@@ -320,6 +320,19 @@ supportable_convert_operation (enum tree_code code,
   return false;
 }
 
+/* Return TRUE if appropriate vector insn is available
+   for vector comparison expr with vector type VALUE_TYPE
+   and resulting mask with MASK_TYPE.  */
+
+bool
+expand_vec_cmp_expr_p (tree value_type, tree mask_type)
+{
+  enum insn_code icode = get_vec_cmp_icode (TYPE_MODE (value_type),
+					    TYPE_MODE (mask_type),
+					    TYPE_UNSIGNED (value_type));
+  return (icode != CODE_FOR_nothing);
+}
+
 /* Return TRUE iff, appropriate vector insns are available
    for vector cond expr with vector type VALUE_TYPE and a comparison
    with operand vector types in CMP_OP_TYPE.  */
@@ -329,6 +342,9 @@ expand_vec_cond_expr_p (tree value_type, tree cmp_op_type)
 {
   machine_mode value_mode = TYPE_MODE (value_type);
   machine_mode cmp_op_mode = TYPE_MODE (cmp_op_type);
+  if (VECTOR_BOOLEAN_TYPE_P (cmp_op_type))
+    return get_vcond_mask_icode (TYPE_MODE (value_type),
+				 TYPE_MODE (cmp_op_type)) != CODE_FOR_nothing;
   if (GET_MODE_SIZE (value_mode) != GET_MODE_SIZE (cmp_op_mode)
       || GET_MODE_NUNITS (value_mode) != GET_MODE_NUNITS (cmp_op_mode)
       || get_vcond_icode (TYPE_MODE (value_type), TYPE_MODE (cmp_op_type),

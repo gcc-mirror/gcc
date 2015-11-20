@@ -64,6 +64,8 @@ static void __offload_fini_library(void);
 #define GET_OFFLOAD_NUMBER(timer_data) \
     timer_data? timer_data->offload_number : 0
 
+static void (*task_completion_callback)(void *);
+
 extern "C" {
 #ifdef TARGET_WINNT
 // Windows does not support imports from libraries without actually
@@ -2507,7 +2509,7 @@ extern "C" {
         const void *info
     )
     {
-	/* TODO: Call callback function, pass info.  */
+	task_completion_callback ((void *) info);
     }
 }
 
@@ -5667,6 +5669,11 @@ extern "C" void __offload_unregister_image(const void *target_image)
         }
 
     }
+}
+
+extern "C" void __offload_register_task_callback(void (*cb)(void *))
+{
+    task_completion_callback = cb;
 }
 
 // Runtime trace interface for user programs

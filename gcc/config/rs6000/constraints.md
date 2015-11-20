@@ -64,7 +64,8 @@
 (define_register_constraint "wd" "rs6000_constraints[RS6000_CONSTRAINT_wd]"
   "VSX vector register to hold vector double data or NO_REGS.")
 
-;; we is not currently used
+(define_register_constraint "we" "rs6000_constraints[RS6000_CONSTRAINT_we]"
+  "VSX register if the -mpower9-vector -m64 options were used or NO_REGS.")
 
 (define_register_constraint "wf" "rs6000_constraints[RS6000_CONSTRAINT_wf]"
   "VSX vector register to hold vector float data or NO_REGS.")
@@ -136,6 +137,22 @@
   "Int constant that is the element number of the 64-bit scalar in a vector."
   (and (match_code "const_int")
        (match_test "TARGET_VSX && (ival == VECTOR_ELEMENT_SCALAR_64BIT)")))
+
+;; Extended fusion store
+(define_memory_constraint "wF"
+  "Memory operand suitable for power9 fusion load/stores"
+  (match_operand 0 "fusion_addis_mem_combo_load"))
+
+;; Fusion gpr load.
+(define_memory_constraint "wG"
+  "Memory operand suitable for TOC fusion memory references"
+  (match_operand 0 "toc_fusion_mem_wrapped"))
+
+(define_constraint "wL"
+  "Int constant that is the element number mfvsrld accesses in a vector."
+  (and (match_code "const_int")
+       (and (match_test "TARGET_DIRECT_MOVE_128")
+	    (match_test "(ival == VECTOR_ELEMENT_MFVSRLD_64BIT)"))))
 
 ;; Lq/stq validates the address for load/store quad
 (define_memory_constraint "wQ"

@@ -1,0 +1,397 @@
+#! /usr/bin/python2
+import os
+import sys
+import shlex
+import re
+
+from headerutils import *
+import Queue
+
+file_list = list ()
+usage = False
+
+ignore_conditional = False
+
+order = [
+  "system.h",
+  "coretypes.h",
+  "backend.h",
+  "target.h",
+  "rtl.h",
+  "c-family/c-target.h",
+  "c-family/c-target-def.h",
+  "tree.h",
+  "cp/cp-tree.h",
+  "c-family/c-common.h",  # these must come before diagnostic.h
+  "c/c-tree.h",
+  "fortran/gfortran.h",
+  "gimple.h",
+  "cfghooks.h",
+  "df.h",
+  "tm_p.h",
+  "gimple-iterators.h",
+  "ssa.h",
+  "expmed.h",
+  "optabs.h",
+  "regs.h",
+  "ira.h",
+  "ira-int.h",
+  "gimple-streamer.h"
+
+]
+
+exclude_special = [  "bversion.h", "obstack.h", "insn-codes.h", "hooks.h" ]
+
+# includes is a dictionary indexed by a header files basename.
+# it consists of a 2 element tuple:
+# [0] - Name of header file which included this header.
+# [1] - vector of header file names included by this file.
+
+includes = { }
+
+# when a header is included multiple times, indexing this dictionary will
+# return a vector of all the headers which included it.
+dups = { }
+
+# When creating the master list, do not descend into these files for what 
+# they include. Simply put the file itself in the list.  This is primarily
+# required because the front end files inlcude orders tend to be at odds with
+# the order of middle end files, and its impossible to synchronize them.\
+# They are ordered such that everything resolves properly.
+exclude_processing = [ "tree-vectorizer.h" , "c-target.h", "c-target-def.h", "cp-tree.h", "c-common.h", "c-tree.h", "gfortran.h" ]
+
+master_list = list ()
+# where include file comes from in src
+h_from = { }
+
+# create the master ordering list... this is the desired order of headers
+def create_master_list (fn, verbose):
+  if fn not in exclude_processing:
+    for x in includes[fn][1]:
+      create_master_list (x, verbose)
+  if not fn in master_list:
+    # Don't put diagnostic*.h into the ordering list. It is special since
+    # various front ends have to set GCC_DIAG_STYLE before including it.
+    # for each file, we'll tailor where it belongs by looking at the include
+    # list and determine its position appropriately.
+    if fn != "diagnostic.h" and fn != "diagnostic-core.h":
+      master_list.append (fn)
+      if (verbose):
+        print fn + "      included by: " + includes[fn][0]
+
+
+
+def print_dups ():
+  if dups:
+    print "\nduplicated includes"
+  for i in dups:
+    string =  "dup : " + i + " : "
+    string += includes[i][0] 
+    for i2 in dups[i]:
+      string += ", "+i2
+    print string
+
+
+def process_known_dups ():
+  # rtl.h gets tagged as a duplicate includer for all of coretypes.h, but that
+  # is really for only generator files
+  rtl_remove = includes["coretypes.h"][1] + ["statistics.h", "vec.h"]
+  if dups:
+    for i in rtl_remove:
+      if dups[i] and "rtl.h" in dups[i]:
+        dups[i].remove("rtl.h")
+      if not dups[i]:
+        dups.pop (i, None)
+
+  # make sure diagnostic.h is the owner of diagnostic-core.h
+  if includes["diagnostic-core.h"][0] != "diagnostic.h":
+    dups["diagnostic-core.h"].append (includes["diagnostic-core.h"][0])
+    includes["diagnostic-core.h"] = ("diagnostic.h", includes["diagnostic-core.h"][1])
+
+# This function scans back thorugh the list of headers which included other
+# headers to determine what file in HEADER_LIST brought 'HEADER' in.
+def indirectly_included (header, header_list):
+  nm = os.path.basename (header)
+  while nm and includes.get(nm):
+    if includes[nm][0] in header_list:
+      return includes[nm][0]
+    nm = includes[nm][0]
+
+  # diagnostic.h and diagnostic-core.h may not show up because we removed them
+  # from the header list to manually position in an appropriate place. They have
+  # specific requirements that they need to occur after certain FE files which
+  # may overide the definition of GCC_DIAG_STYLE.
+  # Check the dup list for whete they may have been included from and return
+  # that header.
+  if header == "diagnostic-core.h":
+    if dups.get("diagnostic-core.h"):
+      for f in dups["diagnostic-core.h"]:
+        if f in header_list:
+          return f
+    else:
+      if header in header_list:
+        return header
+    # Now check if diagnostics is included indirectly anywhere
+    header = "diagnostic.h"
+
+  if header == "diagnostic.h":
+    if dups.get("diagnostic.h"):
+      for f in dups["diagnostic.h"]:
+        if f in header_list:
+          return f
+    else:
+      if header in header_list:
+        return header 
+
+  return ""
+
+
+# This function will take a list of headers from a source file and return 
+# the desired new new order of the canonical headers in DESIRED_ORDER. 
+def get_new_order (src_h, desired_order):
+  new_order = list ()
+  for h in desired_order:
+    if h in master_list:
+      # Create the list of nested headers which included this file.
+      iclist = list ()
+      ib = includes[h][0]
+      while ib:
+        iclist.insert(0, ib)
+        ib = includes[ib][0]
+      if iclist:
+        for x in iclist:
+          # If header is in the source code, and we are allowed to look inside
+          if x in src_h and x not in exclude_processing:
+            if x not in new_order and x[:10] != "diagnostic" and h not in exclude_special:
+              new_order.append (x)
+              break;
+      else:
+        if h not in new_order:
+          new_order.append (h)
+
+  f = ""
+  if "diagnostic.h" in src_h:
+    f = "diagnostic.h"
+  elif "diagnostic-core.h" in src_h:
+    f = "diagnostic-core.h"
+
+ 
+  # If either diagnostic header was directly included in the main file, check to
+  # see if its already included indirectly, or whether we need to add it to the
+  # end of the canonically orders headers.
+  if f:
+    ii = indirectly_included (f, src_h)
+    if not ii or ii == f:
+      new_order.append (f)
+
+  return new_order
+        
+    
+
+# stack of files to process
+process_stack = list ()
+
+def process_one (info):
+  i = info[0]
+  owner = info[1]
+  name = os.path.basename(i)
+  if os.path.exists (i):
+    if includes.get(name) == None:
+      l = find_unique_include_list (i)
+      # create a list which has just basenames in it
+      new_list = list ()
+      for x in l:
+        new_list.append (os.path.basename (x))
+        process_stack.append((x, name))
+      includes[name] = (owner, new_list)
+    elif owner:
+      if dups.get(name) == None:
+        dups[name] = [ owner ]
+      else:
+        dups[name].append (owner)
+  else:
+    # seed tm.h with options.h since it is a build file and won't be seen. 
+    if not includes.get(name):
+      if name == "tm.h":
+        includes[name] = (owner, [ "options.h" ])
+        includes["options.h"] = ("tm.h", list ())
+      else:
+        includes[name] = (owner, list ())
+
+
+show_master = False
+
+for arg in sys.argv[1:]:
+  if arg[0:1] == "-":
+    if arg[0:2] == "-h":
+      usage = True
+    elif arg[0:2] == "-i":
+      ignore_conditional = True
+    elif arg[0:2] == "-v":
+      show_master = True
+    else:
+      print "Error: unrecognized option " + arg
+  elif os.path.exists(arg):
+    file_list.append (arg)
+  else:
+    print "Error: file " + arg + " Does not exist."
+    usage = True
+
+if not file_list and not show_master:
+  usage = True
+
+if not usage and not os.path.exists ("coretypes.h"):
+  usage = True
+  print "Error: Must run command in main gcc source directory containing coretypes.h\n"
+
+# process diagnostic.h first.. it's special since GCC_DIAG_STYLE can be
+# overridden by languages, but must be done so by a file included BEFORE it.
+# so make sure it isn't seen as included by one of those files by making it 
+# appear to be included by the src file.
+process_stack.insert (0, ("diagnostic.h", ""))
+
+# Add the list of files in reverse order since it is processed as a stack later
+for i in order:
+  process_stack.insert (0, (i, "") )
+
+# build up the library of what header files include what other files.
+while process_stack:
+  info = process_stack.pop ()
+  process_one (info)
+
+# Now create the master ordering list
+for i in order:
+  create_master_list (os.path.basename (i), show_master)
+
+# handle warts in the duplicate list
+process_known_dups ()
+desired_order = master_list
+
+if show_master:
+  print " Canonical order of gcc include files: "
+  for x in master_list:
+    print x
+  print " "
+
+if usage:
+  print "gcc-order-headers [-i] [-v] file1 [filen]"
+  print "    Ensures gcc's headers files are included in a normalized form with"
+  print "    redundant headers removed.  The original files are saved in filename.bak"
+  print "    Outputs a list of files which changed."
+  print " -i ignore conditional compilation."
+  print "    Use after examining the file to be sure includes within #ifs are safe"
+  print "    Any headers within conditional sections will be ignored."
+  print " -v Show the canonical order of known headers"
+  sys.exit(0)
+
+
+didnt_do = list ()
+
+for fn in file_list:
+  nest = 0
+  src_h = list ()
+  src_line = { }
+
+  master_list = list ()
+
+  includes = { }
+  dups = { }
+
+  iinfo = process_ii_src (fn)
+  src = ii_src (iinfo)
+  include_list = ii_include_list (iinfo)
+
+  if ii_include_list_cond (iinfo):
+    if not ignore_conditional:
+      print fn + ": Cannot process due to conditional compilation of includes"
+      didnt_do.append (fn)
+      src = list ()
+
+  if not src:
+    continue
+
+  process_stack = list ()
+  # prime the stack with headers in the main ordering list so we get them in
+  # this order.
+  for d in order:
+    if d in include_list:
+      process_stack.insert (0, (d, ""))
+
+  for d in include_list:
+      nm = os.path.basename(d)
+      src_h.append (nm)
+      iname = d
+      iname2 = os.path.dirname (fn) + "/" + d
+      if not os.path.exists (d) and os.path.exists (iname2):
+        iname = iname2
+      if iname not in process_stack:
+        process_stack.insert (0, (iname, ""))
+      src_line[nm] = ii_src_line(iinfo)[d]
+      if src_line[nm].find("/*") != -1 and src_line[nm].find("*/") == -1:
+        # this means we have a multi line comment, abort!'
+        print fn + ": Cannot process due to a multi-line comment :"
+        print "        " + src_line[nm]
+        if fn not in didnt_do:
+          didnt_do.append (fn)
+        src = list ()
+
+  if not src:
+    continue
+
+  # Now create the list of includes as seen by the source file.
+  while process_stack:
+    info = process_stack.pop ()
+    process_one (info)
+ 
+  for i in include_list:
+    create_master_list (os.path.basename (i), False)
+
+  new_src = list ()
+  header_added = list ()
+  new_order = list ()
+  for line in src:
+    d = find_pound_include (line, True, True)
+    if not d or d[-2:] != ".h":
+      new_src.append (line)
+    else:
+      if d == order[0] and not new_order:
+        new_order = get_new_order (src_h, desired_order)
+        for i in new_order:
+          new_src.append (src_line[i])
+          # if not seen, add it.
+          if i not in header_added:
+            header_added.append (i)
+      else:
+        nm = os.path.basename(d)
+        if nm not in header_added:
+          iby = indirectly_included (nm, src_h)
+          if not iby:
+            new_src.append (line)
+            header_added.append (nm)
+
+  if src != new_src:
+    os.rename (fn, fn + ".bak")
+    fl = open(fn,"w")
+    for line in new_src:
+      fl.write (line)
+    fl.close ()
+    print fn 
+
+ 
+if didnt_do:
+  print "\n\n Did not process the following files due to conditional dependencies:"
+  str = ""
+  for x in didnt_do:
+    str += x + " "
+  print str
+  print "\n"
+  print "Please examine to see if they are safe to process, and re-try with -i. "
+  print "Safeness is determined by checking whether any of the reordered headers are"
+  print "within a conditional and could be hauled out of the conditional, thus changing"
+  print "what the compiler will see."
+  print "Multi-line comments after a #include can also cause failuer, they must be turned"
+  print "into single line comments or removed."
+
+
+
+

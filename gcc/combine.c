@@ -5284,6 +5284,22 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
 	      || GET_CODE (SET_DEST (x)) == PC))
 	fmt = "ie";
 
+      /* Substituting into the operands of a widening MULT is not likely
+	 to create RTL matching a machine insn.  */
+      if (code == MULT
+	  && (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+	      || GET_CODE (XEXP (x, 0)) == SIGN_EXTEND)
+	  && (GET_CODE (XEXP (x, 1)) == ZERO_EXTEND
+	      || GET_CODE (XEXP (x, 1)) == SIGN_EXTEND)
+	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && REG_P (XEXP (XEXP (x, 1), 0)))
+	{
+	  if (from == to)
+	    return x;
+	  else
+	    return gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
+	}
+
       /* Get the mode of operand 0 in case X is now a SIGN_EXTEND of a
 	 constant.  */
       if (fmt[0] == 'e')
@@ -8455,6 +8471,17 @@ force_to_mode (rtx x, machine_mode mode, unsigned HOST_WIDE_INT mask,
       /* ... fall through ...  */
 
     case MULT:
+      /* Substituting into the operands of a widening MULT is not likely to
+	 create RTL matching a machine insn.  */
+      if (code == MULT
+	  && (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+	      || GET_CODE (XEXP (x, 0)) == SIGN_EXTEND)
+	  && (GET_CODE (XEXP (x, 1)) == ZERO_EXTEND
+	      || GET_CODE (XEXP (x, 1)) == SIGN_EXTEND)
+	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && REG_P (XEXP (XEXP (x, 1), 0)))
+	return gen_lowpart_or_truncate (mode, x);
+
       /* For PLUS, MINUS and MULT, we need any bits less significant than the
 	 most significant bit in MASK since carries from those bits will
 	 affect the bits we are interested in.  */

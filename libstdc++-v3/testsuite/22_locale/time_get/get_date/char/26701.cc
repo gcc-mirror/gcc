@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "en_GB" }
+// { dg-require-namedlocale "en_GB.ISO8859-1" }
 
 // 2010-01-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -33,7 +33,7 @@ void test01()
 
   typedef istreambuf_iterator<char> iterator_type;
 
-  locale loc_en = locale("en_GB");
+  locale loc_en = locale(ISO_8859(1,en_GB));
   
   tm tm0 = __gnu_test::test_tm(0, 0, 0, 0, 0, 0, 0, 0, 0);
 

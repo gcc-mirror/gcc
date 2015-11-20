@@ -19,5 +19,5 @@
 
 # The compiler defaults to -mcpu=gr5 but this may be overridden via --with-cpu
 # at configure time so the -mcpu setting must be symmetrical.
-MULTILIB_OPTIONS = mcpu=gr5/mcpu=gr6
-MULTILIB_DIRNAMES = gr5 gr6
+MULTILIB_OPTIONS = mcpu=gr5/mcpu=gr6 muser-mode
+MULTILIB_DIRNAMES = gr5 gr6 user

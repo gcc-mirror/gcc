@@ -6,12 +6,12 @@ template<int> void
 foo ()
 {
 #pragma omp parallel for
-  for (auto i = i = 0; i<4; ++i)	// { dg-error "incomplete|unable|invalid|auto" }
+  for (auto i = i = 0; i<4; ++i)	// { dg-error "initializer expression refers to iteration variable" }
     ;
 }
 
 void
 bar ()
 {
-  foo<0> ();				// { dg-message "required from here" }
+  foo<0> ();
 }

@@ -49,6 +49,12 @@ package body System.Soft_Links is
    NT_TSD : TSD;
    --  Note: we rely on the default initialization of NT_TSD
 
+   --  Needed for Vx6Cert (Vx653mc) GOS cert and ravenscar-cert runtimes,
+   --  VxMILS cert, ravenscar-cert and full runtimes, Vx 5 default runtime
+   Stack_Limit : aliased System.Address;
+
+   pragma Export (C, Stack_Limit, "__gnat_stack_limit");
+
    --------------------
    -- Abort_Defer_NT --
    --------------------
@@ -92,7 +98,7 @@ package body System.Soft_Links is
 
       --  Finalize all library-level controlled objects if needed
 
-      if Finalize_Library_Objects /=  null then
+      if Finalize_Library_Objects /= null then
          Finalize_Library_Objects.all;
       end if;
    end Adafinal_NT;

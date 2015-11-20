@@ -30,7 +30,7 @@ extern tree ssa_default_def (struct function *, tree);
 extern void set_ssa_default_def (struct function *, tree, tree);
 extern tree get_or_create_ssa_default_def (struct function *, tree);
 extern tree get_ref_base_and_extent (tree, HOST_WIDE_INT *,
-				     HOST_WIDE_INT *, HOST_WIDE_INT *);
+				     HOST_WIDE_INT *, HOST_WIDE_INT *, bool *);
 extern tree get_addr_base_and_unit_offset_1 (tree, HOST_WIDE_INT *,
 					     tree (*) (tree));
 extern tree get_addr_base_and_unit_offset (tree, HOST_WIDE_INT *);

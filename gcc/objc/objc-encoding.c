@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "alias.h"
 #include "tree.h"
 #include "options.h"
 #include "stringpool.h"
@@ -33,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c/c-lang.h"
 #endif
 
-#include "c-family/c-common.h"
 #include "c-family/c-objc.h"
 
 #include "objc-encoding.h"
@@ -43,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "objc-runtime-shared-support.h"
 
 /* For BITS_PER_UNIT.  */
-#include "tm.h"
 
 /* When building Objective-C++, we are not linking against the C front-end
    and so need to replicate the C tree-construction functions in some way.  */
@@ -53,7 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #endif  /* OBJCPLUS */
 
 /* Set up for use of obstacks.  */
-#include "obstack.h"
 
 /* This obstack is used to accumulate the encoding of a data type.  */
 static struct obstack util_obstack;
@@ -495,13 +491,14 @@ encode_aggregate_within (tree type, int curtype, int format, int left,
 
   if (flag_next_runtime)
     {
-      if (ob_size > 0  &&  *(obstack_next_free (&util_obstack) - 1) == '^')
+      if (ob_size > 0
+	  && *((char *) obstack_next_free (&util_obstack) - 1) == '^')
 	pointed_to = true;
 
       if ((format == OBJC_ENCODE_INLINE_DEFS || generating_instance_variables)
 	  && (!pointed_to || ob_size - curtype == 1
 	      || (ob_size - curtype == 2
-		  && *(obstack_next_free (&util_obstack) - 2) == 'r')))
+		  && *((char *) obstack_next_free (&util_obstack) - 2) == 'r')))
 	inline_contents = true;
     }
   else
@@ -512,9 +509,10 @@ encode_aggregate_within (tree type, int curtype, int format, int left,
 	 comment above applies: in that case we should avoid encoding
 	 the names of instance variables.
       */
-      char c1 = ob_size > 1 ? *(obstack_next_free (&util_obstack) - 2) : 0;
-      char c0 = ob_size > 0 ? *(obstack_next_free (&util_obstack) - 1) : 0;
+      char c0, c1;
 
+      c1 = ob_size > 1 ? *((char *) obstack_next_free (&util_obstack) - 2) : 0;
+      c0 = ob_size > 0 ? *((char *) obstack_next_free (&util_obstack) - 1) : 0;
       if (c0 == '^' || (c1 == '^' && c0 == 'r'))
 	pointed_to = true;
 

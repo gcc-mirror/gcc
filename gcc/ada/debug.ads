@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,7 @@ package Debug is
    -- Dynamic Debug Flags --
    -------------------------
 
-   --  Flags that can be used to active various specialized debugging output
+   --  Flags that can be used to activate various specialized debugging output
    --  information. The flags are preset to False, which corresponds to the
    --  given output being suppressed. The individual flags can be turned on
    --  using the undocumented switch dxxx where xxx is a string of letters for

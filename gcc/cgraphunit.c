@@ -1618,6 +1618,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       fn_block = make_node (BLOCK);
       BLOCK_VARS (fn_block) = a;
       DECL_INITIAL (thunk_fndecl) = fn_block;
+      allocate_struct_function (thunk_fndecl, false);
       init_function_start (thunk_fndecl);
       cfun->is_thunk = 1;
       insn_locations_init ();
@@ -1632,7 +1633,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       insn_locations_finalize ();
       init_insn_lengths ();
       free_after_compilation (cfun);
-      set_cfun (NULL);
       TREE_ASM_WRITTEN (thunk_fndecl) = 1;
       thunk.thunk_p = false;
       analyzed = false;
@@ -1944,9 +1944,11 @@ cgraph_node::expand (void)
   bitmap_obstack_initialize (NULL);
 
   /* Initialize the RTL code for the function.  */
-  current_function_decl = decl;
   saved_loc = input_location;
   input_location = DECL_SOURCE_LOCATION (decl);
+
+  gcc_assert (DECL_STRUCT_FUNCTION (decl));
+  push_cfun (DECL_STRUCT_FUNCTION (decl));
   init_function_start (decl);
 
   gimple_register_cfg_hooks ();
@@ -2014,8 +2016,8 @@ cgraph_node::expand (void)
 
   /* Make sure that BE didn't give up on compiling.  */
   gcc_assert (TREE_ASM_WRITTEN (decl));
-  set_cfun (NULL);
-  current_function_decl = NULL;
+  if (cfun)
+    pop_cfun ();
 
   /* It would make a lot more sense to output thunks before function body to get more
      forward and lest backwarding jumps.  This however would need solving problem

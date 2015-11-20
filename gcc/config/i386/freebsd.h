@@ -98,11 +98,21 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
 #undef  ASM_OUTPUT_MAX_SKIP_ALIGN
-#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE, LOG, MAX_SKIP)					\
-  if ((LOG) != 0) {														\
-    if ((MAX_SKIP) == 0) fprintf ((FILE), "\t.p2align %d\n", (LOG));	\
-    else fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
-  }
+#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP)			\
+  do {									\
+    if ((LOG) != 0) {							\
+      if ((MAX_SKIP) == 0) fprintf ((FILE), "\t.p2align %d\n", (LOG));	\
+      else {								\
+	fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
+	/* Make sure that we have at least 8 byte alignment if > 8 byte \
+	   alignment is preferred.  */					\
+	if ((LOG) > 3							\
+	    && (1 << (LOG)) > ((MAX_SKIP) + 1)				\
+	    && (MAX_SKIP) >= 7)						\
+	  fputs ("\t.p2align 3\n", (FILE));				\
+      }									\
+    }									\
+  } while (0)
 #endif
 
 /* Don't default to pcc-struct-return, we want to retain compatibility with
@@ -121,10 +131,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Static stack checking is supported by means of probes.  */
 #define STACK_CHECK_STATIC_BUILTIN 1
 
-/* Support for i386 has been removed from FreeBSD 6.0 onward.  */
-#if FBSD_MAJOR >= 6
-#define SUBTARGET32_DEFAULT_CPU "i486"
-#endif
+#define SUBTARGET32_DEFAULT_CPU "i586"
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 

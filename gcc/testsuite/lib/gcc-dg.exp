@@ -29,6 +29,7 @@ load_lib libgloss.exp
 load_lib target-libpath.exp
 load_lib torture-options.exp
 load_lib fortran-modules.exp
+load_lib multiline.exp
 
 # We set LC_ALL and LANG to C so that we get the same error messages as expected.
 setenv LC_ALL C

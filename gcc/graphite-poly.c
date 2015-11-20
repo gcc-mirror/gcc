@@ -132,21 +132,19 @@ apply_poly_transforms (scop_p scop)
    NB_SUBSCRIPTS.  */
 
 void
-new_poly_dr (poly_bb_p pbb, enum poly_dr_type type, data_reference_p cdr,
-	     graphite_dim_t nb_subscripts,
+new_poly_dr (poly_bb_p pbb, gimple *stmt, enum poly_dr_type type,
 	     isl_map *acc, isl_set *subscript_sizes)
 {
   static int id = 0;
   poly_dr_p pdr = XNEW (struct poly_dr);
 
+  pdr->stmt = stmt;
   PDR_ID (pdr) = id++;
   PDR_NB_REFS (pdr) = 1;
   PDR_PBB (pdr) = pbb;
   pdr->accesses = acc;
   pdr->subscript_sizes = subscript_sizes;
   PDR_TYPE (pdr) = type;
-  PDR_CDR (pdr) = cdr;
-  PDR_NB_SUBSCRIPTS (pdr) = nb_subscripts;
   PBB_DRS (pbb).safe_push (pdr);
 }
 
@@ -226,6 +224,8 @@ print_pdr (FILE *file, poly_dr_p pdr)
       gcc_unreachable ();
     }
 
+  fprintf (file, "in gimple stmt: ");
+  print_gimple_stmt (file, pdr->stmt, 0, 0);
   fprintf (file, "data accesses: ");
   print_isl_map (file, pdr->accesses);
   fprintf (file, "subscript sizes: ");
@@ -244,14 +244,14 @@ debug_pdr (poly_dr_p pdr)
 /* Store the GRAPHITE representation of BB.  */
 
 gimple_poly_bb_p
-new_gimple_poly_bb (basic_block bb, vec<data_reference_p> drs)
+new_gimple_poly_bb (basic_block bb, vec<data_reference_p> drs,
+		    vec<scalar_use> reads, vec<tree> writes)
 {
-  gimple_poly_bb_p gbb;
-
-  gbb = XNEW (struct gimple_poly_bb);
-  bb->aux = gbb;
+  gimple_poly_bb_p gbb = XNEW (struct gimple_poly_bb);
   GBB_BB (gbb) = bb;
   GBB_DATA_REFS (gbb) = drs;
+  gbb->read_scalar_refs = reads;
+  gbb->write_scalar_refs = writes;
   GBB_CONDITIONS (gbb).create (0);
   GBB_CONDITION_CASES (gbb).create (0);
 
@@ -264,10 +264,10 @@ void
 free_gimple_poly_bb (gimple_poly_bb_p gbb)
 {
   free_data_refs (GBB_DATA_REFS (gbb));
-
   GBB_CONDITIONS (gbb).release ();
   GBB_CONDITION_CASES (gbb).release ();
-  GBB_BB (gbb)->aux = 0;
+  gbb->read_scalar_refs.release ();
+  gbb->write_scalar_refs.release ();
   XDELETE (gbb);
 }
 
@@ -305,6 +305,7 @@ new_scop (edge entry, edge exit)
   scop->must_waw_no_source = NULL;
   scop->may_waw_no_source = NULL;
   scop_set_region (scop, region);
+  scop->original_schedule = NULL;
   scop->pbbs.create (3);
   scop->poly_scop_p = false;
   scop->drs.create (3);
@@ -327,6 +328,7 @@ free_scop (scop_p scop)
     free_poly_bb (pbb);
 
   scop->pbbs.release ();
+  scop->drs.release ();
 
   isl_set_free (scop->param_context);
   isl_union_map_free (scop->must_raw);
@@ -341,6 +343,7 @@ free_scop (scop_p scop)
   isl_union_map_free (scop->may_waw);
   isl_union_map_free (scop->must_waw_no_source);
   isl_union_map_free (scop->may_waw_no_source);
+  isl_union_map_free (scop->original_schedule);
   XDELETE (scop);
 }
 
@@ -475,13 +478,13 @@ print_pbb (FILE *file, poly_bb_p pbb)
 void
 print_scop_params (FILE *file, scop_p scop)
 {
-  if (SESE_PARAMS (scop->scop_info).is_empty ())
+  if (scop->scop_info->params.is_empty ())
     return;
 
   int i;
   tree t;
   fprintf (file, "parameters (");
-  FOR_EACH_VEC_ELT (SESE_PARAMS (scop->scop_info), i, t)
+  FOR_EACH_VEC_ELT (scop->scop_info->params, i, t)
     {
       print_generic_expr (file, t, 0);
       fprintf (file, ", ");

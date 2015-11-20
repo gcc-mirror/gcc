@@ -595,14 +595,12 @@ extern tree x86_mfence;
 /* This is re-defined by cygming.h.  */
 #define TARGET_SEH 0
 
-/* This is re-defined by cygming.h.  */
-#define TARGET_PECOFF 0
-
 /* The default abi used by target.  */
 #define DEFAULT_ABI SYSV_ABI
 
 /* The default TLS segment register used by target.  */
-#define DEFAULT_TLS_SEG_REG (TARGET_64BIT ? SEG_FS : SEG_GS)
+#define DEFAULT_TLS_SEG_REG \
+  (TARGET_64BIT ? ADDR_SPACE_SEG_FS : ADDR_SPACE_SEG_GS)
 
 /* Subtargets may reset this to 1 in order to enable 96-bit long double
    with the rounding mode forced to 53 bits.  */
@@ -816,7 +814,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    TARGET_ABSOLUTE_BIGGEST_ALIGNMENT.  */
 
 #define BIGGEST_ALIGNMENT \
-  (TARGET_AVX512F ? 512 : (TARGET_AVX ? 256 : (TARGET_IAMCU ? 32 : 128)))
+  (TARGET_IAMCU ? 32 : (TARGET_AVX512F ? 512 : (TARGET_AVX ? 256 : 128)))
 
 /* Maximum stack alignment.  */
 #define MAX_STACK_ALIGNMENT MAX_OFILE_ALIGNMENT

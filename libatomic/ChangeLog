@@ -1,3 +1,13 @@
+2015-11-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/65083
+	* fence.c, flag.c: New files.
+	* Makefile.am (libatomic_la_SOURCES): Add fence.c and flag.c.
+	* Makefile.in: Regenerate.
+	* configure.ac (libtool_VERSION): Change to 3:0:2.
+	* configure: Regenerate.
+	* libatomic.map (LIBATOMIC_1.2): New symbol version.
+
 2015-10-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* testsuite/lib/libatomic.exp: Load multiline.exp before

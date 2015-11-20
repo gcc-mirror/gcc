@@ -2795,7 +2795,7 @@ m32c_print_operand_punct_valid_p (unsigned char c)
 #define TARGET_PRINT_OPERAND_ADDRESS m32c_print_operand_address
 
 static void
-m32c_print_operand_address (FILE * stream, rtx address)
+m32c_print_operand_address (FILE * stream, machine_mode /*mode*/, rtx address)
 {
   if (GET_CODE (address) == MEM)
     address = XEXP (address, 0);

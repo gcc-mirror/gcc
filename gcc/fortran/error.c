@@ -773,6 +773,7 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
   va_copy (argp, ap);
 
   diagnostic_info diagnostic;
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
   bool fatal_errors = global_dc->fatal_errors;
   pretty_printer *pp = global_dc->printer;
   output_buffer *tmp_buffer = pp->buffer;
@@ -787,7 +788,7 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
       --werrorcount;
     }
 
-  diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION,
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
   diagnostic.option_index = opt;
   bool ret = report_diagnostic (&diagnostic);
@@ -938,10 +939,12 @@ gfc_format_decoder (pretty_printer *pp,
 	/* If location[0] != UNKNOWN_LOCATION means that we already
 	   processed one of %C/%L.  */
 	int loc_num = text->get_location (0) == UNKNOWN_LOCATION ? 0 : 1;
-	text->set_location (loc_num,
-			    linemap_position_for_loc_and_offset (line_table,
-								 loc->lb->location,
-								 offset));
+	source_range range
+	  = source_range::from_location (
+	      linemap_position_for_loc_and_offset (line_table,
+						   loc->lb->location,
+						   offset));
+	text->set_range (loc_num, range, true);
 	pp_string (pp, result[loc_num]);
 	return true;
       }
@@ -1024,48 +1027,21 @@ gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
 }
 
 /* This function prints the locus (file:line:column), the diagnostic kind
-   (Error, Warning) and (optionally) the caret line (a source line
-   with '1' and/or '2' below it).
+   (Error, Warning) and (optionally) the relevant lines of code with
+   annotation lines with '1' and/or '2' below them.
 
-   With -fdiagnostic-show-caret (the default) and for valid locations,
-   it prints for one location:
+   With -fdiagnostic-show-caret (the default) it prints:
 
-       [locus]:
+       [locus of primary range]:
        
           some code
                  1
        Error: Some error at (1)
         
-   for two locations that fit in the same locus line:
+  With -fno-diagnostic-show-caret or if the primary range is not
+  valid, it prints:
 
-       [locus]:
-       
-         some code and some more code
-                1       2
-       Error: Some error at (1) and (2)
-
-   and for two locations that do not fit in the same locus line:
-
-       [locus]:
-       
-         some code
-                1
-       [locus2]:
-       
-         some other code
-           2
-       Error: Some error at (1) and (2)
-       
-  With -fno-diagnostic-show-caret or if one of the locations is not
-  valid, it prints for one location (or for two locations that fit in
-  the same locus line):
-
-       [locus]: Error: Some error at (1) and (2)
-
-   and for two locations that do not fit in the same locus line:
-
-       [name]:[locus]: Error: (1)
-       [name]:[locus2]: Error: Some error at (1) and (2)
+       [locus of primary range]: Error: Some error at (1) and (2)
 */
 static void 
 gfc_diagnostic_starter (diagnostic_context *context,
@@ -1075,7 +1051,7 @@ gfc_diagnostic_starter (diagnostic_context *context,
 
   expanded_location s1 = diagnostic_expand_location (diagnostic);
   expanded_location s2;
-  bool one_locus = diagnostic_location (diagnostic, 1) == UNKNOWN_LOCATION;
+  bool one_locus = diagnostic->richloc->get_num_locations () < 2;
   bool same_locus = false;
 
   if (!one_locus) 
@@ -1125,35 +1101,6 @@ gfc_diagnostic_starter (diagnostic_context *context,
       /* If the caret line was shown, the prefix does not contain the
 	 locus.  */
       pp_set_prefix (context->printer, kind_prefix);
-
-      if (one_locus || same_locus)
-	  return;
-
-      locus_prefix = gfc_diagnostic_build_locus_prefix (context, s2);
-      if (diagnostic_location (diagnostic, 1) <= BUILTINS_LOCATION)
-	{
-	  /* No caret line for the second location. Override the previous
-	     prefix with [locus2]:[prefix].  */
-	  pp_set_prefix (context->printer,
-			 concat (locus_prefix, " ", kind_prefix, NULL));
-	  free (kind_prefix);
-	  free (locus_prefix);
-	}
-      else
-	{
-	  /* We print the caret for the second location.  */
-	  pp_verbatim (context->printer, locus_prefix);
-	  free (locus_prefix);
-	  /* Fortran uses an empty line between locus and caret line.  */
-	  pp_newline (context->printer);
-	  s1.column = 0; /* Print only a caret line for s2.  */
-	  diagnostic_print_caret_line (context, s2, s1,
-				       context->caret_chars[1], '\0');
-	  pp_newline (context->printer);
-	  /* If the caret line was shown, the prefix does not contain the
-	     locus.  */
-	  pp_set_prefix (context->printer, kind_prefix);
-	}
     }
 }
 
@@ -1173,10 +1120,11 @@ gfc_warning_now_at (location_t loc, int opt, const char *gmsgid, ...)
 {
   va_list argp;
   diagnostic_info diagnostic;
+  rich_location rich_loc (line_table, loc);
   bool ret;
 
   va_start (argp, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &argp, loc, DK_WARNING);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_WARNING);
   diagnostic.option_index = opt;
   ret = report_diagnostic (&diagnostic);
   va_end (argp);
@@ -1190,10 +1138,11 @@ gfc_warning_now (int opt, const char *gmsgid, ...)
 {
   va_list argp;
   diagnostic_info diagnostic;
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
   bool ret;
 
   va_start (argp, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION,
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
   diagnostic.option_index = opt;
   ret = report_diagnostic (&diagnostic);
@@ -1209,11 +1158,12 @@ gfc_error_now (const char *gmsgid, ...)
 {
   va_list argp;
   diagnostic_info diagnostic;
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
   error_buffer.flag = true;
 
   va_start (argp, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION, DK_ERROR);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_ERROR);
   report_diagnostic (&diagnostic);
   va_end (argp);
 }
@@ -1226,9 +1176,10 @@ gfc_fatal_error (const char *gmsgid, ...)
 {
   va_list argp;
   diagnostic_info diagnostic;
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
   va_start (argp, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION, DK_FATAL);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_FATAL);
   report_diagnostic (&diagnostic);
   va_end (argp);
 
@@ -1291,6 +1242,7 @@ gfc_error (const char *gmsgid, va_list ap)
     }
 
   diagnostic_info diagnostic;
+  rich_location richloc (line_table, UNKNOWN_LOCATION);
   bool fatal_errors = global_dc->fatal_errors;
   pretty_printer *pp = global_dc->printer;
   output_buffer *tmp_buffer = pp->buffer;
@@ -1306,7 +1258,7 @@ gfc_error (const char *gmsgid, va_list ap)
       --errorcount;
     }
 
-  diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION, DK_ERROR);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, &richloc, DK_ERROR);
   report_diagnostic (&diagnostic);
 
   if (buffered_p)
@@ -1336,9 +1288,10 @@ gfc_internal_error (const char *gmsgid, ...)
 {
   va_list argp;
   diagnostic_info diagnostic;
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
   va_start (argp, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION, DK_ICE);
+  diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_ICE);
   report_diagnostic (&diagnostic);
   va_end (argp);
 

@@ -181,7 +181,7 @@ package Atree is
    --   Flag10
    --   Flag11        Note that Flag0-3 are stored separately in the Flags
    --   Flag12        table, but that's a detail of the implementation which
-   --   Flag13        is entirely hidden by the funcitonal interface.
+   --   Flag13        is entirely hidden by the functional interface.
    --   Flag14
    --   Flag15
    --   Flag16
@@ -1438,6 +1438,9 @@ package Atree is
 
       function Elist10 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist10);
+
+      function Elist11 (N : Node_Id) return Elist_Id;
+      pragma Inline (Elist11);
 
       function Elist13 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist13);
@@ -2798,6 +2801,9 @@ package Atree is
 
       procedure Set_Elist10 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist10);
+
+      procedure Set_Elist11 (N : Node_Id; Val : Elist_Id);
+      pragma Inline (Set_Elist11);
 
       procedure Set_Elist13 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist13);

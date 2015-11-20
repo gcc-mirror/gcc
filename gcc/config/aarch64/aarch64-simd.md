@@ -382,6 +382,33 @@
   [(set_attr "type" "neon_fp_mul_d_scalar_q")]
 )
 
+(define_insn "aarch64_rsqrte_<mode>2"
+  [(set (match_operand:VALLF 0 "register_operand" "=w")
+	(unspec:VALLF [(match_operand:VALLF 1 "register_operand" "w")]
+		     UNSPEC_RSQRTE))]
+  "TARGET_SIMD"
+  "frsqrte\\t%<v>0<Vmtype>, %<v>1<Vmtype>"
+  [(set_attr "type" "neon_fp_rsqrte_<Vetype><q>")])
+
+(define_insn "aarch64_rsqrts_<mode>3"
+  [(set (match_operand:VALLF 0 "register_operand" "=w")
+	(unspec:VALLF [(match_operand:VALLF 1 "register_operand" "w")
+	       (match_operand:VALLF 2 "register_operand" "w")]
+		     UNSPEC_RSQRTS))]
+  "TARGET_SIMD"
+  "frsqrts\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
+  [(set_attr "type" "neon_fp_rsqrts_<Vetype><q>")])
+
+(define_expand "aarch64_rsqrt_<mode>2"
+  [(set (match_operand:VALLF 0 "register_operand" "=w")
+	(unspec:VALLF [(match_operand:VALLF 1 "register_operand" "w")]
+		     UNSPEC_RSQRT))]
+  "TARGET_SIMD"
+{
+  aarch64_emit_swrsqrt (operands[0], operands[1]);
+  DONE;
+})
+
 (define_insn "*aarch64_mul3_elt_to_64v2df"
   [(set (match_operand:DF 0 "register_operand" "=w")
      (mult:DF
@@ -2868,6 +2895,18 @@
   [(set_attr "type" "neon_mul_<Vetype><q>")]
 )
 
+;; fmulx.
+
+(define_insn "aarch64_fmulx<mode>"
+  [(set (match_operand:VALLF 0 "register_operand" "=w")
+	(unspec:VALLF [(match_operand:VALLF 1 "register_operand" "w")
+		       (match_operand:VALLF 2 "register_operand" "w")]
+		      UNSPEC_FMULX))]
+ "TARGET_SIMD"
+ "fmulx\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
+ [(set_attr "type" "neon_fp_mul_<Vetype>")]
+)
+
 ;; <su>q<addsub>
 
 (define_insn "aarch64_<su_optab><optab><mode>"
@@ -4777,24 +4816,70 @@
   [(set_attr "type" "neon_tbl2_q")]
 )
 
-(define_insn "aarch64_tbl3v8qi"
-  [(set (match_operand:V8QI 0 "register_operand" "=w")
-	(unspec:V8QI [(match_operand:OI 1 "register_operand" "w")
-		      (match_operand:V8QI 2 "register_operand" "w")]
+(define_insn "aarch64_tbl3<mode>"
+  [(set (match_operand:VB 0 "register_operand" "=w")
+	(unspec:VB [(match_operand:OI 1 "register_operand" "w")
+		      (match_operand:VB 2 "register_operand" "w")]
 		      UNSPEC_TBL))]
   "TARGET_SIMD"
-  "tbl\\t%S0.8b, {%S1.16b - %T1.16b}, %S2.8b"
+  "tbl\\t%S0.<Vbtype>, {%S1.16b - %T1.16b}, %S2.<Vbtype>"
   [(set_attr "type" "neon_tbl3")]
 )
 
-(define_insn "aarch64_tbx4v8qi"
-  [(set (match_operand:V8QI 0 "register_operand" "=w")
-	(unspec:V8QI [(match_operand:V8QI 1 "register_operand" "0")
+(define_insn "aarch64_tbx4<mode>"
+  [(set (match_operand:VB 0 "register_operand" "=w")
+	(unspec:VB [(match_operand:VB 1 "register_operand" "0")
 		      (match_operand:OI 2 "register_operand" "w")
-		      (match_operand:V8QI 3 "register_operand" "w")]
+		      (match_operand:VB 3 "register_operand" "w")]
 		      UNSPEC_TBX))]
   "TARGET_SIMD"
-  "tbx\\t%S0.8b, {%S2.16b - %T2.16b}, %S3.8b"
+  "tbx\\t%S0.<Vbtype>, {%S2.16b - %T2.16b}, %S3.<Vbtype>"
+  [(set_attr "type" "neon_tbl4")]
+)
+
+;; Three source registers.
+
+(define_insn "aarch64_qtbl3<mode>"
+  [(set (match_operand:VB 0 "register_operand" "=w")
+	(unspec:VB [(match_operand:CI 1 "register_operand" "w")
+		      (match_operand:VB 2 "register_operand" "w")]
+		      UNSPEC_TBL))]
+  "TARGET_SIMD"
+  "tbl\\t%S0.<Vbtype>, {%S1.16b - %U1.16b}, %S2.<Vbtype>"
+  [(set_attr "type" "neon_tbl3")]
+)
+
+(define_insn "aarch64_qtbx3<mode>"
+  [(set (match_operand:VB 0 "register_operand" "=w")
+	(unspec:VB [(match_operand:VB 1 "register_operand" "0")
+		      (match_operand:CI 2 "register_operand" "w")
+		      (match_operand:VB 3 "register_operand" "w")]
+		      UNSPEC_TBX))]
+  "TARGET_SIMD"
+  "tbx\\t%S0.<Vbtype>, {%S2.16b - %U2.16b}, %S3.<Vbtype>"
+  [(set_attr "type" "neon_tbl3")]
+)
+
+;; Four source registers.
+
+(define_insn "aarch64_qtbl4<mode>"
+  [(set (match_operand:VB 0 "register_operand" "=w")
+	(unspec:VB [(match_operand:XI 1 "register_operand" "w")
+		      (match_operand:VB 2 "register_operand" "w")]
+		      UNSPEC_TBL))]
+  "TARGET_SIMD"
+  "tbl\\t%S0.<Vbtype>, {%S1.16b - %V1.16b}, %S2.<Vbtype>"
+  [(set_attr "type" "neon_tbl4")]
+)
+
+(define_insn "aarch64_qtbx4<mode>"
+  [(set (match_operand:VB 0 "register_operand" "=w")
+	(unspec:VB [(match_operand:VB 1 "register_operand" "0")
+		      (match_operand:XI 2 "register_operand" "w")
+		      (match_operand:VB 3 "register_operand" "w")]
+		      UNSPEC_TBX))]
+  "TARGET_SIMD"
+  "tbx\\t%S0.<Vbtype>, {%S2.16b - %V2.16b}, %S3.<Vbtype>"
   [(set_attr "type" "neon_tbl4")]
 )
 

@@ -1261,8 +1261,8 @@ As an extension, GNU C supports named address spaces as
 defined in the N1275 draft of ISO/IEC DTR 18037.  Support for named
 address spaces in GCC will evolve as the draft technical report
 changes.  Calling conventions for any target might also change.  At
-present, only the AVR, SPU, M32C, and RL78 targets support address
-spaces other than the generic address space.
+present, only the AVR, SPU, M32C, RL78, and x86 targets support
+address spaces other than the generic address space.
 
 Address space identifiers may be used exactly like any other C type
 qualifier (e.g., @code{const} or @code{volatile}).  See the N1275
@@ -1450,6 +1450,49 @@ The compiler generates special code to access the variable @code{i}.
 It may use runtime library
 support, or generate special machine instructions to access that address
 space.
+
+@subsection x86 Named Address Spaces
+@cindex x86 named address spaces
+
+On the x86 target, variables may be declared as being relative
+to the @code{%fs} or @code{%gs} segments.
+
+@table @code
+@item __seg_fs
+@itemx __seg_gs
+@cindex @code{__seg_fs} x86 named address space
+@cindex @code{__seg_gs} x86 named address space
+The object is accessed with the respective segment override prefix.
+
+The respective segment base must be set via some method specific to
+the operating system.  Rather than require an expensive system call
+to retrieve the segment base, these address spaces are not considered
+to be subspaces of the generic (flat) address space.  This means that
+explicit casts are required to convert pointers between these address
+spaces and the generic address space.  In practice the application
+should cast to @code{uintptr_t} and apply the segment base offset
+that it installed previously.
+
+The preprocessor symbols @code{__SEG_FS} and @code{__SEG_GS} are
+defined when these address spaces are supported.
+
+@item __seg_tls
+@cindex @code{__seg_tls} x86 named address space
+Some operating systems define either the @code{%fs} or @code{%gs}
+segment as the thread-local storage base for each thread.  Objects
+within this address space are accessed with the appropriate
+segment override prefix.
+
+The pointer located at address 0 within the segment contains the
+offset of the segment within the generic address space.  Thus this
+address space is considered a subspace of the generic address space,
+and the known segment offset is applied when converting addresses
+to and from the generic address space.
+
+The preprocessor symbol @code{__SEG_TLS} is defined when this
+address space is supported.
+
+@end table
 
 @node Zero Length
 @section Arrays of Length Zero
@@ -3100,6 +3143,22 @@ one compiled with @option{-msse4.1} and another with @option{-mavx}.
 At the function call it will create resolver @code{ifunc}, that will
 dynamically call a clone suitable for current architecture.
 
+@item simd
+@cindex @code{simd} function attribute.
+This attribute enables creation of one or more function versions that
+can process multiple arguments using SIMD instructions from a
+single invocation.  Specifying this attribute allows compiler to
+assume that such versions are available at link time (provided
+in the same or another translation unit).  Generated versions are
+target dependent and described in corresponding Vector ABI document.  For
+x86_64 target this document can be found
+@w{@uref{https://sourceware.org/glibc/wiki/libmvec?action=AttachFile&do=view&target=VectorABI.txt,here}}.
+The attribute should not be used together with Cilk Plus @code{vector}
+attribute on the same function.
+If the attribute is specified and @code{#pragma omp declare simd}
+present on a declaration and @code{-fopenmp} or @code{-fopenmp-simd}
+switch is specified, then the attribute is ignored.
+
 @item target (@var{options})
 @cindex @code{target} function attribute
 Multiple target back ends implement the @code{target} attribute
@@ -3157,6 +3216,9 @@ class itself is instantiated.
 @item visibility ("@var{visibility_type}")
 @cindex @code{visibility} function attribute
 This attribute affects the linkage of the declaration to which it is attached.
+It can be applied to variables (@pxref{Common Variable Attributes}) and types
+(@pxref{Common Type Attributes}) as well as functions.
+
 There are four supported @var{visibility_type} values: default,
 hidden, protected or internal visibility.
 
@@ -3658,9 +3720,16 @@ architecture level.
 @item arm
 @cindex @code{target("arm")} function attribute, ARM
 Force code generation in the ARM (A32) ISA.
-@end table
 
 Functions from different modes can be inlined in the caller's mode.
+
+@item fpu=
+@cindex @code{target("fpu=")} function attribute, ARM
+Specifies the fpu for which to tune the performance of this function.
+The behavior and permissible arguments are the same as for the @option{-mfpu=}
+command-line option.
+
+@end table
 
 @end table
 
@@ -5594,6 +5663,12 @@ struct S  __attribute__ ((vector_size (16))) foo;
 is invalid even if the size of the structure is the same as the size of
 the @code{int}.
 
+@item visibility ("@var{visibility_type}")
+@cindex @code{visibility} variable attribute
+This attribute affects the linkage of the declaration to which it is attached.
+The @code{visibility} attribute is described in
+@ref{Common Function Attributes}.
+
 @item weak
 @cindex @code{weak} variable attribute
 The @code{weak} attribute is described in
@@ -5981,123 +6056,13 @@ data between functions compiled with GCC and the native Microsoft compiler
 (either via function call or as data in a file), it may be necessary to access
 either format.
 
-Currently @option{-m[no-]ms-bitfields} is provided for the Microsoft Windows x86
-compilers to match the native Microsoft compiler.
+The @code{ms_struct} and @code{gcc_struct} attributes correspond
+to the @option{-mms-bitfields} and @option{-mno-ms-bitfields}
+command-line options, respectively;
+see @ref{x86 Options}, for details of how structure layout is affected.
+@xref{x86 Type Attributes}, for information about the corresponding
+attributes on types.
 
-The Microsoft structure layout algorithm is fairly simple with the exception
-of the bit-field packing.  
-The padding and alignment of members of structures and whether a bit-field 
-can straddle a storage-unit boundary are determine by these rules:
-
-@enumerate
-@item Structure members are stored sequentially in the order in which they are
-declared: the first member has the lowest memory address and the last member
-the highest.
-
-@item Every data object has an alignment requirement.  The alignment requirement
-for all data except structures, unions, and arrays is either the size of the
-object or the current packing size (specified with either the
-@code{aligned} attribute or the @code{pack} pragma),
-whichever is less.  For structures, unions, and arrays,
-the alignment requirement is the largest alignment requirement of its members.
-Every object is allocated an offset so that:
-
-@smallexample
-offset % alignment_requirement == 0
-@end smallexample
-
-@item Adjacent bit-fields are packed into the same 1-, 2-, or 4-byte allocation
-unit if the integral types are the same size and if the next bit-field fits
-into the current allocation unit without crossing the boundary imposed by the
-common alignment requirements of the bit-fields.
-@end enumerate
-
-MSVC interprets zero-length bit-fields in the following ways:
-
-@enumerate
-@item If a zero-length bit-field is inserted between two bit-fields that
-are normally coalesced, the bit-fields are not coalesced.
-
-For example:
-
-@smallexample
-struct
- @{
-   unsigned long bf_1 : 12;
-   unsigned long : 0;
-   unsigned long bf_2 : 12;
- @} t1;
-@end smallexample
-
-@noindent
-The size of @code{t1} is 8 bytes with the zero-length bit-field.  If the
-zero-length bit-field were removed, @code{t1}'s size would be 4 bytes.
-
-@item If a zero-length bit-field is inserted after a bit-field, @code{foo}, and the
-alignment of the zero-length bit-field is greater than the member that follows it,
-@code{bar}, @code{bar} is aligned as the type of the zero-length bit-field.
-
-For example:
-
-@smallexample
-struct
- @{
-   char foo : 4;
-   short : 0;
-   char bar;
- @} t2;
-
-struct
- @{
-   char foo : 4;
-   short : 0;
-   double bar;
- @} t3;
-@end smallexample
-
-@noindent
-For @code{t2}, @code{bar} is placed at offset 2, rather than offset 1.
-Accordingly, the size of @code{t2} is 4.  For @code{t3}, the zero-length
-bit-field does not affect the alignment of @code{bar} or, as a result, the size
-of the structure.
-
-Taking this into account, it is important to note the following:
-
-@enumerate
-@item If a zero-length bit-field follows a normal bit-field, the type of the
-zero-length bit-field may affect the alignment of the structure as whole. For
-example, @code{t2} has a size of 4 bytes, since the zero-length bit-field follows a
-normal bit-field, and is of type short.
-
-@item Even if a zero-length bit-field is not followed by a normal bit-field, it may
-still affect the alignment of the structure:
-
-@smallexample
-struct
- @{
-   char foo : 6;
-   long : 0;
- @} t4;
-@end smallexample
-
-@noindent
-Here, @code{t4} takes up 4 bytes.
-@end enumerate
-
-@item Zero-length bit-fields following non-bit-field members are ignored:
-
-@smallexample
-struct
- @{
-   char foo;
-   long : 0;
-   char bar;
- @} t5;
-@end smallexample
-
-@noindent
-Here, @code{t5} takes up 2 bytes.
-@end enumerate
 @end table
 
 @node Xstormy16 Variable Attributes
@@ -6395,6 +6360,42 @@ of the structure or union is placed to minimize the memory required.  When
 attached to an @code{enum} definition, it indicates that the smallest
 integral type should be used.
 
+@item scalar_storage_order ("@var{endianness}")
+@cindex @code{scalar_storage_order} type attribute
+When attached to a @code{union} or a @code{struct}, this attribute sets
+the storage order, aka endianness, of the scalar fields of the type, as
+well as the array fields whose component is scalar.  The supported
+endianness are @code{big-endian} and @code{little-endian}.  The attribute
+has no effects on fields which are themselves a @code{union}, a @code{struct}
+or an array whose component is a @code{union} or a @code{struct}, and it is
+possible to have fields with a different scalar storage order than the
+enclosing type.
+
+This attribute is supported only for targets that use a uniform default
+scalar storage order (fortunately, most of them), i.e. targets that store
+the scalars either all in big-endian or all in little-endian.
+
+Additional restrictions are enforced for types with the reverse scalar
+storage order with regard to the scalar storage order of the target:
+
+@itemize
+@item Taking the address of a scalar field of a @code{union} or a
+@code{struct} with reverse scalar storage order is not permitted and will
+yield an error.
+@item Taking the address of an array field, whose component is scalar, of
+a @code{union} or a @code{struct} with reverse scalar storage order is
+permitted but will yield a warning, unless @option{-Wno-scalar-storage-order}
+is specified.
+@item Taking the address of a @code{union} or a @code{struct} with reverse
+scalar storage order is permitted.
+@end itemize
+
+These restrictions exist because the storage order attribute is lost when
+the address of a scalar or the address of an array with scalar component
+is taken, so storing indirectly through this address will generally not work.
+The second case is nevertheless allowed to be able to perform a block copy
+from or to the array.
+
 @item transparent_union
 @cindex @code{transparent_union} type attribute
 
@@ -6581,8 +6582,13 @@ data between functions compiled with GCC and the native Microsoft compiler
 (either via function call or as data in a file), it may be necessary to access
 either format.
 
-Currently @option{-m[no-]ms-bitfields} is provided for the Microsoft Windows x86
-compilers to match the native Microsoft compiler.
+The @code{ms_struct} and @code{gcc_struct} attributes correspond
+to the @option{-mms-bitfields} and @option{-mno-ms-bitfields}
+command-line options, respectively;
+see @ref{x86 Options}, for details of how structure layout is affected.
+@xref{x86 Variable Attributes}, for information about the corresponding
+attributes on variables.
+
 @end table
 
 @node Label Attributes
@@ -10805,7 +10811,7 @@ int g (int c)
 
 @end deftypefn
 
-@deftypefn {Built-in Function} void *__builtin_assume_aligned (const void *@var{exp}, size_t @var{align}, ...)
+@deftypefn {Built-in Function} {void *} __builtin_assume_aligned (const void *@var{exp}, size_t @var{align}, ...)
 This function returns its first argument, and allows the compiler
 to assume that the returned pointer is at least @var{align} bytes
 aligned.  This built-in can have either two or three arguments,
@@ -18432,7 +18438,7 @@ for further explanation.
 * Darwin Pragmas::
 * Solaris Pragmas::
 * Symbol-Renaming Pragmas::
-* Structure-Packing Pragmas::
+* Structure-Layout Pragmas::
 * Weak Pragmas::
 * Diagnostic Pragmas::
 * Visibility Pragmas::
@@ -18708,8 +18714,8 @@ the name does not change.
 always the C-language name.
 @end enumerate
 
-@node Structure-Packing Pragmas
-@subsection Structure-Packing Pragmas
+@node Structure-Layout Pragmas
+@subsection Structure-Layout Pragmas
 
 For compatibility with Microsoft Windows compilers, GCC supports a
 set of @code{#pragma} directives that change the maximum alignment of
@@ -18732,15 +18738,28 @@ multiple @code{#pragma pack(@var{n})} instances and finalized by a single
 @code{#pragma pack(pop)}.
 @end enumerate
 
-Some targets, e.g.@: x86 and PowerPC, support the @code{ms_struct}
-@code{#pragma} which lays out a structure as the documented
-@code{__attribute__ ((ms_struct))}.
+Some targets, e.g.@: x86 and PowerPC, support the @code{#pragma ms_struct}
+directive which lays out structures and unions subsequently defined as the
+documented @code{__attribute__ ((ms_struct))}.
+
 @enumerate
-@item @code{#pragma ms_struct on} turns on the layout for structures
-declared.
-@item @code{#pragma ms_struct off} turns off the layout for structures
-declared.
+@item @code{#pragma ms_struct on} turns on the Microsoft layout.
+@item @code{#pragma ms_struct off} turns off the Microsoft layout.
 @item @code{#pragma ms_struct reset} goes back to the default layout.
+@end enumerate
+
+Most targets also support the @code{#pragma scalar_storage_order} directive
+which lays out structures and unions subsequently defined as the documented
+@code{__attribute__ ((scalar_storage_order))}.
+
+@enumerate
+@item @code{#pragma scalar_storage_order big-endian} sets the storage order
+of the scalar fields to big-endian.
+@item @code{#pragma scalar_storage_order little-endian} sets the storage order
+of the scalar fields to little-endian.
+@item @code{#pragma scalar_storage_order default} goes back to the endianness
+that was in effect when compilation started (see also command-line option
+@option{-fsso-struct=@var{endianness}} @pxref{C Dialect Options}).
 @end enumerate
 
 @node Weak Pragmas

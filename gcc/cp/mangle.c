@@ -49,13 +49,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "target.h"
 #include "vtable-verify.h"
-#include "tree.h"
 #include "cp-tree.h"
-#include "tm_p.h"
 #include "stringpool.h"
 #include "cgraph.h"
-#include "alias.h"
-#include "tree-hasher.h"
 #include "stor-layout.h"
 #include "flags.h"
 #include "attribs.h"
@@ -396,20 +392,19 @@ add_substitution (tree node)
 	     get_tree_code_name (TREE_CODE (node)), (void *) node);
   node = c;
 
-#if ENABLE_CHECKING
   /* Make sure NODE isn't already a candidate.  */
-  {
-    int i;
-    tree candidate;
+  if (flag_checking)
+    {
+      int i;
+      tree candidate;
 
-    FOR_EACH_VEC_SAFE_ELT (G.substitutions, i, candidate)
-      {
-	gcc_assert (!(DECL_P (node) && node == candidate));
-	gcc_assert (!(TYPE_P (node) && TYPE_P (candidate)
+      FOR_EACH_VEC_SAFE_ELT (G.substitutions, i, candidate)
+	{
+	  gcc_assert (!(DECL_P (node) && node == candidate));
+	  gcc_assert (!(TYPE_P (node) && TYPE_P (candidate)
 		      && same_type_p (node, candidate)));
-      }
-  }
-#endif /* ENABLE_CHECKING */
+	}
+    }
 
   /* Put the decl onto the varray of substitution candidates.  */
   vec_safe_push (G.substitutions, node);

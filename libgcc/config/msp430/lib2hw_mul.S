@@ -22,7 +22,7 @@
 
 .macro start_func name
 	.pushsection .text.\name,"ax",@progbits
-	.align 2
+	.p2align 1
 	.global \name
 	.type \name , @function
 \name:

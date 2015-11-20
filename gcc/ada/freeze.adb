@@ -207,10 +207,7 @@ package body Freeze is
    --  this to have a Freeze_Node, so ensure it doesn't. Do the same for any
    --  Full_View or Corresponding_Record_Type.
 
-   procedure Warn_Overlay
-     (Expr : Node_Id;
-      Typ  : Entity_Id;
-      Nam  : Node_Id);
+   procedure Warn_Overlay (Expr : Node_Id; Typ : Entity_Id; Nam : Node_Id);
    --  Expr is the expression for an address clause for entity Nam whose type
    --  is Typ. If Typ has a default initialization, and there is no explicit
    --  initialization in the source declaration, check whether the address
@@ -598,16 +595,25 @@ package body Freeze is
    --------------------------
 
    procedure Check_Address_Clause (E : Entity_Id) is
-      Addr       : constant Node_Id    := Address_Clause (E);
+      Addr       : constant Node_Id   := Address_Clause (E);
+      Typ        : constant Entity_Id := Etype (E);
+      Decl       : Node_Id;
       Expr       : Node_Id;
-      Decl       : constant Node_Id    := Declaration_Node (E);
-      Loc        : constant Source_Ptr := Sloc (Decl);
-      Typ        : constant Entity_Id  := Etype (E);
+      Init       : Node_Id;
       Lhs        : Node_Id;
       Tag_Assign : Node_Id;
 
    begin
       if Present (Addr) then
+
+         --  For a deferred constant, the initialization value is on full view
+
+         if Ekind (E) = E_Constant and then Present (Full_View (E)) then
+            Decl := Declaration_Node (Full_View (E));
+         else
+            Decl := Declaration_Node (E);
+         end if;
+
          Expr := Expression (Addr);
 
          if Needs_Constant_Address (Decl, Typ) then
@@ -656,29 +662,73 @@ package body Freeze is
             Warn_Overlay (Expr, Typ, Name (Addr));
          end if;
 
-         if Present (Expression (Decl)) then
+         Init := Expression (Decl);
+
+         --  If a variable, or a non-imported constant, overlays a constant
+         --  object and has an initialization value, then the initialization
+         --  may end up writing into read-only memory. Detect the cases of
+         --  statically identical values and remove the initialization. In
+         --  the other cases, give a warning. We will give other warnings
+         --  later for the variable if it is assigned.
+
+         if (Ekind (E) = E_Variable
+              or else (Ekind (E) = E_Constant
+                        and then not Is_Imported (E)))
+           and then Overlays_Constant (E)
+           and then Present (Init)
+         then
+            declare
+               O_Ent : Entity_Id;
+               Off   : Boolean;
+
+            begin
+               Find_Overlaid_Entity (Addr, O_Ent, Off);
+
+               if Ekind (O_Ent) = E_Constant
+                 and then Etype (O_Ent) = Typ
+                 and then Present (Constant_Value (O_Ent))
+                 and then Compile_Time_Compare
+                            (Init,
+                             Constant_Value (O_Ent),
+                             Assume_Valid => True) = EQ
+               then
+                  Set_No_Initialization (Decl);
+                  return;
+
+               elsif Comes_From_Source (Init)
+                 and then Address_Clause_Overlay_Warnings
+               then
+                  Error_Msg_Sloc := Sloc (Addr);
+                  Error_Msg_NE
+                    ("??constant& may be modified via address clause#",
+                     Decl, O_Ent);
+               end if;
+            end;
+         end if;
+
+         if Present (Init) then
 
             --  Capture initialization value at point of declaration,
             --  and make explicit assignment legal, because object may
             --  be a constant.
 
-            Remove_Side_Effects (Expression (Decl));
-            Lhs := New_Occurrence_Of (E, Loc);
+            Remove_Side_Effects (Init);
+            Lhs := New_Occurrence_Of (E, Sloc (Decl));
             Set_Assignment_OK (Lhs);
 
-            --  Move initialization to freeze actions (once the object has
-            --  been frozen, and the address clause alignment check has been
+            --  Move initialization to freeze actions, once the object has
+            --  been frozen and the address clause alignment check has been
             --  performed.
 
             Append_Freeze_Action (E,
-              Make_Assignment_Statement (Loc,
+              Make_Assignment_Statement (Sloc (Decl),
                 Name       => Lhs,
                 Expression => Expression (Decl)));
 
             Set_No_Initialization (Decl);
 
             --  If the objet is tagged, check whether the tag must be
-            --  reassigned expliitly.
+            --  reassigned explicitly.
 
             Tag_Assign := Make_Tag_Assignment (Decl);
             if Present (Tag_Assign) then
@@ -1402,7 +1452,7 @@ package body Freeze is
          return;
       end if;
 
-      --  The situation that is non trivial is something like
+      --  The situation that is nontrivial is something like:
 
       --     subtype x1 is integer range -10 .. +10;
       --     subtype x2 is x1 range 0 .. V1;
@@ -8128,11 +8178,7 @@ package body Freeze is
    -- Warn_Overlay --
    ------------------
 
-   procedure Warn_Overlay
-     (Expr : Node_Id;
-      Typ  : Entity_Id;
-      Nam  : Entity_Id)
-   is
+   procedure Warn_Overlay (Expr : Node_Id; Typ : Entity_Id; Nam : Entity_Id) is
       Ent : constant Entity_Id := Entity (Nam);
       --  The object to which the address clause applies
 

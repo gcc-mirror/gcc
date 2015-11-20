@@ -9993,6 +9993,9 @@ package body Sem_Attr is
                   --  to a missed warning (the Valid check does not really
                   --  modify!) If this case, Note will be reset to False.
 
+                  --  Skip it as well if the type is an Acccess_To_Constant,
+                  --  given that no use of the value can modify the prefix.
+
                begin
                   if Attr_Id = Attribute_Unrestricted_Access
                     and then Nkind (PN) = N_Function_Call
@@ -10006,6 +10009,9 @@ package body Sem_Attr is
                      then
                         Note := False;
                      end if;
+
+                  elsif Is_Access_Constant (Typ) then
+                     Note := False;
                   end if;
 
                   if Note then
@@ -10768,6 +10774,13 @@ package body Sem_Attr is
                      --  it because this will lead to infinite recursion.
 
                      elsif In_Open_Scopes (Subp_Id) then
+                        null;
+
+                     --  If reference to the expression function appears in an
+                     --  inner scope, for example as an actual in an instance,
+                     --  this is not a freeze point either.
+
+                     elsif Scope (Subp_Id) /= Current_Scope then
                         null;
 
                       --  Analyze the body of the expression function to freeze

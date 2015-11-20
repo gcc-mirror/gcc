@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "parse.h"
 #include "constructor.h"
-#include "alias.h"
 
 /* Macros to access allocate memory for gfc_data_variable,
    gfc_data_value and gfc_data.  */
@@ -553,6 +552,15 @@ gfc_match_data (void)
   gfc_data *new_data;
   match m;
 
+  /* Before parsing the rest of a DATA statement, check F2008:c1206.  */
+  if ((gfc_current_state () == COMP_FUNCTION
+       || gfc_current_state () == COMP_SUBROUTINE)
+      && gfc_state_stack->previous->state == COMP_INTERFACE)
+    {
+      gfc_error ("DATA statement at %C cannot appear within an INTERFACE");
+      return MATCH_ERROR;
+    }
+
   set_in_match_data (true);
 
   for (;;)
@@ -926,6 +934,7 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
 	  gfc_find_sym_tree (name, gfc_current_ns, 0, &st);
 	  st->n.sym = *result;
 	  st = gfc_get_unique_symtree (gfc_current_ns);
+	  sym->refs++;
 	  st->n.sym = sym;
 	}
     }
@@ -972,7 +981,7 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
       /* Trap another encompassed procedure with the same name.  All
 	 these conditions are necessary to avoid picking up an entry
 	 whose name clashes with that of the encompassing procedure;
-	 this is handled using gsymbols to register unique,globally
+	 this is handled using gsymbols to register unique, globally
 	 accessible names.  */
       if (sym->attr.flavor != 0
 	  && sym->attr.proc != 0
@@ -1529,26 +1538,34 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	  for (dim = 0; dim < sym->as->rank; ++dim)
 	    {
 	      int k;
-	      gfc_expr* lower;
-	      gfc_expr* e;
+	      gfc_expr *e, *lower;
 
 	      lower = sym->as->lower[dim];
-	      if (lower->expr_type != EXPR_CONSTANT)
+
+	      /* If the lower bound is an array element from another 
+		 parameterized array, then it is marked with EXPR_VARIABLE and
+		 is an initialization expression.  Try to reduce it.  */
+	      if (lower->expr_type == EXPR_VARIABLE)
+		gfc_reduce_init_expr (lower);
+
+	      if (lower->expr_type == EXPR_CONSTANT)
+		{
+		  /* All dimensions must be without upper bound.  */
+		  gcc_assert (!sym->as->upper[dim]);
+
+		  k = lower->ts.kind;
+		  e = gfc_get_constant_expr (BT_INTEGER, k, &sym->declared_at);
+		  mpz_add (e->value.integer, lower->value.integer,
+			   init->shape[dim]);
+		  mpz_sub_ui (e->value.integer, e->value.integer, 1);
+		  sym->as->upper[dim] = e;
+		}
+	      else
 		{
 		  gfc_error ("Non-constant lower bound in implied-shape"
 			     " declaration at %L", &lower->where);
 		  return false;
 		}
-
-	      /* All dimensions must be without upper bound.  */
-	      gcc_assert (!sym->as->upper[dim]);
-
-	      k = lower->ts.kind;
-	      e = gfc_get_constant_expr (BT_INTEGER, k, &sym->declared_at);
-	      mpz_add (e->value.integer,
-		       lower->value.integer, init->shape[dim]);
-	      mpz_sub_ui (e->value.integer, e->value.integer, 1);
-	      sym->as->upper[dim] = e;
 	    }
 
 	  sym->as->type = AS_EXPLICIT;
@@ -5759,6 +5776,13 @@ gfc_match_entry (void)
       return MATCH_ERROR;
     }
 
+  if ((state == COMP_SUBROUTINE || state == COMP_FUNCTION)
+      && gfc_state_stack->previous->state == COMP_INTERFACE)
+    {
+      gfc_error ("ENTRY statement at %C cannot appear within an INTERFACE");
+      return MATCH_ERROR;
+    }
+
   module_procedure = gfc_current_ns->parent != NULL
 		   && gfc_current_ns->parent->proc_name
 		   && gfc_current_ns->parent->proc_name->attr.flavor
@@ -9044,7 +9068,7 @@ gfc_match_final_decl (void)
 
       /* Add this symbol to the list of finalizers.  */
       gcc_assert (block->f2k_derived);
-      ++sym->refs;
+      sym->refs++;
       f = XCNEW (gfc_finalizer);
       f->proc_sym = sym;
       f->proc_tree = NULL;

@@ -32,8 +32,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 static boolean_t
 catomic_compare_and_exchange_bool_acq (long *mem, long newval, long oldval)
 {
-  return __atomic_compare_exchange (mem, &oldval, &newval, 0,
-				    __ATOMIC_ACQUIRE, __ATOMIC_ACQUIRE);
+  return ! __atomic_compare_exchange (mem, &oldval, &newval, 0,
+				      __ATOMIC_ACQUIRE, __ATOMIC_ACQUIRE);
 }
 
 /* If D is non-NULL, call all functions registered with `__cxa_atexit'

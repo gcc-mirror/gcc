@@ -1,3 +1,253 @@
+2015-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-typeck.c (lookup_field_fuzzy): Move determination of closest
+	candidate into a new function, find_closest_identifier.
+
+2015-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68412
+	* c-typeck.c (parser_build_binary_op): Properly handle
+	C_MAYBE_CONST_EXPR before calling warn_tautological_cmp.
+
+2015-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c (set_c_expr_source_range): Bulletproof both
+	overloaded implementations against NULL expr->value.
+	(c_parser_braced_init): Set src_range for "ret" to a sane pair of
+	values.
+	(c_parser_unary_expression): Likewise when handling addresses of
+	labels.
+	(c_parser_postfix_expression): Likewise for statement expressions,
+	for __FUNCTION__, __PRETTY_FUNCTION_ and __func__ keywords, for
+	__builtin_va_arg, and for __builtin_offset_of.
+	(c_parser_postfix_expression_after_paren_type): Initialize expr's
+	src_range using the range of the braced initializer.
+	(c_parser_transaction_expression): Set src_range for "ret" to a
+	sane pair of values.
+
+2015-11-16  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* c-parser.c (c_finish_omp_declare_simd): Look for
+	"simd" attribute as well. Update error message.
+
+2015-11-14  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* c-parser.c (c_parser_omp_declare_target): Adjust.
+
+2015-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_finish_omp_clauses): Don't mark
+	GOMP_MAP_FIRSTPRIVATE_POINTER decls addressable.
+
+2015-11-14  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.c: Use RECORD_OR_UNION_TYPE_P throughout.
+	* c-typeck.c: Likewise.
+
+2015-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (warn_defaults_to): Pass line_table to
+	rich_location ctor.
+	* c-errors.c (pedwarn_c99): Likewise.
+	(pedwarn_c90): Likewise.
+	* c-parser.c (set_c_expr_source_range): New functions.
+	(c_token::get_range): New method.
+	(c_token::get_finish): New method.
+	(c_parser_expr_no_commas): Call set_c_expr_source_range on the ret
+	based on the range from the start of the LHS to the end of the
+	RHS.
+	(c_parser_conditional_expression): Likewise, based on the range
+	from the start of the cond.value to the end of exp2.value.
+	(c_parser_binary_expression): Call set_c_expr_source_range on
+	the stack values for TRUTH_ANDIF_EXPR and TRUTH_ORIF_EXPR.
+	(c_parser_cast_expression): Call set_c_expr_source_range on ret
+	based on the cast_loc through to the end of the expr.
+	(c_parser_unary_expression): Likewise, based on the
+	op_loc through to the end of op.
+	(c_parser_sizeof_expression) Likewise, based on the start of the
+	sizeof token through to either the closing paren or the end of
+	expr.
+	(c_parser_postfix_expression): Likewise, using the token range,
+	or from the open paren through to the close paren for
+	parenthesized expressions.
+	(c_parser_postfix_expression_after_primary): Likewise, for
+	various kinds of expression.
+	* c-tree.h (struct c_expr): Add field "src_range".
+	(c_expr::get_start): New method.
+	(c_expr::get_finish): New method.
+	(set_c_expr_source_range): New decls.
+	* c-typeck.c (parser_build_unary_op): Call set_c_expr_source_range
+	on ret for prefix unary ops.
+	(parser_build_binary_op): Likewise, running from the start of
+	arg1.value through to the end of arg2.value.
+
+2015-11-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68320
+	* c-parser.c (c_parser_for_statement): Treat unknown tokens as IDs.
+
+2015-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-typeck.c: Include spellcheck.h.
+	(lookup_field_fuzzy_find_candidates): New function.
+	(lookup_field_fuzzy): New function.
+	(build_component_ref): If the field was not found, try using
+	lookup_field_fuzzy and potentially offer a suggestion.
+
+2015-11-12  James Norris  <jnorris@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (c_parser_pragma): Handle PRAGMA_OACC_DECLARE.
+	(c_parser_omp_clause_name): Handle 'device_resident' clause.
+	(c_parser_oacc_data_clause): Handle PRAGMA_OACC_CLAUSE_DEVICE_RESIDENT
+	and PRAGMA_OMP_CLAUSE_LINK.
+	(c_parser_oacc_all_clauses): Handle PRAGMA_OACC_CLAUSE_DEVICE_RESIDENT
+	and PRAGMA_OACC_CLAUSE_LINK.
+	(OACC_DECLARE_CLAUSE_MASK): New definition.
+	(c_parser_oacc_declare): New function.
+
+2015-11-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67784
+	* c-parser.c (c_parser_for_statement): Reclassify the token in
+	a correct scope.
+
+2015-11-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68107
+	PR c++/68266
+	* c-decl.c (grokdeclarator): Call valid_array_size_p.  Remove code
+	checking the size of an array.
+
+2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-array-notation.c: Remove unused header files.
+	* c-aux-info.c: Likewise.
+	* c-convert.c: Likewise.
+	* c-decl.c: Likewise.
+	* c-errors.c: Likewise.
+	* c-lang.c: Likewise.
+	* c-objc-common.c: Likewise.
+	* c-parser.c: Likewise.
+	* c-typeck.c: Likewise.
+	* gccspec.c: Likewise.
+
+2015-11-09  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+
+	c/
+	* c-parser.c (c_parser_declaration_or_fndef): Add OpenACC
+	routine arg.
+	(c_parser_declaration_or_fndef): Call c_finish_oacc_routine.
+	(c_parser_pragma): Parse 'acc routine'.
+	(OACC_ROUTINE_CLAUSE_MARK): Define.
+	(c_parser_oacc_routine, (c_finish_oacc_routine): New.
+
+2015-11-09  Andreas Arnez  <arnez@linux.vnet.ibm.com>
+
+	PR debug/67192
+	* c-typeck.c (c_finish_loop): For unconditional loops, set the
+	location of the backward-goto to the start of the loop body.
+
+2015-11-09  Andreas Arnez  <arnez@linux.vnet.ibm.com>
+
+	PR debug/67192
+	* c-parser.c (c_parser_while_statement): Finish the loop before
+	parsing ahead for misleading indentation.
+	(c_parser_for_statement): Likewise.
+
+2015-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-decl.c (finish_struct): If the structure has reverse storage
+	order, rewrite the type of array fields with scalar component.  Call
+	maybe_apply_pragma_scalar_storage_order on entry.
+	* c-typeck.c (build_unary_op) <ADDR_EXPR>: Remove left-overs.  Issue
+	errors on bit-fields and reverse SSO here and not...
+	(c_mark_addressable): ...here.
+	(output_init_element): Adjust call to initializer_constant_valid_p.
+	(c_build_qualified_type): Propagate TYPE_REVERSE_STORAGE_ORDER.
+
+2015-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (warn_defaults_to): Update for change in signature
+	of diagnostic_set_info.
+	* c-errors.c (pedwarn_c99): Likewise.
+	(pedwarn_c90): Likewise.
+	* c-objc-common.c (c_tree_printer): Update for new "caret_p" param
+	for textinfo::set_location.
+
+2015-11-05  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Add support for
+	PRAGMA_OACC_CLAUSE_INDEPENDENT and PRAGMA_OACC_CLAUSE_TILE.
+	(c_parser_omp_clause_default): Add is_oacc argument. Handle
+	default(none) in OpenACC.
+	(c_parser_oacc_shape_clause): Allow pointer variables as gang static
+	arguments.
+	(c_parser_oacc_clause_tile): New function.
+	(c_parser_oacc_all_clauses): Add support for OMP_CLAUSE_DEFAULT,
+	OMP_CLAUSE_INDEPENDENT and OMP_CLAUSE_TILE.
+	(OACC_LOOP_CLAUSE_MASK): Add PRAGMA_OACC_CLAUSE_{PRIVATE,INDEPENDENT,
+	TILE}.
+	(OACC_KERNELS_MASK): Add PRAGMA_OACC_CLAUSE_DEFAULT.
+	(OACC_PARALLEL_MASK): Add PRAGMA_OACC_CLAUSE_{DEFAULT,PRIVATE,
+	FIRSTPRIVATE}.
+	(c_parser_omp_all_clauses): Update call to c_parser_omp_clause_default.
+	(c_parser_oacc_update): Update the error message for missing clauses.
+	* c-typeck.c (c_finish_omp_clauses): Add support for OMP_CLAUSE_TILE
+	and OMP_CLAUSE_INDEPENDENT.
+
+2015-11-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68090
+	* c-parser.c (c_parser_postfix_expression_after_paren_type): Don't
+	deal with pre-evaluation on invalid types.
+
+2015-11-05  Jakub Jelinek  <jakub@redhat.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+
+	* c-parser.c: Include context.h and gimple-expr.h.
+	(c_parser_omp_clause_schedule): Parse schedule modifiers, diagnose
+	monotonic together with nonmonotonic.
+	(c_parser_omp_for_loop): Call c_omp_check_loop_iv.  Call add_stmt here.
+	(OMP_DISTRIBUTE_CLAUSE_MASK): Add lastprivate clause.
+	(c_parser_omp_target_data, c_parser_omp_target_enter_data,
+	c_parser_omp_target_exit_data): Allow GOMP_MAP_ALWAYS_POINTER.
+	(c_parser_omp_target): Likewise.  Evaluate num_teams and thread_limit
+	expressions on combined target teams before the target.
+	(c_parser_omp_declare_target): If decl has "omp declare target" or
+	"omp declare target link" attribute, and cgraph or varpool node already
+	exists, then set corresponding flags.  Call c_finish_omp_clauses
+	in the parenthesized extended-list syntax case.
+	* c-decl.c (c_decl_attributes): Don't diagnose block scope vars inside
+	declare target.
+	* c-typeck.c (handle_omp_array_sections_1): Allow non-zero low-bound
+	on OMP_CLAUSE_REDUCTION array sections.
+	(handle_omp_array_sections): Encode low-bound into the MEM_REF, either
+	into the constant offset, or for variable low-bound using
+	POINTER_PLUS_EXPR.  For structure element based array sections use
+	GOMP_MAP_ALWAYS_POINTER instead of GOMP_MAP_FIRSTPRIVATE_POINTER.
+	(c_finish_omp_clauses): Drop generic_field_head, structure
+	elements are now always mapped even as array section bases,
+	diagnose same var in data sharing and mapping clauses.  Diagnose if
+	linear step on declare simd is neither a constant nor a uniform
+	parameter.  Look through POINTER_PLUS_EXPR for array section
+	reductions.  Diagnose the same var or function appearing multiple
+	times on the same directive.  Fix up wording for the to clause if t
+	is neither a FUNCTION_DECL nor a VAR_DECL.  Diagnose nonmonotonic
+	modifier on kinds other than dynamic or guided or nonmonotonic
+	modifier together with ordered clause.
+
+2015-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_construct): Handle PRAGMA_OACC_ATOMIC.
+
 2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-array-notation.c: Reorder #include's and remove duplicates.

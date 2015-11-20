@@ -51,9 +51,9 @@
 #include "tree-inline.h"
 #include "cfgloop.h"
 #include "fibonacci_heap.h"
+#include "tracer.h"
 
 static int count_insns (basic_block);
-static bool ignore_bb_p (const_basic_block);
 static bool better_p (const_edge, const_edge);
 static edge find_best_successor (basic_block);
 static edge find_best_predecessor (basic_block);
@@ -85,7 +85,7 @@ bb_seen_p (basic_block bb)
 }
 
 /* Return true if we should ignore the basic block for purposes of tracing.  */
-static bool
+bool
 ignore_bb_p (const_basic_block bb)
 {
   if (bb->index < NUM_FIXED_BLOCKS)
@@ -226,6 +226,24 @@ find_trace (basic_block bb, basic_block *trace)
   return i;
 }
 
+/* Duplicate block BB2, placing it after BB in the CFG.  Return the
+   newly created block.  */
+basic_block
+transform_duplicate (basic_block bb, basic_block bb2)
+{
+  edge e;
+  basic_block copy;
+
+  e = find_edge (bb, bb2);
+
+  copy = duplicate_block (bb2, e, bb);
+  flush_pending_stmts (e);
+
+  add_phi_args_after_copy (&copy, 1, NULL);
+
+  return (copy);
+}
+
 /* Look for basic blocks in frequency order, construct traces and tail duplicate
    if profitable.  */
 
@@ -321,17 +339,8 @@ tail_duplicate (void)
 		 entries or at least rotate the loop.  */
 	      && bb2->loop_father->header != bb2)
 	    {
-	      edge e;
-	      basic_block copy;
-
 	      nduplicated += counts [bb2->index];
-
-	      e = find_edge (bb, bb2);
-
-	      copy = duplicate_block (bb2, e, bb);
-	      flush_pending_stmts (e);
-
-	      add_phi_args_after_copy (&copy, 1, NULL);
+	      basic_block copy = transform_duplicate (bb, bb2);
 
 	      /* Reconsider the original copy of block we've duplicated.
 	         Removing the most common predecessor may make it to be

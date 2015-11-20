@@ -37,9 +37,6 @@
    are amortized O(log n) time for a tree with n nodes.  */
 
 #include "libgomp.h"
-#include "splay-tree.h"
-
-extern int splay_compare (splay_tree_key, splay_tree_key);
 
 /* Rotate the edge joining the left child N with its parent P.  PP is the
    grandparents' pointer to P.  */
@@ -214,4 +211,28 @@ splay_tree_lookup (splay_tree sp, splay_tree_key key)
     return &sp->root->key;
   else
     return NULL;
+}
+
+/* Helper function for splay_tree_foreach.
+
+   Run FUNC on every node in KEY.  */
+
+static void
+splay_tree_foreach_internal (splay_tree_node node, splay_tree_callback func,
+			     void *data)
+{
+  if (!node)
+    return;
+  func (&node->key, data);
+  splay_tree_foreach_internal (node->left, func, data);
+  /* Yeah, whatever.  GCC can fix my tail recursion.  */
+  splay_tree_foreach_internal (node->right, func, data);
+}
+
+/* Run FUNC on each of the nodes in SP.  */
+
+attribute_hidden void
+splay_tree_foreach (splay_tree sp, splay_tree_callback func, void *data)
+{
+  splay_tree_foreach_internal (sp->root, func, data);
 }

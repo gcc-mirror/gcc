@@ -1877,9 +1877,8 @@ package body Sem_Ch10 is
                   --  the extended main unit.
 
                   if Generate_SCO
-                    and then
-                      In_Extended_Main_Source_Unit
-                        (Cunit_Entity (Current_Sem_Unit))
+                    and then In_Extended_Main_Source_Unit
+                               (Cunit_Entity (Current_Sem_Unit))
                   then
                      SCO_Record_Raw (Unum);
                   end if;
@@ -4430,7 +4429,7 @@ package body Sem_Ch10 is
                   while Present (Subp_Id) loop
                      if Chars (Node (Subp_Id)) = Chars (E) then
                         if Nkind (Parent (Parent (Node (Subp_Id))))
-                          /=  N_Subprogram_Renaming_Declaration
+                          /= N_Subprogram_Renaming_Declaration
                         then
                            Prev_Id := Subp_Id;
                            Next_Elmt (Subp_Id);

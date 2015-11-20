@@ -57,7 +57,12 @@ package body System.Parameters is
       pragma Import (C, Default_Stack_Size, "__gl_default_stack_size");
    begin
       if Default_Stack_Size = -1 then
-         return 20 * 1024;
+         if Stack_Check_Limits then
+            return 32 * 1024;
+            --  Extra stack to allow for 12K exception area.
+         else
+            return 20 * 1024;
+         end if;
       else
          return Size_Type (Default_Stack_Size);
       end if;

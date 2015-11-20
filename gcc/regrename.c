@@ -130,6 +130,9 @@ static HARD_REG_SET live_hard_regs;
    record_operand_use.  */
 static operand_rr_info *cur_operand;
 
+/* Set while scanning RTL if a register dies.  Used to tie chains.  */
+static struct du_head *terminated_this_insn;
+
 /* Return the chain corresponding to id number ID.  Take into account that
    chains may have been merged.  */
 du_head_p
@@ -200,8 +203,13 @@ mark_conflict (struct du_head *chains, unsigned id)
 static void
 record_operand_use (struct du_head *head, struct du_chain *this_du)
 {
-  if (cur_operand == NULL)
+  if (cur_operand == NULL || cur_operand->failed)
     return;
+  if (head->cannot_rename)
+    {
+      cur_operand->failed = true;
+      return;
+    }
   gcc_assert (cur_operand->n_chains < MAX_REGS_PER_ADDRESS);
   cur_operand->heads[cur_operand->n_chains] = head;
   cur_operand->chains[cur_operand->n_chains++] = this_du;
@@ -219,11 +227,10 @@ create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
   struct du_chain *this_du;
   int nregs;
 
+  memset (head, 0, sizeof *head);
   head->next_chain = open_chains;
   head->regno = this_regno;
   head->nregs = this_nregs;
-  head->need_caller_save_reg = 0;
-  head->cannot_rename = 0;
 
   id_to_chain.safe_push (head);
   head->id = current_id++;
@@ -366,6 +373,13 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
   preferred_class
     = (enum reg_class) targetm.preferred_rename_class (super_class);
 
+  /* Pick and check the register from the tied chain iff the tied chain
+     is not renamed.  */
+  if (this_head->tied_chain && !this_head->tied_chain->renamed
+      && check_new_reg_p (old_reg, this_head->tied_chain->regno,
+			  this_head, *unavailable))
+    return this_head->tied_chain->regno;
+
   /* If PREFERRED_CLASS is not NO_REGS, we iterate in the first pass
      over registers that belong to PREFERRED_CLASS and try to find the
      best register within the class.  If that failed, we iterate in
@@ -405,6 +419,33 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
   return best_new_reg;
 }
 
+/* Iterate over elements in the chain HEAD in order to:
+   1. Count number of uses, storing it in *PN_USES.
+   2. Narrow the set of registers we can use for renaming, adding
+      unavailable registers to *PUNAVAILABLE, which must be
+      initialized by the caller.
+   3. Compute the superunion of register classes in this chain
+      and return it.  */
+reg_class
+regrename_find_superclass (du_head_p head, int *pn_uses,
+			   HARD_REG_SET *punavailable)
+{
+  int n_uses = 0;
+  reg_class super_class = NO_REGS;
+  for (du_chain *tmp = head->first; tmp; tmp = tmp->next_use)
+    {
+      if (DEBUG_INSN_P (tmp->insn))
+	continue;
+      n_uses++;
+      IOR_COMPL_HARD_REG_SET (*punavailable,
+			      reg_class_contents[tmp->cl]);
+      super_class
+	= reg_class_superunion[(int) super_class][(int) tmp->cl];
+    }
+  *pn_uses = n_uses;
+  return super_class;
+}
+
 /* Perform register renaming on the current function.  */
 static void
 rename_chains (void)
@@ -428,10 +469,8 @@ rename_chains (void)
     {
       int best_new_reg;
       int n_uses;
-      struct du_chain *tmp;
       HARD_REG_SET this_unavailable;
       int reg = this_head->regno;
-      enum reg_class super_class = NO_REGS;
 
       if (this_head->cannot_rename)
 	continue;
@@ -445,23 +484,8 @@ rename_chains (void)
 
       COPY_HARD_REG_SET (this_unavailable, unavailable);
 
-      /* Iterate over elements in the chain in order to:
-	 1. Count number of uses, and narrow the set of registers we can
-	    use for renaming.
-	 2. Compute the superunion of register classes in this chain.  */
-      n_uses = 0;
-      super_class = NO_REGS;
-      for (tmp = this_head->first; tmp; tmp = tmp->next_use)
-	{
-	  if (DEBUG_INSN_P (tmp->insn))
-	    continue;
-	  n_uses++;
-	  IOR_COMPL_HARD_REG_SET (this_unavailable,
-				  reg_class_contents[tmp->cl]);
-	  super_class
-	    = reg_class_superunion[(int) super_class][(int) tmp->cl];
-	}
-
+      reg_class super_class = regrename_find_superclass (this_head, &n_uses,
+							 &this_unavailable);
       if (n_uses < 2)
 	continue;
 
@@ -960,6 +984,7 @@ regrename_do_replace (struct du_head *head, int reg)
     return false;
 
   mode = GET_MODE (*head->first->loc);
+  head->renamed = 1;
   head->regno = reg;
   head->nregs = hard_regno_nregs[reg][mode];
   return true;
@@ -1043,7 +1068,36 @@ scan_rtx_reg (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions act
   if (action == mark_write)
     {
       if (type == OP_OUT)
-	create_new_chain (this_regno, this_nregs, loc, insn, cl);
+	{
+	  du_head_p c;
+	  rtx pat = PATTERN (insn);
+
+	  c = create_new_chain (this_regno, this_nregs, loc, insn, cl);
+
+	  /* We try to tie chains in a move instruction for
+	     a single output.  */
+	  if (recog_data.n_operands == 2
+	      && GET_CODE (pat) == SET
+	      && GET_CODE (SET_DEST (pat)) == REG
+	      && GET_CODE (SET_SRC (pat)) == REG
+	      && terminated_this_insn
+	      && terminated_this_insn->nregs
+		 == REG_NREGS (recog_data.operand[1]))
+	    {
+	      gcc_assert (terminated_this_insn->regno
+			  == REGNO (recog_data.operand[1]));
+
+	      c->tied_chain = terminated_this_insn;
+	      terminated_this_insn->tied_chain = c;
+
+	      if (dump_file)
+		fprintf (dump_file, "Tying chain %s (%d) with %s (%d)\n",
+			 reg_names[c->regno], c->id,
+			 reg_names[terminated_this_insn->regno],
+			 terminated_this_insn->id);
+	    }
+	}
+
       return;
     }
 
@@ -1151,6 +1205,8 @@ scan_rtx_reg (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions act
 		SET_HARD_REG_BIT (live_hard_regs, head->regno + nregs);
 	    }
 
+	  if (action == terminate_dead)
+	    terminated_this_insn = *p;
 	  *p = next;
 	  if (dump_file)
 	    fprintf (dump_file,
@@ -1509,6 +1565,8 @@ record_out_operands (rtx_insn *insn, bool earlyclobber, insn_rr_info *insn_info)
 	cur_operand = insn_info->op_info + i;
 
       prev_open = open_chains;
+      if (earlyclobber)
+	scan_rtx (insn, loc, cl, terminate_write, OP_OUT);
       scan_rtx (insn, loc, cl, mark_write, OP_OUT);
 
       /* ??? Many targets have output constraints on the SET_DEST
@@ -1551,6 +1609,7 @@ build_def_use (basic_block bb)
 	  enum rtx_code set_code = SET;
 	  enum rtx_code clobber_code = CLOBBER;
 	  insn_rr_info *insn_info = NULL;
+	  terminated_this_insn = NULL;
 
 	  /* Process the insn, determining its effect on the def-use
 	     chains and live hard registers.  We perform the following

@@ -40,8 +40,50 @@ sequence).
 Pragma Abstract_State
 =====================
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.1.4.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Abstract_State (ABSTRACT_STATE_LIST);
+
+  ABSTRACT_STATE_LIST ::=
+       null
+    |  STATE_NAME_WITH_OPTIONS
+    | (STATE_NAME_WITH_OPTIONS {, STATE_NAME_WITH_OPTIONS} )
+
+  STATE_NAME_WITH_OPTIONS ::=
+       STATE_NAME
+    | (STATE_NAME with OPTION_LIST)
+
+  OPTION_LIST ::= OPTION {, OPTION}
+
+  OPTION ::=
+      SIMPLE_OPTION
+    | NAME_VALUE_OPTION
+
+  SIMPLE_OPTION ::= Ghost | Synchronous
+
+  NAME_VALUE_OPTION ::=
+      Part_Of => ABSTRACT_STATE
+    | External [=> EXTERNAL_PROPERTY_LIST]
+
+  EXTERNAL_PROPERTY_LIST ::=
+       EXTERNAL_PROPERTY
+    | (EXTERNAL_PROPERTY {, EXTERNAL_PROPERTY} )
+
+  EXTERNAL_PROPERTY ::=
+      Async_Readers    [=> boolean_EXPRESSION]
+    | Async_Writers    [=> boolean_EXPRESSION]
+    | Effective_Reads  [=> boolean_EXPRESSION]
+    | Effective_Writes [=> boolean_EXPRESSION]
+      others            => boolean_EXPRESSION
+
+  STATE_NAME ::= defining_identifier
+
+  ABSTRACT_STATE ::= name
+
+For the semantics of this pragma, see the entry for aspect `Abstract_State` in
+the SPARK 2014 Reference Manual, section 7.1.4.
 
 Pragma Ada_83
 =============
@@ -283,18 +325,7 @@ The string argument, if given, is the message that will be associated
 with the exception occurrence if the exception is raised.  If no second
 argument is given, the default message is `file`:`nnn`,
 where `file` is the name of the source file containing the assert,
-and `nnn` is the line number of the assert.  A pragma is not a
-statement, so if a statement sequence contains nothing but a pragma
-assert, then a null statement is required in addition, as in:
-
-.. code-block:: ada
-
-  ...
-  if J > 3 then
-     pragma Assert (K > 3, "Bad value for K");
-     null;
-  end if;
-
+and `nnn` is the line number of the assert.
 
 Note that, as with the `if` statement to which it is equivalent, the
 type of the expression is either `Standard.Boolean`, or any type derived
@@ -521,14 +552,26 @@ case, and it is recommended that these two options not be used together.
 Pragma Async_Readers
 ====================
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.1.2.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Asynch_Readers   [ (boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect `Async_Readers` in
+the SPARK 2014 Reference Manual, section 7.1.2.
 
 Pragma Async_Writers
 ====================
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.1.2.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Asynch_Writers   [ (boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect `Async_Writers` in
+the SPARK 2014 Reference Manual, section 7.1.2.
 
 Pragma Attribute_Definition
 ===========================
@@ -1060,23 +1103,30 @@ clause), the GNAT uses the default alignment as described previously.
 Pragma Constant_After_Elaboration
 =================================
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 3.3.1.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Constant_After_Elaboration [ (boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect
+`Constant_After_Elaboration` in the SPARK 2014 Reference Manual, section 3.3.1.
 
 Pragma Contract_Cases
 =====================
 .. index:: Contract cases
 
-
 Syntax:
 
+.. code-block:: ada
 
-::
+  pragma Contract_Cases ((CONTRACT_CASE {, CONTRACT_CASE));
 
-  pragma Contract_Cases (
-     Condition => Consequence
-   {,Condition => Consequence});
+  CONTRACT_CASE ::= CASE_GUARD => CONSEQUENCE
 
+  CASE_GUARD ::= boolean_EXPRESSION | others
+
+  CONSEQUENCE ::= boolean_EXPRESSION
 
 The `Contract_Cases` pragma allows defining fine-grain specifications
 that can complement or replace the contract given by a precondition and a
@@ -1319,8 +1369,14 @@ See Ada 2012 Reference Manual for details.
 Pragma Default_Initial_Condition
 ================================
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.3.3.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Default_Initial_Condition [ (null | boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect
+`Default_Initial_Condition` in the SPARK 2014 Reference Manual, section 7.3.3.
 
 Pragma Debug
 ============
@@ -1460,8 +1516,33 @@ See Ada 2012 Reference Manual for details.
 Pragma Depends
 ==============
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 6.1.5.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Depends (DEPENDENCY_RELATION);
+
+  DEPENDENCY_RELATION ::=
+       null
+    | (DEPENDENCY_CLAUSE {, DEPENDENCY_CLAUSE})
+
+  DEPENDENCY_CLAUSE ::=
+      OUTPUT_LIST =>[+] INPUT_LIST
+    | NULL_DEPENDENCY_CLAUSE
+
+  NULL_DEPENDENCY_CLAUSE ::= null => INPUT_LIST
+
+  OUTPUT_LIST ::= OUTPUT | (OUTPUT {, OUTPUT})
+
+  INPUT_LIST ::= null | INPUT | (INPUT {, INPUT})
+
+  OUTPUT ::= NAME | FUNCTION_RESULT
+  INPUT  ::= NAME
+
+  where FUNCTION_RESULT is a function Result attribute_reference
+
+For the semantics of this pragma, see the entry for aspect `Depends` in the
+SPARK 2014 Reference Manual, section 6.1.5.
 
 Pragma Detect_Blocking
 ======================
@@ -1523,14 +1604,26 @@ See Ada 2012 Reference Manual for details.
 Pragma Effective_Reads
 ======================
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.1.2.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Effective_Reads  [ (boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect `Effective_Reads` in
+the SPARK 2014 Reference Manual, section 7.1.2.
 
 Pragma Effective_Writes
 =======================
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.1.2.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Effective_Writes [ (boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect `Effective_Writes`
+in the SPARK 2014 Reference Manual, section 7.1.2.
 
 Pragma Elaboration_Checks
 =========================
@@ -1977,8 +2070,14 @@ of GNAT specific extensions are recognized as follows:
 Pragma Extensions_Visible
 =========================
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 6.1.7.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Extensions_Visible [ (boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect `Extensions_Visible`
+in the SPARK 2014 Reference Manual, section 6.1.7.
 
 Pragma External
 ===============
@@ -2179,14 +2278,37 @@ be `IEEE_Float` to specify the use of IEEE format, as follows:
 Pragma Ghost
 ============
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 6.9.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Ghost [ (boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect `Ghost` in the SPARK
+2014 Reference Manual, section 6.9.
 
 Pragma Global
 =============
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 6.1.4.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Global (GLOBAL_SPECIFICATION);
+
+  GLOBAL_SPECIFICATION ::=
+       null
+    | (GLOBAL_LIST)
+    | (MODED_GLOBAL_LIST {, MODED_GLOBAL_LIST})
+
+  MODED_GLOBAL_LIST ::= MODE_SELECTOR => GLOBAL_LIST
+
+  MODE_SELECTOR ::= In_Out | Input | Output | Proof_In
+  GLOBAL_LIST   ::= GLOBAL_ITEM | (GLOBAL_ITEM {, GLOBAL_ITEM})
+  GLOBAL_ITEM   ::= NAME
+
+For the semantics of this pragma, see the entry for aspect `Global` in the
+SPARK 2014 Reference Manual, section 6.1.4.
 
 Pragma Ident
 ============
@@ -2585,8 +2707,14 @@ tight packing).
 Pragma Initial_Condition
 ========================
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.1.6.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Initial_Condition (boolean_EXPRESSION);
+
+For the semantics of this pragma, see the entry for aspect `Initial_Condition`
+in the SPARK 2014 Reference Manual, section 7.1.6.
 
 Pragma Initialize_Scalars
 =========================
@@ -2653,8 +2781,27 @@ User's Guide) when using this pragma.
 Pragma Initializes
 ==================
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.1.5.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Initializes (INITIALIZATION_LIST);
+
+  INITIALIZATION_LIST ::=
+       null
+    | (INITIALIZATION_ITEM {, INITIALIZATION_ITEM})
+
+  INITIALIZATION_ITEM ::= name [=> INPUT_LIST]
+
+  INPUT_LIST ::=
+       null
+    |  INPUT
+    | (INPUT {, INPUT})
+
+  INPUT ::= name
+
+For the semantics of this pragma, see the entry for aspect `Initializes` in the
+SPARK 2014 Reference Manual, section 7.1.5.
 
 Pragma Inline_Always
 ====================
@@ -3999,8 +4146,16 @@ See Ada 2012 Reference Manual for details.
 Pragma Part_Of
 ==============
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.2.6.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Part_Of (ABSTRACT_STATE);
+
+  ABSTRACT_STATE ::= NAME
+
+For the semantics of this pragma, see the entry for aspect `Part_Of` in the
+SPARK 2014 Reference Manual, section 7.2.6.
 
 Pragma Passive
 ==============
@@ -4456,7 +4611,7 @@ the effect is identical to the following Ada 2012 code:
     Dynamic_Predicate => F(Q) or G(Q);
 
 
-Note that there is are no pragmas `Dynamic_Predicate`
+Note that there are no pragmas `Dynamic_Predicate`
 or `Static_Predicate`. That is
 because these pragmas would affect legality and semantics of
 the program and thus do not have a neutral effect if ignored.
@@ -4470,6 +4625,23 @@ fundamentally changed (for example a membership test
 `A in B` would not take into account a predicate
 defined for subtype B). When following this approach, the
 use of predicates should be avoided.
+
+Pragma Predicate_Failure
+========================
+
+Syntax:
+
+
+::
+
+  pragma Predicate_Failure
+    ([Entity  =>] type_LOCAL_NAME,
+     [Message =>] String_Expression);
+
+
+The `Predicate_Failure` pragma is intended to be an exact replacement for
+the language-defined
+`Predicate_Failure` aspect, and shares its restrictions and semantics.
 
 Pragma Preelaborable_Initialization
 ===================================
@@ -4583,14 +4755,14 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Profile (Ravenscar | Restricted | Rational);
+  pragma Profile (Ravenscar | Restricted | Rational | GNAT_Extended_Ravenscar);
 
 
 This pragma is standard in Ada 2005, but is available in all earlier
 versions of Ada as an implementation-defined pragma. This is a
 configuration pragma that establishes a set of configuration pragmas
 that depend on the argument. `Ravenscar` is standard in Ada 2005.
-The other two possibilities (`Restricted` or `Rational`)
+The other possibilities (`Restricted`, `Rational`, `GNAT_Extended_Ravenscar`)
 are implementation-defined. The set of configuration pragmas
 is defined in the following sections.
 
@@ -4702,6 +4874,20 @@ is defined in the following sections.
   ``Profile (Restricted)``,
   automatically causes the use of a simplified,
   more efficient version of the tasking run-time library.
+
+* Pragma Profile (GNAT_Extended_Ravenscar)
+
+  This profile corresponds to a GNAT specific extension of the
+  Ravenscar profile. The profile may change in the future although
+  only in a compatible way: some restrictions may be removed or
+  relaxed. It is defined as a variation of the Ravenscar profile.
+
+  The ``No_Implicit_Heap_Allocations`` restriction has been replaced
+  by ``No_Implicit_Task_Allocations`` and
+  ``No_Implicit_Protected_Object_Allocations``.
+
+  The ``Simple_Barriers`` restriction has been replaced by
+  ``Pure_Barriers``.
 
 * Pragma Profile (Restricted)
 
@@ -4923,26 +5109,92 @@ which is the preferred method of setting the `Ravenscar` profile.
 Pragma Refined_Depends
 ======================
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 6.1.5.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Refined_Depends (DEPENDENCY_RELATION);
+
+  DEPENDENCY_RELATION ::=
+       null
+    | (DEPENDENCY_CLAUSE {, DEPENDENCY_CLAUSE})
+
+  DEPENDENCY_CLAUSE ::=
+      OUTPUT_LIST =>[+] INPUT_LIST
+    | NULL_DEPENDENCY_CLAUSE
+
+  NULL_DEPENDENCY_CLAUSE ::= null => INPUT_LIST
+
+  OUTPUT_LIST ::= OUTPUT | (OUTPUT {, OUTPUT})
+
+  INPUT_LIST ::= null | INPUT | (INPUT {, INPUT})
+
+  OUTPUT ::= NAME | FUNCTION_RESULT
+  INPUT  ::= NAME
+
+  where FUNCTION_RESULT is a function Result attribute_reference
+
+For the semantics of this pragma, see the entry for aspect `Refined_Depends` in
+the SPARK 2014 Reference Manual, section 6.1.5.
 
 Pragma Refined_Global
 =====================
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 6.1.4.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Refined_Global (GLOBAL_SPECIFICATION);
+
+  GLOBAL_SPECIFICATION ::=
+       null
+    | (GLOBAL_LIST)
+    | (MODED_GLOBAL_LIST {, MODED_GLOBAL_LIST})
+
+  MODED_GLOBAL_LIST ::= MODE_SELECTOR => GLOBAL_LIST
+
+  MODE_SELECTOR ::= In_Out | Input | Output | Proof_In
+  GLOBAL_LIST   ::= GLOBAL_ITEM | (GLOBAL_ITEM {, GLOBAL_ITEM})
+  GLOBAL_ITEM   ::= NAME
+
+For the semantics of this pragma, see the entry for aspect `Refined_Global` in
+the SPARK 2014 Reference Manual, section 6.1.4.
 
 Pragma Refined_Post
 ===================
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.2.7.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Refined_Post (boolean_EXPRESSION);
+
+For the semantics of this pragma, see the entry for aspect `Refined_Post` in
+the SPARK 2014 Reference Manual, section 7.2.7.
 
 Pragma Refined_State
 ====================
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.2.2.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Refined_State (REFINEMENT_LIST);
+
+  REFINEMENT_LIST ::=
+    (REFINEMENT_CLAUSE {, REFINEMENT_CLAUSE})
+
+  REFINEMENT_CLAUSE ::= state_NAME => CONSTITUENT_LIST
+
+  CONSTITUENT_LIST ::=
+       null
+    |  CONSTITUENT
+    | (CONSTITUENT {, CONSTITUENT})
+
+  CONSTITUENT ::= object_NAME | state_NAME
+
+For the semantics of this pragma, see the entry for aspect `Refined_State` in
+the SPARK 2014 Reference Manual, section 7.2.2.
 
 Pragma Relative_Deadline
 ========================
@@ -6030,8 +6282,8 @@ Syntax:
 This pragma specifies that the specified entity, which must be
 a variable declared in a library level package, is to be marked as
 "Thread Local Storage" (`TLS`). On systems supporting this (which
-include Solaris, GNU/Linux and VxWorks 6), this causes each thread
-(and hence each Ada task) to see a distinct copy of the variable.
+include Windows, Solaris, GNU/Linux and VxWorks 6), this causes each
+thread (and hence each Ada task) to see a distinct copy of the variable.
 
 The variable may not have default initialization, and if there is
 an explicit initialization, it must be either `null` for an
@@ -6595,8 +6847,14 @@ It is not permissible to specify `Volatile_Full_Access` for a composite
 Pragma Volatile_Function
 ========================
 
-For the description of this pragma, see SPARK 2014 Reference Manual,
-section 7.1.2.
+Syntax:
+
+.. code-block:: ada
+
+  pragma Volatile_Function [ (boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect `Volatile_Function`
+in the SPARK 2014 Reference Manual, section 7.1.2.
 
 Pragma Warning_As_Error
 =======================

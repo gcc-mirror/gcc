@@ -750,7 +750,7 @@ package Sinfo is
    --    to be sure to raise an ABE. This is used to trigger special handling
    --    of such cases, particularly in the instantiation case where we avoid
    --    instantiating the body if this flag is set. This flag is also present
-   --    in an N_Formal_Package_Declaration_Node since formal package
+   --    in an N_Formal_Package_Declaration node since formal package
    --    declarations are treated like instantiations, but it is always set to
    --    False in this context.
 
@@ -2219,6 +2219,14 @@ package Sinfo is
    --    are made potentially use-visible by the clause. Simplifies processing
    --    on exit from the scope of the use_type_clause, in particular in the
    --    case of Use_All_Type, when those operations several scopes.
+
+   --  Was_Expression_Function (Flag18-Sem)
+   --    Present in N_Subprogram_Body. True if the original source had an
+   --    N_Expression_Function, which was converted to the N_Subprogram_Body
+   --    by Analyze_Expression_Function. This is needed by ASIS to correctly
+   --    recreate the expression function (for the instance body) when the
+   --    completion of a generic function declaration is an expression
+   --    function.
 
    --  Was_Originally_Stub (Flag13-Sem)
    --    This flag is set in the node for a proper body that replaces stub.
@@ -5212,6 +5220,7 @@ package Sinfo is
       --  Is_Task_Master (Flag5-Sem)
       --  Was_Originally_Stub (Flag13-Sem)
       --  Has_Relative_Deadline_Pragma (Flag9-Sem)
+      --  Was_Expression_Function (Flag18-Sem)
 
       -------------------------
       -- Expression Function --
@@ -9795,6 +9804,9 @@ package Sinfo is
    function Used_Operations
      (N : Node_Id) return Elist_Id;   -- Elist5
 
+   function Was_Expression_Function
+     (N : Node_Id) return Boolean;    -- Flag18
+
    function Was_Originally_Stub
      (N : Node_Id) return Boolean;    -- Flag13
 
@@ -10829,6 +10841,9 @@ package Sinfo is
 
    procedure Set_Used_Operations
      (N : Node_Id; Val : Elist_Id);           -- Elist5
+
+   procedure Set_Was_Expression_Function
+     (N : Node_Id; Val : Boolean := True);    -- Flag18
 
    procedure Set_Was_Originally_Stub
      (N : Node_Id; Val : Boolean := True);    -- Flag13
@@ -12938,6 +12953,7 @@ package Sinfo is
    pragma Inline (Variants);
    pragma Inline (Visible_Declarations);
    pragma Inline (Used_Operations);
+   pragma Inline (Was_Expression_Function);
    pragma Inline (Was_Originally_Stub);
    pragma Inline (Withed_Body);
 
@@ -13277,6 +13293,7 @@ package Sinfo is
    pragma Inline (Set_Variant_Part);
    pragma Inline (Set_Variants);
    pragma Inline (Set_Visible_Declarations);
+   pragma Inline (Set_Was_Expression_Function);
    pragma Inline (Set_Was_Originally_Stub);
    pragma Inline (Set_Withed_Body);
 

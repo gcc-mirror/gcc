@@ -9,7 +9,7 @@ extern void abort (void) __attribute__ ((noreturn));
 int
 condition_reduction (int *a, int min_v)
 {
-  int last = -1;
+  int last = 66; /* High start value.  */
 
   for (int i = 0; i < N; i++)
     if (a[i] < min_v)
@@ -28,12 +28,13 @@ main (void)
   31, 32
   };
 
-  int ret = condition_reduction (a, 16);
+  int ret = condition_reduction (a, 1);
 
-  if (ret != 19)
+  if (ret != 17)
     abort ();
 
   return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 2 "vect" { xfail { ! vect_max_reduc } } } } */
+/* { dg-final { scan-tree-dump-times "condition expression based on integer induction." 4 "vect" { xfail { ! vect_max_reduc } } } } */

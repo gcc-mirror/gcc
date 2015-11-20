@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -34,6 +34,7 @@
 ------------------------------------------------------------------------------
 
 with System.Interrupts;
+with System.Multiprocessors;
 with Ada.Task_Identification;
 
 package Ada.Interrupts is
@@ -81,6 +82,13 @@ package Ada.Interrupts is
      SPARK_Mode => Off,
      Global     => null;
 
+   function Get_CPU
+     (Interrupt : Interrupt_ID) return System.Multiprocessors.CPU_Range
+   with
+     SPARK_Mode,
+     Volatile_Function,
+     Global => Ada.Task_Identification.Tasking_State;
+
 private
    pragma Inline (Is_Reserved);
    pragma Inline (Is_Attached);
@@ -88,4 +96,5 @@ private
    pragma Inline (Attach_Handler);
    pragma Inline (Detach_Handler);
    pragma Inline (Exchange_Handler);
+   pragma Inline (Get_CPU);
 end Ada.Interrupts;

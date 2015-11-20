@@ -5,7 +5,7 @@
 program reduction_1
   implicit none
 
-  integer, parameter    :: n = 10, vl = 2
+  integer, parameter    :: n = 10, vl = 32
   integer               :: i, vresult, result
   logical               :: lresult, lvresult
   integer, dimension (n) :: array
@@ -19,7 +19,7 @@ program reduction_1
 
   ! '+' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(result)
   !$acc loop reduction(+:result)
   do i = 1, n
      result = result + array(i)
@@ -38,7 +38,7 @@ program reduction_1
 
   ! '*' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(result)
   !$acc loop reduction(*:result)
   do i = 1, n
      result = result * array(i)
@@ -57,7 +57,7 @@ program reduction_1
 
   ! 'max' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(result)
   !$acc loop reduction(max:result)
   do i = 1, n
      result = max (result, array(i))
@@ -76,7 +76,7 @@ program reduction_1
 
   ! 'min' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(result)
   !$acc loop reduction(min:result)
   do i = 1, n
      result = min (result, array(i))
@@ -95,7 +95,7 @@ program reduction_1
 
   ! 'iand' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(result)
   !$acc loop reduction(iand:result)
   do i = 1, n
      result = iand (result, array(i))
@@ -114,7 +114,7 @@ program reduction_1
 
   ! 'ior' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(result)
   !$acc loop reduction(ior:result)
   do i = 1, n
      result = ior (result, array(i))
@@ -133,7 +133,7 @@ program reduction_1
 
   ! 'ieor' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(result)
   !$acc loop reduction(ieor:result)
   do i = 1, n
      result = ieor (result, array(i))
@@ -152,7 +152,7 @@ program reduction_1
 
   ! '.and.' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(lresult)
   !$acc loop reduction(.and.:lresult)
   do i = 1, n
      lresult = lresult .and. (array(i) .ge. 5)
@@ -171,7 +171,7 @@ program reduction_1
 
   ! '.or.' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(lresult)
   !$acc loop reduction(.or.:lresult)
   do i = 1, n
      lresult = lresult .or. (array(i) .ge. 5)
@@ -190,7 +190,7 @@ program reduction_1
 
   ! '.eqv.' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(lresult)
   !$acc loop reduction(.eqv.:lresult)
   do i = 1, n
      lresult = lresult .eqv. (array(i) .ge. 5)
@@ -209,7 +209,7 @@ program reduction_1
 
   ! '.neqv.' reductions
 
-  !$acc parallel vector_length(vl) num_gangs(1)
+  !$acc parallel vector_length(vl) num_gangs(1) copy(lresult)
   !$acc loop reduction(.neqv.:lresult)
   do i = 1, n
      lresult = lresult .neqv. (array(i) .ge. 5)

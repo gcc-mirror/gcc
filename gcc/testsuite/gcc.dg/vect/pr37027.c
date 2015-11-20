@@ -18,8 +18,8 @@ void
 foo (void)
 {
   int i;
-  int sum1;
-  int sum2;
+  int sum1 = 0;
+  int sum2 = 0;
 
   for (i = 0; i < 16; i++)
   {

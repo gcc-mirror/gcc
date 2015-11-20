@@ -1477,49 +1477,6 @@ do									\
 #define ADDITIONAL_REGISTER_NAMES \
   {{"r22", HARD_FRAME_POINTER_REGNUM}, {"r23", STACK_POINTER_REGNUM}}
 
-/* `PRINT_OPERAND (STREAM, X, CODE)'
-
-   A C compound statement to output to stdio stream STREAM the
-   assembler syntax for an instruction operand X.  X is an RTL
-   expression.
-
-   CODE is a value that can be used to specify one of several ways of
-   printing the operand.  It is used when identical operands must be
-   printed differently depending on the context.  CODE comes from the
-   `%' specification that was used to request printing of the operand.
-   If the specification was just `%DIGIT' then CODE is 0; if the
-   specification was `%LTR DIGIT' then CODE is the ASCII code for LTR.
-
-   If X is a register, this macro should print the register's name.
-   The names can be found in an array `reg_names' whose type is `char
-   *[]'.  `reg_names' is initialized from `REGISTER_NAMES'.
-
-   When the machine description has a specification `%PUNCT' (a `%'
-   followed by a punctuation character), this macro is called with a
-   null pointer for X and the punctuation character for CODE. */
-#define PRINT_OPERAND(STREAM, X, CODE) print_operand (STREAM, X, CODE)
-
-/* `PRINT_OPERAND_PUNCT_VALID_P (CODE)'
-
-   A C expression which evaluates to true if CODE is a valid
-   punctuation character for use in the `PRINT_OPERAND' macro.  If
-   `PRINT_OPERAND_PUNCT_VALID_P' is not defined, it means that no
-   punctuation characters (except for the standard one, `%') are used */
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE) ((CODE) == '#')
-
-/* `PRINT_OPERAND_ADDRESS (STREAM, X)'
-
-   A C compound statement to output to stdio stream STREAM the
-   assembler syntax for an instruction operand that is a memory
-   reference whose address is X.  X is an RTL expression.
-
-   On some machines, the syntax for a symbolic address depends on the
-   section that the address refers to.  On these machines, define the
-   macro `ENCODE_SECTION_INFO' to store the information into the
-   `symbol_ref', and then check for it here. */
-#define PRINT_OPERAND_ADDRESS(STREAM, ADDR) \
-  print_operand_address (STREAM, ADDR)
-
 /* `REGISTER_PREFIX'
    `LOCAL_LABEL_PREFIX'
    `USER_LABEL_PREFIX'

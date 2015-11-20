@@ -656,10 +656,13 @@ experimental_headers = \
 	${experimental_srcdir}/list \
 	${experimental_srcdir}/map \
 	${experimental_srcdir}/memory \
+	${experimental_srcdir}/memory_resource \
 	${experimental_srcdir}/numeric \
 	${experimental_srcdir}/optional \
 	${experimental_srcdir}/propagate_const \
+	${experimental_srcdir}/random \
 	${experimental_srcdir}/ratio \
+	${experimental_srcdir}/regex \
 	${experimental_srcdir}/set \
 	${experimental_srcdir}/string \
 	${experimental_srcdir}/string_view \
@@ -668,6 +671,7 @@ experimental_headers = \
 	${experimental_srcdir}/type_traits \
 	${experimental_srcdir}/unordered_map \
 	${experimental_srcdir}/unordered_set \
+	${experimental_srcdir}/utility \
 	${experimental_srcdir}/vector \
 	${experimental_filesystem_headers}
 
@@ -675,6 +679,7 @@ experimental_bits_srcdir = ${glibcxx_srcdir}/include/experimental/bits
 experimental_bits_builddir = ./experimental/bits
 experimental_bits_headers = \
 	${experimental_bits_srcdir}/erase_if.h \
+	${experimental_bits_srcdir}/shared_ptr.h \
 	${experimental_bits_srcdir}/string_view.tcc \
 	${experimental_bits_filesystem_headers}
 

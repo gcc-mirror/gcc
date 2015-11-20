@@ -1,3 +1,31 @@
+2015-11-12  James Norris  <jnorris@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* gomp-constants.h (enum gomp_map_kind): Add GOMP_MAP_DEVICE_RESIDENT
+	and GOMP_MAP_LINK.
+
+2015-11-09  Alan Modra  <amodra@gmail.com>
+
+	PR gdb/17133
+	* obstack.h (__attribute_pure__): Expand _GL_ATTRIBUTE_PURE.
+
+2015-11-09  Alan Modra  <amodra@gmail.com>
+
+	PR gdb/17133
+	* obstack.h: Import current gnulib file.
+
+2015-11-05  Jakub Jelinek  <jakub@redhat.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+
+	* gomp-constants.h (GOMP_MAP_FLAG_SPECIAL_2): Define.
+	(GOMP_MAP_FLAG_ALWAYS): Remove.
+	(enum gomp_map_kind): Use GOMP_MAP_FLAG_SPECIAL_2 instead of
+	GOMP_MAP_FLAG_ALWAYS for GOMP_MAP_ALWAYS_TO, GOMP_MAP_ALWAYS_FROM,
+	GOMP_MAP_ALWAYS_TOFROM, GOMP_MAP_STRUCT, GOMP_MAP_RELEASE.
+	Add GOMP_MAP_ALWAYS_POINTER and GOMP_MAP_FIRSTPRIVATE_REFERENCE.
+	(GOMP_MAP_ALWAYS_P): Define.
+	(GOMP_TARGET_FLAG_NOWAIT): Adjust comment.
+
 2015-10-27  Daniel Jacobowitz  <dan@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 	    Mark Shinwell  <shinwell@codesourcery.com>

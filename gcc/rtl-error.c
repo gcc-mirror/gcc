@@ -67,9 +67,10 @@ diagnostic_for_asm (const rtx_insn *insn, const char *msg, va_list *args_ptr,
 		    diagnostic_t kind)
 {
   diagnostic_info diagnostic;
+  rich_location richloc (line_table, location_for_asm (insn));
 
   diagnostic_set_info (&diagnostic, msg, args_ptr,
-		       location_for_asm (insn), kind);
+		       &richloc, kind);
   report_diagnostic (&diagnostic);
 }
 

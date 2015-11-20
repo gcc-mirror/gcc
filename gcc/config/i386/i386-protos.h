@@ -129,6 +129,10 @@ extern bool ix86_expand_fp_vcond (rtx[]);
 extern bool ix86_expand_int_vcond (rtx[]);
 extern void ix86_expand_vec_perm (rtx[]);
 extern bool ix86_expand_vec_perm_const (rtx[]);
+extern bool ix86_expand_mask_vec_cmp (rtx[]);
+extern bool ix86_expand_int_vec_cmp (rtx[]);
+extern bool ix86_expand_fp_vec_cmp (rtx[]);
+extern void ix86_expand_sse_movcc (rtx, rtx, rtx, rtx);
 extern void ix86_expand_sse_unpack (rtx, rtx, bool, bool);
 extern bool ix86_expand_int_addcc (rtx[]);
 extern rtx ix86_expand_call (rtx, rtx, rtx, rtx, rtx, bool);
@@ -141,6 +145,7 @@ extern void ix86_split_ashr (rtx *, rtx, machine_mode);
 extern void ix86_split_lshr (rtx *, rtx, machine_mode);
 extern rtx ix86_find_base_term (rtx);
 extern bool ix86_check_movabs (rtx, int);
+extern bool ix86_check_no_addr_space (rtx);
 extern void ix86_split_idivmod (machine_mode, rtx[], bool);
 
 extern rtx assign_386_stack_local (machine_mode, enum ix86_stack_slot);
@@ -278,12 +283,11 @@ extern rtx maybe_get_pool_constant (rtx);
 extern char internal_label_prefix[16];
 extern int internal_label_prefix_len;
 
-enum ix86_address_seg { SEG_DEFAULT, SEG_FS, SEG_GS };
 struct ix86_address
 {
   rtx base, index, disp;
   HOST_WIDE_INT scale;
-  enum ix86_address_seg seg;
+  addr_space_t seg;
 };
 
 extern int ix86_decompose_address (rtx, struct ix86_address *);
@@ -325,3 +329,7 @@ struct ix86_first_cycle_multipass_data_
 # define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DATA_T	\
   struct ix86_first_cycle_multipass_data_
 #endif /* RTX_CODE */
+
+const addr_space_t ADDR_SPACE_SEG_FS = 1;
+const addr_space_t ADDR_SPACE_SEG_GS = 2;
+const addr_space_t ADDR_SPACE_SEG_TLS = 3;

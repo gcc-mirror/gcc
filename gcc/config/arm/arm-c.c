@@ -64,8 +64,8 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   def_or_undef_macro (pfile, "__ARM_FEATURE_DSP", TARGET_DSP_MULTIPLY);
   def_or_undef_macro (pfile, "__ARM_FEATURE_QBIT", TARGET_ARM_QBIT); 
   def_or_undef_macro (pfile, "__ARM_FEATURE_SAT", TARGET_ARM_SAT);
-  if (TARGET_CRYPTO)
-    builtin_define ("__ARM_FEATURE_CRYPTO");
+  def_or_undef_macro (pfile, "__ARM_FEATURE_CRYPTO", TARGET_CRYPTO);
+
   if (unaligned_access)
     builtin_define ("__ARM_FEATURE_UNALIGNED");
   if (TARGET_CRC32)
@@ -125,30 +125,30 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   if (TARGET_SOFT_FLOAT)
     builtin_define ("__SOFTFP__");
 
-  if (TARGET_VFP)
-    builtin_define ("__VFP_FP__");
-	
+  def_or_undef_macro (pfile, "__VFP_FP__", TARGET_VFP);
+
   if (TARGET_ARM_FP)
     builtin_define_with_int_value ("__ARM_FP", TARGET_ARM_FP);
+  else
+    cpp_undef (pfile, "__ARM_FP");
+
   if (arm_fp16_format == ARM_FP16_FORMAT_IEEE)
     builtin_define ("__ARM_FP16_FORMAT_IEEE");
   if (arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
     builtin_define ("__ARM_FP16_FORMAT_ALTERNATIVE");
-  if (TARGET_FMA)
-    builtin_define ("__ARM_FEATURE_FMA");
 
-  if (TARGET_NEON)
-    {
-      builtin_define ("__ARM_NEON__");
-      builtin_define ("__ARM_NEON");
-    }
+  def_or_undef_macro (pfile, "__ARM_FEATURE_FMA", TARGET_FMA);
+  def_or_undef_macro (pfile, "__ARM_NEON__", TARGET_NEON);
+  def_or_undef_macro (pfile, "__ARM_NEON", TARGET_NEON);
+
   if (TARGET_NEON_FP)
     builtin_define_with_int_value ("__ARM_NEON_FP", TARGET_NEON_FP);
-  
+  else
+    cpp_undef (pfile, "__ARM_NEON_FP");
+
   /* Add a define for interworking. Needed when building libgcc.a.  */
   if (arm_cpp_interwork)
     builtin_define ("__THUMB_INTERWORK__");
-
 
   builtin_define (arm_arch_name);
   if (arm_arch_xscale)
@@ -228,19 +228,27 @@ arm_pragma_target_parse (tree args, tree pop_target)
   gcc_assert (prev_opt);
   gcc_assert (cur_opt);
 
-  if (cur_opt->x_target_flags != prev_opt->x_target_flags)
+  if (cur_opt != prev_opt)
     {
       /* For the definitions, ensure all newly defined macros are considered
 	 as used for -Wunused-macros.  There is no point warning about the
 	 compiler predefined macros.  */
       cpp_options *cpp_opts = cpp_get_options (parse_in);
       unsigned char saved_warn_unused_macros = cpp_opts->warn_unused_macros;
+      unsigned char saved_warn_builtin_macro_redefined
+	= cpp_opts->warn_builtin_macro_redefined;
+
       cpp_opts->warn_unused_macros = 0;
+      cpp_opts->warn_builtin_macro_redefined = 0;
 
       /* Update macros.  */
       gcc_assert (cur_opt->x_target_flags == target_flags);
+      /* This one can be redefined by the pragma without warning.  */
+      cpp_undef (parse_in, "__ARM_FP");
+
       arm_cpu_builtins (parse_in);
 
+      cpp_opts->warn_builtin_macro_redefined = saved_warn_builtin_macro_redefined;
       cpp_opts->warn_unused_macros = saved_warn_unused_macros;
     }
 

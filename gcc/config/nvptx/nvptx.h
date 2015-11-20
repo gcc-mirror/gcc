@@ -349,6 +349,7 @@ struct GTY(()) machine_function
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
   ((VALUE) = GET_MODE_BITSIZE ((MODE)), 2)
 
+#define SUPPORTS_WEAK 1
 #define NO_DOT_IN_LABEL
 #define ASM_COMMENT_START "//"
 

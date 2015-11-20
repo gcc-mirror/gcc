@@ -109,6 +109,16 @@ package body Exp_Attr is
    --  If we are within an instance body all visibility has been established
    --  already and there is no need to install the package.
 
+   --  This mechanism is now extended to the component types of the array type,
+   --  when the component type is not in scope and is private, to handle
+   --  properly the case when the full view has defaulted discriminants.
+
+   --  This special processing is ultimately caused by the fact that the
+   --  compiler lacks a well-defined phase when full views are visible
+   --  everywhere. Having such a separate pass would remove much of the
+   --  special-case code that shuffles partial and full views in the middle
+   --  of semantic analysis and expansion.
+
    procedure Expand_Access_To_Protected_Op
      (N    : Node_Id;
       Pref : Node_Id;
@@ -624,24 +634,47 @@ package body Exp_Attr is
       Arr   : Entity_Id;
       Check : Boolean)
    is
-      Installed : Boolean := False;
-      Scop      : constant Entity_Id := Scope (Arr);
-      Curr      : constant Entity_Id := Current_Scope;
+      C_Type  : constant Entity_Id := Base_Type (Component_Type (Arr));
+      Curr    : constant Entity_Id := Current_Scope;
+      Install : Boolean := False;
+      Scop    : Entity_Id := Scope (Arr);
 
    begin
       if Is_Hidden (Arr)
         and then not In_Open_Scopes (Scop)
         and then Ekind (Scop) = E_Package
-
-        --  If we are within an instance body, then all visibility has been
-        --  established already and there is no need to install the package.
-
-        and then not In_Instance_Body
       then
+         Install := True;
+
+      else
+         --  The component type may be private, in which case we install its
+         --  full view to compile the subprogram.
+
+         --  The component type may be private, in which case we install its
+         --  full view to compile the subprogram. We do not do this if the
+         --  type has a Stream_Convert pragma, which indicates that there are
+         --  special stream-processing operations for that type (for example
+         --  Unbounded_String and its wide varieties).
+
+         Scop := Scope (C_Type);
+
+         if Is_Private_Type (C_Type)
+           and then Present (Full_View (C_Type))
+           and then not In_Open_Scopes (Scop)
+           and then Ekind (Scop) = E_Package
+           and then No (Get_Stream_Convert_Pragma (C_Type))
+         then
+            Install := True;
+         end if;
+      end if;
+
+      --  If we are within an instance body, then all visibility has been
+      --  established already and there is no need to install the package.
+
+      if Install and then not In_Instance_Body then
          Push_Scope (Scop);
          Install_Visible_Declarations (Scop);
          Install_Private_Declarations (Scop);
-         Installed := True;
 
          --  The entities in the package are now visible, but the generated
          --  stream entity must appear in the current scope (usually an
@@ -649,6 +682,8 @@ package body Exp_Attr is
          --  scopes.
 
          Push_Scope (Curr);
+      else
+         Install := False;
       end if;
 
       if Check then
@@ -657,7 +692,7 @@ package body Exp_Attr is
          Insert_Action (N, Decl, Suppress => All_Checks);
       end if;
 
-      if Installed then
+      if Install then
 
          --  Remove extra copy of current scope, and package itself
 
@@ -4427,7 +4462,7 @@ package body Exp_Attr is
 
          X   : constant Node_Id := Prefix (N);
          Y   : constant Node_Id := First (Expressions (N));
-         --  The argumens
+         --  The arguments
 
          X_Addr, Y_Addr : Node_Id;
          --  the expressions for their integer addresses
@@ -4448,7 +4483,9 @@ package body Exp_Attr is
 
          --  with the proper address operations. We convert addresses to
          --  integer addresses to use predefined arithmetic. The size is
-         --  expressed in storage units.
+         --  expressed in storage units. We add copies of X_Addr and Y_Addr
+         --  to prevent the appearance of the same node in two places in
+         --  the tree.
 
          X_Addr :=
            Unchecked_Convert_To (RTE (RE_Integer_Address),
@@ -4486,28 +4523,28 @@ package body Exp_Attr is
               Right_Opnd => Y_Addr);
 
          Rewrite (N,
-           Make_If_Expression (Loc,
-             New_List (
-               Cond,
+           Make_If_Expression (Loc, New_List (
+             Cond,
 
-               Make_Op_Ge (Loc,
-                  Left_Opnd   =>
-                   Make_Op_Add (Loc,
-                     Left_Opnd  => X_Addr,
-                     Right_Opnd =>
-                       Make_Op_Subtract (Loc,
-                         Left_Opnd  => X_Size,
-                         Right_Opnd => Make_Integer_Literal (Loc, 1))),
-                  Right_Opnd => Y_Addr),
+             Make_Op_Ge (Loc,
+               Left_Opnd   =>
+                 Make_Op_Add (Loc,
+                   Left_Opnd  => New_Copy_Tree (X_Addr),
+                   Right_Opnd =>
+                     Make_Op_Subtract (Loc,
+                       Left_Opnd  => X_Size,
+                       Right_Opnd => Make_Integer_Literal (Loc, 1))),
+               Right_Opnd => Y_Addr),
 
-               Make_Op_Ge (Loc,
-                   Make_Op_Add (Loc,
-                     Left_Opnd  => Y_Addr,
-                     Right_Opnd =>
-                       Make_Op_Subtract (Loc,
-                         Left_Opnd  => Y_Size,
-                         Right_Opnd => Make_Integer_Literal (Loc, 1))),
-                  Right_Opnd => X_Addr))));
+             Make_Op_Ge (Loc,
+               Left_Opnd  =>
+                 Make_Op_Add (Loc,
+                   Left_Opnd  => New_Copy_Tree (Y_Addr),
+                   Right_Opnd =>
+                     Make_Op_Subtract (Loc,
+                       Left_Opnd  => Y_Size,
+                       Right_Opnd => Make_Integer_Literal (Loc, 1))),
+               Right_Opnd => X_Addr))));
 
          Analyze_And_Resolve (N, Standard_Boolean);
       end Overlaps_Storage;

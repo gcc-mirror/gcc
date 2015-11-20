@@ -59,11 +59,6 @@
 /* SYMBOL_REF for GOT */
 static GTY(()) rtx g_got_symbol = NULL;
 
-/* In case of a POST_INC or POST_DEC memory reference, we must report
-   the mode of the memory reference from TARGET_PRINT_OPERAND to
-   TARGET_PRINT_OPERAND_ADDRESS.  */
-static machine_mode output_memory_reference_mode;
-
 /* Report whether we're printing out the first address fragment of a
    POST_INC or POST_DEC memory reference, from TARGET_PRINT_OPERAND to
    TARGET_PRINT_OPERAND_ADDRESS.  */
@@ -1692,7 +1687,7 @@ tilepro_expand_unaligned_load (rtx dest_reg, rtx mem, HOST_WIDE_INT bitsize,
 	extract_bit_field (gen_lowpart (SImode, wide_result),
 			   bitsize, bit_offset % BITS_PER_UNIT,
 			   !sign, gen_lowpart (SImode, dest_reg),
-			   SImode, SImode);
+			   SImode, SImode, false);
 
       if (extracted != dest_reg)
 	emit_move_insn (dest_reg, gen_lowpart (SImode, extracted));
@@ -4594,10 +4589,8 @@ tilepro_print_operand (FILE *file, rtx x, int code)
 	  return;
 	}
 
-      output_memory_reference_mode = GET_MODE (x);
       output_memory_autoinc_first = true;
-      output_address (XEXP (x, 0));
-      output_memory_reference_mode = VOIDmode;
+      output_address (GET_MODE (x), XEXP (x, 0));
       return;
 
     case 'i':
@@ -4608,10 +4601,8 @@ tilepro_print_operand (FILE *file, rtx x, int code)
 	  return;
 	}
 
-      output_memory_reference_mode = GET_MODE (x);
       output_memory_autoinc_first = false;
-      output_address (XEXP (x, 0));
-      output_memory_reference_mode = VOIDmode;
+      output_address (GET_MODE (x), XEXP (x, 0));
       return;
 
     case 'j':
@@ -4810,8 +4801,7 @@ tilepro_print_operand (FILE *file, rtx x, int code)
 	}
       else if (MEM_P (x))
 	{
-	  output_memory_reference_mode = VOIDmode;
-	  output_address (XEXP (x, 0));
+	  output_address (VOIDmode, XEXP (x, 0));
 	  return;
 	}
       else
@@ -4830,14 +4820,14 @@ tilepro_print_operand (FILE *file, rtx x, int code)
 
 /* Implement TARGET_PRINT_OPERAND_ADDRESS.  */
 static void
-tilepro_print_operand_address (FILE *file, rtx addr)
+tilepro_print_operand_address (FILE *file, machine_mode mode, rtx addr)
 {
   if (GET_CODE (addr) == POST_DEC
       || GET_CODE (addr) == POST_INC)
     {
-      int offset = GET_MODE_SIZE (output_memory_reference_mode);
+      int offset = GET_MODE_SIZE (mode);
 
-      gcc_assert (output_memory_reference_mode != VOIDmode);
+      gcc_assert (mode != VOIDmode);
 
       if (output_memory_autoinc_first)
 	fprintf (file, "%s", reg_names[REGNO (XEXP (addr, 0))]);
@@ -4847,7 +4837,7 @@ tilepro_print_operand_address (FILE *file, rtx addr)
     }
   else if (GET_CODE (addr) == POST_MODIFY)
     {
-      gcc_assert (output_memory_reference_mode != VOIDmode);
+      gcc_assert (mode != VOIDmode);
 
       gcc_assert (GET_CODE (XEXP (addr, 1)) == PLUS);
 

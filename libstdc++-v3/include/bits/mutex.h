@@ -129,14 +129,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // _GLIBCXX_HAS_GTHREADS
 
   /// Do not acquire ownership of the mutex.
-  struct defer_lock_t { };
+  struct defer_lock_t { explicit defer_lock_t() = default; };
 
   /// Try to acquire ownership of the mutex without blocking.
-  struct try_to_lock_t { };
+  struct try_to_lock_t { explicit try_to_lock_t() = default; };
 
   /// Assume the calling thread has already obtained mutex ownership
   /// and manage it.
-  struct adopt_lock_t { };
+  struct adopt_lock_t { explicit adopt_lock_t() = default; };
 
   constexpr defer_lock_t	defer_lock { };
   constexpr try_to_lock_t	try_to_lock { };

@@ -432,9 +432,24 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, int flags)
 
     case OMP_CLAUSE_SCHEDULE:
       pp_string (pp, "schedule(");
+      if (OMP_CLAUSE_SCHEDULE_KIND (clause)
+	  & (OMP_CLAUSE_SCHEDULE_MONOTONIC
+	     | OMP_CLAUSE_SCHEDULE_NONMONOTONIC))
+	{
+	  if (OMP_CLAUSE_SCHEDULE_KIND (clause)
+	      & OMP_CLAUSE_SCHEDULE_MONOTONIC)
+	    pp_string (pp, "monotonic");
+	  else
+	    pp_string (pp, "nonmonotonic");
+	  if (OMP_CLAUSE_SCHEDULE_SIMD (clause))
+	    pp_comma (pp);
+	  else
+	    pp_colon (pp);
+	}
       if (OMP_CLAUSE_SCHEDULE_SIMD (clause))
 	pp_string (pp, "simd:");
-      switch (OMP_CLAUSE_SCHEDULE_KIND (clause))
+
+      switch (OMP_CLAUSE_SCHEDULE_KIND (clause) & OMP_CLAUSE_SCHEDULE_MASK)
 	{
 	case OMP_CLAUSE_SCHEDULE_STATIC:
 	  pp_string (pp, "static");
@@ -630,8 +645,20 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, int flags)
 	case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  pp_string (pp, "firstprivate");
 	  break;
+	case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
+	  pp_string (pp, "firstprivate ref");
+	  break;
 	case GOMP_MAP_STRUCT:
 	  pp_string (pp, "struct");
+	  break;
+	case GOMP_MAP_ALWAYS_POINTER:
+	  pp_string (pp, "always_pointer");
+	  break;
+	case GOMP_MAP_DEVICE_RESIDENT:
+	  pp_string (pp, "device_resident");
+	  break;
+	case GOMP_MAP_LINK:
+	  pp_string (pp, "link");
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -642,16 +669,22 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, int flags)
      print_clause_size:
       if (OMP_CLAUSE_SIZE (clause))
 	{
-	  if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP
-	      && (OMP_CLAUSE_MAP_KIND (clause) == GOMP_MAP_POINTER
-		  || OMP_CLAUSE_MAP_KIND (clause)
-		     == GOMP_MAP_FIRSTPRIVATE_POINTER))
-	    pp_string (pp, " [pointer assign, bias: ");
-	  else if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP
-		   && OMP_CLAUSE_MAP_KIND (clause) == GOMP_MAP_TO_PSET)
-	    pp_string (pp, " [pointer set, len: ");
-	  else
-	    pp_string (pp, " [len: ");
+	  switch (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP
+		  ? OMP_CLAUSE_MAP_KIND (clause) : GOMP_MAP_TO)
+	    {
+	    case GOMP_MAP_POINTER:
+	    case GOMP_MAP_FIRSTPRIVATE_POINTER:
+	    case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
+	    case GOMP_MAP_ALWAYS_POINTER:
+	      pp_string (pp, " [pointer assign, bias: ");
+	      break;
+	    case GOMP_MAP_TO_PSET:
+	      pp_string (pp, " [pointer set, len: ");
+	      break;
+	    default:
+	      pp_string (pp, " [len: ");
+	      break;
+	    }
 	  dump_generic_node (pp, OMP_CLAUSE_SIZE (clause),
 			     spc, flags, false);
 	  pp_right_bracket (pp);
@@ -904,6 +937,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, int flags)
       break;
     case OMP_CLAUSE_INDEPENDENT:
       pp_string (pp, "independent");
+      break;
+    case OMP_CLAUSE_TILE:
+      pp_string (pp, "tile(");
+      dump_generic_node (pp, OMP_CLAUSE_TILE_LIST (clause),
+			 spc, flags, false);
+      pp_right_paren (pp);
       break;
 
     default:
@@ -3737,7 +3776,7 @@ void
 percent_K_format (text_info *text)
 {
   tree t = va_arg (*text->args_ptr, tree), block;
-  text->set_location (0, EXPR_LOCATION (t));
+  text->set_location (0, EXPR_LOCATION (t), true);
   gcc_assert (pp_ti_abstract_origin (text) != NULL);
   block = TREE_BLOCK (t);
   *pp_ti_abstract_origin (text) = NULL;

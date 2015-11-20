@@ -2191,6 +2191,17 @@ package body Sem_Ch4 is
 
                Get_Next_Interp (I, It);
             end loop;
+
+            --  If no valid interpretation has been found, then the type of the
+            --  ELSE expression does not match any interpretation of the THEN
+            --  expression.
+
+            if Etype (N) = Any_Type then
+               Error_Msg_N
+                 ("type incompatible with that of `THEN` expression",
+                  Else_Expr);
+               return;
+            end if;
          end;
       end if;
    end Analyze_If_Expression;
@@ -3062,6 +3073,7 @@ package body Sem_Ch4 is
          if not Is_Type (Nam) then
             if Is_Entity_Name (Name (N)) then
                Set_Entity (Name (N), Nam);
+               Set_Etype  (Name (N), Etype (Nam));
 
             elsif Nkind (Name (N)) = N_Selected_Component then
                Set_Entity (Selector_Name (Name (N)),  Nam);
@@ -4644,13 +4656,29 @@ package body Sem_Ch4 is
                    Comp = First_Private_Entity (Base_Type (Prefix_Type));
          end loop;
 
+         --  If the scope is a current instance, the prefix cannot be an
+         --  expression of the same type (that would represent an attempt
+         --  to reach an internal operation of another synchronized object).
+         --  This is legal if prefix is an access to such type and there is
+         --  a dereference.
+
+         if In_Scope
+           and then not Is_Entity_Name (Name)
+           and then Nkind (Name) /= N_Explicit_Dereference
+         then
+            Error_Msg_NE
+              ("invalid reference to internal operation of some object of "
+               & "type &", N, Type_To_Use);
+            Set_Entity (Sel, Any_Id);
+            Set_Etype  (Sel, Any_Type);
+            return;
+         end if;
+
          --  If there is no visible entity with the given name or none of the
          --  visible entities are plausible interpretations, check whether
          --  there is some other primitive operation with that name.
 
-         if Ada_Version >= Ada_2005
-           and then Is_Tagged_Type (Prefix_Type)
-         then
+         if Ada_Version >= Ada_2005 and then Is_Tagged_Type (Prefix_Type) then
             if (Etype (N) = Any_Type
                   or else not Has_Candidate)
               and then Try_Object_Operation (N)
@@ -4682,13 +4710,12 @@ package body Sem_Ch4 is
             if Has_Candidate
               and then Is_Concurrent_Type (Prefix_Type)
               and then Nkind (Parent (N)) = N_Procedure_Call_Statement
-
+            then
                --  Duplicate the call. This is required to avoid problems with
                --  the tree transformations performed by Try_Object_Operation.
                --  Set properly the parent of the copied call, because it is
                --  about to be reanalyzed.
 
-            then
                declare
                   Par : constant Node_Id := New_Copy_Tree (Parent (N));
 
@@ -7190,10 +7217,43 @@ package body Sem_Ch4 is
                begin
                   --  We should look for an interpretation with the proper
                   --  number of formals, and determine whether it is an
-                  --  In_Parameter, but for now assume that in the overloaded
-                  --  case constant indexing is legal. To be improved ???
+                  --  In_Parameter, but for now we examine the formal that
+                  --  corresponds to the indexing, and assume that variable
+                  --  indexing is required if some interpretation has an
+                  --  assignable formal at that position.  Still does not
+                  --  cover the most complex cases ???
 
                   if Is_Overloaded (Name (Parent (Par))) then
+                     declare
+                        Proc : constant Node_Id := Name (Parent (Par));
+                        A    : Node_Id;
+                        F    : Entity_Id;
+                        I    : Interp_Index;
+                        It   : Interp;
+
+                     begin
+                        Get_First_Interp (Proc, I, It);
+                        while Present (It.Nam) loop
+                           F := First_Formal (It.Nam);
+                           A := First (Parameter_Associations (Parent (Par)));
+
+                           while Present (F) and then Present (A) loop
+                              if A = Par then
+                                 if Ekind (F) /= E_In_Parameter then
+                                    return False;
+                                 else
+                                    exit;  --  interpretation is safe
+                                 end if;
+                              end if;
+
+                              Next_Formal (F);
+                              Next_Actual (A);
+                           end loop;
+
+                           Get_Next_Interp (I, It);
+                        end loop;
+                     end;
+
                      return True;
 
                   else
@@ -7235,7 +7295,8 @@ package body Sem_Ch4 is
 
             --  If the indexed component is a prefix it may be the first actual
             --  of a prefixed call. Retrieve the called entity, if any, and
-            --  check its first formal.
+            --  check its first formal. Determine if the context is a procedure
+            --  or function call.
 
             elsif Nkind (Parent (Par)) = N_Selected_Component then
                declare
@@ -7243,11 +7304,17 @@ package body Sem_Ch4 is
                   Nam : constant Entity_Id := Current_Entity (Sel);
 
                begin
-                  if Present (Nam)
-                    and then Is_Overloadable (Nam)
-                    and then Present (First_Formal (Nam))
-                  then
-                     return Ekind (First_Formal (Nam)) = E_In_Parameter;
+                  if Present (Nam) and then Is_Overloadable (Nam) then
+                     if Nkind (Parent (Parent (Par))) =
+                          N_Procedure_Call_Statement
+                     then
+                        return False;
+
+                     elsif Ekind (Nam) = E_Function
+                       and then Present (First_Formal (Nam))
+                     then
+                        return Ekind (First_Formal (Nam)) = E_In_Parameter;
+                     end if;
                   end if;
                end;
 
@@ -7358,12 +7425,27 @@ package body Sem_Ch4 is
          Check_Compiler_Unit ("generalized indexing", N);
       end if;
 
+      --  Create argument list for function call that represents generalized
+      --  indexing. Note that indices (i.e. actuals) may themselves be
+      --  overloaded.
+
       declare
-         Arg : Node_Id;
+         Arg     : Node_Id;
+         New_Arg : Node_Id;
+
       begin
          Arg := First (Exprs);
          while Present (Arg) loop
-            Append (Relocate_Node (Arg), Assoc);
+            New_Arg := Relocate_Node (Arg);
+
+            --  The arguments can be parameter associations, in which case the
+            --  explicit actual parameter carries the overloadings.
+
+            if Nkind (New_Arg) /= N_Parameter_Association then
+               Save_Interps (Arg, New_Arg);
+            end if;
+
+            Append (New_Arg, Assoc);
             Next (Arg);
          end loop;
       end;
@@ -7390,6 +7472,9 @@ package body Sem_Ch4 is
          end if;
 
       else
+         --  If there are multiple indexing functions, build a function call
+         --  and analyze it for each of the possible interpretations.
+
          Indexing :=
            Make_Function_Call (Loc,
              Name                   =>
@@ -7398,6 +7483,8 @@ package body Sem_Ch4 is
 
          Set_Parent (Indexing, Parent (N));
          Set_Generalized_Indexing (N, Indexing);
+         Set_Etype (N, Any_Type);
+         Set_Etype (Name (Indexing), Any_Type);
 
          declare
             I       : Interp_Index;
@@ -7407,21 +7494,24 @@ package body Sem_Ch4 is
          begin
             Get_First_Interp (Func_Name, I, It);
             Set_Etype (Indexing, Any_Type);
+
             while Present (It.Nam) loop
                Analyze_One_Call (Indexing, It.Nam, False, Success);
 
                if Success then
-                  Set_Etype  (Name (Indexing), It.Typ);
-                  Set_Entity (Name (Indexing), It.Nam);
-                  Set_Etype (N, Etype (Indexing));
 
-                  --  Add implicit dereference interpretation
+                  --  Function in current interpretation is a valid candidate.
+                  --  Its result type is also a potential type for the
+                  --  original Indexed_Component node.
+
+                  Add_One_Interp (Name (Indexing), It.Nam, It.Typ);
+                  Add_One_Interp (N, It.Nam, It.Typ);
+
+                  --  Add implicit dereference interpretation to original node
 
                   if Has_Discriminants (Etype (It.Nam)) then
                      Check_Implicit_Dereference (N, Etype (It.Nam));
                   end if;
-
-                  exit;
                end if;
 
                Get_Next_Interp (I, It);

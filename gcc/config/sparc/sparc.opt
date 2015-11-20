@@ -209,7 +209,7 @@ Enable strict 32-bit psABI struct return checking.
 mfix-at697f
 Target Report RejectNegative Var(sparc_fix_at697f)
 Enable workaround for single erratum of AT697F processor
-(corresponding to erratum #13 of AT697E processor)
+(corresponding to erratum #13 of AT697E processor).
 
 mfix-ut699
 Target Report RejectNegative Var(sparc_fix_ut699)

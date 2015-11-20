@@ -173,6 +173,7 @@ UINT CurrentCCSEncoding;
 #include <windows.h>
 #include <accctrl.h>
 #include <aclapi.h>
+#include <tlhelp32.h>
 #undef DIR_SEPARATOR
 #define DIR_SEPARATOR '\\'
 
@@ -3200,8 +3201,7 @@ __gnat_kill (int pid, int sig, int close ATTRIBUTE_UNUSED)
     return;
   if (sig == 9)
     {
-      TerminateProcess (h, 0);
-      __gnat_win32_remove_handle (NULL, pid);
+      TerminateProcess (h, 1);
     }
   else if (sig == SIGINT)
     GenerateConsoleCtrlEvent (CTRL_C_EVENT, pid);
@@ -3218,6 +3218,107 @@ __gnat_kill (int pid, int sig, int close ATTRIBUTE_UNUSED)
 #else
   kill (pid, sig);
 #endif
+}
+
+void __gnat_killprocesstree (int pid, int sig_num)
+{
+#if defined(_WIN32)
+  HANDLE hWnd;
+  PROCESSENTRY32 pe;
+
+  memset(&pe, 0, sizeof(PROCESSENTRY32));
+  pe.dwSize = sizeof(PROCESSENTRY32);
+
+  HANDLE hSnap = CreateToolhelp32Snapshot (TH32CS_SNAPPROCESS, 0);
+
+  /*  cannot take snapshot, just kill the parent process */
+
+  if (hSnap == INVALID_HANDLE_VALUE)
+    {
+      __gnat_kill (pid, sig_num, 1);
+      return;
+    }
+
+  if (Process32First(hSnap, &pe))
+    {
+      BOOL bContinue = TRUE;
+
+      /* kill child processes first */
+
+      while (bContinue)
+        {
+          if (pe.th32ParentProcessID == (int)pid)
+            __gnat_killprocesstree (pe.th32ProcessID, sig_num);
+
+          bContinue = Process32Next (hSnap, &pe);
+        }
+    }
+
+  CloseHandle (hSnap);
+
+  /* kill process */
+
+  __gnat_kill (pid, sig_num, 1);
+
+#elif defined (__vxworks)
+  /* not implemented */
+
+#elif defined (__linux__)
+  DIR *dir;
+  struct dirent *d;
+
+  /*  read all processes' pid and ppid */
+
+  dir = opendir ("/proc");
+
+  /*  cannot open proc, just kill the parent process */
+
+  if (!dir)
+    {
+      __gnat_kill (pid, sig_num, 1);
+      return;
+    }
+
+  /* kill child processes first */
+
+  while (d = readdir (dir))
+    {
+      if ((d->d_type & DT_DIR) == DT_DIR)
+        {
+          char statfile[64] = { 0 };
+          int _pid, _ppid;
+
+          /* read /proc/<PID>/stat */
+
+          strncpy (statfile, "/proc/", sizeof(statfile));
+          strncat (statfile, d->d_name, sizeof(statfile));
+          strncat (statfile, "/stat", sizeof(statfile));
+
+          FILE *fd = fopen (statfile, "r");
+
+          if (fd)
+            {
+              const int match = fscanf (fd, "%d %*s %*s %d", &_pid, &_ppid);
+              fclose (fd);
+
+              if (match == 2 && _ppid == pid)
+                __gnat_killprocesstree (_pid, sig_num);
+            }
+        }
+    }
+
+  closedir (dir);
+
+  /* kill process */
+
+  __gnat_kill (pid, sig_num, 1);
+#else
+  __gnat_kill (pid, sig_num, 1);
+#endif
+  /* Note on Solaris it is possible to read /proc/<PID>/status.
+     The 5th and 6th words are the pid and the 7th and 8th the ppid.
+     See: /usr/include/sys/procfs.h (struct pstatus).
+  */
 }
 
 #ifdef __cplusplus

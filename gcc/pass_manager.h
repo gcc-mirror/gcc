@@ -120,6 +120,7 @@ private:
 #define PUSH_INSERT_PASSES_WITHIN(PASS)
 #define POP_INSERT_PASSES()
 #define NEXT_PASS(PASS, NUM) opt_pass *PASS ## _ ## NUM
+#define NEXT_PASS_WITH_ARG(PASS, NUM, ARG) NEXT_PASS (PASS, NUM)
 #define TERMINATE_PASS_LIST()
 
 #include "pass-instances.def"
@@ -128,6 +129,7 @@ private:
 #undef PUSH_INSERT_PASSES_WITHIN
 #undef POP_INSERT_PASSES
 #undef NEXT_PASS
+#undef NEXT_PASS_WITH_ARG
 #undef TERMINATE_PASS_LIST
 
 }; // class pass_manager

@@ -43,7 +43,11 @@ main()
   if (foo.chars[1] != 98) __builtin_abort();
   if (foo.chars[2] != 99) __builtin_abort();
 
-  auto wfoo = L"\x01020304\x05060708"_foo;
+#if __SIZEOF_WCHAR_T__ == 2
+    auto wfoo = L"\x0102\x0304"_foo;
+#else
+    auto wfoo = L"\x01020304\x05060708"_foo;
+#endif
   if (is_same<decltype(wfoo)::char_type, wchar_t>::value != true) __builtin_abort();
   if (sizeof(wfoo.chars)/sizeof(wchar_t) != 2) __builtin_abort();
   if (wfoo.chars[0] != 16909060) __builtin_abort();

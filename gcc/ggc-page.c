@@ -361,7 +361,7 @@ private:
   void (*m_function)(void *);
   size_t m_object_size;
   size_t m_n_objects;
-  };
+};
 
 #ifdef ENABLE_GC_ALWAYS_COLLECT
 /* List of free objects to be verified as actually free on the
@@ -456,11 +456,11 @@ static struct ggc_globals
      better runtime data access pattern.  */
   unsigned long **save_in_use;
 
-  /* Finalizers for single objects.  */
-  vec<finalizer> finalizers;
+  /* Finalizers for single objects.  The first index is collection_depth.  */
+  vec<vec<finalizer> > finalizers;
 
   /* Finalizers for vectors of objects.  */
-  vec<vec_finalizer> vec_finalizers;
+  vec<vec<vec_finalizer> > vec_finalizers;
 
 #ifdef ENABLE_GC_ALWAYS_COLLECT
   /* List of free objects to be verified as actually free on the
@@ -1240,6 +1240,25 @@ ggc_round_alloc_size (size_t requested_size)
   return size;
 }
 
+/* Push a finalizer onto the appropriate vec.  */
+
+static void
+add_finalizer (void *result, void (*f)(void *), size_t s, size_t n)
+{
+  if (f == NULL)
+    /* No finalizer.  */;
+  else if (n == 1)
+    {
+      finalizer fin (result, f);
+      G.finalizers[G.context_depth].safe_push (fin);
+    }
+  else
+    {
+      vec_finalizer fin (reinterpret_cast<uintptr_t> (result), f, s, n);
+      G.vec_finalizers[G.context_depth].safe_push (fin);
+    }
+}
+
 /* Allocate a chunk of memory of SIZE bytes.  Its contents are undefined.  */
 
 void *
@@ -1387,11 +1406,8 @@ ggc_internal_alloc (size_t size, void (*f)(void *), size_t s, size_t n
   /* For timevar statistics.  */
   timevar_ggc_mem_total += object_size;
 
-  if (f && n == 1)
-    G.finalizers.safe_push (finalizer (result, f));
-  else if (f)
-    G.vec_finalizers.safe_push
-      (vec_finalizer (reinterpret_cast<uintptr_t> (result), f, s, n));
+  if (f)
+    add_finalizer (result, f, s, n);
 
   if (GATHER_STATISTICS)
     {
@@ -1788,6 +1804,11 @@ init_ggc (void)
   G.by_depth_max = INITIAL_PTE_COUNT;
   G.by_depth = XNEWVEC (page_entry *, G.by_depth_max);
   G.save_in_use = XNEWVEC (unsigned long *, G.by_depth_max);
+
+  /* Allocate space for the depth 0 finalizers.  */
+  G.finalizers.safe_push (vNULL);
+  G.vec_finalizers.safe_push (vNULL);
+  gcc_assert (G.finalizers.length() == 1);
 }
 
 /* Merge the SAVE_IN_USE_P and IN_USE_P arrays in P so that IN_USE_P
@@ -1875,36 +1896,42 @@ clear_marks (void)
 static void
 ggc_handle_finalizers ()
 {
-  if (G.context_depth != 0)
-    return;
-
-  unsigned length = G.finalizers.length ();
-  for (unsigned int i = 0; i < length;)
+  unsigned dlen = G.finalizers.length();
+  for (unsigned d = G.context_depth; d < dlen; ++d)
     {
-      finalizer &f = G.finalizers[i];
-      if (!ggc_marked_p (f.addr ()))
+      vec<finalizer> &v = G.finalizers[d];
+      unsigned length = v.length ();
+      for (unsigned int i = 0; i < length;)
 	{
-	  f.call ();
-	  G.finalizers.unordered_remove (i);
-	  length--;
+	  finalizer &f = v[i];
+	  if (!ggc_marked_p (f.addr ()))
+	    {
+	      f.call ();
+	      v.unordered_remove (i);
+	      length--;
+	    }
+	  else
+	    i++;
 	}
-      else
-	i++;
     }
 
-
-  length = G.vec_finalizers.length ();
-  for (unsigned int i = 0; i < length;)
+  gcc_assert (dlen == G.vec_finalizers.length());
+  for (unsigned d = G.context_depth; d < dlen; ++d)
     {
-      vec_finalizer &f = G.vec_finalizers[i];
-      if (!ggc_marked_p (f.addr ()))
+      vec<vec_finalizer> &vv = G.vec_finalizers[d];
+      unsigned length = vv.length ();
+      for (unsigned int i = 0; i < length;)
 	{
-	  f.call ();
-	  G.vec_finalizers.unordered_remove (i);
-	  length--;
+	  vec_finalizer &f = vv[i];
+	  if (!ggc_marked_p (f.addr ()))
+	    {
+	      f.call ();
+	      vv.unordered_remove (i);
+	      length--;
+	    }
+	  else
+	    i++;
 	}
-      else
-	i++;
     }
 }
 
@@ -2545,6 +2572,10 @@ ggc_pch_read (FILE *f, void *addr)
      pages to be 1 too.  PCH pages will have depth 0.  */
   gcc_assert (!G.context_depth);
   G.context_depth = 1;
+  /* Allocate space for the depth 1 finalizers.  */
+  G.finalizers.safe_push (vNULL);
+  G.vec_finalizers.safe_push (vNULL);
+  gcc_assert (G.finalizers.length() == 2);
   for (i = 0; i < NUM_ORDERS; i++)
     {
       page_entry *p;

@@ -33,9 +33,20 @@ type amode = IA | IB | DA | DB
 
 type optype = IN | OUT | INOUT
 
-let rec string_of_addrmode addrmode =
+let rec string_of_addrmode addrmode thumb update =
+  if thumb || update
+then
   match addrmode with
-    IA -> "ia" | IB -> "ib" | DA -> "da" | DB -> "db"
+    IA -> "ia"
+  | IB -> "ib"
+  | DA -> "da"
+  | DB -> "db"
+else
+  match addrmode with
+    IA -> ""
+  | IB -> "ib"
+  | DA -> "da"
+  | DB -> "db"
 
 let rec initial_offset addrmode nregs =
   match addrmode with
@@ -160,7 +171,7 @@ let target addrmode thumb =
   | _, _ -> raise (InvalidAddrMode "ERROR: Invalid Addressing mode for Thumb1.")
 
 let write_pattern_1 name ls addrmode nregs write_set_fn update thumb =
-  let astr = string_of_addrmode addrmode in
+  let astr = string_of_addrmode addrmode thumb update in
   Printf.printf "(define_insn \"*%s%s%d_%s%s\"\n"
     (if thumb then "thumb_" else "") name nregs astr
     (if update then "_update" else "");
@@ -180,8 +191,10 @@ let write_pattern_1 name ls addrmode nregs write_set_fn update thumb =
   Printf.printf ")]\n  \"%s && XVECLEN (operands[0], 0) == %d\"\n"
     (target addrmode thumb)
     (if update then nregs + 1 else nregs);
-  Printf.printf "  \"%s%%(%s%%)\\t%%%d%s, {"
-    name astr (nregs + 1) (if update then "!" else "");
+  if thumb then
+      Printf.printf "  \"%s%s\\t%%%d%s, {"   name astr (nregs + 1) (if update then "!" else "")
+   else
+      Printf.printf "  \"%s%s%%?\\t%%%d%s, {"  name astr (nregs + 1) (if update then "!" else "");
   for n = 1 to nregs; do
     Printf.printf "%%%d%s" n (if n < nregs then ", " else "")
   done;

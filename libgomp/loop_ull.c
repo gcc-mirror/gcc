@@ -566,6 +566,10 @@ extern __typeof(gomp_loop_ull_dynamic_start) GOMP_loop_ull_dynamic_start
 	__attribute__((alias ("gomp_loop_ull_dynamic_start")));
 extern __typeof(gomp_loop_ull_guided_start) GOMP_loop_ull_guided_start
 	__attribute__((alias ("gomp_loop_ull_guided_start")));
+extern __typeof(gomp_loop_ull_dynamic_start) GOMP_loop_ull_nonmonotonic_dynamic_start
+	__attribute__((alias ("gomp_loop_ull_dynamic_start")));
+extern __typeof(gomp_loop_ull_guided_start) GOMP_loop_ull_nonmonotonic_guided_start
+	__attribute__((alias ("gomp_loop_ull_guided_start")));
 
 extern __typeof(gomp_loop_ull_ordered_static_start) GOMP_loop_ull_ordered_static_start
 	__attribute__((alias ("gomp_loop_ull_ordered_static_start")));
@@ -586,6 +590,10 @@ extern __typeof(gomp_loop_ull_static_next) GOMP_loop_ull_static_next
 extern __typeof(gomp_loop_ull_dynamic_next) GOMP_loop_ull_dynamic_next
 	__attribute__((alias ("gomp_loop_ull_dynamic_next")));
 extern __typeof(gomp_loop_ull_guided_next) GOMP_loop_ull_guided_next
+	__attribute__((alias ("gomp_loop_ull_guided_next")));
+extern __typeof(gomp_loop_ull_dynamic_next) GOMP_loop_ull_nonmonotonic_dynamic_next
+	__attribute__((alias ("gomp_loop_ull_dynamic_next")));
+extern __typeof(gomp_loop_ull_guided_next) GOMP_loop_ull_nonmonotonic_guided_next
 	__attribute__((alias ("gomp_loop_ull_guided_next")));
 
 extern __typeof(gomp_loop_ull_ordered_static_next) GOMP_loop_ull_ordered_static_next
@@ -617,6 +625,25 @@ bool
 GOMP_loop_ull_guided_start (bool up, gomp_ull start, gomp_ull end,
 			    gomp_ull incr, gomp_ull chunk_size,
 			    gomp_ull *istart, gomp_ull *iend)
+{
+  return gomp_loop_ull_guided_start (up, start, end, incr, chunk_size, istart,
+				     iend);
+}
+
+bool
+GOMP_loop_ull_nonmonotonic_dynamic_start (bool up, gomp_ull start,
+					  gomp_ull end, gomp_ull incr,
+					  gomp_ull chunk_size,
+					  gomp_ull *istart, gomp_ull *iend)
+{
+  return gomp_loop_ull_dynamic_start (up, start, end, incr, chunk_size, istart,
+				      iend);
+}
+
+bool
+GOMP_loop_ull_nonmonotonic_guided_start (bool up, gomp_ull start, gomp_ull end,
+					 gomp_ull incr, gomp_ull chunk_size,
+					 gomp_ull *istart, gomp_ull *iend)
 {
   return gomp_loop_ull_guided_start (up, start, end, incr, chunk_size, istart,
 				     iend);
@@ -690,6 +717,18 @@ GOMP_loop_ull_dynamic_next (gomp_ull *istart, gomp_ull *iend)
 
 bool
 GOMP_loop_ull_guided_next (gomp_ull *istart, gomp_ull *iend)
+{
+  return gomp_loop_ull_guided_next (istart, iend);
+}
+
+bool
+GOMP_loop_ull_nonmonotonic_dynamic_next (gomp_ull *istart, gomp_ull *iend)
+{
+  return gomp_loop_ull_dynamic_next (istart, iend);
+}
+
+bool
+GOMP_loop_ull_nonmonotonic_guided_next (gomp_ull *istart, gomp_ull *iend)
 {
   return gomp_loop_ull_guided_next (istart, iend);
 }

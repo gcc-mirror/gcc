@@ -39,6 +39,7 @@ optab optab_for_tree_code (enum tree_code, const_tree, enum optab_subtype);
 optab scalar_reduc_to_vector (optab, const_tree);
 bool supportable_convert_operation (enum tree_code, tree, tree, tree *,
 				    enum tree_code *);
+bool expand_vec_cmp_expr_p (tree, tree);
 bool expand_vec_cond_expr_p (tree, tree);
 void init_tree_optimization_optabs (tree);
 

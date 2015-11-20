@@ -169,10 +169,11 @@ in the following sections.
 -aux-info @var{filename} -fallow-parameterless-variadic-functions @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function} @gol
 -fhosted  -ffreestanding -fopenacc -fopenmp -fopenmp-simd @gol
--fms-extensions -fplan9-extensions -trigraphs -traditional -traditional-cpp @gol
+-fms-extensions -fplan9-extensions -fsso-struct=@var{endianness}
 -fallow-single-precision  -fcond-mismatch -flax-vector-conversions @gol
 -fsigned-bitfields  -fsigned-char @gol
--funsigned-bitfields  -funsigned-char}
+-funsigned-bitfields  -funsigned-char @gol
+-trigraphs -traditional -traditional-cpp}
 
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
@@ -272,12 +273,13 @@ Objective-C and Objective-C++ Dialects}.
 -Woverride-init-side-effects @gol
 -Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
--Wpointer-arith  -Wno-pointer-to-int-cast @gol
+-Wplacement-new -Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wredundant-decls  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
 -Wshift-overflow -Wshift-overflow=@var{n} @gol
 -Wshift-count-negative -Wshift-count-overflow -Wshift-negative-value @gol
 -Wsign-compare  -Wsign-conversion -Wfloat-conversion @gol
+-Wno-scalar-storage-order @gol
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
 -Wstrict-aliasing=n @gol -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
@@ -352,6 +354,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-fre@r{[}-@var{n}@r{]} @gol
 -fdump-tree-vtable-verify @gol
 -fdump-tree-vrp@r{[}-@var{n}@r{]} @gol
+-fdump-tree-split-paths@r{[}-@var{n}@r{]} @gol
 -fdump-tree-storeccp@r{[}-@var{n}@r{]} @gol
 -fdump-final-insns=@var{file} @gol
 -fcompare-debug@r{[}=@var{opts}@r{]}  -fcompare-debug-second @gol
@@ -446,6 +449,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
 -fsemantic-interposition -fshrink-wrap -fsignaling-nans @gol
 -fsingle-precision-constant -fsplit-ivs-in-unroller @gol
+-fsplit-paths @gol
 -fsplit-wide-types -fssa-backprop -fssa-phiopt @gol
 -fstack-protector -fstack-protector-all -fstack-protector-strong @gol
 -fstack-protector-explicit -fstdarg-opt -fstrict-aliasing @gol
@@ -521,6 +525,7 @@ Objective-C and Objective-C++ Dialects}.
 -mtls-size=@var{size} @gol
 -mfix-cortex-a53-835769  -mno-fix-cortex-a53-835769 @gol
 -mfix-cortex-a53-843419  -mno-fix-cortex-a53-843419 @gol
+-mlow-precision-recip-sqrt -mno-low-precision-recip-sqrt@gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}}
 
 @emph{Adapteva Epiphany Options}
@@ -546,7 +551,9 @@ Objective-C and Objective-C++ Dialects}.
 -mexpand-adddi -mindexed-loads -mlra -mlra-priority-none @gol
 -mlra-priority-compact mlra-priority-noncompact -mno-millicode @gol
 -mmixed-code -mq-class -mRcq -mRcw -msize-level=@var{level} @gol
--mtune=@var{cpu} -mmultcost=@var{num} -munalign-prob-threshold=@var{probability}}
+-mtune=@var{cpu} -mmultcost=@var{num} @gol
+-munalign-prob-threshold=@var{probability} -mmpy-option=@var{multo} @gol
+-mdiv-rem -mcode-density}
 
 @emph{ARM Options}
 @gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
@@ -870,7 +877,7 @@ Objective-C and Objective-C++ Dialects}.
 -march=@var{arch} -mbmx -mno-bmx -mcdx -mno-cdx}
 
 @emph{Nvidia PTX Options}
-@gccoptlist{-m32 -m64 -mmainkernel}
+@gccoptlist{-m32 -m64 -mmainkernel -moptimize}
 
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
@@ -946,8 +953,9 @@ See RS/6000 and PowerPC Options.
 -mquad-memory-atomic -mno-quad-memory-atomic @gol
 -mcompat-align-parm -mno-compat-align-parm @gol
 -mupper-regs-df -mno-upper-regs-df -mupper-regs-sf -mno-upper-regs-sf @gol
--mupper-regs -mno-upper-regs @gol
--mfloat128 -mno-float128}
+-mupper-regs -mno-upper-regs -mmodulo -mno-modulo @gol
+-mfloat128 -mno-float128 -mfloat128-hardware -mno-float128-hardware @gol
+-mpower9-fusion -mno-mpower9-fusion -mpower9-vector -mno-power9-vector}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -1095,7 +1103,7 @@ See RS/6000 and PowerPC Options.
 -mprefetchwt1 -mclflushopt -mxsavec -mxsaves @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
 -mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mmpx -mmwaitx -mthreads @gol
--mno-align-stringops  -minline-all-stringops @gol
+-mms-bitfields -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy} -mmemset-strategy=@var{strategy} @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
@@ -1108,7 +1116,8 @@ See RS/6000 and PowerPC Options.
 -m32 -m64 -mx32 -m16 -miamcu -mlarge-data-threshold=@var{num} @gol
 -msse2avx -mfentry -mrecord-mcount -mnop-mcount -m8bit-idiv @gol
 -mavx256-split-unaligned-load -mavx256-split-unaligned-store @gol
--malign-data=@var{type} -mstack-protector-guard=@var{guard}}
+-malign-data=@var{type} -mstack-protector-guard=@var{guard} @gol
+-mmitigate-rop}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole -mcygwin -mno-cygwin -mdll @gol
@@ -2075,6 +2084,17 @@ These options control whether a bit-field is signed or unsigned, when the
 declaration does not use either @code{signed} or @code{unsigned}.  By
 default, such a bit-field is signed, because this is consistent: the
 basic integer types such as @code{int} are signed types.
+
+@item -fsso-struct=@var{endianness}
+@opindex fsso-struct
+Set the default scalar storage order of structures and unions to the
+specified endianness.  The accepted values are @samp{big-endian} and
+@samp{little-endian}.  If the option is not passed, the compiler uses
+the native endianness of the target.  This option is not supported for C++.
+
+@strong{Warning:} the @option{-fsso-struct} switch causes GCC to generate
+code that is not binary compatible with code generated without it if the
+specified endianness is not the native endianness of the target.
 @end table
 
 @node C++ Dialect Options
@@ -4870,6 +4890,13 @@ disables the warnings about non-ISO @code{printf} / @code{scanf} format
 width specifiers @code{I32}, @code{I64}, and @code{I} used on Windows targets,
 which depend on the MS runtime.
 
+@item -Wplacement-new
+@opindex Wplacement-new
+@opindex Wno-placement-new
+Warn about placement new expressions with undefined behavior, such as
+constructing an object in a buffer that is smaller than the type of
+the object.
+
 @item -Wpointer-arith
 @opindex Wpointer-arith
 @opindex Wno-pointer-arith
@@ -5104,6 +5131,11 @@ Warn for implicit conversions that reduce the precision of a real value.
 This includes conversions from real to integer, and from higher precision
 real to lower precision real values.  This option is also enabled by
 @option{-Wconversion}.
+
+@item -Wno-scalar-storage-order
+@opindex -Wno-scalar-storage-order
+@opindex -Wscalar-storage-order
+Do not warn on suspicious constructs involving reverse scalar storage order.
 
 @item -Wsized-deallocation @r{(C++ and Objective-C++ only)}
 @opindex Wsized-deallocation
@@ -7142,6 +7174,11 @@ output on to @file{stderr}. If two conflicting dump filenames are
 given for the same pass, then the latter option overrides the earlier
 one.
 
+@item split-paths
+@opindex fdump-tree-split-paths
+Dump each function after splitting paths to loop backedges.  The file
+name is made by appending @file{.split-paths} to the source file name.
+
 @item all
 Turn on all options, except @option{raw}, @option{slim}, @option{verbose}
 and @option{lineno}.
@@ -7420,12 +7457,7 @@ The @var{number} should be different for every file you compile.
 @item -fsched-verbose=@var{n}
 @opindex fsched-verbose
 On targets that use instruction scheduling, this option controls the
-amount of debugging output the scheduler prints.  This information is
-written to standard error, unless @option{-fdump-rtl-sched1} or
-@option{-fdump-rtl-sched2} is specified, in which case it is output
-to the usual dump listing file, @file{.sched1} or @file{.sched2}
-respectively.  However for @var{n} greater than nine, the output is
-always printed to standard error.
+amount of debugging output the scheduler prints to the dump files.
 
 For @var{n} greater than zero, @option{-fsched-verbose} outputs the
 same information as @option{-fdump-rtl-sched1} and @option{-fdump-rtl-sched2}.
@@ -7784,6 +7816,7 @@ also turns on the following optimization flags:
 -frerun-cse-after-loop  @gol
 -fsched-interblock  -fsched-spec @gol
 -fschedule-insns  -fschedule-insns2 @gol
+-fsplit-paths @gol
 -fstrict-aliasing -fstrict-overflow @gol
 -ftree-builtin-call-dce @gol
 -ftree-switch-conversion -ftree-tail-merge @gol
@@ -7835,10 +7868,10 @@ that do not interfere with debugging. It should be the optimization
 level of choice for the standard edit-compile-debug cycle, offering
 a reasonable level of optimization while maintaining fast compilation
 and a good debugging experience.
+@end table
 
 If you use multiple @option{-O} options, with or without level numbers,
 the last such option is the one that is effective.
-@end table
 
 Options of the form @option{-f@var{flag}} specify machine-independent
 flags.  Most flags have both positive and negative forms; the negative
@@ -8797,7 +8830,7 @@ currently enabled, but may be enabled by @option{-O2} in the future.
 
 @item -ftree-sink
 @opindex ftree-sink
-Perform forward store motion  on trees.  This flag is
+Perform forward store motion on trees.  This flag is
 enabled by default at @option{-O} and higher.
 
 @item -ftree-bit-ccp
@@ -9102,6 +9135,12 @@ checks like array bound checks and null pointer checks.  This is
 enabled by default at @option{-O2} and higher.  Null pointer check
 elimination is only done if @option{-fdelete-null-pointer-checks} is
 enabled.
+
+@item -fsplit-paths
+@opindex fsplit-paths
+Split paths leading to loop backedges.  This can improve dead code
+elimination and common subexpression elimination.  This is enabled by
+default at @option{-O2} and above.
 
 @item -fsplit-ivs-in-unroller
 @opindex fsplit-ivs-in-unroller
@@ -12512,6 +12551,17 @@ Enable or disable the workaround for the ARM Cortex-A53 erratum number 843419.
 This erratum workaround is made at link time and this will only pass the
 corresponding flag to the linker.
 
+@item -mlow-precision-recip-sqrt
+@item -mno-low-precision-recip-sqrt
+@opindex -mlow-precision-recip-sqrt
+@opindex -mno-low-precision-recip-sqrt
+The square root estimate uses two steps instead of three for double-precision,
+and one step instead of two for single-precision.
+Thus reducing latency and precision.
+This is only relevant if @option{-ffast-math} activates
+reciprocal square root estimate instructions.
+Which in turn depends on the target processor.
+
 @item -march=@var{name}
 @opindex march
 Specify the name of the target architecture, optionally suffixed by one or
@@ -12541,8 +12591,9 @@ processors implementing the target architecture.
 @opindex mtune
 Specify the name of the target processor for which GCC should tune the
 performance of the code.  Permissible values for this option are:
-@samp{generic}, @samp{cortex-a53}, @samp{cortex-a57}, @samp{cortex-a72},
-@samp{exynos-m1}, @samp{thunderx}, @samp{xgene1}.
+@samp{generic}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a57},
+@samp{cortex-a72}, @samp{exynos-m1}, @samp{qdf24xx}, @samp{thunderx},
+@samp{xgene1}.
 
 Additionally, this option can specify that GCC should tune the performance
 of the code for a big.LITTLE system.  Permissible values for this
@@ -12808,7 +12859,7 @@ is being compiled:
 @item -mbarrel-shifter
 @opindex mbarrel-shifter
 Generate instructions supported by barrel shifter.  This is the default
-unless @option{-mcpu=ARC601} is in effect.
+unless @option{-mcpu=ARC601} or @samp{-mcpu=ARCEM} is in effect.
 
 @item -mcpu=@var{cpu}
 @opindex mcpu
@@ -12821,17 +12872,28 @@ values for @var{cpu} are
 @opindex mA6
 @opindex mARC600
 @item ARC600
+@item arc600
 Compile for ARC600.  Aliases: @option{-mA6}, @option{-mARC600}.
 
 @item ARC601
+@item arc601
 @opindex mARC601
 Compile for ARC601.  Alias: @option{-mARC601}.
 
 @item ARC700
+@item arc700
 @opindex mA7
 @opindex mARC700
 Compile for ARC700.  Aliases: @option{-mA7}, @option{-mARC700}.
 This is the default when configured with @option{--with-cpu=arc700}@.
+
+@item ARCEM
+@item arcem
+Compile for ARC EM.
+
+@item ARCHS
+@item archs
+Compile for ARC HS.
 @end table
 
 @item -mdpfp
@@ -12901,6 +12963,62 @@ can overridden by FPX options; @samp{mspfp}, @samp{mspfp-compact}, or
 @item -mswap
 @opindex mswap
 Generate swap instructions.
+
+@item -mdiv-rem
+@opindex mdiv-rem
+Enable DIV/REM instructions for ARCv2 cores.
+
+@item -mcode-density
+@opindex mcode-density
+Enable code density instructions for ARC EM, default on for ARC HS.
+
+@item -mmpy-option=@var{multo}
+@opindex mmpy-option
+Compile ARCv2 code with a multiplier design option.  @samp{wlh1} is
+the default value.  The recognized values for @var{multo} are:
+
+@table @samp
+@item 0
+No multiplier available.
+
+@item 1
+@opindex w
+The multiply option is set to w: 16x16 multiplier, fully pipelined.
+The following instructions are enabled: MPYW, and MPYUW.
+
+@item 2
+@opindex wlh1
+The multiply option is set to wlh1: 32x32 multiplier, fully
+pipelined (1 stage).  The following instructions are additionaly
+enabled: MPY, MPYU, MPYM, MPYMU, and MPY_S.
+
+@item 3
+@opindex wlh2
+The multiply option is set to wlh2: 32x32 multiplier, fully pipelined
+(2 stages).  The following instructions are additionaly enabled: MPY,
+MPYU, MPYM, MPYMU, and MPY_S.
+
+@item 4
+@opindex wlh3
+The multiply option is set to wlh3: Two 16x16 multiplier, blocking,
+sequential.  The following instructions are additionaly enabled: MPY,
+MPYU, MPYM, MPYMU, and MPY_S.
+
+@item 5
+@opindex wlh4
+The multiply option is set to wlh4: One 16x16 multiplier, blocking,
+sequential.  The following instructions are additionaly enabled: MPY,
+MPYU, MPYM, MPYMU, and MPY_S.
+
+@item 6
+@opindex wlh5
+The multiply option is set to wlh5: One 32x4 multiplier, blocking,
+sequential.  The following instructions are additionaly enabled: MPY,
+MPYU, MPYM, MPYMU, and MPY_S.
+
+@end table
+
+This option is only available for ARCv2 cores@.
 
 @end table
 
@@ -13450,7 +13568,7 @@ Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{arm1156t2-s}, @samp{arm1156t2f-s}, @samp{arm1176jz-s}, @samp{arm1176jzf-s},
 @samp{generic-armv7-a}, @samp{cortex-a5}, @samp{cortex-a7}, @samp{cortex-a8},
 @samp{cortex-a9}, @samp{cortex-a12}, @samp{cortex-a15}, @samp{cortex-a17},
-@samp{cortex-a53}, @samp{cortex-a57}, @samp{cortex-a72},
+@samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a57}, @samp{cortex-a72},
 @samp{cortex-r4},
 @samp{cortex-r4f}, @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-m7},
 @samp{cortex-m4},
@@ -13462,6 +13580,7 @@ Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{cortex-m0.small-multiply},
 @samp{cortex-m0plus.small-multiply},
 @samp{exynos-m1},
+@samp{qdf24xx},
 @samp{marvell-pj4},
 @samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312},
 @samp{fa526}, @samp{fa626},
@@ -13526,6 +13645,8 @@ operations are not generated by GCC's auto-vectorization pass unless
 because NEON hardware does not fully implement the IEEE 754 standard for
 floating-point arithmetic (in particular denormal values are treated as
 zero), so the use of NEON instructions may lead to a loss of precision.
+
+You can also set the fpu name at function level by using the @code{target("fpu=")} function attributes (@pxref{ARM Function Attributes}) or pragmas (@pxref{Function Specific Option Pragmas}).
 
 @item -mfp16-format=@var{name}
 @opindex mfp16-format
@@ -13738,10 +13859,9 @@ off by default.
 @item -masm-syntax-unified
 @opindex masm-syntax-unified
 Assume inline assembler is using unified asm syntax.  The default is
-currently off which implies divided syntax.  Currently this option is
-available only for Thumb1 and has no effect on ARM state and Thumb2.
-However, this may change in future releases of GCC.  Divided syntax
-should be considered deprecated.
+currently off which implies divided syntax.  This option has no impact
+on Thumb2. However, this may change in future releases of GCC.
+Divided syntax should be considered deprecated.
 
 @item -mrestrict-it
 @opindex mrestrict-it
@@ -18928,6 +19048,11 @@ Generate code for 32-bit or 64-bit ABI.
 Link in code for a __main kernel.  This is for stand-alone instead of
 offloading execution.
 
+@item -moptimize
+@opindex moptimize
+Apply partitioned execution optimizations.  This is the default when any
+level of optimization is selected.
+
 @end table
 
 @node PDP-11 Options
@@ -19275,8 +19400,9 @@ Supported values for @var{cpu_type} are @samp{401}, @samp{403},
 @samp{e300c3}, @samp{e500mc}, @samp{e500mc64}, @samp{e5500},
 @samp{e6500}, @samp{ec603e}, @samp{G3}, @samp{G4}, @samp{G5},
 @samp{titan}, @samp{power3}, @samp{power4}, @samp{power5}, @samp{power5+},
-@samp{power6}, @samp{power6x}, @samp{power7}, @samp{power8}, @samp{powerpc},
-@samp{powerpc64}, @samp{powerpc64le}, and @samp{rs64}.
+@samp{power6}, @samp{power6x}, @samp{power7}, @samp{power8},
+@samp{power9}, @samp{powerpc}, @samp{powerpc64}, @samp{powerpc64le},
+and @samp{rs64}.
 
 @option{-mcpu=powerpc}, @option{-mcpu=powerpc64}, and
 @option{-mcpu=powerpc64le} specify pure 32-bit PowerPC (either
@@ -19296,7 +19422,8 @@ following options:
 -mpowerpc-gpopt  -mpowerpc-gfxopt  -msingle-float -mdouble-float @gol
 -msimple-fpu -mstring  -mmulhw  -mdlmzb  -mmfpgpr -mvsx @gol
 -mcrypto -mdirect-move -mpower8-fusion -mpower8-vector @gol
--mquad-memory -mquad-memory-atomic}
+-mquad-memory -mquad-memory-atomic -mmodulo -mfloat128 -mfloat128-hardware @gol
+-mpower9-fusion -mpower9-vector}
 
 The particular options set for any particular CPU varies between
 compiler versions, depending on what setting seems to produce optimal
@@ -19533,11 +19660,44 @@ If the @option{-mno-upper-regs} option is used, it turns off both
 @opindex mfloat128
 @opindex mno-float128
 Enable/disable the @var{__float128} keyword for IEEE 128-bit floating point
-and use software emulation for IEEE 128-bit floating point.
+and use either software emulation for IEEE 128-bit floating point or
+hardware instructions.
 
 The VSX instruction set (@option{-mvsx}, @option{-mcpu=power7}, or
 @option{-mcpu=power8}) must be enabled to use the @option{-mfloat128}
 option.
+
+@item -mfloat128-hardware
+@itemx -mno-float128-hardware
+@opindex mfloat128-hardware
+@opindex mno-float128-hardware
+Enable/disable using ISA 3.0 hardware instructions to support the
+@var{__float128} data type.
+
+@item -mmodulo
+@itemx -mno-modulo
+@opindex mmodulo
+@opindex mno-module
+Generate code that uses (does not use) the ISA 3.0 integer modulo
+instructions.  The @option{-mmodulo} option is enabled by default
+with the @option{-mcpu=power9} option.
+
+@item -mpower9-fusion
+@itemx -mno-power9-fusion
+@opindex mpower9-fusion
+@opindex mno-power9-fusion
+Generate code that keeps (does not keeps) some operations adjacent so
+that the instructions can be fused together on power9 and later
+processors.
+
+@item -mpower9-vector
+@itemx -mno-power9-vector
+@opindex mpower9-vector
+@opindex mno-power9-vector
+Generate code that uses (does not use) the vector and scalar
+instructions that were added in version 2.07 of the PowerPC ISA.  Also
+enable the use of built-in functions that allow more direct access to
+the vector instructions.
 
 @item -mfloat-gprs=@var{yes/single/double/no}
 @itemx -mfloat-gprs
@@ -23272,6 +23432,142 @@ on thread-safe exception handling must compile and link all code with the
 @option{-D_MT}; when linking, it links in a special thread helper library
 @option{-lmingwthrd} which cleans up per-thread exception-handling data.
 
+@item -mms-bitfields
+@itemx -mno-ms-bitfields
+@opindex mms-bitfields
+@opindex mno-ms-bitfields
+
+Enable/disable bit-field layout compatible with the native Microsoft
+Windows compiler.  
+
+If @code{packed} is used on a structure, or if bit-fields are used,
+it may be that the Microsoft ABI lays out the structure differently
+than the way GCC normally does.  Particularly when moving packed
+data between functions compiled with GCC and the native Microsoft compiler
+(either via function call or as data in a file), it may be necessary to access
+either format.
+
+This option is enabled by default for Microsoft Windows
+targets.  This behavior can also be controlled locally by use of variable
+or type attributes.  For more information, see @ref{x86 Variable Attributes}
+and @ref{x86 Type Attributes}.
+
+The Microsoft structure layout algorithm is fairly simple with the exception
+of the bit-field packing.  
+The padding and alignment of members of structures and whether a bit-field 
+can straddle a storage-unit boundary are determine by these rules:
+
+@enumerate
+@item Structure members are stored sequentially in the order in which they are
+declared: the first member has the lowest memory address and the last member
+the highest.
+
+@item Every data object has an alignment requirement.  The alignment requirement
+for all data except structures, unions, and arrays is either the size of the
+object or the current packing size (specified with either the
+@code{aligned} attribute or the @code{pack} pragma),
+whichever is less.  For structures, unions, and arrays,
+the alignment requirement is the largest alignment requirement of its members.
+Every object is allocated an offset so that:
+
+@smallexample
+offset % alignment_requirement == 0
+@end smallexample
+
+@item Adjacent bit-fields are packed into the same 1-, 2-, or 4-byte allocation
+unit if the integral types are the same size and if the next bit-field fits
+into the current allocation unit without crossing the boundary imposed by the
+common alignment requirements of the bit-fields.
+@end enumerate
+
+MSVC interprets zero-length bit-fields in the following ways:
+
+@enumerate
+@item If a zero-length bit-field is inserted between two bit-fields that
+are normally coalesced, the bit-fields are not coalesced.
+
+For example:
+
+@smallexample
+struct
+ @{
+   unsigned long bf_1 : 12;
+   unsigned long : 0;
+   unsigned long bf_2 : 12;
+ @} t1;
+@end smallexample
+
+@noindent
+The size of @code{t1} is 8 bytes with the zero-length bit-field.  If the
+zero-length bit-field were removed, @code{t1}'s size would be 4 bytes.
+
+@item If a zero-length bit-field is inserted after a bit-field, @code{foo}, and the
+alignment of the zero-length bit-field is greater than the member that follows it,
+@code{bar}, @code{bar} is aligned as the type of the zero-length bit-field.
+
+For example:
+
+@smallexample
+struct
+ @{
+   char foo : 4;
+   short : 0;
+   char bar;
+ @} t2;
+
+struct
+ @{
+   char foo : 4;
+   short : 0;
+   double bar;
+ @} t3;
+@end smallexample
+
+@noindent
+For @code{t2}, @code{bar} is placed at offset 2, rather than offset 1.
+Accordingly, the size of @code{t2} is 4.  For @code{t3}, the zero-length
+bit-field does not affect the alignment of @code{bar} or, as a result, the size
+of the structure.
+
+Taking this into account, it is important to note the following:
+
+@enumerate
+@item If a zero-length bit-field follows a normal bit-field, the type of the
+zero-length bit-field may affect the alignment of the structure as whole. For
+example, @code{t2} has a size of 4 bytes, since the zero-length bit-field follows a
+normal bit-field, and is of type short.
+
+@item Even if a zero-length bit-field is not followed by a normal bit-field, it may
+still affect the alignment of the structure:
+
+@smallexample
+struct
+ @{
+   char foo : 6;
+   long : 0;
+ @} t4;
+@end smallexample
+
+@noindent
+Here, @code{t4} takes up 4 bytes.
+@end enumerate
+
+@item Zero-length bit-fields following non-bit-field members are ignored:
+
+@smallexample
+struct
+ @{
+   char foo;
+   long : 0;
+   char bar;
+ @} t5;
+@end smallexample
+
+@noindent
+Here, @code{t5} takes up 2 bytes.
+@end enumerate
+
+
 @item -mno-align-stringops
 @opindex mno-align-stringops
 Do not align the destination of inlined string operations.  This switch reduces
@@ -23412,6 +23708,13 @@ Generate stack protection code using canary at @var{guard}.  Supported
 locations are @samp{global} for global canary or @samp{tls} for per-thread
 canary in the TLS block (the default).  This option has effect only when
 @option{-fstack-protector} or @option{-fstack-protector-all} is specified.
+
+@item -mmitigate-rop
+@opindex mmitigate-rop
+Try to avoid generating code sequences that contain unintended return
+opcodes, to mitigate against certain forms of attack. At the moment,
+this option is limited in what it can do and should not be relied
+on to provide serious protection.
 
 @end table
 

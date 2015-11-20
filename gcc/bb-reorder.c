@@ -2304,7 +2304,9 @@ reorder_basic_blocks_simple (void)
       if (JUMP_P (end) && extract_asm_operands (end))
 	continue;
 
-      if (any_condjump_p (end))
+      if (single_succ_p (bb))
+	edges[n++] = EDGE_SUCC (bb, 0);
+      else if (any_condjump_p (end))
 	{
 	  edge e0 = EDGE_SUCC (bb, 0);
 	  edge e1 = EDGE_SUCC (bb, 1);
@@ -2315,8 +2317,6 @@ reorder_basic_blocks_simple (void)
 	  edges[n++] = e0;
 	  edges[n++] = e1;
 	}
-      else if (single_succ_p (bb))
-	edges[n++] = EDGE_SUCC (bb, 0);
     }
 
   /* Sort the edges, the most desirable first.  When optimizing for size

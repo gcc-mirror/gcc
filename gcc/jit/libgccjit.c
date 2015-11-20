@@ -21,13 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "jit-common.h"
 #include "timevar.h"
-#include "opts.h"
 #include "typed-splay-tree.h"
 
 #include "libgccjit.h"
-#include "jit-logging.h"
 #include "jit-recording.h"
 #include "jit-result.h"
 

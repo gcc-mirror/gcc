@@ -132,19 +132,19 @@ __muldf3_support: /* This label makes debugger output saner.  */
 	.balign 4
 __muldf3:
 	ld.as r9,[pcl,0x4b] ; ((.L7ff00000-.+2)/4)]
-	mpyhu r4,DBL0L,DBL1L
+	MPYHU r4,DBL0L,DBL1L
 	bmsk r6,DBL0H,19
 	bset r6,r6,20
 	mpyu r7,r6,DBL1L
 	and r11,DBL0H,r9
 	breq r11,0,.Ldenorm_dbl0
-	mpyhu r8,r6,DBL1L
+	MPYHU r8,r6,DBL1L
 	bmsk r10,DBL1H,19
 	bset r10,r10,20
-	mpyhu r5,r10,DBL0L
+	MPYHU r5,r10,DBL0L
 	add.f r4,r4,r7
 	and r12,DBL1H,r9
-	mpyhu r7,r6,r10
+	MPYHU r7,r6,r10
 	breq r12,0,.Ldenorm_dbl1
 	adc.f r5,r5,r8
 	mpyu r8,r10,DBL0L

@@ -286,7 +286,7 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
     }
 
   if (set_locus)
-    text->set_location (0, DECL_SOURCE_LOCATION (t));
+    text->set_location (0, DECL_SOURCE_LOCATION (t), true);
 
   if (DECL_P (t))
     {

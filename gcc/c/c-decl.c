@@ -29,11 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "target.h"
 #include "function.h"
-#include "tree.h"
-#include "c-family/c-common.h"
 #include "c-tree.h"
 #include "timevar.h"
-#include "tm_p.h"
 #include "stringpool.h"
 #include "cgraph.h"
 #include "intl.h"
@@ -41,11 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "varasm.h"
 #include "attribs.h"
-#include "tree-inline.h"
-#include "flags.h"
 #include "toplev.h"
 #include "debug.h"
-#include "opts.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-ubsan.h"
@@ -53,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-iterator.h"
 #include "dumpfile.h"
-#include "langhooks-def.h"
 #include "plugin.h"
 #include "c-family/c-ada-spec.h"
 #include "cilk.h"
@@ -3055,8 +3048,7 @@ pushdecl (tree x)
 	element = TREE_TYPE (element);
       element = TYPE_MAIN_VARIANT (element);
 
-      if ((TREE_CODE (element) == RECORD_TYPE
-	   || TREE_CODE (element) == UNION_TYPE)
+      if (RECORD_OR_UNION_TYPE_P (element)
 	  && (TREE_CODE (x) != TYPE_DECL
 	      || TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE)
 	  && !COMPLETE_TYPE_P (element))
@@ -4411,13 +4403,7 @@ c_decl_attributes (tree *node, tree attributes, int flags)
 	  || TREE_CODE (*node) == FUNCTION_DECL))
     {
       if (VAR_P (*node)
-	  && ((DECL_CONTEXT (*node)
-	       && TREE_CODE (DECL_CONTEXT (*node)) == FUNCTION_DECL)
-	      || (current_function_decl && !DECL_EXTERNAL (*node))))
-	error ("%q+D in block scope inside of declare target directive",
-	       *node);
-      else if (VAR_P (*node)
-	       && !lang_hooks.types.omp_mappable_type (TREE_TYPE (*node)))
+	  && !lang_hooks.types.omp_mappable_type (TREE_TYPE (*node)))
 	error ("%q+D in declare target directive does not have mappable type",
 	       *node);
       else
@@ -4656,8 +4642,7 @@ diagnose_uninitialized_cst_member (tree decl, tree type)
 	  inform (DECL_SOURCE_LOCATION (field), "%qD should be initialized", field);
 	}
 
-      if (TREE_CODE (field_type) == RECORD_TYPE
-	  || TREE_CODE (field_type) == UNION_TYPE)
+      if (RECORD_OR_UNION_TYPE_P (field_type))
 	diagnose_uninitialized_cst_member (decl, field_type);
     }
 }
@@ -4979,8 +4964,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
       if (TREE_READONLY (decl))
 	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc___compat,
 		    "uninitialized const %qD is invalid in C++", decl);
-      else if ((TREE_CODE (type) == RECORD_TYPE
-	      	|| TREE_CODE (type) == UNION_TYPE)
+      else if (RECORD_OR_UNION_TYPE_P (type)
 	       && C_TYPE_FIELDS_READONLY (type))
 	diagnose_uninitialized_cst_member (decl, type);
     }
@@ -5291,9 +5275,10 @@ warn_defaults_to (location_t location, int opt, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
   va_list ap;
+  rich_location richloc (line_table, location);
 
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
                        flag_isoc99 ? DK_PEDWARN : DK_WARNING);
   diagnostic.option_index = opt;
   report_diagnostic (&diagnostic);
@@ -6012,6 +5997,9 @@ grokdeclarator (const struct c_declarator *declarator,
 		    TYPE_SIZE_UNIT (type) = size_zero_node;
 		    SET_TYPE_STRUCTURAL_EQUALITY (type);
 		  }
+
+		if (!valid_array_size_p (loc, type, name))
+		  type = error_mark_node;
 	      }
 
 	    if (decl_context != PARM
@@ -6019,7 +6007,8 @@ grokdeclarator (const struct c_declarator *declarator,
 		    || array_ptr_attrs != NULL_TREE
 		    || array_parm_static))
 	      {
-		error_at (loc, "static or type qualifiers in non-parameter array declarator");
+		error_at (loc, "static or type qualifiers in non-parameter "
+			  "array declarator");
 		array_ptr_quals = TYPE_UNQUALIFIED;
 		array_ptr_attrs = NULL_TREE;
 		array_parm_static = 0;
@@ -6296,22 +6285,6 @@ grokdeclarator (const struct c_declarator *declarator,
 	      alignas_align = 0;
 	    }
 	}
-    }
-
-  /* Did array size calculations overflow or does the array cover more
-     than half of the address-space?  */
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && COMPLETE_TYPE_P (type)
-      && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST
-      && ! valid_constant_size_p (TYPE_SIZE_UNIT (type)))
-    {
-      if (name)
-	error_at (loc, "size of array %qE is too large", name);
-      else
-	error_at (loc, "size of unnamed array is too large");
-      /* If we proceed with the array type as it is, we'll eventually
-	 crash in tree_to_[su]hwi().  */
-      type = error_mark_node;
     }
 
   /* If this is declaring a typedef name, return a TYPE_DECL.  */
@@ -6750,8 +6723,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	&& VAR_P (decl)
 	&& TREE_PUBLIC (decl)
 	&& TREE_STATIC (decl)
-	&& (TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
-	    || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
+	&& (RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))
 	    || TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
 	&& TYPE_NAME (TREE_TYPE (decl)) == NULL_TREE)
       warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc___compat,
@@ -7306,8 +7278,7 @@ grokfield (location_t loc,
 	 that took root before someone noticed the bug...  */
 
       tree type = declspecs->type;
-      bool type_ok = (TREE_CODE (type) == RECORD_TYPE
-		      || TREE_CODE (type) == UNION_TYPE);
+      bool type_ok = RECORD_OR_UNION_TYPE_P (type);
       bool ok = false;
 
       if (type_ok
@@ -7383,7 +7354,7 @@ is_duplicate_field (tree x, tree y)
       xt = TREE_TYPE (x);
       if (DECL_NAME (x) != NULL_TREE)
 	xn = DECL_NAME (x);
-      else if ((TREE_CODE (xt) == RECORD_TYPE || TREE_CODE (xt) == UNION_TYPE)
+      else if (RECORD_OR_UNION_TYPE_P (xt)
 	       && TYPE_NAME (xt) != NULL_TREE
 	       && TREE_CODE (TYPE_NAME (xt)) == TYPE_DECL)
 	xn = DECL_NAME (TYPE_NAME (xt));
@@ -7393,7 +7364,7 @@ is_duplicate_field (tree x, tree y)
       yt = TREE_TYPE (y);
       if (DECL_NAME (y) != NULL_TREE)
 	yn = DECL_NAME (y);
-      else if ((TREE_CODE (yt) == RECORD_TYPE || TREE_CODE (yt) == UNION_TYPE)
+      else if (RECORD_OR_UNION_TYPE_P (yt)
 	       && TYPE_NAME (yt) != NULL_TREE
 	       && TREE_CODE (TYPE_NAME (yt)) == TYPE_DECL)
 	yn = DECL_NAME (TYPE_NAME (yt));
@@ -7428,8 +7399,7 @@ detect_field_duplicates_hash (tree fieldlist,
 	  }
 	*slot = y;
       }
-    else if (TREE_CODE (TREE_TYPE (x)) == RECORD_TYPE
-	     || TREE_CODE (TREE_TYPE (x)) == UNION_TYPE)
+    else if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (x)))
       {
 	detect_field_duplicates_hash (TYPE_FIELDS (TREE_TYPE (x)), htab);
 
@@ -7480,8 +7450,7 @@ detect_field_duplicates (tree fieldlist)
   do {
     timeout--;
     if (DECL_NAME (x) == NULL_TREE
-	&& (TREE_CODE (TREE_TYPE (x)) == RECORD_TYPE
-	    || TREE_CODE (TREE_TYPE (x)) == UNION_TYPE))
+	&& RECORD_OR_UNION_TYPE_P (TREE_TYPE (x)))
       timeout = 0;
     x = DECL_CHAIN (x);
   } while (timeout > 0 && x);
@@ -7497,8 +7466,7 @@ detect_field_duplicates (tree fieldlist)
 	if (DECL_NAME (x)
 	    || (flag_plan9_extensions
 		&& DECL_NAME (x) == NULL_TREE
-		&& (TREE_CODE (TREE_TYPE (x)) == RECORD_TYPE
-		    || TREE_CODE (TREE_TYPE (x)) == UNION_TYPE)
+		&& RECORD_OR_UNION_TYPE_P (TREE_TYPE (x))
 		&& TYPE_NAME (TREE_TYPE (x)) != NULL_TREE
 		&& TREE_CODE (TYPE_NAME (TREE_TYPE (x))) == TYPE_DECL))
 	  {
@@ -7611,9 +7579,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	{
 	  if (DECL_NAME (x) != 0)
 	    break;
-	  if (flag_isoc11
-	      && (TREE_CODE (TREE_TYPE (x)) == RECORD_TYPE
-		  || TREE_CODE (TREE_TYPE (x)) == UNION_TYPE))
+	  if (flag_isoc11 && RECORD_OR_UNION_TYPE_P (TREE_TYPE (x)))
 	    break;
 	}
 
@@ -7658,8 +7624,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	{
 	  /* A field that is pseudo-const makes the structure likewise.  */
 	  tree t1 = strip_array_types (TREE_TYPE (x));
-	  if ((TREE_CODE (t1) == RECORD_TYPE || TREE_CODE (t1) == UNION_TYPE)
-	      && C_TYPE_FIELDS_READONLY (t1))
+	  if (RECORD_OR_UNION_TYPE_P (t1) && C_TYPE_FIELDS_READONLY (t1))
 	    C_TYPE_FIELDS_READONLY (t) = 1;
 	}
 
@@ -7717,8 +7682,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 		 "invalid use of structure with flexible array member");
 
       if (DECL_NAME (x)
-	  || TREE_CODE (TREE_TYPE (x)) == RECORD_TYPE
-	  || TREE_CODE (TREE_TYPE (x)) == UNION_TYPE)
+	  || RECORD_OR_UNION_TYPE_P (TREE_TYPE (x)))
 	saw_named_field = 1;
     }
 
@@ -7729,6 +7693,8 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 
   TYPE_FIELDS (t) = fieldlist;
 
+  maybe_apply_pragma_scalar_storage_order (t);
+
   layout_type (t);
 
   if (TYPE_SIZE_UNIT (t)
@@ -7737,27 +7703,45 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       && !valid_constant_size_p (TYPE_SIZE_UNIT (t)))
     error ("type %qT is too large", t);
 
-  /* Give bit-fields their proper types.  */
-  {
-    tree *fieldlistp = &fieldlist;
-    while (*fieldlistp)
-      if (TREE_CODE (*fieldlistp) == FIELD_DECL && DECL_INITIAL (*fieldlistp)
-	  && TREE_TYPE (*fieldlistp) != error_mark_node)
+  /* Give bit-fields their proper types and rewrite the type of array fields
+     with scalar component if the enclosing type has reverse storage order.  */
+  for (tree field = fieldlist; field; field = DECL_CHAIN (field))
+    {
+      if (TREE_CODE (field) == FIELD_DECL
+	  && DECL_INITIAL (field)
+	  && TREE_TYPE (field) != error_mark_node)
 	{
 	  unsigned HOST_WIDE_INT width
-	    = tree_to_uhwi (DECL_INITIAL (*fieldlistp));
-	  tree type = TREE_TYPE (*fieldlistp);
+	    = tree_to_uhwi (DECL_INITIAL (field));
+	  tree type = TREE_TYPE (field);
 	  if (width != TYPE_PRECISION (type))
 	    {
-	      TREE_TYPE (*fieldlistp)
+	      TREE_TYPE (field)
 		= c_build_bitfield_integer_type (width, TYPE_UNSIGNED (type));
-	      DECL_MODE (*fieldlistp) = TYPE_MODE (TREE_TYPE (*fieldlistp));
+	      DECL_MODE (field) = TYPE_MODE (TREE_TYPE (field));
 	    }
-	  DECL_INITIAL (*fieldlistp) = 0;
+	  DECL_INITIAL (field) = 0;
 	}
-      else
-	fieldlistp = &DECL_CHAIN (*fieldlistp);
-  }
+      else if (TYPE_REVERSE_STORAGE_ORDER (t)
+	       && TREE_CODE (field) == FIELD_DECL
+	       && TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE)
+	{
+	  tree ftype = TREE_TYPE (field);
+	  tree ctype = strip_array_types (ftype);
+	  if (!RECORD_OR_UNION_TYPE_P (ctype) && TYPE_MODE (ctype) != QImode)
+	    {
+	      tree fmain_type = TYPE_MAIN_VARIANT (ftype);
+	      tree *typep = &fmain_type;
+	      do {
+		*typep = build_distinct_type_copy (*typep);
+		TYPE_REVERSE_STORAGE_ORDER (*typep) = 1;
+		typep = &TREE_TYPE (*typep);
+	      } while (TREE_CODE (*typep) == ARRAY_TYPE);
+	      TREE_TYPE (field)
+		= c_build_qualified_type (fmain_type, TYPE_QUALS (ftype));
+	    }
+	}
+    }
 
   /* Now we have the truly final field list.
      Store it in this type and in the variants.  */

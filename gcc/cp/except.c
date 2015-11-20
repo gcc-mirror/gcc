@@ -24,15 +24,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "target.h"
-#include "tree.h"
 #include "cp-tree.h"
 #include "stringpool.h"
-#include "alias.h"
 #include "trans-mem.h"
 #include "attribs.h"
-#include "flags.h"
-#include "tree-inline.h"
 #include "tree-iterator.h"
 
 static void push_eh_cleanup (tree);
@@ -667,6 +662,16 @@ do_free_exception (tree ptr)
       /* Declare void __cxa_free_exception (void *) throw().  */
       fn = declare_library_fn (fn, void_type_node, ptr_type_node,
 			       ECF_NOTHROW | ECF_LEAF);
+
+      if (flag_tm)
+	{
+	  tree fn2 = get_identifier ("_ITM_cxa_free_exception");
+	  if (!get_global_value_if_present (fn2, &fn2))
+	    fn2 = declare_library_fn (fn2, void_type_node,
+				      ptr_type_node,
+				      ECF_NOTHROW | ECF_LEAF | ECF_TM_PURE);
+	  record_tm_replacement (fn, fn2);
+	}
     }
 
   return cp_build_function_call_nary (fn, tf_warning_or_error, ptr, NULL_TREE);

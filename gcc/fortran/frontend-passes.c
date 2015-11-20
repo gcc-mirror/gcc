@@ -23,10 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "options.h"
 #include "gfortran.h"
-#include "arith.h"
 #include "dependency.h"
 #include "constructor.h"
-#include "opts.h"
 #include "intrinsic.h"
 
 /* Forward declarations.  */

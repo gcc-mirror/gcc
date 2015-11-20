@@ -7098,9 +7098,6 @@ IFS="$ac_save_IFS"
 nocommon_flag=""
 if test x$ac_checking != x ; then
 
-$as_echo "#define ENABLE_CHECKING 1" >>confdefs.h
-
-
 $as_echo "#define CHECKING_P 1" >>confdefs.h
 
   nocommon_flag=-fno-common
@@ -7717,6 +7714,10 @@ _ACEOF
 if test x"$offload_targets" != x; then
 
 $as_echo "#define ENABLE_OFFLOADING 1" >>confdefs.h
+
+else
+
+$as_echo "#define ENABLE_OFFLOADING 0" >>confdefs.h
 
 fi
 
@@ -18405,7 +18406,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18408 "configure"
+#line 18409 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18511,7 +18512,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18514 "configure"
+#line 18515 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -22011,7 +22012,7 @@ fi
 if test "${with_plugin_ld+set}" = set; then :
   withval=$with_plugin_ld; if test x"$withval" != x; then
    ORIGINAL_PLUGIN_LD_FOR_TARGET="$withval"
-   PLUGIN_LD_SUFFIX=`echo $withval | sed -e "s,$target_alias-,,"`
+   PLUGIN_LD_SUFFIX="$withval"
  fi
 fi
 
@@ -22933,43 +22934,96 @@ fi
 	    gcc_cv_initfini_array=yes
 	  fi
 	elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
-	  cat > conftest.s <<\EOF
-.section .dtors,"a",%progbits
+	  case $target:$gas in
+	    *:yes)
+	      sh_flags='"a"'
+	      sh_type='%progbits'
+	      ;;
+	    i?86-*-solaris2*:no | x86_64-*-solaris2*:no)
+	      sh_flags='"a"'
+	      sh_type='@progbits'
+	      ;;
+	    sparc*-*-solaris2*:no)
+	      sh_flags='#alloc'
+	      sh_type='#progbits'
+	      sh_quote='"'
+	      ;;
+	  esac
+	  case "$target:$gnu_ld" in
+	    *:yes)
+	      cat > conftest.s <<EOF
+.section .dtors,$sh_flags,$sh_type
 .balign 4
 .byte 'A', 'A', 'A', 'A'
-.section .ctors,"a",%progbits
+.section .ctors,$sh_flags,$sh_type
 .balign 4
 .byte 'B', 'B', 'B', 'B'
-.section .fini_array.65530,"a",%progbits
+.section .fini_array.65530,$sh_flags,$sh_type
 .balign 4
 .byte 'C', 'C', 'C', 'C'
-.section .init_array.65530,"a",%progbits
+.section .init_array.65530,$sh_flags,$sh_type
 .balign 4
 .byte 'D', 'D', 'D', 'D'
-.section .dtors.64528,"a",%progbits
+.section .dtors.64528,$sh_flags,$sh_type
 .balign 4
 .byte 'E', 'E', 'E', 'E'
-.section .ctors.64528,"a",%progbits
+.section .ctors.64528,$sh_flags,$sh_type
 .balign 4
 .byte 'F', 'F', 'F', 'F'
-.section .fini_array.01005,"a",%progbits
+.section .fini_array.01005,$sh_flags,$sh_type
 .balign 4
 .byte 'G', 'G', 'G', 'G'
-.section .init_array.01005,"a",%progbits
+.section .init_array.01005,$sh_flags,$sh_type
 .balign 4
 .byte 'H', 'H', 'H', 'H'
 .text
 .globl _start
 _start:
 EOF
-	  if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
-	     && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
-	     && $gcc_cv_objdump -s -j .init_array conftest \
-		| grep HHHHFFFFDDDDBBBB > /dev/null 2>&1 \
-	     && $gcc_cv_objdump -s -j .fini_array conftest \
-		| grep GGGGEEEECCCCAAAA > /dev/null 2>&1; then
-	    gcc_cv_initfini_array=yes
-	  fi
+	      if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
+	         && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
+	         && $gcc_cv_objdump -s -j .init_array conftest \
+		    | grep HHHHFFFFDDDDBBBB > /dev/null 2>&1 \
+	         && $gcc_cv_objdump -s -j .fini_array conftest \
+		    | grep GGGGEEEECCCCAAAA > /dev/null 2>&1; then
+	        gcc_cv_initfini_array=yes
+	      fi
+	      ;;
+	    *-*-solaris2*:no)
+	      # When Solaris ld added constructor priority support, it was
+	      # decided to only handle .init_array.N/.fini_array.N since
+	      # there was no need for backwards compatibility with
+	      # .ctors.N/.dtors.N.  .ctors/.dtors remain as separate
+	      # sections with correct execution order resp. to
+	      # .init_array/.fini_array, while gld merges them into
+	      # .init_array/.fini_array.
+	      cat > conftest.s <<EOF
+.section $sh_quote.fini_array.65530$sh_quote,$sh_flags,$sh_type
+.align 4
+.byte 'C', 'C', 'C', 'C'
+.section $sh_quote.init_array.65530$sh_quote,$sh_flags,$sh_type
+.align 4
+.byte 'D', 'D', 'D', 'D'
+.section $sh_quote.fini_array.01005$sh_quote,$sh_flags,$sh_type
+.align 4
+.byte 'G', 'G', 'G', 'G'
+.section $sh_quote.init_array.01005$sh_quote,$sh_flags,$sh_type
+.align 4
+.byte 'H', 'H', 'H', 'H'
+.text
+.globl _start
+_start:
+EOF
+	      if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
+	         && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
+	         && $gcc_cv_objdump -s -j .init_array conftest \
+		    | grep HHHHDDDD > /dev/null 2>&1 \
+	         && $gcc_cv_objdump -s -j .fini_array conftest \
+		    | grep GGGGCCCC > /dev/null 2>&1; then
+	        gcc_cv_initfini_array=yes
+	      fi
+	      ;;
+	    esac
 	  rm -f conftest conftest.*
 	fi
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -23012,11 +23066,12 @@ $as_echo "$gcc_cv_initfini_array" >&6; }
 
 fi
 
-if test $enable_initfini_array = yes; then
 
-$as_echo "#define HAVE_INITFINI_ARRAY_SUPPORT 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define HAVE_INITFINI_ARRAY_SUPPORT `if test $enable_initfini_array = yes; then echo 1; else echo 0; fi`
+_ACEOF
 
-fi
+
 
 # Check if we have .[us]leb128, and support symbol arithmetic with it.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .sleb128 and .uleb128" >&5
@@ -24670,39 +24725,6 @@ $as_echo "#define HAVE_AS_REGISTER_PSEUDO_OP 1" >>confdefs.h
 
 fi
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for #nobits" >&5
-$as_echo_n "checking assembler for #nobits... " >&6; }
-if test "${gcc_cv_as_sparc_nobits+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_sparc_nobits=no
-  if test x$gcc_cv_as != x; then
-    $as_echo '.section "nobits",#alloc,#write,#nobits
-       .section "progbits",#alloc,#write,#progbits' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_sparc_nobits=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_sparc_nobits" >&5
-$as_echo "$gcc_cv_as_sparc_nobits" >&6; }
-
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_AS_SPARC_NOBITS `if test $gcc_cv_as_sparc_nobits = yes; then echo 1; else echo 0; fi`
-_ACEOF
-
-
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -relax option" >&5
 $as_echo_n "checking assembler for -relax option... " >&6; }
 if test "${gcc_cv_as_sparc_relax+set}" = set; then :
@@ -26311,6 +26333,48 @@ $as_echo "$gcc_cv_as_powerpc_power8" >&6; }
 if test $gcc_cv_as_powerpc_power8 = yes; then
 
 $as_echo "#define HAVE_AS_POWER8 1" >>confdefs.h
+
+fi
+
+    case $target in
+      *-*-aix*) conftest_s='	.machine "pwr9"
+	.csect .text[PR]';;
+      *) conftest_s='	.machine power9
+	.text';;
+    esac
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for power9 support" >&5
+$as_echo_n "checking assembler for power9 support... " >&6; }
+if test "${gcc_cv_as_powerpc_power9+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_powerpc_power9=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 2`
+  then gcc_cv_as_powerpc_power9=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a32 -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_powerpc_power9=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_powerpc_power9" >&5
+$as_echo "$gcc_cv_as_powerpc_power9" >&6; }
+if test $gcc_cv_as_powerpc_power9 = yes; then
+
+$as_echo "#define HAVE_AS_POWER9 1" >>confdefs.h
 
 fi
 
@@ -27994,7 +28058,7 @@ _start:
 x:	.quad .TOC.
 EOF
       if $gcc_cv_as -a64 -o conftest.o conftest.s > /dev/null 2>&1 \
-         && $gcc_cv_ld $emul_name -o conftest conftest.o > /dev/null 2>&1; then
+         && $gcc_cv_ld $emul_name -z norelro -o conftest conftest.o > /dev/null 2>&1; then
         gcc_cv_ld_toc_align=`$gcc_cv_nm conftest | ${AWK} '/\.TOC\./ { match ($0, "0[[:xdigit:]]*", a); print strtonum ("0x" substr(a[0], length(a[0])-3)) }'`
       fi
       rm -f conftest conftest.o conftest.s
@@ -28269,7 +28333,7 @@ else
   enable_default_ssp=no
 fi
 
-if test x$enable_default_ssp == xyes ; then
+if test x$enable_default_ssp = xyes ; then
 
 $as_echo "#define ENABLE_DEFAULT_SSP 1" >>confdefs.h
 
@@ -29121,7 +29185,7 @@ else
   enable_default_pie=no
 fi
 
-if test x$enable_default_pie == xyes ; then
+if test x$enable_default_pie = xyes ; then
 
 $as_echo "#define ENABLE_DEFAULT_PIE 1" >>confdefs.h
 

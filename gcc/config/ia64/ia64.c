@@ -236,7 +236,7 @@ static void ia64_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void ia64_output_function_end_prologue (FILE *);
 
 static void ia64_print_operand (FILE *, rtx, int);
-static void ia64_print_operand_address (FILE *, rtx);
+static void ia64_print_operand_address (FILE *, machine_mode, rtx);
 static bool ia64_print_operand_punct_valid_p (unsigned char code);
 
 static int ia64_issue_rate (void);
@@ -5239,6 +5239,7 @@ ia64_output_dwarf_dtprel (FILE *file, int size, rtx x)
 
 static void
 ia64_print_operand_address (FILE * stream ATTRIBUTE_UNUSED,
+			    machine_mode /*mode*/,
 			    rtx address ATTRIBUTE_UNUSED)
 {
 }

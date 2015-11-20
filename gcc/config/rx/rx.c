@@ -379,7 +379,7 @@ rx_mode_dependent_address_p (const_rtx addr, addr_space_t as ATTRIBUTE_UNUSED)
    reference whose address is ADDR.  */
 
 static void
-rx_print_operand_address (FILE * file, rtx addr)
+rx_print_operand_address (FILE * file, machine_mode /*mode*/, rtx addr)
 {
   switch (GET_CODE (addr))
     {
@@ -690,7 +690,7 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	case MEM:
 	  if (! WORDS_BIG_ENDIAN)
 	    op = adjust_address (op, SImode, 4);
-	  output_address (XEXP (op, 0));
+	  output_address (GET_MODE (op), XEXP (op, 0));
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -714,7 +714,7 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	case MEM:
 	  if (WORDS_BIG_ENDIAN)
 	    op = adjust_address (op, SImode, 4);
-	  output_address (XEXP (op, 0));
+	  output_address (GET_MODE (op), XEXP (op, 0));
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -846,11 +846,11 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	  }
 
 	case MEM:
-	  output_address (XEXP (op, 0));
+	  output_address (GET_MODE (op), XEXP (op, 0));
 	  break;
 
 	case PLUS:
-	  output_address (op);
+	  output_address (VOIDmode, op);
 	  break;
 
 	case REG:
@@ -915,7 +915,7 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	case SYMBOL_REF:
 	case LABEL_REF:
 	case CODE_LABEL:
-	  rx_print_operand_address (file, op);
+	  rx_print_operand_address (file, VOIDmode, op);
 	  break;
 
 	default:

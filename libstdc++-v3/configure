@@ -15831,10 +15831,10 @@ fi
       linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu)
 	enable_clocale_flag=gnu
 	;;
-      darwin* | freebsd*)
+      darwin*)
 	enable_clocale_flag=darwin
 	;;
-      dragonfly*)
+      dragonfly* | freebsd*)
 	enable_clocale_flag=dragonfly
 	;;
       openbsd*)
@@ -15965,8 +15965,8 @@ $as_echo "generic" >&6; }
       CLOCALE_INTERNAL_H=config/locale/generic/c++locale_internal.h
       ;;
     darwin)
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: darwin or freebsd" >&5
-$as_echo "darwin or freebsd" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: darwin" >&5
+$as_echo "darwin" >&6; }
 
       CLOCALE_H=config/locale/generic/c_locale.h
       CLOCALE_CC=config/locale/generic/c_locale.cc
@@ -15983,8 +15983,8 @@ $as_echo "darwin or freebsd" >&6; }
       ;;
 
     dragonfly)
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: dragonfly" >&5
-$as_echo "dragonfly" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: dragonfly or freebsd" >&5
+$as_echo "dragonfly or freebsd" >&6; }
 
       CLOCALE_H=config/locale/dragonfly/c_locale.h
       CLOCALE_CC=config/locale/dragonfly/c_locale.cc
@@ -16542,29 +16542,26 @@ fi
 
   if test x"$enable_c99" = x"yes"; then
 
-
-  ac_ext=cpp
+    ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
-  # Use -std=c++98 because the default (-std=gnu++98) leaves __STRICT_ANSI__
-  # undefined and fake C99 facilities - like pre-standard snprintf - may be
-  # spuriously enabled.
-  # Long term, -std=c++0x could be even better, could manage to explicitly
-  # request C99 facilities to the underlying C headers.
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS -std=c++98"
-  ac_save_LIBS="$LIBS"
-  ac_save_gcc_no_link="$gcc_no_link"
+    # Use -std=c++98 (instead of -std=gnu++98) because leaving __STRICT_ANSI__
+    # undefined may cause fake C99 facilities, like pre-standard snprintf,
+    # to be spuriously enabled.
+    ac_save_CXXFLAGS="$CXXFLAGS"
+    CXXFLAGS="$CXXFLAGS -std=c++98"
+    ac_save_LIBS="$LIBS"
+    ac_save_gcc_no_link="$gcc_no_link"
 
-  if test x$gcc_no_link != xyes; then
-    # Use -fno-exceptions to that the C driver can link these tests without
-    # hitting undefined references to personality routines.
-    CXXFLAGS="$CXXFLAGS -fno-exceptions"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sin in -lm" >&5
+    if test x$gcc_no_link != xyes; then
+      # Use -fno-exceptions to that the C driver can link these tests without
+      # hitting undefined references to personality routines.
+      CXXFLAGS="$CXXFLAGS -fno-exceptions"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sin in -lm" >&5
 $as_echo_n "checking for sin in -lm... " >&6; }
 if test "${ac_cv_lib_m_sin+set}" = set; then :
   $as_echo_n "(cached) " >&6
@@ -16604,56 +16601,54 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_sin" >&5
 $as_echo "$ac_cv_lib_m_sin" >&6; }
 if test "x$ac_cv_lib_m_sin" = x""yes; then :
-
-      LIBS="$LIBS -lm"
-
+  LIBS="$LIBS -lm"
 else
 
-      # Use the default compile-only tests in GCC_TRY_COMPILE_OR_LINK
-      gcc_no_link=yes
+        # Use the default compile-only tests in GCC_TRY_COMPILE_OR_LINK
+        gcc_no_link=yes
 
 fi
 
-  fi
+    fi
 
-  # Check for the existence of <math.h> functions used if C99 is enabled.
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <math.h>" >&5
-$as_echo_n "checking for ISO C99 support in <math.h>... " >&6; }
-  if test "${glibcxx_cv_c99_math+set}" = set; then :
+    # Check for the existence of <math.h> functions used if C99 is enabled.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <math.h> for C++98" >&5
+$as_echo_n "checking for ISO C99 support in <math.h> for C++98... " >&6; }
+    if test "${glibcxx_cv_c99_math_cxx98+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
-  if test x$gcc_no_link = xyes; then
+      if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <math.h>
-      volatile double d1, d2;
-      volatile int i;
+         volatile double d1, d2;
+         volatile int i;
 int
 main ()
 {
 i = fpclassify(d1);
-      i = isfinite(d1);
-      i = isinf(d1);
-      i = isnan(d1);
-      i = isnormal(d1);
-      i = signbit(d1);
-      i = isgreater(d1, d2);
-      i = isgreaterequal(d1, d2);
-      i = isless(d1, d2);
-      i = islessequal(d1, d2);
-      i = islessgreater(d1, d2);
-      i = islessgreater(d1, d2);
-      i = isunordered(d1, d2);
+         i = isfinite(d1);
+         i = isinf(d1);
+         i = isnan(d1);
+         i = isnormal(d1);
+         i = signbit(d1);
+         i = isgreater(d1, d2);
+         i = isgreaterequal(d1, d2);
+         i = isless(d1, d2);
+         i = islessequal(d1, d2);
+         i = islessgreater(d1, d2);
+         i = islessgreater(d1, d2);
+         i = isunordered(d1, d2);
 
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-  glibcxx_cv_c99_math=yes
+  glibcxx_cv_c99_math_cxx98=yes
 else
-  glibcxx_cv_c99_math=no
+  glibcxx_cv_c99_math_cxx98=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 else
@@ -16663,33 +16658,33 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <math.h>
-      volatile double d1, d2;
-      volatile int i;
+         volatile double d1, d2;
+         volatile int i;
 int
 main ()
 {
 i = fpclassify(d1);
-      i = isfinite(d1);
-      i = isinf(d1);
-      i = isnan(d1);
-      i = isnormal(d1);
-      i = signbit(d1);
-      i = isgreater(d1, d2);
-      i = isgreaterequal(d1, d2);
-      i = isless(d1, d2);
-      i = islessequal(d1, d2);
-      i = islessgreater(d1, d2);
-      i = islessgreater(d1, d2);
-      i = isunordered(d1, d2);
+         i = isfinite(d1);
+         i = isinf(d1);
+         i = isnan(d1);
+         i = isnormal(d1);
+         i = signbit(d1);
+         i = isgreater(d1, d2);
+         i = isgreaterequal(d1, d2);
+         i = isless(d1, d2);
+         i = islessequal(d1, d2);
+         i = islessgreater(d1, d2);
+         i = islessgreater(d1, d2);
+         i = isunordered(d1, d2);
 
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
-  glibcxx_cv_c99_math=yes
+  glibcxx_cv_c99_math_cxx98=yes
 else
-  glibcxx_cv_c99_math=no
+  glibcxx_cv_c99_math_cxx98=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -16697,19 +16692,19 @@ fi
 
 fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_math" >&5
-$as_echo "$glibcxx_cv_c99_math" >&6; }
-  if test x"$glibcxx_cv_c99_math" = x"yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_math_cxx98" >&5
+$as_echo "$glibcxx_cv_c99_math_cxx98" >&6; }
+    if test x"$glibcxx_cv_c99_math_cxx98" = x"yes"; then
 
-$as_echo "#define _GLIBCXX_USE_C99_MATH 1" >>confdefs.h
+$as_echo "#define _GLIBCXX98_USE_C99_MATH 1" >>confdefs.h
 
-  fi
+    fi
 
-  # Check for the existence of <complex.h> complex math functions.
-  # This is necessary even though libstdc++ uses the builtin versions
-  # of these functions, because if the builtin cannot be used, a reference
-  # to the library function is emitted.
-  for ac_header in tgmath.h
+    # Check for the existence of <complex.h> complex math functions.
+    # This is necessary even though libstdc++ uses the builtin versions
+    # of these functions, because if the builtin cannot be used, a reference
+    # to the library function is emitted.
+    for ac_header in tgmath.h
 do :
   ac_fn_cxx_check_header_mongrel "$LINENO" "tgmath.h" "ac_cv_header_tgmath_h" "$ac_includes_default"
 if test "x$ac_cv_header_tgmath_h" = x""yes; then :
@@ -16723,7 +16718,7 @@ fi
 
 done
 
-  for ac_header in complex.h
+    for ac_header in complex.h
 do :
   ac_fn_cxx_check_header_mongrel "$LINENO" "complex.h" "ac_cv_header_complex_h" "$ac_includes_default"
 if test "x$ac_cv_header_complex_h" = x""yes; then :
@@ -16737,74 +16732,77 @@ fi
 
 done
 
-  glibcxx_cv_c99_complex=no;
-  if test x"$ac_has_complex_h" = x"yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <complex.h>" >&5
-$as_echo_n "checking for ISO C99 support in <complex.h>... " >&6; }
-    if test x$gcc_no_link = xyes; then
+    if test x"$ac_has_complex_h" = x"yes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <complex.h> for C++98" >&5
+$as_echo_n "checking for ISO C99 support in <complex.h> for C++98... " >&6; }
+      if test "${glibcxx_cv_c99_complex_cxx98+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+        if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <complex.h>
-	typedef __complex__ float float_type;
-	typedef __complex__ double double_type;
-	typedef __complex__ long double ld_type;
-	volatile float_type tmpf;
-	volatile double_type tmpd;
-	volatile ld_type tmpld;
-	volatile float f;
-	volatile double d;
-	volatile long double ld;
+           typedef __complex__ float float_type;
+           typedef __complex__ double double_type;
+           typedef __complex__ long double ld_type;
+           volatile float_type tmpf;
+           volatile double_type tmpd;
+           volatile ld_type tmpld;
+           volatile float f;
+           volatile double d;
+           volatile long double ld;
 int
 main ()
 {
 f = cabsf(tmpf);
-	f = cargf(tmpf);
-	tmpf = ccosf(tmpf);
-	tmpf = ccoshf(tmpf);
-	tmpf = cexpf(tmpf);
-	tmpf = clogf(tmpf);
-	tmpf = csinf(tmpf);
-	tmpf = csinhf(tmpf);
-	tmpf = csqrtf(tmpf);
-	tmpf = ctanf(tmpf);
-	tmpf = ctanhf(tmpf);
-	tmpf = cpowf(tmpf, tmpf);
-	tmpf = cprojf(tmpf);
-	d = cabs(tmpd);
-	d = carg(tmpd);
-	tmpd = ccos(tmpd);
-	tmpd = ccosh(tmpd);
-	tmpd = cexp(tmpd);
-	tmpd = clog(tmpd);
-	tmpd = csin(tmpd);
-	tmpd = csinh(tmpd);
-	tmpd = csqrt(tmpd);
-	tmpd = ctan(tmpd);
-	tmpd = ctanh(tmpd);
-	tmpd = cpow(tmpd, tmpd);
-	tmpd = cproj(tmpd);
-	ld = cabsl(tmpld);
-	ld = cargl(tmpld);
-	tmpld = ccosl(tmpld);
-	tmpld = ccoshl(tmpld);
-	tmpld = cexpl(tmpld);
-	tmpld = clogl(tmpld);
-	tmpld = csinl(tmpld);
-	tmpld = csinhl(tmpld);
-	tmpld = csqrtl(tmpld);
-	tmpld = ctanl(tmpld);
-	tmpld = ctanhl(tmpld);
-	tmpld = cpowl(tmpld, tmpld);
-	tmpld = cprojl(tmpld);
+           f = cargf(tmpf);
+           tmpf = ccosf(tmpf);
+           tmpf = ccoshf(tmpf);
+           tmpf = cexpf(tmpf);
+           tmpf = clogf(tmpf);
+           tmpf = csinf(tmpf);
+           tmpf = csinhf(tmpf);
+           tmpf = csqrtf(tmpf);
+           tmpf = ctanf(tmpf);
+           tmpf = ctanhf(tmpf);
+           tmpf = cpowf(tmpf, tmpf);
+           tmpf = cprojf(tmpf);
+           d = cabs(tmpd);
+           d = carg(tmpd);
+           tmpd = ccos(tmpd);
+           tmpd = ccosh(tmpd);
+           tmpd = cexp(tmpd);
+           tmpd = clog(tmpd);
+           tmpd = csin(tmpd);
+           tmpd = csinh(tmpd);
+           tmpd = csqrt(tmpd);
+           tmpd = ctan(tmpd);
+           tmpd = ctanh(tmpd);
+           tmpd = cpow(tmpd, tmpd);
+           tmpd = cproj(tmpd);
+           ld = cabsl(tmpld);
+           ld = cargl(tmpld);
+           tmpld = ccosl(tmpld);
+           tmpld = ccoshl(tmpld);
+           tmpld = cexpl(tmpld);
+           tmpld = clogl(tmpld);
+           tmpld = csinl(tmpld);
+           tmpld = csinhl(tmpld);
+           tmpld = csqrtl(tmpld);
+           tmpld = ctanl(tmpld);
+           tmpld = ctanhl(tmpld);
+           tmpld = cpowl(tmpld, tmpld);
+           tmpld = cprojl(tmpld);
 
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-  glibcxx_cv_c99_complex=yes
+  glibcxx_cv_c99_complex_cxx98=yes
 else
-  glibcxx_cv_c99_complex=no
+  glibcxx_cv_c99_complex_cxx98=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 else
@@ -16814,100 +16812,103 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <complex.h>
-	typedef __complex__ float float_type;
-	typedef __complex__ double double_type;
-	typedef __complex__ long double ld_type;
-	volatile float_type tmpf;
-	volatile double_type tmpd;
-	volatile ld_type tmpld;
-	volatile float f;
-	volatile double d;
-	volatile long double ld;
+           typedef __complex__ float float_type;
+           typedef __complex__ double double_type;
+           typedef __complex__ long double ld_type;
+           volatile float_type tmpf;
+           volatile double_type tmpd;
+           volatile ld_type tmpld;
+           volatile float f;
+           volatile double d;
+           volatile long double ld;
 int
 main ()
 {
 f = cabsf(tmpf);
-	f = cargf(tmpf);
-	tmpf = ccosf(tmpf);
-	tmpf = ccoshf(tmpf);
-	tmpf = cexpf(tmpf);
-	tmpf = clogf(tmpf);
-	tmpf = csinf(tmpf);
-	tmpf = csinhf(tmpf);
-	tmpf = csqrtf(tmpf);
-	tmpf = ctanf(tmpf);
-	tmpf = ctanhf(tmpf);
-	tmpf = cpowf(tmpf, tmpf);
-	tmpf = cprojf(tmpf);
-	d = cabs(tmpd);
-	d = carg(tmpd);
-	tmpd = ccos(tmpd);
-	tmpd = ccosh(tmpd);
-	tmpd = cexp(tmpd);
-	tmpd = clog(tmpd);
-	tmpd = csin(tmpd);
-	tmpd = csinh(tmpd);
-	tmpd = csqrt(tmpd);
-	tmpd = ctan(tmpd);
-	tmpd = ctanh(tmpd);
-	tmpd = cpow(tmpd, tmpd);
-	tmpd = cproj(tmpd);
-	ld = cabsl(tmpld);
-	ld = cargl(tmpld);
-	tmpld = ccosl(tmpld);
-	tmpld = ccoshl(tmpld);
-	tmpld = cexpl(tmpld);
-	tmpld = clogl(tmpld);
-	tmpld = csinl(tmpld);
-	tmpld = csinhl(tmpld);
-	tmpld = csqrtl(tmpld);
-	tmpld = ctanl(tmpld);
-	tmpld = ctanhl(tmpld);
-	tmpld = cpowl(tmpld, tmpld);
-	tmpld = cprojl(tmpld);
+           f = cargf(tmpf);
+           tmpf = ccosf(tmpf);
+           tmpf = ccoshf(tmpf);
+           tmpf = cexpf(tmpf);
+           tmpf = clogf(tmpf);
+           tmpf = csinf(tmpf);
+           tmpf = csinhf(tmpf);
+           tmpf = csqrtf(tmpf);
+           tmpf = ctanf(tmpf);
+           tmpf = ctanhf(tmpf);
+           tmpf = cpowf(tmpf, tmpf);
+           tmpf = cprojf(tmpf);
+           d = cabs(tmpd);
+           d = carg(tmpd);
+           tmpd = ccos(tmpd);
+           tmpd = ccosh(tmpd);
+           tmpd = cexp(tmpd);
+           tmpd = clog(tmpd);
+           tmpd = csin(tmpd);
+           tmpd = csinh(tmpd);
+           tmpd = csqrt(tmpd);
+           tmpd = ctan(tmpd);
+           tmpd = ctanh(tmpd);
+           tmpd = cpow(tmpd, tmpd);
+           tmpd = cproj(tmpd);
+           ld = cabsl(tmpld);
+           ld = cargl(tmpld);
+           tmpld = ccosl(tmpld);
+           tmpld = ccoshl(tmpld);
+           tmpld = cexpl(tmpld);
+           tmpld = clogl(tmpld);
+           tmpld = csinl(tmpld);
+           tmpld = csinhl(tmpld);
+           tmpld = csqrtl(tmpld);
+           tmpld = ctanl(tmpld);
+           tmpld = ctanhl(tmpld);
+           tmpld = cpowl(tmpld, tmpld);
+           tmpld = cprojl(tmpld);
 
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
-  glibcxx_cv_c99_complex=yes
+  glibcxx_cv_c99_complex_cxx98=yes
 else
-  glibcxx_cv_c99_complex=no
+  glibcxx_cv_c99_complex_cxx98=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
-  fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_complex" >&5
-$as_echo "$glibcxx_cv_c99_complex" >&6; }
-  if test x"$glibcxx_cv_c99_complex" = x"yes"; then
 
-$as_echo "#define _GLIBCXX_USE_C99_COMPLEX 1" >>confdefs.h
+fi
 
-  fi
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_complex_cxx98" >&5
+$as_echo "$glibcxx_cv_c99_complex_cxx98" >&6; }
+    if test x"$glibcxx_cv_c99_complex_cxx98" = x"yes"; then
 
-  # Check for the existence in <stdio.h> of vscanf, et. al.
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <stdio.h>" >&5
-$as_echo_n "checking for ISO C99 support in <stdio.h>... " >&6; }
-  if test "${glibcxx_cv_c99_stdio+set}" = set; then :
+$as_echo "#define _GLIBCXX98_USE_C99_COMPLEX 1" >>confdefs.h
+
+    fi
+
+    # Check for the existence in <stdio.h> of vscanf, et. al.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <stdio.h> for C++98" >&5
+$as_echo_n "checking for ISO C99 support in <stdio.h> for C++98... " >&6; }
+    if test "${glibcxx_cv_c99_stdio_cxx98+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
-  if test x$gcc_no_link = xyes; then
+      if test x$gcc_no_link = xyes; then
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stdio.h>
-      #include <stdarg.h>
-      void foo(char* fmt, ...)
-      {
-	va_list args; va_start(args, fmt);
-	vfscanf(stderr, "%i", args);
-	vscanf("%i", args);
-	vsnprintf(fmt, 0, "%i", args);
-	vsscanf(fmt, "%i", args);
-	snprintf(fmt, 0, "%i");
-      }
+         #include <stdarg.h>
+         void foo(char* fmt, ...)
+         {
+           va_list args; va_start(args, fmt);
+           vfscanf(stderr, "%i", args);
+           vscanf("%i", args);
+           vsnprintf(fmt, 0, "%i", args);
+           vsscanf(fmt, "%i", args);
+           snprintf(fmt, 0, "%i");
+         }
 int
 main ()
 {
@@ -16917,9 +16918,9 @@ main ()
 }
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-  glibcxx_cv_c99_stdio=yes
+  glibcxx_cv_c99_stdio_cxx98=yes
 else
-  glibcxx_cv_c99_stdio=no
+  glibcxx_cv_c99_stdio_cxx98=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 else
@@ -16929,16 +16930,16 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stdio.h>
-      #include <stdarg.h>
-      void foo(char* fmt, ...)
-      {
-	va_list args; va_start(args, fmt);
-	vfscanf(stderr, "%i", args);
-	vscanf("%i", args);
-	vsnprintf(fmt, 0, "%i", args);
-	vsscanf(fmt, "%i", args);
-	snprintf(fmt, 0, "%i");
-      }
+         #include <stdarg.h>
+         void foo(char* fmt, ...)
+         {
+           va_list args; va_start(args, fmt);
+           vfscanf(stderr, "%i", args);
+           vscanf("%i", args);
+           vsnprintf(fmt, 0, "%i", args);
+           vsscanf(fmt, "%i", args);
+           snprintf(fmt, 0, "%i");
+         }
 int
 main ()
 {
@@ -16948,9 +16949,9 @@ main ()
 }
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
-  glibcxx_cv_c99_stdio=yes
+  glibcxx_cv_c99_stdio_cxx98=yes
 else
-  glibcxx_cv_c99_stdio=no
+  glibcxx_cv_c99_stdio_cxx98=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -16958,108 +16959,32 @@ fi
 
 fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_stdio" >&5
-$as_echo "$glibcxx_cv_c99_stdio" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_stdio_cxx98" >&5
+$as_echo "$glibcxx_cv_c99_stdio_cxx98" >&6; }
+    if test x"$glibcxx_cv_c99_stdio_cxx98" = x"yes"; then
 
-  # Check for the existence in <stdlib.h> of lldiv_t, et. al.
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <stdlib.h>" >&5
-$as_echo_n "checking for ISO C99 support in <stdlib.h>... " >&6; }
-  if test "${glibcxx_cv_c99_stdlib+set}" = set; then :
+$as_echo "#define _GLIBCXX98_USE_C99_STDIO 1" >>confdefs.h
+
+    fi
+
+    # Check for the existence in <wchar.h> of wcstold, etc.
+    if test x"$ac_has_wchar_h" = xyes &&
+       test x"$ac_has_wctype_h" = xyes; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <wchar.h> for C++98" >&5
+$as_echo_n "checking for ISO C99 support in <wchar.h> for C++98... " >&6; }
+      if test "${glibcxx_cv_c99_wchar_cxx98+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
-  if test x$gcc_no_link = xyes; then
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-      volatile float f;
-      volatile long double ld;
-      volatile unsigned long long ll;
-      lldiv_t mydivt;
-int
-main ()
-{
-char* tmp;
-      f = strtof("gnu", &tmp);
-      ld = strtold("gnu", &tmp);
-      ll = strtoll("gnu", &tmp, 10);
-      ll = strtoull("gnu", &tmp, 10);
-      ll = llabs(10);
-      mydivt = lldiv(10,1);
-      ll = mydivt.quot;
-      ll = mydivt.rem;
-      ll = atoll("10");
-      _Exit(0);
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  glibcxx_cv_c99_stdlib=yes
-else
-  glibcxx_cv_c99_stdlib=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-else
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-      volatile float f;
-      volatile long double ld;
-      volatile unsigned long long ll;
-      lldiv_t mydivt;
-int
-main ()
-{
-char* tmp;
-      f = strtof("gnu", &tmp);
-      ld = strtold("gnu", &tmp);
-      ll = strtoll("gnu", &tmp, 10);
-      ll = strtoull("gnu", &tmp, 10);
-      ll = llabs(10);
-      mydivt = lldiv(10,1);
-      ll = mydivt.quot;
-      ll = mydivt.rem;
-      ll = atoll("10");
-      _Exit(0);
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  glibcxx_cv_c99_stdlib=yes
-else
-  glibcxx_cv_c99_stdlib=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-
-fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_stdlib" >&5
-$as_echo "$glibcxx_cv_c99_stdlib" >&6; }
-
-  # Check for the existence in <wchar.h> of wcstold, etc.
-  glibcxx_cv_c99_wchar=no;
-  if test x"$ac_has_wchar_h" = xyes &&
-     test x"$ac_has_wctype_h" = xyes; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <wchar.h>" >&5
-$as_echo_n "checking for ISO C99 support in <wchar.h>... " >&6; }
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <wchar.h>
-		    namespace test
-		    {
-		      using ::wcstold;
-		      using ::wcstoll;
-		      using ::wcstoull;
-		    }
+          namespace test
+          {
+            using ::wcstold;
+            using ::wcstoll;
+            using ::wcstoull;
+          }
 
 int
 main ()
@@ -17070,20 +16995,23 @@ main ()
 }
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-  glibcxx_cv_c99_wchar=yes
+  glibcxx_cv_c99_wchar_cxx98=yes
 else
-  glibcxx_cv_c99_wchar=no
+  glibcxx_cv_c99_wchar_cxx98=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
-    # Checks for wide character functions that may not be present.
-    # Injection of these is wrapped with guard macros.
-    # NB: only put functions here, instead of immediately above, if
-    # absolutely necessary.
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+fi
+
+
+      # Checks for wide character functions that may not be present.
+      # Injection of these is wrapped with guard macros.
+      # NB: only put functions here, instead of immediately above, if
+      # absolutely necessary.
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <wchar.h>
-		    namespace test { using ::vfwscanf; }
+        namespace test { using ::vfwscanf; }
 int
 main ()
 {
@@ -17099,10 +17027,10 @@ $as_echo "#define HAVE_VFWSCANF 1" >>confdefs.h
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <wchar.h>
-		    namespace test { using ::vswscanf; }
+        namespace test { using ::vswscanf; }
 int
 main ()
 {
@@ -17118,10 +17046,10 @@ $as_echo "#define HAVE_VSWSCANF 1" >>confdefs.h
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <wchar.h>
-		    namespace test { using ::vwscanf; }
+        namespace test { using ::vwscanf; }
 int
 main ()
 {
@@ -17137,10 +17065,10 @@ $as_echo "#define HAVE_VWSCANF 1" >>confdefs.h
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <wchar.h>
-		    namespace test { using ::wcstof; }
+        namespace test { using ::wcstof; }
 int
 main ()
 {
@@ -17156,13 +17084,13 @@ $as_echo "#define HAVE_WCSTOF 1" >>confdefs.h
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <wctype.h>
 int
 main ()
 {
- wint_t t; int i = iswblank(t);
+wint_t t; int i = iswblank(t);
   ;
   return 0;
 }
@@ -17174,27 +17102,700 @@ $as_echo "#define HAVE_ISWBLANK 1" >>confdefs.h
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_wchar" >&5
-$as_echo "$glibcxx_cv_c99_wchar" >&6; }
-  fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_wchar_cxx98" >&5
+$as_echo "$glibcxx_cv_c99_wchar_cxx98" >&6; }
+      if test x"$glibcxx_cv_c99_wchar_cxx98" = x"yes"; then
 
-  # Option parsed, now set things appropriately.
-  if test x"$glibcxx_cv_c99_math" = x"no" ||
-     test x"$glibcxx_cv_c99_complex" = x"no" ||
-     test x"$glibcxx_cv_c99_stdio" = x"no" ||
-     test x"$glibcxx_cv_c99_stdlib" = x"no" ||
-     test x"$glibcxx_cv_c99_wchar" = x"no"; then
-    enable_c99=no;
-  else
+$as_echo "#define _GLIBCXX98_USE_C99_WCHAR 1" >>confdefs.h
+
+      fi
+    fi
+
+    # Option parsed, now set things appropriately.
+    if test x"$glibcxx_cv_c99_math_cxx98" = x"no" ||
+       test x"$glibcxx_cv_c99_complex_cxx98" = x"no" ||
+       test x"$glibcxx_cv_c99_stdio_cxx98" = x"no" ||
+       test x"$glibcxx_cv_c99_stdlib_cxx98" = x"no" ||
+       test x"$glibcxx_cv_c99_wchar_cxx98" = x"no"; then
+      enable_c99=no;
+    else
 
 $as_echo "#define _GLIBCXX_USE_C99 1" >>confdefs.h
 
-  fi
+    fi
 
-  gcc_no_link="$ac_save_gcc_no_link"
-  LIBS="$ac_save_LIBS"
-  CXXFLAGS="$ac_save_CXXFLAGS"
-  ac_ext=c
+    gcc_no_link="$ac_save_gcc_no_link"
+    LIBS="$ac_save_LIBS"
+    CXXFLAGS="$ac_save_CXXFLAGS"
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+    ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+    # Use -std=c++11 and test again for C99 library feature in C++11 mode.
+    # For the reasons given above we use -std=c++11 not -std=gnu++11.
+    ac_save_CXXFLAGS="$CXXFLAGS"
+    CXXFLAGS="$CXXFLAGS -std=c++11"
+    ac_save_LIBS="$LIBS"
+    ac_save_gcc_no_link="$gcc_no_link"
+
+    if test x$gcc_no_link != xyes; then
+      # Use -fno-exceptions to that the C driver can link these tests without
+      # hitting undefined references to personality routines.
+      CXXFLAGS="$CXXFLAGS -fno-exceptions"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sin in -lm" >&5
+$as_echo_n "checking for sin in -lm... " >&6; }
+if test "${ac_cv_lib_m_sin+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lm  $LIBS"
+if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char sin ();
+int
+main ()
+{
+return sin ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_lib_m_sin=yes
+else
+  ac_cv_lib_m_sin=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_sin" >&5
+$as_echo "$ac_cv_lib_m_sin" >&6; }
+if test "x$ac_cv_lib_m_sin" = x""yes; then :
+  LIBS="$LIBS -lm"
+else
+
+        # Use the default compile-only tests in GCC_TRY_COMPILE_OR_LINK
+        gcc_no_link=yes
+
+fi
+
+    fi
+
+    # Check for the existence of <math.h> functions used if C99 is enabled.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <math.h> for C++11" >&5
+$as_echo_n "checking for ISO C99 support in <math.h> for C++11... " >&6; }
+    if test "${glibcxx_cv_c99_math_cxx11+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+      if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+         volatile double d1, d2;
+         volatile int i;
+int
+main ()
+{
+i = fpclassify(d1);
+         i = isfinite(d1);
+         i = isinf(d1);
+         i = isnan(d1);
+         i = isnormal(d1);
+         i = signbit(d1);
+         i = isgreater(d1, d2);
+         i = isgreaterequal(d1, d2);
+         i = isless(d1, d2);
+         i = islessequal(d1, d2);
+         i = islessgreater(d1, d2);
+         i = islessgreater(d1, d2);
+         i = isunordered(d1, d2);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_c99_math_cxx11=yes
+else
+  glibcxx_cv_c99_math_cxx11=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+         volatile double d1, d2;
+         volatile int i;
+int
+main ()
+{
+i = fpclassify(d1);
+         i = isfinite(d1);
+         i = isinf(d1);
+         i = isnan(d1);
+         i = isnormal(d1);
+         i = signbit(d1);
+         i = isgreater(d1, d2);
+         i = isgreaterequal(d1, d2);
+         i = isless(d1, d2);
+         i = islessequal(d1, d2);
+         i = islessgreater(d1, d2);
+         i = islessgreater(d1, d2);
+         i = isunordered(d1, d2);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_c99_math_cxx11=yes
+else
+  glibcxx_cv_c99_math_cxx11=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_math_cxx11" >&5
+$as_echo "$glibcxx_cv_c99_math_cxx11" >&6; }
+    if test x"$glibcxx_cv_c99_math_cxx11" = x"yes"; then
+
+$as_echo "#define _GLIBCXX11_USE_C99_MATH 1" >>confdefs.h
+
+    fi
+
+    # Check for the existence of <complex.h> complex math functions.
+    # This is necessary even though libstdc++ uses the builtin versions
+    # of these functions, because if the builtin cannot be used, a reference
+    # to the library function is emitted.
+    for ac_header in tgmath.h
+do :
+  ac_fn_cxx_check_header_mongrel "$LINENO" "tgmath.h" "ac_cv_header_tgmath_h" "$ac_includes_default"
+if test "x$ac_cv_header_tgmath_h" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_TGMATH_H 1
+_ACEOF
+ ac_has_tgmath_h=yes
+else
+  ac_has_tgmath_h=no
+fi
+
+done
+
+    for ac_header in complex.h
+do :
+  ac_fn_cxx_check_header_mongrel "$LINENO" "complex.h" "ac_cv_header_complex_h" "$ac_includes_default"
+if test "x$ac_cv_header_complex_h" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_COMPLEX_H 1
+_ACEOF
+ ac_has_complex_h=yes
+else
+  ac_has_complex_h=no
+fi
+
+done
+
+    if test x"$ac_has_complex_h" = x"yes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <complex.h> for C++11" >&5
+$as_echo_n "checking for ISO C99 support in <complex.h> for C++11... " >&6; }
+      if test "${glibcxx_cv_c99_complex_cxx11+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+        if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <complex.h>
+           typedef __complex__ float float_type;
+           typedef __complex__ double double_type;
+           typedef __complex__ long double ld_type;
+           volatile float_type tmpf;
+           volatile double_type tmpd;
+           volatile ld_type tmpld;
+           volatile float f;
+           volatile double d;
+           volatile long double ld;
+int
+main ()
+{
+f = cabsf(tmpf);
+           f = cargf(tmpf);
+           tmpf = ccosf(tmpf);
+           tmpf = ccoshf(tmpf);
+           tmpf = cexpf(tmpf);
+           tmpf = clogf(tmpf);
+           tmpf = csinf(tmpf);
+           tmpf = csinhf(tmpf);
+           tmpf = csqrtf(tmpf);
+           tmpf = ctanf(tmpf);
+           tmpf = ctanhf(tmpf);
+           tmpf = cpowf(tmpf, tmpf);
+           tmpf = cprojf(tmpf);
+           d = cabs(tmpd);
+           d = carg(tmpd);
+           tmpd = ccos(tmpd);
+           tmpd = ccosh(tmpd);
+           tmpd = cexp(tmpd);
+           tmpd = clog(tmpd);
+           tmpd = csin(tmpd);
+           tmpd = csinh(tmpd);
+           tmpd = csqrt(tmpd);
+           tmpd = ctan(tmpd);
+           tmpd = ctanh(tmpd);
+           tmpd = cpow(tmpd, tmpd);
+           tmpd = cproj(tmpd);
+           ld = cabsl(tmpld);
+           ld = cargl(tmpld);
+           tmpld = ccosl(tmpld);
+           tmpld = ccoshl(tmpld);
+           tmpld = cexpl(tmpld);
+           tmpld = clogl(tmpld);
+           tmpld = csinl(tmpld);
+           tmpld = csinhl(tmpld);
+           tmpld = csqrtl(tmpld);
+           tmpld = ctanl(tmpld);
+           tmpld = ctanhl(tmpld);
+           tmpld = cpowl(tmpld, tmpld);
+           tmpld = cprojl(tmpld);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_c99_complex_cxx11=yes
+else
+  glibcxx_cv_c99_complex_cxx11=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <complex.h>
+           typedef __complex__ float float_type;
+           typedef __complex__ double double_type;
+           typedef __complex__ long double ld_type;
+           volatile float_type tmpf;
+           volatile double_type tmpd;
+           volatile ld_type tmpld;
+           volatile float f;
+           volatile double d;
+           volatile long double ld;
+int
+main ()
+{
+f = cabsf(tmpf);
+           f = cargf(tmpf);
+           tmpf = ccosf(tmpf);
+           tmpf = ccoshf(tmpf);
+           tmpf = cexpf(tmpf);
+           tmpf = clogf(tmpf);
+           tmpf = csinf(tmpf);
+           tmpf = csinhf(tmpf);
+           tmpf = csqrtf(tmpf);
+           tmpf = ctanf(tmpf);
+           tmpf = ctanhf(tmpf);
+           tmpf = cpowf(tmpf, tmpf);
+           tmpf = cprojf(tmpf);
+           d = cabs(tmpd);
+           d = carg(tmpd);
+           tmpd = ccos(tmpd);
+           tmpd = ccosh(tmpd);
+           tmpd = cexp(tmpd);
+           tmpd = clog(tmpd);
+           tmpd = csin(tmpd);
+           tmpd = csinh(tmpd);
+           tmpd = csqrt(tmpd);
+           tmpd = ctan(tmpd);
+           tmpd = ctanh(tmpd);
+           tmpd = cpow(tmpd, tmpd);
+           tmpd = cproj(tmpd);
+           ld = cabsl(tmpld);
+           ld = cargl(tmpld);
+           tmpld = ccosl(tmpld);
+           tmpld = ccoshl(tmpld);
+           tmpld = cexpl(tmpld);
+           tmpld = clogl(tmpld);
+           tmpld = csinl(tmpld);
+           tmpld = csinhl(tmpld);
+           tmpld = csqrtl(tmpld);
+           tmpld = ctanl(tmpld);
+           tmpld = ctanhl(tmpld);
+           tmpld = cpowl(tmpld, tmpld);
+           tmpld = cprojl(tmpld);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_c99_complex_cxx11=yes
+else
+  glibcxx_cv_c99_complex_cxx11=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_complex_cxx11" >&5
+$as_echo "$glibcxx_cv_c99_complex_cxx11" >&6; }
+    if test x"$glibcxx_cv_c99_complex_cxx11" = x"yes"; then
+
+$as_echo "#define _GLIBCXX11_USE_C99_COMPLEX 1" >>confdefs.h
+
+    fi
+
+    # Check for the existence in <stdio.h> of vscanf, et. al.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <stdio.h> for C++11" >&5
+$as_echo_n "checking for ISO C99 support in <stdio.h> for C++11... " >&6; }
+    if test "${glibcxx_cv_c99_stdio_cxx11+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+      if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdio.h>
+         #include <stdarg.h>
+         void foo(char* fmt, ...)
+         {
+           va_list args; va_start(args, fmt);
+           vfscanf(stderr, "%i", args);
+           vscanf("%i", args);
+           vsnprintf(fmt, 0, "%i", args);
+           vsscanf(fmt, "%i", args);
+           snprintf(fmt, 0, "%i");
+         }
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_c99_stdio_cxx11=yes
+else
+  glibcxx_cv_c99_stdio_cxx11=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdio.h>
+         #include <stdarg.h>
+         void foo(char* fmt, ...)
+         {
+           va_list args; va_start(args, fmt);
+           vfscanf(stderr, "%i", args);
+           vscanf("%i", args);
+           vsnprintf(fmt, 0, "%i", args);
+           vsscanf(fmt, "%i", args);
+           snprintf(fmt, 0, "%i");
+         }
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_c99_stdio_cxx11=yes
+else
+  glibcxx_cv_c99_stdio_cxx11=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_stdio_cxx11" >&5
+$as_echo "$glibcxx_cv_c99_stdio_cxx11" >&6; }
+    if test x"$glibcxx_cv_c99_stdio_cxx11" = x"yes"; then
+
+$as_echo "#define _GLIBCXX11_USE_C99_STDIO 1" >>confdefs.h
+
+    fi
+
+    # Check for the existence in <stdlib.h> of lldiv_t, et. al.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <stdlib.h> for C++11" >&5
+$as_echo_n "checking for ISO C99 support in <stdlib.h> for C++11... " >&6; }
+    if test "${glibcxx_cv_c99_stdlib_cxx11+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+      if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+         volatile float f;
+         volatile long double ld;
+         volatile unsigned long long ll;
+         lldiv_t mydivt;
+int
+main ()
+{
+char* tmp;
+         f = strtof("gnu", &tmp);
+         ld = strtold("gnu", &tmp);
+         ll = strtoll("gnu", &tmp, 10);
+         ll = strtoull("gnu", &tmp, 10);
+         ll = llabs(10);
+         mydivt = lldiv(10,1);
+         ll = mydivt.quot;
+         ll = mydivt.rem;
+         ll = atoll("10");
+         _Exit(0);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_c99_stdlib_cxx11=yes
+else
+  glibcxx_cv_c99_stdlib_cxx11=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+         volatile float f;
+         volatile long double ld;
+         volatile unsigned long long ll;
+         lldiv_t mydivt;
+int
+main ()
+{
+char* tmp;
+         f = strtof("gnu", &tmp);
+         ld = strtold("gnu", &tmp);
+         ll = strtoll("gnu", &tmp, 10);
+         ll = strtoull("gnu", &tmp, 10);
+         ll = llabs(10);
+         mydivt = lldiv(10,1);
+         ll = mydivt.quot;
+         ll = mydivt.rem;
+         ll = atoll("10");
+         _Exit(0);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_c99_stdlib_cxx11=yes
+else
+  glibcxx_cv_c99_stdlib_cxx11=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_stdlib_cxx11" >&5
+$as_echo "$glibcxx_cv_c99_stdlib_cxx11" >&6; }
+    if test x"$glibcxx_cv_c99_stdlib_cxx11" = x"yes"; then
+
+$as_echo "#define _GLIBCXX11_USE_C99_STDLIB 1" >>confdefs.h
+
+    fi
+
+    # Check for the existence in <wchar.h> of wcstold, etc.
+    if test x"$ac_has_wchar_h" = xyes &&
+       test x"$ac_has_wctype_h" = xyes; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <wchar.h> for C++11" >&5
+$as_echo_n "checking for ISO C99 support in <wchar.h> for C++11... " >&6; }
+      if test "${glibcxx_cv_c99_wchar_cxx11+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <wchar.h>
+          namespace test
+          {
+            using ::wcstold;
+            using ::wcstoll;
+            using ::wcstoull;
+          }
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_c99_wchar_cxx11=yes
+else
+  glibcxx_cv_c99_wchar_cxx11=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+
+
+      # Checks for wide character functions that may not be present.
+      # Injection of these is wrapped with guard macros.
+      # NB: only put functions here, instead of immediately above, if
+      # absolutely necessary.
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <wchar.h>
+        namespace test { using ::vfwscanf; }
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_VFWSCANF 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <wchar.h>
+        namespace test { using ::vswscanf; }
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_VSWSCANF 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <wchar.h>
+        namespace test { using ::vwscanf; }
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_VWSCANF 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <wchar.h>
+        namespace test { using ::wcstof; }
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_WCSTOF 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <wctype.h>
+int
+main ()
+{
+wint_t t; int i = iswblank(t);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_ISWBLANK 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_wchar_cxx11" >&5
+$as_echo "$glibcxx_cv_c99_wchar_cxx11" >&6; }
+      if test x"$glibcxx_cv_c99_wchar_cxx11" = x"yes"; then
+
+$as_echo "#define _GLIBCXX11_USE_C99_WCHAR 1" >>confdefs.h
+
+      fi
+    fi
+
+    gcc_no_link="$ac_save_gcc_no_link"
+    LIBS="$ac_save_LIBS"
+    CXXFLAGS="$ac_save_CXXFLAGS"
+    ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'

@@ -1444,6 +1444,11 @@ grep '^type _inotify_event ' gen-sysinfo.go | \
 # The GNU/Linux CLONE flags.
 grep '^const _CLONE_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(CLONE_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+# We need some CLONE constants that are not defined in older versions
+# of glibc.
+if ! grep '^const CLONE_NEWUSER ' ${OUT} > /dev/null 2>&1; then
+  echo "const CLONE_NEWUSER = 0x10000000" >> ${OUT}
+fi
 
 # Struct sizes.
 set cmsghdr Cmsghdr ip_mreq IPMreq ip_mreqn IPMreqn ipv6_mreq IPv6Mreq \
@@ -1481,6 +1486,26 @@ fi
 # The Solaris 11 Update 1 _zone_net_addr_t struct.
 grep '^type _zone_net_addr_t ' gen-sysinfo.go | \
     sed -e 's/_in6_addr/[16]byte/' \
+    >> ${OUT}
+
+# The Solaris 12 _flow_arp_desc_t struct.
+grep '^type _flow_arp_desc_t ' gen-sysinfo.go | \
+    sed -e 's/_in6_addr_t/[16]byte/g' \
+    >> ${OUT}
+
+# The Solaris 12 _flow_l3_desc_t struct.
+grep '^type _flow_l3_desc_t ' gen-sysinfo.go | \
+    sed -e 's/_in6_addr_t/[16]byte/g' \
+    >> ${OUT}
+
+# The Solaris 12 _mac_ipaddr_t struct.
+grep '^type _mac_ipaddr_t ' gen-sysinfo.go | \
+    sed -e 's/_in6_addr_t/[16]byte/g' \
+    >> ${OUT}
+
+# The Solaris 12 _mactun_info_t struct.
+grep '^type _mactun_info_t ' gen-sysinfo.go | \
+    sed -e 's/_in6_addr_t/[16]byte/g' \
     >> ${OUT}
 
 exit $?

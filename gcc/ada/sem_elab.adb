@@ -597,6 +597,11 @@ package body Sem_Elab is
       --  non-visible unit. This is the scope that is to be investigated to
       --  see whether an elaboration check is required.
 
+      Is_DIC_Proc : Boolean := False;
+      --  Flag set when the call denotes the Default_Initial_Condition
+      --  procedure of a private type that wraps a nontrivial assertion
+      --  expression.
+
       Issue_In_SPARK : Boolean;
       --  Flag set when a source entity is called during elaboration in SPARK
 
@@ -966,7 +971,16 @@ package body Sem_Elab is
          return;
       end if;
 
-      Issue_In_SPARK := SPARK_Mode = On and Comes_From_Source (Ent);
+      Is_DIC_Proc := Is_Nontrivial_Default_Init_Cond_Procedure (Ent);
+
+      --  Elaboration issues in SPARK are reported only for source constructs
+      --  and for nontrivial Default_Initial_Condition procedures. The latter
+      --  must be checked because the default initialization of an object of a
+      --  private type triggers the evaluation of the Default_Initial_Condition
+      --  expression, which in turn may have side effects.
+
+      Issue_In_SPARK :=
+        SPARK_Mode = On and (Comes_From_Source (Ent) or Is_DIC_Proc);
 
       --  Now check if an Elaborate_All (or dynamic check) is needed
 
@@ -1016,7 +1030,20 @@ package body Sem_Elab is
                   Ent);
 
             elsif Issue_In_SPARK then
-               Error_Msg_NE ("call to & during elaboration in SPARK", N, Ent);
+
+               --  Emit a specialized error message when the elaboration of an
+               --  object of a private type evaluates the expression of pragma
+               --  Default_Initial_Condition. This prevents the internal name
+               --  of the procedure from appearing in the error message.
+
+               if Is_DIC_Proc then
+                  Error_Msg_N
+                    ("call to Default_Initial_Condition during elaboration in "
+                     & "SPARK", N);
+               else
+                  Error_Msg_NE
+                    ("call to & during elaboration in SPARK", N, Ent);
+               end if;
 
             else
                Elab_Warning
@@ -2095,12 +2122,6 @@ package body Sem_Elab is
       Outer_Scope : Entity_Id;
       Orig_Ent    : Entity_Id)
    is
-      Loc       : constant Source_Ptr := Sloc (N);
-      Inst_Case : constant Boolean := Is_Generic_Unit (E);
-
-      Sbody : Node_Id;
-      Ebody : Entity_Id;
-
       function Find_Elab_Reference (N : Node_Id) return Traverse_Result;
       --  Function applied to each node as we traverse the body. Checks for
       --  call or entity reference that needs checking, and if so checks it.
@@ -2207,6 +2228,12 @@ package body Sem_Elab is
             return OK;
          end if;
       end Find_Elab_Reference;
+
+      Inst_Case : constant Boolean    := Is_Generic_Unit (E);
+      Loc       : constant Source_Ptr := Sloc (N);
+
+      Ebody : Entity_Id;
+      Sbody : Node_Id;
 
    --  Start of processing for Check_Internal_Call_Continue
 
@@ -2352,27 +2379,43 @@ package body Sem_Elab is
       --  Not that special case, warning and dynamic check is required
 
       --  If we have nothing in the call stack, then this is at the outer
-      --  level, and the ABE is bound to occur, unless it's a 'Access.
+      --  level, and the ABE is bound to occur, unless it's a 'Access, or
+      --  it's a renaming.
 
       if Elab_Call.Last = 0 then
          Error_Msg_Warn := SPARK_Mode /= On;
 
-         if Inst_Case then
-            Error_Msg_NE
-              ("cannot instantiate& before body seen<<", N, Orig_Ent);
-         elsif Nkind (N) /= N_Attribute_Reference then
-            Error_Msg_NE
-              ("cannot call& before body seen<<", N, Orig_Ent);
-         else
-            Error_Msg_NE
-              ("Access attribute of & before body seen<<", N, Orig_Ent);
-            Error_Msg_N ("\possible Program_Error on later references<", N);
-         end if;
+         declare
+            Insert_Check : Boolean := True;
+            --  This flag is set to True if an elaboration check should be
+            --  inserted.
 
-         if Nkind (N) /= N_Attribute_Reference then
-            Error_Msg_N ("\Program_Error [<<", N);
-            Insert_Elab_Check (N);
-         end if;
+         begin
+            if Inst_Case then
+               Error_Msg_NE
+                 ("cannot instantiate& before body seen<<", N, Orig_Ent);
+
+            elsif Nkind (N) = N_Attribute_Reference then
+               Error_Msg_NE
+                 ("Access attribute of & before body seen<<", N, Orig_Ent);
+               Error_Msg_N ("\possible Program_Error on later references<", N);
+               Insert_Check := False;
+
+            elsif Nkind (Unit_Declaration_Node (Orig_Ent)) /=
+                    N_Subprogram_Renaming_Declaration
+            then
+               Error_Msg_NE
+                 ("cannot call& before body seen<<", N, Orig_Ent);
+
+            elsif not Is_Generic_Actual_Subprogram (Orig_Ent) then
+               Insert_Check := False;
+            end if;
+
+            if Insert_Check then
+               Error_Msg_N ("\Program_Error [<<", N);
+               Insert_Elab_Check (N);
+            end if;
+         end;
 
       --  Call is not at outer level
 

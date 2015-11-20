@@ -4874,8 +4874,9 @@ static void initialize_obstack(__sanitizer_obstack *obstack) {
                                         sizeof(*obstack->chunk));
 }
 
-INTERCEPTOR(int, _obstack_begin_1, __sanitizer_obstack *obstack, int sz,
-            int align, void *(*alloc_fn)(uptr arg, uptr sz),
+INTERCEPTOR(int, _obstack_begin_1, __sanitizer_obstack *obstack,
+            _OBSTACK_SIZE_T sz, _OBSTACK_SIZE_T align,
+            void *(*alloc_fn)(uptr arg, SIZE_T sz),
             void (*free_fn)(uptr arg, void *p)) {
   void *ctx;
   COMMON_INTERCEPTOR_ENTER(ctx, _obstack_begin_1, obstack, sz, align, alloc_fn,
@@ -4884,8 +4885,10 @@ INTERCEPTOR(int, _obstack_begin_1, __sanitizer_obstack *obstack, int sz,
   if (res) initialize_obstack(obstack);
   return res;
 }
-INTERCEPTOR(int, _obstack_begin, __sanitizer_obstack *obstack, int sz,
-            int align, void *(*alloc_fn)(uptr sz), void (*free_fn)(void *p)) {
+INTERCEPTOR(int, _obstack_begin, __sanitizer_obstack *obstack,
+            _OBSTACK_SIZE_T sz, _OBSTACK_SIZE_T align,
+            void *(*alloc_fn)(SIZE_T sz),
+            void (*free_fn)(void *p)) {
   void *ctx;
   COMMON_INTERCEPTOR_ENTER(ctx, _obstack_begin, obstack, sz, align, alloc_fn,
                            free_fn);
@@ -4893,7 +4896,8 @@ INTERCEPTOR(int, _obstack_begin, __sanitizer_obstack *obstack, int sz,
   if (res) initialize_obstack(obstack);
   return res;
 }
-INTERCEPTOR(void, _obstack_newchunk, __sanitizer_obstack *obstack, int length) {
+INTERCEPTOR(void, _obstack_newchunk, __sanitizer_obstack *obstack,
+            _OBSTACK_SIZE_T length) {
   void *ctx;
   COMMON_INTERCEPTOR_ENTER(ctx, _obstack_newchunk, obstack, length);
   REAL(_obstack_newchunk)(obstack, length);

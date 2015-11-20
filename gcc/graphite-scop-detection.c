@@ -88,6 +88,200 @@ public:
       if (dump_file && (dump_flags & TDF_DETAILS)) { args; }	\
     } while (0);
 
+/* Pretty print to FILE all the SCoPs in DOT format and mark them with
+   different colors.  If there are not enough colors, paint the
+   remaining SCoPs in gray.
+
+   Special nodes:
+   - "*" after the node number denotes the entry of a SCoP,
+   - "#" after the node number denotes the exit of a SCoP,
+   - "()" around the node number denotes the entry or the
+     exit nodes of the SCOP.  These are not part of SCoP.  */
+
+static void
+dot_all_scops_1 (FILE *file, vec<scop_p> scops)
+{
+  basic_block bb;
+  edge e;
+  edge_iterator ei;
+  scop_p scop;
+  const char *color;
+  int i;
+
+  /* Disable debugging while printing graph.  */
+  int tmp_dump_flags = dump_flags;
+  dump_flags = 0;
+
+  fprintf (file, "digraph all {\n");
+
+  FOR_ALL_BB_FN (bb, cfun)
+    {
+      int part_of_scop = false;
+
+      /* Use HTML for every bb label.  So we are able to print bbs
+	 which are part of two different SCoPs, with two different
+	 background colors.  */
+      fprintf (file, "%d [label=<\n  <TABLE BORDER=\"0\" CELLBORDER=\"1\" ",
+	       bb->index);
+      fprintf (file, "CELLSPACING=\"0\">\n");
+
+      /* Select color for SCoP.  */
+      FOR_EACH_VEC_ELT (scops, i, scop)
+	{
+	  sese_l region = scop->scop_info->region;
+	  if (bb_in_sese_p (bb, region) || (region.exit->dest == bb)
+	      || (region.entry->dest == bb))
+	    {
+	      switch (i % 17)
+		{
+		case 0: /* red */
+		  color = "#e41a1c";
+		  break;
+		case 1: /* blue */
+		  color = "#377eb8";
+		  break;
+		case 2: /* green */
+		  color = "#4daf4a";
+		  break;
+		case 3: /* purple */
+		  color = "#984ea3";
+		  break;
+		case 4: /* orange */
+		  color = "#ff7f00";
+		  break;
+		case 5: /* yellow */
+		  color = "#ffff33";
+		  break;
+		case 6: /* brown */
+		  color = "#a65628";
+		  break;
+		case 7: /* rose */
+		  color = "#f781bf";
+		  break;
+		case 8:
+		  color = "#8dd3c7";
+		  break;
+		case 9:
+		  color = "#ffffb3";
+		  break;
+		case 10:
+		  color = "#bebada";
+		  break;
+		case 11:
+		  color = "#fb8072";
+		  break;
+		case 12:
+		  color = "#80b1d3";
+		  break;
+		case 13:
+		  color = "#fdb462";
+		  break;
+		case 14:
+		  color = "#b3de69";
+		  break;
+		case 15:
+		  color = "#fccde5";
+		  break;
+		case 16:
+		  color = "#bc80bd";
+		  break;
+		default: /* gray */
+		  color = "#999999";
+		}
+
+	      fprintf (file, "    <TR><TD WIDTH=\"50\" BGCOLOR=\"%s\">",
+		       color);
+
+	      if (!bb_in_sese_p (bb, region))
+		fprintf (file, " (");
+
+	      if (bb == region.entry->dest && bb == region.exit->dest)
+		fprintf (file, " %d*# ", bb->index);
+	      else if (bb == region.entry->dest)
+		fprintf (file, " %d* ", bb->index);
+	      else if (bb == region.exit->dest)
+		fprintf (file, " %d# ", bb->index);
+	      else
+		fprintf (file, " %d ", bb->index);
+
+	      fprintf (file, "{lp_%d}", bb->loop_father->num);
+
+	      if (!bb_in_sese_p (bb, region))
+		fprintf (file, ")");
+
+	      fprintf (file, "</TD></TR>\n");
+	      part_of_scop = true;
+	    }
+	}
+
+	if (!part_of_scop)
+	  {
+	    fprintf (file, "    <TR><TD WIDTH=\"50\" BGCOLOR=\"#ffffff\">");
+	    fprintf (file, " %d {lp_%d} </TD></TR>\n", bb->index,
+		     bb->loop_father->num);
+	  }
+	fprintf (file, "  </TABLE>>, shape=box, style=\"setlinewidth(0)\"]\n");
+    }
+
+    FOR_ALL_BB_FN (bb, cfun)
+      {
+	FOR_EACH_EDGE (e, ei, bb->succs)
+	  fprintf (file, "%d -> %d;\n", bb->index, e->dest->index);
+      }
+
+  fputs ("}\n\n", file);
+
+  /* Enable debugging again.  */
+  dump_flags = tmp_dump_flags;
+}
+
+/* Display all SCoPs using dotty.  */
+
+DEBUG_FUNCTION void
+dot_all_scops (vec<scop_p> scops)
+{
+  /* When debugging, enable the following code.  This cannot be used
+     in production compilers because it calls "system".  */
+#if 0
+  int x;
+  FILE *stream = fopen ("/tmp/allscops.dot", "w");
+  gcc_assert (stream);
+
+  dot_all_scops_1 (stream, scops);
+  fclose (stream);
+
+  x = system ("dotty /tmp/allscops.dot &");
+#else
+  dot_all_scops_1 (stderr, scops);
+#endif
+}
+
+/* Display all SCoPs using dotty.  */
+
+DEBUG_FUNCTION void
+dot_scop (scop_p scop)
+{
+  auto_vec<scop_p, 1> scops;
+
+  if (scop)
+    scops.safe_push (scop);
+
+  /* When debugging, enable the following code.  This cannot be used
+     in production compilers because it calls "system".  */
+#if 0
+  {
+    int x;
+    FILE *stream = fopen ("/tmp/allscops.dot", "w");
+    gcc_assert (stream);
+
+    dot_all_scops_1 (stream, scops);
+    fclose (stream);
+    x = system ("dotty /tmp/allscops.dot &");
+  }
+#else
+  dot_all_scops_1 (stderr, scops);
+#endif
+}
 
 /* Return true if BB is empty, contains only DEBUG_INSNs.  */
 
@@ -327,6 +521,11 @@ class scop_detection
 {
 public:
   scop_detection () : scops (vNULL) {}
+
+  ~scop_detection ()
+  {
+    scops.release ();
+  }
 
   /* A marker for invalid sese_l.  */
   static sese_l invalid_sese;
@@ -600,7 +799,8 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
 					      get_entry_bb (second));
 
   edge entry = get_nearest_dom_with_single_entry (dom);
-  if (!entry)
+
+  if (!entry || (entry->flags & EDGE_IRREDUCIBLE_LOOP))
     return invalid_sese;
 
   basic_block pdom = nearest_common_dominator (CDI_POST_DOMINATORS,
@@ -609,7 +809,8 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
   pdom = nearest_common_dominator (CDI_POST_DOMINATORS, dom, pdom);
 
   edge exit = get_nearest_pdom_with_single_exit (pdom);
-  if (!exit)
+
+  if (!exit || (exit->flags & EDGE_IRREDUCIBLE_LOOP))
     return invalid_sese;
 
   sese_l combined (entry, exit);
@@ -729,6 +930,7 @@ scop_detection::can_represent_loop_1 (loop_p loop, sese_l scop)
   struct tree_niter_desc niter_desc;
 
   return single_exit (loop)
+    && !(loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP)
     && number_of_iterations_exit (loop, single_exit (loop), &niter_desc, false)
     && niter_desc.control.no_overflow
     && (niter = number_of_latch_executions (loop))
@@ -761,6 +963,13 @@ scop_detection::loop_is_valid_scop (loop_p loop, sese_l scop) const
 {
   if (!scop)
     return false;
+
+  if (!optimize_loop_nest_for_speed_p (loop))
+    {
+      DEBUG_PRINT (dp << "[scop-detection-fail] loop_"
+		      << loop->num << " is not on a hot path.\n");
+      return false;
+    }
 
   if (!can_represent_loop (loop, scop))
     {
@@ -853,17 +1062,32 @@ scop_detection::harmful_stmt_in_region (sese_l scop) const
   basic_block bb;
   FOR_EACH_VEC_ELT (dom, i, bb)
     {
-      DEBUG_PRINT (dp << "\nVisiting bb_" << bb->index);
+      DEBUG_PRINT (dp << "Visiting bb_" << bb->index << "\n");
 
       /* We don't want to analyze any bb outside sese.  */
       if (!dominated_by_p (CDI_POST_DOMINATORS, bb, exit_bb))
 	continue;
 
+      /* Basic blocks dominated by the scop->exit are not in the scop.  */
+      if (bb != exit_bb && dominated_by_p (CDI_DOMINATORS, bb, exit_bb))
+	continue;
+
+      /* The basic block should not be part of an irreducible loop.  */
+      if (bb->flags & BB_IRREDUCIBLE_LOOP)
+	{
+	  dom.release ();
+	  return true;
+	}
+
       if (harmful_stmt_in_bb (scop, bb))
-	return true;
+	{
+	  dom.release ();
+	  return true;
+	}
     }
 
-    return false;
+  dom.release ();
+  return false;
 }
 
 /* Returns true if S1 subsumes/surrounds S2.  */
@@ -1228,201 +1452,6 @@ scop_detection::harmful_stmt_in_bb (sese_l scop, basic_block bb) const
   return false;
 }
 
-/* Pretty print to FILE all the SCoPs in DOT format and mark them with
-   different colors.  If there are not enough colors, paint the
-   remaining SCoPs in gray.
-
-   Special nodes:
-   - "*" after the node number denotes the entry of a SCoP,
-   - "#" after the node number denotes the exit of a SCoP,
-   - "()" around the node number denotes the entry or the
-     exit nodes of the SCOP.  These are not part of SCoP.  */
-
-static void
-dot_all_scops_1 (FILE *file, vec<scop_p> scops)
-{
-  basic_block bb;
-  edge e;
-  edge_iterator ei;
-  scop_p scop;
-  const char *color;
-  int i;
-
-  /* Disable debugging while printing graph.  */
-  int tmp_dump_flags = dump_flags;
-  dump_flags = 0;
-
-  fprintf (file, "digraph all {\n");
-
-  FOR_ALL_BB_FN (bb, cfun)
-    {
-      int part_of_scop = false;
-
-      /* Use HTML for every bb label.  So we are able to print bbs
-	 which are part of two different SCoPs, with two different
-	 background colors.  */
-      fprintf (file, "%d [label=<\n  <TABLE BORDER=\"0\" CELLBORDER=\"1\" ",
-	       bb->index);
-      fprintf (file, "CELLSPACING=\"0\">\n");
-
-      /* Select color for SCoP.  */
-      FOR_EACH_VEC_ELT (scops, i, scop)
-	{
-	  sese_l region = scop->scop_info->region;
-	  if (bb_in_sese_p (bb, region) || (region.exit->dest == bb)
-	      || (region.entry->dest == bb))
-	    {
-	      switch (i % 17)
-		{
-		case 0: /* red */
-		  color = "#e41a1c";
-		  break;
-		case 1: /* blue */
-		  color = "#377eb8";
-		  break;
-		case 2: /* green */
-		  color = "#4daf4a";
-		  break;
-		case 3: /* purple */
-		  color = "#984ea3";
-		  break;
-		case 4: /* orange */
-		  color = "#ff7f00";
-		  break;
-		case 5: /* yellow */
-		  color = "#ffff33";
-		  break;
-		case 6: /* brown */
-		  color = "#a65628";
-		  break;
-		case 7: /* rose */
-		  color = "#f781bf";
-		  break;
-		case 8:
-		  color = "#8dd3c7";
-		  break;
-		case 9:
-		  color = "#ffffb3";
-		  break;
-		case 10:
-		  color = "#bebada";
-		  break;
-		case 11:
-		  color = "#fb8072";
-		  break;
-		case 12:
-		  color = "#80b1d3";
-		  break;
-		case 13:
-		  color = "#fdb462";
-		  break;
-		case 14:
-		  color = "#b3de69";
-		  break;
-		case 15:
-		  color = "#fccde5";
-		  break;
-		case 16:
-		  color = "#bc80bd";
-		  break;
-		default: /* gray */
-		  color = "#999999";
-		}
-
-	      fprintf (file, "    <TR><TD WIDTH=\"50\" BGCOLOR=\"%s\">",
-		       color);
-
-	      if (!bb_in_sese_p (bb, region))
-		fprintf (file, " (");
-
-	      if (bb == region.entry->dest && bb == region.exit->dest)
-		fprintf (file, " %d*# ", bb->index);
-	      else if (bb == region.entry->dest)
-		fprintf (file, " %d* ", bb->index);
-	      else if (bb == region.exit->dest)
-		fprintf (file, " %d# ", bb->index);
-	      else
-		fprintf (file, " %d ", bb->index);
-
-	      fprintf (file, "{lp_%d}", bb->loop_father->num);
-
-	      if (!bb_in_sese_p (bb, region))
-		fprintf (file, ")");
-
-	      fprintf (file, "</TD></TR>\n");
-	      part_of_scop = true;
-	    }
-	}
-
-	if (!part_of_scop)
-	  {
-	    fprintf (file, "    <TR><TD WIDTH=\"50\" BGCOLOR=\"#ffffff\">");
-	    fprintf (file, " %d {lp_%d} </TD></TR>\n", bb->index,
-		     bb->loop_father->num);
-	  }
-	fprintf (file, "  </TABLE>>, shape=box, style=\"setlinewidth(0)\"]\n");
-    }
-
-    FOR_ALL_BB_FN (bb, cfun)
-      {
-	FOR_EACH_EDGE (e, ei, bb->succs)
-	  fprintf (file, "%d -> %d;\n", bb->index, e->dest->index);
-      }
-
-  fputs ("}\n\n", file);
-
-  /* Enable debugging again.  */
-  dump_flags = tmp_dump_flags;
-}
-
-/* Display all SCoPs using dotty.  */
-
-DEBUG_FUNCTION void
-dot_all_scops (vec<scop_p> scops)
-{
-  /* When debugging, enable the following code.  This cannot be used
-     in production compilers because it calls "system".  */
-#if 0
-  int x;
-  FILE *stream = fopen ("/tmp/allscops.dot", "w");
-  gcc_assert (stream);
-
-  dot_all_scops_1 (stream, scops);
-  fclose (stream);
-
-  x = system ("dotty /tmp/allscops.dot &");
-#else
-  dot_all_scops_1 (stderr, scops);
-#endif
-}
-
-/* Display all SCoPs using dotty.  */
-
-DEBUG_FUNCTION void
-dot_scop (scop_p scop)
-{
-  auto_vec<scop_p, 1> scops;
-
-  if (scop)
-    scops.safe_push (scop);
-
-  /* When debugging, enable the following code.  This cannot be used
-     in production compilers because it calls "system".  */
-#if 0
-  {
-    int x;
-    FILE *stream = fopen ("/tmp/allscops.dot", "w");
-    gcc_assert (stream);
-
-    dot_all_scops_1 (stream, scops);
-    fclose (stream);
-    x = system ("dotty /tmp/allscops.dot &");
-  }
-#else
-  dot_all_scops_1 (stderr, scops);
-#endif
-}
-
 /* Return true when the body of LOOP has statements that can be represented as a
    valid scop.  */
 
@@ -1494,7 +1523,7 @@ parameter_index_in_region_1 (tree name, sese_info_p region)
 
   gcc_assert (TREE_CODE (name) == SSA_NAME);
 
-  FOR_EACH_VEC_ELT (SESE_PARAMS (region), i, p)
+  FOR_EACH_VEC_ELT (region->params, i, p)
     if (p == name)
       return i;
 
@@ -1523,8 +1552,8 @@ parameter_index_in_region (tree name, sese_info_p region)
   if (i != -1)
     return i;
 
-  i = SESE_PARAMS (region).length ();
-  SESE_PARAMS (region).safe_push (name);
+  i = region->params.length ();
+  region->params.safe_push (name);
   return i;
 }
 
@@ -1622,7 +1651,7 @@ find_scop_parameters (scop_p scop)
   struct loop *loop;
 
   /* Find the parameters used in the loop bounds.  */
-  FOR_EACH_VEC_ELT (SESE_LOOP_NEST (region), i, loop)
+  FOR_EACH_VEC_ELT (region->loop_nest, i, loop)
     {
       tree nb_iters = number_of_latch_executions (loop);
 
@@ -1642,14 +1671,104 @@ find_scop_parameters (scop_p scop)
   scop_set_nb_params (scop, nbp);
 }
 
+/* Record DEF if it is used in other bbs different than DEF_BB in the SCOP.  */
+
+static void
+build_cross_bb_scalars_def (scop_p scop, tree def, basic_block def_bb,
+			     vec<tree> *writes)
+{
+  gcc_assert (def);
+  if (!is_gimple_reg (def))
+    return;
+
+  /* Do not gather scalar variables that can be analyzed by SCEV as they can be
+     generated out of the induction variables.  */
+  if (scev_analyzable_p (def, scop->scop_info->region))
+    return;
+
+  gimple *use_stmt;
+  imm_use_iterator imm_iter;
+  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
+    if (def_bb != gimple_bb (use_stmt) && !is_gimple_debug (use_stmt))
+      {
+	writes->safe_push (def);
+	DEBUG_PRINT (dp << "Adding scalar write:\n";
+		     print_generic_expr (dump_file, def, 0);
+		     dp << "From stmt:\n";
+		     print_gimple_stmt (dump_file,
+					SSA_NAME_DEF_STMT (def), 0, 0));
+	/* This is required by the FOR_EACH_IMM_USE_STMT when we want to break
+	   before all the uses have been visited.  */
+	BREAK_FROM_IMM_USE_STMT (imm_iter);
+      }
+}
+
+/* Record DEF if it is used in other bbs different than DEF_BB in the SCOP.  */
+
+static void
+build_cross_bb_scalars_use (scop_p scop, tree use, gimple *use_stmt,
+			    vec<scalar_use> *reads)
+{
+  gcc_assert (use);
+  if (!is_gimple_reg (use))
+    return;
+
+  /* Do not gather scalar variables that can be analyzed by SCEV as they can be
+     generated out of the induction variables.  */
+  if (scev_analyzable_p (use, scop->scop_info->region))
+    return;
+
+  gimple *def_stmt = SSA_NAME_DEF_STMT (use);
+  if (gimple_bb (def_stmt) != gimple_bb (use_stmt))
+    {
+      DEBUG_PRINT (dp << "\nAdding scalar read:";
+		   print_generic_expr (dump_file, use, 0);
+		   dp << "\nFrom stmt:";
+		   print_gimple_stmt (dump_file, use_stmt, 0, 0));
+      reads->safe_push (std::make_pair (use_stmt, use));
+    }
+}
+
+/* Record all scalar variables that are defined and used in different BBs of the
+   SCOP.  */
+
+static void
+graphite_find_cross_bb_scalar_vars (scop_p scop, gimple *stmt,
+				    vec<scalar_use> *reads, vec<tree> *writes)
+{
+  tree def;
+
+  if (gimple_code (stmt) == GIMPLE_ASSIGN)
+    def = gimple_assign_lhs (stmt);
+  else if (gimple_code (stmt) == GIMPLE_CALL)
+    def = gimple_call_lhs (stmt);
+  else if (gimple_code (stmt) == GIMPLE_PHI)
+    def = gimple_phi_result (stmt);
+  else
+    return;
+
+
+  build_cross_bb_scalars_def (scop, def, gimple_bb (stmt), writes);
+
+  ssa_op_iter iter;
+  use_operand_p use_p;
+  FOR_EACH_PHI_OR_STMT_USE (use_p, stmt, iter, SSA_OP_USE)
+    {
+      tree use = USE_FROM_PTR (use_p);
+      build_cross_bb_scalars_use (scop, use, stmt, reads);
+    }
+}
+
 /* Generates a polyhedral black box only if the bb contains interesting
    information.  */
 
 static gimple_poly_bb_p
 try_generate_gimple_bb (scop_p scop, basic_block bb)
 {
-  vec<data_reference_p> drs;
-  drs.create (5);
+  vec<data_reference_p> drs = vNULL;
+  vec<tree> writes = vNULL;
+  vec<scalar_use> reads = vNULL;
+
   sese_l region = scop->scop_info->region;
   loop_p nest = outermost_loop_in_sese (region, bb);
 
@@ -1657,17 +1776,58 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
   if (!loop_in_sese_p (loop, region))
     loop = nest;
 
-  gimple_stmt_iterator gsi;
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+       gsi_next (&gsi))
     {
       gimple *stmt = gsi_stmt (gsi);
       if (is_gimple_debug (stmt))
 	continue;
 
       graphite_find_data_references_in_stmt (nest, loop, stmt, &drs);
+      graphite_find_cross_bb_scalar_vars (scop, stmt, &reads, &writes);
     }
 
-  return new_gimple_poly_bb (bb, drs);
+  for (gphi_iterator psi = gsi_start_phis (bb); !gsi_end_p (psi);
+       gsi_next (&psi))
+    if (!virtual_operand_p (gimple_phi_result (psi.phi ())))
+      graphite_find_cross_bb_scalar_vars (scop, psi.phi (), &reads, &writes);
+
+  if (drs.is_empty () && writes.is_empty () && reads.is_empty ())
+    return NULL;
+
+  return new_gimple_poly_bb (bb, drs, reads, writes);
+}
+
+/* Compute alias-sets for all data references in DRS.  */
+
+static void
+build_alias_set (scop_p scop)
+{
+  int num_vertices = scop->drs.length ();
+  struct graph *g = new_graph (num_vertices);
+  dr_info *dr1, *dr2;
+  int i, j;
+  int *all_vertices;
+
+  FOR_EACH_VEC_ELT (scop->drs, i, dr1)
+    for (j = i+1; scop->drs.iterate (j, &dr2); j++)
+      if (dr_may_alias_p (dr1->dr, dr2->dr, true))
+	{
+	  add_edge (g, i, j);
+	  add_edge (g, j, i);
+	}
+
+  all_vertices = XNEWVEC (int, num_vertices);
+  for (i = 0; i < num_vertices; i++)
+    all_vertices[i] = i;
+
+  graphds_dfs (g, all_vertices, num_vertices, NULL, true, NULL);
+  free (all_vertices);
+
+  for (i = 0; i < g->n_vertices; i++)
+    scop->drs[i].alias_set = g->vertices[i].component + 1;
+
+  free_graph (g);
 }
 
 /* Gather BBs and conditions for a SCOP.  */
@@ -1715,11 +1875,19 @@ gather_bbs::before_dom_children (basic_block bb)
   scop->scop_info->bbs.safe_push (bb);
 
   gimple_poly_bb_p gbb = try_generate_gimple_bb (scop, bb);
+  if (!gbb)
+    return;
+
   GBB_CONDITIONS (gbb) = conditions.copy ();
   GBB_CONDITION_CASES (gbb) = cases.copy ();
 
   poly_bb_p pbb = new_poly_bb (scop, gbb);
   scop->pbbs.safe_push (pbb);
+
+  int i;
+  data_reference_p dr;
+  FOR_EACH_VEC_ELT (gbb->data_refs, i, dr)
+    scop->drs.safe_push (dr_info (dr, pbb));
 }
 
 /* Call-back for dom_walk executed after visiting the dominated
@@ -1763,6 +1931,8 @@ build_scops (vec<scop_p> *scops)
       /* Record all basic blocks and their conditions in REGION.  */
       gather_bbs (CDI_DOMINATORS, scop).walk (cfun->cfg->x_entry_block_ptr);
 
+      build_alias_set (scop);
+
       /* Do not optimize a scop containing only PBBs that do not belong
 	 to any loops.  */
       if (sb.nb_pbbs_in_loops (scop) == 0)
@@ -1794,7 +1964,6 @@ build_scops (vec<scop_p> *scops)
 		          << scop_nb_params (scop)
 		          << " larger than --param graphite-max-nb-scop-params="
 		          << max_dim << ".\n");
-
 	  free_scop (scop);
 	  continue;
 	}

@@ -162,7 +162,7 @@ static bool mmix_frame_pointer_required (void);
 static void mmix_asm_trampoline_template (FILE *);
 static void mmix_trampoline_init (rtx, tree, rtx);
 static void mmix_print_operand (FILE *, rtx, int);
-static void mmix_print_operand_address (FILE *, rtx);
+static void mmix_print_operand_address (FILE *, machine_mode, rtx);
 static bool mmix_print_operand_punct_valid_p (unsigned char);
 static void mmix_conditional_register_usage (void);
 
@@ -1697,7 +1697,7 @@ mmix_print_operand (FILE *stream, rtx x, int code)
       return;
 
     case MEM:
-      output_address (XEXP (modified_x, 0));
+      output_address (GET_MODE (modified_x), XEXP (modified_x, 0));
       return;
 
     case CONST_INT:
@@ -1754,7 +1754,7 @@ mmix_print_operand_punct_valid_p (unsigned char code)
 /* TARGET_PRINT_OPERAND_ADDRESS.  */
 
 static void
-mmix_print_operand_address (FILE *stream, rtx x)
+mmix_print_operand_address (FILE *stream, machine_mode /*mode*/, rtx x)
 {
   if (REG_P (x))
     {

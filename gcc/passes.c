@@ -81,6 +81,13 @@ opt_pass::clone ()
   internal_error ("pass %s does not support cloning", name);
 }
 
+void
+opt_pass::set_pass_param (unsigned int, bool)
+{
+  internal_error ("pass %s needs a set_pass_param implementation to handle the"
+		  " extra argument in NEXT_PASS", name);
+}
+
 bool
 opt_pass::gate (function *)
 {
@@ -144,7 +151,6 @@ debug_pass (void)
 
 /* Global variables used to communicate with passes.  */
 bool in_gimple_form;
-bool first_pass_instance;
 
 
 /* This is called from various places for FUNCTION_DECL, VAR_DECL,
@@ -1572,6 +1578,12 @@ pass_manager::pass_manager (context *ctxt)
     p = next_pass_1 (p, PASS ## _ ## NUM, PASS ## _1);  \
   } while (0)
 
+#define NEXT_PASS_WITH_ARG(PASS, NUM, ARG)		\
+    do {						\
+      NEXT_PASS (PASS, NUM);				\
+      PASS ## _ ## NUM->set_pass_param (0, ARG);	\
+    } while (0)
+
 #define TERMINATE_PASS_LIST() \
   *p = NULL;
 
@@ -1581,6 +1593,7 @@ pass_manager::pass_manager (context *ctxt)
 #undef PUSH_INSERT_PASSES_WITHIN
 #undef POP_INSERT_PASSES
 #undef NEXT_PASS
+#undef NEXT_PASS_WITH_ARG
 #undef TERMINATE_PASS_LIST
 
   /* Register the passes with the tree dump code.  */
@@ -1706,7 +1719,12 @@ do_per_function_toporder (void (*callback) (function *, void *data), void *data)
 	  order[i] = NULL;
 	  node->process = 0;
 	  if (node->has_gimple_body_p ())
-	    callback (DECL_STRUCT_FUNCTION (node->decl), data);
+	    {
+	      struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
+	      push_cfun (fn);
+	      callback (fn, data);
+	      pop_cfun ();
+	    }
 	}
       symtab->remove_cgraph_removal_hook (hook);
     }
@@ -1986,9 +2004,6 @@ execute_todo (unsigned int flags)
 
   timevar_push (TV_TODO);
 
-  /* Inform the pass whether it is the first time it is run.  */
-  first_pass_instance = (flags & TODO_mark_first_instance) != 0;
-
   statistics_fini_pass ();
 
   if (flags)
@@ -2053,6 +2068,18 @@ verify_curr_properties (function *fn, void *data)
   gcc_assert ((fn->curr_properties & props) == props);
 }
 
+/* Release dump file name if set.  */
+
+static void
+release_dump_file_name (void)
+{
+  if (dump_file_name)
+    {
+      free (CONST_CAST (char *, dump_file_name));
+      dump_file_name = NULL;
+    }
+}
+
 /* Initialize pass dump file.  */
 /* This is non-static so that the plugins can use it.  */
 
@@ -2066,6 +2093,7 @@ pass_init_dump_file (opt_pass *pass)
       gcc::dump_manager *dumps = g->get_dumps ();
       bool initializing_dump =
 	!dumps->dump_initialized_p (pass->static_pass_number);
+      release_dump_file_name ();
       dump_file_name = dumps->get_dump_file_name (pass->static_pass_number);
       dumps->dump_start (pass->static_pass_number, &dump_flags);
       if (dump_file && current_function_decl)
@@ -2093,11 +2121,7 @@ pass_fini_dump_file (opt_pass *pass)
   timevar_push (TV_DUMP);
 
   /* Flush and close dump file.  */
-  if (dump_file_name)
-    {
-      free (CONST_CAST (char *, dump_file_name));
-      dump_file_name = NULL;
-    }
+  release_dump_file_name ();
 
   g->get_dumps ()->dump_finish (pass->static_pass_number);
   timevar_pop (TV_DUMP);
@@ -2347,6 +2371,23 @@ execute_one_pass (opt_pass *pass)
 
   current_pass = NULL;
 
+  if (todo_after & TODO_discard_function)
+    {
+      gcc_assert (cfun);
+      /* As cgraph_node::release_body expects release dominators info,
+	 we have to release it.  */
+      if (dom_info_available_p (CDI_DOMINATORS))
+	free_dominance_info (CDI_DOMINATORS);
+
+      if (dom_info_available_p (CDI_POST_DOMINATORS))
+	free_dominance_info (CDI_POST_DOMINATORS);
+
+      tree fn = cfun->decl;
+      pop_cfun ();
+      gcc_assert (!cfun);
+      cgraph_node::get (fn)->release_body ();
+    }
+
   /* Signal this is a suitable GC collection point.  */
   if (!((todo_after | pass->todo_flags_finish) & TODO_do_not_ggc_collect))
     ggc_collect ();
@@ -2361,6 +2402,9 @@ execute_pass_list_1 (opt_pass *pass)
     {
       gcc_assert (pass->type == GIMPLE_PASS
 		  || pass->type == RTL_PASS);
+
+      if (cfun == NULL)
+	return;
       if (execute_one_pass (pass) && pass->sub)
         execute_pass_list_1 (pass->sub);
       pass = pass->next;
@@ -2371,14 +2415,13 @@ execute_pass_list_1 (opt_pass *pass)
 void
 execute_pass_list (function *fn, opt_pass *pass)
 {
-  push_cfun (fn);
+  gcc_assert (fn == cfun);
   execute_pass_list_1 (pass);
-  if (fn->cfg)
+  if (cfun && fn->cfg)
     {
       free_dominance_info (CDI_DOMINATORS);
       free_dominance_info (CDI_POST_DOMINATORS);
     }
-  pop_cfun ();
 }
 
 /* Write out all LTO data.  */

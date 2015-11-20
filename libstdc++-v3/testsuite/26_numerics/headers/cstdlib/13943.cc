@@ -19,7 +19,7 @@
 #include <cstdlib>
 #include <testsuite_hooks.h>
 
-#if _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_STDLIB
 // libstdc++/13943
 void test01()
 {
@@ -36,7 +36,7 @@ void test01()
 
 int main()
 {
-#if _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_STDLIB
   test01();
 #endif
   return 0;

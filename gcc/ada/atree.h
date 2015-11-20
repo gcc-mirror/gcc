@@ -516,6 +516,7 @@ extern Node_Id Current_Error_Node;
 #define Elist8(N)     Field8  (N)
 #define Elist9(N)     Field9  (N)
 #define Elist10(N)    Field10 (N)
+#define Elist11(N)    Field11 (N)
 #define Elist13(N)    Field13 (N)
 #define Elist15(N)    Field15 (N)
 #define Elist16(N)    Field16 (N)

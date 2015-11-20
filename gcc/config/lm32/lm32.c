@@ -498,7 +498,7 @@ lm32_print_operand (FILE * file, rtx op, int letter)
   else if (code == HIGH)
     output_addr_const (file, XEXP (op, 0));  
   else if (code == MEM)
-    output_address (XEXP (op, 0));
+    output_address (GET_MODE (op), XEXP (op, 0));
   else if (letter == 'z' && GET_CODE (op) == CONST_INT && INTVAL (op) == 0)
     fprintf (file, "%s", reg_names[0]);
   else if (GET_CODE (op) == CONST_DOUBLE)
@@ -551,7 +551,7 @@ lm32_print_operand_address (FILE * file, rtx addr)
       break;
 
     case MEM:
-      output_address (XEXP (addr, 0));
+      output_address (VOIDmode, XEXP (addr, 0));
       break;
 
     case PLUS:

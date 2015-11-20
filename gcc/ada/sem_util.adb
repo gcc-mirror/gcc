@@ -1732,6 +1732,8 @@ package body Sem_Util is
       Disc : Entity_Id)
    is
       Loc : constant Source_Ptr := Sloc (Expr);
+      I   : Interp_Index;
+      It  : Interp;
 
    begin
       --  An entity of a type with a reference aspect is overloaded with
@@ -1744,6 +1746,29 @@ package body Sem_Util is
          Set_Etype (Expr, Etype (Entity (Expr)));
 
       elsif Nkind (Expr) = N_Function_Call then
+
+         --  If the name of the indexing function is overloaded, locate the one
+         --  whose return type has an implicit dereference on the desired
+         --  discriminant, and set entity and type of function call.
+
+         if Is_Overloaded (Name (Expr)) then
+            Get_First_Interp (Name (Expr), I, It);
+
+            while Present (It.Nam) loop
+               if Ekind ((It.Typ)) = E_Record_Type
+                 and then First_Entity ((It.Typ)) = Disc
+               then
+                  Set_Entity (Name (Expr), It.Nam);
+                  Set_Etype (Name (Expr), Etype (It.Nam));
+                  exit;
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+         end if;
+
+         --  Set type of call from resolved function name.
+
          Set_Etype (Expr, Etype (Name (Expr)));
       end if;
 
@@ -1890,6 +1915,126 @@ package body Sem_Util is
          end case;
       end if;
    end Cannot_Raise_Constraint_Error;
+
+   -----------------------------
+   -- Check_Part_Of_Reference --
+   -----------------------------
+
+   procedure Check_Part_Of_Reference (Var_Id : Entity_Id; Ref : Node_Id) is
+      Conc_Typ : constant Entity_Id := Encapsulating_State (Var_Id);
+      Decl     : Node_Id;
+      OK_Use   : Boolean := False;
+      Par      : Node_Id;
+      Prag_Nam : Name_Id;
+      Spec_Id  : Entity_Id;
+
+   begin
+      --  Traverse the parent chain looking for a suitable context for the
+      --  reference to the concurrent constituent.
+
+      Par := Parent (Ref);
+      while Present (Par) loop
+         if Nkind (Par) = N_Pragma then
+            Prag_Nam := Pragma_Name (Par);
+
+            --  A concurrent constituent is allowed to appear in pragmas
+            --  Initial_Condition and Initializes as this is part of the
+            --  elaboration checks for the constituent (SPARK RM 9.3).
+
+            if Nam_In (Prag_Nam, Name_Initial_Condition, Name_Initializes) then
+               OK_Use := True;
+               exit;
+
+            --  When the reference appears within pragma Depends or Global,
+            --  check whether the pragma applies to a single task type. Note
+            --  that the pragma is not encapsulated by the type definition,
+            --  but this is still a valid context.
+
+            elsif Nam_In (Prag_Nam, Name_Depends, Name_Global) then
+               Decl := Find_Related_Declaration_Or_Body (Par);
+
+               if Nkind (Decl) = N_Object_Declaration
+                 and then Defining_Entity (Decl) = Conc_Typ
+               then
+                  OK_Use := True;
+                  exit;
+               end if;
+            end if;
+
+         --  The reference appears somewhere in the definition of the single
+         --  protected/task type (SPARK RM 9.3).
+
+         elsif Nkind_In (Par, N_Single_Protected_Declaration,
+                              N_Single_Task_Declaration)
+           and then Defining_Entity (Par) = Conc_Typ
+         then
+            OK_Use := True;
+            exit;
+
+         --  The reference appears within the expanded declaration or the body
+         --  of the single protected/task type (SPARK RM 9.3).
+
+         elsif Nkind_In (Par, N_Protected_Body,
+                              N_Protected_Type_Declaration,
+                              N_Task_Body,
+                              N_Task_Type_Declaration)
+         then
+            Spec_Id := Unique_Defining_Entity (Par);
+
+            if Present (Anonymous_Object (Spec_Id))
+              and then Anonymous_Object (Spec_Id) = Conc_Typ
+            then
+               OK_Use := True;
+               exit;
+            end if;
+
+         --  The reference has been relocated within an internally generated
+         --  package or subprogram. Assume that the reference is legal as the
+         --  real check was already performed in the original context of the
+         --  reference.
+
+         elsif Nkind_In (Par, N_Package_Body,
+                              N_Package_Declaration,
+                              N_Subprogram_Body,
+                              N_Subprogram_Declaration)
+           and then not Comes_From_Source (Par)
+         then
+            OK_Use := True;
+            exit;
+
+         --  The reference has been relocated to an inlined body for GNATprove.
+         --  Assume that the reference is legal as the real check was already
+         --  performed in the original context of the reference.
+
+         elsif GNATprove_Mode
+           and then Nkind (Par) = N_Subprogram_Body
+           and then Chars (Defining_Entity (Par)) = Name_uParent
+         then
+            OK_Use := True;
+            exit;
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      --  The reference is illegal as it appears outside the definition or
+      --  body of the single protected/task type.
+
+      if not OK_Use then
+         Error_Msg_NE
+           ("reference to variable & cannot appear in this context",
+            Ref, Var_Id);
+         Error_Msg_Name_1 := Chars (Var_Id);
+
+         if Ekind (Conc_Typ) = E_Protected_Type then
+            Error_Msg_NE
+              ("\% is constituent of single protected type &", Ref, Conc_Typ);
+         else
+            Error_Msg_NE
+              ("\% is constituent of single task type &", Ref, Conc_Typ);
+         end if;
+      end if;
+   end Check_Part_Of_Reference;
 
    -----------------------------------------
    -- Check_Dynamically_Tagged_Expression --
@@ -3095,9 +3240,9 @@ package body Sem_Util is
       --  Inspect the return type
 
       if Is_Effectively_Volatile (Etype (Func_Id)) then
-         Error_Msg_N
+         Error_Msg_NE
            ("nonvolatile function & cannot have a volatile return type",
-            Func_Id);
+            Result_Definition (Parent (Func_Id)), Func_Id);
       end if;
    end Check_Nonvolatile_Function_Profile;
 
@@ -3572,16 +3717,14 @@ package body Sem_Util is
    ------------------------------
 
    procedure Check_Unused_Body_States (Body_Id : Entity_Id) is
-      Legal_Constits : Boolean := True;
-      --  This flag designates whether all constituents of pragma Refined_State
-      --  are legal. The flag is used to suppress the generation of potentially
-      --  misleading error messages due to a malformed pragma.
-
       procedure Process_Refinement_Clause
         (Clause : Node_Id;
          States : Elist_Id);
       --  Inspect all constituents of refinement clause Clause and remove any
       --  matches from body state list States.
+
+      procedure Report_Unused_Body_States (States : Elist_Id);
+      --  Emit errors for each abstract state or object found in list States
 
       -------------------------------
       -- Process_Refinement_Clause --
@@ -3602,10 +3745,6 @@ package body Sem_Util is
             Constit_Id : Entity_Id;
 
          begin
-            if Error_Posted (Constit) then
-               Legal_Constits := False;
-            end if;
-
             --  Guard against illegal constituents. Only abstract states and
             --  objects can appear on the right hand side of a refinement.
 
@@ -3649,10 +3788,63 @@ package body Sem_Util is
          end if;
       end Process_Refinement_Clause;
 
+      -------------------------------
+      -- Report_Unused_Body_States --
+      -------------------------------
+
+      procedure Report_Unused_Body_States (States : Elist_Id) is
+         Posted     : Boolean := False;
+         State_Elmt : Elmt_Id;
+         State_Id   : Entity_Id;
+
+      begin
+         if Present (States) then
+            State_Elmt := First_Elmt (States);
+            while Present (State_Elmt) loop
+               State_Id := Node (State_Elmt);
+
+               --  Constants are part of the hidden state of a package, but the
+               --  compiler cannot determine whether they have variable input
+               --  (SPARK RM 7.1.1(2)) and cannot classify them properly as a
+               --  hidden state. Do not emit an error when a constant does not
+               --  participate in a state refinement, even though it acts as a
+               --  hidden state.
+
+               if Ekind (State_Id) = E_Constant then
+                  null;
+
+               --  Generate an error message of the form:
+
+               --    body of package ... has unused hidden states
+               --      abstract state ... defined at ...
+               --      variable ... defined at ...
+
+               else
+                  if not Posted then
+                     Posted := True;
+                     SPARK_Msg_N
+                       ("body of package & has unused hidden states", Body_Id);
+                  end if;
+
+                  Error_Msg_Sloc := Sloc (State_Id);
+
+                  if Ekind (State_Id) = E_Abstract_State then
+                     SPARK_Msg_NE
+                       ("\abstract state & defined #", Body_Id, State_Id);
+
+                  else
+                     SPARK_Msg_NE ("\variable & defined #", Body_Id, State_Id);
+                  end if;
+               end if;
+
+                  Next_Elmt (State_Elmt);
+            end loop;
+         end if;
+      end Report_Unused_Body_States;
+
       --  Local variables
 
-      Prag    : constant Node_Id   :=
-                  Get_Pragma (Body_Id, Pragma_Refined_State);
+      Prag    : constant Node_Id := Get_Pragma (Body_Id, Pragma_Refined_State);
       Spec_Id : constant Entity_Id := Spec_Entity (Body_Id);
       Clause  : Node_Id;
       States  : Elist_Id;
@@ -3661,8 +3853,8 @@ package body Sem_Util is
 
    begin
       --  Inspect the clauses of pragma Refined_State and determine whether all
-      --  visible states declared within the body of the package participate in
-      --  the refinement.
+      --  visible states declared within the package body participate in the
+      --  refinement.
 
       if Present (Prag) then
          Clause := Expression (Get_Argument (Prag, Spec_Id));
@@ -3683,12 +3875,10 @@ package body Sem_Util is
             Process_Refinement_Clause (Clause, States);
          end if;
 
-         --  Ensure that all abstract states and objects declared in the body
-         --  state space of the related package are utilized as constituents.
+         --  Ensure that all abstract states and objects declared in the
+         --  package body state space are utilized as constituents.
 
-         if Legal_Constits then
-            Report_Unused_Body_States (Body_Id, States);
-         end if;
+         Report_Unused_Body_States (States);
       end if;
    end Check_Unused_Body_States;
 
@@ -3697,6 +3887,10 @@ package body Sem_Util is
    -------------------------
 
    function Collect_Body_States (Body_Id : Entity_Id) return Elist_Id is
+      function Is_Visible_Object (Obj_Id : Entity_Id) return Boolean;
+      --  Determine whether object Obj_Id is a suitable visible state of a
+      --  package body.
+
       procedure Collect_Visible_States
         (Pack_Id : Entity_Id;
          States  : in out Elist_Id);
@@ -3729,13 +3923,8 @@ package body Sem_Util is
             elsif Ekind (Item_Id) = E_Abstract_State then
                Append_New_Elmt (Item_Id, States);
 
-            --  Do not consider objects that map generic formals to their
-            --  actuals, as the formals cannot be named from the outside and
-            --  participate in refinement.
-
             elsif Ekind_In (Item_Id, E_Constant, E_Variable)
-              and then No (Corresponding_Generic_Association
-                             (Declaration_Node (Item_Id)))
+              and then Is_Visible_Object (Item_Id)
             then
                Append_New_Elmt (Item_Id, States);
 
@@ -3749,6 +3938,34 @@ package body Sem_Util is
          end loop;
       end Collect_Visible_States;
 
+      -----------------------
+      -- Is_Visible_Object --
+      -----------------------
+
+      function Is_Visible_Object (Obj_Id : Entity_Id) return Boolean is
+      begin
+         --  Objects that map generic formals to their actuals are not visible
+         --  from outside the generic instantiation.
+
+         if Present (Corresponding_Generic_Association
+                       (Declaration_Node (Obj_Id)))
+         then
+            return False;
+
+         --  Constituents of a single protected/task type act as components of
+         --  the type and are not visible from outside the type.
+
+         elsif Ekind (Obj_Id) = E_Variable
+           and then Present (Encapsulating_State (Obj_Id))
+           and then Is_Single_Concurrent_Object (Encapsulating_State (Obj_Id))
+         then
+            return False;
+
+         else
+            return True;
+         end if;
+      end Is_Visible_Object;
+
       --  Local variables
 
       Body_Decl : constant Node_Id := Unit_Declaration_Node (Body_Id);
@@ -3760,7 +3977,9 @@ package body Sem_Util is
 
    begin
       --  Inspect the declarations of the body looking for source objects,
-      --  packages and package instantiations.
+      --  packages and package instantiations. Note that even though this
+      --  processing is very similar to Collect_Visible_States, a package
+      --  body does not have a First/Next_Entity list.
 
       Decl := First (Declarations (Body_Decl));
       while Present (Decl) loop
@@ -3771,7 +3990,9 @@ package body Sem_Util is
          if Nkind (Decl) = N_Object_Declaration then
             Item_Id := Defining_Entity (Decl);
 
-            if Comes_From_Source (Item_Id) then
+            if Comes_From_Source (Item_Id)
+              and then Is_Visible_Object (Item_Id)
+            then
                Append_New_Elmt (Item_Id, States);
             end if;
 
@@ -4222,6 +4443,14 @@ package body Sem_Util is
            and then Present (Incomplete_View (Parent (B_Type)))
          then
             Id := Defining_Entity (Incomplete_View (Parent (B_Type)));
+
+            --  If T is a derived from a type with an incomplete view declared
+            --  elsewhere, that incomplete view is irrelevant, we want the
+            --  operations in the scope of T.
+
+            if Scope (Id) /= Scope (B_Type) then
+               Id := Next_Entity (B_Type);
+            end if;
 
          else
             Id := Next_Entity (B_Type);
@@ -7101,8 +7330,7 @@ package body Sem_Util is
    function Fix_Msg (Id : Entity_Id; Msg : String) return String is
       Is_Task   : constant Boolean :=
                     Ekind_In (Id, E_Task_Body, E_Task_Type)
-                      or else (Is_Single_Concurrent_Object (Id)
-                                and then Ekind (Etype (Id)) = E_Task_Type);
+                      or else Is_Single_Task_Object (Id);
       Msg_Last  : constant Natural := Msg'Last;
       Msg_Index : Natural;
       Res       : String (Msg'Range) := (others => ' ');
@@ -7545,13 +7773,16 @@ package body Sem_Util is
       Cursor := Any_Type;
 
       --  Locate function with desired name and profile in scope of type
+      --  In the rare case where the type is an integer type, a base type
+      --  is created for it, check that the base type of the first formal
+      --  of First matches the base type of the domain.
 
       Func := First_Entity (Scope (Typ));
       while Present (Func) loop
          if Chars (Func) = Chars (First_Op)
            and then Ekind (Func) = E_Function
            and then Present (First_Formal (Func))
-           and then Etype (First_Formal (Func)) = Typ
+           and then Base_Type (Etype (First_Formal (Func))) = Base_Type (Typ)
            and then No (Next_Formal (First_Formal (Func)))
          then
             if Cursor /= Any_Type then
@@ -8816,9 +9047,41 @@ package body Sem_Util is
    -------------------------------------
 
    function Has_Full_Default_Initialization (Typ : Entity_Id) return Boolean is
+      Arg  : Node_Id;
       Comp : Entity_Id;
+      Prag : Node_Id;
 
    begin
+      --  A private type and its full view is fully default initialized when it
+      --  is subject to pragma Default_Initial_Condition without an argument or
+      --  with a non-null argument. Since any type may act as the full view of
+      --  a private type, this check must be performed prior to the specialized
+      --  tests below.
+
+      if Has_Default_Init_Cond (Typ)
+        or else Has_Inherited_Default_Init_Cond (Typ)
+      then
+         Prag := Get_Pragma (Typ, Pragma_Default_Initial_Condition);
+
+         --  Pragma Default_Initial_Condition must be present if one of the
+         --  related entity flags is set.
+
+         pragma Assert (Present (Prag));
+         Arg := First (Pragma_Argument_Associations (Prag));
+
+         --  A non-null argument guarantees full default initialization
+
+         if Present (Arg) then
+            return Nkind (Arg) /= N_Null;
+
+         --  Otherwise the missing argument defaults the pragma to "True" which
+         --  is considered a non-null argument (see above).
+
+         else
+            return True;
+         end if;
+      end if;
+
       --  A scalar type is fully default initialized if it is subject to aspect
       --  Default_Value.
 
@@ -8875,20 +9138,6 @@ package body Sem_Util is
 
       elsif Is_Task_Type (Typ) then
          return True;
-      end if;
-
-      --  A private type and by extension its full view is fully default
-      --  initialized if it is subject to pragma Default_Initial_Condition
-      --  with a non-null argument or inherits the pragma from a parent type.
-      --  Since any type can act as the full view of a private type, this check
-      --  is separated from the circuitry above.
-
-      if Has_Default_Init_Cond (Typ)
-        or else Has_Inherited_Default_Init_Cond (Typ)
-      then
-         return
-           Nkind (First (Pragma_Argument_Associations (Get_Pragma
-             (Typ, Pragma_Default_Initial_Condition)))) /= N_Null;
 
       --  Otherwise the type is not fully default initialized
 
@@ -9024,6 +9273,25 @@ package body Sem_Util is
       end if;
    end Has_No_Obvious_Side_Effects;
 
+   -----------------------------
+   -- Has_Non_Null_Refinement --
+   -----------------------------
+
+   function Has_Non_Null_Refinement (Id : Entity_Id) return Boolean is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+
+      --  For a refinement to be non-null, the first constituent must be
+      --  anything other than null.
+
+      if Present (Refinement_Constituents (Id)) then
+         return
+           Nkind (Node (First_Elmt (Refinement_Constituents (Id)))) /= N_Null;
+      end if;
+
+      return False;
+   end Has_Non_Null_Refinement;
+
    ------------------------
    -- Has_Null_Exclusion --
    ------------------------
@@ -9113,6 +9381,25 @@ package body Sem_Util is
          return False;
       end if;
    end Has_Null_Extension;
+
+   -------------------------
+   -- Has_Null_Refinement --
+   -------------------------
+
+   function Has_Null_Refinement (Id : Entity_Id) return Boolean is
+   begin
+      pragma Assert (Ekind (Id) = E_Abstract_State);
+
+      --  For a refinement to be null, the state's sole constituent must be a
+      --  null.
+
+      if Present (Refinement_Constituents (Id)) then
+         return
+           Nkind (Node (First_Elmt (Refinement_Constituents (Id)))) = N_Null;
+      end if;
+
+      return False;
+   end Has_Null_Refinement;
 
    -------------------------------
    -- Has_Overriding_Initialize --
@@ -9780,6 +10067,47 @@ package body Sem_Util is
          return False;
       end if;
    end Has_Tagged_Component;
+
+   -----------------------------
+   -- Has_Undefined_Reference --
+   -----------------------------
+
+   function Has_Undefined_Reference (Expr : Node_Id) return Boolean is
+      Has_Undef_Ref : Boolean := False;
+      --  Flag set when expression Expr contains at least one undefined
+      --  reference.
+
+      function Is_Undefined_Reference (N : Node_Id) return Traverse_Result;
+      --  Determine whether N denotes a reference and if it does, whether it is
+      --  undefined.
+
+      ----------------------------
+      -- Is_Undefined_Reference --
+      ----------------------------
+
+      function Is_Undefined_Reference (N : Node_Id) return Traverse_Result is
+      begin
+         if Is_Entity_Name (N)
+           and then Present (Entity (N))
+           and then Entity (N) = Any_Id
+         then
+            Has_Undef_Ref := True;
+            return Abandon;
+         end if;
+
+         return OK;
+      end Is_Undefined_Reference;
+
+      procedure Find_Undefined_References is
+        new Traverse_Proc (Is_Undefined_Reference);
+
+   --  Start of processing for Has_Undefined_Reference
+
+   begin
+      Find_Undefined_References (Expr);
+
+      return Has_Undef_Ref;
+   end Has_Undefined_Reference;
 
    ----------------------------
    -- Has_Volatile_Component --
@@ -12362,12 +12690,50 @@ package body Sem_Util is
       end if;
    end Is_Local_Variable_Reference;
 
+   -----------------------------------------------
+   -- Is_Nontrivial_Default_Init_Cond_Procedure --
+   -----------------------------------------------
+
+   function Is_Nontrivial_Default_Init_Cond_Procedure
+     (Id : Entity_Id) return Boolean
+   is
+      Body_Decl : Node_Id;
+      Stmt : Node_Id;
+
+   begin
+      if Ekind (Id) = E_Procedure
+        and then Is_Default_Init_Cond_Procedure (Id)
+      then
+         Body_Decl :=
+           Unit_Declaration_Node
+             (Corresponding_Body (Unit_Declaration_Node (Id)));
+
+         --  The body of the Default_Initial_Condition procedure must contain
+         --  at least one statement, otherwise the generation of the subprogram
+         --  body failed.
+
+         pragma Assert (Present (Handled_Statement_Sequence (Body_Decl)));
+
+         --  To qualify as nontrivial, the first statement of the procedure
+         --  must be a check in the form of an if statement. If the original
+         --  Default_Initial_Condition expression was folded, then the first
+         --  statement is not a check.
+
+         Stmt := First (Statements (Handled_Statement_Sequence (Body_Decl)));
+
+         return
+           Nkind (Stmt) = N_If_Statement
+             and then Nkind (Original_Node (Stmt)) = N_Pragma;
+      end if;
+
+      return False;
+   end Is_Nontrivial_Default_Init_Cond_Procedure;
+
    -------------------------
    -- Is_Object_Reference --
    -------------------------
 
    function Is_Object_Reference (N : Node_Id) return Boolean is
-
       function Is_Internally_Generated_Renaming (N : Node_Id) return Boolean;
       --  Determine whether N is the name of an internally-generated renaming
 
@@ -13164,8 +13530,7 @@ package body Sem_Util is
    function Is_Single_Concurrent_Object (Id : Entity_Id) return Boolean is
    begin
       return
-        Ekind (Id) = E_Variable
-          and then Is_Single_Concurrent_Type (Etype (Id));
+        Is_Single_Protected_Object (Id) or else Is_Single_Task_Object (Id);
    end Is_Single_Concurrent_Object;
 
    -------------------------------
@@ -13205,6 +13570,30 @@ package body Sem_Util is
         and then Machine_Emax_Value (E) = Uint_2 ** Uint_7
         and then Machine_Emin_Value (E) = Uint_3 - (Uint_2 ** Uint_7);
    end Is_Single_Precision_Floating_Point_Type;
+
+   --------------------------------
+   -- Is_Single_Protected_Object --
+   --------------------------------
+
+   function Is_Single_Protected_Object (Id : Entity_Id) return Boolean is
+   begin
+      return
+        Ekind (Id) = E_Variable
+          and then Ekind (Etype (Id)) = E_Protected_Type
+          and then Is_Single_Concurrent_Type (Etype (Id));
+   end Is_Single_Protected_Object;
+
+   ---------------------------
+   -- Is_Single_Task_Object --
+   ---------------------------
+
+   function Is_Single_Task_Object (Id : Entity_Id) return Boolean is
+   begin
+      return
+        Ekind (Id) = E_Variable
+          and then Ekind (Etype (Id)) = E_Task_Type
+          and then Is_Single_Concurrent_Type (Etype (Id));
+   end Is_Single_Task_Object;
 
    -------------------------------------
    -- Is_SPARK_05_Initialization_Expr --
@@ -13936,6 +14325,7 @@ package body Sem_Util is
       if Is_Primitive (Func_Id)
         and then Present (First_Formal (Func_Id))
         and then Is_Protected_Type (Etype (First_Formal (Func_Id)))
+        and then Etype (First_Formal (Func_Id)) = Scope (Func_Id)
       then
          return True;
 
@@ -16258,27 +16648,23 @@ package body Sem_Util is
             --  If we are sure this is a modification from source, and we know
             --  this modifies a constant, then give an appropriate warning.
 
-            if Overlays_Constant (Ent)
-              and then (Modification_Comes_From_Source and Sure)
+            if Sure
+              and then Modification_Comes_From_Source
+              and then Overlays_Constant (Ent)
+              and then Address_Clause_Overlay_Warnings
             then
                declare
-                  A : constant Node_Id := Address_Clause (Ent);
+                  Addr  : constant Node_Id := Address_Clause (Ent);
+                  O_Ent : Entity_Id;
+                  Off   : Boolean;
+
                begin
-                  if Present (A) then
-                     declare
-                        Exp : constant Node_Id := Expression (A);
-                     begin
-                        if Nkind (Exp) = N_Attribute_Reference
-                          and then Attribute_Name (Exp) = Name_Address
-                          and then Is_Entity_Name (Prefix (Exp))
-                        then
-                           Error_Msg_Sloc := Sloc (A);
-                           Error_Msg_NE
-                             ("constant& may be modified via address "
-                              & "clause#??", N, Entity (Prefix (Exp)));
-                        end if;
-                     end;
-                  end if;
+                  Find_Overlaid_Entity (Addr, O_Ent, Off);
+
+                  Error_Msg_Sloc := Sloc (Addr);
+                  Error_Msg_NE
+                    ("??constant& may be modified via address clause#",
+                     N, O_Ent);
                end;
             end if;
 
@@ -17128,6 +17514,42 @@ package body Sem_Util is
       Set_Sloc (Endl, Loc);
    end Process_End_Label;
 
+   ---------------------------------------
+   -- Record_Possible_Part_Of_Reference --
+   ---------------------------------------
+
+   procedure Record_Possible_Part_Of_Reference
+     (Var_Id : Entity_Id;
+      Ref    : Node_Id)
+   is
+      Encap : constant Entity_Id := Encapsulating_State (Var_Id);
+      Refs  : Elist_Id;
+
+   begin
+      --  The variable is a constituent of a single protected/task type. Such
+      --  a variable acts as a component of the type and must appear within a
+      --  specific region (SPARK RM 9.3). Instead of recording the reference,
+      --  verify its legality now.
+
+      if Present (Encap) and then Is_Single_Concurrent_Object (Encap) then
+         Check_Part_Of_Reference (Var_Id, Ref);
+
+      --  The variable is subject to pragma Part_Of and may eventually become a
+      --  constituent of a single protected/task type. Record the reference to
+      --  verify its placement when the contract of the variable is analyzed.
+
+      elsif Present (Get_Pragma (Var_Id, Pragma_Part_Of)) then
+         Refs := Part_Of_References (Var_Id);
+
+         if No (Refs) then
+            Refs := New_Elmt_List;
+            Set_Part_Of_References (Var_Id, Refs);
+         end if;
+
+         Append_Elmt (Ref, Refs);
+      end if;
+   end Record_Possible_Part_Of_Reference;
+
    ----------------
    -- Referenced --
    ----------------
@@ -17350,63 +17772,6 @@ package body Sem_Util is
       return New_Occurrence_Of
                (Boolean_Literals (not Range_Checks_Suppressed (E)), Loc);
    end Rep_To_Pos_Flag;
-
-   -------------------------------
-   -- Report_Unused_Body_States --
-   -------------------------------
-
-   procedure Report_Unused_Body_States
-     (Body_Id : Entity_Id;
-      States  : Elist_Id)
-   is
-      Posted     : Boolean := False;
-      State_Elmt : Elmt_Id;
-      State_Id   : Entity_Id;
-
-   begin
-      if Present (States) then
-         State_Elmt := First_Elmt (States);
-         while Present (State_Elmt) loop
-            State_Id := Node (State_Elmt);
-
-            --  Constants are part of the hidden state of a package, but the
-            --  compiler cannot determine whether they have variable input
-            --  (SPARK RM 7.1.1(2)) and cannot classify them properly as a
-            --  hidden state. Do not emit an error when a constant does not
-            --  participate in a state refinement, even though it acts as a
-            --  hidden state.
-
-            if Ekind (State_Id) = E_Constant then
-               null;
-
-            --  Generate an error message of the form:
-
-            --    body of package ... has unused hidden states
-            --      abstract state ... defined at ...
-            --      variable ... defined at ...
-
-            else
-               if not Posted then
-                  Posted := True;
-                  SPARK_Msg_N
-                    ("body of package & has unused hidden states", Body_Id);
-               end if;
-
-               Error_Msg_Sloc := Sloc (State_Id);
-
-               if Ekind (State_Id) = E_Abstract_State then
-                  SPARK_Msg_NE
-                    ("\abstract state & defined #", Body_Id, State_Id);
-
-               else
-                  SPARK_Msg_NE ("\variable & defined #", Body_Id, State_Id);
-               end if;
-            end if;
-
-            Next_Elmt (State_Elmt);
-         end loop;
-      end if;
-   end Report_Unused_Body_States;
 
    --------------------
    -- Require_Entity --

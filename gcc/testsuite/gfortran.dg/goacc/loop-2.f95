@@ -66,7 +66,7 @@ program test
     !$acc loop seq worker ! { dg-error "conflicts with" }
     DO i = 1,10
     ENDDO
-    !$acc loop gang worker ! { dg-error "conflicts with" }
+    !$acc loop gang worker
     DO i = 1,10
     ENDDO
 
@@ -94,10 +94,10 @@ program test
     !$acc loop seq vector ! { dg-error "conflicts with" }
     DO i = 1,10
     ENDDO
-    !$acc loop gang vector ! { dg-error "conflicts with" }
+    !$acc loop gang vector
     DO i = 1,10
     ENDDO
-    !$acc loop worker vector ! { dg-error "conflicts with" }
+    !$acc loop worker vector
     DO i = 1,10
     ENDDO
 
@@ -239,7 +239,7 @@ program test
     !$acc loop seq worker ! { dg-error "conflicts with" }
     DO i = 1,10
     ENDDO
-    !$acc loop gang worker ! { dg-error "conflicts with" }
+    !$acc loop gang worker
     DO i = 1,10
     ENDDO
 
@@ -267,10 +267,10 @@ program test
     !$acc loop seq vector ! { dg-error "conflicts with" }
     DO i = 1,10
     ENDDO
-    !$acc loop gang vector ! { dg-error "conflicts with" }
+    !$acc loop gang vector
     DO i = 1,10
     ENDDO
-    !$acc loop worker vector ! { dg-error "conflicts with" }
+    !$acc loop worker vector
     DO i = 1,10
     ENDDO
 
@@ -392,7 +392,7 @@ program test
   !$acc kernels loop seq worker ! { dg-error "conflicts with" }
   DO i = 1,10
   ENDDO
-  !$acc kernels loop gang worker ! { dg-error "conflicts with" }
+  !$acc kernels loop gang worker
   DO i = 1,10
   ENDDO
 
@@ -420,10 +420,10 @@ program test
   !$acc kernels loop seq vector ! { dg-error "conflicts with" }
   DO i = 1,10
   ENDDO
-  !$acc kernels loop gang vector ! { dg-error "conflicts with" }
+  !$acc kernels loop gang vector
   DO i = 1,10
   ENDDO
-  !$acc kernels loop worker vector ! { dg-error "conflicts with" }
+  !$acc kernels loop worker vector
   DO i = 1,10
   ENDDO
 
@@ -544,7 +544,7 @@ program test
   !$acc parallel loop seq worker ! { dg-error "conflicts with" }
   DO i = 1,10
   ENDDO
-  !$acc parallel loop gang worker ! { dg-error "conflicts with" }
+  !$acc parallel loop gang worker
   DO i = 1,10
   ENDDO
 
@@ -572,10 +572,10 @@ program test
   !$acc parallel loop seq vector ! { dg-error "conflicts with" }
   DO i = 1,10
   ENDDO
-  !$acc parallel loop gang vector ! { dg-error "conflicts with" }
+  !$acc parallel loop gang vector
   DO i = 1,10
   ENDDO
-  !$acc parallel loop worker vector ! { dg-error "conflicts with" }
+  !$acc parallel loop worker vector
   DO i = 1,10
   ENDDO
 

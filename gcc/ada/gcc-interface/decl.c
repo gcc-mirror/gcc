@@ -26,7 +26,6 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "ggc.h"
 #include "target.h"
 #include "tree.h"
 #include "stringpool.h"
@@ -34,8 +33,6 @@
 #include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
-#include "flags.h"
-#include "toplev.h"
 #include "tree-inline.h"
 
 #include "ada.h"
@@ -46,7 +43,6 @@
 #include "nlists.h"
 #include "repinfo.h"
 #include "snames.h"
-#include "stringt.h"
 #include "uintp.h"
 #include "fe.h"
 #include "sinfo.h"
@@ -510,7 +506,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       /* Ignore constant definitions already marked with the error node.  See
 	 the N_Object_Declaration case of gnat_to_gnu for the rationale.  */
       if (definition
-	  && gnu_expr
 	  && present_gnu_tree (gnat_entity)
 	  && get_gnu_tree (gnat_entity) == error_mark_node)
 	{
@@ -968,8 +963,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       function call is a constant object.  Therefore, it can be the
 	       inner object of a constant renaming and the renaming must be
 	       fully instantiated, i.e. it cannot be a reference to (part of)
-	       an existing object.  And treat null expressions, constructors
-	       and literals the same way.  */
+	       an existing object.  And treat other rvalues (addresses, null
+	       expressions, constructors and literals) the same way.  */
 	    tree inner = gnu_expr;
 	    while (handled_component_p (inner) || CONVERT_EXPR_P (inner))
 	      inner = TREE_OPERAND (inner, 0);
@@ -979,6 +974,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      inner = TREE_OPERAND (inner, 1);
 	    if ((TREE_CODE (inner) == CALL_EXPR
 		 && !call_is_atomic_load (inner))
+		|| TREE_CODE (inner) == ADDR_EXPR
 		|| TREE_CODE (inner) == NULL_EXPR
 		|| TREE_CODE (inner) == CONSTRUCTOR
 		|| CONSTANT_CLASS_P (inner))
@@ -1073,14 +1069,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  }
 
 	/* Make a volatile version of this object's type if we are to make
-	   the object volatile.  We also interpret 13.3(19) conservatively
-	   and disallow any optimizations for such a non-constant object.  */
+	   the object volatile.  We also implement RM 13.3(19) for exported
+	   and imported (non-constant) objects by making them volatile.  */
 	if ((Treat_As_Volatile (gnat_entity)
 	     || (!const_flag
 		 && gnu_type != except_type_node
-		 && (Is_Exported (gnat_entity)
-		     || imported_p
-		     || Present (Address_Clause (gnat_entity)))))
+		 && (Is_Exported (gnat_entity) || imported_p)))
 	    && !TYPE_VOLATILE (gnu_type))
 	  {
 	    const int quals
@@ -1123,7 +1117,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  gnu_expr = convert (gnu_type, gnu_expr);
 
 	/* If this is a pointer that doesn't have an initializing expression,
-	   initialize it to NULL, unless the object is imported.  */
+	   initialize it to NULL, unless the object is declared imported as
+	   per RM B.1(24).  */
 	if (definition
 	    && (POINTER_TYPE_P (gnu_type) || TYPE_IS_FAT_POINTER_P (gnu_type))
 	    && !gnu_expr
@@ -1146,7 +1141,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    save_gnu_tree (gnat_entity, NULL_TREE, false);
 
 	    /* Convert the type of the object to a reference type that can
-	       alias everything as per 13.3(19).  */
+	       alias everything as per RM 13.3(19).  */
 	    gnu_type
 	      = build_reference_type_for_mode (gnu_type, ptr_mode, true);
 	    gnu_address = convert (gnu_type, gnu_address);
@@ -1190,13 +1185,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  }
 	      }
 
-	    /* If this is a deferred constant, the initializer is attached to
-	       the full view.  */
-	    if (kind == E_Constant && Present (Full_View (gnat_entity)))
-	      gnu_expr
-		= gnat_to_gnu
-		    (Expression (Declaration_Node (Full_View (gnat_entity))));
-
 	    /* If we don't have an initializing expression for the underlying
 	       variable, the initializing expression for the pointer is the
 	       specified address.  Otherwise, we have to make a COMPOUND_EXPR
@@ -1218,11 +1206,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   as an indirect object.  Likewise for Stdcall objects that are
 	   imported.  */
 	if ((!definition && Present (Address_Clause (gnat_entity)))
-	    || (Is_Imported (gnat_entity)
-		&& Has_Stdcall_Convention (gnat_entity)))
+	    || (imported_p && Has_Stdcall_Convention (gnat_entity)))
 	  {
 	    /* Convert the type of the object to a reference type that can
-	       alias everything as per 13.3(19).  */
+	       alias everything as per RM 13.3(19).  */
 	    gnu_type
 	      = build_reference_type_for_mode (gnu_type, ptr_mode, true);
 	    used_by_ref = true;
@@ -1304,7 +1291,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    else
 		      gnu_expr
 			= build_component_ref
-			    (gnu_expr, NULL_TREE,
+			    (gnu_expr,
 			     DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (gnu_expr))),
 			     false);
 		  }
@@ -1348,8 +1335,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      add_stmt_with_node
 		(build_binary_op (INIT_EXPR, NULL_TREE,
 				  build_component_ref
-				  (gnu_new_var, NULL_TREE,
-				   TYPE_FIELDS (gnu_new_type), false),
+				  (gnu_new_var, TYPE_FIELDS (gnu_new_type),
+				   false),
 				  gnu_expr),
 		 gnat_entity);
 
@@ -1358,8 +1345,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    gnu_expr
 	      = build_unary_op
 		(ADDR_EXPR, NULL_TREE,
-		 build_component_ref (gnu_new_var, NULL_TREE,
-				      TYPE_FIELDS (gnu_new_type), false));
+		 build_component_ref (gnu_new_var, TYPE_FIELDS (gnu_new_type),
+				      false));
 	    TREE_CONSTANT (gnu_expr) = 1;
 
 	    used_by_ref = true;
@@ -1414,10 +1401,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* If this name is external or a name was specified, use it, but don't
 	   use the Interface_Name with an address clause (see cd30005).  */
-	if ((Present (Interface_Name (gnat_entity))
-	     && No (Address_Clause (gnat_entity)))
-	    || (Is_Public (gnat_entity)
-		&& (!Is_Imported (gnat_entity) || Is_Exported (gnat_entity))))
+	if ((Is_Public (gnat_entity) && !Is_Imported (gnat_entity))
+	    || (Present (Interface_Name (gnat_entity))
+		&& No (Address_Clause (gnat_entity))))
 	  gnu_ext_name = create_concat_name (gnat_entity, NULL);
 
 	/* If this is an aggregate constant initialized to a constant, force it
@@ -1805,6 +1791,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  TYPE_ALIGN (gnu_type)
 	    = align > 0 ? align : TYPE_ALIGN (gnu_field_type);
 
+	  /* Propagate the reverse storage order flag to the record type so
+	     that the required byte swapping is performed when retrieving the
+	     enclosed modular value.  */
+	  TYPE_REVERSE_STORAGE_ORDER (gnu_type)
+	    = Reverse_Storage_Order (Original_Array_Type (gnat_entity));
+
 	  relate_alias_sets (gnu_type, gnu_field_type, ALIAS_SET_COPY);
 
 	  /* Don't declare the field as addressable since we won't be taking
@@ -2152,8 +2144,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	for (index = ndim - 1; index >= 0; index--)
 	  {
 	    tem = build_nonshared_array_type (tem, gnu_index_types[index]);
-	    if (Reverse_Storage_Order (gnat_entity) && !GNAT_Mode)
-	      sorry ("non-default Scalar_Storage_Order");
+	    if (index == ndim - 1)
+	      TYPE_REVERSE_STORAGE_ORDER (tem)
+		= Reverse_Storage_Order (gnat_entity);
 	    TYPE_MULTI_ARRAY_P (tem) = (index > 0);
 	    if (array_type_has_nonaliased_component (tem, gnat_entity))
 	      TYPE_NONALIASED_COMPONENT (tem) = 1;
@@ -2516,6 +2509,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    {
 	      gnu_type = build_nonshared_array_type (gnu_type,
 						     gnu_index_types[index]);
+	      if (index == ndim - 1)
+		TYPE_REVERSE_STORAGE_ORDER (gnu_type)
+		  = Reverse_Storage_Order (gnat_entity);
 	      TYPE_MULTI_ARRAY_P (gnu_type) = (index > 0);
 	      if (array_type_has_nonaliased_component (gnu_type, gnat_entity))
 		TYPE_NONALIASED_COMPONENT (gnu_type) = 1;
@@ -2876,8 +2872,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	gnu_type = make_node (tree_code_for_record_type (gnat_entity));
 	TYPE_NAME (gnu_type) = gnu_entity_name;
 	TYPE_PACKED (gnu_type) = (packed != 0) || has_rep;
-	if (Reverse_Storage_Order (gnat_entity) && !GNAT_Mode)
-	  sorry ("non-default Scalar_Storage_Order");
+	TYPE_REVERSE_STORAGE_ORDER (gnu_type)
+	  = Reverse_Storage_Order (gnat_entity);
 	process_attributes (&gnu_type, &attr_list, true, gnat_entity);
 
 	if (!definition)
@@ -3287,6 +3283,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      gnu_type = make_node (RECORD_TYPE);
 	      TYPE_NAME (gnu_type) = gnu_entity_name;
 	      TYPE_PACKED (gnu_type) = TYPE_PACKED (gnu_base_type);
+	      TYPE_REVERSE_STORAGE_ORDER (gnu_type)
+		= Reverse_Storage_Order (gnat_entity);
 	      process_attributes (&gnu_type, &attr_list, true, gnat_entity);
 
 	      /* Set the size, alignment and alias set of the new type to
@@ -3341,6 +3339,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			TYPE_NAME (new_variant)
 			  = concat_name (TYPE_NAME (gnu_type),
 					 IDENTIFIER_POINTER (suffix));
+			TYPE_REVERSE_STORAGE_ORDER (new_variant)
+			  = TYPE_REVERSE_STORAGE_ORDER (gnu_type);
 			copy_and_substitute_in_size (new_variant, old_variant,
 						     gnu_subst_list);
 			v->new_type = new_variant;
@@ -4121,6 +4121,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   of its type, so we must elaborate that type now.  */
 	if (Present (Alias (gnat_entity)))
 	  {
+	    const Entity_Id gnat_renamed = Renamed_Object (gnat_entity);
+
 	    if (Ekind (Alias (gnat_entity)) == E_Enumeration_Literal)
 	      gnat_to_gnu_entity (Etype (Alias (gnat_entity)), NULL_TREE, 0);
 
@@ -4132,6 +4134,33 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 gnat_temp = Next_Formal_With_Extras (gnat_temp))
 	      if (Is_Itype (Etype (gnat_temp)))
 		gnat_to_gnu_entity (Etype (gnat_temp), NULL_TREE, 0);
+
+	    /* Materialize renamed subprograms in the debugging information
+	       when the renamed object is compile time known.  We can consider
+	       such renamings as imported declarations.
+
+	       Because the parameters in generics instantiation are generally
+	       materialized as renamings, we ofter end up having both the
+	       renamed subprogram and the renaming in the same context and with
+	       the same name: in this case, renaming is both useless debug-wise
+	       and potentially harmful as name resolution in the debugger could
+	       return twice the same entity!  So avoid this case.  */
+	    if (debug_info_p && !artificial_p
+		&& !(get_debug_scope (gnat_entity, NULL)
+		       == get_debug_scope (gnat_renamed, NULL)
+		     && Name_Equals (Chars (gnat_entity),
+				     Chars (gnat_renamed)))
+		&& Present (gnat_renamed)
+		&& (Ekind (gnat_renamed) == E_Function
+		    || Ekind (gnat_renamed) == E_Procedure)
+		&& gnu_decl != NULL_TREE
+		&& TREE_CODE (gnu_decl) == FUNCTION_DECL)
+	      {
+		tree decl = build_decl (input_location, IMPORTED_DECL,
+					gnu_entity_name, void_type_node);
+		IMPORTED_DECL_ASSOCIATED_DECL (decl) = gnu_decl;
+		gnat_pushdecl (decl, gnat_entity);
+	      }
 
 	    break;
 	  }
@@ -4587,7 +4616,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    save_gnu_tree (gnat_entity, NULL_TREE, false);
 
 	    /* Convert the type of the object to a reference type that can
-	       alias everything as per 13.3(19).  */
+	       alias everything as per RM 13.3(19).  */
 	    gnu_type
 	      = build_reference_type_for_mode (gnu_type, ptr_mode, true);
 	    if (gnu_address)
@@ -5547,6 +5576,16 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 	create_type_decl (TYPE_NAME (gnu_type), gnu_type, true, debug_info_p,
 			  gnat_array);
     }
+
+  /* If the component type is a padded type made for a non-bit-packed array
+     of scalars with reverse storage order, we need to propagate the reverse
+     storage order to the padding type since it is the innermost enclosing
+     aggregate type around the scalar.  */
+  if (TYPE_IS_PADDING_P (gnu_type)
+      && Reverse_Storage_Order (gnat_array)
+      && !Is_Bit_Packed_Array (gnat_array)
+      && Is_Scalar_Type (gnat_type))
+    gnu_type = set_reverse_storage_order_on_pad_type (gnu_type);
 
   if (Has_Volatile_Components (gnat_array))
     {
@@ -6718,6 +6757,15 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   else
     gnu_pos = NULL_TREE;
 
+  /* If the field's type is a padded type made for a scalar field of a record
+     type with reverse storage order, we need to propagate the reverse storage
+     order to the padding type since it is the innermost enclosing aggregate
+     type around the scalar.  */
+  if (TYPE_IS_PADDING_P (gnu_field_type)
+      && TYPE_REVERSE_STORAGE_ORDER (gnu_record_type)
+      && Is_Scalar_Type (gnat_field_type))
+    gnu_field_type = set_reverse_storage_order_on_pad_type (gnu_field_type);
+
   gcc_assert (TREE_CODE (gnu_field_type) != RECORD_TYPE
 	      || !TYPE_CONTAINS_TEMPLATE_P (gnu_field_type));
 
@@ -6730,8 +6778,12 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   TREE_THIS_VOLATILE (gnu_field) = TREE_SIDE_EFFECTS (gnu_field) = is_volatile;
 
   if (Ekind (gnat_field) == E_Discriminant)
-    DECL_DISCRIMINANT_NUMBER (gnu_field)
-      = UI_To_gnu (Discriminant_Number (gnat_field), sizetype);
+    {
+      DECL_INVARIANT_P (gnu_field)
+	= No (Discriminant_Default_Value (gnat_field));
+      DECL_DISCRIMINANT_NUMBER (gnu_field)
+	= UI_To_gnu (Discriminant_Number (gnat_field), sizetype);
+    }
 
   return gnu_field;
 }
@@ -7034,6 +7086,8 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	  TYPE_NAME (gnu_union_type) = gnu_union_name;
 	  TYPE_ALIGN (gnu_union_type) = 0;
 	  TYPE_PACKED (gnu_union_type) = TYPE_PACKED (gnu_record_type);
+	  TYPE_REVERSE_STORAGE_ORDER (gnu_union_type)
+	    = TYPE_REVERSE_STORAGE_ORDER (gnu_record_type);
 	}
 
       /* If all the fields down to this level have a rep clause, find out
@@ -7085,6 +7139,8 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	     record actually gets only the alignment required.  */
 	  TYPE_ALIGN (gnu_variant_type) = TYPE_ALIGN (gnu_record_type);
 	  TYPE_PACKED (gnu_variant_type) = TYPE_PACKED (gnu_record_type);
+	  TYPE_REVERSE_STORAGE_ORDER (gnu_variant_type)
+	    = TYPE_REVERSE_STORAGE_ORDER (gnu_record_type);
 
 	  /* Similarly, if the outer record has a size specified and all
 	     the fields have a rep clause, we can propagate the size.  */
@@ -7177,6 +7233,8 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 		     position at this level.  */
 		  tree gnu_rep_type = make_node (RECORD_TYPE);
 		  tree gnu_rep_part;
+		  TYPE_REVERSE_STORAGE_ORDER (gnu_rep_type)
+		    = TYPE_REVERSE_STORAGE_ORDER (gnu_variant_type);
 		  finish_record_type (gnu_rep_type, NULL_TREE, 0, debug_info);
 		  gnu_rep_part
 		    = create_rep_part (gnu_rep_type, gnu_variant_type,
@@ -7384,6 +7442,8 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	gnu_field_list = gnu_rep_list;
       else
 	{
+	  TYPE_REVERSE_STORAGE_ORDER (gnu_rep_type)
+	    = TYPE_REVERSE_STORAGE_ORDER (gnu_record_type);
 	  finish_record_type (gnu_rep_type, gnu_rep_list, 1, debug_info);
 
 	  /* If FIRST_FREE_POS is nonzero, we need to ensure that the fields

@@ -151,15 +151,15 @@ f_omp (void)
 
 #pragma omp target
   {
-#pragma acc parallel /* { dg-error "OpenACC parallel construct inside of OpenMP target region" } */
+#pragma acc parallel /* { dg-error "OpenACC .parallel. construct inside of OpenMP .target. region" } */
     ;
-#pragma acc kernels /* { dg-error "OpenACC kernels construct inside of OpenMP target region" } */
+#pragma acc kernels /* { dg-error "OpenACC .kernels. construct inside of OpenMP .target. region" } */
     ;
-#pragma acc data /* { dg-error "OpenACC data construct inside of OpenMP target region" } */
+#pragma acc data /* { dg-error "OpenACC .data. construct inside of OpenMP .target. region" } */
     ;
-#pragma acc update host(i) /* { dg-error "OpenACC update construct inside of OpenMP target region" } */
-#pragma acc enter data copyin(i) /* { dg-error "OpenACC enter/exit data construct inside of OpenMP target region" } */
-#pragma acc exit data delete(i) /* { dg-error "OpenACC enter/exit data construct inside of OpenMP target region" } */
+#pragma acc update host(i) /* { dg-error "OpenACC .update. construct inside of OpenMP .target. region" } */
+#pragma acc enter data copyin(i) /* { dg-error "OpenACC .enter/exit data. construct inside of OpenMP .target. region" } */
+#pragma acc exit data delete(i) /* { dg-error "OpenACC .enter/exit data. construct inside of OpenMP .target. region" } */
 #pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
     for (i = 0; i < 2; ++i)
       ;
@@ -212,12 +212,6 @@ f_acc_parallel (void)
   {
 #pragma omp critical /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     ;
-  }
-
-#pragma acc parallel
-  {
-#pragma omp atomic write
-    i = 0; /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
   }
 
 #pragma acc parallel
@@ -286,12 +280,6 @@ f_acc_kernels (void)
 
 #pragma acc kernels
   {
-#pragma omp atomic write
-    i = 0; /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
-  }
-
-#pragma acc kernels
-  {
 #pragma omp ordered /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     ;
   }
@@ -352,12 +340,6 @@ f_acc_data (void)
   {
 #pragma omp critical /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     ;
-  }
-
-#pragma acc data
-  {
-#pragma omp atomic write
-    i = 0; /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
   }
 
 #pragma acc data
@@ -436,14 +418,6 @@ f_acc_loop (void)
     {
 #pragma omp critical /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
       ;
-    }
-
-#pragma acc parallel
-#pragma acc loop
-  for (i = 0; i < 2; ++i)
-    {
-#pragma omp atomic write
-      i = 0; /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     }
 
 #pragma acc parallel

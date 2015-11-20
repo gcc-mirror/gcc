@@ -541,10 +541,12 @@ ao_ref_init (ao_ref *r, tree ref)
 tree
 ao_ref_base (ao_ref *ref)
 {
+  bool reverse;
+
   if (ref->base)
     return ref->base;
   ref->base = get_ref_base_and_extent (ref->ref, &ref->offset, &ref->size,
-				       &ref->max_size);
+				       &ref->max_size, &reverse);
   return ref->base;
 }
 
@@ -725,9 +727,10 @@ aliasing_component_refs_p (tree ref1,
   else if (same_p == 1)
     {
       HOST_WIDE_INT offadj, sztmp, msztmp;
-      get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp);
+      bool reverse;
+      get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp, &reverse);
       offset2 -= offadj;
-      get_ref_base_and_extent (base1, &offadj, &sztmp, &msztmp);
+      get_ref_base_and_extent (base1, &offadj, &sztmp, &msztmp, &reverse);
       offset1 -= offadj;
       return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
     }
@@ -743,9 +746,10 @@ aliasing_component_refs_p (tree ref1,
   else if (same_p == 1)
     {
       HOST_WIDE_INT offadj, sztmp, msztmp;
-      get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp);
+      bool reverse;
+      get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp, &reverse);
       offset1 -= offadj;
-      get_ref_base_and_extent (base2, &offadj, &sztmp, &msztmp);
+      get_ref_base_and_extent (base2, &offadj, &sztmp, &msztmp, &reverse);
       offset2 -= offadj;
       return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
     }
@@ -2281,7 +2285,9 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
       if (ref->max_size == -1)
 	return false;
       HOST_WIDE_INT size, offset, max_size, ref_offset = ref->offset;
-      tree base = get_ref_base_and_extent (lhs, &offset, &size, &max_size);
+      bool reverse;
+      tree base
+	= get_ref_base_and_extent (lhs, &offset, &size, &max_size, &reverse);
       /* We can get MEM[symbol: sZ, index: D.8862_1] here,
 	 so base == ref->base does not always hold.  */
       if (base != ref->base)

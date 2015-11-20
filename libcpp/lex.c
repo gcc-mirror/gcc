@@ -447,7 +447,7 @@ search_line_sse42 (const uchar *s, const uchar *end)
       /* Advance the pointer to an aligned address.  We will re-scan a
 	 few bytes, but we no longer need care for reading past the
 	 end of a page, since we're guaranteed a match.  */
-      s = (const uchar *)((si + 16) & -16);
+      s = (const uchar *)((si + 15) & -16);
     }
 
   /* Main loop, processing 16 bytes at a time.  */
@@ -2722,6 +2722,19 @@ _cpp_lex_direct (cpp_reader *pfile)
       create_literal (pfile, result, buffer->cur - 1, 1, CPP_OTHER);
       break;
     }
+
+  source_range tok_range;
+  tok_range.m_start = result->src_loc;
+  if (result->src_loc >= RESERVED_LOCATION_COUNT)
+    tok_range.m_finish
+      = linemap_position_for_column (pfile->line_table,
+				     CPP_BUF_COLUMN (buffer, buffer->cur));
+  else
+    tok_range.m_finish = tok_range.m_start;
+
+  result->src_loc = COMBINE_LOCATION_DATA (pfile->line_table,
+					   result->src_loc,
+					   tok_range, NULL);
 
   return result;
 }

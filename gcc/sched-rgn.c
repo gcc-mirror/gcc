@@ -63,6 +63,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "sel-sched.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
+#include "pretty-print.h"
+#include "print-rtl.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -2860,6 +2862,108 @@ void debug_dependencies (rtx_insn *head, rtx_insn *tail)
 
   fprintf (sched_dump, "\n");
 }
+
+/* Dump dependency graph for the current region to a file using dot syntax.  */
+
+void
+dump_rgn_dependencies_dot (FILE *file)
+{
+  rtx_insn *head, *tail, *con, *pro;
+  sd_iterator_def sd_it;
+  dep_t dep;
+  int bb;
+  pretty_printer pp;
+
+  pp.buffer->stream = file;
+  pp_printf (&pp, "digraph SchedDG {\n");
+
+  for (bb = 0; bb < current_nr_blocks; ++bb)
+    {
+      /* Begin subgraph (basic block).  */
+      pp_printf (&pp, "subgraph cluster_block_%d {\n", bb);
+      pp_printf (&pp, "\t" "color=blue;" "\n");
+      pp_printf (&pp, "\t" "style=bold;" "\n");
+      pp_printf (&pp, "\t" "label=\"BB #%d\";\n", BB_TO_BLOCK (bb));
+
+      /* Setup head and tail (no support for EBBs).  */
+      gcc_assert (EBB_FIRST_BB (bb) == EBB_LAST_BB (bb));
+      get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
+      tail = NEXT_INSN (tail);
+
+      /* Dump all insns.  */
+      for (con = head; con != tail; con = NEXT_INSN (con))
+	{
+	  if (!INSN_P (con))
+	    continue;
+
+	  /* Pretty print the insn.  */
+	  pp_printf (&pp, "\t%d [label=\"{", INSN_UID (con));
+	  pp_write_text_to_stream (&pp);
+	  print_insn (&pp, con, /*verbose=*/false);
+	  pp_write_text_as_dot_label_to_stream (&pp, /*for_record=*/true);
+	  pp_write_text_to_stream (&pp);
+
+	  /* Dump instruction attributes.  */
+	  pp_printf (&pp, "|{ uid:%d | luid:%d | prio:%d }}\",shape=record]\n",
+		     INSN_UID (con), INSN_LUID (con), INSN_PRIORITY (con));
+
+	  /* Dump all deps.  */
+	  FOR_EACH_DEP (con, SD_LIST_BACK, sd_it, dep)
+	    {
+	      int weight = 0;
+	      const char *color;
+	      pro = DEP_PRO (dep);
+
+	      switch (DEP_TYPE (dep))
+		{
+		case REG_DEP_TRUE:
+		  color = "black";
+		  weight = 1;
+		  break;
+		case REG_DEP_OUTPUT:
+		case REG_DEP_ANTI:
+		  color = "orange";
+		  break;
+		case REG_DEP_CONTROL:
+		  color = "blue";
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
+
+	      pp_printf (&pp, "\t%d -> %d [color=%s",
+			 INSN_UID (pro), INSN_UID (con), color);
+	      if (int cost = dep_cost (dep))
+		pp_printf (&pp, ",label=%d", cost);
+	      pp_printf (&pp, ",weight=%d", weight);
+	      pp_printf (&pp, "];\n");
+	    }
+	}
+      pp_printf (&pp, "}\n");
+    }
+
+  pp_printf (&pp, "}\n");
+  pp_flush (&pp);
+}
+
+/* Dump dependency graph for the current region to a file using dot syntax.  */
+
+DEBUG_FUNCTION void
+dump_rgn_dependencies_dot (const char *fname)
+{
+  FILE *fp;
+
+  fp = fopen (fname, "w");
+  if (!fp)
+    {
+      perror ("fopen");
+      return;
+    }
+
+  dump_rgn_dependencies_dot (fp);
+  fclose (fp);
+}
+
 
 /* Returns true if all the basic blocks of the current region have
    NOTE_DISABLE_SCHED_OF_BLOCK which means not to schedule that region.  */

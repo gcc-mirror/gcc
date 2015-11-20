@@ -787,9 +787,13 @@ endif
 endif
 
 if LIBGO_IS_LINUX
-go_net_cloexec_file = go/net/sock_cloexec.go
+go_net_cloexec_file = go/net/sock_cloexec.go go/net/hook_cloexec.go
+else
+if LIBGO_IS_FREEBSD
+go_net_cloexec_file = go/net/sock_cloexec.go go/net/hook_cloexec.go
 else
 go_net_cloexec_file = go/net/sys_cloexec.go
+endif
 endif
 
 if LIBGO_IS_OPENBSD
@@ -825,7 +829,6 @@ go_net_common_files = \
 	go/net/file.go \
 	go/net/file_unix.go \
 	go/net/hook.go \
-	go/net/hook_cloexec.go \
 	go/net/hook_unix.go \
 	go/net/hosts.go \
 	go/net/interface.go \
@@ -1985,6 +1988,12 @@ else
 syscall_exec_test_file =
 endif
 
+if LIBGO_IS_LINUX
+syscall_os_file =
+else
+syscall_os_file = go/syscall/libcall_bsd.go
+endif
+
 go_base_syscall_files = \
 	go/syscall/env_unix.go \
 	go/syscall/syscall_errno.go \
@@ -2003,6 +2012,7 @@ go_base_syscall_files = \
 	$(syscall_sleep_file) \
 	$(syscall_errstr_file) \
 	$(syscall_size_file) \
+	$(syscall_os_file) \
 	$(syscall_socket_file) \
 	$(syscall_socket_os_file) \
 	$(syscall_socket_type_file) \
@@ -2344,11 +2354,11 @@ CHECK = \
 	$(MKDIR_P) $(@D); \
 	rm -f $@-testsum $@-testlog; \
 	if test "$(USE_DEJAGNU)" = "yes"; then \
-	  $(SHELL) $(srcdir)/testsuite/gotest --goarch=$(GOARCH) --goos=$(GOOS) --dejagnu=yes --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --testname="$(@D)" --goarch="$(GOARCH)" $(GOTESTFLAGS) $(go_$(subst /,_,$(@D))_test_files); \
+	  $(SHELL) $(srcdir)/testsuite/gotest --goarch=$(GOARCH) --goos=$(GOOS) --dejagnu=yes --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --testname="$(@D)" $(GOTESTFLAGS) $(go_$(subst /,_,$(@D))_test_files); \
 	elif test "$(GOBENCH)" != ""; then \
-	  $(SHELL) $(srcdir)/testsuite/gotest --goarch=$(GOARCH) --goos=$(GOOS) --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --goarch="$(GOARCH)" --bench="$(GOBENCH)" $(GOTESTFLAGS) $(go_$(subst /,_,$(@D))_test_files); \
+	  $(SHELL) $(srcdir)/testsuite/gotest --goarch=$(GOARCH) --goos=$(GOOS) --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --bench="$(GOBENCH)" $(GOTESTFLAGS) $(go_$(subst /,_,$(@D))_test_files); \
 	else \
-	  if $(SHELL) $(srcdir)/testsuite/gotest --goarch=$(GOARCH) --goos=$(GOOS) --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --goarch="$(GOARCH)" $(GOTESTFLAGS) $(go_$(subst /,_,$(@D))_test_files) >>$@-testlog 2>&1; then \
+	  if $(SHELL) $(srcdir)/testsuite/gotest --goarch=$(GOARCH) --goos=$(GOOS) --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" $(GOTESTFLAGS) $(go_$(subst /,_,$(@D))_test_files) >>$@-testlog 2>&1; then \
 	    echo "PASS: $(@D)" >> $@-testlog; \
 	    echo "PASS: $(@D)"; \
 	    echo "PASS: $(@D)" > $@-testsum; \

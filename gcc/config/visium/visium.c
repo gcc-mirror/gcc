@@ -99,7 +99,6 @@ int visium_indent_opcode = 0;
    given how unlikely it is to have a long branch in a leaf function.  */
 static unsigned int long_branch_regnum = 31;
 
-static void visium_output_address (FILE *, enum machine_mode, rtx);
 static tree visium_handle_interrupt_attr (tree *, tree, tree, int, bool *);
 static inline bool current_function_saves_fp (void);
 static inline bool current_function_saves_lr (void);
@@ -156,6 +155,10 @@ static rtx_insn *visium_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 static bool visium_legitimate_constant_p (enum machine_mode, rtx);
 
 static bool visium_legitimate_address_p (enum machine_mode, rtx, bool);
+
+static bool visium_print_operand_punct_valid_p (unsigned char);
+static void visium_print_operand (FILE *, rtx, int);
+static void visium_print_operand_address (FILE *, machine_mode, rtx);
 
 static void visium_conditional_register_usage (void);
 
@@ -226,6 +229,13 @@ static unsigned int visium_reorg (void);
 
 #undef  TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P visium_legitimate_address_p
+
+#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P visium_print_operand_punct_valid_p
+#undef TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND visium_print_operand
+#undef TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS visium_print_operand_address
 
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE visium_attribute_table
@@ -3038,12 +3048,19 @@ output_cbranch (rtx label, enum rtx_code code, enum machine_mode cc_mode,
   return output_branch (label, cond, insn);
 }
 
-/* Helper function for PRINT_OPERAND (STREAM, X, CODE).  Output to stdio
-   stream FILE the assembler syntax for an instruction operand OP subject
-   to the modifier LETTER.  */
+/* Implement TARGET_PRINT_OPERAND_PUNCT_VALID_P.  */
 
-void
-print_operand (FILE *file, rtx op, int letter)
+static bool
+visium_print_operand_punct_valid_p (unsigned char code)
+{
+  return code == '#';
+}
+
+/* Implement TARGET_PRINT_OPERAND.  Output to stdio stream FILE the assembler
+   syntax for an instruction operand OP subject to the modifier LETTER.  */
+
+static void
+visium_print_operand (FILE *file, rtx op, int letter)
 {
   switch (letter)
     {
@@ -3104,7 +3121,7 @@ print_operand (FILE *file, rtx op, int letter)
       break;
 
     case MEM:
-      visium_output_address (file, GET_MODE (op), XEXP (op, 0));
+      visium_print_operand_address (file, GET_MODE (op), XEXP (op, 0));
       break;
 
     case CONST_INT:
@@ -3116,7 +3133,7 @@ print_operand (FILE *file, rtx op, int letter)
       break;
 
     case HIGH:
-      print_operand (file, XEXP (op, 1), letter);
+      visium_print_operand (file, XEXP (op, 1), letter);
       break;
 
     default:
@@ -3124,11 +3141,12 @@ print_operand (FILE *file, rtx op, int letter)
     }
 }
 
-/* Output to stdio stream FILE the assembler syntax for an instruction operand
-   that is a memory reference in MODE and whose address is ADDR.  */
+/* Implement TARGET_PRINT_OPERAND_ADDRESS.  Output to stdio stream FILE the
+   assembler syntax for an instruction operand that is a memory reference
+   whose address is ADDR.  */
 
 static void
-visium_output_address (FILE *file, enum machine_mode mode, rtx addr)
+visium_print_operand_address (FILE *file, enum machine_mode mode, rtx addr)
 {
   switch (GET_CODE (addr))
     {
@@ -3203,16 +3221,6 @@ visium_output_address (FILE *file, enum machine_mode mode, rtx addr)
       fatal_insn ("illegal operand address (4)", addr);
       break;
     }
-}
-
-/* Helper function for PRINT_OPERAND_ADDRESS (STREAM, X).  Output to stdio
-   stream FILE the assembler syntax for an instruction operand that is a
-   memory reference whose address is ADDR.  */
-
-void
-print_operand_address (FILE *file, rtx addr)
-{
-  visium_output_address (file, QImode, addr);
 }
 
 /* The Visium stack frames look like:

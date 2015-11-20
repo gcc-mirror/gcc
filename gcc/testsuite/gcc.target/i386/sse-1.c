@@ -14,8 +14,10 @@ typedef union
 void
 swizzle (const void *a, vector4_t * b, vector4_t * c)
 {
-  b->v = _mm_loadl_pi (b->v, (__m64 *) a);
-  c->v = _mm_loadl_pi (c->v, ((__m64 *) a) + 1);
+  __m64 *t = __builtin_assume_aligned (a, 64);
+
+  b->v = _mm_loadl_pi (b->v, t);
+  c->v = _mm_loadl_pi (c->v, t + 1);
 }
 
 /* While one legal rendering of each statement would be movaps;movlps;movaps,

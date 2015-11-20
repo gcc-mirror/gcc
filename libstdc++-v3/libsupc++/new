@@ -79,7 +79,12 @@ namespace std
   };
 #endif
 
-  struct nothrow_t { };
+  struct nothrow_t
+  {
+#if __cplusplus >= 201103L
+    explicit nothrow_t() = default;
+#endif
+  };
 
   extern const nothrow_t nothrow;
 
@@ -116,6 +121,12 @@ void operator delete(void*) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 void operator delete[](void*) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
+#if __cpp_sized_deallocation
+void operator delete(void*, std::size_t) _GLIBCXX_USE_NOEXCEPT
+  __attribute__((__externally_visible__));
+void operator delete[](void*, std::size_t) _GLIBCXX_USE_NOEXCEPT
+  __attribute__((__externally_visible__));
+#endif
 void* operator new(std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 void* operator new[](std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
@@ -124,6 +135,12 @@ void operator delete(void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 void operator delete[](void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
+#if __cpp_sized_deallocation
+void operator delete(void*, std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
+  __attribute__((__externally_visible__));
+void operator delete[](void*, std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
+  __attribute__((__externally_visible__));
+#endif
 
 // Default placement versions of operator new.
 inline void* operator new(std::size_t, void* __p) _GLIBCXX_USE_NOEXCEPT

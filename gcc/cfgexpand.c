@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "tree-eh.h"
 #include "gimple-iterator.h"
+#include "gimple-expr.h"
 #include "gimple-walk.h"
 #include "tree-cfg.h"
 #include "tree-dfa.h"
@@ -2550,10 +2551,25 @@ expand_call_stmt (gcall *stmt)
       return;
     }
 
+  /* If this is a call to a built-in function and it has no effect other
+     than setting the lhs, try to implement it using an internal function
+     instead.  */
+  decl = gimple_call_fndecl (stmt);
+  if (gimple_call_lhs (stmt)
+      && !gimple_has_side_effects (stmt)
+      && (optimize || (decl && called_as_built_in (decl))))
+    {
+      internal_fn ifn = replacement_internal_fn (stmt);
+      if (ifn != IFN_LAST)
+	{
+	  expand_internal_call (ifn, stmt);
+	  return;
+	}
+    }
+
   exp = build_vl_exp (CALL_EXPR, gimple_call_num_args (stmt) + 3);
 
   CALL_EXPR_FN (exp) = gimple_call_fn (stmt);
-  decl = gimple_call_fndecl (stmt);
   builtin_p = decl && DECL_BUILT_IN (decl);
 
   /* If this is not a builtin function, the function type through which the
@@ -4373,9 +4389,10 @@ expand_debug_expr (tree exp)
 	machine_mode mode1;
 	HOST_WIDE_INT bitsize, bitpos;
 	tree offset;
-	int volatilep = 0;
-	tree tem = get_inner_reference (exp, &bitsize, &bitpos, &offset,
-					&mode1, &unsignedp, &volatilep, false);
+	int reversep, volatilep = 0;
+	tree tem
+	  = get_inner_reference (exp, &bitsize, &bitpos, &offset, &mode1,
+				 &unsignedp, &reversep, &volatilep, false);
 	rtx orig_op0;
 
 	if (bitsize == 0)
@@ -4798,9 +4815,10 @@ expand_debug_expr (tree exp)
 	  if (handled_component_p (TREE_OPERAND (exp, 0)))
 	    {
 	      HOST_WIDE_INT bitoffset, bitsize, maxsize;
+	      bool reverse;
 	      tree decl
-		= get_ref_base_and_extent (TREE_OPERAND (exp, 0),
-					   &bitoffset, &bitsize, &maxsize);
+		= get_ref_base_and_extent (TREE_OPERAND (exp, 0), &bitoffset,
+					   &bitsize, &maxsize, &reverse);
 	      if ((TREE_CODE (decl) == VAR_DECL
 		   || TREE_CODE (decl) == PARM_DECL
 		   || TREE_CODE (decl) == RESULT_DECL)
@@ -6272,6 +6290,9 @@ pass_expand::execute (function *fun)
 
   expand_phi_nodes (&SA);
 
+  /* Release any stale SSA redirection data.  */
+  redirect_edge_var_map_destroy ();
+
   /* Register rtl specific functions for cfg.  */
   rtl_register_cfg_hooks ();
 
@@ -6367,6 +6388,8 @@ pass_expand::execute (function *fun)
 
   /* We're done expanding trees to RTL.  */
   currently_expanding_to_rtl = 0;
+
+  flush_mark_addressable_queue ();
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (fun)->next_bb,
 		  EXIT_BLOCK_PTR_FOR_FN (fun), next_bb)

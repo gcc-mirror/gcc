@@ -221,7 +221,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static_cast<std::time_t>(__s.count()),
 	static_cast<long>(__ns.count())
       };
-    ::nanosleep(&__ts, 0);
+    while (::nanosleep(&__ts, &__ts) == -1 && errno == EINTR)
+      { }
 #elif defined(_GLIBCXX_HAVE_SLEEP)
 # ifdef _GLIBCXX_HAVE_USLEEP
     ::sleep(__s.count());

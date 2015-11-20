@@ -566,9 +566,6 @@ IFS="$ac_save_IFS"
 
 nocommon_flag=""
 if test x$ac_checking != x ; then
-  AC_DEFINE(ENABLE_CHECKING, 1,
-[Define if you want more run-time sanity checks.  This one gets a grab
-   bag of miscellaneous but relatively cheap checks.])
   AC_DEFINE(CHECKING_P, 1,
 [Define to 1 if you want more run-time sanity checks.  This one gets a grab
    bag of miscellaneous but relatively cheap checks.])
@@ -953,6 +950,9 @@ AC_DEFINE_UNQUOTED(OFFLOAD_TARGETS, "$offload_targets",
   [Define to offload targets, separated by commas.])
 if test x"$offload_targets" != x; then
   AC_DEFINE(ENABLE_OFFLOADING, 1,
+    [Define this to enable support for offloading.])
+else
+  AC_DEFINE(ENABLE_OFFLOADING, 0,
     [Define this to enable support for offloading.])
 fi
 
@@ -2246,7 +2246,7 @@ AC_ARG_WITH(plugin-ld,
 [AS_HELP_STRING([[--with-plugin-ld=[ARG]]], [specify the plugin linker])],
 [if test x"$withval" != x; then
    ORIGINAL_PLUGIN_LD_FOR_TARGET="$withval"
-   PLUGIN_LD_SUFFIX=`echo $withval | sed -e "s,$target_alias-,,"`
+   PLUGIN_LD_SUFFIX="$withval"
  fi])
 AC_SUBST(ORIGINAL_PLUGIN_LD_FOR_TARGET)
 AC_DEFINE_UNQUOTED(PLUGIN_LD_SUFFIX, "$PLUGIN_LD_SUFFIX", [Specify plugin linker])
@@ -3757,13 +3757,6 @@ AS_HELP_STRING([--disable-fix-cortex-a53-843419],
       [AC_DEFINE(HAVE_AS_REGISTER_PSEUDO_OP, 1,
 		[Define if your assembler supports .register.])])
 
-    gcc_GAS_CHECK_FEATURE([@%:@nobits], gcc_cv_as_sparc_nobits,,,
-      [.section "nobits",#alloc,#write,#nobits
-       .section "progbits",#alloc,#write,#progbits])
-    AC_DEFINE_UNQUOTED(HAVE_AS_SPARC_NOBITS,
-      [`if test $gcc_cv_as_sparc_nobits = yes; then echo 1; else echo 0; fi`],
-      [Define to 1 if your assembler supports #nobits, 0 otherwise.])
-
     gcc_GAS_CHECK_FEATURE([-relax option], gcc_cv_as_sparc_relax,,
       [-relax], [.text],,
       [AC_DEFINE(HAVE_AS_RELAX_OPTION, 1,
@@ -4324,6 +4317,19 @@ LCF0:
       [$conftest_s],,
       [AC_DEFINE(HAVE_AS_POWER8, 1,
 	  [Define if your assembler supports POWER8 instructions.])])
+
+    case $target in
+      *-*-aix*) conftest_s='	.machine "pwr9"
+	.csect .text[[PR]]';;
+      *) conftest_s='	.machine power9
+	.text';;
+    esac
+
+    gcc_GAS_CHECK_FEATURE([power9 support],
+      gcc_cv_as_powerpc_power9, [2,19,2], -a32,
+      [$conftest_s],,
+      [AC_DEFINE(HAVE_AS_POWER9, 1,
+	  [Define if your assembler supports POWER9 instructions.])])
 
     case $target in
       *-*-aix*) conftest_s='	.csect .text[[PR]]
@@ -5251,7 +5257,7 @@ _start:
 x:	.quad .TOC.
 EOF
       if $gcc_cv_as -a64 -o conftest.o conftest.s > /dev/null 2>&1 \
-         && $gcc_cv_ld $emul_name -o conftest conftest.o > /dev/null 2>&1; then
+         && $gcc_cv_ld $emul_name -z norelro -o conftest conftest.o > /dev/null 2>&1; then
         gcc_cv_ld_toc_align=`$gcc_cv_nm conftest | ${AWK} '/\.TOC\./ { match ($0, "0[[[:xdigit:]]]*", a); print strtonum ("0x" substr(a[[0]], length(a[[0]])-3)) }'`
       fi
       rm -f conftest conftest.o conftest.s
@@ -5460,7 +5466,7 @@ else
   enable_default_ssp=no
 fi],
 enable_default_ssp=no)
-if test x$enable_default_ssp == xyes ; then
+if test x$enable_default_ssp = xyes ; then
   AC_DEFINE(ENABLE_DEFAULT_SSP, 1,
       [Define if your target supports default stack protector and it is enabled.])
 fi
@@ -6025,7 +6031,7 @@ AC_ARG_ENABLE(default-pie,
   [enable Position Independent Executable as default])],
 enable_default_pie=$enableval,
 enable_default_pie=no)
-if test x$enable_default_pie == xyes ; then
+if test x$enable_default_pie = xyes ; then
   AC_DEFINE(ENABLE_DEFAULT_PIE, 1,
       [Define if your target supports default PIE and it is enabled.])
 fi

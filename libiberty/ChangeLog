@@ -1,3 +1,41 @@
+2015-11-12  Mike Stump  <mikestump@comcast.net>
+
+	* Makefile.in (etags tags TAGS): Use && instead of ;.
+
+2015-11-09  Alan Modra  <amodra@gmail.com>
+
+	* configure.ac: Check size of size_t.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+2015-11-09  Alan Modra  <amodra@gmail.com>
+
+	* obstack.c (_obstack_newchunk): Silence -Wc++compat warning.
+	(_obstack_begin_worker): Likewise.  Move assignment to h->chunk
+	after alloc failure check.
+
+2015-11-09  Alan Modra  <amodra@gmail.com>
+
+	PR gdb/17133
+	* obstack.c (__alignof__): Expand alignof_type from alignof.h.
+	(obstack_exit_failure): Don't use exitfail.h.
+	(_): Include libintl.h when HAVE_LIBINTL_H and nls enabled.
+	Provide default.  Don't include gettext.h.
+	(_Noreturn): Define.
+	* obstacks.texi: Adjust node references to external libc info files.
+
+2015-11-09  Alan Modra  <amodra@gmail.com>
+
+	PR gdb/17133
+	* obstack.c: Import current gnulib file.
+	* obstacks.texi: Updated doc, from glibc's manual/memory.texi.
+
+2015-11-06  Joel Brobecker  <brobecker@adacore.com>
+
+	* configure.ac: Set AC_CV_FUNC_GETPAGESIZE to "yes" on
+	Android hosts.
+	* configure: Regenerate.
+
 2015-10-28  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in (TAGS): Fix for separate build directory.

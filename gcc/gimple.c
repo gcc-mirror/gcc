@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "gimplify.h"
+#include "target.h"
 
 
 /* All the tuples have their operand vector (if present) at the very bottom
@@ -2530,6 +2531,27 @@ gimple_call_builtin_p (const gimple *stmt, enum built_in_function code)
   return false;
 }
 
+/* If CALL is a call to a combined_fn (i.e. an internal function or
+   a normal built-in function), return its code, otherwise return
+   CFN_LAST.  */
+
+combined_fn
+gimple_call_combined_fn (const gimple *stmt)
+{
+  if (const gcall *call = dyn_cast <const gcall *> (stmt))
+    {
+      if (gimple_call_internal_p (call))
+	return as_combined_fn (gimple_call_internal_fn (call));
+
+      tree fndecl = gimple_call_fndecl (stmt);
+      if (fndecl
+	  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+	  && gimple_builtin_call_types_compatible_p (stmt, fndecl))
+	return as_combined_fn (DECL_FUNCTION_CODE (fndecl));
+    }
+  return CFN_LAST;
+}
+
 /* Return true if STMT clobbers memory.  STMT is required to be a
    GIMPLE_ASM.  */
 
@@ -2624,9 +2646,15 @@ nonfreeing_call_p (gimple *call)
 static bool
 check_loadstore (gimple *, tree op, tree, void *data)
 {
-  if ((TREE_CODE (op) == MEM_REF || TREE_CODE (op) == TARGET_MEM_REF)
-      && operand_equal_p (TREE_OPERAND (op, 0), (tree)data, 0))
-    return true;
+  if (TREE_CODE (op) == MEM_REF || TREE_CODE (op) == TARGET_MEM_REF)
+    {
+      /* Some address spaces may legitimately dereference zero.  */
+      addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (op));
+      if (targetm.addr_space.zero_address_valid (as))
+	return false;
+
+      return operand_equal_p (TREE_OPERAND (op, 0), (tree)data, 0);
+    }
   return false;
 }
 

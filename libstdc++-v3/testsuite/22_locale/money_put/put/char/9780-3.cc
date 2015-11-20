@@ -1,5 +1,5 @@
-// { dg-require-namedlocale "de_DE" }
-// { dg-require-namedlocale "es_ES" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
+// { dg-require-namedlocale "es_ES.ISO8859-15" }
 
 // Copyright (C) 2004-2015 Free Software Foundation, Inc.
 //
@@ -27,8 +27,8 @@ int main()
   using namespace std;
 
   bool test __attribute__((unused)) = true;
-  locale l1 = locale("de_DE");
-  locale l2 = locale("es_ES");
+  locale l1 = locale(ISO_8859(15,de_DE));
+  locale l2 = locale(ISO_8859(15,es_ES));
   
   const money_put<char>& mp = use_facet<money_put<char> >(l1);  
   ostringstream oss;

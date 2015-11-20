@@ -18,7 +18,7 @@ public:
   {
     /* I am surprised this is considered a constexpr */
     return *((Inner *)4);
-  } // { dg-error "reinterpret_cast" "" { xfail *-*-* } }
+  } // { dg-error "reinterpret_cast" "" }
 };
 
 B B::instance;

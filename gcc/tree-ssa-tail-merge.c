@@ -1081,7 +1081,7 @@ gimple_operand_equal_value_p (tree t1, tree t2)
       || t2 == NULL_TREE)
     return false;
 
-  if (operand_equal_p (t1, t2, 0))
+  if (operand_equal_p (t1, t2, OEP_MATCH_SIDE_EFFECTS))
     return true;
 
   return gvn_uses_equal (t1, t2);

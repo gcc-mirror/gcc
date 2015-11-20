@@ -266,6 +266,20 @@ add_comma_separated_to_vector (void **pvec, const char *arg)
   *pvec = v;
 }
 
+/* Initialize opts_obstack if not initialized.  */
+
+void
+init_opts_obstack (void)
+{
+  static bool opts_obstack_initialized = false;
+
+  if (!opts_obstack_initialized)
+    {
+      opts_obstack_initialized = true;
+      gcc_obstack_init (&opts_obstack);
+    }
+}
+
 /* Initialize OPTS and OPTS_SET before using them in parsing options.  */
 
 void
@@ -273,7 +287,7 @@ init_options_struct (struct gcc_options *opts, struct gcc_options *opts_set)
 {
   size_t num_params = get_num_compiler_params ();
 
-  gcc_obstack_init (&opts_obstack);
+  init_opts_obstack ();
 
   *opts = global_options_init;
 
@@ -464,6 +478,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fmove_loop_invariants, NULL, 1 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_ftree_pta, NULL, 1 },
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fssa_phiopt, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_builtin_call_dce, NULL, 1 },
 
     /* -O2 optimizations.  */
     { OPT_LEVELS_2_PLUS, OPT_finline_small_functions, NULL, 1 },
@@ -489,7 +504,6 @@ static const struct default_options default_options_table[] =
       REORDER_BLOCKS_ALGORITHM_STC },
     { OPT_LEVELS_2_PLUS, OPT_freorder_functions, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_vrp, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_ftree_builtin_call_dce, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_pre, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_switch_conversion, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fipa_cp, NULL, 1 },
@@ -509,6 +523,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS, OPT_fisolate_erroneous_paths_dereference, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fipa_ra, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_flra_remat, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fsplit_paths, NULL, 1 },
 
     /* -O3 optimizations.  */
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribute_patterns, NULL, 1 },

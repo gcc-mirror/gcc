@@ -58,8 +58,8 @@ struct poly_dr
   /* The number of data refs identical to this one in the PBB.  */
   int nb_refs;
 
-  /* A pointer to compiler's data reference description.  */
-  data_reference_p compiler_dr;
+  /* A pointer to the gimple stmt containing this reference.  */
+  gimple *stmt;
 
   /* A pointer to the PBB that contains this data reference.  */
   poly_bb_p pbb;
@@ -181,21 +181,16 @@ struct poly_dr
      In the example, the vector "R C O I L P" is "7 7 3 2 0 1".  */
   isl_map *accesses;
   isl_set *subscript_sizes;
-
-  /* The number of subscripts.  */
-  graphite_dim_t nb_subscripts;
 };
 
 #define PDR_ID(PDR) (PDR->id)
 #define PDR_NB_REFS(PDR) (PDR->nb_refs)
-#define PDR_CDR(PDR) (PDR->compiler_dr)
 #define PDR_PBB(PDR) (PDR->pbb)
 #define PDR_TYPE(PDR) (PDR->type)
 #define PDR_ACCESSES(PDR) (NULL)
-#define PDR_NB_SUBSCRIPTS(PDR) (PDR->nb_subscripts)
 
-void new_poly_dr (poly_bb_p, enum poly_dr_type, data_reference_p,
-		  graphite_dim_t, isl_map *, isl_set *);
+void new_poly_dr (poly_bb_p, gimple *, enum poly_dr_type,
+		  isl_map *, isl_set *);
 void free_poly_dr (poly_dr_p);
 void debug_pdr (poly_dr_p);
 void print_pdr (FILE *, poly_dr_p);
@@ -270,6 +265,9 @@ struct poly_bb
 
   /* True when this PBB contains only a reduction statement.  */
   bool is_reduction;
+
+  /* The last basic block generated for this pbb.  */
+  basic_block new_bb;
 };
 
 #define PBB_BLACK_BOX(PBB) ((gimple_poly_bb_p) PBB->black_box)
@@ -313,22 +311,6 @@ extern bool flatten_all_loops (scop_p);
 extern bool optimize_isl (scop_p);
 extern void pbb_number_of_iterations_at_time (poly_bb_p, graphite_dim_t, mpz_t);
 extern void debug_gmp_value (mpz_t);
-
-/* Returns a gimple_bb from BB.  */
-
-static inline gimple_poly_bb_p
-gbb_from_bb (basic_block bb)
-{
-  return (gimple_poly_bb_p) bb->aux;
-}
-
-/* The poly_bb of the BB.  */
-
-static inline poly_bb_p
-pbb_from_bb (basic_block bb)
-{
-  return GBB_PBB (gbb_from_bb (bb));
-}
 
 /* The basic block of the PBB.  */
 
@@ -436,6 +418,9 @@ struct scop
     *must_war, *may_war, *must_war_no_source, *may_war_no_source,
     *must_waw, *may_waw, *must_waw_no_source, *may_waw_no_source;
 
+  /* Original schedule of the SCoP.  */
+  isl_union_map *original_schedule;
+
   /* True when the scop has been converted to its polyhedral
      representation.  */
   bool poly_scop_p;
@@ -443,7 +428,8 @@ struct scop
 
 extern scop_p new_scop (edge, edge);
 extern void free_scop (scop_p);
-extern gimple_poly_bb_p new_gimple_poly_bb (basic_block, vec<data_reference_p>);
+extern gimple_poly_bb_p new_gimple_poly_bb (basic_block, vec<data_reference_p>,
+					    vec<scalar_use>, vec<tree>);
 extern void free_gimple_poly_bb (gimple_poly_bb_p);
 extern void print_generated_program (FILE *, scop_p);
 extern void debug_generated_program (scop_p);

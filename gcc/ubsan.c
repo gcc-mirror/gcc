@@ -1359,9 +1359,9 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
   machine_mode mode;
-  int volatilep = 0, unsignedp = 0;
+  int volatilep = 0, reversep, unsignedp = 0;
   tree base = get_inner_reference (rhs, &bitsize, &bitpos, &offset, &mode,
-				   &unsignedp, &volatilep, false);
+				   &unsignedp, &reversep, &volatilep, false);
   tree utype = build_nonstandard_integer_type (modebitsize, 1);
 
   if ((TREE_CODE (base) == VAR_DECL && DECL_HARD_REGISTER (base))
@@ -1779,9 +1779,9 @@ instrument_object_size (gimple_stmt_iterator *gsi, bool is_lhs)
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
   machine_mode mode;
-  int volatilep = 0, unsignedp = 0;
+  int volatilep = 0, reversep, unsignedp = 0;
   tree inner = get_inner_reference (t, &bitsize, &bitpos, &offset, &mode,
-				    &unsignedp, &volatilep, false);
+				    &unsignedp, &reversep, &volatilep, false);
 
   if (bitpos % BITS_PER_UNIT != 0
       || bitsize != size_in_bytes * BITS_PER_UNIT)

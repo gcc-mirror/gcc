@@ -21,22 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "basic-block.h"
-#include "tree.h"
 #include "cp-tree.h"
-#include "c-family/c-common.h"
-#include "gimple.h"
-#include "predict.h"
-#include "stringpool.h"
-#include "cgraph.h"
-#include "output.h"
-#include "toplev.h"
 #include "ubsan.h"
-#include "c-family/c-ubsan.h"
-#include "asan.h"
-#include "internal-fn.h"
-#include "stor-layout.h"
-#include "builtins.h"
 
 /* Test if we should instrument vptr access.  */
 

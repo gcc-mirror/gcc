@@ -26,9 +26,17 @@ foo (int a[10][10][10], int **b, int x)
     bar (a);
   #pragma omp parallel reduction(+: a[0:4])
     bar (a);
-  #pragma omp parallel reduction(+: a[2:4])		/* { dg-error "array section has to be zero-based" } */
+  #pragma omp parallel reduction(+: a[2:4])
     bar (a);
-  #pragma omp parallel reduction(+: e[2:4])		/* { dg-error "array section has to be zero-based" } */
+  #pragma omp parallel reduction(+: e[2:4])
+    bar (a);
+  #pragma omp parallel reduction(+: a[x:4])
+    bar (a);
+  #pragma omp parallel reduction(+: e[x:4])
+    bar (a);
+  #pragma omp parallel reduction(+: a[x:x])
+    bar (a);
+  #pragma omp parallel reduction(+: e[x:x])
     bar (a);
   #pragma omp parallel reduction(+: a[0.5:2])		/* { dg-error "low bound \[^\n\r]* of array section does not have integral type" } */
     bar (a);

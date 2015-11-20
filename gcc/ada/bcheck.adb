@@ -447,12 +447,13 @@ package body Bcheck is
    ---------------------------------------------------
 
    --  The rule here is that if a unit has dynamic elaboration checks,
-   --  then any unit it withs must meeting one of the following criteria:
+   --  then any unit it withs must meet one of the following criteria:
 
    --    1. There is a pragma Elaborate_All for the with'ed unit
    --    2. The with'ed unit was compiled with dynamic elaboration checks
    --    3. The with'ed unit has pragma Preelaborate or Pure
    --    4. It is an internal GNAT unit (including children of GNAT)
+   --    5. It is an interface of a Stand-Alone Library
 
    procedure Check_Consistent_Dynamic_Elaboration_Checking is
    begin
@@ -494,6 +495,11 @@ package body Bcheck is
                               --  Case 4. With'ed unit is internal file
 
                               elsif Is_Internal_File_Name (WU.Sfile) then
+                                 null;
+
+                              --  Case 5. With'ed unit is a SAL interface
+
+                              elsif WU.SAL_Interface then
                                  null;
 
                               --  Issue warning, not one of the safe cases
@@ -979,23 +985,27 @@ package body Bcheck is
             for J in ALIs.First .. ALIs.Last loop
                declare
                   A : ALIs_Record renames ALIs.Table (J);
-
                begin
                   for K in A.First_Unit .. A.Last_Unit loop
                      declare
                         U : Unit_Record renames Units.Table (K);
                      begin
-                        for L in U.First_With .. U.Last_With loop
-                           if Same_Unit
-                             (Withs.Table (L).Uname, ND_Unit)
-                           then
-                              Error_Msg_File_1 := U.Sfile;
-                              Error_Msg_Name_1 := ND_Unit;
-                              Consistency_Error_Msg
-                                ("file { violates restriction " &
-                                 "No_Dependence => %");
-                           end if;
-                        end loop;
+                        --  Exclude runtime units from this check since the
+                        --  user does not care how a runtime unit is
+                        --  implemented.
+
+                        if not Is_Internal_File_Name (U.Sfile) then
+                           for L in U.First_With .. U.Last_With loop
+                              if Same_Unit (Withs.Table (L).Uname, ND_Unit)
+                              then
+                                 Error_Msg_File_1 := U.Sfile;
+                                 Error_Msg_Name_1 := ND_Unit;
+                                 Consistency_Error_Msg
+                                   ("file { violates restriction " &
+                                    "No_Dependence => %");
+                              end if;
+                           end loop;
+                        end if;
                      end;
                   end loop;
                end;

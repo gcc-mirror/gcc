@@ -50,7 +50,7 @@ package body Fmap is
 
    Max_Buffer : constant := 1_500;
    Buffer : String (1 .. Max_Buffer);
-   --  Used to bufferize output when writing to a new mapping file
+   --  Used to buffer output when writing to a new mapping file
 
    Buffer_Last : Natural := 0;
    --  Index of last valid character in Buffer

@@ -48,7 +48,7 @@ struct GTY (()) cp_token {
   /* Token flags.  */
   unsigned char flags;
   /* Identifier for the pragma.  */
-  ENUM_BITFIELD (pragma_kind) pragma_kind : 6;
+  ENUM_BITFIELD (pragma_kind) pragma_kind : 8;
   /* True if this token is from a context where it is implicitly extern "C" */
   BOOL_BITFIELD implicit_extern_c : 1;
   /* True if an error has already been reported for this token, such as a
@@ -203,6 +203,7 @@ struct cp_omp_declare_simd_data {
   bool error_seen; /* Set if error has been reported.  */
   bool fndecl_seen; /* Set if one fn decl/definition has been seen already.  */
   vec<cp_token_cache_ptr> tokens;
+  tree clauses;
 };
 
 
@@ -371,6 +372,9 @@ struct GTY(()) cp_parser {
      necessary.  */
   cp_omp_declare_simd_data * GTY((skip)) cilk_simd_fn_info;
 
+  /* Parsing information for #pragma acc routine.  */
+  cp_omp_declare_simd_data * GTY((skip)) oacc_routine;
+  
   /* Nonzero if parsing a parameter list where 'auto' should trigger an implicit
      template parameter.  */
   bool auto_is_implicit_function_template_parm_p;

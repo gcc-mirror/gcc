@@ -617,7 +617,7 @@ static machine_mode sparc_preferred_simd_mode (machine_mode);
 static reg_class_t sparc_preferred_reload_class (rtx x, reg_class_t rclass);
 static bool sparc_print_operand_punct_valid_p (unsigned char);
 static void sparc_print_operand (FILE *, rtx, int);
-static void sparc_print_operand_address (FILE *, rtx);
+static void sparc_print_operand_address (FILE *, machine_mode, rtx);
 static reg_class_t sparc_secondary_reload (bool, rtx, reg_class_t,
 					   machine_mode,
 					   secondary_reload_info *);
@@ -5058,9 +5058,9 @@ sparc_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
       emit_stack_probe (plus_constant (Pmode, g1, -size));
     }
 
-  /* The run-time loop is made up of 10 insns in the generic case while the
+  /* The run-time loop is made up of 9 insns in the generic case while the
      compile-time loop is made up of 4+2*(n-2) insns for n # of intervals.  */
-  else if (size <= 5 * PROBE_INTERVAL)
+  else if (size <= 4 * PROBE_INTERVAL)
     {
       HOST_WIDE_INT i;
 
@@ -5147,40 +5147,32 @@ const char *
 output_probe_stack_range (rtx reg1, rtx reg2)
 {
   static int labelno = 0;
-  char loop_lab[32], end_lab[32];
+  char loop_lab[32];
   rtx xops[2];
 
-  ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno);
-  ASM_GENERATE_INTERNAL_LABEL (end_lab, "LPSRE", labelno++);
+  ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno++);
 
+  /* Loop.  */
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_lab);
 
-   /* Jump to END_LAB if TEST_ADDR == LAST_ADDR.  */
+  /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
   xops[0] = reg1;
+  xops[1] = GEN_INT (-PROBE_INTERVAL);
+  output_asm_insn ("add\t%0, %1, %0", xops);
+
+  /* Test if TEST_ADDR == LAST_ADDR.  */
   xops[1] = reg2;
   output_asm_insn ("cmp\t%0, %1", xops);
-  if (TARGET_ARCH64)
-    fputs ("\tbe,pn\t%xcc,", asm_out_file);
-  else
-    fputs ("\tbe\t", asm_out_file);
-  assemble_name_raw (asm_out_file, end_lab);
-  fputc ('\n', asm_out_file);
-
-  /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
-  xops[1] = GEN_INT (-PROBE_INTERVAL);
-  output_asm_insn (" add\t%0, %1, %0", xops);
 
   /* Probe at TEST_ADDR and branch.  */
   if (TARGET_ARCH64)
-    fputs ("\tba,pt\t%xcc,", asm_out_file);
+    fputs ("\tbne,pt\t%xcc,", asm_out_file);
   else
-    fputs ("\tba\t", asm_out_file);
+    fputs ("\tbne\t", asm_out_file);
   assemble_name_raw (asm_out_file, loop_lab);
   fputc ('\n', asm_out_file);
   xops[1] = GEN_INT (SPARC_STACK_BIAS);
   output_asm_insn (" st\t%%g0, [%0+%1]", xops);
-
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, end_lab);
 
   return "";
 }
@@ -7329,9 +7321,10 @@ sparc_function_value_1 (const_tree type, machine_mode mode,
 	mode = word_mode;
     }
 
-  /* We should only have pointer and integer types at this point.  This must
-     match sparc_promote_function_mode.  */
+  /* We should only have pointer and integer types at this point, except with
+     -freg-struct-return.  This must match sparc_promote_function_mode.  */
   else if (TARGET_ARCH32
+	   && !(type && AGGREGATE_TYPE_P (type))
 	   && mclass == MODE_INT
 	   && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
     mode = word_mode;
@@ -8802,7 +8795,7 @@ sparc_print_operand (FILE *file, rtx x, int code)
       return;
     case 'm':
       /* Print the operand's address only.  */
-      output_address (XEXP (x, 0));
+      output_address (GET_MODE (x), XEXP (x, 0));
       return;
     case 'r':
       /* In this case we need a register.  Use %g0 if the
@@ -8895,7 +8888,7 @@ sparc_print_operand (FILE *file, rtx x, int code)
       /* Operand must be a MEM; write its address.  */
       if (GET_CODE (x) != MEM)
 	output_operand_lossage ("invalid %%f operand");
-      output_address (XEXP (x, 0));
+      output_address (GET_MODE (x), XEXP (x, 0));
       return;
 
     case 's':
@@ -8933,7 +8926,7 @@ sparc_print_operand (FILE *file, rtx x, int code)
 	/* Poor Sun assembler doesn't understand absolute addressing.  */
       if (CONSTANT_P (XEXP (x, 0)))
 	fputs ("%g0+", file);
-      output_address (XEXP (x, 0));
+      output_address (GET_MODE (x), XEXP (x, 0));
       fputc (']', file);
     }
   else if (GET_CODE (x) == HIGH)
@@ -8972,7 +8965,7 @@ sparc_print_operand (FILE *file, rtx x, int code)
 /* Implement TARGET_PRINT_OPERAND_ADDRESS.  */
 
 static void
-sparc_print_operand_address (FILE *file, rtx x)
+sparc_print_operand_address (FILE *file, machine_mode /*mode*/, rtx x)
 {
   register rtx base, index = 0;
   int offset = 0;
@@ -8995,7 +8988,7 @@ sparc_print_operand_address (FILE *file, rtx x)
 		      && ! TARGET_CM_MEDMID);
 	  output_operand (XEXP (base, 0), 0);
 	  fputs ("+%lo(", file);
-	  output_address (XEXP (base, 1));
+	  output_address (VOIDmode, XEXP (base, 1));
 	  fprintf (file, ")+%d", offset);
 	}
       else
@@ -9027,7 +9020,7 @@ sparc_print_operand_address (FILE *file, rtx x)
         fputs ("+%l44(", file);
       else
         fputs ("+%lo(", file);
-      output_address (XEXP (addr, 1));
+      output_address (VOIDmode, XEXP (addr, 1));
       fputc (')', file);
     }
   else if (flag_pic
@@ -9868,14 +9861,12 @@ sparc_solaris_elf_asm_named_section (const char *name, unsigned int flags,
   if (flags & SECTION_CODE)
     fputs (",#execinstr", asm_out_file);
 
-  /* Sun as only supports #nobits/#progbits since Solaris 10.  */
-  if (HAVE_AS_SPARC_NOBITS)
-    {
-      if (flags & SECTION_BSS)
-	fputs (",#nobits", asm_out_file);
-      else
-	fputs (",#progbits", asm_out_file);
-    }
+  if (flags & SECTION_NOTYPE)
+    ;
+  else if (flags & SECTION_BSS)
+    fputs (",#nobits", asm_out_file);
+  else
+    fputs (",#progbits", asm_out_file);
 
   fputc ('\n', asm_out_file);
 }

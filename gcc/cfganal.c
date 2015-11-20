@@ -784,9 +784,8 @@ inverted_post_order_compute (int *post_order)
   int post_order_num = 0;
   sbitmap visited;
 
-#if ENABLE_CHECKING
-  verify_no_unreachable_blocks ();
-#endif
+  if (flag_checking)
+    verify_no_unreachable_blocks ();
 
   /* Allocate stack for back-tracking up CFG.  */
   stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);

@@ -654,11 +654,14 @@ enum cgraph_simd_clone_arg_type
   /* These are only for integer/pointer arguments passed by value.  */
   SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP,
   SIMD_CLONE_ARG_TYPE_LINEAR_VARIABLE_STEP,
-  /* These 3 are only for reference type arguments or arguments passed
+  /* These 6 are only for reference type arguments or arguments passed
      by reference.  */
   SIMD_CLONE_ARG_TYPE_LINEAR_REF_CONSTANT_STEP,
+  SIMD_CLONE_ARG_TYPE_LINEAR_REF_VARIABLE_STEP,
   SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_CONSTANT_STEP,
+  SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_VARIABLE_STEP,
   SIMD_CLONE_ARG_TYPE_LINEAR_VAL_CONSTANT_STEP,
+  SIMD_CLONE_ARG_TYPE_LINEAR_VAL_VARIABLE_STEP,
   SIMD_CLONE_ARG_TYPE_MASK
 };
 
@@ -700,7 +703,7 @@ struct GTY(()) cgraph_simd_clone_arg {
 
   /* For arg_type SIMD_CLONE_ARG_TYPE_LINEAR_*CONSTANT_STEP this is
      the constant linear step, if arg_type is
-     SIMD_CLONE_ARG_TYPE_LINEAR_VARIABLE_STEP, this is index of
+     SIMD_CLONE_ARG_TYPE_LINEAR_*VARIABLE_STEP, this is index of
      the uniform argument holding the step, otherwise 0.  */
   HOST_WIDE_INT linear_step;
 

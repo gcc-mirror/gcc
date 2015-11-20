@@ -74,6 +74,16 @@ trapv_binoptab_p (optab binoptab)
 	  || binoptab == smulv_optab);
 }
 
+/* Return insn code for a comparison operator with VMODE
+   resultin MASK_MODE, unsigned if UNS is true.  */
+
+static inline enum insn_code
+get_vec_cmp_icode (machine_mode vmode, machine_mode mask_mode, bool uns)
+{
+  optab tab = uns ? vec_cmpu_optab : vec_cmp_optab;
+  return convert_optab_handler (tab, vmode, mask_mode);
+}
+
 /* Return insn code for a conditional operator with a comparison in
    mode CMODE, unsigned if UNS is true, resulting in a value of mode VMODE.  */
 
@@ -86,6 +96,15 @@ get_vcond_icode (machine_mode vmode, machine_mode cmode, bool uns)
   else
     icode = convert_optab_handler (vcond_optab, vmode, cmode);
   return icode;
+}
+
+/* Return insn code for a conditional operator with a mask mode
+   MMODE resulting in a value of mode VMODE.  */
+
+static inline enum insn_code
+get_vcond_mask_icode (machine_mode vmode, machine_mode mmode)
+{
+  return convert_optab_handler (vcond_mask_optab, vmode, mmode);
 }
 
 /* Enumerates the possible extraction_insn operations.  */
@@ -130,7 +149,7 @@ enum insn_code find_widening_optab_handler_and_mode (optab, machine_mode,
 						     machine_mode, int,
 						     machine_mode *);
 int can_mult_highpart_p (machine_mode, bool);
-bool can_vec_mask_load_store_p (machine_mode, bool);
+bool can_vec_mask_load_store_p (machine_mode, machine_mode, bool);
 bool can_compare_and_swap_p (machine_mode, bool);
 bool can_atomic_exchange_p (machine_mode, bool);
 bool lshift_cheap_p (bool);

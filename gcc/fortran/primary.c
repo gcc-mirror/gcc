@@ -2709,21 +2709,27 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result)
   e->value.function.esym = sym;
   e->symtree->n.sym->attr.generic = 1;
 
-   m = gfc_match_actual_arglist (0, &e->value.function.actual);
-   if (m != MATCH_YES)
-     {
-       gfc_free_expr (e);
-       return m;
-     }
+  m = gfc_match_actual_arglist (0, &e->value.function.actual);
+  if (m != MATCH_YES)
+    {
+      gfc_free_expr (e);
+      return m;
+    }
 
-   if (!gfc_convert_to_structure_constructor (e, sym, NULL, NULL, false))
-     {
-       gfc_free_expr (e);
-       return MATCH_ERROR;
-     }
+  if (!gfc_convert_to_structure_constructor (e, sym, NULL, NULL, false))
+    {
+      gfc_free_expr (e);
+      return MATCH_ERROR;
+    }
 
-   *result = e;
-   return MATCH_YES;
+  /* If a structure constructor is in a DATA statement, then each entity
+     in the structure constructor must be a constant.  Try to reduce the
+     expression here.  */
+  if (gfc_in_match_data ())
+    gfc_reduce_init_expr (e);
+ 
+  *result = e;
+  return MATCH_YES;
 }
 
 

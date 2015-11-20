@@ -974,7 +974,7 @@
 
   ok = ix86_decompose_address (op, &parts);
   gcc_assert (ok);
-  return parts.seg == SEG_DEFAULT;
+  return parts.seg == ADDR_SPACE_GENERIC;
 })
 
 ;; Return true if op if a valid base register, displacement or
@@ -988,7 +988,7 @@
 
   ok = ix86_decompose_address (op, &parts);
   gcc_assert (ok);
-  if (parts.index || parts.seg != SEG_DEFAULT)
+  if (parts.index || parts.seg != ADDR_SPACE_GENERIC)
     return false;
 
   /* VSIB addressing doesn't support (%rip).  */
@@ -1032,7 +1032,7 @@
   if (parts.index && parts.base)
     return false;
 
-  if (parts.seg != SEG_DEFAULT)
+  if (parts.seg != ADDR_SPACE_GENERIC)
     return false;
 
   /* Do not support (%rip).  */
@@ -1064,7 +1064,7 @@
   if (parts.index)
     return false;
 
-  if (parts.seg != SEG_DEFAULT)
+  if (parts.seg != ADDR_SPACE_GENERIC)
     return false;
 
   /* Do not support (%rip).  */
@@ -1364,10 +1364,11 @@
 (define_predicate "absneg_operator"
   (match_code "abs,neg"))
 
-;; Return true if OP is misaligned memory operand
+;; Return true if OP is a memory operand, aligned to
+;; less than its natural alignment.
 (define_predicate "misaligned_operand"
   (and (match_code "mem")
-       (match_test "MEM_ALIGN (op) < GET_MODE_ALIGNMENT (mode)")))
+       (match_test "MEM_ALIGN (op) < GET_MODE_BITSIZE (mode)")))
 
 ;; Return true if OP is a emms operation, known to be a PARALLEL.
 (define_predicate "emms_operation"

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,6 +74,6 @@ package System.Pool_Global is
    --     for T'Storage_Pool use Q'Storage_Pool;
    --  and Q'Storage_Pool hasn't been defined explicitly.
 
-   Global_Pool_Object : Unbounded_No_Reclaim_Pool;
+   Global_Pool_Object : aliased Unbounded_No_Reclaim_Pool;
 
 end System.Pool_Global;

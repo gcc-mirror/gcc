@@ -324,9 +324,7 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
    propagation after the required low level adjustments.  */
 
 static void
-__gnat_error_handler (int sig,
-		      siginfo_t *si ATTRIBUTE_UNUSED,
-		      void *ucontext ATTRIBUTE_UNUSED)
+__gnat_error_handler (int sig, siginfo_t *si ATTRIBUTE_UNUSED, void *ucontext)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -683,7 +681,7 @@ __gnat_error_handler (int sig)
 }
 
 void
-__gnat_install_handler(void)
+__gnat_install_handler (void)
 {
   struct sigaction act;
 
@@ -1911,6 +1909,40 @@ __gnat_vxsim_error_handler (int sig, siginfo_t *si, void *sc);
 static int is_vxsim = 0;
 #endif
 
+#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR >= 7)
+
+/* ARM-vx7 case with arm unwinding exceptions */
+#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
+
+#include <arch/../regs.h>
+#ifndef __RTP__
+#include <sigLib.h>
+#else
+#include <signal.h>
+#include <regs.h>
+#include <ucontext.h>
+#endif /* __RTP__ */
+
+void
+__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
+				 void *sc ATTRIBUTE_UNUSED)
+{
+  /* In case of ARM exceptions, the registers context have the PC pointing
+     to the instruction that raised the signal.  However the unwinder expects
+     the instruction to be in the range ]PC,PC+1].  */
+  uintptr_t *pc_addr;
+#ifdef __RTP__
+  mcontext_t *mcontext = &((ucontext_t *) sc)->uc_mcontext;
+  pc_addr = (uintptr_t*)&mcontext->regs.pc;
+#else
+  struct sigcontext * sctx = (struct sigcontext *) sc;
+  pc_addr = (uintptr_t*)&sctx->sc_pregs->pc;
+#endif
+  /* ARM Bump has to be an even number because of odd/even architecture.  */
+  *pc_addr += 2;
+}
+#endif /* ARMEL && _WRS_VXWORKS_MAJOR >= 7 */
+
 /* Tasking and Non-tasking signal handler.  Map SIGnal to Ada exception
    propagation after the required low level adjustments.  */
 
@@ -1919,11 +1951,12 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
 {
   sigset_t mask;
 
-  /* VxWorks 7 on e500v2 clears the SPE bit of the MSR when entering CPU
+  /* VxWorks on e500v2 clears the SPE bit of the MSR when entering CPU
      exception state. To allow the handler and exception to work properly
      when they contain SPE instructions, we need to set it back before doing
-     anything else. */
-#if (CPU == PPCE500V2) && (_WRS_VXWORKS_MAJOR == 7)
+     anything else.
+     This mechanism is only need in kernel mode. */
+#if !(defined (__RTP__) || defined (CERT)) && ((CPU == PPCE500V2) || (CPU == PPC85XX))
   register unsigned msr;
   /* Read the MSR value */
   asm volatile ("mfmsr %0" : "=r" (msr));
@@ -1957,7 +1990,11 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
     __gnat_vxsim_error_handler (sig, si, sc);
 #endif
 
-  #include "sigtramp.h"
+#ifdef HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
+  __gnat_adjust_context_for_raise (sig, sc);
+#endif
+
+#include "sigtramp.h"
 
   __gnat_sigtramp (sig, (void *)si, (void *)sc,
 		   (__sigtramphandler_t *)&__gnat_map_signal);
@@ -2149,7 +2186,7 @@ __gnat_error_handler (int sig)
 }
 
 void
-__gnat_install_handler(void)
+__gnat_install_handler (void)
 {
   struct sigaction act;
 
@@ -2212,7 +2249,7 @@ __gnat_error_handler (int sig)
 }
 
 void
-__gnat_install_handler(void)
+__gnat_install_handler (void)
 {
   struct sigaction act;
 
@@ -2259,43 +2296,7 @@ char __gnat_alternate_stack[32 * 1024]; /* 1 * MINSIGSTKSZ */
 
 #ifdef __arm64__
 #include <sys/ucontext.h>
-
-/* Trampoline inserted before raising the exception.  It modifies the
-   stack so that PROC (D, M) looks to be called from the fault point.  Note
-   that LR may be incorrectly set.  */
-void __gnat_sigtramp (struct Exception_Data *d, const char *m,
-		      mcontext_t ctxt,
-		      void (*proc)(struct Exception_Data *, const char *));
-
-asm("\n"
-"	.section	__TEXT,__text,regular,pure_instructions\n"
-"	.align  2\n"
-"___gnat_sigtramp:\n"
-"	.cfi_startproc\n"
-	/* Restore callee saved registers.  */
-"	ldp	x19, x20, [x2, #168]\n"
-"	ldp	x21, x22, [x2, #184]\n"
-"	ldp	x23, x24, [x2, #200]\n"
-"	ldp	x25, x26, [x2, #216]\n"
-"	ldp	x27, x28, [x2, #232]\n"
-"	ldp	q8, q9, [x2, #416]\n"
-"	ldp	q10, q11, [x2, #448]\n"
-"	ldp	q12, q13, [x2, #480]\n"
-"	ldp	q14, q15, [x2, #512]\n"
-	/* Read FP from mcontext.  */
-"	ldp	fp, lr, [x2, #248]\n"
-	/* Read SP and PC from mcontext.  */
-"	ldp	x6, x7, [x2, #264]\n"
-"	add	lr, x7, #1\n"
-"	mov	sp, x6\n"
-	/* Create a standard frame.  */
-"	stp	fp, lr, [sp, #-16]!\n"
-"	.cfi_def_cfa	w29, 16\n"
-"	.cfi_offset	w30, -8\n"
-"	.cfi_offset	w29, -16\n"
-"	br	x3\n"
-"	.cfi_endproc\n"
-);
+#include "sigtramp.h"
 #endif
 
 /* Return true if ADDR is within a stack guard area.  */
@@ -2376,16 +2377,18 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
       uc->uc_mcontext->__ss.__rbx = uc->uc_mcontext->__ss.__rdx;
       uc->uc_mcontext->__ss.__rdx = t;
     }
+#elif defined(__arm64__)
+  /* Even though the CFI is marked as a signal frame, we need this.  */
+  ucontext_t *uc = (ucontext_t *)ucontext;
+  uc->uc_mcontext->__ss.__pc++;
 #endif
 }
 
 static void
-__gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
+__gnat_map_signal (int sig, siginfo_t *si, void *mcontext ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   const char *msg;
-
-  __gnat_adjust_context_for_raise (sig, ucontext);
 
   switch (sig)
     {
@@ -2393,6 +2396,17 @@ __gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
     case SIGBUS:
       if (__gnat_is_stack_guard ((unsigned long)si->si_addr))
 	{
+#ifdef __arm64__
+	  /* ??? This is a kludge to make stack checking work.  The problem is
+	     that the trampoline doesn't restore LR and, consequently, doesn't
+	     make it possible to unwind past an interrupted frame which hasn"t
+	     saved LR on the stack yet.  Therefore, for probes in the prologue
+	     (32-bit probes as opposed to standard 64-bit probes), we make the
+	     unwinder skip the not-yet-established frame altogether.  */
+	  mcontext_t mc = (mcontext_t)mcontext;
+	  if (!(*(unsigned int *)(mc->__ss.__pc-1) & ((unsigned int)1 << 30)))
+	    mc->__ss.__pc = mc->__ss.__lr;
+#endif
 	  exception = &storage_error;
 	  msg = "stack overflow";
 	}
@@ -2401,19 +2415,11 @@ __gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
 	  exception = &constraint_error;
 	  msg = "erroneous memory access";
 	}
+
       /* Reset the use of alt stack, so that the alt stack will be used
 	 for the next signal delivery.
-         The stack can't be used in case of stack checking.  */
+	 The stack can't be used in case of stack checking.  */
       syscall (SYS_sigreturn, NULL, UC_RESET_ALT_STACK);
-
-#ifdef __arm64__
-      /* On arm64, use a trampoline so that the unwinder won't see the
-	 signal frame.  */
-      __gnat_sigtramp (exception, msg,
-		       ((ucontext_t *)ucontext)->uc_mcontext,
-		       Raise_From_Signal_Handler);
-      return;
-#endif
       break;
 
     case SIGFPE:
@@ -2427,6 +2433,20 @@ __gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
     }
 
   Raise_From_Signal_Handler (exception, msg);
+}
+
+static void
+__gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
+{
+  __gnat_adjust_context_for_raise (sig, ucontext);
+
+  /* The Darwin libc comes with a signal trampoline, except for ARM64.  */
+#ifdef __arm64__
+  __gnat_sigtramp (sig, (void *)si, ucontext,
+		   (__sigtramphandler_t *)&__gnat_map_signal);
+#else
+  __gnat_map_signal (sig, si, ucontext);
+#endif
 }
 
 void
@@ -2475,6 +2495,7 @@ __gnat_install_handler (void)
 /*******************/
 
 #include <signal.h>
+#include <sys/ucontext.h>
 #include "sigtramp.h"
 
 #define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
@@ -2491,7 +2512,7 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 static void
 __gnat_map_signal (int sig,
 		   siginfo_t *si ATTRIBUTE_UNUSED,
-		   void *ucontext ATTRIBUTE_UNUSED)
+		   void *mcontext ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -2522,9 +2543,7 @@ __gnat_map_signal (int sig,
 }
 
 static void
-__gnat_error_handler (int sig,
-		      siginfo_t *si ATTRIBUTE_UNUSED,
-		      void *ucontext ATTRIBUTE_UNUSED)
+__gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
 {
   __gnat_adjust_context_for_raise (sig, ucontext);
 

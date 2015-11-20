@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 2001-11-21 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -37,7 +37,7 @@ void test05()
   wistringstream iss;
 
   // A locale that expects grouping  
-  locale loc_de = locale("de_DE");
+  locale loc_de = locale(ISO_8859(15,de_DE));
   iss.imbue(loc_de);
 
   const num_get<wchar_t>& ng = use_facet<num_get<wchar_t> >(iss.getloc()); 

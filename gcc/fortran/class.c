@@ -843,7 +843,11 @@ has_finalizer_component (gfc_symbol *derived)
 	  && c->ts.u.derived->f2k_derived->finalizers)
 	return true;
 
+      /* Stop infinite recursion through this function by inhibiting
+	 calls when the derived type and that of the component are
+	 the same.  */
       if (c->ts.type == BT_DERIVED
+	  && !gfc_compare_derived_types (derived, c->ts.u.derived)
 	  && !c->attr.pointer && !c->attr.allocatable
 	  && has_finalizer_component (c->ts.u.derived))
 	return true;

@@ -271,6 +271,35 @@ template<typename _To, template<typename...> class _Op, typename... _Args>
   constexpr bool is_detected_convertible_v
     = is_detected_convertible<_To, _Op, _Args...>::value;
 
+#define __cpp_lib_experimental_logical_traits 201511
+
+template<typename... _Bn>
+  struct conjunction
+  : __and_<_Bn...>
+  { };
+
+template<typename... _Bn>
+  struct disjunction
+  : __or_<_Bn...>
+  { };
+
+template<typename _Pp>
+  struct negation
+  : __not_<_Pp>
+  { };
+
+template<typename... _Bn>
+  constexpr bool conjunction_v
+    = conjunction<_Bn...>::value;
+
+template<typename... _Bn>
+  constexpr bool disjunction_v
+    = disjunction<_Bn...>::value;
+
+template<typename _Pp>
+  constexpr bool negation_v
+    = negation<_Pp>::value;
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v2
 } // namespace experimental

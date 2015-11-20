@@ -23,11 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "c-target.h"
-#include "tree.h"
 #include "c-common.h"
 #include "tm_p.h"		/* For C_COMMON_OVERRIDE_OPTIONS.  */
 #include "diagnostic.h"
-#include "alias.h"
 #include "c-pragma.h"
 #include "flags.h"
 #include "toplev.h"
@@ -247,6 +245,8 @@ c_common_init_options (unsigned int decoded_options_count,
 	    break;
 	  }
     }
+
+  global_dc->colorize_source_p = true;
 }
 
 /* Handle switch SCODE with argument ARG.  VALUE is true, unless no-

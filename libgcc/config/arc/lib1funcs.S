@@ -79,7 +79,7 @@ SYM(__mulsi3):
 	j_s.d [blink]
 	mov_s r0,mlo
 	ENDFUNC(__mulsi3)
-#elif defined (__ARC700__)
+#elif defined (__ARC700__) || defined (__HS__)
 	HIDDEN_FUNC(__mulsi3)
 	mpyu	r0,r0,r1
 	nop_s
@@ -393,7 +393,12 @@ SYM(__udivmodsi4):
 	lsr_s r1,r1
 	cmp_s r0,r1
 	xor.f r2,lp_count,31
+#if !defined (__EM__)
 	mov_s lp_count,r2
+#else
+	mov lp_count,r2
+	nop_s
+#endif /* !__EM__ */
 #endif /* !__ARC_NORM__ */
 	sub.cc r0,r0,r1
 	mov_s r3,3
@@ -1260,7 +1265,7 @@ SYM(__ld_r13_to_r14_ret):
 #endif
 
 #ifdef  L_muldf3
-#ifdef __ARC700__
+#if defined (__ARC700__) || defined (__HS__)
 #include "ieee-754/muldf3.S"
 #elif defined (__ARC_NORM__) && defined(__ARC_MUL64__)
 #include "ieee-754/arc600-mul64/muldf3.S"
@@ -1276,7 +1281,7 @@ SYM(__ld_r13_to_r14_ret):
 #endif
 
 #ifdef  L_mulsf3
-#ifdef __ARC700__
+#if defined (__ARC700__) || defined (__HS__)
 #include "ieee-754/mulsf3.S"
 #elif defined (__ARC_NORM__) && defined(__ARC_MUL64__)
 #include "ieee-754/arc600-mul64/mulsf3.S"
@@ -1288,7 +1293,7 @@ SYM(__ld_r13_to_r14_ret):
 #endif
 
 #ifdef  L_divdf3
-#ifdef __ARC700__
+#if defined (__ARC700__) || defined (__HS__)
 #include "ieee-754/divdf3.S"
 #elif defined (__ARC_NORM__) && defined(__ARC_MUL64__)
 #include "ieee-754/arc600-mul64/divdf3.S"
@@ -1298,7 +1303,7 @@ SYM(__ld_r13_to_r14_ret):
 #endif
 
 #ifdef  L_divsf3
-#ifdef __ARC700__
+#if defined (__ARC700__) || defined (__HS__)
 #include "ieee-754/divsf3-stdmul.S"
 #elif defined (__ARC_NORM__) && defined(__ARC_MUL64__)
 #include "ieee-754/arc600-mul64/divsf3.S"

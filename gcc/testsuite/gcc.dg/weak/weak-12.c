@@ -2,6 +2,8 @@
 /* { dg-do compile } */
 /* { dg-require-weak "" } */
 /* { dg-options "" } */
+/* NVPTX's weak is applied to the definition,  not declaration.  */
+/* { dg-skip-if "" { nvptx-*-* } { "*" } { "" } } */
 
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?foo" } } */
 

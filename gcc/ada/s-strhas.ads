@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--          Copyright (C) 2009-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,10 @@
 --  cryptographically strong hashes, or for application which wish to use very
 --  wide hash values as pseudo unique identifiers. In such cases please refer
 --  to GNAT.SHA1 and GNAT.MD5.
+--
+--  Note: this package is in the System hierarchy so that it can be directly
+--  be used by other predefined packages. User access to this package is via
+--  a renaming of this package in GNAT.String_Hash (file g-strhas.ads).
 
 package System.String_Hash is
    pragma Pure;

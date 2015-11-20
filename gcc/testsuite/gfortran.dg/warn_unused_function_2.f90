@@ -2,6 +2,7 @@
 ! { dg-options "-Wall" }
 !
 ! [4.8 Regression] PR 54997: -Wunused-function gives false warnings
+! PR 54224: missing warnings with -Wunused-function
 !
 ! Contributed by Janus Weil <janus@gcc.gnu.org>
 
@@ -14,6 +15,9 @@ contains
 
   subroutine s1            ! { dg-warning "defined but not used" }
     call s2(s3)
+    contains
+      subroutine s4        ! { dg-warning "defined but not used" }
+      end subroutine
   end subroutine
 
   subroutine s2(dummy)     ! { dg-warning "Unused dummy argument" }
@@ -30,5 +34,10 @@ subroutine sub
 entry en
 end subroutine
 
+program test
+contains
+  subroutine s5            ! { dg-warning "defined but not used" }
+  end subroutine
+end
 
 ! { dg-final { cleanup-modules "m" } }

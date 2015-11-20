@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "de_DE@euro" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 2004-02-05  Paolo Carlini  <pcarlini@suse.de>
 
@@ -35,7 +35,7 @@ void test01()
 
   // basic construction
   locale loc_c = locale::classic();
-  locale loc_de = locale("de_DE@euro");
+  locale loc_de = locale(ISO_8859(15,de_DE));
   VERIFY( loc_c != loc_de );
 
   iterator_type end01, end02;

@@ -153,6 +153,14 @@ package body Sem_Ch6 is
    --  against a formal access-to-subprogram type so Get_Instance_Of must
    --  be called.
 
+   procedure Check_Limited_Return
+     (N      : Node_Id;
+      Expr   : Node_Id;
+      R_Type : Entity_Id);
+   --  Check the appropriate (Ada 95 or Ada 2005) rules for returning limited
+   --  types. Used only for simple return statements. Expr is the expression
+   --  returned.
+
    procedure Check_Subprogram_Order (N : Node_Id);
    --  N is the N_Subprogram_Body node for a subprogram. This routine applies
    --  the alpha ordering rule for N if this ordering requirement applicable.
@@ -326,6 +334,7 @@ package body Sem_Ch6 is
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (LocX,
               Statements => New_List (Ret)));
+      Set_Was_Expression_Function (New_Body);
 
       --  If the expression completes a generic subprogram, we must create a
       --  separate node for the body, because at instantiation the original
@@ -450,6 +459,7 @@ package body Sem_Ch6 is
          end if;
 
          Analyze (N);
+         Def_Id := Defining_Entity (N);
 
          --  If aspect SPARK_Mode was specified on the body, it needs to be
          --  repeated both on the generated spec and the body.
@@ -467,16 +477,11 @@ package body Sem_Ch6 is
          --  this because it is not part of the original source.
 
          if Inside_A_Generic then
-            declare
-               Id : constant Entity_Id := Defining_Entity (N);
-
-            begin
-               Set_Has_Completion (Id);
-               Push_Scope (Id);
-               Install_Formals (Id);
-               Preanalyze_Spec_Expression (Expr, Etype (Id));
-               End_Scope;
-            end;
+            Set_Has_Completion (Def_Id);
+            Push_Scope (Def_Id);
+            Install_Formals (Def_Id);
+            Preanalyze_Spec_Expression (Expr, Etype (Def_Id));
+            End_Scope;
          end if;
 
          Set_Is_Inlined (Defining_Entity (N));
@@ -500,8 +505,9 @@ package body Sem_Ch6 is
 
          declare
             Decls : List_Id            := List_Containing (N);
+            Expr  : constant Node_Id   := Expression (Ret);
             Par   : constant Node_Id   := Parent (Decls);
-            Id    : constant Entity_Id := Defining_Entity (N);
+            Typ   : constant Entity_Id := Etype (Def_Id);
 
          begin
             --  If this is a wrapper created for in an instance for a formal
@@ -523,23 +529,19 @@ package body Sem_Ch6 is
                end if;
 
                Insert_After (Last (Decls), New_Body);
-               Push_Scope (Id);
-               Install_Formals (Id);
 
                --  Preanalyze the expression for name capture, except in an
                --  instance, where this has been done during generic analysis,
                --  and will be redone when analyzing the body.
 
-               declare
-                  Expr : constant Node_Id := Expression (Ret);
+               Set_Parent (Expr, Ret);
+               Push_Scope (Def_Id);
+               Install_Formals (Def_Id);
 
-               begin
-                  Set_Parent (Expr, Ret);
-
-                  if not In_Instance then
-                     Preanalyze_Spec_Expression (Expr, Etype (Id));
-                  end if;
-               end;
+               if not In_Instance then
+                  Preanalyze_Spec_Expression (Expr, Typ);
+                  Check_Limited_Return (Original_Node (N), Expr, Typ);
+               end if;
 
                End_Scope;
             end if;
@@ -549,8 +551,8 @@ package body Sem_Ch6 is
       --  If the return expression is a static constant, we suppress warning
       --  messages on unused formals, which in most cases will be noise.
 
-      Set_Is_Trivial_Subprogram (Defining_Entity (New_Body),
-        Is_OK_Static_Expression (Expr));
+      Set_Is_Trivial_Subprogram
+        (Defining_Entity (New_Body), Is_OK_Static_Expression (Expr));
    end Analyze_Expression_Function;
 
    ----------------------------------------
@@ -624,11 +626,6 @@ package body Sem_Ch6 is
       --  Apply legality rule of 6.5 (8.2) to the access discriminants of an
       --  aggregate in a return statement.
 
-      procedure Check_Limited_Return (Expr : Node_Id);
-      --  Check the appropriate (Ada 95 or Ada 2005) rules for returning
-      --  limited types. Used only for simple return statements.
-      --  Expr is the expression returned.
-
       procedure Check_Return_Subtype_Indication (Obj_Decl : Node_Id);
       --  Check that the return_subtype_indication properly matches the result
       --  subtype of the function, as required by RM-6.5(5.1/2-5.3/2).
@@ -684,87 +681,6 @@ package body Sem_Ch6 is
             end loop;
          end if;
       end Check_Aggregate_Accessibility;
-
-      --------------------------
-      -- Check_Limited_Return --
-      --------------------------
-
-      procedure Check_Limited_Return (Expr : Node_Id) is
-      begin
-         --  Ada 2005 (AI-318-02): Return-by-reference types have been
-         --  removed and replaced by anonymous access results. This is an
-         --  incompatibility with Ada 95. Not clear whether this should be
-         --  enforced yet or perhaps controllable with special switch. ???
-
-         --  A limited interface that is not immutably limited is OK.
-
-         if Is_Limited_Interface (R_Type)
-           and then
-             not (Is_Task_Interface (R_Type)
-                   or else Is_Protected_Interface (R_Type)
-                   or else Is_Synchronized_Interface (R_Type))
-         then
-            null;
-
-         elsif Is_Limited_Type (R_Type)
-           and then not Is_Interface (R_Type)
-           and then Comes_From_Source (N)
-           and then not In_Instance_Body
-           and then not OK_For_Limited_Init_In_05 (R_Type, Expr)
-         then
-            --  Error in Ada 2005
-
-            if Ada_Version >= Ada_2005
-              and then not Debug_Flag_Dot_L
-              and then not GNAT_Mode
-            then
-               Error_Msg_N
-                 ("(Ada 2005) cannot copy object of a limited type "
-                  & "(RM-2005 6.5(5.5/2))", Expr);
-
-               if Is_Limited_View (R_Type) then
-                  Error_Msg_N
-                    ("\return by reference not permitted in Ada 2005", Expr);
-               end if;
-
-            --  Warn in Ada 95 mode, to give folks a heads up about this
-            --  incompatibility.
-
-            --  In GNAT mode, this is just a warning, to allow it to be
-            --  evilly turned off. Otherwise it is a real error.
-
-            --  In a generic context, simplify the warning because it makes
-            --  no sense to discuss pass-by-reference or copy.
-
-            elsif Warn_On_Ada_2005_Compatibility or GNAT_Mode then
-               if Inside_A_Generic then
-                  Error_Msg_N
-                    ("return of limited object not permitted in Ada 2005 "
-                     & "(RM-2005 6.5(5.5/2))?y?", Expr);
-
-               elsif Is_Limited_View (R_Type) then
-                  Error_Msg_N
-                    ("return by reference not permitted in Ada 2005 "
-                     & "(RM-2005 6.5(5.5/2))?y?", Expr);
-               else
-                  Error_Msg_N
-                    ("cannot copy object of a limited type in Ada 2005 "
-                     & "(RM-2005 6.5(5.5/2))?y?", Expr);
-               end if;
-
-            --  Ada 95 mode, compatibility warnings disabled
-
-            else
-               return; --  skip continuation messages below
-            end if;
-
-            if not Inside_A_Generic then
-               Error_Msg_N
-                 ("\consider switching to return of access type", Expr);
-               Explain_Limited_Type (R_Type, Expr);
-            end if;
-         end if;
-      end Check_Limited_Return;
 
       -------------------------------------
       -- Check_Return_Subtype_Indication --
@@ -987,7 +903,7 @@ package body Sem_Ch6 is
             end if;
 
             Resolve (Expr, R_Type);
-            Check_Limited_Return (Expr);
+            Check_Limited_Return (N, Expr, R_Type);
 
             if Present (Expr) and then Nkind (Expr) = N_Aggregate then
                Check_Aggregate_Accessibility (Expr);
@@ -1378,15 +1294,6 @@ package body Sem_Ch6 is
             Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
          end if;
 
-         --  A generic subprogram body "freezes" the contract of its initial
-         --  declaration. This analysis depends on attribute Corresponding_Spec
-         --  being set. Only bodies coming from source should cause this type
-         --  of "freezing".
-
-         if Comes_From_Source (N) then
-            Analyze_Initial_Declaration_Contract (N);
-         end if;
-
          Analyze_Declarations (Declarations (N));
          Check_Completion;
 
@@ -1644,11 +1551,17 @@ package body Sem_Ch6 is
       --  parameterless member of an entry family. Resolution of these various
       --  interpretations is delicate.
 
-      Analyze (P);
+      --  Do not analyze machine code statements to avoid rejecting them in
+      --  CodePeer mode.
 
-      --  If this is a call of the form Obj.Op, the call may have been
-      --  analyzed and possibly rewritten into a block, in which case
-      --  we are done.
+      if CodePeer_Mode and then Nkind (P) = N_Qualified_Expression then
+         Set_Etype (P, Standard_Void_Type);
+      else
+         Analyze (P);
+      end if;
+
+      --  If this is a call of the form Obj.Op, the call may have been analyzed
+      --  and possibly rewritten into a block, in which case we are done.
 
       if Analyzed (N) then
          return;
@@ -1717,8 +1630,8 @@ package body Sem_Ch6 is
 
          Analyze_Call_And_Resolve;
 
-      --  If the prefix is the simple name of an entry family, this is
-      --  a parameterless call from within the task body itself.
+      --  If the prefix is the simple name of an entry family, this is a
+      --  parameterless call from within the task body itself.
 
       elsif Is_Entity_Name (P)
         and then Nkind (P) = N_Identifier
@@ -2864,7 +2777,10 @@ package body Sem_Ch6 is
          procedure Detect_And_Exchange (Id : Entity_Id);
          --  Determine whether Id's type denotes an incomplete type associated
          --  with a limited with clause and exchange the limited view with the
-         --  non-limited one when available.
+         --  non-limited one when available. Note that the non-limited view
+         --  may exist because of a with_clause in another unit in the context,
+         --  but cannot be used because the current view of the enclosing unit
+         --  is still a limited view.
 
          -------------------------
          -- Detect_And_Exchange --
@@ -2873,7 +2789,10 @@ package body Sem_Ch6 is
          procedure Detect_And_Exchange (Id : Entity_Id) is
             Typ : constant Entity_Id := Etype (Id);
          begin
-            if From_Limited_With (Typ) and then Has_Non_Limited_View (Typ) then
+            if From_Limited_With (Typ)
+              and then Has_Non_Limited_View (Typ)
+              and then not From_Limited_With (Scope (Typ))
+            then
                Set_Etype (Id, Non_Limited_View (Typ));
             end if;
          end Detect_And_Exchange;
@@ -3060,7 +2979,8 @@ package body Sem_Ch6 is
 
    begin
       --  A [generic] subprogram body "freezes" the contract of the nearest
-      --  enclosing package body:
+      --  enclosing package body and all other contracts encountered in the
+      --  same declarative part upto and excluding the subprogram body:
 
       --    package body Nearest_Enclosing_Package
       --      with Refined_State => (State => Constit)
@@ -3081,7 +3001,7 @@ package body Sem_Ch6 is
       --  Original_Node.
 
       if Comes_From_Source (Original_Node (N)) then
-         Analyze_Enclosing_Package_Body_Contract (N);
+         Analyze_Previous_Contracts (N);
       end if;
 
       --  Generic subprograms are handled separately. They always have a
@@ -3857,14 +3777,6 @@ package body Sem_Ch6 is
 
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
-      end if;
-
-      --  A subprogram body "freezes" the contract of its initial declaration.
-      --  This analysis depends on attribute Corresponding_Spec being set. Only
-      --  bodies coming from source should cause this type of "freezing".
-
-      if Comes_From_Source (N) then
-         Analyze_Initial_Declaration_Contract (N);
       end if;
 
       Analyze_Declarations (Declarations (N));
@@ -5525,6 +5437,91 @@ package body Sem_Ch6 is
       Check_Conformance
         (New_Id, Old_Id, Fully_Conformant, True, Result, Err_Loc);
    end Check_Fully_Conformant;
+
+   --------------------------
+   -- Check_Limited_Return --
+   --------------------------
+
+   procedure Check_Limited_Return
+     (N      : Node_Id;
+      Expr   : Node_Id;
+      R_Type : Entity_Id)
+   is
+   begin
+      --  Ada 2005 (AI-318-02): Return-by-reference types have been removed and
+      --  replaced by anonymous access results. This is an incompatibility with
+      --  Ada 95. Not clear whether this should be enforced yet or perhaps
+      --  controllable with special switch. ???
+
+      --  A limited interface that is not immutably limited is OK
+
+      if Is_Limited_Interface (R_Type)
+        and then
+          not (Is_Task_Interface (R_Type)
+                or else Is_Protected_Interface (R_Type)
+                or else Is_Synchronized_Interface (R_Type))
+      then
+         null;
+
+      elsif Is_Limited_Type (R_Type)
+        and then not Is_Interface (R_Type)
+        and then Comes_From_Source (N)
+        and then not In_Instance_Body
+        and then not OK_For_Limited_Init_In_05 (R_Type, Expr)
+      then
+         --  Error in Ada 2005
+
+         if Ada_Version >= Ada_2005
+           and then not Debug_Flag_Dot_L
+           and then not GNAT_Mode
+         then
+            Error_Msg_N
+              ("(Ada 2005) cannot copy object of a limited type "
+               & "(RM-2005 6.5(5.5/2))", Expr);
+
+            if Is_Limited_View (R_Type) then
+               Error_Msg_N
+                 ("\return by reference not permitted in Ada 2005", Expr);
+            end if;
+
+         --  Warn in Ada 95 mode, to give folks a heads up about this
+         --  incompatibility.
+
+         --  In GNAT mode, this is just a warning, to allow it to be evilly
+         --  turned off. Otherwise it is a real error.
+
+         --  In a generic context, simplify the warning because it makes no
+         --  sense to discuss pass-by-reference or copy.
+
+         elsif Warn_On_Ada_2005_Compatibility or GNAT_Mode then
+            if Inside_A_Generic then
+               Error_Msg_N
+                 ("return of limited object not permitted in Ada 2005 "
+                  & "(RM-2005 6.5(5.5/2))?y?", Expr);
+
+            elsif Is_Limited_View (R_Type) then
+               Error_Msg_N
+                 ("return by reference not permitted in Ada 2005 "
+                  & "(RM-2005 6.5(5.5/2))?y?", Expr);
+            else
+               Error_Msg_N
+                 ("cannot copy object of a limited type in Ada 2005 "
+                  & "(RM-2005 6.5(5.5/2))?y?", Expr);
+            end if;
+
+         --  Ada 95 mode, compatibility warnings disabled
+
+         else
+            return; --  skip continuation messages below
+         end if;
+
+         if not Inside_A_Generic then
+            Error_Msg_N
+              ("\consider switching to return of access type", Expr);
+            Explain_Limited_Type (R_Type, Expr);
+         end if;
+      end if;
+   end Check_Limited_Return;
 
    ---------------------------
    -- Check_Mode_Conformant --
@@ -7907,7 +7904,7 @@ package body Sem_Ch6 is
 
             when N_Parameter_Association =>
                return
-                 Chars (Selector_Name (E1))  = Chars (Selector_Name (E2))
+                 Chars (Selector_Name (E1)) = Chars (Selector_Name (E2))
                    and then FCE (Explicit_Actual_Parameter (E1),
                                  Explicit_Actual_Parameter (E2));
 
@@ -8746,11 +8743,38 @@ package body Sem_Ch6 is
          ------------------------------
 
          procedure Check_Private_Overriding (T : Entity_Id) is
+            function Overrides_Private_Part_Op return Boolean;
+            --  This detects the special case where the overriding subprogram
+            --  is overriding a subprogram that was declared in the same
+            --  private part. That case is illegal by 3.9.3(10).
 
             function Overrides_Visible_Function
               (Partial_View : Entity_Id) return Boolean;
             --  True if S overrides a function in the visible part. The
             --  overridden function could be explicitly or implicitly declared.
+
+            -------------------------------
+            -- Overrides_Private_Part_Op --
+            -------------------------------
+
+            function Overrides_Private_Part_Op return Boolean is
+               Over_Decl : constant Node_Id :=
+                             Unit_Declaration_Node (Overridden_Operation (S));
+               Subp_Decl : constant Node_Id := Unit_Declaration_Node (S);
+
+            begin
+               pragma Assert (Is_Overriding);
+               pragma Assert
+                 (Nkind (Over_Decl) = N_Abstract_Subprogram_Declaration);
+               pragma Assert
+                 (Nkind (Subp_Decl) = N_Abstract_Subprogram_Declaration);
+
+               return In_Same_List (Over_Decl, Subp_Decl);
+            end Overrides_Private_Part_Op;
+
+            --------------------------------
+            -- Overrides_Visible_Function --
+            --------------------------------
 
             function Overrides_Visible_Function
               (Partial_View : Entity_Id) return Boolean
@@ -8801,10 +8825,12 @@ package body Sem_Ch6 is
                if Is_Abstract_Type (T)
                  and then Is_Abstract_Subprogram (S)
                  and then (not Is_Overriding
-                            or else not Is_Abstract_Subprogram (E))
+                             or else not Is_Abstract_Subprogram (E)
+                             or else Overrides_Private_Part_Op)
                then
-                  Error_Msg_N ("abstract subprograms must be visible "
-                               & "(RM 3.9.3(10))!", S);
+                  Error_Msg_N
+                    ("abstract subprograms must be visible (RM 3.9.3(10))!",
+                     S);
 
                elsif Ekind (S) = E_Function then
                   declare
@@ -10387,6 +10413,17 @@ package body Sem_Ch6 is
 
       if Nkind (Related_Nod) = N_Function_Specification then
          Analyze_Return_Type (Related_Nod);
+
+         --  If return type is class-wide, subprogram freezing may be
+         --  delayed as well.
+
+         if Is_Class_Wide_Type (Etype (Current_Scope))
+           and then not Is_Thunk (Current_Scope)
+           and then Nkind (Unit_Declaration_Node (Current_Scope)) =
+             N_Subprogram_Declaration
+         then
+            Set_Has_Delayed_Freeze (Current_Scope);
+         end if;
       end if;
 
       --  Now set the kind (mode) of each formal

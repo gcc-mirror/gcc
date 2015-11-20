@@ -110,6 +110,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "builtins.h"
 #include "params.h"
+#include "case-cfn-macros.h"
 
 /* This structure represents one basic block that either computes a
    division, or is a common dominator for basic block that compute a
@@ -725,22 +726,20 @@ execute_cse_sincos_1 (tree name)
   FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, name)
     {
       if (gimple_code (use_stmt) != GIMPLE_CALL
-	  || !gimple_call_lhs (use_stmt)
-	  || !(fndecl = gimple_call_fndecl (use_stmt))
-	  || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+	  || !gimple_call_lhs (use_stmt))
 	continue;
 
-      switch (DECL_FUNCTION_CODE (fndecl))
+      switch (gimple_call_combined_fn (use_stmt))
 	{
-	CASE_FLT_FN (BUILT_IN_COS):
+	CASE_CFN_COS:
 	  seen_cos |= maybe_record_sincos (&stmts, &top_bb, use_stmt) ? 1 : 0;
 	  break;
 
-	CASE_FLT_FN (BUILT_IN_SIN):
+	CASE_CFN_SIN:
 	  seen_sin |= maybe_record_sincos (&stmts, &top_bb, use_stmt) ? 1 : 0;
 	  break;
 
-	CASE_FLT_FN (BUILT_IN_CEXPI):
+	CASE_CFN_CEXPI:
 	  seen_cexpi |= maybe_record_sincos (&stmts, &top_bb, use_stmt) ? 1 : 0;
 	  break;
 
@@ -779,19 +778,18 @@ execute_cse_sincos_1 (tree name)
   for (i = 0; stmts.iterate (i, &use_stmt); ++i)
     {
       tree rhs = NULL;
-      fndecl = gimple_call_fndecl (use_stmt);
 
-      switch (DECL_FUNCTION_CODE (fndecl))
+      switch (gimple_call_combined_fn (use_stmt))
 	{
-	CASE_FLT_FN (BUILT_IN_COS):
+	CASE_CFN_COS:
 	  rhs = fold_build1 (REALPART_EXPR, type, res);
 	  break;
 
-	CASE_FLT_FN (BUILT_IN_SIN):
+	CASE_CFN_SIN:
 	  rhs = fold_build1 (IMAGPART_EXPR, type, res);
 	  break;
 
-	CASE_FLT_FN (BUILT_IN_CEXPI):
+	CASE_CFN_CEXPI:
 	  rhs = res;
 	  break;
 
@@ -1727,26 +1725,24 @@ pass_cse_sincos::execute (function *fun)
       for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
         {
 	  gimple *stmt = gsi_stmt (gsi);
-	  tree fndecl;
 
 	  /* Only the last stmt in a bb could throw, no need to call
 	     gimple_purge_dead_eh_edges if we change something in the middle
 	     of a basic block.  */
 	  cleanup_eh = false;
 
-	  if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL)
+	  if (is_gimple_call (stmt)
 	      && gimple_call_lhs (stmt))
 	    {
 	      tree arg, arg0, arg1, result;
 	      HOST_WIDE_INT n;
 	      location_t loc;
 
-	      fndecl = gimple_call_fndecl (stmt);
-	      switch (DECL_FUNCTION_CODE (fndecl))
+	      switch (gimple_call_combined_fn (stmt))
 		{
-		CASE_FLT_FN (BUILT_IN_COS):
-		CASE_FLT_FN (BUILT_IN_SIN):
-		CASE_FLT_FN (BUILT_IN_CEXPI):
+		CASE_CFN_COS:
+		CASE_CFN_SIN:
+		CASE_CFN_CEXPI:
 		  /* Make sure we have either sincos or cexp.  */
 		  if (!targetm.libc_has_function (function_c99_math_complex)
 		      && !targetm.libc_has_function (function_sincos))
@@ -1757,7 +1753,7 @@ pass_cse_sincos::execute (function *fun)
 		    cfg_changed |= execute_cse_sincos_1 (arg);
 		  break;
 
-		CASE_FLT_FN (BUILT_IN_POW):
+		CASE_CFN_POW:
 		  arg0 = gimple_call_arg (stmt, 0);
 		  arg1 = gimple_call_arg (stmt, 1);
 
@@ -1777,7 +1773,7 @@ pass_cse_sincos::execute (function *fun)
 		    }
 		  break;
 
-		CASE_FLT_FN (BUILT_IN_POWI):
+		CASE_CFN_POWI:
 		  arg0 = gimple_call_arg (stmt, 0);
 		  arg1 = gimple_call_arg (stmt, 1);
 		  loc = gimple_location (stmt);
@@ -1826,7 +1822,7 @@ pass_cse_sincos::execute (function *fun)
 		    }
 		  break;
 
-		CASE_FLT_FN (BUILT_IN_CABS):
+		CASE_CFN_CABS:
 		  arg0 = gimple_call_arg (stmt, 0);
 		  loc = gimple_location (stmt);
 		  result = gimple_expand_builtin_cabs (&gsi, loc, arg0);
@@ -2024,7 +2020,7 @@ find_bswap_or_nop_load (gimple *stmt, tree ref, struct symbolic_number *n)
      offset from base to compare to other such leaf node.  */
   HOST_WIDE_INT bitsize, bitpos;
   machine_mode mode;
-  int unsignedp, volatilep;
+  int unsignedp, reversep, volatilep;
   tree offset, base_addr;
 
   /* Not prepared to handle PDP endian.  */
@@ -2035,7 +2031,7 @@ find_bswap_or_nop_load (gimple *stmt, tree ref, struct symbolic_number *n)
     return false;
 
   base_addr = get_inner_reference (ref, &bitsize, &bitpos, &offset, &mode,
-				   &unsignedp, &volatilep, false);
+				   &unsignedp, &reversep, &volatilep, false);
 
   if (TREE_CODE (base_addr) == MEM_REF)
     {
@@ -2073,6 +2069,8 @@ find_bswap_or_nop_load (gimple *stmt, tree ref, struct symbolic_number *n)
   if (bitpos % BITS_PER_UNIT)
     return false;
   if (bitsize % BITS_PER_UNIT)
+    return false;
+  if (reversep)
     return false;
 
   if (!init_symbolic_number (n, ref))
@@ -2522,11 +2520,11 @@ bswap_replace (gimple *cur_stmt, gimple *src_stmt, tree fndecl,
 	{
 	  HOST_WIDE_INT bitsize, bitpos;
 	  machine_mode mode;
-	  int unsignedp, volatilep;
+	  int unsignedp, reversep, volatilep;
 	  tree offset;
 
 	  get_inner_reference (src, &bitsize, &bitpos, &offset, &mode,
-			       &unsignedp, &volatilep, false);
+			       &unsignedp, &reversep, &volatilep, false);
 	  if (n->range < (unsigned HOST_WIDE_INT) bitsize)
 	    {
 	      load_offset = (bitsize - n->range) / BITS_PER_UNIT;

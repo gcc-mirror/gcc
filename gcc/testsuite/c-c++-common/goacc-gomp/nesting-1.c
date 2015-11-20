@@ -1,12 +1,46 @@
 void
-f_omp_parallel (void)
+f_acc_data (void)
 {
-#pragma omp parallel
+#pragma acc data
   {
     int i;
+#pragma omp atomic write
+    i = 0;
+  }
+}
 
-#pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
-    for (i = 0; i < 2; ++i)
-      ;
+void
+f_acc_kernels (void)
+{
+#pragma acc kernels
+  {
+    int i;
+#pragma omp atomic write
+    i = 0;
+  }
+}
+
+void
+f_acc_loop (void)
+{
+  int i;
+
+#pragma acc parallel
+#pragma acc loop
+  for (i = 0; i < 2; ++i)
+    {
+#pragma omp atomic write
+      i = 0;
+    }
+}
+
+void
+f_acc_parallel (void)
+{
+#pragma acc parallel
+  {
+    int i;
+#pragma omp atomic write
+    i = 0;
   }
 }

@@ -25,9 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h" 
 #include "coretypes.h"
 #include "options.h"
-#include "tree.h"
 #include "c-family/c-common.h"
-#include "langhooks.h" 
 #include "tree-iterator.h"
 
 /* Returns true if the function call in FNDECL is  __sec_implicit_index.  */

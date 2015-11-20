@@ -2253,7 +2253,7 @@ htab_eq_string (const void *s1, const void *s2)
    and a permanent heap copy of STR is created.  */
 
 static void
-add_mnemonic_string (htab_t mnemonic_htab, const char *str, int len)
+add_mnemonic_string (htab_t mnemonic_htab, const char *str, size_t len)
 {
   char *new_str;
   void **slot;
@@ -2306,7 +2306,7 @@ gen_mnemonic_setattr (htab_t mnemonic_htab, rtx insn)
   for (i = 0; *cp; )
     {
       const char *ep, *sp;
-      int size = 0;
+      size_t size = 0;
 
       while (ISSPACE (*cp))
 	cp++;
@@ -2333,8 +2333,7 @@ gen_mnemonic_setattr (htab_t mnemonic_htab, rtx insn)
 	    {
 	      /* Don't set a value if there are more than one
 		 instruction in the string.  */
-	      obstack_next_free (&string_obstack) =
-		obstack_next_free (&string_obstack) - size;
+	      obstack_blank_fast (&string_obstack, -size);
 	      size = 0;
 
 	      cp = sp;
@@ -2346,7 +2345,7 @@ gen_mnemonic_setattr (htab_t mnemonic_htab, rtx insn)
 	obstack_1grow (&string_obstack, '*');
       else
 	add_mnemonic_string (mnemonic_htab,
-			     obstack_next_free (&string_obstack) - size,
+			     (char *) obstack_next_free (&string_obstack) - size,
 			     size);
       i++;
     }

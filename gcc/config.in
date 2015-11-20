@@ -76,13 +76,6 @@
 #endif
 
 
-/* Define if you want more run-time sanity checks. This one gets a grab bag of
-   miscellaneous but relatively cheap checks. */
-#ifndef USED_FOR_TARGET
-#undef ENABLE_CHECKING
-#endif
-
-
 /* Define to 1 to specify that we are using the BID decimal floating point
    format instead of DPD */
 #ifndef USED_FOR_TARGET
@@ -563,6 +556,12 @@
 #endif
 
 
+/* Define if your assembler supports POWER9 instructions. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_POWER9
+#endif
+
+
 /* Define if your assembler supports .ref */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_REF
@@ -602,12 +601,6 @@
 /* Define if your assembler and linker support GOTDATA_OP relocs. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_SPARC_GOTDATA_OP
-#endif
-
-
-/* Define to 1 if your assembler supports #nobits, 0 otherwise. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_SPARC_NOBITS
 #endif
 
 
@@ -1336,7 +1329,8 @@
 #endif
 
 
-/* Define .init_array/.fini_array sections are available and working. */
+/* Define 0/1 if .init_array/.fini_array sections are available and working.
+   */
 #ifndef USED_FOR_TARGET
 #undef HAVE_INITFINI_ARRAY_SUPPORT
 #endif

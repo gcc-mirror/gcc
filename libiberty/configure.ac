@@ -276,6 +276,7 @@ libiberty_AC_DECLARE_ERRNO
 # Determine sizes of some types.
 AC_CHECK_SIZEOF([int])
 AC_CHECK_SIZEOF([long])
+AC_CHECK_SIZEOF([size_t])
 
 # Check for presense of long long
 AC_CHECK_TYPE([long long],
@@ -599,6 +600,12 @@ fi
 if test -z "${setobjs}"; then
 
   case "${host}" in
+
+  *-*-android*)
+    # On android, getpagesize is defined in unistd.h as a static inline
+    # function, which AC_CHECK_FUNCS does not handle properly.
+    ac_cv_func_getpagesize=yes
+    ;;
 
   *-*-mingw32*)
     # Under mingw32, sys_nerr and sys_errlist exist, but they are

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2014, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2015, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -589,12 +589,12 @@ package body System.Task_Primitives.Operations is
 
          if Single_Lock then
             Result := semGive (Single_RTS_Lock.Mutex);
-            taskDelay (0);
+            Result := taskDelay (0);
             Result := semTake (Single_RTS_Lock.Mutex, WAIT_FOREVER);
 
          else
             Result := semGive (Self_ID.Common.LL.L.Mutex);
-            taskDelay (0);
+            Result := taskDelay (0);
             Result := semTake (Self_ID.Common.LL.L.Mutex, WAIT_FOREVER);
          end if;
       end if;
@@ -707,7 +707,7 @@ package body System.Task_Primitives.Operations is
               else Self_ID.Common.LL.L.Mutex);
 
       else
-         taskDelay (0);
+         Result := taskDelay (0);
       end if;
    end Timed_Delay;
 

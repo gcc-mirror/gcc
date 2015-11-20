@@ -77,8 +77,10 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_all_early_optimizations);
       PUSH_INSERT_PASSES_WITHIN (pass_all_early_optimizations)
 	  NEXT_PASS (pass_remove_cgraph_callee_edges);
-	  NEXT_PASS (pass_object_sizes);
-	  NEXT_PASS (pass_ccp);
+	  NEXT_PASS (pass_object_sizes, true /* insert_min_max_p */);
+	  /* Don't record nonzero bits before IPA to avoid
+	     using too much memory.  */
+	  NEXT_PASS (pass_ccp, false /* nonzero_p */);
 	  /* After CCP we rewrite no longer addressed locals into SSA
 	     form if possible.  */
 	  NEXT_PASS (pass_forwprop);
@@ -157,21 +159,21 @@ along with GCC; see the file COPYING3.  If not see
       /* Initial scalar cleanups before alias computation.
 	 They ensure memory accesses are not indirect wherever possible.  */
       NEXT_PASS (pass_strip_predict_hints);
-      NEXT_PASS (pass_ccp);
+      NEXT_PASS (pass_ccp, true /* nonzero_p */);
       /* After CCP we rewrite no longer addressed locals into SSA
 	 form if possible.  */
       NEXT_PASS (pass_complete_unrolli);
       NEXT_PASS (pass_backprop);
       NEXT_PASS (pass_phiprop);
       NEXT_PASS (pass_forwprop);
-      NEXT_PASS (pass_object_sizes);
+      NEXT_PASS (pass_object_sizes, false /* insert_min_max_p */);
       /* pass_build_alias is a dummy pass that ensures that we
 	 execute TODO_rebuild_alias at this point.  */
       NEXT_PASS (pass_build_alias);
       NEXT_PASS (pass_return_slot);
       NEXT_PASS (pass_fre);
       NEXT_PASS (pass_merge_phi);
-      NEXT_PASS (pass_vrp);
+      NEXT_PASS (pass_vrp, true /* warn_array_bounds_p */);
       NEXT_PASS (pass_chkp_opt);
       NEXT_PASS (pass_dce);
       NEXT_PASS (pass_stdarg);
@@ -190,7 +192,7 @@ along with GCC; see the file COPYING3.  If not see
 	 propagations have already run, but before some more dead code
 	 is removed, and this place fits nicely.  Remember this when
 	 trying to move or duplicate pass_dominator somewhere earlier.  */
-      NEXT_PASS (pass_dominator);
+      NEXT_PASS (pass_dominator, true /* may_peel_loop_headers_p */);
       /* At this point the majority of const/copy propagations
 	 are exposed.  Go ahead and identify paths that should never
 	 be executed in a conforming program and isolate those paths.
@@ -205,11 +207,11 @@ along with GCC; see the file COPYING3.  If not see
 	 opportunities.  */
       NEXT_PASS (pass_phi_only_cprop);
       NEXT_PASS (pass_dse);
-      NEXT_PASS (pass_reassoc);
+      NEXT_PASS (pass_reassoc, true /* insert_powi_p */);
       NEXT_PASS (pass_dce);
       NEXT_PASS (pass_forwprop);
       NEXT_PASS (pass_phiopt);
-      NEXT_PASS (pass_ccp);
+      NEXT_PASS (pass_ccp, true /* nonzero_p */);
       /* After CCP we rewrite no longer addressed locals into SSA
 	 form if possible.  */
       NEXT_PASS (pass_cse_sincos);
@@ -274,13 +276,14 @@ along with GCC; see the file COPYING3.  If not see
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_simduid_cleanup);
       NEXT_PASS (pass_lower_vector_ssa);
+      NEXT_PASS (pass_split_paths);
       NEXT_PASS (pass_cse_reciprocals);
-      NEXT_PASS (pass_reassoc);
+      NEXT_PASS (pass_reassoc, false /* insert_powi_p */);
       NEXT_PASS (pass_strength_reduction);
       NEXT_PASS (pass_tracer);
-      NEXT_PASS (pass_dominator);
+      NEXT_PASS (pass_dominator, false /* may_peel_loop_headers_p */);
       NEXT_PASS (pass_strlen);
-      NEXT_PASS (pass_vrp);
+      NEXT_PASS (pass_vrp, false /* warn_array_bounds_p */);
       /* The only const/copy propagation opportunities left after
 	 DOM and VRP should be due to degenerate PHI nodes.  So rather than
 	 run the full propagators, run a specialized pass which
@@ -318,7 +321,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_lower_complex);
       NEXT_PASS (pass_lower_vector_ssa);
       /* Perform simple scalar cleanup which is constant/copy propagation.  */
-      NEXT_PASS (pass_ccp);
+      NEXT_PASS (pass_ccp, true /* nonzero_p */);
       NEXT_PASS (pass_object_sizes);
       /* Fold remaining builtins.  */
       NEXT_PASS (pass_fold_builtins);

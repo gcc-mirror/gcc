@@ -33,7 +33,7 @@ arc_option_init_struct (struct gcc_options *opts)
 {
   opts->x_flag_no_common = 255; /* Mark as not user-initialized.  */
 
-  /* Which cpu we're compiling for (ARC600, ARC601, ARC700).  */
+  /* Which cpu we're compiling for (ARC600, ARC601, ARC700, ARCv2).  */
   arc_cpu = PROCESSOR_NONE;
 }
 
@@ -68,6 +68,7 @@ arc_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 {
   size_t code = decoded->opt_index;
   int value = decoded->value;
+  const char *arg = decoded->arg;
 
   switch (code)
     {
@@ -91,9 +92,40 @@ arc_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 	  if (! (opts_set->x_target_flags & MASK_BARREL_SHIFTER) )
 	    opts->x_target_flags &= ~MASK_BARREL_SHIFTER;
 	  break;
+	case PROCESSOR_ARCHS:
+	  if ( !(opts_set->x_target_flags & MASK_BARREL_SHIFTER))
+	    opts->x_target_flags |= MASK_BARREL_SHIFTER;  /* Default: on.  */
+	  if ( !(opts_set->x_target_flags & MASK_CODE_DENSITY))
+	    opts->x_target_flags |= MASK_CODE_DENSITY;	  /* Default: on.  */
+	  if ( !(opts_set->x_target_flags & MASK_NORM_SET))
+	    opts->x_target_flags |= MASK_NORM_SET;	  /* Default: on.  */
+	  if ( !(opts_set->x_target_flags & MASK_SWAP_SET))
+	    opts->x_target_flags |= MASK_SWAP_SET;	  /* Default: on.  */
+	  if ( !(opts_set->x_target_flags & MASK_DIVREM))
+	    opts->x_target_flags |= MASK_DIVREM;	  /* Default: on.  */
+	  break;
+
+	case PROCESSOR_ARCEM:
+	  if ( !(opts_set->x_target_flags & MASK_BARREL_SHIFTER))
+	    opts->x_target_flags |= MASK_BARREL_SHIFTER;  /* Default: on.  */
+	  if ( !(opts_set->x_target_flags & MASK_CODE_DENSITY))
+	    opts->x_target_flags &= ~MASK_CODE_DENSITY;	  /* Default: off.  */
+	  if ( !(opts_set->x_target_flags & MASK_NORM_SET))
+	    opts->x_target_flags &= ~MASK_NORM_SET;	  /* Default: off.  */
+	  if ( !(opts_set->x_target_flags & MASK_SWAP_SET))
+	    opts->x_target_flags &= ~MASK_SWAP_SET;	  /* Default: off.  */
+	  if ( !(opts_set->x_target_flags & MASK_DIVREM))
+	    opts->x_target_flags &= ~MASK_DIVREM;	  /* Default: off.  */
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
+      break;
+
+    case OPT_mmpy_option_:
+      if (value < 0 || value > 9)
+	error_at (loc, "bad value %qs for -mmpy-option switch", arg);
+      break;
     }
 
   return true;

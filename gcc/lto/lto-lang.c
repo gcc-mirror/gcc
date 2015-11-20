@@ -26,21 +26,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "tree.h"
 #include "gimple.h"
-#include "predict.h"
 #include "stringpool.h"
-#include "cgraph.h"
 #include "diagnostic-core.h"
-#include "alias.h"
-#include "fold-const.h"
 #include "stor-layout.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "debug.h"
 #include "lto-tree.h"
 #include "lto.h"
-#include "tree-inline.h"
-#include "internal-fn.h"
-#include "toplev.h"
 #include "cilk.h"
 
 static tree lto_type_for_size (unsigned, int);
@@ -731,7 +724,6 @@ lto_define_builtins (tree va_list_ref_type_node ATTRIBUTE_UNUSED,
 		     builtin_types[(int) LIBTYPE], BOTH_P, FALLBACK_P,	\
 		     NONANSI_P, built_in_attributes[(int) ATTRS], IMPLICIT);
 #include "builtins.def"
-#undef DEF_BUILTIN
 }
 
 static GTY(()) tree registered_builtin_types;

@@ -6484,6 +6484,10 @@ package body Sem_Ch8 is
       --  This simplifies value tracing in GNATProve. For consistency, both
       --  the entity name and the subtype come from the constrained component.
 
+      --  This is only used in GNATProve mode: when generating code it may be
+      --  necessary to create an itype in the scope of use of the selected
+      --  component, e.g. in the context of a expanded record equality.
+
       function Is_Reference_In_Subunit return Boolean;
       --  In a subunit, the scope depth is not a proper measure of hiding,
       --  because the context of the proper body may itself hide entities in
@@ -6499,17 +6503,19 @@ package body Sem_Ch8 is
          Comp : Entity_Id;
 
       begin
-         Comp := First_Entity (Etype (P));
-         while Present (Comp) loop
-            if Chars (Comp) = Chars (Selector_Name (N)) then
-               Set_Etype (N, Etype (Comp));
-               Set_Entity (Selector_Name (N), Comp);
-               Set_Etype  (Selector_Name (N), Etype (Comp));
-               return True;
-            end if;
+         if GNATprove_Mode then
+            Comp := First_Entity (Etype (P));
+            while Present (Comp) loop
+               if Chars (Comp) = Chars (Selector_Name (N)) then
+                  Set_Etype  (N, Etype (Comp));
+                  Set_Entity (Selector_Name (N), Comp);
+                  Set_Etype  (Selector_Name (N), Etype (Comp));
+                  return True;
+               end if;
 
-            Next_Component (Comp);
-         end loop;
+               Next_Component (Comp);
+            end loop;
+         end if;
 
          return False;
       end Available_Subtype;
@@ -6774,7 +6780,26 @@ package body Sem_Ch8 is
             --  Prefix denotes an enclosing loop, block, or task, i.e. an
             --  enclosing construct that is not a subprogram or accept.
 
-            Find_Expanded_Name (N);
+            --  A special case: a protected body may call an operation
+            --  on an external object of the same type, in which case it
+            --  is not an expanded name. If the prefix is the type itself,
+            --  or the context is a single synchronized object it can only
+            --  be interpreted as an expanded name.
+
+            if Is_Concurrent_Type (Etype (P_Name)) then
+               if Is_Type (P_Name)
+                  or else Present (Anonymous_Object (Etype (P_Name)))
+               then
+                  Find_Expanded_Name (N);
+
+               else
+                  Analyze_Selected_Component (N);
+                  return;
+               end if;
+
+            else
+               Find_Expanded_Name (N);
+            end if;
 
          elsif Ekind (P_Name) = E_Package then
             Find_Expanded_Name (N);

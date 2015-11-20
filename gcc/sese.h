@@ -22,7 +22,13 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SESE_H
 #define GCC_SESE_H
 
-typedef hash_map<tree, tree> parameter_rename_map_t;
+typedef hash_map<basic_block, vec<basic_block> > bb_map_t;
+typedef hash_map<tree, vec<tree> > rename_map_t;
+typedef struct ifsese_s *ifsese;
+/* First phi is the new codegenerated phi second one is original phi.  */
+typedef std::pair <gphi *, gphi *> phi_rename;
+/* First edge is the init edge and second is the back edge w.r.t. a loop.  */
+typedef std::pair<edge, edge> init_back_edge_pair_t;
 
 /* A Single Entry, Single Exit region is a part of the CFG delimited
    by two edges.  */
@@ -52,6 +58,19 @@ get_exit_bb (sese_l &s)
   return s.exit->src;
 }
 
+/* Returns the index of V where ELEM can be found. -1 Otherwise.  */
+template<typename T>
+int
+vec_find (const vec<T> &v, const T &elem)
+{
+  int i;
+  T t;
+  FOR_EACH_VEC_ELT (v, i, t)
+    if (elem == t)
+      return i;
+  return -1;
+}
+
 /* A helper structure for bookkeeping information about a scop in graphite.  */
 typedef struct sese_info_t
 {
@@ -61,8 +80,10 @@ typedef struct sese_info_t
   /* Parameters used within the SCOP.  */
   vec<tree> params;
 
-  /* Parameters to be renamed.  */
-  parameter_rename_map_t *parameter_rename_map;
+  /* Maps an old name to one or more new names.  When there are several new
+     names, one has to select the definition corresponding to the immediate
+     dominator.  */
+  rename_map_t *rename_map;
 
   /* Loops completely contained in this SESE.  */
   bitmap loops;
@@ -70,20 +91,26 @@ typedef struct sese_info_t
 
   /* Basic blocks contained in this SESE.  */
   vec<basic_block> bbs;
-} *sese_info_p;
 
-#define SESE_PARAMS(S) (S->params)
-#define SESE_LOOPS(S) (S->loops)
-#define SESE_LOOP_NEST(S) (S->loop_nest)
+  /* Copied basic blocks indexed by the original bb.  */
+  bb_map_t *copied_bb_map;
+
+  /* A vector of phi nodes to be updated when all arguments are available.  The
+     pair contains first the old_phi and second the new_phi.  */
+  vec<phi_rename> incomplete_phis;
+
+  /* The condition region generated for this sese.  */
+  ifsese if_region;
+
+} *sese_info_p;
 
 extern sese_info_p new_sese_info (edge, edge);
 extern void free_sese_info (sese_info_p);
 extern void sese_insert_phis_for_liveouts (sese_info_p, basic_block, edge, edge);
 extern void build_sese_loop_nests (sese_info_p);
-extern edge copy_bb_and_scalar_dependences (basic_block, sese_info_p, edge,
-					    vec<tree> , bool *);
 extern struct loop *outermost_loop_in_sese (sese_l &, basic_block);
 extern tree scalar_evolution_in_region (sese_l &, loop_p, tree);
+extern bool scev_analyzable_p (tree, sese_l &);
 extern bool invariant_in_sese_p_rec (tree, sese_l &, bool *);
 
 /* Check that SESE contains LOOP.  */
@@ -91,7 +118,7 @@ extern bool invariant_in_sese_p_rec (tree, sese_l &, bool *);
 static inline bool
 sese_contains_loop (sese_info_p sese, struct loop *loop)
 {
-  return bitmap_bit_p (SESE_LOOPS (sese), loop->num);
+  return bitmap_bit_p (sese->loops, loop->num);
 }
 
 /* The number of parameters in REGION. */
@@ -99,7 +126,7 @@ sese_contains_loop (sese_info_p sese, struct loop *loop)
 static inline unsigned
 sese_nb_params (sese_info_p region)
 {
-  return SESE_PARAMS (region).length ();
+  return region->params.length ();
 }
 
 /* Checks whether BB is contained in the region delimited by ENTRY and
@@ -108,16 +135,18 @@ sese_nb_params (sese_info_p region)
 static inline bool
 bb_in_region (basic_block bb, basic_block entry, basic_block exit)
 {
-#ifdef ENABLE_CHECKING
-  {
-    edge e;
-    edge_iterator ei;
+  /* FIXME: PR67842.  */
+#if 0
+  if (flag_checking)
+    {
+      edge e;
+      edge_iterator ei;
 
-    /* Check that there are no edges coming in the region: all the
-       predecessors of EXIT are dominated by ENTRY.  */
-    FOR_EACH_EDGE (e, ei, exit->preds)
-      dominated_by_p (CDI_DOMINATORS, e->src, entry);
-  }
+      /* Check that there are no edges coming in the region: all the
+	 predecessors of EXIT are dominated by ENTRY.  */
+      FOR_EACH_EDGE (e, ei, exit->preds)
+	gcc_assert (dominated_by_p (CDI_DOMINATORS, e->src, entry));
+    }
 #endif
 
   return dominated_by_p (CDI_DOMINATORS, bb, entry)
@@ -207,9 +236,9 @@ typedef struct ifsese_s {
 
 extern void if_region_set_false_region (ifsese, sese_info_p);
 extern ifsese move_sese_in_condition (sese_info_p);
+extern void set_ifsese_condition (ifsese, tree);
 extern edge get_true_edge_from_guard_bb (basic_block);
 extern edge get_false_edge_from_guard_bb (basic_block);
-extern void set_ifsese_condition (ifsese, tree);
 
 static inline edge
 if_region_entry (ifsese if_region)
@@ -242,6 +271,8 @@ recompute_all_dominators (void)
   calculate_dominance_info (CDI_POST_DOMINATORS);
 }
 
+typedef std::pair <gimple *, tree> scalar_use;
+
 typedef struct gimple_poly_bb
 {
   basic_block bb;
@@ -270,6 +301,8 @@ typedef struct gimple_poly_bb
   vec<gimple *> conditions;
   vec<gimple *> condition_cases;
   vec<data_reference_p> data_refs;
+  vec<scalar_use> read_scalar_refs;
+  vec<tree> write_scalar_refs;
 } *gimple_poly_bb_p;
 
 #define GBB_BB(GBB) (GBB)->bb
@@ -313,36 +346,6 @@ nb_common_loops (sese_l &region, gimple_poly_bb_p gbb1, gimple_poly_bb_p gbb2)
   loop_p common = find_common_loop (l1, l2);
 
   return sese_loop_depth (region, common);
-}
-
-/* Return true when DEF can be analyzed in REGION by the scalar
-   evolution analyzer.  */
-
-static inline bool
-scev_analyzable_p (tree def, sese_l &region)
-{
-  loop_p loop;
-  tree scev;
-  tree type = TREE_TYPE (def);
-
-  /* When Graphite generates code for a scev, the code generator
-     expresses the scev in function of a single induction variable.
-     This is unsafe for floating point computations, as it may replace
-     a floating point sum reduction with a multiplication.  The
-     following test returns false for non integer types to avoid such
-     problems.  */
-  if (!INTEGRAL_TYPE_P (type)
-      && !POINTER_TYPE_P (type))
-    return false;
-
-  loop = loop_containing_stmt (SSA_NAME_DEF_STMT (def));
-  scev = scalar_evolution_in_region (region, loop, def);
-
-  return !chrec_contains_undetermined (scev)
-    && (TREE_CODE (scev) != SSA_NAME
-	|| !defined_in_sese_p (scev, region))
-    && (tree_does_not_contain_chrecs (scev)
-	|| evolution_function_is_affine_p (scev));
 }
 
 #endif

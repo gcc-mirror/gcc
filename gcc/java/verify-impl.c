@@ -14,11 +14,8 @@ details.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "options.h"
-#include "symtab.h"
 #include "verify.h"
 
-#include "alias.h"
 
 /* Hack to work around namespace pollution from java-tree.h.  */
 #undef current_class

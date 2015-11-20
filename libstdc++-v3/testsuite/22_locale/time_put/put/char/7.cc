@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "en_HK" }
+// { dg-require-namedlocale "en_HK.ISO8859-1" }
 
 // 2001-09-17 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -40,7 +40,7 @@ void test07()
 
   // basic construction and sanity check
   locale loc_c = locale::classic();
-  locale loc_hk = locale("en_HK");
+  locale loc_hk = locale(ISO_8859(1,en_HK));
   VERIFY( loc_hk != loc_c );
 
   // create an ostream-derived object, cache the time_put facet

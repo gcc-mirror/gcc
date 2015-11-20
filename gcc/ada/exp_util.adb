@@ -1672,17 +1672,10 @@ package body Exp_Util is
    function Containing_Package_With_Ext_Axioms
      (E : Entity_Id) return Entity_Id
    is
-      Decl : Node_Id;
+      Decl                  : Node_Id;
+      First_Ax_Parent_Scope : Entity_Id;
 
    begin
-      if Ekind (E) = E_Package then
-         if Nkind (Parent (E)) = N_Defining_Program_Unit_Name then
-            Decl := Parent (Parent (E));
-         else
-            Decl := Parent (E);
-         end if;
-      end if;
-
       --  E is the package or generic package which is externally axiomatized
 
       if Ekind_In (E, E_Package, E_Generic_Package)
@@ -1691,33 +1684,35 @@ package body Exp_Util is
          return E;
       end if;
 
-      --  If E's scope is axiomatized, E is axiomatized.
+      --  If E's scope is axiomatized, E is axiomatized
 
-      declare
-         First_Ax_Parent_Scope : Entity_Id := Empty;
-
-      begin
-         if Present (Scope (E)) then
-            First_Ax_Parent_Scope :=
-              Containing_Package_With_Ext_Axioms (Scope (E));
-         end if;
+      if Present (Scope (E)) then
+         First_Ax_Parent_Scope :=
+           Containing_Package_With_Ext_Axioms (Scope (E));
 
          if Present (First_Ax_Parent_Scope) then
             return First_Ax_Parent_Scope;
          end if;
 
-         --  otherwise, if E is a package instance, it is axiomatized if the
-         --  corresponding generic package is axiomatized.
+      end if;
 
-         if Ekind (E) = E_Package
-           and then Present (Generic_Parent (Decl))
-         then
+      --  Otherwise, if E is a package instance, it is axiomatized if the
+      --  corresponding generic package is axiomatized.
+
+      if Ekind (E) = E_Package then
+         if Nkind (Parent (E)) = N_Defining_Program_Unit_Name then
+            Decl := Parent (Parent (E));
+         else
+            Decl := Parent (E);
+         end if;
+
+         if Present (Generic_Parent (Decl)) then
             return
               Containing_Package_With_Ext_Axioms (Generic_Parent (Decl));
-         else
-            return Empty;
          end if;
-      end;
+      end if;
+
+      return Empty;
    end Containing_Package_With_Ext_Axioms;
 
    -------------------------------
@@ -2157,7 +2152,8 @@ package body Exp_Util is
      (N             : Node_Id;
       Unc_Type      : Entity_Id;
       Subtype_Indic : Node_Id;
-      Exp           : Node_Id)
+      Exp           : Node_Id;
+      Related_Id    : Entity_Id := Empty)
    is
       Loc     : constant Source_Ptr := Sloc (N);
       Exp_Typ : constant Entity_Id  := Etype (Exp);
@@ -2362,7 +2358,7 @@ package body Exp_Util is
       else
          Remove_Side_Effects (Exp);
          Rewrite (Subtype_Indic,
-           Make_Subtype_From_Expr (Exp, Unc_Type));
+           Make_Subtype_From_Expr (Exp, Unc_Type, Related_Id));
       end if;
    end Expand_Subtype_From_Expr;
 
@@ -6571,8 +6567,9 @@ package body Exp_Util is
    --  3. If Expr is class-wide, creates an implicit class-wide subtype
 
    function Make_Subtype_From_Expr
-     (E       : Node_Id;
-      Unc_Typ : Entity_Id) return Node_Id
+     (E          : Node_Id;
+      Unc_Typ    : Entity_Id;
+      Related_Id : Entity_Id := Empty) return Node_Id
    is
       List_Constr : constant List_Id    := New_List;
       Loc         : constant Source_Ptr := Sloc (E);
@@ -6589,17 +6586,31 @@ package body Exp_Util is
       if Is_Private_Type (Unc_Typ)
         and then Has_Unknown_Discriminants (Unc_Typ)
       then
+         --  The caller requests a unique external name for both the private
+         --  and the full subtype.
+
+         if Present (Related_Id) then
+            Full_Subtyp :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_External_Name (Chars (Related_Id), 'C'));
+            Priv_Subtyp :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_External_Name (Chars (Related_Id), 'P'));
+
+         else
+            Full_Subtyp := Make_Temporary (Loc, 'C');
+            Priv_Subtyp := Make_Temporary (Loc, 'P');
+         end if;
+
          --  Prepare the subtype completion. Use the base type to find the
          --  underlying type because the type may be a generic actual or an
          --  explicit subtype.
 
-         Utyp        := Underlying_Type (Base_Type (Unc_Typ));
-         Full_Subtyp := Make_Temporary (Loc, 'C');
-         Full_Exp    :=
+         Utyp := Underlying_Type (Base_Type (Unc_Typ));
+
+         Full_Exp :=
            Unchecked_Convert_To (Utyp, Duplicate_Subexpr_No_Checks (E));
          Set_Parent (Full_Exp, Parent (E));
-
-         Priv_Subtyp := Make_Temporary (Loc, 'P');
 
          Insert_Action (E,
            Make_Subtype_Declaration (Loc,
@@ -9441,20 +9452,5 @@ package body Exp_Util is
         and then not Is_Predicate_Function (S)
         and then not Is_Predicate_Function_M (S);
    end Within_Internal_Subprogram;
-
-   ----------------------------
-   -- Wrap_Cleanup_Procedure --
-   ----------------------------
-
-   procedure Wrap_Cleanup_Procedure (N : Node_Id) is
-      Loc   : constant Source_Ptr := Sloc (N);
-      Stseq : constant Node_Id    := Handled_Statement_Sequence (N);
-      Stmts : constant List_Id    := Statements (Stseq);
-   begin
-      if Abort_Allowed then
-         Prepend_To (Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
-         Append_To  (Stmts, Build_Runtime_Call (Loc, RE_Abort_Undefer));
-      end if;
-   end Wrap_Cleanup_Procedure;
 
 end Exp_Util;

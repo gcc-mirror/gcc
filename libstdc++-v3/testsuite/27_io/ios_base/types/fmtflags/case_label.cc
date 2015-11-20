@@ -70,5 +70,9 @@ case_labels(bitmask_type b)
       break;
     case std::_S_ios_fmtflags_end:
       break;
+    case std::_S_ios_fmtflags_min:
+      break;
+    case std::_S_ios_fmtflags_max:
+      break;
     }
 }

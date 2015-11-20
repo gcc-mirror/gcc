@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "en_US" }
+// { dg-require-namedlocale "en_US.ISO8859-1" }
 // { dg-require-fork "" }
 // { dg-require-mkfifo "" }
 
@@ -42,7 +42,7 @@ bool test01()
   using namespace __gnu_test;
   bool test __attribute__((unused)) = true;
 
-  locale loc_us = locale("en_US");
+  locale loc_us = locale(ISO_8859(1,en_US));
 
   const char* name = "tmp_14975-2";
 

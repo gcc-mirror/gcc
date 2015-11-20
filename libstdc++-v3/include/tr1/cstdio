@@ -33,7 +33,7 @@
 
 #include <cstdio>
 
-#if _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_STDIO
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

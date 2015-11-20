@@ -794,7 +794,7 @@ package body Atree is
    ------------------------
 
    function Copy_Separate_Tree (Source : Node_Id) return Node_Id is
-      New_Id  : Node_Id;
+      New_Id : Node_Id;
 
       function Copy_Entity (E : Entity_Id) return Entity_Id;
       --  Copy Entity, copying only the Ekind and Chars fields
@@ -803,8 +803,8 @@ package body Atree is
       --  Copy list
 
       function Possible_Copy (Field : Union_Id) return Union_Id;
-      --  Given a field, returns a copy of the node or list if its parent
-      --  is the current source node, and otherwise returns the input
+      --  Given a field, returns a copy of the node or list if its parent is
+      --  the current source node, and otherwise returns the input.
 
       -----------------
       -- Copy_Entity --
@@ -871,8 +871,7 @@ package body Atree is
 
       begin
          if Field in Node_Range then
-            New_N :=
-              Union_Id (Copy_Separate_Tree (Node_Id (Field)));
+            New_N := Union_Id (Copy_Separate_Tree (Node_Id (Field)));
 
             if Parent (Node_Id (Field)) = Source then
                Set_Parent (Node_Id (New_N), New_Id);
@@ -3093,6 +3092,17 @@ package body Atree is
             return Elist_Id (Value);
          end if;
       end Elist10;
+
+      function Elist11 (N : Node_Id) return Elist_Id is
+         pragma Assert (Nkind (N) in N_Entity);
+         Value : constant Union_Id := Nodes.Table (N + 1).Field11;
+      begin
+         if Value = 0 then
+            return No_Elist;
+         else
+            return Elist_Id (Value);
+         end if;
+      end Elist11;
 
       function Elist13 (N : Node_Id) return Elist_Id is
          pragma Assert (Nkind (N) in N_Entity);
@@ -5924,6 +5934,12 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          Nodes.Table (N + 1).Field10 := Union_Id (Val);
       end Set_Elist10;
+
+      procedure Set_Elist11 (N : Node_Id; Val : Elist_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 1).Field11 := Union_Id (Val);
+      end Set_Elist11;
 
       procedure Set_Elist13 (N : Node_Id; Val : Elist_Id) is
       begin

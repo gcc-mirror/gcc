@@ -31,21 +31,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "target.h"
 #include "c-family/c-target.h"
-#include "tree.h"
 #include "cp-tree.h"
-#include "c-family/c-common.h"
 #include "timevar.h"
-#include "tm_p.h"
 #include "stringpool.h"
 #include "cgraph.h"
-#include "tree-hasher.h"
 #include "stor-layout.h"
 #include "varasm.h"
 #include "attribs.h"
-#include "calls.h"
 #include "flags.h"
 #include "tree-iterator.h"
-#include "tree-inline.h"
 #include "decl.h"
 #include "intl.h"
 #include "toplev.h"
@@ -2020,7 +2014,22 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       /* For typedefs use the old type, as the new type's DECL_NAME points
 	 at newdecl, which will be ggc_freed.  */
       if (TREE_CODE (newdecl) == TYPE_DECL)
-	newtype = oldtype;
+	{
+	  newtype = oldtype;
+
+	  /* And remove the new type from the variants list.  */
+	  if (TYPE_NAME (TREE_TYPE (newdecl)) == newdecl)
+	    {
+	      tree remove = TREE_TYPE (newdecl);
+	      for (tree t = TYPE_MAIN_VARIANT (remove); ;
+		   t = TYPE_NEXT_VARIANT (t))
+		if (TYPE_NEXT_VARIANT (t) == remove)
+		  {
+		    TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (remove);
+		    break;
+		  }
+	    }
+	}
       else
 	/* Merge the data types specified in the two decls.  */
 	newtype = merge_types (TREE_TYPE (newdecl), TREE_TYPE (olddecl));
@@ -2958,14 +2967,16 @@ decl_jump_unsafe (tree decl)
   return 0;
 }
 
-/* A subroutine of check_previous_goto_1 to identify a branch to the user.  */
+/* A subroutine of check_previous_goto_1 and check_goto to identify a branch
+   to the user.  */
 
 static bool
-identify_goto (tree decl, const location_t *locus)
+identify_goto (tree decl, location_t loc, const location_t *locus,
+	       diagnostic_t diag_kind)
 {
-  bool complained = (decl
-		     ? permerror (input_location, "jump to label %qD", decl)
-		     : permerror (input_location, "jump to case label"));
+  bool complained
+    = (decl ? emit_diagnostic (diag_kind, loc, 0, "jump to label %qD", decl)
+	    : emit_diagnostic (diag_kind, loc, 0, "jump to case label"));
   if (complained && locus)
     inform (*locus, "  from here");
   return complained;
@@ -2982,15 +2993,17 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 		       bool exited_omp, const location_t *locus)
 {
   cp_binding_level *b;
-  bool identified = false, complained = false;
+  bool complained = false;
+  int identified = 0;
   bool saw_eh = false, saw_omp = false, saw_tm = false;
 
   if (exited_omp)
     {
-      complained = identify_goto (decl, locus);
+      complained = identify_goto (decl, input_location, locus, DK_ERROR);
       if (complained)
 	inform (input_location, "  exits OpenMP structured block");
-      identified = saw_omp = true;
+      saw_omp = true;
+      identified = 2;
     }
 
   for (b = current_binding_level; b ; b = b->level_chain)
@@ -3007,8 +3020,9 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 
 	  if (!identified)
 	    {
-	      complained = identify_goto (decl, locus);
-	      identified = true;
+	      complained = identify_goto (decl, input_location, locus,
+					  DK_PERMERROR);
+	      identified = 1;
 	    }
 	  if (complained)
 	    {
@@ -3026,10 +3040,11 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	break;
       if ((b->kind == sk_try || b->kind == sk_catch) && !saw_eh)
 	{
-	  if (!identified)
+	  if (identified < 2)
 	    {
-	      complained = identify_goto (decl, locus);
-	      identified = true;
+	      complained = identify_goto (decl, input_location, locus,
+					  DK_ERROR);
+	      identified = 2;
 	    }
 	  if (complained)
 	    {
@@ -3042,10 +3057,11 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	}
       if (b->kind == sk_omp && !saw_omp)
 	{
-	  if (!identified)
+	  if (identified < 2)
 	    {
-	      complained = identify_goto (decl, locus);
-	      identified = true;
+	      complained = identify_goto (decl, input_location, locus,
+					  DK_ERROR);
+	      identified = 2;
 	    }
 	  if (complained)
 	    inform (input_location, "  enters OpenMP structured block");
@@ -3053,10 +3069,11 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	}
       if (b->kind == sk_transaction && !saw_tm)
 	{
-	  if (!identified)
+	  if (identified < 2)
 	    {
-	      complained = identify_goto (decl, locus);
-	      identified = true;
+	      complained = identify_goto (decl, input_location, locus,
+					  DK_ERROR);
+	      identified = 2;
 	    }
 	  if (complained)
 	    inform (input_location,
@@ -3089,7 +3106,8 @@ void
 check_goto (tree decl)
 {
   struct named_label_entry *ent, dummy;
-  bool saw_catch = false, identified = false, complained = false;
+  bool saw_catch = false, complained = false;
+  int identified = 0;
   tree bad;
   unsigned ix;
 
@@ -3132,11 +3150,13 @@ check_goto (tree decl)
   if (ent->in_try_scope || ent->in_catch_scope || ent->in_transaction_scope
       || ent->in_omp_scope || !vec_safe_is_empty (ent->bad_decls))
     {
-      complained = permerror (DECL_SOURCE_LOCATION (decl),
-			      "jump to label %qD", decl);
-      if (complained)
-	inform (input_location, "  from here");
-      identified = true;
+      diagnostic_t diag_kind = DK_PERMERROR;
+      if (ent->in_try_scope || ent->in_catch_scope
+	  || ent->in_transaction_scope || ent->in_omp_scope)
+	diag_kind = DK_ERROR;
+      complained = identify_goto (decl, DECL_SOURCE_LOCATION (decl),
+				  &input_location, diag_kind);
+      identified = 1 + (diag_kind == DK_ERROR);
     }
 
   FOR_EACH_VEC_SAFE_ELT (ent->bad_decls, ix, bad)
@@ -3146,6 +3166,12 @@ check_goto (tree decl)
       if (u > 1 && DECL_ARTIFICIAL (bad))
 	{
 	  /* Can't skip init of __exception_info.  */
+	  if (identified == 1)
+	    {
+	      complained = identify_goto (decl, DECL_SOURCE_LOCATION (decl),
+					  &input_location, DK_ERROR);
+	      identified = 2;
+	    }
 	  if (complained)
 	    inform (DECL_SOURCE_LOCATION (bad), "  enters catch block");
 	  saw_catch = true;
@@ -3186,13 +3212,12 @@ check_goto (tree decl)
 	    break;
 	  if (b->kind == sk_omp)
 	    {
-	      if (!identified)
+	      if (identified < 2)
 		{
-		  complained = permerror (DECL_SOURCE_LOCATION (decl),
-					  "jump to label %qD", decl);
-		  if (complained)
-		    inform (input_location, "  from here");
-		  identified = true;
+		  complained = identify_goto (decl,
+					      DECL_SOURCE_LOCATION (decl),
+					      &input_location, DK_ERROR);
+		  identified = 2;
 		}
 	      if (complained)
 		inform (input_location, "  exits OpenMP structured block");
@@ -8580,33 +8605,24 @@ stabilize_vla_size (tree size)
   cp_walk_tree (&size, stabilize_save_expr_r, &pset, &pset);
 }
 
-/* Helper function for compute_array_index_type.  Look for SIZEOF_EXPR
-   not inside of SAVE_EXPR and fold them.  */
+/* Reduce a SIZEOF_EXPR to its value.  */
 
-static tree
-fold_sizeof_expr_r (tree *expr_p, int *walk_subtrees, void *data)
+tree
+fold_sizeof_expr (tree t)
 {
-  tree expr = *expr_p;
-  if (TREE_CODE (expr) == SAVE_EXPR || TYPE_P (expr))
-    *walk_subtrees = 0;
-  else if (TREE_CODE (expr) == SIZEOF_EXPR)
-    {
-      *(bool *)data = true;
-      if (SIZEOF_EXPR_TYPE_P (expr))
-	expr = cxx_sizeof_or_alignof_type (TREE_TYPE (TREE_OPERAND (expr, 0)),
-					   SIZEOF_EXPR, false);
-      else if (TYPE_P (TREE_OPERAND (expr, 0)))
-	expr = cxx_sizeof_or_alignof_type (TREE_OPERAND (expr, 0), SIZEOF_EXPR,
-					   false);
-      else
-        expr = cxx_sizeof_or_alignof_expr (TREE_OPERAND (expr, 0), SIZEOF_EXPR,
-					   false);
-      if (expr == error_mark_node)
-        expr = size_one_node;
-      *expr_p = expr;
-      *walk_subtrees = 0;
-    }
-  return NULL;
+  tree r;
+  if (SIZEOF_EXPR_TYPE_P (t))
+    r = cxx_sizeof_or_alignof_type (TREE_TYPE (TREE_OPERAND (t, 0)),
+				    SIZEOF_EXPR, false);
+  else if (TYPE_P (TREE_OPERAND (t, 0)))
+    r = cxx_sizeof_or_alignof_type (TREE_OPERAND (t, 0), SIZEOF_EXPR,
+				    false);
+  else
+    r = cxx_sizeof_or_alignof_expr (TREE_OPERAND (t, 0), SIZEOF_EXPR,
+				    false);
+  if (r == error_mark_node)
+    r = size_one_node;
+  return r;
 }
 
 /* Given the SIZE (i.e., number of elements) in an array, compute an
@@ -8699,7 +8715,18 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
       SET_TYPE_STRUCTURAL_EQUALITY (itype);
       return itype;
     }
-  
+
+  if (TREE_CODE (size) != INTEGER_CST)
+    {
+      tree folded = cp_fully_fold (size);
+      if (TREE_CODE (folded) == INTEGER_CST)
+	pedwarn (location_of (size), OPT_Wpedantic,
+		 "size of array is not an integral constant-expression");
+      /* Use the folded result for VLAs, too; it will have resolved
+	 SIZEOF_EXPR.  */
+      size = folded;
+    }
+
   /* Normally, the array-bound will be a constant.  */
   if (TREE_CODE (size) == INTEGER_CST)
     {
@@ -8786,25 +8813,13 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 				  cp_convert (ssizetype, integer_one_node,
 					      complain),
 				  complain);
-      itype = fold (itype);
+      itype = maybe_constant_value (itype);
       processing_template_decl = saved_processing_template_decl;
 
       if (!TREE_CONSTANT (itype))
 	{
 	  /* A variable sized array.  */
 	  itype = variable_size (itype);
-
-	  if (TREE_CODE (itype) != SAVE_EXPR)
-	    {
-	      /* Look for SIZEOF_EXPRs in itype and fold them, otherwise
-		 they might survive till gimplification.  */
-	      tree newitype = itype;
-	      bool found = false;
-	      cp_walk_tree_without_duplicates (&newitype,
-					       fold_sizeof_expr_r, &found);
-	      if (found)
-		itype = variable_size (fold (newitype));
-	    }
 
 	  stabilize_vla_size (itype);
 
@@ -9945,6 +9960,9 @@ grokdeclarator (const cp_declarator *declarator,
 	case cdk_array:
 	  type = create_array_type_for_decl (dname, type,
 					     declarator->u.array.bounds);
+	  if (!valid_array_size_p (input_location, type, dname))
+	    type = error_mark_node;
+
 	  if (declarator->std_attributes)
 	    /* [dcl.array]/1:
 
@@ -10506,19 +10524,6 @@ grokdeclarator (const cp_declarator *declarator,
         type = make_pack_expansion (type);
       else
         error ("non-parameter %qs cannot be a parameter pack", name);
-    }
-
-  /* Did array size calculations overflow or does the array cover more
-     than half of the address-space?  */
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && COMPLETE_TYPE_P (type)
-      && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST
-      && ! valid_constant_size_p (TYPE_SIZE_UNIT (type)))
-    {
-      error ("size of array %qs is too large", name);
-      /* If we proceed with the array type as it is, we'll eventually
-	 crash in tree_to_[su]hwi().  */
-      type = error_mark_node;
     }
 
   if ((decl_context == FIELD || decl_context == PARM)
@@ -13515,7 +13520,7 @@ incremented enumerator value is too large for %<long%>");
 		   "type %<%T%>", value, ENUM_UNDERLYING_TYPE (enumtype));
 
           /* Convert the value to the appropriate type.  */
-          value = convert (ENUM_UNDERLYING_TYPE (enumtype), value);
+          value = fold_convert (ENUM_UNDERLYING_TYPE (enumtype), value);
         }
     }
 

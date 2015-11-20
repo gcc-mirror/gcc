@@ -6,7 +6,7 @@
  *                                                                          *
  *                         Asm Implementation File                          *
  *                                                                          *
- *           Copyright (C) 2014, Free Software Foundation, Inc.             *
+ *           Copyright (C) 2015, Free Software Foundation, Inc.             *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -32,6 +32,8 @@
 /******************************************************
  * ARM-Android version of the __gnat_sigtramp service *
  ******************************************************/
+
+#include <sys/ucontext.h>
 
 #include "sigtramp.h"
 /* See sigtramp.h for a general explanation of functionality.  */
@@ -115,7 +117,7 @@ TCR("# from bottom, restore r2 from the current vsp location, move r2 into") \
 TCR("# the vsp, add 12 bytes to get the start of the register save area") \
 TCR("# then restore the 15 general purpose registers of the frame which") \
 TCR("# raised the signal.") \
-TCR(".save {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}") \
+TCR(".save {r0-r15}") \
 TCR(".pad #12") \
 TCR(".movsp r2") \
 TCR(".save {r2}") \

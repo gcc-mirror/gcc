@@ -17,7 +17,7 @@ enum e {
   /* But as in DR#031, the 1/0 in an evaluated subexpression means the
      whole expression violates the constraints.  */
   E4 = 0 * (1 / 0), /* { dg-warning "division by zero" } */
-  /* { dg-error "enumerator value for 'E4' is not an integer constant" "enum error" { xfail *-*-* } 19 } */
+  /* { dg-error "enumerator value for 'E4' is not an integer constant" "enum error" { target c++ } 19 } */
   E5 = INT_MAX + 1, /* { dg-warning "integer overflow in expression" } */
   /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } 21 } */
   /* Again, overflow in evaluated subexpression.  */
@@ -126,3 +126,11 @@ h2i (int x)
   ui = INT_MIN;
   ui = x ? INT_MIN : 1U;
 }
+/* { dg-error "division by zero is not a constant.expression" "division" { target c++11 } 19 } */
+/* { dg-error "division by zero is not a constant.expression" "division" { target c++11 } 32 } */
+/* { dg-warning "invalid conversion from" "convert" { target *-*-* } 56 } */
+/* { dg-warning "invalid conversion from" "convert" { target c++11 } 58 } */
+/* { dg-error "is not a constant expression" "const" { target *-*-* } 65 } */
+/* { dg-error "division by zero is not a constant.expression" "division" { target c++11 } 65 } */
+/* { dg-error "width not an integer constant" "bit.field" { target c++ } 32 } */
+/* { dg-error "is not a constant expression" "division" { target c++ } 32 } */

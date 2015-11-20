@@ -67,6 +67,13 @@
 # define unlink(x)
 #endif
 
+#if defined __FreeBSD__ || defined __DragonFly__ || defined __NetBSD__
+# define ISO_8859(part,langTERR) #langTERR ".ISO8859-" #part
+#else
+# define ISO_8859(part,langTERR) ((part) == 15 ?\
+         #langTERR ".ISO8859-" #part "@euro" : #langTERR ".ISO8859-" #part)
+#endif
+
 namespace __gnu_test
 {
   // All macros are defined in GLIBCXX_CONFIGURE_TESTSUITE and imported

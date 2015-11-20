@@ -1217,13 +1217,21 @@ class pass_object_sizes : public gimple_opt_pass
 {
 public:
   pass_object_sizes (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_object_sizes, ctxt)
+    : gimple_opt_pass (pass_data_object_sizes, ctxt), insert_min_max_p (false)
   {}
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_object_sizes (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param)
+    {
+      gcc_assert (n == 0);
+      insert_min_max_p = param;
+    }
   virtual unsigned int execute (function *);
 
+ private:
+  /* Determines whether the pass instance creates MIN/MAX_EXPRs.  */
+  bool insert_min_max_p;
 }; // class pass_object_sizes
 
 /* Dummy valueize function.  */
@@ -1250,12 +1258,12 @@ pass_object_sizes::execute (function *fun)
 
 	  init_object_sizes ();
 
-	  /* In the first pass instance, only attempt to fold
+	  /* If insert_min_max_p, only attempt to fold
 	     __builtin_object_size (x, 1) and __builtin_object_size (x, 3),
 	     and rather than folding the builtin to the constant if any,
 	     create a MIN_EXPR or MAX_EXPR of the __builtin_object_size
 	     call result and the computed constant.  */
-	  if (first_pass_instance)
+	  if (insert_min_max_p)
 	    {
 	      tree ost = gimple_call_arg (call, 1);
 	      if (tree_fits_uhwi_p (ost))

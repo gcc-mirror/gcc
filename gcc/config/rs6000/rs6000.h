@@ -95,6 +95,12 @@
 #define ASM_CPU_POWER8_SPEC ASM_CPU_POWER7_SPEC
 #endif
 
+#ifdef HAVE_AS_POWER9
+#define ASM_CPU_POWER9_SPEC "-mpower9"
+#else
+#define ASM_CPU_POWER9_SPEC ASM_CPU_POWER8_SPEC
+#endif
+
 #ifdef HAVE_AS_DCI
 #define ASM_CPU_476_SPEC "-m476"
 #else
@@ -119,6 +125,7 @@
 %{mcpu=power6x: %(asm_cpu_power6) -maltivec} \
 %{mcpu=power7: %(asm_cpu_power7)} \
 %{mcpu=power8: %(asm_cpu_power8)} \
+%{mcpu=power9: %(asm_cpu_power9)} \
 %{mcpu=a2: -ma2} \
 %{mcpu=powerpc: -mppc} \
 %{mcpu=rs64a: -mppc64} \
@@ -193,6 +200,7 @@
   { "asm_cpu_power6",		ASM_CPU_POWER6_SPEC },			\
   { "asm_cpu_power7",		ASM_CPU_POWER7_SPEC },			\
   { "asm_cpu_power8",		ASM_CPU_POWER8_SPEC },			\
+  { "asm_cpu_power9",		ASM_CPU_POWER9_SPEC },			\
   { "asm_cpu_476",		ASM_CPU_476_SPEC },			\
   SUBTARGET_EXTRA_SPECS
 
@@ -508,6 +516,10 @@ extern int rs6000_vector_align[];
    with scalar instructions.  */
 #define VECTOR_ELEMENT_SCALAR_64BIT	((BYTES_BIG_ENDIAN) ? 0 : 1)
 
+/* Element number of the 64-bit value in a 128-bit vector that can be accessed
+   with the ISA 3.0 MFVSRLD instructions.  */
+#define VECTOR_ELEMENT_MFVSRLD_64BIT	((BYTES_BIG_ENDIAN) ? 1 : 0)
+
 /* Alignment options for fields in structures for sub-targets following
    AIX-like ABI.
    ALIGN_POWER word-aligns FP doubles (default AIX ABI).
@@ -557,10 +569,15 @@ extern int rs6000_vector_align[];
 #define TARGET_FCFIDUS	TARGET_POPCNTD
 #define TARGET_FCTIDUZ	TARGET_POPCNTD
 #define TARGET_FCTIWUZ	TARGET_POPCNTD
+#define TARGET_CTZ	TARGET_MODULO
+#define TARGET_EXTSWSLI	(TARGET_MODULO && TARGET_POWERPC64)
+#define TARGET_MADDLD	(TARGET_MODULO && TARGET_POWERPC64)
 
 #define TARGET_XSCVDPSPN	(TARGET_DIRECT_MOVE || TARGET_P8_VECTOR)
 #define TARGET_XSCVSPDPN	(TARGET_DIRECT_MOVE || TARGET_P8_VECTOR)
 #define TARGET_VADDUQM		(TARGET_P8_VECTOR && TARGET_POWERPC64)
+#define TARGET_DIRECT_MOVE_128	(TARGET_P9_VECTOR && TARGET_DIRECT_MOVE \
+				 && TARGET_POWERPC64)
 
 /* Byte/char syncs were added as phased in for ISA 2.06B, but are not present
    in power7, so conditionalize them on p8 features.  TImode syncs need quad
@@ -692,6 +709,22 @@ extern int rs6000_vector_align[];
 #define TARGET_FRSQRTE	(TARGET_HARD_FLOAT && TARGET_FPRS \
 			 && TARGET_DOUBLE_FLOAT \
 			 && (TARGET_PPC_GFXOPT || VECTOR_UNIT_VSX_P (DFmode)))
+
+/* Conditions to allow TOC fusion for loading/storing integers.  */
+#define TARGET_TOC_FUSION_INT	(TARGET_P8_FUSION			\
+				 && TARGET_TOC_FUSION			\
+				 && (TARGET_CMODEL != CMODEL_SMALL)	\
+				 && TARGET_POWERPC64)
+
+/* Conditions to allow TOC fusion for loading/storing floating point.  */
+#define TARGET_TOC_FUSION_FP	(TARGET_P9_FUSION			\
+				 && TARGET_TOC_FUSION			\
+				 && (TARGET_CMODEL != CMODEL_SMALL)	\
+				 && TARGET_POWERPC64			\
+				 && TARGET_HARD_FLOAT			\
+				 && TARGET_FPRS				\
+				 && TARGET_SINGLE_FLOAT			\
+				 && TARGET_DOUBLE_FLOAT)
 
 /* Whether the various reciprocal divide/square root estimate instructions
    exist, and whether we should automatically generate code for the instruction
@@ -1491,6 +1524,7 @@ enum r6000_reg_class_enum {
   RS6000_CONSTRAINT_v,		/* Altivec registers */
   RS6000_CONSTRAINT_wa,		/* Any VSX register */
   RS6000_CONSTRAINT_wd,		/* VSX register for V2DF */
+  RS6000_CONSTRAINT_we,		/* VSX register if ISA 3.0 vector. */
   RS6000_CONSTRAINT_wf,		/* VSX register for V4SF */
   RS6000_CONSTRAINT_wg,		/* FPR register for -mmfpgpr */
   RS6000_CONSTRAINT_wh,		/* FPR register for direct moves.  */
@@ -2087,8 +2121,12 @@ do {									     \
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
   ((VALUE) = ((MODE) == SImode ? 32 : 64), 1)
 
-/* The CTZ patterns return -1 for input of zero.  */
-#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = -1, 1)
+/* The CTZ patterns that are implemented in terms of CLZ return -1 for input of
+   zero.  The hardware instructions added in Power9 return 32 or 64.  */
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)				\
+  ((!TARGET_CTZ)							\
+   ? ((VALUE) = -1, 1)							\
+   : ((VALUE) = ((MODE) == SImode ? 32 : 64), 1))
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction

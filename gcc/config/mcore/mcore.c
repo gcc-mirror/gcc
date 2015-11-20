@@ -112,7 +112,7 @@ static void	  mcore_asm_named_section       (const char *,
 						 unsigned int, tree);
 #endif
 static void       mcore_print_operand           (FILE *, rtx, int);
-static void       mcore_print_operand_address   (FILE *, rtx);
+static void       mcore_print_operand_address   (FILE *, machine_mode, rtx);
 static bool       mcore_print_operand_punct_valid_p (unsigned char code);
 static void       mcore_unique_section	        (tree, int);
 static void mcore_encode_section_info		(tree, rtx, int);
@@ -309,7 +309,7 @@ calc_live_regs (int * count)
 /* Print the operand address in x to the stream.  */
 
 static void
-mcore_print_operand_address (FILE * stream, rtx x)
+mcore_print_operand_address (FILE * stream, machine_mode /*mode*/, rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -401,7 +401,7 @@ mcore_print_operand (FILE * stream, rtx x, int code)
 	  break;
 	case MEM:
 	  mcore_print_operand_address
-	    (stream, XEXP (adjust_address (x, SImode, 4), 0));
+	    (stream, GET_MODE (x), XEXP (adjust_address (x, SImode, 4), 0));
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -425,7 +425,7 @@ mcore_print_operand (FILE * stream, rtx x, int code)
 	  fputs (reg_names[REGNO (x)], (stream));
 	  break;
 	case MEM:
-	  output_address (XEXP (x, 0));
+	  output_address (GET_MODE (x), XEXP (x, 0));
 	  break;
 	default:
 	  output_addr_const (stream, x);

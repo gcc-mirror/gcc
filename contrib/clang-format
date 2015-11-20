@@ -1,0 +1,138 @@
+# Copyright (C) 2015 Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# clang-format 3.8+ (Mon Nov 16) is required
+#
+# To utilize the tool to lines just touched by a patch, use
+# clang-format-diff.py script, which can be downloaded here:
+# https://llvm.org/svn/llvm-project/cfe/trunk/tools/clang-format/clang-format-diff.py
+
+---
+Language: Cpp
+AccessModifierOffset: -2
+AlwaysBreakAfterDefinitionReturnType: All
+BinPackArguments: true
+BinPackParameters: true
+BraceWrapping:
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: false
+  AfterObjCDeclaration: true
+  AfterStruct: true
+  AfterUnion: true
+  BeforeCatch: true
+  BeforeElse: true
+  IndentBraces: true
+BreakBeforeBinaryOperators: All
+BreakBeforeBraces: Custom
+BreakBeforeTernaryOperators: true
+ColumnLimit: 80
+ConstructorInitializerIndentWidth: 2
+ContinuationIndentWidth: 2
+ForEachMacros: [
+'FOR_ALL_BB_FN',
+'FOR_ALL_EH_REGION',
+'FOR_ALL_EH_REGION_AT',
+'FOR_ALL_EH_REGION_FN',
+'FOR_ALL_INHERITED_FIELDS',
+'FOR_ALL_PREDICATES',
+'FOR_BB_BETWEEN',
+'FOR_BB_INSNS',
+'FOR_BB_INSNS_REVERSE',
+'FOR_BB_INSNS_REVERSE_SAFE',
+'FOR_BB_INSNS_SAFE',
+'FOR_BODY',
+'FOR_COND',
+'FOR_EACH_AGGR_INIT_EXPR_ARG',
+'FOR_EACH_ALIAS',
+'FOR_EACH_ALLOCNO',
+'FOR_EACH_ALLOCNO_OBJECT',
+'FOR_EACH_ARTIFICIAL_DEF',
+'FOR_EACH_ARTIFICIAL_USE',
+'FOR_EACH_BB_FN',
+'FOR_EACH_BB_REVERSE_FN',
+'FOR_EACH_BIT_IN_MINMAX_SET',
+'FOR_EACH_CALL_EXPR_ARG',
+'FOR_EACH_CLONE',
+'FOR_EACH_CONST_CALL_EXPR_ARG',
+'FOR_EACH_CONSTRUCTOR_ELT',
+'FOR_EACH_CONSTRUCTOR_VALUE',
+'FOR_EACH_COPY',
+'FOR_EACH_DEF',
+'FOR_EACH_DEFINED_FUNCTION',
+'FOR_EACH_DEFINED_SYMBOL',
+'FOR_EACH_DEFINED_VARIABLE',
+'FOR_EACH_DEP',
+'FOR_EACH_EDGE',
+'FOR_EACH_EXPR',
+'FOR_EACH_EXPR_1',
+'FOR_EACH_FUNCTION',
+'FOREACH_FUNCTION_ARGS',
+'FOREACH_FUNCTION_ARGS_PTR',
+'FOR_EACH_FUNCTION_WITH_GIMPLE_BODY',
+'FOR_EACH_HASH_TABLE_ELEMENT',
+'FOR_EACH_IMM_USE_FAST',
+'FOR_EACH_IMM_USE_ON_STMT',
+'FOR_EACH_IMM_USE_STMT',
+'FOR_EACH_INSN',
+'FOR_EACH_INSN_1',
+'FOR_EACH_INSN_DEF',
+'FOR_EACH_INSN_EQ_USE',
+'FOR_EACH_INSN_INFO_DEF',
+'FOR_EACH_INSN_INFO_EQ_USE',
+'FOR_EACH_INSN_INFO_MW',
+'FOR_EACH_INSN_INFO_USE',
+'FOR_EACH_INSN_USE',
+'FOR_EACH_LOCAL_DECL',
+'FOR_EACH_LOOP',
+'FOR_EACH_LOOP_FN',
+'FOR_EACH_OBJECT',
+'FOR_EACH_OBJECT_CONFLICT',
+'FOR_EACH_PHI_ARG',
+'FOR_EACH_PHI_OR_STMT_DEF',
+'FOR_EACH_PHI_OR_STMT_USE',
+'FOR_EACH_PREF',
+'FOR_EACH_SCALAR',
+'FOR_EACH_SSA_DEF_OPERAND',
+'FOR_EACH_SSA_TREE_OPERAND',
+'FOR_EACH_SSA_USE_OPERAND',
+'FOR_EACH_STATIC_INITIALIZER',
+'FOR_EACH_SUBRTX',
+'FOR_EACH_SUBRTX_PTR',
+'FOR_EACH_SUBRTX_VAR',
+'FOR_EACH_SUCC',
+'FOR_EACH_SUCC_1',
+'FOR_EACH_SYMBOL',
+'FOR_EACH_VARIABLE',
+'FOR_EACH_VEC_ELT',
+'FOR_EACH_VEC_ELT_FROM',
+'FOR_EACH_VEC_ELT_REVERSE',
+'FOR_EACH_VEC_SAFE_ELT',
+'FOR_EACH_VEC_SAFE_ELT_REVERSE',
+'FOR_EXPR',
+'FOR_INIT_STMT',
+'FOR_SCOPE'
+]
+IndentCaseLabels: false
+NamespaceIndentation: None
+PenaltyBreakBeforeFirstCallParameter: 100
+PointerAlignment: Right
+SortIncludes: false
+SpaceAfterCStyleCast: true
+SpaceBeforeParens: Always
+SpacesBeforeTrailingComments: 1
+UseTab: Always

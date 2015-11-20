@@ -26,11 +26,9 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "ggc.h"
 #include "target.h"
 #include "function.h"
 #include "tree.h"
-#include "timevar.h"
 #include "stringpool.h"
 #include "cgraph.h"
 #include "diagnostic.h"
@@ -39,7 +37,6 @@
 #include "stor-layout.h"
 #include "attribs.h"
 #include "varasm.h"
-#include "flags.h"
 #include "toplev.h"
 #include "output.h"
 #include "debug.h"
@@ -48,15 +45,11 @@
 #include "langhooks.h"
 #include "tree-dump.h"
 #include "tree-inline.h"
-#include "tree-iterator.h"
 
 #include "ada.h"
 #include "types.h"
 #include "atree.h"
-#include "elists.h"
-#include "namet.h"
 #include "nlists.h"
-#include "stringt.h"
 #include "uintp.h"
 #include "fe.h"
 #include "sinfo.h"
@@ -592,7 +585,7 @@ gnat_set_type_context (tree type, tree context)
    the debug info, or Empty if there is no such scope.  If not NULL, set
    IS_SUBPROGRAM to whether the returned entity is a subprogram.  */
 
-static Entity_Id
+Entity_Id
 get_debug_scope (Node_Id gnat_node, bool *is_subprogram)
 {
   Entity_Id gnat_entity;
@@ -600,7 +593,8 @@ get_debug_scope (Node_Id gnat_node, bool *is_subprogram)
   if (is_subprogram)
     *is_subprogram = false;
 
-  if (Nkind (gnat_node) == N_Defining_Identifier)
+  if (Nkind (gnat_node) == N_Defining_Identifier
+      || Nkind (gnat_node) == N_Defining_Operator_Symbol)
     gnat_entity = Scope (gnat_node);
   else
     return Empty;
@@ -957,6 +951,7 @@ make_packable_type (tree type, bool in_record)
   TYPE_NAME (new_type) = TYPE_NAME (type);
   TYPE_JUSTIFIED_MODULAR_P (new_type) = TYPE_JUSTIFIED_MODULAR_P (type);
   TYPE_CONTAINS_TEMPLATE_P (new_type) = TYPE_CONTAINS_TEMPLATE_P (type);
+  TYPE_REVERSE_STORAGE_ORDER (new_type) = TYPE_REVERSE_STORAGE_ORDER (type);
   if (TREE_CODE (type) == RECORD_TYPE)
     TYPE_PADDING_P (new_type) = TYPE_PADDING_P (type);
 
@@ -1175,14 +1170,15 @@ pad_type_hasher::equal (pad_type_hash *t1, pad_type_hash *t2)
   type1 = t1->type;
   type2 = t2->type;
 
-  /* We consider that the padded types are equivalent if they pad the same
-     type and have the same size, alignment and RM size.  Taking the mode
-     into account is redundant since it is determined by the others.  */
+  /* We consider that the padded types are equivalent if they pad the same type
+     and have the same size, alignment, RM size and storage order.  Taking the
+     mode into account is redundant since it is determined by the others.  */
   return
     TREE_TYPE (TYPE_FIELDS (type1)) == TREE_TYPE (TYPE_FIELDS (type2))
     && TYPE_SIZE (type1) == TYPE_SIZE (type2)
     && TYPE_ALIGN (type1) == TYPE_ALIGN (type2)
-    && TYPE_ADA_SIZE (type1) == TYPE_ADA_SIZE (type2);
+    && TYPE_ADA_SIZE (type1) == TYPE_ADA_SIZE (type2)
+    && TYPE_REVERSE_STORAGE_ORDER (type1) == TYPE_REVERSE_STORAGE_ORDER (type2);
 }
 
 /* Look up the padded TYPE in the hash table and return its canonical version
@@ -1451,6 +1447,31 @@ built:
     }
 
   return record;
+}
+
+/* Return a copy of the padded TYPE but with reverse storage order.  */
+
+tree
+set_reverse_storage_order_on_pad_type (tree type)
+{
+  tree field, canonical_pad_type;
+
+#ifdef ENABLE_CHECKING
+  /* If the inner type is not scalar then the function does nothing.  */
+  tree inner_type = TREE_TYPE (TYPE_FIELDS (type));
+  gcc_assert (!AGGREGATE_TYPE_P (inner_type) && !VECTOR_TYPE_P (inner_type));
+#endif
+
+  /* This is required for the canonicalization.  */
+  gcc_assert (TREE_CONSTANT (TYPE_SIZE (type)));
+
+  field = copy_node (TYPE_FIELDS (type));
+  type = copy_type (type);
+  DECL_CONTEXT (field) = type;
+  TYPE_FIELDS (type) = field;
+  TYPE_REVERSE_STORAGE_ORDER (type) = 1;
+  canonical_pad_type = lookup_and_insert_pad_type (type);
+  return canonical_pad_type ? canonical_pad_type : type;
 }
 
 /* Relate the alias sets of GNU_NEW_TYPE and GNU_OLD_TYPE according to OP.
@@ -3357,7 +3378,7 @@ gnat_types_compatible_p (tree t1, tree t2)
     return 1;
 
   /* Array types are also compatible if they are constrained and have the same
-     domain(s) and the same component type.  */
+     domain(s), the same component type and the same scalar storage order.  */
   if (code == ARRAY_TYPE
       && (TYPE_DOMAIN (t1) == TYPE_DOMAIN (t2)
 	  || (TYPE_DOMAIN (t1)
@@ -3368,7 +3389,8 @@ gnat_types_compatible_p (tree t1, tree t2)
 				     TYPE_MAX_VALUE (TYPE_DOMAIN (t2)))))
       && (TREE_TYPE (t1) == TREE_TYPE (t2)
 	  || (TREE_CODE (TREE_TYPE (t1)) == ARRAY_TYPE
-	      && gnat_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2)))))
+	      && gnat_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2))))
+      && TYPE_REVERSE_STORAGE_ORDER (t1) == TYPE_REVERSE_STORAGE_ORDER (t2))
     return 1;
 
   return 0;
@@ -3948,11 +3970,9 @@ convert_to_fat_pointer (tree type, tree expr)
 	  expr = build_unary_op (INDIRECT_REF, NULL_TREE, expr);
 	  template_addr
 	    = build_unary_op (ADDR_EXPR, NULL_TREE,
-			      build_component_ref (expr, NULL_TREE, field,
-						   false));
+			      build_component_ref (expr, field, false));
 	  expr = build_unary_op (ADDR_EXPR, NULL_TREE,
-				 build_component_ref (expr, NULL_TREE,
-						      DECL_CHAIN (field),
+				 build_component_ref (expr, DECL_CHAIN (field),
 						      false));
 	}
     }
@@ -4088,8 +4108,7 @@ convert (tree type, tree expr)
 
       /* Otherwise, build an explicit component reference.  */
       else
-	unpadded
-	  = build_component_ref (expr, NULL_TREE, TYPE_FIELDS (etype), false);
+	unpadded = build_component_ref (expr, TYPE_FIELDS (etype), false);
 
       return convert (type, unpadded);
     }
@@ -4110,8 +4129,8 @@ convert (tree type, tree expr)
   if (ecode == RECORD_TYPE && TYPE_JUSTIFIED_MODULAR_P (etype)
       && code != UNCONSTRAINED_ARRAY_TYPE
       && TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (etype))
-    return convert (type, build_component_ref (expr, NULL_TREE,
-					       TYPE_FIELDS (etype), false));
+    return
+      convert (type, build_component_ref (expr, TYPE_FIELDS (etype), false));
 
   /* If converting to a type that contains a template, convert to the data
      type and then build the template. */
@@ -4371,7 +4390,7 @@ convert (tree type, tree expr)
       do {
 	tree field = TYPE_FIELDS (child_etype);
 	if (DECL_NAME (field) == parent_name_id && TREE_TYPE (field) == type)
-	  return build_component_ref (expr, NULL_TREE, field, false);
+	  return build_component_ref (expr, field, false);
 	child_etype = TREE_TYPE (field);
       } while (TREE_CODE (child_etype) == RECORD_TYPE);
     }
@@ -4467,8 +4486,7 @@ convert (tree type, tree expr)
       /* If converting fat pointer to normal or thin pointer, get the pointer
 	 to the array and then convert it.  */
       if (TYPE_IS_FAT_POINTER_P (etype))
-	expr
-	  = build_component_ref (expr, NULL_TREE, TYPE_FIELDS (etype), false);
+	expr = build_component_ref (expr, TYPE_FIELDS (etype), false);
 
       return fold (convert_to_pointer (type, expr));
 
@@ -4693,13 +4711,11 @@ maybe_unconstrained_array (tree exp)
 	      tree op1
 		= build_unary_op (INDIRECT_REF, NULL_TREE,
 				  build_component_ref (TREE_OPERAND (exp, 1),
-						       NULL_TREE,
 						       TYPE_FIELDS (type),
 						       false));
 	      tree op2
 		= build_unary_op (INDIRECT_REF, NULL_TREE,
 				  build_component_ref (TREE_OPERAND (exp, 2),
-						       NULL_TREE,
 						       TYPE_FIELDS (type),
 						       false));
 
@@ -4710,8 +4726,8 @@ maybe_unconstrained_array (tree exp)
 	  else
 	    {
 	      exp = build_unary_op (INDIRECT_REF, NULL_TREE,
-				    build_component_ref (exp, NULL_TREE,
-						         TYPE_FIELDS (type),
+				    build_component_ref (exp,
+							 TYPE_FIELDS (type),
 						         false));
 	      TREE_READONLY (exp) = read_only;
 	      TREE_THIS_NOTRAP (exp) = no_trap;
@@ -4732,18 +4748,23 @@ maybe_unconstrained_array (tree exp)
 	  && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (TYPE_FIELDS (type))))
 	{
 	  exp = convert (TREE_TYPE (TYPE_FIELDS (type)), exp);
+	  code = TREE_CODE (exp);
 	  type = TREE_TYPE (exp);
 	}
 
       if (TYPE_CONTAINS_TEMPLATE_P (type))
 	{
-	  exp = build_simple_component_ref (exp, NULL_TREE,
-					    DECL_CHAIN (TYPE_FIELDS (type)),
-					    false);
+	  /* If the array initializer is a box, return NULL_TREE.  */
+	  if (code == CONSTRUCTOR && CONSTRUCTOR_NELTS (exp) < 2)
+	    return NULL_TREE;
+
+	  exp = build_component_ref (exp, DECL_CHAIN (TYPE_FIELDS (type)),
+				     false);
+	  type = TREE_TYPE (exp);
 
 	  /* If the array type is padded, convert to the unpadded type.  */
-	  if (exp && TYPE_IS_PADDING_P (TREE_TYPE (exp)))
-	    exp = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (exp))), exp);
+	  if (TYPE_IS_PADDING_P (type))
+	    exp = convert (TREE_TYPE (TYPE_FIELDS (type)), exp);
 	}
       break;
 
@@ -4849,16 +4870,37 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
     }
 
   /* If we are converting to an integral type whose precision is not equal
-     to its size, first unchecked convert to a record type that contains an
-     field of the given precision.  Then extract the field.  */
+     to its size, first unchecked convert to a record type that contains a
+     field of the given precision.  Then extract the result from the field.
+
+     There is a subtlety if the source type is an aggregate type with reverse
+     storage order because its representation is not contiguous in the native
+     storage order, i.e. a direct unchecked conversion to an integral type
+     with N bits of precision cannot read the first N bits of the aggregate
+     type.  To overcome it, we do an unchecked conversion to an integral type
+     with reverse storage order and return the resulting value.  This also
+     ensures that the result of the unchecked conversion doesn't depend on
+     the endianness of the target machine, but only on the storage order of
+     the aggregate type.
+
+     Finally, for the sake of consistency, we do the unchecked conversion
+     to an integral type with reverse storage order as soon as the source
+     type is an aggregate type with reverse storage order, even if there
+     are no considerations of precision or size involved.  */
   else if (INTEGRAL_TYPE_P (type)
 	   && TYPE_RM_SIZE (type)
-	   && 0 != compare_tree_int (TYPE_RM_SIZE (type),
-				     GET_MODE_BITSIZE (TYPE_MODE (type))))
+	   && (0 != compare_tree_int (TYPE_RM_SIZE (type),
+				      GET_MODE_BITSIZE (TYPE_MODE (type)))
+	       || (AGGREGATE_TYPE_P (etype)
+		   && TYPE_REVERSE_STORAGE_ORDER (etype))))
     {
       tree rec_type = make_node (RECORD_TYPE);
       unsigned HOST_WIDE_INT prec = TREE_INT_CST_LOW (TYPE_RM_SIZE (type));
       tree field_type, field;
+
+      if (AGGREGATE_TYPE_P (etype))
+	TYPE_REVERSE_STORAGE_ORDER (rec_type)
+	  = TYPE_REVERSE_STORAGE_ORDER (etype);
 
       if (TYPE_UNSIGNED (type))
 	field_type = make_unsigned_type (prec);
@@ -4872,23 +4914,32 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
       finish_record_type (rec_type, field, 1, false);
 
       expr = unchecked_convert (rec_type, expr, notrunc_p);
-      expr = build_component_ref (expr, NULL_TREE, field, false);
+      expr = build_component_ref (expr, field, false);
       expr = fold_build1 (NOP_EXPR, type, expr);
     }
 
   /* Similarly if we are converting from an integral type whose precision is
      not equal to its size, first copy into a field of the given precision
-     and unchecked convert the record type.  */
+     and unchecked convert the record type.
+
+     The same considerations as above apply if the target type is an aggregate
+     type with reverse storage order and we also proceed similarly.  */
   else if (INTEGRAL_TYPE_P (etype)
 	   && TYPE_RM_SIZE (etype)
-	   && 0 != compare_tree_int (TYPE_RM_SIZE (etype),
-				     GET_MODE_BITSIZE (TYPE_MODE (etype))))
+	   && (0 != compare_tree_int (TYPE_RM_SIZE (etype),
+				      GET_MODE_BITSIZE (TYPE_MODE (etype)))
+	       || (AGGREGATE_TYPE_P (type)
+		   && TYPE_REVERSE_STORAGE_ORDER (type))))
     {
       tree rec_type = make_node (RECORD_TYPE);
       unsigned HOST_WIDE_INT prec = TREE_INT_CST_LOW (TYPE_RM_SIZE (etype));
       vec<constructor_elt, va_gc> *v;
       vec_alloc (v, 1);
       tree field_type, field;
+
+      if (AGGREGATE_TYPE_P (type))
+	TYPE_REVERSE_STORAGE_ORDER (rec_type)
+	  = TYPE_REVERSE_STORAGE_ORDER (type);
 
       if (TYPE_UNSIGNED (etype))
 	field_type = make_unsigned_type (prec);
@@ -4934,8 +4985,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	  tree rec_type = maybe_pad_type (type, TYPE_SIZE (etype), 0, Empty,
 					  false, false, false, true);
 	  expr = unchecked_convert (rec_type, expr, notrunc_p);
-	  expr = build_component_ref (expr, NULL_TREE, TYPE_FIELDS (rec_type),
-				      false);
+	  expr = build_component_ref (expr, TYPE_FIELDS (rec_type), false);
 	}
     }
 
@@ -6040,7 +6090,6 @@ install_builtin_functions (void)
                    BOTH_P, FALLBACK_P, NONANSI_P,                       \
                    built_in_attributes[(int) ATTRS], IMPLICIT);
 #include "builtins.def"
-#undef DEF_BUILTIN
 }
 
 /* ----------------------------------------------------------------------- *

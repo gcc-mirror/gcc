@@ -177,6 +177,21 @@ adjust_simduid_builtins (hash_table<simduid_to_vf> *htab)
 	      break;
 	    case IFN_GOMP_SIMD_ORDERED_START:
 	    case IFN_GOMP_SIMD_ORDERED_END:
+	      if (integer_onep (gimple_call_arg (stmt, 0)))
+		{
+		  enum built_in_function bcode
+		    = (ifn == IFN_GOMP_SIMD_ORDERED_START
+		       ? BUILT_IN_GOMP_ORDERED_START
+		       : BUILT_IN_GOMP_ORDERED_END);
+		  gimple *g
+		    = gimple_build_call (builtin_decl_explicit (bcode), 0);
+		  tree vdef = gimple_vdef (stmt);
+		  gimple_set_vdef (g, vdef);
+		  SSA_NAME_DEF_STMT (vdef) = g;
+		  gimple_set_vuse (g, gimple_vuse (stmt));
+		  gsi_replace (&i, g, true);
+		  continue;
+		}
 	      gsi_remove (&i, true);
 	      unlink_stmt_vdef (stmt);
 	      continue;
@@ -347,6 +362,33 @@ vect_destroy_datarefs (vec_info *vinfo)
       }
 
   free_data_refs (vinfo->datarefs);
+}
+
+
+/* Return whether STMT is inside the region we try to vectorize.  */
+
+bool
+vect_stmt_in_region_p (vec_info *vinfo, gimple *stmt)
+{
+  if (!gimple_bb (stmt))
+    return false;
+
+  if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
+    {
+      struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+      if (!flow_bb_inside_loop_p (loop, gimple_bb (stmt)))
+	return false;
+    }
+  else
+    {
+      bb_vec_info bb_vinfo = as_a <bb_vec_info> (vinfo);
+      if (gimple_bb (stmt) != BB_VINFO_BB (bb_vinfo)
+	  || gimple_uid (stmt) == -1U
+	  || gimple_code (stmt) == GIMPLE_PHI)
+	return false;
+    }
+
+  return true;
 }
 
 
@@ -692,22 +734,25 @@ pass_slp_vectorize::execute (function *fun)
       scev_initialize ();
     }
 
+  /* Mark all stmts as not belonging to the current region and unvisited.  */
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  gimple_set_uid (stmt, -1);
+	  gimple_set_visited (stmt, false);
+	}
+    }
+
   init_stmt_vec_info_vec ();
 
   FOR_EACH_BB_FN (bb, fun)
     {
-      vect_location = find_bb_location (bb);
-
-      if (vect_slp_analyze_bb (bb))
-        {
-          if (!dbg_cnt (vect_slp))
-            break;
-
-          vect_slp_transform_bb (bb);
-          if (dump_enabled_p ())
-            dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-			     "basic block vectorized\n");
-        }
+      if (vect_slp_bb (bb))
+	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+			 "basic block vectorized\n");
     }
 
   free_stmt_vec_info_vec ();

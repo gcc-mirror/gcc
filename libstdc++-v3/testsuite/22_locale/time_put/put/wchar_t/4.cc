@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "es_ES" }
+// { dg-require-namedlocale "es_ES.ISO8859-15" }
 
 // 2001-09-17 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -37,7 +37,7 @@ void test04()
 
   // basic construction and sanity check
   locale loc_c = locale::classic();
-  locale loc_es = locale("es_ES");
+  locale loc_es = locale(ISO_8859(15,es_ES));
   VERIFY( loc_es != loc_c );
 
   // create an ostream-derived object, cache the time_put facet

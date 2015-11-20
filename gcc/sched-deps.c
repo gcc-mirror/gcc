@@ -4092,9 +4092,9 @@ void
 sched_deps_finish (void)
 {
   gcc_assert (deps_pools_are_empty_p ());
-  dn_pool->release_if_empty ();
+  delete dn_pool;
+  delete dl_pool;
   dn_pool = NULL;
-  dl_pool->release_if_empty ();
   dl_pool = NULL;
 
   h_d_i_d.release ();

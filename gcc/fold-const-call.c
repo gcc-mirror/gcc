@@ -24,7 +24,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "stor-layout.h"
 #include "options.h"
+#include "fold-const.h"
 #include "fold-const-call.h"
+#include "case-cfn-macros.h"
+#include "tm.h" /* For C[LT]Z_DEFINED_AT_ZERO.  */
 
 /* Functions that test for certain constant types, abstracting away the
    decision about whether to check for overflow.  */
@@ -45,6 +48,31 @@ static inline bool
 complex_cst_p (tree t)
 {
   return TREE_CODE (t) == COMPLEX_CST;
+}
+
+/* Return true if ARG is a constant in the range of the host size_t.
+   Store it in *SIZE_OUT if so.  */
+
+static inline bool
+host_size_t_cst_p (tree t, size_t *size_out)
+{
+  if (integer_cst_p (t)
+      && wi::min_precision (t, UNSIGNED) <= sizeof (size_t) * CHAR_BIT)
+    {
+      *size_out = tree_to_uhwi (t);
+      return true;
+    }
+  return false;
+}
+
+/* RES is the result of a comparison in which < 0 means "less", 0 means
+   "equal" and > 0 means "more".  Canonicalize it to -1, 0 or 1 and
+   return it in type TYPE.  */
+
+static inline tree
+build_cmp_result (tree type, int res)
+{
+  return build_int_cst (type, res < 0 ? -1 : res > 0 ? 1 : 0);
 }
 
 /* M is the result of trying to constant-fold an expression (starting
@@ -526,6 +554,20 @@ fold_const_builtin_load_exponent (real_value *result, const real_value *arg0,
   return real_equal (&initial_result, result);
 }
 
+/* Fold a call to __builtin_nan or __builtin_nans with argument ARG and
+   return type TYPE.  QUIET is true if a quiet rather than signalling
+   NaN is required.  */
+
+static tree
+fold_const_builtin_nan (tree type, tree arg, bool quiet)
+{
+  REAL_VALUE_TYPE real;
+  const char *str = c_getstr (arg);
+  if (str && real_nan (&real, str, quiet, TYPE_MODE (type)))
+    return build_real (type, real);
+  return NULL_TREE;
+}
+
 /* Try to evaluate:
 
       *RESULT = FN (*ARG)
@@ -533,114 +575,114 @@ fold_const_builtin_load_exponent (real_value *result, const real_value *arg0,
    in format FORMAT.  Return true on success.  */
 
 static bool
-fold_const_call_ss (real_value *result, built_in_function fn,
+fold_const_call_ss (real_value *result, combined_fn fn,
 		    const real_value *arg, const real_format *format)
 {
   switch (fn)
     {
-    CASE_FLT_FN (BUILT_IN_SQRT):
+    CASE_CFN_SQRT:
       return (real_compare (GE_EXPR, arg, &dconst0)
 	      && do_mpfr_arg1 (result, mpfr_sqrt, arg, format));
 
-    CASE_FLT_FN (BUILT_IN_CBRT):
+    CASE_CFN_CBRT:
       return do_mpfr_arg1 (result, mpfr_cbrt, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_ASIN):
+    CASE_CFN_ASIN:
       return (real_compare (GE_EXPR, arg, &dconstm1)
 	      && real_compare (LE_EXPR, arg, &dconst1)
 	      && do_mpfr_arg1 (result, mpfr_asin, arg, format));
 
-    CASE_FLT_FN (BUILT_IN_ACOS):
+    CASE_CFN_ACOS:
       return (real_compare (GE_EXPR, arg, &dconstm1)
 	      && real_compare (LE_EXPR, arg, &dconst1)
 	      && do_mpfr_arg1 (result, mpfr_acos, arg, format));
 
-    CASE_FLT_FN (BUILT_IN_ATAN):
+    CASE_CFN_ATAN:
       return do_mpfr_arg1 (result, mpfr_atan, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_ASINH):
+    CASE_CFN_ASINH:
       return do_mpfr_arg1 (result, mpfr_asinh, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_ACOSH):
+    CASE_CFN_ACOSH:
       return (real_compare (GE_EXPR, arg, &dconst1)
 	      && do_mpfr_arg1 (result, mpfr_acosh, arg, format));
 
-    CASE_FLT_FN (BUILT_IN_ATANH):
+    CASE_CFN_ATANH:
       return (real_compare (GE_EXPR, arg, &dconstm1)
 	      && real_compare (LE_EXPR, arg, &dconst1)
 	      && do_mpfr_arg1 (result, mpfr_atanh, arg, format));
 
-    CASE_FLT_FN (BUILT_IN_SIN):
+    CASE_CFN_SIN:
       return do_mpfr_arg1 (result, mpfr_sin, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_COS):
+    CASE_CFN_COS:
       return do_mpfr_arg1 (result, mpfr_cos, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_TAN):
+    CASE_CFN_TAN:
       return do_mpfr_arg1 (result, mpfr_tan, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_SINH):
+    CASE_CFN_SINH:
       return do_mpfr_arg1 (result, mpfr_sinh, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_COSH):
+    CASE_CFN_COSH:
       return do_mpfr_arg1 (result, mpfr_cosh, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_TANH):
+    CASE_CFN_TANH:
       return do_mpfr_arg1 (result, mpfr_tanh, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_ERF):
+    CASE_CFN_ERF:
       return do_mpfr_arg1 (result, mpfr_erf, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_ERFC):
+    CASE_CFN_ERFC:
       return do_mpfr_arg1 (result, mpfr_erfc, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_TGAMMA):
+    CASE_CFN_TGAMMA:
       return do_mpfr_arg1 (result, mpfr_gamma, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_EXP):
+    CASE_CFN_EXP:
       return do_mpfr_arg1 (result, mpfr_exp, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_EXP2):
+    CASE_CFN_EXP2:
       return do_mpfr_arg1 (result, mpfr_exp2, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_EXP10):
-    CASE_FLT_FN (BUILT_IN_POW10):
+    CASE_CFN_EXP10:
+    CASE_CFN_POW10:
       return do_mpfr_arg1 (result, mpfr_exp10, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_EXPM1):
+    CASE_CFN_EXPM1:
       return do_mpfr_arg1 (result, mpfr_expm1, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_LOG):
+    CASE_CFN_LOG:
       return (real_compare (GT_EXPR, arg, &dconst0)
 	      && do_mpfr_arg1 (result, mpfr_log, arg, format));
 
-    CASE_FLT_FN (BUILT_IN_LOG2):
+    CASE_CFN_LOG2:
       return (real_compare (GT_EXPR, arg, &dconst0)
 	      && do_mpfr_arg1 (result, mpfr_log2, arg, format));
 
-    CASE_FLT_FN (BUILT_IN_LOG10):
+    CASE_CFN_LOG10:
       return (real_compare (GT_EXPR, arg, &dconst0)
 	      && do_mpfr_arg1 (result, mpfr_log10, arg, format));
 
-    CASE_FLT_FN (BUILT_IN_LOG1P):
+    CASE_CFN_LOG1P:
       return (real_compare (GT_EXPR, arg, &dconstm1)
 	      && do_mpfr_arg1 (result, mpfr_log1p, arg, format));
 
-    CASE_FLT_FN (BUILT_IN_J0):
+    CASE_CFN_J0:
       return do_mpfr_arg1 (result, mpfr_j0, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_J1):
+    CASE_CFN_J1:
       return do_mpfr_arg1 (result, mpfr_j1, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_Y0):
+    CASE_CFN_Y0:
       return (real_compare (GT_EXPR, arg, &dconst0)
 	      && do_mpfr_arg1 (result, mpfr_y0, arg, format));
 
-    CASE_FLT_FN (BUILT_IN_Y1):
+    CASE_CFN_Y1:
       return (real_compare (GT_EXPR, arg, &dconst0)
 	      && do_mpfr_arg1 (result, mpfr_y1, arg, format));
 
-    CASE_FLT_FN (BUILT_IN_FLOOR):
+    CASE_CFN_FLOOR:
       if (!REAL_VALUE_ISNAN (*arg) || !flag_errno_math)
 	{
 	  real_floor (result, format, arg);
@@ -648,7 +690,7 @@ fold_const_call_ss (real_value *result, built_in_function fn,
 	}
       return false;
 
-    CASE_FLT_FN (BUILT_IN_CEIL):
+    CASE_CFN_CEIL:
       if (!REAL_VALUE_ISNAN (*arg) || !flag_errno_math)
 	{
 	  real_ceil (result, format, arg);
@@ -656,11 +698,11 @@ fold_const_call_ss (real_value *result, built_in_function fn,
 	}
       return false;
 
-    CASE_FLT_FN (BUILT_IN_TRUNC):
+    CASE_CFN_TRUNC:
       real_trunc (result, format, arg);
       return true;
 
-    CASE_FLT_FN (BUILT_IN_ROUND):
+    CASE_CFN_ROUND:
       if (!REAL_VALUE_ISNAN (*arg) || !flag_errno_math)
 	{
 	  real_round (result, format, arg);
@@ -668,10 +710,10 @@ fold_const_call_ss (real_value *result, built_in_function fn,
 	}
       return false;
 
-    CASE_FLT_FN (BUILT_IN_LOGB):
+    CASE_CFN_LOGB:
       return fold_const_logb (result, arg, format);
 
-    CASE_FLT_FN (BUILT_IN_SIGNIFICAND):
+    CASE_CFN_SIGNIFICAND:
       return fold_const_significand (result, arg, format);
 
     default:
@@ -687,20 +729,20 @@ fold_const_call_ss (real_value *result, built_in_function fn,
    significant bits in the result.  Return true on success.  */
 
 static bool
-fold_const_call_ss (wide_int *result, built_in_function fn,
+fold_const_call_ss (wide_int *result, combined_fn fn,
 		    const real_value *arg, unsigned int precision,
 		    const real_format *format)
 {
   switch (fn)
     {
-    CASE_FLT_FN (BUILT_IN_SIGNBIT):
+    CASE_CFN_SIGNBIT:
       if (real_isneg (arg))
 	*result = wi::one (precision);
       else
 	*result = wi::zero (precision);
       return true;
 
-    CASE_FLT_FN (BUILT_IN_ILOGB):
+    CASE_CFN_ILOGB:
       /* For ilogb we don't know FP_ILOGB0, so only handle normal values.
 	 Proceed iff radix == 2.  In GCC, normalized significands are in
 	 the range [0.5, 1.0).  We want the exponent as if they were
@@ -712,29 +754,116 @@ fold_const_call_ss (wide_int *result, built_in_function fn,
 	}
       return false;
 
-    CASE_FLT_FN (BUILT_IN_ICEIL):
-    CASE_FLT_FN (BUILT_IN_LCEIL):
-    CASE_FLT_FN (BUILT_IN_LLCEIL):
+    CASE_CFN_ICEIL:
+    CASE_CFN_LCEIL:
+    CASE_CFN_LLCEIL:
       return fold_const_conversion (result, real_ceil, arg,
 				    precision, format);
 
-    CASE_FLT_FN (BUILT_IN_LFLOOR):
-    CASE_FLT_FN (BUILT_IN_IFLOOR):
-    CASE_FLT_FN (BUILT_IN_LLFLOOR):
+    CASE_CFN_LFLOOR:
+    CASE_CFN_IFLOOR:
+    CASE_CFN_LLFLOOR:
       return fold_const_conversion (result, real_floor, arg,
 				    precision, format);
 
-    CASE_FLT_FN (BUILT_IN_IROUND):
-    CASE_FLT_FN (BUILT_IN_LROUND):
-    CASE_FLT_FN (BUILT_IN_LLROUND):
+    CASE_CFN_IROUND:
+    CASE_CFN_LROUND:
+    CASE_CFN_LLROUND:
       return fold_const_conversion (result, real_round, arg,
 				    precision, format);
 
-    CASE_FLT_FN (BUILT_IN_IRINT):
-    CASE_FLT_FN (BUILT_IN_LRINT):
-    CASE_FLT_FN (BUILT_IN_LLRINT):
+    CASE_CFN_IRINT:
+    CASE_CFN_LRINT:
+    CASE_CFN_LLRINT:
       /* Not yet folded to a constant.  */
       return false;
+
+    CASE_CFN_FINITE:
+    case CFN_BUILT_IN_FINITED32:
+    case CFN_BUILT_IN_FINITED64:
+    case CFN_BUILT_IN_FINITED128:
+    case CFN_BUILT_IN_ISFINITE:
+      *result = wi::shwi (real_isfinite (arg) ? 1 : 0, precision);
+      return true;
+
+    CASE_CFN_ISINF:
+    case CFN_BUILT_IN_ISINFD32:
+    case CFN_BUILT_IN_ISINFD64:
+    case CFN_BUILT_IN_ISINFD128:
+      if (real_isinf (arg))
+	*result = wi::shwi (arg->sign ? -1 : 1, precision);
+      else
+	*result = wi::shwi (0, precision);
+      return true;
+
+    CASE_CFN_ISNAN:
+    case CFN_BUILT_IN_ISNAND32:
+    case CFN_BUILT_IN_ISNAND64:
+    case CFN_BUILT_IN_ISNAND128:
+      *result = wi::shwi (real_isnan (arg) ? 1 : 0, precision);
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* Try to evaluate:
+
+      *RESULT = FN (ARG)
+
+   where ARG_TYPE is the type of ARG and PRECISION is the number of bits
+   in the result.  Return true on success.  */
+
+static bool
+fold_const_call_ss (wide_int *result, combined_fn fn, const wide_int_ref &arg,
+		    unsigned int precision, tree arg_type)
+{
+  switch (fn)
+    {
+    CASE_CFN_FFS:
+      *result = wi::shwi (wi::ffs (arg), precision);
+      return true;
+
+    CASE_CFN_CLZ:
+      {
+	int tmp;
+	if (wi::ne_p (arg, 0))
+	  tmp = wi::clz (arg);
+	else if (! CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (arg_type), tmp))
+	  tmp = TYPE_PRECISION (arg_type);
+	*result = wi::shwi (tmp, precision);
+	return true;
+      }
+
+    CASE_CFN_CTZ:
+      {
+	int tmp;
+	if (wi::ne_p (arg, 0))
+	  tmp = wi::ctz (arg);
+	else if (! CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (arg_type), tmp))
+	  tmp = TYPE_PRECISION (arg_type);
+	*result = wi::shwi (tmp, precision);
+	return true;
+      }
+
+    CASE_CFN_CLRSB:
+      *result = wi::shwi (wi::clrsb (arg), precision);
+      return true;
+
+    CASE_CFN_POPCOUNT:
+      *result = wi::shwi (wi::popcount (arg), precision);
+      return true;
+
+    CASE_CFN_PARITY:
+      *result = wi::shwi (wi::parity (arg), precision);
+      return true;
+
+    case CFN_BUILT_IN_BSWAP16:
+    case CFN_BUILT_IN_BSWAP32:
+    case CFN_BUILT_IN_BSWAP64:
+      *result = wide_int::from (arg, precision, TYPE_SIGN (arg_type)).bswap ();
+      return true;
 
     default:
       return false;
@@ -751,12 +880,12 @@ fold_const_call_ss (wide_int *result, built_in_function fn,
 
 static bool
 fold_const_call_cs (real_value *result_real, real_value *result_imag,
-		    built_in_function fn, const real_value *arg,
+		    combined_fn fn, const real_value *arg,
 		    const real_format *format)
 {
   switch (fn)
     {
-    CASE_FLT_FN (BUILT_IN_CEXPI):
+    CASE_CFN_CEXPI:
       /* cexpi(x+yi) = cos(x)+sin(y)*i.  */
       return do_mpfr_sincos (result_imag, result_real, arg, format);
 
@@ -774,13 +903,13 @@ fold_const_call_cs (real_value *result_real, real_value *result_imag,
    success.  */
 
 static bool
-fold_const_call_sc (real_value *result, built_in_function fn,
+fold_const_call_sc (real_value *result, combined_fn fn,
 		    const real_value *arg_real, const real_value *arg_imag,
 		    const real_format *format)
 {
   switch (fn)
     {
-    CASE_FLT_FN (BUILT_IN_CABS):
+    CASE_CFN_CABS:
       return do_mpfr_arg2 (result, mpfr_hypot, arg_real, arg_imag, format);
 
     default:
@@ -798,20 +927,20 @@ fold_const_call_sc (real_value *result, built_in_function fn,
 
 static bool
 fold_const_call_cc (real_value *result_real, real_value *result_imag,
-		    built_in_function fn, const real_value *arg_real,
+		    combined_fn fn, const real_value *arg_real,
 		    const real_value *arg_imag, const real_format *format)
 {
   switch (fn)
     {
-    CASE_FLT_FN (BUILT_IN_CCOS):
+    CASE_CFN_CCOS:
       return do_mpc_arg1 (result_real, result_imag, mpc_cos,
 			  arg_real, arg_imag, format);
 
-    CASE_FLT_FN (BUILT_IN_CCOSH):
+    CASE_CFN_CCOSH:
       return do_mpc_arg1 (result_real, result_imag, mpc_cosh,
 			  arg_real, arg_imag, format);
 
-    CASE_FLT_FN (BUILT_IN_CPROJ):
+    CASE_CFN_CPROJ:
       if (real_isinf (arg_real) || real_isinf (arg_imag))
 	{
 	  real_inf (result_real);
@@ -825,55 +954,55 @@ fold_const_call_cc (real_value *result_real, real_value *result_imag,
 	}
       return true;
 
-    CASE_FLT_FN (BUILT_IN_CSIN):
+    CASE_CFN_CSIN:
       return do_mpc_arg1 (result_real, result_imag, mpc_sin,
 			  arg_real, arg_imag, format);
 
-    CASE_FLT_FN (BUILT_IN_CSINH):
+    CASE_CFN_CSINH:
       return do_mpc_arg1 (result_real, result_imag, mpc_sinh,
 			  arg_real, arg_imag, format);
 
-    CASE_FLT_FN (BUILT_IN_CTAN):
+    CASE_CFN_CTAN:
       return do_mpc_arg1 (result_real, result_imag, mpc_tan,
 			  arg_real, arg_imag, format);
 
-    CASE_FLT_FN (BUILT_IN_CTANH):
+    CASE_CFN_CTANH:
       return do_mpc_arg1 (result_real, result_imag, mpc_tanh,
 			  arg_real, arg_imag, format);
 
-    CASE_FLT_FN (BUILT_IN_CLOG):
+    CASE_CFN_CLOG:
       return do_mpc_arg1 (result_real, result_imag, mpc_log,
 			  arg_real, arg_imag, format);
 
-    CASE_FLT_FN (BUILT_IN_CSQRT):
+    CASE_CFN_CSQRT:
       return do_mpc_arg1 (result_real, result_imag, mpc_sqrt,
 			  arg_real, arg_imag, format);
 
-    CASE_FLT_FN (BUILT_IN_CASIN):
+    CASE_CFN_CASIN:
       return do_mpc_arg1 (result_real, result_imag, mpc_asin,
 			  arg_real, arg_imag, format);
 
-    CASE_FLT_FN (BUILT_IN_CACOS):
+    CASE_CFN_CACOS:
       return do_mpc_arg1 (result_real, result_imag, mpc_acos,
 			  arg_real, arg_imag, format);
 
-    CASE_FLT_FN (BUILT_IN_CATAN):
+    CASE_CFN_CATAN:
       return do_mpc_arg1 (result_real, result_imag, mpc_atan,
 			  arg_real, arg_imag, format);
 
-    CASE_FLT_FN (BUILT_IN_CASINH):
+    CASE_CFN_CASINH:
       return do_mpc_arg1 (result_real, result_imag, mpc_asinh,
 			  arg_real, arg_imag, format);
 
-    CASE_FLT_FN (BUILT_IN_CACOSH):
+    CASE_CFN_CACOSH:
       return do_mpc_arg1 (result_real, result_imag, mpc_acosh,
 			  arg_real, arg_imag, format);
 
-    CASE_FLT_FN (BUILT_IN_CATANH):
+    CASE_CFN_CATANH:
       return do_mpc_arg1 (result_real, result_imag, mpc_atanh,
 			  arg_real, arg_imag, format);
 
-    CASE_FLT_FN (BUILT_IN_CEXP):
+    CASE_CFN_CEXP:
       return do_mpc_arg1 (result_real, result_imag, mpc_exp,
 			  arg_real, arg_imag, format);
 
@@ -882,14 +1011,26 @@ fold_const_call_cc (real_value *result_real, real_value *result_imag,
     }
 }
 
-/* Try to fold FN (ARG) to a constant.  Return the constant on success,
-   otherwise return null.  TYPE is the type of the return value.  */
+/* Subroutine of fold_const_call, with the same interface.  Handle cases
+   where the arguments and result are numerical.  */
 
-tree
-fold_const_call (built_in_function fn, tree type, tree arg)
+static tree
+fold_const_call_1 (combined_fn fn, tree type, tree arg)
 {
   machine_mode mode = TYPE_MODE (type);
   machine_mode arg_mode = TYPE_MODE (TREE_TYPE (arg));
+
+  if (integer_cst_p (arg))
+    {
+      if (SCALAR_INT_MODE_P (mode))
+	{
+	  wide_int result;
+	  if (fold_const_call_ss (&result, fn, arg, TYPE_PRECISION (type),
+				  TREE_TYPE (arg)))
+	    return wide_int_to_tree (type, result);
+	}
+      return NULL_TREE;
+    }
 
   if (real_cst_p (arg))
     {
@@ -965,6 +1106,33 @@ fold_const_call (built_in_function fn, tree type, tree arg)
   return NULL_TREE;
 }
 
+/* Try to fold FN (ARG) to a constant.  Return the constant on success,
+   otherwise return null.  TYPE is the type of the return value.  */
+
+tree
+fold_const_call (combined_fn fn, tree type, tree arg)
+{
+  switch (fn)
+    {
+    case CFN_BUILT_IN_STRLEN:
+      if (const char *str = c_getstr (arg))
+	return build_int_cst (type, strlen (str));
+      return NULL_TREE;
+
+    CASE_CFN_NAN:
+    case CFN_BUILT_IN_NAND32:
+    case CFN_BUILT_IN_NAND64:
+    case CFN_BUILT_IN_NAND128:
+      return fold_const_builtin_nan (type, arg, true);
+
+    CASE_CFN_NANS:
+      return fold_const_builtin_nan (type, arg, false);
+
+    default:
+      return fold_const_call_1 (fn, type, arg);
+    }
+}
+
 /* Try to evaluate:
 
       *RESULT = FN (*ARG0, *ARG1)
@@ -972,37 +1140,37 @@ fold_const_call (built_in_function fn, tree type, tree arg)
    in format FORMAT.  Return true on success.  */
 
 static bool
-fold_const_call_sss (real_value *result, built_in_function fn,
+fold_const_call_sss (real_value *result, combined_fn fn,
 		     const real_value *arg0, const real_value *arg1,
 		     const real_format *format)
 {
   switch (fn)
     {
-    CASE_FLT_FN (BUILT_IN_DREM):
-    CASE_FLT_FN (BUILT_IN_REMAINDER):
+    CASE_CFN_DREM:
+    CASE_CFN_REMAINDER:
       return do_mpfr_arg2 (result, mpfr_remainder, arg0, arg1, format);
 
-    CASE_FLT_FN (BUILT_IN_ATAN2):
+    CASE_CFN_ATAN2:
       return do_mpfr_arg2 (result, mpfr_atan2, arg0, arg1, format);
 
-    CASE_FLT_FN (BUILT_IN_FDIM):
+    CASE_CFN_FDIM:
       return do_mpfr_arg2 (result, mpfr_dim, arg0, arg1, format);
 
-    CASE_FLT_FN (BUILT_IN_HYPOT):
+    CASE_CFN_HYPOT:
       return do_mpfr_arg2 (result, mpfr_hypot, arg0, arg1, format);
 
-    CASE_FLT_FN (BUILT_IN_COPYSIGN):
+    CASE_CFN_COPYSIGN:
       *result = *arg0;
       real_copysign (result, arg1);
       return true;
 
-    CASE_FLT_FN (BUILT_IN_FMIN):
+    CASE_CFN_FMIN:
       return do_mpfr_arg2 (result, mpfr_min, arg0, arg1, format);
 
-    CASE_FLT_FN (BUILT_IN_FMAX):
+    CASE_CFN_FMAX:
       return do_mpfr_arg2 (result, mpfr_max, arg0, arg1, format);
 
-    CASE_FLT_FN (BUILT_IN_POW):
+    CASE_CFN_POW:
       return fold_const_pow (result, arg0, arg1, format);
 
     default:
@@ -1018,22 +1186,22 @@ fold_const_call_sss (real_value *result, built_in_function fn,
    success.  */
 
 static bool
-fold_const_call_sss (real_value *result, built_in_function fn,
+fold_const_call_sss (real_value *result, combined_fn fn,
 		     const real_value *arg0, const wide_int_ref &arg1,
 		     const real_format *format)
 {
   switch (fn)
     {
-    CASE_FLT_FN (BUILT_IN_LDEXP):
+    CASE_CFN_LDEXP:
       return fold_const_builtin_load_exponent (result, arg0, arg1, format);
 
-    CASE_FLT_FN (BUILT_IN_SCALBN):
-    CASE_FLT_FN (BUILT_IN_SCALBLN):
+    CASE_CFN_SCALBN:
+    CASE_CFN_SCALBLN:
       return (format->b == 2
 	      && fold_const_builtin_load_exponent (result, arg0, arg1,
 						   format));
 
-    CASE_FLT_FN (BUILT_IN_POWI):
+    CASE_CFN_POWI:
       real_powi (result, format, arg0, arg1.to_shwi ());
       return true;
 
@@ -1050,16 +1218,16 @@ fold_const_call_sss (real_value *result, built_in_function fn,
    success.  */
 
 static bool
-fold_const_call_sss (real_value *result, built_in_function fn,
+fold_const_call_sss (real_value *result, combined_fn fn,
 		     const wide_int_ref &arg0, const real_value *arg1,
 		     const real_format *format)
 {
   switch (fn)
     {
-    CASE_FLT_FN (BUILT_IN_JN):
+    CASE_CFN_JN:
       return do_mpfr_arg2 (result, mpfr_jn, arg0, arg1, format);
 
-    CASE_FLT_FN (BUILT_IN_YN):
+    CASE_CFN_YN:
       return (real_compare (GT_EXPR, arg1, &dconst0)
 	      && do_mpfr_arg2 (result, mpfr_yn, arg0, arg1, format));
 
@@ -1078,13 +1246,13 @@ fold_const_call_sss (real_value *result, built_in_function fn,
 
 static bool
 fold_const_call_ccc (real_value *result_real, real_value *result_imag,
-		     built_in_function fn, const real_value *arg0_real,
+		     combined_fn fn, const real_value *arg0_real,
 		     const real_value *arg0_imag, const real_value *arg1_real,
 		     const real_value *arg1_imag, const real_format *format)
 {
   switch (fn)
     {
-    CASE_FLT_FN (BUILT_IN_CPOW):
+    CASE_CFN_CPOW:
       return do_mpc_arg2 (result_real, result_imag, mpc_pow,
 			  arg0_real, arg0_imag, arg1_real, arg1_imag, format);
 
@@ -1093,11 +1261,11 @@ fold_const_call_ccc (real_value *result_real, real_value *result_imag,
     }
 }
 
-/* Try to fold FN (ARG0, ARG1) to a constant.  Return the constant on success,
-   otherwise return null.  TYPE is the type of the return value.  */
+/* Subroutine of fold_const_call, with the same interface.  Handle cases
+   where the arguments and result are numerical.  */
 
-tree
-fold_const_call (built_in_function fn, tree type, tree arg0, tree arg1)
+static tree
+fold_const_call_1 (combined_fn fn, tree type, tree arg0, tree arg1)
 {
   machine_mode mode = TYPE_MODE (type);
   machine_mode arg0_mode = TYPE_MODE (TREE_TYPE (arg0));
@@ -1185,6 +1353,35 @@ fold_const_call (built_in_function fn, tree type, tree arg0, tree arg1)
   return NULL_TREE;
 }
 
+/* Try to fold FN (ARG0, ARG1) to a constant.  Return the constant on success,
+   otherwise return null.  TYPE is the type of the return value.  */
+
+tree
+fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1)
+{
+  const char *p0, *p1;
+  switch (fn)
+    {
+    case CFN_BUILT_IN_STRSPN:
+      if ((p0 = c_getstr (arg0)) && (p1 = c_getstr (arg1)))
+	return build_int_cst (type, strspn (p0, p1));
+      return NULL_TREE;
+
+    case CFN_BUILT_IN_STRCSPN:
+      if ((p0 = c_getstr (arg0)) && (p1 = c_getstr (arg1)))
+	return build_int_cst (type, strcspn (p0, p1));
+      return NULL_TREE;
+
+    case CFN_BUILT_IN_STRCMP:
+      if ((p0 = c_getstr (arg0)) && (p1 = c_getstr (arg1)))
+	return build_cmp_result (type, strcmp (p0, p1));
+      return NULL_TREE;
+
+    default:
+      return fold_const_call_1 (fn, type, arg0, arg1);
+    }
+}
+
 /* Try to evaluate:
 
       *RESULT = FN (*ARG0, *ARG1, *ARG2)
@@ -1192,13 +1389,13 @@ fold_const_call (built_in_function fn, tree type, tree arg0, tree arg1)
    in format FORMAT.  Return true on success.  */
 
 static bool
-fold_const_call_ssss (real_value *result, built_in_function fn,
+fold_const_call_ssss (real_value *result, combined_fn fn,
 		      const real_value *arg0, const real_value *arg1,
 		      const real_value *arg2, const real_format *format)
 {
   switch (fn)
     {
-    CASE_FLT_FN (BUILT_IN_FMA):
+    CASE_CFN_FMA:
       return do_mpfr_arg3 (result, mpfr_fma, arg0, arg1, arg2, format);
 
     default:
@@ -1206,12 +1403,11 @@ fold_const_call_ssss (real_value *result, built_in_function fn,
     }
 }
 
-/* Try to fold FN (ARG0, ARG1, ARG2) to a constant.  Return the constant on
-   success, otherwise return null.  TYPE is the type of the return value.  */
+/* Subroutine of fold_const_call, with the same interface.  Handle cases
+   where the arguments and result are numerical.  */
 
-tree
-fold_const_call (built_in_function fn, tree type, tree arg0, tree arg1,
-		 tree arg2)
+static tree
+fold_const_call_1 (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
 {
   machine_mode mode = TYPE_MODE (type);
   machine_mode arg0_mode = TYPE_MODE (TREE_TYPE (arg0));
@@ -1239,6 +1435,38 @@ fold_const_call (built_in_function fn, tree type, tree arg0, tree arg1,
     }
 
   return NULL_TREE;
+}
+
+/* Try to fold FN (ARG0, ARG1, ARG2) to a constant.  Return the constant on
+   success, otherwise return null.  TYPE is the type of the return value.  */
+
+tree
+fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
+{
+  const char *p0, *p1;
+  size_t s2;
+  switch (fn)
+    {
+    case CFN_BUILT_IN_STRNCMP:
+      if ((p0 = c_getstr (arg0))
+	  && (p1 = c_getstr (arg1))
+	  && host_size_t_cst_p (arg2, &s2))
+	return build_int_cst (type, strncmp (p0, p1, s2));
+      return NULL_TREE;
+
+    case CFN_BUILT_IN_BCMP:
+    case CFN_BUILT_IN_MEMCMP:
+      if ((p0 = c_getstr (arg0))
+	  && (p1 = c_getstr (arg1))
+	  && host_size_t_cst_p (arg2, &s2)
+	  && s2 <= strlen (p0)
+	  && s2 <= strlen (p1))
+	return build_cmp_result (type, memcmp (p0, p1, s2));
+      return NULL_TREE;
+
+    default:
+      return fold_const_call_1 (fn, type, arg0, arg1, arg2);
+    }
 }
 
 /* Fold a fma operation with arguments ARG[012].  */

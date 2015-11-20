@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "it_IT" }
+// { dg-require-namedlocale "it_IT.ISO8859-15" }
 
 // 2000-09-13 Benjamin Kosnik <bkoz@redhat.com>
 
@@ -33,10 +33,10 @@ void test03()
   bool test __attribute__((unused)) = true;
 #ifdef _GLIBCXX_HAVE_SETENV 
   const char* LC_ALL_orig = getenv("LC_ALL");
-  if (!setenv("LC_ALL", "it_IT", 1))
+  if (!setenv("LC_ALL", ISO_8859(15,it_IT), 1))
     {
       std::locale loc = std::locale(""); 
-      VERIFY( loc.name() == "it_IT" );
+      VERIFY( loc.name() == ISO_8859(15,it_IT) );
       setenv("LC_ALL", LC_ALL_orig ? LC_ALL_orig : "", 1);
     }
 #endif

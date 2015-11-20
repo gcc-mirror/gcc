@@ -182,6 +182,7 @@ package System.Rident is
       No_Elaboration_Code,                       -- GNAT
       No_Obsolescent_Features,                   -- Ada 2005 AI-368
       No_Wide_Characters,                        -- GNAT
+      Pure_Barriers,                             -- GNAT
       SPARK_05,                                  -- GNAT
 
       --  The following cases require a parameter value
@@ -378,6 +379,7 @@ package System.Rident is
      (No_Profile,
       No_Implementation_Extensions,
       Ravenscar,
+      GNAT_Extended_Ravenscar,
       Restricted);
    --  Names of recognized profiles. No_Profile is used to indicate that a
    --  restriction came from pragma Restrictions[_Warning], as opposed to
@@ -496,6 +498,52 @@ package System.Rident is
                            No_Specific_Termination_Handlers => True,
                            No_Task_Termination              => True,
                            Simple_Barriers                  => True,
+                           others                           => False),
+
+                        --  Value settings for Ravenscar (same as Restricted)
+
+                        Value =>
+                          (Max_Asynchronous_Select_Nesting => 0,
+                           Max_Protected_Entries           => 1,
+                           Max_Select_Alternatives         => 0,
+                           Max_Task_Entries                => 0,
+                           others                          => 0)),
+
+                     GNAT_Extended_Ravenscar  =>
+
+                     --  Restrictions for GNAT_Extended_Ravenscar =
+                     --    Restricted profile ..
+
+                       (Set   =>
+                          (No_Abort_Statements             => True,
+                           No_Asynchronous_Control         => True,
+                           No_Dynamic_Attachment           => True,
+                           No_Dynamic_Priorities           => True,
+                           No_Entry_Queue                  => True,
+                           No_Local_Protected_Objects      => True,
+                           No_Protected_Type_Allocators    => True,
+                           No_Requeue_Statements           => True,
+                           No_Task_Allocators              => True,
+                           No_Task_Attributes_Package      => True,
+                           No_Task_Hierarchy               => True,
+                           No_Terminate_Alternatives       => True,
+                           Max_Asynchronous_Select_Nesting => True,
+                           Max_Protected_Entries           => True,
+                           Max_Select_Alternatives         => True,
+                           Max_Task_Entries                => True,
+
+                           --  plus these additional restrictions:
+
+                           No_Calendar                      => True,
+                           No_Implicit_Task_Allocations     => True,
+                           No_Implicit_Protected_Object_Allocations
+                                                            => True,
+                           No_Local_Timing_Events           => True,
+                           No_Relative_Delay                => True,
+                           No_Select_Statements             => True,
+                           No_Specific_Termination_Handlers => True,
+                           No_Task_Termination              => True,
+                           Pure_Barriers                    => True,
                            others                           => False),
 
                         --  Value settings for Ravenscar (same as Restricted)

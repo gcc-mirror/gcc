@@ -387,15 +387,6 @@ package body Switch.C is
                            Osint.Fail
                              ("-gnatd.b must be first if combined "
                               & "with other switches");
-
-                        --  Special check, -gnatd.V must occur after -gnatc
-
-                        elsif C = 'V'
-                          and then Operating_Mode /= Check_Semantics
-                        then
-                           Osint.Fail
-                             ("gnatd.V requires previous occurrence "
-                              & "of -gnatc");
                         end if;
 
                      --  Not a dotted flag
@@ -584,6 +575,19 @@ package body Switch.C is
                   when 'F' =>
                      Ptr := Ptr + 1;
                      Check_Float_Overflow := not Machine_Overflows_On_Target;
+
+                  --  -gnateg (generate C code)
+
+                  when 'g' =>
+                     --  Special check, -gnateg must occur after -gnatc
+
+                     if Operating_Mode /= Check_Semantics then
+                        Osint.Fail
+                          ("gnateg requires previous occurrence of -gnatc");
+                     end if;
+
+                     Generate_C_Code := True;
+                     Ptr := Ptr + 1;
 
                   --  -gnateG (save preprocessor output)
 

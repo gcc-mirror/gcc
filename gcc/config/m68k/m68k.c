@@ -4470,7 +4470,7 @@ print_operand (FILE *file, rtx op, int letter)
     }
   else if (GET_CODE (op) == MEM)
     {
-      output_address (XEXP (op, 0));
+      output_address (GET_MODE (op), XEXP (op, 0));
       if (letter == 'd' && ! TARGET_68020
 	  && CONSTANT_ADDRESS_P (XEXP (op, 0))
 	  && !(GET_CODE (XEXP (op, 0)) == CONST_INT

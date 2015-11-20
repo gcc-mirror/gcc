@@ -86,11 +86,15 @@ MULTILIB_MATCHES       += march?armv7ve=mcpu?cortex-a12
 MULTILIB_MATCHES       += march?armv7ve=mcpu?cortex-a17
 MULTILIB_MATCHES       += march?armv7ve=mcpu?cortex-a15.cortex-a7
 MULTILIB_MATCHES       += march?armv7ve=mcpu?cortex-a17.cortex-a7
+MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a35
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a53
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a57
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a57.cortex-a53
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a72
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a72.cortex-a53
+MULTILIB_MATCHES       += march?armv8-a=mcpu?exynos-m1
+MULTILIB_MATCHES       += march?armv8-a=mcpu?qdf24xx
+MULTILIB_MATCHES       += march?armv8-a=mcpu?xgene1
 
 # Arch Matches
 MULTILIB_MATCHES       += march?armv8-a=march?armv8-a+crc

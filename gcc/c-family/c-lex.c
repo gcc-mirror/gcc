@@ -21,15 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
-#include "tree.h"
 #include "c-common.h"
 #include "timevar.h"
 #include "stringpool.h"
-#include "alias.h"
 #include "stor-layout.h"
-#include "flags.h"
 #include "c-pragma.h"
-#include "intl.h"
 #include "debug.h"
 
 #include "attribs.h"
@@ -930,8 +926,9 @@ interpret_float (const cpp_token *token, unsigned int flags,
   value = build_real (const_type, real);
   if (flags & CPP_N_IMAGINARY)
     {
-      value = build_complex (NULL_TREE, convert (const_type,
-						 integer_zero_node), value);
+      value = build_complex (NULL_TREE,
+			     fold_convert (const_type,
+					   integer_zero_node), value);
       if (type != const_type)
 	{
 	  const_type = TREE_TYPE (value);

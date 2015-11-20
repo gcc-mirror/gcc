@@ -197,6 +197,10 @@ package body System.OS_Lib is
       --  backslash escapes when computing the bounds for arguments. It is
       --  then removing the extra backslashes from the argument.
 
+      Backslash_Is_Sep : constant Boolean := Directory_Separator = '\';
+      --  Whether '\' is a directory separator (as on Windows), or a way to
+      --  quote special characters.
+
    begin
       Idx := Arg_String'First;
 
@@ -246,7 +250,7 @@ package body System.OS_Lib is
 
                --  Following character is backquoted
 
-               elsif Arg_String (Idx) = '\' then
+               elsif not Backslash_Is_Sep and then Arg_String (Idx) = '\' then
                   Backqd := True;
 
                else
@@ -1605,6 +1609,27 @@ package body System.OS_Lib is
       end if;
    end Kill;
 
+   -----------------------
+   -- Kill_Process_Tree --
+   -----------------------
+
+   procedure Kill_Process_Tree
+     (Pid : Process_Id; Hard_Kill : Boolean := True)
+   is
+      SIGKILL : constant := 9;
+      SIGINT  : constant := 2;
+
+      procedure C_Kill_PT (Pid : Process_Id; Sig_Num : Integer);
+      pragma Import (C, C_Kill_PT, "__gnat_killprocesstree");
+
+   begin
+      if Hard_Kill then
+         C_Kill_PT (Pid, SIGKILL);
+      else
+         C_Kill_PT (Pid, SIGINT);
+      end if;
+   end Kill_Process_Tree;
+
    -------------------------
    -- Locate_Exec_On_Path --
    -------------------------
@@ -2056,33 +2081,36 @@ package body System.OS_Lib is
       -------------------
 
       function Get_Directory (Dir : String) return String is
-         Result : String (1 .. Dir'Length + 1);
-         Length : constant Natural := Dir'Length;
-
       begin
          --  Directory given, add directory separator if needed
 
-         if Length > 0 then
-            Result (1 .. Length) := Dir;
+         if Dir'Length > 0 then
+            declare
+               Result : String   :=
+                          Normalize_Pathname
+                            (Dir, "", Resolve_Links, Case_Sensitive) &
+                             Directory_Separator;
+               Last   : Positive := Result'Last - 1;
 
-            --  On Windows, change all '/' to '\'
+            begin
+               --  On Windows, change all '/' to '\'
 
-            if On_Windows then
-               for J in 1 .. Length loop
-                  if Result (J) = '/' then
-                     Result (J) := Directory_Separator;
-                  end if;
-               end loop;
-            end if;
+               if On_Windows then
+                  for J in Result'First .. Last - 1 loop
+                     if Result (J) = '/' then
+                        Result (J) := Directory_Separator;
+                     end if;
+                  end loop;
+               end if;
 
-            --  Add directory separator, if needed
+               --  Include additional directory separator, if needed
 
-            if Result (Length) = Directory_Separator then
-               return Result (1 .. Length);
-            else
-               Result (Result'Length) := Directory_Separator;
-               return Result;
-            end if;
+               if Result (Last) /= Directory_Separator then
+                  Last := Last + 1;
+               end if;
+
+               return Result (Result'First .. Last);
+            end;
 
          --  Directory name not given, get current directory
 

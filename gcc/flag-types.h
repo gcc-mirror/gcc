@@ -165,7 +165,6 @@ enum stack_check_type
 
 /* Names for the different levels of -Wstrict-overflow=N.  The numeric
    values here correspond to N.  */
-
 enum warn_strict_overflow_code
 {
   /* Overflow warning that should be issued with -Wall: a questionable
@@ -195,6 +194,13 @@ enum fp_contract_mode {
   FP_CONTRACT_FAST = 2
 };
 
+/* Scalar storage order kind.  */
+enum scalar_storage_order_kind {
+  SSO_NATIVE = 0,
+  SSO_BIG_ENDIAN,
+  SSO_LITTLE_ENDIAN
+};
+
 /* Vectorizer cost-model.  */
 enum vect_cost_model {
   VECT_COST_MODEL_UNLIMITED = 0,
@@ -202,7 +208,6 @@ enum vect_cost_model {
   VECT_COST_MODEL_DYNAMIC = 2,
   VECT_COST_MODEL_DEFAULT = 3
 };
-
 
 /* Different instrumentation modes.  */
 enum sanitize_code {

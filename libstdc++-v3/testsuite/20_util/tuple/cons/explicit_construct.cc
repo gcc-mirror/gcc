@@ -28,13 +28,26 @@ struct Explicit
   explicit Explicit(int) {}
 };
 
+struct ExplicitDefault
+{
+  explicit ExplicitDefault() {}
+};
+
+struct ExplicitDefaultDefault
+{
+  explicit ExplicitDefaultDefault() = default;
+};
+
 std::tuple<int> f1a() {return {1};}
 std::tuple<int, int> f1b() {return {1,2};}
 std::tuple<int, int, int> f1c() {return {1,2,3};}
 
-std::tuple<Explicit> f2_a() {return {1};} // { dg-error "explicit" }
-std::tuple<Explicit, Explicit> f2_b() {return {1,2};} // { dg-error "explicit" }
-std::tuple<Explicit, Explicit, Explicit> f2_c() {return {1,2,3};} // { dg-error "explicit" }
+std::tuple<Explicit> f2_a()
+{return {1};} // { dg-error "explicit" }
+std::tuple<Explicit, Explicit> f2_b()
+{return {1,2};} // { dg-error "explicit" }
+std::tuple<Explicit, Explicit, Explicit> f2_c()
+{return {1,2,3};} // { dg-error "explicit" }
 
 std::tuple<long> f3_a() {return std::tuple<int>{1};}
 std::tuple<long, long> f3_b() {return std::tuple<int, int>{1,2};}
@@ -56,6 +69,24 @@ std::tuple<Explicit, Explicit, Explicit> f4_c()
 std::tuple<long> f5_a() {return {1};}
 std::tuple<long, long> f5_b() {return {1,2};}
 std::tuple<long, long, long> f5_c() {return {1,2,3};}
+
+std::tuple<ExplicitDefault> f6_a()
+{return {};} // { dg-error "explicit" }
+std::tuple<ExplicitDefault, ExplicitDefault> f6_b()
+{return {};} // { dg-error "explicit" }
+std::tuple<ExplicitDefault, ExplicitDefault, ExplicitDefault> f6_c()
+{return {};} // { dg-error "explicit" }
+std::tuple<ExplicitDefault, int> f6_d()
+{return {};} // { dg-error "explicit" }
+
+std::tuple<ExplicitDefaultDefault> f7_a()
+{return {};} // { dg-error "explicit" }
+std::tuple<ExplicitDefaultDefault, ExplicitDefaultDefault> f7_b()
+{return {};} // { dg-error "explicit" }
+std::tuple<ExplicitDefaultDefault,
+           ExplicitDefaultDefault,
+           ExplicitDefaultDefault> f7_c()
+{return {};} // { dg-error "explicit" }
 
 std::tuple<int, int> fp1() {return std::pair<int, int>{1,2}; }
 std::tuple<long, long> fp2() {return std::pair<int, int>{1,2}; }
@@ -163,7 +194,7 @@ std::tuple<long, long, long>
   v31_c{std::allocator_arg, std::allocator<int>{}, 1,2,3};
 
 std::tuple<Explicit> v32_a
-  = {std::allocator_arg, std::allocator<int>{}, 1}; // { dg-error "explicit" }
+  = {std::allocator_arg, std::allocator<int>{ }, 1}; // { dg-error "explicit" }
 std::tuple<Explicit, Explicit> v32_b
   = {std::allocator_arg, std::allocator<int>{}, 1, 2}; // { dg-error "explicit" }
 std::tuple<Explicit, Explicit, Explicit> v32_c
@@ -199,7 +230,19 @@ std::tuple<int, int> v42 = {std::allocator_arg, std::allocator<int>{}, v20};
 std::tuple<long, long> v43 = {std::allocator_arg, std::allocator<int>{}, v20};
 
 std::tuple<Explicit, Explicit> v44
-= {std::allocator_arg, std::allocator<int>{}, v20}; // { dg-error "explicit" }
+= {std::allocator_arg, std::allocator<int>{ }, v20}; // { dg-error "explicit" }
+std::tuple<ExplicitDefault> v45_a{};
+std::tuple<ExplicitDefault, int> v45_b{};
+
+std::tuple<ExplicitDefault> v46_a = {}; // { dg-error "explicit" }
+std::tuple<ExplicitDefault, int> v46_b = {}; // { dg-error "explicit" }
+
+std::tuple<ExplicitDefaultDefault> v47_a{};
+std::tuple<ExplicitDefaultDefault, int> v47_b{};
+
+std::tuple<ExplicitDefaultDefault> v48_a = {}; // { dg-error "explicit" }
+std::tuple<ExplicitDefaultDefault, int> v48_b = { }; // { dg-error "explicit" }
+
 
 struct DeletedCopy
 {
@@ -225,58 +268,73 @@ std::tuple<int, int, Sanity> v50(std::allocator_arg,
                                  std::allocator<Sanity>{},
                                  3, 4, {42});
 
-void f6_a(std::tuple<Explicit>) {}
-void f6_b(std::tuple<Explicit, Explicit>) {}
-void f6_c(std::tuple<Explicit, Explicit, Explicit>) {}
+void f8_a(std::tuple<Explicit>) {}
+void f8_b(std::tuple<Explicit, Explicit>) {}
+void f8_c(std::tuple<Explicit, Explicit, Explicit>) {}
 
-void f7_a(std::tuple<long>) {}
-void f7_b(std::tuple<long, long>) {}
-void f7_c(std::tuple<long, long, long>) {}
+void f9_a(std::tuple<long>) {}
+void f9_b(std::tuple<long, long>) {}
+void f9_c(std::tuple<long, long, long>) {}
+
+void f10_a(std::tuple<ExplicitDefault>) {}
+void f10_b(std::tuple<ExplicitDefault, int>) {}
+
+void f11_a(std::tuple<ExplicitDefaultDefault>) {}
+void f11_b(std::tuple<ExplicitDefaultDefault, int>) {}
 
 void test_arg_passing()
 {
-  f6_a(v0_a); // { dg-error "could not convert" }
-  f6_b(v0_b); // { dg-error "could not convert" }
-  f6_c(v0_c); // { dg-error "could not convert" }
-  f6_b(v20); // { dg-error "could not convert" }
+  f8_a(v0_a); // { dg-error "could not convert" }
+  f8_b(v0_b); // { dg-error "could not convert" }
+  f8_c(v0_c); // { dg-error "could not convert" }
+  f8_b(v20); // { dg-error "could not convert" }
 
-  f6_a(v1_a);
-  f6_b(v1_b);
-  f6_c(v1_c);
+  f8_a(v1_a);
+  f8_b(v1_b);
+  f8_c(v1_c);
 
-  f6_a({1}); // { dg-error "explicit" }
-  f6_b({1,2}); // { dg-error "explicit" }
-  f6_c({1,2,3}); // { dg-error "explicit" }
+  f8_a({1}); // { dg-error "explicit" }
+  f8_b({1,2}); // { dg-error "explicit" }
+  f8_c({1,2,3}); // { dg-error "explicit" }
 
-  f6_a(std::tuple<Explicit>{});
-  f6_b(std::tuple<Explicit, Explicit>{});
-  f6_c(std::tuple<Explicit, Explicit, Explicit>{});
+  f8_a(std::tuple<Explicit>{});
+  f8_b(std::tuple<Explicit, Explicit>{});
+  f8_c(std::tuple<Explicit, Explicit, Explicit>{});
 
-  f6_a(std::tuple<int>{}); // { dg-error "could not convert" }
-  f6_b(std::tuple<int, int>{}); // { dg-error "could not convert" }
-  f6_c(std::tuple<int, int, int>{}); // { dg-error "could not convert" }
-  f6_b(std::pair<int, int>{}); // { dg-error "could not convert" }
+  f8_a(std::tuple<int>{}); // { dg-error "could not convert" }
+  f8_b(std::tuple<int, int>{}); // { dg-error "could not convert" }
+  f8_c(std::tuple<int, int, int>{}); // { dg-error "could not convert" }
+  f8_b(std::pair<int, int>{}); // { dg-error "could not convert" }
 
-  f7_a(v0_a);
-  f7_b(v0_b);
-  f7_c(v0_c);
-  f7_b(v20);
+  f9_a(v0_a);
+  f9_b(v0_b);
+  f9_c(v0_c);
+  f9_b(v20);
 
-  f7_a(v6_a);
-  f7_b(v6_b);
-  f7_c(v6_c);
+  f9_a(v6_a);
+  f9_b(v6_b);
+  f9_c(v6_c);
 
-  f7_a({1});
-  f7_b({1,2});
-  f7_c({1,2,3});
+  f9_a({1});
+  f9_b({1,2});
+  f9_c({1,2,3});
 
-  f7_a(std::tuple<int>{});
-  f7_b(std::tuple<int, int>{});
-  f7_c(std::tuple<int, int, int>{});
-  f7_b(std::pair<int, int>{});
+  f9_a(std::tuple<int>{});
+  f9_b(std::tuple<int, int>{});
+  f9_c(std::tuple<int, int, int>{});
+  f9_b(std::pair<int, int>{});
 
+  f9_a(std::tuple<long>{});
+  f9_b(std::tuple<long, long>{});
+  f9_c(std::tuple<long, long, long>{});
 
-  f7_a(std::tuple<long>{});
-  f7_b(std::tuple<long, long>{});
-  f7_c(std::tuple<long, long, long>{});
+  f10_a({}); // { dg-error "explicit" }
+  f10_b({}); // { dg-error "explicit" }
+  f11_a({}); // { dg-error "explicit" }
+  f11_b({}); // { dg-error "explicit" }
+
+  f10_a(std::tuple<ExplicitDefault>{});
+  f10_b(std::tuple<ExplicitDefault, int>{});
+  f11_a(std::tuple<ExplicitDefaultDefault>{});
+  f11_b(std::tuple<ExplicitDefaultDefault, int>{});
 }

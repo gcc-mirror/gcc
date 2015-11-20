@@ -958,7 +958,8 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
     hstate.add_flag (TREE_PRIVATE (t));
   if (TYPE_P (t))
     {
-      hstate.add_flag (TYPE_SATURATING (t));
+      hstate.add_flag (AGGREGATE_TYPE_P (t)
+		       ? TYPE_REVERSE_STORAGE_ORDER (t) : TYPE_SATURATING (t));
       hstate.add_flag (TYPE_ADDR_SPACE (t));
     }
   else if (code == SSA_NAME)
@@ -2386,7 +2387,7 @@ write_global_references (struct output_block *ob,
 
   for (index = 0; index < size; index++)
     {
-      uint32_t slot_num;
+      unsigned slot_num;
 
       t = lto_tree_ref_encoder_get_tree (encoder, index);
       streamer_tree_cache_lookup (ob->writer_cache, t, &slot_num);
@@ -2421,7 +2422,7 @@ lto_output_decl_state_refs (struct output_block *ob,
 			    struct lto_out_decl_state *state)
 {
   unsigned i;
-  uint32_t ref;
+  unsigned ref;
   tree decl;
 
   /* Write reference to FUNCTION_DECL.  If there is not function,

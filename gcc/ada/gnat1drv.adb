@@ -142,18 +142,21 @@ procedure Gnat1drv is
          Modify_Tree_For_C := True;
       end if;
 
-      --  Set all flags required when generating C code (-gnatd.V)
+      --  Set all flags required when generating C code
 
-      if Debug_Flag_Dot_VV then
-         Generate_C_Code := True;
+      if Generate_C_Code then
          Modify_Tree_For_C := True;
          Unnest_Subprogram_Mode := True;
-         Back_Annotate_Rep_Info := True;
 
          --  Set operating mode to Generate_Code to benefit from full front-end
          --  expansion (e.g. generics).
 
          Operating_Mode := Generate_Code;
+
+         --  Suppress alignment checks since we do not have access to alignment
+         --  info on the target.
+
+         Suppress_Options.Suppress (Alignment_Check) := False;
       end if;
 
       --  -gnatd.E sets Error_To_Warning mode, causing selected error messages
@@ -213,7 +216,7 @@ procedure Gnat1drv is
          --  do not expect this to happen in normal use, since both modes are
          --  enabled by special tools, but it is useful to turn off these flags
          --  this way when we are doing CodePeer tests on existing test suites
-         --  that may have -gnatd.V set, to avoid the need for special casing.
+         --  that may have -gnateg set, to avoid the need for special casing.
 
          Modify_Tree_For_C := False;
          Generate_C_Code := False;
@@ -1346,8 +1349,8 @@ begin
       Back_End.Call_Back_End (Back_End_Mode);
 
       --  Once the backend is complete, we unlock the names table. This call
-      --  allows a few extra entries, needed for example for the file name for
-      --  the library file output.
+      --  allows a few extra entries, needed for example for the file name
+      --  for the library file output.
 
       Namet.Unlock;
 

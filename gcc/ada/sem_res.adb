@@ -1635,7 +1635,7 @@ package body Sem_Res is
                end if;
 
                if Nkind (Old_Sec) = N_Parameter_Association then
-                  if Chars (Selector_Name (Old_Sec))  =
+                  if Chars (Selector_Name (Old_Sec)) =
                      Chars (First_Entity (Op_Id))
                   then
                      Rewrite (Explicit_Actual_Parameter (Old_Sec),
@@ -7231,10 +7231,23 @@ package body Sem_Res is
                   & "(SPARK RM 7.1.3(12))", N);
             end if;
 
-            --  Check possible elaboration issues with respect to variables
+            --  Check for possible elaboration issues with respect to reads of
+            --  variables. The act of renaming the variable is not considered a
+            --  read as it simply establishes an alias.
+
+            if Ekind (E) = E_Variable
+              and then Nkind (Par) /= N_Object_Renaming_Declaration
+            then
+               Check_Elab_Call (N);
+            end if;
+
+            --  The variable may eventually become a constituent of a single
+            --  protected/task type. Record the reference now and verify its
+            --  legality when analyzing the contract of the variable
+            --  (SPARK RM 9.3).
 
             if Ekind (E) = E_Variable then
-               Check_Elab_Call (N);
+               Record_Possible_Part_Of_Reference (E, N);
             end if;
          end if;
 
@@ -7577,8 +7590,8 @@ package body Sem_Res is
       end if;
 
       if Ekind_In (Nam, E_Entry, E_Entry_Family)
-        and then Present (PPC_Wrapper (Nam))
-        and then Current_Scope /= PPC_Wrapper (Nam)
+        and then Present (Contract_Wrapper (Nam))
+        and then Current_Scope /= Contract_Wrapper (Nam)
       then
          --  Rewrite as call to the precondition wrapper, adding the task
          --  object to the list of actuals. If the call is to a member of an
@@ -7600,7 +7613,7 @@ package body Sem_Res is
             New_Call :=
               Make_Procedure_Call_Statement (Loc,
                 Name                   =>
-                  New_Occurrence_Of (PPC_Wrapper (Nam), Loc),
+                  New_Occurrence_Of (Contract_Wrapper (Nam), Loc),
                 Parameter_Associations => New_Actuals);
             Rewrite (N, New_Call);
 
@@ -8115,7 +8128,11 @@ package body Sem_Res is
          Resolve (P);
       end if;
 
-      if Is_Access_Type (Etype (P)) then
+      --  If the prefix might be null, add an access check
+
+      if Is_Access_Type (Etype (P))
+        and then not Can_Never_Be_Null (Etype (P))
+      then
          Apply_Access_Check (N);
       end if;
 

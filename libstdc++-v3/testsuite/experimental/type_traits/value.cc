@@ -21,7 +21,7 @@
 #include <experimental/type_traits>
 
 using namespace std;
-using namespace std::experimental;
+using namespace experimental;
 
 // These tests are rather simple, the front-end tests already test
 // variable templates, and the library tests for the underlying
@@ -322,3 +322,24 @@ static_assert(is_convertible_v<int&, const int&>
 	      && is_convertible<int&, const int&>::value, "");
 static_assert(!is_convertible_v<const int&, int&>
 	      && !is_convertible<const int&, int&>::value, "");
+
+static_assert(negation_v<false_type>);
+static_assert(!negation_v<true_type>);
+static_assert(conjunction_v<>);
+static_assert(!disjunction_v<>);
+static_assert(conjunction_v<true_type>);
+static_assert(!conjunction_v<false_type>);
+static_assert(disjunction_v<true_type>);
+static_assert(!disjunction_v<false_type>);
+static_assert(conjunction_v<true_type, true_type>);
+static_assert(!conjunction_v<true_type, false_type>);
+static_assert(disjunction_v<false_type, true_type>);
+static_assert(!disjunction_v<false_type, false_type>);
+static_assert(conjunction_v<true_type, true_type,
+              true_type>);
+static_assert(!conjunction_v<true_type, true_type,
+              false_type>);
+static_assert(disjunction_v<false_type, false_type,
+              true_type>);
+static_assert(!disjunction_v<false_type, false_type,
+              false_type>);

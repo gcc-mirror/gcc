@@ -20,12 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "tree.h"
 #include "cp-tree.h"
 #include "stringpool.h"
-#include "alias.h"
-#include "flags.h"
 #include "tree-diagnostic.h"
 #include "langhooks-def.h"
 #include "intl.h"
@@ -3563,7 +3559,7 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
 
   pp_string (pp, result);
   if (set_locus && t != NULL)
-    text->set_location (0, location_of (t));
+    text->set_location (0, location_of (t), true);
   return true;
 #undef next_tree
 #undef next_tcode
@@ -3677,9 +3673,10 @@ pedwarn_cxx98 (location_t location, int opt, const char *gmsgid, ...)
   diagnostic_info diagnostic;
   va_list ap;
   bool ret;
+  rich_location richloc (line_table, location);
 
   va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
 		       (cxx_dialect == cxx98) ? DK_PEDWARN : DK_WARNING);
   diagnostic.option_index = opt;
   ret = report_diagnostic (&diagnostic);

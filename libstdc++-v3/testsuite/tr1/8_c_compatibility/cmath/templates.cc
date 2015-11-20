@@ -23,7 +23,7 @@
 
 #include <tr1/cmath>
 
-#if _GLIBCXX_USE_C99
+#if _GLIBCXX_USE_C99_MATH
 #if !_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC
 
 template<typename T>

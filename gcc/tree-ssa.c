@@ -1126,6 +1126,9 @@ delete_tree_ssa (struct function *fn)
   fn->gimple_df->decls_to_pointers = NULL;
   fn->gimple_df->modified_noreturn_calls = NULL;
   fn->gimple_df = NULL;
+
+  /* We no longer need the edge variable maps.  */
+  redirect_edge_var_map_destroy ();
 }
 
 /* Return true if EXPR is a useless type conversion, otherwise return
@@ -1201,6 +1204,24 @@ ssa_undefined_value_p (tree t, bool partial)
     }
   return false;
 }
+
+
+/* Return TRUE iff STMT, a gimple statement, references an undefined
+   SSA name.  */
+
+bool
+gimple_uses_undefined_value_p (gimple *stmt)
+{
+  ssa_op_iter iter;
+  tree op;
+
+  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
+    if (ssa_undefined_value_p (op))
+      return true;
+
+  return false;
+}
+
 
 
 /* If necessary, rewrite the base of the reference tree *TP from

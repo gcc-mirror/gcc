@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 2001-08-15 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -42,6 +42,6 @@ int main()
   two.push_back(&test01);
   two.push_back(&test02);
   two.push_back(&test03);
-  run_tests_wrapped_env("de_DE", "LANG", two);
+  run_tests_wrapped_env(ISO_8859(15,de_DE), "LANG", two);
   return 0;
 }

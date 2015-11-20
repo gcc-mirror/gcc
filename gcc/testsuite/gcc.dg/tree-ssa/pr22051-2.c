@@ -1,14 +1,10 @@
 /* { dg-do compile }  */
 /* { dg-options "-O2 -fdump-tree-optimized -w" }  */
 
-
-
-
 void *arf ();
 int
-foo()
+foo(void (*q)(void))
 {
-  void (*q)(void);
   int r = q;
 
   if (r != 0)

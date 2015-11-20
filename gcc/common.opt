@@ -1972,7 +1972,7 @@ Common Report Var(flag_schedule_speculative_load_dangerous) Optimization
 Allow speculative motion of more loads.
 
 fsched-verbose=
-Common RejectNegative Joined UInteger Var(sched_verbose_param)
+Common RejectNegative Joined UInteger Var(sched_verbose_param) Init(1)
 -fsched-verbose=<number>	Set the verbosity level of the scheduler.
 
 fsched2-use-superblocks
@@ -2402,6 +2402,10 @@ Perform live range splitting during the SSA->normal pass.
 ftree-vrp
 Common Report Var(flag_tree_vrp) Init(0) Optimization
 Perform Value Range Propagation on trees.
+
+fsplit-paths
+Common Report Var(flag_split_paths) Init(0) Optimization
+Split paths leading to loop backedges.
 
 funit-at-a-time
 Common Report Var(flag_unit_at_a_time) Init(1)

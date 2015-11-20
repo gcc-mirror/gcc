@@ -1,4 +1,5 @@
 ! { dg-do compile } 
+
 !
 ! PR fortran/64726
 !

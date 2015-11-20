@@ -301,10 +301,11 @@ delegitimize_mem_from_attrs (rtx x)
 	  {
 	    HOST_WIDE_INT bitsize, bitpos;
 	    tree toffset;
-	    int unsignedp, volatilep = 0;
+	    int unsignedp, reversep, volatilep = 0;
 
-	    decl = get_inner_reference (decl, &bitsize, &bitpos, &toffset,
-					&mode, &unsignedp, &volatilep, false);
+	    decl
+	      = get_inner_reference (decl, &bitsize, &bitpos, &toffset, &mode,
+				     &unsignedp, &reversep, &volatilep, false);
 	    if (bitsize != GET_MODE_BITSIZE (mode)
 		|| (bitpos % BITS_PER_UNIT)
 		|| (toffset && !tree_fits_shwi_p (toffset)))
@@ -712,6 +713,34 @@ simplify_truncation (machine_mode mode, rtx op,
       && UINTVAL (XEXP (op, 1)) < precision)
     return simplify_gen_binary (ASHIFT, mode,
 				XEXP (XEXP (op, 0), 0), XEXP (op, 1));
+
+  /* Likewise (truncate:QI (and:SI (lshiftrt:SI (x:SI) C) C2)) into
+     (and:QI (lshiftrt:QI (truncate:QI (x:SI)) C) C2) for suitable C
+     and C2.  */
+  if (GET_CODE (op) == AND
+      && (GET_CODE (XEXP (op, 0)) == LSHIFTRT
+	  || GET_CODE (XEXP (op, 0)) == ASHIFTRT)
+      && CONST_INT_P (XEXP (XEXP (op, 0), 1))
+      && CONST_INT_P (XEXP (op, 1)))
+    {
+      rtx op0 = (XEXP (XEXP (op, 0), 0));
+      rtx shift_op = XEXP (XEXP (op, 0), 1);
+      rtx mask_op = XEXP (op, 1);
+      unsigned HOST_WIDE_INT shift = UINTVAL (shift_op);
+      unsigned HOST_WIDE_INT mask = UINTVAL (mask_op);
+
+      if (shift < precision
+	  /* If doing this transform works for an X with all bits set,
+	     it works for any X.  */
+	  && ((GET_MODE_MASK (mode) >> shift) & mask)
+	     == ((GET_MODE_MASK (op_mode) >> shift) & mask)
+	  && (op0 = simplify_gen_unary (TRUNCATE, mode, op0, op_mode))
+	  && (op0 = simplify_gen_binary (LSHIFTRT, mode, op0, shift_op)))
+	{
+	  mask_op = GEN_INT (trunc_int_for_mode (mask, mode));
+	  return simplify_gen_binary (AND, mode, op0, mask_op);
+	}
+    }
 
   /* Recognize a word extraction from a multi-word subreg.  */
   if ((GET_CODE (op) == LSHIFTRT
@@ -1432,6 +1461,13 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 					   mode, inner, tmode);
 	    }
 	}
+
+      /* (sign_extend:M (lshiftrt:N <X> (const_int I))) is better as
+         (zero_extend:M (lshiftrt:N <X> (const_int I))) if I is not 0.  */
+      if (GET_CODE (op) == LSHIFTRT
+	  && CONST_INT_P (XEXP (op, 1))
+	  && XEXP (op, 1) != const0_rtx)
+	return simplify_gen_unary (ZERO_EXTEND, mode, op, GET_MODE (op));
 
 #if defined(POINTERS_EXTEND_UNSIGNED)
       /* As we do not know which address space the pointer is referring to,

@@ -62,6 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cilk.h"
 #include "tree-chkp.h"
 #include "rtl-chkp.h"
+#include "internal-fn.h"
+#include "case-cfn-macros.h"
 
 
 struct target_builtins default_target_builtins;
@@ -78,7 +80,6 @@ const char * built_in_names[(int) END_BUILTINS] =
 {
 #include "builtins.def"
 };
-#undef DEF_BUILTIN
 
 /* Setup an array of builtin_info_type, make sure each element decl is
    initialized to NULL_TREE.  */
@@ -100,9 +101,6 @@ static rtx expand_builtin_apply (rtx, rtx, rtx);
 static void expand_builtin_return (rtx);
 static enum type_class type_to_class (tree);
 static rtx expand_builtin_classify_type (tree);
-static void expand_errno_check (tree, rtx);
-static rtx expand_builtin_mathfn (tree, rtx, rtx);
-static rtx expand_builtin_mathfn_2 (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_3 (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_ternary (tree, rtx, rtx);
 static rtx expand_builtin_interclass_mathfn (tree, rtx);
@@ -143,12 +141,10 @@ static tree fold_builtin_constant_p (tree);
 static tree fold_builtin_classify_type (tree);
 static tree fold_builtin_strlen (location_t, tree, tree);
 static tree fold_builtin_inf (location_t, tree, int);
-static tree fold_builtin_nan (tree, tree, int);
 static tree rewrite_call_expr (location_t, tree, int, tree, int, ...);
 static bool validate_arg (const_tree, enum tree_code code);
 static rtx expand_builtin_fabs (tree, rtx, rtx);
 static rtx expand_builtin_signbit (tree, rtx);
-static tree fold_builtin_bitop (tree, tree);
 static tree fold_builtin_strchr (location_t, tree, tree, tree);
 static tree fold_builtin_memchr (location_t, tree, tree, tree, tree);
 static tree fold_builtin_memcmp (location_t, tree, tree, tree);
@@ -223,7 +219,7 @@ is_builtin_fn (tree decl)
    of the optimization level.  This means whenever a function is invoked with
    its "internal" name, which normally contains the prefix "__builtin".  */
 
-static bool
+bool
 called_as_built_in (tree node)
 {
   /* Note that we must use DECL_NAME, not DECL_ASSEMBLER_NAME_SET_P since
@@ -255,14 +251,14 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
   machine_mode mode;
-  int unsignedp, volatilep;
+  int unsignedp, reversep, volatilep;
   unsigned int align = BITS_PER_UNIT;
   bool known_alignment = false;
 
   /* Get the innermost object and the constant (bitpos) and possibly
      variable (offset) offset of the access.  */
-  exp = get_inner_reference (exp, &bitsize, &bitpos, &offset,
-			     &mode, &unsignedp, &volatilep, true);
+  exp = get_inner_reference (exp, &bitsize, &bitpos, &offset, &mode,
+			     &unsignedp, &reversep, &volatilep, true);
 
   /* Extract alignment information from the innermost object and
      possibly adjust bitpos and offset.  */
@@ -614,27 +610,6 @@ c_strlen (tree src, int only_value)
      Since OFFSET is our starting index into the string, no further
      calculation is needed.  */
   return ssize_int (strlen (ptr + offset));
-}
-
-/* Return a char pointer for a C string if it is a string constant
-   or sum of string constant and integer constant.  */
-
-const char *
-c_getstr (tree src)
-{
-  tree offset_node;
-
-  src = string_constant (src, &offset_node);
-  if (src == 0)
-    return 0;
-
-  if (offset_node == 0)
-    return TREE_STRING_POINTER (src);
-  else if (!tree_fits_uhwi_p (offset_node)
-	   || compare_tree_int (offset_node, TREE_STRING_LENGTH (src) - 1) > 0)
-    return 0;
-
-  return TREE_STRING_POINTER (src) + tree_to_uhwi (offset_node);
 }
 
 /* Return a constant integer corresponding to target reading
@@ -1774,120 +1749,121 @@ expand_builtin_classify_type (tree exp)
    determines which among a set of three builtin math functions is
    appropriate for a given type mode.  The `F' and `L' cases are
    automatically generated from the `double' case.  */
-#define CASE_MATHFN(BUILT_IN_MATHFN) \
-  case BUILT_IN_MATHFN: case BUILT_IN_MATHFN##F: case BUILT_IN_MATHFN##L: \
-  fcode = BUILT_IN_MATHFN; fcodef = BUILT_IN_MATHFN##F ; \
-  fcodel = BUILT_IN_MATHFN##L ; break;
+#define CASE_MATHFN(MATHFN) \
+  CASE_CFN_##MATHFN: \
+  fcode = BUILT_IN_##MATHFN; fcodef = BUILT_IN_##MATHFN##F ; \
+  fcodel = BUILT_IN_##MATHFN##L ; break;
 /* Similar to above, but appends _R after any F/L suffix.  */
-#define CASE_MATHFN_REENT(BUILT_IN_MATHFN) \
-  case BUILT_IN_MATHFN##_R: case BUILT_IN_MATHFN##F_R: case BUILT_IN_MATHFN##L_R: \
-  fcode = BUILT_IN_MATHFN##_R; fcodef = BUILT_IN_MATHFN##F_R ; \
-  fcodel = BUILT_IN_MATHFN##L_R ; break;
+#define CASE_MATHFN_REENT(MATHFN) \
+  case CFN_BUILT_IN_##MATHFN##_R: \
+  case CFN_BUILT_IN_##MATHFN##F_R: \
+  case CFN_BUILT_IN_##MATHFN##L_R: \
+  fcode = BUILT_IN_##MATHFN##_R; fcodef = BUILT_IN_##MATHFN##F_R ; \
+  fcodel = BUILT_IN_##MATHFN##L_R ; break;
 
 /* Return a function equivalent to FN but operating on floating-point
    values of type TYPE, or END_BUILTINS if no such function exists.
-   This is purely an operation on built-in function codes; it does not
-   guarantee that the target actually has an implementation of the
-   function.  */
+   This is purely an operation on function codes; it does not guarantee
+   that the target actually has an implementation of the function.  */
 
 static built_in_function
-mathfn_built_in_2 (tree type, built_in_function fn)
+mathfn_built_in_2 (tree type, combined_fn fn)
 {
   built_in_function fcode, fcodef, fcodel;
 
   switch (fn)
     {
-      CASE_MATHFN (BUILT_IN_ACOS)
-      CASE_MATHFN (BUILT_IN_ACOSH)
-      CASE_MATHFN (BUILT_IN_ASIN)
-      CASE_MATHFN (BUILT_IN_ASINH)
-      CASE_MATHFN (BUILT_IN_ATAN)
-      CASE_MATHFN (BUILT_IN_ATAN2)
-      CASE_MATHFN (BUILT_IN_ATANH)
-      CASE_MATHFN (BUILT_IN_CBRT)
-      CASE_MATHFN (BUILT_IN_CEIL)
-      CASE_MATHFN (BUILT_IN_CEXPI)
-      CASE_MATHFN (BUILT_IN_COPYSIGN)
-      CASE_MATHFN (BUILT_IN_COS)
-      CASE_MATHFN (BUILT_IN_COSH)
-      CASE_MATHFN (BUILT_IN_DREM)
-      CASE_MATHFN (BUILT_IN_ERF)
-      CASE_MATHFN (BUILT_IN_ERFC)
-      CASE_MATHFN (BUILT_IN_EXP)
-      CASE_MATHFN (BUILT_IN_EXP10)
-      CASE_MATHFN (BUILT_IN_EXP2)
-      CASE_MATHFN (BUILT_IN_EXPM1)
-      CASE_MATHFN (BUILT_IN_FABS)
-      CASE_MATHFN (BUILT_IN_FDIM)
-      CASE_MATHFN (BUILT_IN_FLOOR)
-      CASE_MATHFN (BUILT_IN_FMA)
-      CASE_MATHFN (BUILT_IN_FMAX)
-      CASE_MATHFN (BUILT_IN_FMIN)
-      CASE_MATHFN (BUILT_IN_FMOD)
-      CASE_MATHFN (BUILT_IN_FREXP)
-      CASE_MATHFN (BUILT_IN_GAMMA)
-      CASE_MATHFN_REENT (BUILT_IN_GAMMA) /* GAMMA_R */
-      CASE_MATHFN (BUILT_IN_HUGE_VAL)
-      CASE_MATHFN (BUILT_IN_HYPOT)
-      CASE_MATHFN (BUILT_IN_ILOGB)
-      CASE_MATHFN (BUILT_IN_ICEIL)
-      CASE_MATHFN (BUILT_IN_IFLOOR)
-      CASE_MATHFN (BUILT_IN_INF)
-      CASE_MATHFN (BUILT_IN_IRINT)
-      CASE_MATHFN (BUILT_IN_IROUND)
-      CASE_MATHFN (BUILT_IN_ISINF)
-      CASE_MATHFN (BUILT_IN_J0)
-      CASE_MATHFN (BUILT_IN_J1)
-      CASE_MATHFN (BUILT_IN_JN)
-      CASE_MATHFN (BUILT_IN_LCEIL)
-      CASE_MATHFN (BUILT_IN_LDEXP)
-      CASE_MATHFN (BUILT_IN_LFLOOR)
-      CASE_MATHFN (BUILT_IN_LGAMMA)
-      CASE_MATHFN_REENT (BUILT_IN_LGAMMA) /* LGAMMA_R */
-      CASE_MATHFN (BUILT_IN_LLCEIL)
-      CASE_MATHFN (BUILT_IN_LLFLOOR)
-      CASE_MATHFN (BUILT_IN_LLRINT)
-      CASE_MATHFN (BUILT_IN_LLROUND)
-      CASE_MATHFN (BUILT_IN_LOG)
-      CASE_MATHFN (BUILT_IN_LOG10)
-      CASE_MATHFN (BUILT_IN_LOG1P)
-      CASE_MATHFN (BUILT_IN_LOG2)
-      CASE_MATHFN (BUILT_IN_LOGB)
-      CASE_MATHFN (BUILT_IN_LRINT)
-      CASE_MATHFN (BUILT_IN_LROUND)
-      CASE_MATHFN (BUILT_IN_MODF)
-      CASE_MATHFN (BUILT_IN_NAN)
-      CASE_MATHFN (BUILT_IN_NANS)
-      CASE_MATHFN (BUILT_IN_NEARBYINT)
-      CASE_MATHFN (BUILT_IN_NEXTAFTER)
-      CASE_MATHFN (BUILT_IN_NEXTTOWARD)
-      CASE_MATHFN (BUILT_IN_POW)
-      CASE_MATHFN (BUILT_IN_POWI)
-      CASE_MATHFN (BUILT_IN_POW10)
-      CASE_MATHFN (BUILT_IN_REMAINDER)
-      CASE_MATHFN (BUILT_IN_REMQUO)
-      CASE_MATHFN (BUILT_IN_RINT)
-      CASE_MATHFN (BUILT_IN_ROUND)
-      CASE_MATHFN (BUILT_IN_SCALB)
-      CASE_MATHFN (BUILT_IN_SCALBLN)
-      CASE_MATHFN (BUILT_IN_SCALBN)
-      CASE_MATHFN (BUILT_IN_SIGNBIT)
-      CASE_MATHFN (BUILT_IN_SIGNIFICAND)
-      CASE_MATHFN (BUILT_IN_SIN)
-      CASE_MATHFN (BUILT_IN_SINCOS)
-      CASE_MATHFN (BUILT_IN_SINH)
-      CASE_MATHFN (BUILT_IN_SQRT)
-      CASE_MATHFN (BUILT_IN_TAN)
-      CASE_MATHFN (BUILT_IN_TANH)
-      CASE_MATHFN (BUILT_IN_TGAMMA)
-      CASE_MATHFN (BUILT_IN_TRUNC)
-      CASE_MATHFN (BUILT_IN_Y0)
-      CASE_MATHFN (BUILT_IN_Y1)
-      CASE_MATHFN (BUILT_IN_YN)
+    CASE_MATHFN (ACOS)
+    CASE_MATHFN (ACOSH)
+    CASE_MATHFN (ASIN)
+    CASE_MATHFN (ASINH)
+    CASE_MATHFN (ATAN)
+    CASE_MATHFN (ATAN2)
+    CASE_MATHFN (ATANH)
+    CASE_MATHFN (CBRT)
+    CASE_MATHFN (CEIL)
+    CASE_MATHFN (CEXPI)
+    CASE_MATHFN (COPYSIGN)
+    CASE_MATHFN (COS)
+    CASE_MATHFN (COSH)
+    CASE_MATHFN (DREM)
+    CASE_MATHFN (ERF)
+    CASE_MATHFN (ERFC)
+    CASE_MATHFN (EXP)
+    CASE_MATHFN (EXP10)
+    CASE_MATHFN (EXP2)
+    CASE_MATHFN (EXPM1)
+    CASE_MATHFN (FABS)
+    CASE_MATHFN (FDIM)
+    CASE_MATHFN (FLOOR)
+    CASE_MATHFN (FMA)
+    CASE_MATHFN (FMAX)
+    CASE_MATHFN (FMIN)
+    CASE_MATHFN (FMOD)
+    CASE_MATHFN (FREXP)
+    CASE_MATHFN (GAMMA)
+    CASE_MATHFN_REENT (GAMMA) /* GAMMA_R */
+    CASE_MATHFN (HUGE_VAL)
+    CASE_MATHFN (HYPOT)
+    CASE_MATHFN (ILOGB)
+    CASE_MATHFN (ICEIL)
+    CASE_MATHFN (IFLOOR)
+    CASE_MATHFN (INF)
+    CASE_MATHFN (IRINT)
+    CASE_MATHFN (IROUND)
+    CASE_MATHFN (ISINF)
+    CASE_MATHFN (J0)
+    CASE_MATHFN (J1)
+    CASE_MATHFN (JN)
+    CASE_MATHFN (LCEIL)
+    CASE_MATHFN (LDEXP)
+    CASE_MATHFN (LFLOOR)
+    CASE_MATHFN (LGAMMA)
+    CASE_MATHFN_REENT (LGAMMA) /* LGAMMA_R */
+    CASE_MATHFN (LLCEIL)
+    CASE_MATHFN (LLFLOOR)
+    CASE_MATHFN (LLRINT)
+    CASE_MATHFN (LLROUND)
+    CASE_MATHFN (LOG)
+    CASE_MATHFN (LOG10)
+    CASE_MATHFN (LOG1P)
+    CASE_MATHFN (LOG2)
+    CASE_MATHFN (LOGB)
+    CASE_MATHFN (LRINT)
+    CASE_MATHFN (LROUND)
+    CASE_MATHFN (MODF)
+    CASE_MATHFN (NAN)
+    CASE_MATHFN (NANS)
+    CASE_MATHFN (NEARBYINT)
+    CASE_MATHFN (NEXTAFTER)
+    CASE_MATHFN (NEXTTOWARD)
+    CASE_MATHFN (POW)
+    CASE_MATHFN (POWI)
+    CASE_MATHFN (POW10)
+    CASE_MATHFN (REMAINDER)
+    CASE_MATHFN (REMQUO)
+    CASE_MATHFN (RINT)
+    CASE_MATHFN (ROUND)
+    CASE_MATHFN (SCALB)
+    CASE_MATHFN (SCALBLN)
+    CASE_MATHFN (SCALBN)
+    CASE_MATHFN (SIGNBIT)
+    CASE_MATHFN (SIGNIFICAND)
+    CASE_MATHFN (SIN)
+    CASE_MATHFN (SINCOS)
+    CASE_MATHFN (SINH)
+    CASE_MATHFN (SQRT)
+    CASE_MATHFN (TAN)
+    CASE_MATHFN (TANH)
+    CASE_MATHFN (TGAMMA)
+    CASE_MATHFN (TRUNC)
+    CASE_MATHFN (Y0)
+    CASE_MATHFN (Y1)
+    CASE_MATHFN (YN)
 
-      default:
-	return END_BUILTINS;
-      }
+    default:
+      return END_BUILTINS;
+    }
 
   if (TYPE_MAIN_VARIANT (type) == double_type_node)
     return fcode;
@@ -1905,7 +1881,7 @@ mathfn_built_in_2 (tree type, built_in_function fn)
    return null.  */
 
 static tree
-mathfn_built_in_1 (tree type, enum built_in_function fn, bool implicit_p)
+mathfn_built_in_1 (tree type, combined_fn fn, bool implicit_p)
 {
   built_in_function fcode2 = mathfn_built_in_2 (type, fn);
   if (fcode2 == END_BUILTINS)
@@ -1917,292 +1893,80 @@ mathfn_built_in_1 (tree type, enum built_in_function fn, bool implicit_p)
   return builtin_decl_explicit (fcode2);
 }
 
-/* Like mathfn_built_in_1(), but always use the implicit array.  */
+/* Like mathfn_built_in_1, but always use the implicit array.  */
 
 tree
-mathfn_built_in (tree type, enum built_in_function fn)
+mathfn_built_in (tree type, combined_fn fn)
 {
   return mathfn_built_in_1 (type, fn, /*implicit=*/ 1);
 }
 
-/* If errno must be maintained, expand the RTL to check if the result,
-   TARGET, of a built-in function call, EXP, is NaN, and if so set
-   errno to EDOM.  */
+/* Like mathfn_built_in_1, but take a built_in_function and
+   always use the implicit array.  */
 
-static void
-expand_errno_check (tree exp, rtx target)
+tree
+mathfn_built_in (tree type, enum built_in_function fn)
 {
-  rtx_code_label *lab = gen_label_rtx ();
-
-  /* Test the result; if it is NaN, set errno=EDOM because
-     the argument was not in the domain.  */
-  do_compare_rtx_and_jump (target, target, EQ, 0, GET_MODE (target),
-			   NULL_RTX, NULL, lab,
-			   /* The jump is very likely.  */
-			   REG_BR_PROB_BASE - (REG_BR_PROB_BASE / 2000 - 1));
-
-#ifdef TARGET_EDOM
-  /* If this built-in doesn't throw an exception, set errno directly.  */
-  if (TREE_NOTHROW (TREE_OPERAND (CALL_EXPR_FN (exp), 0)))
-    {
-#ifdef GEN_ERRNO_RTX
-      rtx errno_rtx = GEN_ERRNO_RTX;
-#else
-      rtx errno_rtx
-	  = gen_rtx_MEM (word_mode, gen_rtx_SYMBOL_REF (Pmode, "errno"));
-#endif
-      emit_move_insn (errno_rtx,
-		      gen_int_mode (TARGET_EDOM, GET_MODE (errno_rtx)));
-      emit_label (lab);
-      return;
-    }
-#endif
-
-  /* Make sure the library call isn't expanded as a tail call.  */
-  CALL_EXPR_TAILCALL (exp) = 0;
-
-  /* We can't set errno=EDOM directly; let the library call do it.
-     Pop the arguments right away in case the call gets deleted.  */
-  NO_DEFER_POP;
-  expand_call (exp, target, 0);
-  OK_DEFER_POP;
-  emit_label (lab);
+  return mathfn_built_in_1 (type, as_combined_fn (fn), /*implicit=*/ 1);
 }
 
-/* Expand a call to one of the builtin math functions (sqrt, exp, or log).
-   Return NULL_RTX if a normal call should be emitted rather than expanding
-   the function in-line.  EXP is the expression that is a call to the builtin
-   function; if convenient, the result should be placed in TARGET.
-   SUBTARGET may be used as the target for computing one of EXP's operands.  */
+/* If BUILT_IN_NORMAL function FNDECL has an associated internal function,
+   return its code, otherwise return IFN_LAST.  Note that this function
+   only tests whether the function is defined in internals.def, not whether
+   it is actually available on the target.  */
 
-static rtx
-expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
+internal_fn
+associated_internal_fn (tree fndecl)
 {
-  optab builtin_optab;
-  rtx op0;
-  rtx_insn *insns;
-  tree fndecl = get_callee_fndecl (exp);
-  machine_mode mode;
-  bool errno_set = false;
-  bool try_widening = false;
-  tree arg;
-
-  if (!validate_arglist (exp, REAL_TYPE, VOID_TYPE))
-    return NULL_RTX;
-
-  arg = CALL_EXPR_ARG (exp, 0);
-
+  gcc_checking_assert (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL);
+  tree return_type = TREE_TYPE (TREE_TYPE (fndecl));
   switch (DECL_FUNCTION_CODE (fndecl))
     {
-    CASE_FLT_FN (BUILT_IN_SQRT):
-      errno_set = ! tree_expr_nonnegative_p (arg);
-      try_widening = true;
-      builtin_optab = sqrt_optab;
-      break;
-    CASE_FLT_FN (BUILT_IN_EXP):
-      errno_set = true; builtin_optab = exp_optab; break;
-    CASE_FLT_FN (BUILT_IN_EXP10):
+#define DEF_INTERNAL_FLT_FN(NAME, FLAGS, OPTAB, TYPE) \
+    CASE_FLT_FN (BUILT_IN_##NAME): return IFN_##NAME;
+#define DEF_INTERNAL_INT_FN(NAME, FLAGS, OPTAB, TYPE) \
+    CASE_INT_FN (BUILT_IN_##NAME): return IFN_##NAME;
+#include "internal-fn.def"
+
     CASE_FLT_FN (BUILT_IN_POW10):
-      errno_set = true; builtin_optab = exp10_optab; break;
-    CASE_FLT_FN (BUILT_IN_EXP2):
-      errno_set = true; builtin_optab = exp2_optab; break;
-    CASE_FLT_FN (BUILT_IN_EXPM1):
-      errno_set = true; builtin_optab = expm1_optab; break;
-    CASE_FLT_FN (BUILT_IN_LOGB):
-      errno_set = true; builtin_optab = logb_optab; break;
-    CASE_FLT_FN (BUILT_IN_LOG):
-      errno_set = true; builtin_optab = log_optab; break;
-    CASE_FLT_FN (BUILT_IN_LOG10):
-      errno_set = true; builtin_optab = log10_optab; break;
-    CASE_FLT_FN (BUILT_IN_LOG2):
-      errno_set = true; builtin_optab = log2_optab; break;
-    CASE_FLT_FN (BUILT_IN_LOG1P):
-      errno_set = true; builtin_optab = log1p_optab; break;
-    CASE_FLT_FN (BUILT_IN_ASIN):
-      builtin_optab = asin_optab; break;
-    CASE_FLT_FN (BUILT_IN_ACOS):
-      builtin_optab = acos_optab; break;
-    CASE_FLT_FN (BUILT_IN_TAN):
-      builtin_optab = tan_optab; break;
-    CASE_FLT_FN (BUILT_IN_ATAN):
-      builtin_optab = atan_optab; break;
-    CASE_FLT_FN (BUILT_IN_FLOOR):
-      builtin_optab = floor_optab; break;
-    CASE_FLT_FN (BUILT_IN_CEIL):
-      builtin_optab = ceil_optab; break;
-    CASE_FLT_FN (BUILT_IN_TRUNC):
-      builtin_optab = btrunc_optab; break;
-    CASE_FLT_FN (BUILT_IN_ROUND):
-      builtin_optab = round_optab; break;
-    CASE_FLT_FN (BUILT_IN_NEARBYINT):
-      builtin_optab = nearbyint_optab;
-      if (flag_trapping_math)
-	break;
-      /* Else fallthrough and expand as rint.  */
-    CASE_FLT_FN (BUILT_IN_RINT):
-      builtin_optab = rint_optab; break;
-    CASE_FLT_FN (BUILT_IN_SIGNIFICAND):
-      builtin_optab = significand_optab; break;
+      return IFN_EXP10;
+
+    CASE_FLT_FN (BUILT_IN_DREM):
+      return IFN_REMAINDER;
+
+    CASE_FLT_FN (BUILT_IN_SCALBN):
+    CASE_FLT_FN (BUILT_IN_SCALBLN):
+      if (REAL_MODE_FORMAT (TYPE_MODE (return_type))->b == 2)
+	return IFN_LDEXP;
+      return IFN_LAST;
+
     default:
-      gcc_unreachable ();
+      return IFN_LAST;
     }
-
-  /* Make a suitable register to place result in.  */
-  mode = TYPE_MODE (TREE_TYPE (exp));
-
-  if (! flag_errno_math || ! HONOR_NANS (mode))
-    errno_set = false;
-
-  /* Before working hard, check whether the instruction is available, but try
-     to widen the mode for specific operations.  */
-  if ((optab_handler (builtin_optab, mode) != CODE_FOR_nothing
-       || (try_widening && !excess_precision_type (TREE_TYPE (exp))))
-      && (!errno_set || !optimize_insn_for_size_p ()))
-    {
-      rtx result = gen_reg_rtx (mode);
-
-      /* Wrap the computation of the argument in a SAVE_EXPR, as we may
-	 need to expand the argument again.  This way, we will not perform
-	 side-effects more the once.  */
-      CALL_EXPR_ARG (exp, 0) = arg = builtin_save_expr (arg);
-
-      op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
-
-      start_sequence ();
-
-      /* Compute into RESULT.
-	 Set RESULT to wherever the result comes back.  */
-      result = expand_unop (mode, builtin_optab, op0, result, 0);
-
-      if (result != 0)
-	{
-	  if (errno_set)
-	    expand_errno_check (exp, result);
-
-	  /* Output the entire sequence.  */
-	  insns = get_insns ();
-	  end_sequence ();
-	  emit_insn (insns);
-	  return result;
-	}
-
-      /* If we were unable to expand via the builtin, stop the sequence
-	 (without outputting the insns) and call to the library function
-	 with the stabilized argument list.  */
-      end_sequence ();
-    }
-
-  return expand_call (exp, target, target == const0_rtx);
 }
 
-/* Expand a call to the builtin binary math functions (pow and atan2).
-   Return NULL_RTX if a normal call should be emitted rather than expanding the
-   function in-line.  EXP is the expression that is a call to the builtin
-   function; if convenient, the result should be placed in TARGET.
-   SUBTARGET may be used as the target for computing one of EXP's
-   operands.  */
+/* If CALL is a call to a BUILT_IN_NORMAL function that could be replaced
+   on the current target by a call to an internal function, return the
+   code of that internal function, otherwise return IFN_LAST.  The caller
+   is responsible for ensuring that any side-effects of the built-in
+   call are dealt with correctly.  E.g. if CALL sets errno, the caller
+   must decide that the errno result isn't needed or make it available
+   in some other way.  */
 
-static rtx
-expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
+internal_fn
+replacement_internal_fn (gcall *call)
 {
-  optab builtin_optab;
-  rtx op0, op1, result;
-  rtx_insn *insns;
-  int op1_type = REAL_TYPE;
-  tree fndecl = get_callee_fndecl (exp);
-  tree arg0, arg1;
-  machine_mode mode;
-  bool errno_set = true;
-
-  switch (DECL_FUNCTION_CODE (fndecl))
+  if (gimple_call_builtin_p (call, BUILT_IN_NORMAL))
     {
-    CASE_FLT_FN (BUILT_IN_SCALBN):
-    CASE_FLT_FN (BUILT_IN_SCALBLN):
-    CASE_FLT_FN (BUILT_IN_LDEXP):
-      op1_type = INTEGER_TYPE;
-    default:
-      break;
+      internal_fn ifn = associated_internal_fn (gimple_call_fndecl (call));
+      if (ifn != IFN_LAST)
+	{
+	  tree_pair types = direct_internal_fn_types (ifn, call);
+	  if (direct_internal_fn_supported_p (ifn, types))
+	    return ifn;
+	}
     }
-
-  if (!validate_arglist (exp, REAL_TYPE, op1_type, VOID_TYPE))
-    return NULL_RTX;
-
-  arg0 = CALL_EXPR_ARG (exp, 0);
-  arg1 = CALL_EXPR_ARG (exp, 1);
-
-  switch (DECL_FUNCTION_CODE (fndecl))
-    {
-    CASE_FLT_FN (BUILT_IN_POW):
-      builtin_optab = pow_optab; break;
-    CASE_FLT_FN (BUILT_IN_ATAN2):
-      builtin_optab = atan2_optab; break;
-    CASE_FLT_FN (BUILT_IN_SCALB):
-      if (REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (exp)))->b != 2)
-	return 0;
-      builtin_optab = scalb_optab; break;
-    CASE_FLT_FN (BUILT_IN_SCALBN):
-    CASE_FLT_FN (BUILT_IN_SCALBLN):
-      if (REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (exp)))->b != 2)
-	return 0;
-    /* Fall through... */
-    CASE_FLT_FN (BUILT_IN_LDEXP):
-      builtin_optab = ldexp_optab; break;
-    CASE_FLT_FN (BUILT_IN_FMOD):
-      builtin_optab = fmod_optab; break;
-    CASE_FLT_FN (BUILT_IN_REMAINDER):
-    CASE_FLT_FN (BUILT_IN_DREM):
-      builtin_optab = remainder_optab; break;
-    default:
-      gcc_unreachable ();
-    }
-
-  /* Make a suitable register to place result in.  */
-  mode = TYPE_MODE (TREE_TYPE (exp));
-
-  /* Before working hard, check whether the instruction is available.  */
-  if (optab_handler (builtin_optab, mode) == CODE_FOR_nothing)
-    return NULL_RTX;
-
-  result = gen_reg_rtx (mode);
-
-  if (! flag_errno_math || ! HONOR_NANS (mode))
-    errno_set = false;
-
-  if (errno_set && optimize_insn_for_size_p ())
-    return 0;
-
-  /* Always stabilize the argument list.  */
-  CALL_EXPR_ARG (exp, 0) = arg0 = builtin_save_expr (arg0);
-  CALL_EXPR_ARG (exp, 1) = arg1 = builtin_save_expr (arg1);
-
-  op0 = expand_expr (arg0, subtarget, VOIDmode, EXPAND_NORMAL);
-  op1 = expand_normal (arg1);
-
-  start_sequence ();
-
-  /* Compute into RESULT.
-     Set RESULT to wherever the result comes back.  */
-  result = expand_binop (mode, builtin_optab, op0, op1,
-			 result, 0, OPTAB_DIRECT);
-
-  /* If we were unable to expand via the builtin, stop the sequence
-     (without outputting the insns) and call to the library function
-     with the stabilized argument list.  */
-  if (result == 0)
-    {
-      end_sequence ();
-      return expand_call (exp, target, target == const0_rtx);
-    }
-
-  if (errno_set)
-    expand_errno_check (exp, result);
-
-  /* Output the entire sequence.  */
-  insns = get_insns ();
-  end_sequence ();
-  emit_insn (insns);
-
-  return result;
+  return IFN_LAST;
 }
 
 /* Expand a call to the builtin trinary math functions (fma).
@@ -2883,8 +2647,8 @@ expand_builtin_int_roundingfn_2 (tree exp, rtx target)
 	 a call to lround in the hope that the target provides at least some
 	 C99 functions.  This should result in the best user experience for
 	 not full C99 targets.  */
-      tree fallback_fndecl = mathfn_built_in_1 (TREE_TYPE (arg),
-						fallback_fn, 0);
+      tree fallback_fndecl = mathfn_built_in_1
+	(TREE_TYPE (arg), as_combined_fn (fallback_fn), 0);
 
       exp = build_call_nofold_loc (EXPR_LOCATION (exp),
 				   fallback_fndecl, 1, arg);
@@ -5937,37 +5701,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
     CASE_FLT_FN (BUILT_IN_CABS):
       break;
 
-    CASE_FLT_FN (BUILT_IN_EXP):
-    CASE_FLT_FN (BUILT_IN_EXP10):
-    CASE_FLT_FN (BUILT_IN_POW10):
-    CASE_FLT_FN (BUILT_IN_EXP2):
-    CASE_FLT_FN (BUILT_IN_EXPM1):
-    CASE_FLT_FN (BUILT_IN_LOGB):
-    CASE_FLT_FN (BUILT_IN_LOG):
-    CASE_FLT_FN (BUILT_IN_LOG10):
-    CASE_FLT_FN (BUILT_IN_LOG2):
-    CASE_FLT_FN (BUILT_IN_LOG1P):
-    CASE_FLT_FN (BUILT_IN_TAN):
-    CASE_FLT_FN (BUILT_IN_ASIN):
-    CASE_FLT_FN (BUILT_IN_ACOS):
-    CASE_FLT_FN (BUILT_IN_ATAN):
-    CASE_FLT_FN (BUILT_IN_SIGNIFICAND):
-      /* Treat these like sqrt only if unsafe math optimizations are allowed,
-	 because of possible accuracy problems.  */
-      if (! flag_unsafe_math_optimizations)
-	break;
-    CASE_FLT_FN (BUILT_IN_SQRT):
-    CASE_FLT_FN (BUILT_IN_FLOOR):
-    CASE_FLT_FN (BUILT_IN_CEIL):
-    CASE_FLT_FN (BUILT_IN_TRUNC):
-    CASE_FLT_FN (BUILT_IN_ROUND):
-    CASE_FLT_FN (BUILT_IN_NEARBYINT):
-    CASE_FLT_FN (BUILT_IN_RINT):
-      target = expand_builtin_mathfn (exp, target, subtarget);
-      if (target)
-	return target;
-      break;
-
     CASE_FLT_FN (BUILT_IN_FMA):
       target = expand_builtin_mathfn_ternary (exp, target, subtarget);
       if (target)
@@ -6010,23 +5743,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 
     CASE_FLT_FN (BUILT_IN_POWI):
       target = expand_builtin_powi (exp, target);
-      if (target)
-	return target;
-      break;
-
-    CASE_FLT_FN (BUILT_IN_ATAN2):
-    CASE_FLT_FN (BUILT_IN_LDEXP):
-    CASE_FLT_FN (BUILT_IN_SCALB):
-    CASE_FLT_FN (BUILT_IN_SCALBN):
-    CASE_FLT_FN (BUILT_IN_SCALBLN):
-      if (! flag_unsafe_math_optimizations)
-	break;
-
-    CASE_FLT_FN (BUILT_IN_FMOD):
-    CASE_FLT_FN (BUILT_IN_REMAINDER):
-    CASE_FLT_FN (BUILT_IN_DREM):
-    CASE_FLT_FN (BUILT_IN_POW):
-      target = expand_builtin_mathfn_2 (exp, target, subtarget);
       if (target)
 	return target;
       break;
@@ -7286,26 +7002,6 @@ fold_builtin_inf (location_t loc, tree type, int warn)
   return build_real (type, real);
 }
 
-/* Fold a call to __builtin_nan or __builtin_nans with argument ARG.  */
-
-static tree
-fold_builtin_nan (tree arg, tree type, int quiet)
-{
-  REAL_VALUE_TYPE real;
-  const char *str;
-
-  if (!validate_arg (arg, POINTER_TYPE))
-    return NULL_TREE;
-  str = c_getstr (arg);
-  if (!str)
-    return NULL_TREE;
-
-  if (!real_nan (&real, str, quiet, TYPE_MODE (type)))
-    return NULL_TREE;
-
-  return build_real (type, real);
-}
-
 /* Fold function call to builtin sincos, sincosf, or sincosl.  Return
    NULL_TREE if no simplification can be made.  */
 
@@ -7324,7 +7020,7 @@ fold_builtin_sincos (location_t loc,
   type = TREE_TYPE (arg0);
 
   /* Calculate the result when the argument is a constant.  */
-  built_in_function fn = mathfn_built_in_2 (type, BUILT_IN_CEXPI);
+  built_in_function fn = mathfn_built_in_2 (type, CFN_BUILT_IN_CEXPI);
   if (fn == END_BUILTINS)
     return NULL_TREE;
 
@@ -7332,7 +7028,7 @@ fold_builtin_sincos (location_t loc,
   if (TREE_CODE (arg0) == REAL_CST)
     {
       tree complex_type = build_complex_type (type);
-      call = fold_const_call (fn, complex_type, arg0);
+      call = fold_const_call (as_combined_fn (fn), complex_type, arg0);
     }
   if (!call)
     {
@@ -7351,99 +7047,6 @@ fold_builtin_sincos (location_t loc,
 		 build2 (MODIFY_EXPR, void_type_node,
 			 build_fold_indirect_ref_loc (loc, arg2),
 			 fold_build1_loc (loc, REALPART_EXPR, type, call)));
-}
-
-/* Fold function call to builtin ffs, clz, ctz, popcount and parity
-   and their long and long long variants (i.e. ffsl and ffsll).  ARG is
-   the argument to the call.  Return NULL_TREE if no simplification can
-   be made.  */
-
-static tree
-fold_builtin_bitop (tree fndecl, tree arg)
-{
-  if (!validate_arg (arg, INTEGER_TYPE))
-    return NULL_TREE;
-
-  /* Optimize for constant argument.  */
-  if (TREE_CODE (arg) == INTEGER_CST && !TREE_OVERFLOW (arg))
-    {
-      tree type = TREE_TYPE (arg);
-      int result;
-
-      switch (DECL_FUNCTION_CODE (fndecl))
-	{
-	CASE_INT_FN (BUILT_IN_FFS):
-	  result = wi::ffs (arg);
-	  break;
-
-	CASE_INT_FN (BUILT_IN_CLZ):
-	  if (wi::ne_p (arg, 0))
-	    result = wi::clz (arg);
-	  else if (! CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (type), result))
-	    result = TYPE_PRECISION (type);
-	  break;
-
-	CASE_INT_FN (BUILT_IN_CTZ):
-	  if (wi::ne_p (arg, 0))
-	    result = wi::ctz (arg);
-	  else if (! CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (type), result))
-	    result = TYPE_PRECISION (type);
-	  break;
-
-	CASE_INT_FN (BUILT_IN_CLRSB):
-	  result = wi::clrsb (arg);
-	  break;
-
-	CASE_INT_FN (BUILT_IN_POPCOUNT):
-	  result = wi::popcount (arg);
-	  break;
-
-	CASE_INT_FN (BUILT_IN_PARITY):
-	  result = wi::parity (arg);
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-
-      return build_int_cst (TREE_TYPE (TREE_TYPE (fndecl)), result);
-    }
-
-  return NULL_TREE;
-}
-
-/* Fold function call to builtin_bswap and the short, long and long long
-   variants.  Return NULL_TREE if no simplification can be made.  */
-static tree
-fold_builtin_bswap (tree fndecl, tree arg)
-{
-  if (! validate_arg (arg, INTEGER_TYPE))
-    return NULL_TREE;
-
-  /* Optimize constant value.  */
-  if (TREE_CODE (arg) == INTEGER_CST && !TREE_OVERFLOW (arg))
-    {
-      tree type = TREE_TYPE (TREE_TYPE (fndecl));
-
-      switch (DECL_FUNCTION_CODE (fndecl))
-	{
-	  case BUILT_IN_BSWAP16:
-	  case BUILT_IN_BSWAP32:
-	  case BUILT_IN_BSWAP64:
-	    {
-	      signop sgn = TYPE_SIGN (type);
-	      tree result =
-		wide_int_to_tree (type,
-				  wide_int::from (arg, TYPE_PRECISION (type),
-						  sgn).bswap ());
-	      return result;
-	    }
-	default:
-	  gcc_unreachable ();
-	}
-    }
-
-  return NULL_TREE;
 }
 
 /* Fold function call to builtin memchr.  ARG1, ARG2 and LEN are the
@@ -7493,8 +7096,6 @@ fold_builtin_memchr (location_t loc, tree arg1, tree arg2, tree len, tree type)
 static tree
 fold_builtin_memcmp (location_t loc, tree arg1, tree arg2, tree len)
 {
-  const char *p1, *p2;
-
   if (!validate_arg (arg1, POINTER_TYPE)
       || !validate_arg (arg2, POINTER_TYPE)
       || !validate_arg (len, INTEGER_TYPE))
@@ -7508,25 +7109,6 @@ fold_builtin_memcmp (location_t loc, tree arg1, tree arg2, tree len)
   /* If ARG1 and ARG2 are the same (and not volatile), return zero.  */
   if (operand_equal_p (arg1, arg2, 0))
     return omit_one_operand_loc (loc, integer_type_node, integer_zero_node, len);
-
-  p1 = c_getstr (arg1);
-  p2 = c_getstr (arg2);
-
-  /* If all arguments are constant, and the value of len is not greater
-     than the lengths of arg1 and arg2, evaluate at compile-time.  */
-  if (tree_fits_uhwi_p (len) && p1 && p2
-      && compare_tree_int (len, strlen (p1) + 1) <= 0
-      && compare_tree_int (len, strlen (p2) + 1) <= 0)
-    {
-      const int r = memcmp (p1, p2, tree_to_uhwi (len));
-
-      if (r > 0)
-	return integer_one_node;
-      else if (r < 0)
-	return integer_minus_one_node;
-      else
-	return integer_zero_node;
-    }
 
   /* If len parameter is one, return an expression corresponding to
      (*(const unsigned char*)arg1 - (const unsigned char*)arg2).  */
@@ -7560,8 +7142,6 @@ fold_builtin_memcmp (location_t loc, tree arg1, tree arg2, tree len)
 static tree
 fold_builtin_strcmp (location_t loc, tree arg1, tree arg2)
 {
-  const char *p1, *p2;
-
   if (!validate_arg (arg1, POINTER_TYPE)
       || !validate_arg (arg2, POINTER_TYPE))
     return NULL_TREE;
@@ -7570,21 +7150,8 @@ fold_builtin_strcmp (location_t loc, tree arg1, tree arg2)
   if (operand_equal_p (arg1, arg2, 0))
     return integer_zero_node;
 
-  p1 = c_getstr (arg1);
-  p2 = c_getstr (arg2);
-
-  if (p1 && p2)
-    {
-      const int i = strcmp (p1, p2);
-      if (i < 0)
-	return integer_minus_one_node;
-      else if (i > 0)
-	return integer_one_node;
-      else
-	return integer_zero_node;
-    }
-
   /* If the second arg is "", return *(const unsigned char*)arg1.  */
+  const char *p2 = c_getstr (arg2);
   if (p2 && *p2 == '\0')
     {
       tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
@@ -7599,6 +7166,7 @@ fold_builtin_strcmp (location_t loc, tree arg1, tree arg2)
     }
 
   /* If the first arg is "", return -*(const unsigned char*)arg2.  */
+  const char *p1 = c_getstr (arg1);
   if (p1 && *p1 == '\0')
     {
       tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
@@ -7623,8 +7191,6 @@ fold_builtin_strcmp (location_t loc, tree arg1, tree arg2)
 static tree
 fold_builtin_strncmp (location_t loc, tree arg1, tree arg2, tree len)
 {
-  const char *p1, *p2;
-
   if (!validate_arg (arg1, POINTER_TYPE)
       || !validate_arg (arg2, POINTER_TYPE)
       || !validate_arg (len, INTEGER_TYPE))
@@ -7639,22 +7205,9 @@ fold_builtin_strncmp (location_t loc, tree arg1, tree arg2, tree len)
   if (operand_equal_p (arg1, arg2, 0))
     return omit_one_operand_loc (loc, integer_type_node, integer_zero_node, len);
 
-  p1 = c_getstr (arg1);
-  p2 = c_getstr (arg2);
-
-  if (tree_fits_uhwi_p (len) && p1 && p2)
-    {
-      const int i = strncmp (p1, p2, tree_to_uhwi (len));
-      if (i > 0)
-	return integer_one_node;
-      else if (i < 0)
-	return integer_minus_one_node;
-      else
-	return integer_zero_node;
-    }
-
   /* If the second arg is "", and the length is greater than zero,
      return *(const unsigned char*)arg1.  */
+  const char *p2 = c_getstr (arg2);
   if (p2 && *p2 == '\0'
       && TREE_CODE (len) == INTEGER_CST
       && tree_int_cst_sgn (len) == 1)
@@ -7672,6 +7225,7 @@ fold_builtin_strncmp (location_t loc, tree arg1, tree arg2, tree len)
 
   /* If the first arg is "", and the length is greater than zero,
      return -*(const unsigned char*)arg2.  */
+  const char *p1 = c_getstr (arg1);
   if (p1 && *p1 == '\0'
       && TREE_CODE (len) == INTEGER_CST
       && tree_int_cst_sgn (len) == 1)
@@ -8039,7 +7593,6 @@ static tree
 fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
 {
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
-  REAL_VALUE_TYPE r;
 
   if (!validate_arg (arg, REAL_TYPE))
     return NULL_TREE;
@@ -8050,16 +7603,6 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
       if (!HONOR_INFINITIES (arg))
 	return omit_one_operand_loc (loc, type, integer_zero_node, arg);
 
-      if (TREE_CODE (arg) == REAL_CST)
-	{
-	  r = TREE_REAL_CST (arg);
-	  if (real_isinf (&r))
-	    return real_compare (GT_EXPR, &r, &dconst0)
-		   ? integer_one_node : integer_minus_one_node;
-	  else
-	    return integer_zero_node;
-	}
-
       return NULL_TREE;
 
     case BUILT_IN_ISINF_SIGN:
@@ -8068,7 +7611,8 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
 	/* In a boolean context, GCC will fold the inner COND_EXPR to
 	   1.  So e.g. "if (isinf_sign(x))" would be folded to just
 	   "if (isinf(x) ? 1 : 0)" which becomes "if (isinf(x))". */
-	tree signbit_fn = mathfn_built_in_1 (TREE_TYPE (arg), BUILT_IN_SIGNBIT, 0);
+	tree signbit_fn = mathfn_built_in_1
+	  (TREE_TYPE (arg), CFN_BUILT_IN_SIGNBIT, 0);
 	tree isinf_fn = builtin_decl_explicit (BUILT_IN_ISINF);
 	tree tmp = NULL_TREE;
 
@@ -8099,23 +7643,11 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
 	  && !HONOR_INFINITIES (arg))
 	return omit_one_operand_loc (loc, type, integer_one_node, arg);
 
-      if (TREE_CODE (arg) == REAL_CST)
-	{
-	  r = TREE_REAL_CST (arg);
-	  return real_isfinite (&r) ? integer_one_node : integer_zero_node;
-	}
-
       return NULL_TREE;
 
     case BUILT_IN_ISNAN:
       if (!HONOR_NANS (arg))
 	return omit_one_operand_loc (loc, type, integer_zero_node, arg);
-
-      if (TREE_CODE (arg) == REAL_CST)
-	{
-	  r = TREE_REAL_CST (arg);
-	  return real_isnan (&r) ? integer_one_node : integer_zero_node;
-	}
 
       arg = builtin_save_expr (arg);
       return fold_build2_loc (loc, UNORDERED_EXPR, type, arg, arg);
@@ -8342,7 +7874,7 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
   if (TREE_CODE (arg0) == ERROR_MARK)
     return NULL_TREE;
 
-  if (tree ret = fold_const_call (fcode, type, arg0))
+  if (tree ret = fold_const_call (as_combined_fn (fcode), type, arg0))
     return ret;
 
   switch (fcode)
@@ -8398,28 +7930,6 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
 
     CASE_FLT_FN (BUILT_IN_CARG):
       return fold_builtin_carg (loc, arg0, type);
-
-    CASE_FLT_FN (BUILT_IN_NAN):
-    case BUILT_IN_NAND32:
-    case BUILT_IN_NAND64:
-    case BUILT_IN_NAND128:
-      return fold_builtin_nan (arg0, type, true);
-
-    CASE_FLT_FN (BUILT_IN_NANS):
-      return fold_builtin_nan (arg0, type, false);
-
-    case BUILT_IN_BSWAP16:
-    case BUILT_IN_BSWAP32:
-    case BUILT_IN_BSWAP64:
-      return fold_builtin_bswap (fndecl, arg0);
-
-    CASE_INT_FN (BUILT_IN_FFS):
-    CASE_INT_FN (BUILT_IN_CLZ):
-    CASE_INT_FN (BUILT_IN_CTZ):
-    CASE_INT_FN (BUILT_IN_CLRSB):
-    CASE_INT_FN (BUILT_IN_POPCOUNT):
-    CASE_INT_FN (BUILT_IN_PARITY):
-      return fold_builtin_bitop (fndecl, arg0);
 
     case BUILT_IN_ISASCII:
       return fold_builtin_isascii (loc, arg0);
@@ -8491,7 +8001,7 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1)
       || TREE_CODE (arg1) == ERROR_MARK)
     return NULL_TREE;
 
-  if (tree ret = fold_const_call (fcode, type, arg0, arg1))
+  if (tree ret = fold_const_call (as_combined_fn (fcode), type, arg0, arg1))
     return ret;
 
   switch (fcode)
@@ -8590,7 +8100,8 @@ fold_builtin_3 (location_t loc, tree fndecl,
       || TREE_CODE (arg2) == ERROR_MARK)
     return NULL_TREE;
 
-  if (tree ret = fold_const_call (fcode, type, arg0, arg1, arg2))
+  if (tree ret = fold_const_call (as_combined_fn (fcode), type,
+				  arg0, arg1, arg2))
     return ret;
 
   switch (fcode)
@@ -9226,13 +8737,6 @@ fold_builtin_strspn (location_t loc, tree s1, tree s2)
     {
       const char *p1 = c_getstr (s1), *p2 = c_getstr (s2);
 
-      /* If both arguments are constants, evaluate at compile-time.  */
-      if (p1 && p2)
-	{
-	  const size_t r = strspn (p1, p2);
-	  return build_int_cst (size_type_node, r);
-	}
-
       /* If either argument is "", return NULL_TREE.  */
       if ((p1 && *p1 == '\0') || (p2 && *p2 == '\0'))
 	/* Evaluate and ignore both arguments in case either one has
@@ -9269,16 +8773,8 @@ fold_builtin_strcspn (location_t loc, tree s1, tree s2)
     return NULL_TREE;
   else
     {
-      const char *p1 = c_getstr (s1), *p2 = c_getstr (s2);
-
-      /* If both arguments are constants, evaluate at compile-time.  */
-      if (p1 && p2)
-	{
-	  const size_t r = strcspn (p1, p2);
-	  return build_int_cst (size_type_node, r);
-	}
-
       /* If the first argument is "", return NULL_TREE.  */
+      const char *p1 = c_getstr (s1);
       if (p1 && *p1 == '\0')
 	{
 	  /* Evaluate and ignore argument s2 in case it has
@@ -9288,6 +8784,7 @@ fold_builtin_strcspn (location_t loc, tree s1, tree s2)
 	}
 
       /* If the second argument is "", return __builtin_strlen(s1).  */
+      const char *p2 = c_getstr (s2);
       if (p2 && *p2 == '\0')
 	{
 	  tree fn = builtin_decl_implicit (BUILT_IN_STRLEN);

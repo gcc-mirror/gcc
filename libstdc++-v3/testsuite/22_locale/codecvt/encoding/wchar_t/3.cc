@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "en_US.ISO-8859-15" }
+// { dg-require-namedlocale "en_US.ISO8859-1" }
 
 // 2003-02-06  Petur Runolfsson  <peturr02@ru.is>
 
@@ -27,19 +27,19 @@
 // Required instantiation
 // codecvt<wchar_t, char, mbstate_t>
 //
-// Test do_encoding with ISO-8859-15 locale.
+// Test do_encoding with ISO8859-1 locale.
 void test03()
 {
   using namespace std;
   typedef codecvt<wchar_t, char, mbstate_t> 	w_codecvt;
   bool test __attribute__((unused)) = true;
 
-  locale loc = locale("en_US.ISO-8859-15");
+  locale loc = locale(ISO_8859(1,en_US));
   locale::global(loc);
   const w_codecvt* 	cvt = &use_facet<w_codecvt>(loc); 
 
   int i = cvt->encoding();
-  VERIFY( i == 1 ); // ISO-8859-15 is a single-byte encoding
+  VERIFY( i == 1 ); // ISO8859-1 is a single-byte encoding
 }
 
 int main ()

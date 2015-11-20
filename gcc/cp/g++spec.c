@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "gcc.h"
 #include "opts.h"
 
 /* This bit is set if we saw a `-xfoo' language specification.  */

@@ -506,6 +506,15 @@ package body Sem_Ch5 is
          Ghost_Mode := Save_Ghost_Mode;
          return;
 
+      --  A class-wide type may be a limited view. This illegal case is not
+      --  caught by previous checks.
+
+      elsif Ekind (T1) = E_Class_Wide_Type
+        and then From_Limited_With (T1)
+      then
+         Error_Msg_NE ("invalid use of limited view of&", Lhs, T1);
+         return;
+
       --  Enforce RM 3.9.3 (8): the target of an assignment operation cannot be
       --  abstract. This is only checked when the assignment Comes_From_Source,
       --  because in some cases the expander generates such assignments (such
@@ -2057,19 +2066,20 @@ package body Sem_Ch5 is
 
             Set_Is_Aliased (Def_Id, Has_Aliased_Components (Typ));
 
-            --  AI12-0151 stipulates that the container cannot be a component
-            --  that depends on a discriminant if the enclosing object is
-            --  mutable, to prevent a modification of the container in the
-            --  course of an iteration.
+            --  AI12-0047 stipulates that the domain (array or container)
+            --  cannot be a component that depends on a discriminant if the
+            --  enclosing object is mutable, to prevent a modification of the
+            --  dowmain of iteration in the course of an iteration.
 
-            --  Should comment on need to go to Original_Node ???
+            --  If the object is an expression it has been captured in a
+            --  temporary, so examine original node.
 
             if Nkind (Original_Node (Iter_Name)) = N_Selected_Component
               and then Is_Dependent_Component_Of_Mutable_Object
                          (Original_Node (Iter_Name))
             then
                Error_Msg_N
-                 ("container cannot be a discriminant-dependent "
+                 ("iterable name cannot be a discriminant-dependent "
                   & "component of a mutable object", N);
             end if;
 

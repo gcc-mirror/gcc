@@ -84,7 +84,7 @@ extern char *neon_output_shift_immediate (const char *, char, rtx *,
 extern void neon_pairwise_reduce (rtx, rtx, machine_mode,
 				  rtx (*) (rtx, rtx, rtx));
 extern rtx neon_make_constant (rtx);
-extern tree arm_builtin_vectorized_function (tree, tree, tree);
+extern tree arm_builtin_vectorized_function (unsigned int, tree, tree);
 extern void neon_expand_vector_init (rtx, rtx);
 extern void neon_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT, const_tree);
 extern void neon_const_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
@@ -214,6 +214,7 @@ extern void arm_mark_dllimport (tree);
 extern bool arm_change_mode_p (tree);
 #endif
 
+extern void arm_init_neon_builtins (void);
 extern tree arm_valid_target_attribute_tree (tree, struct gcc_options *,
 					     struct gcc_options *);
 extern void arm_pr_long_calls (struct cpp_reader *);

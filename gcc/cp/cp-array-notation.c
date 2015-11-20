@@ -53,9 +53,7 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tree.h"
 #include "cp-tree.h"
-#include "c-family/c-common.h"
 #include "tree-iterator.h"
 
 /* Creates a FOR_STMT with INIT, COND, INCR and BODY as the initializer,
@@ -1382,7 +1380,12 @@ build_array_notation_ref (location_t loc, tree array, tree start, tree length,
     
   if (!stride) 
     stride = build_one_cst (ptrdiff_type_node);
-  
+
+  stride = maybe_constant_value (stride);
+  length = maybe_constant_value (length);
+  if (start)
+    start = maybe_constant_value (start);
+
   /* When dealing with templates, triplet type-checking will be done in pt.c 
      after type substitution.  */
   if (processing_template_decl 

@@ -5,5 +5,5 @@ extern "C" double fabs (double);
 
 void foo (double x)
 {
-  fabs (x) ();	// { dg-error "__builtin_abs" }
+  fabs (x) ();	// { dg-error "function" }
 }

@@ -551,14 +551,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         {
           return __and_<is_default_constructible<_Elements>...>::value;
         }
+        static constexpr bool _ImplicitlyDefaultConstructibleTuple()
+        {
+          return __and_<__is_implicitly_default_constructible<_Elements>...>
+            ::value;
+        }
       };
 
     public:
       template<typename _Dummy = void,
                typename enable_if<_TC2<_Dummy>::
-                                    _DefaultConstructibleTuple(),
+                                    _ImplicitlyDefaultConstructibleTuple(),
                                   bool>::type = true>
       constexpr tuple()
+      : _Inherited() { }
+
+      template<typename _Dummy = void,
+               typename enable_if<_TC2<_Dummy>::
+                                    _DefaultConstructibleTuple()
+                                  &&
+                                  !_TC2<_Dummy>::
+                                    _ImplicitlyDefaultConstructibleTuple(),
+                                  bool>::type = false>
+      explicit constexpr tuple()
       : _Inherited() { }
 
       // Shortcut for the cases where constructors taking _Elements...
@@ -837,11 +852,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template <typename _U1 = _T1,
                 typename _U2 = _T2,
                 typename enable_if<__and_<
-                                     is_default_constructible<_U1>,
-                                     is_default_constructible<_U2>>
+                                     __is_implicitly_default_constructible<_U1>,
+                                     __is_implicitly_default_constructible<_U2>>
                                    ::value, bool>::type = true>
 
       constexpr tuple()
+      : _Inherited() { }
+
+      template <typename _U1 = _T1,
+                typename _U2 = _T2,
+                typename enable_if<
+                  __and_<
+                    is_default_constructible<_U1>,
+                    is_default_constructible<_U2>,
+                    __not_<
+                      __and_<__is_implicitly_default_constructible<_U1>,
+                             __is_implicitly_default_constructible<_U2>>>>
+                  ::value, bool>::type = false>
+
+      explicit constexpr tuple()
       : _Inherited() { }
 
       // Shortcut for the cases where constructors taking _T1, _T2

@@ -172,7 +172,7 @@ static void iq2000_trampoline_init    (rtx, tree, rtx);
 static rtx iq2000_function_value      (const_tree, const_tree, bool);
 static rtx iq2000_libcall_value       (machine_mode, const_rtx);
 static void iq2000_print_operand      (FILE *, rtx, int);
-static void iq2000_print_operand_address (FILE *, rtx);
+static void iq2000_print_operand_address (FILE *, machine_mode, rtx);
 static bool iq2000_print_operand_punct_valid_p (unsigned char code);
 
 #undef  TARGET_INIT_BUILTINS
@@ -2896,7 +2896,7 @@ iq2000_setup_incoming_varargs (cumulative_args_t cum_v,
    reference whose address is ADDR.  ADDR is an RTL expression.  */
 
 static void
-iq2000_print_operand_address (FILE * file, rtx addr)
+iq2000_print_operand_address (FILE * file, machine_mode mode, rtx addr)
 {
   if (!addr)
     error ("PRINT_OPERAND_ADDRESS, null pointer");
@@ -2921,7 +2921,7 @@ iq2000_print_operand_address (FILE * file, rtx addr)
 			     "PRINT_OPERAND_ADDRESS, LO_SUM with #1 not REG.");
 
 	  fprintf (file, "%%lo(");
-	  iq2000_print_operand_address (file, arg1);
+	  iq2000_print_operand_address (file, mode, arg1);
 	  fprintf (file, ")(%s)", reg_names [REGNO (arg0)]);
 	}
 	break;
@@ -3169,10 +3169,12 @@ iq2000_print_operand (FILE *file, rtx op, int letter)
 
   else if (code == MEM)
     {
+      machine_mode mode = GET_MODE (op);
+
       if (letter == 'D')
-	output_address (plus_constant (Pmode, XEXP (op, 0), 4));
+	output_address (mode, plus_constant (Pmode, XEXP (op, 0), 4));
       else
-	output_address (XEXP (op, 0));
+	output_address (mode, XEXP (op, 0));
     }
 
   else if (code == CONST_DOUBLE

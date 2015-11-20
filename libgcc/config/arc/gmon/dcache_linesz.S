@@ -38,6 +38,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	.global	__dcache_linesz
 	.balign	4
 __dcache_linesz:
+#if !defined (__EM__) && !defined (__HS__)
 	lr	r12,[D_CACHE_BUILD]
 	extb_s	r0,r12
 	breq_s	r0,0,.Lsz_nocache
@@ -51,5 +52,6 @@ __dcache_linesz:
 	asl_s	r0,r0,r12
 	j_s	[blink]
 .Lsz_nocache:
+#endif /* !__EM__  && !__HS__ */
 	mov_s	r0,1
 	j_s	[blink]

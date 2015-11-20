@@ -126,6 +126,9 @@
     UNSPEC_VSTRUCTDUMMY
     UNSPEC_SP_SET
     UNSPEC_SP_TEST
+    UNSPEC_RSQRT
+    UNSPEC_RSQRTE
+    UNSPEC_RSQRTS
 ])
 
 (define_c_enum "unspecv" [
@@ -1124,7 +1127,7 @@
   [(set (match_operand:HF 0 "nonimmediate_operand" "=w, ?r,w,w,m,r,m ,r")
 	(match_operand:HF 1 "general_operand"      "?rY, w,w,m,w,m,rY,r"))]
   "TARGET_FLOAT && (register_operand (operands[0], HFmode)
-    || register_operand (operands[1], HFmode))"
+    || aarch64_reg_or_fp_zero (operands[1], HFmode))"
   "@
    mov\\t%0.h[0], %w1
    umov\\t%w0, %1.h[0]
@@ -3099,6 +3102,24 @@
   }
 )
 
+(define_expand "<neg_not_op><mode>cc"
+  [(set (match_operand:GPI 0 "register_operand" "")
+	(if_then_else:GPI (match_operand 1 "aarch64_comparison_operator" "")
+			  (NEG_NOT:GPI (match_operand:GPI 2 "register_operand" ""))
+			  (match_operand:GPI 3 "register_operand" "")))]
+  ""
+  {
+    rtx ccreg;
+    enum rtx_code code = GET_CODE (operands[1]);
+
+    if (code == UNEQ || code == LTGT)
+      FAIL;
+
+    ccreg = aarch64_gen_compare_reg (code, XEXP (operands[1], 0),
+				      XEXP (operands[1], 1));
+    operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
+  }
+)
 
 ;; CRC32 instructions.
 (define_insn "aarch64_<crc_variant>"

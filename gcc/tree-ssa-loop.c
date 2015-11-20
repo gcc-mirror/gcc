@@ -211,12 +211,15 @@ public:
 unsigned int
 pass_tree_loop_init::execute (function *fun ATTRIBUTE_UNUSED)
 {
+  /* When processing a loop in the loop pipeline, we should be able to assert
+     that:
+       (loops_state_satisfies_p (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS
+					      | LOOP_CLOSED_SSA)
+	&& scev_initialized_p ())
+  */
   loop_optimizer_init (LOOPS_NORMAL
 		       | LOOPS_HAVE_RECORDED_EXITS);
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
-
-  /* We might discover new loops, e.g. when turning irreducible
-     regions into reducible.  */
   scev_initialize ();
 
   return 0;

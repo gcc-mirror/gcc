@@ -88,9 +88,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbxout.h"
 #endif
 
-#ifdef SDB_DEBUGGING_INFO
 #include "sdbout.h"
-#endif
 
 /* Most ports that aren't using cc0 don't need to define CC_STATUS_INIT.
    So define a null default for it to save conditionalization later.  */
@@ -3713,7 +3711,7 @@ output_asm_insn (const char *templ, rtx *operands)
 	    else if (letter == 'l')
 	      output_asm_label (operands[opnum]);
 	    else if (letter == 'a')
-	      output_address (operands[opnum]);
+	      output_address (VOIDmode, operands[opnum]);
 	    else if (letter == 'c')
 	      {
 		if (CONSTANT_ADDRESS_P (operands[opnum]))
@@ -3848,11 +3846,11 @@ output_operand (rtx x, int code ATTRIBUTE_UNUSED)
    machine-dependent assembler syntax.  */
 
 void
-output_address (rtx x)
+output_address (machine_mode mode, rtx x)
 {
   bool changed = false;
   walk_alter_subreg (&x, &changed);
-  targetm.asm_out.print_operand_address (asm_out_file, x);
+  targetm.asm_out.print_operand_address (asm_out_file, mode, x);
 }
 
 /* Print an integer constant expression in assembler syntax.
@@ -4644,10 +4642,8 @@ rest_of_clean_state (void)
   /* In case the function was not output,
      don't leave any temporary anonymous types
      queued up for sdb output.  */
-#ifdef SDB_DEBUGGING_INFO
-  if (write_symbols == SDB_DEBUG)
+  if (SDB_DEBUGGING_INFO && write_symbols == SDB_DEBUG)
     sdbout_types (NULL_TREE);
-#endif
 
   flag_rerun_cse_after_global_opts = 0;
   reload_completed = 0;

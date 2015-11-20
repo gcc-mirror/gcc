@@ -7,8 +7,9 @@ int main()
   "\u0041";			// 'A' UCN is OK in string literal
   '\u0041';			// also OK in character literal
 
-  int c\u0041c;		      // { dg-error "not valid in an identifier" }
-  int c\u0024c;		      // $ is OK; not part of basic source char set
+  int c\u0041c;		// { dg-error "not valid in an identifier" }
+		// $ is OK on most targets; not part of basic source char set
+  int c\u0024c;	// { dg-error "not valid in an identifier" "" { target { powerpc-ibm-aix* } } }
 
   U"\uD800";		  // { dg-error "not a valid universal character" }
 }

@@ -103,15 +103,14 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4258.pdf">
 	  N4258
 	</link>
       </entry>
       <entry>Cleaning-up noexcept in the Library</entry>
-      <entry>Partial</entry>
-      <entry>Changes to basic_string not complete.</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
 
     <row>
@@ -137,15 +136,14 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4169.html">
 	  N4169
 	</link>
       </entry>
       <entry>A proposal to add invoke function template</entry>
-      <entry>N</entry>
-      <entry>In progress</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
 
     <row>

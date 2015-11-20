@@ -543,7 +543,8 @@ package body Sem_Ch7 is
 
    begin
       --  A [generic] package body "freezes" the contract of the nearest
-      --  enclosing package body:
+      --  enclosing package body and all other contracts encountered in the
+      --  same declarative part upto and excluding the package body:
 
       --    package body Nearest_Enclosing_Package
       --      with Refined_State => (State => Constit)
@@ -567,7 +568,7 @@ package body Sem_Ch7 is
       --  Only bodies coming from source should cause this type of "freezing"
 
       if Comes_From_Source (N) then
-         Analyze_Enclosing_Package_Body_Contract (N);
+         Analyze_Previous_Contracts (N);
       end if;
 
       --  Find corresponding package specification, and establish the current
@@ -766,10 +767,6 @@ package body Sem_Ch7 is
       --  A package body "freezes" the contract of its initial declaration.
       --  This analysis depends on attribute Corresponding_Spec being set. Only
       --  bodies coming from source shuld cause this type of "freezing".
-
-      if Comes_From_Source (N) then
-         Analyze_Initial_Declaration_Contract (N);
-      end if;
 
       if Present (Declarations (N)) then
          Analyze_Declarations (Declarations (N));
@@ -2675,10 +2672,13 @@ package body Sem_Ch7 is
          --  If this is a private type with a full view (for example a local
          --  subtype of a private type declared elsewhere), ensure that the
          --  full view is also removed from visibility: it may be exposed when
-         --  swapping views in an instantiation.
+         --  swapping views in an instantiation. Similarly, ensure that the
+         --  use-visibility is properly set on both views.
 
          if Is_Type (Id) and then Present (Full_View (Id)) then
-            Set_Is_Immediately_Visible (Full_View (Id), False);
+            Set_Is_Immediately_Visible     (Full_View (Id), False);
+            Set_Is_Potentially_Use_Visible (Full_View (Id),
+              Is_Potentially_Use_Visible (Id));
          end if;
 
          if Is_Tagged_Type (Id) and then Ekind (Id) = E_Record_Type then

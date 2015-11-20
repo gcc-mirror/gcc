@@ -195,6 +195,10 @@ struct tune_params
   int vec_reassoc_width;
   int min_div_recip_mul_sf;
   int min_div_recip_mul_df;
+  /* Value for aarch64_case_values_threshold; or 0 for the default.  */
+  unsigned int max_case_values;
+  /* Value for PARAM_L1_CACHE_LINE_SIZE; or 0 to use the default.  */
+  unsigned int cache_line_size;
 
 /* An enum specifying how to take into account CPU autoprefetch capabilities
    during instruction scheduling:
@@ -345,12 +349,12 @@ void aarch64_init_cumulative_args (CUMULATIVE_ARGS *, const_tree, rtx,
 				   const_tree, unsigned);
 void aarch64_init_expanders (void);
 void aarch64_init_simd_builtins (void);
-void aarch64_print_operand (FILE *, rtx, char);
-void aarch64_print_operand_address (FILE *, rtx);
 void aarch64_emit_call_insn (rtx);
 void aarch64_register_pragmas (void);
 void aarch64_relayout_simd_types (void);
 void aarch64_reset_previous_fndecl (void);
+
+void aarch64_emit_swrsqrt (rtx, rtx);
 
 /* Initialize builtins for SIMD intrinsics.  */
 void init_aarch64_simd_builtins (void);
@@ -403,10 +407,9 @@ rtx aarch64_expand_builtin (tree exp,
 			    int ignore ATTRIBUTE_UNUSED);
 tree aarch64_builtin_decl (unsigned, bool ATTRIBUTE_UNUSED);
 
-tree
-aarch64_builtin_vectorized_function (tree fndecl,
-				     tree type_out,
-				     tree type_in);
+tree aarch64_builtin_rsqrt (unsigned int, bool);
+
+tree aarch64_builtin_vectorized_function (unsigned int, tree, tree);
 
 extern void aarch64_split_combinev16qi (rtx operands[3]);
 extern void aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);

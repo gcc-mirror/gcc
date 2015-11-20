@@ -182,3 +182,9 @@ LIBITM_1.0 {
   local:
 	*;
 };
+LIBITM_1.1 {
+  global:
+	_ZGTtdlPv?;
+	_ZGTtdlPv?RKSt9nothrow_t;
+	_ITM_cxa_free_exception;
+} LIBITM_1.0;

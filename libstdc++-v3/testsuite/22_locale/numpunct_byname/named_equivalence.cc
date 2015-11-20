@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // 2001-01-24 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -31,10 +31,10 @@ void test01()
   bool test __attribute__((unused)) = true;
   string str;
 
-  locale loc_de = locale("de_DE");
+  locale loc_de = locale(ISO_8859(15,de_DE));
   str = loc_de.name();
 
-  locale loc_byname(locale::classic(), new numpunct_byname<char>("de_DE"));
+  locale loc_byname(locale::classic(), new numpunct_byname<char>(ISO_8859(15,de_DE)));
   str = loc_byname.name();
 
   locale loc_c = locale::classic();

@@ -1192,12 +1192,13 @@ package body Sem_Ch9 is
       Entry_Name : Entity_Id;
 
    begin
-      --  An entry body "freezes" the contract of the nearest enclosing
-      --  package body. This ensures that any annotations referenced by the
-      --  contract of an entry or subprogram body declared within the current
-      --  protected body are available.
+      --  An entry body "freezes" the contract of the nearest enclosing package
+      --  body and all other contracts encountered in the same declarative part
+      --  upto and excluding the entry body. This ensures that any annotations
+      --  referenced by the contract of an entry or subprogram body declared
+      --  within the current protected body are available.
 
-      Analyze_Enclosing_Package_Body_Contract (N);
+      Analyze_Previous_Contracts (N);
 
       Tasking_Used := True;
 
@@ -1353,11 +1354,6 @@ package body Sem_Ch9 is
          Install_Private_Data_Declarations
            (Sloc (N), Entry_Name, P_Type, N, Decls);
       end if;
-
-      --  An entry body "freezes" the contract of its initial declaration. This
-      --  analysis depends on attribute Corresponding_Body being set.
-
-      Analyze_Initial_Declaration_Contract (N);
 
       if Present (Decls) then
          Analyze_Declarations (Decls);
@@ -1772,11 +1768,13 @@ package body Sem_Ch9 is
 
    begin
       --  A protected body "freezes" the contract of the nearest enclosing
-      --  package body. This ensures that any annotations referenced by the
-      --  contract of an entry or subprogram body declared within the current
-      --  protected body are available.
+      --  package body and all other contracts encountered in the same
+      --  declarative part upto and excluding the protected body. This ensures
+      --  that any annotations referenced by the contract of an entry or
+      --  subprogram body declared within the current protected body are
+      --  available.
 
-      Analyze_Enclosing_Package_Body_Contract (N);
+      Analyze_Previous_Contracts (N);
 
       Tasking_Used := True;
       Set_Ekind (Body_Id, E_Protected_Body);
@@ -1818,11 +1816,6 @@ package body Sem_Ch9 is
       Install_Declarations (Spec_Id);
       Expand_Protected_Body_Declarations (N, Spec_Id);
       Last_E := Last_Entity (Spec_Id);
-
-      --  A protected body "freezes" the contract of its initial declaration.
-      --  This analysis depends on attribute Corresponding_Spec being set.
-
-      Analyze_Initial_Declaration_Contract (N);
 
       Analyze_Declarations (Declarations (N));
 
@@ -2816,11 +2809,12 @@ package body Sem_Ch9 is
 
    begin
       --  A task body "freezes" the contract of the nearest enclosing package
-      --  body. This ensures that annotations referenced by the contract of an
-      --  entry or subprogram body declared within the current protected body
-      --  are available.
+      --  body and all other contracts encountered in the same declarative part
+      --  upto and excluding the task body. This ensures that annotations
+      --  referenced by the contract of an entry or subprogram body declared
+      --  within the current protected body are available.
 
-      Analyze_Enclosing_Package_Body_Contract (N);
+      Analyze_Previous_Contracts (N);
 
       Tasking_Used := True;
       Set_Scope (Body_Id, Current_Scope);
@@ -2881,11 +2875,6 @@ package body Sem_Ch9 is
       Set_Has_Completion (Spec_Id);
       Install_Declarations (Spec_Id);
       Last_E := Last_Entity (Spec_Id);
-
-      --  A task body "freezes" the contract of its initial declaration. This
-      --  analysis depends on attribute Corresponding_Spec being set.
-
-      Analyze_Initial_Declaration_Contract (N);
 
       Analyze_Declarations (Decls);
       Inspect_Deferred_Constant_Completion (Decls);

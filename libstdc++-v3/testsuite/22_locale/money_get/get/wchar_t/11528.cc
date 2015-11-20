@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "en_US" }
+// { dg-require-namedlocale "en_US.ISO8859-1" }
 
 // Copyright (C) 2003-2015 Free Software Foundation, Inc.
 //
@@ -30,7 +30,7 @@ void test01()
 
   bool test __attribute__((unused)) = true;
 
-  locale loc_us = locale("en_US");
+  locale loc_us = locale(ISO_8859(1,en_US));
 
   iterator_type end;
   wistringstream iss;

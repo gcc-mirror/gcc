@@ -264,13 +264,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     pop_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type
-	_ValueType;
-
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
-      __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
+      __glibcxx_function_requires(_LessThanComparableConcept<
+	typename iterator_traits<_RandomAccessIterator>::value_type>)
       __glibcxx_requires_non_empty_range(__first, __last);
       __glibcxx_requires_valid_range(__first, __last);
       __glibcxx_requires_irreflexive(__first, __last);

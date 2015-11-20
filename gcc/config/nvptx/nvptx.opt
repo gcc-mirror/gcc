@@ -28,3 +28,7 @@ Generate code for a 64-bit ABI.
 mmainkernel
 Target Report RejectNegative
 Link in code for a __main kernel.
+
+moptimize
+Target Report Var(nvptx_optimize) Init(-1)
+Optimize partition neutering

@@ -37,6 +37,7 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
+with Snames;   use Snames;
 with Stand;    use Stand;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
@@ -1691,10 +1692,12 @@ package body Exp_Fixd is
    --  result cases, and faster.
 
    procedure Expand_Convert_Float_To_Fixed (N : Node_Id) is
-      Rng_Check   : constant Boolean   := Do_Range_Check (N);
       Expr        : constant Node_Id   := Expression (N);
+      Orig_N      : constant Node_Id   := Original_Node (N);
       Result_Type : constant Entity_Id := Etype (N);
+      Rng_Check   : constant Boolean   := Do_Range_Check (N);
       Small       : constant Ureal     := Small_Value (Result_Type);
+      Truncate    : Boolean;
 
    begin
       --  Optimize small = 1, where we can avoid the multiply completely
@@ -1702,16 +1705,31 @@ package body Exp_Fixd is
       if Small = Ureal_1 then
          Set_Result (N, Expr, Rng_Check, Trunc => True);
 
-      --  Normal case where multiply is required
-      --  Rounding is truncating for decimal fixed point types only,
-      --  see RM 4.6(29).
+      --  Normal case where multiply is required. Rounding is truncating
+      --  for decimal fixed point types only, see RM 4.6(29), except if the
+      --  conversion comes from an attribute reference 'Round (RM 3.5.10 (14)):
+      --  The attribute is implemented by means of a conversion that must
+      --  round.
 
       else
-         Set_Result (N,
-           Build_Multiply (N,
-             Fpt_Value (Expr),
-             Real_Literal (N, Ureal_1 / Small)),
-           Rng_Check, Trunc => Is_Decimal_Fixed_Point_Type (Result_Type));
+         if Is_Decimal_Fixed_Point_Type (Result_Type) then
+            Truncate :=
+              Nkind (Orig_N) /= N_Attribute_Reference
+                or else Get_Attribute_Id
+                          (Attribute_Name (Orig_N)) /= Attribute_Round;
+         else
+            Truncate := False;
+         end if;
+
+         Set_Result
+           (N     => N,
+            Expr  =>
+              Build_Multiply
+                (N => N,
+                 L => Fpt_Value (Expr),
+                 R => Real_Literal (N, Ureal_1 / Small)),
+            Rchk  => Rng_Check,
+            Trunc => Truncate);
       end if;
    end Expand_Convert_Float_To_Fixed;
 

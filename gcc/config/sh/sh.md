@@ -2232,9 +2232,49 @@
 	}
     }
   else if (!reg_overlap_mentioned_p (operands[0], operands[1]))
-    emit_move_insn (operands[0], operands[1]);
+    {
+      if (!reg_overlap_mentioned_p (operands[0], operands[2]))
+	emit_move_insn (operands[0], operands[1]);
+      else
+	operands[2] = operands[1];
+    }
 }
   [(set_attr "type" "arith")])
+
+;; Old reload might generate add insns directly (not through the expander) for
+;; the memory address of complex insns like atomic insns when reloading.
+(define_insn_and_split "*addsi3"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(plus:SI (match_operand:SI 1 "arith_reg_operand" "r")
+		 (match_operand:SI 2 "arith_or_int_operand" "rn")))]
+  "TARGET_SH1 && !sh_lra_p ()
+   && reload_completed
+   && !reg_overlap_mentioned_p (operands[0], operands[1])"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (plus:SI (match_dup 0) (match_dup 2)))]
+{
+  if (operands[2] == const0_rtx)
+    {
+      emit_move_insn (operands[0], operands[1]);
+      DONE;
+    }
+
+  if (CONST_INT_P (operands[2]))
+    {
+      if (satisfies_constraint_I08 (operands[2]))
+	emit_move_insn (operands[0], operands[1]);
+      else
+	{
+	  emit_move_insn (operands[0], operands[2]);
+	  operands[2] = operands[1];
+	}
+    }
+  else if (!reg_overlap_mentioned_p (operands[0], operands[2]))
+    emit_move_insn (operands[0], operands[1]);
+  else
+    operands[2] = operands[1];
+})
 
 (define_insn_and_split "*addsi3"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
@@ -11078,7 +11118,7 @@ label:
   operands[2] = !can_create_pseudo_p () ? operands[0] : gen_reg_rtx (Pmode);
   operands[3] = !can_create_pseudo_p () ? operands[0] : gen_reg_rtx (Pmode);
 
-  if (!TARGET_SHMEDIA
+  if (!TARGET_SHMEDIA && !TARGET_FDPIC
       && flag_stack_protect
       && GET_CODE (operands[1]) == CONST
       && GET_CODE (XEXP (operands[1], 0)) == UNSPEC

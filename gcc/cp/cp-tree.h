@@ -98,6 +98,7 @@ c-common.h, not after.
       DECLTYPE_FOR_INIT_CAPTURE (in DECLTYPE_TYPE)
       CONSTRUCTOR_NO_IMPLICIT_ZERO (in CONSTRUCTOR)
       TINFO_USED_TEMPLATE_ID (in TEMPLATE_INFO)
+      PACK_EXPANSION_SIZEOF_P (in *_PACK_EXPANSION)
    2: IDENTIFIER_OPNAME_P (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -3010,7 +3011,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    property.  */
 #define SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT(NODE, INT_VALUE) \
   NON_DEFAULT_TEMPLATE_ARGS_COUNT(NODE) = build_int_cst (NULL_TREE, INT_VALUE)
-#ifdef ENABLE_CHECKING
+#if CHECKING_P
 #define GET_NON_DEFAULT_TEMPLATE_ARGS_COUNT(NODE) \
     int_cst_value (NON_DEFAULT_TEMPLATE_ARGS_COUNT (NODE))
 #else
@@ -3199,6 +3200,9 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 
 /* True iff this pack expansion is within a function context.  */
 #define PACK_EXPANSION_LOCAL_P(NODE) TREE_LANG_FLAG_0 (NODE)
+
+/* True iff this pack expansion is for sizeof....  */
+#define PACK_EXPANSION_SIZEOF_P(NODE) TREE_LANG_FLAG_1 (NODE)
 
 /* True iff the wildcard can match a template parameter pack.  */
 #define WILDCARD_PACK_P(NODE) TREE_LANG_FLAG_0 (NODE)
@@ -4517,10 +4521,6 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define SIZEOF_EXPR_TYPE_P(NODE) \
   TREE_LANG_FLAG_0 (SIZEOF_EXPR_CHECK (NODE))
 
-/* True if INTEGER_CST is a zero literal seen in function argument list.  */
-#define LITERAL_ZERO_P(NODE) \
-  (INTEGER_CST_CHECK (NODE)->base.nothrow_flag)
-
 /* An enumeration of the kind of tags that C++ accepts.  */
 enum tag_types {
   none_type = 0, /* Not a tag type.  */
@@ -4845,6 +4845,11 @@ extern GTY(()) vec<tree, va_gc> *local_classes;
    Two if we're done with front-end processing.  */
 
 extern int at_eof;
+
+/* True if note_mangling_alias should enqueue mangling aliases for
+   later generation, rather than emitting them right away.  */
+
+extern bool defer_mangling_aliases;
 
 /* A list of namespace-scope objects which have constructors or
    destructors which reside in the global scope.  The decl is stored
@@ -5447,6 +5452,42 @@ extern cp_parameter_declarator *no_parameters;
 /* True if we saw "#pragma GCC java_exceptions".  */
 extern bool pragma_java_exceptions;
 
+/* Data structure for a mapping from tree to tree that's only used as a cache;
+   we don't GC-mark trees in the map, and we clear the map when collecting
+   garbage.  Global variables of this type must be marked
+   GTY((cache,deletable)) so that the gt_cleare_cache function is called by
+   ggc_collect but we don't try to load the map pointer from a PCH.
+
+   FIXME improve to use keep_cache_entry.  */
+class cache_map
+{
+  /* Use a lazily initialized pointer rather than a map member since a
+     hash_map can't be constructed in a static initializer.  */
+  hash_map<tree, tree> *map;
+
+public:
+  tree get (tree key)
+  {
+    if (map)
+      if (tree *slot = map->get (key))
+	return *slot;
+    return NULL_TREE;
+  }
+
+  bool put (tree key, tree val)
+  {
+    if (!map)
+      map = new hash_map<tree, tree>;
+    return map->put (key, val);
+  }
+
+  friend inline void gt_cleare_cache (cache_map &cm)
+  {
+    if (cm.map)
+      cm.map->empty();
+  }
+};
+
 /* in call.c */
 extern bool check_dtor_name			(tree, tree);
 bool magic_varargs_p                            (tree);
@@ -5517,9 +5558,7 @@ extern tree build_cxx_call			(tree, int, tree *,
 						 tsubst_flags_t);
 extern bool is_std_init_list			(tree);
 extern bool is_list_ctor			(tree);
-#ifdef ENABLE_CHECKING
 extern void validate_conversion_obstack		(void);
-#endif /* ENABLE_CHECKING */
 extern void mark_versions_used			(tree);
 extern tree get_function_version_dispatcher	(tree);
 
@@ -5738,6 +5777,7 @@ extern tree cxx_maybe_build_cleanup		(tree, tsubst_flags_t);
 
 /* in decl2.c */
 extern void note_mangling_alias			(tree, tree);
+extern void generate_mangling_aliases		(void);
 extern bool check_java_method			(tree);
 extern tree build_memfn_type			(tree, tree, cp_cv_quals, cp_ref_qualifier);
 extern tree build_pointer_ptrmemfn_type	(tree);
@@ -6118,6 +6158,7 @@ extern int class_method_index_for_fn		(tree, tree);
 extern tree lookup_fnfields			(tree, tree, int);
 extern tree lookup_member			(tree, tree, int, bool,
 						 tsubst_flags_t);
+extern tree lookup_member_fuzzy		(tree, tree, bool);
 extern int look_for_overrides			(tree, tree);
 extern void get_pure_virtuals			(tree);
 extern void maybe_suppress_debug_info		(tree);
@@ -6326,7 +6367,7 @@ extern tree begin_omp_task			(void);
 extern tree finish_omp_task			(tree, tree);
 extern tree finish_omp_for			(location_t, enum tree_code,
 						 tree, tree, tree, tree, tree,
-						 tree, tree, tree);
+						 tree, tree, vec<tree> *, tree);
 extern void finish_omp_atomic			(enum tree_code, enum tree_code,
 						 tree, tree, tree, tree, tree,
 						 bool);
@@ -6336,7 +6377,7 @@ extern void finish_omp_taskwait			(void);
 extern void finish_omp_taskyield		(void);
 extern void finish_omp_cancel			(tree);
 extern void finish_omp_cancellation_point	(tree);
-extern tree omp_privatize_field			(tree);
+extern tree omp_privatize_field			(tree, bool);
 extern tree begin_transaction_stmt		(location_t, tree *, int);
 extern void finish_transaction_stmt		(tree, tree, int, tree);
 extern tree build_transaction_expr		(location_t, tree, int, tree);
@@ -6476,7 +6517,6 @@ extern tree cp_walk_subtrees (tree*, int*, walk_tree_fn,
 	walk_tree_1 (tp, func, data, pset, cp_walk_subtrees)
 #define cp_walk_tree_without_duplicates(tp,func,data) \
 	walk_tree_without_duplicates_1 (tp, func, data, cp_walk_subtrees)
-extern tree fold_if_not_in_template		(tree);
 extern tree rvalue				(tree);
 extern tree convert_bitfield_to_declared_type   (tree);
 extern tree cp_save_expr			(tree);
@@ -6707,6 +6747,7 @@ extern tree cxx_omp_clause_dtor			(tree, tree);
 extern void cxx_omp_finish_clause		(tree, gimple_seq *);
 extern bool cxx_omp_privatize_by_reference	(const_tree);
 extern bool cxx_omp_disregard_value_expr	(tree, bool);
+extern tree cp_fully_fold			(tree);
 
 /* in name-lookup.c */
 extern void suggest_alternatives_for            (location_t, tree);
@@ -6798,12 +6839,14 @@ extern tree cxx_constant_value			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE);
 extern tree maybe_constant_init			(tree, tree = NULL_TREE);
 extern tree fold_non_dependent_expr		(tree);
+extern tree fold_simple				(tree);
 extern bool is_sub_constant_expr                (tree);
 extern bool reduced_constant_expression_p       (tree);
 extern bool is_instantiation_of_constexpr       (tree);
 extern bool var_in_constexpr_fn                 (tree);
 extern void explain_invalid_constexpr_fn        (tree);
 extern vec<tree> cx_error_context               (void);
+extern tree fold_sizeof_expr			(tree);
 
 /* In c-family/cilk.c */
 extern bool cilk_valid_spawn                    (tree);

@@ -107,7 +107,7 @@ package Restrict is
    --  to implement pragma Restrictions (No_Implementation_Restrictions) (which
    --  is why this restriction itself is excluded from the list).
 
-   Implementation_Restriction : array (All_Restrictions) of Boolean :=
+   Implementation_Restriction : constant array (All_Restrictions) of Boolean :=
      (Simple_Barriers                    => True,
       No_Calendar                        => True,
       No_Default_Initialization          => True,
@@ -147,6 +147,7 @@ package Restrict is
       No_Wide_Characters                 => True,
       Static_Priorities                  => True,
       Static_Storage_Size                => True,
+      Pure_Barriers                      => True,
       SPARK_05                           => True,
       others                             => False);
 

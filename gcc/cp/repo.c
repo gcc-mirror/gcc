@@ -27,13 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "tree.h"
 #include "cp-tree.h"
 #include "stringpool.h"
-#include "alias.h"
 #include "toplev.h"
-#include "flags.h"
 
 static const char *extract_string (const char **);
 static const char *get_base_filename (const char *);

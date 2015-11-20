@@ -1,3 +1,19 @@
+2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	* objc-act.c: Remove unused header files.
+	* objc-encoding.c: Likewise.
+	* objc-gnu-runtime-abi-01.c: Likewise.
+	* objc-lang.c: Likewise.
+	* objc-map.c: Likewise.
+	* objc-next-runtime-abi-01.c: Likewise.
+	* objc-next-runtime-abi-02.c: Likewise.
+	* objc-runtime-shared-support.c: Likewise.
+
+2015-11-09  Alan Modra  <amodra@gmail.com>
+
+	* objc-encoding.c (encode_aggregate_within): Cast obstack_next_free
+	return value.
+
 2015-10-29  Andrew MacLeod  <amacleod@redhat.com>
 
 	* objc-lang.c: Reorder #include's and remove duplicates.

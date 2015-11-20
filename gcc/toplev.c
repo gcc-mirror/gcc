@@ -80,9 +80,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbxout.h"
 #endif
 
-#ifdef SDB_DEBUGGING_INFO
 #include "sdbout.h"
-#endif
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data declarations. */
@@ -1130,6 +1128,7 @@ general_init (const char *argv0, bool init_signals)
   linemap_init (line_table, BUILTINS_LOCATION);
   line_table->reallocator = realloc_for_line_map;
   line_table->round_alloc_size = ggc_round_alloc_size;
+  line_table->default_range_bits = 5;
   init_ttree ();
 
   /* Initialize register usage now so switches may override.  */
@@ -1378,10 +1377,8 @@ process_options (void)
   else if (write_symbols == XCOFF_DEBUG)
     debug_hooks = &xcoff_debug_hooks;
 #endif
-#ifdef SDB_DEBUGGING_INFO
-  else if (write_symbols == SDB_DEBUG)
+  else if (SDB_DEBUGGING_INFO && write_symbols == SDB_DEBUG)
     debug_hooks = &sdb_debug_hooks;
-#endif
 #ifdef DWARF2_DEBUGGING_INFO
   else if (write_symbols == DWARF2_DEBUG)
     debug_hooks = &dwarf2_debug_hooks;

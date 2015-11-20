@@ -662,7 +662,7 @@ fr30_print_operand (FILE *file, rtx x, int code)
 	  break;
 	  
 	case SYMBOL_REF:
-	  output_address (x0);
+	  output_address (VOIDmode, x0);
 	  break;
 	  
 	default:

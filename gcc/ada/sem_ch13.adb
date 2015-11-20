@@ -1251,22 +1251,25 @@ package body Sem_Ch13 is
         (Prag        : Node_Id;
          Is_Instance : Boolean := False)
       is
-         Aux   : Node_Id;
-         Decl  : Node_Id;
-         Decls : List_Id;
-         Def   : Node_Id;
+         Aux      : Node_Id;
+         Decl     : Node_Id;
+         Decls    : List_Id;
+         Def      : Node_Id;
+         Inserted : Boolean := False;
 
       begin
-         --  When the aspect appears on a package, protected unit, subprogram
-         --  or task unit body, insert the generated pragma at the top of the
-         --  body declarations to emulate the behavior of a source pragma.
+         --  When the aspect appears on an entry, package, protected unit,
+         --  subprogram, or task unit body, insert the generated pragma at the
+         --  top of the body declarations to emulate the behavior of a source
+         --  pragma.
 
          --    package body Pack with Aspect is
 
          --    package body Pack is
          --       pragma Prag;
 
-         if Nkind_In (N, N_Package_Body,
+         if Nkind_In (N, N_Entry_Body,
+                         N_Package_Body,
                          N_Protected_Body,
                          N_Subprogram_Body,
                          N_Task_Body)
@@ -1278,35 +1281,7 @@ package body Sem_Ch13 is
                Set_Declarations (N, Decls);
             end if;
 
-            --  Skip other internally generated pragmas from aspects to find
-            --  the proper insertion point. As a result the order of pragmas
-            --  is the same as the order of aspects.
-
-            --  As precondition pragmas generated from conjuncts in the
-            --  precondition aspect are presented in reverse order to
-            --  Insert_Pragma, insert them in the correct order here by not
-            --  skipping previously inserted precondition pragmas when the
-            --  current pragma is a precondition.
-
-            Decl := First (Decls);
-            while Present (Decl) loop
-               if Nkind (Decl) = N_Pragma
-                 and then From_Aspect_Specification (Decl)
-                 and then not (Get_Pragma_Id (Decl) = Pragma_Precondition
-                                 and then
-                               Get_Pragma_Id (Prag) = Pragma_Precondition)
-               then
-                  Next (Decl);
-               else
-                  exit;
-               end if;
-            end loop;
-
-            if Present (Decl) then
-               Insert_Before (Decl, Prag);
-            else
-               Append_To (Decls, Prag);
-            end if;
+            Prepend_To (Decls, Prag);
 
          --  When the aspect is associated with a [generic] package declaration
          --  insert the generated pragma at the top of the visible declarations
@@ -1335,23 +1310,24 @@ package body Sem_Ch13 is
             --    <first source declaration>
 
             --  Insert the pragma before the first source declaration by
-            --  skipping the instance "header".
+            --  skipping the instance "header" to ensure proper visibility of
+            --  all formals.
 
             if Is_Instance then
                Decl := First (Decls);
-               while Present (Decl) and then not Comes_From_Source (Decl) loop
-                  Decl := Next (Decl);
+               while Present (Decl) loop
+                  if Comes_From_Source (Decl) then
+                     Insert_Before (Decl, Prag);
+                     Inserted := True;
+                     exit;
+                  else
+                     Next (Decl);
+                  end if;
                end loop;
 
-               --  The instance "header" is followed by at least one source
-               --  declaration.
+               --  The pragma is placed after the instance "header"
 
-               if Present (Decl) then
-                  Insert_Before (Decl, Prag);
-
-               --  Otherwise the pragma is placed after the instance "header"
-
-               else
+               if not Inserted then
                   Append_To (Decls, Prag);
                end if;
 
@@ -2697,7 +2673,6 @@ package body Sem_Ch13 is
 
                      Decorate (Aspect, Aitem);
                      Insert_Pragma (Aitem);
-                     goto Continue;
 
                   else
                      Error_Msg_NE
@@ -2705,6 +2680,8 @@ package body Sem_Ch13 is
                         & "object, single protected type or single task type",
                         Aspect, Id);
                   end if;
+
+                  goto Continue;
 
                --  SPARK_Mode
 
@@ -2769,6 +2746,10 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Refined_Post);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
 
                --  Refined_State
 
@@ -4724,9 +4705,31 @@ package body Sem_Ch13 is
 
                   Find_Overlaid_Entity (N, O_Ent, Off);
 
-                  --  Overlaying controlled objects is erroneous.
-                  --  Emit warning but continue analysis because program is
-                  --  itself legal, and back-end must see address clause.
+                  if Present (O_Ent) then
+
+                     --  If the object overlays a constant object, mark it so
+
+                     if Is_Constant_Object (O_Ent) then
+                        Set_Overlays_Constant (U_Ent);
+                     end if;
+
+                  else
+                     --  If this is not an overlay, mark a variable as being
+                     --  volatile to prevent unwanted optimizations. It's a
+                     --  conservative interpretation of RM 13.3(19) for the
+                     --  cases where the compiler cannot detect potential
+                     --  aliasing issues easily and it also covers the case
+                     --  of an absolute address where the volatile aspect is
+                     --  kind of implicit.
+
+                     if Ekind (U_Ent) = E_Variable then
+                        Set_Treat_As_Volatile (U_Ent);
+                     end if;
+                  end if;
+
+                  --  Overlaying controlled objects is erroneous. Emit warning
+                  --  but continue analysis because program is itself legal,
+                  --  and back end must see address clause.
 
                   if Present (O_Ent)
                     and then (Has_Controlled_Component (Etype (O_Ent))
@@ -4743,12 +4746,12 @@ package body Sem_Ch13 is
 
                   --  Issue an unconditional warning for a constant overlaying
                   --  a variable. For the reverse case, we will issue it only
-                  --  if the variable is modified, see below.
+                  --  if the variable is modified.
 
-                  elsif Address_Clause_Overlay_Warnings
+                  elsif Ekind (U_Ent) = E_Constant
                     and then Present (O_Ent)
-                    and then Ekind (U_Ent) = E_Constant
-                    and then not Is_Constant_Object (O_Ent)
+                    and then not Overlays_Constant (U_Ent)
+                    and then Address_Clause_Overlay_Warnings
                   then
                      Error_Msg_N ("??constant overlays a variable", Expr);
 
@@ -4766,34 +4769,6 @@ package body Sem_Ch13 is
                   --  address clause, since it is likely aliasing is occurring.
 
                   Note_Possible_Modification (Nam, Sure => False);
-
-                  --  Here we are checking for explicit overlap of one variable
-                  --  by another, and if we find this then mark the overlapped
-                  --  variable as also being volatile to prevent unwanted
-                  --  optimizations. This is a significant pessimization so
-                  --  avoid it when there is an offset, i.e. when the object
-                  --  is composite; they cannot be optimized easily anyway.
-
-                  if Present (O_Ent)
-                    and then Is_Object (O_Ent)
-                    and then not Off
-
-                    --  The following test is an expedient solution to what
-                    --  is really a problem in CodePeer. Suppressing the
-                    --  Set_Treat_As_Volatile call here prevents later
-                    --  generation (in some cases) of trees that CodePeer
-                    --  should, but currently does not, handle correctly.
-                    --  This test should probably be removed when CodePeer
-                    --  is improved, just because we want the tree CodePeer
-                    --  analyzes to match the tree for which we generate code
-                    --  as closely as is practical. ???
-
-                    and then not CodePeer_Mode
-                  then
-                     --  ??? O_Ent might not be in current unit
-
-                     Set_Treat_As_Volatile (O_Ent);
-                  end if;
 
                   --  Legality checks on the address clause for initialized
                   --  objects is deferred until the freeze point, because
@@ -4867,39 +4842,12 @@ package body Sem_Ch13 is
                   --  Furthermore, by removing the test, we handle the
                   --  aspect case properly.
 
-                  if Address_Clause_Overlay_Warnings
-                    and then Present (O_Ent)
+                  if Present (O_Ent)
                     and then Is_Object (O_Ent)
+                    and then not Is_Generic_Type (Etype (U_Ent))
+                    and then Address_Clause_Overlay_Warnings
                   then
-                     if not Is_Generic_Type (Etype (U_Ent)) then
-                        Address_Clause_Checks.Append ((N, U_Ent, O_Ent, Off));
-                     end if;
-
-                     --  If variable overlays a constant view, and we are
-                     --  warning on overlays, then mark the variable as
-                     --  overlaying a constant and warn immediately if it
-                     --  is initialized. We will give other warnings later
-                     --  if the variable is assigned.
-
-                     if Is_Constant_Object (O_Ent)
-                       and then Ekind (U_Ent) = E_Variable
-                     then
-                        declare
-                           Init : constant Node_Id :=
-                                    Expression (Declaration_Node (U_Ent));
-                        begin
-                           Set_Overlays_Constant (U_Ent);
-
-                           if Present (Init)
-                             and then Comes_From_Source (Init)
-                           then
-                              Error_Msg_Sloc := Sloc (N);
-                              Error_Msg_NE
-                                ("??constant& may be modified via address "
-                                 & "clause#", Declaration_Node (U_Ent), O_Ent);
-                           end if;
-                        end;
-                     end if;
+                     Address_Clause_Checks.Append ((N, U_Ent, O_Ent, Off));
                   end if;
                end;
 
@@ -6043,9 +5991,17 @@ package body Sem_Ch13 is
       DeclO : Node_Id;
 
    begin
+      --  Accept foreign code statements for CodePeer. The analysis is skipped
+      --  to avoid rejecting unrecognized constructs.
+
+      if CodePeer_Mode then
+         Set_Analyzed (N);
+         return;
+      end if;
+
       --  Analyze and check we get right type, note that this implements the
-      --  requirement (RM 13.8(1)) that Machine_Code be with'ed, since that
-      --  is the only way that Asm_Insn could possibly be visible.
+      --  requirement (RM 13.8(1)) that Machine_Code be with'ed, since that is
+      --  the only way that Asm_Insn could possibly be visible.
 
       Analyze_And_Resolve (Expression (N));
 
@@ -6058,8 +6014,8 @@ package body Sem_Ch13 is
 
       Check_Code_Statement (N);
 
-      --  Make sure we appear in the handled statement sequence of a
-      --  subprogram (RM 13.8(3)).
+      --  Make sure we appear in the handled statement sequence of a subprogram
+      --  (RM 13.8(3)).
 
       if Nkind (HSS) /= N_Handled_Sequence_Of_Statements
         or else Nkind (SBody) /= N_Subprogram_Body
@@ -6112,7 +6068,7 @@ package body Sem_Ch13 is
          while Present (Stmt) loop
             StmtO := Original_Node (Stmt);
 
-            --  A procedure call transformed into a code statement is OK.
+            --  A procedure call transformed into a code statement is OK
 
             if Ada_Version >= Ada_2012
               and then Nkind (StmtO) = N_Procedure_Call_Statement
@@ -6612,7 +6568,7 @@ package body Sem_Ch13 is
 
             --  In ASIS_Mode mode, expansion is disabled, but we must convert
             --  the Mod clause into an alignment clause anyway, so that the
-            --  back-end can compute and back-annotate properly the size and
+            --  back end can compute and back-annotate properly the size and
             --  alignment of types that may include this record.
 
             --  This seems dubious, this destroys the source tree in a manner
@@ -13073,7 +13029,7 @@ package body Sem_Ch13 is
             end loop;
 
             --  Reset homonym link of other entities, but do not modify link
-            --  between entities in current scope, so that the back-end can
+            --  between entities in current scope, so that the back end can
             --  have a proper count of local overloadings.
 
             if No (Prev) then
@@ -13614,9 +13570,13 @@ package body Sem_Ch13 is
          Target := Underlying_Type (Target);
       end if;
 
-      --  Source may be unconstrained array, but not target
+      --  Source may be unconstrained array, but not target, except in relaxed
+      --  semantics mode.
 
-      if Is_Array_Type (Target) and then not Is_Constrained (Target) then
+      if Is_Array_Type (Target)
+        and then not Is_Constrained (Target)
+        and then not Relaxed_RM_Semantics
+      then
          Error_Msg_N
            ("unchecked conversion to unconstrained array not allowed", N);
          return;
@@ -13668,7 +13628,7 @@ package body Sem_Ch13 is
 
       --  Make entry in unchecked conversion table for later processing by
       --  Validate_Unchecked_Conversions, which will check sizes and alignments
-      --  (using values set by the back-end where possible). This is only done
+      --  (using values set by the back end where possible). This is only done
       --  if the appropriate warning is active.
 
       if Warn_On_Unchecked_Conversion then

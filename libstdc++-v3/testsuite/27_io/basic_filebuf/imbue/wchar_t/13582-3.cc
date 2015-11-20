@@ -1,5 +1,5 @@
-// { dg-require-namedlocale "en_US" }
-// { dg-require-namedlocale "fr_FR" }
+// { dg-require-namedlocale "en_US.ISO8859-1" }
+// { dg-require-namedlocale "fr_FR.ISO8859-15" }
 
 // 2004-01-11  Petur Runolfsson  <peturr02@ru.is>
 
@@ -32,8 +32,8 @@ void test01()
   bool test __attribute__((unused)) = true;
   using namespace std;
 
-  locale loc_en(locale("en_US"));
-  locale loc_fr(locale("fr_FR"));
+  locale loc_en(locale(ISO_8859(1,en_US)));
+  locale loc_fr(locale(ISO_8859(15,fr_FR)));
 
   const char* name = "tmp_13582-3.tst";
 

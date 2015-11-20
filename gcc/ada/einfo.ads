@@ -714,6 +714,12 @@ package Einfo is
 --       variable and task type entities. Points to the contract of the entity,
 --       holding various assertion items and data classifiers.
 
+--    Contract_Wrapper (Node25)
+--       Defined in entry and entry family entities. Set only when the entry
+--       [family] has contract cases, preconditions, and/or postconditions.
+--       Contains the entity of a wrapper procedure which encapsulates the
+--       original entry and implements precondition/postcondition semantics.
+
 --    Corresponding_Concurrent_Type (Node18)
 --       Defined in record types that are constructed by the expander to
 --       represent task and protected types (Is_Concurrent_Record_Type flag
@@ -1755,9 +1761,10 @@ package Einfo is
 --       E_Abstract_State entities. True if their Non_Limited_View attribute
 --       is present.
 
---    Has_Non_Null_Refinement (synth)
---       Defined in E_Abstract_State entities. True if the state has at least
---       one variable or state constituent in aspect/pragma Refined_State.
+--    Has_Non_Null_Visible_Refinement (synth)
+--       Defined in E_Abstract_State entities. True if the state has a visible
+--       refinement of at least one variable or state constituent as expressed
+--       in aspect/pragma Refined_State.
 
 --    Has_Non_Standard_Rep (Flag75) [implementation base type only]
 --       Defined in all type entities. Set when some representation clause
@@ -1773,9 +1780,9 @@ package Einfo is
 --       Defined in package entities. True if the package is subject to a null
 --       Abstract_State aspect/pragma.
 
---    Has_Null_Refinement (synth)
---       Defined in E_Abstract_State entities. True if the state has a null
---       refinement in aspect/pragma Refined_State.
+--    Has_Null_Visible_Refinement (synth)
+--       Defined in E_Abstract_State entities. True if the state has a visible
+--       null refinement as expressed in aspect/pragma Refined_State.
 
 --    Has_Object_Size_Clause (Flag172)
 --       Defined in entities for types and subtypes. Set if an Object_Size
@@ -3638,8 +3645,9 @@ package Einfo is
 --         Points to the component in the base type.
 
 --    Overlays_Constant (Flag243)
---       Defined in all entities. Set only for a variable for which there is
---       an address clause which causes the variable to overlay a constant.
+--       Defined in all entities. Set only for E_Constant or E_Variable for
+--       which there is an address clause that causes the entity to overlay
+--       a constant object.
 
 --    Overridden_Operation (Node26)
 --       Defined in subprograms. For overriding operations, points to the
@@ -3688,6 +3696,12 @@ package Einfo is
 --       constituents that are subject to indicator Part_Of (both aspect and
 --       option variants).
 
+--    Part_Of_References (Elist11)
+--       Present in variable entities. Contains all references to the variable
+--       when it is subject to pragma Part_Of. If the variable is a constituent
+--       of a single protected/task type, the references are examined as they
+--       must appear only within the type defintion and the corresponding body.
+
 --    Partial_View_Has_Unknown_Discr (Flag280)
 --       Present in all types. Set to Indicate that the partial view of a type
 --       has unknown discriminants. A default initialization of an object of
@@ -3705,11 +3719,6 @@ package Einfo is
 --       Defined in functions, procedures, entries, and entry families. Refers
 --       to the entity of the _Postconditions procedure used to check contract
 --       assertions on exit from a subprogram.
-
---    PPC_Wrapper (Node25)
---       Defined in entries and entry families. Set only if pre- or post-
---       conditions are present. The precondition_wrapper body is the original
---       entry call, decorated with the given precondition for the entry.
 
 --    Predicate_Function (synthesized)
 --       Defined in all types. Set for types for which (Has_Predicates is True)
@@ -5523,8 +5532,8 @@ package Einfo is
    --    From_Limited_With                   (Flag159)
    --    Has_Visible_Refinement              (Flag263)
    --    Has_Non_Limited_View                (synth)
-   --    Has_Non_Null_Refinement             (synth)
-   --    Has_Null_Refinement                 (synth)
+   --    Has_Non_Null_Visible_Refinement     (synth)
+   --    Has_Null_Visible_Refinement         (synth)
    --    Is_External_State                   (synth)
    --    Is_Null_State                       (synth)
    --    Is_Synchronized_State               (synth)
@@ -5757,7 +5766,7 @@ package Einfo is
    --    Accept_Address                      (Elist21)
    --    Scope_Depth_Value                   (Uint22)
    --    Protection_Object                   (Node23)   (protected kind)
-   --    PPC_Wrapper                         (Node25)
+   --    Contract_Wrapper                    (Node25)
    --    Extra_Formals                       (Node28)
    --    Contract                            (Node34)
    --    SPARK_Pragma                        (Node40)   (protected kind)
@@ -6428,6 +6437,7 @@ package Einfo is
    --    Hiding_Loop_Variable                (Node8)
    --    Current_Value                       (Node9)
    --    Part_Of_Constituents                (Elist10)
+   --    Part_Of_References                  (Elist11)
    --    Esize                               (Uint12)
    --    Extra_Accessibility                 (Node13)
    --    Alignment                           (Uint14)
@@ -6750,6 +6760,7 @@ package Einfo is
    function Component_Type                      (Id : E) return E;
    function Contains_Ignored_Ghost_Code         (Id : E) return B;
    function Contract                            (Id : E) return N;
+   function Contract_Wrapper                    (Id : E) return E;
    function Corresponding_Concurrent_Type       (Id : E) return E;
    function Corresponding_Discriminant          (Id : E) return E;
    function Corresponding_Equality              (Id : E) return E;
@@ -7085,10 +7096,10 @@ package Einfo is
    function Packed_Array_Impl_Type              (Id : E) return E;
    function Parent_Subtype                      (Id : E) return E;
    function Part_Of_Constituents                (Id : E) return L;
+   function Part_Of_References                  (Id : E) return L;
    function Partial_View_Has_Unknown_Discr      (Id : E) return B;
    function Pending_Access_Types                (Id : E) return L;
    function Postconditions_Proc                 (Id : E) return E;
-   function PPC_Wrapper                         (Id : E) return E;
    function Prival                              (Id : E) return E;
    function Prival_Link                         (Id : E) return E;
    function Private_Dependents                  (Id : E) return L;
@@ -7253,9 +7264,9 @@ package Einfo is
    function Has_Entries                         (Id : E) return B;
    function Has_Foreign_Convention              (Id : E) return B;
    function Has_Non_Limited_View                (Id : E) return B;
-   function Has_Non_Null_Refinement             (Id : E) return B;
+   function Has_Non_Null_Visible_Refinement     (Id : E) return B;
    function Has_Null_Abstract_State             (Id : E) return B;
-   function Has_Null_Refinement                 (Id : E) return B;
+   function Has_Null_Visible_Refinement         (Id : E) return B;
    function Implementation_Base_Type            (Id : E) return E;
    function Is_Base_Type                        (Id : E) return B;
    function Is_Boolean_Type                     (Id : E) return B;
@@ -7414,6 +7425,7 @@ package Einfo is
    procedure Set_Component_Type                  (Id : E; V : E);
    procedure Set_Contains_Ignored_Ghost_Code     (Id : E; V : B := True);
    procedure Set_Contract                        (Id : E; V : N);
+   procedure Set_Contract_Wrapper                (Id : E; V : E);
    procedure Set_Corresponding_Concurrent_Type   (Id : E; V : E);
    procedure Set_Corresponding_Discriminant      (Id : E; V : E);
    procedure Set_Corresponding_Equality          (Id : E; V : E);
@@ -7752,10 +7764,10 @@ package Einfo is
    procedure Set_Packed_Array_Impl_Type          (Id : E; V : E);
    procedure Set_Parent_Subtype                  (Id : E; V : E);
    procedure Set_Part_Of_Constituents            (Id : E; V : L);
+   procedure Set_Part_Of_References              (Id : E; V : L);
    procedure Set_Partial_View_Has_Unknown_Discr  (Id : E; V : B := True);
    procedure Set_Pending_Access_Types            (Id : E; V : L);
    procedure Set_Postconditions_Proc             (Id : E; V : E);
-   procedure Set_PPC_Wrapper                     (Id : E; V : E);
    procedure Set_Prival                          (Id : E; V : E);
    procedure Set_Prival_Link                     (Id : E; V : E);
    procedure Set_Private_Dependents              (Id : E; V : L);
@@ -8032,6 +8044,8 @@ package Einfo is
    --    Abstract_State
    --    Async_Readers
    --    Async_Writers
+   --    Attach_Handler
+   --    Constant_After_Elaboration
    --    Contract_Cases
    --    Depends
    --    Effective_Reads
@@ -8039,6 +8053,7 @@ package Einfo is
    --    Global
    --    Initial_Condition
    --    Initializes
+   --    Interrupt_Handler
    --    Part_Of
    --    Precondition
    --    Postcondition
@@ -8047,6 +8062,7 @@ package Einfo is
    --    Refined_Post
    --    Refined_State
    --    Test_Case
+   --    Volatile_Function
 
    function Get_Record_Representation_Clause (E : Entity_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for a record
@@ -8193,6 +8209,7 @@ package Einfo is
    pragma Inline (Component_Type);
    pragma Inline (Contains_Ignored_Ghost_Code);
    pragma Inline (Contract);
+   pragma Inline (Contract_Wrapper);
    pragma Inline (Corresponding_Concurrent_Type);
    pragma Inline (Corresponding_Discriminant);
    pragma Inline (Corresponding_Equality);
@@ -8574,10 +8591,10 @@ package Einfo is
    pragma Inline (Parameter_Mode);
    pragma Inline (Parent_Subtype);
    pragma Inline (Part_Of_Constituents);
+   pragma Inline (Part_Of_References);
    pragma Inline (Partial_View_Has_Unknown_Discr);
    pragma Inline (Pending_Access_Types);
    pragma Inline (Postconditions_Proc);
-   pragma Inline (PPC_Wrapper);
    pragma Inline (Prival);
    pragma Inline (Prival_Link);
    pragma Inline (Private_Dependents);
@@ -8701,6 +8718,7 @@ package Einfo is
    pragma Inline (Set_Component_Type);
    pragma Inline (Set_Contains_Ignored_Ghost_Code);
    pragma Inline (Set_Contract);
+   pragma Inline (Set_Contract_Wrapper);
    pragma Inline (Set_Corresponding_Concurrent_Type);
    pragma Inline (Set_Corresponding_Discriminant);
    pragma Inline (Set_Corresponding_Equality);
@@ -9035,10 +9053,10 @@ package Einfo is
    pragma Inline (Set_Packed_Array_Impl_Type);
    pragma Inline (Set_Parent_Subtype);
    pragma Inline (Set_Part_Of_Constituents);
+   pragma Inline (Set_Part_Of_References);
    pragma Inline (Set_Partial_View_Has_Unknown_Discr);
    pragma Inline (Set_Pending_Access_Types);
    pragma Inline (Set_Postconditions_Proc);
-   pragma Inline (Set_PPC_Wrapper);
    pragma Inline (Set_Prival);
    pragma Inline (Set_Prival_Link);
    pragma Inline (Set_Private_Dependents);

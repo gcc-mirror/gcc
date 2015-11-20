@@ -8,6 +8,7 @@ int main ()
   int i;
   int v = 32, w = 19;
   int length = 1, num = 5;
+  int *abc;
 
   /* Valid uses.  */
 
@@ -199,12 +200,12 @@ int main ()
     ;
 
   #pragma acc kernels
-  #pragma acc loop gang(static: * abc) /* { dg-error "expected '.' before" } */
+  #pragma acc loop gang(static: * abc)
   for (i = 0; i < 10; i++)
     ;
 
   #pragma acc kernels
-  #pragma acc loop gang(static:*num:1) /* { dg-error "expected '.' before" } */
+  #pragma acc loop gang(static:*num:1) /* { dg-error "" } */
   for (i = 0; i < 10; i++)
     ;
 

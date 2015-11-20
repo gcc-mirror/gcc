@@ -38,6 +38,7 @@ package Contracts is
    --    Abstract_State
    --    Async_Readers
    --    Async_Writers
+   --    Attach_Handler
    --    Constant_After_Elaboration
    --    Contract_Cases
    --    Depends
@@ -47,6 +48,7 @@ package Contracts is
    --    Global
    --    Initial_Condition
    --    Initializes
+   --    Interrupt_Handler
    --    Part_Of
    --    Postcondition
    --    Precondition
@@ -57,9 +59,8 @@ package Contracts is
    --    Test_Case
    --    Volatile_Function
 
-   procedure Analyze_Enclosing_Package_Body_Contract (Body_Decl : Node_Id);
-   --  Analyze the contract of the nearest package body (if any) which encloses
-   --  package or subprogram body Body_Decl.
+   procedure Analyze_Contracts (L : List_Id);
+   --  Analyze the contracts of all eligible constructs found in list L
 
    procedure Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id : Entity_Id);
    --  Analyze all delayed pragmas chained on the contract of entry or
@@ -75,7 +76,9 @@ package Contracts is
    --    Refined_Post
    --    Test_Case        (stand alone subprogram body)
 
-   procedure Analyze_Entry_Or_Subprogram_Contract (Subp_Id : Entity_Id);
+   procedure Analyze_Entry_Or_Subprogram_Contract
+     (Subp_Id   : Entity_Id;
+      Freeze_Id : Entity_Id := Empty);
    --  Analyze all delayed pragmas chained on the contract of entry or
    --  subprogram Subp_Id as if they appeared at the end of a declarative
    --  region. The pragmas in question are:
@@ -85,12 +88,13 @@ package Contracts is
    --    Postcondition
    --    Precondition
    --    Test_Case
+   --
+   --  Freeze_Id is the entity of a [generic] package body or a [generic]
+   --  subprogram body which "freezes" the contract of Subp_Id.
 
-   procedure Analyze_Initial_Declaration_Contract (Body_Decl : Node_Id);
-   --  Analyze the contract of the initial declaration of entry body, package
-   --  body, protected body, subprogram body or task body Body_Decl.
-
-   procedure Analyze_Object_Contract (Obj_Id : Entity_Id);
+   procedure Analyze_Object_Contract
+     (Obj_Id    : Entity_Id;
+      Freeze_Id : Entity_Id := Empty);
    --  Analyze all delayed pragmas chained on the contract of object Obj_Id as
    --  if they appeared at the end of the declarative region. The pragmas to be
    --  considered are:
@@ -101,6 +105,9 @@ package Contracts is
    --    Effective_Writes
    --    Global            (single concurrent object)
    --    Part_Of
+   --
+   --  Freeze_Id is the entity of a [generic] package body or a [generic]
+   --  subprogram body which "freezes" the contract of Obj_Id.
 
    procedure Analyze_Package_Body_Contract
      (Body_Id   : Entity_Id;
@@ -120,6 +127,11 @@ package Contracts is
    --    Initial_Condition
    --    Initializes
    --    Part_Of
+
+   procedure Analyze_Previous_Contracts (Body_Decl : Node_Id);
+   --  Analyze the contracts of all source constructs found in the declarative
+   --  list which contains entry, package, protected, subprogram, or task body
+   --  denoted by Body_Decl. The analysis stops once Body_Decl is reached.
 
    procedure Analyze_Protected_Contract (Prot_Id : Entity_Id);
    --  Analyze all delayed pragmas chained on the contract of protected unit

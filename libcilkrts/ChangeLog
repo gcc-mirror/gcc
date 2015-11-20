@@ -1,3 +1,9 @@
+2015-11-09  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR target/66326
+	* runtime/config/x86/os-unix-sysdep.c (sysdep_save_fp_ctrl_state):
+	Use fnstcw instead fnstsw.
+
 2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* Makefile.in: Regenerated with automake-1.11.6.

@@ -25,14 +25,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
-#include "tree.h"
 #include "cp-tree.h"
-#include "tm_p.h"
 #include "stringpool.h"
 #include "cgraph.h"
-#include "alias.h"
 #include "varasm.h"
-#include "flags.h"
 #include "toplev.h"
 #include "common/common-target.h"
 
@@ -1645,10 +1641,8 @@ maybe_explain_implicit_delete (tree decl)
 		    "deleted because its exception-specification does not "
 		    "match the implicit exception-specification %qX",
 		    decl, raises);
-#ifdef ENABLE_CHECKING
-	  else
+	  else if (flag_checking)
 	    gcc_unreachable ();
-#endif
 
 	  pop_scope (scope);
 	}

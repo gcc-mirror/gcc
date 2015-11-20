@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "cgraph.h"
 #include "fold-const.h"
+#include "fold-const-call.h"
 #include "stor-layout.h"
 #include "gimple-fold.h"
 #include "calls.h"
@@ -35,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "gimple-match.h"
 #include "tree-pass.h"
+#include "internal-fn.h"
+#include "case-cfn-macros.h"
 
 
 /* Forward declarations of the private auto-generated matchers.
@@ -81,19 +84,7 @@ gimple_resimplify1 (gimple_seq *seq,
       if (res_code->is_tree_code ())
 	tem = const_unop (*res_code, type, res_ops[0]);
       else
-	{
-	  tree decl = builtin_decl_implicit (*res_code);
-	  if (decl)
-	    {
-	      tem = fold_builtin_n (UNKNOWN_LOCATION, decl, res_ops, 1, false);
-	      if (tem)
-		{
-		  /* fold_builtin_n wraps the result inside a NOP_EXPR.  */
-		  STRIP_NOPS (tem);
-		  tem = fold_convert (type, tem);
-		}
-	    }
-	}
+	tem = fold_const_call (combined_fn (*res_code), type, res_ops[0]);
       if (tem != NULL_TREE
 	  && CONSTANT_CLASS_P (tem))
 	{
@@ -137,19 +128,8 @@ gimple_resimplify2 (gimple_seq *seq,
       if (res_code->is_tree_code ())
 	tem = const_binop (*res_code, type, res_ops[0], res_ops[1]);
       else
-	{
-	  tree decl = builtin_decl_implicit (*res_code);
-	  if (decl)
-	    {
-	      tem = fold_builtin_n (UNKNOWN_LOCATION, decl, res_ops, 2, false);
-	      if (tem)
-		{
-		  /* fold_builtin_n wraps the result inside a NOP_EXPR.  */
-		  STRIP_NOPS (tem);
-		  tem = fold_convert (type, tem);
-		}
-	    }
-	}
+	tem = fold_const_call (combined_fn (*res_code), type,
+			       res_ops[0], res_ops[1]);
       if (tem != NULL_TREE
 	  && CONSTANT_CLASS_P (tem))
 	{
@@ -208,19 +188,8 @@ gimple_resimplify3 (gimple_seq *seq,
 	tem = fold_ternary/*_to_constant*/ (*res_code, type, res_ops[0],
 					    res_ops[1], res_ops[2]);
       else
-	{
-	  tree decl = builtin_decl_implicit (*res_code);
-	  if (decl)
-	    {
-	      tem = fold_builtin_n (UNKNOWN_LOCATION, decl, res_ops, 3, false);
-	      if (tem)
-		{
-		  /* fold_builtin_n wraps the result inside a NOP_EXPR.  */
-		  STRIP_NOPS (tem);
-		  tem = fold_convert (type, tem);
-		}
-	    }
-	}
+	tem = fold_const_call (combined_fn (*res_code), type,
+			       res_ops[0], res_ops[1], res_ops[2]);
       if (tem != NULL_TREE
 	  && CONSTANT_CLASS_P (tem))
 	{
@@ -282,6 +251,22 @@ maybe_build_generic_op (enum tree_code code, tree type,
 
 tree (*mprts_hook) (code_helper, tree, tree *);
 
+/* Try to build a call to FN with return type TYPE and the NARGS
+   arguments given in OPS.  Return null if the target doesn't support
+   the function.  */
+
+static gcall *
+build_call_internal (internal_fn fn, tree type, unsigned int nargs, tree *ops)
+{
+  if (direct_internal_fn_p (fn))
+    {
+      tree_pair types = direct_internal_fn_types (fn, type, ops);
+      if (!direct_internal_fn_supported_p (fn, types))
+	return NULL;
+    }
+  return gimple_build_call_internal (fn, nargs, ops[0], ops[1], ops[2]);
+}
+
 /* Push the exploded expression described by RCODE, TYPE and OPS
    as a statement to SEQ if necessary and return a gimple value
    denoting the value of the expression.  If RES is not NULL
@@ -333,12 +318,7 @@ maybe_push_res_to_seq (code_helper rcode, tree type, tree *ops,
     {
       if (!seq)
 	return NULL_TREE;
-      tree decl = builtin_decl_implicit (rcode);
-      if (!decl)
-	return NULL_TREE;
-      /* We can't and should not emit calls to non-const functions.  */
-      if (!(flags_from_decl_or_type (decl) & ECF_CONST))
-	return NULL_TREE;
+      combined_fn fn = rcode;
       /* Play safe and do not allow abnormals to be mentioned in
          newly created statements.  */
       unsigned nargs;
@@ -351,6 +331,28 @@ maybe_push_res_to_seq (code_helper rcode, tree type, tree *ops,
 	    return NULL_TREE;
 	}
       gcc_assert (nargs != 0);
+      gcall *new_stmt = NULL;
+      if (internal_fn_p (fn))
+	{
+	  /* Generate the given function if we can.  */
+	  internal_fn ifn = as_internal_fn (fn);
+	  new_stmt = build_call_internal (ifn, type, nargs, ops);
+	  if (!new_stmt)
+	    return NULL_TREE;
+	}
+      else
+	{
+	  /* Find the function we want to call.  */
+	  tree decl = builtin_decl_implicit (as_builtin_fn (fn));
+	  if (!decl)
+	    return NULL;
+
+	  /* We can't and should not emit calls to non-const functions.  */
+	  if (!(flags_from_decl_or_type (decl) & ECF_CONST))
+	    return NULL;
+
+	  new_stmt = gimple_build_call (decl, nargs, ops[0], ops[1], ops[2]);
+	}
       if (!res)
 	{
 	  if (gimple_in_ssa_p (cfun))
@@ -358,7 +360,6 @@ maybe_push_res_to_seq (code_helper rcode, tree type, tree *ops,
 	  else
 	    res = create_tmp_reg (type);
 	}
-      gimple *new_stmt = gimple_build_call (decl, nargs, ops[0], ops[1], ops[2]);
       gimple_call_set_lhs (new_stmt, res);
       gimple_seq_add_stmt_without_update (seq, new_stmt);
       return res;
@@ -471,25 +472,15 @@ gimple_simplify (enum built_in_function fn, tree type,
 {
   if (constant_for_folding (arg0))
     {
-      tree decl = builtin_decl_implicit (fn);
-      if (decl)
-	{
-	  tree res = fold_builtin_n (UNKNOWN_LOCATION, decl, &arg0, 1, false);
-	  if (res)
-	    {
-	      /* fold_builtin_n wraps the result inside a NOP_EXPR.  */
-	      STRIP_NOPS (res);
-	      res = fold_convert (type, res);
-	      if (CONSTANT_CLASS_P (res))
-		return res;
-	    }
-	}
+      tree res = fold_const_call (as_combined_fn (fn), type, arg0);
+      if (res && CONSTANT_CLASS_P (res))
+	return res;
     }
 
   code_helper rcode;
   tree ops[3] = {};
   if (!gimple_simplify (&rcode, ops, seq, valueize,
-			fn, type, arg0))
+			as_combined_fn (fn), type, arg0))
     return NULL_TREE;
   return maybe_push_res_to_seq (rcode, type, ops, seq);
 }
@@ -504,28 +495,15 @@ gimple_simplify (enum built_in_function fn, tree type,
   if (constant_for_folding (arg0)
       && constant_for_folding (arg1))
     {
-      tree decl = builtin_decl_implicit (fn);
-      if (decl)
-	{
-	  tree args[2];
-	  args[0] = arg0;
-	  args[1] = arg1;
-	  tree res = fold_builtin_n (UNKNOWN_LOCATION, decl, args, 2, false);
-	  if (res)
-	    {
-	      /* fold_builtin_n wraps the result inside a NOP_EXPR.  */
-	      STRIP_NOPS (res);
-	      res = fold_convert (type, res);
-	      if (CONSTANT_CLASS_P (res))
-		return res;
-	    }
-	}
+      tree res = fold_const_call (as_combined_fn (fn), type, arg0, arg1);
+      if (res && CONSTANT_CLASS_P (res))
+	return res;
     }
 
   code_helper rcode;
   tree ops[3] = {};
   if (!gimple_simplify (&rcode, ops, seq, valueize,
-			fn, type, arg0, arg1))
+			as_combined_fn (fn), type, arg0, arg1))
     return NULL_TREE;
   return maybe_push_res_to_seq (rcode, type, ops, seq);
 }
@@ -541,29 +519,15 @@ gimple_simplify (enum built_in_function fn, tree type,
       && constant_for_folding (arg1)
       && constant_for_folding (arg2))
     {
-      tree decl = builtin_decl_implicit (fn);
-      if (decl)
-	{
-	  tree args[3];
-	  args[0] = arg0;
-	  args[1] = arg1;
-	  args[2] = arg2;
-	  tree res = fold_builtin_n (UNKNOWN_LOCATION, decl, args, 3, false);
-	  if (res)
-	    {
-	      /* fold_builtin_n wraps the result inside a NOP_EXPR.  */
-	      STRIP_NOPS (res);
-	      res = fold_convert (type, res);
-	      if (CONSTANT_CLASS_P (res))
-		return res;
-	    }
-	}
+      tree res = fold_const_call (as_combined_fn (fn), type, arg0, arg1, arg2);
+      if (res && CONSTANT_CLASS_P (res))
+	return res;
     }
 
   code_helper rcode;
   tree ops[3] = {};
   if (!gimple_simplify (&rcode, ops, seq, valueize,
-			fn, type, arg0, arg1, arg2))
+			as_combined_fn (fn), type, arg0, arg1, arg2))
     return NULL_TREE;
   return maybe_push_res_to_seq (rcode, type, ops, seq);
 }
@@ -726,23 +690,29 @@ gimple_simplify (gimple *stmt,
 	  && gimple_call_num_args (stmt) >= 1
 	  && gimple_call_num_args (stmt) <= 3)
 	{
-	  tree fn = gimple_call_fn (stmt);
-	  /* ???  Internal function support missing.  */
-	  if (!fn)
-	    return false;
 	  bool valueized = false;
-	  fn = do_valueize (fn, top_valueize, valueized);
-	  if (TREE_CODE (fn) != ADDR_EXPR
-	      || TREE_CODE (TREE_OPERAND (fn, 0)) != FUNCTION_DECL)
-	    return false;
+	  if (gimple_call_internal_p (stmt))
+	    *rcode = as_combined_fn (gimple_call_internal_fn (stmt));
+	  else
+	    {
+	      tree fn = gimple_call_fn (stmt);
+	      if (!fn)
+		return false;
 
-	  tree decl = TREE_OPERAND (fn, 0);
-	  if (DECL_BUILT_IN_CLASS (decl) != BUILT_IN_NORMAL
-	      || !gimple_builtin_call_types_compatible_p (stmt, decl))
-	    return false;
+	      fn = do_valueize (fn, top_valueize, valueized);
+	      if (TREE_CODE (fn) != ADDR_EXPR
+		  || TREE_CODE (TREE_OPERAND (fn, 0)) != FUNCTION_DECL)
+		return false;
+
+	      tree decl = TREE_OPERAND (fn, 0);
+	      if (DECL_BUILT_IN_CLASS (decl) != BUILT_IN_NORMAL
+		  || !gimple_builtin_call_types_compatible_p (stmt, decl))
+		return false;
+
+	      *rcode = as_combined_fn (DECL_FUNCTION_CODE (decl));
+	    }
 
 	  tree type = TREE_TYPE (gimple_call_lhs (stmt));
-	  *rcode = DECL_FUNCTION_CODE (decl);
 	  for (unsigned i = 0; i < gimple_call_num_args (stmt); ++i)
 	    {
 	      tree arg = gimple_call_arg (stmt, i);

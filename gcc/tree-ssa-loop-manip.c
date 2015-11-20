@@ -616,14 +616,10 @@ rewrite_into_loop_closed_ssa_1 (bitmap changed_bbs, unsigned update_flag,
 
   /* If the pass has caused the SSA form to be out-of-date, update it
      now.  */
-  if (update_flag == 0)
-    {
-#ifdef ENABLE_CHECKING
-      verify_ssa (true, true);
-#endif
-    }
-  else
+  if (update_flag != 0)
     update_ssa (update_flag);
+  else if (flag_checking)
+    verify_ssa (true, true);
 
   bitmap_obstack_initialize (&loop_renamer_obstack);
 

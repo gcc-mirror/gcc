@@ -259,6 +259,10 @@ extern void emit_indirect_jump (rtx);
 rtx emit_conditional_move (rtx, enum rtx_code, rtx, rtx, machine_mode,
 			   rtx, rtx, machine_mode, int);
 
+/* Emit a conditional negate or bitwise complement operation.  */
+rtx emit_conditional_neg_or_complement (rtx, rtx_code, machine_mode, rtx,
+					 rtx, rtx);
+
 rtx emit_conditional_add (rtx, enum rtx_code, rtx, rtx, machine_mode,
 			  rtx, rtx, machine_mode, int);
 
@@ -299,6 +303,9 @@ extern rtx_insn *gen_cond_trap (enum rtx_code, rtx, rtx, rtx);
 
 /* Generate code for VEC_PERM_EXPR.  */
 extern rtx expand_vec_perm (machine_mode, rtx, rtx, rtx, rtx);
+
+/* Generate code for vector comparison.  */
+extern rtx expand_vec_cmp_expr (tree, tree, rtx);
 
 /* Generate code for VEC_COND_EXPR.  */
 extern rtx expand_vec_cond_expr (tree, tree, tree, tree, rtx);

@@ -218,7 +218,7 @@ DEFPARAM(PARAM_STACK_FRAME_GROWTH,
 DEFPARAM(PARAM_MAX_GCSE_MEMORY,
 	 "max-gcse-memory",
 	 "The maximum amount of memory to be allocated by GCSE.",
-	 50 * 1024 * 1024, 0, 0)
+	 128 * 1024 * 1024, 0, 0)
 
 /* The GCSE optimization of an expression will avoided if the ratio of
    insertions to deletions is greater than this value.  */

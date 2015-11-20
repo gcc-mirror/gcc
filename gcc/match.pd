@@ -47,10 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 (define_operator_list simple_comparison         lt   le   eq ne ge   gt)
 (define_operator_list swapped_simple_comparison gt   ge   eq ne le   lt)
 
-/* Define an operand list for math function FN, with float, double and
-   long double variants (in that order).  */
-#define DEFINE_MATH_FN(FN) \
-  (define_operator_list FN BUILT_IN_##FN##F BUILT_IN_##FN BUILT_IN_##FN##L)
+#include "cfn-operators.pd"
 
 /* Define operand lists for math rounding functions {,i,l,ll}FN,
    where the versions prefixed with "i" return an int, those prefixed with
@@ -62,10 +59,6 @@ along with GCC; see the file COPYING3.  If not see
      X<FN> for all double functions, in the same order
      X<FN>L for all long double functions, in the same order.  */
 #define DEFINE_INT_AND_FLOAT_ROUND_FN(FN) \
-  DEFINE_MATH_FN (FN) \
-  DEFINE_MATH_FN (I##FN) \
-  DEFINE_MATH_FN (L##FN) \
-  DEFINE_MATH_FN (LL##FN) \
   (define_operator_list X##FN##F BUILT_IN_I##FN##F \
 				 BUILT_IN_L##FN##F \
 				 BUILT_IN_LL##FN##F) \
@@ -75,39 +68,6 @@ along with GCC; see the file COPYING3.  If not see
   (define_operator_list X##FN##L BUILT_IN_I##FN##L \
 				 BUILT_IN_L##FN##L \
 				 BUILT_IN_LL##FN##L)
-
-DEFINE_MATH_FN (LOG)
-DEFINE_MATH_FN (EXP)
-DEFINE_MATH_FN (LOG2)
-DEFINE_MATH_FN (EXP2)
-DEFINE_MATH_FN (LOG10)
-DEFINE_MATH_FN (EXP10)
-DEFINE_MATH_FN (POW)
-DEFINE_MATH_FN (POW10)
-DEFINE_MATH_FN (POWI)
-DEFINE_MATH_FN (SQRT)
-DEFINE_MATH_FN (CBRT)
-DEFINE_MATH_FN (SIN)
-DEFINE_MATH_FN (COS)
-DEFINE_MATH_FN (TAN)
-DEFINE_MATH_FN (ATAN)
-DEFINE_MATH_FN (COSH)
-DEFINE_MATH_FN (CEXP)
-DEFINE_MATH_FN (CEXPI)
-DEFINE_MATH_FN (CPROJ)
-DEFINE_MATH_FN (CCOS)
-DEFINE_MATH_FN (CCOSH)
-DEFINE_MATH_FN (HYPOT)
-DEFINE_MATH_FN (COPYSIGN)
-DEFINE_MATH_FN (CABS)
-DEFINE_MATH_FN (TRUNC)
-DEFINE_MATH_FN (NEARBYINT)
-DEFINE_MATH_FN (SIGNBIT)
-DEFINE_MATH_FN (FMIN)
-DEFINE_MATH_FN (FMAX)
-DEFINE_MATH_FN (LDEXP)
-DEFINE_MATH_FN (SCALBN)
-DEFINE_MATH_FN (SCALBLN)
 
 DEFINE_INT_AND_FLOAT_ROUND_FN (FLOOR)
 DEFINE_INT_AND_FLOAT_ROUND_FN (CEIL)
@@ -246,6 +206,28 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (rdiv @0 real_minus_onep)
  (if (!HONOR_SNANS (type))
   (negate @0)))
+
+(if (flag_reciprocal_math)
+ /* Convert (A/B)/C to A/(B*C)  */
+ (simplify
+  (rdiv (rdiv:s @0 @1) @2)
+   (rdiv @0 (mult @1 @2)))
+
+ /* Convert A/(B/C) to (A/B)*C  */
+ (simplify
+  (rdiv @0 (rdiv:s @1 @2))
+   (mult (rdiv @0 @1) @2)))
+
+/* Optimize (X & (-A)) / A where A is a power of 2, to X >> log2(A) */
+(for div (trunc_div ceil_div floor_div round_div exact_div)
+ (simplify
+  (div (convert? (bit_and @0 INTEGER_CST@1)) INTEGER_CST@2)
+  (if (integer_pow2p (@2)
+       && tree_int_cst_sgn (@2) > 0
+       && wi::add (@2, @1) == 0
+       && tree_nop_conversion_p (type, TREE_TYPE (@0)))
+   (rshift (convert @0) { build_int_cst (integer_type_node,
+					 wi::exact_log2 (@2)); }))))
 
 /* If ARG1 is a constant, we can convert this to a multiply by the
    reciprocal.  This does not have the same rounding properties,
@@ -461,6 +443,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (flag_associative_math)
    (with
     { tree tem = const_binop (MULT_EXPR, type, @0, @2); }
+    (if (tem)
+     (rdiv { tem; } @1)))))
+
+/* Convert C1/(X*C2) into (C1/C2)/X  */
+(simplify
+ (rdiv REAL_CST@0 (mult @1 REAL_CST@2))
+  (if (flag_reciprocal_math)
+   (with
+    { tree tem = const_binop (RDIV_EXPR, type, @0, @2); }
     (if (tem)
      (rdiv { tem; } @1)))))
 
@@ -2479,32 +2470,33 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       exps (EXP2 EXP10 POW10 EXP  EXP10 POW10 EXP   EXP2)
   (simplify
    (logs (exps @0))
-   (with {
-     tree x;
-     switch (exps)
-       {
-       CASE_FLT_FN (BUILT_IN_EXP):
-         /* Prepare to do logN(exp(exponent)) -> exponent*logN(e).  */
-	 x = build_real_truncate (type, dconst_e ());
-         break;
-       CASE_FLT_FN (BUILT_IN_EXP2):
-         /* Prepare to do logN(exp2(exponent)) -> exponent*logN(2).  */
-         x = build_real (type, dconst2);
-         break;
-       CASE_FLT_FN (BUILT_IN_EXP10):
-       CASE_FLT_FN (BUILT_IN_POW10):
-	 /* Prepare to do logN(exp10(exponent)) -> exponent*logN(10).  */
-	 {
-	   REAL_VALUE_TYPE dconst10;
-	   real_from_integer (&dconst10, VOIDmode, 10, SIGNED);
-	   x = build_real (type, dconst10);
-	 }
-         break;
-       default:
-	 gcc_unreachable ();
-       }
-     }
-    (mult (logs { x; }) @0))))
+   (if (SCALAR_FLOAT_TYPE_P (type))
+    (with {
+      tree x;
+      switch (exps)
+	{
+	CASE_CFN_EXP:
+	  /* Prepare to do logN(exp(exponent)) -> exponent*logN(e).  */
+	  x = build_real_truncate (type, dconst_e ());
+	  break;
+	CASE_CFN_EXP2:
+	  /* Prepare to do logN(exp2(exponent)) -> exponent*logN(2).  */
+	  x = build_real (type, dconst2);
+	  break;
+	CASE_CFN_EXP10:
+	CASE_CFN_POW10:
+	  /* Prepare to do logN(exp10(exponent)) -> exponent*logN(10).  */
+	  {
+	    REAL_VALUE_TYPE dconst10;
+	    real_from_integer (&dconst10, VOIDmode, 10, SIGNED);
+	    x = build_real (type, dconst10);
+	  }
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      }
+     (mult (logs { x; }) @0)))))
 
  (for logs (LOG LOG
             LOG2 LOG2
@@ -2512,23 +2504,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       exps (SQRT CBRT)
   (simplify
    (logs (exps @0))
-   (with {
-     tree x;
-     switch (exps)
-       {
-       CASE_FLT_FN (BUILT_IN_SQRT):
-	 /* Prepare to do logN(sqrt(x)) -> 0.5*logN(x).  */
-	 x = build_real (type, dconsthalf);
-         break;
-       CASE_FLT_FN (BUILT_IN_CBRT):
-	 /* Prepare to do logN(cbrt(x)) -> (1/3)*logN(x).  */
-         x = build_real_truncate (type, dconst_third ());
-         break;
-       default:
-	 gcc_unreachable ();
-       }
-     }
-    (mult { x; } (logs @0)))))
+   (if (SCALAR_FLOAT_TYPE_P (type))
+    (with {
+      tree x;
+      switch (exps)
+	{
+	CASE_CFN_SQRT:
+	  /* Prepare to do logN(sqrt(x)) -> 0.5*logN(x).  */
+	  x = build_real (type, dconsthalf);
+	  break;
+	CASE_CFN_CBRT:
+	  /* Prepare to do logN(cbrt(x)) -> (1/3)*logN(x).  */
+	  x = build_real_truncate (type, dconst_third ());
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      }
+     (mult { x; } (logs @0))))))
 
  /* logN(pow(x,exponent)) -> exponent*logN(x).  */
  (for logs (LOG LOG2 LOG10)
@@ -2585,7 +2578,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* hypot(x,0) and hypot(0,x) -> abs(x).  */
 (simplify
- (hypot:c @0 real_zerop@1)
+ (HYPOT:c @0 real_zerop@1)
  (abs @0))
 
 /* pow(1,x) -> 1.  */
@@ -2653,7 +2646,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (rdiv (SIN:s @0) (TAN:s @0))
   (if (! HONOR_NANS (@0)
        && ! HONOR_INFINITIES (@0))
-   (cos @0)))
+   (COS @0)))
 
  /* Simplify tan(x) / sin(x) -> 1.0 / cos(x). */
  (simplify

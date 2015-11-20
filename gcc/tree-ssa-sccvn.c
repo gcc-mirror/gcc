@@ -637,6 +637,9 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
 	{
 	  if (vro1->opcode == MEM_REF)
 	    deref1 = true;
+	  /* Do not look through a storage order barrier.  */
+	  else if (vro1->opcode == VIEW_CONVERT_EXPR && vro1->reverse)
+	    return false;
 	  if (vro1->off == -1)
 	    break;
 	  off1 += vro1->off;
@@ -645,6 +648,9 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
 	{
 	  if (vro2->opcode == MEM_REF)
 	    deref2 = true;
+	  /* Do not look through a storage order barrier.  */
+	  else if (vro2->opcode == VIEW_CONVERT_EXPR && vro2->reverse)
+	    return false;
 	  if (vro2->off == -1)
 	    break;
 	  off2 += vro2->off;
@@ -748,9 +754,10 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	    temp.off = tree_to_shwi (TREE_OPERAND (ref, 1));
 	  temp.clique = MR_DEPENDENCE_CLIQUE (ref);
 	  temp.base = MR_DEPENDENCE_BASE (ref);
+	  temp.reverse = REF_REVERSE_STORAGE_ORDER (ref);
 	  break;
 	case BIT_FIELD_REF:
-	  /* Record bits and position.  */
+	  /* Record bits, position and storage order.  */
 	  temp.op0 = TREE_OPERAND (ref, 1);
 	  temp.op1 = TREE_OPERAND (ref, 2);
 	  if (tree_fits_shwi_p (TREE_OPERAND (ref, 2)))
@@ -759,6 +766,7 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	      if (off % BITS_PER_UNIT == 0)
 		temp.off = off / BITS_PER_UNIT;
 	    }
+	  temp.reverse = REF_REVERSE_STORAGE_ORDER (ref);
 	  break;
 	case COMPONENT_REF:
 	  /* The field decl is enough to unambiguously specify the field,
@@ -855,8 +863,11 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	     operand), so we don't have to put anything
 	     for op* as it will be handled by the iteration  */
 	case REALPART_EXPR:
+	  temp.off = 0;
+	  break;
 	case VIEW_CONVERT_EXPR:
 	  temp.off = 0;
+	  temp.reverse = storage_order_barrier_p (ref);
 	  break;
 	case IMAGPART_EXPR:
 	  /* This is only interesting for its constant offset.  */
@@ -1365,6 +1376,21 @@ fully_constant_vn_reference_p (vn_reference_t ref)
   return NULL_TREE;
 }
 
+/* Return true if OPS contain a storage order barrier.  */
+
+static bool
+contains_storage_order_barrier_p (vec<vn_reference_op_s> ops)
+{
+  vn_reference_op_t op;
+  unsigned i;
+
+  FOR_EACH_VEC_ELT (ops, i, op)
+    if (op->opcode == VIEW_CONVERT_EXPR && op->reverse)
+      return true;
+
+  return false;
+}
+
 /* Transform any SSA_NAME's in a vector of vn_reference_op_s
    structures into their value numbers.  This is done in-place, and
    the vector passed in is returned.  *VALUEIZED_ANYTHING will specify
@@ -1702,7 +1728,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       tree ref2 = TREE_OPERAND (gimple_call_arg (def_stmt, 0), 0);
       tree base2;
       HOST_WIDE_INT offset2, size2, maxsize2;
-      base2 = get_ref_base_and_extent (ref2, &offset2, &size2, &maxsize2);
+      bool reverse;
+      base2 = get_ref_base_and_extent (ref2, &offset2, &size2, &maxsize2,
+				       &reverse);
       size2 = tree_to_uhwi (gimple_call_arg (def_stmt, 2)) * 8;
       if ((unsigned HOST_WIDE_INT)size2 / 8
 	  == tree_to_uhwi (gimple_call_arg (def_stmt, 2))
@@ -1725,8 +1753,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
     {
       tree base2;
       HOST_WIDE_INT offset2, size2, maxsize2;
+      bool reverse;
       base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
-				       &offset2, &size2, &maxsize2);
+				       &offset2, &size2, &maxsize2, &reverse);
       if (maxsize2 != -1
 	  && operand_equal_p (base, base2, 0)
 	  && offset2 <= offset
@@ -1746,14 +1775,17 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	   && maxsize % BITS_PER_UNIT == 0
 	   && offset % BITS_PER_UNIT == 0
 	   && is_gimple_reg_type (vr->type)
+	   && !contains_storage_order_barrier_p (vr->operands)
 	   && gimple_assign_single_p (def_stmt)
 	   && is_gimple_min_invariant (gimple_assign_rhs1 (def_stmt)))
     {
       tree base2;
       HOST_WIDE_INT offset2, size2, maxsize2;
+      bool reverse;
       base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
-				       &offset2, &size2, &maxsize2);
-      if (maxsize2 != -1
+				       &offset2, &size2, &maxsize2, &reverse);
+      if (!reverse
+	  && maxsize2 != -1
 	  && maxsize2 == size2
 	  && size2 % BITS_PER_UNIT == 0
 	  && offset2 % BITS_PER_UNIT == 0
@@ -1785,6 +1817,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
      to access pieces from.  */
   else if (ref->size == maxsize
 	   && is_gimple_reg_type (vr->type)
+	   && !contains_storage_order_barrier_p (vr->operands)
 	   && gimple_assign_single_p (def_stmt)
 	   && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME)
     {
@@ -1797,10 +1830,13 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	{
 	  tree base2;
 	  HOST_WIDE_INT offset2, size2, maxsize2, off;
+	  bool reverse;
 	  base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
-					   &offset2, &size2, &maxsize2);
+					   &offset2, &size2, &maxsize2,
+					   &reverse);
 	  off = offset - offset2;
-	  if (maxsize2 != -1
+	  if (!reverse
+	      && maxsize2 != -1
 	      && maxsize2 == size2
 	      && operand_equal_p (base, base2, 0)
 	      && offset2 <= offset
@@ -1849,7 +1885,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
     {
       tree base2;
       HOST_WIDE_INT maxsize2;
-      int i, j;
+      int i, j, k;
       auto_vec<vn_reference_op_s> rhs;
       vn_reference_op_t vro;
       ao_ref r;
@@ -1908,6 +1944,14 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	 try handling outermost VIEW_CONVERT_EXPRs.  */
       if (j != -1)
 	return (void *)-1;
+
+      /* Punt if the additional ops contain a storage order barrier.  */
+      for (k = i; k >= 0; k--)
+	{
+	  vro = &vr->operands[k];
+	  if (vro->opcode == VIEW_CONVERT_EXPR && vro->reverse)
+	    return (void *)-1;
+	}
 
       /* Now re-write REF to be based on the rhs of the assignment.  */
       copy_reference_ops_from_ref (gimple_assign_rhs1 (def_stmt), &rhs);
@@ -1982,7 +2026,6 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       HOST_WIDE_INT rhs_offset, copy_size, lhs_offset;
       vn_reference_op_s op;
       HOST_WIDE_INT at;
-
 
       /* Only handle non-variable, addressable refs.  */
       if (ref->size != maxsize
@@ -2717,11 +2760,15 @@ cond_stmts_equal_p (gcond *cond1, gcond *cond2, bool *inverted_p)
   else
     return false;
 
-  if (! expressions_equal_p (vn_valueize (lhs1), vn_valueize (lhs2))
-      || ! expressions_equal_p (vn_valueize (rhs1), vn_valueize (rhs2)))
-    return false;
-
-  return true;
+  lhs1 = vn_valueize (lhs1);
+  rhs1 = vn_valueize (rhs1);
+  lhs2 = vn_valueize (lhs2);
+  rhs2 = vn_valueize (rhs2);
+  return ((expressions_equal_p (lhs1, lhs2)
+	   && expressions_equal_p (rhs1, rhs2))
+	  || (commutative_tree_code (code1)
+	      && expressions_equal_p (lhs1, rhs2)
+	      && expressions_equal_p (rhs1, lhs2)));
 }
 
 /* Compare two phi entries for equality, ignoring VN_TOP arguments.  */
@@ -3336,6 +3383,7 @@ visit_phi (gimple *phi)
   tree result;
   tree sameval = VN_TOP;
   bool allsame = true;
+  unsigned n_executable = 0;
 
   /* TODO: We could check for this in init_sccvn, and replace this
      with a gcc_assert.  */
@@ -3351,6 +3399,7 @@ visit_phi (gimple *phi)
       {
 	tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
 
+	++n_executable;
 	if (TREE_CODE (def) == SSA_NAME)
 	  def = SSA_VAL (def);
 	if (def == VN_TOP)
@@ -3365,9 +3414,11 @@ visit_phi (gimple *phi)
       }
   
   /* If none of the edges was executable or all incoming values are
-     undefined keep the value-number at VN_TOP.  */
-  if (sameval == VN_TOP)
-    return set_ssa_val_to (PHI_RESULT (phi), VN_TOP);
+     undefined keep the value-number at VN_TOP.  If only a single edge
+     is exectuable use its value.  */
+  if (sameval == VN_TOP
+      || n_executable == 1)
+    return set_ssa_val_to (PHI_RESULT (phi), sameval);
 
   /* First see if it is equivalent to a phi node in this block.  We prefer
      this as it allows IV elimination - see PRs 66502 and 67167.  */
@@ -4154,6 +4205,7 @@ class sccvn_dom_walker : public dom_walker
 public:
   sccvn_dom_walker ()
     : dom_walker (CDI_DOMINATORS), fail (false), cond_stack (vNULL) {}
+  ~sccvn_dom_walker ();
 
   virtual void before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -4167,6 +4219,11 @@ public:
   vec<std::pair <basic_block, std::pair <vn_nary_op_t, vn_nary_op_t> > >
     cond_stack;
 };
+
+sccvn_dom_walker::~sccvn_dom_walker ()
+{
+  cond_stack.release ();
+}
 
 /* Record a temporary condition for the BB and its dominated blocks.  */
 
@@ -4559,6 +4616,10 @@ expressions_equal_p (tree e1, tree e2)
 {
   /* The obvious case.  */
   if (e1 == e2)
+    return true;
+
+  /* If either one is VN_TOP consider them equal.  */
+  if (e1 == VN_TOP || e2 == VN_TOP)
     return true;
 
   /* If only one of them is null, they cannot be equal.  */

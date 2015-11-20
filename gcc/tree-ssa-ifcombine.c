@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "tree-cfg.h"
+#include "tree-ssa.h"
 
 #ifndef LOGICAL_OP_NON_SHORT_CIRCUIT
 #define LOGICAL_OP_NON_SHORT_CIRCUIT \
@@ -122,6 +123,7 @@ bb_no_side_effects_p (basic_block bb)
 	continue;
 
       if (gimple_has_side_effects (stmt)
+	  || gimple_uses_undefined_value_p (stmt)
 	  || gimple_could_trap_p (stmt)
 	  || gimple_vuse (stmt))
 	return false;
@@ -574,8 +576,7 @@ tree_ssa_ifcombine_bb_1 (basic_block inner_cond_bb, basic_block outer_cond_bb,
      the inner cond_bb having no side-effects.  */
   if (phi_pred_bb != else_bb
       && recognize_if_then_else (outer_cond_bb, &inner_cond_bb, &else_bb)
-      && same_phi_args_p (outer_cond_bb, phi_pred_bb, else_bb)
-      && bb_no_side_effects_p (inner_cond_bb))
+      && same_phi_args_p (outer_cond_bb, phi_pred_bb, else_bb))
     {
       /* We have
 	   <outer_cond_bb>
@@ -593,8 +594,7 @@ tree_ssa_ifcombine_bb_1 (basic_block inner_cond_bb, basic_block outer_cond_bb,
   /* And a version where the outer condition is negated.  */
   if (phi_pred_bb != else_bb
       && recognize_if_then_else (outer_cond_bb, &else_bb, &inner_cond_bb)
-      && same_phi_args_p (outer_cond_bb, phi_pred_bb, else_bb)
-      && bb_no_side_effects_p (inner_cond_bb))
+      && same_phi_args_p (outer_cond_bb, phi_pred_bb, else_bb))
     {
       /* We have
 	   <outer_cond_bb>
@@ -615,8 +615,7 @@ tree_ssa_ifcombine_bb_1 (basic_block inner_cond_bb, basic_block outer_cond_bb,
      having no side-effects.  */
   if (phi_pred_bb != then_bb
       && recognize_if_then_else (outer_cond_bb, &then_bb, &inner_cond_bb)
-      && same_phi_args_p (outer_cond_bb, phi_pred_bb, then_bb)
-      && bb_no_side_effects_p (inner_cond_bb))
+      && same_phi_args_p (outer_cond_bb, phi_pred_bb, then_bb))
     {
       /* We have
 	   <outer_cond_bb>
@@ -633,8 +632,7 @@ tree_ssa_ifcombine_bb_1 (basic_block inner_cond_bb, basic_block outer_cond_bb,
   /* And a version where the outer condition is negated.  */
   if (phi_pred_bb != then_bb
       && recognize_if_then_else (outer_cond_bb, &inner_cond_bb, &then_bb)
-      && same_phi_args_p (outer_cond_bb, phi_pred_bb, then_bb)
-      && bb_no_side_effects_p (inner_cond_bb))
+      && same_phi_args_p (outer_cond_bb, phi_pred_bb, then_bb))
     {
       /* We have
 	   <outer_cond_bb>
@@ -671,7 +669,8 @@ tree_ssa_ifcombine_bb (basic_block inner_cond_bb)
        if (a && b)
 	 ;
      This requires a single predecessor of the inner cond_bb.  */
-  if (single_pred_p (inner_cond_bb))
+  if (single_pred_p (inner_cond_bb)
+      && bb_no_side_effects_p (inner_cond_bb))
     {
       basic_block outer_cond_bb = single_pred (inner_cond_bb);
 

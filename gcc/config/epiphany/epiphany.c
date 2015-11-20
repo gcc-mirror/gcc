@@ -1317,7 +1317,7 @@ epiphany_print_operand (FILE *file, rtx x, int code)
 	    offset = 0;
 	    break;
 	}
-      output_address (addr);
+      output_address (GET_MODE (x), addr);
       fputc (']', file);
       if (offset)
 	{
@@ -1338,7 +1338,7 @@ epiphany_print_operand (FILE *file, rtx x, int code)
 	      case 1:
 		break;
 	    }
-	  output_address (offset);
+	  output_address (GET_MODE (x), offset);
 	}
       break;
     case CONST_DOUBLE :
@@ -1370,7 +1370,7 @@ epiphany_print_operand (FILE *file, rtx x, int code)
 /* Print a memory address as an operand to reference that memory location.  */
 
 static void
-epiphany_print_operand_address (FILE *file, rtx addr)
+epiphany_print_operand_address (FILE *file, machine_mode /*mode*/, rtx addr)
 {
   register rtx base, index = 0;
   int offset = 0;
@@ -1424,7 +1424,9 @@ epiphany_print_operand_address (FILE *file, rtx addr)
       break;
     case PRE_INC: case PRE_DEC: case POST_INC: case POST_DEC: case POST_MODIFY:
       /* We shouldn't get here as we've lost the mode of the memory object
-	 (which says how much to inc/dec by.  */
+	 (which says how much to inc/dec by.
+	 FIXME: We have the mode now, address printing can be moved into this
+	 function.  */
       gcc_unreachable ();
       break;
     default:

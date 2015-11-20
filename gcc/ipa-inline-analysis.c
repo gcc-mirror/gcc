@@ -2853,6 +2853,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   inline_summaries->get (node)->self_time = time;
   inline_summaries->get (node)->self_size = size;
   nonconstant_names.release ();
+  ipa_release_body_info (&fbi);
   if (opt_for_fn (node->decl, optimize))
     {
       if (!early)

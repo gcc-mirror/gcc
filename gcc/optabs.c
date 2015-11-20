@@ -1047,7 +1047,8 @@ expand_binop_directly (machine_mode mode, optab binoptab,
       /* The mode of the result is different then the mode of the
 	 arguments.  */
       tmp_mode = insn_data[(int) icode].operand[0].mode;
-      if (GET_MODE_NUNITS (tmp_mode) != 2 * GET_MODE_NUNITS (mode))
+      if (VECTOR_MODE_P (mode)
+	  && GET_MODE_NUNITS (tmp_mode) != 2 * GET_MODE_NUNITS (mode))
 	{
 	  delete_insns_since (last);
 	  return NULL_RTX;
@@ -4210,6 +4211,56 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
   return NULL_RTX;
 }
 
+
+/* Emit a conditional negate or bitwise complement using the
+   negcc or notcc optabs if available.  Return NULL_RTX if such operations
+   are not available.  Otherwise return the RTX holding the result.
+   TARGET is the desired destination of the result.  COMP is the comparison
+   on which to negate.  If COND is true move into TARGET the negation
+   or bitwise complement of OP1.  Otherwise move OP2 into TARGET.
+   CODE is either NEG or NOT.  MODE is the machine mode in which the
+   operation is performed.  */
+
+rtx
+emit_conditional_neg_or_complement (rtx target, rtx_code code,
+				     machine_mode mode, rtx cond, rtx op1,
+				     rtx op2)
+{
+  optab op = unknown_optab;
+  if (code == NEG)
+    op = negcc_optab;
+  else if (code == NOT)
+    op = notcc_optab;
+  else
+    gcc_unreachable ();
+
+  insn_code icode = direct_optab_handler (op, mode);
+
+  if (icode == CODE_FOR_nothing)
+    return NULL_RTX;
+
+  if (!target)
+    target = gen_reg_rtx (mode);
+
+  rtx_insn *last = get_last_insn ();
+  struct expand_operand ops[4];
+
+  create_output_operand (&ops[0], target, mode);
+  create_fixed_operand (&ops[1], cond);
+  create_input_operand (&ops[2], op1, mode);
+  create_input_operand (&ops[3], op2, mode);
+
+  if (maybe_expand_insn (icode, 4, ops))
+    {
+      if (ops[0].value != target)
+	convert_move (target, ops[0].value, false);
+
+      return target;
+    }
+  delete_insns_since (last);
+  return NULL_RTX;
+}
+
 /* Emit a conditional addition instruction if the machine supports one for that
    condition and machine mode.
 
@@ -4838,6 +4889,33 @@ expand_fix (rtx to, rtx from, int unsignedp)
     }
 }
 
+
+/* Promote integer arguments for a libcall if necessary.
+   emit_library_call_value cannot do the promotion because it does not
+   know if it should do a signed or unsigned promotion.  This is because
+   there are no tree types defined for libcalls.  */
+
+static rtx
+prepare_libcall_arg (rtx arg, int uintp)
+{
+  machine_mode mode = GET_MODE (arg);
+  machine_mode arg_mode;
+  if (SCALAR_INT_MODE_P (mode))
+    {
+      /*  If we need to promote the integer function argument we need to do
+	  it here instead of inside emit_library_call_value because in
+	  emit_library_call_value we don't know if we should do a signed or
+	  unsigned promotion.  */
+
+      int unsigned_p = 0;
+      arg_mode = promote_function_mode (NULL_TREE, mode,
+					&unsigned_p, NULL_TREE, 0);
+      if (arg_mode != mode)
+	return convert_to_mode (arg_mode, arg, uintp);
+    }
+    return arg;
+}
+
 /* Generate code to convert FROM or TO a fixed-point.
    If UINTP is true, either TO or FROM is an unsigned integer.
    If SATP is true, we need to saturate the result.  */
@@ -4879,6 +4957,9 @@ expand_fixed_convert (rtx to, rtx from, int uintp, int satp)
 
   libfunc = convert_optab_libfunc (tab, to_mode, from_mode);
   gcc_assert (libfunc);
+
+  from = prepare_libcall_arg (from, uintp);
+  from_mode = GET_MODE (from);
 
   start_sequence ();
   value = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST, to_mode,
@@ -5100,11 +5181,13 @@ get_rtx_code (enum tree_code tcode, bool unsignedp)
 }
 
 /* Return comparison rtx for COND. Use UNSIGNEDP to select signed or
-   unsigned operators. Do not generate compare instruction.  */
+   unsigned operators.  OPNO holds an index of the first comparison
+   operand in insn with code ICODE.  Do not generate compare instruction.  */
 
 static rtx
 vector_compare_rtx (enum tree_code tcode, tree t_op0, tree t_op1,
-		    bool unsignedp, enum insn_code icode)
+		    bool unsignedp, enum insn_code icode,
+		    unsigned int opno)
 {
   struct expand_operand ops[2];
   rtx rtx_op0, rtx_op1;
@@ -5130,7 +5213,7 @@ vector_compare_rtx (enum tree_code tcode, tree t_op0, tree t_op1,
 
   create_input_operand (&ops[0], rtx_op0, m0);
   create_input_operand (&ops[1], rtx_op1, m1);
-  if (!maybe_legitimize_operands (icode, 4, 2, ops))
+  if (!maybe_legitimize_operands (icode, opno, 2, ops))
     gcc_unreachable ();
   return gen_rtx_fmt_ee (rcode, VOIDmode, ops[0].value, ops[1].value);
 }
@@ -5344,6 +5427,38 @@ expand_vec_perm (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
   return tmp;
 }
 
+/* Generate insns for a VEC_COND_EXPR with mask, given its TYPE and its
+   three operands.  */
+
+rtx
+expand_vec_cond_mask_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
+			   rtx target)
+{
+  struct expand_operand ops[4];
+  machine_mode mode = TYPE_MODE (vec_cond_type);
+  machine_mode mask_mode = TYPE_MODE (TREE_TYPE (op0));
+  enum insn_code icode = get_vcond_mask_icode (mode, mask_mode);
+  rtx mask, rtx_op1, rtx_op2;
+
+  if (icode == CODE_FOR_nothing)
+    return 0;
+
+  mask = expand_normal (op0);
+  rtx_op1 = expand_normal (op1);
+  rtx_op2 = expand_normal (op2);
+
+  mask = force_reg (GET_MODE (mask), mask);
+  rtx_op1 = force_reg (GET_MODE (rtx_op1), rtx_op1);
+
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], rtx_op1, mode);
+  create_input_operand (&ops[2], rtx_op2, mode);
+  create_input_operand (&ops[3], mask, mask_mode);
+  expand_insn (icode, 4, ops);
+
+  return ops[0].value;
+}
+
 /* Generate insns for a VEC_COND_EXPR, given its TYPE and its
    three operands.  */
 
@@ -5365,18 +5480,26 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
       op0a = TREE_OPERAND (op0, 0);
       op0b = TREE_OPERAND (op0, 1);
       tcode = TREE_CODE (op0);
-      unsignedp = TYPE_UNSIGNED (TREE_TYPE (op0a));
     }
   else
     {
-      /* Fake op0 < 0.  */
       gcc_assert (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (op0)));
-      op0a = op0;
-      op0b = build_zero_cst (TREE_TYPE (op0));
-      tcode = LT_EXPR;
-      unsignedp = false;
+      if (get_vcond_mask_icode (mode, TYPE_MODE (TREE_TYPE (op0)))
+	  != CODE_FOR_nothing)
+	return expand_vec_cond_mask_expr (vec_cond_type, op0, op1,
+					  op2, target);
+      /* Fake op0 < 0.  */
+      else
+	{
+	  gcc_assert (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (op0)))
+		      == MODE_VECTOR_INT);
+	  op0a = op0;
+	  op0b = build_zero_cst (TREE_TYPE (op0));
+	  tcode = LT_EXPR;
+	}
     }
   cmp_op_mode = TYPE_MODE (TREE_TYPE (op0a));
+  unsignedp = TYPE_UNSIGNED (TREE_TYPE (op0a));
 
 
   gcc_assert (GET_MODE_SIZE (mode) == GET_MODE_SIZE (cmp_op_mode)
@@ -5386,7 +5509,7 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
   if (icode == CODE_FOR_nothing)
     return 0;
 
-  comparison = vector_compare_rtx (tcode, op0a, op0b, unsignedp, icode);
+  comparison = vector_compare_rtx (tcode, op0a, op0b, unsignedp, icode, 4);
   rtx_op1 = expand_normal (op1);
   rtx_op2 = expand_normal (op2);
 
@@ -5397,6 +5520,40 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
   create_fixed_operand (&ops[4], XEXP (comparison, 0));
   create_fixed_operand (&ops[5], XEXP (comparison, 1));
   expand_insn (icode, 6, ops);
+  return ops[0].value;
+}
+
+/* Generate insns for a vector comparison into a mask.  */
+
+rtx
+expand_vec_cmp_expr (tree type, tree exp, rtx target)
+{
+  struct expand_operand ops[4];
+  enum insn_code icode;
+  rtx comparison;
+  machine_mode mask_mode = TYPE_MODE (type);
+  machine_mode vmode;
+  bool unsignedp;
+  tree op0a, op0b;
+  enum tree_code tcode;
+
+  op0a = TREE_OPERAND (exp, 0);
+  op0b = TREE_OPERAND (exp, 1);
+  tcode = TREE_CODE (exp);
+
+  unsignedp = TYPE_UNSIGNED (TREE_TYPE (op0a));
+  vmode = TYPE_MODE (TREE_TYPE (op0a));
+
+  icode = get_vec_cmp_icode (vmode, mask_mode, unsignedp);
+  if (icode == CODE_FOR_nothing)
+    return 0;
+
+  comparison = vector_compare_rtx (tcode, op0a, op0b, unsignedp, icode, 2);
+  create_output_operand (&ops[0], target, mask_mode);
+  create_fixed_operand (&ops[1], comparison);
+  create_fixed_operand (&ops[2], XEXP (comparison, 0));
+  create_fixed_operand (&ops[3], XEXP (comparison, 1));
+  expand_insn (icode, 4, ops);
   return ops[0].value;
 }
 

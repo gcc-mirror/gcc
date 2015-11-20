@@ -7,3 +7,8 @@ GCC_4.9 {
   _GLOBAL__AIXI_shr_o
   _GLOBAL__AIXD_shr_o
 }
+
+GCC_5 {
+  atexit
+  on_exit
+}

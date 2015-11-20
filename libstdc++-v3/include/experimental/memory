@@ -43,6 +43,7 @@
 #include <type_traits>
 #include <utility>
 #include <functional>
+#include <experimental/bits/shared_ptr.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -247,7 +248,6 @@ template <typename _Tp>
     {
       return hash<typename add_pointer<_Tp>::type> {}(__t.get());
     }
-
   };
 
 } // namespace std

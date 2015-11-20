@@ -140,7 +140,7 @@ sem_usage_pair::sem_usage_pair (sem_item *_item, unsigned int _index):
    for bitmap memory allocation.  */
 
 sem_item::sem_item (sem_item_type _type,
-		    bitmap_obstack *stack): type(_type), hash(0)
+		    bitmap_obstack *stack): type (_type), m_hash (0)
 {
   setup (stack);
 }
@@ -151,7 +151,7 @@ sem_item::sem_item (sem_item_type _type,
 
 sem_item::sem_item (sem_item_type _type, symtab_node *_node,
 		    hashval_t _hash, bitmap_obstack *stack): type(_type),
-  node (_node), hash (_hash)
+  node (_node), m_hash (_hash)
 {
   decl = node->decl;
   setup (stack);
@@ -227,6 +227,11 @@ sem_item::target_supports_symbol_aliases_p (void)
 #endif
 }
 
+void sem_item::set_hash (hashval_t hash)
+{
+  m_hash = hash;
+}
+
 /* Semantic function constructor that uses STACK as bitmap memory stack.  */
 
 sem_function::sem_function (bitmap_obstack *stack): sem_item (FUNC, stack),
@@ -274,7 +279,7 @@ sem_function::get_bb_hash (const sem_bb *basic_block)
 hashval_t
 sem_function::get_hash (void)
 {
-  if(!hash)
+  if (!m_hash)
     {
       inchash::hash hstate;
       hstate.add_int (177454); /* Random number for function type.  */
@@ -289,7 +294,6 @@ sem_function::get_hash (void)
       for (unsigned i = 0; i < bb_sizes.length (); i++)
 	hstate.add_int (bb_sizes[i]);
 
-
       /* Add common features of declaration itself.  */
       if (DECL_FUNCTION_SPECIFIC_TARGET (decl))
         hstate.add_wide_int
@@ -301,10 +305,10 @@ sem_function::get_hash (void)
       hstate.add_flag (DECL_CXX_CONSTRUCTOR_P (decl));
       hstate.add_flag (DECL_CXX_DESTRUCTOR_P (decl));
 
-      hash = hstate.end ();
+      set_hash (hstate.end ());
     }
 
-  return hash;
+  return m_hash;
 }
 
 /* Return ture if A1 and A2 represent equivalent function attribute lists.
@@ -800,7 +804,7 @@ sem_item::update_hash_by_addr_refs (hash_map <symtab_node *,
 				    sem_item *> &m_symtab_node_map)
 {
   ipa_ref* ref;
-  inchash::hash hstate (hash);
+  inchash::hash hstate (get_hash ());
 
   for (unsigned i = 0; node->iterate_reference (i, ref); i++)
     {
@@ -823,7 +827,7 @@ sem_item::update_hash_by_addr_refs (hash_map <symtab_node *,
 	}
     }
 
-  hash = hstate.end ();
+  set_hash (hstate.end ());
 }
 
 /* Update hash by computed local hash values taken from different
@@ -835,13 +839,13 @@ sem_item::update_hash_by_local_refs (hash_map <symtab_node *,
 				     sem_item *> &m_symtab_node_map)
 {
   ipa_ref* ref;
-  inchash::hash state (hash);
+  inchash::hash state (get_hash ());
 
   for (unsigned j = 0; node->iterate_reference (j, ref); j++)
     {
       sem_item **result = m_symtab_node_map.get (ref->referring);
       if (result)
-	state.merge_hash ((*result)->hash);
+	state.merge_hash ((*result)->get_hash ());
     }
 
   if (type == FUNC)
@@ -851,7 +855,7 @@ sem_item::update_hash_by_local_refs (hash_map <symtab_node *,
 	{
 	  sem_item **result = m_symtab_node_map.get (e->caller);
 	  if (result)
-	    state.merge_hash ((*result)->hash);
+	    state.merge_hash ((*result)->get_hash ());
 	}
     }
 
@@ -2099,8 +2103,8 @@ sem_variable::parse (varpool_node *node, bitmap_obstack *stack)
 hashval_t
 sem_variable::get_hash (void)
 {
-  if (hash)
-    return hash;
+  if (m_hash)
+    return m_hash;
 
   /* All WPA streamed in symbols should have their hashes computed at compile
      time.  At this point, the constructor may not be in memory at all.
@@ -2113,9 +2117,9 @@ sem_variable::get_hash (void)
   if (DECL_SIZE (decl) && tree_fits_shwi_p (DECL_SIZE (decl)))
     hstate.add_wide_int (tree_to_shwi (DECL_SIZE (decl)));
   add_expr (ctor, hstate);
-  hash = hstate.end ();
+  set_hash (hstate.end ());
 
-  return hash;
+  return m_hash;
 }
 
 /* Merges instance with an ALIAS_ITEM, where alias, thunk or redirection can
@@ -2688,7 +2692,7 @@ sem_item_optimizer::update_hash_by_addr_refs ()
 	     {
 	        tree class_type
 		  = TYPE_METHOD_BASETYPE (TREE_TYPE (m_items[i]->decl));
-		inchash::hash hstate (m_items[i]->hash);
+		inchash::hash hstate (m_items[i]->get_hash ());
 
 		if (TYPE_NAME (class_type)
 		     && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (class_type)))
@@ -2696,7 +2700,7 @@ sem_item_optimizer::update_hash_by_addr_refs ()
 		    (IDENTIFIER_HASH_VALUE
 		       (DECL_ASSEMBLER_NAME (TYPE_NAME (class_type))));
 
-		m_items[i]->hash = hstate.end ();
+		m_items[i]->set_hash (hstate.end ());
 	     }
 	}
     }
@@ -2710,7 +2714,7 @@ sem_item_optimizer::update_hash_by_addr_refs ()
 
   /* Global hash value replace current hash values.  */
   for (unsigned i = 0; i < m_items.length (); i++)
-    m_items[i]->hash = m_items[i]->global_hash;
+    m_items[i]->set_hash (m_items[i]->global_hash);
 }
 
 /* Congruence classes are built by hash value.  */
@@ -2722,7 +2726,7 @@ sem_item_optimizer::build_hash_based_classes (void)
     {
       sem_item *item = m_items[i];
 
-      congruence_class_group *group = get_group_by_hash (item->hash,
+      congruence_class_group *group = get_group_by_hash (item->get_hash (),
 				      item->type);
 
       if (!group->classes.length ())
@@ -2744,6 +2748,10 @@ sem_item_optimizer::build_graph (void)
     {
       sem_item *item = m_items[i];
       m_symtab_node_map.put (item->node, item);
+
+      /* Initialize hash values if we are not in LTO mode.  */
+      if (!in_lto_p)
+	item->get_hash ();
     }
 
   for (unsigned i = 0; i < m_items.length (); i++)
@@ -3038,7 +3046,9 @@ sem_item_optimizer::traverse_congruence_split (congruence_class * const &cls,
 
   if (popcount > 0 && popcount < cls->members.length ())
     {
-      congruence_class* newclasses[2] = { new congruence_class (class_id++), new congruence_class (class_id++) };
+      auto_vec <congruence_class *, 2> newclasses;
+      newclasses.quick_push (new congruence_class (class_id++));
+      newclasses.quick_push (new congruence_class (class_id++));
 
       for (unsigned int i = 0; i < cls->members.length (); i++)
 	{

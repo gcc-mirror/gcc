@@ -4285,7 +4285,7 @@ package body Exp_Ch5 is
          --  with element iterators, where debug information must be generated
          --  for the temporary that holds the element value. These temporaries
          --  are created within a transient block whose local declarations are
-         --  transferred to the loop, which now has non-trivial local objects.
+         --  transferred to the loop, which now has nontrivial local objects.
 
          if Nkind (N) = N_Loop_Statement
            and then Present (Identifier (N))

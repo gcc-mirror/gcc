@@ -3286,6 +3286,14 @@ package body Sinfo is
       return Elist5 (N);
    end Used_Operations;
 
+   function Was_Expression_Function
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Subprogram_Body);
+      return Flag18 (N);
+   end Was_Expression_Function;
+
    function Was_Originally_Stub
       (N : Node_Id) return Boolean is
    begin
@@ -6524,6 +6532,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Use_Type_Clause);
       Set_Elist5 (N, Val);
    end Set_Used_Operations;
+
+   procedure Set_Was_Expression_Function
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Subprogram_Body);
+      Set_Flag18 (N, Val);
+   end Set_Was_Expression_Function;
 
    procedure Set_Was_Originally_Stub
       (N : Node_Id; Val : Boolean := True) is

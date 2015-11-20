@@ -1662,7 +1662,8 @@ xstormy16_asm_out_constructor (rtx symbol, int priority)
    Print a memory address as an operand to reference that memory location.  */
 
 static void
-xstormy16_print_operand_address (FILE *file, rtx address)
+xstormy16_print_operand_address (FILE *file, machine_mode /*mode*/,
+				 rtx address)
 {
   HOST_WIDE_INT offset;
   int pre_dec, post_inc;
@@ -1769,7 +1770,7 @@ xstormy16_print_operand (FILE *file, rtx x, int code)
       else if (LABEL_P (x))
 	output_asm_label (x);
       else
-	xstormy16_print_operand_address (file, x);
+	xstormy16_print_operand_address (file, VOIDmode, x);
       return;
 
     case 'o':
@@ -1825,7 +1826,7 @@ xstormy16_print_operand (FILE *file, rtx x, int code)
       break;
 
     case MEM:
-      xstormy16_print_operand_address (file, XEXP (x, 0));
+      xstormy16_print_operand_address (file, GET_MODE (x), XEXP (x, 0));
       break;
 
     default:

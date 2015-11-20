@@ -5387,7 +5387,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#if __cplusplus >= 201103L && defined(_GLIBCXX_USE_C99)
+#if __cplusplus >= 201103L
 
 #include <ext/string_conversions.h>
 
@@ -5396,6 +5396,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
+#if _GLIBCXX_USE_C99_STDLIB
   // 21.4 Numeric Conversions [string.conversions].
   inline int
   stoi(const string& __str, size_t* __idx = 0, int __base = 10)
@@ -5434,7 +5435,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline long double
   stold(const string& __str, size_t* __idx = 0)
   { return __gnu_cxx::__stoa(&std::strtold, "stold", __str.c_str(), __idx); }
+#endif // _GLIBCXX_USE_C99_STDLIB
 
+#if _GLIBCXX_USE_C99_STDIO
   // NB: (v)snprintf vs sprintf.
 
   // DR 1261.
@@ -5498,8 +5501,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, __n,
 					   "%Lf", __val);
   }
+#endif // _GLIBCXX_USE_C99_STDIO
 
-#ifdef _GLIBCXX_USE_WCHAR_T
+#if defined(_GLIBCXX_USE_WCHAR_T) && _GLIBCXX_USE_C99_WCHAR
   inline int 
   stoi(const wstring& __str, size_t* __idx = 0, int __base = 10)
   { return __gnu_cxx::__stoa<long, int>(&std::wcstol, "stoi", __str.c_str(),
@@ -5601,13 +5605,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 					    L"%Lf", __val);
   }
 #endif // _GLIBCXX_HAVE_BROKEN_VSWPRINTF
-#endif
+#endif // _GLIBCXX_USE_WCHAR_T && _GLIBCXX_USE_C99_WCHAR
 
 _GLIBCXX_END_NAMESPACE_CXX11
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#endif /* C++11 && _GLIBCXX_USE_C99 ... */
+#endif /* C++11 */
 
 #if __cplusplus >= 201103L
 

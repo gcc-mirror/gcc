@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "ru_RU.UTF8" }
+// { dg-require-namedlocale "ru_RU.UTF-8" }
 
 // 2010-01-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -34,7 +34,7 @@ void test01()
   typedef istreambuf_iterator<char> iterator_type;
 
   // basic construction
-  locale loc("ru_RU.UTF8");
+  locale loc("ru_RU.UTF-8");
 
   // create an ostream-derived object, cache the time_get facet
   iterator_type end;

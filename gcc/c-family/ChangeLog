@@ -1,3 +1,180 @@
+2015-11-18  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (shorten_compare): Don't -Wtype-limits if the
+	non-constant operand comes from a macro.
+
+2015-11-17  Jason Merrill  <jason@redhat.com>
+
+	PR bootstrap/68346
+	* c-common.c (warn_tautological_cmp): Fold before checking for
+	constants.
+
+2015-11-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/68362
+	* c-common.c (check_case_bounds): Fold low and high cases.
+
+2015-11-16  Marek Polacek  <polacek@redhat.com>
+
+	* c-ada-spec.c (dump_ada_template): Use RECORD_OR_UNION_TYPE_P.
+	* c-common.c (c_common_get_alias_set): Likewise.
+	(handle_visibility_attribute): Likewise.
+
+2015-11-16  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* c-common.c (handle_simd_attribute): New.
+	(struct attribute_spec): Add entry for "simd".
+	(handle_simd_attribute): New.
+
+2015-11-13  Kai Tietz  <ktietz70@googlemail.com>
+
+	* c-lex.c (interpret_float): Use fold_convert.
+
+2015-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_fully_fold_internal): Capture existing souce_range,
+	and store it on the result.
+	* c-opts.c (c_common_init_options): Set
+	global_dc->colorize_source_p.
+
+2015-11-12  James Norris  <jnorris@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* c-pragma.c (oacc_pragmas): Add entry for declare directive. 
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OACC_DECLARE.
+	(enum pragma_omp_clause): Add PRAGMA_OACC_CLAUSE_DEVICE_RESIDENT and
+	PRAGMA_OACC_CLAUSE_LINK.
+
+2015-11-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68107
+	PR c++/68266
+	* c-common.c (valid_array_size_p): New function.
+	* c-common.h (valid_array_size_p): Declare.
+
+2015-11-11  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR bootstrap/68271
+	* c-pragma.c (c_register_pragma_1): Update the gcc_assert to 256.
+
+2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	* array-notation-common.c: Remove unused header files.
+	* c-ada-spec.c: Likewise.
+	* c-cilkplus.c: Likewise.
+	* c-common.c: Likewise.
+	* c-cppbuiltin.c: Likewise.
+	* c-dump.c: Likewise.
+	* c-format.c: Likewise.
+	* c-gimplify.c: Likewise.
+	* c-indentation.c: Likewise.
+	* c-lex.c: Likewise.
+	* c-omp.c: Likewise.
+	* c-opts.c: Likewise.
+	* c-pch.c: Likewise.
+	* c-ppoutput.c: Likewise.
+	* c-pragma.c: Likewise.
+	* c-pretty-print.c: Likewise.
+	* c-semantics.c: Likewise.
+	* c-ubsan.c: Likewise.
+	* cilk.c: Likewise.
+	* stub-objc.c: Likewise.
+
+2015-11-09  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-pragma.c (oacc_pragmas): Add "routine".
+	* c-pragma.h (pragma_kind): Add PRAGMA_OACC_ROUTINE.
+
+2015-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-common.c (c_common_attributes): Add scalar_storage_order.
+	(handle_scalar_storage_order_attribute): New function.
+	* c-pragma.c (global_sso): New variable.
+	(maybe_apply_pragma_scalar_storage_order): New function.
+	(handle_pragma_scalar_storage_order): Likewise.
+	(init_pragma): Register scalar_storage_order.
+	* c-pragma.h (maybe_apply_pragma_scalar_storage_order): Declare.
+	* c.opt (Wscalar-storage-order): New warning.
+	(fsso-struct=): New option.
+
+2015-11-08  Martin Sebor  <msebor@redhat.com>
+
+	* c.opt (Wplacement-new): Add a period to the end of a sentence.
+
+2015-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-common.c: Don't undef DEF_BUILTIN.
+
+2015-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_cpp_error): Convert parameter from location_t to
+	rich_location *.  Eliminate the "column_override" parameter and
+	the call to diagnostic_override_column.
+	Update the "done_lexing" clause to set range 0
+	on the rich_location, rather than overwriting a location_t.
+	* c-common.h (c_cpp_error): Convert parameter from location_t to
+	rich_location *.  Eliminate the "column_override" parameter.
+
+2015-11-05  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* c-omp.c (c_oacc_split_loop_clauses): Make TILE, GANG, WORKER, VECTOR,
+	AUTO, SEQ, INDEPENDENT and PRIVATE loop clauses.  Associate REDUCTION
+	clauses with parallel and kernels and loops.
+	* c-pragma.h (enum pragma_omp_clause): Add entries for
+	PRAGMA_OACC_CLAUSE_{INDEPENDENT,TILE,DEFAULT}.
+	* pt.c (tsubst_omp_clauses): Add support for OMP_CLAUSE_{NUM_GANGS,
+	NUM_WORKERS,VECTOR_LENGTH,GANG,WORKER,VECTOR,ASYNC,WAIT,TILE,AUTO,
+	INDEPENDENT,SEQ}.
+	(tsubst_expr): Add support for OMP_CLAUSE_{KERNELS,PARALLEL,LOOP}.
+
+2015-11-05  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/67942
+	* c.opt (-Wplacement-new): New option.
+
+2015-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_finish_omp_atomic): Add TEST argument.
+	(c_omp_check_loop_iv, c_omp_check_loop_iv_exprs): New prototypes.
+	* c-omp.c (c_finish_omp_atomic): Add TEST argument.  Don't call
+	save_expr or create_tmp_var* if TEST is true.
+	(c_finish_omp_for): Store OMP_FOR_ORIG_DECLS always.
+	Don't call add_stmt here.
+	(struct c_omp_check_loop_iv_data): New type.
+	(c_omp_check_loop_iv_r, c_omp_check_loop_iv,
+	c_omp_check_loop_iv_exprs): New functions.
+	(c_omp_split_clauses): Adjust for lastprivate being allowed on
+	distribute.
+	(c_omp_declare_simd_clauses_to_numbers): Change
+	OMP_CLAUSE_LINEAR_VARIABLE_STRIDE OMP_CLAUSE_LINEAR_STEP into numbers.
+	(c_omp_declare_simd_clauses_to_decls): Similarly change those
+	from numbers to PARM_DECLs.
+
+2015-11-04  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* c-omp.c (c_omp_split_clauses): Remove conditional compilation. Use
+	flag_checking.
+
+2015-11-03  Bernd Schmidt <bschmidt@redhat.com>
+
+	PR c++-common/67882
+	* c-family/c-common.h (fold_offsetof_1): Add argument.
+	* c-family/c-common.c (fold_offsetof_1): Diagnose more invalid
+	offsetof expressions that reference elements past the end of
+	an array.
+
+2015-11-03  Thomas Schwinge  <thomas@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-pragma.c (oacc_pragmas): Add "atomic".
+	* c-pragma.h (pragma_kind): Add PRAGMA_OACC_ATOMIC.
+
 2015-10-30  Evgeny Stupachenko  <evstupac@gmail.com>
 
 	* c-common.c (handle_target_clones_attribute): New.

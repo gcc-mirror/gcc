@@ -1,5 +1,5 @@
-// { dg-require-namedlocale "en_US" }
-// { dg-require-namedlocale "fr_FR" }
+// { dg-require-namedlocale "en_US.ISO8859-1" }
+// { dg-require-namedlocale "fr_FR.ISO8859-15" }
 
 // Copyright (C) 2003-2015 Free Software Foundation, Inc.
 //
@@ -41,9 +41,9 @@ void test01()
   using namespace std;
 
   filebuf fb;
-  fb.pubimbue(locale(locale("en_US"), new Cvt));
+  fb.pubimbue(locale(locale(ISO_8859(1,en_US)), new Cvt));
   fb.open("tmp_13171-4", ios_base::out);
-  fb.pubimbue(locale("fr_FR"));
+  fb.pubimbue(locale(ISO_8859(15,fr_FR)));
   fb.sputc('N');
   fb.pubsync();
   fb.close();

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -360,7 +360,8 @@ package SCOs is
       Col  : Column_Number;
    end record;
 
-   No_Source_Location : Source_Location := (No_Line_Number, No_Column_Number);
+   No_Source_Location : constant Source_Location :=
+                          (No_Line_Number, No_Column_Number);
 
    type SCO_Table_Entry is record
       From : Source_Location := No_Source_Location;

@@ -1,7 +1,7 @@
 .. -- Non-breaking space in running text
    -- E.g. Ada |nbsp| 95
 
-.. |nbsp| unicode:: 0xA0 
+.. |nbsp| unicode:: 0xA0
    :trim:
 
 .. _Platform_Specific_Information:
@@ -155,8 +155,8 @@ For example on x86-linux::
    --           +--- adainclude
    --           |
    --           +--- adalib
-  
-  
+
+
 If the *rts-sjlj* library is to be selected on a permanent basis,
 these soft links can be modified with the following commands:
 
@@ -166,7 +166,7 @@ these soft links can be modified with the following commands:
     $ rm -f adainclude adalib
     $ ln -s rts-sjlj/adainclude adainclude
     $ ln -s rts-sjlj/adalib adalib
- 
+
 Alternatively, you can specify :file:`rts-sjlj/adainclude` in the file
 :file:`$target/ada_source_path` and :file:`rts-sjlj/adalib` in
 :file:`$target/ada_object_path`.
@@ -267,7 +267,7 @@ to one of the following:
   *-2*                      Use the default configuration (run the program on all
                             available processors) - this is the same as having `GNAT_PROCESSOR`
                             unset
-  *-1*                      Let the run-time implementation choose one processor and run the 
+  *-1*                      Let the run-time implementation choose one processor and run the
                             program on that processor
   *0 .. Last_Proc*          Run the program on the specified processor.
                             `Last_Proc` is equal to `_SC_NPROCESSORS_CONF - 1`
@@ -318,7 +318,7 @@ platforms.
   the installation path and similar information, and then guides you through the
   installation process. It is also possible to perform silent installations
   using the command-line interface.
- 
+
   In order to install one of the GNAT installers from the command
   line you should pass parameter `/S` (and, optionally,
   `/D=<directory>`) as command-line arguments.
@@ -332,7 +332,7 @@ platforms.
      ::
 
         gnatpro-7.0.2-i686-pc-mingw32-bin.exe /S
-  
+
    To install into a custom directory, say, `C:\\TOOLS\\GNATPRO\\7.0.2`:
 
      ::
@@ -347,7 +347,7 @@ platforms.
      ::
 
         gnat-gpl-2012-i686-pc-mingw32-bin /S /D=C:\GNAT\2012
-  
+
 .. only:: PRO or GPL
 
    You can use the same syntax for all installers.
@@ -436,7 +436,7 @@ called :file:`c-drive` on a machine :file:`LOKI`, the following command will
 make it available:
 
   ::
-  
+
       $ path \\loki\c-drive\gnat\bin;%path%`
 
 Be aware that every compilation using the network installation results in the
@@ -462,7 +462,7 @@ the *-mwindows* linker option must be specified.
    ::
 
       $ gnatmake winprog -largs -mwindows
-  
+
 .. _Temporary_Files:
 
 Temporary Files
@@ -542,7 +542,7 @@ setup the SEH context. For this the C main must looks like this:
 
         adafinal();
       }
-  
+
 Note that this is not needed on x86_64-windows where the Windows
 native SEH support is used.
 
@@ -596,14 +596,14 @@ instance the C function:
    ::
 
        int get_val (long);
-  
+
 should be imported from Ada as follows:
 
   .. code-block:: ada
 
      function Get_Val (V : Interfaces.C.long) return Interfaces.C.int;
      pragma Import (C, Get_Val, External_Name => "get_val");
-  
+
 Note that in this particular case the `External_Name` parameter could
 have been omitted since, when missing, this parameter is taken to be the
 name of the Ada entity in lower case. When the `Link_Name` parameter
@@ -642,7 +642,7 @@ the compiler. For instance the Win32 function:
   ::
 
       APIENTRY int get_val (long);
-  
+
 should be imported from Ada as follows:
 
   .. code-block:: ada
@@ -650,7 +650,7 @@ should be imported from Ada as follows:
      function Get_Val (V : Interfaces.C.long) return Interfaces.C.int;
      pragma Import (Stdcall, Get_Val);
      --  On the x86 a long is 4 bytes, so the Link_Name is "_get_val@4"
-  
+
 As for the `C` calling convention, when the `External_Name`
 parameter is missing, it is taken to be the name of the Ada entity in lower
 case. If instead of writing the above import pragma you write:
@@ -659,7 +659,7 @@ case. If instead of writing the above import pragma you write:
 
      function Get_Val (V : Interfaces.C.long) return Interfaces.C.int;
      pragma Import (Stdcall, Get_Val, External_Name => "retrieve_val");
-  
+
 then the imported routine is `_retrieve_val@4`. However, if instead
 of specifying the `External_Name` parameter you specify the
 `Link_Name` as in the following example:
@@ -668,7 +668,7 @@ of specifying the `External_Name` parameter you specify the
 
      function Get_Val (V : Interfaces.C.long) return Interfaces.C.int;
      pragma Import (Stdcall, Get_Val, Link_Name => "retrieve_val");
-  
+
 then the imported routine is `retrieve_val`, that is, there is no
 decoration at all. No leading underscore and no Stdcall suffix
 :samp:`@{nn}`.
@@ -684,14 +684,14 @@ variable defined as:
   .. code-block:: c
 
      int my_var;
-  
+
 then, to access this variable from Ada you should write:
 
   .. code-block:: ada
 
       My_Var : Interfaces.C.int;
       pragma Import (Stdcall, My_Var);
-  
+
 Note that to ease building cross-platform bindings this convention
 will be handled as a `C` calling convention on non-Windows platforms.
 
@@ -814,7 +814,7 @@ you simply issue the command
   ::
 
       $ gnatmake my_ada_app -largs -lAPI
-  
+
 The argument *-largs -lAPI* at the end of the *gnatmake* command
 tells the GNAT linker to look for an import library. The linker will
 look for a library name in this specific order:
@@ -835,7 +835,7 @@ following pragma
   .. code-block:: ada
 
       pragma Linker_Options ("-lAPI");
-  
+
 you do not have to add *-largs -lAPI* at the end of the
 *gnatmake* command.
 
@@ -861,7 +861,7 @@ following two definitions:
 
       int some_var;
       int get (char *);
-  
+
 then the equivalent Ada spec could be:
 
   .. code-block:: ada
@@ -869,7 +869,7 @@ then the equivalent Ada spec could be:
       with Interfaces.C.Strings;
       package API is
          use Interfaces;
-    
+
          Some_Var : C.int;
          function Get (Str : C.Strings.Chars_Ptr) return C.int;
 
@@ -877,7 +877,7 @@ then the equivalent Ada spec could be:
          pragma Import (C, Get);
          pragma Import (DLL, Some_Var);
       end API;
-  
+
 
 .. _Creating_an_Import_Library:
 
@@ -914,7 +914,7 @@ suffix) has the following structure:
          `symbol1`
          `symbol2`
          ...
-  
+
 *LIBRARY `name`*
   This section, which is optional, gives the name of the DLL.
 
@@ -934,7 +934,7 @@ suffix) has the following structure:
       EXPORTS
          some_var
          get
-    
+
 Note that you must specify the correct suffix (:samp:`@{nn}`)
 (see :ref:`Windows_Calling_Conventions`) for a Stdcall
 calling convention function in the exported symbols list.
@@ -943,24 +943,19 @@ There can actually be other sections in a definition file, but these
 sections are not relevant to the discussion at hand.
 
 
-.. rubric:: GNAT-Style Import Library
+.. _Create_Def_File_Automatically:
 
-.. _GNAT-Style_Import_Library:
+.. rubric:: Creating a Definition File Automatically
 
-To create a static import library from :file:`API.dll` with the GNAT tools
-you should proceed as follows:
-
-* Create the definition file :file:`API.def`
-  (see :ref:`The Definition File <The_Definition_File>`).
-  For that use the `dll2def` tool as follows:
+You can automatically create the definition file :file:`API.def`
+(see :ref:`The Definition File <The_Definition_File>`) from a DLL.
+For that use the `dlltool` program as follows:
 
   ::
 
-      $ dll2def API.dll > API.def
-    
-  `dll2def` is a very simple tool: it takes as input a DLL and prints
-  to standard output the list of entry points in the DLL. Note that if
-  some routines in the DLL have the `Stdcall` convention
+      $ dlltool API.dll -z API.def --export-all-symbols
+
+  Note that if some routines in the DLL have the `Stdcall` convention
   (:ref:`Windows_Calling_Conventions`) with stripped :samp:`@{nn}`
   suffix then you'll have to edit :file:`api.def` to add it, and specify
   *-k* to *gnatdll* when creating the import library.
@@ -972,20 +967,26 @@ you should proceed as follows:
     corresponding Microsoft documentation for further details).
 
     ::
- 
+
         $ dumpbin /exports api.lib
-      
+
   - If you have a message about a missing symbol at link time the compiler
     tells you what symbol is expected. You just have to go back to the
     definition file and add the right suffix.
 
-* Build the import library `libAPI.dll.a`, using `gnatdll`
-  (see :ref:`Using_gnatdll`) as follows:
+
+.. _GNAT-Style_Import_Library:
+
+.. rubric:: GNAT-Style Import Library
+
+To create a static import library from :file:`API.dll` with the GNAT tools
+you should create the .def file, then use `gnatdll` tool
+(see :ref:`Using_gnatdll`) as follows:
 
   ::
 
       $ gnatdll -e API.def -d API.dll
-    
+
   `gnatdll` takes as input a definition file :file:`API.def` and the
   name of the DLL containing the services listed in the definition file
   :file:`API.dll`. The name of the static import library generated is
@@ -997,33 +998,29 @@ you should proceed as follows:
   DLL (:ref:`Using_gnatdll` for more information about `gnatdll`).
 
 
+.. _MSVS-Style_Import_Library:
+
 .. rubric:: Microsoft-Style Import Library
 
-With GNAT you can either use a GNAT-style or Microsoft-style import
-library. A Microsoft import library is needed only if you plan to make an
+A Microsoft import library is needed only if you plan to make an
 Ada DLL available to applications developed with Microsoft
 tools (:ref:`Mixed-Language_Programming_on_Windows`).
 
 To create a Microsoft-style import library for :file:`API.dll` you
-should proceed as follows:
-
-* Create the definition file :file:`API.def` from the DLL. For this use either
-  the `dll2def` tool as described above or the Microsoft `dumpbin`
-  tool (see the corresponding Microsoft documentation for further details).
-
-* Build the actual import library using Microsoft's `lib` utility:
+should create the .def file, then build the actual import library using
+Microsoft's `lib` utility:
 
   ::
 
       $ lib -machine:IX86 -def:API.def -out:API.lib
-    
+
   If you use the above command the definition file :file:`API.def` must
   contain a line giving the name of the DLL:
 
   ::
 
       LIBRARY      "API"
-    
+
   See the Microsoft documentation for further details about the usage of
   `lib`.
 
@@ -1066,7 +1063,7 @@ and use DLLs with GNAT.
   ::
 
       $ gcc -shared -shared-libgcc -o api.dll obj1.o obj2.o ...
-    
+
   It is important to note that in this case all symbols found in the
   object files are automatically exported. It is possible to restrict
   the set of symbols to export by passing to *gcc* a definition
@@ -1076,7 +1073,7 @@ and use DLLs with GNAT.
   ::
 
       $ gcc -shared -shared-libgcc -o api.dll api.def obj1.o obj2.o ...
-    
+
   If you use a definition file you must export the elaboration procedures
   for every package that required one. Elaboration procedures are named
   using the package name followed by "_E".
@@ -1092,7 +1089,7 @@ and use DLLs with GNAT.
       $ mkdir apilib
       $ copy *.ads *.ali api.dll apilib
       $ attrib +R apilib\\*.ali
-    
+
 At this point it is possible to use the DLL by directly linking
 against it. Note that you must use the GNAT shared runtime when using
 GNAT shared libraries. This is achieved by using *-shared* binder's
@@ -1101,7 +1098,7 @@ option.
   ::
 
      $ gnatmake main -Iapilib -bargs -shared -largs -Lapilib -lAPI
-  
+
 
 .. _Building_DLLs_with_gnatdll:
 
@@ -1207,7 +1204,7 @@ variable:
         pragma Export (C, Count);
         pragma Export (C, Factorial);
      end API;
-  
+
   .. code-block:: ada
 
      package body API is
@@ -1235,7 +1232,7 @@ variable:
            Adafinal;
         end Finalize_API;
      end API;
-  
+
 If the Ada DLL you are building will only be used by Ada applications
 you do not have to export Ada entities with a `C` or `Stdcall`
 convention. As an example, the previous package could be written as
@@ -1251,9 +1248,9 @@ follows:
         procedure Finalize_API;
         --  Initialization and Finalization routines.
      end API;
-  
+
   .. code-block:: ada
-  
+
      package body API is
         function Factorial (Val : Integer) return Integer is
            Fact : Integer := 1;
@@ -1268,7 +1265,7 @@ follows:
         ...
         --  The remainder of this package body is unchanged.
      end API;
-  
+
 Note that if you do not export the Ada entities with a `C` or
 `Stdcall` convention you will have to provide the mangled Ada names
 in the definition file of the Ada DLL
@@ -1341,7 +1338,7 @@ the corresponding C header file could look like:
      extern int *_imp__count;
      #define count (*_imp__count)
      int factorial (int);
-  
+
 It is important to understand that when building an Ada DLL to be used by
 other Ada applications, you need two different specs for the packages
 contained in the DLL: one for building the DLL and the other for using
@@ -1357,7 +1354,7 @@ example consider a DLL comprising the following package `API`:
         ...
         --  Remainder of the package omitted.
      end API;
-  
+
 After producing a DLL containing package `API`, the spec that
 must be used to import `API.Count` from Ada code outside of the
 DLL is:
@@ -1368,7 +1365,7 @@ DLL is:
         Count : Integer;
         pragma Import (DLL, Count);
      end API;
-  
+
 
 .. _Creating_the_Definition_File:
 
@@ -1399,7 +1396,7 @@ entities, which in this case are:
         api__factorial
         api__finalize_api
         api__initialize_api
-  
+
 
 .. _Using_gnatdll:
 
@@ -1417,7 +1414,7 @@ static import library for the DLL and the actual DLL. The form of the
   ::
 
       $ gnatdll [`switches`] `list-of-files` [-largs `opts`]
-  
+
 where `list-of-files` is a list of ALI and object files. The object
 file list must be the exact list of objects corresponding to the non-Ada
 sources whose services are to be included in the DLL. The ALI file list
@@ -1545,7 +1542,7 @@ once :file:`api.adb` has been compiled and :file:`api.def` created is
   ::
 
      $ gnatdll -d api.dll api.ali
-  
+
 The above command creates two files: :file:`libapi.dll.a` (the import
 library) and :file:`api.dll` (the actual DLL). If you want to create
 only the DLL, just type:
@@ -1553,13 +1550,13 @@ only the DLL, just type:
   ::
 
      $ gnatdll -d api.dll -n api.ali
-  
+
 Alternatively if you want to create just the import library, type:
 
   ::
 
      $ gnatdll -d api.dll
-  
+
 
 .. rubric:: `gnatdll` behind the Scenes
 
@@ -1608,7 +1605,7 @@ the following:
       $ gnatbind -n api
       $ gnatlink api -o api.jnk api.exp -mdll
             -Wl,--base-file,api.base
-   
+
 
 * `gnatdll` builds the new export table using the new base file and
   generates the DLL import library :file:`libAPI.dll.a`.
@@ -1640,7 +1637,7 @@ is
   ::
 
     $ dlltool [`switches`]
-  
+
 `dlltool` switches include:
 
 
@@ -1766,7 +1763,7 @@ resource:
          VALUE "Translation", 0x809, 1252
        END
      END
-  
+
 The value `0809` (langID) is for the U.K English language and
 `04E4` (charsetID), which is equal to `1252` decimal, for
 multilingual.
@@ -1812,7 +1809,7 @@ containing the resources. This is done using the Resource Compiler
   ::
 
      $ windres -i myres.rc -o myres.o
-  
+
 By default `windres` will run *gcc* to preprocess the :file:`.rc`
 file. You can specify an alternate preprocessor (usually named
 :file:`cpp.exe`) using the `windres` *--preprocessor*
@@ -1828,7 +1825,7 @@ GNAT-compatible object file as follows:
   ::
 
      $ windres -i myres.res -o myres.o
-  
+
 
 .. _Using_Resources:
 
@@ -1845,7 +1842,59 @@ option:
   ::
 
     $ gnatmake myprog -largs myres.o
-  
+
+
+.. _Using_GNAT_DLL_from_MSVS:
+
+Using GNAT DLLs from Microsoft Visual Studio Applications
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: Microsoft Visual Studio, use with GNAT DLLs
+
+This section describes a common case of mixed GNAT/Microsoft Visual Studio
+application development, where the main program is developed using MSVS, and
+is linked with a DLL developed using GNAT. Such a mixed application should
+be developed following the general guidelines outlined above; below is the
+cookbook-style sequence of steps to follow:
+
+1. First develop and build the GNAT shared library using a library project
+   (let's assume the project is `mylib.gpr`, producing the library `libmylib.dll`):
+
+  ::
+
+     $ gprbuild -p mylib.gpr
+
+2. Produce a .def file for the symbols you need to interface with, either by
+   hand or automatically with possibly some manual adjustments 
+   (see :ref:`Creating Definition File Automatically <Create_Def_File_Automatically>`):
+
+  ::
+
+     $ dlltool libmylib.dll -z libmylib.def --export-all-symbols
+
+3. Make sure that MSVS command-line tools are accessible on the path.
+
+4. Create the Microsoft-style import library (see :ref:`MSVS-Style Import Library <MSVS-Style_Import_Library>`):
+
+  ::
+
+     $ lib -machine:IX86 -def:libmylib.def -out:libmylib.lib
+
+If you are using a 64-bit toolchain, the above becomes...
+
+  ::
+
+     $ lib -machine:X64 -def:libmylib.def -out:libmylib.lib
+
+5. Build the C main
+
+  ::
+
+     $ cl /O2 /MD main.c libmylib.lib
+
+6. Before running the executable, make sure you have set the PATH to the DLL,
+   or copy the DLL into into the directory containing the .exe.
+
 
 .. _Debugging_a_DLL:
 
@@ -1890,13 +1939,13 @@ switch). Here are the step-by-step instructions for debugging it:
   ::
 
      $ gdb -nw ada_main
-    
+
 * Start the program and stop at the beginning of the main procedure
 
   ::
 
       (gdb) start
-    
+
   This step is required to be able to set a breakpoint inside the DLL. As long
   as the program is not run, the DLL is not loaded. This has the
   consequence that the DLL debugging information is also not loaded, so it is not
@@ -1908,7 +1957,7 @@ switch). Here are the step-by-step instructions for debugging it:
 
       (gdb) break ada_dll
       (gdb) cont
-    
+
 At this stage a breakpoint is set inside the DLL. From there on
 you can use the standard approach to debug the whole program
 (:ref:`Running_and_Debugging_Ada_Programs`).
@@ -1943,7 +1992,7 @@ been built with debugging information (see GNAT `-g` option).
   ::
 
       $ objdump --file-header main.exe
-    
+
   The starting address is reported on the last line. For example:
 
   ::
@@ -1952,13 +2001,13 @@ been built with debugging information (see GNAT `-g` option).
       architecture: i386, flags 0x0000010a:
       EXEC_P, HAS_DEBUG, D_PAGED
       start address 0x00401010
-    
+
 * Launch the debugger on the executable.
 
   ::
 
       $ gdb main.exe
-    
+
 * Set a breakpoint at the starting address, and launch the program.
 
   ::
@@ -1973,7 +2022,7 @@ been built with debugging information (see GNAT `-g` option).
   ::
 
     (gdb) break ada_dll.adb:45
-  
+
   Or if you want to break using a symbol on the DLL, you need first to
   select the Ada language (language used by the DLL).
 
@@ -1981,13 +2030,13 @@ been built with debugging information (see GNAT `-g` option).
 
       (gdb) set language ada
       (gdb) break ada_dll
-    
+
 * Continue the program.
 
   ::
 
       (gdb) cont
-    
+
   This will run the program until it reaches the breakpoint that has been
   set. From that point you can use the standard way to debug a program
   as described in (:ref:`Running_and_Debugging_Ada_Programs`).
@@ -2010,7 +2059,7 @@ loop in the code of the DLL to meet this criterion.
   ::
 
       $ main
-    
+
 * Use the Windows *Task Manager* to find the process ID. Let's say
   that the process PID for :file:`main.exe` is 208.
 
@@ -2019,31 +2068,31 @@ loop in the code of the DLL to meet this criterion.
   ::
 
       $ gdb
-    
+
 * Attach to the running process to be debugged.
 
   ::
 
       (gdb) attach 208
-    
+
 * Load the process debugging information.
 
   ::
 
       (gdb) symbol-file main.exe
-    
+
 * Break somewhere in the DLL.
 
   ::
 
       (gdb) break ada_dll
-    
+
 * Continue process execution.
 
   ::
 
       (gdb) cont
-   
+
 This last step will resume the process execution, and stop at
 the breakpoint we have set. From there you can use the standard
 approach to debug a program as described in
@@ -2074,7 +2123,7 @@ This setting can be done with *gnatlink* using either of the following:
   ::
 
       $ gnatlink hello -Xlinker --stack=0x10000,0x1000
-    
+
 
   This sets the stack reserve size to 0x10000 bytes and the stack commit
   size to 0x1000 bytes.
@@ -2084,7 +2133,7 @@ This setting can be done with *gnatlink* using either of the following:
   ::
 
     $ gnatlink hello -Wl,--stack=0x1000000
-    
+
   This sets the stack reserve size to 0x1000000 bytes. Note that with
   *-Wl* option it is not possible to set the stack commit size
   because the coma is a separator for this option.
@@ -2103,7 +2152,7 @@ Under Windows systems, it is possible to specify the program heap size from
   ::
 
       $ gnatlink hello -Xlinker --heap=0x10000,0x1000
-    
+
   This sets the heap reserve size to 0x10000 bytes and the heap commit
   size to 0x1000 bytes.
 
@@ -2112,11 +2161,71 @@ Under Windows systems, it is possible to specify the program heap size from
   ::
 
       $ gnatlink hello -Wl,--heap=0x1000000
-    
+
 
   This sets the heap reserve size to 0x1000000 bytes. Note that with
   *-Wl* option it is not possible to set the heap commit size
   because the coma is a separator for this option.
+
+
+.. _Win32_Specific_Addons:
+
+Windows Specific Add-Ons
+-------------------------
+
+This section describes the Windows specific add-ons.
+
+.. _Win32Ada:
+
+Win32Ada
+^^^^^^^^
+
+Win32Ada is a binding for the Microsoft Win32 API. This binding can be
+easily installed from the provided installer. To use the Win32Ada
+binding you need to use a project file, and adding a single with_clause
+will give you full access to the Win32Ada binding sources and ensure
+that the proper libraries are passed to the linker.
+
+  .. code-block:: gpr
+
+      with "win32ada";
+      project P is
+         for Sources use ...;
+      end P;
+
+To build the application you just need to call gprbuild for the
+application's project, here p.gpr:
+
+  .. code-block:: sh
+
+      gprbuild p.gpr
+
+.. _wPOSIX:
+
+wPOSIX
+^^^^^^
+
+wPOSIX is a minimal POSIX binding whose goal is to help with building
+cross-platforms applications. This binding is not complete though, as
+the Win32 API does not provide the necessary support for all POSIX APIs.
+
+To use the wPOSIX binding you need to use a project file, and adding
+a single with_clause will give you full access to the wPOSIX binding
+sources and ensure that the proper libraries are passed to the linker.
+
+  .. code-block:: gpr
+
+      with "wposix";
+      project P is
+         for Sources use ...;
+      end P;
+
+To build the application you just need to call gprbuild for the
+application's project, here p.gpr:
+
+  .. code-block:: sh
+
+      gprbuild p.gpr
 
 
 .. _Mac_OS_Topics:
@@ -2180,10 +2289,8 @@ as follow. In a Terminal, run the following command:
   ::
 
      $ codesign -f -s  "gdb-cert"  <gnat_install_prefix>/bin/gdb
-  
+
 where "gdb-cert" should be replaced by the actual certificate
 name chosen above, and <gnat_install_prefix> should be replaced by
 the location where you installed GNAT.  Also, be sure that users are
 in the Unix group ``_developer``.
-
-

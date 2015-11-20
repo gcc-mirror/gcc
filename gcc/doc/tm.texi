@@ -375,6 +375,11 @@ The sequence in which libgcc and libc are specified to the linker.
 By default this is @code{%G %L %G}.
 @end defmac
 
+@defmac POST_LINK_SPEC
+Define this macro to add additional steps to be executed after linker.
+The default value of this macro is empty string.
+@end defmac
+
 @defmac LINK_COMMAND_SPEC
 A C string constant giving the complete command line need to execute the
 linker.  When you do this, you will need to update your port each time a
@@ -5668,11 +5673,17 @@ If this hook is defined, the autovectorizer will use the
 conversion. Otherwise, it will return @code{NULL_TREE}.
 @end deftypefn
 
-@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION (tree @var{fndecl}, tree @var{vec_type_out}, tree @var{vec_type_in})
+@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION (unsigned @var{code}, tree @var{vec_type_out}, tree @var{vec_type_in})
 This hook should return the decl of a function that implements the
-vectorized variant of the builtin function with builtin function code
+vectorized variant of the function with the @code{combined_fn} code
 @var{code} or @code{NULL_TREE} if such a function is not available.
-The value of @var{fndecl} is the builtin function declaration.  The
+The return type of the vectorized function shall be of vector type
+@var{vec_type_out} and the argument types should be @var{vec_type_in}.
+@end deftypefn
+
+@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_MD_VECTORIZED_FUNCTION (tree @var{fndecl}, tree @var{vec_type_out}, tree @var{vec_type_in})
+This hook should return the decl of a function that implements the
+vectorized variant of target built-in function @code{fndecl}.  The
 return type of the vectorized function shall be of vector type
 @var{vec_type_out} and the argument types should be @var{vec_type_in}.
 @end deftypefn
@@ -5777,6 +5788,11 @@ true, if changes have been made.  You must override this hook to
 provide dimensions larger than 1.
 @end deftypefn
 
+@deftypefn {Target Hook} int TARGET_GOACC_DIM_LIMIT (int @var{axis})
+This hook should return the maximum size of a particular dimension,
+or zero if unbounded.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_GOACC_FORK_JOIN (gcall *@var{call}, const int *@var{dims}, bool @var{is_fork})
 This hook can be used to convert IFN_GOACC_FORK and IFN_GOACC_JOIN
 function calls to target-specific gimple, or indicate whether they
@@ -5785,6 +5801,15 @@ It should return true, if the call should be retained.  It should
 return false, if it is to be deleted (either because target-specific
 gimple has been inserted before it, or there is no need for it).
 The default hook returns false, if there are no RTL expanders for them.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_GOACC_REDUCTION (gcall *@var{call})
+This hook is used by the oacc_transform pass to expand calls to the
+@var{GOACC_REDUCTION} internal function, into a sequence of gimple
+instructions.  @var{call} is gimple statement containing the call to
+the function.  This hook removes statement @var{call} after the
+expanded sequence has been inserted.  This hook is also responsible
+for allocating any storage for reductions when necessary.
 @end deftypefn
 
 @node Anchored Addresses
@@ -9553,7 +9578,7 @@ whose value is the highest absolute text address in the file.
 Here are macros for SDB and DWARF output.
 
 @defmac SDB_DEBUGGING_INFO
-Define this macro if GCC should produce COFF-style debugging output
+Define this macro to 1 if GCC should produce COFF-style debugging output
 for SDB in response to the @option{-g} option.
 @end defmac
 
@@ -10351,6 +10376,11 @@ arithmetic operations.  Pointers to a superset address space can be
 converted to pointers to a subset address space via explicit casts.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID (addr_space_t @var{as})
+Define this to modify the default handling of address 0 for the
+address space.  Return true if 0 should be considered a valid address.
+@end deftypefn
+
 @deftypefn {Target Hook} rtx TARGET_ADDR_SPACE_CONVERT (rtx @var{op}, tree @var{from_type}, tree @var{to_type})
 Define this to convert the pointer expression represented by the RTL
 @var{op} with type @var{from_type} that points to a named address
@@ -10358,6 +10388,11 @@ space to a new pointer expression with type @var{to_type} that points
 to a different named address space.  When this hook it called, it is
 guaranteed that one of the two address spaces is a subset of the other,
 as determined by the @code{TARGET_ADDR_SPACE_SUBSET_P} target hook.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_ADDR_SPACE_DEBUG (addr_space_t @var{as})
+Define this to define how the address space is encoded in dwarf.
+The result is the value to be used with @code{DW_AT_address_class}.
 @end deftypefn
 
 @node Misc

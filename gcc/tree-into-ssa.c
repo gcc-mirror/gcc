@@ -94,7 +94,7 @@ static sbitmap interesting_blocks;
 /* Set of SSA names that have been marked to be released after they
    were registered in the replacement table.  They will be finally
    released after we finish updating the SSA web.  */
-static bitmap names_to_release;
+bitmap names_to_release;
 
 /* vec of vec of PHIs to rewrite in a basic block.  Element I corresponds
    the to basic block with index I.  Allocated once per compilation, *not*

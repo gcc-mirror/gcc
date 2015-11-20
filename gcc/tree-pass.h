@@ -83,6 +83,7 @@ public:
 
      The default implementation prints an error message and aborts.  */
   virtual opt_pass *clone ();
+  virtual void set_pass_param (unsigned int, bool);
 
   /* This pass and all sub-passes are executed only if the function returns
      true.  The default implementation returns true.  */
@@ -300,6 +301,9 @@ protected:
 /* Rebuild the callgraph edges.  */
 #define TODO_rebuild_cgraph_edges       (1 << 22)
 
+/* Release function body and stop pass manager.  */
+#define TODO_discard_function		(1 << 23)
+
 /* Internally used in execute_function_todo().  */
 #define TODO_update_ssa_any		\
     (TODO_update_ssa			\
@@ -387,6 +391,7 @@ extern gimple_opt_pass *make_pass_tree_loop_done (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_ch (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_ch_vect (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_ccp (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_split_paths (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_phi_only_cprop (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_build_ssa (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_build_alias (gcc::context *ctxt);
@@ -623,15 +628,6 @@ extern void ipa_read_summaries (void);
 extern void ipa_read_optimization_summaries (void);
 extern void register_one_dump_file (opt_pass *);
 extern bool function_called_by_processed_nodes_p (void);
-
-/* Set to true if the pass is called the first time during compilation of the
-   current function.  Note that using this information in the optimization
-   passes is considered not to be clean, and it should be avoided if possible.
-   This flag is currently used to prevent loops from being peeled repeatedly
-   in jump threading; it will be removed once we preserve loop structures
-   throughout the compilation -- we will be able to mark the affected loops
-   directly in jump threading, and avoid peeling them next time.  */
-extern bool first_pass_instance;
 
 /* Declare for plugins.  */
 extern void do_per_function_toporder (void (*) (function *, void *), void *);

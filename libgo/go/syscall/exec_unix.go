@@ -17,10 +17,10 @@ import (
 //sysnb	raw_fork() (pid Pid_t, err Errno)
 //fork() Pid_t
 
-//sysnb	raw_getpid() (pid int)
+//sysnb	raw_getpid() (pid Pid_t)
 //getpid() Pid_t
 
-//sysnb	raw_getppid() (pid int)
+//sysnb	raw_getppid() (pid Pid_t)
 //getppid() Pid_t
 
 //sysnb raw_setsid() (err Errno)
@@ -59,7 +59,7 @@ import (
 //sysnb raw_dup2(oldfd int, newfd int) (err Errno)
 //dup2(oldfd _C_int, newfd _C_int) _C_int
 
-//sysnb raw_kill(pid int, sig Signal) (err Errno)
+//sysnb raw_kill(pid Pid_t, sig Signal) (err Errno)
 //kill(pid Pid_t, sig _C_int) _C_int
 
 //sysnb raw_setgroups(size int, list unsafe.Pointer) (err Errno)

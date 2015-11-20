@@ -1465,6 +1465,8 @@ can be described by a series of letters for each operand.  The overall
 constraint for an operand is made from the letters for this operand
 from the first alternative, a comma, the letters for this operand from
 the second alternative, a comma, and so on until the last alternative.
+All operands for a single instruction must have the same number of 
+alternatives.
 @ifset INTERNALS
 Here is how it is done for fullword logical-or on the 68000:
 
@@ -1482,9 +1484,7 @@ operand 1 (meaning it must match operand 0), and @samp{dKs} for operand
 @samp{0} for operand 1, and @samp{dmKs} for operand 2.  The @samp{=} and
 @samp{%} in the constraints apply to all the alternatives; their
 meaning is explained in the next section (@pxref{Class Preferences}).
-@end ifset
 
-@c FIXME Is this ? and ! stuff of use in asm()?  If not, hide unless INTERNAL
 If all the operands fit any one alternative, the instruction is valid.
 Otherwise, for each alternative, the compiler counts how many instructions
 must be added to copy the operands so that that alternative applies.
@@ -1521,7 +1521,6 @@ This constraint is analogous to @samp{!} but it disparages severely
 the alternative only if the operand with the @samp{$} needs a reload.
 @end table
 
-@ifset INTERNALS
 When an insn pattern has multiple alternatives in its constraints, often
 the appearance of the assembler code is determined mostly by which
 alternative was matched.  When this is so, the C code for writing the
@@ -1529,6 +1528,21 @@ assembler code can use the variable @code{which_alternative}, which is
 the ordinal number of the alternative that was actually satisfied (0 for
 the first, 1 for the second alternative, etc.).  @xref{Output Statement}.
 @end ifset
+@ifclear INTERNALS
+
+So the first alternative for the 68000's logical-or could be written as 
+@code{"+m" (output) : "ir" (input)}.  The second could be @code{"+r" 
+(output): "irm" (input)}.  However, the fact that two memory locations 
+cannot be used in a single instruction prevents simply using @code{"+rm" 
+(output) : "irm" (input)}.  Using multi-alternatives, this might be 
+written as @code{"+m,r" (output) : "ir,irm" (input)}.  This describes
+all the available alternatives to the compiler, allowing it to choose 
+the most efficient one for the current conditions.
+
+There is no way within the template to determine which alternative was 
+chosen.  However you may be able to wrap your @code{asm} statements with 
+builtins such as @code{__builtin_constant_p} to achieve the desired results.
+@end ifclear
 
 @ifset INTERNALS
 @node Class Preferences
@@ -1632,7 +1646,9 @@ instruction is defined:
 GCC can only handle one commutative pair in an asm; if you use more,
 the compiler may fail.  Note that you need not use the modifier if
 the two alternatives are strictly identical; this would only waste
-time in the reload pass.  The modifier is not operational after
+time in the reload pass.
+@ifset INTERNALS
+The modifier is not operational after
 register allocation, so the result of @code{define_peephole2}
 and @code{define_split}s performed after reload cannot rely on
 @samp{%} to make the intended insn match.
@@ -1651,7 +1667,6 @@ constraint as a constraint, and no effect on reloading.  For LRA
 @samp{*} additionally disparages slightly the alternative if the
 following character matches the operand.
 
-@ifset INTERNALS
 Here is an example: the 68000 has an instruction to sign-extend a
 halfword in a data register, and can also sign-extend a value by
 copying it into an address register.  While either kind of register is
@@ -3107,8 +3122,27 @@ asm ("xvadddp %0,%1,%2" : "=wa" (v1) : "wa" (v2), "wa" (v3));
 
 is not correct.
 
+If an instruction only takes Altivec registers, you do not want to use
+@code{%x<n>}.
+
+@smallexample
+asm ("xsaddqp %0,%1,%2" : "=v" (v1) : "v" (v2), "v" (v3));
+@end smallexample
+
+is correct because the @code{xsaddqp} instruction only takes Altivec
+registers, while:
+
+@smallexample
+asm ("xsaddqp %x0,%x1,%x2" : "=v" (v1) : "v" (v2), "v" (v3));
+@end smallexample
+
+is incorrect.
+
 @item wd
 VSX vector register to hold vector double data or NO_REGS.
+
+@item we
+VSX register if the -mpower9-vector -m64 options were used or NO_REGS.
 
 @item wf
 VSX vector register to hold vector float data or NO_REGS.
@@ -3172,6 +3206,16 @@ Floating point register if the LFIWZX instruction is enabled or NO_REGS.
 
 @item wD
 Int constant that is the element number of the 64-bit scalar in a vector.
+
+@item wF
+Memory operand suitable for power9 fusion load/stores.
+
+@item wG
+Memory operand suitable for TOC fusion memory references.
+
+@item wL
+Int constant that is the element number that the MFVSRLD instruction
+targets.
 
 @item wQ
 A memory address that will work with the @code{lq} and @code{stq}
@@ -4735,16 +4779,50 @@ specify field index and operand 0 place to store value into.
 Initialize the vector to given values.  Operand 0 is the vector to initialize
 and operand 1 is parallel containing values for individual fields.
 
+@cindex @code{vec_cmp@var{m}@var{n}} instruction pattern
+@item @samp{vec_cmp@var{m}@var{n}}
+Output a vector comparison.  Operand 0 of mode @var{n} is the destination for
+predicate in operand 1 which is a signed vector comparison with operands of
+mode @var{m} in operands 2 and 3.  Predicate is computed by element-wise
+evaluation of the vector comparison with a truth value of all-ones and a false
+value of all-zeros.
+
+@cindex @code{vec_cmpu@var{m}@var{n}} instruction pattern
+@item @samp{vec_cmpu@var{m}@var{n}}
+Similar to @code{vec_cmp@var{m}@var{n}} but perform unsigned vector comparison.
+
 @cindex @code{vcond@var{m}@var{n}} instruction pattern
 @item @samp{vcond@var{m}@var{n}}
 Output a conditional vector move.  Operand 0 is the destination to
 receive a combination of operand 1 and operand 2, which are of mode @var{m},
-dependent on the outcome of the predicate in operand 3 which is a
+dependent on the outcome of the predicate in operand 3 which is a signed
 vector comparison with operands of mode @var{n} in operands 4 and 5.  The
 modes @var{m} and @var{n} should have the same size.  Operand 0
 will be set to the value @var{op1} & @var{msk} | @var{op2} & ~@var{msk}
 where @var{msk} is computed by element-wise evaluation of the vector
 comparison with a truth value of all-ones and a false value of all-zeros.
+
+@cindex @code{vcondu@var{m}@var{n}} instruction pattern
+@item @samp{vcondu@var{m}@var{n}}
+Similar to @code{vcond@var{m}@var{n}} but performs unsigned vector
+comparison.
+
+@cindex @code{vcond_mask_@var{m}@var{n}} instruction pattern
+@item @samp{vcond_mask_@var{m}@var{n}}
+Similar to @code{vcond@var{m}@var{n}} but operand 3 holds a pre-computed
+result of vector comparison.
+
+@cindex @code{maskload@var{m}@var{n}} instruction pattern
+@item @samp{maskload@var{m}@var{n}}
+Perform a masked load of vector from memory operand 1 of mode @var{m}
+into register operand 0.  Mask is provided in register operand 2 of
+mode @var{n}.
+
+@cindex @code{maskstore@var{m}@var{n}} instruction pattern
+@item @samp{maskload@var{m}@var{n}}
+Perform a masked store of vector from register operand 1 of mode @var{m}
+into memory operand 0.  Mask is provided in register operand 2 of
+mode @var{n}.
 
 @cindex @code{vec_perm@var{m}} instruction pattern
 @item @samp{vec_perm@var{m}}
@@ -4794,17 +4872,6 @@ Add operand 2 and operand 1, storing the result in operand 0.  All operands
 must have mode @var{m}.  This can be used even on two-address machines, by
 means of constraints requiring operands 1 and 0 to be the same location.
 
-@cindex @code{addptr@var{m}3} instruction pattern
-@item @samp{addptr@var{m}3}
-Like @code{add@var{m}3} but is guaranteed to only be used for address
-calculations.  The expanded code is not allowed to clobber the
-condition code.  It only needs to be defined if @code{add@var{m}3}
-sets the condition code.  If adds used for address calculations and
-normal adds are not compatible it is required to expand a distinct
-pattern (e.g. using an unspec).  The pattern is used by LRA to emit
-address calculations.  @code{add@var{m}3} is used if
-@code{addptr@var{m}3} is not defined.
-
 @cindex @code{ssadd@var{m}3} instruction pattern
 @cindex @code{usadd@var{m}3} instruction pattern
 @cindex @code{sub@var{m}3} instruction pattern
@@ -4833,6 +4900,35 @@ address calculations.  @code{add@var{m}3} is used if
 @itemx @samp{umin@var{m}3}, @samp{umax@var{m}3}
 @itemx @samp{and@var{m}3}, @samp{ior@var{m}3}, @samp{xor@var{m}3}
 Similar, for other arithmetic operations.
+
+@cindex @code{addv@var{m}4} instruction pattern
+@item @samp{addv@var{m}4}
+Like @code{add@var{m}3} but takes a @code{code_label} as operand 3 and
+emits code to jump to it if signed overflow occurs during the addition.
+This pattern is used to implement the built-in functions performing
+signed integer addition with overflow checking.
+
+@cindex @code{subv@var{m}4} instruction pattern
+@cindex @code{mulv@var{m}4} instruction pattern
+@item @samp{subv@var{m}4}, @samp{mulv@var{m}4}
+Similar, for other signed arithmetic operations.
+
+@cindex @code{umulv@var{m}4} instruction pattern
+@item @samp{umulv@var{m}4}
+Like @code{mulv@var{m}4} but for unsigned multiplication.  That is to
+say, the operation is the same as signed multiplication but the jump
+is taken only on unsigned overflow.
+
+@cindex @code{addptr@var{m}3} instruction pattern
+@item @samp{addptr@var{m}3}
+Like @code{add@var{m}3} but is guaranteed to only be used for address
+calculations.  The expanded code is not allowed to clobber the
+condition code.  It only needs to be defined if @code{add@var{m}3}
+sets the condition code.  If adds used for address calculations and
+normal adds are not compatible it is required to expand a distinct
+pattern (e.g. using an unspec).  The pattern is used by LRA to emit
+address calculations.  @code{add@var{m}3} is used if
+@code{addptr@var{m}3} is not defined.
 
 @cindex @code{fma@var{m}4} instruction pattern
 @item @samp{fma@var{m}4}
@@ -5198,6 +5294,11 @@ Reverse the order of bytes of operand 1 and store the result in operand 0.
 @cindex @code{usneg@var{m}2} instruction pattern
 @item @samp{neg@var{m}2}, @samp{ssneg@var{m}2}, @samp{usneg@var{m}2}
 Negate operand 1 and store the result in operand 0.
+
+@cindex @code{negv@var{m}3} instruction pattern
+@item @samp{negv@var{m}3}
+Like @code{neg@var{m}2} but takes a @code{code_label} as operand 2 and
+emits code to jump to it if signed overflow occurs during the negation.
 
 @cindex @code{abs@var{m}2} instruction pattern
 @item @samp{abs@var{m}2}
@@ -5791,6 +5892,21 @@ move operand 2 or (operands 2 + operand 3) into operand 0 according to the
 comparison in operand 1.  If the comparison is false, operand 2 is moved into
 operand 0, otherwise (operand 2 + operand 3) is moved.
 
+@cindex @code{neg@var{mode}cc} instruction pattern
+@item @samp{neg@var{mode}cc}
+Similar to @samp{mov@var{mode}cc} but for conditional negation.  Conditionally
+move the negation of operand 2 or the unchanged operand 3 into operand 0
+according to the comparison in operand 1.  If the comparison is true, the negation
+of operand 2 is moved into operand 0, otherwise operand 3 is moved.
+
+@cindex @code{not@var{mode}cc} instruction pattern
+@item @samp{not@var{mode}cc}
+Similar to @samp{neg@var{mode}cc} but for conditional complement.
+Conditionally move the bitwise complement of operand 2 or the unchanged
+operand 3 into operand 0 according to the comparison in operand 1.
+If the comparison is true, the complement of operand 2 is moved into
+operand 0, otherwise operand 3 is moved.
+
 @cindex @code{cstore@var{mode}4} instruction pattern
 @item @samp{cstore@var{mode}4}
 Store zero or nonzero in operand 0 according to whether a comparison
@@ -5833,13 +5949,13 @@ from the machine description.
 Conditional branch instruction combined with a compare instruction.
 Operand 0 is a comparison operator.  Operand 1 and operand 2 are the
 first and second operands of the comparison, respectively.  Operand 3
-is a @code{label_ref} that refers to the label to jump to.
+is the @code{code_label} to jump to.
 
 @cindex @code{jump} instruction pattern
 @item @samp{jump}
 A jump inside a function; an unconditional branch.  Operand 0 is the
-@code{label_ref} of the label to jump to.  This pattern name is mandatory
-on all machines.
+@code{code_label} to jump to.  This pattern name is mandatory on all
+machines.
 
 @cindex @code{call} instruction pattern
 @item @samp{call}

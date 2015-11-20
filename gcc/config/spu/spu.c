@@ -1339,7 +1339,7 @@ print_operand (FILE * file, rtx x, int code)
 	    /* Used in indirect function calls. */
 	    fprintf (file, "%s", reg_names[REGNO (XEXP (x, 0))]);
 	  else
-	    output_address (XEXP (x, 0));
+	    output_address (GET_MODE (x), XEXP (x, 0));
 	}
       return;
 
@@ -1432,7 +1432,7 @@ print_operand (FILE * file, rtx x, int code)
       if (xcode == REG)
 	fprintf (file, "%s", reg_names[REGNO (x)]);
       else if (xcode == MEM)
-	output_address (XEXP (x, 0));
+	output_address (GET_MODE (x), XEXP (x, 0));
       else if (xcode == CONST_VECTOR)
 	print_operand (file, CONST_VECTOR_ELT (x, 0), 0);
       else

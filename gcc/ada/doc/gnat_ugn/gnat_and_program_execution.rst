@@ -1447,25 +1447,19 @@ some guidelines on debugging optimized code.
 Controlling Run-Time Checks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-By default, GNAT generates all run-time checks, except integer overflow
-checks, stack overflow checks, and checks for access before elaboration on
-subprogram calls. The latter are not required in default mode, because all
+By default, GNAT generates all run-time checks, except stack overflow
+checks, and checks for access before elaboration on subprogram
+calls. The latter are not required in default mode, because all
 necessary checking is done at compile time.
 
 .. index:: -gnatp (gcc)
 .. index:: -gnato (gcc)
 
-Two gnat switches, *-gnatp* and *-gnato* allow this default to
-be modified. See :ref:`Run-Time_Checks`.
+The gnat switch, *-gnatp* allows this default to be modified. See
+:ref:`Run-Time_Checks`.
 
 Our experience is that the default is suitable for most development
 purposes.
-
-We treat integer overflow specially because these
-are quite expensive and in our experience are not as important as other
-run-time checks in the development process. Note that division by zero
-is not considered an overflow check, and divide by zero checks are
-generated where required by default.
 
 Elaboration checks are off by default, and also not needed by default, since
 GNAT uses a static elaboration analysis approach that avoids the need for
@@ -1942,11 +1936,9 @@ contain a single nested loop, if it can be vectorized when considered alone:
 
 The vectorizable operations depend on the targeted SIMD instruction set, but
 the adding and some of the multiplying operators are generally supported, as
-well as the logical operators for modular types.  Note that, in the former
-case, enabling overflow checks, for example with *-gnato*, totally
-disables vectorization.  The other checks are not supposed to have the same
-definitive effect, although compiling with *-gnatp* might well reveal
-cases where some checks do thwart vectorization.
+well as the logical operators for modular types. Note that compiling
+with *-gnatp* might well reveal cases where some checks do thwart
+vectorization.
 
 Type conversions may also prevent vectorization if they involve semantics that
 are not directly supported by the code generator or the SIMD instruction set.
@@ -3007,9 +2999,9 @@ exception raised because of the intermediate overflow (and we really
 would prefer this precondition to be considered True at run time).
 
 
-.. _Overflow_Checking_Modes_in_GNAT:
+.. _Management_of_Overflows_in_GNAT:
 
-Overflow Checking Modes in GNAT
+Management of Overflows in GNAT
 -------------------------------
 
 To deal with the portability issue, and with the problem of
@@ -3197,10 +3189,6 @@ If no digits follow the *-gnato*, then it is equivalent to
 causing all intermediate operations to be computed using the base
 type (`STRICT` mode).
 
-In addition to setting the mode used for computation of intermediate
-results, the `-gnato` switch also enables overflow checking (which
-is suppressed by default). It thus combines the effect of using
-a pragma `Overflow_Mode` and pragma `Unsuppress`.
 
 .. _Default_Settings:
 
@@ -3214,7 +3202,7 @@ The default mode for overflow checks is
       General => Strict
 
 which causes all computations both inside and outside assertions to use
-the base type. In addition overflow checks are suppressed.
+the base type.
 
 This retains compatibility with previous versions of
 GNAT which suppressed overflow checks by default and always
@@ -3232,8 +3220,6 @@ is equivalent to
 
 which causes overflow checking of all intermediate overflows
 both inside and outside assertions against the base type.
-This provides compatibility
-with this switch as implemented in previous versions of GNAT.
 
 The pragma `Suppress (Overflow_Check)` disables overflow
 checking, but it has no effect on the method used for computing
@@ -3884,7 +3870,7 @@ execution of this erroneous program:
   it to obtain accurate dynamic memory usage history at a minimal cost to the
   execution speed. Note however, that `gnatmem` is not supported on all
   platforms (currently, it is supported on AIX, HP-UX, GNU/Linux, Solaris and
-  Windows NT/2000/XP (x86).
+  Windows.
 
   The `gnatmem` command has the form
 

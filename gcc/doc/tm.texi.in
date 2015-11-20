@@ -375,6 +375,11 @@ The sequence in which libgcc and libc are specified to the linker.
 By default this is @code{%G %L %G}.
 @end defmac
 
+@defmac POST_LINK_SPEC
+Define this macro to add additional steps to be executed after linker.
+The default value of this macro is empty string.
+@end defmac
+
 @defmac LINK_COMMAND_SPEC
 A C string constant giving the complete command line need to execute the
 linker.  When you do this, you will need to update your port each time a
@@ -4230,6 +4235,8 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
 
+@hook TARGET_VECTORIZE_BUILTIN_MD_VECTORIZED_FUNCTION
+
 @hook TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
 
 @hook TARGET_VECTORIZE_PREFERRED_SIMD_MODE
@@ -4262,7 +4269,11 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_GOACC_VALIDATE_DIMS
 
+@hook TARGET_GOACC_DIM_LIMIT
+
 @hook TARGET_GOACC_FORK_JOIN
+
+@hook TARGET_GOACC_REDUCTION
 
 @node Anchored Addresses
 @section Anchored Addresses
@@ -6988,7 +6999,7 @@ whose value is the highest absolute text address in the file.
 Here are macros for SDB and DWARF output.
 
 @defmac SDB_DEBUGGING_INFO
-Define this macro if GCC should produce COFF-style debugging output
+Define this macro to 1 if GCC should produce COFF-style debugging output
 for SDB in response to the @option{-g} option.
 @end defmac
 
@@ -7451,7 +7462,11 @@ c_register_addr_space ("__ea", ADDR_SPACE_EA);
 
 @hook TARGET_ADDR_SPACE_SUBSET_P
 
+@hook TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID
+
 @hook TARGET_ADDR_SPACE_CONVERT
+
+@hook TARGET_ADDR_SPACE_DEBUG
 
 @node Misc
 @section Miscellaneous Parameters

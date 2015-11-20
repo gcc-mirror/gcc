@@ -154,6 +154,8 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
 	   && tree_to_shwi (TYPE_SIZE (outer_type)) >= 0
 	   && tree_to_shwi (TYPE_SIZE (outer_type)) <= offset)
    {
+     bool der = maybe_derived_type; /* clear_outer_type will reset it.  */
+     bool dyn = dynamic;
      clear_outer_type (otr_type);
      type = otr_type;
      cur_offset = 0;
@@ -162,7 +164,7 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
 	For dynamic types, we really do not have information about
 	size of the memory location.  It is possible that completely
 	different type is stored after outer_type.  */
-     if (!maybe_derived_type && !dynamic)
+     if (!der && !dyn)
        {
 	 clear_speculation ();
 	 invalid = true;
@@ -425,8 +427,10 @@ no_useful_type_info:
 		    return true;
 		}
 	      else
-		clear_speculation ();
-	      return true;
+		{
+		  clear_speculation ();
+	          return true;
+		}
 	    }
 	  else
 	    {
@@ -459,15 +463,18 @@ contains_type_p (tree outer_type, HOST_WIDE_INT offset,
   if (offset < 0)
     return false;
   if (TYPE_SIZE (outer_type) && TYPE_SIZE (otr_type)
-      && TREE_CODE (outer_type) == INTEGER_CST
-      && TREE_CODE (otr_type) == INTEGER_CST
-      && wi::ltu_p (wi::to_offset (outer_type), (wi::to_offset (otr_type) + offset)))
+      && TREE_CODE (TYPE_SIZE (outer_type)) == INTEGER_CST
+      && TREE_CODE (TYPE_SIZE (otr_type)) == INTEGER_CST
+      && wi::ltu_p (wi::to_offset (TYPE_SIZE (outer_type)),
+		    (wi::to_offset (TYPE_SIZE (otr_type)) + offset)))
     return false;
 
   context.offset = offset;
   context.outer_type = TYPE_MAIN_VARIANT (outer_type);
   context.maybe_derived_type = false;
-  return context.restrict_to_inner_class (otr_type, consider_placement_new, consider_bases);
+  context.dynamic = false;
+  return context.restrict_to_inner_class (otr_type, consider_placement_new,
+					  consider_bases);
 }
 
 
@@ -742,6 +749,7 @@ ipa_polymorphic_call_context::set_by_invariant (tree cst,
 						HOST_WIDE_INT off)
 {
   HOST_WIDE_INT offset2, size, max_size;
+  bool reverse;
   tree base;
 
   invalid = false;
@@ -752,7 +760,7 @@ ipa_polymorphic_call_context::set_by_invariant (tree cst,
     return false;
 
   cst = TREE_OPERAND (cst, 0);
-  base = get_ref_base_and_extent (cst, &offset2, &size, &max_size);
+  base = get_ref_base_and_extent (cst, &offset2, &size, &max_size, &reverse);
   if (!DECL_P (base) || max_size == -1 || max_size != size)
     return false;
 
@@ -882,8 +890,10 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 	{
 	  HOST_WIDE_INT size, max_size;
 	  HOST_WIDE_INT offset2;
-	  tree base = get_ref_base_and_extent (TREE_OPERAND (base_pointer, 0),
-					       &offset2, &size, &max_size);
+	  bool reverse;
+	  tree base
+	    = get_ref_base_and_extent (TREE_OPERAND (base_pointer, 0),
+				       &offset2, &size, &max_size, &reverse);
 
 	  if (max_size != -1 && max_size == size)
 	    combine_speculation_with (TYPE_MAIN_VARIANT (TREE_TYPE (base)),
@@ -1151,6 +1161,7 @@ extr_type_from_vtbl_ptr_store (gimple *stmt, struct type_change_info *tci,
 {
   HOST_WIDE_INT offset, size, max_size;
   tree lhs, rhs, base;
+  bool reverse;
 
   if (!gimple_assign_single_p (stmt))
     return NULL_TREE;
@@ -1169,7 +1180,7 @@ extr_type_from_vtbl_ptr_store (gimple *stmt, struct type_change_info *tci,
     ;
   else
     {
-      base = get_ref_base_and_extent (lhs, &offset, &size, &max_size);
+      base = get_ref_base_and_extent (lhs, &offset, &size, &max_size, &reverse);
       if (DECL_P (tci->instance))
 	{
 	  if (base != tci->instance)
@@ -1358,6 +1369,7 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 	tree op = walk_ssa_copies (gimple_call_arg (stmt, 0));
 	tree type = TYPE_METHOD_BASETYPE (TREE_TYPE (fn));
 	HOST_WIDE_INT offset = 0, size, max_size;
+	bool reverse;
 
 	if (dump_file)
 	  {
@@ -1368,8 +1380,8 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 	/* See if THIS parameter seems like instance pointer.  */
 	if (TREE_CODE (op) == ADDR_EXPR)
 	  {
-	    op = get_ref_base_and_extent (TREE_OPERAND (op, 0),
-					  &offset, &size, &max_size);
+	    op = get_ref_base_and_extent (TREE_OPERAND (op, 0), &offset,
+					  &size, &max_size, &reverse);
 	    if (size != max_size || max_size == -1)
 	      {
                 tci->speculative = true;
@@ -1527,6 +1539,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
     {
       tree ref = gimple_call_fn (call);
       HOST_WIDE_INT offset2, size, max_size;
+      bool reverse;
 
       if (TREE_CODE (ref) == OBJ_TYPE_REF)
 	{
@@ -1556,8 +1569,9 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 		  && gimple_assign_load_p (SSA_NAME_DEF_STMT (ref)))
 		{
 		  tree ref_exp = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (ref));
-		  tree base_ref = get_ref_base_and_extent
-				   (ref_exp, &offset2, &size, &max_size);
+		  tree base_ref
+		    = get_ref_base_and_extent (ref_exp, &offset2, &size,
+					       &max_size, &reverse);
 
 		  /* Finally verify that what we found looks like read from
 		     OTR_OBJECT or from INSTANCE with offset OFFSET.  */

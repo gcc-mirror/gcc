@@ -1,4 +1,5 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-require-ifunc "" } */
 /* { dg-options "-mavx" } */
 
 #include <immintrin.h>

@@ -1,6 +1,6 @@
-// { dg-require-namedlocale "fr_FR" }
-// { dg-require-namedlocale "en_US" }
-// { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "fr_FR.ISO8859-15" }
+// { dg-require-namedlocale "en_US.ISO8859-1" }
+// { dg-require-namedlocale "de_DE.ISO8859-15" }
 
 // Copyright (C) 2003-2015 Free Software Foundation, Inc.
 //
@@ -31,19 +31,19 @@ void test01()
   bool test __attribute__((unused)) = true;
   using namespace std;
 
-  locale::global(locale("fr_FR"));
+  locale::global(locale(ISO_8859(15,fr_FR)));
 
   ios_base::sync_with_stdio(false);
 
-  locale::global(locale("en_US"));
-  cin.imbue(locale("en_US"));
-  cout.imbue(locale("en_US"));
-  cerr.imbue(locale("en_US"));
-  clog.imbue(locale("de_DE"));
-  wcin.imbue(locale("en_US"));
-  wcout.imbue(locale("en_US"));
-  wcerr.imbue(locale("en_US"));
-  wclog.imbue(locale("de_DE"));
+  locale::global(locale(ISO_8859(1,en_US)));
+  cin.imbue(locale(ISO_8859(1,en_US)));
+  cout.imbue(locale(ISO_8859(1,en_US)));
+  cerr.imbue(locale(ISO_8859(1,en_US)));
+  clog.imbue(locale(ISO_8859(15,de_DE)));
+  wcin.imbue(locale(ISO_8859(1,en_US)));
+  wcout.imbue(locale(ISO_8859(1,en_US)));
+  wcerr.imbue(locale(ISO_8859(1,en_US)));
+  wclog.imbue(locale(ISO_8859(15,de_DE)));
  
   cout << 'f' << endl;
   cerr << 'r' << endl;

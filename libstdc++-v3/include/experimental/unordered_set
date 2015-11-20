@@ -37,6 +37,7 @@
 
 #include <unordered_set>
 #include <experimental/bits/erase_if.h>
+#include <experimental/memory_resource>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -61,6 +62,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { __detail::__erase_nodes_if(__cont, __pred); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
+
+namespace pmr {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<typename _Key, typename _Hash = hash<_Key>,
+	   typename _Pred = equal_to<_Key>>
+    using unordered_set
+      = std::unordered_set<_Key, _Hash, _Pred, polymorphic_allocator<_Key>>;
+
+  template<typename _Key, typename _Hash = hash<_Key>,
+	   typename _Pred = equal_to<_Key>>
+    using unordered_multiset
+      = std::unordered_multiset<_Key, _Hash, _Pred,
+				polymorphic_allocator<_Key>>;
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace pmr
+
 } // namespace fundamentals_v2
 } // namespace experimental
 } // namespace std

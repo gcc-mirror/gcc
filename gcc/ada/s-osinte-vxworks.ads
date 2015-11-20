@@ -303,7 +303,6 @@ package System.OS_Interface is
    pragma Import (C, taskIsSuspended, "taskIsSuspended");
 
    function taskDelay (ticks : int) return int;
-   procedure taskDelay (ticks : int);
    pragma Import (C, taskDelay, "taskDelay");
 
    function sysClkRateGet return int;

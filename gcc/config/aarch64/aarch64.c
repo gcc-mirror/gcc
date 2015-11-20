@@ -52,6 +52,7 @@
 #include "params.h"
 #include "gimplify.h"
 #include "dwarf2.h"
+#include "gimple-iterator.h"
 #include "tree-vectorizer.h"
 #include "aarch64-cost-tables.h"
 #include "dumpfile.h"
@@ -337,6 +338,13 @@ static const struct cpu_branch_cost generic_branch_cost =
   2   /* Unpredictable.  */
 };
 
+/* Branch costs for Cortex-A57.  */
+static const struct cpu_branch_cost cortexa57_branch_cost =
+{
+  1,  /* Predictable.  */
+  3   /* Unpredictable.  */
+};
+
 static const struct tune_params generic_tunings =
 {
   &cortexa57_extra_costs,
@@ -355,7 +363,34 @@ static const struct tune_params generic_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  0,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
+  (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
+};
+
+static const struct tune_params cortexa35_tunings =
+{
+  &cortexa53_extra_costs,
+  &generic_addrcost_table,
+  &cortexa53_regmove_cost,
+  &generic_vector_cost,
+  &generic_branch_cost,
+  4, /* memmov_cost  */
+  1, /* issue_rate  */
+  (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
+   | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fusible_ops  */
+  8,	/* function_align.  */
+  8,	/* jump_align.  */
+  4,	/* loop_align.  */
+  2,	/* int_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
+  1,	/* vec_reassoc_width.  */
+  2,	/* min_div_recip_mul_sf.  */
+  2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  0,	/* cache_line_size.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
 
@@ -378,6 +413,8 @@ static const struct tune_params cortexa53_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  0,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
@@ -388,7 +425,7 @@ static const struct tune_params cortexa57_tunings =
   &cortexa57_addrcost_table,
   &cortexa57_regmove_cost,
   &cortexa57_vector_cost,
-  &generic_branch_cost,
+  &cortexa57_branch_cost,
   4, /* memmov_cost  */
   3, /* issue_rate  */
   (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -401,8 +438,11 @@ static const struct tune_params cortexa57_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  0,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_RENAME_FMA_REGS)	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_RENAME_FMA_REGS
+   | AARCH64_EXTRA_TUNE_RECIP_SQRT)	/* tune_flags.  */
 };
 
 static const struct tune_params cortexa72_tunings =
@@ -424,6 +464,8 @@ static const struct tune_params cortexa72_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  0,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
@@ -446,6 +488,8 @@ static const struct tune_params thunderx_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  0,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
 };
@@ -468,8 +512,10 @@ static const struct tune_params xgene1_tunings =
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  0,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE)	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_RECIP_SQRT)	/* tune_flags.  */
 };
 
 /* Support for fine-grained override of the tuning structures.  */
@@ -555,10 +601,6 @@ static const struct aarch64_option_extension all_extensions[] =
 #undef AARCH64_OPT_EXTENSION
   {NULL, 0, 0}
 };
-
-/* Used to track the size of an address when generating a pre/post
-   increment address.  */
-static machine_mode aarch64_memory_reference_mode;
 
 typedef enum aarch64_cond_code
 {
@@ -3242,6 +3284,20 @@ aarch64_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
   return aarch64_tls_referenced_p (x);
 }
 
+/* Implement TARGET_CASE_VALUES_THRESHOLD.  */
+
+static unsigned int
+aarch64_case_values_threshold (void)
+{
+  /* Use the specified limit for the number of cases before using jump
+     tables at higher optimization levels.  */
+  if (optimize > 2
+      && selected_cpu->tune->max_case_values != 0)
+    return selected_cpu->tune->max_case_values;
+  else
+    return default_case_values_threshold ();
+}
+
 /* Return true if register REGNO is a valid index register.
    STRICT_P is true if REG_OK_STRICT is in effect.  */
 
@@ -4131,8 +4187,8 @@ aarch64_ccmp_mode_to_code (enum machine_mode mode)
 }
 
 
-void
-aarch64_print_operand (FILE *f, rtx x, char code)
+static void
+aarch64_print_operand (FILE *f, rtx x, int code)
 {
   switch (code)
     {
@@ -4362,8 +4418,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  break;
 
 	case MEM:
-	  aarch64_memory_reference_mode = GET_MODE (x);
-	  output_address (XEXP (x, 0));
+	  output_address (GET_MODE (x), XEXP (x, 0));
 	  break;
 
 	case CONST:
@@ -4394,11 +4449,10 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  break;
 
 	case CONST_DOUBLE:
-	  /* CONST_DOUBLE can represent a double-width integer.
-	     In this case, the mode of x is VOIDmode.  */
-	  if (GET_MODE (x) == VOIDmode)
-	    ; /* Do Nothing.  */
-	  else if (aarch64_float_const_zero_rtx_p (x))
+	  /* Since we define TARGET_SUPPORTS_WIDE_INT we shouldn't ever
+	     be getting CONST_DOUBLEs holding integers.  */
+	  gcc_assert (GET_MODE (x) != VOIDmode);
+	  if (aarch64_float_const_zero_rtx_p (x))
 	    {
 	      fputc ('0', f);
 	      break;
@@ -4553,13 +4607,12 @@ aarch64_print_operand (FILE *f, rtx x, char code)
     }
 }
 
-void
-aarch64_print_operand_address (FILE *f, rtx x)
+static void
+aarch64_print_operand_address (FILE *f, machine_mode mode, rtx x)
 {
   struct aarch64_address_info addr;
 
-  if (aarch64_classify_address (&addr, x, aarch64_memory_reference_mode,
-			     MEM, true))
+  if (aarch64_classify_address (&addr, x, mode, MEM, true))
     switch (addr.type)
       {
       case ADDRESS_REG_IMM:
@@ -4602,19 +4655,19 @@ aarch64_print_operand_address (FILE *f, rtx x)
 	  {
 	  case PRE_INC:
 	    asm_fprintf (f, "[%s, %d]!", reg_names [REGNO (addr.base)],
-			 GET_MODE_SIZE (aarch64_memory_reference_mode));
+			 GET_MODE_SIZE (mode));
 	    return;
 	  case POST_INC:
 	    asm_fprintf (f, "[%s], %d", reg_names [REGNO (addr.base)],
-			 GET_MODE_SIZE (aarch64_memory_reference_mode));
+			 GET_MODE_SIZE (mode));
 	    return;
 	  case PRE_DEC:
 	    asm_fprintf (f, "[%s, -%d]!", reg_names [REGNO (addr.base)],
-			 GET_MODE_SIZE (aarch64_memory_reference_mode));
+			 GET_MODE_SIZE (mode));
 	    return;
 	  case POST_DEC:
 	    asm_fprintf (f, "[%s], -%d", reg_names [REGNO (addr.base)],
-			 GET_MODE_SIZE (aarch64_memory_reference_mode));
+			 GET_MODE_SIZE (mode));
 	    return;
 	  case PRE_MODIFY:
 	    asm_fprintf (f, "[%s, %wd]!", reg_names [REGNO (addr.base)],
@@ -5235,24 +5288,40 @@ aarch64_uxt_size (int shift, HOST_WIDE_INT mask)
   return 0;
 }
 
-static bool
-aarch64_use_blocks_for_constant_p (machine_mode mode ATTRIBUTE_UNUSED,
-				   const_rtx x ATTRIBUTE_UNUSED)
+/* Constant pools are per function only when PC relative
+   literal loads are true or we are in the large memory
+   model.  */
+
+static inline bool
+aarch64_can_use_per_function_literal_pools_p (void)
 {
-  /* We can't use blocks for constants when we're using a per-function
-     constant pool.  */
+  return (!aarch64_nopcrelative_literal_loads
+	  || aarch64_cmodel == AARCH64_CMODEL_LARGE);
+}
+
+static bool
+aarch64_use_blocks_for_constant_p (machine_mode, const_rtx)
+{
+  /* Fixme:: In an ideal world this would work similar
+     to the logic in aarch64_select_rtx_section but this
+     breaks bootstrap in gcc go.  For now we workaround
+     this by returning false here.  */
   return false;
 }
 
-static section *
-aarch64_select_rtx_section (machine_mode mode ATTRIBUTE_UNUSED,
-			    rtx x ATTRIBUTE_UNUSED,
-			    unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
-{
-  /* Force all constant pool entries into the current function section.  */
-  return function_section (current_function_decl);
-}
+/* Select appropriate section for constants depending
+   on where we place literal pools.  */
 
+static section *
+aarch64_select_rtx_section (machine_mode mode,
+			    rtx x,
+			    unsigned HOST_WIDE_INT align)
+{
+  if (aarch64_can_use_per_function_literal_pools_p ())
+    return function_section (current_function_decl);
+
+  return default_elf_select_rtx_section (mode, x, align);
+}
 
 /* Costs.  */
 
@@ -7030,6 +7099,105 @@ aarch64_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
   return aarch64_tune_params.memmov_cost;
 }
 
+/* Function to decide when to use
+   reciprocal square root builtins.  */
+
+static tree
+aarch64_builtin_reciprocal (unsigned int fn,
+			    bool md_fn,
+			    bool)
+{
+  if (flag_trapping_math
+      || !flag_unsafe_math_optimizations
+      || optimize_size
+      || ! (aarch64_tune_params.extra_tuning_flags
+	   & AARCH64_EXTRA_TUNE_RECIP_SQRT))
+  {
+    return NULL_TREE;
+  }
+
+  return aarch64_builtin_rsqrt (fn, md_fn);
+}
+
+typedef rtx (*rsqrte_type) (rtx, rtx);
+
+/* Select reciprocal square root initial estimate
+   insn depending on machine mode.  */
+
+rsqrte_type
+get_rsqrte_type (machine_mode mode)
+{
+  switch (mode)
+  {
+    case DFmode:   return gen_aarch64_rsqrte_df2;
+    case SFmode:   return gen_aarch64_rsqrte_sf2;
+    case V2DFmode: return gen_aarch64_rsqrte_v2df2;
+    case V2SFmode: return gen_aarch64_rsqrte_v2sf2;
+    case V4SFmode: return gen_aarch64_rsqrte_v4sf2;
+    default: gcc_unreachable ();
+  }
+}
+
+typedef rtx (*rsqrts_type) (rtx, rtx, rtx);
+
+/* Select reciprocal square root Newton-Raphson step
+   insn depending on machine mode.  */
+
+rsqrts_type
+get_rsqrts_type (machine_mode mode)
+{
+  switch (mode)
+  {
+    case DFmode:   return gen_aarch64_rsqrts_df3;
+    case SFmode:   return gen_aarch64_rsqrts_sf3;
+    case V2DFmode: return gen_aarch64_rsqrts_v2df3;
+    case V2SFmode: return gen_aarch64_rsqrts_v2sf3;
+    case V4SFmode: return gen_aarch64_rsqrts_v4sf3;
+    default: gcc_unreachable ();
+  }
+}
+
+/* Emit instruction sequence to compute
+   reciprocal square root.  Use two Newton-Raphson steps
+   for single precision and three for double precision.  */
+
+void
+aarch64_emit_swrsqrt (rtx dst, rtx src)
+{
+  machine_mode mode = GET_MODE (src);
+  gcc_assert (
+    mode == SFmode || mode == V2SFmode || mode == V4SFmode
+	|| mode == DFmode || mode == V2DFmode);
+
+  rtx xsrc = gen_reg_rtx (mode);
+  emit_move_insn (xsrc, src);
+  rtx x0 = gen_reg_rtx (mode);
+
+  emit_insn ((*get_rsqrte_type (mode)) (x0, xsrc));
+
+  bool double_mode = (mode == DFmode || mode == V2DFmode);
+
+  int iterations = double_mode ? 3 : 2;
+
+  if (flag_mrecip_low_precision_sqrt)
+    iterations--;
+
+  for (int i = 0; i < iterations; ++i)
+    {
+      rtx x1 = gen_reg_rtx (mode);
+      rtx x2 = gen_reg_rtx (mode);
+      rtx x3 = gen_reg_rtx (mode);
+      emit_set_insn (x2, gen_rtx_MULT (mode, x0, x0));
+
+      emit_insn ((*get_rsqrts_type (mode)) (x3, xsrc, x2));
+
+      emit_set_insn (x1, gen_rtx_MULT (mode, x0, x3));
+      x0 = x1;
+    }
+
+  emit_move_insn (dst, x0);
+}
+
 /* Return the number of instructions that can be issued per cycle.  */
 static int
 aarch64_sched_issue_rate (void)
@@ -7671,6 +7839,13 @@ aarch64_override_options_internal (struct gcc_options *opts)
 			 queue_depth,
 			 opts->x_param_values,
 			 global_options_set.x_param_values);
+
+  /* Set the L1 cache line size.  */
+  if (selected_cpu->tune->cache_line_size != 0)
+    maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
+			   selected_cpu->tune->cache_line_size,
+			   opts->x_param_values,
+			   global_options_set.x_param_values);
 
   aarch64_override_options_after_change_1 (opts);
 }
@@ -10050,32 +10225,16 @@ aarch64_simd_valid_immediate (rtx op, machine_mode mode, bool inverse,
          it must be laid out in the vector register in reverse order.  */
       rtx el = CONST_VECTOR_ELT (op, BYTES_BIG_ENDIAN ? (n_elts - 1 - i) : i);
       unsigned HOST_WIDE_INT elpart;
-      unsigned int part, parts;
 
-      if (CONST_INT_P (el))
-        {
-          elpart = INTVAL (el);
-          parts = 1;
-        }
-      else if (GET_CODE (el) == CONST_DOUBLE)
-        {
-          elpart = CONST_DOUBLE_LOW (el);
-          parts = 2;
-        }
-      else
-        gcc_unreachable ();
+      gcc_assert (CONST_INT_P (el));
+      elpart = INTVAL (el);
 
-      for (part = 0; part < parts; part++)
-        {
-          unsigned int byte;
-          for (byte = 0; byte < innersize; byte++)
-            {
-              bytes[idx++] = (elpart & 0xff) ^ invmask;
-              elpart >>= BITS_PER_UNIT;
-            }
-          if (GET_CODE (el) == CONST_DOUBLE)
-            elpart = CONST_DOUBLE_HIGH (el);
-        }
+      for (unsigned int byte = 0; byte < innersize; byte++)
+	{
+	  bytes[idx++] = (elpart & 0xff) ^ invmask;
+	  elpart >>= BITS_PER_UNIT;
+	}
+
     }
 
   /* Sanity check.  */
@@ -13432,6 +13591,9 @@ aarch64_promoted_type (const_tree t)
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM aarch64_cannot_force_const_mem
 
+#undef TARGET_CASE_VALUES_THRESHOLD
+#define TARGET_CASE_VALUES_THRESHOLD aarch64_case_values_threshold
+
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE aarch64_conditional_register_usage
 
@@ -13453,6 +13615,9 @@ aarch64_promoted_type (const_tree t)
 
 #undef TARGET_BUILTIN_DECL
 #define TARGET_BUILTIN_DECL aarch64_builtin_decl
+
+#undef TARGET_BUILTIN_RECIPROCAL
+#define TARGET_BUILTIN_RECIPROCAL aarch64_builtin_reciprocal
 
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN aarch64_expand_builtin
@@ -13692,6 +13857,12 @@ aarch64_promoted_type (const_tree t)
 
 #undef TARGET_USE_PSEUDO_PIC_REG
 #define TARGET_USE_PSEUDO_PIC_REG aarch64_use_pseudo_pic_reg
+
+#undef TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND aarch64_print_operand
+
+#undef TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS aarch64_print_operand_address
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
-#include "tree.h"
 #include "cp-tree.h"
 #include "c-family/c-common.h"
 #include "timevar.h"
@@ -40,15 +39,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "stor-layout.h"
 #include "calls.h"
-#include "flags.h"
 #include "decl.h"
 #include "toplev.h"
 #include "c-family/c-objc.h"
-#include "tree-inline.h"
 #include "c-family/c-pragma.h"
 #include "dumpfile.h"
 #include "intl.h"
-#include "langhooks.h"
 #include "c-family/c-ada-spec.h"
 #include "asan.h"
 
@@ -106,6 +102,11 @@ static GTY(()) vec<tree, va_gc> *mangling_aliases;
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
 int at_eof;
+
+/* True if note_mangling_alias should enqueue mangling aliases for
+   later generation, rather than emitting them right away.  */
+
+bool defer_mangling_aliases = true;
 
 
 /* Return a member function type (a METHOD_TYPE), given FNTYPE (a
@@ -1447,11 +1448,6 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
       if (VAR_P (*decl)
 	  && DECL_CLASS_SCOPE_P (*decl))
 	error ("%q+D static data member inside of declare target directive",
-	       *decl);
-      else if (VAR_P (*decl)
-	       && (DECL_FUNCTION_SCOPE_P (*decl)
-		   || (current_function_decl && !DECL_EXTERNAL (*decl))))
-	error ("%q+D in block scope inside of declare target directive",
 	       *decl);
       else if (!processing_template_decl
 	       && VAR_P (*decl)
@@ -3121,7 +3117,7 @@ get_guard_cond (tree guard, bool thread_safe)
     {
       guard_value = integer_one_node;
       if (!same_type_p (TREE_TYPE (guard_value), TREE_TYPE (guard)))
-	guard_value = convert (TREE_TYPE (guard), guard_value);
+	guard_value = fold_convert (TREE_TYPE (guard), guard_value);
       guard = cp_build_binary_op (input_location,
 				  BIT_AND_EXPR, guard, guard_value,
 				  tf_warning_or_error);
@@ -3129,7 +3125,7 @@ get_guard_cond (tree guard, bool thread_safe)
 
   guard_value = integer_zero_node;
   if (!same_type_p (TREE_TYPE (guard_value), TREE_TYPE (guard)))
-    guard_value = convert (TREE_TYPE (guard), guard_value);
+    guard_value = fold_convert (TREE_TYPE (guard), guard_value);
   return cp_build_binary_op (input_location,
 			     EQ_EXPR, guard, guard_value,
 			     tf_warning_or_error);
@@ -3147,7 +3143,7 @@ set_guard (tree guard)
   guard = get_guard_bits (guard);
   guard_init = integer_one_node;
   if (!same_type_p (TREE_TYPE (guard_init), TREE_TYPE (guard)))
-    guard_init = convert (TREE_TYPE (guard), guard_init);
+    guard_init = fold_convert (TREE_TYPE (guard), guard_init);
   return cp_build_modify_expr (guard, NOP_EXPR, guard_init, 
 			       tf_warning_or_error);
 }
@@ -4398,7 +4394,7 @@ void
 note_mangling_alias (tree decl ATTRIBUTE_UNUSED, tree id2 ATTRIBUTE_UNUSED)
 {
 #ifdef ASM_OUTPUT_DEF
-  if (at_eof)
+  if (!defer_mangling_aliases)
     generate_mangling_alias (decl, id2);
   else
     {
@@ -4408,7 +4404,9 @@ note_mangling_alias (tree decl ATTRIBUTE_UNUSED, tree id2 ATTRIBUTE_UNUSED)
 #endif
 }
 
-static void
+/* Emit all mangling aliases that were deferred up to this point.  */
+
+void
 generate_mangling_aliases ()
 {
   while (!vec_safe_is_empty (mangling_aliases))
@@ -4417,6 +4415,7 @@ generate_mangling_aliases ()
       tree decl = mangling_aliases->pop();
       generate_mangling_alias (decl, id2);
     }
+  defer_mangling_aliases = false;
 }
 
 /* The entire file is now complete.  If requested, dump everything
@@ -4923,9 +4922,8 @@ cxx_post_compilation_parsing_cleanups (void)
 
   input_location = locus_at_end_of_parsing;
 
-#ifdef ENABLE_CHECKING
-  validate_conversion_obstack ();
-#endif /* ENABLE_CHECKING */
+  if (flag_checking)
+    validate_conversion_obstack ();
 
   timevar_stop (TV_PHASE_LATE_PARSING_CLEANUPS);
 }

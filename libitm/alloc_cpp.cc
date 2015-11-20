@@ -35,41 +35,50 @@ using namespace GTM;
 
 #define _ZnwX			S(_Znw,MANGLE_SIZE_T)
 #define _ZnaX			S(_Zna,MANGLE_SIZE_T)
+#define _ZdlPvX			S(_ZdlPv,MANGLE_SIZE_T)
 #define _ZnwXRKSt9nothrow_t	S(S(_Znw,MANGLE_SIZE_T),RKSt9nothrow_t)
 #define _ZnaXRKSt9nothrow_t	S(S(_Zna,MANGLE_SIZE_T),RKSt9nothrow_t)
+#define _ZdlPvXRKSt9nothrow_t	S(S(_ZdlPv,MANGLE_SIZE_T),RKSt9nothrow_t)
 
 #define _ZGTtnwX		S(_ZGTtnw,MANGLE_SIZE_T)
 #define _ZGTtnaX		S(_ZGTtna,MANGLE_SIZE_T)
+#define _ZGTtdlPvX		S(_ZGTtdlPv,MANGLE_SIZE_T)
 #define _ZGTtnwXRKSt9nothrow_t	S(S(_ZGTtnw,MANGLE_SIZE_T),RKSt9nothrow_t)
 #define _ZGTtnaXRKSt9nothrow_t	S(S(_ZGTtna,MANGLE_SIZE_T),RKSt9nothrow_t)
+#define _ZGTtdlPvXRKSt9nothrow_t S(S(_ZGTtdlPv,MANGLE_SIZE_T),RKSt9nothrow_t)
 
 /* Everything from libstdc++ is weak, to avoid requiring that library
    to be linked into plain C applications using libitm.so.  */
 
 extern "C" {
 
-extern void *_ZnwX (size_t) __attribute__((weak));
-extern void _ZdlPv (void *) __attribute__((weak));
-extern void *_ZnaX (size_t) __attribute__((weak));
-extern void _ZdaPv (void *) __attribute__((weak));
+extern void *_ZnwX  (size_t) __attribute__((weak));
+extern void _ZdlPv  (void *) __attribute__((weak));
+extern void _ZdlPvX (void *, size_t) __attribute__((weak));
+extern void *_ZnaX  (size_t) __attribute__((weak));
+extern void _ZdaPv  (void *) __attribute__((weak));
 
 typedef const struct nothrow_t { } *c_nothrow_p;
 
 extern void *_ZnwXRKSt9nothrow_t (size_t, c_nothrow_p) __attribute__((weak));
 extern void _ZdlPvRKSt9nothrow_t (void *, c_nothrow_p) __attribute__((weak));
+extern void _ZdlPvXRKSt9nothrow_t
+(void *, size_t, c_nothrow_p) __attribute__((weak));
 extern void *_ZnaXRKSt9nothrow_t (size_t, c_nothrow_p) __attribute__((weak));
 extern void _ZdaPvRKSt9nothrow_t (void *, c_nothrow_p) __attribute__((weak));
 
 #if !defined (HAVE_ELF_STYLE_WEAKREF) 
-void *_ZnwX (size_t) { return NULL; }
-void _ZdlPv (void *) { return; }
-void *_ZnaX (size_t) { return NULL; }
-void _ZdaPv (void *) { return; }
+void *_ZnwX  (size_t) { return NULL; }
+void _ZdlPv  (void *) { return; }
+void _ZdlPvX (void *, size_t) { return; }
+void *_ZnaX  (size_t) { return NULL; }
+void _ZdaPv  (void *) { return; }
 
-void *_ZnwXRKSt9nothrow_t (size_t, c_nothrow_p) { return NULL; }
-void _ZdlPvRKSt9nothrow_t (void *, c_nothrow_p) { return; }
-void *_ZnaXRKSt9nothrow_t (size_t, c_nothrow_p) { return NULL; }
-void _ZdaPvRKSt9nothrow_t (void *, c_nothrow_p) { return; }
+void *_ZnwXRKSt9nothrow_t  (size_t, c_nothrow_p) { return NULL; }
+void _ZdlPvRKSt9nothrow_t  (void *, c_nothrow_p) { return; }
+void _ZdlPvXRKSt9nothrow_t (void *, size_t, c_nothrow_p) { return; }
+void *_ZnaXRKSt9nothrow_t  (size_t, c_nothrow_p) { return NULL; }
+void _ZdaPvRKSt9nothrow_t  (void *, c_nothrow_p) { return; }
 #endif /* HAVE_ELF_STYLE_WEAKREF */
 
 /* Wrap the delete nothrow symbols for usage with a single argument.
@@ -87,6 +96,12 @@ static void
 del_opvnt (void *ptr)
 {
   _ZdaPvRKSt9nothrow_t (ptr, NULL);
+}
+
+static void
+delsz_opnt (void *ptr, size_t sz)
+{
+  _ZdlPvXRKSt9nothrow_t (ptr, sz, NULL);
 }
 
 /* Wrap: operator new (std::size_t sz)  */
@@ -159,6 +174,22 @@ _ZGTtdaPvRKSt9nothrow_t (void *ptr, c_nothrow_p nt UNUSED)
 {
   if (ptr)
     gtm_thr()->forget_allocation (ptr, del_opvnt);
+}
+
+/* Wrap: operator delete(void* ptr, std::size_t sz)  */
+void
+_ZGTtdlPvX (void *ptr, size_t sz)
+{
+  if (ptr)
+    gtm_thr()->forget_allocation (ptr, sz, _ZdlPvX);
+}
+
+/* Wrap: operator delete (void *ptr, std::size_t sz, const std::nothrow_t&)  */
+void
+_ZGTtdlPvXRKSt9nothrow_t (void *ptr, size_t sz, c_nothrow_p nt UNUSED)
+{
+  if (ptr)
+    gtm_thr()->forget_allocation (ptr, sz, delsz_opnt);
 }
 
 } // extern "C"

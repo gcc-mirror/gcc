@@ -66,7 +66,7 @@ static rtx   m32r_legitimize_address (rtx, rtx, machine_mode);
 static bool  m32r_mode_dependent_address_p (const_rtx, addr_space_t);
 static tree  m32r_handle_model_attribute (tree *, tree, tree, int, bool *);
 static void  m32r_print_operand (FILE *, rtx, int);
-static void  m32r_print_operand_address (FILE *, rtx);
+static void  m32r_print_operand_address (FILE *, machine_mode, rtx);
 static bool  m32r_print_operand_punct_valid_p (unsigned char code);
 static void  m32r_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void  m32r_output_function_epilogue (FILE *, HOST_WIDE_INT);
@@ -2086,6 +2086,8 @@ m32r_print_operand (FILE * file, rtx x, int code)
 	fputs (reg_names[REGNO (x)+1], file);
       else if (MEM_P (x))
 	{
+	  machine_mode mode = GET_MODE (x);
+
 	  fprintf (file, "@(");
 	  /* Handle possible auto-increment.  Since it is pre-increment and
 	     we have already done it, we can just use an offset of four.  */
@@ -2093,9 +2095,10 @@ m32r_print_operand (FILE * file, rtx x, int code)
 	     currently necessary, but keep it around.  */
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    output_address (plus_constant (Pmode, XEXP (XEXP (x, 0), 0), 4));
+	    output_address (mode, plus_constant (Pmode,
+						 XEXP (XEXP (x, 0), 0), 4));
 	  else
-	    output_address (plus_constant (Pmode, XEXP (x, 0), 4));
+	    output_address (mode, plus_constant (Pmode, XEXP (x, 0), 4));
 	  fputc (')', file);
 	}
       else
@@ -2255,7 +2258,7 @@ m32r_print_operand (FILE * file, rtx x, int code)
       else
 	{
 	  fputs ("@(", file);
-	  output_address (XEXP (x, 0));
+	  output_address (GET_MODE (x), addr);
 	  fputc (')', file);
 	}
       break;
@@ -2282,7 +2285,7 @@ m32r_print_operand (FILE * file, rtx x, int code)
 /* Print a memory address as an operand to reference that memory location.  */
 
 static void
-m32r_print_operand_address (FILE * file, rtx addr)
+m32r_print_operand_address (FILE * file, machine_mode /*mode*/, rtx addr)
 {
   rtx base;
   rtx index = 0;

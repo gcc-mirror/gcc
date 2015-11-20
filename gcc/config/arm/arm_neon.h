@@ -27,9 +27,8 @@
 #ifndef _GCC_ARM_NEON_H
 #define _GCC_ARM_NEON_H 1
 
-#ifndef __ARM_NEON__
-#error You must enable NEON instructions (e.g. -mfloat-abi=softfp -mfpu=neon) to use arm_neon.h
-#else
+#pragma GCC push_options
+#pragma GCC target ("fpu=neon")
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,9 +47,10 @@ typedef __simd64_float16_t float16x4_t;
 typedef __simd64_float32_t float32x2_t;
 typedef __simd64_poly8_t poly8x8_t;
 typedef __simd64_poly16_t poly16x4_t;
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 typedef __builtin_neon_poly64 poly64x1_t;
-#endif
+#pragma GCC pop_options
 typedef __simd64_uint8_t uint8x8_t;
 typedef __simd64_uint16_t uint16x4_t;
 typedef __simd64_uint32_t uint32x2_t;
@@ -66,9 +66,10 @@ typedef __simd128_float16_t float16x8_t;
 typedef __simd128_float32_t float32x4_t;
 typedef __simd128_poly8_t poly8x16_t;
 typedef __simd128_poly16_t poly16x8_t;
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 typedef __builtin_neon_poly64 poly64x2_t __attribute__ ((__vector_size__ (16)));
-#endif
+#pragma GCC pop_options
 
 typedef __simd128_uint8_t uint8x16_t;
 typedef __simd128_uint16_t uint16x8_t;
@@ -81,10 +82,11 @@ typedef float float32_t;
    keep them that way.  */
 typedef __builtin_neon_poly8 poly8_t;
 typedef __builtin_neon_poly16 poly16_t;
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 typedef __builtin_neon_poly64 poly64_t;
 typedef __builtin_neon_poly128 poly128_t;
-#endif
+#pragma GCC pop_options
 
 typedef struct int8x8x2_t
 {
@@ -210,20 +212,19 @@ typedef struct poly16x8x2_t
   poly16x8_t val[2];
 } poly16x8x2_t;
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 typedef struct poly64x1x2_t
 {
   poly64x1_t val[2];
 } poly64x1x2_t;
-#endif
 
 
-#ifdef __ARM_FEATURE_CRYPTO
 typedef struct poly64x2x2_t
 {
   poly64x2_t val[2];
 } poly64x2x2_t;
-#endif
+#pragma GCC pop_options
 
 
 typedef struct int8x8x3_t
@@ -350,20 +351,19 @@ typedef struct poly16x8x3_t
   poly16x8_t val[3];
 } poly16x8x3_t;
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 typedef struct poly64x1x3_t
 {
   poly64x1_t val[3];
 } poly64x1x3_t;
-#endif
 
 
-#ifdef __ARM_FEATURE_CRYPTO
 typedef struct poly64x2x3_t
 {
   poly64x2_t val[3];
 } poly64x2x3_t;
-#endif
+#pragma GCC pop_options
 
 
 typedef struct int8x8x4_t
@@ -490,20 +490,19 @@ typedef struct poly16x8x4_t
   poly16x8_t val[4];
 } poly16x8x4_t;
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 typedef struct poly64x1x4_t
 {
   poly64x1_t val[4];
 } poly64x1x4_t;
-#endif
 
 
-#ifdef __ARM_FEATURE_CRYPTO
 typedef struct poly64x2x4_t
 {
   poly64x2_t val[4];
 } poly64x2x4_t;
-#endif
+#pragma GCC pop_options
 
 /* vadd  */
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
@@ -1477,38 +1476,33 @@ vqdmlsl_s32 (int64x2_t __a, int32x2_t __b, int32x2_t __c)
   return (int64x2_t)__builtin_neon_vqdmlslv2si (__a, __b, __c);
 }
 
-#ifdef __ARM_FEATURE_FMA
+#pragma GCC push_options
+#pragma GCC target ("fpu=neon-vfpv4")
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vfma_f32 (float32x2_t __a, float32x2_t __b, float32x2_t __c)
 {
   return (float32x2_t)__builtin_neon_vfmav2sf (__a, __b, __c);
 }
 
-#endif
-#ifdef __ARM_FEATURE_FMA
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vfmaq_f32 (float32x4_t __a, float32x4_t __b, float32x4_t __c)
 {
   return (float32x4_t)__builtin_neon_vfmav4sf (__a, __b, __c);
 }
 
-#endif
-#ifdef __ARM_FEATURE_FMA
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vfms_f32 (float32x2_t __a, float32x2_t __b, float32x2_t __c)
 {
   return (float32x2_t)__builtin_neon_vfmsv2sf (__a, __b, __c);
 }
 
-#endif
-#ifdef __ARM_FEATURE_FMA
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vfmsq_f32 (float32x4_t __a, float32x4_t __b, float32x4_t __c)
 {
   return (float32x4_t)__builtin_neon_vfmsv4sf (__a, __b, __c);
 }
+#pragma GCC pop_options
 
-#endif
 #if __ARM_ARCH >= 8
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vrndn_f32 (float32x2_t __a)
@@ -4515,14 +4509,15 @@ vrsraq_n_u64 (uint64x2_t __a, uint64x2_t __b, const int __c)
   return (uint64x2_t)__builtin_neon_vrsrau_nv2di ((int64x2_t) __a, (int64x2_t) __b, __c);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vsri_n_p64 (poly64x1_t __a, poly64x1_t __b, const int __c)
 {
   return (poly64x1_t)__builtin_neon_vsri_ndi (__a, __b, __c);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vsri_n_s8 (int8x8_t __a, int8x8_t __b, const int __c)
 {
@@ -4583,14 +4578,15 @@ vsri_n_p16 (poly16x4_t __a, poly16x4_t __b, const int __c)
   return (poly16x4_t)__builtin_neon_vsri_nv4hi ((int16x4_t) __a, (int16x4_t) __b, __c);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vsriq_n_p64 (poly64x2_t __a, poly64x2_t __b, const int __c)
 {
   return (poly64x2_t)__builtin_neon_vsri_nv2di ((int64x2_t) __a, (int64x2_t) __b, __c);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vsriq_n_s8 (int8x16_t __a, int8x16_t __b, const int __c)
 {
@@ -4651,14 +4647,15 @@ vsriq_n_p16 (poly16x8_t __a, poly16x8_t __b, const int __c)
   return (poly16x8_t)__builtin_neon_vsri_nv8hi ((int16x8_t) __a, (int16x8_t) __b, __c);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vsli_n_p64 (poly64x1_t __a, poly64x1_t __b, const int __c)
 {
   return (poly64x1_t)__builtin_neon_vsli_ndi (__a, __b, __c);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vsli_n_s8 (int8x8_t __a, int8x8_t __b, const int __c)
 {
@@ -4719,14 +4716,15 @@ vsli_n_p16 (poly16x4_t __a, poly16x4_t __b, const int __c)
   return (poly16x4_t)__builtin_neon_vsli_nv4hi ((int16x4_t) __a, (int16x4_t) __b, __c);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vsliq_n_p64 (poly64x2_t __a, poly64x2_t __b, const int __c)
 {
   return (poly64x2_t)__builtin_neon_vsli_nv2di ((int64x2_t) __a, (int64x2_t) __b, __c);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vsliq_n_s8 (int8x16_t __a, int8x16_t __b, const int __c)
 {
@@ -5545,14 +5543,15 @@ vsetq_lane_u64 (uint64_t __a, uint64x2_t __b, const int __c)
   return (uint64x2_t)__builtin_neon_vset_lanev2di ((__builtin_neon_di) __a, (int64x2_t) __b, __c);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vcreate_p64 (uint64_t __a)
 {
   return (poly64x1_t)__builtin_neon_vcreatedi ((__builtin_neon_di) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vcreate_s8 (uint64_t __a)
 {
@@ -5681,14 +5680,15 @@ vdup_n_p16 (poly16_t __a)
   return (poly16x4_t)__builtin_neon_vdup_nv4hi ((__builtin_neon_hi) __a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vdup_n_p64 (poly64_t __a)
 {
   return (poly64x1_t)__builtin_neon_vdup_ndi ((__builtin_neon_di) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vdup_n_s64 (int64_t __a)
 {
@@ -5701,14 +5701,15 @@ vdup_n_u64 (uint64_t __a)
   return (uint64x1_t)__builtin_neon_vdup_ndi ((__builtin_neon_di) __a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vdupq_n_p64 (poly64_t __a)
 {
   return (poly64x2_t)__builtin_neon_vdup_nv2di ((__builtin_neon_di) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vdupq_n_s8 (int8_t __a)
 {
@@ -5961,14 +5962,15 @@ vdup_lane_p16 (poly16x4_t __a, const int __b)
   return (poly16x4_t)__builtin_neon_vdup_lanev4hi ((int16x4_t) __a, __b);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vdup_lane_p64 (poly64x1_t __a, const int __b)
 {
   return (poly64x1_t)__builtin_neon_vdup_lanedi (__a, __b);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vdup_lane_s64 (int64x1_t __a, const int __b)
 {
@@ -6035,14 +6037,15 @@ vdupq_lane_p16 (poly16x4_t __a, const int __b)
   return (poly16x8_t)__builtin_neon_vdup_lanev8hi ((int16x4_t) __a, __b);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vdupq_lane_p64 (poly64x1_t __a, const int __b)
 {
   return (poly64x2_t)__builtin_neon_vdup_lanev2di (__a, __b);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
 vdupq_lane_s64 (int64x1_t __a, const int __b)
 {
@@ -6055,14 +6058,15 @@ vdupq_lane_u64 (uint64x1_t __a, const int __b)
   return (uint64x2_t)__builtin_neon_vdup_lanev2di ((int64x1_t) __a, __b);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vcombine_p64 (poly64x1_t __a, poly64x1_t __b)
 {
   return (poly64x2_t)__builtin_neon_vcombinedi (__a, __b);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vcombine_s8 (int8x8_t __a, int8x8_t __b)
 {
@@ -6137,14 +6141,15 @@ vcombine_p16 (poly16x4_t __a, poly16x4_t __b)
   return (poly16x8_t)__builtin_neon_vcombinev4hi ((int16x4_t) __a, (int16x4_t) __b);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vget_high_p64 (poly64x2_t __a)
 {
   return (poly64x1_t)__builtin_neon_vget_highv2di ((int64x2_t) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vget_high_s8 (int8x16_t __a)
 {
@@ -6281,14 +6286,15 @@ vget_low_p16 (poly16x8_t __a)
   return (poly16x4_t)__builtin_neon_vget_lowv8hi ((int16x8_t) __a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vget_low_p64 (poly64x2_t __a)
 {
   return (poly64x1_t)__builtin_neon_vget_lowv2di ((int64x2_t) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vget_low_s64 (int64x2_t __a)
 {
@@ -6349,7 +6355,8 @@ vcvtq_u32_f32 (float32x4_t __a)
   return (uint32x4_t)__builtin_neon_vcvtuv4sf (__a);
 }
 
-#if ((__ARM_FP & 0x2) != 0)
+#pragma GCC push_options
+#pragma GCC target ("fpu=neon-fp16")
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 __extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
 vcvt_f16_f32 (float32x4_t __a)
@@ -6357,9 +6364,7 @@ vcvt_f16_f32 (float32x4_t __a)
   return (float16x4_t)__builtin_neon_vcvtv4hfv4sf (__a);
 }
 #endif
-#endif
 
-#if ((__ARM_FP & 0x2) != 0)
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vcvt_f32_f16 (float16x4_t __a)
@@ -6367,7 +6372,7 @@ vcvt_f32_f16 (float16x4_t __a)
   return (float32x4_t)__builtin_neon_vcvtv4sfv4hf (__a);
 }
 #endif
-#endif
+#pragma GCC pop_options
 
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
 vcvt_n_s32_f32 (float32x2_t __a, const int __b)
@@ -7377,14 +7382,15 @@ vqdmlsl_n_s32 (int64x2_t __a, int32x2_t __b, int32_t __c)
   return (int64x2_t)__builtin_neon_vqdmlsl_nv2si (__a, __b, (__builtin_neon_si) __c);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vext_p64 (poly64x1_t __a, poly64x1_t __b, const int __c)
 {
   return (poly64x1_t)__builtin_neon_vextdi (__a, __b, __c);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vext_s8 (int8x8_t __a, int8x8_t __b, const int __c)
 {
@@ -7451,14 +7457,15 @@ vext_p16 (poly16x4_t __a, poly16x4_t __b, const int __c)
   return (poly16x4_t)__builtin_neon_vextv4hi ((int16x4_t) __a, (int16x4_t) __b, __c);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vextq_p64 (poly64x2_t __a, poly64x2_t __b, const int __c)
 {
   return (poly64x2_t)__builtin_neon_vextv2di ((int64x2_t) __a, (int64x2_t) __b, __c);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vextq_s8 (int8x16_t __a, int8x16_t __b, const int __c)
 {
@@ -7741,14 +7748,15 @@ vrev16q_p8 (poly8x16_t __a)
   return (poly8x16_t) __builtin_shuffle (__a, (uint8x16_t) { 1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14 });
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vbsl_p64 (uint64x1_t __a, poly64x1_t __b, poly64x1_t __c)
 {
   return (poly64x1_t)__builtin_neon_vbsldi ((int64x1_t) __a, __b, __c);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vbsl_s8 (uint8x8_t __a, int8x8_t __b, int8x8_t __c)
 {
@@ -7815,14 +7823,15 @@ vbsl_p16 (uint16x4_t __a, poly16x4_t __b, poly16x4_t __c)
   return (poly16x4_t)__builtin_neon_vbslv4hi ((int16x4_t) __a, (int16x4_t) __b, (int16x4_t) __c);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vbslq_p64 (uint64x2_t __a, poly64x2_t __b, poly64x2_t __c)
 {
   return (poly64x2_t)__builtin_neon_vbslv2di ((int64x2_t) __a, (int64x2_t) __b, (int64x2_t) __c);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vbslq_s8 (uint8x16_t __a, int8x16_t __b, int8x16_t __c)
 {
@@ -8764,14 +8773,15 @@ vuzpq_p16 (poly16x8_t __a, poly16x8_t __b)
   return __rv;
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vld1_p64 (const poly64_t * __a)
 {
   return (poly64x1_t)__builtin_neon_vld1di ((const __builtin_neon_di *) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vld1_s8 (const int8_t * __a)
 {
@@ -8846,14 +8856,15 @@ vld1_p16 (const poly16_t * __a)
   return (poly16x4_t)__builtin_neon_vld1v4hi ((const __builtin_neon_hi *) __a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vld1q_p64 (const poly64_t * __a)
 {
   return (poly64x2_t)__builtin_neon_vld1v2di ((const __builtin_neon_di *) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vld1q_s8 (const int8_t * __a)
 {
@@ -8990,14 +9001,15 @@ vld1_lane_p16 (const poly16_t * __a, poly16x4_t __b, const int __c)
   return (poly16x4_t)__builtin_neon_vld1_lanev4hi ((const __builtin_neon_hi *) __a, (int16x4_t) __b, __c);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vld1_lane_p64 (const poly64_t * __a, poly64x1_t __b, const int __c)
 {
   return (poly64x1_t)__builtin_neon_vld1_lanedi ((const __builtin_neon_di *) __a, __b, __c);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vld1_lane_s64 (const int64_t * __a, int64x1_t __b, const int __c)
 {
@@ -9072,14 +9084,15 @@ vld1q_lane_p16 (const poly16_t * __a, poly16x8_t __b, const int __c)
   return (poly16x8_t)__builtin_neon_vld1_lanev8hi ((const __builtin_neon_hi *) __a, (int16x8_t) __b, __c);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vld1q_lane_p64 (const poly64_t * __a, poly64x2_t __b, const int __c)
 {
   return (poly64x2_t)__builtin_neon_vld1_lanev2di ((const __builtin_neon_di *) __a, (int64x2_t) __b, __c);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
 vld1q_lane_s64 (const int64_t * __a, int64x2_t __b, const int __c)
 {
@@ -9155,14 +9168,15 @@ vld1_dup_p16 (const poly16_t * __a)
   return (poly16x4_t)__builtin_neon_vld1_dupv4hi ((const __builtin_neon_hi *) __a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vld1_dup_p64 (const poly64_t * __a)
 {
   return (poly64x1_t)__builtin_neon_vld1_dupdi ((const __builtin_neon_di *) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vld1_dup_s64 (const int64_t * __a)
 {
@@ -9238,14 +9252,15 @@ vld1q_dup_p16 (const poly16_t * __a)
   return (poly16x8_t)__builtin_neon_vld1_dupv8hi ((const __builtin_neon_hi *) __a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vld1q_dup_p64 (const poly64_t * __a)
 {
   return (poly64x2_t)__builtin_neon_vld1_dupv2di ((const __builtin_neon_di *) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
 vld1q_dup_s64 (const int64_t * __a)
 {
@@ -9258,14 +9273,15 @@ vld1q_dup_u64 (const uint64_t * __a)
   return (uint64x2_t)__builtin_neon_vld1_dupv2di ((const __builtin_neon_di *) __a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst1_p64 (poly64_t * __a, poly64x1_t __b)
 {
   __builtin_neon_vst1di ((__builtin_neon_di *) __a, __b);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst1_s8 (int8_t * __a, int8x8_t __b)
 {
@@ -9340,14 +9356,15 @@ vst1_p16 (poly16_t * __a, poly16x4_t __b)
   __builtin_neon_vst1v4hi ((__builtin_neon_hi *) __a, (int16x4_t) __b);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst1q_p64 (poly64_t * __a, poly64x2_t __b)
 {
   __builtin_neon_vst1v2di ((__builtin_neon_di *) __a, (int64x2_t) __b);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst1q_s8 (int8_t * __a, int8x16_t __b)
 {
@@ -9484,14 +9501,15 @@ vst1_lane_p16 (poly16_t * __a, poly16x4_t __b, const int __c)
   __builtin_neon_vst1_lanev4hi ((__builtin_neon_hi *) __a, (int16x4_t) __b, __c);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst1_lane_p64 (poly64_t * __a, poly64x1_t __b, const int __c)
 {
   __builtin_neon_vst1_lanedi ((__builtin_neon_di *) __a, __b, __c);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst1_lane_s64 (int64_t * __a, int64x1_t __b, const int __c)
 {
@@ -9566,14 +9584,15 @@ vst1q_lane_p16 (poly16_t * __a, poly16x8_t __b, const int __c)
   __builtin_neon_vst1_lanev8hi ((__builtin_neon_hi *) __a, (int16x8_t) __b, __c);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst1q_lane_p64 (poly64_t * __a, poly64x2_t __b, const int __c)
 {
   __builtin_neon_vst1_lanev2di ((__builtin_neon_di *) __a, (int64x2_t) __b, __c);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst1q_lane_s64 (int64_t * __a, int64x2_t __b, const int __c)
 {
@@ -9668,7 +9687,8 @@ vld2_p16 (const poly16_t * __a)
   return __rv.__i;
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1x2_t __attribute__ ((__always_inline__))
 vld2_p64 (const poly64_t * __a)
 {
@@ -9677,7 +9697,7 @@ vld2_p64 (const poly64_t * __a)
   return __rv.__i;
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x1x2_t __attribute__ ((__always_inline__))
 vld2_s64 (const int64_t * __a)
 {
@@ -10015,7 +10035,8 @@ vld2_dup_p16 (const poly16_t * __a)
   return __rv.__i;
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1x2_t __attribute__ ((__always_inline__))
 vld2_dup_p64 (const poly64_t * __a)
 {
@@ -10024,7 +10045,7 @@ vld2_dup_p64 (const poly64_t * __a)
   return __rv.__i;
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x1x2_t __attribute__ ((__always_inline__))
 vld2_dup_s64 (const int64_t * __a)
 {
@@ -10113,7 +10134,8 @@ vst2_p16 (poly16_t * __a, poly16x4x2_t __b)
   __builtin_neon_vst2v4hi ((__builtin_neon_hi *) __a, __bu.__o);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst2_p64 (poly64_t * __a, poly64x1x2_t __b)
 {
@@ -10121,7 +10143,7 @@ vst2_p64 (poly64_t * __a, poly64x1x2_t __b)
   __builtin_neon_vst2di ((__builtin_neon_di *) __a, __bu.__o);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst2_s64 (int64_t * __a, int64x1x2_t __b)
 {
@@ -10413,7 +10435,8 @@ vld3_p16 (const poly16_t * __a)
   return __rv.__i;
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1x3_t __attribute__ ((__always_inline__))
 vld3_p64 (const poly64_t * __a)
 {
@@ -10422,7 +10445,7 @@ vld3_p64 (const poly64_t * __a)
   return __rv.__i;
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x1x3_t __attribute__ ((__always_inline__))
 vld3_s64 (const int64_t * __a)
 {
@@ -10760,7 +10783,8 @@ vld3_dup_p16 (const poly16_t * __a)
   return __rv.__i;
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1x3_t __attribute__ ((__always_inline__))
 vld3_dup_p64 (const poly64_t * __a)
 {
@@ -10769,7 +10793,7 @@ vld3_dup_p64 (const poly64_t * __a)
   return __rv.__i;
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x1x3_t __attribute__ ((__always_inline__))
 vld3_dup_s64 (const int64_t * __a)
 {
@@ -10858,7 +10882,8 @@ vst3_p16 (poly16_t * __a, poly16x4x3_t __b)
   __builtin_neon_vst3v4hi ((__builtin_neon_hi *) __a, __bu.__o);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst3_p64 (poly64_t * __a, poly64x1x3_t __b)
 {
@@ -10866,7 +10891,7 @@ vst3_p64 (poly64_t * __a, poly64x1x3_t __b)
   __builtin_neon_vst3di ((__builtin_neon_di *) __a, __bu.__o);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst3_s64 (int64_t * __a, int64x1x3_t __b)
 {
@@ -11158,7 +11183,8 @@ vld4_p16 (const poly16_t * __a)
   return __rv.__i;
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1x4_t __attribute__ ((__always_inline__))
 vld4_p64 (const poly64_t * __a)
 {
@@ -11167,7 +11193,7 @@ vld4_p64 (const poly64_t * __a)
   return __rv.__i;
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x1x4_t __attribute__ ((__always_inline__))
 vld4_s64 (const int64_t * __a)
 {
@@ -11507,7 +11533,8 @@ vld4_dup_p16 (const poly16_t * __a)
   return __rv.__i;
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1x4_t __attribute__ ((__always_inline__))
 vld4_dup_p64 (const poly64_t * __a)
 {
@@ -11516,7 +11543,7 @@ vld4_dup_p64 (const poly64_t * __a)
   return __rv.__i;
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x1x4_t __attribute__ ((__always_inline__))
 vld4_dup_s64 (const int64_t * __a)
 {
@@ -11605,7 +11632,8 @@ vst4_p16 (poly16_t * __a, poly16x4x4_t __b)
   __builtin_neon_vst4v4hi ((__builtin_neon_hi *) __a, __bu.__o);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst4_p64 (poly64_t * __a, poly64x1x4_t __b)
 {
@@ -11613,7 +11641,7 @@ vst4_p64 (poly64_t * __a, poly64x1x4_t __b)
   __builtin_neon_vst4di ((__builtin_neon_di *) __a, __bu.__o);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline void __attribute__ ((__always_inline__))
 vst4_s64 (int64_t * __a, int64x1x4_t __b)
 {
@@ -12323,14 +12351,15 @@ vreinterpret_p8_f32 (float32x2_t __a)
   return (poly8x8_t)__builtin_neon_vreinterpretv8qiv2sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
 vreinterpret_p8_p64 (poly64x1_t __a)
 {
   return (poly8x8_t)__builtin_neon_vreinterpretv8qidi (__a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
 vreinterpret_p8_s64 (int64x1_t __a)
 {
@@ -12399,14 +12428,15 @@ vreinterpret_p16_f32 (float32x2_t __a)
   return (poly16x4_t)__builtin_neon_vreinterpretv4hiv2sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
 vreinterpret_p16_p64 (poly64x1_t __a)
 {
   return (poly16x4_t)__builtin_neon_vreinterpretv4hidi (__a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
 vreinterpret_p16_s64 (int64x1_t __a)
 {
@@ -12479,14 +12509,15 @@ vreinterpret_f16_f32 (float32x2_t __a)
 }
 #endif
 
-#ifdef __ARM_FEATURE_CRYPTO
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline float16x4_t __attribute__ ((__always_inline__))
 vreinterpret_f16_p64 (poly64x1_t __a)
 {
   return (float16x4_t) __a;
 }
-#endif
+#pragma GCC pop_options
 #endif
 
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
@@ -12573,14 +12604,15 @@ vreinterpret_f32_f16 (float16x4_t __a)
 }
 #endif
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vreinterpret_f32_p64 (poly64x1_t __a)
 {
   return (float32x2_t)__builtin_neon_vreinterpretv2sfdi (__a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vreinterpret_f32_s64 (int64x1_t __a)
 {
@@ -12629,105 +12661,83 @@ vreinterpret_f32_u32 (uint32x2_t __a)
   return (float32x2_t)__builtin_neon_vreinterpretv2sfv2si ((int32x2_t) __a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vreinterpret_p64_p8 (poly8x8_t __a)
 {
   return (poly64x1_t)__builtin_neon_vreinterpretdiv8qi ((int8x8_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vreinterpret_p64_p16 (poly16x4_t __a)
 {
   return (poly64x1_t)__builtin_neon_vreinterpretdiv4hi ((int16x4_t) __a);
 }
 
-#endif
-
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vreinterpret_p64_f16 (float16x4_t __a)
 {
   return (poly64x1_t) __a;
 }
 #endif
-#endif
 
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vreinterpret_p64_f32 (float32x2_t __a)
 {
   return (poly64x1_t)__builtin_neon_vreinterpretdiv2sf (__a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vreinterpret_p64_s64 (int64x1_t __a)
 {
   return (poly64x1_t)__builtin_neon_vreinterpretdidi (__a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vreinterpret_p64_u64 (uint64x1_t __a)
 {
   return (poly64x1_t)__builtin_neon_vreinterpretdidi ((int64x1_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vreinterpret_p64_s8 (int8x8_t __a)
 {
   return (poly64x1_t)__builtin_neon_vreinterpretdiv8qi (__a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vreinterpret_p64_s16 (int16x4_t __a)
 {
   return (poly64x1_t)__builtin_neon_vreinterpretdiv4hi (__a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vreinterpret_p64_s32 (int32x2_t __a)
 {
   return (poly64x1_t)__builtin_neon_vreinterpretdiv2si (__a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vreinterpret_p64_u8 (uint8x8_t __a)
 {
   return (poly64x1_t)__builtin_neon_vreinterpretdiv8qi ((int8x8_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vreinterpret_p64_u16 (uint16x4_t __a)
 {
   return (poly64x1_t)__builtin_neon_vreinterpretdiv4hi ((int16x4_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x1_t __attribute__ ((__always_inline__))
 vreinterpret_p64_u32 (uint32x2_t __a)
 {
   return (poly64x1_t)__builtin_neon_vreinterpretdiv2si ((int32x2_t) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vreinterpret_s64_p8 (poly8x8_t __a)
 {
@@ -12754,14 +12764,15 @@ vreinterpret_s64_f32 (float32x2_t __a)
   return (int64x1_t)__builtin_neon_vreinterpretdiv2sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vreinterpret_s64_p64 (poly64x1_t __a)
 {
   return (int64x1_t)__builtin_neon_vreinterpretdidi (__a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vreinterpret_s64_u64 (uint64x1_t __a)
 {
@@ -12830,14 +12841,15 @@ vreinterpret_u64_f32 (float32x2_t __a)
   return (uint64x1_t)__builtin_neon_vreinterpretdiv2sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vreinterpret_u64_p64 (poly64x1_t __a)
 {
   return (uint64x1_t)__builtin_neon_vreinterpretdidi (__a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vreinterpret_u64_s64 (int64x1_t __a)
 {
@@ -12906,14 +12918,15 @@ vreinterpret_s8_f32 (float32x2_t __a)
   return (int8x8_t)__builtin_neon_vreinterpretv8qiv2sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vreinterpret_s8_p64 (poly64x1_t __a)
 {
   return (int8x8_t)__builtin_neon_vreinterpretv8qidi (__a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vreinterpret_s8_s64 (int64x1_t __a)
 {
@@ -12982,14 +12995,15 @@ vreinterpret_s16_f32 (float32x2_t __a)
   return (int16x4_t)__builtin_neon_vreinterpretv4hiv2sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
 vreinterpret_s16_p64 (poly64x1_t __a)
 {
   return (int16x4_t)__builtin_neon_vreinterpretv4hidi (__a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
 vreinterpret_s16_s64 (int64x1_t __a)
 {
@@ -13058,14 +13072,15 @@ vreinterpret_s32_f32 (float32x2_t __a)
   return (int32x2_t)__builtin_neon_vreinterpretv2siv2sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
 vreinterpret_s32_p64 (poly64x1_t __a)
 {
   return (int32x2_t)__builtin_neon_vreinterpretv2sidi (__a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
 vreinterpret_s32_s64 (int64x1_t __a)
 {
@@ -13134,14 +13149,15 @@ vreinterpret_u8_f32 (float32x2_t __a)
   return (uint8x8_t)__builtin_neon_vreinterpretv8qiv2sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
 vreinterpret_u8_p64 (poly64x1_t __a)
 {
   return (uint8x8_t)__builtin_neon_vreinterpretv8qidi (__a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
 vreinterpret_u8_s64 (int64x1_t __a)
 {
@@ -13210,14 +13226,15 @@ vreinterpret_u16_f32 (float32x2_t __a)
   return (uint16x4_t)__builtin_neon_vreinterpretv4hiv2sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
 vreinterpret_u16_p64 (poly64x1_t __a)
 {
   return (uint16x4_t)__builtin_neon_vreinterpretv4hidi (__a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
 vreinterpret_u16_s64 (int64x1_t __a)
 {
@@ -13286,14 +13303,15 @@ vreinterpret_u32_f32 (float32x2_t __a)
   return (uint32x2_t)__builtin_neon_vreinterpretv2siv2sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vreinterpret_u32_p64 (poly64x1_t __a)
 {
   return (uint32x2_t)__builtin_neon_vreinterpretv2sidi (__a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vreinterpret_u32_s64 (int64x1_t __a)
 {
@@ -13356,22 +13374,22 @@ vreinterpretq_p8_f32 (float32x4_t __a)
   return (poly8x16_t)__builtin_neon_vreinterpretv16qiv4sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
 vreinterpretq_p8_p64 (poly64x2_t __a)
 {
   return (poly8x16_t)__builtin_neon_vreinterpretv16qiv2di ((int64x2_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
+
 __extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
 vreinterpretq_p8_p128 (poly128_t __a)
 {
   return (poly8x16_t)__builtin_neon_vreinterpretv16qiti ((__builtin_neon_ti) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
 vreinterpretq_p8_s64 (int64x2_t __a)
 {
@@ -13440,22 +13458,21 @@ vreinterpretq_p16_f32 (float32x4_t __a)
   return (poly16x8_t)__builtin_neon_vreinterpretv8hiv4sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
 vreinterpretq_p16_p64 (poly64x2_t __a)
 {
   return (poly16x8_t)__builtin_neon_vreinterpretv8hiv2di ((int64x2_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
 vreinterpretq_p16_p128 (poly128_t __a)
 {
   return (poly16x8_t)__builtin_neon_vreinterpretv8hiti ((__builtin_neon_ti) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
 vreinterpretq_p16_s64 (int64x2_t __a)
 {
@@ -13528,25 +13545,26 @@ vreinterpretq_f16_f32 (float32x4_t __a)
 }
 #endif
 
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
+
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
 vreinterpretq_f16_p64 (poly64x2_t __a)
 {
   return (float16x8_t) __a;
 }
 #endif
-#endif
 
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
 vreinterpretq_f16_p128 (poly128_t __a)
 {
   return (float16x8_t) __a;
 }
 #endif
-#endif
+
+#pragma GCC pop_options
 
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 __extension__ static __inline float16x8_t __attribute__ ((__always_inline__))
@@ -13632,22 +13650,21 @@ vreinterpretq_f32_f16 (float16x8_t __a)
 }
 #endif
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vreinterpretq_f32_p64 (poly64x2_t __a)
 {
   return (float32x4_t)__builtin_neon_vreinterpretv4sfv2di ((int64x2_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vreinterpretq_f32_p128 (poly128_t __a)
 {
   return (float32x4_t)__builtin_neon_vreinterpretv4sfti ((__builtin_neon_ti) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vreinterpretq_f32_s64 (int64x2_t __a)
 {
@@ -13696,24 +13713,20 @@ vreinterpretq_f32_u32 (uint32x4_t __a)
   return (float32x4_t)__builtin_neon_vreinterpretv4sfv4si ((int32x4_t) __a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_p64_p8 (poly8x16_t __a)
 {
   return (poly64x2_t)__builtin_neon_vreinterpretv2div16qi ((int8x16_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_p64_p16 (poly16x8_t __a)
 {
   return (poly64x2_t)__builtin_neon_vreinterpretv2div8hi ((int16x8_t) __a);
 }
 
-#endif
-
-#ifdef __ARM_FEATURE_CRYPTO
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_p64_f16 (float16x8_t __a)
@@ -13721,105 +13734,79 @@ vreinterpretq_p64_f16 (float16x8_t __a)
   return (poly64x2_t) __a;
 }
 #endif
-#endif
 
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_p64_f32 (float32x4_t __a)
 {
   return (poly64x2_t)__builtin_neon_vreinterpretv2div4sf (__a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_p64_p128 (poly128_t __a)
 {
   return (poly64x2_t)__builtin_neon_vreinterpretv2diti ((__builtin_neon_ti) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_p64_s64 (int64x2_t __a)
 {
   return (poly64x2_t)__builtin_neon_vreinterpretv2div2di (__a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_p64_u64 (uint64x2_t __a)
 {
   return (poly64x2_t)__builtin_neon_vreinterpretv2div2di ((int64x2_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_p64_s8 (int8x16_t __a)
 {
   return (poly64x2_t)__builtin_neon_vreinterpretv2div16qi (__a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_p64_s16 (int16x8_t __a)
 {
   return (poly64x2_t)__builtin_neon_vreinterpretv2div8hi (__a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_p64_s32 (int32x4_t __a)
 {
   return (poly64x2_t)__builtin_neon_vreinterpretv2div4si (__a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_p64_u8 (uint8x16_t __a)
 {
   return (poly64x2_t)__builtin_neon_vreinterpretv2div16qi ((int8x16_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_p64_u16 (uint16x8_t __a)
 {
   return (poly64x2_t)__builtin_neon_vreinterpretv2div8hi ((int16x8_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_p64_u32 (uint32x4_t __a)
 {
   return (poly64x2_t)__builtin_neon_vreinterpretv2div4si ((int32x4_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly128_t __attribute__ ((__always_inline__))
 vreinterpretq_p128_p8 (poly8x16_t __a)
 {
   return (poly128_t)__builtin_neon_vreinterprettiv16qi ((int8x16_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly128_t __attribute__ ((__always_inline__))
 vreinterpretq_p128_p16 (poly16x8_t __a)
 {
   return (poly128_t)__builtin_neon_vreinterprettiv8hi ((int16x8_t) __a);
 }
-#endif
 
-#ifdef __ARM_FEATURE_CRYPTO
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 __extension__ static __inline poly128_t __attribute__ ((__always_inline__))
 vreinterpretq_p128_f16 (float16x8_t __a)
@@ -13827,88 +13814,68 @@ vreinterpretq_p128_f16 (float16x8_t __a)
   return (poly128_t) __a;
 }
 #endif
-#endif
 
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly128_t __attribute__ ((__always_inline__))
 vreinterpretq_p128_f32 (float32x4_t __a)
 {
   return (poly128_t)__builtin_neon_vreinterprettiv4sf (__a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly128_t __attribute__ ((__always_inline__))
 vreinterpretq_p128_p64 (poly64x2_t __a)
 {
   return (poly128_t)__builtin_neon_vreinterprettiv2di ((int64x2_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly128_t __attribute__ ((__always_inline__))
 vreinterpretq_p128_s64 (int64x2_t __a)
 {
   return (poly128_t)__builtin_neon_vreinterprettiv2di (__a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly128_t __attribute__ ((__always_inline__))
 vreinterpretq_p128_u64 (uint64x2_t __a)
 {
   return (poly128_t)__builtin_neon_vreinterprettiv2di ((int64x2_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly128_t __attribute__ ((__always_inline__))
 vreinterpretq_p128_s8 (int8x16_t __a)
 {
   return (poly128_t)__builtin_neon_vreinterprettiv16qi (__a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly128_t __attribute__ ((__always_inline__))
 vreinterpretq_p128_s16 (int16x8_t __a)
 {
   return (poly128_t)__builtin_neon_vreinterprettiv8hi (__a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly128_t __attribute__ ((__always_inline__))
 vreinterpretq_p128_s32 (int32x4_t __a)
 {
   return (poly128_t)__builtin_neon_vreinterprettiv4si (__a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly128_t __attribute__ ((__always_inline__))
 vreinterpretq_p128_u8 (uint8x16_t __a)
 {
   return (poly128_t)__builtin_neon_vreinterprettiv16qi ((int8x16_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly128_t __attribute__ ((__always_inline__))
 vreinterpretq_p128_u16 (uint16x8_t __a)
 {
   return (poly128_t)__builtin_neon_vreinterprettiv8hi ((int16x8_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline poly128_t __attribute__ ((__always_inline__))
 vreinterpretq_p128_u32 (uint32x4_t __a)
 {
   return (poly128_t)__builtin_neon_vreinterprettiv4si ((int32x4_t) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_s64_p8 (poly8x16_t __a)
 {
@@ -13935,22 +13902,21 @@ vreinterpretq_s64_f32 (float32x4_t __a)
   return (int64x2_t)__builtin_neon_vreinterpretv2div4sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_s64_p64 (poly64x2_t __a)
 {
   return (int64x2_t)__builtin_neon_vreinterpretv2div2di ((int64x2_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_s64_p128 (poly128_t __a)
 {
   return (int64x2_t)__builtin_neon_vreinterpretv2diti ((__builtin_neon_ti) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_s64_u64 (uint64x2_t __a)
 {
@@ -14019,22 +13985,21 @@ vreinterpretq_u64_f32 (float32x4_t __a)
   return (uint64x2_t)__builtin_neon_vreinterpretv2div4sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_u64_p64 (poly64x2_t __a)
 {
   return (uint64x2_t)__builtin_neon_vreinterpretv2div2di ((int64x2_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_u64_p128 (poly128_t __a)
 {
   return (uint64x2_t)__builtin_neon_vreinterpretv2diti ((__builtin_neon_ti) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
 vreinterpretq_u64_s64 (int64x2_t __a)
 {
@@ -14103,22 +14068,21 @@ vreinterpretq_s8_f32 (float32x4_t __a)
   return (int8x16_t)__builtin_neon_vreinterpretv16qiv4sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vreinterpretq_s8_p64 (poly64x2_t __a)
 {
   return (int8x16_t)__builtin_neon_vreinterpretv16qiv2di ((int64x2_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vreinterpretq_s8_p128 (poly128_t __a)
 {
   return (int8x16_t)__builtin_neon_vreinterpretv16qiti ((__builtin_neon_ti) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vreinterpretq_s8_s64 (int64x2_t __a)
 {
@@ -14187,22 +14151,21 @@ vreinterpretq_s16_f32 (float32x4_t __a)
   return (int16x8_t)__builtin_neon_vreinterpretv8hiv4sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
 vreinterpretq_s16_p64 (poly64x2_t __a)
 {
   return (int16x8_t)__builtin_neon_vreinterpretv8hiv2di ((int64x2_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
 vreinterpretq_s16_p128 (poly128_t __a)
 {
   return (int16x8_t)__builtin_neon_vreinterpretv8hiti ((__builtin_neon_ti) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
 vreinterpretq_s16_s64 (int64x2_t __a)
 {
@@ -14271,22 +14234,21 @@ vreinterpretq_s32_f32 (float32x4_t __a)
   return (int32x4_t)__builtin_neon_vreinterpretv4siv4sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
 vreinterpretq_s32_p64 (poly64x2_t __a)
 {
   return (int32x4_t)__builtin_neon_vreinterpretv4siv2di ((int64x2_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
 vreinterpretq_s32_p128 (poly128_t __a)
 {
   return (int32x4_t)__builtin_neon_vreinterpretv4siti ((__builtin_neon_ti) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
 vreinterpretq_s32_s64 (int64x2_t __a)
 {
@@ -14355,22 +14317,21 @@ vreinterpretq_u8_f32 (float32x4_t __a)
   return (uint8x16_t)__builtin_neon_vreinterpretv16qiv4sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vreinterpretq_u8_p64 (poly64x2_t __a)
 {
   return (uint8x16_t)__builtin_neon_vreinterpretv16qiv2di ((int64x2_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vreinterpretq_u8_p128 (poly128_t __a)
 {
   return (uint8x16_t)__builtin_neon_vreinterpretv16qiti ((__builtin_neon_ti) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vreinterpretq_u8_s64 (int64x2_t __a)
 {
@@ -14439,22 +14400,21 @@ vreinterpretq_u16_f32 (float32x4_t __a)
   return (uint16x8_t)__builtin_neon_vreinterpretv8hiv4sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
 vreinterpretq_u16_p64 (poly64x2_t __a)
 {
   return (uint16x8_t)__builtin_neon_vreinterpretv8hiv2di ((int64x2_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
 vreinterpretq_u16_p128 (poly128_t __a)
 {
   return (uint16x8_t)__builtin_neon_vreinterpretv8hiti ((__builtin_neon_ti) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
 vreinterpretq_u16_s64 (int64x2_t __a)
 {
@@ -14523,22 +14483,21 @@ vreinterpretq_u32_f32 (float32x4_t __a)
   return (uint32x4_t)__builtin_neon_vreinterpretv4siv4sf (__a);
 }
 
-#ifdef __ARM_FEATURE_CRYPTO
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vreinterpretq_u32_p64 (poly64x2_t __a)
 {
   return (uint32x4_t)__builtin_neon_vreinterpretv4siv2di ((int64x2_t) __a);
 }
 
-#endif
-#ifdef __ARM_FEATURE_CRYPTO
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vreinterpretq_u32_p128 (poly128_t __a)
 {
   return (uint32x4_t)__builtin_neon_vreinterpretv4siti ((__builtin_neon_ti) __a);
 }
 
-#endif
+#pragma GCC pop_options
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vreinterpretq_u32_s64 (int64x2_t __a)
 {
@@ -14582,8 +14541,8 @@ vreinterpretq_u32_u16 (uint16x8_t __a)
 }
 
 
-#ifdef __ARM_FEATURE_CRYPTO
-
+#pragma GCC push_options
+#pragma GCC target ("fpu=crypto-neon-fp-armv8")
 __extension__ static __inline poly128_t __attribute__ ((__always_inline__))
 vldrq_p128 (poly128_t const * __ptr)
 {
@@ -14753,9 +14712,12 @@ vmull_high_p64 (poly64x2_t __a, poly64x2_t __b)
   return (poly128_t) __builtin_arm_crypto_vmullp64 ((uint64_t) __t1, (uint64_t) __t2);
 }
 
-#endif
+#pragma GCC pop_options
+
 #ifdef __cplusplus
 }
 #endif
-#endif
+
+#pragma GCC pop_options
+
 #endif

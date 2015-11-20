@@ -776,6 +776,10 @@ Wprotocol
 ObjC ObjC++ Var(warn_protocol) Init(1) Warning
 Warn if inherited methods are unimplemented.
 
+Wplacement-new
+C++ Var(warn_placement_new) Init(1) Warning
+Warn for placement new expressions with undefined behavior.
+
 Wredundant-decls
 C ObjC C++ ObjC++ Var(warn_redundant_decls) Warning
 Warn about multiple declarations of the same object.
@@ -787,6 +791,10 @@ Warn when the compiler reorders code.
 Wreturn-type
 C ObjC C++ ObjC++ Var(warn_return_type) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++).
+
+Wscalar-storage-order
+C ObjC C++ ObjC++ Init(1) Warning
+Warn on suspicious constructs involving reverse scalar storage order.
 
 Wselector
 ObjC ObjC++ Var(warn_selector) Warning
@@ -1449,6 +1457,19 @@ Enable C++14 sized deallocation support.
 
 fsquangle
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
+
+fsso-struct=
+C ObjC Joined Enum(sso_struct) Var(default_sso) Init(SSO_NATIVE)
+-fsso-struct=[big-endian|little-endian]	Set the default scalar storage order.
+
+Enum
+Name(sso_struct) Type(enum scalar_storage_order_kind) UnknownError(unrecognized scalar storage order value %qs)
+
+EnumValue
+Enum(sso_struct) String(big-endian) Value(SSO_BIG_ENDIAN)
+
+EnumValue
+Enum(sso_struct) String(little-endian) Value(SSO_LITTLE_ENDIAN)
 
 fstats
 C++ ObjC++ Var(flag_detailed_statistics)

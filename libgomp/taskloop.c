@@ -155,8 +155,8 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
   else
     ialias_call (GOMP_taskgroup_start) ();
 
-  /* FIXME, use priority.  */
-  (void) priority;
+  if (priority > gomp_max_task_priority_var)
+    priority = gomp_max_task_priority_var;
 
   if ((flags & GOMP_TASK_FLAG_IF) == 0 || team == NULL
       || (thr->task && thr->task->final_task)
@@ -175,6 +175,7 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	  for (i = 0; i < num_tasks; i++)
 	    {
 	      gomp_init_task (&task[i], parent, gomp_icv (false));
+	      task[i].priority = priority;
 	      task[i].kind = GOMP_TASK_UNDEFERRED;
 	      task[i].final_task = (thr->task && thr->task->final_task)
 				   || (flags & GOMP_TASK_FLAG_FINAL);
@@ -198,10 +199,11 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 		task_step -= step;
 	      fn (arg);
 	      arg += arg_size;
-	      if (task[i].children != NULL)
+	      if (!priority_queue_empty_p (&task[i].children_queue,
+					   MEMMODEL_RELAXED))
 		{
 		  gomp_mutex_lock (&team->task_lock);
-		  gomp_clear_parent (task[i].children);
+		  gomp_clear_parent (&task[i].children_queue);
 		  gomp_mutex_unlock (&team->task_lock);
 		}
 	      gomp_end_task ();
@@ -213,6 +215,7 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	    struct gomp_task task;
 
 	    gomp_init_task (&task, thr->task, gomp_icv (false));
+	    task.priority = priority;
 	    task.kind = GOMP_TASK_UNDEFERRED;
 	    task.final_task = (thr->task && thr->task->final_task)
 			      || (flags & GOMP_TASK_FLAG_FINAL);
@@ -228,10 +231,11 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	    if (i == nfirst)
 	      task_step -= step;
 	    fn (data);
-	    if (task.children != NULL)
+	    if (!priority_queue_empty_p (&task.children_queue,
+					 MEMMODEL_RELAXED))
 	      {
 		gomp_mutex_lock (&team->task_lock);
-		gomp_clear_parent (task.children);
+		gomp_clear_parent (&task.children_queue);
 		gomp_mutex_unlock (&team->task_lock);
 	      }
 	    gomp_end_task ();
@@ -254,6 +258,7 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	  arg = (char *) (((uintptr_t) (task + 1) + arg_align - 1)
 			  & ~(uintptr_t) (arg_align - 1));
 	  gomp_init_task (task, parent, gomp_icv (false));
+	  task->priority = priority;
 	  task->kind = GOMP_TASK_UNDEFERRED;
 	  task->in_tied_task = parent->in_tied_task;
 	  task->taskgroup = taskgroup;
@@ -298,48 +303,20 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
       for (i = 0; i < num_tasks; i++)
 	{
 	  struct gomp_task *task = tasks[i];
-	  if (parent->children)
-	    {
-	      task->next_child = parent->children;
-	      task->prev_child = parent->children->prev_child;
-	      task->next_child->prev_child = task;
-	      task->prev_child->next_child = task;
-	    }
-	  else
-	    {
-	      task->next_child = task;
-	      task->prev_child = task;
-	    }
-	  parent->children = task;
+	  priority_queue_insert (PQ_CHILDREN, &parent->children_queue,
+				 task, priority,
+				 PRIORITY_INSERT_BEGIN,
+				 /*last_parent_depends_on=*/false,
+				 task->parent_depends_on);
 	  if (taskgroup)
-	    {
-	      if (taskgroup->children)
-		{
-		  task->next_taskgroup = taskgroup->children;
-		  task->prev_taskgroup = taskgroup->children->prev_taskgroup;
-		  task->next_taskgroup->prev_taskgroup = task;
-		  task->prev_taskgroup->next_taskgroup = task;
-		}
-	      else
-		{
-		  task->next_taskgroup = task;
-		  task->prev_taskgroup = task;
-		}
-	      taskgroup->children = task;
-	    }
-	  if (team->task_queue)
-	    {
-	      task->next_queue = team->task_queue;
-	      task->prev_queue = team->task_queue->prev_queue;
-	      task->next_queue->prev_queue = task;
-	      task->prev_queue->next_queue = task;
-	    }
-	  else
-	    {
-	      task->next_queue = task;
-	      task->prev_queue = task;
-	      team->task_queue = task;
-	    }
+	    priority_queue_insert (PQ_TASKGROUP, &taskgroup->taskgroup_queue,
+				   task, priority, PRIORITY_INSERT_BEGIN,
+				   /*last_parent_depends_on=*/false,
+				   task->parent_depends_on);
+	  priority_queue_insert (PQ_TEAM, &team->task_queue, task, priority,
+				 PRIORITY_INSERT_END,
+				 /*last_parent_depends_on=*/false,
+				 task->parent_depends_on);
 	  ++team->task_count;
 	  ++team->task_queued_count;
 	}

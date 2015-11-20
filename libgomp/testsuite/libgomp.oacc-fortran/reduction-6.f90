@@ -11,7 +11,7 @@ program reduction
   vs1 = 0
   vs2 = 0
 
-  !$acc parallel vector_length (32)
+  !$acc parallel vector_length (32) copy(s1, s2)
   !$acc loop reduction(+:s1, s2)
   do i = 1, n
      s1 = s1 + 1

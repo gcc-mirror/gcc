@@ -1695,10 +1695,15 @@ transform_to_exit_first_loop_alt (struct loop *loop,
   /* Set the latch arguments of the new phis to ivtmp/sum_b.  */
   flush_pending_stmts (post_inc_edge);
 
-  /* Create a new empty exit block, inbetween the new loop header and the old
-     exit block.  The function separate_decls_in_region needs this block to
-     insert code that is active on loop exit, but not any other path.  */
-  basic_block new_exit_block = split_edge (exit);
+
+  basic_block new_exit_block = NULL;
+  if (!single_pred_p (exit->dest))
+    {
+      /* Create a new empty exit block, inbetween the new loop header and the
+	 old exit block.  The function separate_decls_in_region needs this block
+	 to insert code that is active on loop exit, but not any other path.  */
+      new_exit_block = split_edge (exit);
+    }
 
   /* Insert and register the reduction exit phis.  */
   for (gphi_iterator gsi = gsi_start_phis (exit_block);
@@ -1706,17 +1711,24 @@ transform_to_exit_first_loop_alt (struct loop *loop,
        gsi_next (&gsi))
     {
       gphi *phi = gsi.phi ();
+      gphi *nphi = NULL;
       tree res_z = PHI_RESULT (phi);
+      tree res_c;
 
-      /* Now that we have a new exit block, duplicate the phi of the old exit
-	 block in the new exit block to preserve loop-closed ssa.  */
-      edge succ_new_exit_block = single_succ_edge (new_exit_block);
-      edge pred_new_exit_block = single_pred_edge (new_exit_block);
-      tree res_y = copy_ssa_name (res_z, phi);
-      gphi *nphi = create_phi_node (res_y, new_exit_block);
-      tree res_c = PHI_ARG_DEF_FROM_EDGE (phi, succ_new_exit_block);
-      add_phi_arg (nphi, res_c, pred_new_exit_block, UNKNOWN_LOCATION);
-      add_phi_arg (phi, res_y, succ_new_exit_block, UNKNOWN_LOCATION);
+      if (new_exit_block != NULL)
+	{
+	  /* Now that we have a new exit block, duplicate the phi of the old
+	     exit block in the new exit block to preserve loop-closed ssa.  */
+	  edge succ_new_exit_block = single_succ_edge (new_exit_block);
+	  edge pred_new_exit_block = single_pred_edge (new_exit_block);
+	  tree res_y = copy_ssa_name (res_z, phi);
+	  nphi = create_phi_node (res_y, new_exit_block);
+	  res_c = PHI_ARG_DEF_FROM_EDGE (phi, succ_new_exit_block);
+	  add_phi_arg (nphi, res_c, pred_new_exit_block, UNKNOWN_LOCATION);
+	  add_phi_arg (phi, res_y, succ_new_exit_block, UNKNOWN_LOCATION);
+	}
+      else
+	res_c = PHI_ARG_DEF_FROM_EDGE (phi, exit);
 
       if (virtual_operand_p (res_z))
 	continue;
@@ -1724,7 +1736,9 @@ transform_to_exit_first_loop_alt (struct loop *loop,
       gimple *reduc_phi = SSA_NAME_DEF_STMT (res_c);
       struct reduction_info *red = reduction_phi (reduction_list, reduc_phi);
       if (red != NULL)
-	red->keep_res = nphi;
+	red->keep_res = (nphi != NULL
+			 ? nphi
+			 : phi);
     }
 
   /* We're going to cancel the loop at the end of gen_parallel_loop, but until
@@ -1737,6 +1751,8 @@ transform_to_exit_first_loop_alt (struct loop *loop,
   /* Recalculate dominance info.  */
   free_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
+
+  checking_verify_ssa (true, true);
 }
 
 /* Tries to moves the exit condition of LOOP to the beginning of its header
@@ -1970,10 +1986,9 @@ transform_to_exit_first_loop (struct loop *loop,
 /* Create the parallel constructs for LOOP as described in gen_parallel_loop.
    LOOP_FN and DATA are the arguments of GIMPLE_OMP_PARALLEL.
    NEW_DATA is the variable that should be initialized from the argument
-   of LOOP_FN.  N_THREADS is the requested number of threads.  Returns the
-   basic block containing GIMPLE_OMP_PARALLEL tree.  */
+   of LOOP_FN.  N_THREADS is the requested number of threads.  */
 
-static basic_block
+static void
 create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
 		      tree new_data, unsigned n_threads, location_t loc)
 {
@@ -2146,8 +2161,6 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   /* After the above dom info is hosed.  Re-compute it.  */
   free_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
-
-  return paral_bb;
 }
 
 /* Generates code to execute the iterations of LOOP in N_THREADS
@@ -2370,7 +2383,7 @@ build_new_reduction (reduction_info_table_type *reduction_list,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file,
-	       "Detected reduction. reduction stmt is: \n");
+	       "Detected reduction. reduction stmt is:\n");
       print_gimple_stmt (dump_file, reduc_stmt, 0, 0);
       fprintf (dump_file, "\n");
     }
@@ -2526,6 +2539,9 @@ try_create_reduction_list (loop_p loop,
 
   gcc_assert (exit);
 
+  /* Try to get rid of exit phis.  */
+  final_value_replacement_loop (loop);
+
   gather_scalar_reductions (loop, reduction_list);
 
 
@@ -2548,7 +2564,7 @@ try_create_reduction_list (loop_p loop,
 	      print_generic_expr (dump_file, val, 0);
 	      fprintf (dump_file, " used outside loop\n");
 	      fprintf (dump_file,
-		       "  checking if it a part of reduction pattern:  \n");
+		       "  checking if it is part of reduction pattern:\n");
 	    }
 	  if (reduction_list->elements () == 0)
 	    {

@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gfortran.h"
 #include "trans.h"
-#include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "arith.h"

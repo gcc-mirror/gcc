@@ -4,13 +4,13 @@ int
 main(void)
 {
 #define I 5
-#define N 11
+#define N 32
 #define A 8
 
   int a = A;
   int s = I;
 
-#pragma acc parallel vector_length(N)
+#pragma acc parallel vector_length(N) copy(s)
   {
     int i;
 #pragma acc loop reduction(+:s)

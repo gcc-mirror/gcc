@@ -21,10 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef hash_set_h
 #define hash_set_h
 
-template<typename Key, typename Traits = default_hash_traits<Key> >
+template<typename KeyId, typename Traits = default_hash_traits<KeyId> >
 class hash_set
 {
 public:
+  typedef typename Traits::value_type Key;
   explicit hash_set (size_t n = 13, bool ggc = false CXX_MEM_STAT_INFO)
     : m_table (n, ggc, true, HASH_SET_ORIGIN PASS_MEM_STAT) {}
 
@@ -67,7 +68,7 @@ public:
   /* Call the call back on each pair of key and value with the passed in
      arg.  */
 
-  template<typename Arg, bool (*f)(const Key &, Arg)>
+  template<typename Arg, bool (*f)(const typename Traits::value_type &, Arg)>
   void traverse (Arg a) const
     {
       for (typename hash_table<Traits>::iterator iter = m_table.begin ();

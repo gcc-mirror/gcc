@@ -89,8 +89,8 @@ package body Bindgen is
    --  elaboration policy is sequential.
 
    System_BB_CPU_Primitives_Multiprocessors_Used : Boolean := False;
-   --  Flag indicating wether the unit System.BB.CPU_Primitives.Multiprocessors
-   --  is in the closure of the partiation. This is set by procedure
+   --  Flag indicating whether unit System.BB.CPU_Primitives.Multiprocessors
+   --  is in the closure of the partition. This is set by procedure
    --  Resolve_Binder_Options, and it is used to call a procedure that starts
    --  slave processors.
 
@@ -683,6 +683,14 @@ package body Bindgen is
             WBI ("      procedure Activate_All_Tasks_Sequential;");
             WBI ("      pragma Import (C, Activate_All_Tasks_Sequential," &
                  " ""__gnat_activate_all_tasks"");");
+         end if;
+
+         --  Import procedure to start slave cpus for bareboard runtime
+
+         if System_BB_CPU_Primitives_Multiprocessors_Used then
+            WBI ("      procedure Start_Slave_CPUs;");
+            WBI ("      pragma Import (C, Start_Slave_CPUs," &
+                 " ""__gnat_start_slave_cpus"");");
          end if;
 
          --  For restricted run-time libraries (ZFP and Ravenscar)
