@@ -1,3 +1,12 @@
+2015-11-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/68149
+	* config/arm/arm.md (unaligned_loaddi): Delete.
+	(unaligned_storedi): Likewise.
+	* config/arm/arm.c (gen_movmem_ldrd_strd): Don't generate
+	unaligned DImode memory ops.  Instead perform two back-to-back
+	unaligned SImode ops.
+
 2015-11-20  Nathan Sidwell  <nathan@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 
