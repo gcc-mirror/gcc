@@ -1,3 +1,9 @@
+2015-11-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_neon_ok_nocache): Add check
+	for M profile.
+
 2015-11-20  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/68373
