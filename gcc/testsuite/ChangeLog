@@ -1,3 +1,7 @@
+2015-11-20  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/pfpo.c: New test.
+
 2015-11-20  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* c-c++-common/attr-simd-3.c: Put xfail (PR68158) on dg-error.
