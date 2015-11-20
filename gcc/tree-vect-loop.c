@@ -815,6 +815,8 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 	      dump_generic_expr (MSG_NOTE, TDF_SLIM, access_fn);
               dump_printf (MSG_NOTE, "\n");
 	    }
+	  STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED (stmt_vinfo)
+	    = initial_condition_in_loop_num (access_fn, loop->num);
 	  STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_vinfo)
 	    = evolution_part_in_loop_num (access_fn, loop->num);
 	}
@@ -828,6 +830,8 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 	  continue;
 	}
 
+      gcc_assert (STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED (stmt_vinfo)
+		  != NULL_TREE);
       gcc_assert (STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_vinfo) != NULL_TREE);
 
       if (dump_enabled_p ())
@@ -5128,7 +5132,7 @@ static bool
 is_nonwrapping_integer_induction (gimple *stmt, struct loop *loop)
 {
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
-  tree base = PHI_ARG_DEF_FROM_EDGE (stmt, loop_preheader_edge (loop));
+  tree base = STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED (stmt_vinfo);
   tree step = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_vinfo);
   tree lhs_type = TREE_TYPE (gimple_phi_result (stmt));
   widest_int ni, max_loop_value, lhs_max;
@@ -5263,7 +5267,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   tree def0, def1, tem, op0, op1 = NULL_TREE;
   bool first_p = true;
   tree cr_index_scalar_type = NULL_TREE, cr_index_vector_type = NULL_TREE;
-  bool cond_expr_is_nonwrapping_integer_induction = false;
+  gimple *cond_expr_induction_def_stmt = NULL;
 
   /* In case of reduction chain we switch to the first stmt in the chain, but
      we don't update STMT_INFO, since only the last stmt is marked as reduction
@@ -5413,15 +5417,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
           reduc_index = i;
         }
 
-      if (i == 1 && code == COND_EXPR && dt == vect_induction_def
-	  && is_nonwrapping_integer_induction (def_stmt, loop))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "condition expression based on integer "
-			     "induction.\n");
-	  cond_expr_is_nonwrapping_integer_induction = true;
-	}
+      if (i == 1 && code == COND_EXPR && dt == vect_induction_def)
+	cond_expr_induction_def_stmt = def_stmt;
     }
 
   is_simple_use = vect_is_simple_use (ops[reduc_index], loop_vinfo,
@@ -5448,14 +5445,23 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       return false;
     }
 
-  gimple *tmp = vect_is_simple_reduction
-		  (loop_vinfo, reduc_def_stmt,
-		  !nested_cycle, &dummy, false,
-		  &STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info));
+  enum vect_reduction_type v_reduc_type;
+  gimple *tmp = vect_is_simple_reduction (loop_vinfo, reduc_def_stmt,
+					  !nested_cycle, &dummy, false,
+					  &v_reduc_type);
 
-  if (cond_expr_is_nonwrapping_integer_induction
-      && STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == COND_REDUCTION)
-    STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) = INTEGER_INDUC_COND_REDUCTION;
+  /* If we have a condition reduction, see if we can simplify it further.  */
+  if (v_reduc_type == COND_REDUCTION
+      && cond_expr_induction_def_stmt != NULL
+      && is_nonwrapping_integer_induction (cond_expr_induction_def_stmt, loop))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "condition expression based on integer induction.\n");
+      STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) = INTEGER_INDUC_COND_REDUCTION;
+    }
+  else
+   STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) = v_reduc_type;
 
   if (orig_stmt)
     gcc_assert (tmp == orig_stmt

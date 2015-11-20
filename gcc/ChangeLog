@@ -1,3 +1,10 @@
+2015-11-20  Alan Hayward <alan.hayward@arm.com>
+
+	PR tree-optimization/68413
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Cache
+	evolution base
+	(vectorizable_reduction): Use cached base
+
 2015-11-20  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-parloops.c (build_new_reduction): Fix trailing whitespace in

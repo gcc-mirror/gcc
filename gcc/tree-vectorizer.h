@@ -518,11 +518,13 @@ typedef struct _stmt_vec_info {
   tree dr_step;
   tree dr_aligned_to;
 
-  /* For loop PHI nodes, the evolution part of it.  This makes sure
+  /* For loop PHI nodes, the base and evolution part of it.  This makes sure
      this information is still available in vect_update_ivs_after_vectorizer
      where we may not be able to re-analyze the PHI nodes evolution as
      peeling for the prologue loop can make it unanalyzable.  The evolution
-     part is still correct though.  */
+     part is still correct after peeling, but the base may have changed from
+     the version here.  */
+  tree loop_phi_evolution_base_unchanged;
   tree loop_phi_evolution_part;
 
   /* Used for various bookkeeping purposes, generally holding a pointer to
@@ -645,6 +647,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_GROUP_GAP(S)            (S)->gap
 #define STMT_VINFO_GROUP_SAME_DR_STMT(S)   (S)->same_dr_stmt
 #define STMT_VINFO_GROUPED_ACCESS(S)      ((S)->first_element != NULL && (S)->data_ref_info)
+#define STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED(S) (S)->loop_phi_evolution_base_unchanged
 #define STMT_VINFO_LOOP_PHI_EVOLUTION_PART(S) (S)->loop_phi_evolution_part
 #define STMT_VINFO_MIN_NEG_DIST(S)	(S)->min_neg_dist
 
