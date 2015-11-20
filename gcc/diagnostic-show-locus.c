@@ -78,6 +78,7 @@ class colorizer
 
   void set_range (int range_idx) { set_state (range_idx); }
   void set_normal_text () { set_state (STATE_NORMAL_TEXT); }
+  void set_fixit_hint () { set_state (0); }
 
  private:
   void set_state (int state);
@@ -139,8 +140,8 @@ struct line_bounds
 /* A class to control the overall layout when printing a diagnostic.
 
    The layout is determined within the constructor.
-   It is then printed by repeatedly calling the "print_source_line"
-   and "print_annotation_line" methods.
+   It is then printed by repeatedly calling the "print_source_line",
+   "print_annotation_line" and "print_any_fixits" methods.
 
    We assume we have disjoint ranges.  */
 
@@ -155,6 +156,7 @@ class layout
 
   bool print_source_line (int row, line_bounds *lbounds_out);
   void print_annotation_line (int row, const line_bounds lbounds);
+  void print_any_fixits (int row, const rich_location *richloc);
 
  private:
   bool
@@ -167,6 +169,9 @@ class layout
   int
   get_x_bound_for_row (int row, int caret_column,
 		       int last_non_ws);
+
+  void
+  move_to_column (int *column, int dest_column);
 
  private:
   diagnostic_context *m_context;
@@ -593,6 +598,73 @@ layout::print_annotation_line (int row, const line_bounds lbounds)
   pp_newline (m_pp);
 }
 
+/* If there are any fixit hints on source line ROW within RICHLOC, print them.
+   They are printed in order, attempting to combine them onto lines, but
+   starting new lines if necessary.  */
+
+void
+layout::print_any_fixits (int row, const rich_location *richloc)
+{
+  int column = 0;
+  for (unsigned int i = 0; i < richloc->get_num_fixit_hints (); i++)
+    {
+      fixit_hint *hint = richloc->get_fixit_hint (i);
+      if (hint->affects_line_p (m_exploc.file, row))
+	{
+	  /* For now we assume each fixit hint can only touch one line.  */
+	  switch (hint->get_kind ())
+	    {
+	    case fixit_hint::INSERT:
+	      {
+		fixit_insert *insert = static_cast <fixit_insert *> (hint);
+		/* This assumes the insertion just affects one line.  */
+		int start_column
+		  = LOCATION_COLUMN (insert->get_location ());
+		move_to_column (&column, start_column);
+		m_colorizer.set_fixit_hint ();
+		pp_string (m_pp, insert->get_string ());
+		m_colorizer.set_normal_text ();
+		column += insert->get_length ();
+	      }
+	      break;
+
+	    case fixit_hint::REMOVE:
+	      {
+		fixit_remove *remove = static_cast <fixit_remove *> (hint);
+		/* This assumes the removal just affects one line.  */
+		source_range src_range = remove->get_range ();
+		int start_column = LOCATION_COLUMN (src_range.m_start);
+		int finish_column = LOCATION_COLUMN (src_range.m_finish);
+		move_to_column (&column, start_column);
+		for (int column = start_column; column <= finish_column; column++)
+		  {
+		    m_colorizer.set_fixit_hint ();
+		    pp_character (m_pp, '-');
+		    m_colorizer.set_normal_text ();
+		  }
+	      }
+	      break;
+
+	    case fixit_hint::REPLACE:
+	      {
+		fixit_replace *replace = static_cast <fixit_replace *> (hint);
+		int start_column
+		  = LOCATION_COLUMN (replace->get_range ().m_start);
+		move_to_column (&column, start_column);
+		m_colorizer.set_fixit_hint ();
+		pp_string (m_pp, replace->get_string ());
+		m_colorizer.set_normal_text ();
+		column += replace->get_length ();
+	      }
+	      break;
+
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+    }
+}
+
 /* Return true if (ROW/COLUMN) is within a range of the layout.
    If it returns true, OUT_STATE is written to, with the
    range index, and whether we should draw the caret at
@@ -675,6 +747,27 @@ layout::get_x_bound_for_row (int row, int caret_column,
   return result;
 }
 
+/* Given *COLUMN as an x-coordinate, print spaces to position
+   successive output at DEST_COLUMN, printing a newline if necessary,
+   and updating *COLUMN.  */
+
+void
+layout::move_to_column (int *column, int dest_column)
+{
+  /* Start a new line if we need to.  */
+  if (*column > dest_column)
+    {
+      pp_newline (m_pp);
+      *column = 0;
+    }
+
+  while (*column < dest_column)
+    {
+      pp_space (m_pp);
+      (*column)++;
+    }
+}
+
 } /* End of anonymous namespace.  */
 
 /* Print the physical source code corresponding to the location of
@@ -704,11 +797,14 @@ diagnostic_show_locus (diagnostic_context * context,
 	 row++)
       {
 	/* Print the source line, followed by an annotation line
-	   consisting of any caret/underlines.  If the source line can't
-	   be read, print nothing.  */
+	   consisting of any caret/underlines, then any fixits.
+	   If the source line can't be read, print nothing.  */
 	line_bounds lbounds;
 	if (layout.print_source_line (row, &lbounds))
-	  layout.print_annotation_line (row, lbounds);
+	  {
+	    layout.print_annotation_line (row, lbounds);
+	    layout.print_any_fixits (row, diagnostic->richloc);
+	  }
       }
 
     /* The closing scope here leads to the dtor for layout and thus

@@ -1,3 +1,37 @@
+2015-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 62314
+	* include/line-map.h (source_range::intersects_line_p): New
+	method.
+	(rich_location::~rich_location): New.
+	(rich_location::add_fixit_insert): New method.
+	(rich_location::add_fixit_remove): New method.
+	(rich_location::add_fixit_replace): New method.
+	(rich_location::get_num_fixit_hints): New accessor.
+	(rich_location::get_fixit_hint): New accessor.
+	(rich_location::MAX_FIXIT_HINTS): New constant.
+	(rich_location::m_num_fixit_hints): New field.
+	(rich_location::m_fixit_hints): New field.
+	(class fixit_hint): New class.
+	(class fixit_insert): New class.
+	(class fixit_remove): New class.
+	(class fixit_replace): New class.
+	* line-map.c (source_range::intersects_line_p): New method.
+	(rich_location::rich_location): Add initialization of
+	m_num_fixit_hints to both ctors.
+	(rich_location::~rich_location): New.
+	(rich_location::add_fixit_insert): New method.
+	(rich_location::add_fixit_remove): New method.
+	(rich_location::add_fixit_replace): New method.
+	(fixit_insert::fixit_insert): New.
+	(fixit_insert::~fixit_insert): New.
+	(fixit_insert::affects_line_p): New.
+	(fixit_remove::fixit_remove): New.
+	(fixit_remove::affects_line_p): New.
+	(fixit_replace::fixit_replace): New.
+	(fixit_replace::~fixit_replace): New.
+	(fixit_replace::affects_line_p): New.
+
 2015-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/60736

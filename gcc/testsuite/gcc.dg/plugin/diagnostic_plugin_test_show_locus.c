@@ -258,6 +258,41 @@ test_show_locus (function *fun)
       global_dc->caret_chars[1] = '^';
     }
 
+  /* Tests of rendering fixit hints.  */
+  if (0 == strcmp (fnname, "test_fixit_insert"))
+    {
+      const int line = fnstart_line + 2;
+      source_range src_range;
+      src_range.m_start = get_loc (line, 19);
+      src_range.m_finish = get_loc (line, 22);
+      rich_location richloc (src_range);
+      richloc.add_fixit_insert (src_range.m_start, "{");
+      richloc.add_fixit_insert (get_loc (line, 23), "}");
+      warning_at_rich_loc (&richloc, 0, "example of insertion hints");
+    }
+
+  if (0 == strcmp (fnname, "test_fixit_remove"))
+    {
+      const int line = fnstart_line + 2;
+      source_range src_range;
+      src_range.m_start = get_loc (line, 8);
+      src_range.m_finish = get_loc (line, 8);
+      rich_location richloc (src_range);
+      richloc.add_fixit_remove (src_range);
+      warning_at_rich_loc (&richloc, 0, "example of a removal hint");
+    }
+
+  if (0 == strcmp (fnname, "test_fixit_replace"))
+    {
+      const int line = fnstart_line + 2;
+      source_range src_range;
+      src_range.m_start = get_loc (line, 2);
+      src_range.m_finish = get_loc (line, 19);
+      rich_location richloc (src_range);
+      richloc.add_fixit_replace (src_range, "gtk_widget_show_all");
+      warning_at_rich_loc (&richloc, 0, "example of a replacement hint");
+    }
+
   /* Example of two carets where both carets appear to have an off-by-one
      error appearing one column early.
      Seen with gfortran.dg/associate_5.f03.

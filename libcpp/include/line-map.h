@@ -299,6 +299,9 @@ struct GTY(()) source_range
     result.m_finish = loc;
     return result;
   }
+
+  /* Is there any part of this range on the given line?  */
+  bool intersects_line_p (const char *file, int line) const;
 };
 
 /* Memory allocation function typedef.  Works like xrealloc.  */
@@ -1267,6 +1270,11 @@ struct location_range
   expanded_location m_caret;
 };
 
+class fixit_hint;
+  class fixit_insert;
+  class fixit_remove;
+  class fixit_replace;
+
 /* A "rich" source code location, for use when printing diagnostics.
    A rich_location has one or more ranges, each optionally with
    a caret.   Typically the zeroth range has a caret; other ranges
@@ -1349,6 +1357,9 @@ class rich_location
   /* Constructing from a source_range.  */
   rich_location (source_range src_range);
 
+  /* Destructor.  */
+  ~rich_location ();
+
   /* Accessors.  */
   source_location get_loc () const { return m_loc; }
 
@@ -1381,8 +1392,24 @@ class rich_location
   void
   override_column (int column);
 
+  /* Fix-it hints.  */
+  void
+  add_fixit_insert (source_location where,
+		    const char *new_content);
+
+  void
+  add_fixit_remove (source_range src_range);
+
+  void
+  add_fixit_replace (source_range src_range,
+		     const char *new_content);
+
+  unsigned int get_num_fixit_hints () const { return m_num_fixit_hints; }
+  fixit_hint *get_fixit_hint (int idx) const { return m_fixit_hints[idx]; }
+
 public:
   static const int MAX_RANGES = 3;
+  static const int MAX_FIXIT_HINTS = 2;
 
 protected:
   source_location m_loc;
@@ -1392,7 +1419,76 @@ protected:
 
   bool m_have_expanded_location;
   expanded_location m_expanded_location;
+
+  unsigned int m_num_fixit_hints;
+  fixit_hint *m_fixit_hints[MAX_FIXIT_HINTS];
 };
+
+class fixit_hint
+{
+public:
+  enum kind {INSERT, REMOVE, REPLACE};
+
+  virtual ~fixit_hint () {}
+
+  virtual enum kind get_kind () const = 0;
+  virtual bool affects_line_p (const char *file, int line) = 0;
+};
+
+class fixit_insert : public fixit_hint
+{
+ public:
+  fixit_insert (source_location where,
+		const char *new_content);
+  ~fixit_insert ();
+  enum kind get_kind () const { return INSERT; }
+  bool affects_line_p (const char *file, int line);
+
+  source_location get_location () const { return m_where; }
+  const char *get_string () const { return m_bytes; }
+  size_t get_length () const { return m_len; }
+
+ private:
+  source_location m_where;
+  char *m_bytes;
+  size_t m_len;
+};
+
+class fixit_remove : public fixit_hint
+{
+ public:
+  fixit_remove (source_range src_range);
+  ~fixit_remove () {}
+
+  enum kind get_kind () const { return REMOVE; }
+  bool affects_line_p (const char *file, int line);
+
+  source_range get_range () const { return m_src_range; }
+
+ private:
+  source_range m_src_range;
+};
+
+class fixit_replace : public fixit_hint
+{
+ public:
+  fixit_replace (source_range src_range,
+                 const char *new_content);
+  ~fixit_replace ();
+
+  enum kind get_kind () const { return REPLACE; }
+  bool affects_line_p (const char *file, int line);
+
+  source_range get_range () const { return m_src_range; }
+  const char *get_string () const { return m_bytes; }
+  size_t get_length () const { return m_len; }
+
+ private:
+  source_range m_src_range;
+  char *m_bytes;
+  size_t m_len;
+};
+
 
 /* This is enum is used by the function linemap_resolve_location
    below.  The meaning of the values is explained in the comment of

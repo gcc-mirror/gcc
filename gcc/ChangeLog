@@ -1,3 +1,12 @@
+2015-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 62314
+	* diagnostic-show-locus.c (colorizer::set_fixit_hint): New.
+	(class layout): Update comment
+	(layout::print_any_fixits): New method.
+	(layout::move_to_column): New method.
+	(diagnostic_show_locus): Add call to layout.print_any_fixits.
+
 2015-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/68221
