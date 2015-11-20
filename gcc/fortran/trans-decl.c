@@ -1497,7 +1497,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
      declaration.  */
   if ((sym->attr.flavor == FL_VARIABLE
        || sym->attr.flavor == FL_PARAMETER)
-      && sym->attr.use_assoc
+      && (sym->attr.use_assoc || sym->attr.used_in_submodule)
       && !intrinsic_array_parameter
       && sym->module
       && gfc_get_module_backend_decl (sym))
@@ -4499,7 +4499,7 @@ gfc_create_module_variable (gfc_symbol * sym)
       decl = sym->backend_decl;
       gcc_assert (sym->ns->proc_name->attr.flavor == FL_MODULE);
 
-      if (!sym->attr.use_assoc)
+      if (!sym->attr.use_assoc && !sym->attr.used_in_submodule)
 	{
 	  gcc_assert (TYPE_CONTEXT (decl) == NULL_TREE
 		      || TYPE_CONTEXT (decl) == sym->ns->proc_name->backend_decl);
@@ -4531,7 +4531,8 @@ gfc_create_module_variable (gfc_symbol * sym)
 
   /* Don't generate variables from other modules. Variables from
      COMMONs and Cray pointees will already have been generated.  */
-  if (sym->attr.use_assoc || sym->attr.in_common || sym->attr.cray_pointee)
+  if (sym->attr.use_assoc || sym->attr.used_in_submodule
+      || sym->attr.in_common || sym->attr.cray_pointee)
     return;
 
   /* Equivalenced variables arrive here after creation.  */

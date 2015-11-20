@@ -1,3 +1,16 @@
+2015-11-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68237
+	* decl.c (gfc_match_submod_proc): Test the interface symbol
+	before accessing its attributes.
+
+2015-11-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/66762
+	(gfc_get_symbol_decl): Test for attr.used_in_submodule as well
+	as attr.use_assoc (twice).
+	(gfc_create_module_variable): Ditto.
+
 2015-11-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/59910
@@ -7,7 +20,7 @@
 2015-11-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/43996
-	* simplify.c (gfc_simplify_spread): Issue error for too large array 
+	* simplify.c (gfc_simplify_spread): Issue error for too large array
 	constructor in a PARAMETER statement.
 
 2015-11-17  Steven G. Kargl  <kargl@gcc.gnu.org>
