@@ -7666,7 +7666,7 @@ gfc_match_submod_proc (void)
 
   /* Make sure that the result field is appropriately filled, even though
      the result symbol will be replaced later on.  */
-  if (sym->ts.interface->attr.function)
+  if (sym->ts.interface && sym->ts.interface->attr.function)
     {
       if (sym->ts.interface->result
 	  && sym->ts.interface->result != sym->ts.interface)
