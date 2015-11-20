@@ -1,3 +1,15 @@
+2015-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.md (umulxhi_vis): Move around.
+	(*umulxhi_sp64): Likewise.
+	(umulxhi_v8plus): Likewise.
+	(xmulx_vis): Likewise.
+	(*xmulx_sp64): Likewise.
+	(xmulx_v8plus): Likewise.
+	(xmulxhi_vis): Likewise.
+	(*xmulxhi_sp64): Likewise.
+	(xmulxhi_v8plus): Likewise.
+
 2015-11-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR 62314
