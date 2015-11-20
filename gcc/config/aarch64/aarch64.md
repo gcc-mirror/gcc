@@ -195,6 +195,10 @@
 ;; 1 :=: yes
 (define_attr "far_branch" "" (const_int 0))
 
+;; Strictly for compatibility with AArch32 in pipeline models, since AArch64 has
+;; no predicated insns.
+(define_attr "predicated" "yes,no" (const_string "no"))
+
 ;; -------------------------------------------------------------------
 ;; Pipeline descriptions and scheduling
 ;; -------------------------------------------------------------------

@@ -1,3 +1,9 @@
+2015-11-20  Evandro Menezes  <e.menezes@samsung.com>
+
+	* config/aarch64/aarch64.md (predicated): Copy attribute from
+	"arm.md".
+	* config/arm/arm.md (predicated): Added description.
+
 2015-11-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_option_override): Require TARGET_32BIT
