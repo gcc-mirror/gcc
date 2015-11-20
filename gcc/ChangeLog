@@ -1,3 +1,7 @@
+2015-11-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.md ("bswaphi2"): New pattern.
+
 2015-11-20  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.md (GPR1_REGNUM): New constant.
