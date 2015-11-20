@@ -1769,7 +1769,16 @@ Type::specific_type_functions(Gogo* gogo, Named_type* name,
       const Named_object* in_function = name->in_function(&index);
       if (in_function != NULL)
 	{
-	  base_name += '$' + Gogo::unpack_hidden_name(in_function->name());
+	  base_name.append(1, '$');
+	  const Typed_identifier* rcvr =
+	    in_function->func_value()->type()->receiver();
+	  if (rcvr != NULL)
+	    {
+	      Named_type* rcvr_type = rcvr->type()->deref()->named_type();
+	      base_name.append(Gogo::unpack_hidden_name(rcvr_type->name()));
+	      base_name.append(1, '$');
+	    }
+	  base_name.append(Gogo::unpack_hidden_name(in_function->name()));
 	  if (index > 0)
 	    {
 	      char buf[30];
