@@ -497,7 +497,11 @@ func (p *Package) load(stk *importStack, bp *build.Package, err error) *Package 
 		if goTools[p.ImportPath] == toTool {
 			// This is for 'go tool'.
 			// Override all the usual logic and force it into the tool directory.
-			p.target = filepath.Join(gorootPkg, "tool", full)
+			if buildContext.Compiler == "gccgo" {
+				p.target = filepath.Join(runtime.GCCGOTOOLDIR, elem)
+			} else {
+				p.target = filepath.Join(gorootPkg, "tool", full)
+			}
 		}
 		if p.target != "" && buildContext.GOOS == "windows" {
 			p.target += ".exe"

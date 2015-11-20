@@ -39,6 +39,12 @@ var (
 	toolN bool
 )
 
+// List of go tools found in the gccgo tool directory.
+// Other binaries could be in the same directory so don't
+// show those with the 'go tool' command.
+
+var gccgoTools = []string{"cgo", "fix", "cover", "godoc", "vet"}
+
 func init() {
 	cmdTool.Flag.BoolVar(&toolN, "n", false, "")
 }
@@ -141,6 +147,21 @@ func listTools() {
 		if toolIsWindows && strings.HasSuffix(name, toolWindowsExtension) {
 			name = name[:len(name)-len(toolWindowsExtension)]
 		}
-		fmt.Println(name)
+
+		// The tool directory used by gccgo will have other binaries
+		// in additions to go tools.  Only display go tools for this list.
+
+		if buildContext.Compiler == "gccgo" {
+			for _, tool := range gccgoTools {
+				if tool == name {
+					fmt.Println(name)
+				}
+			}
+		} else {
+
+			// Not gccgo, list all the tools found in this dir
+
+			fmt.Println(name)
+		}
 	}
 }
