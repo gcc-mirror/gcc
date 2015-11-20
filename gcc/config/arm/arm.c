@@ -14890,21 +14890,41 @@ gen_movmem_ldrd_strd (rtx *operands)
   if (!(dst_aligned || src_aligned))
     return arm_gen_movmemqi (operands);
 
-  src = adjust_address (src, DImode, 0);
-  dst = adjust_address (dst, DImode, 0);
+  /* If the either src or dst is unaligned we'll be accessing it as pairs
+     of unaligned SImode accesses.  Otherwise we can generate DImode
+     ldrd/strd instructions.  */
+  src = adjust_address (src, src_aligned ? DImode : SImode, 0);
+  dst = adjust_address (dst, dst_aligned ? DImode : SImode, 0);
+
   while (len >= 8)
     {
       len -= 8;
       reg0 = gen_reg_rtx (DImode);
+      rtx low_reg = NULL_RTX;
+      rtx hi_reg = NULL_RTX;
+
+      if (!src_aligned || !dst_aligned)
+	{
+	  low_reg = gen_lowpart (SImode, reg0);
+	  hi_reg = gen_highpart_mode (SImode, DImode, reg0);
+	}
       if (src_aligned)
         emit_move_insn (reg0, src);
       else
-        emit_insn (gen_unaligned_loaddi (reg0, src));
+	{
+	  emit_insn (gen_unaligned_loadsi (low_reg, src));
+	  src = next_consecutive_mem (src);
+	  emit_insn (gen_unaligned_loadsi (hi_reg, src));
+	}
 
       if (dst_aligned)
         emit_move_insn (dst, reg0);
       else
-        emit_insn (gen_unaligned_storedi (dst, reg0));
+	{
+	  emit_insn (gen_unaligned_storesi (dst, low_reg));
+	  dst = next_consecutive_mem (dst);
+	  emit_insn (gen_unaligned_storesi (dst, hi_reg));
+	}
 
       src = next_consecutive_mem (src);
       dst = next_consecutive_mem (dst);
