@@ -1,3 +1,7 @@
+2015-11-19  DJ Delorie  <dj@redhat.com>
+
+	* config/msp430/lib2hw_mul.S: Fix alignment.
+
 2015-11-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/nvptx/reduction.c: New.
