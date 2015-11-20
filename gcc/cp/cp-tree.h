@@ -4846,6 +4846,11 @@ extern GTY(()) vec<tree, va_gc> *local_classes;
 
 extern int at_eof;
 
+/* True if note_mangling_alias should enqueue mangling aliases for
+   later generation, rather than emitting them right away.  */
+
+extern bool defer_mangling_aliases;
+
 /* A list of namespace-scope objects which have constructors or
    destructors which reside in the global scope.  The decl is stored
    in the TREE_VALUE slot and the initializer is stored in the
@@ -5772,6 +5777,7 @@ extern tree cxx_maybe_build_cleanup		(tree, tsubst_flags_t);
 
 /* in decl2.c */
 extern void note_mangling_alias			(tree, tree);
+extern void generate_mangling_aliases		(void);
 extern bool check_java_method			(tree);
 extern tree build_memfn_type			(tree, tree, cp_cv_quals, cp_ref_qualifier);
 extern tree build_pointer_ptrmemfn_type	(tree);

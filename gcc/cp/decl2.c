@@ -102,6 +102,11 @@ static GTY(()) vec<tree, va_gc> *mangling_aliases;
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
 int at_eof;
+
+/* True if note_mangling_alias should enqueue mangling aliases for
+   later generation, rather than emitting them right away.  */
+
+bool defer_mangling_aliases = true;
 
 
 /* Return a member function type (a METHOD_TYPE), given FNTYPE (a
@@ -4389,7 +4394,7 @@ void
 note_mangling_alias (tree decl ATTRIBUTE_UNUSED, tree id2 ATTRIBUTE_UNUSED)
 {
 #ifdef ASM_OUTPUT_DEF
-  if (at_eof)
+  if (!defer_mangling_aliases)
     generate_mangling_alias (decl, id2);
   else
     {
@@ -4399,7 +4404,9 @@ note_mangling_alias (tree decl ATTRIBUTE_UNUSED, tree id2 ATTRIBUTE_UNUSED)
 #endif
 }
 
-static void
+/* Emit all mangling aliases that were deferred up to this point.  */
+
+void
 generate_mangling_aliases ()
 {
   while (!vec_safe_is_empty (mangling_aliases))
@@ -4408,6 +4415,7 @@ generate_mangling_aliases ()
       tree decl = mangling_aliases->pop();
       generate_mangling_alias (decl, id2);
     }
+  defer_mangling_aliases = false;
 }
 
 /* The entire file is now complete.  If requested, dump everything
