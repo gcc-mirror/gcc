@@ -1,3 +1,10 @@
+2015-11-20  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	PR libstdc++/68448
+	* python/hook.in: Call register_libstdcxx_printers.
+	* python/libstdcxx/v6/__init__.py: Wrap it to
+	register_libstdcxx_printers.
+
 2015-11-16  Doug Evans  <dje@google.com>
 
 	PR libstdc++/67440
