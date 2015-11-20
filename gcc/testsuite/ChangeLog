@@ -1,3 +1,8 @@
+2015-11-20  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	* gcc.target/s390/pfpo.c: New test.
+
 2015-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/67409
