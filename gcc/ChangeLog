@@ -1,3 +1,7 @@
+2015-11-20  Jim Wilson  <jim.wilson@linaro.org>
+
+	* tree-vect-data-refs.c (compare_tree): Call STRIP_NOPS.
+
 2015-11-20  Evandro Menezes  <e.menezes@samsung.com>
 
 	* config/aarch64/aarch64.md (predicated): Copy attribute from
