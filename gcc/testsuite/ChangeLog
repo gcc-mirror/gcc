@@ -1,3 +1,7 @@
+2015-11-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/submodule_6.f08: Add dg-require-effective-target lto.
+
 2015-11-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/init/vbase1.C: Also run on i?86-*-*.
@@ -47,7 +51,7 @@
 	* gfortran.dg/submodule_12.f90: New test
 
 	PR fortran/66762
-	* gfortran.dg/submodule_6.f90: Add compile option -flto.
+	* gfortran.dg/submodule_6.f08: Add compile option -flto.
 
 2015-11-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
