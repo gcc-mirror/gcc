@@ -1,3 +1,11 @@
+2015-11-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-icf.c (sem_item::add_type): Do not look for TYPE_CANONICAL;
+	do not check AGGREGATE_TYPE_P when adding TYPE_MODE;
+	Check that all record types are complete.
+	* ipa-icf-gimple.c (func_checker::compatible_types_p): Do not
+	compare alias sets for types w/o alias sets.
+
 2015-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.md (umulxhi_vis): Move around.
