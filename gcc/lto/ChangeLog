@@ -1,3 +1,8 @@
+2015-11-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-symtab.c (warn_type_compatibility_p): Do not set ODR mismatch
+	flag for types that are not ODR; fix loop walking parameters.
+
 2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	* lto-lang.c: Remove unused header files.
