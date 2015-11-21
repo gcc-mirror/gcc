@@ -398,6 +398,11 @@ proc go-gc-tests { } {
 	    }
 	}
 
+	if [check_effective_target_pie_enabled] {
+	    untested $test
+	    continue
+	}
+
 	if { [file tail $test] == "init1.go" } {
 	    # This tests whether GC runs during init, which for gccgo
 	    # it currently does not.
