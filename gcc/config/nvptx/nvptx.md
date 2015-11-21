@@ -731,7 +731,7 @@
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
 	(clz:SI (match_operand:SDIM 1 "nvptx_register_operand" "R")))]
   ""
-  "%.\\tclz.b%T0\\t%0, %1;")
+  "%.\\tclz.b%T1\\t%0, %1;")
 
 (define_expand "ctz<mode>2"
   [(set (match_operand:SI 0 "nvptx_register_operand" "")

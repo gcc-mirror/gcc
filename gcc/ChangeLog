@@ -1,5 +1,7 @@
 2015-11-21  Nathan Sidwell  <nathan@acm.org>
 
+	* config/nvptx/nvptx.md (clz<mode>2): Use operand 1 for type.
+
 	* config/nvptx/nvptx.c (write_function_decl_and_comment): Print
 	leading blank line.
 	(write_func_decl_from_insn): Likewise.
