@@ -1,3 +1,8 @@
+2015-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/66432
+	* gcc.dg/debug/pr66432.c: New test.
+
 2015-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/68339
