@@ -1,3 +1,8 @@
+2015-11-20  Ian Lance Taylor  <iant@google.com>
+
+	PR go/66406
+	* go.test/go-test.exp (go-gc-tests): Skip nilptr.go if PIE.
+
 2015-11-20  Mike Stump  <mikestump@comcast.net>
 
 	* g++.dg/init/vbase1.C: Only run on x86_64-*-* as this testcase
