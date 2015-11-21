@@ -1,3 +1,7 @@
+2015-11-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/simplify_cshift_1.f90: New test.
+
 2015-11-21  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/atomic-generic.c: Include <string.h>.

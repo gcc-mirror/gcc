@@ -1,3 +1,11 @@
+2015-11-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* simplify.c (gfc_simplify_cshift): Implement simplification of
+	CSHIFT for rank=1 arrays.
+	(gfc_simplify_spread): Remove a FIXME and add error condition.
+	* intrinsic.h: Prototype for gfc_simplify_cshift
+	* intrinsic.c (add_functions): Use gfc_simplify_cshift.
+ 
 2015-11-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68237
