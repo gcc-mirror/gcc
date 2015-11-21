@@ -1659,9 +1659,11 @@ add_functions (void)
 
   make_generic ("count", GFC_ISYM_COUNT, GFC_STD_F95);
 
-  add_sym_3 ("cshift", GFC_ISYM_CSHIFT, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
-	     gfc_check_cshift, NULL, gfc_resolve_cshift,
-	     ar, BT_REAL, dr, REQUIRED, sh, BT_INTEGER, di, REQUIRED,
+  add_sym_3 ("cshift", GFC_ISYM_CSHIFT, CLASS_TRANSFORMATIONAL, ACTUAL_NO,
+	     BT_REAL, dr, GFC_STD_F95,
+	     gfc_check_cshift, gfc_simplify_cshift, gfc_resolve_cshift,
+	     ar, BT_REAL, dr, REQUIRED,
+	     sh, BT_INTEGER, di, REQUIRED,
 	     dm, BT_INTEGER, ii, OPTIONAL);
 
   make_generic ("cshift", GFC_ISYM_CSHIFT, GFC_STD_F95);

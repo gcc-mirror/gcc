@@ -271,6 +271,7 @@ gfc_expr *gfc_simplify_conjg (gfc_expr *);
 gfc_expr *gfc_simplify_cos (gfc_expr *);
 gfc_expr *gfc_simplify_cosh (gfc_expr *);
 gfc_expr *gfc_simplify_count (gfc_expr *, gfc_expr *, gfc_expr *);
+gfc_expr *gfc_simplify_cshift (gfc_expr *, gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_dcmplx (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_dble (gfc_expr *);
 gfc_expr *gfc_simplify_digits (gfc_expr *);
