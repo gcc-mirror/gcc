@@ -1543,11 +1543,8 @@ sem_item::add_type (const_tree type, inchash::hash &hstate)
     }
 
   type = TYPE_MAIN_VARIANT (type);
-  if (TYPE_CANONICAL (type))
-    type = TYPE_CANONICAL (type);
 
-  if (!AGGREGATE_TYPE_P (type))
-    hstate.add_int (TYPE_MODE (type));
+  hstate.add_int (TYPE_MODE (type));
 
   if (TREE_CODE (type) == COMPLEX_TYPE)
     {
@@ -1574,6 +1571,7 @@ sem_item::add_type (const_tree type, inchash::hash &hstate)
     }
   else if (RECORD_OR_UNION_TYPE_P (type))
     {
+      gcc_checking_assert (COMPLETE_TYPE_P (type));
       hashval_t *val = optimizer->m_type_hash_cache.get (type);
 
       if (!val)
