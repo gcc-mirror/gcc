@@ -327,6 +327,7 @@ func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err e
 	var soff Offset_t
 	var psoff *Offset_t
 	if offset != nil {
+		soff = Offset_t(*offset)
 		psoff = &soff
 	}
 	written, err = sendfile(outfd, infd, psoff, count)
