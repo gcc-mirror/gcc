@@ -304,7 +304,7 @@ struct GTY(()) machine_function
 #define ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN)	\
   do									\
     {									\
-      fprintf (FILE, "// BEGIN%s VAR DEF: ",				\
+      fprintf (FILE, "\n// BEGIN%s VAR DEF: ",				\
 	       TREE_PUBLIC (DECL) ? " GLOBAL" : "");			\
       assemble_name_raw (FILE, NAME);					\
       fputc ('\n', FILE);						\
@@ -322,7 +322,7 @@ struct GTY(()) machine_function
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN)	\
   do									\
     {									\
-      fprintf (FILE, "// BEGIN VAR DEF: ");				\
+      fprintf (FILE, "\n// BEGIN VAR DEF: ");				\
       assemble_name_raw (FILE, NAME);					\
       fputc ('\n', FILE);						\
       const char *sec = nvptx_section_for_decl (DECL);			\

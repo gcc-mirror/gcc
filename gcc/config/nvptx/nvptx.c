@@ -515,7 +515,7 @@ walk_args_for_param (FILE *file, tree argtypes, tree args, bool write_copy,
 static void
 write_function_decl_and_comment (std::stringstream &s, const char *name, const_tree decl)
 {
-  s << "// BEGIN";
+  s << "\n// BEGIN";
   if (TREE_PUBLIC (decl))
     s << " GLOBAL";
   s << " FUNCTION DECL: ";
@@ -765,7 +765,7 @@ write_func_decl_from_insn (std::stringstream &s, rtx result, rtx pat,
     {
       name = XSTR (callee, 0);
       name = nvptx_name_replacement (name);
-      s << "// BEGIN GLOBAL FUNCTION DECL: " << name << "\n";
+      s << "\n// BEGIN GLOBAL FUNCTION DECL: " << name << "\n";
     }
   s << (callprototype ? "\t.callprototype\t" : "\t.extern .func ");
 
@@ -820,7 +820,7 @@ write_func_decl_from_insn (std::stringstream &s, rtx result, rtx pat,
 void
 nvptx_function_end (FILE *file)
 {
-  fprintf (file, "\t}\n");
+  fprintf (file, "}\n");
 }
 
 /* Decide whether we can make a sibling call to a function.  For ptx, we
@@ -965,7 +965,7 @@ nvptx_expand_call (rtx retval, rtx address)
     }
 
   if (varargs)
-      XVECEXP (pat, 0, vec_pos++) = gen_rtx_USE (VOIDmode, varargs);
+    XVECEXP (pat, 0, vec_pos++) = gen_rtx_USE (VOIDmode, varargs);
 
   gcc_assert (vec_pos = XVECLEN (pat, 0));
 
@@ -1726,7 +1726,7 @@ static void
 init_output_initializer (FILE *file, const char *name, const_tree type,
 			 bool is_public)
 {
-  fprintf (file, "// BEGIN%s VAR DEF: ", is_public ? " GLOBAL" : "");
+  fprintf (file, "\n// BEGIN%s VAR DEF: ", is_public ? " GLOBAL" : "");
   assemble_name_raw (file, name);
   fputc ('\n', file);
 
@@ -1809,7 +1809,8 @@ nvptx_assemble_undefined_decl (FILE *file, const char *name, const_tree decl)
   if (TREE_CODE (decl) != VAR_DECL)
     return;
   const char *section = nvptx_section_for_decl (decl);
-  fprintf (file, "// BEGIN%s VAR DECL: ", TREE_PUBLIC (decl) ? " GLOBAL" : "");
+  fprintf (file, "\n// BEGIN%s VAR DECL: ",
+	   TREE_PUBLIC (decl) ? " GLOBAL" : "");
   assemble_name_raw (file, name);
   fputs ("\n", file);
   HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
@@ -1934,7 +1935,7 @@ nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
     }
   fprintf (asm_out_file, ";\n");
   if (result != NULL_RTX)
-    return "ld.param%t0\t%0, [%%retval_in];\n\t}";
+    return "\tld.param%t0\t%0, [%%retval_in];\n\t}";
 
   return "}";
 }
@@ -3979,7 +3980,7 @@ nvptx_file_end (void)
       worker_bcast_size = (worker_bcast_size + worker_bcast_align - 1)
 	& ~(worker_bcast_align - 1);
       
-      fprintf (asm_out_file, "// BEGIN VAR DEF: %s\n", worker_bcast_name);
+      fprintf (asm_out_file, "\n// BEGIN VAR DEF: %s\n", worker_bcast_name);
       fprintf (asm_out_file, ".shared .align %d .u8 %s[%d];\n",
 	       worker_bcast_align,
 	       worker_bcast_name, worker_bcast_size);
@@ -3992,7 +3993,7 @@ nvptx_file_end (void)
       worker_red_size = ((worker_red_size + worker_red_align - 1)
 			 & ~(worker_red_align - 1));
       
-      fprintf (asm_out_file, "// BEGIN VAR DEF: %s\n", worker_red_name);
+      fprintf (asm_out_file, "\n// BEGIN VAR DEF: %s\n", worker_red_name);
       fprintf (asm_out_file, ".shared .align %d .u8 %s[%d];\n",
 	       worker_red_align,
 	       worker_red_name, worker_red_size);

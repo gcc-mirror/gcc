@@ -1,3 +1,16 @@
+2015-11-21  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (write_function_decl_and_comment): Print
+	leading blank line.
+	(write_func_decl_from_insn): Likewise.
+	(init_output_initializer, nvptx_assemble_undefined_decl): Likewise.
+	(nvptx_file_end): Likewise.
+	(nvptx_function_end): Undent output.
+	(nvptx_expand_call): Fix formatting.
+	(nvptx_output_call_insn): Indent output.
+	* config/nvptx/nvptx.h (ASM_OUTPUT_ALIGNED_DECL_COMMON,
+	ASM__OUTPUT_ALIGNED_DECL_LOCAL): Print leading blank line.
+
 2015-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/66432
