@@ -1,3 +1,18 @@
+2015-11-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (build_pointer_type_for_mode,build_reference_type_for_mode):
+	In LTO we do not compute TYPE_CANONICAL of pointers.
+	(gimple_canonical_types_compatible_p): Improve coments; sanity check
+	that pointers do not have canonical type that would make us believe
+	they are different.
+	* alias.c (get_alias_set): Do structural type equality on pointers;
+	enable pointer path for LTO; also glob pointer to vector with pointer
+	to vector element; glob pointers and references for LTO; do more strict
+	sanity checking about build_pointer_type returning the canonical type
+	which is also the main variant.
+	(record_component_aliases): When component type is pointer and we
+	do LTO; record void_type_node alias set.
+
 2015-11-21  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.md (clz<mode>2): Use operand 1 for type.

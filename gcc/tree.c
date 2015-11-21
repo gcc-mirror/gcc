@@ -7919,7 +7919,8 @@ build_pointer_type_for_mode (tree to_type, machine_mode mode,
   TYPE_NEXT_PTR_TO (t) = TYPE_POINTER_TO (to_type);
   TYPE_POINTER_TO (to_type) = t;
 
-  if (TYPE_STRUCTURAL_EQUALITY_P (to_type))
+  /* During LTO we do not set TYPE_CANONICAL of pointers and references.  */
+  if (TYPE_STRUCTURAL_EQUALITY_P (to_type) || in_lto_p)
     SET_TYPE_STRUCTURAL_EQUALITY (t);
   else if (TYPE_CANONICAL (to_type) != to_type || could_alias)
     TYPE_CANONICAL (t)
@@ -7987,7 +7988,8 @@ build_reference_type_for_mode (tree to_type, machine_mode mode,
   TYPE_NEXT_REF_TO (t) = TYPE_REFERENCE_TO (to_type);
   TYPE_REFERENCE_TO (to_type) = t;
 
-  if (TYPE_STRUCTURAL_EQUALITY_P (to_type))
+  /* During LTO we do not set TYPE_CANONICAL of pointers and references.  */
+  if (TYPE_STRUCTURAL_EQUALITY_P (to_type) || in_lto_p)
     SET_TYPE_STRUCTURAL_EQUALITY (t);
   else if (TYPE_CANONICAL (to_type) != to_type || could_alias)
     TYPE_CANONICAL (t)
@@ -13224,7 +13226,9 @@ type_with_interoperable_signedness (const_tree type)
    TBAA is concerned.  
    This function is used both by lto.c canonical type merging and by the
    verifier.  If TRUST_TYPE_CANONICAL we do not look into structure of types
-   that have TYPE_CANONICAL defined and assume them equivalent.  */
+   that have TYPE_CANONICAL defined and assume them equivalent.  This is useful
+   only for LTO because only in these cases TYPE_CANONICAL equivalence
+   correspond to one defined by gimple_canonical_types_compatible_p.  */
 
 bool
 gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
@@ -13265,9 +13269,19 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
 	      || (type_with_alias_set_p (t1) && type_with_alias_set_p (t2)));
   /* If the types have been previously registered and found equal
      they still are.  */
+
   if (TYPE_CANONICAL (t1) && TYPE_CANONICAL (t2)
       && trust_type_canonical)
-    return TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2);
+    {
+      /* Do not use TYPE_CANONICAL of pointer types.  For LTO streamed types
+	 they are always NULL, but they are set to non-NULL for types
+	 constructed by build_pointer_type and variants.  In this case the
+	 TYPE_CANONICAL is more fine grained than the equivalnce we test (where
+	 all pointers are considered equal.  Be sure to not return false
+	 negatives.  */
+      gcc_checking_assert (!POINTER_TYPE_P (t1) && !POINTER_TYPE_P (t2));
+      return TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2);
+    }
 
   /* Can't be the same type if the types don't have the same code.  */
   enum tree_code code = tree_code_for_canonical_type_merging (TREE_CODE (t1));

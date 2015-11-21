@@ -869,13 +869,23 @@ get_alias_set (tree t)
       set = lang_hooks.get_alias_set (t);
       if (set != -1)
 	return set;
-      return 0;
+      /* Handle structure type equality for pointer types.  This is easy
+	 to do, because the code bellow ignore canonical types on these anyway.
+	 This is important for LTO, where TYPE_CANONICAL for pointers can not
+	 be meaningfuly computed by the frotnend.  */
+      if (!POINTER_TYPE_P (t))
+	{
+	  /* In LTO we set canonical types for all types where it makes
+	     sense to do so.  Double check we did not miss some type.  */
+	  gcc_checking_assert (!in_lto_p || !type_with_alias_set_p (t));
+          return 0;
+	}
     }
-
-  t = TYPE_CANONICAL (t);
-
-  /* The canonical type should not require structural equality checks.  */
-  gcc_checking_assert (!TYPE_STRUCTURAL_EQUALITY_P (t));
+  else
+    {
+      t = TYPE_CANONICAL (t);
+      gcc_checking_assert (!TYPE_STRUCTURAL_EQUALITY_P (t));
+    }
 
   /* If this is a type with a known alias set, return it.  */
   if (TYPE_ALIAS_SET_KNOWN_P (t))
@@ -952,20 +962,23 @@ get_alias_set (tree t)
      ptr_type_node but that is a bad idea, because it prevents disabiguations
      in between pointers.  For Firefox this accounts about 20% of all
      disambiguations in the program.  */
-  else if (POINTER_TYPE_P (t) && t != ptr_type_node && !in_lto_p)
+  else if (POINTER_TYPE_P (t) && t != ptr_type_node)
     {
       tree p;
       auto_vec <bool, 8> reference;
 
       /* Unnest all pointers and references.
-         We also want to make pointer to array equivalent to pointer to its
-         element. So skip all array types, too.  */
+	 We also want to make pointer to array/vector equivalent to pointer to
+	 its element (see the reasoning above). Skip all those types, too.  */
       for (p = t; POINTER_TYPE_P (p)
-	   || (TREE_CODE (p) == ARRAY_TYPE && !TYPE_NONALIASED_COMPONENT (p));
+	   || (TREE_CODE (p) == ARRAY_TYPE && !TYPE_NONALIASED_COMPONENT (p))
+	   || TREE_CODE (p) == VECTOR_TYPE;
 	   p = TREE_TYPE (p))
 	{
 	  if (TREE_CODE (p) == REFERENCE_TYPE)
-	    reference.safe_push (true);
+	    /* In LTO we want languages that use references to be compatible
+ 	       with languages that use pointers.  */
+	    reference.safe_push (true && !in_lto_p);
 	  if (TREE_CODE (p) == POINTER_TYPE)
 	    reference.safe_push (false);
 	}
@@ -981,7 +994,7 @@ get_alias_set (tree t)
 	set = get_alias_set (ptr_type_node);
       else
 	{
-	  /* Rebuild pointer type from starting from canonical types using
+	  /* Rebuild pointer type starting from canonical types using
 	     unqualified pointers and references only.  This way all such
 	     pointers will have the same alias set and will conflict with
 	     each other.
@@ -998,9 +1011,15 @@ get_alias_set (tree t)
 		p = build_reference_type (p);
 	      else
 		p = build_pointer_type (p);
-	      p = TYPE_CANONICAL (TYPE_MAIN_VARIANT (p));
+	      gcc_checking_assert (p == TYPE_MAIN_VARIANT (p));
+	      /* build_pointer_type should always return the canonical type.
+		 For LTO TYPE_CANOINCAL may be NULL, because we do not compute
+		 them.  Be sure that frontends do not glob canonical types of
+		 pointers in unexpected way and that p == TYPE_CANONICAL (p)
+		 in all other cases.  */
+	      gcc_checking_assert (!TYPE_CANONICAL (p)
+				   || p == TYPE_CANONICAL (p));
 	    }
-          gcc_checking_assert (TYPE_CANONICAL (p) == p);
 
 	  /* Assign the alias set to both p and t.
 	     We can not call get_alias_set (p) here as that would trigger
@@ -1015,11 +1034,12 @@ get_alias_set (tree t)
 	    }
 	}
     }
-  /* In LTO the rules above needs to be part of canonical type machinery.
-     For now just punt.  */
-  else if (POINTER_TYPE_P (t)
-	   && t != TYPE_CANONICAL (ptr_type_node) && in_lto_p)
-    set = get_alias_set (TYPE_CANONICAL (ptr_type_node));
+  /* Alias set of ptr_type_node is special and serve as universal pointer which
+     is TBAA compatible with every other pointer type.  Be sure we have the
+     alias set built even for LTO which otherwise keeps all TYPE_CANONICAL
+     of pointer types NULL.  */
+  else if (t == ptr_type_node)
+    set = new_alias_set ();
 
   /* Otherwise make a new alias set for this type.  */
   else
@@ -1155,7 +1175,42 @@ record_component_aliases (tree type)
     case QUAL_UNION_TYPE:
       for (field = TYPE_FIELDS (type); field != 0; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL && !DECL_NONADDRESSABLE_P (field))
-	  record_alias_subset (superset, get_alias_set (TREE_TYPE (field)));
+	  {
+	    /* LTO type merging does not make any difference between 
+	       component pointer types.  We may have
+
+	       struct foo {int *a;};
+
+	       as TYPE_CANONICAL of 
+
+	       struct bar {float *a;};
+
+	       Because accesses to int * and float * do not alias, we would get
+	       false negative when accessing the same memory location by
+	       float ** and bar *. We thus record the canonical type as:
+
+	       struct {void *a;};
+
+	       void * is special cased and works as a universal pointer type.
+	       Accesses to it conflicts with accesses to any other pointer
+	       type.  */
+	    tree t = TREE_TYPE (field);
+	    if (in_lto_p)
+	      {
+		/* VECTOR_TYPE and ARRAY_TYPE share the alias set with their
+		   element type and that type has to be normalized to void *,
+		   too, in the case it is a pointer. */
+		while ((TREE_CODE (t) == ARRAY_TYPE
+			&& (!COMPLETE_TYPE_P (t)
+			    || TYPE_NONALIASED_COMPONENT (t)))
+		       || TREE_CODE (t) == VECTOR_TYPE)
+		  t = TREE_TYPE (t);
+		if (POINTER_TYPE_P (t))
+		  t = ptr_type_node;
+	      }
+	   
+	    record_alias_subset (superset, get_alias_set (t));
+	  }
       break;
 
     case COMPLEX_TYPE:
