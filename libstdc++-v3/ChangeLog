@@ -1,3 +1,8 @@
+2015-11-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* testsuite/23_containers/vector/profile/vector.cc: Add maxdata
+	option on AIX.
+
 2015-11-20  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	PR libstdc++/68448
