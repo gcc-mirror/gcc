@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-require-effective-target lto }
 ! { dg-options "-flto" }
 !
 ! Checks that the results of module procedures have the correct characteristics
