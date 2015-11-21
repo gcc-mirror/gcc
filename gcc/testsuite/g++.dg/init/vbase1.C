@@ -42,4 +42,4 @@ int main(int, char**)
 // Verify that the SubB() mem-initializer is storing 0 directly into
 // this->D.whatever rather than into a stack temp that is then copied into the
 // base field.
-// { dg-final { scan-rtl-dump "set \[^\n\]*\n\[^\n\]*this\[^\n\]*\n\[^\n\]*const_int 0" "expand" { target { x86_64-*-* } } } }
+// { dg-final { scan-rtl-dump "set \[^\n\]*\n\[^\n\]*this\[^\n\]*\n\[^\n\]*const_int 0" "expand" { target { i?86-*-* x86_64-*-* } } } }

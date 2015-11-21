@@ -1,3 +1,7 @@
+2015-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/init/vbase1.C: Also run on i?86-*-*.
+
 2015-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/66432
