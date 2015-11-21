@@ -1,3 +1,7 @@
+2015-11-21  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/atomic-generic.c: Include <string.h>.
+
 2015-11-21  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gfortran.dg/submodule_6.f08: Add dg-require-effective-target lto.
