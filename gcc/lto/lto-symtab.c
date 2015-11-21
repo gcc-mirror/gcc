@@ -180,16 +180,26 @@ lto_varpool_replace_node (varpool_node *vnode,
 /* Return non-zero if we want to output waring about T1 and T2.
    Return value is a bitmask of reasons of violation:
    Bit 0 indicates that types are not compatible of memory layout.
-   Bot 1 indicates that types are not compatible because of C++ ODR rule.  */
+   Bit 1 indicates that types are not compatible because of C++ ODR rule.  */
 
 static int
 warn_type_compatibility_p (tree prevailing_type, tree type)
 {
   int lev = 0;
+
+  /* Get complete type.
+     ???  We might want to emit a warning here if type qualification
+     differences were spotted.  Do not do this unconditionally though.  */
+  type = TYPE_MAIN_VARIANT (type);
+  prevailing_type = TYPE_MAIN_VARIANT (prevailing_type);
+  if (prevailing_type == type)
+    return 0;
+
+  bool odr_p = odr_or_derived_type_p (prevailing_type)
+	       && odr_or_derived_type_p (type);
   /* C++ provide a robust way to check for type compatibility via the ODR
      rule.  */
-  if (odr_or_derived_type_p (prevailing_type) && odr_or_derived_type_p (type)
-      && !odr_types_equivalent_p (prevailing_type, type))
+  if (odr_p && !odr_types_equivalent_p (prevailing_type, type))
     lev = 2;
 
   /* Function types needs special care, because types_compatible_p never
@@ -209,15 +219,15 @@ warn_type_compatibility_p (tree prevailing_type, tree type)
 	  for (parm1 = TYPE_ARG_TYPES (prevailing_type),
 	       parm2 = TYPE_ARG_TYPES (type);
 	       parm1 && parm2;
-	       parm1 = TREE_CHAIN (prevailing_type),
-	       parm2 = TREE_CHAIN (type))
+	       parm1 = TREE_CHAIN (parm1),
+	       parm2 = TREE_CHAIN (parm2))
 	    lev |= warn_type_compatibility_p (TREE_VALUE (parm1),
 					      TREE_VALUE (parm2));
 	  if (parm1 || parm2)
-	    lev = 3;
+	    lev = odr_p ? 3 : 1;
 	}
       if (comp_type_attributes (prevailing_type, type) == 0)
-	lev = 3;
+	lev = odr_p ? 3 : 1;
       return lev;
     }
   /* Sharing a global symbol is a strong hint that two types are
@@ -269,9 +279,6 @@ warn_type_compatibility_p (tree prevailing_type, tree type)
 
       /* Fallthru.  Compatible enough.  */
     }
-
-  /* ???  We might want to emit a warning here if type qualification
-     differences were spotted.  Do not do this unconditionally though.  */
 
   return lev;
 }
