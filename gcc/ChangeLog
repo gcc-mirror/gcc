@@ -1,3 +1,10 @@
+2015-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/66432
+	* tree-inline.c (copy_debug_stmt): If
+	gimple_debug_source_bind_get_value is DECL_ORIGIN of a PARM_DECL
+	in decl_debug_args, don't call remap_gimple_op_r on it.
+
 2015-11-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-icf.c (sem_item::add_type): Do not look for TYPE_CANONICAL;
