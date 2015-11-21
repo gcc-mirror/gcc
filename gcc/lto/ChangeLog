@@ -1,4 +1,11 @@
-2015-11-11  Jan Hubicka  <hubicka@ucw.cz>
+2015-11-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (iterative_hash_canonical_type): Always recurse for pointers.
+	(gimple_register_canonical_type_1): Check that pointers do not get
+	canonical types.
+	(gimple_register_canonical_type): Do not register pointers.
+
+2015-11-21  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-symtab.c (warn_type_compatibility_p): Do not set ODR mismatch
 	flag for types that are not ODR; fix loop walking parameters.
