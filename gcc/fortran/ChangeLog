@@ -1,4 +1,10 @@
 2015-11-22  James Norris  <jnorris@codesourcery.com>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* openmp.c (match_oacc_clause_gang): Fix uninitialized variable.
+	(gfc_resolve_oacc_declare): Fix comparision.
+
+2015-11-22  James Norris  <jnorris@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
 	* dump-parse-tree.c (show_namespace): Handle declares.

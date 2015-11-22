@@ -415,7 +415,8 @@ match_oacc_clause_gang (gfc_omp_clauses *cp)
 static match
 gfc_match_oacc_clause_link (const char *str, gfc_omp_namelist **list)
 {
-  gfc_omp_namelist *head, *tail, *p;
+  gfc_omp_namelist *head = NULL;
+  gfc_omp_namelist *tail, *p;
   locus old_loc;
   char n[GFC_MAX_SYMBOL_LEN+1];
   gfc_symbol *sym;
@@ -4821,7 +4822,7 @@ gfc_resolve_oacc_declare (gfc_namespace *ns)
 
   for (oc = ns->oacc_declare; oc; oc = oc->next)
     {
-      for (list = 0; list <= OMP_LIST_NUM; list++)
+      for (list = 0; list < OMP_LIST_NUM; list++)
 	for (n = oc->clauses->lists[list]; n; n = n->next)
 	  {
 	    n->sym->mark = 0;
@@ -4846,7 +4847,7 @@ gfc_resolve_oacc_declare (gfc_namespace *ns)
 
   for (oc = ns->oacc_declare; oc; oc = oc->next)
     {
-      for (list = 0; list <= OMP_LIST_NUM; list++)
+      for (list = 0; list < OMP_LIST_NUM; list++)
 	for (n = oc->clauses->lists[list]; n; n = n->next)
 	  {
 	    if (n->sym->mark)
@@ -4862,7 +4863,7 @@ gfc_resolve_oacc_declare (gfc_namespace *ns)
 
   for (oc = ns->oacc_declare; oc; oc = oc->next)
     {
-      for (list = 0; list <= OMP_LIST_NUM; list++)
+      for (list = 0; list < OMP_LIST_NUM; list++)
 	for (n = oc->clauses->lists[list]; n; n = n->next)
 	  n->sym->mark = 0;
     }
