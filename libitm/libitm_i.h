@@ -106,12 +106,10 @@ namespace GTM HIDDEN {
 // the template used inside gtm_thread can instantiate.
 struct gtm_alloc_action
 {
-  // Iff free_fn_sz is nonzero, it must be used instead of free_fn.
-  union
-  {
-    void (*free_fn)(void *);
-    void (*free_fn_sz)(void *, size_t);
-  };
+  // Iff free_fn_sz is nonzero, it must be used instead of free_fn, and vice
+  // versa.
+  void (*free_fn)(void *);
+  void (*free_fn_sz)(void *, size_t);
   size_t sz;
   // If true, this is an allocation; we discard the log entry on outermost
   // commit, and deallocate on abort.  If false, this is a deallocation and
