@@ -1,3 +1,8 @@
+2015-11-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR target/68390
+	* gcc/testsuite/gcc.c-torture/execute/pr68390.c: New test.
+
 2015-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/fmt_g0_1.f08: Update test. Leading zero.
