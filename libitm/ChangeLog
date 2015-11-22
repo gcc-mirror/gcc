@@ -1,3 +1,8 @@
+2015-11-22  Torvald Riegel  <triegel@redhat.com>
+
+	* libitm_i.h (gtm_alloc_action): Remove union.
+	* testsuite/libitm.c/alloc-1.c: New.
+
 2015-11-19  Torvald Riegel  <triegel@redhat.com>
 
 	* testsuite/libitm.c++/eh-5.C: New.
