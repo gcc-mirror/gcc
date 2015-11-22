@@ -1811,6 +1811,7 @@ gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
     {
       case EXPR_VARIABLE:
       case EXPR_ARRAY:
+      case EXPR_OP:
 	a = gfc_copy_expr (array);
 	gfc_simplify_expr (a, 0);
 	if (!is_constant_array_expr (a))
