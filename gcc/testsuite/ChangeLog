@@ -1,3 +1,7 @@
+2015-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/fmt_g0_1.f08: Update test. Leading zero.
+
 2015-11-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68486
