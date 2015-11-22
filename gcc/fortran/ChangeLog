@@ -1,3 +1,48 @@
+2015-11-22  James Norris  <jnorris@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* dump-parse-tree.c (show_namespace): Handle declares.
+	* gfortran.h (struct symbol_attribute): New fields.
+	(enum gfc_omp_map_map): Add OMP_MAP_DEVICE_RESIDENT and OMP_MAP_LINK.
+	(OMP_LIST_LINK): New enum.
+	(struct gfc_oacc_declare): New structure.
+	(gfc_get_oacc_declare): New definition.
+	(struct gfc_namespace): Change type.
+	(enum gfc_exec_op): Add EXEC_OACC_DECLARE.
+	(struct gfc_code): New field.
+	* module.c (enum ab_attribute): Add AB_OACC_DECLARE_CREATE,
+	AB_OACC_DECLARE_COPYIN, AB_OACC_DECLARE_DEVICEPTR,
+	AB_OACC_DECLARE_DEVICE_RESIDENT, AB_OACC_DECLARE_LINK
+	(attr_bits): Add new initializers.
+	(mio_symbol_attribute): Handle new atributes.
+	* openmp.c (gfc_free_oacc_declare_clauses): New function.
+	(gfc_match_oacc_clause_link: Likewise.
+	(OMP_CLAUSE_LINK): New definition.
+	(gfc_match_omp_clauses): Handle OMP_CLAUSE_LINK.
+	(OACC_DECLARE_CLAUSES): Add OMP_CLAUSE_LINK
+	(gfc_match_oacc_declare): Add checking and module handling.
+	(resolve_omp_clauses): Add array initializer.
+	(gfc_resolve_oacc_declare): Reimplement.
+	* parse.c (case_decl): Add ST_OACC_DECLARE.
+	(parse_spec): Remove handling.
+	(parse_progunit): Remove handling.
+	* parse.h (struct gfc_state_data): Change type.
+	* resolve.c (gfc_resolve_blocks): Handle EXEC_OACC_DECLARE.
+	* st.c (gfc_free_statement): Handle EXEC_OACC_DECLARE.
+	* symbol.c (check_conflict): Add conflict checks.
+	(gfc_add_oacc_declare_create, gfc_add_oacc_declare_copyin, 
+	gfc_add_oacc_declare_deviceptr, gfc_add_oacc_declare_device_resident):
+	New functions.
+	(gfc_copy_attr): Handle new symbols.
+	* trans-decl.c (add_clause, find_module_oacc_declare_clauses,
+	finish_oacc_declare): New functions.
+	(gfc_generate_function_code): Replace with call.
+	* trans-openmp.c (gfc_trans_oacc_declare): Reimplement.
+	(gfc_trans_oacc_directive): Handle EXEC_OACC_DECLARE.
+	* trans-stmt.c (gfc_trans_block_construct): Replace with call.
+	* trans-stmt.h (gfc_trans_oacc_declare): Remove argument.
+	* trans.c (trans_code): Handle EXEC_OACC_DECLARE.
+
 2015-11-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* simplify.c (gfc_simplify_cshift): Work around bootstrap issues

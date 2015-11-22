@@ -1,3 +1,9 @@
+2015-11-22  James Norris  <jnorris@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gfortran.dg/goacc/declare-1.f95: Update test.
+	* gfortran.dg/goacc/declare-2.f95: New test.
+
 2015-11-22  Bilyan Borisov  <bilyan.borisov@arm.com>
 
 	* gcc.target/aarch64/simd/vmulx_lane_f32_1.c: New.

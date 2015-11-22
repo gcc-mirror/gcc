@@ -1385,7 +1385,7 @@ next_statement (void)
   case ST_EQUIVALENCE: case ST_NAMELIST: case ST_STATEMENT_FUNCTION: \
   case ST_TYPE: case ST_INTERFACE: case ST_OMP_THREADPRIVATE: \
   case ST_PROCEDURE: case ST_OMP_DECLARE_SIMD: case ST_OMP_DECLARE_REDUCTION: \
-  case ST_OMP_DECLARE_TARGET: case ST_OACC_ROUTINE
+  case ST_OMP_DECLARE_TARGET: case ST_OACC_ROUTINE: case ST_OACC_DECLARE
 
 /* Block end statements.  Errors associated with interchanging these
    are detected in gfc_match_end().  */
@@ -2449,7 +2449,6 @@ verify_st_order (st_state *p, gfc_statement st, bool silent)
     case ST_PUBLIC:
     case ST_PRIVATE:
     case ST_DERIVED_DECL:
-    case ST_OACC_DECLARE:
     case_decl:
       if (p->state >= ORDER_EXEC)
 	goto order;
@@ -3358,19 +3357,6 @@ declSt:
       if (match_deferred_characteristics (ts) != MATCH_YES)
 	bad_characteristic = true;
 
-      st = next_statement ();
-      goto loop;
-
-    case ST_OACC_DECLARE:
-      if (!verify_st_order(&ss, st, false))
-	{
-	  reject_statement ();
-	  st = next_statement ();
-	  goto loop;
-	}
-      if (gfc_state_stack->ext.oacc_declare_clauses == NULL)
-	gfc_state_stack->ext.oacc_declare_clauses = new_st.ext.omp_clauses;
-      accept_statement (st);
       st = next_statement ();
       goto loop;
 
@@ -5213,13 +5199,6 @@ contains:
 
 done:
   gfc_current_ns->code = gfc_state_stack->head;
-  if (gfc_state_stack->state == COMP_PROGRAM
-      || gfc_state_stack->state == COMP_MODULE
-      || gfc_state_stack->state == COMP_SUBROUTINE
-      || gfc_state_stack->state == COMP_FUNCTION
-      || gfc_state_stack->state == COMP_BLOCK)
-    gfc_current_ns->oacc_declare_clauses
-      = gfc_state_stack->ext.oacc_declare_clauses;
 }
 
 

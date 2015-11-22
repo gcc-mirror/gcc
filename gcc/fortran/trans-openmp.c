@@ -4421,13 +4421,24 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
 }
 
 tree
-gfc_trans_oacc_declare (stmtblock_t *block, gfc_namespace *ns)
+gfc_trans_oacc_declare (gfc_code *code)
 {
-  tree oacc_clauses;
-  oacc_clauses = gfc_trans_omp_clauses (block, ns->oacc_declare_clauses,
-					ns->oacc_declare_clauses->loc);
-  return build1_loc (ns->oacc_declare_clauses->loc.lb->location,
-		     OACC_DECLARE, void_type_node, oacc_clauses);
+  stmtblock_t block;
+  tree stmt, oacc_clauses;
+  enum tree_code construct_code;
+
+  construct_code = OACC_DATA;
+
+  gfc_start_block (&block);
+
+  oacc_clauses = gfc_trans_omp_clauses (&block, code->ext.oacc_declare->clauses,
+					code->loc);
+  stmt = gfc_trans_omp_code (code->block->next, true);
+  stmt = build2_loc (input_location, construct_code, void_type_node, stmt,
+		     oacc_clauses);
+  gfc_add_expr_to_block (&block, stmt);
+
+  return gfc_finish_block (&block);
 }
 
 tree
@@ -4455,6 +4466,8 @@ gfc_trans_oacc_directive (gfc_code *code)
       return gfc_trans_oacc_wait_directive (code);
     case EXEC_OACC_ATOMIC:
       return gfc_trans_omp_atomic (code);
+    case EXEC_OACC_DECLARE:
+      return gfc_trans_oacc_declare (code);
     default:
       gcc_unreachable ();
     }

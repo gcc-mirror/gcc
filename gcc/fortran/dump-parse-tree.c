@@ -2570,12 +2570,16 @@ show_namespace (gfc_namespace *ns)
   for (eq = ns->equiv; eq; eq = eq->next)
     show_equiv (eq);
 
-  if (ns->oacc_declare_clauses)
+  if (ns->oacc_declare)
     {
+      struct gfc_oacc_declare *decl;
       /* Dump !$ACC DECLARE clauses.  */
-      show_indent ();
-      fprintf (dumpfile, "!$ACC DECLARE");
-      show_omp_clauses (ns->oacc_declare_clauses);
+      for (decl = ns->oacc_declare; decl; decl = decl->next)
+	{
+	  show_indent ();
+	  fprintf (dumpfile, "!$ACC DECLARE");
+	  show_omp_clauses (decl->clauses);
+	}
     }
 
   fputc ('\n', dumpfile);
