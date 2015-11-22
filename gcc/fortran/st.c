@@ -185,6 +185,11 @@ gfc_free_statement (gfc_code *p)
       gfc_free_forall_iterator (p->ext.forall_iterator);
       break;
 
+    case EXEC_OACC_DECLARE:
+      if (p->ext.oacc_declare)
+	gfc_free_oacc_declare_clauses (p->ext.oacc_declare);
+      break;
+
     case EXEC_OACC_PARALLEL_LOOP:
     case EXEC_OACC_PARALLEL:
     case EXEC_OACC_KERNELS_LOOP:

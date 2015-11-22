@@ -1917,6 +1917,7 @@ trans_code (gfc_code * code, tree cond)
 	case EXEC_OACC_ENTER_DATA:
 	case EXEC_OACC_EXIT_DATA:
 	case EXEC_OACC_ATOMIC:
+	case EXEC_OACC_DECLARE:
 	  res = gfc_trans_oacc_directive (code);
 	  break;
 
