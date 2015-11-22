@@ -1,3 +1,8 @@
+2015-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/write_float.def (output_float): Move block determining
+	room for leading zero to before checkng g0 formatting.
+
 2015-09-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/67527

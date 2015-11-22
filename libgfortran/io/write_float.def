@@ -514,11 +514,20 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	  w = w == 1 ? 2 : w;
 	}
     }
-  
+
   /* Work out how much padding is needed.  */
   nblanks = w - (nbefore + nzero + nafter + edigits + 1);
   if (sign != S_NONE)
     nblanks--;
+
+  /* See if we have space for a zero before the decimal point.  */
+  if (nbefore == 0 && nblanks > 0)
+    {
+      leadzero = 1;
+      nblanks--;
+    }
+  else
+    leadzero = 0;
 
   if (dtp->u.p.g0_no_blanks)
     {
@@ -543,15 +552,6 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
       star_fill (out, w);
       return false;
     }
-
-  /* See if we have space for a zero before the decimal point.  */
-  if (nbefore == 0 && nblanks > 0)
-    {
-      leadzero = 1;
-      nblanks--;
-    }
-  else
-    leadzero = 0;
 
   /* For internal character(kind=4) units, we duplicate the code used for
      regular output slightly modified.  This needs to be maintained
