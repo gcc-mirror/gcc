@@ -1,3 +1,23 @@
+2015-11-22  Bilyan Borisov  <bilyan.borisov@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(*aarch64_mulx_elt_<vswap_width_name><mode>, VDQSF): New.
+	(*aarch64_mulx_elt<mode>, VDQF): Likewise.
+	(*aarch64_mulx_elt_to_64v2df): Likewise.
+	(*aarch64_vgetfmulx<mode>, VDQF_DF): Likewise.
+	* config/aarch64/arm_neon.h (vmulx_lane_f32): New.
+	(vmulx_lane_f64): Likewise.
+	(vmulxq_lane_f32): Refactored & moved.
+	(vmulxq_lane_f64): Likewise.
+	(vmulx_laneq_f32): New.
+	(vmulx_laneq_f64): Likewise.
+	(vmulxq_laneq_f32): Likewise.
+	(vmulxq_laneq_f64): Likewise.
+	(vmulxs_lane_f32): Likewise.
+	(vmulxs_laneq_f32): Likewise.
+	(vmulxd_lane_f64): Likewise.
+	(vmulxd_laneq_f64): Likewise.
+
 2015-11-21  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree.c (build_pointer_type_for_mode,build_reference_type_for_mode):
