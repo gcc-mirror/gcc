@@ -1,3 +1,11 @@
+2015-11-22  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	Backport from mainline
+	2015-09-14  Manuel López-Ibáñe<manu@gcc.gnu.org>
+
+	PR fortran/67460
+	* gfortran.dg/pr67460.f90: New test.
+
 2015-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/66432

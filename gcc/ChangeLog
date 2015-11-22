@@ -1,3 +1,17 @@
+2015-11-22  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	Backport from mainline
+	2015-09-14  Manuel López-Ibáñe<manu@gcc.gnu.org>
+
+	PR fortran/67460
+	* diagnostic.c (diagnostic_initialize): Do not set
+	some_warnings_are_errors.
+	(diagnostic_finish): Use DK_WERROR count instead.
+	(diagnostic_report_diagnostic): Do not set
+	some_warnings_are_errors.
+	* diagnostic.h (struct diagnostic_context): Remove
+	some_warnings_are_errors.
+
 2015-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/66432

@@ -138,7 +138,6 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   new (context->printer) pretty_printer ();
 
   memset (context->diagnostic_count, 0, sizeof context->diagnostic_count);
-  context->some_warnings_are_errors = false;
   context->warning_as_error_requested = false;
   context->n_opts = n_opts;
   context->classify_diagnostic = XNEWVEC (diagnostic_t, n_opts);
@@ -204,7 +203,7 @@ void
 diagnostic_finish (diagnostic_context *context)
 {
   /* Some of the errors may actually have been warnings.  */
-  if (context->some_warnings_are_errors)
+  if (diagnostic_kind_count (context, DK_WERROR))
     {
       /* -Werror was given.  */
       if (context->warning_as_error_requested)
@@ -810,9 +809,6 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       if (diagnostic->kind == DK_IGNORED)
 	return false;
     }
-
-  if (orig_diag_kind == DK_WARNING && diagnostic->kind == DK_ERROR)
-    context->some_warnings_are_errors = true;
 
   context->lock++;
 

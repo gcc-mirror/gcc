@@ -65,10 +65,6 @@ struct diagnostic_context
   /* The number of times we have issued diagnostics.  */
   int diagnostic_count[DK_LAST_DIAGNOSTIC_KIND];
 
-  /* True if we should display the "warnings are being tread as error"
-     message, usually displayed once per compiler run.  */
-  bool some_warnings_are_errors;
-
   /* True if it has been requested that warnings be treated as errors.  */
   bool warning_as_error_requested;
 
