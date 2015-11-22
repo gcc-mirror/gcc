@@ -2907,6 +2907,80 @@
  [(set_attr "type" "neon_fp_mul_<Vetype>")]
 )
 
+;; vmulxq_lane_f32, and vmulx_laneq_f32
+
+(define_insn "*aarch64_mulx_elt_<vswap_width_name><mode>"
+  [(set (match_operand:VDQSF 0 "register_operand" "=w")
+	(unspec:VDQSF
+	 [(match_operand:VDQSF 1 "register_operand" "w")
+	  (vec_duplicate:VDQSF
+	   (vec_select:<VEL>
+	    (match_operand:<VSWAP_WIDTH> 2 "register_operand" "w")
+	    (parallel [(match_operand:SI 3 "immediate_operand" "i")])))]
+	 UNSPEC_FMULX))]
+  "TARGET_SIMD"
+  {
+    operands[3] = GEN_INT (ENDIAN_LANE_N (<VSWAP_WIDTH>mode,
+					  INTVAL (operands[3])));
+    return "fmulx\t%<v>0<Vmtype>, %<v>1<Vmtype>, %2.<Vetype>[%3]";
+  }
+  [(set_attr "type" "neon_fp_mul_<Vetype>_scalar<q>")]
+)
+
+;; vmulxq_laneq_f32, vmulxq_laneq_f64, vmulx_lane_f32
+
+(define_insn "*aarch64_mulx_elt<mode>"
+  [(set (match_operand:VDQF 0 "register_operand" "=w")
+	(unspec:VDQF
+	 [(match_operand:VDQF 1 "register_operand" "w")
+	  (vec_duplicate:VDQF
+	   (vec_select:<VEL>
+	    (match_operand:VDQF 2 "register_operand" "w")
+	    (parallel [(match_operand:SI 3 "immediate_operand" "i")])))]
+	 UNSPEC_FMULX))]
+  "TARGET_SIMD"
+  {
+    operands[3] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[3])));
+    return "fmulx\t%<v>0<Vmtype>, %<v>1<Vmtype>, %2.<Vetype>[%3]";
+  }
+  [(set_attr "type" "neon_fp_mul_<Vetype><q>")]
+)
+
+;; vmulxq_lane_f64
+
+(define_insn "*aarch64_mulx_elt_to_64v2df"
+  [(set (match_operand:V2DF 0 "register_operand" "=w")
+	(unspec:V2DF
+	 [(match_operand:V2DF 1 "register_operand" "w")
+	  (vec_duplicate:V2DF
+	    (match_operand:DF 2 "register_operand" "w"))]
+	 UNSPEC_FMULX))]
+  "TARGET_SIMD"
+  {
+    return "fmulx\t%0.2d, %1.2d, %2.d[0]";
+  }
+  [(set_attr "type" "neon_fp_mul_d_scalar_q")]
+)
+
+;; vmulxs_lane_f32, vmulxs_laneq_f32
+;; vmulxd_lane_f64 ==  vmulx_lane_f64
+;; vmulxd_laneq_f64 == vmulx_laneq_f64
+
+(define_insn "*aarch64_vgetfmulx<mode>"
+  [(set (match_operand:<VEL> 0 "register_operand" "=w")
+	(unspec:<VEL>
+	 [(match_operand:<VEL> 1 "register_operand" "w")
+	  (vec_select:<VEL>
+	   (match_operand:VDQF_DF 2 "register_operand" "w")
+	    (parallel [(match_operand:SI 3 "immediate_operand" "i")]))]
+	 UNSPEC_FMULX))]
+  "TARGET_SIMD"
+  {
+    operands[3] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[3])));
+    return "fmulx\t%<Vetype>0, %<Vetype>1, %2.<Vetype>[%3]";
+  }
+  [(set_attr "type" "fmul<Vetype>")]
+)
 ;; <su>q<addsub>
 
 (define_insn "aarch64_<su_optab><optab><mode>"
