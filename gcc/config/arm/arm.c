@@ -6686,8 +6686,13 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
 	 a VFP register but then need to transfer it to a core
 	 register.  */
       rtx a, b;
+      tree decl_or_type = decl;
 
-      a = arm_function_value (TREE_TYPE (exp), decl, false);
+      /* If it is an indirect function pointer, get the function type.  */
+      if (!decl)
+	decl_or_type = TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (exp)));
+
+      a = arm_function_value (TREE_TYPE (exp), decl_or_type, false);
       b = arm_function_value (TREE_TYPE (DECL_RESULT (cfun->decl)),
 			      cfun->decl, false);
       if (!rtx_equal_p (a, b))
