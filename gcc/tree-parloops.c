@@ -2433,7 +2433,7 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 
   simple_loop_info = vect_analyze_loop_form (loop);
   if (simple_loop_info == NULL)
-    return;
+    goto gather_done;
 
   for (gsi = gsi_start_phis (loop->header); !gsi_end_p (gsi); gsi_next (&gsi))
     {
@@ -2492,8 +2492,12 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
   destroy_loop_vec_info (simple_loop_info, true);
   destroy_loop_vec_info (simple_inner_loop_info, true);
 
+ gather_done:
   /* Release the claim on gimple_uid.  */
   free_stmt_vec_info_vec ();
+
+  if (reduction_list->elements () == 0)
+    return;
 
   /* As gimple_uid is used by the vectorizer in between vect_analyze_loop_form
      and free_stmt_vec_info_vec, we can set gimple_uid of reduc_phi stmts only
