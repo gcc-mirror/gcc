@@ -1,5 +1,10 @@
-2015-11-23    ipa/65908
+2015-11-23  Martin Liska  <mliska@suse.cz>
 
+	Backport from mainline
+	2015-06-22  Jan Hubicka  <hubicka@ucw.cz>
+		    Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65908
 	* ipa-icf.c (sem_item::target_supports_symbol_aliases): Remove
 	construction of arg_types.
 	(sem_function::sem_function): Likewise.
