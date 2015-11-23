@@ -33,7 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    kernels; we check for that in an init section and bail out rather
    unceremoneously.  */
 
-extern unsigned int __write (int fd, const void *buf, unsigned int count);
+extern int write (int fd, const void *buf, unsigned int count);
 extern void abort (void);
 
 /* Kernel helper for compare-and-exchange.  */
@@ -56,7 +56,7 @@ static void __check_for_sync8_kernelhelper (void)
 	 for the user - I'm not sure I can rely on much else being
 	 available at this point, so do the same as generic-morestack.c
 	 write () and abort ().  */
-      __write (2 /* stderr.  */, err, sizeof (err));
+      write (2 /* stderr.  */, err, sizeof (err));
       abort ();
     }
 };
