@@ -442,23 +442,11 @@ optimize_isl (scop_p scop)
 #else
   isl_union_map *schedule_map = get_schedule_map (schedule);
 #endif
+  apply_schedule_map_to_scop (scop, schedule_map);
 
-  if (isl_union_map_is_equal (scop->original_schedule, schedule_map))
-    {
-      if (dump_file && dump_flags)
-	fprintf (dump_file, "\nISL schedule same as original schedule\n");
-
-      isl_schedule_free (schedule);
-      isl_union_map_free (schedule_map);
-      return false;
-    }
-  else
-    {
-      apply_schedule_map_to_scop (scop, schedule_map);
-      isl_schedule_free (schedule);
-      isl_union_map_free (schedule_map);
-      return true;
-    }
+  isl_schedule_free (schedule);
+  isl_union_map_free (schedule_map);
+  return true;
 }
 
 #endif /* HAVE_isl */
