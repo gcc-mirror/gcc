@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "tree-iterator.h"
 #include "tree-inline.h"
-#include "toplev.h" 
+#include "toplev.h"
 #include "calls.h"
 #include "cilk.h"
 
@@ -76,6 +76,7 @@ struct wrapper_data
   tree block;
 };
 
+static tree contains_cilk_spawn_stmt_walker (tree *tp, int *, void *);
 static void extract_free_variables (tree, struct wrapper_data *,
 				    enum add_variable_type);
 static HOST_WIDE_INT cilk_wrapper_count;
@@ -235,7 +236,19 @@ recognize_spawn (tree exp, tree *exp0)
     }
   /* _Cilk_spawn can't be wrapped in expression such as PLUS_EXPR.  */
   else if (contains_cilk_spawn_stmt (exp))
-    error_at (EXPR_LOCATION (exp), "invalid use of %<_Cilk_spawn%>");
+    {
+      location_t loc = EXPR_LOCATION (exp);
+      if (loc == UNKNOWN_LOCATION)
+	{
+	  tree stmt = walk_tree (&exp,
+				 contains_cilk_spawn_stmt_walker,
+				 NULL,
+				 NULL);
+	  gcc_assert (stmt != NULL_TREE);
+	  loc = EXPR_LOCATION (stmt);
+	}
+      error_at (loc, "invalid use of %<_Cilk_spawn%>");
+    }
   return spawn_found;
 }
 

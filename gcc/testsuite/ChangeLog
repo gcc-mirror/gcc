@@ -1,3 +1,8 @@
+2015-11-23  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR c++/68001
+	* g++.dg/cilk-plus/CK/pr68001.cc: New test.
+
 2015-11-23  Richard Biener  <rguenther@suse.de>
 	    Jiong Wang  <jiong.wang@arm.com>
 
