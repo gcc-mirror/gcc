@@ -420,10 +420,6 @@ struct scop
 
   /* Original schedule of the SCoP.  */
   isl_union_map *original_schedule;
-
-  /* True when the scop has been converted to its polyhedral
-     representation.  */
-  bool poly_scop_p;
 };
 
 extern scop_p new_scop (edge, edge);
@@ -467,5 +463,7 @@ bool
 carries_deps (__isl_keep isl_union_map *schedule,
 	      __isl_keep isl_union_map *deps,
 	      int depth);
+
+bool build_poly_scop (scop_p);
 
 #endif

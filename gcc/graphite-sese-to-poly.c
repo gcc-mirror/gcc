@@ -66,7 +66,6 @@ extern "C" {
 #endif
 
 #include "graphite-poly.h"
-#include "graphite-sese-to-poly.h"
 
 /* Assigns to RES the value of the INTEGER_CST T.  */
 
@@ -590,10 +589,20 @@ set_scop_parameter_dim (scop_p scop)
   scop->param_context = isl_set_universe (space);
 }
 
+static inline bool
+cleanup_loop_iter_dom (isl_set *inner, isl_set *outer, isl_space *space, mpz_t g)
+{
+  isl_set_free (inner);
+  isl_set_free (outer);
+  isl_space_free (space);
+  mpz_clear (g);
+  return false;
+}
+
 /* Builds the constraint polyhedra for LOOP in SCOP.  OUTER_PH gives
    the constraints for the surrounding loops.  */
 
-static void
+static bool
 build_loop_iteration_domains (scop_p scop, struct loop *loop,
                               int nb,
 			      isl_set *outer, isl_set **doms)
@@ -638,11 +647,17 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
 
       nb_iters = scalar_evolution_in_region (region, loop, nb_iters);
 
+      /* Bail out as we do not know the scev.  */
+      if (chrec_contains_undetermined (nb_iters))
+	return cleanup_loop_iter_dom (inner, outer, space, g);
+
       aff = extract_affine (scop, nb_iters, isl_set_get_space (inner));
       isl_set *valid = isl_pw_aff_nonneg_set (isl_pw_aff_copy (aff));
       valid = isl_set_project_out (valid, isl_dim_set, 0,
 				   isl_set_dim (valid, isl_dim_set));
-      scop->param_context = isl_set_intersect (scop->param_context, valid);
+
+      if (valid)
+	scop->param_context = isl_set_intersect (scop->param_context, valid);
 
       isl_local_space *ls = isl_local_space_from_space (isl_space_copy (space));
       isl_aff *al = isl_aff_set_coefficient_si (isl_aff_zero_on_domain (ls),
@@ -686,21 +701,24 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
   else
     gcc_unreachable ();
 
-  if (loop->inner)
-    build_loop_iteration_domains (scop, loop->inner, nb + 1,
-				  isl_set_copy (inner), doms);
+  if (loop->inner
+      && !build_loop_iteration_domains (scop, loop->inner, nb + 1,
+					isl_set_copy (inner), doms))
+    return cleanup_loop_iter_dom (inner, outer, space, g);
 
   if (nb != 0
       && loop->next
-      && loop_in_sese_p (loop->next, region))
-    build_loop_iteration_domains (scop, loop->next, nb,
-				  isl_set_copy (outer), doms);
+      && loop_in_sese_p (loop->next, region)
+      && !build_loop_iteration_domains (scop, loop->next, nb,
+					isl_set_copy (outer), doms))
+    return cleanup_loop_iter_dom (inner, outer, space, g);
 
   doms[loop->num] = inner;
 
   isl_set_free (outer);
   isl_space_free (space);
   mpz_clear (g);
+  return true;
 }
 
 /* Returns a linear expression for tree T evaluated in PBB.  */
@@ -711,6 +729,11 @@ create_pw_aff_from_tree (poly_bb_p pbb, tree t)
   scop_p scop = PBB_SCOP (pbb);
 
   t = scalar_evolution_in_region (scop->scop_info->region, pbb_loop (pbb), t);
+
+  /* Bail out as we do not know the scev.  */
+  if (chrec_contains_undetermined (t))
+    return NULL;
+
   gcc_assert (!automatically_generated_chrec_p (t));
 
   return extract_affine (scop, t, isl_set_get_space (pbb->domain));
@@ -720,13 +743,21 @@ create_pw_aff_from_tree (poly_bb_p pbb, tree t)
    operator.  This allows us to invert the condition or to handle
    inequalities.  */
 
-static void
+static bool
 add_condition_to_pbb (poly_bb_p pbb, gcond *stmt, enum tree_code code)
 {
   isl_pw_aff *lhs = create_pw_aff_from_tree (pbb, gimple_cond_lhs (stmt));
-  isl_pw_aff *rhs = create_pw_aff_from_tree (pbb, gimple_cond_rhs (stmt));
-  isl_set *cond;
+  if (!lhs)
+    return false;
 
+  isl_pw_aff *rhs = create_pw_aff_from_tree (pbb, gimple_cond_rhs (stmt));
+  if (!rhs)
+    {
+      isl_pw_aff_free (lhs);
+      return false;
+    }
+
+  isl_set *cond;
   switch (code)
     {
       case LT_EXPR:
@@ -756,17 +787,18 @@ add_condition_to_pbb (poly_bb_p pbb, gcond *stmt, enum tree_code code)
       default:
 	isl_pw_aff_free (lhs);
 	isl_pw_aff_free (rhs);
-	return;
+	return true;
     }
 
   cond = isl_set_coalesce (cond);
   cond = isl_set_set_tuple_id (cond, isl_set_get_tuple_id (pbb->domain));
   pbb->domain = isl_set_intersect (pbb->domain, cond);
+  return true;
 }
 
 /* Add conditions to the domain of PBB.  */
 
-static void
+static bool
 add_conditions_to_domain (poly_bb_p pbb)
 {
   unsigned int i;
@@ -774,7 +806,7 @@ add_conditions_to_domain (poly_bb_p pbb)
   gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
 
   if (GBB_CONDITIONS (gbb).is_empty ())
-    return;
+    return true;
 
   FOR_EACH_VEC_ELT (GBB_CONDITIONS (gbb), i, stmt)
     switch (gimple_code (stmt))
@@ -792,7 +824,8 @@ add_conditions_to_domain (poly_bb_p pbb)
 	    if (!GBB_CONDITION_CASES (gbb)[i])
 	      code = invert_tree_comparison (code, false);
 
-	    add_condition_to_pbb (pbb, cond_stmt, code);
+	    if (!add_condition_to_pbb (pbb, cond_stmt, code))
+	      return false;
 	    break;
 	  }
 
@@ -803,19 +836,24 @@ add_conditions_to_domain (poly_bb_p pbb)
 	gcc_unreachable ();
 	break;
       }
+
+  return true;
 }
 
 /* Traverses all the GBBs of the SCOP and add their constraints to the
    iteration domains.  */
 
-static void
+static bool
 add_conditions_to_constraints (scop_p scop)
 {
   int i;
   poly_bb_p pbb;
 
   FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
-    add_conditions_to_domain (pbb);
+    if (!add_conditions_to_domain (pbb))
+      return false;
+
+  return true;
 }
 
 /* Add constraints on the possible values of parameter P from the type
@@ -895,19 +933,23 @@ build_scop_context (scop_p scop)
    SCOP, and that vary for the execution of the current basic block.
    Returns false if there is no loop in SCOP.  */
 
-static void
+static bool
 build_scop_iteration_domain (scop_p scop)
 {
   sese_info_p region = scop->scop_info;
   int nb_loops = number_of_loops (cfun);
   isl_set **doms = XCNEWVEC (isl_set *, nb_loops);
-
+  bool res = true;
   int i;
   struct loop *loop;
   FOR_EACH_VEC_ELT (region->loop_nest, i, loop)
-    if (!loop_in_sese_p (loop_outer (loop), region->region))
-      build_loop_iteration_domains (scop, loop, 0,
-				    isl_set_copy (scop->param_context), doms);
+    if (!loop_in_sese_p (loop_outer (loop), region->region)
+	&& !build_loop_iteration_domains (scop, loop, 0,
+					  isl_set_copy (scop->param_context), doms))
+      {
+	res = false;
+	goto cleanup;
+      }
 
   poly_bb_p pbb;
   FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
@@ -923,11 +965,13 @@ build_scop_iteration_domain (scop_p scop)
 					  isl_id_for_pbb (scop, pbb));
     }
 
+ cleanup:
   for (int i = 0; i < nb_loops; i++)
     if (doms[i])
       isl_set_free (doms[i]);
 
   free (doms);
+  return res;
 }
 
 /* Add a constrain to the ACCESSES polyhedron for the alias set of
@@ -1187,20 +1231,21 @@ build_scop_drs (scop_p scop)
 
 /* Builds the polyhedral representation for a SESE region.  */
 
-void
+bool
 build_poly_scop (scop_p scop)
 {
   set_scop_parameter_dim (scop);
-  build_scop_iteration_domain (scop);
+  if (!build_scop_iteration_domain (scop))
+    return false;
+
   build_scop_context (scop);
-  add_conditions_to_constraints (scop);
+
+  if (!add_conditions_to_constraints (scop))
+    return false;
 
   build_scop_drs (scop);
   build_scop_minimal_scattering (scop);
   build_scop_original_schedule (scop);
-
-  /* This SCoP has been translated to the polyhedral
-     representation.  */
-  scop->poly_scop_p = true;
+  return true;
 }
 #endif  /* HAVE_isl */

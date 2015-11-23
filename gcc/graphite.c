@@ -62,7 +62,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite-poly.h"
 #include "graphite-scop-detection.h"
 #include "graphite-isl-ast-to-gimple.h"
-#include "graphite-sese-to-poly.h"
 
 /* Print global statistics to FILE.  */
 
@@ -326,20 +325,18 @@ graphite_transform_loops (void)
     if (dbg_cnt (graphite_scop))
       {
 	scop->isl_context = ctx;
-	build_poly_scop (scop);
+	if (!build_poly_scop (scop))
+	  continue;
 
-	if (dump_file && dump_flags)
-	  print_scop (dump_file, scop);
-	if (scop->poly_scop_p
-	    && apply_poly_transforms (scop))
-	  {
-	    need_cfg_cleanup_p = true;
-	    /* When code generation is not successful, do not continue
-	       generating code for the next scops: the IR has to be cleaned up
-	       and could be in an inconsistent state.  */
-	    if (!graphite_regenerate_ast_isl (scop))
-	      break;
-	  }
+	if (!apply_poly_transforms (scop))
+	  continue;
+
+	need_cfg_cleanup_p = true;
+	/* When code generation is not successful, do not continue
+	   generating code for the next scops: the IR has to be cleaned up
+	   and could be in an inconsistent state.  */
+	if (!graphite_regenerate_ast_isl (scop))
+	  break;
       }
 
   free_scops (scops);

@@ -308,7 +308,6 @@ new_scop (edge entry, edge exit)
   scop_set_region (scop, region);
   scop->original_schedule = NULL;
   scop->pbbs.create (3);
-  scop->poly_scop_p = false;
   scop->drs.create (3);
 
   return scop;

@@ -1,6 +1,29 @@
 2015-11-23  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	PR tree-optimization/68279
+	* graphite-poly.c (new_scop): Remove poly_scop_p.
+	* graphite-poly.h (struct scop): Same.
+	(build_poly_scop): Declare.
+	* graphite-sese-to-poly.c: Do not include graphite-sese-to-poly.h.
+	(cleanup_loop_iter_dom): New.
+	(build_loop_iteration_domains): Early return when scev analysis fails.
+	(create_pw_aff_from_tree): Same.
+	(add_condition_to_pbb): Same.
+	(add_conditions_to_domain): Same.
+	(add_conditions_to_constraints): Same.
+	(build_scop_iteration_domain): Same.
+	(build_poly_scop): Same.  Do not initialize poly_scop_p.
+	* graphite-sese-to-poly.h: Remove.
+	* graphite.c: Do not include graphite-sese-to-poly.h.
+	(graphite_transform_loops): Stop before code generation when
+	build_poly_scop fails.
+	* sese.c (scalar_evolution_in_region): Add fixme note about scev
+	analysis.
+
+2015-11-23  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
 	* graphite-isl-ast-to-gimple.c (translate_isl_ast_node_user):
 	Remove call to update_ssa.
 	* sese.c (sese_insert_phis_for_liveouts): Same.
