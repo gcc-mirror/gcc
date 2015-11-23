@@ -1,3 +1,11 @@
+2015-11-23  Richard Biener  <rguenth@gcc.gnu.org>
+	    Jiong Wang  <jiong.wang@arm.com>
+
+	PR tree-optimization/68317
+	PR tree-optimization/68326
+	* tree-vrp.c (adjust_range_with_scev): Call drop_tree_overflow if the
+	final min and max are not infinity.
+
 2015-11-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
 	    Richard Biener  <rguenther@suse.de>
 

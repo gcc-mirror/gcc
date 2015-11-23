@@ -1,3 +1,10 @@
+2015-11-23  Richard Biener  <rguenther@suse.de>
+	    Jiong Wang  <jiong.wang@arm.com>
+
+	PR tree-optimization/68317
+	PR tree-optimization/68326
+	* gcc.dg/pr68317.c: New testcase.
+
 2015-11-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR tree-optimization/68327
