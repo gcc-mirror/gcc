@@ -1,3 +1,9 @@
+2015-11-23  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/68460
+	* tree-parloops.c (gather_scalar_reductions): Also call
+	free_stmt_vec_info_vec if simple_loop_info == NULL.
+
 2015-11-23  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* opts.c (finish_options): Allow -fsanitize-recover=address for
