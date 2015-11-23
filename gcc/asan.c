@@ -2533,9 +2533,11 @@ asan_expand_check_ifn (gimple_stmt_iterator *iter, bool use_calls)
 {
   gimple *g = gsi_stmt (*iter);
   location_t loc = gimple_location (g);
-
-  bool recover_p
-    = (flag_sanitize & flag_sanitize_recover & SANITIZE_KERNEL_ADDRESS) != 0;
+  bool recover_p;
+  if (flag_sanitize & SANITIZE_USER_ADDRESS)
+    recover_p = (flag_sanitize_recover & SANITIZE_USER_ADDRESS) != 0;
+  else
+    recover_p = (flag_sanitize_recover & SANITIZE_KERNEL_ADDRESS) != 0;
 
   HOST_WIDE_INT flags = tree_to_shwi (gimple_call_arg (g, 0));
   gcc_assert (flags < ASAN_CHECK_LAST);
