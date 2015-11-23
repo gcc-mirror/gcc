@@ -1,4 +1,4 @@
-        ZLIB version 1.2.7 for AS400 installation instructions
+        ZLIB version 1.2.8 for AS400 installation instructions
 
 I) From an AS400 *SAVF file:
 

@@ -17,6 +17,7 @@ EXPORTS
     deflatePrime
     deflateSetHeader
     inflateSetDictionary
+    inflateGetDictionary
     inflateSync
     inflateCopy
     inflateReset
@@ -39,6 +40,7 @@ EXPORTS
     gzread
     gzwrite
     gzprintf
+    gzvprintf
     gzputs
     gzgets
     gzputc
