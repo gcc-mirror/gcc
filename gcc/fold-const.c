@@ -4938,8 +4938,7 @@ fold_cond_expr_with_comparison (location_t loc, tree type,
       case GE_EXPR:
       case GT_EXPR:
 	if (TYPE_UNSIGNED (TREE_TYPE (arg1)))
-	  arg1 = fold_convert_loc (loc, signed_type_for
-			       (TREE_TYPE (arg1)), arg1);
+	  break;
 	tem = fold_build1_loc (loc, ABS_EXPR, TREE_TYPE (arg1), arg1);
 	return pedantic_non_lvalue_loc (loc, fold_convert_loc (loc, type, tem));
       case UNLE_EXPR:
@@ -4949,8 +4948,7 @@ fold_cond_expr_with_comparison (location_t loc, tree type,
       case LE_EXPR:
       case LT_EXPR:
 	if (TYPE_UNSIGNED (TREE_TYPE (arg1)))
-	  arg1 = fold_convert_loc (loc, signed_type_for
-			       (TREE_TYPE (arg1)), arg1);
+	  break;
 	tem = fold_build1_loc (loc, ABS_EXPR, TREE_TYPE (arg1), arg1);
 	return negate_expr (fold_convert_loc (loc, type, tem));
       default:

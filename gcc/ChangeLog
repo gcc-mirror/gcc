@@ -1,3 +1,12 @@
+2015-11-23  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56956
+	* fold-const.c (fold_cond_expr_with_comparison): Do not fold
+	unsigned conditonal negation to ABS_EXPR.
+
 2015-11-22  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	Backport from mainline
