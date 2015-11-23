@@ -107,12 +107,14 @@ am__DEPENDENCIES_1 =
 am__objects_1 = tsan_clock.lo tsan_fd.lo tsan_flags.lo \
 	tsan_ignoreset.lo tsan_interceptors.lo tsan_interface_ann.lo \
 	tsan_interface_atomic.lo tsan_interface.lo \
-	tsan_interface_java.lo tsan_md5.lo tsan_mman.lo tsan_mutex.lo \
+	tsan_interface_java.lo tsan_libdispatch_mac.lo \
+	tsan_malloc_mac.lo tsan_md5.lo tsan_mman.lo tsan_mutex.lo \
 	tsan_mutexset.lo tsan_new_delete.lo tsan_platform_linux.lo \
-	tsan_platform_mac.lo tsan_platform_windows.lo tsan_report.lo \
-	tsan_rtl.lo tsan_rtl_mutex.lo tsan_rtl_report.lo \
-	tsan_rtl_thread.lo tsan_stack_trace.lo tsan_stat.lo \
-	tsan_suppressions.lo tsan_symbolize.lo tsan_sync.lo
+	tsan_platform_mac.lo tsan_platform_posix.lo \
+	tsan_platform_windows.lo tsan_report.lo tsan_rtl.lo \
+	tsan_rtl_mutex.lo tsan_rtl_report.lo tsan_rtl_thread.lo \
+	tsan_stack_trace.lo tsan_stat.lo tsan_suppressions.lo \
+	tsan_symbolize.lo tsan_sync.lo
 am_libtsan_la_OBJECTS = $(am__objects_1)
 libtsan_la_OBJECTS = $(am_libtsan_la_OBJECTS)
 libtsan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -318,6 +320,8 @@ tsan_files = \
 	tsan_interface_atomic.cc \
 	tsan_interface.cc \
 	tsan_interface_java.cc \
+	tsan_libdispatch_mac.cc \
+	tsan_malloc_mac.cc \
 	tsan_md5.cc \
 	tsan_mman.cc \
 	tsan_mutex.cc \
@@ -325,6 +329,7 @@ tsan_files = \
 	tsan_new_delete.cc \
 	tsan_platform_linux.cc \
 	tsan_platform_mac.cc \
+	tsan_platform_posix.cc \
 	tsan_platform_windows.cc \
 	tsan_report.cc \
 	tsan_rtl.cc \
@@ -338,7 +343,7 @@ tsan_files = \
 	tsan_sync.cc 
 
 libtsan_la_SOURCES = $(tsan_files)
-EXTRA_libtsan_la_SOURCES = tsan_rtl_amd64.S
+EXTRA_libtsan_la_SOURCES = tsan_rtl_amd64.S tsan_rtl_aarch64.S
 libtsan_la_LIBADD =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
 	$(top_builddir)/interception/libinterception.la \
@@ -473,6 +478,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface_ann.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface_atomic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface_java.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_libdispatch_mac.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_malloc_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_md5.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_mman.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_mutex.Plo@am__quote@
@@ -480,9 +487,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_new_delete.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_platform_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_platform_mac.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_platform_posix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_platform_windows.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_report.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_aarch64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_amd64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_mutex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_report.Plo@am__quote@

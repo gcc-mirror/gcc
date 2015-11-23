@@ -1,3 +1,12 @@
+2015-11-23  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* All source files: Merge from upstream r253555.
+	* configure.tgt: Enable LSan on aarch64-*-linux* targets. Add new
+	dependences for TSan for aarch64-*-linux* targets.
+	* tsan/Makefile.am: Add new source files.
+	* configure: Regenerate.
+	* tsan/Makefile.in: Likewise.
+
 2015-11-09  Alan Modra  <amodra@gmail.com>
 
 	* sanitizer_common/sanitizer_common_interceptors.inc: Update size

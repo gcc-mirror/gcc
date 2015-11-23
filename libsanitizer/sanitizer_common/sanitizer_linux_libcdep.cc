@@ -60,20 +60,6 @@
 
 namespace __sanitizer {
 
-// This function is defined elsewhere if we intercepted pthread_attr_getstack.
-extern "C" {
-SANITIZER_WEAK_ATTRIBUTE int
-real_pthread_attr_getstack(void *attr, void **addr, size_t *size);
-} // extern "C"
-
-static int my_pthread_attr_getstack(void *attr, void **addr, size_t *size) {
-#if !SANITIZER_GO
-  if (&real_pthread_attr_getstack)
-    return real_pthread_attr_getstack((pthread_attr_t *)attr, addr, size);
-#endif
-  return pthread_attr_getstack((pthread_attr_t *)attr, addr, size);
-}
-
 SANITIZER_WEAK_ATTRIBUTE int
 real_sigaction(int signum, const void *act, void *oldact);
 
@@ -126,7 +112,7 @@ void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
   CHECK_EQ(pthread_getattr_np(pthread_self(), &attr), 0);
   uptr stacksize = 0;
   void *stackaddr = nullptr;
-  my_pthread_attr_getstack(&attr, &stackaddr, (size_t*)&stacksize);
+  my_pthread_attr_getstack(&attr, &stackaddr, &stacksize);
   pthread_attr_destroy(&attr);
 
   CHECK_LE(stacksize, kMaxThreadStackSize);  // Sanity check.
@@ -178,11 +164,15 @@ static uptr g_tls_size;
 # define DL_INTERNAL_FUNCTION
 #endif
 
-#if defined(__mips__)
+#if defined(__mips__) || defined(__powerpc64__)
 // TlsPreTcbSize includes size of struct pthread_descr and size of tcb
 // head structure. It lies before the static tls blocks.
 static uptr TlsPreTcbSize() {
-  const uptr kTcbHead = 16;
+# if defined(__mips__)
+  const uptr kTcbHead = 16; // sizeof (tcbhead_t)
+# elif defined(__powerpc64__)
+  const uptr kTcbHead = 88; // sizeof (tcbhead_t)
+# endif
   const uptr kTlsAlign = 16;
   const uptr kTlsPreTcbSize =
     (ThreadDescriptorSize() + kTcbHead + kTlsAlign - 1) & ~(kTlsAlign - 1);
@@ -213,9 +203,9 @@ void InitTlsSize() {
 }
 
 #if (defined(__x86_64__) || defined(__i386__) || defined(__mips__) \
-    || defined(__aarch64__)) \
+    || defined(__aarch64__) || defined(__powerpc64__)) \
     && SANITIZER_LINUX && !SANITIZER_ANDROID
-// sizeof(struct thread) from glibc.
+// sizeof(struct pthread) from glibc.
 static atomic_uintptr_t kThreadDescriptorSize;
 
 uptr ThreadDescriptorSize() {
@@ -230,7 +220,7 @@ uptr ThreadDescriptorSize() {
     char *end;
     int minor = internal_simple_strtoll(buf + 8, &end, 10);
     if (end != buf + 8 && (*end == '\0' || *end == '.')) {
-      /* sizeof(struct thread) values from various glibc versions.  */
+      /* sizeof(struct pthread) values from various glibc versions.  */
       if (SANITIZER_X32)
         val = 1728;  // Assume only one particular version for x32.
       else if (minor <= 3)
@@ -266,6 +256,10 @@ uptr ThreadDescriptorSize() {
   val = 1776;
   atomic_store(&kThreadDescriptorSize, val, memory_order_relaxed);
   return val;
+#elif defined(__powerpc64__)
+  val = 1776; // from glibc.ppc64le 2.20-8.fc21
+  atomic_store(&kThreadDescriptorSize, val, memory_order_relaxed);
+  return val;
 #endif
   return 0;
 }
@@ -297,6 +291,15 @@ uptr ThreadSelf() {
   descr_addr = thread_pointer - kTlsTcbOffset - TlsPreTcbSize();
 # elif defined(__aarch64__)
   descr_addr = reinterpret_cast<uptr>(__builtin_thread_pointer());
+# elif defined(__powerpc64__)
+  // PPC64LE uses TLS variant I. The thread pointer (in GPR 13)
+  // points to the end of the TCB + 0x7000. The pthread_descr structure is
+  // immediately in front of the TCB. TlsPreTcbSize() includes the size of the
+  // TCB and the size of pthread_descr.
+  const uptr kTlsTcbOffset = 0x7000;
+  uptr thread_pointer;
+  asm("addi %0,13,%1" : "=r"(thread_pointer) : "I"(-kTlsTcbOffset));
+  descr_addr = thread_pointer - TlsPreTcbSize();
 # else
 #  error "unsupported CPU arch"
 # endif
@@ -332,7 +335,7 @@ static void GetTls(uptr *addr, uptr *size) {
   *size = GetTlsSize();
   *addr -= *size;
   *addr += ThreadDescriptorSize();
-# elif defined(__mips__) || defined(__aarch64__)
+# elif defined(__mips__) || defined(__aarch64__) || defined(__powerpc64__)
   *addr = ThreadSelf();
   *size = GetTlsSize();
 # else
@@ -397,33 +400,6 @@ void GetThreadStackAndTls(bool main, uptr *stk_addr, uptr *stk_size,
   }
 #endif
 }
-
-#if !SANITIZER_GO
-void AdjustStackSize(void *attr_) {
-  pthread_attr_t *attr = (pthread_attr_t *)attr_;
-  uptr stackaddr = 0;
-  size_t stacksize = 0;
-  my_pthread_attr_getstack(attr, (void**)&stackaddr, &stacksize);
-  // GLibC will return (0 - stacksize) as the stack address in the case when
-  // stacksize is set, but stackaddr is not.
-  bool stack_set = (stackaddr != 0) && (stackaddr + stacksize != 0);
-  // We place a lot of tool data into TLS, account for that.
-  const uptr minstacksize = GetTlsSize() + 128*1024;
-  if (stacksize < minstacksize) {
-    if (!stack_set) {
-      if (stacksize != 0) {
-        VPrintf(1, "Sanitizer: increasing stacksize %zu->%zu\n", stacksize,
-                minstacksize);
-        pthread_attr_setstacksize(attr, minstacksize);
-      }
-    } else {
-      Printf("Sanitizer: pre-allocated stack size is insufficient: "
-             "%zu < %zu\n", stacksize, minstacksize);
-      Printf("Sanitizer: pthread_create is likely to fail.\n");
-    }
-  }
-}
-#endif // !SANITIZER_GO
 
 # if !SANITIZER_FREEBSD
 typedef ElfW(Phdr) Elf_Phdr;

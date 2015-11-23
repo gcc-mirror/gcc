@@ -338,6 +338,8 @@ uptr ALWAYS_INLINE GetThreadTraceHeader(int tid) {
 }
 
 void InitializePlatform();
+void CheckAndProtect();
+void InitializeShadowMemoryPlatform();
 void FlushShadowMemory();
 void WriteMemoryProfile(char *buf, uptr buf_size, uptr nthread, uptr nlive);
 
@@ -350,6 +352,8 @@ int ExtractRecvmsgFDs(void *msg, int *fds, int nfd);
 int call_pthread_cancel_with_cleanup(int(*fn)(void *c, void *m,
     void *abstime), void *c, void *m, void *abstime,
     void(*cleanup)(void *arg), void *arg);
+
+void DestroyThreadState();
 
 }  // namespace __tsan
 
