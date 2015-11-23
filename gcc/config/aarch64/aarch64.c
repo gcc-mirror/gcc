@@ -10108,7 +10108,7 @@ aarch64_madd_needs_nop (rtx_insn* insn)
   if (!TARGET_FIX_ERR_A53_835769)
     return false;
 
-  if (recog_memoized (insn) < 0)
+  if (!INSN_P (insn) || recog_memoized (insn) < 0)
     return false;
 
   attr_type = get_attr_type (insn);
