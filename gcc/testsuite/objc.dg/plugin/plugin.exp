@@ -1,0 +1,90 @@
+#   Copyright (C) 2009-2015 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Test the functionality of the GCC plugin support
+
+load_lib target-supports.exp
+load_lib objc-dg.exp
+
+global TESTING_IN_BUILD_TREE
+global ENABLE_PLUGIN
+
+# The plugin testcases currently only work when the build tree is available.
+# Also check whether the host supports plugins.
+if { ![info exists TESTING_IN_BUILD_TREE] || ![info exists ENABLE_PLUGIN] } {
+    return
+}
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
+}
+
+# The procedures in plugin-support.exp need these parameters.
+set default_flags $DEFAULT_CFLAGS
+
+if $tracelevel then {
+    strace $tracelevel
+}
+
+# Load support procs.
+load_lib plugin-support.exp
+
+# These tests don't run runtest_file_p consistently if it
+# doesn't return the same values, so disable parallelization
+# of this *.exp file.  The first parallel runtest to reach
+# this will run all the tests serially.
+if ![gcc_parallel_test_run_p plugin] {
+    return
+}
+gcc_parallel_test_enable 0
+
+# Specify the plugin source file and the associated test files in a list.
+# plugin_test_list={ {plugin1 test1 test2 ...} {plugin2 test1 ...} ... }
+set plugin_test_list [list \
+    { ../../gcc.dg/plugin/diagnostic_plugin_test_tree_expression_range.c \
+	  diagnostic-test-expressions-1.m } \
+]
+
+foreach plugin_test $plugin_test_list {
+    # Replace each source file with its full-path name
+    for {set i 0} {$i < [llength $plugin_test]} {incr i} {
+	set basename [lindex $plugin_test $i]
+	set plugin_test [lreplace $plugin_test $i $i $srcdir/$subdir/$basename]
+    }
+    set plugin_src [lindex $plugin_test 0]
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $plugin_src] then {
+        continue
+    }
+    set plugin_input_tests [lreplace $plugin_test 0 0]
+    plugin-test-execute $plugin_src $plugin_input_tests
+}
+
+# run the plugindir tests
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/plugindir*.m]] \
+	"" $DEFAULT_CFLAGS
+
+# All done.
+dg-finish
+
+gcc_parallel_test_enable 1

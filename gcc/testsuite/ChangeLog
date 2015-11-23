@@ -1,3 +1,11 @@
+2015-11-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR objc/68438
+	* objc.dg/plugin: New subdirectory.
+	* objc.dg/plugin/diagnostic-test-expressions-1.m: New test file.
+	* objc.dg/plugin/plugin.exp: New file, based on
+	gcc.dg/plugin/plugin.exp.
+
 2015-11-23  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
