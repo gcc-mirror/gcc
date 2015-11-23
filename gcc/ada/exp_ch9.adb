@@ -7785,9 +7785,9 @@ package body Exp_Ch9 is
              Is_Asynchronous_Call_Block => True);
 
          --  Aborts are not deferred at beginning of exception handlers in
-         --  ZCX.
+         --  ZCX mode.
 
-         if Exception_Mechanism = Back_End_Exceptions then
+         if ZCX_Exceptions then
             Handler_Stmt := Make_Null_Statement (Loc);
 
          else

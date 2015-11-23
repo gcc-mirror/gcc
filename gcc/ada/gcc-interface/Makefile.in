@@ -3008,10 +3008,12 @@ gnatlib-shared:
 gnatlib-sjlj:
 	$(MAKE) $(FLAGS_TO_PASS) EH_MECHANISM="" \
 	THREAD_KIND="$(THREAD_KIND)" ../stamp-gnatlib1-$(RTSDIR)
-	sed -e 's/ZCX_By_Default.*/ZCX_By_Default            : constant Boolean := False;/' $(RTSDIR)/system.ads > $(RTSDIR)/s.ads
-	sed -e 's/\(pragma Linker.*crtbe.*\)/--  \1/' $(RTSDIR)/s.ads > $(RTSDIR)/s2.ads
-	$(RM) $(RTSDIR)/s.ads
-	$(MV) $(RTSDIR)/s2.ads $(RTSDIR)/system.ads
+	sed \
+	  -e 's/Frontend_Exceptions.*/Frontend_Exceptions       : constant Boolean := True;/' \
+	  -e 's/ZCX_By_Default.*/ZCX_By_Default            : constant Boolean := False;/' \
+	  -e 's/\(pragma Linker.*crtbe.*\)/--  \1/' \
+	  $(RTSDIR)/system.ads > $(RTSDIR)/s.ads
+	$(MV) $(RTSDIR)/s.ads $(RTSDIR)/system.ads
 	$(MAKE) $(FLAGS_TO_PASS) \
 	     EH_MECHANISM="" \
 	     GNATLIBFLAGS="$(GNATLIBFLAGS)" \
@@ -3025,7 +3027,10 @@ gnatlib-sjlj:
 gnatlib-zcx:
 	$(MAKE) $(FLAGS_TO_PASS) EH_MECHANISM="-gcc" \
 	  THREAD_KIND="$(THREAD_KIND)" ../stamp-gnatlib1-$(RTSDIR)
-	sed -e 's/ZCX_By_Default.*/ZCX_By_Default            : constant Boolean := True;/' $(RTSDIR)/system.ads > $(RTSDIR)/s.ads
+	sed \
+	  -e 's/Frontend_Exceptions.*/Frontend_Exceptions       : constant Boolean := False;/' \
+	  -e 's/ZCX_By_Default.*/ZCX_By_Default            : constant Boolean := True;/' \
+	  $(RTSDIR)/system.ads > $(RTSDIR)/s.ads
 	$(MV) $(RTSDIR)/s.ads $(RTSDIR)/system.ads
 	$(MAKE) $(FLAGS_TO_PASS) \
 	     EH_MECHANISM="-gcc" \

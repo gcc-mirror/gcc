@@ -1565,13 +1565,6 @@ begin
                         Linker_Options.Increment_Last;
                         Linker_Options.Table
                           (Linker_Options.Last) := String_Access (Arg);
-
-                     elsif Arg'Length = 6
-                       and then Arg (Arg'First + 1 .. Arg'First + 5) = "fsjlj"
-                     then
-                        Linker_Options.Increment_Last;
-                        Linker_Options.Table
-                          (Linker_Options.Last) := String_Access (Arg);
                      end if;
 
                   elsif Arg'Length > 5
