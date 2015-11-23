@@ -609,6 +609,8 @@ scalar_evolution_in_region (sese_l &region, loop_p loop, tree t)
 
   if (TREE_CODE (t) != SSA_NAME
       || loop_in_sese_p (loop, region))
+    /* FIXME: we would need instantiate SCEV to work on a region, and be more
+       flexible wrt. memory loads that may be invariant in the region.  */
     return instantiate_scev (before, loop,
 			     analyze_scalar_evolution (loop, t));
 
