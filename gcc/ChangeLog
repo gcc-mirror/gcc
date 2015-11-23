@@ -1,6 +1,21 @@
 2015-11-23  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	PR tree-optimization/68314
+	* graphite-optimize-isl.c (optimize_isl): Do not call isl_union_map_is_equal.
+	* graphite-poly.c (new_scop): Remove original_schedule.
+	(free_scop): Same.
+	* graphite-poly.h (struct scop): Same.
+	* graphite-sese-to-poly.c (build_pbb_minimal_scattering_polyhedrons): Remove.
+	(build_pbb_scattering_polyhedrons): Add back.
+	(build_scop_minimal_scattering): Remove.
+	(build_scop_scattering): Add back.
+	(build_scop_original_schedule): Remove.
+	(build_poly_scop): Revert to only call build_scop_scattering.
+
+2015-11-23  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
 	PR tree-optimization/68493
 	* graphite-isl-ast-to-gimple.c (translate_pending_phi_nodes): Add
 	missing early return when codegen_error is set.
