@@ -1,3 +1,7 @@
+2015-11-23  Tom de Vries  <tom@codesourcery.com>
+
+	* omp-low.c (build_receiver_ref): Mark by_ref mem_ref as non-trapping.
+
 2015-11-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68445
