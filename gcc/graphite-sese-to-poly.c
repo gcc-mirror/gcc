@@ -18,28 +18,11 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define USES_ISL
+
 #include "config.h"
 
 #ifdef HAVE_isl
-/* Workaround for GMP 5.1.3 bug, see PR56019.  */
-#include <stddef.h>
-
-#include <isl/constraint.h>
-#include <isl/set.h>
-#include <isl/map.h>
-#include <isl/union_map.h>
-#include <isl/constraint.h>
-#include <isl/aff.h>
-#include <isl/val.h>
-
-/* Since ISL-0.13, the extern is in val_gmp.h.  */
-#if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
-extern "C" {
-#endif
-#include <isl/val_gmp.h>
-#if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
-}
-#endif
 
 #include "system.h"
 #include "coretypes.h"
@@ -63,8 +46,26 @@ extern "C" {
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
 #include "domwalk.h"
-#include "graphite-poly.h"
 #include "tree-ssa-propagate.h"
+
+#include <isl/constraint.h>
+#include <isl/set.h>
+#include <isl/map.h>
+#include <isl/union_map.h>
+#include <isl/constraint.h>
+#include <isl/aff.h>
+#include <isl/val.h>
+
+/* Since ISL-0.13, the extern is in val_gmp.h.  */
+#if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
+extern "C" {
+#endif
+#include <isl/val_gmp.h>
+#if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
+}
+#endif
+
+#include "graphite-poly.h"
 #include "graphite-sese-to-poly.h"
 
 /* Assigns to RES the value of the INTEGER_CST T.  */
