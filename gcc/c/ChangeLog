@@ -1,3 +1,10 @@
+2015-11-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR objc/68438
+	* c-parser.c (c_parser_postfix_expression): Set up source ranges
+	for various Objective-C constructs: Class.name syntax,
+	@selector(), @protocol(), @encode(), and [] message syntax.
+
 2015-11-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR 62314

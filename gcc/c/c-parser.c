@@ -7338,10 +7338,13 @@ c_parser_postfix_expression (c_parser *parser)
 		expr.value = error_mark_node;
 		break;
 	      }
-	    component = c_parser_peek_token (parser)->value;
+	    c_token *component_tok = c_parser_peek_token (parser);
+	    component = component_tok->value;
+	    location_t end_loc = component_tok->get_finish ();
 	    c_parser_consume_token (parser);
 	    expr.value = objc_build_class_component_ref (class_name, 
 							 component);
+	    set_c_expr_source_range (&expr, loc, end_loc);
 	    break;
 	  }
 	default:
@@ -7816,9 +7819,11 @@ c_parser_postfix_expression (c_parser *parser)
 	    }
 	  {
 	    tree sel = c_parser_objc_selector_arg (parser);
+	    location_t close_loc = c_parser_peek_token (parser)->location;
 	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				       "expected %<)%>");
 	    expr.value = objc_build_selector_expr (loc, sel);
+	    set_c_expr_source_range (&expr, loc, close_loc);
 	  }
 	  break;
 	case RID_AT_PROTOCOL:
@@ -7839,9 +7844,11 @@ c_parser_postfix_expression (c_parser *parser)
 	  {
 	    tree id = c_parser_peek_token (parser)->value;
 	    c_parser_consume_token (parser);
+	    location_t close_loc = c_parser_peek_token (parser)->location;
 	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				       "expected %<)%>");
 	    expr.value = objc_build_protocol_expr (id);
+	    set_c_expr_source_range (&expr, loc, close_loc);
 	  }
 	  break;
 	case RID_AT_ENCODE:
@@ -7860,11 +7867,13 @@ c_parser_postfix_expression (c_parser *parser)
 	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
 	      break;
 	    }
-	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
-				     "expected %<)%>");
 	  {
+	    location_t close_loc = c_parser_peek_token (parser)->location;
+	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+				     "expected %<)%>");
 	    tree type = groktypename (t1, NULL, NULL);
 	    expr.value = objc_build_encode_expr (type);
+	    set_c_expr_source_range (&expr, loc, close_loc);
 	  }
 	  break;
 	case RID_GENERIC:
@@ -7907,9 +7916,11 @@ c_parser_postfix_expression (c_parser *parser)
 	  c_parser_consume_token (parser);
 	  receiver = c_parser_objc_receiver (parser);
 	  args = c_parser_objc_message_args (parser);
+	  location_t close_loc = c_parser_peek_token (parser)->location;
 	  c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE,
 				     "expected %<]%>");
 	  expr.value = objc_build_message_expr (receiver, args);
+	  set_c_expr_source_range (&expr, loc, close_loc);
 	  break;
 	}
       /* Else fall through to report error.  */
