@@ -1,4 +1,49 @@
 2015-11-23  Olivier Hainque  <hainque@adacore.com>
+
+	* system-aix.ads: Add Frontend_Exceptions flag.
+	* system-aix64.ads: Likewise.
+	* system-darwin-ppc.ads: Likewise.
+	* system-darwin-ppc64.ads: Likewise.
+	* system-darwin-x86.ads: Likewise.
+	* system-darwin-x86_64.ads: Likewise.
+	* system-dragonfly-x86_64.ads: Likewise.
+	* system-freebsd-x86.ads: Likewise.
+	* system-freebsd-x86_64.ads: Likewise.
+	* system-hpux-ia64.ads: Likewise.
+	* system-hpux.ads: Likewise.
+	* system-linux-alpha.ads: Likewise.
+	* system-linux-armeb.ads: Likewise.
+	* system-linux-armel.ads: Likewise.
+	* system-linux-hppa.ads: Likewise.
+	* system-linux-ia64.ads: Likewise.
+	* system-linux-mips.ads: Likewise.
+	* system-linux-mips64el.ads: Likewise.
+	* system-linux-mipsel.ads: Likewise.
+	* system-linux-ppc.ads: Likewise.
+	* system-linux-ppc64.ads: Likewise.
+	* system-linux-s390.ads: Likewise.
+	* system-linux-s390x.ads: Likewise.
+	* system-linux-sh4.ads: Likewise.
+	* system-linux-sparc.ads: Likewise.
+	* system-linux-sparcv9.ads: Likewise.
+	* system-linux-x86.ads: Likewise.
+	* system-linux-x86_64.ads: Likewise.
+	* system-mingw-x86_64.ads: Likewise.
+	* system-mingw.ads: Likewise.
+	* system-rtems.ads: Likewise.
+	* system-solaris-sparc.ads: Likewise.
+	* system-solaris-sparcv9.ads: Likewise.
+	* system-solaris-x86.ads: Likewise.
+	* system-solaris-x86_64.ads: Likewise.
+	* system-vxworks-arm.ads: Likewise.
+	* system-vxworks-m68k.ads: Likewise.
+	* system-vxworks-mips.ads: Likewise.
+	* system-vxworks-ppc.ads: Likewise.
+	* system-vxworks-sparcv9.ads: Likewise.
+	* system-vxworks-x86.ads: Likewise.
+	* system.ads: Likewise.
+
+2015-11-23  Olivier Hainque  <hainque@adacore.com>
 	    Eric Botcazou  <botcazou@adacore.com>
 
 	* opt.ads (Exception_Mechanism): Now three values: Front_End_SJLJ,
