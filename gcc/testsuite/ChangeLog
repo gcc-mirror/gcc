@@ -1,3 +1,7 @@
+2015-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/fmt_t_8.f90: New test.
+
 2015-11-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR target/68390
