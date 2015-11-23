@@ -546,6 +546,33 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
   /* u1 +- u2 -> ur  */
   if (uns0_p && uns1_p && unsr_p)
     {
+      insn_code icode = optab_handler (code == PLUS_EXPR ? uaddv4_optab
+                                       : usubv4_optab, mode);
+      if (icode != CODE_FOR_nothing)
+	{
+	  struct expand_operand ops[4];
+	  rtx_insn *last = get_last_insn ();
+
+	  res = gen_reg_rtx (mode);
+	  create_output_operand (&ops[0], res, mode);
+	  create_input_operand (&ops[1], op0, mode);
+	  create_input_operand (&ops[2], op1, mode);
+	  create_fixed_operand (&ops[3], do_error);
+	  if (maybe_expand_insn (icode, 4, ops))
+	    {
+	      last = get_last_insn ();
+	      if (profile_status_for_fn (cfun) != PROFILE_ABSENT
+		  && JUMP_P (last)
+		  && any_condjump_p (last)
+		  && !find_reg_note (last, REG_BR_PROB, 0))
+		add_int_reg_note (last, REG_BR_PROB, PROB_VERY_UNLIKELY);
+	      emit_jump (done_label);
+	      goto do_error_label;
+	    }
+
+	  delete_insns_since (last);
+	}
+
       /* Compute the operation.  On RTL level, the addition is always
 	 unsigned.  */
       res = expand_binop (mode, code == PLUS_EXPR ? add_optab : sub_optab,
@@ -737,92 +764,88 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
   gcc_assert (!uns0_p && !uns1_p && !unsr_p);
 
   /* s1 +- s2 -> sr  */
- do_signed: ;
-  enum insn_code icode;
-  icode = optab_handler (code == PLUS_EXPR ? addv4_optab : subv4_optab, mode);
-  if (icode != CODE_FOR_nothing)
-    {
-      struct expand_operand ops[4];
-      rtx_insn *last = get_last_insn ();
+ do_signed:
+  {
+    insn_code icode = optab_handler (code == PLUS_EXPR ? addv4_optab
+				     : subv4_optab, mode);
+    if (icode != CODE_FOR_nothing)
+      {
+	struct expand_operand ops[4];
+	rtx_insn *last = get_last_insn ();
 
-      res = gen_reg_rtx (mode);
-      create_output_operand (&ops[0], res, mode);
-      create_input_operand (&ops[1], op0, mode);
-      create_input_operand (&ops[2], op1, mode);
-      create_fixed_operand (&ops[3], do_error);
-      if (maybe_expand_insn (icode, 4, ops))
-	{
-	  last = get_last_insn ();
-	  if (profile_status_for_fn (cfun) != PROFILE_ABSENT
-	      && JUMP_P (last)
-	      && any_condjump_p (last)
-	      && !find_reg_note (last, REG_BR_PROB, 0))
-	    add_int_reg_note (last, REG_BR_PROB, PROB_VERY_UNLIKELY);
-	  emit_jump (done_label);
-        }
-      else
-	{
-	  delete_insns_since (last);
-	  icode = CODE_FOR_nothing;
-	}
-    }
+	res = gen_reg_rtx (mode);
+	create_output_operand (&ops[0], res, mode);
+	create_input_operand (&ops[1], op0, mode);
+	create_input_operand (&ops[2], op1, mode);
+	create_fixed_operand (&ops[3], do_error);
+	if (maybe_expand_insn (icode, 4, ops))
+	  {
+	    last = get_last_insn ();
+	    if (profile_status_for_fn (cfun) != PROFILE_ABSENT
+		&& JUMP_P (last)
+		&& any_condjump_p (last)
+		&& !find_reg_note (last, REG_BR_PROB, 0))
+	      add_int_reg_note (last, REG_BR_PROB, PROB_VERY_UNLIKELY);
+	    emit_jump (done_label);
+	    goto do_error_label;
+	  }
 
-  if (icode == CODE_FOR_nothing)
-    {
-      rtx_code_label *sub_check = gen_label_rtx ();
-      int pos_neg = 3;
+	delete_insns_since (last);
+      }
 
-      /* Compute the operation.  On RTL level, the addition is always
-	 unsigned.  */
-      res = expand_binop (mode, code == PLUS_EXPR ? add_optab : sub_optab,
-			  op0, op1, NULL_RTX, false, OPTAB_LIB_WIDEN);
+    rtx_code_label *sub_check = gen_label_rtx ();
+    int pos_neg = 3;
 
-      /* If we can prove one of the arguments (for MINUS_EXPR only
-	 the second operand, as subtraction is not commutative) is always
-	 non-negative or always negative, we can do just one comparison
-	 and conditional jump instead of 2 at runtime, 3 present in the
-	 emitted code.  If one of the arguments is CONST_INT, all we
-	 need is to make sure it is op1, then the first
-	 do_compare_rtx_and_jump will be just folded.  Otherwise try
-	 to use range info if available.  */
-      if (code == PLUS_EXPR && CONST_INT_P (op0))
-	std::swap (op0, op1);
-      else if (CONST_INT_P (op1))
-	;
-      else if (code == PLUS_EXPR && TREE_CODE (arg0) == SSA_NAME)
-	{
-	  pos_neg = get_range_pos_neg (arg0);
-	  if (pos_neg != 3)
-	    std::swap (op0, op1);
-	}
-      if (pos_neg == 3 && !CONST_INT_P (op1) && TREE_CODE (arg1) == SSA_NAME)
-	pos_neg = get_range_pos_neg (arg1);
+    /* Compute the operation.  On RTL level, the addition is always
+       unsigned.  */
+    res = expand_binop (mode, code == PLUS_EXPR ? add_optab : sub_optab,
+			op0, op1, NULL_RTX, false, OPTAB_LIB_WIDEN);
 
-      /* If the op1 is negative, we have to use a different check.  */
-      if (pos_neg == 3)
-	do_compare_rtx_and_jump (op1, const0_rtx, LT, false, mode, NULL_RTX,
-				 NULL, sub_check, PROB_EVEN);
+    /* If we can prove one of the arguments (for MINUS_EXPR only
+       the second operand, as subtraction is not commutative) is always
+       non-negative or always negative, we can do just one comparison
+       and conditional jump instead of 2 at runtime, 3 present in the
+       emitted code.  If one of the arguments is CONST_INT, all we
+       need is to make sure it is op1, then the first
+       do_compare_rtx_and_jump will be just folded.  Otherwise try
+       to use range info if available.  */
+    if (code == PLUS_EXPR && CONST_INT_P (op0))
+      std::swap (op0, op1);
+    else if (CONST_INT_P (op1))
+      ;
+    else if (code == PLUS_EXPR && TREE_CODE (arg0) == SSA_NAME)
+      {
+        pos_neg = get_range_pos_neg (arg0);
+        if (pos_neg != 3)
+	  std::swap (op0, op1);
+      }
+    if (pos_neg == 3 && !CONST_INT_P (op1) && TREE_CODE (arg1) == SSA_NAME)
+      pos_neg = get_range_pos_neg (arg1);
 
-      /* Compare the result of the operation with one of the operands.  */
-      if (pos_neg & 1)
-	do_compare_rtx_and_jump (res, op0, code == PLUS_EXPR ? GE : LE,
-				 false, mode, NULL_RTX, NULL, done_label,
-				 PROB_VERY_LIKELY);
+    /* If the op1 is negative, we have to use a different check.  */
+    if (pos_neg == 3)
+      do_compare_rtx_and_jump (op1, const0_rtx, LT, false, mode, NULL_RTX,
+			       NULL, sub_check, PROB_EVEN);
 
-      /* If we get here, we have to print the error.  */
-      if (pos_neg == 3)
-	{
-	  emit_jump (do_error);
+    /* Compare the result of the operation with one of the operands.  */
+    if (pos_neg & 1)
+      do_compare_rtx_and_jump (res, op0, code == PLUS_EXPR ? GE : LE,
+			       false, mode, NULL_RTX, NULL, done_label,
+			       PROB_VERY_LIKELY);
 
-	  emit_label (sub_check);
-	}
+    /* If we get here, we have to print the error.  */
+    if (pos_neg == 3)
+      {
+	emit_jump (do_error);
+	emit_label (sub_check);
+      }
 
-      /* We have k = a + b for b < 0 here.  k <= a must hold.  */
-      if (pos_neg & 2)
-	do_compare_rtx_and_jump (res, op0, code == PLUS_EXPR ? LE : GE,
-				 false, mode, NULL_RTX, NULL, done_label,
-				 PROB_VERY_LIKELY);
-    }
+    /* We have k = a + b for b < 0 here.  k <= a must hold.  */
+    if (pos_neg & 2)
+      do_compare_rtx_and_jump (res, op0, code == PLUS_EXPR ? LE : GE,
+			       false, mode, NULL_RTX, NULL, done_label,
+			       PROB_VERY_LIKELY);
+  }
 
  do_error_label:
   emit_label (do_error);

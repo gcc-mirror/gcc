@@ -4913,11 +4913,16 @@ signed integer addition with overflow checking.
 @item @samp{subv@var{m}4}, @samp{mulv@var{m}4}
 Similar, for other signed arithmetic operations.
 
-@cindex @code{umulv@var{m}4} instruction pattern
-@item @samp{umulv@var{m}4}
-Like @code{mulv@var{m}4} but for unsigned multiplication.  That is to
-say, the operation is the same as signed multiplication but the jump
+@cindex @code{uaddv@var{m}4} instruction pattern
+@item @samp{uaddv@var{m}4}
+Like @code{addv@var{m}4} but for unsigned addition.  That is to
+say, the operation is the same as signed addition but the jump
 is taken only on unsigned overflow.
+
+@cindex @code{usubv@var{m}4} instruction pattern
+@cindex @code{umulv@var{m}4} instruction pattern
+@item @samp{usubv@var{m}4}, @samp{umulv@var{m}4}
+Similar, for other unsigned arithmetic operations.
 
 @cindex @code{addptr@var{m}3} instruction pattern
 @item @samp{addptr@var{m}3}
