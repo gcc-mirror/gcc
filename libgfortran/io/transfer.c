@@ -1641,6 +1641,7 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 			  - dtp->u.p.current_unit->bytes_left);
 	      dtp->u.p.max_pos = 
 		dtp->u.p.max_pos > tmp ? dtp->u.p.max_pos : tmp;
+	      dtp->u.p.skips = 0;
 	    }
 	  if (dtp->u.p.skips < 0)
 	    {
@@ -3600,6 +3601,16 @@ finalize_transfer (st_parameter_dt *dtp)
      next I/O operation if needed.  */
   if (dtp->u.p.advance_status == ADVANCE_NO)
     {
+      if (dtp->u.p.skips > 0)
+	{
+	  int tmp;
+	  write_x (dtp, dtp->u.p.skips, dtp->u.p.pending_spaces);
+	  tmp = (int)(dtp->u.p.current_unit->recl
+		      - dtp->u.p.current_unit->bytes_left);
+	  dtp->u.p.max_pos = 
+	    dtp->u.p.max_pos > tmp ? dtp->u.p.max_pos : tmp;
+	  dtp->u.p.skips = 0;
+	}
       int bytes_written = (int) (dtp->u.p.current_unit->recl
 	- dtp->u.p.current_unit->bytes_left);
       dtp->u.p.current_unit->saved_pos =

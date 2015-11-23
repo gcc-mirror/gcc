@@ -1,5 +1,12 @@
 2015-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libfortran/52251
+	* io/transfer.c (formatted_transfer_scalar_write): Reset skips count.
+	(finalize_transfer): For ADVANCE_NO, emit pending spaces and reset the
+	skip count.
+
+2015-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	* io/write_float.def (output_float): Move block determining
 	room for leading zero to before checkng g0 formatting.
 
