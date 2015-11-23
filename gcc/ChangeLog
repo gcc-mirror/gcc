@@ -1,3 +1,12 @@
+2015-11-23  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+        * config/s390/s390.h: Add new symref flags, _NOTALIGN2 etc.
+        * config/s390/s390.c (s390_check_symref_alignment): Use new
+        symref flags, early abort on wrong alignment
+        (s390_secondary_reload): Use new symref flags.
+        (s390_encode_section_info): Likewise.
+        * config/s390/predicates.md: Likewise.
+
 2015-11-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR target/68390

@@ -963,12 +963,35 @@ do {									\
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 64, 1)
 
 /* Machine-specific symbol_ref flags.  */
-#define SYMBOL_FLAG_ALIGN1	          (SYMBOL_FLAG_MACH_DEP << 0)
-#define SYMBOL_REF_ALIGN1_P(X)		\
-  ((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_ALIGN1))
-#define SYMBOL_FLAG_NOT_NATURALLY_ALIGNED (SYMBOL_FLAG_MACH_DEP << 1)
-#define SYMBOL_REF_NOT_NATURALLY_ALIGNED_P(X) \
-  ((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_NOT_NATURALLY_ALIGNED))
+#define SYMBOL_FLAG_ALIGN_SHIFT	  SYMBOL_FLAG_MACH_DEP_SHIFT
+#define SYMBOL_FLAG_ALIGN_MASK    \
+  ((SYMBOL_FLAG_MACH_DEP << 0) | (SYMBOL_FLAG_MACH_DEP << 1))
+
+#define SYMBOL_FLAG_SET_ALIGN(X, A) \
+    (SYMBOL_REF_FLAGS (X) = (SYMBOL_REF_FLAGS (X) & ~SYMBOL_FLAG_ALIGN_MASK) \
+     | (A << SYMBOL_FLAG_ALIGN_SHIFT))
+
+#define SYMBOL_FLAG_GET_ALIGN(X) \
+    ((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_ALIGN_MASK) >> SYMBOL_FLAG_ALIGN_SHIFT)
+
+/* Helpers to access symbol_ref flags.  They are used in
+   check_symref_alignment() and larl_operand to detect if the
+   available alignment matches the required one.  We do not use
+   a positive check like _ALIGN2 because in that case we would have
+   to annotate every symbol_ref.  However, we only want to touch
+   the symbol_refs that can be misaligned and assume that the others
+   are correctly aligned.  Hence, if a symbol_ref does not have
+   a _NOTALIGN flag it is supposed to be correctly aligned.  */
+#define SYMBOL_FLAG_SET_NOTALIGN2(X) SYMBOL_FLAG_SET_ALIGN(X, 1)
+#define SYMBOL_FLAG_SET_NOTALIGN4(X) SYMBOL_FLAG_SET_ALIGN(X, 2)
+#define SYMBOL_FLAG_SET_NOTALIGN8(X) SYMBOL_FLAG_SET_ALIGN(X, 3)
+
+#define SYMBOL_FLAG_NOTALIGN2_P(X) (SYMBOL_FLAG_GET_ALIGN(X) == 1)
+#define SYMBOL_FLAG_NOTALIGN4_P(X) (SYMBOL_FLAG_GET_ALIGN(X) == 2 \
+				    || SYMBOL_FLAG_GET_ALIGN(X) == 1)
+#define SYMBOL_FLAG_NOTALIGN8_P(X) (SYMBOL_FLAG_GET_ALIGN(X) == 3 \
+				    || SYMBOL_FLAG_GET_ALIGN(X) == 2 \
+				    || SYMBOL_FLAG_GET_ALIGN(X) == 1)
 
 /* Check whether integer displacement is in range for a short displacement.  */
 #define SHORT_DISP_IN_RANGE(d) ((d) >= 0 && (d) <= 4095)
