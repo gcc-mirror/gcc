@@ -1,3 +1,10 @@
+2015-11-23  Bilyan Borisov  <bilyan.borisov@arm.com>
+
+	* gcc.target/aarch64/simd/vmulx.x: New.
+	* gcc.target/aarch64/simd/vmulx_f64_2.c: Likewise.
+	* gcc.target/aarch64/simd/vmulxd_f64_2.c: Likewise.
+	* gcc.target/aarch64/simd/vmulxs_f32_2.c: Likewise.
+
 2015-11-23  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR c++/68001

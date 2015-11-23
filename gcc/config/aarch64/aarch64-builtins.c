@@ -1468,7 +1468,7 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       if (fndecl)
 	{
 	  int fcode = DECL_FUNCTION_CODE (fndecl);
-	  int nargs = gimple_call_num_args (stmt);
+	  unsigned nargs = gimple_call_num_args (stmt);
 	  tree *args = (nargs > 0
 			? gimple_call_arg_ptr (stmt, 0)
 			: &error_mark_node);
@@ -1492,7 +1492,54 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 		new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
 						REDUC_MIN_EXPR, args[0]);
 		break;
-
+	      BUILTIN_GPF (BINOP, fmulx, 0)
+		{
+		  gcc_assert (nargs == 2);
+		  bool a0_cst_p = TREE_CODE (args[0]) == REAL_CST;
+		  bool a1_cst_p = TREE_CODE (args[1]) == REAL_CST;
+		  if (a0_cst_p || a1_cst_p)
+		    {
+		      if (a0_cst_p && a1_cst_p)
+			{
+			  tree t0 = TREE_TYPE (args[0]);
+			  real_value a0 = (TREE_REAL_CST (args[0]));
+			  real_value a1 = (TREE_REAL_CST (args[1]));
+			  if (real_equal (&a1, &dconst0))
+			    std::swap (a0, a1);
+			  /* According to real_equal (), +0 equals -0.  */
+			  if (real_equal (&a0, &dconst0) && real_isinf (&a1))
+			    {
+			      real_value res = dconst2;
+			      res.sign = a0.sign ^ a1.sign;
+			      new_stmt =
+				gimple_build_assign (gimple_call_lhs (stmt),
+						     REAL_CST,
+						     build_real (t0, res));
+			    }
+			  else
+			    new_stmt =
+			      gimple_build_assign (gimple_call_lhs (stmt),
+						   MULT_EXPR,
+						   args[0], args[1]);
+			}
+		      else /* a0_cst_p ^ a1_cst_p.  */
+			{
+			  real_value const_part = a0_cst_p
+			    ? TREE_REAL_CST (args[0]) : TREE_REAL_CST (args[1]);
+			  if (!real_equal (&const_part, &dconst0)
+			      && !real_isinf (&const_part))
+			    new_stmt =
+			      gimple_build_assign (gimple_call_lhs (stmt),
+						   MULT_EXPR, args[0], args[1]);
+			}
+		    }
+		  if (new_stmt)
+		    {
+		      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+		      gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+		    }
+		  break;
+		}
 	    default:
 	      break;
 	    }
