@@ -1,3 +1,10 @@
+2015-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68465
+	* tree-ssa-sccvn.c (sccvn_dom_walker::before_dom_children):
+	Also record equalities from multiple predecessor blocks if
+	only one non-backedge exists.
+
 2015-11-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/68363

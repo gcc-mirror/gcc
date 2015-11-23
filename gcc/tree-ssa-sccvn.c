@@ -4357,20 +4357,34 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
 
   /* If we have a single predecessor record the equivalence from a
      possible condition on the predecessor edge.  */
-  if (single_pred_p (bb))
+  edge pred_e = NULL;
+  FOR_EACH_EDGE (e, ei, bb->preds)
     {
-      edge e = single_pred_edge (bb);
+      /* Ignore simple backedges from this to allow recording conditions
+         in loop headers.  */
+      if (dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
+	continue;
+      if (! pred_e)
+	pred_e = e;
+      else
+	{
+	  pred_e = NULL;
+	  break;
+	}
+    }
+  if (pred_e)
+    {
       /* Check if there are multiple executable successor edges in
 	 the source block.  Otherwise there is no additional info
 	 to be recorded.  */
       edge e2;
-      FOR_EACH_EDGE (e2, ei, e->src->succs)
-	if (e2 != e
+      FOR_EACH_EDGE (e2, ei, pred_e->src->succs)
+	if (e2 != pred_e
 	    && e2->flags & EDGE_EXECUTABLE)
 	  break;
       if (e2 && (e2->flags & EDGE_EXECUTABLE))
 	{
-	  gimple *stmt = last_stmt (e->src);
+	  gimple *stmt = last_stmt (pred_e->src);
 	  if (stmt
 	      && gimple_code (stmt) == GIMPLE_COND)
 	    {
@@ -4378,11 +4392,11 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
 	      tree lhs = gimple_cond_lhs (stmt);
 	      tree rhs = gimple_cond_rhs (stmt);
 	      record_conds (bb, code, lhs, rhs,
-			    (e->flags & EDGE_TRUE_VALUE) != 0);
+			    (pred_e->flags & EDGE_TRUE_VALUE) != 0);
 	      code = invert_tree_comparison (code, HONOR_NANS (lhs));
 	      if (code != ERROR_MARK)
 		record_conds (bb, code, lhs, rhs,
-			      (e->flags & EDGE_TRUE_VALUE) == 0);
+			      (pred_e->flags & EDGE_TRUE_VALUE) == 0);
 	    }
 	}
     }
