@@ -276,7 +276,6 @@ public:
 
   inline virtual void init_wpa (void)
   {
-    parse_tree_args ();
   }
 
   virtual void init (void);
@@ -294,9 +293,6 @@ public:
     dump_function_to_file (decl, file, TDF_DETAILS);
   }
 
-  /* Parses function arguments and result type.  */
-  void parse_tree_args (void);
-
   /* Returns cgraph_node.  */
   inline cgraph_node *get_node (void)
   {
@@ -313,14 +309,12 @@ public:
      semantic function item.  */
   static sem_function *parse (cgraph_node *node, bitmap_obstack *stack);
 
+  /* Perform additional checks needed to match types of used function
+     paramters.  */
+  bool compatible_parm_types_p (tree, tree);
+
   /* Exception handling region tree.  */
   eh_region region_tree;
-
-  /* Result type tree node.  */
-  tree result_type;
-
-  /* Array of argument tree types.  */
-  vec <tree> arg_types;
 
   /* Number of function arguments.  */
   unsigned int arg_count;
@@ -342,6 +336,9 @@ public:
 
   /* Array of structures for all basic blocks.  */
   vec <ipa_icf_gimple::sem_bb *> bb_sorted;
+
+  /* Return true if parameter I may be used.  */
+  bool param_used_p (unsigned int i);
 
 private:
   /* Calculates hash value based on a BASIC_BLOCK.  */

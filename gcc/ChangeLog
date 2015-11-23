@@ -1,3 +1,22 @@
+2015-11-23    ipa/65908
+
+	* ipa-icf.c (sem_item::target_supports_symbol_aliases): Remove
+	construction of arg_types.
+	(sem_function::sem_function): Likewise.
+	(sem_function::~sem_function): Remove destruction of arg_types.
+	(sem_function::compatible_parm_types_p): New function.
+	(sem_function::equals_wpa): Reorg matching of return values
+	and parameter types.
+	(sem_function::equals_private): Reorg mathcing of argument types.
+	(sem_function::parse_tree_args): Remove.
+	(sem_function::param_used_p): New function.
+	* ipa-icf.h (init_wpa): Do not call it.
+	(parse_tree_args): Remove.
+	(compatible_parm_types_p): Declare.
+	(result_type): Remove.
+	(arg_types): Remove.
+	(param_used_p): Declare.
+
 2015-11-23  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
