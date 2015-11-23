@@ -1501,7 +1501,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   exception handler, and we aren't using the GCC exception mechanism,
 	   we must force this variable in memory in order to avoid an invalid
 	   optimization.  */
-	if (Exception_Mechanism != Back_End_Exceptions
+	if (Front_End_Exceptions ()
 	    && Has_Nested_Block_With_Handler (Scope (gnat_entity)))
 	  TREE_ADDRESSABLE (gnu_decl) = 1;
 
@@ -1520,9 +1520,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* If we are defining an object with variable size or an object with
 	   fixed size that will be dynamically allocated, and we are using the
-	   setjmp/longjmp exception mechanism, update the setjmp buffer.  */
+	   front-end setjmp/longjmp exception mechanism, update the setjmp
+	   buffer.  */
 	if (definition
-	    && Exception_Mechanism == Setjmp_Longjmp
+	    && Exception_Mechanism == Front_End_SJLJ
 	    && get_block_jmpbuf_decl ()
 	    && DECL_SIZE_UNIT (gnu_decl)
 	    && (TREE_CODE (DECL_SIZE_UNIT (gnu_decl)) != INTEGER_CST
@@ -4099,7 +4100,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
           trigger an "abnormal" transfer of control flow; thus they can be
           neither "const" nor "pure" in the back-end sense.  */
 	bool const_flag
-	  = (Exception_Mechanism == Back_End_Exceptions
+	  = (Back_End_Exceptions ()
 	     && Is_Pure (gnat_entity));
 	bool noreturn_flag = No_Return (gnat_entity);
 	bool return_by_direct_ref_p = false;

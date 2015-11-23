@@ -1,3 +1,72 @@
+2015-11-23  Olivier Hainque  <hainque@adacore.com>
+	    Eric Botcazou  <botcazou@adacore.com>
+
+	* opt.ads (Exception_Mechanism): Now three values: Front_End_SJLJ,
+	Back_End_SJLJ and Back_End_ZCX.
+	(Back_End_Exceptions, Front_End_Exceptions, ZCX_Exceptions,
+	SJLJ_Exceptions): New functions, reflecting properties of the current
+	Exception_Mechanism.
+	* opt.adb: Implement the new functions.
+	* fe.h: Bind the new Exception_Mechanism and helper functions for gigi.
+
+	* exp_ch11.adb (Expand_At_End_Handler): Replace test on mechanism by
+	use of property helper and update comments.
+	(Expand_Exception_Handlers): Replace tests on mechanism by use of
+	helper. Restrict Abort_Defer to ZCX specifically.
+	* exp_ch9.adb (Expand_N_Asynchronous_Select): Replace tests on
+	mechanism by calls to helper functions. Abort_Undefer for ZCX only,
+	paired with Expand_Exception_Handlers.
+	* exp_sel.adb (Build_Abort_Block_Handler): Replace tests on mechanism
+	by calls to helper functions. Abort_Undefer for ZCX only, paired with
+	Expand_Exception_Handlers.
+
+	* lib-writ.ads (P line documentation): Add entry for "FX",
+	representative of unit compiled with Frontend_Exceptions True.
+	* lib-writ.adb (Output_Main_Program_Line): Add "FX" on P line if
+	compiled with Frontend_Exceptions True.
+
+	* ali.ads (ALIs_Record): Ada a Frontend_Exceptions component, to reflect
+	whether the ALI file contained an "FX" indication on the P line.
+	(Frontend_Exceptions_Specified): New boolean, to keep track of whether
+	at least an FX ALI file is in the closure.
+	* ali.adb (Scan_ALI): Handle "FX" on the P line.
+	(Initialize_ALI): Initialize Frontend_Exceptions_Specified to False.
+
+	* targparm.ads: Update desription of exception schemes.
+	(Frontend_Exceptions_On_Target): New flag, reflect Frontend_Exceptions
+	set to True in system.ads, or not set at all.
+	* targparm.adb (Targparm_Tags): Add FEX to convey Frontend_Exceptions.
+	Rename ZCD to ZCX for consistency.
+	(FEX_Str, Targparm_Str, Get_Target_Parameters): Adjust accordingly.
+
+	* gnat1drv.adb (Adjust_Global_Switches): Adjust Exception_Mechanism
+	setting, now from combination of Frontend_Exceptions and ZCX_By_Default.
+
+	* bcheck.adb (Check_Consistent_Zero_Cost_Exception_Handling): Rename
+	as ...
+	(Check_Consistent_Exception_Handling): Check consistency of both
+	ZCX_By_Default and Frontend_Exceptions.
+	(Check_Configuration_Consistency): Check_Consistent_Exception_Handling
+	if either flag was set at least once.
+
+	* make.adb (Check): Remove processing of a possible -fsjlj coming from
+	lang-specs.h.
+	* gnatlink.adb (Gnatlin): Likewise.
+
+	* gcc-interface/Makefile.in (gnatlib-sjlj/zcx): Now set
+	both ZCX_By_Default and Frontend_Exceptions.
+	* gcc-interface/decl.c (gnat_to_gnu_entity, case E_Variable):
+	Use eh property helper to test for back-end exceptions. Adjust
+	mechanism name when testing for front-end sjlj.
+	(case E_Procedure): Likewise.
+	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu):
+	Likewise, and rename local variables.
+	(Exception_Handler_to_gnu_sjlj): Rename as
+	Exception_Handler_to_gnu_fe_sjlj.
+	(Exception_Handler_to_gnu_zcx): Rename as
+	Exception_Handler_to_gnu_gcc and adjust tests on eh mechanisms
+	to use property helpers or correct mechanism name.
+
 2015-11-19  Bob Duff  <duff@adacore.com>
 
 	* sem_elab.adb (Check_Internal_Call_Continue): Correction to previous

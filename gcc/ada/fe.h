@@ -178,7 +178,9 @@ extern Boolean In_Same_Source_Unit              (Node_Id, Node_Id);
 #define List_Representation_Info       opt__list_representation_info
 #define No_Strict_Aliasing_CP          opt__no_strict_aliasing
 
-typedef enum {Setjmp_Longjmp, Back_End_Exceptions} Exception_Mechanism_Type;
+typedef enum {
+  Front_End_SJLJ, Back_End_ZCX, Back_End_SJLJ
+} Exception_Mechanism_Type;
 
 extern Boolean Back_End_Inlining;
 extern Boolean Exception_Extra_Info;
@@ -189,6 +191,16 @@ extern Boolean Generate_SCO_Instance_Table;
 extern Boolean GNAT_Mode;
 extern Int List_Representation_Info;
 extern Boolean No_Strict_Aliasing_CP;
+
+#define ZCX_Exceptions            opt__zcx_exceptions
+#define SJLJ_Exceptions           opt__sjlj_exceptions
+#define Front_End_Exceptions      opt__front_end_exceptions
+#define Back_End_Exceptions       opt__back_end_exceptions
+
+extern Boolean ZCX_Exceptions       (void);
+extern Boolean SJLJ_Exceptions      (void);
+extern Boolean Front_End_Exceptions (void);
+extern Boolean Back_End_Exceptions  (void);
 
 /* restrict: */
 

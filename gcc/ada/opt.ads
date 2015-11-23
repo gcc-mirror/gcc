@@ -573,27 +573,41 @@ package Opt is
    --  currently active.
 
    type Exception_Mechanism_Type is
-   --  Determines the handling of exceptions. See Exp_Ch11 for details
+   --  Determines the kind of mechanism used to handle exceptions
    --
-     (Front_End_Setjmp_Longjmp_Exceptions,
+     (Front_End_SJLJ,
       --  Exceptions use setjmp/longjmp generated explicitly by the front end
       --  (this includes gigi or other equivalent parts of the code generator).
       --  AT END handlers are converted into exception handlers by the front
       --  end in this mode.
 
-      Back_End_Exceptions);
+      Back_End_ZCX,
       --  Exceptions are handled by the back end. The front end simply
       --  generates the handlers as they appear in the source, and AT END
       --  handlers are left untouched (they are not converted into exception
-      --  handlers when operating in this mode.
+      --  handlers when operating in this mode). Propagation is performed
+      --  using a frame unwinding scheme and requires no particular setup code
+      --  at handler sites on regular execution paths.
+
+      Back_End_SJLJ);
+      --  Similar to Back_End_ZCX with respect to the front-end processing
+      --  of regular and AT-END handlers. A setjmp/longjmp scheme is used to
+      --  propagate and setup handler contexts on regular execution paths.
+
    pragma Convention (C, Exception_Mechanism_Type);
 
-   Exception_Mechanism : Exception_Mechanism_Type :=
-                           Front_End_Setjmp_Longjmp_Exceptions;
+   Exception_Mechanism : Exception_Mechanism_Type := Front_End_SJLJ;
    --  GNAT
-   --  Set to the appropriate value depending on the default as given in
-   --  system.ads (ZCX_By_Default). The C convention is there to make this
-   --  variable accessible to gigi.
+   --  Set to the appropriate value depending on the flags in system.ads
+   --  (Frontend_Exceptions + ZCX_By_Default). The C convention is there to
+   --  allow access by gigi.
+
+   function Back_End_Exceptions return Boolean;
+   function Front_End_Exceptions return Boolean;
+   function ZCX_Exceptions return Boolean;
+   function SJLJ_Exceptions return Boolean;
+   --  GNAT
+   --  Various properties of the active Exception_Mechanism
 
    Exception_Tracebacks : Boolean := False;
    --  GNATBIND
