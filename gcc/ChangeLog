@@ -1,3 +1,19 @@
+2015-11-23  Richard Henderson  <rth@redhat.com>
+
+	* optabs.def (uaddv4_optab, usubv4_optab): New.
+	* internal-fn.c (expand_addsub_overflow): Use them.
+	* doc/md.texi (Standard Names): Add uaddv<m>4, usubv<m>4.
+
+	* config/i386/i386.c (ix86_cc_mode): Extend add overflow check
+	to reversed operands.
+	* config/i386/i386.md (uaddv<SWI>4, usubv<SWI>4): New.
+	(*add<SWI>3_cconly_overflow_1): Rename *add<SWI>3_cconly_overflow.
+	(*add<SWI>3_cc_overflow_1): Rename *add<SWI>3_cc_overflow.
+	(*addsi3_zext_cc_overflow_1): Rename *add3_zext_cc_overflow.
+	(*add<SWI>3_cconly_overflow_2): New.
+	(*add<SWI>3_cc_overflow_2): New.
+	(*addsi3_zext_cc_overflow_2): New.
+
 2015-11-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68465
