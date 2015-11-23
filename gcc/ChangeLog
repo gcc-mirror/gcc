@@ -1,3 +1,24 @@
+2015-11-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2015-10-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
+		    Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/67808
+	* config/rs6000/rs6000.md (extenddftf2): In the expander, only
+	allow registers, but provide insns for the combiner to create for
+	loads from memory. Separate VSX code from non-VSX code. For
+	non-VSX code, combine extenddftf2_fprs into extenddftf2 and rename
+	externaldftf2_internal to externaldftf2_fprs. Reorder constraints
+	so that registers come before memory operations. Drop support from
+	converting DFmode to TFmode, if the DFmode value is in a GPR
+	register.
+	(extenddftf2_fprs): Likewise.
+	(extenddftf2_internal): Likewise.
+	(extenddftf2_vsx): Likewise.
+	(extendsftf2): In the expander, only allow registers, but provide
+	insns for the combiner to create for stores and loads.
+
 2015-11-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline

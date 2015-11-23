@@ -1,3 +1,11 @@
+2015-11-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	2015-10-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Peter Bergner <bergner@vnet.ibm.com>
+
+	PR target/67808
+	* gcc.target/powerpc/pr67808.c: New test.
+
 2015-11-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
