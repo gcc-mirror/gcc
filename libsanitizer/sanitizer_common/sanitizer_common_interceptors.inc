@@ -439,6 +439,8 @@ INTERCEPTOR(int, memcmp, const void *a1, const void *a2, uptr size) {
 
 #if SANITIZER_INTERCEPT_MEMCHR
 INTERCEPTOR(void*, memchr, const void *s, int c, SIZE_T n) {
+  if (COMMON_INTERCEPTOR_NOTHING_IS_INITIALIZED)
+    return internal_memchr(s, c, n);
   void *ctx;
   COMMON_INTERCEPTOR_ENTER(ctx, memchr, s, c, n);
   void *res = REAL(memchr)(s, c, n);
@@ -2444,6 +2446,7 @@ INTERCEPTOR(int, readdir64_r, void *dirp, __sanitizer_dirent64 *entry,
 INTERCEPTOR(uptr, ptrace, int request, int pid, void *addr, void *data) {
   void *ctx;
   COMMON_INTERCEPTOR_ENTER(ctx, ptrace, request, pid, addr, data);
+  __sanitizer_iovec local_iovec;
 
   if (data) {
     if (request == ptrace_setregs)
@@ -2452,11 +2455,19 @@ INTERCEPTOR(uptr, ptrace, int request, int pid, void *addr, void *data) {
       COMMON_INTERCEPTOR_READ_RANGE(ctx, data, struct_user_fpregs_struct_sz);
     else if (request == ptrace_setfpxregs)
       COMMON_INTERCEPTOR_READ_RANGE(ctx, data, struct_user_fpxregs_struct_sz);
+    else if (request == ptrace_setvfpregs)
+      COMMON_INTERCEPTOR_READ_RANGE(ctx, data, struct_user_vfpregs_struct_sz);
     else if (request == ptrace_setsiginfo)
       COMMON_INTERCEPTOR_READ_RANGE(ctx, data, siginfo_t_sz);
-    else if (request == ptrace_setregset) {
-      __sanitizer_iovec *iov = (__sanitizer_iovec *)data;
-      COMMON_INTERCEPTOR_READ_RANGE(ctx, iov->iov_base, iov->iov_len);
+    // Some kernel might zero the iovec::iov_base in case of invalid
+    // write access.  In this case copy the invalid address for further
+    // inspection.
+    else if (request == ptrace_setregset || request == ptrace_getregset) {
+      __sanitizer_iovec *iovec = (__sanitizer_iovec*)data;
+      COMMON_INTERCEPTOR_READ_RANGE(ctx, iovec, sizeof(*iovec));
+      local_iovec = *iovec;
+      if (request == ptrace_setregset)
+        COMMON_INTERCEPTOR_READ_RANGE(ctx, iovec->iov_base, iovec->iov_len);
     }
   }
 
@@ -2474,13 +2485,17 @@ INTERCEPTOR(uptr, ptrace, int request, int pid, void *addr, void *data) {
       COMMON_INTERCEPTOR_WRITE_RANGE(ctx, data, struct_user_fpregs_struct_sz);
     else if (request == ptrace_getfpxregs)
       COMMON_INTERCEPTOR_WRITE_RANGE(ctx, data, struct_user_fpxregs_struct_sz);
+    else if (request == ptrace_getvfpregs)
+      COMMON_INTERCEPTOR_WRITE_RANGE(ctx, data, struct_user_vfpregs_struct_sz);
     else if (request == ptrace_getsiginfo)
       COMMON_INTERCEPTOR_WRITE_RANGE(ctx, data, siginfo_t_sz);
     else if (request == ptrace_geteventmsg)
       COMMON_INTERCEPTOR_WRITE_RANGE(ctx, data, sizeof(unsigned long));
     else if (request == ptrace_getregset) {
-      __sanitizer_iovec *iov = (__sanitizer_iovec *)data;
-      COMMON_INTERCEPTOR_WRITE_RANGE(ctx, iov->iov_base, iov->iov_len);
+      __sanitizer_iovec *iovec = (__sanitizer_iovec*)data;
+      COMMON_INTERCEPTOR_WRITE_RANGE(ctx, iovec, sizeof(*iovec));
+      COMMON_INTERCEPTOR_WRITE_RANGE(ctx, local_iovec.iov_base,
+                                     local_iovec.iov_len);
     }
   }
   return res;
@@ -4874,9 +4889,8 @@ static void initialize_obstack(__sanitizer_obstack *obstack) {
                                         sizeof(*obstack->chunk));
 }
 
-INTERCEPTOR(int, _obstack_begin_1, __sanitizer_obstack *obstack,
-            _OBSTACK_SIZE_T sz, _OBSTACK_SIZE_T align,
-            void *(*alloc_fn)(uptr arg, SIZE_T sz),
+INTERCEPTOR(int, _obstack_begin_1, __sanitizer_obstack *obstack, int sz,
+            int align, void *(*alloc_fn)(uptr arg, uptr sz),
             void (*free_fn)(uptr arg, void *p)) {
   void *ctx;
   COMMON_INTERCEPTOR_ENTER(ctx, _obstack_begin_1, obstack, sz, align, alloc_fn,
@@ -4885,10 +4899,8 @@ INTERCEPTOR(int, _obstack_begin_1, __sanitizer_obstack *obstack,
   if (res) initialize_obstack(obstack);
   return res;
 }
-INTERCEPTOR(int, _obstack_begin, __sanitizer_obstack *obstack,
-            _OBSTACK_SIZE_T sz, _OBSTACK_SIZE_T align,
-            void *(*alloc_fn)(SIZE_T sz),
-            void (*free_fn)(void *p)) {
+INTERCEPTOR(int, _obstack_begin, __sanitizer_obstack *obstack, int sz,
+            int align, void *(*alloc_fn)(uptr sz), void (*free_fn)(void *p)) {
   void *ctx;
   COMMON_INTERCEPTOR_ENTER(ctx, _obstack_begin, obstack, sz, align, alloc_fn,
                            free_fn);
@@ -4896,8 +4908,7 @@ INTERCEPTOR(int, _obstack_begin, __sanitizer_obstack *obstack,
   if (res) initialize_obstack(obstack);
   return res;
 }
-INTERCEPTOR(void, _obstack_newchunk, __sanitizer_obstack *obstack,
-            _OBSTACK_SIZE_T length) {
+INTERCEPTOR(void, _obstack_newchunk, __sanitizer_obstack *obstack, int length) {
   void *ctx;
   COMMON_INTERCEPTOR_ENTER(ctx, _obstack_newchunk, obstack, length);
   REAL(_obstack_newchunk)(obstack, length);
@@ -5238,6 +5249,39 @@ INTERCEPTOR(int, mincore, void *addr, uptr length, unsigned char *vec) {
 #define INIT_MINCORE
 #endif
 
+#if SANITIZER_INTERCEPT_PROCESS_VM_READV
+INTERCEPTOR(SSIZE_T, process_vm_readv, int pid, __sanitizer_iovec *local_iov,
+            uptr liovcnt, __sanitizer_iovec *remote_iov, uptr riovcnt,
+            uptr flags) {
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, process_vm_readv, pid, local_iov, liovcnt,
+                           remote_iov, riovcnt, flags);
+  SSIZE_T res = REAL(process_vm_readv)(pid, local_iov, liovcnt, remote_iov,
+                                       riovcnt, flags);
+  if (res > 0)
+    write_iovec(ctx, local_iov, liovcnt, res);
+  return res;
+}
+
+INTERCEPTOR(SSIZE_T, process_vm_writev, int pid, __sanitizer_iovec *local_iov,
+            uptr liovcnt, __sanitizer_iovec *remote_iov, uptr riovcnt,
+            uptr flags) {
+  void *ctx;
+  COMMON_INTERCEPTOR_ENTER(ctx, process_vm_writev, pid, local_iov, liovcnt,
+                           remote_iov, riovcnt, flags);
+  SSIZE_T res = REAL(process_vm_writev)(pid, local_iov, liovcnt, remote_iov,
+                                        riovcnt, flags);
+  if (res > 0)
+    read_iovec(ctx, local_iov, liovcnt, res);
+  return res;
+}
+#define INIT_PROCESS_VM_READV                                                  \
+  COMMON_INTERCEPT_FUNCTION(process_vm_readv);                                 \
+  COMMON_INTERCEPT_FUNCTION(process_vm_writev);
+#else
+#define INIT_PROCESS_VM_READV
+#endif
+
 static void InitializeCommonInterceptors() {
   static u64 metadata_mem[sizeof(MetadataHashMap) / sizeof(u64) + 1];
   interceptor_metadata_map = new((void *)&metadata_mem) MetadataHashMap();
@@ -5411,4 +5455,5 @@ static void InitializeCommonInterceptors() {
   INIT_SEM;
   INIT_PTHREAD_SETCANCEL;
   INIT_MINCORE;
+  INIT_PROCESS_VM_READV;
 }

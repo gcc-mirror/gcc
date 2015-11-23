@@ -37,6 +37,8 @@ case "${target}" in
   aarch64*-*-linux*)
 	if test x$ac_cv_sizeof_void_p = x8; then
 		TSAN_SUPPORTED=yes
+		LSAN_SUPPORTED=yes
+		TSAN_TARGET_DEPENDENT_OBJECTS=tsan_rtl_aarch64.lo
 	fi
 	;;
   x86_64-*-darwin[1]* | i?86-*-darwin[1]*)

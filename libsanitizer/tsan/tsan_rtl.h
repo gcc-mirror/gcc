@@ -408,12 +408,18 @@ struct ThreadState {
 };
 
 #ifndef SANITIZER_GO
+#if SANITIZER_MAC
+ThreadState *cur_thread();
+void cur_thread_finalize();
+#else
 __attribute__((tls_model("initial-exec")))
 extern THREADLOCAL char cur_thread_placeholder[];
 INLINE ThreadState *cur_thread() {
   return reinterpret_cast<ThreadState *>(&cur_thread_placeholder);
 }
-#endif
+INLINE void cur_thread_finalize() { }
+#endif  // SANITIZER_MAC
+#endif  // SANITIZER_GO
 
 class ThreadContext : public ThreadContextBase {
  public:
@@ -707,7 +713,7 @@ void AcquireReleaseImpl(ThreadState *thr, uptr pc, SyncClock *c);
 // The trick is that the call preserves all registers and the compiler
 // does not treat it as a call.
 // If it does not work for you, use normal call.
-#if !SANITIZER_DEBUG && defined(__x86_64__)
+#if !SANITIZER_DEBUG && defined(__x86_64__) && !SANITIZER_MAC
 // The caller may not create the stack frame for itself at all,
 // so we create a reserve stack frame for it (1024b must be enough).
 #define HACKY_CALL(f) \
