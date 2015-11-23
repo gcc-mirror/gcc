@@ -1,3 +1,8 @@
+2015-11-23  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/68455
+	* gcc.dg/tree-ssa/pr68455.c: New test.
+
 2015-11-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68465
