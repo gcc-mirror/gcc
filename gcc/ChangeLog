@@ -1,3 +1,12 @@
+2015-11-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2015-11-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/68363
+	* config/aarch64/aarch64.c (aarch64_madd_needs_nop): Reject arguments
+	that are not INSN_P.
+
 2015-11-23  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
