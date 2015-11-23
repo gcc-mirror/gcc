@@ -27,19 +27,9 @@ along with GCC; see the file COPYING3.  If not see
    The wiki page http://gcc.gnu.org/wiki/Graphite contains pointers to
    the related work.  */
 
+#define USES_ISL
+
 #include "config.h"
-
-#ifdef HAVE_isl
-/* Workaround for GMP 5.1.3 bug, see PR56019.  */
-#include <stddef.h>
-
-#include <isl/constraint.h>
-#include <isl/set.h>
-#include <isl/map.h>
-#include <isl/options.h>
-#include <isl/union_map.h>
-#endif
-
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -59,10 +49,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
-#include "graphite-poly.h"
 #include "dbgcnt.h"
 #include "tree-parloops.h"
 #include "tree-cfgcleanup.h"
+
+#include <isl/constraint.h>
+#include <isl/set.h>
+#include <isl/map.h>
+#include <isl/options.h>
+#include <isl/union_map.h>
+
+#include "graphite-poly.h"
 #include "graphite-scop-detection.h"
 #include "graphite-isl-ast-to-gimple.h"
 #include "graphite-sese-to-poly.h"

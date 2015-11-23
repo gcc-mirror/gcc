@@ -18,11 +18,25 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define USES_ISL
+
 #include "config.h"
 
 #ifdef HAVE_isl
-/* Workaround for GMP 5.1.3 bug, see PR56019.  */
-#include <stddef.h>
+
+#include "system.h"
+#include "coretypes.h"
+#include "backend.h"
+#include "cfghooks.h"
+#include "tree.h"
+#include "gimple.h"
+#include "fold-const.h"
+#include "gimple-iterator.h"
+#include "tree-ssa-loop.h"
+#include "cfgloop.h"
+#include "tree-data-ref.h"
+#include "params.h"
+#include "dumpfile.h"
 
 #include <isl/constraint.h>
 #include <isl/set.h>
@@ -38,20 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/schedule_node.h>
 #endif
 
-#include "system.h"
-#include "coretypes.h"
-#include "backend.h"
-#include "cfghooks.h"
-#include "tree.h"
-#include "gimple.h"
-#include "fold-const.h"
-#include "gimple-iterator.h"
-#include "tree-ssa-loop.h"
-#include "cfgloop.h"
-#include "tree-data-ref.h"
 #include "graphite-poly.h"
-#include "params.h"
-#include "dumpfile.h"
 
 #ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
 
