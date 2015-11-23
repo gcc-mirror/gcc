@@ -7590,6 +7590,9 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
   tree mask_type;
   tree mask;
 
+  if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
+    return false;
+
   if (!VECTOR_BOOLEAN_TYPE_P (vectype))
     return false;
 
@@ -7602,9 +7605,6 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
     ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits;
 
   gcc_assert (ncopies >= 1);
-  if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
-    return false;
-
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
       && !(STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle
 	   && reduc_def))
