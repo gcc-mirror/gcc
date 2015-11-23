@@ -6111,8 +6111,10 @@ and program then exits with a non-zero exit code.
 
 Currently this feature only works for @option{-fsanitize=undefined} (and its suboptions
 except for @option{-fsanitize=unreachable} and @option{-fsanitize=return}),
-@option{-fsanitize=float-cast-overflow}, @option{-fsanitize=float-divide-by-zero} and
-@option{-fsanitize=kernel-address}.  For these sanitizers error recovery is turned on by default.
+@option{-fsanitize=float-cast-overflow}, @option{-fsanitize=float-divide-by-zero},
+@option{-fsanitize=kernel-address} and @option{-fsanitize=address}.
+For these sanitizers error recovery is turned on by default, except @option{-fsanitize=address},
+for which this feature is experimental.
 @option{-fsanitize-recover=all} and @option{-fno-sanitize-recover=all} is also
 accepted, the former enables recovery for all sanitizers that support it,
 the latter disables recovery for all sanitizers that support it.

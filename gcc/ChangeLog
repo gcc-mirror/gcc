@@ -1,3 +1,10 @@
+2015-11-23  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* opts.c (finish_options): Allow -fsanitize-recover=address for
+	userspace sanitization.
+	* asan.c (asan_expand_check_ifn): Redefine recover_p.
+	* doc/invoke.texi (fsanitize-recover): Update documentation.
+
 2015-11-23  Tom de Vries  <tom@codesourcery.com>
 
 	* omp-low.c (build_receiver_ref): Mark by_ref mem_ref as non-trapping.

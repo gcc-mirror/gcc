@@ -941,10 +941,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	      "-fsanitize=address and -fsanitize=kernel-address "
 	      "are incompatible with -fsanitize=thread");
 
-  /* Error recovery is not allowed for ASan and TSan.  */
-
-  if (opts->x_flag_sanitize_recover & SANITIZE_USER_ADDRESS)
-    error_at (loc, "-fsanitize-recover=address is not supported");
+  /* Error recovery is not allowed for LSan and TSan.  */
 
   if (opts->x_flag_sanitize_recover & SANITIZE_THREAD)
     error_at (loc, "-fsanitize-recover=thread is not supported");
