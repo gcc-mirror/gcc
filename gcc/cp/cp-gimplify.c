@@ -611,12 +611,14 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	 25979.  */
     case INIT_EXPR:
       if (fn_contains_cilk_spawn_p (cfun)
-	  && cilk_detect_spawn_and_unwrap (expr_p)
-	  && !seen_error ())
+	  && cilk_detect_spawn_and_unwrap (expr_p))
 	{
 	  cilk_cp_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);
 	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
 	}
+      if (seen_error ())
+	return GS_ERROR;
+
       cp_gimplify_init_expr (expr_p);
       if (TREE_CODE (*expr_p) != INIT_EXPR)
 	return GS_OK;
@@ -725,16 +727,16 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       break;
 
     case CILK_SPAWN_STMT:
-      gcc_assert 
-	(fn_contains_cilk_spawn_p (cfun) 
-	 && cilk_detect_spawn_and_unwrap (expr_p));
+      gcc_assert(fn_contains_cilk_spawn_p (cfun)
+		 && cilk_detect_spawn_and_unwrap (expr_p));
 
-      /* If errors are seen, then just process it as a CALL_EXPR.  */
       if (!seen_error ())
 	{
 	  cilk_cp_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);
 	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
 	}
+      return GS_ERROR;
+
     case CALL_EXPR:
       if (fn_contains_cilk_spawn_p (cfun)
 	  && cilk_detect_spawn_and_unwrap (expr_p)

@@ -272,16 +272,16 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
       }
 
     case CILK_SPAWN_STMT:
-      gcc_assert
-	(fn_contains_cilk_spawn_p (cfun)
-	 && cilk_detect_spawn_and_unwrap (expr_p));
+      gcc_assert(fn_contains_cilk_spawn_p (cfun)
+		 && cilk_detect_spawn_and_unwrap (expr_p));
 
-      /* If errors are seen, then just process it as a CALL_EXPR.  */
       if (!seen_error ())
 	{
 	  cilk_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);
 	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
 	}
+      return GS_ERROR;
+
     case MODIFY_EXPR:
     case INIT_EXPR:
     case CALL_EXPR:
