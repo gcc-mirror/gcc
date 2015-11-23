@@ -439,7 +439,8 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 		 compute a factor.  */
 	      if (TREE_CODE (scalar_type) == BOOLEAN_TYPE)
 		{
-		  mask_producers.safe_push (stmt_info);
+		  if (STMT_VINFO_RELEVANT_P (stmt_info))
+		    mask_producers.safe_push (stmt_info);
 		  bool_result = true;
 
 		  if (gimple_code (stmt) == GIMPLE_ASSIGN

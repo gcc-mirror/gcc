@@ -1,3 +1,12 @@
+2015-11-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68327
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Don't
+	compute vectype for non-relevant mask producers.
+	* gcc/tree-vect-stmts.c (vectorizable_comparison): Check stmt
+	relevance earlier.
+
 2015-11-23  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/68460
