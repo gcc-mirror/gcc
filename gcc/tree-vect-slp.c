@@ -3177,10 +3177,11 @@ vect_create_mask_and_perm (gimple *stmt,
 {
   tree perm_dest;
   gimple *perm_stmt = NULL;
-  int i, stride;
+  int i, stride_in, stride_out;
   tree first_vec, second_vec, data_ref;
 
-  stride = SLP_TREE_NUMBER_OF_VEC_STMTS (node) / ncopies;
+  stride_out = SLP_TREE_NUMBER_OF_VEC_STMTS (node) / ncopies;
+  stride_in = dr_chain.length () / ncopies;
 
   /* Initialize the vect stmts of NODE to properly insert the generated
      stmts later.  */
@@ -3202,10 +3203,11 @@ vect_create_mask_and_perm (gimple *stmt,
       vect_finish_stmt_generation (stmt, perm_stmt, gsi);
 
       /* Store the vector statement in NODE.  */
-      SLP_TREE_VEC_STMTS (node)[stride * i + vect_stmts_counter] = perm_stmt;
+      SLP_TREE_VEC_STMTS (node)[stride_out * i + vect_stmts_counter]
+	= perm_stmt;
 
-      first_vec_indx += stride;
-      second_vec_indx += stride;
+      first_vec_indx += stride_in;
+      second_vec_indx += stride_in;
     }
 }
 
