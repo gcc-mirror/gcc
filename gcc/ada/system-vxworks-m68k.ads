@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                          (VxWorks version M68K)                          --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -154,6 +154,7 @@ private
    Always_Compatible_Rep     : constant Boolean := False;
    Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := True;
+   Frontend_Exceptions       : constant Boolean := True;
    ZCX_By_Default            : constant Boolean := False;
 
 end System;
