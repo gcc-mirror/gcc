@@ -1,3 +1,10 @@
+2015-11-23  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-isl-ast-to-gimple.c (translate_isl_ast_node_user):
+	Remove call to update_ssa.
+	* sese.c (sese_insert_phis_for_liveouts): Same.
+
 2015-11-23  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/68455

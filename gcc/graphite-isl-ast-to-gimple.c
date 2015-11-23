@@ -1023,15 +1023,6 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
       print_loops_bb (dump_file, next_e->src, 0, 3);
     }
 
-  mark_virtual_operands_for_renaming (cfun);
-  update_ssa (TODO_update_ssa);
-
-  if (dump_file)
-    {
-      fprintf (dump_file, "\n[codegen] (after update SSA) new basic block\n");
-      print_loops_bb (dump_file, next_e->src, 0, 3);
-    }
-
   return next_e;
 }
 
