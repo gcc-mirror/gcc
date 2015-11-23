@@ -40,6 +40,10 @@
 #  define SET_BINARY_MODE(file)
 #endif
 
+#ifdef _MSC_VER
+#  define snprintf _snprintf
+#endif
+
 #ifdef VMS
 #  define unlink delete
 #  define GZ_SUFFIX "-gz"
@@ -463,8 +467,12 @@ void file_compress(file, mode)
         exit(1);
     }
 
+#if !defined(NO_snprintf) && !defined(NO_vsnprintf)
+    snprintf(outfile, sizeof(outfile), "%s%s", file, GZ_SUFFIX);
+#else
     strcpy(outfile, file);
     strcat(outfile, GZ_SUFFIX);
+#endif
 
     in = fopen(file, "rb");
     if (in == NULL) {
@@ -499,7 +507,11 @@ void file_uncompress(file)
         exit(1);
     }
 
+#if !defined(NO_snprintf) && !defined(NO_vsnprintf)
+    snprintf(buf, sizeof(buf), "%s", file);
+#else
     strcpy(buf, file);
+#endif
 
     if (len > SUFFIX_LEN && strcmp(file+len-SUFFIX_LEN, GZ_SUFFIX) == 0) {
         infile = file;
@@ -508,7 +520,11 @@ void file_uncompress(file)
     } else {
         outfile = file;
         infile = buf;
+#if !defined(NO_snprintf) && !defined(NO_vsnprintf)
+        snprintf(buf + len, sizeof(buf) - len, "%s", GZ_SUFFIX);
+#else
         strcat(infile, GZ_SUFFIX);
+#endif
     }
     in = gzopen(infile, "rb");
     if (in == NULL) {
@@ -546,7 +562,11 @@ int main(argc, argv)
     gzFile file;
     char *bname, outmode[20];
 
+#if !defined(NO_snprintf) && !defined(NO_vsnprintf)
+    snprintf(outmode, sizeof(outmode), "%s", "wb6 ");
+#else
     strcpy(outmode, "wb6 ");
+#endif
 
     prog = argv[0];
     bname = strrchr(argv[0], '/');

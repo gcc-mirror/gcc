@@ -1,3 +1,7 @@
+2015-11-23  Matthias Klose  <doko@ubuntu.com>
+
+	* Imported zlib 1.2.8; merged local changes.
+
 2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* Makefile.in: Regenerated with automake-1.11.6.
