@@ -1,3 +1,8 @@
+2015-11-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/68363
+	* gcc.target/aarch64/pr68363_1.c: New test.
+
 2015-11-23  Bilyan Borisov  <bilyan.borisov@arm.com>
 
 	* gcc.target/aarch64/simd/vmulx.x: New.
