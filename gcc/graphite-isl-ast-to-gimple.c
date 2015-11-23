@@ -2761,6 +2761,8 @@ translate_isl_ast_to_gimple::translate_pending_phi_nodes ()
 	  fprintf (dump_file, "[codegen] to new-phi: ");
 	  print_gimple_stmt (dump_file, new_phi, 0, 0);
 	}
+      if (codegen_error)
+	return;
     }
 }
 
