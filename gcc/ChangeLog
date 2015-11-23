@@ -1,6 +1,13 @@
 2015-11-23  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	PR tree-optimization/68493
+	* graphite-isl-ast-to-gimple.c (translate_pending_phi_nodes): Add
+	missing early return when codegen_error is set.
+
+2015-11-23  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
 	PR tree-optimization/68279
 	* graphite-poly.c (new_scop): Remove poly_scop_p.
 	* graphite-poly.h (struct scop): Same.
