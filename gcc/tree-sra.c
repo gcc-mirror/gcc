@@ -674,12 +674,6 @@ sra_deinitialize (void)
   assign_link_pool.release ();
   obstack_free (&name_obstack, NULL);
 
-  /* TODO: hash_map does not support traits that can release
-     value type of the hash_map.  */
-  for (hash_map<tree, auto_vec<access_p> >::iterator it =
-       base_access_vec->begin (); it != base_access_vec->end (); ++it)
-    (*it).second.release ();
-
   delete base_access_vec;
 }
 

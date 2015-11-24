@@ -1397,7 +1397,8 @@ struct sinfo
   unsigned cnt;
 };
 
-struct sinfo_hashmap_traits : simple_hashmap_traits <pointer_hash <dt_simplify> >
+struct sinfo_hashmap_traits : simple_hashmap_traits<pointer_hash<dt_simplify>,
+						    sinfo *>
 {
   static inline hashval_t hash (const key_type &);
   static inline bool equal_keys (const key_type &, const key_type &);

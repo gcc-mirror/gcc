@@ -277,7 +277,8 @@ struct equiv_hash_elt
 
 /* Value to ssa name equivalence hashtable helpers.  */
 
-struct val_ssa_equiv_hash_traits : simple_hashmap_traits <tree_operand_hash>
+struct val_ssa_equiv_hash_traits : simple_hashmap_traits <tree_operand_hash,
+							  vec<tree> >
 {
   template<typename T> static inline void remove (T &);
 };
