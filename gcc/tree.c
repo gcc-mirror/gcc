@@ -6727,6 +6727,8 @@ build_variant_type_copy (tree type)
   /* Since we're building a variant, assume that it is a non-semantic
      variant. This also propagates TYPE_STRUCTURAL_EQUALITY_P. */
   TYPE_CANONICAL (t) = TYPE_CANONICAL (type);
+  /* Type variants have no alias set defined.  */
+  TYPE_ALIAS_SET (t) = -1;
 
   /* Add the new type to the chain of variants of TYPE.  */
   TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
@@ -13074,8 +13076,12 @@ verify_type_variant (const_tree t, tree tv)
   if ((!in_lto_p || !TYPE_FILE_SCOPE_P (t)) && 0)
     verify_variant_match (TYPE_CONTEXT);
   verify_variant_match (TYPE_STRING_FLAG);
-  if (TYPE_ALIAS_SET_KNOWN_P (t) && TYPE_ALIAS_SET_KNOWN_P (tv))
-    verify_variant_match (TYPE_ALIAS_SET);
+  if (TYPE_ALIAS_SET_KNOWN_P (t))
+    {
+      error ("type variant with TYPE_ALIAS_SET_KNOWN_P");
+      debug_tree (tv);
+      return false;
+    }
 
   /* tree_type_non_common checks.  */
 

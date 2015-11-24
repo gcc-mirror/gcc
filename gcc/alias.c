@@ -888,6 +888,7 @@ get_alias_set (tree t)
     }
 
   /* If this is a type with a known alias set, return it.  */
+  gcc_checking_assert (t == TYPE_MAIN_VARIANT (t));
   if (TYPE_ALIAS_SET_KNOWN_P (t))
     return TYPE_ALIAS_SET (t);
 
@@ -1030,6 +1031,7 @@ get_alias_set (tree t)
 	     We can not call get_alias_set (p) here as that would trigger
 	     infinite recursion when p == t.  In other cases it would just
 	     trigger unnecesary legwork of rebuilding the pointer again.  */
+	  gcc_checking_assert (p == TYPE_MAIN_VARIANT (p));
 	  if (TYPE_ALIAS_SET_KNOWN_P (p))
 	    set = TYPE_ALIAS_SET (p);
 	  else

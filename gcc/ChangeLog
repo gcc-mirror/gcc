@@ -1,5 +1,19 @@
 2015-11-24  Jan Hubicka  <hubicka@ucw.cz>
 
+	* alias.c (get_alias_set): Before checking TYPE_ALIAS_SET_KNOWN_P
+	double check that type is main variant.
+	* tree.c (build_variant_type_copy): Clear TYPE_ALIAS_SET when producing
+	variant.
+	(verify_type_variant): Verify that variants have no
+	TYPE_ALIAS_SET_KNOWN_P set
+	* tree-streamer-out.c (pack_ts_type_common_value_fields): Reorder
+	streaming so constant fields come first; stream TYPE_ALIAS_SET==0
+	only for main variants; stream TYPE_ALIAS_SET as a bit.
+	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Update
+	accordingly.
+
+2015-11-24  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree.c (make_vector_type): Properly compute canonical type of the
 	main variant.
 	(verify_type): Verify that TYPE_CANONICAL of TYPE_MAIN_VARIANT is
