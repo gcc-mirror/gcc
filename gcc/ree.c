@@ -808,6 +808,12 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
       if (state->defs_list.length () != 1)
 	return false;
 
+      /* We don't have the structure described above if there are
+	 conditional moves in between the def and the candidate,
+	 and we will not handle them correctly.  See PR68194.  */
+      if (state->copies_list.length () > 0)
+	return false;
+
       /* We require the candidate not already be modified.  It may,
 	 for example have been changed from a (sign_extend (reg))
 	 into (zero_extend (sign_extend (reg))).

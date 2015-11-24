@@ -1,3 +1,14 @@
+2015-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2015-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/68194
+	PR rtl-optimization/68328
+	PR rtl-optimization/68185
+	* gcc.c-torture/execute/pr68185.c: New test.
+	* gcc.c-torture/execute/pr68328.c: Likewise.
+
 2015-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/68483

@@ -1,3 +1,15 @@
+2015-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2015-11-24  Bernd Schmidt <bschmidt@redhat.com>
+	            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/68194
+	PR rtl-optimization/68328
+	PR rtl-optimization/68185
+	* ree.c (combine_reaching_defs): Reject copy_needed case if
+	copies_list is not empty.
+
 2015-11-24  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/68221
