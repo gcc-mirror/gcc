@@ -1,3 +1,27 @@
+2015-11-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Backport form mainline
+	2015-11-24  David Edelsohn  <dje.gcc@gmail.com>
+		    Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.md (UNSPEC_XSRDPI): New unspec.
+	(Fv2): New mode attribute to be used when ISA 2.07 instructions
+	are used on SF values, and ISA 2.06 instructions on DF values.
+	(add<mode>3_fpr): Use <Fv2> instead of <Fv>.
+	(sub<mode>3_fpr): Use <Fv2> instead of <Fv>.
+	(mul<mode>3_fpr): Use <Fv2> instead of <Fv>.
+	(div<mode>3_fpr): Use <Fv2> instead of <Fv>.
+	(sqrt<mode>2): Use <Fv2> instead of <Fv>.
+	(fre<Fs>): Use <Fv2> instead of <Fv>.
+	(rsqrt<mode>2): Use <Fv2> instead of <Fv>.
+	(cmp<mode>_fpr): Use <Fv2> instead of <Fv>.
+	(xsrdpi<mode>): Add support for the lround function.
+	(lround<mode>di2): Likewise.
+	(fma<mode>4_fpr): Use <Fv2> instead of <Fv>.
+	(fms<mode>4_fpr): Use <Fv2> instead of <Fv>.
+	(nfma<mode>4_fpr): Use <Fv2> instead of <Fv>.
+	(nfms<mode>4_fpr): Use <Fv2> instead of <Fv>.
+
 2015-11-24  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	Backport from mainline
