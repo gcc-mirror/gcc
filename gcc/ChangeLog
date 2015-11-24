@@ -1,3 +1,8 @@
+2015-11-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* doc/invoke.texi (-fpic): Add the AArch64 limit.
+	(-fPIC): Add AArch64.
+
 2015-11-24  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-loop-im.c (tree_ssa_lim): Make static.
