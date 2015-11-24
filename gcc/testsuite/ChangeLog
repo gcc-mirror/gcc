@@ -1,3 +1,9 @@
+2015-11-24  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	PR tree-optimization/67984
+	* gcc.dg/graphite/pr67984.c: New.
+
 2015-11-24  Michael Matz  <matz@suse.de>
 
 	PR rtl-optimization/68392

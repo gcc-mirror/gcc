@@ -1,4 +1,12 @@
-2015-11-23  Aditya Kumar  <aditya.k7@samsung.com>
+2015-11-24  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	PR tree-optimization/67984
+	* graphite-isl-ast-to-gimple.c (is_constant): New.
+	(get_rename): Call is_constant.
+	(get_new_name): Same.
+
+2015-11-24  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
 	* graphite-dependences.c: Only include graphite.h.

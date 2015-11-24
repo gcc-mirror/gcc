@@ -460,6 +460,16 @@ class translate_isl_ast_to_gimple
   void print_isl_ast_node (FILE *file, __isl_keep isl_ast_node *node,
 			   __isl_keep isl_ctx *ctx) const;
 
+  /* Return true when OP is a constant tree.  */
+
+  bool is_constant (tree op) const
+  {
+    return TREE_CODE (op) == INTEGER_CST
+      || TREE_CODE (op) == REAL_CST
+      || TREE_CODE (op) == COMPLEX_CST
+      || TREE_CODE (op) == VECTOR_CST;
+  }
+
 private:
   sese_info_p region;
 
@@ -1004,7 +1014,7 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
     {
       fprintf (dump_file, "[codegen] copying from basic block\n");
       print_loops_bb (dump_file, GBB_BB (gbb), 0, 3);
-      fprintf (dump_file, "\n[codegen] to new basic block\n");
+      fprintf (dump_file, "[codegen] to new basic block\n");
       print_loops_bb (dump_file, next_e->src, 0, 3);
     }
 
@@ -1018,7 +1028,7 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
 
   if (dump_file)
     {
-      fprintf (dump_file, "\n[codegen] (after copy) new basic block\n");
+      fprintf (dump_file, "[codegen] (after copy) new basic block\n");
       print_loops_bb (dump_file, next_e->src, 0, 3);
     }
 
@@ -1229,8 +1239,9 @@ is_valid_rename (tree rename, basic_block def_bb, basic_block use_bb,
     {
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n[codegen] rename not in loop closed ssa:");
+	  fprintf (dump_file, "[codegen] rename not in loop closed ssa:");
 	  print_generic_expr (dump_file, rename, 0);
+	  fprintf (dump_file, "\n");
 	}
       return false;
     }
@@ -1275,9 +1286,17 @@ translate_isl_ast_to_gimple::get_rename (basic_block new_bb,
   if (1 == renames->length ())
     {
       tree rename = (*renames)[0];
-      basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (rename));
-      if (is_valid_rename (rename, bb, new_bb, loop_phi, old_name, old_bb))
+      if (TREE_CODE (rename) == SSA_NAME)
+	{
+	  basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (rename));
+	  if (is_valid_rename (rename, bb, new_bb, loop_phi, old_name, old_bb))
+	    return rename;
+	  return NULL_TREE;
+	}
+
+      if (is_constant (rename))
 	return rename;
+
       return NULL_TREE;
     }
 
@@ -1317,10 +1336,11 @@ translate_isl_ast_to_gimple::set_rename (tree old_name, tree expr)
 {
   if (dump_file)
     {
-      fprintf (dump_file, "\n[codegen] setting rename: old_name = ");
+      fprintf (dump_file, "[codegen] setting rename: old_name = ");
       print_generic_expr (dump_file, old_name, 0);
       fprintf (dump_file, ", new_name = ");
       print_generic_expr (dump_file, expr, 0);
+      fprintf (dump_file, "\n");
     }
 
   if (old_name == expr)
@@ -1436,7 +1456,7 @@ translate_isl_ast_to_gimple::gsi_insert_earliest (gimple_seq seq)
 
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n[codegen] inserting statement: ");
+	  fprintf (dump_file, "[codegen] inserting statement: ");
 	  print_gimple_stmt (dump_file, use_stmt, 0, TDF_VOPS | TDF_MEMSYMS);
 	  print_loops_bb (dump_file, gimple_bb (use_stmt), 0, 3);
 	}
@@ -1718,7 +1738,7 @@ translate_isl_ast_to_gimple::rename_uses (gimple *copy,
 
   if (dump_file)
     {
-      fprintf (dump_file, "\n[codegen] renaming uses of stmt: ");
+      fprintf (dump_file, "[codegen] renaming uses of stmt: ");
       print_gimple_stmt (dump_file, copy, 0, 0);
     }
 
@@ -1730,8 +1750,9 @@ translate_isl_ast_to_gimple::rename_uses (gimple *copy,
 
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n[codegen] renaming old_name = ");
+	  fprintf (dump_file, "[codegen] renaming old_name = ");
 	  print_generic_expr (dump_file, old_name, 0);
+	  fprintf (dump_file, "\n");
 	}
 
       if (TREE_CODE (old_name) != SSA_NAME
@@ -1749,8 +1770,9 @@ translate_isl_ast_to_gimple::rename_uses (gimple *copy,
 
 	  if (dump_file)
 	    {
-	      fprintf (dump_file, "\n[codegen] from rename_map: new_name = ");
+	      fprintf (dump_file, "[codegen] from rename_map: new_name = ");
 	      print_generic_expr (dump_file, new_expr, 0);
+	      fprintf (dump_file, "\n");
 	    }
 
 	  if (type_old_name != type_new_expr
@@ -1778,8 +1800,9 @@ translate_isl_ast_to_gimple::rename_uses (gimple *copy,
 
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n[codegen] not in rename map, scev: ");
+	  fprintf (dump_file, "[codegen] not in rename map, scev: ");
 	  print_generic_expr (dump_file, new_expr, 0);
+	  fprintf (dump_file, "\n");
 	}
 
       gsi_insert_earliest (stmts);
@@ -1846,10 +1869,7 @@ get_new_name (basic_block new_bb, tree op,
 	      basic_block old_bb, bool loop_phi) const
 {
   /* For constants the names are the same.  */
-  if (TREE_CODE (op) == INTEGER_CST
-      || TREE_CODE (op) == REAL_CST
-      || TREE_CODE (op) == COMPLEX_CST
-      || TREE_CODE (op) == VECTOR_CST)
+  if (is_constant (op))
     return op;
 
   return get_rename (new_bb, op, old_bb, loop_phi);
@@ -1925,7 +1945,7 @@ copy_loop_phi_args (gphi *old_phi, init_back_edge_pair_t &ibp_old_bb,
 	     names yet.  */
 	  region->incomplete_phis.safe_push (std::make_pair (old_phi, new_phi));
 	  if (dump_file)
-	    fprintf (dump_file, "\n[codegen] postpone loop phi nodes: ");
+	    fprintf (dump_file, "[codegen] postpone loop phi nodes.\n");
 	}
       else
 	/* Either we should add the arg to phi or, we should postpone.  */
@@ -1941,7 +1961,7 @@ translate_isl_ast_to_gimple::copy_loop_phi_nodes (basic_block bb,
 						  basic_block new_bb)
 {
   if (dump_file)
-    fprintf (dump_file, "\n[codegen] copying loop phi nodes in bb_%d.",
+    fprintf (dump_file, "[codegen] copying loop phi nodes in bb_%d.\n",
 	     new_bb->index);
 
   /* Loop phi nodes should have only two arguments.  */
@@ -2071,7 +2091,7 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
 		   get_loc (old_name));
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n[codegen] Adding loop-closed phi: ");
+	  fprintf (dump_file, "[codegen] Adding loop-closed phi: ");
 	  print_gimple_stmt (dump_file, new_phi, 0, 0);
 	}
 
@@ -2095,7 +2115,7 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
 	  region->incomplete_phis.safe_push (std::make_pair (phi, new_phi));
 	  if (dump_file)
 	    {
-	      fprintf (dump_file, "\n[codegen] postpone close phi nodes: ");
+	      fprintf (dump_file, "[codegen] postpone close phi nodes: ");
 	      print_gimple_stmt (dump_file, new_phi, 0, 0);
 	    }
 	  continue;
@@ -2116,7 +2136,7 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
       add_phi_arg (merge_phi, init, other, get_loc (old_name));
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n[codegen] Adding guard-phi: ");
+	  fprintf (dump_file, "[codegen] Adding guard-phi: ");
 	  print_gimple_stmt (dump_file, merge_phi, 0, 0);
 	}
 
@@ -2133,7 +2153,7 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_nodes (basic_block old_bb,
 							basic_block new_bb)
 {
   if (dump_file)
-    fprintf (dump_file, "\n[codegen] copying loop closed phi nodes in bb_%d.",
+    fprintf (dump_file, "[codegen] copying loop closed phi nodes in bb_%d.\n",
 	     new_bb->index);
   /* Loop close phi nodes should have only one argument.  */
   gcc_assert (1 == EDGE_COUNT (old_bb->preds));
@@ -2324,7 +2344,7 @@ translate_isl_ast_to_gimple::copy_cond_phi_args (gphi *phi, gphi *new_phi,
 						 bool postpone)
 {
   if (dump_file)
-    fprintf (dump_file, "\n[codegen] copying cond phi args: ");
+    fprintf (dump_file, "[codegen] copying cond phi args.\n");
   gcc_assert (2 == gimple_phi_num_args (phi));
 
   basic_block new_bb = gimple_bb (new_phi);
@@ -2365,8 +2385,9 @@ translate_isl_ast_to_gimple::copy_cond_phi_args (gphi *phi, gphi *new_phi,
 	  if (dump_file)
 	    {
 	      fprintf (dump_file,
-		       "\n[codegen] parameter argument to phi, new_expr: ");
+		       "[codegen] parameter argument to phi, new_expr: ");
 	      print_generic_expr (dump_file, new_phi_args[i], 0);
+	      fprintf (dump_file, "\n");
 	    }
 	  continue;
 	}
@@ -2393,8 +2414,9 @@ translate_isl_ast_to_gimple::copy_cond_phi_args (gphi *phi, gphi *new_phi,
 	      if (dump_file)
 		{
 		  fprintf (dump_file,
-			   "\n[codegen] scev analyzeable, new_expr: ");
+			   "[codegen] scev analyzeable, new_expr: ");
 		  print_generic_expr (dump_file, new_expr, 0);
+		  fprintf (dump_file, "\n");
 		}
 	      gsi_insert_earliest (stmts);
 	      new_phi_args [i] = new_name;
@@ -2406,7 +2428,7 @@ translate_isl_ast_to_gimple::copy_cond_phi_args (gphi *phi, gphi *new_phi,
 
 	  if (dump_file)
 	    {
-	      fprintf (dump_file, "\n[codegen] postpone cond phi nodes: ");
+	      fprintf (dump_file, "[codegen] postpone cond phi nodes: ");
 	      print_gimple_stmt (dump_file, new_phi, 0, 0);
 	    }
 
@@ -2442,7 +2464,7 @@ translate_isl_ast_to_gimple::copy_cond_phi_nodes (basic_block bb,
   gcc_assert (!bb_contains_loop_close_phi_nodes (bb));
 
   if (dump_file)
-    fprintf (dump_file, "\n[codegen] copying cond phi nodes in bb_%d:",
+    fprintf (dump_file, "[codegen] copying cond phi nodes in bb_%d.\n",
 	     new_bb->index);
 
   /* Cond phi nodes should have exactly two arguments.  */
@@ -2539,7 +2561,7 @@ translate_isl_ast_to_gimple::graphite_copy_stmts_from_block (basic_block bb,
 
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n[codegen] inserting statement: ");
+	  fprintf (dump_file, "[codegen] inserting statement: ");
 	  print_gimple_stmt (dump_file, copy, 0, 0);
 	}
 
@@ -2645,7 +2667,7 @@ translate_isl_ast_to_gimple::copy_bb_and_scalar_dependences (basic_block bb,
 	}
 
       if (dump_file)
-	fprintf (dump_file, "\n[codegen] bb_%d contains loop phi nodes",
+	fprintf (dump_file, "[codegen] bb_%d contains loop phi nodes.\n",
 		 bb->index);
       if (!copy_loop_phi_nodes (bb, phi_bb))
 	{
@@ -2656,7 +2678,7 @@ translate_isl_ast_to_gimple::copy_bb_and_scalar_dependences (basic_block bb,
   else if (bb_contains_loop_close_phi_nodes (bb))
     {
       if (dump_file)
-	fprintf (dump_file, "\n[codegen] bb_%d contains close phi nodes",
+	fprintf (dump_file, "[codegen] bb_%d contains close phi nodes.\n",
 		 bb->index);
 
       edge e = edge_for_new_close_phis (bb);
@@ -2679,7 +2701,7 @@ translate_isl_ast_to_gimple::copy_bb_and_scalar_dependences (basic_block bb,
   else if (num_phis > 0)
     {
       if (dump_file)
-	fprintf (dump_file, "\n[codegen] bb_%d contains cond phi nodes",
+	fprintf (dump_file, "[codegen] bb_%d contains cond phi nodes.\n",
 		 bb->index);
 
       basic_block phi_bb = single_pred (new_bb);
@@ -2699,7 +2721,7 @@ translate_isl_ast_to_gimple::copy_bb_and_scalar_dependences (basic_block bb,
     }
 
   if (dump_file)
-    fprintf (dump_file, "\n[codegen] copying from bb_%d to bb_%d",
+    fprintf (dump_file, "[codegen] copying from bb_%d to bb_%d.\n",
 	     bb->index, new_bb->index);
 
   vec <basic_block> *copied_bbs = region->copied_bb_map->get (bb);
@@ -2742,7 +2764,7 @@ translate_isl_ast_to_gimple::translate_pending_phi_nodes ()
 
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n[codegen] translating pending old-phi: ");
+	  fprintf (dump_file, "[codegen] translating pending old-phi: ");
 	  print_gimple_stmt (dump_file, old_phi, 0, 0);
 	}
 
@@ -2970,7 +2992,7 @@ graphite_regenerate_ast_isl (scop_p scop)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "\nISL AST generated by ISL: \n");
+      fprintf (dump_file, "ISL AST generated by ISL: \n");
       t.print_isl_ast_node (dump_file, root_node, scop->isl_context);
     }
 
@@ -2993,8 +3015,8 @@ graphite_regenerate_ast_isl (scop_p scop)
   if (t.codegen_error_p ())
     {
       if (dump_file)
-	fprintf (dump_file, "\n[codegen] unsuccessful,"
-		 " reverting back to the original code.");
+	fprintf (dump_file, "[codegen] unsuccessful,"
+		 " reverting back to the original code.\n");
       set_ifsese_condition (if_region, integer_zero_node);
     }
   else
@@ -3018,8 +3040,8 @@ graphite_regenerate_ast_isl (scop_p scop)
       else
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "\n[codegen] unsuccessful in translating"
-		     " pending phis, reverting back to the original code.");
+	    fprintf (dump_file, "[codegen] unsuccessful in translating"
+		     " pending phis, reverting back to the original code.\n");
 	  set_ifsese_condition (if_region, integer_zero_node);
 	}
     }
@@ -3041,7 +3063,7 @@ graphite_regenerate_ast_isl (scop_p scop)
 	if (loop->can_be_parallel)
 	  num_no_dependency++;
 
-      fprintf (dump_file, "\n%d loops carried no dependency.\n",
+      fprintf (dump_file, "%d loops carried no dependency.\n",
 	       num_no_dependency);
     }
 
