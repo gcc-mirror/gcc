@@ -1,3 +1,10 @@
+2015-11-24  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc/config/aarch64/aarch64.md (add<mode>3):
+	Block early expansion into 2 add instructions.
+	(add<mode>3_pluslong): New pattern to combine complex
+	immediates into 2 additions.
+
 2015-11-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/66217
