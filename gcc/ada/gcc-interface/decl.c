@@ -5450,7 +5450,26 @@ get_minimal_subprog_decl (Entity_Id gnat_entity)
 bool
 is_cplusplus_method (Entity_Id gnat_entity)
 {
+  /* Check that the subprogram has C++ convention.  */
   if (Convention (gnat_entity) != Convention_CPP)
+    return false;
+
+  /* A constructor is a method on the C++ side.  We deal with it now because
+     it is declared without the 'this' parameter in the sources and, although
+     the front-end will create a version with the 'this' parameter for code
+     generation purposes, we want to return true for both versions.  */
+  if (Is_Constructor (gnat_entity))
+    return true;
+
+  /* And that the type of the first parameter (indirectly) has it too.  */
+  Entity_Id gnat_first = First_Formal (gnat_entity);
+  if (No (gnat_first))
+    return false;
+
+  Entity_Id gnat_type = Etype (gnat_first);
+  if (Is_Access_Type (gnat_type))
+    gnat_type = Directly_Designated_Type (gnat_type);
+  if (Convention (gnat_type) != Convention_CPP)
     return false;
 
   /* This is the main case: C++ method imported as a primitive operation.
@@ -5461,10 +5480,6 @@ is_cplusplus_method (Entity_Id gnat_entity)
 
   /* A thunk needs to be handled like its associated primitive operation.  */
   if (Is_Subprogram (gnat_entity) && Is_Thunk (gnat_entity))
-    return true;
-
-  /* A constructor is a method on the C++ side.  */
-  if (Is_Constructor (gnat_entity))
     return true;
 
   /* This is set on the E_Subprogram_Type built for a dispatching call.  */
