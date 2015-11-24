@@ -1,3 +1,9 @@
+2015-11-24  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR target/68497
+	* config/i386/i386.c (output_387_binary_op): Fix assertion for
+	-fno-checking case.
+
 2015-11-24  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* tree-ssa-uncprop.c (struct val_ssa_equiv_hash_traits): Remove.

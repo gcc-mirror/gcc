@@ -1,3 +1,8 @@
+2015-11-24  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR target/68497
+	* gcc.target/i386/pr68497.c: New test.
+
 2015-11-24  Bilyan Borisov  <bilyan.borisov@arm.com>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vmulx_lane_f32_indices_1.c:
