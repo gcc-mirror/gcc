@@ -21585,9 +21585,13 @@ gen_decl_die (tree decl, tree origin, dw_die_ref context_die)
 				       context_die);
 
     case NAMESPACE_DECL:
-    case IMPORTED_DECL:
       if (dwarf_version >= 3 || !dwarf_strict)
 	gen_namespace_die (decl, context_die);
+      break;
+
+    case IMPORTED_DECL:
+      dwarf2out_imported_module_or_decl_1 (decl, DECL_NAME (decl),
+					   DECL_CONTEXT (decl), context_die);
       break;
 
     case NAMELIST_DECL:
