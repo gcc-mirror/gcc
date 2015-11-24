@@ -1,3 +1,11 @@
+2015-11-24  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Backport from mainline
+	2015-11-18  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/i386/freebsd.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Bring in the
+	commit from r125920 for FreeBSD.
+
 2015-11-24  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	Backport from mainline r230796.
