@@ -1,5 +1,11 @@
 2015-11-24  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree-ssa-uncprop.c (struct val_ssa_equiv_hash_traits): Remove.
+	(val_ssa_equiv_hash_traits::remove): Likewise.
+	(pass_uncprop::execute): Adjust.
+
+2015-11-24  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* hash-map-traits.h (simple_hashmap_traits ::remove): call
 	destructors on values that are being removed.
 	* mem-stats.h (hash_map): Pass type of values to
