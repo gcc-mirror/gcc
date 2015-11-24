@@ -1,3 +1,10 @@
+2015-11-24  Richard Biener  <rguenther@suse.de>
+            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/68375
+	* cfgloop.c (get_loop_body_in_bfs_order): Restructure loop to avoid
+	bogus assertion.
+
 2015-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/68483
