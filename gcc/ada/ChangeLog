@@ -1,3 +1,8 @@
+2015-11-24  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/utils.c (gnat_write_global_declarations): Output
+	debugging information for top-level imported declarations.
+
 2015-11-24  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch3.adb, sem_type.adb, sem_ch7.adb, sem_ch9.adb, checks.adb,

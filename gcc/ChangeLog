@@ -1,3 +1,10 @@
+2015-11-24  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.c (gen_decl_die): Generate DW_TAG_imported_* instead of
+	DW_TAG_namespace for IMPORTED_DECL declarations.  Call
+	dwarf2out_imported_module_or_decl_1 for all DWARF versions as this
+	function already takes care of checking what it can emit.
+
 2015-11-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* doc/invoke.texi (-fpic): Add the AArch64 limit.
