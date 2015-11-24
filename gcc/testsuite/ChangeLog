@@ -1,3 +1,30 @@
+2015-11-24  Bilyan Borisov  <bilyan.borisov@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmulx_lane_f32_indices_1.c:
+	New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulx_lane_f64_indices_1.c:
+	New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulx_laneq_f32_indices_1.c:
+	New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulx_laneq_f64_indices_1.c:
+	New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulxd_lane_f64_indices_1.c:
+	New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulxd_laneq_f64_indices_1.c:
+	New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulxq_lane_f32_indices_1.c:
+	New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulxq_lane_f64_indices_1.c:
+	New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulxq_laneq_f32_indices_1.c:
+	New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulxq_laneq_f64_indices_1.c:
+	New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulxs_lane_f32_indices_1.c:
+	New.
+	* gcc.target/aarch64/advsimd-intrinsics/vmulxs_laneq_f32_indices_1.c:
+	New.
+
 2015-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR middle-end/68375
