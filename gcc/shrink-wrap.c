@@ -722,8 +722,8 @@ try_shrink_wrapping (edge *entry_edge, bitmap_head *bb_with,
 	{
 	  pro = get_immediate_dominator (CDI_DOMINATORS, pro);
 
-	  bitmap_set_bit (bb_with, pro->index);
-	  vec.quick_push (pro);
+	  if (bitmap_set_bit (bb_with, pro->index))
+	    vec.quick_push (pro);
 	}
 
       basic_block bb = vec.pop ();
@@ -734,8 +734,8 @@ try_shrink_wrapping (edge *entry_edge, bitmap_head *bb_with,
 
 	    pro = get_immediate_dominator (CDI_DOMINATORS, pro);
 
-	    bitmap_set_bit (bb_with, pro->index);
-	    vec.quick_push (pro);
+	    if (bitmap_set_bit (bb_with, pro->index))
+	      vec.quick_push (pro);
 	  }
 
       FOR_EACH_EDGE (e, ei, bb->succs)

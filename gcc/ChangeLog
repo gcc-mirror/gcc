@@ -1,3 +1,9 @@
+2015-11-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/68520
+	* shrink-wrap.c (try_shrink_wrapping): Don't push a block to VEC if
+	its bit was already set in BB_WITH.
+
 2015-11-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* alias.c (get_alias_set): Before checking TYPE_ALIAS_SET_KNOWN_P
