@@ -1623,13 +1623,9 @@ unify_scc (struct data_in *data_in, unsigned from,
 	  data_in->location_cache.revert_location_cache ();
 	  for (unsigned i = 0; i < len; ++i)
 	    {
-	      enum tree_code code;
 	      if (TYPE_P (scc->entries[i]))
 		num_merged_types++;
-	      code = TREE_CODE (scc->entries[i]);
-	      if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
-		vec_free (CONSTRUCTOR_ELTS (scc->entries[i]));
-	      ggc_free (scc->entries[i]);
+	      free_node (scc->entries[i]);
 	    }
 
 	  break;
