@@ -1,5 +1,10 @@
 2015-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	PR rtl-optimization/68381
+	* gcc.c-torture/execute/pr68381.c: New test.
+
+2015-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.target/aarch64/cmpimm_branch_1.c: New test.
 	* gcc.target/aarch64/cmpimm_cset_1.c: Likewise.
 
