@@ -145,6 +145,11 @@
   (and (match_code "const_int")
        (match_test "(unsigned HOST_WIDE_INT) INTVAL (op) <= 4")))
 
+;; An immediate that fits into 24 bits.
+(define_predicate "aarch64_imm24"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (UINTVAL (op), 0, 0xffffff)")))
+
 (define_predicate "aarch64_pwr_imm3"
   (and (match_code "const_int")
        (match_test "INTVAL (op) != 0

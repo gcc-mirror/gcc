@@ -1,3 +1,14 @@
+2015-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (*condjump): Rename to...
+	(condjump): ... This.
+	(*compare_condjump<mode>): New define_insn_and_split.
+	(*compare_cstore<mode>_insn): Likewise.
+	(*cstore<mode>_insn): Rename to...
+	(cstore<mode>_insn): ... This.
+	* config/aarch64/iterators.md (CMP): Handle ne code.
+	* config/aarch64/predicates.md (aarch64_imm24): New predicate.
+
 2015-11-24  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR target/68497
