@@ -1,3 +1,8 @@
+2015-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/68388
+	* g++.dg/cpp1y/pr68388.C: New.
+
 2015-11-24  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
