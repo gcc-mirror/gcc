@@ -1,3 +1,8 @@
+2015-11-24  Michael Matz  <matz@suse.de>
+
+	PR rtl-optimization/68392
+	* g++.dg/pr68392.C: New test.
+
 2015-11-24  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/sso/dump.h: Force IO to be putchar function call on nvptx.
