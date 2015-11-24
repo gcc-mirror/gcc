@@ -869,11 +869,11 @@ get_alias_set (tree t)
       set = lang_hooks.get_alias_set (t);
       if (set != -1)
 	return set;
-      /* Handle structure type equality for pointer types.  This is easy
-	 to do, because the code bellow ignore canonical types on these anyway.
-	 This is important for LTO, where TYPE_CANONICAL for pointers can not
-	 be meaningfuly computed by the frotnend.  */
-      if (!POINTER_TYPE_P (t))
+      /* Handle structure type equality for pointer types, arrays and vectors.
+	 This is easy to do, because the code bellow ignore canonical types on
+	 these anyway.  This is important for LTO, where TYPE_CANONICAL for
+	 pointers can not be meaningfuly computed by the frotnend.  */
+      if (canonical_type_used_p (t))
 	{
 	  /* In LTO we set canonical types for all types where it makes
 	     sense to do so.  Double check we did not miss some type.  */
@@ -929,7 +929,9 @@ get_alias_set (tree t)
      integer(kind=4)[4] the same alias set or not.
      Just be pragmatic here and make sure the array and its element
      type get the same alias set assigned.  */
-  else if (TREE_CODE (t) == ARRAY_TYPE && !TYPE_NONALIASED_COMPONENT (t))
+  else if (TREE_CODE (t) == ARRAY_TYPE
+	   && (!TYPE_NONALIASED_COMPONENT (t)
+	       || TYPE_STRUCTURAL_EQUALITY_P (t)))
     set = get_alias_set (TREE_TYPE (t));
 
   /* From the former common C and C++ langhook implementation:
@@ -971,7 +973,10 @@ get_alias_set (tree t)
 	 We also want to make pointer to array/vector equivalent to pointer to
 	 its element (see the reasoning above). Skip all those types, too.  */
       for (p = t; POINTER_TYPE_P (p)
-	   || (TREE_CODE (p) == ARRAY_TYPE && !TYPE_NONALIASED_COMPONENT (p))
+	   || (TREE_CODE (p) == ARRAY_TYPE
+	       && (!TYPE_NONALIASED_COMPONENT (p)
+		   || !COMPLETE_TYPE_P (p)
+		   || TYPE_STRUCTURAL_EQUALITY_P (p)))
 	   || TREE_CODE (p) == VECTOR_TYPE;
 	   p = TREE_TYPE (p))
 	{
@@ -1200,15 +1205,18 @@ record_component_aliases (tree type)
 		/* VECTOR_TYPE and ARRAY_TYPE share the alias set with their
 		   element type and that type has to be normalized to void *,
 		   too, in the case it is a pointer. */
-		while ((TREE_CODE (t) == ARRAY_TYPE
-			&& (!COMPLETE_TYPE_P (t)
-			    || TYPE_NONALIASED_COMPONENT (t)))
-		       || TREE_CODE (t) == VECTOR_TYPE)
-		  t = TREE_TYPE (t);
+		while (!canonical_type_used_p (t) && !POINTER_TYPE_P (t))
+		  {
+		    gcc_checking_assert (TYPE_STRUCTURAL_EQUALITY_P (t));
+		    t = TREE_TYPE (t);
+		  }
 		if (POINTER_TYPE_P (t))
 		  t = ptr_type_node;
+		else if (flag_checking)
+		  gcc_checking_assert (get_alias_set (t)
+				       == get_alias_set (TREE_TYPE (field)));
 	      }
-	   
+
 	    record_alias_subset (superset, get_alias_set (t));
 	  }
       break;

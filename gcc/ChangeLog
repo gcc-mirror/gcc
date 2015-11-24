@@ -1,3 +1,17 @@
+2015-11-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-in.c (lto_read_body_or_constructor): Set TYPE_CANONICAL
+	only for types where LTO sets them.
+	* tree.c (build_array_type_1): Do ont set TYPE_CANONICAL for LTO.
+	(make_vector_type): Likewise.
+	(gimple_canonical_types_compatible_p): Use canonical_type_used_p.
+	* tree.h (canonical_type_used_p): New inline.
+	* alias.c (get_alias_set): Handle structural equality for all
+	types that pass canonical_type_used_p.
+	(record_component_aliases): Look through all types with
+	record_component_aliases for possible pointers; sanity check that
+	the alias sets match.
+
 2015-11-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.md (lround<mode>di2): Remove constraints.

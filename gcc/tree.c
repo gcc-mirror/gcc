@@ -8252,7 +8252,8 @@ build_array_type_1 (tree elt_type, tree index_type, bool shared)
   if (TYPE_CANONICAL (t) == t)
     {
       if (TYPE_STRUCTURAL_EQUALITY_P (elt_type)
-	  || (index_type && TYPE_STRUCTURAL_EQUALITY_P (index_type)))
+	  || (index_type && TYPE_STRUCTURAL_EQUALITY_P (index_type))
+	  || in_lto_p)
 	SET_TYPE_STRUCTURAL_EQUALITY (t);
       else if (TYPE_CANONICAL (elt_type) != elt_type
 	       || (index_type && TYPE_CANONICAL (index_type) != index_type))
@@ -9865,7 +9866,7 @@ make_vector_type (tree innertype, int nunits, machine_mode mode)
   SET_TYPE_VECTOR_SUBPARTS (t, nunits);
   SET_TYPE_MODE (t, mode);
 
-  if (TYPE_STRUCTURAL_EQUALITY_P (innertype))
+  if (TYPE_STRUCTURAL_EQUALITY_P (innertype) || in_lto_p)
     SET_TYPE_STRUCTURAL_EQUALITY (t);
   else if ((TYPE_CANONICAL (innertype) != innertype
 	    || mode != VOIDmode)
@@ -13295,7 +13296,8 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
 	 TYPE_CANONICAL is more fine grained than the equivalnce we test (where
 	 all pointers are considered equal.  Be sure to not return false
 	 negatives.  */
-      gcc_checking_assert (!POINTER_TYPE_P (t1) && !POINTER_TYPE_P (t2));
+      gcc_checking_assert (canonical_type_used_p (t1)
+			   && canonical_type_used_p (t2));
       return TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2);
     }
 
