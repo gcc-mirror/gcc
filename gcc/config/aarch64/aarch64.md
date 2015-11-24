@@ -1588,30 +1588,46 @@
 	      (match_operand:GPI 2 "aarch64_pluslong_operand" "")))]
   ""
   "
-  if (! aarch64_plus_operand (operands[2], VOIDmode))
+  if (!aarch64_plus_operand (operands[2], VOIDmode))
     {
-      HOST_WIDE_INT imm = INTVAL (operands[2]);
-
-      if (aarch64_move_imm (imm, <MODE>mode) && can_create_pseudo_p ())
-        {
+      if (can_create_pseudo_p ())
+	{
 	  rtx tmp = gen_reg_rtx (<MODE>mode);
 	  emit_move_insn (tmp, operands[2]);
 	  operands[2] = tmp;
-        }
+	}
       else
-        {
-	  rtx subtarget = ((optimize && can_create_pseudo_p ())
-			   ? gen_reg_rtx (<MODE>mode) : operands[0]);
+	{
+	  HOST_WIDE_INT imm = INTVAL (operands[2]);
+	  imm = imm >= 0 ? imm & 0xfff : -(-imm & 0xfff);
+	  emit_insn (gen_add<mode>3 (operands[0], operands[1],
+				     GEN_INT (INTVAL (operands[2]) - imm)));
+	  operands[1] = operands[0];
+	  operands[2] = GEN_INT (imm);
+	}
+    }
+  "
+)
 
-	  if (imm < 0)
-	    imm = -(-imm & ~0xfff);
-	  else
-	    imm &= ~0xfff;
+;; Find add with a 2-instruction immediate and merge into 2 add instructions.
 
-	  emit_insn (gen_add<mode>3 (subtarget, operands[1], GEN_INT (imm)));
-	  operands[1] = subtarget;
-	  operands[2] = GEN_INT (INTVAL (operands[2]) - imm);
-        }
+(define_insn_and_split "*add<mode>3_pluslong"
+  [(set
+    (match_operand:GPI 0 "register_operand" "")
+    (plus:GPI (match_operand:GPI 1 "register_operand" "")
+	      (match_operand:GPI 2 "aarch64_pluslong_operand" "")))]
+  "!aarch64_plus_operand (operands[2], VOIDmode)
+   && !aarch64_move_imm (INTVAL (operands[2]), <MODE>mode)"
+  "#"
+  "&& true"
+  [(set (match_dup 0) (plus:GPI (match_dup 1) (match_dup 3)))
+   (set (match_dup 0) (plus:GPI (match_dup 0) (match_dup 4)))]
+  "
+    {
+      HOST_WIDE_INT imm = INTVAL (operands[2]);
+      imm = imm >= 0 ? imm & 0xfff : -(-imm & 0xfff);
+      operands[3] = GEN_INT (INTVAL (operands[2]) - imm);
+      operands[4] = GEN_INT (imm);
     }
   "
 )
