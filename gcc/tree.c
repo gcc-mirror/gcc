@@ -9860,19 +9860,20 @@ make_vector_type (tree innertype, int nunits, machine_mode mode)
 {
   tree t;
   inchash::hash hstate;
+  tree mv_innertype = TYPE_MAIN_VARIANT (innertype);
 
   t = make_node (VECTOR_TYPE);
-  TREE_TYPE (t) = TYPE_MAIN_VARIANT (innertype);
+  TREE_TYPE (t) = mv_innertype;
   SET_TYPE_VECTOR_SUBPARTS (t, nunits);
   SET_TYPE_MODE (t, mode);
 
-  if (TYPE_STRUCTURAL_EQUALITY_P (innertype) || in_lto_p)
+  if (TYPE_STRUCTURAL_EQUALITY_P (mv_innertype) || in_lto_p)
     SET_TYPE_STRUCTURAL_EQUALITY (t);
-  else if ((TYPE_CANONICAL (innertype) != innertype
+  else if ((TYPE_CANONICAL (mv_innertype) != innertype
 	    || mode != VOIDmode)
 	   && !VECTOR_BOOLEAN_TYPE_P (t))
     TYPE_CANONICAL (t)
-      = make_vector_type (TYPE_CANONICAL (innertype), nunits, VOIDmode);
+      = make_vector_type (TYPE_CANONICAL (mv_innertype), nunits, VOIDmode);
 
   layout_type (t);
 
@@ -13540,6 +13541,13 @@ verify_type (const_tree t)
       debug_tree (ct);
       error_found = true;
     }
+  if (TYPE_MAIN_VARIANT (t) == t && ct && TYPE_MAIN_VARIANT (ct) != ct)
+   {
+      error ("TYPE_CANONICAL of main variant is not main variant");
+      debug_tree (ct);
+      debug_tree (TYPE_MAIN_VARIANT (ct));
+      error_found = true;
+   }
 
 
   /* Check various uses of TYPE_MINVAL.  */

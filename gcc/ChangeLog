@@ -1,3 +1,10 @@
+2015-11-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (make_vector_type): Properly compute canonical type of the
+	main variant.
+	(verify_type): Verify that TYPE_CANONICAL of TYPE_MAIN_VARIANT is
+	a main variant.
+
 2015-11-24  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (maybe_split_mode): Return new mode or
