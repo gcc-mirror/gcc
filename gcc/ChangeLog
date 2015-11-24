@@ -1,3 +1,13 @@
+2015-11-24  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (maybe_split_mode): Return new mode or
+	VOIDmode, don't alter incoming mode.
+	(nvptx_split_reg_p): Delete.
+	(write_one_arg, walk_args_for_param, nvptx_declare_function_name,
+	write_func_decl_from_insn, nvptx_output_call_insn): Adjust
+	maybe_split_mode calls.
+	(nvptx_print_operand): Use maybe_split_mode.
+
 2015-11-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-streamer-in.c (lto_read_body_or_constructor): Set TYPE_CANONICAL

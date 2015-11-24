@@ -206,37 +206,19 @@ nvptx_ptx_type_from_mode (machine_mode mode, bool promote)
     }
 }
 
-/* Return the number of pieces to use when dealing with a pseudo of *PMODE.
-   Alter *PMODE if we return a number greater than one.  */
+/* If MODE should be treated as two registers of an inner mode, return
+   that inner mode.  Otherwise return VOIDmode.  */
 
-static int
-maybe_split_mode (machine_mode *pmode)
-{
-  machine_mode mode = *pmode;
-
-  if (COMPLEX_MODE_P (mode))
-    {
-      *pmode = GET_MODE_INNER (mode);
-      return 2;
-    }
-  else if (mode == TImode)
-    {
-      *pmode = DImode;
-      return 2;
-    }
-  return 1;
-}
-
-/* Like maybe_split_mode, but only return whether or not the mode
-   needs to be split.  */
-static bool
-nvptx_split_reg_p (machine_mode mode)
+static machine_mode
+maybe_split_mode (machine_mode mode)
 {
   if (COMPLEX_MODE_P (mode))
-    return true;
+    return GET_MODE_INNER (mode);
+
   if (mode == TImode)
-    return true;
-  return false;
+    return DImode;
+
+  return VOIDmode;
 }
 
 /* Emit forking instructions for MASK.  */
@@ -315,12 +297,11 @@ write_one_arg (std::stringstream &s, tree type, int i, machine_mode mode,
   if (!PASS_IN_REG_P (mode, type))
     mode = Pmode;
 
-  int count = maybe_split_mode (&mode);
-
-  if (count == 2)
+  machine_mode split = maybe_split_mode (mode);
+  if (split != VOIDmode)
     {
-      write_one_arg (s, NULL_TREE, i, mode, false);
-      write_one_arg (s, NULL_TREE, i + 1, mode, false);
+      write_one_arg (s, NULL_TREE, i, split, false);
+      write_one_arg (s, NULL_TREE, i + 1, split, false);
       return i + 1;
     }
 
@@ -477,6 +458,7 @@ walk_args_for_param (FILE *file, tree argtypes, tree args, bool write_copy,
     {
       tree type = args_from_decl ? TREE_TYPE (args) : TREE_VALUE (args);
       machine_mode mode = TYPE_MODE (type);
+      int count = 1;
 
       if (mode == VOIDmode)
 	break;
@@ -484,18 +466,17 @@ walk_args_for_param (FILE *file, tree argtypes, tree args, bool write_copy,
       if (!PASS_IN_REG_P (mode, type))
 	mode = Pmode;
 
-      int count = maybe_split_mode (&mode);
-      if (count == 1)
+      machine_mode split = maybe_split_mode (mode);
+      if (split != VOIDmode)
 	{
-	  if (argtypes == NULL && !AGGREGATE_TYPE_P (type))
-	    {
-	      if (mode == SFmode)
-		mode = DFmode;
-
-	    }
+	  count = 2;
+	  mode = split;
 	}
+      else if (argtypes == NULL && !AGGREGATE_TYPE_P (type) && mode == SFmode)
+	mode = DFmode;
+
       mode = arg_promotion (mode);
-      while (count-- > 0)
+      while (count--)
 	{
 	  i++;
 	  if (write_copy)
@@ -662,18 +643,17 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
       if (regno_reg_rtx[i] != const0_rtx)
 	{
 	  machine_mode mode = PSEUDO_REGNO_MODE (i);
-	  int count = maybe_split_mode (&mode);
-	  if (count > 1)
+	  machine_mode split = maybe_split_mode (mode);
+	  if (split != VOIDmode)
 	    {
-	      while (count-- > 0)
-		fprintf (file, "\t.reg%s %%r%d$%d;\n",
-			 nvptx_ptx_type_from_mode (mode, true),
-			 i, count);
+	      fprintf (file, "\t.reg%s %%r%d$%d;\n",
+		       nvptx_ptx_type_from_mode (split, true), i, 0);
+	      fprintf (file, "\t.reg%s %%r%d$%d;\n",
+		       nvptx_ptx_type_from_mode (split, true), i, 1);
 	    }
 	  else
 	    fprintf (file, "\t.reg%s %%r%d;\n",
-		     nvptx_ptx_type_from_mode (mode, true),
-		     i);
+		     nvptx_ptx_type_from_mode (mode, true), i);
 	}
     }
 
@@ -794,7 +774,14 @@ write_func_decl_from_insn (std::stringstream &s, rtx result, rtx pat,
 	{
 	  rtx t = XEXP (XVECEXP (pat, 0, i), 0);
 	  machine_mode mode = GET_MODE (t);
-	  int count = maybe_split_mode (&mode);
+	  machine_mode split = maybe_split_mode (mode);
+	  int count = 1;
+
+	  if (split != VOIDmode)
+	    {
+	      mode = split;
+	      count = 2;
+	    }
 
 	  while (count--)
 	    {
@@ -1863,32 +1850,29 @@ nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
     {
       rtx t = XEXP (XVECEXP (pat, 0, i), 0);
       machine_mode mode = GET_MODE (t);
-      int count = maybe_split_mode (&mode);
-
-      while (count--)
-	fprintf (asm_out_file, "\t\t.param%s %%out_arg%d%s;\n",
-		 nvptx_ptx_type_from_mode (mode, false), argno++,
-		 mode == QImode || mode == HImode ? "[1]" : "");
-    }
-  for (int i = 1, argno = 0; i < arg_end; i++)
-    {
-      rtx t = XEXP (XVECEXP (pat, 0, i), 0);
-      gcc_assert (REG_P (t));
-      machine_mode mode = GET_MODE (t);
-      int count = maybe_split_mode (&mode);
-
-      if (count == 1)
-	fprintf (asm_out_file, "\t\tst.param%s [%%out_arg%d], %%r%d;\n",
-		 nvptx_ptx_type_from_mode (mode, false), argno++,
-		 REGNO (t));
-      else
+      machine_mode split = maybe_split_mode (mode);
+      int count = 1;
+      
+      if (split != VOIDmode)
 	{
-	  int n = 0;
-	  while (count--)
-	    fprintf (asm_out_file, "\t\tst.param%s [%%out_arg%d], %%r%d$%d;\n",
-		     nvptx_ptx_type_from_mode (mode, false), argno++,
-		     REGNO (t), n++);
+	  mode = split;
+	  count  = 2;
 	}
+
+      for (int n = 0; n != count; n++)
+	{
+	  fprintf (asm_out_file, "\t\t.param%s %%out_arg%d%s;\n",
+		   nvptx_ptx_type_from_mode (mode, false), argno,
+		   mode == QImode || mode == HImode ? "[1]" : "");
+	  fprintf (asm_out_file, "\t\tst.param%s [%%out_arg%d], %%r%d",
+		   nvptx_ptx_type_from_mode (mode, false), argno,
+		   REGNO (t));
+	  if (split != VOIDmode)
+	    fprintf (asm_out_file, "$%d", n);
+	  fprintf (asm_out_file, ";\n");
+	  argno++;
+	}
+      
     }
 
   fprintf (asm_out_file, "\t\tcall ");
@@ -1913,13 +1897,15 @@ nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
 	{
 	  rtx t = XEXP (XVECEXP (pat, 0, i), 0);
 	  machine_mode mode = GET_MODE (t);
-	  int count = maybe_split_mode (&mode);
+	  machine_mode split = maybe_split_mode (mode);
 
-	  while (count--)
+	  if (split != VOIDmode)
 	    {
 	      fprintf (asm_out_file, "%s%%out_arg%d", comma, argno++);
 	      comma = ", ";
 	    }
+	  fprintf (asm_out_file, "%s%%out_arg%d", comma, argno++);
+	  comma = ", ";
 	}
       if (decl && DECL_STATIC_CHAIN (decl))
 	fprintf (asm_out_file, "%s%s", comma,
@@ -2155,10 +2141,10 @@ nvptx_print_operand (FILE *file, rtx x, int code)
 	    fprintf (file, "%s", reg_names[REGNO (x)]);
 	  else
 	    fprintf (file, "%%r%d", REGNO (x));
-	  if (code != 'f' && nvptx_split_reg_p (GET_MODE (x)))
+	  if (code != 'f' && maybe_split_mode (GET_MODE (x)) != VOIDmode)
 	    {
 	      gcc_assert (GET_CODE (orig_x) == SUBREG
-			  && !nvptx_split_reg_p (GET_MODE (orig_x)));
+			  && maybe_split_mode (GET_MODE (orig_x)) == VOIDmode);
 	      fprintf (file, "$%d", SUBREG_BYTE (orig_x) / UNITS_PER_WORD);
 	    }
 	  break;
