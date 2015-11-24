@@ -1,3 +1,7 @@
+2015-11-24  Steve Ellcey  <sellcey@imgtec.com>
+
+	* gcc.target/mips/frame-header-4.c: New test.
+
 2015-11-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68486
