@@ -1,3 +1,12 @@
+2015-11-24  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backport from mainline
+	2015-11-23  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR target/68059
+	* config/arm/linux-atomic-64bit.c (__write): Rename to...
+	(write): ...this and fix the return type.
+
 2015-11-16  David Edelsohn  <dje.gcc@gmail.com>
 
 	Backport from mainline
