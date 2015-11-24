@@ -1,3 +1,11 @@
+2015-11-23  Nick Clifton  <nickc@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	* ree.c (add_removable_extension): Avoid mis-optimizing cases where
+	the source/dest of the target extension require a different number of
+	hard registers.
+	(combine_set_extension): Remove #if 0 code.
+
 2015-11-23  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
