@@ -2512,7 +2512,8 @@ is_parallel_of_n_reg_sets (rtx pat, int n)
 	|| !REG_P (SET_DEST (XVECEXP (pat, 0, i))))
       return false;
   for ( ; i < len; i++)
-    if (GET_CODE (XVECEXP (pat, 0, i)) != CLOBBER)
+    if (GET_CODE (XVECEXP (pat, 0, i)) != CLOBBER
+	|| XEXP (XVECEXP (pat, 0, i), 0) == const0_rtx)
       return false;
 
   return true;
