@@ -7272,6 +7272,19 @@ gnat_to_gnu (Node_Id gnat_node)
       gnu_result = alloc_stmt_list ();
       break;
 
+    case N_Subunit:
+      gnu_result = gnat_to_gnu (Proper_Body (gnat_node));
+      break;
+
+    case N_Entry_Body:
+    case N_Protected_Body:
+    case N_Task_Body:
+      /* These nodes should only be present when annotating types.  */
+      gcc_assert (type_annotate_only);
+      process_decls (Declarations (gnat_node), Empty, Empty, true, true);
+      gnu_result = alloc_stmt_list ();
+      break;
+
     case N_Subprogram_Body_Stub:
     case N_Package_Body_Stub:
     case N_Protected_Body_Stub:
@@ -7284,10 +7297,6 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gcc_assert (type_annotate_only);
 	  gnu_result = alloc_stmt_list ();
 	}
-      break;
-
-    case N_Subunit:
-      gnu_result = gnat_to_gnu (Proper_Body (gnat_node));
       break;
 
     /***************************/
@@ -7662,8 +7671,6 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Procedure_Specification:
     case N_Op_Concat:
     case N_Component_Association:
-    case N_Protected_Body:
-    case N_Task_Body:
       /* These nodes should only be present when annotating types.  */
       gcc_assert (type_annotate_only);
       gnu_result = alloc_stmt_list ();

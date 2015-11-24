@@ -1,5 +1,13 @@
 2015-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <Concurrent types>: In
+	ASIS mode, do a minimal translation for root types with discriminants.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Subunit>: Move around.
+	<N_Entry_Body, N_Protected_Body, N_Task_Body>: Likewise.  In ASIS mode,
+	process the declarations attached to the body.
+
+2015-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu): In type_annotate_only mode, do
 	not build a NULL_EXPR for an N_Expanded_Name.
 
