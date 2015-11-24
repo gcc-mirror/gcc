@@ -2,23 +2,22 @@
 	    Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.md (UNSPEC_XSRDPI): New unspec.
-	(Fv2): New mode attribute to be used when ISA 2.06 instructions
-	are used on SF/DF values.
-	(abs<mode>2_fpr): Use <Fv2> instead of <Fv>.
-	(nabs<mode>2_fpr): Likewise.
-	(neg<mode>2_fpr): Likewise.
-	(copysign<mode>3_fcpsgn): Likewise.
-	(smax<mode>3_vsx): Likewise.
-	(smin<mode>3_vsx): Likewise.
-	(floatsi<mode>2_lfiwax): Likewise.
-	(floatunssi<mode>2_lfiwz): Likewise.
-	(fctiwz_<mode>): Likewise.
-	(fctiwuz_<mode>): Likewise.
-	(btrunc<mode>2): Likewise.
-	(ceil<mode>2): Likewise.
-	(floor<mode>2): Likewise.
+	(Fv2): New mode attribute to be used when ISA 2.07 instructions
+	are used on SF values, and ISA 2.06 instructions on DF values.
+	(add<mode>3_fpr): Use <Fv2> instead of <Fv>.
+	(sub<mode>3_fpr): Use <Fv2> instead of <Fv>.
+	(mul<mode>3_fpr): Use <Fv2> instead of <Fv>.
+	(div<mode>3_fpr): Use <Fv2> instead of <Fv>.
+	(sqrt<mode>2): Use <Fv2> instead of <Fv>.
+	(fre<Fs>): Use <Fv2> instead of <Fv>.
+	(rsqrt<mode>2): Use <Fv2> instead of <Fv>.
+	(cmp<mode>_fpr): Use <Fv2> instead of <Fv>.
 	(xsrdpi<mode>): Add support for the lround function.
 	(lround<mode>di2): Likewise.
+	(fma<mode>4_fpr): Use <Fv2> instead of <Fv>.
+	(fms<mode>4_fpr): Use <Fv2> instead of <Fv>.
+	(nfma<mode>4_fpr): Use <Fv2> instead of <Fv>.
+	(nfms<mode>4_fpr): Use <Fv2> instead of <Fv>.
 
 2015-11-24  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
