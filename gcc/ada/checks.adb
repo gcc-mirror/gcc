@@ -921,7 +921,7 @@ package body Checks is
       --    range of x op y is included in the range of type1
       --    size of type1 is at least twice the result size of op
 
-      --  then we don't do an overflow check in any case, instead we transform
+      --  then we don't do an overflow check in any case. Instead, we transform
       --  the operation so that we end up with:
 
       --    type1 (type1 (x) op type1 (y))
@@ -1262,7 +1262,7 @@ package body Checks is
          --  is replaced with a reference to Rnn.
 
          --  If our parent is a conversion node then there is no point in
-         --  generating a conversion to Result_Type, we will let the parent
+         --  generating a conversion to Result_Type. Instead, we let the parent
          --  handle this. Note that this special case is not just about
          --  optimization. Consider
 
