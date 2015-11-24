@@ -1287,6 +1287,30 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
 	  update_stmt (stmt);
 	  return;
 	}
+      /* Also detect vec_shr pattern - VEC_PERM_EXPR with zero
+	 vector as VEC1 and a right element shift MASK.  */
+      if (optab_handler (vec_shr_optab, TYPE_MODE (vect_type))
+	  != CODE_FOR_nothing
+	  && TREE_CODE (vec1) == VECTOR_CST
+	  && initializer_zerop (vec1)
+	  && sel_int[0]
+	  && sel_int[0] < elements)
+	{
+	  for (i = 1; i < elements; ++i)
+	    {
+	      unsigned int expected = i + sel_int[0];
+	      /* Indices into the second vector are all equivalent.  */
+	      if (MIN (elements, (unsigned) sel_int[i])
+		  != MIN (elements, expected))
+ 		break;
+	    }
+	  if (i == elements)
+	    {
+	      gimple_assign_set_rhs3 (stmt, mask);
+	      update_stmt (stmt);
+	      return;
+	    }
+	}
     }
   else if (can_vec_perm_p (TYPE_MODE (vect_type), true, NULL))
     return;

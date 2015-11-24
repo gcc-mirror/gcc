@@ -1,3 +1,9 @@
+2015-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/68483
+	* gcc.target/i386/pr68483-1.c: New test.
+	* gcc.target/i386/pr68483-2.c: New test.
+
 2015-11-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	2015-10-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
