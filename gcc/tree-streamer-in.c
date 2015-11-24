@@ -362,6 +362,11 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   /* TYPE_NO_FORCE_BLK is private to stor-layout and need
      no streaming.  */
   TYPE_NEEDS_CONSTRUCTING (expr) = (unsigned) bp_unpack_value (bp, 1);
+  TYPE_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
+  TYPE_RESTRICT (expr) = (unsigned) bp_unpack_value (bp, 1);
+  TYPE_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
+  TYPE_READONLY (expr) = (unsigned) bp_unpack_value (bp, 1);
+  TYPE_ALIAS_SET (expr) = bp_unpack_value (bp, 1) ? 0 : -1;
   if (RECORD_OR_UNION_TYPE_P (expr))
     {
       TYPE_TRANSPARENT_AGGR (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -369,17 +374,12 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
     }
   else if (TREE_CODE (expr) == ARRAY_TYPE)
     TYPE_NONALIASED_COMPONENT (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_RESTRICT (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_READONLY (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_PRECISION (expr) = bp_unpack_var_len_unsigned (bp);
   TYPE_ALIGN (expr) = bp_unpack_var_len_unsigned (bp);
 #ifdef ACCEL_COMPILER
   if (TYPE_ALIGN (expr) > targetm.absolute_biggest_alignment)
     TYPE_ALIGN (expr) = targetm.absolute_biggest_alignment;
 #endif
-  TYPE_ALIAS_SET (expr) = bp_unpack_var_len_int (bp);
 }
 
 
