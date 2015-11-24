@@ -544,7 +544,7 @@ package body Sem_Ch7 is
    begin
       --  A [generic] package body "freezes" the contract of the nearest
       --  enclosing package body and all other contracts encountered in the
-      --  same declarative part upto and excluding the package body:
+      --  same declarative part up to and excluding the package body:
 
       --    package body Nearest_Enclosing_Package
       --      with Refined_State => (State => Constit)

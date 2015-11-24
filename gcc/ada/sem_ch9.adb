@@ -1194,7 +1194,7 @@ package body Sem_Ch9 is
    begin
       --  An entry body "freezes" the contract of the nearest enclosing package
       --  body and all other contracts encountered in the same declarative part
-      --  upto and excluding the entry body. This ensures that any annotations
+      --  up to and excluding the entry body. This ensures that any annotations
       --  referenced by the contract of an entry or subprogram body declared
       --  within the current protected body are available.
 
@@ -1769,7 +1769,7 @@ package body Sem_Ch9 is
    begin
       --  A protected body "freezes" the contract of the nearest enclosing
       --  package body and all other contracts encountered in the same
-      --  declarative part upto and excluding the protected body. This ensures
+      --  declarative part up to and excluding the protected body. This ensures
       --  that any annotations referenced by the contract of an entry or
       --  subprogram body declared within the current protected body are
       --  available.
@@ -2810,7 +2810,7 @@ package body Sem_Ch9 is
    begin
       --  A task body "freezes" the contract of the nearest enclosing package
       --  body and all other contracts encountered in the same declarative part
-      --  upto and excluding the task body. This ensures that annotations
+      --  up to and excluding the task body. This ensures that annotations
       --  referenced by the contract of an entry or subprogram body declared
       --  within the current protected body are available.
 

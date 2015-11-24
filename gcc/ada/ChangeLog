@@ -1,3 +1,9 @@
+2015-11-24  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb, sem_type.adb, sem_ch7.adb, sem_ch9.adb, checks.adb,
+	sem_prag.adb, contracts.adb, g-strhas.ads, sem_ch6.adb: Minor
+	reformatting, rewording, and typo corrections.
+
 2015-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <Concurrent types>: In
