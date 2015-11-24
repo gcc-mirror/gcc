@@ -1,5 +1,10 @@
 2015-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_to_gnu): In type_annotate_only mode, do
+	not build a NULL_EXPR for an N_Expanded_Name.
+
+2015-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (is_cplusplus_method): Check that the type of
 	the first parameter (indirectly) has C++ convention too.
 

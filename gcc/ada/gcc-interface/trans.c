@@ -5734,6 +5734,7 @@ gnat_to_gnu (Node_Id gnat_node)
      types, make this into a NULL_EXPR.  */
   if (type_annotate_only
       && IN (kind, N_Subexpr)
+      && kind != N_Expanded_Name
       && kind != N_Identifier
       && !Compile_Time_Known_Value (gnat_node))
     return build1 (NULL_EXPR, get_unpadded_type (Etype (gnat_node)),
