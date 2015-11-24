@@ -79,7 +79,7 @@ public:
       /* This optimization has no affect if TARGET_NEWABI.   If optimize
          is not at least 1 then the data needed for the optimization is
          not available and nothing will be done anyway.  */
-      return TARGET_OLDABI && flag_frame_header_optimization;
+      return TARGET_OLDABI && flag_frame_header_optimization && optimize > 0;
     }
 
   virtual unsigned int execute (function *) { return frame_header_opt (); }
@@ -125,6 +125,29 @@ is_leaf_function (function *fn)
   return true;
 }
 
+/* Return true if this function has inline assembly code or if we cannot
+   be certain that it does not.  False if we know that there is no inline
+   assembly.  */
+
+static bool
+has_inlined_assembly (function *fn)
+{
+  basic_block bb;
+  gimple_stmt_iterator gsi;
+
+  /* If we do not have a cfg for this function be conservative and assume
+     it is may have inline assembly.  */
+  if (fn->cfg == NULL)
+    return true;
+
+  FOR_EACH_BB_FN (bb, fn)
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      if (gimple_code (gsi_stmt (gsi)) == GIMPLE_ASM)
+	return true;
+
+  return false;
+}
+
 /* Return true if this function will use the stack space allocated by its
    caller or if we cannot determine for certain that it does not.  */
 
@@ -136,20 +159,26 @@ needs_frame_header_p (function *fn)
   if (fn->decl == NULL)
     return true;
 
-  if (fn->stdarg || !is_leaf_function (fn))
+  if (fn->stdarg)
     return true;
 
   for (t = DECL_ARGUMENTS (fn->decl); t; t = TREE_CHAIN (t))
     {
       if (!use_register_for_decl (t))
-	  return true;
+	return true;
+
+      /* Some 64-bit types may get copied to general registers using the frame
+	 header, see mips_output_64bit_xfer.  Checking for SImode only may be
+         overly restrictive but it is guaranteed to be safe. */
+      if (DECL_MODE (t) != SImode)
+	return true;
     }
 
   return false;
 }
 
-/* Returns TRUE if the argument stack space allocated by function FN is used.
-   Returns FALSE if the space is needed or if the need for the space cannot
+/* Return true if the argument stack space allocated by function FN is used.
+   Return false if the space is needed or if the need for the space cannot
    be determined.  */
 
 static bool
@@ -177,6 +206,8 @@ callees_functions_use_frame_header (function *fn)
 	          called_fn = DECL_STRUCT_FUNCTION (called_fn_tree);
 		  if (called_fn == NULL
 		      || DECL_WEAK (called_fn_tree) 
+		      || has_inlined_assembly (called_fn)
+		      || !is_leaf_function (called_fn)
 		      || !called_fn->machine->does_not_use_frame_header)
 		    return true;
 	        }
@@ -186,6 +217,41 @@ callees_functions_use_frame_header (function *fn)
         }
     }
   return false;
+}
+
+/* Set the callers_may_not_allocate_frame flag for any function which
+   function FN calls because FN may not allocate a frame header.  */
+
+static void
+set_callers_may_not_allocate_frame (function *fn)
+{
+  basic_block bb;
+  gimple_stmt_iterator gsi;
+  gimple *stmt;
+  tree called_fn_tree;
+  function *called_fn;
+
+  if (fn->cfg == NULL)
+    return;
+
+  FOR_EACH_BB_FN (bb, fn)
+    {
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  stmt = gsi_stmt (gsi);
+	  if (is_gimple_call (stmt))
+	    {
+	      called_fn_tree = gimple_call_fndecl (stmt);
+	      if (called_fn_tree != NULL)
+	        {
+	          called_fn = DECL_STRUCT_FUNCTION (called_fn_tree);
+		  if (called_fn != NULL)
+		    called_fn->machine->callers_may_not_allocate_frame = true;
+	        }
+            }
+        }
+    }
+  return;
 }
 
 /* Scan each function to determine those that need its frame headers.  Perform
@@ -209,8 +275,16 @@ frame_header_opt ()
     {
       fn = node->get_fun ();
       if (fn != NULL)
-        fn->machine->optimize_call_stack
-	  = !callees_functions_use_frame_header (fn);
+	fn->machine->optimize_call_stack
+	  = !callees_functions_use_frame_header (fn) && !is_leaf_function (fn);
     }
+
+  FOR_EACH_DEFINED_FUNCTION (node)
+    {
+      fn = node->get_fun ();
+      if (fn != NULL && fn->machine->optimize_call_stack)
+	set_callers_may_not_allocate_frame (fn);
+    }
+
   return 0;
 }

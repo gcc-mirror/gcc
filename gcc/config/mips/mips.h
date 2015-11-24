@@ -3273,6 +3273,13 @@ struct GTY(())  machine_function {
   /* True if none of the functions that are called by this function need
      stack space allocated for their arguments.  */
   bool optimize_call_stack;
+
+  /* True if one of the functions calling this function may not allocate
+     a frame header.  */
+  bool callers_may_not_allocate_frame;
+
+  /* True if GCC stored callee saved registers in the frame header.  */
+  bool use_frame_header_for_callee_saved_regs;
 };
 #endif
 

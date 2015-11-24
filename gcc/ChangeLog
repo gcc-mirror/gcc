@@ -1,3 +1,24 @@
+2015-11-24  Steve Ellcey  <sellcey@imgtec.com>
+
+	* frame-header-opt.c (gate): Check for optimize > 0.
+	(has_inlined_assembly): New function.
+	(needs_frame_header_p): Remove is_leaf_function check,
+	add argument type check.
+	(callees_functions_use_frame_header): Add is_leaf_function
+	and has_inlined_assembly calls..
+	(set_callers_may_not_allocate_frame): New function.
+	(frame_header_opt): Add is_leaf_function call, add
+	set_callers_may_not_allocate_frame call.
+	* config/mips/mips.c (mips_compute_frame_info): Add check
+	to see if callee saved regs can be put in frame header.
+	(mips_expand_prologue): Add check to see if step1 is zero,
+	fix cfa restores when using frame header to store regs.
+	(mips_can_use_return_insn): Check to see if registers are
+	stored in frame header.
+	* config/mips/mips.h (machine_function): Add
+	callers_may_not_allocate_frame and
+	use_frame_header_for_callee_saved_regs fields.
+
 2015-11-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/68520
