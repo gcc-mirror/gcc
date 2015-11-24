@@ -1,3 +1,7 @@
+2015-11-24  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* include/system/linux/asm/ptrace.h: New header.
+
 2015-11-23  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* All source files: Merge from upstream r253555.
