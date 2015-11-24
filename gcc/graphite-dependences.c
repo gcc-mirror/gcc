@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/flow.h>
 #include <isl/constraint.h>
 
-#include "graphite-poly.h"
+#include "graphite.h"
 
 
 /* Add the constraints from the set S to the domain of MAP.  */

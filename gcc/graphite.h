@@ -461,6 +461,11 @@ carries_deps (__isl_keep isl_union_map *schedule,
 	      __isl_keep isl_union_map *deps,
 	      int depth);
 
-bool build_poly_scop (scop_p);
+extern bool build_poly_scop (scop_p);
+extern bool graphite_regenerate_ast_isl (scop_p);
+
+extern void build_scops (vec<scop_p> *);
+extern void dot_all_scops (vec<scop_p>);
+extern void dot_scop (scop_p);
 
 #endif

@@ -57,7 +57,7 @@ extern "C" {
 }
 #endif
 
-#include "graphite-poly.h"
+#include "graphite.h"
 
 #define OPENSCOP_MAX_STRING 256
 
