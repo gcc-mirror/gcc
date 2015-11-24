@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "trans-mem.h"
 #include "gimple-fold.h"
+#include "tree-scalar-evolution.h"
 
 /* TODO:  Support for predicated code motion.  I.e.
 
@@ -2496,7 +2497,7 @@ tree_ssa_lim_finalize (void)
 /* Moves invariants from loops.  Only "expensive" invariants are moved out --
    i.e. those that are likely to be win regardless of the register pressure.  */
 
-unsigned int
+static unsigned int
 tree_ssa_lim (void)
 {
   unsigned int todo;
@@ -2560,10 +2561,17 @@ public:
 unsigned int
 pass_lim::execute (function *fun)
 {
+  bool in_loop_pipeline = scev_initialized_p ();
+  if (!in_loop_pipeline)
+    loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
+
   if (number_of_loops (fun) <= 1)
     return 0;
+  unsigned int todo = tree_ssa_lim ();
 
-  return tree_ssa_lim ();
+  if (!in_loop_pipeline)
+    loop_optimizer_finalize ();
+  return todo;
 }
 
 } // anon namespace

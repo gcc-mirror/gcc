@@ -1,3 +1,8 @@
+2015-11-24  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-loop-im.c (tree_ssa_lim): Make static.
+	(pass_lim::execute): Allow to run outside pass_tree_loop.
+
 2015-11-24  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc/config/aarch64/aarch64.md (add<mode>3):
