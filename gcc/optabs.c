@@ -5232,12 +5232,12 @@ shift_amt_for_vec_perm_mask (rtx sel)
     return NULL_RTX;
 
   first = INTVAL (CONST_VECTOR_ELT (sel, 0));
-  if (first >= 2*nelt)
+  if (first >= nelt)
     return NULL_RTX;
   for (i = 1; i < nelt; i++)
     {
       int idx = INTVAL (CONST_VECTOR_ELT (sel, i));
-      unsigned int expected = (i + first) & (2 * nelt - 1);
+      unsigned int expected = i + first;
       /* Indices into the second vector are all equivalent.  */
       if (idx < 0 || (MIN (nelt, (unsigned) idx) != MIN (nelt, expected)))
 	return NULL_RTX;
