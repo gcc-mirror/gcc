@@ -1,3 +1,11 @@
+2015-11-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/66217
+	PR target/67677
+	PR target/68332
+	* config/rs6000/predicates.md (and_operand): Check that the operand
+	is a const_int before calling rs6000_is_valid_and_mask.
+
 2015-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.md (*condjump): Rename to...
