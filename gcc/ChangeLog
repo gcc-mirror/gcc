@@ -1,3 +1,25 @@
+2015-11-24  David Edelsohn  <dje.gcc@gmail.com>
+	    Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.md (UNSPEC_XSRDPI): New unspec.
+	(Fv2): New mode attribute to be used when ISA 2.06 instructions
+	are used on SF/DF values.
+	(abs<mode>2_fpr): Use <Fv2> instead of <Fv>.
+	(nabs<mode>2_fpr): Likewise.
+	(neg<mode>2_fpr): Likewise.
+	(copysign<mode>3_fcpsgn): Likewise.
+	(smax<mode>3_vsx): Likewise.
+	(smin<mode>3_vsx): Likewise.
+	(floatsi<mode>2_lfiwax): Likewise.
+	(floatunssi<mode>2_lfiwz): Likewise.
+	(fctiwz_<mode>): Likewise.
+	(fctiwuz_<mode>): Likewise.
+	(btrunc<mode>2): Likewise.
+	(ceil<mode>2): Likewise.
+	(floor<mode>2): Likewise.
+	(xsrdpi<mode>): Add support for the lround function.
+	(lround<mode>2): Likewise.
+
 2015-11-24  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
