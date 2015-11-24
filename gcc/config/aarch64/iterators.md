@@ -824,7 +824,8 @@
 			   (ltu "1") (leu "1") (geu "2") (gtu "2")])
 
 (define_code_attr CMP [(lt "LT") (le "LE") (eq "EQ") (ge "GE") (gt "GT")
-			   (ltu "LTU") (leu "LEU") (geu "GEU") (gtu "GTU")])
+			(ltu "LTU") (leu "LEU") (ne "NE") (geu "GEU")
+			(gtu "GTU")])
 
 (define_code_attr fix_trunc_optab [(fix "fix_trunc")
 				   (unsigned_fix "fixuns_trunc")])
