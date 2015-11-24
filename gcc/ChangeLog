@@ -90,6 +90,19 @@
 	* config/aarch64/aarch64-builtins.c
 	(aarch64_gimple_fold_builtin): Fold FMULX.
 
+2015-11-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* system.h: Don't poison calloc and strdup if USES_ISL is defined.
+	* graphite-dependences.c: Define USES_ISL.  Include ISL header files
+	after GCC header files and before graphite header files.
+	* graphite-dependences.c: Same.
+	* graphite-isl-ast-to-gimple.c: Same.
+	* graphite-optimize-isl.c: Same.
+	* graphite-poly.c: Same.
+	* graphite-scop-detection.c: Same.
+	* graphite-sese-to-poly.c: Same.
+	* graphite.c: Same.
+
 2015-11-23  Richard Biener  <rguenth@gcc.gnu.org>
 	    Jiong Wang  <jiong.wang@arm.com>
 
