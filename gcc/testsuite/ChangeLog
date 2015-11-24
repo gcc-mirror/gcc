@@ -1,3 +1,13 @@
+2015-11-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/68196
+	* gfortran.dg/proc_ptr_47.f90: New test.
+
+	Backport from trunk.
+	PR fortran/66465
+	* gfortran.dg/pr66465.f90: New test.
+
 2015-11-24  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	Backport from mainline r230796.
@@ -114,12 +124,12 @@
 	* g++.dg/lto/pr68057_1.C: Likewise.
 
 	2015-10-23  Jan Hubicka  <hubicka@ucw.cz>
- 
+
 	PR ipa/pr67600
 	* g++.dg/torture/pr67600.C: New testcase.
 
 	2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
- 
+
 	PR ipa/67056
 	* g++.dg/ipa/pr67056.C: New testcase.
 
@@ -175,7 +185,7 @@
 	* gfortran.dg/pr58027.f90: New test.
 
 2015-11-14  Steven G. Kargl  <kargl@gcc.gnu.org>
- 
+
 	PR fortran/67803
 	* gfortran.dg/pr67803.f90: New test.
 

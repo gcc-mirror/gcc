@@ -2375,6 +2375,7 @@ gfc_get_derived_type (gfc_symbol * derived)
   gfc_component *c;
   gfc_dt_list *dt;
   gfc_namespace *ns;
+  tree tmp;
 
   if (derived->attr.unlimited_polymorphic
       || (flag_coarray == GFC_FCOARRAY_LIB
@@ -2526,8 +2527,19 @@ gfc_get_derived_type (gfc_symbol * derived)
      node as DECL_CONTEXT of each FIELD_DECL.  */
   for (c = derived->components; c; c = c->next)
     {
-      if (c->attr.proc_pointer)
+      /* Prevent infinite recursion, when the procedure pointer type is
+	 the same as derived, by forcing the procedure pointer component to
+	 be built as if the explicit interface does not exist.  */
+      if (c->attr.proc_pointer
+	  && ((c->ts.type != BT_DERIVED && c->ts.type != BT_CLASS)
+	       || (c->ts.u.derived
+		   && !gfc_compare_derived_types (derived, c->ts.u.derived))))
 	field_type = gfc_get_ppc_type (c);
+      else if (c->attr.proc_pointer && derived->backend_decl)
+	{
+	  tmp = build_function_type_list (derived->backend_decl, NULL_TREE);
+	  field_type = build_pointer_type (tmp);
+	}
       else if (c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
         field_type = c->ts.u.derived->backend_decl;
       else
