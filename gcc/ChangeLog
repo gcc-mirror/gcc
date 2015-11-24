@@ -1,3 +1,9 @@
+2015-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/68221
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Properly
+	use mem_ref_offset.
+
 2015-11-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/68381
