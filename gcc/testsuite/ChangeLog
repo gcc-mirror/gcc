@@ -1,3 +1,12 @@
+2015-11-24  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	Backport from mainline r230796.
+	2015-11-24  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR c/68337
+	* gcc.target/i386/mpx/pr68337-1.c: New test.
+	* gcc.target/i386/mpx/pr68337-2.c: New test.
+
 2015-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline

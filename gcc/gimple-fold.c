@@ -88,6 +88,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-match.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "ipa-chkp.h"
 
 /* Return true when DECL can be referenced from current unit.
    FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
@@ -823,6 +824,18 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
       tree srctype, desttype;
       unsigned int src_align, dest_align;
       tree off0;
+
+      /* Inlining of memcpy/memmove may cause bounds lost (if we copy
+	 pointers as wide integer) and also may result in huge function
+	 size because of inlined bounds copy.  Thus don't inline for
+	 functions we want to instrument.  */
+      if (flag_check_pointer_bounds
+	  && chkp_instrumentable_p (cfun->decl)
+	  /* Even if data may contain pointers we can inline if copy
+	     less than a pointer size.  */
+	  && (!tree_fits_uhwi_p (len)
+	      || compare_tree_int (len, POINTER_SIZE_UNITS) >= 0))
+	return false;
 
       /* Build accesses at offset zero with a ref-all character type.  */
       off0 = build_int_cst (build_pointer_type_for_mode (char_type_node,

@@ -1,3 +1,13 @@
+2015-11-24  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	Backport from mainline r230796.
+	2015-11-24  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR c/68337
+	* gimple-fold.c: Include ipa-chkp.h.
+	(gimple_fold_builtin_memory_op): Don't fold call if we
+	are going to instrument it and it may copy pointers.
+
 2015-11-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
