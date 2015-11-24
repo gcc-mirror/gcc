@@ -332,16 +332,6 @@ combine_set_extension (ext_cand *cand, rtx_insn *curr_insn, rtx *orig_set)
   else
     new_reg = gen_rtx_REG (cand->mode, REGNO (SET_DEST (*orig_set)));
 
-#if 0
-  /* Rethinking test.  Temporarily disabled.  */
-  /* We're going to be widening the result of DEF_INSN, ensure that doing so
-     doesn't change the number of hard registers needed for the result.  */
-  if (HARD_REGNO_NREGS (REGNO (new_reg), cand->mode)
-      != HARD_REGNO_NREGS (REGNO (SET_DEST (*orig_set)),
-			   GET_MODE (SET_DEST (*orig_set))))
-	return false;
-#endif
-
   /* Merge constants by directly moving the constant into the register under
      some conditions.  Recall that RTL constants are sign-extended.  */
   if (GET_CODE (orig_src) == CONST_INT
@@ -1079,6 +1069,18 @@ add_removable_extension (const_rtx expr, rtx_insn *insn,
 		return;
 	      }
 	  }
+
+      /* Fourth, if the extended version occupies more registers than the
+	 original and the source of the extension is the same hard register
+	 as the destination of the extension, then we can not eliminate
+	 the extension without deep analysis, so just punt.
+
+	 We allow this when the registers are different because the
+	 code in combine_reaching_defs will handle that case correctly.  */
+      if ((HARD_REGNO_NREGS (REGNO (dest), mode)
+	   != HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg)))
+	  && REGNO (dest) == REGNO (reg))
+	return;
 
       /* Then add the candidate to the list and insert the reaching definitions
          into the definition map.  */
