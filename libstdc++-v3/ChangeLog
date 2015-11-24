@@ -1,3 +1,97 @@
+2015-11-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (GLIBCXX_CHECK_MATH11_PROTO): New test.
+	* configure.ac: Use it.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+	* include/c_global/cmath [__cplusplus >= 201103L]
+	(std::fpclassify): Wrap in !__CORRECT_ISO_CPP11_MATH_H_PROTO.
+	(std::isfinite): Likewise.
+	(std::isinf): Likewise.
+	(std::isnan): Likewise.
+	(std::isnormal): Likewise.
+	(std::signbit): Likewise.
+	(std::isgreater): Likewise.
+	(std::isgreaterequal): Likewise.
+	(std::isless): Likewise.
+	(std::islessequal): Likewise.
+	(std::islessgreater): Likewise.
+	(std::isunordered): Likewise.
+	(std::acosh): Likewise.
+	(std::asinh): Likewise.
+	(std::atanh): Likewise.
+	(std::cbrt): Likewise.
+	(std::copysign): Likewise.
+	(std::erf): Likewise.
+	(std::erfc): Likewise.
+	(std::exp2): Likewise.
+	(std::expm1): Likewise.
+	(std::fdim): Likewise.
+	(std::fma): Likewise.
+	(std::fmax): Likewise.
+	(std::fmin): Likewise.
+	(std::hypot): Likewise.
+	(std::ilogb): Likewise.
+	(std::lgamma): Likewise.
+	(std::llrint): Likewise.
+	(std::llround): Likewise.
+	(std::log1p): Likewise.
+	(std::log2): Likewise.
+	(std::logb): Likewise.
+	(std::lrint): Likewise.
+	(std::lround): Likewise.
+	(std::nearbyint): Likewise.
+	(std::nextafter): Likewise.
+	(std::nexttoward): Likewise.
+	(std::remainder): Likewise.
+	(std::remquo): Likewise.
+	(std::rint): Likewise.
+	(std::round): Likewise.
+	(std::scalbln): Likewise.
+	(std::scalbn): Likewise.
+	(std::tgamma): Likewise.
+	(std::trunc): Likewise.
+	* include/tr1/cmath [_GLIBCXX_USE_C99_MATH_TR1] (std::tr1::acosh):
+	Wrap in !__CORRECT_ISO_CPP11_MATH_H_PROTO.
+	(std::tr1::asinh): Likewise.
+	(std::tr1::atanh): Likewise.
+	(std::tr1::cbrt): Likewise.
+	(std::tr1::copysign): Likewise.
+	(std::tr1::erf): Likewise.
+	(std::tr1::erfc): Likewise.
+	(std::tr1::exp2): Likewise.
+	(std::tr1::expm1): Likewise.
+	(std::tr1::fabs): Likewise.
+	(std::tr1::fdim): Likewise.
+	(std::tr1::fma): Likewise.
+	(std::tr1::fmax): Likewise.
+	(std::tr1::fmin): Likewise.
+	(std::tr1::hypot): Likewise.
+	(std::tr1::ilogb): Likewise.
+	(std::tr1::lgamma): Likewise.
+	(std::tr1::llrint): Likewise.
+	(std::tr1::llround): Likewise.
+	(std::tr1::log1p): Likewise.
+	(std::tr1::log2): Likewise.
+	(std::tr1::logb): Likewise.
+	(std::tr1::lrint): Likewise.
+	(std::tr1::lround): Likewise.
+	(std::tr1::nearbyint): Likewise.
+	(std::tr1::nextafter): Likewise.
+	(std::tr1::nexttoward): Likewise.
+	(std::tr1::remainder): Likewise.
+	(std::tr1::remquo): Likewise.
+	(std::tr1::rint): Likewise.
+	(std::tr1::scalbln): Likewise.
+	(std::tr1::scalbn): Likewise.
+	(std::tr1::tgamma): Likewise.
+	(std::tr1::trunc): Likewise.
+	(std::tr1::pow): Likewise.
+
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
+	Restrict dg-xfail-if, dg-excess-errors to *-*-solaris2.1[01]*.
+
 2015-11-21  David Edelsohn  <dje.gcc@gmail.com>
 
 	* testsuite/23_containers/vector/profile/vector.cc: Add maxdata

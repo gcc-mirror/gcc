@@ -557,6 +557,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
+
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr int
   fpclassify(float __x)
   { return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
@@ -571,6 +573,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   fpclassify(long double __x)
   { return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
 				FP_SUBNORMAL, FP_ZERO, __x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
@@ -578,6 +581,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     fpclassify(_Tp __x)
     { return __x != 0 ? FP_NORMAL : FP_ZERO; }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr bool
   isfinite(float __x)
   { return __builtin_isfinite(__x); }
@@ -589,6 +593,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr bool
   isfinite(long double __x)
   { return __builtin_isfinite(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
@@ -596,6 +601,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     isfinite(_Tp __x)
     { return true; }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr bool
   isinf(float __x)
   { return __builtin_isinf(__x); }
@@ -607,6 +613,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr bool
   isinf(long double __x)
   { return __builtin_isinf(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
@@ -614,6 +621,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     isinf(_Tp __x)
     { return false; }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr bool
   isnan(float __x)
   { return __builtin_isnan(__x); }
@@ -625,6 +633,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr bool
   isnan(long double __x)
   { return __builtin_isnan(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
@@ -632,6 +641,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     isnan(_Tp __x)
     { return false; }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr bool
   isnormal(float __x)
   { return __builtin_isnormal(__x); }
@@ -643,6 +653,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr bool
   isnormal(long double __x)
   { return __builtin_isnormal(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
@@ -650,6 +661,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     isnormal(_Tp __x)
     { return __x != 0 ? true : false; }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   // Note: middle-end/36757 is fixed, __builtin_signbit is type-generic.
   constexpr bool
   signbit(float __x)
@@ -662,6 +674,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr bool
   signbit(long double __x)
   { return __builtin_signbit(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
@@ -669,6 +682,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     signbit(_Tp __x)
     { return __x < 0 ? true : false; }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr bool
   isgreater(float __x, float __y)
   { return __builtin_isgreater(__x, __y); }
@@ -680,6 +694,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr bool
   isgreater(long double __x, long double __y)
   { return __builtin_isgreater(__x, __y); }
+#endif
 
   template<typename _Tp, typename _Up>
     constexpr typename
@@ -691,6 +706,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __builtin_isgreater(__type(__x), __type(__y));
     }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr bool
   isgreaterequal(float __x, float __y)
   { return __builtin_isgreaterequal(__x, __y); }
@@ -702,6 +718,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr bool
   isgreaterequal(long double __x, long double __y)
   { return __builtin_isgreaterequal(__x, __y); }
+#endif
 
   template<typename _Tp, typename _Up>
     constexpr typename
@@ -713,6 +730,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __builtin_isgreaterequal(__type(__x), __type(__y));
     }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr bool
   isless(float __x, float __y)
   { return __builtin_isless(__x, __y); }
@@ -724,6 +742,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr bool
   isless(long double __x, long double __y)
   { return __builtin_isless(__x, __y); }
+#endif
 
   template<typename _Tp, typename _Up>
     constexpr typename
@@ -735,6 +754,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __builtin_isless(__type(__x), __type(__y));
     }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr bool
   islessequal(float __x, float __y)
   { return __builtin_islessequal(__x, __y); }
@@ -746,6 +766,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr bool
   islessequal(long double __x, long double __y)
   { return __builtin_islessequal(__x, __y); }
+#endif
 
   template<typename _Tp, typename _Up>
     constexpr typename
@@ -757,6 +778,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __builtin_islessequal(__type(__x), __type(__y));
     }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr bool
   islessgreater(float __x, float __y)
   { return __builtin_islessgreater(__x, __y); }
@@ -768,6 +790,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr bool
   islessgreater(long double __x, long double __y)
   { return __builtin_islessgreater(__x, __y); }
+#endif
 
   template<typename _Tp, typename _Up>
     constexpr typename
@@ -779,6 +802,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __builtin_islessgreater(__type(__x), __type(__y));
     }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr bool
   isunordered(float __x, float __y)
   { return __builtin_isunordered(__x, __y); }
@@ -790,6 +814,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr bool
   isunordered(long double __x, long double __y)
   { return __builtin_isunordered(__x, __y); }
+#endif
 
   template<typename _Tp, typename _Up>
     constexpr typename
@@ -1180,6 +1205,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using ::truncl;
 
   /// Additional overloads.
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   acosh(float __x)
   { return __builtin_acoshf(__x); }
@@ -1187,6 +1213,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   acosh(long double __x)
   { return __builtin_acoshl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1194,6 +1221,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     acosh(_Tp __x)
     { return __builtin_acosh(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   asinh(float __x)
   { return __builtin_asinhf(__x); }
@@ -1201,6 +1229,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   asinh(long double __x)
   { return __builtin_asinhl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1208,6 +1237,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     asinh(_Tp __x)
     { return __builtin_asinh(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   atanh(float __x)
   { return __builtin_atanhf(__x); }
@@ -1215,6 +1245,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   atanh(long double __x)
   { return __builtin_atanhl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1222,6 +1253,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     atanh(_Tp __x)
     { return __builtin_atanh(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   cbrt(float __x)
   { return __builtin_cbrtf(__x); }
@@ -1229,6 +1261,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   cbrt(long double __x)
   { return __builtin_cbrtl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1236,6 +1269,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     cbrt(_Tp __x)
     { return __builtin_cbrt(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   copysign(float __x, float __y)
   { return __builtin_copysignf(__x, __y); }
@@ -1243,6 +1277,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   copysign(long double __x, long double __y)
   { return __builtin_copysignl(__x, __y); }
+#endif
 
   template<typename _Tp, typename _Up>
     constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
@@ -1252,6 +1287,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return copysign(__type(__x), __type(__y));
     }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   erf(float __x)
   { return __builtin_erff(__x); }
@@ -1259,6 +1295,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   erf(long double __x)
   { return __builtin_erfl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1266,6 +1303,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     erf(_Tp __x)
     { return __builtin_erf(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   erfc(float __x)
   { return __builtin_erfcf(__x); }
@@ -1273,6 +1311,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   erfc(long double __x)
   { return __builtin_erfcl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1280,6 +1319,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     erfc(_Tp __x)
     { return __builtin_erfc(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   exp2(float __x)
   { return __builtin_exp2f(__x); }
@@ -1287,6 +1327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   exp2(long double __x)
   { return __builtin_exp2l(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1294,6 +1335,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     exp2(_Tp __x)
     { return __builtin_exp2(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   expm1(float __x)
   { return __builtin_expm1f(__x); }
@@ -1301,6 +1343,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   expm1(long double __x)
   { return __builtin_expm1l(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1308,6 +1351,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     expm1(_Tp __x)
     { return __builtin_expm1(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   fdim(float __x, float __y)
   { return __builtin_fdimf(__x, __y); }
@@ -1315,6 +1359,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   fdim(long double __x, long double __y)
   { return __builtin_fdiml(__x, __y); }
+#endif
 
   template<typename _Tp, typename _Up>
     constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
@@ -1324,6 +1369,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return fdim(__type(__x), __type(__y));
     }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   fma(float __x, float __y, float __z)
   { return __builtin_fmaf(__x, __y, __z); }
@@ -1331,6 +1377,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   fma(long double __x, long double __y, long double __z)
   { return __builtin_fmal(__x, __y, __z); }
+#endif
 
   template<typename _Tp, typename _Up, typename _Vp>
     constexpr typename __gnu_cxx::__promote_3<_Tp, _Up, _Vp>::__type
@@ -1340,6 +1387,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return fma(__type(__x), __type(__y), __type(__z));
     }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   fmax(float __x, float __y)
   { return __builtin_fmaxf(__x, __y); }
@@ -1347,6 +1395,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   fmax(long double __x, long double __y)
   { return __builtin_fmaxl(__x, __y); }
+#endif
 
   template<typename _Tp, typename _Up>
     constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
@@ -1356,6 +1405,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return fmax(__type(__x), __type(__y));
     }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   fmin(float __x, float __y)
   { return __builtin_fminf(__x, __y); }
@@ -1363,6 +1413,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   fmin(long double __x, long double __y)
   { return __builtin_fminl(__x, __y); }
+#endif
 
   template<typename _Tp, typename _Up>
     constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
@@ -1372,6 +1423,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return fmin(__type(__x), __type(__y));
     }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   hypot(float __x, float __y)
   { return __builtin_hypotf(__x, __y); }
@@ -1379,6 +1431,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   hypot(long double __x, long double __y)
   { return __builtin_hypotl(__x, __y); }
+#endif
 
   template<typename _Tp, typename _Up>
     constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
@@ -1388,6 +1441,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return hypot(__type(__x), __type(__y));
     }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr int
   ilogb(float __x)
   { return __builtin_ilogbf(__x); }
@@ -1395,6 +1449,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr int
   ilogb(long double __x)
   { return __builtin_ilogbl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr
@@ -1403,6 +1458,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     ilogb(_Tp __x)
     { return __builtin_ilogb(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   lgamma(float __x)
   { return __builtin_lgammaf(__x); }
@@ -1410,6 +1466,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   lgamma(long double __x)
   { return __builtin_lgammal(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1417,6 +1474,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lgamma(_Tp __x)
     { return __builtin_lgamma(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr long long
   llrint(float __x)
   { return __builtin_llrintf(__x); }
@@ -1424,6 +1482,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long long
   llrint(long double __x)
   { return __builtin_llrintl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1431,6 +1490,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     llrint(_Tp __x)
     { return __builtin_llrint(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr long long
   llround(float __x)
   { return __builtin_llroundf(__x); }
@@ -1438,6 +1498,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long long
   llround(long double __x)
   { return __builtin_llroundl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1445,6 +1506,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     llround(_Tp __x)
     { return __builtin_llround(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   log1p(float __x)
   { return __builtin_log1pf(__x); }
@@ -1452,6 +1514,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   log1p(long double __x)
   { return __builtin_log1pl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1459,6 +1522,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     log1p(_Tp __x)
     { return __builtin_log1p(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   // DR 568.
   constexpr float
   log2(float __x)
@@ -1467,6 +1531,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   log2(long double __x)
   { return __builtin_log2l(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1474,6 +1539,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     log2(_Tp __x)
     { return __builtin_log2(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   logb(float __x)
   { return __builtin_logbf(__x); }
@@ -1481,6 +1547,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   logb(long double __x)
   { return __builtin_logbl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1488,6 +1555,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     logb(_Tp __x)
     { return __builtin_logb(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr long
   lrint(float __x)
   { return __builtin_lrintf(__x); }
@@ -1495,6 +1563,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long
   lrint(long double __x)
   { return __builtin_lrintl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1502,6 +1571,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lrint(_Tp __x)
     { return __builtin_lrint(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr long
   lround(float __x)
   { return __builtin_lroundf(__x); }
@@ -1509,6 +1579,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long
   lround(long double __x)
   { return __builtin_lroundl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1516,6 +1587,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lround(_Tp __x)
     { return __builtin_lround(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   nearbyint(float __x)
   { return __builtin_nearbyintf(__x); }
@@ -1523,6 +1595,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   nearbyint(long double __x)
   { return __builtin_nearbyintl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1530,6 +1603,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     nearbyint(_Tp __x)
     { return __builtin_nearbyint(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   nextafter(float __x, float __y)
   { return __builtin_nextafterf(__x, __y); }
@@ -1537,6 +1611,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   nextafter(long double __x, long double __y)
   { return __builtin_nextafterl(__x, __y); }
+#endif
 
   template<typename _Tp, typename _Up>
     constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
@@ -1546,6 +1621,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return nextafter(__type(__x), __type(__y));
     }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   nexttoward(float __x, long double __y)
   { return __builtin_nexttowardf(__x, __y); }
@@ -1553,6 +1629,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   nexttoward(long double __x, long double __y)
   { return __builtin_nexttowardl(__x, __y); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1560,6 +1637,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     nexttoward(_Tp __x, long double __y)
     { return __builtin_nexttoward(__x, __y); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   remainder(float __x, float __y)
   { return __builtin_remainderf(__x, __y); }
@@ -1567,6 +1645,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   remainder(long double __x, long double __y)
   { return __builtin_remainderl(__x, __y); }
+#endif
 
   template<typename _Tp, typename _Up>
     constexpr typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
@@ -1576,6 +1655,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return remainder(__type(__x), __type(__y));
     }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   inline float
   remquo(float __x, float __y, int* __pquo)
   { return __builtin_remquof(__x, __y, __pquo); }
@@ -1583,6 +1663,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline long double
   remquo(long double __x, long double __y, int* __pquo)
   { return __builtin_remquol(__x, __y, __pquo); }
+#endif
 
   template<typename _Tp, typename _Up>
     inline typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
@@ -1592,6 +1673,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return remquo(__type(__x), __type(__y), __pquo);
     }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   rint(float __x)
   { return __builtin_rintf(__x); }
@@ -1599,6 +1681,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   rint(long double __x)
   { return __builtin_rintl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1606,6 +1689,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     rint(_Tp __x)
     { return __builtin_rint(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   round(float __x)
   { return __builtin_roundf(__x); }
@@ -1613,6 +1697,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   round(long double __x)
   { return __builtin_roundl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1620,6 +1705,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     round(_Tp __x)
     { return __builtin_round(__x); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   scalbln(float __x, long __ex)
   { return __builtin_scalblnf(__x, __ex); }
@@ -1627,6 +1713,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   scalbln(long double __x, long __ex)
   { return __builtin_scalblnl(__x, __ex); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1634,6 +1721,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     scalbln(_Tp __x, long __ex)
     { return __builtin_scalbln(__x, __ex); }
  
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   scalbn(float __x, int __ex)
   { return __builtin_scalbnf(__x, __ex); }
@@ -1641,6 +1729,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   scalbn(long double __x, int __ex)
   { return __builtin_scalbnl(__x, __ex); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1648,6 +1737,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     scalbn(_Tp __x, int __ex)
     { return __builtin_scalbn(__x, __ex); }
 
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   tgamma(float __x)
   { return __builtin_tgammaf(__x); }
@@ -1655,6 +1745,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   tgamma(long double __x)
   { return __builtin_tgammal(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
@@ -1662,6 +1753,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     tgamma(_Tp __x)
     { return __builtin_tgamma(__x); }
  
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   constexpr float
   trunc(float __x)
   { return __builtin_truncf(__x); }
@@ -1669,6 +1761,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   trunc(long double __x)
   { return __builtin_truncl(__x); }
+#endif
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 

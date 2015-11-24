@@ -952,6 +952,11 @@
 /* Define to 1 if mutex_timedlock is available. */
 #undef _GTHREAD_USE_MUTEX_TIMEDLOCK
 
+/* Define if all C++11 overloads are available in <math.h>.  */
+#if __cplusplus >= 201103L
+#undef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#endif
+
 #if defined (HAVE__ACOSF) && ! defined (HAVE_ACOSF)
 # define HAVE_ACOSF 1
 # define acosf _acosf
