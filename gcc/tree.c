@@ -1103,6 +1103,27 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 
   return t;
 }
+
+/* Free tree node.  */
+
+void
+free_node (tree node)
+{
+  enum tree_code code = TREE_CODE (node);
+  if (GATHER_STATISTICS)
+    {
+      tree_code_counts[(int) TREE_CODE (node)]--;
+      tree_node_counts[(int) t_kind]--;
+      tree_node_sizes[(int) t_kind] -= tree_code_size (TREE_CODE (node));
+    }
+  if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
+    vec_free (CONSTRUCTOR_ELTS (node));
+  else if (code == BLOCK)
+    vec_free (BLOCK_NONLOCALIZED_VARS (node));
+  else if (code == TREE_BINFO)
+    vec_free (BINFO_BASE_ACCESSES (node));
+  ggc_free (node);
+}
 
 /* Return a new node with the same contents as NODE except that its
    TREE_CHAIN, if it has one, is zero and it has a fresh uid.  */
@@ -7100,12 +7121,7 @@ type_hash_canon (unsigned int hashcode, tree type)
     {
       tree t1 = ((type_hash *) *loc)->type;
       gcc_assert (TYPE_MAIN_VARIANT (t1) == t1);
-      if (GATHER_STATISTICS)
-	{
-	  tree_code_counts[(int) TREE_CODE (type)]--;
-	  tree_node_counts[(int) t_kind]--;
-	  tree_node_sizes[(int) t_kind] -= sizeof (struct tree_type_non_common);
-	}
+      free_node (type);
       return t1;
     }
   else
