@@ -1,3 +1,8 @@
+2015-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (is_cplusplus_method): Check that the type of
+	the first parameter (indirectly) has C++ convention too.
+
 2015-11-23  Olivier Hainque  <hainque@adacore.com>
 
 	* system-aix.ads: Add Frontend_Exceptions flag.
