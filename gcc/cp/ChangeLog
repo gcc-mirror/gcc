@@ -1,3 +1,8 @@
+2015-11-24  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* parser.c (cp_parser_oacc_declare): Replace "ifdef ENABLE_OFFLOADING"
+	with "if (ENABLE_OFFLOADING)".
+
 2015-11-23  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR c++/68001
