@@ -4737,13 +4737,51 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       maybe_present = true;
       break;
 
-    case E_Task_Type:
-    case E_Task_Subtype:
     case E_Protected_Type:
     case E_Protected_Subtype:
-      /* Concurrent types are always transformed into their record type.  */
+    case E_Task_Type:
+    case E_Task_Subtype:
+      /* If we are just annotating types and have no equivalent record type,
+	 just return void_type, except for root types that have discriminants
+	 because the discriminants will very likely be used in the declarative
+	 part of the associated body so they need to be translated.  */
       if (type_annotate_only && No (gnat_equiv_type))
-	gnu_type = void_type_node;
+	{
+	  if (Has_Discriminants (gnat_entity)
+	      && Root_Type (gnat_entity) == gnat_entity)
+	    {
+	      tree gnu_field_list = NULL_TREE;
+	      Entity_Id gnat_field;
+
+	      /* This is a minimal version of the E_Record_Type handling.  */
+	      gnu_type = make_node (RECORD_TYPE);
+	      TYPE_NAME (gnu_type) = gnu_entity_name;
+
+	      for (gnat_field = First_Stored_Discriminant (gnat_entity);
+		   Present (gnat_field);
+		   gnat_field = Next_Stored_Discriminant (gnat_field))
+		{
+		  tree gnu_field
+		    = gnat_to_gnu_field (gnat_field, gnu_type, false,
+					 definition, debug_info_p);
+
+		  save_gnu_tree (gnat_field,
+				 build3 (COMPONENT_REF, TREE_TYPE (gnu_field),
+					 build0 (PLACEHOLDER_EXPR, gnu_type),
+					 gnu_field, NULL_TREE),
+				 true);
+
+		  DECL_CHAIN (gnu_field) = gnu_field_list;
+		  gnu_field_list = gnu_field;
+		}
+
+	      TYPE_FIELDS (gnu_type) = nreverse (gnu_field_list);
+	    }
+	  else
+	    gnu_type = void_type_node;
+	}
+
+      /* Concurrent types are always transformed into their record type.  */
       else
 	gnu_decl = gnat_to_gnu_entity (gnat_equiv_type, NULL_TREE, 0);
       maybe_present = true;
