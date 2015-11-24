@@ -70,8 +70,7 @@ extern "C" {
 }
 #endif
 
-#include "graphite-poly.h"
-#include "graphite-isl-ast-to-gimple.h"
+#include "graphite.h"
 
 #include <map>
 

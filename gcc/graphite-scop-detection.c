@@ -54,8 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/map.h>
 #include <isl/union_map.h>
 
-#include "graphite-poly.h"
-#include "graphite-scop-detection.h"
+#include "graphite.h"
 
 class debug_printer
 {

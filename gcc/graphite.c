@@ -59,9 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/options.h>
 #include <isl/union_map.h>
 
-#include "graphite-poly.h"
-#include "graphite-scop-detection.h"
-#include "graphite-isl-ast-to-gimple.h"
+#include "graphite.h"
 
 /* Print global statistics to FILE.  */
 

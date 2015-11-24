@@ -65,7 +65,7 @@ extern "C" {
 }
 #endif
 
-#include "graphite-poly.h"
+#include "graphite.h"
 
 /* Assigns to RES the value of the INTEGER_CST T.  */
 

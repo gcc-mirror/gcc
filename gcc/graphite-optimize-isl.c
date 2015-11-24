@@ -52,7 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/schedule_node.h>
 #endif
 
-#include "graphite-poly.h"
+#include "graphite.h"
 
 #ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
 

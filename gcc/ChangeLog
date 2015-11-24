@@ -1,3 +1,18 @@
+2015-11-23  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-dependences.c: Only include graphite.h.
+	* graphite-isl-ast-to-gimple.c: Same.
+	* graphite-optimize-isl.c: Same.
+	* graphite-poly.c: Same.
+	* graphite-scop-detection.c: Same.
+	* graphite-sese-to-poly.c: Same.
+	* graphite.c: Same.
+	* graphite-isl-ast-to-gimple.h: Move to graphite.h.
+	* graphite-poly.h: Same.
+	* graphite-scop-detection.h: Same.
+	* graphite.h: New.
+
 2015-11-24  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* dwarf2out.c (gen_decl_die): Generate DW_TAG_imported_* instead of
