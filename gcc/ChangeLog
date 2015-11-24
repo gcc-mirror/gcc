@@ -1,3 +1,14 @@
+2015-11-24  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* hash-map-traits.h (simple_hashmap_traits ::remove): call
+	destructors on values that are being removed.
+	* mem-stats.h (hash_map): Pass type of values to
+	simple_hashmap_traits.
+	* tree-sra.c (sra_deinitialize): Remove work around for hash
+	maps not destructing values.
+	* genmatch.c (sinfo_hashmap_traits): Adjust.
+	* tree-ssa-uncprop.c (val_ssa_equiv_hash_traits): Likewise.
+
 2015-11-24  Richard Biener  <rguenther@suse.de>
             Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
