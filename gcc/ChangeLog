@@ -1,3 +1,13 @@
+2015-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/68483
+	* tree-vect-generic.c (lower_vec_perm): If VEC_PERM_EXPR
+	is valid vec_shr pattern, don't lower it even if can_vec_perm_p
+	returns false.
+	* optabs.c (shift_amt_for_vec_perm_mask): Return NULL_RTX
+	whenever first is nelt or above.  Don't mask expected with
+	2 * nelt - 1.
+
 2015-11-24  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR c/68337
