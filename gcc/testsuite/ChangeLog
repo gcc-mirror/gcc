@@ -1,3 +1,8 @@
+2015-11-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68486
+	* gfortran.dg/simplify_cshift_3.f90
+
 2015-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/68278
