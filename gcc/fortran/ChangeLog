@@ -1,3 +1,8 @@
+2015-11-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68486
+	* simplify.c (gfc_simplify_cshift): Allow all EXPR_*.
+
 2015-11-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68486

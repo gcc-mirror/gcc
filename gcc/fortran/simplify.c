@@ -1805,23 +1805,13 @@ gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
   else
     dm = 1;
 
-  /* Copy array into 'a', simplify it, and then test for a constant array.
-     An unexpected expr_type causes an ICE.   */
-  switch (array->expr_type)
+  /* Copy array into 'a', simplify it, and then test for a constant array.  */
+  a = gfc_copy_expr (array);
+  gfc_simplify_expr (a, 0);
+  if (!is_constant_array_expr (a))
     {
-      case EXPR_VARIABLE:
-      case EXPR_ARRAY:
-      case EXPR_OP:
-	a = gfc_copy_expr (array);
-	gfc_simplify_expr (a, 0);
-	if (!is_constant_array_expr (a))
-	  {
-	    gfc_free_expr (a);
-	    return NULL;
-	  }
-	break;
-      default:
-	gcc_unreachable ();
+      gfc_free_expr (a);
+      return NULL;
     }
 
   if (a->rank == 1)
