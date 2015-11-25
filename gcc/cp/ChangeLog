@@ -1,5 +1,8 @@
 2015-11-25  Jason Merrill  <jason@redhat.com>
 
+	* lambda.c (maybe_add_lambda_conv_op): Only set
+	no_sanitize_undefined if SANITIZE_NULL.
+
 	PR c++/67941
 	* lambda.c (maybe_add_lambda_conv_op): Mark _FUN as
 	no_sanitize_undefined.
