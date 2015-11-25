@@ -1,3 +1,20 @@
+2015-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatlink.adb (Gnatlink): Do not reinstate -fsjlj for the linker
+	from the switches saved in the ALI file but from the exception
+	settings.
+
+2015-11-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib-xref-spark_specific.adb
+	(Add_SPARK_Scope): Take entry families into account.
+	* a-exetim.ads, a-exetim-default.ads, a-exetim-mingw.ads (Clock,
+	Clock_For_Interrupts): preconditions added.
+	* a-extiin.ads (Clock): preconditions added.
+	* par-ch3.adb (P_Declarative_Items): In case of misplaced
+	aspect specifications, ensure that flag Done is properly set to
+	continue parsing.
+
 2015-11-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_util.adb (Remove_Side_Effects): Minimize extra temporaries
