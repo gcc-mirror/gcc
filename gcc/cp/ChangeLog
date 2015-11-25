@@ -1,5 +1,9 @@
 2015-11-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/67941
+	* lambda.c (maybe_add_lambda_conv_op): Mark _FUN as
+	no_sanitize_undefined.
+
 	PR c++/68422
 	* cp-tree.h (PACK_EXPANSION_SIZEOF_P): New.
 	* parser.c (cp_parser_sizeof_pack): Set it.

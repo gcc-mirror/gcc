@@ -1054,6 +1054,12 @@ maybe_add_lambda_conv_op (tree type)
   if (generic_lambda_p)
     fn = add_inherited_template_parms (fn, DECL_TI_TEMPLATE (callop));
 
+  /* Don't UBsan this function; we're deliberately calling op() with a null
+     object argument.  */
+  tree attrs = build_tree_list (get_identifier ("no_sanitize_undefined"),
+				NULL_TREE);
+  cplus_decl_attributes (&fn, attrs, 0);
+
   add_method (type, fn, NULL_TREE);
 
   if (nested)
