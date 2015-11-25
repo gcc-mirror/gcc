@@ -253,6 +253,10 @@ OPTAB_D (sin_optab, "sin$a2")
 OPTAB_D (sincos_optab, "sincos$a3")
 OPTAB_D (tan_optab, "tan$a2")
 
+/* C99 implementations of fmax/fmin.  */
+OPTAB_D (fmax_optab, "fmax$a3")
+OPTAB_D (fmin_optab, "fmin$a3")
+
 /* Vector reduction to a scalar.  */
 OPTAB_D (reduc_smax_scal_optab, "reduc_smax_scal_$a")
 OPTAB_D (reduc_smin_scal_optab, "reduc_smin_scal_$a")

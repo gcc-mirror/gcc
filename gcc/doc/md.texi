@@ -4980,6 +4980,15 @@ Signed minimum and maximum operations.  When used with floating point,
 if both operands are zeros, or if either operand is @code{NaN}, then
 it is unspecified which of the two operands is returned as the result.
 
+@cindex @code{fmin@var{m}3} instruction pattern
+@cindex @code{fmax@var{m}3} instruction pattern
+@item @samp{fmin@var{m}3}, @samp{fmax@var{m}3}
+IEEE-conformant minimum and maximum operations.  If one operand is a quiet
+@code{NaN}, then the other operand is returned.  If both operands are quiet
+@code{NaN}, then a quiet @code{NaN} is returned.  In the case when gcc supports
+signalling @code{NaN} (-fsignaling-nans) an invalid floating point exception is
+raised and a quiet @code{NaN} is returned.
+
 @cindex @code{reduc_smin_@var{m}} instruction pattern
 @cindex @code{reduc_smax_@var{m}} instruction pattern
 @item @samp{reduc_smin_@var{m}}, @samp{reduc_smax_@var{m}}
