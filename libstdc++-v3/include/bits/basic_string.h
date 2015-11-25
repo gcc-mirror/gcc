@@ -759,13 +759,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       void
       shrink_to_fit() noexcept
       {
+#if __cpp_exceptions
 	if (capacity() > size())
 	  {
-	    __try
+	    try
 	      { reserve(0); }
-	    __catch(...)
+	    catch(...)
 	      { }
 	  }
+#endif
       }
 #endif
 
@@ -3163,13 +3165,15 @@ _GLIBCXX_END_NAMESPACE_CXX11
       void
       shrink_to_fit() _GLIBCXX_NOEXCEPT
       {
+#if __cpp_exceptions
 	if (capacity() > size())
 	  {
-	    __try
+	    try
 	      { reserve(0); }
-	    __catch(...)
+	    catch(...)
 	      { }
 	  }
+#endif
       }
 #endif
 
