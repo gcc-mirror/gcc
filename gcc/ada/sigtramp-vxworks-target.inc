@@ -441,6 +441,7 @@ TCR("# Call the real handler. The signo, siginfo and sigcontext") \
 TCR("# arguments are the same as those we received") \
 TCR("call	*%rcx") \
 TCR("# This part should never be executed") \
+TCR("addq	$8, %rsp") \
 TCR("ret")
 
 #else

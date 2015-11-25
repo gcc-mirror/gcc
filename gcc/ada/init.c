@@ -1732,7 +1732,7 @@ extern int __gnat_inum_to_ivec (int);
 int
 __gnat_inum_to_ivec (int num)
 {
-  return (int) INUM_TO_IVEC (num);
+  return (int) ((long) INUM_TO_IVEC ((long) num));
 }
 #endif
 
@@ -1985,14 +1985,14 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
 #ifdef HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
   /* We need to sometimes to adjust the PC in case of signals so that it
      doesn't reference the exception that actually raised the signal but the
-     instruction before it. */
+     instruction before it.  */
   __gnat_adjust_context_for_raise (sig, sc);
 #endif
 
 #if defined (__i386__) && !defined (VTHREADS) && (__WRS_VXWORKS_MAJOR < 7)
    /* On x86, the vxsim signal context is subtly different and is processeed
       by a handler compiled especially for vxsim.
-      Vxsim is not supported anymore on our vxworks-7 port. */
+      Vxsim is not supported anymore on our vxworks-7 port.  */
 
   if (is_vxsim)
     __gnat_vxsim_error_handler (sig, si, sc);
@@ -2115,9 +2115,9 @@ __gnat_init_float (void)
 #endif
 #endif
 
-#if defined (__i386__) && !defined (VTHREADS)
+#if (defined (__i386__) && !defined (VTHREADS))
   /* This is used to properly initialize the FPU on an x86 for each
-     process thread.  */
+     process thread. Is this needed for x86_64 ???  */
   asm ("finit");
 #endif
 

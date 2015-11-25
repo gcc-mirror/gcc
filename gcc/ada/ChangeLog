@@ -1,3 +1,23 @@
+2015-11-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): Minimize extra temporaries
+	and use of 'Reference when needed.
+
+2015-11-25  Doug Rupp  <rupp@adacore.com>
+
+	* sigtramp-vxworks-target.inc (__x86_64__): Restore context for the
+	sake of uniformity.
+	* init.c (__gnat_inum_to_ivec): Add some casting to avoid
+	warnings when sizeof(long) != sizeof(int)
+
+2015-11-25  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-spark_specific.adb (SPARK_Entities): Add entries for
+	consideration.
+	(Add_SPARK_Scope): Take tasks into account.
+	(Detect_And_Add_SPARK_Scope): Take tasks into account.
+	(Enclosing_Subprogram_Or_Library_Package): Take tasks into account.
+
 2015-11-25  Bob Duff  <duff@adacore.com>
 
 	* sem_elab.adb (Check_Internal_Call_Continue): Code clean ups.
