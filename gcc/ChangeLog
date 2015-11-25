@@ -1,5 +1,14 @@
 2015-11-25  Jan Hubicka  <hubicka@ucw.cz>
 
+	* timevar.def (TV_IPA_LTO_DECOMPRESS, TV_IPA_LTO_COMPRESS,
+	TV_IPA_LTO_OUTPUT): New.
+	* lto-compress.c: Include timevar.h
+	(lto_end_compression, lto_end_uncompression): Add timers.
+	* langhooks.c: Include timevar.h
+	(lhd_append_data): Add timer.
+
+2015-11-25  Jan Hubicka  <hubicka@ucw.cz>
+
 	* varasm.c (default_elf_asm_output_limited_string,
 	default_elf_asm_output_ascii): Replace fprintf by putc.
 
