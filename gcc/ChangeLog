@@ -1,3 +1,41 @@
+2015-11-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	<patch #10>
+	* config/rs6000/constraints.md (wb constraint): New constraint for
+	ISA 3.0 d-form scalar addressing.
+
+	* config/rs6000/rs6000.c (mode_supports_vmx_dform): Add support
+	for ISA 3.0 D-form addressing to load SFmode/DFmode scalars into
+	Altivec registers.  Add wb constraint for Altivec registers with
+	D-form addressing.  If we have ISA 3.0 d-form support, undo
+	secondary reload support for using FPR registers if we want to do
+	D-form addressing.
+	(rs6000_debug_reg_global): Likewise.
+	(rs6000_setup_reg_addr_masks): Likewise.
+	(rs6000_init_hard_regno_mode_ok): Likewise.
+	(rs6000_secondary_reload): Likewise.
+	(rs6000_preferred_reload_class): Likewise.
+	(rs6000_secondary_reload_class): Likewise.
+
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Add wb
+	constraint.
+
+	* config/rs6000/rs6000.md (f32_lr2 mode attribute): Add support
+	for ISA 3.0 SFmode/DFmode d-form addressing to Altivec registers.
+	(f32_lm2): Likewise.
+	(f32_li2): Likewise.
+	(f32_sr2): Likewise.
+	(f32_sm2): Likewise.
+	(f32_si2): Likewise.
+	(f64_p9): Likewise.
+	(extendsfdf2_fpr): Likewise.
+	(mov<mode>_hardfloat): Likewise.
+	(mov<mode>_hardfloat32): Likewise.
+	(mov<mode>_hardfloat64): Likewise.
+
+	* doc/md.texi (RS/6000 constraints): Document wb constraint.
+	Fixup we constraint documentation.
+
 2015-11-25  Tom de Vries  <tom@codesourcery.com>
 
 	* omp-low.c (pass_expand_omp_ssa::clone): New function.
