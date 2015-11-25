@@ -1,3 +1,9 @@
+2015-11-25  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (walk_args_for_params): Delete.
+	(nvptx_declare_function_name): Move assignments next to register
+	declarations, and process params here.
+
 2015-11-25  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_declare_alias): Rename and globalize

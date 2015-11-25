@@ -436,59 +436,6 @@ nvptx_write_function_decl (std::stringstream &s, const char *name, const_tree de
     }
 }
 
-/* Walk either ARGTYPES or ARGS if the former is null, and write out part of
-   the function header to FILE.  If WRITE_COPY is false, write reg
-   declarations, otherwise write the copy from the incoming argument to that
-   reg.  RETURN_IN_MEM indicates whether to start counting arg numbers at 1
-   instead of 0.  */
-
-static void
-walk_args_for_param (FILE *file, tree argtypes, tree args, bool write_copy,
-		     bool return_in_mem)
-{
-  int i;
-
-  bool args_from_decl = false;
-  if (argtypes == 0)
-    args_from_decl = true;
-  else
-    args = argtypes;
-
-  for (i = return_in_mem ? 1 : 0; args != NULL_TREE; args = TREE_CHAIN (args))
-    {
-      tree type = args_from_decl ? TREE_TYPE (args) : TREE_VALUE (args);
-      machine_mode mode = TYPE_MODE (type);
-      int count = 1;
-
-      if (mode == VOIDmode)
-	break;
-
-      if (!PASS_IN_REG_P (mode, type))
-	mode = Pmode;
-
-      machine_mode split = maybe_split_mode (mode);
-      if (split != VOIDmode)
-	{
-	  count = 2;
-	  mode = split;
-	}
-      else if (argtypes == NULL && !AGGREGATE_TYPE_P (type) && mode == SFmode)
-	mode = DFmode;
-
-      mode = arg_promotion (mode);
-      while (count--)
-	{
-	  i++;
-	  if (write_copy)
-	    fprintf (file, "\tld.param%s %%ar%d, [%%in_ar%d];\n",
-		     nvptx_ptx_type_from_mode (mode, false), i, i);
-	  else
-	    fprintf (file, "\t.reg%s %%ar%d;\n",
-		     nvptx_ptx_type_from_mode (mode, false), i);
-	}
-    }
-}
-
 /* Write a .func or .kernel declaration (not a definition) along with
    a helper comment for use by ld.  S is the stream to write to, DECL
    the decl for the function with name NAME.  */
@@ -589,6 +536,7 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
 {
   tree fntype = TREE_TYPE (decl);
   tree result_type = TREE_TYPE (fntype);
+  int argno  = 0;
 
   name = nvptx_name_replacement (name);
 
@@ -613,12 +561,54 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
 
   fprintf (file, "\n{\n");
 
-  /* Ensure all arguments that should live in a register have one
-     declared.  We'll emit the copies below.  */
-  walk_args_for_param (file, TYPE_ARG_TYPES (fntype), DECL_ARGUMENTS (decl),
-		       false, return_in_mem);
   if (return_in_mem)
-    fprintf (file, "\t.reg.u%d %%ar1;\n", GET_MODE_BITSIZE (Pmode));
+    {
+      ++argno;
+      fprintf (file, "\t.reg.u%d %%ar%d;\n", GET_MODE_BITSIZE (Pmode), argno);
+      fprintf (file, "\tld.param.u%d %%ar%d, [%%in_ar%d];\n",
+	       GET_MODE_BITSIZE (Pmode), argno, argno);
+    }
+
+  /* Declare and initialize incoming arguments.  */
+  tree args = DECL_ARGUMENTS (decl);
+  bool prototyped = false;
+  if (TYPE_ARG_TYPES (fntype))
+    {
+      args = TYPE_ARG_TYPES (fntype);
+      prototyped = true;
+    }
+
+  for (; args != NULL_TREE; args = TREE_CHAIN (args))
+    {
+      tree type = prototyped ? TREE_VALUE (args) : TREE_TYPE (args);
+      machine_mode mode = TYPE_MODE (type);
+      int count = 1;
+
+      if (mode == VOIDmode)
+	break;
+
+      if (!PASS_IN_REG_P (mode, type))
+	mode = Pmode;
+
+      machine_mode split = maybe_split_mode (mode);
+      if (split != VOIDmode)
+	{
+	  count = 2;
+	  mode = split;
+	}
+      else if (!prototyped && !AGGREGATE_TYPE_P (type) && mode == SFmode)
+	mode = DFmode;
+
+      mode = arg_promotion (mode);
+      while (count--)
+	{
+	  ++argno;
+	  fprintf (file, "\t.reg%s %%ar%d;\n",
+		   nvptx_ptx_type_from_mode (mode, false), argno);
+	  fprintf (file, "\tld.param%s %%ar%d, [%%in_ar%d];\n",
+		   nvptx_ptx_type_from_mode (mode, false), argno, argno);
+	}
+    }
 
   /* C++11 ABI causes us to return a reference to the passed in
      pointer for return_in_mem.  */
@@ -631,7 +621,11 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
     }
 
   if (stdarg_p (fntype))
-    fprintf (file, "\t.reg.u%d %%argp;\n", GET_MODE_BITSIZE (Pmode));
+    {
+      fprintf (file, "\t.reg.u%d %%argp;\n", GET_MODE_BITSIZE (Pmode));
+      fprintf (file, "\tld.param.u%d %%argp, [%%in_argp];\n",
+	       GET_MODE_BITSIZE (Pmode));
+    }
 
   fprintf (file, "\t.reg.u%d %s;\n", GET_MODE_BITSIZE (Pmode),
 	   reg_names[OUTGOING_STATIC_CHAIN_REGNUM]);
@@ -665,13 +659,23 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   if (sz == 0)
     sz = 1;
   if (cfun->machine->has_call_with_varargs)
-    fprintf (file, "\t.reg.u%d %%outargs;\n"
-	     "\t.local.align 8 .b8 %%outargs_ar[" HOST_WIDE_INT_PRINT_DEC"];\n",
-	     BITS_PER_WORD, sz);
+    {
+      fprintf (file, "\t.reg.u%d %%outargs;\n"
+	       "\t.local.align 8 .b8 %%outargs_ar["
+	       HOST_WIDE_INT_PRINT_DEC"];\n",
+	       BITS_PER_WORD, sz);
+      fprintf (file, "\tcvta.local.u%d %%outargs, %%outargs_ar;\n",
+	       BITS_PER_WORD);
+    }
+
   if (cfun->machine->punning_buffer_size > 0)
-    fprintf (file, "\t.reg.u%d %%punbuffer;\n"
-	     "\t.local.align 8 .b8 %%punbuffer_ar[%d];\n",
-	     BITS_PER_WORD, cfun->machine->punning_buffer_size);
+    {
+      fprintf (file, "\t.reg.u%d %%punbuffer;\n"
+	       "\t.local.align 8 .b8 %%punbuffer_ar[%d];\n",
+	       BITS_PER_WORD, cfun->machine->punning_buffer_size);
+      fprintf (file, "\tcvta.local.u%d %%punbuffer, %%punbuffer_ar;\n",
+	       BITS_PER_WORD);
+    }
 
   /* Declare a local variable for the frame.  */
   sz = get_frame_size ();
@@ -685,23 +689,6 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
       fprintf (file, "\tcvta.local.u%d %%frame, %%farray;\n",
 	       BITS_PER_WORD);
     }
-
-  if (cfun->machine->has_call_with_varargs)
-      fprintf (file, "\tcvta.local.u%d %%outargs, %%outargs_ar;\n",
-	       BITS_PER_WORD);
-  if (cfun->machine->punning_buffer_size > 0)
-      fprintf (file, "\tcvta.local.u%d %%punbuffer, %%punbuffer_ar;\n",
-	       BITS_PER_WORD);
-
-  /* Now emit any copies necessary for arguments.  */
-  walk_args_for_param (file, TYPE_ARG_TYPES (fntype), DECL_ARGUMENTS (decl),
-		       true, return_in_mem);
-  if (return_in_mem)
-    fprintf (file, "\tld.param.u%d %%ar1, [%%in_ar1];\n",
-	     GET_MODE_BITSIZE (Pmode));
-  if (stdarg_p (fntype))
-    fprintf (file, "\tld.param.u%d %%argp, [%%in_argp];\n",
-	     GET_MODE_BITSIZE (Pmode));
 
   /* Emit axis predicates. */
   if (cfun->machine->axis_predicate[0])
