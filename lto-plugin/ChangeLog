@@ -1,3 +1,10 @@
+2015-11-25  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/67548
+	* lto-plugin.c (linker_output, linker_output_set): New statics.
+	(all_symbols_read_handler): Add -flinker-output option.
+	(onload): Record linker_output info.
+
 2015-07-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* configure.ac: Add AC_USE_SYSTEM_EXTENSIONS.

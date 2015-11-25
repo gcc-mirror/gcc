@@ -167,6 +167,8 @@ static unsigned int num_pass_through_items;
 static char debug;
 static char nop;
 static char *resolution_file = NULL;
+static enum ld_plugin_output_file_type linker_output;
+static int linker_output_set;
 
 /* The version of gold being used, or -1 if not gold.  The number is
    MAJOR * 100 + MINOR.  */
@@ -624,8 +626,9 @@ all_symbols_read_handler (void)
 {
   unsigned i;
   unsigned num_lto_args
-    = num_claimed_files + num_offload_files + lto_wrapper_num_args + 1;
+    = num_claimed_files + num_offload_files + lto_wrapper_num_args + 2;
   char **lto_argv;
+  const char *linker_output_str;
   const char **lto_arg_ptr;
   if (num_claimed_files + num_offload_files == 0)
     return LDPS_OK;
@@ -648,6 +651,26 @@ all_symbols_read_handler (void)
   for (i = 0; i < lto_wrapper_num_args; i++)
     *lto_arg_ptr++ = lto_wrapper_argv[i];
 
+  assert (linker_output_set);
+  switch (linker_output)
+    {
+    case LDPO_REL:
+      linker_output_str = "-flinker-output=rel";
+      break;
+    case LDPO_DYN:
+      linker_output_str = "-flinker-output=dyn";
+      break;
+    case LDPO_PIE:
+      linker_output_str = "-flinker-output=pie";
+      break;
+    case LDPO_EXEC:
+      linker_output_str = "-flinker-output=exec";
+      break;
+    default:
+      message (LDPL_FATAL, "unsupported linker output %i", linker_output);
+      break;
+    }
+  *lto_arg_ptr++ = xstrdup (linker_output_str);
   for (i = 0; i < num_claimed_files; i++)
     {
       struct plugin_file_info *info = &claimed_files[i];
@@ -1099,6 +1122,10 @@ onload (struct ld_plugin_tv *tv)
 	  break;
 	case LDPT_GOLD_VERSION:
 	  gold_version = p->tv_u.tv_val;
+	  break;
+	case LDPT_LINKER_OUTPUT:
+	  linker_output = (enum ld_plugin_output_file_type) p->tv_u.tv_val;
+	  linker_output_set = 1;
 	  break;
 	default:
 	  break;

@@ -265,6 +265,14 @@ enum lto_partition_model {
   LTO_PARTITION_MAX = 4
 };
 
+/* flag_lto_linker_output initialization values.  */
+enum lto_linker_output {
+  LTO_LINKER_OUTPUT_UNKNOWN,
+  LTO_LINKER_OUTPUT_REL,
+  LTO_LINKER_OUTPUT_DYN,
+  LTO_LINKER_OUTPUT_PIE,
+  LTO_LINKER_OUTPUT_EXEC
+};
 
 /* gfortran -finit-real= values.  */
 
