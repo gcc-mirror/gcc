@@ -1,3 +1,9 @@
+2015-11-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/67954
+	* lra-constraints.c (curr_insn_transform): Add check on scratch
+	pseudo when change class to NO_REGS.  Add an assert.
+
 2015-11-25  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.md (load_arg_reg<mode>): Arg number
