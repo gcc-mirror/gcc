@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-ch-details" } */
+/* { dg-options "-O2 -fdump-tree-ch2-details" } */
 
 int mymax2(int *it, int *end)
 {
@@ -10,4 +10,4 @@ int mymax2(int *it, int *end)
   return max;
 }
 
-/* { dg-final { scan-tree-dump "Duplicating header" "ch" } } */
+/* { dg-final { scan-tree-dump "Duplicating header" "ch2" } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-vrp1-stats -fdump-tree-dom1-stats" } */
+/* { dg-options "-O2 -fdump-tree-vrp1-stats -fdump-tree-dom2-stats" } */
 
 void foo();
 void bla();
@@ -29,4 +29,4 @@ void dont_thread_1 (void)
    header and around the latch.  If one is done without the other, then
    we create an irreducible CFG. */
 /* { dg-final { scan-tree-dump-not "Jumps threaded" "vrp1"} } */
-/* { dg-final { scan-tree-dump-not "Jumps threaded" "dom1"} } */
+/* { dg-final { scan-tree-dump-not "Jumps threaded" "dom2"} } */

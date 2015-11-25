@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-dom1 -fdump-tree-optimized" } */
+/* { dg-options "-O1 -fdump-tree-dom2 -fdump-tree-optimized" } */
 
 void dont_remove (void);
 

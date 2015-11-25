@@ -1,3 +1,79 @@
+2015-11-25  Tom de Vries  <tom@codesourcery.com>
+
+	* g++.dg/tree-ssa/copyprop-1.C: Update after adding new dce1.
+	* gcc.dg/pr23911.c: Same.
+	* gcc.dg/tree-ssa/20030709-2.c: Same.
+	* gcc.dg/tree-ssa/20030731-2.c: Same.
+	* gcc.dg/tree-ssa/20040729-1.c: Same.
+	* gcc.dg/tree-ssa/cfgcleanup-1.c: Same.
+	* gcc.dg/tree-ssa/loop-36.c: Same.
+	* gcc.dg/tree-ssa/pr21086.c: Same.
+	* gcc.dg/tree-ssa/ssa-dce-1.c: Same.
+	* gcc.dg/tree-ssa/ssa-dce-2.c: Same.
+	* gcc.dg/vect/pr26359.c: Same.
+	* c-c++-common/restrict-2.c: Update after adding new lim1.
+	* c-c++-common/restrict-4.c: Same.
+	* g++.dg/tree-ssa/pr33615.C: Same.
+	* g++.dg/tree-ssa/restrict1.C: Same.
+	* gcc.dg/tm/pub-safety-1.c: Same.
+	* gcc.dg/tm/reg-promotion.c: Same.
+	* gcc.dg/tree-ssa/20050314-1.c: Same.
+	* gcc.dg/tree-ssa/loop-32.c: Same.
+	* gcc.dg/tree-ssa/loop-33.c: Same.
+	* gcc.dg/tree-ssa/loop-34.c: Same.
+	* gcc.dg/tree-ssa/loop-35.c: Same.
+	* gcc.dg/tree-ssa/loop-7.c: Same.
+	* gcc.dg/tree-ssa/pr23109.c: Same.
+	* gcc.dg/tree-ssa/restrict-3.c: Same.
+	* gcc.dg/tree-ssa/restrict-5.c: Same.
+	* gcc.dg/tree-ssa/ssa-lim-1.c: Same.
+	* gcc.dg/tree-ssa/ssa-lim-10.c: Same.
+	* gcc.dg/tree-ssa/ssa-lim-11.c: Same.
+	* gcc.dg/tree-ssa/ssa-lim-12.c: Same.
+	* gcc.dg/tree-ssa/ssa-lim-2.c: Same.
+	* gcc.dg/tree-ssa/ssa-lim-3.c: Same.
+	* gcc.dg/tree-ssa/ssa-lim-6.c: Same.
+	* gcc.dg/tree-ssa/ssa-lim-7.c: Same.
+	* gcc.dg/tree-ssa/ssa-lim-8.c: Same.
+	* gcc.dg/tree-ssa/ssa-lim-9.c: Same.
+	* gcc.dg/tree-ssa/structopt-1.c: Same.
+	* gfortran.dg/pr32921.f: Same.
+	* g++.dg/tree-ssa/pr19637.C: Update after adding new dom1.
+	* g++.dg/tree-ssa/pr61009.C: Same.
+	* g++.dg/tree-ssa/ssa-dom.C: Same.
+	* gcc.dg/pr20115-1.c: Same.
+	* gcc.dg/tree-prof/20050826-2.c: Same.
+	* gcc.dg/tree-prof/cmpsf-1.c: Same.
+	* gcc.dg/tree-ssa/20030821-1.c: Same.
+	* gcc.dg/tree-ssa/20030922-2.c: Same.
+	* gcc.dg/tree-ssa/20031022-1.c: Same.
+	* gcc.dg/tree-ssa/20040615-1.c: Same.
+	* gcc.dg/tree-ssa/20040624-1.c: Same.
+	* gcc.dg/tree-ssa/pr21417.c: Same.
+	* gcc.dg/tree-ssa/pr61607.c: Same.
+	* gcc.dg/tree-ssa/slsr-27.c: Same.
+	* gcc.dg/tree-ssa/slsr-28.c: Same.
+	* gcc.dg/tree-ssa/slsr-29.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-branch-1.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-cse-3.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-1.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2a.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2b.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2c.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2d.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2e.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2f.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-5.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-6.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Same.
+	* gcc.dg/tree-ssa/ssa-thread-12.c: Same.
+	* gcc.dg/tree-ssa/vrp47.c: Same.
+	* gcc.dg/tree-ssa/copy-headers.c: Update after adding ch1.
+	* gcc.dg/tree-ssa/foldconst-2.c: Same.
+	* gcc.dg/tree-ssa/loop-40.c: Same.
+	* gcc.dg/gomp/notify-new-function-3.c: Update after adding ompexpssa1.
+
 2015-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/constexpr-array13.C: Fix.

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-ch" } */
+/* { dg-options "-O2 -fdump-tree-ch2" } */
 typedef union tree_node *tree;
 enum tree_code
 {
@@ -56,4 +56,4 @@ emit_support_tinfos (void)
 }
 /* We should copy loop header to fundamentals[0] and then fold it way into
    known value.  */
-/* { dg-final { scan-tree-dump-not "fundamentals.0" "ch"} } */
+/* { dg-final { scan-tree-dump-not "fundamentals.0" "ch2"} } */

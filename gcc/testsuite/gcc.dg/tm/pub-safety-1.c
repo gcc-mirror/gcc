@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fgnu-tm -O1 -fdump-tree-lim1" } */
+/* { dg-options "-fgnu-tm -O1 -fdump-tree-lim2" } */
 
 /* Test that thread visible loads do not get hoisted out of loops if
    the load would not have occurred on each path out of the loop.  */
@@ -20,4 +20,4 @@ void reader()
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Cannot hoist.*DATA_DATA because it is in a transaction" 1 "lim1" } } */
+/* { dg-final { scan-tree-dump-times "Cannot hoist.*DATA_DATA because it is in a transaction" 1 "lim2" } } */

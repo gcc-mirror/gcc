@@ -1,6 +1,6 @@
 /* Testcase derived from gcc.c-torture/execute cmpsf-1.c
    which showed jump threading profile insanities.  */
-/* { dg-options "-Ofast -fdump-tree-dom1-all" } */
+/* { dg-options "-Ofast -fdump-tree-dom2-all" } */
 
 #include <limits.h>
 
@@ -181,4 +181,4 @@ main (void)
   exit (0);
 }
 
-/* { dg-final-use { scan-tree-dump-not "Invalid sum" "dom1"} } */
+/* { dg-final-use { scan-tree-dump-not "Invalid sum" "dom2"} } */

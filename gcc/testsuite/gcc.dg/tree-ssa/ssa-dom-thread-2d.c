@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-vrp1-stats -fdump-tree-dom1-stats" } */
+/* { dg-options "-O2 -fdump-tree-vrp1-stats -fdump-tree-dom2-stats" } */
 
 void foo();
 void bla();
@@ -26,4 +26,4 @@ void dont_thread_2 (int first)
 /* Peeling off the first iteration would make threading through
    the loop latch safe, but we don't do that currently.  */
 /* { dg-final { scan-tree-dump-not "Jumps threaded" "vrp1"} } */
-/* { dg-final { scan-tree-dump-not "Jumps threaded" "dom1"} } */
+/* { dg-final { scan-tree-dump-not "Jumps threaded" "dom2"} } */

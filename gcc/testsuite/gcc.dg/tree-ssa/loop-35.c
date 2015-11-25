@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-lim1-details" } */
+/* { dg-options "-O2 -fdump-tree-lim2-details" } */
 
 int x;
 int a[100];
@@ -67,5 +67,5 @@ void test4(struct a *A, unsigned LONG b)
     }
 }
 /* long index not hoisted for avr target PR 36561 */
-/* { dg-final { scan-tree-dump-times "Executing store motion of" 8 "lim1" { xfail { "avr-*-*" } } } } */
-/* { dg-final { scan-tree-dump-times "Executing store motion of" 6 "lim1" { target { "avr-*-*" } } } } */
+/* { dg-final { scan-tree-dump-times "Executing store motion of" 8 "lim2" { xfail { "avr-*-*" } } } } */
+/* { dg-final { scan-tree-dump-times "Executing store motion of" 6 "lim2" { target { "avr-*-*" } } } } */
