@@ -294,6 +294,9 @@ case ${host} in
         ;;
     esac
   fi
+  if test x$enable_vtable_verify = xyes; then
+    extra_parts="$extra_parts vtv_start.o vtv_end.o vtv_start_preinit.o vtv_end_preinit.o"
+  fi
   ;;
 *-*-uclinux*)
   extra_parts="crtbegin.o crtend.o"

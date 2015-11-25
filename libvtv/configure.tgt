@@ -23,6 +23,12 @@ VTV_SUPPORTED=no
 case "${target}" in
   *-*-*android*)
 	;;
+  *-*-solaris2.1[1-9]*)
+        # Vtable verification requires constructor priority support and
+        # dl_iterate_phdr.  The former requires a dynamic check in
+        # configure.ac, the latter is fully present in Solaris 11 only.
+	VTV_SUPPORTED=yes
+	;;
   x86_64-*-linux* | i?86-*-linux*)
 	VTV_SUPPORTED=yes
 	;;

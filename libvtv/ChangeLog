@@ -1,3 +1,30 @@
+2015-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.tgt (*-*-solaris2.[1-9]*): Declare supported.
+	* configure.ac: Call AC_USE_SYSTEM_EXTENSIONS.
+	<*-*-solaris2*>: Check for init priority support.
+	Check for getexecname, __fortify_fail, _obstack_begin.
+	(VTV_NO_OBSTACK): New conditional.
+	* configure: Regenerate.
+	* Makefile.am [VTV_NO_OBSTACK] (obstack.c): Use new condition.
+	Create empty config.h
+	* Makefile.in: Regenerate.
+
+	* vtv_rts.cc [HAVE_GETEXECNAME] (program_invocation_name): New
+	variable.
+	(read_section_offset_and_length) [HAVE_GETEXECNAME]: Set it.
+	(dl_iterate_phdr_callback) [HAVE_GETEXECNAME]: Set it.
+
+	(__fortify_fail): Wrap in HAVE___FORTIFY_FAIL
+	[!HAVE___FORTIFY_FAIL]: Provide non-Cygwin implementation.
+
+	(read_section_offset_and_length): Assert sh_size >= VTV_PAGE_SIZE.
+	(iterate_modules): Fix typo.
+	Use VTV_PAGE_SIZE.
+	(dl_iterate_phdr_callback): Fix typo.
+	Use VTV_PAGE_SIZE.
+	(__VLTChangePermission): Fix typos.
+
 2015-11-09  Alan Modra  <amodra@gmail.com>
 
 	* vtv_malloc.cc (obstack_chunk_free): Correct param type.
