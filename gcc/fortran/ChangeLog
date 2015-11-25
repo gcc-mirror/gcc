@@ -1,3 +1,9 @@
+2015-11-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68227
+	* trans-stmt.c (gfc_do_allocate): Convert gcc_assert argument into
+	into part of conditional statement.
+
 2015-11-25  Ilmir Usmanov <me@ilmir.us>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 

@@ -3125,9 +3125,8 @@ gfc_do_allocate (tree bytesize, tree size, tree * pdata, stmtblock_t * pblock,
 
   type = build_range_type (gfc_array_index_type, gfc_index_zero_node, tmp);
   type = build_array_type (elem_type, type);
-  if (gfc_can_put_var_on_stack (bytesize))
+  if (gfc_can_put_var_on_stack (bytesize) && INTEGER_CST_P (size))
     {
-      gcc_assert (INTEGER_CST_P (size));
       tmpvar = gfc_create_var (type, "temp");
       *pdata = NULL_TREE;
     }
