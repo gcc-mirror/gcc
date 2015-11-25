@@ -3032,30 +3032,6 @@ set_dest_equal_p (const_rtx set, const_rtx item)
   return rtx_equal_p (dest, item);
 }
 
-/* Like memory_modified_in_insn_p, but return TRUE if INSN will
-   *DEFINITELY* modify the memory contents of MEM.  */
-bool
-memory_must_be_modified_in_insn_p (const_rtx mem, const_rtx insn)
-{
-  if (!INSN_P (insn))
-    return false;
-  insn = PATTERN (insn);
-  if (GET_CODE (insn) == SET)
-    return set_dest_equal_p (insn, mem);
-  else if (GET_CODE (insn) == PARALLEL)
-    {
-      int i;
-      for (i = 0; i < XVECLEN (insn, 0); i++)
-	{
-	  rtx sub = XVECEXP (insn, 0, i);
-	  if (GET_CODE (sub) == SET
-	      &&  set_dest_equal_p (sub, mem))
-	    return true;
-	}
-    }
-  return false;
-}
-
 /* Initialize the aliasing machinery.  Initialize the REG_KNOWN_VALUE
    array.  */
 

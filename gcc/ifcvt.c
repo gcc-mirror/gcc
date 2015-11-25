@@ -2962,97 +2962,6 @@ noce_operand_ok (const_rtx op)
   return ! may_trap_p (op);
 }
 
-/* Return true if a write into MEM may trap or fault.  */
-
-static bool
-noce_mem_write_may_trap_or_fault_p (const_rtx mem)
-{
-  rtx addr;
-
-  if (MEM_READONLY_P (mem))
-    return true;
-
-  if (may_trap_or_fault_p (mem))
-    return true;
-
-  addr = XEXP (mem, 0);
-
-  /* Call target hook to avoid the effects of -fpic etc....  */
-  addr = targetm.delegitimize_address (addr);
-
-  while (addr)
-    switch (GET_CODE (addr))
-      {
-      case CONST:
-      case PRE_DEC:
-      case PRE_INC:
-      case POST_DEC:
-      case POST_INC:
-      case POST_MODIFY:
-	addr = XEXP (addr, 0);
-	break;
-      case LO_SUM:
-      case PRE_MODIFY:
-	addr = XEXP (addr, 1);
-	break;
-      case PLUS:
-	if (CONST_INT_P (XEXP (addr, 1)))
-	  addr = XEXP (addr, 0);
-	else
-	  return false;
-	break;
-      case LABEL_REF:
-	return true;
-      case SYMBOL_REF:
-	if (SYMBOL_REF_DECL (addr)
-	    && decl_readonly_section (SYMBOL_REF_DECL (addr), 0))
-	  return true;
-	return false;
-      default:
-	return false;
-      }
-
-  return false;
-}
-
-/* Return whether we can use store speculation for MEM.  TOP_BB is the
-   basic block above the conditional block where we are considering
-   doing the speculative store.  We look for whether MEM is set
-   unconditionally later in the function.  */
-
-static bool
-noce_can_store_speculate_p (basic_block top_bb, const_rtx mem)
-{
-  basic_block dominator;
-
-  for (dominator = get_immediate_dominator (CDI_POST_DOMINATORS, top_bb);
-       dominator != NULL;
-       dominator = get_immediate_dominator (CDI_POST_DOMINATORS, dominator))
-    {
-      rtx_insn *insn;
-
-      FOR_BB_INSNS (dominator, insn)
-	{
-	  /* If we see something that might be a memory barrier, we
-	     have to stop looking.  Even if the MEM is set later in
-	     the function, we still don't want to set it
-	     unconditionally before the barrier.  */
-	  if (INSN_P (insn)
-	      && (volatile_insn_p (PATTERN (insn))
-		  || (CALL_P (insn) && (!RTL_CONST_CALL_P (insn)))))
-	    return false;
-
-	  if (memory_must_be_modified_in_insn_p (mem, insn))
-	    return true;
-	  if (modified_in_p (XEXP (mem, 0), insn))
-	    return false;
-
-	}
-    }
-
-  return false;
-}
-
 /* Return true if X contains a MEM subrtx.  */
 
 static bool
@@ -3582,30 +3491,12 @@ noce_process_if_block (struct noce_if_info *if_info)
     }
 
   if (!set_b && MEM_P (orig_x))
-    {
-      /* Disallow the "if (...) x = a;" form (implicit "else x = x;")
-	 for optimizations if writing to x may trap or fault,
-	 i.e. it's a memory other than a static var or a stack slot,
-	 is misaligned on strict aligned machines or is read-only.  If
-	 x is a read-only memory, then the program is valid only if we
-	 avoid the store into it.  If there are stores on both the
-	 THEN and ELSE arms, then we can go ahead with the conversion;
-	 either the program is broken, or the condition is always
-	 false such that the other memory is selected.  */
-      if (noce_mem_write_may_trap_or_fault_p (orig_x))
-	return FALSE;
-
-      /* Avoid store speculation: given "if (...) x = a" where x is a
-	 MEM, we only want to do the store if x is always set
-	 somewhere in the function.  This avoids cases like
-	   if (pthread_mutex_trylock(mutex))
-	     ++global_variable;
-	 where we only want global_variable to be changed if the mutex
-	 is held.  FIXME: This should ideally be expressed directly in
-	 RTL somehow.  */
-      if (!noce_can_store_speculate_p (test_bb, orig_x))
-	return FALSE;
-    }
+    /* We want to avoid store speculation to avoid cases like
+	 if (pthread_mutex_trylock(mutex))
+	   ++global_variable;
+       Rather than go to much effort here, we rely on the SSA optimizers,
+       which do a good enough job these days.  */
+    return FALSE;
 
   if (noce_try_move (if_info))
     goto success;
