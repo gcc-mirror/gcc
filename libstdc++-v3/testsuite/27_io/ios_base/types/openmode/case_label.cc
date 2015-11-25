@@ -46,9 +46,11 @@ case_labels(bitmask_type b)
       break;
     case std::_S_ios_openmode_end:
       break;
-    case std::_S_ios_openmode_min:
+    case __INT_MAX__:
       break;
-    case std::_S_ios_openmode_max:
+    case ~__INT_MAX__:
       break;
     }
+  static_assert( sizeof(std::underlying_type_t<bitmask_type>) == sizeof(int),
+      "underlying type has same range of values as int");
 }
