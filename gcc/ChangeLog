@@ -1,3 +1,8 @@
+2015-11-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* varasm.c (default_elf_asm_output_limited_string,
+	default_elf_asm_output_ascii): Replace fprintf by putc.
+
 2015-11-25  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/67954
