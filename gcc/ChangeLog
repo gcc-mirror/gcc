@@ -1,3 +1,9 @@
+2015-11-25  David Sherwood  <david.sherwood@arm.com>
+
+	* optabs.def: Add new optabs fmax_optab/fmin_optab.
+	* internal-fn.def: Add new fmax/fmin internal functions.
+	* doc/md.texi: Add fmin and fmax patterns.
+
 2015-11-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68385
