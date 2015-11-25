@@ -1,5 +1,11 @@
 2015-11-25  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/68492
+	* tree-vect-slp.c (vect_build_slp_tree): Consistently build up
+	op from scalars after operand swapping.
+
+2015-11-25  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/68502
 	* tree-vect-data-refs.c (vect_analyze_group_access_1): Restore
 	check that the step is a multiple of the type size.

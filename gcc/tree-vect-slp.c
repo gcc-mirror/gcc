@@ -1078,6 +1078,35 @@ vect_build_slp_tree (vec_info *vinfo,
 				   tem, npermutes, &this_tree_size,
 				   max_tree_size))
 	    {
+	      /* If we have all children of child built up from scalars then
+		 just throw that away and build it up this node from scalars.  */
+	      if (!SLP_TREE_CHILDREN (child).is_empty ())
+		{
+		  unsigned int j;
+		  slp_tree grandchild;
+
+		  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (child), j, grandchild)
+		    if (grandchild != NULL)
+		      break;
+		  if (!grandchild)
+		    {
+		      /* Roll back.  */
+		      *max_nunits = old_max_nunits;
+		      loads->truncate (old_nloads);
+		      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (child), j, grandchild)
+			vect_free_slp_tree (grandchild);
+		      SLP_TREE_CHILDREN (child).truncate (0);
+
+		      dump_printf_loc (MSG_NOTE, vect_location,
+				       "Building parent vector operands from "
+				       "scalars instead\n");
+		      oprnd_info->def_stmts = vNULL;
+		      vect_free_slp_tree (child);
+		      SLP_TREE_CHILDREN (*node).quick_push (NULL);
+		      continue;
+		    }
+		}
+
 	      /* ... so if successful we can apply the operand swapping
 		 to the GIMPLE IL.  This is necessary because for example
 		 vect_get_slp_defs uses operand indexes and thus expects
