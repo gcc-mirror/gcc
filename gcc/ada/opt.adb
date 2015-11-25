@@ -44,8 +44,10 @@ package body Opt is
 
    function Back_End_Exceptions return Boolean is
    begin
-      return Exception_Mechanism = Back_End_SJLJ
-        or else Exception_Mechanism = Back_End_ZCX;
+      return
+        Exception_Mechanism = Back_End_SJLJ
+          or else
+        Exception_Mechanism = Back_End_ZCX;
    end Back_End_Exceptions;
 
    -------------------------
@@ -63,8 +65,10 @@ package body Opt is
 
    function SJLJ_Exceptions return Boolean is
    begin
-      return Exception_Mechanism = Back_End_SJLJ
-        or else Exception_Mechanism = Front_End_SJLJ;
+      return
+        Exception_Mechanism = Back_End_SJLJ
+          or else
+        Exception_Mechanism = Front_End_SJLJ;
    end SJLJ_Exceptions;
 
    --------------------
