@@ -63,6 +63,9 @@ procedure GNATCmd is
    Gprclean  : constant String := "gprclean";
    Gnatclean : constant String := "gnatclean";
 
+   Gprname  : constant String := "gprname";
+   Gnatname : constant String := "gnatname";
+
    Normal_Exit : exception;
    --  Raise this exception for normal program termination
 
@@ -1183,8 +1186,12 @@ begin
          --  If we want to invoke gnatmake/gnatclean with -P, then check if
          --  gprbuild/gprclean is available; if it is, use gprbuild/gprclean
          --  instead of gnatmake/gnatclean.
+         --  Ditto for gnatname -> gprname.
 
-         if Program.all = Gnatmake or else Program.all = Gnatclean then
+         if Program.all = Gnatmake
+            or else Program.all = Gnatclean
+            or else Program.all = Gnatname
+         then
             declare
                Project_File_Used : Boolean := False;
                Switch            : String_Access;
@@ -1209,6 +1216,11 @@ begin
                     and then Locate_Exec_On_Path (Gprclean) /= null
                   then
                      Program := new String'(Gprclean);
+
+                  elsif Program.all = Gnatname
+                    and then Locate_Exec_On_Path (Gprname) /= null
+                  then
+                     Program := new String'(Gprname);
                   end if;
                end if;
             end;
