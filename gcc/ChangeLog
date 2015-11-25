@@ -1,3 +1,11 @@
+2015-11-25  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* ifcvt.c (noce_mem_write_may_trap_or_fault_p,
+	noce_can_store_speculate): Delete.
+	(noce_process_if_block): Don't try to handle single MEM stores.
+	* rtl.h (memory_must_be_modified_in_insn_p): Don't declare.
+	* alias.c (memory_must_be_modified_in_insn_p): Delete.
+
 2015-11-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/68435
