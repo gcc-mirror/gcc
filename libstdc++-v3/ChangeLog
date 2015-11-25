@@ -1,3 +1,10 @@
+2015-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/ios_base/types/fmtflags/case_label.cc: Explicitly
+	check minimum and maximum values, and size of underlying type.
+	* testsuite/27_io/ios_base/types/iostate/case_label.cc: Likewise.
+	* testsuite/27_io/ios_base/types/openmode/case_label.cc: Likewise.
+
 2015-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_VTABLE_VERIFY) <solaris2*>: Use
