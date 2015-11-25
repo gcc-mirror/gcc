@@ -3,4 +3,4 @@
 
 constexpr char c[] = "hello";
 constexpr const char *p = c;
-constexpr char ch = *(p-1);  // { dg-error "negative array subscript" }
+constexpr char ch = *(p-1);  // { dg-error "array subscript" }
