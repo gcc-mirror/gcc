@@ -32,9 +32,7 @@ cp_ubsan_instrument_vptr_p (tree type)
   if (!flag_rtti || flag_sanitize_undefined_trap_on_error)
     return false;
 
-  if (current_function_decl
-      && lookup_attribute ("no_sanitize_undefined",
-			   DECL_ATTRIBUTES (current_function_decl)))
+  if (!do_ubsan_in_current_function ())
     return false;
 
   if (type)
