@@ -2180,7 +2180,10 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
   if (tmp_b && then_bb)
     {
       FOR_BB_INSNS (then_bb, tmp_insn)
-	if (modified_in_p (orig_b, tmp_insn))
+	/* Don't check inside insn_a.  We will have changed it to emit_a
+	   with a destination that doesn't conflict.  */
+	if (!(insn_a && tmp_insn == insn_a)
+	    && modified_in_p (orig_b, tmp_insn))
 	  {
 	    modified_in_a = true;
 	    break;
@@ -2193,7 +2196,10 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 	if (tmp_b && else_bb)
 	  {
 	    FOR_BB_INSNS (else_bb, tmp_insn)
-	      if (modified_in_p (orig_a, tmp_insn))
+	    /* Don't check inside insn_b.  We will have changed it to emit_b
+	       with a destination that doesn't conflict.  */
+	      if (!(insn_b && tmp_insn == insn_b)
+		  && modified_in_p (orig_a, tmp_insn))
 		{
 		  modified_in_b = true;
 		  break;
