@@ -465,6 +465,8 @@ extern gimple_opt_pass *make_pass_strength_reduction (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_vtable_verify (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_ubsan (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_sanopt (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_oacc_kernels (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_oacc_kernels2 (gcc::context *ctxt);
 
 /* IPA Passes */
 extern simple_ipa_opt_pass *make_pass_ipa_lower_emutls (gcc::context *ctxt);
