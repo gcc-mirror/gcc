@@ -27,6 +27,8 @@ target_alias=${target_alias-$host_alias}
 AC_SUBST(target_alias)
 GCC_LIBSTDCXX_RAW_CXX_FLAGS
 
+AC_USE_SYSTEM_EXTENSIONS
+
 # Use same top-level configure hooks in libgcc/libstdc++/libvtv.
 AC_MSG_CHECKING([for --enable-vtable-verify])
 AC_ARG_ENABLE(vtable-verify,
@@ -43,6 +45,21 @@ AC_MSG_RESULT($enable_vtable_verify)
 unset VTV_SUPPORTED
 AC_MSG_CHECKING([for host support for vtable verification])
 . ${srcdir}/configure.tgt
+case ${host} in
+  *-*-solaris2*)
+    # libvtv requires init priority support, which depends on the linker
+    # used on Solaris.
+    AC_CACHE_CHECK(for init priority support, libvtv_cv_init_priority, [
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM(,
+      [[void ip (void) __attribute__ ((constructor (1)));]])],
+      [libgcc_cv_init_priority=yes],[libgcc_cv_init_priority=no])])
+    if test x$libvtv_cv_init_priority = xno; then
+      VTV_SUPPORTED=no
+    fi
+    # FIXME: Maybe check for dl_iterate_phdr, too?  Should be covered by
+    # configure.tgt restricting to libvtv to Solaris 11+.
+    ;;
+esac
 AC_MSG_RESULT($VTV_SUPPORTED)
 
 # Decide if it's usable.
@@ -96,6 +113,8 @@ AC_CHECK_FUNCS([__secure_getenv])
 
 AC_GNU_SOURCE
 AC_CHECK_FUNCS([secure_getenv])
+
+AC_CHECK_FUNCS([getexecname __fortify_fail])
 
 # Check for programs.
 m4_rename([_AC_ARG_VAR_PRECIOUS],[real_PRECIOUS])
@@ -166,5 +185,8 @@ case "$target_os" in
 esac
 
 AM_CONDITIONAL(VTV_CYGMIN, test $vtv_cygmin = yes)
+
+AC_CHECK_FUNCS([_obstack_begin])
+AM_CONDITIONAL(VTV_NO_OBSTACK, test $ac_cv_func__obstack_begin = no)
 
 AC_OUTPUT

@@ -53,6 +53,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_NO_OBSTACK_TRUE@am__append_1 = obstack.c
 subdir = .
 DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -110,11 +111,10 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libvtv_la_DEPENDENCIES =
 am__objects_1 = vtv_start.lo vtv_malloc.lo vtv_rts.lo vtv_utils.lo \
 	vtv_end.lo
-@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_FALSE@am_libvtv_la_OBJECTS =  \
-@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_FALSE@	$(am__objects_1)
-@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@am_libvtv_la_OBJECTS =  \
-@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@	$(am__objects_1) \
-@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@	obstack.lo
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_NO_OBSTACK_TRUE@am__objects_2 =  \
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_NO_OBSTACK_TRUE@	obstack.lo
+@ENABLE_VTABLE_VERIFY_TRUE@am_libvtv_la_OBJECTS = $(am__objects_1) \
+@ENABLE_VTABLE_VERIFY_TRUE@	$(am__objects_2)
 libvtv_la_OBJECTS = $(am_libvtv_la_OBJECTS)
 libvtv_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
@@ -122,9 +122,9 @@ libvtv_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 @VTV_CYGMIN_FALSE@am_libvtv_la_rpath = -rpath $(toolexeclibdir)
 @VTV_CYGMIN_TRUE@am_libvtv_la_rpath = -rpath $(toolexeclibdir)
 libvtv_stubs_la_LIBADD =
-am__objects_2 = vtv_start.lo vtv_stubs.lo vtv_end.lo
+am__objects_3 = vtv_start.lo vtv_stubs.lo vtv_end.lo
 @ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@am_libvtv_stubs_la_OBJECTS =  \
-@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@	$(am__objects_2)
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@	$(am__objects_3)
 libvtv_stubs_la_OBJECTS = $(am_libvtv_stubs_la_OBJECTS)
 libvtv_stubs_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
@@ -353,8 +353,8 @@ BUILT_SOURCES = vtv_start.c vtv_end.c
 @VTV_CYGMIN_TRUE@libvtv_la_LDFLAGS = $(lt_host_flags)
 @VTV_CYGMIN_TRUE@libvtv_stubs_la_LDFLAGS = $(lt_host_flags)
 @ENABLE_VTABLE_VERIFY_FALSE@libvtv_la_SOURCES = 
-@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_FALSE@libvtv_la_SOURCES = $(vtv_sources)
-@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@libvtv_la_SOURCES = $(vtv_sources) obstack.c
+@ENABLE_VTABLE_VERIFY_TRUE@libvtv_la_SOURCES = $(vtv_sources) \
+@ENABLE_VTABLE_VERIFY_TRUE@	$(am__append_1)
 @ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@libvtv_stubs_la_SOURCES = $(vtv_stubs_sources)
 @ENABLE_VTABLE_VERIFY_FALSE@libvtv_include_HEADERS = 
 @ENABLE_VTABLE_VERIFY_TRUE@libvtv_include_HEADERS = $(vtv_headers)
@@ -832,9 +832,10 @@ vtv_end.c:
 	rm -f $@
 	$(LN_S) $(toplevel_srcdir)/libgcc/vtv_end.c $@
 
-@VTV_CYGMIN_TRUE@  obstack.c:
-@VTV_CYGMIN_TRUE@	  rm -f $@
-@VTV_CYGMIN_TRUE@	  $(LN_S) $(toplevel_srcdir)/libiberty/obstack.c $@
+@VTV_NO_OBSTACK_TRUE@  obstack.c:
+@VTV_NO_OBSTACK_TRUE@	  rm -f $@
+@VTV_NO_OBSTACK_TRUE@	  $(LN_S) $(toplevel_srcdir)/libiberty/obstack.c $@
+@VTV_NO_OBSTACK_TRUE@	  > config.h
 
 @VTV_CYGMIN_TRUE@  vtv_stubs.cc:
 @VTV_CYGMIN_TRUE@	  rm -f $@

@@ -1,3 +1,12 @@
+2015-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (VTV_CFLAGS): New variable.
+	(vtv_start$(objext), vtv_end$(objext), vtv_end$(objext))
+	(vtv_start_preinit$(objext), vtv_end_preinit$(objext)): Use it.
+	* config.host (*-*-solaris2*): Add t-crtstuff-pic to tmake_file.
+	Add vtv_start.o, vtv_end.o, vtv_start_preinit.o, vtv_end_preinit.o
+	to extra_parts if $enable_vtable_verify = yes.
+
 2015-11-23  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR target/68059

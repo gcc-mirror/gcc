@@ -76,11 +76,14 @@ vtv_end.c:
 	rm -f $@
 	$(LN_S) $(toplevel_srcdir)/libgcc/vtv_end.c $@
 
-if VTV_CYGMIN
+if VTV_NO_OBSTACK
   obstack.c:
 	  rm -f $@
 	  $(LN_S) $(toplevel_srcdir)/libiberty/obstack.c $@
-  
+	  > config.h
+endif
+
+if VTV_CYGMIN
   vtv_stubs.cc:
 	  rm -f $@
 	  $(LN_S) $(toplevel_srcdir)/libstdc++-v3/libsupc++/vtv_stubs.cc $@
@@ -93,11 +96,12 @@ if VTV_CYGMIN
 endif
 
 if ENABLE_VTABLE_VERIFY
-if VTV_CYGMIN
-  libvtv_la_SOURCES = $(vtv_sources) obstack.c
-  libvtv_stubs_la_SOURCES = $(vtv_stubs_sources)
-else
   libvtv_la_SOURCES = $(vtv_sources)
+if VTV_NO_OBSTACK
+  libvtv_la_SOURCES += obstack.c
+endif
+if VTV_CYGMIN
+  libvtv_stubs_la_SOURCES = $(vtv_stubs_sources)
 endif
   libvtv_include_HEADERS = $(vtv_headers)
 else
