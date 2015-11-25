@@ -1,6 +1,5 @@
 2015-11-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
-	<patch #10>
 	* config/rs6000/constraints.md (wb constraint): New constraint for
 	ISA 3.0 d-form scalar addressing.
 
