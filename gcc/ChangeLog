@@ -1,3 +1,9 @@
+2015-11-25  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_declare_alias): Rename and globalize
+	both the symbol and the "dot" symbol for function descriptors. Fix
+	inversion for rename of symbols with dollar sign.
+
 2015-11-25  Tom de Vries  <tom@codesourcery.com>
 
 	* cfgloop.c (find_single_latch): New function, factored out of ...
