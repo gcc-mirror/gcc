@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-diagnostic.h"
 #include "output.h"
+#include "timevar.h"
 
 /* Do nothing; in many cases the default hook.  */
 
@@ -658,7 +659,11 @@ void
 lhd_append_data (const void *data, size_t len, void *)
 {
   if (data)
-    assemble_string ((const char *)data, len);
+    {
+      timevar_push (TV_IPA_LTO_OUTPUT);
+      assemble_string ((const char *)data, len);
+      timevar_pop (TV_IPA_LTO_OUTPUT);
+    }
 }
 
 
