@@ -1,3 +1,7 @@
+2015-11-25  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/nint_p7.f90: New testcase.
+
 2015-11-25  Markus Trippelsdorf  <markus@trippelsdorf.de>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
