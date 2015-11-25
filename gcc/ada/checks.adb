@@ -749,14 +749,15 @@ package body Checks is
             end if;
          end;
 
-      --  If the expression has the form X'Address, then we can find out if
-      --  the object X has an alignment that is compatible with the object E.
-      --  If it hasn't or we don't know, we defer issuing the warning until
-      --  the end of the compilation to take into account back end annotations.
+      --  If the expression has the form X'Address, then we can find out if the
+      --  object X has an alignment that is compatible with the object E. If it
+      --  hasn't or we don't know, we defer issuing the warning until the end
+      --  of the compilation to take into account back end annotations.
 
       elsif Nkind (Expr) = N_Attribute_Reference
         and then Attribute_Name (Expr) = Name_Address
-        and then Has_Compatible_Alignment (E, Prefix (Expr)) = Known_Compatible
+        and then
+          Has_Compatible_Alignment (E, Prefix (Expr), False) = Known_Compatible
       then
          return;
       end if;

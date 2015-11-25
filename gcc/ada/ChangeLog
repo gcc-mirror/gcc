@@ -1,3 +1,18 @@
+2015-11-25  Bob Duff  <duff@adacore.com>
+
+	* sem_elab.adb (Check_Internal_Call_Continue): Code clean ups.
+
+2015-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.ads (Has_Compatible_Alignment): Add Layout_Done
+	parameter.
+	* sem_util.adb (Has_Compatible_Alignment): Likewise.
+	(Has_Compatible_Alignment_Internal): Likewise.	Do not set the
+	result to Unknown for packed types if Layout_Done is true.
+	* checks.adb (Apply_Address_Clause_Check): Adjust call and
+	pass False to Has_Compatible_Alignment.
+	* sem_ch13.adb (Validate_Address_Clauses): Likewise but pass True.
+
 2015-11-25  Vincent Celier  <celier@adacore.com>
 
 	* gnatcmd.adb: When <target>-gnat is called with switch -P
