@@ -712,7 +712,7 @@ skip_gcc_attribute (locus start)
 
 /* Return true if CC was matched.  */
 static bool
-skip_oacc_attribute (locus start, locus old_loc, bool continue_flag)
+skip_free_oacc_sentinel (locus start, locus old_loc)
 {
   bool r = false;
   char c;
@@ -752,7 +752,7 @@ skip_oacc_attribute (locus start, locus old_loc, bool continue_flag)
 
 /* Return true if MP was matched.  */
 static bool
-skip_omp_attribute (locus start, locus old_loc, bool continue_flag)
+skip_free_omp_sentinel (locus start, locus old_loc)
 {
   bool r = false;
   char c;
@@ -841,7 +841,7 @@ skip_free_comments (void)
 		    c = next_char ();
 		    if (c == 'o' || c == 'O')
 		      {
-			if (skip_omp_attribute (start, old_loc, continue_flag))
+			if (skip_free_omp_sentinel (start, old_loc))
 			  return false;
 			gfc_current_locus = old_loc;
 			next_char ();
@@ -849,7 +849,7 @@ skip_free_comments (void)
 		      }
 		    else if (c == 'a' || c == 'A')
 		      {
-			if (skip_oacc_attribute (start, old_loc, continue_flag))
+			if (skip_free_oacc_sentinel (start, old_loc))
 			  return false;
 			gfc_current_locus = old_loc;
 			next_char ();
@@ -874,7 +874,7 @@ skip_free_comments (void)
 		    c = next_char ();
 		    if (c == 'o' || c == 'O')
 		      {
-			if (skip_omp_attribute (start, old_loc, continue_flag))
+			if (skip_free_omp_sentinel (start, old_loc))
 			  return false;
 			gfc_current_locus = old_loc;
 			next_char ();
@@ -899,8 +899,7 @@ skip_free_comments (void)
 		    c = next_char ();
 		      if (c == 'a' || c == 'A')
 			{
-			  if (skip_oacc_attribute (start, old_loc, 
-						   continue_flag))
+			  if (skip_free_oacc_sentinel (start, old_loc))
 			    return false;
 			  gfc_current_locus = old_loc;
 			  next_char();
@@ -935,6 +934,63 @@ skip_free_comments (void)
   return false;
 }
 
+/* Return true if MP was matched in fixed form.  */
+static bool
+skip_fixed_omp_sentinel (locus *start)
+{
+  gfc_char_t c;
+  if (((c = next_char ()) == 'm' || c == 'M')
+      && ((c = next_char ()) == 'p' || c == 'P'))
+    {
+      c = next_char ();
+      if (c != '\n'
+	  && (continue_flag
+	      || c == ' ' || c == '\t' || c == '0'))
+	{
+	  do
+	    c = next_char ();
+	  while (gfc_is_whitespace (c));
+	  if (c != '\n' && c != '!')
+	    {
+	      /* Canonicalize to *$omp.  */
+	      *start->nextc = '*';
+	      openmp_flag = 1;
+	      gfc_current_locus = *start;
+	      return true;
+	    }
+	}
+    }
+  return false;
+}
+
+/* Return true if CC was matched in fixed form.  */
+static bool
+skip_fixed_oacc_sentinel (locus *start)
+{
+  gfc_char_t c;
+  if (((c = next_char ()) == 'c' || c == 'C')
+      && ((c = next_char ()) == 'c' || c == 'C'))
+    {
+      c = next_char ();
+      if (c != '\n'
+	  && (continue_flag
+	      || c == ' ' || c == '\t' || c == '0'))
+	{
+	  do
+	    c = next_char ();
+	  while (gfc_is_whitespace (c));
+	  if (c != '\n' && c != '!')
+	    {
+	      /* Canonicalize to *$acc.  */
+	      *start->nextc = '*';
+	      openacc_flag = 1;
+	      gfc_current_locus = *start;
+	      return true;
+	    }
+	}
+    }
+  return false;
+}
 
 /* Skip comment lines in fixed source mode.  We have the same rules as
    in skip_free_comment(), except that we can have a 'c', 'C' or '*'
@@ -1003,126 +1059,90 @@ skip_fixed_comments (void)
 	      && continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
 	    continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
 
-	  if (flag_openmp || flag_openmp_simd)
+	  if ((flag_openmp || flag_openmp_simd) && !flag_openacc)
 	    {
 	      if (next_char () == '$')
 		{
 		  c = next_char ();
 		  if (c == 'o' || c == 'O')
 		    {
-		      if (((c = next_char ()) == 'm' || c == 'M')
-			  && ((c = next_char ()) == 'p' || c == 'P'))
-			{
-			  c = next_char ();
-			  if (c != '\n'
-			      && ((openmp_flag && continue_flag)
-				  || c == ' ' || c == '\t' || c == '0'))
-			    {
-			      do
-				c = next_char ();
-			      while (gfc_is_whitespace (c));
-			      if (c != '\n' && c != '!')
-				{
-				  /* Canonicalize to *$omp.  */
-				  *start.nextc = '*';
-				  openmp_flag = 1;
-				  gfc_current_locus = start;
-				  return;
-				}
-			    }
-			}
+		      if (skip_fixed_omp_sentinel (&start))
+			return;
 		    }
 		  else
-		    {
-		      int digit_seen = 0;
-
-		      for (col = 3; col < 6; col++, c = next_char ())
-			if (c == ' ')
-			  continue;
-			else if (c == '\t')
-			  {
-			    col = 6;
-			    break;
-			  }
-			else if (c < '0' || c > '9')
-			  break;
-			else
-			  digit_seen = 1;
-
-		      if (col == 6 && c != '\n'
-			  && ((continue_flag && !digit_seen)
-			      || c == ' ' || c == '\t' || c == '0'))
-			{
-			  gfc_current_locus = start;
-			  start.nextc[0] = ' ';
-			  start.nextc[1] = ' ';
-			  continue;
-			}
-		    }
+		    goto check_for_digits;
 		}
 	      gfc_current_locus = start;
 	    }
 
-	  if (flag_openacc)
+	  if (flag_openacc && !(flag_openmp || flag_openmp_simd))
 	    {
 	      if (next_char () == '$')
 		{
 		  c = next_char ();
 		  if (c == 'a' || c == 'A')
 		    {
-		      if (((c = next_char ()) == 'c' || c == 'C')
-			  && ((c = next_char ()) == 'c' || c == 'C'))
-			{
-			  c = next_char ();
-			  if (c != '\n'
-			      && ((openacc_flag && continue_flag)
-				  || c == ' ' || c == '\t' || c == '0'))
-			    {
-			      do
-				c = next_char ();
-			      while (gfc_is_whitespace (c));
-			      if (c != '\n' && c != '!')
-				{
-				  /* Canonicalize to *$acc. */
-				  *start.nextc = '*';
-				  openacc_flag = 1;
-				  gfc_current_locus = start;
-				  return;
-				}
-			    }
-			}
+		      if (skip_fixed_oacc_sentinel (&start))
+			return;
 		    }
 		  else
-		    {
-		      int digit_seen = 0;
-
-		      for (col = 3; col < 6; col++, c = next_char ())
-			if (c == ' ')
-			  continue;
-			else if (c == '\t')
-			  {
-			    col = 6;
-			    break;
-			  }
-			else if (c < '0' || c > '9')
-			  break;
-			else
-			  digit_seen = 1;
-
-		      if (col == 6 && c != '\n'
-			  && ((continue_flag && !digit_seen)
-			      || c == ' ' || c == '\t' || c == '0'))
-			{
-			  gfc_current_locus = start;
-			  start.nextc[0] = ' ';
-			  start.nextc[1] = ' ';
-			  continue;
-			}
-		    }
+		    goto check_for_digits;
 		}
 	      gfc_current_locus = start;
 	    }
 
+	  if (flag_openacc || flag_openmp || flag_openmp_simd)
+	    {
+	      if (next_char () == '$')
+		{
+		  c = next_char ();
+		  if (c == 'a' || c == 'A')
+		    {
+		      if (skip_fixed_oacc_sentinel (&start))
+			return;
+		    }
+		  else if (c == 'o' || c == 'O')
+		    {
+		      if (skip_fixed_omp_sentinel (&start))
+			return;
+		    }
+		  else
+		    goto check_for_digits;
+		}
+	      gfc_current_locus = start;
+	    }
+
+	  skip_comment_line ();
+	  continue;
+
+	  gcc_unreachable ();
+check_for_digits:
+	  {
+	    int digit_seen = 0;
+
+	    for (col = 3; col < 6; col++, c = next_char ())
+	      if (c == ' ')
+		continue;
+	      else if (c == '\t')
+		{
+		  col = 6;
+		  break;
+		}
+	      else if (c < '0' || c > '9')
+		break;
+	      else
+		digit_seen = 1;
+
+	    if (col == 6 && c != '\n'
+		&& ((continue_flag && !digit_seen)
+		    || c == ' ' || c == '\t' || c == '0'))
+	      {
+		gfc_current_locus = start;
+		start.nextc[0] = ' ';
+		start.nextc[1] = ' ';
+		continue;
+	      }
+	    }
 	  skip_comment_line ();
 	  continue;
 	}
@@ -1321,7 +1341,7 @@ restart:
 	continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
 
       if (flag_openmp)
-	if (prev_openmp_flag != openmp_flag)
+	if (prev_openmp_flag != openmp_flag && !openacc_flag)
 	  {
 	    gfc_current_locus = old_loc;
 	    openmp_flag = prev_openmp_flag;
@@ -1330,7 +1350,7 @@ restart:
 	  }
 
       if (flag_openacc)
-	if (prev_openacc_flag != openacc_flag)
+	if (prev_openacc_flag != openacc_flag && !openmp_flag)
 	  {
 	    gfc_current_locus = old_loc;
 	    openacc_flag = prev_openacc_flag;
@@ -1349,7 +1369,7 @@ restart:
       while (gfc_is_whitespace (c))
 	c = next_char ();
 
-      if (openmp_flag)
+      if (openmp_flag && !openacc_flag)
 	{
 	  for (i = 0; i < 5; i++, c = next_char ())
 	    {
@@ -1360,7 +1380,7 @@ restart:
 	  while (gfc_is_whitespace (c))
 	    c = next_char ();
 	}
-      if (openacc_flag)
+      if (openacc_flag && !openmp_flag)
 	{
 	  for (i = 0; i < 5; i++, c = next_char ())
 	    {
@@ -1370,6 +1390,26 @@ restart:
 	    }
 	  while (gfc_is_whitespace (c))
 	    c = next_char ();
+	}
+
+      /* In case we have an OpenMP directive continued by OpenACC
+	 sentinel, or vice versa, we get both openmp_flag and
+	 openacc_flag on.  */
+
+      if (openacc_flag && openmp_flag)
+	{
+	  int is_openmp = 0;
+	  for (i = 0; i < 5; i++, c = next_char ())
+	    {
+	      if (gfc_wide_tolower (c) != (unsigned char) "!$acc"[i])
+		is_openmp = 1;
+	      if (i == 4)
+		old_loc = gfc_current_locus;
+	    }
+	  gfc_error (is_openmp ? "Wrong OpenACC continuation at %C: "
+		     "expected !$ACC, got !$OMP"
+		     : "Wrong OpenMP continuation at %C: "
+		     "expected !$OMP, got !$ACC");
 	}
 
       if (c != '&')
@@ -1436,18 +1476,35 @@ restart:
       skip_fixed_comments ();
 
       /* See if this line is a continuation line.  */
-      if (flag_openmp && openmp_flag != prev_openmp_flag)
+      if (flag_openmp && openmp_flag != prev_openmp_flag && !openacc_flag)
 	{
 	  openmp_flag = prev_openmp_flag;
 	  goto not_continuation;
 	}
-      if (flag_openacc && openacc_flag != prev_openacc_flag)
+      if (flag_openacc && openacc_flag != prev_openacc_flag && !openmp_flag)
 	{
 	  openacc_flag = prev_openacc_flag;
 	  goto not_continuation;
 	}
 
-      if (!openmp_flag && !openacc_flag)
+      /* In case we have an OpenMP directive continued by OpenACC
+	 sentinel, or vice versa, we get both openmp_flag and
+	 openacc_flag on.  */
+      if (openacc_flag && openmp_flag)
+	{
+	  int is_openmp = 0;
+	  for (i = 0; i < 5; i++)
+	    {
+	      c = next_char ();
+	      if (gfc_wide_tolower (c) != (unsigned char) "*$acc"[i])
+		is_openmp = 1;
+	    }
+	  gfc_error (is_openmp ? "Wrong OpenACC continuation at %C: "
+		     "expected !$ACC, got !$OMP"
+		     : "Wrong OpenMP continuation at %C: "
+		     "expected !$OMP, got !$ACC");
+	}
+      else if (!openmp_flag && !openacc_flag)
 	for (i = 0; i < 5; i++)
 	  {
 	    c = next_char ();

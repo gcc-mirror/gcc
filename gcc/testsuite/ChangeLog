@@ -1,3 +1,10 @@
+2015-11-25  Ilmir Usmanov <me@ilmir.us>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR fortran/63858
+	* goacc/omp-fixed.f: New test.
+	* goacc/omp.f95: Add check for mis-matched omp and acc continuations.
+
 2015-11-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/68528
