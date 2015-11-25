@@ -300,9 +300,9 @@ write_one_arg (std::stringstream &s, tree type, int i, machine_mode mode,
   machine_mode split = maybe_split_mode (mode);
   if (split != VOIDmode)
     {
-      write_one_arg (s, NULL_TREE, i, split, false);
-      write_one_arg (s, NULL_TREE, i + 1, split, false);
-      return i + 1;
+      i = write_one_arg (s, NULL_TREE, i, split, false);
+      i = write_one_arg (s, NULL_TREE, i, split, false);
+      return i;
     }
 
   if (no_arg_types && !AGGREGATE_TYPE_P (type))
@@ -312,13 +312,13 @@ write_one_arg (std::stringstream &s, tree type, int i, machine_mode mode,
       mode = arg_promotion (mode);
     }
 
-  if (i > 0)
+  if (i)
     s << ", ";
   s << ".param" << nvptx_ptx_type_from_mode (mode, false) << " %in_ar"
-    << (i + 1) << (mode == QImode || mode == HImode ? "[1]" : "");
+    << i << (mode == QImode || mode == HImode ? "[1]" : "");
   if (mode == BLKmode)
     s << "[" << int_size_in_bytes (type) << "]";
-  return i;
+  return i + 1;
 }
 
 /* Look for attributes in ATTRS that would indicate we must write a function
@@ -397,10 +397,10 @@ nvptx_write_function_decl (std::stringstream &s, const char *name, const_tree de
     {
       s << "(";
       int i = 0;
-      bool any_args = false;
+
       if (return_in_mem)
 	{
-	  s << ".param.u" << GET_MODE_BITSIZE (Pmode) << " %in_ar1";
+	  s << ".param.u" << GET_MODE_BITSIZE (Pmode) << " %in_ar0";
 	  i++;
 	}
       while (args != NULL_TREE)
@@ -409,12 +409,8 @@ nvptx_write_function_decl (std::stringstream &s, const char *name, const_tree de
 	  machine_mode mode = TYPE_MODE (type);
 
 	  if (mode != VOIDmode)
-	    {
-	      i = write_one_arg (s, type, i, mode,
-				 TYPE_ARG_TYPES (fntype) == 0);
-	      any_args = true;
-	      i++;
-	    }
+	    i = write_one_arg (s, type, i, mode,
+			       TYPE_ARG_TYPES (fntype) == 0);
 	  args = TREE_CHAIN (args);
 	}
       if (stdarg_p (fntype))
@@ -424,12 +420,12 @@ nvptx_write_function_decl (std::stringstream &s, const char *name, const_tree de
 	}
       if (DECL_STATIC_CHAIN (decl))
 	{
-	  if (i > 0)
+	  if (i)
 	    s << ", ";
 	  s << ".reg.u" << GET_MODE_BITSIZE (Pmode)
 	    << reg_names [STATIC_CHAIN_REGNUM];
 	}
-      if (!any_args && is_main)
+      if (!i && is_main)
 	s << ".param.u32 %argc, .param.u" << GET_MODE_BITSIZE (Pmode)
 	  << " %argv";
       s << ")";
@@ -563,10 +559,10 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
 
   if (return_in_mem)
     {
-      ++argno;
       fprintf (file, "\t.reg.u%d %%ar%d;\n", GET_MODE_BITSIZE (Pmode), argno);
       fprintf (file, "\tld.param.u%d %%ar%d, [%%in_ar%d];\n",
 	       GET_MODE_BITSIZE (Pmode), argno, argno);
+      argno++;
     }
 
   /* Declare and initialize incoming arguments.  */
@@ -602,11 +598,11 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
       mode = arg_promotion (mode);
       while (count--)
 	{
-	  ++argno;
 	  fprintf (file, "\t.reg%s %%ar%d;\n",
 		   nvptx_ptx_type_from_mode (mode, false), argno);
 	  fprintf (file, "\tld.param%s %%ar%d, [%%in_ar%d];\n",
 		   nvptx_ptx_type_from_mode (mode, false), argno, argno);
+	  argno++;
 	}
     }
 
@@ -998,7 +994,7 @@ nvptx_function_incoming_arg (cumulative_args_t cum_v, machine_mode mode,
      happen is complex modes and those are dealt with by
      TARGET_SPLIT_COMPLEX_ARG.  */
   return gen_rtx_UNSPEC (mode,
-			 gen_rtvec (1, GEN_INT (1 + cum->count)),
+			 gen_rtvec (1, GEN_INT (cum->count)),
 			 UNSPEC_ARG_REG);
 }
 
@@ -1843,7 +1839,7 @@ nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
       if (split != VOIDmode)
 	{
 	  mode = split;
-	  count  = 2;
+	  count = 2;
 	}
 
       for (int n = 0; n != count; n++)
@@ -1859,7 +1855,6 @@ nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
 	  fprintf (asm_out_file, ";\n");
 	  argno++;
 	}
-      
     }
 
   fprintf (asm_out_file, "\t\tcall ");

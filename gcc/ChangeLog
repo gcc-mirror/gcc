@@ -1,3 +1,14 @@
+2015-11-25  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.md (load_arg_reg<mode>): Arg number
+	constraint is 'n'.
+	* config/nvptx/nvptx.c (write_one_arg): Use 'i' directly as arg
+	number.
+	(nvptx_write_function_decl): Number args from 0.
+	(nvptx_declare_function_name): Likewise.
+	(nvptx_function_incoming_arg): Likewise.
+	(nvptx_output_call_insn): Correct formatting.
+
 2015-11-25  David Sherwood  <david.sherwood@arm.com>
 
 	* optabs.def: Add new optabs fmax_optab/fmin_optab.

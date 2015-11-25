@@ -351,14 +351,14 @@
 
 (define_insn "load_arg_reg<mode>"
   [(set (match_operand:QHIM 0 "nvptx_register_operand" "=R")
-	(unspec:QHIM [(match_operand 1 "const_int_operand" "i")]
+	(unspec:QHIM [(match_operand 1 "const_int_operand" "n")]
 		     UNSPEC_ARG_REG))]
   ""
   "%.\\tcvt%t0.u32\\t%0, %%ar%1;")
 
 (define_insn "load_arg_reg<mode>"
   [(set (match_operand:SDISDFM 0 "nvptx_register_operand" "=R")
-	(unspec:SDISDFM [(match_operand 1 "const_int_operand" "i")]
+	(unspec:SDISDFM [(match_operand 1 "const_int_operand" "n")]
 			UNSPEC_ARG_REG))]
   ""
   "%.\\tmov%t0\\t%0, %%ar%1;")
