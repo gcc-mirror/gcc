@@ -7599,8 +7599,10 @@ default_elf_asm_output_limited_string (FILE *f, const char *s)
 	  putc (c, f);
 	  break;
 	case 1:
-	  /* TODO: Print in hex with fast function, important for -flto. */
-	  fprintf (f, "\\%03o", c);
+	  putc ('\\', f);
+	  putc ('0'+((c>>6)&7), f);
+	  putc ('0'+((c>>3)&7), f);
+	  putc ('0'+(c&7), f);
 	  break;
 	default:
 	  putc ('\\', f);
@@ -7670,8 +7672,10 @@ default_elf_asm_output_ascii (FILE *f, const char *s, unsigned int len)
 	      bytes_in_chunk++;
 	      break;
 	    case 1:
-	      /* TODO: Print in hex with fast function, important for -flto. */
-	      fprintf (f, "\\%03o", c);
+	      putc ('\\', f);
+	      putc ('0'+((c>>6)&7), f);
+	      putc ('0'+((c>>3)&7), f);
+	      putc ('0'+(c&7), f);
 	      bytes_in_chunk += 4;
 	      break;
 	    default:
