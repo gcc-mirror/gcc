@@ -1,3 +1,9 @@
+2015-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68502
+	* tree-vect-data-refs.c (vect_analyze_group_access_1): Restore
+	check that the step is a multiple of the type size.
+
 2015-11-24  Michael Collison  <michael.collison@linaro.org>
 
 	* config/aarch64/aarch64-simd.md (widen_ssum, widen_usum)
