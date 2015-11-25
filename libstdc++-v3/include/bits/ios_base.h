@@ -74,7 +74,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_adjustfield 	= _S_left | _S_right | _S_internal,
       _S_basefield 	= _S_dec | _S_oct | _S_hex,
       _S_floatfield 	= _S_scientific | _S_fixed,
-      _S_ios_fmtflags_end = 1L << 16 
+      _S_ios_fmtflags_end = 1L << 16,
+      _S_ios_fmtflags_max = __INT_MAX__,
+      _S_ios_fmtflags_min = ~__INT_MAX__
     };
 
   inline _GLIBCXX_CONSTEXPR _Ios_Fmtflags
@@ -114,7 +116,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_in 		= 1L << 3,
       _S_out 		= 1L << 4,
       _S_trunc 		= 1L << 5,
-      _S_ios_openmode_end = 1L << 16 
+      _S_ios_openmode_end = 1L << 16,
+      _S_ios_openmode_max = __INT_MAX__,
+      _S_ios_openmode_min = ~__INT_MAX__
     };
 
   inline _GLIBCXX_CONSTEXPR _Ios_Openmode
@@ -152,7 +156,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_badbit 		= 1L << 0,
       _S_eofbit 		= 1L << 1,
       _S_failbit		= 1L << 2,
-      _S_ios_iostate_end = 1L << 16 
+      _S_ios_iostate_end = 1L << 16,
+      _S_ios_iostate_max = __INT_MAX__,
+      _S_ios_iostate_min = ~__INT_MAX__
     };
 
   inline _GLIBCXX_CONSTEXPR _Ios_Iostate

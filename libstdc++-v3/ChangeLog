@@ -1,6 +1,17 @@
 2015-11-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2015-11-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/56158
+	* include/bits/ios_base.h (_Ios_Fmtflags, _Ios_Openmode, _Ios_Iostate):
+	Define enumerators to ensure all values of type int are valid values
+	of the enumeration type.
+	* testsuite/27_io/ios_base/types/fmtflags/case_label.cc: Add new cases.
+	* testsuite/27_io/ios_base/types/iostate/case_label.cc: Likewise.
+	* testsuite/27_io/ios_base/types/openmode/case_label.cc: Likewise.
+
+	Backport from mainline
 	2015-09-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/allocator.h (__shrink_to_fit_aux<T, true>::_S_do_it):

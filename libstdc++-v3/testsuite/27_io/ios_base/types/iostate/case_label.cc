@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-Wall" { target *-*-* } }
+// { dg-options "-Wall -std=gnu++14" { target *-*-* } }
 // -*- C++ -*-
  
 // Copyright (C) 2004-2015 Free Software Foundation, Inc.
@@ -42,5 +42,11 @@ case_labels(bitmask_type b)
       break;
     case std::_S_ios_iostate_end:
       break;
+    case __INT_MAX__:
+      break;
+    case ~__INT_MAX__:
+      break;
     }
+  static_assert( sizeof(std::underlying_type_t<bitmask_type>) == sizeof(int),
+      "underlying type has same range of values as int");
 }
