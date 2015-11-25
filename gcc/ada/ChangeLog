@@ -1,3 +1,16 @@
+2015-11-25  Jerome Lambourg  <lambourg@adacore.com>
+
+	* init.c: Enable the signal trampoline on x86_64-vx7
+	* sigtramp-vxworks-target.inc: Implement the signal trampoline
+	for x86_64
+	* tracebak.c: Remove the hook to use the generic
+	unwinder on x86_64-vx7.
+
+2015-11-25  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: When "gnat name -P" is called, invoke gprname
+	directly if available.
+
 2015-11-25  Tristan Gingold  <gingold@adacore.com>
 
 	* init.c (__gnat_is_stack_guard): Do not use mach calls for
