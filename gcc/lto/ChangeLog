@@ -1,3 +1,9 @@
+2015-11-25  Jan Hubicka  <jh@suse.cz>
+
+	* lto-lang.c (lto_post_options): Process flag_lto_linker_output.
+	* lang.opt (lto_linker_output): New enum.
+	(flinker_output): New flag.
+
 2015-11-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-symtab.c: Include alias.h

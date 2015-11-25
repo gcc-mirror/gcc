@@ -46,6 +46,12 @@ int optimize_fast
 Variable
 bool in_lto_p = false
 
+; This variable is set to non-0 only by LTO front-end.  1 indicates that
+; the output produced will be used for incrmeental linking (thus weak symbols
+; can still be bound).
+Variable
+int flag_incremental_link = 0
+
 ; 0 means straightforward implementation of complex divide acceptable.
 ; 1 means wide ranges of inputs must work for complex divide.
 ; 2 means C99-like requirements for complex multiply and divide.

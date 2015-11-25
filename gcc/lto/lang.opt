@@ -24,6 +24,29 @@
 Language
 LTO
 
+Enum
+Name(lto_linker_output) Type(enum lto_linker_output) UnknownError(unknown linker output %qs)
+
+EnumValue
+Enum(lto_linker_output) String(unknown) Value(LTO_LINKER_OUTPUT_UNKNOWN)
+
+EnumValue
+Enum(lto_linker_output) String(rel) Value(LTO_LINKER_OUTPUT_REL)
+
+EnumValue
+Enum(lto_linker_output) String(dyn) Value(LTO_LINKER_OUTPUT_DYN)
+
+EnumValue
+Enum(lto_linker_output) String(pie) Value(LTO_LINKER_OUTPUT_PIE)
+
+EnumValue
+Enum(lto_linker_output) String(exec) Value(LTO_LINKER_OUTPUT_EXEC)
+
+flinker-output=
+LTO Report Driver Joined RejectNegative Enum(lto_linker_output) Var(flag_lto_linker_output) Init(LTO_LINKER_OUTPUT_UNKNOWN)
+Set linker output type (used internally during LTO optimization)
+
+
 fltrans
 LTO Report Var(flag_ltrans)
 Run the link-time optimizer in local transformation (LTRANS) mode.

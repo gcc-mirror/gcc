@@ -1,3 +1,14 @@
+2015-11-25  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-visibility.c (cgraph_externally_visible_p,
+	varpool_node::externally_visible_p): When doing incremental linking,
+	hidden symbols may be still used later.
+	(update_visibility_by_resolution_info): Do not drop weak during
+	incremental link.
+	(function_and_variable_visibility): Fix formating.
+	* flag-types.h (lto_linker_output): Declare.
+	* common.opt 9flag_incremental_link): New flag.
+
 2015-11-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/constraints.md (wb constraint): New constraint for
