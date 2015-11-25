@@ -1,5 +1,9 @@
 2015-11-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/67941
+	* lambda.c (maybe_add_lambda_conv_op): Mark _FUN as
+	no_sanitize_undefined.
+
 	* cp-ubsan.c (cp_ubsan_instrument_vptr_p): Use
 	do_ubsan_in_current_function.
 
