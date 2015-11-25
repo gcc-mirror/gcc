@@ -1,3 +1,9 @@
+2015-11-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/67954
+	* lra-constraints.c (curr_insn_transform): Add check on scratch
+	pseudo when change class to NO_REGS.  Add an assert.
+
 2015-11-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport form mainline
