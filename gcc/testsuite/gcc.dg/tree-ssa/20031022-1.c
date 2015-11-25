@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-dom1" } */
+/* { dg-options "-O1 -fdump-tree-dom2" } */
  
 typedef struct edge_def
 {
@@ -26,4 +26,4 @@ blah (int arf)
 }
 
 /* There should be one load from entry_exit_blocks[1].pred.  */
-/* { dg-final { scan-tree-dump-times "entry_exit_blocks.1..pred" 1 "dom1"} } */
+/* { dg-final { scan-tree-dump-times "entry_exit_blocks.1..pred" 1 "dom2"} } */

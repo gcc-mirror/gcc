@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-dom1" } */
+/* { dg-options "-O1 -fdump-tree-dom2" } */
   
 void bar1 (void);
 void bar2 (void);
@@ -13,4 +13,4 @@ foo (unsigned int a, unsigned int b)
     bar2 ();
 }
 
-/* { dg-final { scan-tree-dump-times "bar2" 0 "dom1" } } */
+/* { dg-final { scan-tree-dump-times "bar2" 0 "dom2" } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dce2" } */
+/* { dg-options "-O2 -fdump-tree-dce3" } */
 
 struct X { float array[2]; };
 
@@ -18,4 +18,4 @@ float foobar () {
 
 /* The temporary structure should have been promoted to registers
    by FRE after the loops have been unrolled by the early unrolling pass.  */
-/* { dg-final { scan-tree-dump-not "c\.array" "dce2" } } */
+/* { dg-final { scan-tree-dump-not "c\.array" "dce3" } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-lim1-details" } */
+/* { dg-options "-O -fdump-tree-lim2-details" } */
 
 struct { int x; int y; } global;
 void foo(int n)
@@ -9,5 +9,5 @@ void foo(int n)
     global.y += global.x*global.x;
 }
 
-/* { dg-final { scan-tree-dump "Executing store motion of global.y" "lim1" } } */
-/* { dg-final { scan-tree-dump "Moving statement.*global.x.*out of loop 1" "lim1" } } */
+/* { dg-final { scan-tree-dump "Executing store motion of global.y" "lim2" } } */
+/* { dg-final { scan-tree-dump "Moving statement.*global.x.*out of loop 1" "lim2" } } */

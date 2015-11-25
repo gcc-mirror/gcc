@@ -88,7 +88,24 @@ along with GCC; see the file COPYING3.  If not see
 	  /* pass_build_ealias is a dummy pass that ensures that we
 	     execute TODO_rebuild_alias at this point.  */
 	  NEXT_PASS (pass_build_ealias);
+	  /* Pass group that runs when the function is an offloaded function
+	     containing oacc kernels loops.  Part 1.  */
+	  NEXT_PASS (pass_oacc_kernels);
+	  PUSH_INSERT_PASSES_WITHIN (pass_oacc_kernels)
+	      NEXT_PASS (pass_ch);
+	  POP_INSERT_PASSES ()
 	  NEXT_PASS (pass_fre);
+	  /* Pass group that runs when the function is an offloaded function
+	     containing oacc kernels loops.  Part 2.  */
+	  NEXT_PASS (pass_oacc_kernels2);
+	  PUSH_INSERT_PASSES_WITHIN (pass_oacc_kernels2)
+	      /* We use pass_lim to rewrite in-memory iteration and reduction
+		 variable accesses in loops into local variables accesses.  */
+	      NEXT_PASS (pass_lim);
+	      NEXT_PASS (pass_dominator, false /* may_peel_loop_headers_p */);
+	      NEXT_PASS (pass_dce);
+	      NEXT_PASS (pass_expand_omp_ssa);
+	  POP_INSERT_PASSES ()
 	  NEXT_PASS (pass_merge_phi);
           NEXT_PASS (pass_dse);
 	  NEXT_PASS (pass_cd_dce);

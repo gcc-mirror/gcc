@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -funsafe-math-optimizations -ftrapping-math -fdump-tree-recip -fdump-tree-lim1" } */
+/* { dg-options "-O2 -funsafe-math-optimizations -ftrapping-math -fdump-tree-recip -fdump-tree-lim2" } */
 /* { dg-warning "-fassociative-math disabled" "" { target *-*-* } 1 } */
 
 double F[2] = { 0., 0. }, e = 0.;
@@ -29,6 +29,6 @@ int main()
 /* LIM only performs the transformation in the no-trapping-math case.  In
    the future we will do it for trapping-math as well in recip, check that
    this is not wrongly optimized.  */
-/* { dg-final { scan-tree-dump-not "reciptmp" "lim1" } } */
+/* { dg-final { scan-tree-dump-not "reciptmp" "lim2" } } */
 /* { dg-final { scan-tree-dump-not "reciptmp" "recip" } } */
 

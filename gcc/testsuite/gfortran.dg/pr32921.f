@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O2 -fdump-tree-lim1" }
+! { dg-options "-O2 -fdump-tree-lim2" }
 ! gfortran -c -m32 -O2 -S junk.f
 !
       MODULE LES3D_DATA
@@ -45,4 +45,4 @@
 
       RETURN
       END
-! { dg-final { scan-tree-dump-times "stride" 4 "lim1" } }
+! { dg-final { scan-tree-dump-times "stride" 4 "lim2" } }

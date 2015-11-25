@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-lim1-details" } */
+/* { dg-options "-O -fdump-tree-lim2-details" } */
 
 void bar (int);
 void foo (int n, int m)
@@ -16,4 +16,4 @@ void foo (int n, int m)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Moving PHI node" 1 "lim1"  } } */
+/* { dg-final { scan-tree-dump-times "Moving PHI node" 1 "lim2"  } } */

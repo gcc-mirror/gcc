@@ -13363,6 +13363,7 @@ public:
       return !(fun->curr_properties & PROP_gimple_eomp);
     }
   virtual unsigned int execute (function *) { return execute_expand_omp (); }
+  opt_pass * clone () { return new pass_expand_omp_ssa (m_ctxt); }
 
 }; // class pass_expand_omp_ssa
 

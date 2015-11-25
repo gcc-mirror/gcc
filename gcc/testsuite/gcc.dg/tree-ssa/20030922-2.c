@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-dom1 -fdisable-tree-ifcombine" } */
+/* { dg-options "-O1 -fdump-tree-dom2 -fdisable-tree-ifcombine" } */
 
 struct rtx_def;
 typedef struct rtx_def *rtx;
@@ -24,4 +24,4 @@ rgn_rank (rtx insn1, rtx insn2)
    SSA name to record as a copy of the other when DOM derives copies
    from temporary equivalences.  The heuristics there no longer do
    the correct thing.  VRP still optimizes this testcase.  */
-/* { dg-final { scan-tree-dump-times "if " 2 "dom1" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "if " 2 "dom2" { xfail *-*-* } } } */

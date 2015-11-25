@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-dce2" } */
+/* { dg-options "-O -fdump-tree-dce3" } */
 
 /* Verify that we can eliminate the useless conversions to/from
    const qualified pointer types
@@ -27,4 +27,4 @@ int foo(Object&o)
 
 /* Remaining should be two loads.  */
 
-/* { dg-final { scan-tree-dump-times " = \[^\n\]*;" 2 "dce2" } } */
+/* { dg-final { scan-tree-dump-times " = \[^\n\]*;" 2 "dce3" } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fgnu-tm -O2 -fdump-tree-lim1" } */
+/* { dg-options "-fgnu-tm -O2 -fdump-tree-lim2" } */
 
 /* Test that `count' is not written to unless p->data>0.  */
 
@@ -20,4 +20,4 @@ void func()
   }
 }
 
-/* { dg-final { scan-tree-dump-times "Cannot hoist conditional load of count because it is in a transaction" 1 "lim1" } } */
+/* { dg-final { scan-tree-dump-times "Cannot hoist conditional load of count because it is in a transaction" 1 "lim2" } } */
