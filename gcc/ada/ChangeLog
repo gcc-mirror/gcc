@@ -1,3 +1,8 @@
+2015-11-25  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c (__gnat_is_stack_guard): Do not use mach calls for
+	IOS simulator.
+
 2015-11-24  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gcc-interface/utils.c (gnat_write_global_declarations): Output
@@ -1240,8 +1245,6 @@
 	Consider N_Defining_Operator_Symbol as valid entities.
 	(gnat_write_global_declarations): Output debugging information
 	for top-level imported declarations.
-
-2015-11-12  Emmanuel Briot  <briot@adacore.com>
 
 2015-11-12  Emmanuel Briot  <briot@adacore.com>
 

@@ -2276,6 +2276,7 @@ __gnat_install_handler (void)
 
 #elif defined(__APPLE__)
 
+#include <TargetConditionals.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <sys/syscall.h>
@@ -2288,7 +2289,7 @@ char __gnat_alternate_stack[32 * 1024]; /* 1 * MINSIGSTKSZ */
    Tell the kernel to re-use alt stack when delivering a signal.  */
 #define	UC_RESET_ALT_STACK	0x80000000
 
-#if !(defined (__arm__) || defined (__arm64__))
+#if !(defined (__arm__) || defined (__arm64__) || TARGET_IPHONE_SIMULATOR)
 #include <mach/mach_vm.h>
 #include <mach/mach_init.h>
 #include <mach/vm_statistics.h>
@@ -2303,7 +2304,7 @@ char __gnat_alternate_stack[32 * 1024]; /* 1 * MINSIGSTKSZ */
 static int
 __gnat_is_stack_guard (mach_vm_address_t addr)
 {
-#if !(defined (__arm__) || defined (__arm64__))
+#if !(defined (__arm__) || defined (__arm64__) || TARGET_IPHONE_SIMULATOR)
   kern_return_t kret;
   vm_region_submap_info_data_64_t info;
   mach_vm_address_t start;
