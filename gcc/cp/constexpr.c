@@ -1799,8 +1799,8 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
       gcc_unreachable ();
     }
 
-  i = tree_to_shwi (index);
-  if (i < 0)
+  if (!tree_fits_shwi_p (index)
+      || (i = tree_to_shwi (index)) < 0)
     {
       if (!ctx->quiet)
 	error ("negative array subscript");
