@@ -1,3 +1,7 @@
+2015-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/constexpr-array13.C: Fix.
+
 2015-11-25  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gfortran.dg/nint_p7.f90: New testcase.
