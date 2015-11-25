@@ -260,6 +260,7 @@ package body SPARK_Specific is
 
       case Ekind (E) is
          when E_Entry
+            | E_Entry_Family
             | E_Function
             | E_Generic_Function
             | E_Generic_Package
@@ -330,7 +331,7 @@ package body SPARK_Specific is
 
       function Is_SPARK_Scope (E : Entity_Id) return Boolean;
       --  Return whether the entity or reference scope meets requirements for
-      --  being an SPARK scope.
+      --  being a SPARK scope.
 
       function Lt (Op1 : Natural; Op2 : Natural) return Boolean;
       --  Comparison function for Sort call
