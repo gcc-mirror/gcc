@@ -1,3 +1,10 @@
+2015-11-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c: Include gimplify.h
+	(set_cond_stmt_execution_predicate,
+	set_switch_stmt_execution_predicate): Be sure to not leak locations
+	to function body.
+
 2015-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/67089
