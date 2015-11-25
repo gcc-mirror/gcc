@@ -10176,12 +10176,17 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	}
     }
 
-  /* If the expansion is just T..., return the matching argument pack.  */
+  /* If the expansion is just T..., return the matching argument pack, unless
+     we need to call convert_from_reference on all the elements.  This is an
+     important optimization; see c++/68422.  */
   if (!unsubstituted_packs
       && TREE_PURPOSE (packs) == pattern)
     {
       tree args = ARGUMENT_PACK_ARGS (TREE_VALUE (packs));
+      /* Types need no adjustment, nor does sizeof..., and if we still have
+	 some pack expansion args we won't do anything yet.  */
       if (TREE_CODE (t) == TYPE_PACK_EXPANSION
+	  || PACK_EXPANSION_SIZEOF_P (t)
 	  || pack_expansion_args_count (args))
 	return args;
       /* Otherwise use the normal path so we get convert_from_reference.  */
@@ -13226,7 +13231,6 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case SIZEOF_EXPR:
       if (PACK_EXPANSION_P (TREE_OPERAND (t, 0)))
         {
-
           tree expanded, op = TREE_OPERAND (t, 0);
 	  int len = 0;
 
@@ -13252,6 +13256,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    {
 	      if (TREE_CODE (expanded) == TREE_VEC)
 		expanded = TREE_VEC_ELT (expanded, len - 1);
+	      else
+		PACK_EXPANSION_SIZEOF_P (expanded) = true;
 
 	      if (TYPE_P (expanded))
 		return cxx_sizeof_or_alignof_type (expanded, SIZEOF_EXPR, 

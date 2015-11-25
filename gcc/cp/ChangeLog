@@ -1,5 +1,11 @@
 2015-11-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/68422
+	* cp-tree.h (PACK_EXPANSION_SIZEOF_P): New.
+	* parser.c (cp_parser_sizeof_pack): Set it.
+	* pt.c 	(tsubst_copy) [SIZEOF_EXPR]: Likewise.
+	(tsubst_pack_expansion): Improve T... shortcut when set.
+
 	PR c++/67813
 	* constexpr.c (cxx_eval_store_expression): Always use *valp if
 	set.
