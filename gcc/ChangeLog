@@ -1,3 +1,12 @@
+2015-11-25  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-pass.h (make_pass_oacc_kernels, make_pass_oacc_kernels2):
+	Declare.
+	* tree-ssa-loop.c (gate_oacc_kernels): New static function.
+	(pass_data_oacc_kernels, pass_data_oacc_kernels2): New pass_data.
+	(class pass_oacc_kernels, class pass_oacc_kernels2): New pass.
+	(make_pass_oacc_kernels, make_pass_oacc_kernels2): New function.
+
 2015-11-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	* timevar.def (TV_IPA_LTO_DECOMPRESS, TV_IPA_LTO_COMPRESS,
