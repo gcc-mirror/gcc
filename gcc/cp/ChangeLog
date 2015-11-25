@@ -1,3 +1,9 @@
+2015-11-25  Ryan Burn  <contact@rnburn.com>
+
+	PR c++/68434
+	* pt.c (tsubst): Set PLACEHOLDER_TYPE_CONSTRAINTS before
+	calling canonical_type_parameter.
+
 2015-11-25  Jason Merrill  <jason@redhat.com>
 
 	* lambda.c (maybe_add_lambda_conv_op): Only set
