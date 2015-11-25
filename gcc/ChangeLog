@@ -1,3 +1,10 @@
+2015-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/67089
+	* tree-ssa-math-opts.c (uaddsub_overflow_check_p,
+	match_uaddsub_overflow): New functions.
+	(pass_optimize_widening_mul::execute): Call match_uaddsub_overflow.
+
 2015-11-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68492
