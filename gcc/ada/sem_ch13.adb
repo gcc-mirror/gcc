@@ -13097,16 +13097,15 @@ package body Sem_Ch13 is
                  and then X_Size > Uint_0
                  and then X_Size > Y_Size
                then
-                  Error_Msg_NE
-                    ("??& overlays smaller object", ACCR.N, ACCR.X);
+                  Error_Msg_NE ("??& overlays smaller object", ACCR.N, ACCR.X);
                   Error_Msg_N
                     ("\??program execution may be erroneous", ACCR.N);
+
                   Error_Msg_Uint_1 := X_Size;
-                  Error_Msg_NE
-                    ("\??size of & is ^", ACCR.N, ACCR.X);
+                  Error_Msg_NE ("\??size of & is ^", ACCR.N, ACCR.X);
+
                   Error_Msg_Uint_1 := Y_Size;
-                  Error_Msg_NE
-                    ("\??size of & is ^", ACCR.N, ACCR.Y);
+                  Error_Msg_NE ("\??size of & is ^", ACCR.N, ACCR.Y);
 
                --  Check for inadequate alignment, both of the base object
                --  and of the offset, if any. We only do this check if the
@@ -13119,32 +13118,32 @@ package body Sem_Ch13 is
 
                elsif not Alignment_Checks_Suppressed (ACCR.Y)
                  and then Y_Alignment /= Uint_0
-                 and then (Y_Alignment < X_Alignment
-                             or else (ACCR.Off
-                                        and then
-                                          Nkind (Expr) = N_Attribute_Reference
-                                        and then
-                                          Attribute_Name (Expr) = Name_Address
-                                        and then
-                                          Has_Compatible_Alignment
-                                            (ACCR.X, Prefix (Expr))
-                                             /= Known_Compatible))
+                 and then
+                   (Y_Alignment < X_Alignment
+                     or else
+                       (ACCR.Off
+                         and then Nkind (Expr) = N_Attribute_Reference
+                         and then Attribute_Name (Expr) = Name_Address
+                         and then Has_Compatible_Alignment
+                                    (ACCR.X, Prefix (Expr), True) /=
+                                      Known_Compatible))
                then
                   Error_Msg_NE
-                    ("??specified address for& may be inconsistent "
-                       & "with alignment", ACCR.N, ACCR.X);
+                    ("??specified address for& may be inconsistent with "
+                     & "alignment", ACCR.N, ACCR.X);
                   Error_Msg_N
                     ("\??program execution may be erroneous (RM 13.3(27))",
                      ACCR.N);
+
                   Error_Msg_Uint_1 := X_Alignment;
-                  Error_Msg_NE
-                    ("\??alignment of & is ^", ACCR.N, ACCR.X);
+                  Error_Msg_NE ("\??alignment of & is ^", ACCR.N, ACCR.X);
+
                   Error_Msg_Uint_1 := Y_Alignment;
-                  Error_Msg_NE
-                    ("\??alignment of & is ^", ACCR.N, ACCR.Y);
+                  Error_Msg_NE ("\??alignment of & is ^", ACCR.N, ACCR.Y);
+
                   if Y_Alignment >= X_Alignment then
                      Error_Msg_N
-                      ("\??but offset is not multiple of alignment", ACCR.N);
+                       ("\??but offset is not multiple of alignment", ACCR.N);
                   end if;
                end if;
             end if;
