@@ -1,3 +1,19 @@
+2015-11-25  Ilmir Usmanov <me@ilmir.us>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR fortran/63858
+	* scanner.c (skip_oacc_attribute): Remove continue_flag parameter.
+	Rename as ...
+	(skip_free_oacc_sentinel): ... this.
+	(skip_omp_attribute): Remove continue_flag parameter. Rename as ...
+	(skip_free_omp_sentinel): ... this.
+	(skip_free_comments): Update to call skip_free_oacc_sentinel and
+	skip_free_omp_sentinel.
+	(skip_fixed_omp_sentinel): New function.
+	(skip_fixed_oacc_sentinel): New function.
+	(skip_fixed_comments): Fix mix of OpenACC and OpenMP sentinels in
+	continuation.
+
 2015-11-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68486
