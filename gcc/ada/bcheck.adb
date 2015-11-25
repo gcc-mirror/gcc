@@ -1176,16 +1176,17 @@ package body Bcheck is
    begin
       Check_Mechanism : for A1 in ALIs.First + 1 .. ALIs.Last loop
          if (ALIs.Table (A1).Zero_Cost_Exceptions /=
-             ALIs.Table (ALIs.First).Zero_Cost_Exceptions)
+              ALIs.Table (ALIs.First).Zero_Cost_Exceptions)
            or else
             (ALIs.Table (A1).Frontend_Exceptions /=
-             ALIs.Table (ALIs.First).Frontend_Exceptions)
+              ALIs.Table (ALIs.First).Frontend_Exceptions)
          then
             Error_Msg_File_1 := ALIs.Table (A1).Sfile;
             Error_Msg_File_2 := ALIs.Table (ALIs.First).Sfile;
 
-            Consistency_Error_Msg ("{ and { compiled with different "
-                                            & "exception handling mechanisms");
+            Consistency_Error_Msg
+              ("{ and { compiled with different exception handling "
+               & "mechanisms");
          end if;
       end loop Check_Mechanism;
    end Check_Consistent_Exception_Handling;

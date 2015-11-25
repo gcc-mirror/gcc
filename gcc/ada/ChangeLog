@@ -1,3 +1,13 @@
+2015-11-25  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: When <target>-gnat is called with switch -P
+	and a GPR tool is invoked, invoke the GPR tool with switch
+	--target=<target>.
+
+2015-11-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* opt.adb, bcheck.adb: Minor reformatting.
+
 2015-11-25  Jerome Lambourg  <lambourg@adacore.com>
 
 	* init.c: Enable the signal trampoline on x86_64-vx7
