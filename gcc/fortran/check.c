@@ -399,7 +399,15 @@ less_than_bitsize2 (const char *arg1, gfc_expr *expr1, const char *arg2,
 static bool
 same_type_check (gfc_expr *e, int n, gfc_expr *f, int m)
 {
-  if (gfc_compare_types (&e->ts, &f->ts))
+  gfc_typespec *ets = &e->ts;
+  gfc_typespec *fts = &f->ts;
+
+  if (e->ts.type == BT_PROCEDURE && e->symtree->n.sym)
+    ets = &e->symtree->n.sym->ts;
+  if (f->ts.type == BT_PROCEDURE && f->symtree->n.sym)
+    fts = &f->symtree->n.sym->ts;
+
+  if (gfc_compare_types (ets, fts))
     return true;
 
   gfc_error ("'%s' argument of '%s' intrinsic at %L must be the same type "

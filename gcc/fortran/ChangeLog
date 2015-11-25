@@ -1,3 +1,18 @@
+2015-11-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/68196
+	* class.c (has_finalizer_component): Prevent infinite recursion
+	through this function if the derived type and that of its
+	component are the same.
+	* trans-types.c (gfc_get_derived_type): Do the same for proc
+	pointers by ignoring the explicit interface for the component.
+
+	PR fortran/66465
+	* check.c (same_type_check): If either of the expressions is
+	BT_PROCEDURE, use the typespec from the symbol, rather than the
+	expression.
+
 2013-10-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
