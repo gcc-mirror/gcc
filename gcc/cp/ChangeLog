@@ -1,3 +1,34 @@
+2015-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/67354
+	* cp-tree.h (defer_mangling_aliases): Declare.
+	(generate_mangling_aliases): New prototype.
+	* decl2.c (defer_mangling_aliases): New variable.
+	(note_mangling_alias): Use !defer_mangling_aliases
+	instead of at_eof.
+	(generate_mangling_aliases): No longer static. Clear
+	defer_mangling_aliases.
+	* optimize.c (maybe_thunk_body): Defer emitting mangling aliases
+	if !defer_mangling_aliases until the fns are put into the same
+	comdat group.
+
+	2015-05-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR bootstrap/66085
+	* decl2.c (note_mangling_alias): Declare arguments as unused.
+
+	2015-05-08  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (mangling_aliases): New variable.
+	(note_mangling_alias, generate_mangling_aliases): New.
+	(cp_write_global_declarations): Call generate_mangling_aliases.
+	(generate_mangling_alias): Split out from...
+	* mangle.c (mangle_decl): ...here.
+	* cp-tree.h: Declare note_mangling_alias.
+
 2015-11-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67941

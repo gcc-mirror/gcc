@@ -3584,30 +3584,7 @@ mangle_decl (const tree decl)
 		     flag_abi_compat_version, id2);
 	}
 
-#ifdef ASM_OUTPUT_DEF
-      /* If there's a declaration already using this mangled name,
-	 don't create a compatibility alias that conflicts.  */
-      if (IDENTIFIER_GLOBAL_VALUE (id2))
-	return;
-
-      struct cgraph_node *n = NULL;
-      if (TREE_CODE (decl) == FUNCTION_DECL
-	  && !(n = cgraph_node::get (decl)))
-	/* Don't create an alias to an unreferenced function.  */
-	return;
-
-      tree alias = make_alias_for (decl, id2);
-      SET_IDENTIFIER_GLOBAL_VALUE (id2, alias);
-      DECL_IGNORED_P (alias) = 1;
-      TREE_PUBLIC (alias) = TREE_PUBLIC (decl);
-      DECL_VISIBILITY (alias) = DECL_VISIBILITY (decl);
-      if (vague_linkage_p (decl))
-	DECL_WEAK (alias) = 1;
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	n->create_same_body_alias (alias, decl);
-      else
-	varpool_node::create_extra_name_alias (alias, decl);
-#endif
+      note_mangling_alias (decl, id2);
     }
 }
 

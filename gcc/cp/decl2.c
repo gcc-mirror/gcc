@@ -118,9 +118,18 @@ static GTY(()) vec<tree, va_gc> *deferred_fns;
    sure are defined.  */
 static GTY(()) vec<tree, va_gc> *no_linkage_decls;
 
+/* A vector of alternating decls and identifiers, where the latter
+   is to be an alias for the former if the former is defined.  */
+static GTY(()) vec<tree, va_gc> *mangling_aliases;
+
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
 int at_eof;
+
+/* True if note_mangling_alias should enqueue mangling aliases for
+   later generation, rather than emitting them right away.  */
+
+bool defer_mangling_aliases = true;
 
 
 /* Return a member function type (a METHOD_TYPE), given FNTYPE (a
@@ -4327,6 +4336,69 @@ handle_tls_init (void)
   expand_or_defer_fn (finish_function (0));
 }
 
+/* We're at the end of compilation, so generate any mangling aliases that
+   we've been saving up, if DECL is going to be output and ID2 isn't
+   already taken by another declaration.  */
+
+static void
+generate_mangling_alias (tree decl, tree id2)
+{
+  /* If there's a declaration already using this mangled name,
+     don't create a compatibility alias that conflicts.  */
+  if (IDENTIFIER_GLOBAL_VALUE (id2))
+    return;
+
+  struct cgraph_node *n = NULL;
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && !(n = cgraph_node::get (decl)))
+    /* Don't create an alias to an unreferenced function.  */
+    return;
+
+  tree alias = make_alias_for (decl, id2);
+  SET_IDENTIFIER_GLOBAL_VALUE (id2, alias);
+  DECL_IGNORED_P (alias) = 1;
+  TREE_PUBLIC (alias) = TREE_PUBLIC (decl);
+  DECL_VISIBILITY (alias) = DECL_VISIBILITY (decl);
+  if (vague_linkage_p (decl))
+    DECL_WEAK (alias) = 1;
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    n->create_same_body_alias (alias, decl);
+  else
+    varpool_node::create_extra_name_alias (alias, decl);
+}
+
+/* Note that we might want to emit an alias with the symbol ID2 for DECL at
+   the end of translation, for compatibility across bugs in the mangling
+   implementation.  */
+
+void
+note_mangling_alias (tree decl ATTRIBUTE_UNUSED, tree id2 ATTRIBUTE_UNUSED)
+{
+#ifdef ASM_OUTPUT_DEF
+  if (!defer_mangling_aliases)
+    generate_mangling_alias (decl, id2);
+  else
+    {
+      vec_safe_push (mangling_aliases, decl);
+      vec_safe_push (mangling_aliases, id2);
+    }
+#endif
+}
+
+/* Emit all mangling aliases that were deferred up to this point.  */
+
+void
+generate_mangling_aliases ()
+{
+  while (!vec_safe_is_empty (mangling_aliases))
+    {
+      tree id2 = mangling_aliases->pop();
+      tree decl = mangling_aliases->pop();
+      generate_mangling_alias (decl, id2);
+    }
+  defer_mangling_aliases = false;
+}
+
 /* The entire file is now complete.  If requested, dump everything
    to a file.  */
 
@@ -4687,6 +4759,8 @@ cp_write_global_declarations (void)
       retries++;
     }
   while (reconsider);
+
+  generate_mangling_aliases ();
 
   /* All used inline functions must have a definition at this point.  */
   FOR_EACH_VEC_SAFE_ELT (deferred_fns, i, decl)

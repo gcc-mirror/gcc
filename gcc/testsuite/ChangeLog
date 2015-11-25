@@ -1,3 +1,11 @@
+2015-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/67354
+	* g++.dg/abi/mangle67.C: New test.
+
 2015-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/constexpr-array13.C: Fix.
