@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "ipa-utils.h"
 #include "builtins.h"
+#include "alias.h"
 
 /* Replace the cgraph node NODE with PREVAILING_NODE in the cgraph, merging
    all edges and removing the old node.  */
@@ -179,39 +180,52 @@ lto_varpool_replace_node (varpool_node *vnode,
 
 /* Return non-zero if we want to output waring about T1 and T2.
    Return value is a bitmask of reasons of violation:
-   Bit 0 indicates that types are not compatible of memory layout.
-   Bit 1 indicates that types are not compatible because of C++ ODR rule.  */
+   Bit 0 indicates that types are not compatible.
+   Bit 1 indicates that types are not compatible because of C++ ODR rule.
+   If COMMON_OR_EXTERN is true, do not warn on size mismatches of arrays.
+   Bit 2 indicates that types are not ODR compatible
+
+   The interoperability rules are language specific.  At present we do only
+   full checking for C++ ODR rule and for other languages we do basic check
+   that data structures are of same size and TBAA compatible.  Our TBAA
+   implementation should be coarse enough so all valid type transitions
+   across different languages are allowed.
+
+   In partiucular we thus allow almost arbitrary type changes with
+   -fno-strict-aliasing which may be tough of as a feature rather than bug
+   as it allows to implement dodgy tricks in the language runtimes.
+
+   Naturally this code can be strenghtened significantly if we could track
+   down the language of origin.  */
 
 static int
-warn_type_compatibility_p (tree prevailing_type, tree type)
+warn_type_compatibility_p (tree prevailing_type, tree type,
+			   bool common_or_extern)
 {
   int lev = 0;
+  bool odr_p = odr_or_derived_type_p (prevailing_type)
+	       && odr_or_derived_type_p (type);
 
-  /* Get complete type.
-     ???  We might want to emit a warning here if type qualification
-     differences were spotted.  Do not do this unconditionally though.  */
-  type = TYPE_MAIN_VARIANT (type);
-  prevailing_type = TYPE_MAIN_VARIANT (prevailing_type);
   if (prevailing_type == type)
     return 0;
 
-  bool odr_p = odr_or_derived_type_p (prevailing_type)
-	       && odr_or_derived_type_p (type);
   /* C++ provide a robust way to check for type compatibility via the ODR
      rule.  */
   if (odr_p && !odr_types_equivalent_p (prevailing_type, type))
-    lev = 2;
+    lev |= 2;
 
   /* Function types needs special care, because types_compatible_p never
      thinks prototype is compatible to non-prototype.  */
-  if ((TREE_CODE (type) == FUNCTION_TYPE || TREE_CODE (type) == METHOD_TYPE)
-      && TREE_CODE (type) == TREE_CODE (prevailing_type))
+  if (TREE_CODE (type) == FUNCTION_TYPE || TREE_CODE (type) == METHOD_TYPE)
     {
+      if (TREE_CODE (type) != TREE_CODE (prevailing_type))
+	lev |= 1;
       lev |= warn_type_compatibility_p (TREE_TYPE (prevailing_type),
-				        TREE_TYPE (type));
-      if (TREE_CODE (type) == METHOD_TYPE)
+				        TREE_TYPE (type), false);
+      if (TREE_CODE (type) == METHOD_TYPE
+	  && TREE_CODE (prevailing_type) == METHOD_TYPE)
 	lev |= warn_type_compatibility_p (TYPE_METHOD_BASETYPE (prevailing_type),
-					  TYPE_METHOD_BASETYPE (type));
+					  TYPE_METHOD_BASETYPE (type), false);
       if (prototype_p (prevailing_type) && prototype_p (type)
 	  && TYPE_ARG_TYPES (prevailing_type) != TYPE_ARG_TYPES (type))
 	{
@@ -222,62 +236,54 @@ warn_type_compatibility_p (tree prevailing_type, tree type)
 	       parm1 = TREE_CHAIN (parm1),
 	       parm2 = TREE_CHAIN (parm2))
 	    lev |= warn_type_compatibility_p (TREE_VALUE (parm1),
-					      TREE_VALUE (parm2));
+					      TREE_VALUE (parm2), false);
 	  if (parm1 || parm2)
-	    lev = odr_p ? 3 : 1;
+	    lev |= odr_p ? 3 : 1;
 	}
       if (comp_type_attributes (prevailing_type, type) == 0)
-	lev = odr_p ? 3 : 1;
+	lev |= 1;
       return lev;
     }
-  /* Sharing a global symbol is a strong hint that two types are
-     compatible.  We could use this information to complete
-     incomplete pointed-to types more aggressively here, ignoring
-     mismatches in both field and tag names.  It's difficult though
-     to guarantee that this does not have side-effects on merging
-     more compatible types from other translation units though.  */
 
-  /* We can tolerate differences in type qualification, the
-     qualification of the prevailing definition will prevail.
-     ???  In principle we might want to only warn for structurally
-     incompatible types here, but unless we have protective measures
-     for TBAA in place that would hide useful information.  */
+  /* Get complete type.  */
   prevailing_type = TYPE_MAIN_VARIANT (prevailing_type);
   type = TYPE_MAIN_VARIANT (type);
 
-  if (!types_compatible_p (prevailing_type, type))
+  /* We can not use types_compatible_p because we permit some changes
+     across types.  For example unsigned size_t and "signed size_t" may be
+     compatible when merging C and Fortran types.  */
+  if (COMPLETE_TYPE_P (prevailing_type)
+      && COMPLETE_TYPE_P (type)
+      /* While global declarations are never variadic, we can recurse here
+	 for function parameter types.  */
+      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+      && TREE_CODE (TYPE_SIZE (prevailing_type)) == INTEGER_CST
+      && !tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (prevailing_type)))
     {
-      if (TREE_CODE (prevailing_type) == FUNCTION_TYPE
-	  || TREE_CODE (type) == METHOD_TYPE)
-	return 1 | lev;
-      if (COMPLETE_TYPE_P (type) && COMPLETE_TYPE_P (prevailing_type))
-	return 1 | lev;
+       /* As a special case do not warn about merging
+	  int a[];
+	  and
+	  int a[]={1,2,3};
+	  here the first declaration is COMMON or EXTERN
+	  and sizeof(a) == sizeof (int).  */
+       if (!common_or_extern
+	   || TREE_CODE (type) != ARRAY_TYPE
+	   || TYPE_SIZE (type) != TYPE_SIZE (TREE_TYPE (type)))
+       lev |= 1;
+    }
 
-      /* If type is incomplete then avoid warnings in the cases
-	 that TBAA handles just fine.  */
+  /* Verify TBAA compatibility.  Take care of alias set 0 and the fact that
+     we make ptr_type_node to TBAA compatible with every other type.  */
+  if (type_with_alias_set_p (type) && type_with_alias_set_p (prevailing_type))
+    {
+      alias_set_type set1 = get_alias_set (type);
+      alias_set_type set2 = get_alias_set (prevailing_type);
 
-      if (TREE_CODE (prevailing_type) != TREE_CODE (type))
-	return 1 | lev;
-
-      if (TREE_CODE (prevailing_type) == ARRAY_TYPE)
-	{
-	  tree tem1 = TREE_TYPE (prevailing_type);
-	  tree tem2 = TREE_TYPE (type);
-	  while (TREE_CODE (tem1) == ARRAY_TYPE
-		 && TREE_CODE (tem2) == ARRAY_TYPE)
-	    {
-	      tem1 = TREE_TYPE (tem1);
-	      tem2 = TREE_TYPE (tem2);
-	    }
-
-	  if (TREE_CODE (tem1) != TREE_CODE (tem2))
-	    return 1 | lev;
-
-	  if (!types_compatible_p (tem1, tem2))
-	    return 1 | lev;
-	}
-
-      /* Fallthru.  Compatible enough.  */
+      if (set1 && set2 && set1 != set2 
+          && (!POINTER_TYPE_P (type) || !POINTER_TYPE_P (prevailing_type)
+	      || (set1 != TYPE_ALIAS_SET (ptr_type_node)
+		  && set2 != TYPE_ALIAS_SET (ptr_type_node))))
+        lev |= 5;
     }
 
   return lev;
@@ -312,14 +318,17 @@ lto_symtab_merge (symtab_node *prevailing, symtab_node *entry)
       DECL_POSSIBLY_INLINED (decl) |= DECL_POSSIBLY_INLINED (prevailing_decl);
 
       if (warn_type_compatibility_p (TREE_TYPE (prevailing_decl),
-			             TREE_TYPE (decl)))
+			             TREE_TYPE (decl),
+				     DECL_COMMON (decl)
+				     || DECL_EXTERNAL (decl)))
 	return false;
 
       return true;
     }
 
   if (warn_type_compatibility_p (TREE_TYPE (prevailing_decl),
-				 TREE_TYPE (decl)))
+				 TREE_TYPE (decl),
+				 DECL_COMMON (decl) || DECL_EXTERNAL (decl)))
     return false;
 
   /* There is no point in comparing too many details of the decls here.
@@ -332,6 +341,20 @@ lto_symtab_merge (symtab_node *prevailing, symtab_node *entry)
   /* Report a warning if user-specified alignments do not match.  */
   if ((DECL_USER_ALIGN (prevailing_decl) && DECL_USER_ALIGN (decl))
       && DECL_ALIGN (prevailing_decl) < DECL_ALIGN (decl))
+    return false;
+
+  if (DECL_SIZE (decl) && DECL_SIZE (prevailing_decl)
+      && !tree_int_cst_equal (DECL_SIZE (decl), DECL_SIZE (prevailing_decl))
+      /* As a special case do not warn about merging
+	 int a[];
+	 and
+	 int a[]={1,2,3};
+	 here the first declaration is COMMON
+	 and sizeof(a) == sizeof (int).  */
+      && ((!DECL_COMMON (decl) && !DECL_EXTERNAL (decl))
+	  || TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE
+	  || TYPE_SIZE (TREE_TYPE (decl))
+	     != TYPE_SIZE (TREE_TYPE (TREE_TYPE (decl)))))
     return false;
 
   return true;
@@ -491,6 +514,7 @@ lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
   vec<tree> mismatches = vNULL;
   unsigned i;
   tree decl;
+  bool tbaa_p = false;
 
   /* Nothing to do for a single entry.  */
   prevailing = first;
@@ -514,11 +538,12 @@ lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
   FOR_EACH_VEC_ELT (mismatches, i, decl)
     {
       int level = warn_type_compatibility_p (TREE_TYPE (prevailing->decl),
-					     TREE_TYPE (decl));
+					     TREE_TYPE (decl),
+					     DECL_COMDAT (decl));
       if (level)
 	{
 	  bool diag = false;
-	  if (level > 1)
+	  if (level & 2)
 	    diag = warning_at (DECL_SOURCE_LOCATION (decl),
 			       OPT_Wodr,
 			       "%qD violates the C++ One Definition Rule ",
@@ -529,10 +554,15 @@ lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
 			       "type of %qD does not match original "
 			       "declaration", decl);
 	  if (diag)
-	    warn_types_mismatch (TREE_TYPE (prevailing->decl),
-				 TREE_TYPE (decl),
-				 DECL_SOURCE_LOCATION (prevailing->decl),
-				 DECL_SOURCE_LOCATION (decl));
+	    {
+	      warn_types_mismatch (TREE_TYPE (prevailing->decl),
+				   TREE_TYPE (decl),
+				   DECL_SOURCE_LOCATION (prevailing->decl),
+				   DECL_SOURCE_LOCATION (decl));
+	      if ((level & 4)
+		  && !TREE_READONLY (prevailing->decl))
+		tbaa_p = true;
+	    }
 	  diagnosed_p |= diag;
 	}
       else if ((DECL_USER_ALIGN (prevailing->decl)
@@ -544,10 +574,19 @@ lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
 				     "alignment of %qD is bigger than "
 				     "original declaration", decl);
 	}
+      else
+	diagnosed_p |= warning_at (DECL_SOURCE_LOCATION (decl),
+				   OPT_Wlto_type_mismatch,
+				   "size of %qD differ from the size of "
+				   "original declaration", decl);
     }
   if (diagnosed_p)
     inform (DECL_SOURCE_LOCATION (prevailing->decl),
 	    "%qD was previously declared here", prevailing->decl);
+  if (tbaa_p)
+    inform (DECL_SOURCE_LOCATION (prevailing->decl),
+	    "code may be misoptimized unless "
+	    "-fno-strict-aliasing is used");
 
   mismatches.release ();
 }

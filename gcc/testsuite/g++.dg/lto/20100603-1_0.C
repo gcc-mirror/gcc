@@ -1,4 +1,5 @@
 /* { dg-lto-do link } */
+/* { dg-extra-ld-options "-Wno-lto-type-mismatch" } */
 
 extern "C" {
     typedef struct {} CvImage;

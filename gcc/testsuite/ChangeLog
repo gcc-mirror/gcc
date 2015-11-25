@@ -1,3 +1,9 @@
+2015-11-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gfortran.dg/lto/bind_c-6_0.f90: New testcase.
+	* gfortran.dg/lto/bind_c-6_1.c: New testcase.
+	* g++.dg/lto/20100603-1_0.C: Add -Wno-lto-type-mismatch.
+
 2015-11-25  Tom de Vries  <tom@codesourcery.com>
 
 	* g++.dg/tree-ssa/copyprop-1.C: Update after adding new dce1.
