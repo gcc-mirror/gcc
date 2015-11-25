@@ -2777,6 +2777,62 @@
 
 ;; <su><addsub>w<q>.
 
+(define_expand "widen_ssum<mode>3"
+  [(set (match_operand:<VDBLW> 0 "register_operand" "")
+	(plus:<VDBLW> (sign_extend:<VDBLW> 
+		        (match_operand:VQW 1 "register_operand" ""))
+		      (match_operand:<VDBLW> 2 "register_operand" "")))]
+  "TARGET_SIMD"
+  {
+    rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, false);
+    rtx temp = gen_reg_rtx (GET_MODE (operands[0]));
+
+    emit_insn (gen_aarch64_saddw<mode>_internal (temp, operands[2],
+						operands[1], p));
+    emit_insn (gen_aarch64_saddw2<mode> (operands[0], temp, operands[1]));
+    DONE;
+  }
+)
+
+(define_expand "widen_ssum<mode>3"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "")
+	(plus:<VWIDE> (sign_extend:<VWIDE>
+		        (match_operand:VD_BHSI 1 "register_operand" ""))
+		      (match_operand:<VWIDE> 2 "register_operand" "")))]
+  "TARGET_SIMD"
+{
+  emit_insn (gen_aarch64_saddw<mode> (operands[0], operands[2], operands[1]));
+  DONE;
+})
+
+(define_expand "widen_usum<mode>3"
+  [(set (match_operand:<VDBLW> 0 "register_operand" "")
+	(plus:<VDBLW> (zero_extend:<VDBLW> 
+		        (match_operand:VQW 1 "register_operand" ""))
+		      (match_operand:<VDBLW> 2 "register_operand" "")))]
+  "TARGET_SIMD"
+  {
+    rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, false);
+    rtx temp = gen_reg_rtx (GET_MODE (operands[0]));
+
+    emit_insn (gen_aarch64_uaddw<mode>_internal (temp, operands[2],
+						 operands[1], p));
+    emit_insn (gen_aarch64_uaddw2<mode> (operands[0], temp, operands[1]));
+    DONE;
+  }
+)
+
+(define_expand "widen_usum<mode>3"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "")
+	(plus:<VWIDE> (zero_extend:<VWIDE>
+		        (match_operand:VD_BHSI 1 "register_operand" ""))
+		      (match_operand:<VWIDE> 2 "register_operand" "")))]
+  "TARGET_SIMD"
+{
+  emit_insn (gen_aarch64_uaddw<mode> (operands[0], operands[2], operands[1]));
+  DONE;
+})
+
 (define_insn "aarch64_<ANY_EXTEND:su><ADDSUB:optab>w<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
         (ADDSUB:<VWIDE> (match_operand:<VWIDE> 1 "register_operand" "w")
@@ -2784,6 +2840,18 @@
 			  (match_operand:VD_BHSI 2 "register_operand" "w"))))]
   "TARGET_SIMD"
   "<ANY_EXTEND:su><ADDSUB:optab>w\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vtype>"
+  [(set_attr "type" "neon_<ADDSUB:optab>_widen")]
+)
+
+(define_insn "aarch64_<ANY_EXTEND:su><ADDSUB:optab>w<mode>_internal"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+        (ADDSUB:<VWIDE> (match_operand:<VWIDE> 1 "register_operand" "w")
+			(ANY_EXTEND:<VWIDE>
+			  (vec_select:<VHALF>
+			   (match_operand:VQW 2 "register_operand" "w")
+			   (match_operand:VQW 3 "vect_par_cnst_lo_half" "")))))]
+  "TARGET_SIMD"
+  "<ANY_EXTEND:su><ADDSUB:optab>w\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vhalftype>"
   [(set_attr "type" "neon_<ADDSUB:optab>_widen")]
 )
 

@@ -1,3 +1,9 @@
+2015-11-24  Michael Collison  <michael.collison@linaro.org>
+
+	* config/aarch64/aarch64-simd.md (widen_ssum, widen_usum)
+	(aarch64_<ANY_EXTEND:su><ADDSUB:optab>w<mode>_internal): New patterns
+	* config/aarch64/iterators.md (Vhalf, VDBLW): New mode attributes.
+
 2015-11-24  Steve Ellcey  <sellcey@imgtec.com>
 
 	* frame-header-opt.c (gate): Check for optimize > 0.
