@@ -1,3 +1,8 @@
+2015-11-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/dform-1.c: New test.
+	* gcc.target/powerpc/dform-2.c: Likewise.
+
 2015-11-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gfortran.dg/lto/bind_c-6_0.f90: New testcase.
