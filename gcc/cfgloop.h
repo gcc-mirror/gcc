@@ -270,6 +270,7 @@ bool mark_irreducible_loops (void);
 void release_recorded_exits (function *);
 void record_loop_exits (void);
 void rescan_loop_exit (edge, bool, bool);
+basic_block find_single_latch (struct loop*);
 
 /* Loop data structure manipulation/querying.  */
 extern void flow_loop_tree_node_add (struct loop *, struct loop *);
