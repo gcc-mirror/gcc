@@ -1,3 +1,9 @@
+2015-11-25  Markus Trippelsdorf  <markus@trippelsdorf.de>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/68087
+	* g++.dg/cpp0x/constexpr-array13.C: New.
+
 2015-11-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk.

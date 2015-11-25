@@ -1751,7 +1751,7 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
       gcc_unreachable ();
     }
 
-  i = tree_to_shwi (index);
+  i = tree_fits_shwi_p (index) ? tree_to_shwi (index) : -1;
   bool found = true;
   if (TREE_CODE (ary) == CONSTRUCTOR && len
       && (TREE_CODE (CONSTRUCTOR_ELT (ary, len-1)->index) == RANGE_EXPR

@@ -1,3 +1,10 @@
+2015-11-25  Markus Trippelsdorf  <markus@trippelsdorf.de>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/68087
+	* constexpr.c (cxx_eval_array_reference): Use tree_fits_shwi_p before
+	tree_to_shwi to avoid ICEs.
+
 2015-11-19  Jakub Jelinek  <jakub@redhat.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
