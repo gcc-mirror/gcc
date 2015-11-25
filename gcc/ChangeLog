@@ -1,3 +1,9 @@
+2015-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/68528
+	* fold-const.c (fold_binary_loc): Do not call negate_expr_p
+	on stripped operands.
+
 2015-11-25  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (walk_args_for_params): Delete.
