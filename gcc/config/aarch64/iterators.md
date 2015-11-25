@@ -479,6 +479,13 @@
 			 (V4SF "V2SF")  (V4HF "V2HF")
 			 (V8HF "V4HF")  (V2DF  "DF")])
 
+;; Half modes of all vector modes, in lower-case.
+(define_mode_attr Vhalf [(V8QI "v4qi")  (V16QI "v8qi")
+			 (V4HI "v2hi")  (V8HI  "v4hi")
+			 (V2SI "si")    (V4SI  "v2si")
+			 (V2DI "di")    (V2SF  "sf")
+			 (V4SF "v2sf")  (V2DF  "df")])
+
 ;; Double modes of vector modes.
 (define_mode_attr VDBL [(V8QI "V16QI") (V4HI "V8HI")
 			(V4HF "V8HF")
@@ -495,6 +502,11 @@
 			(V2SI "v4si")  (V2SF "v4sf")
 			(SI   "v2si")  (DI   "v2di")
 			(DF   "v2df")])
+
+;; Modes with double-width elements.
+(define_mode_attr VDBLW [(V8QI "V4HI") (V16QI "V8HI")
+                  (V4HI "V2SI") (V8HI "V4SI")
+                  (V2SI "DI")   (V4SI "V2DI")])
 
 ;; Narrowed modes for VDN.
 (define_mode_attr VNARROWD [(V4HI "V8QI") (V2SI "V4HI")

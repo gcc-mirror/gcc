@@ -1,3 +1,14 @@
+2015-11-24  Michael Collison  <michael.collison@linaro.org>
+
+	* gcc.target/aarch64/saddw-1.c: New test.
+	* gcc.target/aarch64/saddw-2.c: New test.
+	* gcc.target/aarch64/uaddw-1.c: New test.
+	* gcc.target/aarch64/uaddw-2.c: New test.
+	* gcc.target/aarch64/uaddw-3.c: New test.
+	* lib/target-support.exp
+	(check_effective_target_vect_widen_sum_hi_to_si_pattern):
+	Add aarch64 to list of support targets.
+
 2015-11-24  Steve Ellcey  <sellcey@imgtec.com>
 
 	* gcc.target/mips/frame-header-4.c: New test.
