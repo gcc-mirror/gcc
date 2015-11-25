@@ -2769,7 +2769,8 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	  /* If init_b == init_a + the size of the type * k, we have an
 	     interleaving, and DRA is accessed before DRB.  */
 	  HOST_WIDE_INT type_size_a = tree_to_uhwi (sza);
-	  if ((init_b - init_a) % type_size_a != 0)
+	  if (type_size_a == 0
+	      || (init_b - init_a) % type_size_a != 0)
 	    break;
 
 	  /* If we have a store, the accesses are adjacent.  This splits
