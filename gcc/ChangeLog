@@ -1,3 +1,11 @@
+2015-11-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68385
+	* tree.c (integer_zerop, integer_onep, integer_each_onep)
+	(integer_all_onesp, integer_minus_onep, integer_pow2p)
+	(integer_nonzerop, integer_truep, tree_log2, tree_floor_log2)
+	(real_zerop, real_onep, real_minus_onep): Remove STRIP_NOPS.
+
 2015-11-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/68528

@@ -2294,8 +2294,6 @@ zerop (const_tree expr)
 int
 integer_zerop (const_tree expr)
 {
-  STRIP_NOPS (expr);
-
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
@@ -2322,8 +2320,6 @@ integer_zerop (const_tree expr)
 int
 integer_onep (const_tree expr)
 {
-  STRIP_NOPS (expr);
-
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
@@ -2350,8 +2346,6 @@ integer_onep (const_tree expr)
 int
 integer_each_onep (const_tree expr)
 {
-  STRIP_NOPS (expr);
-
   if (TREE_CODE (expr) == COMPLEX_CST)
     return (integer_onep (TREE_REALPART (expr))
 	    && integer_onep (TREE_IMAGPART (expr)));
@@ -2365,8 +2359,6 @@ integer_each_onep (const_tree expr)
 int
 integer_all_onesp (const_tree expr)
 {
-  STRIP_NOPS (expr);
-
   if (TREE_CODE (expr) == COMPLEX_CST
       && integer_all_onesp (TREE_REALPART (expr))
       && integer_all_onesp (TREE_IMAGPART (expr)))
@@ -2392,8 +2384,6 @@ integer_all_onesp (const_tree expr)
 int
 integer_minus_onep (const_tree expr)
 {
-  STRIP_NOPS (expr);
-
   if (TREE_CODE (expr) == COMPLEX_CST)
     return (integer_all_onesp (TREE_REALPART (expr))
 	    && integer_zerop (TREE_IMAGPART (expr)));
@@ -2407,8 +2397,6 @@ integer_minus_onep (const_tree expr)
 int
 integer_pow2p (const_tree expr)
 {
-  STRIP_NOPS (expr);
-
   if (TREE_CODE (expr) == COMPLEX_CST
       && integer_pow2p (TREE_REALPART (expr))
       && integer_zerop (TREE_IMAGPART (expr)))
@@ -2426,8 +2414,6 @@ integer_pow2p (const_tree expr)
 int
 integer_nonzerop (const_tree expr)
 {
-  STRIP_NOPS (expr);
-
   return ((TREE_CODE (expr) == INTEGER_CST
 	   && !wi::eq_p (expr, 0))
 	  || (TREE_CODE (expr) == COMPLEX_CST
@@ -2442,8 +2428,6 @@ integer_nonzerop (const_tree expr)
 int
 integer_truep (const_tree expr)
 {
-  STRIP_NOPS (expr);
-
   if (TREE_CODE (expr) == VECTOR_CST)
     return integer_all_onesp (expr);
   return integer_onep (expr);
@@ -2464,8 +2448,6 @@ fixed_zerop (const_tree expr)
 int
 tree_log2 (const_tree expr)
 {
-  STRIP_NOPS (expr);
-
   if (TREE_CODE (expr) == COMPLEX_CST)
     return tree_log2 (TREE_REALPART (expr));
 
@@ -2478,8 +2460,6 @@ tree_log2 (const_tree expr)
 int
 tree_floor_log2 (const_tree expr)
 {
-  STRIP_NOPS (expr);
-
   if (TREE_CODE (expr) == COMPLEX_CST)
     return tree_log2 (TREE_REALPART (expr));
 
@@ -2603,8 +2583,6 @@ tree_ctz (const_tree expr)
 int
 real_zerop (const_tree expr)
 {
-  STRIP_NOPS (expr);
-
   switch (TREE_CODE (expr))
     {
     case REAL_CST:
@@ -2633,8 +2611,6 @@ real_zerop (const_tree expr)
 int
 real_onep (const_tree expr)
 {
-  STRIP_NOPS (expr);
-
   switch (TREE_CODE (expr))
     {
     case REAL_CST:
@@ -2662,8 +2638,6 @@ real_onep (const_tree expr)
 int
 real_minus_onep (const_tree expr)
 {
-  STRIP_NOPS (expr);
-
   switch (TREE_CODE (expr))
     {
     case REAL_CST:
