@@ -1,5 +1,13 @@
 2015-11-24  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto-symtab.c: Include alias.h
+	(warn_type_compatibility_p): Replace types_compatible_p checks by
+	TBAA and size checks; set bit 2 if locations are TBAA incompatible.
+	(lto_symtab_merge): Compare DECL sizes.
+	(lto_symtab_merge_decls_2): Warn about TBAA in compatibility.
+
+2015-11-24  Jan Hubicka  <hubicka@ucw.cz>
+
 	* lto.c (iterative_hash_canonical_type): Recruse for all types
 	which pass !canonical_type_used_p.
 	(gimple_register_canonical_type_1): Sanity check we do not compute
