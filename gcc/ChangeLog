@@ -1,3 +1,8 @@
+2015-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* combine.c (subst): Do not return clobber of zero in widening mult
+	case.  Just return x unchanged if it is a no-op substitution.
+
 2015-11-26  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/68416
