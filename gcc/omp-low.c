@@ -8907,7 +8907,6 @@ expand_omp_for_generic (struct omp_region *region,
 	  orig_loop->header = l1_bb;
 	  /* The loop may have multiple latches.  */
 	  add_loop (orig_loop, new_loop);
-	  orig_loop->latch = find_single_latch (orig_loop);
 	}
     }
 }
