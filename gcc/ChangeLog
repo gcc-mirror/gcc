@@ -1,3 +1,13 @@
+2015-11-26  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (cbranch<mode>4): Use
+	aarch64_fp_compare_operand.
+	(store_pairsf): Use aarch64_reg_or_fp_zero.
+	(store_pairdf): Likewise.
+	(cstore<mode>4): Use aarch64_fp_compare_operand.
+	(cmov<mode>6): Likewise.
+	* config/aarch64/aarch64-ldpstp.md: Use aarch64_reg_or_fp_zero.
+
 2015-11-25  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 

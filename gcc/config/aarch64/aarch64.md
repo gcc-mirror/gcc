@@ -247,7 +247,7 @@
 (define_expand "cbranch<mode>4"
   [(set (pc) (if_then_else (match_operator 0 "aarch64_comparison_operator"
 			    [(match_operand:GPF 1 "register_operand" "")
-			     (match_operand:GPF 2 "aarch64_reg_or_zero" "")])
+			     (match_operand:GPF 2 "aarch64_fp_compare_operand" "")])
 			   (label_ref (match_operand 3 "" ""))
 			   (pc)))]
   ""
@@ -1382,9 +1382,9 @@
 ;; fairly lax checking on the second memory operation.
 (define_insn "store_pairsf"
   [(set (match_operand:SF 0 "aarch64_mem_pair_operand" "=Ump,Ump")
-	(match_operand:SF 1 "register_operand" "w,*r"))
+	(match_operand:SF 1 "aarch64_reg_or_fp_zero" "w,*rY"))
    (set (match_operand:SF 2 "memory_operand" "=m,m")
-	(match_operand:SF 3 "register_operand" "w,*r"))]
+	(match_operand:SF 3 "aarch64_reg_or_fp_zero" "w,*rY"))]
   "rtx_equal_p (XEXP (operands[2], 0),
 		plus_constant (Pmode,
 			       XEXP (operands[0], 0),
@@ -1398,9 +1398,9 @@
 
 (define_insn "store_pairdf"
   [(set (match_operand:DF 0 "aarch64_mem_pair_operand" "=Ump,Ump")
-	(match_operand:DF 1 "register_operand" "w,*r"))
+	(match_operand:DF 1 "aarch64_reg_or_fp_zero" "w,*rY"))
    (set (match_operand:DF 2 "memory_operand" "=m,m")
-	(match_operand:DF 3 "register_operand" "w,*r"))]
+	(match_operand:DF 3 "aarch64_reg_or_fp_zero" "w,*rY"))]
   "rtx_equal_p (XEXP (operands[2], 0),
 		plus_constant (Pmode,
 			       XEXP (operands[0], 0),
@@ -2947,7 +2947,7 @@
   [(set (match_operand:SI 0 "register_operand" "")
 	(match_operator:SI 1 "aarch64_comparison_operator"
 	 [(match_operand:GPF 2 "register_operand" "")
-	  (match_operand:GPF 3 "register_operand" "")]))]
+	  (match_operand:GPF 3 "aarch64_fp_compare_operand" "")]))]
   ""
   "
   operands[2] = aarch64_gen_compare_reg (GET_CODE (operands[1]), operands[2],
@@ -3051,7 +3051,7 @@
 	(if_then_else:GPF
 	 (match_operator 1 "aarch64_comparison_operator"
 	  [(match_operand:GPF 2 "register_operand" "")
-	   (match_operand:GPF 3 "register_operand" "")])
+	   (match_operand:GPF 3 "aarch64_fp_compare_operand" "")])
 	 (match_operand:GPF 4 "register_operand" "")
 	 (match_operand:GPF 5 "register_operand" "")))]
   ""
