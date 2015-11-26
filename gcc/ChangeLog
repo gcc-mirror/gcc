@@ -1,5 +1,12 @@
 2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* gcc/config/aarch64/arm_neon.h (vqrdmlah_s16, vqrdmlah_s32): New.
+	(vqrdmlahq_s16, vqrdmlahq_s32): New.
+	(vqrdmlsh_s16, vqrdmlsh_s32): New.
+	(vqrdmlshq_s16, vqrdmlshq_s32): New.
+
+2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Add
 	ARM_FEATURE_QRDMX.
 

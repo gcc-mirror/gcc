@@ -11213,6 +11213,59 @@ vbslq_u64 (uint64x2_t __a, uint64x2_t __b, uint64x2_t __c)
   return __builtin_aarch64_simd_bslv2di_uuuu (__a, __b, __c);
 }
 
+/* ARMv8.1 instrinsics.  */
+#pragma GCC push_options
+#pragma GCC target ("arch=armv8.1-a")
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vqrdmlah_s16 (int16x4_t __a, int16x4_t __b, int16x4_t __c)
+{
+  return __builtin_aarch64_sqrdmlahv4hi (__a, __b, __c);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vqrdmlah_s32 (int32x2_t __a, int32x2_t __b, int32x2_t __c)
+{
+  return __builtin_aarch64_sqrdmlahv2si (__a, __b, __c);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vqrdmlahq_s16 (int16x8_t __a, int16x8_t __b, int16x8_t __c)
+{
+  return __builtin_aarch64_sqrdmlahv8hi (__a, __b, __c);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vqrdmlahq_s32 (int32x4_t __a, int32x4_t __b, int32x4_t __c)
+{
+  return __builtin_aarch64_sqrdmlahv4si (__a, __b, __c);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vqrdmlsh_s16 (int16x4_t __a, int16x4_t __b, int16x4_t __c)
+{
+  return __builtin_aarch64_sqrdmlshv4hi (__a, __b, __c);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vqrdmlsh_s32 (int32x2_t __a, int32x2_t __b, int32x2_t __c)
+{
+  return __builtin_aarch64_sqrdmlshv2si (__a, __b, __c);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vqrdmlshq_s16 (int16x8_t __a, int16x8_t __b, int16x8_t __c)
+{
+  return __builtin_aarch64_sqrdmlshv8hi (__a, __b, __c);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vqrdmlshq_s32 (int32x4_t __a, int32x4_t __b, int32x4_t __c)
+{
+  return __builtin_aarch64_sqrdmlshv4si (__a, __b, __c);
+}
+#pragma GCC pop_options
+
 #pragma GCC push_options
 #pragma GCC target ("+nothing+crypto")
 /* vaes  */
