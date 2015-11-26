@@ -1,3 +1,38 @@
+2015-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/68128
+	* tree.h (OMP_CLAUSE_SHARED_READONLY): Define.
+	* gimplify.c: Include gimple-walk.h.
+	(enum gimplify_omp_var_data): Add GOVD_WRITTEN.
+	(omp_notice_variable): Set flags to n->value if n already
+	exists in target region, but we need to jump to do_outer.
+	(omp_shared_to_firstprivate_optimizable_decl_p,
+	omp_mark_stores, omp_find_stores_op, omp_find_stores_stmt): New
+	functions.
+	(gimplify_adjust_omp_clauses_1): Set OMP_CLAUSE_SHARED_READONLY
+	on OMP_CLAUSE_SHARED if it is a scalar non-addressable that is
+	not modified in the body.  Call omp_mark_stores for outer
+	contexts on OMP_CLAUSE_SHARED clauses if they could be written
+	in the body or on OMP_CLAUSE_LASTPRIVATE.
+	(gimplify_adjust_omp_clauses): Add body argument, call
+	omp_find_stores_{stmt,op} on the body through walk_gimple_seq.
+	Set OMP_CLAUSE_SHARED_READONLY
+	on OMP_CLAUSE_SHARED if it is a scalar non-addressable that is
+	not modified in the body.  Call omp_mark_stores for outer
+	contexts on OMP_CLAUSE_SHARED clauses if they could be written
+	in the body or on OMP_CLAUSE_LASTPRIVATE or on OMP_CLAUSE_LINEAR
+	without OMP_CLAUSE_LINEAR_NO_COPYOUT or on OMP_CLAUSE_REDUCTION.
+	(gimplify_oacc_cache, gimplify_omp_parallel, gimplify_omp_task,
+	gimplify_omp_for, gimplify_omp_workshare, gimplify_omp_target_update,
+	gimplify_expr): Adjust gimplify_adjust_omp_clauses callers.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Clear OMP_CLAUSE_SHARED_READONLY on
+	non-local vars or local vars referenced from nested routines.
+	* omp-low.c (scan_sharing_clauses): For OMP_CLAUSE_SHARED_READONLY
+	attempt to optimize it into OMP_CLAUSE_FIRSTPRIVATE.  Even for
+	TREE_READONLY, don't call use_pointer_for_field with non-NULL
+	second argument until we are sure we are keeping OMP_CLAUSE_SHARED.
+
 2015-11-26  Paolo Bonzini <bonzini@gnu.org>
 
 	* doc/implement-c.texi (Integers Implementation): Make GCC's promises

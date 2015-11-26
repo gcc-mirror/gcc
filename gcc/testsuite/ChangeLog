@@ -1,3 +1,9 @@
+2015-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/68128
+	* gcc.dg/gomp/pr68128-1.c: New test.
+	* gcc.dg/gomp/pr68128-2.c: New test.
+
 2015-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/67226
