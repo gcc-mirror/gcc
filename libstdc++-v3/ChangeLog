@@ -1,5 +1,8 @@
 2015-11-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/libstdc++-prettyprinters/debug.cc: Add -std=gnu++98 to
+	dg-options and avoid use of uniform-init.
+
 	* testsuite/libstdc++-prettyprinters/simple.cc: Add -std=gnu++98 to
 	dg-options and avoid use of uniform-init.
 
