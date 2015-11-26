@@ -1,3 +1,8 @@
+2015-11-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* doc/install.texi (Prerequisites): Increase ISL requirement to
+	0.14 or 0.15.
+
 2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* gcc/config/aarch64/arm_neon.h

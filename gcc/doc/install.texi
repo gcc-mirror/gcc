@@ -383,7 +383,7 @@ installed but it is not in your default library search path, the
 @option{--with-mpc} configure option should be used.  See also
 @option{--with-mpc-lib} and @option{--with-mpc-include}.
 
-@item ISL Library version 0.15, 0.14, 0.13, or 0.12.2
+@item ISL Library version 0.15 or 0.14.
 
 Necessary to build GCC with the Graphite loop optimizations.
 It can be downloaded from @uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/}.
