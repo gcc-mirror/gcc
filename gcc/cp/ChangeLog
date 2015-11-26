@@ -1,3 +1,9 @@
+2015-11-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/67876
+	* pt.c (convert_template_argument): Make sure number of tree
+	operands is greater than zero before attempting to extract one.
+
 2015-11-25  Ryan Burn  <contact@rnburn.com>
 
 	PR c++/68434
@@ -369,10 +375,10 @@
 	(cp_parser_pragma): Adjust omp_declare_simd checking.  Call
 	cp_ensure_no_oacc_routine.
 	(cp_parser_pragma): Add OpenACC routine handling.
-	
+
 2015-11-08  Martin Sebor  <msebor@redhat.com>
 
-	PR c++/67942 
+	PR c++/67942
 	* cp/init.c (warn_placement_new_too_small): Convert integer
 	operand of POINTER_PLUS_EXPR to ssize_t to determine its signed
 	value.

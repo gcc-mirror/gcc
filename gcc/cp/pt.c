@@ -7234,6 +7234,7 @@ convert_template_argument (tree parm,
           if (TREE_CODE (TREE_TYPE (inner)) == REFERENCE_TYPE
               && TREE_CODE (TREE_TYPE (TREE_TYPE (inner))) == FUNCTION_TYPE
               && TREE_CODE (TREE_TYPE (inner)) == REFERENCE_TYPE
+              && 0 < TREE_OPERAND_LENGTH (inner)
               && reject_gcc_builtin (TREE_OPERAND (inner, 0)))
               return error_mark_node;
         }
