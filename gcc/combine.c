@@ -5285,7 +5285,7 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
 	      || GET_CODE (SET_DEST (x)) == PC))
 	fmt = "ie";
 
-      /* Substituting into the operands of a widening MULT is not likely
+      /* Trying to simplify the operands of a widening MULT is not likely
 	 to create RTL matching a machine insn.  */
       if (code == MULT
 	  && (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
@@ -5293,13 +5293,10 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
 	  && (GET_CODE (XEXP (x, 1)) == ZERO_EXTEND
 	      || GET_CODE (XEXP (x, 1)) == SIGN_EXTEND)
 	  && REG_P (XEXP (XEXP (x, 0), 0))
-	  && REG_P (XEXP (XEXP (x, 1), 0)))
-	{
-	  if (from == to)
-	    return x;
-	  else
-	    return gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
-	}
+	  && REG_P (XEXP (XEXP (x, 1), 0))
+	  && from == to)
+	return x;
+
 
       /* Get the mode of operand 0 in case X is now a SIGN_EXTEND of a
 	 constant.  */
