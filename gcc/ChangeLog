@@ -1,3 +1,20 @@
+2015-11-25  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	PR tree-optimization/68453
+	* graphite-isl-ast-to-gimple.c (translate_isl_ast_for_loop): Do
+	not redirect edges already pointing to their destination.
+	(translate_isl_ast_node_for): Split edges after loops to create
+	basic blocks for close phi nodes.  Save merge points at the end of
+	a loop guard.
+	(translate_isl_ast_node_if): Save merge points at the end of the
+	if region.
+	(add_close_phis_to_outer_loops): New.
+	(add_close_phis_to_merge_points): New.
+	(copy_loop_close_phi_args): Call add_close_phis_to_merge_points.
+	(copy_bb_and_scalar_dependences): Do not split basic blocks on
+	loop close phi locations.
+
 2015-11-25  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-visibility.c (cgraph_externally_visible_p,

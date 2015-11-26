@@ -360,6 +360,15 @@ class translate_isl_ast_to_gimple
 
   bool copy_loop_phi_nodes (basic_block bb, basic_block new_bb);
 
+  /* Add phi nodes to all merge points of all the diamonds enclosing the loop of
+     the close phi node PHI.  */
+
+  bool add_close_phis_to_merge_points (gphi *old_phi, gphi *new_phi,
+				       tree default_value);
+
+  tree add_close_phis_to_outer_loops (tree last_merge_name, edge merge_e,
+				      gimple *old_close_phi);
+
   /* Copy all the loop-close phi args from BB to NEW_BB.  */
 
   bool copy_loop_close_phi_args (basic_block old_bb, basic_block new_bb,
@@ -471,11 +480,15 @@ class translate_isl_ast_to_gimple
   }
 
 private:
+  /* The region to be translated.  */
   sese_info_p region;
 
   /* This flag is set when an error occurred during the translation of ISL AST
      to Gimple.  */
   bool codegen_error;
+
+  /* A vector of all the edges at if_condition merge points.  */
+  auto_vec<edge, 2> merge_points;
 };
 
 /* Return the tree variable that corresponds to the given isl ast identifier
@@ -797,7 +810,8 @@ translate_isl_ast_for_loop (loop_p context_loop,
   if (!next_e || codegen_error_p ())
     return NULL;
 
-  redirect_edge_succ_nodup (next_e, after);
+  if (next_e->dest != after)
+    redirect_edge_succ_nodup (next_e, after);
   set_immediate_dominator (CDI_DOMINATORS, next_e->dest, next_e->src);
 
   if (flag_loop_parallelize_all)
@@ -938,12 +952,21 @@ translate_isl_ast_node_for (loop_p context_loop, __isl_keep isl_ast_node *node,
 						&lb, &ub, ip);
 
   if (last_e == next_e)
-    /* There was no guard generated.  */
-    return translate_isl_ast_for_loop (context_loop, node, last_e,
-				       type, lb, ub, ip);
+    {
+      /* There was no guard generated.  */
+      last_e = single_succ_edge (split_edge (last_e));
+
+      translate_isl_ast_for_loop (context_loop, node, next_e,
+				  type, lb, ub, ip);
+      return last_e;
+    }
 
   edge true_e = get_true_edge_from_guard_bb (next_e->dest);
+  merge_points.safe_push (last_e);
+
+  last_e = single_succ_edge (split_edge (last_e));
   translate_isl_ast_for_loop (context_loop, node, true_e, type, lb, ub, ip);
+
   return last_e;
 }
 
@@ -1081,8 +1104,9 @@ translate_isl_ast_node_if (loop_p context_loop,
   gcc_assert (isl_ast_node_get_type (node) == isl_ast_node_if);
   isl_ast_expr *if_cond = isl_ast_node_if_get_cond (node);
   edge last_e = graphite_create_new_guard (next_e, if_cond, ip);
-
   edge true_e = get_true_edge_from_guard_bb (next_e->dest);
+  merge_points.safe_push (last_e);
+
   isl_ast_node *then_node = isl_ast_node_if_get_then (node);
   translate_isl_ast (context_loop, then_node, true_e, ip);
   isl_ast_node_free (then_node);
@@ -1091,6 +1115,7 @@ translate_isl_ast_node_if (loop_p context_loop,
   isl_ast_node *else_node = isl_ast_node_if_get_else (node);
   if (isl_ast_node_get_type (else_node) != isl_ast_node_error)
     translate_isl_ast (context_loop, else_node, false_e, ip);
+
   isl_ast_node_free (else_node);
   return last_e;
 }
@@ -1135,7 +1160,7 @@ translate_isl_ast_to_gimple::translate_isl_ast (loop_p context_loop,
    at the exit of loop which takes one argument that is the last value of the
    variable being used out of the loop.  */
 
-bool
+static bool
 bb_contains_loop_close_phi_nodes (basic_block bb)
 {
   return single_pred_p (bb)
@@ -1145,7 +1170,7 @@ bb_contains_loop_close_phi_nodes (basic_block bb)
 /* Return true when BB contains loop phi nodes.  A loop phi node is the loop
    header containing phi nodes which has one init-edge and one back-edge.  */
 
-bool
+static bool
 bb_contains_loop_phi_nodes (basic_block bb)
 {
   gcc_assert (EDGE_COUNT (bb->preds) <= 2);
@@ -2050,6 +2075,114 @@ find_init_value_close_phi (gphi *phi)
   return find_init_value (def);
 }
 
+
+tree translate_isl_ast_to_gimple::
+add_close_phis_to_outer_loops (tree last_merge_name, edge last_e,
+			       gimple *old_close_phi)
+{
+  sese_l &codegen_region = region->if_region->true_region->region;
+  gimple *stmt = SSA_NAME_DEF_STMT (last_merge_name);
+  basic_block bb = gimple_bb (stmt);
+  if (!bb_in_sese_p (bb, codegen_region))
+    return last_merge_name;
+
+  loop_p loop = bb->loop_father;
+  if (!loop_in_sese_p (loop, codegen_region))
+    return last_merge_name;
+
+  edge e = single_exit (loop);
+
+  if (dominated_by_p (CDI_DOMINATORS, e->dest, last_e->src))
+    return last_merge_name;
+
+  tree old_name = gimple_phi_arg_def (old_close_phi, 0);
+  tree old_close_phi_name = gimple_phi_result (old_close_phi);
+
+  bb = e->dest;
+  if (!bb_contains_loop_close_phi_nodes (bb) || !single_succ_p (bb))
+    bb = split_edge (e);
+
+  gphi *close_phi = create_phi_node (SSA_NAME_VAR (last_merge_name), bb);
+  tree res = create_new_def_for (last_merge_name, close_phi,
+				 gimple_phi_result_ptr (close_phi));
+  set_rename (old_close_phi_name, res);
+  add_phi_arg (close_phi, last_merge_name, e, get_loc (old_name));
+  last_merge_name = res;
+
+  return add_close_phis_to_outer_loops (last_merge_name, last_e, old_close_phi);
+}
+
+/* Add phi nodes to all merge points of all the diamonds enclosing the loop of
+   the close phi node PHI.  */
+
+bool translate_isl_ast_to_gimple::
+add_close_phis_to_merge_points (gphi *old_close_phi, gphi *new_close_phi,
+				tree default_value)
+{
+  sese_l &codegen_region = region->if_region->true_region->region;
+  basic_block default_value_bb = get_entry_bb (codegen_region);
+  if (SSA_NAME == TREE_CODE (default_value))
+    {
+      gimple *stmt = SSA_NAME_DEF_STMT (default_value);
+      if (!stmt || gimple_code (stmt) == GIMPLE_NOP)
+	return false;
+      default_value_bb = gimple_bb (stmt);
+    }
+
+  basic_block new_close_phi_bb = gimple_bb (new_close_phi);
+
+  tree old_close_phi_name = gimple_phi_result (old_close_phi);
+  tree new_close_phi_name = gimple_phi_result (new_close_phi);
+  tree last_merge_name = new_close_phi_name;
+  tree old_name = gimple_phi_arg_def (old_close_phi, 0);
+
+  int i;
+  edge merge_e;
+  FOR_EACH_VEC_ELT_REVERSE (merge_points, i, merge_e)
+    {
+      basic_block new_merge_bb = merge_e->src;
+      if (!dominated_by_p (CDI_DOMINATORS, new_merge_bb, default_value_bb))
+	continue;
+
+      last_merge_name = add_close_phis_to_outer_loops (last_merge_name, merge_e,
+						       old_close_phi);
+
+      gphi *merge_phi = create_phi_node (SSA_NAME_VAR (old_close_phi_name), new_merge_bb);
+      tree merge_res = create_new_def_for (old_close_phi_name, merge_phi,
+					   gimple_phi_result_ptr (merge_phi));
+      set_rename (old_close_phi_name, merge_res);
+
+      edge from_loop = NULL, from_default_value = NULL;
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, new_merge_bb->preds)
+	if (dominated_by_p (CDI_DOMINATORS, e->src, new_close_phi_bb))
+	  from_loop = e;
+	else
+	  from_default_value = e;
+
+      /* Because CDI_POST_DOMINATORS are not updated, we only rely on
+	 CDI_DOMINATORS, which may not handle all cases where new_close_phi_bb
+	 is contained in another condition.  */
+      if (!from_default_value || !from_loop)
+	return false;
+
+      add_phi_arg (merge_phi, last_merge_name, from_loop, get_loc (old_name));
+      add_phi_arg (merge_phi, default_value, from_default_value, get_loc (old_name));
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "[codegen] Adding guard-phi: ");
+	  print_gimple_stmt (dump_file, merge_phi, 0, 0);
+	}
+
+      update_stmt (merge_phi);
+      last_merge_name = merge_res;
+    }
+
+  return true;
+}
+
 /* Copy all the loop-close phi args from BB to NEW_BB.  */
 
 bool
@@ -2057,15 +2190,11 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
 						       basic_block new_bb,
 						       bool postpone)
 {
-  /* The successor of bb having close phi should be a merge of the diamond
-     inserted to guard the loop during codegen.  */
-  basic_block succ_new_bb = single_succ (new_bb);
-
   for (gphi_iterator psi = gsi_start_phis (old_bb); !gsi_end_p (psi);
        gsi_next (&psi))
     {
-      gphi *phi = psi.phi ();
-      tree res = gimple_phi_result (phi);
+      gphi *old_close_phi = psi.phi ();
+      tree res = gimple_phi_result (old_close_phi);
       if (virtual_operand_p (res))
 	continue;
 
@@ -2073,12 +2202,12 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
 	/* Loop close phi nodes should not be scev_analyzable_p.  */
 	gcc_unreachable ();
 
-      gphi *new_phi = create_phi_node (SSA_NAME_VAR (res), new_bb);
-      tree new_res = create_new_def_for (res, new_phi,
-					 gimple_phi_result_ptr (new_phi));
+      gphi *new_close_phi = create_phi_node (SSA_NAME_VAR (res), new_bb);
+      tree new_res = create_new_def_for (res, new_close_phi,
+					 gimple_phi_result_ptr (new_close_phi));
       set_rename (res, new_res);
 
-      tree old_name = gimple_phi_arg_def (phi, 0);
+      tree old_name = gimple_phi_arg_def (old_close_phi, 0);
       tree new_name = get_new_name (new_bb, old_name, old_bb, false);
 
       /* Predecessor basic blocks of a loop close phi should have been code
@@ -2087,60 +2216,43 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
       if (!new_name)
 	return false;
 
-      add_phi_arg (new_phi, new_name, single_pred_edge (new_bb),
+      add_phi_arg (new_close_phi, new_name, single_pred_edge (new_bb),
 		   get_loc (old_name));
       if (dump_file)
 	{
 	  fprintf (dump_file, "[codegen] Adding loop-closed phi: ");
-	  print_gimple_stmt (dump_file, new_phi, 0, 0);
+	  print_gimple_stmt (dump_file, new_close_phi, 0, 0);
 	}
 
-      update_stmt (new_phi);
+      update_stmt (new_close_phi);
 
       /* When there is no loop guard around this codegenerated loop, there is no
 	 need to collect the close-phi arg.  */
-      if (2 != EDGE_COUNT (succ_new_bb->preds)
-	  || bb_contains_loop_phi_nodes (succ_new_bb))
+      if (merge_points.is_empty ())
 	continue;
 
       /* Add a PHI in the succ_new_bb for each close phi of the loop.  */
-      tree init = find_init_value_close_phi (new_phi);
+      tree default_value = find_init_value_close_phi (new_close_phi);
 
-      /* A close phi must come from a loop-phi having an init value.  */
-      if (!init)
+      /* A close phi must come from a loop-phi having a default value.  */
+      if (!default_value)
 	{
 	  if (!postpone)
 	    return false;
 
-	  region->incomplete_phis.safe_push (std::make_pair (phi, new_phi));
+	  region->incomplete_phis.safe_push (std::make_pair (old_close_phi,
+							     new_close_phi));
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "[codegen] postpone close phi nodes: ");
-	      print_gimple_stmt (dump_file, new_phi, 0, 0);
+	      print_gimple_stmt (dump_file, new_close_phi, 0, 0);
 	    }
 	  continue;
 	}
 
-      gphi *merge_phi = create_phi_node (SSA_NAME_VAR (res), succ_new_bb);
-      tree merge_res = create_new_def_for (res, merge_phi,
-					   gimple_phi_result_ptr (merge_phi));
-      set_rename (res, merge_res);
-
-      edge from_loop = single_succ_edge (new_bb);
-      add_phi_arg (merge_phi, new_res, from_loop, get_loc (old_name));
-
-      /* The edge coming from loop guard.  */
-      edge other = from_loop == (*succ_new_bb->preds)[0]
-	? (*succ_new_bb->preds)[1] : (*succ_new_bb->preds)[0];
-
-      add_phi_arg (merge_phi, init, other, get_loc (old_name));
-      if (dump_file)
-	{
-	  fprintf (dump_file, "[codegen] Adding guard-phi: ");
-	  print_gimple_stmt (dump_file, merge_phi, 0, 0);
-	}
-
-      update_stmt (new_phi);
+      if (!add_close_phis_to_merge_points (old_close_phi, new_close_phi,
+					   default_value))
+	return false;
     }
 
   return true;
@@ -2651,31 +2763,8 @@ translate_isl_ast_to_gimple::copy_bb_and_scalar_dependences (basic_block bb,
 	}
     }
 
-  basic_block new_bb = split_edge (next_e);
-  if (num_phis > 0 && bb_contains_loop_phi_nodes (bb))
-    {
-      basic_block phi_bb = next_e->dest->loop_father->header;
-
-      /* At this point we are unable to codegenerate by still preserving the SSA
-	 structure because maybe the loop is completely unrolled and the PHIs
-	 and cross-bb scalar dependencies are untrackable w.r.t. the original
-	 code.  See gfortran.dg/graphite/pr29832.f90.  */
-      if (EDGE_COUNT (bb->preds) != EDGE_COUNT (phi_bb->preds))
-	{
-	  codegen_error = true;
-	  return NULL;
-	}
-
-      if (dump_file)
-	fprintf (dump_file, "[codegen] bb_%d contains loop phi nodes.\n",
-		 bb->index);
-      if (!copy_loop_phi_nodes (bb, phi_bb))
-	{
-	  codegen_error = true;
-	  return NULL;
-	}
-    }
-  else if (bb_contains_loop_close_phi_nodes (bb))
+  basic_block new_bb = NULL;
+  if (bb_contains_loop_close_phi_nodes (bb))
     {
       if (dump_file)
 	fprintf (dump_file, "[codegen] bb_%d contains close phi nodes.\n",
@@ -2688,7 +2777,11 @@ translate_isl_ast_to_gimple::copy_bb_and_scalar_dependences (basic_block bb,
 	  return NULL;
 	}
 
-      basic_block phi_bb = split_edge (e);
+      basic_block phi_bb = e->dest;
+
+      if (!bb_contains_loop_close_phi_nodes (phi_bb) || !single_succ_p (phi_bb))
+	phi_bb = split_edge (e);
+
       gcc_assert (single_pred_edge (phi_bb)->src->loop_father
 		  != single_pred_edge (phi_bb)->dest->loop_father);
 
@@ -2697,26 +2790,58 @@ translate_isl_ast_to_gimple::copy_bb_and_scalar_dependences (basic_block bb,
 	  codegen_error = true;
 	  return NULL;
 	}
+
+      if (e == next_e)
+	new_bb = phi_bb;
+      else
+	new_bb = split_edge (next_e);
     }
-  else if (num_phis > 0)
+  else
     {
-      if (dump_file)
-	fprintf (dump_file, "[codegen] bb_%d contains cond phi nodes.\n",
-		 bb->index);
-
-      basic_block phi_bb = single_pred (new_bb);
-      loop_p loop_father = new_bb->loop_father;
-
-      /* Move back until we find the block with two predecessors.  */
-      while (single_pred_p (phi_bb))
-	phi_bb = single_pred_edge (phi_bb)->src;
-
-      /* If a corresponding merge-point was not found, then abort codegen.  */
-      if (phi_bb->loop_father != loop_father
-	  || !copy_cond_phi_nodes (bb, phi_bb, iv_map))
+      new_bb = split_edge (next_e);
+      if (num_phis > 0 && bb_contains_loop_phi_nodes (bb))
 	{
-	  codegen_error = true;
-	  return NULL;
+	  basic_block phi_bb = next_e->dest->loop_father->header;
+
+	  /* At this point we are unable to codegenerate by still preserving the SSA
+	     structure because maybe the loop is completely unrolled and the PHIs
+	     and cross-bb scalar dependencies are untrackable w.r.t. the original
+	     code.  See gfortran.dg/graphite/pr29832.f90.  */
+	  if (EDGE_COUNT (bb->preds) != EDGE_COUNT (phi_bb->preds))
+	    {
+	      codegen_error = true;
+	      return NULL;
+	    }
+
+	  if (dump_file)
+	    fprintf (dump_file, "[codegen] bb_%d contains loop phi nodes.\n",
+		     bb->index);
+	  if (!copy_loop_phi_nodes (bb, phi_bb))
+	    {
+	      codegen_error = true;
+	      return NULL;
+	    }
+	}
+      else if (num_phis > 0)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "[codegen] bb_%d contains cond phi nodes.\n",
+		     bb->index);
+
+	  basic_block phi_bb = single_pred (new_bb);
+	  loop_p loop_father = new_bb->loop_father;
+
+	  /* Move back until we find the block with two predecessors.  */
+	  while (single_pred_p (phi_bb))
+	    phi_bb = single_pred_edge (phi_bb)->src;
+
+	  /* If a corresponding merge-point was not found, then abort codegen.  */
+	  if (phi_bb->loop_father != loop_father
+	      || !copy_cond_phi_nodes (bb, phi_bb, iv_map))
+	    {
+	      codegen_error = true;
+	      return NULL;
+	    }
 	}
     }
 
