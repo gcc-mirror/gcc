@@ -19113,9 +19113,23 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
       compute_frame_pointer_to_fb_displacement (cfa_fb_offset);
 
       if (fun->static_chain_decl)
-	add_AT_location_description
-	  (subr_die, DW_AT_static_link,
-	   loc_list_from_tree (fun->static_chain_decl, 2, NULL));
+	{
+	  /* DWARF requires here a location expression that computes the
+	     address of the enclosing subprogram's frame base.  The machinery
+	     in tree-nested.c is supposed to store this specific address in the
+	     last field of the FRAME record.  */
+	  const tree frame_type
+	    = TREE_TYPE (TREE_TYPE (fun->static_chain_decl));
+	  const tree fb_decl = tree_last (TYPE_FIELDS (frame_type));
+
+	  tree fb_expr
+	    = build1 (INDIRECT_REF, frame_type, fun->static_chain_decl);
+	  fb_expr = build3 (COMPONENT_REF, TREE_TYPE (fb_decl),
+			    fb_expr, fb_decl, NULL_TREE);
+
+	  add_AT_location_description (subr_die, DW_AT_static_link,
+				       loc_list_from_tree (fb_expr, 0, NULL));
+	}
     }
 
   /* Generate child dies for template paramaters.  */

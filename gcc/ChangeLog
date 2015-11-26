@@ -1,3 +1,12 @@
+2015-11-26  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	PR debug/53927
+	* tree-nested.c (finalize_nesting_tree_1): Append a field to
+	hold the frame base address.
+	* dwarf2out.c (gen_subprogram_die): Generate for
+	DW_AT_static_link a location description that computes the value
+	of this field.
+
 2015-11-26  Tom de Vries  <tom@codesourcery.com>
 
 	revert:
