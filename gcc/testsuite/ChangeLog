@@ -1,3 +1,7 @@
+2015-11-26  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.target/nvptx/proto-1.c: Adjust expected asm.
+
 2015-11-26  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/68555
