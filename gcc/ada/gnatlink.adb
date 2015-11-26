@@ -1588,16 +1588,6 @@ begin
                   end if;
                end;
             end loop;
-
-            --  Pass -fsjlj to the linker with back-end SJLJ exceptions
-
-            if not ALIs.Table (A).Frontend_Exceptions
-              and then not ALIs.Table (A).Zero_Cost_Exceptions
-            then
-               Linker_Options.Increment_Last;
-               Linker_Options.Table
-                (Linker_Options.Last) := new String'("-fsjlj");
-            end if;
          end if;
       end;
    end if;
