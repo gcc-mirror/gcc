@@ -1,5 +1,21 @@
 2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* gcc/config/aarch64/arm_neon.h
+	(vqrdmlah_laneq_s16, vqrdmlah_laneq_s32): New.
+	(vqrdmlahq_laneq_s16, vqrdmlahq_laneq_s32): New.
+	(vqrdmlsh_lane_s16, vqrdmlsh_lane_s32): New.
+	(vqrdmlshq_laneq_s16, vqrdmlshq_laneq_s32): New.
+	(vqrdmlah_lane_s16, vqrdmlah_lane_s32): New.
+	(vqrdmlahq_lane_s16, vqrdmlahq_lane_s32): New.
+	(vqrdmlahh_s16, vqrdmlahh_lane_s16, vqrdmlahh_laneq_s16): New.
+	(vqrdmlahs_s32, vqrdmlahs_lane_s32, vqrdmlahs_laneq_s32): New.
+	(vqrdmlsh_lane_s16, vqrdmlsh_lane_s32): New.
+	(vqrdmlshq_lane_s16, vqrdmlshq_lane_s32): New.
+	(vqrdmlshh_s16, vqrdmlshh_lane_s16, vqrdmlshh_laneq_s16): New.
+	(vqrdmlshs_s32, vqrdmlshs_lane_s32, vqrdmlshs_laneq_s32): New.
+
+2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* gcc/config/aarch64/arm_neon.h (vqrdmlah_s16, vqrdmlah_s32): New.
 	(vqrdmlahq_s16, vqrdmlahq_s32): New.
 	(vqrdmlsh_s16, vqrdmlsh_s32): New.
