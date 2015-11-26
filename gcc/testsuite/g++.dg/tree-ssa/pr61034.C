@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O3 -fdump-tree-fre2" }
+// { dg-options "-O2 -fdump-tree-fre2 -fdump-tree-optimized" }
 
 #define assume(x) if(!(x))__builtin_unreachable()
 
@@ -43,5 +43,12 @@ bool f(I a, I b, I c, I d) {
 // This works only if everything is inlined into 'f'.
 
 // { dg-final { scan-tree-dump-times ";; Function" 1 "fre2" } }
-// { dg-final { scan-tree-dump-times "free" 10 "fre2" } }
 // { dg-final { scan-tree-dump-times "unreachable" 11 "fre2" } }
+
+// Note that depending on PUSH_ARGS_REVERSED we are presented with
+// a different initial CFG and thus the final outcome is different
+
+// { dg-final { scan-tree-dump-times "free" 10 "fre2" { target x86_64-*-* i?86-*-* } } }
+// { dg-final { scan-tree-dump-times "free" 3 "optimized" { target x86_64-*-* i?86-*-* } } }
+// { dg-final { scan-tree-dump-times "free" 14 "fre2" { target aarch64-*-* ia64-*-* arm-*-* hppa*-*-* sparc*-*-* powerpc*-*-* } } }
+// { dg-final { scan-tree-dump-times "free" 4 "optimized" { target aarch64-*-* ia64-*-* arm-*-* hppa*-*-* sparc*-*-* powerpc*-*-* } } }

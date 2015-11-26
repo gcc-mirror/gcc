@@ -1,3 +1,10 @@
+2015-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/67203
+	* g++.dg/tree-ssa/pr61034.C: Make expected optimization result
+	dependent on PUSH_ARGS_REVERSED.  Drop optimization level and
+	also monitor final optimization result.
+
 2015-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/68249
