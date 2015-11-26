@@ -1,3 +1,14 @@
+2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* lib/target-supports.exp (add_options_for_arm_v8_1a_neon): New.
+	(check_effective_target_arm_arch_FUNC_ok)
+	(add_options_for_arm_arch_FUNC)
+	(check_effective_target_arm_arch_FUNC_multilib): Add "armv8.1-a"
+	to the list to be generated.
+	(check_effective_target_arm_v8_1a_neon_ok_nocache): New.
+	(check_effective_target_arm_v8_1a_neon_ok): New.
+	(check_effective_target_arm_v8_1a_neon_hw): New.
+
 2015-11-26  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.target/nvptx/proto-1.c: Adjust expected asm.
