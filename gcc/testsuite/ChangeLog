@@ -1,5 +1,11 @@
 2015-11-26  Richard Biener  <rguenther@suse.de>
 
+	PR testsuite/66799
+	* gcc.dg/vect/pr20122.c (main): Do not align Kernel, do not
+	vectorize init loop and adjust expected outcome.
+
+2015-11-26  Richard Biener  <rguenther@suse.de>
+
 	PR testsuite/67203
 	* g++.dg/tree-ssa/pr61034.C: Make expected optimization result
 	dependent on PUSH_ARGS_REVERSED.  Drop optimization level and
