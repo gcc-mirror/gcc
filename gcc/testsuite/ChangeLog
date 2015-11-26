@@ -1,3 +1,10 @@
+2015-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/68249
+	PR rtl-optimization/68321
+	* gcc.c-torture/execute/pr68249.c: New test.
+	* gcc.c-torture/execute/pr68321.c: New test.
+
 2015-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
