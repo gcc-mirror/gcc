@@ -431,3 +431,17 @@
   /* Implemented by aarch64_qtbx4<mode>.  */
   VAR1 (TERNOP, qtbx4, 0, v8qi)
   VAR1 (TERNOP, qtbx4, 0, v16qi)
+
+  /* Builtins for ARMv8.1 Adv.SIMD instructions.  */
+
+  /* Implemented by aarch64_sqrdml<SQRDMLH_AS:rdma_as>h<mode>.  */
+  BUILTIN_VSDQ_HSI (TERNOP, sqrdmlah, 0)
+  BUILTIN_VSDQ_HSI (TERNOP, sqrdmlsh, 0)
+
+  /* Implemented by aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_lane<mode>.  */
+  BUILTIN_VSDQ_HSI (QUADOP_LANE, sqrdmlah_lane, 0)
+  BUILTIN_VSDQ_HSI (QUADOP_LANE, sqrdmlsh_lane, 0)
+
+  /* Implemented by aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_laneq<mode>.  */
+  BUILTIN_VSDQ_HSI (QUADOP_LANE, sqrdmlah_laneq, 0)
+  BUILTIN_VSDQ_HSI (QUADOP_LANE, sqrdmlsh_laneq, 0)
