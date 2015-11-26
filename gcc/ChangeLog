@@ -1,3 +1,15 @@
+2015-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2015-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	            Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/67226
+	* calls.c (store_one_arg): Take into account
+	crtl->args.pretend_args_size when checking for overlap between
+	arg->value and argblock + arg->locate.offset during sibcall
+	optimization.
+
 2015-11-25  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/67954

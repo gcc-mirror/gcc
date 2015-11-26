@@ -4959,6 +4959,13 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	      if (XEXP (x, 0) != crtl->args.internal_arg_pointer)
 		i = INTVAL (XEXP (XEXP (x, 0), 1));
 
+	      /* arg.locate doesn't contain the pretend_args_size offset,
+		 it's part of argblock.  Ensure we don't count it in I.  */
+#ifdef STACK_GROWS_DOWNWARD
+		i -= crtl->args.pretend_args_size;
+#else
+		i += crtl->args.pretend_args_size;
+#endif
 	      /* expand_call should ensure this.  */
 	      gcc_assert (!arg->locate.offset.var
 			  && arg->locate.size.var == 0
