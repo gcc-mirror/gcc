@@ -1,3 +1,7 @@
+2015-11-26  Andreas Arnez  <arnez@linux.vnet.ibm.com>
+
+	* g++.dg/guality/pr67192.C: New test.
+
 2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vqrdmlXh_lane.inc: New file,
