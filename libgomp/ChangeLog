@@ -1,3 +1,7 @@
+2015-11-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure: Regenerate.
+
 2015-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/target-35.c: New test.
