@@ -1,3 +1,16 @@
+2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_sqmovun<mode>): Fix some white-space.
+	(aarch64_<sur>qmovun<mode>): Likewise.
+	(aarch64_sqrdml<SQRDMLH_AS:rdma_as>h<mode>): New.
+	(aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_lane<mode>): New.
+	(aarch64_sqrdml<SQRDMLH_AS:rdma_as>h_laneq<mode>): New.
+	* config/aarch64/iterators.md (UNSPEC_SQRDMLAH): New.
+	(UNSPEC_SQRDMLSH): New.
+	(SQRDMLH_AS): New.
+	(rdma_as): New.
+
 2015-11-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66721
