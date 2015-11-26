@@ -1,3 +1,7 @@
+2015-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (build/genmatch.o): Depend on internal-fn.def.
+
 2015-11-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	* doc/install.texi (Prerequisites): Increase ISL requirement to
@@ -5,7 +9,7 @@
 
 2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
 
-	* gcc/config/aarch64/arm_neon.h
+	* config/aarch64/arm_neon.h
 	(vqrdmlah_laneq_s16, vqrdmlah_laneq_s32): New.
 	(vqrdmlahq_laneq_s16, vqrdmlahq_laneq_s32): New.
 	(vqrdmlsh_lane_s16, vqrdmlsh_lane_s32): New.
@@ -21,7 +25,7 @@
 
 2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
 
-	* gcc/config/aarch64/arm_neon.h (vqrdmlah_s16, vqrdmlah_s32): New.
+	* config/aarch64/arm_neon.h (vqrdmlah_s16, vqrdmlah_s32): New.
 	(vqrdmlahq_s16, vqrdmlahq_s32): New.
 	(vqrdmlsh_s16, vqrdmlsh_s32): New.
 	(vqrdmlshq_s16, vqrdmlshq_s32): New.
@@ -530,7 +534,7 @@
 
 2015-11-24  Wilco Dijkstra  <wdijkstr@arm.com>
 
-	* gcc/config/aarch64/aarch64.md (add<mode>3):
+	* config/aarch64/aarch64.md (add<mode>3):
 	Block early expansion into 2 add instructions.
 	(add<mode>3_pluslong): New pattern to combine complex
 	immediates into 2 additions.
@@ -749,7 +753,7 @@
 	PR tree-optimization/68327
 	* tree-vect-loop.c (vect_determine_vectorization_factor): Don't
 	compute vectype for non-relevant mask producers.
-	* gcc/tree-vect-stmts.c (vectorizable_comparison): Check stmt
+	* tree-vect-stmts.c (vectorizable_comparison): Check stmt
 	relevance earlier.
 
 2015-11-23  Tom de Vries  <tom@codesourcery.com>
@@ -2156,7 +2160,7 @@
 
 2015-11-13  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* gcc/omp-low.c (scan_sharing_clauses): Accept INDEPENDENT, AUTO & SEQ.
+	* omp-low.c (scan_sharing_clauses): Accept INDEPENDENT, AUTO & SEQ.
 	(oacc_loop_fixed_partitions): Correct return type to bool.
 	(oacc_loop_auto_partitions): New.
 	(oacc_loop_partition): Take mask argument, call
@@ -2489,17 +2493,17 @@
 
 2015-11-12  Brad Lucier  <lucier@math.purdue.edu>
 
-	* gcc/cprop.c (is_too_expensive): Remove.
+	* cprop.c (is_too_expensive): Remove.
 	(gcse.h): Include.
 	(one_cprop_pass): Call gcse_or_cprop_is_too_expensive, not
 	is_too_expensive.
-	* gcc/gcse.h (gcse_or_cprop_is_too_expensive): Declare.
-	* gcc/gcse.c (is_too_expensive): Rename to ...
+	* gcse.h (gcse_or_cprop_is_too_expensive): Declare.
+	* gcse.c (is_too_expensive): Rename to ...
 	(gcse_or_cprop_is_too_expensive): ... this.
 	Expand warning to add required size of max-gcse-memory.
 	(one_pre_gcse_pass): Use it.
 	(one_code_hoisting_pass): Use it.
-	* gcc/params.def (max-gcse-memory): Increase from 50MB to 128MB.
+	* params.def (max-gcse-memory): Increase from 50MB to 128MB.
 
 2015-11-12  James Norris  <jnorris@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
