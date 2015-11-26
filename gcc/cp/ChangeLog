@@ -1,3 +1,8 @@
+2015-11-26  Andreas Arnez  <arnez@linux.vnet.ibm.com>
+
+	* cp-gimplify.c (genericize_cp_loop): Change LOOP_EXPR's location
+	to start of loop body instead of start of loop.
+
 2015-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/68508
