@@ -1,5 +1,12 @@
 2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vqrdmlXh.inc: New file,
+	support code for vqrdml{as}h tests.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrdmlah.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrdmlsh.c: New.
+
+2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* lib/target-supports.exp (add_options_for_arm_v8_1a_neon): New.
 	(check_effective_target_arm_arch_FUNC_ok)
 	(add_options_for_arm_arch_FUNC)
