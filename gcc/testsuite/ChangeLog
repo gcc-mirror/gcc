@@ -1,3 +1,11 @@
+2015-11-26  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	Backport from mainline r230938.
+	2015-11-26  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/68416
+	* gcc.target/i386/mpx/pr68416.c: New test.
+
 2015-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/68249
