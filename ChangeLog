@@ -1,3 +1,11 @@
+2015-11-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backport from mainline
+	2015-11-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* m4/libtool.m4 (export_symbols_cmds) [AIX]: Add global TLS "L"
+	symbols.
+
 2015-07-16  Release Manager
 
 	* GCC 5.2.0 released.
