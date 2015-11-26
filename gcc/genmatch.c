@@ -3112,16 +3112,10 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	      {
 		if (cinfo.info[i].same_as != (unsigned)i)
 		  continue;
-		if (!cinfo.info[i].force_no_side_effects_p
-		    && cinfo.info[i].result_use_count > 1)
-		  {
-		    fprintf_indent (f, indent,
-				    "if (TREE_SIDE_EFFECTS (captures[%d]))\n",
-				    i);
-		    fprintf_indent (f, indent,
-				    "  captures[%d] = save_expr (captures[%d]);\n",
-				    i, i);
-		  }
+		if (cinfo.info[i].result_use_count > 1)
+		  fprintf_indent (f, indent,
+				  "captures[%d] = save_expr (captures[%d]);\n",
+				  i, i);
 	      }
 	  for (unsigned j = 0; j < e->ops.length (); ++j)
 	    {

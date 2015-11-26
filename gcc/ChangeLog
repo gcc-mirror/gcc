@@ -1,3 +1,8 @@
+2015-11-26  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (dt_simplify::gen_1): For generic wrap all
+	multi-result-use captures in a SAVE_EXPR.
+
 2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/aarch64/aarch64.h (AARCH64_ISA_RDMA): New.
