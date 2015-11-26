@@ -1,3 +1,12 @@
+2015-11-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backport from mainline
+	2015-11-25  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_declare_alias): Rename and globalize
+	both the symbol and the "dot" symbol for function descriptors. Fix
+	inversion for rename of symbols with dollar sign.
+
 2015-11-26  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	Backport from mainline r230938.
