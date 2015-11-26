@@ -1,3 +1,9 @@
+2015-11-26  Maciej W. Rozycki  <macro@imgtec.com>
+
+	* doc/invoke.texi (Option Summary) <MIPS Options>: Reorder
+	`-mcompact-branches='.
+	(MIPS Options): Likewise.
+
 2015-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (build/genmatch.o): Depend on internal-fn.def.
