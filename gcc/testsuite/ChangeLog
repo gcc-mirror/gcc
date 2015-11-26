@@ -1,5 +1,12 @@
 2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vqrdmlXh_lane.inc: New file,
+	support code for vqrdml{as}h_lane tests.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrdmlah_lane.c: New.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrdmlsh_lane.c: New.
+
+2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vqrdmlXh.inc: New file,
 	support code for vqrdml{as}h tests.
 	* gcc.target/aarch64/advsimd-intrinsics/vqrdmlah.c: New.
