@@ -1,3 +1,8 @@
+2015-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/68554
+	* gcc.dg/vect/bb-slp-subgroups-2.c: Require vect_perm.
+
 2015-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67249
