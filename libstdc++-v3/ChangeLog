@@ -1,3 +1,8 @@
+2015-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/simple.cc: Add -std=gnu++98 to
+	dg-options and avoid use of uniform-init.
+
 2015-11-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure: Regenerate.
