@@ -1,3 +1,10 @@
+2015-11-26  Alexandre Oliva <aoliva@redhat.com>
+
+	PR rtl-optimization/67753
+	PR rtl-optimization/64164
+	* function.c (assign_parm_setup_block): Right-shift
+	upward-padded big-endian args when bypassing the stack slot.
+
 2015-11-26  Maciej W. Rozycki  <macro@imgtec.com>
 
 	* doc/invoke.texi (Option Summary) <MIPS Options>: Reorder
