@@ -1,3 +1,14 @@
+2015-11-26  Tom de Vries  <tom@codesourcery.com>
+
+	revert:
+	2015-11-25  Tom de Vries  <tom@codesourcery.com>
+
+	* cfgloop.c (find_single_latch): New function, factored out of ...
+	(flow_loops_find): ... here.
+	(verify_loop_structure): Improve verification of loop->latch.
+	* cfgloop.h (find_single_latch): Declare.
+	* omp-low.c (expand_omp_for_generic): Initialize latch of orig_loop.
+
 2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def:
