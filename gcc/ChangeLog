@@ -1,5 +1,12 @@
 2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config/aarch64/aarch64-simd-builtins.def
+	(sqrdmlah, sqrdmlsh): New.
+	(sqrdmlah_lane, sqrdmlsh_lane): New.
+	(sqrdmlah_laneq, sqrdmlsh_laneq): New.
+
+2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/aarch64/aarch64-simd.md
 	(aarch64_sqmovun<mode>): Fix some white-space.
 	(aarch64_<sur>qmovun<mode>): Likewise.
