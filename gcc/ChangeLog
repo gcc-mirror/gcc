@@ -1,3 +1,8 @@
+2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Add
+	ARM_FEATURE_QRDMX.
+
 2015-11-26  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	PR debug/53927
