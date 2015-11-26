@@ -157,6 +157,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_FP             (aarch64_isa_flags & AARCH64_FL_FP)
 #define AARCH64_ISA_SIMD           (aarch64_isa_flags & AARCH64_FL_SIMD)
 #define AARCH64_ISA_LSE		   (aarch64_isa_flags & AARCH64_FL_LSE)
+#define AARCH64_ISA_RDMA	   (aarch64_isa_flags & AARCH64_FL_RDMA)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
@@ -180,6 +181,9 @@ extern unsigned aarch64_architecture_version;
 #define TARGET_FIX_ERR_A53_835769	\
   ((aarch64_fix_a53_err835769 == 2)	\
   ? TARGET_FIX_ERR_A53_835769_DEFAULT : aarch64_fix_a53_err835769)
+
+/* ARMv8.1 Adv.SIMD support.  */
+#define TARGET_SIMD_RDMA (TARGET_SIMD && AARCH64_ISA_RDMA)
 
 /* Standard register usage.  */
 
