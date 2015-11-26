@@ -3635,7 +3635,8 @@ curr_insn_transform (void)
 		 assigment pass and the scratch pseudo will be
 		 spilled.  Spilled scratch pseudos are transformed
 		 back to scratches at the LRA end.  */
-	      && lra_former_scratch_operand_p (curr_insn, i))
+	      && lra_former_scratch_operand_p (curr_insn, i)
+	      && lra_former_scratch_p (REGNO (op)))
 	    {
 	      int regno = REGNO (op);
 	      lra_change_class (regno, NO_REGS, "      Change to", true);
@@ -3644,6 +3645,8 @@ curr_insn_transform (void)
 		   spilled pseudo as there is only one such insn, the
 		   current one.  */
 		reg_renumber[regno] = -1;
+	      lra_assert (bitmap_single_bit_set_p
+			  (&lra_reg_info[REGNO (op)].insn_bitmap));
 	    }
 	  /* We can do an optional reload.  If the pseudo got a hard
 	     reg, we might improve the code through inheritance.  If
