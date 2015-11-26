@@ -1,5 +1,12 @@
 2015-11-26  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/66721
+	* tree-vect-loop.c (vect_analyze_loop_2): Compute scalar
+	iteration cost earlier.  Re-do analysis without SLP when
+	vectorization using SLP fails and without has a chance to succeed.
+
+2015-11-26  Richard Biener  <rguenther@suse.de>
+
 	* genmatch.c (dt_simplify::gen_1): For generic wrap all
 	multi-result-use captures in a SAVE_EXPR.
 

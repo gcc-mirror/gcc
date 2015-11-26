@@ -1891,6 +1891,14 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
       return false;
     }
 
+  /* Compute the scalar iteration cost.  */
+  vect_compute_single_scalar_iteration_cost (loop_vinfo);
+
+  int saved_vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  HOST_WIDE_INT estimated_niter;
+  unsigned th;
+  int min_scalar_loop_bound;
+
   /* Check the SLP opportunities in the loop, analyze and build SLP trees.  */
   ok = vect_analyze_slp (loop_vinfo, n_stmts);
   if (!ok)
@@ -1906,6 +1914,9 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
       /* Update the vectorization factor based on the SLP decision.  */
       vect_update_vf_for_slp (loop_vinfo);
     }
+
+  /* This is the point where we can re-start analysis with SLP forced off.  */
+start_over:
 
   /* Now the vectorization factor is final.  */
   unsigned vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
@@ -1924,9 +1935,6 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
       || (max_niter != -1
 	  && (unsigned HOST_WIDE_INT) max_niter < vectorization_factor))
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: iteration count too small.\n");
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "not vectorized: iteration count smaller than "
@@ -1961,12 +1969,8 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
       return false;
     }
 
-  /* Compute the scalar iteration cost.  */
-  vect_compute_single_scalar_iteration_cost (loop_vinfo);
-
   /* This pass will decide on using loop versioning and/or loop peeling in
      order to enhance the alignment of data references in the loop.  */
-
   ok = vect_enhance_data_refs_alignment (loop_vinfo);
   if (!ok)
     {
@@ -1985,7 +1989,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
       vect_slp_analyze_operations (LOOP_VINFO_SLP_INSTANCES (loop_vinfo),
 				   LOOP_VINFO_TARGET_COST_DATA (loop_vinfo));
       if (LOOP_VINFO_SLP_INSTANCES (loop_vinfo).length () != old_size)
-	return false;
+	goto again;
     }
 
   /* Scan all the remaining operations in the loop that are not subject
@@ -2013,15 +2017,15 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "not vectorized: vector version will never be "
 			 "profitable.\n");
-      return false;
+      goto again;
     }
 
-  int min_scalar_loop_bound = ((PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND)
-				* vectorization_factor) - 1);
+  min_scalar_loop_bound = ((PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND)
+			    * vectorization_factor) - 1);
 
   /* Use the cost model only if it is more conservative than user specified
      threshold.  */
-  unsigned th = (unsigned) min_scalar_loop_bound;
+  th = (unsigned) min_scalar_loop_bound;
   if (min_profitable_iters
       && (!min_scalar_loop_bound
           || min_profitable_iters > min_scalar_loop_bound))
@@ -2040,10 +2044,10 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
 			 "not vectorized: iteration count smaller than user "
 			 "specified loop bound parameter or minimum profitable "
 			 "iterations (whichever is more conservative).\n");
-      return false;
+      goto again;
     }
 
-  HOST_WIDE_INT estimated_niter
+  estimated_niter
     = estimated_stmt_executions_int (LOOP_VINFO_LOOP (loop_vinfo));
   if (estimated_niter != -1
       && ((unsigned HOST_WIDE_INT) estimated_niter
@@ -2059,7 +2063,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
                          "than specified loop bound parameter or minimum "
                          "profitable iterations (whichever is more "
                          "conservative).\n");
-      return false;
+      goto again;
     }
 
   /* Decide whether we need to create an epilogue loop to handle
@@ -2102,14 +2106,92 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "not vectorized: can't create required "
 			     "epilog loop\n");
-          return false;
+          goto again;
         }
     }
 
   gcc_assert (vectorization_factor
 	      == (unsigned)LOOP_VINFO_VECT_FACTOR (loop_vinfo));
 
+  /* Ok to vectorize!  */
   return true;
+
+again:
+  /* Try again with SLP forced off but if we didn't do any SLP there is
+     no point in re-trying.  */
+  if (!slp)
+    return false;
+
+  /* Likewise if the grouped loads or stores in the SLP cannot be handled
+     via interleaving or lane instructions or if there were any SLP
+     reductions.  */
+  slp_instance instance;
+  slp_tree node;
+  unsigned i, j;
+  FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (loop_vinfo), i, instance)
+    {
+      stmt_vec_info vinfo;
+      vinfo = vinfo_for_stmt
+	  (SLP_TREE_SCALAR_STMTS (SLP_INSTANCE_TREE (instance))[0]);
+      if (! STMT_VINFO_GROUPED_ACCESS (vinfo))
+	return false;
+      vinfo = vinfo_for_stmt (STMT_VINFO_GROUP_FIRST_ELEMENT (vinfo));
+      unsigned int size = STMT_VINFO_GROUP_SIZE (vinfo);
+      tree vectype = STMT_VINFO_VECTYPE (vinfo);
+      if (! vect_store_lanes_supported (vectype, size)
+	  && ! vect_grouped_store_supported (vectype, size))
+	return false;
+      FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), j, node)
+	{
+	  vinfo = vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (node)[0]);
+	  vinfo = vinfo_for_stmt (STMT_VINFO_GROUP_FIRST_ELEMENT (vinfo));
+	  size = STMT_VINFO_GROUP_SIZE (vinfo);
+	  vectype = STMT_VINFO_VECTYPE (vinfo);
+	  if (! vect_load_lanes_supported (vectype, size)
+	      && ! vect_grouped_load_supported (vectype, size))
+	    return false;
+	}
+    }
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "re-trying with SLP disabled\n");
+
+  /* Roll back state appropriately.  No SLP this time.  */
+  slp = false;
+  /* Restore vectorization factor as it were without SLP.  */
+  LOOP_VINFO_VECT_FACTOR (loop_vinfo) = saved_vectorization_factor;
+  /* Free the SLP instances.  */
+  FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (loop_vinfo), j, instance)
+    vect_free_slp_instance (instance);
+  LOOP_VINFO_SLP_INSTANCES (loop_vinfo).release ();
+  /* Reset SLP type to loop_vect on all stmts.  */
+  for (i = 0; i < LOOP_VINFO_LOOP (loop_vinfo)->num_nodes; ++i)
+    {
+      basic_block bb = LOOP_VINFO_BBS (loop_vinfo)[i];
+      for (gimple_stmt_iterator si = gsi_start_bb (bb);
+	   !gsi_end_p (si); gsi_next (&si))
+	{
+	  stmt_vec_info stmt_info = vinfo_for_stmt (gsi_stmt (si));
+	  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
+	    {
+	      gcc_assert (STMT_SLP_TYPE (stmt_info) == loop_vect);
+	      stmt_info = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
+	    }
+	  STMT_SLP_TYPE (stmt_info) = loop_vect;
+	}
+    }
+  /* Free optimized alias test DDRS.  */
+  LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo).release ();
+  /* Reset target cost data.  */
+  destroy_cost_data (LOOP_VINFO_TARGET_COST_DATA (loop_vinfo));
+  LOOP_VINFO_TARGET_COST_DATA (loop_vinfo)
+    = init_cost (LOOP_VINFO_LOOP (loop_vinfo));
+  /* Reset assorted flags.  */
+  LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo) = false;
+  LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo) = 0;
+
+  goto start_over;
 }
 
 /* Function vect_analyze_loop.
