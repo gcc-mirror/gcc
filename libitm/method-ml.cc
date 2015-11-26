@@ -69,23 +69,51 @@ struct ml_mg : public method_group
   atomic<gtm_word>* orecs __attribute__((aligned(HW_CACHELINE_SIZE)));
   char tailpadding[HW_CACHELINE_SIZE - sizeof(atomic<gtm_word>*)];
 
-  // Location-to-orec mapping.  Stripes of 16B mapped to 2^19 orecs.
-  static const gtm_word L2O_ORECS = 1 << 19;
-  static const gtm_word L2O_SHIFT = 4;
-  static size_t get_orec(const void* addr)
+  // Location-to-orec mapping.  Stripes of 32B mapped to 2^16 orecs using
+  // multiplicative hashing.  See Section 5.2.2 of Torvald Riegel's PhD thesis
+  // for the background on this choice of hash function and parameters:
+  // http://nbn-resolving.de/urn:nbn:de:bsz:14-qucosa-115596
+  // We pick the Mult32 hash because it works well with fewer orecs (i.e.,
+  // less space overhead and just 32b multiplication).
+  // We may want to check and potentially change these settings once we get
+  // better or just more benchmarks.
+  static const gtm_word L2O_ORECS_BITS = 16;
+  static const gtm_word L2O_ORECS = 1 << L2O_ORECS_BITS;
+  // An iterator over the orecs covering the region [addr,addr+len).
+  struct orec_iterator
   {
-    return ((uintptr_t)addr >> L2O_SHIFT) & (L2O_ORECS - 1);
-  }
-  static size_t get_next_orec(size_t orec)
-  {
-    return (orec + 1) & (L2O_ORECS - 1);
-  }
-  // Returns the next orec after the region.
-  static size_t get_orec_end(const void* addr, size_t len)
-  {
-    return (((uintptr_t)addr + len + (1 << L2O_SHIFT) - 1) >> L2O_SHIFT)
-        & (L2O_ORECS - 1);
-  }
+    static const gtm_word L2O_SHIFT = 5;
+    static const uint32_t L2O_MULT32 = 81007;
+    uint32_t mult;
+    size_t orec;
+    size_t orec_end;
+    orec_iterator (const void* addr, size_t len)
+    {
+      uint32_t a = (uintptr_t) addr >> L2O_SHIFT;
+      uint32_t ae = ((uintptr_t) addr + len + (1 << L2O_SHIFT) - 1)
+	  >> L2O_SHIFT;
+      mult = a * L2O_MULT32;
+      orec = mult >> (32 - L2O_ORECS_BITS);
+      // We can't really avoid this second multiplication unless we use a
+      // branch instead or know more about the alignment of addr.  (We often
+      // know len at compile time because of instantiations of functions
+      // such as _ITM_RU* for accesses of specific lengths.
+      orec_end = (ae * L2O_MULT32) >> (32 - L2O_ORECS_BITS);
+    }
+    size_t get() { return orec; }
+    void advance()
+    {
+      // We cannot simply increment orec because L2O_MULT32 is larger than
+      // 1 << (32 - L2O_ORECS_BITS), and thus an increase of the stripe (i.e.,
+      // addr >> L2O_SHIFT) could increase the resulting orec index by more
+      // than one; with the current parameters, we would roughly acquire a
+      // fourth more orecs than necessary for regions covering more than orec.
+      // Keeping mult around as extra state shouldn't matter much.
+      mult += L2O_MULT32;
+      orec = mult >> (32 - L2O_ORECS_BITS);
+    }
+    bool reached_end() { return orec == orec_end; }
+  };
 
   virtual void init()
   {
@@ -142,14 +170,13 @@ protected:
     gtm_word locked_by_tx = ml_mg::set_locked(tx);
 
     // Lock all orecs that cover the region.
-    size_t orec = ml_mg::get_orec(addr);
-    size_t orec_end = ml_mg::get_orec_end(addr, len);
+    ml_mg::orec_iterator oi(addr, len);
     do
       {
         // Load the orec.  Relaxed memory order is sufficient here because
         // either we have acquired the orec or we will try to acquire it with
         // a CAS with stronger memory order.
-        gtm_word o = o_ml_mg.orecs[orec].load(memory_order_relaxed);
+        gtm_word o = o_ml_mg.orecs[oi.get()].load(memory_order_relaxed);
 
         // Check whether we have acquired the orec already.
         if (likely (locked_by_tx != o))
@@ -175,7 +202,7 @@ protected:
             // because whenever another thread reads from this CAS'
             // modification, then it will abort anyway and does not rely on
             // any further happens-before relation to be established.
-            if (unlikely (!o_ml_mg.orecs[orec].compare_exchange_strong(
+            if (unlikely (!o_ml_mg.orecs[oi.get()].compare_exchange_strong(
                 o, locked_by_tx, memory_order_acquire)))
               tx->restart(RESTART_LOCKED_WRITE);
 
@@ -192,12 +219,12 @@ protected:
             // numbers when we have to roll back.
             // ??? Reserve capacity early to avoid capacity checks here?
             gtm_rwlog_entry *e = tx->writelog.push();
-            e->orec = o_ml_mg.orecs + orec;
+            e->orec = o_ml_mg.orecs + oi.get();
             e->value = o;
           }
-        orec = o_ml_mg.get_next_orec(orec);
+        oi.advance();
       }
-    while (orec != orec_end);
+    while (!oi.reached_end());
 
     // Do undo logging.  We do not know which region prior writes logged
     // (even if orecs have been acquired), so just log everything.
@@ -275,8 +302,7 @@ protected:
     gtm_word snapshot = tx->shared_state.load(memory_order_relaxed);
     gtm_word locked_by_tx = ml_mg::set_locked(tx);
 
-    size_t orec = ml_mg::get_orec(addr);
-    size_t orec_end = ml_mg::get_orec_end(addr, len);
+    ml_mg::orec_iterator oi(addr, len);
     do
       {
         // We need acquire memory order here so that this load will
@@ -284,13 +310,13 @@ protected:
         // In turn, this makes sure that subsequent data loads will read from
         // a visible sequence of side effects that starts with the most recent
         // store to the data right before the release of the orec.
-        gtm_word o = o_ml_mg.orecs[orec].load(memory_order_acquire);
+        gtm_word o = o_ml_mg.orecs[oi.get()].load(memory_order_acquire);
 
         if (likely (!ml_mg::is_more_recent_or_locked(o, snapshot)))
           {
             success:
             gtm_rwlog_entry *e = tx->readlog.push();
-            e->orec = o_ml_mg.orecs + orec;
+            e->orec = o_ml_mg.orecs + oi.get();
             e->value = o;
           }
         else if (!ml_mg::is_locked(o))
@@ -308,9 +334,9 @@ protected:
             if (o != locked_by_tx)
               tx->restart(RESTART_LOCKED_READ);
           }
-        orec = o_ml_mg.get_next_orec(orec);
+        oi.advance();
       }
-    while (orec != orec_end);
+    while (!oi.reached_end());
     return &tx->readlog[log_start];
   }
 
