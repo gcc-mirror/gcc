@@ -1,3 +1,9 @@
+2015-11-26  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_neon_ok_nocache): Add check
+	for M profile.
+
 2015-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

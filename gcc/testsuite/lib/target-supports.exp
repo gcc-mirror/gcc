@@ -2644,8 +2644,8 @@ proc check_effective_target_arm_neon_ok_nocache { } {
 		int dummy;
 		/* Avoid the case where a test adds -mfpu=neon, but the toolchain is
 		   configured for -mcpu=arm926ej-s, for example.  */
-		#if __ARM_ARCH < 7
-		#error Architecture too old for NEON.
+		#if __ARM_ARCH < 7 || __ARM_ARCH_PROFILE == 'M'
+		#error Architecture does not support NEON.
 		#endif
 	    } "$flags"] } {
 		set et_arm_neon_flags $flags
