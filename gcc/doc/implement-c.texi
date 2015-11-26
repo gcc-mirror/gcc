@@ -266,9 +266,11 @@ both the sign and value bits, where the sign bit is considered
 immediately above the highest-value value bit.  Signed @samp{>>} acts
 on negative numbers by sign extension.
 
-GCC does not use the latitude given in C99 and C11 only to treat certain
-aspects of signed @samp{<<} as undefined, but this is subject to
-change.
+As an extension to the C language, GCC does not use the latitude given in
+C99 and C11 only to treat certain aspects of signed @samp{<<} as undefined.
+However, @option{-fsanitize=shift} (and @option{-fsanitize=undefined}) will
+diagnose such cases.  They are also diagnosed where constant
+expressions are required.
 
 @item
 @cite{The sign of the remainder on integer division (C90 6.3.5).}
