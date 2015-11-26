@@ -1,3 +1,8 @@
+2015-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67249
+	* g++.dg/concepts/pr67249.C: New.
+
 2015-11-26  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/66799
