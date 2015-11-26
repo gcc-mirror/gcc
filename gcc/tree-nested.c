@@ -2722,10 +2722,10 @@ fold_mem_refs (tree *const &e, void *data ATTRIBUTE_UNUSED)
   return true;
 }
 
-/* Do "everything else" to clean up or complete state collected by the
-   various walking passes -- lay out the types and decls, generate code
-   to initialize the frame decl, store critical expressions in the
-   struct function for rtl to find.  */
+/* Do "everything else" to clean up or complete state collected by the various
+   walking passes -- create a field to hold the frame base address, lay out the
+   types and decls, generate code to initialize the frame decl, store critical
+   expressions in the struct function for rtl to find.  */
 
 static void
 finalize_nesting_tree_1 (struct nesting_info *root)
@@ -2741,20 +2741,70 @@ finalize_nesting_tree_1 (struct nesting_info *root)
      out at this time.  */
   if (root->frame_type)
     {
+      /* Debugging information needs to compute the frame base address of the
+	 parent frame out of the static chain from the nested frame.
+
+	 The static chain is the address of the FRAME record, so one could
+	 imagine it would be possible to compute the frame base address just
+	 adding a constant offset to this address.  Unfortunately, this is not
+	 possible: if the FRAME object has alignment constraints that are
+	 stronger than the stack, then the offset between the frame base and
+	 the FRAME object will be dynamic.
+
+	 What we do instead is to append a field to the FRAME object that holds
+	 the frame base address: then debug info just has to fetch this
+	 field.  */
+
+      /* Debugging information will refer to the CFA as the frame base
+	 address: we will do the same here.  */
+      const tree frame_addr_fndecl
+        = builtin_decl_explicit (BUILT_IN_DWARF_CFA);
+
+      /* Create a field in the FRAME record to hold the frame base address for
+	 this stack frame.  Since it will be used only by the debugger, put it
+	 at the end of the record in order not to shift all other offsets.  */
+      tree fb_decl = make_node (FIELD_DECL);
+
+      DECL_NAME (fb_decl) = get_identifier ("FRAME_BASE.PARENT");
+      TREE_TYPE (fb_decl) = ptr_type_node;
+      TREE_ADDRESSABLE (fb_decl) = 1;
+      DECL_CONTEXT (fb_decl) = root->frame_type;
+      TYPE_FIELDS (root->frame_type) = chainon (TYPE_FIELDS (root->frame_type),
+						fb_decl);
+
       /* In some cases the frame type will trigger the -Wpadded warning.
 	 This is not helpful; suppress it. */
       int save_warn_padded = warn_padded;
-      tree *adjust;
-
       warn_padded = 0;
       layout_type (root->frame_type);
       warn_padded = save_warn_padded;
       layout_decl (root->frame_decl, 0);
 
+      /* Initialize the frame base address field.  If the builtin we need is
+	 not available, set it to NULL so that debugging information does not
+	 reference junk.  */
+      tree fb_ref = build3 (COMPONENT_REF, TREE_TYPE (fb_decl),
+			    root->frame_decl, fb_decl, NULL_TREE);
+      tree fb_tmp;
+
+      if (frame_addr_fndecl != NULL_TREE)
+	{
+	  gcall *fb_gimple = gimple_build_call (frame_addr_fndecl, 1,
+						integer_zero_node);
+	  gimple_stmt_iterator gsi = gsi_last (stmt_list);
+
+	  fb_tmp = init_tmp_var_with_call (root, &gsi, fb_gimple);
+	}
+      else
+	fb_tmp = build_int_cst (TREE_TYPE (fb_ref), 0);
+      gimple_seq_add_stmt (&stmt_list,
+			   gimple_build_assign (fb_ref, fb_tmp));
+
       /* Remove root->frame_decl from root->new_local_var_chain, so
 	 that we can declare it also in the lexical blocks, which
 	 helps ensure virtual regs that end up appearing in its RTL
 	 expression get substituted in instantiate_virtual_regs().  */
+      tree *adjust;
       for (adjust = &root->new_local_var_chain;
 	   *adjust != root->frame_decl;
 	   adjust = &DECL_CHAIN (*adjust))
