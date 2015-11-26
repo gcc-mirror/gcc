@@ -1,3 +1,8 @@
+2015-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67313
+	* g++.dg/cpp0x/no-weak1.C: New.
+
 2015-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/68128
