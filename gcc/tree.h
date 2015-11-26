@@ -1453,6 +1453,11 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_SHARED_FIRSTPRIVATE(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_SHARED)->base.public_flag)
 
+/* True on a SHARED clause if a scalar is not modified in the body and
+   thus could be optimized as firstprivate.  */
+#define OMP_CLAUSE_SHARED_READONLY(NODE) \
+  TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_SHARED))
+
 #define OMP_CLAUSE_IF_MODIFIER(NODE)	\
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_IF)->omp_clause.subcode.if_modifier)
 

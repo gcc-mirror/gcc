@@ -1081,6 +1081,8 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	    break;
 	  if (decl_function_context (decl) != info->context)
 	    {
+	      if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_SHARED)
+		OMP_CLAUSE_SHARED_READONLY (clause) = 0;
 	      bitmap_set_bit (new_suppress, DECL_UID (decl));
 	      OMP_CLAUSE_DECL (clause) = get_nonlocal_debug_decl (info, decl);
 	      if (OMP_CLAUSE_CODE (clause) != OMP_CLAUSE_PRIVATE)
@@ -1732,6 +1734,8 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	      tree field = lookup_field_for_decl (info, decl, NO_INSERT);
 	      if (field)
 		{
+		  if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_SHARED)
+		    OMP_CLAUSE_SHARED_READONLY (clause) = 0;
 		  bitmap_set_bit (new_suppress, DECL_UID (decl));
 		  OMP_CLAUSE_DECL (clause)
 		    = get_local_debug_decl (info, decl, field);
