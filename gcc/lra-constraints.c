@@ -1340,7 +1340,7 @@ process_addr_reg (rtx *loc, bool check_only_p, rtx_insn **before, rtx_insn **aft
   if (after != NULL)
     {
       start_sequence ();
-      lra_emit_move (reg, new_reg);
+      lra_emit_move (before_p ? copy_rtx (reg) : reg, new_reg);
       emit_insn (*after);
       *after = get_insns ();
       end_sequence ();
