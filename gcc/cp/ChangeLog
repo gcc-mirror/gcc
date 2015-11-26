@@ -1,3 +1,13 @@
+2015-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/68508
+	* cp-tree.h (cp_ubsan_maybe_instrument_downcast): Add INTYPE argument.
+	* cp-ubsan.c (cp_ubsan_maybe_instrument_downcast): Likewise.  Use
+	it instead of or in addition to TREE_TYPE (op).  Use
+	is_properly_derived_from, return NULL_TREE if TREE_TYPE (intype) and
+	TREE_TYPE (type) are the same type minus qualifiers.
+	* typeck.c (build_static_cast_1): Adjust callers.
+
 2015-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
