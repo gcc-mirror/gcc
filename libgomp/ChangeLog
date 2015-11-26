@@ -1,3 +1,7 @@
+2015-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/target-35.c: New test.
+
 2015-11-22  James Norris  <jnorris@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
