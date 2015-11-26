@@ -1,3 +1,7 @@
+2015-11-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure: Regenerate.
+
 2015-09-22  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	Backport from mainline:
