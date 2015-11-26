@@ -1,3 +1,9 @@
+2015-11-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/68416
+	* config/i386/i386.h (enum reg_class): Add
+	bounds registers to ALL_REGS.
+
 2015-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/68128
