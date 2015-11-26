@@ -1,3 +1,9 @@
+2015-11-26  Martin Sebor  <msebor@redhat.com>
+
+	* g++.dg/init/new45.C (cookie_size): New constant set to a value
+	appropriate for the target.
+	(operator new[]): Use it.
+
 2015-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67238
