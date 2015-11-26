@@ -1,3 +1,9 @@
+2015-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/68527
+	* c-ada-spec.c (dump_nested_types): Add guard for error_mark_node.
+	(print_ada_struct_decl): Likewise.
+
 2015-11-23  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	PR c++/68001
