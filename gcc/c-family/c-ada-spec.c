@@ -2461,7 +2461,8 @@ dump_nested_types (pretty_printer *buffer, tree t, tree parent, bool forward,
   field = TYPE_FIELDS (outer);
   while (field)
     {
-      if ((TREE_TYPE (field) != outer
+      if (((TREE_TYPE (field) != outer
+	    && TREE_TYPE (field) != error_mark_node)
 	   || (TREE_CODE (TREE_TYPE (field)) == POINTER_TYPE
 	       && TREE_TYPE (TREE_TYPE (field)) != outer))
 	   && (!TYPE_NAME (TREE_TYPE (field))
@@ -3230,9 +3231,10 @@ print_ada_struct_decl (pretty_printer *buffer, tree node, tree type, int spc,
 		}
 	    }
 	  /* Avoid printing the structure recursively.  */
-	  else if ((TREE_TYPE (tmp) != node
-		   || (TREE_CODE (TREE_TYPE (tmp)) == POINTER_TYPE
-		       && TREE_TYPE (TREE_TYPE (tmp)) != node))
+	  else if (((TREE_TYPE (tmp) != node
+		     && TREE_TYPE (tmp) != error_mark_node)
+		    || (TREE_CODE (TREE_TYPE (tmp)) == POINTER_TYPE
+			&& TREE_TYPE (TREE_TYPE (tmp)) != node))
 		   && TREE_CODE (tmp) != TYPE_DECL
 		   && !TREE_STATIC (tmp))
 	    {
