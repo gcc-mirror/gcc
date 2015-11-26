@@ -1,3 +1,10 @@
+2015-11-26  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (write_func_decl_from_insn): Replace callee
+	arg with name.  Don't deal with split regs.  Tweak formatting.
+	(nvptx_expand_call): Adjust write_func_decl_from_insn call.
+	(nvptx_output_call_insn): Don't deal with split regs here.
+
 2015-11-26  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def
