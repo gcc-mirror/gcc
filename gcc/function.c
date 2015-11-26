@@ -3002,6 +3002,38 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	      emit_move_insn (change_address (mem, mode, 0), reg);
 	    }
 
+#ifdef BLOCK_REG_PADDING
+	  /* Storing the register in memory as a full word, as
+	     move_block_from_reg below would do, and then using the
+	     MEM in a smaller mode, has the effect of shifting right
+	     if BYTES_BIG_ENDIAN.  If we're bypassing memory, the
+	     shifting must be explicit.  */
+	  else if (!MEM_P (mem))
+	    {
+	      rtx x;
+
+	      /* If the assert below fails, we should have taken the
+		 mode != BLKmode path above, unless we have downward
+		 padding of smaller-than-word arguments on a machine
+		 with little-endian bytes, which would likely require
+		 additional changes to work correctly.  */
+	      gcc_checking_assert (BYTES_BIG_ENDIAN
+				   && (BLOCK_REG_PADDING (mode,
+							  data->passed_type, 1)
+				       == upward));
+
+	      int by = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
+
+	      x = gen_rtx_REG (word_mode, REGNO (entry_parm));
+	      x = expand_shift (RSHIFT_EXPR, word_mode, x, by,
+				NULL_RTX, 1);
+	      x = force_reg (word_mode, x);
+	      x = gen_lowpart_SUBREG (GET_MODE (mem), x);
+
+	      emit_move_insn (mem, x);
+	    }
+#endif
+
 	  /* Blocks smaller than a word on a BYTES_BIG_ENDIAN
 	     machine must be aligned to the left before storing
 	     to memory.  Note that the previous test doesn't
@@ -3023,14 +3055,20 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	      tem = change_address (mem, word_mode, 0);
 	      emit_move_insn (tem, x);
 	    }
-	  else if (!MEM_P (mem))
-	    emit_move_insn (mem, entry_parm);
 	  else
 	    move_block_from_reg (REGNO (entry_parm), mem,
 				 size_stored / UNITS_PER_WORD);
 	}
       else if (!MEM_P (mem))
-	emit_move_insn (mem, entry_parm);
+	{
+	  gcc_checking_assert (size > UNITS_PER_WORD);
+#ifdef BLOCK_REG_PADDING
+	  gcc_checking_assert (BLOCK_REG_PADDING (GET_MODE (mem),
+						  data->passed_type, 0)
+			       == upward);
+#endif
+	  emit_move_insn (mem, entry_parm);
+	}
       else
 	move_block_from_reg (REGNO (entry_parm), mem,
 			     size_stored / UNITS_PER_WORD);
