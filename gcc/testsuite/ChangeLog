@@ -1,5 +1,11 @@
 2015-11-26  Richard Biener  <rguenther@suse.de>
 
+	PR testsuite/68555
+	* gcc.dg/vect/bb-slp-10.c: Adjust pattern, use target selector
+	and not XFAIL.
+
+2015-11-26  Richard Biener  <rguenther@suse.de>
+
 	PR testsuite/68554
 	* gcc.dg/vect/bb-slp-subgroups-2.c: Require vect_perm.
 
