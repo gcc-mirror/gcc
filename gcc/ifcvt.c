@@ -1850,6 +1850,7 @@ insn_valid_noce_process_p (rtx_insn *insn, rtx cc)
 {
   if (!insn
       || !NONJUMP_INSN_P (insn)
+      || multiple_sets (insn)
       || (cc && set_of (cc, insn)))
       return false;
 
@@ -2176,7 +2177,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
        swap insn that sets up A with the one that sets up B.  If even
        that doesn't help, punt.  */
 
-  modified_in_a = emit_a != NULL_RTX && modified_in_p (orig_b, emit_a);
+  gcc_checking_assert (!emit_a || !modified_in_p (orig_b, emit_a));
   if (tmp_b && then_bb)
     {
       FOR_BB_INSNS (then_bb, tmp_insn)
@@ -2192,7 +2193,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
     }
   if (emit_a || modified_in_a)
     {
-      modified_in_b = emit_b != NULL_RTX && modified_in_p (orig_a, emit_b);
+      gcc_checking_assert (!emit_b || !modified_in_p (orig_a, emit_b));
       if (tmp_b && else_bb)
 	{
 	  FOR_BB_INSNS (else_bb, tmp_insn)
