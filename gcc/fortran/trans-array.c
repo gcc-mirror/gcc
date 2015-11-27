@@ -4976,6 +4976,8 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
       gcc_assert (ubound);
       gfc_conv_expr_type (&se, ubound, gfc_array_index_type);
       gfc_add_block_to_block (pblock, &se.pre);
+      if (ubound->expr_type == EXPR_FUNCTION)
+	se.expr = gfc_evaluate_now (se.expr, pblock);
 
       gfc_conv_descriptor_ubound_set (descriptor_block, descriptor,
 				      gfc_rank_cst[n], se.expr);
