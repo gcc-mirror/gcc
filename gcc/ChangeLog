@@ -1,3 +1,9 @@
+2015-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (Option Summary): Use negative form of
+	-Waggressive-loop-optimizations, remove redundant -Wpedantic-ms-format,
+	sort alphabetically and re-justify.
+
 2015-11-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/68536
