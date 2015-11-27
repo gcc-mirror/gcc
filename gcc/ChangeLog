@@ -1,3 +1,13 @@
+2015-11-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Revert
+	2015-11-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* ifcvt.c (insn_valid_noce_process_p): Reject insn if it satisfies
+	multiple_sets.
+	(noce_try_cmove_arith): Add checking asserts that orig_a and orig_b
+	are not modified by the final modified insns in the basic blocks.
+
 2015-11-27  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx-protos.h (nvptx_addr_space_from_address):
