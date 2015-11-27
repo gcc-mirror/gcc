@@ -1,5 +1,10 @@
 2015-11-27  Martin Liska  <mliska@suse.cz>
 
+	* tree-ssa-uninit.c: Fix whitespaces in the source file.
+	The change is just automatical.
+
+2015-11-27  Martin Liska  <mliska@suse.cz>
+
 	* tree-chkp.c (chkp_make_static_bounds): Release buffer
 	used for string.
 
