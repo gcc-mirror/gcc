@@ -41,7 +41,6 @@ extern const char *nvptx_output_return (void);
 extern machine_mode nvptx_underlying_object_mode (rtx);
 extern const char *nvptx_section_from_addr_space (addr_space_t);
 extern bool nvptx_hard_regno_mode_ok (int, machine_mode);
-extern addr_space_t nvptx_addr_space_from_address (rtx);
 extern rtx nvptx_maybe_convert_symbolic_operand (rtx);
 #endif
 #endif

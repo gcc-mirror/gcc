@@ -1,3 +1,12 @@
+2015-11-27  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx-protos.h (nvptx_addr_space_from_address):
+	Don't declare.
+	* config/nvptx/nvptx.c (nvptx_addr_space_from_sym): New.
+	(nvptx_maybe_convert_symbolic_operand): Simplify.
+	(nvptx_addr_space_from_address): Delete.
+	(nvptx_print_operand): Adjust 'A' case.
+
 2015-11-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68559

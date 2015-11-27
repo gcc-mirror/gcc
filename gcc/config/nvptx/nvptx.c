@@ -206,6 +206,24 @@ nvptx_ptx_type_from_mode (machine_mode mode, bool promote)
     }
 }
 
+/* Determine the address space to use for SYMBOL_REF SYM.  */
+
+static addr_space_t
+nvptx_addr_space_from_sym (rtx sym)
+{
+  tree decl = SYMBOL_REF_DECL (sym);
+  if (decl == NULL_TREE || TREE_CODE (decl) == FUNCTION_DECL)
+    return ADDR_SPACE_GENERIC;
+
+  bool is_const = (CONSTANT_CLASS_P (decl)
+		   || TREE_CODE (decl) == CONST_DECL
+		   || TREE_READONLY (decl));
+  if (is_const)
+    return ADDR_SPACE_CONST;
+
+  return ADDR_SPACE_GLOBAL;
+}
+
 /* If MODE should be treated as two registers of an inner mode, return
    that inner mode.  Otherwise return VOIDmode.  */
 
@@ -1359,22 +1377,25 @@ nvptx_gen_wcast (rtx reg, propagate_mask pm, unsigned rep, wcast_data_t *data)
    original operand, or the converted one.  */
 
 rtx
-nvptx_maybe_convert_symbolic_operand (rtx orig_op)
+nvptx_maybe_convert_symbolic_operand (rtx op)
 {
-  if (GET_MODE (orig_op) != Pmode)
-    return orig_op;
+  if (GET_MODE (op) != Pmode)
+    return op;
 
-  rtx op = orig_op;
-  while (GET_CODE (op) == PLUS || GET_CODE (op) == CONST)
-    op = XEXP (op, 0);
-  if (GET_CODE (op) != SYMBOL_REF)
-    return orig_op;
+  rtx sym = op;
+  if (GET_CODE (sym) == CONST)
+    sym = XEXP (sym, 0);
+  if (GET_CODE (sym) == PLUS)
+    sym = XEXP (sym, 0);
 
-  nvptx_maybe_record_fnsym (op);
+  if (GET_CODE (sym) != SYMBOL_REF)
+    return op;
+
+  nvptx_maybe_record_fnsym (sym);
   
-  addr_space_t as = nvptx_addr_space_from_address (op);
+  addr_space_t as = nvptx_addr_space_from_sym (sym);
   if (as == ADDR_SPACE_GENERIC)
-    return orig_op;
+    return op;
 
   enum unspec code;
   code = (as == ADDR_SPACE_GLOBAL ? UNSPEC_FROM_GLOBAL
@@ -1382,9 +1403,10 @@ nvptx_maybe_convert_symbolic_operand (rtx orig_op)
 	  : as == ADDR_SPACE_SHARED ? UNSPEC_FROM_SHARED
 	  : as == ADDR_SPACE_CONST ? UNSPEC_FROM_CONST
 	  : UNSPEC_FROM_PARAM);
+
   rtx dest = gen_reg_rtx (Pmode);
-  emit_insn (gen_rtx_SET (dest, gen_rtx_UNSPEC (Pmode, gen_rtvec (1, orig_op),
-						code)));
+  emit_insn (gen_rtx_SET (dest,
+			  gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op), code)));
   return dest;
 }
 
@@ -1465,29 +1487,6 @@ nvptx_section_for_decl (const_tree decl)
   return ".global";
 }
 
-/* Look for a SYMBOL_REF in ADDR and return the address space to be used
-   for the insn referencing this address.  */
-
-addr_space_t
-nvptx_addr_space_from_address (rtx addr)
-{
-  while (GET_CODE (addr) == PLUS || GET_CODE (addr) == CONST)
-    addr = XEXP (addr, 0);
-  if (GET_CODE (addr) != SYMBOL_REF)
-    return ADDR_SPACE_GENERIC;
-
-  tree decl = SYMBOL_REF_DECL (addr);
-  if (decl == NULL_TREE || TREE_CODE (decl) == FUNCTION_DECL)
-    return ADDR_SPACE_GENERIC;
-
-  bool is_const = (CONSTANT_CLASS_P (decl)
-		   || TREE_CODE (decl) == CONST_DECL
-		   || TREE_READONLY (decl));
-  if (is_const)
-    return ADDR_SPACE_CONST;
-
-  return ADDR_SPACE_GLOBAL;
-}
 
 /* Machinery to output constant initializers.  When beginning an initializer,
    we decide on a chunk size (which is visible in ptx in the type used), and
@@ -1945,7 +1944,17 @@ nvptx_print_operand (FILE *file, rtx x, int code)
     {
     case 'A':
       {
-	addr_space_t as = nvptx_addr_space_from_address (XEXP (x, 0));
+	addr_space_t as = ADDR_SPACE_GENERIC;
+	rtx sym = XEXP (x, 0);
+
+	if (GET_CODE (sym) == CONST)
+	  sym = XEXP (sym, 0);
+	if (GET_CODE (sym) == PLUS)
+	  sym = XEXP (sym, 0);
+
+	if (GET_CODE (sym) == SYMBOL_REF)
+	  as = nvptx_addr_space_from_sym (sym);
+
 	fputs (nvptx_section_from_addr_space (as), file);
       }
       break;
