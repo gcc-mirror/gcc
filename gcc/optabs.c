@@ -6674,17 +6674,6 @@ expand_vec_perm_1 (enum insn_code icode, rtx target,
   else
     {
       create_input_operand (&ops[1], v0, tmode);
-      /* See if this can be handled with a vec_shr.  We only do this if the
-         second vector is all zeroes.  */
-      enum insn_code shift_code = optab_handler (vec_shr_optab, GET_MODE (v0));
-      if (v1 == CONST0_RTX (GET_MODE (v1)) && shift_code)
-	if (rtx shift_amt = shift_amt_for_vec_perm_mask (sel))
-	  {
-	    create_convert_operand_from_type (&ops[2], shift_amt,
-					      sizetype_tab[(int) stk_sizetype]);
-	    if (maybe_expand_insn (shift_code, 3, ops))
-	      return ops[0].value;
-	  }
       create_input_operand (&ops[2], v1, tmode);
     }
 
@@ -6726,6 +6715,44 @@ expand_vec_perm (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
   gcc_assert (GET_MODE_CLASS (GET_MODE (sel)) == MODE_VECTOR_INT);
   if (GET_CODE (sel) == CONST_VECTOR)
     {
+      /* See if this can be handled with a vec_shr.  We only do this if the
+	 second vector is all zeroes.  */
+      enum insn_code shift_code = optab_handler (vec_shr_optab, mode);
+      enum insn_code shift_code_qi = ((qimode != VOIDmode && qimode != mode)
+				      ? optab_handler (vec_shr_optab, qimode)
+				      : CODE_FOR_nothing);
+      rtx shift_amt = NULL_RTX;
+      if (v1 == CONST0_RTX (GET_MODE (v1))
+	  && (shift_code != CODE_FOR_nothing
+	      || shift_code_qi != CODE_FOR_nothing))
+	{
+	  shift_amt = shift_amt_for_vec_perm_mask (sel);
+	  if (shift_amt)
+	    {
+	      struct expand_operand ops[3];
+	      if (shift_code != CODE_FOR_nothing)
+		{
+		  create_output_operand (&ops[0], target, mode);
+		  create_input_operand (&ops[1], v0, mode);
+		  create_convert_operand_from_type (&ops[2], shift_amt,
+						    sizetype);
+		  if (maybe_expand_insn (shift_code, 3, ops))
+		    return ops[0].value;
+		}
+	      if (shift_code_qi != CODE_FOR_nothing)
+		{
+		  tmp = gen_reg_rtx (qimode);
+		  create_output_operand (&ops[0], tmp, qimode);
+		  create_input_operand (&ops[1], gen_lowpart (qimode, v0),
+					qimode);
+		  create_convert_operand_from_type (&ops[2], shift_amt,
+						    sizetype);
+		  if (maybe_expand_insn (shift_code_qi, 3, ops))
+		    return gen_lowpart (mode, ops[0].value);
+		}
+	    }
+	}
+
       icode = direct_optab_handler (vec_perm_const_optab, mode);
       if (icode != CODE_FOR_nothing)
 	{
