@@ -391,8 +391,6 @@
       emit_move_insn (operands[0], tmp);
       DONE;
     }
-  if (GET_CODE (operands[1]) == SYMBOL_REF)
-    nvptx_record_needed_fndecl (SYMBOL_REF_DECL (operands[1]));
 })
 
 (define_insn "highpartscsf2"
