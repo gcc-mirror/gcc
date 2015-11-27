@@ -1,3 +1,10 @@
+2015-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/63326
+	* testsuite/libgomp.c/cancel-parallel-2.c (foo): Add semicolon
+	in between case label and OpenMP standalone directives.
+	* testsuite/libgomp.c++/cancel-parallel-2.C (foo): Likewise.
+
 2015-11-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure: Regenerate.
