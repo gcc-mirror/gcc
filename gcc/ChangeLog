@@ -1,3 +1,10 @@
+2015-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/68552
+	* optabs.c (expand_vec_perm_1): Move vec_shr handling from here...
+	(expand_vec_perm): ... here.  Do it regardless of vec_perm_const_optab
+	or whether v0 == v1.
+
 2015-11-27  Martin Liska  <mliska@suse.cz>
 
 	* tree-ssa-uninit.c: Fix whitespaces in the source file.
