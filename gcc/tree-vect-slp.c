@@ -3241,102 +3241,6 @@ vect_create_mask_and_perm (gimple *stmt,
 }
 
 
-/* Given FIRST_MASK_ELEMENT - the mask element in element representation,
-   return in CURRENT_MASK_ELEMENT its equivalent in target specific
-   representation.  Check that the mask is valid and return FALSE if not.
-   Return TRUE in NEED_NEXT_VECTOR if the permutation requires to move to
-   the next vector, i.e., the current first vector is not needed.  */
-
-static bool
-vect_get_mask_element (gimple *stmt, int first_mask_element, int m,
-                       int mask_nunits, bool only_one_vec, int index,
-		       unsigned char *mask, int *current_mask_element,
-                       bool *need_next_vector, int *number_of_mask_fixes,
-                       bool *mask_fixed, bool *needs_first_vector)
-{
-  int i;
-
-  /* Convert to target specific representation.  */
-  *current_mask_element = first_mask_element + m;
-  /* Adjust the value in case it's a mask for second and third vectors.  */
-  *current_mask_element -= mask_nunits * (*number_of_mask_fixes - 1);
-
-  if (*current_mask_element < 0)
-    {
-      if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			   "permutation requires past vector ");
-	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-	  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-	}
-      return false;
-    }
-
-  if (*current_mask_element < mask_nunits)
-    *needs_first_vector = true;
-
-  /* We have only one input vector to permute but the mask accesses values in
-     the next vector as well.  */
-  if (only_one_vec && *current_mask_element >= mask_nunits)
-    {
-      if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			   "permutation requires at least two vectors ");
-          dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-          dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-        }
-
-      return false;
-    }
-
-  /* The mask requires the next vector.  */
-  while (*current_mask_element >= mask_nunits * 2)
-    {
-      if (*needs_first_vector || *mask_fixed)
-        {
-          /* We either need the first vector too or have already moved to the
-             next vector. In both cases, this permutation needs three
-             vectors.  */
-          if (dump_enabled_p ())
-            {
-              dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			       "permutation requires at "
-			       "least three vectors ");
-              dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-              dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-            }
-
-          return false;
-        }
-
-      /* We move to the next vector, dropping the first one and working with
-         the second and the third - we need to adjust the values of the mask
-         accordingly.  */
-      *current_mask_element -= mask_nunits * *number_of_mask_fixes;
-
-      for (i = 0; i < index; i++)
-        mask[i] -= mask_nunits * *number_of_mask_fixes;
-
-      (*number_of_mask_fixes)++;
-      *mask_fixed = true;
-    }
-
-  *need_next_vector = *mask_fixed;
-
-  /* This was the last element of this mask. Start a new one.  */
-  if (index == mask_nunits - 1)
-    {
-      *number_of_mask_fixes = 1;
-      *mask_fixed = false;
-      *needs_first_vector = false;
-    }
-
-  return true;
-}
-
-
 /* Generate vector permute statements from a list of loads in DR_CHAIN.
    If ANALYZE_ONLY is TRUE, only check that it is possible to create valid
    permute statements for the SLP node NODE of the SLP instance
@@ -3350,17 +3254,11 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   gimple *stmt = SLP_TREE_SCALAR_STMTS (node)[0];
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree mask_element_type = NULL_TREE, mask_type;
-  int i, j, k, nunits, vec_index = 0;
+  int nunits, vec_index = 0;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   int group_size = SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
-  int first_mask_element;
-  int index, unroll_factor, current_mask_element, ncopies;
+  int unroll_factor, mask_element, ncopies;
   unsigned char *mask;
-  bool only_one_vec = false, need_next_vector = false;
-  int first_vec_index, second_vec_index, orig_vec_stmts_num, vect_stmts_counter;
-  int number_of_mask_fixes = 1;
-  bool mask_fixed = false;
-  bool needs_first_vector = false;
   machine_mode mode;
 
   if (!STMT_VINFO_GROUPED_ACCESS (stmt_info))
@@ -3391,15 +3289,6 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   mask = XALLOCAVEC (unsigned char, nunits);
   unroll_factor = SLP_INSTANCE_UNROLLING_FACTOR (slp_node_instance);
 
-  /* The number of vector stmts to generate based only on SLP_NODE_INSTANCE
-     unrolling factor.  */
-  orig_vec_stmts_num
-    = (STMT_VINFO_GROUP_SIZE (stmt_info)
-       * SLP_INSTANCE_UNROLLING_FACTOR (slp_node_instance)
-       + nunits - 1) / nunits;
-  if (orig_vec_stmts_num == 1)
-    only_one_vec = true;
-
   /* Number of copies is determined by the final vectorization factor
      relatively to SLP_NODE_INSTANCE unrolling factor.  */
   ncopies = vf / SLP_INSTANCE_UNROLLING_FACTOR (slp_node_instance);
@@ -3422,75 +3311,85 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
      we need the second and the third vectors: {b1,c1,a2,b2} and
      {c2,a3,b3,c3}.  */
 
-  {
-      index = 0;
-      vect_stmts_counter = 0;
-      vec_index = 0;
-      first_vec_index = vec_index++;
-      if (only_one_vec)
-        second_vec_index = first_vec_index;
-      else
-        second_vec_index =  vec_index++;
+  int vect_stmts_counter = 0;
+  int index = 0;
+  int first_vec_index = -1;
+  int second_vec_index = -1;
 
-      for (j = 0; j < unroll_factor; j++)
-        {
-          for (k = 0; k < group_size; k++)
-            {
-	      i = SLP_TREE_LOAD_PERMUTATION (node)[k];
-              first_mask_element = i + j * STMT_VINFO_GROUP_SIZE (stmt_info);
-              if (!vect_get_mask_element (stmt, first_mask_element, 0,
-					  nunits, only_one_vec, index,
-					  mask, &current_mask_element,
-					  &need_next_vector,
-					  &number_of_mask_fixes, &mask_fixed,
-					  &needs_first_vector))
-		return false;
-	      gcc_assert (current_mask_element >= 0
-			  && current_mask_element < 2 * nunits);
-	      mask[index++] = current_mask_element;
+  for (int j = 0; j < unroll_factor; j++)
+    {
+      for (int k = 0; k < group_size; k++)
+	{
+	  int i = (SLP_TREE_LOAD_PERMUTATION (node)[k]
+		   + j * STMT_VINFO_GROUP_SIZE (stmt_info));
+	  vec_index = i / nunits;
+	  mask_element = i % nunits;
+	  if (vec_index == first_vec_index
+	      || first_vec_index == -1)
+	    {
+	      first_vec_index = vec_index;
+	    }
+	  else if (vec_index == second_vec_index
+		   || second_vec_index == -1)
+	    {
+	      second_vec_index = vec_index;
+	      mask_element += nunits;
+	    }
+	  else
+	    {
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				   "permutation requires at "
+				   "least three vectors ");
+		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				    stmt, 0);
+		  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
+		}
+	      return false;
+	    }
 
-              if (index == nunits)
-                {
-		  index = 0;
-		  if (!can_vec_perm_p (mode, false, mask))
+	  gcc_assert (mask_element >= 0
+		      && mask_element < 2 * nunits);
+	  mask[index++] = mask_element;
+
+	  if (index == nunits)
+	    {
+	      if (!can_vec_perm_p (mode, false, mask))
+		{
+		  if (dump_enabled_p ())
 		    {
-		      if (dump_enabled_p ())
-			{
-			  dump_printf_loc (MSG_MISSED_OPTIMIZATION,
-					   vect_location, 
-					   "unsupported vect permute { ");
-			  for (i = 0; i < nunits; ++i)
-			    dump_printf (MSG_MISSED_OPTIMIZATION, "%d ",
-					 mask[i]);
-			  dump_printf (MSG_MISSED_OPTIMIZATION, "}\n");
-			}
-		      return false;
+		      dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+				       vect_location, 
+				       "unsupported vect permute { ");
+		      for (i = 0; i < nunits; ++i)
+			dump_printf (MSG_MISSED_OPTIMIZATION, "%d ", mask[i]);
+		      dump_printf (MSG_MISSED_OPTIMIZATION, "}\n");
 		    }
+		  return false;
+		}
 
-                  if (!analyze_only)
-                    {
-		      int l;
-		      tree mask_vec, *mask_elts;
-		      mask_elts = XALLOCAVEC (tree, nunits);
-		      for (l = 0; l < nunits; ++l)
-			mask_elts[l] = build_int_cst (mask_element_type,
-						      mask[l]);
-		      mask_vec = build_vector (mask_type, mask_elts);
+	      if (!analyze_only)
+		{
+		  tree mask_vec, *mask_elts;
+		  mask_elts = XALLOCAVEC (tree, nunits);
+		  for (int l = 0; l < nunits; ++l)
+		    mask_elts[l] = build_int_cst (mask_element_type, mask[l]);
+		  mask_vec = build_vector (mask_type, mask_elts);
 
-		      if (need_next_vector)
-                        {
-                          first_vec_index = second_vec_index;
-                          second_vec_index = vec_index;
-                        }
+		  if (second_vec_index == -1)
+		    second_vec_index = first_vec_index;
+		  vect_create_mask_and_perm (stmt, mask_vec, first_vec_index,
+					     second_vec_index,
+					     gsi, node, vectype, dr_chain,
+					     ncopies, vect_stmts_counter++);
+		}
 
-                      vect_create_mask_and_perm (stmt,
-                               mask_vec, first_vec_index, second_vec_index,
-			       gsi, node, vectype, dr_chain,
-			       ncopies, vect_stmts_counter++);
-                    }
-                }
-            }
-        }
+	      index = 0;
+	      first_vec_index = -1;
+	      second_vec_index = -1;
+	    }
+	}
     }
 
   return true;

@@ -33,7 +33,7 @@
 #define M34 7716
 #define M44 16
 
-#define N 16
+#define N 40
 
 void foo (unsigned int *__restrict__ pInput,
           unsigned int *__restrict__ pOutput,
@@ -75,10 +75,16 @@ void foo (unsigned int *__restrict__ pInput,
 int main (int argc, const char* argv[])
 {
   unsigned int input[N], output[N], i, input2[N], output2[N];
-  unsigned int check_results[N] = {3208, 1334, 28764, 35679, 2789, 13028,
-    4754, 168364, 91254, 12399, 22848, 8174, 307964, 146829, 22009, 0};
-  unsigned int check_results2[N] = {7136, 2702, 84604, 57909, 6633, 16956,
-    6122, 224204, 113484, 16243, 26776, 9542, 363804, 169059, 25853, 0};
+  unsigned int check_results[N]
+    = {3208, 1334, 28764, 35679, 2789, 13028, 4754, 168364, 91254, 12399, 
+    22848, 8174, 307964, 146829, 22009, 32668, 11594, 447564, 202404, 31619, 
+    42488, 15014, 587164, 257979, 41229, 52308, 18434, 726764, 313554, 50839, 
+    62128, 21854, 866364, 369129, 60449, 71948, 25274, 1005964, 424704, 70059};
+  unsigned int check_results2[N]
+    = {7136, 2702, 84604, 57909, 6633, 16956, 6122, 224204, 113484, 16243, 
+    26776, 9542, 363804, 169059, 25853, 36596, 12962, 503404, 224634, 35463, 
+    46416, 16382, 643004, 280209, 45073, 56236, 19802, 782604, 335784, 54683, 
+    66056, 23222, 922204, 391359, 64293, 75876, 26642, 1061804, 446934, 73903};
 
   check_vect ();
 
@@ -101,7 +107,5 @@ int main (int argc, const char* argv[])
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect"  } } */
-/* { dg-final { scan-tree-dump "permutation requires at least three vectors" "vect" { target vect_perm } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect"  } } */
-
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" { target vect_perm } } } */
