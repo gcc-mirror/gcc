@@ -242,39 +242,37 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic @gol
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  @gol
--Waggressive-loop-optimizations -Warray-bounds -Warray-bounds=@var{n} @gol
--Wbool-compare -Wduplicated-cond -Wframe-address @gol
--Wno-attributes -Wno-builtin-macro-redefined @gol
+-Wno-aggressive-loop-optimizations -Warray-bounds -Warray-bounds=@var{n} @gol
+-Wno-attributes -Wbool-compare -Wno-builtin-macro-redefined @gol
 -Wc90-c99-compat -Wc99-c11-compat @gol
 -Wc++-compat -Wc++11-compat -Wc++14-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment -Wconditionally-supported  @gol
--Wconversion -Wcoverage-mismatch -Wdate-time -Wdelete-incomplete -Wno-cpp  @gol
+-Wconversion -Wcoverage-mismatch -Wno-cpp -Wdate-time -Wdelete-incomplete @gol
 -Wno-deprecated -Wno-deprecated-declarations -Wno-designated-init @gol
 -Wdisabled-optimization @gol
 -Wno-discarded-qualifiers -Wno-discarded-array-qualifiers @gol
--Wno-div-by-zero -Wdouble-promotion -Wempty-body  -Wenum-compare @gol
--Wno-endif-labels -Werror  -Werror=* @gol
--Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
+-Wno-div-by-zero -Wdouble-promotion -Wduplicated-cond @gol
+-Wempty-body  -Wenum-compare -Wno-endif-labels @gol
+-Werror  -Werror=* -Wfatal-errors -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-contains-nul -Wno-format-extra-args -Wformat-nonliteral @gol
--Wformat-security  -Wformat-signedness  -Wformat-y2k @gol
+-Wformat-security  -Wformat-signedness  -Wformat-y2k -Wframe-address @gol
 -Wframe-larger-than=@var{len} -Wno-free-nonheap-object -Wjump-misses-init @gol
 -Wignored-qualifiers  -Wincompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
 -Winit-self  -Winline  -Wno-int-conversion @gol
 -Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
--Wnull-dereference @gol
--Winvalid-pch -Wlarger-than=@var{len}  -Wunsafe-loop-optimizations @gol
+-Winvalid-pch -Wlarger-than=@var{len} @gol
 -Wlogical-op -Wlogical-not-parentheses -Wlong-long @gol
 -Wmain -Wmaybe-uninitialized -Wmemset-transposed-args @gol
 -Wmisleading-indentation -Wmissing-braces @gol
 -Wmissing-field-initializers -Wmissing-include-dirs @gol
 -Wno-multichar  -Wnonnull  -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
--Wodr  -Wno-overflow  -Wopenmp-simd @gol
--Woverride-init-side-effects @gol
--Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
--Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
+-Wnull-dereference -Wodr  -Wno-overflow  -Wopenmp-simd  @gol
+-Woverride-init-side-effects -Woverlength-strings @gol
+-Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
+-Wparentheses -Wno-pedantic-ms-format @gol
 -Wplacement-new -Wpointer-arith  -Wno-pointer-to-int-cast @gol
--Wredundant-decls  -Wno-return-local-addr @gol
+-Wno-pragmas -Wredundant-decls  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
 -Wshift-overflow -Wshift-overflow=@var{n} @gol
 -Wshift-count-negative -Wshift-count-overflow -Wshift-negative-value @gol
@@ -282,14 +280,14 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-scalar-storage-order @gol
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
--Wstrict-aliasing=n @gol -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
+-Wstrict-aliasing=n -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]} @gol
 -Wsuggest-final-types @gol -Wsuggest-final-methods -Wsuggest-override @gol
 -Wmissing-format-attribute -Wsubobject-linkage @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum -Wswitch-bool -Wsync-nand @gol
 -Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs @gol
 -Wtype-limits  -Wundef @gol
--Wuninitialized  -Wunknown-pragmas  -Wno-pragmas @gol
+-Wuninitialized  -Wunknown-pragmas  -Wunsafe-loop-optimizations @gol
 -Wunsuffixed-float-constants  -Wunused  -Wunused-function @gol
 -Wunused-label  -Wunused-local-typedefs -Wunused-parameter @gol
 -Wno-unused-result -Wunused-value @gol -Wunused-variable @gol
