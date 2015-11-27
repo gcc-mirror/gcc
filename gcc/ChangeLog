@@ -1,3 +1,10 @@
+2015-11-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/68536
+	* lra.c (lra_emit_add): Add code for null base.
+	* lra-constraints.c (curr_insn_transform): Skip operators for
+	subreg reloads.
+
 2015-11-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Revert
