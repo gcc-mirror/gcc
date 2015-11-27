@@ -1,3 +1,7 @@
+2015-11-27  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/pr63568.c: Convert to GIMPLE.
+
 2015-11-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/68506
