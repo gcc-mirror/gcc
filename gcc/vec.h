@@ -1702,6 +1702,18 @@ vec<T, va_heap, vl_ptr>::using_auto_storage () const
   return m_vec->m_vecpfx.m_using_auto_storage;
 }
 
+/* Release VEC and call release of all element vectors.  */
+
+template<typename T>
+inline void
+release_vec_vec (vec<vec<T> > &vec)
+{
+  for (unsigned i = 0; i < vec.length (); i++)
+    vec[i].release ();
+
+  vec.release ();
+}
+
 #if (GCC_VERSION >= 3000)
 # pragma GCC poison m_vec m_vecpfx m_vecdata
 #endif

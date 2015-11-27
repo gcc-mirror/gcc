@@ -1,3 +1,10 @@
+2015-11-27  Martin Liska  <mliska@suse.cz>
+
+	PR c++/68312
+	* array-notation-common.c (cilkplus_extract_an_triplets):
+	Release vector of vectors.
+	* cilk.c (gimplify_cilk_spawn): Free allocated memory.
+
 2015-11-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR c++/68527
