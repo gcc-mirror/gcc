@@ -1519,7 +1519,9 @@ nontrapping_dom_walker::before_dom_children (basic_block bb)
     {
       gimple *stmt = gsi_stmt (gsi);
 
-      if (is_gimple_call (stmt) && !nonfreeing_call_p (stmt))
+      if ((gimple_code (stmt) == GIMPLE_ASM && gimple_vdef (stmt))
+	  || (is_gimple_call (stmt)
+	      && (!nonfreeing_call_p (stmt) || !nonbarrier_call_p (stmt))))
 	nt_call_phase++;
       else if (gimple_assign_single_p (stmt) && !gimple_has_volatile_ops (stmt))
 	{
