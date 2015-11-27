@@ -1,3 +1,22 @@
+2015-11-27  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx-protos.h (nvptx_record_needed_decl): Don't
+	declaree.
+	* config/nvptx/nvptx.c (write_func_decl_from_insn): Move earlier.
+	(nvptx_record_fndecl): Don't return value, remove force
+	argyment. Require fndecl.
+	(nvptx_record_libfunc): New.
+	(nvptx_record_needed_decl): Deteermine how to record decl here.
+	(nvptx_maybe_record_fnsym): New.
+	(nvptx_expand_call): Don't record libfuncs here,
+	(nvptx_maybe_convert_symbolic_operand): Use
+	nvptx_maye_record_fnsym.
+	(nvptx_assemble_integer): Reimplement with single switch.
+	(nvptx_output_call_insn): Register libfuncs here.
+	(nvptx_file_end): Adjust  nvptx_record_fndecl call.
+	* config/nvptx/nvptx.md (expand_movdi): Don't call
+	nvptx_record_needed_decl.
+
 2015-11-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68553

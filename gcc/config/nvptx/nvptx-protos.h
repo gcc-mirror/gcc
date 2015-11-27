@@ -24,7 +24,6 @@
 extern void nvptx_declare_function_name (FILE *, const char *, const_tree decl);
 extern void nvptx_declare_object_name (FILE *file, const char *name,
 				       const_tree decl);
-extern void nvptx_record_needed_fndecl (tree decl);
 extern void nvptx_function_end (FILE *);
 extern void nvptx_output_skip (FILE *, unsigned HOST_WIDE_INT);
 extern void nvptx_output_ascii (FILE *, const char *, unsigned HOST_WIDE_INT);
