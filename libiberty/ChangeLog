@@ -1,3 +1,27 @@
+2015-11-27  Pedro Alves  <palves@redhat.com>
+
+	PR other/61321
+	PR other/61233
+	* demangle.h (enum demangle_component_type)
+	<DEMANGLE_COMPONENT_CONVERSION>: New value.
+	* cp-demangle.c (d_demangle_callback, d_make_comp): Handle
+	DEMANGLE_COMPONENT_CONVERSION.
+	(is_ctor_dtor_or_conversion): Handle DEMANGLE_COMPONENT_CONVERSION
+	instead of DEMANGLE_COMPONENT_CAST.
+	(d_operator_name): Return a DEMANGLE_COMPONENT_CONVERSION
+	component if handling a conversion.
+	(d_count_templates_scopes, d_print_comp_inner): Handle
+	DEMANGLE_COMPONENT_CONVERSION.
+	(d_print_comp_inner): Handle DEMANGLE_COMPONENT_CONVERSION instead
+	of DEMANGLE_COMPONENT_CAST.
+	(d_print_cast): Rename as ...
+	(d_print_conversion): ... this.  Adjust comments.
+	(d_print_cast): Rewrite - simply print the left subcomponent.
+	* cp-demint.c (cplus_demangle_fill_component): Handle
+	DEMANGLE_COMPONENT_CONVERSION.
+
+	* testsuite/demangle-expected: Add tests.
+
 2015-11-12  Mike Stump  <mikestump@comcast.net>
 
 	* Makefile.in (etags tags TAGS): Use && instead of ;.
