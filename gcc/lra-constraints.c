@@ -3383,10 +3383,13 @@ curr_insn_transform (bool check_only_p)
        depend on memory mode.  */
     for (i = 0; i < n_operands; i++)
       {
-	rtx op = *curr_id->operand_loc[i];
-	rtx subst, old = op;
+	rtx op, subst, old;
 	bool op_change_p = false;
+
+	if (curr_static_id->operand[i].is_operator)
+	  continue;
 	
+	old = op = *curr_id->operand_loc[i];
 	if (GET_CODE (old) == SUBREG)
 	  old = SUBREG_REG (old);
 	subst = get_equiv_with_elimination (old, curr_insn);

@@ -382,7 +382,7 @@ lra_emit_add (rtx x, rtx y, rtx z)
 	  base = a1;
 	  index = a2;
 	}
-      if (! (REG_P (base) || GET_CODE (base) == SUBREG)
+      if ((base != NULL_RTX && ! (REG_P (base) || GET_CODE (base) == SUBREG))
 	  || (index != NULL_RTX
 	      && ! (REG_P (index) || GET_CODE (index) == SUBREG))
 	  || (disp != NULL_RTX && ! CONSTANT_P (disp))
@@ -442,18 +442,28 @@ lra_emit_add (rtx x, rtx y, rtx z)
 		  rtx_insn *insn = emit_add2_insn (x, disp);
 		  if (insn != NULL_RTX)
 		    {
-		      insn = emit_add2_insn (x, base);
-		      if (insn != NULL_RTX)
+		      if (base == NULL_RTX)
 			ok_p = true;
+		      else
+			{
+			  insn = emit_add2_insn (x, base);
+			  if (insn != NULL_RTX)
+			    ok_p = true;
+			}
 		    }
 		}
 	      if (! ok_p)
 		{
+		  rtx_insn *insn;
+		  
 		  delete_insns_since (last);
 		  /* Generate x = disp; x = x + base; x = x + index_scale.  */
 		  emit_move_insn (x, disp);
-		  rtx_insn *insn = emit_add2_insn (x, base);
-		  lra_assert (insn != NULL_RTX);
+		  if (base != NULL_RTX)
+		    {
+		      insn = emit_add2_insn (x, base);
+		      lra_assert (insn != NULL_RTX);
+		    }
 		  insn = emit_add2_insn (x, index_scale);
 		  lra_assert (insn != NULL_RTX);
 		}
