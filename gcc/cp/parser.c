@@ -10003,6 +10003,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	     Parse the label, and then use tail recursion to parse
 	     the statement.  */
 	  cp_parser_label_for_labeled_statement (parser, std_attrs);
+	  in_compound = false;
 	  goto restart;
 
 	case RID_IF:
@@ -10100,6 +10101,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	     the statement.  */
 
 	  cp_parser_label_for_labeled_statement (parser, std_attrs);
+	  in_compound = false;
 	  goto restart;
 	}
     }

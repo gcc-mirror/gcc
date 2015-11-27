@@ -1,3 +1,9 @@
+2015-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/63326
+	* gcc.dg/gomp/barrier-2.c (f2): Expect another error after label.
+	* c-c++-common/gomp/pr63326.c: New test.
+
 2015-11-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68553
