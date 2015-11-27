@@ -1,5 +1,12 @@
 2015-11-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* ifcvt.c (insn_valid_noce_process_p): Reject insn if it satisfies
+	multiple_sets.
+	(noce_try_cmove_arith): Add checking asserts that orig_a and orig_b
+	are not modified by the final modified insns in the basic blocks.
+
+2015-11-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	PR rtl-optimization/68506
 	* ifcvt.c (noce_try_cmove_arith): Try emitting the else basic block
 	first if emit_a exists or then_bb modifies 'b'.  Reindent if-else
