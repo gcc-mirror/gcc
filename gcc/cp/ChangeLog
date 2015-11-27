@@ -1,3 +1,13 @@
+2015-11-27  Martin Liska  <mliska@suse.cz>
+
+	PR c++/68312
+	* cp-array-notation.c (expand_sec_reduce_builtin):
+	Likewise.
+	(create_array_refs): Replace argument with const reference.
+	(expand_an_in_modify_expr): Likewise.
+	(cp_expand_cond_array_notations): Likewise.
+	(expand_unary_array_notation_exprs): Likewise.
+
 2015-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/63326

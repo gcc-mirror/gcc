@@ -205,7 +205,7 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
   location_t location = UNKNOWN_LOCATION;
   tree loop_with_init = alloc_stmt_list ();
   vec<vec<an_parts> > an_info = vNULL;
-  vec<an_loop_parts> an_loop_info = vNULL;
+  auto_vec<an_loop_parts> an_loop_info;
   enum built_in_function an_type =
     is_cilkplus_reduce_builtin (CALL_EXPR_FN (an_builtin_fn));
   if (an_type == BUILT_IN_NONE)
@@ -593,8 +593,7 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
     }
   append_to_statement_list_force (body, &loop_with_init);
 
-  an_info.release ();
-  an_loop_info.release ();
+  release_vec_vec (an_info);
   
   return loop_with_init;
 }
@@ -614,7 +613,7 @@ build_array_notation_expr (location_t location, tree lhs, tree lhs_origtype,
   tree array_expr_lhs = NULL_TREE, array_expr_rhs = NULL_TREE;
   tree array_expr = NULL_TREE;
   tree an_init = NULL_TREE;
-  vec<tree> cond_expr = vNULL;
+  auto_vec<tree> cond_expr;
   tree body, loop_with_init = alloc_stmt_list();
   tree scalar_mods = NULL_TREE;
   vec<tree, va_gc> *rhs_array_operand = NULL, *lhs_array_operand = NULL;
@@ -624,7 +623,7 @@ build_array_notation_expr (location_t location, tree lhs, tree lhs_origtype,
   tree new_modify_expr, new_var = NULL_TREE, builtin_loop = NULL_TREE;
   size_t rhs_list_size = 0, lhs_list_size = 0; 
   vec<vec<an_parts> > lhs_an_info = vNULL, rhs_an_info = vNULL;
-  vec<an_loop_parts> lhs_an_loop_info = vNULL, rhs_an_loop_info = vNULL;
+  auto_vec<an_loop_parts> lhs_an_loop_info, rhs_an_loop_info;
   
   /* If either of this is true, an error message must have been send out
      already.  Not necessary to send out multiple error messages.  */
@@ -771,7 +770,7 @@ build_array_notation_expr (location_t location, tree lhs, tree lhs_origtype,
 	  && length_mismatch_in_expr_p (EXPR_LOCATION (rhs), rhs_an_info)))
     {
       pop_stmt_list (an_init);
-      return error_mark_node;
+      goto error;
     }
   if (lhs_list_size > 0 && rhs_list_size > 0 && lhs_rank > 0 && rhs_rank > 0
       && TREE_CODE (lhs_an_info[0][0].length) == INTEGER_CST
@@ -786,7 +785,7 @@ build_array_notation_expr (location_t location, tree lhs, tree lhs_origtype,
 	{
 	  error_at (location, "length mismatch between LHS and RHS");
 	  pop_stmt_list (an_init);
-	  return error_mark_node;
+	  goto error;
 	}
     }
   for (ii = 0; ii < lhs_rank; ii++)
@@ -829,7 +828,7 @@ build_array_notation_expr (location_t location, tree lhs, tree lhs_origtype,
 						 rhs_an_loop_info, rhs_rank,
 						 rhs);
       if (!rhs_array_operand)
-	return error_mark_node;
+	goto error;
       replace_array_notations (&rhs, true, rhs_list, rhs_array_operand);
     }
   else if (rhs_list_size > 0)
@@ -838,7 +837,7 @@ build_array_notation_expr (location_t location, tree lhs, tree lhs_origtype,
 						 lhs_an_loop_info, lhs_rank,
 						 lhs);
       if (!rhs_array_operand)
-	return error_mark_node;
+	goto error;
       replace_array_notations (&rhs, true, rhs_list, rhs_array_operand);
     }
   array_expr_lhs = lhs;
@@ -881,15 +880,15 @@ build_array_notation_expr (location_t location, tree lhs, tree lhs_origtype,
     }
   append_to_statement_list_force (body, &loop_with_init);
 
-  lhs_an_info.release ();
-  lhs_an_loop_info.release ();
-  if (rhs_rank)
-    {
-      rhs_an_info.release ();
-      rhs_an_loop_info.release ();
-    }
-  cond_expr.release ();
+  release_vec_vec (lhs_an_info);
+  release_vec_vec (rhs_an_info);
   return loop_with_init;
+
+error:
+  release_vec_vec (lhs_an_info);
+  release_vec_vec (rhs_an_info);
+
+  return error_mark_node;
 }
 
 /* Helper function for fix_conditional_array_notations.  Encloses the 
@@ -909,7 +908,7 @@ fix_conditional_array_notations_1 (tree stmt)
   location_t location = EXPR_LOCATION (stmt);
   tree body = NULL_TREE, loop_with_init = alloc_stmt_list ();
   vec<vec<an_parts> > an_info = vNULL;
-  vec<an_loop_parts> an_loop_info = vNULL;
+  auto_vec<an_loop_parts> an_loop_info;
  
   if (TREE_CODE (stmt) == COND_EXPR)
     cond = COND_EXPR_COND (stmt);
@@ -1005,9 +1004,7 @@ fix_conditional_array_notations_1 (tree stmt)
       body = pop_stmt_list (new_loop);
     }
   append_to_statement_list_force (body, &loop_with_init);
-
-  an_loop_info.release ();
-  an_info.release ();
+  release_vec_vec (an_info);
 
   return loop_with_init;
 }
@@ -1048,7 +1045,7 @@ fix_array_notation_expr (location_t location, enum tree_code code,
   tree loop_init;
   tree body, loop_with_init = alloc_stmt_list ();
   vec<vec<an_parts> > an_info = vNULL;
-  vec<an_loop_parts> an_loop_info = vNULL;
+  auto_vec<an_loop_parts> an_loop_info;
   
   if (!find_rank (location, arg.value, arg.value, false, &rank))
     {
@@ -1110,8 +1107,7 @@ fix_array_notation_expr (location_t location, enum tree_code code,
     }
   append_to_statement_list_force (body, &loop_with_init);
   arg.value = loop_with_init;
-  an_info.release ();
-  an_loop_info.release ();
+  release_vec_vec (an_info);
   return arg;
 }
 
@@ -1128,7 +1124,7 @@ fix_array_notation_call_expr (tree arg)
   tree body, loop_with_init = alloc_stmt_list ();
   location_t location = UNKNOWN_LOCATION;
   vec<vec<an_parts> > an_info = vNULL;
-  vec<an_loop_parts> an_loop_info = vNULL;
+  auto_vec<an_loop_parts> an_loop_info;
 
   if (TREE_CODE (arg) == CALL_EXPR
       && is_cilkplus_reduce_builtin (CALL_EXPR_FN (arg)))
@@ -1194,8 +1190,7 @@ fix_array_notation_call_expr (tree arg)
       body = pop_stmt_list (new_loop);
     }
   append_to_statement_list_force (body, &loop_with_init);
-  an_loop_info.release ();
-  an_info.release ();
+  release_vec_vec (an_info);
   return loop_with_init;
 }
 

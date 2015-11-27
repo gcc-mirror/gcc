@@ -636,6 +636,8 @@ cilkplus_extract_an_triplets (vec<tree, va_gc> *list, size_t size, size_t rank,
 	      fold_build1 (CONVERT_EXPR, integer_type_node,
 			   ARRAY_NOTATION_STRIDE (ii_tree));
 	  }
+
+  release_vec_vec (array_exprs);
 }
 
 /* Replaces all the __sec_implicit_arg functions in LIST with the induction
