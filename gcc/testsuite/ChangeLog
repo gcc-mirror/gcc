@@ -1,3 +1,8 @@
+2015-11-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/68506
+	* gcc.c-torture/execute/pr68506.c: New test.
+
 2015-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/63326
