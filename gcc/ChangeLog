@@ -1,3 +1,13 @@
+2015-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68559
+	* tree-vect-data-refs.c (vect_analyze_group_access_1): Move
+	peeling for gap checks ...
+	* tree-vect-stmts.c (vectorizable_load): ... here and relax
+	for SLP.
+	* tree-vect-loop.c (vect_analyze_loop_2): Re-set
+	LOOP_VINFO_PEELING_FOR_GAPS before re-trying without SLP.
+
 2015-11-27  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx-protos.h (nvptx_record_needed_decl): Don't

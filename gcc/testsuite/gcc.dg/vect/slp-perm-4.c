@@ -33,7 +33,7 @@
 #define M34 7716
 #define M44 16
 
-#define N 40
+#define N 20
 
 void foo (unsigned int *__restrict__ pInput, unsigned int *__restrict__ pOutput)
 {
@@ -60,9 +60,7 @@ int main (int argc, const char* argv[])
   unsigned int input[N], output[N], i;
   unsigned int check_results[N]
     = {3208, 1334, 28764, 35679, 2789, 13028, 4754, 168364, 91254, 12399, 
-    22848, 8174, 307964, 146829, 22009, 32668, 11594, 447564, 202404, 31619, 
-    42488, 15014, 587164, 257979, 41229, 52308, 18434, 726764, 313554, 50839, 
-    62128, 21854, 866364, 369129, 60449, 71948, 25274, 1005964, 424704, 70059};
+    22848, 8174, 307964, 146829, 22009, 32668, 11594, 447564, 202404, 31619};
 
   check_vect ();
 
@@ -85,5 +83,5 @@ int main (int argc, const char* argv[])
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "gaps requires scalar epilogue loop" 0 "vect" } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target vect_perm } } } */
-

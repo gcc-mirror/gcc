@@ -2166,10 +2166,6 @@ vect_analyze_group_access_1 (struct data_reference *dr)
   HOST_WIDE_INT dr_step = -1;
   HOST_WIDE_INT groupsize, last_accessed_element = 1;
   bool slp_impossible = false;
-  struct loop *loop = NULL;
-
-  if (loop_vinfo)
-    loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   /* For interleaving, GROUPSIZE is STEP counted in elements, i.e., the
      size of the interleaving group (including gaps).  */
@@ -2225,24 +2221,6 @@ vect_analyze_group_access_1 (struct data_reference *dr)
 	      dump_printf (MSG_NOTE, " step ");
 	      dump_generic_expr (MSG_NOTE, TDF_SLIM, step);
 	      dump_printf (MSG_NOTE, "\n");
-	    }
-
-	  if (loop_vinfo)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-		                 "Data access with gaps requires scalar "
-		                 "epilogue loop\n");
-              if (loop->inner)
-                {
-                  if (dump_enabled_p ())
-                    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                     "Peeling for outer loop is not"
-                                     " supported\n");
-                  return false;
-                }
-
-              LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = true;
 	    }
 
 	  return true;
@@ -2399,29 +2377,6 @@ vect_analyze_group_access_1 (struct data_reference *dr)
           if (bb_vinfo)
             BB_VINFO_GROUPED_STORES (bb_vinfo).safe_push (stmt);
         }
-
-      /* If there is a gap in the end of the group or the group size cannot
-         be made a multiple of the vector element count then we access excess
-	 elements in the last iteration and thus need to peel that off.  */
-      if (loop_vinfo
-	  && (groupsize - last_accessed_element > 0
-	      || exact_log2 (groupsize) == -1))
-
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-	                     "Data access with gaps requires scalar "
-	                     "epilogue loop\n");
-          if (loop->inner)
-            {
-              if (dump_enabled_p ())
-                dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                 "Peeling for outer loop is not supported\n");
-              return false;
-            }
-
-          LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = true;
-	}
     }
 
   return true;

@@ -2190,6 +2190,7 @@ again:
     = init_cost (LOOP_VINFO_LOOP (loop_vinfo));
   /* Reset assorted flags.  */
   LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo) = false;
+  LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = false;
   LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo) = 0;
 
   goto start_over;
