@@ -1,3 +1,9 @@
+2015-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68553
+	* tree-vect-slp.c (vect_get_mask_element): Remove.
+	(vect_transform_slp_perm_load): Implement in a simpler way.
+
 2015-11-26  Alexandre Oliva <aoliva@redhat.com>
 
 	PR rtl-optimization/67753
