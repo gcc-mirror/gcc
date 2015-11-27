@@ -1,5 +1,10 @@
 2015-11-27  Martin Liska  <mliska@suse.cz>
 
+	* tree-chkp.c (chkp_make_static_bounds): Release buffer
+	used for string.
+
+2015-11-27  Martin Liska  <mliska@suse.cz>
+
 	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks):
 	Do not release memory for comp_alias_ddrs.
 	* tree-vect-loop.c (destroy_loop_vec_info): Release
