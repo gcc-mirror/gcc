@@ -1,3 +1,10 @@
+2015-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68553
+	* tree-vect-slp.c (vect_create_mask_and_perm): Skip VEC_PERM_EXPR
+	generation for 1:1 permutations.
+	(vect_transform_slp_perm_load): Detect 1:1 permutations.
+
 2015-11-27  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* gimple.h (nonbarrier_call_p): Declare.

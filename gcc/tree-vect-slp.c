@@ -3224,12 +3224,18 @@ vect_create_mask_and_perm (gimple *stmt,
       first_vec = dr_chain[first_vec_indx];
       second_vec = dr_chain[second_vec_indx];
 
-      /* Generate the permute statement.  */
-      perm_stmt = gimple_build_assign (perm_dest, VEC_PERM_EXPR,
-				       first_vec, second_vec, mask);
-      data_ref = make_ssa_name (perm_dest, perm_stmt);
-      gimple_set_lhs (perm_stmt, data_ref);
-      vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+      /* Generate the permute statement if necessary.  */
+      if (mask)
+	{
+	  perm_stmt = gimple_build_assign (perm_dest, VEC_PERM_EXPR,
+					   first_vec, second_vec, mask);
+	  data_ref = make_ssa_name (perm_dest, perm_stmt);
+	  gimple_set_lhs (perm_stmt, data_ref);
+	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+	}
+      else
+	/* If mask was NULL_TREE generate the requested identity transform.  */
+	perm_stmt = SSA_NAME_DEF_STMT (first_vec);
 
       /* Store the vector statement in NODE.  */
       SLP_TREE_VEC_STMTS (node)[stride_out * i + vect_stmts_counter]
@@ -3315,6 +3321,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   int index = 0;
   int first_vec_index = -1;
   int second_vec_index = -1;
+  bool noop_p = true;
 
   for (int j = 0; j < unroll_factor; j++)
     {
@@ -3351,11 +3358,14 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 
 	  gcc_assert (mask_element >= 0
 		      && mask_element < 2 * nunits);
+	  if (mask_element != index)
+	    noop_p = false;
 	  mask[index++] = mask_element;
 
 	  if (index == nunits)
 	    {
-	      if (!can_vec_perm_p (mode, false, mask))
+	      if (! noop_p
+		  && ! can_vec_perm_p (mode, false, mask))
 		{
 		  if (dump_enabled_p ())
 		    {
@@ -3371,11 +3381,16 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 
 	      if (!analyze_only)
 		{
-		  tree mask_vec, *mask_elts;
-		  mask_elts = XALLOCAVEC (tree, nunits);
-		  for (int l = 0; l < nunits; ++l)
-		    mask_elts[l] = build_int_cst (mask_element_type, mask[l]);
-		  mask_vec = build_vector (mask_type, mask_elts);
+		  tree mask_vec = NULL_TREE;
+		  
+		  if (! noop_p)
+		    {
+		      tree *mask_elts = XALLOCAVEC (tree, nunits);
+		      for (int l = 0; l < nunits; ++l)
+			mask_elts[l] = build_int_cst (mask_element_type,
+						      mask[l]);
+		      mask_vec = build_vector (mask_type, mask_elts);
+		    }
 
 		  if (second_vec_index == -1)
 		    second_vec_index = first_vec_index;
@@ -3388,6 +3403,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 	      index = 0;
 	      first_vec_index = -1;
 	      second_vec_index = -1;
+	      noop_p = true;
 	    }
 	}
     }
