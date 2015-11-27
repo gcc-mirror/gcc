@@ -35015,6 +35015,7 @@ cp_parser_late_parsing_cilk_simd_fn_info (cp_parser *parser, tree attrs)
       error ("%<#pragma omp declare simd%> of %<simd%> attribute cannot be "
 	     "used in the same function marked as a Cilk Plus SIMD-enabled "
 	     " function");
+      parser->cilk_simd_fn_info->tokens.release ();
       XDELETE (parser->cilk_simd_fn_info);
       parser->cilk_simd_fn_info = NULL;
       return attrs;
@@ -35052,6 +35053,7 @@ cp_parser_late_parsing_cilk_simd_fn_info (cp_parser *parser, tree attrs)
       attrs = c;
     }
   info->fndecl_seen = true;
+  parser->cilk_simd_fn_info->tokens.release ();
   XDELETE (parser->cilk_simd_fn_info);
   parser->cilk_simd_fn_info = NULL;
   return attrs;
