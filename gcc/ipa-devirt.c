@@ -2987,7 +2987,7 @@ struct decl_warn_count
 struct final_warning_record
 {
   gcov_type dyn_count;
-  vec<odr_type_warn_count> type_warnings;
+  auto_vec<odr_type_warn_count> type_warnings;
   hash_map<tree, decl_warn_count> decl_warnings;
 };
 struct final_warning_record *final_warning_records;
@@ -3609,7 +3609,6 @@ ipa_devirt (void)
   if (warn_suggest_final_methods || warn_suggest_final_types)
     {
       final_warning_records = new (final_warning_record);
-      final_warning_records->type_warnings = vNULL;
       final_warning_records->type_warnings.safe_grow_cleared (odr_types.length ());
       free_polymorphic_call_targets_hash ();
     }
@@ -3837,7 +3836,7 @@ ipa_devirt (void)
 
       if (warn_suggest_final_methods)
 	{
-	  vec<const decl_warn_count*> decl_warnings_vec = vNULL;
+	  auto_vec<const decl_warn_count*> decl_warnings_vec;
 
 	  final_warning_records->decl_warnings.traverse
 	    <vec<const decl_warn_count *> *, add_decl_warning> (&decl_warnings_vec);
@@ -3887,7 +3886,7 @@ ipa_devirt (void)
 			      decl, count, dyn_count);
 	    }
 	}
-	
+
       delete (final_warning_records);
       final_warning_records = 0;
     }

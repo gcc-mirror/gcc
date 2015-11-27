@@ -1,3 +1,10 @@
+2015-11-27  Martin Liska  <mliska@suse.cz>
+
+	* ipa-devirt.c (ipa_devirt): Use auto_vec instead
+	of a local-scope vec.
+	(struct final_warning_record): Use auto_vec instead
+	of vec.
+
 2015-11-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68553
