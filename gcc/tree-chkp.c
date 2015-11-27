@@ -2910,6 +2910,8 @@ chkp_make_static_bounds (tree obj)
 			    pointer_bounds_type_node);
     }
 
+  free (bnd_var_name);
+
   TREE_PUBLIC (bnd_var) = 0;
   TREE_USED (bnd_var) = 1;
   TREE_READONLY (bnd_var) = 0;
