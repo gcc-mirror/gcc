@@ -585,6 +585,8 @@ GOMP_PLUGIN_target_task_completion (void *data)
   gomp_mutex_unlock (&team->task_lock);
 }
 
+static void gomp_task_run_post_handle_depend_hash (struct gomp_task *);
+
 /* Called for nowait target tasks.  */
 
 bool
@@ -704,6 +706,7 @@ gomp_create_target_task (struct gomp_device_descr *devicep,
     }
   if (state == GOMP_TARGET_TASK_DATA)
     {
+      gomp_task_run_post_handle_depend_hash (task);
       gomp_mutex_unlock (&team->task_lock);
       gomp_finish_task (task);
       free (task);

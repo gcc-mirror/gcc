@@ -1,5 +1,10 @@
 2015-11-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR libgomp/68579
+	* task.c (gomp_task_run_post_handle_depend_hash): New forward decl.
+	(gomp_create_target_task): Call it before freeing
+	GOMP_TARGET_TASK_DATA tasks.
+
 	PR c/63326
 	* testsuite/libgomp.c/cancel-parallel-2.c (foo): Add semicolon
 	in between case label and OpenMP standalone directives.
