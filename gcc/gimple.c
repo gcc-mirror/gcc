@@ -2636,6 +2636,18 @@ nonfreeing_call_p (gimple *call)
   return n->nonfreeing_fn;
 }
 
+/* Return true when CALL is a call stmt that definitely need not
+   be considered to be a memory barrier.  */
+bool
+nonbarrier_call_p (gimple *call)
+{
+  if (gimple_call_flags (call) & (ECF_PURE | ECF_CONST))
+    return true;
+  /* Should extend this to have a nonbarrier_fn flag, just as above in
+     the nonfreeing case.  */
+  return false;
+}
+
 /* Callback for walk_stmt_load_store_ops.
  
    Return TRUE if OP will dereference the tree stored in DATA, FALSE

@@ -1,3 +1,11 @@
+2015-11-27  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* gimple.h (nonbarrier_call_p): Declare.
+	* gimple.c (nonbarrier_call_p): New function.
+	* tree-ssa-phiopt.c (nontrapping_dom_walker::before_dom_children):
+	Also increment call phase for ASMs with vdef and potential barrier
+	calls.
+
 2015-11-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* ifcvt.c (insn_valid_noce_process_p): Reject insn if it satisfies
