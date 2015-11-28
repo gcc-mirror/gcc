@@ -2010,7 +2010,7 @@ ifeq ($(strip $(filter-out sparc% linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS_64 = \
   system.ads<system-linux-sparcv9.ads
 
-  ifeq ($(strip $(shell $(GCC_FOR_TARGET) $(GNATLIBCFLAGS) -print-multi-os-directory)),../lib64)
+  ifneq (,$(or $(filter sparc64-linux-gnu, $(shell $(GCC_FOR_TARGET) $(GNATLIBCFLAGS) -print-multiarch)), $(filter ../lib64, $(shell $(GCC_FOR_TARGET) $(GNATLIBCFLAGS) -print-multi-os-directory))))
     LIBGNAT_TARGET_PAIRS = \
     $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_64)
   else

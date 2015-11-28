@@ -1,3 +1,8 @@
+2015-11-28  Matthias Klose  <doko@ubuntu.com>
+
+	PR ada/68564
+	* gcc-interface/Makefile.in: Fix sparc/sparc64 bitness detection.
+
 2015-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (is_cplusplus_method): Check that the type of
