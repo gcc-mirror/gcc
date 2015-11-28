@@ -1,3 +1,10 @@
+2015-11-28  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.h (FIRST_PARM_OFFSET): Add void cast.
+	(FRAME_POINTER_CFA_OFFSET): Define.
+	(struct nvptx_args): Use 'tree' type.
+	(INIT_CUMULATIVE_ARGS): Remove unnecessary do...while.
+
 2015-11-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	* m4/libtool.m4 (export_symbols_cmds) [AIX]: Add global TLS "L"

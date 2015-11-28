@@ -166,14 +166,16 @@ enum reg_class
 #define OUTGOING_ARG_POINTER_REGNUM 11
 #define OUTGOING_STATIC_CHAIN_REGNUM 10
 
-#define FIRST_PARM_OFFSET(FNDECL) 0
+#define FIRST_PARM_OFFSET(FNDECL) ((void)(FNDECL), 0)
 #define PUSH_ARGS_REVERSED 1
-
 #define ACCUMULATE_OUTGOING_ARGS 1
+
+/* Avoid using the argument pointer for frame-related things.  */
+#define FRAME_POINTER_CFA_OFFSET(FNDECL) ((void)(FNDECL), 0)
 
 #ifdef HOST_WIDE_INT
 struct nvptx_args {
-  union tree_node *fntype;
+  tree fntype;
   /* Number of arguments passed in registers so far.  */
   int count;
   /* Offset into the stdarg area so far.  */
@@ -184,7 +186,7 @@ struct nvptx_args {
 #define CUMULATIVE_ARGS struct nvptx_args
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
-  do { (CUM).fntype = (FNTYPE); (CUM).count = 0; (CUM).off = 0; } while (0)
+  ((CUM).fntype = (FNTYPE), (CUM).count = 0, (CUM).off = 0, (void)0)
 
 #define FUNCTION_ARG_REGNO_P(r) 0
 
