@@ -1,3 +1,8 @@
+2015-11-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config/i386/freebsd.h (SUBTARGET32_DEFAULT_CPU): Change to i586.
+	Remove support for FreeBSD 5 and earlier.
+
 2015-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/68552

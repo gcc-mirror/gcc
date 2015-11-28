@@ -131,10 +131,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Static stack checking is supported by means of probes.  */
 #define STACK_CHECK_STATIC_BUILTIN 1
 
-/* Support for i386 has been removed from FreeBSD 6.0 onward.  */
-#if FBSD_MAJOR >= 6
-#define SUBTARGET32_DEFAULT_CPU "i486"
-#endif
+#define SUBTARGET32_DEFAULT_CPU "i586"
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
