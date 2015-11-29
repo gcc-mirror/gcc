@@ -1,3 +1,10 @@
+2015-11-29  Matthias Klose  <doko@ubuntu.com>
+
+	PR ada/68564
+	* gcc-interface/Makefile.in: Fix powerpc/powerpc64* and
+	mipsel/mips64el bitness detection.
+	Merge the mipsel/mips64el definitions into one.
+
 2015-11-28  Matthias Klose  <doko@ubuntu.com>
 
 	PR ada/68564
