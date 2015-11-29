@@ -7787,7 +7787,8 @@ handle_transparent_union_attribute (tree *node, tree name,
 	  *node = type = build_duplicate_type (type);
 	}
 
-      TYPE_TRANSPARENT_AGGR (type) = 1;
+      for (tree t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+        TYPE_TRANSPARENT_AGGR (t) = 1;
       return NULL_TREE;
     }
 
