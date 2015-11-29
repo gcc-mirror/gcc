@@ -1,3 +1,9 @@
+2015-11-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR c/67581
+	* c-common.c (handle_transparent_union_attribute): Update
+	also type variants.
+
 2015-11-27  Martin Liska  <mliska@suse.cz>
 
 	PR c++/68312

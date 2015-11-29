@@ -1,3 +1,8 @@
+2015-11-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR c/67581
+	* g++.dg/torture/pr67581.C: New testcase.
+
 2015-11-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68559
