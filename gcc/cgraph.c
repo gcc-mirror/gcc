@@ -2253,8 +2253,9 @@ cgraph_node::make_local (cgraph_node *node, void *)
       node->forced_by_abi = false;
       node->local.local = true;
       node->set_section (NULL);
-      node->unique_name = (node->resolution == LDPR_PREVAILING_DEF_IRONLY
-				  || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP);
+      node->unique_name = ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
+			   || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+			   && !flag_incremental_link);
       node->resolution = LDPR_PREVAILING_DEF_IRONLY;
       gcc_assert (node->get_availability () == AVAIL_LOCAL);
     }

@@ -6837,7 +6837,9 @@ default_binds_local_p_3 (const_tree exp, bool shlib, bool weak_dominate,
     {
       if (node->in_other_partition)
 	defined_locally = true;
-      if (resolution_to_local_definition_p (node->resolution))
+      if (node->can_be_discarded_p ())
+	;
+      else if (resolution_to_local_definition_p (node->resolution))
 	defined_locally = resolved_locally = true;
       else if (resolution_local_p (node->resolution))
 	resolved_locally = true;
@@ -6930,7 +6932,8 @@ decl_binds_to_current_def_p (const_tree decl)
   /* When resolution is available, just use it.  */
   if (symtab_node *node = symtab_node::get (decl))
     {
-      if (node->resolution != LDPR_UNKNOWN)
+      if (node->resolution != LDPR_UNKNOWN
+	  && !node->can_be_discarded_p ())
 	return resolution_to_local_definition_p (node->resolution);
     }
 
