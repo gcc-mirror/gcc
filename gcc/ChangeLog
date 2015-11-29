@@ -1,3 +1,9 @@
+2015-11-29  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/28115
+	* config/rs6000/rs6000.c (rs6000_adjust_cost): Correct
+	recog_memoized test for insn and check recog_memoized for dep_insn.
+
 2015-11-28  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.h (FIRST_PARM_OFFSET): Add void cast.
