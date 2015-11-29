@@ -1,3 +1,8 @@
+2015-11-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR c/67106
+	* c-decl.c: Set TYPE_PACKED in variants.
+
 2015-11-27  Martin Liska  <mliska@suse.cz>
 
 	PR c++/68312

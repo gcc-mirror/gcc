@@ -1,5 +1,10 @@
 2015-11-29  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR c/67106
+	* gcc.c-torture/compile/pr67106.c: New testcase.
+
+2015-11-29  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR c/67581
 	* g++.dg/torture/pr67581.C: New testcase.
 
