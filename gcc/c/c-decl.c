@@ -7213,7 +7213,8 @@ start_struct (location_t loc, enum tree_code code, tree name,
     }
 
   C_TYPE_BEING_DEFINED (ref) = 1;
-  TYPE_PACKED (ref) = flag_pack_struct;
+  for (tree v = TYPE_MAIN_VARIANT (ref); v; v = TYPE_NEXT_VARIANT (v))
+    TYPE_PACKED (v) = flag_pack_struct;
 
   *enclosing_struct_parse_info = struct_parse_info;
   struct_parse_info = XNEW (struct c_struct_parse_info);
