@@ -1969,15 +1969,6 @@ add_type_duplicate (odr_type val, tree type)
       merge = false;
       odr_violation_reported = true;
       val->odr_violated = true;
-      if (symtab->dump_file)
-	{
-	  fprintf (symtab->dump_file, "ODR violation\n");
-
-	  print_node (symtab->dump_file, "", val->type, 0);
-	  putc ('\n',symtab->dump_file);
-	  print_node (symtab->dump_file, "", type, 0);
-	  putc ('\n',symtab->dump_file);
-	}
     }
   gcc_assert (val->odr_violated || !odr_must_violate);
   /* Sanity check that all bases will be build same way again.  */
