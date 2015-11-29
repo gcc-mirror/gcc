@@ -1,3 +1,9 @@
+2015-11-29  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.md (const_0_operand, global_mem_operand,
+	const_mem_operand, param_mem_operand, shared_mem_operand): Delete.
+	(ctrap<mode>): Use const0_operand.
+
 2015-11-29  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-devirt.c (add_type_duplicate): Remove redundant ODR violation
@@ -65,10 +71,10 @@
 2015-11-27  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx-protos.h (nvptx_record_needed_decl): Don't
-	declaree.
+	declare.
 	* config/nvptx/nvptx.c (write_func_decl_from_insn): Move earlier.
 	(nvptx_record_fndecl): Don't return value, remove force
-	argyment. Require fndecl.
+	argument. Require fndecl.
 	(nvptx_record_libfunc): New.
 	(nvptx_record_needed_decl): Deteermine how to record decl here.
 	(nvptx_maybe_record_fnsym): New.
