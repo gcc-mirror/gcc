@@ -319,15 +319,23 @@ public:
   /* Return true when there are references to the node.  */
   bool referred_to_p (bool include_self = true);
 
-  /* Return true if NODE can be discarded by linker from the binary.  */
+  /* Return true if symbol can be discarded by linker from the binary.
+     Assume that symbol is used (so there is no need to take into account
+     garbage collecting linkers)
+
+     This can happen for comdats, commons and weaks when they are previaled
+     by other definition at static linking time.  */
   inline bool
   can_be_discarded_p (void)
   {
     return (DECL_EXTERNAL (decl)
-	    || (get_comdat_group ()
-		&& resolution != LDPR_PREVAILING_DEF
-		&& resolution != LDPR_PREVAILING_DEF_IRONLY
-		&& resolution != LDPR_PREVAILING_DEF_IRONLY_EXP));
+	    || ((get_comdat_group ()
+		 || DECL_COMMON (decl)
+		 || (DECL_SECTION_NAME (decl) && DECL_WEAK (decl)))
+		&& ((resolution != LDPR_PREVAILING_DEF
+		     && resolution != LDPR_PREVAILING_DEF_IRONLY_EXP)
+		    || flag_incremental_link)
+		&& resolution != LDPR_PREVAILING_DEF_IRONLY));
   }
 
   /* Return true if NODE is local to a particular COMDAT group, and must not

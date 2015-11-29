@@ -1,3 +1,19 @@
+2015-11-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_node::make_local): No name is unique during
+	incremental linking.
+	* cgraph.h (can_be_discarded_p): Update comment; also common and
+	WEAK in named sections can be discarded; when doing incremental
+	link do not rely on resolution being the final one.
+	* varasm.c (default_binds_local_p_3, decl_binds_to_current_def_p):
+	When symbol can be discarded, do not rely on resolution info.
+	* symtab.c (symtab_node::nonzero_address): Take into account that
+	symbol can be discarded.
+	* ipa-visibility.c (update_visibility_by_resolution_info): Handle
+	definition correctly.
+	(function_and_variable_visibility): Do not set unique_name when
+	incrementally linking.
+
 2015-11-29  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.md (const_0_operand, global_mem_operand,
