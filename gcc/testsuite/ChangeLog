@@ -1,5 +1,11 @@
 2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.dg/dump-ada-spec-1.c: Move to...
+	* c-c++-common/dump-ada-spec-1.c: ...here.
+	* c-c++-common/dump-ada-spec-2.c: New test.
+
+2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/loop_optimization22.ad[sb]: New test.
 
 2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>

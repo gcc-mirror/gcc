@@ -1,3 +1,24 @@
+2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (print_ada_macros): Remove redundant blank line.
+	(decl_sloc_common): Delete and move bulk of processing to...
+	(decl_sloc): ...here.
+	(pp_ada_tree_identifier): Remove reference to QUAL_UNION_TYPE.
+	(dump_ada_double_name): Remove S parameter and compute the suffix.
+	(dump_ada_array_type): Add PARENT parameter.  Simplify computation of
+	element type and deal with an anonymous one.
+	(dump_ada_template): Use RECORD_OR_UNION_TYPE_P macro.
+	(dump_generic_ada_node): Tweak.  Adjust call to dump_ada_array_type
+	and remove reference to QUAL_UNION_TYPE.
+	(dump_nested_types): Make 2 passes on the fields and move bulk to...
+	(dump_nested_type): ...here.  New function extracted from above.
+	Generate a full declaration for anonymous element type of arrays.
+	(print_ada_declaration): Really skip anonymous declarations.  Remove
+	references to QUAL_UNION_TYPE.  Adjust call to dump_ada_array_type.
+	Clean up processing of declarations of array types and objects.
+	(print_ada_struct_decl): Remove reference to QUAL_UNION_TYPE.
+	Remove obsolete code and tidy up.
+
 2015-11-29  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR c/67581
