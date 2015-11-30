@@ -2829,11 +2829,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    ? 1
 	    : Component_Alignment (gnat_entity) == Calign_Storage_Unit
 	      ? -1
-	      : (Known_Alignment (gnat_entity)
-		 || (Strict_Alignment (gnat_entity)
-		     && Known_RM_Size (gnat_entity)))
-		? -2
-		: 0;
+	      : 0;
+	const bool has_align = Known_Alignment (gnat_entity);
 	const bool has_discr = Has_Discriminants (gnat_entity);
 	const bool has_rep = Has_Specified_Layout (gnat_entity);
 	const bool is_extension
@@ -2872,7 +2869,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   suppress expanding incomplete types.  */
 	gnu_type = make_node (tree_code_for_record_type (gnat_entity));
 	TYPE_NAME (gnu_type) = gnu_entity_name;
-	TYPE_PACKED (gnu_type) = (packed != 0) || has_rep;
+	TYPE_PACKED (gnu_type) = (packed != 0) || has_align || has_rep;
 	TYPE_REVERSE_STORAGE_ORDER (gnu_type)
 	  = Reverse_Storage_Order (gnat_entity);
 	process_attributes (&gnu_type, &attr_list, true, gnat_entity);
@@ -2883,38 +2880,32 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    this_deferred = true;
 	  }
 
-	/* If both a size and rep clause was specified, put the size in
-	   the record type now so that it can get the proper mode.  */
+	/* If both a size and rep clause were specified, put the size on
+	   the record type now so that it can get the proper layout.  */
 	if (has_rep && Known_RM_Size (gnat_entity))
 	  TYPE_SIZE (gnu_type)
 	    = UI_To_gnu (RM_Size (gnat_entity), bitsizetype);
 
-	/* Always set the alignment here so that it can be used to
-	   set the mode, if it is making the alignment stricter.  If
-	   it is invalid, it will be checked again below.  If this is to
-	   be Atomic, choose a default alignment of a word unless we know
-	   the size and it's smaller.  */
-	if (Known_Alignment (gnat_entity))
+	/* Always set the alignment on the record type here so that it can
+	   get the proper layout.  */
+	if (has_align)
 	  TYPE_ALIGN (gnu_type)
 	    = validate_alignment (Alignment (gnat_entity), gnat_entity, 0);
-	else if (Is_Atomic_Or_VFA (gnat_entity) && Known_Esize (gnat_entity))
-	  {
-	    unsigned int size = UI_To_Int (Esize (gnat_entity));
-	    TYPE_ALIGN (gnu_type)
-	      = size >= BITS_PER_WORD ? BITS_PER_WORD : ceil_pow2 (size);
-	  }
-	/* If a type needs strict alignment, the minimum size will be the
-	   type size instead of the RM size (see validate_size).  Cap the
-	   alignment, lest it causes this type size to become too large.  */
-	else if (Strict_Alignment (gnat_entity) && Known_RM_Size (gnat_entity))
-	  {
-	    unsigned int raw_size = UI_To_Int (RM_Size (gnat_entity));
-	    unsigned int raw_align = raw_size & -raw_size;
-	    if (raw_align < BIGGEST_ALIGNMENT)
-	      TYPE_ALIGN (gnu_type) = raw_align;
-	  }
 	else
-	  TYPE_ALIGN (gnu_type) = 0;
+	  {
+	    TYPE_ALIGN (gnu_type) = 0;
+
+	    /* If a type needs strict alignment, the minimum size will be the
+	       type size instead of the RM size (see validate_size).  Cap the
+	       alignment lest it causes this type size to become too large.  */
+	    if (Strict_Alignment (gnat_entity) && Known_RM_Size (gnat_entity))
+	      {
+		unsigned int max_size = UI_To_Int (RM_Size (gnat_entity));
+		unsigned int max_align = max_size & -max_size;
+		if (max_align < BIGGEST_ALIGNMENT)
+		  TYPE_MAX_ALIGN (gnu_type) = max_align;
+	      }
+	  }
 
 	/* If we have a Parent_Subtype, make a field for the parent.  If
 	   this record has rep clauses, force the position to zero.  */
@@ -6502,25 +6493,29 @@ adjust_packed (tree field_type, tree record_type, int packed)
   if (type_has_variable_size (field_type))
     return 0;
 
+  /* In the other cases, we can honor the packing.  */
+  if (packed)
+    return packed;
+
   /* If the alignment of the record is specified and the field type
      is over-aligned, request Storage_Unit alignment for the field.  */
-  if (packed == -2)
-    {
-      if (TYPE_ALIGN (field_type) > TYPE_ALIGN (record_type))
-	return -1;
-      else
-	return 0;
-    }
+  if (TYPE_ALIGN (record_type)
+      && TYPE_ALIGN (field_type) > TYPE_ALIGN (record_type))
+    return -1;
 
-  return packed;
+  /* Likewise if the maximum alignment of the record is specified.  */
+  if (TYPE_MAX_ALIGN (record_type)
+      && TYPE_ALIGN (field_type) > TYPE_MAX_ALIGN (record_type))
+    return -1;
+
+  return 0;
 }
 
 /* Return a GCC tree for a field corresponding to GNAT_FIELD to be
    placed in GNU_RECORD_TYPE.
 
-   PACKED is 1 if the enclosing record is packed, -1 if the enclosing
-   record has Component_Alignment of Storage_Unit, -2 if the enclosing
-   record has a specified alignment.
+   PACKED is 1 if the enclosing record is packed or -1 if the enclosing
+   record has Component_Alignment of Storage_Unit.
 
    DEFINITION is true if this field is for a record being defined.
 
@@ -6989,9 +6984,8 @@ typedef struct vinfo
    GNU_FIELD_LIST.  The other calls to this function are recursive calls for
    the component list of a variant and, in this case, GNU_FIELD_LIST is empty.
 
-   PACKED is 1 if this is for a packed record, -1 if this is for a record
-   with Component_Alignment of Storage_Unit, -2 if this is for a record
-   with a specified alignment.
+   PACKED is 1 if this is for a packed record or -1 if this is for a record
+   with Component_Alignment of Storage_Unit.
 
    DEFINITION is true if we are defining this record type.
 

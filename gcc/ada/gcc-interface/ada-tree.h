@@ -176,6 +176,10 @@ do {							 \
 /* True if TYPE can alias any other types.  */
 #define TYPE_UNIVERSAL_ALIASING_P(NODE) TYPE_LANG_FLAG_6 (NODE)
 
+/* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, this holds the maximum
+   alignment value the type ought to have.  */
+#define TYPE_MAX_ALIGN(NODE) (TYPE_PRECISION (RECORD_OR_UNION_CHECK (NODE)))
+
 /* For an UNCONSTRAINED_ARRAY_TYPE, this is the record containing both the
    template and the object.
 

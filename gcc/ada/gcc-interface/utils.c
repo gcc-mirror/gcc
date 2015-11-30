@@ -1694,7 +1694,8 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 	      /* The enclosing record type must be sufficiently aligned.
 		 Otherwise, if no alignment was specified for it and it
 		 has been laid out already, bump its alignment to the
-		 desired one if this is compatible with its size.  */
+		 desired one if this is compatible with its size and
+		 maximum alignment, if any.  */
 	      if (TYPE_ALIGN (record_type) >= align)
 		{
 		  DECL_ALIGN (field) = MAX (DECL_ALIGN (field), align);
@@ -1702,7 +1703,9 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 		}
 	      else if (!had_align
 		       && rep_level == 0
-		       && value_factor_p (TYPE_SIZE (record_type), align))
+		       && value_factor_p (TYPE_SIZE (record_type), align)
+		       && (!TYPE_MAX_ALIGN (record_type)
+			   || TYPE_MAX_ALIGN (record_type) >= align))
 		{
 		  TYPE_ALIGN (record_type) = align;
 		  DECL_ALIGN (field) = MAX (DECL_ALIGN (field), align);
@@ -1799,6 +1802,9 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 	  compute_record_mode (record_type);
 	}
     }
+
+  /* Reset the TYPE_MAX_ALIGN field since it's private to gigi.  */
+  TYPE_MAX_ALIGN (record_type) = 0;
 
   if (debug_info_p)
     rest_of_record_type_compilation (record_type);

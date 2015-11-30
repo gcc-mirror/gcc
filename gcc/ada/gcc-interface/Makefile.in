@@ -111,13 +111,12 @@ NO_SIBLING_ADAFLAGS = -fno-optimize-sibling-calls
 NO_REORDER_ADAFLAGS = -fno-toplevel-reorder
 GNATLIBFLAGS = -W -Wall -gnatpg -nostdinc
 GNATLIBCFLAGS = -g -O2
-PICFLAG_FOR_TARGET = @PICFLAG_FOR_TARGET@
-
 # Pretend that _Unwind_GetIPInfo is available for the target by default.  This
 # should be autodetected during the configuration of libada and passed down to
 # here, but we need something for --disable-libada and hope for the best.
-GNATLIBCFLAGS_FOR_C = -W -Wall $(GNATLIBCFLAGS) \
-	-fexceptions -DIN_RTS -DHAVE_GETIPINFO
+GNATLIBCFLAGS_FOR_C = \
+  -W -Wall $(GNATLIBCFLAGS) -fexceptions -DIN_RTS -DHAVE_GETIPINFO
+PICFLAG_FOR_TARGET = @PICFLAG_FOR_TARGET@
 ALL_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS)
 THREAD_KIND = native
 THREADSLIB =
@@ -132,22 +131,6 @@ soext  = .so
 shext  =
 hyphen = -
 
-# Define this as & to perform parallel make on a Sequent.
-# Note that this has some bugs, and it seems currently necessary
-# to compile all the gen* files first by hand to avoid erroneous results.
-P =
-
-# This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
-# It specifies -B./.
-# It also specifies -B$(tooldir)/ to find as and ld for a cross compiler.
-GCC_CFLAGS = $(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS)
-
-# Tools to use when building a cross-compiler.
-# These are used because `configure' appends `cross-make'
-# to the makefile when making a cross-compiler.
-
-# We don't use cross-make.  Instead we use the tools from the build tree,
-# if they are available.
 # program_transform_name and objdir are set by configure.ac.
 program_transform_name =
 objdir = .
