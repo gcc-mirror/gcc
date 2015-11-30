@@ -273,19 +273,9 @@ extract_affine_mul (scop_p s, tree e, __isl_take isl_space *space)
 static isl_id *
 isl_id_for_ssa_name (scop_p s, tree e)
 {
-  const char *name = get_name (e);
-  isl_id *id;
-
-  if (name)
-    id = isl_id_alloc (s->isl_context, name, e);
-  else
-    {
-      char name1[10];
-      snprintf (name1, sizeof (name1), "P_%d", SSA_NAME_VERSION (e));
-      id = isl_id_alloc (s->isl_context, name1, e);
-    }
-
-  return id;
+  char name1[10];
+  snprintf (name1, sizeof (name1), "P_%d", SSA_NAME_VERSION (e));
+  return isl_id_alloc (s->isl_context, name1, e);
 }
 
 /* Return an ISL identifier for the data reference DR.  Data references and

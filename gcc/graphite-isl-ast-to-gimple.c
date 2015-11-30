@@ -2220,7 +2220,7 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
 		   get_loc (old_name));
       if (dump_file)
 	{
-	  fprintf (dump_file, "[codegen] Adding loop-closed phi: ");
+	  fprintf (dump_file, "[codegen] Adding loop close phi: ");
 	  print_gimple_stmt (dump_file, new_close_phi, 0, 0);
 	}
 
@@ -2265,7 +2265,7 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_nodes (basic_block old_bb,
 							basic_block new_bb)
 {
   if (dump_file)
-    fprintf (dump_file, "[codegen] copying loop closed phi nodes in bb_%d.\n",
+    fprintf (dump_file, "[codegen] copying loop close phi nodes in bb_%d.\n",
 	     new_bb->index);
   /* Loop close phi nodes should have only one argument.  */
   gcc_assert (1 == EDGE_COUNT (old_bb->preds));
