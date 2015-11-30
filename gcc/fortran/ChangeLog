@@ -1,3 +1,10 @@
+2015-11-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68534
+	* decl.c (gfc_match_formal_arglist): Cope with zero formal args
+	either in interface declaration or in procedure declaration in
+	submodule.
+
 2015-11-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68227
@@ -68,7 +75,7 @@
 	* resolve.c (gfc_resolve_blocks): Handle EXEC_OACC_DECLARE.
 	* st.c (gfc_free_statement): Handle EXEC_OACC_DECLARE.
 	* symbol.c (check_conflict): Add conflict checks.
-	(gfc_add_oacc_declare_create, gfc_add_oacc_declare_copyin, 
+	(gfc_add_oacc_declare_create, gfc_add_oacc_declare_copyin,
 	gfc_add_oacc_declare_deviceptr, gfc_add_oacc_declare_device_resident):
 	New functions.
 	(gfc_copy_attr): Handle new symbols.
@@ -84,7 +91,7 @@
 2015-11-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* simplify.c (gfc_simplify_cshift): Work around bootstrap issues
-	due to inappropriate warning options. 
+	due to inappropriate warning options.
 
 2015-11-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
@@ -93,7 +100,7 @@
 	(gfc_simplify_spread): Remove a FIXME and add error condition.
 	* intrinsic.h: Prototype for gfc_simplify_cshift
 	* intrinsic.c (add_functions): Use gfc_simplify_cshift.
- 
+
 2015-11-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68237
