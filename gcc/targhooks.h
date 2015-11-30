@@ -90,7 +90,7 @@ extern tree default_builtin_vectorized_conversion (unsigned int, tree, tree);
 
 extern int default_builtin_vectorization_cost (enum vect_cost_for_stmt, tree, int);
 
-extern tree default_builtin_reciprocal (unsigned int, bool, bool);
+extern tree default_builtin_reciprocal (gcall *);
 
 extern HOST_WIDE_INT default_vector_alignment (const_tree);
 

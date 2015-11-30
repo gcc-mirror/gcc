@@ -5608,14 +5608,10 @@ be placed in an @code{object_block} structure.
 The default version returns true for all decls.
 @end deftypefn
 
-@deftypefn {Target Hook} tree TARGET_BUILTIN_RECIPROCAL (unsigned @var{fn}, bool @var{md_fn}, bool @var{sqrt})
+@deftypefn {Target Hook} tree TARGET_BUILTIN_RECIPROCAL (gcall *@var{call})
 This hook should return the DECL of a function that implements reciprocal of
-the builtin function with builtin function code @var{fn}, or
-@code{NULL_TREE} if such a function is not available.  @var{md_fn} is true
-when @var{fn} is a code of a machine-dependent builtin function.  When
-@var{sqrt} is true, additional optimizations that apply only to the reciprocal
-of a square root function are performed, and only reciprocals of @code{sqrt}
-function are valid.
+the builtin or internal function call @var{call}, or
+@code{NULL_TREE} if such a function is not available.
 @end deftypefn
 
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD (void)

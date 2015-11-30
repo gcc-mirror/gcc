@@ -7103,19 +7103,21 @@ aarch64_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
    reciprocal square root builtins.  */
 
 static tree
-aarch64_builtin_reciprocal (unsigned int fn,
-			    bool md_fn,
-			    bool)
+aarch64_builtin_reciprocal (gcall *call)
 {
   if (flag_trapping_math
       || !flag_unsafe_math_optimizations
       || optimize_size
       || ! (aarch64_tune_params.extra_tuning_flags
 	   & AARCH64_EXTRA_TUNE_RECIP_SQRT))
-  {
     return NULL_TREE;
-  }
 
+  if (gimple_call_internal_p (call)
+    return NULL_TREE;
+
+  tree fndecl = gimple_call_fndecl (call);
+  enum built_in_function fn = DECL_FUNCTION_CODE (fndecl);
+  bool md_fn = DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD;
   return aarch64_builtin_rsqrt (fn, md_fn);
 }
 

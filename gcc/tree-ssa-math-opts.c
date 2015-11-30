@@ -601,19 +601,17 @@ pass_cse_reciprocals::execute (function *fun)
 
 	      if (is_gimple_call (stmt1)
 		  && gimple_call_lhs (stmt1)
-		  && (fndecl = gimple_call_fndecl (stmt1))
-		  && (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-		      || DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD))
+		  && (gimple_call_internal_p (stmt1)
+		      || ((fndecl = gimple_call_fndecl (stmt1))
+			  && (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+			      || (DECL_BUILT_IN_CLASS (fndecl)
+				  == BUILT_IN_MD)))))
 		{
-		  enum built_in_function code;
-		  bool md_code, fail;
+		  bool fail;
 		  imm_use_iterator ui;
 		  use_operand_p use_p;
 
-		  code = DECL_FUNCTION_CODE (fndecl);
-		  md_code = DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD;
-
-		  fndecl = targetm.builtin_reciprocal (code, md_code, false);
+		  fndecl = targetm.builtin_reciprocal (as_a <gcall *> (stmt1));
 		  if (!fndecl)
 		    continue;
 
@@ -639,8 +637,28 @@ pass_cse_reciprocals::execute (function *fun)
 		    continue;
 
 		  gimple_replace_ssa_lhs (stmt1, arg1);
-		  gimple_call_set_fndecl (stmt1, fndecl);
-		  update_stmt (stmt1);
+		  if (gimple_call_internal_p (stmt1))
+		    {
+		      auto_vec<tree, 4> args;
+		      for (unsigned int i = 0;
+			   i < gimple_call_num_args (stmt1); i++)
+			args.safe_push (gimple_call_arg (stmt1, i));
+		      gcall *stmt2 = gimple_build_call_vec (fndecl, args);
+		      gimple_call_set_lhs (stmt2, arg1);
+		      if (gimple_vdef (stmt1))
+			{
+			  gimple_set_vdef (stmt2, gimple_vdef (stmt1));
+			  SSA_NAME_DEF_STMT (gimple_vdef (stmt2)) = stmt2;
+			}
+		      gimple_set_vuse (stmt2, gimple_vuse (stmt1));
+		      gimple_stmt_iterator gsi2 = gsi_for_stmt (stmt1);
+		      gsi_replace (&gsi2, stmt2, true);
+		    }
+		  else
+		    {
+		      gimple_call_set_fndecl (stmt1, fndecl);
+		      update_stmt (stmt1);
+		    }
 		  reciprocal_stats.rfuncs_inserted++;
 
 		  FOR_EACH_IMM_USE_STMT (stmt, ui, arg1)
