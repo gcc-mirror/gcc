@@ -93,6 +93,8 @@ static const struct attribute_spec gfc_attribute_table[] =
        affects_type_identity } */
   { "omp declare target", 0, 0, true,  false, false,
     gfc_handle_omp_declare_target_attribute, false },
+  { "oacc function", 0, -1, true,  false, false,
+    gfc_handle_omp_declare_target_attribute, false },
   { NULL,		  0, 0, false, false, false, NULL, false }
 };
 

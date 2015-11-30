@@ -1108,10 +1108,31 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_NUM_TASKS:
 	case OMP_CLAUSE_HINT:
 	case OMP_CLAUSE__CILK_FOR_COUNT_:
-	  wi->val_only = true;
-	  wi->is_lhs = false;
-	  convert_nonlocal_reference_op (&OMP_CLAUSE_OPERAND (clause, 0),
-					 &dummy, wi);
+	case OMP_CLAUSE_NUM_GANGS:
+	case OMP_CLAUSE_NUM_WORKERS:
+	case OMP_CLAUSE_VECTOR_LENGTH:
+	case OMP_CLAUSE_GANG:
+	case OMP_CLAUSE_WORKER:
+	case OMP_CLAUSE_VECTOR:
+	  /* Several OpenACC clauses have optional arguments.  Check if they
+	     are present.  */
+	  if (OMP_CLAUSE_OPERAND (clause, 0))
+	    {
+	      wi->val_only = true;
+	      wi->is_lhs = false;
+	      convert_nonlocal_reference_op (&OMP_CLAUSE_OPERAND (clause, 0),
+					     &dummy, wi);
+	    }
+
+	  /* The gang clause accepts two arguments.  */
+	  if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_GANG
+	      && OMP_CLAUSE_GANG_STATIC_EXPR (clause))
+	    {
+		wi->val_only = true;
+		wi->is_lhs = false;
+		convert_nonlocal_reference_op
+		  (&OMP_CLAUSE_GANG_STATIC_EXPR (clause), &dummy, wi);
+	    }
 	  break;
 
 	case OMP_CLAUSE_DIST_SCHEDULE:
@@ -1175,6 +1196,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_THREADS:
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_DEFAULTMAP:
+	case OMP_CLAUSE_SEQ:
 	  break;
 
 	default:
@@ -1762,10 +1784,31 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_NUM_TASKS:
 	case OMP_CLAUSE_HINT:
 	case OMP_CLAUSE__CILK_FOR_COUNT_:
-	  wi->val_only = true;
-	  wi->is_lhs = false;
-	  convert_local_reference_op (&OMP_CLAUSE_OPERAND (clause, 0), &dummy,
-				      wi);
+	case OMP_CLAUSE_NUM_GANGS:
+	case OMP_CLAUSE_NUM_WORKERS:
+	case OMP_CLAUSE_VECTOR_LENGTH:
+	case OMP_CLAUSE_GANG:
+	case OMP_CLAUSE_WORKER:
+	case OMP_CLAUSE_VECTOR:
+	  /* Several OpenACC clauses have optional arguments.  Check if they
+	     are present.  */
+	  if (OMP_CLAUSE_OPERAND (clause, 0))
+	    {
+	      wi->val_only = true;
+	      wi->is_lhs = false;
+	      convert_local_reference_op (&OMP_CLAUSE_OPERAND (clause, 0),
+					  &dummy, wi);
+	    }
+
+	  /* The gang clause accepts two arguments.  */
+	  if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_GANG
+	      && OMP_CLAUSE_GANG_STATIC_EXPR (clause))
+	    {
+		wi->val_only = true;
+		wi->is_lhs = false;
+		convert_nonlocal_reference_op
+		  (&OMP_CLAUSE_GANG_STATIC_EXPR (clause), &dummy, wi);
+	    }
 	  break;
 
 	case OMP_CLAUSE_DIST_SCHEDULE:
@@ -1834,6 +1877,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_THREADS:
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_DEFAULTMAP:
+	case OMP_CLAUSE_SEQ:
 	  break;
 
 	default:

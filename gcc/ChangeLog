@@ -1,3 +1,9 @@
+2015-11-30  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* tree-nested.c (convert_nonlocal_omp_clauses): Add support for
+	OMP_CLAUSE_{NUM_GANGS,NUM_VECTORS,VECTOR_LENGTH,SEQ}.
+	(convert_local_omp_clauses): Likewise.
+
 2015-11-30  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/46032
