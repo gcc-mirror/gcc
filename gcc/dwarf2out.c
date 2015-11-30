@@ -20798,9 +20798,10 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
   /* We are going to output a DIE to represent the unqualified version
      of this type (i.e. without any const or volatile qualifiers) so
      get the main variant (i.e. the unqualified version) of this type
-     now.  (Vectors are special because the debugging info is in the
+     now.  (Vectors and arrays are special because the debugging info is in the
      cloned type itself).  */
-  if (TREE_CODE (type) != VECTOR_TYPE)
+  if (TREE_CODE (type) != VECTOR_TYPE
+      && TREE_CODE (type) != ARRAY_TYPE)
     type = type_main_variant (type);
 
   /* If this is an array type with hidden descriptor, handle it first.  */

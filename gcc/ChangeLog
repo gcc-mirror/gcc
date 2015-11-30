@@ -1,3 +1,9 @@
+2015-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR c/68162
+	* dwarf2out.c (gen_type_die_with_usage): Keep variant types
+	of arrays.
+
 2015-11-30  Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
 
 	* tree-if-conv.c (struct ifc_dr): Add new tree
