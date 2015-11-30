@@ -1,5 +1,9 @@
 2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils2.c (gnat_invariant_expr): Add type conversions.
+
+2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (TYPE_MAX_ALIGN): New macro.
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not set PACKED to -2.
 	Remove obsolete code setting the alignment on some atomic types.

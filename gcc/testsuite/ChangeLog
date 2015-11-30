@@ -1,5 +1,9 @@
 2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/loop_optimization22.ad[sb]: New test.
+
+2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/specs/rep_clause5.ads: New test.
 
 2015-11-29  Jan Hubicka  <hubicka@ucw.cz>
