@@ -9353,8 +9353,8 @@ supersparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   enum attr_type insn_type;
 
-  if (! recog_memoized (insn))
-    return 0;
+  if (recog_memoized (insn) < 0)
+    return cost;
 
   insn_type = get_attr_type (insn);
 
@@ -9487,7 +9487,7 @@ hypersparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 }
 
 static int
-sparc_adjust_cost(rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
+sparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
 {
   switch (sparc_cpu)
     {

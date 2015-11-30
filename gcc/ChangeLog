@@ -1,3 +1,9 @@
+2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/28115
+	* config/sparc/sparc.c (supersparc_adjust_cost): Fix thinko.
+	(sparc_adjust_cost): Add missing space.
+
 2015-11-30  Richard Biener  <rguenther@suse.de>
 
 	PR c/68162
