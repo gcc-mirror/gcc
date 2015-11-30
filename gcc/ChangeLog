@@ -1,3 +1,8 @@
+2015-11-30  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/i386.md (define_mode_iterator SWI1248_AVX512BW): New.
+	(define_insn "*k<logic><mode>"): Use new iterator.
+
 2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/28115
