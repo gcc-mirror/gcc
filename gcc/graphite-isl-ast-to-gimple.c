@@ -502,7 +502,7 @@ private:
 tree
 translate_isl_ast_to_gimple::
 gcc_expression_from_isl_ast_expr_id (tree type,
-				     __isl_keep isl_ast_expr *expr_id,
+				     __isl_take isl_ast_expr *expr_id,
 				     ivs_params &ip)
 {
   gcc_assert (isl_ast_expr_get_type (expr_id) == isl_ast_expr_id);
@@ -550,8 +550,13 @@ binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
   tree tree_lhs_expr = gcc_expression_from_isl_expression (type, arg_expr, ip);
   arg_expr = isl_ast_expr_get_op_arg (expr, 1);
   tree tree_rhs_expr = gcc_expression_from_isl_expression (type, arg_expr, ip);
+
   enum isl_ast_op_type expr_type = isl_ast_expr_get_op_type (expr);
   isl_ast_expr_free (expr);
+
+  if (codegen_error)
+    return NULL_TREE;
+
   switch (expr_type)
     {
     case isl_ast_op_add:
@@ -564,15 +569,43 @@ binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
       return fold_build2 (MULT_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_div:
+      /* As ISL operates on arbitrary precision numbers, we may end up with
+	 division by 2^64 that is folded to 0.  */
+      if (integer_zerop (tree_rhs_expr))
+	{
+	  codegen_error = true;
+	  return NULL_TREE;
+	}
       return fold_build2 (EXACT_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_pdiv_q:
+      /* As ISL operates on arbitrary precision numbers, we may end up with
+	 division by 2^64 that is folded to 0.  */
+      if (integer_zerop (tree_rhs_expr))
+	{
+	  codegen_error = true;
+	  return NULL_TREE;
+	}
       return fold_build2 (TRUNC_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_pdiv_r:
+      /* As ISL operates on arbitrary precision numbers, we may end up with
+	 division by 2^64 that is folded to 0.  */
+      if (integer_zerop (tree_rhs_expr))
+	{
+	  codegen_error = true;
+	  return NULL_TREE;
+	}
       return fold_build2 (TRUNC_MOD_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_fdiv_q:
+      /* As ISL operates on arbitrary precision numbers, we may end up with
+	 division by 2^64 that is folded to 0.  */
+      if (integer_zerop (tree_rhs_expr))
+	{
+	  codegen_error = true;
+	  return NULL_TREE;
+	}
       return fold_build2 (FLOOR_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_and:
@@ -620,6 +653,9 @@ ternary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
   tree tree_third_expr
     = gcc_expression_from_isl_expression (type, arg_expr, ip);
   isl_ast_expr_free (expr);
+
+  if (codegen_error)
+    return NULL_TREE;
   return fold_build3 (COND_EXPR, type, tree_first_expr,
 		      tree_second_expr, tree_third_expr);
 }
@@ -635,7 +671,7 @@ unary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
   isl_ast_expr *arg_expr = isl_ast_expr_get_op_arg (expr, 0);
   tree tree_expr = gcc_expression_from_isl_expression (type, arg_expr, ip);
   isl_ast_expr_free (expr);
-  return fold_build1 (NEGATE_EXPR, type, tree_expr);
+  return codegen_error ? NULL_TREE : fold_build1 (NEGATE_EXPR, type, tree_expr);
 }
 
 /* Converts an isl_ast_expr_op expression E with unknown number of arguments
@@ -661,11 +697,25 @@ nary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
     }
   isl_ast_expr *arg_expr = isl_ast_expr_get_op_arg (expr, 0);
   tree res = gcc_expression_from_isl_expression (type, arg_expr, ip);
+
+  if (codegen_error)
+    {
+      isl_ast_expr_free (expr);
+      return NULL_TREE;
+    }
+
   int i;
   for (i = 1; i < isl_ast_expr_get_op_n_arg (expr); i++)
     {
       arg_expr = isl_ast_expr_get_op_arg (expr, i);
       tree t = gcc_expression_from_isl_expression (type, arg_expr, ip);
+
+      if (codegen_error)
+	{
+	  isl_ast_expr_free (expr);
+	  return NULL_TREE;
+	}
+
       res = fold_build2 (op_code, type, res, t);
     }
   isl_ast_expr_free (expr);
@@ -680,6 +730,12 @@ translate_isl_ast_to_gimple::
 gcc_expression_from_isl_expr_op (tree type, __isl_take isl_ast_expr *expr,
 				 ivs_params &ip)
 {
+  if (codegen_error)
+    {
+      isl_ast_expr_free (expr);
+      return NULL_TREE;
+    }
+
   gcc_assert (isl_ast_expr_get_type (expr) == isl_ast_expr_op);
   switch (isl_ast_expr_get_op_type (expr))
     {
@@ -732,6 +788,12 @@ translate_isl_ast_to_gimple::
 gcc_expression_from_isl_expression (tree type, __isl_take isl_ast_expr *expr,
 				    ivs_params &ip)
 {
+  if (codegen_error)
+    {
+      isl_ast_expr_free (expr);
+      return NULL_TREE;
+    }
+
   switch (isl_ast_expr_get_type (expr))
     {
     case isl_ast_expr_id:
@@ -766,6 +828,11 @@ graphite_create_new_loop (edge entry_edge, __isl_keep isl_ast_node *node_for,
 {
   isl_ast_expr *for_inc = isl_ast_node_for_get_inc (node_for);
   tree stride = gcc_expression_from_isl_expression (type, for_inc, ip);
+
+  /* To fail code generation, we generate wrong code until we discard it.  */
+  if (codegen_error)
+    stride = integer_zero_node;
+
   tree ivvar = create_tmp_var (type, "graphite_IV");
   tree iv, iv_after_increment;
   loop_p loop = create_empty_loop_on_edge
@@ -909,8 +976,14 @@ graphite_create_new_loop_guard (edge entry_edge,
     build_nonstandard_integer_type (graphite_expression_type_precision, 0);
   isl_ast_expr *for_init = isl_ast_node_for_get_init (node_for);
   *lb = gcc_expression_from_isl_expression (*type, for_init, ip);
+  /* To fail code generation, we generate wrong code until we discard it.  */
+  if (codegen_error)
+    *lb = integer_zero_node;
   isl_ast_expr *upper_bound = get_upper_bound (node_for);
   *ub = gcc_expression_from_isl_expression (*type, upper_bound, ip);
+  /* To fail code generation, we generate wrong code until we discard it.  */
+  if (codegen_error)
+    *ub = integer_zero_node;
   
   /* When ub is simply a constant or a parameter, use lb <= ub.  */
   if (TREE_CODE (*ub) == INTEGER_CST || TREE_CODE (*ub) == SSA_NAME)
@@ -993,6 +1066,10 @@ build_iv_mapping (vec<tree> iv_map, gimple_poly_bb_p gbb,
       tree type =
 	build_nonstandard_integer_type (graphite_expression_type_precision, 0);
       tree t = gcc_expression_from_isl_expression (type, arg_expr, ip);
+      /* To fail code generation, we generate wrong code until we discard it.  */
+      if (codegen_error)
+	t = integer_zero_node;
+
       loop_p old_loop = gbb_loop_at_index (gbb, region, i - 1);
       iv_map[old_loop->num] = t;
     }
@@ -1089,6 +1166,10 @@ graphite_create_new_guard (edge entry_edge, __isl_take isl_ast_expr *if_cond,
   tree type =
     build_nonstandard_integer_type (graphite_expression_type_precision, 0);
   tree cond_expr = gcc_expression_from_isl_expression (type, if_cond, ip);
+  /* To fail code generation, we generate wrong code until we discard it.  */
+  if (codegen_error)
+    cond_expr = integer_zero_node;
+
   edge exit_edge = create_empty_if_region_on_edge (entry_edge, cond_expr);
   return exit_edge;
 }

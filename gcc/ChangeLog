@@ -1,6 +1,23 @@
 2015-11-30  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	PR tree-optimization/68565
+	* graphite-isl-ast-to-gimple.c (binary_op_to_tree): Early return on
+	codegen_error.  Fail when rhs of division operations is integer_zerop.
+	(ternary_op_to_tree): Early return on codegen_error.
+	(unary_op_to_tree): Same.
+	(nary_op_to_tree): Same.
+	(gcc_expression_from_isl_expr_op): Same.
+	(gcc_expression_from_isl_expression): Same.
+	(graphite_create_new_loop): On codegen_error continue generating
+	wrong code.
+	(graphite_create_new_loop_guard): Same.
+	(build_iv_mapping): Same.
+	(graphite_create_new_guard): Same.
+
+2015-11-30  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
 	* graphite-isl-ast-to-gimple.c: Fix dump messages.
 	* graphite-scop-detection.c: Same.
 	* graphite-sese-to-poly.c (isl_id_for_ssa_name): Do not call get_name.
