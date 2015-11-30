@@ -1,3 +1,12 @@
+2015-11-30  Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+
+	* tree-if-conv.c (struct ifc_dr): Add new tree
+	base_predicate field.
+	(hash_memrefs_baserefs_and_store_DRs_read_written_info): Hash
+	base ref, DR pairs and store base_predicate for write type DRs.
+	(ifcvt_memrefs_wont_trap): Guard checks with
+	-ftree-loop-if-convert-stores flag.
+
 2015-11-29  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c (cgraph_node::make_local): No name is unique during
