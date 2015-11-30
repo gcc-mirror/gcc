@@ -1,5 +1,21 @@
 2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* osint.adb: Add use type clause for CRTL.size_t.
+	(C_String_Length): Return CRTL.size_t instead of Integer.
+	(To_Path_String_Access): Take CRTL.size_t instead of Integer.
+	(Get_Libraries_From_Registry): Use CRTL throughout.
+	(To_Canonical_Dir_Spec): Use CRTL.size_t instead of Integer.
+	(To_Canonical_File_List): Likewise.
+	(To_Canonical_File_Spec): Likewise.
+	(To_Canonical_Path_Spec): Likewise.
+	(To_Host_Dir_Spec): Likewise.
+	(To_Host_File_Spec): Likewise.
+	(Update_Path): Use CRTL throughout.
+	* s-shasto.adb: Add with clause for System.CRTL.
+	(Initialize): Rename CRTL.strncpy instead of importing it manually.
+
+2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (create_var_decl): Adjust prototype.
 	(create_subprog_decl): Likewise.
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Rename

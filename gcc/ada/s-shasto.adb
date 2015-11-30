@@ -37,6 +37,7 @@ with System.Global_Locks;
 with System.Soft_Links;
 
 with System;
+with System.CRTL;
 with System.File_Control_Block;
 with System.File_IO;
 with System.HTable;
@@ -270,24 +271,26 @@ package body System.Shared_Storage is
       procedure Get_Env_Value_Ptr (Name, Length, Ptr : Address);
       pragma Import (C, Get_Env_Value_Ptr, "__gnat_getenv");
 
-      procedure Strncpy (Astring_Addr, Cstring : Address; N : Integer);
-      pragma Import (C, Strncpy, "strncpy");
+      subtype size_t is CRTL.size_t;
+
+      procedure Strncpy (dest, src : System.Address; n : size_t)
+        renames CRTL.strncpy;
 
       Dir_Name : aliased constant String :=
                    "SHARED_MEMORY_DIRECTORY" & ASCII.NUL;
 
-      Env_Value_Ptr    : aliased Address;
-      Env_Value_Length : aliased Integer;
+      Env_Value_Ptr : aliased Address;
+      Env_Value_Len : aliased Integer;
 
    begin
       if Dir = null then
          Get_Env_Value_Ptr
-           (Dir_Name'Address, Env_Value_Length'Address, Env_Value_Ptr'Address);
+           (Dir_Name'Address, Env_Value_Len'Address, Env_Value_Ptr'Address);
 
-         Dir := new String (1 .. Env_Value_Length);
+         Dir := new String (1 .. Env_Value_Len);
 
-         if Env_Value_Length > 0 then
-            Strncpy (Dir.all'Address, Env_Value_Ptr, Env_Value_Length);
+         if Env_Value_Len > 0 then
+            Strncpy (Dir.all'Address, Env_Value_Ptr, size_t (Env_Value_Len));
          end if;
 
          System.Global_Locks.Create_Lock (Global_Lock, Dir.all & "__lock");
