@@ -4139,6 +4139,24 @@ get_fi_for_callee (gcall *call)
   return get_vi_for_tree (fn);
 }
 
+/* Create constraints for assigning call argument ARG to the incoming parameter
+   INDEX of function FI.  */
+
+static void
+find_func_aliases_for_call_arg (varinfo_t fi, unsigned index, tree arg)
+{
+  struct constraint_expr lhs;
+  lhs = get_function_part_constraint (fi, fi_parm_base + index);
+
+  auto_vec<ce_s, 2> rhsc;
+  get_constraint_for_rhs (arg, &rhsc);
+
+  unsigned j;
+  struct constraint_expr *rhsp;
+  FOR_EACH_VEC_ELT (rhsc, j, rhsp)
+    process_constraint (new_constraint (lhs, *rhsp));
+}
+
 /* Create constraints for the builtin call T.  Return true if the call
    was handled, otherwise false.  */
 
@@ -4488,6 +4506,25 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
 	    }
 	  return true;
 	}
+      case BUILT_IN_GOMP_PARALLEL:
+	{
+	  /* Handle __builtin_GOMP_parallel (fn, data, num_threads, flags) as
+	     fn (data).  */
+	  if (in_ipa_mode)
+	    {
+	      tree fnarg = gimple_call_arg (t, 0);
+	      gcc_assert (TREE_CODE (fnarg) == ADDR_EXPR);
+	      tree fndecl = TREE_OPERAND (fnarg, 0);
+	      tree arg = gimple_call_arg (t, 1);
+	      gcc_assert (TREE_CODE (arg) == ADDR_EXPR);
+
+	      varinfo_t fi = get_vi_for_tree (fndecl);
+	      find_func_aliases_for_call_arg (fi, 0, arg);
+	      return true;
+	    }
+	  /* Else fallthru to generic call handling.  */
+	  break;
+	}
       /* printf-style functions may have hooks to set pointers to
 	 point to somewhere into the generated string.  Leave them
 	 for a later exercise...  */
@@ -4546,18 +4583,8 @@ find_func_aliases_for_call (struct function *fn, gcall *t)
 	 parameters of the function.  */
       for (j = 0; j < gimple_call_num_args (t); j++)
 	{
-	  struct constraint_expr lhs ;
-	  struct constraint_expr *rhsp;
 	  tree arg = gimple_call_arg (t, j);
-
-	  get_constraint_for_rhs (arg, &rhsc);
-	  lhs = get_function_part_constraint (fi, fi_parm_base + j);
-	  while (rhsc.length () != 0)
-	    {
-	      rhsp = &rhsc.last ();
-	      process_constraint (new_constraint (lhs, *rhsp));
-	      rhsc.pop ();
-	    }
+	  find_func_aliases_for_call_arg (fi, j, arg);
 	}
 
       /* If we are returning a value, assign it to the result.  */
@@ -5035,6 +5062,8 @@ find_func_clobbers (struct function *fn, gimple *origt)
 	    return;
 	  case BUILT_IN_VA_START:
 	  case BUILT_IN_VA_END:
+	    return;
+	  case BUILT_IN_GOMP_PARALLEL:
 	    return;
 	  /* printf-style functions may have hooks to set pointers to
 	     point to somewhere into the generated string.  Leave them
@@ -7345,6 +7374,18 @@ ipa_pta_execute (void)
 
       gcc_assert (!node->clone_of);
 
+      /* When parallelizing a code region, we split the region off into a
+	 separate function, to be run by several threads in parallel.  So for a
+	 function foo, we split off a region into a function
+	 foo._0 (void *foodata), and replace the region with some variant of a
+	 function call run_on_threads (&foo._0, data).  The '&foo._0' sets the
+	 address_taken bit for function foo._0, which would make it non-local.
+	 But for the purpose of ipa-pta, we can regard the run_on_threads call
+	 as a local call foo._0 (data),  so we ignore address_taken on nodes
+	 with parallelized_function set.  */
+      bool node_address_taken = (node->address_taken
+				 && !node->parallelized_function);
+
       /* For externally visible or attribute used annotated functions use
 	 local constraints for their arguments.
 	 For local functions we see all callers and thus do not need initial
@@ -7352,7 +7393,7 @@ ipa_pta_execute (void)
       bool nonlocal_p = (node->used_from_other_partition
 			 || node->externally_visible
 			 || node->force_output
-			 || node->address_taken);
+			 || node_address_taken);
 
       vi = create_function_info_for (node->decl,
 				     alias_get_name (node->decl), false,
@@ -7504,7 +7545,11 @@ ipa_pta_execute (void)
 		continue;
 
 	      /* Handle direct calls to functions with body.  */
-	      decl = gimple_call_fndecl (stmt);
+	      if (gimple_call_builtin_p (stmt, BUILT_IN_GOMP_PARALLEL))
+		decl = TREE_OPERAND (gimple_call_arg (stmt, 0), 0);
+	      else
+		decl = gimple_call_fndecl (stmt);
+
 	      if (decl
 		  && (fi = lookup_vi_for_tree (decl))
 		  && fi->is_fn_info)

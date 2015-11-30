@@ -1,3 +1,14 @@
+2015-11-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/46032
+	* tree-ssa-structalias.c (find_func_aliases_for_call_arg): New function,
+	factored out of ...
+	(find_func_aliases_for_call): ... here.
+	(find_func_aliases_for_builtin_call, find_func_clobbers): Handle
+	BUILT_IN_GOMP_PARALLEL.
+	(ipa_pta_execute): Same.  Handle node->parallelized_function as a local
+	function.
+
 2015-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/68501
