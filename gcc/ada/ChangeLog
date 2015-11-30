@@ -1,3 +1,21 @@
+2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (TYPE_MAX_ALIGN): New macro.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not set PACKED to -2.
+	Remove obsolete code setting the alignment on some atomic types.
+	When the type has no alignment but needs strict alignment and has a
+	size clause, compute a maximum alignment and set it on the type.
+	(adjust_packed): Remove handling of -2 argument.  Deal with TYPE_ALIGN
+	and TYPE_MAX_ALIGN directly.
+	(gnat_to_gnu_field): Do not document -2 as argument.
+	(components_to_record): Likewise.
+	* gcc-interface/utils.c (finish_record_type): Do not bump alignment of
+	the record type beyond TYPE_MAX_ALIGN.  Reset the latter on exit.
+
+	* gcc-interface/Makefile.in (PICFLAG_FOR_TARGET): Move around.
+	(GNATLIBCFLAGS_FOR_C): Reformat.
+	(GCC_CFLAGS): Delete.
+
 2015-11-29  Matthias Klose  <doko@ubuntu.com>
 
 	PR ada/68564
