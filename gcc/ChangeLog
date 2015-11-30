@@ -1,3 +1,19 @@
+2015-11-30  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (nvptx_name_replacement): Move earlier.
+	(write_one_arg): Reorder parms, add 'sep' param.
+	(nvptx_write_function_decl): Rename to ...
+	(write_fn_proto): ... here.  Do name replacement. Emit linaer
+	comment marker. Deal with both decls and defns. Simplify argument
+	formatting.
+	(write_function_decl_and_comment): Delete.
+	(write_func_decl_from_insn): Rename to ...
+	(write_fn_proto_from_insn): ... here.  Don't do name replacement.
+	(nvptx_record_fndecl): Call write_fn_proto.
+	(nvptx_record_libfunc): Call write_fn_proto_from_insn.
+	(nvptx_declare_function_name): Adjust for write_fn_proto changes.
+	(nvotx_output_call_insn): Call write_fn_prot_from_insn.
+
 2015-11-30  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/i386.md (define_mode_iterator SWI1248_AVX512BW): New.

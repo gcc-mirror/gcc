@@ -224,6 +224,24 @@ nvptx_addr_space_from_sym (rtx sym)
   return ADDR_SPACE_GLOBAL;
 }
 
+/* Check NAME for special function names and redirect them by returning a
+   replacement.  This applies to malloc, free and realloc, for which we
+   want to use libgcc wrappers, and call, which triggers a bug in ptxas.  */
+
+static const char *
+nvptx_name_replacement (const char *name)
+{
+  if (strcmp (name, "call") == 0)
+    return "__nvptx_call";
+  if (strcmp (name, "malloc") == 0)
+    return "__nvptx_malloc";
+  if (strcmp (name, "free") == 0)
+    return "__nvptx_free";
+  if (strcmp (name, "realloc") == 0)
+    return "__nvptx_realloc";
+  return name;
+}
+
 /* If MODE should be treated as two registers of an inner mode, return
    that inner mode.  Otherwise return VOIDmode.  */
 
@@ -309,8 +327,8 @@ arg_promotion (machine_mode mode)
    a decl with zero TYPE_ARG_TYPES, i.e. an old-style C decl.  */
 
 static int
-write_one_arg (std::stringstream &s, tree type, int i, machine_mode mode,
-	       bool no_arg_types)
+write_one_arg (std::stringstream &s, const char *sep, int i,
+	       tree type, machine_mode mode, bool no_arg_types)
 {
   if (!PASS_IN_REG_P (mode, type))
     mode = Pmode;
@@ -318,9 +336,9 @@ write_one_arg (std::stringstream &s, tree type, int i, machine_mode mode,
   machine_mode split = maybe_split_mode (mode);
   if (split != VOIDmode)
     {
-      i = write_one_arg (s, NULL_TREE, i, split, false);
-      i = write_one_arg (s, NULL_TREE, i, split, false);
-      return i;
+      i = write_one_arg (s, sep, i, TREE_TYPE (type), split, false);
+      sep = ", ";
+      mode = split;
     }
 
   if (no_arg_types && !AGGREGATE_TYPE_P (type))
@@ -330,8 +348,7 @@ write_one_arg (std::stringstream &s, tree type, int i, machine_mode mode,
       mode = arg_promotion (mode);
     }
 
-  if (i)
-    s << ", ";
+  s << sep;
   s << ".param" << nvptx_ptx_type_from_mode (mode, false) << " %in_ar"
     << i << (mode == QImode || mode == HImode ? "[1]" : "");
   if (mode == BLKmode)
@@ -349,41 +366,41 @@ write_as_kernel (tree attrs)
 	  || lookup_attribute ("omp target entrypoint", attrs) != NULL_TREE);
 }
 
-/* Write a function decl for DECL to S, where NAME is the name to be used.
-   This includes ptx .visible or .extern specifiers, .func or .kernel, and
-   argument and return types.  */
+/* Write a .func or .kernel declaration or definition along with
+   a helper comment for use by ld.  S is the stream to write to, DECL
+   the decl for the function with name NAME.   For definitions, emit
+   a declaration too.  */
 
-static void
-nvptx_write_function_decl (std::stringstream &s, const char *name, const_tree decl)
+static const char *
+write_fn_proto (std::stringstream &s, bool is_defn,
+		const char *name, const_tree decl)
 {
-  tree fntype = TREE_TYPE (decl);
-  tree result_type = TREE_TYPE (fntype);
-  tree args = TYPE_ARG_TYPES (fntype);
-  tree attrs = DECL_ATTRIBUTES (decl);
-  bool kernel = write_as_kernel (attrs);
-  bool is_main = strcmp (name, "main") == 0;
-  bool args_from_decl = false;
-
-  /* We get:
-     NULL in TYPE_ARG_TYPES, for old-style functions
-     NULL in DECL_ARGUMENTS, for builtin functions without another
-       declaration.
-     So we have to pick the best one we have.  */
-  if (args == 0)
+  if (is_defn)
+    /* Emit a declaration. The PTX assembler gets upset without it.   */
+    name = write_fn_proto (s, false, name, decl);
+  else
     {
-      args = DECL_ARGUMENTS (decl);
-      args_from_decl = true;
+      /* Avoid repeating the name replacement.  */
+      name = nvptx_name_replacement (name);
+      if (name[0] == '*')
+	name++;
     }
 
+  /* Emit the linker marker.  */
+  s << "\n// BEGIN";
+  if (TREE_PUBLIC (decl))
+    s << " GLOBAL";
+  s << " FUNCTION " << (is_defn ? "DEF" : "DECL") << ": " << name << "\n";
+
+  /* PTX declaration.  */
   if (DECL_EXTERNAL (decl))
     s << ".extern ";
   else if (TREE_PUBLIC (decl))
     s << (DECL_WEAK (decl) ? ".weak " : ".visible ");
+  s << (write_as_kernel (DECL_ATTRIBUTES (decl)) ? ".entry " : ".func ");
 
-  if (kernel)
-    s << ".entry ";
-  else
-    s << ".func ";
+  tree fntype = TREE_TYPE (decl);
+  tree result_type = TREE_TYPE (fntype);
 
   /* Declare the result.  */
   bool return_in_mem = false;
@@ -396,78 +413,74 @@ nvptx_write_function_decl (std::stringstream &s, const char *name, const_tree de
 	{
 	  mode = arg_promotion (mode);
 	  s << "(.param" << nvptx_ptx_type_from_mode (mode, false)
-	    << " %out_retval)";
+	    << " %out_retval) ";
 	}
     }
 
-  if (name[0] == '*')
-    s << (name + 1);
-  else
-    s << name;
+  s << name;
 
-  /* Declare argument types.  */
-  if ((args != NULL_TREE
-       && !(TREE_CODE (args) == TREE_LIST
-	    && TREE_VALUE (args) == void_type_node))
-      || is_main
-      || return_in_mem
-      || DECL_STATIC_CHAIN (decl))
+  const char *sep = " (";
+  int i = 0;
+
+  /* Emit argument list.  */
+  if (return_in_mem)
     {
-      s << "(";
-      int i = 0;
-
-      if (return_in_mem)
-	{
-	  s << ".param.u" << GET_MODE_BITSIZE (Pmode) << " %in_ar0";
-	  i++;
-	}
-      while (args != NULL_TREE)
-	{
-	  tree type = args_from_decl ? TREE_TYPE (args) : TREE_VALUE (args);
-	  machine_mode mode = TYPE_MODE (type);
-
-	  if (mode != VOIDmode)
-	    i = write_one_arg (s, type, i, mode,
-			       TYPE_ARG_TYPES (fntype) == 0);
-	  args = TREE_CHAIN (args);
-	}
-      if (stdarg_p (fntype))
-	{
-	  gcc_assert (i > 0);
-	  s << ", .param.u" << GET_MODE_BITSIZE (Pmode) << " %in_argp";
-	}
-      if (DECL_STATIC_CHAIN (decl))
-	{
-	  if (i)
-	    s << ", ";
-	  s << ".reg.u" << GET_MODE_BITSIZE (Pmode)
-	    << reg_names [STATIC_CHAIN_REGNUM];
-	}
-      if (!i && is_main)
-	s << ".param.u32 %argc, .param.u" << GET_MODE_BITSIZE (Pmode)
-	  << " %argv";
-      s << ")";
+      s << sep << ".param.u" << GET_MODE_BITSIZE (Pmode) << " %in_ar0";
+      sep  = ", ";
+      i++;
     }
-}
 
-/* Write a .func or .kernel declaration (not a definition) along with
-   a helper comment for use by ld.  S is the stream to write to, DECL
-   the decl for the function with name NAME.  */
+  /* We get:
+     NULL in TYPE_ARG_TYPES, for old-style functions
+     NULL in DECL_ARGUMENTS, for builtin functions without another
+       declaration.
+     So we have to pick the best one we have.  */
+  tree args = TYPE_ARG_TYPES (fntype);
+  bool null_type_args = !args;
+  if (null_type_args)
+    args = DECL_ARGUMENTS (decl);
 
-static void
-write_function_decl_and_comment (std::stringstream &s, const char *name, const_tree decl)
-{
-  s << "\n// BEGIN";
-  if (TREE_PUBLIC (decl))
-    s << " GLOBAL";
-  s << " FUNCTION DECL: ";
-  if (name[0] == '*')
-    s << (name + 1);
-  else
-    s << name;
-  s << "\n";
-  nvptx_write_function_decl (s, name, decl);
-  s << ";\n";
+  for (; args; args = TREE_CHAIN (args))
+    {
+      tree type = null_type_args ? TREE_TYPE (args) : TREE_VALUE (args);
+      machine_mode mode = TYPE_MODE (type);
+
+      if (mode == VOIDmode)
+	break;
+      i = write_one_arg (s, sep, i, type, mode, null_type_args);
+      sep = ", ";
+    }
+
+  if (stdarg_p (fntype))
+    {
+      s << sep << ".param.u" << GET_MODE_BITSIZE (Pmode) << " %in_argp";
+      i++;
+      sep = ", ";
+    }
+
+  if (DECL_STATIC_CHAIN (decl))
+    {
+      s << sep << ".reg.u" << GET_MODE_BITSIZE (Pmode)
+	<< reg_names [STATIC_CHAIN_REGNUM];
+      i++;
+      sep = ", ";
+    }
+
+  if (!i && strcmp (name, "main") == 0)
+    {
+      s << sep
+	<< ".param.u32 %argc, .param.u" << GET_MODE_BITSIZE (Pmode)
+	<< " %argv";
+      i++;
+      sep = ", ";
+    }
+
+  if (i)
+    s << ")";
+
+  s << (is_defn ? "\n" : ";\n");
+
+  return name;
 }
 
 /* Construct a function declaration from a call insn.  This can be
@@ -476,8 +489,8 @@ write_function_decl_and_comment (std::stringstream &s, const char *name, const_t
    generated by emit_library_call for which no decl exists.  */
 
 static void
-write_func_decl_from_insn (std::stringstream &s, const char *name,
-			   rtx result, rtx pat)
+write_fn_proto_from_insn (std::stringstream &s, const char *name,
+			  rtx result, rtx pat)
 {
   if (!name)
     {
@@ -486,6 +499,7 @@ write_func_decl_from_insn (std::stringstream &s, const char *name,
     }
   else
     {
+      name = nvptx_name_replacement (name);
       s << "\n// BEGIN GLOBAL FUNCTION DECL: " << name << "\n";
       s << "\t.extern .func ";
     }
@@ -519,24 +533,6 @@ write_func_decl_from_insn (std::stringstream &s, const char *name,
   s << ";\n";
 }
 
-/* Check NAME for special function names and redirect them by returning a
-   replacement.  This applies to malloc, free and realloc, for which we
-   want to use libgcc wrappers, and call, which triggers a bug in ptxas.  */
-
-static const char *
-nvptx_name_replacement (const char *name)
-{
-  if (strcmp (name, "call") == 0)
-    return "__nvptx_call";
-  if (strcmp (name, "malloc") == 0)
-    return "__nvptx_malloc";
-  if (strcmp (name, "free") == 0)
-    return "__nvptx_free";
-  if (strcmp (name, "realloc") == 0)
-    return "__nvptx_realloc";
-  return name;
-}
-
 /* DECL is an external FUNCTION_DECL, make sure its in the fndecl hash
    table and and write a ptx prototype.  These are emitted at end of
    compilation.  */
@@ -549,8 +545,7 @@ nvptx_record_fndecl (tree decl)
     {
       *slot = decl;
       const char *name = get_fnname_from_decl (decl);
-      name = nvptx_name_replacement (name);
-      write_function_decl_and_comment (func_decls, name, decl);
+      write_fn_proto (func_decls, false, name, decl);
     }
 }
 
@@ -567,8 +562,7 @@ nvptx_record_libfunc (rtx callee, rtx retval, rtx pat)
       *slot = callee;
 
       const char *name = XSTR (callee, 0);
-      name = nvptx_name_replacement (name);
-      write_func_decl_from_insn (func_decls, name, retval, pat);
+      write_fn_proto_from_insn (func_decls, name, retval, pat);
     }
 }
 
@@ -625,29 +619,13 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   tree result_type = TREE_TYPE (fntype);
   int argno  = 0;
 
-  name = nvptx_name_replacement (name);
-
   std::stringstream s;
-  write_function_decl_and_comment (s, name, decl);
-  s << "// BEGIN";
-  if (TREE_PUBLIC (decl))
-    s << " GLOBAL";
-  s << " FUNCTION DEF: ";
-
-  if (name[0] == '*')
-    s << (name + 1);
-  else
-    s << name;
-  s << "\n";
-
-  nvptx_write_function_decl (s, name, decl);
+  write_fn_proto (s, true, name, decl);
   fprintf (file, "%s", s.str().c_str());
+  fprintf (file, "{\n");
 
   bool return_in_mem = (TYPE_MODE (result_type) != VOIDmode
 			&& !RETURN_IN_REG_P (TYPE_MODE (result_type)));
-
-  fprintf (file, "\n{\n");
-
   if (return_in_mem)
     {
       fprintf (file, "\t.reg.u%d %%ar%d;\n", GET_MODE_BITSIZE (Pmode), argno);
@@ -1794,7 +1772,7 @@ nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
       labelno++;
       ASM_OUTPUT_LABEL (asm_out_file, buf);
       std::stringstream s;
-      write_func_decl_from_insn (s, NULL, result, pat);
+      write_fn_proto_from_insn (s, NULL, result, pat);
       fputs (s.str().c_str(), asm_out_file);
     }
 
