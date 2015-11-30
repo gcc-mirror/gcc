@@ -1,3 +1,8 @@
+2015-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68592
+	* gfortran.dg/pr68592.f: New testcase.
+
 2015-11-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/68534
