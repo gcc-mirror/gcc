@@ -2860,7 +2860,9 @@ gnat_invariant_expr (tree expr)
       tree op0 = gnat_invariant_expr (TREE_OPERAND (expr, 0));
       tree op1 = TREE_OPERAND (expr, 1);
       if (op0 && TREE_CONSTANT (op1))
-	return fold_build2 (TREE_CODE (expr), type, op0, op1);
+	return
+	  fold_build2 (TREE_CODE (expr), type,
+		       fold_convert (type, op0), fold_convert (type, op1));
       else
 	return NULL_TREE;
     }
