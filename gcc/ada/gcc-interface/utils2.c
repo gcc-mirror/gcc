@@ -2813,6 +2813,52 @@ done:
   return exp;
 }
 
+/* Return true if EXPR is the addition or the subtraction of a constant and,
+   if so, set *ADD to the addend, *CST to the constant and *MINUS_P to true
+   if this is a subtraction.  */
+
+bool
+is_simple_additive_expression (tree expr, tree *add, tree *cst, bool *minus_p)
+{
+  /* Skip overflow checks.  */
+  if (TREE_CODE (expr) == COND_EXPR
+      && TREE_CODE (COND_EXPR_THEN (expr)) == COMPOUND_EXPR
+      && TREE_CODE (TREE_OPERAND (COND_EXPR_THEN (expr), 0)) == CALL_EXPR
+      && get_callee_fndecl (TREE_OPERAND (COND_EXPR_THEN (expr), 0))
+         == gnat_raise_decls[CE_Overflow_Check_Failed])
+    expr = COND_EXPR_ELSE (expr);
+
+  if (TREE_CODE (expr) == PLUS_EXPR)
+    {
+      if (TREE_CONSTANT (TREE_OPERAND (expr, 0)))
+	{
+	  *add = TREE_OPERAND (expr, 1);
+	  *cst = TREE_OPERAND (expr, 0);
+	  *minus_p = false;
+	  return true;
+	}
+      else if (TREE_CONSTANT (TREE_OPERAND (expr, 1)))
+	{
+	  *add = TREE_OPERAND (expr, 0);
+	  *cst = TREE_OPERAND (expr, 1);
+	  *minus_p = false;
+	  return true;
+	}
+    }
+  else if (TREE_CODE (expr) == MINUS_EXPR)
+    {
+      if (TREE_CONSTANT (TREE_OPERAND (expr, 1)))
+	{
+	  *add = TREE_OPERAND (expr, 0);
+	  *cst = TREE_OPERAND (expr, 1);
+	  *minus_p = true;
+	  return true;
+	}
+    }
+
+  return false;
+}
+
 /* If EXPR is an expression that is invariant in the current function, in the
    sense that it can be evaluated anywhere in the function and any number of
    times, return EXPR or an equivalent expression.  Otherwise return NULL.  */
@@ -2821,6 +2867,8 @@ tree
 gnat_invariant_expr (tree expr)
 {
   const tree type = TREE_TYPE (expr);
+  tree add, cst;
+  bool minus_p;
 
   expr = remove_conversions (expr, false);
 
@@ -2846,23 +2894,14 @@ gnat_invariant_expr (tree expr)
   if (TREE_CONSTANT (expr))
     return fold_convert (type, expr);
 
-  /* Skip overflow checks since they don't change the invariantness.  */
-  if (TREE_CODE (expr) == COND_EXPR
-      && TREE_CODE (COND_EXPR_THEN (expr)) == COMPOUND_EXPR
-      && TREE_CODE (TREE_OPERAND (COND_EXPR_THEN (expr), 0)) == CALL_EXPR
-      && get_callee_fndecl (TREE_OPERAND (COND_EXPR_THEN (expr), 0))
-         == gnat_raise_decls[CE_Overflow_Check_Failed])
-    expr = COND_EXPR_ELSE (expr);
-
   /* Deal with addition or subtraction of constants.  */
-  if (TREE_CODE (expr) == PLUS_EXPR || TREE_CODE (expr) == MINUS_EXPR)
+  if (is_simple_additive_expression (expr, &add, &cst, &minus_p))
     {
-      tree op0 = gnat_invariant_expr (TREE_OPERAND (expr, 0));
-      tree op1 = TREE_OPERAND (expr, 1);
-      if (op0 && TREE_CONSTANT (op1))
+      add = gnat_invariant_expr (add);
+      if (add)
 	return
-	  fold_build2 (TREE_CODE (expr), type,
-		       fold_convert (type, op0), fold_convert (type, op1));
+	  fold_build2 (minus_p ? MINUS_EXPR : PLUS_EXPR, type,
+		       fold_convert (type, add), fold_convert (type, cst));
       else
 	return NULL_TREE;
     }

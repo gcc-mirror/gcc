@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-O" }
+-- { dg-options "-O -fdump-tree-optimized" }
 
 pragma Overflow_Mode (Minimized);
 
@@ -14,3 +14,5 @@ package body Loop_Optimization22 is
    end;
 
 end Loop_Optimization22;
+
+-- { dg-final { scan-tree-dump-not "Index_Check" "optimized" } }

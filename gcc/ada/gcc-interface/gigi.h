@@ -962,6 +962,12 @@ extern tree gnat_rewrite_reference (tree ref, rewrite_fn func, void *data,
    i.e. if it doesn't depend on the context in which it is evaluated.  */
 extern tree get_inner_constant_reference (tree exp);
 
+/* Return true if EXPR is the addition or the subtraction of a constant and,
+   if so, set *ADD to the addend, *CST to the constant and *MINUS_P to true
+   if this is a subtraction.  */
+extern bool is_simple_additive_expression (tree expr, tree *add, tree *cst,
+					   bool *minus_p);
+
 /* If EXPR is an expression that is invariant in the current function, in the
    sense that it can be evaluated anywhere in the function and any number of
    times, return EXPR or an equivalent expression.  Otherwise return NULL.  */

@@ -1,5 +1,18 @@
 2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (is_simple_additive_expression): Declare.
+	* gcc-interface/trans.c (struct range_check_info_d): Add DISP and
+	NEG_P fields.
+	(find_loop_for): Add DISP and NEG_P parameters with default value.
+	Call is_simple_additive_expression to handle additive expressions.
+	(Loop_Statement_to_gnu): Deal with displacement in range checks.
+	(Raise_Error_to_gnu): Likewise.
+	(gnat_to_gnu): Add call to find_loop_for.
+	(is_simple_additive_expression): New function extracted from...
+	(gnat_invariant_expr): ...here.  Call it on the expression.
+
+2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils2.c (gnat_invariant_expr): Add type conversions.
 
 2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>

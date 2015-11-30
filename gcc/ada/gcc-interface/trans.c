@@ -180,6 +180,8 @@ static GTY(()) vec<tree, va_gc> *gnu_return_var_stack;
 struct GTY(()) range_check_info_d {
   tree low_bound;
   tree high_bound;
+  tree disp;
+  bool neg_p;
   tree type;
   tree invariant_cond;
   tree inserted_cond;
@@ -2638,14 +2640,35 @@ inside_loop_p (void)
   return !vec_safe_is_empty (gnu_loop_stack);
 }
 
-/* Find out whether VAR is the iteration variable of an enclosing loop in the
-   current function.  If so, return the loop; otherwise, return NULL.  */
+/* Find out whether EXPR is a simple additive expression based on the iteration
+   variable of some enclosing loop in the current function.  If so, return the
+   loop and set *DISP to the displacement and *NEG_P to true if this is for a
+   subtraction; otherwise, return NULL.  */
 
 static struct loop_info_d *
-find_loop_for (tree var)
+find_loop_for (tree expr, tree *disp = NULL, bool *neg_p = NULL)
 {
+  tree var, add, cst;
+  bool minus_p;
   struct loop_info_d *iter = NULL;
   unsigned int i;
+
+  if (is_simple_additive_expression (expr, &add, &cst, &minus_p))
+    {
+      var = add;
+      if (disp)
+	*disp = cst;
+      if (neg_p)
+	*neg_p = minus_p;
+    }
+  else
+    {
+      var = expr;
+      if (disp)
+	*disp =  NULL_TREE;
+      if (neg_p)
+	*neg_p = false;
+    }
 
   var = remove_conversions (var, false);
 
@@ -3123,19 +3146,35 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 
 	  FOR_EACH_VEC_ELT (*gnu_loop_info->checks, i, rci)
 	    {
-	      tree low_ok
-		= rci->low_bound
-		  ? build_binary_op (GE_EXPR, boolean_type_node,
-				     convert (rci->type, gnu_low),
-				     rci->low_bound)
-		  : boolean_true_node;
+	      tree low_ok, high_ok;
 
-	      tree high_ok
-		= rci->high_bound
-		  ? build_binary_op (LE_EXPR, boolean_type_node,
-				     convert (rci->type, gnu_high),
-				     rci->high_bound)
-		  : boolean_true_node;
+	      if (rci->low_bound)
+		{
+		  tree gnu_adjusted_low = convert (rci->type, gnu_low);
+		  if (rci->disp)
+		    gnu_adjusted_low
+		      = fold_build2 (rci->neg_p ? MINUS_EXPR : PLUS_EXPR,
+				     rci->type, gnu_adjusted_low, rci->disp);
+		  low_ok
+		    = build_binary_op (GE_EXPR, boolean_type_node,
+				       gnu_adjusted_low, rci->low_bound);
+		}
+	      else
+		low_ok = boolean_true_node;
+
+	      if (rci->high_bound)
+		{
+		  tree gnu_adjusted_high = convert (rci->type, gnu_high);
+		  if (rci->disp)
+		    gnu_adjusted_high
+		      = fold_build2 (rci->neg_p ? MINUS_EXPR : PLUS_EXPR,
+				     rci->type, gnu_adjusted_high, rci->disp);
+		  high_ok
+		    = build_binary_op (LE_EXPR, boolean_type_node,
+				       gnu_adjusted_high, rci->high_bound);
+		}
+	      else
+		high_ok = boolean_true_node;
 
 	      tree range_ok
 		= build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
@@ -5492,7 +5531,8 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       if (Present (gnat_cond) && Nkind (gnat_cond) == N_Op_Not)
 	{
 	  Node_Id gnat_range, gnat_index, gnat_type;
-	  tree gnu_index, gnu_low_bound, gnu_high_bound;
+	  tree gnu_index, gnu_low_bound, gnu_high_bound, disp;
+	  bool neg_p;
 	  struct loop_info_d *loop;
 
 	  switch (Nkind (Right_Opnd (gnat_cond)))
@@ -5559,11 +5599,13 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 		  || (gnu_low_bound = gnat_invariant_expr (gnu_low_bound)))
 	      && (!gnu_high_bound
 		  || (gnu_high_bound = gnat_invariant_expr (gnu_high_bound)))
-	      && (loop = find_loop_for (gnu_index)))
+	      && (loop = find_loop_for (gnu_index, &disp, &neg_p)))
 	    {
 	      struct range_check_info_d *rci = ggc_alloc<range_check_info_d> ();
 	      rci->low_bound = gnu_low_bound;
 	      rci->high_bound = gnu_high_bound;
+	      rci->disp = disp;
+	      rci->neg_p = neg_p;
 	      rci->type = get_unpadded_type (gnat_type);
 	      rci->inserted_cond
 		= build1 (SAVE_EXPR, boolean_type_node, boolean_true_node);
@@ -6197,7 +6239,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		&& tree_int_cst_equal (TYPE_MIN_VALUE (TYPE_DOMAIN (gnu_type)),
 				       TYPE_MAX_VALUE (TYPE_DOMAIN (gnu_type)))
 		&& !array_at_struct_end_p (gnu_result)
-		&& (loop = find_loop_for (skip_simple_arithmetic (gnu_expr)))
+		&& (loop = find_loop_for (gnu_expr))
 		&& !loop->artificial
 		&& !loop->has_checks
 		&& tree_int_cst_equal (TYPE_MIN_VALUE (TYPE_DOMAIN (gnu_type)),
