@@ -848,6 +848,9 @@ typedef struct
   unsigned oacc_declare_device_resident:1;
   unsigned oacc_declare_link:1;
 
+  /* This is an OpenACC acclerator function at level N - 1  */
+  unsigned oacc_function:3;
+
   /* Attributes set by compiler extensions (!GCC$ ATTRIBUTES).  */
   unsigned ext_attr:EXT_ATTR_NUM;
 
@@ -1606,6 +1609,16 @@ gfc_dt_list;
   /* A list of all derived types.  */
   extern gfc_dt_list *gfc_derived_types;
 
+typedef struct gfc_oacc_routine_name
+{
+  struct gfc_symbol *sym;
+  struct gfc_omp_clauses *clauses;
+  struct gfc_oacc_routine_name *next;
+}
+gfc_oacc_routine_name;
+
+#define gfc_get_oacc_routine_name() XCNEW (gfc_oacc_routine_name)
+
 /* A namespace describes the contents of procedure, module, interface block
    or BLOCK construct.  */
 /* ??? Anything else use these?  */
@@ -1672,6 +1685,12 @@ typedef struct gfc_namespace
   /* !$ACC DECLARE.  */
   gfc_oacc_declare *oacc_declare;
 
+  /* !$ACC ROUTINE clauses.  */
+  gfc_omp_clauses *oacc_routine_clauses;
+
+  /* !$ACC ROUTINE names.  */
+  gfc_oacc_routine_name *oacc_routine_names;
+
   gfc_charlen *cl_list, *old_cl_list;
 
   gfc_dt_list *derived_types;
@@ -1717,6 +1736,9 @@ typedef struct gfc_namespace
 
   /* Set to 1 for !$OMP DECLARE REDUCTION namespaces.  */
   unsigned omp_udr_ns:1;
+
+  /* Set to 1 for !$ACC ROUTINE namespaces.  */
+  unsigned oacc_routine:1;
 }
 gfc_namespace;
 
@@ -2344,7 +2366,7 @@ enum gfc_exec_op
   EXEC_READ, EXEC_WRITE, EXEC_IOLENGTH, EXEC_TRANSFER, EXEC_DT_END,
   EXEC_BACKSPACE, EXEC_ENDFILE, EXEC_INQUIRE, EXEC_REWIND, EXEC_FLUSH,
   EXEC_LOCK, EXEC_UNLOCK,
-  EXEC_OACC_KERNELS_LOOP, EXEC_OACC_PARALLEL_LOOP,
+  EXEC_OACC_KERNELS_LOOP, EXEC_OACC_PARALLEL_LOOP, EXEC_OACC_ROUTINE,
   EXEC_OACC_PARALLEL, EXEC_OACC_KERNELS, EXEC_OACC_DATA, EXEC_OACC_HOST_DATA,
   EXEC_OACC_LOOP, EXEC_OACC_UPDATE, EXEC_OACC_WAIT, EXEC_OACC_CACHE,
   EXEC_OACC_ENTER_DATA, EXEC_OACC_EXIT_DATA, EXEC_OACC_ATOMIC,

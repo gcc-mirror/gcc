@@ -5786,6 +5786,7 @@ is_oacc (gfc_state_data *sd)
     case EXEC_OACC_ENTER_DATA:
     case EXEC_OACC_EXIT_DATA:
     case EXEC_OACC_ATOMIC:
+    case EXEC_OACC_ROUTINE:
       return true;
 
     default:

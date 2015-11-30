@@ -1,3 +1,25 @@
+2015-11-30  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+
+	* f95-lang.c (gfc_attribute_table): Add an "oacc function"
+	attribute.
+	* gfortran.h (symbol_attribute): Add an oacc_function bit-field.
+	(gfc_oacc_routine_name): New struct;
+	(gfc_get_oacc_routine_name): New macro.
+	(gfc_namespace): Add oacc_routine_clauses, oacc_routine_names and
+	oacc_routine fields.
+	(gfc_exec_op): Add EXEC_OACC_ROUTINE.
+	* openmp.c (OACC_ROUTINE_CLAUSES): New mask.
+	(gfc_oacc_routine_dims): New function.
+	(gfc_match_oacc_routine): Add support for named routines and the
+	gang, worker vector and seq clauses.
+	* parse.c (is_oacc): Add EXEC_OACC_ROUTINE.
+	* resolve.c (gfc_resolve_blocks): Likewise.
+	* st.c (gfc_free_statement): Likewise.
+	* trans-decl.c (add_attributes_to_decl): Attach an 'oacc function'
+	attribute and shape geometry for acc routine.
+
 2015-11-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/68534

@@ -1318,6 +1318,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, uint64_t mask,
    | OMP_CLAUSE_DELETE)
 #define OACC_WAIT_CLAUSES \
   (OMP_CLAUSE_ASYNC)
+#define OACC_ROUTINE_CLAUSES \
+  (OMP_CLAUSE_GANG | OMP_CLAUSE_WORKER | OMP_CLAUSE_VECTOR | OMP_CLAUSE_SEQ)
 
 
 match
@@ -1619,13 +1621,44 @@ gfc_match_oacc_cache (void)
   return MATCH_YES;
 }
 
+/* Determine the loop level for a routine.   */
+
+static int
+gfc_oacc_routine_dims (gfc_omp_clauses *clauses)
+{
+  int level = -1;
+
+  if (clauses)
+    {
+      unsigned mask = 0;
+
+      if (clauses->gang)
+	level = GOMP_DIM_GANG, mask |= GOMP_DIM_MASK (level);
+      if (clauses->worker)
+	level = GOMP_DIM_WORKER, mask |= GOMP_DIM_MASK (level);
+      if (clauses->vector)
+	level = GOMP_DIM_VECTOR, mask |= GOMP_DIM_MASK (level);
+      if (clauses->seq)
+	level = GOMP_DIM_MAX, mask |= GOMP_DIM_MASK (level);
+
+      if (mask != (mask & -mask))
+	gfc_error ("Multiple loop axes specified for routine");
+    }
+
+  if (level < 0)
+    level = GOMP_DIM_MAX;
+
+  return level;
+}
 
 match
 gfc_match_oacc_routine (void)
 {
   locus old_loc;
-  gfc_symbol *sym;
+  gfc_symbol *sym = NULL;
   match m;
+  gfc_omp_clauses *c = NULL;
+  gfc_oacc_routine_name *n = NULL;
 
   old_loc = gfc_current_locus;
 
@@ -1640,52 +1673,85 @@ gfc_match_oacc_routine (void)
       goto cleanup;
     }
 
-  if (m == MATCH_NO
-      && gfc_current_ns->proc_name
-      && gfc_match_omp_eos () == MATCH_YES)
+  if (m == MATCH_YES)
+    {
+      char buffer[GFC_MAX_SYMBOL_LEN + 1];
+      gfc_symtree *st;
+
+      m = gfc_match_name (buffer);
+      if (m == MATCH_YES)
+	{
+	  st = gfc_find_symtree (gfc_current_ns->sym_root, buffer);
+	  if (st)
+	    {
+	      sym = st->n.sym;
+	      if (strcmp (sym->name, gfc_current_ns->proc_name->name) == 0)
+	        sym = NULL;
+	    }
+
+	  if (st == NULL
+	      || (sym
+		  && !sym->attr.external
+		  && !sym->attr.function
+		  && !sym->attr.subroutine))
+	    {
+	      gfc_error ("Syntax error in !$ACC ROUTINE ( NAME ) at %C, "
+			 "invalid function name %s",
+			 (sym) ? sym->name : buffer);
+	      gfc_current_locus = old_loc;
+	      return MATCH_ERROR;
+	    }
+	}
+      else
+        {
+	  gfc_error ("Syntax error in !$ACC ROUTINE ( NAME ) at %C");
+	  gfc_current_locus = old_loc;
+	  return MATCH_ERROR;
+	}
+
+      if (gfc_match_char (')') != MATCH_YES)
+	{
+	  gfc_error ("Syntax error in !$ACC ROUTINE ( NAME ) at %C, expecting"
+		     " ')' after NAME");
+	  gfc_current_locus = old_loc;
+	  return MATCH_ERROR;
+	}
+    }
+
+  if (gfc_match_omp_eos () != MATCH_YES
+      && (gfc_match_omp_clauses (&c, OACC_ROUTINE_CLAUSES, false, false, true)
+	  != MATCH_YES))
+    return MATCH_ERROR;
+
+  if (sym != NULL)
+    {
+      n = gfc_get_oacc_routine_name ();
+      n->sym = sym;
+      n->clauses = NULL;
+      n->next = NULL;
+      if (gfc_current_ns->oacc_routine_names != NULL)
+	n->next = gfc_current_ns->oacc_routine_names;
+
+      gfc_current_ns->oacc_routine_names = n;
+    }
+  else if (gfc_current_ns->proc_name)
     {
       if (!gfc_add_omp_declare_target (&gfc_current_ns->proc_name->attr,
 				       gfc_current_ns->proc_name->name,
 				       &old_loc))
 	goto cleanup;
-      return MATCH_YES;
+      gfc_current_ns->proc_name->attr.oacc_function
+	= gfc_oacc_routine_dims (c) + 1;
     }
 
-  if (m != MATCH_YES)
-    return m;
+  if (n)
+    n->clauses = c;
+  else if (gfc_current_ns->oacc_routine)
+    gfc_current_ns->oacc_routine_clauses = c;
 
-  /* Scan for a function name.  */
-  m = gfc_match_symbol (&sym, 0);
-
-  if (m != MATCH_YES)
-    {
-      gfc_error ("Syntax error in !$ACC ROUTINE ( NAME ) at %C");
-      gfc_current_locus = old_loc;
-      return MATCH_ERROR;
-    }
-
-  if (!sym->attr.external && !sym->attr.function && !sym->attr.subroutine)
-    {
-      gfc_error ("Syntax error in !$ACC ROUTINE ( NAME ) at %C, invalid"
-		 " function name %qs", sym->name);
-      gfc_current_locus = old_loc;
-      return MATCH_ERROR;
-    }
-
-  if (gfc_match_char (')') != MATCH_YES)
-    {
-      gfc_error ("Syntax error in !$ACC ROUTINE ( NAME ) at %C, expecting"
-		 " ')' after NAME");
-      gfc_current_locus = old_loc;
-      return MATCH_ERROR;
-    }
-
-  if (gfc_match_omp_eos () != MATCH_YES)
-    {
-      gfc_error ("Unexpected junk after !$ACC ROUTINE at %C");
-      goto cleanup;
-    }
-  return MATCH_YES;
+  new_st.op = EXEC_OACC_ROUTINE;
+  new_st.ext.omp_clauses = c;
+  return MATCH_YES;  
 
 cleanup:
   gfc_current_locus = old_loc;
