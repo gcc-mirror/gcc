@@ -627,8 +627,16 @@ gigi (Node_Id gnat_root,
 
   main_identifier_node = get_identifier ("main");
 
-  /* Install the builtins we might need, either internally or as
-     user available facilities for Intrinsic imports.  */
+  /* If we are using the GCC exception mechanism, let GCC know.  */
+  if (Back_End_Exceptions ())
+    gnat_init_gcc_eh ();
+
+  /* Initialize the GCC support for FP operations.  */
+  gnat_init_gcc_fp ();
+
+  /* Install the builtins we might need, either internally or as user-available
+     facilities for Intrinsic imports.  Note that this must be done after the
+     GCC exception mechanism is initialized.  */
   gnat_install_builtins ();
 
   vec_safe_push (gnu_except_ptr_stack, NULL_TREE);
@@ -640,13 +648,6 @@ gigi (Node_Id gnat_root,
   if (Present (Ident_String (Main_Unit)))
     targetm.asm_out.output_ident
       (TREE_STRING_POINTER (gnat_to_gnu (Ident_String (Main_Unit))));
-
-  /* If we are using the GCC exception mechanism, let GCC know.  */
-  if (Back_End_Exceptions ())
-    gnat_init_gcc_eh ();
-
-  /* Initialize the GCC support for FP operations.  */
-  gnat_init_gcc_fp ();
 
   /* Force -fno-strict-aliasing if the configuration pragma was seen.  */
   if (No_Strict_Aliasing_CP)

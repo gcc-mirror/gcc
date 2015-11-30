@@ -1,5 +1,9 @@
 2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gigi): Fix initialization order.
+
+2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* osint.adb: Add use type clause for CRTL.size_t.
 	(C_String_Length): Return CRTL.size_t instead of Integer.
 	(To_Path_String_Access): Take CRTL.size_t instead of Integer.
