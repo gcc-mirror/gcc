@@ -1,3 +1,8 @@
+2015-11-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/46032
+	* gcc.dg/pr46032.c: New test.
+
 2015-11-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68592
