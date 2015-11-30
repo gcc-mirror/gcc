@@ -1,5 +1,32 @@
 2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (create_var_decl): Adjust prototype.
+	(create_subprog_decl): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Rename
+	static_p into static_flag and add volatile_flag local variable.
+	Do not locally change the type of a volatile object, except for the
+	pointed-to type if the object is handled by reference.  Adjust calls
+	to create_var_decl.
+	<E_Subprogram_Type>: Likewise for const and noreturn subprograms.
+	(get_minimal_subprog_decl): Adjust call to create_subprog_decl.
+	(elaborate_expression_1): Adjust call to create_var_decl.
+	(gnat_to_gnu_field): Minor tweak.
+	* gcc-interface/trans.c (gigi): Adjust calls to create_var_decl and
+	create_subprog_decl.
+	(build_raise_check): Likewise.
+	(Subprogram_Body_to_gnu): Likewise.
+	(create_temporary): Likewise.
+	(Handled_Sequence_Of_Statements_to_gnu): Likewise.
+	(Exception_Handler_to_gnu_gcc): Likewise.
+	(Compilation_Unit_to_gnu): Likewise.
+	(gnat_to_gnu): Likewise.
+	* gcc-interface/utils.c (maybe_pad_type): Likewise.
+	(create_var_decl): Add VOLATILE_FLAG parameter and handle it.
+	(create_subprog_decl): Add CONST_FLAG and VOLATILE_FLAG parameters and
+	handle them.
+
+2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (is_simple_additive_expression): Declare.
 	* gcc-interface/trans.c (struct range_check_info_d): Add DISP and
 	NEG_P fields.
