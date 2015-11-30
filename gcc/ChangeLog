@@ -1,3 +1,21 @@
+2015-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/68501
+	* target.def (builtin_reciprocal): Replace the 3 arguments with
+	a gcall * one, adjust description.
+	* targhooks.h (default_builtin_reciprocal): Replace the 3 arguments
+	with a gcall * one.
+	* targhooks.c (default_builtin_reciprocal): Likewise.
+	* tree-ssa-math-opts.c (pass_cse_reciprocals::execute): Use
+	targetm.builtin_reciprocal even on internal functions, adjust
+	the arguments and allow replacing an internal function with normal
+	built-in.
+	* config/i386/i386.c (ix86_builtin_reciprocal): Replace the 3 arguments
+	with a gcall * one.  Handle internal fns too.
+	* config/rs6000/rs6000.c (rs6000_builtin_reciprocal): Likewise.
+	* config/aarch64/aarch64.c (aarch64_builtin_reciprocal): Likewise.
+	* doc/tm.texi (builtin_reciprocal): Document.
+
 2015-11-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68592

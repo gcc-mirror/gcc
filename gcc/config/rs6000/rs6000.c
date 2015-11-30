@@ -32643,14 +32643,42 @@ rs6000_memory_move_cost (machine_mode mode, reg_class_t rclass,
    reciprocal of the function, or NULL_TREE if not available.  */
 
 static tree
-rs6000_builtin_reciprocal (unsigned int fn, bool md_fn,
-			   bool sqrt ATTRIBUTE_UNUSED)
+rs6000_builtin_reciprocal (gcall *call)
 {
   if (optimize_insn_for_size_p ())
     return NULL_TREE;
 
-  if (md_fn)
-    switch (fn)
+  if (gimple_call_internal_p (call))
+    switch (gimple_call_internal_fn (call))
+      {
+	tree type;
+      case IFN_SQRT:
+	type = TREE_TYPE (gimple_call_lhs (call));
+	switch (TYPE_MODE (type))
+	  {
+	  case V2DFmode:
+	    if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))
+	      return NULL_TREE;
+
+	    return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_2DF];
+
+	  case V4SFmode:
+	    if (!RS6000_RECIP_AUTO_RSQRTE_P (V4SFmode))
+	      return NULL_TREE;
+
+	    return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_4SF];
+
+	  default:
+	    return NULL_TREE;
+	  }
+
+      default:
+	return NULL_TREE;
+      }
+
+  tree fndecl = gimple_call_fndecl (call);
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
+    switch (DECL_FUNCTION_CODE (fndecl))
       {
       case VSX_BUILTIN_XVSQRTDP:
 	if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))
@@ -32669,7 +32697,7 @@ rs6000_builtin_reciprocal (unsigned int fn, bool md_fn,
       }
 
   else
-    switch (fn)
+    switch (DECL_FUNCTION_CODE (fndecl))
       {
       case BUILT_IN_SQRT:
 	if (!RS6000_RECIP_AUTO_RSQRTE_P (DFmode))

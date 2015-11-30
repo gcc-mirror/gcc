@@ -42680,16 +42680,40 @@ ix86_vectorize_builtin_scatter (const_tree vectype,
    reciprocal of the function, or NULL_TREE if not available.  */
 
 static tree
-ix86_builtin_reciprocal (unsigned int fn, bool md_fn, bool)
+ix86_builtin_reciprocal (gcall *call)
 {
   if (! (TARGET_SSE_MATH && !optimize_insn_for_size_p ()
 	 && flag_finite_math_only && !flag_trapping_math
 	 && flag_unsafe_math_optimizations))
     return NULL_TREE;
 
-  if (md_fn)
+  if (gimple_call_internal_p (call))
+    switch (gimple_call_internal_fn (call))
+      {
+	tree type;
+      case IFN_SQRT:
+	type = TREE_TYPE (gimple_call_lhs (call));
+	switch (TYPE_MODE (type))
+	  {
+	    /* Vectorized version of sqrt to rsqrt conversion.  */
+	  case V4SFmode:
+	    return ix86_get_builtin (IX86_BUILTIN_RSQRTPS_NR);
+
+	  case V8SFmode:
+	    return ix86_get_builtin (IX86_BUILTIN_RSQRTPS_NR256);
+
+	  default:
+	    return NULL_TREE;
+	  }
+
+      default:
+	return NULL_TREE;
+      }
+
+  tree fndecl = gimple_call_fndecl (call);
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
     /* Machine dependent builtins.  */
-    switch (fn)
+    switch (DECL_FUNCTION_CODE (fndecl))
       {
 	/* Vectorized version of sqrt to rsqrt conversion.  */
       case IX86_BUILTIN_SQRTPS_NR:
@@ -42703,7 +42727,7 @@ ix86_builtin_reciprocal (unsigned int fn, bool md_fn, bool)
       }
   else
     /* Normal builtins.  */
-    switch (fn)
+    switch (DECL_FUNCTION_CODE (fndecl))
       {
 	/* Sqrt to rsqrt conversion.  */
       case BUILT_IN_SQRTF:

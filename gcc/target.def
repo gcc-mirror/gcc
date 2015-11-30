@@ -2463,13 +2463,9 @@ identical versions.",
 DEFHOOK
 (builtin_reciprocal,
  "This hook should return the DECL of a function that implements reciprocal of\n\
-the builtin function with builtin function code @var{fn}, or\n\
-@code{NULL_TREE} if such a function is not available.  @var{md_fn} is true\n\
-when @var{fn} is a code of a machine-dependent builtin function.  When\n\
-@var{sqrt} is true, additional optimizations that apply only to the reciprocal\n\
-of a square root function are performed, and only reciprocals of @code{sqrt}\n\
-function are valid.",
- tree, (unsigned fn, bool md_fn, bool sqrt),
+the builtin or internal function call @var{call}, or\n\
+@code{NULL_TREE} if such a function is not available.",
+ tree, (gcall *call),
  default_builtin_reciprocal)
 
 /* For a vendor-specific TYPE, return a pointer to a statically-allocated
