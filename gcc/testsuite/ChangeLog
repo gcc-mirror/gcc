@@ -1,5 +1,10 @@
 2015-11-30  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.target/s390/load-relative-check.c: Add scan patterns for
+	-m31.
+
+2015-11-30  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
         * gcc.target/s390/load-relative-check.c: Add -mzarch.
 
 2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
