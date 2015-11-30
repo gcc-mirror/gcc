@@ -1,3 +1,8 @@
+2015-11-30  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/pr46032-2.c: New test.
+	* gcc.dg/pr46032-3.c: New test.
+
 2015-11-30  Charles Baylis  <charles.baylis@linaro.org>
 
 	PR target/63870
