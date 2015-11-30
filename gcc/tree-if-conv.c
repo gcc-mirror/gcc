@@ -589,6 +589,8 @@ struct ifc_dr {
   int rw_unconditionally;
 
   tree predicate;
+
+  tree base_predicate;
 };
 
 #define IFC_DR(DR) ((struct ifc_dr *) (DR)->aux)
@@ -636,22 +638,24 @@ hash_memrefs_baserefs_and_store_DRs_read_written_info (data_reference_p a)
   if (is_true_predicate (IFC_DR (*master_dr)->predicate))
     DR_RW_UNCONDITIONALLY (*master_dr) = 1;
 
-  base_master_dr = &baseref_DR_map->get_or_insert (base_ref,&exist2);
-
-  if (!exist2)
+  if (DR_IS_WRITE (a))
     {
-      IFC_DR (a)->predicate = ca;
-      *base_master_dr = a;
-    }
-  else
-    IFC_DR (*base_master_dr)->predicate
-	= fold_or_predicates
-		(EXPR_LOCATION (IFC_DR (*base_master_dr)->predicate),
-		 ca, IFC_DR (*base_master_dr)->predicate);
+      base_master_dr = &baseref_DR_map->get_or_insert (base_ref, &exist2);
 
-  if (DR_IS_WRITE (a)
-      && (is_true_predicate (IFC_DR (*base_master_dr)->predicate)))
-    DR_WRITTEN_AT_LEAST_ONCE (*base_master_dr) = 1;
+      if (!exist2)
+	{
+	  IFC_DR (a)->base_predicate = ca;
+	  *base_master_dr = a;
+	}
+      else
+	IFC_DR (*base_master_dr)->base_predicate
+	  = fold_or_predicates
+	      (EXPR_LOCATION (IFC_DR (*base_master_dr)->base_predicate),
+	       ca, IFC_DR (*base_master_dr)->base_predicate);
+
+      if (is_true_predicate (IFC_DR (*base_master_dr)->base_predicate))
+	DR_WRITTEN_AT_LEAST_ONCE (*base_master_dr) = 1;
+    }
 }
 
 /* Return true when the memory references of STMT won't trap in the
@@ -698,17 +702,19 @@ ifcvt_memrefs_wont_trap (gimple *stmt, vec<data_reference_p> drs)
   master_dr = ref_DR_map->get (ref_base_a);
   base_master_dr = baseref_DR_map->get (base);
 
-  gcc_assert (master_dr != NULL && base_master_dr != NULL);
+  gcc_assert (master_dr != NULL);
 
   if (DR_RW_UNCONDITIONALLY (*master_dr) == 1)
     {
-      if (DR_WRITTEN_AT_LEAST_ONCE (*base_master_dr) == 1)
+      if (base_master_dr
+	  && DR_WRITTEN_AT_LEAST_ONCE (*base_master_dr) == 1)
 	return true;
       else
 	{
 	  tree base_tree = get_base_address (DR_REF (a));
 	  if (DECL_P (base_tree)
 	      && decl_binds_to_current_def_p (base_tree)
+	      && flag_tree_loop_if_convert_stores
 	      && !TREE_READONLY (base_tree))
 	  return true;
 	}
