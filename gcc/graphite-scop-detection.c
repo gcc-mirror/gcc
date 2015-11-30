@@ -382,7 +382,7 @@ canonicalize_loop_closed_ssa (loop_p loop)
   if (single_pred_p (bb))
     {
       e = split_block_after_labels (bb);
-      DEBUG_PRINT (dp << "\nSplitting bb_" << bb->index);
+      DEBUG_PRINT (dp << "Splitting bb_" << bb->index << ".\n");
       make_close_phi_nodes_unique (e->src);
     }
   else
@@ -391,7 +391,7 @@ canonicalize_loop_closed_ssa (loop_p loop)
       basic_block close = split_edge (e);
 
       e = single_succ_edge (close);
-      DEBUG_PRINT (dp << "\nSplitting edge (" << e->src->index << ","
+      DEBUG_PRINT (dp << "Splitting edge (" << e->src->index << ","
 		      << e->dest->index << ")\n");
 
       for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
@@ -846,7 +846,7 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
 	combined.exit = single_succ_edge (imm_succ);
       else
 	{
-	  DEBUG_PRINT (dp << "\n[scop-detection-fail] Discarding SCoP because "
+	  DEBUG_PRINT (dp << "[scop-detection-fail] Discarding SCoP because "
 			  << "no single exit (empty succ) for sese exit";
 		       print_sese (dump_file, combined));
 	  return invalid_sese;
@@ -870,7 +870,7 @@ scop_detection::build_scop_depth (sese_l s, loop_p loop)
   if (!loop)
     return s;
 
-  DEBUG_PRINT (dp << "\n[Depth loop_" << loop->num << "]");
+  DEBUG_PRINT (dp << "[Depth loop_" << loop->num << "]\n");
   s = build_scop_depth (s, loop->inner);
 
   sese_l s2 = merge_sese (s, get_sese (loop));
@@ -895,7 +895,7 @@ scop_detection::build_scop_breadth (sese_l s1, loop_p loop)
 {
   if (!loop)
     return s1;
-  DEBUG_PRINT (dp << "\n[Breadth loop_" << loop->num << "]");
+  DEBUG_PRINT (dp << "[Breadth loop_" << loop->num << "]\n");
   gcc_assert (s1);
 
   loop_p l = loop;
@@ -981,7 +981,7 @@ scop_detection::loop_is_valid_scop (loop_p loop, sese_l scop) const
   if (loop_body_is_valid_scop (loop, scop))
     {
       DEBUG_PRINT (dp << "[valid-scop] loop_" << loop->num
-		      << "is a valid scop.\n");
+		      << " is a valid scop.\n");
       return true;
     }
   return false;
@@ -1013,15 +1013,15 @@ scop_detection::add_scop (sese_l s)
   /* Do not add scops with only one loop.  */
   if (region_has_one_loop (s))
     {
-      DEBUG_PRINT (dp << "\n[scop-detection-fail] Discarding one loop SCoP";
+      DEBUG_PRINT (dp << "[scop-detection-fail] Discarding one loop SCoP.\n";
 		   print_sese (dump_file, s));
       return;
     }
 
   if (get_exit_bb (s) == EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
-      DEBUG_PRINT (dp << "\n[scop-detection-fail] "
-		      << "Discarding SCoP exiting to return";
+      DEBUG_PRINT (dp << "[scop-detection-fail] "
+		      << "Discarding SCoP exiting to return.";
 		   print_sese (dump_file, s));
       return;
     }
@@ -1033,7 +1033,7 @@ scop_detection::add_scop (sese_l s)
   remove_intersecting_scops (s);
 
   scops.safe_push (s);
-  DEBUG_PRINT (dp << "\nAdding SCoP "; print_sese (dump_file, s));
+  DEBUG_PRINT (dp << "Adding SCoP "; print_sese (dump_file, s));
 }
 
 /* Return true when a statement in SCOP cannot be represented by Graphite.
@@ -1047,7 +1047,7 @@ scop_detection::harmful_stmt_in_region (sese_l scop) const
   basic_block exit_bb = get_exit_bb (scop);
   basic_block entry_bb = get_entry_bb (scop);
 
-  DEBUG_PRINT (dp << "\n[checking-harmful-bbs] ";
+  DEBUG_PRINT (dp << "[checking-harmful-bbs] ";
 	       print_sese (dump_file, scop));
   gcc_assert (dominated_by_p (CDI_DOMINATORS, exit_bb, entry_bb));
 
@@ -1112,7 +1112,7 @@ scop_detection::remove_subscops (sese_l s1)
     {
       if (subsumes (s1, *s2))
 	{
-	  DEBUG_PRINT (dp << "\nRemoving sub-SCoP";
+	  DEBUG_PRINT (dp << "Removing sub-SCoP";
 		       print_sese (dump_file, *s2));
 	  scops.unordered_remove (j);
 	}
@@ -1147,8 +1147,9 @@ scop_detection::remove_intersecting_scops (sese_l s1)
     {
       if (intersects (s1, *s2))
 	{
-	  DEBUG_PRINT (dp << "\nRemoving intersecting SCoP";
-		       print_sese (dump_file, *s2); dp << "Intersects with:";
+	  DEBUG_PRINT (dp << "Removing intersecting SCoP";
+		       print_sese (dump_file, *s2);
+		       dp << "Intersects with:";
 		       print_sese (dump_file, s1));
 	  scops.unordered_remove (j);
 	}
@@ -1721,7 +1722,7 @@ build_cross_bb_scalars_use (scop_p scop, tree use, gimple *use_stmt,
   gimple *def_stmt = SSA_NAME_DEF_STMT (use);
   if (gimple_bb (def_stmt) != gimple_bb (use_stmt))
     {
-      DEBUG_PRINT (dp << "\nAdding scalar read:";
+      DEBUG_PRINT (dp << "Adding scalar read:";
 		   print_generic_expr (dump_file, use, 0);
 		   dp << "\nFrom stmt:";
 		   print_gimple_stmt (dump_file, use_stmt, 0, 0));
