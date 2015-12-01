@@ -1205,7 +1205,6 @@ split_function (basic_block return_bb, struct split_point *split_point,
   edge e;
   edge_iterator ei;
   tree retval = NULL, real_retval = NULL, retbnd = NULL;
-  bool split_part_return_p = false;
   bool with_bounds = chkp_function_instrumented_p (current_function_decl);
   gimple *last_stmt = NULL;
   unsigned int i;
@@ -1246,12 +1245,28 @@ split_function (basic_block return_bb, struct split_point *split_point,
 	args_to_pass.safe_push (arg);
       }
 
-  /* See if the split function will return.  */
+  /* See if the split function or the main part will return.  */
+  bool main_part_return_p = false;
+  bool split_part_return_p = false;
   FOR_EACH_EDGE (e, ei, return_bb->preds)
-    if (bitmap_bit_p (split_point->split_bbs, e->src->index))
-      break;
-  if (e)
-    split_part_return_p = true;
+    {
+      if (bitmap_bit_p (split_point->split_bbs, e->src->index))
+	split_part_return_p = true;
+      else
+	main_part_return_p = true;
+    }
+  /* The main part also returns if we we split on a fallthru edge
+     and the split part returns.  */
+  if (split_part_return_p)
+    FOR_EACH_EDGE (e, ei, split_point->entry_bb->preds)
+      {
+	if (! bitmap_bit_p (split_point->split_bbs, e->src->index)
+	    && single_succ_p (e->src))
+	  {
+	    main_part_return_p = true;
+	    break;
+	  }
+      }
 
   /* Add return block to what will become the split function.
      We do not return; no return block is needed.  */
@@ -1294,6 +1309,11 @@ split_function (basic_block return_bb, struct split_point *split_point,
   /* When we pass around the value, use existing return block.  */
   else
     bitmap_set_bit (split_point->split_bbs, return_bb->index);
+
+  /* If the main part doesn't return pretend the return block wasn't
+     found for all of the following.  */
+  if (! main_part_return_p)
+    return_bb = EXIT_BLOCK_PTR_FOR_FN (cfun);
 
   /* If RETURN_BB has virtual operand PHIs, they must be removed and the
      virtual operand marked for renaming as we change the CFG in a way that
