@@ -267,7 +267,7 @@ Avoid overlapping destination and address registers on LDRD instructions
 that may trigger Cortex-M3 errata.
 
 munaligned-access
-Target Report Var(unaligned_access) Init(2)
+Target Report Var(unaligned_access) Init(2) Save
 Enable unaligned word and halfword accesses to packed data.
 
 mneon-for-64bits

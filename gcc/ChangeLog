@@ -1,3 +1,12 @@
+2015-12-01  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/68617
+	* config/arm/arm.opt (unaligned_access): Save.
+	* config/arm/arm-c.c (__ARM_FEATURE_UNALIGNED): Conditionally define.
+	* config/arm/arm.c (arm_option_override): Move unaligned_access setting
+	(arm_option_override_internal): ... here.
+	* config/arm/arm.h (TARGET_32BIT_P): New macro.
+
 2015-12-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68379
