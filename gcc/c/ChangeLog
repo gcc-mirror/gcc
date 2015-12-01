@@ -1,3 +1,17 @@
+2015-12-01  Julian Brown  <julian@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <James_Norris@mentor.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Add use_device support.
+	(c_parser_oacc_clause_use_device): New function.
+	(c_parser_oacc_all_clauses): Add use_device support.
+	(OACC_HOST_DATA_CLAUSE_MASK): New macro.
+	(c_parser_oacc_host_data): New function.
+	(c_parser_omp_construct): Add host_data support.
+	* c-tree.h (c_finish_oacc_host_data): Add prototype.
+	* c-typeck.c (c_finish_oacc_host_data): New function.
+	(c_finish_omp_clauses): Add use_device support.
+
 2015-11-29  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR c/67106

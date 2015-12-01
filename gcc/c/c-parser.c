@@ -10279,6 +10279,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_UNTIED;
 	  else if (!strcmp ("use_device_ptr", p))
 	    result = PRAGMA_OMP_CLAUSE_USE_DEVICE_PTR;
+	  else if (!strcmp ("use_device", p))
+	    result = PRAGMA_OACC_CLAUSE_USE_DEVICE;
 	  break;
 	case 'v':
 	  if (!strcmp ("vector", p))
@@ -11631,6 +11633,15 @@ c_parser_oacc_clause_tile (c_parser *parser, tree list)
   return c;
 }
 
+/* OpenACC 2.0:
+   use_device ( variable-list ) */
+
+static tree
+c_parser_oacc_clause_use_device (c_parser *parser, tree list)
+{
+  return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_USE_DEVICE, list);
+}
+
 /* OpenACC:
    wait ( int-expr-list ) */
 
@@ -12940,6 +12951,10 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  clauses = c_parser_oacc_data_clause (parser, c_kind, clauses);
 	  c_name = "self";
 	  break;
+	case PRAGMA_OACC_CLAUSE_USE_DEVICE:
+	  clauses = c_parser_oacc_clause_use_device (parser, clauses);
+	  c_name = "use_device";
+	  break;
 	case PRAGMA_OACC_CLAUSE_SEQ:
 	  clauses = c_parser_oacc_simple_clause (parser, OMP_CLAUSE_SEQ,
 						clauses);
@@ -13586,6 +13601,29 @@ c_parser_oacc_enter_exit_data (c_parser *parser, bool enter)
   OMP_STANDALONE_CLAUSES (stmt) = clauses;
   SET_EXPR_LOCATION (stmt, loc);
   add_stmt (stmt);
+}
+
+
+/* OpenACC 2.0:
+   # pragma acc host_data oacc-data-clause[optseq] new-line
+     structured-block
+*/
+
+#define OACC_HOST_DATA_CLAUSE_MASK					\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_USE_DEVICE) )
+
+static tree
+c_parser_oacc_host_data (location_t loc, c_parser *parser)
+{
+  tree stmt, clauses, block;
+
+  clauses = c_parser_oacc_all_clauses (parser, OACC_HOST_DATA_CLAUSE_MASK,
+				       "#pragma acc host_data");
+
+  block = c_begin_omp_parallel ();
+  add_stmt (c_parser_omp_structured_block (parser));
+  stmt = c_finish_oacc_host_data (loc, clauses, block);
+  return stmt;
 }
 
 
@@ -16896,6 +16934,9 @@ c_parser_omp_construct (c_parser *parser)
       break;
     case PRAGMA_OACC_DATA:
       stmt = c_parser_oacc_data (loc, parser);
+      break;
+    case PRAGMA_OACC_HOST_DATA:
+      stmt = c_parser_oacc_host_data (loc, parser);
       break;
     case PRAGMA_OACC_KERNELS:
     case PRAGMA_OACC_PARALLEL:

@@ -1,3 +1,15 @@
+2015-12-01  Julian Brown  <julian@codesourcery.com>
+	    James Norris  <James_Norris@mentor.com>
+
+	* oacc-parallel.c (GOACC_host_data): New function.
+	* libgomp.map (GOACC_host_data): Add to GOACC_2.0.1.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-3.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-4.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-5.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-6.c: New test.
+
 2015-11-30  James Norris  <jnorris@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 

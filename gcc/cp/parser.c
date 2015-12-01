@@ -29232,6 +29232,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_UNTIED;
 	  else if (!strcmp ("use_device_ptr", p))
 	    result = PRAGMA_OMP_CLAUSE_USE_DEVICE_PTR;
+	  else if (!strcmp ("use_device", p))
+	    result = PRAGMA_OACC_CLAUSE_USE_DEVICE;
 	  break;
 	case 'v':
 	  if (!strcmp ("vector", p))
@@ -31597,6 +31599,11 @@ cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OACC_CLAUSE_SELF:
 	  clauses = cp_parser_oacc_data_clause (parser, c_kind, clauses);
 	  c_name = "self";
+	  break;
+	case PRAGMA_OACC_CLAUSE_USE_DEVICE:
+	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_USE_DEVICE,
+					    clauses);
+	  c_name = "use_device";
 	  break;
 	case PRAGMA_OACC_CLAUSE_SEQ:
 	  clauses = cp_parser_oacc_simple_clause (parser, OMP_CLAUSE_SEQ,
@@ -34509,6 +34516,30 @@ cp_parser_oacc_data (cp_parser *parser, cp_token *pragma_tok)
   return stmt;
 }
 
+#define OACC_HOST_DATA_CLAUSE_MASK					\
+  ( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_USE_DEVICE) )
+
+/* OpenACC 2.0:
+  # pragma acc host_data <clauses> new-line
+  structured-block  */
+
+static tree
+cp_parser_oacc_host_data (cp_parser *parser, cp_token *pragma_tok)
+{
+  tree stmt, clauses, block;
+  unsigned int save;
+
+  clauses = cp_parser_oacc_all_clauses (parser, OACC_HOST_DATA_CLAUSE_MASK,
+					"#pragma acc host_data", pragma_tok);
+
+  block = begin_omp_parallel ();
+  save = cp_parser_begin_omp_structured_block (parser);
+  cp_parser_statement (parser, NULL_TREE, false, NULL);
+  cp_parser_end_omp_structured_block (parser, save);
+  stmt = finish_oacc_host_data (clauses, block);
+  return stmt;
+}
+
 /* OpenACC 2.0:
    # pragma acc declare oacc-data-clause[optseq] new-line
 */
@@ -36068,6 +36099,9 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok)
     case PRAGMA_OACC_EXIT_DATA:
       stmt = cp_parser_oacc_enter_exit_data (parser, pragma_tok, false);
       break;
+    case PRAGMA_OACC_HOST_DATA:
+      stmt = cp_parser_oacc_host_data (parser, pragma_tok);
+      break;
     case PRAGMA_OACC_KERNELS:
     case PRAGMA_OACC_PARALLEL:
       strcpy (p_name, "#pragma acc");
@@ -36645,6 +36679,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context)
     case PRAGMA_OACC_DATA:
     case PRAGMA_OACC_ENTER_DATA:
     case PRAGMA_OACC_EXIT_DATA:
+    case PRAGMA_OACC_HOST_DATA:
     case PRAGMA_OACC_KERNELS:
     case PRAGMA_OACC_PARALLEL:
     case PRAGMA_OACC_LOOP:

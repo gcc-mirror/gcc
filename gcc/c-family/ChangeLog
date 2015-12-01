@@ -1,3 +1,11 @@
+2015-12-01  Julian Brown  <julian@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <James_Norris@mentor.com>
+
+	* c-pragma.c (oacc_pragmas): Add PRAGMA_OACC_HOST_DATA.
+	* c-pragma.h (pragma_kind): Add PRAGMA_OACC_HOST_DATA.
+	(pragma_omp_clause): Add PRAGMA_OACC_CLAUSE_USE_DEVICE.
+
 2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (print_ada_macros): Remove redundant blank line.

@@ -1,3 +1,32 @@
+2015-12-01  Julian Brown  <julian@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <James_Norris@mentor.com>
+
+	* gimple-pretty-print.c (dump_gimple_omp_target): Add host_data
+	support.
+	* gimple.h (gf_mask): Add GF_OMP_TARGET_KIND_OACC_HOST_DATA.
+	(is_gimple_omp_oacc): Add support for above.
+	* gimplify.c (omp_region_type): Add ORT_ACC_HOST_DATA.
+	(omp_notice_variable): Diagnose undefined implicit uses of
+	use_device variables in offloaded regions.
+	(gimplify_scan_omp_clauses): Add host_data, use_device
+	support. Diagnose undefined mapping of use_device variables in
+	OpenACC clauses.
+	(gimplify_omp_workshare): Add host_data support.
+	(gimplify_expr): Likewise.
+	* omp-builtins.def (BUILT_IN_GOACC_HOST_DATA): New.
+	* omp-low.c (lookup_decl_in_outer_ctx)
+	(maybe_lookup_decl_in_outer_ctx): Add optional argument to skip
+	host_data regions.
+	(scan_sharing_clauses): Support use_device.
+	(check_omp_nesting_restrictions): Support host_data.
+	(expand_omp_target): Support host_data.
+	(lower_omp_target): Skip over outer host_data regions when looking
+	up decls. Support use_device.
+	(make_gimple_omp_edges): Support host_data.
+	* tree-nested.c (convert_nonlocal_omp_clauses): Add use_device
+	clause.
+
 2015-12-01  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/68582
