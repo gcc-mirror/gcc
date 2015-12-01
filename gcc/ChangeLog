@@ -1,5 +1,13 @@
 2015-12-01  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/68379
+	* tree-vect-stmts.c (vectorizable_load): For BB vectorization
+	always base loads on the first used DR of a group.
+	* tree-vect-data-refs.c (vect_slp_analyze_and_verify_node_alignment):
+	Compute alignment of the first scalar element unconditionally.
+
+2015-12-01  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/68590
 	* genmatch.c (struct capture_info): Add match_use_count.
 	(capture_info::walk_match): Increment match_use_count.

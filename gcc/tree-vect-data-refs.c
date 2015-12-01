@@ -2102,11 +2102,16 @@ vect_slp_analyze_and_verify_node_alignment (slp_tree node)
      the node is permuted in which case we start from the first
      element in the group.  */
   gimple *first_stmt = SLP_TREE_SCALAR_STMTS (node)[0];
+  data_reference_p first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
   if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
     first_stmt = GROUP_FIRST_ELEMENT (vinfo_for_stmt (first_stmt));
 
   data_reference_p dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
   if (! vect_compute_data_ref_alignment (dr)
+      /* For creating the data-ref pointer we need alignment of the
+	 first element anyway.  */
+      || (dr != first_dr
+	  && ! vect_compute_data_ref_alignment (first_dr))
       || ! verify_data_ref_alignment (dr))
     {
       if (dump_enabled_p ())
