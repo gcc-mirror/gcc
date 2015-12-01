@@ -1,3 +1,8 @@
+2015-11-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-transform.c (inline_call): Drop -fstrict-aliasing when
+	inlining -fno-strict-aliasing into -fstrict-aliasing body.
+
 2015-11-30  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
