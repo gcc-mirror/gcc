@@ -959,7 +959,8 @@ use_internal_fn (gcall *call)
 {
   unsigned nconds = 0;
   auto_vec<gimple *, 12> conds;
-  gen_shrink_wrap_conditions (call, conds, &nconds);
+  if (can_test_argument_range (call))
+    gen_shrink_wrap_conditions (call, conds, &nconds);
   if (nconds == 0 && !edom_only_function (call))
     return false;
 
