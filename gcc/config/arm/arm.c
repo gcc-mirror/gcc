@@ -2876,6 +2876,28 @@ arm_option_override_internal (struct gcc_options *opts,
   if (!TARGET_THUMB2_P (opts->x_target_flags))
     opts->x_arm_restrict_it = 0;
 
+  /* Enable -munaligned-access by default for
+     - all ARMv6 architecture-based processors when compiling for a 32-bit ISA
+     i.e. Thumb2 and ARM state only.
+     - ARMv7-A, ARMv7-R, and ARMv7-M architecture-based processors.
+     - ARMv8 architecture-base processors.
+
+     Disable -munaligned-access by default for
+     - all pre-ARMv6 architecture-based processors
+     - ARMv6-M architecture-based processors.  */
+
+  if (! opts_set->x_unaligned_access)
+    {
+      opts->x_unaligned_access = (TARGET_32BIT_P (opts->x_target_flags)
+			  && arm_arch6 && (arm_arch_notm || arm_arch7));
+    }
+  else if (opts->x_unaligned_access == 1
+	   && !(arm_arch6 && (arm_arch_notm || arm_arch7)))
+    {
+      warning (0, "target CPU does not support unaligned accesses");
+     opts->x_unaligned_access = 0;
+    }
+
   /* Don't warn since it's on by default in -O2.  */
   if (TARGET_THUMB1_P (opts->x_target_flags))
     opts->x_flag_schedule_insns = 0;
@@ -3279,30 +3301,6 @@ arm_option_override (void)
 	fix_cm3_ldrd = 1;
       else
 	fix_cm3_ldrd = 0;
-    }
-
-  /* Enable -munaligned-access by default for
-     - all ARMv6 architecture-based processors when compiling for a 32-bit ISA
-     i.e. Thumb2 and ARM state only.
-     - ARMv7-A, ARMv7-R, and ARMv7-M architecture-based processors.
-     - ARMv8 architecture-base processors.
-
-     Disable -munaligned-access by default for
-     - all pre-ARMv6 architecture-based processors
-     - ARMv6-M architecture-based processors.  */
-
-  if (unaligned_access == 2)
-    {
-      if (TARGET_32BIT && arm_arch6 && (arm_arch_notm || arm_arch7))
-	unaligned_access = 1;
-      else
-	unaligned_access = 0;
-    }
-  else if (unaligned_access == 1
-	   && !(arm_arch6 && (arm_arch_notm || arm_arch7)))
-    {
-      warning (0, "target CPU does not support unaligned accesses");
-      unaligned_access = 0;
     }
 
   /* Hot/Cold partitioning is not currently supported, since we can't
