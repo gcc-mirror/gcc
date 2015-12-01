@@ -1,3 +1,8 @@
+2015-12-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/fs_path.h (path::_Cmpt): Move definition
+	after __is_encoded_char explicit specializations.
+
 2015-11-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/libstdc++-prettyprinters/debug.cc: Add -std=gnu++98 to
