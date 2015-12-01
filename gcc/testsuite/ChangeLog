@@ -1,3 +1,11 @@
+2015-12-01  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gfortran.dg/goacc/gang-static.f95: Add tests for gang num arguments.
+	* gfortran.dg/goacc/loop-2.f95: Update expected diagnostics.
+	* gfortran.dg/goacc/loop-6.f95: Likewise.
+	* gfortran.dg/goacc/loop-7.f95: New test.
+	* gfortran.dg/goacc/reduction-2.f95: New test.
+
 2015-12-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68379

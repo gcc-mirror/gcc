@@ -77,7 +77,8 @@ gfc_free_omp_clauses (gfc_omp_clauses *c)
   gfc_free_expr (c->thread_limit);
   gfc_free_expr (c->dist_chunk_size);
   gfc_free_expr (c->async_expr);
-  gfc_free_expr (c->gang_expr);
+  gfc_free_expr (c->gang_num_expr);
+  gfc_free_expr (c->gang_static_expr);
   gfc_free_expr (c->worker_expr);
   gfc_free_expr (c->vector_expr);
   gfc_free_expr (c->num_gangs_expr);
@@ -395,21 +396,41 @@ cleanup:
 static match
 match_oacc_clause_gang (gfc_omp_clauses *cp)
 {
-  if (gfc_match_char ('(') != MATCH_YES)
+  match ret = MATCH_YES;
+
+  if (gfc_match (" ( ") != MATCH_YES)
     return MATCH_NO;
-  if (gfc_match (" num :") == MATCH_YES)
+
+  /* The gang clause accepts two optional arguments, num and static.
+     The num argument may either be explicit (num: <val>) or
+     implicit without (<val> without num:).  */
+
+  while (ret == MATCH_YES)
     {
-      cp->gang_static = false;
-      return gfc_match (" %e )", &cp->gang_expr);
+      if (gfc_match (" static :") == MATCH_YES)
+	{
+	  if (cp->gang_static)
+	    return MATCH_ERROR;
+	  else
+	    cp->gang_static = true;
+	  if (gfc_match_char ('*') == MATCH_YES)
+	    cp->gang_static_expr = NULL;
+	  else if (gfc_match (" %e ", &cp->gang_static_expr) != MATCH_YES)
+	    return MATCH_ERROR;
+	}
+      else
+	{
+	  /* This is optional.  */
+	  if (cp->gang_num_expr || gfc_match (" num :") == MATCH_ERROR)
+	    return MATCH_ERROR;
+	  else if (gfc_match (" %e ", &cp->gang_num_expr) != MATCH_YES)
+	    return MATCH_ERROR;
+	}
+
+      ret = gfc_match (" , ");
     }
-  if (gfc_match (" static :") == MATCH_YES)
-    {
-      cp->gang_static = true;
-      if (gfc_match (" * )") != MATCH_YES)
-	return gfc_match (" %e )", &cp->gang_expr);
-      return MATCH_YES;
-    }
-  return gfc_match (" %e )", &cp->gang_expr);
+
+  return gfc_match (" ) ");
 }
 
 static match
@@ -3726,11 +3747,15 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   if (omp_clauses->num_gangs_expr)
     resolve_oacc_positive_int_expr (omp_clauses->num_gangs_expr, "NUM_GANGS");
   if (omp_clauses->num_workers_expr)
-    resolve_oacc_positive_int_expr (omp_clauses->num_workers_expr, "NUM_WORKERS");
+    resolve_oacc_positive_int_expr (omp_clauses->num_workers_expr,
+				    "NUM_WORKERS");
   if (omp_clauses->vector_length_expr)
-    resolve_oacc_positive_int_expr (omp_clauses->vector_length_expr, "VECTOR_LENGTH");
-  if (omp_clauses->gang_expr)
-    resolve_oacc_positive_int_expr (omp_clauses->gang_expr, "GANG");
+    resolve_oacc_positive_int_expr (omp_clauses->vector_length_expr,
+				    "VECTOR_LENGTH");
+  if (omp_clauses->gang_num_expr)
+    resolve_oacc_positive_int_expr (omp_clauses->gang_num_expr, "GANG");
+  if (omp_clauses->gang_static_expr)
+    resolve_oacc_positive_int_expr (omp_clauses->gang_static_expr, "GANG");
   if (omp_clauses->worker_expr)
     resolve_oacc_positive_int_expr (omp_clauses->worker_expr, "WORKER");
   if (omp_clauses->vector_expr)
@@ -4705,20 +4730,21 @@ resolve_oacc_nested_loops (gfc_code *code, gfc_code* do_code, int collapse,
 
 
 static void
-resolve_oacc_params_in_parallel (gfc_code *code, const char *clause)
+resolve_oacc_params_in_parallel (gfc_code *code, const char *clause,
+				 const char *arg)
 {
   fortran_omp_context *c;
 
   if (oacc_is_parallel (code))
     gfc_error ("!$ACC LOOP %s in PARALLEL region doesn't allow "
-	       "non-static arguments at %L", clause, &code->loc);
+	       "%s arguments at %L", clause, arg, &code->loc);
   for (c = omp_current_ctx; c; c = c->previous)
     {
       if (oacc_is_loop (c->code))
 	break;
       if (oacc_is_parallel (c->code))
 	gfc_error ("!$ACC LOOP %s in PARALLEL region doesn't allow "
-		   "non-static arguments at %L", clause, &code->loc);
+		   "%s arguments at %L", clause, arg, &code->loc);
     }
 }
 
@@ -4801,13 +4827,16 @@ resolve_oacc_loop_blocks (gfc_code *code)
 	       "vectors at the same time at %L", &code->loc);
 
   if (code->ext.omp_clauses->gang
-      && code->ext.omp_clauses->gang_expr
-      && !code->ext.omp_clauses->gang_static)
-    resolve_oacc_params_in_parallel (code, "GANG");
+      && code->ext.omp_clauses->gang_num_expr)
+    resolve_oacc_params_in_parallel (code, "GANG", "num");
 
   if (code->ext.omp_clauses->worker
       && code->ext.omp_clauses->worker_expr)
-    resolve_oacc_params_in_parallel (code, "WORKER");
+    resolve_oacc_params_in_parallel (code, "WORKER", "num");
+
+  if (code->ext.omp_clauses->vector
+      && code->ext.omp_clauses->vector_expr)
+    resolve_oacc_params_in_parallel (code, "VECTOR", "length");
 
   if (code->ext.omp_clauses->tile_list)
     {
