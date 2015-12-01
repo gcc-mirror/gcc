@@ -1,5 +1,10 @@
 2015-12-01  Jan Hubicka  <hubicka@ucw.cz>
 
+	* c-common.c (parse_optimize_options): Do not silently ignore
+	-fstrict-aliasing changes.
+
+2015-12-01  Jan Hubicka  <hubicka@ucw.cz>
+
 	* lto-streamer-out.c (hash_tree): Do not stream TYPE_ALIAS_SET.
 	* tree-streamer-out.c (pack_ts_type_common_value_fields): Do not
 	stream TYPE_ALIAS_SET.
