@@ -1,3 +1,9 @@
+2015-12-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/fptr.c (__canonicalize_funcptr_for_compare): Initialize
+	fixup values if saved GOT address doesn't match runtime address.
+	(fixup_branch_offset): Reorder list.
+
 2015-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.in (VTV_CFLAGS): New variable.
