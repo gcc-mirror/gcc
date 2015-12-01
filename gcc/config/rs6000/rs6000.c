@@ -36613,7 +36613,12 @@ const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
 	  rtx base, offset;
 	  if (GET_CODE (tocrel_body) != SET)
 	    return false;
-	  if (!toc_relative_expr_p (SET_SRC (tocrel_body), false))
+	  /* There is an extra level of indirection for small/large
+	     code models.  */
+	  rtx tocrel_expr = SET_SRC (tocrel_body);
+	  if (GET_CODE (tocrel_expr) == MEM)
+	    tocrel_expr = XEXP (tocrel_expr, 0);
+	  if (!toc_relative_expr_p (tocrel_expr, false))
 	    return false;
 	  split_const (XVECEXP (tocrel_base, 0, 0), &base, &offset);
 	  if (GET_CODE (base) != SYMBOL_REF || !CONSTANT_POOL_ADDRESS_P (base))
@@ -37294,10 +37299,19 @@ adjust_vperm (rtx_insn *insn)
      to set tocrel_base; otherwise it would be unnecessary as we've
      already established it will return true.  */
   rtx base, offset;
-  if (!toc_relative_expr_p (SET_SRC (PATTERN (tocrel_insn)), false))
+  rtx tocrel_expr = SET_SRC (PATTERN (tocrel_insn));
+  /* There is an extra level of indirection for small/large code models.  */
+  if (GET_CODE (tocrel_expr) == MEM)
+    tocrel_expr = XEXP (tocrel_expr, 0);
+  if (!toc_relative_expr_p (tocrel_expr, false))
     gcc_unreachable ();
   split_const (XVECEXP (tocrel_base, 0, 0), &base, &offset);
   rtx const_vector = get_pool_constant (base);
+  /* With the extra indirection, get_pool_constant will produce the
+     real constant from the reg_equal expression, so get the real
+     constant.  */
+  if (GET_CODE (const_vector) == SYMBOL_REF)
+    const_vector = get_pool_constant (const_vector);
   gcc_assert (GET_CODE (const_vector) == CONST_VECTOR);
 
   /* Create an adjusted mask from the initial mask.  */
