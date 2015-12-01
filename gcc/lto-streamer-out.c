@@ -1109,10 +1109,6 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       hstate.commit_flag ();
       hstate.add_int (TYPE_PRECISION (t));
       hstate.add_int (TYPE_ALIGN (t));
-      hstate.add_int ((TYPE_ALIAS_SET (t) == 0
-					 || (!in_lto_p
-					     && get_alias_set (t) == 0))
-					? 0 : -1);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
