@@ -1,5 +1,10 @@
 2015-12-01  Marek Polacek  <polacek@redhat.com>
 
+	PR tree-optimization/67916
+	* gcc.dg/torture/pr67916.c: New test.
+
+2015-12-01  Marek Polacek  <polacek@redhat.com>
+
 	PR middle-end/68582
 	* c-c++-common/pr68582.c: New test.
 
