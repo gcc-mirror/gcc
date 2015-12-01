@@ -957,13 +957,14 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
    bounds on the difference FINAL - IV->base.  */
 
 static bool
-number_of_iterations_ne (tree type, affine_iv *iv, tree final,
-			 struct tree_niter_desc *niter, bool exit_must_be_taken,
-			 bounds *bnds)
+number_of_iterations_ne (struct loop *loop, tree type, affine_iv *iv,
+			 tree final, struct tree_niter_desc *niter,
+			 bool exit_must_be_taken, bounds *bnds)
 {
   tree niter_type = unsigned_type_for (type);
   tree s, c, d, bits, assumption, tmp, bound;
   mpz_t max;
+  tree e;
 
   niter->control = *iv;
   niter->bound = final;
@@ -997,6 +998,23 @@ number_of_iterations_ne (tree type, affine_iv *iv, tree final,
   niter->max = widest_int::from (wi::from_mpz (niter_type, max, false),
 				 TYPE_SIGN (niter_type));
   mpz_clear (max);
+
+  /* Compute no-overflow information for the control iv.  Note we are
+     handling NE_EXPR, if iv base equals to final value, the loop exits
+     immediately, and the iv does not overflow.  */
+  if (tree_int_cst_sign_bit (iv->step))
+    e = fold_build2 (GE_EXPR, boolean_type_node, iv->base, final);
+  else
+    e = fold_build2 (LE_EXPR, boolean_type_node, iv->base, final);
+  e = simplify_using_initial_conditions (loop, e);
+  if (integer_onep (e)
+      && (integer_onep (s)
+	  || (TREE_CODE (c) == INTEGER_CST
+	      && TREE_CODE (s) == INTEGER_CST
+	      && wi::mod_trunc (c, s, TYPE_SIGN (type)) == 0)))
+    {
+      niter->control.no_overflow = true;
+    }
 
   /* First the trivial cases -- when the step is 1.  */
   if (integer_onep (s))
@@ -1361,8 +1379,8 @@ assert_loop_rolls_lt (tree type, affine_iv *iv0, affine_iv *iv1,
    that the exit must be taken eventually.  */
 
 static bool
-number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
-			 struct tree_niter_desc *niter,
+number_of_iterations_lt (struct loop *loop, tree type, affine_iv *iv0,
+			 affine_iv *iv1, struct tree_niter_desc *niter,
 			 bool exit_must_be_taken, bounds *bnds)
 {
   tree niter_type = unsigned_type_for (type);
@@ -1434,7 +1452,8 @@ number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
 	 zps does not overflow.  */
       zps.no_overflow = true;
 
-      return number_of_iterations_ne (type, &zps, delta, niter, true, bnds);
+      return number_of_iterations_ne (loop, type, &zps,
+				      delta, niter, true, bnds);
     }
 
   /* Make sure that the control iv does not overflow.  */
@@ -1473,9 +1492,9 @@ number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
    is the case).  BNDS bounds the difference IV1->base - IV0->base.  */
 
 static bool
-number_of_iterations_le (tree type, affine_iv *iv0, affine_iv *iv1,
-			 struct tree_niter_desc *niter, bool exit_must_be_taken,
-			 bounds *bnds)
+number_of_iterations_le (struct loop *loop, tree type, affine_iv *iv0,
+			 affine_iv *iv1, struct tree_niter_desc *niter,
+			 bool exit_must_be_taken, bounds *bnds)
 {
   tree assumption;
   tree type1 = type;
@@ -1523,7 +1542,7 @@ number_of_iterations_le (tree type, affine_iv *iv0, affine_iv *iv1,
 
   bounds_add (bnds, 1, type1);
 
-  return number_of_iterations_lt (type, iv0, iv1, niter, exit_must_be_taken,
+  return number_of_iterations_lt (loop, type, iv0, iv1, niter, exit_must_be_taken,
 				  bnds);
 }
 
@@ -1698,18 +1717,18 @@ number_of_iterations_cond (struct loop *loop,
     {
     case NE_EXPR:
       gcc_assert (integer_zerop (iv1->step));
-      ret = number_of_iterations_ne (type, iv0, iv1->base, niter,
+      ret = number_of_iterations_ne (loop, type, iv0, iv1->base, niter,
 				     exit_must_be_taken, &bnds);
       break;
 
     case LT_EXPR:
-      ret = number_of_iterations_lt (type, iv0, iv1, niter, exit_must_be_taken,
-				     &bnds);
+      ret = number_of_iterations_lt (loop, type, iv0, iv1, niter,
+				     exit_must_be_taken, &bnds);
       break;
 
     case LE_EXPR:
-      ret = number_of_iterations_le (type, iv0, iv1, niter, exit_must_be_taken,
-				     &bnds);
+      ret = number_of_iterations_le (loop, type, iv0, iv1, niter,
+				     exit_must_be_taken, &bnds);
       break;
 
     default:
