@@ -63,8 +63,6 @@ possible_polymorphic_call_targets (tree, HOST_WIDE_INT,
 				   void **cache_token = NULL,
 				   bool speuclative = false);
 odr_type get_odr_type (tree, bool insert = false);
-bool type_in_anonymous_namespace_p (const_tree);
-bool type_with_linkage_p (const_tree);
 bool odr_type_p (const_tree);
 bool possible_polymorphic_call_target_p (tree ref, gimple *stmt, struct cgraph_node *n);
 void dump_possible_polymorphic_call_targets (FILE *, tree, HOST_WIDE_INT,
@@ -176,6 +174,92 @@ polymorphic_type_binfo_p (const_tree binfo)
   return (BINFO_TYPE (binfo) && TYPE_BINFO (BINFO_TYPE (binfo))
 	  && BINFO_VTABLE (TYPE_BINFO (BINFO_TYPE (binfo))));
 }
+
+/* Return true if T is a type with linkage defined.  */
+
+inline bool
+type_with_linkage_p (const_tree t)
+{
+  if (!TYPE_NAME (t) || TREE_CODE (TYPE_NAME (t)) != TYPE_DECL
+      || !TYPE_STUB_DECL (t))
+    return false;
+  /* In LTO do not get confused by non-C++ produced types or types built
+     with -fno-lto-odr-type-merigng.  */
+  if (in_lto_p)
+    {
+      /* To support -fno-lto-odr-type-merigng recognize types with vtables
+         to have linkage.  */
+      if (RECORD_OR_UNION_TYPE_P (t)
+	  && TYPE_BINFO (t) && BINFO_VTABLE (TYPE_BINFO (t)))
+        return true;
+      /* With -flto-odr-type-merging C++ FE specify mangled names
+	 for all types with the linkage.  */
+      return DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t));
+    }
+
+  if (!RECORD_OR_UNION_TYPE_P (t) && TREE_CODE (t) != ENUMERAL_TYPE)
+    return false;
+
+  /* Builtin types do not define linkage, their TYPE_CONTEXT is NULL.  */
+  if (!TYPE_CONTEXT (t))
+    return false;
+
+  return true;
+}
+
+/* Return true if T is in anonymous namespace.
+   This works only on those C++ types with linkage defined.  */
+
+inline bool
+type_in_anonymous_namespace_p (const_tree t)
+{
+  gcc_checking_assert (type_with_linkage_p (t));
+
+  if (!TREE_PUBLIC (TYPE_STUB_DECL (t)))
+    {
+      /* C++ FE uses magic <anon> as assembler names of anonymous types.
+ 	 verify that this match with type_in_anonymous_namespace_p.  */
+      gcc_checking_assert (!in_lto_p || !DECL_ASSEMBLER_NAME_SET_P (t)
+			   || !strcmp
+				 ("<anon>",
+				  IDENTIFIER_POINTER
+				     (DECL_ASSEMBLER_NAME (TYPE_NAME (t)))));
+      return true;
+    }
+  return false;
+}
+
+/* Return true of T is type with One Definition Rule info attached. 
+   It means that either it is anonymous type or it has assembler name
+   set.  */
+
+inline bool
+odr_type_p (const_tree t)
+{
+  /* We do not have this information when not in LTO, but we do not need
+     to care, since it is used only for type merging.  */
+  gcc_checking_assert (in_lto_p || flag_lto);
+
+  if (!type_with_linkage_p (t))
+    return false;
+
+  /* To support -fno-lto-odr-type-merging consider types with vtables ODR.  */
+  if (type_in_anonymous_namespace_p (t))
+    return true;
+
+  if (TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
+      && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t)))
+    {
+      /* C++ FE uses magic <anon> as assembler names of anonymous types.
+ 	 verify that this match with type_in_anonymous_namespace_p.  */
+      gcc_checking_assert (strcmp ("<anon>",
+				      IDENTIFIER_POINTER
+					(DECL_ASSEMBLER_NAME (TYPE_NAME (t)))));
+      return true;
+    }
+  return false;
+}
+
 #endif  /* GCC_IPA_UTILS_H  */
 
 
