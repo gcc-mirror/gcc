@@ -2459,23 +2459,25 @@ ADA_INCLUDE_SRCS =\
 # Files that are in ADA_INCLUDE_SRCS but not in all configurations.
 # They will be removed from the run time if not used.
 ADA_EXCLUDE_SRCS =\
-  s-bb.ads \
-  s-bbbosu.ads s-bbcaco.ads s-bbcppr.ads s-bbexti.adb s-bbexti.ads \
-  s-bbinte.adb s-bbinte.ads s-bbprot.adb s-bbprot.ads s-bbsle3.ads \
-  s-bbsuer.ads s-bbsule.ads s-bbthqu.adb s-bbthqu.ads s-bbthre.adb \
-  s-bbthre.ads s-bbtiev.adb s-bbtiev.ads s-bbtime.adb s-bbtime.ads \
-  s-bcprmu.adb s-bcprmu.ads s-btstch.adb s-btstch.ads \
-  s-init.ads s-init.adb \
-  s-macres.ads \
-  s-stache.adb s-stache.ads \
-  s-thread.ads \
-  s-vxwext.adb s-vxwext.ads \
-  s-vxwexc.adb s-vxwexc.ads \
-  s-win32.ads  s-winext.ads \
-  g-regist.adb g-regist.ads g-sse.ads    g-ssvety.ads \
+  g-allein.ads g-alleve.adb g-alleve.ads g-altcon.adb g-altcon.ads \
+  g-altive.ads g-alveop.adb g-alveop.ads g-alvety.ads g-alvevi.ads \
+  g-intpri.ads g-regist.adb g-regist.ads g-sse.ads    g-ssvety.ads \
   i-vxwoio.adb i-vxwoio.ads i-vxwork.ads \
-  g-allein.ads g-alleve.ads g-altcon.ads g-alveop.adb g-alvety.ads \
-  g-alleve.adb g-altcon.adb g-altive.ads g-alveop.ads g-alvevi.ads
+  s-bb.ads     s-bbbosu.ads s-bbcaco.ads s-bbcppr.ads s-bbexti.adb \
+  s-bbexti.ads s-bbinte.adb s-bbinte.ads s-bbprot.adb s-bbprot.ads \
+  s-bbsle3.ads s-bbsuer.ads s-bbsule.ads s-bbthqu.adb s-bbthqu.ads \
+  s-bbthre.adb s-bbthre.ads s-bbtiev.adb s-bbtiev.ads s-bbtime.adb \
+  s-bbtime.ads s-bcprmu.adb s-bcprmu.ads s-btstch.adb s-btstch.ads \
+  s-gcc.adb    s-gcc.ads    s-gccdiv.adb s-gccdiv.ads \
+  s-gccshi.adb s-gccshi.ads \
+  s-init.ads   s-init.adb   s-linux.ads  s-macres.ads \
+  s-memcom.adb s-memcom.ads s-memmov.adb s-memmov.ads s-memset.adb \
+  s-memset.ads s-mufalo.adb s-mufalo.ads s-musplo.adb s-musplo.ads \
+  s-sopco3.adb s-sopco3.ads s-sopco4.adb s-sopco4.ads \
+  s-sopco5.adb s-sopco5.ads s-stache.adb s-stache.ads \
+  s-strcom.adb s-strcom.ads s-thread.ads \
+  s-vxwexc.adb s-vxwexc.ads s-vxwext.adb s-vxwext.ads \
+  s-win32.ads  s-winext.ads
 
 # ADA_EXCLUDE_SRCS without the sources used by the target
 ADA_EXCLUDE_FILES=$(filter-out \
