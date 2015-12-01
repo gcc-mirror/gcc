@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target fopenmp } */
 /* { dg-options "-O2 -fopenmp -std=c99 -fipa-pta -fdump-tree-optimized" } */
 
 #define N 2
