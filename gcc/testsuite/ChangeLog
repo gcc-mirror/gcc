@@ -1,3 +1,13 @@
+2015-12-01  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/pr46032.c: Move to ...
+	* gcc.dg/vect/pr46032.c: here.  Add dg-require-effective-target
+	vect_int.
+	* gcc.dg/pr46032-2.c: Move to ...
+	* gcc.dg/gomp/pr46032-2.c: ... here.  Drop dg-require-effective-target fopenmp.
+	* gcc.dg/pr46032-3.c: Move to ...
+	* gcc.dg/gomp/pr46032-3.c: ... here.  Drop dg-require-effective-target fopenmp.
+
 2015-12-01  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* gfortran.dg/goacc/gang-static.f95: Add tests for gang num arguments.
