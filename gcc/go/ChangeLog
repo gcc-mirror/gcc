@@ -1,3 +1,9 @@
+2015-11-30  Ian Lance Taylor  <iant@google.com>
+
+	PR go/68477
+	* go-gcc.cc (Gcc_backend::string_constant_expression): Don't set
+	TYPE_STRING_FLAG on a variant type.
+
 2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	* go-backend.c: Remove unused header files.
