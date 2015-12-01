@@ -1,3 +1,10 @@
+2015-12-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (type_with_linkage_p, type_in_anonymous_namespace_p,
+	odr_type_p): Move to ...
+	* ipa-utils.h (type_with_linkage_p, type_in_anonymous_namespace_p,
+	odr_type_p): here; miscro-optimize.
+
 2015-12-01  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/68529
