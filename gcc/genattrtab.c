@@ -729,9 +729,8 @@ attr_copy_rtx (rtx orig)
   return copy;
 }
 
-/* Given a test expression for an attribute, ensure it is validly formed.
-   IS_CONST indicates whether the expression is constant for each compiler
-   run (a constant expression may not test any particular insn).
+/* Given a test expression EXP for attribute ATTR, ensure it is validly
+   formed.  LOC is the location of the .md construct that contains EXP.
 
    Convert (eq_attr "att" "a1,a2") to (ior (eq_attr ... ) (eq_attrq ..))
    and (eq_attr "att" "!a1") to (not (eq_attr "att" "a1")).  Do the latter
@@ -744,9 +743,8 @@ attr_copy_rtx (rtx orig)
    Return the new expression, if any.  */
 
 static rtx
-check_attr_test (rtx exp, int is_const, file_location loc)
+check_attr_test (file_location loc, rtx exp, attr_desc *attr)
 {
-  struct attr_desc *attr;
   struct attr_value *av;
   const char *name_ptr, *p;
   rtx orexp, newexp;
@@ -756,26 +754,27 @@ check_attr_test (rtx exp, int is_const, file_location loc)
     case EQ_ATTR:
       /* Handle negation test.  */
       if (XSTR (exp, 1)[0] == '!')
-	return check_attr_test (attr_rtx (NOT,
+	return check_attr_test (loc,
+				attr_rtx (NOT,
 					  attr_eq (XSTR (exp, 0),
 						   &XSTR (exp, 1)[1])),
-				is_const, loc);
+				attr);
 
       else if (n_comma_elts (XSTR (exp, 1)) == 1)
 	{
-	  attr = find_attr (&XSTR (exp, 0), 0);
-	  if (attr == NULL)
+	  attr_desc *attr2 = find_attr (&XSTR (exp, 0), 0);
+	  if (attr2 == NULL)
 	    {
 	      if (! strcmp (XSTR (exp, 0), "alternative"))
 		return mk_attr_alt (((uint64_t) 1) << atoi (XSTR (exp, 1)));
 	      else
-		fatal_at (loc, "unknown attribute `%s' in EQ_ATTR",
-			  XSTR (exp, 0));
+		fatal_at (loc, "unknown attribute `%s' in definition of"
+			  " attribute `%s'", XSTR (exp, 0), attr->name);
 	    }
 
-	  if (is_const && ! attr->is_const)
-	    fatal_at (loc, "constant expression uses insn attribute `%s'"
-		      " in EQ_ATTR", XSTR (exp, 0));
+	  if (attr->is_const && ! attr2->is_const)
+	    fatal_at (loc, "constant attribute `%s' cannot test non-constant"
+		      " attribute `%s'", attr->name, attr2->name);
 
 	  /* Copy this just to make it permanent,
 	     so expressions using it can be permanent too.  */
@@ -784,26 +783,26 @@ check_attr_test (rtx exp, int is_const, file_location loc)
 	  /* It shouldn't be possible to simplify the value given to a
 	     constant attribute, so don't expand this until it's time to
 	     write the test expression.  */
-	  if (attr->is_const)
+	  if (attr2->is_const)
 	    ATTR_IND_SIMPLIFIED_P (exp) = 1;
 
-	  if (attr->is_numeric)
+	  if (attr2->is_numeric)
 	    {
 	      for (p = XSTR (exp, 1); *p; p++)
 		if (! ISDIGIT (*p))
 		  fatal_at (loc, "attribute `%s' takes only numeric values",
-			    XSTR (exp, 0));
+			    attr2->name);
 	    }
 	  else
 	    {
-	      for (av = attr->first_value; av; av = av->next)
+	      for (av = attr2->first_value; av; av = av->next)
 		if (GET_CODE (av->value) == CONST_STRING
 		    && ! strcmp (XSTR (exp, 1), XSTR (av->value, 0)))
 		  break;
 
 	      if (av == NULL)
-		fatal_at (loc, "unknown value `%s' for `%s' attribute",
-			  XSTR (exp, 1), XSTR (exp, 0));
+		fatal_at (loc, "unknown value `%s' for attribute `%s'",
+			  XSTR (exp, 1), attr2->name);
 	    }
 	}
       else
@@ -829,7 +828,7 @@ check_attr_test (rtx exp, int is_const, file_location loc)
 		  orexp = insert_right_side (IOR, orexp, newexp, -2, -2);
 		}
 
-	      return check_attr_test (orexp, is_const, loc);
+	      return check_attr_test (loc, orexp, attr);
 	    }
 	}
       break;
@@ -846,12 +845,12 @@ check_attr_test (rtx exp, int is_const, file_location loc)
 
     case IOR:
     case AND:
-      XEXP (exp, 0) = check_attr_test (XEXP (exp, 0), is_const, loc);
-      XEXP (exp, 1) = check_attr_test (XEXP (exp, 1), is_const, loc);
+      XEXP (exp, 0) = check_attr_test (loc, XEXP (exp, 0), attr);
+      XEXP (exp, 1) = check_attr_test (loc, XEXP (exp, 1), attr);
       break;
 
     case NOT:
-      XEXP (exp, 0) = check_attr_test (XEXP (exp, 0), is_const, loc);
+      XEXP (exp, 0) = check_attr_test (loc, XEXP (exp, 0), attr);
       break;
 
     case MATCH_TEST:
@@ -860,9 +859,10 @@ check_attr_test (rtx exp, int is_const, file_location loc)
       break;
 
     case MATCH_OPERAND:
-      if (is_const)
-	fatal_at (loc, "RTL operator \"%s\" not valid in constant attribute"
-		  " test", GET_RTX_NAME (GET_CODE (exp)));
+      if (attr->is_const)
+	fatal_at (loc, "invalid operator `%s' in definition of constant"
+		  " attribute `%s'", GET_RTX_NAME (GET_CODE (exp)),
+		  attr->name);
       /* These cases can't be simplified.  */
       ATTR_IND_SIMPLIFIED_P (exp) = 1;
       break;
@@ -880,7 +880,7 @@ check_attr_test (rtx exp, int is_const, file_location loc)
       break;
 
     case SYMBOL_REF:
-      if (is_const)
+      if (attr->is_const)
 	{
 	  /* These cases are valid for constant attributes, but can't be
 	     simplified.  */
@@ -889,21 +889,21 @@ check_attr_test (rtx exp, int is_const, file_location loc)
 	  break;
 	}
     default:
-      fatal_at (loc, "RTL operator \"%s\" not valid in attribute test",
-		GET_RTX_NAME (GET_CODE (exp)));
+      fatal_at (loc, "invalid operator `%s' in definition of attribute"
+		" `%s'", GET_RTX_NAME (GET_CODE (exp)), attr->name);
     }
 
   return exp;
 }
 
-/* Given an expression, ensure that it is validly formed and that all named
-   attribute values are valid for the given attribute.  Issue a fatal error
-   if not.
+/* Given an expression EXP, ensure that it is validly formed and that
+   all named attribute values are valid for ATTR.  Issue an error if not.
+   LOC is the location of the .md construct that contains EXP.
 
    Return a perhaps modified replacement expression for the value.  */
 
 static rtx
-check_attr_value (rtx exp, struct attr_desc *attr)
+check_attr_value (file_location loc, rtx exp, struct attr_desc *attr)
 {
   struct attr_value *av;
   const char *p;
@@ -914,16 +914,16 @@ check_attr_value (rtx exp, struct attr_desc *attr)
     case CONST_INT:
       if (!attr->is_numeric)
 	{
-	  error_at (attr->loc,
-		    "CONST_INT not valid for non-numeric attribute %s",
+	  error_at (loc,
+		    "CONST_INT not valid for non-numeric attribute `%s'",
 		    attr->name);
 	  break;
 	}
 
       if (INTVAL (exp) < 0)
 	{
-	  error_at (attr->loc,
-		    "negative numeric value specified for attribute %s",
+	  error_at (loc,
+		    "negative numeric value specified for attribute `%s'",
 		    attr->name);
 	  break;
 	}
@@ -939,9 +939,9 @@ check_attr_value (rtx exp, struct attr_desc *attr)
 	  for (; *p; p++)
 	    if (! ISDIGIT (*p))
 	      {
-		error_at (attr->loc,
-			  "non-numeric value for numeric attribute %s",
-			  attr->name);
+		error_at (loc,
+			  "non-numeric value specified for numeric"
+			  " attribute `%s'", attr->name);
 		break;
 	      }
 	  break;
@@ -953,15 +953,14 @@ check_attr_value (rtx exp, struct attr_desc *attr)
 	  break;
 
       if (av == NULL)
-	error_at (attr->loc, "unknown value `%s' for `%s' attribute",
+	error_at (loc, "unknown value `%s' for attribute `%s'",
 		  XSTR (exp, 0), attr->name);
       break;
 
     case IF_THEN_ELSE:
-      XEXP (exp, 0) = check_attr_test (XEXP (exp, 0), attr->is_const,
-				       attr->loc);
-      XEXP (exp, 1) = check_attr_value (XEXP (exp, 1), attr);
-      XEXP (exp, 2) = check_attr_value (XEXP (exp, 2), attr);
+      XEXP (exp, 0) = check_attr_test (loc, XEXP (exp, 0), attr);
+      XEXP (exp, 1) = check_attr_value (loc, XEXP (exp, 1), attr);
+      XEXP (exp, 2) = check_attr_value (loc, XEXP (exp, 2), attr);
       break;
 
     case PLUS:
@@ -971,16 +970,17 @@ check_attr_value (rtx exp, struct attr_desc *attr)
     case MOD:
       if (!attr->is_numeric)
 	{
-	  error_at (attr->loc, "invalid operation `%s' for non-numeric"
-		    " attribute value", GET_RTX_NAME (GET_CODE (exp)));
+	  error_at (loc, "invalid operation `%s' for non-numeric"
+		    " attribute `%s'", GET_RTX_NAME (GET_CODE (exp)),
+		    attr->name);
 	  break;
 	}
       /* Fall through.  */
 
     case IOR:
     case AND:
-      XEXP (exp, 0) = check_attr_value (XEXP (exp, 0), attr);
-      XEXP (exp, 1) = check_attr_value (XEXP (exp, 1), attr);
+      XEXP (exp, 0) = check_attr_value (loc, XEXP (exp, 0), attr);
+      XEXP (exp, 1) = check_attr_value (loc, XEXP (exp, 1), attr);
       break;
 
     case FFS:
@@ -989,41 +989,42 @@ check_attr_value (rtx exp, struct attr_desc *attr)
     case POPCOUNT:
     case PARITY:
     case BSWAP:
-      XEXP (exp, 0) = check_attr_value (XEXP (exp, 0), attr);
+      XEXP (exp, 0) = check_attr_value (loc, XEXP (exp, 0), attr);
       break;
 
     case COND:
       if (XVECLEN (exp, 0) % 2 != 0)
 	{
-	  error_at (attr->loc, "first operand of COND must have even length");
+	  error_at (loc, "first operand of COND must have even length");
 	  break;
 	}
 
       for (i = 0; i < XVECLEN (exp, 0); i += 2)
 	{
-	  XVECEXP (exp, 0, i) = check_attr_test (XVECEXP (exp, 0, i),
-						 attr->is_const, attr->loc);
+	  XVECEXP (exp, 0, i) = check_attr_test (attr->loc,
+						 XVECEXP (exp, 0, i),
+						 attr);
 	  XVECEXP (exp, 0, i + 1)
-	    = check_attr_value (XVECEXP (exp, 0, i + 1), attr);
+	    = check_attr_value (loc, XVECEXP (exp, 0, i + 1), attr);
 	}
 
-      XEXP (exp, 1) = check_attr_value (XEXP (exp, 1), attr);
+      XEXP (exp, 1) = check_attr_value (loc, XEXP (exp, 1), attr);
       break;
 
     case ATTR:
       {
 	struct attr_desc *attr2 = find_attr (&XSTR (exp, 0), 0);
 	if (attr2 == NULL)
-	  error_at (attr->loc, "unknown attribute `%s' in ATTR",
+	  error_at (loc, "unknown attribute `%s' in ATTR",
 		    XSTR (exp, 0));
 	else if (attr->is_const && ! attr2->is_const)
 	  error_at (attr->loc,
-		    "non-constant attribute `%s' referenced from `%s'",
-		    XSTR (exp, 0), attr->name);
+		    "constant attribute `%s' cannot refer to non-constant"
+		    " attribute `%s'", attr->name, attr2->name);
 	else if (attr->is_numeric != attr2->is_numeric)
-	  error_at (attr->loc,
+	  error_at (loc,
 		    "numeric attribute mismatch calling `%s' from `%s'",
-		    XSTR (exp, 0), attr->name);
+		    attr2->name, attr->name);
       }
       break;
 
@@ -1034,8 +1035,8 @@ check_attr_value (rtx exp, struct attr_desc *attr)
       return attr_rtx (SYMBOL_REF, XSTR (exp, 0));
 
     default:
-      error_at (attr->loc, "invalid operation `%s' for attribute value",
-		GET_RTX_NAME (GET_CODE (exp)));
+      error_at (loc, "invalid operator `%s' in definition of attribute `%s'",
+		GET_RTX_NAME (GET_CODE (exp)), attr->name);
       break;
     }
 
@@ -1163,7 +1164,7 @@ check_defs (void)
 	    }
 
 	  XVECEXP (id->def, id->vec_idx, i) = value;
-	  XEXP (value, 1) = check_attr_value (XEXP (value, 1), attr);
+	  XEXP (value, 1) = check_attr_value (id->loc, XEXP (value, 1), attr);
 	}
     }
 }
@@ -1204,7 +1205,7 @@ make_canonical (file_location loc, struct attr_desc *attr, rtx exp)
 	 This makes the COND something that won't be considered an arbitrary
 	 expression by walk_attr_value.  */
       ATTR_IND_SIMPLIFIED_P (exp) = 1;
-      exp = check_attr_value (exp, attr);
+      exp = check_attr_value (loc, exp, attr);
       break;
 
     case IF_THEN_ELSE:
@@ -3186,7 +3187,7 @@ gen_attr (md_rtx_info *info)
     error_at (info->loc, "`length' attribute must take numeric values");
 
   /* Set up the default value.  */
-  XEXP (def, 2) = check_attr_value (XEXP (def, 2), attr);
+  XEXP (def, 2) = check_attr_value (info->loc, XEXP (def, 2), attr);
   attr->default_val = get_attr_value (info->loc, XEXP (def, 2), attr, -2);
 }
 
@@ -4755,9 +4756,14 @@ gen_insn_reserv (md_rtx_info *info)
   struct insn_reserv *decl = oballoc (struct insn_reserv);
   rtx def = info->def;
 
+  struct attr_desc attr;
+  memset (&attr, 0, sizeof (attr));
+  attr.name = DEF_ATTR_STRING (XSTR (def, 0));
+  attr.loc = info->loc;
+
   decl->name            = DEF_ATTR_STRING (XSTR (def, 0));
   decl->default_latency = XINT (def, 1);
-  decl->condexp         = check_attr_test (XEXP (def, 2), 0, info->loc);
+  decl->condexp         = check_attr_test (info->loc, XEXP (def, 2), &attr);
   decl->insn_num        = n_insn_reservs;
   decl->bypassed	= false;
   decl->next            = 0;
@@ -5287,7 +5293,7 @@ main (int argc, char **argv)
   for (i = 0; i < MAX_ATTRS_INDEX; i++)
     for (attr = attrs[i]; attr; attr = attr->next)
       attr->default_val->value
-	= check_attr_value (attr->default_val->value, attr);
+	= check_attr_value (attr->loc, attr->default_val->value, attr);
 
   if (have_error)
     return FATAL_EXIT_CODE;
