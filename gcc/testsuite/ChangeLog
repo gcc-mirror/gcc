@@ -1,3 +1,9 @@
+2015-12-01  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc.target/arm/ftest-armv6-thumb.c: Remove NEED_ARM_FEATURE_UNALIGNED.
+	* gcc.target/arm/ftest-armv6k-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv6z-thumb.c: Likewise.
+
 2015-12-01  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/68529
