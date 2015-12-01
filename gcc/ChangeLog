@@ -1,3 +1,8 @@
+2015-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/68470
+	* ipa-split.c (split_function): Handle main part not returning.
+
 2015-12-01  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR middle-end/68595
