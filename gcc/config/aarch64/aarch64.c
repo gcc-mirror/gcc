@@ -7112,7 +7112,7 @@ aarch64_builtin_reciprocal (gcall *call)
 	   & AARCH64_EXTRA_TUNE_RECIP_SQRT))
     return NULL_TREE;
 
-  if (gimple_call_internal_p (call)
+  if (gimple_call_internal_p (call))
     return NULL_TREE;
 
   tree fndecl = gimple_call_fndecl (call);

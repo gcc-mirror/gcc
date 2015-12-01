@@ -1,3 +1,7 @@
+2015-12-01  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_builtin_reciprocal): Fix typo.
+
 2015-12-01  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/68590
