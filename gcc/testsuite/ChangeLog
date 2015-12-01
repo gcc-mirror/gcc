@@ -1,3 +1,7 @@
+2015-12-01  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.target/nvptx/uninit-decl.c: New.
+
 2015-12-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.c-torture/execute/alias-1.c: New testcase.
