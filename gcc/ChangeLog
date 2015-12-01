@@ -1,3 +1,9 @@
+2015-12-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/68474
+	* tree-call-cdce.c (use_internal_fn): Protect call to
+	gen_shrink_wrap_conditions.
+
 2015-12-01  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/68617
