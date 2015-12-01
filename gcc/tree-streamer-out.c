@@ -317,13 +317,9 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, TYPE_RESTRICT (expr), 1);
   bp_pack_value (bp, TYPE_USER_ALIGN (expr), 1);
   bp_pack_value (bp, TYPE_READONLY (expr), 1);
-  /* Make sure to preserve the fact whether the frontend would assign
-     alias-set zero to this type.  Do that only for main variants, because
-     type variants alias sets are never computed.
-     FIXME:  This does not work for pre-streamed builtin types.  */
-  bp_pack_value (bp, (TYPE_ALIAS_SET (expr) == 0
-		      || (!in_lto_p && TYPE_MAIN_VARIANT (expr) == expr
-			  && get_alias_set (expr) == 0)), 1);
+  /* We used to stream TYPE_ALIAS_SET == 0 information to let frontends mark
+     types that are opaque for TBAA.  This however did not work as intended,
+     becuase TYPE_ALIAS_SET == 0 was regularly lost in type merging.  */
   if (RECORD_OR_UNION_TYPE_P (expr))
     {
       bp_pack_value (bp, TYPE_TRANSPARENT_AGGR (expr), 1);

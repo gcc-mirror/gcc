@@ -1,3 +1,11 @@
+2015-12-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (hash_tree): Do not stream TYPE_ALIAS_SET.
+	* tree-streamer-out.c (pack_ts_type_common_value_fields): Do not
+	stream TYPE_ALIAS_SET.
+	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Do not
+	stream TYPE_ALIAS_SET.
+
 2015-12-01  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (nvptx_function_arg_advance): Don't

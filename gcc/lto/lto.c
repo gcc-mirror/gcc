@@ -1166,7 +1166,9 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       compare_values (TYPE_READONLY);
       compare_values (TYPE_PRECISION);
       compare_values (TYPE_ALIGN);
-      compare_values (TYPE_ALIAS_SET);
+      /* Do not compare TYPE_ALIAS_SET.  Doing so introduce ordering issues
+         with calls to get_alias_set which may initialize it for streamed
+ 	 in types.  */
     }
 
   /* We don't want to compare locations, so there is nothing do compare
