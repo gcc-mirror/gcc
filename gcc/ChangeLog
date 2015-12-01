@@ -1,3 +1,17 @@
+2015-12-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genattrtab.c (check_attr_test): Take an attr_desc instead of
+	an is_const flag.  Put the file_location argument first.
+	Update recursive calls.  Improve error messages.
+	(check_attr_value): Take a file location and use it instead
+	of attr->loc.  Improve error messages.  Update calls to
+	check_attr_test.
+	(check_defs): Update call to check_attr_value.
+	(make_canonical): Likewise.
+	(gen_attr): Likewise.
+	(main): Likewise.
+	(gen_insn_reserv): Update call to check_attr_test.
+
 2015-12-01  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_builtin_reciprocal): Fix typo.
