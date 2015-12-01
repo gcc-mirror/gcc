@@ -1,3 +1,8 @@
+2015-12-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/68577
+	* gcc.dg/vect/pr68577.c: New test.
+
 2015-12-01  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.target/nvptx/uninit-decl.c: New.

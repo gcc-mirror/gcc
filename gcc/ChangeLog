@@ -1,3 +1,12 @@
+2015-12-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/68577
+	* tree-vect-stmts.c (simple_integer_narrowing): New function.
+	(vectorizable_call): Restrict internal function handling
+	to NONE and NARROW cases, using simple_integer_narrowing
+	to test for the latter.  Add cost of narrowing operation
+	and insert it where necessary.
+
 2015-12-01  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/rs6000/freebsd64.h (ELFv2_ABI_CHECK): Add new macro.
