@@ -1,3 +1,8 @@
+2015-12-01  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR middle-end/68595
+	* gcc.dg/pr68595.c: New test.
+
 2015-12-01  Christian Bruel  <christian.bruel@st.com>
 
 	* gcc.target/arm/ftest-armv6-thumb.c: Remove NEED_ARM_FEATURE_UNALIGNED.
