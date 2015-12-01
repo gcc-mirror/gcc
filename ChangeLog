@@ -1,3 +1,10 @@
+2015-12-01  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	PR libffi/65726
+	* Makefile.def (lang_env_dependencies): Make libffi depend
+	on cxx.
+	* Makefile.in: Regenerate.
+
 2015-11-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	* m4/libtool.m4 (export_symbols_cmds) [AIX]: Add global TLS "L"
