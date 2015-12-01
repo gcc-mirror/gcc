@@ -975,15 +975,13 @@ nvptx_function_incoming_arg (cumulative_args_t cum_v, machine_mode mode,
 /* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
-nvptx_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			    const_tree type ATTRIBUTE_UNUSED,
-			    bool named ATTRIBUTE_UNUSED)
+nvptx_function_arg_advance (cumulative_args_t cum_v,
+			    machine_mode ARG_UNUSED (mode),
+			    const_tree ARG_UNUSED (type),
+			    bool ARG_UNUSED (named))
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  if (mode == TImode)
-    cum->count += 2;
-  else
-    cum->count++;
+  cum->count++;
 }
 
 /* Handle the TARGET_STRICT_ARGUMENT_NAMING target hook.
