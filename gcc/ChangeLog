@@ -1,3 +1,9 @@
+2015-12-01  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR middle-end/68595
+	* tree-vect-stmts.c (vect_init_vector): Cast boolean
+	scalars to a proper value before building a vector.
+
 2015-12-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* genattrtab.c (check_attr_test): Take an attr_desc instead of
