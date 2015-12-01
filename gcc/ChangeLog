@@ -1,3 +1,8 @@
+2015-12-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/68590
+	* match.pd: Merge (eq @0 @0) and (ge/le @0 @0) patterns.
+
 2015-12-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-devirt.c (type_with_linkage_p, type_in_anonymous_namespace_p,
