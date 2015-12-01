@@ -1,3 +1,24 @@
+2015-12-01  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses): Handle optional num and static
+	arguments for the gang clause.
+	* gfortran.h (gfc_omp_clauses): Rename gang_expr as gang_num_expr.
+	Add gang_static_expr.
+	* openmp.c (gfc_free_omp_clauses): Update to free gang_num_expr and
+	gang_static_expr.
+	(match_oacc_clause_gang): Update to support both num and static in
+	the same clause.
+	(resolve_omp_clauses): Formatting.  Also handle gang_num_expr and
+	gang_static_expr.
+	(resolve_oacc_params_in_parallel): New const char arg argument.
+	Use it to report more accurate gang, worker and vector clause errors.
+	(resolve_oacc_loop_blocks): Update calls to
+	resolve_oacc_params_in_parallel.
+	* trans-openmp.c (gfc_trans_omp_clauses): Update the gimplification of
+	the gang clause.
+	(gfc_trans_oacc_combined_directive): Make use of gang_num_expr and
+	gang_static_expr.  Remove OMP_LIST_REDUCTION from construct_clauses.
+
 2015-11-30  Cesar Philippidis  <cesar@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>

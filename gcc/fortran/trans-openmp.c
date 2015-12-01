@@ -2630,28 +2630,20 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
     }
   if (clauses->gang)
     {
-      if (clauses->gang_expr)
+      tree arg;
+      c = build_omp_clause (where.lb->location, OMP_CLAUSE_GANG);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+      if (clauses->gang_num_expr)
 	{
-	  tree gang_var
-	    = gfc_convert_expr_to_tree (block, clauses->gang_expr);
-	  c = build_omp_clause (where.lb->location, OMP_CLAUSE_GANG);
-	  if (clauses->gang_static)
-	    OMP_CLAUSE_GANG_STATIC_EXPR (c) = gang_var;
-	  else
-	    OMP_CLAUSE_GANG_EXPR (c) = gang_var;
-	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+	  arg = gfc_convert_expr_to_tree (block, clauses->gang_num_expr);
+	  OMP_CLAUSE_GANG_EXPR (c) = arg;
 	}
-      else if (clauses->gang_static)
+      if (clauses->gang_static)
 	{
-	  /* This corresponds to gang (static: *).  */
-	  c = build_omp_clause (where.lb->location, OMP_CLAUSE_GANG);
-	  OMP_CLAUSE_GANG_STATIC_EXPR (c) = integer_minus_one_node;
-	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
-	}
-      else
-	{
-	  c = build_omp_clause (where.lb->location, OMP_CLAUSE_GANG);
-	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+	  arg = clauses->gang_static_expr
+	    ? gfc_convert_expr_to_tree (block, clauses->gang_static_expr)
+	    : integer_minus_one_node;
+	  OMP_CLAUSE_GANG_STATIC_EXPR (c) = arg;
 	}
     }
 
@@ -3476,8 +3468,9 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
 	      sizeof (construct_clauses));
       loop_clauses.collapse = construct_clauses.collapse;
       loop_clauses.gang = construct_clauses.gang;
-      loop_clauses.gang_expr = construct_clauses.gang_expr;
       loop_clauses.gang_static = construct_clauses.gang_static;
+      loop_clauses.gang_num_expr = construct_clauses.gang_num_expr;
+      loop_clauses.gang_static_expr = construct_clauses.gang_static_expr;
       loop_clauses.vector = construct_clauses.vector;
       loop_clauses.vector_expr = construct_clauses.vector_expr;
       loop_clauses.worker = construct_clauses.worker;
@@ -3491,8 +3484,9 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
       loop_clauses.lists[OMP_LIST_REDUCTION]
 	= construct_clauses.lists[OMP_LIST_REDUCTION];
       construct_clauses.gang = false;
-      construct_clauses.gang_expr = NULL;
       construct_clauses.gang_static = false;
+      construct_clauses.gang_num_expr = NULL;
+      construct_clauses.gang_static_expr = NULL;
       construct_clauses.vector = false;
       construct_clauses.vector_expr = NULL;
       construct_clauses.worker = false;
@@ -3503,6 +3497,7 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
       construct_clauses.independent = false;
       construct_clauses.tile_list = NULL;
       construct_clauses.lists[OMP_LIST_PRIVATE] = NULL;
+      construct_clauses.lists[OMP_LIST_REDUCTION] = NULL;
       oacc_clauses = gfc_trans_omp_clauses (&block, &construct_clauses,
 					    code->loc);
     }

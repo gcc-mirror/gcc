@@ -1146,10 +1146,24 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
   if (omp_clauses->gang)
     {
       fputs (" GANG", dumpfile);
-      if (omp_clauses->gang_expr)
+      if (omp_clauses->gang_num_expr || omp_clauses->gang_static_expr)
 	{
 	  fputc ('(', dumpfile);
-	  show_expr (omp_clauses->gang_expr);
+	  if (omp_clauses->gang_num_expr)
+	    {
+	      fprintf (dumpfile, "num:");
+	      show_expr (omp_clauses->gang_num_expr);
+	    }
+	  if (omp_clauses->gang_num_expr && omp_clauses->gang_static)
+	    fputc (',', dumpfile);
+	  if (omp_clauses->gang_static)
+	    {
+	      fprintf (dumpfile, "static:");
+	      if (omp_clauses->gang_static_expr)
+		show_expr (omp_clauses->gang_static_expr);
+	      else
+		fputc ('*', dumpfile);
+	    }
 	  fputc (')', dumpfile);
 	}
     }
