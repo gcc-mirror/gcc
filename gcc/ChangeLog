@@ -1,3 +1,9 @@
+2015-12-01  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/68582
+	* cgraphunit.c (check_global_declaration): Only depend on TREE_THIS_VOLATILE
+	for VAR_DECLs.
+
 2015-12-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/68474
