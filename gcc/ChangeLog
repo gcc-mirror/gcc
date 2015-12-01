@@ -1,5 +1,14 @@
 2015-12-01  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/68590
+	* genmatch.c (struct capture_info): Add match_use_count.
+	(capture_info::walk_match): Increment match_use_count.
+	(dt_simplify::gen_1): For GENERIC, only wrap multi-use
+	replacements in a save_expr if they occur more often than
+	in the original expression.
+
+2015-12-01  Richard Biener  <rguenther@suse.de>
+
 	PR ipa/68470
 	* ipa-split.c (split_function): Handle main part not returning.
 
