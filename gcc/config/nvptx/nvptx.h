@@ -304,38 +304,11 @@ struct GTY(()) machine_function
 
 #undef  ASM_OUTPUT_ALIGNED_DECL_COMMON
 #define ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN)	\
-  do									\
-    {									\
-      fprintf (FILE, "\n// BEGIN%s VAR DEF: ",				\
-	       TREE_PUBLIC (DECL) ? " GLOBAL" : "");			\
-      assemble_name_raw (FILE, NAME);					\
-      fputc ('\n', FILE);						\
-      const char *sec = nvptx_section_for_decl (DECL);			\
-      fprintf (FILE, ".visible%s.align %d .b8 ", sec,			\
-	       (ALIGN) / BITS_PER_UNIT);				\
-      assemble_name ((FILE), (NAME));					\
-      if ((SIZE) > 0)							\
-	fprintf (FILE, "[" HOST_WIDE_INT_PRINT_DEC"]", (SIZE));		\
-      fprintf (FILE, ";\n");						\
-    }									\
-  while (0)
+  nvptx_output_aligned_decl (FILE, NAME, DECL, SIZE, ALIGN)
 
 #undef  ASM_OUTPUT_ALIGNED_DECL_LOCAL
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN)	\
-  do									\
-    {									\
-      fprintf (FILE, "\n// BEGIN VAR DEF: ");				\
-      assemble_name_raw (FILE, NAME);					\
-      fputc ('\n', FILE);						\
-      const char *sec = nvptx_section_for_decl (DECL);			\
-      fprintf (FILE, ".visible%s.align %d .b8 ", sec,			\
-	       (ALIGN) / BITS_PER_UNIT);				\
-      assemble_name ((FILE), (NAME));					\
-      if ((SIZE) > 0)							\
-	fprintf (FILE, "[" HOST_WIDE_INT_PRINT_DEC"]", (SIZE));		\
-      fprintf (FILE, ";\n");						\
-    }									\
-  while (0)
+  nvptx_output_aligned_decl (FILE, NAME, DECL, SIZE, ALIGN)
 
 #define CASE_VECTOR_PC_RELATIVE flag_pic
 #define JUMP_TABLES_IN_TEXT_SECTION flag_pic

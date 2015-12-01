@@ -1,3 +1,14 @@
+2015-12-01  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx-protos.h (nvptx_output_aligned_decl): Declare.
+	* config/nvptx/nvptx.h (ASM_OUTPUT_ALIGNED_DECL_COMMON,
+	ASM_OUTPUT_ALIGNED_DECL_LOCAL): Forward to nvptx_output_aligned_decl.
+	* config/nvptx/nvptx.c (write_fn_marker, write_var_marker): New.
+	(write_fn_proto, write_fn_proto_from_insn): Call write_fn_marker.
+	(init_output_initializer): Call write_var_marker.
+	(nvptx_output_aligned_decl): New.
+	(nvptx_assemble_undefined_decl, nvptx_file_end): Call write_var_marker.
+
 2015-12-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* c-common.c (parse_optimize_options): Do not silently ignore

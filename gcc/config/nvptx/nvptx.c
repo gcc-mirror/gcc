@@ -366,6 +366,31 @@ write_as_kernel (tree attrs)
 	  || lookup_attribute ("omp target entrypoint", attrs) != NULL_TREE);
 }
 
+/* Emit a linker marker for a function decl or defn.  */
+
+static void
+write_fn_marker (std::stringstream &s, bool is_defn, bool globalize,
+		 const char *name)
+{
+  s << "\n// BEGIN";
+  if (globalize)
+    s << " GLOBAL";
+  s << " FUNCTION " << (is_defn ? "DEF: " : "DECL: ");
+  s << name << "\n";
+}
+
+/* Emit a linker marker for a variable decl or defn.  */
+
+static void
+write_var_marker (FILE *file, bool is_defn, bool globalize, const char *name)
+{
+  fprintf (file, "\n// BEGIN%s VAR %s: ",
+	   globalize ? " GLOBAL" : "",
+	   is_defn ? "DEF" : "DECL");
+  assemble_name_raw (file, name);
+  fputs ("\n", file);
+}
+
 /* Write a .func or .kernel declaration or definition along with
    a helper comment for use by ld.  S is the stream to write to, DECL
    the decl for the function with name NAME.   For definitions, emit
@@ -386,11 +411,7 @@ write_fn_proto (std::stringstream &s, bool is_defn,
 	name++;
     }
 
-  /* Emit the linker marker.  */
-  s << "\n// BEGIN";
-  if (TREE_PUBLIC (decl))
-    s << " GLOBAL";
-  s << " FUNCTION " << (is_defn ? "DEF" : "DECL") << ": " << name << "\n";
+  write_fn_marker (s, is_defn, TREE_PUBLIC (decl), name);
 
   /* PTX declaration.  */
   if (DECL_EXTERNAL (decl))
@@ -500,7 +521,7 @@ write_fn_proto_from_insn (std::stringstream &s, const char *name,
   else
     {
       name = nvptx_name_replacement (name);
-      s << "\n// BEGIN GLOBAL FUNCTION DECL: " << name << "\n";
+      write_fn_marker (s, false, true, name);
       s << "\t.extern .func ";
     }
 
@@ -1638,9 +1659,7 @@ static void
 init_output_initializer (FILE *file, const char *name, const_tree type,
 			 bool is_public)
 {
-  fprintf (file, "\n// BEGIN%s VAR DEF: ", is_public ? " GLOBAL" : "");
-  assemble_name_raw (file, name);
-  fputc ('\n', file);
+  write_var_marker (file, true, is_public, name);
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     type = TREE_TYPE (type);
@@ -1656,6 +1675,27 @@ init_output_initializer (FILE *file, const char *name, const_tree type,
   decl_offset = 0;
   init_part = 0;
   object_finished = false;
+}
+
+/* Output an uninitialized common or file-scope variable.  */
+
+void
+nvptx_output_aligned_decl (FILE *file, const char *name,
+			   const_tree decl, HOST_WIDE_INT size, unsigned align)
+{
+  write_var_marker (file, true, TREE_PUBLIC (decl), name);
+
+  /* If this is public, it is common.  The nearest thing we have to
+     common is weak.  */
+  if (TREE_PUBLIC (decl))
+    fprintf (file, ".weak ");
+
+  const char *sec = nvptx_section_for_decl (decl);
+  fprintf (file, "%s.align %d .b8 ", sec, align / BITS_PER_UNIT);
+  assemble_name (file, name);
+  if (size > 0)
+    fprintf (file, "[" HOST_WIDE_INT_PRINT_DEC"]", size);
+  fprintf (file, ";\n");
 }
 
 /* Implement TARGET_ASM_DECLARE_CONSTANT_NAME.  Begin the process of
@@ -1720,11 +1760,10 @@ nvptx_assemble_undefined_decl (FILE *file, const char *name, const_tree decl)
 {
   if (TREE_CODE (decl) != VAR_DECL)
     return;
+
+  write_var_marker (file, false, TREE_PUBLIC (decl), name);
+
   const char *section = nvptx_section_for_decl (decl);
-  fprintf (file, "\n// BEGIN%s VAR DECL: ",
-	   TREE_PUBLIC (decl) ? " GLOBAL" : "");
-  assemble_name_raw (file, name);
-  fputs ("\n", file);
   HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
   fprintf (file, ".extern %s .b8 ", section);
   assemble_name_raw (file, name);
@@ -3876,7 +3915,7 @@ nvptx_file_end (void)
       worker_bcast_size = (worker_bcast_size + worker_bcast_align - 1)
 	& ~(worker_bcast_align - 1);
       
-      fprintf (asm_out_file, "\n// BEGIN VAR DEF: %s\n", worker_bcast_name);
+      write_var_marker (asm_out_file, true, false, worker_bcast_name);
       fprintf (asm_out_file, ".shared .align %d .u8 %s[%d];\n",
 	       worker_bcast_align,
 	       worker_bcast_name, worker_bcast_size);
@@ -3888,8 +3927,8 @@ nvptx_file_end (void)
 
       worker_red_size = ((worker_red_size + worker_red_align - 1)
 			 & ~(worker_red_align - 1));
-      
-      fprintf (asm_out_file, "\n// BEGIN VAR DEF: %s\n", worker_red_name);
+
+      write_var_marker (asm_out_file, true, false, worker_red_name);
       fprintf (asm_out_file, ".shared .align %d .u8 %s[%d];\n",
 	       worker_red_align,
 	       worker_red_name, worker_red_size);
