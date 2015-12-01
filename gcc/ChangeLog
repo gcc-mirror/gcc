@@ -1,3 +1,11 @@
+2015-12-01  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/68529
+	* tree-ssa-loop-niter.c (number_of_iterations_ne): Add new param.
+	Compute no-overflow information for control iv.
+	(number_of_iterations_lt, number_of_iterations_le): Add new param.
+	(number_of_iterations_cond): Pass new argument to above functions.
+
 2015-11-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline-transform.c (inline_call): Drop -fstrict-aliasing when

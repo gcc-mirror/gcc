@@ -1,3 +1,10 @@
+2015-12-01  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/68529
+	* gcc.dg/tree-ssa/pr68529-1.c: New test.
+	* gcc.dg/tree-ssa/pr68529-2.c: New test.
+	* gcc.dg/tree-ssa/pr68529-3.c: New test.
+
 2015-11-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/lto/alias-1_0.c: New testcase.
