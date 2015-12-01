@@ -1,3 +1,7 @@
+2015-12-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.c-torture/execute/alias-1.c: New testcase.
+
 2015-12-01  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/64769
