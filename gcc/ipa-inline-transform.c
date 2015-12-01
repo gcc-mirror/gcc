@@ -322,6 +322,21 @@ inline_call (struct cgraph_edge *e, bool update_original,
   if (DECL_FUNCTION_PERSONALITY (callee->decl))
     DECL_FUNCTION_PERSONALITY (to->decl)
       = DECL_FUNCTION_PERSONALITY (callee->decl);
+  if (!opt_for_fn (callee->decl, flag_strict_aliasing)
+      && opt_for_fn (to->decl, flag_strict_aliasing))
+    {
+      struct gcc_options opts = global_options;
+
+      cl_optimization_restore (&opts,
+	 TREE_OPTIMIZATION (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)));
+      opts.x_flag_strict_aliasing = false;
+      if (dump_file)
+	fprintf (dump_file, "Dropping flag_strict_aliasing on %s:%i\n",
+		 to->name (), to->order);
+      build_optimization_node (&opts);
+      DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)
+	 = build_optimization_node (&opts);
+    }
 
   /* If aliases are involved, redirect edge to the actual destination and
      possibly remove the aliases.  */
