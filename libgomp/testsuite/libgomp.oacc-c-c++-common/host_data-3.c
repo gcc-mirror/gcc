@@ -1,0 +1,29 @@
+/* { dg-do compile } */
+
+#include <openacc.h>
+#include <stdlib.h>
+
+#define N 1024
+
+int main (int argc, char* argv[])
+{
+  int x[N];
+
+#pragma acc data copyin (x[0:N])
+  {
+    int *xp;
+#pragma acc host_data use_device (x)
+    {
+      /* This use of the present clause is undefined behaviour for OpenACC.  */
+#pragma acc parallel present (x) copyout (xp) /* { dg-error "variable 'x' declared in enclosing 'host_data' region" } */
+      {
+        xp = x;
+      }
+    }
+
+    if (xp != acc_deviceptr (x))
+      abort ();
+  }
+
+  return 0;
+}

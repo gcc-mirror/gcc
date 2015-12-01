@@ -11631,6 +11631,25 @@ c_finish_oacc_data (location_t loc, tree clauses, tree block)
   return add_stmt (stmt);
 }
 
+/* Generate OACC_HOST_DATA, with CLAUSES and BLOCK as its compound
+   statement.  LOC is the location of the OACC_HOST_DATA.  */
+
+tree
+c_finish_oacc_host_data (location_t loc, tree clauses, tree block)
+{
+  tree stmt;
+
+  block = c_end_compound_stmt (loc, block, true);
+
+  stmt = make_node (OACC_HOST_DATA);
+  TREE_TYPE (stmt) = void_type_node;
+  OACC_HOST_DATA_CLAUSES (stmt) = clauses;
+  OACC_HOST_DATA_BODY (stmt) = block;
+  SET_EXPR_LOCATION (stmt, loc);
+
+  return add_stmt (stmt);
+}
+
 /* Like c_begin_compound_stmt, except force the retention of the BLOCK.  */
 
 tree
@@ -13074,6 +13093,7 @@ c_finish_omp_clauses (tree clauses, bool is_omp, bool declare_simd)
 	  bitmap_set_bit (&map_head, DECL_UID (t));
 	  goto check_dup_generic;
 
+	case OMP_CLAUSE_USE_DEVICE:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	  t = OMP_CLAUSE_DECL (c);

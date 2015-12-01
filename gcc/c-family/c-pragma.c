@@ -1251,6 +1251,7 @@ static const struct omp_pragma_def oacc_pragmas[] = {
   { "declare", PRAGMA_OACC_DECLARE },
   { "enter", PRAGMA_OACC_ENTER_DATA },
   { "exit", PRAGMA_OACC_EXIT_DATA },
+  { "host_data", PRAGMA_OACC_HOST_DATA },
   { "kernels", PRAGMA_OACC_KERNELS },
   { "loop", PRAGMA_OACC_LOOP },
   { "parallel", PRAGMA_OACC_PARALLEL },

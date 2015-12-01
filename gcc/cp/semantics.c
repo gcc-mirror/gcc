@@ -6835,6 +6835,7 @@ finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
 	    }
 	  break;
 
+	case OMP_CLAUSE_USE_DEVICE:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	  field_ok = allow_fields;
@@ -7386,6 +7387,24 @@ finish_oacc_data (tree clauses, tree block)
   TREE_TYPE (stmt) = void_type_node;
   OACC_DATA_CLAUSES (stmt) = clauses;
   OACC_DATA_BODY (stmt) = block;
+
+  return add_stmt (stmt);
+}
+
+/* Generate OACC_HOST_DATA, with CLAUSES and BLOCK as its compound
+   statement.  */
+
+tree
+finish_oacc_host_data (tree clauses, tree block)
+{
+  tree stmt;
+
+  block = finish_omp_structured_block (block);
+
+  stmt = make_node (OACC_HOST_DATA);
+  TREE_TYPE (stmt) = void_type_node;
+  OACC_HOST_DATA_CLAUSES (stmt) = clauses;
+  OACC_HOST_DATA_BODY (stmt) = block;
 
   return add_stmt (stmt);
 }
