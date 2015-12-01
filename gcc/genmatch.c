@@ -1851,7 +1851,8 @@ struct capture_info
       bool force_single_use;
       bool cond_expr_cond_p;
       unsigned long toplevel_msk;
-      int result_use_count;
+      unsigned match_use_count;
+      unsigned result_use_count;
       unsigned same_as;
       capture *c;
     };
@@ -1901,6 +1902,7 @@ capture_info::walk_match (operand *o, unsigned toplevel_arg,
   if (capture *c = dyn_cast <capture *> (o))
     {
       unsigned where = c->where;
+      info[where].match_use_count++;
       info[where].toplevel_msk |= 1 << toplevel_arg;
       info[where].force_no_side_effects_p |= conditional_p;
       info[where].cond_expr_cond_p |= cond_expr_cond_p;
@@ -3106,13 +3108,16 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	  else if (is_a <predicate_id *> (opr))
 	    is_predicate = true;
 	  /* Search for captures used multiple times in the result expression
-	     and dependent on TREE_SIDE_EFFECTS emit a SAVE_EXPR.  */
+	     and wrap them in a SAVE_EXPR.  Allow as many uses as in the
+	     original expression.  */
 	  if (!is_predicate)
 	    for (int i = 0; i < s->capture_max + 1; ++i)
 	      {
-		if (cinfo.info[i].same_as != (unsigned)i)
+		if (cinfo.info[i].same_as != (unsigned)i
+		    || cinfo.info[i].cse_p)
 		  continue;
-		if (cinfo.info[i].result_use_count > 1)
+		if (cinfo.info[i].result_use_count
+		    > cinfo.info[i].match_use_count)
 		  fprintf_indent (f, indent,
 				  "captures[%d] = save_expr (captures[%d]);\n",
 				  i, i);
