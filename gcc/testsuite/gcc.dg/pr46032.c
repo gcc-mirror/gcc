@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target fopenmp } */
 /* { dg-options "-O2 -fopenmp -ftree-vectorize -std=c99 -fipa-pta -fdump-tree-vect-all" } */
 
 extern void abort (void);
