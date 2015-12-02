@@ -1,3 +1,8 @@
+2015-12-02  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR c++/67337
+	* mangle.c (write_template_prefix): Guard against context==NULL.
+
 2015-12-02  Jason Merrill  <jason@redhat.com>
 
 	* call.c (build_new_op_1): Don't fold arguments to
