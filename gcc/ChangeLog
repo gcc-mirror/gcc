@@ -1,3 +1,35 @@
+2015-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* Makefile.in (GENSUPPORT_H): New macro.
+	(build/gensupport.o, build/read-rtl.o, build/genattr.o)
+	(build/genattr-common.o, build/genattrtab.o, build/genautomata.o)
+	(build/gencodes.o, build/genconditions.o, build/genconfig.o)
+	(build/genconstants.o, build/genextract.o, build/genflags.o)
+	(build/gentarget-def.o): Use it.
+	(build/genemit.o): Likewise.  Depend on internal-fn.def.
+	* genopinit.c: Move block comment to optabs.def.
+	(optab_tag, optab_def): Move to gensupport.h
+	(pattern): Likewise, renaming to optab_pattern.
+	(match_pattern): Move to gensupport.c
+	(gen_insn): Use find_optab.
+	(patterns, pattern_cmp): Replace pattern with optab_pattern.
+	(main): Likewise.  Use num_optabs.
+	* optabs.def: Add comment that was previously in genopinit.c.
+	* gensupport.h (optab_tag): Moved from genopinit.c
+	(optab_def): Likewise, expanding commentary.
+	(optab_pattern): Likewise, after renaming from pattern.
+	(optabs, num_optabs, find_optab): Declare.
+	* gensupport.c (optabs): Moved from genopinit.c.
+	(num_optabs): New variable.
+	(match_pattern): Moved from genopinit.c.
+	(find_optab): New function, extracted from genopinit.c:gen_insn.
+	* genemit.c (nofail_optabs): New variable.
+	(emit_c_code): New function.
+	(gen_expand): Check whether the instruction is an optab that isn't
+	allowed to fail.  Call emit_c_code.
+	(gen_split): Call emit_c_code here too.
+	(main): Initialize nofail_optabs.  Don't emit FAIL and DONE here.
+
 2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/predicates.md (const_mask_operand): New predicate.
