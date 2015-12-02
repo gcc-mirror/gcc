@@ -1,5 +1,9 @@
 2015-12-02  Jason Merrill  <jason@redhat.com>
 
+	* cp-gimplify.c (cp_fold_maybe_rvalue, cp_fold_rvalue): New.
+	(c_fully_fold): Use cp_fold_rvalue.
+	(cp_fold): Use them for rvalue operands.
+
 	* cp-gimplify.c (c_fully_fold): Define.
 
 	* cp-gimplify.c (cp_fold): Use fold_build*.
