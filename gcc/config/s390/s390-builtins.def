@@ -362,6 +362,15 @@ B_DEF      (s390_vrepih,                vec_splatsv8hi,     0,                  
 B_DEF      (s390_vrepif,                vec_splatsv4si,     0,                  B_VX,               O1_S16,             BT_FN_V4SI_SHORT)
 B_DEF      (s390_vrepig,                vec_splatsv2di,     0,                  B_VX,               O1_S16,             BT_FN_V2DI_SHORT)
 
+B_DEF      (s390_vec_splat_u8,          vec_splatsv16qi,    0,                  B_VX,               O1_U8,              BT_FN_UV16QI_UCHAR)
+B_DEF      (s390_vec_splat_s8,          vec_splatsv16qi,    0,                  B_VX,               O1_S8,              BT_FN_V16QI_SCHAR)
+B_DEF      (s390_vec_splat_u16,         vec_splatsv8hi,     0,                  B_VX,               O1_U16,             BT_FN_UV8HI_USHORT)
+B_DEF      (s390_vec_splat_s16,         vec_splatsv8hi,     0,                  B_VX,               O1_S16,             BT_FN_V8HI_SHORT)
+B_DEF      (s390_vec_splat_u32,         vec_splatsv4si,     0,                  B_VX,               O1_U16,             BT_FN_UV4SI_USHORT)
+B_DEF      (s390_vec_splat_s32,         vec_splatsv4si,     0,                  B_VX,               O1_S16,             BT_FN_V4SI_SHORT)
+B_DEF      (s390_vec_splat_u64,         vec_splatsv2di,     0,                  B_VX,               O1_U16,             BT_FN_UV2DI_USHORT)
+B_DEF      (s390_vec_splat_s64,         vec_splatsv2di,     0,                  B_VX,               O1_S16,             BT_FN_V2DI_SHORT)
+
 OB_DEF     (s390_vec_insert,            s390_vec_insert_s8, s390_vec_insert_dbl,B_VX,               BT_FN_OV4SI_INT_OV4SI_INT)
 OB_DEF_VAR (s390_vec_insert_s8,         s390_vlvgb,         O3_ELEM,            BT_OV_V16QI_SCHAR_V16QI_INT)
 OB_DEF_VAR (s390_vec_insert_u8,         s390_vlvgb,         O3_ELEM,            BT_OV_UV16QI_UCHAR_UV16QI_INT)
