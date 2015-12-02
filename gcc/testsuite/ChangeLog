@@ -1,5 +1,16 @@
 2015-12-02  Tom de Vries  <tom@codesourcery.com>
 
+	* c-c++-common/goacc/kernels-alias-2.c: New test.
+	* c-c++-common/goacc/kernels-alias-3.c: New test.
+	* c-c++-common/goacc/kernels-alias-4.c: New test.
+	* c-c++-common/goacc/kernels-alias-5.c: New test.
+	* c-c++-common/goacc/kernels-alias-6.c: New test.
+	* c-c++-common/goacc/kernels-alias-7.c: New test.
+	* c-c++-common/goacc/kernels-alias-8.c: New test.
+	* c-c++-common/goacc/kernels-alias.c: New test.
+
+2015-12-02  Tom de Vries  <tom@codesourcery.com>
+
 	* c-c++-common/goacc/kernels-alias-ipa-pta-2.c: New test.
 	* c-c++-common/goacc/kernels-alias-ipa-pta-3.c: New test.
 	* c-c++-common/goacc/kernels-alias-ipa-pta.c: New test.
