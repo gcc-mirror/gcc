@@ -40,7 +40,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    the template should it be necessary to change the current branch
    position.  */
 #define NOFFSETS 2
-static int fixup_branch_offset[NOFFSETS] = { 32, -4 };
+static int fixup_branch_offset[NOFFSETS] = { -4, 32 };
 
 #define GET_FIELD(X, FROM, TO) \
   ((X) >> (31 - (TO)) & ((1 << ((TO) - (FROM) + 1)) - 1))
@@ -66,6 +66,7 @@ __canonicalize_funcptr_for_compare (fptr_t fptr)
 {
   static unsigned int fixup_plabel[2];
   static fixup_t fixup;
+  static unsigned int *init_fixup;
   unsigned int *plabel, *got;
 
   /* -1 and page 0 are special.  -1 is used in crtend to mark the end of
@@ -88,9 +89,11 @@ __canonicalize_funcptr_for_compare (fptr_t fptr)
     return plabel[0];
 
   /* Initialize our plabel for calling fixup if we haven't done so already.
-     This code needs to be thread safe but we don't have to be too careful
-     as the result is invariant.  */
-  if (!fixup)
+     We can't rely on static initialization so we check that any previous
+     initialization was done for the current got address.  This code needs
+     to be thread safe but we don't have to be too careful as the result
+     is invariant.  */
+  if (init_fixup != got)
     {
       int i;
       unsigned int *iptr;
@@ -121,6 +124,9 @@ __canonicalize_funcptr_for_compare (fptr_t fptr)
       fixup_plabel[0] = (unsigned int) iptr + 8;  /* address of fixup */
       fixup_plabel[1] = got[-1];		  /* ltp for fixup */
       fixup = (fixup_t) ((int) fixup_plabel | 3);
+
+      /* Save address of the global offset table.  */
+      init_fixup = got;
     }
 
   /* Call fixup to resolve the function address.  got[1] contains the
