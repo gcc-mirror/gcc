@@ -1,3 +1,8 @@
+2015-12-02  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/68162
+	* gcc.dg/pr68162-1.c: New test.
+
 2015-12-02  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
