@@ -87,7 +87,11 @@ scop_get_reads (scop_p scop, vec<poly_bb_p> pbbs)
     {
       FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
 	if (pdr_read_p (pdr))
-	  res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
+	  {
+	    if (dump_file)
+	      print_pdr (dump_file, pdr);
+	    res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
+	  }
     }
 
   return res;
@@ -108,7 +112,11 @@ scop_get_must_writes (scop_p scop, vec<poly_bb_p> pbbs)
     {
       FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
 	if (pdr_write_p (pdr))
-	  res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
+	  {
+	    if (dump_file)
+	      print_pdr (dump_file, pdr);
+	    res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
+	  }
     }
 
   return res;
@@ -129,7 +137,12 @@ scop_get_may_writes (scop_p scop, vec<poly_bb_p> pbbs)
     {
       FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
 	if (pdr_may_write_p (pdr))
-	  res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
+	  {
+	    if (dump_file)
+	      print_pdr (dump_file, pdr);
+
+	    res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
+	  }
     }
 
   return res;
@@ -312,6 +325,36 @@ compute_deps (scop_p scop, vec<poly_bb_p> pbbs,
   isl_space *space = isl_union_map_get_space (all_writes);
   isl_union_map *empty = isl_union_map_empty (space);
   isl_union_map *original = scop_get_original_schedule (scop, pbbs);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "\n--- Documentation for datarefs dump: ---\n");
+      fprintf (dump_file, "Statements on the iteration domain are mapped to"
+	       " array references.\n");
+      fprintf (dump_file, "  To read the following data references:\n\n");
+      fprintf (dump_file, "  S_5[i0] -> [106] : i0 >= 0 and i0 <= 3\n");
+      fprintf (dump_file, "  S_8[i0] -> [1, i0] : i0 >= 0 and i0 <= 3\n\n");
+
+      fprintf (dump_file, "  S_5[i0] is the dynamic instance of statement"
+	       " bb_5 in a loop that accesses all iterations 0 <= i0 <= 3.\n");
+      fprintf (dump_file, "  [1, i0] is a 'memref' with alias set 1"
+	       " and first subscript access i0.\n");
+      fprintf (dump_file, "  [106] is a 'scalar reference' which is the sum of"
+	       " SSA_NAME_VERSION 6"
+	       " and --param graphite-max-arrays-per-scop=100\n");
+      fprintf (dump_file, "-----------------------\n\n");
+
+      fprintf (dump_file, "data references (\n");
+      fprintf (dump_file, "  reads: ");
+      print_isl_union_map (dump_file, reads);
+      fprintf (dump_file, "  must_writes: ");
+      print_isl_union_map (dump_file, must_writes);
+      fprintf (dump_file, "  may_writes: ");
+      print_isl_union_map (dump_file, may_writes);
+      fprintf (dump_file, "  all_writes: ");
+      print_isl_union_map (dump_file, all_writes);
+      fprintf (dump_file, ")\n");
+    }
 
   isl_union_map_compute_flow (isl_union_map_copy (reads),
 			      isl_union_map_copy (must_writes),

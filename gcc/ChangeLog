@@ -1,6 +1,16 @@
 2015-12-02  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	* graphite-dependences.c (scop_get_reads): Add extra dumps.
+	(scop_get_must_writes): Same.
+	(scop_get_may_writes): Same.
+	(compute_deps): Same.
+	* graphite-sese-to-poly.c (bounds_are_valid): New.
+	(pdr_add_data_dimensions): Call bounds_are_valid.
+
+2015-12-02  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
 	* common.opt (flag_loop_optimize_isl): Renamed flag_loop_nest_optimize.
 	* graphite-poly.c (apply_poly_transforms): Same.
 	* graphite.c (gate_graphite_transforms): Same.

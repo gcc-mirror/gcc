@@ -1,3 +1,8 @@
+2015-12-02  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* gfortran.dg/graphite/run-id-3.f90: New.
+
 2015-12-02  David Sherwood  <david.sherwood@arm.com>
 
         * gcc.target/aarch64/fmaxmin.c: New test.
