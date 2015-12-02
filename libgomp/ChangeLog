@@ -1,3 +1,12 @@
+2015-12-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/host_data-2.c: Restrict to
+	target openacc_nvidia_accel_selected.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-5.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-3.c: Remove file.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-6.c: Remove file.
+
 2015-12-01  Julian Brown  <julian@codesourcery.com>
 	    James Norris  <James_Norris@mentor.com>
 

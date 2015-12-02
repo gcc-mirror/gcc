@@ -3,6 +3,7 @@
 !
 ! PR fortran/63861
 ! { dg-xfail-if "<http://gcc.gnu.org/PR63861>" { *-*-* } }
+! { dg-excess-errors "TODO" }
 
 module test
 contains
@@ -106,4 +107,3 @@ contains
     !$acc update self (a)
   end subroutine oacc4
 end module test
-! { dg-excess-errors "sorry, unimplemented: directive not yet implemented" }
