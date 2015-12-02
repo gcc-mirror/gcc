@@ -1,3 +1,10 @@
+2015-12-02  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (c_disable_warnings, c_enable_warnings, c_fully_fold)
+	(c_fully_fold_internal, decl_constant_value_for_optimization):
+	Move to c/c-fold.c.
+	* c-common.h: Don't declare decl_constant_value_for_optimization.
+
 2015-12-02  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/68162

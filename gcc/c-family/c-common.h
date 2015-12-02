@@ -809,7 +809,6 @@ extern enum conversion_safety unsafe_conversion_p (location_t, tree, tree,
 						   bool);
 extern bool decl_with_nonnull_addr_p (const_tree);
 extern tree c_fully_fold (tree, bool, bool *);
-extern tree decl_constant_value_for_optimization (tree);
 extern tree c_wrap_maybe_const (tree, bool);
 extern tree c_save_expr (tree);
 extern tree c_common_truthvalue_conversion (location_t, tree);

@@ -728,4 +728,7 @@ extern void
 set_c_expr_source_range (c_expr *expr,
 			 source_range src_range);
 
+/* In c-fold.c */
+extern tree decl_constant_value_for_optimization (tree);
+
 #endif /* ! GCC_C_TREE_H */
