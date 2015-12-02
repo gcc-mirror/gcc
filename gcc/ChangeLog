@@ -1,3 +1,12 @@
+2015-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68625
+	* tree-cfgcleanup.c (cleanup_tree_cfg_bb): Do not call
+	cleanup_control_flow_bb.
+	(cleanup_tree_cfg_1): First perform cleanup_control_flow_bb
+	on all BBs, then cleanup_tree_cfg_bb and finally iterate
+	over the worklist doing both.
+
 2015-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/68432

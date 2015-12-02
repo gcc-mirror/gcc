@@ -614,8 +614,6 @@ fixup_noreturn_call (gimple *stmt)
 static bool
 cleanup_tree_cfg_bb (basic_block bb)
 {
-  bool retval = cleanup_control_flow_bb (bb);
-
   if (tree_forwarder_block_p (bb, false)
       && remove_forwarder_block (bb))
     return true;
@@ -640,7 +638,7 @@ cleanup_tree_cfg_bb (basic_block bb)
 	}
     }
 
-  return retval;
+  return false;
 }
 
 /* Iterate the cfg cleanups, while anything changes.  */
@@ -660,8 +658,26 @@ cleanup_tree_cfg_1 (void)
      recording of edge to CASE_LABEL_EXPR.  */
   start_recording_case_labels ();
 
-  /* Start by iterating over all basic blocks.  We cannot use FOR_EACH_BB_FN,
+  /* We cannot use FOR_EACH_BB_FN for the BB iterations below
      since the basic blocks may get removed.  */
+
+  /* Start by iterating over all basic blocks looking for edge removal
+     opportunities.  Do this first because incoming SSA form may be
+     invalid and we want to avoid performing SSA related tasks such
+     as propgating out a PHI node during BB merging in that state.  */
+  n = last_basic_block_for_fn (cfun);
+  for (i = NUM_FIXED_BLOCKS; i < n; i++)
+    {
+      bb = BASIC_BLOCK_FOR_FN (cfun, i);
+      if (bb)
+	retval |= cleanup_control_flow_bb (bb);
+    }
+
+  /* After doing the above SSA form should be valid (or an update SSA
+     should be required).  */
+
+  /* Continue by iterating over all basic blocks looking for BB merging
+     opportunities.  */
   n = last_basic_block_for_fn (cfun);
   for (i = NUM_FIXED_BLOCKS; i < n; i++)
     {
@@ -682,6 +698,7 @@ cleanup_tree_cfg_1 (void)
       if (!bb)
 	continue;
 
+      retval |= cleanup_control_flow_bb (bb);
       retval |= cleanup_tree_cfg_bb (bb);
     }
 
