@@ -1,5 +1,14 @@
 2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/predicates.md (const_mask_operand): New predicate.
+	* config/s390/s390-builtins.def: Set a smaller bitmask for a few builtins.
+	* config/s390/vector.md: Change predicate from immediate_operand
+	to either const_int_operand or const_mask_operand.  Add special
+	insn conditions on patterns which have to exclude certain values.
+	* config/s390/vx-builtins.md: Likewise.
+
+2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/vector.md ("*vec_set<mode>"): Change shift count
 	mode from DI to SI.
 
