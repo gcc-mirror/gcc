@@ -1,3 +1,12 @@
+2015-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/56383
+	* testsuite/20_util/enable_shared_from_this/56383.cc: New.
+	* include/bits/shared_ptr_base.h (__enable_shared_from_this): Make
+	friend declaration match previous declaration of
+	__enable_shared_from_this_helper.
+	* include/bits/shared_ptr.h (enable_shared_from_this): Likewise.
+
 2015-12-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/bits/fs_path.h (path::_Cmpt): Move definition
