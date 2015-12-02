@@ -1,3 +1,8 @@
+2015-12-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (cstore_si_as_di): New expander.
+	(cstore<mode>4): Use it.
+
 2015-12-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68625
