@@ -1,5 +1,9 @@
 2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.target/s390/zvector/vec-splat-2.c: New test.
+
+2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.target/s390/vector/vec-vrepi-1.c: New test.
 
 2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
