@@ -1,3 +1,11 @@
+2015-12-02  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* common.opt (flag_loop_optimize_isl): Renamed flag_loop_nest_optimize.
+	* graphite-poly.c (apply_poly_transforms): Same.
+	* graphite.c (gate_graphite_transforms): Same.
+	* toplev.c (process_options): Same.
+
 2015-12-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/mips/mips.c (mips_emit_probe_stack_range): Adjust.

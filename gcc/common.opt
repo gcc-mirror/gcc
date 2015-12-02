@@ -1379,7 +1379,7 @@ Common Ignore
 Does nothing. Preserved for backward compatibility.
 
 floop-nest-optimize
-Common Report Var(flag_loop_optimize_isl) Optimization
+Common Report Var(flag_loop_nest_optimize) Optimization
 Enable the ISL based loop nest optimizer.
 
 fstrict-volatile-bitfields
