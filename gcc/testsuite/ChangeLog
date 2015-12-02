@@ -1,3 +1,8 @@
+2015-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68625
+	* gcc.dg/torture/pr68625.c: New testcase.
+
 2015-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/i386/pr68432-1.c: New test.
