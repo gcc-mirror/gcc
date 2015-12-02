@@ -250,4 +250,7 @@ extern void default_setup_incoming_vararg_bounds (cumulative_args_t ca ATTRIBUTE
 						  tree type ATTRIBUTE_UNUSED,
 						  int *pretend_arg_size ATTRIBUTE_UNUSED,
 						  int second_time ATTRIBUTE_UNUSED);
+extern bool default_optab_supported_p (int, machine_mode, machine_mode,
+				       optimization_type);
+
 #endif /* GCC_TARGHOOKS_H */

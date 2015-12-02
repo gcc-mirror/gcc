@@ -11118,7 +11118,8 @@ maybe_build_call_expr_loc (location_t loc, combined_fn fn, tree type,
       if (direct_internal_fn_p (ifn))
 	{
 	  tree_pair types = direct_internal_fn_types (ifn, type, argarray);
-	  if (!direct_internal_fn_supported_p (ifn, types))
+	  if (!direct_internal_fn_supported_p (ifn, types,
+					       OPTIMIZE_FOR_BOTH))
 	    return NULL_TREE;
 	}
       return build_call_expr_internal_loc_array (loc, ifn, type, n, argarray);

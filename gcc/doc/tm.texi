@@ -6425,6 +6425,20 @@ Define this macro if a non-short-circuit operation produced by
 @code{BRANCH_COST} is greater than or equal to the value 2.
 @end defmac
 
+@deftypefn {Target Hook} bool TARGET_OPTAB_SUPPORTED_P (int @var{op}, machine_mode @var{mode1}, machine_mode @var{mode2}, optimization_type @var{opt_type})
+Return true if the optimizers should use optab @var{op} with
+modes @var{mode1} and @var{mode2} for optimization type @var{opt_type}.
+The optab is known to have an associated @file{.md} instruction
+whose C condition is true.  @var{mode2} is only meaningful for conversion
+optabs; for direct optabs it is a copy of @var{mode1}.
+
+For example, when called with @var{op} equal to @code{rint_optab} and
+@var{mode1} equal to @code{DFmode}, the hook should say whether the
+optimizers should use optab @code{rintdf2}.
+
+The default hook returns true for all inputs.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_RTX_COSTS (rtx @var{x}, machine_mode @var{mode}, int @var{outer_code}, int @var{opno}, int *@var{total}, bool @var{speed})
 This target hook describes the relative costs of RTL expressions.
 

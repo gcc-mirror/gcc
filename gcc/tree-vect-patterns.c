@@ -1056,7 +1056,9 @@ vect_recog_pow_pattern (vec<gimple *> *stmts, tree *type_in,
       && real_equal (&TREE_REAL_CST (exp), &dconsthalf))
     {
       *type_in = get_vectype_for_scalar_type (TREE_TYPE (base));
-      if (*type_in && direct_internal_fn_supported_p (IFN_SQRT, *type_in))
+      if (*type_in
+	  && direct_internal_fn_supported_p (IFN_SQRT, *type_in,
+					     OPTIMIZE_FOR_SPEED))
 	{
 	  gcall *stmt = gimple_build_call_internal (IFN_SQRT, 1, base);
 	  var = vect_recog_temp_ssa_var (TREE_TYPE (base), stmt);

@@ -1681,7 +1681,8 @@ vectorizable_internal_function (combined_fn cfn, tree fndecl,
 	{
 	  tree type0 = (info.type0 < 0 ? vectype_out : vectype_in);
 	  tree type1 = (info.type1 < 0 ? vectype_out : vectype_in);
-	  if (direct_internal_fn_supported_p (ifn, tree_pair (type0, type1)))
+	  if (direct_internal_fn_supported_p (ifn, tree_pair (type0, type1),
+					      OPTIMIZE_FOR_SPEED))
 	    return ifn;
 	}
     }

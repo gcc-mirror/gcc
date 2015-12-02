@@ -1,3 +1,9 @@
+2015-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/i386/pr68432-1.c: New test.
+	* gcc.target/i386/pr68432-2.c: Likewise.
+	* gcc.target/i386/pr68432-3.c: Likewise.
+
 2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/zvector/vec-splat-2.c: New test.

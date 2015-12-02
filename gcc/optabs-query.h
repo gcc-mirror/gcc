@@ -46,6 +46,9 @@ convert_optab_handler (convert_optab op, machine_mode to_mode,
   return raw_optab_handler (scode);
 }
 
+enum insn_code convert_optab_handler (convert_optab, machine_mode,
+				      machine_mode, optimization_type);
+
 /* Return the insn used to implement mode MODE of OP, or CODE_FOR_nothing
    if the target does not have such an insn.  */
 
@@ -54,6 +57,9 @@ direct_optab_handler (direct_optab op, machine_mode mode)
 {
   return optab_handler (op, mode);
 }
+
+enum insn_code direct_optab_handler (convert_optab, machine_mode,
+				     optimization_type);
 
 /* Return true if UNOPTAB is for a trapping-on-overflow operation.  */
 
