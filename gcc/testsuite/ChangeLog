@@ -1,5 +1,10 @@
 2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* lib/target-supports.exp: Add s390 and s390x to the list of long
+	long atomic targets.
+
+2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.dg/optimize-bswapdi-1.c: Force using -mzarch on s390 and
 	s390x to enable 64 bit bswap patterns.
 	* gcc.dg/optimize-bswapdi-2.c: Likewise.
