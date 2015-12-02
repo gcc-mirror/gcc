@@ -1,3 +1,9 @@
+2015-12-02  David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64.md: New pattern.
+	* config/aarch64/aarch64-simd.md: Likewise.
+	* config/aarch64/iterators.md: New unspecs, iterators.
+
 2015-12-02  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* dwarf2out.c (dwar2out_var_location): In addition to notes,

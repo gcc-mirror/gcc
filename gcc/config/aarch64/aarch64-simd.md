@@ -1962,6 +1962,17 @@
   [(set_attr "type" "neon_fp_minmax_<Vetype><q>")]
 )
 
+;; Auto-vectorized forms for the IEEE-754 fmax()/fmin() functions
+(define_insn "<fmaxmin><mode>3"
+  [(set (match_operand:VDQF 0 "register_operand" "=w")
+	(unspec:VDQF [(match_operand:VDQF 1 "register_operand" "w")
+		      (match_operand:VDQF 2 "register_operand" "w")]
+		      FMAXMIN))]
+  "TARGET_SIMD"
+  "<fmaxmin_op>\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "type" "neon_fp_minmax_<Vetype><q>")]
+)
+
 ;; 'across lanes' add.
 
 (define_expand "reduc_plus_scal_<mode>"

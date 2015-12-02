@@ -4569,6 +4569,17 @@
   [(set_attr "type" "f_minmax<s>")]
 )
 
+;; Scalar forms for the IEEE-754 fmax()/fmin() functions
+(define_insn "<fmaxmin><mode>3"
+  [(set (match_operand:GPF 0 "register_operand" "=w")
+	(unspec:GPF [(match_operand:GPF 1 "register_operand" "w")
+		     (match_operand:GPF 2 "register_operand" "w")]
+		     FMAXMIN))]
+  "TARGET_FLOAT"
+  "<fmaxmin_op>\\t%<s>0, %<s>1, %<s>2"
+  [(set_attr "type" "f_minmax<s>")]
+)
+
 ;; For copysign (x, y), we want to generate:
 ;;
 ;;   LDR d2, #(1 << 63)
