@@ -3061,3 +3061,161 @@ needs_barrier_p (rtx x)
 	  && GET_CODE (SET_DEST (x)) == PC
 	  && GET_CODE (SET_SRC (x)) == LABEL_REF);
 }
+
+#define NS "NULL"
+#define ZS "'\\0'"
+#define OPTAB_CL(o, p, c, b, l)    { #o, p, #b, ZS, #l, o, c, UNKNOWN, 1 },
+#define OPTAB_CX(o, p) { #o, p, NULL, NULL, NULL, o, UNKNOWN, UNKNOWN, 1 },
+#define OPTAB_CD(o, p) { #o, p, NS, ZS, NS, o, UNKNOWN, UNKNOWN, 2 },
+#define OPTAB_NL(o, p, c, b, s, l) { #o, p, #b, #s, #l, o, c, c, 3 },
+#define OPTAB_NC(o, p, c)          { #o, p, NS, ZS, NS, o, c, c, 3 },
+#define OPTAB_NX(o, p) { #o, p, NULL, NULL, NULL, o, UNKNOWN, UNKNOWN, 3 },
+#define OPTAB_VL(o, p, c, b, s, l) { #o, p, #b, #s, #l, o, c, UNKNOWN, 3 },
+#define OPTAB_VC(o, p, c)          { #o, p, NS, ZS, NS, o, c, UNKNOWN, 3 },
+#define OPTAB_VX(o, p) { #o, p, NULL, NULL, NULL, o, UNKNOWN, UNKNOWN, 3 },
+#define OPTAB_DC(o, p, c)          { #o, p, NS, ZS, NS, o, c, c, 4 },
+#define OPTAB_D(o, p)  { #o, p, NS, ZS, NS, o, UNKNOWN, UNKNOWN, 4 },
+
+/* An array of all optabs.  Note that the same optab can appear more
+   than once, with a different pattern.  */
+optab_def optabs[] = {
+  { "unknown_optab", NULL, NS, ZS, NS, unknown_optab, UNKNOWN, UNKNOWN, 0 },
+#include "optabs.def"
+};
+
+/* The number of entries in optabs[].  */
+unsigned int num_optabs = ARRAY_SIZE (optabs);
+
+#undef OPTAB_CL
+#undef OPTAB_CX
+#undef OPTAB_CD
+#undef OPTAB_NL
+#undef OPTAB_NC
+#undef OPTAB_NX
+#undef OPTAB_VL
+#undef OPTAB_VC
+#undef OPTAB_VX
+#undef OPTAB_DC
+#undef OPTAB_D
+
+/* Return true if instruction NAME matches pattern PAT, storing information
+   about the match in P if so.  */
+
+static bool
+match_pattern (optab_pattern *p, const char *name, const char *pat)
+{
+  bool force_float = false;
+  bool force_int = false;
+  bool force_partial_int = false;
+  bool force_fixed = false;
+
+  if (pat == NULL)
+    return false;
+  for (; ; ++pat)
+    {
+      if (*pat != '$')
+	{
+	  if (*pat != *name++)
+	    return false;
+	  if (*pat == '\0')
+	    return true;
+	  continue;
+	}
+      switch (*++pat)
+	{
+	case 'I':
+	  force_int = 1;
+	  break;
+	case 'P':
+	  force_partial_int = 1;
+	  break;
+	case 'F':
+	  force_float = 1;
+	  break;
+	case 'Q':
+	  force_fixed = 1;
+	  break;
+
+	case 'a':
+	case 'b':
+	  {
+	    int i;
+
+	    /* This loop will stop at the first prefix match, so
+	       look through the modes in reverse order, in case
+	       there are extra CC modes and CC is a prefix of the
+	       CC modes (as it should be).  */
+	    for (i = (MAX_MACHINE_MODE) - 1; i >= 0; i--)
+	      {
+		const char *p, *q;
+		for (p = GET_MODE_NAME (i), q = name; *p; p++, q++)
+		  if (TOLOWER (*p) != *q)
+		    break;
+		if (*p == 0
+		    && (! force_int || mode_class[i] == MODE_INT
+			|| mode_class[i] == MODE_VECTOR_INT)
+		    && (! force_partial_int
+			|| mode_class[i] == MODE_INT
+			|| mode_class[i] == MODE_PARTIAL_INT
+			|| mode_class[i] == MODE_VECTOR_INT)
+		    && (! force_float
+			|| mode_class[i] == MODE_FLOAT
+			|| mode_class[i] == MODE_DECIMAL_FLOAT
+			|| mode_class[i] == MODE_COMPLEX_FLOAT
+			|| mode_class[i] == MODE_VECTOR_FLOAT)
+		    && (! force_fixed
+			|| mode_class[i] == MODE_FRACT
+			|| mode_class[i] == MODE_UFRACT
+			|| mode_class[i] == MODE_ACCUM
+			|| mode_class[i] == MODE_UACCUM
+			|| mode_class[i] == MODE_VECTOR_FRACT
+			|| mode_class[i] == MODE_VECTOR_UFRACT
+			|| mode_class[i] == MODE_VECTOR_ACCUM
+			|| mode_class[i] == MODE_VECTOR_UACCUM))
+		  break;
+	      }
+
+	    if (i < 0)
+	      return false;
+	    name += strlen (GET_MODE_NAME (i));
+	    if (*pat == 'a')
+	      p->m1 = i;
+	    else
+	      p->m2 = i;
+
+	    force_int = false;
+	    force_partial_int = false;
+	    force_float = false;
+	    force_fixed = false;
+	  }
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+}
+
+/* Return true if NAME is the name of an optab, describing it in P if so.  */
+
+bool
+find_optab (optab_pattern *p, const char *name)
+{
+  if (*name == 0 || *name == '*')
+    return false;
+
+  /* See if NAME matches one of the patterns we have for the optabs
+     we know about.  */
+  for (unsigned int pindex = 0; pindex < ARRAY_SIZE (optabs); pindex++)
+    {
+      p->m1 = p->m2 = 0;
+      if (match_pattern (p, name, optabs[pindex].pattern))
+	{
+	  p->name = name;
+	  p->op = optabs[pindex].op;
+	  p->sort_num = (p->op << 16) | (p->m2 << 8) | p->m1;
+	  return true;
+	}
+    }
+  return false;
+}

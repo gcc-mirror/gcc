@@ -51,6 +51,8 @@ struct clobber_ent
 
 static void output_peephole2_scratches	(rtx);
 
+/* True for <X>_optab if that optab isn't allowed to fail.  */
+static bool nofail_optabs[NUM_OPTABS];
 
 static void
 print_code (RTX_CODE code)
@@ -285,6 +287,28 @@ gen_emit_seq (rtvec vec, char *used)
     }
 }
 
+/* Emit the given C code to the output file.  The code is allowed to
+   fail if CAN_FAIL_P.  NAME describes what we're generating,
+   for use in error messages.  */
+
+static void
+emit_c_code (const char *code, bool can_fail_p, const char *name)
+{
+  if (can_fail_p)
+    printf ("#define FAIL return (end_sequence (), _val)\n");
+  else
+    printf ("#define FAIL _Pragma (\"GCC error \\\"%s cannot FAIL\\\"\")"
+	    " (void)0\n", name);
+  printf ("#define DONE return (_val = get_insns (),"
+	  "end_sequence (), _val)\n");
+
+  print_md_ptr_loc (code);
+  printf ("%s\n", code);
+
+  printf ("#undef DONE\n");
+  printf ("#undef FAIL\n");
+}
+
 /* Generate the `gen_...' function for a DEFINE_INSN.  */
 
 static void
@@ -478,8 +502,15 @@ gen_expand (md_rtx_info *info)
 
       /* Output the special code to be executed before the sequence
 	 is generated.  */
-      print_md_ptr_loc (XSTR (expand, 3));
-      printf ("%s\n", XSTR (expand, 3));
+      optab_pattern p;
+      bool can_fail_p = true;
+      if (find_optab (&p, XSTR (expand, 0)))
+	{
+	  gcc_assert (p.op < NUM_OPTABS);
+	  if (nofail_optabs[p.op])
+	    can_fail_p = false;
+	}
+      emit_c_code (XSTR (expand, 3), can_fail_p, XSTR (expand, 0));
 
       /* Output code to copy the arguments back out of `operands'
 	 (unless we aren't going to use them at all).  */
@@ -569,10 +600,7 @@ gen_split (md_rtx_info *info)
      before the actual construction.  */
 
   if (XSTR (split, 3))
-    {
-      print_md_ptr_loc (XSTR (split, 3));
-      printf ("%s\n", XSTR (split, 3));
-    }
+    emit_c_code (XSTR (split, 3), true, name);
 
   /* Output code to copy the arguments back out of `operands'  */
   for (i = 0; i < stats.num_operand_vars; i++)
@@ -724,6 +752,10 @@ main (int argc, char **argv)
   if (!init_rtx_reader_args (argc, argv))
     return (FATAL_EXIT_CODE);
 
+#define DEF_INTERNAL_OPTAB_FN(NAME, FLAGS, OPTAB, TYPE) \
+  nofail_optabs[OPTAB##_optab] = true;
+#include "internal-fn.def"
+
   /* Assign sequential codes to all entries in the machine description
      in parallel with the tables in insn-output.c.  */
 
@@ -764,8 +796,6 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"ggc.h\"\n");
   printf ("#include \"dumpfile.h\"\n");
   printf ("#include \"target.h\"\n\n");
-  printf ("#define FAIL return (end_sequence (), _val)\n");
-  printf ("#define DONE return (_val = get_insns (), end_sequence (), _val)\n\n");
 
   /* Read the machine description.  */
 

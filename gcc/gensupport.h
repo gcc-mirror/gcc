@@ -39,6 +39,91 @@ struct md_rtx_info {
   int index;
 };
 
+#define OPTAB_CL(name, pat, c, b, l)		name,
+#define OPTAB_CX(name, pat)
+#define OPTAB_CD(name, pat)			name,
+#define OPTAB_NL(name, pat, c, b, s, l)		name,
+#define OPTAB_NC(name, pat, c)			name,
+#define OPTAB_NX(name, pat)
+#define OPTAB_VL(name, pat, c, b, s, l)		name,
+#define OPTAB_VC(name, pat, c)			name,
+#define OPTAB_VX(name, pat)
+#define OPTAB_DC(name, pat, c)			name,
+#define OPTAB_D(name, pat)			name,
+
+/* Enumerates all optabs.  */
+typedef enum optab_tag {
+  unknown_optab,
+#include "optabs.def"
+  NUM_OPTABS
+} optab;
+
+#undef OPTAB_CL
+#undef OPTAB_CX
+#undef OPTAB_CD
+#undef OPTAB_NL
+#undef OPTAB_NC
+#undef OPTAB_NX
+#undef OPTAB_VL
+#undef OPTAB_VC
+#undef OPTAB_VX
+#undef OPTAB_DC
+#undef OPTAB_D
+
+/* Describes one entry in optabs.def.  */
+struct optab_def
+{
+  /* The name of the optab (e.g. "add_optab").  */
+  const char *name;
+
+  /* The pattern that matching define_expands and define_insns have.
+     See the comment at the head of optabs.def for details.  */
+  const char *pattern;
+
+  /* The initializers (in the form of C code) for the libcall_basename,
+     libcall_suffix and libcall_gen fields of (convert_)optab_libcall_d.  */
+  const char *base;
+  const char *suffix;
+  const char *libcall;
+
+  /* The optab's enum value.  */
+  unsigned int op;
+
+  /* The value returned by optab_to_code (OP).  */
+  enum rtx_code fcode;
+
+  /* CODE if code_to_optab (CODE) should return OP, otherwise UNKNOWN.  */
+  enum rtx_code rcode;
+
+  /* 1: conversion optabs with libcall data,
+     2: conversion optabs without libcall data,
+     3: non-conversion optabs with libcall data ("normal" and "overflow"
+        optabs in the optabs.def comment)
+     4: non-conversion optabs without libcall data ("direct" optabs).  */
+  unsigned int kind;
+};
+
+extern optab_def optabs[];
+extern unsigned int num_optabs;
+
+/* Information about an instruction name that matches an optab pattern.  */
+struct optab_pattern
+{
+  /* The name of the instruction.  */
+  const char *name;
+
+  /* The matching optab.  */
+  unsigned int op;
+
+  /* The optab modes.  M2 is only significant for conversion optabs;
+     it is zero otherwise.  */
+  unsigned int m1, m2;
+
+  /* An index that provides a lexicographical sort of (OP, M2, M1).
+     Used by genopinit.c.  */
+  unsigned int sort_num;
+};
+
 extern rtx add_implicit_parallel (rtvec);
 extern bool init_rtx_reader_args_cb (int, char **, bool (*)(const char *));
 extern bool init_rtx_reader_args (int, char **);
@@ -135,5 +220,6 @@ extern void compute_test_codes (rtx, file_location, char *);
 extern file_location get_file_location (rtx);
 extern const char *get_emit_function (rtx);
 extern bool needs_barrier_p (rtx);
+extern bool find_optab (optab_pattern *, const char *);
 
 #endif /* GCC_GENSUPPORT_H */
