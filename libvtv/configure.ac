@@ -6,6 +6,8 @@ AC_INIT([GNU Vtable Verification Runtime Library], 1.0,,[libvtv])
 #AC_INIT(package-unused, version-unused, libvtv)
 AC_CONFIG_SRCDIR([vtv_rts.h])
 
+AM_ENABLE_MULTILIB(, ..)
+
 # -------
 # Options
 # -------
@@ -73,7 +75,6 @@ fi
 AM_CONDITIONAL(ENABLE_VTABLE_VERIFY, test $use_vtable_verify = yes)
 
 AM_INIT_AUTOMAKE(foreign no-dist)
-AM_ENABLE_MULTILIB(, ..)
 AM_MAINTAINER_MODE
 
 LIBVTV_CONFIGURE
