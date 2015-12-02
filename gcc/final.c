@@ -2995,7 +2995,8 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	    && targetm.asm_out.unwind_emit)
 	  targetm.asm_out.unwind_emit (asm_out_file, insn);
 
-	if (rtx_call_insn *call_insn = dyn_cast <rtx_call_insn *> (insn))
+	rtx_call_insn *call_insn = dyn_cast <rtx_call_insn *> (insn);
+	if (call_insn != NULL)
 	  {
 	    rtx x = call_from_call_insn (call_insn);
 	    x = XEXP (x, 0);
@@ -3007,8 +3008,6 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		if (t)
 		  assemble_external (t);
 	      }
-	    if (!DECL_IGNORED_P (current_function_decl))
-	      debug_hooks->var_location (insn);
 	  }
 
 	/* Output assembler code from the template.  */
@@ -3023,6 +3022,12 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	if (!targetm.asm_out.unwind_emit_before_insn
 	    && targetm.asm_out.unwind_emit)
 	  targetm.asm_out.unwind_emit (asm_out_file, insn);
+
+	/* Let the debug info back-end know about this call.  We do this only
+	   after the instruction has been emitted because labels that may be
+	   created to reference the call instruction must appear after it.  */
+	if (call_insn != NULL && !DECL_IGNORED_P (current_function_decl))
+	  debug_hooks->var_location (insn);
 
 	current_output_insn = debug_insn = 0;
       }

@@ -1,3 +1,12 @@
+2015-12-02  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.c (dwar2out_var_location): In addition to notes,
+	process indirect calls whose target is compile-time known.
+	Enhance pattern matching to get the SYMBOL_REF they embed.
+	(gen_subprogram_die): Handle such calls.
+	* final.c (final_scan_insn): For call instructions, invoke the
+	var_location debug hook only after the call has been emitted.
+
 2015-12-02  Tom de Vries  <tom@codesourcery.com>
 
 	* gimplify.c (enum gimplify_omp_var_data): Add enum value
