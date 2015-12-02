@@ -1883,6 +1883,17 @@ cp_fully_fold (tree x)
   return cp_fold (x);
 }
 
+/* c-common interface to cp_fold.  If IN_INIT, this is in a static initializer
+   and certain changes are made to the folding done.  Or should be (FIXME).  We
+   never touch maybe_const, as it is only used for the C front-end
+   C_MAYBE_CONST_EXPR.  */
+
+tree
+c_fully_fold (tree x, bool /*in_init*/, bool */*maybe_const*/)
+{
+  return cp_fold (x);
+}
+
 static GTY((cache, deletable)) cache_map fold_cache;
 
 /*  This function tries to fold an expression X.
