@@ -1944,9 +1944,9 @@ cp_fold (tree x)
       op0 = cp_fold (op0);
 
       if (op0 != TREE_OPERAND (x, 0))
-        x = build1_loc (loc, code, TREE_TYPE (x), op0);
-
-      x = fold (x);
+        x = fold_build1_loc (loc, code, TREE_TYPE (x), op0);
+      else
+	x = fold (x);
 
       /* Conversion of an out-of-range value has implementation-defined
 	 behavior; the language considers it different from arithmetic
@@ -1976,9 +1976,9 @@ cp_fold (tree x)
       op0 = cp_fold (TREE_OPERAND (x, 0));
 
       if (op0 != TREE_OPERAND (x, 0))
-        x = build1_loc (loc, code, TREE_TYPE (x), op0);
-
-      x = fold (x);
+        x = fold_build1_loc (loc, code, TREE_TYPE (x), op0);
+      else
+	x = fold (x);
 
       gcc_assert (TREE_CODE (x) != COND_EXPR
 		  || !VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (x, 0))));
@@ -2048,9 +2048,9 @@ cp_fold (tree x)
 	op0 = build_empty_stmt (loc);
 
       if (op0 != TREE_OPERAND (x, 0) || op1 != TREE_OPERAND (x, 1))
-	x = build2_loc (loc, code, TREE_TYPE (x), op0, op1);
-
-      x = fold (x);
+	x = fold_build2_loc (loc, code, TREE_TYPE (x), op0, op1);
+      else
+	x = fold (x);
 
       if (TREE_CODE (x) == COMPOUND_EXPR && TREE_OPERAND (x, 0) == NULL_TREE
 	  && TREE_OPERAND (x, 1))

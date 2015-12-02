@@ -1,3 +1,7 @@
+2015-12-02  Jason Merrill  <jason@redhat.com>
+
+	* cp-gimplify.c (cp_fold): Use fold_build*.
+
 2015-12-02  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/68162
