@@ -978,7 +978,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, uint64_t mask,
 
 	  if (gfc_match_omp_variable_list (" :",
 					   &c->lists[OMP_LIST_REDUCTION],
-					   false, NULL, &head) == MATCH_YES)
+					   false, NULL, &head, openacc)
+	      == MATCH_YES)
 	    {
 	      gfc_omp_namelist *n;
 	      if (rop == OMP_REDUCTION_NONE)
@@ -3313,6 +3314,11 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		       n->sym->name, &n->where);
 	  else
 	    n->sym->mark = 1;
+
+	  /* OpenACC does not support reductions on arrays.  */
+	  if (n->sym->as)
+	    gfc_error ("Array %qs is not permitted in reduction at %L",
+		       n->sym->name, &n->where);
 	}
     }
   

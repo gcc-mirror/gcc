@@ -45,3 +45,6 @@ contains
     !$acc update self (a) ! { dg-error "Assumed rank" }
   end subroutine assumed_rank
 end module test
+
+! { dg-error "Array 'a' is not permitted in reduction" "" { target "*-*-*" } 18 }
+! { dg-error "Array 'a' is not permitted in reduction" "" { target "*-*-*" } 39 }
