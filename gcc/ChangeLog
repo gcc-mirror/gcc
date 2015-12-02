@@ -1,3 +1,10 @@
+2015-12-02  Richard Biener  <rguenther@suse.de>
+
+	* tree.h (tree_invariant_p): Declare.
+	* tree.c (tree_invariant_p): Export.
+	* genmatch.c (dt_simplify::gen_1): For GENERIC code-gen never
+	create SAVE_EXPRs but reject patterns if we would need to.
+
 2015-12-02  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call)

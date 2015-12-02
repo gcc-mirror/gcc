@@ -3231,8 +3231,6 @@ decl_address_ip_invariant_p (const_tree op)
    not handle arithmetic; that's handled in skip_simple_arithmetic and
    tree_invariant_p).  */
 
-static bool tree_invariant_p (tree t);
-
 static bool
 tree_invariant_p_1 (tree t)
 {
@@ -3282,7 +3280,7 @@ tree_invariant_p_1 (tree t)
 
 /* Return true if T is function-invariant.  */
 
-static bool
+bool
 tree_invariant_p (tree t)
 {
   tree inner = skip_simple_arithmetic (t);
