@@ -1,3 +1,11 @@
+2015-12-02  Renlin Li  <renlin.li@arm.com>
+
+	Backport from mainline.
+	2014-04-22  Ramana Radhakrishnan <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.c (arm_hard_regno_mode_ok): Loosen
+	restrictions on core registers for DImode values in Thumb2.
+
 2015-11-25  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/67954
