@@ -1,3 +1,15 @@
+2015-12-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/68290
+	* constraint.cc (make_constrained_auto): Move to...
+	* pt.c (make_auto_1): Add set_canonical parameter and set
+	TYPE_CANONICAL on the type only if it is true.
+	(make_decltype_auto): Adjust call to make_auto_1.
+	(make_auto): Likewise.
+	(splice_late_return_type): Likewise.
+	(make_constrained_auto): ...here.  Call make_auto_1 instead of
+	make_auto and pass false.  Set TYPE_CANONICAL directly.
+
 2015-12-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* parser.c (cp_parser_omp_clause_name)
