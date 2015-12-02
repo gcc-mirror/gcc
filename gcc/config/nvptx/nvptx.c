@@ -70,10 +70,15 @@
 /* This file should be included last.  */
 #include "target-def.h"
 
-#define SHUFFLE_UP 0
-#define SHUFFLE_DOWN 1
-#define SHUFFLE_BFLY 2
-#define SHUFFLE_IDX 3
+/* The kind of shuffe instruction.  */
+enum nvptx_shuffle_kind
+{
+  SHUFFLE_UP,
+  SHUFFLE_DOWN,
+  SHUFFLE_BFLY,
+  SHUFFLE_IDX,
+  SHUFFLE_MAX
+};
 
 /* Record the function decls we've written, and the libfuncs and function
    decls corresponding to them.  */
@@ -1221,7 +1226,7 @@ nvptx_gen_pack (rtx dst, rtx src0, rtx src1)
    across the vectors of a single warp.  */
 
 static rtx
-nvptx_gen_shuffle (rtx dst, rtx src, rtx idx, unsigned kind)
+nvptx_gen_shuffle (rtx dst, rtx src, rtx idx, nvptx_shuffle_kind kind)
 {
   rtx res;
 
@@ -2019,10 +2024,11 @@ nvptx_print_operand (FILE *file, rtx x, int code)
 
     case 'S':
       {
-	unsigned kind = UINTVAL (x);
+	nvptx_shuffle_kind kind = (nvptx_shuffle_kind) UINTVAL (x);
+	/* Same order as nvptx_shuffle_kind.  */
 	static const char *const kinds[] = 
-	  {"up", "down", "bfly", "idx"};
-	fprintf (file, ".%s", kinds[kind]);
+	  {".up", ".down", ".bfly", ".idx"};
+	fputs (kinds[kind], file);
       }
       break;
 
@@ -3990,7 +3996,8 @@ nvptx_expand_shuffle (tree exp, rtx target, machine_mode mode, int ignore)
   if (!REG_P (idx) && GET_CODE (idx) != CONST_INT)
     idx = copy_to_mode_reg (SImode, idx);
 
-  rtx pat = nvptx_gen_shuffle (target, src, idx, INTVAL (op));
+  rtx pat = nvptx_gen_shuffle (target, src, idx,
+			       (nvptx_shuffle_kind) INTVAL (op));
   if (pat)
     emit_insn (pat);
 
