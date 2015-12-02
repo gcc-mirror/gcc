@@ -1,3 +1,9 @@
+2015-12-02  Tom de Vries  <tom@codesourcery.com>
+
+	* c-c++-common/goacc/kernels-alias-ipa-pta-2.c: New test.
+	* c-c++-common/goacc/kernels-alias-ipa-pta-3.c: New test.
+	* c-c++-common/goacc/kernels-alias-ipa-pta.c: New test.
+
 2015-12-02  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/vect-strided-a-u8-i8-gap7-big-array.c: Fix uninitialized
