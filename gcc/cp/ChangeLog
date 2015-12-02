@@ -1,3 +1,8 @@
+2015-12-02  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/68162
+	* tree.c (c_build_qualified_type): Add extra arguments.
+
 2015-12-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR c++/68290
