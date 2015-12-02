@@ -1,3 +1,9 @@
+2015-11-27  Jiri Engelthaler  <engycz@gmail.com>
+
+	PR driver/68029
+	* opts-common.c (prune_options): Don't ignore -fdiagnostics-color 
+	if it is the first parameter.
+
 2015-12-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/68577
