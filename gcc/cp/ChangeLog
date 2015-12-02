@@ -1,3 +1,14 @@
+2015-12-02  Andreas Arnez  <arnez@linux.vnet.ibm.com>
+
+	PR gcov-profile/68603
+	* cp-gimplify.c (genericize_cp_loop): For the back-jump's location
+	use the start of the loop body only if the loop is unconditional.
+
+2015-11-26  Andreas Arnez  <arnez@linux.vnet.ibm.com>
+
+	* cp-gimplify.c (genericize_cp_loop): Change LOOP_EXPR's location
+	to start of loop body instead of start of loop.
+
 2015-12-01  Julian Brown  <julian@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    James Norris  <James_Norris@mentor.com>

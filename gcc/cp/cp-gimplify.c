@@ -264,7 +264,9 @@ genericize_cp_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
     }
   else
     {
-      location_t loc = EXPR_LOCATION (expr_first (body));
+      location_t loc = start_locus;
+      if (!cond || integer_nonzerop (cond))
+	loc = EXPR_LOCATION (expr_first (body));
       if (loc == UNKNOWN_LOCATION)
 	loc = start_locus;
       loop = build1_loc (loc, LOOP_EXPR, void_type_node, stmt_list);
