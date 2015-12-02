@@ -5404,6 +5404,7 @@ proc check_effective_target_sync_int_128_runtime { } {
 # Return 1 if the target supports atomic operations on "long long".
 #
 # Note: 32bit x86 targets require -march=pentium in dg-options.
+# Note: 32bit s390 targets require -mzarch in dg-options.
 
 proc check_effective_target_sync_long_long { } {
     if { [istarget x86_64-*-*] || [istarget i?86-*-*])
@@ -5411,6 +5412,7 @@ proc check_effective_target_sync_long_long { } {
 	 || [istarget arm*-*-*]
 	 || [istarget alpha*-*-*]
 	 || ([istarget sparc*-*-*] && [check_effective_target_lp64])
+	 || [istarget s390*-*-*]
 	 || [istarget spu-*-*] } {
 	return 1
     } else {
