@@ -19268,7 +19268,9 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	      rtx tloc = NULL_RTX, tlocc = NULL_RTX;
 	      rtx arg, next_arg;
 
-	      for (arg = NOTE_VAR_LOCATION (ca_loc->call_arg_loc_note);
+	      for (arg = (ca_loc->call_arg_loc_note != NULL_RTX
+			  ? NOTE_VAR_LOCATION (ca_loc->call_arg_loc_note)
+			  : NULL_RTX);
 		   arg; arg = next_arg)
 		{
 		  dw_loc_descr_ref reg, val;
@@ -19291,18 +19293,23 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		    }
 		  if (mode == VOIDmode || mode == BLKmode)
 		    continue;
-		  if (XEXP (XEXP (arg, 0), 0) == pc_rtx)
+		  /* Get dynamic information about call target only if we
+		     have no static information: we cannot generate both
+		     DW_AT_abstract_origin and DW_AT_GNU_call_site_target
+		     attributes.  */
+		  if (ca_loc->symbol_ref == NULL_RTX)
 		    {
-		      gcc_assert (ca_loc->symbol_ref == NULL_RTX);
-		      tloc = XEXP (XEXP (arg, 0), 1);
-		      continue;
-		    }
-		  else if (GET_CODE (XEXP (XEXP (arg, 0), 0)) == CLOBBER
-			   && XEXP (XEXP (XEXP (arg, 0), 0), 0) == pc_rtx)
-		    {
-		      gcc_assert (ca_loc->symbol_ref == NULL_RTX);
-		      tlocc = XEXP (XEXP (arg, 0), 1);
-		      continue;
+		      if (XEXP (XEXP (arg, 0), 0) == pc_rtx)
+			{
+			  tloc = XEXP (XEXP (arg, 0), 1);
+			  continue;
+			}
+		      else if (GET_CODE (XEXP (XEXP (arg, 0), 0)) == CLOBBER
+			       && XEXP (XEXP (XEXP (arg, 0), 0), 0) == pc_rtx)
+			{
+			  tlocc = XEXP (XEXP (arg, 0), 1);
+			  continue;
+			}
 		    }
 		  reg = NULL;
 		  if (REG_P (XEXP (XEXP (arg, 0), 0)))
@@ -22289,6 +22296,7 @@ dwarf2out_var_location (rtx_insn *loc_note)
   char loclabel[MAX_ARTIFICIAL_LABEL_BYTES + 2];
   struct var_loc_node *newloc;
   rtx_insn *next_real, *next_note;
+  rtx_insn *call_insn = NULL;
   static const char *last_label;
   static const char *last_postcall_label;
   static bool last_in_cold_section_p;
@@ -22303,6 +22311,35 @@ dwarf2out_var_location (rtx_insn *loc_note)
 	  call_site_count++;
 	  if (SIBLING_CALL_P (loc_note))
 	    tail_call_site_count++;
+	  if (optimize == 0 && !flag_var_tracking)
+	    {
+	      /* When the var-tracking pass is not running, there is no note
+		 for indirect calls whose target is compile-time known. In this
+		 case, process such calls specifically so that we generate call
+		 sites for them anyway.  */
+	      rtx x = PATTERN (loc_note);
+	      if (GET_CODE (x) == PARALLEL)
+		x = XVECEXP (x, 0, 0);
+	      if (GET_CODE (x) == SET)
+		x = SET_SRC (x);
+	      if (GET_CODE (x) == CALL)
+		x = XEXP (x, 0);
+	      if (!MEM_P (x)
+		  || GET_CODE (XEXP (x, 0)) != SYMBOL_REF
+		  || !SYMBOL_REF_DECL (XEXP (x, 0))
+		  || (TREE_CODE (SYMBOL_REF_DECL (XEXP (x, 0)))
+		      != FUNCTION_DECL))
+		{
+		  call_insn = loc_note;
+		  loc_note = NULL;
+		  var_loc_p = false;
+
+		  next_real = next_real_insn (call_insn);
+		  next_note = NULL;
+		  cached_next_real_insn = NULL;
+		  goto create_label;
+		}
+	    }
 	}
       return;
     }
@@ -22347,6 +22384,8 @@ dwarf2out_var_location (rtx_insn *loc_note)
       && next_real == NULL_RTX
       && !NOTE_DURING_CALL_P (loc_note))
     return;
+
+create_label:
 
   if (next_real == NULL_RTX)
     next_real = get_last_insn ();
@@ -22427,12 +22466,16 @@ dwarf2out_var_location (rtx_insn *loc_note)
 	}
     }
 
+  gcc_assert ((loc_note == NULL_RTX && call_insn != NULL_RTX)
+	      || (loc_note != NULL_RTX && call_insn == NULL_RTX));
+
   if (!var_loc_p)
     {
       struct call_arg_loc_node *ca_loc
 	= ggc_cleared_alloc<call_arg_loc_node> ();
-      rtx_insn *prev = prev_real_insn (loc_note);
-      rtx x;
+      rtx_insn *prev
+        = loc_note != NULL_RTX ? prev_real_insn (loc_note) : call_insn;
+
       ca_loc->call_arg_loc_note = loc_note;
       ca_loc->next = NULL;
       ca_loc->label = last_label;
@@ -22444,15 +22487,27 @@ dwarf2out_var_location (rtx_insn *loc_note)
       if (!CALL_P (prev))
 	prev = as_a <rtx_sequence *> (PATTERN (prev))->insn (0);
       ca_loc->tail_call_p = SIBLING_CALL_P (prev);
-      x = get_call_rtx_from (PATTERN (prev));
+
+      /* Look for a SYMBOL_REF in the "prev" instruction.  */
+      rtx x = get_call_rtx_from (PATTERN (prev));
       if (x)
 	{
-	  x = XEXP (XEXP (x, 0), 0);
-	  if (GET_CODE (x) == SYMBOL_REF
-	      && SYMBOL_REF_DECL (x)
-	      && TREE_CODE (SYMBOL_REF_DECL (x)) == FUNCTION_DECL)
-	    ca_loc->symbol_ref = x;
+	  /* Try to get the call symbol, if any.  */
+	  if (MEM_P (XEXP (x, 0)))
+	    x = XEXP (x, 0);
+	  /* First, look for a memory access to a symbol_ref.  */
+	  if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+	      && SYMBOL_REF_DECL (XEXP (x, 0))
+	      && TREE_CODE (SYMBOL_REF_DECL (XEXP (x, 0))) == FUNCTION_DECL)
+	    ca_loc->symbol_ref = XEXP (x, 0);
+	  /* Otherwise, look at a compile-time known user-level function
+	     declaration.  */
+	  else if (MEM_P (x)
+		   && MEM_EXPR (x)
+		   && TREE_CODE (MEM_EXPR (x)) == FUNCTION_DECL)
+	    ca_loc->symbol_ref = XEXP (DECL_RTL (MEM_EXPR (x)), 0);
 	}
+
       ca_loc->block = insn_scope (prev);
       if (call_arg_locations)
 	call_arg_loc_last->next = ca_loc;
@@ -22460,7 +22515,7 @@ dwarf2out_var_location (rtx_insn *loc_note)
 	call_arg_locations = ca_loc;
       call_arg_loc_last = ca_loc;
     }
-  else if (!NOTE_DURING_CALL_P (loc_note))
+  else if (loc_note != NULL_RTX && !NOTE_DURING_CALL_P (loc_note))
     newloc->label = last_label;
   else
     {
