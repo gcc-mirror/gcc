@@ -122,7 +122,7 @@ apply_poly_transforms (scop_p scop)
   if (flag_loop_parallelize_all)
     transform_done = true;
 
-  if (flag_loop_optimize_isl)
+  if (flag_loop_nest_optimize)
     transform_done |= optimize_isl (scop);
 
   return transform_done;

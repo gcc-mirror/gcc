@@ -372,7 +372,7 @@ gate_graphite_transforms (void)
      is turned on.  */
   if (flag_graphite_identity
       || flag_loop_parallelize_all
-      || flag_loop_optimize_isl)
+      || flag_loop_nest_optimize)
     flag_graphite = 1;
 
   return flag_graphite != 0;

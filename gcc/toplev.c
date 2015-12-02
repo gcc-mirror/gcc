@@ -1237,7 +1237,7 @@ process_options (void)
 
 #ifndef HAVE_isl
   if (flag_graphite
-      || flag_loop_optimize_isl
+      || flag_loop_nest_optimize
       || flag_graphite_identity
       || flag_loop_parallelize_all)
     sorry ("Graphite loop optimizations cannot be used (ISL is not available)" 
