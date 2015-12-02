@@ -1,3 +1,27 @@
+2015-12-02  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx-protos.h (nvptx_output_mov_insn): Declare.
+	(nvptx_underlying_object_mode): Delete.
+	* config/nvptx/nvptx.c (nvptx_underlying_object_mode): Delete.
+	(output_reg): New.
+	(nvptx_declare_function_name): Use output_reg.  Remove punning
+	buffer.
+	(nvptx_output_mov_insn): New.
+	(nvptx_print_operand): Separate SUBREG handling, remove 'f' case,
+	Use output_reg. Merge 't' and 'u' handling.
+	* config/nvptx/nvptx.h (NVPTX_PUNNING_BUFFER_REGNUM): Delete.
+	(struct machine_function): Remvoe punning_buffer_size.
+	(REGISTER_NAMES): Remove %punbuffer.
+	* config/nvptx/nvptx.md (UNSPEC_CPLX_LOWPART,
+	UNSPEC_CPLX_HIGHPART): Delete.
+	(*mov<mode>_insn [QHSDIM): Remove unnecessary constraints, use
+	nvptx_output_mov_insn.
+	(*mov<mode>_insn [SDFM): Reorder constraints to match integer
+	moc.  Use nvptx_output_mov_insn.
+	(highpartscsf2,  set_highpartscsf2, lowpartscsf2,
+	set_lowpartscsf2): Delete.
+	(mov<mode> [SDCM]): Delete.
+
 2015-12-02  Richard Biener  <rguenther@suse.de>
 
 	* tree.h (tree_invariant_p): Declare.

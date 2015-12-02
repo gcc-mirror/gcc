@@ -156,7 +156,6 @@ enum reg_class
 
 #define STACK_POINTER_REGNUM 1
 #define HARD_FRAME_POINTER_REGNUM 2
-#define NVPTX_PUNNING_BUFFER_REGNUM 3
 #define NVPTX_RETURN_REGNUM 4
 #define FRAME_POINTER_REGNUM 15
 #define ARG_POINTER_REGNUM 14
@@ -231,7 +230,6 @@ struct GTY(()) machine_function
   bool has_call_with_sc;
   HOST_WIDE_INT outgoing_stdarg_size;
   int ret_reg_mode; /* machine_mode not defined yet. */
-  int punning_buffer_size;
   rtx axis_predicate[2];
 };
 #endif
@@ -264,7 +262,7 @@ struct GTY(()) machine_function
 
 #define REGISTER_NAMES							\
   {									\
-    "%hr0", "%outargs", "%hfp", "%punbuffer", "%retval", "%retval_in", "%hr6", "%hr7",	\
+    "%hr0", "%outargs", "%hfp", "%hr3", "%retval", "%retval_in", "%hr6", "%hr7",	\
     "%hr8", "%hr9", "%hr10", "%hr11", "%hr12", "%hr13", "%argp", "%frame" \
   }
 

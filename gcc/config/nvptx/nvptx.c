@@ -155,23 +155,6 @@ nvptx_option_override (void)
   worker_red_align = GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT;
 }
 
-/* Return the mode to be used when declaring a ptx object for OBJ.
-   For objects with subparts such as complex modes this is the mode
-   of the subpart.  */
-
-machine_mode
-nvptx_underlying_object_mode (rtx obj)
-{
-  if (GET_CODE (obj) == SUBREG)
-    obj = SUBREG_REG (obj);
-  machine_mode mode = GET_MODE (obj);
-  if (mode == TImode)
-    return DImode;
-  if (COMPLEX_MODE_P (mode))
-    return GET_MODE_INNER (mode);
-  return mode;
-}
-
 /* Return a ptx type for MODE.  If PROMOTE, then use .u32 for QImode to
    deal with ptx ideosyncracies.  */
 
@@ -255,6 +238,37 @@ maybe_split_mode (machine_mode mode)
     return DImode;
 
   return VOIDmode;
+}
+
+/* Output a register, subreg, or register pair (with optional
+   enclosing braces).  */
+
+static void
+output_reg (FILE *file, unsigned regno, machine_mode inner_mode,
+	    int subreg_offset = -1)
+{
+  if (inner_mode == VOIDmode)
+    {
+      if (HARD_REGISTER_NUM_P (regno))
+	fprintf (file, "%s", reg_names[regno]);
+      else
+	fprintf (file, "%%r%d", regno);
+    }
+  else if (subreg_offset >= 0)
+    {
+      output_reg (file, regno, VOIDmode);
+      fprintf (file, "$%d", subreg_offset);
+    }
+  else
+    {
+      if (subreg_offset == -1)
+	fprintf (file, "{");
+      output_reg (file, regno, inner_mode, GET_MODE_SIZE (inner_mode));
+      fprintf (file, ",");
+      output_reg (file, regno, inner_mode, 0);
+      if (subreg_offset == -1)
+	fprintf (file, "}");
+    }
 }
 
 /* Emit forking instructions for MASK.  */
@@ -724,16 +738,12 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
 	{
 	  machine_mode mode = PSEUDO_REGNO_MODE (i);
 	  machine_mode split = maybe_split_mode (mode);
+
 	  if (split != VOIDmode)
-	    {
-	      fprintf (file, "\t.reg%s %%r%d$%d;\n",
-		       nvptx_ptx_type_from_mode (split, true), i, 0);
-	      fprintf (file, "\t.reg%s %%r%d$%d;\n",
-		       nvptx_ptx_type_from_mode (split, true), i, 1);
-	    }
-	  else
-	    fprintf (file, "\t.reg%s %%r%d;\n",
-		     nvptx_ptx_type_from_mode (mode, true), i);
+	    mode = split;
+	  fprintf (file, "\t.reg%s ", nvptx_ptx_type_from_mode (mode, true));
+	  output_reg (file, i, split, -2);
+	  fprintf (file, ";\n");
 	}
     }
 
@@ -751,15 +761,6 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
 	       HOST_WIDE_INT_PRINT_DEC"];\n",
 	       BITS_PER_WORD, sz);
       fprintf (file, "\tcvta.local.u%d %%outargs, %%outargs_ar;\n",
-	       BITS_PER_WORD);
-    }
-
-  if (cfun->machine->punning_buffer_size > 0)
-    {
-      fprintf (file, "\t.reg.u%d %%punbuffer;\n"
-	       "\t.local.align 8 .b8 %%punbuffer_ar[%d];\n",
-	       BITS_PER_WORD, cfun->machine->punning_buffer_size);
-      fprintf (file, "\tcvta.local.u%d %%punbuffer, %%punbuffer_ar;\n",
 	       BITS_PER_WORD);
     }
 
@@ -1755,6 +1756,7 @@ nvptx_globalize_label (FILE *, const char *)
 
 /* Implement TARGET_ASM_ASSEMBLE_UNDEFINED_DECL.  Write an extern
    declaration only for variable DECL with NAME to FILE.  */
+
 static void
 nvptx_assemble_undefined_decl (FILE *file, const char *name, const_tree decl)
 {
@@ -1770,6 +1772,37 @@ nvptx_assemble_undefined_decl (FILE *file, const char *name, const_tree decl)
   if (size > 0)
     fprintf (file, "[" HOST_WIDE_INT_PRINT_DEC"]", size);
   fprintf (file, ";\n\n");
+}
+
+/* Output a pattern for a move instruction.  */
+
+const char *
+nvptx_output_mov_insn (rtx dst, rtx src)
+{
+  machine_mode dst_mode = GET_MODE (dst);
+  machine_mode dst_inner = (GET_CODE (dst) == SUBREG
+			    ? GET_MODE (XEXP (dst, 0)) : dst_mode);
+  machine_mode src_inner = (GET_CODE (src) == SUBREG
+			    ? GET_MODE (XEXP (src, 0)) : dst_mode);
+
+  if (REG_P (dst) && REGNO (dst) == NVPTX_RETURN_REGNUM && dst_mode == HImode)
+    /* Special handling for the return register.  It's never really an
+       HI object, and only occurs as the destination of a move
+       insn.  */
+    dst_inner = SImode;
+
+  if (src_inner == dst_inner)
+    return "%.\tmov%t0\t%0, %1;";
+
+  if (CONSTANT_P (src))
+    return (GET_MODE_CLASS (dst_inner) == MODE_INT
+	    && GET_MODE_CLASS (src_inner) != MODE_FLOAT
+	    ? "%.\tmov%t0\t%0, %1;" : "%.\tmov.b%T0\t%0, %1;");
+
+  if (GET_MODE_SIZE (dst_inner) == GET_MODE_SIZE (src_inner))
+    return "%.\tmov.b%T0\t%0, %1;";
+
+  return "%.\tcvt%t0%t1\t%0, %1;";
 }
 
 /* Output INSN, which is a call to CALLEE with result RESULT.  For ptx, this
@@ -1921,7 +1954,6 @@ nvptx_print_operand_address (FILE *file, machine_mode mode, rtx addr)
 
    A -- print an address space identifier for a MEM
    c -- print an opcode suffix for a comparison operator, including a type code
-   f -- print a full reg even for something that must always be split
    S -- print a shuffle kind specified by CONST_INT
    t -- print a type opcode suffix, promoting QImode to 32 bits
    T -- print a type size in bits
@@ -1930,9 +1962,6 @@ nvptx_print_operand_address (FILE *file, machine_mode mode, rtx addr)
 static void
 nvptx_print_operand (FILE *file, rtx x, int code)
 {
-  rtx orig_x = x;
-  machine_mode op_mode;
-
   if (code == '.')
     {
       x = current_insn_predicate;
@@ -1954,6 +1983,7 @@ nvptx_print_operand (FILE *file, rtx x, int code)
     }
 
   enum rtx_code x_code = GET_CODE (x);
+  machine_mode mode = GET_MODE (x);
 
   switch (code)
     {
@@ -1975,13 +2005,16 @@ nvptx_print_operand (FILE *file, rtx x, int code)
       break;
 
     case 't':
-      op_mode = nvptx_underlying_object_mode (x);
-      fprintf (file, "%s", nvptx_ptx_type_from_mode (op_mode, true));
-      break;
-
     case 'u':
-      op_mode = nvptx_underlying_object_mode (x);
-      fprintf (file, "%s", nvptx_ptx_type_from_mode (op_mode, false));
+      if (x_code == SUBREG)
+	{
+	  mode = GET_MODE (SUBREG_REG (x));
+	  if (mode == TImode)
+	    mode = DImode;
+	  else if (COMPLEX_MODE_P (mode))
+	    mode = GET_MODE_INNER (mode);
+	}
+      fprintf (file, "%s", nvptx_ptx_type_from_mode (mode, code == 't'));
       break;
 
     case 'S':
@@ -1994,7 +2027,7 @@ nvptx_print_operand (FILE *file, rtx x, int code)
       break;
 
     case 'T':
-      fprintf (file, "%d", GET_MODE_BITSIZE (GET_MODE (x)));
+      fprintf (file, "%d", GET_MODE_BITSIZE (mode));
       break;
 
     case 'j':
@@ -2006,14 +2039,14 @@ nvptx_print_operand (FILE *file, rtx x, int code)
       goto common;
 
     case 'c':
-      op_mode = GET_MODE (XEXP (x, 0));
+      mode = GET_MODE (XEXP (x, 0));
       switch (x_code)
 	{
 	case EQ:
 	  fputs (".eq", file);
 	  break;
 	case NE:
-	  if (FLOAT_MODE_P (op_mode))
+	  if (FLOAT_MODE_P (mode))
 	    fputs (".neu", file);
 	  else
 	    fputs (".ne", file);
@@ -2069,38 +2102,39 @@ nvptx_print_operand (FILE *file, rtx x, int code)
 	default:
 	  gcc_unreachable ();
 	}
-      if (FLOAT_MODE_P (op_mode)
+      if (FLOAT_MODE_P (mode)
 	  || x_code == EQ || x_code == NE
 	  || x_code == GEU || x_code == GTU
 	  || x_code == LEU || x_code == LTU)
-	fputs (nvptx_ptx_type_from_mode (op_mode, true), file);
+	fputs (nvptx_ptx_type_from_mode (mode, true), file);
       else
-	fprintf (file, ".s%d", GET_MODE_BITSIZE (op_mode));
+	fprintf (file, ".s%d", GET_MODE_BITSIZE (mode));
       break;
     default:
     common:
       switch (x_code)
 	{
 	case SUBREG:
-	  x = SUBREG_REG (x);
-	  /* fall through */
+	  {
+	    rtx inner_x = SUBREG_REG (x);
+	    machine_mode inner_mode = GET_MODE (inner_x);
+	    machine_mode split = maybe_split_mode (inner_mode);
+
+	    if (split != VOIDmode
+		&& (GET_MODE_SIZE (inner_mode) == GET_MODE_SIZE (mode)))
+	      output_reg (file, REGNO (inner_x), split);
+	    else
+	      output_reg (file, REGNO (inner_x), split, SUBREG_BYTE (x));
+	  }
+	  break;
 
 	case REG:
-	  if (HARD_REGISTER_P (x))
-	    fprintf (file, "%s", reg_names[REGNO (x)]);
-	  else
-	    fprintf (file, "%%r%d", REGNO (x));
-	  if (code != 'f' && maybe_split_mode (GET_MODE (x)) != VOIDmode)
-	    {
-	      gcc_assert (GET_CODE (orig_x) == SUBREG
-			  && maybe_split_mode (GET_MODE (orig_x)) == VOIDmode);
-	      fprintf (file, "$%d", SUBREG_BYTE (orig_x) / UNITS_PER_WORD);
-	    }
+	  output_reg (file, REGNO (x), maybe_split_mode (mode));
 	  break;
 
 	case MEM:
 	  fputc ('[', file);
-	  nvptx_print_address_operand (file, XEXP (x, 0), GET_MODE (x));
+	  nvptx_print_address_operand (file, XEXP (x, 0), mode);
 	  fputc (']', file);
 	  break;
 
@@ -2119,10 +2153,10 @@ nvptx_print_operand (FILE *file, rtx x, int code)
 
 	case CONST_DOUBLE:
 	  long vals[2];
-	  real_to_target (vals, CONST_DOUBLE_REAL_VALUE (x), GET_MODE (x));
+	  real_to_target (vals, CONST_DOUBLE_REAL_VALUE (x), mode);
 	  vals[0] &= 0xffffffff;
 	  vals[1] &= 0xffffffff;
-	  if (GET_MODE (x) == SFmode)
+	  if (mode == SFmode)
 	    fprintf (file, "0f%08lx", vals[0]);
 	  else
 	    fprintf (file, "0d%08lx%08lx", vals[1], vals[0]);
