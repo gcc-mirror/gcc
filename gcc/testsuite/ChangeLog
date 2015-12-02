@@ -1,5 +1,10 @@
 2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.target/s390/bswap-1.c (foo64c, foo32a, foo32c): New functions.
+	* gcc.target/s390/bswaphi-1.c: New test.
+
+2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* lib/target-supports.exp: Add s390 and s390x to the list of long
 	long atomic targets.
 
