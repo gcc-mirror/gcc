@@ -241,7 +241,8 @@ enum gfc_statement
   ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD,
   ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD,
   ST_PROCEDURE, ST_GENERIC, ST_CRITICAL, ST_END_CRITICAL,
-  ST_GET_FCN_CHARACTERISTICS, ST_LOCK, ST_UNLOCK, ST_NONE
+  ST_GET_FCN_CHARACTERISTICS, ST_LOCK, ST_UNLOCK, ST_EVENT_POST,
+  ST_EVENT_WAIT,ST_NONE
 };
 
 /* Types of interfaces that we can have.  Assignment interfaces are
@@ -393,6 +394,7 @@ enum gfc_isym_id
   GFC_ISYM_ERFC,
   GFC_ISYM_ERFC_SCALED,
   GFC_ISYM_ETIME,
+  GFC_ISYM_EVENT_QUERY,
   GFC_ISYM_EXECUTE_COMMAND_LINE,
   GFC_ISYM_EXIT,
   GFC_ISYM_EXP,
@@ -828,7 +830,7 @@ typedef struct
      entities.  */
   unsigned alloc_comp:1, pointer_comp:1, proc_pointer_comp:1,
 	   private_comp:1, zero_comp:1, coarray_comp:1, lock_comp:1,
-	   defined_assign_comp:1, unlimited_polymorphic:1;
+	   event_comp:1, defined_assign_comp:1, unlimited_polymorphic:1;
 
   /* This is a temporary selector for SELECT TYPE or an associate
      variable for SELECT_TYPE or ASSOCIATE.  */
@@ -2366,7 +2368,7 @@ enum gfc_exec_op
   EXEC_OPEN, EXEC_CLOSE, EXEC_WAIT,
   EXEC_READ, EXEC_WRITE, EXEC_IOLENGTH, EXEC_TRANSFER, EXEC_DT_END,
   EXEC_BACKSPACE, EXEC_ENDFILE, EXEC_INQUIRE, EXEC_REWIND, EXEC_FLUSH,
-  EXEC_LOCK, EXEC_UNLOCK,
+  EXEC_LOCK, EXEC_UNLOCK, EXEC_EVENT_POST, EXEC_EVENT_WAIT,
   EXEC_OACC_KERNELS_LOOP, EXEC_OACC_PARALLEL_LOOP, EXEC_OACC_ROUTINE,
   EXEC_OACC_PARALLEL, EXEC_OACC_KERNELS, EXEC_OACC_DATA, EXEC_OACC_HOST_DATA,
   EXEC_OACC_LOOP, EXEC_OACC_UPDATE, EXEC_OACC_WAIT, EXEC_OACC_CACHE,

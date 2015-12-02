@@ -1981,7 +1981,7 @@ enum ab_attribute
   AB_ELEMENTAL, AB_PURE, AB_RECURSIVE, AB_GENERIC, AB_ALWAYS_EXPLICIT,
   AB_CRAY_POINTER, AB_CRAY_POINTEE, AB_THREADPRIVATE,
   AB_ALLOC_COMP, AB_POINTER_COMP, AB_PROC_POINTER_COMP, AB_PRIVATE_COMP,
-  AB_VALUE, AB_VOLATILE, AB_PROTECTED, AB_LOCK_COMP,
+  AB_VALUE, AB_VOLATILE, AB_PROTECTED, AB_LOCK_COMP, AB_EVENT_COMP,
   AB_IS_BIND_C, AB_IS_C_INTEROP, AB_IS_ISO_C, AB_ABSTRACT, AB_ZERO_COMP,
   AB_IS_CLASS, AB_PROCEDURE, AB_PROC_POINTER, AB_ASYNCHRONOUS, AB_CODIMENSION,
   AB_COARRAY_COMP, AB_VTYPE, AB_VTAB, AB_CONTIGUOUS, AB_CLASS_POINTER,
@@ -2028,6 +2028,7 @@ static const mstring attr_bits[] =
     minit ("ALLOC_COMP", AB_ALLOC_COMP),
     minit ("COARRAY_COMP", AB_COARRAY_COMP),
     minit ("LOCK_COMP", AB_LOCK_COMP),
+    minit ("EVENT_COMP", AB_EVENT_COMP),
     minit ("POINTER_COMP", AB_POINTER_COMP),
     minit ("PROC_POINTER_COMP", AB_PROC_POINTER_COMP),
     minit ("PRIVATE_COMP", AB_PRIVATE_COMP),
@@ -2216,6 +2217,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_COARRAY_COMP, attr_bits);
       if (attr->lock_comp)
 	MIO_NAME (ab_attribute) (AB_LOCK_COMP, attr_bits);
+      if (attr->event_comp)
+	MIO_NAME (ab_attribute) (AB_EVENT_COMP, attr_bits);
       if (attr->zero_comp)
 	MIO_NAME (ab_attribute) (AB_ZERO_COMP, attr_bits);
       if (attr->is_class)
@@ -2382,6 +2385,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_LOCK_COMP:
 	      attr->lock_comp = 1;
+	      break;
+	    case AB_EVENT_COMP:
+	      attr->event_comp = 1;
 	      break;
 	    case AB_POINTER_COMP:
 	      attr->pointer_comp = 1;

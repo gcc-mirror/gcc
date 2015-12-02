@@ -2371,6 +2371,11 @@ gfc_get_derived_type (gfc_symbol * derived)
 	  && derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE))
     return ptr_type_node;
 
+  if (flag_coarray != GFC_FCOARRAY_LIB
+      && derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+      && derived->intmod_sym_id == ISOFORTRAN_EVENT_TYPE)
+    return gfc_get_int_type (gfc_default_integer_kind);
+
   if (derived && derived->attr.flavor == FL_PROCEDURE
       && derived->attr.generic)
     derived = gfc_find_dt_in_generic (derived);

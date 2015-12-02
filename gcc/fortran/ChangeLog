@@ -1,3 +1,62 @@
+2015-12-02  Tobias Burnus  <burnus@net-b.de>
+	    Alessandro Fanfarillo <fanfarillo.gcc@gmail.com>
+
+	* check.c (gfc_check_event_query): New function.
+	* dump-parse-tree.c (show_code_node): Handle EXEC_EVENT_POST,
+	EXEC_EVENT_WAIT.
+	* expr.c (gfc_check_vardef_context): New check for event variables
+	definition.
+	* gfortran.h (gfc_statement): Add ST_EVENT_POST, ST_EVENT_WAIT.
+	(gfc_isym_id): GFC_ISYM_EVENT_QUERY.
+	(struct symbol_attribute): New field.
+	(gfc_exec_op): Add EXEC_EVENT_POST and EXEC_EVENT_WAIT.
+	* gfortran.texi: Document about new events functions and minor
+	changes.
+	* interface.c (compare_parameter): New check.
+	(gfc_procedure_use): New check for explicit procedure interface.
+	(add_subroutines): Add event_query.
+	* intrinsic.h (gfc_check_event_query,gfc_resolve_event_query):
+	New prototypes.
+	* iresolve.c (gfc_resolve_event_query): New function.
+	* iso-fortran-env.def (event_type): New type.
+	* match.c (event_statement,gfc_match_event_post,gfc_match_event_wait):
+	New functions.
+	(gfc_match_name): New event post and event wait.
+	* match.h (gfc_match_event_post,gfc_match_event_wait):
+	New prototypes.
+	* module.c (ab_attribute): Add AB_EVENT_COMP.
+	(attr_bits): Likewise.
+	(mio_symbol_attribute): Handle event_comp attribute.
+	* parse.c (decode_statement): Add ST_EVENT_POST, ST_EVENT_WAIT.
+	(next_statement): Add ST_EVENT_POST, ST_EVENT_WAIT.
+	(gfc_ascii_statement): Add ST_EVENT_POST, ST_EVENT_WAIT.
+	(parse_derived): Check for event_type components.
+	* resolve.c (resolve_allocate_expr): Check for event variable def.
+	(resolve_lock_unlock): Renamed to resolve_lock_unlock_event. It
+	includes logic for locks and events.
+	(gfc_resolve_code): Call it.
+	(gfc_resolve_symbol): New check for event variable to be a corray.
+	* st.c (gfc_free_statement): Handle new EXEC_EVENT_POST and
+	EXEC_EVENT_WAIT.
+	* trans-decl.c (gfor_fndecl_caf_event_post,gfor_fndecl_caf_event_wait,
+	gfor_fndecl_caf_event_query): New global variables.
+	(generate_coarray_sym_init): Checking for event_type.
+	(gfc_conv_procedure_call): Check for C bind attribute.
+	* trans-intrinsic.c (conv_intrinsic_event_query): New function.
+	(conv_intrinsic_move_alloc): Call it.
+	* trans-stmt.c (gfc_trans_lock_unlock): Passing address
+	of actual argument.
+	(gfc_trans_sync): Likewise.
+	(gfc_trans_event_post_wait): New function.
+	* trans-stmt.h (gfc_trans_event_post_wait): New prototype.
+	* trans-types.c (gfc_get_derived_type): Integer_kind as event_type.
+	* trans.c (gfc_allocate_using_lib): New argument and logic for events.
+	(gfc_allocate_allocatable): Passing new argument.
+	(trans_code): Handle EXEC_EVENT_POST, EXEC_EVENT_WAIT.
+	* trans.h (gfc_coarray_type): New elements.
+	(gfor_fndecl_caf_event_post,gfor_fndecl_caf_event_wait,
+	gfor_fndecl_caf_event_query): Declare them.
+
 2015-12-02  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR fortran/63861

@@ -145,6 +145,9 @@ tree gfor_fndecl_caf_atomic_cas;
 tree gfor_fndecl_caf_atomic_op;
 tree gfor_fndecl_caf_lock;
 tree gfor_fndecl_caf_unlock;
+tree gfor_fndecl_caf_event_post;
+tree gfor_fndecl_caf_event_wait;
+tree gfor_fndecl_caf_event_query;
 tree gfor_fndecl_co_broadcast;
 tree gfor_fndecl_co_max;
 tree gfor_fndecl_co_min;
@@ -3559,6 +3562,21 @@ gfc_build_builtin_function_decls (void)
 	void_type_node, 6, pvoid_type_node, size_type_node, integer_type_node,
 	pint_type, pchar_type_node, integer_type_node);
 
+      gfor_fndecl_caf_event_post = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_event_post")), "R..WW",
+	void_type_node, 6, pvoid_type_node, size_type_node, integer_type_node,
+	pint_type, pchar_type_node, integer_type_node);
+
+      gfor_fndecl_caf_event_wait = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_event_wait")), "R..WW",
+	void_type_node, 6, pvoid_type_node, size_type_node, integer_type_node,
+	pint_type, pchar_type_node, integer_type_node);
+
+      gfor_fndecl_caf_event_query = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_event_query")), "R..WW",
+	void_type_node, 5, pvoid_type_node, size_type_node, integer_type_node,
+	pint_type, pint_type);
+
       gfor_fndecl_co_broadcast = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_co_broadcast")), "W.WW",
 	void_type_node, 5, pvoid_type_node, integer_type_node,
@@ -4854,7 +4872,7 @@ static void
 generate_coarray_sym_init (gfc_symbol *sym)
 {
   tree tmp, size, decl, token;
-  bool is_lock_type;
+  bool is_lock_type, is_event_type;
   int reg_type;
 
   if (sym->attr.dummy || sym->attr.allocatable || !sym->attr.codimension
@@ -4870,13 +4888,17 @@ generate_coarray_sym_init (gfc_symbol *sym)
 		 && sym->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
 		 && sym->ts.u.derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE;
 
+  is_event_type = sym->ts.type == BT_DERIVED
+		  && sym->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+		  && sym->ts.u.derived->intmod_sym_id == ISOFORTRAN_EVENT_TYPE;
+
   /* FIXME: Workaround for PR middle-end/49106, cf. also PR middle-end/49108
      to make sure the variable is not optimized away.  */
   DECL_PRESERVE_P (DECL_CONTEXT (decl)) = 1;
 
   /* For lock types, we pass the array size as only the library knows the
      size of the variable.  */
-  if (is_lock_type)
+  if (is_lock_type || is_event_type)
     size = gfc_index_one_node;
   else
     size = TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (decl)));
@@ -4898,6 +4920,8 @@ generate_coarray_sym_init (gfc_symbol *sym)
 			       GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE(decl)));
   if (is_lock_type)
     reg_type = sym->attr.artificial ? GFC_CAF_CRITICAL : GFC_CAF_LOCK_STATIC;
+  else if (is_event_type)
+    reg_type = GFC_CAF_EVENT_STATIC;
   else
     reg_type = GFC_CAF_COARRAY_STATIC;
   tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_register, 6, size,

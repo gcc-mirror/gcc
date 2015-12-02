@@ -2157,6 +2157,21 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		       formal->name, &actual->where);
 	  return 0;
 	}
+
+      /* TS18508, C702/C703.  */
+      if (formal->attr.intent != INTENT_INOUT
+	  && (((formal->ts.type == BT_DERIVED || formal->ts.type == BT_CLASS)
+	       && formal->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+	       && formal->ts.u.derived->intmod_sym_id == ISOFORTRAN_EVENT_TYPE)
+	      || formal->attr.event_comp))
+
+    	{
+	  if (where)
+	    gfc_error ("Actual argument to non-INTENT(INOUT) dummy %qs at %L, "
+		       "which is EVENT_TYPE or has a EVENT_TYPE component",
+		       formal->name, &actual->where);
+	  return 0;
+	}
     }
 
   /* F2008, C1239/C1240.  */
@@ -3380,6 +3395,19 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 		  || gfc_expr_attr (a->expr).lock_comp))
 	    {
 	      gfc_error ("Actual argument of LOCK_TYPE or with LOCK_TYPE "
+			 "component at %L requires an explicit interface for "
+			 "procedure %qs", &a->expr->where, sym->name);
+	      break;
+	    }
+
+	  if (a->expr
+	      && (a->expr->ts.type == BT_DERIVED || a->expr->ts.type == BT_CLASS)
+	      && ((a->expr->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+		   && a->expr->ts.u.derived->intmod_sym_id
+		      == ISOFORTRAN_EVENT_TYPE)
+		  || gfc_expr_attr (a->expr).event_comp))
+	    {
+	      gfc_error ("Actual argument of EVENT_TYPE or with EVENT_TYPE "
 			 "component at %L requires an explicit interface for "
 			 "procedure %qs", &a->expr->where, sym->name);
 	      break;
