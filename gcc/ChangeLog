@@ -1,3 +1,8 @@
+2015-12-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/mips/mips.c (mips_emit_probe_stack_range): Adjust.
+	(mips_output_probe_stack_range): Rotate the loop and simplify.
+
 2015-12-02  David Sherwood  <david.sherwood@arm.com>
 
 	* config/aarch64/aarch64.md: New pattern.
