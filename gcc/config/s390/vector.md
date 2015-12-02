@@ -370,11 +370,11 @@
 
 (define_insn "*vec_splats<mode>"
   [(set (match_operand:V_HW                          0 "register_operand" "=v,v,v,v")
-	(vec_duplicate:V_HW (match_operand:<non_vec> 1 "general_operand"  "QR,I,v,d")))]
+	(vec_duplicate:V_HW (match_operand:<non_vec> 1 "general_operand"  "QR,K,v,d")))]
   "TARGET_VX"
   "@
    vlrep<bhfgq>\t%v0,%1
-   vrepi<bhfgq>\t%v0,%1
+   vrepi<bhfgq>\t%v0,%h1
    vrep<bhfgq>\t%v0,%v1,0
    #"
   [(set_attr "op_type" "VRX,VRI,VRI,*")])
