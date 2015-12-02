@@ -364,8 +364,8 @@
 	 (vec_select:<non_vec>
 	  (match_operand:V_HW 1 "register_operand"  "v")
 	  (parallel
-	   [(match_operand:QI 2 "immediate_operand" "C")]))))]
-  "TARGET_VX"
+	   [(match_operand:QI 2 "const_mask_operand" "C")]))))]
+  "TARGET_VX && UINTVAL (operands[2]) < GET_MODE_NUNITS (<V_HW:MODE>mode)"
   "vrep<bhfgq>\t%v0,%v1,%2"
   [(set_attr "op_type" "VRI")])
 
@@ -1073,7 +1073,7 @@
   [(set (match_operand:VI_HW_QHS 0 "register_operand" "=v")
 	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "v")
 			   (match_operand:VI_HW_QHS 2 "register_operand" "v")
-			   (match_operand:QI 3 "immediate_operand" "C")]
+			   (match_operand:QI 3 "const_mask_operand" "C")]
 			  UNSPEC_VEC_VFENE))
    (set (reg:CCRAW CC_REGNUM)
 	(unspec:CCRAW [(match_dup 1)

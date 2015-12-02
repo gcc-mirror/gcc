@@ -34,6 +34,11 @@
   (and (match_code "const_int, const_double,const_vector")
        (match_test "op == CONSTM1_RTX (mode)")))
 
+;; Return true if OP is a 4 bit mask operand
+(define_predicate "const_mask_operand"
+  (and (match_code "const_int")
+       (match_test "UINTVAL (op) < 16")))
+
 ;; Return true if OP is constant.
 
 (define_special_predicate "consttable_operand"
