@@ -200,6 +200,18 @@ enum node_frequency {
   NODE_FREQUENCY_HOT
 };
 
+/* Ways of optimizing code.  */
+enum optimization_type {
+  /* Prioritize speed over size.  */
+  OPTIMIZE_FOR_SPEED,
+
+  /* Only do things that are good for both size and speed.  */
+  OPTIMIZE_FOR_BOTH,
+
+  /* Prioritize size over speed.  */
+  OPTIMIZE_FOR_SIZE
+};
+
 /* Possible initialization status of a variable.   When requested
    by the user, this information is tracked and recorded in the DWARF
    debug information, along with the variable's location.  */

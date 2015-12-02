@@ -1962,7 +1962,8 @@ replacement_internal_fn (gcall *call)
       if (ifn != IFN_LAST)
 	{
 	  tree_pair types = direct_internal_fn_types (ifn, call);
-	  if (direct_internal_fn_supported_p (ifn, types))
+	  optimization_type opt_type = bb_optimization_type (gimple_bb (call));
+	  if (direct_internal_fn_supported_p (ifn, types, opt_type))
 	    return ifn;
 	}
     }

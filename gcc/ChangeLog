@@ -1,5 +1,43 @@
 2015-12-02  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/68432
+	* coretypes.h (optimization_type): New enum.
+	* doc/tm.texi.in (TARGET_OPTAB_SUPPORTED_P): New hook.
+	* doc/tm.texi: Regenerate.
+	* target.def (optab_supported_p): New hook.
+	* targhooks.h (default_optab_supported_p): Declare.
+	* targhooks.c (default_optab_supported_p): New function.
+	* predict.h (function_optimization_type): Declare.
+	(bb_optimization_type): Likewise.
+	* predict.c (function_optimization_type): New function.
+	(bb_optimization_type): Likewise.
+	* optabs-query.h (convert_optab_handler): Define an overload
+	that takes an optimization type.
+	(direct_optab_handler): Likewise.
+	* optabs-query.c (convert_optab_handler): Likewise.
+	(direct_optab_handler): Likewise.
+	* internal-fn.h (direct_internal_fn_supported_p): Take an
+	optimization_type argument.
+	* internal-fn.c (direct_optab_supported_p): Likewise.
+	(multi_vector_optab_supported_p): Likewise.
+	(direct_internal_fn_supported_p): Likewise.
+	* builtins.c (replacement_internal_fn): Update call to
+	direct_internal_fn_supported_p.
+	* gimple-match-head.c (build_call_internal): Likewise.
+	* tree-vect-patterns.c (vect_recog_pow_pattern): Likewise.
+	* tree-vect-stmts.c (vectorizable_internal_function): Likewise.
+	* tree.c (maybe_build_call_expr_loc): Likewise.
+	* config/i386/i386.c (ix86_optab_supported_p): New function.
+	(TARGET_OPTAB_SUPPORTED_P): Define.
+	* config/i386/i386.md (asinxf2): Remove optimize_insn_for_size_p check.
+	(asin<mode>2, acosxf2, acos<mode>2, log1pxf2, log1p<mode>2)
+	(expNcorexf3, expxf2, exp<mode>2, exp10xf2, exp10<mode>2, exp2xf2)
+	(exp2<mode>2, expm1xf2, expm1<mode>2, ldexpxf3, ldexp<mode>3)
+	(scalbxf3, scalb<mode>3, rint<mode>2, round<mode>2)
+	(<rounding_insn>xf2, <rounding_insn><mode>2): Likewise.
+
+2015-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* Makefile.in (GENSUPPORT_H): New macro.
 	(build/gensupport.o, build/read-rtl.o, build/genattr.o)
 	(build/genattr-common.o, build/genattrtab.o, build/genautomata.o)

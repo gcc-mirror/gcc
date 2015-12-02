@@ -35,6 +35,36 @@ struct target_optabs *this_fn_optabs = &default_target_optabs;
 struct target_optabs *this_target_optabs = &default_target_optabs;
 #endif
 
+/* Return the insn used to perform conversion OP from mode FROM_MODE
+   to mode TO_MODE; return CODE_FOR_nothing if the target does not have
+   such an insn, or if it is unsuitable for optimization type OPT_TYPE.  */
+
+insn_code
+convert_optab_handler (convert_optab optab, machine_mode to_mode,
+		       machine_mode from_mode, optimization_type opt_type)
+{
+  insn_code icode = convert_optab_handler (optab, to_mode, from_mode);
+  if (icode == CODE_FOR_nothing
+      || !targetm.optab_supported_p (optab, to_mode, from_mode, opt_type))
+    return CODE_FOR_nothing;
+  return icode;
+}
+
+/* Return the insn used to implement mode MODE of OP; return
+   CODE_FOR_nothing if the target does not have such an insn,
+   or if it is unsuitable for optimization type OPT_TYPE.  */
+
+insn_code
+direct_optab_handler (convert_optab optab, machine_mode mode,
+		      optimization_type opt_type)
+{
+  insn_code icode = direct_optab_handler (optab, mode);
+  if (icode == CODE_FOR_nothing
+      || !targetm.optab_supported_p (optab, mode, mode, opt_type))
+    return CODE_FOR_nothing;
+  return icode;
+}
+
 /* Enumerates the possible types of structure operand to an
    extraction_insn.  */
 enum extraction_type { ET_unaligned_mem, ET_reg };

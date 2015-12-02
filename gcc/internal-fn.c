@@ -2214,23 +2214,30 @@ direct_internal_fn_types (internal_fn fn, gcall *call)
 }
 
 /* Return true if OPTAB is supported for TYPES (whose modes should be
-   the same).  Used for simple direct optabs.  */
+   the same) when the optimization type is OPT_TYPE.  Used for simple
+   direct optabs.  */
 
 static bool
-direct_optab_supported_p (direct_optab optab, tree_pair types)
+direct_optab_supported_p (direct_optab optab, tree_pair types,
+			  optimization_type opt_type)
 {
   machine_mode mode = TYPE_MODE (types.first);
   gcc_checking_assert (mode == TYPE_MODE (types.second));
-  return direct_optab_handler (optab, mode) != CODE_FOR_nothing;
+  return direct_optab_handler (optab, mode, opt_type) != CODE_FOR_nothing;
 }
 
 /* Return true if load/store lanes optab OPTAB is supported for
-   array type TYPES.first.  */
+   array type TYPES.first when the optimization type is OPT_TYPE.  */
 
 static bool
-multi_vector_optab_supported_p (convert_optab optab, tree_pair types)
+multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
+				optimization_type opt_type)
 {
-  return get_multi_vector_move (types.first, optab) != CODE_FOR_nothing;
+  gcc_assert (TREE_CODE (types.first) == ARRAY_TYPE);
+  machine_mode imode = TYPE_MODE (types.first);
+  machine_mode vmode = TYPE_MODE (TREE_TYPE (types.first));
+  return (convert_optab_handler (optab, imode, vmode, opt_type)
+	  != CODE_FOR_nothing);
 }
 
 #define direct_unary_optab_supported_p direct_optab_supported_p
@@ -2240,12 +2247,14 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types)
 #define direct_mask_store_optab_supported_p direct_optab_supported_p
 #define direct_store_lanes_optab_supported_p multi_vector_optab_supported_p
 
-/* Return true if FN is supported for the types in TYPES.  The types
-   are those associated with the "type0" and "type1" fields of FN's
-   direct_internal_fn_info structure.  */
+/* Return true if FN is supported for the types in TYPES when the
+   optimization type is OPT_TYPE.  The types are those associated with
+   the "type0" and "type1" fields of FN's direct_internal_fn_info
+   structure.  */
 
 bool
-direct_internal_fn_supported_p (internal_fn fn, tree_pair types)
+direct_internal_fn_supported_p (internal_fn fn, tree_pair types,
+				optimization_type opt_type)
 {
   switch (fn)
     {
@@ -2253,7 +2262,8 @@ direct_internal_fn_supported_p (internal_fn fn, tree_pair types)
     case IFN_##CODE: break;
 #define DEF_INTERNAL_OPTAB_FN(CODE, FLAGS, OPTAB, TYPE) \
     case IFN_##CODE: \
-      return direct_##TYPE##_optab_supported_p (OPTAB##_optab, types);
+      return direct_##TYPE##_optab_supported_p (OPTAB##_optab, types, \
+						opt_type);
 #include "internal-fn.def"
 
     case IFN_LAST:
@@ -2262,16 +2272,17 @@ direct_internal_fn_supported_p (internal_fn fn, tree_pair types)
   gcc_unreachable ();
 }
 
-/* Return true if FN is supported for type TYPE.  The caller knows that
-   the "type0" and "type1" fields of FN's direct_internal_fn_info
-   structure are the same.  */
+/* Return true if FN is supported for type TYPE when the optimization
+   type is OPT_TYPE.  The caller knows that the "type0" and "type1"
+   fields of FN's direct_internal_fn_info structure are the same.  */
 
 bool
-direct_internal_fn_supported_p (internal_fn fn, tree type)
+direct_internal_fn_supported_p (internal_fn fn, tree type,
+				optimization_type opt_type)
 {
   const direct_internal_fn_info &info = direct_internal_fn (fn);
   gcc_checking_assert (info.type0 == info.type1);
-  return direct_internal_fn_supported_p (fn, tree_pair (type, type));
+  return direct_internal_fn_supported_p (fn, tree_pair (type, type), opt_type);
 }
 
 /* Return true if IFN_SET_EDOM is supported.  */
