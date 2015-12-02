@@ -1,3 +1,8 @@
+2015-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/68570
+	* gcc.dg/torture/pr68570.c: New test.
+
 2015-12-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68625
