@@ -1,3 +1,9 @@
+2015-12-02  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Move AM_ENABLE_MULTILIB before
+	GCC_LIBSTDCXX_RAW_CXX_FLAGS.
+	* configure: Regenerate.
+
 2015-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.tgt (*-*-solaris2.[1-9]*): Declare supported.
