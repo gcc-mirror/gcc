@@ -1,3 +1,7 @@
+2015-12-02  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (check-c++1z, check-c++-all): New.
+
 2015-12-02  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR c++/67337

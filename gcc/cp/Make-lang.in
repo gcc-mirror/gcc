@@ -145,9 +145,15 @@ c++.srcman: doc/g++.1
 # check targets.  However, our DejaGNU framework requires 'check-g++' as its
 # entry point.  We feed the former to the latter here.
 check-c++ : check-g++
-# Run the testsute in C++0x mode.
-check-c++0x:
-	@echo Normal 'make check' now runs the testsuite in C++11 mode as well as C++98.
+
+# Run the testsuite in C++1z mode.
+check-c++1z:
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --stds=1z" check-g++
+
+# Run the testsuite in all standard conformance levels.
+check-c++-all:
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --stds=98,11,14,1z" check-g++
+
 # Run the testsuite with garbage collection at every opportunity.
 check-g++-strict-gc:
 	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --extra_opts,--param,ggc-min-heapsize=0,--param,ggc-min-expand=0" \
