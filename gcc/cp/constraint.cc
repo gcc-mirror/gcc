@@ -1353,32 +1353,6 @@ finish_template_introduction (tree tmpl_decl, tree intro_list)
 }
 
 
-/* Make a "constrained auto" type-specifier. This is an
-   auto type with constraints that must be associated after
-   deduction.  The constraint is formed from the given
-   CONC and its optional sequence of arguments, which are
-   non-null if written as partial-concept-id.  */
-tree
-make_constrained_auto (tree con, tree args)
-{
-  tree type = make_auto();
-
-  /* Build the constraint. */
-  tree tmpl = DECL_TI_TEMPLATE (con);
-  tree expr;
-  if (VAR_P (con))
-    expr = build_concept_check (tmpl, type, args);
-  else
-    expr = build_concept_check (build_overload (tmpl, NULL_TREE), type, args);
-
-  tree constr = make_predicate_constraint (expr);
-  PLACEHOLDER_TYPE_CONSTRAINTS (type) = constr;
-
-  /* Attach the constraint to the type declaration. */
-  tree decl = TYPE_NAME (type);
-  return decl;
-}
-
 /* Given the predicate constraint T from a constrained-type-specifier, extract
    its TMPL and ARGS.  FIXME why do we need two different forms of
    constrained-type-specifier?  */

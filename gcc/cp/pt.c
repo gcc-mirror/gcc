@@ -23469,10 +23469,10 @@ make_args_non_dependent (vec<tree, va_gc> *args)
 
 /* Returns a type which represents 'auto' or 'decltype(auto)'.  We use a
    TEMPLATE_TYPE_PARM with a level one deeper than the actual template
-   parms.  */
+   parms.  If set_canonical is true, we set TYPE_CANONICAL on it.  */
 
 static tree
-make_auto_1 (tree name)
+make_auto_1 (tree name, bool set_canonical)
 {
   tree au = cxx_make_type (TEMPLATE_TYPE_PARM);
   TYPE_NAME (au) = build_decl (input_location,
@@ -23481,7 +23481,8 @@ make_auto_1 (tree name)
   TEMPLATE_TYPE_PARM_INDEX (au) = build_template_parm_index
     (0, processing_template_decl + 1, processing_template_decl + 1,
      TYPE_NAME (au), NULL_TREE);
-  TYPE_CANONICAL (au) = canonical_type_parameter (au);
+  if (set_canonical)
+    TYPE_CANONICAL (au) = canonical_type_parameter (au);
   DECL_ARTIFICIAL (TYPE_NAME (au)) = 1;
   SET_DECL_TEMPLATE_PARM_P (TYPE_NAME (au));
 
@@ -23491,13 +23492,43 @@ make_auto_1 (tree name)
 tree
 make_decltype_auto (void)
 {
-  return make_auto_1 (get_identifier ("decltype(auto)"));
+  return make_auto_1 (get_identifier ("decltype(auto)"), true);
 }
 
 tree
 make_auto (void)
 {
-  return make_auto_1 (get_identifier ("auto"));
+  return make_auto_1 (get_identifier ("auto"), true);
+}
+
+/* Make a "constrained auto" type-specifier. This is an
+   auto type with constraints that must be associated after
+   deduction.  The constraint is formed from the given
+   CONC and its optional sequence of arguments, which are
+   non-null if written as partial-concept-id.  */
+
+tree
+make_constrained_auto (tree con, tree args)
+{
+  tree type = make_auto_1 (get_identifier ("auto"), false);
+
+  /* Build the constraint. */
+  tree tmpl = DECL_TI_TEMPLATE (con);
+  tree expr;
+  if (VAR_P (con))
+    expr = build_concept_check (tmpl, type, args);
+  else
+    expr = build_concept_check (build_overload (tmpl, NULL_TREE), type, args);
+
+  tree constr = make_predicate_constraint (expr);
+  PLACEHOLDER_TYPE_CONSTRAINTS (type) = constr;
+
+  /* Our canonical type depends on the constraint.  */
+  TYPE_CANONICAL (type) = canonical_type_parameter (type);
+
+  /* Attach the constraint to the type declaration. */
+  tree decl = TYPE_NAME (type);
+  return decl;
 }
 
 /* Given type ARG, return std::initializer_list<ARG>.  */
@@ -23813,7 +23844,7 @@ splice_late_return_type (tree type, tree late_return_type)
 	/* In an abbreviated function template we didn't know we were dealing
 	   with a function template when we saw the auto return type, so update
 	   it to have the correct level.  */
-	return make_auto_1 (TYPE_IDENTIFIER (type));
+	return make_auto_1 (TYPE_IDENTIFIER (type), true);
     }
   return type;
 }
