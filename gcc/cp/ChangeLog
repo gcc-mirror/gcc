@@ -1,3 +1,9 @@
+2015-12-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_name)
+	(cp_parser_oacc_all_clauses): Alphabetical sorting.
+	* pt.c (tsubst_omp_clauses): Handle OMP_CLAUSE_USE_DEVICE.
+
 2015-12-02  Andreas Arnez  <arnez@linux.vnet.ibm.com>
 
 	PR gcov-profile/68603

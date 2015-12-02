@@ -1,8 +1,5 @@
 /* { dg-do compile } */
 
-#include <openacc.h>
-#include <stdlib.h>
-
 #define N 1024
 
 int main (int argc, char* argv[])
@@ -20,9 +17,6 @@ int main (int argc, char* argv[])
         xp = x;
       }
     }
-
-    if (xp != acc_deviceptr (x))
-      abort ();
   }
 
   return 0;
