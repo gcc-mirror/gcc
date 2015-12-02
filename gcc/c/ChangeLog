@@ -1,3 +1,9 @@
+2015-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/68533
+	* c-decl.c (get_parm_info): Use b->locus instead of input_location
+	for diagnostics.
+
 2015-12-01  Julian Brown  <julian@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    James Norris  <James_Norris@mentor.com>

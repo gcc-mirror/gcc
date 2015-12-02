@@ -6913,11 +6913,11 @@ get_parm_info (bool ellipsis, tree expr)
     {
       if (TYPE_QUALS (TREE_TYPE (b->decl)) != TYPE_UNQUALIFIED
 	  || C_DECL_REGISTER (b->decl))
-	error ("%<void%> as only parameter may not be qualified");
+	error_at (b->locus, "%<void%> as only parameter may not be qualified");
 
       /* There cannot be an ellipsis.  */
       if (ellipsis)
-	error ("%<void%> must be the only parameter");
+	error_at (b->locus, "%<void%> must be the only parameter");
 
       arg_info->types = void_list_node;
       return arg_info;
@@ -6946,13 +6946,14 @@ get_parm_info (bool ellipsis, tree expr)
 
 	  /* Check for forward decls that never got their actual decl.  */
 	  if (TREE_ASM_WRITTEN (decl))
-	    error ("parameter %q+D has just a forward declaration", decl);
+	    error_at (b->locus,
+		      "parameter %q+D has just a forward declaration", decl);
 	  /* Check for (..., void, ...) and issue an error.  */
 	  else if (VOID_TYPE_P (type) && !DECL_NAME (decl))
 	    {
 	      if (!gave_void_only_once_err)
 		{
-		  error ("%<void%> must be the only parameter");
+		  error_at (b->locus, "%<void%> must be the only parameter");
 		  gave_void_only_once_err = true;
 		}
 	    }
@@ -6991,13 +6992,13 @@ get_parm_info (bool ellipsis, tree expr)
 	    {
 	      if (b->id)
 		/* The %s will be one of 'struct', 'union', or 'enum'.  */
-		warning_at (input_location, 0,
+		warning_at (b->locus, 0,
 			    "%<%s %E%> declared inside parameter list"
 			    " will not be visible outside of this definition or"
 			    " declaration", keyword, b->id);
 	      else
 		/* The %s will be one of 'struct', 'union', or 'enum'.  */
-		warning_at (input_location, 0,
+		warning_at (b->locus, 0,
 			    "anonymous %s declared inside parameter list"
 			    " will not be visible outside of this definition or"
 			    " declaration", keyword);

@@ -1,3 +1,8 @@
+2015-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/68533
+	* gcc.dg/pr68533.c: New test.
+
 2015-12-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/68577
