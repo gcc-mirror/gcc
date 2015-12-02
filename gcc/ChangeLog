@@ -1,5 +1,10 @@
 2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/vector.md ("*vec_set<mode>"): Change shift count
+	mode from DI to SI.
+
+2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390-builtin-types.def: New builtin types added.
 	* config/s390/s390-builtins.def: Add s390_vec_splat_* definitions.
 	* config/s390/s390.c (s390_expand_builtin): Always truncate

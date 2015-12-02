@@ -314,7 +314,7 @@
 (define_insn "*vec_set<mode>"
   [(set (match_operand:V                    0 "register_operand"             "=v, v,v")
 	(unspec:V [(match_operand:<non_vec> 1 "general_operand"               "d,QR,K")
-		   (match_operand:DI        2 "shift_count_or_setmem_operand" "Y, I,I")
+		   (match_operand:SI        2 "shift_count_or_setmem_operand" "Y, I,I")
 		   (match_operand:V         3 "register_operand"              "0, 0,0")]
 		  UNSPEC_VEC_SET))]
   "TARGET_VX"
