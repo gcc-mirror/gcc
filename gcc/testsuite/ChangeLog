@@ -1,9 +1,17 @@
 2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
-        * gcc.dg/builtin-bswap-6a.c: Add -march=z900 for s390 and s390x in
+	* gcc.dg/optimize-bswapdi-1.c: Force using -mzarch on s390 and
+	s390x to enable 64 bit bswap patterns.
+	* gcc.dg/optimize-bswapdi-2.c: Likewise.
+	* gcc.dg/optimize-bswapdi-3.c: Likewise.
+	* lib/target-supports.exp: Add a comment for s390.
+
+2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.dg/builtin-bswap-6a.c: Add -march=z900 for s390 and s390x in
 	order to make -m31 work.
-        * gcc.dg/optimize-bswapsi-1.c: Likewise.
-        * gcc.dg/optimize-bswapsi-2.c: Likewise.
+	* gcc.dg/optimize-bswapsi-1.c: Likewise.
+	* gcc.dg/optimize-bswapsi-2.c: Likewise.
 
 2015-12-02  Jakub Jelinek  <jakub@redhat.com>
 
@@ -306,7 +314,7 @@
 
 2015-11-30  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
-        * gcc.target/s390/load-relative-check.c: Add -mzarch.
+	* gcc.target/s390/load-relative-check.c: Add -mzarch.
 
 2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
