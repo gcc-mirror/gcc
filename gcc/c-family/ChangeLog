@@ -1,5 +1,9 @@
 2015-12-02  Jason Merrill  <jason@redhat.com>
 
+	* c-common.c (fold_for_warn): New.
+	(warn_logical_operator, warn_tautological_cmp)
+	(check_function_arguments_recurse, maybe_warn_bool_compare): Use it.
+
 	* c-common.c (c_disable_warnings, c_enable_warnings, c_fully_fold)
 	(c_fully_fold_internal, decl_constant_value_for_optimization):
 	Move to c/c-fold.c.
