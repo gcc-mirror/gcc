@@ -4320,6 +4320,10 @@ extern tree staticp (tree);
 
 extern tree save_expr (tree);
 
+/* Return true if T is function-invariant.  */
+
+extern bool tree_invariant_p (tree);
+
 /* Look inside EXPR into any simple arithmetic operations.  Return the
    outermost non-arithmetic or non-invariant node.  */
 

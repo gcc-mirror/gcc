@@ -3119,8 +3119,8 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 		if (cinfo.info[i].result_use_count
 		    > cinfo.info[i].match_use_count)
 		  fprintf_indent (f, indent,
-				  "captures[%d] = save_expr (captures[%d]);\n",
-				  i, i);
+				  "if (! tree_invariant_p (captures[%d])) "
+				  "return NULL_TREE;\n", i);
 	      }
 	  for (unsigned j = 0; j < e->ops.length (); ++j)
 	    {
