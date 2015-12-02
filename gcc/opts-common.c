@@ -885,7 +885,7 @@ keep:
 	}
     }
 
-  if (fdiagnostics_color_idx > 1)
+  if (fdiagnostics_color_idx >= 1)
     {
       /* We put the last -fdiagnostics-color= at the first position
 	 after argv[0] so it can take effect immediately.  */
