@@ -5784,8 +5784,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       len = cl.backend_decl;
     }
 
-  byref = (comp && (comp->attr.dimension || comp->ts.type == BT_CHARACTER))
-	  || (!comp && gfc_return_by_reference (sym));
+  byref = (comp && (comp->attr.dimension
+	   || (comp->ts.type == BT_CHARACTER && !sym->attr.is_bind_c)))
+	   || (!comp && gfc_return_by_reference (sym));
   if (byref)
     {
       if (se->direct_byref)
@@ -6610,6 +6611,11 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
 		      bool array, bool pointer, bool procptr)
 {
   gfc_se se;
+
+  if (flag_coarray != GFC_FCOARRAY_LIB && ts->type == BT_DERIVED
+      && ts->u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+      && ts->u.derived->intmod_sym_id == ISOFORTRAN_EVENT_TYPE)
+    return build_constructor (type, NULL);
 
   if (!(expr || pointer || procptr))
     return NULL_TREE;

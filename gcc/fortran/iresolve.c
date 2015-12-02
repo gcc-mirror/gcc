@@ -2945,6 +2945,12 @@ gfc_resolve_atomic_ref (gfc_code *c)
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 
+void
+gfc_resolve_event_query (gfc_code *c)
+{
+  const char *name = "event_query";
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
 
 void
 gfc_resolve_mvbits (gfc_code *c)

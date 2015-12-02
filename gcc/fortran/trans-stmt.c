@@ -776,6 +776,7 @@ gfc_trans_lock_unlock (gfc_code *code, gfc_exec_op op)
       if (code->expr3)
 	{
 	  gfc_init_se (&argse, NULL);
+	  argse.want_pointer = 1;
 	  gfc_conv_expr (&argse, code->expr3);
 	  gfc_add_block_to_block (&se.pre, &argse.pre);
 	  errmsg = argse.expr;
@@ -840,6 +841,165 @@ gfc_trans_lock_unlock (gfc_code *code, gfc_exec_op op)
   return gfc_finish_block (&se.pre);
 }
 
+tree
+gfc_trans_event_post_wait (gfc_code *code, gfc_exec_op op)
+{
+  gfc_se se, argse;
+  tree stat = NULL_TREE, stat2 = NULL_TREE;
+  tree until_count = NULL_TREE;
+
+  if (code->expr2)
+    {
+      gcc_assert (code->expr2->expr_type == EXPR_VARIABLE);
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_val (&argse, code->expr2);
+      stat = argse.expr;
+    }
+  else if (flag_coarray == GFC_FCOARRAY_LIB)
+    stat = null_pointer_node;
+
+  if (code->expr4)
+    {
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_val (&argse, code->expr4);
+      until_count = fold_convert (integer_type_node, argse.expr);
+    }
+  else
+    until_count = integer_one_node;
+
+  if (flag_coarray != GFC_FCOARRAY_LIB)
+    {
+      gfc_start_block (&se.pre);
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_val (&argse, code->expr1);
+
+      if (op == EXEC_EVENT_POST)
+	gfc_add_modify (&se.pre, argse.expr,
+			fold_build2_loc (input_location, PLUS_EXPR,
+				TREE_TYPE (argse.expr), argse.expr,
+				build_int_cst (TREE_TYPE (argse.expr), 1)));
+      else
+	gfc_add_modify (&se.pre, argse.expr,
+			fold_build2_loc (input_location, MINUS_EXPR,
+				TREE_TYPE (argse.expr), argse.expr,
+				fold_convert (TREE_TYPE (argse.expr),
+					      until_count)));
+      if (stat != NULL_TREE)
+	gfc_add_modify (&se.pre, stat, build_int_cst (TREE_TYPE (stat), 0));
+
+      return gfc_finish_block (&se.pre);
+    }
+
+  gfc_start_block (&se.pre);
+  tree tmp, token, image_index, errmsg, errmsg_len;
+  tree index = size_zero_node;
+  tree caf_decl = gfc_get_tree_for_caf_expr (code->expr1);
+
+  if (code->expr1->symtree->n.sym->ts.type != BT_DERIVED
+      || code->expr1->symtree->n.sym->ts.u.derived->from_intmod
+	 != INTMOD_ISO_FORTRAN_ENV
+      || code->expr1->symtree->n.sym->ts.u.derived->intmod_sym_id
+	 != ISOFORTRAN_EVENT_TYPE)
+    {
+      gfc_error ("Sorry, the event component of derived type at %L is not "
+		 "yet supported", &code->expr1->where);
+      return NULL_TREE;
+    }
+
+  gfc_get_caf_token_offset (&token, NULL, caf_decl, NULL_TREE, code->expr1);
+
+  if (gfc_is_coindexed (code->expr1))
+    image_index = gfc_caf_get_image_index (&se.pre, code->expr1, caf_decl);
+  else
+    image_index = integer_zero_node;
+
+  /* For arrays, obtain the array index.  */
+  if (gfc_expr_attr (code->expr1).dimension)
+    {
+      tree desc, tmp, extent, lbound, ubound;
+      gfc_array_ref *ar, ar2;
+      int i;
+
+      /* TODO: Extend this, once DT components are supported.  */
+      ar = &code->expr1->ref->u.ar;
+      ar2 = *ar;
+      memset (ar, '\0', sizeof (*ar));
+      ar->as = ar2.as;
+      ar->type = AR_FULL;
+
+      gfc_init_se (&argse, NULL);
+      argse.descriptor_only = 1;
+      gfc_conv_expr_descriptor (&argse, code->expr1);
+      gfc_add_block_to_block (&se.pre, &argse.pre);
+      desc = argse.expr;
+      *ar = ar2;
+
+      extent = integer_one_node;
+      for (i = 0; i < ar->dimen; i++)
+	{
+	  gfc_init_se (&argse, NULL);
+	  gfc_conv_expr_type (&argse, ar->start[i], integer_type_node);
+	  gfc_add_block_to_block (&argse.pre, &argse.pre);
+	  lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[i]);
+	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
+				 integer_type_node, argse.expr,
+				 fold_convert(integer_type_node, lbound));
+	  tmp = fold_build2_loc (input_location, MULT_EXPR,
+				 integer_type_node, extent, tmp);
+	  index = fold_build2_loc (input_location, PLUS_EXPR,
+				   integer_type_node, index, tmp);
+	  if (i < ar->dimen - 1)
+	    {
+	      ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[i]);
+	      tmp = gfc_conv_array_extent_dim (lbound, ubound, NULL);
+	      tmp = fold_convert (integer_type_node, tmp);
+	      extent = fold_build2_loc (input_location, MULT_EXPR,
+					integer_type_node, extent, tmp);
+	    }
+	}
+    }
+
+  /* errmsg.  */
+  if (code->expr3)
+    {
+      gfc_init_se (&argse, NULL);
+      argse.want_pointer = 1;
+      gfc_conv_expr (&argse, code->expr3);
+      gfc_add_block_to_block (&se.pre, &argse.pre);
+      errmsg = argse.expr;
+      errmsg_len = fold_convert (integer_type_node, argse.string_length);
+    }
+  else
+    {
+      errmsg = null_pointer_node;
+      errmsg_len = integer_zero_node;
+    }
+
+  if (stat != null_pointer_node && TREE_TYPE (stat) != integer_type_node)
+    {
+      stat2 = stat;
+      stat = gfc_create_var (integer_type_node, "stat");
+    }
+
+  if (op == EXEC_EVENT_POST)
+    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_event_post, 6,
+			       token, index, image_index,
+			       stat != null_pointer_node
+			       ? gfc_build_addr_expr (NULL, stat) : stat,
+			       errmsg, errmsg_len);
+  else
+    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_event_wait, 6,
+			       token, index, until_count,
+			       stat != null_pointer_node
+			       ? gfc_build_addr_expr (NULL, stat) : stat,
+			       errmsg, errmsg_len);
+  gfc_add_expr_to_block (&se.pre, tmp);
+
+  if (stat2 != NULL_TREE)
+    gfc_add_modify (&se.pre, stat2, fold_convert (TREE_TYPE (stat2), stat));
+
+  return gfc_finish_block (&se.pre);
+}
 
 tree
 gfc_trans_sync (gfc_code *code, gfc_exec_op type)
@@ -879,6 +1039,7 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
     {
       gcc_assert (code->expr3->expr_type == EXPR_VARIABLE);
       gfc_init_se (&argse, NULL);
+      argse.want_pointer = 1;
       gfc_conv_expr (&argse, code->expr3);
       gfc_conv_string_parameter (&argse);
       errmsg = gfc_build_addr_expr (NULL, argse.expr);

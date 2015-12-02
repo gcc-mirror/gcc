@@ -3164,6 +3164,13 @@ add_subroutines (void)
 	      GFC_STD_F95, gfc_check_cpu_time, NULL, gfc_resolve_cpu_time,
 	      tm, BT_REAL, dr, REQUIRED, INTENT_OUT);
 
+  add_sym_3s ("event_query", GFC_ISYM_EVENT_QUERY, CLASS_ATOMIC,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_event_query, NULL, gfc_resolve_event_query,
+	      "event", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      c, BT_INTEGER, di, OPTIONAL, INTENT_IN,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
+
   /* More G77 compatibility garbage.  */
   add_sym_2s ("ctime", GFC_ISYM_CTIME, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_ctime_sub, NULL, gfc_resolve_ctime_sub,
