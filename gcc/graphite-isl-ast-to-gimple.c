@@ -2096,6 +2096,12 @@ translate_isl_ast_to_gimple::copy_loop_phi_nodes (basic_block bb,
       codegen_error = !copy_loop_phi_args (phi, ibp_old_bb, new_phi,
 					  ibp_new_bb, true);
       update_stmt (new_phi);
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "[codegen] creating loop-phi node: ");
+	  print_gimple_stmt (dump_file, new_phi, 0, 0);
+	}
     }
 
   return true;
@@ -2889,6 +2895,26 @@ translate_isl_ast_to_gimple::copy_bb_and_scalar_dependences (basic_block bb,
 	     and cross-bb scalar dependencies are untrackable w.r.t. the original
 	     code.  See gfortran.dg/graphite/pr29832.f90.  */
 	  if (EDGE_COUNT (bb->preds) != EDGE_COUNT (phi_bb->preds))
+	    {
+	      codegen_error = true;
+	      return NULL;
+	    }
+
+	  /* In case ISL did some loop peeling, like this:
+
+	       S_8(0);
+	       for (int c1 = 1; c1 <= 5; c1 += 1) {
+	         S_8(c1);
+	       }
+	       S_8(6);
+
+	     there should be no loop-phi nodes in S_8(0).
+
+	     FIXME: We need to reason about dynamic instances of S_8, i.e., the
+	     values of all scalar variables: for the moment we instantiate only
+	     SCEV analyzable expressions on the iteration domain, and we need to
+	     extend that to reductions that cannot be analyzed by SCEV.  */
+	  if (!bb_in_sese_p (phi_bb, region->if_region->true_region->region))
 	    {
 	      codegen_error = true;
 	      return NULL;
