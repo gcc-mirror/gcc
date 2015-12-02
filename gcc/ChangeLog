@@ -1,3 +1,10 @@
+2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.md ("bswap<mode>2"): Add support for strv and
+	strvg.
+	("bswaphi2"): New pattern.
+	New splitter for HI reg-reg bswap.
+
 2015-11-27  Jiri Engelthaler  <engycz@gmail.com>
 
 	PR driver/68029
