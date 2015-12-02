@@ -1,5 +1,12 @@
 2015-12-02  Tom de Vries  <tom@codesourcery.com>
 
+	* gimplify.c (enum gimplify_omp_var_data): Add enum value
+	GOVD_MAP_FORCE.
+	(oacc_default_clause): Fix default for scalars in oacc kernels.
+	(gimplify_adjust_omp_clauses_1): Handle GOVD_MAP_FORCE.
+
+2015-12-02  Tom de Vries  <tom@codesourcery.com>
+
 	* omp-low.c (install_var_field, scan_sharing_clauses): Add and handle
 	parameter base_pointers_restrict.
 	(omp_target_base_pointers_restrict_p): New function.

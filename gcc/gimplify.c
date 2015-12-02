@@ -90,6 +90,9 @@ enum gimplify_omp_var_data
   /* Flag for shared vars that are or might be stored to in the region.  */
   GOVD_WRITTEN = 131072,
 
+  /* Flag for GOVD_MAP, if it is a forced mapping.  */
+  GOVD_MAP_FORCE = 262144,
+
   GOVD_DATA_SHARE_CLASS = (GOVD_SHARED | GOVD_PRIVATE | GOVD_FIRSTPRIVATE
 			   | GOVD_LASTPRIVATE | GOVD_REDUCTION | GOVD_LINEAR
 			   | GOVD_LOCAL)
@@ -5980,8 +5983,12 @@ oacc_default_clause (struct gimplify_omp_ctx *ctx, tree decl, unsigned flags)
       gcc_unreachable ();
 
     case ORT_ACC_KERNELS:
-      /* Everything under kernels are default 'present_or_copy'.  */
+      /* Scalars are default 'copy' under kernels, non-scalars are default
+	 'present_or_copy'.  */
       flags |= GOVD_MAP;
+      if (!AGGREGATE_TYPE_P (TREE_TYPE (decl)))
+	flags |= GOVD_MAP_FORCE;
+
       rkind = "kernels";
       break;
 
@@ -7640,10 +7647,12 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
     }
   else if (code == OMP_CLAUSE_MAP)
     {
-      OMP_CLAUSE_SET_MAP_KIND (clause,
-			       flags & GOVD_MAP_TO_ONLY
-			       ? GOMP_MAP_TO
-			       : GOMP_MAP_TOFROM);
+      int kind = (flags & GOVD_MAP_TO_ONLY
+		  ? GOMP_MAP_TO
+		  : GOMP_MAP_TOFROM);
+      if (flags & GOVD_MAP_FORCE)
+	kind |= GOMP_MAP_FLAG_FORCE;
+      OMP_CLAUSE_SET_MAP_KIND (clause, kind);
       if (DECL_SIZE (decl)
 	  && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
 	{
