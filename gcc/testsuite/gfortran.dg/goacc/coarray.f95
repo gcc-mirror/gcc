@@ -2,8 +2,6 @@
 ! { dg-additional-options "-fcoarray=single" }
 !
 ! PR fortran/63861
-! { dg-xfail-if "<http://gcc.gnu.org/PR63861>" { *-*-* } }
-! { dg-excess-errors "TODO" }
 
 module test
 contains
@@ -20,7 +18,7 @@ contains
     !$acc end parallel
     !$acc host_data use_device (a)
     !$acc end host_data
-    !$acc parallel loop reduction(+:a)
+    !$acc parallel loop reduction(+:a) ! { dg-error "Array 'a' is not permitted in reduction" }
     do i = 1,5
     enddo
     !$acc end parallel loop
