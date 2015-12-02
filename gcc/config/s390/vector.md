@@ -137,8 +137,8 @@
 
 ; Full HW vector size moves
 (define_insn "mov<mode>"
-  [(set (match_operand:V_128 0 "nonimmediate_operand" "=v, v,QR,  v,  v,  v,  v,v,d")
-	(match_operand:V_128 1 "general_operand"      " v,QR, v,j00,jm1,jyy,jxx,d,v"))]
+  [(set (match_operand:V_128 0 "nonimmediate_operand" "=v, v,QR,  v,  v,  v,  v,  v,v,d")
+	(match_operand:V_128 1 "general_operand"      " v,QR, v,j00,jm1,jyy,jxx,jKK,d,v"))]
   "TARGET_VX"
   "@
    vlr\t%v0,%v1
@@ -148,9 +148,10 @@
    vone\t%v0
    vgbm\t%v0,%t1
    vgm<bhfgq>\t%v0,%s1,%e1
+   vrepi<bhfgq>\t%v0,%h1
    vlvgp\t%v0,%1,%N1
    #"
-  [(set_attr "op_type" "VRR,VRX,VRX,VRI,VRI,VRI,VRI,VRR,*")])
+  [(set_attr "op_type" "VRR,VRX,VRX,VRI,VRI,VRI,VRI,VRI,VRR,*")])
 
 (define_split
   [(set (match_operand:V_128 0 "register_operand" "")
