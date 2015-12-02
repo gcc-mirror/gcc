@@ -1,5 +1,10 @@
 2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390-c.c (s390_get_vstring_flags): Invert the
+	condition for the RT flag.
+
+2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/constraints.md ("jKK"): New constraint.
 	* config/s390/s390.c (tm-constrs.h): Include for
 	satisfies_constraint_*.
