@@ -922,6 +922,33 @@ pdr_add_memory_accesses (isl_map *acc, dr_info &dri)
   return acc;
 }
 
+/* Return true when the LOW and HIGH bounds of an array reference REF are valid
+   to extract constraints on accessed elements of the array.  Returning false is
+   the conservative answer.  */
+
+static bool
+bounds_are_valid (tree ref, tree low, tree high)
+{
+  if (!high)
+    return false;
+
+  if (!tree_fits_shwi_p (low)
+      || !tree_fits_shwi_p (high))
+    return false;
+
+  /* 1-element arrays at end of structures may extend over
+     their declared size.  */
+  if (array_at_struct_end_p (ref)
+      && operand_equal_p (low, high, 0))
+    return false;
+
+  /* Fortran has some arrays where high bound is -1 and low is 0.  */
+  if (integer_onep (fold_build2 (LT_EXPR, boolean_type_node, high, low)))
+    return false;
+
+  return true;
+}
+
 /* Add constrains representing the size of the accessed data to the
    ACCESSES polyhedron.  ACCESSP_NB_DIMS is the dimension of the
    ACCESSES polyhedron, DOM_NB_DIMS is the dimension of the iteration
@@ -942,48 +969,35 @@ pdr_add_data_dimensions (isl_set *subscript_sizes, scop_p scop,
       tree low = array_ref_low_bound (ref);
       tree high = array_ref_up_bound (ref);
 
-      /* XXX The PPL code dealt separately with
-         subscript - low >= 0 and high - subscript >= 0 in case one of
-	 the two bounds isn't known.  Do the same here?  */
+      if (!bounds_are_valid (ref, low, high))
+	continue;
 
-      if (tree_fits_shwi_p (low)
-	  && high
-	  && tree_fits_shwi_p (high)
-	  /* 1-element arrays at end of structures may extend over
-	     their declared size.  */
-	  && !(array_at_struct_end_p (ref)
-	       && operand_equal_p (low, high, 0)))
-	{
-	  isl_id *id;
-	  isl_aff *aff;
-	  isl_set *univ, *lbs, *ubs;
-	  isl_pw_aff *index;
-	  isl_set *valid;
-	  isl_space *space = isl_set_get_space (subscript_sizes);
-	  isl_pw_aff *lb = extract_affine_int (low, isl_space_copy (space));
-	  isl_pw_aff *ub = extract_affine_int (high, isl_space_copy (space));
+      isl_space *space = isl_set_get_space (subscript_sizes);
+      isl_pw_aff *lb = extract_affine_int (low, isl_space_copy (space));
+      isl_pw_aff *ub = extract_affine_int (high, isl_space_copy (space));
 
-	  /* high >= 0 */
-	  valid = isl_pw_aff_nonneg_set (isl_pw_aff_copy (ub));
-	  valid = isl_set_project_out (valid, isl_dim_set, 0,
-				       isl_set_dim (valid, isl_dim_set));
-	  scop->param_context = isl_set_intersect (scop->param_context, valid);
+      /* high >= 0 */
+      isl_set *valid = isl_pw_aff_nonneg_set (isl_pw_aff_copy (ub));
+      valid = isl_set_project_out (valid, isl_dim_set, 0,
+				   isl_set_dim (valid, isl_dim_set));
+      scop->param_context = isl_set_intersect (scop->param_context, valid);
 
-	  aff = isl_aff_zero_on_domain (isl_local_space_from_space (space));
-	  aff = isl_aff_add_coefficient_si (aff, isl_dim_in, i + 1, 1);
-	  univ = isl_set_universe (isl_space_domain (isl_aff_get_space (aff)));
-	  index = isl_pw_aff_alloc (univ, aff);
+      isl_aff *aff
+	= isl_aff_zero_on_domain (isl_local_space_from_space (space));
+      aff = isl_aff_add_coefficient_si (aff, isl_dim_in, i + 1, 1);
+      isl_set *univ
+	= isl_set_universe (isl_space_domain (isl_aff_get_space (aff)));
+      isl_pw_aff *index = isl_pw_aff_alloc (univ, aff);
 
-	  id = isl_set_get_tuple_id (subscript_sizes);
-	  lb = isl_pw_aff_set_tuple_id (lb, isl_dim_in, isl_id_copy (id));
-	  ub = isl_pw_aff_set_tuple_id (ub, isl_dim_in, id);
+      isl_id *id = isl_set_get_tuple_id (subscript_sizes);
+      lb = isl_pw_aff_set_tuple_id (lb, isl_dim_in, isl_id_copy (id));
+      ub = isl_pw_aff_set_tuple_id (ub, isl_dim_in, id);
 
-	  /* low <= sub_i <= high */
-	  lbs = isl_pw_aff_ge_set (isl_pw_aff_copy (index), lb);
-	  ubs = isl_pw_aff_le_set (index, ub);
-	  subscript_sizes = isl_set_intersect (subscript_sizes, lbs);
-	  subscript_sizes = isl_set_intersect (subscript_sizes, ubs);
-	}
+      /* low <= sub_i <= high */
+      isl_set *lbs = isl_pw_aff_ge_set (isl_pw_aff_copy (index), lb);
+      isl_set *ubs = isl_pw_aff_le_set (index, ub);
+      subscript_sizes = isl_set_intersect (subscript_sizes, lbs);
+      subscript_sizes = isl_set_intersect (subscript_sizes, ubs);
     }
 
   return subscript_sizes;
