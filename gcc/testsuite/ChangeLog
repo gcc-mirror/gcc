@@ -1,3 +1,8 @@
+2015-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68513
+	* gcc.dg/pr68513.c: New test.
+
 2015-12-02  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR fortran/63861
