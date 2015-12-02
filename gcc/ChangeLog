@@ -1,6 +1,12 @@
 2015-12-02  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	* graphite-isl-ast-to-gimple.c (copy_bb_and_scalar_dependences): Check
+	that insertion point is still in the region.
+
+2015-12-02  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
 	PR tree-optimization/68550
 	* graphite-isl-ast-to-gimple.c (copy_loop_phi_nodes): Add dump.
 	(copy_bb_and_scalar_dependences): Do not code generate loop peeled
