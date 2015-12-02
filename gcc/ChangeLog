@@ -1,3 +1,16 @@
+2015-12-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* configure.ac: Check assembler support for R_PPC64_ENTRY relocation.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/rs6000/rs6000.c (rs6000_global_entry_point_needed_p): New
+	function.
+	(rs6000_output_function_prologue): Use it instead of checking
+	cfun->machine->r2_setup_needed.  Use internal labels instead of
+	GNU as local label extension.  Handle ELFv2 large code model.
+	(rs6000_output_mi_thunk): Do not set cfun->machine->r2_setup_needed.
+	(rs6000_elf_declare_function_name): Handle ELFv2 large code model.
+
 2015-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/68647
