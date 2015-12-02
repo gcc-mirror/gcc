@@ -1,3 +1,9 @@
+2015-12-02  Ian Lance Taylor  <iant@google.com>
+
+	PR go/66147
+	* Makefile.tpl (HOST_EXPORTS): Add XGCC_FLAGS_FOR_TARGET.
+	* Makefile.in: Regenerate.
+
 2015-12-01  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	PR libffi/65726

@@ -30,7 +30,7 @@ LIBGODEP = $(libgodir)/libgo.la
 
 if NATIVE
 # Use the compiler we just built.
-GOCOMPILER = $(GOC_FOR_TARGET)
+GOCOMPILER = $(GOC_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET)
 else
 GOCOMPILER = $(GOC)
 endif

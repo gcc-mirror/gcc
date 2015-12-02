@@ -256,7 +256,7 @@ LIBGODEP = $(libgodir)/libgo.la
 @NATIVE_FALSE@GOCOMPILER = $(GOC)
 
 # Use the compiler we just built.
-@NATIVE_TRUE@GOCOMPILER = $(GOC_FOR_TARGET)
+@NATIVE_TRUE@GOCOMPILER = $(GOC_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET)
 GOCOMPILE = $(GOCOMPILER) $(GOCFLAGS)
 AM_LDFLAGS = -L $(libgodir) -L $(libgodir)/.libs
 GOLINK = $(GOCOMPILER) $(GOCFLAGS) $(AM_GOCFLAGS) $(LDFLAGS) $(AM_LDFLAGS) -o $@
@@ -563,8 +563,8 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-@NATIVE_FALSE@uninstall-local:
 @NATIVE_FALSE@install-exec-local:
+@NATIVE_FALSE@uninstall-local:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-noinstPROGRAMS \
