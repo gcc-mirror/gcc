@@ -1,3 +1,10 @@
+2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+        * gcc.dg/builtin-bswap-6a.c: Add -march=z900 for s390 and s390x in
+	order to make -m31 work.
+        * gcc.dg/optimize-bswapsi-1.c: Likewise.
+        * gcc.dg/optimize-bswapsi-2.c: Likewise.
+
 2015-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/68533
