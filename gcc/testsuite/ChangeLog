@@ -1,3 +1,8 @@
+2015-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/68647
+	* gcc.target/i386/pr68647.c: New test.
+
 2015-12-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/68653

@@ -1,3 +1,10 @@
+2015-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/68647
+	* optabs.c (expand_doubleword_popcount, expand_doubleword_parity):
+	New functions.
+	(expand_unop): Use them.
+
 2015-12-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/68653

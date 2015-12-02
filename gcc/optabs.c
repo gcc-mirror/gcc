@@ -2223,6 +2223,58 @@ expand_doubleword_clz (machine_mode mode, rtx op0, rtx target)
   return 0;
 }
 
+/* Try calculating popcount of a double-word quantity as two popcount's of
+   word-sized quantities and summing up the results.  */
+static rtx
+expand_doubleword_popcount (machine_mode mode, rtx op0, rtx target)
+{
+  rtx t0, t1, t;
+  rtx_insn *seq;
+
+  start_sequence ();
+
+  t0 = expand_unop_direct (word_mode, popcount_optab,
+			   operand_subword_force (op0, 0, mode), NULL_RTX,
+			   true);
+  t1 = expand_unop_direct (word_mode, popcount_optab,
+			   operand_subword_force (op0, 1, mode), NULL_RTX,
+			   true);
+  if (!t0 || !t1)
+    {
+      end_sequence ();
+      return NULL_RTX;
+    }
+
+  /* If we were not given a target, use a word_mode register, not a
+     'mode' register.  The result will fit, and nobody is expecting
+     anything bigger (the return type of __builtin_popcount* is int).  */
+  if (!target)
+    target = gen_reg_rtx (word_mode);
+
+  t = expand_binop (word_mode, add_optab, t0, t1, target, 0, OPTAB_DIRECT);
+
+  seq = get_insns ();
+  end_sequence ();
+
+  add_equal_note (seq, t, POPCOUNT, op0, 0);
+  emit_insn (seq);
+  return t;
+}
+
+/* Try calculating
+	(parity:wide x)
+   as
+	(parity:narrow (low (x) ^ high (x))) */
+static rtx
+expand_doubleword_parity (machine_mode mode, rtx op0, rtx target)
+{
+  rtx t = expand_binop (word_mode, xor_optab,
+			operand_subword_force (op0, 0, mode),
+			operand_subword_force (op0, 1, mode),
+			NULL_RTX, 0, OPTAB_DIRECT);
+  return expand_unop (word_mode, parity_optab, t, target, true);
+}
+
 /* Try calculating
 	(bswap:narrow x)
    as
@@ -2582,7 +2634,7 @@ expand_absneg_bit (enum rtx_code code, machine_mode mode,
    different mode or with a libcall.  */
 static rtx
 expand_unop_direct (machine_mode mode, optab unoptab, rtx op0, rtx target,
-	     int unsignedp)
+		    int unsignedp)
 {
   if (optab_handler (unoptab, mode) != CODE_FOR_nothing)
     {
@@ -2663,6 +2715,27 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
       if (temp)
 	return temp;
       goto try_libcall;
+    }
+
+  if (unoptab == popcount_optab
+      && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
+      && optab_handler (unoptab, word_mode) != CODE_FOR_nothing
+      && optimize_insn_for_speed_p ())
+    {
+      temp = expand_doubleword_popcount (mode, op0, target);
+      if (temp)
+	return temp;
+    }
+
+  if (unoptab == parity_optab
+      && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
+      && (optab_handler (unoptab, word_mode) != CODE_FOR_nothing
+	  || optab_handler (popcount_optab, word_mode) != CODE_FOR_nothing)
+      && optimize_insn_for_speed_p ())
+    {
+      temp = expand_doubleword_parity (mode, op0, target);
+      if (temp)
+	return temp;
     }
 
   /* Widening (or narrowing) bswap needs special treatment.  */
