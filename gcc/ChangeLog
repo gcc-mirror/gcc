@@ -1,3 +1,8 @@
+2015-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/68653
+	* tree.c (nonnull_arg_p): Allow OFFSET_TYPE.
+
 2015-12-02  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (enum nvptx_shuffle_kind): New.  Absorb

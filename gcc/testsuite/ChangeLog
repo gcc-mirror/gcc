@@ -1,3 +1,8 @@
+2015-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/68653
+	* g++.dg/warn/nonnull3.C: New test.
+
 2015-12-02  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/68162

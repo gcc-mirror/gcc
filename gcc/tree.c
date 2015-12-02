@@ -13848,7 +13848,9 @@ nonnull_arg_p (const_tree arg)
   tree t, attrs, fntype;
   unsigned HOST_WIDE_INT arg_num;
 
-  gcc_assert (TREE_CODE (arg) == PARM_DECL && POINTER_TYPE_P (TREE_TYPE (arg)));
+  gcc_assert (TREE_CODE (arg) == PARM_DECL
+	      && (POINTER_TYPE_P (TREE_TYPE (arg))
+		  || TREE_CODE (TREE_TYPE (arg)) == OFFSET_TYPE));
 
   /* The static chain decl is always non null.  */
   if (arg == cfun->static_chain_decl)
