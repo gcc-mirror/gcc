@@ -2944,6 +2944,7 @@ translate_isl_ast_to_gimple::copy_bb_and_scalar_dependences (basic_block bb,
 
 	  /* If a corresponding merge-point was not found, then abort codegen.  */
 	  if (phi_bb->loop_father != loop_father
+	      || !bb_in_sese_p (phi_bb, region->if_region->true_region->region)
 	      || !copy_cond_phi_nodes (bb, phi_bb, iv_map))
 	    {
 	      codegen_error = true;
