@@ -34,6 +34,8 @@
 ;;         jm1: constant scalar or vector with all bits set
 ;;         jxx: contiguous bitmask of 0 or 1 in all vector elements
 ;;         jyy: constant consisting of byte chunks being either 0 or 0xff
+;;         jKK: constant vector with all elements having the same value and
+;;              matching K constraint
 ;;    t -- Access registers 36 and 37.
 ;;    v -- Vector registers v0-v31.
 ;;    C -- A signed 8-bit constant (-128..127)
@@ -108,23 +110,6 @@
   "FP_REGS"
   "Floating point registers")
 
-(define_constraint "j00"
-  "Zero scalar or vector constant"
-  (match_test "op == CONST0_RTX (GET_MODE (op))"))
-
-(define_constraint "jm1"
-  "All one bit scalar or vector constant"
-  (match_test "op == CONSTM1_RTX (GET_MODE (op))"))
-
-(define_constraint "jxx"
-  "@internal"
-  (and (match_code "const_vector")
-       (match_test "s390_contiguous_bitmask_vector_p (op, NULL, NULL)")))
-
-(define_constraint "jyy"
-  "@internal"
-  (and (match_code "const_vector")
-       (match_test "s390_bytemask_vector_p (op, NULL)")))
 
 (define_register_constraint "t"
   "ACCESS_REGS"
@@ -402,6 +387,33 @@
        (match_test "s390_O_constraint_str ('n', ival)")))
 
 
+;;
+;; Vector constraints follow.
+;;
+
+(define_constraint "j00"
+  "Zero scalar or vector constant"
+  (match_test "op == CONST0_RTX (GET_MODE (op))"))
+
+(define_constraint "jm1"
+  "All one bit scalar or vector constant"
+  (match_test "op == CONSTM1_RTX (GET_MODE (op))"))
+
+(define_constraint "jxx"
+  "@internal"
+  (and (match_code "const_vector")
+       (match_test "s390_contiguous_bitmask_vector_p (op, NULL, NULL)")))
+
+(define_constraint "jyy"
+  "@internal"
+  (and (match_code "const_vector")
+       (match_test "s390_bytemask_vector_p (op, NULL)")))
+
+(define_constraint "jKK"
+  "@internal"
+  (and (and (match_code "const_vector")
+	    (match_test "const_vec_duplicate_p (op)"))
+       (match_test "satisfies_constraint_K (XVECEXP (op, 0, 0))")))
 
 
 ;;
