@@ -5543,6 +5543,8 @@ proc check_effective_target_bswap32 { } {
 }
 
 # Return 1 if the target supports 64-bit byte swap instructions.
+#
+# Note: 32bit s390 targets require -mzarch in dg-options.
 
 proc check_effective_target_bswap64 { } {
     global et_bswap64_saved
