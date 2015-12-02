@@ -1,3 +1,7 @@
+2015-12-02  David Sherwood  <david.sherwood@arm.com>
+
+        * gcc.target/aarch64/fmaxmin.c: New test.
+
 2015-12-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gfortran.dg/goacc/coarray.f95: XFAIL.

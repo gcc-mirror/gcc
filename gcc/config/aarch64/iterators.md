@@ -306,6 +306,8 @@
     UNSPEC_VEC_SHR      ; Used in aarch64-simd.md.
     UNSPEC_SQRDMLAH     ; Used in aarch64-simd.md.
     UNSPEC_SQRDMLSH     ; Used in aarch64-simd.md.
+    UNSPEC_FMAXNM       ; Used in aarch64-simd.md.
+    UNSPEC_FMINNM       ; Used in aarch64-simd.md.
 ])
 
 ;; ------------------------------------------------------------------
@@ -948,6 +950,8 @@
 
 (define_int_iterator FMAXMIN_UNS [UNSPEC_FMAX UNSPEC_FMIN])
 
+(define_int_iterator FMAXMIN [UNSPEC_FMAXNM UNSPEC_FMINNM])
+
 (define_int_iterator VQDMULH [UNSPEC_SQDMULH UNSPEC_SQRDMULH])
 
 (define_int_iterator USSUQADD [UNSPEC_SUQADD UNSPEC_USQADD])
@@ -1039,6 +1043,12 @@
 				 (UNSPEC_FMIN "fmin")
 				 (UNSPEC_FMINNMV "fminnm")
 				 (UNSPEC_FMINV "fmin")])
+
+(define_int_attr fmaxmin [(UNSPEC_FMAXNM "fmax")
+			  (UNSPEC_FMINNM "fmin")])
+
+(define_int_attr fmaxmin_op [(UNSPEC_FMAXNM "fmaxnm")
+			     (UNSPEC_FMINNM "fminnm")])
 
 (define_int_attr sur [(UNSPEC_SHADD "s") (UNSPEC_UHADD "u")
 		      (UNSPEC_SRHADD "sr") (UNSPEC_URHADD "ur")
