@@ -26,7 +26,7 @@ main1 ()
   s *ptr = arr;
   s check_res[N];
   s res[N];
-  unsigned char u, t, s, x, y, z, w;
+  unsigned char u, t, s, x, z, w;
 
   for (i = 0; i < N; i++)
     {
