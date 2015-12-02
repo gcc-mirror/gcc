@@ -1094,6 +1094,19 @@ fix_string_type (tree value)
   return value;
 }
 
+/* Fold X for consideration by one of the warning functions when checking
+   whether an expression has a constant value.  */
+
+static tree
+fold_for_warn (tree x)
+{
+  if (c_dialect_cxx ())
+    return c_fully_fold (x, /*for_init*/false, /*maybe_constp*/NULL);
+  else
+    /* The C front-end has already folded X appropriately.  */
+    return x;
+}
+
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
    requires to be a constant expression.
@@ -1207,6 +1220,9 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
      programmer. That is, an expression such as op && MASK
      where op should not be any boolean expression, nor a
      constant, and mask seems to be a non-boolean integer constant.  */
+  if (TREE_CODE (op_right) == CONST_DECL)
+    /* An enumerator counts as a constant.  */
+    op_right = DECL_INITIAL (op_right);
   if (!truth_value_p (code_left)
       && INTEGRAL_TYPE_P (TREE_TYPE (op_left))
       && !CONSTANT_CLASS_P (op_left)
@@ -1227,7 +1243,8 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
 
   /* We do not warn for constants because they are typical of macro
      expansions that test for features.  */
-  if (CONSTANT_CLASS_P (op_left) || CONSTANT_CLASS_P (op_right))
+  if (CONSTANT_CLASS_P (fold_for_warn (op_left))
+      || CONSTANT_CLASS_P (fold_for_warn (op_right)))
     return;
 
   /* This warning only makes sense with logical operands.  */
@@ -1347,7 +1364,8 @@ warn_tautological_cmp (location_t loc, enum tree_code code, tree lhs, tree rhs)
 
   /* We do not warn for constants because they are typical of macro
      expansions that test for features, sizeof, and similar.  */
-  if (CONSTANT_CLASS_P (fold (lhs)) || CONSTANT_CLASS_P (fold (rhs)))
+  if (CONSTANT_CLASS_P (fold_for_warn (lhs))
+      || CONSTANT_CLASS_P (fold_for_warn (rhs)))
     return;
 
   /* Don't warn for e.g.
@@ -9701,11 +9719,14 @@ check_function_arguments_recurse (void (*callback)
 
   if (TREE_CODE (param) == COND_EXPR)
     {
+      tree cond = fold_for_warn (TREE_OPERAND (param, 0));
       /* Check both halves of the conditional expression.  */
-      check_function_arguments_recurse (callback, ctx,
-					TREE_OPERAND (param, 1), param_num);
-      check_function_arguments_recurse (callback, ctx,
-					TREE_OPERAND (param, 2), param_num);
+      if (!integer_zerop (cond))
+	check_function_arguments_recurse (callback, ctx,
+					  TREE_OPERAND (param, 1), param_num);
+      if (!integer_nonzerop (cond))
+	check_function_arguments_recurse (callback, ctx,
+					  TREE_OPERAND (param, 2), param_num);
       return;
     }
 
@@ -11984,9 +12005,14 @@ maybe_warn_bool_compare (location_t loc, enum tree_code code, tree op0,
   if (TREE_CODE_CLASS (code) != tcc_comparison)
     return;
 
-  tree cst = (TREE_CODE (op0) == INTEGER_CST)
-	     ? op0 : (TREE_CODE (op1) == INTEGER_CST) ? op1 : NULL_TREE;
-  if (!cst)
+  tree f, cst;
+  if (f = fold_for_warn (op0),
+      TREE_CODE (f) == INTEGER_CST)
+    cst = op0 = f;
+  else if (f = fold_for_warn (op1),
+	   TREE_CODE (f) == INTEGER_CST)
+    cst = op1 = f;
+  else
     return;
 
   if (!integer_zerop (cst) && !integer_onep (cst))

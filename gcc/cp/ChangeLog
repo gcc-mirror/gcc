@@ -1,5 +1,8 @@
 2015-12-02  Jason Merrill  <jason@redhat.com>
 
+	* call.c (build_new_op_1): Don't fold arguments to
+	warn_logical_operator or maybe_warn_bool_compare.
+
 	* cp-gimplify.c (cp_fold_maybe_rvalue, cp_fold_rvalue): New.
 	(c_fully_fold): Use cp_fold_rvalue.
 	(cp_fold): Use them for rvalue operands.
