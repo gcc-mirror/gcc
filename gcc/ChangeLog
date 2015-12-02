@@ -1,3 +1,8 @@
+2015-12-02  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call)
+	(find_func_clobbers, ipa_pta_execute): Handle BUILT_IN_GOACC_PARALLEL.
+
 2015-12-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (cstore_si_as_di): New expander.

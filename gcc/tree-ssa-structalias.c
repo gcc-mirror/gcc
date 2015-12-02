@@ -4507,15 +4507,32 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
 	  return true;
 	}
       case BUILT_IN_GOMP_PARALLEL:
+      case BUILT_IN_GOACC_PARALLEL:
 	{
-	  /* Handle __builtin_GOMP_parallel (fn, data, num_threads, flags) as
-	     fn (data).  */
 	  if (in_ipa_mode)
 	    {
-	      tree fnarg = gimple_call_arg (t, 0);
+	      unsigned int fnpos, argpos;
+	      switch (DECL_FUNCTION_CODE (fndecl))
+		{
+		case BUILT_IN_GOMP_PARALLEL:
+		  /* __builtin_GOMP_parallel (fn, data, num_threads, flags).  */
+		  fnpos = 0;
+		  argpos = 1;
+		  break;
+		case BUILT_IN_GOACC_PARALLEL:
+		  /* __builtin_GOACC_parallel (device, fn, mapnum, hostaddrs,
+					       sizes, kinds, ...).  */
+		  fnpos = 1;
+		  argpos = 3;
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
+
+	      tree fnarg = gimple_call_arg (t, fnpos);
 	      gcc_assert (TREE_CODE (fnarg) == ADDR_EXPR);
 	      tree fndecl = TREE_OPERAND (fnarg, 0);
-	      tree arg = gimple_call_arg (t, 1);
+	      tree arg = gimple_call_arg (t, argpos);
 	      gcc_assert (TREE_CODE (arg) == ADDR_EXPR);
 
 	      varinfo_t fi = get_vi_for_tree (fndecl);
@@ -5064,6 +5081,7 @@ find_func_clobbers (struct function *fn, gimple *origt)
 	  case BUILT_IN_VA_END:
 	    return;
 	  case BUILT_IN_GOMP_PARALLEL:
+	  case BUILT_IN_GOACC_PARALLEL:
 	    return;
 	  /* printf-style functions may have hooks to set pointers to
 	     point to somewhere into the generated string.  Leave them
@@ -7547,6 +7565,8 @@ ipa_pta_execute (void)
 	      /* Handle direct calls to functions with body.  */
 	      if (gimple_call_builtin_p (stmt, BUILT_IN_GOMP_PARALLEL))
 		decl = TREE_OPERAND (gimple_call_arg (stmt, 0), 0);
+	      else if (gimple_call_builtin_p (stmt, BUILT_IN_GOACC_PARALLEL))
+		decl = TREE_OPERAND (gimple_call_arg (stmt, 1), 0);
 	      else
 		decl = gimple_call_fndecl (stmt);
 
