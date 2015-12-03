@@ -1,3 +1,8 @@
+2015-12-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66051
+	* gcc.dg/vect/slp-42.c: New testcase.
+
 2015-12-02  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/avx512vl-vextractf32x4-1.c: Fix scan pattern.
