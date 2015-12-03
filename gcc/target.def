@@ -2459,13 +2459,13 @@ identical versions.",
  tree, (void *decl), NULL)
 
 /* Returns a code for a target-specific builtin that implements
-   reciprocal of the function, or NULL_TREE if not available.  */
+   reciprocal of a target-specific function, or NULL_TREE if not available.  */
 DEFHOOK
 (builtin_reciprocal,
- "This hook should return the DECL of a function that implements reciprocal of\n\
-the builtin or internal function call @var{call}, or\n\
+ "This hook should return the DECL of a function that implements the\n\
+reciprocal of the machine-specific builtin function @var{fndecl}, or\n\
 @code{NULL_TREE} if such a function is not available.",
- tree, (gcall *call),
+ tree, (tree fndecl),
  default_builtin_reciprocal)
 
 /* For a vendor-specific TYPE, return a pointer to a statically-allocated

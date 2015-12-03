@@ -1,3 +1,43 @@
+2015-12-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* internal-fn.def (RSQRT): New function.
+	* optabs.def (rsqrt_optab): New optab.
+	* doc/md.texi (rsqrtM2): Document.
+	* target.def (builtin_reciprocal): Replace gcall argument with
+	a function decl.  Restrict hook to machine functions.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_builtin_reciprocal): Update prototype.
+	* targhooks.c (default_builtin_reciprocal): Likewise.
+	* tree-ssa-math-opts.c: Include internal-fn.h.
+	(internal_fn_reciprocal): New function.
+	(pass_cse_reciprocals::execute): Call it, and build a call to an
+	internal function on success.  Only call targetm.builtin_reciprocal
+	for machine functions.
+	* config/aarch64/aarch64-protos.h (aarch64_builtin_rsqrt): Remove
+	second argument.
+	* config/aarch64/aarch64-builtins.c (aarch64_expand_builtin_rsqrt):
+	Rename aarch64_rsqrt_<mode>2 to rsqrt<mode>2.
+	(aarch64_builtin_rsqrt): Remove md_fn argument and only handle
+	machine functions.
+	* config/aarch64/aarch64.c (use_rsqrt_p): New function.
+	(aarch64_builtin_reciprocal): Replace gcall argument with a
+	function decl.  Use use_rsqrt_p.  Remove optimize_size check.
+	Only handle machine functions.  Update call to aarch64_builtin_rsqrt.
+	(aarch64_optab_supported_p): New function.
+	(TARGET_OPTAB_SUPPORTED_P): Define.
+	* config/aarch64/aarch64-simd.md (aarch64_rsqrt_<mode>2): Rename to...
+	(rsqrt<mode>2): ...this.
+	* config/i386/i386.c (use_rsqrt_p): New function.
+	(ix86_builtin_reciprocal): Replace gcall argument with a
+	function decl.  Use use_rsqrt_p.  Remove optimize_insn_for_size_p
+	check.  Only handle machine functions.
+	(ix86_optab_supported_p): Handle rsqrt_optab.
+	* config/rs6000/rs6000.c (TARGET_OPTAB_SUPPORTED_P): Define.
+	(rs6000_builtin_reciprocal): Replace gcall argument with a
+	function decl.  Remove optimize_insn_for_size_p check.
+	Only handle machine functions.
+	(rs6000_optab_supported_p): New function.
+
 2015-12-03  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR target/68471

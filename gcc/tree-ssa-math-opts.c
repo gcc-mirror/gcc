@@ -110,6 +110,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "builtins.h"
 #include "params.h"
+#include "internal-fn.h"
 #include "case-cfn-macros.h"
 
 /* This structure represents one basic block that either computes a
@@ -497,6 +498,31 @@ execute_cse_reciprocals_1 (gimple_stmt_iterator *def_gsi, tree def)
   occ_head = NULL;
 }
 
+/* Return an internal function that implements the reciprocal of CALL,
+   or IFN_LAST if there is no such function that the target supports.  */
+
+internal_fn
+internal_fn_reciprocal (gcall *call)
+{
+  internal_fn ifn;
+
+  switch (gimple_call_combined_fn (call))
+    {
+    CASE_CFN_SQRT:
+      ifn = IFN_RSQRT;
+      break;
+
+    default:
+      return IFN_LAST;
+    }
+
+  tree_pair types = direct_internal_fn_types (ifn, call);
+  if (!direct_internal_fn_supported_p (ifn, types, OPTIMIZE_FOR_SPEED))
+    return IFN_LAST;
+
+  return ifn;
+}
+
 /* Go through all the floating-point SSA_NAMEs, and call
    execute_cse_reciprocals_1 on each of them.  */
 namespace {
@@ -586,7 +612,6 @@ pass_cse_reciprocals::execute (function *fun)
 	   gsi_next (&gsi))
         {
 	  gimple *stmt = gsi_stmt (gsi);
-	  tree fndecl;
 
 	  if (is_gimple_assign (stmt)
 	      && gimple_assign_rhs_code (stmt) == RDIV_EXPR)
@@ -600,20 +625,25 @@ pass_cse_reciprocals::execute (function *fun)
 	      stmt1 = SSA_NAME_DEF_STMT (arg1);
 
 	      if (is_gimple_call (stmt1)
-		  && gimple_call_lhs (stmt1)
-		  && (gimple_call_internal_p (stmt1)
-		      || ((fndecl = gimple_call_fndecl (stmt1))
-			  && (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-			      || (DECL_BUILT_IN_CLASS (fndecl)
-				  == BUILT_IN_MD)))))
+		  && gimple_call_lhs (stmt1))
 		{
 		  bool fail;
 		  imm_use_iterator ui;
 		  use_operand_p use_p;
+		  tree fndecl = NULL_TREE;
 
-		  fndecl = targetm.builtin_reciprocal (as_a <gcall *> (stmt1));
-		  if (!fndecl)
-		    continue;
+		  gcall *call = as_a <gcall *> (stmt1);
+		  internal_fn ifn = internal_fn_reciprocal (call);
+		  if (ifn == IFN_LAST)
+		    {
+		      fndecl = gimple_call_fndecl (call);
+		      if (!fndecl
+			  || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_MD)
+			continue;
+		      fndecl = targetm.builtin_reciprocal (fndecl);
+		      if (!fndecl)
+			continue;
+		    }
 
 		  /* Check that all uses of the SSA name are divisions,
 		     otherwise replacing the defining statement will do
@@ -636,28 +666,35 @@ pass_cse_reciprocals::execute (function *fun)
 		  if (fail)
 		    continue;
 
-		  gimple_replace_ssa_lhs (stmt1, arg1);
-		  if (gimple_call_internal_p (stmt1))
+		  gimple_replace_ssa_lhs (call, arg1);
+		  if (gimple_call_internal_p (call) != (ifn != IFN_LAST))
 		    {
 		      auto_vec<tree, 4> args;
 		      for (unsigned int i = 0;
-			   i < gimple_call_num_args (stmt1); i++)
-			args.safe_push (gimple_call_arg (stmt1, i));
-		      gcall *stmt2 = gimple_build_call_vec (fndecl, args);
+			   i < gimple_call_num_args (call); i++)
+			args.safe_push (gimple_call_arg (call, i));
+		      gcall *stmt2;
+		      if (ifn == IFN_LAST)
+			stmt2 = gimple_build_call_vec (fndecl, args);
+		      else
+			stmt2 = gimple_build_call_internal_vec (ifn, args);
 		      gimple_call_set_lhs (stmt2, arg1);
-		      if (gimple_vdef (stmt1))
+		      if (gimple_vdef (call))
 			{
-			  gimple_set_vdef (stmt2, gimple_vdef (stmt1));
+			  gimple_set_vdef (stmt2, gimple_vdef (call));
 			  SSA_NAME_DEF_STMT (gimple_vdef (stmt2)) = stmt2;
 			}
-		      gimple_set_vuse (stmt2, gimple_vuse (stmt1));
-		      gimple_stmt_iterator gsi2 = gsi_for_stmt (stmt1);
+		      gimple_set_vuse (stmt2, gimple_vuse (call));
+		      gimple_stmt_iterator gsi2 = gsi_for_stmt (call);
 		      gsi_replace (&gsi2, stmt2, true);
 		    }
 		  else
 		    {
-		      gimple_call_set_fndecl (stmt1, fndecl);
-		      update_stmt (stmt1);
+		      if (ifn == IFN_LAST)
+			gimple_call_set_fndecl (call, fndecl);
+		      else
+			gimple_call_set_internal_fn (call, ifn);
+		      update_stmt (call);
 		    }
 		  reciprocal_stats.rfuncs_inserted++;
 

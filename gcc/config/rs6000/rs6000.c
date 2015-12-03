@@ -1722,6 +1722,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_INVALID_BINARY_OP
 #define TARGET_INVALID_BINARY_OP rs6000_invalid_binary_op
+
+#undef TARGET_OPTAB_SUPPORTED_P
+#define TARGET_OPTAB_SUPPORTED_P rs6000_optab_supported_p
 
 
 /* Processor table.  */
@@ -32713,77 +32716,25 @@ rs6000_memory_move_cost (machine_mode mode, reg_class_t rclass,
    reciprocal of the function, or NULL_TREE if not available.  */
 
 static tree
-rs6000_builtin_reciprocal (gcall *call)
+rs6000_builtin_reciprocal (tree fndecl)
 {
-  if (optimize_insn_for_size_p ())
-    return NULL_TREE;
-
-  if (gimple_call_internal_p (call))
-    switch (gimple_call_internal_fn (call))
-      {
-	tree type;
-      case IFN_SQRT:
-	type = TREE_TYPE (gimple_call_lhs (call));
-	switch (TYPE_MODE (type))
-	  {
-	  case V2DFmode:
-	    if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))
-	      return NULL_TREE;
-
-	    return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_2DF];
-
-	  case V4SFmode:
-	    if (!RS6000_RECIP_AUTO_RSQRTE_P (V4SFmode))
-	      return NULL_TREE;
-
-	    return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_4SF];
-
-	  default:
-	    return NULL_TREE;
-	  }
-
-      default:
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    case VSX_BUILTIN_XVSQRTDP:
+      if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))
 	return NULL_TREE;
-      }
 
-  tree fndecl = gimple_call_fndecl (call);
-  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
-    switch (DECL_FUNCTION_CODE (fndecl))
-      {
-      case VSX_BUILTIN_XVSQRTDP:
-	if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))
-	  return NULL_TREE;
+      return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_2DF];
 
-	return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_2DF];
-
-      case VSX_BUILTIN_XVSQRTSP:
-	if (!RS6000_RECIP_AUTO_RSQRTE_P (V4SFmode))
-	  return NULL_TREE;
-
-	return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_4SF];
-
-      default:
+    case VSX_BUILTIN_XVSQRTSP:
+      if (!RS6000_RECIP_AUTO_RSQRTE_P (V4SFmode))
 	return NULL_TREE;
-      }
 
-  else
-    switch (DECL_FUNCTION_CODE (fndecl))
-      {
-      case BUILT_IN_SQRT:
-	if (!RS6000_RECIP_AUTO_RSQRTE_P (DFmode))
-	  return NULL_TREE;
+      return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_4SF];
 
-	return rs6000_builtin_decls[RS6000_BUILTIN_RSQRT];
-
-      case BUILT_IN_SQRTF:
-	if (!RS6000_RECIP_AUTO_RSQRTE_P (SFmode))
-	  return NULL_TREE;
-
-	return rs6000_builtin_decls[RS6000_BUILTIN_RSQRTF];
-
-      default:
-	return NULL_TREE;
-      }
+    default:
+      return NULL_TREE;
+    }
 }
 
 /* Load up a constant.  If the mode is a vector mode, splat the value across
@@ -38007,6 +37958,22 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   *update = build2 (COMPOUND_EXPR, void_type_node, update_mffs, update_mtfsf);
 }
 
+/* Implement the TARGET_OPTAB_SUPPORTED_P hook.  */
+
+static bool
+rs6000_optab_supported_p (int op, machine_mode mode1, machine_mode,
+			  optimization_type opt_type)
+{
+  switch (op)
+    {
+    case rsqrt_optab:
+      return (opt_type == OPTIMIZE_FOR_SPEED
+	      && RS6000_RECIP_AUTO_RSQRTE_P (mode1));
+
+    default:
+      return true;
+    }
+}
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

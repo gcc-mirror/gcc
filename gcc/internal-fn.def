@@ -91,6 +91,8 @@ DEF_INTERNAL_OPTAB_FN (LOAD_LANES, ECF_CONST, vec_load_lanes, load_lanes)
 DEF_INTERNAL_OPTAB_FN (MASK_STORE, 0, maskstore, mask_store)
 DEF_INTERNAL_OPTAB_FN (STORE_LANES, ECF_CONST, vec_store_lanes, store_lanes)
 
+DEF_INTERNAL_OPTAB_FN (RSQRT, ECF_CONST, rsqrt, unary)
+
 /* Unary math functions.  */
 DEF_INTERNAL_FLT_FN (ACOS, ECF_CONST, acos, unary)
 DEF_INTERNAL_FLT_FN (ASIN, ECF_CONST, asin, unary)

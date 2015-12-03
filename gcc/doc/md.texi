@@ -5331,6 +5331,18 @@ corresponds to the C data type @code{double} and the @code{sqrtf}
 built-in function uses the mode which corresponds to the C data
 type @code{float}.
 
+@cindex @code{rsqrt@var{m}2} instruction pattern
+@item @samp{rsqrt@var{m}2}
+Store the reciprocal of the square root of operand 1 into operand 0.
+On most architectures this pattern is only approximate, so either
+its C condition or the @code{TARGET_OPTAB_SUPPORTED_P} hook should
+check for the appropriate math flags.  (Using the C condition is
+more direct, but using @code{TARGET_OPTAB_SUPPORTED_P} can be useful
+if a target-specific built-in also uses the @samp{rsqrt@var{m}2}
+pattern.)
+
+This pattern is not allowed to @code{FAIL}.
+
 @cindex @code{fmod@var{m}3} instruction pattern
 @item @samp{fmod@var{m}3}
 Store the remainder of dividing operand 1 by operand 2 into

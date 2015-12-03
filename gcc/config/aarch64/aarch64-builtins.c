@@ -1176,19 +1176,19 @@ aarch64_expand_builtin_rsqrt (int fcode, tree exp, rtx target)
   switch (fcode)
     {
       case AARCH64_BUILTIN_RSQRT_DF:
-	gen = gen_aarch64_rsqrt_df2;
+	gen = gen_rsqrtdf2;
 	break;
       case AARCH64_BUILTIN_RSQRT_SF:
-	gen = gen_aarch64_rsqrt_sf2;
+	gen = gen_rsqrtsf2;
 	break;
       case AARCH64_BUILTIN_RSQRT_V2DF:
-	gen = gen_aarch64_rsqrt_v2df2;
+	gen = gen_rsqrtv2df2;
 	break;
       case AARCH64_BUILTIN_RSQRT_V2SF:
-	gen = gen_aarch64_rsqrt_v2sf2;
+	gen = gen_rsqrtv2sf2;
 	break;
       case AARCH64_BUILTIN_RSQRT_V4SF:
-	gen = gen_aarch64_rsqrt_v4sf2;
+	gen = gen_rsqrtv4sf2;
 	break;
       default: gcc_unreachable ();
     }
@@ -1405,24 +1405,14 @@ aarch64_builtin_vectorized_function (unsigned int fn, tree type_out,
 /* Return builtin for reciprocal square root.  */
 
 tree
-aarch64_builtin_rsqrt (unsigned int fn, bool md_fn)
+aarch64_builtin_rsqrt (unsigned int fn)
 {
-  if (md_fn)
-    {
-      if (fn == AARCH64_SIMD_BUILTIN_UNOP_sqrtv2df)
-	return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_V2DF];
-      if (fn == AARCH64_SIMD_BUILTIN_UNOP_sqrtv2sf)
-	return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_V2SF];
-      if (fn == AARCH64_SIMD_BUILTIN_UNOP_sqrtv4sf)
-	return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_V4SF];
-    }
-  else
-    {
-      if (fn == BUILT_IN_SQRT)
-	return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_DF];
-      if (fn == BUILT_IN_SQRTF)
-	return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_SF];
-    }
+  if (fn == AARCH64_SIMD_BUILTIN_UNOP_sqrtv2df)
+    return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_V2DF];
+  if (fn == AARCH64_SIMD_BUILTIN_UNOP_sqrtv2sf)
+    return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_V2SF];
+  if (fn == AARCH64_SIMD_BUILTIN_UNOP_sqrtv4sf)
+    return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_V4SF];
   return NULL_TREE;
 }
 
