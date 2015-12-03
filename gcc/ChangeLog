@@ -1,5 +1,10 @@
 2015-12-02  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-pure-const.c (ignore_edge_for_pure_const): New function.
+	(propagate_pure_const): Use it; fix comments and optimize loops.
+
+2015-12-02  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-pure-const.c (ignore_edge): Rename to ...
 	(ignore_edge_for_nothrow) ... this one; also ignore eges to
 	interposable functions or ones that can not throw.
