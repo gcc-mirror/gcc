@@ -1,5 +1,14 @@
 2015-12-03  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/67800
+	PR tree-optimization/68333
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Restore
+	restriction to reduction contexts but allow SLP reductions as well.
+	(vect_recog_sad_pattern): Likewise.
+	(vect_recog_widen_sum_pattern): Likewise.
+
+2015-12-03  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/68639
 	* tree-vect-data-refs.c (dr_group_sort_cmp): Split groups
 	belonging to different loops.

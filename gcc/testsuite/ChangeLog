@@ -1,5 +1,11 @@
 2015-12-03  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/67800
+	PR tree-optimization/68333
+	* gcc.target/i386/vect-pr67800.c: New testcase.
+
+2015-12-03  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/68639
 	* gfortran.fortran-torture/compile/pr68639.f90: New testcase.
 
