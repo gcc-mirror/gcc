@@ -75,6 +75,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chkp.h"
 #include "rtl-chkp.h"
 #include "tree-dfa.h"
+#include "tree-ssa.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
@@ -4798,6 +4799,7 @@ set_cfun (struct function *new_cfun)
     {
       cfun = new_cfun;
       invoke_set_current_function_hook (new_cfun ? new_cfun->decl : NULL_TREE);
+      redirect_edge_var_map_empty ();
     }
 }
 
