@@ -1677,6 +1677,12 @@ build_def_use (basic_block bb)
 		      untracked_operands |= 1 << matches;
 		    }
 		}
+#ifdef STACK_REGS
+	      if (regstack_completed
+		  && REG_P (op)
+		  && IN_RANGE (REGNO (op), FIRST_STACK_REG, LAST_STACK_REG))
+		untracked_operands |= 1 << i;
+#endif
 	      /* If there's an in-out operand with a register that is not
 		 being tracked at all yet, open a chain.  */
 	      if (recog_data.operand_type[i] == OP_INOUT

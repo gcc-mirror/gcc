@@ -45267,8 +45267,9 @@ ix86_mitigate_rop (void)
   COPY_HARD_REG_SET (inout_risky, input_risky);
   IOR_HARD_REG_SET (inout_risky, output_risky);
 
-  compute_bb_for_insn ();
   df_note_add_problem ();
+  /* Fix up what stack-regs did.  */
+  df_insn_rescan_all ();
   df_analyze ();
 
   regrename_init (true);
