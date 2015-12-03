@@ -1,3 +1,16 @@
+2015-12-03  Alan Lawrence  <alan.lawrence@arm.com>
+	    Richard Biener  <richard.guenther@gmail.com>
+
+	* cfgexpand.c (pass_expand::execute): Replace call to
+	redirect_edge_var_map_destroy with redirect_edge_var_map_empty.
+	* tree-ssa.c (delete_tree_ssa): Likewise.
+	* function.c (set_cfun): Call redirect_edge_var_map_empty.
+	* passes.c (execute_one_ipa_transform_pass, execute_one_pass): Likewise.
+	* tree-ssa.h (redirect_edge_var_map_destroy): Remove.
+	(redirect_edge_var_map_empty): New.
+	* tree-ssa.c (redirect_edge_var_map_destroy): Remove.
+	(redirect_edge_var_map_empty): New.
+
 2015-12-03  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/68599

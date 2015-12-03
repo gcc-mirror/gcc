@@ -119,10 +119,10 @@ redirect_edge_var_map_vector (edge e)
 /* Clear the edge variable mappings.  */
 
 void
-redirect_edge_var_map_destroy (void)
+redirect_edge_var_map_empty (void)
 {
-  delete edge_var_maps;
-  edge_var_maps = NULL;
+  if (edge_var_maps)
+    edge_var_maps->empty ();
 }
 
 
@@ -1128,7 +1128,7 @@ delete_tree_ssa (struct function *fn)
   fn->gimple_df = NULL;
 
   /* We no longer need the edge variable maps.  */
-  redirect_edge_var_map_destroy ();
+  redirect_edge_var_map_empty ();
 }
 
 /* Return true if EXPR is a useless type conversion, otherwise return

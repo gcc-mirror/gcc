@@ -6294,7 +6294,7 @@ pass_expand::execute (function *fun)
   expand_phi_nodes (&SA);
 
   /* Release any stale SSA redirection data.  */
-  redirect_edge_var_map_destroy ();
+  redirect_edge_var_map_empty ();
 
   /* Register rtl specific functions for cfg.  */
   rtl_register_cfg_hooks ();
