@@ -1,5 +1,45 @@
 2015-12-03  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* doc/md.texi (vec_load_lanes@var{m}@var{n}): Document that
+	the pattern cannot FAIL.
+	(vec_store_lanes@var{m}@var{n}): Likewise.
+	(maskload@var{m}@var{n}): Likewise.
+	(maskstore@var{m}@var{n}): Likewise.  Fix a cut-&-paste error
+	in the name of the pattern.
+	(rsqrt@var{m}2): Document that mode m must be a scalar or vector
+	floating-point mode and that all operands have that mode.
+	(fmin@var{m}3, fmax@var{m}3): Likewise.  Document that the
+	pattern cannot FAIL.
+	(sqrt@var{m}2): Document that mode m must be a scalar or vector
+	floating-point mode, that all operands have that mode, and that
+	the patterns cannot FAIL.  Remove previous documentation referring
+	to @code{double} and @code{float}.
+	(fmod@var{m}3, remainder@var{m}3, cos@var{m}2, sin@var{m}2)
+	(sincos@var{m}3, log@var{m}2, pow@var{m}3, atan2@var{m}3)
+	(copysign@var{m}3): Likewise.
+	(exp@var{m}2): Likewise.  Explicitly state the base.
+	(floor@var{m}2): As for sqrt@var{m}2, but also specify the operands.
+	(btrunc@var{m}2, rint@var{m}2): Likewise.
+	(round@var{m}2): Likewise.  Fix incorrect description of rounding
+	effect.
+	(ceil@var{m}2): As for round@var{m}2.
+	(nearbyint@var{m}2): As for floor@var{m}2, but also mention that
+	the instruction must not raise an inexact condition.
+	(scalb@var{m}3): Document previously-undocumented pattern
+	(ldexp@var{m}3, tan@var{m}2, asin@var{m}2, acos@var{m}2)
+	(atan@var{m}2, expm1@var{m}2, exp10@var{m}2, exp2@var{m}2)
+	(log1p@var{m}2, log10@var{m}2, log2@var{m}2, logb@var{m}2)
+	(significand@var{m}2): Likewise.
+	(ffs@var{m}2): Fix the description of the modes, so that operand 1 has
+	mode m and operand 0 is defined more freely.  Document that @var{m}
+	can be a scalar or vector integer mode and that the pattern is not
+	allowed to FAIL.
+	(clz@var{m}2, ctz@var{m}2, popcount@var{m}2, parity@var{m}2): Likewise.
+	(clrsb@var{m}2): Likewise, except that the description of the
+	mode was missing in this case.
+
+2015-12-03  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* internal-fn.def (RSQRT): New function.
 	* optabs.def (rsqrt_optab): New optab.
 	* doc/md.texi (rsqrtM2): Document.
