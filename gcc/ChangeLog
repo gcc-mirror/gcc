@@ -1,3 +1,12 @@
+2015-12-03  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/68599
+	* loop-init.c (rtl_loop_init): Set LOOPS_HAVE_RECORDED_EXITS
+	in call to loop_optimizer_init.
+	* loop-iv.c (get_simple_loop_desc): Only allow unsafe loop
+	optimization to drop the assumptions/infinite notations if
+	the loop has a single exit.
+
 2015-12-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* doc/md.texi (vec_load_lanes@var{m}@var{n}): Document that
