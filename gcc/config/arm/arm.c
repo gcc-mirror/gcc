@@ -2006,6 +2006,29 @@ const struct tune_params arm_cortex_a57_tune =
   tune_params::SCHED_AUTOPREF_FULL
 };
 
+const struct tune_params arm_exynosm1_tune =
+{
+  arm_9e_rtx_costs,
+  &exynosm1_extra_costs,
+  NULL,						/* Sched adj cost.  */
+  arm_default_branch_cost,
+  &arm_default_vec_cost,
+  1,						/* Constant limit.  */
+  2,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  3,						/* Issue rate.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  tune_params::PREF_CONST_POOL_FALSE,
+  tune_params::PREF_LDRD_TRUE,
+  tune_params::LOG_OP_NON_SHORT_CIRCUIT_FALSE,	/* Thumb.  */
+  tune_params::LOG_OP_NON_SHORT_CIRCUIT_FALSE,	/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_ALL,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_TRUE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
+};
+
 const struct tune_params arm_xgene1_tune =
 {
   arm_9e_rtx_costs,
