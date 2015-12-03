@@ -1,5 +1,12 @@
 2015-12-02  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-pure-const.c (ignore_edge): Rename to ...
+	(ignore_edge_for_nothrow) ... this one; also ignore eges to
+	interposable functions or ones that can not throw.
+	(propagate_nothrow): Fix handling of availability.
+
+2015-12-02  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/68184
 	* cgraphunit.c (cgraph_node::analyze): Set can_throw_external.
 
