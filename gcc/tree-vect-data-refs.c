@@ -2597,6 +2597,12 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
   if (dra == drb)
     return 0;
 
+  /* DRs in different loops never belong to the same group.  */
+  loop_p loopa = gimple_bb (DR_STMT (dra))->loop_father;
+  loop_p loopb = gimple_bb (DR_STMT (drb))->loop_father;
+  if (loopa != loopb)
+    return loopa->num < loopb->num ? -1 : 1;
+
   /* Ordering of DRs according to base.  */
   if (!operand_equal_p (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb), 0))
     {
@@ -2687,6 +2693,12 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	     split here as we don't just skip over those.  If it really
 	     matters we can push those to a worklist and re-iterate
 	     over them.  The we can just skip ahead to the next DR here.  */
+
+	  /* DRs in a different loop should not be put into the same
+	     interleaving group.  */
+	  if (gimple_bb (DR_STMT (dra))->loop_father
+	      != gimple_bb (DR_STMT (drb))->loop_father)
+	    break;
 
 	  /* Check that the data-refs have same first location (except init)
 	     and they are both either store or load (not load and store,
