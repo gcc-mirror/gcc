@@ -1,3 +1,8 @@
+2015-12-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/68624
+	* gcc.c-torture/execute/pr68624.c: New test.
+
 2015-12-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66051

@@ -1,3 +1,10 @@
+2015-12-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/68624
+	* ifcvt.c (noce_try_cmove_arith): Check clobbers of temp regs in both
+	blocks if they exist and simplify the logic choosing the order to emit
+	them in.
+
 2015-12-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66051

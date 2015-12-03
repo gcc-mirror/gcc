@@ -2172,10 +2172,6 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 	}
     }
 
-    /* If insn to set up A clobbers any registers B depends on, try to
-       swap insn that sets up A with the one that sets up B.  If even
-       that doesn't help, punt.  */
-
   modified_in_a = emit_a != NULL_RTX && modified_in_p (orig_b, emit_a);
   if (tmp_b && then_bb)
     {
@@ -2190,38 +2186,42 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 	  }
 
     }
-  if (emit_a || modified_in_a)
-    {
-      modified_in_b = emit_b != NULL_RTX && modified_in_p (orig_a, emit_b);
-      if (tmp_b && else_bb)
-	{
-	  FOR_BB_INSNS (else_bb, tmp_insn)
-	  /* Don't check inside insn_b.  We will have changed it to emit_b
-	     with a destination that doesn't conflict.  */
-	  if (!(insn_b && tmp_insn == insn_b)
-	      && modified_in_p (orig_a, tmp_insn))
-	    {
-	      modified_in_b = true;
-	      break;
-	    }
-	}
-      if (modified_in_b)
-	goto end_seq_and_fail;
 
+  modified_in_b = emit_b != NULL_RTX && modified_in_p (orig_a, emit_b);
+  if (tmp_a && else_bb)
+    {
+      FOR_BB_INSNS (else_bb, tmp_insn)
+      /* Don't check inside insn_b.  We will have changed it to emit_b
+	 with a destination that doesn't conflict.  */
+      if (!(insn_b && tmp_insn == insn_b)
+	  && modified_in_p (orig_a, tmp_insn))
+	{
+	  modified_in_b = true;
+	  break;
+	}
+    }
+
+  /* If insn to set up A clobbers any registers B depends on, try to
+     swap insn that sets up A with the one that sets up B.  If even
+     that doesn't help, punt.  */
+  if (modified_in_a && !modified_in_b)
+    {
       if (!noce_emit_bb (emit_b, else_bb, b_simple))
 	goto end_seq_and_fail;
 
       if (!noce_emit_bb (emit_a, then_bb, a_simple))
+	goto end_seq_and_fail;
+    }
+  else if (!modified_in_a)
+    {
+      if (!noce_emit_bb (emit_a, then_bb, a_simple))
+	goto end_seq_and_fail;
+
+      if (!noce_emit_bb (emit_b, else_bb, b_simple))
 	goto end_seq_and_fail;
     }
   else
-    {
-      if (!noce_emit_bb (emit_a, then_bb, a_simple))
-	goto end_seq_and_fail;
-
-      if (!noce_emit_bb (emit_b, else_bb, b_simple))
-	goto end_seq_and_fail;
-    }
+    goto end_seq_and_fail;
 
   target = noce_emit_cmove (if_info, x, code, XEXP (if_info->cond, 0),
 			    XEXP (if_info->cond, 1), a, b);
