@@ -1,3 +1,9 @@
+2015-12-03  Tom de Vries  <tom@codesourcery.com>
+
+	* graphite-isl-ast-to-gimple.c (binary_op_to_tree)
+	(gcc_expression_from_isl_expr_op): Guard isl_ast_op_zdiv_r usage with
+	HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS.
+
 2015-12-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67800
