@@ -14,6 +14,13 @@
 	belonging to different loops.
 	(vect_analyze_data_ref_accesses): Likewise.
 
+2015-12-02  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/sse.md (define_insn "vec_extract_hi_<mode>_maskm"):
+	Remove "prefix_extra".
+	(define_insn "vec_extract_hi_<mode>_mask"): New.
+	(define_insn "vec_extract_hi_<mode>"): Remove masking.
+
 2015-12-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-pure-const.c (ignore_edge_for_pure_const): New function.
@@ -171,6 +178,7 @@
 	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call)
 	(find_func_clobbers, ipa_pta_execute): Handle BUILT_IN_GOACC_PARALLEL.
 
+>>>>>>> .r231221
 2015-12-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (cstore_si_as_di): New expander.
