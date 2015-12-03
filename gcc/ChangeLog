@@ -1,3 +1,13 @@
+2015-12-03  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR target/68471
+	PR target/68472
+	* config/i386/i386.c (ix86_mitigate_rop): Don't call
+	compute_bb_for_insn again.  Call df_insn_rescan_all.
+	* config/i386/i386.md (set_got_rex64): Override modrm_class.
+
+	* regrename.c (build_def_use): Ignore stack regs if regstack_completed.
+
 2015-12-03  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx-protos.h (npvptx_section_from_addr_space):	Delete.
