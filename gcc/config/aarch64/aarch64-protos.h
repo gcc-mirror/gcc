@@ -407,7 +407,7 @@ rtx aarch64_expand_builtin (tree exp,
 			    int ignore ATTRIBUTE_UNUSED);
 tree aarch64_builtin_decl (unsigned, bool ATTRIBUTE_UNUSED);
 
-tree aarch64_builtin_rsqrt (unsigned int, bool);
+tree aarch64_builtin_rsqrt (unsigned int);
 
 tree aarch64_builtin_vectorized_function (unsigned int, tree, tree);
 

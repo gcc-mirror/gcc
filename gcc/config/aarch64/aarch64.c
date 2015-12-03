@@ -7099,26 +7099,27 @@ aarch64_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
   return aarch64_tune_params.memmov_cost;
 }
 
+/* Return true if it is safe and beneficial to use the rsqrt optabs to
+   optimize 1.0/sqrt.  */
+
+static bool
+use_rsqrt_p (void)
+{
+  return (!flag_trapping_math
+	  && flag_unsafe_math_optimizations
+	  && (aarch64_tune_params.extra_tuning_flags
+	      & AARCH64_EXTRA_TUNE_RECIP_SQRT));
+}
+
 /* Function to decide when to use
    reciprocal square root builtins.  */
 
 static tree
-aarch64_builtin_reciprocal (gcall *call)
+aarch64_builtin_reciprocal (tree fndecl)
 {
-  if (flag_trapping_math
-      || !flag_unsafe_math_optimizations
-      || optimize_size
-      || ! (aarch64_tune_params.extra_tuning_flags
-	   & AARCH64_EXTRA_TUNE_RECIP_SQRT))
+  if (!use_rsqrt_p ())
     return NULL_TREE;
-
-  if (gimple_call_internal_p (call))
-    return NULL_TREE;
-
-  tree fndecl = gimple_call_fndecl (call);
-  enum built_in_function fn = DECL_FUNCTION_CODE (fndecl);
-  bool md_fn = DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD;
-  return aarch64_builtin_rsqrt (fn, md_fn);
+  return aarch64_builtin_rsqrt (DECL_FUNCTION_CODE (fndecl));
 }
 
 typedef rtx (*rsqrte_type) (rtx, rtx);
@@ -13546,6 +13547,23 @@ aarch64_promoted_type (const_tree t)
     return float_type_node;
   return NULL_TREE;
 }
+
+/* Implement the TARGET_OPTAB_SUPPORTED_P hook.  */
+
+static bool
+aarch64_optab_supported_p (int op, machine_mode, machine_mode,
+			   optimization_type opt_type)
+{
+  switch (op)
+    {
+    case rsqrt_optab:
+      return opt_type == OPTIMIZE_FOR_SPEED && use_rsqrt_p ();
+
+    default:
+      return true;
+    }
+}
+
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST aarch64_address_cost
 
@@ -13865,6 +13883,9 @@ aarch64_promoted_type (const_tree t)
 
 #undef TARGET_PRINT_OPERAND_ADDRESS
 #define TARGET_PRINT_OPERAND_ADDRESS aarch64_print_operand_address
+
+#undef TARGET_OPTAB_SUPPORTED_P
+#define TARGET_OPTAB_SUPPORTED_P aarch64_optab_supported_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

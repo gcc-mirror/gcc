@@ -42676,66 +42676,36 @@ ix86_vectorize_builtin_scatter (const_tree vectype,
   return ix86_builtins[code];
 }
 
+/* Return true if it is safe to use the rsqrt optabs to optimize
+   1.0/sqrt.  */
+
+static bool
+use_rsqrt_p ()
+{
+  return (TARGET_SSE_MATH
+	  && flag_finite_math_only
+	  && !flag_trapping_math
+	  && flag_unsafe_math_optimizations);
+}
+
 /* Returns a code for a target-specific builtin that implements
    reciprocal of the function, or NULL_TREE if not available.  */
 
 static tree
-ix86_builtin_reciprocal (gcall *call)
+ix86_builtin_reciprocal (tree fndecl)
 {
-  if (! (TARGET_SSE_MATH && !optimize_insn_for_size_p ()
-	 && flag_finite_math_only && !flag_trapping_math
-	 && flag_unsafe_math_optimizations))
-    return NULL_TREE;
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+      /* Vectorized version of sqrt to rsqrt conversion.  */
+    case IX86_BUILTIN_SQRTPS_NR:
+      return ix86_get_builtin (IX86_BUILTIN_RSQRTPS_NR);
 
-  if (gimple_call_internal_p (call))
-    switch (gimple_call_internal_fn (call))
-      {
-	tree type;
-      case IFN_SQRT:
-	type = TREE_TYPE (gimple_call_lhs (call));
-	switch (TYPE_MODE (type))
-	  {
-	    /* Vectorized version of sqrt to rsqrt conversion.  */
-	  case V4SFmode:
-	    return ix86_get_builtin (IX86_BUILTIN_RSQRTPS_NR);
+    case IX86_BUILTIN_SQRTPS_NR256:
+      return ix86_get_builtin (IX86_BUILTIN_RSQRTPS_NR256);
 
-	  case V8SFmode:
-	    return ix86_get_builtin (IX86_BUILTIN_RSQRTPS_NR256);
-
-	  default:
-	    return NULL_TREE;
-	  }
-
-      default:
-	return NULL_TREE;
-      }
-
-  tree fndecl = gimple_call_fndecl (call);
-  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
-    /* Machine dependent builtins.  */
-    switch (DECL_FUNCTION_CODE (fndecl))
-      {
-	/* Vectorized version of sqrt to rsqrt conversion.  */
-      case IX86_BUILTIN_SQRTPS_NR:
-	return ix86_get_builtin (IX86_BUILTIN_RSQRTPS_NR);
-
-      case IX86_BUILTIN_SQRTPS_NR256:
-	return ix86_get_builtin (IX86_BUILTIN_RSQRTPS_NR256);
-
-      default:
-	return NULL_TREE;
-      }
-  else
-    /* Normal builtins.  */
-    switch (DECL_FUNCTION_CODE (fndecl))
-      {
-	/* Sqrt to rsqrt conversion.  */
-      case BUILT_IN_SQRTF:
-	return ix86_get_builtin (IX86_BUILTIN_RSQRTF);
-
-      default:
-	return NULL_TREE;
-      }
+    default:
+      return NULL_TREE;
+    }
 }
 
 /* Helper for avx_vpermilps256_operand et al.  This is also used by
@@ -54138,6 +54108,9 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
 	  && TARGET_ROUND)
 	return true;
       return opt_type == OPTIMIZE_FOR_SPEED;
+
+    case rsqrt_optab:
+      return opt_type == OPTIMIZE_FOR_SPEED && use_rsqrt_p ();
 
     default:
       return true;

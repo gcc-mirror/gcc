@@ -600,7 +600,7 @@ default_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 /* Reciprocal.  */
 
 tree
-default_builtin_reciprocal (gcall *)
+default_builtin_reciprocal (tree)
 {
   return NULL_TREE;
 }

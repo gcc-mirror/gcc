@@ -5608,9 +5608,9 @@ be placed in an @code{object_block} structure.
 The default version returns true for all decls.
 @end deftypefn
 
-@deftypefn {Target Hook} tree TARGET_BUILTIN_RECIPROCAL (gcall *@var{call})
-This hook should return the DECL of a function that implements reciprocal of
-the builtin or internal function call @var{call}, or
+@deftypefn {Target Hook} tree TARGET_BUILTIN_RECIPROCAL (tree @var{fndecl})
+This hook should return the DECL of a function that implements the
+reciprocal of the machine-specific builtin function @var{fndecl}, or
 @code{NULL_TREE} if such a function is not available.
 @end deftypefn
 
