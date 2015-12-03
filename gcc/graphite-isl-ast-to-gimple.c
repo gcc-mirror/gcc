@@ -588,7 +588,9 @@ binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
 	}
       return fold_build2 (TRUNC_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
+#if HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
     case isl_ast_op_zdiv_r:
+#endif
     case isl_ast_op_pdiv_r:
       /* As ISL operates on arbitrary precision numbers, we may end up with
 	 division by 2^64 that is folded to 0.  */
@@ -759,7 +761,9 @@ gcc_expression_from_isl_expr_op (tree type, __isl_take isl_ast_expr *expr,
     case isl_ast_op_pdiv_q:
     case isl_ast_op_pdiv_r:
     case isl_ast_op_fdiv_q:
+#if HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
     case isl_ast_op_zdiv_r:
+#endif
     case isl_ast_op_and:
     case isl_ast_op_or:
     case isl_ast_op_eq:
