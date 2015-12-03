@@ -1,3 +1,13 @@
+2015-12-03  Evandro Menezes  <e.menezes@samsung.com>
+
+	* config/aarch64/aarch64-cores.def: Use the Exynos M1 cost model.
+	* config/aarch64/aarch64.c (exynosm1_addrcost_table): New variable.
+	(exynosm1_regmove_cost): Likewise.
+	(exynosm1_vector_cost): Likewise.
+	(exynosm1_tunings): Likewise.
+	* config/arm/aarch-cost-tables.h (exynosm1_extra_costs): Likewise.
+	* config/arm/arm.c (arm_exynos_m1_tune): Likewise.
+
 2015-12-03  Alan Lawrence  <alan.lawrence@arm.com>
 	    Richard Biener  <richard.guenther@gmail.com>
 
