@@ -1164,6 +1164,17 @@ cdtor_p (cgraph_node *n, void *)
   return false;
 }
 
+/* We only propagate across edges with non-interposable callee.  */
+
+static bool
+ignore_edge_for_pure_const (struct cgraph_edge *e)
+{
+  enum availability avail;
+  e->callee->function_or_virtual_thunk_symbol (&avail);
+  return (avail <= AVAIL_INTERPOSABLE);
+}
+
+
 /* Produce transitive closure over the callgraph and compute pure/const
    attributes.  */
 
@@ -1179,7 +1190,8 @@ propagate_pure_const (void)
   struct ipa_dfs_info * w_info;
   bool remove_p = false;
 
-  order_pos = ipa_reduced_postorder (order, true, false, NULL);
+  order_pos = ipa_reduced_postorder (order, true, false,
+				     ignore_edge_for_pure_const);
   if (dump_file)
     {
       cgraph_node::dump_cgraph (dump_file);
@@ -1226,7 +1238,7 @@ propagate_pure_const (void)
 	  if (pure_const_state == IPA_NEITHER)
 	    break;
 
-	  /* For overwritable nodes we can not assume anything.  */
+	  /* For interposable nodes we can not assume anything.  */
 	  if (w->get_availability () == AVAIL_INTERPOSABLE)
 	    {
 	      worse_state (&pure_const_state, &looping,
@@ -1235,7 +1247,7 @@ propagate_pure_const (void)
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
 		  fprintf (dump_file,
-			   "    Overwritable. state %s looping %i\n",
+			   "    Interposable. state %s looping %i\n",
 			   pure_const_names[w_l->state_previously_known],
 			   w_l->looping_previously_known);
 		}
@@ -1251,7 +1263,8 @@ propagate_pure_const (void)
 	    looping = true;
 
 	  /* Now walk the edges and merge in callee properties.  */
-	  for (e = w->callees; e; e = e->next_callee)
+	  for (e = w->callees; e && pure_const_state != IPA_NEITHER;
+	       e = e->next_callee)
 	    {
 	      enum availability avail;
 	      struct cgraph_node *y = e->callee->
@@ -1309,11 +1322,10 @@ propagate_pure_const (void)
 	      if (pure_const_state == IPA_NEITHER)
 	        break;
 	    }
-	  if (pure_const_state == IPA_NEITHER)
-	    break;
 
 	  /* Now process the indirect call.  */
-          for (ie = w->indirect_calls; ie; ie = ie->next_callee)
+          for (ie = w->indirect_calls;
+	       ie && pure_const_state != IPA_NEITHER; ie = ie->next_callee)
 	    {
 	      enum pure_const_state_e edge_state = IPA_CONST;
 	      bool edge_looping = false;
@@ -1332,11 +1344,10 @@ propagate_pure_const (void)
 	      if (pure_const_state == IPA_NEITHER)
 	        break;
 	    }
-	  if (pure_const_state == IPA_NEITHER)
-	    break;
 
 	  /* And finally all loads and stores.  */
-	  for (i = 0; w->iterate_reference (i, ref); i++)
+	  for (i = 0; w->iterate_reference (i, ref)
+	       && pure_const_state != IPA_NEITHER; i++)
 	    {
 	      enum pure_const_state_e ref_state = IPA_CONST;
 	      bool ref_looping = false;
@@ -1426,7 +1437,8 @@ propagate_pure_const (void)
 	      && this_state > w_l->state_previously_known)
 	    {
               this_state = w_l->state_previously_known;
-	      this_looping |= w_l->looping_previously_known;
+	      if (this_state == IPA_NEITHER)
+	        this_looping = w_l->looping_previously_known;
 	    }
 	  if (!this_looping && self_recursive_p (w))
 	    this_looping = true;
