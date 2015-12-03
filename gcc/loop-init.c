@@ -395,7 +395,7 @@ rtl_loop_init (void)
       dump_flow_info (dump_file, dump_flags);
     }
 
-  loop_optimizer_init (LOOPS_NORMAL);
+  loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
   return 0;
 }
 

@@ -3054,7 +3054,7 @@ get_simple_loop_desc (struct loop *loop)
 	    }
 	}
 
-      if (flag_unsafe_loop_optimizations)
+      if (flag_unsafe_loop_optimizations && single_exit (loop))
 	{
 	  desc->assumptions = NULL_RTX;
 	  desc->infinite = NULL_RTX;
