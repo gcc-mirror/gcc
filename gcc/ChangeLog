@@ -1,3 +1,10 @@
+2015-12-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* alias.c (alias_set_subset_of, alias_sets_must_conflict_p)
+	Short circuit for !flag_strict_aliasing
+	(get_alias_set): Remove flag_strict_aliasing check.
+	(new_alias_set): Likewise.
+
 2015-12-03  Evandro Menezes  <e.menezes@samsung.com>
 
 	* config/aarch64/aarch64-cores.def: Use the Exynos M1 cost model.

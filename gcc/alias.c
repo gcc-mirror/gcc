@@ -405,6 +405,10 @@ alias_set_subset_of (alias_set_type set1, alias_set_type set2)
 {
   alias_set_entry *ase2;
 
+  /* Disable TBAA oracle with !flag_strict_aliasing.  */
+  if (!flag_strict_aliasing)
+    return true;
+
   /* Everything is a subset of the "aliases everything" set.  */
   if (set2 == 0)
     return true;
@@ -537,6 +541,9 @@ alias_sets_conflict_p (alias_set_type set1, alias_set_type set2)
 int
 alias_sets_must_conflict_p (alias_set_type set1, alias_set_type set2)
 {
+  /* Disable TBAA oracle with !flag_strict_aliasing.  */
+  if (!flag_strict_aliasing)
+    return 1;
   if (set1 == 0 || set2 == 0)
     {
       ++alias_stats.num_alias_zero;
@@ -816,10 +823,12 @@ get_alias_set (tree t)
 {
   alias_set_type set;
 
-  /* If we're not doing any alias analysis, just assume everything
-     aliases everything else.  Also return 0 if this or its type is
-     an error.  */
-  if (! flag_strict_aliasing || t == error_mark_node
+  /* We can not give up with -fno-strict-aliasing because we need to build
+     proper type representation for possible functions which are build with
+     -fstirct-aliasing.  */
+
+  /* return 0 if this or its type is an error.  */
+  if (t == error_mark_node
       || (! TYPE_P (t)
 	  && (TREE_TYPE (t) == 0 || TREE_TYPE (t) == error_mark_node)))
     return 0;
@@ -1085,15 +1094,10 @@ get_alias_set (tree t)
 alias_set_type
 new_alias_set (void)
 {
-  if (flag_strict_aliasing)
-    {
-      if (alias_sets == 0)
-	vec_safe_push (alias_sets, (alias_set_entry *) NULL);
-      vec_safe_push (alias_sets, (alias_set_entry *) NULL);
-      return alias_sets->length () - 1;
-    }
-  else
-    return 0;
+  if (alias_sets == 0)
+    vec_safe_push (alias_sets, (alias_set_entry *) NULL);
+  vec_safe_push (alias_sets, (alias_set_entry *) NULL);
+  return alias_sets->length () - 1;
 }
 
 /* Indicate that things in SUBSET can alias things in SUPERSET, but that
