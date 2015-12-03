@@ -20,16 +20,7 @@
 
 (define_c_enum "unspec" [
    UNSPEC_ARG_REG
-   UNSPEC_FROM_GLOBAL
-   UNSPEC_FROM_LOCAL
-   UNSPEC_FROM_PARAM
-   UNSPEC_FROM_SHARED
-   UNSPEC_FROM_CONST
-   UNSPEC_TO_GLOBAL
-   UNSPEC_TO_LOCAL
-   UNSPEC_TO_PARAM
-   UNSPEC_TO_SHARED
-   UNSPEC_TO_CONST
+   UNSPEC_TO_GENERIC
 
    UNSPEC_COPYSIGN
    UNSPEC_LOG2
@@ -99,20 +90,6 @@
 ;; Allow symbolic constants.
 (define_predicate "symbolic_operand"
   (match_code "symbol_ref,const"))
-
-;; Allow registers or symbolic constants.  We can allow frame, arg or stack
-;; pointers here since they are actually symbolic constants.
-(define_predicate "nvptx_register_or_symbolic_operand"
-  (match_code "reg,subreg,symbol_ref,const")
-{
-  if (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))
-    return false;
-  if (GET_CODE (op) == SUBREG)
-    return false;
-  if (CONSTANT_P (op))
-    return true;
-  return register_operand (op, mode);
-})
 
 ;; Registers or constants for normal instructions.  Does not allow symbolic
 ;; constants.
@@ -399,43 +376,13 @@
    %.\\tst%A0.u%T0\\t%0, %1;"
   [(set_attr "subregs_ok" "true")])
 
-;; Pointer address space conversions
-
-(define_int_iterator cvt_code
-  [UNSPEC_FROM_GLOBAL
-   UNSPEC_FROM_LOCAL
-   UNSPEC_FROM_SHARED
-   UNSPEC_FROM_CONST
-   UNSPEC_TO_GLOBAL
-   UNSPEC_TO_LOCAL
-   UNSPEC_TO_SHARED
-   UNSPEC_TO_CONST])
-
-(define_int_attr cvt_name
-  [(UNSPEC_FROM_GLOBAL "from_global")
-   (UNSPEC_FROM_LOCAL "from_local")
-   (UNSPEC_FROM_SHARED "from_shared")
-   (UNSPEC_FROM_CONST "from_const")
-   (UNSPEC_TO_GLOBAL "to_global")
-   (UNSPEC_TO_LOCAL "to_local")
-   (UNSPEC_TO_SHARED "to_shared")
-   (UNSPEC_TO_CONST "to_const")])
-
-(define_int_attr cvt_str
-  [(UNSPEC_FROM_GLOBAL ".global")
-   (UNSPEC_FROM_LOCAL ".local")
-   (UNSPEC_FROM_SHARED ".shared")
-   (UNSPEC_FROM_CONST ".const")
-   (UNSPEC_TO_GLOBAL ".to.global")
-   (UNSPEC_TO_LOCAL ".to.local")
-   (UNSPEC_TO_SHARED ".to.shared")
-   (UNSPEC_TO_CONST ".to.const")])
-
-(define_insn "convaddr_<cvt_name><mode>"
+;; Pointer address space conversion
+(define_insn "convaddr_<mode>"
   [(set (match_operand:P 0 "nvptx_register_operand" "=R")
-	(unspec:P [(match_operand:P 1 "nvptx_register_or_symbolic_operand" "Rs")] cvt_code))]
+	(unspec:P [(match_operand:P 1 "symbolic_operand" "s")]
+                  UNSPEC_TO_GENERIC))]
   ""
-  "%.\\tcvta<cvt_str>%t0\\t%0, %1;")
+  "%.\\tcvta%D1%t0\\t%0, %1;")
 
 ;; Integer arithmetic
 

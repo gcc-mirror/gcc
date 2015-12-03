@@ -141,13 +141,6 @@ enum reg_class
       (MODE) = SImode;					\
     }
 
-/* Address spaces.  */
-#define ADDR_SPACE_GLOBAL 1
-#define ADDR_SPACE_SHARED 3
-#define ADDR_SPACE_CONST 4
-#define ADDR_SPACE_LOCAL 5
-#define ADDR_SPACE_PARAM 101
-
 /* Stack and Calling.  */
 
 #define STARTING_FRAME_OFFSET 0

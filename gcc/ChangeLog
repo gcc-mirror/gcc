@@ -1,3 +1,34 @@
+2015-12-03  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx-protos.h (npvptx_section_from_addr_space):	Delete.
+	* config/nvptx/nvptx.c (enum nvptx_data_area): New.
+	(SYMBOL_DATA_AREA, SET_SYMBOL_DATA_AREA): New defines.
+	(nvptx_option_override): Set data ares for worker vars.
+	(nvptx_addr_space_from_sym): Delete.
+	(nvptx_encode_section_info): New.
+	(section_for_sym, section_for_decl): New.
+	(nvptx_maybe_convert_symbolic_operand): Get data area from symbol
+	flags,
+	(nvptx_section_from_addr_space): Delete.
+	(nvptx_section_for_decl): Delete.
+	(nvptx_output_aligned, nvptx_declare_object_name,
+	nvptx_assemble_undefined_decl): Use section_for_decl, remove
+	unnecessary checks.
+	(nvptx_print_operand): Add 'D', adjust 'A'.
+	(nvptx_expand_worker_addr): Adjust unspec generation.
+	(TARGET_ENCODE_SECTION_INFO): Override.
+	* config/nvptx/nvptx.h (ADDR_SPACE_GLOBAL, ADDR_SPACE_SHARED,
+	ADDR_SPACE_CONST, ADDR_SPACE_LOCAL, ADDR_SPACE_PARAM): Delete.
+	* config/nvptx/nvptx.md (UNSPEC_FROM_GLOBAL, UNSPEC_FROM_LOCAL,
+	UNSPEC_FROM_PARAM, UNSPEC_FROM_SHARED, UNSPEC_FROM_CONST,
+	UNSPEC_TO_GLOBAL, UNSPEC_TO_LOCAL, UNSPEC_TO_PARAM,
+	UNSPEC_TO_SHARED, UNSPEC_TO_CONST): Delete.
+	(UNSPEC_TO_GENERIC): New.
+	(nvptx_register_or_symbolic_operand): Delete.
+	(cvt_code, cvt_name, cvt_str): Delete.
+	(convaddr_<cvt_name><mode> [P]): Delete.
+	(convaddr_<mode> [P]): New.
+
 2015-12-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/68624
