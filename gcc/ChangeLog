@@ -1,3 +1,14 @@
+2015-12-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66051
+	* tree-vect-slp.c (vect_build_slp_tree_1): Remove restriction
+	on load group size.  Do not pass in vectorization_factor.
+	(vect_transform_slp_perm_load): Do not require any permute support.
+	(vect_build_slp_tree): Do not pass in vectorization factor.
+	(vect_analyze_slp_instance): Do not compute vectorization
+	factor estimate.  Use vector size instead of vectorization factor
+	estimate to split store groups for BB vectorization.
+
 2015-12-03  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* cfgexpand.c (expand_gimple_stmt_1): Return statement with
