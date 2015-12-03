@@ -80,6 +80,25 @@ enum nvptx_shuffle_kind
   SHUFFLE_MAX
 };
 
+/* The various PTX memory areas an object might reside in.  */
+enum nvptx_data_area
+{
+  DATA_AREA_GENERIC,
+  DATA_AREA_GLOBAL,
+  DATA_AREA_SHARED,
+  DATA_AREA_LOCAL,
+  DATA_AREA_CONST,
+  DATA_AREA_PARAM,
+  DATA_AREA_MAX
+};
+
+/*  We record the data area in the target symbol flags.  */
+#define SYMBOL_DATA_AREA(SYM) \
+  (nvptx_data_area)((SYMBOL_REF_FLAGS (SYM) >> SYMBOL_FLAG_MACH_DEP_SHIFT) \
+		    & 7)
+#define SET_SYMBOL_DATA_AREA(SYM,AREA) \
+  (SYMBOL_REF_FLAGS (SYM) |= (AREA) << SYMBOL_FLAG_MACH_DEP_SHIFT)
+
 /* Record the function decls we've written, and the libfuncs and function
    decls corresponding to them.  */
 static std::stringstream func_decls;
@@ -154,9 +173,11 @@ nvptx_option_override (void)
     = hash_table<declared_libfunc_hasher>::create_ggc (17);
 
   worker_bcast_sym = gen_rtx_SYMBOL_REF (Pmode, worker_bcast_name);
+  SET_SYMBOL_DATA_AREA (worker_bcast_sym, DATA_AREA_SHARED);
   worker_bcast_align = GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT;
 
   worker_red_sym = gen_rtx_SYMBOL_REF (Pmode, worker_red_name);
+  SET_SYMBOL_DATA_AREA (worker_red_sym, DATA_AREA_SHARED);
   worker_red_align = GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT;
 }
 
@@ -194,22 +215,49 @@ nvptx_ptx_type_from_mode (machine_mode mode, bool promote)
     }
 }
 
-/* Determine the address space to use for SYMBOL_REF SYM.  */
+/* Encode the PTX data area that DECL (which might not actually be a
+   _DECL) should reside in.  */
 
-static addr_space_t
-nvptx_addr_space_from_sym (rtx sym)
+static void
+nvptx_encode_section_info (tree decl, rtx rtl, int first)
 {
-  tree decl = SYMBOL_REF_DECL (sym);
-  if (decl == NULL_TREE || TREE_CODE (decl) == FUNCTION_DECL)
-    return ADDR_SPACE_GENERIC;
+  default_encode_section_info (decl, rtl, first);
+  if (first && MEM_P (rtl))
+    {
+      nvptx_data_area area = DATA_AREA_GENERIC;
 
-  bool is_const = (CONSTANT_CLASS_P (decl)
-		   || TREE_CODE (decl) == CONST_DECL
-		   || TREE_READONLY (decl));
-  if (is_const)
-    return ADDR_SPACE_CONST;
+      if (TREE_CONSTANT (decl))
+	area = DATA_AREA_CONST;
+      else if (TREE_CODE (decl) == VAR_DECL)
+	/* TODO: This would be a good place to check for a .shared or
+	   other section name.  */
+	area = TREE_READONLY (decl) ? DATA_AREA_CONST : DATA_AREA_GLOBAL;
 
-  return ADDR_SPACE_GLOBAL;
+      SET_SYMBOL_DATA_AREA (XEXP (rtl, 0), area);
+    }
+}
+
+/* Return the PTX name of the data area in which SYM should be
+   placed.  The symbol must have already been processed by
+   nvptx_encode_seciton_info, or equivalent.  */
+
+static const char *
+section_for_sym (rtx sym)
+{
+  nvptx_data_area area = SYMBOL_DATA_AREA (sym);
+  /* Same order as nvptx_data_area enum.  */
+  static char const *const areas[] =
+    {"", ".global", ".shared", ".local", ".const", ".param"};
+
+  return areas[area];
+}
+
+/* Similarly for a decl.  */
+
+static const char *
+section_for_decl (const_tree decl)
+{
+  return section_for_sym (XEXP (DECL_RTL (CONST_CAST (tree, decl)), 0));
 }
 
 /* Check NAME for special function names and redirect them by returning a
@@ -1395,21 +1443,15 @@ nvptx_maybe_convert_symbolic_operand (rtx op)
     return op;
 
   nvptx_maybe_record_fnsym (sym);
-  
-  addr_space_t as = nvptx_addr_space_from_sym (sym);
-  if (as == ADDR_SPACE_GENERIC)
-    return op;
 
-  enum unspec code;
-  code = (as == ADDR_SPACE_GLOBAL ? UNSPEC_FROM_GLOBAL
-	  : as == ADDR_SPACE_LOCAL ? UNSPEC_FROM_LOCAL
-	  : as == ADDR_SPACE_SHARED ? UNSPEC_FROM_SHARED
-	  : as == ADDR_SPACE_CONST ? UNSPEC_FROM_CONST
-	  : UNSPEC_FROM_PARAM);
+  nvptx_data_area area = SYMBOL_DATA_AREA (sym);
+  if (area == DATA_AREA_GENERIC)
+    return op;
 
   rtx dest = gen_reg_rtx (Pmode);
   emit_insn (gen_rtx_SET (dest,
-			  gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op), code)));
+			  gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op),
+					  UNSPEC_TO_GENERIC)));
   return dest;
 }
 
@@ -1451,45 +1493,6 @@ nvptx_hard_regno_mode_ok (int regno, machine_mode mode)
     return true;
   return mode == cfun->machine->ret_reg_mode;
 }
-
-/* Convert an address space AS to the corresponding ptx string.  */
-
-const char *
-nvptx_section_from_addr_space (addr_space_t as)
-{
-  switch (as)
-    {
-    case ADDR_SPACE_CONST:
-      return ".const";
-
-    case ADDR_SPACE_GLOBAL:
-      return ".global";
-
-    case ADDR_SPACE_SHARED:
-      return ".shared";
-
-    case ADDR_SPACE_GENERIC:
-      return "";
-
-    default:
-      gcc_unreachable ();
-    }
-}
-
-/* Determine whether DECL goes into .const or .global.  */
-
-const char *
-nvptx_section_for_decl (const_tree decl)
-{
-  bool is_const = (CONSTANT_CLASS_P (decl)
-		   || TREE_CODE (decl) == CONST_DECL
-		   || TREE_READONLY (decl));
-  if (is_const)
-    return ".const";
-
-  return ".global";
-}
-
 
 /* Machinery to output constant initializers.  When beginning an initializer,
    we decide on a chunk size (which is visible in ptx in the type used), and
@@ -1693,11 +1696,10 @@ nvptx_output_aligned_decl (FILE *file, const char *name,
 
   /* If this is public, it is common.  The nearest thing we have to
      common is weak.  */
-  if (TREE_PUBLIC (decl))
-    fprintf (file, ".weak ");
-
-  const char *sec = nvptx_section_for_decl (decl);
-  fprintf (file, "%s.align %d .b8 ", sec, align / BITS_PER_UNIT);
+  fprintf (file, "\t%s%s .align %d .b8 ",
+	   TREE_PUBLIC (decl) ? ".weak " : "",
+	   section_for_decl (decl),
+	   align / BITS_PER_UNIT);
   assemble_name (file, name);
   if (size > 0)
     fprintf (file, "[" HOST_WIDE_INT_PRINT_DEC"]", size);
@@ -1729,27 +1731,24 @@ nvptx_asm_declare_constant_name (FILE *file, const char *name,
 void
 nvptx_declare_object_name (FILE *file, const char *name, const_tree decl)
 {
-  if (decl && DECL_SIZE (decl))
-    {
-      tree type = TREE_TYPE (decl);
-      unsigned HOST_WIDE_INT size;
+  tree type = TREE_TYPE (decl);
 
-      init_output_initializer (file, name, type, TREE_PUBLIC (decl));
-      size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
-      const char *section = nvptx_section_for_decl (decl);
-      fprintf (file, "\t%s%s .align %d .u%d ",
-	       !TREE_PUBLIC (decl) ? ""
-	       : DECL_WEAK (decl) ? ".weak" : ".visible",
-	       section, DECL_ALIGN (decl) / BITS_PER_UNIT,
-	       decl_chunk_size * BITS_PER_UNIT);
-      assemble_name (file, name);
-      if (size > 0)
-	fprintf (file, "[" HOST_WIDE_INT_PRINT_DEC "]",
-		 (size + decl_chunk_size - 1) / decl_chunk_size);
-      else
-	object_finished = true;
-      object_size = size;
-    }
+  init_output_initializer (file, name, type, TREE_PUBLIC (decl));
+  fprintf (file, "\t%s%s .align %d .u%d ",
+	   !TREE_PUBLIC (decl) ? ""
+	   : DECL_WEAK (decl) ? ".weak " : ".visible ",
+	   section_for_decl (decl),
+	   DECL_ALIGN (decl) / BITS_PER_UNIT,
+	   decl_chunk_size * BITS_PER_UNIT);
+  assemble_name (file, name);
+
+  unsigned HOST_WIDE_INT size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
+  if (size > 0)
+    fprintf (file, "[" HOST_WIDE_INT_PRINT_DEC "]",
+	     (size + decl_chunk_size - 1) / decl_chunk_size);
+  else
+    object_finished = true;
+  object_size = size;
 }
 
 /* Implement TARGET_ASM_GLOBALIZE_LABEL by doing nothing.  */
@@ -1765,18 +1764,15 @@ nvptx_globalize_label (FILE *, const char *)
 static void
 nvptx_assemble_undefined_decl (FILE *file, const char *name, const_tree decl)
 {
-  if (TREE_CODE (decl) != VAR_DECL)
-    return;
-
   write_var_marker (file, false, TREE_PUBLIC (decl), name);
 
-  const char *section = nvptx_section_for_decl (decl);
-  HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
-  fprintf (file, ".extern %s .b8 ", section);
+  fprintf (file, "\t.extern %s .b8 ", section_for_decl (decl));
   assemble_name_raw (file, name);
+
+  HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
   if (size > 0)
     fprintf (file, "[" HOST_WIDE_INT_PRINT_DEC"]", size);
-  fprintf (file, ";\n\n");
+  fprintf (file, ";\n");
 }
 
 /* Output a pattern for a move instruction.  */
@@ -1957,8 +1953,9 @@ nvptx_print_operand_address (FILE *file, machine_mode mode, rtx addr)
         unconditional one.
    # -- print a rounding mode for the instruction
 
-   A -- print an address space identifier for a MEM
+   A -- print a data area for a MEM
    c -- print an opcode suffix for a comparison operator, including a type code
+   D -- print a data area for a MEM operand
    S -- print a shuffle kind specified by CONST_INT
    t -- print a type opcode suffix, promoting QImode to 32 bits
    T -- print a type size in bits
@@ -1993,20 +1990,17 @@ nvptx_print_operand (FILE *file, rtx x, int code)
   switch (code)
     {
     case 'A':
-      {
-	addr_space_t as = ADDR_SPACE_GENERIC;
-	rtx sym = XEXP (x, 0);
+      x = XEXP (x, 0);
+      /* FALLTHROUGH.  */
 
-	if (GET_CODE (sym) == CONST)
-	  sym = XEXP (sym, 0);
-	if (GET_CODE (sym) == PLUS)
-	  sym = XEXP (sym, 0);
+    case 'D':
+      if (GET_CODE (x) == CONST)
+	x = XEXP (x, 0);
+      if (GET_CODE (x) == PLUS)
+	x = XEXP (x, 0);
 
-	if (GET_CODE (sym) == SYMBOL_REF)
-	  as = nvptx_addr_space_from_sym (sym);
-
-	fputs (nvptx_section_from_addr_space (as), file);
-      }
+      if (GET_CODE (x) == SYMBOL_REF)
+	fputs (section_for_sym (x), file);
       break;
 
     case 't':
@@ -4022,15 +4016,14 @@ nvptx_expand_worker_addr (tree exp, rtx target,
   if (size + offset > worker_red_size)
     worker_red_size = size + offset;
 
-  emit_insn (gen_rtx_SET (target, worker_red_sym));
-
+  rtx addr = worker_red_sym;
   if (offset)
-    emit_insn (gen_rtx_SET (target,
-			    gen_rtx_PLUS (Pmode, target, GEN_INT (offset))));
+    {
+      addr = gen_rtx_PLUS (Pmode, addr, GEN_INT (offset));
+      addr = gen_rtx_CONST (Pmode, addr);
+    }
 
-  emit_insn (gen_rtx_SET (target,
-			  gen_rtx_UNSPEC (Pmode, gen_rtvec (1, target),
-					  UNSPEC_FROM_SHARED)));
+  emit_move_insn (target, addr);
 
   return target;
 }
@@ -4895,6 +4888,8 @@ nvptx_goacc_reduction (gcall *call)
 #undef TARGET_NO_REGISTER_ALLOCATION
 #define TARGET_NO_REGISTER_ALLOCATION true
 
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO nvptx_encode_section_info
 #undef TARGET_RECORD_OFFLOAD_SYMBOL
 #define TARGET_RECORD_OFFLOAD_SYMBOL nvptx_record_offload_symbol
 

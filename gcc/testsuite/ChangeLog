@@ -1,3 +1,8 @@
+2015-12-03  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.target/nvptx/decl.c: New.
+	* gcc.target/nvptx/uninit-decl.c: Robustify regexps.
+
 2015-12-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/68624
