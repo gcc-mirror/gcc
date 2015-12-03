@@ -1,3 +1,8 @@
+2015-12-03  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* cfgexpand.c (expand_gimple_stmt_1): Return statement with
+	DECL as return value is allowed to have NULL bounds.
+
 2015-12-03  Tom de Vries  <tom@codesourcery.com>
 
 	* graphite-isl-ast-to-gimple.c (binary_op_to_tree)
