@@ -1,3 +1,9 @@
+2015-12-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/68349
+	* lra-eliminations.c (move_plus_up): New function.
+	(lra_eliminate_regs_1): Use the function.
+
 2015-12-04  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (nvptx_assemble_decl_begin): New,
