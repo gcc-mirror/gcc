@@ -2,6 +2,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-std=gnu99" } */
+/* { dg-require-effective-target alloca } */
 
 extern void abort (void);
 
