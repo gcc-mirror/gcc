@@ -49336,6 +49336,57 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* For V*[QHS]Imode permutations, check if the same permutation
+   can't be performed in a 2x, 4x or 8x wider inner mode.  */
+
+static bool
+canonicalize_vector_int_perm (const struct expand_vec_perm_d *d,
+			      struct expand_vec_perm_d *nd)
+{
+  int i;
+  enum machine_mode mode = VOIDmode;
+
+  switch (d->vmode)
+    {
+    case V16QImode: mode = V8HImode; break;
+    case V32QImode: mode = V16HImode; break;
+    case V64QImode: mode = V32HImode; break;
+    case V8HImode: mode = V4SImode; break;
+    case V16HImode: mode = V8SImode; break;
+    case V32HImode: mode = V16SImode; break;
+    case V4SImode: mode = V2DImode; break;
+    case V8SImode: mode = V4DImode; break;
+    case V16SImode: mode = V8DImode; break;
+    default: return false;
+    }
+  for (i = 0; i < d->nelt; i += 2)
+    if ((d->perm[i] & 1) || d->perm[i + 1] != d->perm[i] + 1)
+      return false;
+  nd->vmode = mode;
+  nd->nelt = d->nelt / 2;
+  for (i = 0; i < nd->nelt; i++)
+    nd->perm[i] = d->perm[2 * i] / 2;
+  if (GET_MODE_INNER (mode) != DImode)
+    canonicalize_vector_int_perm (nd, nd);
+  if (nd != d)
+    {
+      nd->one_operand_p = d->one_operand_p;
+      nd->testing_p = d->testing_p;
+      if (d->op0 == d->op1)
+	nd->op0 = nd->op1 = gen_lowpart (nd->vmode, d->op0);
+      else
+	{
+	  nd->op0 = gen_lowpart (nd->vmode, d->op0);
+	  nd->op1 = gen_lowpart (nd->vmode, d->op1);
+	}
+      if (d->testing_p)
+	nd->target = gen_raw_REG (nd->vmode, LAST_VIRTUAL_REGISTER + 1);
+      else
+	nd->target = gen_reg_rtx (nd->vmode);
+    }
+  return true;
+}
+
 /* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to instantiate D
    in a single instruction.  */
 
@@ -49343,7 +49394,7 @@ static bool
 expand_vec_perm_1 (struct expand_vec_perm_d *d)
 {
   unsigned i, nelt = d->nelt;
-  unsigned char perm2[MAX_VECT_LEN];
+  struct expand_vec_perm_d nd;
 
   /* Check plain VEC_SELECT first, because AVX has instructions that could
      match both SEL and SEL+CONCAT, but the plain SEL will allow a memory
@@ -49356,10 +49407,10 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 
       for (i = 0; i < nelt; i++)
 	{
-	  perm2[i] = d->perm[i] & mask;
-	  if (perm2[i] != i)
+	  nd.perm[i] = d->perm[i] & mask;
+	  if (nd.perm[i] != i)
 	    identity_perm = false;
-	  if (perm2[i])
+	  if (nd.perm[i])
 	    broadcast_perm = false;
 	}
 
@@ -49428,7 +49479,7 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	    }
 	}
 
-      if (expand_vselect (d->target, d->op0, perm2, nelt, d->testing_p))
+      if (expand_vselect (d->target, d->op0, nd.perm, nelt, d->testing_p))
 	return true;
 
       /* There are plenty of patterns in sse.md that are written for
@@ -49439,10 +49490,10 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	 every other permutation operand.  */
       for (i = 0; i < nelt; i += 2)
 	{
-	  perm2[i] = d->perm[i] & mask;
-	  perm2[i + 1] = (d->perm[i + 1] & mask) + nelt;
+	  nd.perm[i] = d->perm[i] & mask;
+	  nd.perm[i + 1] = (d->perm[i + 1] & mask) + nelt;
 	}
-      if (expand_vselect_vconcat (d->target, d->op0, d->op0, perm2, nelt,
+      if (expand_vselect_vconcat (d->target, d->op0, d->op0, nd.perm, nelt,
 				  d->testing_p))
 	return true;
 
@@ -49451,13 +49502,13 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	{
 	  for (i = 0; i < nelt; i += 4)
 	    {
-	      perm2[i + 0] = d->perm[i + 0] & mask;
-	      perm2[i + 1] = d->perm[i + 1] & mask;
-	      perm2[i + 2] = (d->perm[i + 2] & mask) + nelt;
-	      perm2[i + 3] = (d->perm[i + 3] & mask) + nelt;
+	      nd.perm[i + 0] = d->perm[i + 0] & mask;
+	      nd.perm[i + 1] = d->perm[i + 1] & mask;
+	      nd.perm[i + 2] = (d->perm[i + 2] & mask) + nelt;
+	      nd.perm[i + 3] = (d->perm[i + 3] & mask) + nelt;
 	    }
 
-	  if (expand_vselect_vconcat (d->target, d->op0, d->op0, perm2, nelt,
+	  if (expand_vselect_vconcat (d->target, d->op0, d->op0, nd.perm, nelt,
 				      d->testing_p))
 	    return true;
 	}
@@ -49478,10 +49529,10 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	    e -= nelt;
 	  else
 	    e += nelt;
-	  perm2[i] = e;
+	  nd.perm[i] = e;
 	}
 
-      if (expand_vselect_vconcat (d->target, d->op1, d->op0, perm2, nelt,
+      if (expand_vselect_vconcat (d->target, d->op1, d->op0, nd.perm, nelt,
 				  d->testing_p))
 	return true;
     }
@@ -49507,6 +49558,14 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
   if (ix86_expand_vec_perm_vpermi2 (NULL_RTX, NULL_RTX, NULL_RTX, NULL_RTX, d))
     return true;
 
+  /* See if we can get the same permutation in different vector integer
+     mode.  */
+  if (canonicalize_vector_int_perm (d, &nd) && expand_vec_perm_1 (&nd))
+    {
+      if (!d->testing_p)
+	emit_move_insn (d->target, gen_lowpart (d->vmode, nd.target));
+      return true;
+    }
   return false;
 }
 
@@ -50939,7 +50998,7 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
 	  struct expand_vec_perm_d d_copy = *d;
 	  d_copy.vmode = V4DFmode;
 	  if (d->testing_p)
-	    d_copy.target = gen_lowpart (V4DFmode, d->target);
+	    d_copy.target = gen_raw_REG (V4DFmode, LAST_VIRTUAL_REGISTER + 1);
 	  else
 	    d_copy.target = gen_reg_rtx (V4DFmode);
 	  d_copy.op0 = gen_lowpart (V4DFmode, d->op0);
@@ -50978,7 +51037,7 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
 	  struct expand_vec_perm_d d_copy = *d;
 	  d_copy.vmode = V8SFmode;
 	  if (d->testing_p)
-	    d_copy.target = gen_lowpart (V8SFmode, d->target);
+	    d_copy.target = gen_raw_REG (V8SFmode, LAST_VIRTUAL_REGISTER + 1);
 	  else
 	    d_copy.target = gen_reg_rtx (V8SFmode);
 	  d_copy.op0 = gen_lowpart (V8SFmode, d->op0);
@@ -51421,6 +51480,16 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   /* Even longer sequences.  */
   if (expand_vec_perm_vpshufb4_vpermq2 (d))
     return true;
+
+  /* See if we can get the same permutation in different vector integer
+     mode.  */
+  struct expand_vec_perm_d nd;
+  if (canonicalize_vector_int_perm (d, &nd) && expand_vec_perm_1 (&nd))
+    {
+      if (!d->testing_p)
+	emit_move_insn (d->target, gen_lowpart (d->vmode, nd.target));
+      return true;
+    }
 
   return false;
 }
