@@ -1116,16 +1116,17 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
   build_iv_mapping (iv_map, gbb, user_expr, ip, pbb->scop->scop_info->region);
   isl_ast_expr_free (user_expr);
 
+  basic_block old_bb = GBB_BB (gbb);
   if (dump_file)
     {
-      fprintf (dump_file, "[codegen] copying from basic block\n");
+      fprintf (dump_file,
+	       "[codegen] copying from bb_%d on edge (bb_%d, bb_%d)\n",
+	       old_bb->index, next_e->src->index, next_e->dest->index);
       print_loops_bb (dump_file, GBB_BB (gbb), 0, 3);
-      fprintf (dump_file, "[codegen] to new basic block\n");
-      print_loops_bb (dump_file, next_e->src, 0, 3);
+
     }
 
-  next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb), next_e,
-					   iv_map);
+  next_e = copy_bb_and_scalar_dependences (old_bb, next_e, iv_map);
 
   iv_map.release ();
 
@@ -1598,8 +1599,8 @@ translate_isl_ast_to_gimple::collect_all_ssa_names (tree new_expr,
     }
 }
 
-/* This is abridged version of the function:
-   tree.c:substitute_in_expr (tree exp, tree f, tree r). */
+/* This is abridged version of the function copied from:
+   tree.c:substitute_in_expr (tree exp, tree f, tree r).  */
 
 static tree
 substitute_ssa_name (tree exp, tree f, tree r)
@@ -1804,15 +1805,23 @@ get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
     }
 
   new_expr = rename_all_uses (new_expr, new_bb, old_bb);
-  /* We should check all the operands and all of them should dominate the use at
+
+  /* We check all the operands and all of them should dominate the use at
      new_expr.  */
-  if (TREE_CODE (new_expr) == SSA_NAME)
+  auto_vec <tree, 2> new_ssa_names;
+  collect_all_ssa_names (new_expr, &new_ssa_names);
+  int i;
+  tree new_ssa_name;
+  FOR_EACH_VEC_ELT (new_ssa_names, i, new_ssa_name)
     {
-      basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (new_expr));
-      if (bb && !dominated_by_p (CDI_DOMINATORS, new_bb, bb))
+      if (TREE_CODE (new_ssa_name) == SSA_NAME)
 	{
-	  codegen_error = true;
-	  return build_zero_cst (TREE_TYPE (old_name));
+	  basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (new_ssa_name));
+	  if (bb && !dominated_by_p (CDI_DOMINATORS, new_bb, bb))
+	    {
+	      codegen_error = true;
+	      return build_zero_cst (TREE_TYPE (old_name));
+	    }
 	}
     }
 
