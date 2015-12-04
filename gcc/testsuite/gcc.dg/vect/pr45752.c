@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-additional-options "--param tree-reassoc-width=1" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
