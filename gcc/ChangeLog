@@ -1,3 +1,11 @@
+2015-12-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/68214
+	* config/arm/arm.md (*call_mem): Delete pattern.
+	(*call_value_mem): Likewise.
+	* config/arm/arm.c (output_call_mem): Delete.
+	* config/arm/arm-protos.h (output_call_mem): Delete prototype.
+
 2015-12-04  Bin Cheng  <bin.cheng@arm.com>
 
 	* config/aarch64/atomics.md (atomic_store<mode>): Use predicate
