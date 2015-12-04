@@ -1,3 +1,8 @@
+2015-12-04  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* c-c++-common/attr-simd-4.c: New test.
+	* c-c++-common/attr-simd-5.c: New test.
+
 2015-12-04  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/graphite/id-28.c: Requires pthreads.

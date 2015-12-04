@@ -3142,6 +3142,7 @@ At the function call it will create resolver @code{ifunc}, that will
 dynamically call a clone suitable for current architecture.
 
 @item simd
+@itemx simd("@var{mask}")
 @cindex @code{simd} function attribute.
 This attribute enables creation of one or more function versions that
 can process multiple arguments using SIMD instructions from a
@@ -3156,6 +3157,9 @@ attribute on the same function.
 If the attribute is specified and @code{#pragma omp declare simd}
 present on a declaration and @code{-fopenmp} or @code{-fopenmp-simd}
 switch is specified, then the attribute is ignored.
+The optional argument @var{mask} may have "notinbranch" or "inbranch"
+value and instructs the compiler to generate non-masked or masked
+clones correspondingly. By default, all clones are generated.
 
 @item target (@var{options})
 @cindex @code{target} function attribute
