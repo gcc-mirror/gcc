@@ -1,3 +1,12 @@
+2015-12-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	* c-c++-common/Wshift-overflow-1.c: Test shifting 1 out of the sign bit.
+	* c-c++-common/Wshift-overflow-2.c: Test shifting 1 out of the sign bit.
+	* c-c++-common/Wshift-overflow-3.c: Test shifting 1 out of the sign bit.
+	* c-c++-common/Wshift-overflow-4.c: Test shifting 1 out of the sign bit.
+	* c-c++-common/Wshift-overflow-6.c: Test shifting 1 out of the sign bit.
+	* c-c++-common/Wshift-overflow-7.c: Test shifting 1 out of the sign bit.
+
 2015-11-25  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.target/msp430/msp_abi_div_funcs.c: New test.

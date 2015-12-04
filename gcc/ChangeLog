@@ -1,3 +1,8 @@
+2015-12-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	* c-family/c-common.c (maybe_warn_shift_overflow): Warn on all
+	overflows if shifting 1 out of the sign bit.
+
 2015-12-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* (cstore<mode>4_unsigned): Use gpc_reg_operand instead of
