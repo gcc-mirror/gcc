@@ -1,3 +1,14 @@
+2015-12-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (can_inline_edge_p) Use merged_comdat.
+	* cgraphclones.c (cgraph_node::create_clone): Use merged_comdat.
+	* cgraph.c (cgraph_node::dump): Dump merged_comdat.
+	* ipa-icf.c (sem_function::merge): Drop merged_comdat when merging
+	comdat and non-comdat.
+	* cgraph.h (cgraph_node): Rename merged to merged_comdat.
+	* ipa-inline-analysis.c (simple_edge_hints): Check both merged_comdat
+	and icf_merged.
+
 2015-12-04  Paolo Bonzini  <bonzini@gnu.org>
 
 	* c-family/c-common.c (maybe_warn_shift_overflow): Warn on all
