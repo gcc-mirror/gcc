@@ -1,3 +1,8 @@
+2015-12-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/fs_path.h (path::_Cmpt): Move definition
+	after __is_encoded_char explicit specializations.
+
 2015-12-04  Jason Merrill  <jason@redhat.com>
 
 	* include/bits/c++config: Fix abi_tag in special modes.

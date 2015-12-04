@@ -549,16 +549,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     std::string _M_what = _M_gen_what();
   };
 
-  struct path::_Cmpt : path
-  {
-    _Cmpt(string_type __s, _Type __t, size_t __pos)
-      : path(std::move(__s), __t), _M_pos(__pos) { }
-
-    _Cmpt() : _M_pos(-1) { }
-
-    size_t _M_pos;
-  };
-
   template<>
     struct path::__is_encoded_char<char> : std::true_type
     { using value_type = char; };
@@ -574,6 +564,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template<>
     struct path::__is_encoded_char<char32_t> : std::true_type
     { using value_type = char32_t; };
+
+  struct path::_Cmpt : path
+  {
+    _Cmpt(string_type __s, _Type __t, size_t __pos)
+      : path(std::move(__s), __t), _M_pos(__pos) { }
+
+    _Cmpt() : _M_pos(-1) { }
+
+    size_t _M_pos;
+  };
 
   // specialize _Cvt for degenerate 'noconv' case
   template<>
