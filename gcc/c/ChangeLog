@@ -1,3 +1,11 @@
+2015-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-tree.h (c_build_va_arg): Adjust prototype.
+	* c-parser.c (c_parser_postfix_expression): Adjust call to above.
+	* c-typeck.c (c_build_va_arg): Rename LOC parameter to LOC2, add LOC1
+	parameter, adjust throughout and issue an error if EXPR is a component
+	with reverse storage order.
+
 2015-12-02  Jason Merrill  <jason@redhat.com>
 
 	* c-fold.c (c_disable_warnings, c_enable_warnings, c_fully_fold)
