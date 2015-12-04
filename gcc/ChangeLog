@@ -1,3 +1,10 @@
+2015-12-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_override_options_internal):
+	Do not alter target_flags due to TARGET_GENERAL_REGS_ONLY_P.
+	* doc/invoke.texi (AArch64 options): Mention that -mgeneral-regs-only
+	does not affect the assembler directives.
+
 2015-12-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_asm_file_start): Implement hook function to
