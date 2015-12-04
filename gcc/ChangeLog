@@ -1,3 +1,8 @@
+2015-12-04  Richard Biener  <rguenther@suse.de>
+
+	* bitmap.c (bitmap_find_bit): Guard the bitmap descriptor
+	query with GATHER_STATISTICS.
+
 2015-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/65958
