@@ -294,7 +294,7 @@ namespace std
 # endif
 
 # if _GLIBCXX_USE_CXX11_ABI
-  inline namespace __cxx11 __attribute__((__abi_tag__)) { }
+  inline namespace __cxx11 __attribute__((__abi_tag__ ("cxx11"))) { }
 # endif
   }
 
