@@ -8745,7 +8745,7 @@ resolve_lock_unlock_event (gfc_code *code)
 	      !gfc_is_coindexed (code->expr1))))
     gfc_error ("Lock variable at %L must be a scalar of type LOCK_TYPE",
 	       &code->expr1->where);
-  else if ((code->op == EXEC_EVENT_POST && code->op == EXEC_EVENT_WAIT)
+  else if ((code->op == EXEC_EVENT_POST || code->op == EXEC_EVENT_WAIT)
 	   && (code->expr1->ts.type != BT_DERIVED
 	       || code->expr1->expr_type != EXPR_VARIABLE
 	       || code->expr1->ts.u.derived->from_intmod
