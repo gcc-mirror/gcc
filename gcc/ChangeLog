@@ -1,4 +1,19 @@
 2015-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/65958
+	* gimplify.c (struct gimplify_ctx): Turn boolean fields into 1-bit
+	fields, add keep_stack and reorder them.
+	(gimplify_bind_expr): Save gimplify_ctxp->keep_stack on entry then
+	set it to false.  Do not insert a stack save/restore pair if it has
+	been set to true by the gimplification of the statements.
+	Restore it to the saved value on exit if it is still false.
+	(gimplify_vla_decl): Do not set gimplify_ctxp->save_stack here.
+	(gimplify_call_expr) <BUILT_IN_ALLOCA[_WITH_ALIGN]>: New case.  Set
+	either save_stack or keep_stack depending on CALL_ALLOCA_FOR_VAR_P.
+	* doc/extend.texi (Variable Length): Document new behavior.
+	* doc/generic.texi (Blocks): Document new handling of VLAs.
+
+2015-12-04  Eric Botcazou  <ebotcazou@adacore.com>
             Tristan Gingold  <gingold@adacore.com>
 
 	PR middle-end/65958

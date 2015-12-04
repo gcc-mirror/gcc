@@ -155,10 +155,11 @@ struct gimplify_ctx
   hash_table<gimplify_hasher> *temp_htab;
 
   int conditions;
-  bool save_stack;
-  bool into_ssa;
-  bool allow_rhs_cond_expr;
-  bool in_cleanup_point_expr;
+  unsigned into_ssa : 1;
+  unsigned allow_rhs_cond_expr : 1;
+  unsigned in_cleanup_point_expr : 1;
+  unsigned keep_stack : 1;
+  unsigned save_stack : 1;
 };
 
 struct gimplify_omp_ctx
@@ -1080,6 +1081,7 @@ static enum gimplify_status
 gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 {
   tree bind_expr = *expr_p;
+  bool old_keep_stack = gimplify_ctxp->keep_stack;
   bool old_save_stack = gimplify_ctxp->save_stack;
   tree t;
   gbind *bind_stmt;
@@ -1129,9 +1131,10 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
     }
 
   bind_stmt = gimple_build_bind (BIND_EXPR_VARS (bind_expr), NULL,
-                                   BIND_EXPR_BLOCK (bind_expr));
+				 BIND_EXPR_BLOCK (bind_expr));
   gimple_push_bind_expr (bind_stmt);
 
+  gimplify_ctxp->keep_stack = false;
   gimplify_ctxp->save_stack = false;
 
   /* Gimplify the body into the GIMPLE_BIND tuple's body.  */
@@ -1154,7 +1157,10 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 
   cleanup = NULL;
   stack_save = NULL;
-  if (gimplify_ctxp->save_stack)
+
+  /* If the code both contains VLAs and calls alloca, then we cannot reclaim
+     the stack space allocated to the VLAs.  */
+  if (gimplify_ctxp->save_stack && !gimplify_ctxp->keep_stack)
     {
       gcall *stack_restore;
 
@@ -1236,7 +1242,11 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
       gimple_bind_set_body (bind_stmt, new_body);
     }
 
+  /* keep_stack propagates all the way up to the outermost BIND_EXPR.  */
+  if (!gimplify_ctxp->keep_stack)
+    gimplify_ctxp->keep_stack = old_keep_stack;
   gimplify_ctxp->save_stack = old_save_stack;
+
   gimple_pop_bind_expr ();
 
   gimplify_seq_add_stmt (pre_p, bind_stmt);
@@ -1393,10 +1403,6 @@ gimplify_vla_decl (tree decl, gimple_seq *seq_p)
   t = build2 (MODIFY_EXPR, TREE_TYPE (addr), addr, t);
 
   gimplify_and_add (t, seq_p);
-
-  /* Indicate that we need to restore the stack level when the
-     enclosing BIND_EXPR is exited.  */
-  gimplify_ctxp->save_stack = true;
 }
 
 /* A helper function to be called via walk_tree.  Mark all labels under *TP
@@ -2377,6 +2383,18 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
       && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (fndecl))
       {
+      case BUILT_IN_ALLOCA:
+      case BUILT_IN_ALLOCA_WITH_ALIGN:
+	/* If the call has been built for a variable-sized object, then we
+	   want to restore the stack level when the enclosing BIND_EXPR is
+	   exited to reclaim the allocated space; otherwise, we precisely
+	   need to do the opposite and preserve the latest stack level.  */
+	if (CALL_ALLOCA_FOR_VAR_P (*expr_p))
+	  gimplify_ctxp->save_stack = true;
+	else
+	  gimplify_ctxp->keep_stack = true;
+	break;
+
       case BUILT_IN_VA_START:
         {
 	  builtin_va_start_p = TRUE;
