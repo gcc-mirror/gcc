@@ -50,48 +50,110 @@ enum processor_flags
 
 #define TARGET_CPU_IEEE_FLOAT \
 	(s390_arch_flags & PF_IEEE_FLOAT)
+#define TARGET_CPU_IEEE_FLOAT_P(opts) \
+	(opts->x_s390_arch_flags & PF_IEEE_FLOAT)
 #define TARGET_CPU_ZARCH \
 	(s390_arch_flags & PF_ZARCH)
+#define TARGET_CPU_ZARCH_P(opts) \
+	(opts->x_s390_arch_flags & PF_ZARCH)
 #define TARGET_CPU_LONG_DISPLACEMENT \
 	(s390_arch_flags & PF_LONG_DISPLACEMENT)
+#define TARGET_CPU_LONG_DISPLACEMENT_P(opts) \
+	(opts->x_s390_arch_flags & PF_LONG_DISPLACEMENT)
 #define TARGET_CPU_EXTIMM \
- 	(s390_arch_flags & PF_EXTIMM)
+	(s390_arch_flags & PF_EXTIMM)
+#define TARGET_CPU_EXTIMM_P(opts) \
+	(opts->x_s390_arch_flags & PF_EXTIMM)
 #define TARGET_CPU_DFP \
- 	(s390_arch_flags & PF_DFP)
+	(s390_arch_flags & PF_DFP)
+#define TARGET_CPU_DFP_P(opts) \
+	(opts->x_s390_arch_flags & PF_DFP)
 #define TARGET_CPU_Z10 \
- 	(s390_arch_flags & PF_Z10)
+	(s390_arch_flags & PF_Z10)
+#define TARGET_CPU_Z10_P(opts) \
+	(opts->x_s390_arch_flags & PF_Z10)
 #define TARGET_CPU_Z196 \
- 	(s390_arch_flags & PF_Z196)
+	(s390_arch_flags & PF_Z196)
+#define TARGET_CPU_Z196_P(opts) \
+	(opts->x_s390_arch_flags & PF_Z196)
 #define TARGET_CPU_ZEC12 \
- 	(s390_arch_flags & PF_ZEC12)
+	(s390_arch_flags & PF_ZEC12)
+#define TARGET_CPU_ZEC12_P(opts) \
+	(opts->x_s390_arch_flags & PF_ZEC12)
 #define TARGET_CPU_HTM \
- 	(s390_arch_flags & PF_TX)
+	(s390_arch_flags & PF_TX)
+#define TARGET_CPU_HTM_P(opts) \
+	(opts->x_s390_arch_flags & PF_TX)
 #define TARGET_CPU_Z13 \
-        (s390_arch_flags & PF_Z13)
+	(s390_arch_flags & PF_Z13)
+#define TARGET_CPU_Z13_P(opts) \
+        (opts->x_s390_arch_flags & PF_Z13)
 #define TARGET_CPU_VX \
         (s390_arch_flags & PF_VX)
+#define TARGET_CPU_VX_P(opts) \
+	(opts->x_s390_arch_flags & PF_VX)
+
+#define TARGET_HARD_FLOAT_P(opts) (!TARGET_SOFT_FLOAT_P(opts))
 
 /* These flags indicate that the generated code should run on a cpu
    providing the respective hardware facility when run in
    z/Architecture mode.  */
 
 #define TARGET_LONG_DISPLACEMENT \
-       (TARGET_ZARCH && TARGET_CPU_LONG_DISPLACEMENT)
+	(TARGET_ZARCH && TARGET_CPU_LONG_DISPLACEMENT)
+#define TARGET_LONG_DISPLACEMENT_P(opts) \
+	(TARGET_ZARCH_P (opts->x_target_flags) \
+	 && TARGET_CPU_LONG_DISPLACEMENT_P (opts))
 #define TARGET_EXTIMM \
-       (TARGET_ZARCH && TARGET_CPU_EXTIMM)
+	(TARGET_ZARCH && TARGET_CPU_EXTIMM)
+#define TARGET_EXTIMM_P(opts) \
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_EXTIMM_P (opts))
 #define TARGET_DFP \
-       (TARGET_ZARCH && TARGET_CPU_DFP && TARGET_HARD_FLOAT)
+	(TARGET_ZARCH && TARGET_CPU_DFP && TARGET_HARD_FLOAT)
+#define TARGET_DFP_P(opts) \
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_DFP_P (opts) \
+	 && TARGET_HARD_FLOAT_P (opts->x_target_flags))
 #define TARGET_Z10 \
-       (TARGET_ZARCH && TARGET_CPU_Z10)
+	(TARGET_ZARCH && TARGET_CPU_Z10)
+#define TARGET_Z10_P(opts) \
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_Z10_P (opts))
 #define TARGET_Z196 \
-       (TARGET_ZARCH && TARGET_CPU_Z196)
+	(TARGET_ZARCH && TARGET_CPU_Z196)
+#define TARGET_Z196_P(opts) \
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_Z196_P (opts))
 #define TARGET_ZEC12 \
-       (TARGET_ZARCH && TARGET_CPU_ZEC12)
+	(TARGET_ZARCH && TARGET_CPU_ZEC12)
+#define TARGET_ZEC12_P(opts) \
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_ZEC12_P (opts))
 #define TARGET_HTM (TARGET_OPT_HTM)
+#define TARGET_HTM_P(opts) (TARGET_OPT_HTM_P (opts->x_target_flags))
 #define TARGET_Z13 \
-       (TARGET_ZARCH && TARGET_CPU_Z13)
+	(TARGET_ZARCH && TARGET_CPU_Z13)
+#define TARGET_Z13_P(opts) \
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_Z13_P (opts))
 #define TARGET_VX \
-       (TARGET_ZARCH && TARGET_CPU_VX && TARGET_OPT_VX && TARGET_HARD_FLOAT)
+	(TARGET_ZARCH && TARGET_CPU_VX && TARGET_OPT_VX && TARGET_HARD_FLOAT)
+#define TARGET_VX_P(opts) \
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_VX_P (opts) \
+	 && TARGET_OPT_VX_P (opts->x_target_flags) \
+	 && TARGET_HARD_FLOAT_P (opts->x_target_flags))
+
+#ifdef HAVE_AS_MACHINE_MACHINEMODE
+#define S390_USE_TARGET_ATTRIBUTE 1
+#else
+#define S390_USE_TARGET_ATTRIBUTE 0
+#endif
+
+#ifdef HAVE_AS_ARCHITECTURE_MODIFIERS
+#define S390_USE_ARCHITECTURE_MODIFIERS 1
+#else
+#define S390_USE_ARCHITECTURE_MODIFIERS 0
+#endif
+
+#if S390_USE_TARGET_ATTRIBUTE
+/* For switching between functions with different target attributes.  */
+#define SWITCHABLE_TARGET 1
+#endif
 
 /* Use the ABI introduced with IBM z13:
    - pass vector arguments <= 16 bytes in VRs
@@ -936,6 +998,16 @@ do {									\
 #undef ASM_OUTPUT_FUNCTION_LABEL
 #define ASM_OUTPUT_FUNCTION_LABEL(FILE, NAME, DECL) \
   s390_asm_output_function_label (FILE, NAME, DECL)
+
+#if S390_USE_TARGET_ATTRIBUTE
+/* Hook to output .machine and .machinemode at start of function.  */
+#undef ASM_OUTPUT_FUNCTION_PREFIX
+#define ASM_OUTPUT_FUNCTION_PREFIX s390_asm_output_function_prefix
+
+/* Hook to output .machine and .machinemode at end of function.  */
+#undef ASM_DECLARE_FUNCTION_SIZE
+#define ASM_DECLARE_FUNCTION_SIZE s390_asm_declare_function_size
+#endif
 
 /* Miscellaneous parameters.  */
 

@@ -1,3 +1,95 @@
+2015-12-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/s390.opt (s390_arch_string): Remove.
+	(s390_tune_string): Likewise.
+	(s390_cost_pointer): Add Variable.
+	(s390_tune_flags): Add TargetVariable.
+	(s390_arch_flags, march=, mbackchain, mdebug, mesa, mhard-dfp),
+	(mhard-float, mlong-double-128, mlong-double-64, mhtm, mvx),
+	(mpacked-stack, msmall-exec, msoft-float, mstack-guard=, mstack-size=),
+	(mtune=, mmvcle, mzvector, mzarch, mbranch-cost=, mwarn-dynamicstack),
+	(mwarn-framesize=): Save option.
+	(mno-stack-guard, mno-stack-guard): New option.
+	(mwarn-dynamicstack): Allow mno-warn-dynamicstack.
+	(mwarn-framesize=): Convert to UInteger (negative values are rejected
+	now).
+	* config/s390/s390-c.c (s390_cpu_cpp_builtins_internal): Split setting
+	macros changeable through the GCC target pragma into a separate
+	function.
+	(s390_cpu_cpp_builtins): Likewise.
+	(s390_pragma_target_parse): New function, implement GCC target pragma
+	if enabled.
+	(s390_register_target_pragmas): Register s390_pragma_target_parse if
+	available.
+	* common/config/s390/s390-common.c (s390_handle_option):
+	Export.
+	Move setting s390_arch_flags to s390.c.
+	Remove s390_tune_flags.
+	Allow 0 as argument to -mstack-size (switch to default value).
+	Allow 0 as argument to -mstack-guard (switch off).
+	Remove now unnecessary explicit parsing code for -mwarn-framesize.
+	* config/s390/s390-protos.h (s390_handle_option): Export.
+	(s390_valid_target_attribute_tree): Export.
+	(s390_reset_previous_fndecl): Export.
+	* config/s390/s390-builtins.def: Use new macro B_GROUP to mark the start
+	and end of HTM and VX builtins.
+	(s390_asm_output_function_prefix): Declare hook.
+	(s390_asm_declare_function_size): Likewise.
+	* config/s390/s390-builtins.h (B_GROUP): Use macro.
+	* config/s390/s390-opts.h: Add comment about processor_type usage.
+	* config/s390/s390.h (TARGET_CPU_IEEE_FLOAT_P, TARGET_CPU_ZARCH_P),
+	(TARGET_CPU_LONG_DISPLACEMENT_P, TARGET_CPU_EXTIMM_P, TARGET_CPU_DFP_P),
+	(TARGET_CPU_Z10_P, TARGET_CPU_Z196_P, TARGET_CPU_ZEC12_P),
+	(TARGET_CPU_HTM_P, TARGET_CPU_Z13_P, TARGET_CPU_VX_P),
+	(TARGET_HARD_FLOAT_P, TARGET_LONG_DISPLACEMENT_P, TARGET_EXTIMM_P),
+	(TARGET_DFP_P, TARGET_Z10_P, TARGET_Z196_P, TARGET_ZEC12_P),
+	(TARGET_HTM_P, TARGET_Z13_P, TARGET_VX_P, TARGET_CPU_EXTIMM),
+	(TARGET_CPU_DFP, TARGET_CPU_Z10, TARGET_CPU_Z196, TARGET_CPU_ZEC12),
+	(TARGET_CPU_HTM, TARGET_CPU_Z13, TARGET_LONG_DISPLACEMENT),
+	(TARGET_EXTIMM, TARGET_DFP, TARGET_Z10, TARGET_Z196, TARGET_ZEC12),
+	(TARGET_Z13, TARGET_VX, S390_USE_TARGET_ATTRIBUTE),
+	(S390_USE_ARCHITECTURE_MODIFIERS, SWITCHABLE_TARGET),
+	(ASM_DECLARE_FUNCTION_SIZE, ASM_OUTPUT_FUNCTION_PREFIX): Likewise.
+	* config/s390/vecintrin.h: Use vector definitions even if __VEC__ is
+	undefined.
+	(vec_all_nan): Rewrite as macro using statement expressions to avoid
+	that the vector keyword needs to be defined when including the file.
+	(vec_all_numeric): Likewise.
+	(vec_any_nan): Likewise.
+	(vec_any_numeric):  Likewise.
+	* config/s390/s390.c (s390_previous_fndecl): New static variable.
+	(s390_set_current_function): New function.
+	(s390_cost): Wrapper macro to allow defining the cost table pointer in
+	the options file.
+	(processor_table): Table for march= and mtune= parsing.
+	(s390_init_builtins): Enable all builtins and types unconditionally.
+	(s390_expand_builtin): Generate an error message if builtin is not
+	supported by current options.
+	Correct an error message.
+	(s390_function_specific_restore): New function to set s390_cost.
+	(s390_asm_output_machine_for_arch): New function for emitting .machine
+	and .machinmode directives to the assembler file.
+	(s390_asm_output_function_prefix): Likewise.
+	(s390_asm_declare_function_size):  Likewise.
+	(s390_asm_output_function_label): Add mdebug output for feature testing.
+	(s390_option_override): Move implementation into internal function.
+	(s390_option_override_internal): Likewise.
+	Implement option overriding based on current options.
+	(s390_valid_target_attribute_inner_p): New function implementing target
+	attribute logic.
+	(s390_valid_target_attribute_tree): Likewise.
+	(s390_valid_target_attribute_p): Likewise.
+	(s390_reset_previous_fndecl): Likewise.
+	(s390_set_current_function): Likewise.
+	(TARGET_SET_CURRENT_FUNCTION): Provide target hook function.
+	(TARGET_OPTION_VALID_ATTRIBUTE_P): Likewise.
+	(TARGET_OPTION_RESTORE): Likewise.
+	* doc/extend.texi: S390: Document target attribute and pragma.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+	* configure.ac: S390: Check for .machinemode and .machine in gas.
+	S390: Check for architecture modifiers support in gas.
+
 2015-12-04  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* c-family/c-common.c (c_common_attribute_table[]): Update max arguments

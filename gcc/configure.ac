@@ -4564,6 +4564,19 @@ pointers into PC-relative form.])
       [.gnu_attribute 8,1],,
       [AC_DEFINE(HAVE_AS_GNU_ATTRIBUTE, 1,
 	  [Define if your assembler supports .gnu_attribute.])])
+    gcc_GAS_CHECK_FEATURE([.machine and .machinemode support],
+      gcc_cv_as_s390_machine_machinemode, [2,24,0],,
+      [	.machinemode push
+	.machinemode pop
+	.machine push
+	.machine pop],,
+      [AC_DEFINE(HAVE_AS_MACHINE_MACHINEMODE, 1,
+	  [Define if your assembler supports .machine and .machinemode.])])
+    gcc_GAS_CHECK_FEATURE([architecture modifiers support],
+      gcc_cv_as_s390_architecture_modifiers, [2,26,0],,
+      [	.machine z13+vx ],,
+      [AC_DEFINE(HAVE_AS_ARCHITECTURE_MODIFIERS, 1,
+	  [Define if your assembler supports architecture modifiers.])])
     ;;
 esac
 

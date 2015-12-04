@@ -31,6 +31,12 @@ extern int s390_float_const_zero_p (rtx value);
 extern bool s390_check_symref_alignment (rtx addr, HOST_WIDE_INT alignment);
 
 
+/* In s390-common.c.  */
+extern bool s390_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
+				struct gcc_options *opts_set ATTRIBUTE_UNUSED,
+				const struct cl_decoded_option *decoded,
+				location_t loc);
+
 /* Declare functions in s390.c.  */
 
 extern HOST_WIDE_INT s390_initial_elimination_offset (int, int);
@@ -46,6 +52,19 @@ extern int s390_class_max_nregs (enum reg_class, machine_mode);
 extern int s390_cannot_change_mode_class (machine_mode, machine_mode,
 					  enum reg_class);
 extern bool s390_function_arg_vector (machine_mode, const_tree);
+#if S390_USE_TARGET_ATTRIBUTE
+extern tree s390_valid_target_attribute_tree (tree args,
+					      struct gcc_options *opts,
+					      const struct gcc_options
+					      *opts_set, bool is_pragma);
+extern void s390_activate_target_options (tree new_tree);
+extern void
+s390_asm_output_function_prefix (FILE *asm_out_file,
+				 const char *fnname ATTRIBUTE_UNUSED);
+extern void
+s390_asm_declare_function_size (FILE *asm_out_file,
+				const char *fnname ATTRIBUTE_UNUSED, tree decl);
+#endif
 
 #ifdef RTX_CODE
 extern int s390_extra_constraint_str (rtx, int, const char *);

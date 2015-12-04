@@ -79,40 +79,26 @@ s390_option_init_struct (struct gcc_options *opts)
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
-static bool
-s390_handle_option (struct gcc_options *opts,
+bool
+s390_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
   		    const struct cl_decoded_option *decoded,
 		    location_t loc)
 {
   size_t code = decoded->opt_index;
-  const char *arg = decoded->arg;
   int value = decoded->value;
 
   switch (code)
     {
-    case OPT_march_:
-      opts->x_s390_arch_flags = processor_flags_table[value];
-      opts->x_s390_arch_string = arg;
-      return true;
-
     case OPT_mstack_guard_:
-      if (exact_log2 (value) == -1)
+      if (value != 0 && exact_log2 (value) == -1)
 	error_at (loc, "stack guard value must be an exact power of 2");
       return true;
 
     case OPT_mstack_size_:
-      if (exact_log2 (value) == -1)
+      if (value != 0 && exact_log2 (value) == -1)
 	error_at (loc, "stack size must be an exact power of 2");
       return true;
-
-    case OPT_mtune_:
-      opts->x_s390_tune_flags = processor_flags_table[value];
-      return true;
-
-    case OPT_mwarn_framesize_:
-      return sscanf (arg, HOST_WIDE_INT_PRINT_DEC,
-		     &opts->x_s390_warn_framesize) == 1;
 
     default:
       return true;

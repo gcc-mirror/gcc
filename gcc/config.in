@@ -259,6 +259,12 @@
 #endif
 
 
+/* Define if your assembler supports architecture modifiers. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_ARCHITECTURE_MODIFIERS
+#endif
+
+
 /* Define if your avr assembler supports --mlink-relax option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_AVR_MLINK_RELAX_OPTION
@@ -505,6 +511,12 @@
 /* Define if your assembler supports the -mabi option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_MABI_OPTION
+#endif
+
+
+/* Define if your assembler supports .machine and .machinemode. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_MACHINE_MACHINEMODE
 #endif
 
 

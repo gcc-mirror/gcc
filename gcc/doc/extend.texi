@@ -4944,6 +4944,50 @@ number of halfwords to be added after the function label.  For
 both arguments the maximum allowed value is 1000000.
 
 If both arguments are zero, hotpatching is disabled.
+
+@item target (@var{options})
+@cindex @code{target} function attribute
+As discussed in @ref{Common Function Attributes}, this attribute
+allows specification of target-specific compilation options.
+
+On S/390, the following options are supported:
+
+@table @samp
+@item arch=
+@item tune=
+@item stack-guard=
+@item stack-size=
+@item branch-cost=
+@item warn-framesize=
+@item backchain
+@itemx no-backchain
+@item hard-dfp
+@itemx no-hard-dfp
+@item hard-float
+@itemx soft-float
+@item htm
+@itemx no-htm
+@item vx
+@itemx no-vx
+@item packed-stack
+@itemx no-packed-stack
+@item small-exec
+@itemx no-small-exec
+@item mvcle
+@itemx no-mvcle
+@item warn-dynamicstack
+@itemx no-warn-dynamicstack
+@end table
+
+The options work exactly like the S/390 specific command line
+options (without the prefix @option{-m}) except that they do not
+change any feature macros.  For example,
+
+@smallexample
+@code{target("no-vx")}
+@end smallexample
+
+does not undefine the @code{__VEC__} macro.
 @end table
 
 @node SH Function Attributes
@@ -18437,6 +18481,7 @@ for further explanation.
 * M32C Pragmas::
 * MeP Pragmas::
 * RS/6000 and PowerPC Pragmas::
+* S/390 Pragmas::
 * Darwin Pragmas::
 * Solaris Pragmas::
 * Symbol-Renaming Pragmas::
@@ -18610,6 +18655,26 @@ declarations.
 @c Describe h8300 pragmas here.
 @c Describe sh pragmas here.
 @c Describe v850 pragmas here.
+
+@node S/390 Pragmas
+@subsection S/390 Pragmas
+
+The pragmas defined by the S/390 target correspond to the S/390
+target function attributes and some the additional options:
+
+@table @samp
+@item zvector
+@itemx no-zvector
+@end table
+
+Note that options of the pragma, unlike options of the target
+attribute, do change the value of preprocessor macros like
+@code{__VEC__}.  They can be specified as below:
+
+@smallexample
+#pragma GCC target("string[,string]...")
+#pragma GCC target("string"[,"string"]...)
+@end smallexample
 
 @node Darwin Pragmas
 @subsection Darwin Pragmas

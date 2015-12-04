@@ -27065,6 +27065,77 @@ if test $gcc_cv_as_s390_gnu_attribute = yes; then
 $as_echo "#define HAVE_AS_GNU_ATTRIBUTE 1" >>confdefs.h
 
 fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .machine and .machinemode support" >&5
+$as_echo_n "checking assembler for .machine and .machinemode support... " >&6; }
+if test "${gcc_cv_as_s390_machine_machinemode+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_s390_machine_machinemode=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 24 \) \* 1000 + 0`
+  then gcc_cv_as_s390_machine_machinemode=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '	.machinemode push
+	.machinemode pop
+	.machine push
+	.machine pop' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_s390_machine_machinemode=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_s390_machine_machinemode" >&5
+$as_echo "$gcc_cv_as_s390_machine_machinemode" >&6; }
+if test $gcc_cv_as_s390_machine_machinemode = yes; then
+
+$as_echo "#define HAVE_AS_MACHINE_MACHINEMODE 1" >>confdefs.h
+
+fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for architecture modifiers support" >&5
+$as_echo_n "checking assembler for architecture modifiers support... " >&6; }
+if test "${gcc_cv_as_s390_architecture_modifiers+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_s390_architecture_modifiers=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 26 \) \* 1000 + 0`
+  then gcc_cv_as_s390_architecture_modifiers=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '	.machine z13+vx ' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_s390_architecture_modifiers=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_s390_architecture_modifiers" >&5
+$as_echo "$gcc_cv_as_s390_architecture_modifiers" >&6; }
+if test $gcc_cv_as_s390_architecture_modifiers = yes; then
+
+$as_echo "#define HAVE_AS_ARCHITECTURE_MODIFIERS 1" >>confdefs.h
+
+fi
     ;;
 esac
 
