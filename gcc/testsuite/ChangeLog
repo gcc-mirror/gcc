@@ -1,3 +1,8 @@
+2015-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/68681
+	* gcc.dg/vect/pr45752.c: Add --param tree-reassoc-width=1.
+
 2015-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/sso-9.c: New test.
