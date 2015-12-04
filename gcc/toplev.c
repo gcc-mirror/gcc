@@ -904,7 +904,9 @@ init_asm_output (const char *name)
 						   NULL);
 	    }
 	  else
-	    inform (input_location, "-frecord-gcc-switches is not supported by the current target");
+	    inform (UNKNOWN_LOCATION,
+		    "-frecord-gcc-switches is not supported by "
+		    "the current target");
 	}
 
       if (flag_verbose_asm)
@@ -1214,8 +1216,9 @@ process_options (void)
 
   if (flag_section_anchors && !target_supports_section_anchors_p ())
     {
-      warning (OPT_fsection_anchors,
-	       "this target does not support %qs", "-fsection-anchors");
+      warning_at (UNKNOWN_LOCATION, OPT_fsection_anchors,
+		  "this target does not support %qs",
+		  "-fsection-anchors");
       flag_section_anchors = 0;
     }
 
@@ -1250,14 +1253,16 @@ process_options (void)
     {
       if (targetm.chkp_bound_mode () == VOIDmode)
 	{
-	  error ("-fcheck-pointer-bounds is not supported for this target");
+	  error_at (UNKNOWN_LOCATION,
+		    "-fcheck-pointer-bounds is not supported for this target");
 	  flag_check_pointer_bounds = 0;
 	}
 
       if (flag_sanitize & SANITIZE_ADDRESS)
 	{
-	  error ("-fcheck-pointer-bounds is not supported with "
-		 "Address Sanitizer");
+	  error_at (UNKNOWN_LOCATION,
+		    "-fcheck-pointer-bounds is not supported with "
+		    "Address Sanitizer");
 	  flag_check_pointer_bounds = 0;
 	}
     }
@@ -1270,7 +1275,8 @@ process_options (void)
   if (!abi_version_at_least (2))
     {
       /* -fabi-version=1 support was removed after GCC 4.9.  */
-      error ("%<-fabi-version=1%> is no longer supported");
+      error_at (UNKNOWN_LOCATION,
+		"%<-fabi-version=1%> is no longer supported");
       flag_abi_version = 2;
     }
 
@@ -1297,10 +1303,12 @@ process_options (void)
   /* Warn about options that are not supported on this machine.  */
 #ifndef INSN_SCHEDULING
   if (flag_schedule_insns || flag_schedule_insns_after_reload)
-    warning (0, "instruction scheduling not supported on this target machine");
+    warning_at (UNKNOWN_LOCATION, 0,
+		"instruction scheduling not supported on this target machine");
 #endif
   if (!DELAY_SLOTS && flag_delayed_branch)
-    warning (0, "this target machine does not have delayed branches");
+    warning_at (UNKNOWN_LOCATION, 0,
+		"this target machine does not have delayed branches");
 
   user_label_prefix = USER_LABEL_PREFIX;
   if (flag_leading_underscore != -1)
@@ -1313,8 +1321,9 @@ process_options (void)
 	  user_label_prefix = flag_leading_underscore ? "_" : "";
 	}
       else
-	warning (0, "-f%sleading-underscore not supported on this target machine",
-		 flag_leading_underscore ? "" : "no-");
+	warning_at (UNKNOWN_LOCATION, 0,
+		    "-f%sleading-underscore not supported on this "
+		    "target machine", flag_leading_underscore ? "" : "no-");
     }
 
   /* If we are in verbose mode, write out the version and maybe all the
@@ -1350,14 +1359,16 @@ process_options (void)
       FILE *final_output = fopen (flag_dump_final_insns, "w");
       if (!final_output)
 	{
-	  error ("could not open final insn dump file %qs: %m",
-		 flag_dump_final_insns);
+	  error_at (UNKNOWN_LOCATION,
+		    "could not open final insn dump file %qs: %m",
+		    flag_dump_final_insns);
 	  flag_dump_final_insns = NULL;
 	}
       else if (fclose (final_output))
 	{
-	  error ("could not close zeroed insn dump file %qs: %m",
-		 flag_dump_final_insns);
+	  error_at (UNKNOWN_LOCATION,
+		    "could not close zeroed insn dump file %qs: %m",
+		    flag_dump_final_insns);
 	  flag_dump_final_insns = NULL;
 	}
     }
@@ -1392,8 +1403,9 @@ process_options (void)
     debug_hooks = &dwarf2_lineno_debug_hooks;
 #endif
   else
-    error ("target system does not support the %qs debug format",
-	   debug_type_names[write_symbols]);
+    error_at (UNKNOWN_LOCATION,
+	      "target system does not support the %qs debug format",
+	      debug_type_names[write_symbols]);
 
   /* We know which debug output will be used so we can set flag_var_tracking
      and flag_var_tracking_uninit if the user has not specified them.  */
@@ -1404,11 +1416,13 @@ process_options (void)
 	  || flag_var_tracking_uninit == 1)
         {
 	  if (debug_info_level < DINFO_LEVEL_NORMAL)
-	    warning (0, "variable tracking requested, but useless unless "
-		     "producing debug info");
+	    warning_at (UNKNOWN_LOCATION, 0,
+			"variable tracking requested, but useless unless "
+			"producing debug info");
 	  else
-	    warning (0, "variable tracking requested, but not supported "
-		     "by this debug format");
+	    warning_at (UNKNOWN_LOCATION, 0,
+			"variable tracking requested, but not supported "
+			"by this debug format");
 	}
       flag_var_tracking = 0;
       flag_var_tracking_uninit = 0;
@@ -1444,7 +1458,8 @@ process_options (void)
 
   if (flag_var_tracking_assignments
       && (flag_selective_scheduling || flag_selective_scheduling2))
-    warning (0, "var-tracking-assignments changes selective scheduling");
+    warning_at (UNKNOWN_LOCATION, 0,
+		"var-tracking-assignments changes selective scheduling");
 
   if (flag_tree_cselim == AUTODETECT_VALUE)
     {
@@ -1461,31 +1476,37 @@ process_options (void)
     {
       aux_info_file = fopen (aux_info_file_name, "w");
       if (aux_info_file == 0)
-	fatal_error (input_location, "can%'t open %s: %m", aux_info_file_name);
+	fatal_error (UNKNOWN_LOCATION,
+		     "can%'t open %s: %m", aux_info_file_name);
     }
 
   if (!targetm_common.have_named_sections)
     {
       if (flag_function_sections)
 	{
-	  warning (0, "-ffunction-sections not supported for this target");
+	  warning_at (UNKNOWN_LOCATION, 0,
+		      "-ffunction-sections not supported for this target");
 	  flag_function_sections = 0;
 	}
       if (flag_data_sections)
 	{
-	  warning (0, "-fdata-sections not supported for this target");
+	  warning_at (UNKNOWN_LOCATION, 0,
+		      "-fdata-sections not supported for this target");
 	  flag_data_sections = 0;
 	}
     }
 
   if (flag_prefetch_loop_arrays > 0 && !targetm.code_for_prefetch)
     {
-      warning (0, "-fprefetch-loop-arrays not supported for this target");
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "-fprefetch-loop-arrays not supported for this target");
       flag_prefetch_loop_arrays = 0;
     }
   else if (flag_prefetch_loop_arrays > 0 && !targetm.have_prefetch ())
     {
-      warning (0, "-fprefetch-loop-arrays not supported for this target (try -march switches)");
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "-fprefetch-loop-arrays not supported for this target "
+		  "(try -march switches)");
       flag_prefetch_loop_arrays = 0;
     }
 
@@ -1493,7 +1514,8 @@ process_options (void)
      make much sense anyway, so don't allow it.  */
   if (flag_prefetch_loop_arrays > 0 && optimize_size)
     {
-      warning (0, "-fprefetch-loop-arrays is not supported with -Os");
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "-fprefetch-loop-arrays is not supported with -Os");
       flag_prefetch_loop_arrays = 0;
     }
 
@@ -1504,7 +1526,9 @@ process_options (void)
   /* We cannot reassociate if we want traps or signed zeros.  */
   if (flag_associative_math && (flag_trapping_math || flag_signed_zeros))
     {
-      warning (0, "-fassociative-math disabled; other options take precedence");
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "-fassociative-math disabled; other options take "
+		  "precedence");
       flag_associative_math = 0;
     }
 
@@ -1520,7 +1544,8 @@ process_options (void)
      target already uses a soft frame pointer, the transition is trivial.  */
   if (!FRAME_GROWS_DOWNWARD && flag_stack_protect)
     {
-      warning (0, "-fstack-protector not supported for this target");
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "-fstack-protector not supported for this target");
       flag_stack_protect = 0;
     }
   if (!flag_stack_protect)
@@ -1531,16 +1556,17 @@ process_options (void)
   if ((flag_sanitize & SANITIZE_ADDRESS)
       && !FRAME_GROWS_DOWNWARD)
     {
-      warning (0,
-	       "-fsanitize=address and -fsanitize=kernel-address "
-	       "are not supported for this target");
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "-fsanitize=address and -fsanitize=kernel-address "
+		  "are not supported for this target");
       flag_sanitize &= ~SANITIZE_ADDRESS;
     }
 
   if ((flag_sanitize & SANITIZE_USER_ADDRESS)
       && targetm.asan_shadow_offset == NULL)
     {
-      warning (0, "-fsanitize=address not supported for this target");
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "-fsanitize=address not supported for this target");
       flag_sanitize &= ~SANITIZE_ADDRESS;
     }
 
