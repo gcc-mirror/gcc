@@ -1,3 +1,7 @@
+2015-12-02  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/reassoc-43.c: New test.
+
 2015-12-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/mgeneral-regs_4.c: New test.

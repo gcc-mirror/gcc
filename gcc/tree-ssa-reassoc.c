@@ -2976,9 +2976,15 @@ struct inter_bb_range_test_entry
   unsigned int first_idx, last_idx;
 };
 
-/* Inter-bb range test optimization.  */
+/* Inter-bb range test optimization.
 
-static void
+   Returns TRUE if a gimple conditional is optimized to a true/false,
+   otherwise return FALSE.
+
+   This indicates to the caller that it should run a CFG cleanup pass
+   once reassociation is completed.  */
+
+static bool
 maybe_optimize_range_tests (gimple *stmt)
 {
   basic_block first_bb = gimple_bb (stmt);
@@ -2990,6 +2996,7 @@ maybe_optimize_range_tests (gimple *stmt)
   auto_vec<operand_entry *> ops;
   auto_vec<inter_bb_range_test_entry> bbinfo;
   bool any_changes = false;
+  bool cfg_cleanup_needed = false;
 
   /* Consider only basic blocks that end with GIMPLE_COND or
      a cast statement satisfying final_range_test_p.  All
@@ -2998,15 +3005,15 @@ maybe_optimize_range_tests (gimple *stmt)
   if (gimple_code (stmt) == GIMPLE_COND)
     {
       if (EDGE_COUNT (first_bb->succs) != 2)
-	return;
+	return cfg_cleanup_needed;
     }
   else if (final_range_test_p (stmt))
     other_bb = single_succ (first_bb);
   else
-    return;
+    return cfg_cleanup_needed;
 
   if (stmt_could_throw_p (stmt))
-    return;
+    return cfg_cleanup_needed;
 
   /* As relative ordering of post-dominator sons isn't fixed,
      maybe_optimize_range_tests can be called first on any
@@ -3030,14 +3037,14 @@ maybe_optimize_range_tests (gimple *stmt)
       /* As non-GIMPLE_COND last stmt always terminates the range,
 	 if forward search didn't discover anything, just give up.  */
       if (gimple_code (stmt) != GIMPLE_COND)
-	return;
+	return cfg_cleanup_needed;
       /* Look at both successors.  Either it ends with a GIMPLE_COND
 	 and satisfies suitable_cond_bb, or ends with a cast and
 	 other_bb is that cast's successor.  */
       FOR_EACH_EDGE (e, ei, first_bb->succs)
 	if (!(e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE))
 	    || e->dest == first_bb)
-	  return;
+	  return cfg_cleanup_needed;
 	else if (single_pred_p (e->dest))
 	  {
 	    stmt = last_stmt (e->dest);
@@ -3060,7 +3067,7 @@ maybe_optimize_range_tests (gimple *stmt)
 	      }
 	  }
       if (other_bb == NULL)
-	return;
+	return cfg_cleanup_needed;
     }
   /* Now do the forward search, moving last_bb to successor bbs
      that aren't other_bb.  */
@@ -3080,7 +3087,7 @@ maybe_optimize_range_tests (gimple *stmt)
       last_bb = e->dest;
     }
   if (first_bb == last_bb)
-    return;
+    return cfg_cleanup_needed;
   /* Here basic blocks first_bb through last_bb's predecessor
      end with GIMPLE_COND, all of them have one of the edges to
      other_bb and another to another block in the range,
@@ -3289,10 +3296,18 @@ maybe_optimize_range_tests (gimple *stmt)
 	      && ops[bbinfo[idx].first_idx]->op != NULL_TREE)
 	    {
 	      gcond *cond_stmt = as_a <gcond *> (last_stmt (bb));
+	      /* If we collapse the conditional to a true/false
+		 condition, then bubble that knowledge up to our caller.  */
 	      if (integer_zerop (ops[bbinfo[idx].first_idx]->op))
-		gimple_cond_make_false (cond_stmt);
+		{
+		  gimple_cond_make_false (cond_stmt);
+		  cfg_cleanup_needed = true;
+		}
 	      else if (integer_onep (ops[bbinfo[idx].first_idx]->op))
-		gimple_cond_make_true (cond_stmt);
+		{
+		  gimple_cond_make_true (cond_stmt);
+		  cfg_cleanup_needed = true;
+		}
 	      else
 		{
 		  gimple_cond_set_code (cond_stmt, NE_EXPR);
@@ -3306,6 +3321,7 @@ maybe_optimize_range_tests (gimple *stmt)
 	    break;
 	}
     }
+  return cfg_cleanup_needed;
 }
 
 /* Return true if OPERAND is defined by a PHI node which uses the LHS
@@ -4753,17 +4769,20 @@ transform_stmt_to_multiply (gimple_stmt_iterator *gsi, gimple *stmt,
 }
 
 /* Reassociate expressions in basic block BB and its post-dominator as
-   children.  */
+   children.
 
-static void
+   Bubble up return status from maybe_optimize_range_tests.  */
+
+static bool
 reassociate_bb (basic_block bb)
 {
   gimple_stmt_iterator gsi;
   basic_block son;
   gimple *stmt = last_stmt (bb);
+  bool cfg_cleanup_needed = false;
 
   if (stmt && !gimple_visited_p (stmt))
-    maybe_optimize_range_tests (stmt);
+    cfg_cleanup_needed |= maybe_optimize_range_tests (stmt);
 
   for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
     {
@@ -4922,7 +4941,9 @@ reassociate_bb (basic_block bb)
   for (son = first_dom_son (CDI_POST_DOMINATORS, bb);
        son;
        son = next_dom_son (CDI_POST_DOMINATORS, son))
-    reassociate_bb (son);
+    cfg_cleanup_needed |= reassociate_bb (son);
+
+  return cfg_cleanup_needed;
 }
 
 /* Add jumps around shifts for range tests turned into bit tests.
@@ -5028,11 +5049,13 @@ debug_ops_vector (vec<operand_entry *> ops)
   dump_ops_vector (stderr, ops);
 }
 
-static void
+/* Bubble up return status from reassociate_bb.  */
+
+static bool
 do_reassoc (void)
 {
   break_up_subtract_bb (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  reassociate_bb (EXIT_BLOCK_PTR_FOR_FN (cfun));
+  return reassociate_bb (EXIT_BLOCK_PTR_FOR_FN (cfun));
 }
 
 /* Initialize the reassociation pass.  */
@@ -5106,7 +5129,10 @@ fini_reassoc (void)
 }
 
 /* Gate and execute functions for Reassociation.  If INSERT_POWI_P, enable
-   insertion of __builtin_powi calls.  */
+   insertion of __builtin_powi calls.
+
+   Returns TODO_cfg_cleanup if a CFG cleanup pass is desired due to
+   optimization of a gimple conditional.  Otherwise returns zero.  */
 
 static unsigned int
 execute_reassoc (bool insert_powi_p)
@@ -5115,12 +5141,13 @@ execute_reassoc (bool insert_powi_p)
 
   init_reassoc ();
 
-  do_reassoc ();
+  bool cfg_cleanup_needed;
+  cfg_cleanup_needed = do_reassoc ();
   repropagate_negates ();
   branch_fixup ();
 
   fini_reassoc ();
-  return 0;
+  return cfg_cleanup_needed ? TODO_cleanup_cfg : 0;
 }
 
 namespace {
