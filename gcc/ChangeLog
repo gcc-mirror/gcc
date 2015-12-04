@@ -1,3 +1,21 @@
+2015-12-04  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	PR tree-optimization/68693
+	* graphite-scop-detection.c (dot_all_sese): New
+	(dot_all_scops_1): Renamed to dot_all_sese.
+	(dot_all_scops): Removed.
+	(dot_sese): New.
+	(dot_cfg): New.
+	(scop_detection::get_nearest_dom_with_single_entry): Check that
+	preds are from different loop levels.
+	(scop_detection::get_nearest_pdom_with_single_exit): Check that
+	succs are from different loop levels.
+	(scop_detection::print_sese): Inlined.
+	(scop_detection::print_edge): New.
+	(scop_detection::merge_sese): Added dumps.
+	* graphite.h: Add declarations.
+
 2015-12-04  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.md (add<mode>3_pluslong): Add register
