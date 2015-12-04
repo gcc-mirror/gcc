@@ -1160,7 +1160,7 @@ write_template_prefix (const tree node)
      So, for the example above, `Outer<int>::Inner' is represented as a
      substitution candidate by a TREE_LIST whose purpose is `Outer<int>'
      and whose value is `Outer<T>::Inner<U>'.  */
-  if (TYPE_P (context))
+  if (context && TYPE_P (context))
     substitution = build_tree_list (context, templ);
   else
     substitution = templ;
