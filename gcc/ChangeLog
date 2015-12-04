@@ -1,3 +1,9 @@
+2015-12-04  Bin Cheng  <bin.cheng@arm.com>
+	    Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_legitimize_address): legitimize
+	address expressions like Ra + Rb + CONST and Ra + Rb<<SCALE + CONST.
+
 2015-12-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* alias.c (alias_set_subset_of, alias_sets_must_conflict_p)
