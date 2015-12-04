@@ -1,3 +1,9 @@
+2015-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67438
+	* match.pd: Guard ~X cmp ~Y -> Y cmp X and the variant with
+	a constant with single_use.
+
 2015-12-04  Bin Cheng  <bin.cheng@arm.com>
 	    Jiong Wang  <jiong.wang@arm.com>
 
