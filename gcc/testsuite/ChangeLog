@@ -1,3 +1,9 @@
+2015-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/68655
+	* gcc.dg/torture/vshuf-4.inc (TESTS): Add one extra test.
+	* gcc.dg/torture/vshuf-4.inc (TESTS): Add two extra tests.
+
 2015-12-03  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR target/68472

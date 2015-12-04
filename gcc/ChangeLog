@@ -1,3 +1,14 @@
+2015-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/68655
+	* config/i386/i386.c (canonicalize_vector_int_perm): New function.
+	(expand_vec_perm_1): Use it and recurse if everything else
+	failed.  Use nd.perm instead of perm2.
+	(expand_vec_perm_even_odd_1): If testing_p, use gen_raw_REG
+	instead of gen_lowpart for the target.
+	(ix86_expand_vec_perm_const_1): Use canonicalize_vector_int_perm
+	and recurse if everything else failed.
+
 2015-12-04  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/68636
