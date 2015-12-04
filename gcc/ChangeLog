@@ -1,3 +1,12 @@
+2015-12-04  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-reassoc.c (maybe_optimize_range_tests): Return boolean
+	indicating if a gimple conditional was optimized to true/false.
+	(reassociate_bb): Bubble up return value from
+	maybe_optimize_range_tests.
+	(do_reassoc): Similarly, but for reassociate_bb.
+	(execute_reassoc): Return TODO_cleanup_cfg as needed.
+
 2015-12-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_override_options_internal):
