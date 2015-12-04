@@ -7662,23 +7662,6 @@
 )
 
 
-;; Note: not used for armv5+ because the sequence used (ldr pc, ...) is not
-;; considered a function call by the branch predictor of some cores (PR40887).
-;; Falls back to blx rN (*call_reg_armv5).
-
-(define_insn "*call_mem"
-  [(call (mem:SI (match_operand:SI 0 "call_memory_operand" "m"))
-	 (match_operand 1 "" ""))
-   (use (match_operand 2 "" ""))
-   (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM && !arm_arch5 && !SIBLING_CALL_P (insn)"
-  "*
-  return output_call_mem (operands);
-  "
-  [(set_attr "length" "12")
-   (set_attr "type" "call")]
-)
-
 (define_expand "call_value"
   [(parallel [(set (match_operand       0 "" "")
 	           (call (match_operand 1 "memory_operand" "")
@@ -7737,23 +7720,6 @@
   "TARGET_ARM && !arm_arch5 && !SIBLING_CALL_P (insn)"
   "*
   return output_call (&operands[1]);
-  "
-  [(set_attr "length" "12")
-   (set_attr "type" "call")]
-)
-
-;; Note: see *call_mem
-
-(define_insn "*call_value_mem"
-  [(set (match_operand 0 "" "")
-	(call (mem:SI (match_operand:SI 1 "call_memory_operand" "m"))
-	      (match_operand 2 "" "")))
-   (use (match_operand 3 "" ""))
-   (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM && !arm_arch5 && (!CONSTANT_ADDRESS_P (XEXP (operands[1], 0)))
-   && !SIBLING_CALL_P (insn)"
-  "*
-  return output_call_mem (&operands[1]);
   "
   [(set_attr "length" "12")
    (set_attr "type" "call")]

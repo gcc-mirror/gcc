@@ -17913,41 +17913,6 @@ output_call (rtx *operands)
   return "";
 }
 
-/* Output a 'call' insn that is a reference in memory. This is
-   disabled for ARMv5 and we prefer a blx instead because otherwise
-   there's a significant performance overhead.  */
-const char *
-output_call_mem (rtx *operands)
-{
-  gcc_assert (!arm_arch5);
-  if (TARGET_INTERWORK)
-    {
-      output_asm_insn ("ldr%?\t%|ip, %0", operands);
-      output_asm_insn ("mov%?\t%|lr, %|pc", operands);
-      output_asm_insn ("bx%?\t%|ip", operands);
-    }
-  else if (regno_use_in (LR_REGNUM, operands[0]))
-    {
-      /* LR is used in the memory address.  We load the address in the
-	 first instruction.  It's safe to use IP as the target of the
-	 load since the call will kill it anyway.  */
-      output_asm_insn ("ldr%?\t%|ip, %0", operands);
-      output_asm_insn ("mov%?\t%|lr, %|pc", operands);
-      if (arm_arch4t)
-	output_asm_insn ("bx%?\t%|ip", operands);
-      else
-	output_asm_insn ("mov%?\t%|pc, %|ip", operands);
-    }
-  else
-    {
-      output_asm_insn ("mov%?\t%|lr, %|pc", operands);
-      output_asm_insn ("ldr%?\t%|pc, %0", operands);
-    }
-
-  return "";
-}
-
-
 /* Output a move from arm registers to arm registers of a long double
    OPERANDS[0] is the destination.
    OPERANDS[1] is the source.  */
