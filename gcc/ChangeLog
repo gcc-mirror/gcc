@@ -1,5 +1,7 @@
 2015-12-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-tailcall.c (find_tail_calls): Ignore GIMPLE_NOPs.
+
 	PR tree-optimization/68680
 	* calls.c (special_function_p): Return ECF_MAY_BE_ALLOCA for
 	BUILT_IN_ALLOCA{,_WITH_ALIGN}.  Don't check for __builtin_alloca

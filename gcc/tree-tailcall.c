@@ -412,9 +412,10 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
     {
       stmt = gsi_stmt (gsi);
 
-      /* Ignore labels, returns, clobbers and debug stmts.  */
+      /* Ignore labels, returns, nops, clobbers and debug stmts.  */
       if (gimple_code (stmt) == GIMPLE_LABEL
 	  || gimple_code (stmt) == GIMPLE_RETURN
+	  || gimple_code (stmt) == GIMPLE_NOP
 	  || gimple_clobber_p (stmt)
 	  || is_gimple_debug (stmt))
 	continue;
@@ -532,7 +533,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 
       stmt = gsi_stmt (agsi);
 
-      if (gimple_code (stmt) == GIMPLE_LABEL)
+      if (gimple_code (stmt) == GIMPLE_LABEL
+	  || gimple_code (stmt) == GIMPLE_NOP)
 	continue;
 
       if (gimple_code (stmt) == GIMPLE_RETURN)
