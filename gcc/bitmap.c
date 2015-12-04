@@ -487,9 +487,11 @@ bitmap_find_bit (bitmap head, unsigned int bit)
       && head->first->next == NULL)
     return NULL;
 
-   /* Usage can be NULL due to allocated bitmaps for which we do not
-      call initialize function.  */
-   bitmap_usage *usage = bitmap_mem_desc.get_descriptor_for_instance (head);
+  /* Usage can be NULL due to allocated bitmaps for which we do not
+     call initialize function.  */
+  bitmap_usage *usage = NULL;
+  if (GATHER_STATISTICS)
+    usage = bitmap_mem_desc.get_descriptor_for_instance (head);
 
   /* This bitmap has more than one element, and we're going to look
      through the elements list.  Count that as a search.  */
