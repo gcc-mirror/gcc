@@ -12107,8 +12107,11 @@ maybe_warn_shift_overflow (location_t loc, tree op0, tree op1)
 
   unsigned int min_prec = (wi::min_precision (op0, SIGNED)
 			   + TREE_INT_CST_LOW (op1));
-  /* Handle the left-shifting 1 into the sign bit case.  */
-  if (min_prec == prec0 + 1)
+  /* Handle the case of left-shifting 1 into the sign bit.
+   * However, shifting 1 _out_ of the sign bit, as in
+   * INT_MIN << 1, is considered an overflow.
+   */
+  if (!tree_int_cst_sign_bit(op0) && min_prec == prec0 + 1)
     {
       /* Never warn for C++14 onwards.  */
       if (cxx_dialect >= cxx14)

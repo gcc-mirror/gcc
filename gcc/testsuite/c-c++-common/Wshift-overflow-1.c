@@ -8,6 +8,9 @@
 #define LLONGM1 (sizeof (long long) * __CHAR_BIT__ - 1)
 #define LLONGM2 (sizeof (long long) * __CHAR_BIT__ - 2)
 
+#define INT_MIN (-__INT_MAX__-1)
+#define LONG_LONG_MIN (-__LONG_LONG_MAX__-1)
+
 int i1 = 1 << INTM1;
 int i2 = 9 << INTM1; /* { dg-warning "requires 36 bits to represent" } */
 int i3 = 10 << INTM2; /* { dg-warning "requires 35 bits to represent" } */
@@ -18,6 +21,7 @@ int i7 = -9 << INTM1; /* { dg-warning "requires 36 bits to represent" } */
 int i8 = -10 << INTM2; /* { dg-warning "requires 35 bits to represent" } */
 int i9 = -__INT_MAX__ << 2; /* { dg-warning "requires 34 bits to represent" } */
 int i10 = -__INT_MAX__ << INTM1; /* { dg-warning "requires 63 bits to represent" } */
+int i11 = INT_MIN << 1; /* { dg-warning "requires 33 bits to represent" } */
 
 int r1 = 1 >> INTM1;
 int r2 = 9 >> INTM1;
@@ -46,6 +50,7 @@ long long int l7 = -9LL << LLONGM1; /* { dg-warning "requires 68 bits to represe
 long long int l8 = -10LL << LLONGM2; /* { dg-warning "requires 67 bits to represent" } */
 long long int l9 = -__LONG_LONG_MAX__ << 2; /* { dg-warning "requires 66 bits to represent" } */
 long long int l10 = -__LONG_LONG_MAX__ << LLONGM1; /* { dg-warning "requires 127 bits to represent" } */
+long long int l11 = LONG_LONG_MIN << 1; /* { dg-warning "requires 65 bits to represent" } */
 
 void
 fn (void)
