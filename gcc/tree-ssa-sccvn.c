@@ -4207,7 +4207,8 @@ class sccvn_dom_walker : public dom_walker
 {
 public:
   sccvn_dom_walker ()
-    : dom_walker (CDI_DOMINATORS), fail (false), cond_stack (vNULL) {}
+    : dom_walker (CDI_DOMINATORS), fail (false), unreachable_dom (NULL),
+      cond_stack (vNULL) {}
   ~sccvn_dom_walker ();
 
   virtual void before_dom_children (basic_block);
@@ -4219,6 +4220,7 @@ public:
 		     enum tree_code code, tree lhs, tree rhs, bool value);
 
   bool fail;
+  basic_block unreachable_dom;
   vec<std::pair <basic_block, std::pair <vn_nary_op_t, vn_nary_op_t> > >
     cond_stack;
 };
@@ -4299,6 +4301,9 @@ sccvn_dom_walker::record_conds (basic_block bb,
 void
 sccvn_dom_walker::after_dom_children (basic_block bb)
 {
+  if (unreachable_dom == bb)
+    unreachable_dom = NULL;
+
   while (!cond_stack.is_empty ()
 	 && cond_stack.last ().first == bb)
     {
@@ -4325,10 +4330,14 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
   /* If any of the predecessor edges that do not come from blocks dominated
      by us are still marked as possibly executable consider this block
      reachable.  */
-  bool reachable = bb == ENTRY_BLOCK_PTR_FOR_FN (cfun);
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    if (!dominated_by_p (CDI_DOMINATORS, e->src, bb))
-      reachable |= (e->flags & EDGE_EXECUTABLE);
+  bool reachable = false;
+  if (!unreachable_dom)
+    {
+      reachable = bb == ENTRY_BLOCK_PTR_FOR_FN (cfun);
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if (!dominated_by_p (CDI_DOMINATORS, e->src, bb))
+	  reachable |= (e->flags & EDGE_EXECUTABLE);
+    }
 
   /* If the block is not reachable all outgoing edges are not
      executable.  Neither are incoming edges with src dominated by us.  */
@@ -4352,6 +4361,11 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
 	      e->flags &= ~EDGE_EXECUTABLE;
 	    }
 	}
+
+      /* Record the most dominating unreachable block.  */
+      if (!unreachable_dom)
+	unreachable_dom = bb;
+
       return;
     }
 

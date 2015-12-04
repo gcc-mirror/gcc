@@ -1,5 +1,15 @@
 2015-12-04  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-sccvn.c (sccvn_dom_walker): Add unreachable_dom
+	member and initialize it.
+	(sccvn_dom_walker::after_dom_children): Reset unreachable_dom
+	if necessary.
+	(sccvn_dom_walker::before_dom_children): If unreachable_dom
+	is set BB is not reachable either.  Set unreachable_dom
+	if not set and BB is unreachable.
+
+2015-12-04  Richard Biener  <rguenther@suse.de>
+
 	* bitmap.c (bitmap_find_bit): Guard the bitmap descriptor
 	query with GATHER_STATISTICS.
 
