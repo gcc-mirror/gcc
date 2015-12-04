@@ -1,3 +1,7 @@
+2015-12-04  Release Manager
+
+	* GCC 5.3.0 released.
+
 2015-11-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/libstdc++-prettyprinters/debug.cc: Add -std=gnu++98 to

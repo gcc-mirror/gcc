@@ -1,3 +1,7 @@
+2015-12-04  Release Manager
+
+	* GCC 5.3.0 released.
+
 2015-11-07 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk

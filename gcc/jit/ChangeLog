@@ -1,3 +1,7 @@
+2015-12-04  Release Manager
+
+	* GCC 5.3.0 released.
+
 2015-08-13  David Malcolm  <dmalcolm@redhat.com>
 
 	Backport from mainline r226882

@@ -1,3 +1,7 @@
+2015-12-04  Release Manager
+
+	* GCC 5.3.0 released.
+
 2015-11-28  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config/i386/freebsd.h (SUBTARGET32_DEFAULT_CPU): Change to i586.
