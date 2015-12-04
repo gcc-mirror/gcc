@@ -1,3 +1,7 @@
+2015-12-04  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/vla-24.c: Requires alloca.
+
 2015-12-04  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/68349
