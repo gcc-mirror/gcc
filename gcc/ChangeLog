@@ -1,3 +1,8 @@
+2015-12-04  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* config/i386/sse.md (<avx512>_store<mode>_mask): Fix
+	operand checked for alignment.
+
 2015-12-04  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (write_one_arg): Deal with prologue

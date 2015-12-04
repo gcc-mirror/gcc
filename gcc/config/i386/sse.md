@@ -1051,7 +1051,7 @@
       sse_suffix = "<ssescalarsize>";
     }
 
-  if (misaligned_operand (operands[1], <MODE>mode))
+  if (misaligned_operand (operands[0], <MODE>mode))
     align = "u";
   else
     align = "a";
