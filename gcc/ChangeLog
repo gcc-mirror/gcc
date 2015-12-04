@@ -1,3 +1,10 @@
+2015-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/68671
+	* tree-ssa-reassoc.c (maybe_optimize_range_tests): For basic
+	blocks starting with the successor of first bb we've modified
+	and ending with last_bb call reset_flow_sensitive_info_in_bb.
+
 2015-12-04  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-reassoc.c (maybe_optimize_range_tests): Return boolean

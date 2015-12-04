@@ -3211,7 +3211,7 @@ maybe_optimize_range_tests (gimple *stmt)
     any_changes = optimize_range_tests (ERROR_MARK, &ops);
   if (any_changes)
     {
-      unsigned int idx;
+      unsigned int idx, max_idx = 0;
       /* update_ops relies on has_single_use predicates returning the
 	 same values as it did during get_ops earlier.  Additionally it
 	 never removes statements, only adds new ones and it should walk
@@ -3227,6 +3227,7 @@ maybe_optimize_range_tests (gimple *stmt)
 	    {
 	      tree new_op;
 
+	      max_idx = idx;
 	      stmt = last_stmt (bb);
 	      new_op = update_ops (bbinfo[idx].op,
 				   (enum tree_code)
@@ -3296,6 +3297,10 @@ maybe_optimize_range_tests (gimple *stmt)
 	      && ops[bbinfo[idx].first_idx]->op != NULL_TREE)
 	    {
 	      gcond *cond_stmt = as_a <gcond *> (last_stmt (bb));
+
+	      if (idx > max_idx)
+		max_idx = idx;
+
 	      /* If we collapse the conditional to a true/false
 		 condition, then bubble that knowledge up to our caller.  */
 	      if (integer_zerop (ops[bbinfo[idx].first_idx]->op))
@@ -3320,6 +3325,17 @@ maybe_optimize_range_tests (gimple *stmt)
 	  if (bb == first_bb)
 	    break;
 	}
+
+      /* The above changes could result in basic blocks after the first
+	 modified one, up to and including last_bb, to be executed even if
+	 they would not be in the original program.  If the value ranges of
+	 assignment lhs' in those bbs were dependent on the conditions
+	 guarding those basic blocks which now can change, the VRs might
+	 be incorrect.  As no_side_effect_bb should ensure those SSA_NAMEs
+	 are only used within the same bb, it should be not a big deal if
+	 we just reset all the VRs in those bbs.  See PR68671.  */
+      for (bb = last_bb, idx = 0; idx < max_idx; bb = single_pred (bb), idx++)
+	reset_flow_sensitive_info_in_bb (bb);
     }
   return cfg_cleanup_needed;
 }
