@@ -8149,7 +8149,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec_volatile:SI [(match_operand:SI 1 "register_operand" "0")
 			     (match_operand:SI 2 "register_operand" "r")]
-			     UNSPEC_PROBE_STACK_RANGE))]
+			     VUNSPEC_PROBE_STACK_RANGE))]
   "TARGET_32BIT"
 {
   return output_probe_stack_range (operands[0], operands[2]);

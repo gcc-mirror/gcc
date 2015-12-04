@@ -104,7 +104,6 @@
     UNSPEC_MB
     UNSPEC_NOP
     UNSPEC_PRLG_STK
-    UNSPEC_PROBE_STACK_RANGE
     UNSPEC_RBIT
     UNSPEC_SISD_NEG
     UNSPEC_SISD_SSHL
@@ -139,6 +138,7 @@
     UNSPECV_GET_FPSR		; Represent fetch of FPSR content.
     UNSPECV_SET_FPSR		; Represent assign of FPSR content.
     UNSPECV_BLOCKAGE		; Represent a blockage
+    UNSPECV_PROBE_STACK_RANGE	; Represent stack range probing.
   ]
 )
 
@@ -4968,7 +4968,7 @@
   [(set (match_operand:PTR 0 "register_operand" "=r")
 	(unspec_volatile:PTR [(match_operand:PTR 1 "register_operand" "0")
 			      (match_operand:PTR 2 "register_operand" "r")]
-			       UNSPEC_PROBE_STACK_RANGE))]
+			       UNSPECV_PROBE_STACK_RANGE))]
   ""
 {
   return aarch64_output_probe_stack_range (operands[0], operands[2]);
