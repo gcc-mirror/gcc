@@ -1,3 +1,7 @@
+2015-12-04  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.c-torture/compile/20151204.c: New.
+
 2015-12-04  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/vla-24.c: Requires alloca.

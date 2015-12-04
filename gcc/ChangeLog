@@ -1,3 +1,8 @@
+2015-12-04  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.md (add<mode>3_pluslong): Add register
+	constraints.
+
 2015-12-04  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/68349

@@ -1615,9 +1615,9 @@
 
 (define_insn_and_split "*add<mode>3_pluslong"
   [(set
-    (match_operand:GPI 0 "register_operand" "")
-    (plus:GPI (match_operand:GPI 1 "register_operand" "")
-	      (match_operand:GPI 2 "aarch64_pluslong_operand" "")))]
+    (match_operand:GPI 0 "register_operand" "=r")
+    (plus:GPI (match_operand:GPI 1 "register_operand" "r")
+	      (match_operand:GPI 2 "aarch64_pluslong_immediate" "i")))]
   "!aarch64_plus_operand (operands[2], VOIDmode)
    && !aarch64_move_imm (INTVAL (operands[2]), <MODE>mode)"
   "#"
