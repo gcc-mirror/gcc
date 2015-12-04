@@ -6738,7 +6738,7 @@ s390_function_num_hotpatch_hw (tree decl,
 /* Write the current .machine and .machinemode specification to the assembler
    file.  */
 
-#if S390_USE_TARGET_ATTRIBUTE
+#ifdef HAVE_AS_MACHINE_MACHINEMODE
 static void
 s390_asm_output_machine_for_arch (FILE *asm_out_file)
 {
@@ -14346,6 +14346,15 @@ s390_vector_alignment (const_tree type)
   return MIN (64, tree_to_shwi (TYPE_SIZE (type)));
 }
 
+#ifdef HAVE_AS_MACHINE_MACHINEMODE
+/* Implement TARGET_ASM_FILE_START.  */
+static void
+s390_asm_file_start (void)
+{
+  s390_asm_output_machine_for_arch (asm_out_file);
+}
+#endif
+
 /* Implement TARGET_ASM_FILE_END.  */
 static void
 s390_asm_file_end (void)
@@ -14644,6 +14653,11 @@ s390_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1, const_tree ty
 
 #undef TARGET_INVALID_BINARY_OP
 #define TARGET_INVALID_BINARY_OP s390_invalid_binary_op
+
+#ifdef HAVE_AS_MACHINE_MACHINEMODE
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START s390_asm_file_start
+#endif
 
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END s390_asm_file_end
