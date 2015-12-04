@@ -362,10 +362,11 @@ convert_to_real_1 (tree type, tree expr, bool fold_p)
     case REAL_TYPE:
       /* Ignore the conversion if we don't need to store intermediate
 	 results and neither type is a decimal float.  */
-      return build1 ((flag_float_store
-		     || DECIMAL_FLOAT_TYPE_P (type)
-		     || DECIMAL_FLOAT_TYPE_P (itype))
-		     ? CONVERT_EXPR : NOP_EXPR, type, expr);
+      return build1_loc (loc,
+			 (flag_float_store
+			  || DECIMAL_FLOAT_TYPE_P (type)
+			  || DECIMAL_FLOAT_TYPE_P (itype))
+			 ? CONVERT_EXPR : NOP_EXPR, type, expr);
 
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:

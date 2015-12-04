@@ -17,7 +17,7 @@
 # Test the functionality of the GCC plugin support
 
 load_lib target-supports.exp
-load_lib g++-dg.exp
+load_lib obj-c++-dg.exp
 
 global TESTING_IN_BUILD_TREE
 global ENABLE_PLUGIN
@@ -29,13 +29,13 @@ if { ![info exists TESTING_IN_BUILD_TREE] || ![info exists ENABLE_PLUGIN] } {
 }
 
 # If a testcase doesn't have special options, use these.
-global DEFAULT_CXXFLAGS
-if ![info exists DEFAULT_CXXFLAGS] then {
-    set DEFAULT_CXXFLAGS " -pedantic-errors -Wno-long-long"
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
 }
 
 # The procedures in plugin-support.exp need these parameters.
-set default_flags $DEFAULT_CXXFLAGS
+set default_flags $DEFAULT_CFLAGS
 
 if $tracelevel then {
     strace $tracelevel
@@ -56,15 +56,8 @@ gcc_parallel_test_enable 0
 # Specify the plugin source file and the associated test files in a list.
 # plugin_test_list={ {plugin1 test1 test2 ...} {plugin2 test1 ...} ... }
 set plugin_test_list [list \
-    { attribute_plugin.c attribute_plugin-test-1.C } \
-    { pragma_plugin.c pragma_plugin-test-1.C } \
-    { selfassign.c self-assign-test-1.C self-assign-test-2.C self-assign-test-3.C } \
-    { dumb_plugin.c dumb-plugin-test-1.C } \
-    { header_plugin.c header-plugin-test.C } \
-    { decl_plugin.c decl-plugin-test.C } \
-    { def_plugin.c def-plugin-test.C } \
     { ../../gcc.dg/plugin/diagnostic_plugin_test_tree_expression_range.c \
-	  diagnostic-test-expressions-1.C } \
+	  diagnostic-test-expressions-1.mm } \
 ]
 
 foreach plugin_test $plugin_test_list {
@@ -81,5 +74,17 @@ foreach plugin_test $plugin_test_list {
     set plugin_input_tests [lreplace $plugin_test 0 0]
     plugin-test-execute $plugin_src $plugin_input_tests
 }
+
+# run the plugindir tests
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/plugindir*.mm]] \
+	"" $DEFAULT_CFLAGS
+
+# All done.
+dg-finish
 
 gcc_parallel_test_enable 1

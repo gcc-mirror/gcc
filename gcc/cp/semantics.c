@@ -1672,8 +1672,8 @@ force_paren_expr (tree expr)
 
 /* Finish a parenthesized expression EXPR.  */
 
-tree
-finish_parenthesized_expr (tree expr)
+cp_expr
+finish_parenthesized_expr (cp_expr expr)
 {
   if (EXPR_P (expr))
     /* This inhibits warnings in c_common_truthvalue_conversion.  */
@@ -1688,7 +1688,7 @@ finish_parenthesized_expr (tree expr)
   if (TREE_CODE (expr) == STRING_CST)
     PAREN_STRING_LITERAL_P (expr) = 1;
 
-  expr = force_paren_expr (expr);
+  expr = cp_expr (force_paren_expr (expr), expr.get_location ());
 
   return expr;
 }
@@ -2164,8 +2164,8 @@ empty_expr_stmt_p (tree expr_stmt)
    the function (or functions) to call; ARGS are the arguments to the
    call.  Returns the functions to be considered by overload resolution.  */
 
-tree
-perform_koenig_lookup (tree fn, vec<tree, va_gc> *args,
+cp_expr
+perform_koenig_lookup (cp_expr fn, vec<tree, va_gc> *args,
 		       tsubst_flags_t complain)
 {
   tree identifier = NULL_TREE;
@@ -2460,10 +2460,23 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
    is indicated by CODE, which should be POSTINCREMENT_EXPR or
    POSTDECREMENT_EXPR.)  */
 
-tree
-finish_increment_expr (tree expr, enum tree_code code)
+cp_expr
+finish_increment_expr (cp_expr expr, enum tree_code code)
 {
-  return build_x_unary_op (input_location, code, expr, tf_warning_or_error);
+  /* input_location holds the location of the trailing operator token.
+     Build a location of the form:
+       expr++
+       ~~~~^~
+     with the caret at the operator token, ranging from the start
+     of EXPR to the end of the operator token.  */
+  location_t combined_loc = make_location (input_location,
+					   expr.get_start (),
+					   get_finish (input_location));
+  cp_expr result = build_x_unary_op (combined_loc, code, expr,
+				     tf_warning_or_error);
+  /* TODO: build_x_unary_op doesn't honor the location, so set it here.  */
+  result.set_location (combined_loc);
+  return result;
 }
 
 /* Finish a use of `this'.  Returns an expression for `this'.  */
@@ -2557,11 +2570,21 @@ finish_pseudo_destructor_expr (tree object, tree scope, tree destructor,
 
 /* Finish an expression of the form CODE EXPR.  */
 
-tree
-finish_unary_op_expr (location_t loc, enum tree_code code, tree expr,
+cp_expr
+finish_unary_op_expr (location_t op_loc, enum tree_code code, cp_expr expr,
 		      tsubst_flags_t complain)
 {
-  tree result = build_x_unary_op (loc, code, expr, complain);
+  /* Build a location of the form:
+       ++expr
+       ^~~~~~
+     with the caret at the operator token, ranging from the start
+     of the operator token to the end of EXPR.  */
+  location_t combined_loc = make_location (op_loc,
+					   op_loc, expr.get_finish ());
+  cp_expr result = build_x_unary_op (combined_loc, code, expr, complain);
+  /* TODO: build_x_unary_op doesn't always honor the location.  */
+  result.set_location (combined_loc);
+
   tree result_ovl, expr_ovl;
 
   if (!(complain & tf_warning))
@@ -2581,7 +2604,7 @@ finish_unary_op_expr (location_t loc, enum tree_code code, tree expr,
     result_ovl = cp_fully_fold (result_ovl);
 
   if (CONSTANT_CLASS_P (result_ovl) && TREE_OVERFLOW_P (result_ovl))
-    overflow_warning (input_location, result_ovl);
+    overflow_warning (combined_loc, result_ovl);
 
   return result;
 }
@@ -3324,7 +3347,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
    the use of "this" explicit.
 
    Upon return, *IDK will be filled in appropriately.  */
-tree
+cp_expr
 finish_id_expression (tree id_expression,
 		      tree decl,
 		      tree scope,
@@ -3669,7 +3692,7 @@ finish_id_expression (tree id_expression,
 	}
     }
 
-  return decl;
+  return cp_expr (decl, location);
 }
 
 /* Implement the __typeof keyword: Return the type of EXPR, suitable for
