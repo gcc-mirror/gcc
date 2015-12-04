@@ -1,5 +1,11 @@
 2015-12-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* gcc.dg/Wframe-address.c: S/390 requires the -mbackchain option to
+	access arbitrary stack frames.
+	* gcc.dg/Wno-frame-address.c: Likewise.
+
+2015-12-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* gcc.target/s390/asm-machine-1.c: Updated.
 	* gcc.target/s390/asm-machine-2.c: Updated.
 	* gcc.target/s390/asm-machine-3.c: Updated.
