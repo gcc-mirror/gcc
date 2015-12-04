@@ -18714,6 +18714,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  /* In here, we handle cases where attribute is used after
 		     the function declaration.  For example:
 		     void func (int x) __attribute__((vector(..)));  */
+		  tree gnu_attrs = NULL_TREE;
 		  if (flag_cilkplus
 		      && cp_next_tokens_can_be_gnu_attribute_p (parser))
 		    {
@@ -18727,7 +18728,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		      else if (!cp_parser_parse_definitely (parser))
 			;
 		      else
-			attrs = chainon (attr, attrs);
+			gnu_attrs = attr;
 		    }
 		  tree requires_clause = NULL_TREE;
 		  late_return = (cp_parser_late_return_type_opt
@@ -18748,6 +18749,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 						     late_return,
 						     requires_clause);
 		  declarator->std_attributes = attrs;
+		  declarator->attributes = gnu_attrs;
 		  /* Any subsequent parameter lists are to do with
 		     return type, so are not those of the declared
 		     function.  */
@@ -19547,17 +19549,17 @@ cp_parser_late_return_type_opt (cp_parser* parser, cp_declarator *declarator,
   requires_clause = cp_parser_requires_clause_opt (parser);
 
   if (cilk_simd_fn_vector_p)
-    declarator->std_attributes
+    declarator->attributes
       = cp_parser_late_parsing_cilk_simd_fn_info (parser,
-						  declarator->std_attributes);
+						  declarator->attributes);
   if (declare_simd_p)
-    declarator->std_attributes
+    declarator->attributes
       = cp_parser_late_parsing_omp_declare_simd (parser,
-						 declarator->std_attributes);
+						 declarator->attributes);
   if (oacc_routine_p)
-    declarator->std_attributes
+    declarator->attributes
       = cp_parser_late_parsing_oacc_routine (parser,
-					     declarator->std_attributes);
+					     declarator->attributes);
 
   if (quals >= 0)
     {

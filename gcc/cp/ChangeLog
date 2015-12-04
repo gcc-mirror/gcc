@@ -1,3 +1,10 @@
+2015-12-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68645
+	* parser.c (cp_parser_direct_declarator)
+	(cp_parser_late_return_type_opt): Put Cilk+ attributes on
+	declarator->attributes, not std_attributes.
+
 2015-12-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* cp-tree.h (class cp_expr): New class.
