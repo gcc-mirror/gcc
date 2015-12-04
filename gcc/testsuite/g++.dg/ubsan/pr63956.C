@@ -10,15 +10,18 @@ fn1 (int a, int b)
 {
   if (b != 2)
     a <<= b;
+    // { dg-error "5 << -2.. is negative" "" { target *-*-* } 12 }
+    // { dg-error "is >= than the precision of the left operand" "" { target *-*-* } 12 }
+    // { dg-error "-2 << 4.. is negative" "" { target *-*-* } 12 }
   return a;
 }
 
 constexpr int i1 = fn1 (5, 3);
-constexpr int i2 = fn1 (5, -2); // { dg-error "is negative" }
-constexpr int i3 = fn1 (5, sizeof (int) * __CHAR_BIT__); // { dg-error "is >= than the precision of the left operand" }
-constexpr int i4 = fn1 (5, 256); // { dg-error "is >= than the precision of the left operand" }
+constexpr int i2 = fn1 (5, -2); // { dg-message "in constexpr expansion" }
+constexpr int i3 = fn1 (5, sizeof (int) * __CHAR_BIT__); // { dg-message "in constexpr expansion" }
+constexpr int i4 = fn1 (5, 256); // { dg-message "in constexpr expansion" }
 constexpr int i5 = fn1 (5, 2);
-constexpr int i6 = fn1 (-2, 4); // { dg-error "is negative" }
+constexpr int i6 = fn1 (-2, 4); // { dg-message "in constexpr expansion" }
 constexpr int i7 = fn1 (0, 2);
 
 SA (i1 == 40);
@@ -30,13 +33,16 @@ fn2 (int a, int b)
 {
   if (b != 2)
     a >>= b;
+    // { dg-error "4 >> -1.. is negative" "" { target *-*-* } 35 }
+    // { dg-error "is >= than the precision of the left operand" "" { target *-*-* } 35 }
+
   return a;
 }
 
 constexpr int j1 = fn2 (4, 1);
-constexpr int j2 = fn2 (4, -1); // { dg-error "is negative" }
-constexpr int j3 = fn2 (10, sizeof (int) * __CHAR_BIT__); // { dg-error "is >= than the precision of the left operand" }
-constexpr int j4 = fn2 (1, 256); // { dg-error "is >= than the precision of the left operand" }
+constexpr int j2 = fn2 (4, -1); // { dg-message "in constexpr expansion" }
+constexpr int j3 = fn2 (10, sizeof (int) * __CHAR_BIT__); // { dg-message "in constexpr expansion" }
+constexpr int j4 = fn2 (1, 256); // { dg-message "in constexpr expansion" }
 constexpr int j5 = fn2 (5, 2);
 constexpr int j6 = fn2 (-2, 4);
 constexpr int j7 = fn2 (0, 4);
@@ -49,12 +55,12 @@ constexpr int
 fn3 (int a, int b)
 {
   if (b != 2)
-    a = a / b;
+    a = a / b; // { dg-error "..7 / 0.. is not a constant expression" }
   return a;
 }
 
 constexpr int k1 = fn3 (8, 4);
-constexpr int k2 = fn3 (7, 0); // { dg-error "is not a constant expression" }
+constexpr int k2 = fn3 (7, 0); // { dg-message "in constexpr expansion" }
 constexpr int k3 = fn3 (INT_MIN, -1); // { dg-error "overflow in constant expression" }
 
 SA (k1 == 2);
@@ -63,12 +69,12 @@ constexpr float
 fn4 (float a, float b)
 {
   if (b != 2.0)
-    a = a / b;
+    a = a / b; // { dg-error "is not a constant expression" }
   return a;
 }
 
 constexpr float l1 = fn4 (5.0, 3.0);
-constexpr float l2 = fn4 (7.0, 0.0); // { dg-error "is not a constant expression" }
+constexpr float l2 = fn4 (7.0, 0.0); // { dg-message "in constexpr expansion" }
 
 constexpr int
 fn5 (const int *a, int b)

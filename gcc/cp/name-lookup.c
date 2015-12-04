@@ -5659,7 +5659,7 @@ arg_assoc (struct arg_lookup *k, tree n)
 /* Performs Koenig lookup depending on arguments, where fns
    are the functions found in normal lookup.  */
 
-static tree
+static cp_expr
 lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
 {
   struct arg_lookup k;
@@ -5720,10 +5720,10 @@ lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
 
 /* Wrapper for lookup_arg_dependent_1.  */
 
-tree
+cp_expr
 lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
 {
-  tree ret;
+  cp_expr ret;
   bool subtime;
   subtime = timevar_cond_start (TV_NAME_LOOKUP);
   ret = lookup_arg_dependent_1 (name, fns, args);

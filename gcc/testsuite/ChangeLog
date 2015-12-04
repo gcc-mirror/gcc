@@ -1,3 +1,27 @@
+2015-12-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/cpp0x/nsdmi-template14.C: Move dg-error directive.
+	* g++.dg/gomp/loop-1.C: Update dg-error locations.
+	* g++.dg/plugin/diagnostic-test-expressions-1.C: New file, adapted
+	from gcc.dg/plugin/diagnostic-test-expressions-1.c.
+	* g++.dg/plugin/plugin.exp (plugin_test_list): Add the above.
+	* g++.dg/template/crash55.C: Update dg-error directives.
+	* g++.dg/template/pseudodtor3.C: Update column numbers in dg-error
+	directives.
+	* g++.dg/template/pr64100.C: Update location of dg-error
+	directive.
+	* g++.dg/template/ref3.C: Add XFAIL (PR c++/68699).
+	* g++.dg/ubsan/pr63956.C: Update dg directives to reflect
+	improved location information.
+	* g++.dg/warn/pr35635.C (func3): Update location of a
+	dg-warning.
+	* g++.dg/warn/Wconversion-real-integer2.C: Update location of
+	dg-warning; add a dg-message.
+	* obj-c++.dg/plugin/diagnostic-test-expressions-1.mm: New file,
+	based on objc.dg/plugin/diagnostic-test-expressions-1.m.
+	* obj-c++.dg/plugin/plugin.exp: New file, based on
+	objc.dg/plugin/plugin.exp.
+
 2015-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/68656

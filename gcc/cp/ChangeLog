@@ -1,3 +1,139 @@
+2015-12-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-tree.h (class cp_expr): New class.
+	(finish_parenthesized_expr): Convert return type and param to
+	cp_expr.
+	(perform_koenig_lookup): Convert return type and param from tree
+	to cp_expr.
+	(finish_increment_expr): Likewise.
+	(finish_unary_op_expr): Likewise.
+	(finish_id_expression): Likewise for return type.
+	(build_class_member_access_expr): Likewise for param.
+	(finish_class_member_access_expr): Likewise.
+	(build_x_unary_op): Likewise.
+	(build_c_cast): New decl.
+	(build_x_modify_expr): Convert return type from tree to cp_expr.
+	* cvt.c (cp_convert_and_check): When warning about conversions,
+	attempt to use the location of "expr" if available, otherwise
+	falling back to the old behavior of using input_location.
+	* name-lookup.c (lookup_arg_dependent_1): Convert return type from
+	tree to cp_expr.
+	(lookup_arg_dependent): Likewise; also for local "ret".
+	* name-lookup.h (lookup_arg_dependent): Likewise for return type.
+	* parser.c (cp_lexer_previous_token): Skip past purged tokens.
+	(struct cp_parser_expression_stack_entry): Convert field "lhs" to
+	cp_expr.
+	(cp_parser_identifier): Likewise for return type.  Use cp_expr
+	ctor to preserve the token's location.
+	(cp_parser_string_literal): Likewise, building up a meaningful
+	location for the case where a compound string literal is built by
+	concatentation.
+	(cp_parser_userdef_char_literal): Likewise for return type.
+	(cp_parser_userdef_numeric_literal): Likewise.
+	(cp_parser_statement_expr): Convert return type to cp_expr.
+	Generate a suitable location for the expr and return it via the
+	cp_expr ctor.
+	(cp_parser_fold_expression): Convert return type to cp_expr.
+	(cp_parser_primary_expression): Likewise, and for locals "expr",
+	"lam", "id_expression", "decl".
+	Use cp_expr ctor when parsing literals, to preserve the spelling
+	location of the token.  Preserve the locations of parentheses.
+	Preserve location when calling objc_lookup_ivar.
+	Preserve the location for "this" tokens.  Generate suitable
+	locations for "__builtin_va_arg" constructs and for
+	Objective C 2.0 dot-syntax.  Set the location for the result of
+	finish_id_expression.
+	(cp_parser_primary_expression): Convert return type from tree to
+	cp_expr.
+	(cp_parser_id_expression): Likewise.
+	(cp_parser_unqualified_id): Likewise.  Also for local "id".
+	(cp_parser_postfix_expression): Likewise, also for local
+	"postfix_expression".  Generate suitable locations for
+	C++-style casts, "_Cilk_spawn" constructs.  Convert local
+	"initializer" to cp_expr and use it to preserve the location of
+	compound literals.  Capture the location of the closing
+	parenthesis of a call site via
+	cp_parser_parenthesized_expression_list, and use it to build
+	a source range for a call.  Use cp_expr in ternary expression.
+	(cp_parser_postfix_dot_deref_expression): Convert param from tree to
+	cp_expr.  Generate and set a location.
+	(cp_parser_parenthesized_expression_list): Add "close_paren_loc"
+	out-param, and write back to it.
+	(cp_parser_unary_expression): Convert return type from tree to
+	cp_expr.  Also for locals "cast_expression" and "expression".
+	Generate and use suitable locations for addresses of
+	labels and for cast expressions.  Call cp_expr::set_location where
+	necessary.  Preserve the locations of negated numeric literals.
+	(cp_parser_new_expression): Generate meaningful locations/ranges.
+	(cp_parser_cast_expression): Convert return type from tree to
+	cp_expr; also for local "expr".  Use the paren location to generate a
+	meaningful range for the expression.
+	(cp_parser_binary_expression): Convert return type from tree to
+	cp_expr; also for local "rhs".  Generate a meaningful location
+	for the expression, and use it.  Replace call to
+	protected_set_expr_location by converting a build2 to a build2_loc
+	and using the location in the call to build_x_binary_op, adding a
+	cp_expr::set_location to the latter case.
+	(cp_parser_question_colon_clause): Convert param from tree to
+	cp_expr; also for local "assignment_expr".  Set the spelling range
+	of the expression.
+	(cp_parser_assignment_expression): Likewise for return type and
+	locals "expr" and "rhs".  Build a meaningful spelling range for
+	the expression.  Remove saving of input_location in favor of a
+	call to cp_expr::set_location.
+	(cp_parser_expression): Convert return type and locals
+	"expression" and "assignment_expression" to cp_expr.  Build a
+	meaningful spelling range for assignment expressions.
+	(cp_parser_constant_expression): Likewise for return type and
+	local "expression".
+	(cp_parser_builtin_offsetof): Convert return type and local "expr"
+	to cp_expr.  Generate suitable locations.
+	(cp_parser_lambda_expression): Convert return return type to
+	cp_expr.
+	(cp_parser_operator_function_id): Likewise.
+	(cp_parser_operator): Likewise.  Generate a meaningful range,
+	using cp_expr's ctor to return it.
+	(cp_parser_template_id): When converting a token to
+	CPP_TEMPLATE_ID, update the location.
+	(cp_parser_initializer_clause): Convert return type and local
+	"initializer" to cp_expr.
+	(cp_parser_braced_list): Likewise for return type.  Generate
+	suitable locations.
+	(cp_parser_lookup_name): Likewise for return type.  Use cp_expr's
+	ctor to preserve the location_t of the name.
+	(cp_parser_simple_cast_expression): Likewise for return type.
+	(cp_parser_functional_cast): Convert return type and local "cast"
+	to cp_expr.  Generate suitable locations.
+	(cp_parser_objc_expression): Convert return type to cp_expr.k  Generate
+	(cp_parser_objc_message_expression): Generate suitable locations.
+	(cp_parser_objc_encode_expression): Convert return type to
+	cp_expr.  Generate suitable locations.
+	(cp_parser_objc_protocol_expression): Generate suitable locations.
+	(cp_parser_objc_selector_expression): Generate suitable locations.
+	(cp_parser_omp_for_cond): Attempt to use the location
+	of "cond" for the binary op.
+	(cp_parser_transaction_expression): Issue the tm-not-enabled error
+	at the location of the __transaction_foo token, rather than at
+	input_location.
+	* semantics.c (finish_parenthesized_expr): Convert return type and
+	param to cp_expr.  Preserve location.
+	(perform_koenig_lookup): Likewise for return type
+	and param.
+	(finish_increment_expr): Likewise.  Generate suitable locations.
+	(finish_unary_op_expr): Likewise for return type and local "result".
+	Generate suitable locations.
+	(finish_id_expression): Convert return type to cp_expr and use
+	cp_expr ctor to preserve location information.
+	* typeck.c (build_class_member_access_expr): Convert param to
+	cp_expr.
+	(finish_class_member_access_expr): Likewise.
+	(cp_build_binary_op): Convert a build2 to a build2_loc.
+	(build_x_unary_op): Convert param from tree to cp_expr.
+	(build_nop): Preserve the location of EXPR.
+	(build_c_cast): Provide an overloaded variant that takes a cp_expr
+	and returns a cp_expr.
+	(build_x_modify_expr): Convert return type from tree to cp_expr.
+
 2015-12-03  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* parser.c (cp_ensure_no_oacc_routine): Update error message.
