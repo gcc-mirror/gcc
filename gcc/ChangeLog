@@ -1,3 +1,11 @@
+2015-12-04  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (write_one_arg): Deal with prologue
+	emission too. Change 'no_arg_types' to 'prototyped'.
+	(write_fn_proto):  Use write_one_arg for stdarg, static chain &
+	main.
+	(nvptx_declare_function_name): Use write_one_arg for prologue copies.
+
 2015-12-04  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (sccvn_dom_walker): Add unreachable_dom
