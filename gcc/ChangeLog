@@ -1,3 +1,12 @@
+2015-12-04  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (nvptx_assemble_decl_begin): New,
+	replacing ...
+	(init_output_initializer): ... this.
+	(nvptx_output_aligned_decl, nvptx_asm_declare_constant_name,
+	nvptx_declare_object_name, nvptx_assemble_undefined_decl): Use
+	nvptx_assemble_decl_begin.
+
 2015-12-04  Dmitry Vyukov  <dvyukov@google.com>
 
 	* sancov.c: New file.
