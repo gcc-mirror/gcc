@@ -12480,10 +12480,9 @@ Generate big-endian code.  This is the default when GCC is configured for an
 
 @item -mgeneral-regs-only
 @opindex mgeneral-regs-only
-Generate code which uses only the general-purpose registers.  This is equivalent
-to feature modifier @option{nofp} of @option{-march} or @option{-mcpu}, except
-that @option{-mgeneral-regs-only} takes precedence over any conflicting feature
-modifier regardless of sequence.
+Generate code which uses only the general-purpose registers.  This will prevent
+the compiler from using floating-point and Advanced SIMD registers but will not
+impose any restrictions on the assembler.
 
 @item -mlittle-endian
 @opindex mlittle-endian

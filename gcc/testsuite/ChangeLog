@@ -1,3 +1,7 @@
+2015-12-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/mgeneral-regs_4.c: New test.
+
 2015-12-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.dg/Wframe-address.c: S/390 requires the -mbackchain option to

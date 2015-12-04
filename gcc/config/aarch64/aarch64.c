@@ -8118,19 +8118,6 @@ aarch64_override_options_internal (struct gcc_options *opts)
   if (opts->x_flag_strict_volatile_bitfields < 0 && abi_version_at_least (2))
     opts->x_flag_strict_volatile_bitfields = 1;
 
-  /* -mgeneral-regs-only sets a mask in target_flags, make sure that
-     aarch64_isa_flags does not contain the FP/SIMD/Crypto feature flags
-     in case some code tries reading aarch64_isa_flags directly to check if
-     FP is available.  Reuse the aarch64_parse_extension machinery since it
-     knows how to disable any other flags that fp implies.  */
-  if (TARGET_GENERAL_REGS_ONLY_P (opts->x_target_flags))
-    {
-      /* aarch64_parse_extension takes char* rather than const char* because
-	 it is usually called from within other parsing functions.  */
-      char tmp_str[] = "+nofp";
-      aarch64_parse_extension (tmp_str, &opts->x_aarch64_isa_flags);
-    }
-
   initialize_aarch64_code_model (opts);
   initialize_aarch64_tls_size (opts);
 
