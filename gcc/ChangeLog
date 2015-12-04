@@ -1,3 +1,12 @@
+2015-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/68656
+	* toplev.c (init_asm_output): Pass UNKNOWN_LOCATION instead of
+	input_location to inform.
+	(process_options): Use warning_at (UNKNOWN_LOCATION instead of
+	warning ( and error_at (UNKNOWN_LOCATION instead of error (.
+	Pass UNKNOWN_LOCATION instead of input_location to fatal_error.
+
 2015-12-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline.c (can_inline_edge_p) Use merged_comdat.
@@ -8,11 +17,6 @@
 	* cgraph.h (cgraph_node): Rename merged to merged_comdat.
 	* ipa-inline-analysis.c (simple_edge_hints): Check both merged_comdat
 	and icf_merged.
-
-2015-12-04  Paolo Bonzini  <bonzini@gnu.org>
-
-	* c-family/c-common.c (maybe_warn_shift_overflow): Warn on all
-	overflows if shifting 1 out of the sign bit.
 
 2015-12-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
@@ -186,9 +190,6 @@
 
 2015-12-04  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-	* c-family/c-common.c (c_common_attribute_table[]): Update max arguments
-	count for "simd" attribute.
-	(handle_simd_attribute): Parse "notinbranch" and "inbranch" arguments.
 	* doc/extend.texi ("simd"): Describe new flags.
 
 2015-12-04  Ilya Enkovich  <enkovich.gnu@gmail.com>
@@ -663,7 +664,6 @@
 	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call)
 	(find_func_clobbers, ipa_pta_execute): Handle BUILT_IN_GOACC_PARALLEL.
 
->>>>>>> .r231221
 2015-12-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (cstore_si_as_di): New expander.
@@ -18044,7 +18044,6 @@ broken.
 
 2015-08-02  Martin Sebor  <msebor@redhat.com>
 
-	* c-family/c.opt (-Wframe-address): New warning option.
 	* doc/invoke.texi (Wframe-address): Document it.
 	* doc/extend.texi (__builtin_frame_address, __builtin_return_address):
 	Clarify possible effects of calling the functions with non-zero
@@ -26919,8 +26918,6 @@ broken.
 
 2015-06-04  Sriraman Tallam  <tmsriram@google.com>
 
-	* c-family/c-common.c (noplt): New attribute.
-	(handle_noplt_attribute): New handler.
 	* calls.c (prepare_call_address): Check for noplt
 	attribute.
 	* config/i386/i386.c (ix86_expand_call): Check

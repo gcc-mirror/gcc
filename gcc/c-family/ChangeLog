@@ -1,3 +1,14 @@
+2015-12-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	* c-common.c (maybe_warn_shift_overflow): Warn on all overflows if
+	shifting 1 out of the sign bit.
+
+2015-12-04  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* c-common.c (c_common_attribute_table[]): Update max arguments
+	count for "simd" attribute.
+	(handle_simd_attribute): Parse "notinbranch" and "inbranch" arguments.
+
 2015-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/57580
@@ -256,8 +267,8 @@
 2015-11-03  Bernd Schmidt <bschmidt@redhat.com>
 
 	PR c++-common/67882
-	* c-family/c-common.h (fold_offsetof_1): Add argument.
-	* c-family/c-common.c (fold_offsetof_1): Diagnose more invalid
+	* c-common.h (fold_offsetof_1): Add argument.
+	* c-common.c (fold_offsetof_1): Diagnose more invalid
 	offsetof expressions that reference elements past the end of
 	an array.
 
@@ -571,6 +582,10 @@
 	* c-opts.c (set_std_cxx1z): Set flag_concepts.
 	* c.opt (fconcepts): New.
 
+2015-08-02  Martin Sebor  <msebor@redhat.com>
+
+	* c.opt (-Wframe-address): New warning option.
+
 2015-08-02  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* c-indentation.c (should_warn_for_misleading_indentation):
@@ -720,11 +735,11 @@
 2015-06-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement N4197 - Adding u8 character literals
-	* c-family/c-ada-spec.c (print_ada_macros): Treat CPP_UTF8CHAR like
+	* c-ada-spec.c (print_ada_macros): Treat CPP_UTF8CHAR like
 	CPP_CHAR.
-	* c-family/c-common.c (c_parse_error): Print CPP_UTF8CHAR and
+	* c-common.c (c_parse_error): Print CPP_UTF8CHAR and
 	CPP_UTF8CHAR_USERDEF tokens.
-	* c-family/c-lex.c (c_lex_with_flags): Treat CPP_UTF8CHAR_USERDEF
+	* c-lex.c (c_lex_with_flags): Treat CPP_UTF8CHAR_USERDEF
 	and CPP_UTF8CHAR tokens.
 	(lex_charconst): Treat CPP_UTF8CHAR token.
 
@@ -881,6 +896,11 @@
 
 	* c-common.h (c_parse_final_cleanups): New prototype.
 	* c-opts.c (c_common_parse_file): Call c_parse_final_cleanups.
+
+2015-06-04  Sriraman Tallam  <tmsriram@google.com>
+
+	* c-common.c (noplt): New attribute.
+	(handle_noplt_attribute): New handler.
 
 2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
 
