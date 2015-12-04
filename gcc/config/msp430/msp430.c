@@ -90,7 +90,7 @@ msp430_init_machine_status (void)
 #define TARGET_OPTION_OVERRIDE		msp430_option_override
 
 /* This is a copy of the same data structure found in gas/config/tc-msp430.c
-   Also another (sort-of) copy can be found in gcc/config/msp430/t-msp430.
+   Also another (sort-of) copy can be found in gcc/config/msp430/devices-msp430.c
    Keep these three structures in sync.
    The data in this structure has been extracted from the devices.csv file
    released by TI, updated as of 8 October 2015.  */
@@ -717,6 +717,20 @@ msp430_mcu_name (void)
   return msp430x ? "__MSP430XGENERIC__" : "__MSP430GENERIC__";
 }
 
+static const char *
+hwmult_name (unsigned int val)
+{
+  switch (val)
+    {
+    case 0: return "none";
+    case 1: return "16-bit";
+    case 2: return "16-bit";
+    case 4: return "32-bit";
+    case 8: return "32-bit (5xx)";
+    default: gcc_unreachable ();
+    }
+}
+
 static void
 msp430_option_override (void)
 {
@@ -724,36 +738,89 @@ msp430_option_override (void)
 
   if (target_cpu)
     {
+      /* gcc/common/config/msp430-common.c will have
+	 already canonicalised the string in target_cpu.  */
       if (strcasecmp (target_cpu, "msp430x") == 0)
 	msp430x = true;
       else /* target_cpu == "msp430" - already handled by the front end.  */
 	msp430x = false;
     }
-  /* Note - the front end has already ensured at most
-     one of target_cpu and target_mcu will be set.  */
-  else if (target_mcu)
+
+  if (target_mcu)
     {
       int i;
 
-      /* If we are given an MCU name, we assume that it supports 430X.
-	 Then we check to see if it is one of the known MCUs that only
-	 supports 430.  */
-      msp430x = true;
-
-      /* FIXME: This array is alpha sorted, so we could use a binary search.  */
+      /* FIXME: If the array were alpha sorted, we could use a binary search.  */
       for (i = ARRAY_SIZE (msp430_mcu_data); i--;)
 	if (strcasecmp (msp430_mcu_data[i].name, target_mcu) == 0)
 	  {
-	    msp430x = msp430_mcu_data[i].revision >= 1;
+	    bool xisa = msp430_mcu_data[i].revision >= 1; 
+
+	    if (msp430_warn_mcu)
+	      {
+		if (target_cpu&& msp430x != xisa)
+		  warning (0, "MCU '%s' supports %s ISA but -mcpu option is set to %s",
+			   target_mcu, xisa ? "430X" : "430", msp430x ? "430X" : "430");
+
+		if (msp430_mcu_data[i].hwmpy == 0
+		    && msp430_hwmult_type != AUTO
+		    && msp430_hwmult_type != NONE)
+		  warning (0, "MCU '%s' does not have hardware multiply support, but -mhwmult is set to %s",
+			   target_mcu,
+			   msp430_hwmult_type == SMALL ? "16-bit" : msp430_hwmult_type == LARGE ? "32-bit" : "f5series");
+		else if (msp430_hwmult_type == SMALL
+		    && msp430_mcu_data[i].hwmpy != 1
+		    && msp430_mcu_data[i].hwmpy != 2 )
+		  warning (0, "MCU '%s' supports %s hardware multiply, but -mhwmult is set to 16-bit",
+			   target_mcu, hwmult_name (msp430_mcu_data[i].hwmpy));
+		else if (msp430_hwmult_type == LARGE && msp430_mcu_data[i].hwmpy != 4)
+		  warning (0, "MCU '%s' supports %s hardware multiply, but -mhwmult is set to 32-bit",
+			   target_mcu, hwmult_name (msp430_mcu_data[i].hwmpy));
+		else if (msp430_hwmult_type == F5SERIES && msp430_mcu_data[i].hwmpy != 8)
+		  warning (0, "MCU '%s' supports %s hardware multiply, but -mhwmult is set to f5series",
+			   target_mcu, hwmult_name (msp430_mcu_data[i].hwmpy));
+	      }
+
+	    msp430x = xisa;
 	    break;
 	  }
+
       if (i < 0)
 	{
-	  warning (0, "Unrecognised MCU name '%s', assuming that it is just a MSP430 with no hardware multiply",
-		   target_mcu);
-	  msp430x = false;
+	  if (msp430_hwmult_type == AUTO)
+	    {
+	      if (msp430_warn_mcu)
+		{
+		  if (target_cpu == NULL)
+		    warning (0,
+			     "Unrecognised MCU name '%s', assuming that it is just a MSP430 with no hardware multiply.\nUse the -mcpu and -mhwmult options to set these explicitly.",
+			     target_mcu);
+		  else
+		    warning (0,
+			     "Unrecognised MCU name '%s', assuming that it has no hardware multiply.\nUse the -mhwmult option to set this explicitly.",
+			     target_mcu);
+		}
+
+	      msp430_hwmult_type = NONE;
+	    }
+	  else if (target_cpu == NULL)
+	    {
+	      if (msp430_warn_mcu)
+		warning (0,
+			 "Unrecognised MCU name '%s', assuming that it just supports the MSP430 ISA.\nUse the -mcpu option to set the ISA explicitly.",
+			 target_mcu);
+
+	      msp430x = false;
+	    }
+	  else if (msp430_warn_mcu)
+	    warning (0,
+		     "Unrecognised MCU name '%s'.", target_mcu);
 	}
     }
+
+  /* The F5 series are all able to support the 430X ISA.  */
+  if (target_cpu == NULL && target_mcu == NULL && msp430_hwmult_type == F5SERIES)
+    msp430x = true;
 
   if (TARGET_LARGE && !msp430x)
     error ("-mlarge requires a 430X-compatible -mmcu=");
@@ -955,7 +1022,8 @@ msp430_addr_space_pointer_mode (addr_space_t addrspace)
 static machine_mode
 msp430_unwind_word_mode (void)
 {
-  return TARGET_LARGE ? PSImode : HImode;
+  /* This needs to match msp430_init_dwarf_reg_sizes_extra (below).  */
+  return msp430x ? PSImode : HImode;
 }
 
 /* Determine if one named address space is a subset of another.  */
@@ -1930,7 +1998,7 @@ const struct attribute_spec msp430_attribute_table[] =
   { ATTR_NOINIT,      0, 0, true,  false, false, msp430_data_attr, false },
   { ATTR_PERSIST,     0, 0, true,  false, false, msp430_data_attr, false },
 
-  { NULL,             0, 0, false, false, false, NULL,        false }
+  { NULL,             0, 0, false, false, false, NULL, false }
 };
 
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
@@ -2795,6 +2863,7 @@ msp430_init_dwarf_reg_sizes_extra (tree address)
   rtx addr = expand_normal (address);
   rtx mem = gen_rtx_MEM (BLKmode, addr);
 
+  /* This needs to match msp430_unwind_word_mode (above).  */
   if (!msp430x)
     return;
 
@@ -3089,8 +3158,8 @@ static const struct
   { "__divsi3", "__mspabi_divli" },
   { "__divdi3", "__mspabi_divlli" },
   { "__udivhi3", "__mspabi_divu" },
-  { "__udivsi3", "__mspabi_divlu" },
-  { "__udivdi3", "__mspabi_divllu" },
+  { "__udivsi3", "__mspabi_divul" },
+  { "__udivdi3", "__mspabi_divull" },
   { "__modhi3", "__mspabi_remi" },
   { "__modsi3", "__mspabi_remli" },
   { "__moddi3", "__mspabi_remlli" },
@@ -3186,8 +3255,11 @@ msp430_no_hwmult (void)
   if (msp430_hwmult_type == NONE)
     return true;
 
-  if (target_mcu == NULL || msp430_hwmult_type != AUTO)
+  if (msp430_hwmult_type != AUTO)
     return false;
+
+  if (target_mcu == NULL)
+    return true;
 
   if (target_mcu == cached_match)
     return cached_result;

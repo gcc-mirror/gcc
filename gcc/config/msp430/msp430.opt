@@ -10,6 +10,10 @@ mmcu=
 Target Report ToLower Joined RejectNegative Var(target_mcu)
 Specify the MCU to build for.
 
+mwarn-mcu
+Target Report Var(msp430_warn_mcu) Init(1)
+Warn if an MCU name is unrecognised or conflicts with other options (default: on).
+
 mcpu=
 Target Report Joined RejectNegative Var(target_cpu)
 Specify the ISA to build for: msp430, msp430x, msp430xv2.

@@ -65,13 +65,37 @@ extern bool msp430x;
    is enabled  (the GDB testsuite relies upon unused entities not being deleted).  */
 #define LINK_SPEC "%{mrelax:--relax} %{mlarge:%{!r:%{!g:--gc-sections}}}"
 
+extern const char * msp430_select_hwmult_lib (int, const char **);
+# define EXTRA_SPEC_FUNCTIONS				\
+  { "msp430_hwmult_lib", msp430_select_hwmult_lib },
+
+/* Specify the libraries to include on the linker command line.
+
+   Selecting the hardware multiply library to use is quite complex.
+   If the user has specified -mhwmult=FOO then the mapping is quite
+   easy (and could be handled here in the SPEC string), unless FOO
+   is set to AUTO.  In this case the -mmcu= option must be consulted
+   instead.  If the -mhwmult= option is not specified then the -mmcu=
+   option must then be examined.  If neither -mhwmult= nor -mmcu= are
+   specified then a default hardware multiply library is used.
+
+   Examining the -mmcu=FOO option is difficult, and it is so this
+   reason that a spec function is used.  There are so many possible
+   values of FOO that a table is used to look up the name and map
+   it to a hardware multiply library.  This table (in device-msp430.c)
+   must be kept in sync with the same table in msp430.c.  */
 #undef  LIB_SPEC
 #define LIB_SPEC "					\
 --start-group						\
+%{mhwmult=auto:%{mmcu=*:%:msp430_hwmult_lib(mcu %{mmcu=*:%*});:%:msp430_hwmult_lib(default)}; \
+  mhwmult=*:%:msp430_hwmult_lib(hwmult %{mhwmult=*:%*}); \
+  mmcu=*:%:msp430_hwmult_lib(mcu %{mmcu=*:%*});		\
+  :%:msp430_hwmult_lib(default)}			\
 -lc							\
 -lgcc							\
 -lcrt							\
 %{msim:-lsim}						\
+%{!msim:-lnosys}					\
 --end-group					   	\
 %{!T*:%{!msim:%{mmcu=*:--script=%*.ld}}}		\
 %{!T*:%{!msim:%{!mmcu=*:%Tmsp430.ld}}}			\

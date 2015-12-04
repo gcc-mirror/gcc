@@ -1,3 +1,12 @@
+2015-11-25  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.target/msp430/msp_abi_div_funcs.c: New test.
+	* gcc.target/msp430/mul_main.h: New test support file.
+	* gcc.target/msp430/mul_none.c: New test.
+	* gcc.target/msp430/mul_16bit.c: New test.
+	* gcc.target/msp430/mul_32bit.c: New test.
+	* gcc.target/msp430/mul_f5.c: New test.
+
 2015-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/68680

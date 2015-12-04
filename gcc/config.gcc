@@ -2236,6 +2236,7 @@ msp430*-*-*)
 	c_target_objs="msp430-c.o"
 	cxx_target_objs="msp430-c.o"
 	tmake_file="${tmake_file} msp430/t-msp430"
+	extra_gcc_objs="driver-msp430.o"
 	;;
 nds32le-*-*)
 	target_cpu_default="0"
