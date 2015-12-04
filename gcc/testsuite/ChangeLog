@@ -1,3 +1,101 @@
+2015-12-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/asm-machine-1.c: New test.
+	* gcc.target/s390/asm-machine-2.c: New test.
+	* gcc.target/s390/asm-machine-3.c: New test.
+	* gcc.target/s390/asm-machine-4.c: New test.
+	* gcc.target/s390/target-attribute/tattr-1.c: New test.
+	* gcc.target/s390/target-attribute/tattr-2.c: New test.
+	* gcc.target/s390/target-attribute/tattr-3.c: New test.
+	* gcc.target/s390/target-attribute/tattr-4.c: New test.
+	* gcc.target/s390/target-attribute/tattr-5.c: New test.
+	* gcc.target/s390/target-attribute/tattr-6.c: New test.
+	* gcc.target/s390/target-attribute/tattr-7.c: New test.
+	* gcc.target/s390/target-attribute/tattr-8.c: New test.
+	* gcc.target/s390/target-attribute/tattr-9.c: New test.
+	* gcc.target/s390/target-attribute/tattr-10.c: New test.
+	* gcc.target/s390/target-attribute/tattr-11.c: New test.
+	* gcc.target/s390/target-attribute/tattr-12.c: New test.
+	* gcc.target/s390/target-attribute/tattr-13.c: New test.
+	* gcc.target/s390/target-attribute/tattr-14.c: New test.
+	* gcc.target/s390/target-attribute/tattr-15.c: New test.
+	* gcc.target/s390/target-attribute/tattr-16.c: New test.
+	* gcc.target/s390/target-attribute/tattr-17.c: New test.
+	* gcc.target/s390/target-attribute/tattr-18.c: New test.
+	* gcc.target/s390/target-attribute/tattr-19.c: New test.
+	* gcc.target/s390/target-attribute/tattr-arch-tune-1.c: New test.
+	* gcc.target/s390/target-attribute/tattr-arch-tune-2.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-1.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-2.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-3.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-4.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-5.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-6.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-7.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-8.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-9.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-10.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-11.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-12.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-13.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-14.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-15.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-16.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-17.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-18.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-19.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-20.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-21.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-22.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-23.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-24.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-25.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-26.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-27.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-28.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-29.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-30.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-31.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m31-32.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-1.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-2.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-3.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-4.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-5.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-6.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-7.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-8.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-9.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-10.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-11.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-12.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-13.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-14.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-15.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-16.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-17.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-18.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-19.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-20.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-21.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-22.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-23.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-24.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-25.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-26.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-27.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-28.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-29.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-30.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-31.c: New test.
+	* gcc.target/s390/target-attribute/tattr-m64-32.c: New test.
+	* gcc.target/s390/target-attribute/tpragma-struct-vx-2.c: New test.
+	* gcc.target/s390/s390.exp (check_effective_target_target_attribute):
+	Add check whether target attribute is available.
+	Run test in target-attribute subdir.
+	* gcc.target/s390/s390-c++.exp
+	(check_effective_target_target_attribute): Likewise.
+
 2015-12-04  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* c-c++-common/attr-simd-4.c: New test.

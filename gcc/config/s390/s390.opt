@@ -21,18 +21,27 @@
 HeaderInclude
 config/s390/s390-opts.h
 
-; The architecture name to use in diagnostics.
-Variable
-const char *s390_arch_string
+;; Definitions to add to the cl_target_option and gcc_options structures
 
-Variable
-int s390_tune_flags
+;; whether -march was specified
+TargetVariable
+unsigned char s390_arch_specified
 
-Variable
+;; Flags derived from s390_arch
+TargetVariable
 int s390_arch_flags
 
+;; whether -mtune was specified
+TargetVariable
+unsigned char s390_tune_specified
+
+;; Flags derived from s390_tune
+TargetVariable
+int s390_tune_flags
+
+;; Cpu cost table (this is actually a "const struct processor_cost *")
 Variable
-HOST_WIDE_INT s390_warn_framesize = 0
+long s390_cost_pointer
 
 m31
 Target Report RejectNegative Negative(m64) InverseMask(64BIT)
@@ -43,7 +52,7 @@ Target Report RejectNegative Negative(m31) Mask(64BIT)
 64 bit ABI.
 
 march=
-Target RejectNegative Joined Enum(processor_type) Var(s390_arch) Init(PROCESSOR_max)
+Target RejectNegative Joined Enum(processor_type) Var(s390_arch) Init(PROCESSOR_max) Save
 Generate code for given CPU.
 
 Enum
@@ -83,11 +92,11 @@ EnumValue
 Enum(processor_type) String(native) Value(PROCESSOR_NATIVE) DriverOnly
 
 mbackchain
-Target Report Mask(BACKCHAIN)
+Target Report Mask(BACKCHAIN) Save
 Maintain backchain pointer.
 
 mdebug
-Target Report Mask(DEBUG_ARG)
+Target Report Mask(DEBUG_ARG) Save
 Additional debug prints.
 
 mesa
@@ -95,11 +104,11 @@ Target Report RejectNegative Negative(mzarch) InverseMask(ZARCH)
 ESA/390 architecture.
 
 mhard-dfp
-Target Report Mask(HARD_DFP)
+Target Report Mask(HARD_DFP) Save
 Enable decimal floating point hardware support.
 
 mhard-float
-Target Report RejectNegative Negative(msoft-float) InverseMask(SOFT_FLOAT, HARD_FLOAT)
+Target Report RejectNegative Negative(msoft-float) InverseMask(SOFT_FLOAT, HARD_FLOAT) Save
 Enable hardware floating point.
 
 mhotpatch=
@@ -121,52 +130,60 @@ Target Report RejectNegative Negative(mlong-double-128) InverseMask(LONG_DOUBLE_
 Use 64-bit long double.
 
 mhtm
-Target Report Mask(OPT_HTM)
+Target Report Mask(OPT_HTM) Save
 Use hardware transactional execution instructions.
 
 mvx
-Target Report Mask(OPT_VX)
+Target Report Mask(OPT_VX) Save
 Use hardware vector facility instructions and enable the vector ABI.
 
 mpacked-stack
-Target Report Mask(PACKED_STACK)
+Target Report Mask(PACKED_STACK) Save
 Use packed stack layout.
 
 msmall-exec
-Target Report Mask(SMALL_EXEC)
+Target Report Mask(SMALL_EXEC) Save
 Use bras for executable < 64k.
 
 msoft-float
-Target Report RejectNegative Negative(mhard-float) Mask(SOFT_FLOAT)
+Target Report RejectNegative Negative(mhard-float) Mask(SOFT_FLOAT) Save
 Disable hardware floating point.
 
 mstack-guard=
-Target RejectNegative Joined UInteger Var(s390_stack_guard)
+Target RejectNegative Negative(mno-stack-guard) Joined UInteger Var(s390_stack_guard) Save
 Set the max. number of bytes which has to be left to stack size before a trap instruction is triggered.
 
+mno-stack-guard
+Target RejectNegative Alias(mstack-guard=,0) Negative(mstack-guard=)
+Switches off the -mstack-guard= option.
+
 mstack-size=
-Target RejectNegative Joined UInteger Var(s390_stack_size)
+Target RejectNegative Joined UInteger Var(s390_stack_size) Save
 Emit extra code in the function prologue in order to trap if the stack size exceeds the given limit.
 
+mno-stack-size
+Target RejectNegative Alias(mstack-size=,0) Negative(mstack-size=)
+Switches off the -mstack-size= option.
+
 mtune=
-Target RejectNegative Joined Enum(processor_type) Var(s390_tune) Init(PROCESSOR_max)
+Target RejectNegative Joined Enum(processor_type) Var(s390_tune) Init(PROCESSOR_max) Save
 Schedule code for given CPU.
 
 mmvcle
-Target Report Mask(MVCLE)
+Target Report Mask(MVCLE) Save
 mvcle use.
 
 mzvector
-Target Report Mask(ZVECTOR)
+Target Report Mask(ZVECTOR) Save
 Enable the z vector language extension providing the context-sensitive
 vector macro and enable the Altivec-style builtins in vecintrin.h
 
 mwarn-dynamicstack
-Target RejectNegative Var(s390_warn_dynamicstack_p)
+Target Var(s390_warn_dynamicstack_p) Save
 Warn if a function uses alloca or creates an array with dynamic size.
 
 mwarn-framesize=
-Target RejectNegative Joined
+Target RejectNegative Joined UInteger Var(s390_warn_framesize) Save
 Warn if a single function's framesize exceeds the given framesize.
 
 mzarch
@@ -174,7 +191,7 @@ Target Report RejectNegative Negative(mesa) Mask(ZARCH)
 z/Architecture.
 
 mbranch-cost=
-Target Report Joined RejectNegative UInteger Var(s390_branch_cost) Init(1)
+Target Report Joined RejectNegative UInteger Var(s390_branch_cost) Init(1) Save
 Set the branch costs for conditional branch instructions.  Reasonable
 values are small, non-negative integers.  The default branch cost is
 1.

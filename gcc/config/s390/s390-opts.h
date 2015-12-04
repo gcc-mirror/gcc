@@ -22,7 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Which processor to generate code or schedule for. The cpu attribute
    defines a list that mirrors this list, so changes to s390.md must be
-   made at the same time.  */
+   made at the same time.  The enumeration must also be kept in snyc with
+   processor_table in s390.c (the enumeration values are used as indices into
+   the table).  */
 
 enum processor_type
 {

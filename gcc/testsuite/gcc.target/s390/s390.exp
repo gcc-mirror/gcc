@@ -24,6 +24,21 @@ if ![istarget s390*-*-*] then {
 # Load support procs.
 load_lib gcc-dg.exp
 
+# Return 1 if the the assembler understands .machine and .machinemode.  The
+# target attribute needs that feature to work.
+proc check_effective_target_target_attribute { } {
+    if { ![check_runtime s390_check_machine_machinemode [subst {
+	int main (void)
+	{
+	    asm (".machine push" : : );
+	    asm (".machine pop" : : );
+	    asm (".machinemode push" : : );
+	    asm (".machinemode pop" : : );
+	    return 0;
+	}
+    }] "" ] } { return 0 } else { return 1 }
+}
+
 # Return 1 if htm (etnd - extract nesting depth) instructions are
 # understood by the assembler and can be executed.
 proc check_effective_target_htm { } {
@@ -68,6 +83,9 @@ dg-runtest [lsort [prune [glob -nocomplain $srcdir/$subdir/*.\[cS\]] \
 			 $hotpatch_tests]] "" $DEFAULT_CFLAGS
 
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.\[cS\]]] \
+	"" $DEFAULT_CFLAGS
+
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/target-attribute/*.\[cS\]]] \
 	"" $DEFAULT_CFLAGS
 
 # Additional hotpatch torture tests.
