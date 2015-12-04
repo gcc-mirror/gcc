@@ -1,3 +1,10 @@
+2015-12-04  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* c-family/c-common.c (c_common_attribute_table[]): Update max arguments
+	count for "simd" attribute.
+	(handle_simd_attribute): Parse "notinbranch" and "inbranch" arguments.
+	* doc/extend.texi ("simd"): Describe new flags.
+
 2015-12-04  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* config/i386/sse.md (<avx512>_store<mode>_mask): Fix
