@@ -6136,6 +6136,11 @@ a @code{libubsan} library routine.  The advantage of this is that the
 @code{libubsan} library is not needed and is not linked in, so this
 is usable even in freestanding environments.
 
+@item -fsanitize-coverage=trace-pc
+@opindex fsanitize-coverage=trace-pc
+Enable coverage-guided fuzzing code instrumentation.
+Inserts call to __sanitizer_cov_trace_pc into every basic block.
+
 @item -fcheck-pointer-bounds
 @opindex fcheck-pointer-bounds
 @opindex fno-check-pointer-bounds

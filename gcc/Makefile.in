@@ -1427,6 +1427,7 @@ OBJS = \
 	tsan.o \
 	ubsan.o \
 	sanopt.o \
+	sancov.o \
 	tree-call-cdce.o \
 	tree-cfg.o \
 	tree-cfgcleanup.o \
@@ -2400,6 +2401,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/ubsan.c \
   $(srcdir)/tsan.c \
   $(srcdir)/sanopt.c \
+  $(srcdir)/sancov.c \
   $(srcdir)/ipa-devirt.c \
   $(srcdir)/internal-fn.h \
   @all_gtfiles@
