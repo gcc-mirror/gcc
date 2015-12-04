@@ -1,3 +1,13 @@
+2015-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/65958
+	* config/arm/unspecs.md (unspec): Remove UNSPEC_PROBE_STACK_RANGE.
+	(unspecv): Add VUNSPEC_PROBE_STACK_RANGE.
+	* config/arm/arm.md (probe_stack_range): Adjust.
+	* config/aarch64/aarch64.md (unspec): Remove UNSPEC_PROBE_STACK_RANGE.
+	(unspecv): Add UNSPECV_PROBE_STACK_RANGE.
+	(probe_stack_range_<PTR:mode>): Adjust.
+
 2015-12-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* convert.c (convert_to_real_1): When converting from a
@@ -309,8 +319,8 @@
 
 2015-12-03  Jan Hubicka  <hubicka@ucw.cz>
 
-	* alias.c (alias_set_subset_of, alias_sets_must_conflict_p)
-	Short circuit for !flag_strict_aliasing
+	* alias.c (alias_set_subset_of, alias_sets_must_conflict_p):
+	Add short circuit for !flag_strict_aliasing
 	(get_alias_set): Remove flag_strict_aliasing check.
 	(new_alias_set): Likewise.
 
