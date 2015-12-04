@@ -1,3 +1,11 @@
+2015-12-03  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* parser.c (cp_ensure_no_oacc_routine): Update error message.
+	(cp_parser_oacc_routine): Likewise.
+	(cp_parser_late_parsing_oacc_routine): Likewise.  Update comment
+	describing this function.
+	(cp_finalize_oacc_routine): Update error message.
+
 2015-12-02  Jason Merrill  <jason@redhat.com>
 
 	* Make-lang.in (check-c++1z, check-c++-all): New.
