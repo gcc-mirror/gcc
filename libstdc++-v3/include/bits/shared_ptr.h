@@ -582,18 +582,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_weak_assign(_Tp1* __p, const __shared_count<>& __n) const noexcept
 	{ _M_weak_this._M_assign(__p, __n); }
 
-      template<typename _Tp1>
+      template<typename _Tp1, typename _Tp2>
 	friend void
-	__enable_shared_from_this_helper(const __shared_count<>& __pn,
-					 const enable_shared_from_this* __pe,
-					 const _Tp1* __px) noexcept
-	{
-	  if (__pe != 0)
-	    __pe->_M_weak_assign(const_cast<_Tp1*>(__px), __pn);
-	}
+	__enable_shared_from_this_helper(const __shared_count<>&,
+					 const enable_shared_from_this<_Tp1>*,
+					 const _Tp2*) noexcept;
 
       mutable weak_ptr<_Tp>  _M_weak_this;
     };
+
+  template<typename _Tp1, typename _Tp2>
+    inline void
+    __enable_shared_from_this_helper(const __shared_count<>& __pn,
+				     const enable_shared_from_this<_Tp1>*
+				     __pe, const _Tp2* __px) noexcept
+    {
+      if (__pe != nullptr)
+	__pe->_M_weak_assign(const_cast<_Tp2*>(__px), __pn);
+    }
 
   /**
    *  @brief  Create an object that is owned by a shared_ptr.
