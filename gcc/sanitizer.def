@@ -510,3 +510,8 @@ DEF_SANITIZER_BUILTIN(BUILT_IN_UBSAN_HANDLE_DYNAMIC_TYPE_CACHE_MISS_ABORT,
 		      "__ubsan_handle_dynamic_type_cache_miss_abort",
 		      BT_FN_VOID_PTR_PTR_PTR,
 		      ATTR_COLD_NOTHROW_LEAF_LIST)
+
+/* Sanitizer coverage */
+DEF_SANITIZER_BUILTIN(BUILT_IN_SANITIZER_COV_TRACE_PC,
+		      "__sanitizer_cov_trace_pc",
+		      BT_FN_VOID, ATTR_NOTHROW_LEAF_LIST)

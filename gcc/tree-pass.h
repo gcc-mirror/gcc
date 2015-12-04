@@ -351,6 +351,8 @@ extern gimple_opt_pass *make_pass_asan (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_asan_O0 (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_tsan (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_tsan_O0 (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_sancov (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_sancov_O0 (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_cf (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_refactor_eh (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_eh (gcc::context *ctxt);

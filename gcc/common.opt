@@ -225,6 +225,11 @@ unsigned int flag_sanitize
 Variable
 unsigned int flag_sanitize_recover = SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT | SANITIZE_KERNEL_ADDRESS
 
+fsanitize-coverage=trace-pc
+Common Report Var(flag_sanitize_coverage)
+Enable coverage-guided fuzzing code instrumentation.
+Inserts call to __sanitizer_cov_trace_pc into every basic block.
+
 ; Flag whether a prefix has been added to dump_base_name
 Variable
 bool dump_base_name_prefixed = false
