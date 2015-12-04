@@ -1,5 +1,9 @@
 2015-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.dg/vla-24.c: New test.
+
+2015-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc.target/aarch64/stack-checking.c: New test.
 
 2015-12-04  Richard Biener  <rguenther@suse.de>

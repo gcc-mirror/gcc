@@ -1658,9 +1658,7 @@ variable-length arrays are more elegant.
 There are other differences between these two methods.  Space allocated
 with @code{alloca} exists until the containing @emph{function} returns.
 The space for a variable-length array is deallocated as soon as the array
-name's scope ends.  (If you use both variable-length arrays and
-@code{alloca} in the same function, deallocation of a variable-length array
-also deallocates anything more recently allocated with @code{alloca}.)
+name's scope ends, unless you also use @code{alloca} in this scope.
 
 You can also use variable-length arrays as arguments to functions:
 
