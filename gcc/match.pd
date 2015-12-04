@@ -1855,15 +1855,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Fold ~X op ~Y as Y op X.  */
 (for cmp (simple_comparison)
  (simplify
-  (cmp (bit_not @0) (bit_not @1))
-  (cmp @1 @0)))
+  (cmp (bit_not@2 @0) (bit_not@3 @1))
+  (if (single_use (@2) && single_use (@3))
+   (cmp @1 @0))))
 
 /* Fold ~X op C as X op' ~C, where op' is the swapped comparison.  */
 (for cmp (simple_comparison)
      scmp (swapped_simple_comparison)
  (simplify
-  (cmp (bit_not @0) CONSTANT_CLASS_P@1)
-  (if (TREE_CODE (@1) == INTEGER_CST || TREE_CODE (@1) == VECTOR_CST)
+  (cmp (bit_not@2 @0) CONSTANT_CLASS_P@1)
+  (if (single_use (@2)
+       && (TREE_CODE (@1) == INTEGER_CST || TREE_CODE (@1) == VECTOR_CST))
    (scmp @0 (bit_not @1)))))
 
 (for cmp (simple_comparison)
