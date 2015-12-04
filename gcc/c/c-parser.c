@@ -7485,7 +7485,7 @@ c_parser_postfix_expression (c_parser *parser)
 	    else
 	      {
 		tree type_expr = NULL_TREE;
-		expr.value = c_build_va_arg (loc, e1.value,
+		expr.value = c_build_va_arg (start_loc, e1.value, loc,
 					     groktypename (t1, &type_expr, NULL));
 		if (type_expr)
 		  {
