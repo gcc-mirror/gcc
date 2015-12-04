@@ -1,3 +1,9 @@
+2015-12-04  Jan Sommer <soja-lists@aries.uberspace.de>
+
+	PR ada/68169
+	* s-oscons-tmplt.c: Generate pthread constants for RTEMS
+	* s-osinte-rtems.ads: Declare pthread structs as opaque types in Ada
+
 2015-12-04  Release Manager
 
 	* GCC 5.3.0 released.
