@@ -1,4 +1,5 @@
 /* { dg-options "-fcilkplus -floop-nest-optimize -O3" } */
+/* { dg-require-effective-target pthread } */
 
 #if HAVE_IO
 #include <stdio.h>

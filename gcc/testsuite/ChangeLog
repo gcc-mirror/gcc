@@ -1,3 +1,7 @@
+2015-12-04  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/graphite/id-28.c: Requires pthreads.
+
 2015-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/vla-24.c: New test.
