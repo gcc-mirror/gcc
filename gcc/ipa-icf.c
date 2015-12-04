@@ -1352,10 +1352,15 @@ sem_function::merge (sem_item *alias_item)
   gcc_assert (alias->icf_merged || remove || redirect_callers);
   original->icf_merged = true;
 
-  /* Inform the inliner about cross-module merging.  */
-  if ((original->lto_file_data || alias->lto_file_data)
-      && original->lto_file_data != alias->lto_file_data)
-    local_original->merged = original->merged = true;
+  /* We use merged flag to track cases where COMDAT function is known to be
+     compatible its callers.  If we merged in non-COMDAT, we need to give up
+     on this optimization.  */
+  if (original->merged_comdat && !alias->merged_comdat)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Dropping merged_comdat flag.\n\n");
+      local_original->merged_comdat = original->merged_comdat = false;
+    }
 
   if (remove)
     {

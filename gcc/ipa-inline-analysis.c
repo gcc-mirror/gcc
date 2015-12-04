@@ -3708,7 +3708,7 @@ simple_edge_hints (struct cgraph_edge *edge)
 
   if (callee->lto_file_data && edge->caller->lto_file_data
       && edge->caller->lto_file_data != callee->lto_file_data
-      && !callee->merged)
+      && !callee->merged_comdat && !callee->icf_merged)
     hints |= INLINE_HINT_cross_module;
 
   return hints;

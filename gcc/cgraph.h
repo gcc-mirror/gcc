@@ -1333,7 +1333,7 @@ public:
      accesses trapping.  */
   unsigned nonfreeing_fn : 1;
   /* True if there was multiple COMDAT bodies merged by lto-symtab.  */
-  unsigned merged : 1;
+  unsigned merged_comdat : 1;
   /* True if function was created to be executed in parallel.  */
   unsigned parallelized_function : 1;
   /* True if function is part split out by ipa-split.  */

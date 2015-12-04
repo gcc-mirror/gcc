@@ -63,8 +63,9 @@ lto_cgraph_replace_node (struct cgraph_node *node,
       gcc_assert (!prevailing_node->global.inlined_to);
       prevailing_node->mark_address_taken ();
     }
-  if (node->definition && prevailing_node->definition)
-    prevailing_node->merged = true;
+  if (node->definition && prevailing_node->definition
+      && DECL_COMDAT (node->decl) && DECL_COMDAT (prevailing_node->decl))
+    prevailing_node->merged_comdat = true;
 
   /* Redirect all incoming edges.  */
   compatible_p
