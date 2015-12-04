@@ -1,5 +1,11 @@
 2015-12-04  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/68636
+	* builtins.c (get_pointer_alignment_1): Take care of byte to
+	bit alignment computation overflow.
+
+2015-12-04  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/67438
 	* match.pd: Guard ~X cmp ~Y -> Y cmp X and the variant with
 	a constant with single_use.
