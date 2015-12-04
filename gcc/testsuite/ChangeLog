@@ -1,5 +1,12 @@
 2015-12-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* gcc.target/s390/asm-machine-1.c: Updated.
+	* gcc.target/s390/asm-machine-2.c: Updated.
+	* gcc.target/s390/asm-machine-3.c: Updated.
+	* gcc.target/s390/asm-machine-4.c: Updated.
+
+2015-12-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* gcc.target/s390/asm-machine-1.c: New test.
 	* gcc.target/s390/asm-machine-2.c: New test.
 	* gcc.target/s390/asm-machine-3.c: New test.

@@ -1,5 +1,13 @@
 2015-12-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_asm_file_start): Implement hook function to
+	emit .machine and .machinemode to the top of the assembler file.
+	(TARGET_ASM_FILE_START): Provide target hook.
+	(s390_asm_output_machine_for_arch): Protect with
+	HAVE_AS_MACHINE_MACHINEMODE instead of S390_USE_TARGET_ATTRIBUTE.
+
+2015-12-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* config/s390/s390.opt (s390_arch_string): Remove.
 	(s390_tune_string): Likewise.
 	(s390_cost_pointer): Add Variable.
