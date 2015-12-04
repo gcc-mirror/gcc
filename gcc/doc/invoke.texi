@@ -845,6 +845,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{MSP430 Options}
 @gccoptlist{-msim -masm-hex -mmcu= -mcpu= -mlarge -msmall -mrelax @gol
+-mwarn-mcu @gol
 -mcode-region= -mdata-region= @gol
 -msilicon-errata= -msilicon-errata-warn= @gol
 -mhwmult= -minrt}
@@ -18510,6 +18511,16 @@ cause the linker to search for a script called @file{xxx.ld}.
 
 This option is also passed on to the assembler.
 
+@item -mwarn-mcu
+@itemx -mno-warn-mcu
+@opindex mwarn-mcu
+@opindex mno-warn-mcu
+This option enables or disables warnings about conflicts between the
+MCU name specified by the @option{-mmcu} option and the ISA set by the
+@option{-mcpu} option and/or the hardware multiply support set by the
+@option{-mhwmult} option.  It also toggles warnings about unrecognised
+MCU names.  This option is on by default.
+
 @item -mcpu=
 @opindex mcpu=
 Specifies the ISA to use.  Accepted values are @samp{msp430},
@@ -18544,10 +18555,9 @@ for the original 16-bit-only multiply supported by early MCUs.
 @samp{f5series} for the 16/32-bit multiply supported by F5-series MCUs.
 A value of @samp{auto} can also be given.  This tells GCC to deduce
 the hardware multiply support based upon the MCU name provided by the
-@option{-mmcu} option.  If no @option{-mmcu} option is specified then
-@samp{32bit} hardware multiply support is assumed.  If the MCU name is
-not recognised then no hardware multiply support is assumed.
-@code{auto} is the default setting.
+@option{-mmcu} option.  If no @option{-mmcu} option is specified or if
+the MCU name is not recognised then no hardware multiply support is
+assumed.  @code{auto} is the default setting.
 
 Hardware multiplies are normally performed by calling a library
 routine.  This saves space in the generated code.  When compiling at

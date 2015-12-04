@@ -1,4 +1,29 @@
-2015-12-04  Segher Boessenkool  <segher@kernel.crashing.org>
+2015-11-25  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc (extra_gcc_objs): Define for MSP430.
+        * common/config/msp430/msp430-common.c (msp430_handle_option):
+	Pass both -mmcu and -mcpu on to the back end if they are both
+	defined.
+	* config/msp430/msp430.c (hwmult_name): New function.
+        (msp430_option_override): If an unrecognised MCU name is
+	detected only warn if the user has not provided suitable
+        -mhwmult and -mcpu options.  Use msp430_warn_mcu to control
+	warning messages.  Generate warnings about conflicts between
+	-mmcu and -mcpu and -mhwmult options.
+	If neither -mcpu nor -mmcu have been specified but -mhwmult=
+	f5series has the select the 430X isa.
+	(msp430_no_hwmult): If -mmcu has not been specified and
+	msp430_hwmult_type is AUTO then return true.
+	* config/msp430/msp430.h (EXTRA_SPEC_FUNCTIONS): Define.
+	(LIB_SPEC): Add hardware multiply library selection.
+	* config/msp430/t-msp430: Delete hardware multiply multilibs.
+	Add rule to build driver-msp430.o
+	* config/msp430/driver-msp430.c: New file.
+	* config/msp430/msp430.opt (warn-mcu): New option.
+	* doc/invoke.texi: Update description of -mhwmult=auto.
+        Document -mwarn-mcu option.
+
+2015-12-04  Segher Boessenkool  <segher&kernel.crashing.org>
 
 	* (cstore<mode>4_signed): New expander.
 	(cstore<mode>4): Call it.

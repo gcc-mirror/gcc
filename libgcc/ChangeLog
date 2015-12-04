@@ -1,3 +1,18 @@
+2015-12-04  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/mpy.c (__mulhi3): Use a faster algorithm.
+	Allow for the second argument being negative.
+	* config.host (extra_parts): Define for MSP430.  Create separate
+	libraries for each of the hardware multiply formats.
+	* config/msp430/lib2hw_mul.S: Build only the multiply routines
+	that are needed.
+	* config/msp430/lib2mul.c: Likewise.
+	* config/msp430/t-msp430 (LIB2ADD): Remove lib2hw_mul.S.
+	Add rules to build hardware multiply libraries.
+	* config/msp430/lib2divSI.c: (__mspabi_divlu): Alias for
+	__mspabi_divul function.
+	(__mspabi_divllu): New stub function.
+
 2015-12-01  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/fptr.c (__canonicalize_funcptr_for_compare): Initialize
