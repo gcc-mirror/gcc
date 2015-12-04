@@ -1,3 +1,9 @@
+2015-12-01  Jan Sommer <soja-lists@aries.uberspace.de>
+
+	PR ada/68169
+	* s-oscons-tmplt.c: Generate pthread constants for RTEMS
+	* s-osinte-rtems.ads: Declare pthread structs as opaque types in Ada
+
 2015-11-29  Matthias Klose  <doko@ubuntu.com>
 
 	PR ada/68564
