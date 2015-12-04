@@ -1,3 +1,13 @@
+2015-12-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/57060
+	* include/std/thread (operator==(thread::id, thread::id)): Do not use
+	__gthread_equal.
+	(operator<(thread::id, thread::id)): Add comment.
+	(this_thread::get_id()): Do not use __gthread_self for single-threaded
+	programs using glibc.
+	* testsuite/30_threads/this_thread/57060.cc: New.
+
 2015-12-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/56383
