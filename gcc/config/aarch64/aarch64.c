@@ -4823,12 +4823,74 @@ aarch64_legitimize_address (rtx x, rtx /* orig_x  */, machine_mode mode)
      We try to pick as large a range for the offset as possible to
      maximize the chance of a CSE.  However, for aligned addresses
      we limit the range to 4k so that structures with different sized
-     elements are likely to use the same base.  */
+     elements are likely to use the same base.  We need to be careful
+     not to split a CONST for some forms of address expression, otherwise
+     it will generate sub-optimal code.  */
 
   if (GET_CODE (x) == PLUS && CONST_INT_P (XEXP (x, 1)))
     {
       HOST_WIDE_INT offset = INTVAL (XEXP (x, 1));
       HOST_WIDE_INT base_offset;
+
+      if (GET_CODE (XEXP (x, 0)) == PLUS)
+	{
+	  rtx op0 = XEXP (XEXP (x, 0), 0);
+	  rtx op1 = XEXP (XEXP (x, 0), 1);
+
+	  /* Address expressions of the form Ra + Rb + CONST.
+
+	     If CONST is within the range supported by the addressing
+	     mode "reg+offset", do not split CONST and use the
+	     sequence
+	       Rt = Ra + Rb;
+	       addr = Rt + CONST.  */
+	  if (REG_P (op0) && REG_P (op1))
+	    {
+	      machine_mode addr_mode = GET_MODE (x);
+	      rtx base = gen_reg_rtx (addr_mode);
+	      rtx addr = plus_constant (addr_mode, base, offset);
+
+	      if (aarch64_legitimate_address_hook_p (mode, addr, false))
+		{
+		  emit_insn (gen_adddi3 (base, op0, op1));
+		  return addr;
+		}
+	    }
+	  /* Address expressions of the form Ra + Rb<<SCALE + CONST.
+
+	     If Reg + Rb<<SCALE is a valid address expression, do not
+	     split CONST and use the sequence
+	       Rc = CONST;
+	       Rt = Ra + Rc;
+	       addr = Rt + Rb<<SCALE.
+
+	     Here we split CONST out of memory referece because:
+	       a) We depend on GIMPLE optimizers to pick up common sub
+		  expression involving the scaling operation.
+	       b) The index Rb is likely a loop iv, it's better to split
+		  the CONST so that computation of new base Rt is a loop
+		  invariant and can be moved out of loop.  This is more
+		  important when the original base Ra is sfp related.  */
+	  else if (REG_P (op0) || REG_P (op1))
+	    {
+	      machine_mode addr_mode = GET_MODE (x);
+	      rtx base = gen_reg_rtx (addr_mode);
+
+	      /* Switch to make sure that register is in op0.  */
+	      if (REG_P (op1))
+		std::swap (op0, op1);
+
+	      rtx addr = gen_rtx_PLUS (addr_mode, op1, base);
+
+	      if (aarch64_legitimate_address_hook_p (mode, addr, false))
+		{
+		  base = force_operand (plus_constant (addr_mode,
+						       op0, offset),
+					NULL_RTX);
+		  return gen_rtx_PLUS (addr_mode, op1, base);
+		}
+	    }
+	}
 
       /* Does it look like we'll need a load/store-pair operation?  */
       if (GET_MODE_SIZE (mode) > 16
