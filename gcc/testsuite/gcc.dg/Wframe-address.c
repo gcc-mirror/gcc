@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Wframe-address" } */
+/* { dg-additional-options "-mbackchain" { target { s390*-*-* } } } */
 
 void* __attribute__ ((noclone, noinline))
 test_builtin_frame_address (unsigned i)
