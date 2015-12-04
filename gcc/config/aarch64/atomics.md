@@ -481,7 +481,7 @@
 )
 
 (define_insn "atomic_store<mode>"
-  [(set (match_operand:ALLI 0 "memory_operand" "=Q")
+  [(set (match_operand:ALLI 0 "aarch64_sync_memory_operand" "=Q")
     (unspec_volatile:ALLI
       [(match_operand:ALLI 1 "general_operand" "rZ")
        (match_operand:SI 2 "const_int_operand")]			;; model

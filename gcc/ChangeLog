@@ -1,3 +1,8 @@
+2015-12-04  Bin Cheng  <bin.cheng@arm.com>
+
+	* config/aarch64/atomics.md (atomic_store<mode>): Use predicate
+	aarch64_sync_memory_operand.
+
 2015-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/68655
