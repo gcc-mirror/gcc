@@ -389,38 +389,67 @@ arg_promotion (machine_mode mode)
   return mode;
 }
 
-/* Write the declaration of a function arg of TYPE to S.  I is the index
-   of the argument, MODE its mode.  NO_ARG_TYPES is true if this is for
-   a decl with zero TYPE_ARG_TYPES, i.e. an old-style C decl.  */
+/* Process function parameter TYPE, either emitting in a prototype
+   argument, or as a copy a in a function prologue.  ARGNO is the
+   index of this argument in the PTX function.  FOR_REG is negative,
+   if we're emitting the PTX prototype.  It is zero if we're copying
+   to an argument register and it is greater than zero if we're
+   copying to a specific hard register.  PROTOTYPED is true, if this
+   is a prototyped function, rather than an old-style C declaration.
+
+   The behaviour here must match the regular GCC function parameter
+   marshalling machinery.  */
 
 static int
-write_one_arg (std::stringstream &s, const char *sep, int i,
-	       tree type, machine_mode mode, bool no_arg_types)
+write_one_arg (std::stringstream &s, int for_reg, int argno,
+	       tree type, bool prototyped)
 {
+  machine_mode mode = TYPE_MODE (type);
+
   if (!PASS_IN_REG_P (mode, type))
     mode = Pmode;
 
   machine_mode split = maybe_split_mode (mode);
   if (split != VOIDmode)
     {
-      i = write_one_arg (s, sep, i, TREE_TYPE (type), split, false);
-      sep = ", ";
       mode = split;
+      argno = write_one_arg (s, for_reg, argno,
+			     TREE_TYPE (type), prototyped);
     }
 
-  if (no_arg_types && !AGGREGATE_TYPE_P (type))
+  if (!prototyped && !AGGREGATE_TYPE_P (type))
     {
       if (mode == SFmode)
 	mode = DFmode;
       mode = arg_promotion (mode);
     }
 
-  s << sep;
-  s << ".param" << nvptx_ptx_type_from_mode (mode, false) << " %in_ar"
-    << i << (mode == QImode || mode == HImode ? "[1]" : "");
-  if (mode == BLKmode)
-    s << "[" << int_size_in_bytes (type) << "]";
-  return i + 1;
+  if (for_reg < 0)
+    {
+      /* Writing PTX prototype.  */
+      s << (argno ? ", " : " (");
+      s << ".param" << nvptx_ptx_type_from_mode (mode, false)
+	<< " %in_ar" << argno;
+      if (mode == QImode || mode == HImode)
+	s << "[1]";
+    }
+  else
+    {
+      mode = arg_promotion (mode);
+      s << "\t.reg" << nvptx_ptx_type_from_mode (mode, false) << " ";
+      if (for_reg)
+	s << reg_names[for_reg];
+      else
+	s << "%ar" << argno;
+      s << ";\n";
+      s << "\tld.param" << nvptx_ptx_type_from_mode (mode, false) << " ";
+      if (for_reg)
+	s << reg_names[for_reg];
+      else
+	s << "%ar" << argno;
+      s<< ", [%in_ar" << argno << "];\n";
+    }
+  return argno + 1;
 }
 
 /* Look for attributes in ATTRS that would indicate we must write a function
@@ -507,16 +536,11 @@ write_fn_proto (std::stringstream &s, bool is_defn,
 
   s << name;
 
-  const char *sep = " (";
-  int i = 0;
+  int argno = 0;
 
   /* Emit argument list.  */
   if (return_in_mem)
-    {
-      s << sep << ".param.u" << GET_MODE_BITSIZE (Pmode) << " %in_ar0";
-      sep  = ", ";
-      i++;
-    }
+    argno = write_one_arg (s, -1, argno, ptr_type_node, true);
 
   /* We get:
      NULL in TYPE_ARG_TYPES, for old-style functions
@@ -524,46 +548,34 @@ write_fn_proto (std::stringstream &s, bool is_defn,
        declaration.
      So we have to pick the best one we have.  */
   tree args = TYPE_ARG_TYPES (fntype);
-  bool null_type_args = !args;
-  if (null_type_args)
-    args = DECL_ARGUMENTS (decl);
+  bool prototyped = true;
+  if (!args)
+    {
+      args = DECL_ARGUMENTS (decl);
+      prototyped = false;
+    }
 
   for (; args; args = TREE_CHAIN (args))
     {
-      tree type = null_type_args ? TREE_TYPE (args) : TREE_VALUE (args);
-      machine_mode mode = TYPE_MODE (type);
+      tree type = prototyped ? TREE_VALUE (args) : TREE_TYPE (args);
 
-      if (mode == VOIDmode)
-	break;
-      i = write_one_arg (s, sep, i, type, mode, null_type_args);
-      sep = ", ";
+      if (type != void_type_node)
+	argno = write_one_arg (s, -1, argno, type, prototyped);
     }
 
   if (stdarg_p (fntype))
-    {
-      s << sep << ".param.u" << GET_MODE_BITSIZE (Pmode) << " %in_argp";
-      i++;
-      sep = ", ";
-    }
+    argno = write_one_arg (s, -1, argno, ptr_type_node, true);
 
   if (DECL_STATIC_CHAIN (decl))
+    argno = write_one_arg (s, -1, argno, ptr_type_node, true);
+
+  if (!argno && strcmp (name, "main") == 0)
     {
-      s << sep << ".reg.u" << GET_MODE_BITSIZE (Pmode)
-	<< reg_names [STATIC_CHAIN_REGNUM];
-      i++;
-      sep = ", ";
+      argno = write_one_arg (s, -1, argno, integer_type_node, true);
+      argno = write_one_arg (s, -1, argno, ptr_type_node, true);
     }
 
-  if (!i && strcmp (name, "main") == 0)
-    {
-      s << sep
-	<< ".param.u32 %argc, .param.u" << GET_MODE_BITSIZE (Pmode)
-	<< " %argv";
-      i++;
-      sep = ", ";
-    }
-
-  if (i)
+  if (argno)
     s << ")";
 
   s << (is_defn ? "\n" : ";\n");
@@ -705,63 +717,43 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
 {
   tree fntype = TREE_TYPE (decl);
   tree result_type = TREE_TYPE (fntype);
-  int argno  = 0;
+  int argno = 0;
 
+  /* We construct the initial part of the function into a string
+     stream, in order to share the prototype writing code.  */
   std::stringstream s;
   write_fn_proto (s, true, name, decl);
-  fprintf (file, "%s", s.str().c_str());
-  fprintf (file, "{\n");
+  s << "{\n";
 
   bool return_in_mem = (TYPE_MODE (result_type) != VOIDmode
 			&& !RETURN_IN_REG_P (TYPE_MODE (result_type)));
   if (return_in_mem)
-    {
-      fprintf (file, "\t.reg.u%d %%ar%d;\n", GET_MODE_BITSIZE (Pmode), argno);
-      fprintf (file, "\tld.param.u%d %%ar%d, [%%in_ar%d];\n",
-	       GET_MODE_BITSIZE (Pmode), argno, argno);
-      argno++;
-    }
-
+    argno = write_one_arg (s, 0, argno, ptr_type_node, true);
+  
   /* Declare and initialize incoming arguments.  */
-  tree args = DECL_ARGUMENTS (decl);
-  bool prototyped = false;
-  if (TYPE_ARG_TYPES (fntype))
+  tree args = TYPE_ARG_TYPES (fntype);
+  bool prototyped = true;
+  if (!args)
     {
-      args = TYPE_ARG_TYPES (fntype);
-      prototyped = true;
+      args = DECL_ARGUMENTS (decl);
+      prototyped = false;
     }
 
   for (; args != NULL_TREE; args = TREE_CHAIN (args))
     {
       tree type = prototyped ? TREE_VALUE (args) : TREE_TYPE (args);
-      machine_mode mode = TYPE_MODE (type);
-      int count = 1;
 
-      if (mode == VOIDmode)
-	break;
-
-      if (!PASS_IN_REG_P (mode, type))
-	mode = Pmode;
-
-      machine_mode split = maybe_split_mode (mode);
-      if (split != VOIDmode)
-	{
-	  count = 2;
-	  mode = split;
-	}
-      else if (!prototyped && !AGGREGATE_TYPE_P (type) && mode == SFmode)
-	mode = DFmode;
-
-      mode = arg_promotion (mode);
-      while (count--)
-	{
-	  fprintf (file, "\t.reg%s %%ar%d;\n",
-		   nvptx_ptx_type_from_mode (mode, false), argno);
-	  fprintf (file, "\tld.param%s %%ar%d, [%%in_ar%d];\n",
-		   nvptx_ptx_type_from_mode (mode, false), argno, argno);
-	  argno++;
-	}
+      if (type != void_type_node)
+	argno = write_one_arg (s, 0, argno, type, prototyped);
     }
+
+  if (stdarg_p (fntype))
+    argno = write_one_arg (s, ARG_POINTER_REGNUM, argno, ptr_type_node, true);
+
+  if (DECL_STATIC_CHAIN (decl))
+    argno = write_one_arg (s, STATIC_CHAIN_REGNUM, argno, ptr_type_node, true);
+
+  fprintf (file, "%s", s.str().c_str());
 
   /* C++11 ABI causes us to return a reference to the passed in
      pointer for return_in_mem.  */
@@ -773,16 +765,9 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
 	       nvptx_ptx_type_from_mode (mode, false));
     }
 
-  if (stdarg_p (fntype))
-    {
-      fprintf (file, "\t.reg.u%d %%argp;\n", GET_MODE_BITSIZE (Pmode));
-      fprintf (file, "\tld.param.u%d %%argp, [%%in_argp];\n",
-	       GET_MODE_BITSIZE (Pmode));
-    }
-
   fprintf (file, "\t.reg.u%d %s;\n", GET_MODE_BITSIZE (Pmode),
 	   reg_names[OUTGOING_STATIC_CHAIN_REGNUM]);
-
+  
   /* Declare the pseudos we have as ptx registers.  */
   int maxregs = max_reg_num ();
   for (int i = LAST_VIRTUAL_REGISTER + 1; i < maxregs; i++)
