@@ -98,22 +98,16 @@ public:
    - "()" around the node number denotes the entry or the
      exit nodes of the SCOP.  These are not part of SCoP.  */
 
-static void
-dot_all_scops_1 (FILE *file, vec<scop_p> scops)
+DEBUG_FUNCTION void
+dot_all_sese (FILE *file, vec<sese_l>& scops)
 {
-  basic_block bb;
-  edge e;
-  edge_iterator ei;
-  scop_p scop;
-  const char *color;
-  int i;
-
   /* Disable debugging while printing graph.  */
   int tmp_dump_flags = dump_flags;
   dump_flags = 0;
 
   fprintf (file, "digraph all {\n");
 
+  basic_block bb;
   FOR_ALL_BB_FN (bb, cfun)
     {
       int part_of_scop = false;
@@ -126,12 +120,15 @@ dot_all_scops_1 (FILE *file, vec<scop_p> scops)
       fprintf (file, "CELLSPACING=\"0\">\n");
 
       /* Select color for SCoP.  */
-      FOR_EACH_VEC_ELT (scops, i, scop)
+      sese_l *region;
+      int i;
+      FOR_EACH_VEC_ELT (scops, i, region)
 	{
-	  sese_l region = scop->scop_info->region;
-	  if (bb_in_sese_p (bb, region) || (region.exit->dest == bb)
-	      || (region.entry->dest == bb))
+	  bool sese_in_region = bb_in_sese_p (bb, *region);
+	  if (sese_in_region || (region->exit->dest == bb)
+	      || (region->entry->dest == bb))
 	    {
+	      const char *color;
 	      switch (i % 17)
 		{
 		case 0: /* red */
@@ -192,21 +189,21 @@ dot_all_scops_1 (FILE *file, vec<scop_p> scops)
 	      fprintf (file, "    <TR><TD WIDTH=\"50\" BGCOLOR=\"%s\">",
 		       color);
 
-	      if (!bb_in_sese_p (bb, region))
+	      if (!sese_in_region)
 		fprintf (file, " (");
 
-	      if (bb == region.entry->dest && bb == region.exit->dest)
+	      if (bb == region->entry->dest && bb == region->exit->dest)
 		fprintf (file, " %d*# ", bb->index);
-	      else if (bb == region.entry->dest)
+	      else if (bb == region->entry->dest)
 		fprintf (file, " %d* ", bb->index);
-	      else if (bb == region.exit->dest)
+	      else if (bb == region->exit->dest)
 		fprintf (file, " %d# ", bb->index);
 	      else
 		fprintf (file, " %d ", bb->index);
 
 	      fprintf (file, "{lp_%d}", bb->loop_father->num);
 
-	      if (!bb_in_sese_p (bb, region))
+	      if (!sese_in_region)
 		fprintf (file, ")");
 
 	      fprintf (file, "</TD></TR>\n");
@@ -225,6 +222,8 @@ dot_all_scops_1 (FILE *file, vec<scop_p> scops)
 
     FOR_ALL_BB_FN (bb, cfun)
       {
+	edge e;
+	edge_iterator ei;
 	FOR_EACH_EDGE (e, ei, bb->succs)
 	  fprintf (file, "%d -> %d;\n", bb->index, e->dest->index);
       }
@@ -235,52 +234,29 @@ dot_all_scops_1 (FILE *file, vec<scop_p> scops)
   dump_flags = tmp_dump_flags;
 }
 
-/* Display all SCoPs using dotty.  */
+/* Display SCoP on stderr.  */
 
 DEBUG_FUNCTION void
-dot_all_scops (vec<scop_p> scops)
+dot_sese (sese_l& scop)
 {
-  /* When debugging, enable the following code.  This cannot be used
-     in production compilers because it calls "system".  */
-#if 0
-  int x;
-  FILE *stream = fopen ("/tmp/allscops.dot", "w");
-  gcc_assert (stream);
-
-  dot_all_scops_1 (stream, scops);
-  fclose (stream);
-
-  x = system ("dotty /tmp/allscops.dot &");
-#else
-  dot_all_scops_1 (stderr, scops);
-#endif
-}
-
-/* Display all SCoPs using dotty.  */
-
-DEBUG_FUNCTION void
-dot_scop (scop_p scop)
-{
-  auto_vec<scop_p, 1> scops;
+  vec<sese_l> scops;
+  scops.create (1);
 
   if (scop)
     scops.safe_push (scop);
 
-  /* When debugging, enable the following code.  This cannot be used
-     in production compilers because it calls "system".  */
-#if 0
-  {
-    int x;
-    FILE *stream = fopen ("/tmp/allscops.dot", "w");
-    gcc_assert (stream);
+  dot_all_sese (stderr, scops);
 
-    dot_all_scops_1 (stream, scops);
-    fclose (stream);
-    x = system ("dotty /tmp/allscops.dot &");
-  }
-#else
-  dot_all_scops_1 (stderr, scops);
-#endif
+  scops.release ();
+}
+
+DEBUG_FUNCTION void
+dot_cfg ()
+{
+  vec<sese_l> scops;
+  scops.create (1);
+  dot_all_sese (stderr, scops);
+  scops.release ();
 }
 
 /* Return true if BB is empty, contains only DEBUG_INSNs.  */
@@ -552,9 +528,20 @@ public:
 
   static edge get_nearest_pdom_with_single_exit (basic_block dom);
 
-  /* Print S to FILE.  */
 
-  static void print_sese (FILE *file, sese_l s);
+  /* Pretty printers.  */
+
+  static void print_edge (FILE *file, const_edge e)
+  {
+    fprintf (file, "edge (bb_%d, bb_%d)", e->src->index, e->dest->index);
+  }
+
+  static void print_sese (FILE *file, sese_l s)
+  {
+    fprintf (file, "(entry_"); print_edge (file, s.entry);
+    fprintf (file, ", exit_"); print_edge (file, s.exit);
+    fprintf (file, ")\n");
+  }
 
   /* Merge scops at same loop depth and returns the new sese.
      Returns a new SESE when merge was successful, INVALID_SESE otherwise.  */
@@ -717,9 +704,14 @@ scop_detection::get_nearest_dom_with_single_entry (basic_block dom)
     {
       edge e1 = (*dom->preds)[0];
       edge e2 = (*dom->preds)[1];
-      if (dominated_by_p (CDI_DOMINATORS, e2->src, e1->src))
+      loop_p l = dom->loop_father;
+      loop_p l1 = e1->src->loop_father;
+      loop_p l2 = e2->src->loop_father;
+      if (l != l1
+	  && dominated_by_p (CDI_DOMINATORS, e2->src, e1->src))
 	return e1;
-      if (dominated_by_p (CDI_DOMINATORS, e1->src, e2->src))
+      if (l != l2
+	  && dominated_by_p (CDI_DOMINATORS, e1->src, e2->src))
 	return e2;
     }
 
@@ -738,39 +730,35 @@ scop_detection::get_nearest_dom_with_single_entry (basic_block dom)
    back-loop the back-edge is not counted.  */
 
 edge
-scop_detection::get_nearest_pdom_with_single_exit (basic_block dom)
+scop_detection::get_nearest_pdom_with_single_exit (basic_block pdom)
 {
-  if (!dom->succs)
+  if (!pdom->succs)
     return NULL;
-  if (dom->succs->length () == 2)
+  if (pdom->succs->length () == 2)
     {
-      edge e1 = (*dom->succs)[0];
-      edge e2 = (*dom->succs)[1];
-      if (dominated_by_p (CDI_POST_DOMINATORS, e2->dest, e1->dest))
+      edge e1 = (*pdom->succs)[0];
+      edge e2 = (*pdom->succs)[1];
+      loop_p l = pdom->loop_father;
+      loop_p l1 = e1->dest->loop_father;
+      loop_p l2 = e2->dest->loop_father;
+      if (l != l1
+	  && dominated_by_p (CDI_POST_DOMINATORS, e2->dest, e1->dest))
 	return e1;
-      if (dominated_by_p (CDI_POST_DOMINATORS, e1->dest, e2->dest))
+      if (l != l2
+	  && dominated_by_p (CDI_POST_DOMINATORS, e1->dest, e2->dest))
 	return e2;
     }
 
-  while (dom->succs->length () != 1)
+  while (pdom->succs->length () != 1)
     {
-      if (dom->succs->length () < 1)
+      if (pdom->succs->length () < 1)
 	return NULL;
-      dom = get_immediate_dominator (CDI_POST_DOMINATORS, dom);
-      if (!dom->succs)
+      pdom = get_immediate_dominator (CDI_POST_DOMINATORS, pdom);
+      if (!pdom->succs)
 	return NULL;
     }
-  return (*dom->succs)[0];
-}
 
-/* Print S to FILE.  */
-
-void
-scop_detection::print_sese (FILE *file, sese_l s)
-{
-  fprintf (file, "(entry_edge (bb_%d, bb_%d), exit_edge (bb_%d, bb_%d))\n",
-           s.entry->src->index, s.entry->dest->index,
-           s.exit->src->index, s.exit->dest->index);
+  return (*pdom->succs)[0];
 }
 
 /* Merge scops at same loop depth and returns the new sese.
@@ -814,6 +802,9 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
     return invalid_sese;
 
   sese_l combined (entry, exit);
+
+  DEBUG_PRINT (dp << "checking combined sese: ";
+	       print_sese (dump_file, combined));
 
   /* FIXME: We could iterate to find the dom which dominates pdom, and pdom
      which post-dominates dom, until it stabilizes.  Also, ENTRY->SRC and

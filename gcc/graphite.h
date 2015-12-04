@@ -465,7 +465,7 @@ extern bool build_poly_scop (scop_p);
 extern bool graphite_regenerate_ast_isl (scop_p);
 
 extern void build_scops (vec<scop_p> *);
-extern void dot_all_scops (vec<scop_p>);
-extern void dot_scop (scop_p);
-
+extern void dot_all_sese (FILE *, vec<sese_l> &);
+extern void dot_sese (sese_l &);
+extern void dot_cfg ();
 #endif
