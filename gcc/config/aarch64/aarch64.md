@@ -104,6 +104,7 @@
     UNSPEC_MB
     UNSPEC_NOP
     UNSPEC_PRLG_STK
+    UNSPEC_PROBE_STACK_RANGE
     UNSPEC_RBIT
     UNSPEC_SISD_NEG
     UNSPEC_SISD_SSHL
@@ -137,6 +138,7 @@
     UNSPECV_SET_FPCR		; Represent assign of FPCR content.
     UNSPECV_GET_FPSR		; Represent fetch of FPSR content.
     UNSPECV_SET_FPSR		; Represent assign of FPSR content.
+    UNSPECV_BLOCKAGE		; Represent a blockage
   ]
 )
 
@@ -4949,6 +4951,29 @@
   ""
   ""
   [(set_attr "length" "0")]
+)
+
+;; UNSPEC_VOLATILE is considered to use and clobber all hard registers and
+;; all of memory.  This blocks insns from being moved across this point.
+
+(define_insn "blockage"
+  [(unspec_volatile [(const_int 0)] UNSPECV_BLOCKAGE)]
+  ""
+  ""
+  [(set_attr "length" "0")
+   (set_attr "type" "block")]
+)
+
+(define_insn "probe_stack_range_<PTR:mode>"
+  [(set (match_operand:PTR 0 "register_operand" "=r")
+	(unspec_volatile:PTR [(match_operand:PTR 1 "register_operand" "0")
+			      (match_operand:PTR 2 "register_operand" "r")]
+			       UNSPEC_PROBE_STACK_RANGE))]
+  ""
+{
+  return aarch64_output_probe_stack_range (operands[0], operands[2]);
+}
+  [(set_attr "length" "32")]
 )
 
 ;; Named pattern for expanding thread pointer reference.

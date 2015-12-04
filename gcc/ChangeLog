@@ -1,3 +1,21 @@
+2015-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+            Tristan Gingold  <gingold@adacore.com>
+
+	PR middle-end/65958
+	* config/aarch64/aarch64-protos.h (aarch64_output_probe_stack-range):
+	Declare.
+	* config/aarch64/aarch64.md: Declare UNSPECV_BLOCKAGE and
+	UNSPEC_PROBE_STACK_RANGE.
+	(blockage): New instruction.
+	(probe_stack_range_<PTR:mode>): Likewise.
+	* config/aarch64/aarch64.c (aarch64_emit_probe_stack_range): New
+	function.
+	(aarch64_output_probe_stack_range): Likewise.
+	(aarch64_expand_prologue): Invoke aarch64_emit_probe_stack_range if
+	static builtin stack checking is enabled.
+	* config/aarch64/aarch64-linux.h (STACK_CHECK_STATIC_BUILTIN):
+	Define to 1.
+
 2015-12-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/68214
