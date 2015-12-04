@@ -1,4 +1,14 @@
-2015-11-25  Nick Clifton  <nickc@redhat.com>
+2015-12-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* (cstore<mode>4_unsigned): Use gpc_reg_operand instead of
+	register_operand.  Remove empty constraints.  Use std::swap.
+	(cstore_si_as_di, cstore<mode>4_signed_imm,
+	cstore<mode>4_unsigned_imm, cstore<mode>4 for GPR): Use
+	gpc_reg_operand instead of register_operand.
+	(cstore<mode>4 for FP): Use gpc_reg_operand instead of
+	register_operand.  Remove empty constraints.
+
+2015-12-04  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc (extra_gcc_objs): Define for MSP430.
         * common/config/msp430/msp430-common.c (msp430_handle_option):
