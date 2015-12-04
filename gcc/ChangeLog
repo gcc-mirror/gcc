@@ -1,3 +1,12 @@
+2015-12-04  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Backport from mainline
+	2015-12-01  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/rs6000/freebsd64.h (ELFv2_ABI_CHECK): Add new macro.
+	(SUBSUBTARGET_OVERRIDE_OPTIONS): Use it to decide whether to set
+	rs6000_current_abi to ABI_AIX or ABI_ELFv2.
+
 2015-12-04  Richard Biener  <rguenther@suse.de>
 
 	* BASE-VER: Set to 5.3.1.
