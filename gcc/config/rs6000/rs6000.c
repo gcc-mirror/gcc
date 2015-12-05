@@ -32910,7 +32910,7 @@ rs6000_emit_swdiv (rtx dst, rtx n, rtx d, bool note_p)
    rsqrt.  Assumes no trapping math and finite arguments.  */
 
 void
-rs6000_emit_swrsqrt (rtx dst, rtx src)
+rs6000_emit_swsqrt (rtx dst, rtx src, bool recip)
 {
   machine_mode mode = GET_MODE (src);
   rtx x0 = gen_reg_rtx (mode);
@@ -32943,6 +32943,16 @@ rs6000_emit_swrsqrt (rtx dst, rtx src)
   emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, src),
 					      UNSPEC_RSQRT)));
 
+  /* If (src == 0.0) filter infinity to prevent NaN for sqrt(0.0).  */
+  if (!recip)
+    {
+      rtx zero = force_reg (mode, CONST0_RTX (mode));
+      rtx target = emit_conditional_move (x0, GT, src, zero, mode,
+					  x0, zero, mode, 0);
+      if (target != x0)
+	emit_move_insn (x0, target);
+    }
+
   /* y = 0.5 * src = 1.5 * src - src -> fewer constants */
   rs6000_emit_msub (y, src, halfthree, src);
 
@@ -32959,7 +32969,12 @@ rs6000_emit_swrsqrt (rtx dst, rtx src)
       x0 = x1;
     }
 
-  emit_move_insn (dst, x0);
+  /* If not reciprocal, multiply by src to produce sqrt.  */
+  if (!recip)
+    emit_insn (gen_mul (dst, src, x0));
+  else
+    emit_move_insn (dst, x0);
+
   return;
 }
 

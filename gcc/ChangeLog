@@ -1,3 +1,14 @@
+2015-12-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/68609
+	* config/rs6000/rs6000-protos.h (rs6000_emit_swsqrt): Rename and add
+	bool arguement.
+	* config/rs6000/rs6000.c (rs6000_emit_swsqrt): Rename. Add
+	non-reciporcal path.
+	* config/rs6000/rs6000.md (rsqrt<mode>2): Call new function name.
+	(sqrt<mode>2): Replace define_insn with define_expand that may call
+	rs6000_emit_swsqrt.
+	
 2015-12-04  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
