@@ -4817,6 +4817,9 @@ ok:
       goto cleanup;
     }
 
+  /* gfc_error_now used in following and return with MATCH_YES because
+     doing otherwise results in a cascade of extraneous errors and in
+     some cases an ICE in symbol.c(gfc_release_symbol).  */
   if (progname->attr.module_procedure && progname->attr.host_assoc)
     {
       bool arg_count_mismatch = false;
@@ -4826,7 +4829,7 @@ ok:
 
       /* Abbreviated module procedure declaration is not meant to have any
 	 formal arguments!  */
-      if (!sym->abr_modproc_decl && formal && !head)
+      if (!progname->abr_modproc_decl && formal && !head)
 	arg_count_mismatch = true;
 
       for (p = formal, q = head; p && q; p = p->next, q = q->next)
