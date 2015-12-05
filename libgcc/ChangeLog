@@ -1,3 +1,12 @@
+2015-12-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	Backport from mainline:
+	2015-12-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/fptr.c (__canonicalize_funcptr_for_compare): Initialize
+	fixup values if saved GOT address doesn't match runtime address.
+	(fixup_branch_offset): Reorder list.
+
 2015-12-04  Release Manager
 
 	* GCC 5.3.0 released.
