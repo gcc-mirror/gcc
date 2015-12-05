@@ -938,7 +938,7 @@ snprintf (buffer, size, "%+-#.*Le", (prec), (val))
 
 #if defined(GFC_REAL_16_IS_FLOAT128)
 #define DTOA2Q(prec,val)							\
-__qmath_(quadmath_snprintf) (buffer, size, "%+-#.*Qe", (prec), (val))
+quadmath_snprintf (buffer, size, "%+-#.*Qe", (prec), (val))
 #endif
 
 #define FDTOA(suff,prec,val) TOKENPASTE(FDTOA2,suff)(prec,val)
@@ -953,7 +953,7 @@ snprintf (buffer, size, "%+-#.*Lf", (prec), (val))
 
 #if defined(GFC_REAL_16_IS_FLOAT128)
 #define FDTOA2Q(prec,val)			       \
-__qmath_(quadmath_snprintf) (buffer, size, "%+-#.*Qf", \
+quadmath_snprintf (buffer, size, "%+-#.*Qf", \
 			     (prec), (val))
 #endif
 

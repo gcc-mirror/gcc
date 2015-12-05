@@ -1,3 +1,9 @@
+2015-12-05  Juoko Orava <jouko.orava@iki.fi>
+
+	PR fortran/50201
+	* io/write_float.def: Avoid marking quadmath_snprintf as an untyped
+	weak reference, which fixing linking with -static.
+
 2015-12-04  Release Manager
 
 	* GCC 5.3.0 released.
