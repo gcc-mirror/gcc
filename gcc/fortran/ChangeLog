@@ -1,3 +1,9 @@
+2015-12-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68676
+	* decl.c (gfc_match_formal_arglist): Correct error, where 'sym'
+	was used instead of 'progname'.
+
 2015-12-02  Tobias Burnus  <burnus@net-b.de>
 	    Alessandro Fanfarillo <fanfarillo.gcc@gmail.com>
 
