@@ -1,3 +1,8 @@
+2015-12-06  Piotr Trojanek  <piotr.trojanek@gmail.com>
+
+	PR ada/60164
+	* doc/gnat_ugn/gnat_and_program_execution.rst (gnatmem): Fix typo.
+
 2015-12-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/50048
