@@ -1359,7 +1359,9 @@ sem_function::merge (sem_item *alias_item)
     {
       if (dump_file)
 	fprintf (dump_file, "Dropping merged_comdat flag.\n\n");
-      local_original->merged_comdat = original->merged_comdat = false;
+      if (local_original)
+        local_original->merged_comdat = false;
+      original->merged_comdat = false;
     }
 
   if (remove)

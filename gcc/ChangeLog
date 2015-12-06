@@ -1,3 +1,7 @@
+2015-12-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-icf.c (sem_function::merge): Check that local_original exists.
+
 2015-12-05  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/68609
