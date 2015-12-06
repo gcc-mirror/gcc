@@ -1,5 +1,20 @@
 2015-12-06  Ludovic Brenta  <ludovic@ludovic-brenta.org>
 
+	PR ada/49944
+	* s-osinte-freebsd.ads: Minor reformatting.
+	(Stack_Base_Available): Correct comments.
+	* s-osinte-kfreebsd-gnu.ads (Time_Slice_Supported, nanosleep,
+	clock_id_t, clock_gettime, Stack_Base_Available, Get_Page_Size,
+	mprotect, pthread_mutexattr_setprotocol,pthread_mutexattr_getprotocol
+	pthread_mutexattr_setprioceiling, pthread_mutexattr_getprioceiling,
+	pthread_attr_setscope, pthread_attr_getscope,
+	pthread_attr_setinheritsched, pthread_attr_getinheritsched,
+	Time_Slice_Supported): Copy from s-osinte-freebsd.ads.
+	* gcc-interface/Makefile.in (x86/kfreebsd): Use the POSIX version of
+	the System.Task_Primitives.Operations package.
+
+2015-12-06  Ludovic Brenta  <ludovic@ludovic-brenta.org>
+
 	PR ada/49940
 	* s-osinte-kfreebsd-gnu.ads (lwp_self): New imported function.
 
