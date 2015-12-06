@@ -1,3 +1,7 @@
+2015-12-06  Tobias Burnus  <burnus@net-b.de>
+
+	* download_prerequisites: Download ISL 0.15 instead of 0.14.
+
 2015-11-20  Martin Liska  <mliska@suse.cz>
 
 	* clang-format: Split content of a list to multiple
