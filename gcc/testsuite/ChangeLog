@@ -1,3 +1,14 @@
+2015-12-06  Victoria Stepanyan  <victoria.stepanyan@amd.com>
+
+	* gcc.target/i386/clzero.c: New.
+	* gcc.target/i386/sse-12.c: Add -mclzero.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+
 2015-12-05  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/recip-sqrtf.c: New test.

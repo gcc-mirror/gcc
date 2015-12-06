@@ -2501,6 +2501,7 @@ static rtx (*ix86_gen_sub3_carry) (rtx, rtx, rtx, rtx, rtx);
 static rtx (*ix86_gen_one_cmpl2) (rtx, rtx);
 static rtx (*ix86_gen_monitor) (rtx, rtx, rtx);
 static rtx (*ix86_gen_monitorx) (rtx, rtx, rtx);
+static rtx (*ix86_gen_clzero) (rtx);
 static rtx (*ix86_gen_andsp) (rtx, rtx, rtx);
 static rtx (*ix86_gen_allocate_stack_worker) (rtx, rtx);
 static rtx (*ix86_gen_adjust_stack_and_probe) (rtx, rtx, rtx);
@@ -5370,6 +5371,7 @@ ix86_option_override_internal (bool main_args_p,
       ix86_gen_probe_stack_range = gen_probe_stack_rangedi;
       ix86_gen_monitor = gen_sse3_monitor_di;
       ix86_gen_monitorx = gen_monitorx_di;
+      ix86_gen_clzero = gen_clzero_di;
     }
   else
     {
@@ -5383,6 +5385,7 @@ ix86_option_override_internal (bool main_args_p,
       ix86_gen_probe_stack_range = gen_probe_stack_rangesi;
       ix86_gen_monitor = gen_sse3_monitor_si;
       ix86_gen_monitorx = gen_monitorx_si;
+      ix86_gen_clzero = gen_clzero_si;
     }
 
 #ifdef USE_IX86_CLD
@@ -5915,6 +5918,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("clwb",	OPT_mclwb),
     IX86_ATTR_ISA ("pcommit",	OPT_mpcommit),
     IX86_ATTR_ISA ("mwaitx",	OPT_mmwaitx),
+    IX86_ATTR_ISA ("clzero",    OPT_mclzero),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -30009,6 +30013,7 @@ enum ix86_builtins
 
   IX86_BUILTIN_MONITOR,
   IX86_BUILTIN_MWAIT,
+  IX86_BUILTIN_CLZERO,
 
   /* SSSE3.  */
   IX86_BUILTIN_PHADDW,
@@ -35893,6 +35898,10 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (OPTION_MASK_ISA_MWAITX, "__builtin_ia32_mwaitx",
 	       VOID_FTYPE_UNSIGNED_UNSIGNED_UNSIGNED, IX86_BUILTIN_MWAITX);
 
+  /* CLZERO.  */
+  def_builtin (OPTION_MASK_ISA_CLZERO, "__builtin_ia32_clzero",
+               VOID_FTYPE_PCVOID, IX86_BUILTIN_CLZERO);
+
   /* Add FMA4 multi-arg argument instructions */
   for (i = 0, d = bdesc_multi_arg; i < ARRAY_SIZE (bdesc_multi_arg); i++, d++)
     {
@@ -40661,6 +40670,14 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       if (!REG_P (op2))
 	op2 = copy_to_mode_reg (SImode, op2);
       emit_insn (gen_mwaitx (op0, op1, op2));
+      return 0;
+
+    case IX86_BUILTIN_CLZERO:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = expand_normal (arg0);
+      if (!REG_P (op0))
+	op0 = ix86_zero_extend_to_Pmode (op0);
+      emit_insn (ix86_gen_clzero (op0));
       return 0;
 
     case IX86_BUILTIN_VEC_INIT_V2SI:

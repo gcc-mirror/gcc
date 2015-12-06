@@ -1,3 +1,32 @@
+2015-12-06  Victoria Stepanyan  <victoria.stepanyan@amd.com>
+
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_CLZERO_SET): New.
+	(ix86_handle_option): Handle clzero.
+	* config.gcc (i[34567]86-*-*): Add clzerointrin.h,
+	(x86_64-*-*): Likewise.
+	* config/i386/clzerointrin.h: New header.
+	* config/i386/cpuid.h (bit_CLZERO):  Define.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	CLZERO support.
+	* config/i386/i386.opt (clzero): New.
+	* config/i386/i386-c.c: Define __CLZERO__ if needed.
+	* config/i386/i386.c (ix86_target_string): Define -mclzero option.
+	(PTA_CLZERO): New.
+	(ix86_option_override_internal): Handle new option.
+	(processor_alias_table): Added PTA_CLZERO.
+	(ix86_valid_target_attribute_inner_p): Add OPT_mclzero.
+	(ix86_builtins): Add IX86_BUILTIN_CLZERO, IX86_BUILTIN_CLZERO.
+	(ix86_expand_builtin): Handle IX86_BUILTIN_CLZERO and
+	IX86_BUILTIN_CLZERO  built-ins.
+	* config/i386/i386.h (TARGET_CLZERO):  New.
+	* config/i386/i386.md (unspecv): Add UNSPEC_CLZERO.
+	(clzero):  New pattern.
+	(clzero_<mode>): New pattern.
+	* config/i386/x86intrin.h: Include clzerointrin.h.
+	* doc/extend.texi: Document clzero builtins.
+	* doc/invoke.texi: Document -mclzero option.
+
 2015-12-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-icf.c (sem_function::merge): Check that local_original exists.
