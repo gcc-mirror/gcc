@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --               Copyright (C) 1991-1994, Florida State University          --
---            Copyright (C) 1995-2014, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2015, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -235,6 +235,16 @@ package System.OS_Interface is
 
    function getpid return pid_t;
    pragma Import (C, getpid, "getpid");
+
+   ---------
+   -- LWP --
+   ---------
+
+   function lwp_self return System.Address;
+   --  lwp_self does not exist on this thread library, revert to pthread_self
+   --  which is the closest approximation (with getpid). This function is
+   --  needed to share 7staprop.adb across POSIX-like targets.
+   pragma Import (C, lwp_self, "pthread_self");
 
    -------------
    -- Threads --
