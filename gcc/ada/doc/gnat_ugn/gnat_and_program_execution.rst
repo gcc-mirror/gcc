@@ -3872,7 +3872,7 @@ execution of this erroneous program:
   it to obtain accurate dynamic memory usage history at a minimal cost to the
   execution speed. Note however, that `gnatmem` is not supported on all
   platforms (currently, it is supported on AIX, HP-UX, GNU/Linux, Solaris and
-  Windows NT/2000/XP (x86).
+  Windows NT/2000/XP (x86)).
 
   The `gnatmem` command has the form
 
