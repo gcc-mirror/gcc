@@ -751,10 +751,6 @@ mclflushopt
 Target Report Mask(ISA_CLFLUSHOPT) Var(ix86_isa_flags) Save
 Support CLFLUSHOPT instructions.
 
-mclzero
-Target Report Mask(ISA_CLZERO) Var(ix86_isa_flags) Save
-Support CLZERO instructions.
-
 mclwb
 Target Report Mask(ISA_CLWB) Var(ix86_isa_flags) Save
 Support CLWB instruction.
@@ -875,6 +871,10 @@ Support MPX code generation.
 mmwaitx
 Target Report Mask(ISA_MWAITX) Var(ix86_isa_flags) Save
 Support MWAITX and MONITORX built-in functions and code generation.
+
+mclzero
+Target Report Mask(ISA_CLZERO) Var(ix86_isa_flags) Save
+Support CLZERO built-in functions and code generation.
 
 mstack-protector-guard=
 Target RejectNegative Joined Enum(stack_protector_guard) Var(ix86_stack_protector_guard) Init(SSP_TLS)

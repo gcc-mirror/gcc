@@ -18337,6 +18337,12 @@ void __builtin_ia32_monitorx (void *, unsigned int, unsigned int)
 void __builtin_ia32_mwaitx (unsigned int, unsigned int, unsigned int)
 @end smallexample
 
+The following built-in functions are available when @option{-mclzero} is used.
+All of them generate the machine instruction that is part of the name.
+@smallexample
+void __builtin_i32_clzero (void *)
+@end smallexample
+
 @node x86 transactional memory intrinsics
 @subsection x86 Transactional Memory Intrinsics
 

@@ -93,6 +93,8 @@
 
 #include <mwaitxintrin.h>
 
+#include <clzerointrin.h>
+
 #endif /* __iamcu__ */
 
 #endif /* _X86INTRIN_H_INCLUDED */
