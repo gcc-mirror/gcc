@@ -1,5 +1,10 @@
 2015-12-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/50048
+	* gcc-interface/Makefile.in (INCLUDES): Use -iquote.
+
+2015-12-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/56274
 	* s-osinte-kfreebsd-gnu.ads (pthread_rwlock_t): New subtype.
 	(pthread_rwlockattr_t): Likewise.
