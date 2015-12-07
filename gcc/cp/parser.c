@@ -1008,6 +1008,28 @@ cp_lexer_next_token_is_decltype (cp_lexer *lexer)
   return token_is_decltype (t);
 }
 
+/* Called when processing a token with tree_check_value; perform or defer the
+   associated checks and return the value.  */
+
+static tree
+saved_checks_value (struct tree_check *check_value)
+{
+  /* Perform any access checks that were deferred.  */
+  vec<deferred_access_check, va_gc> *checks;
+  deferred_access_check *chk;
+  checks = check_value->checks;
+  if (checks)
+    {
+      int i;
+      FOR_EACH_VEC_SAFE_ELT (checks, i, chk)
+	perform_or_defer_access_check (chk->binfo,
+				       chk->decl,
+				       chk->diag_decl, tf_warning_or_error);
+    }
+  /* Return the stored value.  */
+  return check_value->value;
+}
+
 /* Return a pointer to the Nth token in the token stream.  If N is 1,
    then this is precisely equivalent to cp_lexer_peek_token (except
    that it is not inline).  One would like to disallow that case, but
@@ -5818,7 +5840,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	      token = cp_lexer_consume_token (parser->lexer);
 	      error_at (token->location, "decltype evaluates to %qT, "
 			"which is not a class or enumeration type",
-			token->u.value);
+			token->u.tree_check_value->value);
 	      parser->scope = error_mark_node;
 	      error_p = true;
 	      /* As below.  */
@@ -13016,7 +13038,7 @@ cp_parser_decltype (cp_parser *parser)
     {
       /* Already parsed.  */
       cp_lexer_consume_token (parser->lexer);
-      return start_token->u.value;
+      return saved_checks_value (start_token->u.tree_check_value);
     }
 
   /* Look for the `decltype' token.  */
@@ -13101,7 +13123,9 @@ cp_parser_decltype (cp_parser *parser)
   /* Replace the decltype with a CPP_DECLTYPE so we don't need to parse
      it again.  */
   start_token->type = CPP_DECLTYPE;
-  start_token->u.value = expr;
+  start_token->u.tree_check_value = ggc_cleared_alloc<struct tree_check> ();
+  start_token->u.tree_check_value->value = expr;
+  start_token->u.tree_check_value->checks = get_deferred_access_checks ();
   start_token->keyword = RID_MAX;
   cp_lexer_purge_tokens_after (parser->lexer, start_token);
 
@@ -14617,13 +14641,10 @@ cp_parser_template_id (cp_parser *parser,
 		       enum tag_types tag_type,
 		       bool is_declaration)
 {
-  int i;
   tree templ;
   tree arguments;
   tree template_id;
   cp_token_position start_of_id = 0;
-  deferred_access_check *chk;
-  vec<deferred_access_check, va_gc> *access_check;
   cp_token *next_token = NULL, *next_token_2 = NULL;
   bool is_identifier;
 
@@ -14632,22 +14653,8 @@ cp_parser_template_id (cp_parser *parser,
   next_token = cp_lexer_peek_token (parser->lexer);
   if (next_token->type == CPP_TEMPLATE_ID)
     {
-      struct tree_check *check_value;
-
-      /* Get the stored value.  */
-      check_value = cp_lexer_consume_token (parser->lexer)->u.tree_check_value;
-      /* Perform any access checks that were deferred.  */
-      access_check = check_value->checks;
-      if (access_check)
-	{
-	  FOR_EACH_VEC_ELT (*access_check, i, chk)
-	    perform_or_defer_access_check (chk->binfo,
-					   chk->decl,
-					   chk->diag_decl,
-					   tf_warning_or_error);
-	}
-      /* Return the stored value.  */
-      return check_value->value;
+      cp_lexer_consume_token (parser->lexer);
+      return saved_checks_value (next_token->u.tree_check_value);
     }
 
   /* Avoid performing name lookup if there is no possibility of
@@ -15999,7 +16006,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
   if (token->type == CPP_DECLTYPE
       && cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_SCOPE)
     {
-      type = token->u.value;
+      type = saved_checks_value (token->u.tree_check_value);
       if (decl_specs)
 	{
 	  cp_parser_set_decl_spec_type (decl_specs, type,
@@ -27042,24 +27049,12 @@ cp_parser_optional_template_keyword (cp_parser *parser)
 static void
 cp_parser_pre_parsed_nested_name_specifier (cp_parser *parser)
 {
-  int i;
   struct tree_check *check_value;
-  deferred_access_check *chk;
-  vec<deferred_access_check, va_gc> *checks;
 
   /* Get the stored value.  */
   check_value = cp_lexer_consume_token (parser->lexer)->u.tree_check_value;
-  /* Perform any access checks that were deferred.  */
-  checks = check_value->checks;
-  if (checks)
-    {
-      FOR_EACH_VEC_SAFE_ELT (checks, i, chk)
-	perform_or_defer_access_check (chk->binfo,
-				       chk->decl,
-				       chk->diag_decl, tf_warning_or_error);
-    }
   /* Set the scope from the stored value.  */
-  parser->scope = check_value->value;
+  parser->scope = saved_checks_value (check_value);
   parser->qualifying_scope = check_value->qualifying_scope;
   parser->object_scope = NULL_TREE;
 }
