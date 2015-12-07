@@ -17,6 +17,7 @@
 # <http://www.gnu.org/licenses/>.
 
 load_lib gcc-dg.exp
+load_lib asan-dg.exp
 load_lib torture-options.exp
 
 dg-init

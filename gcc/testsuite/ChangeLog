@@ -1,3 +1,8 @@
+2015-12-06  Dmitry Vyukov  <dvyukov@google.com>
+
+	* gcc.dg/sancov/sancov.exp: Load asan-dg.exp.
+	* gcc.dg/sancov/asan.c: Don't run when asan is not available.
+
 2015-12-07  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.target/nvptx/decl-init.c: New.
