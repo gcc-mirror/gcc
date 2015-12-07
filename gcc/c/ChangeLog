@@ -1,3 +1,9 @@
+2015-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68668
+	* c-decl.c (grokdeclarator): If ORIG_QUAL_INDIRECT is indirect, use
+	TREE_TYPE of ORIG_QUAL_TYPE, otherwise decrement ORIG_QUAL_INDIRECT.
+
 2015-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-tree.h (c_build_va_arg): Adjust prototype.

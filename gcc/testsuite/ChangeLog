@@ -1,3 +1,8 @@
+2015-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68668
+	* gcc.dg/pr68668.c: New test.
+
 2015-12-07  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* gcc.target/i386/pr68349.c (strlen): Rename to my_strlen.
