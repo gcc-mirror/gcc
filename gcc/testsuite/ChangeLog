@@ -1,3 +1,8 @@
+2015-12-07  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/68633
+	* gcc.target/i386/pr68633.c: New test.
+
 2015-12-06  Victoria Stepanyan  <victoria.stepanyan@amd.com>
 
 	* gcc.target/i386/clzero.c: New.
