@@ -1,5 +1,11 @@
 2015-12-07  Kirill Yukhin  <kirill.yukhin@intel.com>
 
+	PR target/68627
+	* config/i386/sse.md: Make 'v' alternative work on 'avx512f' ISA only.
+	Force destination to 512 bits register.
+
+2015-12-07  Kirill Yukhin  <kirill.yukhin@intel.com>
+
 	PR target/68633
 	* config/i386/sse.md (define_insn "kunpckhi"): Fix operands order.
 	(define_insn "kunpcksi"): Ditto.

@@ -1,5 +1,10 @@
 2015-12-07  Kirill Yukhin  <kirill.yukhin@intel.com>
 
+	PR target/68627
+	* gfortran.dg/pr68627.f: New test.
+
+2015-12-07  Kirill Yukhin  <kirill.yukhin@intel.com>
+
 	PR target/68633
 	* gcc.target/i386/pr68633.c: New test.
 
