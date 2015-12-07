@@ -1,3 +1,7 @@
+2015-12-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* fold-const.c (operand_equal_p): Drp flag_strict_aliasing check.
+
 2015-12-07  Nathan Sidwell  <nathan@acm.org>
 
 	* config//nvptx/nvptx.c (write_return): New.
