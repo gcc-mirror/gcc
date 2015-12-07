@@ -1,3 +1,9 @@
+2015-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66726
+	* g++.dg/tree-ssa/pr66726.c: Renamed to...
+	* g++.dg/tree-ssa/pr66726.C: ... this.
+
 2015-12-07  Steve Ellcey  <sellcey@imgtec.com>
 
 	* gcc.target/mips/wrap-delay.c: New test.
