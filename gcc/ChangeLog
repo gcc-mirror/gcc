@@ -1,3 +1,7 @@
+2015-12-06  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (rsqrtsf2): Adjust for canonical form with unspec.
+
 2015-12-06  Victoria Stepanyan  <victoria.stepanyan@amd.com>
 
 	* common/config/i386/i386-common.c
