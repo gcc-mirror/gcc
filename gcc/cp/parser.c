@@ -178,6 +178,22 @@ enum required_token {
   RT_TRANSACTION_CANCEL /* __transaction_cancel */
 };
 
+/* RAII wrapper for parser->in_type_id_in_expr_p, setting it on creation and
+   reverting it on destruction.  */
+
+class type_id_in_expr_sentinel
+{
+  cp_parser *parser;
+  bool saved;
+public:
+  type_id_in_expr_sentinel (cp_parser *parser, bool set = true)
+    : parser (parser),
+      saved (parser->in_type_id_in_expr_p)
+  { parser->in_type_id_in_expr_p = set; }
+  ~type_id_in_expr_sentinel ()
+  { parser->in_type_id_in_expr_p = saved; }
+};
+
 /* Prototypes.  */
 
 static cp_lexer *cp_lexer_new_main
@@ -4888,7 +4904,10 @@ cp_parser_primary_expression (cp_parser *parser,
 	    cp_parser_require (parser, CPP_COMMA, RT_COMMA);
 	    type_location = cp_lexer_peek_token (parser->lexer)->location;
 	    /* Parse the type-id.  */
-	    type = cp_parser_type_id (parser);
+	    {
+	      type_id_in_expr_sentinel s (parser);
+	      type = cp_parser_type_id (parser);
+	    }
 	    /* Look for the closing `)'.  */
 	    location_t finish_loc
 	      = cp_lexer_peek_token (parser->lexer)->location;
@@ -7907,7 +7926,10 @@ cp_parser_new_expression (cp_parser* parser)
       /* Parse the type-id.  */
       parser->type_definition_forbidden_message
 	= G_("types may not be defined in a new-expression");
-      type = cp_parser_type_id (parser);
+      {
+	type_id_in_expr_sentinel s (parser);
+	type = cp_parser_type_id (parser);
+      }
       parser->type_definition_forbidden_message = saved_message;
 
       /* Look for the closing `)'.  */
@@ -9391,7 +9413,10 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
 
   cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
 
-  type1 = cp_parser_type_id (parser);
+  {
+    type_id_in_expr_sentinel s (parser);
+    type1 = cp_parser_type_id (parser);
+  }
 
   if (type1 == error_mark_node)
     return error_mark_node;
@@ -9400,7 +9425,10 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
     {
       cp_parser_require (parser, CPP_COMMA, RT_COMMA);
  
-      type2 = cp_parser_type_id (parser);
+      {
+	type_id_in_expr_sentinel s (parser);
+	type2 = cp_parser_type_id (parser);
+      }
 
       if (type2 == error_mark_node)
 	return error_mark_node;
@@ -12149,6 +12177,11 @@ cp_parser_simple_declaration (cp_parser* parser,
       && !cp_parser_error_occurred (parser))
     cp_parser_commit_to_tentative_parse (parser);
 
+  tree last_type, auto_node;
+
+  last_type = NULL_TREE;
+  auto_node = type_uses_auto (decl_specifiers.type);
+
   /* Keep going until we hit the `;' at the end of the simple
      declaration.  */
   saw_declarator = false;
@@ -12190,6 +12223,24 @@ cp_parser_simple_declaration (cp_parser* parser,
 	 otherwise.)  */
       if (cp_parser_error_occurred (parser))
 	goto done;
+
+      if (auto_node)
+	{
+	  tree type = TREE_TYPE (decl);
+	  if (last_type && !same_type_p (type, last_type))
+	    {
+	      /* If the list of declarators contains more than one declarator,
+		 the type of each declared variable is determined as described
+		 above. If the type deduced for the template parameter U is not
+		 the same in each deduction, the program is ill-formed.  */
+	      error_at (decl_specifiers.locations[ds_type_spec],
+			"inconsistent deduction for %qT: %qT and then %qT",
+			decl_specifiers.type, last_type, type);
+	      auto_node = NULL_TREE;
+	    }
+	  last_type = type;
+	}
+
       /* Handle function definitions specially.  */
       if (function_definition_p)
 	{
@@ -14188,10 +14239,19 @@ cp_parser_default_type_template_argument (cp_parser *parser)
   /* Consume the `=' token.  */
   cp_lexer_consume_token (parser->lexer);
 
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+
   /* Parse the default-argument.  */
   push_deferring_access_checks (dk_no_deferred);
   tree default_argument = cp_parser_type_id (parser);
   pop_deferring_access_checks ();
+
+  if (flag_concepts && type_uses_auto (default_argument))
+    {
+      error_at (token->location,
+		"invalid use of %<auto%> in default template argument");
+      return error_mark_node;
+    }
 
   return default_argument;
 }
@@ -15870,7 +15930,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 		     "use of %<auto%> in parameter declaration "
 		     "only available with "
 		     "-std=c++14 or -std=gnu++14");
-	  else
+	  else if (!flag_concepts)
 	    pedwarn (token->location, OPT_Wpedantic,
 		     "ISO C++ forbids use of %<auto%> in parameter "
 		     "declaration");
@@ -19647,7 +19707,7 @@ cp_parser_type_id_1 (cp_parser* parser, bool is_template_arg,
 
   if (type_specifier_seq.type
       /* The concepts TS allows 'auto' as a type-id.  */
-      && !flag_concepts
+      && (!flag_concepts || parser->in_type_id_in_expr_p)
       /* None of the valid uses of 'auto' in C++14 involve the type-id
 	 nonterminal, but it is valid in a trailing-return-type.  */
       && !(cxx_dialect >= cxx14 && is_trailing_return)
@@ -22875,8 +22935,17 @@ cp_parser_type_id_list (cp_parser* parser)
       cp_token *token;
       tree type;
 
+      token = cp_lexer_peek_token (parser->lexer);
+
       /* Get the next type-id.  */
       type = cp_parser_type_id (parser);
+      /* Check for invalid 'auto'.  */
+      if (flag_concepts && type_uses_auto (type))
+	{
+	  error_at (token->location,
+		    "invalid use of %<auto%> in exception-specification");
+	  type = error_mark_node;
+	}
       /* Parse the optional ellipsis. */
       if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
         {

@@ -4555,8 +4555,9 @@ check_tag_decl (cp_decl_specifier_seq *declspecs,
     permerror (input_location, "declaration does not declare anything");
   else if (declared_type != NULL_TREE && type_uses_auto (declared_type))
     {
-      error ("%<auto%> can only be specified for variables "
-	     "or function declarations");
+      error_at (declspecs->locations[ds_type_spec],
+		"%<auto%> can only be specified for variables "
+		"or function declarations");
       return error_mark_node;
     }
   /* Check for an anonymous union.  */

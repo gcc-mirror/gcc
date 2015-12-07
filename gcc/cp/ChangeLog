@@ -1,3 +1,18 @@
+2015-12-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68597, fix auto9.C and auto-neg1.C with -std=c++1z.
+	* decl.c (check_tag_decl): Use ds_type_spec in auto diagnostic.
+	* typeck.c (check_return_expr): Check for inconsistent deduction.
+	* parser.c (class type_id_in_expr_sentinel): New.
+	(cp_parser_primary_expression) [RID_VA_ARG]: Use it.
+	(cp_parser_new_expression): Use it.
+	(cp_parser_trait_expr): Use it.
+	(cp_parser_type_id_1): Complain about auto if in_type_id_in_expr_p.
+	(cp_parser_default_type_template_argument): Check for auto.
+	(cp_parser_type_id_list): Likewise.
+	(cp_parser_simple_type_specifier): Allow auto parms if flag_concepts.
+	* pt.c (do_auto_deduction): Handle erroneous type.
+
 2015-12-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68645
