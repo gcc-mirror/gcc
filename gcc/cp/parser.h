@@ -63,11 +63,13 @@ struct GTY (()) cp_token {
   location_t location;
   /* The value associated with this token, if any.  */
   union cp_token_value {
-    /* Used for CPP_NESTED_NAME_SPECIFIER and CPP_TEMPLATE_ID.  */
+    /* Used for compound tokens such as CPP_NESTED_NAME_SPECIFIER.  */
     struct tree_check* GTY((tag ("1"))) tree_check_value;
     /* Use for all other tokens.  */
     tree GTY((tag ("0"))) value;
-  } GTY((desc ("(%1.type == CPP_TEMPLATE_ID) || (%1.type == CPP_NESTED_NAME_SPECIFIER)"))) u;
+  } GTY((desc ("(%1.type == CPP_TEMPLATE_ID)"
+	       "|| (%1.type == CPP_NESTED_NAME_SPECIFIER)"
+	       "|| (%1.type == CPP_DECLTYPE)"))) u;
 };
 
 

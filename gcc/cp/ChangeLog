@@ -1,5 +1,14 @@
 2015-12-06  Jason Merrill  <jason@redhat.com>
 
+	* parser.h (struct cp_token): Tell GTY that CPP_DECLTYPE uses
+	tree_check_value.
+	* parser.c (cp_parser_decltype): Use tree_check_value.
+	(saved_checks_value): New.
+	(cp_parser_nested_name_specifier_opt): Use it.
+	(cp_parser_template_id): Use it.
+	(cp_parser_simple_type_specifier): Use it.
+	(cp_parser_pre_parsed_nested_name_specifier): Use it.
+
 	* semantics.c (finish_qualified_id_expr): Handle
 	UNBOUND_CLASS_TEMPLATE.
 
