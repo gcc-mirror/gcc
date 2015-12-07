@@ -184,10 +184,15 @@ set_rtl (tree t, rtx x)
 				      || SUBREG_P (XEXP (x, 0)))
 				  && (REG_P (XEXP (x, 1))
 				      || SUBREG_P (XEXP (x, 1))))
+			      /* We need to accept PARALLELs for RESUT_DECLs
+				 because of vector types with BLKmode returned
+				 in multiple registers, but they are supposed
+				 to be uncoalesced.  */
 			      || (GET_CODE (x) == PARALLEL
 				  && SSAVAR (t)
 				  && TREE_CODE (SSAVAR (t)) == RESULT_DECL
-				  && !flag_tree_coalesce_vars))
+				  && (GET_MODE (x) == BLKmode
+				      || !flag_tree_coalesce_vars)))
 			   : (MEM_P (x) || x == pc_rtx
 			      || (GET_CODE (x) == CONCAT
 				  && MEM_P (XEXP (x, 0))
