@@ -543,6 +543,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	      node->definition = false;
 	      node->cpp_implicit_alias = false;
 	      node->alias = false;
+	      node->transparent_alias = false;
 	      node->thunk.thunk_p = false;
 	      node->weakref = false;
 	      /* After early inlining we drop always_inline attributes on
