@@ -1,3 +1,10 @@
+2015-12-07  Evandro Menezes  <e.menezes@samsung.com>
+
+	* config/aarch64/aarch64-cores.def: Use the Exynos M1 sched model.
+	* config/aarch64/aarch64.md: Include "exynos-m1.md".
+	* config/arm/arm.md: Likewise.
+	* config/arm/exynos-m1.md: New file.
+
 2015-12-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* fold-const.c (operand_equal_p): Drp flag_strict_aliasing check.
