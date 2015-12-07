@@ -5148,15 +5148,16 @@ expand_function_start (tree subr)
       /* Compute the return values into a pseudo reg, which we will copy
 	 into the true return register after the cleanups are done.  */
       tree return_type = TREE_TYPE (res);
-      /* If we may coalesce this result, make sure it has the expected
-	 mode.  */
-      if (flag_tree_coalesce_vars && is_gimple_reg (res))
-	{
-	  tree def = ssa_default_def (cfun, res);
-	  gcc_assert (def);
-	  machine_mode mode = promote_ssa_mode (def, NULL);
-	  set_parm_rtl (res, gen_reg_rtx (mode));
-	}
+
+      /* If we may coalesce this result, make sure it has the expected mode
+	 in case it was promoted.  But we need not bother about BLKmode.  */
+      machine_mode promoted_mode
+	= flag_tree_coalesce_vars && is_gimple_reg (res)
+	  ? promote_ssa_mode (ssa_default_def (cfun, res), NULL)
+	  : BLKmode;
+
+      if (promoted_mode != BLKmode)
+	set_parm_rtl (res, gen_reg_rtx (promoted_mode));
       else if (TYPE_MODE (return_type) != BLKmode
 	       && targetm.calls.return_in_msb (return_type))
 	/* expand_function_end will insert the appropriate padding in
