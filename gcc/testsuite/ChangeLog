@@ -1,3 +1,13 @@
+2015-12-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/diagnostic-ranges-1.c: New test file.
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw.c
+	(test_percent_q_plus_d): New test function.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
+	(test_show_locus): Rewrite test code using
+	rich_location::set_range.  Add code to unit-test the "%q+D"
+	format code.
+
 2015-12-07  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/ipa/pr66896.C: New test.

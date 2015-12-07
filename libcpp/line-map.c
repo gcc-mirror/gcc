@@ -2064,29 +2064,30 @@ rich_location::add_range (location_range *src_range)
   m_ranges[m_num_ranges++] = *src_range;
 }
 
-/* Add or overwrite the range given by IDX.  It must either
-   overwrite an existing range, or add one *exactly* on the end of
-   the array.
+/* Add or overwrite the location given by IDX, setting its location to LOC,
+   and setting its "should my caret be printed" flag to SHOW_CARET_P.
 
-   This is primarily for use by gcc when implementing diagnostic
-   format decoders e.g. the "+" in the C/C++ frontends, for handling
-   format codes like "%q+D" (which writes the source location of a
-   tree back into range 0 of the rich_location).
+   It must either overwrite an existing location, or add one *exactly* on
+   the end of the array.
 
-   If SHOW_CARET_P is true, then the range should be rendered with
-   a caret at its starting location.  This
-   is for use by the Fortran frontend, for implementing the
-   "%C" and "%L" format codes.  */
+   This is primarily for use by gcc when implementing diagnostic format
+   decoders e.g.
+   - the "+" in the C/C++ frontends, for handling format codes like "%q+D"
+     (which writes the source location of a tree back into location 0 of
+     the rich_location), and
+   - the "%C" and "%L" format codes in the Fortran frontend.  */
 
 void
-rich_location::set_range (unsigned int idx, source_range src_range,
-			  bool show_caret_p, bool overwrite_loc_p)
+rich_location::set_range (line_maps *set, unsigned int idx,
+			  source_location loc, bool show_caret_p)
 {
   linemap_assert (idx < MAX_RANGES);
 
   /* We can either overwrite an existing range, or add one exactly
      on the end of the array.  */
   linemap_assert (idx <= m_num_ranges);
+
+  source_range src_range = get_range_from_loc (set, loc);
 
   location_range *locrange = &m_ranges[idx];
   locrange->m_start
@@ -2095,16 +2096,16 @@ rich_location::set_range (unsigned int idx, source_range src_range,
     = linemap_client_expand_location_to_spelling_point (src_range.m_finish);
 
   locrange->m_show_caret_p = show_caret_p;
-  if (overwrite_loc_p)
-    locrange->m_caret = locrange->m_start;
+  locrange->m_caret
+    = linemap_client_expand_location_to_spelling_point (loc);
 
   /* Are we adding a range onto the end?  */
   if (idx == m_num_ranges)
     m_num_ranges = idx + 1;
 
-  if (idx == 0 && overwrite_loc_p)
+  if (idx == 0)
     {
-      m_loc = src_range.m_start;
+      m_loc = loc;
       /* Mark any cached value here as dirty.  */
       m_have_expanded_location = false;
     }

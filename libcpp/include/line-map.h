@@ -1376,8 +1376,8 @@ class rich_location
   add_range (location_range *src_range);
 
   void
-  set_range (unsigned int idx, source_range src_range,
-	     bool show_caret_p, bool overwrite_loc_p);
+  set_range (line_maps *set, unsigned int idx, source_location loc,
+	     bool show_caret_p);
 
   unsigned int get_num_locations () const { return m_num_ranges; }
 

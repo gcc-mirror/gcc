@@ -37,14 +37,7 @@ struct text_info
   void **x_data;
   rich_location *m_richloc;
 
-  inline void set_location (unsigned int idx, location_t loc, bool caret_p)
-  {
-    source_range src_range;
-    src_range.m_start = loc;
-    src_range.m_finish = loc;
-    set_range (idx, src_range, caret_p);
-  }
-  void set_range (unsigned int idx, source_range range, bool caret_p);
+  void set_location (unsigned int idx, location_t loc, bool caret_p);
   location_t get_location (unsigned int index_of_location) const;
 };
 
