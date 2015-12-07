@@ -739,6 +739,7 @@ optimize_skip (rtx_jump_insn *insn, vec<rtx_insn *> *delay_list)
       || recog_memoized (trial) < 0
       || (! eligible_for_annul_false (insn, 0, trial, flags)
 	  && ! eligible_for_annul_true (insn, 0, trial, flags))
+      || RTX_FRAME_RELATED_P (trial)
       || can_throw_internal (trial))
     return;
 
@@ -1126,7 +1127,13 @@ steal_delay_list_from_target (rtx_insn *insn, rtx condition, rtx_sequence *seq,
 					      trial, flags)))
 	{
 	  if (must_annul)
-	    used_annul = 1;
+	    {
+	      /* Frame related instructions cannot go into annulled delay
+		 slots, it messes up the dwarf info.  */
+	      if (RTX_FRAME_RELATED_P (trial))
+		return;
+	      used_annul = 1;
+	    }
 	  rtx_insn *temp = copy_delay_slot_insn (trial);
 	  INSN_FROM_TARGET_P (temp) = 1;
 	  add_to_delay_list (temp, &new_delay_list);
@@ -2464,9 +2471,9 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
 	      if (eligible_for_delay (insn, *pslots_filled, trial, flags))
 		goto winner;
 	    }
-	  else if (0
-		   || (ANNUL_IFTRUE_SLOTS && ! thread_if_true)
-		   || (ANNUL_IFFALSE_SLOTS && thread_if_true))
+	  else if (!RTX_FRAME_RELATED_P (trial)
+		   && ((ANNUL_IFTRUE_SLOTS && ! thread_if_true)
+		        || (ANNUL_IFFALSE_SLOTS && thread_if_true)))
 	    {
 	      old_trial = trial;
 	      trial = try_split (pat, trial, 0);
