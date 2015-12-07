@@ -1,5 +1,13 @@
 2015-12-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/68464
+	* cp-gimplify.c (cp_fold): Don't assume X has TREE_TYPE.
+	(cp_genericize): Don't do cp_fold_r here.
+	(cp_fold_function): New.
+	* cp-tree.h: Declare it.
+	* decl.c (finish_function): Call it and the pre-genericize plugin
+	before NRV processing.
+
 	PR c++/68170
 	* pt.c (maybe_new_partial_specialization): The injected-class-name
 	is not a new partial specialization.

@@ -991,6 +991,15 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
   return NULL;
 }
 
+/* Fold ALL the trees!  FIXME we should be able to remove this, but
+   apparently that still causes optimization regressions.  */
+
+void
+cp_fold_function (tree fndecl)
+{
+  cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_r, NULL, NULL);
+}
+
 /* Perform any pre-gimplification lowering of C++ front end trees to
    GENERIC.  */
 
@@ -1475,10 +1484,6 @@ cp_genericize (tree fndecl)
 {
   tree t;
 
-  /* Fold ALL the trees!  FIXME we should be able to remove this, but
-     apparently that still causes optimization regressions.  */
-  cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_r, NULL, NULL);
-
   /* Fix up the types of parms passed by invisible reference.  */
   for (t = DECL_ARGUMENTS (fndecl); t; t = DECL_CHAIN (t))
     if (TREE_ADDRESSABLE (TREE_TYPE (t)))
@@ -1936,11 +1941,11 @@ cp_fold (tree x)
   location_t loc;
   bool rval_ops = true;
 
-  if (!x || error_operand_p (x))
+  if (!x || x == error_mark_node)
     return x;
 
   if (processing_template_decl
-      || (EXPR_P (x) && !TREE_TYPE (x)))
+      || (EXPR_P (x) && (!TREE_TYPE (x) || TREE_TYPE (x) == error_mark_node)))
     return x;
 
   /* Don't bother to cache DECLs or constants.  */
