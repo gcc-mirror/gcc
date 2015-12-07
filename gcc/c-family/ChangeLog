@@ -1,3 +1,8 @@
+2015-12-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_cpp_error): Update for change to
+	rich_location::set_range.
+
 2015-12-04  Paolo Bonzini  <bonzini@gnu.org>
 
 	* c-common.c (maybe_warn_shift_overflow): Warn on all overflows if

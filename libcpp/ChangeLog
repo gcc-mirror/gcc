@@ -1,3 +1,11 @@
+2015-12-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (rich_location::set_range): Add line_maps *
+	param; convert param from source_range to source_location.  Drop
+	"overwrite_loc_p" param.
+	* line-map.c (rich_location::set_range): Likewise, acting as if
+	"overwrite_loc_p" were true, and getting range from the location.
+
 2015-11-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR 62314

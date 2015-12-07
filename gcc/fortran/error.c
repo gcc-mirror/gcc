@@ -939,12 +939,11 @@ gfc_format_decoder (pretty_printer *pp,
 	/* If location[0] != UNKNOWN_LOCATION means that we already
 	   processed one of %C/%L.  */
 	int loc_num = text->get_location (0) == UNKNOWN_LOCATION ? 0 : 1;
-	source_range range
-	  = source_range::from_location (
-	      linemap_position_for_loc_and_offset (line_table,
-						   loc->lb->location,
-						   offset));
-	text->set_range (loc_num, range, true);
+	location_t src_loc
+	  = linemap_position_for_loc_and_offset (line_table,
+						 loc->lb->location,
+						 offset);
+	text->set_location (loc_num, src_loc, true);
 	pp_string (pp, result[loc_num]);
 	return true;
       }

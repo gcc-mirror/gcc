@@ -1,3 +1,12 @@
+2015-12-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print.c (text_info::set_range): Rename to...
+	(text_info::set_location): ...this, converting 2nd param
+	from source_range to a location_t.
+	* pretty-print.h (text_info::set_location): Convert
+	from inline function to external definition.
+	(text_info::set_range): Delete.
+
 2015-12-07  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (nvptx_assemble_decl_begin): Look inside
