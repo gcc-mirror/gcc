@@ -1157,7 +1157,7 @@ shorten_branches (rtx_insn *first)
 	      int inner_uid = INSN_UID (inner_insn);
 	      int inner_length;
 
-	      if (GET_CODE (body) == ASM_INPUT
+	      if (GET_CODE (PATTERN (inner_insn)) == ASM_INPUT
 		  || asm_noperands (PATTERN (inner_insn)) >= 0)
 		inner_length = (asm_insn_count (PATTERN (inner_insn))
 				* insn_default_length (inner_insn));

@@ -1,5 +1,7 @@
 2015-12-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	* final.c (shorten_branches): Fix check for basic asm.
+
 	* ipa-icf-gimple.c (func_checker::compare_gimple_asm): Add check for
 	basic asm.
 
