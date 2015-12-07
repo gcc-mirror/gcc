@@ -1,3 +1,7 @@
+2015-12-07  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ipa/pr66896.C: New test.
+
 2015-12-06  Dmitry Vyukov  <dvyukov@google.com>
 
 	* gcc.dg/sancov/sancov.exp: Load asan-dg.exp.
@@ -10829,10 +10833,6 @@
 
 	PR rtl-optimization/66626
 	* gcc.target/i386/pr66626-2.c: New.
-
-2015-07-16  Martin Liska  <mliska@suse.cz>
-
-	* g++.dg/ipa/pr66896.c: New test.
 
 2015-07-16  Richard Biener  <rguenther@suse.de>
 
