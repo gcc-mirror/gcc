@@ -1,3 +1,8 @@
+2015-12-07  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (nvptx_assemble_decl_begin): Look inside
+	complex and vector types.  Cope with packed structs.
+
 2015-12-07  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/68627

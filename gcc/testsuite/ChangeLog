@@ -1,3 +1,7 @@
+2015-12-07  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.target/nvptx/decl-init.c: New.
+
 2015-12-07  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/68627

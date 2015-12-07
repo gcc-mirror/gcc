@@ -1643,17 +1643,24 @@ nvptx_assemble_decl_begin (FILE *file, const char *name, const char *section,
   while (TREE_CODE (type) == ARRAY_TYPE)
     type = TREE_TYPE (type);
 
-  if (!INTEGRAL_TYPE_P (type) && !SCALAR_FLOAT_TYPE_P (type))
-    type = ptr_type_node;
+  if (TREE_CODE (type) == VECTOR_TYPE
+      || TREE_CODE (type) == COMPLEX_TYPE)
+    /* Neither vector nor complex types can contain the other.  */
+    type = TREE_TYPE (type);
+
   unsigned elt_size = int_size_in_bytes (type);
-  if (elt_size > UNITS_PER_WORD)
-    {
-      type = ptr_type_node;
-      elt_size = int_size_in_bytes (type);
-    }
+
+  /* Largest mode we're prepared to accept.  For BLKmode types we
+     don't know if it'll contain pointer constants, so have to choose
+     pointer size, otherwise we can choose DImode.  */
+  machine_mode elt_mode = TYPE_MODE (type) == BLKmode ? Pmode : DImode;
+
+  elt_size |= GET_MODE_SIZE (elt_mode);
+  elt_size &= -elt_size; /* Extract LSB set.  */
+  elt_mode = mode_for_size (elt_size * BITS_PER_UNIT, MODE_INT, 0);
 
   decl_chunk_size = elt_size;
-  decl_chunk_mode = int_mode_for_mode (TYPE_MODE (type));
+  decl_chunk_mode = elt_mode;
   decl_offset = 0;
   init_part = 0;
 
