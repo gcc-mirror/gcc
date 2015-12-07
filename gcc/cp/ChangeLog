@@ -1,3 +1,9 @@
+2015-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/68760
+	* error.c (dump_global_iord): Use DECL_SOURCE_FILE (t)
+	instead of LOCATION_FILE (input_location).
+
 2015-12-07  Ryan Burn  <contact@rnburn.com>
 
 	PR c++/68683
