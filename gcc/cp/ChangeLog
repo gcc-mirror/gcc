@@ -1,5 +1,12 @@
 2015-12-06  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_template_argument): Handle references in
+	C++1z mode.
+	* constexpr.c (potential_constant_expression_1): Don't error about
+	TREE_THIS_VOLATILE on declarations.
+	[COMPONENT_REF]: Don't consider the object if we're dealing with
+	an overloaded function.
+
 	* constraint.cc (strictly_subsumes): New.
 	* cp-tree.h: Declare it.
 	* pt.c (process_partial_specialization): Use it instead of

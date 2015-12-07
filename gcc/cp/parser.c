@@ -15364,7 +15364,16 @@ cp_parser_template_argument (cp_parser* parser)
      because the argument could really be a type-id.  */
   if (maybe_type_id)
     cp_parser_parse_tentatively (parser);
-  argument = cp_parser_constant_expression (parser);
+
+  if (cxx_dialect <= cxx14)
+    argument = cp_parser_constant_expression (parser);
+  else
+    {
+      /* With C++17 generalized non-type template arguments we need to handle
+	 lvalue constant expressions, too.  */
+      argument = cp_parser_assignment_expression (parser);
+      require_potential_constant_expression (argument);
+    }
 
   if (!maybe_type_id)
     return argument;
