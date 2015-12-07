@@ -4326,6 +4326,43 @@ cp_parser_end_tentative_firewall (cp_parser *parser, cp_token_position start,
   cp_lexer_purge_tokens_after (parser->lexer, start);
 }
 
+/* Like the above functions, but let the user modify the tokens.  Used by
+   CPP_DECLTYPE and CPP_TEMPLATE_ID, where we are saving the side-effects for
+   later parses, so it makes sense to localize the effects of
+   cp_parser_commit_to_tentative_parse.  */
+
+struct tentative_firewall
+{
+  cp_parser *parser;
+  bool set;
+
+  tentative_firewall (cp_parser *p): parser(p)
+  {
+    /* If we're currently parsing tentatively, start a committed level as a
+       firewall and then an inner tentative parse.  */
+    if ((set = cp_parser_uncommitted_to_tentative_parse_p (parser)))
+      {
+	cp_parser_parse_tentatively (parser);
+	cp_parser_commit_to_topmost_tentative_parse (parser);
+	cp_parser_parse_tentatively (parser);
+      }
+  }
+
+  ~tentative_firewall()
+  {
+    if (set)
+      {
+	/* Finish the inner tentative parse and the firewall, propagating any
+	   uncommitted error state to the outer tentative parse.  */
+	bool err = cp_parser_error_occurred (parser);
+	cp_parser_parse_definitely (parser);
+	cp_parser_parse_definitely (parser);
+	if (err)
+	  cp_parser_simulate_error (parser);
+      }
+  }
+};
+
 /* Parse a GNU statement-expression, i.e. ({ stmts }), except for the
    enclosing parentheses.  */
 
@@ -12921,6 +12958,11 @@ cp_parser_decltype_expr (cp_parser *parser,
   cp_token *id_expr_start_token;
   tree expr;
 
+  /* Since we're going to preserve any side-effects from this parse, set up a
+     firewall to protect our callers from cp_parser_commit_to_tentative_parse
+     in the expression.  */
+  tentative_firewall firewall (parser);
+
   /* First, try parsing an id-expression.  */
   id_expr_start_token = cp_lexer_peek_token (parser->lexer);
   cp_parser_parse_tentatively (parser);
@@ -14686,6 +14728,11 @@ cp_parser_template_id (cp_parser *parser,
       pop_deferring_access_checks ();
       return templ;
     }
+
+  /* Since we're going to preserve any side-effects from this parse, set up a
+     firewall to protect our callers from cp_parser_commit_to_tentative_parse
+     in the template arguments.  */
+  tentative_firewall firewall (parser);
 
   /* If we find the sequence `[:' after a template-name, it's probably
      a digraph-typo for `< ::'. Substitute the tokens and check if we can
