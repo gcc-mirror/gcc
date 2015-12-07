@@ -1,5 +1,5 @@
 // PR c++/38647
-// { dg-do compile }
+// { dg-do compile { target { ! c++1z } } }
 // { dg-prune-output "note" }
 
 template<const char *, int> struct A {};
