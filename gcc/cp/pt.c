@@ -23712,6 +23712,9 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	}
     }
 
+  if (type == error_mark_node)
+    return error_mark_node;
+
   init = resolve_nondeduced_context (init);
 
   if (AUTO_IS_DECLTYPE (auto_node))
@@ -23769,26 +23772,6 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	  return error_mark_node;
 	}
     }
-
-  /* If the list of declarators contains more than one declarator, the type
-     of each declared variable is determined as described above. If the
-     type deduced for the template parameter U is not the same in each
-     deduction, the program is ill-formed.  */
-  if (!flag_concepts && TREE_TYPE (auto_node)
-      && !same_type_p (TREE_TYPE (auto_node), TREE_VEC_ELT (targs, 0)))
-    {
-      if (cfun && auto_node == current_function_auto_return_pattern
-	  && LAMBDA_FUNCTION_P (current_function_decl))
-	error ("inconsistent types %qT and %qT deduced for "
-	       "lambda return type", TREE_TYPE (auto_node),
-	       TREE_VEC_ELT (targs, 0));
-      else
-	error ("inconsistent deduction for %qT: %qT and then %qT",
-	       auto_node, TREE_TYPE (auto_node), TREE_VEC_ELT (targs, 0));
-      return error_mark_node;
-    }
-  if (!flag_concepts)
-    TREE_TYPE (auto_node) = TREE_VEC_ELT (targs, 0);
 
   /* Check any placeholder constraints against the deduced type. */
   if (flag_concepts && !processing_template_decl)
@@ -23877,7 +23860,9 @@ is_auto_r (tree tp, void */*data*/)
 tree
 type_uses_auto (tree type)
 {
-  if (flag_concepts)
+  if (type == NULL_TREE)
+    return NULL_TREE;
+  else if (flag_concepts)
     {
       /* The Concepts TS allows multiple autos in one type-specifier; just
 	 return the first one we find, do_auto_deduction will collect all of

@@ -8644,9 +8644,15 @@ check_return_expr (tree retval, bool *no_warning)
 	/* Leave it.  */;
       else if (functype == current_function_auto_return_pattern)
 	apply_deduced_return_type (current_function_decl, type);
-      else
-	/* A mismatch should have been diagnosed in do_auto_deduction.  */
-	gcc_assert (same_type_p (type, functype));
+      else if (!same_type_p (type, functype))
+	{
+	  if (LAMBDA_FUNCTION_P (current_function_decl))
+	    error ("inconsistent types %qT and %qT deduced for "
+		   "lambda return type", functype, type);
+	  else
+	    error ("inconsistent deduction for auto return type: "
+		   "%qT and then %qT", functype, type);
+	}
       functype = type;
     }
 
