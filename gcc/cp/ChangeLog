@@ -1,5 +1,8 @@
 2015-12-06  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (finish_qualified_id_expr): Handle
+	UNBOUND_CLASS_TEMPLATE.
+
 	* parser.c (cp_parser_template_argument): Handle references in
 	C++1z mode.
 	* constexpr.c (potential_constant_expression_1): Don't error about
