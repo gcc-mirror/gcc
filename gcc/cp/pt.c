@@ -855,6 +855,10 @@ maybe_new_partial_specialization (tree type)
       if (!current_template_parms)
         return NULL_TREE;
 
+      // The injected-class-name is not a new partial specialization.
+      if (DECL_SELF_REFERENCE_P (TYPE_NAME (type)))
+	return NULL_TREE;
+
       // If the constraints are not the same as those of the primary
       // then, we can probably create a new specialization.
       tree type_constr = current_template_constraints ();
