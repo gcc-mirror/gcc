@@ -33,6 +33,9 @@ load_lib target-libpath.exp
 
 set gpp_compile_options ""
 set gpp_std_list { }
+if [info exists env(GXX_TESTSUITE_STDS)] {
+    set gpp_std_list [split $env(GXX_TESTSUITE_STDS) ","]
+}
 
 #
 # g++_version -- extract and print the version number of the compiler
