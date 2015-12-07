@@ -1,3 +1,11 @@
+2015-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
+	2015-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/68671
+	* gcc.dg/pr68671.c: New test.
+
 2015-12-04  Release Manager
 
 	* GCC 5.3.0 released.
