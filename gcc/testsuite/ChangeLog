@@ -1,5 +1,8 @@
 2015-12-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/68760
+	* g++.dg/tree-ssa/pr68760.C: New test.
+
 	PR middle-end/66726
 	* g++.dg/tree-ssa/pr66726.c: Renamed to...
 	* g++.dg/tree-ssa/pr66726.C: ... this.
