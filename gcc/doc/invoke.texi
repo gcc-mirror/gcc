@@ -1022,6 +1022,7 @@ See RS/6000 and PowerPC Options.
 -mfpu  -mno-fpu  -mhard-float  -msoft-float @gol
 -mhard-quad-float  -msoft-quad-float @gol
 -mstack-bias  -mno-stack-bias @gol
+-mstd-struct-return  -mno-std-struct-return @gol
 -munaligned-doubles  -mno-unaligned-doubles @gol
 -muser-mode  -mno-user-mode @gol
 -mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
@@ -21586,10 +21587,10 @@ Do not generate code that can only run in supervisor mode.  This is relevant
 only for the @code{casa} instruction emitted for the LEON3 processor.  This
 is the default.
 
-@item -mno-faster-structs
-@itemx -mfaster-structs
-@opindex mno-faster-structs
+@item -mfaster-structs
+@itemx -mno-faster-structs
 @opindex mfaster-structs
+@opindex mno-faster-structs
 With @option{-mfaster-structs}, the compiler assumes that structures
 should have 8-byte alignment.  This enables the use of pairs of
 @code{ldd} and @code{std} instructions for copies in structure
@@ -21598,6 +21599,17 @@ However, the use of this changed alignment directly violates the SPARC
 ABI@.  Thus, it's intended only for use on targets where the developer
 acknowledges that their resulting code is not directly in line with
 the rules of the ABI@.
+
+@item -mstd-struct-return
+@itemx -mno-std-struct-return
+@opindex mstd-struct-return
+@opindex mno-std-struct-return
+With @option{-mstd-struct-return}, the compiler generates checking code
+in functions returning structures or unions that detect size mismatches
+between the two sides of function calls, as per the 32-bit ABI@.
+
+The default is @option{-mno-std-struct-return}.  This option has no effect
+in 64-bit mode.
 
 @item -mcpu=@var{cpu_type}
 @opindex mcpu

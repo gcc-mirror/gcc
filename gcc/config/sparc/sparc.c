@@ -7199,17 +7199,16 @@ sparc_struct_value_rtx (tree fndecl, int incoming)
 	  && TYPE_SIZE_UNIT (TREE_TYPE (fndecl))
 	  && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (fndecl))) == INTEGER_CST)
 	{
-	  /* We must check and adjust the return address, as it is
-	     optional as to whether the return object is really
-	     provided.  */
-	  rtx ret_reg = gen_rtx_REG (Pmode, 31);
+	  /* We must check and adjust the return address, as it is optional
+	     as to whether the return object is really provided.  */
+	  rtx ret_reg = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
 	  rtx scratch = gen_reg_rtx (SImode);
 	  rtx_code_label *endlab = gen_label_rtx ();
 
-	  /* Calculate the return object size */
+	  /* Calculate the return object size.  */
 	  tree size = TYPE_SIZE_UNIT (TREE_TYPE (fndecl));
 	  rtx size_rtx = GEN_INT (TREE_INT_CST_LOW (size) & 0xfff);
-	  /* Construct a temporary return value */
+	  /* Construct a temporary return value.  */
 	  rtx temp_val
 	    = assign_stack_local (Pmode, TREE_INT_CST_LOW (size), 0);
 
@@ -7221,13 +7220,13 @@ sparc_struct_value_rtx (tree fndecl, int incoming)
 	  emit_move_insn (scratch, gen_rtx_MEM (SImode,
 						plus_constant (Pmode,
 							       ret_reg, 8)));
-	  /* Assume the size is valid and pre-adjust */
+	  /* Assume the size is valid and pre-adjust.  */
 	  emit_insn (gen_add3_insn (ret_reg, ret_reg, GEN_INT (4)));
 	  emit_cmp_and_jump_insns (scratch, size_rtx, EQ, const0_rtx, SImode,
 				   0, endlab);
 	  emit_insn (gen_sub3_insn (ret_reg, ret_reg, GEN_INT (4)));
 	  /* Write the address of the memory pointed to by temp_val into
-	     the memory pointed to by mem */
+	     the memory pointed to by mem.  */
 	  emit_move_insn (mem, XEXP (temp_val, 0));
 	  emit_label (endlab);
 	}

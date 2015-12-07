@@ -696,6 +696,31 @@ extern enum cmodel sparc_cmodel;
 				\
   1, 1, 1, 1, 1, 1, 1}
 
+/* 1 for registers not available across function calls.
+   Unlike the above, this need not include the FIXED_REGISTERS, but any
+   registers that can be used without being saved.
+   The latter must include the registers where values are returned
+   and the register where structure-value addresses are passed.
+   Aside from that, you can include as many other registers as you like.  */
+
+#define CALL_REALLY_USED_REGISTERS  \
+ {1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  0, 0, 0, 0, 0, 0, 0, 0,	\
+  0, 0, 0, 0, 0, 0, 0, 0,	\
+				\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+				\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+				\
+  1, 1, 1, 1, 1, 1, 1}
+
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
    This is ordinarily the length in words of a value of mode MODE
