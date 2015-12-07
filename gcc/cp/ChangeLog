@@ -1,4 +1,11 @@
-2015-12-05  Jason Merrill  <jason@redhat.com>
+2015-12-06  Jason Merrill  <jason@redhat.com>
+
+	* constraint.cc (strictly_subsumes): New.
+	* cp-tree.h: Declare it.
+	* pt.c (process_partial_specialization): Use it instead of
+	subsumes_constraints.
+	(maybe_new_partial_specialization): Do compare null constraints.
+	* search.c (lookup_member): Handle currently_open_class returning null.
 
 	PR c++/68597, fix auto9.C and auto-neg1.C with -std=c++1z.
 	* decl.c (check_tag_decl): Use ds_type_spec in auto diagnostic.
