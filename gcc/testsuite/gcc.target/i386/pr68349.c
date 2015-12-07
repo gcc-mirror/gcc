@@ -3,7 +3,7 @@
 /* { dg-options "-O2" } */
 
 int a, b;
-unsigned long strlen();
+unsigned long my_strlen();
 typedef struct sHyphenNode {
   char sepcnts[0];
   struct sHyphenNode *Daughters[];
@@ -12,7 +12,7 @@ int GetIndex();
 PHyphenNode c;
 void DoHyphens_Field_1() {
   char d[300], e[300];
-  int z, f, l = strlen();
+  int z, f, l = my_strlen();
   for (; z;)
     ;
   for (; l; z++) {

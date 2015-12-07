@@ -1,3 +1,7 @@
+2015-12-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/i386/pr68349.c (strlen): Rename to my_strlen.
+
 2015-12-07  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.target/nvptx/abort.c: New.
