@@ -1,3 +1,10 @@
+2015-12-07  Ryan Burn  <contact@rnburn.com>
+
+	PR c++/68683
+	* constraint.cc (satisfy_argument_deduction_constraint): Set
+	TYPE_CANONICAL to NULL_TREE if PLACEHOLDER_TYPE_CONSTRAINTS are
+	changed.
+
 2015-12-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68464
