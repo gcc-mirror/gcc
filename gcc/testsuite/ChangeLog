@@ -1,3 +1,9 @@
+2015-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/struct-ret-check.c: Rename to...
+	* gcc.target/sparc/struct-ret-check-1.c: ...this.
+	* gcc.target/sparc/struct-ret-check-2.c: New test.
+
 2015-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/68760

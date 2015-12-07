@@ -203,7 +203,7 @@ Target RejectNegative Joined Var(sparc_debug_string)
 Enable debug output.
 
 mstd-struct-return
-Target Report RejectNegative Var(sparc_std_struct_return)
+Target Report Var(sparc_std_struct_return)
 Enable strict 32-bit psABI struct return checking.
 
 mfix-at697f

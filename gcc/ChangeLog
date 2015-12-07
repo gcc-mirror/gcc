@@ -1,3 +1,11 @@
+2015-12-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/63668
+	* doc/invoke.texi (SPARC options): Document -mstd-struct-return.
+	* config/sparc/sparc.c (sparc_struct_value_rtx): Minor tweaks.
+	* config/sparc/sparc.h (CALL_REALLY_USED_REGISTERS): Define.
+	* config/sparc/sparc.opt (mstd-struct-return): Accept negative.
+
 2015-12-07  Steve Ellcey  <sellcey@imgtec.com>
 
 	* reorg.c (optimize_skip): Do not put frame related instructions
@@ -14,7 +22,7 @@
 
 2015-12-07  Jan Hubicka  <hubicka@ucw.cz>
 
-	* fold-const.c (operand_equal_p): Drp flag_strict_aliasing check.
+	* fold-const.c (operand_equal_p): Drop flag_strict_aliasing check.
 
 2015-12-07  Nathan Sidwell  <nathan@acm.org>
 
