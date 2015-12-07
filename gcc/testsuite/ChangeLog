@@ -1,3 +1,7 @@
+2015-12-07  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.target/nvptx/abort.c: New.
+
 2015-12-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/diagnostic-ranges-1.c: New test file.
