@@ -1,3 +1,8 @@
+2015-12-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* ipa-icf-gimple.c (func_checker::compare_gimple_asm): Add check for
+	basic asm.
+
 2015-12-07  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (nvptx_output_call_insn): Emit trap after no
