@@ -576,12 +576,9 @@ special_function_p (const_tree fndecl, int flags)
       /* We assume that alloca will always be called by name.  It
 	 makes no sense to pass it as a pointer-to-function to
 	 anything that does not understand its behavior.  */
-      if (((IDENTIFIER_LENGTH (name_decl) == 6
-	    && name[0] == 'a'
-	    && ! strcmp (name, "alloca"))
-	   || (IDENTIFIER_LENGTH (name_decl) == 16
-	       && name[0] == '_'
-	       && ! strcmp (name, "__builtin_alloca"))))
+      if (IDENTIFIER_LENGTH (name_decl) == 6
+	  && name[0] == 'a'
+	  && ! strcmp (name, "alloca"))
 	flags |= ECF_MAY_BE_ALLOCA;
 
       /* Disregard prefix _, __, __x or __builtin_.  */
@@ -626,6 +623,17 @@ special_function_p (const_tree fndecl, int flags)
 	       && ! strcmp (tname, "longjmp"))
 	flags |= ECF_NORETURN;
     }
+
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    switch (DECL_FUNCTION_CODE (fndecl))
+      {
+      case BUILT_IN_ALLOCA:
+      case BUILT_IN_ALLOCA_WITH_ALIGN:
+	flags |= ECF_MAY_BE_ALLOCA;
+	break;
+      default:
+	break;
+      }
 
   return flags;
 }

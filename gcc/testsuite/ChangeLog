@@ -3,6 +3,9 @@
 	Backport from mainline
 	2015-12-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/68680
+	* gcc.target/i386/pr68680.c: New test.
+
 	PR tree-optimization/68671
 	* gcc.dg/pr68671.c: New test.
 

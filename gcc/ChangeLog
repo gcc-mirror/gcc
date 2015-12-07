@@ -3,6 +3,11 @@
 	Backport from mainline
 	2015-12-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/68680
+	* calls.c (special_function_p): Return ECF_MAY_BE_ALLOCA for
+	BUILT_IN_ALLOCA{,_WITH_ALIGN}.  Don't check for __builtin_alloca
+	by name.
+
 	PR tree-optimization/68671
 	* tree-ssa-reassoc.c (maybe_optimize_range_tests): For basic
 	blocks starting with the successor of first bb we've modified
