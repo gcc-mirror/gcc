@@ -1,3 +1,10 @@
+2015-12-07  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/68633
+	* config/i386/sse.md (define_insn "kunpckhi"): Fix operands order.
+	(define_insn "kunpcksi"): Ditto.
+	(define_insn "kunpckdi"): Ditto.
+
 2015-12-06  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (rsqrtsf2): Adjust for canonical form with unspec.
