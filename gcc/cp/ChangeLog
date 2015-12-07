@@ -1,3 +1,7 @@
+2015-12-07  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (check-c++1z, check-c++-all): Use GXX_TESTSUITE_STDS.
+
 2015-12-06  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (struct tentative_firewall): New.
