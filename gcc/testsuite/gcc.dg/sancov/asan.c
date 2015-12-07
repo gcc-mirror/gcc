@@ -3,7 +3,7 @@
      - coverage does not instrument asan-emitted basic blocks
      - asan considers coverage callback as "nonfreeing" (thus 1 asan store
        callback.  */
-/* { dg-do compile } */
+/* { dg-do compile { target fsanitize_address } } */
 /* { dg-options "-fsanitize-coverage=trace-pc -fsanitize=address -fdump-tree-optimized" } */
 
 void foo(volatile int *a, int *b)
