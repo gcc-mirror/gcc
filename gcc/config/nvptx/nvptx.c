@@ -1890,6 +1890,13 @@ nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
     }
   fprintf (asm_out_file, ";\n");
 
+  if (find_reg_note (insn, REG_NORETURN, NULL))
+    /* No return functions confuse the PTX JIT, as it doesn't realize
+       the flow control barrier they imply.  It can seg fault if it
+       encounters what looks like an unexitable loop.  Emit a trailing
+       trap, which it does grok.  */
+    fprintf (asm_out_file, "\t\ttrap; // (noreturn)\n");
+
   return result != NULL_RTX ? "\tld.param%t0\t%0, [%%retval_in];\n\t}" : "}";
 }
 

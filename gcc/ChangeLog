@@ -1,3 +1,8 @@
+2015-12-07  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (nvptx_output_call_insn): Emit trap after no
+	return call.
+
 2015-12-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* pretty-print.c (text_info::set_range): Rename to...
