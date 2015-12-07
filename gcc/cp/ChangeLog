@@ -1,5 +1,8 @@
 2015-12-06  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (struct tentative_firewall): New.
+	(cp_parser_template_id, cp_parser_decltype_expr): Use it.
+
 	* parser.h (struct cp_token): Tell GTY that CPP_DECLTYPE uses
 	tree_check_value.
 	* parser.c (cp_parser_decltype): Use tree_check_value.
