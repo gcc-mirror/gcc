@@ -6417,6 +6417,13 @@ grokdeclarator (const struct c_declarator *declarator,
 	  {
 	    /* Transfer const-ness of array into that of type pointed to.  */
 	    type = TREE_TYPE (type);
+	    if (orig_qual_type != NULL_TREE)
+	      {
+		if (orig_qual_indirect == 0)
+		  orig_qual_type = TREE_TYPE (orig_qual_type);
+		else
+		  orig_qual_indirect--;
+	      }
 	    if (type_quals)
 	      type = c_build_qualified_type (type, type_quals, orig_qual_type,
 					     orig_qual_indirect);
