@@ -1,3 +1,7 @@
+2015-12-07  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ipa/pr66896.C: New test.
+
 2015-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
@@ -1264,10 +1268,6 @@
 
 	PR fortran/66725
 	* gfortran.dg/pr66725.f90: New test.
-
-2015-07-16  Martin Liska  <mliska@suse.cz>
-
-	* g++.dg/ipa/pr66896.c: New test.
 
 2015-07-16  Marek Polacek  <polacek@redhat.com>
 
