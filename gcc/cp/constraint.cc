@@ -1871,11 +1871,14 @@ satisfy_argument_deduction_constraint (tree t, tree args,
   tree pattern = DEDUCT_CONSTR_PATTERN (t);
   tree placeholder = DEDUCT_CONSTR_PLACEHOLDER (t);
   tree constr = PLACEHOLDER_TYPE_CONSTRAINTS (placeholder);
+  tree type_canonical = TYPE_CANONICAL (placeholder);
   PLACEHOLDER_TYPE_CONSTRAINTS (placeholder)
     = tsubst_constraint (constr, args, complain|tf_partial, in_decl);
+  TYPE_CANONICAL (placeholder) = NULL_TREE;
   tree type = do_auto_deduction (pattern, init, placeholder,
                                  complain, adc_requirement);
   PLACEHOLDER_TYPE_CONSTRAINTS (placeholder) = constr;
+  TYPE_CANONICAL (placeholder) = type_canonical;
   if (type == error_mark_node)
     return boolean_false_node;
 
