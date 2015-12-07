@@ -560,7 +560,7 @@ cgraph_node::create_alias (tree alias, tree target)
   alias_node->definition = true;
   alias_node->alias = true;
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (alias)) != NULL)
-    alias_node->weakref = true;
+    alias_node->transparent_alias = alias_node->weakref = true;
   return alias_node;
 }
 
@@ -2147,7 +2147,7 @@ cgraph_node::get_availability (void)
     avail = AVAIL_NOT_AVAILABLE;
   else if (local.local)
     avail = AVAIL_LOCAL;
-  else if (alias && weakref)
+  else if (transparent_alias)
     ultimate_alias_target (&avail);
   else if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (decl)))
     avail = AVAIL_INTERPOSABLE;

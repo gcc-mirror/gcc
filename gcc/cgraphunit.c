@@ -369,6 +369,7 @@ cgraph_node::reset (void)
   analyzed = false;
   definition = false;
   alias = false;
+  transparent_alias = false;
   weakref = false;
   cpp_implicit_alias = false;
 
@@ -594,7 +595,7 @@ cgraph_node::analyze (void)
       thunk.alias = NULL;
     }
   if (alias)
-    resolve_alias (cgraph_node::get (alias_target));
+    resolve_alias (cgraph_node::get (alias_target), transparent_alias);
   else if (dispatcher_function)
     {
       /* Generate the dispatcher body of multi-versioned functions.  */
@@ -1254,6 +1255,7 @@ handle_alias_pairs (void)
 	      node->alias_target = p->target;
 	      node->weakref = true;
 	      node->alias = true;
+	      node->transparent_alias = true;
 	    }
 	  alias_pairs->unordered_remove (i);
 	  continue;
@@ -1908,15 +1910,18 @@ cgraph_node::assemble_thunks_and_aliases (void)
   FOR_EACH_ALIAS (this, ref)
     {
       cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
-      bool saved_written = TREE_ASM_WRITTEN (decl);
+      if (!alias->transparent_alias)
+	{
+	  bool saved_written = TREE_ASM_WRITTEN (decl);
 
-      /* Force assemble_alias to really output the alias this time instead
-	 of buffering it in same alias pairs.  */
-      TREE_ASM_WRITTEN (decl) = 1;
-      do_assemble_alias (alias->decl,
-			 DECL_ASSEMBLER_NAME (decl));
-      alias->assemble_thunks_and_aliases ();
-      TREE_ASM_WRITTEN (decl) = saved_written;
+	  /* Force assemble_alias to really output the alias this time instead
+	     of buffering it in same alias pairs.  */
+	  TREE_ASM_WRITTEN (decl) = 1;
+	  do_assemble_alias (alias->decl,
+			     DECL_ASSEMBLER_NAME (decl));
+	  alias->assemble_thunks_and_aliases ();
+	  TREE_ASM_WRITTEN (decl) = saved_written;
+	}
     }
 }
 

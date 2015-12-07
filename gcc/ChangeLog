@@ -1,3 +1,49 @@
+2015-12-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61886
+	* symtab.c (ultimate_transparent_alias_target): New inline function.
+	(symbol_table::assembler_names_equal_p): New method; break out from ...
+	(symbol_table::decl_assembler_name_equal): ... here.
+	(symbol_table::change_decl_assembler_name): Also update names and
+	translation links of transparent aliases.
+	(symtab_node::dump_base): Dump transparent_alias.
+	(symtab_node::verify_base): Implement basic transparent alias
+	verification.
+	(symtab_node::make_decl_local): Support localization of weakrefs;
+	recurse to transparent aliases; set TREE_STATIC.
+	(symtab_node::ultimate_alias_target_1): Handle visibility of
+	transparent aliases.
+	(symtab_node::resolve_alias): New parmaeter transparent; handle
+	transparent aliases; recurse to aliases of aliases to fix comdat
+	groups.
+	(symtab_node::get_partitioning_class): Handle transparent aliases.
+	* ipa-visibility.c (cgraph_externally_visible_p,
+	varpool_node::externally_visible_p): Visibility of transparent alias
+	depends on its target.
+	(function_and_variable_visibility): Do not tweak visibility of
+	transparent laiases.
+	(function_and_variable_visibility): Likewise.
+	* ipa.c (symbol_table::remove_unreachable_nodes): Clear
+	transparent_alias flag.
+	* alias.c (cgraph_node::create_alias, cgraph_node::get_availability):
+	Support transparent aliases.
+	* cgraph.h (symtab_node): Update prototype of resolve_alias;
+	add transparent_alias flag.
+	(symbol_table: Add assembler_names_equal_p.
+	(symtab_node::real_symbol_p): Skip transparent aliases.
+	* cgraphunit.c (cgraph_node::reset): Reset transparent_alias flag.
+	(handle_alias_pairs): Set transparent_alias for weakref.
+	(cgraph_node::assemble_thunks_and_aliases): Do not asemble transparent
+	aliases.
+	* lto-cgraph.c (lto_output_node): When outputting same_comdat_group
+	skip symbols not put into boundary; stream transparent_alias.
+	(lto_output_varpool_node): Likewise.
+	(input_overwrite_node, input_varpool_node): Stream transparent alias.
+	* varpool.c (ctor_for_folding, varpool_node::get_availability,
+	varpool_node::assemble_aliases,
+	symbol_table::remove_unreferenced_decls): Handle transparent aliase.
+	(varpool_node::create_alias): Set transparent_alias.
+
 2015-12-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/68291

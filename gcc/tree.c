@@ -13423,6 +13423,12 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
       {
 	tree f1, f2;
 
+	/* Don't try to compare variants of an incomplete type, before
+	   TYPE_FIELDS has been copied around.  */
+	if (!COMPLETE_TYPE_P (t1) && !COMPLETE_TYPE_P (t2))
+	  return true;
+
+
 	if (TYPE_REVERSE_STORAGE_ORDER (t1) != TYPE_REVERSE_STORAGE_ORDER (t2))
 	  return false;
 
@@ -13709,28 +13715,35 @@ verify_type (const_tree t)
 	}
     }
   else if (RECORD_OR_UNION_TYPE_P (t))
-    for (tree fld = TYPE_FIELDS (t); fld; fld = TREE_CHAIN (fld))
-      {
-	/* TODO: verify properties of decls.  */
-	if (TREE_CODE (fld) == FIELD_DECL)
-	  ;
-	else if (TREE_CODE (fld) == TYPE_DECL)
-	  ;
-	else if (TREE_CODE (fld) == CONST_DECL)
-	  ;
-	else if (TREE_CODE (fld) == VAR_DECL)
-	  ;
-	else if (TREE_CODE (fld) == TEMPLATE_DECL)
-	  ;
-	else if (TREE_CODE (fld) == USING_DECL)
-	  ;
-	else
-	  {
-	    error ("Wrong tree in TYPE_FIELDS list");
-	    debug_tree (fld);
-	    error_found = true;
-	  }
-      }
+    {
+      if (TYPE_FIELDS (t) && !COMPLETE_TYPE_P (t) && in_lto_p)
+	{
+	  error ("TYPE_FIELDS defined in incomplete type");
+	  error_found = true;
+	}
+      for (tree fld = TYPE_FIELDS (t); fld; fld = TREE_CHAIN (fld))
+	{
+	  /* TODO: verify properties of decls.  */
+	  if (TREE_CODE (fld) == FIELD_DECL)
+	    ;
+	  else if (TREE_CODE (fld) == TYPE_DECL)
+	    ;
+	  else if (TREE_CODE (fld) == CONST_DECL)
+	    ;
+	  else if (TREE_CODE (fld) == VAR_DECL)
+	    ;
+	  else if (TREE_CODE (fld) == TEMPLATE_DECL)
+	    ;
+	  else if (TREE_CODE (fld) == USING_DECL)
+	    ;
+	  else
+	    {
+	      error ("Wrong tree in TYPE_FIELDS list");
+	      debug_tree (fld);
+	      error_found = true;
+	    }
+	}
+    }
   else if (TREE_CODE (t) == INTEGER_TYPE
 	   || TREE_CODE (t) == BOOLEAN_TYPE
 	   || TREE_CODE (t) == OFFSET_TYPE

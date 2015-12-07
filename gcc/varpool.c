@@ -440,7 +440,7 @@ ctor_for_folding (tree decl)
       gcc_assert (!DECL_INITIAL (decl)
 		  || (node->alias && node->get_alias_target () == real_node)
 		  || DECL_INITIAL (decl) == error_mark_node);
-      if (node->weakref)
+      while (node->transparent_alias && node->analyzed)
 	{
 	  node = node->get_alias_target ();
 	  decl = node->decl;
@@ -490,11 +490,11 @@ varpool_node::get_availability (void)
   if (DECL_IN_CONSTANT_POOL (decl)
       || DECL_VIRTUAL_P (decl))
     return AVAIL_AVAILABLE;
-  if (alias && weakref)
+  if (transparent_alias)
     {
       enum availability avail;
 
-      ultimate_alias_target (&avail)->get_availability ();
+      ultimate_alias_target (&avail);
       return avail;
     }
   /* If the variable can be overwritten, return OVERWRITABLE.  Takes
@@ -536,8 +536,9 @@ varpool_node::assemble_aliases (void)
   FOR_EACH_ALIAS (this, ref)
     {
       varpool_node *alias = dyn_cast <varpool_node *> (ref->referring);
-      do_assemble_alias (alias->decl,
-			 DECL_ASSEMBLER_NAME (decl));
+      if (!alias->transparent_alias)
+	do_assemble_alias (alias->decl,
+			   DECL_ASSEMBLER_NAME (decl));
       alias->assemble_aliases ();
     }
 }
@@ -665,7 +666,14 @@ symbol_table::remove_unreferenced_decls (void)
 	      && vnode->analyzed)
 	    enqueue_node (vnode, &first);
 	  else
-	    referenced.add (node);
+	    {
+	      referenced.add (node);
+	      while (node->alias && node->definition)
+		{
+		  node = node->get_alias_target ();
+	          referenced.add (node);
+		}
+	    }
 	}
     }
   if (dump_file)
@@ -760,7 +768,7 @@ varpool_node::create_alias (tree alias, tree decl)
   alias_node->definition = true;
   alias_node->alias_target = decl;
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (alias)) != NULL)
-    alias_node->weakref = true;
+    alias_node->weakref = alias_node->transparent_alias = true;
   return alias_node;
 }
 

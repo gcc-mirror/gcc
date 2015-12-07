@@ -1035,7 +1035,15 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node *node)
   /* Assign every symbol in the set that shares the same ASM name an unique
      mangled name.  */
   for (s = symtab_node::get_for_asmname (name); s;)
-    if (!s->externally_visible
+    if ((!s->externally_visible || s->weakref)
+	/* Transparent aliases having same name as target are renamed at a
+	   time their target gets new name.  Transparent aliases that use
+	   separate assembler name require the name to be unique.  */
+	&& (!s->transparent_alias || !s->definition || s->weakref
+	    || !symbol_table::assembler_names_equal_p
+		 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (s->decl)),
+		  IDENTIFIER_POINTER
+		    (DECL_ASSEMBLER_NAME (s->get_alias_target()->decl))))
 	&& ((s->real_symbol_p ()
              && !DECL_EXTERNAL (node->decl)
 	     && !TREE_PUBLIC (node->decl))

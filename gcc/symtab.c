@@ -52,6 +52,26 @@ const char * const ld_plugin_symbol_resolution_names[]=
   "prevailing_def_ironly_exp"
 };
 
+/* Follow the IDENTIFIER_TRANSPARENT_ALIAS chain starting at ALIAS
+   until we find an identifier that is not itself a transparent alias.  */
+
+static inline tree
+ultimate_transparent_alias_target (tree alias)
+{
+  tree target = alias;
+
+  while (IDENTIFIER_TRANSPARENT_ALIAS (target))
+    {
+      gcc_checking_assert (TREE_CHAIN (target));
+      target = TREE_CHAIN (target);
+    }
+  gcc_checking_assert (! IDENTIFIER_TRANSPARENT_ALIAS (target)
+		       && ! TREE_CHAIN (target));
+
+  return target;
+}
+
+
 /* Hash asmnames ignoring the user specified marks.  */
 
 hashval_t
@@ -73,6 +93,44 @@ symbol_table::decl_assembler_name_hash (const_tree asmname)
   return htab_hash_string (IDENTIFIER_POINTER (asmname));
 }
 
+/* Return true if assembler names NAME1 and NAME2 leads to the same symbol
+   name.  */
+
+bool
+symbol_table::assembler_names_equal_p (const char *name1, const char *name2)
+{
+  if (name1 != name2)
+    {
+      if (name1[0] == '*')
+	{
+	  size_t ulp_len = strlen (user_label_prefix);
+
+	  name1 ++;
+
+	  if (ulp_len == 0)
+	    ;
+	  else if (strncmp (name1, user_label_prefix, ulp_len) == 0)
+	    name1 += ulp_len;
+	  else
+	    return false;
+	}
+      if (name2[0] == '*')
+	{
+	  size_t ulp_len = strlen (user_label_prefix);
+
+	  name2 ++;
+
+	  if (ulp_len == 0)
+	    ;
+	  else if (strncmp (name2, user_label_prefix, ulp_len) == 0)
+	    name2 += ulp_len;
+	  else
+	    return false;
+	}
+      return !strcmp (name1, name2);
+    }
+  return true;
+}
 
 /* Compare ASMNAME with the DECL_ASSEMBLER_NAME of DECL.  */
 
@@ -82,51 +140,13 @@ symbol_table::decl_assembler_name_equal (tree decl, const_tree asmname)
   tree decl_asmname = DECL_ASSEMBLER_NAME (decl);
   const char *decl_str;
   const char *asmname_str;
-  bool test = false;
 
   if (decl_asmname == asmname)
     return true;
 
   decl_str = IDENTIFIER_POINTER (decl_asmname);
   asmname_str = IDENTIFIER_POINTER (asmname);
-
-
-  /* If the target assembler name was set by the user, things are trickier.
-     We have a leading '*' to begin with.  After that, it's arguable what
-     is the correct thing to do with -fleading-underscore.  Arguably, we've
-     historically been doing the wrong thing in assemble_alias by always
-     printing the leading underscore.  Since we're not changing that, make
-     sure user_label_prefix follows the '*' before matching.  */
-  if (decl_str[0] == '*')
-    {
-      size_t ulp_len = strlen (user_label_prefix);
-
-      decl_str ++;
-
-      if (ulp_len == 0)
-	test = true;
-      else if (strncmp (decl_str, user_label_prefix, ulp_len) == 0)
-	decl_str += ulp_len, test=true;
-      else
-	decl_str --;
-    }
-  if (asmname_str[0] == '*')
-    {
-      size_t ulp_len = strlen (user_label_prefix);
-
-      asmname_str ++;
-
-      if (ulp_len == 0)
-	test = true;
-      else if (strncmp (asmname_str, user_label_prefix, ulp_len) == 0)
-	asmname_str += ulp_len, test=true;
-      else
-	asmname_str --;
-    }
-
-  if (!test)
-    return false;
-  return strcmp (decl_str, asmname_str) == 0;
+  return assembler_names_equal_p (decl_str, asmname_str);
 }
 
 
@@ -273,6 +293,8 @@ symbol_table::change_decl_assembler_name (tree decl, tree name)
 		    : NULL);
       if (node)
 	unlink_from_assembler_name_hash (node, true);
+
+      const char *old_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
       if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
 	  && DECL_RTL_SET_P (decl))
 	warning (0, "%D renamed after being referenced in assembly", decl);
@@ -283,8 +305,48 @@ symbol_table::change_decl_assembler_name (tree decl, tree name)
 	  IDENTIFIER_TRANSPARENT_ALIAS (name) = 1;
 	  TREE_CHAIN (name) = alias;
 	}
+      /* If we change assembler name, also all transparent aliases must
+	 be updated.  There are three kinds - those having same assembler name,
+	 those being renamed in varasm.c and weakref being renamed by the
+	 assembler.  */
       if (node)
-	insert_to_assembler_name_hash (node, true);
+	{
+	  insert_to_assembler_name_hash (node, true);
+	  ipa_ref *ref;
+	  for (unsigned i = 0; node->iterate_direct_aliases (i, ref); i++)
+	    {
+	      struct symtab_node *alias = ref->referring;
+	      if (alias->transparent_alias && !alias->weakref
+		  && symbol_table::assembler_names_equal_p
+			 (old_name, IDENTIFIER_POINTER (
+				      DECL_ASSEMBLER_NAME (alias->decl))))
+		change_decl_assembler_name (alias->decl, name);
+	      else if (alias->transparent_alias
+		       && IDENTIFIER_TRANSPARENT_ALIAS (alias->decl))
+		{
+		  gcc_assert (TREE_CHAIN (DECL_ASSEMBLER_NAME (alias->decl))
+			      && IDENTIFIER_TRANSPARENT_ALIAS
+				     (DECL_ASSEMBLER_NAME (alias->decl)));
+
+		  TREE_CHAIN (DECL_ASSEMBLER_NAME (alias->decl)) = 
+		    ultimate_transparent_alias_target
+			 (DECL_ASSEMBLER_NAME (node->decl));
+		}
+#ifdef ASM_OUTPUT_WEAKREF
+	     else gcc_assert (!alias->transparent_alias || alias->weakref);
+#else
+	     else gcc_assert (!alias->transparent_alias);
+#endif
+	    }
+	  gcc_assert (!node->transparent_alias || !node->definition
+		      || node->weakref
+		      || TREE_CHAIN (DECL_ASSEMBLER_NAME (decl))
+		      || symbol_table::assembler_names_equal_p
+			  (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+			   IDENTIFIER_POINTER
+			     (DECL_ASSEMBLER_NAME
+				 (node->get_alias_target ()->decl))));
+	}
     }
 }
 
@@ -727,6 +789,8 @@ symtab_node::dump_base (FILE *f)
     fprintf (f, " analyzed");
   if (alias)
     fprintf (f, " alias");
+  if (transparent_alias)
+    fprintf (f, " transparent_alias");
   if (weakref)
     fprintf (f, " weakref");
   if (cpp_implicit_alias)
@@ -973,9 +1037,14 @@ symtab_node::verify_base (void)
       error ("node is alias but not definition");
       error_found = true;
     }
-  if (weakref && !alias)
+  if (weakref && !transparent_alias)
     {
-      error ("node is weakref but not an alias");
+      error ("node is weakref but not an transparent_alias");
+      error_found = true;
+    }
+  if (transparent_alias && !alias)
+    {
+      error ("node is transparent_alias but not an alias");
       error_found = true;
     }
   if (same_comdat_group)
@@ -1061,6 +1130,29 @@ symtab_node::verify_base (void)
       get_alias_target ()->dump (stderr);
       error_found = true;
     }
+  if (transparent_alias && definition && !weakref)
+    {
+      symtab_node *to = get_alias_target ();
+      const char *name1
+	= IDENTIFIER_POINTER (
+	    ultimate_transparent_alias_target (DECL_ASSEMBLER_NAME (decl)));
+      const char *name2
+	= IDENTIFIER_POINTER (
+	    ultimate_transparent_alias_target (DECL_ASSEMBLER_NAME (to->decl)));
+      if (!symbol_table::assembler_names_equal_p (name1, name2))
+	{
+	  error ("Transparent alias and target's assembler names differs");
+	  get_alias_target ()->dump (stderr);
+	  error_found = true;
+	}
+    }
+  if (transparent_alias && definition
+      && get_alias_target()->transparent_alias && get_alias_target()->analyzed)
+    {
+      error ("Chained transparent aliases");
+      get_alias_target ()->dump (stderr);
+      error_found = true;
+    }
 
   return error_found;
 }
@@ -1132,15 +1224,35 @@ symtab_node::make_decl_local (void)
 {
   rtx rtl, symbol;
 
+  if (weakref)
+    {
+      weakref = false;
+      IDENTIFIER_TRANSPARENT_ALIAS (DECL_ASSEMBLER_NAME (decl)) = 0;
+      TREE_CHAIN (DECL_ASSEMBLER_NAME (decl)) = NULL_TREE;
+      symtab->change_decl_assembler_name
+	 (decl, DECL_ASSEMBLER_NAME (get_alias_target ()->decl));
+      DECL_ATTRIBUTES (decl) = remove_attribute ("weakref",
+						 DECL_ATTRIBUTES (decl));
+    }
   /* Avoid clearing comdat_groups on comdat-local decls.  */
-  if (TREE_PUBLIC (decl) == 0)
+  else if (TREE_PUBLIC (decl) == 0)
     return;
+
+  /* Localizing a symbol also make all its transparent aliases local.  */
+  ipa_ref *ref;
+  for (unsigned i = 0; iterate_direct_aliases (i, ref); i++)
+    {
+      struct symtab_node *alias = ref->referring;
+      if (alias->transparent_alias)
+	alias->make_decl_local ();
+    }
 
   if (TREE_CODE (decl) == VAR_DECL)
     {
       DECL_COMMON (decl) = 0;
       /* ADDRESSABLE flag is not defined for public symbols.  */
       TREE_ADDRESSABLE (decl) = 1;
+      TREE_STATIC (decl) = 1;
     }
   else gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
@@ -1175,29 +1287,28 @@ symtab_node::make_decl_local (void)
 symtab_node *
 symtab_node::ultimate_alias_target_1 (enum availability *availability)
 {
-  bool weakref_p = false;
+  bool transparent_p = false;
 
   /* To determine visibility of the target, we follow ELF semantic of aliases.
      Here alias is an alternative assembler name of a given definition. Its
      availability prevails the availability of its target (i.e. static alias of
      weak definition is available.
 
-     Weakref is a different animal (and not part of ELF per se). It is just
-     alternative name of a given symbol used within one complation unit
-     and is translated prior hitting the object file.  It inherits the
-     visibility of its target (i.e. weakref of non-overwritable definition
-     is non-overwritable, while weakref of weak definition is weak).
+     Transaparent alias is just alternative anme of a given symbol used within
+     one compilation unit and is translated prior hitting the object file.  It
+     inherits the visibility of its target.
+     Weakref is a different animal (and noweak definition is weak).
 
      If we ever get into supporting targets with different semantics, a target
      hook will be needed here.  */
 
   if (availability)
     {
-      weakref_p = weakref;
-      if (!weakref_p)
+      transparent_p = transparent_alias;
+      if (!transparent_p)
 	*availability = get_availability ();
       else
-	*availability = AVAIL_LOCAL;
+	*availability = AVAIL_NOT_AVAILABLE;
     }
 
   symtab_node *node = this;
@@ -1207,27 +1318,19 @@ symtab_node::ultimate_alias_target_1 (enum availability *availability)
 	node = node->get_alias_target ();
       else
 	{
-	  if (!availability)
+	  if (!availability || (!transparent_p && node->analyzed))
 	    ;
-	  else if (node->analyzed)
-	    {
-	      if (weakref_p)
-		{
-		  enum availability a = node->get_availability ();
-		  if (a < *availability)
-		    *availability = a;
-		}
-	    }
+	  else if (node->analyzed && !node->transparent_alias)
+	    *availability = node->get_availability ();
 	  else
 	    *availability = AVAIL_NOT_AVAILABLE;
 	  return node;
 	}
-      if (node && availability && weakref_p)
+      if (node && availability && transparent_p
+	  && node->transparent_alias)
 	{
-	  enum availability a = node->get_availability ();
-	  if (a < *availability)
-	    *availability = a;
-          weakref_p = node->weakref;
+	  *availability = node->get_availability ();
+	  transparent_p = false;
 	}
     }
   if (availability)
@@ -1442,7 +1545,7 @@ symtab_node::set_implicit_section (symtab_node *n,
    it returns false.  */
 
 bool
-symtab_node::resolve_alias (symtab_node *target)
+symtab_node::resolve_alias (symtab_node *target, bool transparent)
 {
   symtab_node *n;
 
@@ -1468,6 +1571,11 @@ symtab_node::resolve_alias (symtab_node *target)
   definition = true;
   alias = true;
   analyzed = true;
+  transparent |= transparent_alias;
+  transparent_alias = transparent;
+  if (transparent)
+    while (target->transparent_alias && target->analyzed)
+      target = target->get_alias_target ();
   create_reference (target, IPA_REF_ALIAS, NULL);
 
   /* Add alias into the comdat group of its target unless it is already there.  */
@@ -1492,19 +1600,29 @@ symtab_node::resolve_alias (symtab_node *target)
      when renaming symbols.  */
   alias_target = NULL;
 
-  if (cpp_implicit_alias && symtab->state >= CONSTRUCTION)
+  if (!transparent && cpp_implicit_alias && symtab->state >= CONSTRUCTION)
     fixup_same_cpp_alias_visibility (target);
 
   /* If alias has address taken, so does the target.  */
   if (address_taken)
     target->ultimate_alias_target ()->address_taken = true;
 
-  /* All non-weakref aliases of THIS are now in fact aliases of TARGET.  */
+  /* All non-transparent aliases of THIS are now in fact aliases of TARGET.
+     If alias is transparent, also all transparent aliases of THIS are now
+     aliases of TARGET.
+     Also merge same comdat group lists.  */
   ipa_ref *ref;
   for (unsigned i = 0; iterate_direct_aliases (i, ref);)
     {
       struct symtab_node *alias_alias = ref->referring;
-      if (!alias_alias->weakref)
+      if (alias_alias->get_comdat_group ())
+	{
+	  alias_alias->remove_from_same_comdat_group ();
+	  alias_alias->set_comdat_group (NULL);
+	  if (target->get_comdat_group ())
+	    alias_alias->add_to_same_comdat_group (target);
+	}
+      if (!alias_alias->transparent_alias || transparent)
 	{
 	  alias_alias->remove_all_references ();
 	  alias_alias->create_reference (target, IPA_REF_ALIAS, NULL);
@@ -1648,9 +1766,9 @@ symtab_node::get_partitioning_class (void)
   if (cnode && cnode->global.inlined_to)
     return SYMBOL_DUPLICATE;
 
-  /* Weakref aliases are always duplicated.  */
-  if (weakref)
-    return SYMBOL_DUPLICATE;
+  /* Transparent aliases are always duplicated.  */
+  if (transparent_alias)
+    return definition ? SYMBOL_DUPLICATE : SYMBOL_EXTERNAL;
 
   /* External declarations are external.  */
   if (DECL_EXTERNAL (decl))
