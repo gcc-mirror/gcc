@@ -2314,6 +2314,15 @@ subsumes_constraints (tree a, tree b)
   return subsumes (a, b);
 }
 
+/* Returns true when the the constraints in A subsume those in B, but
+   the constraints in B do not subsume the constraints in A.  */
+
+bool
+strictly_subsumes (tree a, tree b)
+{
+  return subsumes (a, b) && !subsumes (b, a);
+}
+
 /* Determines which of the declarations, A or B, is more constrained.
    That is, which declaration's constraints subsume but are not subsumed
    by the other's?

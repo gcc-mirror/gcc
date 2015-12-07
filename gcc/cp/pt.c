@@ -860,9 +860,11 @@ maybe_new_partial_specialization (tree type)
       tree type_constr = current_template_constraints ();
 
       if (type == TREE_TYPE (tmpl))
-	if (tree main_constr = get_constraints (tmpl))
+	{
+	  tree main_constr = get_constraints (tmpl);
 	  if (equivalent_constraints (type_constr, main_constr))
 	    return NULL_TREE;
+	}
 
       // Also, if there's a pre-existing specialization with matching
       // constraints, then this also isn't new.
@@ -4508,8 +4510,8 @@ process_partial_specialization (tree decl)
     = TI_ARGS (get_template_info (DECL_TEMPLATE_RESULT (maintmpl)));
   if (comp_template_args (inner_args, INNERMOST_TEMPLATE_ARGS (main_args))
       && (!flag_concepts
-	  || !subsumes_constraints (current_template_constraints (),
-				    get_constraints (maintmpl))))
+	  || !strictly_subsumes (current_template_constraints (),
+				 get_constraints (maintmpl))))
     {
       if (!flag_concepts)
         error ("partial specialization %q+D does not specialize "
