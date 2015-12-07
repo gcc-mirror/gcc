@@ -1,3 +1,10 @@
+2015-12-07  Steve Ellcey  <sellcey@imgtec.com>
+
+	* reorg.c (optimize_skip): Do not put frame related instructions
+	in annulled delay slots.
+	(steal_delay_list_from_target): Ditto.
+	(fill_slots_from_thread): Ditto.
+
 2015-12-07  Evandro Menezes  <e.menezes@samsung.com>
 
 	* config/aarch64/aarch64-cores.def: Use the Exynos M1 sched model.
