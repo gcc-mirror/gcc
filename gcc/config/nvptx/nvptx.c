@@ -452,6 +452,33 @@ write_one_arg (std::stringstream &s, int for_reg, int argno,
   return argno + 1;
 }
 
+static bool
+write_return (std::stringstream &s, bool for_proto, tree type,
+	      machine_mode ret_mode)
+{
+  machine_mode mode = TYPE_MODE (type);
+  bool return_in_mem = mode != VOIDmode && !RETURN_IN_REG_P (mode);
+
+  mode = arg_promotion (mode);
+  if (for_proto)
+    {
+      if (!return_in_mem && mode != VOIDmode)
+	s << "(.param" << nvptx_ptx_type_from_mode (mode, false)
+	  << " %out_retval) ";
+    }
+  else
+    {
+      /* Prologue.  C++11 ABI causes us to return a reference to the
+	 passed in pointer for return_in_mem.  */
+      ret_mode = arg_promotion (ret_mode);
+      if (ret_mode != VOIDmode)
+	s << "\t.reg" << nvptx_ptx_type_from_mode (ret_mode, false)
+	  << " %retval;\n";
+    }
+
+  return return_in_mem;
+}
+
 /* Look for attributes in ATTRS that would indicate we must write a function
    as a .entry kernel rather than a .func.  Return true if one is found.  */
 
@@ -520,19 +547,7 @@ write_fn_proto (std::stringstream &s, bool is_defn,
   tree result_type = TREE_TYPE (fntype);
 
   /* Declare the result.  */
-  bool return_in_mem = false;
-  if (TYPE_MODE (result_type) != VOIDmode)
-    {
-      machine_mode mode = TYPE_MODE (result_type);
-      if (!RETURN_IN_REG_P (mode))
-	return_in_mem = true;
-      else
-	{
-	  mode = arg_promotion (mode);
-	  s << "(.param" << nvptx_ptx_type_from_mode (mode, false)
-	    << " %out_retval) ";
-	}
-    }
+  bool return_in_mem = write_return (s, true, result_type, VOIDmode);
 
   s << name;
 
@@ -725,8 +740,8 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   write_fn_proto (s, true, name, decl);
   s << "{\n";
 
-  bool return_in_mem = (TYPE_MODE (result_type) != VOIDmode
-			&& !RETURN_IN_REG_P (TYPE_MODE (result_type)));
+  bool return_in_mem = write_return (s, false, result_type,
+				     (machine_mode)cfun->machine->ret_reg_mode);
   if (return_in_mem)
     argno = write_one_arg (s, 0, argno, ptr_type_node, true);
   
@@ -754,16 +769,6 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
     argno = write_one_arg (s, STATIC_CHAIN_REGNUM, argno, ptr_type_node, true);
 
   fprintf (file, "%s", s.str().c_str());
-
-  /* C++11 ABI causes us to return a reference to the passed in
-     pointer for return_in_mem.  */
-  if (cfun->machine->ret_reg_mode != VOIDmode)
-    {
-      machine_mode mode = arg_promotion
-	((machine_mode)cfun->machine->ret_reg_mode);
-      fprintf (file, "\t.reg%s %%retval;\n",
-	       nvptx_ptx_type_from_mode (mode, false));
-    }
 
   fprintf (file, "\t.reg.u%d %s;\n", GET_MODE_BITSIZE (Pmode),
 	   reg_names[OUTGOING_STATIC_CHAIN_REGNUM]);

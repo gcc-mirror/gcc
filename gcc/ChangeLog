@@ -1,3 +1,8 @@
+2015-12-07  Nathan Sidwell  <nathan@acm.org>
+
+	* config//nvptx/nvptx.c (write_return): New.
+	(write_fn_proto, nvptx_declare_function_name): Call it.
+
 2015-12-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61886
