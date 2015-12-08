@@ -12570,22 +12570,26 @@ Which in turn depends on the target processor.
 
 @item -march=@var{name}
 @opindex march
-Specify the name of the target architecture, optionally suffixed by one or
+Specify the name of the target architecture and, optionally, one or
 more feature modifiers.  This option has the form
 @option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}.
 
-The permissible values for @var{arch} are @samp{armv8-a} or
-@samp{armv8.1-a}.
+The permissible values for @var{arch} are @samp{armv8-a},
+@samp{armv8.1-a} or @var{native}.
 
-For the permissible values for @var{feature}, see the sub-section on
-@ref{aarch64-feature-modifiers,,@option{-march} and @option{-mcpu}
+The value @samp{armv8.1-a} implies @samp{armv8-a} and enables compiler
+support for the ARMv8.1 architecture extension.  In particular, it
+enables the @samp{+crc} and @samp{+lse} features.
+
+The value @samp{native} is available on native AArch64 GNU/Linux and
+causes the compiler to pick the architecture of the host system.  This
+option has no effect if the compiler is unable to recognize the
+architecture of the host system,
+
+The permissible values for @var{feature} are listed in the sub-section
+on @ref{aarch64-feature-modifiers,,@option{-march} and @option{-mcpu}
 Feature Modifiers}.  Where conflicting feature modifiers are
 specified, the right-most feature is used.
-
-Additionally on native AArch64 GNU/Linux systems the value
-@samp{native} is available.  This option causes the compiler to pick the
-architecture of the host system.  If the compiler is unable to recognize the
-architecture of the host system this option has no effect.
 
 GCC uses @var{name} to determine what kind of instructions it can emit
 when generating assembly code.  If @option{-march} is specified
@@ -12608,8 +12612,8 @@ option are: @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53}.
 Additionally on native AArch64 GNU/Linux systems the value
 @samp{native} is available.  This option causes the compiler to pick
 the architecture of and tune the performance of the code for the
-processor of the host system.  If the compiler is unable to recognize
-the processor of the host system this option has no effect.
+processor of the host system.  This option has no effect if the
+compiler is unable to recognize the architecture of the host system.
 
 Where none of @option{-mtune=}, @option{-mcpu=} or @option{-march=}
 are specified, the code is tuned to perform well across a range
@@ -12631,9 +12635,9 @@ specified, the right-most feature is used.
 
 Additionally on native AArch64 GNU/Linux systems the value
 @samp{native} is available.  This option causes the compiler to tune
-the performance of the code for the processor of the host system.  If
-the compiler is unable to recognize the processor of the host system
-this option has no effect.
+the performance of the code for the processor of the host system.
+This option has no effect if the compiler is unable to recognize the
+architecture of the host system.
 
 GCC uses @var{name} to determine what kind of instructions it can emit when
 generating assembly code (as if by @option{-march}) and to determine
@@ -12669,7 +12673,8 @@ the following and their inverses @option{no@var{feature}}:
 
 @table @samp
 @item crc
-Enable CRC extension.
+Enable CRC extension.  This is on by default for
+@option{-march=armv8.1-a}.
 @item crypto
 Enable Crypto extension.  This also enables Advanced SIMD and floating-point
 instructions.
@@ -12681,14 +12686,8 @@ Enable Advanced SIMD instructions.  This also enables floating-point
 instructions.  This is on by default for all possible values for options
 @option{-march} and @option{-mcpu}.
 @item lse
-Enable Large System Extension instructions.
-@item pan
-Enable Privileged Access Never support.
-@item lor
-Enable Limited Ordering Regions support.
-@item rdma
-Enable ARMv8.1 Advanced SIMD instructions.  This implies Advanced SIMD
-is enabled.
+Enable Large System Extension instructions.  This is on by default for
+@option{-march=armv8.1-a}.
 
 @end table
 

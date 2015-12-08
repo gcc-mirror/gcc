@@ -1,3 +1,24 @@
+2015-12-08  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/aarch64/aarch64-options-extensions.def: Remove
+	AARCH64_FL_RDMA from "fp" and "simd".  Remove "pan", "lor",
+	"rdma".
+	* config/aarch64/aarch64.h (AARCH64_FL_PAN): Remove.
+	(AARCH64_FL_LOR): Remove.
+	(AARCH64_FL_RDMA): Remove.
+	(AARCH64_FL_V8_1): New.
+	(AARCH64_FL_FOR_AARCH8_1): Replace AARCH64_FL_PAN, AARCH64_FL_LOR
+	and AARCH64_FL_RDMA with AARCH64_FL_V8_1.
+	(AARCH64_ISA_RDMA): Replace AARCH64_FL_RDMA with AARCH64_FL_V8_1.
+	* doc/invoke.texi (AArch64 -march): Rewrite initial paragraph and
+	section on -march=native.  Group descriptions of permitted
+	architecture names together.  Expand description of
+	-march=armv8.1-a.
+	(AArch64 -mtune): Slightly rework section on -march=native.
+	(AArch64 -mcpu): Slightly rework section on -march=native.
+	(AArch64 Feature Modifiers): Remove "pan", "lor" and "rdma".
+	State that -march=armv8.1-a enables "crc" and "lse".
+
 2015-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/invoke.texi (SPARC options): Fix typo.
