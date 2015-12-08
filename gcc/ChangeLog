@@ -1,3 +1,10 @@
+2015-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/68291
+	PR middle-end/68292
+	* cfgexpand.c (set_rtl): Always accept mode mismatch for SSA names
+	with BLKmode promoted mode based on RESULT_DECLs.
+
 2015-12-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/68701
