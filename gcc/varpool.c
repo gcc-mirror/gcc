@@ -490,7 +490,7 @@ varpool_node::get_availability (void)
   if (DECL_IN_CONSTANT_POOL (decl)
       || DECL_VIRTUAL_P (decl))
     return AVAIL_AVAILABLE;
-  if (transparent_alias)
+  if (transparent_alias && definition)
     {
       enum availability avail;
 
@@ -667,11 +667,11 @@ symbol_table::remove_unreferenced_decls (void)
 	    enqueue_node (vnode, &first);
 	  else
 	    {
-	      referenced.add (node);
-	      while (node->alias && node->definition)
+	      referenced.add (vnode);
+	      while (vnode && vnode->alias && vnode->definition)
 		{
-		  node = node->get_alias_target ();
-	          referenced.add (node);
+		  vnode = vnode->get_alias_target ();
+	          referenced.add (vnode);
 		}
 	    }
 	}

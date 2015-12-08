@@ -1,8 +1,15 @@
 2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61886
-	* ipa-visibility.c (can_replace_by_local_alias): Look through transparent
-	aliaes; refuse weakrefs.
+	* varpool.c (varpool_node::get_availability): Recurse only on
+	weakrefs with definition in the target.
+	(symbol_table::remove_unreferenced_decls): Keep aliases in the boundary.
+
+2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61886
+	* ipa-visibility.c (can_replace_by_local_alias): Look through
+	transparent aliases; refuse weakrefs.
 	(update_visibility_by_resolution_info): Skip transparent aliases in the
 	analysis part
 
