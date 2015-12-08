@@ -610,6 +610,24 @@ rl78_force_nonfar_3 (rtx *operands, rtx (*gen)(rtx,rtx,rtx))
   return 1;
 }
 
+int
+rl78_one_far_p (rtx *operands, int n)
+{
+  rtx which = NULL;
+  int i, c = 0;
+
+  for (i = 0; i < n; i ++)
+    if (rl78_far_p (operands[i]))
+      {
+	if (which == NULL)
+	  which = operands[i];
+	else if (rtx_equal_p (operands[i], which))
+	  continue;
+	c ++;
+      }
+  return c <= 1;
+}
+
 #undef  TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE		rl78_can_eliminate
 
