@@ -1,3 +1,8 @@
+2015-12-08  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/got_mem_hoist_1.c (dg-skip-if): Match big-endian
+	as well.
+
 2015-12-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/68116
