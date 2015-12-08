@@ -1005,7 +1005,7 @@ symtab_node::verify_base (void)
 	}
       if (!hashed_node
 	  && !(is_a <varpool_node *> (this)
-	       || DECL_HARD_REGISTER (decl)))
+	       && DECL_HARD_REGISTER (decl)))
 	{
           error ("node not found in symtab assembler name hash");
           error_found = true;
@@ -1637,7 +1637,7 @@ symtab_node::resolve_alias (symtab_node *target, bool transparent)
 bool
 symtab_node::noninterposable_alias (symtab_node *node, void *data)
 {
-  if (decl_binds_to_current_def_p (node->decl))
+  if (!node->transparent_alias && decl_binds_to_current_def_p (node->decl))
     {
       symtab_node *fn = node->ultimate_alias_target ();
 
