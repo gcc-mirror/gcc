@@ -1,3 +1,13 @@
+2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61886
+	* lto-partition.c (add_symbol_to_partition_1): Transparent aliases
+	are not part of the definition.
+	(contained_in_symbol): Likewise.
+	(promote_symbol): When promoting a symbol also promote all transparent
+	aliases.
+	(rename_statics): Weakref needs unique name, too.
+
 2015-12-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61886

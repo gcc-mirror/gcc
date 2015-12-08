@@ -177,8 +177,20 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
   /* Add all aliases associated with the symbol.  */
 
   FOR_EACH_ALIAS (node, ref)
-    if (!node->weakref)
+    if (!ref->referring->transparent_alias)
       add_symbol_to_partition_1 (part, ref->referring);
+    else
+      {
+	struct ipa_ref *ref2;
+	/* We do not need to add transparent aliases if they are not used.
+	   However we must add aliases of transparent aliases if they exist.  */
+	FOR_EACH_ALIAS (ref->referring, ref2)
+	  {
+	    /* Nested transparent aliases are not permitted.  */
+	    gcc_checking_assert (!ref2->referring->transparent_alias);
+	    add_symbol_to_partition_1 (part, ref2->referring);
+	  }
+      }
 
   /* Ensure that SAME_COMDAT_GROUP lists all allways added in a group.  */
   if (node->same_comdat_group)
@@ -199,8 +211,10 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
 static symtab_node *
 contained_in_symbol (symtab_node *node)
 {
-  /* Weakrefs are never contained in anything.  */
-  if (node->weakref)
+  /* There is no need to consider transparent aliases to be part of the
+     definition: they are only useful insite the partition they are output
+     and thus we will always see an explicit reference to it.  */
+  if (node->transparent_alias)
     return node;
   if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
     {
@@ -967,6 +981,23 @@ promote_symbol (symtab_node *node)
   TREE_PUBLIC (node->decl) = 1;
   DECL_VISIBILITY (node->decl) = VISIBILITY_HIDDEN;
   DECL_VISIBILITY_SPECIFIED (node->decl) = true;
+  ipa_ref *ref;
+
+  /* Promoting a symbol also promotes all trasparent aliases with exception
+     of weakref where the visibility flags are always wrong and set to 
+     !PUBLIC.  */
+  for (unsigned i = 0; node->iterate_direct_aliases (i, ref); i++)
+    {
+      struct symtab_node *alias = ref->referring;
+      if (alias->transparent_alias && !alias->weakref)
+	{
+	  TREE_PUBLIC (alias->decl) = 1;
+	  DECL_VISIBILITY (alias->decl) = VISIBILITY_HIDDEN;
+	  DECL_VISIBILITY_SPECIFIED (alias->decl) = true;
+	}
+      gcc_assert (!alias->weakref || TREE_PUBLIC (alias->decl));
+    }
+
   if (symtab->dump_file)
     fprintf (symtab->dump_file,
 	    "Promoting as hidden: %s\n", node->name ());
@@ -974,7 +1005,8 @@ promote_symbol (symtab_node *node)
 
 /* Return true if NODE needs named section even if it won't land in the partition
    symbol table.
-   FIXME: we should really not use named sections for inline clones and master clones.  */
+   FIXME: we should really not use named sections for inline clones and master
+   clones.  */
 
 static bool
 may_need_named_section_p (lto_symtab_encoder_t encoder, symtab_node *node)
@@ -1004,7 +1036,7 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node *node)
   tree name = DECL_ASSEMBLER_NAME (decl);
 
   /* See if this is static symbol. */
-  if ((node->externally_visible
+  if (((node->externally_visible && !node->weakref)
       /* FIXME: externally_visible is somewhat illogically not set for
 	 external symbols (i.e. those not defined).  Remove this test
 	 once this is fixed.  */
