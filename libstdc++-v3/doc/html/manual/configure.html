@@ -174,10 +174,12 @@
 	Mostly useful together with shared memory allocators, see PR
 	libstdc++/16612 for details.
      </p></dd><dt><span class="term"><code class="code">--enable-concept-checks</code></span></dt><dd><p>This turns on additional compile-time checks for instantiated
-	library templates, in the form of specialized templates,
-	<a class="link" href="concept_checking.html" title="Concept Checking">described here</a>.  They
+	library templates, in the form of specialized templates described in
+        the <a class="link" href="concept_checking.html" title="Concept Checking">Concept
+        Checking</a> section.  They
 	can help users discover when they break the rules of the STL, before
-	their programs run.
+	their programs run. These checks are based on C++03 rules and some of
+	them are not compatible with correct C++11 code.
      </p></dd><dt><span class="term"><code class="code">--enable-symvers[=style]</code></span></dt><dd><p>In 3.1 and later, tries to turn on symbol versioning in the
 	shared library (if a shared library has been
 	requested). Values for 'style' that are currently supported
@@ -236,9 +238,10 @@
    </p></dd><dt><span class="term"><code class="code">--with-default-libstdcxx-abi=</code><em class="replaceable"><code>OPTION</code></em></span></dt><dd><p>
      Set the default value for the <span class="symbol">_GLIBCXX_USE_CXX11_ABI</span>
      macro (see <a class="xref" href="using_macros.html" title="Macros">Macros</a>).
-     The default is <code class="option">OPTION=c++11</code> which sets the macro to
+     The default is <code class="option">OPTION=new</code> which sets the macro to
      <code class="literal">1</code>,
-     use <code class="option">OPTION=c++98</code> to set it to <code class="literal">0</code>.
+     use <code class="option">OPTION=gcc4-compatible</code> to set it to
+     <code class="literal">0</code>.
      This option does not change the library ABI.
    </p></dd><dt><span class="term"><code class="code">--enable-vtable-verify</code>[default]</span></dt><dd><p>Use <code class="code">-fvtable-verify=std</code> to compile the C++
     runtime with instrumentation for vtable verification. All virtual
@@ -247,4 +250,8 @@
     <code class="classname">iostream</code>, and others.  Disabling means that
     the C++ runtime is compiled without support for vtable
     verification. By default, this option is off.
-     </p></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="setup.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="setup.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="make.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 2. Setup </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Make</td></tr></table></div></body></html>
+     </p></dd><dt><span class="term"><code class="code">--enable-libstdcxx-filesystem-ts</code>[default]</span></dt><dd><p>Build <code class="filename">libstdc++fs.a</code> as well
+      as the usual libstdc++ and libsupc++ libraries. This is enabled by
+      default on select POSIX targets where it is known to work and disabled
+      otherwise.
+    </p></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="setup.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="setup.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="make.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 2. Setup </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Make</td></tr></table></div></body></html>

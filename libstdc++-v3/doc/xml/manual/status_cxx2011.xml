@@ -17,8 +17,8 @@ Final Draft International Standard, Standard for Programming Language C++
 </para>
 
 <para>
-In this implementation <literal>-std=gnu++11</literal> or
-<literal>-std=c++11</literal> flags must be used to enable language
+In this implementation the <literal>-std=gnu++11</literal> or
+<literal>-std=c++11</literal> flag must be used to enable language
 and library
 features. See <link linkend="manual.intro.using.flags">dialect</link>
 options. The pre-defined symbol
@@ -642,10 +642,8 @@ particular release.
       <entry>Class template <code>shared_ptr</code></entry>
       <entry>Y</entry>
       <entry>
-	<para>
 	  Uses code from
 	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.boost.org/libs/smart_ptr/shared_ptr.htm">boost::shared_ptr</link>.
-	</para>
       </entry>
     </row>
     <row>
@@ -2673,7 +2671,10 @@ particular release.
       <emphasis>30.2.3 [thread.req.native]/1</emphasis>
       <classname>native_handle_type</classname> and
       <methodname>native_handle</methodname> are provided. The handle types
-      are defined in terms of the Gthreads abstraction layer.
+      are defined in terms of the Gthreads abstraction layer, although this
+      is subject to change at any time. Any use of
+      <classname>native_handle</classname> is inherently non-portable and
+      not guaranteed to work between major releases of GCC.
       <itemizedlist>
          <listitem><para><classname>thread</classname>: The native handle type is
             a typedef for <code>__gthread_t</code> i.e. <code>pthread_t</code>

@@ -66,7 +66,7 @@
 </para>
 
 <para> Putting all of these ideas together results in the C++ Standard
-library ABI, which is the compilation of a given library API by a
+Library ABI, which is the compilation of a given library API by a
 given compiler ABI. In a nutshell:
 </para>
 

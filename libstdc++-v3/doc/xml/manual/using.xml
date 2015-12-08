@@ -13,7 +13,10 @@
     </para>
 
     <para>
-      By default, <command>g++</command> is equivalent to  <command>g++ -std=gnu++98</command>. The standard library also defaults to this dialect.
+      The standard library conforms to the dialect of C++ specified by the
+      <option>-std</option> option passed to the compiler.
+      By default, <command>g++</command> is equivalent to
+      <command>g++ -std=gnu++98</command> for GCC 5 and older releases.
     </para>
 
  <table frame="all" xml:id="table.cmd_options">
@@ -32,12 +35,14 @@
 
   <tbody>
     <row>
-      <entry><literal>-std=c++98</literal></entry>
+      <entry><literal>-std=c++98</literal> or <literal>-std=c++03</literal>
+      </entry>
       <entry>Use the 1998 ISO C++ standard plus amendments.</entry>
     </row>
 
     <row>
-      <entry><literal>-std=gnu++98</literal></entry>
+      <entry><literal>-std=gnu++98</literal> or <literal>-std=gnu++03</literal>
+      </entry>
       <entry>As directly above, with GNU extensions.</entry>
     </row>
 
@@ -48,6 +53,16 @@
 
     <row>
       <entry><literal>-std=gnu++11</literal></entry>
+      <entry>As directly above, with GNU extensions.</entry>
+    </row>
+
+    <row>
+      <entry><literal>-std=c++14</literal></entry>
+      <entry>Use the 2014 ISO C++ standard.</entry>
+    </row>
+
+    <row>
+      <entry><literal>-std=gnu++14</literal></entry>
       <entry>As directly above, with GNU extensions.</entry>
     </row>
 
@@ -76,6 +91,14 @@
       <entry>Linking to <filename class="libraryfile">libatomic</filename>
         is required for some uses of ISO C++11
         <filename class="headerfile">&lt;atomic&gt;</filename>.
+      </entry>
+    </row>
+
+    <row>
+      <entry><literal>-lstdc++fs</literal></entry>
+      <entry>Linking to <filename class="libraryfile">libstdc++fs</filename>
+        is required for use of the Filesystem library extensions in
+        <filename class="headerfile">&lt;experimental/filesystem&gt;</filename>.
       </entry>
     </row>
 
@@ -703,7 +726,7 @@ and <code>std::sinl</code>.
 
 <para>There are three base header files that are provided. They can be
 used to precompile the standard headers and extensions into binary
-files that may the be used to speed compiles that use these headers.
+files that may then be used to speed up compilations that use these headers.
 </para>
 
 
@@ -711,7 +734,7 @@ files that may the be used to speed compiles that use these headers.
 <listitem>
   <para>stdc++.h</para>
 <para>Includes all standard headers. Actual content varies depending on
-language dialect.
+<link linkend="manual.intro.using.flags">language dialect</link>.
 </para>
 </listitem>
 
@@ -722,13 +745,14 @@ language dialect.
 </listitem>
 
 <listitem><para>extc++.h</para>
-<para>Includes all of &lt;stdtr1c++.h&gt;, and adds all the Extension headers.
+<para>Includes all of the Extension headers
+(and in C++98 mode also adds all the TR1 headers by including all of
+&lt;stdtr1c++.h&gt;).
 </para></listitem>
 </itemizedlist>
 
-<para>How to construct a .gch file from one of these base header files.</para>
-
-<para>First, find the include directory for the compiler. One way to do
+<para>To construct a .gch file from one of these base header files,
+first find the include directory for the compiler. One way to do
 this is:</para>
 
 <programlisting>
@@ -1027,8 +1051,8 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
   <listitem><para>std</para>
 <para>The ISO C++ standards specify that "all library entities are defined
 within namespace std." This includes namespaces nested
-within <code>namespace std</code>, such as <code>namespace
-std::tr1</code>.
+within namespace <code>std</code>, such as namespace
+<code>std::chrono</code>.
 </para>
 </listitem>
 <listitem><para>abi</para>
@@ -1333,8 +1357,31 @@ A quick read of the relevant part of the GCC
       you.
     </para>
     </section>
-  </section>
 
+    <section xml:id="manual.intro.using.linkage.experimental" xreflabel="Library Extensions"><info><title>Experimental Library Extensions</title></info>
+
+    <para>
+      GCC 5.3 includes an implementation of the Filesystem library defined
+      by the technical specification ISO/IEC TS 18822:2015. Because this is
+      an experimental library extension, not part of the C++ standard, it
+      is implemented in a separate library,
+      <filename class="libraryfile">libstdc++fs.a</filename>, and there is
+      no shared library for it. To use the library you should include
+      <filename class="headerfile">&lt;experimental/filesystem&gt;</filename>
+      and link with <option>-lstdc++fs</option>. The library implementation
+      is incomplete on non-POSIX platforms, specifically Windows support is
+      rudimentary.
+    </para>
+
+    <para>
+      Due to the experimental nature of the Filesystem library the usual
+      guarantees about ABI stability and backwards compatibility do not apply
+      to it. There is no guarantee that the components in any
+      <filename class="headerfile">&lt;experimental/xxx&gt;</filename>
+      header will remain compatible between different GCC releases.
+    </para>
+    </section>
+  </section>
 
   <section xml:id="manual.intro.using.concurrency" xreflabel="Concurrency"><info><title>Concurrency</title></info>
     <?dbhtml filename="using_concurrency.html"?>

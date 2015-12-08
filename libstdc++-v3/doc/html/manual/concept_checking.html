@@ -35,8 +35,9 @@
      <code class="literal">-D_GLIBCXX_CONCEPT_CHECKS</code>.
  </p><p>
    Please note that the checks are based on the requirements in the original
-   C++ standard, some of which have changed in the new C++11 revision.
-   Additionally, some correct code might be rejected by the concept checks,
+   C++ standard, many of which were relaxed in the C++11 standard and so valid
+   C++11 code may be incorrectly rejected by the concept checks.  Additionally,
+   some correct C++03 code might be rejected by the concept checks,
    for example template argument types may need to be complete when used in
    a template definition, rather than at the point of instantiation.
    There are no plans to address these shortcomings.

@@ -10,8 +10,8 @@
 </info>
 
 <para>
-In this implementation <literal>-std=gnu++1y</literal> or
-<literal>-std=c++1y</literal> flags must be used to enable language
+In this implementation the <literal>-std=gnu++14</literal> or
+<literal>-std=c++14</literal> flag must be used to enable language
 and library
 features. See <link linkend="manual.intro.using.flags">dialect</link>
 options. The pre-defined symbol
@@ -196,7 +196,7 @@ not in any particular release.
       </entry>
       <entry>Shared Locking in C++</entry>
       <entry>Y</entry>
-      <entry>Need tests</entry>
+      <entry/>
     </row>
 
 
@@ -395,15 +395,18 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8C8B0" ?>
       <entry>
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3932.htm">
-	  N3940
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4100.pdf">
+	  N4100
 	</link>
       </entry>
       <entry>File System</entry>
-      <entry>WIP</entry>
-      <entry></entry>
+      <entry>Y</entry>
+      <entry>
+	Link with
+	<link linkend="manual.intro.using.linkage.experimental">
+	<option>-lstdc++fs</option></link>
+      </entry>
     </row>
 
 

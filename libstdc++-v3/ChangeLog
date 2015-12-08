@@ -1,3 +1,15 @@
+2015-12-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Backport documentation improvements from
+	mainline.
+	* doc/xml/manual/configure.xml: Likewise.
+	* doc/xml/manual/diagnostics.xml: Likewise.
+	* doc/xml/manual/extensions.xml: Likewise.
+	* doc/xml/manual/status_cxx2011.xml: Likewise.
+	* doc/xml/manual/status_cxx2014.xml: Likewise.
+	* doc/xml/manual/using.xml: Likewise.
+	* doc/html/*: Regenerate.
+
 2015-12-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/56383
