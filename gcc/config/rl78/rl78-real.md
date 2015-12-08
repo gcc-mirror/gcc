@@ -589,7 +589,7 @@
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
   ""
-  "bf\tA.%B0, $%1"
+  "bt\tA.%B0, $1f\n\tbr !!%1\n\t1:"
   [(set (attr "update_Z") (const_string "clobber"))]
 )
 
@@ -601,7 +601,7 @@
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
   ""
-  "bt\tA.%B0, $%1"
+  "bf\tA.%B0, $1f\n\tbr !!%1\n\t1:"
   [(set (attr "update_Z") (const_string "clobber"))]
 )
 

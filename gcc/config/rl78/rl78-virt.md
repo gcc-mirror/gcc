@@ -42,8 +42,8 @@
 )
 
 (define_insn "*movqi_virt"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=vY,v,Wfr")
-	(match_operand    1 "general_operand" "vInt8J,YWfr,vInt8J"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=vY,v,*Wfr,Y,*Wfr,*Wfr")
+	(match_operand    1 "general_operand" "vInt8JY,*Wfr,vInt8J,*Wfr,Y,*Wfr"))]
   "rl78_virt_insns_ok ()"
   "v.mov %0, %1"
   [(set_attr "valloc" "op1")]
@@ -58,8 +58,8 @@
 )
 
 (define_insn "*movhi_virt"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=vS,  Y,   v,   Wfr")
-	(match_operand:HI 1 "general_operand"      "viYS, viS, Wfr, vi"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=vS,  Y,   v,   *Wfr")
+	(match_operand:HI 1 "general_operand"      "viYS, viS, *Wfr, vi"))]
   "rl78_virt_insns_ok ()"
   "v.movw %0, %1"
   [(set_attr "valloc" "op1")]
@@ -68,17 +68,17 @@
 ;;---------- Conversions ------------------------
 
 (define_insn "*zero_extendqihi2_virt"
-  [(set (match_operand:HI                 0 "rl78_nonfar_nonimm_operand" "=vm")
-	(zero_extend:HI (match_operand:QI 1 "general_operand" "vim")))]
-  "rl78_virt_insns_ok ()"
+  [(set (match_operand:HI                 0 "rl78_nonfar_nonimm_operand" "=vY,*Wfr")
+	(zero_extend:HI (match_operand:QI 1 "general_operand" "vim,viY")))]
+  "rl78_virt_insns_ok () && rl78_one_far_p (operands, 2)"
   "v.zero_extend\t%0, %1"
   [(set_attr "valloc" "op1")]
   )
 
 (define_insn "*extendqihi2_virt"
-  [(set (match_operand:HI                 0 "rl78_nonfar_nonimm_operand" "=vm")
-	(sign_extend:HI (match_operand:QI 1 "general_operand" "vim")))]
-  "rl78_virt_insns_ok ()"
+  [(set (match_operand:HI                 0 "rl78_nonfar_nonimm_operand" "=vY,*Wfr")
+	(sign_extend:HI (match_operand:QI 1 "general_operand" "vim,viY")))]
+  "rl78_virt_insns_ok () && rl78_one_far_p (operands, 2)"
   "v.sign_extend\t%0, %1"
   [(set_attr "valloc" "op1")]
   )
@@ -95,20 +95,20 @@
 )
 
 (define_insn "*add<mode>3_virt"
-  [(set (match_operand:QHI           0 "rl78_nonfar_nonimm_operand" "=vY,S")
-	(plus:QHI (match_operand:QHI 1 "rl78_nonfar_operand" "viY,0")
-		  (match_operand:QHI 2 "rl78_general_operand" "vim,i")))
+  [(set (match_operand:QHI           0 "rl78_nonimmediate_operand" "=vY,  S, *Wfr,  vY")
+	(plus:QHI (match_operand:QHI 1 "rl78_general_operand"      "%viY, 0, 0viY, *Wfr")
+		  (match_operand:QHI 2 "rl78_general_operand"       "vim, i, viY,  viY")))
    ]
-  "rl78_virt_insns_ok ()"
+  "rl78_virt_insns_ok () && rl78_one_far_p (operands, 3)"
   "v.add\t%0, %1, %2"
 )
 
 (define_insn "*sub<mode>3_virt"
-  [(set (match_operand:QHI            0 "rl78_nonfar_nonimm_operand" "=vm,S")
-	(minus:QHI (match_operand:QHI 1 "rl78_nonfar_operand" "vim,0")
-		   (match_operand:QHI 2 "rl78_general_operand" "vim,i")))
+  [(set (match_operand:QHI            0 "rl78_nonimmediate_operand" "=vY, S, *Wfr,  vY")
+	(minus:QHI (match_operand:QHI 1 "rl78_general_operand"      "viY, 0, 0viY, *Wfr")
+		   (match_operand:QHI 2 "rl78_general_operand"      "vim, i, viY,  viY")))
    ]
-  "rl78_virt_insns_ok ()"
+  "rl78_virt_insns_ok () && rl78_one_far_p (operands, 3)"
   "v.sub\t%0, %1, %2"
 )
 
@@ -131,29 +131,29 @@
 )
 
 (define_insn "*andqi3_virt"
-  [(set (match_operand:QI         0 "rl78_nonimmediate_operand" "=vm")
-	(and:QI (match_operand:QI 1 "rl78_general_operand" "vim")
-		(match_operand:QI 2 "rl78_general_operand" "vim")))
+  [(set (match_operand:QI         0 "rl78_nonimmediate_operand" "=vm,  *Wfr,  vY")
+	(and:QI (match_operand:QI 1 "rl78_general_operand"      "%vim, 0viY, *Wfr")
+		(match_operand:QI 2 "rl78_general_operand"      "vim,  viY,  viY")))
    ]
-  "rl78_virt_insns_ok ()"
+  "rl78_virt_insns_ok () && rl78_one_far_p (operands, 3)"
   "v.and\t%0, %1, %2"
 )
 
 (define_insn "*iorqi3_virt"
-  [(set (match_operand:QI         0 "rl78_nonimmediate_operand" "=vm")
-	(ior:QI (match_operand:QI 1 "rl78_general_operand" "vim")
-		(match_operand:QI 2 "rl78_general_operand" "vim")))
+  [(set (match_operand:QI         0 "rl78_nonimmediate_operand" "=vm,  *Wfr,  vY")
+	(ior:QI (match_operand:QI 1 "rl78_general_operand"      "%vim, 0viY, *Wfr")
+		(match_operand:QI 2 "rl78_general_operand"      "vim,  viY,  viY")))
    ]
-  "rl78_virt_insns_ok ()"
+  "rl78_virt_insns_ok () && rl78_one_far_p (operands, 3)"
   "v.or\t%0, %1, %2"
 )
 
 (define_insn "*xorqi3_virt"
-  [(set (match_operand:QI         0 "rl78_nonfar_nonimm_operand" "=v,vm,m")
-	(xor:QI (match_operand:QI 1 "rl78_nonfar_operand" "%0,vm,vm")
-		(match_operand    2 "rl78_general_operand" "i,vm,vim")))
+  [(set (match_operand:QI         0 "rl78_nonimmediate_operand" "=vm,  *Wfr,  vY")
+	(xor:QI (match_operand:QI 1 "rl78_general_operand"      "%vim, 0viY, *Wfr")
+		(match_operand    2 "rl78_general_operand"      "vim,  viY,  viY")))
    ]
-  "rl78_virt_insns_ok ()"
+  "rl78_virt_insns_ok () && rl78_one_far_p (operands, 3)"
   "v.xor\t%0, %1, %2"
 )
 

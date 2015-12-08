@@ -1,3 +1,22 @@
+2015-12-07  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/constraints.md (Wfr): Change to be a non-memory
+	constraint.
+	* config/rl78/rl78-protos.h (rl78_one_far_p): Declare.
+	* config/rl78/rl78.c (rl78_one_far_p): Define.
+	* config/rl78/rl78-virt (movqi_virt): Fix far memory
+	alternatives.
+	(movhi_virt): Likewise.
+	(zero_extendqihi2_virt): Likewise.
+	(extendqihi2_virt): Likewise.
+	(add<mode>3_virt): Likewise.
+	(sub<mode>3_virt): Likewise.
+	(andqi3_virt): Likewise.
+	(iorqi3_virt): Likewise.
+	(xorqi3_virt): Likewise.
+	* config/rl78/rl78-real.md (bf,br): Use long forms to avoid reloc
+	overflow in large files.
+
 2015-12-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/63668

@@ -364,7 +364,7 @@
                || satisfies_constraint_Cs1 (op)")
   )
 
-(define_memory_constraint "Wfr"
+(define_constraint "Wfr"
   "ES/CS far pointer"
   (and (match_code "mem")
        (match_test "rl78_far_p (op)"))
