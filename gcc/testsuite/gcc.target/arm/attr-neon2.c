@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_neon_ok } */
-/* { dg-options "-O2 -mfloat-abi=softfp -mfpu=vfp" } */
+/* { dg-require-effective-target arm_vfp_ok } */
+/* { dg-options "-O2" } */
+/* { dg-add-options arm_vfp } */
 
 #pragma GCC target ("fpu=neon")
 #include <arm_neon.h>
