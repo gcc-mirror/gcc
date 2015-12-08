@@ -1,5 +1,11 @@
 2015-12-08  David Malcolm  <dmalcolm@redhat.com>
 
+	* c-parser.c (c_parser_alignof_expression): Capture location of
+	closing parenthesis (if any), or of end of unary expression, and
+	use it to build a src_range for the expression.
+
+2015-12-08  David Malcolm  <dmalcolm@redhat.com>
+
 	PR c/68757
 	* c-parser.c (c_parser_get_builtin_args): Add
 	"out_close_paren_loc" param, and write back to it.

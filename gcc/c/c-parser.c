@@ -6853,7 +6853,8 @@ static struct c_expr
 c_parser_alignof_expression (c_parser *parser)
 {
   struct c_expr expr;
-  location_t loc = c_parser_peek_token (parser)->location;
+  location_t start_loc = c_parser_peek_token (parser)->location;
+  location_t end_loc;
   tree alignof_spelling = c_parser_peek_token (parser)->value;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_ALIGNOF));
   bool is_c11_alignof = strcmp (IDENTIFIER_POINTER (alignof_spelling),
@@ -6864,10 +6865,10 @@ c_parser_alignof_expression (c_parser *parser)
   if (is_c11_alignof)
     {
       if (flag_isoc99)
-	pedwarn_c99 (loc, OPT_Wpedantic, "ISO C99 does not support %qE",
+	pedwarn_c99 (start_loc, OPT_Wpedantic, "ISO C99 does not support %qE",
 		     alignof_spelling);
       else
-	pedwarn_c99 (loc, OPT_Wpedantic, "ISO C90 does not support %qE",
+	pedwarn_c99 (start_loc, OPT_Wpedantic, "ISO C90 does not support %qE",
 		     alignof_spelling);
     }
   c_parser_consume_token (parser);
@@ -6884,6 +6885,7 @@ c_parser_alignof_expression (c_parser *parser)
       c_parser_consume_token (parser);
       loc = c_parser_peek_token (parser)->location;
       type_name = c_parser_type_name (parser);
+      end_loc = c_parser_peek_token (parser)->location;
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
       if (type_name == NULL)
 	{
@@ -6910,21 +6912,25 @@ c_parser_alignof_expression (c_parser *parser)
 					    false, is_c11_alignof, 1);
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
+      set_c_expr_source_range (&ret, start_loc, end_loc);
       return ret;
     }
   else
     {
       struct c_expr ret;
       expr = c_parser_unary_expression (parser);
+      end_loc = expr.src_range.m_finish;
     alignof_expr:
       mark_exp_read (expr.value);
       c_inhibit_evaluation_warnings--;
       in_alignof--;
-      pedwarn (loc, OPT_Wpedantic, "ISO C does not allow %<%E (expression)%>",
+      pedwarn (start_loc,
+	       OPT_Wpedantic, "ISO C does not allow %<%E (expression)%>",
 	       alignof_spelling);
-      ret.value = c_alignof_expr (loc, expr.value);
+      ret.value = c_alignof_expr (start_loc, expr.value);
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
+      set_c_expr_source_range (&ret, start_loc, end_loc);
       return ret;
     }
 }
