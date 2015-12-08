@@ -194,7 +194,7 @@
 	* config/rs6000/rs6000.md (rsqrt<mode>2): Call new function name.
 	(sqrt<mode>2): Replace define_insn with define_expand that may call
 	rs6000_emit_swsqrt.
-	
+
 2015-12-04  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
@@ -234,8 +234,7 @@
 
 2015-12-04  Nathan Sidwell  <nathan@acm.org>
 
-	* config/nvptx/nvptx.c (nvptx_assemble_decl_begin): New,
-	replacing ...
+	* config/nvptx/nvptx.c (nvptx_assemble_decl_begin): New, replacing ...
 	(init_output_initializer): ... this.
 	(nvptx_output_aligned_decl, nvptx_asm_declare_constant_name,
 	nvptx_declare_object_name, nvptx_assemble_undefined_decl): Use
@@ -297,8 +296,8 @@
 
 2015-12-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
-	* (cstore<mode>4_unsigned): Use gpc_reg_operand instead of
-	register_operand.  Remove empty constraints.  Use std::swap.
+	* config/rs6000/rs6000.md (cstore<mode>4_unsigned): Use gpc_reg_operand
+	instead of register_operand.  Remove empty constraints.  Use std::swap.
 	(cstore_si_as_di, cstore<mode>4_signed_imm,
 	cstore<mode>4_unsigned_imm, cstore<mode>4 for GPR): Use
 	gpc_reg_operand instead of register_operand.
@@ -308,13 +307,12 @@
 2015-12-04  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc (extra_gcc_objs): Define for MSP430.
-        * common/config/msp430/msp430-common.c (msp430_handle_option):
-	Pass both -mmcu and -mcpu on to the back end if they are both
-	defined.
+	* common/config/msp430/msp430-common.c (msp430_handle_option):
+	Pass both -mmcu and -mcpu on to the back end if they are both defined.
 	* config/msp430/msp430.c (hwmult_name): New function.
-        (msp430_option_override): If an unrecognised MCU name is
+	(msp430_option_override): If an unrecognised MCU name is
 	detected only warn if the user has not provided suitable
-        -mhwmult and -mcpu options.  Use msp430_warn_mcu to control
+	-mhwmult and -mcpu options.  Use msp430_warn_mcu to control
 	warning messages.  Generate warnings about conflicts between
 	-mmcu and -mcpu and -mhwmult options.
 	If neither -mcpu nor -mmcu have been specified but -mhwmult=
@@ -328,11 +326,11 @@
 	* config/msp430/driver-msp430.c: New file.
 	* config/msp430/msp430.opt (warn-mcu): New option.
 	* doc/invoke.texi: Update description of -mhwmult=auto.
-        Document -mwarn-mcu option.
+	Document -mwarn-mcu option.
 
 2015-12-04  Segher Boessenkool  <segher&kernel.crashing.org>
 
-	* (cstore<mode>4_signed): New expander.
+	* config/rs6000/rs6000.md (cstore<mode>4_signed): New expander.
 	(cstore<mode>4): Call it.
 
 2015-12-04  Jakub Jelinek  <jakub@redhat.com>
@@ -513,7 +511,7 @@
 	* doc/generic.texi (Blocks): Document new handling of VLAs.
 
 2015-12-04  Eric Botcazou  <ebotcazou@adacore.com>
-            Tristan Gingold  <gingold@adacore.com>
+	    Tristan Gingold  <gingold@adacore.com>
 
 	PR middle-end/65958
 	* config/aarch64/aarch64-protos.h (aarch64_output_probe_stack-range):
@@ -710,8 +708,7 @@
 	(nvptx_addr_space_from_sym): Delete.
 	(nvptx_encode_section_info): New.
 	(section_for_sym, section_for_decl): New.
-	(nvptx_maybe_convert_symbolic_operand): Get data area from symbol
-	flags,
+	(nvptx_maybe_convert_symbolic_operand): Get data area from symbol flags.
 	(nvptx_section_from_addr_space): Delete.
 	(nvptx_section_for_decl): Delete.
 	(nvptx_output_aligned, nvptx_declare_object_name,
@@ -804,8 +801,9 @@
 2015-12-02  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
-	* graphite-isl-ast-to-gimple.c (binary_op_to_tree): Handle isl_ast_op_zdiv_r.
-        (gcc_expression_from_isl_expr_op): Same.
+	* graphite-isl-ast-to-gimple.c (binary_op_to_tree): Handle
+	isl_ast_op_zdiv_r.
+	(gcc_expression_from_isl_expr_op): Same.
 
 2015-12-02  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
@@ -902,8 +900,8 @@
 	* omp-low.c (install_var_field, scan_sharing_clauses): Add and handle
 	parameter base_pointers_restrict.
 	(omp_target_base_pointers_restrict_p): New function.
-	(scan_omp_target): Call scan_sharing_clauses with base_pointers_restrict
-	arg.
+	(scan_omp_target): Call scan_sharing_clauses with
+	base_pointers_restrict arg.
 
 2015-12-02  Nathan Sidwell  <nathan@acm.org>
 
@@ -911,8 +909,7 @@
 	(nvptx_underlying_object_mode): Delete.
 	* config/nvptx/nvptx.c (nvptx_underlying_object_mode): Delete.
 	(output_reg): New.
-	(nvptx_declare_function_name): Use output_reg.  Remove punning
-	buffer.
+	(nvptx_declare_function_name): Use output_reg.  Remove punning buffer.
 	(nvptx_output_mov_insn): New.
 	(nvptx_print_operand): Separate SUBREG handling, remove 'f' case,
 	Use output_reg. Merge 't' and 'u' handling.
@@ -923,10 +920,10 @@
 	UNSPEC_CPLX_HIGHPART): Delete.
 	(*mov<mode>_insn [QHSDIM): Remove unnecessary constraints, use
 	nvptx_output_mov_insn.
-	(*mov<mode>_insn [SDFM): Reorder constraints to match integer
-	moc.  Use nvptx_output_mov_insn.
-	(highpartscsf2,  set_highpartscsf2, lowpartscsf2,
-	set_lowpartscsf2): Delete.
+	(*mov<mode>_insn [SDFM): Reorder constraints to match integer moc.
+	Use nvptx_output_mov_insn.
+	(highpartscsf2,  set_highpartscsf2, lowpartscsf2, set_lowpartscsf2):
+	Delete.
 	(mov<mode> [SDCM]): Delete.
 
 2015-12-02  Richard Biener  <rguenther@suse.de>
@@ -1028,7 +1025,8 @@
 2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/predicates.md (const_mask_operand): New predicate.
-	* config/s390/s390-builtins.def: Set a smaller bitmask for a few builtins.
+	* config/s390/s390-builtins.def: Set a smaller bitmask
+	for a few builtins.
 	* config/s390/vector.md: Change predicate from immediate_operand
 	to either const_int_operand or const_mask_operand.  Add special
 	insn conditions on patterns which have to exclude certain values.
@@ -1071,19 +1069,18 @@
 2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/vector.md ("*vec_splats<mode>"): Fix constraint
-	latter I->K.
+	letter I->K.
 
 2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
-	* config/s390/s390.md ("bswap<mode>2"): Add support for strv and
-	strvg.
+	* config/s390/s390.md ("bswap<mode>2"): Add support for strv and strvg.
 	("bswaphi2"): New pattern.
 	New splitter for HI reg-reg bswap.
 
 2015-11-27  Jiri Engelthaler  <engycz@gmail.com>
 
 	PR driver/68029
-	* opts-common.c (prune_options): Don't ignore -fdiagnostics-color 
+	* opts-common.c (prune_options): Don't ignore -fdiagnostics-color
 	if it is the first parameter.
 
 2015-12-01  Richard Sandiford  <richard.sandiford@arm.com>
@@ -1140,8 +1137,7 @@
 	    Cesar Philippidis  <cesar@codesourcery.com>
 	    James Norris  <James_Norris@mentor.com>
 
-	* gimple-pretty-print.c (dump_gimple_omp_target): Add host_data
-	support.
+	* gimple-pretty-print.c (dump_gimple_omp_target): Add host_data support.
 	* gimple.h (gf_mask): Add GF_OMP_TARGET_KIND_OACC_HOST_DATA.
 	(is_gimple_omp_oacc): Add support for above.
 	* gimplify.c (omp_region_type): Add ORT_ACC_HOST_DATA.
@@ -1162,14 +1158,13 @@
 	(lower_omp_target): Skip over outer host_data regions when looking
 	up decls. Support use_device.
 	(make_gimple_omp_edges): Support host_data.
-	* tree-nested.c (convert_nonlocal_omp_clauses): Add use_device
-	clause.
+	* tree-nested.c (convert_nonlocal_omp_clauses): Add use_device clause.
 
 2015-12-01  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/68582
-	* cgraphunit.c (check_global_declaration): Only depend on TREE_THIS_VOLATILE
-	for VAR_DECLs.
+	* cgraphunit.c (check_global_declaration): Only depend
+	on TREE_THIS_VOLATILE for VAR_DECLs.
 
 2015-12-01  Richard Sandiford  <richard.sandiford@arm.com>
 
@@ -1182,7 +1177,7 @@
 	PR target/68617
 	* config/arm/arm.opt (unaligned_access): Save.
 	* config/arm/arm-c.c (__ARM_FEATURE_UNALIGNED): Conditionally define.
-	* config/arm/arm.c (arm_option_override): Move unaligned_access setting
+	* config/arm/arm.c (arm_option_override): Move unaligned_access setting.
 	(arm_option_override_internal): ... here.
 	* config/arm/arm.h (TARGET_32BIT_P): New macro.
 
@@ -1352,13 +1347,11 @@
 2015-11-30  Richard Biener  <rguenther@suse.de>
 
 	PR c/68162
-	* dwarf2out.c (gen_type_die_with_usage): Keep variant types
-	of arrays.
+	* dwarf2out.c (gen_type_die_with_usage): Keep variant types of arrays.
 
 2015-11-30  Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
 
-	* tree-if-conv.c (struct ifc_dr): Add new tree
-	base_predicate field.
+	* tree-if-conv.c (struct ifc_dr): Add new tree base_predicate field.
 	(hash_memrefs_baserefs_and_store_DRs_read_written_info): Hash
 	base ref, DR pairs and store base_predicate for write type DRs.
 	(ifcvt_memrefs_wont_trap): Guard checks with
@@ -1388,8 +1381,8 @@
 
 2015-11-29  Jan Hubicka  <hubicka@ucw.cz>
 
-	* ipa-devirt.c (add_type_duplicate): Remove redundant ODR violation
-	dump
+	* ipa-devirt.c (add_type_duplicate): Remove redundant
+	ODR violation dump.
 
 2015-11-29  David Edelsohn  <dje.gcc@gmail.com>
 
@@ -1445,15 +1438,13 @@
 	PR tree-optimization/68559
 	* tree-vect-data-refs.c (vect_analyze_group_access_1): Move
 	peeling for gap checks ...
-	* tree-vect-stmts.c (vectorizable_load): ... here and relax
-	for SLP.
+	* tree-vect-stmts.c (vectorizable_load): ... here and relax for SLP.
 	* tree-vect-loop.c (vect_analyze_loop_2): Re-set
 	LOOP_VINFO_PEELING_FOR_GAPS before re-trying without SLP.
 
 2015-11-27  Nathan Sidwell  <nathan@acm.org>
 
-	* config/nvptx/nvptx-protos.h (nvptx_record_needed_decl): Don't
-	declare.
+	* config/nvptx/nvptx-protos.h (nvptx_record_needed_decl): Don't declare.
 	* config/nvptx/nvptx.c (write_func_decl_from_insn): Move earlier.
 	(nvptx_record_fndecl): Don't return value, remove force
 	argument. Require fndecl.
@@ -1531,8 +1522,7 @@
 
 	* ipa-devirt.c (ipa_devirt): Use auto_vec instead
 	of a local-scope vec.
-	(struct final_warning_record): Use auto_vec instead
-	of vec.
+	(struct final_warning_record): Use auto_vec instead of vec.
 
 2015-11-27  Richard Biener  <rguenther@suse.de>
 
@@ -1712,7 +1702,7 @@
 	broken.
 
 2015-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
-            Bernd Schmidt  <bschmidt@redhat.com>
+	    Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/67226
 	* calls.c (store_one_arg): Take into account
@@ -1816,7 +1806,7 @@
 	TV_IPA_LTO_OUTPUT): New.
 	* lto-compress.c: Include timevar.h
 	(lto_end_compression, lto_end_uncompression): Add timers.
-	* langhooks.c: Include timevar.h
+	* langhooks.c: Include timevar.h.
 	(lhd_append_data): Add timer.
 
 2015-11-25  Jan Hubicka  <hubicka@ucw.cz>
@@ -1834,8 +1824,7 @@
 
 	* config/nvptx/nvptx.md (load_arg_reg<mode>): Arg number
 	constraint is 'n'.
-	* config/nvptx/nvptx.c (write_one_arg): Use 'i' directly as arg
-	number.
+	* config/nvptx/nvptx.c (write_one_arg): Use 'i' directly as arg number.
 	(nvptx_write_function_decl): Number args from 0.
 	(nvptx_declare_function_name): Likewise.
 	(nvptx_function_incoming_arg): Likewise.
@@ -2137,7 +2126,7 @@
 	* tree-ssa-uncprop.c (val_ssa_equiv_hash_traits): Likewise.
 
 2015-11-24  Richard Biener  <rguenther@suse.de>
-            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR middle-end/68375
 	* cfgloop.c (get_loop_body_in_bfs_order): Restructure loop to avoid
@@ -2161,7 +2150,7 @@
 	are going to instrument it and it may copy pointers.
 
 2015-11-24  Bernd Schmidt <bschmidt@redhat.com>
-            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/68194
 	PR rtl-optimization/68328
@@ -2193,11 +2182,13 @@
 	    Sebastian Pop  <s.pop@samsung.com>
 
 	PR tree-optimization/68314
-	* graphite-optimize-isl.c (optimize_isl): Do not call isl_union_map_is_equal.
+	* graphite-optimize-isl.c (optimize_isl): Do not call
+	isl_union_map_is_equal.
 	* graphite-poly.c (new_scop): Remove original_schedule.
 	(free_scop): Same.
 	* graphite-poly.h (struct scop): Same.
-	* graphite-sese-to-poly.c (build_pbb_minimal_scattering_polyhedrons): Remove.
+	* graphite-sese-to-poly.c (build_pbb_minimal_scattering_polyhedrons):
+	Remove.
 	(build_pbb_scattering_polyhedrons): Add back.
 	(build_scop_minimal_scattering): Remove.
 	(build_scop_scattering): Add back.
@@ -2336,12 +2327,12 @@
 
 2015-11-23  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
-        * config/s390/s390.h: Add new symref flags, _NOTALIGN2 etc.
-        * config/s390/s390.c (s390_check_symref_alignment): Use new
-        symref flags, early abort on wrong alignment
-        (s390_secondary_reload): Use new symref flags.
-        (s390_encode_section_info): Likewise.
-        * config/s390/predicates.md: Likewise.
+	* config/s390/s390.h: Add new symref flags, _NOTALIGN2 etc.
+	* config/s390/s390.c (s390_check_symref_alignment): Use new
+	symref flags, early abort on wrong alignment
+	(s390_secondary_reload): Use new symref flags.
+	(s390_encode_section_info): Likewise.
+	* config/s390/predicates.md: Likewise.
 
 2015-11-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
 

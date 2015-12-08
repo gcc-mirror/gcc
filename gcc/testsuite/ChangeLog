@@ -131,8 +131,7 @@
 	* g++.dg/template/ref3.C: Add XFAIL (PR c++/68699).
 	* g++.dg/ubsan/pr63956.C: Update dg directives to reflect
 	improved location information.
-	* g++.dg/warn/pr35635.C (func3): Update location of a
-	dg-warning.
+	* g++.dg/warn/pr35635.C (func3): Update location of a dg-warning.
 	* g++.dg/warn/Wconversion-real-integer2.C: Update location of
 	dg-warning; add a dg-message.
 	* obj-c++.dg/plugin/diagnostic-test-expressions-1.mm: New file,
@@ -439,13 +438,12 @@
 
 2015-12-02  David Sherwood  <david.sherwood@arm.com>
 
-        * gcc.target/aarch64/fmaxmin.c: New test.
+	* gcc.target/aarch64/fmaxmin.c: New test.
 
 2015-12-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gfortran.dg/goacc/coarray.f95: XFAIL.
-	* gfortran.dg/goacc/coarray_2.f90: Adjust dg-excess-errors
-	directive.
+	* gfortran.dg/goacc/coarray_2.f90: Adjust dg-excess-errors directive.
 	* gfortran.dg/goacc/host_data-tree.f95: Remove dg-prune-output
 	directive.
 
@@ -591,9 +589,11 @@
 	* gcc.dg/vect/pr46032.c: here.  Add dg-require-effective-target
 	vect_int.
 	* gcc.dg/pr46032-2.c: Move to ...
-	* gcc.dg/gomp/pr46032-2.c: ... here.  Drop dg-require-effective-target fopenmp.
+	* gcc.dg/gomp/pr46032-2.c: ... here.
+	Drop dg-require-effective-target fopenmp.
 	* gcc.dg/pr46032-3.c: Move to ...
-	* gcc.dg/gomp/pr46032-3.c: ... here.  Drop dg-require-effective-target fopenmp.
+	* gcc.dg/gomp/pr46032-3.c: ... here.
+	Drop dg-require-effective-target fopenmp.
 
 2015-12-01  Cesar Philippidis  <cesar@codesourcery.com>
 
@@ -1366,8 +1366,8 @@
 
 2015-11-23  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
-        * gcc.target/s390/load-relative-check.c: New test to check
-        generation of load relative instructions.
+	* gcc.target/s390/load-relative-check.c: New test to check
+	generation of load relative instructions.
 
 2015-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
