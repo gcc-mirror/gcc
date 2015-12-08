@@ -1,6 +1,12 @@
 2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61886
+	* lto-cgraph.c (compute_ltrans_boundary): Add transparent alias targets
+	into the boundary.
+
+2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61886
 	* varpool.c (varpool_node::get_availability): Recurse only on
 	weakrefs with definition in the target.
 	(symbol_table::remove_unreferenced_decls): Keep aliases in the boundary.

@@ -972,6 +972,15 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
       if (cnode
 	  && cnode->thunk.thunk_p)
 	add_node_to (encoder, cnode->callees->callee, false);
+      while (node->transparent_alias && node->analyzed)
+	{
+	  node = node->get_alias_target ();
+	  if (is_a <cgraph_node *> (node))
+	    add_node_to (encoder, dyn_cast <cgraph_node *> (node),
+			 false);
+	  else
+	    lto_symtab_encoder_encode (encoder, node);
+	}
     }
   lto_symtab_encoder_delete (in_encoder);
   return encoder;
