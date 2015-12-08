@@ -581,7 +581,7 @@ Common Var(flag_fatal_errors)
 Exit on the first error occurred.
 
 Wframe-larger-than=
-Common RejectNegative Joined UInteger
+Common RejectNegative Joined UInteger Warning
 -Wframe-larger-than=<number>	Warn if a function's stack frame requires more than <number> bytes.
 
 Wfree-nonheap-object

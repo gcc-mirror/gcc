@@ -1,3 +1,11 @@
+2015-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48088
+	PR c/68657
+	* c.opt (Wfloat-conversion, Wsign-conversion): Add Warning.
+	* c-pragma.c (handle_pragma_diagnostic): Adjust
+	control_warning_option caller.
+
 2015-12-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.c (c_cpp_error): Update for change to
