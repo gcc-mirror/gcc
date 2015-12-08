@@ -1,3 +1,10 @@
+2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61886
+	* symtab.c (symtab_node::verify_base): Fix thinko in a conditional.
+	(symtab_node::noninterposable_alias): Do not accept transparent
+	aliases.
+
 2015-12-08  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (decl_chunk_size, decl_chunk_mode,
