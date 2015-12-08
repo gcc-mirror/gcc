@@ -1,3 +1,11 @@
+2015-12-08  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	Backport from mainline.
+	2015-03-16  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR sanitizer/64820
+	* c-c++-common/asan/pr64820.c: New test.
+
 2015-11-27  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/68218
