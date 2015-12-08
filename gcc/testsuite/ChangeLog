@@ -1,3 +1,8 @@
+2015-12-08  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gfortran.dg/pr68627.f: Use '!ia32' instead' of 'lp64' in target
+	specifier.
+
 2015-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48088
