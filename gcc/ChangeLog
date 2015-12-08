@@ -1,5 +1,9 @@
 2015-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* doc/invoke.texi (SPARC options): Fix typo.
+
+2015-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* config/ia64/ia64.c (ia64_emit_probe_stack_range): Adjust.
 	(output_probe_stack_range): Rotate the loop and simplify.
 
