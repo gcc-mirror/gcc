@@ -1,3 +1,14 @@
+2015-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48088
+	PR c/68657
+	* c-c++-common/pr68657-1.c: New test.
+	* c-c++-common/pr68657-2.c: New test.
+	* c-c++-common/pr68657-3.c: New test.
+	* gcc.dg/cpp/warn-normalized-3.c: Use
+	-Werror=normalized=nfc instead of -Werror=normalized=
+	in dg-options.
+
 2015-12-08  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* lib/target-supports.exp

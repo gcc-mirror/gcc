@@ -2114,7 +2114,7 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_pedantic_errors:
       dc->pedantic_errors = 1;
-      control_warning_option (OPT_Wpedantic, DK_ERROR, value,
+      control_warning_option (OPT_Wpedantic, DK_ERROR, NULL, value,
 			      loc, lang_mask,
 			      handlers, opts, opts_set,
                               dc);
@@ -2437,8 +2437,11 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
   else
     {
       const diagnostic_t kind = value ? DK_ERROR : DK_WARNING;
+      const char *arg = NULL;
 
-      control_warning_option (option_index, (int) kind, value,
+      if (cl_options[option_index].flags & CL_JOINED)
+	arg = new_option + cl_options[option_index].opt_len;
+      control_warning_option (option_index, (int) kind, arg, value,
 			      loc, lang_mask,
 			      handlers, opts, opts_set, dc);
     }

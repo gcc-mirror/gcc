@@ -1,3 +1,10 @@
+2015-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48088
+	PR c/68657
+	* gcc-interface/trans.c (Pragma_to_gnu): Adjust
+	control_warning_option caller.
+
 2015-12-06  Piotr Trojanek  <piotr.trojanek@gmail.com>
 
 	PR ada/60164

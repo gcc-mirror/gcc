@@ -1,3 +1,19 @@
+2015-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48088
+	PR c/68657
+	* common.opt (Wframe-larger-than=): Add Warning.
+	* opts.h (control_warning_option): Add ARG argument.
+	* opts-common.c (cmdline_handle_error): New function.
+	(read_cmdline_option): Use it.
+	(control_warning_option): Likewise.  Add ARG argument.
+	If non-NULL, decode it if needed and pass through
+	to handle_generated_option.  Handle CLVC_ENUM like
+	CLVC_BOOLEAN.
+	* opts.c (common_handle_option): Adjust control_warning_option
+	caller.
+	(enable_warning_as_error): Likewise.
+
 2015-12-08  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/aarch64/aarch64-options-extensions.def: Remove

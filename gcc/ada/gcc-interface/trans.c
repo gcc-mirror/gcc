@@ -1441,6 +1441,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 
 	/* This is the same implementation as in the C family of compilers.  */
 	const unsigned int lang_mask = CL_Ada | CL_COMMON;
+	const char *arg = NULL;
 	if (Present (gnat_expr))
 	  {
 	    tree gnu_expr = gnat_to_gnu (gnat_expr);
@@ -1464,12 +1465,14 @@ Pragma_to_gnu (Node_Id gnat_node)
 		post_error ("?-W switch not valid for Ada", gnat_node);
 		break;
 	      }
+	    if (cl_options[option_index].flags & CL_JOINED)
+	      arg = option_string + 1 + cl_options[option_index].opt_len;
 	  }
 	else
 	  option_index = 0;
 
 	set_default_handlers (&handlers);
-	control_warning_option (option_index, (int) kind, imply, location,
+	control_warning_option (option_index, (int) kind, arg, imply, location,
 				lang_mask, &handlers, &global_options,
 				&global_options_set, global_dc);
       }
