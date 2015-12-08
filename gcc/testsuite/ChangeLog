@@ -1,5 +1,7 @@
 2015-12-08  Nathan Sidwell  <nathan@acm.org>
 
+	* gcc.target/nvptx/trailing-init.c: New.
+
 	* gcc.c-torture/compile/920723-1.c: Remove PTX skip. 
 	* gcc.c-torture/compile/pr33855.c: Likewise.
 	* gcc.c-torture/execute/981019-1.c: Remove PTX -O2 skip.

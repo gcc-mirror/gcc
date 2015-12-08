@@ -1,3 +1,16 @@
+2015-12-08  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (decl_chunk_size, decl_chunk_mode,
+	decl_offset, init_part, object_size, object_finished): Replace
+	with ...
+	(struct init_frag): ... this new struct variable.
+	(begin_decl_field, output_decl_chunk): Replace with ...
+	(output_init_frag): ... this new function.
+	(nvptx_assemble_value): Reimplement.
+	(nvptx_assemble_integer, nvptx_output_skip): Adjust.
+	(nvptx_assemble_decl_begin, nvptx_assemble_decl_end): Adjust.
+	(nvptx_output_aligned_decl): Call nvptx_assemble_decl_end.
+
 2015-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/68291
