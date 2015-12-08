@@ -1,3 +1,8 @@
+2015-12-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/68116
+	* g++.dg/cpp0x/pr68116.C: New test.
+
 2015-12-08  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gfortran.dg/pr68627.f: Use '!ia32' instead' of 'lp64' in target
