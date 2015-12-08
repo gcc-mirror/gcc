@@ -21605,7 +21605,7 @@ the rules of the ABI@.
 @opindex mstd-struct-return
 @opindex mno-std-struct-return
 With @option{-mstd-struct-return}, the compiler generates checking code
-in functions returning structures or unions that detect size mismatches
+in functions returning structures or unions to detect size mismatches
 between the two sides of function calls, as per the 32-bit ABI@.
 
 The default is @option{-mno-std-struct-return}.  This option has no effect
