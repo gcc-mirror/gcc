@@ -1,3 +1,7 @@
+2015-12-08  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gfortran.dg/pr68627.f: Limit target to x86.
+
 2015-12-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 	    Joern Rennecke  <joern.rennecke@embecosm.com>
 
