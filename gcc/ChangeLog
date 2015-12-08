@@ -1,3 +1,10 @@
+2015-12-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/68701
+	* config/i386/i386.c (ix86_option_override_internal): Enable
+	-maccumulate-outgoing-args when %ebp is fixed due to stack
+	realignment requirements.
+
 2015-12-08  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/68640
