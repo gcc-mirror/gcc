@@ -1,3 +1,8 @@
+2015-12-08  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/sse.md (define_insn "<avx512>_vec_dup<mode>_1"): Fix
+	assembler to make source always 128bit.
+
 2015-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48088
