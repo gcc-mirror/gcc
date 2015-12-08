@@ -1,3 +1,9 @@
+2015-12-08  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.c-torture/compile/920723-1.c: Remove PTX skip. 
+	* gcc.c-torture/compile/pr33855.c: Likewise.
+	* gcc.c-torture/execute/981019-1.c: Remove PTX -O2 skip.
+
 2015-12-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/68701
