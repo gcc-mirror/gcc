@@ -1389,6 +1389,13 @@ install_var_field (tree var, bool by_ref, int mask, omp_context *ctx,
 	      || !is_gimple_omp_oacc (ctx->stmt));
 
   type = TREE_TYPE (var);
+  /* Prevent redeclaring the var in the split-off function with a restrict
+     pointer type.  Note that we only clear type itself, restrict qualifiers in
+     the pointed-to type will be ignored by points-to analysis.  */
+  if (POINTER_TYPE_P (type)
+      && TYPE_RESTRICT (type))
+    type = build_qualified_type (type, TYPE_QUALS (type) & ~TYPE_QUAL_RESTRICT);
+
   if (mask & 4)
     {
       gcc_assert (TREE_CODE (type) == ARRAY_TYPE);

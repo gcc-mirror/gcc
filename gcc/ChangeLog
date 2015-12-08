@@ -1,3 +1,9 @@
+2015-12-08  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/68640
+	* omp-low.c (install_var_field): Clear the restrict qualifier on the var
+	type.
+
 2015-12-08  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/sse.md (define_insn "<avx512>_vec_dup<mode>_1"): Fix
