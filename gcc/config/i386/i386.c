@@ -47827,8 +47827,7 @@ void ix86_emit_swdivsf (rtx res, rtx a, rtx b, machine_mode mode)
 /* Output code to perform a Newton-Rhapson approximation of a
    single precision floating point [reciprocal] square root.  */
 
-void ix86_emit_swsqrtsf (rtx res, rtx a, machine_mode mode,
-			 bool recip)
+void ix86_emit_swsqrtsf (rtx res, rtx a, machine_mode mode, bool recip)
 {
   rtx x0, e0, e1, e2, e3, mthree, mhalf;
   REAL_VALUE_TYPE r;
@@ -47868,12 +47867,8 @@ void ix86_emit_swsqrtsf (rtx res, rtx a, machine_mode mode,
   /* If (a == 0.0) Filter out infinity to prevent NaN for sqrt(0.0).  */
   if (!recip)
     {
-      rtx zero, mask;
-
-      zero = gen_reg_rtx (mode);
-      mask = gen_reg_rtx (mode);
-
-      zero = force_reg (mode, CONST0_RTX(mode));
+      rtx zero = force_reg (mode, CONST0_RTX(mode));
+      rtx mask;
 
       /* Handle masked compare.  */
       if (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 64)
@@ -47885,8 +47880,8 @@ void ix86_emit_swsqrtsf (rtx res, rtx a, machine_mode mode,
 	}
       else
 	{
+	  mask = gen_reg_rtx (mode);
 	  emit_insn (gen_rtx_SET (mask, gen_rtx_NE (mode, zero, a)));
-
 	  emit_insn (gen_rtx_SET (x0, gen_rtx_AND (mode, x0, mask)));
 	}
     }
