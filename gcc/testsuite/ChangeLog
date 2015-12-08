@@ -1,3 +1,9 @@
+2015-12-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse4_1-round.h (do_round): Fix inline asm statements.
+	* gcc.target/i386/sse4_1-roundsd-4.c (do_round): Ditto.
+	* gcc.target/i386/sse4_1-roundss-4.c (do_round): Ditto.
+
 2015-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/sso-9.c (foo): Robustify trick.
