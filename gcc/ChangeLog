@@ -1,3 +1,8 @@
+2015-12-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_emit_swsqrtsf): Cleanup
+	infinity filterning code.
+
 2015-12-08  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR tree-optimization/68766
