@@ -1,3 +1,15 @@
+2015-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68757
+	* c-parser.c (c_parser_get_builtin_args): Add
+	"out_close_paren_loc" param, and write back to it.
+	(c_parser_postfix_expression): Capture the closing
+	parenthesis location for RID_CHOOSE_EXPR,
+	RID_BUILTIN_CALL_WITH_STATIC_CHAIN, RID_BUILTIN_COMPLEX,
+	RID_BUILTIN_SHUFFLE and use it to set the source range
+	for such expressions; within RID_BUILTIN_COMPLEX set
+	the underlying location.
+
 2015-12-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c/68668
