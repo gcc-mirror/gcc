@@ -568,6 +568,33 @@ void test_builtin_shuffle (v4si a, v4si b, v4si mask)
    { dg-end-multiline-output "" } */
 }
 
+void test_alignof (int param)
+{
+  __emit_expression_range (0, __alignof__ (int) + param );  /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, __alignof__ (int) + param );
+                               ~~~~~~~~~~~~~~~~~~^~~~~~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0,  param + __alignof__ (int) );  /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0,  param + __alignof__ (int) );
+                                ~~~~~~^~~~~~~~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0,  __alignof__ (param) + param );  /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0,  __alignof__ (param) + param );
+                                ~~~~~~~~~~~~~~~~~~~~^~~~~~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0,  param + __alignof__ (param) );  /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0,  param + __alignof__ (param) );
+                                ~~~~~~^~~~~~~~~~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+}
+
 /* Examples of non-trivial expressions.  ****************************/
 
 extern double sqrt (double x);
