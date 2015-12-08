@@ -1,6 +1,14 @@
 2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61886
+	* ipa-visibility.c (can_replace_by_local_alias): Look through transparent
+	aliaes; refuse weakrefs.
+	(update_visibility_by_resolution_info): Skip transparent aliases in the
+	analysis part
+
+2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61886
 	* symtab.c (symtab_node::verify_base): Fix thinko in a conditional.
 	(symtab_node::noninterposable_alias): Do not accept transparent
 	aliases.

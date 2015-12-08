@@ -332,6 +332,13 @@ varpool_node::externally_visible_p (void)
 bool
 can_replace_by_local_alias (symtab_node *node)
 {
+  /* Weakrefs have a reason to be non-local.  Be sure we do not replace
+     them.  */
+  while (node->transparent_alias && node->definition && !node->weakref)
+    node = node->get_alias_target ();
+  if (node->weakref)
+    return false;
+  
   return (node->get_availability () > AVAIL_INTERPOSABLE
 	  && !decl_binds_to_current_def_p (node->decl)
 	  && !node->can_be_discarded_p ());
@@ -392,7 +399,7 @@ update_visibility_by_resolution_info (symtab_node * node)
     for (symtab_node *next = node->same_comdat_group;
 	 next != node; next = next->same_comdat_group)
       {
-	if (!next->externally_visible)
+	if (!next->externally_visible || next->transparent_alias)
 	  continue;
 
 	bool same_def
