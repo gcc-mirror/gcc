@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_crypto_ok } */
-/* { dg-options "-O2 -mfloat-abi=softfp -mfpu=vfp" } */
+/* { dg-require-effective-target arm_vfp_ok } */
+/* { dg-options "-O2" } */
+/* { dg-add-options arm_vfp } */
 
 #include <arm_neon.h>
 
