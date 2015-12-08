@@ -1,3 +1,9 @@
+2015-12-08  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR tree-optimization/68766
+	* tree-vectorizer.c (vectorize_loops): Check for
+	if-converted loops when debug counters are used.
+
 2015-12-07  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/constraints.md (Wfr): Change to be a non-memory
