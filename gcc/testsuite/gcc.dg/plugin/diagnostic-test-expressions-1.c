@@ -518,6 +518,56 @@ void test_builtin_offsetof (int i)
    { dg-end-multiline-output "" } */
 }
 
+void test_builtin_choose_expr (int i)
+{
+  __emit_expression_range (0,  __builtin_choose_expr (1, i, i) + i);  /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0,  __builtin_choose_expr (1, i, i) + i);
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0,  i + __builtin_choose_expr (1, i, i));  /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0,  i + __builtin_choose_expr (1, i, i));
+                                ~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+}
+
+extern int f (int);
+void test_builtin_call_with_static_chain (int i, void *ptr)
+{
+  __emit_expression_range (0, __builtin_call_with_static_chain (f (i), ptr));  /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, __builtin_call_with_static_chain (f (i), ptr));
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+}
+
+void test_builtin_complex (float i, float j)
+{
+  __emit_expression_range (0,  __builtin_complex (i, j) );  /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0,  __builtin_complex (i, j) );
+                                ^~~~~~~~~~~~~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+}
+
+typedef int v4si __attribute__ ((vector_size (16)));
+void test_builtin_shuffle (v4si a, v4si b, v4si mask)
+{
+  __emit_expression_range (0,  __builtin_shuffle (a, mask) );  /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0,  __builtin_shuffle (a, mask) );
+                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0,  __builtin_shuffle (a, b, mask) );  /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0,  __builtin_shuffle (a, b, mask) );
+                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+}
+
 /* Examples of non-trivial expressions.  ****************************/
 
 extern double sqrt (double x);

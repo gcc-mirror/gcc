@@ -1,3 +1,12 @@
+2015-12-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68757
+	* gcc.dg/plugin/diagnostic-test-expressions-1.c
+	(test_builtin_choose_expr): New test function.
+	(test_builtin_call_with_static_chain): Likewise.
+	(test_builtin_complex): Likewise.
+	(test_builtin_shuffle): Likewise.
+
 2015-12-08  Jiong Wang  <jiong.wang@arm.com>
 
 	* gcc.target/aarch64/got_mem_hoist_1.c (dg-skip-if): Match big-endian
