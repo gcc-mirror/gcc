@@ -1,3 +1,10 @@
+2015-12-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.dg/torture/stackalign/builtin-return-1.c: Add an
+	inline assembly read to make sure dummy is not optimized
+	away by LTO.
+
 2015-12-08  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR tree-optimization/68766
