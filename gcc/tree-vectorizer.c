@@ -536,7 +536,13 @@ vectorize_loops (void)
 	  continue;
 
         if (!dbg_cnt (vect_loop))
-	  break;
+	  {
+	    /* We may miss some if-converted loops due to
+	       debug counter.  Set any_ifcvt_loops to visit
+	       them at finalization.  */
+	    any_ifcvt_loops = true;
+	    break;
+	  }
 
 	gimple *loop_vectorized_call = vect_loop_vectorized_call (loop);
 	if (loop_vectorized_call)
