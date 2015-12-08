@@ -22,6 +22,6 @@ void foo (int i, ...)
 {
   struct Rec a;
   va_start (a.v, i);
-  a.v = a.v, x = va_arg (a.v, int); /* { dg-error "array type|reverse storage order" } */
+  a.v = 0, x = va_arg (a.v, int); /* { dg-error "type|reverse storage order" } */
   va_end (a.v);
 }
