@@ -1,3 +1,12 @@
+2015-12-09  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/66949
+	* tree-ssa-phiopt.c (tree_ssa_phiopt_worker): Don't call 
+	single_non_singleton_phi_for_edges to get the PHI from
+	factor_out_conditional_conversion.  Use NULL_TREE instead of NULL.
+	(factor_out_conditional_conversion): Adjust declaration.  Make it
+	return the newly-created PHI.
+
 2015-12-09  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-protos.h

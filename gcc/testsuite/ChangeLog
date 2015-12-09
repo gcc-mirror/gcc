@@ -1,3 +1,9 @@
+2015-12-09  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/66949
+	* gcc.dg/torture/pr66949-1.c: New test.
+	* gcc.dg/torture/pr66949-2.c: New test.
+
 2015-12-09  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR rtl-optimization/67609
