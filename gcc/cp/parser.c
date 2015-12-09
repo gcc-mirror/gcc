@@ -35385,6 +35385,7 @@ cp_parser_oacc_wait (cp_parser *parser, cp_token *pragma_tok)
 					"#pragma acc wait", pragma_tok);
 
   stmt = c_finish_oacc_wait (loc, list, clauses);
+  stmt = finish_expr_stmt (stmt);
 
   return stmt;
 }

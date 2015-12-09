@@ -1,3 +1,9 @@
+2015-12-09  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-family/c-omp.c (c_finish_oacc_wait): Remove add_stmt() call.
+	* c/c-parser.c (c_parser_oacc_wait): Add add_stmt() call.
+	* cp/parser.c (cp_parser_oacc_wait): Add finish_expr_stmt() call.
+
 2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61886

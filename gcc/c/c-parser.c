@@ -13960,6 +13960,7 @@ c_parser_oacc_wait (location_t loc, c_parser *parser, char *p_name)
   strcpy (p_name, " wait");
   clauses = c_parser_oacc_all_clauses (parser, OACC_WAIT_CLAUSE_MASK, p_name);
   stmt = c_finish_oacc_wait (loc, list, clauses);
+  add_stmt (stmt);
 
   return stmt;
 }
