@@ -1,3 +1,9 @@
+2015-12-08  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/68711
+	* typeck.c (build_class_member_access_expr): Strip NOPs before
+        testing a potentially null operand for equality to zero.
+
 2015-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/68760
