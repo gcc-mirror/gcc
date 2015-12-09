@@ -968,6 +968,7 @@ See RS/6000 and PowerPC Options.
 -mint-register=@gol
 -mpid@gol
 -mallow-string-insns -mno-allow-string-insns@gol
+-mjsr@gol
 -mno-warn-multiple-fast-interrupts@gol
 -msave-acc-in-interrupts}
 
@@ -20685,6 +20686,15 @@ accesses I/O space.
 When the instructions are enabled GCC defines the C preprocessor
 symbol @code{__RX_ALLOW_STRING_INSNS__}, otherwise it defines the
 symbol @code{__RX_DISALLOW_STRING_INSNS__}.
+
+@item -mjsr
+@itemx -mno-jsr
+@opindex mjsr
+@opindex mno-jsr
+Use only (or not only) @code{JSR} instructions to access functions.
+This option can be used when code size exceeds the range of @code{BSR}
+instructions.  Note that @option{-mno-jsr} does not mean to not use
+@code{JSR} but instead means that any type of branch may be used.
 @end table
 
 @emph{Note:} The generic GCC command-line option @option{-ffixed-@var{reg}}

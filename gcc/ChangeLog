@@ -1,3 +1,12 @@
+2015-12-08  DJ Delorie  <dj@redhat.com>
+
+	* config/rx/rx.opt (-mjsr): Add.
+	* config/rx/predicates.md (rx_call_operand): Avoid overflowing
+	calls when -mjsr.
+	* config/rx/rx.c (rx_function_ok_for_sibcall): Likewise for
+	overflowing jumps.
+	* doc/invoke.texi (-mjsr): Document it.
+
 2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61886

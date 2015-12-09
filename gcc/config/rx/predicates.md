@@ -24,7 +24,9 @@
 ;; Only registers and symbol refs are allowed.
 
 (define_predicate "rx_call_operand"
-  (match_code "symbol_ref,reg")
+  (ior (match_code "reg")
+       (and (match_test "!TARGET_JSR")
+	    (match_code "symbol_ref")))
 )
 
 ;; For sibcall operations we can only use a symbolic address.
