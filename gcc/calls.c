@@ -2952,6 +2952,19 @@ expand_call (tree exp, rtx target, int ignore)
 
       compute_argument_addresses (args, argblock, num_actuals);
 
+      /* Stack is properly aligned, pops can't safely be deferred during
+	 the evaluation of the arguments.  */
+      NO_DEFER_POP;
+
+      /* Precompute all register parameters.  It isn't safe to compute
+	 anything once we have started filling any specific hard regs.
+	 TLS symbols sometimes need a call to resolve.  Precompute
+	 register parameters before any stack pointer manipulation
+	 to avoid unaligned stack in the called function.  */
+      precompute_register_parameters (num_actuals, args, &reg_parm_seen);
+
+      OK_DEFER_POP;
+
       /* If we push args individually in reverse order, perform stack alignment
 	 before the first push (the last arg).  */
       if (PUSH_ARGS_REVERSED && argblock == 0
@@ -3018,10 +3031,6 @@ expand_call (tree exp, rtx target, int ignore)
 		valreg = where;
 	    }
 	}
-
-      /* Precompute all register parameters.  It isn't safe to compute anything
-	 once we have started filling any specific hard regs.  */
-      precompute_register_parameters (num_actuals, args, &reg_parm_seen);
 
       if (CALL_EXPR_STATIC_CHAIN (exp))
 	static_chain_value = expand_normal (CALL_EXPR_STATIC_CHAIN (exp));
