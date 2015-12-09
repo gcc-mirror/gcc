@@ -1,3 +1,8 @@
+2015-12-09  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR rtl-optimization/67609
+	* gcc.dg/torture/pr67609.c: New.
+
 2015-12-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68583
