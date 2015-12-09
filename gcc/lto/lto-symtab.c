@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "builtins.h"
 #include "alias.h"
+#include "lto-symtab.h"
 
 /* Replace the cgraph node NODE with PREVAILING_NODE in the cgraph, merging
    all edges and removing the old node.  */
@@ -99,7 +100,6 @@ lto_cgraph_replace_node (struct cgraph_node *node,
       node->instrumented_version = NULL;
     }
 
-  ipa_merge_profiles (prevailing_node, node);
   lto_free_function_in_decl_state_for_node (node);
 
   if (node->decl != prevailing_node->decl)
@@ -503,6 +503,30 @@ lto_symtab_resolve_symbols (symtab_node *first)
   return prevailing;
 }
 
+/* Decide if it is OK to merge DECL into PREVAILING.
+   Because we wrap most of uses of declarations in MEM_REF, we can tolerate
+   some differences but other code may inspect directly the DECL.  */
+
+static bool
+lto_symtab_merge_p (tree prevailing, tree decl)
+{
+  if (TREE_CODE (prevailing) != TREE_CODE (decl))
+    return false;
+  if (TREE_CODE (prevailing) == FUNCTION_DECL)
+    {
+      if (DECL_BUILT_IN (prevailing) != DECL_BUILT_IN (decl))
+	return false;
+      if (DECL_BUILT_IN (prevailing)
+	  && (DECL_BUILT_IN_CLASS (prevailing) != DECL_BUILT_IN_CLASS (decl)
+	      || DECL_FUNCTION_CODE (prevailing) != DECL_FUNCTION_CODE (decl)))
+	return false;
+    }
+  /* There are several other cases where merging can not be done, but until
+     aliasing code is fixed to support aliases it we can not really return
+     false on non-readonly var, yet.  */
+  return true;
+}
+
 /* Merge all decls in the symbol table chain to the prevailing decl and
    issue diagnostics about type mismatches.  If DIAGNOSED_P is true
    do not issue further diagnostics.*/
@@ -523,15 +547,59 @@ lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
     return;
 
   /* Try to merge each entry with the prevailing one.  */
-  for (e = prevailing->next_sharing_asm_name;
-       e; e = e->next_sharing_asm_name)
-    if (TREE_PUBLIC (e->decl))
-      {
-	if (!lto_symtab_merge (prevailing, e)
-	    && !diagnosed_p
-	    && !DECL_ARTIFICIAL (e->decl))
-	  mismatches.safe_push (e->decl);
-      }
+  symtab_node *last_prevailing = prevailing, *next;
+  for (e = prevailing->next_sharing_asm_name; e; e = next)
+    {
+      next = e->next_sharing_asm_name;
+
+      /* Skip non-LTO symbols and symbols whose declaration we already
+	 visited.  */
+      if (lto_symtab_prevailing_decl (e->decl) != e->decl
+	  || !lto_symtab_symbol_p (e)
+          || e->decl == prevailing->decl)
+	continue;
+
+      if (!lto_symtab_merge (prevailing, e)
+	  && !diagnosed_p
+	  && !DECL_ARTIFICIAL (e->decl))
+	mismatches.safe_push (e->decl);
+
+      symtab_node *this_prevailing;
+      for (this_prevailing = prevailing; ;
+	   this_prevailing = this_prevailing->next_sharing_asm_name)
+	{
+	  if (lto_symtab_merge_p (this_prevailing->decl, e->decl))
+	    break;
+	  if (this_prevailing == last_prevailing)
+	    {
+	      this_prevailing = NULL;
+	      break;
+	    }
+	}
+
+      if (this_prevailing)
+	lto_symtab_prevail_decl (this_prevailing->decl, e->decl);
+      /* Maintain LRU list: relink the new prevaililng symbol
+	 just after previaling node in the chain and update last_prevailing.
+	 Since the number of possible declarations of a given symbol is
+	 small, this should be faster than building a hash.  */
+      else if (e == prevailing->next_sharing_asm_name)
+	last_prevailing = e;
+      else
+	{
+	  if (e->next_sharing_asm_name)
+	    e->next_sharing_asm_name->previous_sharing_asm_name
+	      = e->previous_sharing_asm_name;
+	  e->previous_sharing_asm_name->next_sharing_asm_name
+	    = e->next_sharing_asm_name;
+	  e->previous_sharing_asm_name = prevailing;
+	  e->next_sharing_asm_name = prevailing->next_sharing_asm_name;
+	  prevailing->next_sharing_asm_name->previous_sharing_asm_name = e;
+	  prevailing->next_sharing_asm_name = e;
+	  if (last_prevailing == prevailing)
+	    last_prevailing = e;
+	}
+    }
   if (mismatches.is_empty ())
     return;
 
@@ -729,6 +797,8 @@ lto_symtab_merge_symbols_1 (symtab_node *prevailing)
   symtab_node *e;
   symtab_node *next;
 
+  prevailing->decl->decl_with_vis.symtab_node = prevailing;
+
   /* Replace the cgraph node of each entry with the prevailing one.  */
   for (e = prevailing->next_sharing_asm_name; e;
        e = next)
@@ -738,10 +808,47 @@ lto_symtab_merge_symbols_1 (symtab_node *prevailing)
       if (!lto_symtab_symbol_p (e))
 	continue;
       cgraph_node *ce = dyn_cast <cgraph_node *> (e);
-      if (ce && !DECL_BUILT_IN (e->decl))
-	lto_cgraph_replace_node (ce, dyn_cast<cgraph_node *> (prevailing));
-      if (varpool_node *ve = dyn_cast <varpool_node *> (e))
-	lto_varpool_replace_node (ve, dyn_cast<varpool_node *> (prevailing));
+      symtab_node *to = symtab_node::get (lto_symtab_prevailing_decl (e->decl));
+
+      /* No matter how we are going to deal with resolution, we will ultimately
+	 use prevailing definition.  */
+      if (ce)
+          ipa_merge_profiles (dyn_cast<cgraph_node *> (prevailing),
+			      dyn_cast<cgraph_node *> (e));
+
+      /* If we decided to replace the node by TO, do it.  */
+      if (e != to)
+	{
+	  if (ce)
+	    lto_cgraph_replace_node (ce, dyn_cast<cgraph_node *> (to));
+	  else if (varpool_node *ve = dyn_cast <varpool_node *> (e))
+	    lto_varpool_replace_node (ve, dyn_cast<varpool_node *> (to));
+	}
+      /* Watch out for duplicated symbols for a given declaration.  */
+      else if (!e->transparent_alias
+	       || !e->definition || e->get_alias_target () != to)
+	{
+	  /* We got a new declaration we do not want to merge.  In this case
+	     get rid of the existing definition and create a transparent
+	     alias.  */
+	  if (ce)
+	    {
+	      lto_free_function_in_decl_state_for_node (ce);
+	      if (!ce->weakref)
+	        ce->release_body ();
+	      ce->reset ();
+	      symtab->call_cgraph_removal_hooks (ce);
+	    }
+	  else
+	    {
+	      DECL_INITIAL (e->decl) = error_mark_node;
+	      symtab->call_varpool_removal_hooks (dyn_cast<varpool_node *> (e));
+	    }
+	  e->remove_all_references ();
+	  e->analyzed = e->body_removed = false;
+	  e->resolve_alias (prevailing, true);
+	  gcc_assert (e != prevailing);
+	}
     }
 
   return;
@@ -782,9 +889,8 @@ lto_symtab_merge_symbols (void)
 	      symtab_node *tgt = symtab_node::get_for_asmname (node->alias_target);
 	      gcc_assert (node->weakref);
 	      if (tgt)
-		node->resolve_alias (tgt);
+		node->resolve_alias (tgt, true);
 	    }
-	  node->aux = NULL;
 
 	  if (!(cnode = dyn_cast <cgraph_node *> (node))
 	      || !cnode->clone_of
@@ -820,46 +926,4 @@ lto_symtab_merge_symbols (void)
 	    }
 	}
     }
-}
-
-/* Given the decl DECL, return the prevailing decl with the same name. */
-
-tree
-lto_symtab_prevailing_decl (tree decl)
-{
-  symtab_node *ret;
-
-  /* Builtins and local symbols are their own prevailing decl.  */
-  if ((!TREE_PUBLIC (decl) && !DECL_EXTERNAL (decl)) || is_builtin_fn (decl))
-    return decl;
-
-  /* DECL_ABSTRACT_Ps are their own prevailing decl.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_ABSTRACT_P (decl))
-    return decl;
-
-  /* When decl did not participate in symbol resolution leave it alone.
-     This can happen when we streamed the decl as abstract origin
-     from the block tree of inlining a partially inlined function.
-     If all, the split function and the original function end up
-     optimized away early we do not put the abstract origin into the
-     ltrans boundary and we'll end up ICEing in
-     dwarf2out.c:gen_inlined_subroutine_die because we eventually
-     replace a decl with DECL_POSSIBLY_INLINED set with one without.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && ! cgraph_node::get (decl))
-    return decl;
-
-  /* Ensure DECL_ASSEMBLER_NAME will not set assembler name.  */
-  gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
-
-  /* Walk through the list of candidates and return the one we merged to.  */
-  ret = symtab_node::get_for_asmname (DECL_ASSEMBLER_NAME (decl));
-  if (!ret)
-    return decl;
-
-  /* Do not replace a non-builtin with a builtin.  */
-  if (is_builtin_fn (ret->decl))
-    return decl;
-
-  return ret->decl;
 }

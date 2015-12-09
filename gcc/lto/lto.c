@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "ipa-utils.h"
 #include "gomp-constants.h"
+#include "lto-symtab.h"
 
 
 /* Number of parallel tasks to run, -1 if we want to use GNU Make jobserver.  */

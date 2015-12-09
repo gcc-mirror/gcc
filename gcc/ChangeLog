@@ -1,3 +1,11 @@
+2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61886
+	* lto-streamer.h (lto_symtab_merge_decls, lto_symtab_merge_symbols,
+	lto_symtab_prevailing_decl): MOve to lto-symtab.h.
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): Check that
+	DECL_ABSTRACT_ORIGIN is not error_mark_node.
+
 2015-12-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* tree-nested.c (convert_tramp_reference_stmt): Fix indentation.

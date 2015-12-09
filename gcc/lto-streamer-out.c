@@ -731,7 +731,11 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 
       /* Do not follow DECL_ABSTRACT_ORIGIN.  We cannot handle debug information
 	 for early inlining so drop it on the floor instead of ICEing in
-	 dwarf2out.c.  */
+	 dwarf2out.c.
+	 We however use DECL_ABSTRACT_ORIGIN == error_mark_node to mark
+	 declarations which should be eliminated by decl merging. Be sure none
+	 leaks to this point.  */
+      gcc_assert (DECL_ABSTRACT_ORIGIN (expr) != error_mark_node);
 
       if ((TREE_CODE (expr) == VAR_DECL
 	   || TREE_CODE (expr) == PARM_DECL)
