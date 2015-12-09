@@ -1,5 +1,23 @@
 2015-12-09  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/68583
+	* tree-if-conv.c (ifc_dr): Make flags bool, add w_unconditionally
+	flag and rename predicates to w_predicate, rw_predicate and
+	base_w_predicate.
+	(DR_WRITTEN_AT_LEAST_ONCE): Rename to ...
+	(DR_BASE_W_UNCONDITIONALLY): ... this.
+	(DR_W_UNCONDITIONALLY): Add.
+	(hash_memrefs_baserefs_and_store_DRs_read): Adjust.  Compute
+	unconditionally written separately from read or written.
+	(ifcvt_memrefs_wont_trap): Properly treat reads.
+	(ifcvt_could_trap_p): Inline ...
+	(if_convertible_gimple_assign_stmt_p): ... here.  Refactor
+	to avoid code duplication.
+	(if_convertible_loop_p_1): Adjust and properly initialize
+	predicates.
+
+2015-12-09  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-stmts.c (vectorizable_load): Set new vinfo only
 	if it was not yet set.
 	* tree-vectorizer.h (set_vinfo_for_stmt): Assert we don't

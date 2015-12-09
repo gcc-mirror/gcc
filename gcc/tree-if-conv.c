@@ -582,20 +582,19 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, gphi *phi,
    each DR->aux field.  */
 
 struct ifc_dr {
-  /* -1 when not initialized, 0 when false, 1 when true.  */
-  int written_at_least_once;
+  bool rw_unconditionally;
+  bool w_unconditionally;
+  bool written_at_least_once;
 
-  /* -1 when not initialized, 0 when false, 1 when true.  */
-  int rw_unconditionally;
-
-  tree predicate;
-
-  tree base_predicate;
+  tree rw_predicate;
+  tree w_predicate;
+  tree base_w_predicate;
 };
 
 #define IFC_DR(DR) ((struct ifc_dr *) (DR)->aux)
-#define DR_WRITTEN_AT_LEAST_ONCE(DR) (IFC_DR (DR)->written_at_least_once)
+#define DR_BASE_W_UNCONDITIONALLY(DR) (IFC_DR (DR)->written_at_least_once)
 #define DR_RW_UNCONDITIONALLY(DR) (IFC_DR (DR)->rw_unconditionally)
+#define DR_W_UNCONDITIONALLY(DR) (IFC_DR (DR)->w_unconditionally)
 
 /* Iterates over DR's and stores refs, DR and base refs, DR pairs in
    HASH tables.  While storing them in HASH table, it checks if the
@@ -623,38 +622,33 @@ hash_memrefs_baserefs_and_store_DRs_read_written_info (data_reference_p a)
     ref = TREE_OPERAND (ref, 0);
 
   master_dr = &ref_DR_map->get_or_insert (ref, &exist1);
-
   if (!exist1)
-    {
-      IFC_DR (a)->predicate = ca;
-      *master_dr = a;
-    }
-  else
-    IFC_DR (*master_dr)->predicate
-	= fold_or_predicates
-		(EXPR_LOCATION (IFC_DR (*master_dr)->predicate),
-		 ca, IFC_DR (*master_dr)->predicate);
+    *master_dr = a;
 
-  if (is_true_predicate (IFC_DR (*master_dr)->predicate))
-    DR_RW_UNCONDITIONALLY (*master_dr) = 1;
+  if (DR_IS_WRITE (a))
+    {
+      IFC_DR (*master_dr)->w_predicate
+	= fold_or_predicates (UNKNOWN_LOCATION, ca,
+			      IFC_DR (*master_dr)->w_predicate);
+      if (is_true_predicate (IFC_DR (*master_dr)->w_predicate))
+	DR_W_UNCONDITIONALLY (*master_dr) = true;
+    }
+  IFC_DR (*master_dr)->rw_predicate
+    = fold_or_predicates (UNKNOWN_LOCATION, ca,
+			  IFC_DR (*master_dr)->rw_predicate);
+  if (is_true_predicate (IFC_DR (*master_dr)->rw_predicate))
+    DR_RW_UNCONDITIONALLY (*master_dr) = true;
 
   if (DR_IS_WRITE (a))
     {
       base_master_dr = &baseref_DR_map->get_or_insert (base_ref, &exist2);
-
       if (!exist2)
-	{
-	  IFC_DR (a)->base_predicate = ca;
-	  *base_master_dr = a;
-	}
-      else
-	IFC_DR (*base_master_dr)->base_predicate
-	  = fold_or_predicates
-	      (EXPR_LOCATION (IFC_DR (*base_master_dr)->base_predicate),
-	       ca, IFC_DR (*base_master_dr)->base_predicate);
-
-      if (is_true_predicate (IFC_DR (*base_master_dr)->base_predicate))
-	DR_WRITTEN_AT_LEAST_ONCE (*base_master_dr) = 1;
+	*base_master_dr = a;
+      IFC_DR (*base_master_dr)->base_w_predicate
+	= fold_or_predicates (UNKNOWN_LOCATION, ca,
+			      IFC_DR (*base_master_dr)->base_w_predicate);
+      if (is_true_predicate (IFC_DR (*base_master_dr)->base_w_predicate))
+	DR_BASE_W_UNCONDITIONALLY (*base_master_dr) = true;
     }
 }
 
@@ -704,37 +698,34 @@ ifcvt_memrefs_wont_trap (gimple *stmt, vec<data_reference_p> drs)
 
   gcc_assert (master_dr != NULL);
 
-  if (DR_RW_UNCONDITIONALLY (*master_dr) == 1)
+  /* If a is unconditionally written to it doesn't trap.  */
+  if (DR_W_UNCONDITIONALLY (*master_dr))
+    return true;
+
+  /* If a is unconditionally accessed then ... */
+  if (DR_RW_UNCONDITIONALLY (*master_dr))
     {
+      /* an unconditional read won't trap.  */
+      if (DR_IS_READ (a))
+	return true;
+
+      /* an unconditionaly write won't trap if the base is written
+         to unconditionally.  */
       if (base_master_dr
-	  && DR_WRITTEN_AT_LEAST_ONCE (*base_master_dr) == 1)
+	  && DR_BASE_W_UNCONDITIONALLY (*base_master_dr))
 	return true;
       else
 	{
+	  /* or the base is know to be not readonly.  */
 	  tree base_tree = get_base_address (DR_REF (a));
 	  if (DECL_P (base_tree)
 	      && decl_binds_to_current_def_p (base_tree)
 	      && flag_tree_loop_if_convert_stores
 	      && !TREE_READONLY (base_tree))
-	  return true;
+	    return true;
 	}
     }
   return false;
-}
-
-/* Wrapper around gimple_could_trap_p refined for the needs of the
-   if-conversion.  Try to prove that the memory accesses of STMT could
-   not trap in the innermost loop containing STMT.  */
-
-static bool
-ifcvt_could_trap_p (gimple *stmt, vec<data_reference_p> refs)
-{
-  if (gimple_vuse (stmt)
-      && !gimple_could_trap_p_1 (stmt, false, false)
-      && ifcvt_memrefs_wont_trap (stmt, refs))
-    return false;
-
-  return gimple_could_trap_p (stmt);
 }
 
 /* Return true if STMT could be converted into a masked load or store
@@ -828,24 +819,10 @@ if_convertible_gimple_assign_stmt_p (gimple *stmt,
      we can perform loop versioning.  */
   gimple_set_plf (stmt, GF_PLF_2, false);
 
-  if (flag_tree_loop_if_convert_stores)
-    {
-      if (ifcvt_could_trap_p (stmt, refs))
-	{
-	  if (ifcvt_can_use_mask_load_store (stmt))
-	    {
-	      gimple_set_plf (stmt, GF_PLF_2, true);
-	      *any_mask_load_store = true;
-	      return true;
-	    }
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "tree could trap...\n");
-	  return false;
-	}
-      return true;
-    }
-
-  if (ifcvt_could_trap_p (stmt, refs))
+  if ((! gimple_vuse (stmt)
+       || gimple_could_trap_p_1 (stmt, false, false)
+       || ! ifcvt_memrefs_wont_trap (stmt, refs))
+      && gimple_could_trap_p (stmt))
     {
       if (ifcvt_can_use_mask_load_store (stmt))
 	{
@@ -857,6 +834,9 @@ if_convertible_gimple_assign_stmt_p (gimple *stmt,
 	fprintf (dump_file, "tree could trap...\n");
       return false;
     }
+
+  if (flag_tree_loop_if_convert_stores)
+    return true;
 
   bb = gimple_bb (stmt);
 
@@ -1279,8 +1259,12 @@ if_convertible_loop_p_1 (struct loop *loop,
   for (i = 0; refs->iterate (i, &dr); i++)
     {
       dr->aux = XNEW (struct ifc_dr);
-      DR_WRITTEN_AT_LEAST_ONCE (dr) = -1;
-      DR_RW_UNCONDITIONALLY (dr) = -1;
+      DR_BASE_W_UNCONDITIONALLY (dr) = false;
+      DR_RW_UNCONDITIONALLY (dr) = false;
+      DR_W_UNCONDITIONALLY (dr) = false;
+      IFC_DR (dr)->rw_predicate = boolean_false_node;
+      IFC_DR (dr)->w_predicate = boolean_false_node;
+      IFC_DR (dr)->base_w_predicate = boolean_false_node;
       if (gimple_uid (DR_STMT (dr)) == 0)
 	gimple_set_uid (DR_STMT (dr), i + 1);
       hash_memrefs_baserefs_and_store_DRs_read_written_info (dr);
