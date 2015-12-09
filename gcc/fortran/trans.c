@@ -746,6 +746,14 @@ gfc_allocate_using_lib (stmtblock_t * block, tree pointer, tree size,
 			 TREE_TYPE (pointer), pointer,
 			 fold_convert ( TREE_TYPE (pointer), tmp));
   gfc_add_expr_to_block (block, tmp);
+
+  /* It guarantees memory consistency within the same segment */
+  tmp = gfc_build_string_const (strlen ("memory")+1, "memory"),
+  tmp = build5_loc (input_location, ASM_EXPR, void_type_node,
+		    gfc_build_string_const (1, ""), NULL_TREE, NULL_TREE,
+		    tree_cons (NULL_TREE, tmp, NULL_TREE), NULL_TREE);
+  ASM_VOLATILE_P (tmp) = 1;
+  gfc_add_expr_to_block (block, tmp);
 }
 
 
@@ -1354,6 +1362,14 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
       tmp = build_call_expr_loc (input_location,
 	     gfor_fndecl_caf_deregister, 4,
 	     token, pstat, errmsg, errlen);
+      gfc_add_expr_to_block (&non_null, tmp);
+
+      /* It guarantees memory consistency within the same segment */
+      tmp = gfc_build_string_const (strlen ("memory")+1, "memory"),
+      tmp = build5_loc (input_location, ASM_EXPR, void_type_node,
+			gfc_build_string_const (1, ""), NULL_TREE, NULL_TREE,
+			tree_cons (NULL_TREE, tmp, NULL_TREE), NULL_TREE);
+      ASM_VOLATILE_P (tmp) = 1;
       gfc_add_expr_to_block (&non_null, tmp);
 
       if (status != NULL_TREE)
