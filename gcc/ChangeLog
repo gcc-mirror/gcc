@@ -1,3 +1,12 @@
+2015-12-09  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2015-12-09  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/68790
+	* ipa-icf.c (sem_function::param_used_p): Return true
+	if ipa_node_params_sum equals to NULL.
+
 2015-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline

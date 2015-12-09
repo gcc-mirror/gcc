@@ -1,3 +1,11 @@
+2015-12-09  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2015-12-09  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/68790
+	* gcc.dg/ipa/pr68790.c: New test.
+
 2015-12-07  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/ipa/pr66896.C: New test.
