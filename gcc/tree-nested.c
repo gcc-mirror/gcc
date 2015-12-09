@@ -2375,27 +2375,27 @@ convert_tramp_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED)
 		  && OMP_CLAUSE_DECL (c) == decl)
 		break;
-	      if (c == NULL && gimple_code (stmt) != GIMPLE_OMP_TARGET)
-		{
-		  c = build_omp_clause (gimple_location (stmt),
-					i ? OMP_CLAUSE_FIRSTPRIVATE
-					  : OMP_CLAUSE_SHARED);
-		  OMP_CLAUSE_DECL (c) = decl;
-		  OMP_CLAUSE_CHAIN (c) = gimple_omp_taskreg_clauses (stmt);
-		  gimple_omp_taskreg_set_clauses (stmt, c);
-		}
-	      else if (c == NULL)
-		{
-		  c = build_omp_clause (gimple_location (stmt),
-					OMP_CLAUSE_MAP);
-		  OMP_CLAUSE_DECL (c) = decl;
-		  OMP_CLAUSE_SET_MAP_KIND (c,
-					   i ? GOMP_MAP_TO : GOMP_MAP_TOFROM);
-		  OMP_CLAUSE_SIZE (c) = DECL_SIZE_UNIT (decl);
-		  OMP_CLAUSE_CHAIN (c) = gimple_omp_target_clauses (stmt);
-		  gimple_omp_target_set_clauses (as_a <gomp_target *> (stmt),
-						 c);
-		}
+	    if (c == NULL && gimple_code (stmt) != GIMPLE_OMP_TARGET)
+	      {
+		c = build_omp_clause (gimple_location (stmt),
+				      i ? OMP_CLAUSE_FIRSTPRIVATE
+				      : OMP_CLAUSE_SHARED);
+		OMP_CLAUSE_DECL (c) = decl;
+		OMP_CLAUSE_CHAIN (c) = gimple_omp_taskreg_clauses (stmt);
+		gimple_omp_taskreg_set_clauses (stmt, c);
+	      }
+	    else if (c == NULL)
+	      {
+		c = build_omp_clause (gimple_location (stmt),
+				      OMP_CLAUSE_MAP);
+		OMP_CLAUSE_DECL (c) = decl;
+		OMP_CLAUSE_SET_MAP_KIND (c,
+					 i ? GOMP_MAP_TO : GOMP_MAP_TOFROM);
+		OMP_CLAUSE_SIZE (c) = DECL_SIZE_UNIT (decl);
+		OMP_CLAUSE_CHAIN (c) = gimple_omp_target_clauses (stmt);
+		gimple_omp_target_set_clauses (as_a <gomp_target *> (stmt),
+					       c);
+	      }
 	  }
 	info->new_local_var_chain = save_local_var_chain;
 	info->static_chain_added |= save_static_chain_added;

@@ -1,5 +1,9 @@
 2015-12-08  David Malcolm  <dmalcolm@redhat.com>
 
+	* tree-nested.c (convert_tramp_reference_stmt): Fix indentation.
+
+2015-12-08  David Malcolm  <dmalcolm@redhat.com>
+
 	* tree-ssa-loop-unswitch.c (tree_unswitch_outer_loop): Fix
 	indentation.
 
