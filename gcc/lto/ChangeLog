@@ -1,6 +1,20 @@
 2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61886
+	* lto-symtab.c: Include lto-symtab.h.
+	(lto_cgraph_replace_node): Do not merge profiles here.
+	(lto_symtab_merge_p): New function.
+	(lto_symtab_merge_decls_2): Honor lto_symtab_merge_p.
+	(lto_symtab_merge_symbols_1): Turn unmerged decls into transparent
+	aliases.
+	(lto_symtab_merge_symbols): Do not clear node->aux; we no longer use it.
+	(lto_symtab_prevailing_decl): Move to lto-symtab.h; rewrite.
+	* lto.c: Include lto-symtab.h
+	* lto-symtab.h: New.
+
+2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61886
 	* lto-partition.c (add_symbol_to_partition_1): Transparent aliases
 	are not part of the definition.
 	(contained_in_symbol): Likewise.

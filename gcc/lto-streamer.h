@@ -927,11 +927,6 @@ void cl_optimization_stream_out (struct bitpack_d *, struct cl_optimization *);
 void cl_optimization_stream_in (struct bitpack_d *, struct cl_optimization *);
 
 
-/* In lto-symtab.c.  */
-extern void lto_symtab_merge_decls (void);
-extern void lto_symtab_merge_symbols (void);
-extern tree lto_symtab_prevailing_decl (tree decl);
-
 
 /* In lto-opts.c.  */
 extern void lto_write_options (void);
