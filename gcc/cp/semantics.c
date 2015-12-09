@@ -3851,8 +3851,9 @@ calculate_bases_helper (tree type)
   vec<tree, va_gc> *vector = make_tree_vector();
 
   /* Now add non-virtual base classes in order of construction */
-  dfs_walk_all (TYPE_BINFO (type),
-                dfs_calculate_bases_pre, dfs_calculate_bases_post, &vector);
+  if (TYPE_BINFO (type))
+    dfs_walk_all (TYPE_BINFO (type),
+		  dfs_calculate_bases_pre, dfs_calculate_bases_post, &vector);
   return vector;
 }
 
@@ -3886,13 +3887,18 @@ calculate_bases (tree type)
   vec_safe_splice (vector, nonvbases);
   release_tree_vector (nonvbases);
 
-  /* Last element is entire class, so don't copy */
-  bases_vec = make_tree_vec (vector->length () - 1);
-
-  for (i = 0; i < vector->length () - 1; ++i)
+  /* Note that during error recovery vector->length can even be zero.  */
+  if (vector->length () > 1)
     {
-      TREE_VEC_ELT (bases_vec, i) = (*vector)[i];
+      /* Last element is entire class, so don't copy */
+      bases_vec = make_tree_vec (vector->length() - 1);
+
+      for (i = 0; i < vector->length () - 1; ++i)
+	TREE_VEC_ELT (bases_vec, i) = (*vector)[i];
     }
+  else
+    bases_vec = make_tree_vec (0);
+
   release_tree_vector (vector);
   return bases_vec;
 }
