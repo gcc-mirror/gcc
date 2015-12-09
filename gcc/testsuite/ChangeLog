@@ -1,3 +1,8 @@
+2015-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60218
+	* g++.dg/ext/bases2.C: New.
+
 2015-12-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse4_1-roundps-1.c: Remove ASM_SUFFIX define.

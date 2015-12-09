@@ -1,3 +1,10 @@
+2015-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60218
+	* semantics.c (calculate_bases_helper): Don't call dfs_walk_all
+	when TYPE_BINFO (type) is null.
+	(calculate_bases): Handle gracefully a null vector->length ().
+
 2015-12-08  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/68711
