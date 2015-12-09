@@ -1,3 +1,13 @@
+2015-12-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/68815
+	* decl.c (gfc_verify_c_interop_param, variable_decl): Use
+	%< ... %> for quoting in diagnostics.
+	* io.c (check_format): Ditto.
+	* resolve.c (resolve_operator): Ditto.
+	* symbol.c (check_conflict): Ditto.
+	* trans-common.c (translate_common): Ditto.
+
 2015-12-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.c (gfc_format_decoder): Update for change of
