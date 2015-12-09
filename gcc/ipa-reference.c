@@ -174,14 +174,22 @@ set_reference_optimization_summary (struct cgraph_node *node,
 bitmap
 ipa_reference_get_not_read_global (struct cgraph_node *fn)
 {
-  if (!opt_for_fn (fn->decl, flag_ipa_reference)
-      || !opt_for_fn (current_function_decl, flag_ipa_reference))
+  if (!opt_for_fn (current_function_decl, flag_ipa_reference))
     return NULL;
+
+  enum availability avail;
+  struct cgraph_node *fn2 = fn->function_symbol (&avail);
   ipa_reference_optimization_summary_t info =
-    get_reference_optimization_summary (fn->function_symbol (NULL));
-  if (info)
+    get_reference_optimization_summary (fn2);
+
+  if (info
+      && (avail >= AVAIL_AVAILABLE
+	  || (avail == AVAIL_INTERPOSABLE
+	      && flags_from_decl_or_type (fn->decl) & ECF_LEAF))
+      && opt_for_fn (fn2->decl, flag_ipa_reference))
     return info->statics_not_read;
-  else if (flags_from_decl_or_type (fn->decl) & ECF_LEAF)
+  else if (avail == AVAIL_NOT_AVAILABLE
+	   && flags_from_decl_or_type (fn->decl) & ECF_LEAF)
     return all_module_statics;
   else
     return NULL;
@@ -195,14 +203,22 @@ ipa_reference_get_not_read_global (struct cgraph_node *fn)
 bitmap
 ipa_reference_get_not_written_global (struct cgraph_node *fn)
 {
-  if (!opt_for_fn (fn->decl, flag_ipa_reference)
-      || !opt_for_fn (current_function_decl, flag_ipa_reference))
+  if (!opt_for_fn (current_function_decl, flag_ipa_reference))
     return NULL;
+
+  enum availability avail;
+  struct cgraph_node *fn2 = fn->function_symbol (&avail);
   ipa_reference_optimization_summary_t info =
-    get_reference_optimization_summary (fn);
-  if (info)
+    get_reference_optimization_summary (fn2);
+
+  if (info
+      && (avail >= AVAIL_AVAILABLE
+	  || (avail == AVAIL_INTERPOSABLE
+	      && flags_from_decl_or_type (fn->decl) & ECF_LEAF))
+      && opt_for_fn (fn2->decl, flag_ipa_reference))
     return info->statics_not_written;
-  else if (flags_from_decl_or_type (fn->decl) & ECF_LEAF)
+  else if (avail == AVAIL_NOT_AVAILABLE
+	   && flags_from_decl_or_type (fn->decl) & ECF_LEAF)
     return all_module_statics;
   else
     return NULL;
