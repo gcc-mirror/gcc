@@ -1,3 +1,9 @@
+2015-12-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/66526
+	* g-expect.adb (Set_Up_Child_Communications): Add matching condition
+	for uses of Input, Ouput and Error variables after the Execvp call.
+
 2015-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48088
