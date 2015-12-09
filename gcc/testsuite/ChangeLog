@@ -1,3 +1,21 @@
+2015-12-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse4_1-roundps-1.c: Remove ASM_SUFFIX define.
+	* gcc.target/i386/sse4_1-roundps-2.c: Ditto.
+	* gcc.target/i386/sse4_1-roundps-3.c: Ditto.
+	* gcc.target/i386/sse4_1-roundsd-1.c: Ditto.
+	* gcc.target/i386/sse4_1-roundsd-2.c: Ditto.
+	* gcc.target/i386/sse4_1-roundsd-3.c: Ditto.
+	* gcc.target/i386/sse4_1-roundss-1.c: Ditto.
+	* gcc.target/i386/sse4_1-roundss-2.c: Ditto.
+	* gcc.target/i386/sse4_1-roundss-3.c: Ditto.
+
+2015-12-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse4_1-round.h (do_round): Fix inline asm statements.
+	* gcc.target/i386/sse4_1-roundsd-4.c (do_round): Ditto.
+	* gcc.target/i386/sse4_1-roundss-4.c (do_round): Ditto.
+
 2015-12-09  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
