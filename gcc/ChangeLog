@@ -1,3 +1,19 @@
+2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61886
+	PR middle-end/25140
+	* ipa-reference.c (ipa_reference_get_not_read_global,
+	ipa_reference_get_not_read_global): Fix WRT aliases.
+	(is_improper): Break out from ...
+	(is_proper_for_analysis): ... here; fix WRT aliases.
+	(analyze_function, generate_summary,
+	ipa_reference_write_optimization_summary,
+	ipa_reference_read_optimization_summary): Use ipa_reference_var_uid.
+	* ipa-refrence.h (ipa_reference_var_uid): New inline.
+	* tree-ssa-alias.c: Revert my accidental previous commit.
+	(ref_maybe_used_by_call_p_1,
+	call_may_clobber_ref_p_1): Use ipa_reference_var_uid.
+
 2015-12-09  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/rs6000/freebsd64.h: Remove the redefinition of WCHAR_TYPE.
@@ -119,6 +135,7 @@
 	* tree-vectorizer.h (set_vinfo_for_stmt): Assert we don't
 	overwrite an existing entry.
 
+>>>>>>> .r231469
 2015-12-09  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* c-family/c-omp.c (c_finish_oacc_wait): Remove add_stmt() call.

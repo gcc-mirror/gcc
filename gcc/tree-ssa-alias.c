@@ -1739,21 +1739,15 @@ ref_maybe_used_by_call_p_1 (gcall *call, ao_ref *ref)
       && TREE_STATIC (base))
     {
       struct cgraph_node *node = cgraph_node::get (callee);
+      bitmap not_read;
 
       /* FIXME: Callee can be an OMP builtin that does not have a call graph
 	 node yet.  We should enforce that there are nodes for all decls in the
 	 IL and remove this check instead.  */
-      if (node)
-	{
-	  enum availability avail;
-	  bitmap not_read;
-
-	  node = node->ultimate_alias_target (&avail);
-	  if (avail >= AVAIL_AVAILABLE
-	      && (not_read = ipa_reference_get_not_read_global (node))
-	      && bitmap_bit_p (not_read, ipa_reference_var_uid (base)))
-	    goto process_args;
-	}
+      if (node
+	  && (not_read = ipa_reference_get_not_read_global (node))
+	  && bitmap_bit_p (not_read, ipa_reference_var_uid (base)))
+	goto process_args;
     }
 
   /* Check if the base variable is call-used.  */
@@ -2134,18 +2128,12 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref)
       && TREE_STATIC (base))
     {
       struct cgraph_node *node = cgraph_node::get (callee);
+      bitmap not_written;
 
-      if (node)
-	{
-	  bitmap not_written;
-	  enum availability avail;
-
-	  node = node->ultimate_alias_target (&avail);
-	  if (avail >= AVAIL_AVAILABLE
-	      && (not_written = ipa_reference_get_not_written_global (node))
-	      && bitmap_bit_p (not_written, ipa_reference_var_uid (base)))
-	    return false;
-	}
+      if (node
+	  && (not_written = ipa_reference_get_not_written_global (node))
+	  && bitmap_bit_p (not_written, ipa_reference_var_uid (base)))
+	return false;
     }
 
   /* Check if the base variable is call-clobbered.  */
