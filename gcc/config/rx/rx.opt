@@ -149,3 +149,9 @@ Enable the use of the LRA register allocator.
 mallow-string-insns
 Target Report Var(rx_allow_string_insns) Init(1)
 Enables or disables the use of the SMOVF, SMOVB, SMOVU, SUNTIL, SWHILE and RMPA instructions.  Enabled by default.
+
+;---------------------------------------------------
+
+mjsr
+Target Report Mask(JSR)
+Always use JSR, never BSR, for calls.
