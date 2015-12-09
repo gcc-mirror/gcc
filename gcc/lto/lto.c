@@ -2517,7 +2517,7 @@ lto_wpa_write_files (void)
 
 /* Ensure that TT isn't a replacable var of function decl.  */
 #define LTO_NO_PREVAIL(tt) \
-  gcc_assert (!(tt) || !VAR_OR_FUNCTION_DECL_P (tt))
+  gcc_checking_assert (!(tt) || !VAR_OR_FUNCTION_DECL_P (tt))
 
 /* Given a tree T replace all fields referring to variables or functions
    with their prevailing variant.  */
@@ -2529,7 +2529,10 @@ lto_fixup_prevailing_decls (tree t)
 
   gcc_checking_assert (code != TREE_BINFO);
   LTO_NO_PREVAIL (TREE_TYPE (t));
-  if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
+  if (CODE_CONTAINS_STRUCT (code, TS_COMMON)
+      /* lto_symtab_prevail_decl use TREE_CHAIN to link to the prevailing decl.
+	 in the case T is a prevailed declaration we would ICE here. */
+      && !VAR_OR_FUNCTION_DECL_P (t))
     LTO_NO_PREVAIL (TREE_CHAIN (t));
   if (DECL_P (t))
     {

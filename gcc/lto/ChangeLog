@@ -1,6 +1,13 @@
 2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/68811
+	* lto.c (lto_fixup_prevailing_decls): Do not check TREE_CHAIN of
+	DECL.
+	(LTO_NO_PREVAIL): Use gcc_checking_assert.
+
+2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/68811
 	* lto-symtab.c (lto_symtab_merge_decls_2): Decl can never be prevailed
 	by itself.
 
