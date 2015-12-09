@@ -36,6 +36,7 @@ extern int nonoverlapping_memrefs_p (const_rtx, const_rtx, bool);
 extern void dump_alias_stats_in_alias_c (FILE *s);
 tree reference_alias_ptr_type (tree);
 bool alias_ptr_types_compatible_p (tree, tree);
+int compare_base_decls (tree, tree);
 
 /* This alias set can be used to force a memory to conflict with all
    other memories, creating a barrier across which no memory reference

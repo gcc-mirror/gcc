@@ -1,6 +1,21 @@
 2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61886
+	PR middle-end/25140
+	* tree-ssa-alias.c (ptr_deref_may_alias_decl_p): Use compare_base_decls
+	(nonoverlapping_component_refs_of_decl_p): Update sanity check.
+	(decl_refs_may_alias_p): Use compare_base_decls.
+	* alias.c: Include cgraph.h
+	(rtx_equal_for_memref_p): Use rtx_equal_for_memref_p.
+	(compare_base_decls): New function.
+	(base_alias_check): Likewise.
+	(memrefs_conflict_p): Likewise.
+	(nonoverlapping_memrefs_p): Likewise.
+	* alias.h (compare_base_decls): Declare.
+
+2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61886
 	* ipa-visibility.c (function_and_variable_visibility): Fix vtable
 	rewritting guard.
 
