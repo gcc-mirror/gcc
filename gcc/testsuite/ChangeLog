@@ -1,3 +1,7 @@
+2015-12-09  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/ipa/pr68790.c: New test.
+
 2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61886

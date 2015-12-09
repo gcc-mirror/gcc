@@ -544,7 +544,7 @@ bool
 sem_function::param_used_p (unsigned int i)
 {
   if (ipa_node_params_sum == NULL)
-    return false;
+    return true;
 
   struct ipa_node_params *parms_info = IPA_NODE_REF (get_node ());
 
