@@ -1,3 +1,9 @@
+2015-12-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/68716
+	* tree-ssa-structalias.c (find_func_clobbers): Fix handling of
+	BUILT_IN_GOMP_PARALLEL and BUILT_IN_GOACC_PARALLEL.
+
 2015-12-09  Martin Liska  <mliska@suse.cz>
 
 	* hash-traits.h (struct typed_delete_remove): New function.
