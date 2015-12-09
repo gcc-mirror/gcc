@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/ctx.h>
 #ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
 #include <isl/schedule_node.h>
+#include <isl/ast_build.h>
 #endif
 
 #include "graphite.h"
@@ -405,7 +406,14 @@ optimize_isl (scop_p scop)
   isl_options_set_schedule_maximize_band_depth (scop->isl_context, 1);
 #ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
   /* ISL-0.15 or later.  */
+  isl_options_set_schedule_serialize_sccs (scop->isl_context, 0);
   isl_options_set_schedule_maximize_band_depth (scop->isl_context, 1);
+  isl_options_set_schedule_max_constant_term (scop->isl_context, 20);
+  isl_options_set_schedule_max_coefficient (scop->isl_context, 20);
+  isl_options_set_tile_scale_tile_loops (scop->isl_context, 0);
+  isl_options_set_coalesce_bounded_wrapping (scop->isl_context, 1);
+  isl_options_set_ast_build_exploit_nested_bounds (scop->isl_context, 1);
+  isl_options_set_ast_build_atomic_upper_bound (scop->isl_context, 1);
 #else
   isl_options_set_schedule_fuse (scop->isl_context, ISL_SCHEDULE_FUSE_MIN);
 #endif
