@@ -720,7 +720,7 @@ function_and_variable_visibility (bool whole_program)
 	  bool found = false;
 
 	  /* See if there is something to update.  */
-	  for (i = 0; vnode->iterate_referring (i, ref); i++)
+	  for (i = 0; vnode->iterate_reference (i, ref); i++)
 	    if (ref->use == IPA_REF_ADDR
 		&& can_replace_by_local_alias_in_vtable (ref->referred))
 	      {

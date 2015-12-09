@@ -1,6 +1,12 @@
 2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61886
+	* ipa-visibility.c (function_and_variable_visibility): Fix vtable
+	rewritting guard.
+
+2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61886
 	PR middle-end/25140
 	* ipa-reference.c (ipa_reference_get_not_read_global,
 	ipa_reference_get_not_read_global): Fix WRT aliases.
@@ -135,7 +141,6 @@
 	* tree-vectorizer.h (set_vinfo_for_stmt): Assert we don't
 	overwrite an existing entry.
 
->>>>>>> .r231469
 2015-12-09  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* c-family/c-omp.c (c_finish_oacc_wait): Remove add_stmt() call.
