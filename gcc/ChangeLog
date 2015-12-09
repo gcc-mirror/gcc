@@ -1,5 +1,13 @@
 2015-12-09  Martin Liska  <mliska@suse.cz>
 
+	* hash-traits.h (struct typed_delete_remove): New function.
+	(typed_delete_remove ::remove): Likewise.
+	* tree-ssa-loop-ivopts.c (struct iv_common_cand): Replace
+	auto_vec with vec.
+	(record_common_cand): Replace XNEW with operator new.
+
+2015-12-09  Martin Liska  <mliska@suse.cz>
+
 	* tree-if-conv.c (ifcvt_local_dce): Replace vec with auto_vec.
 
 2015-12-09  Martin Liska  <mliska@suse.cz>
