@@ -1878,13 +1878,28 @@ symtab_node::nonzero_address ()
 
 /* Return 0 if symbol is known to have different address than S2,
    Return 1 if symbol is known to have same address as S2,
-   return 2 otherwise.   */
+   return 2 otherwise.  
+
+   If MEMORY_ACCESSED is true, assume that both memory pointer to THIS
+   and S2 is going to be accessed.  This eliminates the situations when
+   either THIS or S2 is NULL and is seful for comparing bases when deciding
+   about memory aliasing.  */
 int
-symtab_node::equal_address_to (symtab_node *s2)
+symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
 {
   enum availability avail1, avail2;
 
   /* A Shortcut: equivalent symbols are always equivalent.  */
+  if (this == s2)
+    return 1;
+
+  /* Unwind transparent aliases first; those are always equal to their
+     target.  */
+  if (this->transparent_alias && this->analyzed)
+    return this->get_alias_target ()->equal_address_to (s2);
+  while (s2->transparent_alias && s2->analyzed)
+    s2 = s2->get_alias_target();
+
   if (this == s2)
     return 1;
 
@@ -1924,8 +1939,9 @@ symtab_node::equal_address_to (symtab_node *s2)
       return 1;
     }
 
-  /* If both symbols may resolve to NULL, we can not really prove them different.  */
-  if (!nonzero_address () && !s2->nonzero_address ())
+  /* If both symbols may resolve to NULL, we can not really prove them
+     different.  */
+  if (!memory_accessed && !nonzero_address () && !s2->nonzero_address ())
     return 2;
 
   /* Except for NULL, functions and variables never overlap.  */
@@ -1956,11 +1972,12 @@ symtab_node::equal_address_to (symtab_node *s2)
     }
 
   /* TODO: Alias oracle basically assume that addresses of global variables
-     are different unless they are declared as alias of one to another.
-     We probably should be consistent and use this fact here, too, and update
-     alias oracle to use this predicate.  */
+     are different unless they are declared as alias of one to another while
+     the code folding comparsions doesn't.
+     We probably should be consistent and use this fact here, too, but for
+     the moment return false only when we are called from the alias oracle.  */
 
-  return 2;
+  return memory_accessed && rs1 != rs2 ? 0 : 2;
 }
 
 /* Worker for call_for_symbol_and_aliases.  */

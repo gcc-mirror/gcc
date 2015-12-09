@@ -1,3 +1,10 @@
+2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61886
+	* symtab.c (symtab_node::equal_address_to): New parameter
+	MEMORY_ACCESSED.
+	* cgraph.h (symtab_node::equal_address_to): Update prototype.
+
 2015-12-08  DJ Delorie  <dj@redhat.com>
 
 	* config/rx/rx.opt (-mjsr): Add.
