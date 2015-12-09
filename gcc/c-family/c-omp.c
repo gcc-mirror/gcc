@@ -63,7 +63,6 @@ c_finish_oacc_wait (location_t loc, tree parms, tree clauses)
     }
 
   stmt = build_call_expr_loc_vec (loc, stmt, args);
-  add_stmt (stmt);
 
   vec_free (args);
 
