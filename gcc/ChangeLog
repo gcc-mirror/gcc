@@ -1,7 +1,12 @@
+2015-12-09  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-optimize-isl.c (optimize_isl): Improve dump message.
+
 2015-12-09  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/66949
-	* tree-ssa-phiopt.c (tree_ssa_phiopt_worker): Don't call 
+	* tree-ssa-phiopt.c (tree_ssa_phiopt_worker): Don't call
 	single_non_singleton_phi_for_edges to get the PHI from
 	factor_out_conditional_conversion.  Use NULL_TREE instead of NULL.
 	(factor_out_conditional_conversion): Adjust declaration.  Make it
