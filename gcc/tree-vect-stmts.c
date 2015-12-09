@@ -7276,6 +7276,9 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 					      unshare_expr
 					        (gimple_assign_rhs1 (stmt))));
 		      new_temp = vect_init_vector (stmt, tem, vectype, NULL);
+		      new_stmt = SSA_NAME_DEF_STMT (new_temp);
+		      set_vinfo_for_stmt (new_stmt,
+					  new_stmt_vec_info (new_stmt, vinfo));
 		    }
 		  else
 		    {
@@ -7283,10 +7286,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		      gsi_next (&gsi2);
 		      new_temp = vect_init_vector (stmt, scalar_dest,
 						   vectype, &gsi2);
+		      new_stmt = SSA_NAME_DEF_STMT (new_temp);
 		    }
-		  new_stmt = SSA_NAME_DEF_STMT (new_temp);
-		  set_vinfo_for_stmt (new_stmt,
-				      new_stmt_vec_info (new_stmt, vinfo));
 		}
 
 	      if (negative)
