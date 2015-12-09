@@ -1,5 +1,9 @@
 2015-12-09  Martin Liska  <mliska@suse.cz>
 
+	* tree-if-conv.c (ifcvt_local_dce): Replace vec with auto_vec.
+
+2015-12-09  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/68790
 	* ipa-icf.c (sem_function::param_used_p): Return true
 	if ipa_node_params_sum equals to NULL.

@@ -2550,7 +2550,7 @@ ifcvt_local_dce (basic_block bb)
   gimple *stmt1;
   gimple *phi;
   gimple_stmt_iterator gsi;
-  vec<gimple *> worklist;
+  auto_vec<gimple *> worklist;
   enum gimple_code code;
   use_operand_p use_p;
   imm_use_iterator imm_iter;
