@@ -912,7 +912,7 @@ pdr_add_memory_accesses (isl_map *acc, dr_info &dri)
   for (i = 0; i < nb_subscripts; i++)
     {
       isl_pw_aff *aff;
-      tree afn = DR_ACCESS_FN (dr, nb_subscripts - 1 - i);
+      tree afn = DR_ACCESS_FN (dr, i);
 
       aff = extract_affine (scop, afn,
 			    isl_space_domain (isl_map_get_space (acc)));
