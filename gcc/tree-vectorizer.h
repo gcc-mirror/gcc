@@ -715,7 +715,10 @@ set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
       stmt_vec_info_vec.safe_push (info);
     }
   else
-    stmt_vec_info_vec[uid - 1] = info;
+    {
+      gcc_checking_assert (info == NULL);
+      stmt_vec_info_vec[uid - 1] = info;
+    }
 }
 
 /* Return the earlier statement between STMT1 and STMT2.  */

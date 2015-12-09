@@ -1,3 +1,10 @@
+2015-12-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vectorizable_load): Set new vinfo only
+	if it was not yet set.
+	* tree-vectorizer.h (set_vinfo_for_stmt): Assert we don't
+	overwrite an existing entry.
+
 2015-12-09  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* c-family/c-omp.c (c_finish_oacc_wait): Remove add_stmt() call.
