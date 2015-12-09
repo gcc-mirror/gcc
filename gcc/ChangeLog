@@ -1,3 +1,17 @@
+2015-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/68786
+	* tree-if-conv.c: Include builtins.h.
+	(predicate_mem_writes): Put result of get_object_alignment (ref)
+	into second argument's value.
+	* tree-vect-stmts.c (vectorizable_mask_load_store): Put minimum
+	pointer alignment into second argument's value.
+	* tree-data-ref.c (get_references_in_stmt): Use value of second
+	argument for build_aligned_type, and only the type to build
+	a zero second argument for MEM_REF.
+	* internal-fn.c (expand_mask_load_optab_fn,
+	expand_mask_store_optab_fn): Likewise.
+
 2015-12-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68583

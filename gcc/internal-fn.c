@@ -1911,16 +1911,20 @@ static void
 expand_mask_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
   struct expand_operand ops[3];
-  tree type, lhs, rhs, maskt;
+  tree type, lhs, rhs, maskt, ptr;
   rtx mem, target, mask;
+  unsigned align;
 
   maskt = gimple_call_arg (stmt, 2);
   lhs = gimple_call_lhs (stmt);
   if (lhs == NULL_TREE)
     return;
   type = TREE_TYPE (lhs);
-  rhs = fold_build2 (MEM_REF, type, gimple_call_arg (stmt, 0),
-		     gimple_call_arg (stmt, 1));
+  ptr = build_int_cst (TREE_TYPE (gimple_call_arg (stmt, 1)), 0);
+  align = tree_to_shwi (gimple_call_arg (stmt, 1));
+  if (TYPE_ALIGN (type) != align)
+    type = build_aligned_type (type, align);
+  rhs = fold_build2 (MEM_REF, type, gimple_call_arg (stmt, 0), ptr);
 
   mem = expand_expr (rhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   gcc_assert (MEM_P (mem));
@@ -1940,14 +1944,18 @@ static void
 expand_mask_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
   struct expand_operand ops[3];
-  tree type, lhs, rhs, maskt;
+  tree type, lhs, rhs, maskt, ptr;
   rtx mem, reg, mask;
+  unsigned align;
 
   maskt = gimple_call_arg (stmt, 2);
   rhs = gimple_call_arg (stmt, 3);
   type = TREE_TYPE (rhs);
-  lhs = fold_build2 (MEM_REF, type, gimple_call_arg (stmt, 0),
-		     gimple_call_arg (stmt, 1));
+  ptr = build_int_cst (TREE_TYPE (gimple_call_arg (stmt, 1)), 0);
+  align = tree_to_shwi (gimple_call_arg (stmt, 1));
+  if (TYPE_ALIGN (type) != align)
+    type = build_aligned_type (type, align);
+  lhs = fold_build2 (MEM_REF, type, gimple_call_arg (stmt, 0), ptr);
 
   mem = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   gcc_assert (MEM_P (mem));

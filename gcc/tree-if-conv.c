@@ -111,6 +111,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "tree-hash-traits.h"
 #include "varasm.h"
+#include "builtins.h"
 
 /* List of basic blocks in if-conversion-suitable order.  */
 static basic_block *ifc_bbs;
@@ -2056,7 +2057,8 @@ predicate_mem_writes (loop_p loop)
 	        vect_sizes.safe_push (bitsize);
 		vect_masks.safe_push (mask);
 	      }
-	    ptr = build_int_cst (reference_alias_ptr_type (ref), 0);
+	    ptr = build_int_cst (reference_alias_ptr_type (ref),
+				 get_object_alignment (ref));
 	    /* Copy points-to info if possible.  */
 	    if (TREE_CODE (addr) == SSA_NAME && !SSA_NAME_PTR_INFO (addr))
 	      copy_ref_info (build2 (MEM_REF, TREE_TYPE (ref), addr, ptr),
