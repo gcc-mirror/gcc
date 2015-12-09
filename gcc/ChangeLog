@@ -1,3 +1,7 @@
+2015-12-09  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/rs6000/freebsd64.h: Remove the redefinition of WCHAR_TYPE.
+
 2015-12-09  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
