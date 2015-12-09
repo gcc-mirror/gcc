@@ -1,3 +1,8 @@
+2015-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68417
+	* gcc.dg/vect/pr68417.c: New testcase.
+
 2015-12-09  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/ipa/pr68790.c: New test.
