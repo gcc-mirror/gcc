@@ -5082,7 +5082,52 @@ find_func_clobbers (struct function *fn, gimple *origt)
 	    return;
 	  case BUILT_IN_GOMP_PARALLEL:
 	  case BUILT_IN_GOACC_PARALLEL:
-	    return;
+	    {
+	      unsigned int fnpos, argpos;
+	      switch (DECL_FUNCTION_CODE (decl))
+		{
+		case BUILT_IN_GOMP_PARALLEL:
+		  /* __builtin_GOMP_parallel (fn, data, num_threads, flags).  */
+		  fnpos = 0;
+		  argpos = 1;
+		  break;
+		case BUILT_IN_GOACC_PARALLEL:
+		  /* __builtin_GOACC_parallel (device, fn, mapnum, hostaddrs,
+					       sizes, kinds, ...).  */
+		  fnpos = 1;
+		  argpos = 3;
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
+
+	      tree fnarg = gimple_call_arg (t, fnpos);
+	      gcc_assert (TREE_CODE (fnarg) == ADDR_EXPR);
+	      tree fndecl = TREE_OPERAND (fnarg, 0);
+	      varinfo_t cfi = get_vi_for_tree (fndecl);
+
+	      tree arg = gimple_call_arg (t, argpos);
+
+	      /* Parameter passed by value is used.  */
+	      lhs = get_function_part_constraint (fi, fi_uses);
+	      struct constraint_expr *rhsp;
+	      get_constraint_for (arg, &rhsc);
+	      FOR_EACH_VEC_ELT (rhsc, j, rhsp)
+		process_constraint (new_constraint (lhs, *rhsp));
+	      rhsc.truncate (0);
+
+	      /* The caller clobbers what the callee does.  */
+	      lhs = get_function_part_constraint (fi, fi_clobbers);
+	      rhs = get_function_part_constraint (cfi, fi_clobbers);
+	      process_constraint (new_constraint (lhs, rhs));
+
+	      /* The caller uses what the callee does.  */
+	      lhs = get_function_part_constraint (fi, fi_uses);
+	      rhs = get_function_part_constraint (cfi, fi_uses);
+	      process_constraint (new_constraint (lhs, rhs));
+
+	      return;
+	    }
 	  /* printf-style functions may have hooks to set pointers to
 	     point to somewhere into the generated string.  Leave them
 	     for a later exercise...  */

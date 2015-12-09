@@ -1,3 +1,8 @@
+2015-12-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/68716
+	* testsuite/libgomp.c/omp-nested-2.c: New test.
+
 2015-12-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/host_data-2.c: Restrict to
