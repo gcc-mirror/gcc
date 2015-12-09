@@ -1,3 +1,9 @@
+2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/68811
+	* g++.dg/lto/pr68811_0.C: New testcase.
+	* g++.dg/lto/pr68811_1.C: New testcase.
+
 2015-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60218

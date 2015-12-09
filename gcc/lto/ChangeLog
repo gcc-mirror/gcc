@@ -1,5 +1,11 @@
 2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR lto/68811
+	* lto-symtab.c (lto_symtab_merge_decls_2): Decl can never be prevailed
+	by itself.
+
+2015-12-08  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/61886
 	* lto-symtab.c: Include lto-symtab.h.
 	(lto_cgraph_replace_node): Do not merge profiles here.

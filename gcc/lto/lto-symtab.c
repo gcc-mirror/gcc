@@ -568,7 +568,8 @@ lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
       for (this_prevailing = prevailing; ;
 	   this_prevailing = this_prevailing->next_sharing_asm_name)
 	{
-	  if (lto_symtab_merge_p (this_prevailing->decl, e->decl))
+	  if (this_prevailing->decl != e->decl
+	      && lto_symtab_merge_p (this_prevailing->decl, e->decl))
 	    break;
 	  if (this_prevailing == last_prevailing)
 	    {
@@ -709,7 +710,7 @@ lto_symtab_merge_decls_1 (symtab_node *first)
 		&& lto_symtab_symbol_p (e))
 	      prevailing = e;
 	}
-      /* For variables prefer the non-builtin if one is available.  */
+      /* For functions prefer the non-builtin if one is available.  */
       else if (TREE_CODE (prevailing->decl) == FUNCTION_DECL)
 	{
 	  for (e = first; e; e = e->next_sharing_asm_name)
