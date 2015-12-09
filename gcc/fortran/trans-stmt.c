@@ -818,6 +818,15 @@ gfc_trans_lock_unlock (gfc_code *code, gfc_exec_op op)
 				   errmsg, errmsg_len);
       gfc_add_expr_to_block (&se.pre, tmp);
 
+      /* It guarantees memory consistency within the same segment */
+      tmp = gfc_build_string_const (strlen ("memory")+1, "memory"),
+      tmp = build5_loc (input_location, ASM_EXPR, void_type_node,
+			gfc_build_string_const (1, ""), NULL_TREE, NULL_TREE,
+			tree_cons (NULL_TREE, tmp, NULL_TREE), NULL_TREE);
+      ASM_VOLATILE_P (tmp) = 1;
+
+      gfc_add_expr_to_block (&se.pre, tmp);
+
       if (stat2 != NULL_TREE)
 	gfc_add_modify (&se.pre, stat2,
 			fold_convert (TREE_TYPE (stat2), stat));
@@ -995,6 +1004,14 @@ gfc_trans_event_post_wait (gfc_code *code, gfc_exec_op op)
 			       errmsg, errmsg_len);
   gfc_add_expr_to_block (&se.pre, tmp);
 
+  /* It guarantees memory consistency within the same segment */
+  tmp = gfc_build_string_const (strlen ("memory")+1, "memory"),
+  tmp = build5_loc (input_location, ASM_EXPR, void_type_node,
+		    gfc_build_string_const (1, ""), NULL_TREE, NULL_TREE,
+		    tree_cons (NULL_TREE, tmp, NULL_TREE), NULL_TREE);
+  ASM_VOLATILE_P (tmp) = 1;
+  gfc_add_expr_to_block (&se.pre, tmp);
+
   if (stat2 != NULL_TREE)
     gfc_add_modify (&se.pre, stat2, fold_convert (TREE_TYPE (stat2), stat));
 
@@ -1078,6 +1095,18 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 			       &code->expr1->where, "Invalid image number "
 			       "%d in SYNC IMAGES",
 			       fold_convert (integer_type_node, images));
+    }
+
+  /* Per F2008, 8.5.1, a SYNC MEMORY is implied by calling the
+     image control statements SYNC IMAGES and SYNC ALL.  */
+  if (flag_coarray == GFC_FCOARRAY_LIB)
+    {
+      tmp = gfc_build_string_const (strlen ("memory")+1, "memory"),
+      tmp = build5_loc (input_location, ASM_EXPR, void_type_node,
+			gfc_build_string_const (1, ""), NULL_TREE, NULL_TREE,
+			tree_cons (NULL_TREE, tmp, NULL_TREE), NULL_TREE);
+      ASM_VOLATILE_P (tmp) = 1;
+      gfc_add_expr_to_block (&se.pre, tmp);
     }
 
   if (flag_coarray != GFC_FCOARRAY_LIB)
@@ -1399,6 +1428,17 @@ gfc_trans_critical (gfc_code *code)
 				 null_pointer_node, null_pointer_node,
 				 null_pointer_node, integer_zero_node);
       gfc_add_expr_to_block (&block, tmp);
+
+      /* It guarantees memory consistency within the same segment */
+      tmp = gfc_build_string_const (strlen ("memory")+1, "memory"),
+	tmp = build5_loc (input_location, ASM_EXPR, void_type_node,
+			  gfc_build_string_const (1, ""),
+			  NULL_TREE, NULL_TREE,
+			  tree_cons (NULL_TREE, tmp, NULL_TREE),
+			  NULL_TREE);
+      ASM_VOLATILE_P (tmp) = 1;
+  
+      gfc_add_expr_to_block (&block, tmp);
     }
 
   tmp = gfc_trans_code (code->block->next);
@@ -1411,8 +1451,18 @@ gfc_trans_critical (gfc_code *code)
 				 null_pointer_node, null_pointer_node,
 				 integer_zero_node);
       gfc_add_expr_to_block (&block, tmp);
-    }
 
+      /* It guarantees memory consistency within the same segment */
+      tmp = gfc_build_string_const (strlen ("memory")+1, "memory"),
+	tmp = build5_loc (input_location, ASM_EXPR, void_type_node,
+			  gfc_build_string_const (1, ""),
+			  NULL_TREE, NULL_TREE,
+			  tree_cons (NULL_TREE, tmp, NULL_TREE),
+			  NULL_TREE);
+      ASM_VOLATILE_P (tmp) = 1;
+
+      gfc_add_expr_to_block (&block, tmp);
+    }
 
   return gfc_finish_block (&block);
 }

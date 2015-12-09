@@ -1,4 +1,16 @@
 2015-12-09  Tobias Burnus  <burnus@net-b.de>
+	    Alessandro Fanfarillo <fanfarillo.gcc@gmail.com>
+
+	* trans.c (gfc_allocate_using_lib,gfc_deallocate_with_status):
+	Introducing __asm__ __volatile__ ("":::"memory")
+	after image control statements.
+	* trans-stmt.c 	(gfc_trans_sync, gfc_trans_event_post_wait,
+	gfc_trans_lock_unlock, gfc_trans_critical): Ditto.
+	* trans-intrinsic.c (gfc_conv_intrinsic_caf_get,
+	conv_caf_send): Introducing __asm__ __volatile__ ("":::"memory")
+	after send, before get and around sendget.
+
+2015-12-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/68815
 	* decl.c (gfc_verify_c_interop_param, variable_decl): Use
