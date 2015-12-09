@@ -444,7 +444,7 @@ tree_unswitch_outer_loop (struct loop *loop)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, ";; Not unswitching, loop is not expected"
 		 " to iterate\n");
-	return false;
+      return false;
     }
 
   guard = find_loop_guard (loop);
