@@ -1,3 +1,20 @@
+2015-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68583
+	* tree-if-conv.c (if_convertible_phi_p): Drop
+	flag_tree_loop_if_convert_stores check in favor of the
+	existing any_mask_load_store check.
+	(insert_gimplified_predicates): Likewise.
+	(combine_blocks): Likewise.
+	(tree_if_conversion): Likewise.
+	(ifcvt_memrefs_wont_trap): Properly check
+	flag_tree_loop_if_convert_stores in all places that can end
+	up introducing store-data-races.
+	(if_convertible_gimple_assign_stmt_p): Remove restriction
+	on flag_tree_loop_if_convert_stores for stores we can if-convert
+	without introducing store-data-races.  Force versioning for
+	all if-converted stores.
+
 2015-12-09  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/68716

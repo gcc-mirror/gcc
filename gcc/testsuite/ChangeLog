@@ -1,5 +1,13 @@
 2015-12-09  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/68583
+	* gcc.dg/tree-ssa/ifc-pr68583.c: New testcase.
+	* gcc.dg/vect/vect-72.c: Adjust.
+	* gcc.dg/vect/vect-cselim-2.c: Likewise.
+	* gcc.dg/vect/vect-strided-store-a-u8-i2.c: Likewise.
+
+2015-12-09  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/68417
 	* gcc.dg/vect/pr68417.c: New testcase.
 

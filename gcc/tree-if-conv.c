@@ -517,7 +517,7 @@ bb_with_exit_edge_p (struct loop *loop, basic_block bb)
    PHI is not if-convertible if:
    - it has more than 2 arguments.
 
-   When the flag_tree_loop_if_convert_stores is not set, PHI is not
+   When we didn't see if-convertible stores, PHI is not
    if-convertible if:
    - a virtual PHI is immediately used in another PHI node,
    - there is a virtual PHI in a BB other than the loop->header.
@@ -545,10 +545,10 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, gphi *phi,
         }
     }
 
-  if (flag_tree_loop_if_convert_stores || any_mask_load_store)
+  if (any_mask_load_store)
     return true;
 
-  /* When the flag_tree_loop_if_convert_stores is not set, check
+  /* When there were no if-convertible stores, check
      that there are no memory writes in the branches of the loop to be
      if-converted.  */
   if (virtual_operand_p (gimple_phi_result (phi)))
@@ -713,16 +713,15 @@ ifcvt_memrefs_wont_trap (gimple *stmt, vec<data_reference_p> drs)
          to unconditionally.  */
       if (base_master_dr
 	  && DR_BASE_W_UNCONDITIONALLY (*base_master_dr))
-	return true;
+	return flag_tree_loop_if_convert_stores;
       else
 	{
 	  /* or the base is know to be not readonly.  */
 	  tree base_tree = get_base_address (DR_REF (a));
 	  if (DECL_P (base_tree)
 	      && decl_binds_to_current_def_p (base_tree)
-	      && flag_tree_loop_if_convert_stores
-	      && !TREE_READONLY (base_tree))
-	    return true;
+	      && ! TREE_READONLY (base_tree))
+	    return flag_tree_loop_if_convert_stores;
 	}
     }
   return false;
@@ -791,7 +790,6 @@ if_convertible_gimple_assign_stmt_p (gimple *stmt,
 				     bool *any_mask_load_store)
 {
   tree lhs = gimple_assign_lhs (stmt);
-  basic_block bb;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -835,28 +833,10 @@ if_convertible_gimple_assign_stmt_p (gimple *stmt,
       return false;
     }
 
-  if (flag_tree_loop_if_convert_stores)
-    return true;
-
-  bb = gimple_bb (stmt);
-
-  if (TREE_CODE (lhs) != SSA_NAME
-      && bb != bb->loop_father->header
-      && !bb_with_exit_edge_p (bb->loop_father, bb))
-    {
-      if (ifcvt_can_use_mask_load_store (stmt))
-	{
-	  gimple_set_plf (stmt, GF_PLF_2, true);
-	  *any_mask_load_store = true;
-	  return true;
-	}
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "LHS is not var\n");
-	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-	}
-      return false;
-    }
+  /* When if-converting stores force versioning, likewise if we
+     ended up generating store data races.  */
+  if (gimple_vdef (stmt))
+    *any_mask_load_store = true;
 
   return true;
 }
@@ -1851,8 +1831,7 @@ insert_gimplified_predicates (loop_p loop, bool any_mask_load_store)
       stmts = bb_predicate_gimplified_stmts (bb);
       if (stmts)
 	{
-	  if (flag_tree_loop_if_convert_stores
-	      || any_mask_load_store)
+	  if (any_mask_load_store)
 	    {
 	      /* Insert the predicate of the BB just after the label,
 		 as the if-conversion of memory writes will use this
@@ -2174,7 +2153,7 @@ combine_blocks (struct loop *loop, bool any_mask_load_store)
   insert_gimplified_predicates (loop, any_mask_load_store);
   predicate_all_scalar_phis (loop);
 
-  if (flag_tree_loop_if_convert_stores || any_mask_load_store)
+  if (any_mask_load_store)
     predicate_mem_writes (loop);
 
   /* Merge basic blocks: first remove all the edges in the loop,
@@ -2691,7 +2670,7 @@ tree_if_conversion (struct loop *loop)
     }
 
   todo |= TODO_cleanup_cfg;
-  if (flag_tree_loop_if_convert_stores || any_mask_load_store)
+  if (any_mask_load_store)
     {
       mark_virtual_operands_for_renaming (cfun);
       todo |= TODO_update_ssa_only_virtuals;
