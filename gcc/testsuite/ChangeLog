@@ -1,3 +1,8 @@
+2015-12-09  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gcc.c-torture/execute/980716-1.c: Avoid undefined behavior due to
+	passing terminating NULL as int rather than pointer.
+
 2015-12-09  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/66949
