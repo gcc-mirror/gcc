@@ -549,7 +549,7 @@ check_format (bool is_input)
 {
   const char *posint_required	  = _("Positive width required");
   const char *nonneg_required	  = _("Nonnegative width required");
-  const char *unexpected_element  = _("Unexpected element %<%c%> in format "
+  const char *unexpected_element  = _("Unexpected element %qc in format "
 				      "string at %L");
   const char *unexpected_end	  = _("Unexpected end of format string");
   const char *zero_width	  = _("Zero width in format descriptor");

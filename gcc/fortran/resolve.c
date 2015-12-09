@@ -3560,7 +3560,7 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
-      sprintf (msg, _("Operand of unary numeric operator '%s' at %%L is %s"),
+      sprintf (msg, _("Operand of unary numeric operator %%<%s%%> at %%L is %s"),
 	       gfc_op2string (e->value.op.op), gfc_typename (&e->ts));
       goto bad_op;
 
@@ -3576,7 +3576,7 @@ resolve_operator (gfc_expr *e)
 	}
 
       sprintf (msg,
-	       _("Operands of binary numeric operator '%s' at %%L are %s/%s"),
+	       _("Operands of binary numeric operator %%<%s%%> at %%L are %s/%s"),
 	       gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
 	       gfc_typename (&op2->ts));
       goto bad_op;
@@ -3610,7 +3610,7 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
-      sprintf (msg, _("Operands of logical operator '%s' at %%L are %s/%s"),
+      sprintf (msg, _("Operands of logical operator %%<%s%%> at %%L are %s/%s"),
 	       gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
 	       gfc_typename (&op2->ts));
 
@@ -3695,7 +3695,7 @@ resolve_operator (gfc_expr *e)
 		 ? ".eqv." : ".neqv.", gfc_op2string (e->value.op.op));
       else
 	sprintf (msg,
-		 _("Operands of comparison operator '%s' at %%L are %s/%s"),
+		 _("Operands of comparison operator %%<%s%%> at %%L are %s/%s"),
 		 gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
 		 gfc_typename (&op2->ts));
 
@@ -3703,13 +3703,14 @@ resolve_operator (gfc_expr *e)
 
     case INTRINSIC_USER:
       if (e->value.op.uop->op == NULL)
-	sprintf (msg, _("Unknown operator '%s' at %%L"), e->value.op.uop->name);
+	sprintf (msg, _("Unknown operator %%<%s%%> at %%L"),
+		 e->value.op.uop->name);
       else if (op2 == NULL)
-	sprintf (msg, _("Operand of user operator '%s' at %%L is %s"),
+	sprintf (msg, _("Operand of user operator %%<%s%%> at %%L is %s"),
 		 e->value.op.uop->name, gfc_typename (&op1->ts));
       else
 	{
-	  sprintf (msg, _("Operands of user operator '%s' at %%L are %s/%s"),
+	  sprintf (msg, _("Operands of user operator %%<%s%%> at %%L are %s/%s"),
 		   e->value.op.uop->name, gfc_typename (&op1->ts),
 		   gfc_typename (&op2->ts));
 	  e->value.op.uop->op->sym->attr.referenced = 1;
