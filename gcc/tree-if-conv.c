@@ -112,6 +112,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-hash-traits.h"
 #include "varasm.h"
 #include "builtins.h"
+#include "params.h"
 
 /* List of basic blocks in if-conversion-suitable order.  */
 static basic_block *ifc_bbs;
@@ -714,7 +715,7 @@ ifcvt_memrefs_wont_trap (gimple *stmt, vec<data_reference_p> drs)
          to unconditionally.  */
       if (base_master_dr
 	  && DR_BASE_W_UNCONDITIONALLY (*base_master_dr))
-	return flag_tree_loop_if_convert_stores;
+	return PARAM_VALUE (PARAM_ALLOW_STORE_DATA_RACES);
       else
 	{
 	  /* or the base is know to be not readonly.  */
@@ -722,7 +723,7 @@ ifcvt_memrefs_wont_trap (gimple *stmt, vec<data_reference_p> drs)
 	  if (DECL_P (base_tree)
 	      && decl_binds_to_current_def_p (base_tree)
 	      && ! TREE_READONLY (base_tree))
-	    return flag_tree_loop_if_convert_stores;
+	    return PARAM_VALUE (PARAM_ALLOW_STORE_DATA_RACES);
 	}
     }
   return false;
