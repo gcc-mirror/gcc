@@ -1,5 +1,12 @@
 2015-12-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/68825
+	* include/experimental/bits/shared_ptr.h (__shared_ptr, __weak_ptr,
+	experimental::shared_ptr, experimental::weak_ptr): Constrain
+	assignment operators.
+	* testsuite/experimental/memory/shared_ptr/cons/copy_ctor_neg.cc:
+	Change to a compile-only test and change dg-excess-errors to dg-error.
+
 	* doc/doxygen/user.cfg.in: Use EXTENSION_MAPPING tag. Add new headers
 	to INPUT. Remove obsolete XML_SCHEMA and XML_DTD tags. Update
 	PREDEFINED macros. Set BRIEF_MEMBER_DESC for man-pages.
