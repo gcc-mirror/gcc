@@ -159,9 +159,7 @@
 
    The is_global_var bit which marks escape points is overly conservative
    in IPA mode.  Split it to is_escape_point and is_global_var - only
-   externally visible globals are escape points in IPA mode.  This is
-   also needed to fix the pt_solution_includes_global predicate
-   (and thus ptr_deref_may_alias_global_p).
+   externally visible globals are escape points in IPA mode.
 
    The way we introduce DECL_PT_UID to avoid fixing up all points-to
    sets in the translation unit when we copy a DECL during inlining
@@ -186,6 +184,7 @@
    propagating it simply like the clobber / uses solutions.  The
    solution can go alongside the non-IPA espaced solution and be
    used to query which vars escape the unit through a function.
+   This is also required to make the escaped-HEAP trick work in IPA mode.
 
    We never put function decls in points-to sets so we do not
    keep the set of called functions for indirect calls.
@@ -6150,7 +6149,8 @@ shared_bitmap_add (bitmap pt_vars)
 /* Set bits in INTO corresponding to the variable uids in solution set FROM.  */
 
 static void
-set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt)
+set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt,
+		   tree fndecl)
 {
   unsigned int i;
   bitmap_iterator bi;
@@ -6188,7 +6188,19 @@ set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt)
 	  /* Add the decl to the points-to set.  Note that the points-to
 	     set contains global variables.  */
 	  bitmap_set_bit (into, DECL_PT_UID (vi->decl));
-	  if (vi->is_global_var)
+	  if (vi->is_global_var
+	      /* In IPA mode the escaped_heap trick doesn't work as
+		 ESCAPED is escaped from the unit but
+		 pt_solution_includes_global needs to answer true for
+		 all variables not automatic within a function.
+		 For the same reason is_global_var is not the
+		 correct flag to track - local variables from other
+		 functions also need to be considered global.
+		 Conveniently all HEAP vars are not put in function
+		 scope.  */
+	      || (in_ipa_mode
+		  && fndecl
+		  && ! auto_var_in_fn_p (vi->decl, fndecl)))
 	    pt->vars_contains_nonlocal = true;
 	}
     }
@@ -6198,7 +6210,7 @@ set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt)
 /* Compute the points-to solution *PT for the variable VI.  */
 
 static struct pt_solution
-find_what_var_points_to (varinfo_t orig_vi)
+find_what_var_points_to (tree fndecl, varinfo_t orig_vi)
 {
   unsigned int i;
   bitmap_iterator bi;
@@ -6263,7 +6275,7 @@ find_what_var_points_to (varinfo_t orig_vi)
   finished_solution = BITMAP_GGC_ALLOC ();
   stats.points_to_sets_created++;
 
-  set_uids_in_ptset (finished_solution, vi->solution, pt);
+  set_uids_in_ptset (finished_solution, vi->solution, pt, fndecl);
   result = shared_bitmap_lookup (finished_solution);
   if (!result)
     {
@@ -6282,7 +6294,7 @@ find_what_var_points_to (varinfo_t orig_vi)
 /* Given a pointer variable P, fill in its points-to set.  */
 
 static void
-find_what_p_points_to (tree p)
+find_what_p_points_to (tree fndecl, tree p)
 {
   struct ptr_info_def *pi;
   tree lookup_p = p;
@@ -6301,7 +6313,7 @@ find_what_p_points_to (tree p)
     return;
 
   pi = get_ptr_info (p);
-  pi->pt = find_what_var_points_to (vi);
+  pi->pt = find_what_var_points_to (fndecl, vi);
 }
 
 
@@ -6466,12 +6478,6 @@ pt_solution_includes_global (struct pt_solution *pt)
 
   if (pt->ipa_escaped)
     return pt_solution_includes_global (&ipa_escaped_pt);
-
-  /* ???  This predicate is not correct for the IPA-PTA solution
-     as we do not properly distinguish between unit escape points
-     and global variables.  */
-  if (cfun->gimple_df->ipa_pta)
-    return true;
 
   return false;
 }
@@ -6969,7 +6975,8 @@ compute_points_to_sets (void)
   solve_constraints ();
 
   /* Compute the points-to set for ESCAPED used for call-clobber analysis.  */
-  cfun->gimple_df->escaped = find_what_var_points_to (get_varinfo (escaped_id));
+  cfun->gimple_df->escaped = find_what_var_points_to (cfun->decl,
+						      get_varinfo (escaped_id));
 
   /* Make sure the ESCAPED solution (which is used as placeholder in
      other solutions) does not reference itself.  This simplifies
@@ -6982,7 +6989,7 @@ compute_points_to_sets (void)
       tree ptr = ssa_name (i);
       if (ptr
 	  && POINTER_TYPE_P (TREE_TYPE (ptr)))
-	find_what_p_points_to (ptr);
+	find_what_p_points_to (cfun->decl, ptr);
     }
 
   /* Compute the call-used/clobbered sets.  */
@@ -7004,7 +7011,7 @@ compute_points_to_sets (void)
 	    memset (pt, 0, sizeof (struct pt_solution));
 	  else if ((vi = lookup_call_use_vi (stmt)) != NULL)
 	    {
-	      *pt = find_what_var_points_to (vi);
+	      *pt = find_what_var_points_to (cfun->decl, vi);
 	      /* Escaped (and thus nonlocal) variables are always
 	         implicitly used by calls.  */
 	      /* ???  ESCAPED can be empty even though NONLOCAL
@@ -7025,7 +7032,7 @@ compute_points_to_sets (void)
 	    memset (pt, 0, sizeof (struct pt_solution));
 	  else if ((vi = lookup_call_clobber_vi (stmt)) != NULL)
 	    {
-	      *pt = find_what_var_points_to (vi);
+	      *pt = find_what_var_points_to (cfun->decl, vi);
 	      /* Escaped (and thus nonlocal) variables are always
 	         implicitly clobbered by calls.  */
 	      /* ???  ESCAPED can be empty even though NONLOCAL
@@ -7565,7 +7572,7 @@ ipa_pta_execute (void)
      ???  Note that the computed escape set is not correct
      for the whole unit as we fail to consider graph edges to
      externally visible functions.  */
-  ipa_escaped_pt = find_what_var_points_to (get_varinfo (escaped_id));
+  ipa_escaped_pt = find_what_var_points_to (NULL, get_varinfo (escaped_id));
 
   /* Make sure the ESCAPED solution (which is used as placeholder in
      other solutions) does not reference itself.  This simplifies
@@ -7591,7 +7598,7 @@ ipa_pta_execute (void)
 	{
 	  if (ptr
 	      && POINTER_TYPE_P (TREE_TYPE (ptr)))
-	    find_what_p_points_to (ptr);
+	    find_what_p_points_to (node->decl, ptr);
 	}
 
       /* Compute the call-use and call-clobber sets for indirect calls
@@ -7625,10 +7632,10 @@ ipa_pta_execute (void)
 		{
 		  *gimple_call_clobber_set (stmt)
 		     = find_what_var_points_to
-		         (first_vi_for_offset (fi, fi_clobbers));
+		         (node->decl, first_vi_for_offset (fi, fi_clobbers));
 		  *gimple_call_use_set (stmt)
 		     = find_what_var_points_to
-		         (first_vi_for_offset (fi, fi_uses));
+		         (node->decl, first_vi_for_offset (fi, fi_uses));
 		}
 	      /* Handle direct calls to external functions.  */
 	      else if (decl)
@@ -7638,7 +7645,7 @@ ipa_pta_execute (void)
 		    memset (pt, 0, sizeof (struct pt_solution));
 		  else if ((vi = lookup_call_use_vi (stmt)) != NULL)
 		    {
-		      *pt = find_what_var_points_to (vi);
+		      *pt = find_what_var_points_to (node->decl, vi);
 		      /* Escaped (and thus nonlocal) variables are always
 			 implicitly used by calls.  */
 		      /* ???  ESCAPED can be empty even though NONLOCAL
@@ -7659,7 +7666,7 @@ ipa_pta_execute (void)
 		    memset (pt, 0, sizeof (struct pt_solution));
 		  else if ((vi = lookup_call_clobber_vi (stmt)) != NULL)
 		    {
-		      *pt = find_what_var_points_to (vi);
+		      *pt = find_what_var_points_to (node->decl, vi);
 		      /* Escaped (and thus nonlocal) variables are always
 			 implicitly clobbered by calls.  */
 		      /* ???  ESCAPED can be empty even though NONLOCAL
@@ -7719,13 +7726,15 @@ ipa_pta_execute (void)
 			  if (!uses->anything)
 			    {
 			      sol = find_what_var_points_to
-				      (first_vi_for_offset (vi, fi_uses));
+				      (node->decl,
+				       first_vi_for_offset (vi, fi_uses));
 			      pt_solution_ior_into (uses, &sol);
 			    }
 			  if (!clobbers->anything)
 			    {
 			      sol = find_what_var_points_to
-				      (first_vi_for_offset (vi, fi_clobbers));
+				      (node->decl,
+				       first_vi_for_offset (vi, fi_clobbers));
 			      pt_solution_ior_into (clobbers, &sol);
 			    }
 			}
@@ -7735,6 +7744,12 @@ ipa_pta_execute (void)
 	}
 
       fn->gimple_df->ipa_pta = true;
+
+      /* We have to re-set the final-solution cache after each function
+         because what is a "global" is dependent on function context.  */
+      final_solutions->empty ();
+      obstack_free (&final_solutions_obstack, NULL);
+      gcc_obstack_init (&final_solutions_obstack);
     }
 
   delete_points_to_sets ();

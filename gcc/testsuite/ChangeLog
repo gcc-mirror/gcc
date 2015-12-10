@@ -1,5 +1,11 @@
 2015-12-10  Richard Biener  <rguenther@suse.de>
 
+	PR ipa/68331
+	* gcc.dg/torture/ipa-pta-3.c: New testcase.
+	* g++.dg/ipa/ipa-pta-1.C: Likewise.
+
+2015-12-10  Richard Biener  <rguenther@suse.de>
+
 	PR ipa/68721
 	* gcc.dg/torture/pr68721.c: New testcase.
 
