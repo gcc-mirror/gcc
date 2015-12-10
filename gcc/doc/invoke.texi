@@ -3542,18 +3542,22 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 
 @gccoptlist{-Waddress   @gol
 -Warray-bounds=1 @r{(only with} @option{-O2}@r{)}  @gol
+-Wbool-compare  @gol
 -Wc++11-compat  -Wc++14-compat@gol
 -Wchar-subscripts  @gol
+-Wcomment  @gol
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
+-Wformat   @gol
+-Wimplicit @r{(C and Objective-C only)} @gol
 -Wimplicit-int @r{(C and Objective-C only)} @gol
 -Wimplicit-function-declaration @r{(C and Objective-C only)} @gol
--Wbool-compare  @gol
--Wduplicated-cond  @gol
--Wcomment  @gol
--Wformat   @gol
+-Winit-self @r{(only for C++)} @gol
+-Wlogical-not-parentheses
 -Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}  @gol
 -Wmaybe-uninitialized @gol
+-Wmemset-transposed-args @gol
 -Wmissing-braces @r{(only for C/ObjC)} @gol
+-Wnarrowing @r{(only for C++)}  @gol
 -Wnonnull  @gol
 -Wopenmp-simd @gol
 -Wparentheses  @gol
@@ -3562,6 +3566,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wreturn-type  @gol
 -Wsequence-point  @gol
 -Wsign-compare @r{(only in C++)}  @gol
+-Wsizeof-pointer-memaccess @gol
 -Wstrict-aliasing  @gol
 -Wstrict-overflow=1  @gol
 -Wswitch  @gol
@@ -3599,10 +3604,10 @@ name is still supported, but the newer name is more descriptive.)
 -Wmissing-parameter-type @r{(C only)}  @gol
 -Wold-style-declaration @r{(C only)}  @gol
 -Woverride-init  @gol
--Wsign-compare  @gol
+-Wsign-compare @r{(C only)} @gol
 -Wtype-limits  @gol
 -Wuninitialized  @gol
--Wshift-negative-value  @gol
+-Wshift-negative-value @r{(in C++03 and in C99 and newer)}  @gol
 -Wunused-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)} @gol
 -Wunused-but-set-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}  @gol
 }
@@ -4589,7 +4594,6 @@ warn for the following code:
 if (p->q != NULL) @{ @dots{} @}
 else if (p->q != NULL) @{ @dots{} @}
 @end smallexample
-This warning is enabled by @option{-Wall}.
 
 @item -Wframe-address
 @opindex Wno-frame-address
@@ -4896,8 +4900,15 @@ which depend on the MS runtime.
 @opindex Wno-placement-new
 Warn about placement new expressions with undefined behavior, such as
 constructing an object in a buffer that is smaller than the type of
-the object.
-
+the object.  For example, the placement new expression below is diagnosed
+because it attempts to construct an array of 64 integers in a buffer only
+64 bytes large.
+@smallexample
+char buf [64];
+new (buf) int[64];
+@end smallexample
+This warning is enabled by default.
+  
 @item -Wpointer-arith
 @opindex Wpointer-arith
 @opindex Wno-pointer-arith
@@ -5114,8 +5125,8 @@ can be disabled with the @option{-Wno-jump-misses-init} option.
 @cindex signed and unsigned values, comparison warning
 Warn when a comparison between signed and unsigned values could produce
 an incorrect result when the signed value is converted to unsigned.
-This warning is also enabled by @option{-Wextra}; to get the other warnings
-of @option{-Wextra} without this warning, use @option{-Wextra -Wno-sign-compare}.
+In C++, this warning is also enabled by @option{-Wall}.  In C, it is
+also enabled by @option{-Wextra}.
 
 @item -Wsign-conversion
 @opindex Wsign-conversion
