@@ -1828,7 +1828,7 @@ class gather_bbs : public dom_walker
 public:
   gather_bbs (cdi_direction, scop_p);
 
-  virtual void before_dom_children (basic_block);
+  virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
 
 private:
@@ -1844,11 +1844,11 @@ gather_bbs::gather_bbs (cdi_direction direction, scop_p scop)
 /* Call-back for dom_walk executed before visiting the dominated
    blocks.  */
 
-void
+edge
 gather_bbs::before_dom_children (basic_block bb)
 {
   if (!bb_in_sese_p (bb, scop->scop_info->region))
-    return;
+    return NULL;
 
   gcond *stmt = single_pred_cond_non_loop_exit (bb);
 
@@ -1868,7 +1868,7 @@ gather_bbs::before_dom_children (basic_block bb)
 
   gimple_poly_bb_p gbb = try_generate_gimple_bb (scop, bb);
   if (!gbb)
-    return;
+    return NULL;
 
   GBB_CONDITIONS (gbb) = conditions.copy ();
   GBB_CONDITION_CASES (gbb) = cases.copy ();
@@ -1880,6 +1880,8 @@ gather_bbs::before_dom_children (basic_block bb)
   data_reference_p dr;
   FOR_EACH_VEC_ELT (gbb->data_refs, i, dr)
     scop->drs.safe_push (dr_info (dr, pbb));
+
+  return NULL;
 }
 
 /* Call-back for dom_walk executed after visiting the dominated
