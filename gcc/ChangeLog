@@ -1,3 +1,68 @@
+2015-12-10  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/68619
+	* tree-ssa-dom.c (dom_opt_dom_walker::before_dom_children): Propgate
+	return value from optimize_stmt.
+	(dom_opt_dom_walker): Add new argument to dom_walker constructor.
+	(pass_dominator:execute): If a block has an unreachable edge,
+	remove all jump threads through any successor of the affected block.
+	(record_equivalences_from_phis): Ignore alternative if the edge
+	does not have EDGE_EXECUTABLE set.
+	(single_incoming_edge_ignoring_loop_edges): Similarly.
+	(optimize_stmt): If a gimple_code has a compile-time constant
+	condition, return the edge taken for that constant value.  Also
+	change the condition to true/false as necessary.
+	* domwalk.h (dom_walker::dom_walker): Add new argument
+	skip_unreachable_blocks.  Don't provide empty constructor body.
+	(dom_walker::before_dom_children): Change return type.
+	(dom_walker::bb_reachable): Declare new private method.
+	(dom_walker::propagate_unreachable_to_edges): Likewise.
+	(dom_walker::m_unreachable_dom): Declare new private data member.
+	(dom_walker::m_skip_unreachable_blocks): Likewise.
+	* domwalk.c: Include dumpfile.h.
+	(dom_walker::dom_walker): New constructor.  Initialize private data
+	members.  If needed, set EDGE_EXECUTABLE for all edges in the CFG,
+	extracted from tree-ssa-sccvn.c.
+	(dom_walker::bb_reachable): New method extracted from tree-ssa-sccvn.c
+	(dom_walker::propagate_unreachable_to_edges): Likewise.
+	(dom_walker::walk): Only call before_dom_children on reachable
+	blocks.  If before_dom_children returns an edge, then clear
+	EDGE_EXECUTABLE for all other outgoing edges from the same block.
+	For unreachable blocks, call propagate_unreachable_to_edges.
+	Similarly, only call after_dom_children on reachable blocks.  For
+	unreachable blocks, conditionally clear m_unreachable_dom.
+	* tree-ssa-sccvn.c (sccvn_dom_walker::unreachable_dom): Remove
+	private data member.
+	(sccvn_dom_walker::after_dom_children): Use methods from dom_walker
+	class.
+	(run_scc_vn): Likewise.
+	(sccvn_dom_walker::before_dom_children): Likewise.  Return the taken
+	outgoing edge if a COND, SWITCH, or GOTO are optimized.
+	* compare-elim.c (find_comparison_dom_walker::before_dom_children):
+	Change return type to an edge.  Always return NULL.
+	* fwprop.c (single_def_use_dom_walker::before_dom_children): Likewise.
+	* gimple-ssa-strength-reduction.c
+	(find_candidates_dom_walker::before_dom_children): Likewise.
+	* ipa-prop.c (analysis_dom_walker::before_dom_children): Likewise.
+	(ipcp_modif_dom_walker::before_dom_children): Likewise.
+	* tree-into-ssa.c (rewrite_dom_walker::before_dom_children): Likewise.
+	(rewrite_update_dom_walker::before_dom_children): Likewise.
+	(mark_def_dom_children::before_dom_children): Likewise.
+	* tree-ssa-dse.c (dse_dom_walker::before_dom_children): Likewise.
+	* tree-ssa-loop-im.c
+	(invariantness_dom_walker::before_dom_children): Likewise.
+	(move_computations_dom_walker::before_dom_walker): Likewise.
+	* tree-ssa-phiopt.c
+	(nontrapping_dom_walker::before_dom_children): Likewise.
+	* tree-ssa-pre.c
+	(eliminate_dom_walker::before_dom_children): Likewise.
+	* tree-ssa-propagate.c
+	(substitute_and_fold_dom_walker::before_dom_children): Likewise.
+	* tree-ssa-strlen.c
+	(strlen_dom_walker::before_dom_children): Likewise.
+	* tree-ssa-uncprop.c
+	(uncprop_dom_walker::before_dom_children): Likewise.
+
 2015-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/68376

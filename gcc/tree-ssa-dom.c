@@ -99,7 +99,7 @@ struct opt_stats_d
 static struct opt_stats_d opt_stats;
 
 /* Local functions.  */
-static void optimize_stmt (basic_block, gimple_stmt_iterator,
+static edge optimize_stmt (basic_block, gimple_stmt_iterator,
 			   class const_and_copies *,
 			   class avail_exprs_stack *);
 static tree lookup_avail_expr (gimple *, bool, class avail_exprs_stack *);
@@ -493,12 +493,12 @@ public:
   dom_opt_dom_walker (cdi_direction direction,
 		      class const_and_copies *const_and_copies,
 		      class avail_exprs_stack *avail_exprs_stack)
-    : dom_walker (direction),
+    : dom_walker (direction, true),
       m_const_and_copies (const_and_copies),
       m_avail_exprs_stack (avail_exprs_stack),
       m_dummy_cond (NULL) {}
 
-  virtual void before_dom_children (basic_block);
+  virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
 
 private:
@@ -610,6 +610,36 @@ pass_dominator::execute (function *fun)
 			     const_and_copies,
 			     avail_exprs_stack);
   walker.walk (fun->cfg->x_entry_block_ptr);
+
+  /* Look for blocks where we cleared EDGE_EXECUTABLE on an outgoing
+     edge.  When found, remove jump threads which contain any outgoing
+     edge from the affected block.  */
+  if (cfg_altered)
+    {
+      FOR_EACH_BB_FN (bb, fun)
+	{
+	  edge_iterator ei;
+	  edge e;
+
+	  /* First see if there are any edges without EDGE_EXECUTABLE
+	     set.  */
+	  bool found = false;
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    {
+	      if ((e->flags & EDGE_EXECUTABLE) == 0)
+		{
+		  found = true;
+		  break;
+		}
+	    }
+
+	  /* If there were any such edges found, then remove jump threads
+	     containing any edge leaving BB.  */
+	  if (found)
+	    FOR_EACH_EDGE (e, ei, bb->succs)
+	      remove_jump_threads_including (e);
+	}
+    }
 
   {
     gimple_stmt_iterator gsi;
@@ -951,6 +981,11 @@ record_equivalences_from_phis (basic_block bb)
 	  if (lhs == t)
 	    continue;
 
+	  /* If the associated edge is not marked as executable, then it
+	     can be ignored.  */
+	  if ((gimple_phi_arg_edge (phi, i)->flags & EDGE_EXECUTABLE) == 0)
+	    continue;
+
 	  t = dom_valueize (t);
 
 	  /* If we have not processed an alternative yet, then set
@@ -995,6 +1030,10 @@ single_incoming_edge_ignoring_loop_edges (basic_block bb)
       /* A loop back edge can be identified by the destination of
 	 the edge dominating the source of the edge.  */
       if (dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
+	continue;
+
+      /* We can safely ignore edges that are not executable.  */
+      if ((e->flags & EDGE_EXECUTABLE) == 0)
 	continue;
 
       /* If we have already seen a non-loop edge, then we must have
@@ -1294,7 +1333,7 @@ cprop_into_successor_phis (basic_block bb,
     }
 }
 
-void
+edge
 dom_opt_dom_walker::before_dom_children (basic_block bb)
 {
   gimple_stmt_iterator gsi;
@@ -1322,12 +1361,15 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
 				      m_avail_exprs_stack);
   m_avail_exprs_stack->pop_to_marker ();
 
+  edge taken_edge = NULL;
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    optimize_stmt (bb, gsi, m_const_and_copies, m_avail_exprs_stack);
+    taken_edge
+      = optimize_stmt (bb, gsi, m_const_and_copies, m_avail_exprs_stack);
 
   /* Now prepare to process dominated blocks.  */
   record_edge_info (bb);
   cprop_into_successor_phis (bb, m_const_and_copies);
+  return taken_edge;
 }
 
 /* We have finished processing the dominator children of BB, perform
@@ -1694,7 +1736,7 @@ cprop_into_stmt (gimple *stmt)
       assignment is found, we map the value on the RHS of the assignment to
       the variable in the LHS in the CONST_AND_COPIES table.  */
 
-static void
+static edge
 optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 	       class const_and_copies *const_and_copies,
 	       class avail_exprs_stack *avail_exprs_stack)
@@ -1703,6 +1745,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
   bool may_optimize_p;
   bool modified_p = false;
   bool was_noreturn;
+  edge retval = NULL;
 
   old_stmt = stmt = gsi_stmt (si);
   was_noreturn = is_gimple_call (stmt) && gimple_call_noreturn_p (stmt);
@@ -1823,7 +1866,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 		    fprintf (dump_file, "  Flagged to clear EH edges.\n");
 		}
 	      release_defs (stmt);
-	      return;
+	      return retval;
 	    }
 	}
     }
@@ -1849,25 +1892,19 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 
       if (val && TREE_CODE (val) == INTEGER_CST)
 	{
-	  edge taken_edge = find_taken_edge (bb, val);
-	  if (taken_edge)
+	  retval = find_taken_edge (bb, val);
+	  if (retval)
 	    {
-
-	      /* We need to remove any queued jump threads that
-		 reference outgoing edges from this block.  */
-	      edge_iterator ei;
-	      edge e;
-	      FOR_EACH_EDGE (e, ei, bb->succs)
-		remove_jump_threads_including (e);
-
-	      /* Now clean up the control statement at the end of
-		 BB and remove unexecutable edges.  */
-	      remove_ctrl_stmt_and_useless_edges (bb, taken_edge->dest);
-
-	      /* Fixup the flags on the single remaining edge.  */
-	      taken_edge->flags
-		&= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE | EDGE_ABNORMAL);
-	      taken_edge->flags |= EDGE_FALLTHRU;
+	      /* Fix the condition to be either true or false.  */
+	      if (gimple_code (stmt) == GIMPLE_COND)
+		{
+		  if (integer_zerop (val))
+		    gimple_cond_make_false (as_a <gcond *> (stmt));
+		  else if (integer_onep (val))
+		    gimple_cond_make_true (as_a <gcond *> (stmt));
+		  else
+		    gcc_unreachable ();
+		}
 
 	      /* Further simplifications may be possible.  */
 	      cfg_altered = true;
@@ -1887,6 +1924,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 	  && is_gimple_call (stmt) && gimple_call_noreturn_p (stmt))
 	need_noreturn_fixup.safe_push (stmt);
     }
+  return retval;
 }
 
 /* Helper for walk_non_aliased_vuses.  Determine if we arrived at

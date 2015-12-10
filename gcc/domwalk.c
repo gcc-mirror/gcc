@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "cfganal.h"
 #include "domwalk.h"
+#include "dumpfile.h"
 
 /* This file implements a generic walker for dominator trees.
 
@@ -142,6 +143,91 @@ cmp_bb_postorder (const void *a, const void *b)
   return 1;
 }
 
+/* Constructor for a dom walker.
+
+   If SKIP_UNREACHBLE_BLOCKS is true, then we need to set
+   EDGE_EXECUTABLE on every edge in the CFG. */
+dom_walker::dom_walker (cdi_direction direction,
+			bool skip_unreachable_blocks)
+  : m_dom_direction (direction),
+    m_skip_unreachable_blocks (skip_unreachable_blocks),
+    m_unreachable_dom (NULL)
+{
+  /* If we are not skipping unreachable blocks, then there is nothing
+     to do.  */
+  if (!m_skip_unreachable_blocks)
+    return;
+
+  basic_block bb;
+  FOR_ALL_BB_FN (bb, cfun)
+    {
+      edge_iterator ei;
+      edge e;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	e->flags |= EDGE_EXECUTABLE;
+    }
+}
+
+/* Return TRUE if BB is reachable, false otherwise.  */
+
+bool
+dom_walker::bb_reachable (struct function *fun, basic_block bb)
+{
+  /* If we're not skipping unreachable blocks, then assume everything
+     is reachable.  */
+  if (!m_skip_unreachable_blocks)
+    return true;
+
+  /* If any of the predecessor edges that do not come from blocks dominated
+     by us are still marked as possibly executable consider this block
+     reachable.  */
+  bool reachable = false;
+  if (!m_unreachable_dom)
+    {
+      reachable = bb == ENTRY_BLOCK_PTR_FOR_FN (fun);
+      edge_iterator ei;
+      edge e;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if (!dominated_by_p (CDI_DOMINATORS, e->src, bb))
+	  reachable |= (e->flags & EDGE_EXECUTABLE);
+    }
+
+  return reachable;
+}
+
+/* BB has been determined to be unreachable.  Propagate that property
+   to incoming and outgoing edges of BB as appropriate.  */
+
+void
+dom_walker::propagate_unreachable_to_edges (basic_block bb,
+					    FILE *dump_file,
+					    int dump_flags)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Marking all outgoing edges of unreachable "
+	     "BB %d as not executable\n", bb->index);
+
+  edge_iterator ei;
+  edge e;
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    e->flags &= ~EDGE_EXECUTABLE;
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      if (dominated_by_p (CDI_DOMINATORS, e->src, bb))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Marking backedge from BB %d into "
+		     "unreachable BB %d as not executable\n",
+		     e->src->index, bb->index);
+	  e->flags &= ~EDGE_EXECUTABLE;
+	}
+    }
+
+  if (!m_unreachable_dom)
+    m_unreachable_dom = bb;
+}
+
 /* Recursively walk the dominator tree.
    BB is the basic block we are currently visiting.  */
 
@@ -171,9 +257,23 @@ dom_walker::walk (basic_block bb)
 	  || bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	  || bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	{
+
 	  /* Callback for subclasses to do custom things before we have walked
 	     the dominator children, but before we walk statements.  */
-	  before_dom_children (bb);
+	  if (this->bb_reachable (cfun, bb))
+	    {
+	      edge taken_edge = before_dom_children (bb);
+	      if (taken_edge)
+		{
+		  edge_iterator ei;
+		  edge e;
+		  FOR_EACH_EDGE (e, ei, bb->succs)
+		    if (e != taken_edge)
+		      e->flags &= ~EDGE_EXECUTABLE;
+		}
+	    }
+	  else
+	    propagate_unreachable_to_edges (bb, dump_file, dump_flags);
 
 	  /* Mark the current BB to be popped out of the recursion stack
 	     once children are processed.  */
@@ -203,7 +303,10 @@ dom_walker::walk (basic_block bb)
 
 	  /* Callback allowing subclasses to do custom things after we have
 	     walked dominator children, but before we walk statements.  */
-	  after_dom_children (bb);
+	  if (bb_reachable (cfun, bb))
+	    after_dom_children (bb);
+	  else if (m_unreachable_dom == bb)
+	    m_unreachable_dom = NULL;
 	}
       if (sp)
 	bb = worklist[--sp];

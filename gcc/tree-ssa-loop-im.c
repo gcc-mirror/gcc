@@ -958,14 +958,14 @@ public:
   invariantness_dom_walker (cdi_direction direction)
     : dom_walker (direction) {}
 
-  virtual void before_dom_children (basic_block);
+  virtual edge before_dom_children (basic_block);
 };
 
 /* Determine the outermost loops in that statements in basic block BB are
    invariant, and record them to the LIM_DATA associated with the statements.
    Callback for dom_walker.  */
 
-void
+edge
 invariantness_dom_walker::before_dom_children (basic_block bb)
 {
   enum move_pos pos;
@@ -976,7 +976,7 @@ invariantness_dom_walker::before_dom_children (basic_block bb)
   struct lim_aux_data *lim_data;
 
   if (!loop_outer (bb->loop_father))
-    return;
+    return NULL;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Basic block %d (loop %d -- depth %d):\n\n",
@@ -1094,6 +1094,7 @@ invariantness_dom_walker::before_dom_children (basic_block bb)
       if (lim_data->cost >= LIM_EXPENSIVE)
 	set_profitable_level (stmt);
     }
+  return NULL;
 }
 
 class move_computations_dom_walker : public dom_walker
@@ -1102,7 +1103,7 @@ public:
   move_computations_dom_walker (cdi_direction direction)
     : dom_walker (direction), todo_ (0) {}
 
-  virtual void before_dom_children (basic_block);
+  virtual edge before_dom_children (basic_block);
 
   unsigned int todo_;
 };
@@ -1111,7 +1112,7 @@ public:
    data stored in LIM_DATA structures associated with each statement.  Callback
    for walk_dominator_tree.  */
 
-void
+edge
 move_computations_dom_walker::before_dom_children (basic_block bb)
 {
   struct loop *level;
@@ -1119,7 +1120,7 @@ move_computations_dom_walker::before_dom_children (basic_block bb)
   struct lim_aux_data *lim_data;
 
   if (!loop_outer (bb->loop_father))
-    return;
+    return NULL;
 
   for (gphi_iterator bsi = gsi_start_phis (bb); !gsi_end_p (bsi); )
     {
@@ -1265,6 +1266,7 @@ move_computations_dom_walker::before_dom_children (basic_block bb)
       else
 	gsi_insert_on_edge (e, stmt);
     }
+  return NULL;
 }
 
 /* Hoist the statements out of the loops prescribed by data stored in

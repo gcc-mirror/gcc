@@ -1477,7 +1477,7 @@ public:
   nontrapping_dom_walker (cdi_direction direction, hash_set<tree> *ps)
     : dom_walker (direction), m_nontrapping (ps), m_seen_ssa_names (128) {}
 
-  virtual void before_dom_children (basic_block);
+  virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
 
 private:
@@ -1496,7 +1496,7 @@ private:
 };
 
 /* Called by walk_dominator_tree, when entering the block BB.  */
-void
+edge
 nontrapping_dom_walker::before_dom_children (basic_block bb)
 {
   edge e;
@@ -1529,6 +1529,7 @@ nontrapping_dom_walker::before_dom_children (basic_block bb)
 	  add_or_mark_expr (bb, gimple_assign_rhs1 (stmt), false);
 	}
     }
+  return NULL;
 }
 
 /* Called by walk_dominator_tree, when basic block BB is exited.  */

@@ -1,3 +1,12 @@
+2015-12-10  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/68619
+	* gcc.dg/tree-ssa/pr68619-1.c: New test.
+	* gcc.dg/tree-ssa/pr68619-2.c: New test.
+	* gcc.dg/tree-ssa/pr68619-3.c: New test.
+	* gcc.dg/tree-ssa/pr68619-4.c: New test.
+	* gcc.dg/tree-ssa/pr68619-5.c: New test.
+
 2015-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/68376

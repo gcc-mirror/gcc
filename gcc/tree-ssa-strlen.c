@@ -2196,14 +2196,14 @@ class strlen_dom_walker : public dom_walker
 public:
   strlen_dom_walker (cdi_direction direction) : dom_walker (direction) {}
 
-  virtual void before_dom_children (basic_block);
+  virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
 };
 
 /* Callback for walk_dominator_tree.  Attempt to optimize various
    string ops by remembering string lenths pointed by pointer SSA_NAMEs.  */
 
-void
+edge
 strlen_dom_walker::before_dom_children (basic_block bb)
 {
   basic_block dombb = get_immediate_dominator (CDI_DOMINATORS, bb);
@@ -2283,6 +2283,7 @@ strlen_dom_walker::before_dom_children (basic_block bb)
   bb->aux = stridx_to_strinfo;
   if (vec_safe_length (stridx_to_strinfo) && !strinfo_shared ())
     (*stridx_to_strinfo)[0] = (strinfo *) bb;
+  return NULL;
 }
 
 /* Callback for walk_dominator_tree.  Free strinfo vector if it is
