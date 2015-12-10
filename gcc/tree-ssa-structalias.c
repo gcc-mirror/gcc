@@ -160,6 +160,8 @@
    The is_global_var bit which marks escape points is overly conservative
    in IPA mode.  Split it to is_escape_point and is_global_var - only
    externally visible globals are escape points in IPA mode.
+   There is now is_ipa_escape_point but this is only used in a few
+   selected places.
 
    The way we introduce DECL_PT_UID to avoid fixing up all points-to
    sets in the translation unit when we copy a DECL during inlining
@@ -264,6 +266,9 @@ struct variable_info
 
   /* True if this represents a global variable.  */
   unsigned int is_global_var : 1;
+
+  /* True if this represents a module escape point for IPA analysis.  */
+  unsigned int is_ipa_escape_point : 1;
 
   /* True if this represents a IPA function info.  */
   unsigned int is_fn_info : 1;
@@ -374,6 +379,7 @@ new_var_info (tree t, const char *name, bool add_id)
   ret->is_restrict_var = false;
   ret->ruid = 0;
   ret->is_global_var = (t == NULL_TREE);
+  ret->is_ipa_escape_point = false;
   ret->is_fn_info = false;
   if (t && DECL_P (t))
     ret->is_global_var = (is_global_var (t)
@@ -4779,11 +4785,13 @@ find_func_aliases (struct function *fn, gimple *origt)
 	}
       /* If there is a store to a global variable the rhs escapes.  */
       if ((lhsop = get_base_address (lhsop)) != NULL_TREE
-	  && DECL_P (lhsop)
-	  && is_global_var (lhsop)
-	  && (!in_ipa_mode
-	      || DECL_EXTERNAL (lhsop) || TREE_PUBLIC (lhsop)))
-	make_escape_constraint (rhsop);
+	  && DECL_P (lhsop))
+	{
+	  varinfo_t vi = get_vi_for_tree (lhsop);
+	  if ((! in_ipa_mode && vi->is_global_var)
+	      || vi->is_ipa_escape_point)
+	    make_escape_constraint (rhsop);
+	}
     }
   /* Handle escapes through return.  */
   else if (gimple_code (t) == GIMPLE_RETURN
@@ -4794,8 +4802,7 @@ find_func_aliases (struct function *fn, gimple *origt)
       if (!in_ipa_mode
 	  || !(fi = get_vi_for_tree (fn->decl)))
 	make_escape_constraint (gimple_return_retval (return_stmt));
-      else if (in_ipa_mode
-	       && fi != NULL)
+      else if (in_ipa_mode)
 	{
 	  struct constraint_expr lhs ;
 	  struct constraint_expr *rhsp;
@@ -7498,7 +7505,15 @@ ipa_pta_execute (void)
       if (var->alias && var->analyzed)
 	continue;
 
-      get_vi_for_tree (var->decl);
+      varinfo_t vi = get_vi_for_tree (var->decl);
+
+      /* For the purpose of IPA PTA unit-local globals are not
+         escape points.  */
+      bool nonlocal_p = (var->used_from_other_partition
+			 || var->externally_visible
+			 || var->force_output);
+      if (nonlocal_p)
+	vi->is_ipa_escape_point = true;
     }
 
   if (dump_file

@@ -1,3 +1,12 @@
+2015-12-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (struct variable_info): Add
+	is_ipa_escape_point flag.
+	(new_var_info): Initialize to false.
+	(find_func_aliases): Generate escape constraints for stores
+	properly in IPA mode.
+	(ipa_pta_execute): Compute is_ipa_escape_point for globals.
+
 2015-12-10  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/atomic.md: Add new file.
