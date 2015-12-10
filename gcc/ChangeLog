@@ -1,5 +1,9 @@
 2015-12-10  David Malcolm  <dmalcolm@redhat.com>
 
+	* regrename.c (scan_rtx_address): Fix indentation.
+
+2015-12-10  David Malcolm  <dmalcolm@redhat.com>
+
 	* function.c (locate_and_pad_parm): Fix indentation.
 
 2015-12-10  Richard Biener  <rguenther@suse.de>
