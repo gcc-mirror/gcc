@@ -1,3 +1,11 @@
+2015-12-09  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/68729
+	* config/pa/pa.c (pa_emit_move_sequence): Don't check that mode is
+	consistent with modes of the input and output operands when doing
+	reloads to and from floating point registers.  Do reload for all
+	address forms.
+
 2015-12-08  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	Backport from mainline.

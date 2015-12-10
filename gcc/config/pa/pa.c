@@ -1665,11 +1665,10 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
      REG+D addresses where D does not fit in 5 or 14 bits, including
      (subreg (mem (addr))) cases.  */
   if (scratch_reg
-      && fp_reg_operand (operand0, mode)
+      && FP_REG_P (operand0)
       && (MEM_P (operand1)
 	  || (GET_CODE (operand1) == SUBREG
-	      && MEM_P (XEXP (operand1, 0))))
-      && !floating_point_store_memory_operand (operand1, mode))
+	      && MEM_P (XEXP (operand1, 0)))))
     {
       if (GET_CODE (operand1) == SUBREG)
 	operand1 = XEXP (operand1, 0);
@@ -1681,10 +1680,8 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 
       /* D might not fit in 14 bits either; for such cases load D into
 	 scratch reg.  */
-      if (reg_plus_base_memory_operand (operand1, mode)
-	  && !(TARGET_PA_20
-	       && !TARGET_ELF32
-	       && INT_14_BITS (XEXP (XEXP (operand1, 0), 1))))
+      if (reg_plus_base_memory_operand (operand1, GET_MODE (operand1))
+	  && !INT_14_BITS (XEXP (XEXP (operand1, 0), 1)))
 	{
 	  emit_move_insn (scratch_reg, XEXP (XEXP (operand1, 0), 1));
 	  emit_move_insn (scratch_reg,
@@ -1700,11 +1697,10 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
       return 1;
     }
   else if (scratch_reg
-	   && fp_reg_operand (operand1, mode)
+	   && FP_REG_P (operand1)
 	   && (MEM_P (operand0)
 	       || (GET_CODE (operand0) == SUBREG
-		   && MEM_P (XEXP (operand0, 0))))
-	   && !floating_point_store_memory_operand (operand0, mode))
+		   && MEM_P (XEXP (operand0, 0)))))
     {
       if (GET_CODE (operand0) == SUBREG)
 	operand0 = XEXP (operand0, 0);
@@ -1716,10 +1712,8 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 
       /* D might not fit in 14 bits either; for such cases load D into
 	 scratch reg.  */
-      if (reg_plus_base_memory_operand (operand0, mode)
-	  && !(TARGET_PA_20
-	       && !TARGET_ELF32
-	       && INT_14_BITS (XEXP (XEXP (operand0, 0), 1))))
+      if (reg_plus_base_memory_operand (operand0, GET_MODE (operand0))
+	  && !INT_14_BITS (XEXP (XEXP (operand0, 0), 1)))
 	{
 	  emit_move_insn (scratch_reg, XEXP (XEXP (operand0, 0), 1));
 	  emit_move_insn (scratch_reg, gen_rtx_fmt_ee (GET_CODE (XEXP (operand0,
