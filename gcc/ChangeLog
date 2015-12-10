@@ -1,3 +1,10 @@
+2015-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/68785
+	* gimple-fold.c (fold_ctor_reference): Pass return value from
+	native_encode_expr to native_interpret_expr.
+	* tree-ssa-sccvn.c (fully_constant_vn_reference_p): Likewise.
+
 2015-12-10  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/68331

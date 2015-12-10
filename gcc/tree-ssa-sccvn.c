@@ -1370,8 +1370,9 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 	  else
 	    {
 	      unsigned char buf[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
-	      if (native_encode_expr (ctor, buf, size, off) > 0)
-		return native_interpret_expr (ref->type, buf, size);
+	      int len = native_encode_expr (ctor, buf, size, off);
+	      if (len > 0)
+		return native_interpret_expr (ref->type, buf, len);
 	    }
 	}
     }

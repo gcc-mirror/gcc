@@ -5495,9 +5495,10 @@ fold_ctor_reference (tree type, tree ctor, unsigned HOST_WIDE_INT offset,
       && size <= MAX_BITSIZE_MODE_ANY_MODE)
     {
       unsigned char buf[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
-      if (native_encode_expr (ctor, buf, size / BITS_PER_UNIT,
-			      offset / BITS_PER_UNIT) > 0)
-	return native_interpret_expr (type, buf, size / BITS_PER_UNIT);
+      int len = native_encode_expr (ctor, buf, size / BITS_PER_UNIT,
+				    offset / BITS_PER_UNIT);
+      if (len > 0)
+	return native_interpret_expr (type, buf, len);
     }
   if (TREE_CODE (ctor) == CONSTRUCTOR)
     {
