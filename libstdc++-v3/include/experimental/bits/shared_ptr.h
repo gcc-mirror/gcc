@@ -91,9 +91,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class __shared_ptr<__libfund_v1<_Tp, false>, _Lp>
     : private __shared_ptr<_Tp, _Lp>
     {
-      template<typename _Tp1>
+      template<typename _Tp1, typename _Res = void>
 	using _Compatible
-	  = enable_if_t<__sp_compatible<_Tp1, _Tp>::value>;
+	  = enable_if_t<__sp_compatible<_Tp1, _Tp>::value, _Res>;
 
       using _Base_type = __shared_ptr<_Tp>;
 
@@ -201,7 +201,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Base_type::operator->;
 
       template<typename _Tp1>
-	__shared_ptr&
+	_Compatible<_Tp1, __shared_ptr&>
 	operator=(const __shared_ptr<__libfund_v1<_Tp1>, _Lp>& __r) noexcept
 	{
 	  _Base_type::operator=(__r._M_get_base());
@@ -209,7 +209,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<class _Tp1>
-	__shared_ptr&
+	_Compatible<_Tp1, __shared_ptr&>
 	operator=(__shared_ptr<__libfund_v1<_Tp1>, _Lp>&& __r) noexcept
 	{
 	  _Base_type::operator=(std::move(__r._M_get_base()));
@@ -217,7 +217,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Tp1>
-	__shared_ptr&
+	_Compatible<_Tp1, __shared_ptr&>
 	operator=(std::unique_ptr<_Tp1>&& __r)
 	{
 	  _Base_type::operator=(std::move(__r));
@@ -226,7 +226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if _GLIBCXX_USE_DEPRECATED
       template<typename _Tp1>
-	__shared_ptr&
+	_Compatible<_Tp1, __shared_ptr&>
 	operator=(std::auto_ptr<_Tp1>&& __r)
 	{
 	  _Base_type::operator=(std::move(__r));
@@ -292,26 +292,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using element_type = remove_extent_t<_Tp>;
 
     private:
-      struct _Array_Deleter
+      struct _Array_deleter
       {
 	void
 	operator()(element_type const *__p) const
 	{ delete [] __p; }
       };
 
-      struct _Normal_Deleter
-      {
-	void
-	operator()(element_type const *__p) const
-	{ delete __p; }
-      };
-
-      template<typename _Tp1>
+      template<typename _Tp1, typename _Res = void>
 	using _Compatible
-	  = enable_if_t<__sp_compatible<_Tp1, _Tp>::value>;
-
-      using _Deleter_type
-	= conditional_t<is_array<_Tp>::value, _Array_Deleter, _Normal_Deleter>;
+	  = enable_if_t<__sp_compatible<_Tp1, _Tp>::value, _Res>;
 
       using _Base_type = __shared_ptr<element_type>;
 
@@ -325,7 +315,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Tp1>
 	explicit __shared_ptr(_Tp1* __p)
-	: _Base_type(__p, _Deleter_type())
+	: _Base_type(__p, _Array_deleter())
 	{ }
 
       template<typename _Tp1, typename _Deleter>
@@ -402,7 +392,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	reset(_Tp1* __p)
 	{
 	  _GLIBCXX_DEBUG_ASSERT(__p == 0 || __p != get());
-	  __shared_ptr(__p, _Deleter_type()).swap(*this);
+	  __shared_ptr(__p, _Array_deleter()).swap(*this);
 	}
 
       template<typename _Tp1, typename _Deleter>
@@ -423,7 +413,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<typename _Tp1>
-	__shared_ptr&
+	_Compatible<_Tp1, __shared_ptr&>
 	operator=(const __shared_ptr<__libfund_v1<_Tp1>, _Lp>& __r) noexcept
 	{
 	  _Base_type::operator=(__r._M_get_base());
@@ -431,7 +421,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<class _Tp1>
-	__shared_ptr&
+	_Compatible<_Tp1, __shared_ptr&>
 	operator=(__shared_ptr<__libfund_v1<_Tp1>, _Lp>&& __r) noexcept
 	{
 	  _Base_type::operator=(std::move(__r._M_get_base()));
@@ -439,7 +429,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Tp1>
-	__shared_ptr&
+	_Compatible<_Tp1, __shared_ptr&>
 	operator=(std::unique_ptr<_Tp1>&& __r)
 	{
 	  _Base_type::operator=(std::move(__r));
@@ -448,7 +438,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if _GLIBCXX_USE_DEPRECATED
       template<typename _Tp1>
-	__shared_ptr&
+	_Compatible<_Tp1, __shared_ptr&>
 	operator=(std::auto_ptr<_Tp1>&& __r)
 	{
 	  _Base_type::operator=(std::move(__r));
@@ -509,8 +499,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class __weak_ptr<__libfund_v1<_Tp>, _Lp>
     : __weak_ptr<remove_extent_t<_Tp>, _Lp>
     {
-      template<typename _Tp1>
-	using _Compatible = enable_if_t<__sp_compatible<_Tp1, _Tp>::value>;
+      template<typename _Tp1, typename _Res = void>
+	using _Compatible
+	  = enable_if_t<__sp_compatible<_Tp1, _Tp>::value, _Res>;
 
       using _Base_type = __weak_ptr<remove_extent_t<_Tp>>;
 
@@ -551,7 +542,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator=(const __weak_ptr& __r) noexcept = default;
 
       template<typename _Tp1>
-	__weak_ptr&
+	_Compatible<_Tp1, __weak_ptr&>
 	operator=(const __weak_ptr<__libfund_v1<_Tp1>, _Lp>& __r) noexcept
 	{
 	  this->_Base_type::operator=(__r._M_get_base());
@@ -559,7 +550,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Tp1>
-	__weak_ptr&
+	_Compatible<_Tp1, __weak_ptr&>
 	operator=(const __shared_ptr<_Tp1, _Lp>& __r) noexcept
 	{
 	  this->_Base_type::operator=(__r._M_get_base());
@@ -574,7 +565,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<typename _Tp1>
-	__weak_ptr&
+	_Compatible<_Tp1, __weak_ptr&>
 	operator=(__weak_ptr<_Tp1, _Lp>&& __r) noexcept
 	{
 	  this->_Base_type::operator=(std::move(__r._M_get_base()));
@@ -639,8 +630,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     class shared_ptr : public __shared_ptr<_Tp>
     {
-      template<typename _Tp1>
-	using _Compatible = enable_if_t<__sp_compatible<_Tp1, _Tp>::value>;
+      template<typename _Tp1, typename _Res = void>
+	using _Compatible
+	  = enable_if_t<__sp_compatible<_Tp1, _Tp>::value, _Res>;
 
       using _Base_type = __shared_ptr<_Tp>;
 
@@ -713,7 +705,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       shared_ptr& operator=(const shared_ptr&) noexcept = default;
 
       template <typename _Tp1>
-	shared_ptr&
+	_Compatible<_Tp1, shared_ptr&>
 	operator=(const shared_ptr<_Tp1>& __r) noexcept
 	{
 	  _Base_type::operator=(__r);
@@ -728,7 +720,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template <typename _Tp1>
-	shared_ptr&
+	_Compatible<_Tp1, shared_ptr&>
 	operator=(shared_ptr<_Tp1>&& __r) noexcept
 	{
 	  _Base_type::operator=(std::move(__r));
@@ -737,7 +729,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if _GLIBCXX_USE_DEPRECATED
       template<typename _Tp1>
-	shared_ptr&
+	_Compatible<_Tp1, shared_ptr&>
 	operator=(std::auto_ptr<_Tp1>&& __r)
 	{
 	  __shared_ptr<_Tp>::operator=(std::move(__r));
@@ -746,7 +738,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       template <typename _Tp1, typename _Del>
-	shared_ptr&
+	_Compatible<_Tp1, shared_ptr&>
 	operator=(unique_ptr<_Tp1, _Del>&& __r)
 	{
 	  _Base_type::operator=(std::move(__r));
@@ -933,8 +925,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    template<typename _Tp>
      class weak_ptr : public __weak_ptr<_Tp>
      {
-      template<typename _Tp1>
-	using _Compatible = enable_if_t<__sp_compatible<_Tp1, _Tp>::value>;
+      template<typename _Tp1, typename _Res = void>
+	using _Compatible
+	  = enable_if_t<__sp_compatible<_Tp1, _Tp>::value, _Res>;
 
       using _Base_type = __weak_ptr<_Tp>;
 
@@ -961,7 +954,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        operator=(const weak_ptr& __r) noexcept = default;
 
        template<typename _Tp1>
-	 weak_ptr&
+	 _Compatible<_Tp1, weak_ptr&>
 	 operator=(const weak_ptr<_Tp1>& __r) noexcept
 	 {
 	   this->_Base_type::operator=(__r);
@@ -969,7 +962,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 }
 
        template<typename _Tp1>
-	 weak_ptr&
+	 _Compatible<_Tp1, weak_ptr&>
 	 operator=(const shared_ptr<_Tp1>& __r) noexcept
 	 {
 	   this->_Base_type::operator=(__r);
@@ -980,7 +973,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        operator=(weak_ptr&& __r) noexcept = default;
 
        template<typename _Tp1>
-	 weak_ptr&
+	 _Compatible<_Tp1, weak_ptr&>
 	 operator=(weak_ptr<_Tp1>&& __r) noexcept
 	 {
 	   this->_Base_type::operator=(std::move(__r));
