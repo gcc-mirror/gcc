@@ -3847,6 +3847,7 @@ again:
 	      return false;
 	    }
 
+	  free_data_ref (datarefs[i]);
 	  datarefs[i] = dr;
 	  STMT_VINFO_GATHER_SCATTER_P (stmt_info) = gatherscatter;
 	}

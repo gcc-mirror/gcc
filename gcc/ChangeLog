@@ -1,3 +1,7 @@
+2015-12-10  Martin Liska  <mliska@suse.cz>
+
+	* tree-vect-data-refs.c: Free an overwritten dataref.
+
 2015-12-09  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/68729
