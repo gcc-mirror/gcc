@@ -3484,6 +3484,10 @@ require GNU binutils 2.13 or newer.  Such subtargets include:
 @code{arm-*-netbsdelf}, @code{arm-*-*linux-*}
 and @code{arm-*-rtemseabi}.
 
+Building the Ada frontend commonly fails (an infinite loop executing
+@code{xsinfo}) if the host compiler is GNAT 4.8.  Host compilers built from the
+GNAT 4.6, 4.9 or 5 release branches are known to succeed.
+
 @html
 <hr />
 @end html
