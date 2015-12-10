@@ -218,6 +218,7 @@ static enum tree_code gnu_codes[Number_Node_Kinds];
 
 static void init_code_table (void);
 static void Compilation_Unit_to_gnu (Node_Id);
+static bool empty_stmt_list_p (tree);
 static void record_code_position (Node_Id);
 static void insert_code_for (Node_Id);
 static void add_cleanup (tree, Node_Id);
@@ -675,15 +676,15 @@ gigi (Node_Id gnat_root,
   /* Finally see if we have any elaboration procedures to deal with.  */
   for (info = elab_info_list; info; info = info->next)
     {
-      tree gnu_body = DECL_SAVED_TREE (info->elab_proc), gnu_stmts;
+      tree gnu_body = DECL_SAVED_TREE (info->elab_proc);
 
       /* We should have a BIND_EXPR but it may not have any statements in it.
 	 If it doesn't have any, we have nothing to do except for setting the
 	 flag on the GNAT node.  Otherwise, process the function as others.  */
-      gnu_stmts = gnu_body;
+      tree gnu_stmts = gnu_body;
       if (TREE_CODE (gnu_stmts) == BIND_EXPR)
 	gnu_stmts = BIND_EXPR_BODY (gnu_stmts);
-      if (!gnu_stmts || !STATEMENT_LIST_HEAD (gnu_stmts))
+      if (!gnu_stmts || empty_stmt_list_p (gnu_stmts))
 	Set_Has_No_Elaboration_Code (info->gnat_node, 1);
       else
 	{
@@ -7881,6 +7882,25 @@ push_exception_label_stack (vec<tree, va_gc> **gnu_stack, Entity_Id gnat_label)
   vec_safe_push (*gnu_stack, gnu_label);
 }
 
+/* Return true if the statement list STMT_LIST is empty.  */
+
+static bool
+empty_stmt_list_p (tree stmt_list)
+{
+  tree_stmt_iterator tsi;
+
+  for (tsi = tsi_start (stmt_list); !tsi_end_p (tsi); tsi_next (&tsi))
+    {
+      tree stmt = tsi_stmt (tsi);
+
+      /* Anything else than an empty STMT_STMT counts as something.  */
+      if (TREE_CODE (stmt) != STMT_STMT || STMT_STMT_STMT (stmt))
+	return false;
+    }
+
+  return true;
+}
+
 /* Record the current code position in GNAT_NODE.  */
 
 static void
@@ -7897,7 +7917,12 @@ record_code_position (Node_Id gnat_node)
 static void
 insert_code_for (Node_Id gnat_node)
 {
-  STMT_STMT_STMT (get_gnu_tree (gnat_node)) = gnat_to_gnu (gnat_node);
+  tree code = gnat_to_gnu (gnat_node);
+
+  /* It's too late to remove the STMT_STMT itself at this point.  */
+  if (!empty_stmt_list_p (code))
+    STMT_STMT_STMT (get_gnu_tree (gnat_node)) = code;
+
   save_gnu_tree (gnat_node, NULL_TREE, true);
 }
 

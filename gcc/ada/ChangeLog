@@ -1,5 +1,12 @@
 2015-12-10  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/48013
+	* gcc-interface/trans.c (empty_stmt_list_p): New predicate.
+	(gigi): Invoke it to compute the No_Elaboration_Code property.
+	(insert_code_for): Do not insert the code if it's empty.
+
+2015-12-10  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Call_to_gnu): Remove guard for NULL_EXPR.
 	* gcc-interface/utils2.c (gnat_rewrite_reference) <ERROR_MARK>: Return
 	the reference unmodified.

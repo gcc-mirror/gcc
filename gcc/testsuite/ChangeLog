@@ -1,5 +1,10 @@
 2015-12-10  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/elab4.ads: New test.
+	* gnat.dg/specs/elab4_proc.ad[sb]: New helper.
+
+2015-12-10  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/array25.adb: New test.
 	* gnat.dg/array25_pkg.ad[sb]: New helper.
 
