@@ -593,6 +593,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __str  A string of '0' and '1' characters.
        *  @param  __pos  Index of the first character in @p __str to use.
        *  @param  __n    The number of characters to copy.
+       *  @param  __zero The character to use for unset bits.
+       *  @param  __one  The character to use for set bits.
+       *  @param  __alloc An allocator.
        *  @throw  std::out_of_range  If @p __pos is bigger the size of @p __str.
        *  @throw  std::invalid_argument  If a character appears in the string
        *                                 which is neither '0' nor '1'.

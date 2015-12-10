@@ -478,7 +478,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /**
        *  @brief  Creates a %forward_list with default constructed elements.
-       *  @param  __n  The number of elements to initially create.
+       *  @param  __n   The number of elements to initially create.
+       *  @param  __al  An allocator object.
        *
        *  This constructor creates the %forward_list with @a __n default
        *  constructed elements.
@@ -1096,6 +1097,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  after @a __pos in constant time.
        *
        *  Undefined if @a __pos is in (__before,__last).
+       *  @{
        */
       void
       splice_after(const_iterator __pos, forward_list&&,
@@ -1106,6 +1108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       splice_after(const_iterator __pos, forward_list&,
                    const_iterator __before, const_iterator __last) noexcept
       { _M_splice_after(__pos, __before, __last); }
+      // @}
 
       /**
        *  @brief  Remove all elements equal to value.

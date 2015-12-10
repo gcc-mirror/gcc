@@ -22,7 +22,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file experimental/fs_dir.h
+/** @file experimental/bits/fs_dir.h
  *  This is an internal header file, included by other library headers.
  *  Do not attempt to use it directly. @headername{experimental/filesystem}
  */

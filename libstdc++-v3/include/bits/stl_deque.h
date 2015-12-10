@@ -895,6 +895,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  Creates a %deque with default constructed elements.
        *  @param  __n  The number of elements to initially create.
+       *  @param  __a  An allocator.
        *
        *  This constructor fills the %deque with @a n default
        *  constructed elements.
