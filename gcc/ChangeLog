@@ -1,3 +1,29 @@
+2015-12-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (arc_expand_atomic_op): Prototype.
+	(arc_split_compare_and_swap): Likewise.
+	(arc_expand_compare_and_swap): Likewise.
+	* config/arc/arc.c (arc_init): Check usage atomic option.
+	(arc_pre_atomic_barrier): New function.
+	(arc_post_atomic_barrier): Likewise.
+	(emit_unlikely_jump): Likewise.
+	(arc_expand_compare_and_swap_qh): Likewise.
+	(arc_expand_compare_and_swap): Likewise.
+	(arc_split_compare_and_swap): Likewise.
+	(arc_expand_atomic_op): Likewise.
+	* config/arc/arc.h (TARGET_CPU_CPP_BUILTINS): New C macro.
+	(ASM_SPEC): Enable mlock option when matomic is used.
+	* config/arc/arc.md (UNSPEC_ARC_MEMBAR): Define.
+	(VUNSPEC_ARC_CAS): Likewise.
+	(VUNSPEC_ARC_LL): Likewise.
+	(VUNSPEC_ARC_SC): Likewise.
+	(VUNSPEC_ARC_EX): Likewise.
+	* config/arc/arc.opt (matomic): New option.
+	* config/arc/constraints.md (ATO): New constraint.
+	* config/arc/predicates.md (mem_noofs_operand): New predicate.
+	* doc/invoke.texi: Document -matomic.
+	* config/arc/atomic.md: New file.
+
 2015-12-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68817

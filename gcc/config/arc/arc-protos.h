@@ -41,6 +41,10 @@ extern int arc_output_commutative_cond_exec (rtx *operands, bool);
 extern bool arc_expand_movmem (rtx *operands);
 extern bool prepare_move_operands (rtx *operands, machine_mode mode);
 extern void emit_shift (enum rtx_code, rtx, rtx, rtx);
+extern void arc_expand_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
+extern void arc_split_compare_and_swap (rtx *);
+extern void arc_expand_compare_and_swap (rtx *);
+
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE

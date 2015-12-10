@@ -88,6 +88,10 @@ along with GCC; see the file COPYING3.  If not see
       {					\
 	builtin_define ("__HS__");	\
       }					\
+    if (TARGET_ATOMIC)			\
+      {					\
+	builtin_define ("__ARC_ATOMIC__");	\
+      }					\
     if (TARGET_NORM)			\
       {					\
 	builtin_define ("__ARC_NORM__");\
@@ -153,7 +157,7 @@ along with GCC; see the file COPYING3.  If not see
 %{mcpu=ARC700|!mcpu=*:%{mrtsc}} \
 %{mcpu=ARCHS:-mHS} \
 %{mcpu=ARCEM:-mEM} \
-"
+%{matomic:-mlock}"
 
 #if DEFAULT_LIBC == LIBC_UCLIBC
 /* Note that the default is to link against dynamic libraries, if they are
