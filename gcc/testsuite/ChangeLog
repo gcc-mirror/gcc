@@ -1,3 +1,8 @@
+2015-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/68785
+	* gcc.dg/pr68785.c: New test.
+
 2015-12-10  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/68331
