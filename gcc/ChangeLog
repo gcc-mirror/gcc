@@ -1,3 +1,16 @@
+2015-12-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.c (ipcp_cloning_candidate_p): Use node->optimize_for_size_p.
+	(good_cloning_opportunity_p): Likewise.
+	(gather_context_independent_values): Do not return true when
+	polymorphic call context is known or when we have known aggregate
+	value of unused parameter.
+	(estimate_local_effects): Try to create clone for all context
+	when either some params are substituted or devirtualization is possible
+	or some params can be removed; use local flag instead of
+	node->will_be_removed_from_program_if_no_direct_calls_p.
+	(identify_dead_nodes): Likewise.
+
 2015-12-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/invoke.texi (-Wall): Add -Wmisleading-indentation to the
