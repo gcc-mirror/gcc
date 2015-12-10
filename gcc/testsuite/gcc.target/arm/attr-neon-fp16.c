@@ -1,7 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_fp_ok } */
-/* { dg-options "-mfp16-format=ieee" } */
-/* { dg-add-options arm_fp } */
+/* { dg-require-effective-target arm_neon_ok } */
+/* { dg-options "-mfp16-format=ieee -mfloat-abi=softfp" } */
 
 #include "arm_neon.h"
 

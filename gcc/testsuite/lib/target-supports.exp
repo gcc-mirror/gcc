@@ -2664,34 +2664,17 @@ proc check_effective_target_arm_vect_no_misalign { } {
 
 
 # Return 1 if this is an ARM target supporting -mfpu=vfp
-# -mfloat-abi=softfp or equivalent options.  Some multilibs may be
-# incompatible with these options.  Also set et_arm_vfp_flags to the
-# best options to add.
-
-proc check_effective_target_arm_vfp_ok_nocache { } {
-    global et_arm_vfp_flags
-    set et_arm_vfp_flags ""
-    if { [check_effective_target_arm32] } {
-	foreach flags {"-mfpu=vfp" "-mfpu=vfp -mfloat-abi=softfp" "-mfpu=vfp -mfloat-abi=hard"} {
-	    if { [check_no_compiler_messages_nocache arm_vfp_ok object {
-		#ifndef __ARM_FP
-		#error __ARM_FP not defined
-		#endif
-		#ifdef __ARM_NEON_FP
-		#error __ARM_NEON_FP defined
-		#endif
-	    } "$flags" ] } {
-		set et_arm_vfp_flags $flags
-		return 1
-	    }
-	}
-    }
-    return 0
-}
+# -mfloat-abi=softfp.  Some multilibs may be incompatible with these
+# options.
 
 proc check_effective_target_arm_vfp_ok { } {
-    return [check_cached_effective_target arm_vfp_ok \
-		check_effective_target_arm_vfp_ok_nocache]
+    if { [check_effective_target_arm32] } {
+	return [check_no_compiler_messages arm_vfp_ok object {
+	    int dummy;
+	} "-mfpu=vfp -mfloat-abi=softfp"]
+    } else {
+	return 0
+    }
 }
 
 # Return 1 if this is an ARM target supporting -mfpu=vfp3
@@ -2738,47 +2721,6 @@ proc check_effective_target_arm_hard_vfp_ok { } {
     }
 }
 
-# Return 1 if this is an ARM target defining __ARM_FP. We may need
-# -mfloat-abi=softfp or equivalent options.  Some multilibs may be
-# incompatible with these options.  Also set et_arm_fp_flags to the
-# best options to add.
-
-proc check_effective_target_arm_fp_ok_nocache { } {
-    global et_arm_fp_flags
-    set et_arm_fp_flags ""
-    if { [check_effective_target_arm32] } {
-	foreach flags {"" "-mfloat-abi=softfp" "-mfloat-abi=hard"} {
-	    if { [check_no_compiler_messages_nocache arm_fp_ok object {
-		#ifndef __ARM_FP
-		#error __ARM_FP not defined
-		#endif
-	    } "$flags"] } {
-		set et_arm_fp_flags $flags
-		return 1
-	    }
-	}
-    }
-
-    return 0
-}
-
-proc check_effective_target_arm_fp_ok { } {
-    return [check_cached_effective_target arm_fp_ok \
-		check_effective_target_arm_fp_ok_nocache]
-}
-
-# Add the options needed to define __ARM_FP.  We need either
-# -mfloat-abi=softfp or -mfloat-abi=hard, but if one is already
-# specified by the multilib, use it.
-
-proc add_options_for_arm_fp { flags } {
-    if { ! [check_effective_target_arm_fp_ok] } {
-	return "$flags"
-    }
-    global et_arm_fp_flags
-    return "$flags $et_arm_fp_flags"
-}
-
 # Return 1 if this is an ARM target that supports DSP multiply with
 # current multilib flags.
 
@@ -2811,7 +2753,7 @@ proc check_effective_target_arm_unaligned { } {
 proc check_effective_target_arm_crypto_ok_nocache { } {
     global et_arm_crypto_flags
     set et_arm_crypto_flags ""
-    if { [check_effective_target_arm_v8_neon_ok] } {
+    if { [check_effective_target_arm32] } {
 	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=crypto-neon-fp-armv8" "-mfpu=crypto-neon-fp-armv8 -mfloat-abi=softfp"} {
 	    if { [check_no_compiler_messages_nocache arm_crypto_ok object {
 		#include "arm_neon.h"
@@ -2835,54 +2777,6 @@ proc check_effective_target_arm_crypto_ok_nocache { } {
 proc check_effective_target_arm_crypto_ok { } {
     return [check_cached_effective_target arm_crypto_ok \
 		check_effective_target_arm_crypto_ok_nocache]
-}
-
-# Return 1 if this is an ARM target supporting pragma target
-# -mfpu=crypto-neon-fp-armv8 -mfloat-abi=softfp or equivalent options.
-# Some multilibs may be incompatible with these options.  Also set
-# et_arm_crypto_pragma_flags to the best options to add.
-
-proc check_effective_target_arm_crypto_pragma_ok_nocache { } {
-    global et_arm_crypto_pragma_flags
-    set et_arm_crypto_pragma_flags ""
-    if { [check_effective_target_arm_v8_neon_ok] } {
-	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=crypto-neon-fp-armv8" "-mfpu=crypto-neon-fp-armv8 -mfloat-abi=softfp"} {
-	    if { [check_no_compiler_messages_nocache arm_crypto_pragmaok object {
-		#pragma GCC target ("fpu=crypto-neon-fp-armv8")
-		#include "arm_neon.h"
-		uint8x16_t
-		foo (uint8x16_t a, uint8x16_t b)
-		{
-	          return vaeseq_u8 (a, b);
-		}
-	    } "[add_options_for_arm_v8_neon ""] $flags"] } {
-		set et_arm_crypto_pragma_flags "[add_options_for_arm_v8_neon ""] $flags"
-		return 1
-	    }
-	}
-    }
-
-    return 0
-}
-
-# Return 1 if this is an ARM target supporting pragma target
-# -mfpu=crypto-neon-fp-armv8.
-
-proc check_effective_target_arm_crypto_pragma_ok { } {
-    return [check_cached_effective_target arm_crypto_pragma_ok \
-		check_effective_target_arm_crypto_pragma_ok_nocache]
-}
-
-# Add the options needed for VFP.  We need either -mfloat-abi=softfp
-# or -mfloat-abi=hard, but if one is already specified by the
-# multilib, use it.
-
-proc add_options_for_arm_vfp { flags } {
-    if { ! [check_effective_target_arm_vfp_ok] } {
-	return "$flags"
-    }
-    global et_arm_vfp_flags
-    return "$flags $et_arm_vfp_flags"
 }
 
 # Add options for crypto extensions.
@@ -3013,8 +2907,8 @@ proc check_effective_target_arm_crc_ok { } {
 
 # Return 1 if this is an ARM target supporting -mfpu=neon-fp16
 # -mfloat-abi=softfp or equivalent options.  Some multilibs may be
-# incompatible with these options.  Also set et_arm_neon_fp16_flags to
-# the best options to add.
+# incompatible with these options.  Also set et_arm_neon_flags to the
+# best options to add.
 
 proc check_effective_target_arm_neon_fp16_ok_nocache { } {
     global et_arm_neon_fp16_flags
