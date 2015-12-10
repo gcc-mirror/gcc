@@ -1,3 +1,11 @@
+2015-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/68376
+	PR rtl-optimization/68670
+	* ifcvt.c (noce_try_abs): For one_cmpl allow < 0, >= 0
+	or > -1 conditions regardless of negate, and disallow
+	all other conditions.
+
 2015-12-10  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	Backport from mainline
