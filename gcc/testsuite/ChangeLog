@@ -1,3 +1,8 @@
+2015-12-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/68348
+	* g++.dg/cpp0x/pr68348.C: New test.
+
 2015-12-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/elab4.ads: New test.
