@@ -414,3 +414,6 @@ Target Joined
 mmac_
 Target Joined
 
+matomic
+Target Report Mask(ATOMIC)
+Enable atomic instructions.

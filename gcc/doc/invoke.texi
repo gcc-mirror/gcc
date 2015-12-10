@@ -538,7 +538,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mbarrel-shifter @gol
 -mcpu=@var{cpu} -mA6 -mARC600 -mA7 -mARC700 @gol
 -mdpfp -mdpfp-compact -mdpfp-fast -mno-dpfp-lrsr @gol
--mea -mno-mpy -mmul32x16 -mmul64 @gol
+-mea -mno-mpy -mmul32x16 -mmul64 -matomic @gol
 -mnorm -mspfp -mspfp-compact -mspfp-fast -msimd -msoft-float -mswap @gol
 -mcrc -mdsp-packa -mdvbf -mlock -mmac-d16 -mmac-24 -mrtsc -mswape @gol
 -mtelephony -mxy -misize -mannotate-align -marclinux -marclinux_prof @gol
@@ -12969,6 +12969,12 @@ can overridden by FPX options; @samp{mspfp}, @samp{mspfp-compact}, or
 @item -mswap
 @opindex mswap
 Generate swap instructions.
+
+@item -matomic
+@opindex matomic
+This enables Locked Load/Store Conditional extension to implement
+atomic memopry built-in functions.  Not available for ARC 6xx or ARC
+EM cores.
 
 @item -mdiv-rem
 @opindex mdiv-rem
