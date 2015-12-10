@@ -1,3 +1,10 @@
+2015-12-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (create_var_decl): Adjust comment.
+	(create_subprog_decl): Likewise.
+	* gcc-interface/utils.c (create_var_decl): Likewise.
+	(create_subprog_decl): Likewise.
+
 2015-12-10  Tom de Vries  <tom@codesourcery.com>
 
 	PR ada/65102
