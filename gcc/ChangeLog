@@ -1,3 +1,11 @@
+2015-12-10  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/61515
+	PR tree-optimization/46590
+	Backport from mainline.
+	* tree-ssa-threadedge.c (invalidate_equivalences): Walk the unwinding
+	stack rather than looking at every SSA_NAME's value.
+
 2015-12-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
