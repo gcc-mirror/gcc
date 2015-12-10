@@ -1,5 +1,10 @@
 2015-12-10  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-structalias.c (create_function_info_for): Add missing
+	constraint from nonlocal for DECL_RESULT.
+
+2015-12-10  Richard Biener  <rguenther@suse.de>
+
 	* tree-if-conv.c: Include params.h.
 	(ifcvt_memrefs_wont_trap): Use PARAM_ALLOW_STORE_DATA_RACES
 	instead of flag_tree_loop_if_convert_stores to guard cases
