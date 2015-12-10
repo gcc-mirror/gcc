@@ -1,3 +1,14 @@
+2015-12-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* lib/multiline.exp (_multiline_expected_outputs): Update comment.
+	(dg-end-multiline-output): Capture line numbers within
+	_multiline_expected_outputs.
+	(handle-multiline-outputs): Access global $testname_with_flags
+	and add it as a prefix to pass/fail results.  Extract line numbers
+	from $_multiline_expected_outputs and print them within pass/fail
+	results, replacing the printing of $index.  Consolidate the
+	string prefix shared between pass/fail into a new local ($title).
+
 2015-12-10  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/68619

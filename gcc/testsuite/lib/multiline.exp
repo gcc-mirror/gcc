@@ -54,7 +54,9 @@
 # The line number of the last dg-begin-multiline-output directive.
 set _multiline_last_beginning_line -1
 
-# A list of lists of strings.
+# A list of
+#   first-line-number, last-line-number, lines
+# where each "lines" is a list of strings.
 set _multiline_expected_outputs []
 
 ############################################################################
@@ -88,12 +90,15 @@ proc dg-end-multiline-output { args } {
     # Load it and split it into lines
 
     set lines [_get_lines $prog $_multiline_last_beginning_line $line]
-    set _multiline_last_beginning_line -1
 
     verbose "lines: $lines" 3
+    # Create an entry of the form:  first-line, last-line, lines
+    set entry [list $_multiline_last_beginning_line $line $lines]
     global _multiline_expected_outputs
-    lappend _multiline_expected_outputs $lines
+    lappend _multiline_expected_outputs $entry
     verbose "within dg-end-multiline-output: _multiline_expected_outputs: $_multiline_expected_outputs" 3
+
+    set _multiline_last_beginning_line -1
 }
 
 # Hook to be called by prune.exp's prune_gcc_output to
@@ -107,9 +112,14 @@ proc dg-end-multiline-output { args } {
 
 proc handle-multiline-outputs { text } {
     global _multiline_expected_outputs
+    global testname_with_flags
     set index 0
-    foreach multiline $_multiline_expected_outputs {
-	verbose "  multiline: $multiline" 4
+    foreach entry $_multiline_expected_outputs {
+	verbose "  entry: $entry" 3
+	set start_line [lindex $entry 0]
+	set end_line   [lindex $entry 1]
+	set multiline  [lindex $entry 2]
+	verbose "  multiline: $multiline" 3
 	set rexp [_build_multiline_regex $multiline $index]
 	verbose "rexp: ${rexp}" 4
 	# Escape newlines in $rexp so that we can print them in
@@ -117,12 +127,14 @@ proc handle-multiline-outputs { text } {
 	set escaped_regex [string map {"\n" "\\n"} $rexp]
 	verbose "escaped_regex: ${escaped_regex}" 4
 
+	set title "$testname_with_flags expected multiline pattern lines $start_line-$end_line"
+
 	# Use "regsub" to attempt to prune the pattern from $text
 	if {[regsub -line $rexp $text "" text]} {
 	    # Success; the multiline pattern was pruned.
-	    pass "expected multiline pattern $index was found: \"$escaped_regex\""
+	    pass "$title was found: \"$escaped_regex\""
 	} else {
-	    fail "expected multiline pattern $index not found: \"$escaped_regex\""
+	    fail "$title not found: \"$escaped_regex\""
 	}
 
 	set index [expr $index + 1]
