@@ -1,6 +1,6 @@
 2015-12-10  Alan Lawrence  <alan.lawrence@arm.com>
 
-	* doc/install.texi: Add note against GNAT 4.8 on ARM hosts.
+	* doc/install.texi: Add note against GNAT 4.8 on ARM targets.
 
 2015-12-10  Jakub Jelinek  <jakub@redhat.com>
 
