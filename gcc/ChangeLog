@@ -1,3 +1,7 @@
+2015-12-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* function.c (locate_and_pad_parm): Fix indentation.
+
 2015-12-10  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (struct variable_info): Add
