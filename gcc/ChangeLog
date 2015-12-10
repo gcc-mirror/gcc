@@ -1,3 +1,9 @@
+2015-12-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/68814
+	* rtlanal.c (set_noop_p): Use BITS_BIG_ENDIAN instead of
+	BYTES_BIG_ENDIAN.
+
 2015-12-10  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (nvptx_function_arg,
