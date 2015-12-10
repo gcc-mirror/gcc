@@ -1,5 +1,9 @@
 2015-12-10  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto-streamer-out.c (wrap_refs): Only wrap public decls.
+
+2015-12-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-cp.c (ipcp_cloning_candidate_p): Use node->optimize_for_size_p.
 	(good_cloning_opportunity_p): Likewise.
 	(gather_context_independent_values): Do not return true when
