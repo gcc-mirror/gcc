@@ -1,3 +1,7 @@
+2015-12-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* c.opt (Wmisleading-indentation): Add to -Wall for C and C++.
+
 2015-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48088
