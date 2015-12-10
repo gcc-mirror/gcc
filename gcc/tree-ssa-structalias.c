@@ -5631,6 +5631,11 @@ create_function_info_for (tree decl, const char *name, bool add_id,
       if (DECL_RESULT (decl))
 	insert_vi_for_tree (DECL_RESULT (decl), resultvi);
 
+      if (nonlocal_p
+	  && DECL_RESULT (decl)
+	  && DECL_BY_REFERENCE (DECL_RESULT (decl)))
+	make_constraint_from (resultvi, nonlocal_id);
+
       gcc_assert (prev_vi->offset < resultvi->offset);
       prev_vi->next = resultvi->id;
       prev_vi = resultvi;
