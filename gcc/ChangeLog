@@ -1,3 +1,9 @@
+2015-12-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/68691
+	* lra-spills.c (lra_final_code_change): Check pseudo occurrence
+	number in non-debug insns and remove debug insns if necessary.
+
 2015-12-10  Martin Sebor  <msebor@redhat.com>
 
 	* invoke.texi (Warning Options): Update -Wall options.  Clarify

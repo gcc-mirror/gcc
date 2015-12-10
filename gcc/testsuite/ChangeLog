@@ -1,3 +1,8 @@
+2015-12-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/68691
+	* gcc.target/i386/pr68691.c: New.
+
 2015-12-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* lib/multiline.exp (_multiline_expected_outputs): Update comment.

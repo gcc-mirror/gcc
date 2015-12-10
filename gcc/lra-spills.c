@@ -708,6 +708,30 @@ lra_final_code_change (void)
 	    }
 	
 	  lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
+	  struct lra_insn_reg *reg;
+
+	  for (reg = id->regs; reg != NULL; reg = reg->next)
+	    if (reg->regno >= FIRST_PSEUDO_REGISTER
+		&& lra_reg_info [reg->regno].nrefs == 0)
+	      break;
+	  
+	  if (reg != NULL)
+	    {
+	      /* Pseudos still can be in debug insns in some very rare
+		 and complicated cases, e.g. the pseudo was removed by
+		 inheritance and the debug insn is not EBBs where the
+		 inheritance happened.  It is difficult and time
+		 consuming to find what hard register corresponds the
+		 pseudo -- so just remove the debug insn.  Another
+		 solution could be assigning hard reg/memory but it
+		 would be a misleading info.  It is better not to have
+		 info than have it wrong.  */
+	      lra_assert (DEBUG_INSN_P (insn));
+	      lra_invalidate_insn_data (insn);
+	      delete_insn (insn);
+	      continue;
+	    }
+	  
 	  struct lra_static_insn_data *static_id = id->insn_static_data;
 	  bool insn_change_p = false;
 	  
