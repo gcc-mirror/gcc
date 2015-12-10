@@ -1,3 +1,13 @@
+2015-12-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* tree-chkp.c (chkp_call_returns_bounds_p): Return true
+	for VA_ARG call.
+	(chkp_fixup_inlined_call): New.
+	* tree-chkp.h (chkp_fixup_inlined_call): New.
+	* tree-stdarg.c: Include tree-chkp.h.
+	(expand_ifn_va_arg_1): Fixup bndret calls for removed
+	VA_ARG calls.
+
 2015-12-10  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-inline.c (duplicate_remap_omp_clause_seq): New function.
