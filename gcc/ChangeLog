@@ -1,3 +1,16 @@
+2015-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/68331
+	* tree-ssa-structalias.c (set_uids_in_ptset): Add fndecl
+	parameter and make vars_contains_nonlocal properly have
+	function-scope semantics in IPA mode.
+	(find_what_var_points_to): Add fndecl parameter.
+	(find_what_p_points_to): Likewise.
+	(pt_solution_includes_global): Remove IPA PTA early out.
+	(compute_points_to_sets): Adjust.
+	(ipa_pta_execute): Likewise.  Clear final_solutions after
+	each function.
+
 2015-12-10  Tom de Vries  <tom@codesourcery.com>
 
 	PR ada/65102
