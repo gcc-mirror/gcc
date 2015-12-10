@@ -1,3 +1,9 @@
+2015-12-10  Tom de Vries  <tom@codesourcery.com>
+
+	PR ada/65102
+	* gnat-style.texi: Set nodefaultgnufreedocumentationlicensenode and
+	define @node GNU Free Documentation License locally.
+
 2015-12-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/66526

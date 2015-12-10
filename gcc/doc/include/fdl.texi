@@ -30,8 +30,15 @@ of this license document, but changing it is not allowed.
 @end ifset
 @c man begin DESCRIPTION
 @ifclear gfdlhtml
+@comment For some cases, this default @node/@unnumbered is not applicable and
+@comment causes warnings.  In those cases, the including file can set
+@comment nodefaultgnufreedocumentationlicensenode and provide it's own version.
+@comment F.i., when this file is included in an @raisesections context, the
+@comment including file can use an @unnumberedsec.
+@ifclear nodefaultgnufreedocumentationlicensenode
 @node GNU Free Documentation License
 @unnumbered GNU Free Documentation License
+@end ifclear
 @end ifclear
 
 @cindex FDL, GNU Free Documentation License
