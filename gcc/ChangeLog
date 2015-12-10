@@ -1,3 +1,11 @@
+2015-12-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	Backport from mainline r231224.
+	2015-12-03  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* cfgexpand.c (expand_gimple_stmt_1): Return statement with
+	DECL as return value is allowed to have NULL bounds.
+
 2015-12-10  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
