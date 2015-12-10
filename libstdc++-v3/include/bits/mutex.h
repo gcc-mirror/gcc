@@ -82,7 +82,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __mutex_base& operator=(const __mutex_base&) = delete;
   };
 
-  /// mutex
+  /// The standard mutex type.
   class mutex : private __mutex_base
   {
   public:
@@ -138,13 +138,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// and manage it.
   struct adopt_lock_t { explicit adopt_lock_t() = default; };
 
+  /// Tag used to prevent a scoped lock from acquiring ownership of a mutex.
   constexpr defer_lock_t	defer_lock { };
+
+  /// Tag used to prevent a scoped lock from blocking if a mutex is locked.
   constexpr try_to_lock_t	try_to_lock { };
+
+  /// Tag used to make a scoped lock take ownership of a locked mutex.
   constexpr adopt_lock_t	adopt_lock { };
 
-  /// @brief  Scoped lock idiom.
-  // Acquire the mutex here with a constructor call, then release with
-  // the destructor call in accordance with RAII style.
+  /** @brief A simple scoped lock type.
+   *
+   * A lock_guard controls mutex ownership within a scope, releasing
+   * ownership in the destructor.
+   */
   template<typename _Mutex>
     class lock_guard
     {
@@ -167,7 +174,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       mutex_type&  _M_device;
     };
 
-  /// unique_lock
+  /** @brief A movable scoped lock type.
+   *
+   * A unique_lock controls mutex ownership within a scope. Ownership of the
+   * mutex can be delayed until after construction and can be transferred
+   * to another unique_lock by move construction or move assignment. If a
+   * mutex lock is owned when the destructor runs ownership will be released.
+   */
   template<typename _Mutex>
     class unique_lock
     {

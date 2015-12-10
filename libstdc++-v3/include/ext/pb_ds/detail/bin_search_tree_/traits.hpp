@@ -166,13 +166,8 @@ namespace __gnu_pbds
 	     class Node_Update,
 	     class Node,
 	     typename _Alloc>
-    struct bin_search_tree_traits<
-      Key,
-      null_type,
-      Cmp_Fn,
-      Node_Update,
-      Node,
-      _Alloc>
+    struct
+    bin_search_tree_traits<Key, null_type, Cmp_Fn, Node_Update, Node, _Alloc>
     {
     private:
       typedef types_traits<Key, null_type, _Alloc, false> type_traits;

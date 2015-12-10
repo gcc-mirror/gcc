@@ -334,6 +334,23 @@ for f in *__profile_*; do
     mv $f $newname
 done
 
+# Remove inline namespaces used for versioning.
+for f in *_V2_*; do
+    newname=`echo $f | sed 's/_V2_/::/'`
+    sed 's/::_V2::/::/g' $f > $newname
+    rm $f
+done
+for f in *_experimental_filesystem_v?_*; do
+    newname=`echo $f | sed 's/_filesystem_v._/::filesystem::/'`
+    sed 's/::filesystem::v.::/::filesystem::/g' $f > $newname
+    rm $f
+done
+for f in *experimental_fundamentals_v?_*; do
+    newname=`echo $f | sed 's/experimental_.*_v[[:digit:]]_/experimental::/'`
+    sed 's/::experimental::fundamentals_v[[:digit:]]::/::experimental::/g' $f > $newname
+    rm $f
+done
+
 # Then, clean up other top-level namespaces.
 for f in std_tr1_*; do
     newname=`echo $f | sed 's/^std_tr1_/std::tr1::/'`

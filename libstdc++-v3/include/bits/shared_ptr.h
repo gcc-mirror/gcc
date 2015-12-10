@@ -41,7 +41,7 @@
 // accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
-/** @file bits/shared_ptr.h
+/** @file
  *  This is an internal header file, included by other library headers.
  *  Do not attempt to use it directly. @headername{memory}
  */

@@ -709,7 +709,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *
        *  @param __s        Start of string to parse.
        *  @param __end      End of string to parse.
-       *  @param __io       Source of the locale.
+       *  @param __f        Source of the locale.
        *  @param __err      Error flags to set.
        *  @param __tm       Pointer to struct tm to fill in.
        *  @param __format   Format specifier.
