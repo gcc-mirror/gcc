@@ -1,3 +1,12 @@
+2015-12-10  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2015-04-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/65948
+	* ipa-devirt.c (odr_types_equivalent_p): NULLPTR_TYPE is equivalent
+	to itself.
+
 2015-12-09  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/68729
