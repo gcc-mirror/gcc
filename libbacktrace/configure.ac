@@ -172,7 +172,10 @@ AC_SUBST(PIC_FLAG)
 AC_CACHE_CHECK([__sync extensions],
 [libbacktrace_cv_sys_sync],
 [if test -n "${with_target_subdir}"; then
-   libbacktrace_cv_sys_sync=yes
+   case "${host}" in
+   hppa*-*-hpux*) libbacktrace_cv_sys_sync=no ;;
+   *) libbacktrace_cv_sys_sync=yes ;;
+   esac
  else
    AC_LINK_IFELSE(
      [AC_LANG_PROGRAM([int i;],
