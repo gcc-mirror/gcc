@@ -1,5 +1,9 @@
 2015-12-10  David Malcolm  <dmalcolm@redhat.com>
 
+	* ifcvt.c (noce_try_inverse_constants): Fix indentation.
+
+2015-12-10  David Malcolm  <dmalcolm@redhat.com>
+
 	* regrename.c (scan_rtx_address): Fix indentation.
 
 2015-12-10  David Malcolm  <dmalcolm@redhat.com>
