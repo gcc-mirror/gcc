@@ -389,33 +389,255 @@ arg_promotion (machine_mode mode)
   return mode;
 }
 
-/* Process function parameter TYPE, either emitting in a prototype
-   argument, or as a copy a in a function prologue.  ARGNO is the
+/* Implement TARGET_FUNCTION_ARG.  */
+
+static rtx
+nvptx_function_arg (cumulative_args_t, machine_mode mode,
+		    const_tree, bool named)
+{
+  if (mode == VOIDmode)
+    return NULL_RTX;
+
+  if (named)
+    return gen_reg_rtx (mode);
+  return NULL_RTX;
+}
+
+/* Implement TARGET_FUNCTION_INCOMING_ARG.  */
+
+static rtx
+nvptx_function_incoming_arg (cumulative_args_t cum_v, machine_mode mode,
+			     const_tree, bool named)
+{
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+  if (mode == VOIDmode)
+    return NULL_RTX;
+
+  if (!named)
+    return NULL_RTX;
+
+  /* No need to deal with split modes here, the only case that can
+     happen is complex modes and those are dealt with by
+     TARGET_SPLIT_COMPLEX_ARG.  */
+  return gen_rtx_UNSPEC (mode,
+			 gen_rtvec (1, GEN_INT (cum->count)),
+			 UNSPEC_ARG_REG);
+}
+
+/* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
+
+static void
+nvptx_function_arg_advance (cumulative_args_t cum_v,
+			    machine_mode ARG_UNUSED (mode),
+			    const_tree ARG_UNUSED (type),
+			    bool ARG_UNUSED (named))
+{
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+  cum->count++;
+}
+
+/* Handle the TARGET_STRICT_ARGUMENT_NAMING target hook.
+
+   For nvptx, we know how to handle functions declared as stdarg: by
+   passing an extra pointer to the unnamed arguments.  However, the
+   Fortran frontend can produce a different situation, where a
+   function pointer is declared with no arguments, but the actual
+   function and calls to it take more arguments.  In that case, we
+   want to ensure the call matches the definition of the function.  */
+
+static bool
+nvptx_strict_argument_naming (cumulative_args_t cum_v)
+{
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+  return cum->fntype == NULL_TREE || stdarg_p (cum->fntype);
+}
+
+/* Implement TARGET_FUNCTION_ARG_BOUNDARY.  */
+
+static unsigned int
+nvptx_function_arg_boundary (machine_mode mode, const_tree type)
+{
+  unsigned int boundary = type ? TYPE_ALIGN (type) : GET_MODE_BITSIZE (mode);
+
+  if (boundary > BITS_PER_WORD)
+    return 2 * BITS_PER_WORD;
+
+  if (mode == BLKmode)
+    {
+      HOST_WIDE_INT size = int_size_in_bytes (type);
+      if (size > 4)
+        return 2 * BITS_PER_WORD;
+      if (boundary < BITS_PER_WORD)
+        {
+          if (size >= 3)
+            return BITS_PER_WORD;
+          if (size >= 2)
+            return 2 * BITS_PER_UNIT;
+        }
+    }
+  return boundary;
+}
+
+/* Implement TARGET_LIBCALL_VALUE.  */
+
+static rtx
+nvptx_libcall_value (machine_mode mode, const_rtx)
+{
+  if (cfun->machine->start_call == NULL_RTX)
+    /* Pretend to return in a hard reg for early uses before pseudos can be
+       generated.  */
+    return gen_rtx_REG (mode, NVPTX_RETURN_REGNUM);
+  return gen_reg_rtx (mode);
+}
+
+/* TARGET_FUNCTION_VALUE implementation.  Returns an RTX representing the place
+   where function FUNC returns or receives a value of data type TYPE.  */
+
+static rtx
+nvptx_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED,
+		      bool outgoing)
+{
+  int unsignedp = TYPE_UNSIGNED (type);
+  machine_mode orig_mode = TYPE_MODE (type);
+  machine_mode mode = promote_function_mode (type, orig_mode,
+					     &unsignedp, NULL_TREE, 1);
+  if (outgoing)
+    return gen_rtx_REG (mode, NVPTX_RETURN_REGNUM);
+  if (cfun->machine->start_call == NULL_RTX)
+    /* Pretend to return in a hard reg for early uses before pseudos can be
+       generated.  */
+    return gen_rtx_REG (mode, NVPTX_RETURN_REGNUM);
+  return gen_reg_rtx (mode);
+}
+
+/* Implement TARGET_FUNCTION_VALUE_REGNO_P.  */
+
+static bool
+nvptx_function_value_regno_p (const unsigned int regno)
+{
+  return regno == NVPTX_RETURN_REGNUM;
+}
+
+/* Types with a mode other than those supported by the machine are passed by
+   reference in memory.  */
+
+static bool
+nvptx_pass_by_reference (cumulative_args_t, machine_mode mode,
+			 const_tree type, bool)
+{
+  return !PASS_IN_REG_P (mode, type);
+}
+
+/* Implement TARGET_RETURN_IN_MEMORY.  */
+
+static bool
+nvptx_return_in_memory (const_tree type, const_tree)
+{
+  machine_mode mode = TYPE_MODE (type);
+  if (!RETURN_IN_REG_P (mode))
+    return true;
+  return false;
+}
+
+/* Implement TARGET_PROMOTE_FUNCTION_MODE.  */
+
+static machine_mode
+nvptx_promote_function_mode (const_tree type, machine_mode mode,
+			     int *punsignedp,
+			     const_tree funtype, int for_return)
+{
+  if (type == NULL_TREE)
+    return mode;
+  if (for_return)
+    return promote_mode (type, mode, punsignedp);
+  /* For K&R-style functions, try to match the language promotion rules to
+     minimize type mismatches at assembly time.  */
+  if (TYPE_ARG_TYPES (funtype) == NULL_TREE
+      && type != NULL_TREE
+      && !AGGREGATE_TYPE_P (type))
+    {
+      if (mode == SFmode)
+	mode = DFmode;
+      mode = arg_promotion (mode);
+    }
+
+  return mode;
+}
+
+/* Implement TARGET_STATIC_CHAIN.  */
+
+static rtx
+nvptx_static_chain (const_tree fndecl, bool incoming_p)
+{
+  if (!DECL_STATIC_CHAIN (fndecl))
+    return NULL;
+
+  if (incoming_p)
+    return gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
+  else
+    return gen_rtx_REG (Pmode, OUTGOING_STATIC_CHAIN_REGNUM);
+}
+
+/* Helper for write_arg.  Emit a single PTX argument of MODE, either
+   in a prototype, or as copy in a function prologue.  ARGNO is the
    index of this argument in the PTX function.  FOR_REG is negative,
    if we're emitting the PTX prototype.  It is zero if we're copying
    to an argument register and it is greater than zero if we're
-   copying to a specific hard register.  PROTOTYPED is true, if this
-   is a prototyped function, rather than an old-style C declaration.
-
-   The behaviour here must match the regular GCC function parameter
-   marshalling machinery.  */
+   copying to a specific hard register.  */
 
 static int
-write_one_arg (std::stringstream &s, int for_reg, int argno,
-	       tree type, bool prototyped)
+write_one_arg (std::stringstream &s, int for_reg, int argno, machine_mode mode)
+{
+  const char *ptx_type = nvptx_ptx_type_from_mode (mode, false);
+
+  if (for_reg < 0)
+    {
+      /* Writing PTX prototype.  */
+      s << (argno ? ", " : " (");
+      s << ".param" << ptx_type << " %in_ar" << argno;
+      if (mode == QImode || mode == HImode)
+	s << "[1]";
+    }
+  else
+    {
+      s << "\t.reg" << ptx_type << " ";
+      if (for_reg)
+	s << reg_names[for_reg];
+      else
+	s << "%ar" << argno;
+      s << ";\n";
+      s << "\tld.param" << ptx_type << " ";
+      if (for_reg)
+	s << reg_names[for_reg];
+      else
+	s << "%ar" << argno;
+      s << ", [%in_ar" << argno << "];\n";
+    }
+  return argno + 1;
+}
+
+/* Process function parameter TYPE to emit one or more PTX
+   arguments.  PROTOTYPED is true, if this is a prototyped function,
+   rather than an old-style C declaration.
+
+   The promotion behaviour here must match the regular GCC function
+   parameter marshalling machinery.  */
+
+static int
+write_arg (std::stringstream &s, int for_reg, int argno,
+	   tree type, bool prototyped)
 {
   machine_mode mode = TYPE_MODE (type);
+
+  if (mode == VOIDmode)
+    return argno;
 
   if (!PASS_IN_REG_P (mode, type))
     mode = Pmode;
 
   machine_mode split = maybe_split_mode (mode);
   if (split != VOIDmode)
-    {
-      mode = split;
-      argno = write_one_arg (s, for_reg, argno,
-			     TREE_TYPE (type), prototyped);
-    }
+    mode = split;
 
   if (!prototyped && !AGGREGATE_TYPE_P (type))
     {
@@ -423,33 +645,12 @@ write_one_arg (std::stringstream &s, int for_reg, int argno,
 	mode = DFmode;
       mode = arg_promotion (mode);
     }
+  else if (for_reg >= 0)
+    mode = arg_promotion (mode);
 
-  if (for_reg < 0)
-    {
-      /* Writing PTX prototype.  */
-      s << (argno ? ", " : " (");
-      s << ".param" << nvptx_ptx_type_from_mode (mode, false)
-	<< " %in_ar" << argno;
-      if (mode == QImode || mode == HImode)
-	s << "[1]";
-    }
-  else
-    {
-      mode = arg_promotion (mode);
-      s << "\t.reg" << nvptx_ptx_type_from_mode (mode, false) << " ";
-      if (for_reg)
-	s << reg_names[for_reg];
-      else
-	s << "%ar" << argno;
-      s << ";\n";
-      s << "\tld.param" << nvptx_ptx_type_from_mode (mode, false) << " ";
-      if (for_reg)
-	s << reg_names[for_reg];
-      else
-	s << "%ar" << argno;
-      s<< ", [%in_ar" << argno << "];\n";
-    }
-  return argno + 1;
+  if (split != VOIDmode)
+    argno = write_one_arg (s, for_reg, argno, mode);
+  return write_one_arg (s, for_reg, argno, mode);
 }
 
 static bool
@@ -555,7 +756,7 @@ write_fn_proto (std::stringstream &s, bool is_defn,
 
   /* Emit argument list.  */
   if (return_in_mem)
-    argno = write_one_arg (s, -1, argno, ptr_type_node, true);
+    argno = write_arg (s, -1, argno, ptr_type_node, true);
 
   /* We get:
      NULL in TYPE_ARG_TYPES, for old-style functions
@@ -574,20 +775,19 @@ write_fn_proto (std::stringstream &s, bool is_defn,
     {
       tree type = prototyped ? TREE_VALUE (args) : TREE_TYPE (args);
 
-      if (type != void_type_node)
-	argno = write_one_arg (s, -1, argno, type, prototyped);
+      argno = write_arg (s, -1, argno, type, prototyped);
     }
 
   if (stdarg_p (fntype))
-    argno = write_one_arg (s, -1, argno, ptr_type_node, true);
+    argno = write_arg (s, -1, argno, ptr_type_node, true);
 
   if (DECL_STATIC_CHAIN (decl))
-    argno = write_one_arg (s, -1, argno, ptr_type_node, true);
+    argno = write_arg (s, -1, argno, ptr_type_node, true);
 
   if (!argno && strcmp (name, "main") == 0)
     {
-      argno = write_one_arg (s, -1, argno, integer_type_node, true);
-      argno = write_one_arg (s, -1, argno, ptr_type_node, true);
+      argno = write_arg (s, -1, argno, integer_type_node, true);
+      argno = write_arg (s, -1, argno, ptr_type_node, true);
     }
 
   if (argno)
@@ -743,7 +943,7 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   bool return_in_mem = write_return (s, false, result_type,
 				     (machine_mode)cfun->machine->ret_reg_mode);
   if (return_in_mem)
-    argno = write_one_arg (s, 0, argno, ptr_type_node, true);
+    argno = write_arg (s, 0, argno, ptr_type_node, true);
   
   /* Declare and initialize incoming arguments.  */
   tree args = TYPE_ARG_TYPES (fntype);
@@ -758,15 +958,14 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
     {
       tree type = prototyped ? TREE_VALUE (args) : TREE_TYPE (args);
 
-      if (type != void_type_node)
-	argno = write_one_arg (s, 0, argno, type, prototyped);
+      argno = write_arg (s, 0, argno, type, prototyped);
     }
 
   if (stdarg_p (fntype))
-    argno = write_one_arg (s, ARG_POINTER_REGNUM, argno, ptr_type_node, true);
+    argno = write_arg (s, ARG_POINTER_REGNUM, argno, ptr_type_node, true);
 
   if (DECL_STATIC_CHAIN (decl))
-    argno = write_one_arg (s, STATIC_CHAIN_REGNUM, argno, ptr_type_node, true);
+    argno = write_arg (s, STATIC_CHAIN_REGNUM, argno, ptr_type_node, true);
 
   fprintf (file, "%s", s.str().c_str());
 
@@ -1001,196 +1200,6 @@ nvptx_expand_call (rtx retval, rtx address)
   if (tmp_retval != retval)
     emit_move_insn (retval, tmp_retval);
 }
-
-/* Implement TARGET_FUNCTION_ARG.  */
-
-static rtx
-nvptx_function_arg (cumulative_args_t, machine_mode mode,
-		    const_tree, bool named)
-{
-  if (mode == VOIDmode)
-    return NULL_RTX;
-
-  if (named)
-    return gen_reg_rtx (mode);
-  return NULL_RTX;
-}
-
-/* Implement TARGET_FUNCTION_INCOMING_ARG.  */
-
-static rtx
-nvptx_function_incoming_arg (cumulative_args_t cum_v, machine_mode mode,
-			     const_tree, bool named)
-{
-  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  if (mode == VOIDmode)
-    return NULL_RTX;
-
-  if (!named)
-    return NULL_RTX;
-
-  /* No need to deal with split modes here, the only case that can
-     happen is complex modes and those are dealt with by
-     TARGET_SPLIT_COMPLEX_ARG.  */
-  return gen_rtx_UNSPEC (mode,
-			 gen_rtvec (1, GEN_INT (cum->count)),
-			 UNSPEC_ARG_REG);
-}
-
-/* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
-
-static void
-nvptx_function_arg_advance (cumulative_args_t cum_v,
-			    machine_mode ARG_UNUSED (mode),
-			    const_tree ARG_UNUSED (type),
-			    bool ARG_UNUSED (named))
-{
-  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  cum->count++;
-}
-
-/* Handle the TARGET_STRICT_ARGUMENT_NAMING target hook.
-
-   For nvptx, we know how to handle functions declared as stdarg: by
-   passing an extra pointer to the unnamed arguments.  However, the
-   Fortran frontend can produce a different situation, where a
-   function pointer is declared with no arguments, but the actual
-   function and calls to it take more arguments.  In that case, we
-   want to ensure the call matches the definition of the function.  */
-
-static bool
-nvptx_strict_argument_naming (cumulative_args_t cum_v)
-{
-  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  return cum->fntype == NULL_TREE || stdarg_p (cum->fntype);
-}
-
-/* Implement TARGET_FUNCTION_ARG_BOUNDARY.  */
-
-static unsigned int
-nvptx_function_arg_boundary (machine_mode mode, const_tree type)
-{
-  unsigned int boundary = type ? TYPE_ALIGN (type) : GET_MODE_BITSIZE (mode);
-
-  if (boundary > BITS_PER_WORD)
-    return 2 * BITS_PER_WORD;
-
-  if (mode == BLKmode)
-    {
-      HOST_WIDE_INT size = int_size_in_bytes (type);
-      if (size > 4)
-        return 2 * BITS_PER_WORD;
-      if (boundary < BITS_PER_WORD)
-        {
-          if (size >= 3)
-            return BITS_PER_WORD;
-          if (size >= 2)
-            return 2 * BITS_PER_UNIT;
-        }
-    }
-  return boundary;
-}
-
-/* TARGET_FUNCTION_VALUE implementation.  Returns an RTX representing the place
-   where function FUNC returns or receives a value of data type TYPE.  */
-
-static rtx
-nvptx_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED,
-		      bool outgoing)
-{
-  int unsignedp = TYPE_UNSIGNED (type);
-  machine_mode orig_mode = TYPE_MODE (type);
-  machine_mode mode = promote_function_mode (type, orig_mode,
-					     &unsignedp, NULL_TREE, 1);
-  if (outgoing)
-    return gen_rtx_REG (mode, NVPTX_RETURN_REGNUM);
-  if (cfun->machine->start_call == NULL_RTX)
-    /* Pretend to return in a hard reg for early uses before pseudos can be
-       generated.  */
-    return gen_rtx_REG (mode, NVPTX_RETURN_REGNUM);
-  return gen_reg_rtx (mode);
-}
-
-/* Implement TARGET_LIBCALL_VALUE.  */
-
-static rtx
-nvptx_libcall_value (machine_mode mode, const_rtx)
-{
-  if (cfun->machine->start_call == NULL_RTX)
-    /* Pretend to return in a hard reg for early uses before pseudos can be
-       generated.  */
-    return gen_rtx_REG (mode, NVPTX_RETURN_REGNUM);
-  return gen_reg_rtx (mode);
-}
-
-/* Implement TARGET_FUNCTION_VALUE_REGNO_P.  */
-
-static bool
-nvptx_function_value_regno_p (const unsigned int regno)
-{
-  return regno == NVPTX_RETURN_REGNUM;
-}
-
-/* Types with a mode other than those supported by the machine are passed by
-   reference in memory.  */
-
-static bool
-nvptx_pass_by_reference (cumulative_args_t, machine_mode mode,
-			 const_tree type, bool)
-{
-  return !PASS_IN_REG_P (mode, type);
-}
-
-/* Implement TARGET_RETURN_IN_MEMORY.  */
-
-static bool
-nvptx_return_in_memory (const_tree type, const_tree)
-{
-  machine_mode mode = TYPE_MODE (type);
-  if (!RETURN_IN_REG_P (mode))
-    return true;
-  return false;
-}
-
-/* Implement TARGET_PROMOTE_FUNCTION_MODE.  */
-
-static machine_mode
-nvptx_promote_function_mode (const_tree type, machine_mode mode,
-			     int *punsignedp,
-			     const_tree funtype, int for_return)
-{
-  if (type == NULL_TREE)
-    return mode;
-  if (for_return)
-    return promote_mode (type, mode, punsignedp);
-  /* For K&R-style functions, try to match the language promotion rules to
-     minimize type mismatches at assembly time.  */
-  if (TYPE_ARG_TYPES (funtype) == NULL_TREE
-      && type != NULL_TREE
-      && !AGGREGATE_TYPE_P (type))
-    {
-      if (mode == SFmode)
-	mode = DFmode;
-      mode = arg_promotion (mode);
-    }
-
-  return mode;
-}
-
-/* Implement TARGET_STATIC_CHAIN.  */
-
-static rtx
-nvptx_static_chain (const_tree fndecl, bool incoming_p)
-{
-  if (!DECL_STATIC_CHAIN (fndecl))
-    return NULL;
-
-  if (incoming_p)
-    return gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
-  else
-    return gen_rtx_REG (Pmode, OUTGOING_STATIC_CHAIN_REGNUM);
-}
-
 /* Emit a comparison COMPARE, and return the new test to be used in the
    jump.  */
 
