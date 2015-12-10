@@ -1,5 +1,42 @@
 2015-12-10  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/memory/shared_ptr/assign/assign.cc: Replace
+	-std=gnu++1y with -std=gnu++14.
+	* testsuite/experimental/memory/shared_ptr/cast/cast.cc: Likewise.
+	* testsuite/experimental/memory/shared_ptr/comparison/comparison.cc:
+	Likewise.
+	* testsuite/experimental/memory/shared_ptr/cons/alias_ctor.cc:
+	Likewise.
+	* testsuite/experimental/memory/shared_ptr/cons/alloc_ctor.cc:
+	Likewise.
+	* testsuite/experimental/memory/shared_ptr/cons/copy_ctor.cc:
+	Likewise.
+	* testsuite/experimental/memory/shared_ptr/cons/copy_ctor_neg.cc:
+	Likewise.
+	* testsuite/experimental/memory/shared_ptr/cons/default_ctor.cc:
+	Likewise.
+	* testsuite/experimental/memory/shared_ptr/cons/move_ctor.cc:
+	Likewise.
+	* testsuite/experimental/memory/shared_ptr/cons/pointer_ctor.cc:
+	Likewise.
+	* testsuite/experimental/memory/shared_ptr/cons/unique_ptr_ctor.cc:
+	Likewise.
+	* testsuite/experimental/memory/shared_ptr/cons/weak_ptr_ctor.cc:
+	Likewise.
+	* testsuite/experimental/memory/shared_ptr/dest/dest.cc: Likewise.
+	* testsuite/experimental/memory/shared_ptr/modifiers/reset.cc:
+	Likewise.
+	* testsuite/experimental/memory/shared_ptr/modifiers/swap.cc:
+	Likewise.
+	* testsuite/experimental/memory/shared_ptr/observers/bool_conv.cc:
+	Likewise.
+	* testsuite/experimental/memory/shared_ptr/observers/operators.cc:
+	Likewise.
+	* testsuite/experimental/memory/shared_ptr/observers/owner_before.cc:
+	Likewise.
+	* testsuite/experimental/memory/shared_ptr/observers/use_count.cc:
+	Likewise.
+
 	PR libstdc++/68825
 	* include/experimental/bits/shared_ptr.h (__shared_ptr, __weak_ptr,
 	experimental::shared_ptr, experimental::weak_ptr): Constrain
