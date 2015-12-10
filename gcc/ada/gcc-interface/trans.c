@@ -4407,9 +4407,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       /* If it's possible we may need to use this expression twice, make sure
 	 that any side-effects are handled via SAVE_EXPRs; likewise if we need
 	 to force side-effects before the call.  */
-      if (Ekind (gnat_formal) != E_In_Parameter
-	  && !is_by_ref_formal_parm
-	  && TREE_CODE (gnu_name) != NULL_EXPR)
+      if (Ekind (gnat_formal) != E_In_Parameter && !is_by_ref_formal_parm)
 	{
 	  tree init = NULL_TREE;
 	  gnu_name = gnat_stabilize_reference (gnu_name, true, &init);

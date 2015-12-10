@@ -1,3 +1,8 @@
+2015-12-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array25.adb: New test.
+	* gnat.dg/array25_pkg.ad[sb]: New helper.
+
 2015-12-10  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* lib/target-supports.exp (check_effective_target_arc_atomic): New

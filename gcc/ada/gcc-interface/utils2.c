@@ -2733,7 +2733,8 @@ gnat_rewrite_reference (tree ref, rewrite_fn func, void *data, tree *init)
       break;
 
     case ERROR_MARK:
-      return error_mark_node;
+    case NULL_EXPR:
+      return ref;
 
     default:
       gcc_unreachable ();
