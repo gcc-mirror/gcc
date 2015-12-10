@@ -4533,7 +4533,6 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
 	      gcc_assert (TREE_CODE (fnarg) == ADDR_EXPR);
 	      tree fndecl = TREE_OPERAND (fnarg, 0);
 	      tree arg = gimple_call_arg (t, argpos);
-	      gcc_assert (TREE_CODE (arg) == ADDR_EXPR);
 
 	      varinfo_t fi = get_vi_for_tree (fndecl);
 	      find_func_aliases_for_call_arg (fi, 0, arg);
