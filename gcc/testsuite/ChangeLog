@@ -1,3 +1,8 @@
+2015-12-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61886
+	* gcc.dg/lto/pr61886_0.c: New testcase
+
 2015-12-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.c-torture/execute/20010122-1.c: Disable cloning.
