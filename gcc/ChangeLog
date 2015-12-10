@@ -1,3 +1,8 @@
+2015-12-10  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-inline.c (duplicate_remap_omp_clause_seq): New function.
+	(replace_locals_op): Duplicate gimple sequences in OMP clauses.
+
 2015-12-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* graphite-optimize-isl.c (scop_get_domains): Fix indentation.
