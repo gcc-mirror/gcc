@@ -2006,8 +2006,8 @@ gfc_match_open (void)
 	{
 	  static const char *delim[] = { "APOSTROPHE", "QUOTE", "NONE", NULL };
 
-	if (!is_char_type ("DELIM", open->delim))
-	  goto cleanup;
+	  if (!is_char_type ("DELIM", open->delim))
+	    goto cleanup;
 
 	  if (!compare_to_allowed_values ("DELIM", delim, NULL, NULL,
 					  open->delim->value.character.string,

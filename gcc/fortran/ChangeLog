@@ -1,3 +1,7 @@
+2015-12-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* io.c (gfc_match_open): Fix indentation.
+
 2015-12-09  Tobias Burnus  <burnus@net-b.de>
 	    Alessandro Fanfarillo <fanfarillo.gcc@gmail.com>
 
