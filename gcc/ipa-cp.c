@@ -613,7 +613,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
       return false;
     }
 
-  if (!optimize_function_for_speed_p (DECL_STRUCT_FUNCTION (node->decl)))
+  if (node->optimize_for_size_p ())
     {
       if (dump_file)
         fprintf (dump_file, "Not considering %s for cloning; "
@@ -2267,7 +2267,7 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 {
   if (time_benefit == 0
       || !opt_for_fn (node->decl, flag_ipa_cp_clone)
-      || !optimize_function_for_speed_p (DECL_STRUCT_FUNCTION (node->decl)))
+      || node->optimize_for_size_p ())
     return false;
 
   gcc_assert (size_cost > 0);
@@ -2387,12 +2387,14 @@ gather_context_independent_values (struct ipa_node_params *info,
 	*removable_params_cost
 	  += ipa_get_param_move_cost (info, i);
 
+      if (!ipa_is_param_used (info, i))
+	continue;
+
       ipcp_lattice<ipa_polymorphic_call_context> *ctxlat = &plats->ctxlat;
+      /* Do not account known context as reason for cloning.  We can see
+	 if it permits devirtualization.  */
       if (ctxlat->is_single_const ())
-	{
-	  (*known_contexts)[i] = ctxlat->values->value;
-	  ret = true;
-	}
+	(*known_contexts)[i] = ctxlat->values->value;
 
       if (known_aggs)
 	{
@@ -2494,7 +2496,9 @@ estimate_local_effects (struct cgraph_node *node)
 						    &known_contexts, &known_aggs,
 						    &removable_params_cost);
   known_aggs_ptrs = agg_jmp_p_vec_for_t_vec (known_aggs);
-  if (always_const)
+  int devirt_bonus = devirtualization_time_bonus (node, known_csts,
+					   known_contexts, known_aggs_ptrs);
+  if (always_const || devirt_bonus || removable_params_cost)
     {
       struct caller_statistics stats;
       inline_hints hints;
@@ -2505,8 +2509,7 @@ estimate_local_effects (struct cgraph_node *node)
 					      false);
       estimate_ipcp_clone_size_and_time (node, known_csts, known_contexts,
 					 known_aggs_ptrs, &size, &time, &hints);
-      time -= devirtualization_time_bonus (node, known_csts, known_contexts,
-					   known_aggs_ptrs);
+      time -= devirt_bonus;
       time -= hint_time_bonus (hints);
       time -= removable_params_cost;
       size -= stats.n_calls * removable_params_cost;
@@ -2515,8 +2518,7 @@ estimate_local_effects (struct cgraph_node *node)
 	fprintf (dump_file, " - context independent values, size: %i, "
 		 "time_benefit: %i\n", size, base_time - time);
 
-      if (size <= 0
-	  || node->will_be_removed_from_program_if_no_direct_calls_p ())
+      if (size <= 0 || node->local.local)
 	{
 	  info->do_clone_for_all_contexts = true;
 	  base_time = time;
@@ -2544,6 +2546,10 @@ estimate_local_effects (struct cgraph_node *node)
 		     "max_new_size would be reached with %li.\n",
 		     size + overall_size);
 	}
+      else if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "   Not cloning for all contexts because "
+		 "!good_cloning_opportunity_p.\n");
+	
     }
 
   for (i = 0; i < count ; i++)
@@ -4419,7 +4425,7 @@ identify_dead_nodes (struct cgraph_node *node)
 {
   struct cgraph_node *v;
   for (v = node; v ; v = ((struct ipa_dfs_info *) v->aux)->next_cycle)
-    if (v->will_be_removed_from_program_if_no_direct_calls_p ()
+    if (v->local.local
 	&& !v->call_for_symbol_thunks_and_aliases
 	     (has_undead_caller_from_outside_scc_p, NULL, true))
       IPA_NODE_REF (v)->node_dead = 1;

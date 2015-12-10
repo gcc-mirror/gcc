@@ -1,3 +1,7 @@
+2015-12-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.c-torture/execute/20010122-1.c: Disable cloning.
+
 2015-12-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/68691
