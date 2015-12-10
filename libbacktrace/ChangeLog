@@ -1,3 +1,11 @@
+2015-12-09  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR 68115/libfortran
+	* configure.ac: Set libbacktrace_cv_sys_sync to no on hppa*-*-hpux*.
+	* configure: Regenerate.
+	* elf.c (backtrace_initialize): Cast __sync_bool_compare_and_swap call
+	to void.
+
 2015-09-17  Ian Lance Taylor  <iant@google.com>
 
 	* posix.c (backtrace_open): Cast second argument of open() to int.
