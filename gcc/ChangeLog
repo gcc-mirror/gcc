@@ -1,3 +1,10 @@
+2015-12-10  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Backport from mainline
+	2015-12-09  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/rs6000/freebsd64.h: Remove the redefinition of WCHAR_TYPE.
+
 2015-12-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

@@ -317,7 +317,7 @@ extern int dot_symbols;
 
 /* rs6000.h gets this wrong for FreeBSD.  We use the GCC defaults instead.  */
 #undef WCHAR_TYPE
-#define	WCHAR_TYPE      (TARGET_64BIT ? "int" : "long int")
+
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
