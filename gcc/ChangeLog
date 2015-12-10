@@ -1,5 +1,9 @@
 2015-12-10  David Malcolm  <dmalcolm@redhat.com>
 
+	* graphite-optimize-isl.c (scop_get_domains): Fix indentation.
+
+2015-12-10  David Malcolm  <dmalcolm@redhat.com>
+
 	* ifcvt.c (noce_try_inverse_constants): Fix indentation.
 
 2015-12-10  David Malcolm  <dmalcolm@redhat.com>

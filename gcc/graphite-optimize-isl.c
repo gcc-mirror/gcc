@@ -360,7 +360,7 @@ scop_get_domains (scop_p scop ATTRIBUTE_UNUSED)
   FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     res = isl_union_set_add_set (res, isl_set_copy (pbb->domain));
 
-    return res;
+  return res;
 }
 
 static const int CONSTANT_BOUND = 20;
