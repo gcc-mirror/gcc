@@ -1,3 +1,9 @@
+2015-12-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-if-conv.c (if_convertible_loop_p_1): Do not compute
+	dependences.
+	(if_convertible_loop_p): Adjust.
+
 2015-12-10  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call): Remove
