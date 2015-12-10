@@ -2236,7 +2236,8 @@ wrap_refs (tree *tp, int *ws, void *)
 {
   tree t = *tp;
   if (handled_component_p (t)
-      && TREE_CODE (TREE_OPERAND (t, 0)) == VAR_DECL)
+      && TREE_CODE (TREE_OPERAND (t, 0)) == VAR_DECL
+      && TREE_PUBLIC (TREE_OPERAND (t, 0)))
     {
       tree decl = TREE_OPERAND (t, 0);
       tree ptrtype = build_pointer_type (TREE_TYPE (decl));
