@@ -1,3 +1,13 @@
+2015-12-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2015-12-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/68701
+	* config/i386/i386.c (ix86_option_override_internal): Enable
+	-maccumulate-outgoing-args when %ebp is fixed due to stack
+	realignment requirements.
+
 2015-12-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	Backport from mainline r231224.
