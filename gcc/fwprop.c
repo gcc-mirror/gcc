@@ -208,11 +208,11 @@ class single_def_use_dom_walker : public dom_walker
 public:
   single_def_use_dom_walker (cdi_direction direction)
     : dom_walker (direction) {}
-  virtual void before_dom_children (basic_block);
+  virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
 };
 
-void
+edge
 single_def_use_dom_walker::before_dom_children (basic_block bb)
 {
   int bb_index = bb->index;
@@ -245,6 +245,8 @@ single_def_use_dom_walker::before_dom_children (basic_block bb)
 
   process_uses (df_get_artificial_uses (bb_index), 0);
   process_defs (df_get_artificial_defs (bb_index), 0);
+
+  return NULL;
 }
 
 /* Pop the definitions created in this basic block when leaving its

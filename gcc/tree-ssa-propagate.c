@@ -1123,7 +1123,7 @@ public:
       BITMAP_FREE (need_eh_cleanup);
     }
 
-    virtual void before_dom_children (basic_block);
+    virtual edge before_dom_children (basic_block);
     virtual void after_dom_children (basic_block) {}
 
     ssa_prop_get_value_fn get_value_fn;
@@ -1135,7 +1135,7 @@ public:
     bitmap need_eh_cleanup;
 };
 
-void
+edge
 substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 {
   /* Propagate known values into PHI nodes.  */
@@ -1293,6 +1293,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	    fprintf (dump_file, "Not folded\n");
 	}
     }
+  return NULL;
 }
 
 

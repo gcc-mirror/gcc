@@ -303,7 +303,7 @@ class uncprop_dom_walker : public dom_walker
 public:
   uncprop_dom_walker (cdi_direction direction) : dom_walker (direction) {}
 
-  virtual void before_dom_children (basic_block);
+  virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
 
 private:
@@ -433,7 +433,7 @@ single_incoming_edge_ignoring_loop_edges (basic_block bb)
   return retval;
 }
 
-void
+edge
 uncprop_dom_walker::before_dom_children (basic_block bb)
 {
   basic_block parent;
@@ -462,6 +462,7 @@ uncprop_dom_walker::before_dom_children (basic_block bb)
     m_equiv_stack.safe_push (NULL_TREE);
 
   uncprop_into_successor_phis (bb);
+  return NULL;
 }
 
 namespace {

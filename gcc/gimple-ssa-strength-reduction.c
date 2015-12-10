@@ -1649,12 +1649,12 @@ class find_candidates_dom_walker : public dom_walker
 public:
   find_candidates_dom_walker (cdi_direction direction)
     : dom_walker (direction) {}
-  virtual void before_dom_children (basic_block);
+  virtual edge before_dom_children (basic_block);
 };
 
 /* Find strength-reduction candidates in block BB.  */
 
-void
+edge
 find_candidates_dom_walker::before_dom_children (basic_block bb)
 {
   bool speed = optimize_bb_for_speed_p (bb);
@@ -1737,6 +1737,7 @@ find_candidates_dom_walker::before_dom_children (basic_block bb)
 	    }
 	}
     }
+  return NULL;
 }
 
 /* Dump a candidate for debug.  */
