@@ -1,3 +1,15 @@
+2015-12-10  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (nvptx_function_arg,
+	nvptx_function_incoming_arg, nvptx_function_arg_advance,
+	nvptx_strict_argument_naming, nvptx_function_arg_boundary,
+	nvptx_libcall_value, nvptx_function_value,
+	nvptx_function_value_regno_p, nvptx_pass_by_reference,
+	nvptx_return_in_memory, nvptx_promote_function_mode,
+	nvptx_static_chain): Move earlier.
+	(write_one_arg): Break out as helper fn for ...
+	(write_arg): ... this new function.  Adjust all callers.
+
 2015-12-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-streamer-out.c (wrap_refs): Only wrap public decls.
