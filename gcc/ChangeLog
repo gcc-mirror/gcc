@@ -1,5 +1,9 @@
 2015-12-10  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/atomic.md: Add new file.
+
+2015-12-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc-protos.h (arc_expand_atomic_op): Prototype.
 	(arc_split_compare_and_swap): Likewise.
 	(arc_expand_compare_and_swap): Likewise.
