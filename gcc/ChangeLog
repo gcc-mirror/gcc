@@ -88,6 +88,7 @@
 	(nonoverlapping_component_refs_of_decl_p): Update sanity check.
 	(decl_refs_may_alias_p): Use compare_base_decls.
 	* alias.c: Include cgraph.h
+	(get_alias_set): Add cut-off for recursion.
 	(rtx_equal_for_memref_p): Use rtx_equal_for_memref_p.
 	(compare_base_decls): New function.
 	(base_alias_check): Likewise.

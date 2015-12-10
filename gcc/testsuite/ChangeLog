@@ -1,3 +1,8 @@
+2015-12-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/access1.ads: New test.
+	* gnat.dg/specs/access2.ads: Likewise.
+
 2015-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/68785
