@@ -1,3 +1,8 @@
+2015-12-09  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/fptr.c (__canonicalize_funcptr_for_compare): Remove code
+	to initialize call to __dl_fixup once.
+
 2015-12-04  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/mpy.c (__mulhi3): Use a faster algorithm.
