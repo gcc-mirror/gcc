@@ -1281,7 +1281,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
      to return void instead of just outputting function with undefined return
      value.  For structures this affects quality of codegen.  */
   else if (!split_point->split_part_set_retval
-           && find_retval (return_bb))
+           && (retval = find_retval (return_bb)))
     {
       bool redirected = true;
       basic_block new_return_bb = create_basic_block (NULL, 0, return_bb);
@@ -1305,6 +1305,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
       e->count = new_return_bb->count;
       add_bb_to_loop (new_return_bb, current_loops->tree_root);
       bitmap_set_bit (split_point->split_bbs, new_return_bb->index);
+      retbnd = find_retbnd (return_bb);
     }
   /* When we pass around the value, use existing return block.  */
   else

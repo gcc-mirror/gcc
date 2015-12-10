@@ -1,5 +1,10 @@
 2015-12-10  Richard Biener  <rguenther@suse.de>
 
+	PR ipa/68721
+	* gcc.dg/torture/pr68721.c: New testcase.
+
+2015-12-10  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/68806
 	* gcc.dg/torture/pr68806.c: New testcase.
 

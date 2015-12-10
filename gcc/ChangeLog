@@ -1,5 +1,11 @@
 2015-12-10  Richard Biener  <rguenther@suse.de>
 
+	PR ipa/68721
+	* ipa-split.c (split_function): Record return value properly
+	when the split part doesn't set it.
+
+2015-12-10  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/68806
 	* tree-vect-loop.c (vect_analyze_loop_2): Properly detect
 	reduction chains and ignore SLP reductions.
