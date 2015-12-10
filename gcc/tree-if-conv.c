@@ -1173,18 +1173,13 @@ predicate_bbs (loop_p loop)
 
 static bool
 if_convertible_loop_p_1 (struct loop *loop,
-			 vec<loop_p> *loop_nest,
 			 vec<data_reference_p> *refs,
-			 vec<ddr_p> *ddrs, bool *any_mask_load_store)
+			 bool *any_mask_load_store)
 {
-  bool res;
   unsigned int i;
   basic_block exit_bb = NULL;
 
-  /* Don't if-convert the loop when the data dependences cannot be
-     computed: the loop won't be vectorized in that case.  */
-  res = compute_data_dependences_for_loop (loop, true, loop_nest, refs, ddrs);
-  if (!res)
+  if (find_data_references_in_loop (loop, refs) == chrec_dont_know)
     return false;
 
   calculate_dominance_info (CDI_DOMINATORS);
@@ -1301,7 +1296,6 @@ if_convertible_loop_p (struct loop *loop, bool *any_mask_load_store)
   edge_iterator ei;
   bool res = false;
   vec<data_reference_p> refs;
-  vec<ddr_p> ddrs;
 
   /* Handle only innermost loop.  */
   if (!loop || loop->inner)
@@ -1334,10 +1328,7 @@ if_convertible_loop_p (struct loop *loop, bool *any_mask_load_store)
       return false;
 
   refs.create (5);
-  ddrs.create (25);
-  auto_vec<loop_p, 3> loop_nest;
-  res = if_convertible_loop_p_1 (loop, &loop_nest, &refs, &ddrs,
-				 any_mask_load_store);
+  res = if_convertible_loop_p_1 (loop, &refs, any_mask_load_store);
 
   data_reference_p dr;
   unsigned int i;
@@ -1345,7 +1336,6 @@ if_convertible_loop_p (struct loop *loop, bool *any_mask_load_store)
     free (dr->aux);
 
   free_data_refs (refs);
-  free_dependence_relations (ddrs);
 
   delete ref_DR_map;
   ref_DR_map = NULL;
