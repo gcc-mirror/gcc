@@ -1,3 +1,9 @@
+2015-12-11  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.h (TARGET_SUPPORTS_WIDE_INT): Define.
+	* config/nvptx/nvptx.c (nvptxx_assemble_integer): Return false for
+	unrecognizable RTX.
+
 2015-12-11  Tom de Vries  <tom@codesourcery.com>
 
 	* passes.def: Remove unpaired TERMINATE_PASS_LIST.

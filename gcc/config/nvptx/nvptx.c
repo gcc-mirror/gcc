@@ -1570,7 +1570,9 @@ nvptx_assemble_integer (rtx x, unsigned int size, int ARG_UNUSED (aligned_p))
   switch (GET_CODE (x))
     {
     default:
-      gcc_unreachable ();
+      /* Let the generic machinery figure it out, usually for a
+	 CONST_WIDE_INT.  */
+      return false;
 
     case CONST_INT:
       nvptx_assemble_value (INTVAL (x), size);

@@ -69,6 +69,7 @@
 #define FLOAT_TYPE_SIZE 32
 #define DOUBLE_TYPE_SIZE 64
 #define LONG_DOUBLE_TYPE_SIZE 64
+#define TARGET_SUPPORTS_WIDE_INT 1
 
 #undef SIZE_TYPE
 #define SIZE_TYPE (TARGET_ABI64 ? "long unsigned int" : "unsigned int")
