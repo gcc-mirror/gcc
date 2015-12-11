@@ -1646,6 +1646,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	      && align % BITS_PER_UNIT == 0
 	      && hwi_bitpos % BITS_PER_UNIT == 0)
 	    {
+	      gcc_checking_assert (align != 0);
 	      jfunc->alignment.known = true;
 	      jfunc->alignment.align = align / BITS_PER_UNIT;
 	      jfunc->alignment.misalign = hwi_bitpos / BITS_PER_UNIT;

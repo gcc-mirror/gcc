@@ -1,3 +1,9 @@
+2015-12-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/68064
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Add checking
+	assert that align is nonzero.
+
 2015-12-11  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_expand_setmem): Use new expanders.
