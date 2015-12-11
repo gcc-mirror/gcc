@@ -53533,7 +53533,8 @@ ix86_get_mask_mode (unsigned nunits, unsigned vector_size)
   unsigned elem_size = vector_size / nunits;
 
   /* Scalar mask case.  */
-  if (TARGET_AVX512F && vector_size == 64)
+  if ((TARGET_AVX512F && vector_size == 64)
+      || (TARGET_AVX512VL && (vector_size == 32 || vector_size == 16)))
     {
       if (elem_size == 4 || elem_size == 8 || TARGET_AVX512BW)
 	return smallest_mode_for_size (nunits, MODE_INT);
