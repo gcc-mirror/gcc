@@ -184,6 +184,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : _Weak_result_type_impl<typename remove_cv<_Functor>::type>
     { };
 
+  template<typename _Tp, typename _Up = typename decay<_Tp>::type>
+    struct _Unwrap
+    {
+      using type = _Tp&&;
+
+      // Equivalent to std::forward<_Tp>
+      static constexpr _Tp&&
+      _S_fwd(_Tp& __t) noexcept { return static_cast<_Tp&&>(__t); }
+    };
+
+  template<typename _Tp, typename _Up>
+    struct _Unwrap<_Tp, reference_wrapper<_Up>>
+    {
+      using type = _Up&;
+
+      // Get an lvalue-reference from a reference_wrapper.
+      static _Up&
+      _S_fwd(const _Tp& __t) noexcept { __t.get(); }
+    };
+
+  // Used by __invoke_impl instead of std::forward<_Tp> so that a
+  // reference_wrapper is converted to an lvalue-reference.
+  template<typename _Tp>
+    typename _Unwrap<_Tp>::type
+    __invfwd(typename remove_reference<_Tp>::type& __t) noexcept
+    { return _Unwrap<_Tp>::_S_fwd(__t); }
+
   template<typename _Res, typename _Fn, typename... _Args>
     inline _Res
     __invoke_impl(__invoke_other, _Fn&& __f, _Args&&... __args)
@@ -194,15 +221,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _Res
     __invoke_impl(__invoke_memfun_ref, _MemFun&& __f, _Tp&& __t,
 		  _Args&&... __args)
-    noexcept(noexcept((forward<_Tp>(__t).*__f)(forward<_Args>(__args)...)))
-    { return (forward<_Tp>(__t).*__f)(forward<_Args>(__args)...); }
-
-  template<typename _Res, typename _MemFun, typename _Tp, typename... _Args>
-    inline _Res
-    __invoke_impl(__invoke_memfun_ref, _MemFun&& __f,
-		  reference_wrapper<_Tp> __t, _Args&&... __args)
-    noexcept(noexcept((__t.get().*__f)(forward<_Args>(__args)...)))
-    { return (__t.get().*__f)(forward<_Args>(__args)...); }
+    noexcept(noexcept((__invfwd<_Tp>(__t).*__f)(forward<_Args>(__args)...)))
+    { return (__invfwd<_Tp>(__t).*__f)(forward<_Args>(__args)...); }
 
   template<typename _Res, typename _MemFun, typename _Tp, typename... _Args>
     inline _Res
@@ -214,15 +234,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res, typename _MemFun, typename _Tp, typename... _Args>
     inline _Res
     __invoke_impl(__invoke_memobj_ref, _MemFun&& __f, _Tp&& __t)
-    noexcept(noexcept(forward<_Tp>(__t).*__f))
-    { return forward<_Tp>(__t).*__f; }
-
-  template<typename _Res, typename _MemFun, typename _Tp, typename... _Args>
-    inline _Res
-    __invoke_impl(__invoke_memobj_ref, _MemFun&& __f,
-		  reference_wrapper<_Tp> __t)
-    noexcept(noexcept(__t.get().*__f))
-    { return __t.get().*__f; }
+    noexcept(noexcept(__invfwd<_Tp>(__t).*__f))
+    { return __invfwd<_Tp>(__t).*__f; }
 
   template<typename _Res, typename _MemFun, typename _Tp, typename... _Args>
     inline _Res

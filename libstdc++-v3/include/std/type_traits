@@ -2391,44 +2391,59 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2219.  INVOKE-ing a pointer to member with a reference_wrapper
   //        as the object expression
-  template<typename> struct reference_wrapper;
 
   template<typename _Res, typename _Class, typename _Arg>
     struct __result_of_memobj<_Res _Class::*, reference_wrapper<_Arg>>
-    : __result_of_memobj<_Res _Class::*, _Arg>
-    {
-      typedef typename
-	__result_of_memobj_ref<_Res _Class::*, _Arg&>::type type;
-    };
+    : __result_of_memobj_ref<_Res _Class::*, _Arg&>
+    { };
 
   template<typename _Res, typename _Class, typename _Arg>
     struct __result_of_memobj<_Res _Class::*, reference_wrapper<_Arg>&>
-    : __result_of_memobj<_Res _Class::*, reference_wrapper<_Arg>>
+    : __result_of_memobj_ref<_Res _Class::*, _Arg&>
+    { };
+
+  template<typename _Res, typename _Class, typename _Arg>
+    struct __result_of_memobj<_Res _Class::*, const reference_wrapper<_Arg>&>
+    : __result_of_memobj_ref<_Res _Class::*, _Arg&>
     { };
 
   template<typename _Res, typename _Class, typename _Arg>
     struct __result_of_memobj<_Res _Class::*, reference_wrapper<_Arg>&&>
-    : __result_of_memobj<_Res _Class::*, reference_wrapper<_Arg>>
+    : __result_of_memobj_ref<_Res _Class::*, _Arg&>
+    { };
+
+  template<typename _Res, typename _Class, typename _Arg>
+    struct __result_of_memobj<_Res _Class::*, const reference_wrapper<_Arg>&&>
+    : __result_of_memobj_ref<_Res _Class::*, _Arg&>
     { };
 
   template<typename _Res, typename _Class, typename _Arg, typename... _Args>
     struct __result_of_memfun<_Res _Class::*, reference_wrapper<_Arg>, _Args...>
-    : __result_of_memfun<_Res _Class::*, _Arg&, _Args...>
-    {
-      typedef typename
-	__result_of_memfun_ref<_Res _Class::*, _Arg&, _Args...>::type type;
-    };
+    : __result_of_memfun_ref<_Res _Class::*, _Arg&, _Args...>
+    { };
 
   template<typename _Res, typename _Class, typename _Arg, typename... _Args>
     struct __result_of_memfun<_Res _Class::*, reference_wrapper<_Arg>&,
 			      _Args...>
-    : __result_of_memfun<_Res _Class::*, reference_wrapper<_Arg>, _Args...>
+    : __result_of_memfun_ref<_Res _Class::*, _Arg&, _Args...>
+    { };
+
+  template<typename _Res, typename _Class, typename _Arg, typename... _Args>
+    struct __result_of_memfun<_Res _Class::*, const reference_wrapper<_Arg>&,
+			      _Args...>
+    : __result_of_memfun_ref<_Res _Class::*, _Arg&, _Args...>
     { };
 
   template<typename _Res, typename _Class, typename _Arg, typename... _Args>
     struct __result_of_memfun<_Res _Class::*, reference_wrapper<_Arg>&&,
 			      _Args...>
-    : __result_of_memfun<_Res _Class::*, reference_wrapper<_Arg>, _Args...>
+    : __result_of_memfun_ref<_Res _Class::*, _Arg&, _Args...>
+    { };
+
+  template<typename _Res, typename _Class, typename _Arg, typename... _Args>
+    struct __result_of_memfun<_Res _Class::*, const reference_wrapper<_Arg>&&,
+			      _Args...>
+    : __result_of_memfun_ref<_Res _Class::*, _Arg&, _Args...>
     { };
 
   template<bool, bool, typename _Functor, typename... _ArgTypes>
