@@ -1,3 +1,15 @@
+2015-12-11  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_rtx_costs)
+	(s390_cannot_force_const_mem, legitimate_pic_operand_p)
+	(s390_preferred_reload_class, s390_reload_symref_address)
+	(legitimate_reload_constant_p, print_operand): Wide int support.
+	* config/s390/predicates.md ("const0_operand", "constm1_operand")
+	("consttable_operand"): Likewise.
+	("larl_operand"): Add a comment.
+	* config/s390/s390.h (TARGET_SUPPORTS_WIDE_INT): Enable wide int
+	support.
+
 2015-12-11  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.h (TARGET_SUPPORTS_WIDE_INT): Define.
@@ -30,7 +42,7 @@
 	("*setmem_long_and_31z"): New define_insn.
 	("setmem_long_<P:mode>"): New expanders.
 	* (<modesize>): New mode attribute
-	
+
 2015-12-11  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.md ("movstr", "*movstr"): Fix warning.

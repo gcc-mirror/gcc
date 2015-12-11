@@ -155,6 +155,8 @@ enum processor_flags
 #define SWITCHABLE_TARGET 1
 #endif
 
+#define TARGET_SUPPORTS_WIDE_INT 1
+
 /* Use the ABI introduced with IBM z13:
    - pass vector arguments <= 16 bytes in VRs
    - align *all* vector types to 8 bytes  */
