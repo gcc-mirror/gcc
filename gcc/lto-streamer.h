@@ -407,9 +407,6 @@ struct lto_simple_header : lto_header
 
 struct lto_simple_header_with_strings : lto_simple_header
 {
-  /* Size of main gimple body of function.  */
-  int32_t main_size;
-
   /* Size of the string table.  */
   int32_t string_size;
 };
