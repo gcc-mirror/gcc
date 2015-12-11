@@ -1,5 +1,13 @@
 2015-12-11  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	PR rtl-optimization/67778
+	PR rtl-optimization/68634
+	* shrink-wrap.c (try_shrink_wrapping): Add a comment about why we want
+	to put the prologue earlier.  When determining if an earlier block is
+	suitable, make sure it dominates every block reachable from it.
+
+2015-12-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR rtl-optimization/68814
 	* rtlanal.c (set_noop_p): Use BITS_BIG_ENDIAN instead of
 	BYTES_BIG_ENDIAN.
