@@ -1,3 +1,13 @@
+2015-12-11  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR target/26427
+	PR target/33120
+	PR testsuite/35710
+
+	* config/darwin.c (darwin_use_anchors_for_symbol_p): Fix indention and
+	trailing whitespace.
+
 2015-12-11  Jan Beulich  <jbeulich@suse.com>
 
 	* cfgexpand.c (expand_one_var): Exit early for static and
