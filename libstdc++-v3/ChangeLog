@@ -1,3 +1,10 @@
+2015-12-11  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/68139
+
+	* libsupc++/nested_exception.h (_S_rethrow): Use std::__addressof.
+	* testsuite/18_support/nested_exception/68139.cc: New.
+
 2015-12-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/experimental/memory/shared_ptr/assign/assign.cc: Replace

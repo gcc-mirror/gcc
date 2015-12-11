@@ -37,6 +37,7 @@
 #else
 
 #include <bits/c++config.h>
+#include <bits/move.h>
 
 #if ATOMIC_INT_LOCK_FREE < 2
 #  error This platform does not support exception propagation.
@@ -142,7 +143,8 @@ namespace std
     {
       static void _S_rethrow(const _Tp& __t)
       {
-	if (auto __tp = dynamic_cast<const nested_exception*>(&__t))
+	if (auto __tp =
+            dynamic_cast<const nested_exception*>(std::__addressof(__t)))
 	  __tp->rethrow_nested();
       }
     };
