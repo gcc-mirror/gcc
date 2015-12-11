@@ -134,7 +134,6 @@
 
 2015-12-10  Uros Bizjak  <ubizjak@gmail.com>
 
-	PR tree-optimization/68619
 	* graphite-scop-detection.c (gather_bbs::before_dom_children):
 	Change return type to an edge.  Always return NULL.
 
