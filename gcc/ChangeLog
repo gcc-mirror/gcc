@@ -1,3 +1,7 @@
+2015-12-11  Tom de Vries  <tom@codesourcery.com>
+
+	* passes.def: Remove unpaired TERMINATE_PASS_LIST.
+
 2015-12-11  Michael Matz  <matz@suse.de>
 
 	* hash-map.h (hash_map::hash_map): Gather statistics only
