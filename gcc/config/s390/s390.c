@@ -5237,7 +5237,12 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
   else if (TARGET_MVCLE)
     {
       val = force_not_mem (convert_modes (Pmode, QImode, val, 1));
-      emit_insn (gen_setmem_long (dst, convert_to_mode (Pmode, len, 1), val));
+      if (TARGET_64BIT)
+	emit_insn (gen_setmem_long_di (dst, convert_to_mode (Pmode, len, 1),
+				       val));
+      else
+	emit_insn (gen_setmem_long_si (dst, convert_to_mode (Pmode, len, 1),
+				       val));
     }
 
   else

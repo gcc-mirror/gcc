@@ -1,5 +1,14 @@
 2015-12-11  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_expand_setmem): Use new expanders.
+	* config/s390/s390.md ("*setmem_long")
+	("*setmem_long_and", "*setmem_long_31z"): Fix warnings.
+	("*setmem_long_and_31z"): New define_insn.
+	("setmem_long_<P:mode>"): New expanders.
+	* (<modesize>): New mode attribute
+	
+2015-12-11  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* config/s390/s390.md ("movstr", "*movstr"): Fix warning.
 	("movstr<P:mode>"): New indirect expanders used by "movstr".
 
