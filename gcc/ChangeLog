@@ -1,3 +1,8 @@
+2015-12-11  Jan Beulich  <jbeulich@suse.com>
+
+	* cfgexpand.c (expand_one_var): Exit early for static and
+	external variables when adjusting stack alignment related.
+
 2015-12-11  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_rtx_costs)
