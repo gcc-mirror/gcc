@@ -410,7 +410,6 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_rtl_unroll_loops);
 	  NEXT_PASS (pass_rtl_doloop);
 	  NEXT_PASS (pass_rtl_loop_done);
-	  TERMINATE_PASS_LIST ()
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_web);
       NEXT_PASS (pass_rtl_cprop);
