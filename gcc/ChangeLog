@@ -1,5 +1,10 @@
 2015-12-11  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
+	* tree-vect-stmts.c (vectorizable_mask_load_store): Check
+	mask vectype.
+
+2015-12-11  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
 	* config/i386/i386.c (ix86_get_mask_mode): Use scalar
 	modes for 32 and 16 byte boolean vectors when possible.
 
