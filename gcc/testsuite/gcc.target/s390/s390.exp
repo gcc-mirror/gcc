@@ -76,11 +76,11 @@ if ![info exists DEFAULT_CFLAGS] then {
 # Initialize `dg'.
 dg-init
 
-set hotpatch_tests $srcdir/$subdir/hotpatch-\[0-9\]*.c
+set md_tests $srcdir/$subdir/md/*.c
 
 # Main loop.
 dg-runtest [lsort [prune [glob -nocomplain $srcdir/$subdir/*.\[cS\]] \
-			 $hotpatch_tests]] "" $DEFAULT_CFLAGS
+			 $md_tests]] "" $DEFAULT_CFLAGS
 
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.\[cS\]]] \
 	"" $DEFAULT_CFLAGS
@@ -88,11 +88,26 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.\[cS\]]] \
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/target-attribute/*.\[cS\]]] \
 	"" $DEFAULT_CFLAGS
 
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/md/*.\[cS\]]] \
+	"" $DEFAULT_CFLAGS
+
 # Additional hotpatch torture tests.
 torture-init
-set HOTPATCH_TEST_OPTS [list -Os -O0 -O1 -O2 -O3]
-set-torture-options $HOTPATCH_TEST_OPTS
-gcc-dg-runtest [lsort [glob -nocomplain $hotpatch_tests]] "" $DEFAULT_CFLAGS
+set-torture-options [list -Os -O0 -O1 -O2 -O3]
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/hotpatch-\[0-9\]*.c]] \
+	"" $DEFAULT_CFLAGS
+torture-finish
+
+# Additional md torture tests.
+torture-init
+set MD_TEST_OPTS [list \
+	{-Os -march=z900} {-Os -march=z13} \
+	{-O0 -march=z900} {-O0 -march=z13} \
+	{-O1 -march=z900} {-O1 -march=z13} \
+	{-O2 -march=z900} {-O2 -march=z13} \
+	{-O3 -march=z900} {-O3 -march=z13}]
+set-torture-options $MD_TEST_OPTS
+gcc-dg-runtest [lsort [glob -nocomplain $md_tests]] "" $DEFAULT_CFLAGS
 torture-finish
 
 # All done.
