@@ -1,3 +1,8 @@
+2015-12-11  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* config/i386/i386.c (ix86_get_mask_mode): Use scalar
+	modes for 32 and 16 byte boolean vectors when possible.
+
 2015-12-11  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/67778
