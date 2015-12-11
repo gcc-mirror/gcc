@@ -1323,7 +1323,7 @@ s390_tm_ccmode (rtx op1, rtx op2, bool mixed)
 {
   int bit0, bit1;
 
-  /* ??? Fixme: should work on CONST_DOUBLE as well.  */
+  /* ??? Fixme: should work on CONST_WIDE_INT as well.  */
   if (GET_CODE (op1) != CONST_INT || GET_CODE (op2) != CONST_INT)
     return VOIDmode;
 
@@ -3355,6 +3355,7 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case LABEL_REF:
     case SYMBOL_REF:
     case CONST_DOUBLE:
+    case CONST_WIDE_INT:
     case MEM:
       *total = 0;
       return true;
@@ -3662,7 +3663,7 @@ tls_symbolic_reference_mentioned_p (rtx op)
 
 /* Return true if OP is a legitimate general operand when
    generating PIC code.  It is given that flag_pic is on
-   and that OP satisfies CONSTANT_P or is a CONST_DOUBLE.  */
+   and that OP satisfies CONSTANT_P.  */
 
 int
 legitimate_pic_operand_p (rtx op)
@@ -3677,7 +3678,7 @@ legitimate_pic_operand_p (rtx op)
 }
 
 /* Returns true if the constant value OP is a legitimate general operand.
-   It is given that OP satisfies CONSTANT_P or is a CONST_DOUBLE.  */
+   It is given that OP satisfies CONSTANT_P.  */
 
 static bool
 s390_legitimate_constant_p (machine_mode mode, rtx op)
@@ -3731,6 +3732,7 @@ s390_cannot_force_const_mem (machine_mode mode, rtx x)
     {
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_WIDE_INT:
     case CONST_VECTOR:
       /* Accept all non-symbolic constants.  */
       return false;
@@ -3831,8 +3833,9 @@ legitimate_reload_constant_p (rtx op)
     return true;
 
   /* Accept double-word operands that can be split.  */
-  if (GET_CODE (op) == CONST_INT
-      && trunc_int_for_mode (INTVAL (op), word_mode) != INTVAL (op))
+  if (GET_CODE (op) == CONST_WIDE_INT
+      || (GET_CODE (op) == CONST_INT
+	  && trunc_int_for_mode (INTVAL (op), word_mode) != INTVAL (op)))
     {
       machine_mode dword_mode = word_mode == SImode ? DImode : TImode;
       rtx hi = operand_subword (op, 0, 0, dword_mode);
@@ -3896,6 +3899,7 @@ s390_preferred_reload_class (rtx op, reg_class_t rclass)
       case CONST_VECTOR:
       case CONST_DOUBLE:
       case CONST_INT:
+      case CONST_WIDE_INT:
 	if (reg_class_subset_p (GENERAL_REGS, rclass)
 	    && legitimate_reload_constant_p (op))
 	  return GENERAL_REGS;
@@ -4047,6 +4051,7 @@ s390_reload_symref_address (rtx reg, rtx mem, rtx scratch, bool tomem)
   /* Reload might have pulled a constant out of the literal pool.
      Force it back in.  */
   if (CONST_INT_P (mem) || GET_CODE (mem) == CONST_DOUBLE
+      || GET_CODE (mem) == CONST_WIDE_INT
       || GET_CODE (mem) == CONST_VECTOR
       || GET_CODE (mem) == CONST)
     mem = force_const_mem (GET_MODE (reg), mem);
@@ -7238,15 +7243,16 @@ print_operand (FILE *file, rtx x, int code)
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, ival);
       break;
 
-    case CONST_DOUBLE:
-      gcc_assert (GET_MODE (x) == VOIDmode);
+    case CONST_WIDE_INT:
       if (code == 'b')
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, CONST_DOUBLE_LOW (x) & 0xff);
+        fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+		 CONST_WIDE_INT_ELT (x, 0) & 0xff);
       else if (code == 'x')
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, CONST_DOUBLE_LOW (x) & 0xffff);
+        fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+		 CONST_WIDE_INT_ELT (x, 0) & 0xffff);
       else if (code == 'h')
         fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-		 ((CONST_DOUBLE_LOW (x) & 0xffff) ^ 0x8000) - 0x8000);
+		 ((CONST_WIDE_INT_ELT (x, 0) & 0xffff) ^ 0x8000) - 0x8000);
       else
 	{
 	  if (code == 0)
