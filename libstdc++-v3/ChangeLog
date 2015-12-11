@@ -1,3 +1,25 @@
+2015-12-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Use EXTENSION_MAPPING tag. Add new headers
+	to INPUT. Remove obsolete XML_SCHEMA and XML_DTD tags. Update
+	PREDEFINED macros. Set BRIEF_MEMBER_DESC for man-pages.
+	* include/backward/strstream: Correct @file comment.
+	* include/bits/forward_list.h: Improve Doxygen comments.
+	* include/bits/locale_facets_nonio.h: Likewise.
+	* include/debug/vector (_Safe_vector): Add @brief section to comment.
+	* include/experimental/fs_fwd.h: Correct @file comment.
+	* include/experimental/fs_ops.h: Likewise.
+	* include/experimental/string_view.tcc: Likewise.
+	* include/experimental/optional: Document experimental status.
+	* include/experimental/string_view: Correct @file comment.
+	* include/ext/pb_ds/detail/bin_search_tree_/traits.hpp: Reduce
+	whitespace to avoid Doxygen bug.
+	* include/std/bitset: Remove redundant @class Doxygen command. Add
+	parentheses to avoid Doxygen bug.
+	* include/std/mutex: Improve Doxygen comments.
+	* include/tr2/dynamic_bitset: Add missing @param documentation.
+	* scripts/run_doxygen: Rename man pages for std::experimental types.
+
 2015-12-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/abi.xml: Backport documentation improvements from

@@ -114,7 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-  /// mutex
+  /// The standard mutex type.
   class mutex : private __mutex_base
   {
   public:
@@ -158,7 +158,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return &_M_mutex; }
   };
 
-  /// recursive_mutex
+  /// The standard recursive mutex type.
   class recursive_mutex : private __recursive_mutex_base
   {
   public:
@@ -243,7 +243,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     };
 
-  /// timed_mutex
+  /// The standard timed mutex type.
   class timed_mutex
   : private __mutex_base, public __timed_mutex_impl<timed_mutex>
   {
@@ -295,7 +295,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return &_M_mutex; }
   };
 
-  /// recursive_timed_mutex
+  /// The standard recursive timed mutex type.
   class recursive_timed_mutex
   : private __recursive_mutex_base,
     public __timed_mutex_impl<recursive_timed_mutex>
@@ -360,13 +360,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// and manage it.
   struct adopt_lock_t { };
 
+  /// Tag used to prevent a scoped lock from acquiring ownership of a mutex.
   constexpr defer_lock_t	defer_lock { };
+
+  /// Tag used to prevent a scoped lock from blocking if a mutex is locked.
   constexpr try_to_lock_t	try_to_lock { };
+
+  /// Tag used to make a scoped lock take ownership of a locked mutex.
   constexpr adopt_lock_t	adopt_lock { };
 
-  /// @brief  Scoped lock idiom.
-  // Acquire the mutex here with a constructor call, then release with
-  // the destructor call in accordance with RAII style.
+  /** @brief A movable scoped lock type.
+   *
+   * A unique_lock controls mutex ownership within a scope. Ownership of the
+   * mutex can be delayed until after construction and can be transferred
+   * to another unique_lock by move construction or move assignment. If a
+   * mutex lock is owned when the destructor runs ownership will be released.
+   */
   template<typename _Mutex>
     class lock_guard
     {

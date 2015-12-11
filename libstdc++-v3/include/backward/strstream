@@ -40,9 +40,8 @@
 // MAY BE REMOVED in a future standard revision.  One should use the
 // header <sstream> instead.
 
-/** @file backward/strstream
- *  This is an internal header file, included by other library headers.
- *  Do not attempt to use it directly. @headername{sstream}
+/** @file strstream
+ *  This is a Standard C++ Library header.
  */
 
 #ifndef _BACKWARD_STRSTREAM
