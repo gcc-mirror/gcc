@@ -1,3 +1,8 @@
+2015-12-11  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer.h (lto_simple_header_with_strings): Remove
+	main_size field already in lto_simple_header.
+
 2015-12-11  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* tree-vect-stmts.c (vectorizable_mask_load_store): Check
