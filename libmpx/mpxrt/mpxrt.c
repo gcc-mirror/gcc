@@ -51,33 +51,10 @@
 #include <sys/prctl.h>
 #include <cpuid.h>
 #include "mpxrt-utils.h"
-
-#ifdef __i386__
-
-/* i386 directory size is 4MB */
-#define NUM_L1_BITS    20
-
-#define REG_IP_IDX      REG_EIP
-#define REX_PREFIX
-
-#define XSAVE_OFFSET_IN_FPMEM    sizeof (struct _libc_fpstate)
-
-#else /* __i386__ */
-
-/* x86_64 directory size is 2GB */
-#define NUM_L1_BITS   28
-
-#define REG_IP_IDX    REG_RIP
-#define REX_PREFIX    "0x48, "
-
-#define XSAVE_OFFSET_IN_FPMEM    0
-
-#endif /* !__i386__ */
+#include "mpxrt.h"
 
 #define MPX_ENABLE_BIT_NO 0
 #define BNDPRESERVE_BIT_NO 1
-
-const size_t MPX_L1_SIZE = (1UL << NUM_L1_BITS) * sizeof (void *);
 
 struct xsave_hdr_struct
 {
@@ -507,4 +484,11 @@ mpxrt_cleanup (void)
   __mpxrt_print_summary (num_bnd_chk, MPX_L1_SIZE);
   __mpxrt_utils_free ();
   process_specific_finish ();
+}
+
+/* Get address of bounds directory.  */
+void *
+get_bd ()
+{
+  return l1base;
 }

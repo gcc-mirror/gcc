@@ -1,3 +1,30 @@
+2015-12-11  Tsvetkova Alexandra  <aleksandra.tsvetkova@intel.com>
+
+	* mpxrt/Makefile.am (libmpx_la_LDFLAGS): Add -version-info
+	option.
+	* libmpxwrap/Makefile.am (libmpx_la_LDFLAGS): Likewise and
+	fix include path.
+	* libmpx/Makefile.in: Regenerate.
+	* mpxrt/Makefile.in: Regenerate.
+	* libmpxwrap/Makefile.in: Regenerate.
+	* mpxrt/libtool-version: New version.
+	* libmpxwrap/libtool-version: Likewise.
+	* mpxrt/libmpx.map: Add new version and a new symbol.
+	* mpxrt/mpxrt.h: New file.
+	* mpxrt/mpxrt.c (NUM_L1_BITS): Moved to mpxrt.h.
+	(REG_IP_IDX): Moved to mpxrt.h.
+	(REX_PREFIX): Moved to mpxrt.h.
+	(XSAVE_OFFSET_IN_FPMEM): Moved to mpxrt.h.
+	(MPX_L1_SIZE): Moved to mpxrt.h.
+	* libmpxwrap/mpx_wrappers.c (mpx_pointer): New type.
+	(mpx_bt_entry): New type.
+	(alloc_bt): New function.
+	(get_bt): New function.
+	(copy_if_possible): New function.
+	(copy_if_possible_from_end): New function.
+	(move_bounds): New function.
+	(__mpx_wrapper_memmove): Use move_bounds to copy bounds.
+
 2015-10-15  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR other/66887
