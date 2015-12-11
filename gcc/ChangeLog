@@ -1,3 +1,11 @@
+2015-12-11  Michael Matz  <matz@suse.de>
+
+	* hash-map.h (hash_map::hash_map): Gather statistics only
+	when GATHER_STATISTICS is true.
+	* hash-set.h (hash_set::hash_set): Ditto.
+	* hash-table.h (hash_table::hash_table): Ditto.
+	(hash_table::create_ggc): Ditto.
+
 2015-12-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/68064
@@ -3242,6 +3250,7 @@
 
 2015-11-19  Michael Matz  <matz@suse.de>
 
+	PR rtl-optimization/68392
 	* fwprop.c (update_uses): Use flag_checking instead of
 	gcc_checking_assert.
 
