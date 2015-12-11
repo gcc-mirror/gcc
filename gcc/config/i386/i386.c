@@ -6152,7 +6152,7 @@ ix86_valid_target_attribute_tree (tree args,
       if (option_strings[IX86_FUNCTION_SPECIFIC_ARCH])
 	{
 	  opts->x_ix86_arch_string
-	    = option_strings[IX86_FUNCTION_SPECIFIC_ARCH];
+	    = ggc_strdup (option_strings[IX86_FUNCTION_SPECIFIC_ARCH]);
 
 	  /* If arch= is set,  clear all bits in x_ix86_isa_flags,
 	     except for ISA_64BIT, ABI_64, ABI_X32, and CODE16.  */
@@ -6166,7 +6166,8 @@ ix86_valid_target_attribute_tree (tree args,
 	opts->x_ix86_arch_string = NULL;
 
       if (option_strings[IX86_FUNCTION_SPECIFIC_TUNE])
-	opts->x_ix86_tune_string = option_strings[IX86_FUNCTION_SPECIFIC_TUNE];
+	opts->x_ix86_tune_string
+	  = ggc_strdup (option_strings[IX86_FUNCTION_SPECIFIC_TUNE]);
       else if (orig_tune_defaulted)
 	opts->x_ix86_tune_string = NULL;
 
