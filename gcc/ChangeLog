@@ -1,3 +1,12 @@
+2015-12-11  Martin Liska  <mliska@suse.cz>
+
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/67484
+	* config/i386/i386.c (ix86_valid_target_attribute_tree):
+	Use ggc_strdup to copy option_strings to opts->x_ix86_arch_string and
+	opts->x_ix86_tune_string.
+
 2015-12-11  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer.h (lto_simple_header_with_strings): Remove
