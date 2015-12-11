@@ -2997,23 +2997,23 @@ darwin_asm_output_anchor (rtx symbol)
 	   SYMBOL_REF_BLOCK_OFFSET (symbol));
 }
 
-/* Disable section anchoring on any section containing a zero-sized 
+/* Disable section anchoring on any section containing a zero-sized
    object.  */
 bool
 darwin_use_anchors_for_symbol_p (const_rtx symbol)
 {
-  if (DARWIN_SECTION_ANCHORS && flag_section_anchors) 
+  if (DARWIN_SECTION_ANCHORS && flag_section_anchors)
     {
       section *sect;
       /* If the section contains a zero-sized object it's ineligible.  */
       sect = SYMBOL_REF_BLOCK (symbol)->sect;
       /* This should have the effect of disabling anchors for vars that follow
-         any zero-sized one, in a given section.  */     
+         any zero-sized one, in a given section.  */
       if (sect->common.flags & SECTION_NO_ANCHOR)
 	return false;
 
-        /* Also check the normal reasons for suppressing.  */
-        return default_use_anchors_for_symbol_p (symbol);
+      /* Also check the normal reasons for suppressing.  */
+      return default_use_anchors_for_symbol_p (symbol);
     }
   else
     return false;
