@@ -392,15 +392,13 @@ arg_promotion (machine_mode mode)
 /* Implement TARGET_FUNCTION_ARG.  */
 
 static rtx
-nvptx_function_arg (cumulative_args_t, machine_mode mode,
+nvptx_function_arg (cumulative_args_t ARG_UNUSED (cum_v), machine_mode mode,
 		    const_tree, bool named)
 {
-  if (mode == VOIDmode)
+  if (mode == VOIDmode || !named)
     return NULL_RTX;
 
-  if (named)
-    return gen_reg_rtx (mode);
-  return NULL_RTX;
+  return gen_reg_rtx (mode);
 }
 
 /* Implement TARGET_FUNCTION_INCOMING_ARG.  */
@@ -410,10 +408,8 @@ nvptx_function_incoming_arg (cumulative_args_t cum_v, machine_mode mode,
 			     const_tree, bool named)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  if (mode == VOIDmode)
-    return NULL_RTX;
 
-  if (!named)
+  if (mode == VOIDmode || !named)
     return NULL_RTX;
 
   /* No need to deal with split modes here, the only case that can
@@ -433,6 +429,7 @@ nvptx_function_arg_advance (cumulative_args_t cum_v,
 			    bool ARG_UNUSED (named))
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   cum->count++;
 }
 
@@ -449,6 +446,7 @@ static bool
 nvptx_strict_argument_naming (cumulative_args_t cum_v)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   return cum->fntype == NULL_TREE || stdarg_p (cum->fntype);
 }
 
@@ -459,22 +457,30 @@ nvptx_function_arg_boundary (machine_mode mode, const_tree type)
 {
   unsigned int boundary = type ? TYPE_ALIGN (type) : GET_MODE_BITSIZE (mode);
 
-  if (boundary > BITS_PER_WORD)
-    return 2 * BITS_PER_WORD;
-
-  if (mode == BLKmode)
+  if (boundary > UNITS_PER_WORD * BITS_PER_UNIT)
+    boundary = UNITS_PER_WORD * BITS_PER_UNIT;
+  else if (mode == BLKmode)
     {
       HOST_WIDE_INT size = int_size_in_bytes (type);
-      if (size > 4)
-        return 2 * BITS_PER_WORD;
-      if (boundary < BITS_PER_WORD)
-        {
-          if (size >= 3)
-            return BITS_PER_WORD;
-          if (size >= 2)
-            return 2 * BITS_PER_UNIT;
-        }
+
+      if (size > UNITS_PER_WORD)
+	boundary = UNITS_PER_WORD;
+      else
+	{
+	  /* Keep rounding up until only 1 bit set.  */
+	  unsigned lsb = (unsigned) size;
+
+	  boundary = 0;
+	  do
+	    {
+	      boundary += lsb;
+	      lsb = boundary & -boundary;
+	    }
+	  while (boundary != lsb);
+	}
+      boundary *= BITS_PER_UNIT;
     }
+
   return boundary;
 }
 
@@ -487,6 +493,7 @@ nvptx_libcall_value (machine_mode mode, const_rtx)
     /* Pretend to return in a hard reg for early uses before pseudos can be
        generated.  */
     return gen_rtx_REG (mode, NVPTX_RETURN_REGNUM);
+
   return gen_reg_rtx (mode);
 }
 
@@ -503,11 +510,8 @@ nvptx_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED,
 					     &unsignedp, NULL_TREE, 1);
   if (outgoing)
     return gen_rtx_REG (mode, NVPTX_RETURN_REGNUM);
-  if (cfun->machine->start_call == NULL_RTX)
-    /* Pretend to return in a hard reg for early uses before pseudos can be
-       generated.  */
-    return gen_rtx_REG (mode, NVPTX_RETURN_REGNUM);
-  return gen_reg_rtx (mode);
+
+  return nvptx_libcall_value (mode, NULL_RTX);
 }
 
 /* Implement TARGET_FUNCTION_VALUE_REGNO_P.  */
@@ -522,8 +526,8 @@ nvptx_function_value_regno_p (const unsigned int regno)
    reference in memory.  */
 
 static bool
-nvptx_pass_by_reference (cumulative_args_t, machine_mode mode,
-			 const_tree type, bool)
+nvptx_pass_by_reference (cumulative_args_t ARG_UNUSED (cum), machine_mode mode,
+			 const_tree type, bool ARG_UNUSED (named))
 {
   return !PASS_IN_REG_P (mode, type);
 }
@@ -572,10 +576,9 @@ nvptx_static_chain (const_tree fndecl, bool incoming_p)
   if (!DECL_STATIC_CHAIN (fndecl))
     return NULL;
 
-  if (incoming_p)
-    return gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
-  else
-    return gen_rtx_REG (Pmode, OUTGOING_STATIC_CHAIN_REGNUM);
+
+  return gen_rtx_REG (Pmode, (incoming_p ? STATIC_CHAIN_REGNUM
+			      : OUTGOING_STATIC_CHAIN_REGNUM));
 }
 
 /* Helper for write_arg.  Emit a single PTX argument of MODE, either
@@ -3829,8 +3832,7 @@ nvptx_handle_kernel_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       error ("%qE attribute only applies to functions", name);
       *no_add_attrs = true;
     }
-
-  else if (TREE_TYPE (TREE_TYPE (decl)) != void_type_node)
+  else if (!VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
     {
       error ("%qE attribute requires a void return type", name);
       *no_add_attrs = true;

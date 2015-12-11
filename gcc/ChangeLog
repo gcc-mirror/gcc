@@ -1,3 +1,18 @@
+2015-12-11  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.h (RETURN_ADDR_REGNO): Delete.
+	(OUTGOING_ARG_POINTER_REGNUM): Delete.
+	(ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL): Delete.
+	(REGISTER_NAMES): Name static chain regs.
+	* config/nvptx/nvptx.c (nvptx_function_arg): Add ARG_UNUSED, merge
+	ifs.
+	(nvptx_incoming_arg): Merge ifs.
+	(nvptx_function_arg_boundary): Reimplement to avoid mixing units.
+	(nvptx_function_value): Tail call nvptx_libcall_value.
+	(nvptx_pass_by_reference): Add ARG_UNUSED.
+	(nvptx_static_chain): Use conditional op.
+	(nvptx_handle_kernel_attribute): Use VOID_TYPE_P.
+
 2015-12-11  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 

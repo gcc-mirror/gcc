@@ -153,10 +153,8 @@ enum reg_class
 #define NVPTX_RETURN_REGNUM 4
 #define FRAME_POINTER_REGNUM 15
 #define ARG_POINTER_REGNUM 14
-#define RETURN_ADDR_REGNO 13
 
 #define STATIC_CHAIN_REGNUM 12
-#define OUTGOING_ARG_POINTER_REGNUM 11
 #define OUTGOING_STATIC_CHAIN_REGNUM 10
 
 #define FIRST_PARM_OFFSET(FNDECL) ((void)(FNDECL), 0)
@@ -251,13 +249,10 @@ struct GTY(()) machine_function
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "\t// #NO_APP \n"
 
-#define ASM_OUTPUT_COMMON(stream, name, size, rounded)
-#define ASM_OUTPUT_LOCAL(stream, name, size, rounded)
-
 #define REGISTER_NAMES							\
   {									\
-    "%hr0", "%outargs", "%hfp", "%hr3", "%retval", "%retval_in", "%hr6", "%hr7",	\
-    "%hr8", "%hr9", "%hr10", "%hr11", "%hr12", "%hr13", "%argp", "%frame" \
+    "%hr0", "%outargs", "%hfp", "%hr3", "%retval", "%hr5", "%hr6", "%hr7",	\
+    "%hr8", "%hr9", "%chain_out", "%hr11", "%chain_in", "%hr13", "%argp", "%frame" \
   }
 
 #define DBX_REGISTER_NUMBER(N) N
