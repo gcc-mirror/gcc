@@ -1,5 +1,9 @@
 2015-12-11  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* gcc.target/s390/md/setmem_long-1.c: New test.
+
+2015-12-11  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* gcc.target/s390/md/movstr-1.c: New test.
 	* gcc.target/s390/s390.exp: Add subdir md.
 	Do not run hotpatch tests twice.
