@@ -1550,6 +1550,9 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
 
   if (TREE_TYPE (var) != error_mark_node && TREE_CODE (var) == VAR_DECL)
     {
+      if (is_global_var (var))
+	return 0;
+
       /* Because we don't know if VAR will be in register or on stack,
 	 we conservatively assume it will be on stack even if VAR is
 	 eventually put into register after RA pass.  For non-automatic
