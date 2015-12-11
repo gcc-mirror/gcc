@@ -1,5 +1,9 @@
-2015-12-11  Martin Liska  <mliska@suse.cz>
+2015-12-11  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* config/s390/s390.md ("movstr", "*movstr"): Fix warning.
+	("movstr<P:mode>"): New indirect expanders used by "movstr".
+
+2015-12-11  Martin Liska  <mliska@suse.cz>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/67484
