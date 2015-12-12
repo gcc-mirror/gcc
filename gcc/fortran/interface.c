@@ -2020,7 +2020,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
   /* F2008, C1241.  */
   if (formal->attr.pointer && formal->attr.contiguous
-      && !gfc_is_simply_contiguous (actual, true))
+      && !gfc_is_simply_contiguous (actual, true, false))
     {
       if (where)
 	gfc_error ("Actual argument to contiguous pointer dummy %qs at %L "
@@ -2131,15 +2131,17 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
   if (formal->attr.codimension)
     {
-      /* F2008, 12.5.2.8.  */
+      /* F2008, 12.5.2.8 + Corrig 2 (IR F08/0048).  */
+      /* F2015, 12.5.2.8.  */
       if (formal->attr.dimension
 	  && (formal->attr.contiguous || formal->as->type != AS_ASSUMED_SHAPE)
 	  && gfc_expr_attr (actual).dimension
-	  && !gfc_is_simply_contiguous (actual, true))
+	  && !gfc_is_simply_contiguous (actual, true, true))
 	{
 	  if (where)
 	    gfc_error ("Actual argument to %qs at %L must be simply "
-		       "contiguous", formal->name, &actual->where);
+		       "contiguous or an element of such an array",
+		       formal->name, &actual->where);
 	  return 0;
 	}
 
@@ -2179,7 +2181,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       && (actual->symtree->n.sym->attr.asynchronous
          || actual->symtree->n.sym->attr.volatile_)
       &&  (formal->attr.asynchronous || formal->attr.volatile_)
-      && actual->rank && formal->as && !gfc_is_simply_contiguous (actual, true)
+      && actual->rank && formal->as
+      && !gfc_is_simply_contiguous (actual, true, false)
       && ((formal->as->type != AS_ASSUMED_SHAPE
 	   && formal->as->type != AS_ASSUMED_RANK && !formal->attr.pointer)
 	  || formal->attr.contiguous))

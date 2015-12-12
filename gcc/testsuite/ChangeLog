@@ -1,3 +1,8 @@
+2014-12-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45859
+	* gfortran.dg/coarray_args_2.f90: Remove dg-error.
+
 2015-12-12  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/pr67808.c: Add -mlong-double-128 option.

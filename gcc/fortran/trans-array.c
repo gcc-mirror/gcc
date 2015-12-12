@@ -7386,7 +7386,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 		  && ref->u.ar.as->type != AS_ASSUMED_RANK
 		  && ref->u.ar.as->type != AS_ASSUMED_SHAPE)
 		      ||
-	     gfc_is_simply_contiguous (expr, false));
+	     gfc_is_simply_contiguous (expr, false, true));
 
   no_pack = contiguous && no_pack;
 
@@ -7464,7 +7464,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
     }
 
   if (g77 || (fsym && fsym->attr.contiguous
-	      && !gfc_is_simply_contiguous (expr, false)))
+	      && !gfc_is_simply_contiguous (expr, false, true)))
     {
       tree origptr = NULL_TREE;
 
