@@ -5386,6 +5386,7 @@ extern void gt_pch_nx (tree &);
 extern void gt_pch_nx (tree &, gt_pointer_operator, void *);
 
 extern bool nonnull_arg_p (const_tree);
+extern bool is_redundant_typedef (const_tree);
 
 extern location_t
 set_source_range (tree expr, location_t start, location_t finish);

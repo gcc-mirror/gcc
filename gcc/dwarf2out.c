@@ -3319,7 +3319,6 @@ static void gen_typedef_die (tree, dw_die_ref);
 static void gen_type_die (tree, dw_die_ref);
 static void gen_block_die (tree, dw_die_ref);
 static void decls_for_scope (tree, dw_die_ref);
-static inline int is_redundant_typedef (const_tree);
 static bool is_naming_typedef_decl (const_tree);
 static inline dw_die_ref get_context_die (tree);
 static void gen_namespace_die (tree, dw_die_ref);
@@ -21117,11 +21116,11 @@ decls_for_scope (tree stmt, dw_die_ref context_die)
 
 /* Is this a typedef we can avoid emitting?  */
 
-static inline int
+bool
 is_redundant_typedef (const_tree decl)
 {
   if (TYPE_DECL_IS_STUB (decl))
-    return 1;
+    return true;
 
   if (DECL_ARTIFICIAL (decl)
       && DECL_CONTEXT (decl)
@@ -21129,9 +21128,9 @@ is_redundant_typedef (const_tree decl)
       && TREE_CODE (TYPE_NAME (DECL_CONTEXT (decl))) == TYPE_DECL
       && DECL_NAME (decl) == DECL_NAME (TYPE_NAME (DECL_CONTEXT (decl))))
     /* Also ignore the artificial member typedef for the class name.  */
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
 /* Return TRUE if TYPE is a typedef that names a type for linkage
