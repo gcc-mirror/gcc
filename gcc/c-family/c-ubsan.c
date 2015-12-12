@@ -124,12 +124,17 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
   t = fold_convert_loc (loc, op1_utype, op1);
   t = fold_build2 (GT_EXPR, boolean_type_node, t, uprecm1);
 
+  /* If this is not a signed operation, don't perform overflow checks.
+     Also punt on bit-fields.  */
+  if (!INTEGRAL_TYPE_P (type0)
+      || TYPE_OVERFLOW_WRAPS (type0)
+      || GET_MODE_BITSIZE (TYPE_MODE (type0)) != TYPE_PRECISION (type0))
+    ;
+
   /* For signed x << y, in C99/C11, the following:
      (unsigned) x >> (uprecm1 - y)
      if non-zero, is undefined.  */
-  if (code == LSHIFT_EXPR
-      && !TYPE_UNSIGNED (type0)
-      && flag_isoc99)
+  else if (code == LSHIFT_EXPR && flag_isoc99 && cxx_dialect < cxx11)
     {
       tree x = fold_build2 (MINUS_EXPR, op1_utype, uprecm1,
 			    fold_convert (op1_utype, unshare_expr (op1)));
@@ -142,9 +147,7 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
   /* For signed x << y, in C++11 and later, the following:
      x < 0 || ((unsigned) x >> (uprecm1 - y))
      if > 1, is undefined.  */
-  if (code == LSHIFT_EXPR
-      && !TYPE_UNSIGNED (type0)
-      && (cxx_dialect >= cxx11))
+  else if (code == LSHIFT_EXPR && cxx_dialect >= cxx11)
     {
       tree x = fold_build2 (MINUS_EXPR, op1_utype, uprecm1,
 			    fold_convert (op1_utype, unshare_expr (op1)));
