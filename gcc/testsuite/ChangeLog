@@ -1,3 +1,9 @@
+2015-12-12  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr67808.c: Add -mlong-double-128 option.
+	* g++.dg/cpp1y/pr58708.C: Test appropriate value for size of
+	wchar_t.
+
 2015-12-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR sanitizer/68418
