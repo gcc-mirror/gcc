@@ -1880,14 +1880,6 @@
    && reload_completed"
   [(clobber (const_int 0))]
 {
-#if HOST_BITS_PER_WIDE_INT == 32
-  emit_insn (gen_movsi (gen_highpart (SImode, operands[0]),
-			(INTVAL (operands[1]) < 0) ?
-			constm1_rtx :
-			const0_rtx));
-  emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
-			operands[1]));
-#else
   HOST_WIDE_INT low, high;
 
   low = trunc_int_for_mode (INTVAL (operands[1]), SImode);
@@ -1903,40 +1895,7 @@
 			  gen_highpart (SImode, operands[0])));
   else
     emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]), GEN_INT (low)));
-#endif
-  DONE;
-})
 
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-        (match_operand:DI 1 "const_double_operand" ""))]
-  "reload_completed
-   && (! TARGET_V9
-       || (! TARGET_ARCH64
-           && ((GET_CODE (operands[0]) == REG
-                && SPARC_INT_REG_P (REGNO (operands[0])))
-               || (GET_CODE (operands[0]) == SUBREG
-                   && GET_CODE (SUBREG_REG (operands[0])) == REG
-                   && SPARC_INT_REG_P (REGNO (SUBREG_REG (operands[0])))))))"
-  [(clobber (const_int 0))]
-{
-  emit_insn (gen_movsi (gen_highpart (SImode, operands[0]),
-			GEN_INT (CONST_DOUBLE_HIGH (operands[1]))));
-
-  /* Slick... but this trick loses if this subreg constant part
-     can be done in one insn.  */
-  if (CONST_DOUBLE_LOW (operands[1]) == CONST_DOUBLE_HIGH (operands[1])
-      && ! SPARC_SETHI32_P (CONST_DOUBLE_HIGH (operands[1]))
-      && ! SPARC_SIMM13_P (CONST_DOUBLE_HIGH (operands[1])))
-    {
-      emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
-			    gen_highpart (SImode, operands[0])));
-    }
-  else
-    {
-      emit_insn (gen_movsi (gen_lowpart (SImode, operands[0]),
-			    GEN_INT (CONST_DOUBLE_LOW (operands[1]))));
-    }
   DONE;
 })
 
@@ -2358,13 +2317,9 @@
 
   if (TARGET_ARCH64)
     {
-#if HOST_BITS_PER_WIDE_INT == 32
-      gcc_unreachable ();
-#else
       machine_mode mode = GET_MODE (operands[1]);
       rtx tem = simplify_subreg (DImode, operands[1], mode, 0);
       emit_insn (gen_movdi (operands[0], tem));
-#endif
     }
   else
     {
@@ -3682,17 +3637,7 @@
   operands[5] = gen_lowpart (SImode, operands[2]);
   operands[6] = gen_highpart (SImode, operands[0]);
   operands[7] = gen_highpart_mode (SImode, DImode, operands[1]);
-#if HOST_BITS_PER_WIDE_INT == 32
-  if (GET_CODE (operands[2]) == CONST_INT)
-    {
-      if (INTVAL (operands[2]) < 0)
-	operands[8] = constm1_rtx;
-      else
-	operands[8] = const0_rtx;
-    }
-  else
-#endif
-    operands[8] = gen_highpart_mode (SImode, DImode, operands[2]);
+  operands[8] = gen_highpart_mode (SImode, DImode, operands[2]);
 }
   [(set_attr "length" "2")])
 
@@ -3872,17 +3817,7 @@
   operands[5] = gen_lowpart (SImode, operands[2]);
   operands[6] = gen_highpart (SImode, operands[0]);
   operands[7] = gen_highpart (SImode, operands[1]);
-#if HOST_BITS_PER_WIDE_INT == 32
-  if (GET_CODE (operands[2]) == CONST_INT)
-    {
-      if (INTVAL (operands[2]) < 0)
-	operands[8] = constm1_rtx;
-      else
-	operands[8] = const0_rtx;
-    }
-  else
-#endif
-    operands[8] = gen_highpart_mode (SImode, DImode, operands[2]);
+  operands[8] = gen_highpart_mode (SImode, DImode, operands[2]);
 }
   [(set_attr "length" "2")])
 
@@ -5034,17 +4969,7 @@
   operands[5] = gen_lowpart (SImode, operands[0]);
   operands[6] = gen_highpart (SImode, operands[2]);
   operands[7] = gen_lowpart (SImode, operands[2]);
-#if HOST_BITS_PER_WIDE_INT == 32
-  if (GET_CODE (operands[3]) == CONST_INT)
-    {
-      if (INTVAL (operands[3]) < 0)
-	operands[8] = constm1_rtx;
-      else
-	operands[8] = const0_rtx;
-    }
-  else
-#endif
-    operands[8] = gen_highpart_mode (SImode, DImode, operands[3]);
+  operands[8] = gen_highpart_mode (SImode, DImode, operands[3]);
   operands[9] = gen_lowpart (SImode, operands[3]);
 })
 
