@@ -3863,7 +3863,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 		{
 		  gfc_error ("%qs argument of %qs intrinsic at %L has "
 			     "invalid permutation of dimensions (dimension "
-			     "%<%d%> duplicated)",
+			     "%qd duplicated)",
 			     gfc_current_intrinsic_arg[3]->name,
 			     gfc_current_intrinsic, &e->where, dim);
 		  return false;

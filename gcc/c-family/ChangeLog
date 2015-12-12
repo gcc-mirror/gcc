@@ -1,3 +1,9 @@
+2014-12-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/68815
+	* c-format.c (gcc_gfc_char_table): Add 'q' flag to remaining
+	specifiers (%d, %i,%u and %c).
+
 2015-12-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* c.opt (Wmisleading-indentation): Add to -Wall for C and C++.

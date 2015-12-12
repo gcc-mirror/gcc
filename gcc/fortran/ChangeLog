@@ -1,3 +1,11 @@
+2014-12-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/68815
+	* check.c (gfc_check_reshape): Replace %<%d%> by %qd.
+	* matchexp.c (gfc_match_defined_op_name): Use %qc.
+	* symbol.c (gfc_add_new_implicit_range,
+	gfc_merge_new_implicit): Ditto.
+
 2015-12-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* io.c (gfc_match_open): Fix indentation.
