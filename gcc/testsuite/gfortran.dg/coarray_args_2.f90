@@ -40,8 +40,7 @@ program rank_mismatch_02
   sync all
 
   call subr(ndim, a(1:1,2)) ! OK
-  call subr(ndim, a(1,2)) ! { dg-error "must be simply contiguous" }
-                          ! See also F08/0048 and PR 45859 about the validity
+  call subr(ndim, a(1,2)) ! See also F08/0048 and PR 45859 about the validity
   if (this_image() == 1) then
      write(*, *) 'OK'
   end if

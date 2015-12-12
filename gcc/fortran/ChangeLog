@@ -1,5 +1,16 @@
 2014-12-12  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/45859
+	* expr.c (gfc_is_simply_contiguous): Optionally permit array elements.
+	(gfc_check_pointer_assign): Update call.
+	* interface.c (compare_parameter): Ditto.
+	* trans-array.c (gfc_conv_array_parameter): Ditto.
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer,
+	conv_isocbinding_function): Ditto.
+	* gfortran.h (gfc_is_simply_contiguous): Update prototype.
+
+2014-12-12  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/68815
 	* check.c (gfc_check_reshape): Replace %<%d%> by %qd.
 	* matchexp.c (gfc_match_defined_op_name): Use %qc.

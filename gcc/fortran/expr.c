@@ -3683,7 +3683,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	 and F2008 must be allowed.  */
       if (rvalue->rank != 1)
 	{
-	  if (!gfc_is_simply_contiguous (rvalue, true))
+	  if (!gfc_is_simply_contiguous (rvalue, true, false))
 	    {
 	      gfc_error ("Rank remapping target must be rank 1 or"
 			 " simply contiguous at %L", &rvalue->where);
@@ -4601,7 +4601,7 @@ gfc_has_ultimate_pointer (gfc_expr *e)
    a "(::1)" is accepted.  */
 
 bool
-gfc_is_simply_contiguous (gfc_expr *expr, bool strict)
+gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
 {
   bool colon;
   int i;
@@ -4615,7 +4615,7 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict)
   else if (expr->expr_type != EXPR_VARIABLE)
     return false;
 
-  if (expr->rank == 0)
+  if (!permit_element && expr->rank == 0)
     return false;
 
   for (ref = expr->ref; ref; ref = ref->next)
