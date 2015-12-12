@@ -1,3 +1,9 @@
+2015-12-12  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR sanitizer/68418
+	* gcc.dg/ubsan/c99-wrapv-shift-1.c,
+	gcc.dg/ubsan/c99-wrapv-shift-2.c: New testcases.
+
 2015-12-11  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/68844
