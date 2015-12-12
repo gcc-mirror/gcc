@@ -506,6 +506,7 @@ extern enum cmodel sparc_cmodel;
 /* FIXME, this is wrong when TARGET_ARCH64 and TARGET_STACK_BIAS, because
    then %sp+2047 is 128-bit aligned so %sp is really only byte-aligned.  */
 #define STACK_BOUNDARY (TARGET_ARCH64 ? 128 : 64)
+
 /* Temporary hack until the FIXME above is fixed.  */
 #define SPARC_STACK_BOUNDARY_HACK (TARGET_ARCH64 && TARGET_STACK_BIAS)
 
@@ -1801,3 +1802,5 @@ extern int sparc_indent_opcode;
 
 /* Define this to 1 if the FE_EXCEPT values defined in fenv.h start at 1.  */
 #define SPARC_LOW_FE_EXCEPT_VALUES 0
+
+#define TARGET_SUPPORTS_WIDE_INT 1

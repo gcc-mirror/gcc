@@ -21,13 +21,12 @@
 
 ;; Return true if OP is the zero constant for MODE.
 (define_predicate "const_zero_operand"
-  (and (match_code "const_int,const_double,const_vector")
+  (and (match_code "const_int,const_wide_int,const_double,const_vector")
        (match_test "op == CONST0_RTX (mode)")))
 
-;; Return true if the integer representation of OP is
-;; all-ones.
+;; Return true if the integer representation of OP is all ones.
 (define_predicate "const_all_ones_operand"
-  (and (match_code "const_int,const_double,const_vector")
+  (and (match_code "const_int,const_wide_int,const_double,const_vector")
        (match_test "INTEGRAL_MODE_P (GET_MODE (op))")
        (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
 
@@ -47,20 +46,10 @@
 ;; instruction sign-extends immediate values just like all other SPARC
 ;; instructions, but interprets the extended result as an unsigned number.
 (define_predicate "uns_small_int_operand"
-  (match_code "const_int,const_double")
-{
-#if HOST_BITS_PER_WIDE_INT == 32
-  return ((GET_CODE (op) == CONST_INT && (unsigned) INTVAL (op) < 0x1000)
-	  || (GET_CODE (op) == CONST_DOUBLE
-	      && CONST_DOUBLE_HIGH (op) == 0
-	      && (unsigned) CONST_DOUBLE_LOW (op) - 0xFFFFF000 < 0x1000));
-#else
-  return (GET_CODE (op) == CONST_INT
-	  && ((INTVAL (op) >= 0 && INTVAL (op) < 0x1000)
-	      || (INTVAL (op) >= 0xFFFFF000
-                  && INTVAL (op) <= 0xFFFFFFFF)));
-#endif
-})
+  (and (match_code "const_int")
+       (match_test "((INTVAL (op) >= 0 && INTVAL (op) < 0x1000)
+		    || (INTVAL (op) >= 0xFFFFF000
+			&& INTVAL (op) <= 0xFFFFFFFF))")))
 
 ;; Return true if OP is a constant that can be loaded by the sethi instruction.
 ;; The first test avoids emitting sethi to load zero for example.
@@ -308,7 +297,7 @@
 ;; representable by a couple of 13-bit signed fields.  This is an
 ;; acceptable operand for most 3-address splitters.
 (define_predicate "arith_double_operand"
-  (match_code "const_int,const_double,reg,subreg")
+  (match_code "const_int,reg,subreg")
 {
   bool arith_simple_operand = arith_operand (op, mode);
   HOST_WIDE_INT m1, m2;
@@ -316,17 +305,11 @@
   if (TARGET_ARCH64 || arith_simple_operand)
     return arith_simple_operand;
 
-#if HOST_BITS_PER_WIDE_INT == 32
-  if (GET_CODE (op) != CONST_DOUBLE)
-    return false;
-  m1 = CONST_DOUBLE_LOW (op);
-  m2 = CONST_DOUBLE_HIGH (op);
-#else
   if (GET_CODE (op) != CONST_INT)
     return false;
+
   m1 = trunc_int_for_mode (INTVAL (op), SImode);
   m2 = trunc_int_for_mode (INTVAL (op) >> 32, SImode);
-#endif
 
   return SPARC_SIMM13_P (m1) && SPARC_SIMM13_P (m2);
 })
@@ -338,11 +321,9 @@
 
 ;; Return true if OP is suitable as second double operand for add/sub.
 (define_predicate "arith_double_add_operand"
-  (match_code "const_int,const_double,reg,subreg")
+  (match_code "const_int,reg,subreg")
 {
-  bool _arith_double_operand = arith_double_operand (op, mode);
-
-  if (_arith_double_operand)
+  if (arith_double_operand (op, mode))
     return true;
 
   return TARGET_ARCH64 && const_4096_operand (op, mode);
@@ -395,8 +376,8 @@
 		|| (TARGET_ARCH64
 		    && mode == DImode
 		    && INTVAL (XEXP (op, 2)) > 51)));
-  else
-    return register_operand (op, mode);
+
+  return register_operand (op, mode);
 })
 
 ;; Return true if OP is a valid operand for the source of a move insn.
@@ -419,9 +400,7 @@
 
   /* If 32-bit mode and this is a DImode constant, allow it
      so that the splits can be generated.  */
-  if (TARGET_ARCH32
-      && mode == DImode
-      && (GET_CODE (op) == CONST_DOUBLE || GET_CODE (op) == CONST_INT))
+  if (TARGET_ARCH32 && mode == DImode && GET_CODE (op) == CONST_INT)
     return true;
 
   if (mclass == MODE_FLOAT && GET_CODE (op) == CONST_DOUBLE)

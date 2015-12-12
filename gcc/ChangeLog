@@ -1,3 +1,33 @@
+2015-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.h (TARGET_SUPPORTS_WIDE_INT): Define to 1.
+	* config/sparc/sparc.c (sparc_emit_set_const64): Remove code
+	conditionalized on HOST_BITS_PER_WIDE_INT == 32.
+	(sparc_cannot_force_const_mem) <CONST_WIDE_INT>: New case.
+	<CONST_DOUBLE>: Remove VOIDmode test.
+	(epilogue_renumber) <CONST_WIDE_INT>: New case.
+	(sparc_print_operand): Remove support for CONST_DOUBLE with VOIDmode.
+	(sparc_assemble_integer): Likewise.
+	(set_extends): Likewise.
+	(sparc_rtx_costs) <CONST_INT>: Use SMALL_INT.
+	<CONST_WIDE_INT>: New case.
+	<CONST_DOUBLE>: Remove support for VOIDmode.
+	<MULT>: Remove support for CONST_DOUBLE with VOIDmode.
+	* config/sparc/predicates.md (const_zero_operand): Add const_wide_int.
+	(const_all_ones_operand): Likewise.
+	(uns_small_int_operand): Remove const_double and code conditionalized
+	on HOST_BITS_PER_WIDE_INT == 32.
+	(arith_double_operand): Likewise.
+	(arith_double_add_operand): Likewise.
+	(input_operand): Remove support for CONST_DOUBLE with DImode.
+	* config/sparc/sparc.md (DImode CONST_INT splitter): Remove code
+	conditionalized on HOST_BITS_PER_WIDE_INT == 32.
+	(DFmode CONST_DOUBLE splitter): Likewise.
+	(*adddi3_insn_sp32): Likewise.
+	(*subdi3_insn_sp32): Likewise.
+	(DImode logical splitter): Likewise.
+	(DImode CONST_DOUBLE splitter): Delete.
+
 2015-12-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR sanitizer/68418
