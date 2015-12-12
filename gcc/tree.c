@@ -5191,7 +5191,10 @@ free_lang_data_in_type (tree type)
       while (member)
 	{
 	  if (TREE_CODE (member) == FIELD_DECL
-	      || TREE_CODE (member) == TYPE_DECL)
+	      || (TREE_CODE (member) == TYPE_DECL
+		  && !DECL_IGNORED_P (member)
+		  && debug_info_level > DINFO_LEVEL_TERSE
+		  && !is_redundant_typedef (member)))
 	    {
 	      if (prev)
 		TREE_CHAIN (prev) = member;
@@ -5216,7 +5219,7 @@ free_lang_data_in_type (tree type)
       /* Remove TYPE_METHODS list.  While it would be nice to keep it
  	 to enable ODR warnings about different method lists, doing so
 	 seems to impractically increase size of LTO data streamed.
-	 Keep the infrmation if TYPE_METHODS was non-NULL. This is used
+	 Keep the information if TYPE_METHODS was non-NULL. This is used
 	 by function.c and pretty printers.  */
       if (TYPE_METHODS (type))
         TYPE_METHODS (type) = error_mark_node;
@@ -5666,7 +5669,10 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	  while (tem)
 	    {
 	      if (TREE_CODE (tem) == FIELD_DECL
-		  || TREE_CODE (tem) == TYPE_DECL)
+		  || (TREE_CODE (tem) == TYPE_DECL
+		      && !DECL_IGNORED_P (tem)
+		      && debug_info_level > DINFO_LEVEL_TERSE
+		      && !is_redundant_typedef (tem)))
 		fld_worklist_push (tem, fld);
 	      tem = TREE_CHAIN (tem);
 	    }

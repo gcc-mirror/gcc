@@ -1,3 +1,10 @@
+2015-12-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (free_lang_data_in_type, find_decls_types_r): Also free
+	unnecesary type decls.
+	* tree.h (is_redundant_typedef): Declare.
+	* dwarf2out.c (is_redundant_typedef): Export; booleanize
+
 2015-12-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.h (TARGET_SUPPORTS_WIDE_INT): Define to 1.
