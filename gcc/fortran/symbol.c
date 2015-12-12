@@ -165,7 +165,7 @@ gfc_add_new_implicit_range (int c1, int c2)
     {
       if (new_flag[i])
 	{
-	  gfc_error ("Letter %<%c%> already set in IMPLICIT statement at %C",
+	  gfc_error ("Letter %qc already set in IMPLICIT statement at %C",
 		     i + 'A');
 	  return false;
 	}
@@ -197,7 +197,7 @@ gfc_merge_new_implicit (gfc_typespec *ts)
 	{
 	  if (gfc_current_ns->set_flag[i])
 	    {
-	      gfc_error ("Letter %c already has an IMPLICIT type at %C",
+	      gfc_error ("Letter %qc already has an IMPLICIT type at %C",
 			 i + 'A');
 	      return false;
 	    }

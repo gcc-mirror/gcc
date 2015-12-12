@@ -69,7 +69,7 @@ gfc_match_defined_op_name (char *result, int error_flag)
   for (i = 0; name[i]; i++)
     if (!ISALPHA (name[i]))
       {
-	gfc_error ("Bad character %<%c%> in OPERATOR name at %C", name[i]);
+	gfc_error ("Bad character %qc in OPERATOR name at %C", name[i]);
 	return MATCH_ERROR;
       }
 
