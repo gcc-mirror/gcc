@@ -3251,9 +3251,11 @@ cgraph_node::get_untransformed_body (void)
 
   /* We may have renamed the declaration, e.g., a static function.  */
   name = lto_get_decl_name_mapping (file_data, name);
+  struct lto_in_decl_state *decl_state
+	 = lto_get_function_in_decl_state (file_data, decl);
 
   data = lto_get_section_data (file_data, LTO_section_function_body,
-			       name, &len);
+			       name, &len, decl_state->compressed);
   if (!data)
     fatal_error (input_location, "%s: section %s is missing",
 		 file_data->file_name,
@@ -3264,7 +3266,7 @@ cgraph_node::get_untransformed_body (void)
   lto_input_function_body (file_data, this, data);
   lto_stats.num_function_bodies++;
   lto_free_section_data (file_data, LTO_section_function_body, name,
-			 data, len);
+			 data, len, decl_state->compressed);
   lto_free_function_in_decl_state_for_node (this);
   /* Keep lto file data so ipa-inline-analysis knows about cross module
      inlining.  */
