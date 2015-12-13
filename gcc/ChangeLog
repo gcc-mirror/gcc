@@ -1,3 +1,8 @@
+2015-12-13  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-structalias.c (find_func_clobbers): Handle sizes and kinds
+	parameters of GOACC_paralllel.
+
 2015-12-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c (cgraph_node::get_untransformed_body): Pass compressed

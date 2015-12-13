@@ -5089,6 +5089,8 @@ find_func_clobbers (struct function *fn, gimple *origt)
 	  case BUILT_IN_GOACC_PARALLEL:
 	    {
 	      unsigned int fnpos, argpos;
+	      unsigned int implicit_use_args[2];
+	      unsigned int num_implicit_use_args = 0;
 	      switch (DECL_FUNCTION_CODE (decl))
 		{
 		case BUILT_IN_GOMP_PARALLEL:
@@ -5101,6 +5103,8 @@ find_func_clobbers (struct function *fn, gimple *origt)
 					       sizes, kinds, ...).  */
 		  fnpos = 1;
 		  argpos = 3;
+		  implicit_use_args[num_implicit_use_args++] = 4;
+		  implicit_use_args[num_implicit_use_args++] = 5;
 		  break;
 		default:
 		  gcc_unreachable ();
@@ -5120,6 +5124,18 @@ find_func_clobbers (struct function *fn, gimple *origt)
 	      FOR_EACH_VEC_ELT (rhsc, j, rhsp)
 		process_constraint (new_constraint (lhs, *rhsp));
 	      rhsc.truncate (0);
+
+	      /* Handle parameters used by the call, but not used in cfi, as
+		 implicitly used by cfi.  */
+	      lhs = get_function_part_constraint (cfi, fi_uses);
+	      for (unsigned i = 0; i < num_implicit_use_args; ++i)
+		{
+		  tree arg = gimple_call_arg (t, implicit_use_args[i]);
+		  get_constraint_for (arg, &rhsc);
+		  FOR_EACH_VEC_ELT (rhsc, j, rhsp)
+		    process_constraint (new_constraint (lhs, *rhsp));
+		  rhsc.truncate (0);
+		}
 
 	      /* The caller clobbers what the callee does.  */
 	      lhs = get_function_part_constraint (fi, fi_clobbers);
