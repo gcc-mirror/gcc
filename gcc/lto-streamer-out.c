@@ -2191,22 +2191,23 @@ copy_function_or_variable (struct symtab_node *node)
   struct lto_in_decl_state *in_state;
   struct lto_out_decl_state *out_state = lto_get_out_decl_state ();
 
-  lto_begin_section (section_name, !flag_wpa);
+  lto_begin_section (section_name, false);
   free (section_name);
 
   /* We may have renamed the declaration, e.g., a static function.  */
   name = lto_get_decl_name_mapping (file_data, name);
 
-  data = lto_get_section_data (file_data, LTO_section_function_body,
-                               name, &len);
+  data = lto_get_raw_section_data (file_data, LTO_section_function_body,
+                                   name, &len);
   gcc_assert (data);
 
   /* Do a bit copy of the function body.  */
-  lto_write_data (data, len);
+  lto_write_raw_data (data, len);
 
   /* Copy decls. */
   in_state =
     lto_get_function_in_decl_state (node->lto_file_data, function);
+  out_state->compressed = in_state->compressed;
   gcc_assert (in_state);
 
   for (i = 0; i < LTO_N_DECL_STREAMS; i++)
@@ -2224,8 +2225,8 @@ copy_function_or_variable (struct symtab_node *node)
 	encoder->trees.safe_push ((*trees)[j]);
     }
 
-  lto_free_section_data (file_data, LTO_section_function_body, name,
-			 data, len);
+  lto_free_raw_section_data (file_data, LTO_section_function_body, name,
+			     data, len);
   lto_end_section ();
 }
 
@@ -2431,6 +2432,7 @@ lto_output_decl_state_refs (struct output_block *ob,
   decl = (state->fn_decl) ? state->fn_decl : void_type_node;
   streamer_tree_cache_lookup (ob->writer_cache, decl, &ref);
   gcc_assert (ref != (unsigned)-1);
+  ref = ref * 2 + (state->compressed ? 1 : 0);
   lto_write_data (&ref, sizeof (uint32_t));
 
   for (i = 0;  i < LTO_N_DECL_STREAMS; i++)
