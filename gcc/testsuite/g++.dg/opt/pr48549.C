@@ -1,7 +1,7 @@
 // PR rtl-optimization/48549
 // { dg-do compile }
 // { dg-options "-fcompare-debug -O2" }
-// { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } }
+// { dg-xfail-if "" { powerpc-ibm-aix* } }
 
 __extension__ typedef __PTRDIFF_TYPE__ pdiff_t;
 

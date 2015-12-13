@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -ftree-loop-linear -fcompare-debug" } */
+/* { dg-xfail-if "" { powerpc-ibm-aix* } } */
 
 extern int A[];
 
