@@ -2129,7 +2129,7 @@ base_alias_check (rtx x, rtx x_base, rtx y, rtx y_base,
 }
 
 /* Return TRUE if EXPR refers to a VALUE whose uid is greater than
-   that of V.  */
+   (or equal to) that of V.  */
 
 static bool
 refs_newer_value_p (const_rtx expr, rtx v)
@@ -2137,7 +2137,7 @@ refs_newer_value_p (const_rtx expr, rtx v)
   int minuid = CSELIB_VAL_PTR (v)->uid;
   subrtx_iterator::array_type array;
   FOR_EACH_SUBRTX (iter, array, expr, NONCONST)
-    if (GET_CODE (*iter) == VALUE && CSELIB_VAL_PTR (*iter)->uid > minuid)
+    if (GET_CODE (*iter) == VALUE && CSELIB_VAL_PTR (*iter)->uid >= minuid)
       return true;
   return false;
 }

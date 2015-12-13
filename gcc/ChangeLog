@@ -1,3 +1,11 @@
+2015-12-13  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/67355
+	* var-tracking.c (reverse_op): Don't add dummy zero to reverse
+	ops that simplify back to the original value.
+	* alias.c (refs_newer_value_p): Cut off recursion for
+	expressions containing the original value.
+
 2015-12-13  Kazu Kirata  <kazu@gcc.gnu.org>
 
 	* config/m68k/m68k.md (load feeding clear byte): New peephole2.
