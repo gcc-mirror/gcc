@@ -66,9 +66,6 @@ lto_begin_section (const char *name, bool compress)
 {
   lang_hooks.lto.begin_section (name);
 
-  /* FIXME lto: for now, suppress compression if the lang_hook that appends
-     data is anything other than assembler output.  The effect here is that
-     we get compression of IL only in non-ltrans object files.  */
   gcc_assert (compression_stream == NULL);
   if (compress)
     compression_stream = lto_start_compression (lto_append_data, NULL);
@@ -99,6 +96,14 @@ lto_write_data (const void *data, unsigned int size)
     lang_hooks.lto.append_data ((const char *)data, size, NULL);
 }
 
+/* Write SIZE bytes starting at DATA to the assembler.  */
+
+void
+lto_write_raw_data (const void *data, unsigned int size)
+{
+  lang_hooks.lto.append_data ((const char *)data, size, NULL);
+}
+
 /* Write all of the chars in OBS to the assembler.  Recycle the blocks
    in obs as this is being done.  */
 
@@ -123,10 +128,6 @@ lto_write_stream (struct lto_output_stream *obs)
       if (!next_block)
 	num_chars -= obs->left_in_block;
 
-      /* FIXME lto: WPA mode uses an ELF function as a lang_hook to append
-         output data.  This hook is not happy with the way that compression
-         blocks up output differently to the way it's blocked here.  So for
-         now, we don't compress WPA output.  */
       if (compression_stream)
 	lto_compress_block (compression_stream, base, num_chars);
       else
@@ -294,6 +295,9 @@ lto_new_out_decl_state (void)
 
   for (i = 0; i < LTO_N_DECL_STREAMS; i++)
     lto_init_tree_ref_encoder (&state->streams[i]);
+
+  /* At WPA time we do not compress sections by default.  */
+  state->compressed = !flag_wpa;
 
   return state;
 }
