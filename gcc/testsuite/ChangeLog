@@ -1,3 +1,9 @@
+2015-12-13  Jeff Law  <law@redhat.com>
+
+	* gcc.target/m68k/pr63347.c: Remove #include <stdlib> add -w to
+	command line options.
+	* gcc.target/m68k/20090709-1.c: Adjust expected output.
+
 2015-12-12  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/opt/pr48549.C: XFAIL AIX.
