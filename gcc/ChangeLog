@@ -1,3 +1,7 @@
+2015-12-13  Kazu Kirata  <kazu@gcc.gnu.org>
+
+	* config/m68k/m68k.md (load feeding clear byte): New peephole2.
+
 2015-12-13  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-ssa-structalias.c (find_func_clobbers): Handle sizes and kinds
