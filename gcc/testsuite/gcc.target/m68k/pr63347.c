@@ -1,7 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mcpu=5208" } */
-
-#include <stdlib.h>
+/* { dg-options "-O2 -mcpu=5208 -w" } */
 
 void __attribute__ ((noinline))
 oof()
