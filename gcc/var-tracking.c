@@ -5833,11 +5833,6 @@ reverse_op (rtx val, const_rtx expr, rtx_insn *insn)
 	    return;
 	}
       ret = simplify_gen_binary (code, GET_MODE (val), val, arg);
-      if (ret == val)
-	/* Ensure ret isn't VALUE itself (which can happen e.g. for
-	   (plus (reg1) (reg2)) when reg2 is known to be 0), as that
-	   breaks a lot of routines during var-tracking.  */
-	ret = gen_rtx_fmt_ee (PLUS, GET_MODE (val), val, const0_rtx);
       break;
     default:
       gcc_unreachable ();
