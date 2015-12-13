@@ -234,6 +234,8 @@ lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,
   uint32_t i, j;
 
   ix = *data++;
+  state->compressed = ix & 1;
+  ix /= 2;
   decl = streamer_tree_cache_get_tree (data_in->reader_cache, ix);
   if (!VAR_OR_FUNCTION_DECL_P (decl))
     {

@@ -1,3 +1,7 @@
+2015-12-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (lto_read_in_decl_state): Unpickle compressed bit.
+
 2015-12-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61886

@@ -1,5 +1,26 @@
 2015-12-10  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraph.c (cgraph_node::get_untransformed_body): Pass compressed
+	flag to lto_get_section_data.
+	* varpool.c (varpool_node::get_constructor): Likewise.
+	* lto-section-in.c (lto_get_section_data): Add new flag decompress.
+	(lto_free_section_data): Likewise.
+	(lto_get_raw_section_data): New function.
+	(lto_free_raw_section_data): New function.
+	(copy_function_or_variable): Copy sections w/o decompressing.
+	(lto_output_decl_state_refs): Picke compressed bit.
+	* lto-streamer.h (lto_in_decl_state): New flag compressed.
+	(lto_out_decl_state): Likewise.
+	(lto_get_section_data, lto_free_section_data): Update prototypes
+	(lto_get_raw_section_data, lto_free_raw_section_data): Declare.
+	(lto_write_raw_data): Declare.
+	(lto_begin_section): Remove FIXME.
+	(lto_write_raw_data): New function.
+	(lto_write_stream): Remove FIXME.
+	(lto_new_out_decl_state): Set compressed flag.
+
+2015-12-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree.c (free_lang_data_in_type, find_decls_types_r): Also free
 	unnecesary type decls.
 	* tree.h (is_redundant_typedef): Declare.
