@@ -1,4 +1,10 @@
-2014-12-12  Tobias Burnus  <burnus@net-b.de>
+2015-12-12  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/opt/pr48549.C: XFAIL AIX.
+	* g++.dg/abi/anon1.C: XFAIL AIX.
+	* gcc.dg/graphite/pr42917.c: XFAIL AIX.
+
+2015-12-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45859
 	* gfortran.dg/coarray_args_2.f90: Remove dg-error.
