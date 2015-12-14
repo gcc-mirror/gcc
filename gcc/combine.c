@@ -11045,7 +11045,8 @@ change_zero_ext (rtx *src)
 	  if (BITS_BIG_ENDIAN)
 	    start = GET_MODE_PRECISION (mode) - size - start;
 
-	  x = gen_rtx_LSHIFTRT (mode, XEXP (x, 0), GEN_INT (start));
+	  x = simplify_gen_binary (LSHIFTRT, mode,
+				   XEXP (x, 0), GEN_INT (start));
 	}
       else if (GET_CODE (x) == ZERO_EXTEND
 	       && GET_CODE (XEXP (x, 0)) == SUBREG
