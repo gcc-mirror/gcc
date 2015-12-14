@@ -612,7 +612,7 @@ Common Var(warn_unsafe_loop_optimizations) Warning
 Warn if the loop cannot be optimized due to nontrivial assumptions.
 
 Wmissing-noreturn
-Common Alias(Wsuggest-attribute=noreturn)
+Common Warning Alias(Wsuggest-attribute=noreturn)
 
 Wodr
 Common Var(warn_odr_violations) Init(1) Warning

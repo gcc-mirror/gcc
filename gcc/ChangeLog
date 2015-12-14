@@ -1,3 +1,10 @@
+2015-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/68833
+	* common.opt (Wmissing-noreturn): Add Warning option.
+	* opts-common.c (control_warning_option): If opt is
+	alias_target with alias_arg, set arg to it.
+
 2015-12-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/68865

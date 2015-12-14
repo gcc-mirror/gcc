@@ -1,3 +1,8 @@
+2015-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/68833
+	* c.opt (Wmissing-format-attribute, Wnormalized): Add Warning option.
+
 2014-12-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/68815
