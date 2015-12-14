@@ -1,3 +1,9 @@
+2015-12-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68775
+	* tree-vect-slp.c (vect_build_slp_tree): Make sure to apply
+	a operand swapping even if replacing the op with scalars.
+
 2015-12-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* combine.c (change_zero_ext): Do not create a shift of zero length.
