@@ -225,7 +225,7 @@ acc_init_1 (acc_device_t d)
   acc_dev = &base_dev[goacc_device_num];
 
   gomp_mutex_lock (&acc_dev->lock);
-  if (acc_dev->is_initialized)
+  if (acc_dev->state == GOMP_DEVICE_INITIALIZED)
     {
       gomp_mutex_unlock (&acc_dev->lock);
       gomp_fatal ("device already active");
@@ -306,10 +306,11 @@ acc_shutdown_1 (acc_device_t d)
     {
       struct gomp_device_descr *acc_dev = &base_dev[i];
       gomp_mutex_lock (&acc_dev->lock);
-      if (acc_dev->is_initialized)
+      if (acc_dev->state == GOMP_DEVICE_INITIALIZED)
         {
 	  devices_active = true;
-	  gomp_fini_device (acc_dev);
+	  acc_dev->fini_device_func (acc_dev->target_id);
+	  acc_dev->state = GOMP_DEVICE_UNINITIALIZED;
 	}
       gomp_mutex_unlock (&acc_dev->lock);
     }
@@ -506,7 +507,7 @@ acc_set_device_type (acc_device_t d)
   acc_dev = &base_dev[goacc_device_num];
 
   gomp_mutex_lock (&acc_dev->lock);
-  if (!acc_dev->is_initialized)
+  if (acc_dev->state == GOMP_DEVICE_UNINITIALIZED)
     gomp_init_device (acc_dev);
   gomp_mutex_unlock (&acc_dev->lock);
 
@@ -608,7 +609,7 @@ acc_set_device_num (int ord, acc_device_t d)
       acc_dev = &base_dev[ord];
 
       gomp_mutex_lock (&acc_dev->lock);
-      if (!acc_dev->is_initialized)
+      if (acc_dev->state == GOMP_DEVICE_UNINITIALIZED)
         gomp_init_device (acc_dev);
       gomp_mutex_unlock (&acc_dev->lock);
 

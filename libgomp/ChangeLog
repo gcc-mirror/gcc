@@ -1,3 +1,32 @@
+2015-12-14  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* libgomp.h (gomp_device_state): New enum.
+	(struct gomp_device_descr): Replace is_initialized with state.
+	(gomp_fini_device): Remove declaration.
+	* oacc-host.c (host_dispatch): Use state instead of is_initialized.
+	* oacc-init.c (acc_init_1): Use state instead of is_initialized.
+	(acc_shutdown_1): Likewise.  Inline gomp_fini_device.
+	(acc_set_device_type): Use state instead of is_initialized.
+	(acc_set_device_num): Likewise.
+	* target.c (resolve_device): Use state instead of is_initialized.
+	Do not initialize finalized device.
+	(gomp_map_vars): Do nothing if device is finalized.
+	(gomp_unmap_vars): Likewise.
+	(gomp_update): Likewise.
+	(GOMP_offload_register_ver): Use state instead of is_initialized.
+	(GOMP_offload_unregister_ver): Likewise.
+	(gomp_init_device): Likewise.
+	(gomp_unload_device): Likewise.
+	(gomp_fini_device): Remove.
+	(gomp_get_target_fn_addr): Do nothing if device is finalized.
+	(GOMP_target): Go to host fallback if device is finalized.
+	(GOMP_target_ext): Likewise.
+	(gomp_exit_data): Do nothing if device is finalized.
+	(gomp_target_task_fn): Go to host fallback if device is finalized.
+	(gomp_target_fini): New static function.
+	(gomp_target_init): Use state instead of is_initialized.
+	Call gomp_target_fini at exit.
+
 2015-12-09  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/68716
