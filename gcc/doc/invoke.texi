@@ -542,7 +542,7 @@ Objective-C and Objective-C++ Dialects}.
 -mnorm -mspfp -mspfp-compact -mspfp-fast -msimd -msoft-float -mswap @gol
 -mcrc -mdsp-packa -mdvbf -mlock -mmac-d16 -mmac-24 -mrtsc -mswape @gol
 -mtelephony -mxy -misize -mannotate-align -marclinux -marclinux_prof @gol
--mepilogue-cfi -mlong-calls -mmedium-calls -msdata @gol
+-mlong-calls -mmedium-calls -msdata @gol
 -mucb-mcount -mvolatile-cache @gol
 -malign-call -mauto-modify-reg -mbbit-peephole -mno-brcc @gol
 -mcase-vector-pcrel -mcompact-casesi -mno-cond-exec -mearly-cbranchsi @gol
@@ -13145,14 +13145,6 @@ The following options control the semantics of generated code:
 
 @c semantically relevant code generation options
 @table @gcctabopt
-@item -mepilogue-cfi
-@opindex mepilogue-cfi
-Enable generation of call frame information for epilogues.
-
-@item -mno-epilogue-cfi
-@opindex mno-epilogue-cfi
-Disable generation of call frame information for epilogues.
-
 @item -mlong-calls
 @opindex mlong-calls
 Generate call insns as register indirect calls, thus providing access
