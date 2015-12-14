@@ -1,3 +1,8 @@
+2015-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/68730
+	* cfgrtl.c (cfg_layout_finalize): Free dominators.
+
 2015-12-13  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/67355
