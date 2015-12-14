@@ -1,3 +1,22 @@
+2015-12-14  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/abi/nvptx-nrv1.C: New.
+	* g++.dg/abi/nvptx-ptrmem1.C: New.
+	* gcc.target/nvptx/abi-complex-arg.c: New.
+	* gcc.target/nvptx/abi-complex-ret.c: New.
+	* gcc.target/nvptx/abi-enum-arg.c: New.
+	* gcc.target/nvptx/abi-enum-ret.c: New.
+	* gcc.target/nvptx/abi-knr-arg.c: New.
+	* gcc.target/nvptx/abi-knr-ret.c: New.
+	* gcc.target/nvptx/abi-scalar-arg.c: New.
+	* gcc.target/nvptx/abi-scalar-ret.c: New.
+	* gcc.target/nvptx/abi-struct-arg.c: New.
+	* gcc.target/nvptx/abi-struct-ret.c: New.
+	* gcc.target/nvptx/abi-vararg-1.c: New.
+	* gcc.target/nvptx/abi-vararg-2.c: New.
+	* gcc.target/nvptx/abi-vect-arg.c: New.
+	* gcc.target/nvptx/abi-vect-ret.c: New.
+
 2015-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/68833

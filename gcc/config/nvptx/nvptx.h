@@ -46,7 +46,8 @@
 /* Chosen such that we won't have to deal with multi-word subregs.  */
 #define UNITS_PER_WORD 8
 
-#define PARM_BOUNDARY 8
+/* Alignments in bits.  */
+#define PARM_BOUNDARY 32
 #define STACK_BOUNDARY 64
 #define FUNCTION_BOUNDARY 32
 #define BIGGEST_ALIGNMENT 64
