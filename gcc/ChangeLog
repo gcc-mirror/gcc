@@ -1,3 +1,20 @@
+2015-12-14  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.h (PARM_BOUNDARY): Set to 32.
+	* config/nvptx/nvptx.c (PASS_IN_REG_P, RETURN_IN_REG_P): Delete.
+	(pass_in_memory, promote_arg, promote_return): New.
+	(nvptx_function_arg_boundary): Delete.
+	(nvptx_function_value): Use promote_return.
+	(nvptx_pass_by_reference): Use pass_in_memory.
+	(nvptx_return_in_memory): Use pass_in_memory.
+	(nvptx_promote_function_mode): Use promote_arg.
+	(write_arg): Adjust arg splitting logic.
+	(write_return): Check and clear ret_reg_mode, if needed.
+	(write_fn_proto, nvptx_declare_function_name): Adust write_return
+	calls.
+	(TARGET_RUNCTION_ARG_BOUNDARY,
+	TARGET_FUNCTION_ARG_ROUND_BOUNDARY): Don't override.
+
 2015-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/68833
