@@ -1,3 +1,8 @@
+2015-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/68730
+	* gcc.dg/pr68730.c: New test.
+
 2015-12-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR testsuite/68629
