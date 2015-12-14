@@ -7312,6 +7312,23 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   return bb;
 }
 
+/* Dump default def DEF to file FILE using FLAGS and indentation
+   SPC.  */
+
+static void
+dump_default_def (FILE *file, tree def, int spc, int flags)
+{
+  for (int i = 0; i < spc; ++i)
+    fprintf (file, " ");
+  dump_ssaname_info_to_file (file, def, spc);
+
+  print_generic_expr (file, TREE_TYPE (def), flags);
+  fprintf (file, " ");
+  print_generic_expr (file, def, flags);
+  fprintf (file, " = ");
+  print_generic_expr (file, SSA_NAME_VAR (def), flags);
+  fprintf (file, ";\n");
+}
 
 /* Dump FUNCTION_DECL FN to file FILE using FLAGS (see TDF_* in dumpfile.h)
    */
@@ -7391,6 +7408,35 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
       ignore_topmost_bind = true;
 
       fprintf (file, "{\n");
+      if (gimple_in_ssa_p (fun)
+	  && (flags & TDF_ALIAS))
+	{
+	  for (arg = DECL_ARGUMENTS (fndecl); arg != NULL;
+	       arg = DECL_CHAIN (arg))
+	    {
+	      tree def = ssa_default_def (fun, arg);
+	      if (def)
+		dump_default_def (file, def, 2, flags);
+	    }
+
+	  tree res = DECL_RESULT (fun->decl);
+	  if (res != NULL_TREE
+	      && DECL_BY_REFERENCE (res))
+	    {
+	      tree def = ssa_default_def (fun, res);
+	      if (def)
+		dump_default_def (file, def, 2, flags);
+	    }
+
+	  tree static_chain = fun->static_chain_decl;
+	  if (static_chain != NULL_TREE)
+	    {
+	      tree def = ssa_default_def (fun, static_chain);
+	      if (def)
+		dump_default_def (file, def, 2, flags);
+	    }
+	}
+
       if (!vec_safe_is_empty (fun->local_decls))
 	FOR_EACH_LOCAL_DECL (fun, ix, var)
 	  {

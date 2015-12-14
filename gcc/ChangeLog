@@ -1,3 +1,12 @@
+2015-12-14  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/68882
+	* gimple-pretty-print.c (dump_ssaname_info_to_file): New function.
+	* gimple-pretty-print.h (dump_ssaname_info_to_file): Declare.
+	* tree-cfg.c (dump_default_def): New function.
+	(dump_function_to_file): Dump default defs for arguments, static chain,
+	and decl-by-reference.
+
 2015-12-14  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.h (PARM_BOUNDARY): Set to 32.
