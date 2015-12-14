@@ -8649,10 +8649,7 @@ vect_is_simple_use (tree operand, vec_info *vinfo,
   else
     {
       stmt_vec_info stmt_vinfo = vinfo_for_stmt (*def_stmt);
-      if (is_a <bb_vec_info> (vinfo) && !STMT_VINFO_VECTORIZABLE (stmt_vinfo))
-	*dt = vect_external_def;
-      else
-	*dt = STMT_VINFO_DEF_TYPE (stmt_vinfo);
+      *dt = STMT_VINFO_DEF_TYPE (stmt_vinfo);
     }
 
   if (dump_enabled_p ())
