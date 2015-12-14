@@ -1,4 +1,10 @@
 2015-12-14  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P):
+	Provide target hook.
+	(arc_no_speculation_in_delay_slots_p): New function.
+
+2015-12-14  Claudiu Zissulescu  <claziss@synopsys.com>
 	    Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* config/arc/arc.c (frame_move): Set frame related flag.
