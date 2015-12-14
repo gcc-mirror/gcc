@@ -128,6 +128,7 @@ Some basic guidelines for editing this document:
 * @code{ERFC}:          ERFC,      Complementary error function
 * @code{ERFC_SCALED}:   ERFC_SCALED, Exponentially-scaled complementary error function
 * @code{ETIME}:         ETIME,     Execution time subroutine (or function)
+* @code{EVENT_QUERY}: EVENT_QUERY, Query whether a coarray event has occurred
 * @code{EXECUTE_COMMAND_LINE}: EXECUTE_COMMAND_LINE, Execute a shell command
 * @code{EXIT}:          EXIT,      Exit the program with status.
 * @code{EXP}:           EXP,       Exponential function
@@ -5058,6 +5059,57 @@ end program test_etime
 
 @item @emph{See also}:
 @ref{CPU_TIME}
+
+@end table
+
+
+
+@node EVENT_QUERY
+@section @code{EVENT_QUERY} --- Query whether a coarray event has occurred
+@fnindex EVENT_QUERY
+@cindex Events, EVENT_QUERY
+
+@table @asis
+@item @emph{Description}:
+@code{EVENT_QUERY} assignes the number of events to @var{COUNT} which have been
+posted to the @var{EVENT} variable and not yet been removed by calling
+@code{EVENT WAIT}. When @var{STAT} is present and the invokation was successful,
+it is assigned the value 0. If it is present and the invokation has failed,
+it is assigned a positive value and @var{COUNT} is assigned the value @math{-1}.
+
+@item @emph{Standard}:
+TS 18508 or later
+
+@item @emph{Class}:
+ subroutine
+
+@item @emph{Syntax}:
+@code{CALL EVENT_QUERY (EVENT, COUNT [, STAT])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{EVENT}  @tab (intent(IN)) Scalar of type @code{EVENT_TYPE},
+defined in @code{ISO_FORTRAN_ENV}; shall not be coindexed.
+@item @var{COUNT}  @tab (intent(out))Scalar integer with at least the
+precision of default integer.
+@item @var{STAT}   @tab (optional) Scalar default-kind integer variable.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program atomic
+  use iso_fortran_env
+  implicit none
+  type(event_type) :: event_value_has_been_set[*]
+  integer :: cnt
+  if (this_image() == 1) then
+    call event_query (event_value_has_been_set, cnt)
+    if (cnt > 0) write(*,*) "Value has been set"
+  elseif (this_image() == 2) then
+    event post (event_value_has_been_set[1])
+  end if
+end program atomic
+@end smallexample
 
 @end table
 

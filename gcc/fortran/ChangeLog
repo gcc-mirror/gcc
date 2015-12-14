@@ -1,3 +1,10 @@
+2014-12-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/68850
+	* gfortran.texi (Standards): Mention TS 18508.
+	(Fortran 2003 and 2008 Status): Add section on TS 18508 status.
+	* intrinsic.texi (EVENT_QUERY): Add.
+
 2014-12-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45859
