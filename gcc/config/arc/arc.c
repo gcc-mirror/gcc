@@ -558,6 +558,10 @@ static void arc_finalize_pic (void);
 
 #define TARGET_INSN_LENGTH_PARAMETERS arc_insn_length_parameters
 
+#undef TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P
+#define TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P	\
+  arc_no_speculation_in_delay_slots_p
+
 #undef TARGET_LRA_P
 #define TARGET_LRA_P arc_lra_p
 #define TARGET_REGISTER_PRIORITY arc_register_priority
@@ -10055,6 +10059,14 @@ arc_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
   emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
 
   arc_post_atomic_barrier (model);
+}
+
+/* Implement TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P.  */
+
+static bool
+arc_no_speculation_in_delay_slots_p ()
+{
+  return true;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;
