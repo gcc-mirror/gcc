@@ -1,3 +1,18 @@
+2015-12-14  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	Backport from mainline.
+	2015-12-09  James Greenhalgh  <james.greenhalgh@arm.com> 
+
+	PR rtl-optimization/67609
+	* config/aarch64/aarch64-protos.h
+	(aarch64_cannot_change_mode_class): Bring back.
+	* config/aarch64/aarch64.c
+	(aarch64_cannot_change_mode_class): Likewise.
+	* config/aarch64/aarch64.h (CANNOT_CHANGE_MODE_CLASS): Likewise.
+	* config/aarch64/aarch64.md (aarch64_movdi_<mode>low): Use
+	zero_extract rather than truncate.
+	(aarch64_movdi_<mode>high): Likewise.
+
 2015-12-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
