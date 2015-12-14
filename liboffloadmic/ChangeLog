@@ -1,3 +1,9 @@
+2015-12-14  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (unregister_main_image): Remove.
+	(register_main_image): Do not call unregister_main_image at exit.
+	(GOMP_OFFLOAD_fini_device): Allow for OpenMP.  Unregister main image.
+
 2015-11-19  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* plugin/libgomp-plugin-intelmic.cpp (struct TargetImageDesc): New.

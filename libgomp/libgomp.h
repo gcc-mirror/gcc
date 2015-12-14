@@ -888,6 +888,14 @@ typedef struct acc_dispatch_t
   } cuda;
 } acc_dispatch_t;
 
+/* Various state of the accelerator device.  */
+enum gomp_device_state
+{
+  GOMP_DEVICE_UNINITIALIZED,
+  GOMP_DEVICE_INITIALIZED,
+  GOMP_DEVICE_FINALIZED
+};
+
 /* This structure describes accelerator device.
    It contains name of the corresponding libgomp plugin, function handlers for
    interaction with the device, ID-number of the device, and information about
@@ -933,8 +941,10 @@ struct gomp_device_descr
   /* Mutex for the mutable data.  */
   gomp_mutex_t lock;
 
-  /* Set to true when device is initialized.  */
-  bool is_initialized;
+  /* Current state of the device.  OpenACC allows to move from INITIALIZED state
+     back to UNINITIALIZED state.  OpenMP allows only to move from INITIALIZED
+     to FINALIZED state (at program shutdown).  */
+  enum gomp_device_state state;
 
   /* OpenACC-specific data and functions.  */
   /* This is mutable because of its mutable data_environ and target_data
@@ -962,7 +972,6 @@ extern void gomp_copy_from_async (struct target_mem_desc *);
 extern void gomp_unmap_vars (struct target_mem_desc *, bool);
 extern void gomp_init_device (struct gomp_device_descr *);
 extern void gomp_free_memmap (struct splay_tree_s *);
-extern void gomp_fini_device (struct gomp_device_descr *);
 extern void gomp_unload_device (struct gomp_device_descr *);
 
 /* work.c */

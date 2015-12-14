@@ -222,7 +222,7 @@ static struct gomp_device_descr host_dispatch =
 
     .mem_map = { NULL },
     /* .lock initilized in goacc_host_init.  */
-    .is_initialized = false,
+    .state = GOMP_DEVICE_UNINITIALIZED,
 
     .openacc = {
       .data_environ = NULL,
