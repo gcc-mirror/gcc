@@ -1044,6 +1044,20 @@ vect_build_slp_tree (vec_info *vinfo,
 				   tem, npermutes, &this_tree_size,
 				   max_tree_size))
 	    {
+	      /* ... so if successful we can apply the operand swapping
+		 to the GIMPLE IL.  This is necessary because for example
+		 vect_get_slp_defs uses operand indexes and thus expects
+		 canonical operand order.  This is also necessary even
+		 if we end up building the operand from scalars as
+		 we'll continue to process swapped operand two.  */
+	      for (j = 0; j < group_size; ++j)
+		if (!matches[j])
+		  {
+		    gimple *stmt = SLP_TREE_SCALAR_STMTS (*node)[j];
+		    swap_ssa_operands (stmt, gimple_assign_rhs1_ptr (stmt),
+				       gimple_assign_rhs2_ptr (stmt));
+		  }
+
 	      /* If we have all children of child built up from scalars then
 		 just throw that away and build it up this node from scalars.  */
 	      if (!SLP_TREE_CHILDREN (child).is_empty ())
@@ -1073,17 +1087,6 @@ vect_build_slp_tree (vec_info *vinfo,
 		    }
 		}
 
-	      /* ... so if successful we can apply the operand swapping
-		 to the GIMPLE IL.  This is necessary because for example
-		 vect_get_slp_defs uses operand indexes and thus expects
-		 canonical operand order.  */
-	      for (j = 0; j < group_size; ++j)
-		if (!matches[j])
-		  {
-		    gimple *stmt = SLP_TREE_SCALAR_STMTS (*node)[j];
-		    swap_ssa_operands (stmt, gimple_assign_rhs1_ptr (stmt),
-				       gimple_assign_rhs2_ptr (stmt));
-		  }
 	      oprnd_info->def_stmts = vNULL;
 	      SLP_TREE_CHILDREN (*node).quick_push (child);
 	      continue;
