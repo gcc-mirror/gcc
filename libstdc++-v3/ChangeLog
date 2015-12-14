@@ -1,3 +1,12 @@
+2015-11-14  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Document the implementation of Logical Operator Type Traits.
+
+	* doc/html/index.html: Regenerate.
+	* doc/html/manual/status.html: Likewise.
+	* doc/xml/manual/status_cxx2017.xml: Add P0013R1 to C++ 201z
+	and to Library Fundamentals 2 TS.
+
 2015-12-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59768
