@@ -1,3 +1,10 @@
+2015-12-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR testsuite/68629
+	* lib/target-supports.exp (check_effective_target_cilkplus): Also
+	check that compiling with -fcilkplus does not give an error.
+	* c-c++-common/attr-simd-3.c: Require cilkplus effective target.
+
 2015-12-13  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/graphite/pr42729.c: XFAIL AIX.
