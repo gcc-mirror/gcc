@@ -627,7 +627,7 @@ C++ ObjC++ Var(warn_templates) Warning
 Warn on primary template declaration.
 
 Wmissing-format-attribute
-C ObjC C++ ObjC++ Alias(Wsuggest-attribute=format)
+C ObjC C++ ObjC++ Warning Alias(Wsuggest-attribute=format)
 ;
 
 Wmissing-include-dirs
@@ -678,7 +678,7 @@ C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
 ;
 
 Wnormalized
-C ObjC C++ ObjC++ Alias(Wnormalized=,nfc,none)
+C ObjC C++ ObjC++ Warning Alias(Wnormalized=,nfc,none)
 ;
 
 Wnormalized=

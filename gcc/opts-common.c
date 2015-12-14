@@ -1361,7 +1361,13 @@ control_warning_option (unsigned int opt_index, int kind, const char *arg,
 			diagnostic_context *dc)
 {
   if (cl_options[opt_index].alias_target != N_OPTS)
-    opt_index = cl_options[opt_index].alias_target;
+    {
+      gcc_assert (!cl_options[opt_index].cl_separate_alias
+		  && !cl_options[opt_index].cl_negative_alias);
+      if (cl_options[opt_index].alias_arg)
+	arg = cl_options[opt_index].alias_arg;
+      opt_index = cl_options[opt_index].alias_target;
+    }
   if (opt_index == OPT_SPECIAL_ignore)
     return;
   if (dc)
