@@ -1,5 +1,29 @@
 2015-12-14  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/68852
+	* tree-vectorizer.h (struct _slp_tree): Add def_type member.
+	(SLP_TREE_DEF_TYPE): New accessor.
+	* tree-vect-stmts.c (vect_is_simple_use): Remove BB vectorization
+	hack.
+	* tree-vect-slp.c (vect_create_new_slp_node): Initialize
+	SLP_TREE_DEF_TYPE.
+	(vect_build_slp_tree): When a node is to be built up from scalars
+	do not push a NULL as child but instead set its def_type to
+	vect_external_def.
+	(vect_analyze_slp_cost_1): Check for child def-type instead
+	of NULL.
+	(vect_detect_hybrid_slp_stmts): Likewise.
+	(vect_bb_slp_scalar_cost): Likewise.
+	(vect_get_slp_defs): Likewise.
+	(vect_slp_analyze_node_operations): Likewise.  Before
+	processing node push the children def-types to the underlying
+	stmts vinfo and restore it afterwards.
+	(vect_schedule_slp_instance): Likewise.
+	(vect_slp_analyze_bb_1): Do not mark stmts not in SLP instances
+	as not vectorizable.
+
+2015-12-14  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/68775
 	* tree-vect-slp.c (vect_build_slp_tree): Make sure to apply
 	a operand swapping even if replacing the op with scalars.

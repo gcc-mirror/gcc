@@ -107,6 +107,8 @@ struct _slp_tree {
   unsigned int vec_stmts_size;
   /* Whether the scalar computations use two different operators.  */
   bool two_operators;
+  /* The DEF type of this node.  */
+  enum vect_def_type def_type;
 };
 
 
@@ -139,6 +141,7 @@ typedef struct _slp_instance {
 #define SLP_TREE_NUMBER_OF_VEC_STMTS(S)          (S)->vec_stmts_size
 #define SLP_TREE_LOAD_PERMUTATION(S)             (S)->load_permutation
 #define SLP_TREE_TWO_OPERATORS(S)		 (S)->two_operators
+#define SLP_TREE_DEF_TYPE(S)			 (S)->def_type
 
 
 
