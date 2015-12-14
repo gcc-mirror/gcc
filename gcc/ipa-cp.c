@@ -1787,6 +1787,18 @@ propagate_aggs_accross_jump_function (struct cgraph_edge *cs,
   return ret;
 }
 
+/* Return true if on the way cfrom CS->caller to the final (non-alias and
+   non-thunk) destination, the call passes through a thunk.  */
+
+static bool
+call_passes_through_thunk_p (cgraph_edge *cs)
+{
+  cgraph_node *alias_or_thunk = cs->callee;
+  while (alias_or_thunk->alias)
+    alias_or_thunk = alias_or_thunk->get_alias_target ();
+  return alias_or_thunk->thunk.thunk_p;
+}
+
 /* Propagate constants from the caller to the callee of CS.  INFO describes the
    caller.  */
 
@@ -1795,7 +1807,7 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
 {
   struct ipa_node_params *callee_info;
   enum availability availability;
-  struct cgraph_node *callee, *alias_or_thunk;
+  cgraph_node *callee;
   struct ipa_edge_args *args;
   bool ret = false;
   int i, args_count, parms_count;
@@ -1833,10 +1845,7 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
   /* If this call goes through a thunk we must not propagate to the first (0th)
      parameter.  However, we might need to uncover a thunk from below a series
      of aliases first.  */
-  alias_or_thunk = cs->callee;
-  while (alias_or_thunk->alias)
-    alias_or_thunk = alias_or_thunk->get_alias_target ();
-  if (alias_or_thunk->thunk.thunk_p)
+  if (call_passes_through_thunk_p (cs))
     {
       ret |= set_all_contains_variable (ipa_get_parm_lattices (callee_info,
 							       0));
@@ -3404,7 +3413,11 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
 	  struct ipa_jump_func *jump_func;
 	  tree t;
 
-          if (i >= ipa_get_cs_argument_count (IPA_EDGE_REF (cs)))
+          if (i >= ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
+	      || (i == 0
+		  && call_passes_through_thunk_p (cs))
+	      || (!cs->callee->instrumentation_clone
+		  && cs->callee->function_symbol ()->instrumentation_clone))
             {
               newval = NULL_TREE;
               break;
