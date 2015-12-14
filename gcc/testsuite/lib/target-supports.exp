@@ -1432,7 +1432,12 @@ proc check_effective_target_cilkplus { } {
     if { [istarget avr-*-*] } {
 	return 0;
     }
-    return 1
+    return [ check_no_compiler_messages_nocache fcilkplus_available executable {
+	#ifdef __cplusplus
+	extern "C"
+	#endif
+	    int dummy;
+	} "-fcilkplus" ]
 }
 
 proc check_linker_plugin_available { } {

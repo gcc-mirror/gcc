@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target "cilkplus" } */
 /* { dg-options "-fcilkplus" } */
 /* { dg-prune-output "undeclared here \\(not in a function\\)|\[^\n\r\]* was not declared in this scope" } */
 
