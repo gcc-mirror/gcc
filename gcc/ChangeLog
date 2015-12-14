@@ -1,3 +1,9 @@
+2015-12-14  Steve Ellcey  <sellcey@imgtec.com>
+
+	* config/mips/mips.c (mips_promote_function_mode): New function.
+	(TARGET_PROMOTE_FUNCTION_MODE): Define as above function.
+	(TARGET_PROMOTE_PROTOTYPES): Remove.
+
 2015-12-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68309
