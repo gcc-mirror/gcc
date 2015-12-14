@@ -1,3 +1,11 @@
+2015-12-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/66616
+	* ipa-cp.c (propagate_constants_accross_call): Move thuk check...
+	(call_passes_through_thunk_p): ...here.
+	(find_more_scalar_values_for_callers_subset): Perform thunk checks
+	like propagate_constants_accross_call does.
+
 2015-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/68730
