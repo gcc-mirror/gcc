@@ -1,3 +1,9 @@
+2015-12-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68309
+	* hash-table.h: Add copy constructor.
+	* hash-map.h: Add copy constructor.
+
 2015-12-14  Tom de Vries  <tom@codesourcery.com>
 
 	PR other/68882
