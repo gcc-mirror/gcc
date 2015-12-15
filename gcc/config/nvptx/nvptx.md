@@ -64,26 +64,18 @@
   (const_string "false"))
 
 (define_predicate "nvptx_register_operand"
-  (match_code "reg,subreg")
+  (match_code "reg")
 {
   if (REG_P (op))
     return !HARD_REGISTER_P (op);
-  if (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))
-    return false;
-  if (GET_CODE (op) == SUBREG)
-    return false;
   return register_operand (op, mode);
 })
 
 (define_predicate "nvptx_reg_or_mem_operand"
-  (match_code "mem,reg,subreg")
+  (match_code "mem,reg")
 {
   if (REG_P (op))
     return !HARD_REGISTER_P (op);
-  if (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))
-    return false;
-  if (GET_CODE (op) == SUBREG)
-    return false;
   return memory_operand (op, mode) || register_operand (op, mode);
 })
 
@@ -94,14 +86,10 @@
 ;; Registers or constants for normal instructions.  Does not allow symbolic
 ;; constants.
 (define_predicate "nvptx_nonmemory_operand"
-  (match_code "reg,subreg,const_int,const_double")
+  (match_code "reg,const_int,const_double")
 {
   if (REG_P (op))
     return !HARD_REGISTER_P (op);
-  if (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))
-    return false;
-  if (GET_CODE (op) == SUBREG)
-    return false;
   return nonmemory_operand (op, mode);
 })
 
@@ -145,18 +133,10 @@
   (match_code "eq,ne,le,ge,lt,gt,uneq,unle,unge,unlt,ungt,unordered,ordered"))
 
 ;; Test for a valid operand for a call instruction.
-(define_special_predicate "call_insn_operand"
+(define_predicate "call_insn_operand"
   (match_code "symbol_ref,reg")
 {
-  if (GET_CODE (op) == SYMBOL_REF)
-    {
-      tree decl = SYMBOL_REF_DECL (op);
-      /* This happens for libcalls.  */
-      if (decl == NULL_TREE)
-        return true;
-      return TREE_CODE (SYMBOL_REF_DECL (op)) == FUNCTION_DECL;
-    }
-  return true;
+  return GET_CODE (op) != SYMBOL_REF || SYMBOL_REF_FUNCTION_P (op);
 })
 
 ;; Return true if OP is a call with parallel USEs of the argument
@@ -753,7 +733,7 @@
 
 (define_insn "call_insn"
   [(match_parallel 2 "call_operation"
-    [(call (mem:QI (match_operand:SI 0 "call_insn_operand" "Rs"))
+    [(call (mem:QI (match_operand 0 "call_insn_operand" "Rs"))
 	   (match_operand 1))])]
   ""
 {
@@ -763,7 +743,7 @@
 (define_insn "call_value_insn"
   [(match_parallel 3 "call_operation"
     [(set (match_operand 0 "nvptx_register_operand" "=R")
-	  (call (mem:QI (match_operand:SI 1 "call_insn_operand" "Rs"))
+	  (call (mem:QI (match_operand 1 "call_insn_operand" "Rs"))
 		(match_operand 2)))])]
   ""
 {

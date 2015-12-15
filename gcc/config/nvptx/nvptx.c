@@ -366,17 +366,6 @@ nvptx_emit_joining (unsigned mask, bool is_call)
 }
 
 
-/* Perform a mode promotion for a function argument with MODE.  Return
-   the promoted mode.  */
-
-static machine_mode
-arg_promotion (machine_mode mode)
-{
-  if (mode == QImode || mode == HImode)
-    return SImode;
-  return mode;
-}
-
 /* Determine whether MODE and TYPE (possibly NULL) should be passed or
    returned in memory.  Integer and floating types supported by the
    machine are passed in registers, everything else is passed in
@@ -1165,11 +1154,6 @@ nvptx_expand_call (rtx retval, rtx address)
     }
 
   if (cfun->machine->funtype
-      /* It's possible to construct testcases where we call a variable.
-	 See compile/20020129-1.c.  stdarg_p will crash so avoid calling it
-	 in such a case.  */
-      && (TREE_CODE (cfun->machine->funtype) == FUNCTION_TYPE
-	  || TREE_CODE (cfun->machine->funtype) == METHOD_TYPE)
       && stdarg_p (cfun->machine->funtype))
     {
       varargs = gen_reg_rtx (Pmode);

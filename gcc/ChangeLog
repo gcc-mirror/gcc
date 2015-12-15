@@ -1,3 +1,24 @@
+2015-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.md (nvptx_register_operand): Don't accept and
+	then reject subregs.
+	(nvptx_reg_or_mem_operand): Likewise.
+	(nvptx_nonmemory_operand): Likewise.
+	(call_insn_operand): A regular predicate, check	SYMBOL_REF_FUNCTION_P.
+	(call_insn, call_value_insn): Address is not SImode.
+	* config/nvptx/nvptx.h (FIXED_REGISTERS): Make return reg fixed.
+	(enum reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS): Remove
+	RETURN_REG class.
+	(REGNO_REG_CLASS): Alwaus ALL_REGS.
+	(PROMOTE_MODE): QI and HI are the only smaller than SI int modes.
+	(HARD_FRAME_POINTER_REGNUM): Delete.
+	(REGISTER_NAMES): Move earlier.
+	(struct nvptx_args): Remove 'off'.
+	(INIT_CUMULATIVE_ARGS): Don't initialize 'off'.
+	(ELIMINABLE_REGS): Remove HARD_FRAME_POINTER_REGNUM.
+	* config/nvptx/nvptx.c (arg_promotion): Delete.
+	(nvptx_expand_call): Remove check for funtype being an fntype.
+
 2015-12-15  Jason Merrill  <jason@redhat.com>
 
 	* hash-map.h, hash-table.h: Make copy constructors explicit.
@@ -10,9 +31,10 @@
 	"omp declare target link" variables.
 	* omp-low.c (scan_sharing_clauses): Do not remove mapping of "omp
 	declare target link" variables.
-	(add_decls_addresses_to_decl_constructor): For "omp declare target link"
-	variables output address of the artificial pointer instead of address of
-	the variable.  Set most significant bit of the size to mark them.
+	(add_decls_addresses_to_decl_constructor): For "omp declare target
+	link" variables output address of the artificial pointer instead
+	of address of the variable.  Set most significant bit of the size
+	to mark them.
 	(pass_data_omp_target_link): New pass_data.
 	(pass_omp_target_link): New class.
 	(find_link_var_op): New static function.
