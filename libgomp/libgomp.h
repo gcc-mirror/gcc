@@ -817,6 +817,9 @@ struct target_mem_desc {
 
 /* Special value for refcount - infinity.  */
 #define REFCOUNT_INFINITY (~(uintptr_t) 0)
+/* Special value for refcount - tgt_offset contains target address of the
+   artificial pointer to "omp declare target link" object.  */
+#define REFCOUNT_LINK (~(uintptr_t) 1)
 
 struct splay_tree_key_s {
   /* Address of the host object.  */
@@ -831,6 +834,8 @@ struct splay_tree_key_s {
   uintptr_t refcount;
   /* Asynchronous reference count.  */
   uintptr_t async_refcount;
+  /* Pointer to the original mapping of "omp declare target link" object.  */
+  splay_tree_key link_key;
 };
 
 /* The comparison function.  */

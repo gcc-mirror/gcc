@@ -50,6 +50,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "gomp-constants.h"
 #include "lto-symtab.h"
+#include "stringpool.h"
+#include "fold-const.h"
 
 
 /* Number of parallel tasks to run, -1 if we want to use GNU Make jobserver.  */
@@ -3226,6 +3228,37 @@ lto_init (void)
 #endif
 }
 
+/* Create artificial pointers for "omp declare target link" vars.  */
+
+static void
+offload_handle_link_vars (void)
+{
+#ifdef ACCEL_COMPILER
+  varpool_node *var;
+  FOR_EACH_VARIABLE (var)
+    if (lookup_attribute ("omp declare target link",
+			  DECL_ATTRIBUTES (var->decl)))
+      {
+	tree type = build_pointer_type (TREE_TYPE (var->decl));
+	tree link_ptr_var = make_node (VAR_DECL);
+	TREE_TYPE (link_ptr_var) = type;
+	TREE_USED (link_ptr_var) = 1;
+	TREE_STATIC (link_ptr_var) = 1;
+	DECL_MODE (link_ptr_var) = TYPE_MODE (type);
+	DECL_SIZE (link_ptr_var) = TYPE_SIZE (type);
+	DECL_SIZE_UNIT (link_ptr_var) = TYPE_SIZE_UNIT (type);
+	DECL_ARTIFICIAL (link_ptr_var) = 1;
+	tree var_name = DECL_ASSEMBLER_NAME (var->decl);
+	char *new_name
+	  = ACONCAT ((IDENTIFIER_POINTER (var_name), "_linkptr", NULL));
+	DECL_NAME (link_ptr_var) = get_identifier (new_name);
+	SET_DECL_ASSEMBLER_NAME (link_ptr_var, DECL_NAME (link_ptr_var));
+	SET_DECL_VALUE_EXPR (var->decl, build_simple_mem_ref (link_ptr_var));
+	DECL_HAS_VALUE_EXPR_P (var->decl) = 1;
+      }
+#endif
+}
+
 
 /* Main entry point for the GIMPLE front end.  This front end has
    three main personalities:
@@ -3274,6 +3307,8 @@ lto_main (void)
 
   if (!seen_error ())
     {
+      offload_handle_link_vars ();
+
       /* If WPA is enabled analyze the whole call graph and create an
 	 optimization plan.  Otherwise, read in all the function
 	 bodies and continue with optimization.  */

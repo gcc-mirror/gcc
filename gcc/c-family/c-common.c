@@ -821,6 +821,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_simd_attribute, false },
   { "omp declare target",     0, 0, true, false, false,
 			      handle_omp_declare_target_attribute, false },
+  { "omp declare target link", 0, 0, true, false, false,
+			      handle_omp_declare_target_attribute, false },
   { "alloc_align",	      1, 1, false, true, true,
 			      handle_alloc_align_attribute, false },
   { "assume_aligned",	      1, 2, false, true, true,

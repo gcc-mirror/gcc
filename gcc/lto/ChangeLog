@@ -1,3 +1,9 @@
+2015-12-15  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* lto.c: Include stringpool.h and fold-const.h.
+	(offload_handle_link_vars): New static function.
+	(lto_main): Call offload_handle_link_vars.
+
 2015-12-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (lto_read_in_decl_state): Unpickle compressed bit.

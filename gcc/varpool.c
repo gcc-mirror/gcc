@@ -748,6 +748,13 @@ symbol_table::output_variables (void)
       /* Handled in output_in_order.  */
       if (node->no_reorder)
 	continue;
+#ifdef ACCEL_COMPILER
+      /* Do not assemble "omp declare target link" vars.  */
+      if (DECL_HAS_VALUE_EXPR_P (node->decl)
+	  && lookup_attribute ("omp declare target link",
+			       DECL_ATTRIBUTES (node->decl)))
+	continue;
+#endif
       if (node->assemble_decl ())
         changed = true;
     }
