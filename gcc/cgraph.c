@@ -2592,7 +2592,8 @@ collect_callers_of_node_1 (cgraph_node *node, void *data)
 
   if (avail > AVAIL_INTERPOSABLE)
     for (cs = node->callers; cs != NULL; cs = cs->next_caller)
-      if (!cs->indirect_inlining_edge)
+      if (!cs->indirect_inlining_edge
+	  && !cs->caller->thunk.thunk_p)
         redirect_callers->safe_push (cs);
   return false;
 }
