@@ -1,3 +1,25 @@
+2015-12-15  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/21802
+	PR c++/53223
+	* cp-tree.h (cp_tree_code_length): Declare.
+	(build_min_non_dep_op_overload): Declare.
+	* tree.c (cp_tree_code_length): Define.
+	(build_min_non_dep_op_overload): Define.
+	(build_win_non_dep_call_vec): Copy the KOENIG_LOOKUP_P flag.
+	* typeck.c (build_x_indirect_ref): Use
+	build_min_non_dep_op_overload when the given expression
+	has been resolved to an operator overload.
+	(build_x_binary_op): Likewise.
+	(build_x_array_ref): Likewise.
+	(build_x_unary_op): Likewise.
+	(build_x_compound_expr): Likewise.
+	(build_x_modify_expr): Likewise.
+	* decl2.c (grok_array_decl): Likewise.
+	* call.c (build_new_op_1): If during template processing we
+	chose an operator overload that is a hidden friend function, set
+	the call's KOENIG_LOOKUP_P flag to 1.
+
 2015-12-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68309

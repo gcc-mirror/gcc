@@ -5630,6 +5630,19 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 	    result = error_mark_node;
 	  else
 	    result = build_over_call (cand, LOOKUP_NORMAL, complain);
+
+	  if (processing_template_decl
+	      && result != NULL_TREE
+	      && result != error_mark_node
+	      && DECL_HIDDEN_FRIEND_P (cand->fn))
+	    {
+	      tree call = result;
+	      if (REFERENCE_REF_P (call))
+		call = TREE_OPERAND (call, 0);
+	      /* This prevents build_new_function_call from discarding this
+		 function during instantiation of the enclosing template.  */
+	      KOENIG_LOOKUP_P (call) = 1;
+	    }
 	}
       else
 	{

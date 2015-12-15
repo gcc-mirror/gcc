@@ -354,6 +354,7 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
   tree expr;
   tree orig_array_expr = array_expr;
   tree orig_index_exp = index_exp;
+  tree overload = NULL_TREE;
 
   if (error_operand_p (array_expr) || error_operand_p (index_exp))
     return error_mark_node;
@@ -379,7 +380,7 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
       if (decltype_p)
 	complain |= tf_decltype;
       expr = build_new_op (loc, ARRAY_REF, LOOKUP_NORMAL, array_expr,
-			   index_exp, NULL_TREE, /*overload=*/NULL, complain);
+			   index_exp, NULL_TREE, &overload, complain);
     }
   else
     {
@@ -424,8 +425,14 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
       expr = build_array_ref (input_location, array_expr, index_exp);
     }
   if (processing_template_decl && expr != error_mark_node)
-    return build_min_non_dep (ARRAY_REF, expr, orig_array_expr, orig_index_exp,
-			      NULL_TREE, NULL_TREE);
+    {
+      if (overload != NULL_TREE)
+	return (build_min_non_dep_op_overload
+		(ARRAY_REF, expr, overload, orig_array_expr, orig_index_exp));
+
+      return build_min_non_dep (ARRAY_REF, expr, orig_array_expr, orig_index_exp,
+				NULL_TREE, NULL_TREE);
+    }
   return expr;
 }
 
