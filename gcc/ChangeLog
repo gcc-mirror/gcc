@@ -1,3 +1,7 @@
+2015-12-15  Jason Merrill  <jason@redhat.com>
+
+	* hash-map.h, hash-table.h: Make copy constructors explicit.
+
 2015-12-15  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* cgraphunit.c (output_in_order): Do not assemble "omp declare target

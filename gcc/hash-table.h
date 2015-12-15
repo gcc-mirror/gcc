@@ -365,10 +365,10 @@ public:
 		       bool gather_mem_stats = GATHER_STATISTICS,
 		       mem_alloc_origin origin = HASH_TABLE_ORIGIN
 		       CXX_MEM_STAT_INFO);
-  hash_table (const hash_table &, bool ggc = false,
-	      bool gather_mem_stats = GATHER_STATISTICS,
-	      mem_alloc_origin origin = HASH_TABLE_ORIGIN
-	      CXX_MEM_STAT_INFO);
+  explicit hash_table (const hash_table &, bool ggc = false,
+		       bool gather_mem_stats = GATHER_STATISTICS,
+		       mem_alloc_origin origin = HASH_TABLE_ORIGIN
+		       CXX_MEM_STAT_INFO);
   ~hash_table ();
 
   /* Create a hash_table in gc memory.  */
