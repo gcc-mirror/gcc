@@ -1,3 +1,9 @@
+2015-12-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68907
+	* c-typeck.c (build_atomic_assign): Set TREE_NO_WARNING on an
+	artificial decl.
+
 2015-12-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-parser.c (c_parser_alignof_expression): Capture location of

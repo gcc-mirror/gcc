@@ -3814,6 +3814,7 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
   newval = create_tmp_var_raw (nonatomic_lhs_type);
   newval_addr = build_unary_op (loc, ADDR_EXPR, newval, 0);
   TREE_ADDRESSABLE (newval) = 1;
+  TREE_NO_WARNING (newval) = 1;
 
   loop_decl = create_artificial_label (loc);
   loop_label = build1 (LABEL_EXPR, void_type_node, loop_decl);

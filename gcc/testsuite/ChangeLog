@@ -1,3 +1,8 @@
+2015-12-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68907
+	* gcc.dg/pr68907.c: New test.
+
 2015-12-15  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 
 	* gfortran.dg/coarray_critical_1.f90: New.
