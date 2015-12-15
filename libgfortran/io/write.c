@@ -1405,9 +1405,16 @@ set_fnode_default (st_parameter_dt *dtp, fnode *f, int length)
       f->u.real.e = 4;
       break;
     case 16:
+      /* Adjust decimal precision depending on binary precision, 106 or 113.  */
+#if GFC_REAL_16_DIGITS == 113
       f->u.real.w = 45;
       f->u.real.d = 36;
       f->u.real.e = 4;
+#else
+      f->u.real.w = 41;
+      f->u.real.d = 32;
+      f->u.real.e = 4;
+#endif
       break;
     default:
       internal_error (&dtp->common, "bad real kind");
