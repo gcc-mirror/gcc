@@ -1,3 +1,15 @@
+2015-12-15  Tim Shen  <timshen@google.com>
+
+	Backport from mainline
+	2015-12-15  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/68863
+	* include/bits/regex_executor.tcc (_Executor::_M_lookahead):
+	Copy the captured content for lookahead, so that the backreferences
+	inside can refer to them.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/68863.cc:
+	New testcase.
+
 2015-12-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/doxygen/user.cfg.in: Use EXTENSION_MAPPING tag. Add new headers

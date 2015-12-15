@@ -147,7 +147,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
     _M_lookahead(_State<_TraitsT> __state)
     {
-      _ResultsVec __what(_M_cur_results.size());
+      // Backreferences may refer to captured content.
+      // We may want to make this faster by not copying,
+      // but let's not be clever prematurely.
+      _ResultsVec __what(_M_cur_results);
       _Executor __sub(_M_current, _M_end, __what, _M_re, _M_flags);
       __sub._M_states._M_start = __state._M_alt;
       if (__sub._M_search_from_first())
