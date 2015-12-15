@@ -1068,12 +1068,12 @@ collect_insn_data (rtx pattern, int *palt, int *pmax)
   switch (code)
     {
     case MATCH_OPERAND:
-      i = n_alternatives (XSTR (pattern, 2));
+    case MATCH_SCRATCH:
+      i = n_alternatives (XSTR (pattern, code == MATCH_SCRATCH ? 1 : 2));
       *palt = (i > *palt ? i : *palt);
       /* Fall through.  */
 
     case MATCH_OPERATOR:
-    case MATCH_SCRATCH:
     case MATCH_PARALLEL:
       i = XINT (pattern, 0);
       if (i > *pmax)
