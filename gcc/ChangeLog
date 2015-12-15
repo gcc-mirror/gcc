@@ -1,3 +1,23 @@
+2015-12-15  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* cgraphunit.c (output_in_order): Do not assemble "omp declare target
+	link" variables in ACCEL_COMPILER.
+	* gimplify.c (gimplify_adjust_omp_clauses): Do not remove mapping of
+	"omp declare target link" variables.
+	* omp-low.c (scan_sharing_clauses): Do not remove mapping of "omp
+	declare target link" variables.
+	(add_decls_addresses_to_decl_constructor): For "omp declare target link"
+	variables output address of the artificial pointer instead of address of
+	the variable.  Set most significant bit of the size to mark them.
+	(pass_data_omp_target_link): New pass_data.
+	(pass_omp_target_link): New class.
+	(find_link_var_op): New static function.
+	(make_pass_omp_target_link): New function.
+	* passes.def: Add pass_omp_target_link.
+	* tree-pass.h (make_pass_omp_target_link): Declare.
+	* varpool.c (symbol_table::output_variables): Do not assemble "omp
+	declare target link" variables in ACCEL_COMPILER.
+
 2015-12-15  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR middle-end/21273

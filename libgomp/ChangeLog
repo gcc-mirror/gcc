@@ -1,3 +1,21 @@
+2015-12-15  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* libgomp.h (REFCOUNT_LINK): Define.
+	(struct splay_tree_key_s): Add link_key.
+	* target.c (gomp_map_vars): Treat REFCOUNT_LINK objects as not mapped.
+	Replace target address of the pointer with target address of newly
+	mapped object in the splay tree.  Set link pointer on target to the
+	device address of the mapped object.
+	(gomp_unmap_vars): Restore target address of the pointer in the splay
+	tree for REFCOUNT_LINK objects after unmapping.
+	(gomp_load_image_to_device): Set refcount to REFCOUNT_LINK for "omp
+	declare target link" objects.
+	(gomp_unload_image_from_device): Replace j with i.  Force unmap of all
+	"omp declare target link" objects, which were mapped for the image.
+	(gomp_exit_data): Restore target address of the pointer in the splay
+	tree for REFCOUNT_LINK objects after unmapping.
+	* testsuite/libgomp.c/target-link-1.c: New file.
+
 2015-12-14  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* libgomp.h (gomp_device_state): New enum.

@@ -2210,6 +2210,13 @@ output_in_order (bool no_reorder)
 	  break;
 
 	case ORDER_VAR:
+#ifdef ACCEL_COMPILER
+	  /* Do not assemble "omp declare target link" vars.  */
+	  if (DECL_HAS_VALUE_EXPR_P (nodes[i].u.v->decl)
+	      && lookup_attribute ("omp declare target link",
+				   DECL_ATTRIBUTES (nodes[i].u.v->decl)))
+	    break;
+#endif
 	  nodes[i].u.v->assemble_decl ();
 	  break;
 

@@ -1,3 +1,8 @@
+2015-12-15  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* c-common.c (c_common_attribute_table): Handle "omp declare target
+	link" attribute.
+
 2015-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/68833
