@@ -1,3 +1,7 @@
+2015-12-15  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.target/visium/block_move.c: Skip for -mcpu=gr5.
+
 2015-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/66688

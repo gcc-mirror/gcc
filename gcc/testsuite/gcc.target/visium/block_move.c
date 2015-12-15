@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "no bmd in gr5" { "visium*-*-*" } { "-mcpu=gr5" } { "" } } */
 /* { dg-options "-O -mcpu=gr6" } */
 
 extern void abort (void);
