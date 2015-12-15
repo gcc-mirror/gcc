@@ -1,3 +1,8 @@
+2015-12-15  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+
+	* resolve.c (resolve_critical): Committing symbols of
+	lock variables.
+
 2014-12-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/68850
