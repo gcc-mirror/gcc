@@ -43,6 +43,7 @@ protected:
 class F
 {
 public:
+  int nelems;
   int elems[];
   int *
   m_fn1 ()

@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "convert.h"
 #include "dumpfile.h"
 #include "gimplify.h"
+#include "intl.h"
 
 /* The number of nested classes being processed.  If we are not in the
    scope of any class, this is zero.  */
@@ -145,6 +146,12 @@ static void build_base_fields (record_layout_info, splay_tree, tree *);
 static void check_methods (tree);
 static void remove_zero_width_bit_fields (tree);
 static bool accessible_nvdtor_p (tree);
+
+/* Used by find_flexarrays and related.  */
+struct flexmems_t;
+static void find_flexarrays (tree, flexmems_t *);
+static void diagnose_flexarrays (tree, const flexmems_t *);
+static void check_flexarrays (tree, flexmems_t * = NULL);
 static void check_bases (tree, int *, int *);
 static void check_bases_and_members (tree);
 static tree create_vtable_ptr (tree, tree *);
@@ -4114,7 +4121,10 @@ walk_subobject_offsets (tree type,
 
       /* Avoid recursing into objects that are not interesting.  */
       if (!CLASS_TYPE_P (element_type)
-	  || !CLASSTYPE_CONTAINS_EMPTY_CLASS_P (element_type))
+	  || !CLASSTYPE_CONTAINS_EMPTY_CLASS_P (element_type)
+	  || !domain
+	  /* Flexible array members have no upper bound.  */
+	  || !TYPE_MAX_VALUE (domain))
 	return 0;
 
       /* Step through each of the elements in the array.  */
@@ -5703,9 +5713,9 @@ check_bases_and_members (tree t)
   cant_have_const_ctor = 0;
   no_const_asn_ref = 0;
 
-  /* Check all the base-classes.  */
-  check_bases (t, &cant_have_const_ctor,
-	       &no_const_asn_ref);
+  /* Check all the base-classes and set FMEM members to point to arrays
+     of potential interest.  */
+  check_bases (t, &cant_have_const_ctor, &no_const_asn_ref);
 
   /* Deduce noexcept on destructors.  This needs to happen after we've set
      triviality flags appropriately for our bases.  */
@@ -6531,7 +6541,7 @@ layout_class_type (tree t, tree *virtuals_p)
       && TREE_CODE (TYPE_SIZE_UNIT (t)) == INTEGER_CST
       && !TREE_OVERFLOW (TYPE_SIZE_UNIT (t))
       && !valid_constant_size_p (TYPE_SIZE_UNIT (t)))
-    error ("type %qT is too large", t);
+    error ("size of type %qT is too large (%qE bytes)", t, TYPE_SIZE_UNIT (t));
 
   /* Warn about bases that can't be talked about due to ambiguity.  */
   warn_about_ambiguous_bases (t);
@@ -6597,9 +6607,262 @@ sorted_fields_type_new (int n)
   return sft;
 }
 
+/* Helper of find_flexarrays.  Return true when FLD refers to a non-static
+   class data member of non-zero size, otherwise false.  */
+
+static inline bool
+field_nonempty_p (const_tree fld)
+{
+  if (TREE_CODE (fld) == ERROR_MARK)
+    return false;
+
+  tree type = TREE_TYPE (fld);
+  if (TREE_CODE (fld) == FIELD_DECL
+      && TREE_CODE (type) != ERROR_MARK
+      && (DECL_NAME (fld) || RECORD_OR_UNION_TYPE_P (type)))
+    {
+      return TYPE_SIZE (type)
+	&& (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
+	    || !tree_int_cst_equal (size_zero_node, TYPE_SIZE (type)));
+    }
+
+  return false;
+}
+
+/* Used by find_flexarrays and related.  */
+struct flexmems_t {
+  /* The first flexible array member or non-zero array member found
+     in order of layout.  */
+  tree array;
+  /* First non-static non-empty data member in the class or its bases.  */
+  tree first;
+  /* First non-static non-empty data member following either the flexible
+     array member, if found, or the zero-length array member.  */
+  tree after;
+};
+
+/* Find either the first flexible array member or the first zero-length
+   array, in that order or preference, among members of class T (but not
+   its base classes), and set members of FMEM accordingly.  */
+
+static void
+find_flexarrays (tree t, flexmems_t *fmem)
+{
+  for (tree fld = TYPE_FIELDS (t), next; fld; fld = next)
+    {
+      /* Find the next non-static data member if it exists.  */
+      for (next = fld;
+	   (next = DECL_CHAIN (next))
+	     && TREE_CODE (next) != FIELD_DECL; );
+      
+      tree fldtype = TREE_TYPE (fld);
+      if (TREE_CODE (fld) != TYPE_DECL
+	  && RECORD_OR_UNION_TYPE_P (fldtype)
+	  && TYPE_ANONYMOUS_P (fldtype))
+	{
+	  /* Members of anonymous structs and unions are treated as if
+	     they were members of the containing class.  Descend into
+	     the anonymous struct or union and find a flexible array
+	     member or zero-length array among its fields.  */
+	  find_flexarrays (fldtype, fmem);
+	  continue;
+	}
+
+      /* Skip anything that's not a (non-static) data member.  */
+      if (TREE_CODE (fld) != FIELD_DECL)
+	continue;
+
+      /* Skip virtual table pointers.  */
+      if (DECL_ARTIFICIAL (fld))
+	continue;
+
+      if (field_nonempty_p (fld))
+	{
+	  /* Remember the first non-static data member.  */
+	  if (!fmem->first)
+	    fmem->first = fld;
+	  
+	  /* Remember the first non-static data member after the flexible
+	     array member, if one has been found, or the zero-length array
+	     if it has been found.  */
+	  if (!fmem->after && fmem->array)
+	    fmem->after = fld;
+	}
+	    
+      /* Skip non-arrays.  */
+      if (TREE_CODE (fldtype) != ARRAY_TYPE)
+	continue;
+
+      /* Determine the upper bound of the array if it has one.  */
+      tree dom = TYPE_DOMAIN (fldtype);
+
+      if (dom && TYPE_MAX_VALUE (dom))
+	{
+	  if (fmem->array)
+	    {
+	      /* Make a record of the zero-length array if either one
+		 such field or a flexible array member has been seen to
+		 handle the pathological and unlikely case of multiple
+		 such members.  */
+	      if (!fmem->after)
+		fmem->after = fld;
+	    }
+	  else if (integer_all_onesp (TYPE_MAX_VALUE (dom)))
+	    /* Remember the first zero-length array unless a flexible array
+	       member has already been seen.  */
+	    fmem->array = fld;
+	}
+      else
+	{
+	  /* Flexible array members have no upper bound.  */
+	  if (fmem->array)
+	    {
+	      /* Replace the zero-length array if it's been stored and
+		 reset the after pointer.  */
+	      dom = TYPE_DOMAIN (TREE_TYPE (fmem->array));
+	      if (dom && TYPE_MAX_VALUE (dom))
+		{
+		  fmem->array = fld;
+		  fmem->after = NULL_TREE;
+		}
+	    }
+	  else	
+	    fmem->array = fld;
+	}
+    }
+}
+
+/* Issue diagnostics for invalid flexible array members or zero-length
+   arrays that are not the last elements of the containing class or its
+   base classes or that are its sole members.  */
+
+static void
+diagnose_flexarrays (tree t, const flexmems_t *fmem)
+{
+  /* Members of anonymous structs and unions are considered to be members
+     of the containing struct or union.  */
+  if (TYPE_ANONYMOUS_P (t) || !fmem->array)
+    return;
+
+  const char *msg = 0;
+
+  const_tree dom = TYPE_DOMAIN (TREE_TYPE (fmem->array));
+  if (dom && TYPE_MAX_VALUE (dom))
+    {
+      if (fmem->after)
+	msg = G_("zero-size array member %qD not at end of %q#T");
+      else if (!fmem->first)
+	msg = G_("zero-size array member %qD in an otherwise empty %q#T");
+
+      if (msg && pedwarn (DECL_SOURCE_LOCATION (fmem->array),
+			  OPT_Wpedantic, msg, fmem->array, t))
+
+	inform (location_of (t), "in the definition of %q#T", t);
+    }
+  else
+    {
+      if (fmem->after)
+	msg = G_("flexible array member %qD not at end of %q#T");
+      else if (!fmem->first)
+	msg = G_("flexible array member %qD in an otherwise empty %q#T");
+
+      if (msg)
+	{
+	  error_at (DECL_SOURCE_LOCATION (fmem->array), msg,
+		    fmem->array, t);
+
+	  /* In the unlikely event that the member following the flexible
+	     array member is declared in a different class, point to it.
+	     Otherwise it should be obvious.  */
+	  if (fmem->after
+	      && (DECL_CONTEXT (fmem->after) != DECL_CONTEXT (fmem->array)))
+	      inform (DECL_SOURCE_LOCATION (fmem->after),
+		      "next member %q#D declared here",
+		      fmem->after);
+	  
+	  inform (location_of (t), "in the definition of %q#T", t);
+	}
+    }
+}
+
+
+/* Recursively check to make sure that any flexible array or zero-length
+   array members of class T or its bases are valid (i.e., not the sole
+   non-static data member of T and, if one exists, that it is the last
+   non-static data member of T and its base classes.  FMEM is expected
+   to be initially null and is used internally by recursive calls to
+   the function.  Issue the appropriate diagnostics for the array member
+   that fails the checks.  */
+
+static void
+check_flexarrays (tree t, flexmems_t *fmem /* = NULL */)
+{
+  /* Initialize the result of a search for flexible array and zero-length
+     array members.  Avoid doing any work if the most interesting FMEM data
+     have already been populated.  */
+  flexmems_t flexmems = flexmems_t ();
+  if (!fmem)
+    fmem = &flexmems;
+  else if (fmem->array && fmem->first && fmem->after)
+    return;
+
+  /* Recursively check the primary base class first.  */
+  if (CLASSTYPE_HAS_PRIMARY_BASE_P (t))
+    {
+      tree basetype = BINFO_TYPE (CLASSTYPE_PRIMARY_BINFO (t));
+      check_flexarrays (basetype, fmem);
+    }
+
+  /* Recursively check the base classes.  */
+  int nbases = BINFO_N_BASE_BINFOS (TYPE_BINFO (t));
+  for (int i = 0; i < nbases; ++i)
+    {
+      tree base_binfo = BINFO_BASE_BINFO (TYPE_BINFO (t), i);
+
+      /* The primary base class was already checked above.  */
+      if (base_binfo == CLASSTYPE_PRIMARY_BINFO (t))
+	continue;
+
+      /* Virtual base classes are at the end.  */
+      if (BINFO_VIRTUAL_P (base_binfo))
+	continue;
+
+      /* Check the base class.  */
+      check_flexarrays (BINFO_TYPE (base_binfo), fmem);
+    }
+
+  if (fmem == &flexmems)
+    {
+      /* Check virtual base classes only once per derived class.
+	 I.e., this check is not performed recursively for base
+	 classes.  */
+      int i;
+      tree base_binfo;
+      vec<tree, va_gc> *vbases;
+      for (vbases = CLASSTYPE_VBASECLASSES (t), i = 0;
+	   vec_safe_iterate (vbases, i, &base_binfo); i++)
+	{
+	  /* Check the virtual base class.  */
+	  tree basetype = TREE_TYPE (base_binfo);
+
+	  check_flexarrays (basetype, fmem);
+	}
+    }
+
+  /* Search the members of the current (derived) class.  */
+  find_flexarrays (t, fmem);
+
+  if (fmem == &flexmems)
+    { 
+      /* Issue diagnostics for invalid flexible and zero-length array members
+	 found in base classes or among the members of the current class.  */
+      diagnose_flexarrays (t, fmem);
+    }
+}
 
 /* Perform processing required when the definition of T (a class type)
-   is complete.  */
+   is complete.  Diagnose invalid definitions of flexible array members
+   and zero-size arrays.  */
 
 void
 finish_struct_1 (tree t)
@@ -6660,6 +6923,11 @@ finish_struct_1 (tree t)
     /* We use the base type for trivial assignments, and hence it
        needs a mode.  */
     compute_record_mode (CLASSTYPE_AS_BASE (t));
+
+  /* With the layout complete, check for flexible array members and
+     zero-length arrays that might overlap other members in the final
+     layout.  */
+  check_flexarrays (t);
 
   virtuals = modify_all_vtables (t, nreverse (virtuals));
 

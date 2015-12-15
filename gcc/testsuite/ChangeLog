@@ -1,3 +1,32 @@
+2015-12-15  Martin Sebor  <msebor@redhat.com>
+
+	c++/42121
+	c++/68478
+	c++/68613
+	c++/68689
+	c++/68710
+	* g++.dg/compat/struct-layout-1_generate.c: Avoid generating
+	further fields after the first flexible array member.
+	* g++.dg/ext/flexary2.C: Expect a sole flexible array member
+	to be rejected.  Add a test case exercising zero-length array.
+	* g++.dg/ext/flexary3.C: Expect a sole flexible array member
+	to be rejected.
+	* g++.dg/ext/flexary.h: New file.
+	* g++.dg/ext/flexary4.C: New file.
+	* g++.dg/ext/flexary5.C: New file.
+	* g++.dg/ext/flexary6.C: New file.
+	* g++.dg/ext/flexary7.C: New file.
+	* g++.dg/ext/flexary8.C: New file.
+	* g++.dg/other/dump-ada-spec-2.C: Adjust to reflect flexible
+	array members.
+	* g++.dg/parse/pr43765.C: Add a member to make a struct with
+	a flexible array member valid.  Adjust expected error message.
+	* g++.dg/torture/pr64280.C: Expect a sole flexible array member
+	to be rejected.
+	* g++.dg/torture/pr64312.C: Add a member to make a struct with
+	a flexible array member valid.
+	* g++.dg/ubsan/object-size-1.C: Adjust expected diagnostic.
+
 2015-12-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c/68907

@@ -1664,8 +1664,10 @@ chkp_find_bound_slots_1 (const_tree type, bitmap have_bound,
 				     offs + field_offs);
 	  }
     }
-  else if (TREE_CODE (type) == ARRAY_TYPE)
+  else if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
     {
+      /* The object type is an array of complete type, i.e., other
+	 than a flexible array.  */
       tree maxval = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
       tree etype = TREE_TYPE (type);
       HOST_WIDE_INT esize = TREE_INT_CST_LOW (TYPE_SIZE (etype));

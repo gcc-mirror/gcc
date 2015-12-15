@@ -1,3 +1,30 @@
+2015-12-15  Martin Sebor  <msebor@redhat.com>
+
+	c++/42121
+	c++/68478
+	c++/68613
+	c++/68689
+	c++/68710
+	* class.c (walk_subobject_offsets): Avoid assuming type domain
+	is non-null or has an upper bound.
+	(layout_class_type): Include type size in error message.
+	(flexmems_t): New type.
+	(field_nonempty_p, find_flexarrays, diagnose_flexarrays)
+	(check_flexarrays): New	functions.
+	(finish_struct_1): Call check_flexarrays.
+	* decl.c (compute_array_index_type): Distinguish flexible array
+	members from zero-length arrays.
+	(grokdeclarator): Reject flexible array members in unions.  Avoid
+	rejecting members of incomplete types that are flexible array members.
+	* error.c (dump_type_suffix): Handle flexible array members with null
+	upper bound.
+	* init.c (perform_member_init): Same.
+	* pt.c (instantiate_class_template_1): Allow flexible array members.
+	(tsubst): Handle flexible array members with null upper bound.
+	* typeck2.c (digest_init_r): Warn for initialization of flexible
+	array members.
+	(process_init_constructor_record): Handle flexible array members.
+
 2015-12-15  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/21802

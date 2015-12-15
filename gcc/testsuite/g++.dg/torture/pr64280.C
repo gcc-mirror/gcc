@@ -15,7 +15,7 @@ public:
 typedef int jmp_buf[];
 struct C
 {
-  jmp_buf cond_;
+  jmp_buf cond_;   // { dg-error "flexible array member" }
 };
 class F
 {

@@ -1,3 +1,15 @@
+2015-12-15  Martin Sebor  <msebor@redhat.com>
+
+	c++/42121
+	* tree-chkp.c (chkp_find_bound_slots_1): Handle flexible array
+	members.
+	* tree.c (type_contains_placeholder_1): Avoid assuming type has
+	a non-null domain or an upper bound to handle flexible array
+	members.
+	* varasm.c (output_constructor_regular_field):  Same.
+	(output_constructor): Set min_index to integer_zero_node rather
+	than null when a type has no domain to avoid crashing later.
+
 2015-12-15  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (write_one_arg): Rename to ...
