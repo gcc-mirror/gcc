@@ -8643,6 +8643,7 @@ resolve_critical (gfc_code *code)
   symtree->n.sym->as->cotype = AS_EXPLICIT;
   symtree->n.sym->as->lower[0] = gfc_get_int_expr (gfc_default_integer_kind,
 						   NULL, 1);
+  gfc_commit_symbols();
 }
 
 
