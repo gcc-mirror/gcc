@@ -852,7 +852,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     public:
       template<typename _CVArg, typename _Tuple>
 	_CVArg&&
-	operator()(_CVArg&& __arg, _Tuple&) const
+	operator()(_CVArg&& __arg, _Tuple&) const volatile
 	{ return std::forward<_CVArg>(__arg); }
     };
 

@@ -1,5 +1,8 @@
 2015-12-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/functional (_Mu<_Arg, false, false>::operator()): Restore
+	accidentally-removed volatile qualifier.
+
 	* include/std/functional (is_placeholder, is_bind_expression): Update
 	comments.
 	(_Safe_tuple_element): Replace with _Safe_tuple_element_t alias
