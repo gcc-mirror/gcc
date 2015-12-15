@@ -186,7 +186,7 @@ cleanup_control_flow_bb (basic_block bb)
      we need to prune cfg.  */
   retval |= gimple_purge_dead_eh_edges (bb);
 
-  gsi = gsi_last_bb (bb);
+  gsi = gsi_last_nondebug_bb (bb);
   if (gsi_end_p (gsi))
     return retval;
 
@@ -197,7 +197,10 @@ cleanup_control_flow_bb (basic_block bb)
 
   if (gimple_code (stmt) == GIMPLE_COND
       || gimple_code (stmt) == GIMPLE_SWITCH)
-    retval |= cleanup_control_expr_graph (bb, gsi);
+    {
+      gcc_checking_assert (gsi_stmt (gsi_last_bb (bb)) == stmt);
+      retval |= cleanup_control_expr_graph (bb, gsi);
+    }
   else if (gimple_code (stmt) == GIMPLE_GOTO
 	   && TREE_CODE (gimple_goto_dest (stmt)) == ADDR_EXPR
 	   && (TREE_CODE (TREE_OPERAND (gimple_goto_dest (stmt), 0))
@@ -210,6 +213,7 @@ cleanup_control_flow_bb (basic_block bb)
       edge_iterator ei;
       basic_block target_block;
 
+      gcc_checking_assert (gsi_stmt (gsi_last_bb (bb)) == stmt);
       /* First look at all the outgoing edges.  Delete any outgoing
 	 edges which do not go to the right block.  For the one
 	 edge which goes to the right block, fix up its flags.  */
@@ -242,9 +246,15 @@ cleanup_control_flow_bb (basic_block bb)
   /* Check for indirect calls that have been turned into
      noreturn calls.  */
   else if (is_gimple_call (stmt)
-           && gimple_call_noreturn_p (stmt)
-           && remove_fallthru_edge (bb->succs))
-    retval = true;
+	   && gimple_call_noreturn_p (stmt))
+    {
+      /* If there are debug stmts after the noreturn call, remove them
+	 now, they should be all unreachable anyway.  */
+      for (gsi_next (&gsi); !gsi_end_p (gsi); )
+	gsi_remove (&gsi, true);
+      if (remove_fallthru_edge (bb->succs))
+	retval = true;
+    }
 
   return retval;
 }
