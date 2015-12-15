@@ -1,3 +1,7 @@
+2015-12-15  Alessandro Fanfarillo <fanfarillo.gcc@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2015-12-02  Ian Lance Taylor  <iant@google.com>
 
 	PR go/66147
