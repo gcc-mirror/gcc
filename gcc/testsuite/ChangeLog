@@ -1,3 +1,7 @@
+2015-12-14svn commit   Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/quad_2.f90: Update test.
+
 2015-12-14  Steve Ellcey  <sellcey@imgtec.com>
 
 	* gcc.dg/tree-ssa/ssa-fre-4.c: Remove mips*-*-* target.

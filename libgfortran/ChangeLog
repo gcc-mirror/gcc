@@ -1,3 +1,9 @@
+2015-12-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/pr68867
+	* io/write.c (set_fnode_default): For kind=16, set the decimal precision
+	depending on the platform binary precision, 106 or 113.
+
 2015-12-05  Juoko Orava <jouko.orava@iki.fi>
 
 	PR fortran/50201
