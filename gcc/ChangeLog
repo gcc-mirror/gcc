@@ -1,5 +1,23 @@
 2015-12-15  Nathan Sidwell  <nathan@acm.org>
 
+	* config/nvptx/nvptx.c (write_one_arg): Rename to ...
+	(write_arg_mode): ... here.  Update callers.
+	(write_arg): Rename to ...
+	(write__arg_type): ... here.  Update callers.
+	(write_return_mode): New fn, broken out of ...
+	(write_return): ... here.  Rename to ...
+	(write_return_type): ... here.  Call it. Update callers.
+	(write_fn_proto_from_insn): Use write_arg_mode and
+	write_return_mode.
+	(init_frame): New fn.
+	(nvptx_declare_function_name): Call it for frame and varargs. Only
+	emit outgoing static chain, if it's live.
+	(nvptx_output_return): Use reg_names for return reg name.
+	(nvptx_output_call_insn): Likewise.
+	(nvptx_reorg): Mark unused hard regs too.
+
+2015-12-15  Nathan Sidwell  <nathan@acm.org>
+
 	* config/nvptx/nvptx.md (nvptx_register_operand): Don't accept and
 	then reject subregs.
 	(nvptx_reg_or_mem_operand): Likewise.
