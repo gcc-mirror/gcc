@@ -144,7 +144,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
     _M_lookahead(_State<_TraitsT> __state)
     {
-      _ResultsVec __what(_M_cur_results.size());
+      // Backreferences may refer to captured content.
+      // We may want to make this faster by not copying,
+      // but let's not be clever prematurely.
+      _ResultsVec __what(_M_cur_results);
       auto __sub = std::unique_ptr<_Executor>(new _Executor(_M_current,
 							    _M_end,
 							    __what,
