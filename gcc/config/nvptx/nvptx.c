@@ -516,7 +516,10 @@ nvptx_function_value (const_tree type, const_tree ARG_UNUSED (func),
   machine_mode mode = promote_return (TYPE_MODE (type));
 
   if (outgoing)
-    return gen_rtx_REG (mode, NVPTX_RETURN_REGNUM);
+    {
+      cfun->machine->ret_reg_mode = mode;
+      return gen_rtx_REG (mode, NVPTX_RETURN_REGNUM);
+    }
 
   return nvptx_libcall_value (mode, NULL_RTX);
 }
@@ -586,8 +589,6 @@ write_one_arg (std::stringstream &s, int for_reg, int argno, machine_mode mode)
       /* Writing PTX prototype.  */
       s << (argno ? ", " : " (");
       s << ".param" << ptx_type << " %in_ar" << argno;
-      if (mode == QImode || mode == HImode)
-	s << "[1]";
     }
   else
     {
@@ -674,6 +675,7 @@ write_return (std::stringstream &s, bool for_proto, tree type)
 	 this data, but more importantly for us, we must ensure it
 	 doesn't change the PTX prototype.  */
       mode = (machine_mode) cfun->machine->ret_reg_mode;
+
       if (mode == VOIDmode)
 	return return_in_mem;
 
@@ -834,7 +836,7 @@ write_fn_proto_from_insn (std::stringstream &s, const char *name,
 
   if (result != NULL_RTX)
     s << "(.param"
-      << nvptx_ptx_type_from_mode (arg_promotion (GET_MODE (result)), false)
+      << nvptx_ptx_type_from_mode (GET_MODE (result), false)
       << " %rval) ";
 
   s << name;
@@ -1049,11 +1051,8 @@ nvptx_output_return (void)
   machine_mode mode = (machine_mode)cfun->machine->ret_reg_mode;
 
   if (mode != VOIDmode)
-    {
-      mode = arg_promotion (mode);
-      fprintf (asm_out_file, "\tst.param%s\t[%%out_retval], %%retval;\n",
-	       nvptx_ptx_type_from_mode (mode, false));
-    }
+    fprintf (asm_out_file, "\tst.param%s\t[%%out_retval], %%retval;\n",
+	     nvptx_ptx_type_from_mode (mode, false));
 
   return "ret;";
 }
@@ -1804,12 +1803,6 @@ nvptx_output_mov_insn (rtx dst, rtx src)
   machine_mode src_inner = (GET_CODE (src) == SUBREG
 			    ? GET_MODE (XEXP (src, 0)) : dst_mode);
 
-  if (REG_P (dst) && REGNO (dst) == NVPTX_RETURN_REGNUM && dst_mode == HImode)
-    /* Special handling for the return register.  It's never really an
-       HI object, and only occurs as the destination of a move
-       insn.  */
-    dst_inner = SImode;
-
   if (src_inner == dst_inner)
     return "%.\tmov%t0\t%0, %1;";
 
@@ -1841,8 +1834,7 @@ nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
   fprintf (asm_out_file, "\t{\n");
   if (result != NULL)
     fprintf (asm_out_file, "\t\t.param%s %%retval_in;\n",
-	     nvptx_ptx_type_from_mode (arg_promotion (GET_MODE (result)),
-				       false));
+	     nvptx_ptx_type_from_mode (GET_MODE (result), false));
 
   /* Ensure we have a ptx declaration in the output if necessary.  */
   if (GET_CODE (callee) == SYMBOL_REF)

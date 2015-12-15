@@ -280,16 +280,6 @@
   ""
 {
   operands[1] = nvptx_maybe_convert_symbolic_operand (operands[1]);
-  /* Record the mode of the return register so that we can prevent
-     later optimization passes from changing it.  */
-  if (REG_P (operands[0]) && REGNO (operands[0]) == NVPTX_RETURN_REGNUM
-      && cfun)
-    {
-      if (cfun->machine->ret_reg_mode == VOIDmode)
-	cfun->machine->ret_reg_mode = GET_MODE (operands[0]);
-      else
-        gcc_assert (cfun->machine->ret_reg_mode == GET_MODE (operands[0]));
-    }
 
   /* Hard registers are often actually symbolic operands on this target.
      Don't allow them when storing to memory.  */
