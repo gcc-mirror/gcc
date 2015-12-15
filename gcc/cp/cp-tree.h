@@ -6477,6 +6477,7 @@ extern bool is_lambda_ignored_entity            (tree);
 
 /* in tree.c */
 extern int cp_tree_operand_length		(const_tree);
+extern int cp_tree_code_length			(enum tree_code);
 void cp_free_lang_data 				(tree t);
 extern tree force_target_expr			(tree, tree, tsubst_flags_t);
 extern tree build_target_expr_with_type		(tree, tree, tsubst_flags_t);
@@ -6513,6 +6514,7 @@ extern tree build_min				(enum tree_code, tree, ...);
 extern tree build_min_nt_loc			(location_t, enum tree_code,
 						 ...);
 extern tree build_min_non_dep			(enum tree_code, tree, ...);
+extern tree build_min_non_dep_op_overload	(enum tree_code, tree, tree, ...);
 extern tree build_min_non_dep_call_vec		(tree, tree, vec<tree, va_gc> *);
 extern tree build_cplus_new			(tree, tree, tsubst_flags_t);
 extern tree build_aggr_init_expr		(tree, tree);

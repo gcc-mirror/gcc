@@ -1,4 +1,12 @@
-2015-12-14svn commit   Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2015-12-15  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/21802
+	PR c++/53223
+	* g++.dg/cpp0x/pr53223.C: New test.
+	* g++.dg/lookup/pr21802.C: New test.
+	* g++.dg/lookup/two-stage4.C: Remove XFAIL.
+
+2015-12-14 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/quad_2.f90: Update test.
 
