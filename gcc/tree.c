@@ -3581,9 +3581,10 @@ type_contains_placeholder_1 (const_tree type)
 	      || CONTAINS_PLACEHOLDER_P (TYPE_MAX_VALUE (type)));
 
     case ARRAY_TYPE:
-      /* We have already checked the component type above, so just check the
-	 domain type.  */
-      return type_contains_placeholder_p (TYPE_DOMAIN (type));
+      /* We have already checked the component type above, so just check
+	 the domain type.  Flexible array members have a null domain.  */
+      return TYPE_DOMAIN (type) ?
+	type_contains_placeholder_p (TYPE_DOMAIN (type)) : false;
 
     case RECORD_TYPE:
     case UNION_TYPE:

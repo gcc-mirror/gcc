@@ -1013,6 +1013,14 @@ digest_init_r (tree type, tree init, bool nested, int flags,
      them if they were present.  */
   if (code == ARRAY_TYPE)
     {
+      if (nested
+	  && (!TYPE_DOMAIN (type) || !TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
+	{
+	  /* Flexible array members do not have an upper bound.  */
+	  pedwarn (EXPR_LOC_OR_LOC (init, input_location), OPT_Wpedantic,
+		   "initialization of a flexible array member");
+	}
+      
       tree typ1 = TYPE_MAIN_VARIANT (TREE_TYPE (type));
       if (char_type_p (typ1)
 	  /*&& init */
@@ -1051,8 +1059,11 @@ digest_init_r (tree type, tree init, bool nested, int flags,
 	      init = copy_node (init);
 	      TREE_TYPE (init) = type;
 	    }
-	  if (TYPE_DOMAIN (type) != 0 && TREE_CONSTANT (TYPE_SIZE (type)))
+	  if (TYPE_DOMAIN (type)
+	      && TYPE_MAX_VALUE (TYPE_DOMAIN (type))
+	      && TREE_CONSTANT (TYPE_SIZE (type)))
 	    {
+	      /* Not a flexible array member.  */
 	      int size = TREE_INT_CST_LOW (TYPE_SIZE (type));
 	      size = (size + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
 	      /* In C it is ok to subtract 1 from the length of the string
@@ -1240,8 +1251,10 @@ process_init_constructor_array (tree type, tree init,
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       tree domain = TYPE_DOMAIN (type);
-      if (domain && TREE_CONSTANT (TYPE_MAX_VALUE (domain)))
-	len = wi::ext (wi::to_offset (TYPE_MAX_VALUE (domain))
+      /* Flexible array members have no upper bound.  */
+      tree maxval = domain ? TYPE_MAX_VALUE (domain) : NULL_TREE;
+      if (domain && maxval && TREE_CONSTANT (maxval))
+	len = wi::ext (wi::to_offset (maxval)
 		       - wi::to_offset (TYPE_MIN_VALUE (domain)) + 1,
 		       TYPE_PRECISION (TREE_TYPE (domain)),
 		       TYPE_SIGN (TREE_TYPE (domain))).to_uhwi ();
@@ -1417,14 +1430,15 @@ process_init_constructor_record (tree type, tree init,
 	}
       else
 	{
-	  if (TREE_CODE (TREE_TYPE (field)) == REFERENCE_TYPE)
+	  const_tree fldtype = TREE_TYPE (field);
+	  if (TREE_CODE (fldtype) == REFERENCE_TYPE)
 	    {
 	      if (complain & tf_error)
 		error ("member %qD is uninitialized reference", field);
 	      else
 		return PICFLAG_ERRONEOUS;
 	    }
-	  else if (CLASSTYPE_REF_FIELDS_NEED_INIT (TREE_TYPE (field)))
+	  else if (CLASSTYPE_REF_FIELDS_NEED_INIT (fldtype))
 	    {
 	      if (complain & tf_error)
 		error ("member %qD with uninitialized reference fields", field);
@@ -1433,13 +1447,17 @@ process_init_constructor_record (tree type, tree init,
 	    }
 
 	  /* Warn when some struct elements are implicitly initialized
-	     to zero.  */
-	  if ((complain & tf_warning)
+	     to zero.  However, avoid issuing the warning for flexible
+	     array members since they need not have any elements.  */
+	  if ((TREE_CODE (fldtype) != ARRAY_TYPE
+	       || (TYPE_DOMAIN (fldtype)
+		   && TYPE_MAX_VALUE (TYPE_DOMAIN (fldtype))))
+	      && (complain & tf_warning)
 	      && !EMPTY_CONSTRUCTOR_P (init))
 	    warning (OPT_Wmissing_field_initializers,
 		     "missing initializer for member %qD", field);
 
-	  if (!zero_init_p (TREE_TYPE (field))
+	  if (!zero_init_p (fldtype)
 	      || skipped < 0)
 	    next = build_zero_init (TREE_TYPE (field), /*nelts=*/NULL_TREE,
 				    /*static_storage_p=*/false);
