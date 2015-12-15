@@ -1,5 +1,11 @@
 2015-12-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/functional (is_placeholder, is_bind_expression): Update
+	comments.
+	(_Safe_tuple_element): Replace with _Safe_tuple_element_t alias
+	template.
+	(_Mu): Remove vestigial TR1 return types and update coments.
+
 	PR libstdc++/68912
 	* include/std/functional (_Bind::operator()): Use lvalue functor to
 	deduce return type.

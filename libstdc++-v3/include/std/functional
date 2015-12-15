@@ -654,9 +654,11 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     }
 
   /**
-   *  @brief Determines if the given type _Tp is a function object
+   *  @brief Determines if the given type _Tp is a function object that
    *  should be treated as a subexpression when evaluating calls to
-   *  function objects returned by bind(). [TR1 3.6.1]
+   *  function objects returned by bind().
+   *
+   *  C++11 [func.bind.isbind].
    *  @ingroup binders
    */
   template<typename _Tp>
@@ -665,7 +667,9 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
   /**
    *  @brief Determines if the given type _Tp is a placeholder in a
-   *  bind() expression and, if so, which placeholder it is. [TR1 3.6.2]
+   *  bind() expression and, if so, which placeholder it is.
+   *
+   *  C++11 [func.bind.isplace].
    *  @ingroup binders
    */
   template<typename _Tp>
@@ -740,45 +744,16 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     : public integral_constant<int, _Num>
     { };
 
-  /**
-   * Used by _Safe_tuple_element to indicate that there is no tuple
-   * element at this position.
-   */
-  struct _No_tuple_element;
 
-  /**
-   * Implementation helper for _Safe_tuple_element. This primary
-   * template handles the case where it is safe to use @c
-   * tuple_element.
-   */
-  template<std::size_t __i, typename _Tuple, bool _IsSafe>
-    struct _Safe_tuple_element_impl
-    : tuple_element<__i, _Tuple> { };
-
-  /**
-   * Implementation helper for _Safe_tuple_element. This partial
-   * specialization handles the case where it is not safe to use @c
-   * tuple_element. We just return @c _No_tuple_element.
-   */
-  template<std::size_t __i, typename _Tuple>
-    struct _Safe_tuple_element_impl<__i, _Tuple, false>
-    {
-      typedef _No_tuple_element type;
-    };
-
-  /**
-   * Like tuple_element, but returns @c _No_tuple_element when
-   * tuple_element would return an error.
-   */
+  // Like tuple_element_t but SFINAE-friendly.
  template<std::size_t __i, typename _Tuple>
-   struct _Safe_tuple_element
-   : _Safe_tuple_element_impl<__i, _Tuple,
-			      (__i < tuple_size<_Tuple>::value)>
-   { };
+   using _Safe_tuple_element_t
+     = typename enable_if<(__i < tuple_size<_Tuple>::value),
+			  tuple_element<__i, _Tuple>>::type::type;
 
   /**
    *  Maps an argument to bind() into an actual argument to the bound
-   *  function object [TR1 3.6.3/5]. Only the first parameter should
+   *  function object [func.bind.bind]/10. Only the first parameter should
    *  be specified: the rest are used to determine among the various
    *  implementations. Note that, although this class is a function
    *  object, it isn't entirely normal because it takes only two
@@ -794,20 +769,19 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
   /**
    *  If the argument is reference_wrapper<_Tp>, returns the
-   *  underlying reference. [TR1 3.6.3/5 bullet 1]
+   *  underlying reference.
+   *  C++11 [func.bind.bind] p10 bullet 1.
    */
   template<typename _Tp>
     class _Mu<reference_wrapper<_Tp>, false, false>
     {
     public:
-      typedef _Tp& result_type;
-
       /* Note: This won't actually work for const volatile
        * reference_wrappers, because reference_wrapper::get() is const
        * but not volatile-qualified. This might be a defect in the TR.
        */
       template<typename _CVRef, typename _Tuple>
-	result_type
+	_Tp&
 	operator()(_CVRef& __arg, _Tuple&) const volatile
 	{ return __arg.get(); }
     };
@@ -815,7 +789,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
   /**
    *  If the argument is a bind expression, we invoke the underlying
    *  function object with the same cv-qualifiers as we are given and
-   *  pass along all of our arguments (unwrapped). [TR1 3.6.3/5 bullet 2]
+   *  pass along all of our arguments (unwrapped).
+   *  C++11 [func.bind.bind] p10 bullet 2.
    */
   template<typename _Arg>
     class _Mu<_Arg, true, false>
@@ -849,58 +824,35 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
   /**
    *  If the argument is a placeholder for the Nth argument, returns
    *  a reference to the Nth argument to the bind function object.
-   *  [TR1 3.6.3/5 bullet 3]
+   *  C++11 [func.bind.bind] p10 bullet 3.
    */
   template<typename _Arg>
     class _Mu<_Arg, false, true>
     {
     public:
-      template<typename _Signature> class result;
-
-      template<typename _CVMu, typename _CVArg, typename _Tuple>
-	class result<_CVMu(_CVArg, _Tuple)>
-	{
-	  // Add a reference, if it hasn't already been done for us.
-	  // This allows us to be a little bit sloppy in constructing
-	  // the tuple that we pass to result_of<...>.
-	  typedef typename _Safe_tuple_element<(is_placeholder<_Arg>::value
-						- 1), _Tuple>::type
-	    __base_type;
-
-	public:
-	  typedef typename add_rvalue_reference<__base_type>::type type;
-	};
-
       template<typename _Tuple>
-	typename result<_Mu(_Arg, _Tuple)>::type
+	_Safe_tuple_element_t<(is_placeholder<_Arg>::value - 1), _Tuple>&&
 	operator()(const volatile _Arg&, _Tuple& __tuple) const volatile
 	{
-	  return std::forward<typename result<_Mu(_Arg, _Tuple)>::type>(
+	  using __type
+	    = __tuple_element_t<(is_placeholder<_Arg>::value - 1), _Tuple>;
+	  return std::forward<__type>(
 	      ::std::get<(is_placeholder<_Arg>::value - 1)>(__tuple));
 	}
     };
 
   /**
    *  If the argument is just a value, returns a reference to that
-   *  value. The cv-qualifiers on the reference are the same as the
-   *  cv-qualifiers on the _Mu object. [TR1 3.6.3/5 bullet 4]
+   *  value. The cv-qualifiers on the reference are determined by the caller.
+   *  C++11 [func.bind.bind] p10 bullet 4.
    */
   template<typename _Arg>
     class _Mu<_Arg, false, false>
     {
     public:
-      template<typename _Signature> struct result;
-
-      template<typename _CVMu, typename _CVArg, typename _Tuple>
-	struct result<_CVMu(_CVArg, _Tuple)>
-	{
-	  typedef typename add_lvalue_reference<_CVArg>::type type;
-	};
-
-      // Pick up the cv-qualifiers of the argument
       template<typename _CVArg, typename _Tuple>
 	_CVArg&&
-	operator()(_CVArg&& __arg, _Tuple&) const volatile
+	operator()(_CVArg&& __arg, _Tuple&) const
 	{ return std::forward<_CVArg>(__arg); }
     };
 
