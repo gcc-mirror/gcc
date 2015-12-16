@@ -1,3 +1,10 @@
+2015-12-16  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* config/isl.m4 (ISL_CHECK_VERSION): Check for
+	isl_ctx_get_max_operations.
+	* configure: Regenerate.
+
 2015-12-15  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

@@ -60,15 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/map.h>
 #include <isl/union_map.h>
 #include <isl/ast_build.h>
-
-/* Since ISL-0.13, the extern is in val_gmp.h.  */
-#if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
-extern "C" {
-#endif
 #include <isl/val_gmp.h>
-#if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
-}
-#endif
 
 #include "graphite.h"
 
@@ -589,6 +581,7 @@ binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
       return fold_build2 (TRUNC_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
 #if HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+    /* ISL-0.15 or later.  */
     case isl_ast_op_zdiv_r:
 #endif
     case isl_ast_op_pdiv_r:
@@ -762,6 +755,7 @@ gcc_expression_from_isl_expr_op (tree type, __isl_take isl_ast_expr *expr,
     case isl_ast_op_pdiv_r:
     case isl_ast_op_fdiv_q:
 #if HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+    /* ISL-0.15 or later.  */
     case isl_ast_op_zdiv_r:
 #endif
     case isl_ast_op_and:

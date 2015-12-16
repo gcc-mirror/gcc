@@ -640,7 +640,7 @@ print_version (FILE *file, const char *indent, bool show_global_state)
 #endif
     ;
   static const char fmt2[] =
-    N_("GMP version %s, MPFR version %s, MPC version %s\n");
+    N_("GMP version %s, MPFR version %s, MPC version %s, isl version %s\n");
   static const char fmt3[] =
     N_("%s%swarning: %s header version %s differs from library version %s.\n");
   static const char fmt4[] =
@@ -674,7 +674,15 @@ print_version (FILE *file, const char *indent, bool show_global_state)
 #endif
   fprintf (file,
 	   file == stderr ? _(fmt2) : fmt2,
-	   GCC_GMP_STRINGIFY_VERSION, MPFR_VERSION_STRING, MPC_VERSION_STRING);
+	   GCC_GMP_STRINGIFY_VERSION, MPFR_VERSION_STRING, MPC_VERSION_STRING,
+#ifndef HAVE_isl
+	   "none"
+#elif HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+	   "0.15"
+#else
+	   "0.14 or 0.13"
+#endif
+	   );
   if (strcmp (GCC_GMP_STRINGIFY_VERSION, gmp_version))
     fprintf (file,
 	     file == stderr ? _(fmt3) : fmt3,

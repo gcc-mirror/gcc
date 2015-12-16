@@ -1,3 +1,17 @@
+2015-12-16  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Remove checks for functions that exist in isl 0.13
+	or later.
+	* graphite-isl-ast-to-gimple.c: Remove #ifdefs and code for isl 0.12.
+        * graphite-optimize-isl.c: Same.
+	* graphite-poly.c: Same.
+	* graphite-sese-to-poly.c: Same.
+	* graphite.h: Add comment for isl 0.14.
+	* toplev.c (print_version): Print isl version.
+
 2015-12-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-cp.c (ipa_get_indirect_edge_target_1): Use can_refer; do not

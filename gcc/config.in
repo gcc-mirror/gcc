@@ -1372,21 +1372,9 @@
 #endif
 
 
-/* Define if isl_ctx_get_max_operations exists. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_ISL_CTX_MAX_OPERATIONS
-#endif
-
-
 /* Define if isl_options_set_schedule_serialize_sccs exists. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
-#endif
-
-
-/* Define if isl_schedule_constraints_compute_schedule exists. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
 #endif
 
 
