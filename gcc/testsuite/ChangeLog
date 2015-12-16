@@ -1,3 +1,11 @@
+2015-12-16  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-12-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/68184
+	* g++.dg/torture/pr68184.C: New testcase.
+
 2015-12-15  Alessandro Fanfarillo  <fanfarillo@gmail.com>
 
 	Backport from mainline.

@@ -585,6 +585,7 @@ cgraph_node::analyze (void)
       cgraph_node *t = cgraph_node::get (thunk.alias);
 
       create_edge (t, NULL, 0, CGRAPH_FREQ_BASE);
+      callees->can_throw_external = !TREE_NOTHROW (t->decl);
       /* Target code in expand_thunk may need the thunk's target
 	 to be analyzed, so recurse here.  */
       if (!t->analyzed)

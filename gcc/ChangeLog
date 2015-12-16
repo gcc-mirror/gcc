@@ -1,6 +1,14 @@
 2015-12-16  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2015-12-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/68184
+	* cgraphunit.c (cgraph_node::analyze): Set can_throw_external.
+
+2015-12-16  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2015-12-04  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/68636
