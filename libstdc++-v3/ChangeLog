@@ -1,5 +1,10 @@
 2015-12-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/68921
+	* src/c++11/futex.cc
+	(__atomic_futex_unsigned_base::_M_futex_wait_until): Use null pointer
+	as timeout argument.
+
 	* include/std/functional (_Mu<_Arg, false, false>::operator()): Restore
 	accidentally-removed volatile qualifier.
 
