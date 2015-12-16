@@ -497,6 +497,10 @@ get_pointer_alignment_1 (tree exp, unsigned int *alignp,
 	{
 	  *bitposp = ptr_misalign * BITS_PER_UNIT;
 	  *alignp = ptr_align * BITS_PER_UNIT;
+	  /* Make sure to return a sensible alignment when the multiplication
+	     by BITS_PER_UNIT overflowed.  */
+	  if (*alignp == 0)
+	    *alignp = 1u << (HOST_BITS_PER_INT - 1);
 	  /* We cannot really tell whether this result is an approximation.  */
 	  return true;
 	}
