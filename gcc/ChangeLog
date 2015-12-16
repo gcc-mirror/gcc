@@ -1,5 +1,15 @@
 2015-12-16  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config/arm/iterators.md (VQRDMLH_AS): New.
+	(neon_rdma_as): New.
+	* config/arm/neon.md
+	(neon_vqrdml<VQRDMLH_AS:neon_rdma_as>h<mode>): New.
+	(neon_vqrdml<VQRDMLH_AS:neon_rdma_as>h_lane<mode>): New.
+	* config/arm/unspecs.md (UNSPEC_VQRDMLAH): New.
+	(UNSPEC_VQRDMLSH): New.
+
+2015-12-16  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/arm/t-aprofile: Make "armv8.1-a" and "armv8.1-a+crc"
 	matches for "armv8-a".
 

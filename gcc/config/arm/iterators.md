@@ -362,6 +362,8 @@
 (define_int_iterator CRYPTO_SELECTING [UNSPEC_SHA1C UNSPEC_SHA1M
                                        UNSPEC_SHA1P])
 
+(define_int_iterator VQRDMLH_AS [UNSPEC_VQRDMLAH UNSPEC_VQRDMLSH])
+
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
 ;;----------------------------------------------------------------------------
@@ -831,3 +833,6 @@
                                (simple_return " && use_simple_return_p ()")])
 (define_code_attr return_cond_true [(return " && USE_RETURN_INSN (TRUE)")
                                (simple_return " && use_simple_return_p ()")])
+
+;; Attributes for VQRDMLAH/VQRDMLSH
+(define_int_attr neon_rdma_as [(UNSPEC_VQRDMLAH "a") (UNSPEC_VQRDMLSH "s")])
