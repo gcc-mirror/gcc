@@ -387,6 +387,8 @@ extern bool arm_is_constant_pool_ref (rtx);
 #define FL_IWMMXT2    (1 << 30)       /* "Intel Wireless MMX2 technology".  */
 #define FL_ARCH6KZ    (1 << 31)       /* ARMv6KZ architecture.  */
 
+#define FL2_ARCH8_1   (1 << 0)	      /* Architecture 8.1.  */
+
 /* Flags that only effect tuning, not available instructions.  */
 #define FL_TUNE		(FL_WBUF | FL_VFPV2 | FL_STRONG | FL_LDSCHED \
 			 | FL_CO_PROC)
@@ -415,6 +417,7 @@ extern bool arm_is_constant_pool_ref (rtx);
 #define FL_FOR_ARCH7M	(FL_FOR_ARCH7 | FL_THUMB_DIV)
 #define FL_FOR_ARCH7EM  (FL_FOR_ARCH7M | FL_ARCH7EM)
 #define FL_FOR_ARCH8A	(FL_FOR_ARCH7VE | FL_ARCH8)
+#define FL2_FOR_ARCH8_1A	FL2_ARCH8_1
 
 /* There are too many feature bits to fit in a single word so the set of cpu and
    fpu capabilities is a structure.  A feature set is created and manipulated

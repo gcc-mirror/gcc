@@ -817,6 +817,9 @@ int arm_arch7em = 0;
 /* Nonzero if instructions present in ARMv8 can be used.  */
 int arm_arch8 = 0;
 
+/* Nonzero if this chip supports the ARMv8.1 extensions.  */
+int arm_arch8_1 = 0;
+
 /* Nonzero if this chip can benefit from load scheduling.  */
 int arm_ld_sched = 0;
 
@@ -3154,6 +3157,7 @@ arm_option_override (void)
   arm_arch7 = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH7);
   arm_arch7em = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH7EM);
   arm_arch8 = ARM_FSET_HAS_CPU1 (insn_flags, FL_ARCH8);
+  arm_arch8_1 = ARM_FSET_HAS_CPU2 (insn_flags, FL2_ARCH8_1);
   arm_arch_thumb2 = ARM_FSET_HAS_CPU1 (insn_flags, FL_THUMB2);
   arm_arch_xscale = ARM_FSET_HAS_CPU1 (insn_flags, FL_XSCALE);
 
