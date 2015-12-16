@@ -202,8 +202,8 @@ struct GTY(()) c_parser {
   /* The look-ahead tokens.  */
   c_token * GTY((skip)) tokens;
   /* Buffer for look-ahead tokens.  */
-  c_token tokens_buf[2];
-  /* How many look-ahead tokens are available (0, 1 or 2, or
+  c_token tokens_buf[4];
+  /* How many look-ahead tokens are available (0 - 4, or
      more if parsing from pre-lexed tokens).  */
   unsigned int tokens_avail;
   /* True if a syntax error is being recovered from; false otherwise.
@@ -490,6 +490,23 @@ c_parser_peek_2nd_token (c_parser *parser)
   c_lex_one_token (parser, &parser->tokens[1]);
   parser->tokens_avail = 2;
   return &parser->tokens[1];
+}
+
+/* Return a pointer to the Nth token from PARSER, reading it
+   in if necessary.  The N-1th token is already read in.  */
+
+static c_token *
+c_parser_peek_nth_token (c_parser *parser, unsigned int n)
+{
+  /* N is 1-based, not zero-based.  */
+  gcc_assert (n > 0);
+
+  if (parser->tokens_avail >= n)
+    return &parser->tokens[n - 1];
+  gcc_assert (parser->tokens_avail == n - 1);
+  c_lex_one_token (parser, &parser->tokens[n - 1]);
+  parser->tokens_avail = n;
+  return &parser->tokens[n - 1];
 }
 
 /* Return true if TOKEN can start a type name,
@@ -829,6 +846,46 @@ c_parser_set_source_position_from_token (c_token *token)
     }
 }
 
+/* Helper function for c_parser_error.
+   Having peeked a token of kind TOK1_KIND that might signify
+   a conflict marker, peek successor tokens to determine
+   if we actually do have a conflict marker.
+   Specifically, we consider a run of 7 '<', '=' or '>' characters
+   at the start of a line as a conflict marker.
+   These come through the lexer as three pairs and a single,
+   e.g. three CPP_LSHIFT ("<<") and a CPP_LESS ('<').
+   If it returns true, *OUT_LOC is written to with the location/range
+   of the marker.  */
+
+static bool
+c_parser_peek_conflict_marker (c_parser *parser, enum cpp_ttype tok1_kind,
+			       location_t *out_loc)
+{
+  c_token *token2 = c_parser_peek_2nd_token (parser);
+  if (token2->type != tok1_kind)
+    return false;
+  c_token *token3 = c_parser_peek_nth_token (parser, 3);
+  if (token3->type != tok1_kind)
+    return false;
+  c_token *token4 = c_parser_peek_nth_token (parser, 4);
+  if (token4->type != conflict_marker_get_final_tok_kind (tok1_kind))
+    return false;
+
+  /* It must be at the start of the line.  */
+  location_t start_loc = c_parser_peek_token (parser)->location;
+  if (LOCATION_COLUMN (start_loc) != 1)
+    return false;
+
+  /* We have a conflict marker.  Construct a location of the form:
+       <<<<<<<
+       ^~~~~~~
+     with start == caret, finishing at the end of the marker.  */
+  location_t finish_loc = get_finish (token4->location);
+  *out_loc = make_location (start_loc, start_loc, finish_loc);
+
+  return true;
+}
+
 /* Issue a diagnostic of the form
       FILE:LINE: MESSAGE before TOKEN
    where TOKEN is the next token in the input stream of PARSER.
@@ -850,6 +907,20 @@ c_parser_error (c_parser *parser, const char *gmsgid)
   parser->error = true;
   if (!gmsgid)
     return;
+
+  /* If this is actually a conflict marker, report it as such.  */
+  if (token->type == CPP_LSHIFT
+      || token->type == CPP_RSHIFT
+      || token->type == CPP_EQ_EQ)
+    {
+      location_t loc;
+      if (c_parser_peek_conflict_marker (parser, token->type, &loc))
+	{
+	  error_at (loc, "version control conflict marker in file");
+	  return;
+	}
+    }
+
   /* This diagnostic makes more sense if it is tagged to the line of
      the token we just peeked at.  */
   c_parser_set_source_position_from_token (token);

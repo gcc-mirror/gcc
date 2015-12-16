@@ -1,5 +1,13 @@
 2015-12-16  David Malcolm  <dmalcolm@redhat.com>
 
+	* c-parser.c (struct c_parser): Expand array "tokens_buf" from 2
+	to 4.
+	(c_parser_peek_nth_token): New function.
+	(c_parser_peek_conflict_marker): New function.
+	(c_parser_error): Detect conflict markers and report them as such.
+
+2015-12-16  David Malcolm  <dmalcolm@redhat.com>
+
 	* c-parser.c (c_parser_postfix_expression): Use EXPR_LOC_OR_LOC
 	to preserve range information for the primary expression
 	in the call to c_parser_postfix_expression_after_primary.

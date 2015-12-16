@@ -1,5 +1,20 @@
 2015-12-16  David Malcolm  <dmalcolm@redhat.com>
 
+	* c-c++-common/conflict-markers-1.c: New testcase.
+	* c-c++-common/conflict-markers-2.c: Likewise.
+	* c-c++-common/conflict-markers-3.c: Likewise.
+	* c-c++-common/conflict-markers-4.c: Likewise.
+	* c-c++-common/conflict-markers-5.c: Likewise.
+	* c-c++-common/conflict-markers-6.c: Likewise.
+	* c-c++-common/conflict-markers-7.c: Likewise.
+	* c-c++-common/conflict-markers-8.c: Likewise.
+	* c-c++-common/conflict-markers-9.c: Likewise.
+	* c-c++-common/conflict-markers-10.c: Likewise.
+	* c-c++-common/conflict-markers-11.c: Likewise.
+	* g++.dg/conflict-markers-1.C: Likewise.
+
+2015-12-16  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc.dg/cast-function-1.c (bar): Update column numbers.
 	* gcc.dg/diagnostic-range-bad-called-object.c: New test case.
 
