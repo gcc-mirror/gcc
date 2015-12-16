@@ -1802,8 +1802,16 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 
       /* Two label-refs are equivalent if they point at labels
 	 in the same position in the instruction stream.  */
-      return (next_real_insn (LABEL_REF_LABEL (x))
-	      == next_real_insn (LABEL_REF_LABEL (y)));
+      else
+	{
+	  rtx_insn *xi = next_nonnote_nondebug_insn (LABEL_REF_LABEL (x));
+	  rtx_insn *yi = next_nonnote_nondebug_insn (LABEL_REF_LABEL (y));
+	  while (xi && LABEL_P (xi))
+	    xi = next_nonnote_nondebug_insn (xi);
+	  while (yi && LABEL_P (yi))
+	    yi = next_nonnote_nondebug_insn (yi);
+	  return xi == yi;
+	}
 
     case SYMBOL_REF:
       return XSTR (x, 0) == XSTR (y, 0);
