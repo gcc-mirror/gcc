@@ -21742,13 +21742,8 @@ instantiate_decl (tree d, int defer_ok,
 	 template from within the body of another.  */
       saved_local_specializations = local_specializations;
 
-      /* Set up the list of local specializations, copying the current
-	 list if there is one.  */
-      if (local_specializations)
-	local_specializations
-	  = new hash_map<tree, tree> (*local_specializations);
-      else
-	local_specializations = new hash_map<tree, tree>;
+      /* Set up the list of local specializations.  */
+      local_specializations = new hash_map<tree, tree>;
 
       /* Set up context.  */
       if (DECL_OMP_DECLARE_REDUCTION_P (code_pattern)
