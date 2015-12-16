@@ -1,3 +1,8 @@
+2015-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/65980
+	* gcc.dg/pr65980.c: New test.
+
 2015-12-15  Martin Sebor  <msebor@redhat.com>
 
 	c++/42121

@@ -1,3 +1,10 @@
+2015-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/65980
+	* jump.c (rtx_renumbered_equal_p) <case LABEL_REF>: Use
+	next_nonnote_nondebug_insn instead of next_real_insn and
+	skip over CODE_LABELs too.
+
 2015-12-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* symtab.c (symtab_node::fixup_same_cpp_alias_visibility):
