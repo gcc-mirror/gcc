@@ -1,3 +1,8 @@
+2015-12-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64637
+	* gcc.dg/pr64637.c: New test.
+
 2015-12-16  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/sibcall-9.c: Xfail for nvptx.
