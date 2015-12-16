@@ -1,5 +1,10 @@
 2015-12-16  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config/arm/t-aprofile: Make "armv8.1-a" and "armv8.1-a+crc"
+	matches for "armv8-a".
+
+2015-12-16  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/arm/arm-arches.def: Add "armv8.1-a" and "armv8.1-a+crc".
 	* config/arm/arm-protos.h (FL2_ARCH8_1): New.
 	(FL2_FOR_ARCH8_1A): New.
