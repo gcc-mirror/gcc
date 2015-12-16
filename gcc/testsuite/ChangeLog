@@ -1,3 +1,7 @@
+2015-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/sibcall-9.c: Xfail for nvptx.
+
 2015-12-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68870
