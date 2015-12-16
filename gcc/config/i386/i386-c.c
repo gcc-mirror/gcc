@@ -439,8 +439,6 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__CLWB__");
   if (isa_flag & OPTION_MASK_ISA_MWAITX)
     def_or_undef (parse_in, "__MWAITX__");
-  if (isa_flag & OPTION_MASK_ISA_CLZERO)
-    def_or_undef (parse_in, "__CLZERO__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");
