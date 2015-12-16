@@ -7881,9 +7881,9 @@ template_args_equal (tree ot, tree nt)
    template arguments.  Returns 0 otherwise, and updates OLDARG_PTR and
    NEWARG_PTR with the offending arguments if they are non-NULL.  */
 
-static int
-comp_template_args_with_info (tree oldargs, tree newargs,
-			      tree *oldarg_ptr, tree *newarg_ptr)
+int
+comp_template_args (tree oldargs, tree newargs,
+		    tree *oldarg_ptr, tree *newarg_ptr)
 {
   int i;
 
@@ -7911,15 +7911,6 @@ comp_template_args_with_info (tree oldargs, tree newargs,
 	}
     }
   return 1;
-}
-
-/* Returns 1 iff the OLDARGS and NEWARGS are in fact identical sets
-   of template arguments.  Returns 0 otherwise.  */
-
-int
-comp_template_args (tree oldargs, tree newargs)
-{
-  return comp_template_args_with_info (oldargs, newargs, NULL, NULL);
 }
 
 static void
@@ -19051,8 +19042,8 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
 	  tree bad_old_arg = NULL_TREE, bad_new_arg = NULL_TREE;
 	  tree old_args = ARGUMENT_PACK_ARGS (old_pack);
 
-	  if (!comp_template_args_with_info (old_args, new_args,
-					     &bad_old_arg, &bad_new_arg))
+	  if (!comp_template_args (old_args, new_args,
+				   &bad_old_arg, &bad_new_arg))
 	    /* Inconsistent unification of this parameter pack.  */
 	    return unify_parameter_pack_inconsistent (explain_p,
 						      bad_old_arg,

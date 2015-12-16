@@ -1,3 +1,11 @@
+2015-12-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (comp_template_args): Remove.
+	(comp_template_args_with_info): Rename to comp_template_args;
+	not static.
+	(add_pending_template): Adjust call.
+	* cp-tree.h (comp_template_args): Add default arguments.
+
 2015-12-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68309

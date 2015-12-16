@@ -6115,7 +6115,8 @@ extern int template_class_depth			(tree);
 extern int is_specialization_of			(tree, tree);
 extern bool is_specialization_of_friend		(tree, tree);
 extern tree get_pattern_parm			(tree, tree);
-extern int comp_template_args			(tree, tree);
+extern int comp_template_args			(tree, tree, tree * = NULL,
+						 tree * = NULL);
 extern tree maybe_process_partial_specialization (tree);
 extern tree most_specialized_instantiation	(tree);
 extern void print_candidates			(tree);
