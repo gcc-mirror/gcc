@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fipa-pta -fdump-ipa-pta-details" } */
+/* { dg-options "-O2 -fipa-pta -fdump-ipa-pta2-details" } */
 
 #include <stdarg.h>
 
@@ -26,4 +26,4 @@ int main()
 /* Verify we properly handle variadic arguments and do not let escape
    stuff through it.  */
 
-/* { dg-final { scan-ipa-dump "ESCAPED = { (ESCAPED )?(NONLOCAL )?}" "pta" } } */
+/* { dg-final { scan-ipa-dump "ESCAPED = { (ESCAPED )?(NONLOCAL )?}" "pta2" } } */

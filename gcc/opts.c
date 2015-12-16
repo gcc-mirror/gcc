@@ -560,6 +560,7 @@ default_options_optimization (struct gcc_options *opts,
 {
   unsigned int i;
   int opt2;
+  bool openacc_mode = false;
 
   /* Scan to see what optimization level has been specified.  That will
      determine the default value of many flags.  */
@@ -619,6 +620,11 @@ default_options_optimization (struct gcc_options *opts,
 	  opts->x_optimize_debug = 1;
 	  break;
 
+	case OPT_fopenacc:
+	  if (opt->value)
+	    openacc_mode = true;
+	  break;
+
 	default:
 	  /* Ignore other options in this prescan.  */
 	  break;
@@ -632,6 +638,10 @@ default_options_optimization (struct gcc_options *opts,
 
   /* -O2 param settings.  */
   opt2 = (opts->x_optimize >= 2);
+
+  if (openacc_mode
+      && !opts_set->x_flag_ipa_pta)
+    opts->x_flag_ipa_pta = true;
 
   /* Track fields in field-sensitive alias analysis.  */
   maybe_set_param_value
