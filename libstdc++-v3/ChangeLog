@@ -1,3 +1,10 @@
+2015-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/68921
+	* src/c++11/futex.cc
+	(__atomic_futex_unsigned_base::_M_futex_wait_until): Use null pointer
+	as timeout argument.
+
 2015-12-15  Tim Shen  <timshen@google.com>
 
 	Backport from mainline

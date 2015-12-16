@@ -52,7 +52,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// we will fall back to spin-waiting.  The only thing we could do
 	// here on errors is abort.
 	int ret __attribute__((unused));
-	ret = syscall (SYS_futex, __addr, futex_wait_op, __val);
+	ret = syscall (SYS_futex, __addr, futex_wait_op, __val, nullptr);
 	_GLIBCXX_DEBUG_ASSERT(ret == 0 || errno == EINTR || errno == EAGAIN);
 	return true;
       }
