@@ -295,9 +295,9 @@ scop_p
 new_scop (edge entry, edge exit)
 {
   sese_info_p region = new_sese_info (entry, exit);
-  scop_p s;
-  s = XNEW (struct scop);
+  scop_p s = XNEW (struct scop);
 
+  s->schedule = NULL;
   s->param_context = NULL;
   scop_set_region (s, region);
   s->pbbs.create (3);

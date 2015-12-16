@@ -61,6 +61,9 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/union_map.h>
 #include <isl/ast_build.h>
 #include <isl/val_gmp.h>
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+#include <isl/schedule_node.h>
+#endif
 
 #include "graphite.h"
 
@@ -124,6 +127,29 @@ void ivs_params_clear (ivs_params &ip)
       isl_id_free (it->first);
     }
 }
+
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+
+/* Set the "separate" option for the schedule node.  */
+
+static __isl_give isl_schedule_node *
+set_separate_option (__isl_take isl_schedule_node *node, void *user)
+{
+  if (user)
+    return node;
+
+  if (isl_schedule_node_get_type (node) != isl_schedule_node_band)
+    return node;
+
+  /* Set the "separate" option unless it is set earlier to another option.  */
+  if (isl_schedule_node_band_member_get_ast_loop_type (node, 0)
+      == isl_ast_loop_default)
+    return isl_schedule_node_band_member_set_ast_loop_type
+      (node, 0, isl_ast_loop_separate);
+
+  return node;
+}
+#endif
 
 class translate_isl_ast_to_gimple
 {
@@ -289,6 +315,14 @@ class translate_isl_ast_to_gimple
      visit elements in a domain.  */
 
   __isl_give isl_union_map *generate_isl_schedule (scop_p scop);
+
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  /* Set the "separate" option for all schedules.  This helps reducing control
+     overhead.  */
+
+  __isl_give isl_schedule *
+    set_options_for_schedule_tree (__isl_take isl_schedule *schedule);
+#endif
 
   /* Set the separate option for all dimensions.
      This helps to reduce control overhead.  */
@@ -3163,6 +3197,19 @@ ast_build_before_for (__isl_keep isl_ast_build *build, void *user)
   return id;
 }
 
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+/* Set the separate option for all schedules.  This helps reducing control
+   overhead.  */
+
+__isl_give isl_schedule *
+translate_isl_ast_to_gimple::set_options_for_schedule_tree
+(__isl_take isl_schedule *schedule)
+{
+  return isl_schedule_map_schedule_node_bottom_up
+    (schedule, set_separate_option, NULL);
+}
+#endif
+
 /* Set the separate option for all dimensions.
    This helps to reduce control overhead.  */
 
@@ -3187,6 +3234,7 @@ translate_isl_ast_to_gimple::set_options (__isl_take isl_ast_build *control,
 __isl_give isl_ast_node *
 translate_isl_ast_to_gimple::scop_to_isl_ast (scop_p scop, ivs_params &ip)
 {
+  isl_ast_node *ast_isl = NULL;
   /* Generate loop upper bounds that consist of the current loop iterator, an
      operator (< or <=) and an expression not involving the iterator.  If this
      option is not set, then the current loop iterator may appear several times
@@ -3204,8 +3252,21 @@ translate_isl_ast_to_gimple::scop_to_isl_ast (scop_p scop, ivs_params &ip)
 	isl_ast_build_set_before_each_for (context_isl, ast_build_before_for,
 					   dependence);
     }
-  isl_ast_node *ast_isl = isl_ast_build_ast_from_schedule (context_isl,
-							   schedule_isl);
+
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  if (scop->schedule)
+    {
+      scop->schedule = set_options_for_schedule_tree (scop->schedule);
+      ast_isl = isl_ast_build_node_from_schedule (context_isl, scop->schedule);
+      isl_union_map_free(schedule_isl);
+    }
+  else
+    ast_isl = isl_ast_build_ast_from_schedule (context_isl, schedule_isl);
+#else
+  ast_isl = isl_ast_build_ast_from_schedule (context_isl, schedule_isl);
+  isl_schedule_free (scop->schedule);
+#endif
+
   isl_ast_build_free (context_isl);
   return ast_isl;
 }

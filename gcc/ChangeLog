@@ -1,3 +1,15 @@
+2015-12-16  Abderrazek Zaafrani  <a.zaafrani@samsung.com>
+
+	* graphite-isl-ast-to-gimple.c: Include isl/schedule_node.h.
+	(set_separate_option): New.
+	(translate_isl_ast_to_gimple::set_options_for_schedule_tree): New.
+	(translate_isl_ast_to_gimple::scop_to_isl_ast): Use scop->schedule.
+	* graphite-optimize-isl.c (optimize_isl): Set scop->schedule, do not
+	free the computed schedule tree.
+	* graphite-poly.c (new_scop): Initialize scop->schedule.
+	* graphite.h: Include isl/schedule.h.
+	(struct scop): Add field schedule.
+
 2015-12-16  Nathan Sidwell  <nathan@acm.org>
 
 	* ipa-visibility.c (can_replace_by_local_alias): Make static,

@@ -420,6 +420,10 @@ optimize_isl (scop_p scop)
       return false;
     }
 
+  /* Attach the schedule to scop so that it can be used in code generation.
+     schedule freeing will occur in code generation.  */
+  scop->schedule = schedule;
+
 #ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
   /* isl 0.15 or later.  */
   isl_union_map *schedule_map = get_schedule_map_st (schedule);
@@ -428,7 +432,6 @@ optimize_isl (scop_p scop)
 #endif
   apply_schedule_map_to_scop (scop, schedule_map);
 
-  isl_schedule_free (schedule);
   isl_union_map_free (schedule_map);
   return true;
 }
