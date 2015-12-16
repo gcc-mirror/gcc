@@ -2097,8 +2097,9 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
   c_parser_consume_token (parser);
   if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     return;
-  value_loc = c_parser_peek_token (parser)->location;
+  location_t value_tok_loc = c_parser_peek_token (parser)->location;
   value = c_parser_expr_no_commas (parser, NULL).value;
+  value_loc = EXPR_LOC_OR_LOC (value, value_tok_loc);
   parser->lex_untranslated_string = true;
   if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
     {
