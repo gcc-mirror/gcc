@@ -1,5 +1,10 @@
 2015-12-16  Richard Biener  <rguenther@suse.de>
 
+	PR testsuite/68915
+	* gcc.dg/vect/pr46032.c: Use dg-additional-options.
+
+2015-12-16  Richard Biener  <rguenther@suse.de>
+
 	PR testsuite/68916
 	PR testsuite/68914
 	* gcc.dg/vect/pr45752.c: Require vect_perm and adjust expected

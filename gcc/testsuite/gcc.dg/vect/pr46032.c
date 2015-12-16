@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target fopenmp } */
 /* { dg-require-effective-target vect_int } */
-/* { dg-options "-O2 -fopenmp -ftree-vectorize -std=c99 -fipa-pta -fdump-tree-vect-all" } */
+/* { dg-additional-options "-fopenmp -fipa-pta" } */
 
 extern void abort (void);
 
