@@ -1,3 +1,13 @@
+2015-12-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68870
+	* tree-cfgcleanup.c (cleanup_control_expr_graph): Add first_p
+	parameter, if set only perform trivial constant folding.
+	Queue other blocks with conditions for later processing.
+	(cleanup_control_flow_bb): Add first_p parameter and pass it through.
+	(cleanup_tree_cfg_1): Pass true for the first iteration
+	cleanup_control_expr_graph.
+
 2015-12-16  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx-protos.h (nvptx_hard_regno_mode_ok): Delete.
