@@ -7821,6 +7821,8 @@ public:
 	      && !seen_error ());
     }
 
+  opt_pass * clone () { return new pass_ipa_pta (m_ctxt); }
+
   virtual unsigned int execute (function *) { return ipa_pta_execute (); }
 
 }; // class pass_ipa_pta

@@ -1,3 +1,21 @@
+2015-12-16  Tom de Vries  <tom@codesourcery.com>
+
+	* g++.dg/ipa/devirt-37.C: Update for new fre2 pass.
+	* g++.dg/ipa/devirt-40.C: Same.
+	* g++.dg/tree-ssa/pr61034.C: Same.
+	* gcc.dg/ipa/ipa-pta-1.c: Update for new pta1 pass.
+	* gcc.dg/ipa/ipa-pta-10.c: Same.
+	* gcc.dg/ipa/ipa-pta-11.c: Same.
+	* gcc.dg/ipa/ipa-pta-14.c: Same.
+	* gcc.dg/ipa/ipa-pta-16.c: Same.
+	* gcc.dg/ipa/ipa-pta-2.c: Same.
+	* gcc.dg/ipa/ipa-pta-5.c: Same.
+	* gcc.dg/ipa/ipa-pta-6.c: Same.
+	* gcc.dg/torture/ipa-pta-1.c: Same.
+	* gcc.dg/ipa/ipa-pta-13.c: Update for new fre2 and pta1 pass.
+	* gcc.dg/ipa/ipa-pta-3.c: Same.
+	* gcc.dg/ipa/ipa-pta-4.c: Same.
+
 2015-12-16  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/68915

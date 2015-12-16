@@ -1,3 +1,15 @@
+2015-12-16  Tom de Vries  <tom@codesourcery.com>
+
+	* opts.c (default_options_optimization): Set fipa-pta on by default for
+	fopenacc.
+	* passes.def: Move kernels pass group to pass_ipa_oacc.
+	* tree-pass.h (make_pass_oacc_kernels2): Remove.
+	(make_pass_ipa_oacc, make_pass_ipa_oacc_kernels): Declare.
+	* tree-ssa-loop.c (pass_oacc_kernels2, make_pass_oacc_kernels2): Remove.
+	(pass_ipa_oacc, pass_ipa_oacc_kernels): New pass.
+	(make_pass_ipa_oacc, make_pass_ipa_oacc_kernels): New function.
+	* tree-ssa-structalias.c (pass_ipa_pta::clone): New function.
+
 2015-12-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68861

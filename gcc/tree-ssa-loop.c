@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
 #include "omp-low.h"
+#include "diagnostic-core.h"
 
 
 /* A pass making sure loops are fixed up.  */
@@ -206,12 +207,14 @@ make_pass_oacc_kernels (gcc::context *ctxt)
   return new pass_oacc_kernels (ctxt);
 }
 
+/* The ipa oacc superpass.  */
+
 namespace {
 
-const pass_data pass_data_oacc_kernels2 =
+const pass_data pass_data_ipa_oacc =
 {
-  GIMPLE_PASS, /* type */
-  "oacc_kernels2", /* name */
+  SIMPLE_IPA_PASS, /* type */
+  "ipa_oacc", /* name */
   OPTGROUP_LOOP, /* optinfo_flags */
   TV_TREE_LOOP, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -221,34 +224,65 @@ const pass_data pass_data_oacc_kernels2 =
   0, /* todo_flags_finish */
 };
 
-class pass_oacc_kernels2 : public gimple_opt_pass
+class pass_ipa_oacc : public simple_ipa_opt_pass
 {
 public:
-  pass_oacc_kernels2 (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_oacc_kernels2, ctxt)
+  pass_ipa_oacc (gcc::context *ctxt)
+    : simple_ipa_opt_pass (pass_data_ipa_oacc, ctxt)
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fn) { return gate_oacc_kernels (fn); }
-  virtual unsigned int execute (function *fn)
-    {
-      /* Rather than having a copy of the previous dump, get some use out of
-	 this dump, and try to minimize differences with the following pass
-	 (pass_lim), which will initizalize the loop optimizer with
-	 LOOPS_NORMAL.  */
-      loop_optimizer_init (LOOPS_NORMAL);
-      loop_optimizer_finalize (fn);
-      return 0;
-    }
+  virtual bool gate (function *)
+  {
+    return (optimize
+	    /* Don't bother doing anything if the program has errors.  */
+	    && !seen_error ()
+	    && flag_openacc
+	    && flag_tree_parallelize_loops > 1);
+  }
 
-}; // class pass_oacc_kernels2
+}; // class pass_ipa_oacc
 
 } // anon namespace
 
-gimple_opt_pass *
-make_pass_oacc_kernels2 (gcc::context *ctxt)
+simple_ipa_opt_pass *
+make_pass_ipa_oacc (gcc::context *ctxt)
 {
-  return new pass_oacc_kernels2 (ctxt);
+  return new pass_ipa_oacc (ctxt);
+}
+
+/* The ipa oacc kernels pass.  */
+
+namespace {
+
+const pass_data pass_data_ipa_oacc_kernels =
+{
+  SIMPLE_IPA_PASS, /* type */
+  "ipa_oacc_kernels", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  TV_TREE_LOOP, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_ipa_oacc_kernels : public simple_ipa_opt_pass
+{
+public:
+  pass_ipa_oacc_kernels (gcc::context *ctxt)
+    : simple_ipa_opt_pass (pass_data_ipa_oacc_kernels, ctxt)
+  {}
+
+}; // class pass_ipa_oacc_kernels
+
+} // anon namespace
+
+simple_ipa_opt_pass *
+make_pass_ipa_oacc_kernels (gcc::context *ctxt)
+{
+  return new pass_ipa_oacc_kernels (ctxt);
 }
 
 /* The no-loop superpass.  */
