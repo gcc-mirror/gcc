@@ -1,5 +1,11 @@
 2015-12-16  David Malcolm  <dmalcolm@redhat.com>
 
+	* c-parser.c (c_parser_postfix_expression): Use EXPR_LOC_OR_LOC
+	to preserve range information for the primary expression
+	in the call to c_parser_postfix_expression_after_primary.
+
+2015-12-16  David Malcolm  <dmalcolm@redhat.com>
+
 	* c-parser.c (c_parser_static_assert_declaration_no_semi): Use the
 	expression location, falling back on the first token location,
 	rather than always using the latter.

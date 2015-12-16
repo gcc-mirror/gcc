@@ -1,5 +1,10 @@
 2015-12-16  David Malcolm  <dmalcolm@redhat.com>
 
+	* gcc.dg/cast-function-1.c (bar): Update column numbers.
+	* gcc.dg/diagnostic-range-bad-called-object.c: New test case.
+
+2015-12-16  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc.dg/diagnostic-range-static-assert.c: New test case.
 
 2015-12-16  Marek Polacek  <polacek@redhat.com>

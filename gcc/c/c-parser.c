@@ -7954,7 +7954,8 @@ c_parser_postfix_expression (c_parser *parser)
       expr.value = error_mark_node;
       break;
     }
-  return c_parser_postfix_expression_after_primary (parser, loc, expr);
+  return c_parser_postfix_expression_after_primary
+    (parser, EXPR_LOC_OR_LOC (expr.value, loc), expr);
 }
 
 /* Parse a postfix expression after a parenthesized type name: the
