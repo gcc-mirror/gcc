@@ -1158,6 +1158,56 @@ vqrdmulhq_s32 (int32x4_t __a, int32x4_t __b)
   return (int32x4_t)__builtin_neon_vqrdmulhv4si (__a, __b);
 }
 
+#ifdef __ARM_FEATURE_QRDMX
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vqrdmlah_s16 (int16x4_t __a, int16x4_t __b, int16x4_t __c)
+{
+  return (int16x4_t)__builtin_neon_vqrdmlahv4hi (__a, __b, __c);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vqrdmlah_s32 (int32x2_t __a, int32x2_t __b, int32x2_t __c)
+{
+  return (int32x2_t)__builtin_neon_vqrdmlahv2si (__a, __b, __c);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vqrdmlahq_s16 (int16x8_t __a, int16x8_t __b, int16x8_t __c)
+{
+  return (int16x8_t)__builtin_neon_vqrdmlahv8hi (__a, __b, __c);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vqrdmlahq_s32 (int32x4_t __a, int32x4_t __b, int32x4_t __c)
+{
+  return (int32x4_t)__builtin_neon_vqrdmlahv4si (__a, __b, __c);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vqrdmlsh_s16 (int16x4_t __a, int16x4_t __b, int16x4_t __c)
+{
+  return (int16x4_t)__builtin_neon_vqrdmlshv4hi (__a, __b, __c);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vqrdmlsh_s32 (int32x2_t __a, int32x2_t __b, int32x2_t __c)
+{
+  return (int32x2_t)__builtin_neon_vqrdmlshv2si (__a, __b, __c);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vqrdmlshq_s16 (int16x8_t __a, int16x8_t __b, int16x8_t __c)
+{
+  return (int16x8_t)__builtin_neon_vqrdmlshv8hi (__a, __b, __c);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vqrdmlshq_s32 (int32x4_t __a, int32x4_t __b, int32x4_t __c)
+{
+  return (int32x4_t)__builtin_neon_vqrdmlshv4si (__a, __b, __c);
+}
+#endif
+
 __extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
 vmull_s8 (int8x8_t __a, int8x8_t __b)
 {

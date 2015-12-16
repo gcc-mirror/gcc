@@ -1,5 +1,13 @@
 2015-12-16  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config/arm/arm_neon.h (vqrdmlah_s16, vqrdmlah_s32): New.
+	(vqrdmlahq_s16, vqrdmlahq_s32): New.
+	(vqrdmlsh_s16, vqrdmlsh_s32): New.
+	(vqrdmlahq_s16, vqrdmlshq_s32): New.
+	* config/arm/arm_neon_builtins.def: Add "vqrdmlah" and "vqrdmlsh".
+
+2015-12-16  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* doc/sourcebuild.texi (ARM-specific attributes): Add
 	"arm_v8_1a_neon_ok" and "arm_v8_1a_neon_hw".
 
