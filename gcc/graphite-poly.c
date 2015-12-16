@@ -31,13 +31,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple.h"
 #include "cfghooks.h"
-#include "gimple-pretty-print.h"
 #include "diagnostic-core.h"
 #include "fold-const.h"
 #include "gimple-iterator.h"
 #include "tree-ssa-loop.h"
 #include "cfgloop.h"
 #include "tree-data-ref.h"
+#include "pretty-print.h"
+#include "gimple-pretty-print.h"
+#include "tree-dump.h"
 
 #include <isl/constraint.h>
 #include <isl/set.h>
@@ -147,6 +149,17 @@ new_poly_dr (poly_bb_p pbb, gimple *stmt, enum poly_dr_type type,
   pdr->subscript_sizes = subscript_sizes;
   PDR_TYPE (pdr) = type;
   PBB_DRS (pbb).safe_push (pdr);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "Converting dr: ");
+      print_pdr (dump_file, pdr);
+      fprintf (dump_file, "To polyhedral representation:\n");
+      fprintf (dump_file, "  - access functions: ");
+      print_isl_map (dump_file, acc);
+      fprintf (dump_file, "  - subscripts: ");
+      print_isl_set (dump_file, subscript_sizes);
+    }
 }
 
 /* Free polyhedral data reference PDR.  */

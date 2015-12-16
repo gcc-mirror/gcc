@@ -1,3 +1,13 @@
+2015-12-16  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-dependences.c (scop_get_reads): Add more dumps.
+	(scop_get_must_writes): Same.
+	(scop_get_may_writes): Same.
+	* graphite-poly.c (new_poly_dr): Same.
+	* graphite-scop-detection.c (build_cross_bb_scalars_def): Same.
+	(gather_bbs::before_dom_children): Same.
+
 2015-12-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_extend_bitfield_pattern_p):

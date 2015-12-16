@@ -89,8 +89,16 @@ scop_get_reads (scop_p scop, vec<poly_bb_p> pbbs)
 	if (pdr_read_p (pdr))
 	  {
 	    if (dump_file)
-	      print_pdr (dump_file, pdr);
+	      {
+		fprintf (dump_file, "Adding read to depedence graph: ");
+		print_pdr (dump_file, pdr);
+	      }
 	    res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
+	    if (dump_file)
+	      {
+		fprintf (dump_file, "Reads depedence graph: ");
+		print_isl_union_map (dump_file, res);
+	      }
 	  }
     }
 
@@ -114,8 +122,16 @@ scop_get_must_writes (scop_p scop, vec<poly_bb_p> pbbs)
 	if (pdr_write_p (pdr))
 	  {
 	    if (dump_file)
-	      print_pdr (dump_file, pdr);
+	      {
+		fprintf (dump_file, "Adding must write to depedence graph: ");
+		print_pdr (dump_file, pdr);
+	      }
 	    res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
+	    if (dump_file)
+	      {
+		fprintf (dump_file, "Must writes depedence graph: ");
+		print_isl_union_map (dump_file, res);
+	      }
 	  }
     }
 
@@ -139,9 +155,16 @@ scop_get_may_writes (scop_p scop, vec<poly_bb_p> pbbs)
 	if (pdr_may_write_p (pdr))
 	  {
 	    if (dump_file)
-	      print_pdr (dump_file, pdr);
-
+	      {
+		fprintf (dump_file, "Adding may write to depedence graph: ");
+		print_pdr (dump_file, pdr);
+	      }
 	    res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
+	    if (dump_file)
+	      {
+		fprintf (dump_file, "May writes depedence graph: ");
+		print_isl_union_map (dump_file, res);
+	      }
 	  }
     }
 
