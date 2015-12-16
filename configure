@@ -1492,7 +1492,7 @@ Optional Features:
                           build static libjava [default=no]
   --enable-bootstrap      enable bootstrapping [yes if native build]
   --disable-isl-version-check
-                          disable check for ISL version
+                          disable check for isl version
   --enable-lto            enable link time optimization support
   --enable-linker-plugin-configure-flags=FLAGS
                           additional flags for configuring linker plugins
@@ -1553,8 +1553,8 @@ Optional Packages:
                           package. Equivalent to
                           --with-isl-include=PATH/include plus
                           --with-isl-lib=PATH/lib
-  --with-isl-include=PATH Specify directory for installed ISL include files
-  --with-isl-lib=PATH     Specify the directory for the installed ISL library
+  --with-isl-include=PATH Specify directory for installed isl include files
+  --with-isl-lib=PATH     Specify the directory for the installed isl library
   --with-build-sysroot=SYSROOT
                           use sysroot as the system root during the build
   --with-debug-prefix-map='A=B C=D ...'
@@ -6003,8 +6003,8 @@ fi
     isllibs='-L$$r/$(HOST_SUBDIR)/isl/'"$lt_cv_objdir"' '
     islinc='-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include'
     ENABLE_ISL_CHECK=no
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using in-tree ISL, disabling version check" >&5
-$as_echo "$as_me: WARNING: using in-tree ISL, disabling version check" >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using in-tree isl, disabling version check" >&5
+$as_echo "$as_me: WARNING: using in-tree isl, disabling version check" >&2;}
   fi
 
   isllibs="${isllibs} -lisl"
@@ -6020,15 +6020,15 @@ $as_echo "$as_me: WARNING: using in-tree ISL, disabling version check" >&2;}
     LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs}"
     LIBS="${_isl_saved_LIBS} -lisl"
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for compatible ISL" >&5
-$as_echo_n "checking for compatible ISL... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for isl 0.15 (or deprecated 0.14)" >&5
+$as_echo_n "checking for isl 0.15 (or deprecated 0.14)... " >&6; }
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <isl/val.h>
+#include <isl/ctx.h>
 int
 main ()
 {
-;
+isl_ctx_get_max_operations (isl_ctx_alloc ());
   ;
   return 0;
 }
@@ -6042,6 +6042,11 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_isl" >&5
 $as_echo "$gcc_cv_isl" >&6; }
+
+    if test "${gcc_cv_isl}" = no ; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: recommended isl version is 0.15, minimum required isl version 0.14 is deprecated" >&5
+$as_echo "recommended isl version is 0.15, minimum required isl version 0.14 is deprecated" >&6; }
+    fi
 
     CFLAGS=$_isl_saved_CFLAGS
     LDFLAGS=$_isl_saved_LDFLAGS

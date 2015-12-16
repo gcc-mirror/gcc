@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/options.h>
 #include <isl/ctx.h>
 #ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+/* isl 0.15 or later.  */
 #include <isl/schedule_node.h>
 #include <isl/ast_build.h>
 #endif
@@ -56,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite.h"
 
 #ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+/* isl 0.15 or later.  */
 
 /* get_schedule_for_node_st - Improve schedule for the schedule node.
    Only Simple loop tiling is considered.  */
@@ -371,12 +373,10 @@ static const int CONSTANT_BOUND = 20;
 bool
 optimize_isl (scop_p scop)
 {
-#ifdef HAVE_ISL_CTX_MAX_OPERATIONS
   int old_max_operations = isl_ctx_get_max_operations (scop->isl_context);
   int max_operations = PARAM_VALUE (PARAM_MAX_ISL_OPERATIONS);
   if (max_operations)
     isl_ctx_set_max_operations (scop->isl_context, max_operations);
-#endif
   isl_options_set_on_error (scop->isl_context, ISL_ON_ERROR_CONTINUE);
 
   isl_union_set *domain = scop_get_domains (scop);
@@ -388,24 +388,10 @@ optimize_isl (scop_p scop)
   isl_union_map *validity = dependences;
   isl_union_map *proximity = isl_union_map_copy (validity);
 
-#ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
-  isl_schedule_constraints *schedule_constraints;
-  schedule_constraints = isl_schedule_constraints_on_domain (domain);
-  schedule_constraints
-    = isl_schedule_constraints_set_proximity (schedule_constraints,
-					      proximity);
-  schedule_constraints
-    = isl_schedule_constraints_set_validity (schedule_constraints,
-					     isl_union_map_copy (validity));
-  schedule_constraints
-    = isl_schedule_constraints_set_coincidence (schedule_constraints,
-						validity);
-#endif
-
   isl_options_set_schedule_max_constant_term (scop->isl_context, CONSTANT_BOUND);
   isl_options_set_schedule_maximize_band_depth (scop->isl_context, 1);
 #ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
-  /* ISL-0.15 or later.  */
+  /* isl 0.15 or later.  */
   isl_options_set_schedule_serialize_sccs (scop->isl_context, 0);
   isl_options_set_schedule_maximize_band_depth (scop->isl_context, 1);
   isl_options_set_schedule_max_constant_term (scop->isl_context, 20);
@@ -418,34 +404,24 @@ optimize_isl (scop_p scop)
   isl_options_set_schedule_fuse (scop->isl_context, ISL_SCHEDULE_FUSE_MIN);
 #endif
 
-#ifdef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
-  isl_schedule *schedule
-    = isl_schedule_constraints_compute_schedule (schedule_constraints);
-#else
   isl_schedule *schedule
     = isl_union_set_compute_schedule (domain, validity, proximity);
-#endif
-
   isl_options_set_on_error (scop->isl_context, ISL_ON_ERROR_ABORT);
 
-#ifdef HAVE_ISL_CTX_MAX_OPERATIONS
   isl_ctx_reset_operations (scop->isl_context);
   isl_ctx_set_max_operations (scop->isl_context, old_max_operations);
   if (!schedule || isl_ctx_last_error (scop->isl_context) == isl_error_quota)
     {
       if (dump_file && dump_flags)
-	fprintf (dump_file, "ISL timed out --param max-isl-operations=%d\n",
+	fprintf (dump_file, "isl timed out --param max-isl-operations=%d\n",
 		 max_operations);
       if (schedule)
 	isl_schedule_free (schedule);
       return false;
     }
-#else
-  if (!schedule)
-    return false;
-#endif
 
 #ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  /* isl 0.15 or later.  */
   isl_union_map *schedule_map = get_schedule_map_st (schedule);
 #else
   isl_union_map *schedule_map = get_schedule_map (schedule);

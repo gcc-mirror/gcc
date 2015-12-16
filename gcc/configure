@@ -16378,7 +16378,7 @@ _LT_EOF
 	if $NM -V 2>&1 | $GREP 'GNU' > /dev/null; then
 	  export_symbols_cmds='$NM -Bpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "W")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
 	else
-	  export_symbols_cmds='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
+	  export_symbols_cmds='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "L")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
 	fi
 	aix_use_runtimelinking=no
 
@@ -20864,7 +20864,7 @@ $as_echo_n "checking whether the $compiler linker ($LD) supports shared librarie
     if $NM -V 2>&1 | $GREP 'GNU' > /dev/null; then
       export_symbols_cmds_CXX='$NM -Bpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "W")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
     else
-      export_symbols_cmds_CXX='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
+      export_symbols_cmds_CXX='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "L")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
     fi
     ;;
   pw32*)
@@ -28911,29 +28911,6 @@ if test "x${ISLLIBS}" != "x" ; then
   saved_LIBS="$LIBS"
   LIBS="$LIBS $ISLLIBS $GMPLIBS"
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking Checking for isl_schedule_constraints_compute_schedule" >&5
-$as_echo_n "checking Checking for isl_schedule_constraints_compute_schedule... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <isl/schedule.h>
-int
-main ()
-{
-isl_schedule_constraints_compute_schedule (NULL);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  ac_has_isl_schedule_constraints_compute_schedule=yes
-else
-  ac_has_isl_schedule_constraints_compute_schedule=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_isl_schedule_constraints_compute_schedule" >&5
-$as_echo "$ac_has_isl_schedule_constraints_compute_schedule" >&6; }
-
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking Checking for isl_options_set_schedule_serialize_sccs" >&5
 $as_echo_n "checking Checking for isl_options_set_schedule_serialize_sccs... " >&6; }
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -28957,46 +28934,12 @@ rm -f core conftest.err conftest.$ac_objext \
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_isl_options_set_schedule_serialize_sccs" >&5
 $as_echo "$ac_has_isl_options_set_schedule_serialize_sccs" >&6; }
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking Checking for isl_ctx_get_max_operations" >&5
-$as_echo_n "checking Checking for isl_ctx_get_max_operations... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <isl/ctx.h>
-int
-main ()
-{
-isl_ctx_get_max_operations (isl_ctx_alloc ());
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  ac_has_isl_ctx_get_max_operations=yes
-else
-  ac_has_isl_ctx_get_max_operations=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_isl_ctx_get_max_operations" >&5
-$as_echo "$ac_has_isl_ctx_get_max_operations" >&6; }
-
   LIBS="$saved_LIBS"
   CXXFLAGS="$saved_CXXFLAGS"
-
-  if test x"$ac_has_isl_schedule_constraints_compute_schedule" = x"yes"; then
-
-$as_echo "#define HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE 1" >>confdefs.h
-
-  fi
 
   if test x"$ac_has_isl_options_set_schedule_serialize_sccs" = x"yes"; then
 
 $as_echo "#define HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS 1" >>confdefs.h
-
-  fi
-  if test x"$ac_has_isl_ctx_get_max_operations" = x"yes"; then
-
-$as_echo "#define HAVE_ISL_CTX_MAX_OPERATIONS 1" >>confdefs.h
 
   fi
 fi
