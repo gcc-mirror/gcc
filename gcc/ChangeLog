@@ -1,10 +1,26 @@
+2015-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.h (OUTGOING_STATIC_CHAIN_REGNUM): Remove.
+	(REGISTER_NAMES): Adjust.
+	* config/nvptx/nvptx.c (nvptx_pass_by_reference): Avoid long line.
+	(nvptx_static_hain): Delete.
+	(write_arg_mode): Don't emit initializer if argno < 0.
+	(write_arg_type): Fix whitespace.
+	(init_frame): Initialize reg to zero if frame is zero-sized.
+	(nvptx_declare_function_name):  Use write_arg_type to emit chain
+	decl.
+	(nvptx_output_call_insn): Adjust static chain emission.
+	(nvptx_goacc_reduction): Make static.
+	(TARGET_STATIC_CHAIN): Don't override.
+
 2015-12-16  Aditya Kumar  <aditya.k7@samsung.com>
 
 	* graphite-dependences.c (scop_get_dependences): Use local pointers.
 	* graphite-isl-ast-to-gimple.c
 	(translate_isl_ast_to_gimple::scop_to_isl_ast): Use scop->dependence.
 	* graphite-optimize-isl.c (optimize_isl): Same.
-	* graphite-poly.c (new_scop): Remove initialization of removed members.
+	* graphite-poly.c (new_scop): Remove initialization of removed
+	members.
 	(free_scop): Same.
 	* graphite.h (struct scop): Remove individial dependence pointers and
 	add a scop::dependence to contain all the dependence.
