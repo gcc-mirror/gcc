@@ -6146,6 +6146,50 @@ aarch64_if_then_else_costs (rtx op0, rtx op1, rtx op2, int *cost, bool speed)
   return false;
 }
 
+/* Check whether X is a bitfield operation of the form shift + extend that
+   maps down to a UBFIZ/SBFIZ/UBFX/SBFX instruction.  If so, return the
+   operand to which the bitfield operation is applied.  Otherwise return
+   NULL_RTX.  */
+
+static rtx
+aarch64_extend_bitfield_pattern_p (rtx x)
+{
+  rtx_code outer_code = GET_CODE (x);
+  machine_mode outer_mode = GET_MODE (x);
+
+  if (outer_code != ZERO_EXTEND && outer_code != SIGN_EXTEND
+      && outer_mode != SImode && outer_mode != DImode)
+    return NULL_RTX;
+
+  rtx inner = XEXP (x, 0);
+  rtx_code inner_code = GET_CODE (inner);
+  machine_mode inner_mode = GET_MODE (inner);
+  rtx op = NULL_RTX;
+
+  switch (inner_code)
+    {
+      case ASHIFT:
+	if (CONST_INT_P (XEXP (inner, 1))
+	    && (inner_mode == QImode || inner_mode == HImode))
+	  op = XEXP (inner, 0);
+	break;
+      case LSHIFTRT:
+	if (outer_code == ZERO_EXTEND && CONST_INT_P (XEXP (inner, 1))
+	    && (inner_mode == QImode || inner_mode == HImode))
+	  op = XEXP (inner, 0);
+	break;
+      case ASHIFTRT:
+	if (outer_code == SIGN_EXTEND && CONST_INT_P (XEXP (inner, 1))
+	    && (inner_mode == QImode || inner_mode == HImode))
+	  op = XEXP (inner, 0);
+	break;
+      default:
+	break;
+    }
+
+  return op;
+}
+
 /* Calculate the cost of calculating X, storing it in *COST.  Result
    is true if the total cost of the operation has now been calculated.  */
 static bool
@@ -6837,6 +6881,15 @@ cost_plus:
 	  return true;
 	}
 
+      op0 = aarch64_extend_bitfield_pattern_p (x);
+      if (op0)
+	{
+	  *cost += rtx_cost (op0, mode, ZERO_EXTEND, 0, speed);
+	  if (speed)
+	    *cost += extra_cost->alu.bfx;
+	  return true;
+	}
+
       if (speed)
 	{
 	  if (VECTOR_MODE_P (mode))
@@ -6865,6 +6918,15 @@ cost_plus:
 		COSTS_N_INSNS (aarch64_address_cost (address, mode,
 						     0, speed));
 	    }
+	  return true;
+	}
+
+      op0 = aarch64_extend_bitfield_pattern_p (x);
+      if (op0)
+	{
+	  *cost += rtx_cost (op0, mode, SIGN_EXTEND, 0, speed);
+	  if (speed)
+	    *cost += extra_cost->alu.bfx;
 	  return true;
 	}
 
