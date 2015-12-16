@@ -1,5 +1,10 @@
 2015-12-16  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config/arm/arm-c.c (arm_cpu_builtins): Define
+	__ARM_FEATURE_QRDMX.  Clean up some trailing whitespace.
+
+2015-12-16  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/arm/iterators.md (VQRDMLH_AS): New.
 	(neon_rdma_as): New.
 	* config/arm/neon.md

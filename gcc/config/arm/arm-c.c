@@ -62,19 +62,21 @@ static void
 arm_cpu_builtins (struct cpp_reader* pfile)
 {
   def_or_undef_macro (pfile, "__ARM_FEATURE_DSP", TARGET_DSP_MULTIPLY);
-  def_or_undef_macro (pfile, "__ARM_FEATURE_QBIT", TARGET_ARM_QBIT); 
+  def_or_undef_macro (pfile, "__ARM_FEATURE_QBIT", TARGET_ARM_QBIT);
   def_or_undef_macro (pfile, "__ARM_FEATURE_SAT", TARGET_ARM_SAT);
   def_or_undef_macro (pfile, "__ARM_FEATURE_CRYPTO", TARGET_CRYPTO);
 
   def_or_undef_macro (pfile, "__ARM_FEATURE_UNALIGNED", unaligned_access);
 
+  def_or_undef_macro (pfile, "__ARM_FEATURE_QRDMX", TARGET_NEON_RDMA);
+
   if (TARGET_CRC32)
     builtin_define ("__ARM_FEATURE_CRC32");
 
-  def_or_undef_macro (pfile, "__ARM_32BIT_STATE", TARGET_32BIT); 
+  def_or_undef_macro (pfile, "__ARM_32BIT_STATE", TARGET_32BIT);
 
   if (TARGET_ARM_FEATURE_LDREX)
-    builtin_define_with_int_value ("__ARM_FEATURE_LDREX", 
+    builtin_define_with_int_value ("__ARM_FEATURE_LDREX",
 				   TARGET_ARM_FEATURE_LDREX);
   else
     cpp_undef (pfile, "__ARM_FEATURE_LDREX");
