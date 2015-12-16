@@ -2014,6 +2014,18 @@
   [(set_attr "type" "neon_sat_mul_<V_elem_ch><q>")]
 )
 
+;; vqrdmlah, vqrdmlsh
+(define_insn "neon_vqrdml<VQRDMLH_AS:neon_rdma_as>h<mode>"
+  [(set (match_operand:VMDQI 0 "s_register_operand" "=w")
+	(unspec:VMDQI [(match_operand:VMDQI 1 "s_register_operand" "0")
+		       (match_operand:VMDQI 2 "s_register_operand" "w")
+		       (match_operand:VMDQI 3 "s_register_operand" "w")]
+		      VQRDMLH_AS))]
+  "TARGET_NEON_RDMA"
+  "vqrdml<VQRDMLH_AS:neon_rdma_as>h.<V_s_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
+  [(set_attr "type" "neon_sat_mla_<V_elem_ch>_long")]
+)
+
 (define_insn "neon_vqdmlal<mode>"
   [(set (match_operand:<V_widen> 0 "s_register_operand" "=w")
         (unspec:<V_widen> [(match_operand:<V_widen> 1 "s_register_operand" "0")
@@ -3174,6 +3186,39 @@ if (BYTES_BIG_ENDIAN)
   return "vq<r>dmulh.<V_s_elem>\t%P0, %P1, %P2[%c3]";
 }
   [(set_attr "type" "neon_sat_mul_<V_elem_ch>_scalar_q")]
+)
+
+;; vqrdmlah_lane, vqrdmlsh_lane
+(define_insn "neon_vqrdml<VQRDMLH_AS:neon_rdma_as>h_lane<mode>"
+  [(set (match_operand:VMQI 0 "s_register_operand" "=w")
+	(unspec:VMQI [(match_operand:VMQI 1 "s_register_operand" "0")
+		      (match_operand:VMQI 2 "s_register_operand" "w")
+		      (match_operand:<V_HALF> 3 "s_register_operand"
+					  "<scalar_mul_constraint>")
+		      (match_operand:SI 4 "immediate_operand" "i")]
+		     VQRDMLH_AS))]
+  "TARGET_NEON_RDMA"
+{
+  return
+   "vqrdml<VQRDMLH_AS:neon_rdma_as>h.<V_s_elem>\t%q0, %q2, %P3[%c4]";
+}
+  [(set_attr "type" "neon_mla_<V_elem_ch>_scalar<q>")]
+)
+
+(define_insn "neon_vqrdml<VQRDMLH_AS:neon_rdma_as>h_lane<mode>"
+  [(set (match_operand:VMDI 0 "s_register_operand" "=w")
+	(unspec:VMDI [(match_operand:VMDI 1 "s_register_operand" "0")
+		      (match_operand:VMDI 2 "s_register_operand" "w")
+		      (match_operand:VMDI 3 "s_register_operand"
+					  "<scalar_mul_constraint>")
+		      (match_operand:SI 4 "immediate_operand" "i")]
+		     VQRDMLH_AS))]
+  "TARGET_NEON_RDMA"
+{
+  return
+   "vqrdml<VQRDMLH_AS:neon_rdma_as>h.<V_s_elem>\t%P0, %P2, %P3[%c4]";
+}
+  [(set_attr "type" "neon_mla_<V_elem_ch>_scalar")]
 )
 
 (define_insn "neon_vmla_lane<mode>"
