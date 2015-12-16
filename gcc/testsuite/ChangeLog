@@ -1,3 +1,8 @@
+2015-12-16  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/68162
+	* gcc.dg/pr68162-1.c: New test.
+
 2015-12-16  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

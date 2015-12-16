@@ -1,3 +1,9 @@
+2015-12-16  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/68162
+	* c-common.h (c_build_qualified_type): Add extra default
+	arguments.
+
 2015-12-04  Release Manager
 
 	* GCC 5.3.0 released.

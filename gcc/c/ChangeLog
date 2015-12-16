@@ -1,3 +1,12 @@
+2015-12-16  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/68162
+	* c-decl.c (grokdeclarator): Set first_non_attr_kind before
+	following link from declarator to next declarator.  Track original
+	qualified type and pass it to c_build_qualified_type.
+	* c-typeck.c (c_build_qualified_type): Add arguments
+	orig_qual_type and orig_qual_indirect.
+
 2015-12-04  Release Manager
 
 	* GCC 5.3.0 released.
