@@ -39,7 +39,7 @@ union rtunion_def
 typedef union rtunion_def rtunion;
 struct rtx_def
 {
-  enum rtx_code code:16;
+  enum rtx_code code:8;
   union u
   {
     rtunion fld[1];

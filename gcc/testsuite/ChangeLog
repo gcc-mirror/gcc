@@ -1,3 +1,7 @@
+2015-12-13  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/pr68619-4.c: Change size of code bitfield.
+
 2015-12-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-c++-common/conflict-markers-1.c: New testcase.
