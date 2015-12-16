@@ -517,6 +517,8 @@ lto_symtab_merge_p (tree prevailing, tree decl)
 		 "TREE_CODE mismatch\n");
       return false;
     }
+  gcc_checking_assert (TREE_CHAIN (prevailing) == TREE_CHAIN (decl));
+  
   if (TREE_CODE (prevailing) == FUNCTION_DECL)
     {
       if (DECL_BUILT_IN (prevailing) != DECL_BUILT_IN (decl))
@@ -883,6 +885,11 @@ lto_symtab_merge_symbols_1 (symtab_node *prevailing)
 	  else
 	    {
 	      DECL_INITIAL (e->decl) = error_mark_node;
+	      if (e->lto_file_data)
+		{
+		  lto_free_function_in_decl_state_for_node (e);
+		  e->lto_file_data = NULL;
+		}
 	      symtab->call_varpool_removal_hooks (dyn_cast<varpool_node *> (e));
 	    }
 	  e->remove_all_references ();
@@ -967,4 +974,34 @@ lto_symtab_merge_symbols (void)
 	    }
 	}
     }
+}
+
+/* Virtual tables may matter for code generation even if they are not
+   directly refernced by the code because they may be used for devirtualizaiton.
+   For this reason it is important to merge even virtual tables that have no
+   associated symbol table entries.  Without doing so we lose optimization
+   oppurtunities by losing track of the vtable constructor.
+   FIXME: we probably ought to introduce explicit symbol table entries for
+   those before streaming.  */
+
+tree
+lto_symtab_prevailing_virtual_decl (tree decl)
+{
+  gcc_checking_assert (!type_in_anonymous_namespace_p (DECL_CONTEXT (decl))
+		       && DECL_ASSEMBLER_NAME_SET_P (decl));
+
+  symtab_node *n = symtab_node::get_for_asmname
+		     (DECL_ASSEMBLER_NAME (decl));
+  while (n && ((!DECL_EXTERNAL (n->decl) && !TREE_PUBLIC (n->decl))
+	       || !DECL_VIRTUAL_P (n->decl)))
+    n = n->next_sharing_asm_name;
+  if (n)
+    {
+      lto_symtab_prevail_decl (n->decl, decl);
+      decl = n->decl;
+    }
+  else
+    symtab_node::get_create (decl);
+
+  return decl;
 }

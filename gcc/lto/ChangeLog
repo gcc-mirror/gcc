@@ -1,3 +1,10 @@
+2015-12-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/68878
+	* lto-symtab.c (lto_symtab_prevailing_virtual_decl): New function.
+	* lto-symtab.h (lto_symtab_prevailing_virtual_decl): Declare.
+	(lto_symtab_prevailing_decl): Use it.
+
 2015-12-15  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* lto.c: Include stringpool.h and fold-const.h.
