@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_GRAPHITE_POLY_H
 
 #include "sese.h"
+#include <isl/schedule.h>
 
 #ifndef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
   /* isl 0.14.  */
@@ -410,6 +411,9 @@ struct scop
 
   /* The context used internally by ISL.  */
   isl_ctx *isl_context;
+
+  /* SCoP final schedule.  */
+  isl_schedule *schedule;
 
   /* The data dependence relation among the data references in this scop.  */
   isl_union_map *dependence;
