@@ -1,5 +1,18 @@
 2015-12-16  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* config/arm/arm_neon.h (vqrdmlahq_lane_s16): New.
+	(vqrdmlahq_lane_s32): New.
+	(vqrdmlah_lane_s16): New.
+	(vqrdmlah_lane_s32): New.
+	(vqrdmlshq_lane_s16): New.
+	(vqrdmlshq_lane_s32): New.
+	(vqrdmlsh_lane_s16): New.
+	(vqrdmlsh_lane_s32): New.
+	* config/arm/arm_neon_builtins.def: Add "vqrdmlah_lane" and
+	"vqrdmlsh_lane".
+
+2015-12-16  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/arm/arm_neon.h (vqrdmlah_s16, vqrdmlah_s32): New.
 	(vqrdmlahq_s16, vqrdmlahq_s32): New.
 	(vqrdmlsh_s16, vqrdmlsh_s32): New.
