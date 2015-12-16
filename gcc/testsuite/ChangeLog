@@ -1,3 +1,8 @@
+2015-12-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68892
+	* gcc.dg/vect/bb-slp-pr68892.c: New testcase.
+
 2015-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/65980

@@ -1,3 +1,9 @@
+2015-12-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68892
+	* tree-vect-slp.c (vect_analyze_slp_cost_1): Properly compute
+	cost for permuted loads.
+
 2015-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/65980
