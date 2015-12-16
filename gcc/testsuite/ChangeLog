@@ -1,3 +1,14 @@
+2015-12-16  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* lib/target-supports.exp (add_options_for_arm_v8_1a_neon): Update
+	comment.  Use check_effective_target_arm_v8_1a_neon_ok to select
+	the command line options.
+	(check_effective_target_arm_v8_1a_neon_ok_nocache): Update initial
+	test to allow ARM targets.  Select and record a working set of
+	command line options.
+	(check_effective_target_arm_v8_1a_neon_hw): Add tests for ARM
+	targets.
+
 2015-12-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/68648

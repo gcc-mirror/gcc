@@ -1,5 +1,10 @@
 2015-12-16  Matthew Wahab  <matthew.wahab@arm.com>
 
+	* doc/sourcebuild.texi (ARM-specific attributes): Add
+	"arm_v8_1a_neon_ok" and "arm_v8_1a_neon_hw".
+
+2015-12-16  Matthew Wahab  <matthew.wahab@arm.com>
+
 	* config/arm/arm-c.c (arm_cpu_builtins): Define
 	__ARM_FEATURE_QRDMX.  Clean up some trailing whitespace.
 

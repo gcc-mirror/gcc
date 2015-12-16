@@ -2830,14 +2830,15 @@ proc add_options_for_arm_v8_neon { flags } {
     return "$flags $et_arm_v8_neon_flags -march=armv8-a"
 }
 
-# Add the options needed for ARMv8.1 Adv.SIMD.
+# Add the options needed for ARMv8.1 Adv.SIMD.  Also adds the ARMv8 NEON
+# options for AArch64 and for ARM.
 
 proc add_options_for_arm_v8_1a_neon { flags } {
-    if { [istarget aarch64*-*-*] } {
-	return "$flags -march=armv8.1-a"
-    } else {
+    if { ! [check_effective_target_arm_v8_1a_neon_ok] } {
 	return "$flags"
     }
+    global et_arm_v8_1a_neon_flags
+    return "$flags $et_arm_v8_1a_neon_flags -march=armv8.1-a"
 }
 
 proc add_options_for_arm_crc { flags } {
@@ -3285,17 +3286,33 @@ proc check_effective_target_arm_neonv2_hw { } {
 }
 
 # Return 1 if the target supports the ARMv8.1 Adv.SIMD extension, 0
-# otherwise.  The test is valid for AArch64.
+# otherwise.  The test is valid for AArch64 and ARM.  Record the command
+# line options needed.
 
 proc check_effective_target_arm_v8_1a_neon_ok_nocache { } {
-    if { ![istarget aarch64*-*-*] } {
-	return 0
+    global et_arm_v8_1a_neon_flags
+    set et_arm_v8_1a_neon_flags ""
+
+    if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
+	return 0;
     }
-    return [check_no_compiler_messages_nocache arm_v8_1a_neon_ok assembly {
-	#if !defined (__ARM_FEATURE_QRDMX)
-	#error "__ARM_FEATURE_QRDMX not defined"
-	#endif
-    } [add_options_for_arm_v8_1a_neon ""]]
+
+    # Iterate through sets of options to find the compiler flags that
+    # need to be added to the -march option.  Start with the empty set
+    # since AArch64 only needs the -march setting.
+    foreach flags {"" "-mfpu=neon-fp-armv8" "-mfloat-abi=softfp" \
+		       "-mfpu=neon-fp-armv8 -mfloat-abi=softfp"} {
+	if { [check_no_compiler_messages_nocache arm_v8_1a_neon_ok object {
+	    #if !defined (__ARM_FEATURE_QRDMX)
+	    #error "__ARM_FEATURE_QRDMX not defined"
+	    #endif
+	} "$flags -march=armv8.1-a"] } {
+	    set et_arm_v8_1a_neon_flags "$flags -march=armv8.1-a"
+	    return 1
+	}
+    }
+
+    return 0;
 }
 
 proc check_effective_target_arm_v8_1a_neon_ok { } {
@@ -3322,16 +3339,17 @@ proc check_effective_target_arm_v8_neon_hw { } {
 }
 
 # Return 1 if the target supports executing the ARMv8.1 Adv.SIMD extension, 0
-# otherwise.  The test is valid for AArch64.
+# otherwise.  The test is valid for AArch64 and ARM.
 
 proc check_effective_target_arm_v8_1a_neon_hw { } {
     if { ![check_effective_target_arm_v8_1a_neon_ok] } {
 	return 0;
     }
-    return [check_runtime_nocache arm_v8_1a_neon_hw_available {
+    return [check_runtime arm_v8_1a_neon_hw_available {
 	int
 	main (void)
 	{
+	  #ifdef __ARM_ARCH_ISA_A64
 	  __Int32x2_t a = {0, 1};
 	  __Int32x2_t b = {0, 2};
 	  __Int32x2_t result;
@@ -3341,9 +3359,21 @@ proc check_effective_target_arm_v8_1a_neon_hw { } {
 	       : "w"(a), "w"(b)
 	       : /* No clobbers.  */);
 
+	  #else
+
+	  __simd64_int32_t a = {0, 1};
+	  __simd64_int32_t b = {0, 2};
+	  __simd64_int32_t result;
+
+	  asm ("vqrdmlah.s32 %P0, %P1, %P2"
+	       : "=w"(result)
+	       : "w"(a), "w"(b)
+	       : /* No clobbers.  */);
+	  #endif
+
 	  return result[0];
 	}
-    }  [add_options_for_arm_v8_1a_neon ""]]
+    } [add_options_for_arm_v8_1a_neon ""]]
 }
 
 # Return 1 if this is a ARM target with NEON enabled.
