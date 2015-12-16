@@ -1,3 +1,8 @@
+2015-12-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68870
+	* gcc.dg/torture/pr68870.c: New testcase.
+
 2015-12-16  Tom de Vries  <tom@codesourcery.com>
 
 	* g++.dg/ipa/devirt-37.C: Update for new fre2 pass.
