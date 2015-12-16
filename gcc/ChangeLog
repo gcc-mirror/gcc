@@ -1,3 +1,9 @@
+2015-12-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/68648
+	* config/arm/arm.md (*andsi_iorsi3_notsi): Try to simplify
+	the complement of operands[3] during splitting.
+
 2015-12-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68892
