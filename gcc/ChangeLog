@@ -1,11 +1,24 @@
+2015-12-16  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx-protos.h (nvptx_hard_regno_mode_ok): Delete.
+	* config/nvptx/nvptx.h (struct machine_function):
+	Reimplement. Adjust all users.
+	* config/nvptx/nvptx.c (nvptx_declare_function_name): Move stack
+	and frame array generation earlier.
+	(nvptx_call_args): Reimplement.
+	(nvptx_expand_call): Adjust.
+	(nvptx_hard_reno_mode_ok): Delete.
+	(nvptx_reorg): Revert scan of hard regs.
+
 2015-12-16  Tom de Vries  <tom@codesourcery.com>
 
-	* opts.c (default_options_optimization): Set fipa-pta on by default for
-	fopenacc.
+	* opts.c (default_options_optimization): Set fipa-pta on by
+	default for fopenacc.
 	* passes.def: Move kernels pass group to pass_ipa_oacc.
 	* tree-pass.h (make_pass_oacc_kernels2): Remove.
 	(make_pass_ipa_oacc, make_pass_ipa_oacc_kernels): Declare.
-	* tree-ssa-loop.c (pass_oacc_kernels2, make_pass_oacc_kernels2): Remove.
+	* tree-ssa-loop.c (pass_oacc_kernels2, make_pass_oacc_kernels2):
+	Remove.
 	(pass_ipa_oacc, pass_ipa_oacc_kernels): New pass.
 	(make_pass_ipa_oacc, make_pass_ipa_oacc_kernels): New function.
 	* tree-ssa-structalias.c (pass_ipa_pta::clone): New function.

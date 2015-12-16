@@ -220,14 +220,15 @@ struct nvptx_args {
 #if defined HOST_WIDE_INT
 struct GTY(()) machine_function
 {
-  rtx_expr_list *call_args;
-  rtx start_call;
-  tree funtype;
-  bool has_call_with_varargs;
-  bool has_call_with_sc;
-  HOST_WIDE_INT outgoing_stdarg_size;
-  int ret_reg_mode; /* machine_mode not defined yet. */
-  rtx axis_predicate[2];
+  rtx_expr_list *call_args;  /* Arg list for the current call.  */
+  bool doing_call; /* Within a CALL_ARGS ... CALL_ARGS_END sequence.  */
+  bool is_varadic;  /* This call is varadic  */
+  bool has_varadic;  /* Current function has a varadic call.  */
+  bool has_chain; /* Current function has outgoing static chain.  */
+  int num_args;	/* Number of args of current call.  */
+  int return_mode; /* Return mode of current fn.
+		      (machine_mode not defined yet.) */
+  rtx axis_predicate[2]; /* Neutering predicates.  */
 };
 #endif
 
