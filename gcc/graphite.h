@@ -411,13 +411,8 @@ struct scop
   /* The context used internally by ISL.  */
   isl_ctx *isl_context;
 
-  /* The original dependence relations:
-     RAW are read after write dependences,
-     WAR are write after read dependences,
-     WAW are write after write dependences.  */
-  isl_union_map *must_raw, *may_raw, *must_raw_no_source, *may_raw_no_source,
-    *must_war, *may_war, *must_war_no_source, *may_war_no_source,
-    *must_waw, *may_waw, *must_waw_no_source, *may_waw_no_source;
+  /* The data dependence relation among the data references in this scop.  */
+  isl_union_map *dependence;
 };
 
 extern scop_p new_scop (edge, edge);

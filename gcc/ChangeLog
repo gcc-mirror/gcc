@@ -1,4 +1,15 @@
 2015-12-16  Aditya Kumar  <aditya.k7@samsung.com>
+
+	* graphite-dependences.c (scop_get_dependences): Use local pointers.
+	* graphite-isl-ast-to-gimple.c
+	(translate_isl_ast_to_gimple::scop_to_isl_ast): Use scop->dependence.
+	* graphite-optimize-isl.c (optimize_isl): Same.
+	* graphite-poly.c (new_scop): Remove initialization of removed members.
+	(free_scop): Same.
+	* graphite.h (struct scop): Remove individial dependence pointers and
+	add a scop::dependence to contain all the dependence.
+
+2015-12-16  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
 	* config.in: Regenerate.

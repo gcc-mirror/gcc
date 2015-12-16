@@ -399,28 +399,32 @@ compute_deps (scop_p scop, vec<poly_bb_p> pbbs,
 isl_union_map *
 scop_get_dependences (scop_p scop)
 {
-  isl_union_map *dependences;
+  if (scop->dependence)
+    return scop->dependence;
 
-  if (!scop->must_raw)
-    compute_deps (scop, scop->pbbs,
-		  &scop->must_raw, &scop->may_raw,
-		  &scop->must_raw_no_source, &scop->may_raw_no_source,
-		  &scop->must_war, &scop->may_war,
-		  &scop->must_war_no_source, &scop->may_war_no_source,
-		  &scop->must_waw, &scop->may_waw,
-		  &scop->must_waw_no_source, &scop->may_waw_no_source);
+  /* The original dependence relations:
+     RAW are read after write dependences,
+     WAR are write after read dependences,
+     WAW are write after write dependences.  */
+  isl_union_map *must_raw = NULL, *may_raw = NULL, *must_raw_no_source = NULL,
+      *may_raw_no_source = NULL, *must_war = NULL, *may_war = NULL,
+      *must_war_no_source = NULL, *may_war_no_source = NULL, *must_waw = NULL,
+      *may_waw = NULL, *must_waw_no_source = NULL, *may_waw_no_source = NULL;
 
-  dependences = isl_union_map_copy (scop->must_raw);
-  dependences = isl_union_map_union (dependences,
-				     isl_union_map_copy (scop->must_war));
-  dependences = isl_union_map_union (dependences,
-				     isl_union_map_copy (scop->must_waw));
-  dependences = isl_union_map_union (dependences,
-				     isl_union_map_copy (scop->may_raw));
-  dependences = isl_union_map_union (dependences,
-				     isl_union_map_copy (scop->may_war));
-  dependences = isl_union_map_union (dependences,
-				     isl_union_map_copy (scop->may_waw));
+  compute_deps (scop, scop->pbbs,
+		  &must_raw, &may_raw,
+		  &must_raw_no_source, &may_raw_no_source,
+		  &must_war, &may_war,
+		  &must_war_no_source, &may_war_no_source,
+		  &must_waw, &may_waw,
+		  &must_waw_no_source, &may_waw_no_source);
+
+  isl_union_map *dependences = must_raw;
+  dependences = isl_union_map_union (dependences, must_war);
+  dependences = isl_union_map_union (dependences, must_waw);
+  dependences = isl_union_map_union (dependences, may_raw);
+  dependences = isl_union_map_union (dependences, may_war);
+  dependences = isl_union_map_union (dependences, may_waw);
 
   if (dump_file)
     {
@@ -429,6 +433,14 @@ scop_get_dependences (scop_p scop)
       fprintf (dump_file, ")\n");
     }
 
+  isl_union_map_free (must_raw_no_source);
+  isl_union_map_free (may_raw_no_source);
+  isl_union_map_free (must_war_no_source);
+  isl_union_map_free (may_war_no_source);
+  isl_union_map_free (must_waw_no_source);
+  isl_union_map_free (may_waw_no_source);
+
+  scop->dependence = dependences;
   return dependences;
 }
 
