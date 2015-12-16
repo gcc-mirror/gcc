@@ -1,3 +1,9 @@
+2015-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR objc++/68932
+	* obj-c++.dg/property/at-property-23.mm: Remove check for
+	an error message.
+
 2015-12-13  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/pr68619-4.c: Change size of code bitfield.

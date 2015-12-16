@@ -10933,8 +10933,9 @@ grokdeclarator (const cp_declarator *declarator,
 	if (!staticp && TREE_CODE (type) == ARRAY_TYPE
 	    && TYPE_DOMAIN (type) == NULL_TREE)
 	  {
-	    if (TREE_CODE (ctype) == UNION_TYPE
-		|| TREE_CODE (ctype) == QUAL_UNION_TYPE)
+	    if (ctype
+		&& (TREE_CODE (ctype) == UNION_TYPE
+		    || TREE_CODE (ctype) == QUAL_UNION_TYPE))
 	      {
 		error ("flexible array member in union");
 		type = error_mark_node;
