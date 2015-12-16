@@ -1,3 +1,9 @@
+2015-12-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68861
+	* tree-vect-slp.c (vect_build_slp_tree): Properly handle
+	duplicate stmts when applying swapping to stmts.
+
 2015-12-16  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/i386-c.c (ix86_target_macros_internal): Remove

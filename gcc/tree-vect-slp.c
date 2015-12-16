@@ -1049,11 +1049,29 @@ vect_build_slp_tree (vec_info *vinfo,
 		 if we end up building the operand from scalars as
 		 we'll continue to process swapped operand two.  */
 	      for (j = 0; j < group_size; ++j)
-		if (!matches[j])
+		{
+		  gimple *stmt = SLP_TREE_SCALAR_STMTS (*node)[j];
+		  gimple_set_plf (stmt, GF_PLF_1, false);
+		}
+	      for (j = 0; j < group_size; ++j)
+		{
+		  gimple *stmt = SLP_TREE_SCALAR_STMTS (*node)[j];
+		  if (!matches[j])
+		    {
+		      /* Avoid swapping operands twice.  */
+		      if (gimple_plf (stmt, GF_PLF_1))
+			continue;
+		      swap_ssa_operands (stmt, gimple_assign_rhs1_ptr (stmt),
+					 gimple_assign_rhs2_ptr (stmt));
+		      gimple_set_plf (stmt, GF_PLF_1, true);
+		    }
+		}
+	      /* Verify we swap all duplicates or none.  */
+	      if (flag_checking)
+		for (j = 0; j < group_size; ++j)
 		  {
 		    gimple *stmt = SLP_TREE_SCALAR_STMTS (*node)[j];
-		    swap_ssa_operands (stmt, gimple_assign_rhs1_ptr (stmt),
-				       gimple_assign_rhs2_ptr (stmt));
+		    gcc_assert (gimple_plf (stmt, GF_PLF_1) == ! matches[j]);
 		  }
 
 	      /* If we have all children of child built up from scalars then
