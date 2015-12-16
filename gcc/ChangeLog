@@ -1,3 +1,17 @@
+2015-12-16  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/arm-arches.def: Add "armv8.1-a" and "armv8.1-a+crc".
+	* config/arm/arm-protos.h (FL2_ARCH8_1): New.
+	(FL2_FOR_ARCH8_1A): New.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm.c (arm_arch8_1): New.
+	(arm_option_override): Set arm_arch8_1.
+	* config/arm/arm.h (TARGET_NEON_RDMA): New.
+	(arm_arch8_1): Declare.
+	* doc/invoke.texi (ARM Options, -march): Add "armv8.1-a" and
+	"armv8.1-a+crc".
+	(ARM Options, -mfpu): Fix a typo.
+
 2015-12-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/68648
