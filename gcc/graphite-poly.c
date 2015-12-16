@@ -295,26 +295,15 @@ scop_p
 new_scop (edge entry, edge exit)
 {
   sese_info_p region = new_sese_info (entry, exit);
-  scop_p scop = XNEW (struct scop);
+  scop_p s;
+  s = XNEW (struct scop);
 
-  scop->param_context = NULL;
-  scop->must_raw = NULL;
-  scop->may_raw = NULL;
-  scop->must_raw_no_source = NULL;
-  scop->may_raw_no_source = NULL;
-  scop->must_war = NULL;
-  scop->may_war = NULL;
-  scop->must_war_no_source = NULL;
-  scop->may_war_no_source = NULL;
-  scop->must_waw = NULL;
-  scop->may_waw = NULL;
-  scop->must_waw_no_source = NULL;
-  scop->may_waw_no_source = NULL;
-  scop_set_region (scop, region);
-  scop->pbbs.create (3);
-  scop->drs.create (3);
-
-  return scop;
+  s->param_context = NULL;
+  scop_set_region (s, region);
+  s->pbbs.create (3);
+  s->drs.create (3);
+  s->dependence = NULL;
+  return s;
 }
 
 /* Deletes SCOP.  */
@@ -335,18 +324,8 @@ free_scop (scop_p scop)
   scop->drs.release ();
 
   isl_set_free (scop->param_context);
-  isl_union_map_free (scop->must_raw);
-  isl_union_map_free (scop->may_raw);
-  isl_union_map_free (scop->must_raw_no_source);
-  isl_union_map_free (scop->may_raw_no_source);
-  isl_union_map_free (scop->must_war);
-  isl_union_map_free (scop->may_war);
-  isl_union_map_free (scop->must_war_no_source);
-  isl_union_map_free (scop->may_war_no_source);
-  isl_union_map_free (scop->must_waw);
-  isl_union_map_free (scop->may_waw);
-  isl_union_map_free (scop->must_waw_no_source);
-  isl_union_map_free (scop->may_waw_no_source);
+  isl_union_map_free (scop->dependence);
+  scop->dependence = NULL;
   XDELETE (scop);
 }
 

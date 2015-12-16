@@ -380,12 +380,12 @@ optimize_isl (scop_p scop)
   isl_options_set_on_error (scop->isl_context, ISL_ON_ERROR_CONTINUE);
 
   isl_union_set *domain = scop_get_domains (scop);
-  isl_union_map *dependences = scop_get_dependences (scop);
-  dependences
-    = isl_union_map_gist_domain (dependences, isl_union_set_copy (domain));
-  dependences
-    = isl_union_map_gist_range (dependences, isl_union_set_copy (domain));
-  isl_union_map *validity = dependences;
+  scop_get_dependences (scop);
+  scop->dependence
+    = isl_union_map_gist_domain (scop->dependence, isl_union_set_copy (domain));
+  scop->dependence
+    = isl_union_map_gist_range (scop->dependence, isl_union_set_copy (domain));
+  isl_union_map *validity = isl_union_map_copy (scop->dependence);
   isl_union_map *proximity = isl_union_map_copy (validity);
 
   isl_options_set_schedule_max_constant_term (scop->isl_context, CONSTANT_BOUND);

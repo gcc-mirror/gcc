@@ -3197,18 +3197,15 @@ translate_isl_ast_to_gimple::scop_to_isl_ast (scop_p scop, ivs_params &ip)
   isl_union_map *schedule_isl = generate_isl_schedule (scop);
   isl_ast_build *context_isl = generate_isl_context (scop);
   context_isl = set_options (context_isl, schedule_isl);
-  isl_union_map *dependences = NULL;
   if (flag_loop_parallelize_all)
     {
-      dependences = scop_get_dependences (scop);
+      isl_union_map *dependence = scop_get_dependences (scop);
       context_isl =
 	isl_ast_build_set_before_each_for (context_isl, ast_build_before_for,
-					   dependences);
+					   dependence);
     }
   isl_ast_node *ast_isl = isl_ast_build_ast_from_schedule (context_isl,
 							   schedule_isl);
-  if (dependences)
-    isl_union_map_free (dependences);
   isl_ast_build_free (context_isl);
   return ast_isl;
 }
