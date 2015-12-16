@@ -10,6 +10,10 @@
 	add a scop::dependence to contain all the dependence.
 
 2015-12-16  Aditya Kumar  <aditya.k7@samsung.com>
+
+	* graphite-sese-to-poly.c (build_poly_sr): Use refs.
+
+2015-12-16  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
 	* config.in: Regenerate.
