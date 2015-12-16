@@ -1,5 +1,12 @@
 2015-12-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_extend_bitfield_pattern_p):
+	New function.
+	(aarch64_rtx_costs, ZERO_EXTEND, SIGN_EXTEND cases): Use the above
+	to handle extend+shift rtxes.
+
+2015-12-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	PR target/68696
 	* config/aarch64/aarch64-simd.md (*aarch64_simd_bsl<mode>_alt):
 	New pattern.
