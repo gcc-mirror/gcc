@@ -1056,8 +1056,8 @@ build_poly_sr (poly_bb_p pbb)
 {
   scop_p scop = PBB_SCOP (pbb);
   gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
-  vec<scalar_use> reads = gbb->read_scalar_refs;
-  vec<tree> writes = gbb->write_scalar_refs;
+  vec<scalar_use> &reads = gbb->read_scalar_refs;
+  vec<tree> &writes = gbb->write_scalar_refs;
 
   isl_space *dc = isl_set_get_space (pbb->domain);
   int nb_out = 1;
