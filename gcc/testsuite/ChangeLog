@@ -1,3 +1,8 @@
+2015-12-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/68648
+	* gcc.c-torture/execute/pr68648.c: New test.
+
 2015-12-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68892
