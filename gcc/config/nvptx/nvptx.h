@@ -157,12 +157,11 @@ enum reg_class
 #define ARG_POINTER_REGNUM 14
 
 #define STATIC_CHAIN_REGNUM 12
-#define OUTGOING_STATIC_CHAIN_REGNUM 10
 
 #define REGISTER_NAMES							\
   {									\
     "%hr0", "%outargs", "%hfp", "%hr3", "%retval", "%hr5", "%hr6", "%hr7",	\
-    "%hr8", "%hr9", "%chain_out", "%hr11", "%chain_in", "%hr13", "%argp", "%frame" \
+    "%hr8", "%hr9", "%hr10", "%hr11", "%chain_in", "%hr13", "%argp", "%frame" \
   }
 
 #define FIRST_PARM_OFFSET(FNDECL) ((void)(FNDECL), 0)

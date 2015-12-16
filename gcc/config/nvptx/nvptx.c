@@ -525,8 +525,9 @@ nvptx_function_value_regno_p (const unsigned int regno)
    reference in memory.  */
 
 static bool
-nvptx_pass_by_reference (cumulative_args_t ARG_UNUSED (cum), machine_mode mode,
-			 const_tree type, bool ARG_UNUSED (named))
+nvptx_pass_by_reference (cumulative_args_t ARG_UNUSED (cum),
+			 machine_mode mode, const_tree type,
+			 bool ARG_UNUSED (named))
 {
   return pass_in_memory (mode, type, false);
 }
@@ -547,18 +548,6 @@ nvptx_promote_function_mode (const_tree type, machine_mode mode,
 			     const_tree funtype, int for_return)
 {
   return promote_arg (mode, for_return || !type || TYPE_ARG_TYPES (funtype));
-}
-
-/* Implement TARGET_STATIC_CHAIN.  */
-
-static rtx
-nvptx_static_chain (const_tree fndecl, bool incoming_p)
-{
-  if (!DECL_STATIC_CHAIN (fndecl))
-    return NULL;
-
-  return gen_rtx_REG (Pmode, (incoming_p ? STATIC_CHAIN_REGNUM
-			      : OUTGOING_STATIC_CHAIN_REGNUM));
 }
 
 /* Helper for write_arg.  Emit a single PTX argument of MODE, either
@@ -588,12 +577,15 @@ write_arg_mode (std::stringstream &s, int for_reg, int argno,
       else
 	s << "%ar" << argno;
       s << ";\n";
-      s << "\tld.param" << ptx_type << " ";
-      if (for_reg)
-	s << reg_names[for_reg];
-      else
-	s << "%ar" << argno;
-      s << ", [%in_ar" << argno << "];\n";
+      if (argno >= 0)
+	{
+	  s << "\tld.param" << ptx_type << " ";
+	  if (for_reg)
+	    s << reg_names[for_reg];
+	  else
+	    s << "%ar" << argno;
+	  s << ", [%in_ar" << argno << "];\n";
+	}
     }
   return argno + 1;
 }
@@ -625,7 +617,7 @@ write_arg_type (std::stringstream &s, int for_reg, int argno,
 	{
 	  /* Complex types are sent as two separate args.  */
 	  type = TREE_TYPE (type);
-	  mode  = TYPE_MODE (type);
+	  mode = TYPE_MODE (type);
 	  prototyped = true;
 	}
 
@@ -917,16 +909,20 @@ nvptx_maybe_record_fnsym (rtx sym)
 }
 
 /* Emit a local array to hold some part of a conventional stack frame
-   and initialize REGNO to point to it.  */
+   and initialize REGNO to point to it.  If the size is zero, it'll
+   never be valid to dereference, so we can simply initialize to
+   zero.  */
 
 static void
 init_frame (FILE  *file, int regno, unsigned align, unsigned size)
 {
-  fprintf (file, "\t.reg.u%d %s;\n"
-	   "\t.local.align %d .b8 %s_ar[%u];\n"
-	   "\tcvta.local.u%d %s, %s_ar;\n",
-	   POINTER_SIZE, reg_names[regno],
-	   align, reg_names[regno], size ? size : 1,
+  if (size)
+    fprintf (file, "\t.local .align %d .b8 %s_ar[%u];\n",
+	     align, reg_names[regno], size);
+  fprintf (file, "\t.reg.u%d %s;\n",
+	   POINTER_SIZE, reg_names[regno]);
+  fprintf (file, (size ? "\tcvta.local.u%d %s, %s_ar;\n"
+		  :  "\tmov.u%d %s, 0;\n"),
 	   POINTER_SIZE, reg_names[regno], reg_names[regno]);
 }
 
@@ -981,11 +977,13 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
     }
 
   if (stdarg_p (fntype))
-    argno = write_arg_type (s, ARG_POINTER_REGNUM, argno, ptr_type_node, true);
-
-  if (DECL_STATIC_CHAIN (decl))
-    argno = write_arg_type (s, STATIC_CHAIN_REGNUM, argno, ptr_type_node,
+    argno = write_arg_type (s, ARG_POINTER_REGNUM, argno, ptr_type_node,
 			    true);
+
+  if (DECL_STATIC_CHAIN (decl) || cfun->machine->has_chain)
+    write_arg_type (s, STATIC_CHAIN_REGNUM,
+		    DECL_STATIC_CHAIN (decl) ? argno : -1, ptr_type_node,
+		    true);
 
   fprintf (file, "%s", s.str().c_str());
 
@@ -999,10 +997,6 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   if (sz || cfun->machine->has_chain)
     init_frame (file, FRAME_POINTER_REGNUM,
 		crtl->stack_alignment_needed / BITS_PER_UNIT, sz);
-
-  if (cfun->machine->has_chain)
-    fprintf (file, "\t.reg.u%d %s;\n", GET_MODE_BITSIZE (Pmode),
-	     reg_names[OUTGOING_STATIC_CHAIN_REGNUM]);
 
   /* Declare the pseudos we have as ptx registers.  */
   int maxregs = max_reg_num ();
@@ -1864,8 +1858,7 @@ nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
     }
   if (decl && DECL_STATIC_CHAIN (decl))
     {
-      fprintf (asm_out_file, ", %s%s", open,
-	       reg_names [OUTGOING_STATIC_CHAIN_REGNUM]);
+      fprintf (asm_out_file, ", %s%s", open, reg_names [STATIC_CHAIN_REGNUM]);
       open = "";
     }
   if (!open[0])
@@ -4779,7 +4772,7 @@ nvptx_goacc_reduction_teardown (gcall *call)
 
 /* NVPTX reduction expander.  */
 
-void
+static void
 nvptx_goacc_reduction (gcall *call)
 {
   unsigned code = (unsigned)TREE_INT_CST_LOW (gimple_call_arg (call, 0));
@@ -4845,9 +4838,6 @@ nvptx_goacc_reduction (gcall *call)
 #define TARGET_OMIT_STRUCT_RETURN_REG true
 #undef TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING nvptx_strict_argument_naming
-#undef TARGET_STATIC_CHAIN
-#define TARGET_STATIC_CHAIN nvptx_static_chain
-
 #undef TARGET_CALL_ARGS
 #define TARGET_CALL_ARGS nvptx_call_args
 #undef TARGET_END_CALL_ARGS
