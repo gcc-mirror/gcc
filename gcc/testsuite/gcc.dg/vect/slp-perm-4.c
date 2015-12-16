@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_perm } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -82,6 +83,8 @@ int main (int argc, const char* argv[])
   return 0;
 }
 
+/* Currently interleaving is not supported for a group-size of 5.  */
+
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "gaps requires scalar epilogue loop" 0 "vect" } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target vect_perm } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" } } */

@@ -1,3 +1,11 @@
+2015-12-16  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/68916
+	PR testsuite/68914
+	* gcc.dg/vect/pr45752.c: Require vect_perm and adjust expected
+	dump.
+	* gcc.dg/vect/slp-perm-4.c: Likewise.
+
 2015-12-16  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* lib/target-supports.exp (add_options_for_arm_v8_1a_neon): Update
