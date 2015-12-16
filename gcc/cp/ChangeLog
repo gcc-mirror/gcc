@@ -1,3 +1,9 @@
+2015-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.c (cp_lexer_peek_conflict_marker): New function.
+	(cp_parser_error): Detect conflict markers and report them as
+	such.
+
 2015-12-15  Martin Sebor  <msebor@redhat.com>
 
 	c++/42121

@@ -1089,6 +1089,10 @@ extern void c_genericize (tree);
 extern int c_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
 extern tree c_build_bind_expr (location_t, tree, tree);
 
+/* In c-lex.c.  */
+extern enum cpp_ttype
+conflict_marker_get_final_tok_kind (enum cpp_ttype tok1_kind);
+
 /* In c-pch.c  */
 extern void pch_init (void);
 extern void pch_cpp_save_state (void);
