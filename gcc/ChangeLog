@@ -1,3 +1,8 @@
+2015-12-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* symtab.c (symtab_node::fixup_same_cpp_alias_visibility):
+	Do not copy DECL_VIRTUAL_P.
+
 2015-12-15  Martin Sebor  <msebor@redhat.com>
 
 	c++/42121
