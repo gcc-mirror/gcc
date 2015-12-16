@@ -1,3 +1,9 @@
+2015-12-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/63628
+	* pt.c (tsubst_pack_expansion): Also make dummy decls if
+	retrieve_local_specialization fails.
+
 2015-12-04  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR c++/67337
