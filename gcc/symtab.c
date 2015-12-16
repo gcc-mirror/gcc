@@ -1363,7 +1363,6 @@ symtab_node::fixup_same_cpp_alias_visibility (symtab_node *target)
       DECL_EXTERNAL (decl) = DECL_EXTERNAL (target->decl);
       DECL_VISIBILITY (decl) = DECL_VISIBILITY (target->decl);
     }
-  DECL_VIRTUAL_P (decl) = DECL_VIRTUAL_P (target->decl);
   if (TREE_PUBLIC (decl))
     {
       tree group;
