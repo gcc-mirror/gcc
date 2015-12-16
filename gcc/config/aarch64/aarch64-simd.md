@@ -2153,6 +2153,10 @@
 ;;     bit op0, op2, mask
 ;;   if (op0 = op2) (so 0-bits in mask choose bits from op1, else op0)
 ;;     bif op0, op1, mask
+;;
+;; This pattern is expanded to by the aarch64_simd_bsl<mode> expander.
+;; Some forms of straight-line code may generate the equivalent form
+;; in *aarch64_simd_bsl<mode>_alt.
 
 (define_insn "aarch64_simd_bsl<mode>_internal"
   [(set (match_operand:VSDQ_I_DI 0 "register_operand" "=w,w,w")
@@ -2169,6 +2173,29 @@
   bsl\\t%0.<Vbtype>, %2.<Vbtype>, %3.<Vbtype>
   bit\\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>
   bif\\t%0.<Vbtype>, %3.<Vbtype>, %1.<Vbtype>"
+  [(set_attr "type" "neon_bsl<q>")]
+)
+
+;; We need this form in addition to the above pattern to match the case
+;; when combine tries merging three insns such that the second operand of
+;; the outer XOR matches the second operand of the inner XOR rather than
+;; the first.  The two are equivalent but since recog doesn't try all
+;; permutations of commutative operations, we have to have a separate pattern.
+
+(define_insn "*aarch64_simd_bsl<mode>_alt"
+  [(set (match_operand:VSDQ_I_DI 0 "register_operand" "=w,w,w")
+	(xor:VSDQ_I_DI
+	   (and:VSDQ_I_DI
+	     (xor:VSDQ_I_DI
+	       (match_operand:VSDQ_I_DI 3 "register_operand" "w,w,0")
+	       (match_operand:VSDQ_I_DI 2 "register_operand" "w,0,w"))
+	      (match_operand:VSDQ_I_DI 1 "register_operand" "0,w,w"))
+	  (match_dup:VSDQ_I_DI 2)))]
+  "TARGET_SIMD"
+  "@
+  bsl\\t%0.<Vbtype>, %3.<Vbtype>, %2.<Vbtype>
+  bit\\t%0.<Vbtype>, %3.<Vbtype>, %1.<Vbtype>
+  bif\\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>"
   [(set_attr "type" "neon_bsl<q>")]
 )
 
