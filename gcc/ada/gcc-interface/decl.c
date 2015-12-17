@@ -3556,10 +3556,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      /* Fill in locations of fields.  */
 	      annotate_rep (gnat_entity, gnu_type);
 
-	      /* If debugging information is being written for the type, write
-		 a record that shows what we are a subtype of and also make a
-		 variable that indicates our size, if still variable.  */
-	      if (debug_info_p)
+	      /* If debugging information is being written for the type and if
+		 we are asked to output such encodings, write a record that
+		 shows what we are a subtype of and also make a variable that
+		 indicates our size, if still variable.  */
+	      if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
 		{
 		  tree gnu_subtype_marker = make_node (RECORD_TYPE);
 		  tree gnu_unpad_base_name
@@ -7029,6 +7030,8 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 		      bool debug_info, bool maybe_unused, bool reorder,
 		      tree first_free_pos, tree *p_gnu_rep_list)
 {
+  const bool needs_xv_encodings
+    = debug_info && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL;
   bool all_rep_and_size = all_rep && TYPE_SIZE (gnu_record_type);
   bool variants_have_rep = all_rep;
   bool layout_with_rep = false;
@@ -7211,7 +7214,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 				    NULL_TREE, packed, definition,
 				    !all_rep_and_size, all_rep,
 				    unchecked_union,
-				    true, debug_info, true, reorder,
+				    true, needs_xv_encodings, true, reorder,
 				    this_first_free_pos,
 				    all_rep || this_first_free_pos
 				    ? NULL : &gnu_rep_list);
@@ -7301,7 +7304,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	      if (debug_info)
 		rest_of_record_type_compilation (gnu_variant_type);
 	      create_type_decl (TYPE_NAME (gnu_variant_type), gnu_variant_type,
-				true, debug_info, gnat_component_list);
+				true, needs_xv_encodings, gnat_component_list);
 
 	      gnu_field
 		= create_field_decl (gnu_variant->name, gnu_variant_type,
@@ -7334,7 +7337,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	    }
 
 	  finish_record_type (gnu_union_type, nreverse (gnu_variant_list),
-			      all_rep_and_size ? 1 : 0, debug_info);
+			      all_rep_and_size ? 1 : 0, needs_xv_encodings);
 
 	  /* If GNU_UNION_TYPE is our record type, it means we must have an
 	     Unchecked_Union with no fields.  Verify that and, if so, just
@@ -7348,7 +7351,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	    }
 
 	  create_type_decl (TYPE_NAME (gnu_union_type), gnu_union_type, true,
-			    debug_info, gnat_component_list);
+			    needs_xv_encodings, gnat_component_list);
 
 	  /* Deal with packedness like in gnat_to_gnu_field.  */
 	  if (union_field_needs_strict_alignment)

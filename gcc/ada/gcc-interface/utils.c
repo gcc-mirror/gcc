@@ -1348,8 +1348,10 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 
   /* Unless debugging information isn't being written for the input type,
      write a record that shows what we are a subtype of and also make a
-     variable that indicates our size, if still variable.  */
-  if (TREE_CODE (orig_size) != INTEGER_CST
+     variable that indicates our size, if still variable.  Don't do this if
+     asked to output as few encodings as possible.  */
+  if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL
+      && TREE_CODE (orig_size) != INTEGER_CST
       && TYPE_NAME (record)
       && TYPE_NAME (type)
       && !(TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
@@ -1890,7 +1892,7 @@ rest_of_record_type_compilation (tree record_type)
 
   /* If this record type is of variable size, make a parallel record type that
      will tell the debugger how the former is laid out (see exp_dbug.ads).  */
-  if (var_size)
+  if (var_size && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
     {
       tree new_record_type
 	= make_node (TREE_CODE (record_type) == QUAL_UNION_TYPE

@@ -1,5 +1,128 @@
 2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* debug.h (struct gcc_debug_hooks): Add a new size_function
+	hook.
+	* debug.c (do_nothing_debug_hooks): Set the size_function field
+	to no-op.
+	* dbxout.c (dbx_debug_hooks, xcoff_debug_hooks): Likewise.
+	* sdbout.c (sdb_debug_hooks): Likewise.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Likewise.
+	* stor-layout.c (finalize_size_functions): Let the debug info
+	back-end know about the implementation of size functions.
+	* dwarf2out.h (dw_discr_list_ref): New typedef.
+	(enum dw_val_class): Add value classes for discriminant values
+	and discriminant lists.
+	(struct dw_discr_value): New structure.
+	(struct dw_val_node): Add discriminant values and discriminant
+	lists to the union.
+	(struct dw_loc_descr_node): Add frame_offset_rel and
+	dw_loc_frame_offset (only for checking) fields to handle DWARF
+	procedures generation.
+	(struct dw_discr_list_node): New structure.
+	* dwarf2out.c (dwarf2out_size_function): New.
+	(dwarf2_debug_hooks): Set the size_function field to
+	dwarf2out_size_function.
+	(dwarf2_lineno_debug_hooks): Set the size_function field to
+	no-op.
+	(new_loc_descr): Initialize the
+	dw_loc_frame_offset field.
+	(dwarf_proc_stack_usage_map): New.
+	(dw_val_equal_p): Handle discriminants.
+	(size_of_discr_value): New.
+	(size_of_discr_list): New.
+	(size_of_die): Handle discriminants.
+	(add_loc_descr_to_each): New.
+	(add_loc_list): New.
+	(print_discr_value): New.
+	(print_dw_val): Handle discriminants.
+	(value_format): Handle discriminants.
+	(output_discr_value): New.
+	(output_die): Handle discriminants.
+	(output_loc_operands): Handle DW_OP_call2 and DW_OP_call4.
+	(uint_loc_descriptor): New.
+	(uint_comparison_loc_list): New.
+	(loc_list_from_uint_comparison): New.
+	(add_discr_value): New.
+	(add_discr_list): New.
+	(AT_discr_list): New.
+	(loc_descr_to_next_no_op): New.
+	(free_loc_descr): New.
+	(loc_descr_without_nops): New.
+	(struct loc_descr_context): Add a dpi field.
+	(struct dwarf_procedure_info): New helper structure.
+	(new_dwarf_proc_die): New.
+	(is_handled_procedure_type): New.
+	(resolve_args_picking_1): New.
+	(resolve_args_picking): New.
+	(function_to_dwarf_procedure): New.
+	(copy_dwarf_procedure): New.
+	(copy_dwarf_procs_ref_in_attrs): New.
+	(copy_dwarf_procs_ref_in_dies): New.
+	(break_out_comdat_types): Copy DWARF procedures along with the
+	types that reference them.
+	(loc_list_from_tree): Rename into loc_list_from_tree_1.  Handle
+	CALL_EXPR in the cases suitable for DWARF procedures.  Handle
+	for PARM_DECL when generating a location description for a DWARF
+	procedure.  Handle big unsigned INTEGER_CST nodes.  Handle
+	NON_LVALUE_EXPR, EXACT_DIV_EXPR and all unsigned comparison
+	operators.  Add a wrapper for loc_list_from_tree that strips
+	DW_OP_nop operations from the result.
+	(type_byte_size): New.
+	(struct vlr_context): New helper structure.
+	(field_byte_offset): Change signature to return either a
+	constant offset or a location description for dynamic ones.
+	Handle dynamic byte offsets with constant bit offsets and handle
+	fields in variant parts.
+	(add_data_member_location): Change signature to handle dynamic
+	member offsets and fields in variant parts.  Update call to
+	field_byte_offset.  Handle location lists.  Emit a variable data
+	member location only when -fgnat-encodings=minimal.
+	(add_bound_info): Emit self-referential bounds only when
+	-fgnat-encodings=minimal.
+	(add_byte_size_attribute): Use type_byte_size in order to handle
+	dynamic type sizes.  Emit variable byte size only when
+	-fgnat-encodings=minimal and when the target DWARF version
+	allows them.
+	(add_bit_offset_attribute): Change signature to handle
+	variable-length records.  Update call to field_byte_offset.
+	(gen_descr_array_type_die): Update call to gen_field_die.
+	Update loc_descr_context literal.
+	(gen_type_die_for_member): Likewise.
+	(gen_subprogram_die): Update calls to get_decl_die.
+	(gen_field_die): Change signature to handle variable-length
+	records.  Update calls to add_bit_offset_attribute and
+	add_data_member_location_attribute.
+	(gen_inheritance_die): Update call to
+	add_data_member_location_attribute.
+	(gen_decl_die): Change signature to handle variable-length
+	records.  Update call to gen_field_die.
+	(gen_inheritance_die): Change signature to handle
+	variable-length records.  Update call to
+	add_data_member_location_attribute.
+	(is_variant_part): New.
+	(analyze_discr_in_predicate): New.
+	(get_discr_value): New.
+	(analyze_variants_discr): New.
+	(gen_variant_part): New.
+	(gen_member_die): Update calls to gen_decl_die.  Call instead
+	gen_variant_part for variant parts.
+	(gen_type_die_with_usage): Update calls to gen_decl_die.
+	(process_scope_var): Likewise.
+	(force_decl_die): Likewise.
+	(declare_in_namespace): Likewise.
+	(dwarf2out_decl): Likewise.
+	(prune_unused_types_walk_loc_descr): New.
+	(prune_unused_types_walk_attribs): Mark DIEs referenced by
+	location descriptions and loc. descr. lists.
+	(prune_unused_types_walk): Don't mark DWARF procedures by
+	default.  Mark variant parts since nothing is supposed to
+	reference them.
+	(dwarf2out_init): Allocate dwarf_proc_stack_usage_map.
+	(dwarf2out_c_finalize): Deallocate and reset
+	dwarf_proc_stack_usage_map.
+
+2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* common.opt (gnat_encodings): New variable
 	(dwarf_gnat_encodings): New enum type.
 	(fgnat_encodings): New option.
