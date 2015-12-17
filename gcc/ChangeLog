@@ -1,3 +1,9 @@
+2015-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR c/68868
+	* ginclude/stdatomic.h (atomic_init): Use atomic_store instead
+	of plain assignment.
+
 2015-12-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/68805
