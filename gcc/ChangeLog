@@ -1,3 +1,11 @@
+2015-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.h (NVPTX_RETURN_REGNUM, FRAME_POINTER_REGNUM,
+	ARG_POINTER_REGNUM, STATIC_CHAIN_REGNUM): Renumber.
+	(REGISTER_NAMES): Update and rename.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS): Update.
+	(enum_reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS): Reformat.
+
 2015-12-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68946
