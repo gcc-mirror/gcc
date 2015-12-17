@@ -1,3 +1,9 @@
+2015-12-17  Richard Biener  <rguenther@suse.de>
+
+	* gimple-ssa.h (struct gimple_df): Remove modified_noreturn_calls
+	field.
+	* tree-ssa.c (delete_tree_ssa): Do not zero it.
+
 2015-12-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/67973
