@@ -1278,6 +1278,8 @@ maybe_pad_type (tree type, tree size, unsigned int align,
      type and name.  */
   record = make_node (RECORD_TYPE);
   TYPE_PADDING_P (record) = 1;
+  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+    SET_TYPE_DEBUG_TYPE (record, type);
 
   if (Present (gnat_entity))
     TYPE_NAME (record) = create_concat_name (gnat_entity, "PAD");
@@ -1348,10 +1350,8 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 
   /* Unless debugging information isn't being written for the input type,
      write a record that shows what we are a subtype of and also make a
-     variable that indicates our size, if still variable.  Don't do this if
-     asked to output as few encodings as possible.  */
-  if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL
-      && TREE_CODE (orig_size) != INTEGER_CST
+     variable that indicates our size, if still variable.  */
+  if (TREE_CODE (orig_size) != INTEGER_CST
       && TYPE_NAME (record)
       && TYPE_NAME (type)
       && !(TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
@@ -1367,6 +1367,8 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 	  && TREE_CODE (size) != INTEGER_CST
 	  && (definition || global_bindings_p ()))
 	{
+	  /* Whether or not gnat_entity comes from source, this XVZ variable is
+	     is a compilation artifact.  */
 	  size_unit
 	    = create_var_decl (concat_name (name, "XVZ"), NULL_TREE, sizetype,
 			      size_unit, true, global_bindings_p (),
@@ -1375,19 +1377,25 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 	  TYPE_SIZE_UNIT (record) = size_unit;
 	}
 
-      tree marker = make_node (RECORD_TYPE);
-      tree orig_name = TYPE_IDENTIFIER (type);
+      /* There is no need to show what we are a subtype of when outputting as
+	 few encodings as possible: regular debugging infomation makes this
+	 redundant.  */
+      if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	{
+	  tree marker = make_node (RECORD_TYPE);
+	  tree orig_name = TYPE_IDENTIFIER (type);
 
-      TYPE_NAME (marker) = concat_name (name, "XVS");
-      finish_record_type (marker,
-			  create_field_decl (orig_name,
-					     build_reference_type (type),
-					     marker, NULL_TREE, NULL_TREE,
-					     0, 0),
-			  0, true);
-      TYPE_SIZE_UNIT (marker) = size_unit;
+	  TYPE_NAME (marker) = concat_name (name, "XVS");
+	  finish_record_type (marker,
+			      create_field_decl (orig_name,
+						 build_reference_type (type),
+						 marker, NULL_TREE, NULL_TREE,
+						 0, 0),
+			      0, true);
+	  TYPE_SIZE_UNIT (marker) = size_unit;
 
-      add_parallel_type (record, marker);
+	  add_parallel_type (record, marker);
+	}
     }
 
   rest_of_record_type_compilation (record);

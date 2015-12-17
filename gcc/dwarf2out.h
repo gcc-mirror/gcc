@@ -325,6 +325,8 @@ struct array_descr_info
   tree data_location;
   tree allocated;
   tree associated;
+  tree stride;
+  bool stride_in_bits;
   struct array_descr_dimen
     {
       /* GCC uses sizetype for array indices, so lower_bound and upper_bound
@@ -333,6 +335,9 @@ struct array_descr_info
       tree bounds_type;
       tree lower_bound;
       tree upper_bound;
+
+      /* Only Fortran uses more than one dimension for array types.  For other
+	 languages, the stride can be rather specified for the whole array.  */
       tree stride;
     } dimen[10];
 };

@@ -1,5 +1,34 @@
 2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* gcc-interface/ada-tree.h (struct lang_type): Rename the t
+	field as t1 and add a t2 one.
+	(get_lang_specific): New.
+	(GET_TYPE_LANG_SPECIFIC): Refactor to use get_lang_specific.
+	(SET_TYPE_LANG_SPECIFIC): Likewise.
+	(GET_TYPE_LANG_SPECIFIC2): New macro.
+	(SET_TYPE_LANG_SPECIFIC2): New macro.
+	(TYPE_DEBUG_TYPE): New macro.
+	(SET_TYPE_DEBUG_TYPE): New macro.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): When
+	-fgnat-encodings=minimal, set padding types' debug type to the
+	padded one (i.e. strip ___PAD GNAT encodings) and set
+	constrained record subtypes's debug type to the base type.
+	* gcc-interface/misc.c (gnat_print_type): Print debug types.
+	(gnat_get_debug_type): New.
+	(gnat_get_array_descr_info): When -fgnat-encodings=minimal, set
+	a byte stride for arrays that contain a type whose debug type
+	has variable length.
+	(LANG_HOOKS_GET_DEBUG_TYPE): Redefine macro to implement the
+	debug type language hook.
+	* gcc-interface/utils.c (maybe_pad_type): When
+	-fgnat-encodings=minimal, set padding types' debug type to the
+	padded one.  Restore XVZ variables creation when
+	-fgnat-encodings-minimal and use them to hold padding types'
+	byte size.  For library-level padding types, share this variable
+	across translation units.  Tag XVZ variables as artificial.
+
+2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Disable ___XVS GNAT
 	encodings when -fgnat-encodings=minimal.
 	(components_to_record): Disable ___XVE, ___XVN, ___XVU and

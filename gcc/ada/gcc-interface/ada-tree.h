@@ -33,21 +33,21 @@ union GTY((desc ("0"),
 };
 
 /* Ada uses the lang_decl and lang_type fields to hold a tree.  */
-struct GTY(()) lang_type { tree t; };
+struct GTY(()) lang_type { tree t1; tree t2; };
 struct GTY(()) lang_decl { tree t; };
 
-/* Macros to get and set the tree in TYPE_LANG_SPECIFIC.  */
-#define GET_TYPE_LANG_SPECIFIC(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE) ? TYPE_LANG_SPECIFIC (NODE)->t : NULL_TREE)
+extern struct lang_type *get_lang_specific (tree node);
 
-#define SET_TYPE_LANG_SPECIFIC(NODE, X)			 \
-do {							 \
-  tree tmp = (X);					 \
-  if (!TYPE_LANG_SPECIFIC (NODE))			 \
-    TYPE_LANG_SPECIFIC (NODE)				 \
-      = ggc_alloc<struct lang_type> (); \
-  TYPE_LANG_SPECIFIC (NODE)->t = tmp;			 \
-} while (0)
+/* Macros to get and set the trees in TYPE_LANG_SPECIFIC.  */
+#define GET_TYPE_LANG_SPECIFIC(NODE) \
+  (TYPE_LANG_SPECIFIC (NODE) ? TYPE_LANG_SPECIFIC (NODE)->t1 : NULL_TREE)
+
+#define SET_TYPE_LANG_SPECIFIC(NODE, X) (get_lang_specific (NODE)->t1 = (X))
+
+#define GET_TYPE_LANG_SPECIFIC2(NODE) \
+  (TYPE_LANG_SPECIFIC (NODE) ? TYPE_LANG_SPECIFIC (NODE)->t2 : NULL_TREE)
+
+#define SET_TYPE_LANG_SPECIFIC2(NODE, X) (get_lang_specific (NODE)->t2 = (X))
 
 /* Macros to get and set the tree in DECL_LANG_SPECIFIC.  */
 #define GET_DECL_LANG_SPECIFIC(NODE) \
@@ -351,6 +351,12 @@ do {						   \
 #define SET_TYPE_ADA_SIZE(NODE, X) \
   SET_TYPE_LANG_SPECIFIC (RECORD_OR_UNION_CHECK (NODE), X)
 
+/* For types with TYPE_CAN_HAVE_DEBUG_TYPE_P, this is the type to use in
+   debugging information.  */
+#define TYPE_DEBUG_TYPE(NODE) \
+  GET_TYPE_LANG_SPECIFIC2(NODE)
+#define SET_TYPE_DEBUG_TYPE(NODE, X) \
+  SET_TYPE_LANG_SPECIFIC2(NODE, X)
 
 /* Flags added to decl nodes.  */
 

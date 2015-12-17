@@ -11084,6 +11084,14 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
   if (code == ERROR_MARK)
     return NULL;
 
+  if (lang_hooks.types.get_debug_type)
+    {
+      tree debug_type = lang_hooks.types.get_debug_type (type);
+
+      if (debug_type != NULL_TREE && debug_type != type)
+	return modified_type_die (debug_type, cv_quals, context_die);
+    }
+
   cv_quals &= cv_qual_mask;
 
   /* Don't emit DW_TAG_restrict_type for DWARFv2, since it is a type
@@ -19073,6 +19081,19 @@ gen_descr_array_type_die (tree type, struct array_descr_info *info,
 			 dw_scalar_form_constant
 			 | dw_scalar_form_exprloc
 			 | dw_scalar_form_reference, &context);
+      if (info->stride)
+	{
+	  const enum dwarf_attribute attr
+	    = (info->stride_in_bits) ? DW_AT_bit_stride : DW_AT_byte_stride;
+	  const int forms
+	    = (info->stride_in_bits)
+	      ? dw_scalar_form_constant
+	      : (dw_scalar_form_constant
+		 | dw_scalar_form_exprloc
+		 | dw_scalar_form_reference);
+
+	  add_scalar_info (array_die, attr, info->stride, forms, &context);
+	}
     }
 
   add_gnat_descriptive_type_attribute (array_die, type, context_die);

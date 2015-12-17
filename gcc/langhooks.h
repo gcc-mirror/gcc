@@ -143,6 +143,12 @@ struct lang_hooks_for_types
      type_for_size.  Used in dwarf2out.c to add a DW_AT_type base type
      reference to a DW_TAG_enumeration.  */
   tree (*enum_underlying_base_type) (const_tree);
+
+  /* Return a type to use in the debug info instead of TYPE, or NULL_TREE to
+     keep TYPE.  This is useful to keep a single "source type" when the
+     middle-end uses specialized types, for instance constrained discriminated
+     types in Ada.  */
+  tree (*get_debug_type) (const_tree);
 };
 
 /* Language hooks related to decls and the symbol table.  */
