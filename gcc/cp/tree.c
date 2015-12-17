@@ -4427,23 +4427,10 @@ cp_tree_operand_length (const_tree t)
 {
   enum tree_code code = TREE_CODE (t);
 
-  switch (code)
-    {
-    case PREINCREMENT_EXPR:
-    case PREDECREMENT_EXPR:
-    case POSTINCREMENT_EXPR:
-    case POSTDECREMENT_EXPR:
-      return 1;
+  if (TREE_CODE_CLASS (code) == tcc_vl_exp)
+    return VL_EXP_OPERAND_LENGTH (t);
 
-    case ARRAY_REF:
-      return 2;
-
-    case EXPR_PACK_EXPANSION:
-      return 1;
-
-    default:
-      return TREE_OPERAND_LENGTH (t);
-    }
+  return cp_tree_code_length (code);
 }
 
 /* Like cp_tree_operand_length, but takes a tree_code CODE.  */
