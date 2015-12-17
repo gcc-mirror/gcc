@@ -1,5 +1,9 @@
 2015-12-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/67550
+	* init.c (constant_value_1): Don't return a CONSTRUCTOR missing
+	non-constant elements.
+
 	PR c++/67576
 	PR c++/25466
 	* rtti.c (build_typeid): Use save_expr, not stabilize_reference.

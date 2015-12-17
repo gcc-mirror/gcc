@@ -2079,6 +2079,11 @@ constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p)
 	      && (TREE_CODE (init) == CONSTRUCTOR
 		  || TREE_CODE (init) == STRING_CST)))
 	break;
+      /* Don't return a CONSTRUCTOR for a variable with partial run-time
+	 initialization, since it doesn't represent the entire value.  */
+      if (TREE_CODE (init) == CONSTRUCTOR
+	  && !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
+	break;
       decl = unshare_expr (init);
     }
   return decl;
