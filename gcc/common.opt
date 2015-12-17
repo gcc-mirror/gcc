@@ -167,6 +167,11 @@ bool flag_stack_usage_info = false
 Variable
 int flag_debug_asm
 
+
+; Balance between GNAT encodings and standard DWARF to emit.
+Variable
+enum dwarf_gnat_encodings gnat_encodings = DWARF_GNAT_ENCODINGS_DEFAULT
+
 ; -dP causes the rtl to be emitted as a comment in assembly.
 Variable
 int flag_dump_rtl_in_asm
@@ -1336,6 +1341,22 @@ fgcse-after-reload
 Common Report Var(flag_gcse_after_reload) Optimization
 Perform global common subexpression elimination after register allocation has
 finished.
+
+Enum
+Name(dwarf_gnat_encodings) Type(int)
+
+EnumValue
+Enum(dwarf_gnat_encodings) String(all) Value(DWARF_GNAT_ENCODINGS_ALL)
+
+EnumValue
+Enum(dwarf_gnat_encodings) String(gdb) Value(DWARF_GNAT_ENCODINGS_GDB)
+
+EnumValue
+Enum(dwarf_gnat_encodings) String(minimal) Value(DWARF_GNAT_ENCODINGS_MINIMAL)
+
+fgnat-encodings=
+Common Enum(dwarf_gnat_encodings) Joined RejectNegative Report Undocumented Var(gnat_encodings)
+-fgnat-encodings=[all|gdb|minimal]	Select the balance between GNAT encodings and standard DWARF emitted in the debug information
 
 ; This option is not documented yet as its semantics will change.
 fgraphite
