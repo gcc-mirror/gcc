@@ -1,3 +1,8 @@
+2015-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	* config/isl.m4 (ISL_CHECK_VERSION): Add gmp libs.
+	* configure: Regenerate.
+
 2015-12-16  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
