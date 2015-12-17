@@ -332,7 +332,7 @@ build_typeid (tree exp, tsubst_flags_t complain)
       /* So we need to look into the vtable of the type of exp.
          Make sure it isn't a null lvalue.  */
       exp = cp_build_addr_expr (exp, complain);
-      exp = stabilize_reference (exp);
+      exp = save_expr (exp);
       cond = cp_convert (boolean_type_node, exp, complain);
       exp = cp_build_indirect_ref (exp, RO_NULL, complain);
     }
