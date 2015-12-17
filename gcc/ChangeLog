@@ -1,5 +1,25 @@
 2015-12-17  Sebastian Pop  <s.pop@samsung.com>
 
+	* Makefile.in: Replace ISL with isl.
+	* common.opt: Same.
+	* configure: Regenerate.
+	* configure.ac: Same.
+	* doc/install.texi: Same.
+	* doc/invoke.texi: Same.
+	* graphite-isl-ast-to-gimple.c: Same.
+	* graphite-scop-detection.c: Same.
+	* graphite-sese-to-poly.c: Same.
+	* graphite.c: Same.
+	* graphite.h: Same.
+	* params.def: Same.
+	* testsuite/gcc.dg/graphite/fuse-1.c: Same.
+	* testsuite/gcc.dg/graphite/fuse-2.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-1.c: Same.
+	* testsuite/gcc.dg/graphite/pr35356-1.c: Same.
+	* toplev.c: Same.
+
+2015-12-17  Sebastian Pop  <s.pop@samsung.com>
+
 	* graphite-dependences.c: Move all isl include files to...
 	* graphite-isl-ast-to-gimple.c: Same.
 	* graphite-optimize-isl.c: Same.

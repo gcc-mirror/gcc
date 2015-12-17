@@ -94,7 +94,7 @@ AC_DEFUN([ISL_REQUESTED],
 
 # ISL_CHECK_VERSION ISL_CHECK_VERSION ()
 # ----------------------------------------------------------------
-# Test that ISL contains functionality added to the minimum expected version.
+# Test whether isl contains functionality added to the minimum expected version.
 AC_DEFUN([ISL_CHECK_VERSION],
 [
   if test "${ENABLE_ISL_CHECK}" = yes ; then

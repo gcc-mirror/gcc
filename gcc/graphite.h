@@ -425,7 +425,7 @@ struct scop
      c = 2a + b  */
   isl_set *param_context;
 
-  /* The context used internally by ISL.  */
+  /* The context used internally by isl.  */
   isl_ctx *isl_context;
 
   /* SCoP final schedule.  */

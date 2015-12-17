@@ -1251,7 +1251,7 @@ process_options (void)
       || flag_loop_nest_optimize
       || flag_graphite_identity
       || flag_loop_parallelize_all)
-    sorry ("Graphite loop optimizations cannot be used (ISL is not available)" 
+    sorry ("Graphite loop optimizations cannot be used (isl is not available)"
 	   "(-fgraphite, -fgraphite-identity, -floop-block, "
 	   "-floop-interchange, -floop-strip-mine, -floop-parallelize-all, "
 	   "-floop-unroll-and-jam, and -ftree-loop-linear)");

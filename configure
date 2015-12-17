@@ -1549,7 +1549,7 @@ Optional Packages:
   --with-boot-libs=LIBS   libraries for stage2 and later
   --with-boot-ldflags=FLAGS
                           linker flags for stage2 and later
-  --with-isl=PATH         Specify prefix directory for the installed ISL
+  --with-isl=PATH         Specify prefix directory for the installed isl
                           package. Equivalent to
                           --with-isl-include=PATH/include plus
                           --with-isl-lib=PATH/lib
@@ -5943,7 +5943,7 @@ fi
 
 
 
-# GCC GRAPHITE dependency ISL.
+# GCC GRAPHITE dependency isl.
 # Basic setup is inlined here, actual checks are in config/isl.m4
 
 
@@ -5956,7 +5956,7 @@ fi
 # Treat --without-isl as a request to disable
 # GRAPHITE support and skip all following checks.
 if test "x$with_isl" != "xno"; then
-  # Check for ISL
+  # Check for isl
 
 
 # Check whether --with-isl-include was given.
@@ -6079,13 +6079,13 @@ $as_echo "recommended isl version is 0.15, minimum required isl version 0.14 is 
     && test "x${isllibs}" = x \
     && test "x${islinc}" = x ; then
 
-    as_fn_error "Unable to find a usable ISL.  See config.log for details." "$LINENO" 5
+    as_fn_error "Unable to find a usable isl.  See config.log for details." "$LINENO" 5
   fi
 
 
 fi
 
-# If the ISL check failed, disable builds of in-tree variant of ISL
+# If the isl check failed, disable builds of in-tree variant of isl
 if test "x$with_isl" = xno ||
    test "x$gcc_cv_isl" = xno; then
   noconfigdirs="$noconfigdirs isl"

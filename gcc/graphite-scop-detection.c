@@ -436,7 +436,7 @@ canonicalize_loop_closed_ssa_form (void)
 }
 
 /* Can all ivs be represented by a signed integer?
-   As ISL might generate negative values in its expressions, signed loop ivs
+   As isl might generate negative values in its expressions, signed loop ivs
    are required in the backend.  */
 
 static bool
@@ -1198,7 +1198,7 @@ scop_detection::graphite_can_represent_scev (tree scev)
     return false;
 
   /* We disable the handling of pointer types, because it’s currently not
-     supported by Graphite with the ISL AST generator. SSA_NAME nodes are
+     supported by Graphite with the isl AST generator. SSA_NAME nodes are
      the only nodes, which are disabled in case they are pointers to object
      types, but this can be changed.  */
 
