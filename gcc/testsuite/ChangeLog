@@ -1,3 +1,13 @@
+2015-12-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Revert:
+	2015-12-14  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR testsuite/68629
+	* lib/target-supports.exp (check_effective_target_cilkplus): Also
+	check that compiling with -fcilkplus does not give an error.
+	* c-c++-common/attr-simd-3.c: Require cilkplus effective target.
+
 2015-12-16  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/16333
