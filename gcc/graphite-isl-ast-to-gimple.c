@@ -53,18 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "cfganal.h"
 #include "value-prof.h"
-
-#include <isl/constraint.h>
-#include <isl/set.h>
-#include <isl/union_set.h>
-#include <isl/map.h>
-#include <isl/union_map.h>
-#include <isl/ast_build.h>
-#include <isl/val_gmp.h>
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
-#include <isl/schedule_node.h>
-#endif
-
 #include "graphite.h"
 
 #include <map>

@@ -1,3 +1,13 @@
+2015-12-17  Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-dependences.c: Move all isl include files to...
+	* graphite-isl-ast-to-gimple.c: Same.
+	* graphite-optimize-isl.c: Same.
+	* graphite-poly.c: Same.
+	* graphite-scop-detection.c: Same.
+	* graphite.c: Same.
+	* graphite.h: ... here.
+
 2015-12-17  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* config/avr/avr.h (MOVE_MAX): Set value to 1.

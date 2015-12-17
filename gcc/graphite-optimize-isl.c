@@ -37,23 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "params.h"
 #include "dumpfile.h"
-
-#include <isl/constraint.h>
-#include <isl/set.h>
-#include <isl/union_set.h>
-#include <isl/map.h>
-#include <isl/union_map.h>
-#include <isl/schedule.h>
-#include <isl/band.h>
-#include <isl/aff.h>
-#include <isl/options.h>
-#include <isl/ctx.h>
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
-/* isl 0.15 or later.  */
-#include <isl/schedule_node.h>
-#include <isl/ast_build.h>
-#endif
-
 #include "graphite.h"
 
 #ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS

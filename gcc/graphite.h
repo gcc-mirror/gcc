@@ -23,10 +23,26 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_GRAPHITE_POLY_H
 
 #include "sese.h"
+#include <isl/options.h>
+#include <isl/ctx.h>
+#include <isl/val_gmp.h>
+#include <isl/set.h>
+#include <isl/union_set.h>
+#include <isl/map.h>
+#include <isl/union_map.h>
+#include <isl/aff.h>
+#include <isl/constraint.h>
+#include <isl/flow.h>
+#include <isl/ilp.h>
 #include <isl/schedule.h>
+#include <isl/ast_build.h>
 
-#ifndef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
-  /* isl 0.14.  */
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+/* isl 0.15 or later.  */
+#include <isl/schedule_node.h>
+
+#else
+/* isl 0.14 or 0.13.  */
 # define isl_stat int
 # define isl_stat_ok 0
 #endif

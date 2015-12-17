@@ -48,12 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
 #include "gimple-pretty-print.h"
-
-#include <isl/constraint.h>
-#include <isl/set.h>
-#include <isl/map.h>
-#include <isl/union_map.h>
-
 #include "graphite.h"
 
 class debug_printer
