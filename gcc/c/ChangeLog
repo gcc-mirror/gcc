@@ -1,5 +1,14 @@
 2015-12-16  David Malcolm  <dmalcolm@redhat.com>
 
+	* c-parser.c (c_parser_statement_after_labels): When calling
+	c_finish_return, Use the return expression's location if it has
+	one, falling back to the location of the first token within it.
+	* c-typeck.c (c_finish_return): When issuing warnings about
+	the incorrect presence/absence of a return value, issue a note
+	showing the declaration of the function.
+
+2015-12-16  David Malcolm  <dmalcolm@redhat.com>
+
 	* c-parser.c (struct c_parser): Expand array "tokens_buf" from 2
 	to 4.
 	(c_parser_peek_nth_token): New function.

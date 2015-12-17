@@ -9545,24 +9545,36 @@ c_finish_return (location_t loc, tree retval, tree origtype)
       if ((warn_return_type || flag_isoc99)
 	  && valtype != 0 && TREE_CODE (valtype) != VOID_TYPE)
 	{
+	  bool warned_here;
 	  if (flag_isoc99)
-	    pedwarn (loc, 0, "%<return%> with no value, in "
-		     "function returning non-void");
+	    warned_here = pedwarn
+	      (loc, 0,
+	       "%<return%> with no value, in function returning non-void");
 	  else
-	    warning_at (loc, OPT_Wreturn_type, "%<return%> with no value, "
-			"in function returning non-void");
+	    warned_here = warning_at
+	      (loc, OPT_Wreturn_type,
+	       "%<return%> with no value, in function returning non-void");
 	  no_warning = true;
+	  if (warned_here)
+	    inform (DECL_SOURCE_LOCATION (current_function_decl),
+		    "declared here");
 	}
     }
   else if (valtype == 0 || TREE_CODE (valtype) == VOID_TYPE)
     {
       current_function_returns_null = 1;
+      bool warned_here;
       if (TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
-	pedwarn (xloc, 0,
-		 "%<return%> with a value, in function returning void");
+	warned_here = pedwarn
+	  (xloc, 0,
+	   "%<return%> with a value, in function returning void");
       else
-	pedwarn (xloc, OPT_Wpedantic, "ISO C forbids "
-		 "%<return%> with expression, in function returning void");
+	warned_here = pedwarn
+	  (xloc, OPT_Wpedantic, "ISO C forbids "
+	   "%<return%> with expression, in function returning void");
+      if (warned_here)
+	inform (DECL_SOURCE_LOCATION (current_function_decl),
+		"declared here");
     }
   else
     {
