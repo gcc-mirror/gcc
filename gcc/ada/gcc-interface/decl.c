@@ -44,6 +44,7 @@
 #include "repinfo.h"
 #include "snames.h"
 #include "uintp.h"
+#include "urealp.h"
 #include "fe.h"
 #include "sinfo.h"
 #include "einfo.h"
@@ -1619,11 +1620,78 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       break;
 
     case E_Signed_Integer_Type:
-    case E_Ordinary_Fixed_Point_Type:
-    case E_Decimal_Fixed_Point_Type:
       /* For integer types, just make a signed type the appropriate number
 	 of bits.  */
       gnu_type = make_signed_type (esize);
+      goto discrete_type;
+
+    case E_Ordinary_Fixed_Point_Type:
+    case E_Decimal_Fixed_Point_Type:
+      {
+	/* Small_Value is the scale factor.  */
+	const Ureal gnat_small_value = Small_Value (gnat_entity);
+	tree scale_factor = NULL_TREE;
+
+	gnu_type = make_signed_type (esize);
+
+	/* Try to decode the scale factor and to save it for the fixed-point
+	   types debug hook.  */
+
+	/* There are various ways to describe the scale factor, however there
+	   are cases where back-end internals cannot hold it.  In such cases,
+	   we output invalid scale factor for such cases (i.e. the 0/0
+	   rational constant) but we expect GNAT to output GNAT encodings,
+	   then.  Thus, keep this in sync with
+	   Exp_Dbug.Is_Handled_Scale_Factor.  */
+
+	/* When encoded as 1/2**N or 1/10**N, describe the scale factor as a
+	   binary or decimal scale: it is easier to read for humans.  */
+	if (UI_Eq (Numerator (gnat_small_value), Uint_1)
+	    && (Rbase (gnat_small_value) == 2
+		|| Rbase (gnat_small_value) == 10))
+	  {
+	    /* Given RM restrictions on 'Small values, we assume here that
+	       the denominator fits in an int.  */
+	    const tree base = build_int_cst (integer_type_node,
+					     Rbase (gnat_small_value));
+	    const tree exponent
+	      = build_int_cst (integer_type_node,
+			       UI_To_Int (Denominator (gnat_small_value)));
+	    scale_factor
+	      = build2 (RDIV_EXPR, integer_type_node,
+			integer_one_node,
+			build2 (POWER_EXPR, integer_type_node,
+				base, exponent));
+	  }
+
+	/* Default to arbitrary scale factors descriptions.  */
+	else
+	  {
+	    const Uint num = Norm_Num (gnat_small_value);
+	    const Uint den = Norm_Den (gnat_small_value);
+
+	    if (UI_Is_In_Int_Range (num) && UI_Is_In_Int_Range (den))
+	      {
+		const tree gnu_num
+		  = build_int_cst (integer_type_node,
+				   UI_To_Int (Norm_Num (gnat_small_value)));
+		const tree gnu_den
+		  = build_int_cst (integer_type_node,
+				   UI_To_Int (Norm_Den (gnat_small_value)));
+		scale_factor = build2 (RDIV_EXPR, integer_type_node,
+				       gnu_num, gnu_den);
+	      }
+	    else
+	      /* If compiler internals cannot represent arbitrary scale
+		 factors, output an invalid scale factor so that debugger
+		 don't try to handle them but so that we still have a type
+		 in the output.  Note that GNAT  */
+	      scale_factor = integer_zero_node;
+	  }
+
+	TYPE_FIXED_POINT_P (gnu_type) = 1;
+	SET_TYPE_SCALE_FACTOR (gnu_type, scale_factor);
+      }
       goto discrete_type;
 
     case E_Modular_Integer_Type:

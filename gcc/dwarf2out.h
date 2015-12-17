@@ -342,6 +342,35 @@ struct array_descr_info
     } dimen[10];
 };
 
+enum fixed_point_scale_factor
+{
+  fixed_point_scale_factor_binary,
+  fixed_point_scale_factor_decimal,
+  fixed_point_scale_factor_arbitrary
+};
+
+struct fixed_point_type_info
+{
+  /* A scale factor is the value one has to multiply with physical data in
+     order to get the fixed point logical data.  The DWARF standard enables one
+     to encode it in three ways.  */
+  enum fixed_point_scale_factor scale_factor_kind;
+  union
+    {
+      /* For binary scale factor, the scale factor is: 2 ** binary.  */
+      int binary;
+      /* For decimal scale factor, the scale factor is: 10 ** binary.  */
+      int decimal;
+      /* For arbitrary scale factor, the scale factor is:
+	 numerator / denominator.  */
+      struct
+	{
+	  unsigned HOST_WIDE_INT numerator;
+	  HOST_WIDE_INT denominator;
+	} arbitrary;
+    } scale_factor;
+};
+
 void dwarf2out_c_finalize (void);
 
 #endif /* GCC_DWARF2OUT_H */

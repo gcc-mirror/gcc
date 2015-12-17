@@ -126,6 +126,13 @@ do {							 \
 #define TYPE_CONTAINS_TEMPLATE_P(NODE) \
   TYPE_LANG_FLAG_3 (RECORD_OR_UNION_CHECK (NODE))
 
+/* For INTEGER_TYPE, nonzero if it implements a fixed-point type.  */
+#define TYPE_FIXED_POINT_P(NODE) \
+  TYPE_LANG_FLAG_3 (INTEGER_TYPE_CHECK (NODE))
+
+#define TYPE_IS_FIXED_POINT_P(NODE) \
+  (TREE_CODE (NODE) == INTEGER_TYPE && TYPE_FIXED_POINT_P (NODE))
+
 /* True if NODE is a thin pointer.  */
 #define TYPE_IS_THIN_POINTER_P(NODE)			\
   (POINTER_TYPE_P (NODE)				\
@@ -357,6 +364,16 @@ do {						   \
   GET_TYPE_LANG_SPECIFIC2(NODE)
 #define SET_TYPE_DEBUG_TYPE(NODE, X) \
   SET_TYPE_LANG_SPECIFIC2(NODE, X)
+
+/* For an INTEGER_TYPE with TYPE_IS_FIXED_POINT_P, this is the value of the
+   scale factor.  Modular types, index types (sizetype subtypes) and
+   fixed-point types are totally distinct types, so there is no problem with
+   sharing type lang specific's first slot.  */
+#define TYPE_SCALE_FACTOR(NODE) \
+  GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
+#define SET_TYPE_SCALE_FACTOR(NODE, X) \
+  SET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE), X)
+
 
 /* Flags added to decl nodes.  */
 

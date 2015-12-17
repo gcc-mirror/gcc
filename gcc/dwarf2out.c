@@ -10807,6 +10807,8 @@ base_type_die (tree type)
 {
   dw_die_ref base_type_result;
   enum dwarf_type encoding;
+  bool fpt_used = false;
+  struct fixed_point_type_info fpt_info;
 
   if (TREE_CODE (type) == ERROR_MARK || TREE_CODE (type) == VOID_TYPE)
     return 0;
@@ -10830,6 +10832,19 @@ base_type_die (tree type)
 	      || strcmp (name, "char32_t") == 0)
 	    {
 	      encoding = DW_ATE_UTF;
+	      break;
+	    }
+	}
+      if ((dwarf_version >= 3 || !dwarf_strict)
+	  && lang_hooks.types.get_fixed_point_type_info)
+	{
+	  memset (&fpt_info, 0, sizeof (fpt_info));
+	  if (lang_hooks.types.get_fixed_point_type_info (type, &fpt_info))
+	    {
+	      fpt_used = true;
+	      encoding = ((TYPE_UNSIGNED (type))
+			  ? DW_ATE_unsigned_fixed
+			  : DW_ATE_signed_fixed);
 	      break;
 	    }
 	}
@@ -10891,6 +10906,43 @@ base_type_die (tree type)
   add_AT_unsigned (base_type_result, DW_AT_byte_size,
 		   int_size_in_bytes (type));
   add_AT_unsigned (base_type_result, DW_AT_encoding, encoding);
+
+  if (fpt_used)
+    {
+      switch (fpt_info.scale_factor_kind)
+	{
+	case fixed_point_scale_factor_binary:
+	  add_AT_int (base_type_result, DW_AT_binary_scale,
+		      fpt_info.scale_factor.binary);
+	  break;
+
+	case fixed_point_scale_factor_decimal:
+	  add_AT_int (base_type_result, DW_AT_decimal_scale,
+		      fpt_info.scale_factor.decimal);
+	  break;
+
+	case fixed_point_scale_factor_arbitrary:
+	  /* Arbitrary scale factors cannot be described in standard DWARF,
+	     yet.  */
+	  if (!dwarf_strict)
+	    {
+	      /* Describe the scale factor as a rational constant.  */
+	      const dw_die_ref scale_factor
+		= new_die (DW_TAG_constant, comp_unit_die (), type);
+
+	      add_AT_unsigned (scale_factor, DW_AT_GNU_numerator,
+			       fpt_info.scale_factor.arbitrary.numerator);
+	      add_AT_int (scale_factor, DW_AT_GNU_denominator,
+			  fpt_info.scale_factor.arbitrary.denominator);
+
+	      add_AT_die_ref (base_type_result, DW_AT_small, scale_factor);
+	    }
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
   add_pubtype (type, base_type_result);
 
   return base_type_result;
