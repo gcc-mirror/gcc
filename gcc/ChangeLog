@@ -1,3 +1,13 @@
+2015-12-17  Jeff Law  <law@redhat.com>
+
+	* doc/invoke.texi (-O2 options): Remove -fsplit-paths.
+	(-O3 options): Add -fsplit-paths.
+	* gimple-ssa-split-paths.c: Include predict.h
+	(split_paths): Only split paths in a loop that should be
+	optimized for speed.
+	* opts.c (default_options_table): Move -fsplit-paths from -O2 to
+	-O3.
+
 2015-12-17  Nathan Sidwell  <nathan@acm.org>
 
 	* ipa-icf.c (sem_item_optimizer::merge): Don't pick 'main' as the

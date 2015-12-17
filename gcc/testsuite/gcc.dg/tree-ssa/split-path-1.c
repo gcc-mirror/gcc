@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fdump-tree-split-paths-details " } */
+/* { dg-options "-O2 -fsplit-paths -fdump-tree-split-paths-details " } */
 
 #include <stdio.h>
 #include <stdlib.h>
