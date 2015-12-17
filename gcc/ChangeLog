@@ -1,3 +1,12 @@
+2015-12-17  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* config/avr/avr.h (MOVE_MAX): Set value to 1.
+	(MOVE_MAX_PIECES): Define.
+	(MOVE_RATIO): Define.
+	* config/avr/avr.c (TARGET_USE_BY_PIECES_INFRASTRUCTURE_P):
+	Provide target hook.
+	(avr_use_by_pieces_infrastructure_p): New function.
+
 2015-12-17  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* config.gcc: mark *-interix* as obsolete.
@@ -349,7 +358,7 @@
 	* configure.ac: Remove checks for functions that exist in isl 0.13
 	or later.
 	* graphite-isl-ast-to-gimple.c: Remove #ifdefs and code for isl 0.12.
-        * graphite-optimize-isl.c: Same.
+	* graphite-optimize-isl.c: Same.
 	* graphite-poly.c: Same.
 	* graphite-sese-to-poly.c: Same.
 	* graphite.h: Add comment for isl 0.14.

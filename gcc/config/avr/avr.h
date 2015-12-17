@@ -453,7 +453,22 @@ typedef struct avr_args
 
 #undef WORD_REGISTER_OPERATIONS
 
-#define MOVE_MAX 4
+/* Can move only a single byte from memory to reg in a
+   single instruction. */
+
+#define MOVE_MAX 1
+
+/* Allow upto two bytes moves to occur using by_pieces
+   infrastructure */
+
+#define MOVE_MAX_PIECES 2
+
+/* Set MOVE_RATIO to 3 to allow memory moves upto 4 bytes to happen
+   by pieces when optimizing for speed, like it did when MOVE_MAX_PIECES
+   was 4. When optimizing for size, allow memory moves upto 2 bytes. 
+   Also see avr_use_by_pieces_infrastructure_p. */
+
+#define MOVE_RATIO(speed) ((speed) ? 3 : 2)
 
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
