@@ -5179,7 +5179,8 @@ c_parser_statement_after_labels (c_parser *parser, vec<tree> *chain)
 	      location_t xloc = c_parser_peek_token (parser)->location;
 	      struct c_expr expr = c_parser_expression_conv (parser);
 	      mark_exp_read (expr.value);
-	      stmt = c_finish_return (xloc, expr.value, expr.original_type);
+	      stmt = c_finish_return (EXPR_LOC_OR_LOC (expr.value, xloc),
+				      expr.value, expr.original_type);
 	      goto expect_semicolon;
 	    }
 	  break;

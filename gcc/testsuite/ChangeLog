@@ -1,3 +1,7 @@
+2015-12-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/diagnostic-range-bad-return.c: New test case.
+
 2015-12-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68946
