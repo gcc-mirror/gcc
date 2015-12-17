@@ -1,3 +1,9 @@
+2015-12-17  Christian Bruel  <christian.bruel@st.com>
+
+	* tree.h (TYPE_MODE_RAW): New macro.
+	* tree-streamer-out.c (pack_ts_type_common_value_fields):
+	Replace TYPE_MODE by TYPE_MODE_RAW.
+
 2015-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/68835
