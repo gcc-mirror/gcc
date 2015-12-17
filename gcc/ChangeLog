@@ -1,3 +1,13 @@
+2015-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/68835
+	* tree.c (get_int_cst_ext_nunits): Return
+	cst.get_precision () / HOST_BITS_PER_WIDE_INT + 1
+	for all unsigned wi::neg_p (cst) constants.
+	(build_new_int_cst): If cst.get_precision is not a multiple
+	of HOST_BITS_PER_WIDE_INT, zero extend -1 to the precision
+	% HOST_BITS_PER_WIDE_INT.
+
 2015-12-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68951
