@@ -22563,6 +22563,10 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
       memset (&info, 0, sizeof (info));
       if (lang_hooks.types.get_array_descr_info (type, &info))
 	{
+	  /* Fortran sometimes emits array types with no dimension.  */
+	  gcc_assert (info.ndimensions >= 0
+		      && (info.ndimensions
+			  <= DWARF2OUT_ARRAY_DESCR_INFO_MAX_DIMEN));
 	  gen_descr_array_type_die (type, &info, context_die);
 	  TREE_ASM_WRITTEN (type) = 1;
 	  return;
