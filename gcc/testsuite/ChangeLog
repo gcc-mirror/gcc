@@ -12,6 +12,10 @@
 
 2015-12-17  Andrew Burgess  <andrew.burgess@embecosm.com>
 
+	* gcc.target/arc/loop-hazard-1.c: New file.
+
+2015-12-17  Andrew Burgess  <andrew.burgess@embecosm.com>
+
 	* gcc.target/arc/jump-around-jump.c (rtc_set_time): Declare.
 
 2015-12-17  Thomas Preud'homme  <thomas.preudhomme@arm.com>
