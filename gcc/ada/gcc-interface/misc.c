@@ -524,6 +524,10 @@ gnat_print_type (FILE *file, tree node, int indent)
     default:
       break;
     }
+
+  if (TYPE_DEBUG_TYPE (node) != NULL_TREE)
+    print_node_brief (file, "debug type", TYPE_DEBUG_TYPE (node),
+		      indent + 4);
 }
 
 /* Return the name to be printed for DECL.  */
@@ -563,6 +567,15 @@ gnat_descriptive_type (const_tree type)
     return DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type));
   else
     return NULL_TREE;
+}
+
+/* Return the type to used for debugging information instead of TYPE, if any.
+   NULL_TREE if TYPE is fine.  */
+
+static tree
+gnat_get_debug_type (const_tree type)
+{
+  return TYPE_DEBUG_TYPE (type);
 }
 
 /* Return true if types T1 and T2 are identical for type hashing purposes.
@@ -696,6 +709,33 @@ gnat_get_array_descr_info (const_tree type, struct array_descr_info *info)
     }
 
   info->element_type = TREE_TYPE (last_dimen);
+
+  /* When arrays contain dynamically-sized elements, we usually wrap them in
+     padding types, or we create constrained types for them.  Then, if such
+     types are stripped in the debugging information output, the debugger needs
+     a way to know the size that is reserved for each element.  This is why we
+     emit a stride in such situations.  */
+  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+    {
+      tree source_element_type = info->element_type;
+
+      while (1)
+	{
+	  if (TYPE_DEBUG_TYPE (source_element_type) != NULL_TREE)
+	    source_element_type = TYPE_DEBUG_TYPE (source_element_type);
+	  else if (TYPE_IS_PADDING_P (source_element_type))
+	    source_element_type
+	      = TREE_TYPE (TYPE_FIELDS (source_element_type));
+	  else
+	    break;
+	}
+
+      if (TREE_CODE (TYPE_SIZE_UNIT (source_element_type)) != INTEGER_CST)
+	{
+	  info->stride = TYPE_SIZE_UNIT (info->element_type);
+	  info->stride_in_bits = false;
+	}
+    }
 
   return true;
 }
@@ -947,6 +987,17 @@ gnat_init_ts (void)
   MARK_TS_TYPED (EXIT_STMT);
 }
 
+/* Return the lang specific structure attached to NODE.  Allocate it (cleared)
+   if needed.  */
+
+struct lang_type *
+get_lang_specific (tree node)
+{
+  if (!TYPE_LANG_SPECIFIC (node))
+    TYPE_LANG_SPECIFIC (node) = ggc_cleared_alloc<struct lang_type> ();
+  return TYPE_LANG_SPECIFIC (node);
+}
+
 /* Definitions for our language-specific hooks.  */
 
 #undef  LANG_HOOKS_NAME
@@ -999,6 +1050,8 @@ gnat_init_ts (void)
 #define LANG_HOOKS_GET_SUBRANGE_BOUNDS  gnat_get_subrange_bounds
 #undef  LANG_HOOKS_DESCRIPTIVE_TYPE
 #define LANG_HOOKS_DESCRIPTIVE_TYPE	gnat_descriptive_type
+#undef  LANG_HOOKS_GET_DEBUG_TYPE
+#define LANG_HOOKS_GET_DEBUG_TYPE	gnat_get_debug_type
 #undef  LANG_HOOKS_ATTRIBUTE_TABLE
 #define LANG_HOOKS_ATTRIBUTE_TABLE	gnat_internal_attribute_table
 #undef  LANG_HOOKS_BUILTIN_FUNCTION

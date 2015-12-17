@@ -1846,6 +1846,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	  gnu_type = make_node (RECORD_TYPE);
 	  TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "PAD");
+	  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+	    SET_TYPE_DEBUG_TYPE (gnu_type, gnu_field_type);
 	  TYPE_PACKED (gnu_type) = 1;
 	  TYPE_SIZE (gnu_type) = TYPE_SIZE (gnu_field_type);
 	  TYPE_SIZE_UNIT (gnu_type) = TYPE_SIZE_UNIT (gnu_field_type);
@@ -3277,6 +3279,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	      gnu_type = make_node (RECORD_TYPE);
 	      TYPE_NAME (gnu_type) = gnu_entity_name;
+	      if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+		SET_TYPE_DEBUG_TYPE (gnu_type, gnu_base_type);
 	      TYPE_PACKED (gnu_type) = TYPE_PACKED (gnu_base_type);
 	      TYPE_REVERSE_STORAGE_ORDER (gnu_type)
 		= Reverse_Storage_Order (gnat_entity);

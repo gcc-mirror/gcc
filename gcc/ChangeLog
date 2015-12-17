@@ -1,5 +1,18 @@
 2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* langhooks.h (struct lang_hooks_for_types): Add a
+	get_debug_type field.
+	* langhooks-def.h (LANG_HOOKS_GET_DEBUG_TYPE): New macro.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Initialize the
+	get_debug_type field.
+	* dwarf2out.h (struct array_descr_info): Add an array-wide
+	stride field.
+	* dwarf2out.c (modified_type_die): Invoke the get_debug_type
+	language hook, process its result instead, if any.
+	(gen_descr_array_type_die): Add array-wide stride processing.
+
+2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* debug.h (struct gcc_debug_hooks): Add a new size_function
 	hook.
 	* debug.c (do_nothing_debug_hooks): Set the size_function field
