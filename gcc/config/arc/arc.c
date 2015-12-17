@@ -8041,6 +8041,7 @@ static bool
 arc_loop_hazard (rtx_insn *pred, rtx_insn *succ)
 {
   rtx_insn *jump  = NULL;
+  rtx label_rtx = NULL_RTX;
   rtx_insn *label = NULL;
   basic_block succ_bb;
 
@@ -8067,22 +8068,22 @@ arc_loop_hazard (rtx_insn *pred, rtx_insn *succ)
   else
     return false;
 
-  label = JUMP_LABEL_AS_INSN (jump);
-  if (!label)
-    return false;
-
   /* Phase 2b: Make sure is not a millicode jump.  */
   if ((GET_CODE (PATTERN (jump)) == PARALLEL)
       && (XVECEXP (PATTERN (jump), 0, 0) == ret_rtx))
     return false;
 
-  /* Phase 2c: Make sure is not a simple_return.  */
-  if ((GET_CODE (PATTERN (jump)) == SIMPLE_RETURN)
-      || (GET_CODE (label) == SIMPLE_RETURN))
+  label_rtx = JUMP_LABEL (jump);
+  if (!label_rtx)
+    return false;
+
+  /* Phase 2c: Make sure is not a return.  */
+  if (ANY_RETURN_P (label_rtx))
     return false;
 
   /* Pahse 2d: Go to the target of the jump and check for aliveness of
      LP_COUNT register.  */
+  label = safe_as_a <rtx_insn *> (label_rtx);
   succ_bb = BLOCK_FOR_INSN (label);
   if (!succ_bb)
     {

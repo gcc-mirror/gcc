@@ -1,3 +1,8 @@
+2015-12-17  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* config/arc/arc.c (arc_loop_hazard): Don't convert the jump label
+	rtx to an rtx_insn until we confirm it's not a return rtx.
+
 2015-12-17  Richard Biener  <rguenther@suse.de>
 
 	* gimple-ssa.h (struct gimple_df): Remove modified_noreturn_calls
