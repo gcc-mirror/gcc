@@ -938,6 +938,15 @@ proc check_effective_target_pthread {} {
     } "-pthread"]
 }
 
+# Return 1 if compilation with -gstabs is error-free for trivial
+# code, 0 otherwise.
+
+proc check_effective_target_stabs {} {
+    return [check_no_compiler_messages stabs object {
+	void foo (void) { }
+    } "-gstabs"]
+}
+
 # Return 1 if compilation with -mpe-aligned-commons is error-free
 # for trivial code, 0 otherwise.
 
