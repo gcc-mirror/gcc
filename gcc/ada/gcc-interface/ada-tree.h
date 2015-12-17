@@ -187,6 +187,17 @@ do {							 \
    alignment value the type ought to have.  */
 #define TYPE_MAX_ALIGN(NODE) (TYPE_PRECISION (RECORD_OR_UNION_CHECK (NODE)))
 
+/* True for types that implement a packed array and for original packed array
+   types.  */
+#define TYPE_IMPLEMENTS_PACKED_ARRAY_P(NODE) \
+  ((TREE_CODE (NODE) == ARRAY_TYPE && TYPE_PACKED (NODE))		      \
+    || (TREE_CODE (NODE) == INTEGER_TYPE && TYPE_PACKED_ARRAY_TYPE_P (NODE))) \
+
+/* True for types that can hold a debug type.  */
+#define TYPE_CAN_HAVE_DEBUG_TYPE_P(NODE)  \
+ (!TYPE_IMPLEMENTS_PACKED_ARRAY_P (NODE)  \
+  && TYPE_DEBUG_TYPE (NODE) != NULL_TREE)
+
 /* For an UNCONSTRAINED_ARRAY_TYPE, this is the record containing both the
    template and the object.
 
@@ -373,6 +384,21 @@ do {						   \
   GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
 #define SET_TYPE_SCALE_FACTOR(NODE, X) \
   SET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE), X)
+
+/* For types with TYPE_CAN_HAVE_DEBUG_TYPE_P, this is the type to use in
+   debugging information.  */
+#define TYPE_DEBUG_TYPE(NODE) \
+  GET_TYPE_LANG_SPECIFIC2(NODE)
+#define SET_TYPE_DEBUG_TYPE(NODE, X) \
+  SET_TYPE_LANG_SPECIFIC2(NODE, X)
+
+/* For types with TYPE_IMPLEMENTS_PACKED_ARRAY_P, this is the original packed
+   array type.  Note that this predicate is trou for original packed array
+   types, so these cannot have a debug type.  */
+#define TYPE_ORIGINAL_PACKED_ARRAY(NODE) \
+  GET_TYPE_LANG_SPECIFIC2(NODE)
+#define SET_TYPE_ORIGINAL_PACKED_ARRAY(NODE, X) \
+  SET_TYPE_LANG_SPECIFIC2(NODE, X)
 
 
 /* Flags added to decl nodes.  */
