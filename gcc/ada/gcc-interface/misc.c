@@ -528,9 +528,12 @@ gnat_print_type (FILE *file, tree node, int indent)
       break;
     }
 
-  if (TYPE_DEBUG_TYPE (node) != NULL_TREE)
-    print_node_brief (file, "debug type", TYPE_DEBUG_TYPE (node),
-		      indent + 4);
+  if (TYPE_CAN_HAVE_DEBUG_TYPE_P (node) && TYPE_DEBUG_TYPE (node) != NULL_TREE)
+    print_node_brief (file, "debug type", TYPE_DEBUG_TYPE (node), indent + 4);
+  else if (TYPE_IMPLEMENTS_PACKED_ARRAY_P (node)
+	   && TYPE_ORIGINAL_PACKED_ARRAY (node) != NULL_TREE)
+    print_node_brief (file, "original packed array",
+		      TYPE_ORIGINAL_PACKED_ARRAY (node), indent + 4);
 }
 
 /* Return the name to be printed for DECL.  */
@@ -578,7 +581,18 @@ gnat_descriptive_type (const_tree type)
 static tree
 gnat_get_debug_type (const_tree type)
 {
-  return TYPE_DEBUG_TYPE (type);
+  if (TYPE_CAN_HAVE_DEBUG_TYPE_P (type))
+    {
+      type = TYPE_DEBUG_TYPE (type);
+      /* ??? Kludge: the get_debug_type language hook is processed after the
+	 array descriptor language hook, so if there is an array behind this
+	 type, the latter is supposed to handle it.  Still, we can get here
+	 with a type we are not supposed to handle (when the DWARF back-end
+	 processes the type of a variable), so keep this guard.  */
+      if (type != NULL_TREE && !TYPE_IMPLEMENTS_PACKED_ARRAY_P (type))
+	return const_cast<tree> (type);
+    }
+  return NULL_TREE;
 }
 
 /* Provide information in INFO for debugging output about the TYPE fixed-point
@@ -732,17 +746,21 @@ gnat_type_max_size (const_tree gnu_type)
   return max_unitsize;
 }
 
+static tree get_array_bit_stride (tree comp_type);
+
 /* Provide information in INFO for debug output about the TYPE array type.
    Return whether TYPE is handled.  */
 
 static bool
-gnat_get_array_descr_info (const_tree type, struct array_descr_info *info)
+gnat_get_array_descr_info (const_tree const_type,
+			   struct array_descr_info *info)
 {
   bool convention_fortran_p;
   bool is_array = false;
   bool is_fat_ptr = false;
+  bool is_packed_array = false;
 
-  const tree type_ = const_cast<tree> (type);
+  tree type = const_cast<tree> (const_type);
 
   const_tree first_dimen = NULL_TREE;
   const_tree last_dimen = NULL_TREE;
@@ -755,6 +773,20 @@ gnat_get_array_descr_info (const_tree type, struct array_descr_info *info)
      a cursor through this record's fields.  */
   tree thinptr_template_expr = NULL_TREE;
   tree thinptr_bound_field = NULL_TREE;
+
+  /* ??? Kludge: see gnat_get_debug_type.  */
+  if (TYPE_CAN_HAVE_DEBUG_TYPE_P (type)
+      && TYPE_DEBUG_TYPE (type) != NULL_TREE)
+    type = TYPE_DEBUG_TYPE (type);
+
+  /* If we have an implementation type for a packed array, get the orignial
+     array type.  */
+  if (TYPE_IMPLEMENTS_PACKED_ARRAY_P (type)
+      && TYPE_ORIGINAL_PACKED_ARRAY (type) != NULL_TREE)
+    {
+      is_packed_array = true;
+      type = TYPE_ORIGINAL_PACKED_ARRAY (type);
+    }
 
   /* First pass: gather all information about this array except everything
      related to dimensions.  */
@@ -772,10 +804,10 @@ gnat_get_array_descr_info (const_tree type, struct array_descr_info *info)
   else if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL
 	   && TYPE_IS_FAT_POINTER_P (type))
     {
-      const tree ua_type = TYPE_UNCONSTRAINED_ARRAY (type_);
+      const tree ua_type = TYPE_UNCONSTRAINED_ARRAY (type);
 
       /* This will be our base object address.  */
-      const tree placeholder_expr = build0 (PLACEHOLDER_EXPR, type_);
+      const tree placeholder_expr = build0 (PLACEHOLDER_EXPR, type);
 
       /* We assume below that maybe_unconstrained_array returns an INDIRECT_REF
 	 node.  */
@@ -803,7 +835,7 @@ gnat_get_array_descr_info (const_tree type, struct array_descr_info *info)
       /* This will be our base object address.  Note that we assume that
 	 pointers to these will actually point to the array field (thin
 	 pointers are shifted).  */
-      const tree placeholder_expr = build0 (PLACEHOLDER_EXPR, type_);
+      const tree placeholder_expr = build0 (PLACEHOLDER_EXPR, type);
       const tree placeholder_addr
         = build_unary_op (ADDR_EXPR, NULL_TREE, placeholder_expr);
 
@@ -838,6 +870,8 @@ gnat_get_array_descr_info (const_tree type, struct array_descr_info *info)
   /* Second pass: compute the remaining information: dimensions and
      corresponding bounds.  */
 
+  if (TYPE_PACKED (first_dimen))
+    is_packed_array = true;
   /* If this array has fortran convention, it's arranged in column-major
      order, so our view here has reversed dimensions.  */
   convention_fortran_p = TYPE_CONVENTION_FORTRAN_P (first_dimen);
@@ -937,13 +971,13 @@ gnat_get_array_descr_info (const_tree type, struct array_descr_info *info)
   info->allocated = NULL_TREE;
   info->associated = NULL_TREE;
 
-  /* When arrays contain dynamically-sized elements, we usually wrap them in
-     padding types, or we create constrained types for them.  Then, if such
-     types are stripped in the debugging information output, the debugger needs
-     a way to know the size that is reserved for each element.  This is why we
-     emit a stride in such situations.  */
   if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
     {
+      /* When arrays contain dynamically-sized elements, we usually wrap them
+	 in padding types, or we create constrained types for them.  Then, if
+	 such types are stripped in the debugging information output, the
+	 debugger needs a way to know the size that is reserved for each
+	 element.  This is why we emit a stride in such situations.  */
       tree source_element_type = info->element_type;
 
       while (1)
@@ -962,9 +996,78 @@ gnat_get_array_descr_info (const_tree type, struct array_descr_info *info)
 	  info->stride = TYPE_SIZE_UNIT (info->element_type);
 	  info->stride_in_bits = false;
 	}
+
+      /* We need to specify a bit stride when it does not correspond to the
+	 natural size of the contained elements.  ??? Note that we do not
+	 support packed records and nested packed arrays.  */
+      else if (is_packed_array)
+	{
+	  info->stride = get_array_bit_stride (info->element_type);
+	  info->stride_in_bits = true;
+	}
     }
 
   return true;
+}
+
+/* Given the component type COMP_TYPE of a packed array, return an expression
+   that computes the bit stride of this packed array.  Return NULL_TREE when
+   unsuccessful.  */
+
+static tree
+get_array_bit_stride (tree comp_type)
+{
+  struct array_descr_info info;
+  tree stride;
+
+  /* Simple case: the array contains an integral type: return its RM size.  */
+  if (INTEGRAL_TYPE_P (comp_type))
+    return TYPE_RM_SIZE (comp_type);
+
+  /* Otherwise, see if this is an array we can analyze.  */
+  memset (&info, 0, sizeof (info));
+  if (!gnat_get_array_descr_info (comp_type, &info)
+      || info.stride == NULL_TREE)
+    /* If it's not, give it up.  */
+    return NULL_TREE;
+
+  /* Otherwise, the array stride is the inner array's stride multiplied by the
+     number of elements it contains.  Note that if the inner array is not
+     packed, then the stride is "natural" and thus does not deserve an
+     attribute.  */
+  stride = info.stride;
+  if (!info.stride_in_bits)
+    {
+      stride = fold_convert (bitsizetype, stride);
+      stride = build_binary_op (MULT_EXPR, bitsizetype,
+				stride, build_int_cstu (bitsizetype, 8));
+    }
+
+  for (int i = 0; i < info.ndimensions; ++i)
+    {
+      tree count;
+
+      if (info.dimen[i].lower_bound == NULL_TREE
+	  || info.dimen[i].upper_bound == NULL_TREE)
+	return NULL_TREE;
+
+      /* Put in count an expression that computes the length of this
+	 dimension.  */
+      count = build_binary_op (MINUS_EXPR, sbitsizetype,
+			       fold_convert (sbitsizetype,
+					     info.dimen[i].upper_bound),
+			       fold_convert (sbitsizetype,
+					     info.dimen[i].lower_bound)),
+      count = build_binary_op (PLUS_EXPR, sbitsizetype,
+			       count, build_int_cstu (sbitsizetype, 1));
+      count = build_binary_op (MAX_EXPR, sbitsizetype,
+			       count,
+			       build_int_cstu (sbitsizetype, 0));
+      count = fold_convert (bitsizetype, count);
+      stride = build_binary_op (MULT_EXPR, bitsizetype, stride, count);
+    }
+
+  return stride;
 }
 
 /* GNU_TYPE is a subtype of an integral type.  Set LOWVAL to the low bound

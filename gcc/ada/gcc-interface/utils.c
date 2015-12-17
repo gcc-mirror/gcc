@@ -1281,7 +1281,17 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
     SET_TYPE_DEBUG_TYPE (record, type);
 
-  if (Present (gnat_entity))
+  /* ??? Kludge: padding types around packed array implementation types will be
+     considered as root types in the array descriptor language hook (see
+     gnat_get_array_descr_info). Give them the original packed array type
+     name so that the one coming from sources appears in the debugging
+     information.  */
+  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL
+      && TYPE_IMPLEMENTS_PACKED_ARRAY_P (type)
+      && TYPE_ORIGINAL_PACKED_ARRAY (type) != NULL_TREE)
+    TYPE_NAME (record)
+      = TYPE_NAME (TYPE_ORIGINAL_PACKED_ARRAY (type));
+  else if (Present (gnat_entity))
     TYPE_NAME (record) = create_concat_name (gnat_entity, "PAD");
 
   TYPE_ALIGN (record) = align ? align : orig_align;

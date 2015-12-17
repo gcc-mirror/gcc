@@ -195,7 +195,7 @@ static tree get_rep_part (tree);
 static tree create_variant_part_from (tree, vec<variant_desc> , tree,
 				      tree, vec<subst_pair> );
 static void copy_and_substitute_in_size (tree, tree, vec<subst_pair> );
-static void add_parallel_type_for_packed_array (tree, Entity_Id);
+static void associate_original_type_to_packed_array (tree, Entity_Id);
 static const char *get_entity_char (Entity_Id);
 
 /* The relevant constituents of a subprogram binding to a GCC builtin.  Used
@@ -1806,9 +1806,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       TYPE_STUB_DECL (gnu_type)
 	= create_type_stub_decl (gnu_entity_name, gnu_type);
 
-      /* For a packed array, make the original array type a parallel type.  */
+      /* For a packed array, make the original array type a parallel/debug
+	 type.  */
       if (debug_info_p && Is_Packed_Array_Impl_Type (gnat_entity))
-	add_parallel_type_for_packed_array (gnu_type, gnat_entity);
+	associate_original_type_to_packed_array (gnu_type, gnat_entity);
 
     discrete_type:
 
@@ -1840,6 +1841,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  SET_TYPE_RM_SIZE (gnu_type,
 			    UI_To_gnu (RM_Size (gnat_entity), bitsizetype));
 	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type) = 1;
+
+	  /* Strip the ___XP suffix for standard DWARF.  */
+	  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+	    gnu_entity_name = TYPE_NAME (gnu_type);
 
 	  /* Create a stripped-down declaration, mainly for debugging.  */
 	  create_type_decl (gnu_entity_name, gnu_type, true, debug_info_p,
@@ -1885,8 +1890,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	  if (debug_info_p)
 	    {
-	      /* Make the original array type a parallel type.  */
-	      add_parallel_type_for_packed_array (gnu_type, gnat_entity);
+	      /* Make the original array type a parallel/debug type.  */
+	      associate_original_type_to_packed_array (gnu_type, gnat_entity);
+
+	      /* Since GNU_TYPE is a padding type around the packed array
+		 implementation type, the padded type is its debug type.  */
+	      if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+		SET_TYPE_DEBUG_TYPE (gnu_type, gnu_field_type);
 
 	      rest_of_record_type_compilation (gnu_type);
 	    }
@@ -2240,6 +2250,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  }
 
 	TYPE_CONVENTION_FORTRAN_P (tem) = convention_fortran_p;
+
+	/* Tag top-level ARRAY_TYPE nodes for packed arrays and their
+	   implementation types as such so that the debug information back-end
+	   can output the appropriate description for them.  */
+	TYPE_PACKED (tem)
+	  = (Is_Packed (gnat_entity)
+	     || Is_Packed_Array_Impl_Type (gnat_entity));
 
 	if (Treat_As_Volatile (gnat_entity))
 	  tem = change_qualified_type (tem, TYPE_QUAL_VOLATILE);
@@ -2603,6 +2620,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		TYPE_NONALIASED_COMPONENT (gnu_type) = 1;
 	    }
 
+	  /* Strip the ___XP suffix for standard DWARF.  */
+	  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL
+	      && Is_Packed_Array_Impl_Type (gnat_entity))
+	    {
+	      Entity_Id gnat_original_array_type
+		= Underlying_Type (Original_Array_Type (gnat_entity));
+
+	      gnu_entity_name
+		= get_entity_name (gnat_original_array_type);
+	    }
+
 	  /* Attach the TYPE_STUB_DECL in case we have a parallel type.  */
 	  TYPE_STUB_DECL (gnu_type)
 	    = create_type_stub_decl (gnu_entity_name, gnu_type);
@@ -2677,17 +2705,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    }
 
 	  /* If this is a packed array type, make the original array type a
-	     parallel type.  Otherwise, do it for the base array type if it
-	     isn't artificial to make sure it is kept in the debug info.  */
+	     parallel/debug type.  Otherwise, if such GNAT encodings are
+	     required, do it for the base array type if it isn't artificial to
+	     make sure it is kept in the debug info.  */
 	  if (debug_info_p)
 	    {
 	      if (Is_Packed_Array_Impl_Type (gnat_entity))
-		add_parallel_type_for_packed_array (gnu_type, gnat_entity);
+		associate_original_type_to_packed_array (gnu_type,
+							 gnat_entity);
 	      else
 		{
 		  tree gnu_base_decl
 		    = gnat_to_gnu_entity (Etype (gnat_entity), NULL_TREE, 0);
-		  if (!DECL_ARTIFICIAL (gnu_base_decl))
+		  if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL
+		      && !DECL_ARTIFICIAL (gnu_base_decl))
 		    add_parallel_type (gnu_type,
 				       TREE_TYPE (TREE_TYPE (gnu_base_decl)));
 		}
@@ -2697,6 +2728,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type)
 	    = (Is_Packed_Array_Impl_Type (gnat_entity)
 	       && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)));
+
+	/* Tag top-level ARRAY_TYPE nodes for packed arrays and their
+	   implementation types as such so that the debug information back-end
+	   can output the appropriate description for them.  */
+	  TYPE_PACKED (gnu_type)
+	    = (Is_Packed (gnat_entity)
+	       || Is_Packed_Array_Impl_Type (gnat_entity));
 
 	  /* If the size is self-referential and the maximum size doesn't
 	     overflow, use it.  */
@@ -2754,6 +2792,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				      NULL_TREE, 0);
 	      this_made_decl = true;
 	      gnu_type = TREE_TYPE (gnu_decl);
+
 	      save_gnu_tree (gnat_entity, NULL_TREE, false);
 
 	      gnu_inner = gnu_type;
@@ -8832,12 +8871,14 @@ copy_and_substitute_in_size (tree new_type, tree old_type,
   TYPE_SIZE_UNIT (new_type) = variable_size (TYPE_SIZE_UNIT (new_type));
 }
 
-/* Add a parallel type to GNU_TYPE, the translation of GNAT_ENTITY, which is
-   the implementation type of a packed array type (Is_Packed_Array_Impl_Type).
-   The parallel type is the original array type if it has been translated.  */
+/* Associate to GNU_TYPE, the translation of GNAT_ENTITY, which is
+   the implementation type of a packed array type (Is_Packed_Array_Impl_Type),
+   the original array type if it has been translated.  This association is a
+   parallel type for GNAT encodings or a debug type for standard DWARF.  Note
+   that for standard DWARF, we also want to get the original type name.  */
 
 static void
-add_parallel_type_for_packed_array (tree gnu_type, Entity_Id gnat_entity)
+associate_original_type_to_packed_array (tree gnu_type, Entity_Id gnat_entity)
 {
   Entity_Id gnat_original_array_type
     = Underlying_Type (Original_Array_Type (gnat_entity));
@@ -8851,7 +8892,18 @@ add_parallel_type_for_packed_array (tree gnu_type, Entity_Id gnat_entity)
   if (TYPE_IS_DUMMY_P (gnu_original_array_type))
     return;
 
-  add_parallel_type (gnu_type, gnu_original_array_type);
+  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+    {
+      tree original_name = TYPE_NAME (gnu_original_array_type);
+
+      if (TREE_CODE (original_name) == TYPE_DECL)
+	original_name = DECL_NAME (original_name);
+
+      SET_TYPE_ORIGINAL_PACKED_ARRAY (gnu_type, gnu_original_array_type);
+      TYPE_NAME (gnu_type) = original_name;
+    }
+  else
+    add_parallel_type (gnu_type, gnu_original_array_type);
 }
 
 /* Given a type T, a FIELD_DECL F, and a replacement value R, return a
