@@ -236,7 +236,8 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
- *-knetbsd-*				\
+ *-interix*				\
+ | *-knetbsd-*				\
  | *-openbsd2*				\
  | *-openbsd3*				\
  )
