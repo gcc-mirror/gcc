@@ -37,11 +37,11 @@
 
 	PR c++/16333
 	PR c++/41426
-	PR c++/59878
+	PR c++/59879
 	PR c++/66895
 	* g++.dg/conversion/pr16333.C: New test.
 	* g++.dg/conversion/pr41426.C: New test.
-	* g++.dg/conversion/pr59878.C: New test.
+	* g++.dg/conversion/pr59879.C: New test.
 	* g++.dg/conversion/pr66895.C: New test.
 
 2015-12-16  Martin Sebor  <msebor@redhat.com>

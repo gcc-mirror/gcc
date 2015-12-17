@@ -1,4 +1,4 @@
-// PR c++/59878
+// PR c++/59879
 
 struct Test {
  template <int N>

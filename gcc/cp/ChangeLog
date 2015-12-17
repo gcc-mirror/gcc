@@ -2,7 +2,7 @@
 
 	PR c++/16333
 	PR c++/41426
-	PR c++/59878
+	PR c++/59879
 	PR c++/66895
 	* typeck.c (convert_for_initialization): Don't perform an early
 	decaying conversion if converting to a class type.
