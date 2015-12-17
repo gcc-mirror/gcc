@@ -1,3 +1,8 @@
+2015-12-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68951
+	* gcc.dg/torture/pr68951.c: New testcase.
+
 2015-12-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/67973

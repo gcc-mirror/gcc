@@ -1,3 +1,9 @@
+2015-12-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68951
+	* tree-vect-data-refs.c (vect_peeling_hash_get_lowest_cost):
+	Ignore strided non-group accesses.
+
 2015-12-17  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* config/arc/arc.c (arc_loop_hazard): Don't convert the jump label
