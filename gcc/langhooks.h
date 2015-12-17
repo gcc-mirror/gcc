@@ -149,6 +149,11 @@ struct lang_hooks_for_types
      middle-end uses specialized types, for instance constrained discriminated
      types in Ada.  */
   tree (*get_debug_type) (const_tree);
+
+  /* Return TRUE if TYPE implements a fixed point type and fills in information
+     for the debugger about scale factor, etc.  */
+  bool (*get_fixed_point_type_info) (const_tree,
+				     struct fixed_point_type_info *);
 };
 
 /* Language hooks related to decls and the symbol table.  */

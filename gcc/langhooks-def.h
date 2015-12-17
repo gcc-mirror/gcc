@@ -177,6 +177,7 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE reconstruct_complex_type
 #define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE lhd_enum_underlying_base_type
 #define LANG_HOOKS_GET_DEBUG_TYPE	NULL
+#define LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO NULL
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
   LANG_HOOKS_MAKE_TYPE, \
@@ -197,7 +198,8 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_DESCRIPTIVE_TYPE, \
   LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE, \
   LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE, \
-  LANG_HOOKS_GET_DEBUG_TYPE \
+  LANG_HOOKS_GET_DEBUG_TYPE, \
+  LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO \
 }
 
 /* Declaration hooks.  */

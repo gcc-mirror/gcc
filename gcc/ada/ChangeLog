@@ -1,5 +1,23 @@
 2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* gcc-interface/ada-tree.def (POWER_EXPR): New binary operation.
+	* gcc-interface/ada-tree.h (TYPE_FIXED_POINT_P): New macro.
+	(TYPE_IS_FIXED_POINT_P): New macro.
+	(TYPE_SCALE_FACTOR): New macro.
+	(SET_TYPE_SCALE_FACTOR): New macro.
+	* gcc-interface/decl.c: Include urealp.h
+	(gnat_to_gnu_entity): Attach trees to encode scale factors to
+	fixed-point types.
+	* gcc-interface/misc.c (gnat_print_type): Print scale factors
+	for fixed-point types.
+	(gnat_get_fixed_point_type_info): New.
+	(gnat_init_ts): Initialize data for the POWER_EXPR binary
+	operation.
+	(LANG_HOOKS_GET_FIXED_POINT_INFO): Redefine macro to implement
+	the get_fixed_point_type_info language hook.
+
+2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* gcc-interface/ada-tree.h (struct lang_type): Rename the t
 	field as t1 and add a t2 one.
 	(get_lang_specific): New.

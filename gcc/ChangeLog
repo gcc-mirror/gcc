@@ -1,6 +1,20 @@
 2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* langhooks.h (struct lang_hooks_for_types): Add a
+	get_fixed_point_type_info field.
+	* langhooks-def.h (LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO): New
+	macro.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Initialize the
+	get_fixed_point_type_info field.
+	* dwarf2out.h (enum fixed_point_scale_factor): New.
+	(struct fixed_point_type_info): New.
+	* dwarf2out.c (base_type_die): In DWARFv3 or non-strict DWARF
+	mode, get fixed-point type information using the debugging hook
+	and describe it in DWARF, if any.
+
+2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* langhooks.h (struct lang_hooks_for_types): Add a
 	get_debug_type field.
 	* langhooks-def.h (LANG_HOOKS_GET_DEBUG_TYPE): New macro.
 	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Initialize the

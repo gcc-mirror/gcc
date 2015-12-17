@@ -480,6 +480,9 @@ gnat_print_type (FILE *file, tree node, int indent)
     case INTEGER_TYPE:
       if (TYPE_MODULAR_P (node))
 	print_node_brief (file, "modulus", TYPE_MODULUS (node), indent + 4);
+      else if (TYPE_FIXED_POINT_P (node))
+	print_node (file, "scale factor", TYPE_SCALE_FACTOR (node),
+		    indent + 4);
       else if (TYPE_HAS_ACTUAL_BOUNDS_P (node))
 	print_node (file, "actual bounds", TYPE_ACTUAL_BOUNDS (node),
 		    indent + 4);
@@ -576,6 +579,81 @@ static tree
 gnat_get_debug_type (const_tree type)
 {
   return TYPE_DEBUG_TYPE (type);
+}
+
+/* Provide information in INFO for debugging output about the TYPE fixed-point
+   type.  Return whether TYPE is handled.  */
+
+static bool
+gnat_get_fixed_point_type_info (const_tree type,
+				struct fixed_point_type_info *info)
+{
+  tree scale_factor;
+
+  /* GDB cannot handle fixed-point types yet, so rely on GNAT encodings
+     instead for it.  */
+  if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL
+      || !TYPE_IS_FIXED_POINT_P (type))
+    return false;
+
+  scale_factor = TYPE_SCALE_FACTOR (type);
+
+  /* We expect here only a finite set of pattern.  See fixed-point types
+     handling in gnat_to_gnu_entity.  */
+
+  /* Put invalid values when compiler internals cannot represent the scale
+     factor.  */
+  if (scale_factor == integer_zero_node)
+    {
+      info->scale_factor_kind = fixed_point_scale_factor_arbitrary;
+      info->scale_factor.arbitrary.numerator = 0;
+      info->scale_factor.arbitrary.denominator = 0;
+      return true;
+    }
+
+  if (TREE_CODE (scale_factor) == RDIV_EXPR)
+    {
+      const tree num = TREE_OPERAND (scale_factor, 0);
+      const tree den = TREE_OPERAND (scale_factor, 1);
+
+      /* See if we have a binary or decimal scale.  */
+      if (TREE_CODE (den) == POWER_EXPR)
+	{
+	  const tree base = TREE_OPERAND (den, 0);
+	  const tree exponent = TREE_OPERAND (den, 1);
+
+	  /* We expect the scale factor to be 1 / 2 ** N or 1 / 10 ** N.  */
+	  gcc_assert (num == integer_one_node
+		      && TREE_CODE (base) == INTEGER_CST
+		      && TREE_CODE (exponent) == INTEGER_CST);
+	  switch (tree_to_shwi (base))
+	    {
+	    case 2:
+	      info->scale_factor_kind = fixed_point_scale_factor_binary;
+	      info->scale_factor.binary = -tree_to_shwi (exponent);
+	      return true;
+
+	    case 10:
+	      info->scale_factor_kind = fixed_point_scale_factor_decimal;
+	      info->scale_factor.decimal = -tree_to_shwi (exponent);
+	      return true;
+
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+
+      /* If we reach this point, we are handling an arbitrary scale factor.  We
+	 expect N / D with constant operands.  */
+      gcc_assert (TREE_CODE (num) == INTEGER_CST
+		  && TREE_CODE (den) == INTEGER_CST);
+      info->scale_factor_kind = fixed_point_scale_factor_arbitrary;
+      info->scale_factor.arbitrary.numerator = tree_to_uhwi (num);
+      info->scale_factor.arbitrary.denominator = tree_to_shwi (den);
+      return true;
+    }
+
+  gcc_unreachable ();
 }
 
 /* Return true if types T1 and T2 are identical for type hashing purposes.
@@ -981,6 +1059,7 @@ gnat_init_ts (void)
   MARK_TS_TYPED (NULL_EXPR);
   MARK_TS_TYPED (PLUS_NOMOD_EXPR);
   MARK_TS_TYPED (MINUS_NOMOD_EXPR);
+  MARK_TS_TYPED (POWER_EXPR);
   MARK_TS_TYPED (ATTR_ADDR_EXPR);
   MARK_TS_TYPED (STMT_STMT);
   MARK_TS_TYPED (LOOP_STMT);
@@ -1052,6 +1131,9 @@ get_lang_specific (tree node)
 #define LANG_HOOKS_DESCRIPTIVE_TYPE	gnat_descriptive_type
 #undef  LANG_HOOKS_GET_DEBUG_TYPE
 #define LANG_HOOKS_GET_DEBUG_TYPE	gnat_get_debug_type
+#undef  LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO
+#define LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO \
+					gnat_get_fixed_point_type_info
 #undef  LANG_HOOKS_ATTRIBUTE_TABLE
 #define LANG_HOOKS_ATTRIBUTE_TABLE	gnat_internal_attribute_table
 #undef  LANG_HOOKS_BUILTIN_FUNCTION
