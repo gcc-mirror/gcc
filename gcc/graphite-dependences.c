@@ -37,16 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "cfgloop.h"
 #include "tree-data-ref.h"
-
-#include <isl/constraint.h>
-#include <isl/set.h>
-#include <isl/map.h>
-#include <isl/union_map.h>
-#include <isl/flow.h>
-#include <isl/constraint.h>
-
 #include "graphite.h"
-
 
 /* Add the constraints from the set S to the domain of MAP.  */
 
