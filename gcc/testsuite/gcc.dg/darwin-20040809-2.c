@@ -1,7 +1,7 @@
 /* Test dead code strip support.  */
 /* Contributed by Devang Patel  <dpatel@apple.com>  */
 
-/* { dg-do compile { target *-*-darwin* } } */
+/* { dg-do compile { target { *-*-darwin* && stabs } } } */
 /* { dg-options "-gstabs+ -fno-eliminate-unused-debug-symbols" } */
 
 int
