@@ -1,3 +1,8 @@
+2015-12-17  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/split-path-1.c: Explicitly ask for path
+	splitting optimizations.
+
 2015-12-17  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/ipa/ipa-icf-merge-1.c: New.

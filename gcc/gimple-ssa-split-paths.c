@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "gimple-iterator.h"
 #include "tracer.h"
+#include "predict.h"
 
 /* Given LATCH, the latch block in a loop, see if the shape of the
    path reaching LATCH is suitable for being split by duplication.
@@ -180,9 +181,14 @@ split_paths ()
 
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
+      /* Only split paths if we are optimizing this loop for speed.  */
+      if (!optimize_loop_for_speed_p (loop))
+	continue;
+
       /* See if there is a block that we can duplicate to split the
 	 path to the loop latch.  */
-      basic_block bb = find_block_to_duplicate_for_splitting_paths (loop->latch);
+      basic_block bb
+	= find_block_to_duplicate_for_splitting_paths (loop->latch);
 
       /* BB is the merge point for an IF-THEN-ELSE we want to transform.
 
