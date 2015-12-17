@@ -1,5 +1,14 @@
 2015-12-16  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	PR c++/16333
+	PR c++/41426
+	PR c++/59878
+	PR c++/66895
+	* typeck.c (convert_for_initialization): Don't perform an early
+	decaying conversion if converting to a class type.
+
+2015-12-16  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	* tree.c (cp_tree_operand_length): Define in terms of
 	cp_tree_code_length.
 
