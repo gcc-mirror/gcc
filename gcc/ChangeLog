@@ -1,5 +1,14 @@
 2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* dwarf2out.h (DWARF2OUT_ARRAY_DESCR_INFO_MAX_DIMEN): New macro.
+	(struct array_descr_info): Use it for the dimensions array's
+	size.
+	* dwarf2out.c (gen_type_die_with_usage): Check that the array
+	descr. language hook does not return an array with more
+	dimensions that it should.
+
+2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* langhooks.h (struct lang_hooks_for_types): Add a
 	get_fixed_point_type_info field.
 	* langhooks-def.h (LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO): New

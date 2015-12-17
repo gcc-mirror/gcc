@@ -856,7 +856,20 @@ gnat_get_array_descr_info (const_tree type, struct array_descr_info *info)
 	break;
       last_dimen = dimen;
     }
+
   info->ndimensions = i;
+
+  /* Too many dimensions?  Give up generating proper description: yield instead
+     nested arrays.  Note that in this case, this hook is invoked once on each
+     intermediate array type: be consistent and output nested arrays for all
+     dimensions.  */
+  if (info->ndimensions > DWARF2OUT_ARRAY_DESCR_INFO_MAX_DIMEN
+      || TYPE_MULTI_ARRAY_P (first_dimen))
+    {
+      info->ndimensions = 1;
+      last_dimen = first_dimen;
+    }
+
   info->element_type = TREE_TYPE (last_dimen);
 
   /* Now iterate over all dimensions in source-order and fill the info
@@ -881,7 +894,8 @@ gnat_get_array_descr_info (const_tree type, struct array_descr_info *info)
 	     expressions:  arrays that are constrained by record discriminants
 	     and XUA types.  */
 	  const bool is_xua_type =
-	   (TREE_CODE (TYPE_CONTEXT (first_dimen)) != RECORD_TYPE
+	   (TYPE_CONTEXT (first_dimen) != NULL_TREE
+            && TREE_CODE (TYPE_CONTEXT (first_dimen)) != RECORD_TYPE
 	    && contains_placeholder_p (TYPE_MIN_VALUE (index_type)));
 
 	  if (is_xua_type && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)

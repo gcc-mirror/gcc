@@ -316,6 +316,8 @@ enum array_descr_ordering
   array_descr_ordering_column_major
 };
 
+#define DWARF2OUT_ARRAY_DESCR_INFO_MAX_DIMEN 16
+
 struct array_descr_info
 {
   int ndimensions;
@@ -339,7 +341,7 @@ struct array_descr_info
       /* Only Fortran uses more than one dimension for array types.  For other
 	 languages, the stride can be rather specified for the whole array.  */
       tree stride;
-    } dimen[10];
+    } dimen[DWARF2OUT_ARRAY_DESCR_INFO_MAX_DIMEN];
 };
 
 enum fixed_point_scale_factor
