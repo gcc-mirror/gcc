@@ -1,3 +1,16 @@
+2015-12-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/68779
+	* config/pa/pa.md (atomic_loaddi): Honor -mdisable-fpregs.
+	(atomic_loaddi_1): Likewise.
+	(atomic_storedi): Likewise.
+	(atomic_storedi_1): Likewise.
+	(atomic_loaddf): Likewise.
+	(atomic_loaddf_1): Likewise.
+	(atomic_storedf): Likewise.
+	(atomic_storedf_1): Likewise.
+	Move all atomic patterns to end of file.
+
 2015-12-16  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
