@@ -1,5 +1,14 @@
 2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): When
+	-fgnat-encodings-minimal, do not add ___XUP/XUT suffixes to type
+	names and do not generate ___XA parallel types.
+	* gcc-interface/misc.c (gnat_get_array_descr_info): Match fat
+	and thin pointers and generate the corresponding array type
+	descriptions.
+
+2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* gcc-interface/ada-tree.def (POWER_EXPR): New binary operation.
 	* gcc-interface/ada-tree.h (TYPE_FIXED_POINT_P): New macro.
 	(TYPE_IS_FIXED_POINT_P): New macro.

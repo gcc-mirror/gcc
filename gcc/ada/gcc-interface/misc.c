@@ -739,38 +739,130 @@ static bool
 gnat_get_array_descr_info (const_tree type, struct array_descr_info *info)
 {
   bool convention_fortran_p;
-  tree index_type;
+  bool is_array = false;
+  bool is_fat_ptr = false;
 
-  const_tree dimen = NULL_TREE;
+  const tree type_ = const_cast<tree> (type);
+
+  const_tree first_dimen = NULL_TREE;
   const_tree last_dimen = NULL_TREE;
+  const_tree dimen;
   int i;
 
-  if (TREE_CODE (type) != ARRAY_TYPE
-      || !TYPE_DOMAIN (type)
-      || !TYPE_INDEX_TYPE (TYPE_DOMAIN (type)))
+  /* Temporaries created in the first pass and used in the second one for thin
+     pointers.  The first one is an expression that yields the template record
+     from the base address (i.e. the PLACEHOLDER_EXPR).  The second one is just
+     a cursor through this record's fields.  */
+  tree thinptr_template_expr = NULL_TREE;
+  tree thinptr_bound_field = NULL_TREE;
+
+  /* First pass: gather all information about this array except everything
+     related to dimensions.  */
+
+  /* Only handle ARRAY_TYPE nodes that come from GNAT.  */
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && TYPE_DOMAIN (type)
+      && TYPE_INDEX_TYPE (TYPE_DOMAIN (type)))
+    {
+      is_array = true;
+      first_dimen = type;
+      info->data_location = NULL_TREE;
+    }
+
+  else if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL
+	   && TYPE_IS_FAT_POINTER_P (type))
+    {
+      const tree ua_type = TYPE_UNCONSTRAINED_ARRAY (type_);
+
+      /* This will be our base object address.  */
+      const tree placeholder_expr = build0 (PLACEHOLDER_EXPR, type_);
+
+      /* We assume below that maybe_unconstrained_array returns an INDIRECT_REF
+	 node.  */
+      const tree ua_val
+        = maybe_unconstrained_array (build_unary_op (INDIRECT_REF,
+						     ua_type,
+						     placeholder_expr));
+
+      is_fat_ptr = true;
+      first_dimen = TREE_TYPE (ua_val);
+
+      /* Get the *address* of the array, not the array itself.  */
+      info->data_location = TREE_OPERAND (ua_val, 0);
+    }
+
+  /* Unlike fat pointers (which appear for unconstrained arrays passed in
+     argument), thin pointers are used only for array access types, so we want
+     them to appear in the debug info as pointers to an array type.  That's why
+     we match only the RECORD_TYPE here instead of the POINTER_TYPE with the
+     TYPE_IS_THIN_POINTER_P predicate.  */
+  else if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL
+	   && TREE_CODE (type) == RECORD_TYPE
+	   && TYPE_CONTAINS_TEMPLATE_P (type))
+    {
+      /* This will be our base object address.  Note that we assume that
+	 pointers to these will actually point to the array field (thin
+	 pointers are shifted).  */
+      const tree placeholder_expr = build0 (PLACEHOLDER_EXPR, type_);
+      const tree placeholder_addr
+        = build_unary_op (ADDR_EXPR, NULL_TREE, placeholder_expr);
+
+      const tree bounds_field = TYPE_FIELDS (type);
+      const tree bounds_type = TREE_TYPE (bounds_field);
+      const tree array_field = DECL_CHAIN (bounds_field);
+      const tree array_type = TREE_TYPE (array_field);
+
+      /* Shift the thin pointer address to get the address of the template.  */
+      const tree shift_amount
+	= fold_build1 (NEGATE_EXPR, sizetype, byte_position (array_field));
+      tree template_addr
+	= build_binary_op (POINTER_PLUS_EXPR, TREE_TYPE (placeholder_addr),
+			   placeholder_addr, shift_amount);
+      template_addr
+	= fold_convert (TYPE_POINTER_TO (bounds_type), template_addr);
+
+      first_dimen = array_type;
+
+      /* The thin pointer is already the pointer to the array data, so there's
+	 no need for a specific "data location" expression.  */
+      info->data_location = NULL_TREE;
+
+      thinptr_template_expr = build_unary_op (INDIRECT_REF,
+					      bounds_type,
+					      template_addr);
+      thinptr_bound_field = TYPE_FIELDS (bounds_type);
+    }
+  else
     return false;
 
-  /* Count how many dimentions this array has.  */
-  for (i = 0, dimen = type; ; ++i, dimen = TREE_TYPE (dimen))
-    if (i > 0
-	&& (TREE_CODE (dimen) != ARRAY_TYPE
-	    || !TYPE_MULTI_ARRAY_P (dimen)))
-      break;
-  info->ndimensions = i;
-  convention_fortran_p = TYPE_CONVENTION_FORTRAN_P (type);
+  /* Second pass: compute the remaining information: dimensions and
+     corresponding bounds.  */
 
-  /* TODO: for row major ordering, we probably want to emit nothing and
+  /* If this array has fortran convention, it's arranged in column-major
+     order, so our view here has reversed dimensions.  */
+  convention_fortran_p = TYPE_CONVENTION_FORTRAN_P (first_dimen);
+  /* ??? For row major ordering, we probably want to emit nothing and
      instead specify it as the default in Dw_TAG_compile_unit.  */
   info->ordering = (convention_fortran_p
 		    ? array_descr_ordering_column_major
 		    : array_descr_ordering_row_major);
-  info->base_decl = NULL_TREE;
-  info->data_location = NULL_TREE;
-  info->allocated = NULL_TREE;
-  info->associated = NULL_TREE;
 
+  /* Count how many dimensions this array has.  */
+  for (i = 0, dimen = first_dimen; ; ++i, dimen = TREE_TYPE (dimen))
+    {
+      if (i > 0
+	  && (TREE_CODE (dimen) != ARRAY_TYPE
+	      || !TYPE_MULTI_ARRAY_P (dimen)))
+	break;
+      last_dimen = dimen;
+    }
+  info->ndimensions = i;
+  info->element_type = TREE_TYPE (last_dimen);
+
+  /* Now iterate over all dimensions in source-order and fill the info
+     structure.  */
   for (i = (convention_fortran_p ? info->ndimensions - 1 : 0),
-       dimen = type;
+       dimen = first_dimen;
 
        0 <= i && i < info->ndimensions;
 
@@ -778,15 +870,58 @@ gnat_get_array_descr_info (const_tree type, struct array_descr_info *info)
        dimen = TREE_TYPE (dimen))
     {
       /* We are interested in the stored bounds for the debug info.  */
-      index_type = TYPE_INDEX_TYPE (TYPE_DOMAIN (dimen));
+      tree index_type = TYPE_INDEX_TYPE (TYPE_DOMAIN (dimen));
 
+      if (is_array || is_fat_ptr)
+	{
+	  /* GDB does not handle very well the self-referencial bound
+	     expressions we are able to generate here for XUA types (they are
+	     used only by XUP encodings) so avoid them in this case.  Note that
+	     there are two cases where we generate self-referencial bound
+	     expressions:  arrays that are constrained by record discriminants
+	     and XUA types.  */
+	  const bool is_xua_type =
+	   (TREE_CODE (TYPE_CONTEXT (first_dimen)) != RECORD_TYPE
+	    && contains_placeholder_p (TYPE_MIN_VALUE (index_type)));
+
+	  if (is_xua_type && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	    {
+	      info->dimen[i].lower_bound = NULL_TREE;
+	      info->dimen[i].upper_bound = NULL_TREE;
+	    }
+	  else
+	    {
+	      info->dimen[i].lower_bound = TYPE_MIN_VALUE (index_type);
+	      info->dimen[i].upper_bound = TYPE_MAX_VALUE (index_type);
+	    }
+	}
+
+      /* This is a thin pointer.  */
+      else
+	{
+	  info->dimen[i].lower_bound
+	    = build_component_ref (thinptr_template_expr, thinptr_bound_field,
+				   false);
+	  thinptr_bound_field = DECL_CHAIN (thinptr_bound_field);
+
+	  info->dimen[i].upper_bound
+	    = build_component_ref (thinptr_template_expr, thinptr_bound_field,
+				   false);
+	  thinptr_bound_field = DECL_CHAIN (thinptr_bound_field);
+	}
+
+      /* The DWARF back-end will output exactly INDEX_TYPE as the array index'
+	 "root" type, so pell subtypes when possible.  */
+      while (TREE_TYPE (index_type) != NULL_TREE
+	     && !subrange_type_for_debug_p (index_type, NULL, NULL))
+	index_type = TREE_TYPE (index_type);
       info->dimen[i].bounds_type = index_type;
-      info->dimen[i].lower_bound = TYPE_MIN_VALUE (index_type);
-      info->dimen[i].upper_bound = TYPE_MAX_VALUE (index_type);
-      last_dimen = dimen;
+      info->dimen[i].stride = NULL_TREE;
     }
 
-  info->element_type = TREE_TYPE (last_dimen);
+  /* These are Fortran-specific fields.  They make no sense here.  */
+  info->allocated = NULL_TREE;
+  info->associated = NULL_TREE;
 
   /* When arrays contain dynamically-sized elements, we usually wrap them in
      padding types, or we create constrained types for them.  Then, if such

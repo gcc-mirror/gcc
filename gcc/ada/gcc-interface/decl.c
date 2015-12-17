@@ -2274,22 +2274,31 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	create_type_decl (create_concat_name (gnat_entity, "XUA"), tem,
 			  artificial_p, debug_info_p, gnat_entity);
 
-	/* Give the fat pointer type a name.  If this is a packed array, tell
-	   the debugger how to interpret the underlying bits.  */
+	/* If told to generate GNAT encodings for them (GDB rely on them at the
+	   moment): give the fat pointer type a name.  If this is a packed
+	   array, tell the debugger how to interpret the underlying bits.  */
 	if (Present (Packed_Array_Impl_Type (gnat_entity)))
 	  gnat_name = Packed_Array_Impl_Type (gnat_entity);
 	else
 	  gnat_name = gnat_entity;
-	create_type_decl (create_concat_name (gnat_name, "XUP"), gnu_fat_type,
-			  artificial_p, debug_info_p, gnat_entity);
+	if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	  gnu_entity_name = create_concat_name (gnat_name, "XUP");
+	create_type_decl (gnu_entity_name, gnu_fat_type, artificial_p,
+			  debug_info_p, gnat_entity);
 
 	/* Create the type to be designated by thin pointers: a record type for
 	   the array and its template.  We used to shift the fields to have the
 	   template at a negative offset, but this was somewhat of a kludge; we
 	   now shift thin pointer values explicitly but only those which have a
-	   TYPE_UNCONSTRAINED_ARRAY attached to the designated RECORD_TYPE.  */
-	tem = build_unc_object_type (gnu_template_type, tem,
-				     create_concat_name (gnat_name, "XUT"),
+	   TYPE_UNCONSTRAINED_ARRAY attached to the designated RECORD_TYPE.
+	   Note that GDB can handle standard DWARF information for them, so we
+	   don't have to name them as a GNAT encoding, except if specifically
+	   asked to.  */
+	if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	  gnu_entity_name = create_concat_name (gnat_name, "XUT");
+	else
+	  gnu_entity_name = get_entity_name (gnat_name);
+	tem = build_unc_object_type (gnu_template_type, tem, gnu_entity_name,
 				     debug_info_p);
 
 	SET_TYPE_UNCONSTRAINED_ARRAY (tem, gnu_type);
@@ -2522,14 +2531,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	      /* We need special types for debugging information to point to
 		 the index types if they have variable bounds, are not integer
-		 types or are biased.  */
-	      if (TREE_CODE (gnu_orig_min) != INTEGER_CST
-		  || TREE_CODE (gnu_orig_max) != INTEGER_CST
-		  || TREE_CODE (gnu_index_type) != INTEGER_TYPE
-		  || (TREE_TYPE (gnu_index_type)
-		      && TREE_CODE (TREE_TYPE (gnu_index_type))
-			 != INTEGER_TYPE)
-		  || TYPE_BIASED_REPRESENTATION_P (gnu_index_type))
+		 types, are biased or are wider than sizetype.  These are GNAT
+		 encodings, so we have to include them only when all encodings
+		 are requested.  */
+	      if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL
+		  && (TREE_CODE (gnu_orig_min) != INTEGER_CST
+		      || TREE_CODE (gnu_orig_max) != INTEGER_CST
+		      || TREE_CODE (gnu_index_type) != INTEGER_TYPE
+		      || (TREE_TYPE (gnu_index_type)
+			  && TREE_CODE (TREE_TYPE (gnu_index_type))
+			     != INTEGER_TYPE)
+		      || TYPE_BIASED_REPRESENTATION_P (gnu_index_type)))
 		need_index_type_struct = true;
 	    }
 
