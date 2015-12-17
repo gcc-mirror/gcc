@@ -77,12 +77,10 @@ typedef _Atomic __UINTMAX_TYPE__ atomic_uintmax_t;
 
 
 #define ATOMIC_VAR_INIT(VALUE)	(VALUE)
-#define atomic_init(PTR, VAL)			\
-  do						\
-    {						\
-      *(PTR) = (VAL);				\
-    }						\
-  while (0)
+
+/* Initialize an atomic object pointed to by PTR with VAL.  */
+#define atomic_init(PTR, VAL)                           \
+  atomic_store_explicit (PTR, VAL, __ATOMIC_RELAXED)
 
 #define kill_dependency(Y)			\
   __extension__					\

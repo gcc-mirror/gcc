@@ -1,3 +1,8 @@
+2015-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR c/68868
+	* testsuite/gcc.dg/atomic/stdatomic-init.c: New test.
+
 2015-12-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/68805
