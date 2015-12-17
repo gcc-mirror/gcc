@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-dump.h"
 #include "gimplify.h"
+#include "debug.h"
 
 /* Data type for the expressions representing sizes of data types.
    It is the first integer type laid out.  */
@@ -292,6 +293,10 @@ finalize_size_functions (void)
       allocate_struct_function (fndecl, false);
       set_cfun (NULL);
       dump_function (TDI_original, fndecl);
+
+      /* As these functions are used to describe the layout of variable-length
+         structures, debug info generation needs their implementation.  */
+      debug_hooks->size_function (fndecl);
       gimplify_function_tree (fndecl);
       cgraph_node::finalize_function (fndecl, false);
     }
