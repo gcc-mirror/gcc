@@ -1,6 +1,7 @@
 /* PR c/46015 */
 /* { dg-options "-Wunused" } */
 /* { dg-do compile } */
+/* { dg-require-effective-target label_values } */
 
 int
 f1 (int i)
