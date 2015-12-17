@@ -262,7 +262,7 @@
 
 2015-12-15  Martin Sebor  <msebor@redhat.com>
 
-	c++/42121
+	PR c++/42121
 	* tree-chkp.c (chkp_find_bound_slots_1): Handle flexible array
 	members.
 	* tree.c (type_contains_placeholder_1): Avoid assuming type has
