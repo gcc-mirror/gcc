@@ -29,11 +29,11 @@
 
 2015-12-15  Martin Sebor  <msebor@redhat.com>
 
-	c++/42121
-	c++/68478
-	c++/68613
-	c++/68689
-	c++/68710
+	PR c++/42121
+	PR c++/68478
+	PR c++/68613
+	PR c++/68689
+	PR c++/68710
 	* class.c (walk_subobject_offsets): Avoid assuming type domain
 	is non-null or has an upper bound.
 	(layout_class_type): Include type size in error message.

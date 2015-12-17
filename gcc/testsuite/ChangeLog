@@ -115,11 +115,11 @@
 
 2015-12-15  Martin Sebor  <msebor@redhat.com>
 
-	c++/42121
-	c++/68478
-	c++/68613
-	c++/68689
-	c++/68710
+	PR c++/42121
+	PR c++/68478
+	PR c++/68613
+	PR c++/68689
+	PR c++/68710
 	* g++.dg/compat/struct-layout-1_generate.c: Avoid generating
 	further fields after the first flexible array member.
 	* g++.dg/ext/flexary2.C: Expect a sole flexible array member
