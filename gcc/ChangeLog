@@ -1,5 +1,9 @@
 2015-12-17  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* config.gcc: Mark openbsd 2.0 and 3.X as obsolete.
+
+2015-12-17  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config.gcc: Mark knetbsd targets as obsolete.
 
 2015-12-17  Nathan Sidwell  <nathan@acm.org>
