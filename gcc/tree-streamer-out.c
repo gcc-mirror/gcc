@@ -308,7 +308,10 @@ pack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 static void
 pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
 {
-  bp_pack_machine_mode (bp, TYPE_MODE (expr));
+  /* for VECTOR_TYPE, TYPE_MODE reevaluates the mode using target_flags
+     not necessary valid in a global context.
+     Use the raw value previously set by layout_type.  */
+  bp_pack_machine_mode (bp, TYPE_MODE_RAW (expr));
   bp_pack_value (bp, TYPE_STRING_FLAG (expr), 1);
   /* TYPE_NO_FORCE_BLK is private to stor-layout and need
      no streaming.  */
