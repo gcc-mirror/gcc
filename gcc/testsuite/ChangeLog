@@ -1,3 +1,8 @@
+2015-12-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68946
+	* gcc.dg/torture/pr68946.c: New testcase.
+
 2015-12-17  Nathan Sidwell  <nathan@acm.org>
 
 	* c-c++-common/Wunused-var-13.c: Requires label values.

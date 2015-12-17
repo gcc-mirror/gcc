@@ -1,3 +1,9 @@
+2015-12-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68946
+	* tree-vect-slp.c (vect_slp_analyze_node_operations): Push
+	SLP def type to stmt operands one stmt at a time.
+
 2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* langhooks.h (struct lang_hooks_for_types): New get_bias_field.

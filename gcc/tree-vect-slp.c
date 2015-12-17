@@ -2221,12 +2221,6 @@ vect_slp_analyze_node_operations (slp_tree node)
     if (!vect_slp_analyze_node_operations (child))
       return false;
 
-  /* Push SLP node def-type to stmts.  */
-  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
-      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (child), j, stmt)
-	STMT_VINFO_DEF_TYPE (vinfo_for_stmt (stmt)) = SLP_TREE_DEF_TYPE (child);
-
   bool res = true;
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt)
     {
@@ -2234,18 +2228,20 @@ vect_slp_analyze_node_operations (slp_tree node)
       gcc_assert (stmt_info);
       gcc_assert (STMT_SLP_TYPE (stmt_info) != loop_vect);
 
-      if (!vect_analyze_stmt (stmt, &dummy, node))
-	{
-	  res = false;
-	  break;
-	}
+      /* Push SLP node def-type to stmt operands.  */
+      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
+	if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
+	  STMT_VINFO_DEF_TYPE (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (child)[i]))
+	    = SLP_TREE_DEF_TYPE (child);
+      res = vect_analyze_stmt (stmt, &dummy, node);
+      /* Restore def-types.  */
+      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
+	if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
+	  STMT_VINFO_DEF_TYPE (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (child)[i]))
+	    = vect_internal_def;
+      if (! res)
+	break;
     }
-
-  /* Restore stmt def-types.  */
-  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
-      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (child), j, stmt)
-	STMT_VINFO_DEF_TYPE (vinfo_for_stmt (stmt)) = vect_internal_def;
 
   return res;
 }
