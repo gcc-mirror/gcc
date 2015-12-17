@@ -1,5 +1,11 @@
 2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* gcc-interface/misc.c (gnat_get_type_bias): New.
+	(LANG_HOOKS_GET_TYPE_BIAS): Redefine macro to implement the
+	get_type_bias language hook.
+
+2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* gcc-interface/misc.c (gnat_get_array_descr_info): When the
 	array has more dimensions than the language hook can handle,
 	fall back to a nested arrays description.  Handle context-less

@@ -3288,7 +3288,7 @@ static void output_line_info (bool);
 static void output_file_names (void);
 static dw_die_ref base_type_die (tree);
 static int is_base_type (tree);
-static dw_die_ref subrange_type_die (tree, tree, tree, dw_die_ref);
+static dw_die_ref subrange_type_die (tree, tree, tree, tree, dw_die_ref);
 static int decl_quals (const_tree);
 static dw_die_ref modified_type_die (tree, int, dw_die_ref);
 static dw_die_ref generic_parameter_die (tree, tree, bool, dw_die_ref);
@@ -10809,6 +10809,7 @@ base_type_die (tree type)
   enum dwarf_type encoding;
   bool fpt_used = false;
   struct fixed_point_type_info fpt_info;
+  tree type_bias = NULL_TREE;
 
   if (TREE_CODE (type) == ERROR_MARK || TREE_CODE (type) == VOID_TYPE)
     return 0;
@@ -10859,6 +10860,10 @@ base_type_die (tree type)
 	encoding = DW_ATE_unsigned;
       else
 	encoding = DW_ATE_signed;
+
+      if (!dwarf_strict
+	  && lang_hooks.types.get_type_bias)
+	type_bias = lang_hooks.types.get_type_bias (type);
       break;
 
     case REAL_TYPE:
@@ -10943,6 +10948,12 @@ base_type_die (tree type)
 	  gcc_unreachable ();
 	}
     }
+  if (type_bias != NULL)
+    add_scalar_info (base_type_result, DW_AT_GNU_bias, type_bias,
+		     dw_scalar_form_constant
+		     | dw_scalar_form_exprloc
+		     | dw_scalar_form_reference,
+		     NULL);
   add_pubtype (type, base_type_result);
 
   return base_type_result;
@@ -11044,7 +11055,8 @@ offset_int_type_size_in_bits (const_tree type)
     to a DIE that describes the given type.  */
 
 static dw_die_ref
-subrange_type_die (tree type, tree low, tree high, dw_die_ref context_die)
+subrange_type_die (tree type, tree low, tree high, tree bias,
+		   dw_die_ref context_die)
 {
   dw_die_ref subrange_die;
   const HOST_WIDE_INT size_in_bytes = int_size_in_bytes (type);
@@ -11065,6 +11077,12 @@ subrange_type_die (tree type, tree low, tree high, dw_die_ref context_die)
     add_bound_info (subrange_die, DW_AT_lower_bound, low, NULL);
   if (high)
     add_bound_info (subrange_die, DW_AT_upper_bound, high, NULL);
+  if (bias && !dwarf_strict)
+    add_scalar_info (subrange_die, DW_AT_GNU_bias, bias,
+		     dw_scalar_form_constant
+		     | dw_scalar_form_exprloc
+		     | dw_scalar_form_reference,
+		     NULL);
 
   return subrange_die;
 }
@@ -11279,7 +11297,10 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
 	   && TREE_TYPE (type) != NULL_TREE
 	   && subrange_type_for_debug_p (type, &low, &high))
     {
-      mod_type_die = subrange_type_die (type, low, high, context_die);
+      tree bias = NULL_TREE;
+      if (lang_hooks.types.get_type_bias)
+	bias = lang_hooks.types.get_type_bias (type);
+      mod_type_die = subrange_type_die (type, low, high, bias, context_die);
       item_type = TREE_TYPE (type);
     }
   else if (is_base_type (type))

@@ -1,5 +1,21 @@
 2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* langhooks.h (struct lang_hooks_for_types): New get_bias_field.
+	* langhooks-def.h (LANG_HOOKS_GET_TYPE_BIAS): New.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Initialize the
+	get_bias_field.
+	* dwarf2out.c
+	(base_type_die): In non-strict DWARF mode, invoke the
+	get_type_bias language hook for INTEGER_TYPE nodes.  If it
+	returns a bias, emit an attribute for it.
+	(subrange_type_die): Change signature to handle bias.  If
+	non-strict DWARF mode, emit an attribute for it, if one passed.
+	(modified_type_die): For subrange types, invoke the
+	get_type_bias langage hook and pass the bias to
+	subrange_type_die.
+
+2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* dwarf2out.h (DWARF2OUT_ARRAY_DESCR_INFO_MAX_DIMEN): New macro.
 	(struct array_descr_info): Use it for the dimensions array's
 	size.

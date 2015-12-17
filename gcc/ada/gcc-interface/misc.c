@@ -977,6 +977,16 @@ gnat_get_subrange_bounds (const_tree gnu_type, tree *lowval, tree *highval)
   *highval = TYPE_MAX_VALUE (gnu_type);
 }
 
+static tree
+gnat_get_type_bias (const_tree gnu_type)
+{
+  if (TREE_CODE (gnu_type) == INTEGER_TYPE
+      && TYPE_BIASED_REPRESENTATION_P (gnu_type)
+      && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+    return TYPE_RM_MIN_VALUE(gnu_type);
+  return NULL_TREE;
+}
+
 /* GNU_TYPE is the type of a subprogram parameter.  Determine if it should be
    passed by reference by default.  */
 
@@ -1276,6 +1286,8 @@ get_lang_specific (tree node)
 #define LANG_HOOKS_GET_ARRAY_DESCR_INFO	gnat_get_array_descr_info
 #undef  LANG_HOOKS_GET_SUBRANGE_BOUNDS
 #define LANG_HOOKS_GET_SUBRANGE_BOUNDS  gnat_get_subrange_bounds
+#undef  LANG_HOOKS_GET_TYPE_BIAS
+#define LANG_HOOKS_GET_TYPE_BIAS	gnat_get_type_bias
 #undef  LANG_HOOKS_DESCRIPTIVE_TYPE
 #define LANG_HOOKS_DESCRIPTIVE_TYPE	gnat_descriptive_type
 #undef  LANG_HOOKS_GET_DEBUG_TYPE
