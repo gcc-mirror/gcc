@@ -1124,7 +1124,6 @@ delete_tree_ssa (struct function *fn)
   if (fn->gimple_df->decls_to_pointers != NULL)
     delete fn->gimple_df->decls_to_pointers;
   fn->gimple_df->decls_to_pointers = NULL;
-  fn->gimple_df->modified_noreturn_calls = NULL;
   fn->gimple_df = NULL;
 
   /* We no longer need the edge variable maps.  */

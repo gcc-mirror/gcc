@@ -44,6 +44,9 @@ struct tm_restart_hasher : ggc_ptr_hash<tm_restart_node>
   }
 };
 
+extern void gt_ggc_mx (gimple *&);
+extern void gt_pch_nx (gimple *&);
+
 struct ssa_name_hasher : ggc_ptr_hash<tree_node>
 {
   /* Hash a tree in a uid_decl_map.  */
@@ -67,13 +70,6 @@ struct ssa_name_hasher : ggc_ptr_hash<tree_node>
    gimple_ accessor defined, all publicly modifiable fields should have
    gimple_set accessor.  */
 struct GTY(()) gimple_df {
-  /* A vector of all the noreturn calls passed to modify_stmt.
-     cleanup_control_flow uses it to detect cases where a mid-block
-     indirect call has been turned into a noreturn call.  When this
-     happens, all the instructions after the call are no longer
-     reachable and must be deleted as dead.  */
-  vec<gimple *, va_gc> *modified_noreturn_calls;
-
   /* Array of all SSA_NAMEs used in the function.  */
   vec<tree, va_gc> *ssa_names;
 
