@@ -26,15 +26,13 @@
 
 ;; Iterator for the 2 64-bit vector types + 128-bit types that are loaded with
 ;; lxvd2x to properly handle swapping words on little endian
-(define_mode_iterator VSX_LE [V2DF
-			      V2DI
-			      V1TI
-			      (TI	"VECTOR_MEM_VSX_P (TImode)")])
+(define_mode_iterator VSX_LE [V2DF V2DI V1TI])
 
 ;; Mode iterator to handle swapping words on little endian for the 128-bit
 ;; types that goes in a single vector register.
 (define_mode_iterator VSX_LE_128 [(KF   "FLOAT128_VECTOR_P (KFmode)")
-				  (TF   "FLOAT128_VECTOR_P (TFmode)")])
+				  (TF   "FLOAT128_VECTOR_P (TFmode)")
+				  (TI	"TARGET_VSX_TIMODE")])
 
 ;; Iterator for the 2 32-bit vector types
 (define_mode_iterator VSX_W [V4SF V4SI])
@@ -738,6 +736,21 @@
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 })
+
+;; Peephole to catch memory to memory transfers for TImode if TImode landed in
+;; VSX registers on a little endian system.  The vector types and IEEE 128-bit
+;; floating point are handled by the more generic swap elimination pass.
+(define_peephole2
+  [(set (match_operand:TI 0 "vsx_register_operand" "")
+	(rotate:TI (match_operand:TI 1 "vsx_register_operand" "")
+		   (const_int 64)))
+   (set (match_operand:TI 2 "vsx_register_operand" "")
+	(rotate:TI (match_dup 0)
+		   (const_int 64)))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && TARGET_VSX_TIMODE
+   && (rtx_equal_p (operands[0], operands[2])
+       || peep2_reg_dead_p (2, operands[0]))"
+   [(set (match_dup 2) (match_dup 1))])
 
 ;; The post-reload split requires that we re-permute the source
 ;; register in case it is still live.

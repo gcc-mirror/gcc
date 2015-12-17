@@ -8829,8 +8829,9 @@ rs6000_const_vec (machine_mode mode)
 rtx
 rs6000_gen_le_vsx_permute (rtx source, machine_mode mode)
 {
-  /* Use ROTATE instead of VEC_SELECT on IEEE 128-bit floating point.  */
-  if (FLOAT128_VECTOR_P (mode))
+  /* Use ROTATE instead of VEC_SELECT on IEEE 128-bit floating point, and
+     128-bit integers if they are allowed in VSX registers.  */
+  if (FLOAT128_VECTOR_P (mode) || mode == TImode)
     return gen_rtx_ROTATE (mode, source, GEN_INT (64));
   else
     {
