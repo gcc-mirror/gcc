@@ -127,6 +127,11 @@ struct lang_hooks_for_types
   /* Fill in information for the debugger about the bounds of TYPE.  */
   void (*get_subrange_bounds) (const_tree, tree *, tree *);
 
+  /* Called on INTEGER_TYPEs.  Return NULL_TREE for non-biased types.  For
+     biased types, return as an INTEGER_CST node the value that is represented
+     by a physical zero.  */
+  tree (*get_type_bias) (const_tree);
+
   /* A type descriptive of TYPE's complex layout generated to help the
      debugger to decode variable-length or self-referential constructs.
      This is only used for the AT_GNAT_descriptive_type DWARF attribute.  */
