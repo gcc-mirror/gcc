@@ -8953,12 +8953,12 @@ Enable the identity transformation for graphite.  For every SCoP we generate
 the polyhedral representation and transform it back to gimple.  Using
 @option{-fgraphite-identity} we can check the costs or benefits of the
 GIMPLE -> GRAPHITE -> GIMPLE transformation.  Some minimal optimizations
-are also performed by the code generator ISL, like index splitting and
+are also performed by the code generator isl, like index splitting and
 dead code elimination in loops.
 
 @item -floop-nest-optimize
 @opindex floop-nest-optimize
-Enable the ISL based loop nest optimizer.  This is a generic loop nest
+Enable the isl based loop nest optimizer.  This is a generic loop nest
 optimizer based on the Pluto optimization algorithms.  It calculates a loop
 structure optimized for data-locality and parallelism.  This option
 is experimental.

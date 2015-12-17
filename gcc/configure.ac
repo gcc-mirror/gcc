@@ -5908,16 +5908,14 @@ fi
 AC_ARG_VAR(GMPLIBS,[How to link GMP])
 AC_ARG_VAR(GMPINC,[How to find GMP include files])
 
-AC_ARG_VAR(ISLLIBS,[How to link ISL])
-AC_ARG_VAR(ISLINC,[How to find ISL include files])
+AC_ARG_VAR(ISLLIBS,[How to link isl])
+AC_ARG_VAR(ISLINC,[How to find isl include files])
 if test "x${ISLLIBS}" != "x" ; then 
    AC_DEFINE(HAVE_isl, 1, [Define if isl is in use.])
 fi
 
-# Check whether isl_schedule_constraints_compute_schedule is available;
-# it's new in ISL-0.13.
 # Check whether isl_options_set_schedule_serialize_sccs is available;
-# it's new in ISL-0.15.
+# it's new in isl 0.15.
 if test "x${ISLLIBS}" != "x" ; then
   saved_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS $ISLINC"

@@ -865,7 +865,7 @@ DEFPARAM (PARAM_GRAPHITE_MIN_LOOPS_PER_FUNCTION,
 
 DEFPARAM (PARAM_MAX_ISL_OPERATIONS,
 	  "max-isl-operations",
-	  "maximum number of ISL operations, 0 means unlimited",
+	  "maximum number of isl operations, 0 means unlimited",
 	  350000, 0, 0)
 
 /* Avoid data dependence analysis on very large loops.  */

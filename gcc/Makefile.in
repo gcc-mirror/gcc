@@ -365,7 +365,7 @@ ZLIBINC = @zlibinc@
 GMPLIBS = @GMPLIBS@
 GMPINC = @GMPINC@
 
-# How to find ISL
+# How to find isl.
 ISLLIBS = @ISLLIBS@
 ISLINC = @ISLINC@
 

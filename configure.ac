@@ -1773,31 +1773,31 @@ AC_ARG_WITH(boot-ldflags,
  fi])
 AC_SUBST(poststage1_ldflags)
 
-# GCC GRAPHITE dependency ISL.
+# GCC GRAPHITE dependency isl.
 # Basic setup is inlined here, actual checks are in config/isl.m4
 
 AC_ARG_WITH(isl,
   [AS_HELP_STRING(
    [--with-isl=PATH],
-   [Specify prefix directory for the installed ISL package.
+   [Specify prefix directory for the installed isl package.
     Equivalent to --with-isl-include=PATH/include
     plus --with-isl-lib=PATH/lib])])
 
 # Treat --without-isl as a request to disable
 # GRAPHITE support and skip all following checks.
 if test "x$with_isl" != "xno"; then
-  # Check for ISL
+  # Check for isl
   dnl Provide configure switches and initialize islinc & isllibs
   dnl with user input.
   ISL_INIT_FLAGS
-  dnl The versions of ISL that work for Graphite
+  dnl The versions of isl that work for Graphite
   ISL_CHECK_VERSION()
-  dnl Only execute fail-action, if ISL has been requested.
+  dnl Only execute fail-action, if isl has been requested.
   ISL_IF_FAILED([
-    AC_MSG_ERROR([Unable to find a usable ISL.  See config.log for details.])])
+    AC_MSG_ERROR([Unable to find a usable isl.  See config.log for details.])])
 fi
 
-# If the ISL check failed, disable builds of in-tree variant of ISL
+# If the isl check failed, disable builds of in-tree variant of isl
 if test "x$with_isl" = xno ||
    test "x$gcc_cv_isl" = xno; then
   noconfigdirs="$noconfigdirs isl"

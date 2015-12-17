@@ -1750,8 +1750,8 @@ Some influential environment variables:
   CPP         C preprocessor
   GMPLIBS     How to link GMP
   GMPINC      How to find GMP include files
-  ISLLIBS     How to link ISL
-  ISLINC      How to find ISL include files
+  ISLLIBS     How to link isl
+  ISLINC      How to find isl include files
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -28932,10 +28932,8 @@ $as_echo "#define HAVE_isl 1" >>confdefs.h
 
 fi
 
-# Check whether isl_schedule_constraints_compute_schedule is available;
-# it's new in ISL-0.13.
 # Check whether isl_options_set_schedule_serialize_sccs is available;
-# it's new in ISL-0.15.
+# it's new in isl 0.15.
 if test "x${ISLLIBS}" != "x" ; then
   saved_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS $ISLINC"

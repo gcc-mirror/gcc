@@ -67,7 +67,7 @@ tree_int_to_gmp (tree t, mpz_t res)
   wi::to_mpz (t, res, TYPE_SIGN (TREE_TYPE (t)));
 }
 
-/* Return an ISL identifier for the polyhedral basic block PBB.  */
+/* Return an isl identifier for the polyhedral basic block PBB.  */
 
 static isl_id *
 isl_id_for_pbb (scop_p s, poly_bb_p pbb)
@@ -260,7 +260,7 @@ extract_affine_mul (scop_p s, tree e, __isl_take isl_space *space)
   return isl_pw_aff_mul (lhs, rhs);
 }
 
-/* Return an ISL identifier from the name of the ssa_name E.  */
+/* Return an isl identifier from the name of the ssa_name E.  */
 
 static isl_id *
 isl_id_for_ssa_name (scop_p s, tree e)
@@ -270,7 +270,7 @@ isl_id_for_ssa_name (scop_p s, tree e)
   return isl_id_alloc (s->isl_context, name1, e);
 }
 
-/* Return an ISL identifier for the data reference DR.  Data references and
+/* Return an isl identifier for the data reference DR.  Data references and
    scalar references get the same isl_id.  They need to be comparable and are
    distinguished through the first dimension, which contains the alias set or
    SSA_NAME_VERSION number.  */

@@ -1,3 +1,12 @@
+2015-12-17  Sebastian Pop  <s.pop@samsung.com>
+
+	* Makefile.in: Replace ISL with isl.
+	* Makefile.tpl: Same.
+	* config/isl.m4: Same.
+	* configure.ac: Same.
+	* contrib/download_prerequisites: Same.
+	* configure: Regenerate.
+
 2015-12-17  Andris Pavenis  <andris.pavenis@iki.fi>
 
 	* MAINTAINERS (Write After Approval): Add Myself.

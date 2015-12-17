@@ -383,14 +383,14 @@ installed but it is not in your default library search path, the
 @option{--with-mpc} configure option should be used.  See also
 @option{--with-mpc-lib} and @option{--with-mpc-include}.
 
-@item ISL Library version 0.15 or 0.14.
+@item isl Library version 0.15 or 0.14.
 
 Necessary to build GCC with the Graphite loop optimizations.
 It can be downloaded from @uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/}.
-If an ISL source distribution is found
+If an isl source distribution is found
 in a subdirectory of your GCC sources named @file{isl}, it will be
 built together with GCC.  Alternatively, the @option{--with-isl} configure
-option should be used if ISL is not installed in your default library
+option should be used if isl is not installed in your default library
 search path.
 
 @end table
@@ -1850,7 +1850,7 @@ a cross compiler, they will not be used to configure target libraries.
 @item --with-isl=@var{pathname}
 @itemx --with-isl-include=@var{pathname}
 @itemx --with-isl-lib=@var{pathname}
-If you do not have the ISL library installed in a standard location and you
+If you do not have the isl library installed in a standard location and you
 want to build GCC, you can explicitly specify the directory where it is
 installed (@samp{--with-isl=@/@var{islinstalldir}}). The
 @option{--with-isl=@/@var{islinstalldir}} option is shorthand for

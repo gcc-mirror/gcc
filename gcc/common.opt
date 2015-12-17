@@ -1406,7 +1406,7 @@ Does nothing. Preserved for backward compatibility.
 
 floop-nest-optimize
 Common Report Var(flag_loop_nest_optimize) Optimization
-Enable the ISL based loop nest optimizer.
+Enable the loop nest optimizer.
 
 fstrict-volatile-bitfields
 Common Report Var(flag_strict_volatile_bitfields) Init(-1) Optimization

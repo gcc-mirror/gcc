@@ -315,7 +315,7 @@ NORMAL_TARGET_EXPORTS = \
 HOST_GMPLIBS = @gmplibs@
 HOST_GMPINC = @gmpinc@
 
-# Where to find ISL
+# Where to find isl
 HOST_ISLLIBS = @isllibs@
 HOST_ISLINC = @islinc@
 
