@@ -6017,8 +6017,8 @@ $as_echo "$as_me: WARNING: using in-tree isl, disabling version check" >&2;}
     _isl_saved_LIBS=$LIBS
 
     CFLAGS="${_isl_saved_CFLAGS} ${islinc} ${gmpinc}"
-    LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs}"
-    LIBS="${_isl_saved_LIBS} -lisl"
+    LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs} ${gmplibs}"
+    LIBS="${_isl_saved_LIBS} -lisl -lgmp"
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for isl 0.15 (or deprecated 0.14)" >&5
 $as_echo_n "checking for isl 0.15 (or deprecated 0.14)... " >&6; }
