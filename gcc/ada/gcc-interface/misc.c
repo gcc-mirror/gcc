@@ -68,7 +68,8 @@ extern const char **gnat_argv;
 
 /* Ada code requires variables for these settings rather than elements
    of the global_options structure because they are imported.  */
-int gnat_encodings = 0;
+#undef gnat_encodings
+enum dwarf_gnat_encodings gnat_encodings = DWARF_GNAT_ENCODINGS_DEFAULT;
 
 #undef optimize
 int optimize;
@@ -276,6 +277,7 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 		"supported anymore");
 
   /* Copy global settings to local versions.  */
+  gnat_encodings = global_options.x_gnat_encodings;
   optimize = global_options.x_optimize;
   optimize_size = global_options.x_optimize_size;
   flag_compare_debug = global_options.x_flag_compare_debug;

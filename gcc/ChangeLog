@@ -1,3 +1,10 @@
+2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* common.opt (gnat_encodings): New variable
+	(dwarf_gnat_encodings): New enum type.
+	(fgnat_encodings): New option.
+	* flag-types.h (enum dwarf_gnat_encodings): New.
+
 2015-12-17  Christian Bruel  <christian.bruel@st.com>
 
 	* tree.h (TYPE_MODE_RAW): New macro.

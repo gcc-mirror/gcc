@@ -91,6 +91,21 @@ enum debug_struct_file
   DINFO_STRUCT_FILE_ANY     /* Debug structs defined in all files. */
 };
 
+/* Balance between GNAT encodings and standard DWARF to emit.  */
+
+enum dwarf_gnat_encodings
+{
+  DWARF_GNAT_ENCODINGS_ALL = 0,	    /* Emit all GNAT encodings, then emit as
+				       much standard DWARF as possible so it
+				       does not conflict with GNAT
+				       encodings.  */
+  DWARF_GNAT_ENCODINGS_GDB = 1,	    /* Emit as much standard DWARF as possible
+				       as long as GDB handles them.  Emit GNAT
+				       encodings for the rest.  */
+  DWARF_GNAT_ENCODINGS_MINIMAL = 2  /* Emit all the standard DWARF we can.
+				       Emit GNAT encodings for the rest.  */
+};
+
 /* Enumerate Objective-c instance variable visibility settings. */
 
 enum ivar_visibility
