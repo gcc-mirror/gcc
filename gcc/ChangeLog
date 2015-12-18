@@ -1,3 +1,11 @@
+2015-12-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backported from mainline
+	2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/vector.md ("*vec_splats<mode>"): Fix constraint
+	letter I->K.
+
 2015-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
