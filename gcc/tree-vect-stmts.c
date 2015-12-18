@@ -1304,8 +1304,8 @@ vect_init_vector (gimple *stmt, tree val, tree type, gimple_stmt_iterator *gsi)
 	     all zeros or all ones value before building a vector.  */
 	  if (VECTOR_BOOLEAN_TYPE_P (type))
 	    {
-	      tree true_val = build_zero_cst (TREE_TYPE (type));
-	      tree false_val = build_all_ones_cst (TREE_TYPE (type));
+	      tree true_val = build_all_ones_cst (TREE_TYPE (type));
+	      tree false_val = build_zero_cst (TREE_TYPE (type));
 
 	      if (CONSTANT_CLASS_P (val))
 		val = integer_zerop (val) ? false_val : true_val;

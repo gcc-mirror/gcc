@@ -1,3 +1,9 @@
+2015-12-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR tree-optimization/68956
+	* tree-vect-stmts.c (vect_init_vector): Fix constants
+	used for boolean vectors.
+
 2015-12-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/68796
