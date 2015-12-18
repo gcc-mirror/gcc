@@ -859,6 +859,15 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       insn_op = &insn_data[icode].operand[arity + nonvoid];
       op[arity] = expand_expr (arg, NULL_RTX, insn_op->mode, EXPAND_NORMAL);
 
+      /* expand_expr truncates constants to the target mode only if it
+	 is "convenient".  However, our checks below rely on this
+	 being done.  */
+      if (CONST_INT_P (op[arity])
+	  && SCALAR_INT_MODE_P (insn_op->mode)
+	  && GET_MODE (op[arity]) != insn_op->mode)
+	op[arity] = GEN_INT (trunc_int_for_mode (INTVAL (op[arity]),
+						 insn_op->mode));
+
       /* Wrap the expanded RTX for pointer types into a MEM expr with
 	 the proper mode.  This allows us to use e.g. (match_operand
 	 "memory_operand"..) in the insn patterns instead of (mem
