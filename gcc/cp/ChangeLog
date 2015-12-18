@@ -1,3 +1,10 @@
+2015-12-18  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/68831
+	* init.c (build_delete): Use a warning sentinel to disable
+	-Waddress warnings when building the conditional that tests
+	if the operand is NULL.
+
 2015-12-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67550
