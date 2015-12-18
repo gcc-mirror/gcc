@@ -1,3 +1,9 @@
+2015-12-18  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/68906
+	* tree-ssa-loop-unswitch.c (tree_unswitch_outer_loop): Add check
+	that an exit block belongs to LOOP.
+
 2015-12-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR tree-optimization/68956
