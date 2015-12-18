@@ -1221,11 +1221,9 @@ static unsigned int
 get_int_cst_ext_nunits (tree type, const wide_int &cst)
 {
   gcc_checking_assert (cst.get_precision () == TYPE_PRECISION (type));
-  /* We need an extra zero HWI if CST is an unsigned integer with its
-     upper bit set, and if CST occupies a whole number of HWIs.  */
-  if (TYPE_UNSIGNED (type)
-      && wi::neg_p (cst)
-      && (cst.get_precision () % HOST_BITS_PER_WIDE_INT) == 0)
+  /* We need extra HWIs if CST is an unsigned integer with its
+     upper bit set.  */
+  if (TYPE_UNSIGNED (type) && wi::neg_p (cst))
     return cst.get_precision () / HOST_BITS_PER_WIDE_INT + 1;
   return cst.get_len ();
 }
@@ -1242,7 +1240,8 @@ build_new_int_cst (tree type, const wide_int &cst)
   if (len < ext_len)
     {
       --ext_len;
-      TREE_INT_CST_ELT (nt, ext_len) = 0;
+      TREE_INT_CST_ELT (nt, ext_len)
+	= zext_hwi (-1, cst.get_precision () % HOST_BITS_PER_WIDE_INT);
       for (unsigned int i = len; i < ext_len; ++i)
 	TREE_INT_CST_ELT (nt, i) = -1;
     }
