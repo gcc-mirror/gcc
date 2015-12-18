@@ -11,4 +11,4 @@ package Debug1 is
 
 end Debug1;
 
--- { dg-final { scan-assembler-times "DW_AT_artificial" 17 } }
+-- { dg-final { scan-assembler-times "DW_AT_artificial" 18 } }

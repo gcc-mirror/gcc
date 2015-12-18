@@ -1,3 +1,7 @@
+2015-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/debug1.ads: Bump final count to 18.
+
 2015-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67592
