@@ -1800,7 +1800,13 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 	    {
 	      insn_constraints[nop * recog_data.n_alternatives + nalt] = p;
 	      while (*p && *p != ',')
-		p++;
+		{
+		  /* We only support one commutative marker, the first
+		     one.  We already set commutative above.  */
+		  if (*p == '%' && commutative < 0)
+		    commutative = nop;
+		  p++;
+		}
 	      if (*p)
 		p++;
 	    }
@@ -1831,11 +1837,7 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 		    break;
 		  
 		  case '%':
-		    /* We only support one commutative marker, the
-		       first one.  We already set commutative
-		       above.  */
-		    if (commutative < 0)
-		      commutative = nop;
+		    /* The commutative modifier is handled above.  */
 		    break;
 
 		  case '0':  case '1':  case '2':  case '3':  case '4':
