@@ -1,3 +1,8 @@
+2015-12-18  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/68831
+	* g++.dg/pr68831.C: New test.
+
 2015-12-17  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/split-path-1.c: Explicitly ask for path

@@ -4449,6 +4449,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
       else
 	{
 	  /* Handle deleting a null pointer.  */
+	  warning_sentinel s (warn_address);
 	  ifexp = fold (cp_build_binary_op (input_location,
 					    NE_EXPR, addr, nullptr_node,
 					    complain));
