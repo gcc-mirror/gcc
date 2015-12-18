@@ -39,8 +39,6 @@
 
    UNSPEC_DIM_SIZE
 
-   UNSPEC_SHARED_DATA
-
    UNSPEC_BIT_CONV
 
    UNSPEC_SHUFFLE
@@ -1192,20 +1190,6 @@
 		    UNSPEC_BIT_CONV))]
   ""
   "%.\\tmov.b64\\t%0, {%1,%2};")
-
-(define_insn "worker_load<mode>"
-  [(set (match_operand:SDISDFM 0 "nvptx_register_operand" "=R")
-        (unspec:SDISDFM [(match_operand:SDISDFM 1 "memory_operand" "m")]
-			 UNSPEC_SHARED_DATA))]
-  ""
-  "%.\\tld.shared%u0\\t%0, %1;")
-
-(define_insn "worker_store<mode>"
-  [(set (unspec:SDISDFM [(match_operand:SDISDFM 1 "memory_operand" "=m")]
-			 UNSPEC_SHARED_DATA)
-	(match_operand:SDISDFM 0 "nvptx_register_operand" "R"))]
-  ""
-  "%.\\tst.shared%u1\\t%1, %0;")
 
 ;; Atomic insns.
 
