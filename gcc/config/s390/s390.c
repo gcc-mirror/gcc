@@ -6139,19 +6139,60 @@ s390_expand_vcond (rtx target, rtx then, rtx els,
   machine_mode result_mode;
   rtx result_target;
 
+  machine_mode target_mode = GET_MODE (target);
+  machine_mode cmp_mode = GET_MODE (cmp_op1);
+  rtx op = (cond == LT) ? els : then;
+
+  /* Try to optimize x < 0 ? -1 : 0 into (signed) x >> 31
+     and x < 0 ? 1 : 0 into (unsigned) x >> 31.  Likewise
+     for short and byte (x >> 15 and x >> 7 respectively).  */
+  if ((cond == LT || cond == GE)
+      && target_mode == cmp_mode
+      && cmp_op2 == CONST0_RTX (cmp_mode)
+      && op == CONST0_RTX (target_mode)
+      && s390_vector_mode_supported_p (target_mode)
+      && GET_MODE_CLASS (target_mode) == MODE_VECTOR_INT)
+    {
+      rtx negop = (cond == LT) ? then : els;
+
+      int shift = GET_MODE_BITSIZE (GET_MODE_INNER (target_mode)) - 1;
+
+      /* if x < 0 ? 1 : 0 or if x >= 0 ? 0 : 1 */
+      if (negop == CONST1_RTX (target_mode))
+	{
+	  rtx res = expand_simple_binop (cmp_mode, LSHIFTRT, cmp_op1,
+					 GEN_INT (shift), target,
+					 1, OPTAB_DIRECT);
+	  if (res != target)
+	    emit_move_insn (target, res);
+	  return;
+	}
+
+      /* if x < 0 ? -1 : 0 or if x >= 0 ? 0 : -1 */
+      else if (constm1_operand (negop, target_mode))
+	{
+	  rtx res = expand_simple_binop (cmp_mode, ASHIFTRT, cmp_op1,
+					 GEN_INT (shift), target,
+					 0, OPTAB_DIRECT);
+	  if (res != target)
+	    emit_move_insn (target, res);
+	  return;
+	}
+    }
+
   /* We always use an integral type vector to hold the comparison
      result.  */
-  result_mode = GET_MODE (cmp_op1) == V2DFmode ? V2DImode : GET_MODE (cmp_op1);
+  result_mode = cmp_mode == V2DFmode ? V2DImode : cmp_mode;
   result_target = gen_reg_rtx (result_mode);
 
-  /* Alternatively this could be done by reload by lowering the cmp*
-     predicates.  But it appears to be better for scheduling etc. to
-     have that in early.  */
+  /* We allow vector immediates as comparison operands that
+     can be handled by the optimization above but not by the
+     following code.  Hence, force them into registers here.  */
   if (!REG_P (cmp_op1))
-    cmp_op1 = force_reg (GET_MODE (target), cmp_op1);
+    cmp_op1 = force_reg (target_mode, cmp_op1);
 
   if (!REG_P (cmp_op2))
-    cmp_op2 = force_reg (GET_MODE (target), cmp_op2);
+    cmp_op2 = force_reg (target_mode, cmp_op2);
 
   s390_expand_vec_compare (result_target, cond,
 			   cmp_op1, cmp_op2);
@@ -6161,7 +6202,7 @@ s390_expand_vcond (rtx target, rtx then, rtx els,
   if (constm1_operand (then, GET_MODE (then))
       && const0_operand (els, GET_MODE (els)))
     {
-      emit_move_insn (target, gen_rtx_SUBREG (GET_MODE (target),
+      emit_move_insn (target, gen_rtx_SUBREG (target_mode,
 					      result_target, 0));
       return;
     }
@@ -6170,10 +6211,10 @@ s390_expand_vcond (rtx target, rtx then, rtx els,
   /* This gets triggered e.g.
      with gcc.c-torture/compile/pr53410-1.c */
   if (!REG_P (then))
-    then = force_reg (GET_MODE (target), then);
+    then = force_reg (target_mode, then);
 
   if (!REG_P (els))
-    els = force_reg (GET_MODE (target), els);
+    els = force_reg (target_mode, els);
 
   tmp = gen_rtx_fmt_ee (EQ, VOIDmode,
 			result_target,
@@ -6181,9 +6222,9 @@ s390_expand_vcond (rtx target, rtx then, rtx els,
 
   /* We compared the result against zero above so we have to swap then
      and els here.  */
-  tmp = gen_rtx_IF_THEN_ELSE (GET_MODE (target), tmp, els, then);
+  tmp = gen_rtx_IF_THEN_ELSE (target_mode, tmp, els, then);
 
-  gcc_assert (GET_MODE (target) == GET_MODE (then));
+  gcc_assert (target_mode == GET_MODE (then));
   emit_insn (gen_rtx_SET (target, tmp));
 }
 
