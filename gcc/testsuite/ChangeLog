@@ -1,3 +1,8 @@
+2015-12-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR tree-optimization/68956
+	* gcc.target/i386/pr68956.c: New test.
+
 2015-12-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/68796
