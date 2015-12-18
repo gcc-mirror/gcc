@@ -3874,6 +3874,13 @@ record_jump_equiv (rtx_insn *insn, bool taken)
   op0 = fold_rtx (XEXP (XEXP (SET_SRC (set), 0), 0), insn);
   op1 = fold_rtx (XEXP (XEXP (SET_SRC (set), 0), 1), insn);
 
+  /* On a cc0 target the cc0-setter and cc0-user may end up in different
+     blocks.  When that happens the tracking of the cc0-setter via
+     PREV_INSN_CC0 is spoiled.  That means that fold_rtx may return
+     NULL_RTX.  In those cases, there's nothing to record.  */
+  if (op0 == NULL_RTX || op1 == NULL_RTX)
+    return;
+
   code = find_comparison_args (code, &op0, &op1, &mode0, &mode1);
   if (! cond_known_true)
     {
