@@ -185,6 +185,12 @@ lvalue_kind (const_tree ref)
       op2_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 2));
       break;
 
+    case MODOP_EXPR:
+      /* We expect to see unlowered MODOP_EXPRs only during
+	 template processing.  */
+      gcc_assert (processing_template_decl);
+      return clk_ordinary;
+
     case MODIFY_EXPR:
     case TYPEID_EXPR:
       return clk_ordinary;
