@@ -1,3 +1,9 @@
+2015-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/68860
+	* gcc.dg/guality/pr68860-1.c: New test.
+	* gcc.dg/guality/pr68860-2.c: New test.
+
 2015-12-18  Nathan Sidwell  <nathan@acm.org>
 
 	* lib/target-supports.exp (check_effective_target_cilkplus): Not nvptx.

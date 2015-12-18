@@ -1,3 +1,15 @@
+2015-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/68860
+	* ipa-split.c (split_function): Only perform caller side
+	modifications for decl_debug_args here.
+	* cgraph.c: Include gimplify.h.
+	(cgraph_edge::redirect_call_stmt_to_callee): Add caller side
+	debug stmts for decl_debug_args.  Spelling fix in a comment.
+	* tree-inline.c (tree_function_versioning): Populate decl_debug_args
+	for args_to_skip arguments and add callee side debug stmts.
+	Formatting fixes.  Avoid shadowing i variable.
+
 2015-12-18  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (nvptx_maybe_convert_symbolic_operand):
