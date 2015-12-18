@@ -1,3 +1,8 @@
+2015-12-18  Andris Pavenis  <andris.pavenis@iki.fi>
+
+	* configure.ac: Specify that DJGPP do not have mmap even when sys/mman.h exists
+	* configure: Regenerate
+
 2015-12-09  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR 68115/libfortran
