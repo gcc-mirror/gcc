@@ -1,7 +1,7 @@
 /* Functional tests for the function hotpatching feature.  */
 
 /* { dg-do compile { target { ! lp64 } } } */
-/* { dg-options "-mesa -march=g5 -mhotpatch=0,4" } */
+/* { dg-options "-mesa -march=g5 -Wno-deprecated -mhotpatch=0,4" } */
 
 #include <stdio.h>
 

@@ -1,3 +1,17 @@
+2015-12-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/driver-native.c (s390_host_detect_local_cpu): Pick
+	z900 -march -mtune even on g5 and g6 machines.
+	* config/s390/s390.c (s390_option_override_internal): New argument
+	to distingiush between options and target attributes.  Emit
+	deprecation warning for g5 and g6 arch/tune options.
+	(s390_option_override): Set new s390_option_override_internal
+	argument to true.
+	(s390_valid_target_attribute_tree): Set new
+	s390_option_override_internal argument to false.
+	* config/s390/s390.h: Default to z900 in the driver.
+	* doc/invoke.texi: Document the deprecation of g5 and g6.
+
 2015-12-18  Andris Pavenis <andris.pavenis@iki.fi>
 
 	* config/i386/djgpp-stdint.h: update typedefs for integer types
