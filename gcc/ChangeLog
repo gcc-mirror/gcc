@@ -1,5 +1,8 @@
 2015-12-17  Jeff Law  <law@redhat.com>
 
+	* passes.def: Put the split-paths pass immediately before the
+	tracer pass.
+
 	* doc/invoke.texi (-O2 options): Remove -fsplit-paths.
 	(-O3 options): Add -fsplit-paths.
 	* gimple-ssa-split-paths.c: Include predict.h
