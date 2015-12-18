@@ -1,3 +1,10 @@
+2015-12-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67592
+	* decl.c (grokdeclarator): Reject constexpr virtual member functions;
+	in error messages, prefer %<virtual%> and %<constexpr%> to virtual
+	and constexpr, respectively.
+
 2015-12-18  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/68831

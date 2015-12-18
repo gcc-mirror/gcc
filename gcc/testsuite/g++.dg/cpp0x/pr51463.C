@@ -3,5 +3,5 @@
 
 struct A
 {
-  static virtual int i = 0;	// { dg-error "both virtual and static|declared as" }
+  static virtual int i = 0;	// { dg-error "both 'virtual' and 'static'|declared as" }
 };

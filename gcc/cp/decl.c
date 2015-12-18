@@ -9769,11 +9769,18 @@ grokdeclarator (const cp_declarator *declarator,
   if (storage_class == sc_static)
     staticp = 1 + (decl_context == FIELD);
 
-  if (virtualp && staticp == 2)
+  if (virtualp)
     {
-      error ("member %qD cannot be declared both virtual and static", dname);
-      storage_class = sc_none;
-      staticp = 0;
+      if (staticp == 2)
+	{
+	  error ("member %qD cannot be declared both %<virtual%> "
+		 "and %<static%>", dname);
+	  storage_class = sc_none;
+	  staticp = 0;
+	}
+      if (constexpr_p)
+	error ("member %qD cannot be declared both %<virtual%> "
+	       "and %<constexpr%>", dname);
     }
   friendp = decl_spec_seq_has_spec_p (declspecs, ds_friend);
 
@@ -10153,7 +10160,8 @@ grokdeclarator (const cp_declarator *declarator,
 		      explicitp = 2;
 		    if (virtualp)
 		      {
-			permerror (input_location, "constructors cannot be declared virtual");
+			permerror (input_location,
+				   "constructors cannot be declared %<virtual%>");
 			virtualp = 0;
 		      }
 		    if (decl_context == FIELD
@@ -10988,7 +10996,7 @@ grokdeclarator (const cp_declarator *declarator,
 		   ARM 9.5 */
 		if (virtualp && TREE_CODE (ctype) == UNION_TYPE)
 		  {
-		    error ("function %qD declared virtual inside a union",
+		    error ("function %qD declared %<virtual%> inside a union",
 			   unqualified_id);
 		    return error_mark_node;
 		  }
@@ -10997,7 +11005,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  {
 		    if (virtualp)
 		      {
-			error ("%qD cannot be declared virtual, since it "
+			error ("%qD cannot be declared %<virtual%>, since it "
 			       "is always static",
 			       unqualified_id);
 			virtualp = 0;
