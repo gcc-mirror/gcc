@@ -2267,6 +2267,24 @@ s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT in, int size,
   return true;
 }
 
+bool
+s390_const_vec_duplicate_p (rtx op)
+{
+ if (!VECTOR_MODE_P (GET_MODE (op))
+      || GET_CODE (op) != CONST_VECTOR
+      || !CONST_INT_P (XVECEXP (op, 0, 0)))
+    return false;
+
+  if (GET_MODE_NUNITS (GET_MODE (op)) > 1)
+    {
+      int i;
+
+      for (i = 1; i < GET_MODE_NUNITS (GET_MODE (op)); ++i)
+	if (!rtx_equal_p (XVECEXP (op, 0, i), XVECEXP (op, 0, 0)))
+	  return false;
+    }
+  return true;
+}
 /* Return true if OP contains the same contiguous bitfield in *all*
    its elements.  START and END can be used to obtain the start and
    end position of the bitfield.
@@ -2282,19 +2300,8 @@ s390_contiguous_bitmask_vector_p (rtx op, int *start, int *end)
   unsigned HOST_WIDE_INT mask;
   int length, size;
 
-  if (!VECTOR_MODE_P (GET_MODE (op))
-      || GET_CODE (op) != CONST_VECTOR
-      || !CONST_INT_P (XVECEXP (op, 0, 0)))
+  if (!s390_const_vec_duplicate_p (op))
     return false;
-
-  if (GET_MODE_NUNITS (GET_MODE (op)) > 1)
-    {
-      int i;
-
-      for (i = 1; i < GET_MODE_NUNITS (GET_MODE (op)); ++i)
-	if (!rtx_equal_p (XVECEXP (op, 0, i), XVECEXP (op, 0, 0)))
-	  return false;
-    }
 
   size = GET_MODE_UNIT_BITSIZE (GET_MODE (op));
   mask = UINTVAL (XVECEXP (op, 0, 0));
@@ -7120,7 +7127,7 @@ print_operand (FILE *file, rtx x, int code)
       switch (code)
 	{
 	case 'h':
-	  gcc_assert (const_vec_duplicate_p (x));
+	  gcc_assert (s390_const_vec_duplicate_p (x));
 	  fprintf (file, HOST_WIDE_INT_PRINT_DEC,
 		   ((INTVAL (XVECEXP (x, 0, 0)) & 0xffff) ^ 0x8000) - 0x8000);
 	  break;

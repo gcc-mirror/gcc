@@ -124,6 +124,8 @@ extern int s390_compare_and_branch_condition_mask (rtx);
 extern bool s390_extzv_shift_ok (int, int, unsigned HOST_WIDE_INT);
 extern void s390_asm_output_function_label (FILE *, const char *, tree);
 
+extern bool s390_const_vec_duplicate_p (rtx);
+
 #endif /* RTX_CODE */
 
 /* s390-c.c routines */

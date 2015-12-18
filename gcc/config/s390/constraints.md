@@ -412,7 +412,7 @@
 (define_constraint "jKK"
   "@internal"
   (and (and (match_code "const_vector")
-	    (match_test "const_vec_duplicate_p (op)"))
+	    (match_test "s390_const_vec_duplicate_p (op)"))
        (match_test "satisfies_constraint_K (XVECEXP (op, 0, 0))")))
 
 
