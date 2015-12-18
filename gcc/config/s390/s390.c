@@ -9584,10 +9584,17 @@ s390_init_frame_layout (void)
 	 as base register to avoid save/restore overhead.  */
       if (!base_used)
 	cfun->machine->base_reg = NULL_RTX;
-      else if (crtl->is_leaf && !df_regs_ever_live_p (5))
-	cfun->machine->base_reg = gen_rtx_REG (Pmode, 5);
       else
-	cfun->machine->base_reg = gen_rtx_REG (Pmode, BASE_REGNUM);
+	{
+	  int br = 0;
+
+	  if (crtl->is_leaf)
+	    /* Prefer r5 (most likely to be free).  */
+	    for (br = 5; br >= 2 && df_regs_ever_live_p (br); br--)
+	      ;
+	  cfun->machine->base_reg =
+	    gen_rtx_REG (Pmode, (br > 0) ? br : BASE_REGNUM);
+	}
 
       s390_register_info ();
       s390_frame_info ();
