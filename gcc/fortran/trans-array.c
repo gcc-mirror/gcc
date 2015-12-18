@@ -8074,7 +8074,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	    }
 
 	  if (cmp_has_alloc_comps
-		&& !c->attr.pointer
+		&& !c->attr.pointer && !c->attr.proc_pointer
 		&& !called_dealloc_with_status)
 	    {
 	      /* Do not deallocate the components of ultimate pointer
@@ -8264,7 +8264,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	     components that are really allocated, the deep copy code has to
 	     be generated first and then added to the if-block in
 	     gfc_duplicate_allocatable ().  */
-	  if (cmp_has_alloc_comps)
+	  if (cmp_has_alloc_comps
+	      && !c->attr.proc_pointer)
 	    {
 	      rank = c->as ? c->as->rank : 0;
 	      tmp = fold_convert (TREE_TYPE (dcmp), comp);

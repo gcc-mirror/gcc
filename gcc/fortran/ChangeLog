@@ -1,3 +1,10 @@
+2015-12-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68196
+	*expr.c (gfc_has_default_initializer): Prevent infinite recursion
+	through this function for procedure pointer components.
+	* trans-array.c (structure_alloc_comps): Ditto twice.
+
 2015-12-15  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 
 	* resolve.c (resolve_critical): Committing symbols of
