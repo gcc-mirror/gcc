@@ -1,3 +1,8 @@
+2015-12-18  Andris Pavenis  <andris.pavenis@iki.fi>
+
+	* config.host: Add *-*-msdosdjgpp to lists of i[34567]86-*-*
+	soft-fp targets 
+
 2015-12-16  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* unwind-generic.h (_Unwind_GetTextRelBase): Call __builtin_abort
