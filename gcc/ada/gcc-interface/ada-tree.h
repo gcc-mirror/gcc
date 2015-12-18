@@ -369,13 +369,6 @@ do {						   \
 #define SET_TYPE_ADA_SIZE(NODE, X) \
   SET_TYPE_LANG_SPECIFIC (RECORD_OR_UNION_CHECK (NODE), X)
 
-/* For types with TYPE_CAN_HAVE_DEBUG_TYPE_P, this is the type to use in
-   debugging information.  */
-#define TYPE_DEBUG_TYPE(NODE) \
-  GET_TYPE_LANG_SPECIFIC2(NODE)
-#define SET_TYPE_DEBUG_TYPE(NODE, X) \
-  SET_TYPE_LANG_SPECIFIC2(NODE, X)
-
 /* For an INTEGER_TYPE with TYPE_IS_FIXED_POINT_P, this is the value of the
    scale factor.  Modular types, index types (sizetype subtypes) and
    fixed-point types are totally distinct types, so there is no problem with
@@ -388,17 +381,17 @@ do {						   \
 /* For types with TYPE_CAN_HAVE_DEBUG_TYPE_P, this is the type to use in
    debugging information.  */
 #define TYPE_DEBUG_TYPE(NODE) \
-  GET_TYPE_LANG_SPECIFIC2(NODE)
+  GET_TYPE_LANG_SPECIFIC2 (NODE)
 #define SET_TYPE_DEBUG_TYPE(NODE, X) \
-  SET_TYPE_LANG_SPECIFIC2(NODE, X)
+  SET_TYPE_LANG_SPECIFIC2 (NODE, X)
 
 /* For types with TYPE_IMPLEMENTS_PACKED_ARRAY_P, this is the original packed
    array type.  Note that this predicate is trou for original packed array
    types, so these cannot have a debug type.  */
 #define TYPE_ORIGINAL_PACKED_ARRAY(NODE) \
-  GET_TYPE_LANG_SPECIFIC2(NODE)
+  GET_TYPE_LANG_SPECIFIC2 (NODE)
 #define SET_TYPE_ORIGINAL_PACKED_ARRAY(NODE, X) \
-  SET_TYPE_LANG_SPECIFIC2(NODE, X)
+  SET_TYPE_LANG_SPECIFIC2 (NODE, X)
 
 
 /* Flags added to decl nodes.  */
