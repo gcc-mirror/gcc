@@ -28,7 +28,8 @@ LIST = aarch64-elf aarch64-linux-gnu \
   hppa64-hpux11.0OPT-enable-sjlj-exceptions=yes hppa2.0-hpux11.9 \
   i686-pc-linux-gnu i686-apple-darwin i686-apple-darwin9 i686-apple-darwin10 \
   i486-freebsd4 i686-freebsd6 i686-kfreebsd-gnu \
-  i686-netbsdelf9 i686-knetbsd-gnu i686-openbsd i686-openbsd3.0 \
+  i686-netbsdelf9 i686-knetbsd-gnuOPT-enable-obsolete \
+  i686-openbsd i686-openbsd3.0OPT-enable-obsolete \
   i686-elf i686-kopensolaris-gnu i686-symbolics-gnu i686-pc-msdosdjgpp \
   i686-lynxos i686-nto-qnx \
   i686-rtems i686-solaris2.10 i686-wrs-vxworks \
@@ -74,7 +75,7 @@ LIST = aarch64-elf aarch64-linux-gnu \
   vax-netbsdelf vax-openbsd visium-elf x86_64-apple-darwin \
   x86_64-pc-linux-gnuOPT-with-fpmath=avx \
   x86_64-elfOPT-with-fpmath=sse x86_64-freebsd6 x86_64-netbsd \
-  x86_64-knetbsd-gnu x86_64-w64-mingw32 \
+  x86_64-knetbsd-gnuOPT-enable-obsolete x86_64-w64-mingw32 \
   x86_64-mingw32OPT-enable-sjlj-exceptions=yes xstormy16-elf xtensa-elf \
   xtensa-linux \
   i686-interix3OPT-enable-obsolete
