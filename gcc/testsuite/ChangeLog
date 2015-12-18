@@ -1,3 +1,8 @@
+2015-12-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68196
+	* gfortran.dg/proc_ptr_48.f90: New test.
+
 2015-12-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/hotpatch-8.c: Add -Wno-deprecated to options.
@@ -16,7 +21,7 @@
 2015-12-17  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/ipa/ipa-icf-merge-1.c: New.
-	
+
 2015-12-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/diagnostic-range-bad-return.c: New test case.

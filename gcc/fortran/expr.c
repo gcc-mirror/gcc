@@ -3930,7 +3930,7 @@ gfc_has_default_initializer (gfc_symbol *der)
   for (c = der->components; c; c = c->next)
     if (c->ts.type == BT_DERIVED)
       {
-        if (!c->attr.pointer
+        if (!c->attr.pointer && !c->attr.proc_pointer
 	     && gfc_has_default_initializer (c->ts.u.derived))
 	  return true;
 	if (c->attr.pointer && c->initializer)
