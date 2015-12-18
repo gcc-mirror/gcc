@@ -1,3 +1,8 @@
+2015-12-18  Andris Pavenis  <andris.pavenis@iki.fi>
+
+	* config/os/djgpp/error_constants.h: update according to DJGPP errno
+	macros.
+
 2015-12-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/68921
