@@ -1,5 +1,13 @@
 2015-12-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	Backported from mainline
+	2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390-c.c (s390_get_vstring_flags): Invert the
+	condition for the RT flag.
+
+2015-12-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/constraints.md: Use private backport of
 	const_vec_duplicate_p s390_const_vec_duplicate_p.
 	* config/s390/s390-protos.h: Add prototype for
