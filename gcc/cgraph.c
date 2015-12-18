@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-chkp.h"
 #include "context.h"
+#include "gimplify.h"
 
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"
@@ -1275,7 +1276,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
       if (decl)
 	e = e->resolve_speculation (decl);
       /* If types do not match, speculation was likely wrong. 
-         The direct edge was posisbly redirected to the clone with a different
+         The direct edge was possibly redirected to the clone with a different
 	 signature.  We did not update the call statement yet, so compare it 
 	 with the reference that still points to the proper type.  */
       else if (!gimple_check_call_matching_types (e->call_stmt,
@@ -1420,6 +1421,70 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
 
       gsi = gsi_for_stmt (e->call_stmt);
+
+      /* For optimized away parameters, add on the caller side
+	 before the call
+	 DEBUG D#X => parm_Y(D)
+	 stmts and associate D#X with parm in decl_debug_args_lookup
+	 vector to say for debug info that if parameter parm had been passed,
+	 it would have value parm_Y(D).  */
+      if (e->callee->clone.combined_args_to_skip && MAY_HAVE_DEBUG_STMTS)
+	{
+	  vec<tree, va_gc> **debug_args
+	    = decl_debug_args_lookup (e->callee->decl);
+	  tree old_decl = gimple_call_fndecl (e->call_stmt);
+	  if (debug_args && old_decl)
+	    {
+	      tree parm;
+	      unsigned i = 0, num;
+	      unsigned len = vec_safe_length (*debug_args);
+	      unsigned nargs = gimple_call_num_args (e->call_stmt);
+	      for (parm = DECL_ARGUMENTS (old_decl), num = 0;
+		   parm && num < nargs;
+		   parm = DECL_CHAIN (parm), num++)
+		if (bitmap_bit_p (e->callee->clone.combined_args_to_skip, num)
+		    && is_gimple_reg (parm))
+		  {
+		    unsigned last = i;
+
+		    while (i < len && (**debug_args)[i] != DECL_ORIGIN (parm))
+		      i += 2;
+		    if (i >= len)
+		      {
+			i = 0;
+			while (i < last
+			       && (**debug_args)[i] != DECL_ORIGIN (parm))
+			  i += 2;
+			if (i >= last)
+			  continue;
+		      }
+		    tree ddecl = (**debug_args)[i + 1];
+		    tree arg = gimple_call_arg (e->call_stmt, num);
+		    if (!useless_type_conversion_p (TREE_TYPE (ddecl),
+						    TREE_TYPE (arg)))
+		      {
+			tree rhs1;
+			if (!fold_convertible_p (TREE_TYPE (ddecl), arg))
+			  continue;
+			if (TREE_CODE (arg) == SSA_NAME
+			    && gimple_assign_cast_p (SSA_NAME_DEF_STMT (arg))
+			    && (rhs1
+				= gimple_assign_rhs1 (SSA_NAME_DEF_STMT (arg)))
+			    && useless_type_conversion_p (TREE_TYPE (ddecl),
+							  TREE_TYPE (rhs1)))
+			  arg = rhs1;
+			else
+			  arg = fold_convert (TREE_TYPE (ddecl), arg);
+		      }
+
+		    gimple *def_temp
+		      = gimple_build_debug_bind (ddecl, unshare_expr (arg),
+						 e->call_stmt);
+		    gsi_insert_before (&gsi, def_temp, GSI_SAME_STMT);
+		  }
+	    }
+	}
+
       gsi_replace (&gsi, new_stmt, false);
       /* We need to defer cleaning EH info on the new statement to
          fixup-cfg.  We may not have dominator information at this point

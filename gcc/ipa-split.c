@@ -1209,7 +1209,6 @@ split_function (basic_block return_bb, struct split_point *split_point,
   gimple *last_stmt = NULL;
   unsigned int i;
   tree arg, ddef;
-  vec<tree, va_gc> **debug_args = NULL;
 
   if (dump_file)
     {
@@ -1432,73 +1431,38 @@ split_function (basic_block return_bb, struct split_point *split_point,
      vector to say for debug info that if parameter parm had been passed,
      it would have value parm_Y(D).  */
   if (args_to_skip)
-    for (parm = DECL_ARGUMENTS (current_function_decl), num = 0;
-	 parm; parm = DECL_CHAIN (parm), num++)
-      if (bitmap_bit_p (args_to_skip, num)
-	  && is_gimple_reg (parm))
-	{
-	  tree ddecl;
-	  gimple *def_temp;
-
-	  /* This needs to be done even without MAY_HAVE_DEBUG_STMTS,
-	     otherwise if it didn't exist before, we'd end up with
-	     different SSA_NAME_VERSIONs between -g and -g0.  */
-	  arg = get_or_create_ssa_default_def (cfun, parm);
-	  if (!MAY_HAVE_DEBUG_STMTS)
-	    continue;
-
-	  if (debug_args == NULL)
-	    debug_args = decl_debug_args_insert (node->decl);
-	  ddecl = make_node (DEBUG_EXPR_DECL);
-	  DECL_ARTIFICIAL (ddecl) = 1;
-	  TREE_TYPE (ddecl) = TREE_TYPE (parm);
-	  DECL_MODE (ddecl) = DECL_MODE (parm);
-	  vec_safe_push (*debug_args, DECL_ORIGIN (parm));
-	  vec_safe_push (*debug_args, ddecl);
-	  def_temp = gimple_build_debug_bind (ddecl, unshare_expr (arg),
-					      call);
-	  gsi_insert_after (&gsi, def_temp, GSI_NEW_STMT);
-	}
-  /* And on the callee side, add
-     DEBUG D#Y s=> parm
-     DEBUG var => D#Y
-     stmts to the first bb where var is a VAR_DECL created for the
-     optimized away parameter in DECL_INITIAL block.  This hints
-     in the debug info that var (whole DECL_ORIGIN is the parm PARM_DECL)
-     is optimized away, but could be looked up at the call site
-     as value of D#X there.  */
-  if (debug_args != NULL)
     {
-      unsigned int i;
-      tree var, vexpr;
-      gimple_stmt_iterator cgsi;
-      gimple *def_temp;
-
-      push_cfun (DECL_STRUCT_FUNCTION (node->decl));
-      var = BLOCK_VARS (DECL_INITIAL (node->decl));
-      i = vec_safe_length (*debug_args);
-      cgsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
-      do
+      vec<tree, va_gc> **debug_args = NULL;
+      unsigned i = 0, len = 0;
+      if (MAY_HAVE_DEBUG_STMTS)
 	{
-	  i -= 2;
-	  while (var != NULL_TREE
-		 && DECL_ABSTRACT_ORIGIN (var) != (**debug_args)[i])
-	    var = TREE_CHAIN (var);
-	  if (var == NULL_TREE)
-	    break;
-	  vexpr = make_node (DEBUG_EXPR_DECL);
-	  parm = (**debug_args)[i];
-	  DECL_ARTIFICIAL (vexpr) = 1;
-	  TREE_TYPE (vexpr) = TREE_TYPE (parm);
-	  DECL_MODE (vexpr) = DECL_MODE (parm);
-	  def_temp = gimple_build_debug_source_bind (vexpr, parm,
-						     NULL);
-	  gsi_insert_before (&cgsi, def_temp, GSI_SAME_STMT);
-	  def_temp = gimple_build_debug_bind (var, vexpr, NULL);
-	  gsi_insert_before (&cgsi, def_temp, GSI_SAME_STMT);
+	  debug_args = decl_debug_args_lookup (node->decl);
+	  if (debug_args)
+	    len = vec_safe_length (*debug_args);
 	}
-      while (i);
-      pop_cfun ();
+      for (parm = DECL_ARGUMENTS (current_function_decl), num = 0;
+	   parm; parm = DECL_CHAIN (parm), num++)
+	if (bitmap_bit_p (args_to_skip, num) && is_gimple_reg (parm))
+	  {
+	    tree ddecl;
+	    gimple *def_temp;
+
+	    /* This needs to be done even without MAY_HAVE_DEBUG_STMTS,
+	       otherwise if it didn't exist before, we'd end up with
+	       different SSA_NAME_VERSIONs between -g and -g0.  */
+	    arg = get_or_create_ssa_default_def (cfun, parm);
+	    if (!MAY_HAVE_DEBUG_STMTS || debug_args == NULL)
+	      continue;
+
+	    while (i < len && (**debug_args)[i] != DECL_ORIGIN (parm))
+	      i += 2;
+	    if (i >= len)
+	      continue;
+	    ddecl = (**debug_args)[i + 1];
+	    def_temp
+	      = gimple_build_debug_bind (ddecl, unshare_expr (arg), call);
+	    gsi_insert_after (&gsi, def_temp, GSI_NEW_STMT);
+	  }
     }
 
   /* We avoid address being taken on any variable used by split part,
