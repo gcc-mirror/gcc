@@ -1107,7 +1107,7 @@
 	 (eq (match_operand:<tointvec> 3 "register_operand" "")
 	     (match_operand:V 4 "const0_operand" ""))
 	 (match_operand:V 1 "const0_operand" "")
-	 (match_operand:V 2 "constm1_operand" "")))]
+	 (match_operand:V 2 "all_ones_operand" "")))]
   "TARGET_VX"
   [(set (match_dup 0) (match_dup 3))]
 {
@@ -1120,7 +1120,7 @@
 	(if_then_else:V
 	 (eq (match_operand:<tointvec> 3 "register_operand" "")
 	     (match_operand:V 4 "const0_operand" ""))
-	 (match_operand:V 1 "constm1_operand" "")
+	 (match_operand:V 1 "all_ones_operand" "")
 	 (match_operand:V 2 "const0_operand" "")))]
   "TARGET_VX"
   [(set (match_dup 0) (not:V (match_dup 3)))]
@@ -1134,7 +1134,7 @@
 	(if_then_else:V
 	 (ne (match_operand:<tointvec> 3 "register_operand" "")
 	     (match_operand:V 4 "const0_operand" ""))
-	 (match_operand:V 1 "constm1_operand" "")
+	 (match_operand:V 1 "all_ones_operand" "")
 	 (match_operand:V 2 "const0_operand" "")))]
   "TARGET_VX"
   [(set (match_dup 0) (match_dup 3))]
@@ -1149,7 +1149,7 @@
 	 (ne (match_operand:<tointvec> 3 "register_operand" "")
 	     (match_operand:V 4 "const0_operand" ""))
 	 (match_operand:V 1 "const0_operand" "")
-	 (match_operand:V 2 "constm1_operand" "")))]
+	 (match_operand:V 2 "all_ones_operand" "")))]
   "TARGET_VX"
   [(set (match_dup 0) (not:V (match_dup 3)))]
 {
@@ -1185,7 +1185,7 @@
   [(set (match_operand:V 0 "register_operand" "=v")
 	(if_then_else:V
 	 (eq (match_operand:<tointvec> 3 "register_operand" "v")
-	     (match_operand:<tointvec> 4 "constm1_operand" ""))
+	     (match_operand:<tointvec> 4 "all_ones_operand" ""))
 	 (match_operand:V 1 "register_operand" "v")
 	 (match_operand:V 2 "register_operand" "v")))]
   "TARGET_VX"
@@ -1197,7 +1197,7 @@
   [(set (match_operand:V 0 "register_operand" "=v")
 	(if_then_else:V
 	 (eq (not:<tointvec> (match_operand:<tointvec> 3 "register_operand" "v"))
-	     (match_operand:<tointvec> 4 "constm1_operand" ""))
+	     (match_operand:<tointvec> 4 "all_ones_operand" ""))
 	 (match_operand:V 1 "register_operand" "v")
 	 (match_operand:V 2 "register_operand" "v")))]
   "TARGET_VX"
