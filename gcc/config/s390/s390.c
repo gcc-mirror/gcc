@@ -13569,9 +13569,27 @@ s390_function_specific_restore (struct gcc_options *opts,
 }
 
 static void
-s390_option_override_internal (struct gcc_options *opts,
+s390_option_override_internal (bool main_args_p,
+			       struct gcc_options *opts,
 			       const struct gcc_options *opts_set)
 {
+  const char *prefix;
+  const char *suffix;
+
+  /* Set up prefix/suffix so the error messages refer to either the command
+     line argument, or the attribute(target).  */
+  if (main_args_p)
+    {
+      prefix = "-m";
+      suffix = "";
+    }
+  else
+    {
+      prefix = "option(\"";
+      suffix = "\")";
+    }
+
+
   /* Architecture mode defaults according to ABI.  */
   if (!(opts_set->x_target_flags & MASK_ZARCH))
     {
@@ -13583,13 +13601,26 @@ s390_option_override_internal (struct gcc_options *opts,
 
   /* Set the march default in case it hasn't been specified on cmdline.  */
   if (!opts_set->x_s390_arch)
-    opts->x_s390_arch = TARGET_ZARCH_P (opts->x_target_flags)
-      ? PROCESSOR_2064_Z900 : PROCESSOR_9672_G5;
+    opts->x_s390_arch = PROCESSOR_2064_Z900;
+  else if (opts->x_s390_arch == PROCESSOR_9672_G5
+	   || opts->x_s390_arch == PROCESSOR_9672_G6)
+    warning (OPT_Wdeprecated, "%sarch=%s%s is deprecated and will be removed "
+	     "in future releases; use at least %sarch=z900%s",
+	     prefix, opts->x_s390_arch == PROCESSOR_9672_G5 ? "g5" : "g6",
+	     suffix, prefix, suffix);
+
   opts->x_s390_arch_flags = processor_flags_table[(int) opts->x_s390_arch];
 
   /* Determine processor to tune for.  */
   if (!opts_set->x_s390_tune)
     opts->x_s390_tune = opts->x_s390_arch;
+  else if (opts->x_s390_tune == PROCESSOR_9672_G5
+	   || opts->x_s390_tune == PROCESSOR_9672_G6)
+    warning (OPT_Wdeprecated, "%stune=%s%s is deprecated and will be removed "
+	     "in future releases; use at least %stune=z900%s",
+	     prefix, opts->x_s390_tune == PROCESSOR_9672_G5 ? "g5" : "g6",
+	     suffix, prefix, suffix);
+
   opts->x_s390_tune_flags = processor_flags_table[opts->x_s390_tune];
 
   /* Sanity checks.  */
@@ -13800,7 +13831,7 @@ s390_option_override (void)
   /* Set up function hooks.  */
   init_machine_status = s390_init_machine_status;
 
-  s390_option_override_internal (&global_options, &global_options_set);
+  s390_option_override_internal (true, &global_options, &global_options_set);
 
   /* Save the initial options in case the user does function specific
      options.  */
@@ -14102,7 +14133,7 @@ s390_valid_target_attribute_tree (tree args,
 	dest[i] |= src[i];
 
       /* Do any overrides, such as arch=xxx, or tune=xxx support.  */
-      s390_option_override_internal (opts, &new_opts_set);
+      s390_option_override_internal (false, opts, &new_opts_set);
       /* Save the current options unless we are validating options for
 	 #pragma.  */
       t = build_target_option_node (opts);

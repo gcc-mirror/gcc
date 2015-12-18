@@ -84,9 +84,8 @@ s390_host_detect_local_cpu (int argc, const char **argv)
 	  machine_id = strtol (p, NULL, 16);
 	  switch (machine_id)
 	    {
+	      /* g5 and g6 default to z900 */
 	    case 0x9672:
-	      cpu = "g5";
-	      break;
 	    case 0x2064:
 	    case 0x2066:
 	      cpu = "z900";

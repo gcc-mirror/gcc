@@ -20892,14 +20892,12 @@ The default is to not print debug information.
 
 @item -march=@var{cpu-type}
 @opindex march
-Generate code that runs on @var{cpu-type}, which is the name of a system
-representing a certain processor type.  Possible values for
-@var{cpu-type} are @samp{g5}, @samp{g6}, @samp{z900}, @samp{z990},
-@samp{z9-109}, @samp{z9-ec}, @samp{z10},  @samp{z196}, @samp{zEC12},
-and @samp{z13}.
-When generating code using the instructions available on z/Architecture,
-the default is @option{-march=z900}.  Otherwise, the default is
-@option{-march=g5}.
+Generate code that runs on @var{cpu-type}, which is the name of a
+system representing a certain processor type.  Possible values for
+@var{cpu-type} are @samp{z900}, @samp{z990}, @samp{z9-109},
+@samp{z9-ec}, @samp{z10}, @samp{z196}, @samp{zEC12}, and @samp{z13}.
+The default is @option{-march=z900}.  @samp{g5} and @samp{g6} are
+deprecated and will be removed with future releases.
 
 @item -mtune=@var{cpu-type}
 @opindex mtune

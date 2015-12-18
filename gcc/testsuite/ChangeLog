@@ -1,3 +1,8 @@
+2015-12-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/hotpatch-8.c: Add -Wno-deprecated to options.
+	* gcc.target/s390/hotpatch-9.c: Likewise.
+
 2015-12-18  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/68831
