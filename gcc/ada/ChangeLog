@@ -1,3 +1,7 @@
+2015-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (TYPE_DEBUG_TYPE): Remove duplicate.
+
 2015-12-17  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gcc-interface/ada-tree.h
