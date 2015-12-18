@@ -121,7 +121,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__ix < numeric_limits<int>::max())
 	  {
 	    __newsize = __ix + 1;
-	    __words = new (std::nothrow) _Words[__newsize];
+	    /* We still need to catch bad_alloc even though we use
+	       a nothrow new, because the new-expression can throw
+	       a bad_array_new_length.  */
+	    __try
+	      { __words = new (std::nothrow) _Words[__newsize]; }
+	    __catch(const std::bad_alloc&)
+	      { __words = nullptr; }
 	    if (!__words)
 	      {
 		_M_streambuf_state |= badbit;
