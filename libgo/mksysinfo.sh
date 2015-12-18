@@ -267,6 +267,9 @@ enum {
 #ifdef TUNGETFILTER
   TUNGETFILTER_val = TUNGETFILTER,
 #endif
+#ifdef NLA_HDRLEN
+  NLA_HDRLEN_val = NLA_HDRLEN,
+#endif
 
 };
 EOF
@@ -1075,8 +1078,6 @@ if ! grep '^const TUNGETFILTER' ${OUT} >/dev/null 2>&1; then
   fi
 fi
 
-
-
 # The ioctl flags for terminal control
 grep '^const _TC[GS]ET' gen-sysinfo.go | grep -v _val | \
     sed -e 's/^\(const \)_\(TC[GS]ET[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
@@ -1422,8 +1423,14 @@ grep '^type _rtnexthop ' gen-sysinfo.go | \
 # The GNU/Linux netlink flags.
 grep '^const _NETLINK_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(NETLINK_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
-grep '^const _NLA_' gen-sysinfo.go | \
+grep '^const _NLA_' gen-sysinfo.go | grep -v '_val =' | \
   sed -e 's/^\(const \)_\(NLA_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+if ! grep '^const NLA_HDRLEN' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _NLA_HDRLEN_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const NLA_HDRLEN = _NLA_HDRLEN_val' >> ${OUT}
+  fi
+fi
 
 # The GNU/Linux packet socket flags.
 grep '^const _PACKET_' gen-sysinfo.go | \
