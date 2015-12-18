@@ -1,3 +1,13 @@
+2015-12-18  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/68776
+	* tree-vect-patterns.c (struct vect_recog_func): New.
+	(vect_vect_recog_func_ptrs): Make an array of function name pairs.
+	(vect_pattern_recog_1): Print the recognized pattern name.  Return
+	true if a pattern was recognized.
+	(vect_pattern_recog): Adjust.  Stop iterating over pattern recognition
+	functions on a stmt if a pattern was recognized.
+
 2015-12-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* ira.c (ira_setup_alts): Move the scan for commutative modifier
