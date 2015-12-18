@@ -1,3 +1,13 @@
+2015-12-18  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (worker_bcast_name, worker_red_name): Delete.
+	(nvptx_option_override): Adjust worker symbol creation.
+	(nvptx_gen_wcast): Wrap worker address in UNSPEC_TO_GENERIC.
+	(write_worker_buffer): New.
+	(nvptx_file_end): Call write_worker_buffer.
+	* config/nvptx/nvptx.md (UNSPEC_SHARED_DATA): Delete.
+	(worker_load<mode>, worker_store<mode>): Delete.
+
 2015-12-18  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/68776

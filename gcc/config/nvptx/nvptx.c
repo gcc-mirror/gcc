@@ -128,14 +128,12 @@ static GTY((cache)) hash_table<tree_hasher> *needed_fndecls_htab;
    shared across TUs (taking the largest size).  */
 static unsigned worker_bcast_size;
 static unsigned worker_bcast_align;
-#define worker_bcast_name "__worker_bcast"
 static GTY(()) rtx worker_bcast_sym;
 
 /* Buffer needed for worker reductions.  This has to be distinct from
    the worker broadcast array, as both may be live concurrently.  */
 static unsigned worker_red_size;
 static unsigned worker_red_align;
-#define worker_red_name "__worker_red"
 static GTY(()) rtx worker_red_sym;
 
 /* Global lock variable, needed for 128bit worker & gang reductions.  */
@@ -172,11 +170,11 @@ nvptx_option_override (void)
   declared_libfuncs_htab
     = hash_table<declared_libfunc_hasher>::create_ggc (17);
 
-  worker_bcast_sym = gen_rtx_SYMBOL_REF (Pmode, worker_bcast_name);
+  worker_bcast_sym = gen_rtx_SYMBOL_REF (Pmode, "__worker_bcast");
   SET_SYMBOL_DATA_AREA (worker_bcast_sym, DATA_AREA_SHARED);
   worker_bcast_align = GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT;
 
-  worker_red_sym = gen_rtx_SYMBOL_REF (Pmode, worker_red_name);
+  worker_red_sym = gen_rtx_SYMBOL_REF (Pmode, "__worker_red");
   SET_SYMBOL_DATA_AREA (worker_red_sym, DATA_AREA_SHARED);
   worker_red_align = GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT;
 }
@@ -1382,7 +1380,6 @@ nvptx_gen_wcast (rtx reg, propagate_mask pm, unsigned rep, wcast_data_t *data)
 	  }
 	
 	addr = gen_rtx_MEM (mode, addr);
-	addr = gen_rtx_UNSPEC (mode, gen_rtvec (1, addr), UNSPEC_SHARED_DATA);
 	if (pm == PM_read)
 	  res = gen_rtx_SET (addr, reg);
 	else if (pm == PM_write)
@@ -3356,9 +3353,11 @@ nvptx_wpropagate (bool pre_p, basic_block block, rtx_insn *insn)
   if (data.offset)
     {
       /* Stuff was emitted, initialize the base pointer now.  */
-      rtx init = gen_rtx_SET (data.base, worker_bcast_sym);
+      rtx init = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, worker_bcast_sym),
+				 UNSPEC_TO_GENERIC);
+      init = gen_rtx_SET (data.base, init);
       emit_insn_after (init, insn);
-      
+
       if (worker_bcast_size < data.offset)
 	worker_bcast_size = data.offset;
     }
@@ -3922,6 +3921,18 @@ nvptx_file_start (void)
   fputs ("// END PREAMBLE\n", asm_out_file);
 }
 
+/* Emit a declaration for a worker-level buffer in .shared memory.  */
+
+static void
+write_worker_buffer (FILE *file, rtx sym, unsigned align, unsigned size)
+{
+  const char *name = XSTR (sym, 0);
+
+  write_var_marker (file, true, false, name);
+  fprintf (file, ".shared .align %d .u8 %s[%d];\n",
+	   align, name, size);
+}
+
 /* Write out the function declarations we've collected and declare storage
    for the broadcast buffer.  */
 
@@ -3935,30 +3946,12 @@ nvptx_file_end (void)
   fputs (func_decls.str().c_str(), asm_out_file);
 
   if (worker_bcast_size)
-    {
-      /* Define the broadcast buffer.  */
-
-      worker_bcast_size = (worker_bcast_size + worker_bcast_align - 1)
-	& ~(worker_bcast_align - 1);
-      
-      write_var_marker (asm_out_file, true, false, worker_bcast_name);
-      fprintf (asm_out_file, ".shared .align %d .u8 %s[%d];\n",
-	       worker_bcast_align,
-	       worker_bcast_name, worker_bcast_size);
-    }
+    write_worker_buffer (asm_out_file, worker_bcast_sym,
+			 worker_bcast_align, worker_bcast_size);
 
   if (worker_red_size)
-    {
-      /* Define the reduction buffer.  */
-
-      worker_red_size = ((worker_red_size + worker_red_align - 1)
-			 & ~(worker_red_align - 1));
-
-      write_var_marker (asm_out_file, true, false, worker_red_name);
-      fprintf (asm_out_file, ".shared .align %d .u8 %s[%d];\n",
-	       worker_red_align,
-	       worker_red_name, worker_red_size);
-    }
+    write_worker_buffer (asm_out_file, worker_red_sym,
+			 worker_red_align, worker_red_size);
 }
 
 /* Expander for the shuffle builtins.  */
