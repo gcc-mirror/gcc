@@ -4146,7 +4146,9 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
       && y == const0_rtx
       && (code == EQ || code == NE || code == LT || code == GE)
       && (GET_CODE (x) == PLUS || GET_CODE (x) == MINUS || GET_CODE (x) == AND
-	  || GET_CODE (x) == NEG))
+	  || GET_CODE (x) == NEG
+	  || (GET_CODE (x) == ZERO_EXTRACT && CONST_INT_P (XEXP (x, 1))
+	      && CONST_INT_P (XEXP (x, 2)))))
     return CC_NZmode;
 
   /* A compare with a shifted operand.  Because of canonicalization,
@@ -10726,6 +10728,21 @@ bool
 aarch64_simd_imm_zero_p (rtx x, machine_mode mode)
 {
   return x == CONST0_RTX (mode);
+}
+
+
+/* Return the bitmask CONST_INT to select the bits required by a zero extract
+   operation of width WIDTH at bit position POS.  */
+
+rtx
+aarch64_mask_from_zextract_ops (rtx width, rtx pos)
+{
+  gcc_assert (CONST_INT_P (width));
+  gcc_assert (CONST_INT_P (pos));
+
+  unsigned HOST_WIDE_INT mask
+    = ((unsigned HOST_WIDE_INT) 1 << UINTVAL (width)) - 1;
+  return GEN_INT (mask << UINTVAL (pos));
 }
 
 bool

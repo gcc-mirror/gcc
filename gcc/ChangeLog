@@ -1,3 +1,14 @@
+2015-12-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/68796
+	* config/aarch64/aarch64.md (*and<mode>3nr_compare0_zextract):
+	New pattern.
+	* config/aarch64/aarch64.c (aarch64_select_cc_mode): Handle
+	ZERO_EXTRACT comparison with zero.
+	(aarch64_mask_from_zextract_ops): New function.
+	* config/aarch64/aarch64-protos.h (aarch64_mask_from_zextract_ops):
+	New prototype.
+
 2015-12-18 Robin Dapp <rdapp@linux.vnet.ibm.com>
 
 	* config/s390/predicates.md: Change and rename
