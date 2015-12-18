@@ -1,3 +1,7 @@
+2015-12-18  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* gcc.dg/debug/dwarf2/prod-options.c: New test.
+
 2015-12-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/debug1.ads: Bump final count to 18.

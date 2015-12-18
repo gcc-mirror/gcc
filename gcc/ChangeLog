@@ -1,3 +1,7 @@
+2015-12-18  Daniel Kahn Gillmor  <dkg@fifthhorseman.net>
+
+	* dwarf2out.c (gen_producer_string): Ignore -fdebug-prefix-map.
+
 2015-12-18  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (nvptx_option_override): Emit sorry for
