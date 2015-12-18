@@ -121,9 +121,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__ix < numeric_limits<int>::max())
 	  {
 	    __newsize = __ix + 1;
-	    __try
-	      { __words = new _Words[__newsize]; }
-	    __catch(const std::bad_alloc&)
+	    __words = new (std::nothrow) _Words[__newsize];
+	    if (!__words)
 	      {
 		_M_streambuf_state |= badbit;
 		if (_M_streambuf_state & _M_exception)

@@ -26,14 +26,14 @@
 
 int new_fails;
 
-void* operator new(std::size_t n) throw (std::bad_alloc)
+void* operator new(std::size_t n, const std::nothrow_t&) throw()
 {
   if (new_fails)
-    throw std::bad_alloc();  
+    return 0;
   return malloc(n);
 }
-void* operator new[] (std::size_t n) throw (std::bad_alloc)
-{ return operator new(n); }
+void* operator new[] (std::size_t n, const std::nothrow_t& ntt) throw()
+{ return operator new(n, ntt); }
 
 void operator delete (void *p) throw() { free(p); }
 void operator delete[] (void *p) throw() { operator delete(p); }
