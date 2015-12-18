@@ -1,3 +1,7 @@
+2015-12-18  Andris Pavenis <andris.pavenis@iki.fi>
+
+	* config/i386/djgpp-stdint.h: update typedefs for integer types
+
 2015-12-17  Jeff Law  <law@redhat.com>
 
 	* passes.def: Put the split-paths pass immediately before the
