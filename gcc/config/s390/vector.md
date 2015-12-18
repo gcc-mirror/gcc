@@ -403,7 +403,7 @@
 	(if_then_else:V_HW
 	 (match_operator 3 "comparison_operator"
 			 [(match_operand:V_HW2 4 "register_operand" "")
-			  (match_operand:V_HW2 5 "register_operand" "")])
+			  (match_operand:V_HW2 5 "nonmemory_operand" "")])
 	 (match_operand:V_HW 1 "nonmemory_operand" "")
 	 (match_operand:V_HW 2 "nonmemory_operand" "")))]
   "TARGET_VX && GET_MODE_NUNITS (<V_HW:MODE>mode) == GET_MODE_NUNITS (<V_HW2:MODE>mode)"
@@ -418,7 +418,7 @@
 	(if_then_else:V_HW
 	 (match_operator 3 "comparison_operator"
 			 [(match_operand:V_HW2 4 "register_operand" "")
-			  (match_operand:V_HW2 5 "register_operand" "")])
+			  (match_operand:V_HW2 5 "nonmemory_operand" "")])
 	 (match_operand:V_HW 1 "nonmemory_operand" "")
 	 (match_operand:V_HW 2 "nonmemory_operand" "")))]
   "TARGET_VX && GET_MODE_NUNITS (<V_HW:MODE>mode) == GET_MODE_NUNITS (<V_HW2:MODE>mode)"
