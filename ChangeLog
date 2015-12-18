@@ -1,3 +1,7 @@
+2015-12-18  Sujoy Saraswati  <sujoy.saraswati@hpe.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2015-12-17  Sebastian Pop  <s.pop@samsung.com>
 
 	* Makefile.in: Replace ISL with isl.
