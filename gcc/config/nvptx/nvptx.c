@@ -159,6 +159,13 @@ nvptx_option_override (void)
   flag_toplevel_reorder = 1;
   /* Assumes that it will see only hard registers.  */
   flag_var_tracking = 0;
+
+  if (write_symbols == DBX_DEBUG)
+    /* The stabs testcases want to know stabs isn't supported.  */
+    sorry ("stabs debug format not supported");
+
+  /* Actually we don't have any debug format, but don't be
+     unneccesarily noisy.  */
   write_symbols = NO_DEBUG;
   debug_info_level = DINFO_LEVEL_NONE;
 
@@ -1751,7 +1758,7 @@ nvptx_assemble_undefined_decl (FILE *file, const char *name, const_tree decl)
   nvptx_assemble_decl_begin (file, name, section_for_decl (decl),
 			     TREE_TYPE (decl), size ? tree_to_shwi (size) : 0,
 			     DECL_ALIGN (decl));
-  fprintf (file, ";\n");
+  nvptx_assemble_decl_end ();
 }
 
 /* Output a pattern for a move instruction.  */

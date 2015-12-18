@@ -1,3 +1,9 @@
+2015-12-18  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (nvptx_option_override): Emit sorry for
+	stabs debug.
+	(nvptx_assemble_undefined_decl): Use nvptx_assemble_decl_end.
+
 2015-12-18  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/49847
