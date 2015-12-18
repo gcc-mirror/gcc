@@ -1,3 +1,8 @@
+2015-12-18  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/68906
+	* gcc.dg/torture/pr68906.c: New test.
+
 2015-12-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR tree-optimization/68956
