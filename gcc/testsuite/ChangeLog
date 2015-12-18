@@ -1,3 +1,8 @@
+2015-12-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/vect/pr68305.c (dg-additional-options): Add -mavx2
+	for x86 target.
+
 2015-12-18  Nathan Sidwell  <nathan@acm.org>
 
 	* c-c++-common/attr-simd-3.c: Requires pthreads.
