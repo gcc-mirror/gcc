@@ -64,17 +64,14 @@
 (define_predicate "nvptx_register_operand"
   (match_code "reg")
 {
-  if (REG_P (op))
-    return !HARD_REGISTER_P (op);
   return register_operand (op, mode);
 })
 
 (define_predicate "nvptx_reg_or_mem_operand"
   (match_code "mem,reg")
 {
-  if (REG_P (op))
-    return !HARD_REGISTER_P (op);
-  return memory_operand (op, mode) || register_operand (op, mode);
+  return (REG_P (op) ? register_operand (op, mode)
+          : memory_operand (op, mode));
 })
 
 ;; Allow symbolic constants.
@@ -86,23 +83,10 @@
 (define_predicate "nvptx_nonmemory_operand"
   (match_code "reg,const_int,const_double")
 {
-  if (REG_P (op))
-    return !HARD_REGISTER_P (op);
-  return nonmemory_operand (op, mode);
+  return (REG_P (op) ? register_operand (op, mode)
+          : immediate_operand (op, mode));
 })
 
-;; A source operand for a move instruction.  This is the only predicate we use
-;; that accepts symbolic constants.
-(define_predicate "nvptx_general_operand"
-  (match_code "reg,subreg,mem,const,symbol_ref,label_ref,const_int,const_double")
-{
-  if (REG_P (op))
-    return !HARD_REGISTER_P (op);
-  return general_operand (op, mode);
-})
-
-;; A destination operand for a move instruction.  This is the only destination
-;; predicate that accepts the return register since it requires special handling.
 (define_predicate "nvptx_nonimmediate_operand"
   (match_code "reg,subreg,mem")
 {
@@ -210,10 +194,9 @@
    %.\\tsetp.eq.u32\\t%0, 1, 1;")
 
 (define_insn "*mov<mode>_insn"
-  [(set (match_operand:QHSDIM 0 "nvptx_nonimmediate_operand" "=R,R,m")
+  [(set (match_operand:QHSDIM 0 "nonimmediate_operand" "=R,R,m")
 	(match_operand:QHSDIM 1 "general_operand" "Ri,m,R"))]
-  "!MEM_P (operands[0])
-   || (REG_P (operands[1]) && REGNO (operands[1]) > LAST_VIRTUAL_REGISTER)"
+  "!MEM_P (operands[0]) || REG_P (operands[1])"
 {
   if (which_alternative == 1)
     return "%.\\tld%A1%u1\\t%0, %1;";
@@ -225,7 +208,7 @@
   [(set_attr "subregs_ok" "true")])
 
 (define_insn "*mov<mode>_insn"
-  [(set (match_operand:SDFM 0 "nvptx_nonimmediate_operand" "=R,R,m")
+  [(set (match_operand:SDFM 0 "nonimmediate_operand" "=R,R,m")
 	(match_operand:SDFM 1 "general_operand" "RF,m,R"))]
   "!MEM_P (operands[0]) || REG_P (operands[1])"
 {
@@ -253,7 +236,7 @@
   "%.\\tmov%t0\\t%0, %%ar%1;")
 
 (define_expand "mov<mode>"
-  [(set (match_operand:QHSDISDFM 0 "nvptx_nonimmediate_operand" "")
+  [(set (match_operand:QHSDISDFM 0 "nonimmediate_operand" "")
 	(match_operand:QHSDISDFM 1 "general_operand" ""))]
   ""
 {
@@ -1137,7 +1120,7 @@
 
 (define_expand "oacc_fork"
   [(set (match_operand:SI 0 "nvptx_nonmemory_operand" "")
-        (match_operand:SI 1 "nvptx_general_operand" ""))
+        (match_operand:SI 1 "general_operand" ""))
    (unspec_volatile:SI [(match_operand:SI 2 "const_int_operand" "")]
 		        UNSPECV_FORKED)]
   ""
@@ -1150,7 +1133,7 @@
 
 (define_expand "oacc_join"
   [(set (match_operand:SI 0 "nvptx_nonmemory_operand" "")
-        (match_operand:SI 1 "nvptx_general_operand" ""))
+        (match_operand:SI 1 "general_operand" ""))
    (unspec_volatile:SI [(match_operand:SI 2 "const_int_operand" "")]
 		        UNSPECV_JOIN)]
   ""

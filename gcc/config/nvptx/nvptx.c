@@ -1436,15 +1436,7 @@ nvptx_maybe_convert_symbolic_operand (rtx op)
 
   nvptx_maybe_record_fnsym (sym);
 
-  nvptx_data_area area = SYMBOL_DATA_AREA (sym);
-  if (area == DATA_AREA_GENERIC)
-    return op;
-
-  rtx dest = gen_reg_rtx (Pmode);
-  emit_insn (gen_rtx_SET (dest,
-			  gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op),
-					  UNSPEC_TO_GENERIC)));
-  return dest;
+  return op;
 }
 
 /* Returns true if X is a valid address for use in a memory reference.  */
@@ -1771,6 +1763,13 @@ nvptx_output_mov_insn (rtx dst, rtx src)
 			    ? GET_MODE (XEXP (dst, 0)) : dst_mode);
   machine_mode src_inner = (GET_CODE (src) == SUBREG
 			    ? GET_MODE (XEXP (src, 0)) : dst_mode);
+
+  rtx sym = src;
+  if (GET_CODE (sym) == CONST)
+    sym = XEXP (XEXP (sym, 0), 0);
+  if (SYMBOL_REF_P (sym)
+      && SYMBOL_DATA_AREA (sym) != DATA_AREA_GENERIC)
+    return "%.\tcvta%D1%t0\t%0, %1;";
 
   if (src_inner == dst_inner)
     return "%.\tmov%t0\t%0, %1;";

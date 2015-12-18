@@ -1,3 +1,15 @@
+2015-12-18  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (nvptx_maybe_convert_symbolic_operand):
+	Remove UNSPEC_TO_GENERIC generation.
+	(nvptx_output_mov_insn): Generate cvta for symbolic src.
+	* config/nvptx/nvptx.md (nvptx_register_operand): Allow hard reg.
+	(nvptx_reg_or_mem_operand): Likewise.
+	(nvptx_nonmemory_operand): Likewise.
+	(nvptx_general_operand): Delete.
+	(*mov<mode>_insn): Use nonimmediate_operand, permit hardregs.
+	(oacc_fork, oacc_join): Use general_operand.
+
 2015-12-18  Daniel Kahn Gillmor  <dkg@fifthhorseman.net>
 
 	* dwarf2out.c (gen_producer_string): Ignore -fdebug-prefix-map.
