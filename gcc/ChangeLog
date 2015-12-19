@@ -1,3 +1,20 @@
+2015-12-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/68910
+	* emit-rtl.c (set_unique_reg_note) <>REG_EQUAL>: Add bypass for USEs.
+	* config/sparc/sparc.md (anddi3): Enable only in 64-bit mode.
+	(iordi3): Likewise.
+	(xordi3): Likewise.
+	(one_cmpldi2): Likewise.
+	(*anddi3_sp32): Delete.
+	(*and_not_di_sp32): Likewise.
+	(*iordi3_sp32): Likewise.
+	(*or_not_di_sp32): Likewise.
+	(*xordi3_sp32): Likewise.
+	(*xor_not_di_sp32): Likewise.
+	(32-bit DImode logical operations splitter): Likewise.
+	(*one_cmpldi2_sp32): Likewise.
+
 2015-13-18  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/68729

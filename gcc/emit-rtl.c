@@ -5256,7 +5256,8 @@ set_unique_reg_note (rtx insn, enum reg_note kind, rtx datum)
     {
     case REG_EQUAL:
     case REG_EQUIV:
-      if (!set_for_reg_notes (insn))
+      /* We need to support the REG_EQUAL on USE trick of find_reloads.  */
+      if (!set_for_reg_notes (insn) && GET_CODE (PATTERN (insn)) != USE)
 	return NULL_RTX;
 
       /* Don't add ASM_OPERAND REG_EQUAL/REG_EQUIV notes.
