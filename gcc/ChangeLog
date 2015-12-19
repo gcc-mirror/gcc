@@ -1,3 +1,10 @@
+2015-13-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/68729
+	* config/pa/pa.c (pa_emit_move_sequence): Reorganize handling of
+	floating-point reloads. Only reload operands that are not valid
+	floating-point memory operands.
+
 2015-12-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	Backported from mainline
