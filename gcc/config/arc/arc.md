@@ -1149,9 +1149,9 @@
    (set_attr "length" "4,8")])
 
 (define_insn "*storeqi_update"
-  [(set (match_operator:QI 4 "store_update_operand"
-	 [(match_operand:SI 1 "register_operand" "0")
-	  (match_operand:SI 2 "short_immediate_operand" "I")])
+  [(set (match_operator:QI 4 "any_mem_operand"
+	 [(plus:SI (match_operand:SI 1 "register_operand" "0")
+	           (match_operand:SI 2 "short_immediate_operand" "I"))])
 	(match_operand:QI 3 "register_operand" "c"))
    (set (match_operand:SI 0 "dest_reg_operand" "=w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
@@ -1200,9 +1200,9 @@
    (set_attr "length" "4,8")])
 
 (define_insn "*storehi_update"
-  [(set (match_operator:HI 4 "store_update_operand"
-	 [(match_operand:SI 1 "register_operand" "0")
-	  (match_operand:SI 2 "short_immediate_operand" "I")])
+  [(set (match_operator:HI 4 "any_mem_operand"
+	 [(plus:SI (match_operand:SI 1 "register_operand" "0")
+	           (match_operand:SI 2 "short_immediate_operand" "I"))])
 	(match_operand:HI 3 "register_operand" "c"))
    (set (match_operand:SI 0 "dest_reg_operand" "=w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
@@ -1225,9 +1225,9 @@
    (set_attr "length" "4,8")])
 
 (define_insn "*storesi_update"
-  [(set (match_operator:SI 4 "store_update_operand"
-	 [(match_operand:SI 1 "register_operand" "0")
-	  (match_operand:SI 2 "short_immediate_operand" "I")])
+  [(set (match_operator:SI 4 "any_mem_operand"
+	 [(plus:SI (match_operand:SI 1 "register_operand" "0")
+	           (match_operand:SI 2 "short_immediate_operand" "I"))])
 	(match_operand:SI 3 "register_operand" "c"))
    (set (match_operand:SI 0 "dest_reg_operand" "=w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
@@ -1249,9 +1249,9 @@
    (set_attr "length" "4,8")])
 
 (define_insn "*storesf_update"
-  [(set (match_operator:SF 4 "store_update_operand"
-	 [(match_operand:SI 1 "register_operand" "0")
-	  (match_operand:SI 2 "short_immediate_operand" "I")])
+  [(set (match_operator:SF 4 "any_mem_operand"
+	 [(plus:SI (match_operand:SI 1 "register_operand" "0")
+	           (match_operand:SI 2 "short_immediate_operand" "I"))])
 	(match_operand:SF 3 "register_operand" "c"))
    (set (match_operand:SI 0 "dest_reg_operand" "=w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
