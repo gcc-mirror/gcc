@@ -1114,9 +1114,9 @@
 ;; Note: loadqi_update has no 16-bit variant
 (define_insn "*loadqi_update"
   [(set (match_operand:QI 3 "dest_reg_operand" "=r,r")
-	(match_operator:QI 4 "load_update_operand"
-	 [(match_operand:SI 1 "register_operand" "0,0")
-	  (match_operand:SI 2 "nonmemory_operand" "rI,Cal")]))
+        (match_operator:QI 4 "any_mem_operand"
+         [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
+                   (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))]))
    (set (match_operand:SI 0 "dest_reg_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1126,9 +1126,9 @@
 
 (define_insn "*load_zeroextendqisi_update"
   [(set (match_operand:SI 3 "dest_reg_operand" "=r,r")
-	(zero_extend:SI (match_operator:QI 4 "load_update_operand"
-			 [(match_operand:SI 1 "register_operand" "0,0")
-			  (match_operand:SI 2 "nonmemory_operand" "rI,Cal")])))
+	(zero_extend:SI (match_operator:QI 4 "any_mem_operand"
+			 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
+			           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))])))
    (set (match_operand:SI 0 "dest_reg_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1138,9 +1138,9 @@
 
 (define_insn "*load_signextendqisi_update"
   [(set (match_operand:SI 3 "dest_reg_operand" "=r,r")
-	(sign_extend:SI (match_operator:QI 4 "load_update_operand"
-			 [(match_operand:SI 1 "register_operand" "0,0")
-			  (match_operand:SI 2 "nonmemory_operand" "rI,Cal")])))
+	(sign_extend:SI (match_operator:QI 4 "any_mem_operand"
+			 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
+			           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))])))
    (set (match_operand:SI 0 "dest_reg_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1164,9 +1164,9 @@
 ;; Note: no 16-bit variant for this pattern
 (define_insn "*loadhi_update"
   [(set (match_operand:HI 3 "dest_reg_operand" "=r,r")
-	(match_operator:HI 4 "load_update_operand"
-	 [(match_operand:SI 1 "register_operand" "0,0")
-	  (match_operand:SI 2 "nonmemory_operand" "rI,Cal")]))
+	(match_operator:HI 4 "any_mem_operand"
+	 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
+	           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))]))
    (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1176,9 +1176,9 @@
 
 (define_insn "*load_zeroextendhisi_update"
   [(set (match_operand:SI 3 "dest_reg_operand" "=r,r")
-	(zero_extend:SI (match_operator:HI 4 "load_update_operand"
-			 [(match_operand:SI 1 "register_operand" "0,0")
-			  (match_operand:SI 2 "nonmemory_operand" "rI,Cal")])))
+	(zero_extend:SI (match_operator:HI 4 "any_mem_operand"
+			 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
+			           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))])))
    (set (match_operand:SI 0 "dest_reg_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1189,9 +1189,9 @@
 ;; Note: no 16-bit variant for this instruction
 (define_insn "*load_signextendhisi_update"
   [(set (match_operand:SI 3 "dest_reg_operand" "=r,r")
-	(sign_extend:SI (match_operator:HI 4 "load_update_operand"
-			 [(match_operand:SI 1 "register_operand" "0,0")
-			  (match_operand:SI 2 "nonmemory_operand" "rI,Cal")])))
+	(sign_extend:SI (match_operator:HI 4 "any_mem_operand"
+			 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
+			           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))])))
    (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1214,9 +1214,9 @@
 ;; No 16-bit variant for this instruction pattern
 (define_insn "*loadsi_update"
   [(set (match_operand:SI 3 "dest_reg_operand" "=r,r")
-	(match_operator:SI 4 "load_update_operand"
-	 [(match_operand:SI 1 "register_operand" "0,0")
-	  (match_operand:SI 2 "nonmemory_operand" "rI,Cal")]))
+	(match_operator:SI 4 "any_mem_operand"
+	 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
+	           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))]))
    (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1238,9 +1238,9 @@
 
 (define_insn "*loadsf_update"
   [(set (match_operand:SF 3 "dest_reg_operand" "=r,r")
-	(match_operator:SF 4 "load_update_operand"
-	 [(match_operand:SI 1 "register_operand" "0,0")
-	  (match_operand:SI 2 "nonmemory_operand" "rI,Cal")]))
+	(match_operator:SF 4 "any_mem_operand"
+	 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
+	           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))]))
    (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""

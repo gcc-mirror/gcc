@@ -460,24 +460,6 @@
 }
 )
 
-;; Return true if OP is valid load with update operand.
-(define_predicate "load_update_operand"
-  (match_code "mem")
-{
-  if (GET_CODE (op) != MEM
-      || GET_MODE (op) != mode)
-    return 0;
-  op = XEXP (op, 0);
-  if (GET_CODE (op) != PLUS
-      || GET_MODE (op) != Pmode
-      || !register_operand (XEXP (op, 0), Pmode)
-      || !nonmemory_operand (XEXP (op, 1), Pmode))
-    return 0;
-  return 1;
-
-}
-)
-
 ;; Return true if OP is valid store with update operand.
 (define_predicate "store_update_operand"
   (match_code "mem")
@@ -817,3 +799,6 @@
 (define_predicate "mem_noofs_operand"
   (and (match_code "mem")
        (match_code "reg" "0")))
+
+(define_predicate "any_mem_operand"
+  (match_code "mem"))
