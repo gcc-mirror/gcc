@@ -1,3 +1,9 @@
+2015-12-19  Sujoy Saraswati  <sujoy.saraswati@hpe.com>
+
+	PR tree-optimization/61441
+	* real.c (real_issignaling_nan): New.
+	* real.h (real_issignaling_nan, REAL_VALUE_ISSIGNALING_NAN): New.
+
 2015-13-18  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/68729

@@ -262,6 +262,9 @@ extern bool real_isinf (const REAL_VALUE_TYPE *);
 /* Determine whether a floating-point value X is a NaN.  */
 extern bool real_isnan (const REAL_VALUE_TYPE *);
 
+/* Determine whether a floating-point value X is a signaling NaN.  */
+extern bool real_issignaling_nan (const REAL_VALUE_TYPE *);
+
 /* Determine whether a floating-point value X is finite.  */
 extern bool real_isfinite (const REAL_VALUE_TYPE *);
 
@@ -356,6 +359,9 @@ extern const struct real_format arm_half_format;
 
 /* Determine whether a floating-point value X is a NaN.  */
 #define REAL_VALUE_ISNAN(x)		real_isnan (&(x))
+
+/* Determine whether a floating-point value X is a signaling NaN.  */ 
+#define REAL_VALUE_ISSIGNALING_NAN(x)  real_issignaling_nan (&(x))
 
 /* Determine whether a floating-point value X is negative.  */
 #define REAL_VALUE_NEGATIVE(x)		real_isneg (&(x))
