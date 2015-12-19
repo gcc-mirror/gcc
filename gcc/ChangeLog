@@ -1,5 +1,14 @@
 2015-12-19  Andrew Burgess  <andrew.burgess@embecosm.com>
 
+	* config/arc/arc.md (*storeqi_update): Use 'any_mem_operand' and
+	fix RTL pattern to include the plus.
+	(*storehi_update): Likewise.
+	(*storesi_update): Likewise.
+	(*storesf_update): Likewise.
+	* config/arc/predicates.md (store_update_operand): Delete.
+
+2015-12-19  Andrew Burgess  <andrew.burgess@embecosm.com>
+
 	* config/arc/arc.md (*loadqi_update): Use new 'any_mem_operand'
 	and fix RTL pattern to include the plus.
 	(*load_zeroextendqisi_update): Likewise.
