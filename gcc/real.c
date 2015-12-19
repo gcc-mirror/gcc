@@ -1195,6 +1195,12 @@ real_isnan (const REAL_VALUE_TYPE *r)
   return (r->cl == rvc_nan);
 }
 
+/* Determine whether a floating-point value X is a signaling NaN.  */ 
+bool real_issignaling_nan (const REAL_VALUE_TYPE *r)
+{
+  return real_isnan (r) && r->signalling;
+}
+
 /* Determine whether a floating-point value X is finite.  */
 
 bool
