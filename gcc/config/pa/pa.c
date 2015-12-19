@@ -1670,31 +1670,39 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 	  || (GET_CODE (operand1) == SUBREG
 	      && MEM_P (XEXP (operand1, 0)))))
     {
-      if (GET_CODE (operand1) == SUBREG)
-	operand1 = XEXP (operand1, 0);
+      rtx op1 = operand1;
 
-      /* SCRATCH_REG will hold an address and maybe the actual data.  We want
-	 it in WORD_MODE regardless of what mode it was originally given
-	 to us.  */
-      scratch_reg = force_mode (word_mode, scratch_reg);
+      if (GET_CODE (op1) == SUBREG)
+	op1 = XEXP (op1, 0);
 
-      /* D might not fit in 14 bits either; for such cases load D into
-	 scratch reg.  */
-      if (reg_plus_base_memory_operand (operand1, GET_MODE (operand1))
-	  && !INT_14_BITS (XEXP (XEXP (operand1, 0), 1)))
+      if (reg_plus_base_memory_operand (op1, GET_MODE (op1))
+	  && !(TARGET_PA_20
+	       && !TARGET_ELF32
+	       && INT_14_BITS (XEXP (XEXP (op1, 0), 1)))
+	  && !INT_5_BITS (XEXP (XEXP (op1, 0), 1)))
 	{
-	  emit_move_insn (scratch_reg, XEXP (XEXP (operand1, 0), 1));
-	  emit_move_insn (scratch_reg,
-			  gen_rtx_fmt_ee (GET_CODE (XEXP (operand1, 0)),
-					  Pmode,
-					  XEXP (XEXP (operand1, 0), 0),
-					  scratch_reg));
+	  /* SCRATCH_REG will hold an address and maybe the actual data.
+	     We want it in WORD_MODE regardless of what mode it was
+	     originally given to us.  */
+	  scratch_reg = force_mode (word_mode, scratch_reg);
+
+	  /* D might not fit in 14 bits either; for such cases load D into
+	     scratch reg.  */
+	  if (!INT_14_BITS (XEXP (XEXP (op1, 0), 1)))
+	    {
+	      emit_move_insn (scratch_reg, XEXP (XEXP (op1, 0), 1));
+	      emit_move_insn (scratch_reg,
+			      gen_rtx_fmt_ee (GET_CODE (XEXP (op1, 0)),
+					      Pmode,
+					      XEXP (XEXP (op1, 0), 0),
+					      scratch_reg));
+	    }
+	  else
+	    emit_move_insn (scratch_reg, XEXP (op1, 0));
+	  emit_insn (gen_rtx_SET (VOIDmode, operand0,
+				  replace_equiv_address (op1, scratch_reg)));
+	  return 1;
 	}
-      else
-	emit_move_insn (scratch_reg, XEXP (operand1, 0));
-      emit_insn (gen_rtx_SET (VOIDmode, operand0,
-			      replace_equiv_address (operand1, scratch_reg)));
-      return 1;
     }
   else if (scratch_reg
 	   && FP_REG_P (operand1)
@@ -1702,33 +1710,40 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 	       || (GET_CODE (operand0) == SUBREG
 		   && MEM_P (XEXP (operand0, 0)))))
     {
-      if (GET_CODE (operand0) == SUBREG)
-	operand0 = XEXP (operand0, 0);
+      rtx op0 = operand0;
 
-      /* SCRATCH_REG will hold an address and maybe the actual data.  We want
-	 it in WORD_MODE regardless of what mode it was originally given
-	 to us.  */
-      scratch_reg = force_mode (word_mode, scratch_reg);
+      if (GET_CODE (op0) == SUBREG)
+	op0 = XEXP (op0, 0);
 
-      /* D might not fit in 14 bits either; for such cases load D into
-	 scratch reg.  */
-      if (reg_plus_base_memory_operand (operand0, GET_MODE (operand0))
-	  && !INT_14_BITS (XEXP (XEXP (operand0, 0), 1)))
+      if (reg_plus_base_memory_operand (op0, GET_MODE (op0))
+	  && !(TARGET_PA_20
+	       && !TARGET_ELF32
+	       && INT_14_BITS (XEXP (XEXP (op0, 0), 1)))
+	  && !INT_5_BITS (XEXP (XEXP (op0, 0), 1)))
 	{
-	  emit_move_insn (scratch_reg, XEXP (XEXP (operand0, 0), 1));
-	  emit_move_insn (scratch_reg, gen_rtx_fmt_ee (GET_CODE (XEXP (operand0,
-								        0)),
-						       Pmode,
-						       XEXP (XEXP (operand0, 0),
-								   0),
-						       scratch_reg));
+	  /* SCRATCH_REG will hold an address and maybe the actual data.
+	     We want it in WORD_MODE regardless of what mode it was
+	     originally given to us.  */
+	  scratch_reg = force_mode (word_mode, scratch_reg);
+
+	  /* D might not fit in 14 bits either; for such cases load D into
+	     scratch reg.  */
+	  if (!INT_14_BITS (XEXP (XEXP (op0, 0), 1)))
+	    {
+	      emit_move_insn (scratch_reg, XEXP (XEXP (op0, 0), 1));
+	      emit_move_insn (scratch_reg,
+			      gen_rtx_fmt_ee (GET_CODE (XEXP (op0, 0)),
+					      Pmode,
+					      XEXP (XEXP (op0, 0), 0),
+					      scratch_reg));
+	    }
+	  else
+	    emit_move_insn (scratch_reg, XEXP (op0, 0));
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  replace_equiv_address (op0, scratch_reg),
+				  operand1));
+	  return 1;
 	}
-      else
-	emit_move_insn (scratch_reg, XEXP (operand0, 0));
-      emit_insn (gen_rtx_SET (VOIDmode,
-			      replace_equiv_address (operand0, scratch_reg),
-			      operand1));
-      return 1;
     }
   /* Handle secondary reloads for loads of FP registers from constant
      expressions by forcing the constant into memory.  For the most part,
@@ -1737,7 +1752,7 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
      Use scratch_reg to hold the address of the memory location.  */
   else if (scratch_reg
 	   && CONSTANT_P (operand1)
-	   && fp_reg_operand (operand0, mode))
+	   && FP_REG_P (operand0))
     {
       rtx const_mem, xoperands[2];
 
@@ -1782,12 +1797,11 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 	  scratch_reg = force_mode (word_mode, scratch_reg);
 
 	  emit_move_insn (scratch_reg, XEXP (XEXP (operand1, 0), 1));
-	  emit_move_insn (scratch_reg, gen_rtx_fmt_ee (GET_CODE (XEXP (operand1,
-								        0)),
-						       Pmode,
-						       XEXP (XEXP (operand1, 0),
-						       0),
-						       scratch_reg));
+	  emit_move_insn (scratch_reg,
+			  gen_rtx_fmt_ee (GET_CODE (XEXP (operand1, 0)),
+					  Pmode,
+					  XEXP (XEXP (operand1, 0), 0),
+					  scratch_reg));
 
 	  /* Now we are going to load the scratch register from memory,
 	     we want to load it in the same width as the original MEM,
@@ -1813,8 +1827,9 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
       emit_move_insn (operand0, scratch_reg);
       return 1;
     }
+
   /* Handle the most common case: storing into a register.  */
-  else if (register_operand (operand0, mode))
+  if (register_operand (operand0, mode))
     {
       /* Legitimize TLS symbol references.  This happens for references
 	 that aren't a legitimate constant.  */
