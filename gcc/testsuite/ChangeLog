@@ -1,3 +1,7 @@
+2015-12-19  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* gcc.target/arc/load-update.c: New file.
+
 2015-12-18  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/68978
