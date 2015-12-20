@@ -3231,27 +3231,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
   if (!mark_used (decl, complain) && !(complain & tf_error))
     return error_mark_node;
 
-  /* Core issue 696: "[At the July 2009 meeting] the CWG expressed
-     support for an approach in which a reference to a local
-     [constant] automatic variable in a nested class or lambda body
-     would enter the expression as an rvalue, which would reduce
-     the complexity of the problem"
-
-     FIXME update for final resolution of core issue 696.  */
-  if (decl_maybe_constant_var_p (decl))
-    {
-      if (processing_template_decl)
-	/* In a template, the constant value may not be in a usable
-	   form, so wait until instantiation time.  */
-	return decl;
-      else if (decl_constant_var_p (decl))
-	{
-	  tree t = maybe_constant_value (convert_from_reference (decl));
-	  if (TREE_CONSTANT (t))
-	    return t;
-	}
-    }
-
+  bool saw_generic_lambda = false;
   if (parsing_nsdmi ())
     containing_function = NULL_TREE;
   else
@@ -3264,6 +3244,9 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
       {
 	tree closure = DECL_CONTEXT (containing_function);
 	lambda_expr = CLASSTYPE_LAMBDA_EXPR (closure);
+
+	if (generic_lambda_fn_p (containing_function))
+	  saw_generic_lambda = true;
 
 	if (TYPE_CLASS_SCOPE_P (closure))
 	  /* A lambda in an NSDMI (c++/64496).  */
@@ -3280,6 +3263,35 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
 	containing_function
 	  = decl_function_context (containing_function);
       }
+
+  /* Core issue 696: "[At the July 2009 meeting] the CWG expressed
+     support for an approach in which a reference to a local
+     [constant] automatic variable in a nested class or lambda body
+     would enter the expression as an rvalue, which would reduce
+     the complexity of the problem"
+
+     FIXME update for final resolution of core issue 696.  */
+  if (decl_maybe_constant_var_p (decl))
+    {
+      if (processing_template_decl && !saw_generic_lambda)
+	/* In a non-generic lambda within a template, wait until instantiation
+	   time to decide whether to capture.  For a generic lambda, we can't
+	   wait until we instantiate the op() because the closure class is
+	   already defined at that point.  FIXME to get the semantics exactly
+	   right we need to partially-instantiate the lambda body so the only
+	   dependencies left are on the generic parameters themselves.  This
+	   probably means moving away from our current model of lambdas in
+	   templates (instantiating the closure type) to one based on creating
+	   the closure type when instantiating the lambda context.  That is
+	   probably also the way to handle lambdas within pack expansions.  */
+	return decl;
+      else if (decl_constant_var_p (decl))
+	{
+	  tree t = maybe_constant_value (convert_from_reference (decl));
+	  if (TREE_CONSTANT (t))
+	    return t;
+	}
+    }
 
   if (lambda_expr && VAR_P (decl)
       && DECL_ANON_UNION_VAR_P (decl))

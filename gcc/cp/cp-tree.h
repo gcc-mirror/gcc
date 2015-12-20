@@ -6158,6 +6158,7 @@ extern bool reregister_specialization		(tree, tree, tree);
 extern tree instantiate_non_dependent_expr	(tree);
 extern tree instantiate_non_dependent_expr_sfinae (tree, tsubst_flags_t);
 extern tree instantiate_non_dependent_expr_internal (tree, tsubst_flags_t);
+extern tree instantiate_non_dependent_or_null   (tree);
 extern bool variable_template_specialization_p  (tree);
 extern bool alias_type_or_template_p            (tree);
 extern bool alias_template_specialization_p     (const_tree);
@@ -6473,6 +6474,7 @@ extern tree maybe_resolve_dummy			(tree, bool);
 extern tree current_nonlambda_function		(void);
 extern tree nonlambda_method_basetype		(void);
 extern tree current_nonlambda_scope		(void);
+extern bool generic_lambda_fn_p			(tree);
 extern void maybe_add_lambda_conv_op            (tree);
 extern bool is_lambda_ignored_entity            (tree);
 

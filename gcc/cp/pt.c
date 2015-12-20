@@ -5661,6 +5661,28 @@ instantiate_non_dependent_expr (tree expr)
   return instantiate_non_dependent_expr_sfinae (expr, tf_error);
 }
 
+/* Like instantiate_non_dependent_expr, but return NULL_TREE rather than
+   an uninstantiated expression.  */
+
+tree
+instantiate_non_dependent_or_null (tree expr)
+{
+  if (expr == NULL_TREE)
+    return NULL_TREE;
+  if (processing_template_decl)
+    {
+      if (instantiation_dependent_expression_p (expr)
+	  || !potential_constant_expression (expr))
+	expr = NULL_TREE;
+      else
+	{
+	  processing_template_decl_sentinel s;
+	  expr = instantiate_non_dependent_expr_internal (expr, tf_error);
+	}
+    }
+  return expr;
+}
+
 /* True iff T is a specialization of a variable template.  */
 
 bool
