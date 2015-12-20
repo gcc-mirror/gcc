@@ -1,5 +1,15 @@
 2015-12-20  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: During
+	layout in type_annotate_only mode, skip discriminants of derived
+	tagged types renaming those of the parent type.
+	In type_annotate_only mode, if the type is tagged, do not override a
+	size clause but take into account the alignment of the tag.
+	(annotate_rep): In type_annotate_only mode, deal with  discriminants
+	of derived tagged types renaming those of the parent type.
+
+2015-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (maybe_pad_type): In type_annotate_only mode,
 	retrieve the component type if this is an array and do not issue the
 	warning for concurrent types.
