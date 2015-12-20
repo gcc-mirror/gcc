@@ -1,3 +1,9 @@
+2015-12-20  Andrew Pinsi  <apinski@cavium.com>
+
+	* config/aarch64/atomics.md
+	(aarch64_atomic_<atomic_optab>_fetch<mode>_lse): Add early clobber
+	to the scratch register.
+
 2015-12-20  Sujoy Saraswati  <sujoy.saraswati@hpe.com>
 
 	PR tree-optimization/61441

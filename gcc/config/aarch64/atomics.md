@@ -428,7 +428,7 @@
        (match_dup 2)
        (match_operand:SI 3 "const_int_operand")]
       UNSPECV_ATOMIC_LDOP))
-     (clobber (match_scratch:ALLI 4 "=r"))]
+     (clobber (match_scratch:ALLI 4 "=&r"))]
   "TARGET_LSE"
   "#"
   "&& reload_completed"
