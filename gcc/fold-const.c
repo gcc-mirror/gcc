@@ -1150,9 +1150,10 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       mode = TYPE_MODE (type);
 
       /* Don't perform operation if we honor signaling NaNs and
-	 either operand is a NaN.  */
+	 either operand is a signaling NaN.  */
       if (HONOR_SNANS (mode)
-	  && (REAL_VALUE_ISNAN (d1) || REAL_VALUE_ISNAN (d2)))
+	  && (REAL_VALUE_ISSIGNALING_NAN (d1)
+	      || REAL_VALUE_ISSIGNALING_NAN (d2)))
 	return NULL_TREE;
 
       /* Don't perform operation if it would raise a division
