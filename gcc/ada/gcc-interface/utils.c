@@ -1411,19 +1411,28 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   rest_of_record_type_compilation (record);
 
 built:
-  /* If the size was widened explicitly, maybe give a warning.  Take the
-     original size as the maximum size of the input if there was an
-     unconstrained record involved and round it up to the specified alignment,
-     if one was specified.  But don't do it if we are just annotating types
-     and the type is tagged, since tagged types aren't fully laid out in this
-     mode.  */
+  /* If a simple size was explicitly given, maybe issue a warning.  */
   if (!size
       || TREE_CODE (size) == COND_EXPR
       || TREE_CODE (size) == MAX_EXPR
-      || No (gnat_entity)
-      || (type_annotate_only && Is_Tagged_Type (Etype (gnat_entity))))
+      || No (gnat_entity))
     return record;
 
+  /* But don't do it if we are just annotating types and the type is tagged or
+     concurrent, since these types aren't fully laid out in this mode.  */
+  if (type_annotate_only)
+    {
+      Entity_Id gnat_type
+	= is_component_type
+	  ? Component_Type (gnat_entity) : Etype (gnat_entity);
+
+      if (Is_Tagged_Type (gnat_type) || Is_Concurrent_Type (gnat_type))
+	return record;
+    }
+
+  /* Take the original size as the maximum size of the input if there was an
+     unconstrained record involved and round it up to the specified alignment,
+     if one was specified, but only for aggregate types.  */
   if (CONTAINS_PLACEHOLDER_P (orig_size))
     orig_size = max_size (orig_size, true);
 

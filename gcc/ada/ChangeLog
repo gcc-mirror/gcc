@@ -1,3 +1,9 @@
+2015-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (maybe_pad_type): In type_annotate_only mode,
+	retrieve the component type if this is an array and do not issue the
+	warning for concurrent types.
+
 2015-12-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.h (TYPE_DEBUG_TYPE): Remove duplicate.
