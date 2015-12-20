@@ -1,3 +1,8 @@
+2015-12-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67411
+	* decl2.c (decl_maybe_constant_var_p): A proxy isn't constant.
+
 2015-12-18  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/68978
