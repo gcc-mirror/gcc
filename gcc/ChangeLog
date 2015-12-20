@@ -1,6 +1,11 @@
 2015-12-20  Sujoy Saraswati  <sujoy.saraswati@hpe.com>
 
 	PR tree-optimization/61441
+	* match.pd (f(x) -> x): Removed flag_errno_math check for RINT.
+
+2015-12-20  Sujoy Saraswati  <sujoy.saraswati@hpe.com>
+
+	PR tree-optimization/61441
 	* fold-const.c (const_binop): Use REAL_VALUE_ISSIGNALING_NAN instead
 	of REAL_VALUE_ISNAN to avoid the operation for sNaN operands.
 	* simplify-rtx.c (simplify_const_binary_operation): Same.
