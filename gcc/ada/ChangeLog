@@ -1,5 +1,11 @@
 2015-12-20  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils2.c (gnat_rewrite_reference) <REALPART_EXPR>: New
+	case identical to FLOAT_EXPR.
+	<IMAGPART_EXPR>: Likewise.
+
+2015-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: During
 	layout in type_annotate_only mode, skip discriminants of derived
 	tagged types renaming those of the parent type.

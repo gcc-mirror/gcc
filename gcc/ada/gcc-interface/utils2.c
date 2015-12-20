@@ -2664,6 +2664,8 @@ gnat_rewrite_reference (tree ref, rewrite_fn func, void *data, tree *init)
     CASE_CONVERT:
     case FLOAT_EXPR:
     case FIX_TRUNC_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
     case VIEW_CONVERT_EXPR:
       result
 	= build1 (code, type,
