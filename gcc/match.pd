@@ -2566,15 +2566,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (fns (fns @0))
   (fns @0)))
 /* f(x) -> x if x is integer valued and f does nothing for such values.  */
-(for fns (TRUNC FLOOR CEIL ROUND NEARBYINT)
+(for fns (TRUNC FLOOR CEIL ROUND NEARBYINT RINT)
  (simplify
   (fns integer_valued_real_p@0)
-  @0))
-/* Same for rint.  We have to check flag_errno_math because
-   integer_valued_real_p accepts +Inf, -Inf and NaNs as integers.  */
-(if (!flag_errno_math)
- (simplify
-  (RINT integer_valued_real_p@0)
   @0))
 
 /* hypot(x,0) and hypot(0,x) -> abs(x).  */
