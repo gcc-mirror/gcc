@@ -3892,7 +3892,8 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	  real_convert (&f1, mode, CONST_DOUBLE_REAL_VALUE (op1));
 
 	  if (HONOR_SNANS (mode)
-	      && (REAL_VALUE_ISNAN (f0) || REAL_VALUE_ISNAN (f1)))
+	      && (REAL_VALUE_ISSIGNALING_NAN (f0)
+	          || REAL_VALUE_ISSIGNALING_NAN (f1)))
 	    return 0;
 
 	  if (code == DIV
