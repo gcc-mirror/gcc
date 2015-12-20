@@ -1,3 +1,14 @@
+2015-12-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/65337
+	* tree-ssa-dce.c (bb_postorder): New static var.
+	(forward_edge_to_pdom): Remove.
+	(remove_dead_stmt): Instead of redirecting edges only keep an edge
+	on a path to nearest live BB.
+	(eliminate_unnecessary_stmts): Free bb_postorder.
+	* cfganal.c (dfs_find_deadend): Add START_POINTES.
+	* cfganal.h (inverted_post_order_compute): Update prototype.
+
 2015-12-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/68910

@@ -112,6 +112,9 @@ static sbitmap visited_control_parents;
    to be recomputed.  */
 static bool cfg_altered;
 
+/* When non-NULL holds map from basic block index into the postorder.  */
+static int *bb_postorder;
+
 
 /* If STMT is not already marked necessary, mark it, and add it to the
    worklist if ADD_TO_WORKLIST is true.  */
@@ -134,7 +137,7 @@ mark_stmt_necessary (gimple *stmt, bool add_to_worklist)
   gimple_set_plf (stmt, STMT_NECESSARY, true);
   if (add_to_worklist)
     worklist.safe_push (stmt);
-  if (bb_contains_live_stmts && !is_gimple_debug (stmt))
+  if (add_to_worklist && bb_contains_live_stmts && !is_gimple_debug (stmt))
     bitmap_set_bit (bb_contains_live_stmts, gimple_bb (stmt)->index);
 }
 
@@ -997,65 +1000,6 @@ remove_dead_phis (basic_block bb)
   return something_changed;
 }
 
-/* Forward edge E to respective POST_DOM_BB and update PHIs.  */
-
-static edge
-forward_edge_to_pdom (edge e, basic_block post_dom_bb)
-{
-  gphi_iterator gsi;
-  edge e2 = NULL;
-  edge_iterator ei;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Redirecting edge %i->%i to %i\n", e->src->index,
-	     e->dest->index, post_dom_bb->index);
-
-  e2 = redirect_edge_and_branch (e, post_dom_bb);
-  cfg_altered = true;
-
-  /* If edge was already around, no updating is necessary.  */
-  if (e2 != e)
-    return e2;
-
-  if (!gimple_seq_empty_p (phi_nodes (post_dom_bb)))
-    {
-      /* We are sure that for every live PHI we are seeing control dependent BB.
-         This means that we can pick any edge to duplicate PHI args from.  */
-      FOR_EACH_EDGE (e2, ei, post_dom_bb->preds)
-	if (e2 != e)
-	  break;
-      for (gsi = gsi_start_phis (post_dom_bb); !gsi_end_p (gsi);)
-	{
-	  gphi *phi = gsi.phi ();
-	  tree op;
-	  source_location locus;
-
-	  /* PHIs for virtuals have no control dependency relation on them.
-	     We are lost here and must force renaming of the symbol.  */
-	  if (virtual_operand_p (gimple_phi_result (phi)))
-	    {
-	      mark_virtual_phi_result_for_renaming (phi);
-	      remove_phi_node (&gsi, true);
-	      continue;
-	    }
-
-	  /* Dead PHI do not imply control dependency.  */
-          if (!gimple_plf (phi, STMT_NECESSARY))
-	    {
-	      gsi_next (&gsi);
-	      continue;
-	    }
-
-	  op = gimple_phi_arg_def (phi, e2->dest_idx);
-	  locus = gimple_phi_arg_location (phi, e2->dest_idx);
-	  add_phi_arg (phi, op, e, locus);
-	  /* The resulting PHI if not dead can only be degenerate.  */
-	  gcc_assert (degenerate_phi_p (phi));
-	  gsi_next (&gsi);
-	}
-    }
-  return e;
-}
 
 /* Remove dead statement pointed to by iterator I.  Receives the basic block BB
    containing I so that we don't have to look it up.  */
@@ -1075,38 +1019,50 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
   stats.removed++;
 
   /* If we have determined that a conditional branch statement contributes
-     nothing to the program, then we not only remove it, but we also change
-     the flow graph so that the current block will simply fall-thru to its
-     immediate post-dominator.  The blocks we are circumventing will be
-     removed by cleanup_tree_cfg if this change in the flow graph makes them
-     unreachable.  */
+     nothing to the program, then we not only remove it, but we need to update
+     the CFG.  We can chose any of edges out of BB as long as we are sure to not
+     close infinite loops.  This is done by always choosing the edge closer to
+     exit in inverted_post_order_compute order.  */
   if (is_ctrl_stmt (stmt))
     {
-      basic_block post_dom_bb;
-      edge e, e2;
       edge_iterator ei;
+      edge e = NULL, e2;
 
-      post_dom_bb = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
-
-      e = find_edge (bb, post_dom_bb);
-
-      /* If edge is already there, try to use it.  This avoids need to update
-         PHI nodes.  Also watch for cases where post dominator does not exists
-	 or is exit block.  These can happen for infinite loops as we create
-	 fake edges in the dominator tree.  */
-      if (e)
-        ;
-      else if (! post_dom_bb || post_dom_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
-	e = EDGE_SUCC (bb, 0);
-      else
-        e = forward_edge_to_pdom (EDGE_SUCC (bb, 0), post_dom_bb);
+      /* See if there is only one non-abnormal edge.  */
+      if (single_succ_p (bb))
+        e = single_succ_edge (bb);
+      /* Otherwise chose one that is closer to bb with live statement in it.
+         To be able to chose one, we compute inverted post order starting from
+	 all BBs with live statements.  */
+      if (!e)
+	{
+	  if (!bb_postorder)
+	    {
+	      int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+	      int postorder_num
+		 = inverted_post_order_compute (postorder,
+						&bb_contains_live_stmts);
+	      bb_postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
+	      for (int i = 0; i < postorder_num; ++i)
+		 bb_postorder[postorder[i]] = i;
+	      free (postorder);
+	    }
+          FOR_EACH_EDGE (e2, ei, bb->succs)
+	    if (!e || e2->dest == EXIT_BLOCK_PTR_FOR_FN (cfun)
+		|| bb_postorder [e->dest->index]
+		   < bb_postorder [e2->dest->index])
+	      e = e2;
+	}
       gcc_assert (e);
       e->probability = REG_BR_PROB_BASE;
       e->count = bb->count;
 
       /* The edge is no longer associated with a conditional, so it does
-	 not have TRUE/FALSE flags.  */
-      e->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
+	 not have TRUE/FALSE flags.
+	 We are also safe to drop EH/ABNORMAL flags and turn them into
+	 normal control flow, because we know that all the destinations (including
+	 those odd edges) are equivalent for program execution.  */
+      e->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE | EDGE_EH | EDGE_ABNORMAL);
 
       /* The lone outgoing edge from BB will be a fallthru edge.  */
       e->flags |= EDGE_FALLTHRU;
@@ -1515,6 +1471,10 @@ eliminate_unnecessary_stmts (void)
       /* Remove dead PHI nodes.  */
       something_changed |= remove_dead_phis (bb);
     }
+
+  if (bb_postorder)
+    free (bb_postorder);
+  bb_postorder = NULL;
 
   return something_changed;
 }
