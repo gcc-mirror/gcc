@@ -62,7 +62,7 @@ extern void add_noreturn_fake_exit_edges (void);
 extern void connect_infinite_loops_to_exit (void);
 extern int post_order_compute (int *, bool, bool);
 extern basic_block dfs_find_deadend (basic_block);
-extern int inverted_post_order_compute (int *);
+extern int inverted_post_order_compute (int *, sbitmap *start_points = 0);
 extern int pre_and_rev_post_order_compute_fn (struct function *,
 					      int *, int *, bool);
 extern int pre_and_rev_post_order_compute (int *, int *, bool);
