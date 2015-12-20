@@ -851,6 +851,16 @@ prepare_op_call (tree fn, int nargs)
   return t;
 }
 
+/* Return true iff CALLOP is the op() for a generic lambda.  */
+
+bool
+generic_lambda_fn_p (tree callop)
+{
+  return (LAMBDA_FUNCTION_P (callop)
+	  && DECL_TEMPLATE_INFO (callop)
+	  && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (callop)));
+}
+
 /* If the closure TYPE has a static op(), also add a conversion to function
    pointer.  */
 
@@ -867,9 +877,7 @@ maybe_add_lambda_conv_op (tree type)
   if (processing_template_decl)
     return;
 
-  bool const generic_lambda_p
-    = (DECL_TEMPLATE_INFO (callop)
-    && DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (callop)) == callop);
+  bool const generic_lambda_p = generic_lambda_fn_p (callop);
 
   if (!generic_lambda_p && DECL_INITIAL (callop) == NULL_TREE)
     {
