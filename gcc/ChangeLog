@@ -1,3 +1,11 @@
+2015-12-21  Sujoy Saraswati  <sujoy.saraswati@hpe.com>
+
+	PR tree-optimization/61441
+	* real.c (do_add): Make resulting NaN value to be qNaN.
+	(do_multiply, do_divide, do_fix_trunc): Same.
+	(real_arithmetic, real_ldexp, real_convert): Same.
+	(real_isinteger): Updated comment stating it returns false for sNaN.
+
 2015-12-20  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/64910
