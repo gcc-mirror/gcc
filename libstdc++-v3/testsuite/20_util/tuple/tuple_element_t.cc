@@ -33,4 +33,10 @@ main()
   foo q1;
   tuple_element_t<0,tuple<foo,void,int> > q2(q1);
   tuple_element_t<2,tuple<void,int,foo> > q3(q1);
+  tuple_element_t<0,const tuple<foo,void,int> > q4(q1);
+  tuple_element_t<2,const tuple<void,int,foo> > q5(q1);
+  tuple_element_t<0,volatile tuple<foo,void,int> > q6(q1);
+  tuple_element_t<2,volatile tuple<void,int,foo> > q7(q1);
+  tuple_element_t<0,const volatile tuple<foo,void,int> > q8(q1);
+  tuple_element_t<2,const volatile tuple<void,int,foo> > q9(q1);
 }

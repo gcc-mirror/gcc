@@ -1,3 +1,20 @@
+2015-12-21  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/66693
+	* include/std/tuple (tuple_element, tuple_size, tuple_element_t,
+	__tuple_element_t): Move to...
+	* include/std/utility: ...here.
+	* testsuite/20_util/pair/astuple/astuple.cc: Adjust.
+	* testsuite/20_util/pair/astuple/astuple_cpp14.cc: New.
+	* testsuite/20_util/tuple/tuple_element.cc: Adjust.
+	* testsuite/20_util/tuple/tuple_element_t.cc: Likewise.
+	* testsuite/20_util/tuple/tuple_size.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/tuple_element.cc:
+	Likewise.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_cpp14.cc:
+	New.
+	* testsuite/23_containers/array/tuple_interface/tuple_size.cc: Adjust.
+
 2015-12-18  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Fix a regression introduced by the fix of libstdc++/68276.

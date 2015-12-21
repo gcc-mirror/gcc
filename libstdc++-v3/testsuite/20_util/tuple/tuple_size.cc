@@ -1,3 +1,4 @@
+// { dg-do compile }
 // { dg-options "-std=gnu++11" }
 
 // Copyright (C) 2007-2015 Free Software Foundation, Inc.
@@ -29,10 +30,28 @@ main()
 {
   bool test __attribute__((unused)) = true;
 
-  VERIFY(tuple_size<tuple<> >::value == 0);
-  VERIFY(tuple_size<tuple<int> >::value == 1);
-  VERIFY(tuple_size<tuple<void> >::value == 1);
+  static_assert(tuple_size<tuple<>>::value == 0, "");
+  static_assert(tuple_size<tuple<int>>::value == 1, "");
+  static_assert(tuple_size<tuple<void>>::value == 1, "");
   typedef tuple<int,const int&,void> test_tuple1;
-  VERIFY(tuple_size<test_tuple1>::value == 3);
-  VERIFY(tuple_size<tuple<tuple<void> > >::value == 1);
+  static_assert(tuple_size<test_tuple1>::value == 3, "");
+  static_assert(tuple_size<tuple<tuple<void>>>::value == 1, "");
+
+  static_assert(tuple_size<const tuple<>>::value == 0, "");
+  static_assert(tuple_size<const tuple<int>>::value == 1, "");
+  static_assert(tuple_size<const tuple<void>>::value == 1, "");
+  static_assert(tuple_size<const test_tuple1>::value == 3, "");
+  static_assert(tuple_size<const tuple<tuple<void>>>::value == 1, "");
+
+  static_assert(tuple_size<volatile tuple<>>::value == 0, "");
+  static_assert(tuple_size<volatile tuple<int>>::value == 1, "");
+  static_assert(tuple_size<volatile tuple<void>>::value == 1, "");
+  static_assert(tuple_size<volatile test_tuple1>::value == 3, "");
+  static_assert(tuple_size<volatile tuple<tuple<void>>>::value == 1, "");
+
+  static_assert(tuple_size<const volatile tuple<>>::value == 0, "");
+  static_assert(tuple_size<const volatile tuple<int>>::value == 1, "");
+  static_assert(tuple_size<const volatile tuple<void>>::value == 1, "");
+  static_assert(tuple_size<const volatile test_tuple1>::value == 3, "");
+  static_assert(tuple_size<const volatile tuple<tuple<void>>>::value == 1,"");
 }

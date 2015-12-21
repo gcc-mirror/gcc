@@ -1197,10 +1197,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 
-  /// Gives the type of the ith element of a given tuple type.
-  template<std::size_t __i, typename _Tp>
-    struct tuple_element;
-
   /**
    * Recursive case for tuple_element: strip off the first element in
    * the tuple and retrieve the (i-1)th element of the remaining tuple.
@@ -1217,53 +1213,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef _Head type;
     };
-
-  // Duplicate of C++14's tuple_element_t for internal use in C++11 mode
-  template<std::size_t __i, typename _Tp>
-    using __tuple_element_t = typename tuple_element<__i, _Tp>::type;
-
-  template<std::size_t __i, typename _Tp>
-    struct tuple_element<__i, const _Tp>
-    {
-      typedef typename add_const<__tuple_element_t<__i, _Tp>>::type type;
-    };
-
-  template<std::size_t __i, typename _Tp>
-    struct tuple_element<__i, volatile _Tp>
-    {
-      typedef typename add_volatile<__tuple_element_t<__i, _Tp>>::type type;
-    };
-
-  template<std::size_t __i, typename _Tp>
-    struct tuple_element<__i, const volatile _Tp>
-    {
-      typedef typename add_cv<__tuple_element_t<__i, _Tp>>::type type;
-    };
-
-#if __cplusplus > 201103L
-#define __cpp_lib_tuple_element_t 201402
-
-  template<std::size_t __i, typename _Tp>
-    using tuple_element_t = typename tuple_element<__i, _Tp>::type;
-#endif
-
-  /// Finds the size of a given tuple type.
-  template<typename _Tp>
-    struct tuple_size;
-
-  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // 2313. tuple_size should always derive from integral_constant<size_t, N>
-  template<typename _Tp>
-    struct tuple_size<const _Tp>
-    : integral_constant<size_t, tuple_size<_Tp>::value> { };
-
-  template<typename _Tp>
-    struct tuple_size<volatile _Tp>
-    : integral_constant<size_t, tuple_size<_Tp>::value> { };
-
-  template<typename _Tp>
-    struct tuple_size<const volatile _Tp>
-    : integral_constant<size_t, tuple_size<_Tp>::value> { };
 
   /// class tuple_size
   template<typename... _Elements>
