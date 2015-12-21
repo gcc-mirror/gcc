@@ -541,6 +541,10 @@ do_add (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
     case CLASS2 (rvc_normal, rvc_inf):
       /* R + Inf = Inf.  */
       *r = *b;
+      /* Make resulting NaN value to be qNaN. The caller has the
+         responsibility to avoid the operation if flag_signaling_nans
+         is on.  */
+      r->signalling = 0;
       r->sign = sign ^ subtract_p;
       return false;
 
@@ -554,6 +558,10 @@ do_add (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
     case CLASS2 (rvc_inf, rvc_normal):
       /* Inf + R = Inf.  */
       *r = *a;
+      /* Make resulting NaN value to be qNaN. The caller has the
+         responsibility to avoid the operation if flag_signaling_nans
+         is on.  */
+      r->signalling = 0;
       return false;
 
     case CLASS2 (rvc_inf, rvc_inf):
@@ -676,6 +684,10 @@ do_multiply (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
     case CLASS2 (rvc_nan, rvc_nan):
       /* ANY * NaN = NaN.  */
       *r = *b;
+      /* Make resulting NaN value to be qNaN. The caller has the
+         responsibility to avoid the operation if flag_signaling_nans
+         is on.  */
+      r->signalling = 0;
       r->sign = sign;
       return false;
 
@@ -684,6 +696,10 @@ do_multiply (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
     case CLASS2 (rvc_nan, rvc_inf):
       /* NaN * ANY = NaN.  */
       *r = *a;
+      /* Make resulting NaN value to be qNaN. The caller has the
+         responsibility to avoid the operation if flag_signaling_nans
+         is on.  */
+      r->signalling = 0;
       r->sign = sign;
       return false;
 
@@ -826,6 +842,10 @@ do_divide (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
     case CLASS2 (rvc_nan, rvc_nan):
       /* ANY / NaN = NaN.  */
       *r = *b;
+      /* Make resulting NaN value to be qNaN. The caller has the
+         responsibility to avoid the operation if flag_signaling_nans
+         is on.  */
+      r->signalling = 0;
       r->sign = sign;
       return false;
 
@@ -834,6 +854,10 @@ do_divide (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
     case CLASS2 (rvc_nan, rvc_inf):
       /* NaN / ANY = NaN.  */
       *r = *a;
+      /* Make resulting NaN value to be qNaN. The caller has the
+         responsibility to avoid the operation if flag_signaling_nans
+         is on.  */
+      r->signalling = 0;
       r->sign = sign;
       return false;
 
@@ -964,6 +988,10 @@ do_fix_trunc (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a)
     case rvc_zero:
     case rvc_inf:
     case rvc_nan:
+      /* Make resulting NaN value to be qNaN. The caller has the
+         responsibility to avoid the operation if flag_signaling_nans
+         is on.  */
+      r->signalling = 0;
       break;
 
     case rvc_normal:
@@ -1022,7 +1050,13 @@ real_arithmetic (REAL_VALUE_TYPE *r, int icode, const REAL_VALUE_TYPE *op0,
 
     case MIN_EXPR:
       if (op1->cl == rvc_nan)
+      {
 	*r = *op1;
+	/* Make resulting NaN value to be qNaN. The caller has the
+	   responsibility to avoid the operation if flag_signaling_nans
+           is on.  */
+	r->signalling = 0;
+      }
       else if (do_compare (op0, op1, -1) < 0)
 	*r = *op0;
       else
@@ -1031,7 +1065,13 @@ real_arithmetic (REAL_VALUE_TYPE *r, int icode, const REAL_VALUE_TYPE *op0,
 
     case MAX_EXPR:
       if (op1->cl == rvc_nan)
+      {
 	*r = *op1;
+	/* Make resulting NaN value to be qNaN. The caller has the
+	   responsibility to avoid the operation if flag_signaling_nans
+           is on.  */
+	r->signalling = 0;
+      }
       else if (do_compare (op0, op1, 1) < 0)
 	*r = *op1;
       else
@@ -1162,6 +1202,10 @@ real_ldexp (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *op0, int exp)
     case rvc_zero:
     case rvc_inf:
     case rvc_nan:
+      /* Make resulting NaN value to be qNaN. The caller has the
+         responsibility to avoid the operation if flag_signaling_nans
+         is on.  */
+      r->signalling = 0;
       break;
 
     case rvc_normal:
@@ -2527,7 +2571,7 @@ real_nan (REAL_VALUE_TYPE *r, const char *str, int quiet,
       /* Our MSB is always unset for NaNs.  */
       r->sig[SIGSZ-1] &= ~SIG_MSB;
 
-      /* Force quiet or signalling NaN.  */
+      /* Force quiet or signaling NaN.  */
       r->signalling = !quiet;
     }
 
@@ -2729,6 +2773,12 @@ real_convert (REAL_VALUE_TYPE *r, format_helper fmt,
     decimal_real_convert (r, fmt, a);
 
   round_for_format (fmt, r);
+
+  /* Make resulting NaN value to be qNaN. The caller has the
+     responsibility to avoid the operation if flag_signaling_nans
+     is on.  */
+  if (r->cl == rvc_nan)
+    r->signalling = 0;
 
   /* round_for_format de-normalizes denormals.  Undo just that part.  */
   if (r->cl == rvc_normal)
@@ -4943,7 +4993,8 @@ real_copysign (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *x)
   r->sign = x->sign;
 }
 
-/* Check whether the real constant value given is an integer.  */
+/* Check whether the real constant value given is an integer.
+   Returns false for signaling NaN.  */
 
 bool
 real_isinteger (const REAL_VALUE_TYPE *c, format_helper fmt)
