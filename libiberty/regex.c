@@ -685,7 +685,7 @@ typedef enum
 #  define EXTRACT_NUMBER(destination, source)				\
   do {									\
     (destination) = *(source) & 0377;					\
-    (destination) += SIGN_EXTEND_CHAR (*((source) + 1)) << 8;		\
+    (destination) += ((unsigned) SIGN_EXTEND_CHAR (*((source) + 1))) << 8; \
   } while (0)
 # endif
 

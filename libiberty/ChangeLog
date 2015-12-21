@@ -1,3 +1,9 @@
+2015-12-21  Nick Clifton  <nickc@redhat.com>
+
+	PR 66827
+	* regex.c (EXTRACT_NUMBER): Cast sign byte to unsigned before left
+	shifting.
+
 2015-11-27  Pedro Alves  <palves@redhat.com>
 
 	PR other/61321
