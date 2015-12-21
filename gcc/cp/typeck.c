@@ -4908,7 +4908,13 @@ cp_build_binary_op (location_t location,
 	      || !vector_types_compatible_elements_p (type0, type1))
 	    {
 	      if (complain & tf_error)
-		binary_op_error (location, code, type0, type1);
+		{
+		  /* "location" already embeds the locations of the
+		     operands, so we don't need to add them separately
+		     to richloc.  */
+		  rich_location richloc (line_table, location);
+		  binary_op_error (&richloc, code, type0, type1);
+		}
 	      return error_mark_node;
 	    }
 	  arithmetic_types_p = 1;
@@ -4931,8 +4937,9 @@ cp_build_binary_op (location_t location,
   if (!result_type)
     {
       if (complain & tf_error)
-	error ("invalid operands of types %qT and %qT to binary %qO",
-	       TREE_TYPE (orig_op0), TREE_TYPE (orig_op1), code);
+	error_at (location,
+		  "invalid operands of types %qT and %qT to binary %qO",
+		  TREE_TYPE (orig_op0), TREE_TYPE (orig_op1), code);
       return error_mark_node;
     }
 

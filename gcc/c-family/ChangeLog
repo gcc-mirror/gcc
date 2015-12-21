@@ -1,3 +1,10 @@
+2015-12-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (binary_op_error): Convert first param from
+	location_t to rich_location * and use it when emitting an error.
+	* c-common.h (binary_op_error): Convert first param from
+	location_t to rich_location *.
+
 2015-12-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.h (conflict_marker_get_final_tok_kind): New prototype.
