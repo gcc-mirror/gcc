@@ -1,5 +1,10 @@
 2015-12-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/68995
+	* include/std/functional (_function_handler, function): Qualify
+	__callable_functor.
+	* testsuite/20_util/function/68995.cc: New.
+
 	PR libstdc++/68276
 	* include/std/functional (__invoke_impl, _Mem_fn::operator()): Qualify
 	std::forward.
