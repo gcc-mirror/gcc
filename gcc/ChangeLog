@@ -89,7 +89,7 @@
 2015-12-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/68910
-	* emit-rtl.c (set_unique_reg_note) <>REG_EQUAL>: Add bypass for USEs.
+	* emit-rtl.c (set_unique_reg_note) <REG_EQUAL>: Add bypass for USEs.
 	* config/sparc/sparc.md (anddi3): Enable only in 64-bit mode.
 	(iordi3): Likewise.
 	(xordi3): Likewise.
