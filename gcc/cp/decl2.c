@@ -4197,6 +4197,9 @@ decl_maybe_constant_var_p (tree decl)
     return false;
   if (DECL_DECLARED_CONSTEXPR_P (decl))
     return true;
+  if (DECL_VALUE_EXPR (decl))
+    /* A proxy isn't constant.  */
+    return false;
   return (CP_TYPE_CONST_NON_VOLATILE_P (type)
 	  && INTEGRAL_OR_ENUMERATION_TYPE_P (type));
 }
