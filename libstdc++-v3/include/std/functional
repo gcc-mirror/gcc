@@ -221,15 +221,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _Res
     __invoke_impl(__invoke_memfun_ref, _MemFun&& __f, _Tp&& __t,
 		  _Args&&... __args)
-    noexcept(noexcept((__invfwd<_Tp>(__t).*__f)(forward<_Args>(__args)...)))
-    { return (__invfwd<_Tp>(__t).*__f)(forward<_Args>(__args)...); }
+    noexcept(noexcept(
+	  (__invfwd<_Tp>(__t).*__f)(std::forward<_Args>(__args)...)))
+    { return (__invfwd<_Tp>(__t).*__f)(std::forward<_Args>(__args)...); }
 
   template<typename _Res, typename _MemFun, typename _Tp, typename... _Args>
     inline _Res
     __invoke_impl(__invoke_memfun_deref, _MemFun&& __f, _Tp&& __t,
 		  _Args&&... __args)
-    noexcept(noexcept(((*forward<_Tp>(__t)).*__f)(forward<_Args>(__args)...)))
-    { return ((*forward<_Tp>(__t)).*__f)(forward<_Args>(__args)...); }
+    noexcept(noexcept(
+	  ((*std::forward<_Tp>(__t)).*__f)(std::forward<_Args>(__args)...)))
+    {
+      return ((*std::forward<_Tp>(__t)).*__f)(std::forward<_Args>(__args)...);
+    }
 
   template<typename _Res, typename _MemFun, typename _Tp, typename... _Args>
     inline _Res
@@ -241,8 +245,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _Res
     __invoke_impl(__invoke_memobj_deref, _MemFun&& __f, _Tp&& __t,
 		  _Args&&... __args)
-    noexcept(noexcept((*forward<_Tp>(__t)).*__f))
-    { return (*forward<_Tp>(__t)).*__f; }
+    noexcept(noexcept((*std::forward<_Tp>(__t)).*__f))
+    { return (*std::forward<_Tp>(__t)).*__f; }
 
   /// Invoke a callable object.
   template<typename _Callable, typename... _Args>
@@ -603,8 +607,9 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       template<typename... _Args>
 	auto
 	operator()(_Args&&... __args) const
-	noexcept(noexcept(std::__invoke(_M_pmf, forward<_Args>(__args)...)))
-	-> decltype(std::__invoke(_M_pmf, forward<_Args>(__args)...))
+	noexcept(noexcept(
+	      std::__invoke(_M_pmf, std::forward<_Args>(__args)...)))
+	-> decltype(std::__invoke(_M_pmf, std::forward<_Args>(__args)...))
 	{ return std::__invoke(_M_pmf, std::forward<_Args>(__args)...); }
     };
 
@@ -627,7 +632,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       template<typename _Tp>
 	auto
 	operator()(_Tp&& __obj) const
-	noexcept(noexcept(std::__invoke(_M_pm, forward<_Tp>(__obj))))
+	noexcept(noexcept(std::__invoke(_M_pm, std::forward<_Tp>(__obj))))
 	-> decltype(std::__invoke(_M_pm, std::forward<_Tp>(__obj)))
 	{ return std::__invoke(_M_pm, std::forward<_Tp>(__obj)); }
     };
