@@ -4499,6 +4499,8 @@ eliminate (bool do_pre)
 	  unlink_stmt_vdef (stmt);
 	  if (gsi_remove (&gsi, true))
 	    bitmap_set_bit (need_eh_cleanup, bb->index);
+	  if (is_gimple_call (stmt) && stmt_can_make_abnormal_goto (stmt))
+	    bitmap_set_bit (need_ab_cleanup, bb->index);
 	  release_defs (stmt);
 	}
 

@@ -1,3 +1,8 @@
+2015-12-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/65337
+	* tree-ssa-pre.c (eliminate): Also clean up abnormal edges if need be.
+
 2015-12-21  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_emit_prologue): Fix base reg condition.
@@ -77,8 +82,9 @@
 
 2015-12-19  Jan Hubicka  <hubicka@ucw.cz>
 
-	PR middle-end/65337
+	PR tree-optimization/65337
 	* tree-ssa-dce.c (bb_postorder): New static var.
+	(mark_stmt_necessary): Add guard for setting bb_contains_live_stmts.
 	(forward_edge_to_pdom): Remove.
 	(remove_dead_stmt): Instead of redirecting edges only keep an edge
 	on a path to nearest live BB.
