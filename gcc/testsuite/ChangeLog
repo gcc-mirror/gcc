@@ -1,3 +1,8 @@
+2015-12-20  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/64910
+	* gcc.target/i386/bittest.c: New test.
+
 2015-12-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/complex1.adb: New test.
