@@ -1,6 +1,9 @@
 2015-12-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67411
+	* decl2.c (decl_maybe_constant_var_p): Use DECL_HAS_VALUE_EXPR_P.
+
+	PR c++/67411
 	* decl2.c (decl_maybe_constant_var_p): A proxy isn't constant.
 
 2015-12-17  Jason Merrill  <jason@redhat.com>
