@@ -16727,19 +16727,19 @@ add_data_member_location_attribute (dw_die_ref die,
     {
       loc_descr = field_byte_offset (decl, ctx, &offset);
 
-      /* Data member location evalutation start with the base address on the
-	 stack.  Compute the field offset and add it to this base address.  */
-      if (loc_descr != NULL)
-	add_loc_descr (&loc_descr, new_loc_descr (DW_OP_plus, 0, 0));
-    }
+      /* If loc_descr is available then we know the field offset is dynamic.
+	 However, GDB does not handle dynamic field offsets very well at the
+	 moment.  */
+      if (loc_descr != NULL && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	{
+	  loc_descr = NULL;
+	  offset = 0;
+	}
 
-  /* If loc_descr is available then we know the field offset is dynamic.
-     However, GDB does not handle dynamic field offsets very well at the
-     moment.  */
-  if (loc_descr != NULL && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
-    {
-      loc_descr = NULL;
-      offset = 0;
+      /* Data member location evalutation starts with the base address on the
+	 stack.  Compute the field offset and add it to this base address.  */
+      else if (loc_descr != NULL)
+	add_loc_descr (&loc_descr, new_loc_descr (DW_OP_plus, 0, 0));
     }
 
   if (! loc_descr)

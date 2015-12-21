@@ -1,3 +1,9 @@
+2015-12-21  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* dwarf2out.c (add_data_member_location_attribute): Do not
+	disable dynamic data member offsets descriptions for TREE_BINFO
+	members.
+
 2015-12-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/65337
