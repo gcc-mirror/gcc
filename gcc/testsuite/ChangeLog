@@ -1,3 +1,9 @@
+2015-12-21  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/builtin_general.c: New test.
+	* gcc.target/arc/builtin_simd.c: Likewise.
+	* gcc.target/arc/builtin_special.c: Likewise.
+
 2015-12-20  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/64910

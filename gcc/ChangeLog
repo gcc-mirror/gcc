@@ -1,3 +1,45 @@
+2015-12-21  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/builtins.def: New file.
+	* config/arc/arc.c (arc_init_simd_builtins): Remove.
+	(arc_builtins): Likewise.
+	(TARGET_BUILTIN_DECL): Define.
+	(arc_builtin_id): New enum.
+	(arc_builtin_description): New structure.
+	(arc_bdesc): New variable.
+	(arc_tolower): New function.
+	(def_mbuiltin): Remove.
+	(arc_builtin_decl): New function.
+	(arc_expand_builtin_aligned ): Likewise.
+	(apply_GEN_FCN): Likewise.
+	(arc_init_builtins): Refurbish.
+	(arc_expand_builtin): Likewise.
+	(simd_insn_args_type): Remove.
+	(builtin_description): Likewise
+	(arc_simd_builtin_desc_list): Likewise.
+	(arc_expand_simd_builtin): Likewise.
+	(arc_process_double_reg_moves): Use the new builtin name format.
+	* config/arc/arc.md (unspec): New builtin function UNSPEC codes.
+	(vunspec): New builtin function VUNSPEC codes.
+	(UNSPEC_SWAP, UNSPEC_MUL64, UNSPEC_MULU64, UNSPEC_DIVAW)
+	(UNSPEC_DIRECT, UNSPEC_LP, UNSPEC_CASESI, VUNSPEC_RTIE)
+	(VUNSPEC_SYNC, VUNSPEC_BRK, VUNSPEC_FLAG, VUNSPEC_SLEEP)
+	(VUNSPEC_SWI, VUNSPEC_CORE_READ, VUNSPEC_CORE_WRITE, VUNSPEC_LR)
+	(VUNSPEC_SR, VUNSPEC_TRAP_S, VUNSPEC_UNIMP_S, VUNSPEC_NOP)
+	(UNSPEC_ARC_MEMBAR,VUNSPEC_ARC_CAS, VUNSPEC_ARC_LL)
+	(VUNSPEC_ARC_SC, VUNSPEC_ARC_EX, VUNSPEC_DEXCL)
+	(VUNSPEC_DEXCL_NORES, VUNSPEC_LR_HIGH): Remove.
+	(mul64, mulu64): Remove patterns.
+	(store_direct, *movdf_insn_nolrsr, casesi, casesi_load)
+	(casesi_compact_jump, nopv, swap, divaw, flag, brk, rtie, sync)
+	(swi, sleep, core_read, core_write, lr, sr, trap_s, unimp_s)
+	(doloop_begin_i): Use new builtin function code naming.
+	(kflag, clri, ffs, ffs_f, ffssi2, fls, seti): New patterns.
+	* config/arc/builtins.def: New file.
+	* config/arc/fpx.md: Use new builtin function code naming.
+	* config/arc/simdext.md: New SIMD builtin function UNSPEC
+	codes. Use them in the SIMD patterns.
+
 2015-12-21  Sujoy Saraswati  <sujoy.saraswati@hpe.com>
 
 	PR tree-optimization/61441
