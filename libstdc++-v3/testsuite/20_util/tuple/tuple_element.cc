@@ -35,4 +35,10 @@ main()
   foo q1;
   tuple_element<0,tuple<foo,void,int> >::type q2(q1);
   tuple_element<2,tuple<void,int,foo> >::type q3(q1);
+  tuple_element<0,const tuple<foo,void,int> >::type q4(q1);
+  tuple_element<2,const tuple<void,int,foo> >::type q5(q1);
+  tuple_element<0,volatile tuple<foo,void,int> >::type q6(q1);
+  tuple_element<2,volatile tuple<void,int,foo> >::type q7(q1);
+  tuple_element<0,const volatile tuple<foo,void,int> >::type q8(q1);
+  tuple_element<2,const volatile tuple<void,int,foo> >::type q9(q1);
 }

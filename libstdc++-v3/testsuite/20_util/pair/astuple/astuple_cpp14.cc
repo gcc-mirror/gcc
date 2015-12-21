@@ -1,7 +1,7 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-options "-std=gnu++14" }
 
-// Copyright (C) 2013-2015 Free Software Foundation, Inc.
+// Copyright (C) 2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,14 +23,8 @@
 
 typedef std::pair<int, long> test_type;
 
-static_assert( std::tuple_size<test_type>::value == 2, "size is 2" );
-static_assert( std::tuple_size<const test_type>::value == 2, "size is 2" );
-static_assert( std::tuple_size<volatile test_type>::value == 2, "size is 2" );
-static_assert( std::tuple_size<const volatile test_type>::value == 2,
-               "size is 2" );
-
 template<std::size_t N, typename T>
-  using Tuple_elt = typename std::tuple_element<N, T>::type;
+  using Tuple_elt = std::tuple_element_t<N, T>;
 
 using std::is_same;
 
