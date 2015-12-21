@@ -1,3 +1,12 @@
+2015-12-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* typeck.c (cp_build_binary_op): Update for change in signature
+	of build_binary_op.  Use error_at to replace an implicit use
+	of input_location with param "location" in "invalid operands"
+	error.
+	(cp_build_binary_op): Replace an error with an error_at, using
+	"location", rather than implicitly using input_location.
+
 2015-12-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67411

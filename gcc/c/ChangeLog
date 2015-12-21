@@ -1,3 +1,10 @@
+2015-12-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-typeck.c: Include "gcc-rich-location.h".
+	(build_binary_op): In the two places that call binary_op_error,
+	create a gcc_rich_location and populate it with the location of
+	the binary op and its two operands.
+
 2015-12-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-parser.c (c_parser_statement_after_labels): When calling
