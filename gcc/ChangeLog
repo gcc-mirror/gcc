@@ -1,3 +1,7 @@
+2015-12-21  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_emit_prologue): Fix base reg condition.
+
 2015-12-21  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/builtins.def: New file.
