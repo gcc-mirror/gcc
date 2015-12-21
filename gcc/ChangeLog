@@ -1,3 +1,8 @@
+2015-12-21  Andrew Pinski <apinski@cavium.com>
+
+	* config/aarch64/aarch64-option-extensions.def (LSE): Change
+	FEAT_STRING to "atomics".
+
 2015-12-21  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* dwarf2out.c (add_data_member_location_attribute): Do not
