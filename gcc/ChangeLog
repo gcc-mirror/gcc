@@ -1,3 +1,8 @@
+2015-12-20  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/64910
+	* config/i386/i386.md (testqi_ext_3): Allow HImode.
+
 2015-12-20  Andrew Pinsi  <apinski@cavium.com>
 
 	* config/aarch64/atomics.md
