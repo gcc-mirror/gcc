@@ -1,3 +1,8 @@
+2015-12-22  Jeff Law  <law@redhat.com>
+
+	* gimple-ssa-split-paths.c (split_paths): Avoid unnecessary block
+	copying.
+
 2015-12-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/67376
