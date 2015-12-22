@@ -1,3 +1,10 @@
+2015-12-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR debug/60756
+	* var-tracking.c (tracked_record_parameter_p): New predicate.
+	(track_expr_p): Invoke it.
+	(add_stores): Likewise.
+
 2015-12-21  Jeff Law  <law@redhat.com>
 
 	* dbgcnt.def (dom_unreachable_edges): New debug counter.

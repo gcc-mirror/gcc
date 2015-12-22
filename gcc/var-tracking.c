@@ -5020,6 +5020,27 @@ dataflow_set_destroy (dataflow_set *set)
   set->vars = NULL;
 }
 
+/* Return true if T is a tracked parameter with non-degenerate record type.  */
+
+static bool
+tracked_record_parameter_p (tree t)
+{
+  if (TREE_CODE (t) != PARM_DECL)
+    return false;
+
+  if (DECL_MODE (t) == BLKmode)
+    return false;
+
+  tree type = TREE_TYPE (t);
+  if (TREE_CODE (type) != RECORD_TYPE)
+    return false;
+
+  if (DECL_CHAIN (TYPE_FIELDS (type)) == NULL_TREE)
+    return false;
+
+  return true;
+}
+
 /* Shall EXPR be tracked?  */
 
 static bool
@@ -5064,11 +5085,9 @@ track_expr_p (tree expr, bool need_rtl)
 					   &maxsize, &reverse);
 	      if (!DECL_P (innerdecl)
 		  || DECL_IGNORED_P (innerdecl)
-		  /* Do not track declarations for parts of tracked parameters
-		     since we want to track them as a whole instead.  */
-		  || (TREE_CODE (innerdecl) == PARM_DECL
-		      && DECL_MODE (innerdecl) != BLKmode
-		      && TREE_CODE (TREE_TYPE (innerdecl)) != UNION_TYPE)
+		  /* Do not track declarations for parts of tracked record
+		     parameters since we want to track them as a whole.  */
+		  || tracked_record_parameter_p (innerdecl)
 		  || TREE_STATIC (innerdecl)
 		  || bitsize <= 0
 		  || bitpos + bitsize > 256
@@ -5928,18 +5947,11 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
   resolve = preserve = !cselib_preserved_value_p (v);
 
   /* We cannot track values for multiple-part variables, so we track only
-     locations for tracked parameters passed either by invisible reference
-     or directly in multiple locations.  */
+     locations for tracked record parameters.  */
   if (track_p
       && REG_P (loc)
       && REG_EXPR (loc)
-      && TREE_CODE (REG_EXPR (loc)) == PARM_DECL
-      && DECL_MODE (REG_EXPR (loc)) != BLKmode
-      && TREE_CODE (TREE_TYPE (REG_EXPR (loc))) != UNION_TYPE
-      && ((MEM_P (DECL_INCOMING_RTL (REG_EXPR (loc)))
-	   && XEXP (DECL_INCOMING_RTL (REG_EXPR (loc)), 0) != arg_pointer_rtx)
-          || (GET_CODE (DECL_INCOMING_RTL (REG_EXPR (loc))) == PARALLEL
-	      && XVECLEN (DECL_INCOMING_RTL (REG_EXPR (loc)), 0) > 1)))
+      && tracked_record_parameter_p (REG_EXPR (loc)))
     {
       /* Although we don't use the value here, it could be used later by the
 	 mere virtue of its existence as the operand of the reverse operation
