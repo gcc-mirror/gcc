@@ -29,5 +29,5 @@ int f3()
          + __transaction_atomic noexcept (global + 6);
 }
 
-/* { dg-final { scan-tree-dump-times "eh_must_not_throw" 6 "tmlower" } } */
+/* { dg-final { scan-tree-dump-times "eh_must_not_throw" 12 "tmlower" } } */
 /* { dg-final { scan-tree-dump-times "ITM_RU" 6 "tmmark" } } */

@@ -1,3 +1,38 @@
+2015-12-22  Richard Henderson  <rth@redhat.com>
+
+	PR ipa/67811
+	* gimple.h (struct gtransaction): Add label_norm, label_uninst;
+	replace label with label_over.
+	(gimple_build_transaction): Remove label parameter.
+	(gimple_transaction_label_norm): New.
+	(gimple_transaction_label_uninst): New.
+	(gimple_transaction_label_over): Rename from gimple_transaction_label.
+	(gimple_transaction_label_norm_ptr): New.
+	(gimple_transaction_label_uninst_ptr): New.
+	(gimple_transaction_label_over_ptr): Rename from
+	gimple_transaction_label_ptr.
+	(gimple_transaction_set_label_norm): New.
+	(gimple_transaction_set_label_uninst): New.
+	(gimple_transaction_set_label_over): Rename from
+	gimple_transaction_set_label.
+	* gimple-pretty-print.c (dump_gimple_transaction): Update.
+	* gimple-streamer-in.c (input_gimple_stmt) [GIMPLE_TRANSACTION]: Same.
+	* gimple-streamer-out.c (output_gimple_stmt) [GIMPLE_TRANSACTION]: Same.
+	* gimple-walk.c (walk_gimple_op) [GIMPLE_TRANSACTION]: Same.
+	* tree-cfg.c (make_edges_bb) [GIMPLE_TRANSACTION]: Same.
+	(cleanup_dead_labels) [GIMPLE_TRANSACTION]: Same.
+	(verify_gimple_transaction): Same.
+	(gimple_redirect_edge_and_branch) [GIMPLE_TRANSACTION]: Same.
+	* tree-inline.c (remap_gimple_stmt) [GIMPLE_TRANSACTION]: Same.
+	* gimple.c (gimple_build_transaction): Remove label parameter;
+	initialize all three label memebers.
+	* gimplify.c (gimplify_transaction): Update call
+	to gimple_build_transaction.
+	* trans-mem.c (make_tm_uninst): New.
+	(lower_transaction): Create uninstrumented code path here...
+	(ipa_tm_scan_calls_transaction): ... not here.
+	(ipa_uninstrument_transaction): Remove.
+
 2015-12-22  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/68772

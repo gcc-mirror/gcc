@@ -180,9 +180,11 @@ output_gimple_stmt (struct output_block *ob, gimple *stmt)
 
     case GIMPLE_TRANSACTION:
       {
-	gtransaction *trans_stmt = as_a <gtransaction *> (stmt);
-	gcc_assert (gimple_transaction_body (trans_stmt) == NULL);
-	stream_write_tree (ob, gimple_transaction_label (trans_stmt), true);
+	gtransaction *txn = as_a <gtransaction *> (stmt);
+	gcc_assert (gimple_transaction_body (txn) == NULL);
+	stream_write_tree (ob, gimple_transaction_label_norm (txn), true);
+	stream_write_tree (ob, gimple_transaction_label_uninst (txn), true);
+	stream_write_tree (ob, gimple_transaction_label_over (txn), true);
       }
       break;
 

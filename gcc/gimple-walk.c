@@ -474,11 +474,22 @@ walk_gimple_op (gimple *stmt, walk_tree_fn callback_op,
       break;
 
     case GIMPLE_TRANSACTION:
-      ret = walk_tree (gimple_transaction_label_ptr (
-			 as_a <gtransaction *> (stmt)),
-		       callback_op, wi, pset);
-      if (ret)
-	return ret;
+      {
+	gtransaction *txn = as_a <gtransaction *> (stmt);
+
+	ret = walk_tree (gimple_transaction_label_norm_ptr (txn),
+			 callback_op, wi, pset);
+	if (ret)
+	  return ret;
+	ret = walk_tree (gimple_transaction_label_uninst_ptr (txn),
+			 callback_op, wi, pset);
+	if (ret)
+	  return ret;
+	ret = walk_tree (gimple_transaction_label_over_ptr (txn),
+			 callback_op, wi, pset);
+	if (ret)
+	  return ret;
+      }
       break;
 
     case GIMPLE_OMP_RETURN:
