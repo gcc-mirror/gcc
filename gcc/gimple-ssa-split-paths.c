@@ -192,9 +192,10 @@ split_paths ()
 
       /* BB is the merge point for an IF-THEN-ELSE we want to transform.
 
-	 Essentially we want to create two duplicates of BB and append
-	 a duplicate to the THEN and ELSE clauses.  This will split the
-	 path leading to the latch.  BB will be unreachable and removed.  */
+	 Essentially we want to create a duplicate of bb and redirect the
+	 first predecessor of BB to the duplicate (leaving the second
+	 predecessor as is.  This will split the path leading to the latch
+	 re-using BB to avoid useless copying.  */
       if (bb && is_feasible_trace (bb))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -202,9 +203,7 @@ split_paths ()
 		     "Duplicating join block %d into predecessor paths\n",
 		     bb->index);
 	  basic_block pred0 = EDGE_PRED (bb, 0)->src;
-	  basic_block pred1 = EDGE_PRED (bb, 1)->src;
 	  transform_duplicate (pred0, bb);
-	  transform_duplicate (pred1, bb);
 	  changed = true;
 	}
     }
