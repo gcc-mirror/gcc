@@ -1,5 +1,9 @@
 2015-12-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66921
+	* decl.c (cp_complete_array_type): Allow an initializer that
+	already has array type.
+
 	PR c++/67339
 	* parser.c (cp_parser_elaborated_type_specifier): Use CLASS_TYPE_P
 	rather than check for RECORD_TYPE.
