@@ -1,3 +1,8 @@
+2015-12-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* combine.c (simplify_comparison): Convert preprocessor check of
+	WORD_REGISTER_OPERATIONS into runtime check.
+
 2015-12-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/60756
