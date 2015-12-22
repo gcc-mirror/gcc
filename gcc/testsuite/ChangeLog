@@ -1,3 +1,8 @@
+2015-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/67376
+	* g++.dg/cpp0x/constexpr-67376.C: New test.
+
 2015-12-22  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/tm/noexcept-1.C: Update expected must_not_throw count.
