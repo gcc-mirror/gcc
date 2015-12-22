@@ -33,6 +33,9 @@
 	(ipa_tm_scan_calls_transaction): ... not here.
 	(ipa_uninstrument_transaction): Remove.
 
+	* tree-eh.c (honor_protect_cleanup_actions): Do not wrap eh_else
+	in a must-not-throw; set ehp_region for it too.
+
 2015-12-22  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/68772

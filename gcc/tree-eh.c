@@ -986,64 +986,65 @@ honor_protect_cleanup_actions (struct leh_state *outer_state,
 			       struct leh_state *this_state,
 			       struct leh_tf_state *tf)
 {
-  tree protect_cleanup_actions;
-  gimple_stmt_iterator gsi;
-  bool finally_may_fallthru;
-  gimple_seq finally;
-  gimple *x;
-  geh_mnt *eh_mnt;
-  gtry *try_stmt;
-  geh_else *eh_else;
+  gimple_seq finally = gimple_try_cleanup (tf->top_p);
 
-  /* First check for nothing to do.  */
-  if (lang_hooks.eh_protect_cleanup_actions == NULL)
-    return;
-  protect_cleanup_actions = lang_hooks.eh_protect_cleanup_actions ();
-  if (protect_cleanup_actions == NULL)
-    return;
-
-  finally = gimple_try_cleanup (tf->top_p);
-  eh_else = get_eh_else (finally);
-
-  /* Duplicate the FINALLY block.  Only need to do this for try-finally,
-     and not for cleanups.  If we've got an EH_ELSE, extract it now.  */
-  if (eh_else)
+  /* EH_ELSE doesn't come from user code; only compiler generated stuff.
+     It does need to be handled here, so as to separate the (different)
+     EH path from the normal path.  But we should not attempt to wrap
+     it with a must-not-throw node (which indeed gets in the way).  */
+  if (geh_else *eh_else = get_eh_else (finally))
     {
-      finally = gimple_eh_else_e_body (eh_else);
       gimple_try_set_cleanup (tf->top_p, gimple_eh_else_n_body (eh_else));
-    }
-  else if (this_state)
-    finally = lower_try_finally_dup_block (finally, outer_state,
-	gimple_location (tf->try_finally_expr));
-  finally_may_fallthru = gimple_seq_may_fallthru (finally);
+      finally = gimple_eh_else_e_body (eh_else);
 
-  /* If this cleanup consists of a TRY_CATCH_EXPR with TRY_CATCH_IS_CLEANUP
-     set, the handler of the TRY_CATCH_EXPR is another cleanup which ought
-     to be in an enclosing scope, but needs to be implemented at this level
-     to avoid a nesting violation (see wrap_temporary_cleanups in
-     cp/decl.c).  Since it's logically at an outer level, we should call
-     terminate before we get to it, so strip it away before adding the
-     MUST_NOT_THROW filter.  */
-  gsi = gsi_start (finally);
-  x = gsi_stmt (gsi);
-  if (gimple_code (x) == GIMPLE_TRY
-      && gimple_try_kind (x) == GIMPLE_TRY_CATCH
-      && gimple_try_catch_is_cleanup (x))
+      /* Let the ELSE see the exception that's being processed.  */
+      eh_region save_ehp = this_state->ehp_region;
+      this_state->ehp_region = this_state->cur_region;
+      lower_eh_constructs_1 (this_state, &finally);
+      this_state->ehp_region = save_ehp;
+    }
+  else
     {
-      gsi_insert_seq_before (&gsi, gimple_try_eval (x), GSI_SAME_STMT);
-      gsi_remove (&gsi, false);
-    }
+      /* First check for nothing to do.  */
+      if (lang_hooks.eh_protect_cleanup_actions == NULL)
+	return;
+      tree actions = lang_hooks.eh_protect_cleanup_actions ();
+      if (actions == NULL)
+	return;
 
-  /* Wrap the block with protect_cleanup_actions as the action.  */
-  eh_mnt = gimple_build_eh_must_not_throw (protect_cleanup_actions);
-  try_stmt = gimple_build_try (finally, gimple_seq_alloc_with_stmt (eh_mnt),
-			       GIMPLE_TRY_CATCH);
-  finally = lower_eh_must_not_throw (outer_state, try_stmt);
+      if (this_state)
+	finally = lower_try_finally_dup_block (finally, outer_state,
+	  gimple_location (tf->try_finally_expr));
+
+      /* If this cleanup consists of a TRY_CATCH_EXPR with TRY_CATCH_IS_CLEANUP
+	 set, the handler of the TRY_CATCH_EXPR is another cleanup which ought
+	 to be in an enclosing scope, but needs to be implemented at this level
+	 to avoid a nesting violation (see wrap_temporary_cleanups in
+	 cp/decl.c).  Since it's logically at an outer level, we should call
+	 terminate before we get to it, so strip it away before adding the
+	 MUST_NOT_THROW filter.  */
+      gimple_stmt_iterator gsi = gsi_start (finally);
+      gimple *x = gsi_stmt (gsi);
+      if (gimple_code (x) == GIMPLE_TRY
+	  && gimple_try_kind (x) == GIMPLE_TRY_CATCH
+	  && gimple_try_catch_is_cleanup (x))
+	{
+	  gsi_insert_seq_before (&gsi, gimple_try_eval (x), GSI_SAME_STMT);
+	  gsi_remove (&gsi, false);
+	}
+
+      /* Wrap the block with protect_cleanup_actions as the action.  */
+      geh_mnt *eh_mnt = gimple_build_eh_must_not_throw (actions);
+      gtry *try_stmt = gimple_build_try (finally,
+					 gimple_seq_alloc_with_stmt (eh_mnt),
+					 GIMPLE_TRY_CATCH);
+      finally = lower_eh_must_not_throw (outer_state, try_stmt);
+    }
 
   /* Drop all of this into the exception sequence.  */
   emit_post_landing_pad (&eh_seq, tf->region);
   gimple_seq_add_seq (&eh_seq, finally);
-  if (finally_may_fallthru)
+  if (gimple_seq_may_fallthru (finally))
     emit_resx (&eh_seq, tf->region);
 
   /* Having now been handled, EH isn't to be considered with
