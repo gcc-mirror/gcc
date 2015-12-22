@@ -1,3 +1,10 @@
+2015-12-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* line-map.c (get_combined_adhoc_loc): Remove condition
+	on locus < RESERVED_LOCATION_COUNT when considering
+	whether a caret == start == finish location can be
+	simply stored as the caret location.
+
 2015-12-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (rich_location::set_range): Add line_maps *
