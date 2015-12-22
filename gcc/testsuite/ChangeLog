@@ -1,3 +1,7 @@
+2015-12-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/torture/pr68264.c: Tweak for Solaris.
+
 2015-12-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/diagnostic/bad-binary-ops.C: New test case.
