@@ -444,7 +444,7 @@ layout::layout (diagnostic_context * context,
     {
       /* This diagnostic printer can only cope with "sufficiently sane" ranges.
 	 Ignore any ranges that are awkward to handle.  */
-      location_range *loc_range = richloc->get_range (idx);
+      const location_range *loc_range = richloc->get_range (idx);
 
       /* If any part of the range isn't in the same file as the primary
 	 location of this diagnostic, ignore the range.  */
@@ -456,16 +456,38 @@ layout::layout (diagnostic_context * context,
 	if (loc_range->m_caret.file != m_exploc.file)
 	  continue;
 
+      /* Everything is now known to be in the correct source file,
+	 but it may require further sanitization.  */
+      layout_range ri (loc_range);
+
+      /* If we have a range that finishes before it starts (perhaps
+	 from something built via macro expansion), printing the
+	 range is likely to be nonsensical.  Also, attempting to do so
+	 breaks assumptions within the printing code  (PR c/68473).  */
+      if (loc_range->m_start.line > loc_range->m_finish.line)
+	{
+	  /* Is this the primary location?  */
+	  if (m_layout_ranges.length () == 0)
+	    {
+	      /* We want to print the caret for the primary location, but
+		 we must sanitize away m_start and m_finish.  */
+	      ri.m_start = ri.m_caret;
+	      ri.m_finish = ri.m_caret;
+	    }
+	  else
+	    /* This is a non-primary range; ignore it.  */
+	    continue;
+	}
+
       /* Passed all the tests; add the range to m_layout_ranges so that
 	 it will be printed.  */
-      layout_range ri (loc_range);
       m_layout_ranges.safe_push (ri);
 
       /* Update m_first_line/m_last_line if necessary.  */
-      if (loc_range->m_start.line < m_first_line)
-	m_first_line = loc_range->m_start.line;
-      if (loc_range->m_finish.line > m_last_line)
-	m_last_line = loc_range->m_finish.line;
+      if (ri.m_start.m_line < m_first_line)
+	m_first_line = ri.m_start.m_line;
+      if (ri.m_finish.m_line > m_last_line)
+	m_last_line = ri.m_finish.m_line;
     }
 
   /* Adjust m_x_offset.

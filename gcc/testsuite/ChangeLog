@@ -1,3 +1,11 @@
+2015-12-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68473
+	* gcc.dg/plugin/diagnostic-test-expressions-1.c (fminl): New decl.
+	(TEST_EQ): New macro.
+	(test_macro): New function.
+	* gcc.target/i386/pr68473-1.c: New test case.
+
 2015-12-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/67376

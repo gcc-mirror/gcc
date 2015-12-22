@@ -1,3 +1,10 @@
+2015-12-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68473
+	* diagnostic-show-locus.c (layout::layout): Make loc_range const.
+	Sanitize the layout_range against ranges that finish before they
+	start.
+
 2015-12-22  Jeff Law  <law@redhat.com>
 
 	* gimple-ssa-split-paths.c (split_paths): Avoid unnecessary block
