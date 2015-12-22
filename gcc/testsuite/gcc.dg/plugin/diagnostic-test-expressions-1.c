@@ -618,3 +618,20 @@ void test_quadratic (double a, double b, double c)
    { dg-end-multiline-output "" } */
 
 }
+
+/* Reproducer for PR c/68473.  */
+
+extern long double fminl (long double __x, long double __y);
+#define TEST_EQ(FUNC) FUNC##l(xl,xl)
+void test_macro (long double xl)
+{
+  __emit_expression_range (0, TEST_EQ (fmin) ); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+   __emit_expression_range (0, TEST_EQ (fmin) );
+                                        ^
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+ #define TEST_EQ(FUNC) FUNC##l(xl,xl)
+                       ^~~~
+   { dg-end-multiline-output "" } */
+}
