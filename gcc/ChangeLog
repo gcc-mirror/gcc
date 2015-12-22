@@ -1,3 +1,14 @@
+2015-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/67376
+	* fold-const.c (size_low_cst): Removed.
+	(fold_comparison): For POINTER_PLUS_EXPR where base is ADDR_EXPR
+	call get_inner_reference and handle INDIRECT_REF base of it.  Use
+	offset_int for computation of the bitpos.
+	(fold_binary_loc) <case EQ_EXPR, NE_EXPR>: Formatting
+	fixes for X +- Y CMP X and C - X CMP X folding.  Add X CMP X +- Y
+	and X CMP C - X folding.
+
 2015-12-22  Richard Henderson  <rth@redhat.com>
 
 	PR ipa/67811
