@@ -1,3 +1,14 @@
+2015-12-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/68937
+	* config/i386/i386.c (ix86_function_ok_for_sibcall): Count
+	call to global function via GOT slot as indirect call.
+	* config/i386/i386.md (*sibcall_GOT_32): New pattern.
+	(*sibcall_value_GOT_32): Likewise.
+	* config/i386/predicates.md (sibcall_memory_operand): Rewrite.
+	Allow 32-bit GOT slot only with pseudo register as GOT base.
+	(GOT32_symbol_operand): New predicate.
+
 2015-12-22  Sujoy Saraswati  <sujoy.saraswati@hpe.com>
 
 	* fold-const.c (const_binop): Convert sNaN to qNaN when
