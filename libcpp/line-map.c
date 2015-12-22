@@ -196,10 +196,9 @@ get_combined_adhoc_loc (struct line_maps *set,
 	}
     }
 
-  /* We can also compactly store the reserved locations
+  /* We can also compactly store locations
      when locus == start == finish (and data is NULL).  */
-  if (locus < RESERVED_LOCATION_COUNT
-      && locus == src_range.m_start
+  if (locus == src_range.m_start
       && locus == src_range.m_finish
       && !data)
     return locus;
