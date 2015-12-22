@@ -1,3 +1,12 @@
+2015-12-22  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/68772
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): For -mcpu=powerpc64le,
+	pass %(asm_cpu_power8)/-mpwr8.
+	* config/rs6000/aix53.h: Likewise.
+	* config/rs6000/aix61.h: Likewise.
+	* config/rs6000/aix71.h: Likewise.
+
 2015-12-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/68937

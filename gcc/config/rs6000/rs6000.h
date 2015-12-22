@@ -128,6 +128,7 @@
 %{mcpu=power9: %(asm_cpu_power9)} \
 %{mcpu=a2: -ma2} \
 %{mcpu=powerpc: -mppc} \
+%{mcpu=powerpc64le: %(asm_cpu_power8)} \
 %{mcpu=rs64a: -mppc64} \
 %{mcpu=401: -mppc} \
 %{mcpu=403: -m403} \
