@@ -1,5 +1,9 @@
 2015-12-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/67257
+	* parser.c (cp_parser_single_declaration): Reject a class template
+	that also declares a variable.
+
 	PR c++/67339
 	* parser.c (cp_parser_elaborated_type_specifier): Use CLASS_TYPE_P
 	rather than check for RECORD_TYPE.
