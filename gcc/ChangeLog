@@ -1,3 +1,9 @@
+2015-12-21  Jeff Law  <law@redhat.com>
+
+	* dbgcnt.def (dom_unreachable_edges): New debug counter.
+	* tree-ssa-dom.c: Include dbgcnt.h
+	(dom_opt_dom_walker::before_dom_children): Handle the new counter.
+
 2015-12-21  Andrew Pinski <apinski@cavium.com>
 
 	* config/aarch64/aarch64-option-extensions.def (LSE): Change
