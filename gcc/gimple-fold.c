@@ -6267,7 +6267,7 @@ gimple_stmt_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p,
 
 /* Return true if the floating-point value computed by assignment STMT
    is known to have an integer value.  We also allow +Inf, -Inf and NaN
-   to be considered integer values.
+   to be considered integer values. Return false for signaling NaN.
 
    DEPTH is the current nesting depth of the query.  */
 
@@ -6296,7 +6296,7 @@ gimple_assign_integer_valued_real_p (gimple *stmt, int depth)
 
 /* Return true if the floating-point value computed by call STMT is known
    to have an integer value.  We also allow +Inf, -Inf and NaN to be
-   considered integer values.
+   considered integer values. Return false for signaling NaN.
 
    DEPTH is the current nesting depth of the query.  */
 
@@ -6315,7 +6315,7 @@ gimple_call_integer_valued_real_p (gimple *stmt, int depth)
 
 /* Return true if the floating-point result of phi STMT is known to have
    an integer value.  We also allow +Inf, -Inf and NaN to be considered
-   integer values.
+   integer values. Return false for signaling NaN.
 
    DEPTH is the current nesting depth of the query.  */
 
@@ -6333,7 +6333,7 @@ gimple_phi_integer_valued_real_p (gimple *stmt, int depth)
 
 /* Return true if the floating-point value computed by STMT is known
    to have an integer value.  We also allow +Inf, -Inf and NaN to be
-   considered integer values.
+   considered integer values. Return false for signaling NaN.
 
    DEPTH is the current nesting depth of the query.  */
 

@@ -1535,6 +1535,13 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
   if (TREE_CODE (arg1) != REAL_CST)
     return NULL_TREE;
 
+  /* Don't perform the operation if flag_signaling_nans is on
+     and the operand is a signaling NaN.  */
+  if (HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg1)))
+      && (REAL_VALUE_ISSIGNALING_NAN (TREE_REAL_CST (arg0))
+	  || REAL_VALUE_ISSIGNALING_NAN (TREE_REAL_CST (arg1))))
+    return NULL_TREE;
+
   /* If the exponent is equivalent to an integer, expand to an optimal
      multiplication sequence when profitable.  */
   c = TREE_REAL_CST (arg1);

@@ -512,7 +512,11 @@ fold_const_pow (real_value *result, const real_value *arg0,
 	  || !real_equal (arg0, &dconst0)))
     {
       bool inexact = real_powi (result, format, arg0, n1);
-      if (flag_unsafe_math_optimizations || !inexact)
+      /* Avoid the folding if flag_signaling_nans is on.  */
+      if (flag_unsafe_math_optimizations
+	  || (!inexact
+	      && !(flag_signaling_nans
+	           && REAL_VALUE_ISSIGNALING_NAN (*arg0))))
 	return true;
     }
 
@@ -539,6 +543,13 @@ fold_const_builtin_load_exponent (real_value *result, const real_value *arg0,
      is a preliminary cap to avoid things like overflow, we
      may still fail to compute the result for other reasons.  */
   if (wi::les_p (arg1, -max_exp_adj) || wi::ges_p (arg1, max_exp_adj))
+    return false;
+
+  /* Don't perform operation if we honor signaling NaNs and
+     operand is a signaling NaN.  */
+  if (!flag_unsafe_math_optimizations
+      && flag_signaling_nans
+      && REAL_VALUE_ISSIGNALING_NAN (*arg0))
     return false;
 
   REAL_VALUE_TYPE initial_result;
@@ -1202,6 +1213,13 @@ fold_const_call_sss (real_value *result, combined_fn fn,
 						   format));
 
     CASE_CFN_POWI:
+      /* Avoid the folding if flag_signaling_nans is on and
+         operand is a signaling NaN.  */
+      if (!flag_unsafe_math_optimizations
+	  && flag_signaling_nans
+	  && REAL_VALUE_ISSIGNALING_NAN (*arg0))
+        return false;
+
       real_powi (result, format, arg0, arg1.to_shwi ());
       return true;
 

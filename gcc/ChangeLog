@@ -1,3 +1,30 @@
+2015-12-22  Sujoy Saraswati  <sujoy.saraswati@hpe.com>
+
+	* fold-const.c (const_binop): Convert sNaN to qNaN when
+	flag_signaling_nans is off.
+	(const_unop): Avoid the operation, other than NEGATE and
+	ABS, if flag_signaling_nans is on and the operand is an sNaN.
+	(fold_convert_const_real_from_real): Avoid the operation if
+	flag_signaling_nans is on and the operand is an sNaN.
+	(integer_valued_real_unary_p): Update comment stating it
+	returns false for sNaN values.
+	(integer_valued_real_binary_p, integer_valued_real_call_p): Same.
+	(integer_valued_real_single_p): Same.
+	(integer_valued_real_invalid_p, integer_valued_real_p): Same.
+	* fold-const-call.c (fold_const_pow): Avoid the operation
+	if flag_signaling_nans is on and the operand is an sNaN.
+	(fold_const_builtin_load_exponent) Same.
+	(fold_const_call_sss): Same for CASE_CFN_POWI.
+	* gimple-fold.c (gimple_assign_integer_valued_real_p): Same.
+	(gimple_call_integer_valued_real_p): Same.
+	(gimple_phi_integer_valued_real_p): Same.
+	(gimple_stmt_integer_valued_real_p): Same.
+	* simplify-rtx.c (simplify_const_unary_operation): Avoid the
+	operation if flag_signaling_nans is on and the operand is an sNaN.
+	(simplify_const_binary_operation): Same.
+	* tree-ssa-math-opts.c (gimple_expand_builtin_pow): Avoid the
+	operation if flag_signaling_nans is on and the operand is an sNaN.
+
 2015-12-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* combine.c (simplify_comparison): Convert preprocessor check of

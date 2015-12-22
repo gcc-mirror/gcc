@@ -1,3 +1,7 @@
+2015-12-22  Sujoy Saraswati  <sujoy.saraswati@hpe.com>
+
+	* gcc.dg/pr61441.c: New testcase.
+
 2015-12-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/torture/pr68264.c: Tweak for Solaris.
