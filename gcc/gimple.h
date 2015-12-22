@@ -836,8 +836,10 @@ struct GTY((tag("GSS_TRANSACTION")))
   /* [ WORD 10 ] */
   gimple_seq body;
 
-  /* [ WORD 11 ] */
-  tree label;
+  /* [ WORD 11-13 ] */
+  tree label_norm;
+  tree label_uninst;
+  tree label_over;
 };
 
 #define DEFGSSTRUCT(SYM, STRUCT, HAS_TREE_OP)	SYM,
@@ -1463,7 +1465,7 @@ gomp_target *gimple_build_omp_target (gimple_seq, int, tree);
 gomp_teams *gimple_build_omp_teams (gimple_seq, tree);
 gomp_atomic_load *gimple_build_omp_atomic_load (tree, tree);
 gomp_atomic_store *gimple_build_omp_atomic_store (tree);
-gtransaction *gimple_build_transaction (gimple_seq, tree);
+gtransaction *gimple_build_transaction (gimple_seq);
 extern void gimple_seq_add_stmt (gimple_seq *, gimple *);
 extern void gimple_seq_add_stmt_without_update (gimple_seq *, gimple *);
 void gimple_seq_add_seq (gimple_seq *, gimple_seq);
@@ -5847,21 +5849,45 @@ gimple_transaction_body_ptr (gtransaction *transaction_stmt)
 static inline gimple_seq
 gimple_transaction_body (gtransaction *transaction_stmt)
 {
-  return *gimple_transaction_body_ptr (transaction_stmt);
+  return transaction_stmt->body;
 }
 
 /* Return the label associated with a GIMPLE_TRANSACTION.  */
 
 static inline tree
-gimple_transaction_label (const gtransaction *transaction_stmt)
+gimple_transaction_label_norm (const gtransaction *transaction_stmt)
 {
-  return transaction_stmt->label;
+  return transaction_stmt->label_norm;
 }
 
 static inline tree *
-gimple_transaction_label_ptr (gtransaction *transaction_stmt)
+gimple_transaction_label_norm_ptr (gtransaction *transaction_stmt)
 {
-  return &transaction_stmt->label;
+  return &transaction_stmt->label_norm;
+}
+
+static inline tree
+gimple_transaction_label_uninst (const gtransaction *transaction_stmt)
+{
+  return transaction_stmt->label_uninst;
+}
+
+static inline tree *
+gimple_transaction_label_uninst_ptr (gtransaction *transaction_stmt)
+{
+  return &transaction_stmt->label_uninst;
+}
+
+static inline tree
+gimple_transaction_label_over (const gtransaction *transaction_stmt)
+{
+  return transaction_stmt->label_over;
+}
+
+static inline tree *
+gimple_transaction_label_over_ptr (gtransaction *transaction_stmt)
+{
+  return &transaction_stmt->label_over;
 }
 
 /* Return the subcode associated with a GIMPLE_TRANSACTION.  */
@@ -5885,9 +5911,21 @@ gimple_transaction_set_body (gtransaction *transaction_stmt,
 /* Set the label associated with a GIMPLE_TRANSACTION.  */
 
 static inline void
-gimple_transaction_set_label (gtransaction *transaction_stmt, tree label)
+gimple_transaction_set_label_norm (gtransaction *transaction_stmt, tree label)
 {
-  transaction_stmt->label = label;
+  transaction_stmt->label_norm = label;
+}
+
+static inline void
+gimple_transaction_set_label_uninst (gtransaction *transaction_stmt, tree label)
+{
+  transaction_stmt->label_uninst = label;
+}
+
+static inline void
+gimple_transaction_set_label_over (gtransaction *transaction_stmt, tree label)
+{
+  transaction_stmt->label_over = label;
 }
 
 /* Set the subcode associated with a GIMPLE_TRANSACTION.  */
@@ -5898,7 +5936,6 @@ gimple_transaction_set_subcode (gtransaction *transaction_stmt,
 {
   transaction_stmt->subcode = subcode;
 }
-
 
 /* Return a pointer to the return value for GIMPLE_RETURN GS.  */
 

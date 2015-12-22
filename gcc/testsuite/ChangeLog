@@ -1,3 +1,10 @@
+2015-12-22  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/tm/noexcept-1.C: Update expected must_not_throw count.
+	* g++.dg/tm/noexcept-4.C: Likewise.
+	* g++.dg/tm/noexcept-5.C: Likewise.
+	* g++.dg/tm/pr67811.C: New.
+
 2015-12-22  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/68772

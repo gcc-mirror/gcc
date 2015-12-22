@@ -1608,6 +1608,27 @@ examine_call_tm (unsigned *state, gimple_stmt_iterator *gsi)
   *state |= GTMA_HAVE_LOAD | GTMA_HAVE_STORE;
 }
 
+/* Iterate through the statements in the sequence, moving labels
+   (and thus edges) of transactions from "label_norm" to "label_uninst".  */
+
+static tree
+make_tm_uninst (gimple_stmt_iterator *gsi, bool *handled_ops_p,
+                struct walk_stmt_info *)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+
+  if (gtransaction *txn = dyn_cast <gtransaction *> (stmt))
+    {
+      *handled_ops_p = true;
+      txn->label_uninst = txn->label_norm;
+      txn->label_norm = NULL;
+    }
+  else
+    *handled_ops_p = !gimple_has_substatements (stmt);
+
+  return NULL_TREE;
+}
+
 /* Lower a GIMPLE_TRANSACTION statement.  */
 
 static void
@@ -1670,19 +1691,48 @@ lower_transaction (gimple_stmt_iterator *gsi, struct walk_stmt_info *wi)
 
   g = gimple_build_try (gimple_transaction_body (stmt),
 			gimple_seq_alloc_with_stmt (g), GIMPLE_TRY_FINALLY);
-  gsi_insert_after (gsi, g, GSI_CONTINUE_LINKING);
 
-  gimple_transaction_set_body (stmt, NULL);
+  /* For a (potentially) outer transaction, create two paths.  */
+  gimple_seq uninst = NULL;
+  if (outer_state == NULL)
+    {
+      uninst = copy_gimple_seq_and_replace_locals (g);
+      /* In the uninstrumented copy, reset inner transactions to have only
+	 an uninstrumented code path.  */
+      memset (&this_wi, 0, sizeof (this_wi));
+      walk_gimple_seq (uninst, make_tm_uninst, NULL, &this_wi);
+    }
+
+  tree label1 = create_artificial_label (UNKNOWN_LOCATION);
+  gsi_insert_after (gsi, gimple_build_label (label1), GSI_CONTINUE_LINKING);
+  gsi_insert_after (gsi, g, GSI_CONTINUE_LINKING);
+  gimple_transaction_set_label_norm (stmt, label1);
 
   /* If the transaction calls abort or if this is an outer transaction,
      add an "over" label afterwards.  */
-  if ((this_state & (GTMA_HAVE_ABORT))
+  tree label3 = NULL;
+  if ((this_state & GTMA_HAVE_ABORT)
+      || outer_state == NULL
       || (gimple_transaction_subcode (stmt) & GTMA_IS_OUTER))
     {
-      tree label = create_artificial_label (UNKNOWN_LOCATION);
-      gimple_transaction_set_label (stmt, label);
-      gsi_insert_after (gsi, gimple_build_label (label), GSI_CONTINUE_LINKING);
+      label3 = create_artificial_label (UNKNOWN_LOCATION);
+      gimple_transaction_set_label_over (stmt, label3);
     }
+
+  if (uninst != NULL)
+    {
+      gsi_insert_after (gsi, gimple_build_goto (label3), GSI_CONTINUE_LINKING);
+
+      tree label2 = create_artificial_label (UNKNOWN_LOCATION);
+      gsi_insert_after (gsi, gimple_build_label (label2), GSI_CONTINUE_LINKING);
+      gsi_insert_seq_after (gsi, uninst, GSI_CONTINUE_LINKING);
+      gimple_transaction_set_label_uninst (stmt, label2);
+    }
+
+  if (label3 != NULL)
+    gsi_insert_after (gsi, gimple_build_label (label3), GSI_CONTINUE_LINKING);
+
+  gimple_transaction_set_body (stmt, NULL);
 
   /* Record the set of operations found for use later.  */
   this_state |= gimple_transaction_subcode (stmt) & GTMA_DECLARATION_MASK;
@@ -4113,35 +4163,6 @@ maybe_push_queue (struct cgraph_node *node,
     }
 }
 
-/* Duplicate the basic blocks in QUEUE for use in the uninstrumented
-   code path.  QUEUE are the basic blocks inside the transaction
-   represented in REGION.
-
-   Later in split_code_paths() we will add the conditional to choose
-   between the two alternatives.  */
-
-static void
-ipa_uninstrument_transaction (struct tm_region *region,
-			      vec<basic_block> queue)
-{
-  gimple *transaction = region->transaction_stmt;
-  basic_block transaction_bb = gimple_bb (transaction);
-  int n = queue.length ();
-  basic_block *new_bbs = XNEWVEC (basic_block, n);
-
-  copy_bbs (queue.address (), n, new_bbs, NULL, 0, NULL, NULL, transaction_bb,
-	    true);
-  edge e = make_edge (transaction_bb, new_bbs[0], EDGE_TM_UNINSTRUMENTED);
-  add_phi_args_after_copy (new_bbs, n, e);
-
-  // Now we will have a GIMPLE_ATOMIC with 3 possible edges out of it.
-  //   a) EDGE_FALLTHRU into the transaction
-  //   b) EDGE_TM_ABORT out of the transaction
-  //   c) EDGE_TM_UNINSTRUMENTED into the uninstrumented blocks.
-
-  free (new_bbs);
-}
-
 /* A subroutine of ipa_tm_scan_calls_transaction and ipa_tm_scan_calls_clone.
    Queue all callees within block BB.  */
 
@@ -4189,43 +4210,23 @@ static void
 ipa_tm_scan_calls_transaction (struct tm_ipa_cg_data *d,
 			       cgraph_node_queue *callees_p)
 {
-  struct tm_region *r;
-
   d->transaction_blocks_normal = BITMAP_ALLOC (&tm_obstack);
   d->all_tm_regions = all_tm_regions;
 
-  for (r = all_tm_regions; r; r = r->next)
+  for (tm_region *r = all_tm_regions; r; r = r->next)
     {
       vec<basic_block> bbs;
       basic_block bb;
       unsigned i;
 
       bbs = get_tm_region_blocks (r->entry_block, r->exit_blocks, NULL,
-				  d->transaction_blocks_normal, false);
-
-      // Generate the uninstrumented code path for this transaction.
-      ipa_uninstrument_transaction (r, bbs);
+				  d->transaction_blocks_normal, false, false);
 
       FOR_EACH_VEC_ELT (bbs, i, bb)
 	ipa_tm_scan_calls_block (callees_p, bb, false);
 
       bbs.release ();
     }
-
-  // ??? copy_bbs should maintain cgraph edges for the blocks as it is
-  // copying them, rather than forcing us to do this externally.
-  cgraph_edge::rebuild_edges ();
-
-  // ??? In ipa_uninstrument_transaction we don't try to update dominators
-  // because copy_bbs doesn't return a VEC like iterate_fix_dominators expects.
-  // Instead, just release dominators here so update_ssa recomputes them.
-  free_dominance_info (CDI_DOMINATORS);
-
-  // When building the uninstrumented code path, copy_bbs will have invoked
-  // create_new_def_for starting an "ssa update context".  There is only one
-  // instance of this context, so resolve ssa updates before moving on to
-  // the next function.
-  update_ssa (TODO_update_ssa);
 }
 
 /* Scan all calls in NODE as if this is the transactional clone,

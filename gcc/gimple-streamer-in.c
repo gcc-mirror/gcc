@@ -198,8 +198,12 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
       break;
 
     case GIMPLE_TRANSACTION:
-      gimple_transaction_set_label (as_a <gtransaction *> (stmt),
-				    stream_read_tree (ib, data_in));
+      gimple_transaction_set_label_norm (as_a <gtransaction *> (stmt),
+				         stream_read_tree (ib, data_in));
+      gimple_transaction_set_label_uninst (as_a <gtransaction *> (stmt),
+				           stream_read_tree (ib, data_in));
+      gimple_transaction_set_label_over (as_a <gtransaction *> (stmt),
+				         stream_read_tree (ib, data_in));
       break;
 
     default:
