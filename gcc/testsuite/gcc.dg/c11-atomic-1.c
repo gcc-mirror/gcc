@@ -61,15 +61,15 @@ func (_Atomic volatile long al1)
      accessing elements of atomic structures and unions is at
      translation or execution time; presume here that it's at
      execution time.  */
-  t1.i = at1.i;
-  at1.i = t1.i;
-  atp1->i = t1.i;
+  t1.i = at1.i; /* { dg-warning "accessing a member .i. of an atomic structure" } */
+  at1.i = t1.i; /* { dg-warning "accessing a member .i. of an atomic structure" } */
+  atp1->i = t1.i; /* { dg-warning "accessing a member .i. of an atomic structure" } */
   au1 = u1;
   u1 = au1;
   av1 = v1;
   v1 = av1;
-  v1.i = av1.i;
-  av1.i = v1.i;
+  v1.i = av1.i; /* { dg-warning "accessing a member .i. of an atomic union" } */
+  av1.i = v1.i; /* { dg-warning "accessing a member .i. of an atomic union" } */
   /* _Atomic is valid on register variables, even if not particularly
      useful.  */
   register _Atomic volatile int ra1 = 1, ra2 = 2;

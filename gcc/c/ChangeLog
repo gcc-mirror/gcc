@@ -1,3 +1,9 @@
+2015-12-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/69002
+	* c-typeck.c (build_component_ref): Warn when acessing elements of
+	atomic structures or unions.
+
 2015-12-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-typeck.c: Include "gcc-rich-location.h".
