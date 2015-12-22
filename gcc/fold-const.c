@@ -1166,9 +1166,21 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       /* If either operand is a NaN, just return it.  Otherwise, set up
 	 for floating-point trap; we return an overflow.  */
       if (REAL_VALUE_ISNAN (d1))
-	return arg1;
+      {
+	/* Make resulting NaN value to be qNaN when flag_signaling_nans
+	   is off.  */
+	d1.signalling = 0;
+	t = build_real (type, d1);
+	return t;
+      }
       else if (REAL_VALUE_ISNAN (d2))
-	return arg2;
+      {
+	/* Make resulting NaN value to be qNaN when flag_signaling_nans
+	   is off.  */
+	d2.signalling = 0;
+	t = build_real (type, d2);
+	return t;
+      }
 
       inexact = real_arithmetic (&value, code, &d1, &d2);
       real_convert (&result, mode, &value);
@@ -1538,6 +1550,15 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
 tree
 const_unop (enum tree_code code, tree type, tree arg0)
 {
+  /* Don't perform the operation, other than NEGATE and ABS, if
+     flag_signaling_nans is on and the operand is a signaling NaN.  */
+  if (TREE_CODE (arg0) == REAL_CST
+      && HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
+      && REAL_VALUE_ISSIGNALING_NAN (TREE_REAL_CST (arg0))
+      && code != NEGATE_EXPR
+      && code != ABS_EXPR)
+    return NULL_TREE;
+
   switch (code)
     {
     CASE_CONVERT:
@@ -1948,6 +1969,12 @@ fold_convert_const_real_from_real (tree type, const_tree arg1)
 {
   REAL_VALUE_TYPE value;
   tree t;
+
+  /* Don't perform the operation if flag_signaling_nans is on
+     and the operand is a signaling NaN.  */
+  if (HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg1)))
+      && REAL_VALUE_ISSIGNALING_NAN (TREE_REAL_CST (arg1)))
+    return NULL_TREE; 
 
   real_convert (&value, TYPE_MODE (type), &TREE_REAL_CST (arg1));
   t = build_real (type, value);
@@ -13414,7 +13441,7 @@ tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 
 /* Return true if the floating point result of (CODE OP0) has an
    integer value.  We also allow +Inf, -Inf and NaN to be considered
-   integer values.
+   integer values. Return false for signaling NaN.
 
    DEPTH is the current nesting depth of the query.  */
 
@@ -13447,7 +13474,7 @@ integer_valued_real_unary_p (tree_code code, tree op0, int depth)
 
 /* Return true if the floating point result of (CODE OP0 OP1) has an
    integer value.  We also allow +Inf, -Inf and NaN to be considered
-   integer values.
+   integer values. Return false for signaling NaN.
 
    DEPTH is the current nesting depth of the query.  */
 
@@ -13471,8 +13498,8 @@ integer_valued_real_binary_p (tree_code code, tree op0, tree op1, int depth)
 
 /* Return true if the floating point result of calling FNDECL with arguments
    ARG0 and ARG1 has an integer value.  We also allow +Inf, -Inf and NaN to be
-   considered integer values.  If FNDECL takes fewer than 2 arguments,
-   the remaining ARGn are null.
+   considered integer values. Return false for signaling NaN.  If FNDECL
+   takes fewer than 2 arguments, the remaining ARGn are null.
 
    DEPTH is the current nesting depth of the query.  */
 
@@ -13501,7 +13528,7 @@ integer_valued_real_call_p (combined_fn fn, tree arg0, tree arg1, int depth)
 
 /* Return true if the floating point expression T (a GIMPLE_SINGLE_RHS)
    has an integer value.  We also allow +Inf, -Inf and NaN to be
-   considered integer values.
+   considered integer values. Return false for signaling NaN.
 
    DEPTH is the current nesting depth of the query.  */
 
@@ -13535,7 +13562,7 @@ integer_valued_real_single_p (tree t, int depth)
 
 /* Return true if the floating point expression T (a GIMPLE_INVALID_RHS)
    has an integer value.  We also allow +Inf, -Inf and NaN to be
-   considered integer values.
+   considered integer values. Return false for signaling NaN.
 
    DEPTH is the current nesting depth of the query.  */
 
@@ -13563,6 +13590,7 @@ integer_valued_real_invalid_p (tree t, int depth)
 
 /* Return true if the floating point expression T has an integer value.
    We also allow +Inf, -Inf and NaN to be considered integer values.
+   Return false for signaling NaN.
 
    DEPTH is the current nesting depth of the query.  */
 
