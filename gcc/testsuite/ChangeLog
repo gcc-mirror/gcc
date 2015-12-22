@@ -1,3 +1,9 @@
+2015-12-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/69002
+	* gcc.dg/c11-atomic-1.c: Add dg-warnings.
+	* gcc.dg/c11-atomic-4.c: New test.
+
 2015-12-22  Sujoy Saraswati  <sujoy.saraswati@hpe.com>
 
 	* gcc.dg/pr61441.c: New testcase.

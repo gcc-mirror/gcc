@@ -2349,6 +2349,18 @@ build_component_ref (location_t loc, tree datum, tree component)
 	  return error_mark_node;
 	}
 
+      /* Accessing elements of atomic structures or unions is undefined
+	 behavior (C11 6.5.2.3#5).  */
+      if (TYPE_ATOMIC (type) && c_inhibit_evaluation_warnings == 0)
+	{
+	  if (code == RECORD_TYPE)
+	    warning_at (loc, 0, "accessing a member %qE of an atomic "
+			"structure %qE", component, datum);
+	  else
+	    warning_at (loc, 0, "accessing a member %qE of an atomic "
+			"union %qE", component, datum);
+	}
+
       /* Chain the COMPONENT_REFs if necessary down to the FIELD.
 	 This might be better solved in future the way the C++ front
 	 end does it - by giving the anonymous entities each a
