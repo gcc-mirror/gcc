@@ -1,3 +1,8 @@
+2015-12-22  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* pt.c (make_pack_expansion): Make sure to initialize
+	ppd.type_pack_expansion_p.
+
 2015-12-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* typeck.c (cp_build_binary_op): Update for change in signature
