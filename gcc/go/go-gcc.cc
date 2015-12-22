@@ -2391,6 +2391,7 @@ Gcc_backend::global_variable(const std::string& package_name,
     return this->error_variable();
 
   // The GNU linker does not like dynamic variables with zero size.
+  tree orig_type_tree = type_tree;
   if ((is_external || !is_hidden) && int_size_in_bytes(type_tree) == 0)
     type_tree = this->non_zero_size_type(type_tree);
 
@@ -2420,6 +2421,10 @@ Gcc_backend::global_variable(const std::string& package_name,
 
   go_preserve_from_gc(decl);
 
+  if (orig_type_tree != type_tree)
+    decl = fold_build1_loc(location.gcc_location(), VIEW_CONVERT_EXPR,
+			   orig_type_tree, decl);
+
   return new Bvariable(decl);
 }
 
@@ -2435,6 +2440,10 @@ Gcc_backend::global_variable_set_init(Bvariable* var, Bexpression* expr)
   tree var_decl = var->get_tree();
   if (var_decl == error_mark_node)
     return;
+  // Undo the VIEW_CONVERT_EXPR that may have been added by
+  // global_variable.
+  if (TREE_CODE(var_decl) == VIEW_CONVERT_EXPR)
+    var_decl = TREE_OPERAND(var_decl, 0);
   DECL_INITIAL(var_decl) = expr_tree;
 
   // If this variable goes in a unique section, it may need to go into
@@ -3031,7 +3040,12 @@ Gcc_backend::write_global_definitions(
     {
       if ((*p)->get_tree() != error_mark_node)
         {
-          defs[i] = (*p)->get_tree();
+	  tree t = (*p)->get_tree();
+	  // Undo the VIEW_CONVERT_EXPR that may have been added by
+	  // global_variable.
+	  if (TREE_CODE(t) == VIEW_CONVERT_EXPR)
+	    t = TREE_OPERAND(t, 0);
+          defs[i] = t;
           go_preserve_from_gc(defs[i]);
           ++i;
         }
