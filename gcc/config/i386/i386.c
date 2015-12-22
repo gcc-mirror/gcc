@@ -6657,6 +6657,7 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 {
   tree type, decl_or_type;
   rtx a, b;
+  bool bind_global = decl && !targetm.binds_local_p (decl);
 
   /* If we are generating position-independent code, we cannot sibcall
      optimize direct calls to global functions, as the PLT requires
@@ -6665,7 +6666,7 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
       && !TARGET_64BIT
       && flag_pic
       && flag_plt
-      && decl && !targetm.binds_local_p (decl))
+      && bind_global)
     return false;
 
   /* If we need to align the outgoing stack, then sibcalling would
@@ -6723,8 +6724,10 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
       /* If this call is indirect, we'll need to be able to use a
 	 call-clobbered register for the address of the target function.
 	 Make sure that all such registers are not used for passing
-	 parameters.  Note that DLLIMPORT functions are indirect.  */
+	 parameters.  Note that DLLIMPORT functions and call to global
+	 function via GOT slot are indirect.  */
       if (!decl
+	  || (bind_global && flag_pic && !flag_plt)
 	  || (TARGET_DLLIMPORT_DECL_ATTRIBUTES && DECL_DLLIMPORT_P (decl)))
 	{
 	  /* Check if regparm >= 3 since arg_reg_available is set to
