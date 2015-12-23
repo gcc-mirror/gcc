@@ -1,3 +1,13 @@
+2015-12-23  David Sherwood  <david.sherwood@arm.com>
+
+	* config/arm/iterators.md (VMAXMINFNM): New int iterator.
+	(fmaxmin): New int attribute.
+	(fmaxmin_op): Likewise.
+	* config/arm/unspecs.md (UNSPEC_VMAXNM): New unspec.
+	(UNSPEC_VMINNM): Likewise.
+	* config/arm/neon.md (fmaxmin): New pattern.
+	* config/arm/vfp.md (fmaxmin): Likewise.
+
 2015-12-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/66232
