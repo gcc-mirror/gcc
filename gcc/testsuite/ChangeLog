@@ -1,3 +1,7 @@
+2015-12-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/dg.exp (tests): Prune "goacc/*" and "goacc-gomp/*" files.
+
 2015-12-23  David Sherwood  <david.sherwood@arm.com>
 
 	* gcc.target/arm/fmaxmin.x: New file used by tests below.
