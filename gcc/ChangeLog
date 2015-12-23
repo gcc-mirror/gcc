@@ -1,5 +1,18 @@
 2015-12-23  Nathan Sidwell  <nathan@acm.org>
 
+	* config/nvptx/nvptx-protos.h
+	(nvptx_maybe_convert_symbolic_operand): Delete prototype.
+	* config/nvptx/nvptx.c (nvptx_maybe_convert_symbolic_operand): Delete.
+	(nvptx_output_mov_insn): Record fnsym here.
+	(nvptx_wpropagate): Don't create UNSPEC_TO_GENERIC unspec.
+	* config/nvptx/nvptx.md (UNSPEC_TO_GENERIC): Delete.
+	(symbolic_operand): Delete predicate.
+	(nvptx_nonimmediate_operand): Delete predicate.
+	(mov<mode>): Hard regs are perfectly ok here.
+	(convaddr_<mode>): Delete.
+
+2015-12-23  Nathan Sidwell  <nathan@acm.org>
+
 	* alias.c (compare_base_decls): Simplify in-symtab check.
 	* cgraph.h (decl_in_symtab_p): Check DECL_IN_CONSTANT_POOL.
 
