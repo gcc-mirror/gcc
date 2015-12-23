@@ -308,6 +308,8 @@
 
 (define_int_iterator VMAXMINF [UNSPEC_VMAX UNSPEC_VMIN])
 
+(define_int_iterator VMAXMINFNM [UNSPEC_VMAXNM UNSPEC_VMINNM])
+
 (define_int_iterator VPADDL [UNSPEC_VPADDL_S UNSPEC_VPADDL_U])
 
 (define_int_iterator VPADAL [UNSPEC_VPADAL_S UNSPEC_VPADAL_U])
@@ -743,6 +745,13 @@
   (UNSPEC_VMIN "min") (UNSPEC_VMIN_U "min")
   (UNSPEC_VPMAX "max") (UNSPEC_VPMAX_U "max")
   (UNSPEC_VPMIN "min") (UNSPEC_VPMIN_U "min")
+])
+
+(define_int_attr fmaxmin [
+  (UNSPEC_VMAXNM "fmax") (UNSPEC_VMINNM "fmin")])
+
+(define_int_attr fmaxmin_op [
+  (UNSPEC_VMAXNM "vmaxnm") (UNSPEC_VMINNM "vminnm")
 ])
 
 (define_int_attr shift_op [

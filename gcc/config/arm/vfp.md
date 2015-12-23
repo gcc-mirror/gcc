@@ -1366,6 +1366,18 @@
    (set_attr "conds" "unconditional")]
 )
 
+;; Scalar forms for the IEEE-754 fmax()/fmin() functions
+(define_insn "<fmaxmin><mode>3"
+  [(set (match_operand:SDF 0 "s_register_operand" "=<F_constraint>")
+	(unspec:SDF [(match_operand:SDF 1 "s_register_operand" "<F_constraint>")
+		     (match_operand:SDF 2 "s_register_operand" "<F_constraint>")]
+		     VMAXMINFNM))]
+  "TARGET_HARD_FLOAT && TARGET_VFP5 <vfp_double_cond>"
+  "<fmaxmin_op>.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+  [(set_attr "type" "f_minmax<vfp_type>")
+   (set_attr "conds" "unconditional")]
+)
+
 ;; Write Floating-point Status and Control Register.
 (define_insn "set_fpscr"
   [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")] VUNSPEC_SET_FPSCR)]
