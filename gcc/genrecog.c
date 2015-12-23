@@ -3382,7 +3382,8 @@ safe_predicate_mode (const struct pred_data *pred, machine_mode mode)
   if (GET_MODE_CLASS (mode) == MODE_INT
       && (pred->codes[CONST_INT]
 	  || pred->codes[CONST_DOUBLE]
-	  || pred->codes[CONST_WIDE_INT]))
+	  || pred->codes[CONST_WIDE_INT]
+	  || pred->codes[LABEL_REF]))
     return false;
 
   return !pred->special && mode != VOIDmode;
