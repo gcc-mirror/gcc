@@ -1,3 +1,8 @@
+2015-12-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/69023
+	* g++.dg/lookup/name-clash11.C: New test.
+
 2015-12-23  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/alias-15.c: Revert.
