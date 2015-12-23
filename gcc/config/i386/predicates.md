@@ -620,23 +620,6 @@
   return false;
 })
 
-;; Test for a valid operand for a call instruction.
-;; Allow constant call address operands in Pmode only.
-(define_special_predicate "call_insn_operand"
-  (ior (match_test "constant_call_address_operand
-		     (op, mode == VOIDmode ? mode : Pmode)")
-       (match_operand 0 "call_register_no_elim_operand")
-       (and (not (match_test "TARGET_X32"))
-	    (match_operand 0 "memory_operand"))))
-
-;; Similarly, but for tail calls, in which we cannot allow memory references.
-(define_special_predicate "sibcall_insn_operand"
-  (ior (match_test "constant_call_address_operand
-		     (op, mode == VOIDmode ? mode : Pmode)")
-       (match_operand 0 "register_no_elim_operand")
-       (and (not (match_test "TARGET_X32"))
-	    (match_operand 0 "sibcall_memory_operand"))))
-
 ;; Return true if OP is a GOT memory operand.
 (define_predicate "GOT_memory_operand"
   (match_operand 0 "memory_operand")
@@ -646,6 +629,27 @@
 	  && GET_CODE (XEXP (op, 0)) == UNSPEC
 	  && XINT (XEXP (op, 0), 1) == UNSPEC_GOTPCREL);
 })
+
+;; Test for a valid operand for a call instruction.
+;; Allow constant call address operands in Pmode only.
+(define_special_predicate "call_insn_operand"
+  (ior (match_test "constant_call_address_operand
+		     (op, mode == VOIDmode ? mode : Pmode)")
+       (match_operand 0 "call_register_no_elim_operand")
+       (ior (and (not (match_test "TARGET_X32"))
+		 (match_operand 0 "sibcall_memory_operand"))
+	    (and (match_test "TARGET_X32 && Pmode == DImode")
+		 (match_operand 0 "GOT_memory_operand")))))
+
+;; Similarly, but for tail calls, in which we cannot allow memory references.
+(define_special_predicate "sibcall_insn_operand"
+  (ior (match_test "constant_call_address_operand
+		     (op, mode == VOIDmode ? mode : Pmode)")
+       (match_operand 0 "register_no_elim_operand")
+       (ior (and (not (match_test "TARGET_X32"))
+		 (match_operand 0 "sibcall_memory_operand"))
+	    (and (match_test "TARGET_X32 && Pmode == DImode")
+		 (match_operand 0 "GOT_memory_operand")))))
 
 ;; Return true if OP is a 32-bit GOT symbol operand.
 (define_predicate "GOT32_symbol_operand"
