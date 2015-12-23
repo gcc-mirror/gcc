@@ -41,6 +41,5 @@ extern const char *nvptx_ptx_type_from_mode (machine_mode, bool);
 extern const char *nvptx_output_mov_insn (rtx, rtx);
 extern const char *nvptx_output_call_insn (rtx_insn *, rtx, rtx);
 extern const char *nvptx_output_return (void);
-extern rtx nvptx_maybe_convert_symbolic_operand (rtx);
 #endif
 #endif

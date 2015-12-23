@@ -1413,31 +1413,6 @@ nvptx_gen_wcast (rtx reg, propagate_mask pm, unsigned rep, wcast_data_t *data)
     }
   return res;
 }
-
-/* When loading an operand ORIG_OP, verify whether an address space
-   conversion to generic is required, and if so, perform it.  Check
-   for SYMBOL_REFs and record them if needed.  Return either the
-   original operand, or the converted one.  */
-
-rtx
-nvptx_maybe_convert_symbolic_operand (rtx op)
-{
-  if (GET_MODE (op) != Pmode)
-    return op;
-
-  rtx sym = op;
-  if (GET_CODE (sym) == CONST)
-    sym = XEXP (sym, 0);
-  if (GET_CODE (sym) == PLUS)
-    sym = XEXP (sym, 0);
-
-  if (GET_CODE (sym) != SYMBOL_REF)
-    return op;
-
-  nvptx_maybe_record_fnsym (sym);
-
-  return op;
-}
 
 /* Returns true if X is a valid address for use in a memory reference.  */
 
@@ -1767,9 +1742,12 @@ nvptx_output_mov_insn (rtx dst, rtx src)
   rtx sym = src;
   if (GET_CODE (sym) == CONST)
     sym = XEXP (XEXP (sym, 0), 0);
-  if (SYMBOL_REF_P (sym)
-      && SYMBOL_DATA_AREA (sym) != DATA_AREA_GENERIC)
-    return "%.\tcvta%D1%t0\t%0, %1;";
+  if (SYMBOL_REF_P (sym))
+    {
+      if (SYMBOL_DATA_AREA (sym) != DATA_AREA_GENERIC)
+	return "%.\tcvta%D1%t0\t%0, %1;";
+      nvptx_maybe_record_fnsym (sym);
+    }
 
   if (src_inner == dst_inner)
     return "%.\tmov%t0\t%0, %1;";
@@ -3359,9 +3337,7 @@ nvptx_wpropagate (bool pre_p, basic_block block, rtx_insn *insn)
   if (data.offset)
     {
       /* Stuff was emitted, initialize the base pointer now.  */
-      rtx init = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, worker_bcast_sym),
-				 UNSPEC_TO_GENERIC);
-      init = gen_rtx_SET (data.base, init);
+      rtx init = gen_rtx_SET (data.base, worker_bcast_sym);
       emit_insn_after (init, insn);
 
       if (worker_bcast_size < data.offset)

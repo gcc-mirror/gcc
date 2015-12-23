@@ -20,7 +20,6 @@
 
 (define_c_enum "unspec" [
    UNSPEC_ARG_REG
-   UNSPEC_TO_GENERIC
 
    UNSPEC_COPYSIGN
    UNSPEC_LOG2
@@ -61,6 +60,9 @@
 (define_attr "subregs_ok" "false,true"
   (const_string "false"))
 
+;; The nvptx operand predicates, in general, don't permit subregs and
+;; only literal constants, which differ from the generic ones, which
+;; permit subregs and symbolc constants (as appropriate)
 (define_predicate "nvptx_register_operand"
   (match_code "reg")
 {
@@ -74,27 +76,11 @@
           : memory_operand (op, mode));
 })
 
-;; Allow symbolic constants.
-(define_predicate "symbolic_operand"
-  (match_code "symbol_ref,const"))
-
-;; Registers or constants for normal instructions.  Does not allow symbolic
-;; constants.
 (define_predicate "nvptx_nonmemory_operand"
   (match_code "reg,const_int,const_double")
 {
   return (REG_P (op) ? register_operand (op, mode)
           : immediate_operand (op, mode));
-})
-
-(define_predicate "nvptx_nonimmediate_operand"
-  (match_code "reg,subreg,mem")
-{
-  if (REG_P (op))
-    return (op != frame_pointer_rtx
-	    && op != arg_pointer_rtx
-	    && op != stack_pointer_rtx);
-  return nonimmediate_operand (op, mode);
 })
 
 (define_predicate "const0_operand"
@@ -240,13 +226,7 @@
 	(match_operand:QHSDISDFM 1 "general_operand" ""))]
   ""
 {
-  operands[1] = nvptx_maybe_convert_symbolic_operand (operands[1]);
-
-  /* Hard registers are often actually symbolic operands on this target.
-     Don't allow them when storing to memory.  */
-  if (MEM_P (operands[0])
-      && (!REG_P (operands[1])
-	  || REGNO (operands[1]) <= LAST_VIRTUAL_REGISTER))
+  if (MEM_P (operands[0]) && !REG_P (operands[1]))
     {
       rtx tmp = gen_reg_rtx (<MODE>mode);
       emit_move_insn (tmp, operands[1]);
@@ -326,14 +306,6 @@
    %.\\tcvt%t0.u64\\t%0, %1;
    %.\\tst%A0.u%T0\\t%0, %1;"
   [(set_attr "subregs_ok" "true")])
-
-;; Pointer address space conversion
-(define_insn "convaddr_<mode>"
-  [(set (match_operand:P 0 "nvptx_register_operand" "=R")
-	(unspec:P [(match_operand:P 1 "symbolic_operand" "s")]
-                  UNSPEC_TO_GENERIC))]
-  ""
-  "%.\\tcvta%D1%t0\\t%0, %1;")
 
 ;; Integer arithmetic
 
