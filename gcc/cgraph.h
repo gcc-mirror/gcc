@@ -2294,19 +2294,13 @@ symtab_node::real_symbol_p (void)
 }
 
 /* Return true if DECL should have entry in symbol table if used.
-   Those are functions and static & external non-constpool variables.
-   We do not expect constant pool variables in the varpool, as they're
-   not related to other variables, and simply lazily inserting them
-   using the regular interface results in varpool thinking they are
-   externally provided -- which results in erroneous assembly emission
-   as an undefined decl.  */
+   Those are functions and static & external veriables*/
 
 static inline bool
 decl_in_symtab_p (const_tree decl)
 {
   return (TREE_CODE (decl) == FUNCTION_DECL
           || (TREE_CODE (decl) == VAR_DECL
-	      && !DECL_IN_CONSTANT_POOL (decl)
 	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))));
 }
 
