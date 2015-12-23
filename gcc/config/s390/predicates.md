@@ -122,10 +122,7 @@
 ;;  Return true if OP a valid operand for the LARL instruction.
 
 (define_predicate "larl_operand"
-; Note: Although CONST_INT and CONST_DOUBLE are not handled in this predicate,
-; at least one of them needs to appear or otherwise safe_predicate_mode will
-; assume that a VOIDmode LABEL_REF is not accepted either (see genrecog.c).
-  (match_code "label_ref, symbol_ref, const, const_int, const_double")
+  (match_code "label_ref, symbol_ref, const")
 {
   /* Allow labels and local symbols.  */
   if (GET_CODE (op) == LABEL_REF)

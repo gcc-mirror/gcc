@@ -320,6 +320,8 @@ add_mode_tests (struct pred_data *p)
 	{
 	case CONST_INT:
 	case CONST_WIDE_INT:
+	  /* Special handling for (VOIDmode) LABEL_REFs.  */
+	case LABEL_REF:
 	  matches_const_scalar_int_p = true;
 	  break;
 

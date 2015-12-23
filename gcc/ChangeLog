@@ -1,3 +1,12 @@
+2015-12-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/predicates.md ("larl_operand"): Remove now superfluous
+	const_int and const_double.
+	* genrecog.c (safe_predicate_mode): Return false for VOIDmode
+	LABEL_REFs even if the predicate does not handle const_int,
+	const_double or const_wide_int.
+	* genpreds.c (add_mode_tests): Treat LABEL_REF like CONST_INT.
+
 2015-12-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* tree-core.h (enum omp_clause_code): Merge OMP_CLAUSE_USE_DEVICE
