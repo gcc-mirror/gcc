@@ -11395,7 +11395,10 @@ c_parser_omp_clause_defaultmap (c_parser *parser, tree list)
   return list;
 }
 
-/* OpenMP 4.5:
+/* OpenACC 2.0:
+   use_device ( variable-list )
+
+   OpenMP 4.5:
    use_device_ptr ( variable-list ) */
 
 static tree
@@ -11728,15 +11731,6 @@ c_parser_oacc_clause_tile (c_parser *parser, tree list)
   OMP_CLAUSE_TILE_LIST (c) = tile;
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
-}
-
-/* OpenACC 2.0:
-   use_device ( variable-list ) */
-
-static tree
-c_parser_oacc_clause_use_device (c_parser *parser, tree list)
-{
-  return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_USE_DEVICE, list);
 }
 
 /* OpenACC:
@@ -13058,7 +13052,7 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  c_name = "tile";
 	  break;
 	case PRAGMA_OACC_CLAUSE_USE_DEVICE:
-	  clauses = c_parser_oacc_clause_use_device (parser, clauses);
+	  clauses = c_parser_omp_clause_use_device_ptr (parser, clauses);
 	  c_name = "use_device";
 	  break;
 	case PRAGMA_OACC_CLAUSE_VECTOR:

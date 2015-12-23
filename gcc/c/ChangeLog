@@ -1,3 +1,10 @@
+2015-12-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (c_parser_oacc_clause_use_device): Merge function
+	into...
+	(c_parser_omp_clause_use_device_ptr): ... this function.  Adjust
+	all users.
+
 2015-12-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c/69002

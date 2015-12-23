@@ -302,7 +302,8 @@ enum omp_clause_code {
      OpenMP clause: map ({alloc:,to:,from:,tofrom:,}variable-list).  */
   OMP_CLAUSE_MAP,
 
-  /* OpenMP clause: use_device_ptr (variable-list).  */
+  /* OpenACC clause: use_device (variable_list).
+     OpenMP clause: use_device_ptr (variable-list).  */
   OMP_CLAUSE_USE_DEVICE_PTR,
 
   /* OpenMP clause: is_device_ptr (variable-list).  */
@@ -314,9 +315,6 @@ enum omp_clause_code {
 
   /* OpenACC clause: device_resident (variable_list).  */
   OMP_CLAUSE_DEVICE_RESIDENT,
-
-  /* OpenACC clause: use_device (variable_list).  */
-  OMP_CLAUSE_USE_DEVICE,
 
   /* OpenACC clause: gang [(gang-argument-list)].
      Where
