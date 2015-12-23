@@ -1,4 +1,6 @@
 /* { dg-options "-fdump-rtl-ce1 -O2" } */
+/* { dg-skip-if "Multiple set if-conversion not guaranteed on all subtargets" { "arm*-*-* powerpc64le*-*-*" } {"*"} { "" } }  */
+
 int
 foo (int x, int y, int a)
 {

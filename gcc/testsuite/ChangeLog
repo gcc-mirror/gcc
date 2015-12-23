@@ -1,3 +1,8 @@
+2015-12-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR testsuite/68232
+	* gcc.dg/ifcvt-4.c: Skip for arm*-*-* and powerpc64le*-*-*.
+
 2015-12-23  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/alias-15.c: New. 
