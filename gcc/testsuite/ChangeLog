@@ -1,3 +1,7 @@
+2015-12-23  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/alias-15.c: Revert.
+
 2015-12-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR testsuite/68232

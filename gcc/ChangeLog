@@ -1,5 +1,9 @@
 2015-12-23  Nathan Sidwell  <nathan@acm.org>
 
+	* cgraph.h (decl_in_symtab_p): Revert check DECL_IN_CONSTANT_POOL.
+
+2015-12-23  Nathan Sidwell  <nathan@acm.org>
+
 	* config/nvptx/nvptx-protos.h
 	(nvptx_maybe_convert_symbolic_operand): Delete prototype.
 	* config/nvptx/nvptx.c (nvptx_maybe_convert_symbolic_operand): Delete.
