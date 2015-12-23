@@ -1,3 +1,7 @@
+2015-12-23  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/alias-15.c: New. 
+
 2015-12-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* g++.dg/dg.exp (tests): Prune "goacc/*" and "goacc-gomp/*" files.

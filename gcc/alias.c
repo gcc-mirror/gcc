@@ -2038,13 +2038,12 @@ compare_base_decls (tree base1, tree base2)
   if (base1 == base2)
     return 1;
 
-  bool in_symtab1 = decl_in_symtab_p (base1);
-  bool in_symtab2 = decl_in_symtab_p (base2);
-
   /* Declarations of non-automatic variables may have aliases.  All other
      decls are unique.  */
-  if (in_symtab1 != in_symtab2 || !in_symtab1)
+  if (!decl_in_symtab_p (base1)
+      || !decl_in_symtab_p (base2))
     return 0;
+
   ret = symtab_node::get_create (base1)->equal_address_to
 		 (symtab_node::get_create (base2), true);
   if (ret == 2)
