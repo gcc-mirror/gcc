@@ -1,3 +1,8 @@
+2015-12-23  Nathan Sidwell  <nathan@acm.org>
+
+	* alias.c (compare_base_decls): Simplify in-symtab check.
+	* cgraph.h (decl_in_symtab_p): Check DECL_IN_CONSTANT_POOL.
+
 2015-12-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/predicates.md ("larl_operand"): Remove now superfluous
