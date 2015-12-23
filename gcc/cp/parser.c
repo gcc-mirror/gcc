@@ -32097,7 +32097,7 @@ cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  c_name = "tile";
 	  break;
 	case PRAGMA_OACC_CLAUSE_USE_DEVICE:
-	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_USE_DEVICE,
+	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_USE_DEVICE_PTR,
 					    clauses);
 	  c_name = "use_device";
 	  break;

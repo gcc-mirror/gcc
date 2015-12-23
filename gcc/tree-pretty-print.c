@@ -327,9 +327,6 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, int flags)
     case OMP_CLAUSE_DEVICE_RESIDENT:
       name = "device_resident";
       goto print_remap;
-    case OMP_CLAUSE_USE_DEVICE:
-      name = "use_device";
-      goto print_remap;
     case OMP_CLAUSE_TO_DECLARE:
       name = "to";
       goto print_remap;

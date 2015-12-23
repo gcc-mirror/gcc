@@ -1,3 +1,8 @@
+2015-12-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree-core.h (enum omp_clause_code): Merge OMP_CLAUSE_USE_DEVICE
+	into OMP_CLAUSE_USE_DEVICE_PTR.  Adjust all users.
+
 2015-12-23  David Sherwood  <david.sherwood@arm.com>
 
 	* config/arm/iterators.md (VMAXMINFNM): New int iterator.
