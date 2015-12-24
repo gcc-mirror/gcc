@@ -1103,7 +1103,8 @@ See RS/6000 and PowerPC Options.
 -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma @gol
 -mprefetchwt1 -mclflushopt -mxsavec -mxsaves @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
--mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mmpx -mmwaitx -mclzero -mthreads @gol
+-mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mmpx -mmwaitx -mclzero
+-mpku -mthreads @gol
 -mms-bitfields -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy} -mmemset-strategy=@var{strategy} @gol
@@ -22625,7 +22626,7 @@ AVX512CD instruction set support.
 
 @item skylake-avx512
 Intel Skylake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
-SSSE3, SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
+SSSE3, SSE4.1, SSE4.2, POPCNT, PKU, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
 BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, CLFLUSHOPT, XSAVEC, XSAVES, AVX512F,
 AVX512VL, AVX512BW, AVX512DQ and AVX512CD instruction set support.
 
@@ -23247,11 +23248,13 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mclzero
 @opindex mclzero
+@itemx -mpku
+@opindex mpku
 These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
 SHA, AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM,
 AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA AVX512VBMI, BMI, BMI2, FXSR,
-XSAVE, XSAVEOPT, LZCNT, RTM, MPX, MWAITX or 3DNow!@:
+XSAVE, XSAVEOPT, LZCNT, RTM, MPX, MWAITX, PKU or 3DNow!@:
 extended instruction sets.  Each has a corresponding @option{-mno-} option
 to disable use of these instructions.
 

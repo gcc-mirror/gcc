@@ -95,6 +95,8 @@
 /* %ecx */
 #define bit_PREFETCHWT1	  (1 << 0)
 #define bit_AVX512VBMI	(1 << 1)
+#define bit_PKU	(1 << 3)
+#define bit_OSPKE	(1 << 4)
 
 /* XFEATURE_ENABLED_MASK register bits (%eax == 13, %ecx == 0) */
 #define bit_BNDREGS     (1 << 3)
