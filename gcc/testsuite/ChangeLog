@@ -1,3 +1,14 @@
+2015-12-24  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mpku.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/rdpku-1.c: New test.
+	* gcc.target/i386/sse-12.c: Add -mpku.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-33.c: Ditto.
+	* gcc.target/i386/wrpku-1.c: New test.
+
 2015-12-23  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/69023

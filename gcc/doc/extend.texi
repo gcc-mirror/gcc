@@ -18343,6 +18343,13 @@ All of them generate the machine instruction that is part of the name.
 void __builtin_i32_clzero (void *)
 @end smallexample
 
+The following built-in functions are available when @option{-mpku} is used.
+They generate reads and writes to PKRU.
+@smallexample
+void __builtin_ia32_wrpkru (unsigned int)
+unsigned int __builtin_ia32_rdpkru ()
+@end smallexample
+
 @node x86 transactional memory intrinsics
 @subsection x86 Transactional Memory Intrinsics
 
