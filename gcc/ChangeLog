@@ -1,3 +1,8 @@
+2015-12-23  Richard Henderson  <rth@redhat.com>
+
+	PR ipa/67811
+	* tree-cfg.c (make_edges_bb): Add abort edge for outer transactions.
+
 2015-12-23  Nathan Sidwell  <nathan@acm.org>
 
 	* cgraph.h (decl_in_symtab_p): Revert check DECL_IN_CONSTANT_POOL.
