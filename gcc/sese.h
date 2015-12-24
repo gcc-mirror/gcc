@@ -109,9 +109,9 @@ extern void free_sese_info (sese_info_p);
 extern void sese_insert_phis_for_liveouts (sese_info_p, basic_block, edge, edge);
 extern void build_sese_loop_nests (sese_info_p);
 extern struct loop *outermost_loop_in_sese (sese_l &, basic_block);
-extern tree scalar_evolution_in_region (sese_l &, loop_p, tree);
+extern tree scalar_evolution_in_region (const sese_l &, loop_p, tree);
 extern bool scev_analyzable_p (tree, sese_l &);
-extern bool invariant_in_sese_p_rec (tree, sese_l &, bool *);
+extern bool invariant_in_sese_p_rec (tree, const sese_l &, bool *);
 
 /* Check that SESE contains LOOP.  */
 
@@ -133,7 +133,7 @@ sese_nb_params (sese_info_p region)
    EXIT blocks.  */
 
 static inline bool
-bb_in_region (basic_block bb, basic_block entry, basic_block exit)
+bb_in_region (const_basic_block bb, const_basic_block entry, const_basic_block exit)
 {
   /* FIXME: PR67842.  */
 #if 0
@@ -158,7 +158,7 @@ bb_in_region (basic_block bb, basic_block entry, basic_block exit)
    EXIT blocks.  */
 
 static inline bool
-bb_in_sese_p (basic_block bb, sese_l &r)
+bb_in_sese_p (basic_block bb, const sese_l &r)
 {
   return bb_in_region (bb, r.entry->dest, r.exit->dest);
 }
@@ -166,7 +166,7 @@ bb_in_sese_p (basic_block bb, sese_l &r)
 /* Returns true when STMT is defined in REGION.  */
 
 static inline bool
-stmt_in_sese_p (gimple *stmt, sese_l &r)
+stmt_in_sese_p (gimple *stmt, const sese_l &r)
 {
   basic_block bb = gimple_bb (stmt);
   return bb && bb_in_sese_p (bb, r);
@@ -175,7 +175,7 @@ stmt_in_sese_p (gimple *stmt, sese_l &r)
 /* Returns true when NAME is defined in REGION.  */
 
 static inline bool
-defined_in_sese_p (tree name, sese_l &r)
+defined_in_sese_p (tree name, const sese_l &r)
 {
   return stmt_in_sese_p (SSA_NAME_DEF_STMT (name), r);
 }
@@ -183,7 +183,7 @@ defined_in_sese_p (tree name, sese_l &r)
 /* Returns true when LOOP is in REGION.  */
 
 static inline bool
-loop_in_sese_p (struct loop *loop, sese_l &region)
+loop_in_sese_p (struct loop *loop, const sese_l &region)
 {
   return (bb_in_sese_p (loop->header, region)
 	  && bb_in_sese_p (loop->latch, region));

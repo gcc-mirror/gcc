@@ -523,7 +523,7 @@ set_ifsese_condition (ifsese if_region, tree condition)
    when T depends on memory that may change in REGION.  */
 
 bool
-invariant_in_sese_p_rec (tree t, sese_l &region, bool *has_vdefs)
+invariant_in_sese_p_rec (tree t, const sese_l &region, bool *has_vdefs)
 {
   if (!defined_in_sese_p (t, region))
     return true;
@@ -596,7 +596,7 @@ scev_analyzable_p (tree def, sese_l &region)
    is not defined in the REGION is considered a parameter.  */
 
 tree
-scalar_evolution_in_region (sese_l &region, loop_p loop, tree t)
+scalar_evolution_in_region (const sese_l &region, loop_p loop, tree t)
 {
   gimple *def;
   struct loop *def_loop;
