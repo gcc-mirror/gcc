@@ -839,7 +839,8 @@ make_edges_bb (basic_block bb, struct omp_region **pcur_region, int *pomp_index)
 		     EDGE_TM_UNINSTRUMENTED | (label1 ? 0 : EDGE_FALLTHRU));
 
 	tree label3 = gimple_transaction_label_over (txn);
-	if (gimple_transaction_subcode (txn) & GTMA_HAVE_ABORT)
+	if (gimple_transaction_subcode (txn)
+	    & (GTMA_HAVE_ABORT | GTMA_IS_OUTER))
 	  make_edge (bb, label_to_block (label3), EDGE_TM_ABORT);
 
 	fallthru = false;
