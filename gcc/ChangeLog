@@ -1,5 +1,16 @@
 2015-12-24  Aditya Kumar  <aditya.k7@samsung.com>
 
+	* graphite-sese-to-poly.c (build_loop_iteration_domains): Use ref instead of value.
+	* sese.c (invariant_in_sese_p_rec): Use const ref instead of value.
+	(scalar_evolution_in_region): Same
+	* sese.h (bb_in_region): Same
+	(bb_in_sese_p): Same.
+	(stmt_in_sese_p): Same.
+	(defined_in_sese_p): Same.
+	(loop_in_sese_p): Same.
+
+2015-12-24  Aditya Kumar  <aditya.k7@samsung.com>
+
 	* graphite-scop-detection.c
 	(scop_detection::get_nearest_dom_with_single_entry): Check l ==	l2.
 	(scop_detection::get_nearest_pdom_with_single_exit): Same.
