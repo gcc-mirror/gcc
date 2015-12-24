@@ -693,18 +693,22 @@ scop_detection::get_nearest_dom_with_single_entry (basic_block dom)
 {
   if (!dom->preds)
     return NULL;
-  /* If e1->src dominates e2->src then e1->src will also dominate dom.  */
+
+  /* If any of the dominators has two predecessors but one of them is a back
+     edge, then that basic block also qualifies as a dominator with single
+     entry.  */
   if (dom->preds->length () == 2)
     {
+      /* If e1->src dominates e2->src then e1->src will also dominate dom.  */
       edge e1 = (*dom->preds)[0];
       edge e2 = (*dom->preds)[1];
       loop_p l = dom->loop_father;
       loop_p l1 = e1->src->loop_father;
       loop_p l2 = e2->src->loop_father;
-      if (l != l1
+      if (l != l1 && l == l2
 	  && dominated_by_p (CDI_DOMINATORS, e2->src, e1->src))
 	return e1;
-      if (l != l2
+      if (l != l2 && l == l1
 	  && dominated_by_p (CDI_DOMINATORS, e1->src, e2->src))
 	return e2;
     }
@@ -728,17 +732,23 @@ scop_detection::get_nearest_pdom_with_single_exit (basic_block pdom)
 {
   if (!pdom->succs)
     return NULL;
+
+  /* If any of the post-dominators has two successors but one of them is a back
+     edge, then that basic block also qualifies as a post-dominator with single
+     exit. */
   if (pdom->succs->length () == 2)
     {
+      /* If e1->dest post-dominates e2->dest then e1->dest will also
+	 post-dominate pdom.  */
       edge e1 = (*pdom->succs)[0];
       edge e2 = (*pdom->succs)[1];
       loop_p l = pdom->loop_father;
       loop_p l1 = e1->dest->loop_father;
       loop_p l2 = e2->dest->loop_father;
-      if (l != l1
+      if (l != l1 && l == l2
 	  && dominated_by_p (CDI_POST_DOMINATORS, e2->dest, e1->dest))
 	return e1;
-      if (l != l2
+      if (l != l2 && l == l1
 	  && dominated_by_p (CDI_POST_DOMINATORS, e1->dest, e2->dest))
 	return e2;
     }
@@ -805,7 +815,7 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
      EXIT->DEST should be in the same loop nest.  */
   if (!dominated_by_p (CDI_DOMINATORS, pdom, dom)
       || loop_depth (entry->src->loop_father)
-         != loop_depth (exit->dest->loop_father))
+	 != loop_depth (exit->dest->loop_father))
     return invalid_sese;
 
   /* For now we just want to bail out when exit does not post-dominate entry.
@@ -1014,7 +1024,8 @@ scop_detection::add_scop (sese_l s)
   /* Remove all the scops which are subsumed by s.  */
   remove_subscops (s);
 
-  /* Replace this with split-intersecting scops.  */
+  /* Remove intersecting scops. FIXME: It will be a good idea to keep
+     the non-intersecting part of the scop already in the list.  */
   remove_intersecting_scops (s);
 
   scops.safe_push (s);
@@ -1960,9 +1971,9 @@ build_scops (vec<scop_p> *scops)
       if (scop_nb_params (scop) > max_dim)
 	{
 	  DEBUG_PRINT (dp << "[scop-detection-fail] too many parameters: "
-		          << scop_nb_params (scop)
-		          << " larger than --param graphite-max-nb-scop-params="
-		          << max_dim << ".\n");
+			  << scop_nb_params (scop)
+			  << " larger than --param graphite-max-nb-scop-params="
+			  << max_dim << ".\n");
 	  free_scop (scop);
 	  continue;
 	}

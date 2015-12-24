@@ -1,3 +1,12 @@
+2015-12-24  Aditya Kumar  <aditya.k7@samsung.com>
+
+	* graphite-scop-detection.c
+	(scop_detection::get_nearest_dom_with_single_entry): Check l ==	l2.
+	(scop_detection::get_nearest_pdom_with_single_exit): Same.
+	(scop_detection::merge_sese): Whitespace.
+	(scop_detection::add_scop): Comment.
+	(build_scops): Whitespace.
+
 2015-12-24  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_PKU_SET): New.
