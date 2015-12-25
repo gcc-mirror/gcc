@@ -167,10 +167,7 @@ extern int dot_symbols;
   { "link_os_freebsd_spec32",	LINK_OS_FREEBSD_SPEC32 },     		\
   { "link_os_freebsd_spec64",	LINK_OS_FREEBSD_SPEC64 },
 
-#define FREEBSD_DYNAMIC_LINKER32 "/libexec/ld-elf32.so.1"
-#define FREEBSD_DYNAMIC_LINKER64 "/libexec/ld-elf.so.1"
-
-#define LINK_OS_FREEBSD_SPEC_DEF32 "\
+#define LINK_OS_FREEBSD_SPEC_DEF "\
   %{p:%nconsider using `-pg' instead of `-p' with gprof(1)} \
   %{v:-V} \
   %{assert*} %{R*} %{rpath*} %{defsym*} \
@@ -178,25 +175,13 @@ extern int dot_symbols;
   %{!shared: \
     %{!static: \
       %{rdynamic: -export-dynamic} \
-      %{!dynamic-linker:-dynamic-linker " FREEBSD_DYNAMIC_LINKER32 "}} \
+      %{!dynamic-linker:-dynamic-linker " FBSD_DYNAMIC_LINKER "}} \
     %{static:-Bstatic}} \
   %{symbolic:-Bsymbolic}"
 
-#define LINK_OS_FREEBSD_SPEC_DEF64 "\
-  %{p:%nconsider using `-pg' instead of `-p' with gprof(1)} \
-  %{v:-V} \
-  %{assert*} %{R*} %{rpath*} %{defsym*} \
-  %{shared:-Bshareable %{h*} %{soname*}} \
-  %{!shared: \
-    %{!static: \
-      %{rdynamic: -export-dynamic} \
-      %{!dynamic-linker:-dynamic-linker " FREEBSD_DYNAMIC_LINKER64 "}} \
-    %{static:-Bstatic}} \
-  %{symbolic:-Bsymbolic}"
-
-#define LINK_OS_FREEBSD_SPEC32 "-melf32ppc_fbsd " LINK_OS_FREEBSD_SPEC_DEF32
+#define LINK_OS_FREEBSD_SPEC32 "-melf32ppc_fbsd " LINK_OS_FREEBSD_SPEC_DEF
   
-#define LINK_OS_FREEBSD_SPEC64 "-melf64ppc_fbsd " LINK_OS_FREEBSD_SPEC_DEF64
+#define LINK_OS_FREEBSD_SPEC64 "-melf64ppc_fbsd " LINK_OS_FREEBSD_SPEC_DEF
 
 #undef	MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS { "m64" }

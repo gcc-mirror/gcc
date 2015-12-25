@@ -1,3 +1,10 @@
+2015-12-25  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/rs6000/freebsd64.h: Delete FREEBSD_DYNAMIC_LINKER32/64
+	defines. Use FBSD_DYNAMIC_LINKER instead.
+	Rename and simplify LINK_OS_FREEBSD_SPEC_DEF32/64 to
+	LINK_OS_FREEBSD_SPEC_DEF.
+
 2015-12-24  Aditya Kumar  <aditya.k7@samsung.com>
 
 	* graphite-sese-to-poly.c (build_loop_iteration_domains): Use ref instead of value.
