@@ -3037,6 +3037,34 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
   if (len < skip_without_in_chrg)
     return NULL;
 
+  if (DECL_CONSTRUCTOR_P (tmpl) && nargs == 2
+      && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (first_arg),
+						    TREE_TYPE ((*arglist)[0])))
+    {
+      /* 12.8/6 says, "A declaration of a constructor for a class X is
+	 ill-formed if its first parameter is of type (optionally cv-qualified)
+	 X and either there are no other parameters or else all other
+	 parameters have default arguments. A member function template is never
+	 instantiated to produce such a constructor signature."
+
+	 So if we're trying to copy an object of the containing class, don't
+	 consider a template constructor that has a first parameter type that
+	 is just a template parameter, as we would deduce a signature that we
+	 would then reject in the code below.  */
+      if (tree firstparm = FUNCTION_FIRST_USER_PARMTYPE (tmpl))
+	{
+	  firstparm = TREE_VALUE (firstparm);
+	  if (PACK_EXPANSION_P (firstparm))
+	    firstparm = PACK_EXPANSION_PATTERN (firstparm);
+	  if (TREE_CODE (firstparm) == TEMPLATE_TYPE_PARM)
+	    {
+	      gcc_assert (!explicit_targs);
+	      reason = invalid_copy_with_fn_template_rejection ();
+	      goto fail;
+	    }
+	}
+    }
+
   nargs_without_in_chrg = ((first_arg_without_in_chrg != NULL_TREE ? 1 : 0)
 			   + (len - skip_without_in_chrg));
   args_without_in_chrg = XALLOCAVEC (tree, nargs_without_in_chrg);
@@ -3075,34 +3103,15 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
       goto fail;
     }
 
-  /* In [class.copy]:
-
-       A member function template is never instantiated to perform the
-       copy of a class object to an object of its class type.
-
-     It's a little unclear what this means; the standard explicitly
-     does allow a template to be used to copy a class.  For example,
-     in:
-
-       struct A {
-	 A(A&);
-	 template <class T> A(const T&);
-       };
-       const A f ();
-       void g () { A a (f ()); }
-
-     the member template will be used to make the copy.  The section
-     quoted above appears in the paragraph that forbids constructors
-     whose only parameter is (a possibly cv-qualified variant of) the
-     class type, and a logical interpretation is that the intent was
-     to forbid the instantiation of member templates which would then
-     have that form.  */
   if (DECL_CONSTRUCTOR_P (fn) && nargs == 2)
     {
       tree arg_types = FUNCTION_FIRST_USER_PARMTYPE (fn);
       if (arg_types && same_type_p (TYPE_MAIN_VARIANT (TREE_VALUE (arg_types)),
 				    ctype))
 	{
+	  /* We're trying to produce a constructor with a prohibited signature,
+	     as discussed above; handle here any cases we didn't catch then,
+	     such as X(X<T>).  */
 	  reason = invalid_copy_with_fn_template_rejection ();
 	  goto fail;
 	}

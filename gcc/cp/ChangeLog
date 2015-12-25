@@ -1,3 +1,8 @@
+2015-12-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69005
+	* call.c (add_template_candidate_real): Don't try to deduce X(X).
+
 2015-12-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66921
