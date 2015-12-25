@@ -30,7 +30,7 @@ int main()
   return 0;
 }
 
-#if !__GXX_WEAK
+#if !__GXX_WEAK__
 // Explicitly instantiatiate for systems without weak symbols.
 template class __gnu_cxx::bitmap_allocator<value_type>;
 #endif
