@@ -1,3 +1,9 @@
+2015-12-24  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/ext/bitmap_allocator/check_deallocate_null.cc
+	* testsuite/ext/bitmap_allocator/check_allocate_max_size.cc:
+	Correct use of __GXX_WEAK__ macro.
+
 2015-12-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59768
