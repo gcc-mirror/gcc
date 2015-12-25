@@ -67,7 +67,7 @@
 
 2015-12-22  Peter Bergner  <bergner@vnet.ibm.com>
 
-	PR target/68772
+	PR target/68872
 	* gcc.target/powerpc/pr68872.c: New test.
 
 2015-12-22  H.J. Lu  <hongjiu.lu@intel.com>
