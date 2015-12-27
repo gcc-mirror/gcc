@@ -493,8 +493,12 @@ function_and_variable_visibility (bool whole_program)
         DECL_COMDAT (node->decl) = 0;
 
       /* For external decls stop tracking same_comdat_group. It doesn't matter
-	 what comdat group they are in when they won't be emitted in this TU.  */
-      if (node->same_comdat_group && DECL_EXTERNAL (node->decl))
+	 what comdat group they are in when they won't be emitted in this TU.
+
+	 An exception is LTO where we may end up with both external
+	 and non-external declarations in the same comdat group in
+	 the case declarations was not merged.  */
+      if (node->same_comdat_group && DECL_EXTERNAL (node->decl) && !in_lto_p)
 	{
 	  if (flag_checking)
 	    {

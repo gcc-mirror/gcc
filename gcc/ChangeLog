@@ -1,3 +1,8 @@
+2015-12-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-visibility.c (function_and_variable_visibility): Do not
+	dissolve comdat groups when in LTO mode.
+
 2015-12-25  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/rs6000/freebsd64.h: Delete FREEBSD_DYNAMIC_LINKER32/64
