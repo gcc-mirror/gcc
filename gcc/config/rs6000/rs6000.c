@@ -8904,6 +8904,7 @@ rs6000_emit_le_vsx_move (rtx dest, rtx source, machine_mode mode)
 {
   gcc_assert (!BYTES_BIG_ENDIAN
 	      && VECTOR_MEM_VSX_P (mode)
+	      && !TARGET_P9_VECTOR
 	      && !gpr_or_gpr_p (dest, source)
 	      && (MEM_P (source) ^ MEM_P (dest)));
 
@@ -37793,7 +37794,7 @@ public:
   virtual bool gate (function *)
     {
       return (optimize > 0 && !BYTES_BIG_ENDIAN && TARGET_VSX
-	      && rs6000_optimize_swaps);
+	      && !TARGET_P9_VECTOR && rs6000_optimize_swaps);
     }
 
   virtual unsigned int execute (function *fun)

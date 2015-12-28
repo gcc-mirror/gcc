@@ -113,6 +113,7 @@
     }
   if (!BYTES_BIG_ENDIAN
       && VECTOR_MEM_VSX_P (<MODE>mode)
+      && !TARGET_P9_VECTOR
       && !gpr_or_gpr_p (operands[0], operands[1])
       && (memory_operand (operands[0], <MODE>mode)
           ^ memory_operand (operands[1], <MODE>mode)))
