@@ -1,3 +1,36 @@
+2015-12-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_le_vsx_move): Verify that
+	this is never called when lxvx/stxvx are available.
+	(pass_analyze_swaps::gate): Don't perform swap optimization when
+	lxvx/stxvx are available.
+	* config/rs6000/vector.md (mov<mode>): Don't call
+	rs6000_emit_le_vsx_move when lxvx/stxvx are available.
+	* config/rs6000/vsx.md (*p9_vecload_<mode>): New define_insn.
+	(*p9_vecstore_<mode>): Likewise.
+	(*vsx_le_perm_load_<mode>:VSX_LE): Disable when lxvx/stxvx are
+	available.
+	(*vsx_le_perm_load_<mode>:VSX_W): Likewise.
+	(*vsx_le_perm_load_v8hi): Likewise.
+	(*vsx_le_perm_load_v16qi): Likewise.
+	(*vsx_le_perm_store_<mode>:VSX_LE): Likewise.
+	([related define_splits]): Likewise.
+	(*vsx_le_perm_store_<mode>:VSX_W): Likewise.
+	([related define_splits]): Likewise.
+	(*vsx_le_perm_store_v8hi): Likewise.
+	([related define_splits]): Likewise.
+	(*vsx_le_perm_store_v16qi): Likewise.
+	([related define_splits]): Likewise.
+	(*vsx_lxvd2x2_le_<mode>): Likewise.
+	(*vsx_lxvd2x4_le_<mode>): Likewise.
+	(*vsx_lxvd2x8_le_V8HI): Likewise.
+	(*vsx_lvxd2x16_le_V16QI): Likewise.
+	(*vsx_stxvd2x2_le_<mode>): Likewise.
+	(*vsx_stxvd2x4_le_<mode>): Likewise.
+	(*vsx_stxvd2x8_le_V8HI): Likewise.
+	(*vsx_stxvdx16_le_V16QI): Likewise.
+	([define_peepholes for vector load fusion]): Likewise.
+
 2015-12-28  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (nvptx_output_call_insn): Expect hard regs.

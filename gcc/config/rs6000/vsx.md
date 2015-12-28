@@ -301,6 +301,24 @@
    UNSPEC_VSX_XVCVDPUXDS
   ])
 
+;; VSX (P9) moves
+
+(define_insn "*p9_vecload_<mode>"
+  [(set (match_operand:VSX_M 0 "vsx_register_operand" "=<VSa>")
+        (match_operand:VSX_M 1 "memory_operand" "Z"))]
+  "TARGET_P9_VECTOR"
+  "lxvx %x0,%y1"
+  [(set_attr "type" "vecload")
+   (set_attr "length" "4")])
+
+(define_insn "*p9_vecstore_<mode>"
+  [(set (match_operand:VSX_M 0 "memory_operand" "=Z")
+        (match_operand:VSX_M 1 "vsx_register_operand" "<VSa>"))]
+  "TARGET_P9_VECTOR"
+  "stxvx %x1,%y0"
+  [(set_attr "type" "vecstore")
+   (set_attr "length" "4")])
+
 ;; VSX moves
 
 ;; The patterns for LE permuted loads and stores come before the general
@@ -308,9 +326,9 @@
 (define_insn_and_split "*vsx_le_perm_load_<mode>"
   [(set (match_operand:VSX_LE 0 "vsx_register_operand" "=<VSa>")
         (match_operand:VSX_LE 1 "memory_operand" "Z"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   [(set (match_dup 2)
         (vec_select:<MODE>
           (match_dup 1)
@@ -331,9 +349,9 @@
 (define_insn_and_split "*vsx_le_perm_load_<mode>"
   [(set (match_operand:VSX_W 0 "vsx_register_operand" "=<VSa>")
         (match_operand:VSX_W 1 "memory_operand" "Z"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   [(set (match_dup 2)
         (vec_select:<MODE>
           (match_dup 1)
@@ -356,9 +374,9 @@
 (define_insn_and_split "*vsx_le_perm_load_v8hi"
   [(set (match_operand:V8HI 0 "vsx_register_operand" "=wa")
         (match_operand:V8HI 1 "memory_operand" "Z"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   [(set (match_dup 2)
         (vec_select:V8HI
           (match_dup 1)
@@ -385,9 +403,9 @@
 (define_insn_and_split "*vsx_le_perm_load_v16qi"
   [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
         (match_operand:V16QI 1 "memory_operand" "Z"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   [(set (match_dup 2)
         (vec_select:V16QI
           (match_dup 1)
@@ -422,7 +440,7 @@
 (define_insn "*vsx_le_perm_store_<mode>"
   [(set (match_operand:VSX_LE 0 "memory_operand" "=Z")
         (match_operand:VSX_LE 1 "vsx_register_operand" "+<VSa>"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
   [(set_attr "type" "vecstore")
    (set_attr "length" "12")])
@@ -430,7 +448,7 @@
 (define_split
   [(set (match_operand:VSX_LE 0 "memory_operand" "")
         (match_operand:VSX_LE 1 "vsx_register_operand" ""))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && !reload_completed"
   [(set (match_dup 2)
         (vec_select:<MODE>
           (match_dup 1)
@@ -449,7 +467,7 @@
 (define_split
   [(set (match_operand:VSX_LE 0 "memory_operand" "")
         (match_operand:VSX_LE 1 "vsx_register_operand" ""))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && reload_completed"
   [(set (match_dup 1)
         (vec_select:<MODE>
           (match_dup 1)
@@ -467,7 +485,7 @@
 (define_insn "*vsx_le_perm_store_<mode>"
   [(set (match_operand:VSX_W 0 "memory_operand" "=Z")
         (match_operand:VSX_W 1 "vsx_register_operand" "+<VSa>"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
   [(set_attr "type" "vecstore")
    (set_attr "length" "12")])
@@ -475,7 +493,7 @@
 (define_split
   [(set (match_operand:VSX_W 0 "memory_operand" "")
         (match_operand:VSX_W 1 "vsx_register_operand" ""))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && !reload_completed"
   [(set (match_dup 2)
         (vec_select:<MODE>
           (match_dup 1)
@@ -496,7 +514,7 @@
 (define_split
   [(set (match_operand:VSX_W 0 "memory_operand" "")
         (match_operand:VSX_W 1 "vsx_register_operand" ""))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && reload_completed"
   [(set (match_dup 1)
         (vec_select:<MODE>
           (match_dup 1)
@@ -517,7 +535,7 @@
 (define_insn "*vsx_le_perm_store_v8hi"
   [(set (match_operand:V8HI 0 "memory_operand" "=Z")
         (match_operand:V8HI 1 "vsx_register_operand" "+wa"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
   [(set_attr "type" "vecstore")
    (set_attr "length" "12")])
@@ -525,7 +543,7 @@
 (define_split
   [(set (match_operand:V8HI 0 "memory_operand" "")
         (match_operand:V8HI 1 "vsx_register_operand" ""))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && !reload_completed"
   [(set (match_dup 2)
         (vec_select:V8HI
           (match_dup 1)
@@ -550,7 +568,7 @@
 (define_split
   [(set (match_operand:V8HI 0 "memory_operand" "")
         (match_operand:V8HI 1 "vsx_register_operand" ""))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && reload_completed"
   [(set (match_dup 1)
         (vec_select:V8HI
           (match_dup 1)
@@ -577,7 +595,7 @@
 (define_insn "*vsx_le_perm_store_v16qi"
   [(set (match_operand:V16QI 0 "memory_operand" "=Z")
         (match_operand:V16QI 1 "vsx_register_operand" "+wa"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
   [(set_attr "type" "vecstore")
    (set_attr "length" "12")])
@@ -585,7 +603,7 @@
 (define_split
   [(set (match_operand:V16QI 0 "memory_operand" "")
         (match_operand:V16QI 1 "vsx_register_operand" ""))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && !reload_completed"
   [(set (match_dup 2)
         (vec_select:V16QI
           (match_dup 1)
@@ -618,7 +636,7 @@
 (define_split
   [(set (match_operand:V16QI 0 "memory_operand" "")
         (match_operand:V16QI 1 "vsx_register_operand" ""))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && reload_completed"
   [(set (match_dup 1)
         (vec_select:V16QI
           (match_dup 1)
@@ -1781,7 +1799,7 @@
         (vec_select:VSX_LE
           (match_operand:VSX_LE 1 "memory_operand" "Z")
           (parallel [(const_int 1) (const_int 0)])))]
-  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (<MODE>mode)"
+  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (<MODE>mode) && !TARGET_P9_VECTOR"
   "lxvd2x %x0,%y1"
   [(set_attr "type" "vecload")])
 
@@ -1791,7 +1809,7 @@
           (match_operand:VSX_W 1 "memory_operand" "Z")
           (parallel [(const_int 2) (const_int 3)
                      (const_int 0) (const_int 1)])))]
-  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (<MODE>mode)"
+  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (<MODE>mode) && !TARGET_P9_VECTOR"
   "lxvd2x %x0,%y1"
   [(set_attr "type" "vecload")])
 
@@ -1803,7 +1821,7 @@
                      (const_int 6) (const_int 7)
                      (const_int 0) (const_int 1)
                      (const_int 2) (const_int 3)])))]
-  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (V8HImode)"
+  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (V8HImode) && !TARGET_P9_VECTOR"
   "lxvd2x %x0,%y1"
   [(set_attr "type" "vecload")])
 
@@ -1819,7 +1837,7 @@
                      (const_int 2) (const_int 3)
                      (const_int 4) (const_int 5)
                      (const_int 6) (const_int 7)])))]
-  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (V16QImode)"
+  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (V16QImode) && !TARGET_P9_VECTOR"
   "lxvd2x %x0,%y1"
   [(set_attr "type" "vecload")])
 
@@ -1830,7 +1848,7 @@
         (vec_select:VSX_LE
           (match_operand:VSX_LE 1 "vsx_register_operand" "<VSa>")
           (parallel [(const_int 1) (const_int 0)])))]
-  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (<MODE>mode)"
+  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (<MODE>mode) && !TARGET_P9_VECTOR"
   "stxvd2x %x1,%y0"
   [(set_attr "type" "vecstore")])
 
@@ -1840,7 +1858,7 @@
           (match_operand:VSX_W 1 "vsx_register_operand" "<VSa>")
           (parallel [(const_int 2) (const_int 3)
                      (const_int 0) (const_int 1)])))]
-  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (<MODE>mode)"
+  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (<MODE>mode) && !TARGET_P9_VECTOR"
   "stxvd2x %x1,%y0"
   [(set_attr "type" "vecstore")])
 
@@ -1852,7 +1870,7 @@
                      (const_int 6) (const_int 7)
                      (const_int 0) (const_int 1)
                      (const_int 2) (const_int 3)])))]
-  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (V8HImode)"
+  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (V8HImode) && !TARGET_P9_VECTOR"
   "stxvd2x %x1,%y0"
   [(set_attr "type" "vecstore")])
 
@@ -1868,7 +1886,7 @@
                      (const_int 2) (const_int 3)
                      (const_int 4) (const_int 5)
                      (const_int 6) (const_int 7)])))]
-  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (V16QImode)"
+  "!BYTES_BIG_ENDIAN && VECTOR_MEM_VSX_P (V16QImode) && !TARGET_P9_VECTOR"
   "stxvd2x %x1,%y0"
   [(set_attr "type" "vecstore")])
 
@@ -2456,7 +2474,7 @@
    (set (match_operand:VSX_M2 2 "vsx_register_operand" "")
 	(mem:VSX_M2 (plus:P (match_dup 0)
 			    (match_operand:P 3 "int_reg_operand" ""))))]
-  "TARGET_VSX && TARGET_P8_FUSION"
+  "TARGET_VSX && TARGET_P8_FUSION && !TARGET_P9_VECTOR"
   "li %0,%1\t\t\t# vector load fusion\;lx<VSX_M2:VSm>x %x2,%0,%3"  
   [(set_attr "length" "8")
    (set_attr "type" "vecload")])
@@ -2467,7 +2485,7 @@
    (set (match_operand:VSX_M2 2 "vsx_register_operand" "")
 	(mem:VSX_M2 (plus:P (match_operand:P 3 "int_reg_operand" "")
 			    (match_dup 0))))]
-  "TARGET_VSX && TARGET_P8_FUSION"
+  "TARGET_VSX && TARGET_P8_FUSION && !TARGET_P9_VECTOR"
   "li %0,%1\t\t\t# vector load fusion\;lx<VSX_M2:VSm>x %x2,%0,%3"  
   [(set_attr "length" "8")
    (set_attr "type" "vecload")])
