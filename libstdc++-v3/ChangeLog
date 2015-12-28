@@ -1,3 +1,6 @@
+2015-12-27  Edward Smith-Rowland  <3dw4rd@verizon.net>
+	* include/bits/c++0x_warning.h Remove experimental language.
+
 2015-12-24  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/ext/bitmap_allocator/check_deallocate_null.cc
