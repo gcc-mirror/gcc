@@ -1,3 +1,11 @@
+2015-12-28  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* crc32.c: In the documentation, don't refer to GDB's
+	now-nonexistent crc32 implementation.  In the table-generation
+	program embedded within the documentation, change the type of
+	the induction variables i and j from int to unsigned int, to
+	avoid undefined behavior.
+
 2015-12-21  Nick Clifton  <nickc@redhat.com>
 
 	PR 66827
