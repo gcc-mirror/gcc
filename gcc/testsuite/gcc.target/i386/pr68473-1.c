@@ -1,3 +1,4 @@
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-fdiagnostics-show-caret -mno-fp-ret-in-387" } */
 
 extern long double fminl (long double __x, long double __y);
