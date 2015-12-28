@@ -69,7 +69,7 @@
   return register_operand (op, mode);
 })
 
-(define_predicate "nvptx_reg_or_mem_operand"
+(define_predicate "nvptx_nonimmediate_operand"
   (match_code "mem,reg")
 {
   return (REG_P (op) ? register_operand (op, mode)
@@ -104,7 +104,7 @@
 (define_predicate "call_insn_operand"
   (match_code "symbol_ref,reg")
 {
-  return GET_CODE (op) != SYMBOL_REF || SYMBOL_REF_FUNCTION_P (op);
+  return REG_P (op) || SYMBOL_REF_FUNCTION_P (op);
 })
 
 ;; Return true if OP is a call with parallel USEs of the argument
@@ -118,11 +118,7 @@
     {
       rtx elt = XVECEXP (op, 0, i);
 
-      if (GET_CODE (elt) != USE
-          || GET_CODE (XEXP (elt, 0)) != REG
-          || XEXP (elt, 0) == frame_pointer_rtx
-          || XEXP (elt, 0) == arg_pointer_rtx
-          || XEXP (elt, 0) == stack_pointer_rtx)
+      if (GET_CODE (elt) != USE || !REG_P (XEXP (elt, 0)))
         return false;
     }
   return true;
@@ -237,7 +233,7 @@
 
 (define_insn "zero_extendqihi2"
   [(set (match_operand:HI 0 "nvptx_register_operand" "=R,R")
-	(zero_extend:HI (match_operand:QI 1 "nvptx_reg_or_mem_operand" "R,m")))]
+	(zero_extend:HI (match_operand:QI 1 "nvptx_nonimmediate_operand" "R,m")))]
   ""
   "@
    %.\\tcvt.u16.u%T1\\t%0, %1;
@@ -246,7 +242,7 @@
 
 (define_insn "zero_extend<mode>si2"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R,R")
-	(zero_extend:SI (match_operand:QHIM 1 "nvptx_reg_or_mem_operand" "R,m")))]
+	(zero_extend:SI (match_operand:QHIM 1 "nvptx_nonimmediate_operand" "R,m")))]
   ""
   "@
    %.\\tcvt.u32.u%T1\\t%0, %1;
@@ -255,7 +251,7 @@
 
 (define_insn "zero_extend<mode>di2"
   [(set (match_operand:DI 0 "nvptx_register_operand" "=R,R")
-	(zero_extend:DI (match_operand:QHSIM 1 "nvptx_reg_or_mem_operand" "R,m")))]
+	(zero_extend:DI (match_operand:QHSIM 1 "nvptx_nonimmediate_operand" "R,m")))]
   ""
   "@
    %.\\tcvt.u64.u%T1\\t%0, %1;
@@ -264,7 +260,7 @@
 
 (define_insn "extend<mode>si2"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R,R")
-	(sign_extend:SI (match_operand:QHIM 1 "nvptx_reg_or_mem_operand" "R,m")))]
+	(sign_extend:SI (match_operand:QHIM 1 "nvptx_nonimmediate_operand" "R,m")))]
   ""
   "@
    %.\\tcvt.s32.s%T1\\t%0, %1;
@@ -273,7 +269,7 @@
 
 (define_insn "extend<mode>di2"
   [(set (match_operand:DI 0 "nvptx_register_operand" "=R,R")
-	(sign_extend:DI (match_operand:QHSIM 1 "nvptx_reg_or_mem_operand" "R,m")))]
+	(sign_extend:DI (match_operand:QHSIM 1 "nvptx_nonimmediate_operand" "R,m")))]
   ""
   "@
    %.\\tcvt.s64.s%T1\\t%0, %1;
@@ -281,7 +277,7 @@
   [(set_attr "subregs_ok" "true")])
 
 (define_insn "trunchiqi2"
-  [(set (match_operand:QI 0 "nvptx_reg_or_mem_operand" "=R,m")
+  [(set (match_operand:QI 0 "nvptx_nonimmediate_operand" "=R,m")
 	(truncate:QI (match_operand:HI 1 "nvptx_register_operand" "R,R")))]
   ""
   "@
@@ -290,7 +286,7 @@
   [(set_attr "subregs_ok" "true")])
 
 (define_insn "truncsi<mode>2"
-  [(set (match_operand:QHIM 0 "nvptx_reg_or_mem_operand" "=R,m")
+  [(set (match_operand:QHIM 0 "nvptx_nonimmediate_operand" "=R,m")
 	(truncate:QHIM (match_operand:SI 1 "nvptx_register_operand" "R,R")))]
   ""
   "@
@@ -299,7 +295,7 @@
   [(set_attr "subregs_ok" "true")])
 
 (define_insn "truncdi<mode>2"
-  [(set (match_operand:QHSIM 0 "nvptx_reg_or_mem_operand" "=R,m")
+  [(set (match_operand:QHSIM 0 "nvptx_nonimmediate_operand" "=R,m")
 	(truncate:QHSIM (match_operand:DI 1 "nvptx_register_operand" "R,R")))]
   ""
   "@

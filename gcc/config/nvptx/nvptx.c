@@ -1808,14 +1808,14 @@ nvptx_output_call_insn (rtx_insn *insn, rtx result, rtx callee)
     {
       rtx t = XEXP (XVECEXP (pat, 0, argno), 0);
       machine_mode mode = GET_MODE (t);
+      const char *ptx_type = nvptx_ptx_type_from_mode (mode, false);
 
       /* Mode splitting has already been done.  */
-      fprintf (asm_out_file, "\t\t.param%s %%out_arg%d%s;\n",
-	       nvptx_ptx_type_from_mode (mode, false), argno,
-	       mode == QImode || mode == HImode ? "[1]" : "");
-      fprintf (asm_out_file, "\t\tst.param%s [%%out_arg%d], %%r%d;\n",
-	       nvptx_ptx_type_from_mode (mode, false), argno,
-	       REGNO (t));
+      fprintf (asm_out_file, "\t\t.param%s %%out_arg%d;\n"
+	       "\t\tst.param%s [%%out_arg%d], ",
+	       ptx_type, argno, ptx_type, argno);
+      output_reg (asm_out_file, REGNO (t), VOIDmode);
+      fprintf (asm_out_file, ";\n");
     }
 
   fprintf (asm_out_file, "\t\tcall ");
