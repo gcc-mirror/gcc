@@ -1,5 +1,6 @@
 ! { dg-do run }
-! { dg-options "-fcoarray=lib -lcaf_single" }
+! { dg-options "-fcoarray=lib -lcaf_single -latomic" { target libatomic_available } }
+! { dg-options "-fcoarray=lib -lcaf_single" { target { ! libatomic_available } } }
 !
 ! Run-time test for memory consistency
 !
