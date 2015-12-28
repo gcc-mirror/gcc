@@ -1,5 +1,7 @@
 2015-12-28  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.dg/pr49551.c: Skip on hppa*-*-hpux*.
+
 	* gcc.dg/torture/pr67609.c: Add -fno-common option on hppa*-*-hpux*.
 
 2015-12-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
