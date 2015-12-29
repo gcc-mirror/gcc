@@ -19690,7 +19690,8 @@ hardware instructions.
 
 The VSX instruction set (@option{-mvsx}, @option{-mcpu=power7}, or
 @option{-mcpu=power8}) must be enabled to use the @option{-mfloat128}
-option.
+option.  The @code{-mfloat128} option only works on PowerPC 64-bit
+Linux systems.
 
 @item -mfloat128-hardware
 @itemx -mno-float128-hardware
