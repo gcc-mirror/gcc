@@ -483,7 +483,18 @@ __mpx_wrapper_memmove (void *dst, const void *src, size_t n)
   __bnd_chk_ptr_bounds (dst, n);
   __bnd_chk_ptr_bounds (src, n);
 
+  /* When we copy exactly one pointer it is faster to
+     just use bndldx + bndstx.  */
+  if (n == sizeof (void *))
+  {
+    const void **s = (const void**)src;
+    void **d = (void**)dst;
+    *d = *s;
+    return dst;
+  }
+
   memmove (dst, src, n);
+
   /* Not necessary to copy bounds if size is less then size of pointer
      or SRC==DST.  */
   if ((n >= sizeof (void *)) && (src != dst))

@@ -1,3 +1,8 @@
+2015-12-29  Tsvetkova Alexandra  <aleksandra.tsvetkova@intel.com>
+
+	* libmpxwrap/mpx_wrappers.c (__mpx_wrapper_memmove): Special
+	handling of one pointer copy.
+
 2015-12-11  Tsvetkova Alexandra  <aleksandra.tsvetkova@intel.com>
 
 	* mpxrt/Makefile.am (libmpx_la_LDFLAGS): Add -version-info
