@@ -1,7 +1,7 @@
 /* Test that the compiler properly optimizes vector rotate instructions vector
    into prot on XOP systems.  */
 
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -mxop -mno-avx2 -ftree-vectorize" } */
 
 extern void exit (int);

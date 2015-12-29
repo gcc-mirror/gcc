@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -mtune=k8" } */
 
 typedef long long __v2di __attribute__ ((__vector_size__ (16)));

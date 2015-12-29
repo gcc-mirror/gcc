@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -fPIC -mx32 -maddress-mode=long" } */
 

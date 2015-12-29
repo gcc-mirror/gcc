@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -mx32 -maddress-mode=long -ftree-vectorize" } */
 
 struct s2{

@@ -1,4 +1,4 @@
-/* { dg-do run { target { ! { ia32 } } } } */
+/* { dg-do run { target { ! ia32 } } } */
 /* { dg-options "-mavx512f -O2" } */
 /* { dg-require-effective-target avx512f } */
 

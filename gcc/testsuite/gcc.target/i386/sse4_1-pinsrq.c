@@ -1,4 +1,4 @@
-/* { dg-do run { target { ! { ia32 } } } } */
+/* { dg-do run { target { ! ia32 } } } */
 /* { dg-require-effective-target sse4 } */
 /* { dg-options "-O2 -msse4.1" } */
 
