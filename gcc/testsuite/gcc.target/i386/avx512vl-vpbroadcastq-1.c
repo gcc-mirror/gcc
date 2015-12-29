@@ -4,10 +4,10 @@
 /* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 2 } } */
 /* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 2 } } */
 /* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 2 } } */
-/* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+%r\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 { target { ! { ia32 } } } } } */
-/* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+%r\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 { target { ! { ia32 } } } } } */
-/* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+%r\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 { target { ! { ia32 } } } } } */
-/* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+%r\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 { target { ! { ia32 } } } } } */
+/* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+%r\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+%r\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+%r\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpbroadcastq\[ \\t\]+%r\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 { target { ! ia32 } } } } */
 
 #include <immintrin.h>
 

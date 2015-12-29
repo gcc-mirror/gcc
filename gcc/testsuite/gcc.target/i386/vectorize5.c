@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -ftree-vectorize -mveclibabi=acml -ffast-math -mtune=generic" } */
 
 double x[256];

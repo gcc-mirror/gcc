@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -mfsgsbase" } */
 /* { dg-final { scan-assembler "wrgsbase\[ \t]+(%|)(edi|ecx)" } } */
 

@@ -1,5 +1,9 @@
 2015-12-28  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.target/i386/*.c: Remove extra braces from target selectors.
+
+2015-12-28  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.target/i386/pr68473-1.c: Add dg-do compile directive.
 
 2015-12-28  John David Anglin  <danglin@gcc.gnu.org>

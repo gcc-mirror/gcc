@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -mavx512f" } */
 /* { dg-final { scan-assembler-times "vcvttss2siq\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+.{6}(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvttss2siq\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%xmm\[0-9\]+.{6}(?:\n|\[ \\t\]+#)" 1 } } */

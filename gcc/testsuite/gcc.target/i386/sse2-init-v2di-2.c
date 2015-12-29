@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-skip-if "" { *-*-* } { "-march=*" } { "-march=core2" } } */
 /* { dg-options "-O2 -msse4 -march=core2 -dp" } */
 

@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2" } */
 
 typedef unsigned int UTItype __attribute__ ((mode (TI)));

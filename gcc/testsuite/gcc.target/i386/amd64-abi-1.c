@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-mno-sse" } */
 /* { dg-additional-options "-mabi=sysv" { target *-*-mingw* } } */
 

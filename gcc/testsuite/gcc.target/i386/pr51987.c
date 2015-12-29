@@ -1,5 +1,5 @@
 /* PR tree-optimization/51987 */
-/* { dg-do run { target { ! { ia32 } } } } */
+/* { dg-do run { target { ! ia32 } } } */
 /* { dg-options "-O3" } */
 
 extern void abort (void);

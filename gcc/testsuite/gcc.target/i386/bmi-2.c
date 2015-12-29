@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 }  } } } */
+/* { dg-do compile { target { ! ia32  } } } */
 /* { dg-options "-O2 -fno-ipa-icf -mbmi " } */
 /* { dg-final { scan-assembler "andn\[^\\n]*rax" } } */
 /* { dg-final { scan-assembler-times "bextr\[ \\t]+\[^\\n]*rax" 2 } } */
