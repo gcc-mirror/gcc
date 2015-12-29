@@ -1,3 +1,8 @@
+2015-12-29  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/69011
+	* gfortran.dg/allocate_with_source_16.f90: New test.
+
 2015-12-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/*.c: Remove extra braces from target selectors.

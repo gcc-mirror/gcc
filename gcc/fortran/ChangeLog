@@ -1,3 +1,10 @@
+2015-12-29  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/69011
+	* trans-stmt.c (gfc_trans_allocate): Unwrap a NOP_EXPR to make sure
+	the actual type of the source=-expr is used when it is of class type.
+	Furthermore prevent an ICE.
+
 2015-12-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/68196
