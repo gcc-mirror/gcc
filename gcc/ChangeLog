@@ -1,3 +1,37 @@
+2015-12-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (init_float128_ieee): Remove IEEE 128-bit
+	comparison functions in cmp_optab and ucmp_optab.
+	(rs6000_generate_compare): Rewrite IEEE 128-bit floating point
+	software emulation comparisons to only use __eqkf2, __gekf2,
+	__lekf2, and __unordkf2 functions.
+	(rs6000_invalid_binary_op): Add support for -mfloat128-convert.
+
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Define
+	__FLOAT128_HARDWARE__ if hardware IEEE 128-bit support is
+	available.
+
+	* config/rs6000/rs6000.opt (-mfloat128-convert): Add debug switch
+	to allow IBM extended double and IEEE 128-bit floating point to be
+	converted with default conversions.
+
+	* config/rs6000/rs6000.md (extendkftf2): Add converters between
+	KFmode and TFmode if -mabi=ieeelongdouble.
+	(trunctfkf2): Likewise.
+	(ieee128_mfvsrd): Split 64-bit integer conversions into 32-bit and
+	64-bit insns.
+	(ieee128_mfvsrd_64bit): Likewise.
+	(ieee128_mfvsrd_32bit): Likewise.
+	(ieee128_mtvsrd): Likewise.
+	(ieee128_mtvsrd_64bit): Likewise.
+	(ieee128_mtvsrd_32bit): Likewise.
+
+	* doc/extend.texi (Floating Types): Document that complex
+	__float128 does not work currently.
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document that
+	-mfloat128 is only supported on PowerPC 64-bit Linux systems.
+
 2015-12-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_le_vsx_move): Verify that

@@ -16501,8 +16501,6 @@ init_float128_ieee (machine_mode mode)
       set_optab_libfunc (lt_optab, mode, "__ltkf2");
       set_optab_libfunc (le_optab, mode, "__lekf2");
       set_optab_libfunc (unord_optab, mode, "__unordkf2");
-      set_optab_libfunc (cmp_optab, mode, "__cmpokf2");		/* fcmpo */
-      set_optab_libfunc (ucmp_optab, mode, "__cmpukf2");	/* fcmpu */
 
       set_conv_libfunc (sext_optab, mode, SFmode, "__extendsfkf2");
       set_conv_libfunc (sext_optab, mode, DFmode, "__extenddfkf2");
@@ -20297,7 +20295,9 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
   rtx op0 = XEXP (cmp, 0);
   rtx op1 = XEXP (cmp, 1);
 
-  if (FLOAT_MODE_P (mode))
+  if (!TARGET_FLOAT128_HW && FLOAT128_VECTOR_P (mode))
+    comp_mode = CCmode;
+  else if (FLOAT_MODE_P (mode))
     comp_mode = CCFPmode;
   else if (code == GTU || code == LTU
 	   || code == GEU || code == LEU)
@@ -20503,106 +20503,77 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
       emit_insn (cmp);
     }
 
-  /* IEEE 128-bit support in VSX registers.  If we do not have IEEE 128-bit
-     hardware, the comparison functions (__cmpokf2 and __cmpukf2) returns 0..15
-     that is laid out the same way as the PowerPC CR register would for a
-     normal floating point comparison from the fcmpo and fcmpu
-     instructions.  */
-  else if (!TARGET_FLOAT128_HW && FLOAT128_IEEE_P (mode))
+  /* IEEE 128-bit support in VSX registers when we do not have hardware
+     support.  */
+  else if (!TARGET_FLOAT128_HW && FLOAT128_VECTOR_P (mode))
     {
-      rtx and_reg = gen_reg_rtx (SImode);
+      rtx libfunc = NULL_RTX;
+      bool uneq_or_ltgt = false;
       rtx dest = gen_reg_rtx (SImode);
-      rtx libfunc = optab_libfunc (ucmp_optab, mode);
-      HOST_WIDE_INT mask_value = 0;
-
-      /* Values that __cmpokf2/__cmpukf2 returns.  */
-#define PPC_CMP_UNORDERED	0x1		/* isnan (a) || isnan (b).  */
-#define PPC_CMP_EQUAL		0x2		/* a == b.  */
-#define PPC_CMP_GREATER_THEN	0x4		/* a > b.  */
-#define PPC_CMP_LESS_THEN	0x8		/* a < b.  */
 
       switch (code)
 	{
 	case EQ:
-	  mask_value = PPC_CMP_EQUAL;
-	  code = NE;
-	  break;
-
 	case NE:
-	  mask_value = PPC_CMP_EQUAL;
-	  code = EQ;
+	  libfunc = optab_libfunc (eq_optab, mode);
 	  break;
 
 	case GT:
-	  mask_value = PPC_CMP_GREATER_THEN;
-	  code = NE;
-	  break;
-
 	case GE:
-	  mask_value = PPC_CMP_GREATER_THEN | PPC_CMP_EQUAL;
-	  code = NE;
+	  libfunc = optab_libfunc (ge_optab, mode);
 	  break;
 
 	case LT:
-	  mask_value = PPC_CMP_LESS_THEN;
-	  code = NE;
-	  break;
-
 	case LE:
-	  mask_value = PPC_CMP_LESS_THEN | PPC_CMP_EQUAL;
-	  code = NE;
-	  break;
-
-	case UNLE:
-	  mask_value = PPC_CMP_GREATER_THEN;
-	  code = EQ;
-	  break;
-
-	case UNLT:
-	  mask_value = PPC_CMP_GREATER_THEN | PPC_CMP_EQUAL;
-	  code = EQ;
-	  break;
-
-	case UNGE:
-	  mask_value = PPC_CMP_LESS_THEN;
-	  code = EQ;
-	  break;
-
-	case UNGT:
-	  mask_value = PPC_CMP_LESS_THEN | PPC_CMP_EQUAL;
-	  code = EQ;
-	  break;
-
-	case UNEQ:
-	  mask_value = PPC_CMP_EQUAL | PPC_CMP_UNORDERED;
-	  code = NE;
-
-	case LTGT:
-	  mask_value = PPC_CMP_EQUAL | PPC_CMP_UNORDERED;
-	  code = EQ;
+	  libfunc = optab_libfunc (le_optab, mode);
 	  break;
 
 	case UNORDERED:
-	  mask_value = PPC_CMP_UNORDERED;
-	  code = NE;
+	case ORDERED:
+	  libfunc = optab_libfunc (unord_optab, mode);
+	  code = (code == UNORDERED) ? NE : EQ;
 	  break;
 
-	case ORDERED:
-	  mask_value = PPC_CMP_UNORDERED;
-	  code = EQ;
+	case UNGE:
+	case UNGT:
+	  libfunc = optab_libfunc (le_optab, mode);
+	  code = (code == UNGE) ? GE : GT;
+	  break;
+
+	case UNLE:
+	case UNLT:
+	  libfunc = optab_libfunc (ge_optab, mode);
+	  code = (code == UNLE) ? LE : LT;
+	  break;
+
+	case UNEQ:
+	case LTGT:
+	  libfunc = optab_libfunc (le_optab, mode);
+	  uneq_or_ltgt = true;
+	  code = (code = UNEQ) ? NE : EQ;
 	  break;
 
 	default:
 	  gcc_unreachable ();
 	}
 
-      gcc_assert (mask_value != 0);
-      and_reg = emit_library_call_value (libfunc, and_reg, LCT_CONST, SImode, 2,
-					 op0, mode, op1, mode);
+      gcc_assert (libfunc);
+      dest = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
+				      SImode, 2, op0, mode, op1, mode);
 
-      emit_insn (gen_andsi3 (dest, and_reg, GEN_INT (mask_value)));
-      compare_result = gen_reg_rtx (CCmode);
-      comp_mode = CCmode;
+      /* If this is UNEQ or LTGT, we call __lekf2, which returns -1 for less
+	 than, 0 for equal, +1 for greater, and +2 for nan.  We add 1, to give
+	 a value of 0..3, and then do and AND immediate of 1 to isolate whether
+	 it is 0/Nan (i.e. bottom bit is 0), or less than/greater than
+	 (i.e. bottom bit is 1).  */
+      if (uneq_or_ltgt)
+	{
+	  rtx add_result = gen_reg_rtx (SImode);
+	  rtx and_result = gen_reg_rtx (SImode);
+	  emit_insn (gen_addsi3 (add_result, dest, GEN_INT (1)));
+	  emit_insn (gen_andsi3 (and_result, add_result, GEN_INT (1)));
+	  dest = and_result;
+	}
 
       emit_insn (gen_rtx_SET (compare_result,
 			      gen_rtx_COMPARE (comp_mode, dest, const0_rtx)));
@@ -20706,24 +20677,29 @@ rs6000_invalid_binary_op (int op ATTRIBUTE_UNUSED,
     mode2 = GET_MODE_INNER (mode2);
 
   /* Don't allow IEEE 754R 128-bit binary floating point and IBM extended
-     double to intermix.  */
+     double to intermix unless -mfloat128-convert.  */
   if (mode1 == mode2)
     return NULL;
 
-  if ((mode1 == KFmode && mode2 == IFmode)
-      || (mode1 == IFmode && mode2 == KFmode))
-    return N_("__float128 and __ibm128 cannot be used in the same expression");
+  if (!TARGET_FLOAT128_CVT)
+    {
+      if ((mode1 == KFmode && mode2 == IFmode)
+	  || (mode1 == IFmode && mode2 == KFmode))
+	return N_("__float128 and __ibm128 cannot be used in the same "
+		  "expression");
 
-  if (TARGET_IEEEQUAD
-      && ((mode1 == IFmode && mode2 == TFmode)
-	  || (mode1 == TFmode && mode2 == IFmode)))
-    return N_("__ibm128 and long double cannot be used in the same expression");
+      if (TARGET_IEEEQUAD
+	  && ((mode1 == IFmode && mode2 == TFmode)
+	      || (mode1 == TFmode && mode2 == IFmode)))
+	return N_("__ibm128 and long double cannot be used in the same "
+		  "expression");
 
-  if (!TARGET_IEEEQUAD
-      && ((mode1 == KFmode && mode2 == TFmode)
-	  || (mode1 == TFmode && mode2 == KFmode)))
-    return N_("__float128 and long double cannot be used in the same "
-	      "expression");
+      if (!TARGET_IEEEQUAD
+	  && ((mode1 == KFmode && mode2 == TFmode)
+	      || (mode1 == TFmode && mode2 == KFmode)))
+	return N_("__float128 and long double cannot be used in the same "
+		  "expression");
+    }
 
   return NULL;
 }
