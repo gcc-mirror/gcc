@@ -1,3 +1,8 @@
+2015-12-30  Nathan Sidwell  <nathan@acm.org>
+
+	* config/nvptx/nvptx.c (nvptx_assemble_undefined_decl): Check
+	it's not a constant pool object.
+
 2015-12-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (init_float128_ieee): Remove IEEE 128-bit
