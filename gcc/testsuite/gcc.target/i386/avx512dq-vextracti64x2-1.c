@@ -3,7 +3,7 @@
 /* { dg-final { scan-assembler-times "vextracti64x2\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+.{7}(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vextracti64x2\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+.{7}\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vextracti64x2\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+.{7}\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
-/* { dg-final { scan-assembler-times "vextracti64x2\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+.{7}(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vextracti(?:128|64x2)\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+.{7}(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vextracti64x2\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+.{7}\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vextracti64x2\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+.{7}\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
 

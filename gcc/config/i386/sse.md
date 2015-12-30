@@ -7018,28 +7018,50 @@
   DONE;
 })
 
-(define_insn "vec_extract_hi_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=v,<store_mask_constraint>")
-	(vec_select:<ssehalfvecmode>
-	  (match_operand:VI8F_256 1 "register_operand" "v,v")
-	  (parallel [(const_int 2) (const_int 3)])))]
-  "TARGET_AVX && <mask_avx512vl_condition> && <mask_avx512dq_condition>"
-{
-  if (TARGET_AVX512VL)
-  {
-    if (TARGET_AVX512DQ)
-      return "vextract<shuffletype>64x2\t{$0x1, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x1}";
-    else
-      return "vextract<shuffletype>32x4\t{$0x1, %1, %0|%0, %1, 0x1}";
-  }
-  else
-    return "vextract<i128>\t{$0x1, %1, %0|%0, %1, 0x1}";
-}
-  [(set_attr "type" "sselog")
-   (set_attr "prefix_extra" "1")
+(define_insn "vec_extract_hi_<mode>_maskm"
+  [(set (match_operand:<ssehalfvecmode> 0 "memory_operand" "=m")
+	(vec_merge:<ssehalfvecmode>
+	  (vec_select:<ssehalfvecmode>
+	    (match_operand:VI8F_256 1 "register_operand" "v")
+	    (parallel [(const_int 2) (const_int 3)]))
+	  (match_operand:<ssehalfvecmode> 2 "memory_operand" "0")
+	  (match_operand:<ssehalfvecmode> 3 "register_operand" "k")))]
+  "TARGET_AVX512DQ && TARGET_AVX512VL
+   && rtx_equal_p (operands[2], operands[0])"
+  "vextract<shuffletype>64x2\t{$0x1, %1, %0%{%3%}|%0%{%3%}, %1, 0x1}"
+  [(set_attr "type" "sselog1")
    (set_attr "length_immediate" "1")
-   (set_attr "memory" "none,store")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "vec_extract_hi_<mode>_mask"
+  [(set (match_operand:<ssehalfvecmode> 0 "register_operand" "=v")
+	(vec_merge:<ssehalfvecmode>
+	  (vec_select:<ssehalfvecmode>
+	    (match_operand:VI8F_256 1 "register_operand" "v")
+	    (parallel [(const_int 2) (const_int 3)]))
+	  (match_operand:<ssehalfvecmode> 2 "vector_move_operand" "0C")
+	  (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk")))]
+  "TARGET_AVX512VL && TARGET_AVX512DQ"
+  "vextract<shuffletype>64x2\t{$0x1, %1, %0%{%3%}%N2|%0%{%3%}%N2, %1, 0x1}"
+  [(set_attr "type" "sselog1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "vec_extract_hi_<mode>"
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=xm, vm")
+	(vec_select:<ssehalfvecmode>
+	  (match_operand:VI8F_256 1 "register_operand" "x, v")
+	  (parallel [(const_int 2) (const_int 3)])))]
+  "TARGET_AVX"
+  "@
+    vextract<i128>\t{$0x1, %1, %0|%0, %1, 0x1}
+    vextract<shuffletype>64x2\t{$0x1, %1, %0|%0, %1, 0x1}"
+  [(set_attr "isa" "*, avx512dq")
+   (set_attr "prefix" "vex, evex")
+   (set_attr "type" "sselog1")
+   (set_attr "length_immediate" "1")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_split

@@ -1,3 +1,10 @@
+2015-12-30  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/sse.md (define_insn "vec_extract_hi_<mode>_maskm"):
+	Remove "prefix_extra".
+	(define_insn "vec_extract_hi_<mode>_mask"): New.
+	(define_insn "vec_extract_hi_<mode>"): Remove masking.
+
 2015-12-25  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	Backport from mainline
