@@ -1,3 +1,9 @@
+2015-12-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR libfortran/68987
+	io/format.c (format_error): Remove unneeded memory cleanup.
+
 2015-12-05  Juoko Orava <jouko.orava@iki.fi>
 
 	PR fortran/50201
