@@ -1,3 +1,8 @@
+2015-12-30  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gfortran.dg/coarray_40.f90: Revise to use dg-additional-options.
+	* gfortran.dg/coarray_lib_comm_1.f90: Likewise.
+
 2015-12-29  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/69011
