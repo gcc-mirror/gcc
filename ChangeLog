@@ -1,3 +1,8 @@
+2016-01-01  Ben Elliston  <bje@gnu.org>
+
+	* config.guess: Import version 2016-01-01.
+	* config.sub: Likewise.
+
 2015-12-18  Sujoy Saraswati  <sujoy.saraswati@hpe.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
