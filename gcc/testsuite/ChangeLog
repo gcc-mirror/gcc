@@ -1,3 +1,7 @@
+2016-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69015
+	* gcc.dg/pr69015.c: New test.
 
 Copyright (C) 2016 Free Software Foundation, Inc.
 
