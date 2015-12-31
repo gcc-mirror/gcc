@@ -1,3 +1,7 @@
+2015-12-31  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/avx512f-vbroadcastsd-3.c: New test.
+
 2015-12-30  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/69037

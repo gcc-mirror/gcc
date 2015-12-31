@@ -16929,20 +16929,21 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vec_dup<mode>"
-  [(set (match_operand:AVX_VEC_DUP_MODE 0 "register_operand" "=x,x,v,x")
+  [(set (match_operand:AVX_VEC_DUP_MODE 0 "register_operand" "=x,x,x,v,x")
 	(vec_duplicate:AVX_VEC_DUP_MODE
-	  (match_operand:<ssescalarmode> 1 "nonimmediate_operand" "m,m,v,?x")))]
+	  (match_operand:<ssescalarmode> 1 "nonimmediate_operand" "m,m,x,v,?x")))]
   "TARGET_AVX"
   "@
    v<sseintprefix>broadcast<bcstscalarsuff>\t{%1, %0|%0, %1}
    vbroadcast<ssescalarmodesuffix>\t{%1, %0|%0, %1}
    v<sseintprefix>broadcast<bcstscalarsuff>\t{%x1, %0|%0, %x1}
+   v<sseintprefix>broadcast<bcstscalarsuff>\t{%x1, %g0|%g0, %x1}
    #"
   [(set_attr "type" "ssemov")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "maybe_evex")
-   (set_attr "isa" "avx2,noavx2,avx2,noavx2")
-   (set_attr "mode" "<sseinsnmode>,V8SF,<sseinsnmode>,V8SF")])
+   (set_attr "isa" "avx2,noavx2,avx2,avx512f,noavx2")
+   (set_attr "mode" "<sseinsnmode>,V8SF,<sseinsnmode>,<sseinsnmode>,V8SF")])
 
 (define_split
   [(set (match_operand:AVX2_VEC_DUP_MODE 0 "register_operand")
