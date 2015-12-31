@@ -1,3 +1,14 @@
+2015-12-30  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/69037
+	Backport from mainline:
+
+	2015-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68668
+	* c-decl.c (grokdeclarator): If ORIG_QUAL_INDIRECT is indirect, use
+	TREE_TYPE of ORIG_QUAL_TYPE, otherwise decrement ORIG_QUAL_INDIRECT.
+
 2015-12-16  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/68162
