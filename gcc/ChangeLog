@@ -1,3 +1,7 @@
+2016-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69015
+	* ifcvt.c (find_cond_trap): Give up if returnjump_p (jump).
 
 Copyright (C) 2016 Free Software Foundation, Inc.
 

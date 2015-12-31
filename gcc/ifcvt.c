@@ -4526,8 +4526,11 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
     return FALSE;
 
   /* If the conditional jump is more than just a conditional jump, then
-     we can not do if-conversion on this block.  */
-  if (! onlyjump_p (jump))
+     we can not do if-conversion on this block.  Give up for returnjump_p,
+     changing a conditional return followed by unconditional trap for
+     conditional trap followed by unconditional return is likely not
+     beneficial and harder to handle.  */
+  if (! onlyjump_p (jump) || returnjump_p (jump))
     return FALSE;
 
   /* We must be comparing objects whose modes imply the size.  */
