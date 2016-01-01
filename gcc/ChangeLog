@@ -1,3 +1,9 @@
+2016-01-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/68917
+	* config/tilegx/tilegx.md (clzsi2): Don't create DI subregs of
+	SI values.  Explicitly convert SI to DI and vice-versa.
+
 2016-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69070
