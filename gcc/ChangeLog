@@ -1,5 +1,9 @@
 2016-01-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/69055
+	* ubsan.c (ubsan_instrument_float_cast): Call
+	initialize_sanitizer_builtins.
+
 	PR target/69015
 	* ifcvt.c (find_cond_trap): Give up if returnjump_p (jump).
 

@@ -1,5 +1,8 @@
 2016-01-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/69055
+	* gfortran.dg/pr69055.f90: New test.
+
 	PR target/69015
 	* gcc.dg/pr69015.c: New test.
 

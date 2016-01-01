@@ -1588,6 +1588,7 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr, tree arg)
     {
       location_t *loc_ptr = NULL;
       unsigned num_locations = 0;
+      initialize_sanitizer_builtins ();
       /* Figure out if we can propagate location to ubsan_data and use new
          style handlers in libubsan.  */
       if (ubsan_use_new_style_p (loc))
