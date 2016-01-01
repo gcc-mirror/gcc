@@ -1,5 +1,8 @@
 2016-01-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/69070
+	* gcc.dg/pr69070.c: New test.
+
 	PR sanitizer/69055
 	* gfortran.dg/pr69055.f90: New test.
 
