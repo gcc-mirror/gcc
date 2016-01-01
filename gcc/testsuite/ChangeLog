@@ -1,6 +1,12 @@
 2016-01-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/68867
+	* gfortran.dg/default_format_denormal_2.f90: Fix the dg regular
+	expression.
+
+2016-01-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/68867
 	* gfortran.dg/default_format_denormal_2.f90: XFAIL for all
 	PowerPC.
 
