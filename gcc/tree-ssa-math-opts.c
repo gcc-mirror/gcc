@@ -1538,7 +1538,8 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
   /* Don't perform the operation if flag_signaling_nans is on
      and the operand is a signaling NaN.  */
   if (HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg1)))
-      && (REAL_VALUE_ISSIGNALING_NAN (TREE_REAL_CST (arg0))
+      && ((TREE_CODE (arg0) == REAL_CST
+	   && REAL_VALUE_ISSIGNALING_NAN (TREE_REAL_CST (arg0)))
 	  || REAL_VALUE_ISSIGNALING_NAN (TREE_REAL_CST (arg1))))
     return NULL_TREE;
 

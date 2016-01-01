@@ -1,5 +1,9 @@
 2016-01-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/69070
+	* tree-ssa-math-opts.c (gimple_expand_builtin_pow): Only test
+	REAL_VALUE_ISSIGNALING_NAN on arg0 if arg0 is a REAL_CST.
+
 	PR sanitizer/69055
 	* ubsan.c (ubsan_instrument_float_cast): Call
 	initialize_sanitizer_builtins.
