@@ -10284,7 +10284,7 @@ references to local frame addresses.
 @item -fstack-protector-explicit
 @opindex fstack-protector-explicit
 Like @option{-fstack-protector} but only protects those functions which
-have the @code{stack_protect} attribute
+have the @code{stack_protect} attribute.
 
 @item -fstdarg-opt
 @opindex fstdarg-opt
@@ -24418,21 +24418,20 @@ for @option{-fpie} and 2 for @option{-fPIE}.
 
 @item -fno-plt
 @opindex fno-plt
-Do not use PLT for external function calls in position-independent code.
-Instead, load callee address at call site from GOT and branch to it.
+Do not use the PLT for external function calls in position-independent code.
+Instead, load the callee address at call sites from the GOT and branch to it.
 This leads to more efficient code by eliminating PLT stubs and exposing
-GOT load to optimizations.  On architectures such as 32-bit x86 where
-PLT stubs expect GOT pointer in a specific register, this gives more
-register allocation freedom to the compiler.  Lazy binding requires PLT:
+GOT loads to optimizations.  On architectures such as 32-bit x86 where
+PLT stubs expect the GOT pointer in a specific register, this gives more
+register allocation freedom to the compiler.
+Lazy binding requires use of the PLT; 
 with @option{-fno-plt} all external symbols are resolved at load time.
 
-Alternatively, function attribute @code{noplt} can be used to avoid PLT
-for calls to specific external functions by marking those functions with
-this attribute.
+Alternatively, the function attribute @code{noplt} can be used to avoid calls
+through the PLT for specific external functions.
 
-Additionally, a few targets also convert calls to those functions that are
-marked to not use the PLT to use the GOT instead for non-position independent
-code.
+In position-dependent code, a few targets also convert calls to
+functions that are marked to not use the PLT to use the GOT instead.
 
 @item -fno-jump-tables
 @opindex fno-jump-tables

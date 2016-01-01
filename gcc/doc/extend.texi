@@ -2932,6 +2932,36 @@ my_memcpy (void *dest, const void *src, size_t len)
         __attribute__((nonnull));
 @end smallexample
 
+@item noplt
+@cindex @code{noplt} function attribute
+The @code{noplt} attribute is the counterpart to option @option{-fno-plt}.
+Calls to functions marked with this attribute in position-independent code
+do not use the PLT.
+
+@smallexample
+@group
+/* Externally defined function foo.  */
+int foo () __attribute__ ((noplt));
+
+int
+main (/* @r{@dots{}} */)
+@{
+  /* @r{@dots{}} */
+  foo ();
+  /* @r{@dots{}} */
+@}
+@end group
+@end smallexample
+
+The @code{noplt} attribute on function @code{foo}
+tells the compiler to assume that
+the function @code{foo} is externally defined and that the call to
+@code{foo} must avoid the PLT
+in position-independent code.
+
+In position-dependent code, a few targets also convert calls to
+functions that are marked to not use the PLT to use the GOT instead.
+
 @item noreturn
 @cindex @code{noreturn} function attribute
 @cindex functions that never return
@@ -2976,35 +3006,6 @@ function cannot throw an exception.  For example, most functions in
 the standard C library can be guaranteed not to throw an exception
 with the notable exceptions of @code{qsort} and @code{bsearch} that
 take function pointer arguments.
-
-@item noplt
-@cindex @code{noplt} function attribute
-The @code{noplt} attribute is the counterpart to option @option{-fno-plt} and
-does not use PLT for calls to functions marked with this attribute in position
-independent code. 
-
-@smallexample
-@group
-/* Externally defined function foo.  */
-int foo () __attribute__ ((noplt));
-
-int
-main (/* @r{@dots{}} */)
-@{
-  /* @r{@dots{}} */
-  foo ();
-  /* @r{@dots{}} */
-@}
-@end group
-@end smallexample
-
-The @code{noplt} attribute on function foo tells the compiler to assume that
-the function foo is externally defined and the call to foo must avoid the PLT
-in position independent code.
-
-Additionally, a few targets also convert calls to those functions that are
-marked to not use the PLT to use the GOT instead for non-position independent
-code.
 
 @item optimize
 @cindex @code{optimize} function attribute
@@ -3120,44 +3121,35 @@ with a copy that redefines NULL appropriately.
 The warnings for missing or incorrect sentinels are enabled with
 @option{-Wformat}.
 
-@item stack_protect
-@cindex @code{stack_protect} function attribute
-This function attribute make a stack protection of the function if 
-flags @option{fstack-protector} or @option{fstack-protector-strong}
-or @option{fstack-protector-explicit} are set.
-
-@item target_clones (@var{options})
-@cindex @code{target_clones} function attribute
-The @code{target_clones} attribute is used to specify that a function is to
-be cloned into multiple versions compiled with different target options
-than specified on the command line.  The supported options and restrictions
-are the same as for @code{target} attribute.
-
-For instance on an x86, you could compile a function with
-@code{target_clones("sse4.1,avx")}. It will create 2 function clones,
-one compiled with @option{-msse4.1} and another with @option{-mavx}.
-At the function call it will create resolver @code{ifunc}, that will
-dynamically call a clone suitable for current architecture.
-
 @item simd
 @itemx simd("@var{mask}")
-@cindex @code{simd} function attribute.
+@cindex @code{simd} function attribute
 This attribute enables creation of one or more function versions that
 can process multiple arguments using SIMD instructions from a
 single invocation.  Specifying this attribute allows compiler to
 assume that such versions are available at link time (provided
 in the same or another translation unit).  Generated versions are
-target dependent and described in corresponding Vector ABI document.  For
+target-dependent and described in the corresponding Vector ABI document.  For
 x86_64 target this document can be found
 @w{@uref{https://sourceware.org/glibc/wiki/libmvec?action=AttachFile&do=view&target=VectorABI.txt,here}}.
+
+The optional argument @var{mask} may have the value
+@code{notinbranch} or @code{inbranch},
+and instructs the compiler to generate non-masked or masked
+clones correspondingly. By default, all clones are generated.
+
 The attribute should not be used together with Cilk Plus @code{vector}
 attribute on the same function.
-If the attribute is specified and @code{#pragma omp declare simd}
-present on a declaration and @code{-fopenmp} or @code{-fopenmp-simd}
+
+If the attribute is specified and @code{#pragma omp declare simd} is
+present on a declaration and the @option{-fopenmp} or @option{-fopenmp-simd}
 switch is specified, then the attribute is ignored.
-The optional argument @var{mask} may have "notinbranch" or "inbranch"
-value and instructs the compiler to generate non-masked or masked
-clones correspondingly. By default, all clones are generated.
+
+@item stack_protect
+@cindex @code{stack_protect} function attribute
+This attribute adds stack protection code to the function if 
+flags @option{-fstack-protector}, @option{-fstack-protector-strong}
+or @option{-fstack-protector-explicit} are set.
 
 @item target (@var{options})
 @cindex @code{target} function attribute
@@ -3195,6 +3187,19 @@ The options supported are specific to each target; refer to @ref{x86
 Function Attributes}, @ref{PowerPC Function Attributes},
 @ref{ARM Function Attributes},and @ref{Nios II Function Attributes},
 for details.
+
+@item target_clones (@var{options})
+@cindex @code{target_clones} function attribute
+The @code{target_clones} attribute is used to specify that a function
+be cloned into multiple versions compiled with different target options
+than specified on the command line.  The supported options and restrictions
+are the same as for @code{target} attribute.
+
+For instance, on an x86, you could compile a function with
+@code{target_clones("sse4.1,avx")}.  GCC creates two function clones,
+one compiled with @option{-msse4.1} and another with @option{-mavx}.
+It also creates a resolver function (see the @code{ifunc} attribute
+above) that dynamically selects a clone suitable for current architecture.
 
 @item unused
 @cindex @code{unused} function attribute
