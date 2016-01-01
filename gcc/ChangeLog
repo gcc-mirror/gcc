@@ -1,3 +1,15 @@
+2016-01-01  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (Common Function Attributes) <noplt>: Move
+	to correct alphabetization of table.  Copy-edit and correct
+	markup.
+	<stack_protect>: Likewise.
+	<target_clones>: Likewise.
+	<simd>: Likewise.
+	* doc/invoke.texi (Optimize Options) <-fstack-protector-explicit>:
+	Correct punctuation.
+	(Code Gen Options) <-fno-plt>: Copy-edit.
+
 2016-01-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR target/68917
