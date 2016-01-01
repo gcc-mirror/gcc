@@ -1,3 +1,8 @@
+2016-01-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68864
+	* gfortran.dg/pr68864.f90: New test.
+
 2016-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69070
@@ -8,7 +13,7 @@
 
 	PR target/69015
 	* gcc.dg/pr69015.c: New test.
-
+
 Copyright (C) 2016 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,

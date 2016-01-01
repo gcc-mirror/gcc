@@ -1,3 +1,9 @@
+2016-01-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/68864
+	* trans-array.c (evaluate_bound): If deferred, test that 'desc'
+	is an array descriptor before using gfc_conv_descriptor_xxx.
+
 2015-12-29  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/69011
