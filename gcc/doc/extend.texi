@@ -2877,6 +2877,12 @@ prologue which decides whether to split the stack.  Functions with the
 @code{no_split_stack} attribute do not have that prologue, and thus
 may run with only a small amount of stack space available.
 
+@item no_stack_limit
+@cindex @code{no_stack_limit} function attribute
+This attribute locally overrides the @option{-fstack-limit-register}
+and @option{-fstack-limit-symbol} command-line options; it has the effect
+of disabling stack limit checking in the function it applies to.
+
 @item noclone
 @cindex @code{noclone} function attribute
 This function attribute prevents a function from being considered for
