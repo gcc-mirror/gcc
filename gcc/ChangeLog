@@ -1,5 +1,13 @@
 2016-01-01  Sandra Loosemore  <sandra@codesourcery.com>
 
+	PR 1078
+
+	* extend.texi (Common Function Attributes) <no_stack_limit>: New.
+	* invoke.texi (Code Gen Options) <-fno-stack-limit>: Add pointer
+	to corresponding attribute.
+
+2016-01-01  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* doc/extend.texi (Common Function Attributes) <noplt>: Move
 	to correct alphabetization of table.  Copy-edit and correct
 	markup.

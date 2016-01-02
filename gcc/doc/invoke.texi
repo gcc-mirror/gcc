@@ -24631,6 +24631,9 @@ and grows downwards, you can use the flags
 @option{-Wl,--defsym,__stack_limit=0x7ffe0000} to enforce a stack limit
 of 128KB@.  Note that this may only work with the GNU linker.
 
+You can locally override stack limit checking by using the
+@code{no_stack_limit} function attribute (@pxref{Function Attributes}).
+
 @item -fsplit-stack
 @opindex fsplit-stack
 Generate code to automatically split the stack before it overflows.
