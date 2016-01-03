@@ -1,3 +1,8 @@
+2016-01-03  Matthias Klose  <doko@ubuntu.com>
+
+	* libtool-version: Bump soversion.
+	* include/jvm.h (GCJ_CXX_ABI_VERSION): Don't encode __GNUC_MINOR__.
+
 2015-07-24  Michael Darling  <darlingm@gmail.com>
 
 	PR other/66259
