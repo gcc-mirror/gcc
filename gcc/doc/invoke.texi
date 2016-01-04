@@ -20374,7 +20374,7 @@ Newton-Raphson steps to increase precision instead of doing a divide or
 square root and divide for floating-point arguments.  You should use
 the @option{-ffast-math} option when using @option{-mrecip} (or at
 least @option{-funsafe-math-optimizations},
-@option{-finite-math-only}, @option{-freciprocal-math} and
+@option{-ffinite-math-only}, @option{-freciprocal-math} and
 @option{-fno-trapping-math}).  Note that while the throughput of the
 sequence is generally higher than the throughput of the non-reciprocal
 instruction, the precision of the sequence can be decreased by up to 2
@@ -23366,7 +23366,7 @@ to increase precision instead of @code{DIVSS} and @code{SQRTSS}
 (and their vectorized
 variants) for single-precision floating-point arguments.  These instructions
 are generated only when @option{-funsafe-math-optimizations} is enabled
-together with @option{-finite-math-only} and @option{-fno-trapping-math}.
+together with @option{-ffinite-math-only} and @option{-fno-trapping-math}.
 Note that while the throughput of the sequence is higher than the throughput
 of the non-reciprocal instruction, the precision of the sequence can be
 decreased by up to 2 ulp (i.e. the inverse of 1.0 equals 0.99999994).
