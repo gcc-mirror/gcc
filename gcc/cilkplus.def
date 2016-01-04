@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    CilkPlus builtins used in the GNU compiler.
-   Copyright (C) 2013-2015 Free Software Foundation, Inc.
+   Copyright (C) 2013-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

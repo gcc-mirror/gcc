@@ -2,7 +2,7 @@
 # Generate mova.md, a file containing patterns that can be implemented
 # using the h8sx mova instruction.
 
-# Copyright (C) 2004-2015 Free Software Foundation, Inc.
+# Copyright (C) 2004-2016 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -22,7 +22,7 @@
 
 echo ";; -*- buffer-read-only: t -*-"
 echo ";; Generated automatically from genmova.sh"
-echo ";; Copyright (C) 2004-2015 Free Software Foundation, Inc."
+echo ";; Copyright (C) 2004-2016 Free Software Foundation, Inc."
 echo ";;"
 echo ";; This file is part of GCC."
 echo ";;"

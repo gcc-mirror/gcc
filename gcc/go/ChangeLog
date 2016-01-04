@@ -1,5 +1,7 @@
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
+	Update copyright years.
+
 	* gccgo.texi: Bump @copyrights-go year.
 
 2015-12-21  Ian Lance Taylor  <iant@google.com>

@@ -1,5 +1,5 @@
 ;; Iterator definitions for GCC SH machine description files.
-;; Copyright (C) 2012-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2016 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;

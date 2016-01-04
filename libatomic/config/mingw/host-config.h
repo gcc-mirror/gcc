@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2015 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2016 Free Software Foundation, Inc.
    Contributed by Kai Tietz <ktietz@redhat.com>.
 
    This file is part of the GNU Atomic Library (libatomic).

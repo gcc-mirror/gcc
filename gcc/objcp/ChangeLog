@@ -1,3 +1,7 @@
+2016-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2015-11-13  Jason Merrill  <jason@redhat.com>
 
 	* config-lang.in (gtfiles): Add cp-gimplify.c.
@@ -512,7 +516,7 @@
 	* objcp-lang.c: Likewise.
 
 
-Copyright (C) 2005-2015 Free Software Foundation, Inc.
+Copyright (C) 2005-2016 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

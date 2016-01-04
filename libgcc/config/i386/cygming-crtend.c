@@ -1,5 +1,5 @@
 /* crtend object for windows32 targets.
-   Copyright (C) 2007-2015 Free Software Foundation, Inc.
+   Copyright (C) 2007-2016 Free Software Foundation, Inc.
 
    Contributed by Danny Smith <dannysmith@users.sourceforge.net>
 

@@ -1,5 +1,5 @@
 ;; ARM Cortex-A15 pipeline description
-;; Copyright (C) 2011-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2016 Free Software Foundation, Inc.
 ;;
 ;; Written by Matthew Gretton-Dann <matthew.gretton-dann@arm.com>
 

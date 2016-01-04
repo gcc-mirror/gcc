@@ -1,5 +1,5 @@
 /* Definitions of target machine for gcc for Renesas / SuperH SH using ELF.
-   Copyright (C) 1996-2015 Free Software Foundation, Inc.
+   Copyright (C) 1996-2016 Free Software Foundation, Inc.
    Contributed by Ian Lance Taylor <ian@cygnus.com>.
 
 This file is part of GCC.

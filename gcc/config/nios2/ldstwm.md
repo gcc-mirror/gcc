@@ -2,7 +2,7 @@
    This file was automatically generated using nios2-ldstwm.sml.
    Please do not edit manually.
 
-   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
    Contributed by Mentor Graphics.
 
    This file is part of GCC.

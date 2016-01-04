@@ -1,5 +1,5 @@
 /* Linux-specific atomic operations for m68k Linux.
-   Copyright (C) 2011-2015 Free Software Foundation, Inc.
+   Copyright (C) 2011-2016 Free Software Foundation, Inc.
    Based on code contributed by CodeSourcery for ARM EABI Linux.
 
 This file is part of GCC.

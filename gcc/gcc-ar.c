@@ -1,5 +1,5 @@
 /* Wrapper for ar/ranlib/nm to pass the LTO plugin.
-   Copyright (C) 2011-2015 Free Software Foundation, Inc.
+   Copyright (C) 2011-2016 Free Software Foundation, Inc.
    Contributed by Andi Kleen.
 
 This file is part of GCC.

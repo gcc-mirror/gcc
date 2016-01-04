@@ -1,5 +1,5 @@
 /* Make ucnid.h from various sources.
-   Copyright (C) 2005-2015 Free Software Foundation, Inc.
+   Copyright (C) 2005-2016 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -378,7 +378,7 @@ write_copyright (void)
 {
   static const char copyright[] = "\
 /* Unicode characters and various properties.\n\
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.\n\
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.\n\
 \n\
    This program is free software; you can redistribute it and/or modify it\n\
    under the terms of the GNU General Public License as published by the\n\

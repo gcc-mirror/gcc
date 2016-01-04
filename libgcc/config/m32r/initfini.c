@@ -1,7 +1,7 @@
 /* .init/.fini section handling + C++ global constructor/destructor handling.
    This file is based on crtstuff.c, sol2-crti.S, sol2-crtn.S.
 
-   Copyright (C) 1996-2015 Free Software Foundation, Inc.
+   Copyright (C) 1996-2016 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

@@ -1,6 +1,6 @@
 ! crt1.s for sparc & sparcv9 (SunOS 5)
 
-!   Copyright (C) 1992-2015 Free Software Foundation, Inc.
+!   Copyright (C) 1992-2016 Free Software Foundation, Inc.
 !   Written By David Vinayak Henkel-Wallace, June 1992
 ! 
 ! This file is free software; you can redistribute it and/or modify it
