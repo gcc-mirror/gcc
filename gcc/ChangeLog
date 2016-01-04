@@ -1,3 +1,9 @@
+2016-01-03  Vladimír Čunát <vcunat@gmail.com>
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Fix
+	-finite-math typo.
+	(x86 Options): Likewise.
+
 2016-01-01  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR 1078
