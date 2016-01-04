@@ -1,5 +1,10 @@
 2016-01-04  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/arm/arm.c (aapcs_vfp_allocate_return_reg): Treat all integer
+	modes larger than TImode as TImode if NEON is not enabled.
+
+2016-01-04  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR target/69100
 	* config/sparc/sparc.h (FUNCTION_ARG_REGNO_P): Return true in 64-bit
 	mode for %f0-%f31 only if TARGET_FPU.
