@@ -1102,9 +1102,19 @@ sysv, aix.
 @item --with-multilib-list=@var{list}
 @itemx --without-multilib-list
 Specify what multilibs to build.
-Currently only implemented for sh*-*-* and x86-64-*-linux*.
+Currently only implemented for arm*-*-*, sh*-*-* and x86-64-*-linux*.
 
 @table @code
+@item arm*-*-*
+@var{list} is either @code{default} or @code{aprofile}.  Specifying
+@code{default} is equivalent to omitting this option while specifying
+@code{aprofile} builds multilibs for each combination of ISA (@code{-marm} or
+@code{-mthumb}), architecture (@code{-march=armv7-a}, @code{-march=armv7ve},
+or @code{-march=armv8-a}), FPU available (none, @code{-mfpu=vfpv3-d16},
+@code{-mfpu=neon}, @code{-mfpu=vfpv4-d16}, @code{-mfpu=neon-vfpv4} or
+@code{-mfpu=neon-fp-armv8} depending on architecture) and floating-point ABI
+(@code{-mfloat-abi=softfp} or @code{-mfloat-abi=hard}).
+
 @item sh*-*-*
 @var{list} is a comma separated list of CPU names.  These must be of the
 form @code{sh*} or @code{m*} (in which case they match the compiler option

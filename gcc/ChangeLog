@@ -1,3 +1,8 @@
+2016-01-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* doc/install.texi (--with-multilib-list): Describe the meaning of the
+	option for arm*-*-* targets.
+
 2016-01-03  Sandra Loosemore <sandra@codesourcery.com>
 
 	* doc/extend.texi (Common Function Attributes): Move docs for
