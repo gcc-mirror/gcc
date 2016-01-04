@@ -3394,55 +3394,6 @@ performing a reloadable link on them.
 At present, a declaration to which @code{weakref} is attached can
 only be @code{static}.
 
-@item lower
-@itemx upper
-@itemx either
-@cindex lower memory region on the MSP430
-@cindex upper memory region on the MSP430
-@cindex either memory region on the MSP430
-On the MSP430 target these attributes can be used to specify whether
-the function or variable should be placed into low memory, high
-memory, or the placement should be left to the linker to decide.  The
-attributes are only significant if compiling for the MSP430X
-architecture.
-
-The attributes work in conjunction with a linker script that has been
-augmented to specify where to place sections with a @code{.lower} and
-a @code{.upper} prefix.  So for example as well as placing the
-@code{.data} section the script would also specify the placement of a
-@code{.lower.data} and a @code{.upper.data} section.  The intention
-being that @code{lower} sections are placed into a small but easier to
-access memory region and the upper sections are placed into a larger, but
-slower to access region.
-
-The @code{either} attribute is special.  It tells the linker to place
-the object into the corresponding @code{lower} section if there is
-room for it.  If there is insufficient room then the object is placed
-into the corresponding @code{upper} section instead.  Note - the
-placement algorithm is not very sophisticated.  It will not attempt to
-find an optimal packing of the @code{lower} sections.  It just makes
-one pass over the objects and does the best that it can.  Using the
-@option{-ffunction-sections} and @option{-fdata-sections} command line
-options can help the packing however, since they produce smaller,
-easier to pack regions.
-
-@item reentrant
-On the MSP430 a function can be given the @code{reentant} attribute.
-This makes the function disable interrupts upon entry and enable
-interrupts upon exit.  Reentrant functions cannot be @code{naked}.
-
-@item critical
-On the MSP430 a function can be given the @code{critical} attribute.
-This makes the function disable interrupts upon entry and restore the
-previous interrupt enabled/disabled state upon exit.  A function
-cannot have both the @code{reentrant} and @code{critical} attributes.
-Critical functions cannot be @code{naked}.
-
-@item wakeup
-On the MSP430 a function can be given the @code{wakeup} attribute.
-Such a function must also have the @code{interrupt} attribute.  When a
-function with the @code{wakeup} attribute exists the processor will be
-woken up from any low-power state in which it may be residing.
 
 @end table
 
@@ -4531,6 +4482,38 @@ This attribute only applies to interrupt functions.  It is silently
 ignored if applied to a non-interrupt function.  A wakeup interrupt
 function will rouse the processor from any low-power state that it
 might be in when the function exits.
+
+@item lower
+@itemx upper
+@itemx either
+@cindex @code{lower} function attribute, MSP430
+@cindex @code{upper} function attribute, MSP430
+@cindex @code{either} function attribute, MSP430
+On the MSP430 target these attributes can be used to specify whether
+the function or variable should be placed into low memory, high
+memory, or the placement should be left to the linker to decide.  The
+attributes are only significant if compiling for the MSP430X
+architecture.
+
+The attributes work in conjunction with a linker script that has been
+augmented to specify where to place sections with a @code{.lower} and
+a @code{.upper} prefix.  So, for example, as well as placing the
+@code{.data} section, the script also specifies the placement of a
+@code{.lower.data} and a @code{.upper.data} section.  The intention
+is that @code{lower} sections are placed into a small but easier to
+access memory region and the upper sections are placed into a larger, but
+slower to access, region.
+
+The @code{either} attribute is special.  It tells the linker to place
+the object into the corresponding @code{lower} section if there is
+room for it.  If there is insufficient room then the object is placed
+into the corresponding @code{upper} section instead.  Note that the
+placement algorithm is not very sophisticated.  It does not attempt to
+find an optimal packing of the @code{lower} sections.  It just makes
+one pass over the objects and does the best that it can.  Using the
+@option{-ffunction-sections} and @option{-fdata-sections} command-line
+options can help the packing, however, since they produce smaller,
+easier to pack regions.
 @end table
 
 @node NDS32 Function Attributes
@@ -6042,13 +6025,13 @@ The @code{shared} attribute is only available on Microsoft Windows@.
 
 @table @code
 @item noinit
-@cindex @code{noinit} MSP430 variable attribute
+@cindex @code{noinit} variable attribute, MSP430 
 Any data with the @code{noinit} attribute will not be initialised by
 the C runtime startup code, or the program loader.  Not initialising
 data in this way can reduce program startup times.
 
 @item persistent
-@cindex @code{persistent} MSP430 variable attribute
+@cindex @code{persistent} variable attribute, MSP430 
 Any variable with the @code{persistent} attribute will not be
 initialised by the C runtime startup code.  Instead its value will be
 set once, when the application is loaded, and then never initialised
@@ -6061,12 +6044,12 @@ placed.
 @item lower
 @itemx upper
 @itemx either
-@cindex @code{lower} memory region on the MSP430
-@cindex @code{upper} memory region on the MSP430
-@cindex @code{either} memory region on the MSP430
+@cindex @code{lower} variable attribute, MSP430 
+@cindex @code{upper} variable attribute, MSP430 
+@cindex @code{either} variable attribute, MSP430 
 These attributes are the same as the MSP430 function attributes of the
-same name.  These attributes can be applied to both functions and
-variables.
+same name (@pxref{MSP430 Function Attributes}).  
+These attributes can be applied to both functions and variables.
 @end table
 
 @node PowerPC Variable Attributes
