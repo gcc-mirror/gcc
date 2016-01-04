@@ -1,3 +1,9 @@
+2016-01-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68908
+	* c-typeck.c (build_atomic_assign): Improve commentary.  Add
+	optimization to use __atomic_fetch_* built-in if possible.
+
 2015-12-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-parser.c (c_parser_oacc_clause_use_device): Merge function

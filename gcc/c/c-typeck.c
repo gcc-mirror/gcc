@@ -3698,9 +3698,9 @@ pointer_diff (location_t loc, tree op0, tree op1)
   return convert (restype, result);
 }
 
-/* Expand atomic compound assignments into an approriate sequence as
-   specified by the C11 standard section 6.5.16.2.   
-    given 
+/* Expand atomic compound assignments into an appropriate sequence as
+   specified by the C11 standard section 6.5.16.2.
+
        _Atomic T1 E1
        T2 E2
        E1 op= E2
@@ -3732,26 +3732,25 @@ loop:
 done:
   feupdateenv (&fenv);
 
-  Also note that the compiler is simply issuing the generic form of
-  the atomic operations.  This requires temp(s) and has their address
-  taken.  The atomic processing is smart enough to figure out when the
-  size of an object can utilize a lock-free version, and convert the
-  built-in call to the appropriate lock-free routine.  The optimizers
-  will then dispose of any temps that are no longer required, and
-  lock-free implementations are utilized as long as there is target
-  support for the required size.
+  The compiler will issue the __atomic_fetch_* built-in when possible,
+  otherwise it will generate the generic form of the atomic operations.
+  This requires temp(s) and has their address taken.  The atomic processing
+  is smart enough to figure out when the size of an object can utilize
+  a lock-free version, and convert the built-in call to the appropriate
+  lock-free routine.  The optimizers will then dispose of any temps that
+  are no longer required, and lock-free implementations are utilized as
+  long as there is target support for the required size.
 
   If the operator is NOP_EXPR, then this is a simple assignment, and
   an __atomic_store is issued to perform the assignment rather than
-  the above loop.
-
-*/
+  the above loop.  */
 
 /* Build an atomic assignment at LOC, expanding into the proper
    sequence to store LHS MODIFYCODE= RHS.  Return a value representing
-   the result of the operation, unless RETURN_OLD_P in which case
+   the result of the operation, unless RETURN_OLD_P, in which case
    return the old value of LHS (this is only for postincrement and
    postdecrement).  */
+
 static tree
 build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
 		     tree rhs, bool return_old_p)
@@ -3818,6 +3817,93 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
       return build2 (COMPOUND_EXPR, nonatomic_lhs_type, compound_stmt, val);
     }
 
+  /* Attempt to implement the atomic operation as an __atomic_fetch_* or
+     __atomic_*_fetch built-in rather than a CAS loop.  atomic_bool type
+     isn't applicable for such builtins.  ??? Do we want to handle enums?  */
+  if ((TREE_CODE (lhs_type) == INTEGER_TYPE || POINTER_TYPE_P (lhs_type))
+      && TREE_CODE (rhs_type) == INTEGER_TYPE)
+    {
+      built_in_function fncode;
+      switch (modifycode)
+	{
+	case PLUS_EXPR:
+	case POINTER_PLUS_EXPR:
+	  fncode = (return_old_p
+		    ? BUILT_IN_ATOMIC_FETCH_ADD_N
+		    : BUILT_IN_ATOMIC_ADD_FETCH_N);
+	  break;
+	case MINUS_EXPR:
+	  fncode = (return_old_p
+		    ? BUILT_IN_ATOMIC_FETCH_SUB_N
+		    : BUILT_IN_ATOMIC_SUB_FETCH_N);
+	  break;
+	case BIT_AND_EXPR:
+	  fncode = (return_old_p
+		    ? BUILT_IN_ATOMIC_FETCH_AND_N
+		    : BUILT_IN_ATOMIC_AND_FETCH_N);
+	  break;
+	case BIT_IOR_EXPR:
+	  fncode = (return_old_p
+		    ? BUILT_IN_ATOMIC_FETCH_OR_N
+		    : BUILT_IN_ATOMIC_OR_FETCH_N);
+	  break;
+	case BIT_XOR_EXPR:
+	  fncode = (return_old_p
+		    ? BUILT_IN_ATOMIC_FETCH_XOR_N
+		    : BUILT_IN_ATOMIC_XOR_FETCH_N);
+	  break;
+	default:
+	  goto cas_loop;
+	}
+
+      /* We can only use "_1" through "_16" variants of the atomic fetch
+	 built-ins.  */
+      unsigned HOST_WIDE_INT size = tree_to_uhwi (TYPE_SIZE_UNIT (lhs_type));
+      if (size != 1 && size != 2 && size != 4 && size != 8 && size != 16)
+	goto cas_loop;
+
+      /* If this is a pointer type, we need to multiply by the size of
+	 the pointer target type.  */
+      if (POINTER_TYPE_P (lhs_type))
+	{
+	  if (!COMPLETE_TYPE_P (TREE_TYPE (lhs_type))
+	      /* ??? This would introduce -Wdiscarded-qualifiers
+		 warning: __atomic_fetch_* expect volatile void *
+		 type as the first argument.  (Assignments between
+		 atomic and non-atomic objects are OK.) */
+	      || TYPE_RESTRICT (lhs_type))
+	    goto cas_loop;
+	  tree sz = TYPE_SIZE_UNIT (TREE_TYPE (lhs_type));
+	  rhs = fold_build2_loc (loc, MULT_EXPR, ptrdiff_type_node,
+				 convert (ptrdiff_type_node, rhs),
+				 convert (ptrdiff_type_node, sz));
+	}
+
+      /* Build __atomic_fetch_* (&lhs, &val, SEQ_CST), or
+	 __atomic_*_fetch (&lhs, &val, SEQ_CST).  */
+      fndecl = builtin_decl_explicit (fncode);
+      params->quick_push (lhs_addr);
+      params->quick_push (rhs);
+      params->quick_push (seq_cst);
+      func_call = c_build_function_call_vec (loc, vNULL, fndecl, params, NULL);
+
+      newval = create_tmp_var_raw (nonatomic_lhs_type);
+      TREE_ADDRESSABLE (newval) = 1;
+      TREE_NO_WARNING (newval) = 1;
+      rhs = build4 (TARGET_EXPR, nonatomic_lhs_type, newval, func_call,
+		    NULL_TREE, NULL_TREE);
+      SET_EXPR_LOCATION (rhs, loc);
+      add_stmt (rhs);
+
+      /* Finish the compound statement.  */
+      compound_stmt = c_end_compound_stmt (loc, compound_stmt, false);
+
+      /* NEWVAL is the value which was stored, return a COMPOUND_STMT of
+	 the statement and that value.  */
+      return build2 (COMPOUND_EXPR, nonatomic_lhs_type, compound_stmt, newval);
+    }
+
+cas_loop:
   /* Create the variables and labels required for the op= form.  */
   old = create_tmp_var_raw (nonatomic_lhs_type);
   old_addr = build_unary_op (loc, ADDR_EXPR, old, 0);

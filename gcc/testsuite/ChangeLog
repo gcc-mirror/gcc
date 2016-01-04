@@ -1,3 +1,10 @@
+2016-01-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68908
+	* gcc.dg/atomic/c11-atomic-exec-6.c: New test.
+	* gcc.dg/atomic/c11-atomic-exec-7.c: New test.
+	* gcc.dg/atomic/stdatomic-op-5.c: New test.
+
 2016-01-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/20160104-2.c: New test.
