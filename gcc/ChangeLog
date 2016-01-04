@@ -1,3 +1,27 @@
+2016-01-04  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/constraints.md (wo constraint): New constraint for
+	ISA 3.0 (power9).
+
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Add support
+	for wo constraint.
+	(rs6000_init_hard_regno_mode_ok): Likewise.
+
+	* config/rs6000/rs6000.h (r6000_reg_class_enum): Add support for
+	wo constraint.
+
+	* config/rs6000/altivec.md (altivec_vperm_<mode>): Clean up vperm
+	expanders not to have constraints.  Add support for ISA 3.0 xxperm
+	instruction.  Add support for fusing xxlor with xxperm.
+	(altivec_vperm_<mode>_internal): Likewise.
+	(altivec_vperm_v8hiv16qi): Likewise.
+	(altivec_vperm_<mode>v16q): Likewise.
+	(altivec_vperm_<mode>_uns): Likewise.
+	(vperm_v8hiv4si): Likewise.
+	(vperm_v16qiv8hi): Likewise.
+
+	* doc/md.texi (RS/6000 constraints): Document wo constraint.
+
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
