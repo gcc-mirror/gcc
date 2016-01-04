@@ -1176,9 +1176,8 @@ extern char leaf_reg_remap[];
    On SPARC, these are the "output" registers.  v9 also uses %f0-%f31.  */
 
 #define FUNCTION_ARG_REGNO_P(N) \
-(TARGET_ARCH64 \
- ? (((N) >= 8 && (N) <= 13) || ((N) >= 32 && (N) <= 63)) \
- : ((N) >= 8 && (N) <= 13))
+  (((N) >= 8 && (N) <= 13)	\
+   || (TARGET_ARCH64 && TARGET_FPU && (N) >= 32 && (N) <= 63))
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should

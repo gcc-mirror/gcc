@@ -1,5 +1,11 @@
 2016-01-04  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR target/69100
+	* config/sparc/sparc.h (FUNCTION_ARG_REGNO_P): Return true in 64-bit
+	mode for %f0-%f31 only if TARGET_FPU.
+
+2016-01-04  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR target/69072
 	* config/sparc/sparc.c (scan_record_type): Take into account subfields
 	to compute the PACKED_P predicate.
