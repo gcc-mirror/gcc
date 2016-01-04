@@ -1,5 +1,5 @@
 /* Code for RTL transformations to satisfy insn constraints.
-   Copyright (C) 2010-2015 Free Software Foundation, Inc.
+   Copyright (C) 2010-2016 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
    This file is part of GCC.

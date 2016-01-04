@@ -1,5 +1,5 @@
 /* Generic partial redundancy elimination with lazy code motion support.
-   Copyright (C) 1998-2015 Free Software Foundation, Inc.
+   Copyright (C) 1998-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

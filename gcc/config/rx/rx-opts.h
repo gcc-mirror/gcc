@@ -1,5 +1,5 @@
 /* GCC option-handling definitions for the Renesas RX processor.
-   Copyright (C) 2008-2015 Free Software Foundation, Inc.
+   Copyright (C) 2008-2016 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

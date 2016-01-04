@@ -1,5 +1,5 @@
 /* Utility routines for finding and reading Java(TM) .class files.
-   Copyright (C) 1996-2015 Free Software Foundation, Inc.
+   Copyright (C) 1996-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

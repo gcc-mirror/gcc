@@ -1,5 +1,7 @@
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
+	Update copyright years.
+
 	* gfortranspec.c (lang_specific_driver): Update copyright notice
 	dates.
 	* gfc-internals.texi: Bump @copying's copyright year.

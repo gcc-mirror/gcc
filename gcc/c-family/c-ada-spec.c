@@ -1,6 +1,6 @@
 /* Print GENERIC declaration (functions, variables, types) trees coming from
    the C and C++ front-ends as well as macros in Ada syntax.
-   Copyright (C) 2010-2015 Free Software Foundation, Inc.
+   Copyright (C) 2010-2016 Free Software Foundation, Inc.
    Adapted from tree-pretty-print.c by Arnaud Charlet  <charlet@adacore.com>
 
 This file is part of GCC.

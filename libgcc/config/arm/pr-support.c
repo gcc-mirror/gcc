@@ -1,5 +1,5 @@
 /* ARM EABI compliant unwinding routines
-   Copyright (C) 2004-2015 Free Software Foundation, Inc.
+   Copyright (C) 2004-2016 Free Software Foundation, Inc.
    Contributed by Paul Brook
  
    This file is free software; you can redistribute it and/or modify it

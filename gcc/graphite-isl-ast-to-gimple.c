@@ -1,5 +1,5 @@
 /* Translation of isl AST to Gimple.
-   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
    Contributed by Roman Gareev <gareevroman@gmail.com>.
 
 This file is part of GCC.

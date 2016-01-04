@@ -1,5 +1,5 @@
 ;; DFA-based pipeline description for the XLR.
-;;   Copyright (C) 2008-2015 Free Software Foundation, Inc.
+;;   Copyright (C) 2008-2016 Free Software Foundation, Inc.
 ;;
 ;; xlr.md   Machine Description for the RMI XLR Microprocessor
 ;; This file is part of GCC.

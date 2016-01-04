@@ -2,7 +2,7 @@
    constexpr functions.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2015 Free Software Foundation, Inc.
+   Copyright (C) 1998-2016 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

@@ -1,5 +1,5 @@
 /* Dead code elimination pass for the GNU compiler.
-   Copyright (C) 2002-2015 Free Software Foundation, Inc.
+   Copyright (C) 2002-2016 Free Software Foundation, Inc.
    Contributed by Ben Elliston <bje@redhat.com>
    and Andrew MacLeod <amacleod@redhat.com>
    Adapted to use control dependence by Steven Bosscher, SUSE Labs.

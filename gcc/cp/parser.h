@@ -1,5 +1,5 @@
 /* Data structures and function exported by the C++ Parser.
-   Copyright (C) 2010-2015 Free Software Foundation, Inc.
+   Copyright (C) 2010-2016 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

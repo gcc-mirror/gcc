@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2015 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2016 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert
 
 This file is part of the GNU Fortran runtime library (libgfortran).

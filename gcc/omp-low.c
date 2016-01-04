@@ -4,7 +4,7 @@
 
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
-   Copyright (C) 2005-2015 Free Software Foundation, Inc.
+   Copyright (C) 2005-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

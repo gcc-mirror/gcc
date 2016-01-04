@@ -1,5 +1,7 @@
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
+	Update copyright years.
+
 	* libgomp.texi: Bump @copying's copyright year.
 
 2015-12-31  Nathan Sidwell  <nathan@acm.org>

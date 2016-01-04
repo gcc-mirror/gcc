@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vxworks PowerPC version.
-   Copyright (C) 1996-2015 Free Software Foundation, Inc.
+   Copyright (C) 1996-2016 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
 This file is part of GCC.

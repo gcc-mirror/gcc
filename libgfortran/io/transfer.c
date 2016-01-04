@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2015 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2016 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist transfer functions contributed by Paul Thomas
    F2003 I/O support contributed by Jerry DeLisle

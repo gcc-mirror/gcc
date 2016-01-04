@@ -1,3 +1,7 @@
+2016-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2015-11-07  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	PR libobjc/24775
@@ -3400,3 +3404,9 @@ Mon Sep 21 23:27:10 1998  Ovidiu Predescu <ovidiu@slip.net>
 1998-09-21  Ben Elliston  <bje@cygnus.com>
 
 	* New directory.  Moved files from ../gcc/objc.
+
+Copyright (C) 1998-2016 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

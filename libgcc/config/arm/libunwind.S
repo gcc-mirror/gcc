@@ -1,5 +1,5 @@
 /* Support functions for the unwinder.
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
    This file is free software; you can redistribute it and/or modify it

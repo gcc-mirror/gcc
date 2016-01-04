@@ -1,6 +1,6 @@
 /* Routines required for instrumenting a program.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989-2015 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

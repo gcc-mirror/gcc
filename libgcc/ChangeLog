@@ -1,3 +1,7 @@
+2016-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2015-12-18  Andris Pavenis  <andris.pavenis@iki.fi>
 
 	* config.host: Add *-*-msdosdjgpp to lists of i[34567]86-*-*
@@ -7286,3 +7290,9 @@
 	config/rs6000/t-ppccomm, config.host, configure.ac, empty.mk,
 	shared-object.mk, siditi-object.mk, static-object.mk: New files.
 	* configure: Generated.
+
+Copyright (C) 2007-2016 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

@@ -1,5 +1,5 @@
 /* Pretty formatting of GIMPLE statements and expressions.
-   Copyright (C) 2001-2015 Free Software Foundation, Inc.
+   Copyright (C) 2001-2016 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com> and
    Diego Novillo <dnovillo@google.com>
 

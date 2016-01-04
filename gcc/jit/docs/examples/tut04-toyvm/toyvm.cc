@@ -1,6 +1,6 @@
 /* A simple stack-based virtual machine to demonstrate
    JIT-compilation.
-   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

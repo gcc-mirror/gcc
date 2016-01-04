@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    additional tree codes used in the GNU C compiler (see tree.def
    for the standard codes).
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
    Written by Benjamin Chelf <chelf@codesourcery.com>
 
 This file is part of GCC.

@@ -1,5 +1,5 @@
 /* Iterator routines for GIMPLE statements.
-   Copyright (C) 2007-2015 Free Software Foundation, Inc.
+   Copyright (C) 2007-2016 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez  <aldy@quesejoda.com>
 
 This file is part of GCC.

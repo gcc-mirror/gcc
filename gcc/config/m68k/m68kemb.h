@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  "embedded" 68XXX.
    This is meant to be included after m68k.h.
-   Copyright (C) 1994-2015 Free Software Foundation, Inc.  */
+   Copyright (C) 1994-2016 Free Software Foundation, Inc.  */
 
 /* Override the SVR4 ABI for this target.  */
 

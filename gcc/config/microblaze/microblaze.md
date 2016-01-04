@@ -1,5 +1,5 @@
 ;; microblaze.md -- Machine description for Xilinx MicroBlaze processors.
-;; Copyright (C) 2009-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2016 Free Software Foundation, Inc.
 
 ;; Contributed by Michael Eager <eager@eagercon.com>.
 

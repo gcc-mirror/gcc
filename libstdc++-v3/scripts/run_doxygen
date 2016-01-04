@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Runs doxygen and massages the output files.
-# Copyright (C) 2001-2015 Free Software Foundation, Inc.
+# Copyright (C) 2001-2016 Free Software Foundation, Inc.
 #
 # Synopsis:  run_doxygen --mode=[html|latex|man|xml] --host_alias=<alias> \
 #                        v3srcdir \

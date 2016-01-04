@@ -1,5 +1,5 @@
 /* Target Code for ft32
-   Copyright (C) 2015  Free Software Foundation
+   Copyright (C) 2015-2016 Free Software Foundation, Inc.
    Contributed by FTDI <support@ftdi.com>
 
    This file is part of GCC.

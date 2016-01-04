@@ -1,5 +1,5 @@
 /* Process declarations and variables for C++ compiler.
-   Copyright (C) 1988-2015 Free Software Foundation, Inc.
+   Copyright (C) 1988-2016 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.

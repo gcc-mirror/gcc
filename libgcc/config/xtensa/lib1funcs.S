@@ -1,5 +1,5 @@
 /* Assembly functions for the Xtensa version of libgcc1.
-   Copyright (C) 2001-2015 Free Software Foundation, Inc.
+   Copyright (C) 2001-2016 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
