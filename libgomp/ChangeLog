@@ -1,3 +1,7 @@
+2016-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Bump @copying's copyright year.
+
 2015-12-31  Nathan Sidwell  <nathan@acm.org>
 
 	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-2.c: Correct
@@ -7098,3 +7102,9 @@
 2005-05-03  Richard Henderson  <rth@redhat.com>
 
 	Initial implementation and checkin.
+
+Copyright (C) 2005-2016 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

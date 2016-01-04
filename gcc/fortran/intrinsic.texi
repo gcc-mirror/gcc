@@ -1,5 +1,5 @@
 @ignore
-Copyright (C) 2005-2015 Free Software Foundation, Inc.
+Copyright (C) 2005-2016 Free Software Foundation, Inc.
 This is part of the GNU Fortran manual.   
 For copying conditions, see the file gfortran.texi.
 
