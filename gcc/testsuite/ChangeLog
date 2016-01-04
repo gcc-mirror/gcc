@@ -1,3 +1,7 @@
+2016-01-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20160104-1.c: New test.
+
 2016-01-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/65045

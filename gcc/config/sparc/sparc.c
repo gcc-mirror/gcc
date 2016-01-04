@@ -6140,30 +6140,28 @@ sparc_strict_argument_naming (cumulative_args_t ca ATTRIBUTE_UNUSED)
       that is eligible for promotion in integer registers.
     - FP_REGS_P: the record contains at least one field or sub-field
       that is eligible for promotion in floating-point registers.
-    - PACKED_P: the record contains at least one field that is packed.
-
-   Sub-fields are not taken into account for the PACKED_P predicate.  */
+    - PACKED_P: the record contains at least one field that is packed.  */
 
 static void
 scan_record_type (const_tree type, int *intregs_p, int *fpregs_p,
 		  int *packed_p)
 {
-  tree field;
-
-  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
       if (TREE_CODE (field) == FIELD_DECL)
 	{
-	  if (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE)
-	    scan_record_type (TREE_TYPE (field), intregs_p, fpregs_p, 0);
-	  else if ((FLOAT_TYPE_P (TREE_TYPE (field))
-		   || TREE_CODE (TREE_TYPE (field)) == VECTOR_TYPE)
+	  tree field_type = TREE_TYPE (field);
+
+	  if (TREE_CODE (field_type) == RECORD_TYPE)
+	    scan_record_type (field_type, intregs_p, fpregs_p, packed_p);
+	  else if ((FLOAT_TYPE_P (field_type)
+		   || TREE_CODE (field_type) == VECTOR_TYPE)
 		  && TARGET_FPU)
 	    *fpregs_p = 1;
 	  else
 	    *intregs_p = 1;
 
-	  if (packed_p && DECL_PACKED (field))
+	  if (DECL_PACKED (field))
 	    *packed_p = 1;
 	}
     }
@@ -6647,9 +6645,10 @@ function_arg_record_value (const_tree type, machine_mode mode,
 
       parms.nregs += intslots;
     }
-  nregs = parms.nregs;
 
   /* Allocate the vector and handle some annoying special cases.  */
+  nregs = parms.nregs;
+
   if (nregs == 0)
     {
       /* ??? Empty structure has no value?  Duh?  */
@@ -6661,16 +6660,15 @@ function_arg_record_value (const_tree type, machine_mode mode,
 	     load.  */
 	  return gen_rtx_REG (mode, regbase);
 	}
-      else
-	{
-	  /* ??? C++ has structures with no fields, and yet a size.  Give up
-	     for now and pass everything back in integer registers.  */
-	  nregs = (typesize + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-	}
+
+      /* ??? C++ has structures with no fields, and yet a size.  Give up
+	 for now and pass everything back in integer registers.  */
+      nregs = (typesize + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
       if (nregs + slotno > SPARC_INT_ARG_MAX)
 	nregs = SPARC_INT_ARG_MAX - slotno;
     }
-  gcc_assert (nregs != 0);
+
+  gcc_assert (nregs > 0);
 
   parms.ret = gen_rtx_PARALLEL (mode, rtvec_alloc (parms.stack + nregs));
 
