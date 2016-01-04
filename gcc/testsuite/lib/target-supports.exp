@@ -1447,6 +1447,10 @@ proc check_effective_target_cilkplus { } {
 	return 0;
     }
 
+    if { ! [check_effective_target_pthread] } {
+	return 0;
+    }
+
     return 1
 }
 
