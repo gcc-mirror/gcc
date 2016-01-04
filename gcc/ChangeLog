@@ -1,3 +1,18 @@
+2016-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (process_command): Update copyright notice dates.
+	* gcov-dump.c (print_version): Ditto.
+	* gcov.c (print_version): Ditto.
+	* gcov-tool.c (print_version): Ditto.
+	* gengtype.c (create_file): Ditto.
+	* doc/cpp.texi: Bump @copying's copyright year.
+	* doc/cppinternals.texi: Ditto.
+	* doc/gcc.texi: Ditto.
+	* doc/gccint.texi: Ditto.
+	* doc/gcov.texi: Ditto.
+	* doc/install.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+
 2016-01-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/arm/arm.c (aapcs_vfp_allocate_return_reg): Treat all integer

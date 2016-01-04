@@ -1,3 +1,7 @@
+2016-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* libitm.texi: Bump @copying's copyright year.
+
 2015-11-26  Torvald Riegel  <triegel@redhat.com>
 
 	* method-ml.cc (ml_mg): Use multiplicative instead of simple hashing.
@@ -1856,3 +1860,9 @@
 2008-11-21  Richard Henderson  <rth@redhat.com>
 
 	* Initial commit.
+
+Copyright (C) 2008-2016 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

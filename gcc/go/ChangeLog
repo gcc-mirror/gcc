@@ -1,3 +1,7 @@
+2016-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gccgo.texi: Bump @copyrights-go year.
+
 2015-12-21  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (class Bvariable): Remove Gcc_tree parent class.  Add
@@ -1160,7 +1164,7 @@
 
 	Go frontend added to gcc repository.
 
-Copyright (C) 2010-2015 Free Software Foundation, Inc.
+Copyright (C) 2010-2016 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
