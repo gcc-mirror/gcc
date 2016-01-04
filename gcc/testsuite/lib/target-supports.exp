@@ -1442,11 +1442,6 @@ proc check_effective_target_cilkplus { } {
 	return 0;
     }
 
-    # No pthreads on NVPTX
-    if { [istarget nvptx-*-*] } {
-	return 0;
-    }
-
     if { ! [check_effective_target_pthread] } {
 	return 0;
     }
