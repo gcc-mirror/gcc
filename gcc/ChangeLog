@@ -1,3 +1,9 @@
+2016-01-05  Nick Clifton  <nickc@redhat.com>
+
+	PR target/66655
+	* config/i386/cygming.h (MAKE_DECL_ONE_ONLY): Define to use weak
+	decls if weak support is available.
+
 2016-01-04  Martin Sebor  <msebor@redhat.com>
 
 	* doc/invoke.texi (Warning Options): Document -Winvalid-memory-model.
