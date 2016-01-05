@@ -1,5 +1,9 @@
 2016-01-05  Nick Clifton  <nickc@redhat.com>
 
+	PR target/68770
+	* ira-costs.c (copy_cost): Initialise the t_icode field of the
+	secondary_reload_info structure.
+
 	PR target/66655
 	* config/i386/cygming.h (MAKE_DECL_ONE_ONLY): Define to use weak
 	decls if weak support is available.
