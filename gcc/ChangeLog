@@ -1,3 +1,9 @@
+2016-01-05  Sandra Loosemore <sandra@codesourcery.com>
+
+	PR 1078
+	* doc/extend.texi (MicroBlaze Function Attributes): Document
+	interrupt_handler and fast_interrupt attributes.
+
 2016-01-05  Sergei Trofimovich <siarheit@google.com>
 
 	PR other/60465

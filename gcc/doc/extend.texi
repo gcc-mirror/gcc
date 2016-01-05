@@ -4205,6 +4205,17 @@ the @code{rtbd} instead of @code{rtsd}.
 @smallexample
 void f () __attribute__ ((break_handler));
 @end smallexample
+
+@item interrupt_handler
+@itemx fast_interrupt 
+@cindex @code{interrupt_handler} function attribute, MicroBlaze
+@cindex @code{fast_interrupt} function attribute, MicroBlaze
+These attributes indicate that the specified function is an interrupt
+handler.  Use the @code{fast_interrupt} attribute to indicate handlers
+used in low-latency interrupt mode, and @code{interrupt_handler} for
+interrupts that do not use low-latency handlers.  In both cases, GCC
+emits appropriate prologue code and generates a return from the handler
+using @code{rtid} instead of @code{rtsd}.
 @end table
 
 @node Microsoft Windows Function Attributes
