@@ -1,6 +1,22 @@
 2016-01-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/68991
+	* config/i386/i386.c (ix86_expand_vector_logical_operator):
+	Replace nonimmediate_operand with vector_operand.
+	* config/i386/predicates.md (vector_operand): New predicate.
+	(general_vector_operand): Replace nonimmediate_operand with
+	vector_operand.
+	* config/i386/sse.md: Replace nonimmediate_operand with
+	vector_operand and m constraint with Bm constraint on SSE
+	patterns with 16-byte memory operand.
+	* config/i386/subst.md (round_nimm_predicate): Replace
+	nonimmediate_operand with vector_operand.
+	(round_saeonly_nimm_predicate): Likewise.
+	(round_saeonly_nimm_scalar_predicate): New.
+
+2016-01-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/68991
 	* config/i386/constraints.md (Bm): New constraint.
 	* config/i386/predicates.md (vector_memory_operand): New
 	predicate.
