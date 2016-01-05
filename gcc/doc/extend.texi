@@ -5453,6 +5453,7 @@ attributes.
 * Microsoft Windows Variable Attributes::
 * MSP430 Variable Attributes::
 * PowerPC Variable Attributes::
+* RL78 Variable Attributes::
 * SPU Variable Attributes::
 * V850 Variable Attributes::
 * x86 Variable Attributes::
@@ -6095,6 +6096,14 @@ documentation in @ref{x86 Variable Attributes}.
 @cindex @code{altivec} variable attribute, PowerPC
 For documentation of @code{altivec} attribute please see the
 documentation in @ref{PowerPC Type Attributes}.
+
+@node RL78 Variable Attributes
+@subsection RL78 Variable Attributes
+
+@cindex @code{saddr} variable attribute, RL78
+The RL78 back end supports the @code{saddr} variable attribute.  This
+specifies placement of the corresponding variable in the SADDR area,
+which can be accessed more efficiently than the default memory region.
 
 @node SPU Variable Attributes
 @subsection SPU Variable Attributes
