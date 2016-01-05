@@ -76,11 +76,7 @@ dupargv (char **argv)
 
   /* the strings */
   for (argc = 0; argv[argc] != NULL; argc++)
-    {
-      int len = strlen (argv[argc]);
-      copy[argc] = (char *) xmalloc (len + 1);
-      strcpy (copy[argc], argv[argc]);
-    }
+    copy[argc] = xstrdup (argv[argc]);
   copy[argc] = NULL;
   return copy;
 }
