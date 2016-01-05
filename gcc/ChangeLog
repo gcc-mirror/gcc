@@ -1,6 +1,12 @@
 2016-01-05  Sandra Loosemore <sandra@codesourcery.com>
 
 	PR 1078
+	* doc/extend.texi (V850 Function Attributes): New section.
+	(V850 Variable Attributes): New section.
+
+2016-01-05  Sandra Loosemore <sandra@codesourcery.com>
+
+	PR 1078
 	* doc/extend.texi (MicroBlaze Function Attributes): Document
 	interrupt_handler and fast_interrupt attributes.
 
