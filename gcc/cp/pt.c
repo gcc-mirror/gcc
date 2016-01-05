@@ -23416,9 +23416,13 @@ build_non_dependent_expr (tree expr)
 {
   tree inner_expr;
 
-  /* Try to get a constant value for all non-dependent expressions in
-      order to expose bugs in *_dependent_expression_p and constexpr.  */
-  if (flag_checking && cxx_dialect >= cxx11)
+  /* When checking, try to get a constant value for all non-dependent
+     expressions in order to expose bugs in *_dependent_expression_p
+     and constexpr.  */
+  if (flag_checking && cxx_dialect >= cxx11
+      /* Don't do this during nsdmi parsing as it can lead to
+	 unexpected recursive instantiations.  */
+      && !parsing_nsdmi ())
     fold_non_dependent_expr (expr);
 
   /* Preserve OVERLOADs; the functions must be available to resolve
