@@ -5895,6 +5895,13 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 			  || XEXP (temp, 1) != XEXP (x, 0)))))
 	    return temp;
 	}
+
+      /* Canonicalize x + x into x << 1.  */
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && rtx_equal_p (XEXP (x, 0), XEXP (x, 1))
+	  && !side_effects_p (XEXP (x, 0)))
+	return simplify_gen_binary (ASHIFT, mode, XEXP (x, 0), const1_rtx);
+
       break;
 
     case MINUS:

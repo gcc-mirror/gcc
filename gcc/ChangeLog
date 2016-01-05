@@ -1,3 +1,9 @@
+2016-01-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/68651
+	* combine.c (combine_simplify_rtx): Canonicalize x + x into
+	x << 1.
+
 2016-01-05  Nathan Sidwell  <nathan@acm.org>
 
 	* alias.c (compare_base_decls): Use symtab_node::get.
