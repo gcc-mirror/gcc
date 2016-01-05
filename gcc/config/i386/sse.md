@@ -1676,7 +1676,7 @@
   [(set (match_operand:VF 0 "register_operand" "=x,v")
 	(plusminus:VF
 	  (match_operand:VF 1 "<round_nimm_predicate>" "<comm>0,v")
-	  (match_operand:VF 2 "<round_nimm_predicate>" "xm,<round_constraint>")))]
+	  (match_operand:VF 2 "<round_nimm_predicate>" "xBm,<round_constraint>")))]
   "TARGET_SSE && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands) && <mask_mode512bit_condition> && <round_mode512bit_condition>"
   "@
    <plusminus_mnemonic><ssemodesuffix>\t{%2, %0|%0, %2}
@@ -1691,7 +1691,7 @@
 	(vec_merge:VF_128
 	  (plusminus:VF_128
 	    (match_operand:VF_128 1 "register_operand" "0,v")
-	    (match_operand:VF_128 2 "nonimmediate_operand" "xm,<round_constraint>"))
+	    (match_operand:VF_128 2 "nonimmediate_operand" "xBm,<round_constraint>"))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_SSE"
@@ -2424,7 +2424,7 @@
 	  (vec_concat:V2SF
 	    (plusminus:SF
 	      (vec_select:SF
-		(match_operand:V4SF 2 "nonimmediate_operand" "xm,xm")
+		(match_operand:V4SF 2 "nonimmediate_operand" "xBm,xm")
 		(parallel [(const_int 0)]))
 	      (vec_select:SF (match_dup 2) (parallel [(const_int 1)])))
 	    (plusminus:SF
@@ -3240,7 +3240,7 @@
   [(set (match_operand:VF_128_256 0 "register_operand" "=x,v")
 	(any_logic:VF_128_256
 	  (match_operand:VF_128_256 1 "nonimmediate_operand" "%0,v")
-	  (match_operand:VF_128_256 2 "nonimmediate_operand" "xm,vm")))]
+	  (match_operand:VF_128_256 2 "nonimmediate_operand" "xBm,vm")))]
   "TARGET_SSE && <mask_avx512vl_condition>
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
 {
@@ -3489,7 +3489,7 @@
   [(set (match_operand:TF 0 "register_operand" "=x,x")
 	(any_logic:TF
 	  (match_operand:TF 1 "nonimmediate_operand" "%0,x")
-	  (match_operand:TF 2 "nonimmediate_operand" "xm,xm")))]
+	  (match_operand:TF 2 "nonimmediate_operand" "xBm,xm")))]
   "TARGET_SSE
    && ix86_binary_operator_ok (<CODE>, TFmode, operands)"
 {
@@ -9653,7 +9653,7 @@
   [(set (match_operand:VI_AVX2 0 "register_operand" "=x,v")
 	(plusminus:VI_AVX2
 	  (match_operand:VI_AVX2 1 "nonimmediate_operand" "<comm>0,v")
-	  (match_operand:VI_AVX2 2 "nonimmediate_operand" "xm,vm")))]
+	  (match_operand:VI_AVX2 2 "nonimmediate_operand" "xBm,vm")))]
   "TARGET_SSE2
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
   "@
@@ -9706,7 +9706,7 @@
   [(set (match_operand:VI12_AVX2 0 "register_operand" "=x,v")
 	(sat_plusminus:VI12_AVX2
 	  (match_operand:VI12_AVX2 1 "nonimmediate_operand" "<comm>0,v")
-	  (match_operand:VI12_AVX2 2 "nonimmediate_operand" "xm,vm")))]
+	  (match_operand:VI12_AVX2 2 "nonimmediate_operand" "xBm,vm")))]
   "TARGET_SSE2 && <mask_mode512bit_condition> && <mask_avx512bw_condition>
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
   "@
@@ -11361,7 +11361,7 @@
   [(set (match_operand:VI48_AVX_AVX512F 0 "register_operand" "=x,v")
 	(any_logic:VI48_AVX_AVX512F
 	  (match_operand:VI48_AVX_AVX512F 1 "nonimmediate_operand" "%0,v")
-	  (match_operand:VI48_AVX_AVX512F 2 "nonimmediate_operand" "xm,vm")))]
+	  (match_operand:VI48_AVX_AVX512F 2 "nonimmediate_operand" "xBm,vm")))]
   "TARGET_SSE && <mask_mode512bit_condition>
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
 {
@@ -11457,7 +11457,7 @@
   [(set (match_operand:VI12_AVX_AVX512F 0 "register_operand" "=x,v")
 	(any_logic: VI12_AVX_AVX512F
 	  (match_operand:VI12_AVX_AVX512F 1 "nonimmediate_operand" "%0,v")
-	  (match_operand:VI12_AVX_AVX512F 2 "nonimmediate_operand" "xm,vm")))]
+	  (match_operand:VI12_AVX_AVX512F 2 "nonimmediate_operand" "xBm,vm")))]
   "TARGET_SSE && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
 {
   static char buf[64];
