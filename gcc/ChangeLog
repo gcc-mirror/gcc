@@ -1,3 +1,8 @@
+2016-01-05  Sandra Loosemore <sandra@codesourcery.com>
+
+	PR 1078
+	* doc/extend.texi (RL78 Variable Attributes): New section.
+
 2016-01-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c/69104
