@@ -1105,6 +1105,15 @@ ia64_expand_load_address (rtx dest, rtx src)
     emit_insn (gen_load_fptr (dest, src));
   else if (sdata_symbolic_operand (src, VOIDmode))
     emit_insn (gen_load_gprel (dest, src));
+  else if (local_symbolic_operand64 (src, VOIDmode))
+    {
+      /* We want to use @gprel rather than @ltoff relocations for local
+	 symbols:
+	  - @gprel does not require dynamic linker
+	  - and does not use .sdata section
+	 https://gcc.gnu.org/bugzilla/60465 */
+      emit_insn (gen_load_gprel64 (dest, src));
+    }
   else
     {
       HOST_WIDE_INT addend = 0;
