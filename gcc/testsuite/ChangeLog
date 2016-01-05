@@ -1,3 +1,7 @@
+2016-01-05  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/alias-15.c: New.
+
 2016-01-05  Nick Clifton  <nickc@redhat.com>
 
 	PR target/68870
