@@ -1,3 +1,7 @@
+2016-01-05  Nathan Sidwell  <nathan@acm.org>
+
+	* alias.c (compare_base_decls): Use symtab_node::get.
+
 2016-01-05  Nick Clifton  <nickc@redhat.com>
 
 	PR target/68770

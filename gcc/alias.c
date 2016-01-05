@@ -2044,8 +2044,15 @@ compare_base_decls (tree base1, tree base2)
       || !decl_in_symtab_p (base2))
     return 0;
 
-  ret = symtab_node::get_create (base1)->equal_address_to
-		 (symtab_node::get_create (base2), true);
+  /* Don't cause symbols to be inserted by the act of checking.  */
+  symtab_node *node1 = symtab_node::get (base1);
+  if (!node1)
+    return 0;
+  symtab_node *node2 = symtab_node::get (base2);
+  if (!node2)
+    return 0;
+  
+  ret = node1->equal_address_to (node2, true);
   if (ret == 2)
     return -1;
   return ret;
