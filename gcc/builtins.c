@@ -5037,6 +5037,8 @@ get_memmodel (tree exp)
 {
   rtx op;
   unsigned HOST_WIDE_INT val;
+  source_location loc
+    = expansion_point_location_if_in_system_header (input_location);
 
   /* If the parameter is not a constant, it's a run time value so we'll just
      convert it to MEMMODEL_SEQ_CST to avoid annoying runtime checking.  */
@@ -5050,16 +5052,16 @@ get_memmodel (tree exp)
     val = targetm.memmodel_check (val);
   else if (val & ~MEMMODEL_MASK)
     {
-      warning (OPT_Winvalid_memory_model,
-	       "Unknown architecture specifier in memory model to builtin.");
+      warning_at (loc, OPT_Winvalid_memory_model,
+		  "unknown architecture specifier in memory model to builtin");
       return MEMMODEL_SEQ_CST;
     }
 
   /* Should never see a user explicit SYNC memodel model, so >= LAST works. */
   if (memmodel_base (val) >= MEMMODEL_LAST)
     {
-      warning (OPT_Winvalid_memory_model,
-	       "invalid memory model argument to builtin");
+      warning_at (loc, OPT_Winvalid_memory_model,
+		  "invalid memory model argument to builtin");
       return MEMMODEL_SEQ_CST;
     }
 
@@ -5111,23 +5113,25 @@ expand_builtin_atomic_compare_exchange (machine_mode mode, tree exp,
   enum memmodel success, failure;
   tree weak;
   bool is_weak;
+  source_location loc
+    = expansion_point_location_if_in_system_header (input_location);
 
   success = get_memmodel (CALL_EXPR_ARG (exp, 4));
   failure = get_memmodel (CALL_EXPR_ARG (exp, 5));
 
   if (failure > success)
     {
-      warning (OPT_Winvalid_memory_model,
-	       "failure memory model cannot be stronger than success memory "
-	       "model for %<__atomic_compare_exchange%>");
+      warning_at (loc, OPT_Winvalid_memory_model,
+		  "failure memory model cannot be stronger than success "
+		  "memory model for %<__atomic_compare_exchange%>");
       success = MEMMODEL_SEQ_CST;
     }
  
   if (is_mm_release (failure) || is_mm_acq_rel (failure))
     {
-      warning (OPT_Winvalid_memory_model,
-	       "invalid failure memory model for "
-	       "%<__atomic_compare_exchange%>");
+      warning_at (loc, OPT_Winvalid_memory_model,
+		  "invalid failure memory model for "
+		  "%<__atomic_compare_exchange%>");
       failure = MEMMODEL_SEQ_CST;
       success = MEMMODEL_SEQ_CST;
     }
@@ -5188,8 +5192,10 @@ expand_builtin_atomic_load (machine_mode mode, tree exp, rtx target)
   model = get_memmodel (CALL_EXPR_ARG (exp, 1));
   if (is_mm_release (model) || is_mm_acq_rel (model))
     {
-      warning (OPT_Winvalid_memory_model,
-	       "invalid memory model for %<__atomic_load%>");
+      source_location loc
+	= expansion_point_location_if_in_system_header (input_location);
+      warning_at (loc, OPT_Winvalid_memory_model,
+		  "invalid memory model for %<__atomic_load%>");
       model = MEMMODEL_SEQ_CST;
     }
 
@@ -5218,8 +5224,10 @@ expand_builtin_atomic_store (machine_mode mode, tree exp)
   if (!(is_mm_relaxed (model) || is_mm_seq_cst (model)
 	|| is_mm_release (model)))
     {
-      warning (OPT_Winvalid_memory_model,
-	       "invalid memory model for %<__atomic_store%>");
+      source_location loc
+	= expansion_point_location_if_in_system_header (input_location);
+      warning_at (loc, OPT_Winvalid_memory_model,
+		  "invalid memory model for %<__atomic_store%>");
       model = MEMMODEL_SEQ_CST;
     }
 
@@ -5319,8 +5327,10 @@ expand_builtin_atomic_clear (tree exp)
 
   if (is_mm_consume (model) || is_mm_acquire (model) || is_mm_acq_rel (model))
     {
-      warning (OPT_Winvalid_memory_model,
-	       "invalid memory model for %<__atomic_store%>");
+      source_location loc
+	= expansion_point_location_if_in_system_header (input_location);
+      warning_at (loc, OPT_Winvalid_memory_model,
+		  "invalid memory model for %<__atomic_store%>");
       model = MEMMODEL_SEQ_CST;
     }
 
