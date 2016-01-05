@@ -951,6 +951,13 @@
        (match_test "INTEGRAL_MODE_P (GET_MODE (op))")
        (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
 
+; Return true when OP is operand acceptable for vector memory operand.
+; Only AVX can have misaligned memory operand.
+(define_predicate "vector_memory_operand"
+  (and (match_operand 0 "memory_operand")
+       (ior (match_test "TARGET_AVX")
+	    (match_test "MEM_ALIGN (op) >= GET_MODE_ALIGNMENT (mode)"))))
+
 ; Return true when OP is operand acceptable for standard SSE move.
 (define_predicate "vector_move_operand"
   (ior (match_operand 0 "nonimmediate_operand")

@@ -1,3 +1,9 @@
+2016-01-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/68991
+	* g++.dg/pr68991-1.C: New test.
+	* g++.dg/pr68991-2.C: Likewise.
+
 2016-01-05  Sergei Trofimovich <siarheit@google.com>
 
         PR other/60465
