@@ -1,3 +1,8 @@
+2016-01-05  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/aix-unwind.h (ucontext_for): Handle AIX 7.1
+	specificities. 
+
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
