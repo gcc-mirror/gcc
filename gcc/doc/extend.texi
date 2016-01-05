@@ -2278,6 +2278,7 @@ GCC plugins may provide their own attributes.
 * SH Function Attributes::
 * SPU Function Attributes::
 * Symbian OS Function Attributes::
+* V850 Function Attributes::
 * Visium Function Attributes::
 * x86 Function Attributes::
 * Xstormy16 Function Attributes::
@@ -5099,6 +5100,22 @@ depended upon to work reliably and are not supported.
 @xref{Microsoft Windows Function Attributes}, for discussion of the
 @code{dllexport} and @code{dllimport} attributes.
 
+@node V850 Function Attributes
+@subsection V850 Function Attributes
+
+The V850 back end supports these function attributes:
+
+@table @code
+@item interrupt
+@itemx interrupt_handler
+@cindex @code{interrupt} function attribute, V850
+@cindex @code{interrupt_handler} function attribute, V850
+Use these attributes to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when either attribute is present.
+@end table
+
 @node Visium Function Attributes
 @subsection Visium Function Attributes
 
@@ -5437,6 +5454,7 @@ attributes.
 * MSP430 Variable Attributes::
 * PowerPC Variable Attributes::
 * SPU Variable Attributes::
+* V850 Variable Attributes::
 * x86 Variable Attributes::
 * Xstormy16 Variable Attributes::
 @end menu
@@ -6085,6 +6103,29 @@ documentation in @ref{PowerPC Type Attributes}.
 The SPU supports the @code{spu_vector} attribute for variables.  For
 documentation of this attribute please see the documentation in
 @ref{SPU Type Attributes}.
+
+@node V850 Variable Attributes
+@subsection V850 Variable Attributes
+
+These variable attributes are supported by the V850 back end:
+
+@table @code
+
+@item sda
+@cindex @code{sda} variable attribute, V850
+Use this attribute to explicitly place a variable in the small data area,
+which can hold up to 64 kilobytes.
+
+@item tda
+@cindex @code{tda} variable attribute, V850
+Use this attribute to explicitly place a variable in the tiny data area,
+which can hold up to 256 bytes in total.
+
+@item zda
+@cindex @code{zda} variable attribute, V850
+Use this attribute to explicitly place a variable in the first 32 kilobytes
+of memory.
+@end table
 
 @node x86 Variable Attributes
 @subsection x86 Variable Attributes
