@@ -1,5 +1,11 @@
 2016-01-05  Mike Frysinger  <vapier@gentoo.org>
 
+	* argv.c (dupargv): Change arg to char * const *.  Update comment.
+	(writeargv, countargv): Likewise.
+	* functions.texi (dupargv, writeargv, countargv): Likewise.
+
+2016-01-05  Mike Frysinger  <vapier@gentoo.org>
+
 	* argv.c (dupargv): Replace strlen/xmalloc/strcpy with xstrdup.
 
 2015-12-28  Patrick Palka  <ppalka@gcc.gnu.org>
