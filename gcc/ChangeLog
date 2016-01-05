@@ -1,3 +1,7 @@
+2016-01-04  Martin Sebor  <msebor@redhat.com>
+
+	* doc/invoke.texi (Warning Options): Document -Winvalid-memory-model.
+
 2016-01-04  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-cpus.def (ISA_3_0_MASKS_SERVER): Add

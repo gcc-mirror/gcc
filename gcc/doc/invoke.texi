@@ -260,7 +260,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wignored-qualifiers  -Wincompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
 -Winit-self  -Winline  -Wno-int-conversion @gol
--Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
+-Wno-int-to-pointer-cast -Winvalid-memory-model -Wno-invalid-offsetof @gol
 -Winvalid-pch -Wlarger-than=@var{len} @gol
 -Wlogical-op -Wlogical-not-parentheses -Wlong-long @gol
 -Wmain -Wmaybe-uninitialized -Wmemset-transposed-args @gol
@@ -4304,6 +4304,26 @@ Note that there may be no warning about a variable that is used only
 to compute a value that itself is never used, because such
 computations may be deleted by data flow analysis before the warnings
 are printed.
+
+@item -Winvalid-memory-model
+@opindex Winvalid-memory-model
+@opindex Wno-invalid-memory-model
+Warn for invocations of @ref{__atomic Builtins}, @ref{__sync Builtins},
+and the C11 atomic generic functions with a memory consistency argument
+that is either invalid for the operation or outside the range of values
+of the @code{memory_order} enumeration.  For example, since the
+@code{__atomic_store} and @code{__atomic_store_n} built-ins are only
+defined for the relaxed, release, and sequentially consistent memory
+orders the following code is diagnosed:
+
+@smallexample
+void store (int *i)
+@{
+  __atomic_store_n (i, 0, memory_order_consume);
+@}
+@end smallexample
+
+@option{-Winvalid-memory-model} is enabled by default.
 
 @item -Wmaybe-uninitialized
 @opindex Wmaybe-uninitialized
