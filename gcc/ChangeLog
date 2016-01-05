@@ -11,7 +11,7 @@
 2015-12-22  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline
-	PR target/68772
+	PR target/68872
 	* config/rs6000/rs6000.h (ASM_CPU_SPEC): For -mcpu=powerpc64le,
 	pass %(asm_cpu_power8).
 
