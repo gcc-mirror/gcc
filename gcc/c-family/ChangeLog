@@ -1,3 +1,13 @@
+2016-01-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/69122
+	* c-indentation.c (get_visual_column): Remove default argument.
+	(should_warn_for_misleading_indentation): For the multiline case,
+	update call to get_visual_column for next_stmt_exploc so that it
+	captures the location of the first non-whitespace character in the
+	relevant line.  Don't issue warnings if there is non-whitespace
+	before the next statement.
+
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

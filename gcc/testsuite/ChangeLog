@@ -1,3 +1,8 @@
+2016-01-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/69122
+	* c-c++-common/Wmisleading-indentation.c (pr69122): New function.
+
 2016-01-05  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/58583

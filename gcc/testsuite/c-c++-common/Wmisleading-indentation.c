@@ -891,3 +891,13 @@ fn_39 (void)
        i++);
   foo (i);
 }
+
+/* We shouldn't complain about the following function.  */
+#define emit
+void pr69122 (void)
+{
+  if (flagA)
+       foo (0);
+  emit foo (1);
+}
+#undef emit
