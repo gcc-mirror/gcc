@@ -1,3 +1,9 @@
+2016-01-05  Sergei Trofimovich <siarheit@google.com>
+
+        PR other/60465
+	* gcc.target/ia64/pr60465-gprel64.c: New test.
+	* gcc.target/ia64/pr60465-gprel64-c37.c: New test.
+
 2016-01-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/68651
