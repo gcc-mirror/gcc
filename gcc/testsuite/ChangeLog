@@ -1,5 +1,8 @@
 2016-01-05  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/58583
+	* g++.dg/cpp0x/nsdmi-template14.C: Adjust test & errors.
+
 	* gcc.dg/alias-15.c: New.
 
 2016-01-05  Nick Clifton  <nickc@redhat.com>
