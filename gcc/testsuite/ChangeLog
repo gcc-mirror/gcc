@@ -1,3 +1,7 @@
+2016-01-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/bad-dereference.c: New test case.
+
 2015-01-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/p9-lxvx-stxvx-3.c: New test.
