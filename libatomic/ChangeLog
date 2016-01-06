@@ -1,3 +1,12 @@
+2016-01-06  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backport from mainline:
+	2016-01-06  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR other/67627
+	* Makefile.am (all-multi): Add dependency.
+	* Makefile.in: Regenerate.
+
 2015-06-26  Release Manager
 
 	* GCC 4.9.3 released.
