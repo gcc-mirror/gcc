@@ -121,6 +121,7 @@ int acc_set_cuda_stream (int, void *) __GOACC_NOTHROW;
 
 /* Forwarding function with correctly typed arg.  */
 
+#pragma acc routine seq
 inline int acc_on_device (acc_device_t __arg) __GOACC_NOTHROW
 {
   return acc_on_device ((int) __arg);
