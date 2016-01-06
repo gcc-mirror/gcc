@@ -1,3 +1,7 @@
+2016-01-06  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.dg/atomic-invalid-2.c: Remove duplicated content.
+
 2016-01-06  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/69099
