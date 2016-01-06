@@ -111,20 +111,16 @@ convert (tree type, tree expr)
 	  && COMPLETE_TYPE_P (type)
 	  && do_ubsan_in_current_function ())
 	{
-	  tree arg;
 	  if (in_late_binary_op)
-	    {
-	      expr = save_expr (expr);
-	      arg = expr;
-	    }
+	    expr = save_expr (expr);
 	  else
 	    {
 	      expr = c_save_expr (expr);
-	      arg = c_fully_fold (expr, false, NULL);
+	      expr = c_fully_fold (expr, false, NULL);
 	    }
-	  tree check = ubsan_instrument_float_cast (loc, type, expr, arg);
+	  tree check = ubsan_instrument_float_cast (loc, type, expr);
 	  expr = fold_build1 (FIX_TRUNC_EXPR, type, expr);
-	  if (check == NULL)
+	  if (check == NULL_TREE)
 	    return expr;
 	  return fold_build2 (COMPOUND_EXPR, TREE_TYPE (expr), check, expr);
 	}

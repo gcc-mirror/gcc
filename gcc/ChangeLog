@@ -1,3 +1,12 @@
+2016-01-06  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/69099
+	* convert.c (convert_to_integer_1): Adjust call to
+	ubsan_instrument_float_cast.  Use NULL_TREE instead of NULL.
+	* ubsan.c (ubsan_instrument_float_cast): Drop the ARG parameter.  Use
+	EXPR instead of ARG.
+	* ubsan.h (ubsan_instrument_float_cast): Adjust declaration.
+
 2016-01-05  Sandra Loosemore <sandra@codesourcery.com>
 
 	PR 1078

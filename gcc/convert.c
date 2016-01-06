@@ -920,9 +920,9 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	  && do_ubsan_in_current_function ())
 	{
 	  expr = save_expr (expr);
-	  tree check = ubsan_instrument_float_cast (loc, type, expr, expr);
+	  tree check = ubsan_instrument_float_cast (loc, type, expr);
 	  expr = build1 (FIX_TRUNC_EXPR, type, expr);
-	  if (check == NULL)
+	  if (check == NULL_TREE)
 	    return expr;
 	  return maybe_fold_build2_loc (dofold, loc, COMPOUND_EXPR,
 					TREE_TYPE (expr), check, expr);
