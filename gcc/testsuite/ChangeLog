@@ -1,3 +1,8 @@
+2016-01-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/69140
+	* gcc.target/i386/pr69140.c: New test
+
 2016-01-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/bad-dereference.c: New test case.
