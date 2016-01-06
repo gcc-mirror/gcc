@@ -304,16 +304,16 @@
 ;; VSX (P9) moves
 
 (define_insn "*p9_vecload_<mode>"
-  [(set (match_operand:VSX_M 0 "vsx_register_operand" "=<VSa>")
-        (match_operand:VSX_M 1 "memory_operand" "Z"))]
+  [(set (match_operand:VSX_M2 0 "vsx_register_operand" "=<VSa>")
+        (match_operand:VSX_M2 1 "memory_operand" "Z"))]
   "TARGET_P9_VECTOR"
   "lxvx %x0,%y1"
   [(set_attr "type" "vecload")
    (set_attr "length" "4")])
 
 (define_insn "*p9_vecstore_<mode>"
-  [(set (match_operand:VSX_M 0 "memory_operand" "=Z")
-        (match_operand:VSX_M 1 "vsx_register_operand" "<VSa>"))]
+  [(set (match_operand:VSX_M2 0 "memory_operand" "=Z")
+        (match_operand:VSX_M2 1 "vsx_register_operand" "<VSa>"))]
   "TARGET_P9_VECTOR"
   "stxvx %x1,%y0"
   [(set_attr "type" "vecstore")
@@ -680,7 +680,7 @@
 	(rotate:VSX_LE_128
 	 (match_operand:VSX_LE_128 1 "input_operand" "<VSa>,Z,<VSa>")
 	 (const_int 64)))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "@
    xxpermdi %x0,%x1,%x1,2
    lxvd2x %x0,%y1
@@ -714,9 +714,9 @@
 (define_insn_and_split "*vsx_le_perm_load_<mode>"
   [(set (match_operand:VSX_LE_128 0 "vsx_register_operand" "=<VSa>")
         (match_operand:VSX_LE_128 1 "memory_operand" "Z"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   [(set (match_dup 2)
 	(rotate:VSX_LE_128 (match_dup 1)
 			   (const_int 64)))
@@ -735,7 +735,7 @@
 (define_insn "*vsx_le_perm_store_<mode>"
   [(set (match_operand:VSX_LE_128 0 "memory_operand" "=Z")
         (match_operand:VSX_LE_128 1 "vsx_register_operand" "+<VSa>"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
   [(set_attr "type" "vecstore")
    (set_attr "length" "12")])
@@ -743,7 +743,7 @@
 (define_split
   [(set (match_operand:VSX_LE_128 0 "memory_operand" "")
         (match_operand:VSX_LE_128 1 "vsx_register_operand" ""))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed && !TARGET_P9_VECTOR"
   [(set (match_dup 2)
 	(rotate:VSX_LE_128 (match_dup 1)
 			   (const_int 64)))
@@ -765,7 +765,7 @@
    (set (match_operand:TI 2 "vsx_register_operand" "")
 	(rotate:TI (match_dup 0)
 		   (const_int 64)))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && TARGET_VSX_TIMODE
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && TARGET_VSX_TIMODE && !TARGET_P9_VECTOR
    && (rtx_equal_p (operands[0], operands[2])
        || peep2_reg_dead_p (2, operands[0]))"
    [(set (match_dup 2) (match_dup 1))])
@@ -775,7 +775,7 @@
 (define_split
   [(set (match_operand:VSX_LE_128 0 "memory_operand" "")
         (match_operand:VSX_LE_128 1 "vsx_register_operand" ""))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed && !TARGET_P9_VECTOR"
   [(set (match_dup 1)
 	(rotate:VSX_LE_128 (match_dup 1)
 			   (const_int 64)))
