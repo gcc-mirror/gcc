@@ -1478,18 +1478,18 @@ ubsan_use_new_style_p (location_t loc)
 }
 
 /* Instrument float point-to-integer conversion.  TYPE is an integer type of
-   destination, EXPR is floating-point expression.  ARG is what to pass
-   the libubsan call as value, often EXPR itself.  */
+   destination, EXPR is floating-point expression.  */
 
 tree
-ubsan_instrument_float_cast (location_t loc, tree type, tree expr, tree arg)
+ubsan_instrument_float_cast (location_t loc, tree type, tree expr)
 {
   tree expr_type = TREE_TYPE (expr);
   tree t, tt, fn, min, max;
   machine_mode mode = TYPE_MODE (expr_type);
   int prec = TYPE_PRECISION (type);
   bool uns_p = TYPE_UNSIGNED (type);
-  if (!loc) loc = input_location;
+  if (loc == UNKNOWN_LOCATION)
+    loc = input_location;
 
   /* Float to integer conversion first truncates toward zero, so
      even signed char c = 127.875f; is not problematic.
@@ -1609,7 +1609,7 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr, tree arg)
       fn = builtin_decl_explicit (bcode);
       fn = build_call_expr_loc (loc, fn, 2,
 				build_fold_addr_expr_loc (loc, data),
-				ubsan_encode_value (arg, false));
+				ubsan_encode_value (expr, false));
     }
 
   return fold_build3 (COND_EXPR, void_type_node, t, fn, integer_zero_node);
