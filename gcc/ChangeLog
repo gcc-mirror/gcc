@@ -1,3 +1,7 @@
+2016-01-06  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* config/mips/mips-ftypes.def: Sort to lexicographical order.
+
 2016-01-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/69140
