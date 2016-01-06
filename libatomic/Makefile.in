@@ -494,12 +494,6 @@ clean-libtool:
 
 distclean-libtool:
 	-rm -f libtool config.lt
-
-# GNU Make needs to see an explicit $(MAKE) variable in the command it
-# runs to enable its job server during parallel builds.  Hence the
-# comments below.
-all-multi:
-	$(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do # $(MAKE)
 install-multi:
 	$(MULTIDO) $(AM_MAKEFLAGS) DO=install multi-do # $(MAKE)
 
@@ -797,6 +791,13 @@ vpath % $(strip $(search_path))
 
 %_.lo: Makefile
 	$(LTCOMPILE) $(M_DEPS) $(M_SIZE) $(M_IFUNC) -c -o $@ $(M_SRC)
+
+# Override the automake generated all-multi rule to guarantee that all-multi
+# is not run in parallel with the %_.lo rules which generate $(DEPDIR)/*.Ppo
+# makefile fragments to avoid broken *.Ppo getting included into the Makefile
+# when it is reloaded during the build of all-multi.
+all-multi: $(libatomic_la_LIBADD)
+	$(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do # $(MAKE)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
