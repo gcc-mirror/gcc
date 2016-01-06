@@ -13065,6 +13065,8 @@ ix86_expand_prologue (void)
       m->fs.fp_valid = true;
     }
 
+  m->fs.sp_valid = !frame_pointer_needed;
+
   if (!int_registers_saved)
     ix86_emit_save_regs_using_mov (frame.reg_save_offset);
   if (!sse_registers_saved)

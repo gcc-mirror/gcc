@@ -1,3 +1,10 @@
+2016-01-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/69140
+	* config/i386/i386.c (ix86_expand_prologue): Declare fs.sp_valid
+	depending on frame_pointer_needed before remaining integer and SSE
+	registers are saved.
+
 2015-01-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/vsx.md (*p9_vecload_<mode>): Replace VSX_M
