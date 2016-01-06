@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1937,6 +1937,7 @@ rest_of_record_type_compilation (tree record_type)
 	= create_type_stub_decl (new_name, new_record_type);
       DECL_IGNORED_P (TYPE_STUB_DECL (new_record_type))
 	= DECL_IGNORED_P (TYPE_STUB_DECL (record_type));
+      gnat_pushdecl (TYPE_STUB_DECL (new_record_type), Empty);
       TYPE_SIZE (new_record_type) = size_int (TYPE_ALIGN (record_type));
       TYPE_SIZE_UNIT (new_record_type)
 	= size_int (TYPE_ALIGN (record_type) / BITS_PER_UNIT);
