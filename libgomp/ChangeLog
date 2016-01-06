@@ -1,3 +1,8 @@
+2016-01-06  Nathan Sidwell  <nathan@acm.org>
+
+	* openacc.c (acc_on_device): Add routine pragma for C++ wrapper.
+	* testsuite/libgomp.oacc-c-c++-common/acc-on-device-2.c: New.
+
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
