@@ -1,3 +1,7 @@
+2016-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20151219-1.c: Skip in 64-bit mode.
+
 2016-01-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/69140

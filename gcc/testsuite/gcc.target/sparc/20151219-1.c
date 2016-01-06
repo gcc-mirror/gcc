@@ -2,6 +2,7 @@
 /* Reported by Sebastian Huber <sebastian.huber@embedded-brains.de> */
 
 /* { dg-do compile } */
+/* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O2 -mtune=supersparc" } */
 
 typedef unsigned int size_t;
