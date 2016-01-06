@@ -1,3 +1,15 @@
+2015-01-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (*p9_vecload_<mode>): Replace VSX_M
+	mode iterator with VSX_M2.
+	(*p9_vecstore_<mode>): Likewise.
+	(*vsx_le_permute_<mode>): Restrict to !TARGET_P9_VECTOR.
+	(*vsx_le_perm_load_<mode> for VSX_LE_128): Likewise.
+	(*vsx_le_perm_store_<mode> for VSX_LE_128): Likewise.
+	(define_split for VSX_LE128 stores): Likewise.
+	(define_peephole2 for TImode LE swaps): Likewise.
+	(define_split for VSX_LE128 post-reload stores): Likewise.
+
 2016-01-06  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/69099
