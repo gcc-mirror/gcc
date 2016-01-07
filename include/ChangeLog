@@ -1,3 +1,9 @@
+2016-01-07  Mike Frysinger  <vapier@gentoo.org>
+
+	* longlong.h: Change !__SHMEDIA__ to
+	(!defined (__SHMEDIA__) || !__SHMEDIA__).
+	Change __SHMEDIA__ to defined (__SHMEDIA__) && __SHMEDIA__.
+
 2016-01-05  Mike Frysinger  <vapier@gentoo.org>
 
 	* libiberty.h (dupargv): Change arg to char * const *.
