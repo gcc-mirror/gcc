@@ -1,3 +1,19 @@
+2016-01-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/69140
+	* config/i386/i386.c (ix86_frame_pointer_required): Enable
+	frame pointer for TARGET_64BIT_MS_ABI when stack is misaligned.
+
+2016-01-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert
+	2016-01-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/69140
+	* config/i386/i386.c (ix86_expand_prologue): Declare fs.sp_valid
+	depending on frame_pointer_needed before remaining integer and SSE
+	registers are saved.
+
 2016-01-07  Sandra Loosemore <sandra@codesourcery.com>
 
 	PR 1078
