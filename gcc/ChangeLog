@@ -1,3 +1,11 @@
+2016-01-07  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/arm/freebsd.h: Rename SUBTARGET_OVERRIDE_OPTIONS to
+	SUBTARGET_OVERRIDE_INTERNAL_OPTIONS. Adjust to check
+	unaligned_access on the gcc_options set.
+	* config/arm/arm.c (arm_option_override_internal): Use
+	SUBTARGET_OVERRIDE_INTERNAL_OPTIONS.
+
 2016-01-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/69140
