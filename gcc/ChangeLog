@@ -1,3 +1,9 @@
+2016-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/68960
+	* gimple-expr.c (copy_var_decl): If var has DECL_USER_ALIGN set, copy
+	it and DECL_ALIGN too.
+
 2016-01-06  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* config/mips/mips-ftypes.def: Sort to lexicographical order.

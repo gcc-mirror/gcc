@@ -1,3 +1,8 @@
+2016-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/68960
+	* testsuite/libgomp.c/pr68960.c: New test.
+
 2016-01-06  Nathan Sidwell  <nathan@acm.org>
 
 	* openacc.h (acc_on_device): Add routine pragma for C++ wrapper.
