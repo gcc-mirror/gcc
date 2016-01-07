@@ -1420,6 +1420,9 @@ make_decl_rtl (tree decl)
 	 specifications.  */
       SET_DECL_ASSEMBLER_NAME (decl, NULL_TREE);
       DECL_HARD_REGISTER (decl) = 0;
+      /* Also avoid SSA inconsistencies by pretending this is an external
+	 decl now.  */
+      DECL_EXTERNAL (decl) = 1;
       return;
     }
   /* Now handle ordinary static variables and functions (in memory).

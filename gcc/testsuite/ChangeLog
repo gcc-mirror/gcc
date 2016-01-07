@@ -1,3 +1,8 @@
+2015-12-15  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR middle-end/67639
+	* c-c++-common/pr67639.c: New test.
+
 2016-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69141
