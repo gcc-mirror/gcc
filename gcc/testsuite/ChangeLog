@@ -1,3 +1,8 @@
+2016-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69141
+	* g++.dg/opt/pr69141.C: New test.
+
 2016-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/20151219-1.c: Skip in 64-bit mode.
