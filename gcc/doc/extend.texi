@@ -2271,6 +2271,7 @@ GCC plugins may provide their own attributes.
 * MSP430 Function Attributes::
 * NDS32 Function Attributes::
 * Nios II Function Attributes::
+* Nvidia PTX Function Attributes::
 * PowerPC Function Attributes::
 * RL78 Function Attributes::
 * RX Function Attributes::
@@ -4631,6 +4632,22 @@ command-line option, to select a predefined set of custom instructions
 named @var{name}.
 @xref{Nios II Options}, for more information.
 @end table
+@end table
+
+@node Nvidia PTX Function Attributes
+@subsection Nvidia PTX Function Attributes
+
+These function attributes are supported by the Nvidia PTX back end:
+
+@table @code
+@item kernel
+@cindex @code{kernel} attribute, Nvidia PTX
+This attribute indicates that the corresponding function should be compiled
+as a kernel function, which can be invoked from the host via the CUDA RT 
+library.
+By default functions are only callable only from other PTX functions.
+
+Kernel functions must have @code{void} return type.
 @end table
 
 @node PowerPC Function Attributes

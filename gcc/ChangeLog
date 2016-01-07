@@ -1,3 +1,8 @@
+2016-01-07  Sandra Loosemore <sandra@codesourcery.com>
+
+	PR 1078
+	* doc/extend.texi (Nvidia PDX Function Attributes): New section.
+
 2016-01-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/69171
