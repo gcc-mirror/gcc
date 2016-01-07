@@ -375,6 +375,11 @@ copy_var_decl (tree var, tree name, tree type)
   TREE_USED (copy) = 1;
   DECL_SEEN_IN_BIND_EXPR_P (copy) = 1;
   DECL_ATTRIBUTES (copy) = DECL_ATTRIBUTES (var);
+  if (DECL_USER_ALIGN (var))
+    {
+      DECL_ALIGN (copy) = DECL_ALIGN (var);
+      DECL_USER_ALIGN (copy) = 1;
+    }
 
   return copy;
 }
