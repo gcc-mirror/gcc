@@ -1,3 +1,8 @@
+2016-01-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR fortran/66680
+	* testsuite/libgomp.fortran/pr66680.f90: New test.
+
 2016-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/68960

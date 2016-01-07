@@ -1,3 +1,8 @@
+2016-01-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR fortran/66680
+	gfortran.dg/gomp/pr66680.f90: Moved to libgomp.
+
 2016-01-07  Nick Clifton  <nickc@redhat.com>
 
 	PR target/66655
