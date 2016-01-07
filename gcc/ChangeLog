@@ -1,3 +1,9 @@
+2015-12-15  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/66206
+	* bt-load.c (find_btr_use): Change first arg to be a pointer to an rtx.
+	All callers changed.
+
 2016-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69141
