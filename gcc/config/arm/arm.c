@@ -2954,6 +2954,10 @@ arm_option_override_internal (struct gcc_options *opts,
   /* Thumb2 inline assembly code should always use unified syntax.
      This will apply to ARM and Thumb1 eventually.  */
   opts->x_inline_asm_unified = TARGET_THUMB2_P (opts->x_target_flags);
+
+#ifdef SUBTARGET_OVERRIDE_INTERNAL_OPTIONS
+  SUBTARGET_OVERRIDE_INTERNAL_OPTIONS;
+#endif
 }
 
 /* Fix up any incompatible options that the user has specified.  */

@@ -120,10 +120,12 @@
 #define SUBTARGET_CPU_DEFAULT   TARGET_CPU_arm9
 #endif
 
-#define SUBTARGET_OVERRIDE_OPTIONS		\
-do {						\
-    if (unaligned_access)			\
-	unaligned_access = 0;			\
+#define SUBTARGET_OVERRIDE_INTERNAL_OPTIONS				\
+do {									\
+    if (opts_set->x_unaligned_access == 1)				\
+        warning (0, "target OS does not support unaligned accesses");	\
+    if (opts->x_unaligned_access)					\
+	opts->x_unaligned_access = 0;					\
 } while (0)
 
 #undef MAX_SYNC_LIBFUNC_SIZE
