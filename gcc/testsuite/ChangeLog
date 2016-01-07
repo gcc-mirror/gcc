@@ -1,3 +1,10 @@
+2016-01-07  Nick Clifton  <nickc@redhat.com>
+
+	PR target/66655
+	* g++.dg/pr66655.C: New test.
+	* g++.dg/pr66655_1.cc: Test support file.
+	* g++.dg/pr66655.h: Test header file.
+
 2016-01-07  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR fortran/66680
