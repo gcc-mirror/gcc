@@ -1,3 +1,20 @@
+2016-01-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/69171
+	* config/i386/sse.md (<sse>_sqrt<mode>2<mask_name><round_name>):
+	Use the "xBm" constraint.
+	(float<sseintvecmodelower><mode>2<mask_name><round_name):
+	Likewise.
+	(sse_cvtsi2ss<round_name>): Use round_nimm_scalar_predicate.
+	(sse_cvtsi2ssq<round_name>): Likewise.
+	(sse_cvtss2si<round_name>): Likewise.
+	(sse_cvtss2siq<round_name>): Likewise.
+	(sse2_cvtsi2sdq<round_name>): Likewise.
+	(sse2_cvtsd2si<round_name>): Likewise.
+	(sse2_cvtsd2siq<round_name>): Likewise.
+	* config/i386/subst.md (round_nimm_scalar_predicate): New
+	predicate.
+
 2015-12-15  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR middle-end/67639

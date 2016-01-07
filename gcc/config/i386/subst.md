@@ -124,6 +124,7 @@
 (define_subst_attr "round_constraint2" "round" "m" "v")
 (define_subst_attr "round_constraint3" "round" "rm" "r")
 (define_subst_attr "round_nimm_predicate" "round" "vector_operand" "register_operand")
+(define_subst_attr "round_nimm_scalar_predicate" "round" "nonimmediate_operand" "register_operand")
 (define_subst_attr "round_prefix" "round" "vex" "evex")
 (define_subst_attr "round_mode512bit_condition" "round" "1" "(<MODE>mode == V16SFmode
 							      || <MODE>mode == V8DFmode
