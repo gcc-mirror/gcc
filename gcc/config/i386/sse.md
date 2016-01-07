@@ -1862,11 +1862,14 @@
 })
 
 (define_insn "<sse>_sqrt<mode>2<mask_name><round_name>"
-  [(set (match_operand:VF 0 "register_operand" "=v")
-	(sqrt:VF (match_operand:VF 1 "<round_nimm_predicate>" "<round_constraint>")))]
+  [(set (match_operand:VF 0 "register_operand" "=x,v")
+	(sqrt:VF (match_operand:VF 1 "<round_nimm_predicate>" "xBm,<round_constraint>")))]
   "TARGET_SSE && <mask_mode512bit_condition> && <round_mode512bit_condition>"
-  "%vsqrt<ssemodesuffix>\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
-  [(set_attr "type" "sse")
+  "@
+   sqrt<ssemodesuffix>\t{%1, %0|%0, %1}
+   vsqrt<ssemodesuffix>\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sse")
    (set_attr "atom_sse_attr" "sqrt")
    (set_attr "btver2_sse_attr" "sqrt")
    (set_attr "prefix" "maybe_vex")
@@ -4269,7 +4272,7 @@
   [(set (match_operand:V4SF 0 "register_operand" "=x,x,v")
 	(vec_merge:V4SF
 	  (vec_duplicate:V4SF
-	    (float:SF (match_operand:SI 2 "<round_nimm_predicate>" "r,m,<round_constraint3>")))
+	    (float:SF (match_operand:SI 2 "<round_nimm_scalar_predicate>" "r,m,<round_constraint3>")))
 	  (match_operand:V4SF 1 "register_operand" "0,0,v")
 	  (const_int 1)))]
   "TARGET_SSE"
@@ -4291,7 +4294,7 @@
   [(set (match_operand:V4SF 0 "register_operand" "=x,x,v")
 	(vec_merge:V4SF
 	  (vec_duplicate:V4SF
-	    (float:SF (match_operand:DI 2 "<round_nimm_predicate>" "r,m,<round_constraint3>")))
+	    (float:SF (match_operand:DI 2 "<round_nimm_scalar_predicate>" "r,m,<round_constraint3>")))
 	  (match_operand:V4SF 1 "register_operand" "0,0,v")
 	  (const_int 1)))]
   "TARGET_SSE && TARGET_64BIT"
@@ -4314,7 +4317,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(unspec:SI
 	  [(vec_select:SF
-	     (match_operand:V4SF 1 "<round_nimm_predicate>" "v,<round_constraint2>")
+	     (match_operand:V4SF 1 "<round_nimm_scalar_predicate>" "v,<round_constraint2>")
 	     (parallel [(const_int 0)]))]
 	  UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE"
@@ -4344,7 +4347,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(unspec:DI
 	  [(vec_select:SF
-	     (match_operand:V4SF 1 "<round_nimm_predicate>" "v,<round_constraint2>")
+	     (match_operand:V4SF 1 "<round_nimm_scalar_predicate>" "v,<round_constraint2>")
 	     (parallel [(const_int 0)]))]
 	  UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE && TARGET_64BIT"
@@ -4431,12 +4434,15 @@
    (set_attr "mode" "<ssescalarmode>")])
 
 (define_insn "float<sseintvecmodelower><mode>2<mask_name><round_name>"
-  [(set (match_operand:VF1 0 "register_operand" "=v")
+  [(set (match_operand:VF1 0 "register_operand" "=x,v")
 	(float:VF1
-	  (match_operand:<sseintvecmode> 1 "<round_nimm_predicate>" "<round_constraint>")))]
+	  (match_operand:<sseintvecmode> 1 "<round_nimm_predicate>" "xBm,<round_constraint>")))]
   "TARGET_SSE2 && <mask_mode512bit_condition> && <round_mode512bit_condition>"
-  "%vcvtdq2ps\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
-  [(set_attr "type" "ssecvt")
+  "@
+   cvtdq2ps\t{%1, %0|%0, %1}
+   vcvtdq2ps\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "ssecvt")
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "<sseinsnmode>")])
 
@@ -4684,7 +4690,7 @@
   [(set (match_operand:V2DF 0 "register_operand" "=x,x,v")
 	(vec_merge:V2DF
 	  (vec_duplicate:V2DF
-	    (float:DF (match_operand:DI 2 "<round_nimm_predicate>" "r,m,<round_constraint3>")))
+	    (float:DF (match_operand:DI 2 "<round_nimm_scalar_predicate>" "r,m,<round_constraint3>")))
 	  (match_operand:V2DF 1 "register_operand" "0,0,v")
 	  (const_int 1)))]
   "TARGET_SSE2 && TARGET_64BIT"
@@ -4806,7 +4812,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(unspec:SI
 	  [(vec_select:DF
-	     (match_operand:V2DF 1 "<round_nimm_predicate>" "v,<round_constraint2>")
+	     (match_operand:V2DF 1 "<round_nimm_scalar_predicate>" "v,<round_constraint2>")
 	     (parallel [(const_int 0)]))]
 	  UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE2"
@@ -4837,7 +4843,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(unspec:DI
 	  [(vec_select:DF
-	     (match_operand:V2DF 1 "<round_nimm_predicate>" "v,<round_constraint2>")
+	     (match_operand:V2DF 1 "<round_nimm_scalar_predicate>" "v,<round_constraint2>")
 	     (parallel [(const_int 0)]))]
 	  UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE2 && TARGET_64BIT"

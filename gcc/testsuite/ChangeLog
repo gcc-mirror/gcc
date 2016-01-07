@@ -1,3 +1,13 @@
+2016-01-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/69171
+	* gcc.target/i386/pr69171-1.c: New test.
+	* gcc.target/i386/pr69171-2.c: Likewise.
+	* gcc.target/i386/pr69171-3.c: Likewise.
+	* gcc.target/i386/pr69171-4.c: Likewise.
+	* gcc.target/i386/pr69171-5.c: Likewise.
+	* gcc.target/i386/pr69171-6.c: Likewise.
+
 2015-12-15  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR middle-end/67639
