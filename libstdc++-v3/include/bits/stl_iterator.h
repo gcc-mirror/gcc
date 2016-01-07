@@ -451,7 +451,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// The only way to create this %iterator is with a container.
       explicit
-      back_insert_iterator(_Container& __x) : container(&__x) { }
+      back_insert_iterator(_Container& __x)
+      : container(std::__addressof(__x)) { }
 
       /**
        *  @param  __value  An instance of whatever type
@@ -541,7 +542,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Container          container_type;
 
       /// The only way to create this %iterator is with a container.
-      explicit front_insert_iterator(_Container& __x) : container(&__x) { }
+      explicit front_insert_iterator(_Container& __x)
+      : container(std::__addressof(__x)) { }
 
       /**
        *  @param  __value  An instance of whatever type
@@ -640,7 +642,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  initial position (a normal %iterator into the container).
       */
       insert_iterator(_Container& __x, typename _Container::iterator __i)
-      : container(&__x), iter(__i) {}
+      : container(std::__addressof(__x)), iter(__i) {}
 
       /**
        *  @param  __value  An instance of whatever type

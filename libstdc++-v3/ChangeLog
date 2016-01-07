@@ -1,3 +1,18 @@
+2016-01-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69105
+	PR libstdc++/69106
+	PR libstdc++/69114
+	* include/bits/stl_iterator.h (back_insert_iterator,
+	front_insert_iterator, insert_iterator): Use __addressof (LWG 2324).
+	* include/bits/uses_allocator.h (__use_alloc): Use __addressof.
+	* include/std/future (__future::base::_State_baseV2::__setter):
+	Likewise.
+	* include/std/scoped_allocator (__outermost): Likewise.
+	* testsuite/20_util/scoped_allocator/69114.cc: New.
+	* testsuite/20_util/uses_allocator/69114.cc: New.
+	* testsuite/30_threads/promise/69106.cc: New.
+
 2016-01-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/69092
