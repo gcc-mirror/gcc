@@ -1,5 +1,11 @@
 2016-01-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/69141
+	* tree-ssa-pre.c: Include langhooks.h.
+	(eliminate_dom_walker::before_dom_children): Use
+	lang_hooks.decl_printable_name instead of
+	cgraph_node::get ()->name ().
+
 	PR middle-end/68960
 	* gimple-expr.c (copy_var_decl): If var has DECL_USER_ALIGN set, copy
 	it and DECL_ALIGN too.
