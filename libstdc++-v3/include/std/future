@@ -507,7 +507,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         static _Setter<_Res, _Arg&&>
         __setter(promise<_Res>* __prom, _Arg&& __arg)
         {
-          return _Setter<_Res, _Arg&&>{ __prom, &__arg };
+          return _Setter<_Res, _Arg&&>{ __prom, std::__addressof(__arg) };
         }
 
       template<typename _Res>
