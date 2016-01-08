@@ -1,3 +1,10 @@
+2016-01-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* symtab.c (symtab_node::equal_address_to): Return -1 instead of 2
+	if we can't determine address equivalence.
+	* alias.c (compare_base_decl): Update for changed return value of
+	symtab_node::equal_address_to.
+
 2016-01-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68983
