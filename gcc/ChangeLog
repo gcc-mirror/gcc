@@ -1,3 +1,12 @@
+2016-01-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/67778
+	PR rtl-optimization/68634
+	PR rtl-optimization/68909
+	* shrink-wrap.c (try_shrink_wrapping): Add comment.  Don't pop
+	block from the stack until done with it.  Remove a superfluous
+	bitmap set.  Remove a superfluous bitmap test.
+
 2016-01-07  Martin Sebor  <msebor@redhat.com>
 
 	PR c/68966
