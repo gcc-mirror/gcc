@@ -1,3 +1,9 @@
+2016-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69145
+	* files.c (cpp_included_before): If IS_ADHOC_LOC (location), lookup
+	real location from the line_table.
+
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

@@ -1224,10 +1224,12 @@ bool
 cpp_included_before (cpp_reader *pfile, const char *fname,
 		     source_location location)
 {
-  struct cpp_file_hash_entry *entry;
+  struct cpp_file_hash_entry *entry
+    = (struct cpp_file_hash_entry *)
+      htab_find_with_hash (pfile->file_hash, fname, htab_hash_string (fname));
 
-  entry = (struct cpp_file_hash_entry *)
-     htab_find_with_hash (pfile->file_hash, fname, htab_hash_string (fname));
+  if (IS_ADHOC_LOC (location))
+    location = get_location_from_adhoc_loc (pfile->line_table, location);
 
   while (entry && (entry->start_dir == NULL || entry->u.file->err_no
 		   || entry->location > location))
