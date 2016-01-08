@@ -9316,6 +9316,9 @@ returns the value that had previously been in memory.  That is,
 @{ tmp = *ptr; *ptr = ~(tmp & value); return tmp; @}   // nand
 @end smallexample
 
+The object pointed to by the first argument must be of integer or pointer
+type.  It must not be a Boolean type.
+
 @emph{Note:} GCC 4.4 and later implement @code{__sync_fetch_and_nand}
 as @code{*ptr = ~(tmp & value)} instead of @code{*ptr = ~tmp & value}.
 
@@ -9338,6 +9341,9 @@ return the new value.  That is,
 @{ *ptr @var{op}= value; return *ptr; @}
 @{ *ptr = ~(*ptr & value); return *ptr; @}   // nand
 @end smallexample
+
+The same constraints on arguments apply as for the corresponding
+@code{__sync_op_and_fetch} built-in functions.
 
 @emph{Note:} GCC 4.4 and later implement @code{__sync_nand_and_fetch}
 as @code{*ptr = ~(*ptr & value)} instead of
@@ -9585,13 +9591,14 @@ pointer.
 @deftypefnx {Built-in Function} @var{type} __atomic_or_fetch (@var{type} *ptr, @var{type} val, int memorder)
 @deftypefnx {Built-in Function} @var{type} __atomic_nand_fetch (@var{type} *ptr, @var{type} val, int memorder)
 These built-in functions perform the operation suggested by the name, and
-return the result of the operation. That is,
+return the result of the operation.  That is,
 
 @smallexample
 @{ *ptr @var{op}= val; return *ptr; @}
 @end smallexample
 
-All memory orders are valid.
+The object pointed to by the first argument must be of integer or pointer
+type.  It must not be a Boolean type.  All memory orders are valid.
 
 @end deftypefn
 
@@ -9608,7 +9615,8 @@ return the value that had previously been in @code{*@var{ptr}}.  That is,
 @{ tmp = *ptr; *ptr @var{op}= val; return tmp; @}
 @end smallexample
 
-All memory orders are valid.
+The same constraints on arguments apply as for the corresponding
+@code{__atomic_op_fetch} built-in functions.  All memory orders are valid.
 
 @end deftypefn
 
