@@ -1,3 +1,11 @@
+2016-01-08  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/67781
+	* tree-ssa-math-opts.c (find_bswap_or_nop): Zero out bytes in cmpxchg
+	and cmpnop in two steps: first the ones not accessed in original
+	gimple expression in a endian independent way and then the ones not
+	accessed in the final result in an endian-specific way.
+
 2016-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69083
