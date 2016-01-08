@@ -1,3 +1,11 @@
+2016-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69083
+	* tree-vect-slp.c (vect_get_constant_vectors): For
+	VECTOR_BOOLEAN_TYPE_P assert op is fold_convertible_p to vector_type's
+	element type.  If op is fold_convertible_p to vector_type's element
+	type, use NOP_EXPR instead of VCE.
+
 2016-01-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/67778
