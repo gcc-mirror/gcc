@@ -1,3 +1,8 @@
+2016-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69172
+	* gcc.dg/pr69172.c: New test.
+
 2016-01-08  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/67781
