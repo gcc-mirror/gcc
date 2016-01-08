@@ -750,9 +750,21 @@ try_shrink_wrapping (edge *entry_edge, bitmap_head *bb_with,
 
   /* If we can move PRO back without having to duplicate more blocks, do so.
      We do this because putting the prologue earlier is better for scheduling.
+
      We can move back to a block PRE if every path from PRE will eventually
      need a prologue, that is, PRO is a post-dominator of PRE.  PRE needs
-     to dominate every block reachable from itself.  */
+     to dominate every block reachable from itself.  We keep in BB_TMP a
+     bitmap of the blocks reachable from PRE that we already found, and in
+     VEC a stack of those we still need to consider.
+
+     Any block reachable from PRE is also reachable from all predecessors
+     of PRE, so if we find we need to move PRE back further we can leave
+     everything not considered so far on the stack.  Any block dominated
+     by PRE is also dominated by all other dominators of PRE, so anything
+     found good for some PRE does not need to be reconsidered later.
+
+     We don't need to update BB_WITH because none of the new blocks found
+     can jump to a block that does not need the prologue.  */
 
   if (pro != entry)
     {
@@ -775,18 +787,15 @@ try_shrink_wrapping (edge *entry_edge, bitmap_head *bb_with,
 	  bool ok = true;
 	  while (!vec.is_empty ())
 	    {
-	      basic_block bb = vec.pop ();
-	      bitmap_set_bit (bb_tmp, pre->index);
-
-	      if (!dominated_by_p (CDI_DOMINATORS, bb, pre))
+	      if (!dominated_by_p (CDI_DOMINATORS, vec.last (), pre))
 		{
 		  ok = false;
 		  break;
 		}
 
+	      basic_block bb = vec.pop ();
 	      FOR_EACH_EDGE (e, ei, bb->succs)
-		if (!bitmap_bit_p (bb_with, e->dest->index)
-		    && bitmap_set_bit (bb_tmp, e->dest->index))
+		if (bitmap_set_bit (bb_tmp, e->dest->index))
 		  vec.quick_push (e->dest);
 	    }
 
