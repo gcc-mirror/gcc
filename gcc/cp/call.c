@@ -7161,6 +7161,9 @@ unsafe_copy_elision_p (tree target, tree exp)
       && resolves_to_fixed_type_p (target, NULL))
     return false;
   tree init = TARGET_EXPR_INITIAL (exp);
+  /* build_compound_expr pushes COMPOUND_EXPR inside TARGET_EXPR.  */
+  while (TREE_CODE (init) == COMPOUND_EXPR)
+    init = TREE_OPERAND (init, 1);
   return (TREE_CODE (init) == AGGR_INIT_EXPR
 	  && !AGGR_INIT_VIA_CTOR_P (init));
 }
