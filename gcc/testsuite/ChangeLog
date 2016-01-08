@@ -1,3 +1,8 @@
+2016-01-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/68449
+	* g++.dg/pr68449.C: New.
+
 2016-01-08  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR tree-optimization/68707

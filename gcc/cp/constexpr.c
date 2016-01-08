@@ -3184,7 +3184,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	r = TARGET_EXPR_INITIAL (r);
       if (VAR_P (r))
 	if (tree *p = ctx->values->get (r))
-	  r = *p;
+	  if (*p != NULL_TREE)
+	    r = *p;
       if (DECL_P (r))
 	{
 	  if (!ctx->quiet)
