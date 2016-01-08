@@ -4876,6 +4876,25 @@ proc check_effective_target_vect_element_align { } {
     return $et_vect_element_align
 }
 
+# Return 1 if the target supports vector LOAD_LANES operations, 0 otherwise.
+
+proc check_effective_target_vect_load_lanes { } {
+    global et_vect_load_lanes
+
+    if [info exists et_vect_load_lanes] {
+	verbose "check_effective_target_vect_load_lanes: using cached result" 2
+    } else {
+	set et_vect_load_lanes 0
+	if { ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok])
+	     || [istarget aarch64*-*-*] } {
+	    set et_vect_load_lanes 1
+	}
+    }
+
+    verbose "check_effective_target_vect_load_lanes: returning $et_vect_load_lanes" 2
+    return $et_vect_load_lanes
+}
+
 # Return 1 if the target supports vector conditional operations, 0 otherwise.
 
 proc check_effective_target_vect_condition { } {

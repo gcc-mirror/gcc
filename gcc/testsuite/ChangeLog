@@ -1,3 +1,17 @@
+2016-01-08  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR tree-optimization/68707
+	* lib/target-supports.exp (check_effective_target_vect_load_lanes): New.
+	* gcc.dg/vect/slp-perm-1.c: Look for vect_load_lanes instead of SLP
+	on platforms supporting it.
+	* gcc.dg/vect/slp-perm-2.c: Likewise.
+	* gcc.dg/vect/slp-perm-3.c: Likewise.
+	* gcc.dg/vect/slp-perm-5.c: Likewise.
+	* gcc.dg/vect/slp-perm-7.c: Likewise.
+	* gcc.dg/vect/slp-perm-8.c: Likewise.
+	* gcc.dg/vect/slp-perm-6.c: Look for vect_load_lanes in addition to SLP
+	on platforms supporting it.
+
 2016-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69162

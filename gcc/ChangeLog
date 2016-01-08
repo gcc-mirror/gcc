@@ -1,3 +1,10 @@
+2016-01-08  Alan Lawrence  <alan.lawrence@arm.com>
+	Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68707
+	* tree-vect-slp.c (vect_analyze_slp_instance): Cancel permuted SLP
+	instances that can be handled via vect_load_lanes.
+
 2016-01-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* symtab.c (symtab_node::equal_address_to): Return -1 instead of 2

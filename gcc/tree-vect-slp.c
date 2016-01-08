@@ -1820,6 +1820,36 @@ vect_analyze_slp_instance (vec_info *vinfo,
             }
         }
 
+      /* If the loads and stores can be handled with load/store-lane
+	 instructions do not generate this SLP instance.  */
+      if (is_a <loop_vec_info> (vinfo)
+	  && loads_permuted
+	  && dr && vect_store_lanes_supported (vectype, group_size))
+	{
+	  slp_tree load_node;
+	  FOR_EACH_VEC_ELT (loads, i, load_node)
+	    {
+	      gimple *first_stmt = GROUP_FIRST_ELEMENT
+		  (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (load_node)[0]));
+	      stmt_vec_info stmt_vinfo = vinfo_for_stmt (first_stmt);
+	      /* Use SLP for strided accesses (or if we can't load-lanes).  */
+	      if (STMT_VINFO_STRIDED_P (stmt_vinfo)
+		  || ! vect_load_lanes_supported
+			(STMT_VINFO_VECTYPE (stmt_vinfo),
+			 GROUP_SIZE (stmt_vinfo)))
+		break;
+	    }
+	  if (i == loads.length ())
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "Built SLP cancelled: can use "
+				 "load/store-lanes\n");
+	      vect_free_slp_instance (new_instance);
+	      return false;
+	    }
+	}
+
       vinfo->slp_instances.safe_push (new_instance);
 
       if (dump_enabled_p ())
