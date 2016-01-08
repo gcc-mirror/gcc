@@ -1,3 +1,11 @@
+2016-01-08  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2015-12-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/68851
+	* g++.dg/ipa/pr68851.C: New test.
+
 2016-01-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/68648

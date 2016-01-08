@@ -1028,7 +1028,7 @@ public:
   cgraph_edge *get_edge (gimple call_stmt);
 
   /* Collect all callers of cgraph_node and its aliases that are known to lead
-     to NODE (i.e. are not overwritable).  */
+     to NODE (i.e. are not overwritable) and that are not thunks.  */
   vec<cgraph_edge *> collect_callers (void);
 
   /* Remove all callers from the node.  */
