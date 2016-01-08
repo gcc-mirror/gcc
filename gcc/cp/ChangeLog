@@ -1,3 +1,8 @@
+2016-01-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/68449
+	* constexpr.c (cxx_eval_constant_expression): Handle NULL initializer.
+
 2016-01-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68983
