@@ -2,6 +2,11 @@
 
 	PR c++/68983
 	PR c++/67557
+	* cvt.c (convert_to_void): Don't strip a TARGET_EXPR of
+	TREE_ADDRESSABLE type.
+
+	PR c++/68983
+	PR c++/67557
 	* call.c (unsafe_copy_elision_p): Look through COMPOUND_EXPR.
 
 2016-01-05  Nathan Sidwell  <nathan@acm.org>

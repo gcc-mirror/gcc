@@ -1,3 +1,13 @@
+2016-01-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68983
+	PR c++/67557
+	* function.c (assign_temp): Guard against TREE_ADDRESSABLE types here.
+	* expr.c (store_field): Not here.
+	* tree-cfgcleanup.c (fixup_noreturn_call): Don't clear LHS of a
+	call with TREE_ADDRESSABLE type.
+	* tree-cfg.c (verify_gimple_call): Adjust.
+
 2016-01-08  Olivier Hainque  <hainque@adacore.com>
 
 	* config/vxworks.h (VXWORKS_LIBGCC_SPEC): Don't link shared RTPs with
