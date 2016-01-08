@@ -299,7 +299,14 @@ maybe_push_res_to_seq (code_helper rcode, tree type, tree *ops,
 	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[1]))
 	  || (ops[2]
 	      && TREE_CODE (ops[2]) == SSA_NAME
-	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[2])))
+	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[2]))
+	  || (COMPARISON_CLASS_P (ops[0])
+	      && ((TREE_CODE (TREE_OPERAND (ops[0], 0)) == SSA_NAME
+		   && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (TREE_OPERAND (ops[0],
+								     0)))
+		  || (TREE_CODE (TREE_OPERAND (ops[0], 1)) == SSA_NAME
+		      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (TREE_OPERAND (ops[0],
+									1))))))
 	return NULL_TREE;
       if (!res)
 	{
