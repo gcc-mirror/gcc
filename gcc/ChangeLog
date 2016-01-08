@@ -1,3 +1,8 @@
+2016-01-08  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VXWORKS_LIBGCC_SPEC): Don't link shared RTPs with
+	libc_internal.
+
 2016-01-08  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/rs6000/paired.md (reduc_smax_v2sf): Rename to...
