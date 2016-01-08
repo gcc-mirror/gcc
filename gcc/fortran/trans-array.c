@@ -3601,7 +3601,8 @@ gfc_trans_scalarized_loop_end (gfc_loopinfo * loop, int n,
   tree init;
   tree incr;
 
-  if ((ompws_flags & (OMPWS_WORKSHARE_FLAG | OMPWS_SCALARIZER_WS))
+  if ((ompws_flags & (OMPWS_WORKSHARE_FLAG | OMPWS_SCALARIZER_WS
+		      | OMPWS_SCALARIZER_BODY))
       == (OMPWS_WORKSHARE_FLAG | OMPWS_SCALARIZER_WS)
       && n == loop->dimen - 1)
     {

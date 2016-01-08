@@ -5057,10 +5057,15 @@ gfc_trans_where_3 (gfc_code * cblock, gfc_code * eblock)
   gfc_loopinfo loop;
   gfc_ss *edss = 0;
   gfc_ss *esss = 0;
+  bool maybe_workshare = false;
 
   /* Allow the scalarizer to workshare simple where loops.  */
-  if (ompws_flags & OMPWS_WORKSHARE_FLAG)
-    ompws_flags |= OMPWS_SCALARIZER_WS;
+  if ((ompws_flags & (OMPWS_WORKSHARE_FLAG | OMPWS_SCALARIZER_BODY))
+      == OMPWS_WORKSHARE_FLAG)
+    {
+      maybe_workshare = true;
+      ompws_flags |= OMPWS_SCALARIZER_WS | OMPWS_SCALARIZER_BODY;
+    }
 
   cond = cblock->expr1;
   tdst = cblock->next->expr1;
@@ -5160,6 +5165,8 @@ gfc_trans_where_3 (gfc_code * cblock, gfc_code * eblock)
   gfc_add_expr_to_block (&body, tmp);
   gfc_add_block_to_block (&body, &cse.post);
 
+  if (maybe_workshare)
+    ompws_flags &= ~OMPWS_SCALARIZER_BODY;
   gfc_trans_scalarizing_loops (&loop, &body);
   gfc_add_block_to_block (&block, &loop.pre);
   gfc_add_block_to_block (&block, &loop.post);

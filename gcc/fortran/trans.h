@@ -1039,7 +1039,9 @@ extern const char gfc_msg_wrong_return[];
 					   construct is not workshared.  */
 #define OMPWS_SCALARIZER_WS	4	/* Set if scalarizer should attempt
 					   to create parallel loops.  */
-#define OMPWS_NOWAIT		8	/* Use NOWAIT on OMP_FOR.  */
+#define OMPWS_SCALARIZER_BODY	8	/* Set if handling body of potential
+					   parallel loop.  */
+#define OMPWS_NOWAIT		16	/* Use NOWAIT on OMP_FOR.  */
 extern int ompws_flags;
 
 #endif /* GFC_TRANS_H */

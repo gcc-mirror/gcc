@@ -9160,6 +9160,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   bool scalar_to_array;
   tree string_length;
   int n;
+  bool maybe_workshare = false;
 
   /* Assignment of the form lhs = rhs.  */
   gfc_start_block (&block);
@@ -9234,8 +9235,13 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	}
 
       /* Allow the scalarizer to workshare array assignments.  */
-      if ((ompws_flags & OMPWS_WORKSHARE_FLAG) && loop.temp_ss == NULL)
-	ompws_flags |= OMPWS_SCALARIZER_WS;
+      if ((ompws_flags & (OMPWS_WORKSHARE_FLAG | OMPWS_SCALARIZER_BODY))
+	  == OMPWS_WORKSHARE_FLAG
+	  && loop.temp_ss == NULL)
+	{
+	  maybe_workshare = true;
+	  ompws_flags |= OMPWS_SCALARIZER_WS | OMPWS_SCALARIZER_BODY;
+	}
 
       /* Start the scalarized loop body.  */
       gfc_start_scalarized_body (&loop, &body);
@@ -9383,6 +9389,9 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	  if (tmp != NULL_TREE)
 	    gfc_add_expr_to_block (&loop.code[expr1->rank - 1], tmp);
 	}
+
+      if (maybe_workshare)
+	ompws_flags &= ~OMPWS_SCALARIZER_BODY;
 
       /* Generate the copying loops.  */
       gfc_trans_scalarizing_loops (&loop, &body);
