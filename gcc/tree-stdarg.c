@@ -1018,7 +1018,7 @@ expand_ifn_va_arg_1 (function *fun)
     for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
       {
 	gimple *stmt = gsi_stmt (i);
-	tree ap, expr, lhs, type;
+	tree ap, aptype, expr, lhs, type;
 	gimple_seq pre = NULL, post = NULL;
 
 	if (!gimple_call_ifn_va_arg_p (stmt))
@@ -1028,9 +1028,12 @@ expand_ifn_va_arg_1 (function *fun)
 
 	type = TREE_TYPE (TREE_TYPE (gimple_call_arg (stmt, 1)));
 	ap = gimple_call_arg (stmt, 0);
+	aptype = TREE_TYPE (gimple_call_arg (stmt, 2));
+	gcc_assert (POINTER_TYPE_P (aptype));
 
 	/* Balanced out the &ap, usually added by build_va_arg.  */
-	ap = build_fold_indirect_ref (ap);
+	ap = build2 (MEM_REF, TREE_TYPE (aptype), ap,
+		     build_int_cst (aptype, 0));
 
 	push_gimplify_context (false);
 	saved_location = input_location;
@@ -1053,7 +1056,7 @@ expand_ifn_va_arg_1 (function *fun)
 	    if (chkp_function_instrumented_p (fun->decl))
 	      chkp_fixup_inlined_call (lhs, expr);
 
-	    if (nargs == 3)
+	    if (nargs == 4)
 	      {
 		/* We've transported the size of with WITH_SIZE_EXPR here as
 		   the last argument of the internal fn call.  Now reinstate

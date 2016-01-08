@@ -1,5 +1,8 @@
 2016-01-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/69162
+	* gcc.dg/pr69162.c: New test.
+
 	PR tree-optimization/69172
 	* gcc.dg/pr69172.c: New test.
 

@@ -4724,12 +4724,12 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  tree type = TREE_TYPE (call);
 	  tree ap = CALL_EXPR_ARG (call, 0);
 	  tree tag = CALL_EXPR_ARG (call, 1);
+	  tree aptag = CALL_EXPR_ARG (call, 2);
 	  tree newcall = build_call_expr_internal_loc (EXPR_LOCATION (call),
 						       IFN_VA_ARG, type,
 						       nargs + 1, ap, tag,
-						       vlasize);
-	  tree *call_p = &(TREE_OPERAND (*from_p, 0));
-	  *call_p = newcall;
+						       aptag, vlasize);
+	  TREE_OPERAND (*from_p, 0) = newcall;
 	}
     }
 
@@ -11501,7 +11501,7 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p,
   tree promoted_type, have_va_type;
   tree valist = TREE_OPERAND (*expr_p, 0);
   tree type = TREE_TYPE (*expr_p);
-  tree t, tag;
+  tree t, tag, aptag;
   location_t loc = EXPR_LOCATION (*expr_p);
 
   /* Verify that valist is of the proper type.  */
@@ -11555,7 +11555,10 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p,
     }
 
   tag = build_int_cst (build_pointer_type (type), 0);
-  *expr_p = build_call_expr_internal_loc (loc, IFN_VA_ARG, type, 2, valist, tag);
+  aptag = build_int_cst (TREE_TYPE (valist), 0);
+
+  *expr_p = build_call_expr_internal_loc (loc, IFN_VA_ARG, type, 3,
+					  valist, tag, aptag);
 
   /* Clear the tentatively set PROP_gimple_lva, to indicate that IFN_VA_ARG
      needs to be expanded.  */
