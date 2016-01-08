@@ -1,3 +1,10 @@
+2016-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69145
+	* g++.dg/ext/pr69145-1.C: New test.
+	* g++.dg/ext/pr69145-2-very-long-filename.cc: New file.
+	* g++.dg/ext/pr69145-2.h: New file.
+
 2016-01-07  Martin Sebor  <msebor@redhat.com>
 
 	PR c/68966
