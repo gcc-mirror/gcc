@@ -1,5 +1,8 @@
 2016-01-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/69128
+	* gfortran.dg/gomp/pr69128.f90: New test.
+
 	PR c++/69145
 	* g++.dg/ext/pr69145-1.C: New test.
 	* g++.dg/ext/pr69145-2-very-long-filename.cc: New file.

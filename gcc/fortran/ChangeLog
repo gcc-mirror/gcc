@@ -1,3 +1,17 @@
+2016-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/69128
+	* trans.h (OMPWS_SCALARIZER_BODY): Define.
+	(OMPWS_NOWAIT): Renumber.
+	* trans-stmt.c (gfc_trans_where_3): Only set OMPWS_SCALARIZER_WS
+	if OMPWS_SCALARIZER_BODY is not set already, and set also
+	OMPWS_SCALARIZER_BODY until the final loop creation.
+	* trans-expr.c (gfc_trans_assignment_1): Likewise.
+	* trans-openmp.c (gfc_trans_omp_workshare): Also clear
+	OMPWS_SCALARIZER_BODY.
+	* trans-array.c (gfc_trans_scalarized_loop_end): Don't create
+	OMP_FOR if OMPWS_SCALARIZER_BODY is set.
+
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
