@@ -1,3 +1,8 @@
+2016-01-08  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/67781
+	* gcc.c-torture/execute/pr67781.c: New file.
+
 2016-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69083
