@@ -2527,13 +2527,14 @@ collect_callers_of_node_1 (struct cgraph_node *node, void *data)
 
   if (avail > AVAIL_OVERWRITABLE)
     for (cs = node->callers; cs != NULL; cs = cs->next_caller)
-      if (!cs->indirect_inlining_edge)
+      if (!cs->indirect_inlining_edge
+	  && !cs->caller->thunk.thunk_p)
         redirect_callers->safe_push (cs);
   return false;
 }
 
 /* Collect all callers of NODE and its aliases that are known to lead to NODE
-   (i.e. are not overwritable).  */
+   (i.e. are not overwritable) and that are not thunks.  */
 
 vec<cgraph_edge_p> 
 collect_callers_of_node (struct cgraph_node *node)
