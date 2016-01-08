@@ -1,3 +1,9 @@
+2016-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68983
+	PR c++/67557
+	* call.c (unsafe_copy_elision_p): Look through COMPOUND_EXPR.
+
 2015-12-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66921
