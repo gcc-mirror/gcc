@@ -1,3 +1,8 @@
+2016-01-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-icf.c (sem_item_optimizer::merge_classes): Do not ICE on VAR_DECL
+	w/o DECL_NAME.
+
 2016-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69167

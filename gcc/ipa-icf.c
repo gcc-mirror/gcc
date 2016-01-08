@@ -3400,7 +3400,8 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 
 	sem_item *source = c->members[0];
 
-	if (MAIN_NAME_P (DECL_NAME (source->decl)))
+	if (DECL_NAME (source->decl)
+	    && MAIN_NAME_P (DECL_NAME (source->decl)))
 	  /* If merge via wrappers, picking main as the target can be
 	     problematic.  */
 	  source = c->members[1];
