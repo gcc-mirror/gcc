@@ -1,3 +1,8 @@
+2016-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69167
+	* gcc.dg/pr69167.c: New test.
+
 2016-01-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/68449
@@ -137,9 +142,9 @@
 	* g++.dg/pr68991-1.C: New test.
 	* g++.dg/pr68991-2.C: Likewise.
 
-2016-01-05  Sergei Trofimovich <siarheit@google.com>
+2016-01-05  Sergei Trofimovich  <siarheit@google.com>
 
-        PR other/60465
+	PR other/60465
 	* gcc.target/ia64/pr60465-gprel64.c: New test.
 	* gcc.target/ia64/pr60465-gprel64-c37.c: New test.
 

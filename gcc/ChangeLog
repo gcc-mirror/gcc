@@ -1,5 +1,13 @@
+2016-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69167
+	* gimple-fold.c (replace_stmt_with_simplification): Also punt if
+	new SSA_NAME_OCCURS_IN_ABNORMAL_PHI SSA_NAMEs appear in operands of
+	ops[0] comparison.
+	* gimple-match-head.c (maybe_push_res_to_seq): Likewise.
+
 2016-01-08  Alan Lawrence  <alan.lawrence@arm.com>
-	Richard Biener  <rguenther@suse.de>
+	    Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68707
 	* tree-vect-slp.c (vect_analyze_slp_instance): Cancel permuted SLP
