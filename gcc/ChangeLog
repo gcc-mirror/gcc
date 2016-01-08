@@ -1,5 +1,13 @@
 2016-01-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/69162
+	* gimplify.c (gimplify_va_arg_expr): Encode original type of
+	valist argument in another argument.
+	(gimplify_modify_expr): Adjust for the above change.  Cleanup.
+	* tree-stdarg.c (expand_ifn_va_arg_1): Use new 3rd argument
+	to determine the va_list type, build a MEM_REF instead of
+	build_fold_indirect_ref.
+
 	PR tree-optimization/69172
 	* gimple-fold.c (gimple_fold_builtin_memory_chk): Pass type to
 	gimple_build.
