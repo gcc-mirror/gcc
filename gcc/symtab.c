@@ -1877,7 +1877,7 @@ symtab_node::nonzero_address ()
 
 /* Return 0 if symbol is known to have different address than S2,
    Return 1 if symbol is known to have same address as S2,
-   return 2 otherwise.  
+   return -1 otherwise.  
 
    If MEMORY_ACCESSED is true, assume that both memory pointer to THIS
    and S2 is going to be accessed.  This eliminates the situations when
@@ -1941,7 +1941,7 @@ symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
   /* If both symbols may resolve to NULL, we can not really prove them
      different.  */
   if (!memory_accessed && !nonzero_address () && !s2->nonzero_address ())
-    return 2;
+    return -1;
 
   /* Except for NULL, functions and variables never overlap.  */
   if (TREE_CODE (decl) != TREE_CODE (s2->decl))
@@ -1949,7 +1949,7 @@ symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
 
   /* If one of the symbols is unresolved alias, punt.  */
   if (rs1->alias || rs2->alias)
-    return 2;
+    return -1;
 
   /* If we have a non-interposale definition of at least one of the symbols
      and the other symbol is different, we know other unit can not interpose
@@ -1976,7 +1976,7 @@ symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
      We probably should be consistent and use this fact here, too, but for
      the moment return false only when we are called from the alias oracle.  */
 
-  return memory_accessed && rs1 != rs2 ? 0 : 2;
+  return memory_accessed && rs1 != rs2 ? 0 : -1;
 }
 
 /* Worker for call_for_symbol_and_aliases.  */

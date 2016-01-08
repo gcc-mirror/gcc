@@ -2053,8 +2053,6 @@ compare_base_decls (tree base1, tree base2)
     return 0;
   
   ret = node1->equal_address_to (node2, true);
-  if (ret == 2)
-    return -1;
   return ret;
 }
 
