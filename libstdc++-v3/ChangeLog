@@ -1,5 +1,14 @@
 2016-01-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/26_numerics/headers/cmath/
+	c99_classification_macros_c++.cc: Rename to ...
+	* testsuite/26_numerics/headers/cmath/
+	c99_classification_macros_c++98.cc: Here and add -std=gnu++98.
+	* testsuite/26_numerics/headers/cmath/
+	c99_classification_macros_c++0x.cc: Rename to ...
+	* testsuite/26_numerics/headers/cmath/
+	c99_classification_macros_c++11.cc: Here.
+
 	PR libstdc++/69190
 	* include/bits/uses_allocator.h: Add missing include.
 
