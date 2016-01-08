@@ -1,3 +1,8 @@
+2016-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69160
+	* include/bits/uses_allocator.h: Add missing include.
+
 2016-01-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/69105
