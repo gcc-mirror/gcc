@@ -1,3 +1,10 @@
+2016-01-08  Sujoy Saraswati  <sujoy.saraswati@hpe.com>
+
+	PR tree-optimization/61441
+	* gcc.dg/pr61441.c: Restrict to linux and gnu targets.
+	Use -fexcess-precision=standard for compiler options.
+	Use fabs() only when  __FLT_EVAL_METHOD__ == 0.
+
 2016-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/69128
