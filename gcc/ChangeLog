@@ -1,3 +1,9 @@
+2016-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69172
+	* gimple-fold.c (gimple_fold_builtin_memory_chk): Pass type to
+	gimple_build.
+
 2016-01-08  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/67781

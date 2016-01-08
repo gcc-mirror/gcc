@@ -1710,7 +1710,8 @@ gimple_fold_builtin_memory_chk (gimple_stmt_iterator *gsi,
 	{
 	  gimple_seq stmts = NULL;
 	  len = gimple_convert_to_ptrofftype (&stmts, loc, len);
-	  tree temp = gimple_build (&stmts, loc, POINTER_PLUS_EXPR, dest, len);
+	  tree temp = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
+				    TREE_TYPE (dest), dest, len);
 	  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
 	  replace_call_with_value (gsi, temp);
 	  return true;
