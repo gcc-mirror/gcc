@@ -6655,9 +6655,6 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
       rtx temp;
       gimple *nop_def;
 
-      /* Using bitwise copy is not safe for TREE_ADDRESSABLE types.  */
-      gcc_assert (!TREE_ADDRESSABLE (TREE_TYPE (exp)));
-
       /* If EXP is a NOP_EXPR of precision less than its mode, then that
 	 implies a mask operation.  If the precision is the same size as
 	 the field we're storing into, that mask is redundant.  This is

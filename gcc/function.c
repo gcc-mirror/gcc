@@ -956,6 +956,10 @@ assign_temp (tree type_or_decl, int memory_required,
   unsignedp = TYPE_UNSIGNED (type);
 #endif
 
+  /* Allocating temporaries of TREE_ADDRESSABLE type must be done in the front
+     end.  See also create_tmp_var for the gimplification-time check.  */
+  gcc_assert (!TREE_ADDRESSABLE (type) && COMPLETE_TYPE_P (type));
+
   if (mode == BLKmode || memory_required)
     {
       HOST_WIDE_INT size = int_size_in_bytes (type);
