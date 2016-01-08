@@ -1,3 +1,9 @@
+2016-01-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/68966
+	* doc/extend.texi (__atomic Builtins, __sync Builtins): Document
+	constraint on the type of arguments.
+
 2016-01-07  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/arm/freebsd.h: Rename SUBTARGET_OVERRIDE_OPTIONS to

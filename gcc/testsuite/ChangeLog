@@ -1,3 +1,9 @@
+2016-01-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/68966
+	* gcc.dg/atomic-fetch-bool.c: New test.
+	* gcc.dg/sync-fetch-bool.c: New test.
+
 2016-01-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR fortran/66680

@@ -10657,11 +10657,16 @@ builtin_type_for_size (int size, bool unsignedp)
 /* A helper function for resolve_overloaded_builtin in resolving the
    overloaded __sync_ builtins.  Returns a positive power of 2 if the
    first operand of PARAMS is a pointer to a supported data type.
-   Returns 0 if an error is encountered.  */
+   Returns 0 if an error is encountered.
+   FETCH is true when FUNCTION is one of the _FETCH_OP_ or _OP_FETCH_
+   built-ins.  */
 
 static int
-sync_resolve_size (tree function, vec<tree, va_gc> *params)
+sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch)
 {
+  /* Type of the argument.  */
+  tree argtype;
+  /* Type the argument points to.  */
   tree type;
   int size;
 
@@ -10671,7 +10676,7 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params)
       return 0;
     }
 
-  type = TREE_TYPE ((*params)[0]);
+  argtype = type = TREE_TYPE ((*params)[0]);
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       /* Force array-to-pointer decay for C++.  */
@@ -10686,12 +10691,16 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params)
   if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
     goto incompatible;
 
+  if (fetch && TREE_CODE (type) == BOOLEAN_TYPE)
+    goto incompatible;
+
   size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
   if (size == 1 || size == 2 || size == 4 || size == 8 || size == 16)
     return size;
 
  incompatible:
-  error ("incompatible type for argument %d of %qE", 1, function);
+  error ("operand type %qT is incompatible with argument %d of %qE",
+	 argtype, 1, function);
   return 0;
 }
 
@@ -11250,6 +11259,11 @@ resolve_overloaded_builtin (location_t loc, tree function,
 			    vec<tree, va_gc> *params)
 {
   enum built_in_function orig_code = DECL_FUNCTION_CODE (function);
+
+  /* Is function one of the _FETCH_OP_ or _OP_FETCH_ built-ins?
+     Those are not valid to call with a pointer to _Bool (or C++ bool)
+     and so must be rejected.  */
+  bool fetch_op = true;
   bool orig_format = true;
   tree new_return = NULL_TREE;
 
@@ -11325,6 +11339,10 @@ resolve_overloaded_builtin (location_t loc, tree function,
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_N:
     case BUILT_IN_ATOMIC_LOAD_N:
     case BUILT_IN_ATOMIC_STORE_N:
+      {
+	fetch_op = false;
+	/* Fallthrough to further processing.  */
+      }
     case BUILT_IN_ATOMIC_ADD_FETCH_N:
     case BUILT_IN_ATOMIC_SUB_FETCH_N:
     case BUILT_IN_ATOMIC_AND_FETCH_N:
@@ -11358,7 +11376,16 @@ resolve_overloaded_builtin (location_t loc, tree function,
     case BUILT_IN_SYNC_LOCK_TEST_AND_SET_N:
     case BUILT_IN_SYNC_LOCK_RELEASE_N:
       {
-	int n = sync_resolve_size (function, params);
+	/* The following are not _FETCH_OPs and must be accepted with
+	   pointers to _Bool (or C++ bool).  */
+	if (fetch_op)
+	  fetch_op =
+	    (orig_code != BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N
+	     && orig_code != BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_N
+	     && orig_code != BUILT_IN_SYNC_LOCK_TEST_AND_SET_N
+	     && orig_code != BUILT_IN_SYNC_LOCK_RELEASE_N);
+
+	int n = sync_resolve_size (function, params, fetch_op);
 	tree new_function, first_param, result;
 	enum built_in_function fncode;
 

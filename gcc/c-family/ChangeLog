@@ -1,3 +1,10 @@
+gcc/c-family/ChangeLog:
+2016-01-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/68966
+	* c-common.c (sync_resolve_size): Reject first argument when it's
+	a pointer to _Bool.
+
 2016-01-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/69122
