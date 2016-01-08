@@ -1,5 +1,8 @@
 2016-01-08  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (cxx_eval_call_expression): Remove convert_to_void
+	workaround.
+
 	PR c++/68983
 	PR c++/67557
 	* cvt.c (convert_to_void): Don't strip a TARGET_EXPR of
