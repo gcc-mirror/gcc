@@ -1,5 +1,15 @@
 2016-01-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/50865
+	PR tree-optimization/69097
+	* gcc.c-torture/execute/pr50865.c: New test.
+	* gcc.c-torture/execute/pr69097-1.c: New test.
+	* gcc.c-torture/execute/pr69097-2.c: New test.
+	* gcc.dg/pr69097-1.c: New test.
+	* gcc.dg/pr69097-2.c: New test.
+
+2016-01-09  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/69164
 	* g++.dg/opt/pr69164.C: New test.
 
