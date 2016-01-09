@@ -8942,7 +8942,7 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
    modulo.  */
 
 static bool
-simplify_div_or_mod_using_ranges (gimple *stmt)
+simplify_div_or_mod_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
 {
   enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
   tree val = NULL;
@@ -8971,12 +8971,19 @@ simplify_div_or_mod_using_ranges (gimple *stmt)
     }
 
   if (!integer_pow2p (op1))
-    return false;
+    {
+      /* X % -Y can be only optimized into X % Y either if
+	 X is not INT_MIN, or Y is not -1.  Fold it now, as after
+	 remove_range_assertions the range info might be not available
+	 anymore.  */
+      if (rhs_code == TRUNC_MOD_EXPR
+	  && fold_stmt (gsi, follow_single_use_edges))
+	return true;
+      return false;
+    }
 
   if (TYPE_UNSIGNED (TREE_TYPE (op0)))
-    {
-      val = integer_one_node;
-    }
+    val = integer_one_node;
   else
     {
       bool sop = false;
@@ -9890,7 +9897,7 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	case TRUNC_MOD_EXPR:
 	  if (TREE_CODE (rhs1) == SSA_NAME
 	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_div_or_mod_using_ranges (stmt);
+	    return simplify_div_or_mod_using_ranges (gsi, stmt);
 	  break;
 
       /* Transform ABS (X) into X or -X as appropriate.  */
@@ -10200,16 +10207,6 @@ vrp_finalize (bool warn_array_bounds_p)
       fprintf (dump_file, "\n");
     }
 
-  substitute_and_fold (op_with_constant_singleton_value_range,
-		       vrp_fold_stmt, false);
-
-  if (warn_array_bounds && warn_array_bounds_p)
-    check_all_array_refs ();
-
-  /* We must identify jump threading opportunities before we release
-     the datastructures built by VRP.  */
-  identify_jump_threads ();
-
   /* Set value range to non pointer SSA_NAMEs.  */
   for (i  = 0; i < num_vr_values; i++)
     if (vr_value[i])
@@ -10229,6 +10226,16 @@ vrp_finalize (bool warn_array_bounds_p)
 	set_range_info (name, vr_value[i]->type, vr_value[i]->min,
 			vr_value[i]->max);
       }
+
+  substitute_and_fold (op_with_constant_singleton_value_range,
+		       vrp_fold_stmt, false);
+
+  if (warn_array_bounds && warn_array_bounds_p)
+    check_all_array_refs ();
+
+  /* We must identify jump threading opportunities before we release
+     the datastructures built by VRP.  */
+  identify_jump_threads ();
 
   /* Free allocated memory.  */
   for (i = 0; i < num_vr_values; i++)

@@ -1,3 +1,19 @@
+2016-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/50865
+	PR tree-optimization/69097
+	* fold-const.h (expr_not_equal_to): New prototype.
+	* fold-const.c: Include stringpool.h and tree-ssanames.h.
+	(expr_not_equal_to): New function.
+	* match.pd (X % -Y is the same as X % Y): Don't optimize
+	unless X is known not to be equal to minimum or Y is known
+	not to be equal to -1.
+	* tree-vrp.c (simplify_div_or_mod_using_ranges): Add GSI argument.
+	fold TRUNC_MOD_EXPR if the second argument is not a power of two.
+	(simplify_stmt_using_ranges): Adjust caller.
+	(vrp_finalize): Call set_value_range on SSA_NAMEs before calling
+	substitute_and_fold.
+
 2016-01-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-icf.c (sem_item_optimizer::merge_classes): Do not ICE on VAR_DECL

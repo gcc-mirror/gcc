@@ -74,6 +74,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "md5.h"
 #include "case-cfn-macros.h"
+#include "stringpool.h"
+#include "tree-ssanames.h"
 
 #ifndef LOAD_EXTEND_OP
 #define LOAD_EXTEND_OP(M) UNKNOWN
@@ -9099,6 +9101,45 @@ tree_expr_nonzero_p (tree t)
 			    "non-zero"),
 			   WARN_STRICT_OVERFLOW_MISC);
   return ret;
+}
+
+/* Return true if T is known not to be equal to an integer W.  */
+
+bool
+expr_not_equal_to (tree t, const wide_int &w)
+{
+  wide_int min, max, nz;
+  value_range_type rtype;
+  switch (TREE_CODE (t))
+    {
+    case INTEGER_CST:
+      return wi::ne_p (t, w);
+
+    case SSA_NAME:
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	return false;
+      rtype = get_range_info (t, &min, &max);
+      if (rtype == VR_RANGE)
+	{
+	  if (wi::lt_p (max, w, TYPE_SIGN (TREE_TYPE (t))))
+	    return true;
+	  if (wi::lt_p (w, min, TYPE_SIGN (TREE_TYPE (t))))
+	    return true;
+	}
+      else if (rtype == VR_ANTI_RANGE
+	       && wi::le_p (min, w, TYPE_SIGN (TREE_TYPE (t)))
+	       && wi::le_p (w, max, TYPE_SIGN (TREE_TYPE (t))))
+	return true;
+      /* If T has some known zero bits and W has any of those bits set,
+	 then T is known not to be equal to W.  */
+      if (wi::ne_p (wi::zext (wi::bit_and_not (w, get_nonzero_bits (t)),
+			      TYPE_PRECISION (TREE_TYPE (t))), 0))
+	return true;
+      return false;
+
+    default:
+      return false;
+    }
 }
 
 /* Fold a binary expression of code CODE and type TYPE with operands

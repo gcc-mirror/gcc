@@ -295,7 +295,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (trunc_mod @0 (convert? (negate @1)))
  (if (!TYPE_UNSIGNED (type)
       && !TYPE_OVERFLOW_TRAPS (type)
-      && tree_nop_conversion_p (type, TREE_TYPE (@1)))
+      && tree_nop_conversion_p (type, TREE_TYPE (@1))
+      /* Avoid this transformation if X might be INT_MIN or
+	 Y might be -1, because we would then change valid
+	 INT_MIN % -(-1) into invalid INT_MIN % -1.  */
+      && (expr_not_equal_to (@0, TYPE_MIN_VALUE (type))
+	  || expr_not_equal_to (@1, wi::minus_one (TYPE_PRECISION
+							(TREE_TYPE (@1))))))
   (trunc_mod @0 (convert @1))))
 
 /* X - (X / Y) * Y is the same as X % Y.  */
