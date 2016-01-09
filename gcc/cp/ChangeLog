@@ -1,3 +1,8 @@
+2016-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69164
+	* class.c (layout_class_type): Use copy_node to copy FIELD_DECLs.
+
 2016-01-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/69158
