@@ -1,3 +1,9 @@
+2016-01-09  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR middle-end/68743
+	* match.pd: Require target has function_c99_misc before doing
+	truncl(extend(x)) and trunc(extend(x)) -> extend(truncf(x)), etc.
+	
 2016-01-09  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* configure.ac (isl_options_set_schedule_serialize_sccs): Also 

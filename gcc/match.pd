@@ -2784,7 +2784,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  BUILT_IN_RINTF BUILT_IN_RINTF)
  /* truncl(extend(x)) and trunc(extend(x)) -> extend(truncf(x)), etc.,
     if x is a float.  */
- (if (optimize && canonicalize_math_p ())
+ (if (optimize && canonicalize_math_p ()
+      && targetm.libc_has_function (function_c99_misc))
   (simplify
    (froms (convert float_value_p@0))
    (convert (tos @0)))))
