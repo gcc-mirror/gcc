@@ -1820,7 +1820,8 @@ comdat_linkage (tree decl)
 	}
     }
 
-  DECL_COMDAT (decl) = 1;
+  if (TREE_PUBLIC (decl))
+    DECL_COMDAT (decl) = 1;
 }
 
 /* For win32 we also want to put explicit instantiations in
