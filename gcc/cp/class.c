@@ -6484,18 +6484,11 @@ layout_class_type (tree t, tree *virtuals_p)
       for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL)
 	  {
-	    *next_field = build_decl (input_location,
-				      FIELD_DECL,
-				      DECL_NAME (field),
-				      TREE_TYPE (field));
+	    *next_field = copy_node (field);
 	    DECL_CONTEXT (*next_field) = base_t;
-	    DECL_FIELD_OFFSET (*next_field) = DECL_FIELD_OFFSET (field);
-	    DECL_FIELD_BIT_OFFSET (*next_field)
-	      = DECL_FIELD_BIT_OFFSET (field);
-	    DECL_SIZE (*next_field) = DECL_SIZE (field);
-	    DECL_MODE (*next_field) = DECL_MODE (field);
 	    next_field = &DECL_CHAIN (*next_field);
 	  }
+      *next_field = NULL_TREE;
 
       /* Record the base version of the type.  */
       CLASSTYPE_AS_BASE (t) = base_t;
