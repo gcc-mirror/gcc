@@ -1,3 +1,9 @@
+2016-01-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69158
+	* constexpr.c (cxx_fold_indirect_ref): Handle array type differing
+	in completion.
+
 2016-01-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/68449
