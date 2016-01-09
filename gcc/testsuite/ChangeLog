@@ -1,3 +1,8 @@
+2016-01-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/69113
+	* g++.dg/pr69113.C: New test.
+
 2016-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/50865

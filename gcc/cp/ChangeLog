@@ -1,3 +1,8 @@
+2016-01-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/69113
+	* decl2.c (comdat_linkage): Only set DECL_COMDAT if TREE_PUBLIC is set.
+
 2016-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69164
