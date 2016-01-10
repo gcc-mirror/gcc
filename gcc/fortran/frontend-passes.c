@@ -78,6 +78,10 @@ static int forall_level;
 
 static bool in_omp_workshare;
 
+/* Keep track of whether we are within a WHERE statement.  */
+
+static bool in_where;
+
 /* Keep track of iterators for array constructors.  */
 
 static int iterator_level;
@@ -2790,6 +2794,9 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   if (co->op != EXEC_ASSIGN)
     return 0;
 
+  if (in_where)
+    return 0;
+
   expr1 = co->expr1;
   expr2 = co->expr2;
   if (expr2->expr_type != EXPR_FUNCTION
@@ -3268,12 +3275,14 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	  gfc_code *co;
 	  gfc_association_list *alist;
 	  bool saved_in_omp_workshare;
+	  bool saved_in_where;
 
 	  /* There might be statement insertions before the current code,
 	     which must not affect the expression walker.  */
 
 	  co = *c;
 	  saved_in_omp_workshare = in_omp_workshare;
+	  saved_in_where = in_where;
 
 	  switch (co->op)
 	    {
@@ -3299,6 +3308,10 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      WALK_SUBEXPR (co->ext.iterator->start);
 	      WALK_SUBEXPR (co->ext.iterator->end);
 	      WALK_SUBEXPR (co->ext.iterator->step);
+	      break;
+
+	    case EXEC_WHERE:
+	      in_where = true;
 	      break;
 
 	    case EXEC_CALL:
@@ -3554,6 +3567,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    doloop_level --;
 
 	  in_omp_workshare = saved_in_omp_workshare;
+	  in_where = saved_in_where;
 	}
     }
   return 0;

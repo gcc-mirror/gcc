@@ -1,3 +1,11 @@
+2016-01-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/69154
+	* frontend-passes.c (in_where):  New variable.
+	(inline_matmul_assign):  Don't try this if we are within
+	a WHERE statement.
+	(gfc_code_walker):  Keep track of in_where.
+
 2016-01-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/67779
