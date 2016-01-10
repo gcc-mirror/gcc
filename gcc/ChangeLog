@@ -1,3 +1,9 @@
+2016-01-10  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69039
+	* tree-parloops.c (try_create_reduction_list): Only allow single exit
+	phi for reduction.
+
 2016-01-09  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR middle-end/68743

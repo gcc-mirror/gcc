@@ -1,3 +1,8 @@
+2016-01-10  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69039
+	* gcc.dg/autopar/pr69039.c: New test.
+
 2016-01-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/69113
