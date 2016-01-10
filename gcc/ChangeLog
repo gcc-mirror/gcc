@@ -1,5 +1,12 @@
 2016-01-10  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/69062
+	* tree-parloops.c (loop_has_phi_with_address_arg): New function.
+	(parallelize_loops): Don't paralelize loop that has phi with address
+	arg.
+
+2016-01-10  Tom de Vries  <tom@codesourcery.com>
+
 	PR tree-optimization/69039
 	* tree-parloops.c (try_create_reduction_list): Only allow single exit
 	phi for reduction.
