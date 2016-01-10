@@ -1,3 +1,9 @@
+2016-01-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/67779
+	* trans_array.c (gfc_conv_scalarized_array_ref): Add missing
+	se->use_offset from condition for calculation of 'base'.
+
 2016-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/69128

@@ -1,3 +1,8 @@
+2016-01-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/67779
+	* gfortran.dg/actual_array_offset_1: New test.
+
 2016-01-10  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69062
