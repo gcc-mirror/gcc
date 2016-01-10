@@ -1,3 +1,8 @@
+2016-01-10  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69062
+	* gcc.dg/autopar/pr69062.c: New test.
+
 2016-01-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc.dg/vect/slp-perm-1.c: Fix scan-tree-dump syntax.
