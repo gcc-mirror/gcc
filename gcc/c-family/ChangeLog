@@ -1,4 +1,9 @@
-gcc/c-family/ChangeLog:
+2016-01-10  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/69029
+	* c-indentation.c (should_warn_for_misleading_indentation):
+	Don't warn about do-while statements.
+
 2016-01-07  Martin Sebor  <msebor@redhat.com>
 
 	PR c/68966

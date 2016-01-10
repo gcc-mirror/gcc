@@ -890,6 +890,8 @@ fn_39 (void)
        i < 10;
        i++);
   foo (i);
+
+  do foo (0); while (flagA);
 }
 
 /* We shouldn't complain about the following function.  */
