@@ -1,3 +1,8 @@
+2016-01-10  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/69029
+	* c-c++-common/Wisleading-indentation.c: Augment test.
+
 2016-01-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/69154
