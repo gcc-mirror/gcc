@@ -2595,6 +2595,14 @@ try_create_reduction_list (loop_p loop,
 			 "  FAILED: it is not a part of reduction.\n");
 	      return false;
 	    }
+	  if (red->keep_res != NULL)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "  FAILED: reduction has multiple exit phis.\n");
+	      return false;
+	    }
+	  red->keep_res = phi;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "reduction phi is  ");
