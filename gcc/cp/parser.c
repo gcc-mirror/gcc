@@ -6717,7 +6717,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    bool saved_non_integral_constant_expression_p = false;
 	    tsubst_flags_t complain = complain_flags (decltype_p);
 	    vec<tree, va_gc> *args;
-	    location_t close_paren_loc;
+	    location_t close_paren_loc = UNKNOWN_LOCATION;
 
             is_member_access = false;
 
@@ -6879,10 +6879,13 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 				    koenig_p,
 				    complain);
 
-	    location_t combined_loc = make_location (token->location,
-						     start_loc,
-						     close_paren_loc);
-	    postfix_expression.set_location (combined_loc);
+	    if (close_paren_loc != UNKNOWN_LOCATION)
+	      {
+		location_t combined_loc = make_location (token->location,
+							 start_loc,
+							 close_paren_loc);
+		postfix_expression.set_location (combined_loc);
+	      }
 
 	    /* The POSTFIX_EXPRESSION is certainly no longer an id.  */
 	    idk = CP_ID_KIND_NONE;
@@ -7351,7 +7354,10 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
    plain identifier argument, normal_attr for an attribute that wants
    an expression, or non_attr if we aren't parsing an attribute list.  If
    NON_CONSTANT_P is non-NULL, *NON_CONSTANT_P indicates whether or
-   not all of the expressions in the list were constant.  */
+   not all of the expressions in the list were constant.
+   If CLOSE_PAREN_LOC is non-NULL, and no errors occur, then *CLOSE_PAREN_LOC
+   will be written to with the location of the closing parenthesis.  If
+   an error occurs, it may or may not be written to.  */
 
 static vec<tree, va_gc> *
 cp_parser_parenthesized_expression_list (cp_parser* parser,
