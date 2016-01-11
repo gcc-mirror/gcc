@@ -1,5 +1,9 @@
 2016-01-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/67462
+	* gcc.dg/ifcvt-3.c: Only compile on lp64 targets, include also i?86
+	if lp64.
+
 	PR target/69071
 	* gcc.dg/pr69071.c: New test.
 
