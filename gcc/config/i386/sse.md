@@ -960,30 +960,20 @@
 	  (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk,Yk")))]
   "TARGET_AVX512F"
 {
-  static char buf [64];
-
-  const char *insn_op;
-  const char *sse_suffix;
-  const char *align;
   if (FLOAT_MODE_P (GET_MODE_INNER (<MODE>mode)))
     {
-      insn_op = "vmov";
-      sse_suffix = "<ssemodesuffix>";
+      if (misaligned_operand (operands[1], <MODE>mode))
+	return "vmovu<ssemodesuffix>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}";
+      else
+	return "vmova<ssemodesuffix>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}";
     }
   else
     {
-      insn_op = "vmovdq";
-      sse_suffix = "<ssescalarsize>";
+      if (misaligned_operand (operands[1], <MODE>mode))
+	return "vmovdqu<ssescalarsize>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}";
+      else
+	return "vmovdqa<ssescalarsize>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}";
     }
-
-  if (misaligned_operand (operands[1], <MODE>mode))
-    align = "u";
-  else
-    align = "a";
-
-  snprintf (buf, sizeof (buf), "%s%s%s\t{%%1, %%0%%{%%3%%}%%N2|%%0%%{%%3%%}%%N2, %%1}",
-	    insn_op, align, sse_suffix);
-  return buf;
 }
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
@@ -1035,30 +1025,20 @@
 	  (match_operand:<avx512fmaskmode> 2 "register_operand" "Yk")))]
   "TARGET_AVX512F"
 {
-  static char buf [64];
-
-  const char *insn_op;
-  const char *sse_suffix;
-  const char *align;
   if (FLOAT_MODE_P (GET_MODE_INNER (<MODE>mode)))
     {
-      insn_op = "vmov";
-      sse_suffix = "<ssemodesuffix>";
+      if (misaligned_operand (operands[0], <MODE>mode))
+	return "vmovu<ssemodesuffix>\t{%1, %0%{%2%}|%0%{%2%}, %1}";
+      else
+	return "vmova<ssemodesuffix>\t{%1, %0%{%2%}|%0%{%2%}, %1}";
     }
   else
     {
-      insn_op = "vmovdq";
-      sse_suffix = "<ssescalarsize>";
+      if (misaligned_operand (operands[0], <MODE>mode))
+	return "vmovdqu<ssescalarsize>\t{%1, %0%{%2%}|%0%{%2%}, %1}";
+      else
+	return "vmovdqa<ssescalarsize>\t{%1, %0%{%2%}|%0%{%2%}, %1}";
     }
-
-  if (misaligned_operand (operands[0], <MODE>mode))
-    align = "u";
-  else
-    align = "a";
-
-  snprintf (buf, sizeof (buf), "%s%s%s\t{%%1, %%0%%{%%2%%}|%%0%%{%%2%%}, %%1}",
-	    insn_op, align, sse_suffix);
-  return buf;
 }
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
