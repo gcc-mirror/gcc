@@ -1,6 +1,12 @@
 2016-01-11  Alexandre Oliva <aoliva@redhat.com>
 
 	PR bootstrap/69123
+	* var-tracking.c (drop_overlapping_mem_locs): Operate on all
+	onepart vars.  Fix typo in comment.  Fix reversed condition in
+	unshare test.
+	(dataflow_set_remove_mem_locs): Operate on all onepart vars.
+
+	PR bootstrap/69123
 	* var-tracking.c (dump_onepart_variable_differences): New.
 	(dataflow_set_different): If a detailed dump is requested,
 	delay early returns and dump differences between onepart

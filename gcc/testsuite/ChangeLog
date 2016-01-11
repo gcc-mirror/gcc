@@ -1,3 +1,8 @@
+2016-01-11  Alexandre Oliva <aoliva@redhat.com>
+
+	PR bootstrap/69123
+	* g++.dg/pr69123.C: New.
+
 2016-01-11  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/69010

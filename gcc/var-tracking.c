@@ -2224,7 +2224,7 @@ struct overlapping_mems
 };
 
 /* Remove all MEMs that overlap with COMS->LOC from the location list
-   of a hash table entry for a value.  COMS->ADDR must be a
+   of a hash table entry for a onepart variable.  COMS->ADDR must be a
    canonicalized form of COMS->LOC's address, and COMS->LOC must be
    canonicalized itself.  */
 
@@ -2235,7 +2235,7 @@ drop_overlapping_mem_locs (variable **slot, overlapping_mems *coms)
   rtx mloc = coms->loc, addr = coms->addr;
   variable *var = *slot;
 
-  if (var->onepart == ONEPART_VALUE)
+  if (var->onepart != NOT_ONEPART)
     {
       location_chain *loc, **locp;
       bool changed = false;
@@ -4682,11 +4682,11 @@ dataflow_set_preserve_mem_locs (variable **slot, dataflow_set *set)
 	{
 	  for (loc = var->var_part[0].loc_chain; loc; loc = loc->next)
 	    {
-	      /* We want to remove dying MEMs that doesn't refer to DECL.  */
+	      /* We want to remove dying MEMs that don't refer to DECL.  */
 	      if (GET_CODE (loc->loc) == MEM
 		  && (MEM_EXPR (loc->loc) != decl
 		      || INT_MEM_OFFSET (loc->loc) != 0)
-		  && !mem_dies_at_call (loc->loc))
+		  && mem_dies_at_call (loc->loc))
 		break;
 	      /* We want to move here MEMs that do refer to DECL.  */
 	      else if (GET_CODE (loc->loc) == VALUE
@@ -4769,14 +4769,14 @@ dataflow_set_preserve_mem_locs (variable **slot, dataflow_set *set)
 }
 
 /* Remove all MEMs from the location list of a hash table entry for a
-   value.  */
+   onepart variable.  */
 
 int
 dataflow_set_remove_mem_locs (variable **slot, dataflow_set *set)
 {
   variable *var = *slot;
 
-  if (var->onepart == ONEPART_VALUE)
+  if (var->onepart != NOT_ONEPART)
     {
       location_chain *loc, **locp;
       bool changed = false;
