@@ -2086,7 +2086,12 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
 	 value is not modified in the loop, and we're done with this phi.  */
       if (!(gimple_code (def_stmt) == GIMPLE_PHI
 	    && gimple_bb (def_stmt) == loop->header))
-	continue;
+	{
+	  locus = gimple_phi_arg_location_from_edge (phi, exit);
+	  add_phi_arg (phi, def, guard, locus);
+	  add_phi_arg (phi, def, end, locus);
+	  continue;
+	}
 
       gphi *stmt = as_a <gphi *> (def_stmt);
       def = PHI_ARG_DEF_FROM_EDGE (stmt, loop_preheader_edge (loop));
