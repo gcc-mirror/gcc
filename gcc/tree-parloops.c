@@ -1769,6 +1769,10 @@ try_transform_to_exit_first_loop_alt (struct loop *loop,
   if (!gimple_seq_nondebug_singleton_p (bb_seq (loop->latch)))
     return false;
 
+  /* Check whether the latch contains no phis.  */
+  if (phi_nodes (loop->latch) != NULL)
+    return false;
+
   /* Check whether the latch contains the loop iv increment.  */
   edge back = single_succ_edge (loop->latch);
   edge exit = single_dom_exit (loop);
