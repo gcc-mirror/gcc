@@ -1,3 +1,9 @@
+2016-01-11  Yury Gribov  <y.gribov@samsung.com>
+
+	PR 67425
+	* common.opt (frandom-seed): Fix parameter name.
+	* doc/invoke.texi (frandom-seed): Ditto and describe parameter.
+
 2016-01-11  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69058
