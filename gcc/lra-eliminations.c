@@ -296,9 +296,14 @@ move_plus_up (rtx x)
   if (GET_CODE (x) == SUBREG && GET_CODE (subreg_reg) == PLUS
       && GET_MODE_SIZE (x_mode) <= GET_MODE_SIZE (subreg_reg_mode)
       && CONSTANT_P (XEXP (subreg_reg, 1)))
-    return gen_rtx_PLUS (x_mode, lowpart_subreg (x_mode, subreg_reg,
-						 subreg_reg_mode),
-			 XEXP (subreg_reg, 1));
+    {
+      rtx cst = simplify_subreg (x_mode, XEXP (subreg_reg, 1), subreg_reg_mode,
+				 subreg_lowpart_offset (x_mode,
+							subreg_reg_mode));
+      if (cst && CONSTANT_P (cst))
+	return gen_rtx_PLUS (x_mode, lowpart_subreg (x_mode, subreg_reg,
+						     subreg_reg_mode), cst);
+    }
   return x;
 }
 

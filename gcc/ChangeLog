@@ -1,5 +1,11 @@
 2016-01-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/69071
+	* lra-eliminations.c (move_plus_up): Only move plus up
+	if subreg of the constant can be simplified into constant
+	and use the simplified subreg of the constant instead of
+	the original constant.
+
 	* fold-const.c (fold_convertible_p): Don't return true
 	for conversion of VECTOR_TYPE to same sized integral type.
 	(fold_convert_loc): Fix up formatting.  Fold conversion of

@@ -1,5 +1,8 @@
 2016-01-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/69071
+	* gcc.dg/pr69071.c: New test.
+
 	PR c++/69211
 	* g++.dg/opt/pr69211.C: New test.
 
