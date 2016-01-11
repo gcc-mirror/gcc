@@ -1845,7 +1845,7 @@ Common Var(common_deferred_options) Defer
 
 frandom-seed=
 Common Joined RejectNegative Var(common_deferred_options) Defer
--frandom-seed=<number>	Make compile reproducible using <number>
+-frandom-seed=<string>	Make compile reproducible using <string>
 
 ; This switch causes the command line that was used to create an
 ; object file to be recorded into the object file.  The exact format

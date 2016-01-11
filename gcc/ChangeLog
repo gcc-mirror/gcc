@@ -1,3 +1,12 @@
+2016-01-11  Yury Gribov  <y.gribov@samsung.com>
+
+	Backport from mainline
+	2016-01-11  Yury Gribov  <y.gribov@samsung.com>
+
+	PR 67425
+	* common.opt (frandom-seed): Fix parameter name.
+	* doc/invoke.texi (frandom-seed): Ditto and describe parameter.
+
 2016-01-08  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
@@ -28,7 +37,7 @@
 2015-12-25  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	Backport from mainline
-        2015-12-25  Andreas Tobler  <andreast@gcc.gnu.org>
+	2015-12-25  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/rs6000/freebsd64.h: Delete FREEBSD_DYNAMIC_LINKER32/64
 	defines. Use FBSD_DYNAMIC_LINKER instead.
