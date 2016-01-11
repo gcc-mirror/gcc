@@ -1,5 +1,11 @@
 2016-01-11  Jakub Jelinek  <jakub@redhat.com>
 
+	* fold-const.c (fold_convertible_p): Don't return true
+	for conversion of VECTOR_TYPE to same sized integral type.
+	(fold_convert_loc): Fix up formatting.  Fold conversion of
+	VECTOR_TYPE to same sized integral type using VIEW_CONVERT_EXPR
+	instead of NOP_EXPR.
+
 	PR tree-optimization/69214
 	* tree-vrp.c (simplify_cond_using_ranges): Don't propagate
 	innerop into a comparison if SSA_NAME_OCCURS_IN_ABNORMAL_PHI.

@@ -2182,11 +2182,8 @@ fold_convertible_p (const_tree type, const_tree arg)
     case INTEGER_TYPE: case ENUMERAL_TYPE: case BOOLEAN_TYPE:
     case POINTER_TYPE: case REFERENCE_TYPE:
     case OFFSET_TYPE:
-      if (INTEGRAL_TYPE_P (orig) || POINTER_TYPE_P (orig)
-	  || TREE_CODE (orig) == OFFSET_TYPE)
-        return true;
-      return (TREE_CODE (orig) == VECTOR_TYPE
-	      && tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (orig)));
+      return (INTEGRAL_TYPE_P (orig) || POINTER_TYPE_P (orig)
+	      || TREE_CODE (orig) == OFFSET_TYPE);
 
     case REAL_TYPE:
     case FIXED_POINT_TYPE:
@@ -2241,11 +2238,11 @@ fold_convert_loc (location_t loc, tree type, tree arg)
 	return fold_build1_loc (loc, NOP_EXPR, type, arg);
       if (TREE_CODE (orig) == COMPLEX_TYPE)
 	return fold_convert_loc (loc, type,
-			     fold_build1_loc (loc, REALPART_EXPR,
-					  TREE_TYPE (orig), arg));
+				 fold_build1_loc (loc, REALPART_EXPR,
+						  TREE_TYPE (orig), arg));
       gcc_assert (TREE_CODE (orig) == VECTOR_TYPE
 		  && tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (orig)));
-      return fold_build1_loc (loc, NOP_EXPR, type, arg);
+      return fold_build1_loc (loc, VIEW_CONVERT_EXPR, type, arg);
 
     case REAL_TYPE:
       if (TREE_CODE (arg) == INTEGER_CST)
