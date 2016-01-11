@@ -1,3 +1,11 @@
+2016-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69211
+	* cp-gimplify.c (cp_fold): If COMPOUND_EXPR or MODIFY_EXPR
+	folded operands have side-effects, but folding changed any of them,
+	build a new tree with the folded operands instead of returning the
+	unfolded tree.
+
 2016-01-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/69113
