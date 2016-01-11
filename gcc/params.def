@@ -1177,6 +1177,12 @@ DEFPARAM (PARAM_MAX_SSA_NAME_QUERY_DEPTH,
 	  "Maximum recursion depth allowed when querying a property of an"
 	  " SSA name.",
 	  2, 1, 0)
+
+DEFPARAM (PARAM_MAX_RTL_IF_CONVERSION_INSNS,
+	  "max-rtl-if-conversion-insns",
+	  "Maximum number of insns in a basic block to consider for RTL "
+	  "if-conversion.",
+	  10, 0, 99)
 /*
 
 Local variables:

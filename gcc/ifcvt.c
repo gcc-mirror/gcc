@@ -44,6 +44,7 @@
 #include "shrink-wrap.h"
 #include "rtl-iter.h"
 #include "ifcvt.h"
+#include "params.h"
 
 #ifndef MAX_CONDITIONAL_EXECUTE
 #define MAX_CONDITIONAL_EXECUTE \
@@ -3242,6 +3243,8 @@ bb_ok_for_noce_convert_multiple_sets (basic_block test_bb,
 {
   rtx_insn *insn;
   unsigned count = 0;
+  unsigned param = PARAM_VALUE (PARAM_MAX_RTL_IF_CONVERSION_INSNS);
+  unsigned limit = MIN (ii->branch_cost, param);
 
   FOR_BB_INSNS (test_bb, insn)
     {
@@ -3277,8 +3280,8 @@ bb_ok_for_noce_convert_multiple_sets (basic_block test_bb,
   /* FORNOW: Our cost model is a count of the number of instructions we
      would if-convert.  This is suboptimal, and should be improved as part
      of a wider rework of branch_cost.  */
-  if (count > ii->branch_cost)
-    return FALSE;
+  if (count > limit)
+    return false;
 
   return count > 0;
 }
@@ -3823,7 +3826,6 @@ cond_move_process_if_block (struct noce_if_info *if_info)
     }
 
   num_updated_if_blocks++;
-
   success_p = TRUE;
 
 done:
@@ -4810,7 +4812,6 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 
   num_true_changes++;
   num_updated_if_blocks++;
-
   return TRUE;
 }
 

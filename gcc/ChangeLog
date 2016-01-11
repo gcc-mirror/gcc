@@ -1,3 +1,18 @@
+2016-01-11  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR rtl-optimization/68920
+	* config/i386/i386.c (ix86_option_override_internal): Restrict number
+	of conditional moves for  RTL if-conversion to 1 for
+	TARGET_ONE_IF_CONV_INSN.
+	* config/i386/i386.h (TARGET_ONE_IF_CONV_INSN): New macros.
+	* config/i386/x86-tune.def (X86_TUNE_ONE_IF_CONV_INSN): New macros.
+	* params.def (PARAM_MAX_RTL_IF_CONVERSION_INSNS) : Introduce new
+	parameter to restirct number of conditional moves for
+	RTL if-conversion.
+	* doc/invoke.texi (max-rtl-if-conversion-insns): Document it.
+	* ifcvt.c (bb_ok_for_noce_convert_multiple_sets): Limit number of
+	conditionl moves.
+
 2016-01-11  Alexandre Oliva <aoliva@redhat.com>
 
 	PR bootstrap/69123

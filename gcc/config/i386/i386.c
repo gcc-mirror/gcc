@@ -5343,6 +5343,13 @@ ix86_option_override_internal (bool main_args_p,
 			 opts->x_param_values,
 			 opts_set->x_param_values);
 
+  /* Restrict number of if-converted SET insns to 1.  */
+  if (TARGET_ONE_IF_CONV_INSN)
+    maybe_set_param_value (PARAM_MAX_RTL_IF_CONVERSION_INSNS,
+			   1,
+			   opts->x_param_values,
+			   opts_set->x_param_values);
+
   /* Enable sw prefetching at -O3 for CPUS that prefetching is helpful.  */
   if (opts->x_flag_prefetch_loop_arrays < 0
       && HAVE_prefetch
