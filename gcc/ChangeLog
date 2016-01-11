@@ -1,3 +1,9 @@
+2016-01-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/66616
+	* cgraphclones.c (duplicate_thunk_for_node): Copy can_change_signature
+	flag.
+
 2016-01-11  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69109
