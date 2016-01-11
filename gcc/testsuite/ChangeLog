@@ -1,3 +1,8 @@
+2016-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69173
+	* gcc.dg/torture/pr69173.c: New testcase.
+
 2016-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/68796
