@@ -1,3 +1,13 @@
+2016-01-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/66616
+	* ipa-cp.c (propagate_constants_accross_call): Move thuk check...
+	(call_passes_through_thunk_p): ...here.
+	(find_more_scalar_values_for_callers_subset): Perform thunk checks
+	like propagate_constants_accross_call does.
+	* cgraphclones.c (duplicate_thunk_for_node): Copy can_change_signature
+	flag from the node to the new flag.
+
 2016-01-08  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
