@@ -367,6 +367,7 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   new_thunk = cgraph_node::create (new_decl);
   set_new_clone_decl_and_node_flags (new_thunk);
   new_thunk->definition = true;
+  new_thunk->local.can_change_signature = node->local.can_change_signature;
   new_thunk->thunk = thunk->thunk;
   new_thunk->unique_name = in_lto_p;
   new_thunk->former_clone_of = thunk->decl;
