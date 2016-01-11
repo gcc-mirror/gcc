@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 5.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-07-02 12:31+0000\n"
-"PO-Revision-Date: 2015-11-21 03:15-0500\n"
+"PO-Revision-Date: 2016-01-10 13:41-0500\n"
 "Last-Translator: Mingye Wang (Arthur2e5) <arthur200126@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -1518,7 +1518,7 @@ msgstr "警告："
 
 #: diagnostic.def:38
 msgid "anachronism: "
-msgstr "时代错误："
+msgstr "历史遗留："
 
 #: diagnostic.def:39
 msgid "note: "
@@ -1536,7 +1536,7 @@ msgstr "保守警告："
 
 #: diagnostic.def:44
 msgid "permerror: "
-msgstr "永久性错误："
+msgstr "永久错误："
 
 #: params.def:44
 msgid "Maximal estimated outcome of branch considered predictable"
@@ -11520,14 +11520,12 @@ msgid "Allow gcc to generate the SETLB and Lcc instructions"
 msgstr "允许 gcc 生成 LIW 指令"
 
 #: config/nds32/nds32.opt:26
-#, fuzzy
 msgid "Generate code in big-endian mode."
-msgstr "生成大端在前的代码"
+msgstr "生成大端在前的代码。"
 
 #: config/nds32/nds32.opt:30
-#, fuzzy
 msgid "Generate code in little-endian mode."
-msgstr "生成小端在前的代码"
+msgstr "生成小端在前的代码。"
 
 #: config/nds32/nds32.opt:34
 #, fuzzy
@@ -11555,9 +11553,8 @@ msgid "Generate v3 push25/pop25 instructions."
 msgstr "生成加载/存储乘法指令"
 
 #: config/nds32/nds32.opt:54
-#, fuzzy
 msgid "Generate 16-bit instructions."
-msgstr "生成 isel 指令"
+msgstr "生成 16 位指令。"
 
 #: config/nds32/nds32.opt:58
 msgid "Specify the size of each interrupt vector, which must be 4 or 16."
@@ -12493,24 +12490,20 @@ msgid "Known TILE-Gx CPUs (for use with the -mcpu= option):"
 msgstr "已知 TILE-Gx 处理器 (用于 -mcpu= 选项)："
 
 #: config/tilegx/tilegx.opt:37
-#, fuzzy
 msgid "Compile with 32 bit longs and pointers."
-msgstr "为 32 位指针编译"
+msgstr "为 32 位长整形和指针编译。"
 
 #: config/tilegx/tilegx.opt:41
-#, fuzzy
 msgid "Compile with 64 bit longs and pointers."
-msgstr "为 64 位指针编译"
+msgstr "为 32 位长整形和指针编译。"
 
 #: config/tilegx/tilegx.opt:45
-#, fuzzy
 msgid "Use big-endian byte order."
-msgstr "令大端在前"
+msgstr "令大端在前。"
 
 #: config/tilegx/tilegx.opt:49
-#, fuzzy
 msgid "Use little-endian byte order."
-msgstr "令小端在前"
+msgstr "令小端在前。"
 
 #: config/tilegx/tilegx.opt:53
 #, fuzzy
@@ -12518,14 +12511,12 @@ msgid "Use given TILE-Gx code model"
 msgstr "使用给定的 SPARC-V9 代码模型"
 
 #: config/arc/arc.opt:26
-#, fuzzy
 msgid "Compile code for big endian mode"
-msgstr "生成大端在前的代码"
+msgstr "生成大端序模式的代码"
 
 #: config/arc/arc.opt:30
-#, fuzzy
 msgid "Compile code for little endian mode.  This is the default"
-msgstr "生成小端在前的代码"
+msgstr "生成笑端序模式的代码。此为默认"
 
 #: config/arc/arc.opt:34
 msgid "Disable ARCompact specific pass to generate conditional execution instructions"
@@ -12540,9 +12531,8 @@ msgid "Generate ARCompact 32-bit code for ARC600 processor"
 msgstr ""
 
 #: config/arc/arc.opt:46
-#, fuzzy
 msgid "Same as -mA6"
-msgstr "与上一次相同"
+msgstr "与 -mA6 相同"
 
 #: config/arc/arc.opt:50
 msgid "Generate ARCompact 32-bit code for ARC601 processor"
@@ -12553,9 +12543,8 @@ msgid "Generate ARCompact 32-bit code for ARC700 processor"
 msgstr ""
 
 #: config/arc/arc.opt:58
-#, fuzzy
 msgid "Same as -mA7"
-msgstr "与上一次相同"
+msgstr "与 -mA7 相同"
 
 #: config/arc/arc.opt:62
 #, fuzzy
@@ -12728,9 +12717,8 @@ msgid "Enable pre-reload use of cbranchsi pattern"
 msgstr "启用 cbranchdi4 样式"
 
 #: config/arc/arc.opt:257
-#, fuzzy
 msgid "Enable bbit peephole2"
-msgstr "启用预处理"
+msgstr "启用 bbit peephole2"
 
 #: config/arc/arc.opt:261
 msgid "Use pc-relative switch case tables - this enables case table shortening."
@@ -13407,9 +13395,8 @@ msgid "Map one directory name to another in debug information"
 msgstr "在调试信息中将一个目录名映射到另一个"
 
 #: common.opt:1054
-#, fuzzy
 msgid "Output .debug_types section when using DWARF v4 debuginfo."
-msgstr "输出.debugtypes 区段时使用 DWARF v4 debuginfo(_T)。"
+msgstr "使用 DWARF v4 debuginfo 时输出 .debug_types 区段。"
 
 #: common.opt:1060
 msgid "Defer popping functions args from stack until later"
@@ -54216,9 +54203,9 @@ msgstr "不能设置只读属性"
 #. underlying instance variable could be a bitfield, but that is
 #. a different matter.
 #: objc/objc-act.c:955
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "property can not be a bit-field"
-msgstr "不能设置只读属性"
+msgstr "属性不能是一个位段"
 
 #: objc/objc-act.c:987
 #, fuzzy, gcc-internal-format
@@ -54309,9 +54296,9 @@ msgid "class %qE is deprecated"
 msgstr "已弃用类%qE"
 
 #: objc/objc-act.c:1735
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "could not find setter/getter for %qE in class %qE"
-msgstr "找不到类%qE的接口"
+msgstr "类 %2$qE 中找不到 %1$qE 的存取器。"
 
 #: objc/objc-act.c:1771
 #, gcc-internal-format
@@ -54513,14 +54500,14 @@ msgid "%<@throw%> (rethrow) used outside of a @catch block"
 msgstr "在 @catch 块外使用%<@throw%>(rethrow)"
 
 #: objc/objc-act.c:4374
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<@throw%> argument is not an object"
-msgstr "对常量对象的写操作(实参 %d)"
+msgstr "%<@throw%> 参数不是一个对象"
 
 #: objc/objc-act.c:4395
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<@synchronized%> argument is not an object"
-msgstr "级别 2 尚未同步"
+msgstr "%<@synchronized%> 参数不是一个对象"
 
 #: objc/objc-act.c:4603
 #, gcc-internal-format
@@ -54591,9 +54578,9 @@ msgstr "也找到了%<%c%s%>"
 #. class, or cast the receiver to 'id'.  Note that
 #. rtype is an IDENTIFIER_NODE at this point.
 #: objc/objc-act.c:5428 objc/objc-act.c:5562
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "@interface of class %qE not found"
-msgstr "找不到类%qE的接口"
+msgstr "找不到类 %qE 的 @interface"
 
 #: objc/objc-act.c:5436
 #, gcc-internal-format
@@ -54892,9 +54879,9 @@ msgstr "%<@dynamic%> 在 Objective-C 1.0 里不可用"
 #. "misplaced '@dynamic' Objective-C++ construct" and skips the
 #. declaration.
 #: objc/objc-act.c:7853
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<@dynamic%> not in @implementation context"
-msgstr "实现上下文中缺少%<@end%>"
+msgstr "@implemention 上下文中缺少 %<@dynamic%>"
 
 #: objc/objc-act.c:7875
 #, fuzzy, gcc-internal-format
@@ -54958,9 +54945,9 @@ msgstr "%qE的局部声明隐藏了实例变量"
 #. should be impossible for real properties, which always
 #. have a getter.
 #: objc/objc-act.c:9468
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no %qs getter found"
-msgstr "找不到字段%qs。"
+msgstr "找不到 %qs 的取值器"
 
 #: objc/objc-act.c:9708
 #, gcc-internal-format
@@ -54968,9 +54955,9 @@ msgid "fast enumeration is not available in Objective-C 1.0"
 msgstr "快速枚举在 Objective-C 1.0 里不可用"
 
 #: objc/objc-act.c:9718
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "iterating variable in fast enumeration is not an object"
-msgstr "迭代变量在中快速枚举类型不是对象"
+msgstr "快速枚举中的迭代变量不是对象"
 
 #: objc/objc-act.c:9724
 #, fuzzy, gcc-internal-format
@@ -54980,7 +54967,7 @@ msgstr "快速枚举在 Objective-C 1.0 里不可用"
 #: objc/objc-encoding.c:142
 #, gcc-internal-format
 msgid "type %qT does not have a known size"
-msgstr "类型%qT大小未知"
+msgstr "类型 %qT 大小未知"
 
 #: objc/objc-encoding.c:730
 #, fuzzy, gcc-internal-format
@@ -54989,9 +54976,9 @@ msgstr "未知类型 %<%T%>找到在的期间 Objective-C 编码"
 
 #. Do not do any encoding, produce an error and keep going.
 #: objc/objc-encoding.c:813
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "trying to encode non-integer type as a bitfield"
-msgstr "尝试编码 non-integer 类型作为 bitfield"
+msgstr "尝试将未整数类型编码为位段（bitfield）"
 
 #: objc/objc-gnu-runtime-abi-01.c:143
 #, gcc-internal-format
