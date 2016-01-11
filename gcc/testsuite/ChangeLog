@@ -1,3 +1,10 @@
+2016-01-11  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR rtl-optimization/68920
+	* gcc.dg/ifcvt-4.c: Add "--param max-rtl-if-conversion-insns=3" option
+	for ix86 targets.
+	* gcc.dg/ifcvt-5.c: New test.
+
 2016-01-11  Alexandre Oliva <aoliva@redhat.com>
 
 	PR bootstrap/69123

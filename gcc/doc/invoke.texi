@@ -10365,6 +10365,14 @@ In each case, the @var{value} is an integer.  The allowable choices for
 When branch is predicted to be taken with probability lower than this threshold
 (in percent), then it is considered well predictable. The default is 10.
 
+@item max-rtl-if-conversion-insns
+RTL if-conversion tries to remove conditional branches around a block and
+replace them with conditionally executed instructions.  This parameter
+gives the maximum number of instructions in a block which should be
+considered for if-conversion.  The default is 10, though the compiler will
+also use other heuristics to decide whether if-conversion is likely to be
+profitable.
+
 @item max-crossjump-edges
 The maximum number of incoming edges to consider for cross-jumping.
 The algorithm used by @option{-fcrossjumping} is @math{O(N^2)} in
