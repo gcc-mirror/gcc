@@ -1,3 +1,9 @@
+2016-01-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (<avx512>_load<mode>_mask): Remove
+	snprintf.
+	(<avx512>_store<mode>_mask): Likewise.
+
 2016-01-11  Bernd Schmidt  <bschmidt@redhat.com>
             Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
