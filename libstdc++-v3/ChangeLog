@@ -1,3 +1,11 @@
+2016-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60976
+	* include/bits/alloc_traits.h (allocator_traits<allocator<_Tp>>):
+	Define partial specialization.
+	* testsuite/20_util/shared_ptr/cons/58659.cc: Add construct and
+	destroy members to std::allocator explicit specialization.
+
 2016-01-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/26_numerics/headers/cmath/
