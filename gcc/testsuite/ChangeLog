@@ -1,5 +1,11 @@
 2016-01-11  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/69109
+	* gcc.dg/autopar/pr69109-2.c: New test.
+	* gcc.dg/autopar/pr69109.c: New test.
+
+2016-01-11  Tom de Vries  <tom@codesourcery.com>
+
 	PR tree-optimization/69108
 	* gcc.dg/autopar/pr69108.c: New test.
 
