@@ -2086,7 +2086,11 @@ cp_fold (tree x)
       if ((code == COMPOUND_EXPR || code == MODIFY_EXPR)
 	  && ((op1 && TREE_SIDE_EFFECTS (op1))
 	       || (op0 && TREE_SIDE_EFFECTS (op0))))
-	break;
+	{
+	  if (op0 != TREE_OPERAND (x, 0) || op1 != TREE_OPERAND (x, 1))
+	    x = build2_loc (loc, code, TREE_TYPE (x), op0, op1);
+	  break;
+	}
       if (TREE_CODE (x) == COMPOUND_EXPR && !op0)
 	op0 = build_empty_stmt (loc);
 

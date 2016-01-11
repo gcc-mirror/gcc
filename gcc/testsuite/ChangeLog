@@ -1,5 +1,8 @@
 2016-01-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/69211
+	* g++.dg/opt/pr69211.C: New test.
+
 	PR tree-optimization/69214
 	* gcc.c-torture/compile/pr69214.c: New test.
 
