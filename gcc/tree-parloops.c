@@ -2474,6 +2474,8 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 	  gimple *inner_stmt;
 	  bool single_use_p = single_imm_use (res, &use_p, &inner_stmt);
 	  gcc_assert (single_use_p);
+	  if (gimple_code (inner_stmt) != GIMPLE_PHI)
+	    continue;
 	  gphi *inner_phi = as_a <gphi *> (inner_stmt);
 	  if (simple_iv (loop->inner, loop->inner, PHI_RESULT (inner_phi),
 			 &iv, true))

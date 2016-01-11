@@ -1,3 +1,9 @@
+2016-01-11  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69108
+	* tree-parloops.c (gather_scalar_reductions): Handle case that outer phi
+	res is not used in a phi.
+
 2016-01-11  Yury Gribov  <y.gribov@samsung.com>
 
 	PR 67425
