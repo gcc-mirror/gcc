@@ -1,3 +1,9 @@
+2016-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/68841
+	* gcc.dg/pr68841.c: New test.
+	* gcc.c-torture/execute/pr68841.c: New test.
+
 2016-01-11  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR rtl-optimization/68920

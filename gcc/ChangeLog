@@ -1,3 +1,15 @@
+2016-01-11  Bernd Schmidt  <bschmidt@redhat.com>
+            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/68841
+	* ifcvt.c (struct noce_if_info): Add orig_x field.
+	(bbs_ok_for_cmove_arith): Add to_rename parameter.
+	Don't record conflicts on to_rename if it's present.
+	Allow memory destinations in sets.
+	(noce_try_cmove_arith): Call bbs_ok_for_cmove_arith even on simple
+	blocks, passing orig_x to the checks.
+	(noce_process_if_block): Set if_info->orig_x appropriately.
+
 2016-01-11  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69069
