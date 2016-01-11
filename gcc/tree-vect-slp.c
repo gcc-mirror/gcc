@@ -2999,12 +2999,9 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 		  gimple *init_stmt;
 		  if (VECTOR_BOOLEAN_TYPE_P (vector_type))
 		    {
-		      gcc_assert (fold_convertible_p (TREE_TYPE (vector_type),
-						      op));
+		      gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (op)));
 		      init_stmt = gimple_build_assign (new_temp, NOP_EXPR, op);
 		    }
-		  else if (fold_convertible_p (TREE_TYPE (vector_type), op))
-		    init_stmt = gimple_build_assign (new_temp, NOP_EXPR, op);
 		  else
 		    {
 		      op = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (vector_type),

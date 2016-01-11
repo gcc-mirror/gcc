@@ -1,3 +1,11 @@
+2016-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69207
+	* tree-vect-slp.c (vect_get_constant_vectors): For
+	VECTOR_BOOLEAN_TYPE_P, assert op has integral type instead of
+	fold_convertible_p to vector_type's element type, and always
+	use VCE for non-VECTOR_BOOLEAN_TYPE_P.
+
 2016-01-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69173
