@@ -793,6 +793,9 @@ struct noce_if_info
   /* The SET_DEST of INSN_A.  */
   rtx x;
 
+  /* The original set destination that the THEN and ELSE basic blocks finally
+     write their result to.  */
+  rtx orig_x;
   /* True if this if block is not canonical.  In the canonical form of
      if blocks, the THEN_BB is the block reached via the fallthru edge
      from TEST_BB.  For the noce transformations, we allow the symmetric
@@ -1867,11 +1870,13 @@ insn_valid_noce_process_p (rtx_insn *insn, rtx cc)
 }
 
 
-/* Return true iff the registers that the insns in BB_A set do not
-   get used in BB_B.  */
+/* Return true iff the registers that the insns in BB_A set do not get
+   used in BB_B.  If TO_RENAME is non-NULL then it is a location that will be
+   renamed later by the caller and so conflicts on it should be ignored
+   in this function.  */
 
 static bool
-bbs_ok_for_cmove_arith (basic_block bb_a, basic_block bb_b)
+bbs_ok_for_cmove_arith (basic_block bb_a, basic_block bb_b, rtx to_rename)
 {
   rtx_insn *a_insn;
   bitmap bba_sets = BITMAP_ALLOC (&reg_obstack);
@@ -1891,10 +1896,10 @@ bbs_ok_for_cmove_arith (basic_block bb_a, basic_block bb_b)
 	  BITMAP_FREE (bba_sets);
 	  return false;
 	}
-
       /* Record all registers that BB_A sets.  */
       FOR_EACH_INSN_DEF (def, a_insn)
-	bitmap_set_bit (bba_sets, DF_REF_REGNO (def));
+	if (!(to_rename && DF_REF_REG (def) == to_rename))
+	  bitmap_set_bit (bba_sets, DF_REF_REGNO (def));
     }
 
   rtx_insn *b_insn;
@@ -1913,8 +1918,15 @@ bbs_ok_for_cmove_arith (basic_block bb_a, basic_block bb_b)
 	}
 
       /* Make sure this is a REG and not some instance
-	 of ZERO_EXTRACT or SUBREG or other dangerous stuff.  */
-      if (!REG_P (SET_DEST (sset_b)))
+	 of ZERO_EXTRACT or SUBREG or other dangerous stuff.
+	 If we have a memory destination then we have a pair of simple
+	 basic blocks performing an operation of the form [addr] = c ? a : b.
+	 bb_valid_for_noce_process_p will have ensured that these are
+	 the only stores present.  In that case [addr] should be the location
+	 to be renamed.  Assert that the callers set this up properly.  */
+      if (MEM_P (SET_DEST (sset_b)))
+	gcc_assert (rtx_equal_p (SET_DEST (sset_b), to_rename));
+      else if (!REG_P (SET_DEST (sset_b)))
 	{
 	  BITMAP_FREE (bba_sets);
 	  return false;
@@ -2083,9 +2095,9 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 	}
     }
 
-  if (then_bb && else_bb && !a_simple && !b_simple
-      && (!bbs_ok_for_cmove_arith (then_bb, else_bb)
-	  || !bbs_ok_for_cmove_arith (else_bb, then_bb)))
+  if (then_bb && else_bb
+      && (!bbs_ok_for_cmove_arith (then_bb, else_bb,  if_info->orig_x)
+	  || !bbs_ok_for_cmove_arith (else_bb, then_bb,  if_info->orig_x)))
     return FALSE;
 
   start_sequence ();
@@ -3403,6 +3415,7 @@ noce_process_if_block (struct noce_if_info *if_info)
   /* Only operate on register destinations, and even then avoid extending
      the lifetime of hard registers on small register class machines.  */
   orig_x = x;
+  if_info->orig_x = orig_x;
   if (!REG_P (x)
       || (HARD_REGISTER_P (x)
 	  && targetm.small_register_classes_for_mode_p (GET_MODE (x))))
