@@ -1,3 +1,11 @@
+2016-01-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/68999
+	* alias.c (base_alias_check): Move check for addresses with
+	alignment ANDs before the call for compare_base_decls.
+	(memrefs_conflict_p): Return -1 for different decls
+	that went through alignment adjustments.
+
 2016-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/68796
@@ -8,12 +16,11 @@
 
 2016-01-11  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/sse.md (<avx512>_load<mode>_mask): Remove
-	snprintf.
+	* config/i386/sse.md (<avx512>_load<mode>_mask): Remove snprintf.
 	(<avx512>_store<mode>_mask): Likewise.
 
 2016-01-11  Bernd Schmidt  <bschmidt@redhat.com>
-            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/68841
 	* ifcvt.c (struct noce_if_info): Add orig_x field.

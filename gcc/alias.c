@@ -2093,17 +2093,6 @@ base_alias_check (rtx x, rtx x_base, rtx y, rtx y_base,
   if (rtx_equal_p (x_base, y_base))
     return 1;
 
-  if (GET_CODE (x_base) == SYMBOL_REF && GET_CODE (y_base) == SYMBOL_REF)
-    {
-      tree x_decl = SYMBOL_REF_DECL (x_base);
-      tree y_decl = SYMBOL_REF_DECL (y_base);
-
-      /* We can assume that no stores are made to labels.  */
-      if (!x_decl || !y_decl)
-	return 0;
-      return compare_base_decls (x_decl, y_decl) != 0;
-    }
-
   /* The base addresses are different expressions.  If they are not accessed
      via AND, there is no conflict.  We can bring knowledge of object
      alignment into play here.  For example, on alpha, "char a, b;" can
@@ -2121,6 +2110,17 @@ base_alias_check (rtx x, rtx x_base, rtx y, rtx y_base,
       && (!CONST_INT_P (XEXP (y, 1))
 	  || (int) GET_MODE_UNIT_SIZE (x_mode) < -INTVAL (XEXP (y, 1))))
     return 1;
+
+  if (GET_CODE (x_base) == SYMBOL_REF && GET_CODE (y_base) == SYMBOL_REF)
+    {
+      tree x_decl = SYMBOL_REF_DECL (x_base);
+      tree y_decl = SYMBOL_REF_DECL (y_base);
+
+      /* We can assume that no stores are made to labels.  */
+      if (!x_decl || !y_decl)
+	return 0;
+      return compare_base_decls (x_decl, y_decl) != 0;
+    }
 
   /* Differing symbols not accessed via AND never alias.  */
   if (GET_CODE (x_base) != ADDRESS && GET_CODE (y_base) != ADDRESS)
@@ -2344,6 +2344,12 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
       /* If both decls are the same, decide by offsets.  */
       if (cmp == 1)
         return offset_overlap_p (c, xsize, ysize);
+      /* Assume a potential overlap for symbolic addresses that went
+	 through alignment adjustments (i.e., that have negative
+	 sizes), because we can't know how far they are from each
+	 other.  */
+      if (xsize < 0 || ysize < 0)
+	return -1;
       /* If decls are different or we know by offsets that there is no overlap,
 	 we win.  */
       if (!cmp || !offset_overlap_p (c, xsize, ysize))
