@@ -1,3 +1,8 @@
+2016-01-11  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* config/arc/arc.opt (mdiv-rem): Add period to the end.
+	(mcode-density): Likewise.
+
 2016-01-10  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69062

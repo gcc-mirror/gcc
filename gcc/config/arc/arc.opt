@@ -59,11 +59,11 @@ Target RejectNegative Joined UInteger Var(arc_mpy_option) Init(2)
 
 mdiv-rem
 Target Report Mask(DIVREM)
-Enable DIV-REM instructions for ARCv2
+Enable DIV-REM instructions for ARCv2.
 
 mcode-density
 Target Report Mask(CODE_DENSITY)
-Enable code density instructions for ARCv2
+Enable code density instructions for ARCv2.
 
 mmixed-code
 Target Report Mask(MIXED_CODE_SET)
