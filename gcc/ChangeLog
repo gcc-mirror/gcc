@@ -1,3 +1,8 @@
+2016-01-11  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69069
+	* tree-parloops.c (create_parallel_loop): Add missing phi args.
+
 2016-01-11  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR rtl-optimization/68920
