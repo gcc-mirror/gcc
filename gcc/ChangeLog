@@ -1,3 +1,12 @@
+2016-01-11  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/69010
+	* expr.c (expand_expr_real_1): For boolean vector constants
+	with a scalar mode use const_scalar_mask_from_tree.
+	(const_scalar_mask_from_tree): New.
+	* optabs.c (expand_vec_cond_mask_expr): Use mask mode
+	assigned to a mask type to handle constants.
+
 2016-01-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/69044
