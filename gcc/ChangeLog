@@ -1,3 +1,9 @@
+2016-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69173
+	* tree-vect-loop.c (vect_fixup_scalar_cycles_with_patterns): Only
+	fixup the cycle if all stmts are in a pattern.
+
 2016-01-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/68999

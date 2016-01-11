@@ -985,9 +985,21 @@ vect_fixup_scalar_cycles_with_patterns (loop_vec_info loop_vinfo)
   FOR_EACH_VEC_ELT (LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo), i, first)
     if (STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (first)))
       {
-	vect_fixup_reduc_chain (first);
-	LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo)[i]
-	  = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (first));
+	gimple *next = GROUP_NEXT_ELEMENT (vinfo_for_stmt (first));
+	while (next)
+	  {
+	    if (! STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (next)))
+	      break;
+	    next = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next));
+	  }
+	/* If not all stmt in the chain are patterns try to handle
+	   the chain without patterns.  */
+	if (! next)
+	  {
+	    vect_fixup_reduc_chain (first);
+	    LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo)[i]
+	      = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (first));
+	  }
       }
 }
 
