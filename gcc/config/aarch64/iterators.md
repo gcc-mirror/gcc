@@ -345,6 +345,8 @@
 (define_mode_attr w1 [(SF "w") (DF "x")])
 (define_mode_attr w2 [(SF "x") (DF "w")])
 
+(define_mode_attr short_mask [(HI "65535") (QI "255")])
+
 ;; For constraints used in scalar immediate vector moves
 (define_mode_attr hq [(HI "h") (QI "q")])
 

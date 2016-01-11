@@ -1,3 +1,11 @@
+2016-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/68796
+	* config/aarch64/aarch64.md (*and<mode>_compare0): New pattern.
+	* config/aarch64/aarch64.c (aarch64_select_cc_mode): Handle HImode
+	and QImode comparisons against zero with CC_NZmode.
+	* config/aarch64/iterators.md (short_mask): New mode_attr.
+
 2016-01-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/sse.md (<avx512>_load<mode>_mask): Remove

@@ -4142,6 +4142,13 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
 	}
     }
 
+  /* Equality comparisons of short modes against zero can be performed
+     using the TST instruction with the appropriate bitmask.  */
+  if (y == const0_rtx && REG_P (x)
+      && (code == EQ || code == NE)
+      && (GET_MODE (x) == HImode || GET_MODE (x) == QImode))
+    return CC_NZmode;
+
   if ((GET_MODE (x) == SImode || GET_MODE (x) == DImode)
       && y == const0_rtx
       && (code == EQ || code == NE || code == LT || code == GE)
