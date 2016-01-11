@@ -1,5 +1,11 @@
 2016-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	PR rtl-optimization/68796
+	* gcc.target/aarch64/tst_5.c: New test.
+	* gcc.target/aarch64/tst_6.c: Likewise.
+
+2016-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	PR rtl-optimization/68841
 	* gcc.dg/pr68841.c: New test.
 	* gcc.c-torture/execute/pr68841.c: New test.

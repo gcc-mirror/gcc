@@ -3672,6 +3672,16 @@
   }
 )
 
+(define_insn "*and<mode>_compare0"
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
+	 (match_operand:SHORT 0 "register_operand" "r")
+	 (const_int 0)))]
+  ""
+  "tst\\t%<w>0, <short_mask>"
+  [(set_attr "type" "alus_imm")]
+)
+
 (define_insn "*and<mode>3nr_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ
