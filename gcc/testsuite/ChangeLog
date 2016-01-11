@@ -1,3 +1,8 @@
+2016-01-11  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/69010
+	* gcc.target/i386/pr69010.c: New test.
+
 2016-01-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/69044

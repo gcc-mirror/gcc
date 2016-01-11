@@ -137,6 +137,7 @@ static void emit_single_push_insn (machine_mode, rtx, tree);
 #endif
 static void do_tablejump (rtx, machine_mode, rtx, rtx, rtx, int);
 static rtx const_vector_from_tree (tree);
+static rtx const_scalar_mask_from_tree (tree);
 static tree tree_expr_size (const_tree);
 static HOST_WIDE_INT int_expr_size (tree);
 
@@ -9742,9 +9743,15 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  return const_vector_from_tree (exp);
 	if (GET_MODE_CLASS (mode) == MODE_INT)
 	  {
-	    tree type_for_mode = lang_hooks.types.type_for_mode (mode, 1);
-	    if (type_for_mode)
-	      tmp = fold_unary_loc (loc, VIEW_CONVERT_EXPR, type_for_mode, exp);
+	    if (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (exp)))
+	      return const_scalar_mask_from_tree (exp);
+	    else
+	      {
+		tree type_for_mode = lang_hooks.types.type_for_mode (mode, 1);
+		if (type_for_mode)
+		  tmp = fold_unary_loc (loc, VIEW_CONVERT_EXPR,
+					type_for_mode, exp);
+	      }
 	  }
 	if (!tmp)
 	  {
@@ -11453,6 +11460,29 @@ const_vector_mask_from_tree (tree exp)
     }
 
   return gen_rtx_CONST_VECTOR (mode, v);
+}
+
+/* Return a CONST_INT rtx representing vector mask for
+   a VECTOR_CST of booleans.  */
+static rtx
+const_scalar_mask_from_tree (tree exp)
+{
+  machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+  wide_int res = wi::zero (GET_MODE_PRECISION (mode));
+  tree elt;
+  unsigned i;
+
+  for (i = 0; i < VECTOR_CST_NELTS (exp); ++i)
+    {
+      elt = VECTOR_CST_ELT (exp, i);
+      gcc_assert (TREE_CODE (elt) == INTEGER_CST);
+      if (integer_all_onesp (elt))
+	res = wi::set_bit (res, i);
+      else
+	gcc_assert (integer_zerop (elt));
+    }
+
+  return immed_wide_int_const (res, mode);
 }
 
 /* Return a CONST_VECTOR rtx for a VECTOR_CST tree.  */
