@@ -1,5 +1,11 @@
 2016-01-11  Martin Jambor  <mjambor@suse.cz>
 
+	PR ipa/69044
+	* ipa-cp.c (estimate_local_effects): Do not clone for removal of
+	useless parameters if we cannot change function signature.
+
+2016-01-11  Martin Jambor  <mjambor@suse.cz>
+
 	PR ipa/66616
 	* cgraphclones.c (duplicate_thunk_for_node): Copy can_change_signature
 	flag.
