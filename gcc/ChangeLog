@@ -1,3 +1,11 @@
+2016-01-11  Alexandre Oliva <aoliva@redhat.com>
+
+	PR bootstrap/69123
+	* var-tracking.c (dump_onepart_variable_differences): New.
+	(dataflow_set_different): If a detailed dump is requested,
+	delay early returns and dump differences between onepart
+	variables present before and after, and added variables.
+
 2016-01-11  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/69010
