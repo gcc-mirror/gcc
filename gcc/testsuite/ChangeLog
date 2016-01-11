@@ -1,3 +1,8 @@
+2016-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69214
+	* gcc.c-torture/compile/pr69214.c: New test.
+
 2016-01-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr66232-10.c: Do not compile on ia32 target.

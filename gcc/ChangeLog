@@ -1,5 +1,10 @@
 2016-01-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/69214
+	* tree-vrp.c (simplify_cond_using_ranges): Don't propagate
+	innerop into a comparison if SSA_NAME_OCCURS_IN_ABNORMAL_PHI.
+	Formatting fix.
+
 	PR tree-optimization/69207
 	* tree-vect-slp.c (vect_get_constant_vectors): For
 	VECTOR_BOOLEAN_TYPE_P, assert op has integral type instead of
