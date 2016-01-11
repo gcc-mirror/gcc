@@ -2836,6 +2836,10 @@ pass_parallelize_loops::execute (function *fun)
   if (number_of_loops (fun) <= 1)
     return 0;
 
+  tree nthreads = builtin_decl_explicit (BUILT_IN_OMP_GET_NUM_THREADS);
+  if (nthreads == NULL_TREE)
+    return 0;
+
   if (parallelize_loops ())
     {
       fun->curr_properties &= ~(PROP_gimple_eomp);

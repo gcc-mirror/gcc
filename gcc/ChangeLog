@@ -1,3 +1,9 @@
+2016-01-11  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69058
+	* tree-parloops.c (pass_parallelize_loops::execute): Return 0 if libgomp
+	not supported.
+
 2016-01-11  Andrew Burgess  <andrew.burgess@embecosm.com>
 
 	* config/arc/arc.opt (mdiv-rem): Add period to the end.
