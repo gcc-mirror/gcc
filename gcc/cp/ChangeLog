@@ -1,3 +1,13 @@
+2016-01-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/68795
+	* parser.c (cp_parser_postfix_expression): Initialize
+	close_paren_loc to UNKNOWN_LOCATION; only use it if
+	it has been written to by
+	cp_parser_parenthesized_expression_list.
+	(cp_parser_parenthesized_expression_list): Document the behavior
+	with respect to the CLOSE_PAREN_LOC param.
+
 2016-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69211
