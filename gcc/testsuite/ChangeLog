@@ -1,3 +1,10 @@
+2016-01-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr66232-10.c: Do not compile on ia32 target.
+	* gcc.target/i386/pr66232-11.c: Ditto.
+	* gcc.target/i386/pr66232-12.c: Ditto.
+	* gcc.target/i386/pr66232-13.c: Ditto.
+
 2016-01-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69173

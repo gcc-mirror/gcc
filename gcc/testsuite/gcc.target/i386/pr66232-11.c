@@ -1,4 +1,4 @@
-/* { dg-do compile { target *-*-linux* } } */
+/* { dg-do compile { target { *-*-linux* && { ! ia32 } } } } */
 /* { dg-require-effective-target maybe_x32 } */
 /* { dg-options "-O2 -mx32 -fpic -fno-plt -maddress-mode=long" } */
 
