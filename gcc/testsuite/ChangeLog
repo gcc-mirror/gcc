@@ -1,3 +1,9 @@
+2016-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc++/68511
+	PR c++/69213
+	* g++.dg/opt/pr69213.C: New test.
+
 2016-01-12  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/69180
