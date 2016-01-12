@@ -1,3 +1,8 @@
+2016-01-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_emit_move_sequence): Handle floating point
+	reloads for other unsupported memory operands.
+
 2016-01-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/66616
