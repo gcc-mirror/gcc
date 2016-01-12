@@ -23,6 +23,7 @@
 #include "c-family/c-common.h"
 #include "tm_p.h"
 #include "c-family/c-pragma.h"
+#include "stringpool.h"
 
 /* Output C specific EABI object attributes.  These can not be done in
    arm.c because they require information from the C frontend.  */
@@ -245,8 +246,18 @@ arm_pragma_target_parse (tree args, tree pop_target)
 
       /* Update macros.  */
       gcc_assert (cur_opt->x_target_flags == target_flags);
-      /* This one can be redefined by the pragma without warning.  */
-      cpp_undef (parse_in, "__ARM_FP");
+
+      /* Don't warn for macros that have context sensitive values depending on
+	 other attributes.
+	 See warn_of_redefinition, Reset after cpp_create_definition.  */
+      tree acond_macro = get_identifier ("__ARM_NEON_FP");
+      C_CPP_HASHNODE (acond_macro)->flags |= NODE_CONDITIONAL ;
+
+      acond_macro = get_identifier ("__ARM_FP");
+      C_CPP_HASHNODE (acond_macro)->flags |= NODE_CONDITIONAL;
+
+      acond_macro = get_identifier ("__ARM_FEATURE_LDREX");
+      C_CPP_HASHNODE (acond_macro)->flags |= NODE_CONDITIONAL;
 
       arm_cpu_builtins (parse_in);
 

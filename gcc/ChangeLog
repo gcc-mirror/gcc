@@ -1,3 +1,9 @@
+2016-01-12  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/69180
+	* config/arm/arm-c.c (arm_pragma_target_parse): Set NODE_CONDITIONAL
+	for __ARM_NEON_FP, __ARM_FP, _ARM_FEATURE_LDREX.
+
 2016-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69198

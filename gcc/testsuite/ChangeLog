@@ -1,3 +1,8 @@
+2016-01-12  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/69180
+	* gcc.target/arm/pr69180.c: New test.
+
 2016-01-12  Richard Biener  <rguenther@suse.de>
 
 	PR lto/69077
