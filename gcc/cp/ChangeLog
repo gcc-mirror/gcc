@@ -1,3 +1,9 @@
+2016-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/66808
+	PR c++/69000
+	* pt.c (tsubst_decl): If not local_p, clear DECL_TEMPLATE_INFO.
+
 2016-01-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/69131
