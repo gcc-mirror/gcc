@@ -1,3 +1,13 @@
+2016-01-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/68456
+	PR target/69226
+	* config/i386/iamcu.h (SIZE_TYPE): New macro.
+	(PTRDIFF_TYPE): Likewise.
+	(WCHAR_TYPE): Likewise.
+	(WCHAR_TYPE_SIZE): Likewise.
+	(STDINT_LONG32): Likewise.
+
 2016-01-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69053
