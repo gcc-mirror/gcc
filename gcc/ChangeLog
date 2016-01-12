@@ -1,3 +1,9 @@
+2016-01-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (v2df_reduction_p): New function.
+	(rtx_is_swappable_p): Reductions are swappable.
+	(insn_is_swappable_p): V2DF reductions are swappable.
+
 2016-01-11  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_emit_move_sequence): Handle floating point

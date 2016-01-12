@@ -36648,6 +36648,44 @@ const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
   return true;
 }
 
+/* Return TRUE iff OP matches a V2DF reduction pattern.  See the
+   definition of vsx_reduc_<VEC_reduc_name>_v2df in vsx.md.  */
+static bool
+v2df_reduction_p (rtx op)
+{
+  if (GET_MODE (op) != V2DFmode)
+    return false;
+  
+  enum rtx_code code = GET_CODE (op);
+  if (code != PLUS && code != SMIN && code != SMAX)
+    return false;
+
+  rtx concat = XEXP (op, 0);
+  if (GET_CODE (concat) != VEC_CONCAT)
+    return false;
+
+  rtx select0 = XEXP (concat, 0);
+  rtx select1 = XEXP (concat, 1);
+  if (GET_CODE (select0) != VEC_SELECT || GET_CODE (select1) != VEC_SELECT)
+    return false;
+
+  rtx reg0 = XEXP (select0, 0);
+  rtx reg1 = XEXP (select1, 0);
+  if (!rtx_equal_p (reg0, reg1) || !REG_P (reg0))
+    return false;
+
+  rtx parallel0 = XEXP (select0, 1);
+  rtx parallel1 = XEXP (select1, 1);
+  if (GET_CODE (parallel0) != PARALLEL || GET_CODE (parallel1) != PARALLEL)
+    return false;
+
+  if (!rtx_equal_p (XVECEXP (parallel0, 0, 0), const1_rtx)
+      || !rtx_equal_p (XVECEXP (parallel1, 0, 0), const0_rtx))
+    return false;
+
+  return true;
+}
+
 /* Return 1 iff OP is an operand that will not be affected by having
    vector doublewords swapped in memory.  */
 static unsigned int
@@ -36719,6 +36757,8 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  *special = SH_XXPERMDI;
 	  return 1;
 	}
+      else if (v2df_reduction_p (op))
+	return 1;
       else
 	return 0;
 
@@ -36782,6 +36822,9 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	    return 0;
 	  case UNSPEC_VSPLT_DIRECT:
 	    *special = SH_SPLAT;
+	    return 1;
+	  case UNSPEC_REDUC_PLUS:
+	  case UNSPEC_REDUC:
 	    return 1;
 	  }
       }
@@ -36905,6 +36948,15 @@ insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
     {
       *special = SH_CONCAT;
       return 1;
+    }
+
+  /* V2DF reductions are always swappable.  */
+  if (GET_CODE (body) == PARALLEL)
+    {
+      rtx expr = XVECEXP (body, 0, 0);
+      if (GET_CODE (expr) == SET
+	  && v2df_reduction_p (SET_SRC (expr)))
+	return 1;
     }
 
   /* An UNSPEC_VPERM is ok if the mask operand is loaded from the
