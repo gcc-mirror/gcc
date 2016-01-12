@@ -1846,20 +1846,14 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     {
       typedef _Res _Signature_type(_ArgTypes...);
 
-      template<typename _Functor>
-	using _Invoke
-	= decltype(std::__callable_functor(std::declval<_Functor&>())
-		   (std::declval<_ArgTypes>()...) );
+      template<typename _Func,
+	       typename _Res2 = typename result_of<_Func(_ArgTypes...)>::type>
+	struct _Callable : __check_func_return_type<_Res2, _Res> { };
 
       // Used so the return type convertibility checks aren't done when
       // performing overload resolution for copy construction/assignment.
       template<typename _Tp>
-	using _NotSelf = __not_<is_same<_Tp, function>>;
-
-      template<typename _Functor>
-	using _Callable
-	  = __and_<_NotSelf<_Functor>,
-		   __check_func_return_type<_Invoke<_Functor>, _Res>>;
+	struct _Callable<function, _Tp> : false_type { };
 
       template<typename _Cond, typename _Tp>
 	using _Requires = typename enable_if<_Cond::value, _Tp>::type;
@@ -1924,6 +1918,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
        *  reference_wrapper<F>, this function will not throw.
        */
       template<typename _Functor,
+	       typename = _Requires<__not_<is_same<_Functor, function>>, void>,
 	       typename = _Requires<_Callable<_Functor>, void>>
 	function(_Functor);
 
@@ -2116,7 +2111,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     }
 
   template<typename _Res, typename... _ArgTypes>
-    template<typename _Functor, typename>
+    template<typename _Functor, typename, typename>
       function<_Res(_ArgTypes...)>::
       function(_Functor __f)
       : _Function_base()

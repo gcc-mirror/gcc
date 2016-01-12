@@ -1,3 +1,14 @@
+2016-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69005
+	PR libstdc++/69222
+	* include/std/functional (function::_Invoke): Remove, use result_of.
+	(function::_Callable): Replace alias template with class template
+	and use partial specialization instead of _NotSelf alias template.
+	(function(_Functor)): Add "not self" constraint so that _Callable is
+	not used while type is incomplete.
+	* testsuite/20_util/function/69222.cc: New.
+
 2016-01-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60976
