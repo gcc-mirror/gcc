@@ -1,5 +1,11 @@
 2016-01-12  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/69053
+	* tree-vect-loop.c (get_initial_def_for_reduction): Properly
+	convert initial value for cond reductions.
+
+2016-01-12  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/69007
 	* tree-vect-patterns.c (vect_vect_recog_func_ptrs): Move
 	widen_sum after dot_prod and sad.
