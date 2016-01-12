@@ -1,3 +1,16 @@
+2016-01-12  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	Backport from mainline.
+	2015-12-09  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR rtl-optimization/67609
+	* config/aarch64/aarch64.c
+	(aarch64_cannot_change_mode_class): Don't permit word_mode
+	subregs of full vector modes.
+	* config/aarch64/aarch64.md (aarch64_movdi_<mode>low): Use
+	zero_extract rather than truncate.
+	(aarch64_movdi_<mode>high): Likewise.
+
 2016-01-11  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_emit_move_sequence): Handle floating point
