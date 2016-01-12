@@ -1,3 +1,60 @@
+2016-01-12  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.dg/vect/fast-math-bb-slp-call-3.c: Declare functions as 'extern'
+	rather than #including math.h & stdlib.h.
+	* gcc.dg/vect/pr47001.c: Declare abort as 'extern', remove stdlib.h.
+	* gcc.dg/vect/pr49771.c: Likewise.
+	* gcc.dg/vect/vect-10-big-array.c: Likewise.
+	* gcc.dg/vect/vect-neg-store-1.c: Likewise.
+	* gcc.dg/vect/vect-neg-store-2.c: Likewise.
+	* gcc.dg/vect/slp-37.c: Change NULL to 0, remove stdlib.h.
+	* gcc.dg/vect/pr40254.c: Remove unnecessary include of stdlib.h.
+	* gcc.dg/vect/pr44507.c: Likewise.
+	* gcc.dg/vect/pr45902.c: Likewise.
+	* gcc.dg/vect/slp-widen-mult-half.c: Likewise.
+	* gcc.dg/vect/vect-117.c: Likewise.
+	* gcc.dg/vect/vect-99.c: Likewise.
+	* gcc.dg/vect/vect-aggressive-1.c: Likewise.
+	* gcc.dg/vect/vect-cond-1.c: Likewise.
+	* gcc.dg/vect/vect-cond-2.c: Likewise.
+	* gcc.dg/vect/vect-cond-3.c: Likewise.
+	* gcc.dg/vect/vect-cond-4.c: Likewise.
+	* gcc.dg/vect/vect-mask-load-1.c: Likewise.
+	* gcc.dg/vect/vect-mask-loadstore-1.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-1-big-array.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-1.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-2-big-array.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-2.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-3-big-array.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-3.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-4-big-array.c: Likewise.
+	* gcc.dg/vect/vect-over-widen-4.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-const-s16.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-const-u16.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-half-u8.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-half.c: Likewise.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-11.c: Remove unnecessary
+	include of signal.h.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-12.c: Likewise.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-13.c: Likewise.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-14.c: Likewise.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-15.c: Likewise.
+	* gcc.dg/vect/no-trapping-math-vect-ifcvt-16.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-16.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-17.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-2.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-3.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-4.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-5.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-5.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-6.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-7.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-9.c: Likewise.
+	* gcc.dg/vect/vect-outer-5.c: Likewise.
+	* gcc.dg/vect/vect-outer-6.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4-unknown.c: Remove unnecessary
+	include of stdio.h.
+
 2016-01-12  Nick Clifton  <nickc@redhat.com>
 
 	PR target/68913
