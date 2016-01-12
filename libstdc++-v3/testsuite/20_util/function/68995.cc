@@ -25,3 +25,8 @@
 std::tr1::shared_ptr<int> test() { return {}; }
 
 std::function<std::tr1::shared_ptr<int>()> func = test;
+std::function<std::tr1::shared_ptr<int>()> funcr = std::ref(test);
+
+void test2(std::tr1::shared_ptr<int>) { }
+
+std::function<void(std::tr1::shared_ptr<int>)> func2 = std::ref(test2);
