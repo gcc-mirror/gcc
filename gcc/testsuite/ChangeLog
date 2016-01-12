@@ -1,3 +1,8 @@
+2016-01-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR tree-optimization/68356
+	* gcc.dg/torture/pr68264.c: Disable exp2 ERANGE test on hppa unix.
+
 2016-01-12  Kugan Vivekanandarajah  <kuganv@linaro.org>
 	    Jim Wilson  <jim.wilson@linaro.org>
 

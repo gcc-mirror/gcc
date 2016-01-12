@@ -78,8 +78,9 @@ test (void)
   if (0)
     TEST (log1p (d), LARGE_NEG_EDOM);
   TEST (exp (d), POWER_ERANGE);
-#if defined (__sun__) && defined (__unix__)
-  /* Disabled due to a bug in Solaris libm.  */
+#if (defined (__sun__) || defined(__hppa__)) && defined (__unix__)
+  /* Disabled due to a bug in Solaris libm.  HP PA-RISC libm doesn't support
+     ERANGE for exp2.  */
   if (0)
 #endif
     {
