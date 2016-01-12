@@ -1,5 +1,7 @@
 2016-01-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/function/68995.cc: Test reference_wrapper cases.
+
 	PR libstdc++/69005
 	PR libstdc++/69222
 	* include/std/functional (function::_Invoke): Remove, use result_of.
