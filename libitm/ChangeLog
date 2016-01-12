@@ -1,3 +1,14 @@
+2016-01-12  Torvald Riegel  <triegel@redhat.com>
+
+	* libitm_i.h (gtm_mask_stack): Remove.
+	* beginend.cc (gtm_stmlock_array, gtm_clock): Likewise.
+	* stmlock.h: Remove file.
+	* config/alpha/cacheline.h: Likewise.
+	* config/generic/cacheline.h: Likewise.
+	* config/powerpc/cacheline.h: Likewise.
+	* config/sparc/cacheline.h: Likewise.
+	* config/x86/cacheline.h: Likewise.
+
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

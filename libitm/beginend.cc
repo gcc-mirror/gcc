@@ -36,9 +36,6 @@ gtm_rwlock GTM::gtm_thread::serial_lock;
 gtm_thread *GTM::gtm_thread::list_of_threads = 0;
 unsigned GTM::gtm_thread::number_of_threads = 0;
 
-gtm_stmlock GTM::gtm_stmlock_array[LOCK_ARRAY_SIZE];
-atomic<gtm_version> GTM::gtm_clock;
-
 /* ??? Move elsewhere when we figure out library initialization.  */
 uint64_t GTM::gtm_spin_count_var = 1000;
 
