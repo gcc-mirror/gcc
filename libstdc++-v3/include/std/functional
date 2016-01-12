@@ -1883,7 +1883,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       static _Res
       _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
       {
-	return __callable_functor(**_Base::_M_get_pointer(__functor))(
+	return std::__callable_functor(**_Base::_M_get_pointer(__functor))(
 	      std::forward<_ArgTypes>(__args)...);
       }
     };
@@ -1898,7 +1898,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       static void
       _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
       {
-	__callable_functor(**_Base::_M_get_pointer(__functor))(
+	std::__callable_functor(**_Base::_M_get_pointer(__functor))(
 	    std::forward<_ArgTypes>(__args)...);
       }
     };
