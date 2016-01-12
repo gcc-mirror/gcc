@@ -72,8 +72,9 @@ assembly and linking.  The ``overall options'' allow you to stop this
 process at an intermediate stage.  For example, the @option{-c} option
 says not to run the linker.  Then the output consists of object files
 output by the assembler.
+@xref{Overall Options,,Options Controlling the Kind of Output}.
 
-Other options are passed on to one stage of processing.  Some options
+Other options are passed on to one or more stages of processing.  Some options
 control the preprocessor and others the compiler itself.  Yet other
 options control the assembler and linker; most of these are not
 documented here, since you rarely need to use any of them.
@@ -85,9 +86,18 @@ for C programs; when an option is only useful with another language
 for a particular option does not mention a source language, you can use
 that option with all supported languages.
 
-@cindex C++ compilation options
-@xref{Invoking G++,,Compiling C++ Programs}, for a summary of special
-options for compiling C++ programs.
+@cindex cross compiling
+@cindex specifying machine version
+@cindex specifying compiler version and target machine
+@cindex compiler version, specifying
+@cindex target machine, specifying
+The usual way to run GCC is to run the executable called @command{gcc}, or
+@command{@var{machine}-gcc} when cross-compiling, or
+@command{@var{machine}-gcc-@var{version}} to run a specific version of GCC.
+When you compile C++ programs, you should invoke GCC as @command{g++} 
+instead.  @xref{Invoking G++,,Compiling C++ Programs}, 
+for information about the differences in behavior between @command{gcc} 
+and @code{g++} when compiling C++ programs.
 
 @cindex grouping options
 @cindex options, grouping
@@ -137,7 +147,6 @@ only one of these two forms, whichever one is not the default.
 * Directory Options::   Where to find header files and libraries.
                         Where to find the compiler executable files.
 * Spec Files::          How to pass switches to sub-processes.
-* Target Options::      Running a cross-compiler, or an old version of GCC.
 * Submodel Options::    Specifying minor hardware or convention variations,
                         such as 68010 vs 68020.
 * Code Gen Options::    Specifying conventions for function calls, data layout
@@ -11733,7 +11742,8 @@ include files, and data files of the compiler itself.
 The compiler driver program runs one or more of the subprograms
 @command{cpp}, @command{cc1}, @command{as} and @command{ld}.  It tries
 @var{prefix} as a prefix for each program it tries to run, both with and
-without @samp{@var{machine}/@var{version}/} (@pxref{Target Options}).
+without @samp{@var{machine}/@var{version}/} for the corresponding target
+machine and compiler version.
 
 For each subprogram to be run, the compiler driver first tries the
 @option{-B} prefix, if any.  If that name is not found, or if @option{-B}
@@ -12408,20 +12418,6 @@ treated as compiler output files, and passed to the linker in their
 proper position among the other output files.
 
 @c man begin OPTIONS
-
-@node Target Options
-@section Specifying Target Machine and Compiler Version
-@cindex target options
-@cindex cross compiling
-@cindex specifying machine version
-@cindex specifying compiler version and target machine
-@cindex compiler version, specifying
-@cindex target machine, specifying
-
-The usual way to run GCC is to run the executable called @command{gcc}, or
-@command{@var{machine}-gcc} when cross-compiling, or
-@command{@var{machine}-gcc-@var{version}} to run a version other than the
-one that was installed last.
 
 @node Submodel Options
 @section Hardware Models and Configurations

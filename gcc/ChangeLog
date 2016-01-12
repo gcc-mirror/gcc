@@ -1,3 +1,10 @@
+2016-01-12  Sandra Loosemore <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Invoking GCC): Copy-edit.  Incorporate information
+	about name of GCC executable.  Remove deleted node from menu.
+	(Directory Options) <-B>: Remove cross-reference to deleted node.
+	(Target Options): Delete section.
+
 2016-01-12  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/69180
