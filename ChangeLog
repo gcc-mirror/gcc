@@ -1,3 +1,9 @@
+2016-01-12  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR bootstrap/69134
+	* Makefile.def (mpfr): Disable assembler.
+	* Makefile.in: Regenerate.
+
 2016-01-01  Ben Elliston  <bje@gnu.org>
 
 	* config.guess: Import version 2016-01-01.
