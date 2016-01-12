@@ -1,3 +1,10 @@
+2016-01-12  Kugan Vivekanandarajah  <kuganv@linaro.org>
+	    Jim Wilson  <jim.wilson@linaro.org>
+
+	PR target/69194
+	* config/arm/arm-builtins.c (arm_expand_neon_args): Call
+	copy_to_mode_reg instead of force_reg.
+
 2016-01-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/69225

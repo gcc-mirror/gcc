@@ -1,3 +1,9 @@
+2016-01-12  Kugan Vivekanandarajah  <kuganv@linaro.org>
+	    Jim Wilson  <jim.wilson@linaro.org>
+
+	PR target/69194
+	* gcc.target/arm/pr69194.c: New test.
+
 2016-01-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/69225
