@@ -1,3 +1,18 @@
+2016-01-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2016-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69198
+	* config/i386/i386.c (ix86_expand_special_args_builtin): Ensure
+	aligned_mem is properly set for AVX512-VL floating point masked
+	stores.
+
+	2015-12-04  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* config/i386/sse.md (<avx512>_store<mode>_mask): Fix
+	operand checked for alignment.
+
 2016-01-12  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backport from mainline r222186.
