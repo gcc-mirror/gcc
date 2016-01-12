@@ -4075,10 +4075,10 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
   tree *elts;
   int i;
   bool nested_in_vect_loop = false;
-  tree init_value;
   REAL_VALUE_TYPE real_init_val = dconst0;
   int int_init_val = 0;
   gimple *def_stmt = NULL;
+  gimple_seq stmts = NULL;
 
   gcc_assert (vectype);
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
@@ -4106,16 +4106,6 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
       *adjustment_def = NULL;
       return vect_create_destination_var (init_val, vectype);
     }
-
-  if (TREE_CONSTANT (init_val))
-    {
-      if (SCALAR_FLOAT_TYPE_P (scalar_type))
-        init_value = build_real (scalar_type, TREE_REAL_CST (init_val));
-      else
-        init_value = build_int_cst (scalar_type, TREE_INT_CST_LOW (init_val));
-    }
-  else
-    init_value = init_val;
 
   switch (code)
     {
@@ -4193,7 +4183,10 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
 		break;
 	      }
 	  }
-	init_def = build_vector_from_val (vectype, init_value);
+	init_val = gimple_convert (&stmts, TREE_TYPE (vectype), init_val);
+	if (! gimple_seq_empty_p (stmts))
+	  gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
+	init_def = build_vector_from_val (vectype, init_val);
 	break;
 
       default:
