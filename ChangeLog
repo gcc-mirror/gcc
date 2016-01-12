@@ -1,3 +1,13 @@
+2016-01-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Sync with binutils-gdb:
+	2015-10-21  Nick Clifton  <nickc@redhat.com>
+
+	PR gas/19109
+	* configure.ac: Note the 'none' is an acceptable argument to
+	--enable-compressed-debug-sections.
+	* configure: Regenerate.
+
 2016-01-12  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR bootstrap/69134
