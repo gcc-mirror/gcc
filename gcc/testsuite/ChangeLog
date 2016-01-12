@@ -1,3 +1,9 @@
+2016-01-12  Nick Clifton  <nickc@redhat.com>
+
+	PR target/68913
+	* gcc.dg/lto/pr61886_0.c: Rename the external function called
+	to fread so that it will be found in all target runtimes.
+
 2016-01-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69053
