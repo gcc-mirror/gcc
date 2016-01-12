@@ -1512,17 +1512,17 @@ cxx_eval_check_shift_p (location_t loc, const constexpr_ctx *ctx,
   if (tree_int_cst_sgn (rhs) == -1)
     {
       if (!ctx->quiet)
-	error_at (loc, "right operand of shift expression %q+E is negative",
-		  build2_loc (loc, code, type, lhs, rhs));
-      return true;
+	permerror (loc, "right operand of shift expression %q+E is negative",
+		   build2_loc (loc, code, type, lhs, rhs));
+      return (!flag_permissive || ctx->quiet);
     }
   if (compare_tree_int (rhs, uprec) >= 0)
     {
       if (!ctx->quiet)
-	error_at (loc, "right operand of shift expression %q+E is >= than "
-		  "the precision of the left operand",
-		  build2_loc (loc, code, type, lhs, rhs));
-      return true;
+	permerror (loc, "right operand of shift expression %q+E is >= than "
+		   "the precision of the left operand",
+		   build2_loc (loc, code, type, lhs, rhs));
+      return (!flag_permissive || ctx->quiet);
     }
 
   /* The value of E1 << E2 is E1 left-shifted E2 bit positions; [...]
@@ -1536,9 +1536,10 @@ cxx_eval_check_shift_p (location_t loc, const constexpr_ctx *ctx,
       if (tree_int_cst_sgn (lhs) == -1)
 	{
 	  if (!ctx->quiet)
-	    error_at (loc, "left operand of shift expression %q+E is negative",
-		      build2_loc (loc, code, type, lhs, rhs));
-	  return true;
+	    permerror (loc,
+		       "left operand of shift expression %q+E is negative",
+		       build2_loc (loc, code, type, lhs, rhs));
+	  return (!flag_permissive || ctx->quiet);
 	}
       /* For signed x << y the following:
 	 (unsigned) x >> ((prec (lhs) - 1) - y)
@@ -1555,9 +1556,9 @@ cxx_eval_check_shift_p (location_t loc, const constexpr_ctx *ctx,
       if (tree_int_cst_lt (integer_one_node, t))
 	{
 	  if (!ctx->quiet)
-	    error_at (loc, "shift expression %q+E overflows",
-		      build2_loc (loc, code, type, lhs, rhs));
-	  return true;
+	    permerror (loc, "shift expression %q+E overflows",
+		       build2_loc (loc, code, type, lhs, rhs));
+	  return (!flag_permissive || ctx->quiet);
 	}
     }
   return false;
