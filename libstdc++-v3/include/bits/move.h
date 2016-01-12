@@ -198,9 +198,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, size_t _Nm>
     inline
 #if __cplusplus >= 201103L
-    typename enable_if<__is_swappable_impl::__is_swappable<_Tp>::value>::type
+    typename enable_if<__is_swappable<_Tp>::value>::type
     swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
-    noexcept(noexcept(swap(*__a, *__b)))
+    noexcept(__is_nothrow_swappable<_Tp>::value)
 #else
     void
     swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])

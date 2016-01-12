@@ -2587,12 +2587,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : true_type								\
     { };
 
+  template <typename _Tp>
+    struct __is_swappable;
 
-   namespace __is_swappable_impl {
-     template <typename _Tp, typename=void>
-     struct __is_swappable : public false_type
-     { };
-   }
+  template <typename _Tp>
+    struct __is_nothrow_swappable;
 
   template<typename _Tp>
     inline
@@ -2604,33 +2603,58 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, size_t _Nm>
     inline
-    typename enable_if<__is_swappable_impl::__is_swappable<_Tp>::value>::type
+    typename enable_if<__is_swappable<_Tp>::value>::type
     swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
-    noexcept(noexcept(swap(*__a, *__b)));
+    noexcept(__is_nothrow_swappable<_Tp>::value);
 
-  namespace __is_swappable_impl {
+  namespace __swappable_details {
     using std::swap;
 
-    template <typename _Tp>
-    struct __is_swappable<_Tp, __void_t<decltype(swap(declval<_Tp&>(),
-                                                      declval<_Tp&>()))>>
-    : public true_type
-    { };
+    struct __do_is_swappable_impl
+    {
+      template<typename _Tp, typename
+               = decltype(swap(std::declval<_Tp&>(), std::declval<_Tp&>()))>
+        static true_type __test(int);
+
+      template<typename>
+        static false_type __test(...);
+    };
+
+    struct __do_is_nothrow_swappable_impl
+    {
+      template<typename _Tp>
+        static __bool_constant<
+          noexcept(swap(std::declval<_Tp&>(), std::declval<_Tp&>()))
+        > __test(int);
+
+      template<typename>
+        static false_type __test(...);
+    };
+
   }
 
-  template <bool, typename _Tp>
+  template<typename _Tp>
+    struct __is_swappable_impl
+    : public __swappable_details::__do_is_swappable_impl
+    {
+      typedef decltype(__test<_Tp>(0)) type;
+    };
+
+  template<typename _Tp>
     struct __is_nothrow_swappable_impl
-    : public __bool_constant<noexcept(swap(declval<_Tp&>(), declval<_Tp&>()))>
+    : public __swappable_details::__do_is_nothrow_swappable_impl
+    {
+      typedef decltype(__test<_Tp>(0)) type;
+    };
+
+  template<typename _Tp>
+    struct __is_swappable
+    : public __is_swappable_impl<_Tp>::type
     { };
 
-  template <typename _Tp>
-    struct __is_nothrow_swappable_impl<false, _Tp> : public false_type
-    { };
-
-  template <typename _Tp>
+  template<typename _Tp>
     struct __is_nothrow_swappable
-    : public __is_nothrow_swappable_impl<
-               __is_swappable_impl::__is_swappable<_Tp>::value, _Tp>
+    : public __is_nothrow_swappable_impl<_Tp>::type
     { };
 
 _GLIBCXX_END_NAMESPACE_VERSION

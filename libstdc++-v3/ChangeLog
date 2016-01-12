@@ -1,3 +1,18 @@
+2016-01-12  Daniel Kruegler  <daniel.kruegler@gmail.com>
+
+	PR libstdc++/68877
+	* include/std/type_traits: Following N4511, reimplement __is_swappable
+	and __is_nothrow_swappable. Move __is_swappable to namespace std,
+	adjust callers. Use __is_nothrow_swappable in swap.
+	* include/bits/move.h: Use __is_nothrow_swappable in swap.
+	* testsuite/20_util/is_nothrow_swappable/value.cc: Extend; remove
+	__is_swappable related tests.
+	* testsuite/20_util/is_swappable/value.cc: New.
+	* testsuite/20_util/is_swappable/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/is_swappable/requirements/typedefs.cc: New.
+	* testsuite/25_algorithms/swap/68877.cc: New.
+
 2016-01-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/function/68995.cc: Test reference_wrapper cases.
