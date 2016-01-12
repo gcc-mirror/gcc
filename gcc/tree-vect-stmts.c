@@ -190,8 +190,11 @@ vect_mark_relevant (vec<gimple *> *worklist, gimple *stmt,
   gimple *pattern_stmt;
 
   if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "mark relevant %d, live %d.\n", relevant, live_p);
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "mark relevant %d, live %d: ", relevant, live_p);
+      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+    }
 
   /* If this stmt is an original stmt in a pattern, we might need to mark its
      related pattern stmt instead of the original stmt.  However, such stmts
@@ -1757,7 +1760,8 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
     return false;
 
-  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
+      && ! vec_stmt)
     return false;
 
   if (!STMT_VINFO_DATA_REF (stmt_info))
@@ -2206,7 +2210,8 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
 
-  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
+      && ! vec_stmt)
     return false;
 
   /* Is GS a vectorizable call?   */
@@ -2811,7 +2816,8 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
 
-  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
+      && ! vec_stmt)
     return false;
 
   if (gimple_call_lhs (stmt)
@@ -3669,7 +3675,8 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
 
-  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
+      && ! vec_stmt)
     return false;
 
   if (!is_gimple_assign (stmt))
@@ -4246,7 +4253,8 @@ vectorizable_assignment (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
 
-  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
+      && ! vec_stmt)
     return false;
 
   /* Is vectorizable assignment?  */
@@ -4462,7 +4470,8 @@ vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
 
-  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
+      && ! vec_stmt)
     return false;
 
   /* Is STMT a vectorizable binary/unary operation?   */
@@ -4823,7 +4832,8 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
 
-  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
+      && ! vec_stmt)
     return false;
 
   /* Is STMT a vectorizable binary/unary operation?   */
@@ -5248,7 +5258,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
 
-  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
+      && ! vec_stmt)
     return false;
 
   /* Is vectorizable store? */
@@ -6237,7 +6248,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
 
-  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
+      && ! vec_stmt)
     return false;
 
   /* Is vectorizable load? */
@@ -6748,9 +6760,16 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  else
 	    ltype = vectype;
 	  ltype = build_aligned_type (ltype, TYPE_ALIGN (TREE_TYPE (vectype)));
-	  ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+	  /* For SLP permutation support we need to load the whole group,
+	     not only the number of vector stmts the permutation result
+	     fits in.  */
 	  if (slp_perm)
-	    dr_chain.create (ncopies);
+	    {
+	      ncopies = (group_size * vf + nunits - 1) / nunits;
+	      dr_chain.create (ncopies);
+	    }
+	  else
+	    ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	}
       for (j = 0; j < ncopies; j++)
 	{
@@ -6798,9 +6817,10 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
 	  if (slp)
 	    {
-	      SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
 	      if (slp_perm)
 		dr_chain.quick_push (gimple_assign_lhs (new_stmt));
+	      else
+		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
 	    }
 	  else
 	    {
