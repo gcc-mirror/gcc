@@ -4259,6 +4259,27 @@ adjust_range_with_scev (value_range *vr, struct loop *loop,
 	      /* Likewise if the addition did.  */
 	      if (maxvr.type == VR_RANGE)
 		{
+		  value_range initvr = VR_INITIALIZER;
+
+		  if (TREE_CODE (init) == SSA_NAME)
+		    initvr = *(get_value_range (init));
+		  else if (is_gimple_min_invariant (init))
+		    set_value_range_to_value (&initvr, init, NULL);
+		  else
+		    return;
+
+		  /* Check if init + nit * step overflows.  Though we checked
+		     scev {init, step}_loop doesn't wrap, it is not enough
+		     because the loop may exit immediately.  Overflow could
+		     happen in the plus expression in this case.  */
+		  if ((dir == EV_DIR_DECREASES
+		       && (is_negative_overflow_infinity (maxvr.min)
+			   || compare_values (maxvr.min, initvr.min) != -1))
+		      || (dir == EV_DIR_GROWS
+			  && (is_positive_overflow_infinity (maxvr.max)
+			      || compare_values (maxvr.max, initvr.max) != 1)))
+		    return;
+
 		  tmin = maxvr.min;
 		  tmax = maxvr.max;
 		}

@@ -1,3 +1,8 @@
+2016-01-12  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/68911
+	* gcc.c-torture/execute/pr68911.c: New test.
+
 2016-01-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/68979
