@@ -740,7 +740,7 @@ cond_exec_process_if_block (ce_if_block * ce_info,
       rtx_insn *from = then_first_tail;
       if (!INSN_P (from))
 	from = find_active_insn_after (then_bb, from);
-      delete_insn_chain (from, BB_END (then_bb), false);
+      delete_insn_chain (from, get_last_bb_insn (then_bb), false);
     }
   if (else_last_head)
     delete_insn_chain (first_active_insn (else_bb), else_last_head, false);
