@@ -694,7 +694,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    the rounding precision is indeterminate, since either may be chosen
    apparently at random.  */
 #define TARGET_FLT_EVAL_METHOD \
-  (TARGET_MIX_SSE_I387 ? -1 : TARGET_SSE_MATH ? 0 : 2)
+  (TARGET_MIX_SSE_I387 ? -1 : (TARGET_80387 && !TARGET_SSE_MATH) ? 2 : 0)
 
 /* Whether to allow x87 floating-point arithmetic on MODE (one of
    SFmode, DFmode and XFmode) in the current excess precision
