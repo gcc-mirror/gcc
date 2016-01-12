@@ -1,3 +1,9 @@
+2016-01-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/69225
+	* config/i386/i386.h (TARGET_FLT_EVAL_METHOD): Set to 2 only if
+	TARGET_80387 is true.
+
 2016-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69071
