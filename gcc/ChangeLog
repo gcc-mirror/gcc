@@ -1,5 +1,10 @@
 2016-01-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/69198
+	* config/i386/i386.c (ix86_expand_special_args_builtin): Ensure
+	aligned_mem is properly set for AVX512-VL floating point masked
+	stores.
+
 	PR target/69175
 	* ifcvt.c (cond_exec_process_if_block): When removing the last
 	insn from then_bb, remove also any possible barriers that follow it.
