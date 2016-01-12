@@ -1,5 +1,11 @@
 2016-01-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR objc++/68511
+	PR c++/69213
+	* cp-gimplify.c (cp_gimplify_expr) <case INIT_EXPR>: Don't return
+	GS_ERROR whenever seen_error (), only if *expr_p contains
+	cilk spawn stmt, but cilk_detect_spawn_and_unwrap failed.
+
 	PR c++/66808
 	PR c++/69000
 	* pt.c (tsubst_decl): If not local_p, clear DECL_TEMPLATE_INFO.
