@@ -2189,10 +2189,11 @@ again:
 	   !gsi_end_p (si); gsi_next (&si))
 	{
 	  stmt_vec_info stmt_info = vinfo_for_stmt (gsi_stmt (si));
+	  STMT_SLP_TYPE (stmt_info) = loop_vect;
 	  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
 	    {
-	      gcc_assert (STMT_SLP_TYPE (stmt_info) == loop_vect);
 	      stmt_info = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
+	      STMT_SLP_TYPE (stmt_info) = loop_vect;
 	      for (gimple_stmt_iterator pi
 		     = gsi_start (STMT_VINFO_PATTERN_DEF_SEQ (stmt_info));
 		   !gsi_end_p (pi); gsi_next (&pi))
@@ -2201,7 +2202,6 @@ again:
 		  STMT_SLP_TYPE (vinfo_for_stmt (pstmt)) = loop_vect;
 		}
 	    }
-	  STMT_SLP_TYPE (stmt_info) = loop_vect;
 	}
     }
   /* Free optimized alias test DDRS.  */
