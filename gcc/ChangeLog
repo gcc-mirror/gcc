@@ -1,5 +1,11 @@
 2016-01-12  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/69007
+	* tree-vect-patterns.c (vect_vect_recog_func_ptrs): Move
+	widen_sum after dot_prod and sad.
+
+2016-01-12  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/69168
 	* tree-vect-loop.c (vect_analyze_loop_2): Reset both main and
 	pattern stmt SLP type.
