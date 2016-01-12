@@ -1,5 +1,9 @@
-#include <stdlib.h>
-#include <math.h>
+extern double sqrt (double);
+extern double fabs (double);
+extern double ceil (double);
+extern double floor (double);
+
+extern void abort (void);
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))

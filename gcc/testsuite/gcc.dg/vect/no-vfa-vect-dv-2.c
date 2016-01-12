@@ -1,7 +1,6 @@
 /* { dg-require-effective-target vect_int } */
 
 #include <stdarg.h>
-#include <signal.h>
 #include "tree-vect.h"
 
 #define N 64

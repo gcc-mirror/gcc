@@ -2,7 +2,6 @@
 /* { dg-additional-options "-fno-ipa-icf" } */
 
 #include "tree-vect.h"
-#include <stdlib.h>
 
 #define N 32
 
