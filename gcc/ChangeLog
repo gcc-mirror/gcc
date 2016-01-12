@@ -1,3 +1,28 @@
+2016-01-12  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	Backport from mainline r222186.
+	2015-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65689
+	* genpreds.c (struct constraint_data): Add maybe_allows_reg and
+	maybe_allows_mem bitfields.
+	(maybe_allows_none_start, maybe_allows_none_end,
+	maybe_allows_reg_start, maybe_allows_reg_end, maybe_allows_mem_start,
+	maybe_allows_mem_end): New variables.
+	(compute_maybe_allows): New function.
+	(add_constraint): Use it to initialize maybe_allows_reg and
+	maybe_allows_mem fields.
+	(choose_enum_order): Sort the non-is_register/is_const_int/is_memory/
+	is_address constraints such that those that allow neither mem nor
+	reg come first, then those that only allow reg but not mem, then
+	those that only allow mem but not reg, then the rest.
+	(write_allows_reg_mem_function): New function.
+	(write_tm_preds_h): Call it.
+	* stmt.c (parse_output_constraint, parse_input_constraint): Use
+	the generated insn_extra_constraint_allows_reg_mem function
+	instead of always setting *allows_reg = true; *allows_mem = true;
+	for unknown extra constraints.
+
 2016-01-11  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_emit_move_sequence): Handle floating point
