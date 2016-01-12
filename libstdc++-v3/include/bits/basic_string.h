@@ -322,7 +322,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<class _Iterator>
         static void
         _S_copy_chars(_CharT* __p, _Iterator __k1, _Iterator __k2)
-	_GLIBCXX_NOEXCEPT
         {
 	  for (; __k1 != __k2; ++__k1, ++__p)
 	    traits_type::assign(*__p, *__k1); // These types are off.
@@ -2782,7 +2781,6 @@ _GLIBCXX_END_NAMESPACE_CXX11
       template<class _Iterator>
         static void
         _S_copy_chars(_CharT* __p, _Iterator __k1, _Iterator __k2)
-	_GLIBCXX_NOEXCEPT
         {
 	  for (; __k1 != __k2; ++__k1, ++__p)
 	    traits_type::assign(*__p, *__k1); // These types are off.

@@ -1,5 +1,10 @@
 2016-01-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/69092
+	* include/bits/basic_string.h (basic_string::_S_copy_chars<_Iterator>):
+	Remove _GLIBCXX_NOEXCEPT.
+	testsuite/21_strings/basic_string/cons/char/69092.cc: New.
+
 	PR libstdc++/68995
 	* include/std/functional (_Function_handler::_M_invoke): Qualify
 	__callable_functor.
