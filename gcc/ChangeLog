@@ -1,3 +1,12 @@
+2016-01-12  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.c (spec_undefvar_allowed): New global.
+	(process_command): Set to true when running for --version or --help,
+	alone or together.
+	(getenv_spec_function): When the variable is not defined, use the
+	variable name as the variable value if we're allowed not to issue
+	a fatal error.
+
 2016-01-12  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/68911

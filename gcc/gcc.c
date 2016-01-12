@@ -3299,6 +3299,11 @@ int n_infiles;
 
 static int n_infiles_alloc;
 
+/* True if undefined environment variables encountered during spec processing
+   are ok to ignore, typically when we're running for --help or --version.  */
+
+static bool spec_undefvar_allowed;
+
 /* True if multiple input files are being compiled to a single
    assembly file.  */
 
@@ -4541,6 +4546,26 @@ process_command (unsigned int decoded_options_count,
 	 the help option on to the various sub-processes.  */
       add_infile ("help-dummy", "c");
     }
+
+  /* Decide if undefined variable references are allowed in specs.  */
+
+  /* --version and --help alone or together are safe.  Note that -v would
+     make them unsafe, as they'd then be run for subprocesses as well, the
+     location of which might depend on variables possibly coming from
+     self-specs.
+
+     Count the number of options we have for which undefined variables
+     are harmless for sure, and check that nothing else is set.  */
+
+  unsigned n_varsafe_options = 0;
+
+  if (print_version)
+    n_varsafe_options++;
+  
+  if (print_help_list)
+    n_varsafe_options++;
+  
+  spec_undefvar_allowed = (n_varsafe_options == decoded_options_count - 1);
 
   alloc_switch ();
   switches[n_switches].part1 = 0;
@@ -9085,14 +9110,17 @@ print_multilib_info (void)
 
 /* getenv built-in spec function.
 
-   Returns the value of the environment variable given by its first
-   argument, concatenated with the second argument.  If the
-   environment variable is not defined, a fatal error is issued.  */
+   Returns the value of the environment variable given by its first argument,
+   concatenated with the second argument.  If the variable is not defined, a
+   fatal error is issued unless such undefs are internally allowed, in which
+   case the variable name is used as the variable value.  */
 
 static const char *
 getenv_spec_function (int argc, const char **argv)
 {
   const char *value;
+  const char *varname;
+
   char *result;
   char *ptr;
   size_t len;
@@ -9100,10 +9128,15 @@ getenv_spec_function (int argc, const char **argv)
   if (argc != 2)
     return NULL;
 
-  value = env.get (argv[0]);
+  varname = argv[0];
+  value = env.get (varname);
+
+  if (!value && spec_undefvar_allowed)
+    value = varname;
+
   if (!value)
     fatal_error (input_location,
-		 "environment variable %qs not defined", argv[0]);
+		 "environment variable %qs not defined", varname);
 
   /* We have to escape every character of the environment variable so
      they are not interpreted as active spec characters.  A
