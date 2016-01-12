@@ -1,3 +1,7 @@
+2016-01-12  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c: Various whitespace and typo fixes.
+
 2016-01-12  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc.c (spec_undefvar_allowed): New global.
