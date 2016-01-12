@@ -1,0 +1,8 @@
+
+EXTRA_OBJS += djgpp.o
+
+djgpp.o:    $(srcdir)/config/i386/djgpp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+  $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
+  $(TM_P_H) $(HASH_TABLE_H) $(GGC_H) $(LTO_STREAMER_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(srcdir)/config/i386/djgpp.c

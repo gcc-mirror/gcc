@@ -1,3 +1,41 @@
+2016-01-12  Andris Pavenis <andris.pavenis@iki.fi>
+
+	* config/i386/djgpp.h (PREFERRED_DEBUGGING_TYPE): Define to DWARF2
+	(TARGET_ASM_OUTPUT_IDENT): Define to default_asm_output_ident_directive
+	(MD_EXEC_PREFIX): Remove.
+	(MD_STARTFILE_PREFIX) Removee.
+	(FILE_NAME_ABSOLUTE_P): Remove.
+	(CPP_SPEC): Do not read macros from sys/version.h.
+	(LINK_COMMAND_SPEC): Remove.
+	(LOCAL_INCLUDE_DIR): Remove.
+	(TARGET_ASM_NAMED_SECTION): Define to i386_djgpp_asm_named_section
+	(TARGET_OS_CPP_BUILTINS): Add DJGPP (non ISO only), __DJGPP, __DJGPP__, unix.
+	(POST_LINK_SPEC): Define to invoke stubify after linker
+	(LIBSTDCXX): Remove define
+	(DBX_REGISTER_NUMBER): Define to svr4_dbx_register_map.
+	(DEFAULT_PCC_STRUCT_RETURN): Define to 1.
+	(SUBTARGET_OVERRIDE_OPTIONS): Remove warning about -mbnu2210.
+	(SUBTARGET_OVERRIDE_OPTIONS): Ignore -fPIC and generate message.
+	(SUBTARGET_OVERRIDE_OPTIONS): Default to DWARF2 debugging info.
+	(IX86_MAYBE_NO_LIBGCC_TFMODE): Remove.
+	(i386_djgpp_asm_named_section): Add propotype of new procedure
+
+	* config/i386/xm-djgpp.h (NATIVE_SYSTEM_HEADER_DIR): Define.
+	(MD_EXEC_PREFIX): Define (moved from config/i386/djgpp.h).
+	(STANDARD_STARTFILE_PREFIX_1): Define (moved from MD_STARTFILE_PREFIX in config/i386/djgpp.h).
+	(STANDARD_STARTFILE_PREFIX_2): Define identical to STANDARD_STARTFILE_PREFIX_1.
+	(LOCAL_INCLUDE_DIR): Define (moved from config/i386/djgpp.h).
+	(GCC_DRIVER_HOST_INITIALIZATION): Fix reporting fatal installation errors.
+	(MAX_OFILE_ALIGNMENT): Define to 128.
+	(HAVE_FTW_H): Undefine as DJGPP do not have nftw, but have ftw.h.
+
+	* config/i386/djgpp.c: New file. Add implementation of i386_djgpp_asm_named_section.
+
+	* config/i386/djgpp.opt: Remove obsolete option -mbnu210.
+
+	* config/i386/t-djgpp: New file. Add djgpp.o to EXTRA_OBJS.
+	Add rule for building djgpp.o.
+
 2016-01-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (v2df_reduction_p): New function.

@@ -18,11 +18,5 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
-;; -mbnu210 is now ignored and obsolete.  It was used to enable support for
-;; weak symbols, and .gnu.linkonce support.
-mbnu210
-Target Var(TARGET_BNU210)
-Ignored (obsolete).
-
 posix
 Driver

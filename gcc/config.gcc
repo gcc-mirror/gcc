@@ -4392,6 +4392,9 @@ case ${target} in
 	i[34567]86-*-gnu*)
 		tmake_file="$tmake_file i386/t-gnu"
 		;;
+	i[34567]86-*-msdosdjgpp*)
+		tmake_file="${tmake_file} i386/t-djgpp"
+		;;
 	i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
 		;;
 	i[34567]86-*-cygwin* | x86_64-*-cygwin*)
