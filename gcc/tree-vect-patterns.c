@@ -75,11 +75,15 @@ struct vect_recog_func
   vect_recog_func_ptr fn;
   const char *name;
 };
+
+/* Note that ordering matters - the first pattern matching on a stmt
+   is taken which means usually the more complex one needs to preceed
+   the less comples onex (widen_sum only after dot_prod or sad for example).  */
 static vect_recog_func vect_vect_recog_func_ptrs[NUM_PATTERNS] = {
       { vect_recog_widen_mult_pattern, "widen_mult" },
-      { vect_recog_widen_sum_pattern, "widen_sum" },
       { vect_recog_dot_prod_pattern, "dot_prod" },
       { vect_recog_sad_pattern, "sad" },
+      { vect_recog_widen_sum_pattern, "widen_sum" },
       { vect_recog_pow_pattern, "pow" },
       { vect_recog_widen_shift_pattern, "widen_shift" },
       { vect_recog_over_widening_pattern, "over_widening" },
