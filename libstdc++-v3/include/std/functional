@@ -2051,7 +2051,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       static _Res
       _M_invoke(const _Any_data& __functor, _ArgTypes... __args)
       {
-	return __callable_functor(**_Base::_M_get_pointer(__functor))(
+	return std::__callable_functor(**_Base::_M_get_pointer(__functor))(
 	      std::forward<_ArgTypes>(__args)...);
       }
     };
@@ -2066,7 +2066,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       static void
       _M_invoke(const _Any_data& __functor, _ArgTypes... __args)
       {
-	__callable_functor(**_Base::_M_get_pointer(__functor))(
+	std::__callable_functor(**_Base::_M_get_pointer(__functor))(
 	    std::forward<_ArgTypes>(__args)...);
       }
     };
@@ -2146,8 +2146,9 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       typedef _Res _Signature_type(_ArgTypes...);
 
       template<typename _Functor>
-	using _Invoke = decltype(__callable_functor(std::declval<_Functor&>())
-				 (std::declval<_ArgTypes>()...) );
+	using _Invoke
+	  = decltype(std::__callable_functor(std::declval<_Functor&>())
+		     (std::declval<_ArgTypes>()...) );
 
       // Used so the return type convertibility checks aren't done when
       // performing overload resolution for copy construction/assignment.

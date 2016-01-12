@@ -1,3 +1,10 @@
+2016-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/68995
+	* include/std/functional (_Function_handler::_M_invoke): Qualify
+	__callable_functor.
+	* testsuite/20_util/function/68995.cc: New.
+
 2015-12-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/68912
