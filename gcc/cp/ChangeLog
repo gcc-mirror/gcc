@@ -1,3 +1,9 @@
+2016-01-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/68979
+	* constexpr.c (cxx_eval_check_shift_p): Use permerror rather than
+	error_at and adjust the return value.
+
 2016-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR objc++/68511

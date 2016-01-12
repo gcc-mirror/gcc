@@ -1,3 +1,8 @@
+2016-01-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/68979
+	* g++.dg/warn/permissive-1.C: New test.
+
 2016-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR objc++/68511
