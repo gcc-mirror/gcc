@@ -1,6 +1,6 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
 #   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
-#   2014, 2015 Free Software Foundation, Inc.
+#   2014, 2015, 2016 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -1817,7 +1817,7 @@ ACX_ELF_TARGET_IFELSE([# ELF platforms build the lto-plugin always.
   build_lto_plugin=yes
 ],[if test x"$default_enable_lto" = x"yes" ; then
     case $target in
-      *-apple-darwin9* | *-cygwin* | *-mingw*) ;;
+      *-apple-darwin9* | *-cygwin* | *-mingw* | *djgpp*) ;;
       # On other non-ELF platforms, LTO has yet to be validated.
       *) enable_lto=no ;;
     esac
@@ -1828,7 +1828,7 @@ ACX_ELF_TARGET_IFELSE([# ELF platforms build the lto-plugin always.
   # warn during gcc/ subconfigure; unless you're bootstrapping with
   # -flto it won't be needed until after installation anyway.
     case $target in
-      *-cygwin* | *-mingw* | *-apple-darwin*) ;;
+      *-cygwin* | *-mingw* | *-apple-darwin* | *djgpp*) ;;
       *) if test x"$enable_lto" = x"yes"; then
 	AC_MSG_ERROR([LTO support is not enabled for this target.])
         fi

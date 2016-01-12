@@ -6127,7 +6127,7 @@ if test $target_elf = yes; then :
 else
   if test x"$default_enable_lto" = x"yes" ; then
     case $target in
-      *-apple-darwin9* | *-cygwin* | *-mingw*) ;;
+      *-apple-darwin9* | *-cygwin* | *-mingw* | *djgpp*) ;;
       # On other non-ELF platforms, LTO has yet to be validated.
       *) enable_lto=no ;;
     esac
@@ -6138,7 +6138,7 @@ else
   # warn during gcc/ subconfigure; unless you're bootstrapping with
   # -flto it won't be needed until after installation anyway.
     case $target in
-      *-cygwin* | *-mingw* | *-apple-darwin*) ;;
+      *-cygwin* | *-mingw* | *-apple-darwin* | *djgpp*) ;;
       *) if test x"$enable_lto" = x"yes"; then
 	as_fn_error "LTO support is not enabled for this target." "$LINENO" 5
         fi
