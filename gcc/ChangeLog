@@ -1,3 +1,26 @@
+2016-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69157
+	* tree-vect-stmts.c (vectorizable_mask_load_store): Check
+	stmts def type only during analyze phase.
+	(vectorizable_call): Likewise.
+	(vectorizable_simd_clone_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+
+2016-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69174
+	* tree-vect-stmts.c (vect_mark_relevant): Remove excessive vertical
+	space.
+	(vectorizable_load): Properly compute the number of loads needed
+	for permuted strided SLP loads and do not spuriously assign
+	to SLP_TREE_VEC_STMTS.
+
 2016-01-12  Andris Pavenis <andris.pavenis@iki.fi>
 
 	* config/i386/djgpp.h (PREFERRED_DEBUGGING_TYPE): Define to DWARF2
