@@ -1,5 +1,10 @@
 2016-01-12  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/69168
+	* gcc.dg/torture/pr69168.c: New testcase.
+
+2016-01-12  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/69157
 	* gcc.dg/torture/pr69157.c: New testcase.
 

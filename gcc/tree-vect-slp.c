@@ -2016,10 +2016,10 @@ vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
     {
       /* Check if a pure SLP stmt has uses in non-SLP stmts.  */
       gcc_checking_assert (PURE_SLP_STMT (stmt_vinfo));
-      /* We always get the pattern stmt here, but for immediate
-	 uses we have to use the LHS of the original stmt.  */
-      gcc_checking_assert (!STMT_VINFO_IN_PATTERN_P (stmt_vinfo));
-      if (STMT_VINFO_RELATED_STMT (stmt_vinfo))
+      /* If we get a pattern stmt here we have to use the LHS of the
+         original stmt for immediate uses.  */
+      if (! STMT_VINFO_IN_PATTERN_P (stmt_vinfo)
+	  && STMT_VINFO_RELATED_STMT (stmt_vinfo))
 	stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
       if (TREE_CODE (gimple_op (stmt, 0)) == SSA_NAME)
 	FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, gimple_op (stmt, 0))

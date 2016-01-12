@@ -1,5 +1,13 @@
 2016-01-12  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/69168
+	* tree-vect-loop.c (vect_analyze_loop_2): Reset both main and
+	pattern stmt SLP type.
+	* tree-vect-slp.c (vect_detect_hybrid_slp_stmts): Patterns may
+	end up unused so cope with that case.
+
+2016-01-12  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/69157
 	* tree-vect-stmts.c (vectorizable_mask_load_store): Check
 	stmts def type only during analyze phase.
