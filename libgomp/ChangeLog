@@ -1,3 +1,7 @@
+2016-01-12  James Norris  <jnorris@codesourcery.com>
+
+	* libgomp.texi: Updates for OpenACC.
+
 2016-01-11  Alexander Monakov  <amonakov@ispras.ru>
 
 	* plugin/plugin-nvptx.c (link_ptx): Do not set CU_JIT_TARGET.
