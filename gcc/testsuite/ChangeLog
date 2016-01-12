@@ -1,3 +1,9 @@
+2016-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR lto/69077
+	* g++.dg/lto/pr69077_0.C: New testcase.
+	* g++.dg/lto/pr69077_1.C: Likewise.
+
 2016-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69175

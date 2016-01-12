@@ -1,3 +1,9 @@
+2016-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR lto/69077
+	* lto-symtab.c (lto_symtab_prevailing_virtual_decl): Properly
+	merge TREE_ADDRESSABLE and DECL_POSSIBLY_INLINED flags.
+
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
