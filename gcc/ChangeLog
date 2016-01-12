@@ -1,3 +1,9 @@
+2016-01-12  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/68911
+	* tree-vrp.c (adjust_range_with_scev): Check overflow in range
+	information computed for expression "init + nit * step".
+
 2016-01-12  Sandra Loosemore <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Invoking GCC): Copy-edit.  Incorporate information
