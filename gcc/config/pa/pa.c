@@ -1681,7 +1681,8 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 
   /* Handle secondary reloads for loads/stores of FP registers from
      REG+D addresses where D does not fit in 5 or 14 bits, including
-     (subreg (mem (addr))) cases.  */
+     (subreg (mem (addr))) cases, and reloads for other unsupported
+     memory operands.  */
   if (scratch_reg
       && FP_REG_P (operand0)
       && (MEM_P (operand1)
@@ -1693,30 +1694,43 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
       if (GET_CODE (op1) == SUBREG)
 	op1 = XEXP (op1, 0);
 
-      if (reg_plus_base_memory_operand (op1, GET_MODE (op1))
-	  && !(TARGET_PA_20
-	       && !TARGET_ELF32
-	       && INT_14_BITS (XEXP (XEXP (op1, 0), 1)))
-	  && !INT_5_BITS (XEXP (XEXP (op1, 0), 1)))
+      if (reg_plus_base_memory_operand (op1, GET_MODE (op1)))
 	{
-	  /* SCRATCH_REG will hold an address and maybe the actual data.
-	     We want it in WORD_MODE regardless of what mode it was
-	     originally given to us.  */
-	  scratch_reg = force_mode (word_mode, scratch_reg);
-
-	  /* D might not fit in 14 bits either; for such cases load D into
-	     scratch reg.  */
-	  if (!INT_14_BITS (XEXP (XEXP (op1, 0), 1)))
+	  if (!(TARGET_PA_20
+		&& !TARGET_ELF32
+		&& INT_14_BITS (XEXP (XEXP (op1, 0), 1)))
+	      && !INT_5_BITS (XEXP (XEXP (op1, 0), 1)))
 	    {
-	      emit_move_insn (scratch_reg, XEXP (XEXP (op1, 0), 1));
-	      emit_move_insn (scratch_reg,
-			      gen_rtx_fmt_ee (GET_CODE (XEXP (op1, 0)),
-					      Pmode,
-					      XEXP (XEXP (op1, 0), 0),
-					      scratch_reg));
+	      /* SCRATCH_REG will hold an address and maybe the actual data.
+		 We want it in WORD_MODE regardless of what mode it was
+		 originally given to us.  */
+	      scratch_reg = force_mode (word_mode, scratch_reg);
+
+	      /* D might not fit in 14 bits either; for such cases load D
+		 into scratch reg.  */
+	      if (!INT_14_BITS (XEXP (XEXP (op1, 0), 1)))
+		{
+		  emit_move_insn (scratch_reg, XEXP (XEXP (op1, 0), 1));
+		  emit_move_insn (scratch_reg,
+				  gen_rtx_fmt_ee (GET_CODE (XEXP (op1, 0)),
+						  Pmode,
+						  XEXP (XEXP (op1, 0), 0),
+						  scratch_reg));
+		}
+	      else
+		emit_move_insn (scratch_reg, XEXP (op1, 0));
+	      emit_insn (gen_rtx_SET (operand0,
+				  replace_equiv_address (op1, scratch_reg)));
+	      return 1;
 	    }
-	  else
-	    emit_move_insn (scratch_reg, XEXP (op1, 0));
+	}
+      else if ((!INT14_OK_STRICT && symbolic_memory_operand (op1, VOIDmode))
+	       || IS_LO_SUM_DLT_ADDR_P (XEXP (op1, 0))
+	       || IS_INDEX_ADDR_P (XEXP (op1, 0)))
+	{
+	  /* Load memory address into SCRATCH_REG.  */
+	  scratch_reg = force_mode (word_mode, scratch_reg);
+	  emit_move_insn (scratch_reg, XEXP (op1, 0));
 	  emit_insn (gen_rtx_SET (operand0,
 				  replace_equiv_address (op1, scratch_reg)));
 	  return 1;
@@ -1733,30 +1747,43 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
       if (GET_CODE (op0) == SUBREG)
 	op0 = XEXP (op0, 0);
 
-      if (reg_plus_base_memory_operand (op0, GET_MODE (op0))
-	  && !(TARGET_PA_20
-	       && !TARGET_ELF32
-	       && INT_14_BITS (XEXP (XEXP (op0, 0), 1)))
-	  && !INT_5_BITS (XEXP (XEXP (op0, 0), 1)))
+      if (reg_plus_base_memory_operand (op0, GET_MODE (op0)))
 	{
-	  /* SCRATCH_REG will hold an address and maybe the actual data.
-	     We want it in WORD_MODE regardless of what mode it was
-	     originally given to us.  */
-	  scratch_reg = force_mode (word_mode, scratch_reg);
-
-	  /* D might not fit in 14 bits either; for such cases load D into
-	     scratch reg.  */
-	  if (!INT_14_BITS (XEXP (XEXP (op0, 0), 1)))
+	  if (!(TARGET_PA_20
+		&& !TARGET_ELF32
+		&& INT_14_BITS (XEXP (XEXP (op0, 0), 1)))
+	      && !INT_5_BITS (XEXP (XEXP (op0, 0), 1)))
 	    {
-	      emit_move_insn (scratch_reg, XEXP (XEXP (op0, 0), 1));
-	      emit_move_insn (scratch_reg,
-			      gen_rtx_fmt_ee (GET_CODE (XEXP (op0, 0)),
-					      Pmode,
-					      XEXP (XEXP (op0, 0), 0),
-					      scratch_reg));
+	      /* SCRATCH_REG will hold an address and maybe the actual data.
+		 We want it in WORD_MODE regardless of what mode it was
+		 originally given to us.  */
+	      scratch_reg = force_mode (word_mode, scratch_reg);
+
+	      /* D might not fit in 14 bits either; for such cases load D
+		 into scratch reg.  */
+	      if (!INT_14_BITS (XEXP (XEXP (op0, 0), 1)))
+		{
+		  emit_move_insn (scratch_reg, XEXP (XEXP (op0, 0), 1));
+		  emit_move_insn (scratch_reg,
+				  gen_rtx_fmt_ee (GET_CODE (XEXP (op0, 0)),
+						  Pmode,
+						  XEXP (XEXP (op0, 0), 0),
+						  scratch_reg));
+		}
+	      else
+		emit_move_insn (scratch_reg, XEXP (op0, 0));
+	      emit_insn (gen_rtx_SET (replace_equiv_address (op0, scratch_reg),
+				      operand1));
+	      return 1;
 	    }
-	  else
-	    emit_move_insn (scratch_reg, XEXP (op0, 0));
+	}
+      else if ((!INT14_OK_STRICT && symbolic_memory_operand (op0, VOIDmode))
+	       || IS_LO_SUM_DLT_ADDR_P (XEXP (op0, 0))
+	       || IS_INDEX_ADDR_P (XEXP (op0, 0)))
+	{
+	  /* Load memory address into SCRATCH_REG.  */
+	  scratch_reg = force_mode (word_mode, scratch_reg);
+	  emit_move_insn (scratch_reg, XEXP (op0, 0));
 	  emit_insn (gen_rtx_SET (replace_equiv_address (op0, scratch_reg),
 				  operand1));
 	  return 1;
