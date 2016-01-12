@@ -1,3 +1,14 @@
+2016-01-12  Renlin Li  <renlin.li@arm.com>
+
+	PR target/69082
+	Backport from mainline.
+	2015-08-24  Renlin Li  <renlin.li@arm.com>
+
+	* config/arm/arm-protos.h (arm_valid_symbolic_address_p): Declare.
+	* config/arm/arm.c (arm_valid_symbolic_address_p): Define.
+	* config/arm/arm.md (arm_movt): Use arm_valid_symbolic_address_p.
+	* config/arm/constraints.md ("j"): Add check for high code.
+
 2016-01-12  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backport from mainline.
