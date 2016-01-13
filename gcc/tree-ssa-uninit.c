@@ -1093,19 +1093,21 @@ prune_uninit_phi_opnds_in_unrealizable_paths (gphi *phi,
 	      edge opnd_edge;
 	      unsigned uninit_opnds2
 		  = compute_uninit_opnds_pos (opnd_def_phi);
-	      pred_chain_union def_preds = vNULL;
-	      bool ok;
-	      gcc_assert (!MASK_EMPTY (uninit_opnds2));
-	      opnd_edge = gimple_phi_arg_edge (phi, i);
-	      ok = is_use_properly_guarded (phi,
-					    opnd_edge->src,
-					    opnd_def_phi,
-					    uninit_opnds2,
-					    &def_preds,
-					    visited_phis);
-	      destroy_predicate_vecs (&def_preds);
-	      if (!ok)
-		return false;
+	      if (!MASK_EMPTY (uninit_opnds2))
+		{
+		  pred_chain_union def_preds = vNULL;
+		  bool ok;
+		  opnd_edge = gimple_phi_arg_edge (phi, i);
+		  ok = is_use_properly_guarded (phi,
+						opnd_edge->src,
+						opnd_def_phi,
+						uninit_opnds2,
+						&def_preds,
+						visited_phis);
+		  destroy_predicate_vecs (&def_preds);
+		  if (!ok)
+		    return false;
+		}
 	    }
 	  else
 	    return false;
