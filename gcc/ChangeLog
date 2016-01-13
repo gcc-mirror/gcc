@@ -1,3 +1,11 @@
+2016-01-12  Sandra Loosemore <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Option Summary) Move -no-canonical-prefixes to
+	Directory Options, and -specs= to Overall Options.
+	(Overall Options): Adjust similarly.  Reorder to group related
+	options together.  Make -specs= cross-reference the spec file details.
+	(Directory Options): Adjust similarly.
+
 2016-01-12  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c: Various whitespace and typo fixes.
