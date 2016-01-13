@@ -13538,6 +13538,8 @@ uint64_t __builtin_ppc_get_timebase ();
 unsigned long __builtin_ppc_mftb ();
 double __builtin_unpack_longdouble (long double, int);
 long double __builtin_pack_longdouble (double, double);
+double __builtin_unpack_ibm128 (__ibm128, int);
+__ibm128 __builtin_pack_ibm128 (double, double);
 @end smallexample
 
 The @code{vec_rsqrt}, @code{__builtin_rsqrt}, and
