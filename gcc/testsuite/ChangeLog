@@ -1,3 +1,8 @@
+2016-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69247
+	* gcc.dg/pr69247.c: New test.
+
 2016-01-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69242
