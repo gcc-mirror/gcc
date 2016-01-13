@@ -3521,7 +3521,8 @@ rs6000_builtin_mask_calculate (void)
 	  | ((TARGET_HTM)		    ? RS6000_BTM_HTM	   : 0)
 	  | ((TARGET_DFP)		    ? RS6000_BTM_DFP	   : 0)
 	  | ((TARGET_HARD_FLOAT)	    ? RS6000_BTM_HARD_FLOAT : 0)
-	  | ((TARGET_LONG_DOUBLE_128)	    ? RS6000_BTM_LDBL128 : 0));
+	  | ((TARGET_LONG_DOUBLE_128)	    ? RS6000_BTM_LDBL128   : 0)
+	  | ((TARGET_FLOAT128)		    ? RS6000_BTM_FLOAT128  : 0));
 }
 
 /* Implement TARGET_MD_ASM_ADJUST.  All asm statements are considered
@@ -14605,6 +14606,8 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
 	   " -mlong-double-128 options", name);
   else if ((fnmask & RS6000_BTM_HARD_FLOAT) != 0)
     error ("Builtin function %s requires the -mhard-float option", name);
+  else if ((fnmask & RS6000_BTM_FLOAT128) != 0)
+    error ("Builtin function %s requires the -mfloat128 options", name);
   else
     error ("Builtin function %s is not supported with the current options",
 	   name);
@@ -14894,19 +14897,21 @@ rs6000_init_builtins (void)
      IFmode is the IBM extended 128-bit format that is a pair of doubles.
      TFmode will be either IEEE 128-bit floating point or the IBM double-double
      format that uses a pair of doubles, depending on the switches and
-     defaults.  */
+     defaults.  Always create the types even if we don't register the keywords
+     to allow built-in functions using these types to be created.  */
+
+  ibm128_float_type_node = make_node (REAL_TYPE);
+  TYPE_PRECISION (ibm128_float_type_node) = 128;
+  layout_type (ibm128_float_type_node);
+  SET_TYPE_MODE (ibm128_float_type_node, IFmode);
+
+  ieee128_float_type_node = make_node (REAL_TYPE);
+  TYPE_PRECISION (ieee128_float_type_node) = 128;
+  layout_type (ieee128_float_type_node);
+  SET_TYPE_MODE (ieee128_float_type_node, KFmode);
+
   if (TARGET_FLOAT128)
     {
-      ibm128_float_type_node = make_node (REAL_TYPE);
-      TYPE_PRECISION (ibm128_float_type_node) = 128;
-      layout_type (ibm128_float_type_node);
-      SET_TYPE_MODE (ibm128_float_type_node, IFmode);
-
-      ieee128_float_type_node = make_node (REAL_TYPE);
-      TYPE_PRECISION (ieee128_float_type_node) = 128;
-      layout_type (ieee128_float_type_node);
-      SET_TYPE_MODE (ieee128_float_type_node, KFmode);
-
       lang_hooks.types.register_builtin_type (ieee128_float_type_node,
 					      "__float128");
 
@@ -34223,6 +34228,7 @@ static struct rs6000_opt_mask const rs6000_builtin_mask_names[] =
   { "hard-dfp",		 RS6000_BTM_DFP,	false, false },
   { "hard-float",	 RS6000_BTM_HARD_FLOAT,	false, false },
   { "long-double-128",	 RS6000_BTM_LDBL128,	false, false },
+  { "float128",		 RS6000_BTM_FLOAT128,	false, false },
 };
 
 /* Option variables that we want to support inside attribute((target)) and

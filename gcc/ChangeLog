@@ -1,3 +1,41 @@
+2016-01-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (BU_FLOAT128_2): Add support
+	for pack/unpack functions for __ibm128.
+	(PACK_IF): Likewise.
+	(UNPACK_IF): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Add
+	support for __ibm128 pack/unpack functions.
+	(rs6000_invalid_builtin): Likewise.
+	(rs6000_init_builtins): Likewise.
+	(rs6000_opt_masks): Likewise.
+
+	* config/rs6000/rs6000.h (MASK_FLOAT128): Add short name.
+	(RS6000_BTM_FLOAT128): Add support for __ibm128 pack/unpack
+	functions
+	(RS6000_BTM_COMMON): Likewise.
+
+	* config/rs6000/rs6000.md (f128_vsx): New mode attribute.
+	(unpack<mode>): Use FMOVE128_FPR iterator instead of FMOVE128, to
+	disallow __builtin_{pack,unpack}_longdouble if long double is IEEE
+	128-bit floating point.  Add support for the double values to be
+	in Altivec registers for TF/IF packing and unpacking, but restrict
+	TD packing sub-fields to be FPR registers.  Don't allow overlapped
+	register support for packing.  Allow pack inputs to be memory
+	locations.  Don't build generator functions for unpack<mode>_dm
+	and unpack<mode>_nodm.
+	(unpack<mode>_dm): Likewise.
+	(unpack<mode>_nodm): Likewise.
+	(pack<mode>): Likewise.
+
+	* config/rs6000/rs6000-builtin.def (__builtin_pack_ibm128): Add
+	built-in functions to pack/unpack explicit __ibm128 values.
+	(__builtin_unpack_ibm128): Likewise.
+
+	* doc/extend.texi (PowerPC Built-in Functions): Document
+	__builtin_pack_ibm128 and __builtin_unpack_ibm128.
+
 2016-01-13  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR c/66208
