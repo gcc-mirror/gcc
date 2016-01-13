@@ -1,3 +1,8 @@
+2016-01-13  Yvan Roux  <yvan.roux@linaro.org>
+
+	* config/arm/arm-arches.def: Remove spurious whitespace in "armv8.1-a"
+	and "armv8.1-a+crc" entries.
+
 2016-01-13  Alexander Fomin <alexander.fomin@intel.com>
 
 	PR target/69228
