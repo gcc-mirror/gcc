@@ -1,3 +1,11 @@
+	PR tree-optimization/69169
+	* tree-ssa-structalias.c (create_variable_info_for_1): Add and handle
+	handled_struct_type param.
+	(create_variable_info_for, intra_create_variable_infos): Call
+	create_variable_info_for_1 with extra arg.
+
+	* gcc.dg/pr69169.c: New test.
+
 2016-01-13  Alexander Fomin <alexander.fomin@intel.com>
 
 	PR target/69228
