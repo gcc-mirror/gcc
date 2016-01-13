@@ -1,3 +1,14 @@
+2016-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/48891
+	* acinclude.m4 (GLIBCXX_CHECK_MATH11_PROTO): Check for obsolete isinf
+	and isnan functions.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/c_global/cmath (isinf(double), isnan(double))
+	[_GLIBCXX_HAVE_OBSOLETE_ISINF_ISNAN]: Import via using-directive.
+	* testsuite/26_numerics/headers/cmath/48891.cc: New.
+
 2016-01-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libstdc++/66006

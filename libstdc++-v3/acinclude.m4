@@ -2186,6 +2186,40 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
       fi
       AC_MSG_RESULT([$glibcxx_cv_math11_overload])
       ;;
+    *-*-*gnu*)
+      # If <math.h> defines the obsolete isinf(double) and isnan(double)
+      # functions (instead of or as well as the C99 generic macros) then we
+      # can't define std::isinf(double) and std::isnan(double) in <cmath>
+      # and must use the ones from <math.h> instead.
+      AC_MSG_CHECKING([for obsolete isinf and isnan functions in <math.h>])
+        AC_CACHE_VAL(glibcxx_cv_obsolete_isinf_isnan, [
+          AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+            [#include <math.h>
+             #undef isinf
+             #undef isnan
+             namespace std {
+               using ::isinf;
+               bool isinf(float);
+               bool isinf(long double);
+               using ::isnan;
+               bool isnan(float);
+               bool isnan(long double);
+             }
+             using std::isinf;
+             using std::isnan;
+             bool b = isinf(0.0) || isnan(0.0);
+          ])],
+          [glibcxx_cv_obsolete_isinf_isnan=yes],
+          [glibcxx_cv_obsolete_isinf_isnan=no]
+        )])
+
+
+      if test $glibcxx_cv_obsolete_isinf_isnan = yes; then
+        AC_DEFINE(HAVE_OBSOLETE_ISINF_ISNAN, 1,
+                  [Define if <math.h> defines obsolete isinf and isnan functions.])
+      fi
+      AC_MSG_RESULT([$glibcxx_cv_obsolete_isinf_isnan])
+      ;;
   esac
 
   CXXFLAGS="$ac_save_CXXFLAGS"
