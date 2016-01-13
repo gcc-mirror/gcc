@@ -3,6 +3,14 @@
 	* config/i386/i386.h (TARGET_FLT_EVAL_METHOD): Return -1 for
 	TARGET_SSE_MATH without TARGET_SSE2.  Rewrite.
 
+2016-01-13  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69169
+	* tree-ssa-structalias.c (create_variable_info_for_1): Add and handle
+	handled_struct_type param.
+	(create_variable_info_for, intra_create_variable_infos): Call
+	create_variable_info_for_1 with extra arg.
+
 2016-01-13  Yvan Roux  <yvan.roux@linaro.org>
 
 	* config/arm/arm-arches.def: Remove spurious whitespace in "armv8.1-a"
