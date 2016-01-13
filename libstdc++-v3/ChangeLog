@@ -1,3 +1,12 @@
+2016-01-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/66006
+	* configure.host (abi_baseline_pair): Use separate baseline for
+	Solaris 11+ and Solaris 10 with gld.
+	* config/abi/post/solaris2.11/amd64/baseline_symbols.txt: New file.
+	* config/abi/post/solaris2.11/baseline_symbols.txt: New file.
+	* config/abi/post/solaris2.11/sparcv9/baseline_symbols.txt: New file.
+
 2016-01-12  Daniel Kruegler  <daniel.kruegler@gmail.com>
 
 	PR libstdc++/68877
