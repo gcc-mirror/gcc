@@ -1,3 +1,8 @@
+2016-01-13  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/69247
+	* config/s390/s390.md (bswaphi splitter): Use simplify_gen_subreg.
+
 2016-01-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69242
