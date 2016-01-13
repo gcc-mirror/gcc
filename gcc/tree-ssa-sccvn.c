@@ -3221,8 +3221,11 @@ visit_reference_op_load (tree lhs, tree op, gimple *stmt)
 	      gimple_seq stmts = NULL;
 	      result = maybe_push_res_to_seq (rcode, TREE_TYPE (op), ops,
 					      &stmts);
-	      gcc_assert (result && gimple_seq_singleton_p (stmts));
-	      new_stmt = gimple_seq_first_stmt (stmts);
+	      if (result)
+		{
+		  gcc_assert (gimple_seq_singleton_p (stmts));
+		  new_stmt = gimple_seq_first_stmt (stmts);
+		}
 	    }
 	  else
 	    /* The expression is already available.  */
