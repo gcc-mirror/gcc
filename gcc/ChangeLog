@@ -1,5 +1,12 @@
 2016-01-13  Sandra Loosemore <sandra@codesourcery.com>
 
+	* doc/invoke.texi (Submodel Options): Rename section to
+	"Machine-Dependent Options" to better reflect its content.
+	Rewrite introductory text to remove archaic CPU names.
+	Update references.
+
+2016-01-13  Sandra Loosemore <sandra@codesourcery.com>
+
 	* doc/invoke.texi (Code Gen Options): Move section up in file,
 	before target-specific options.  Update menu and option summary
 	to reflect the new section ordering.

@@ -148,8 +148,8 @@ only one of these two forms, whichever one is not the default.
                         Where to find the compiler executable files.
 * Code Gen Options::    Specifying conventions for function calls, data layout
                         and register usage.
-* Submodel Options::    Specifying minor hardware or convention variations,
-                        such as 68010 vs 68020.
+* Submodel Options::    Target-specific options, such as compiling for a
+                        specific processor variant.
 * Spec Files::          How to pass switches to sub-processes.
 * Environment Variables:: Env vars that affect GCC.
 * Precompiled Headers:: Compiling a header once, and using it many times.
@@ -541,8 +541,8 @@ Objective-C and Objective-C++ Dialects}.
 -fvisibility=@r{[}default@r{|}internal@r{|}hidden@r{|}protected@r{]} @gol
 -fstrict-volatile-bitfields -fsync-libcalls}
 
-@item Machine Dependent Options
-@xref{Submodel Options,,Hardware Models and Configurations}.
+@item Machine-Dependent Options
+@xref{Submodel Options,,Machine-Dependent Options}.
 @c This list is ordered alphanumerically by subsection name.
 @c Try and put the significant identifier (CPU or system) first,
 @c so users have a clue at guessing where the ones they want will be.
@@ -12569,20 +12569,20 @@ the implementation of the @file{libatomic} runtime library.
 @end table
 
 @node Submodel Options
-@section Hardware Models and Configurations
+@section Machine-Dependent Options
 @cindex submodel options
 @cindex specifying hardware config
 @cindex hardware models and configurations, specifying
-@cindex machine dependent options
+@cindex target-dependent options
+@cindex machine-dependent options
 
-Each target machine types can have its own
-special options, starting with @samp{-m}, to choose among various
-hardware models or configurations---for example, 68010 vs 68020,
-floating coprocessor or none.  A single installed version of the
-compiler can compile for any model or configuration, according to the
-options specified.
+Each target machine supported by GCC can have its own options---for
+example, to allow you to compile for a particular processor variant or
+ABI, or to control optimizations specific to that machine.  By
+convention, the names of machine-specific options start with
+@samp{-m}.
 
-Some configurations of the compiler also support additional special
+Some configurations of the compiler also support additional target-specific
 options, usually for compatibility with other compilers on the same
 platform.
 
