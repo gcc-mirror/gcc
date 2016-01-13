@@ -239,6 +239,11 @@ struct ssa_local_info_t
 
   /* Blocks duplicated for the thread.  */
   bitmap duplicate_blocks;
+
+  /* When we have multiple paths through a joiner which reach different
+     final destinations, then we may need to correct for potential
+     profile insanities.  */
+  bool need_profile_correction;
 };
 
 /* Passes which use the jump threading code register jump threading
@@ -826,7 +831,8 @@ compute_path_counts (struct redirection_data *rd,
      So ensure that this path's path_out_count is at least the
      difference between elast->count and nonpath_count.  Otherwise the edge
      counts after threading will not be sane.  */
-  if (has_joiner && path_out_count < elast->count - nonpath_count)
+  if (local_info->need_profile_correction
+      && has_joiner && path_out_count < elast->count - nonpath_count)
     {
       path_out_count = elast->count - nonpath_count;
       /* But neither can we go above the minimum count along the path
@@ -1492,6 +1498,7 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
   ssa_local_info_t local_info;
 
   local_info.duplicate_blocks = BITMAP_ALLOC (NULL);
+  local_info.need_profile_correction = false;
 
   /* To avoid scanning a linear array for the element we need we instead
      use a hash table.  For normal code there should be no noticeable
@@ -1502,6 +1509,7 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
 
   /* Record each unique threaded destination into a hash table for
      efficient lookups.  */
+  edge last = NULL;
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
       if (e->aux == NULL)
@@ -1555,6 +1563,17 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
       /* Insert the outgoing edge into the hash table if it is not
 	 already in the hash table.  */
       lookup_redirection_data (e, INSERT);
+
+      /* When we have thread paths through a common joiner with different
+	 final destinations, then we may need corrections to deal with
+	 profile insanities.  See the big comment before compute_path_counts.  */
+      if ((*path)[1]->type == EDGE_COPY_SRC_JOINER_BLOCK)
+	{
+	  if (!last)
+	    last = e2;
+	  else if (e2 != last)
+	    local_info.need_profile_correction = true;
+	}
     }
 
   /* We do not update dominance info.  */
