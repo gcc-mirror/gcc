@@ -1,3 +1,15 @@
+2016-01-13  Torvald Riegel  <triegel@redhat.com>
+
+	* beginend.cc (gtm_thread::trycommit): Fix privatization safety.
+	* config/linux/rwlock.cc (gtm_rwlock::write_lock_generic): Likewise.
+	* config/posix/rwlock.cc (gtm_rwlock::write_lock_generic): Likewise.
+	* dispatch.h (abi_dispatch::snapshot_most_recent): New.
+	* method-gl.cc (gl_wt_dispatch::snapshot_most_recent): New.
+	* method-ml.cc (ml_wt_dispatch::snapshot_most_recent): New.
+	* method-serial.cc (serial_dispatch::snapshot_most_recent): New.
+	(serialirr_dispatch::snapshot_most_recent): New.
+	(serialirr_onwrite_dispatch::snapshot_most_recent): New.
+
 2016-01-12  Torvald Riegel  <triegel@redhat.com>
 
 	* libitm_i.h (gtm_mask_stack): Remove.

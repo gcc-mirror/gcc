@@ -200,6 +200,26 @@ gtm_rwlock::write_lock_generic (gtm_thread *tx)
       if (readers == 0)
 	break;
 
+      // If this is an upgrade, we have to break deadlocks with
+      // privatization safety.  This may fail on our side, in which
+      // case we need to cancel our attempt to upgrade.  Also, we do not
+      // block using the convdar but just spin so that we never have to be
+      // woken.
+      // FIXME This is horribly inefficient -- but so is not being able
+      // to use futexes in this case.
+      if (tx != 0)
+	{
+	  pthread_mutex_unlock (&this->mutex);
+	  if (!abi_disp ()->snapshot_most_recent ())
+	    {
+	      write_unlock ();
+	      return false;
+	    }
+	  pthread_mutex_lock (&this->mutex);
+	  continue;
+	}
+
+
       // We've seen a number of readers, so we publish this number and wait.
       this->a_readers = readers;
       pthread_cond_wait (&this->c_confirmed_writers, &this->mutex);
