@@ -394,7 +394,6 @@ static tree handle_bnd_variable_size_attribute (tree *, tree, tree, int, bool *)
 static tree handle_bnd_legacy (tree *, tree, tree, int, bool *);
 static tree handle_bnd_instrument (tree *, tree, tree, int, bool *);
 
-static void check_function_nonnull (tree, int, tree *);
 static void check_nonnull_arg (void *, tree, unsigned HOST_WIDE_INT);
 static bool nonnull_check_p (tree, unsigned HOST_WIDE_INT);
 static bool get_nonnull_operand (tree, unsigned HOST_WIDE_INT *);
@@ -9097,11 +9096,10 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 
 /* Check the argument list of a function call for null in argument slots
    that are marked as requiring a non-null pointer argument.  The NARGS
-   arguments are passed in the array ARGARRAY.
-*/
+   arguments are passed in the array ARGARRAY.  */
 
 static void
-check_function_nonnull (tree attrs, int nargs, tree *argarray)
+check_function_nonnull (location_t loc, tree attrs, int nargs, tree *argarray)
 {
   tree a;
   int i;
@@ -9121,7 +9119,7 @@ check_function_nonnull (tree attrs, int nargs, tree *argarray)
 
   if (a != NULL_TREE)
     for (i = 0; i < nargs; i++)
-      check_function_arguments_recurse (check_nonnull_arg, NULL, argarray[i],
+      check_function_arguments_recurse (check_nonnull_arg, &loc, argarray[i],
 					i + 1);
   else
     {
@@ -9137,7 +9135,7 @@ check_function_nonnull (tree attrs, int nargs, tree *argarray)
 	    }
 
 	  if (a != NULL_TREE)
-	    check_function_arguments_recurse (check_nonnull_arg, NULL,
+	    check_function_arguments_recurse (check_nonnull_arg, &loc,
 					      argarray[i], i + 1);
 	}
     }
@@ -9223,9 +9221,10 @@ nonnull_check_p (tree args, unsigned HOST_WIDE_INT param_num)
    via check_function_arguments_recurse.  */
 
 static void
-check_nonnull_arg (void * ARG_UNUSED (ctx), tree param,
-		   unsigned HOST_WIDE_INT param_num)
+check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
 {
+  location_t *ploc = (location_t *) ctx;
+
   /* Just skip checking the argument if it's not a pointer.  This can
      happen if the "nonnull" attribute was given without an operand
      list (which means to check every pointer argument).  */
@@ -9234,8 +9233,8 @@ check_nonnull_arg (void * ARG_UNUSED (ctx), tree param,
     return;
 
   if (integer_zerop (param))
-    warning (OPT_Wnonnull, "null argument where non-null required "
-	     "(argument %lu)", (unsigned long) param_num);
+    warning_at (*ploc, OPT_Wnonnull, "null argument where non-null required "
+		"(argument %lu)", (unsigned long) param_num);
 }
 
 /* Helper for nonnull attribute handling; fetch the operand number
@@ -9678,15 +9677,17 @@ handle_designated_init_attribute (tree *node, tree name, tree, int,
 
 
 /* Check for valid arguments being passed to a function with FNTYPE.
-   There are NARGS arguments in the array ARGARRAY.  */
+   There are NARGS arguments in the array ARGARRAY.  LOC should be used for
+   diagnostics.  */
 void
-check_function_arguments (const_tree fntype, int nargs, tree *argarray)
+check_function_arguments (location_t loc, const_tree fntype, int nargs,
+			  tree *argarray)
 {
   /* Check for null being passed in a pointer argument that must be
      non-null.  We also need to do this if format checking is enabled.  */
 
   if (warn_nonnull)
-    check_function_nonnull (TYPE_ATTRIBUTES (fntype), nargs, argarray);
+    check_function_nonnull (loc, TYPE_ATTRIBUTES (fntype), nargs, argarray);
 
   /* Check for errors in format strings.  */
 
