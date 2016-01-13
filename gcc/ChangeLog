@@ -1,3 +1,14 @@
+2016-01-13  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR c/66208
+	* c-common.c (check_function_nonnull): Remove unnecessary declaration.
+	Add new arg loc and pass it down as context.
+	(check_nonnull_arg): Don't mark ctx arg as unused. Use it as a pointer
+	to the location to use for the warning.
+	(check_function_arguments): New arg loc.  All callers changed.  Pass
+	it to check_function_nonnull.
+	* c-common.h (check_function_arguments): Adjust declaration.
+
 2016-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69156

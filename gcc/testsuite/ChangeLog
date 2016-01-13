@@ -1,3 +1,8 @@
+2016-01-13  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR c/66208
+	* c-c++-common/pr66208.c: New file.
+
 2016-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69156

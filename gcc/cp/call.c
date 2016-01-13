@@ -7536,7 +7536,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       for (j = 0; j < nargs; j++)
 	fargs[j] = maybe_constant_value (argarray[j]);
 
-      check_function_arguments (TREE_TYPE (fn), nargs, fargs);
+      check_function_arguments (input_location, TREE_TYPE (fn), nargs, fargs);
     }
 
   /* Avoid actually calling copy constructors and copy assignment operators,
