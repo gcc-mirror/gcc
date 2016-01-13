@@ -1,3 +1,8 @@
+2016-01-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (TARGET_FLT_EVAL_METHOD): Return -1 for
+	TARGET_SSE_MATH without TARGET_SSE2.  Rewrite.
+
 2016-01-13  Yvan Roux  <yvan.roux@linaro.org>
 
 	* config/arm/arm-arches.def: Remove spurious whitespace in "armv8.1-a"
