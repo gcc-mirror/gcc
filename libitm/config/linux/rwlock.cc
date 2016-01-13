@@ -158,6 +158,19 @@ gtm_rwlock::write_lock_generic (gtm_thread *tx)
       while (it->shared_state.load (memory_order_relaxed)
           != ~(typeof it->shared_state)0)
 	{
+	  // If this is an upgrade, we have to break deadlocks with
+	  // privatization safety.  This may fail on our side, in which
+	  // case we need to cancel our attempt to upgrade.  Also, we do not
+	  // block but just spin so that we never have to be woken.
+	  if (tx != 0)
+	    {
+	      if (!abi_disp()->snapshot_most_recent ())
+		{
+		  write_unlock ();
+		  return false;
+		}
+	      continue;
+	    }
 	  // An active reader. Wait until it has finished. To avoid lost
 	  // wake-ups, we need to use Dekker-like synchronization.
 	  // Note that we can reset writer_readers to zero when we see after

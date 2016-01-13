@@ -604,6 +604,24 @@ public:
     tx->readlog.clear();
   }
 
+  virtual bool snapshot_most_recent()
+  {
+    // This is the same code as in extend() except that we do not restart
+    // on failure but simply return the result, and that we don't validate
+    // if our snapshot is already most recent.
+    gtm_thread* tx = gtm_thr();
+    gtm_word snapshot = o_ml_mg.time.load(memory_order_acquire);
+    if (snapshot == tx->shared_state.load(memory_order_relaxed))
+      return true;
+    if (!validate(tx))
+      return false;
+
+    // Update our public snapshot time.  Necessary so that we do not prevent
+    // other transactions from ensuring privatization safety.
+    tx->shared_state.store(snapshot, memory_order_release);
+    return true;
+  }
+
   virtual bool supports(unsigned number_of_threads)
   {
     // Each txn can commit and fail and rollback once before checking for

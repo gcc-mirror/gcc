@@ -95,6 +95,7 @@ class serialirr_dispatch : public abi_dispatch
   virtual gtm_restart_reason begin_or_restart() { return NO_RESTART; }
   virtual bool trycommit(gtm_word& priv_time) { return true; }
   virtual void rollback(gtm_transaction_cp *cp) { abort(); }
+  virtual bool snapshot_most_recent() { return true; }
 
   virtual abi_dispatch* closed_nesting_alternative()
   {
@@ -149,6 +150,7 @@ public:
   // Local undo will handle this.
   // trydropreference() need not be changed either.
   virtual void rollback(gtm_transaction_cp *cp) { }
+  virtual bool snapshot_most_recent() { return true; }
 
   CREATE_DISPATCH_METHODS(virtual, )
   CREATE_DISPATCH_METHODS_MEM()
@@ -210,6 +212,8 @@ class serialirr_onwrite_dispatch : public serialirr_dispatch
     if (tx->state & gtm_thread::STATE_IRREVOCABLE)
       abort();
   }
+
+  virtual bool snapshot_most_recent() { return true; }
 };
 
 // This group is pure HTM with serial mode as a fallback.  There is no

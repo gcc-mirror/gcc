@@ -291,6 +291,10 @@ public:
   // Rolls back a transaction. Called on abort or after trycommit() returned
   // false.
   virtual void rollback(gtm_transaction_cp *cp = 0) = 0;
+  // Returns true iff the snapshot is most recent, which will be the case if
+  // this transaction cannot be the reason why other transactions cannot
+  // ensure privatization safety.
+  virtual bool snapshot_most_recent() = 0;
 
   // Return an alternative method that is compatible with the current
   // method but supports closed nesting. Return zero if there is none.
