@@ -606,9 +606,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   isinf(float __x)
   { return __builtin_isinf(__x); }
 
+#ifdef _GLIBCXX_HAVE_OBSOLETE_ISINF_ISNAN
+  using ::isinf;
+#else
   constexpr bool
   isinf(double __x)
   { return __builtin_isinf(__x); }
+#endif
 
   constexpr bool
   isinf(long double __x)
@@ -626,9 +630,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   isnan(float __x)
   { return __builtin_isnan(__x); }
 
+#ifdef _GLIBCXX_HAVE_OBSOLETE_ISINF_ISNAN
+  using ::isnan;
+#else
   constexpr bool
   isnan(double __x)
   { return __builtin_isnan(__x); }
+#endif
 
   constexpr bool
   isnan(long double __x)
