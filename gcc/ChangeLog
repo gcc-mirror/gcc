@@ -1,3 +1,10 @@
+2016-01-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/66487
+	* ipa-polymorphic-call.c (inlined_polymorphic_ctor_dtor_block_p):
+	use block_ultimate_origin
+	(noncall-stmt_may_be_vtbl_ptr_store): Likewise.
+	
 2016-01-13  Sandra Loosemore <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Submodel Options): Rename section to
