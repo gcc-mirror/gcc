@@ -1,3 +1,9 @@
+2016-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (C Dialect Options): Adjust -std default for C++.
+	(C++ Dialect Options): Add cross-reference to -std option.
+	* doc/standards.texi (C++ Language): Document C++14 support.
+
 2016-01-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (BU_FLOAT128_2): Add support
