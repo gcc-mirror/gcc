@@ -1,3 +1,9 @@
+2016-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69186
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Properly guard vect_update_misalignment_for_peel call.
+
 2016-01-12  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/pr67755
