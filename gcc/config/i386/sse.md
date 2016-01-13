@@ -15654,7 +15654,7 @@
 
 (define_expand "avx512pf_gatherpf<mode>sf"
   [(unspec
-     [(match_operand:<avx512fmaskmode> 0 "register_or_constm1_operand")
+     [(match_operand:<avx512fmaskmode> 0 "register_operand")
       (mem:<GATHER_SCATTER_SF_MEM_MODE>
 	(match_par_dup 5
 	  [(match_operand 2 "vsib_address_operand")
@@ -15696,37 +15696,10 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_insn "*avx512pf_gatherpf<mode>sf"
-  [(unspec
-     [(const_int -1)
-      (match_operator:<GATHER_SCATTER_SF_MEM_MODE> 4 "vsib_mem_operator"
-	[(unspec:P
-	   [(match_operand:P 1 "vsib_address_operand" "Tv")
-	    (match_operand:VI48_512 0 "register_operand" "v")
-	    (match_operand:SI 2 "const1248_operand" "n")]
-	   UNSPEC_VSIBADDR)])
-      (match_operand:SI 3 "const_2_to_3_operand" "n")]
-     UNSPEC_GATHER_PREFETCH)]
-  "TARGET_AVX512PF"
-{
-  switch (INTVAL (operands[3]))
-    {
-    case 3:
-      return "vgatherpf0<ssemodesuffix>ps\t{%4|%4}";
-    case 2:
-      return "vgatherpf1<ssemodesuffix>ps\t{%4|%4}";
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "type" "sse")
-   (set_attr "prefix" "evex")
-   (set_attr "mode" "XI")])
-
 ;; Packed double variants
 (define_expand "avx512pf_gatherpf<mode>df"
   [(unspec
-     [(match_operand:<avx512fmaskmode> 0 "register_or_constm1_operand")
+     [(match_operand:<avx512fmaskmode> 0 "register_operand")
       (mem:V8DF
 	(match_par_dup 5
 	  [(match_operand 2 "vsib_address_operand")
@@ -15768,37 +15741,10 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_insn "*avx512pf_gatherpf<mode>df"
-  [(unspec
-     [(const_int -1)
-      (match_operator:V8DF 4 "vsib_mem_operator"
-	[(unspec:P
-	   [(match_operand:P 1 "vsib_address_operand" "Tv")
-	    (match_operand:VI4_256_8_512 0 "register_operand" "v")
-	    (match_operand:SI 2 "const1248_operand" "n")]
-	   UNSPEC_VSIBADDR)])
-      (match_operand:SI 3 "const_2_to_3_operand" "n")]
-     UNSPEC_GATHER_PREFETCH)]
-  "TARGET_AVX512PF"
-{
-  switch (INTVAL (operands[3]))
-    {
-    case 3:
-      return "vgatherpf0<ssemodesuffix>pd\t{%4|%4}";
-    case 2:
-      return "vgatherpf1<ssemodesuffix>pd\t{%4|%4}";
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "type" "sse")
-   (set_attr "prefix" "evex")
-   (set_attr "mode" "XI")])
-
 ;; Packed float variants
 (define_expand "avx512pf_scatterpf<mode>sf"
   [(unspec
-     [(match_operand:<avx512fmaskmode> 0 "register_or_constm1_operand")
+     [(match_operand:<avx512fmaskmode> 0 "register_operand")
       (mem:<GATHER_SCATTER_SF_MEM_MODE>
 	(match_par_dup 5
 	  [(match_operand 2 "vsib_address_operand")
@@ -15842,39 +15788,10 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_insn "*avx512pf_scatterpf<mode>sf"
-  [(unspec
-     [(const_int -1)
-      (match_operator:<GATHER_SCATTER_SF_MEM_MODE> 4 "vsib_mem_operator"
-	[(unspec:P
-	   [(match_operand:P 1 "vsib_address_operand" "Tv")
-	    (match_operand:VI48_512 0 "register_operand" "v")
-	    (match_operand:SI 2 "const1248_operand" "n")]
-	   UNSPEC_VSIBADDR)])
-      (match_operand:SI 3 "const2367_operand" "n")]
-     UNSPEC_SCATTER_PREFETCH)]
-  "TARGET_AVX512PF"
-{
-  switch (INTVAL (operands[3]))
-    {
-    case 3:
-    case 7:
-      return "vscatterpf0<ssemodesuffix>ps\t{%4|%4}";
-    case 2:
-    case 6:
-      return "vscatterpf1<ssemodesuffix>ps\t{%4|%4}";
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "type" "sse")
-   (set_attr "prefix" "evex")
-   (set_attr "mode" "XI")])
-
 ;; Packed double variants
 (define_expand "avx512pf_scatterpf<mode>df"
   [(unspec
-     [(match_operand:<avx512fmaskmode> 0 "register_or_constm1_operand")
+     [(match_operand:<avx512fmaskmode> 0 "register_operand")
       (mem:V8DF
 	(match_par_dup 5
 	  [(match_operand 2 "vsib_address_operand")
@@ -15910,35 +15827,6 @@
     case 2:
     case 6:
       return "vscatterpf1<ssemodesuffix>pd\t{%5%{%0%}|%5%{%0%}}";
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "type" "sse")
-   (set_attr "prefix" "evex")
-   (set_attr "mode" "XI")])
-
-(define_insn "*avx512pf_scatterpf<mode>df"
-  [(unspec
-     [(const_int -1)
-      (match_operator:V8DF 4 "vsib_mem_operator"
-	[(unspec:P
-	   [(match_operand:P 1 "vsib_address_operand" "Tv")
-	    (match_operand:VI4_256_8_512 0 "register_operand" "v")
-	    (match_operand:SI 2 "const1248_operand" "n")]
-	   UNSPEC_VSIBADDR)])
-      (match_operand:SI 3 "const2367_operand" "n")]
-     UNSPEC_SCATTER_PREFETCH)]
-  "TARGET_AVX512PF"
-{
-  switch (INTVAL (operands[3]))
-    {
-    case 3:
-    case 7:
-      return "vscatterpf0<ssemodesuffix>pd\t{%4|%4}";
-    case 2:
-    case 6:
-      return "vscatterpf1<ssemodesuffix>pd\t{%4|%4}";
     default:
       gcc_unreachable ();
     }
