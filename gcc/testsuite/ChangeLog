@@ -1,3 +1,8 @@
+2015-01-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.c-torture/unsorted/dump-noaddr.x (dump_compare): Replace static
+	pass number in output by a star.
+
 2016-01-12  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/68911
