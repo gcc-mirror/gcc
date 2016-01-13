@@ -1,3 +1,8 @@
+2016-01-12  Sandra Loosemore <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Spec Files): Move section down in file, past
+	all command-line option descriptions.
+
 2016-01-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	PR middle-end/54809
