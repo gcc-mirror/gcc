@@ -1,3 +1,12 @@
+2016-01-12  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	PR middle-end/54809
+	* doc/gty.texi: Remove documentation of mark_hook.
+	* gengtype.c (struct write_types_data): Remove code to support
+	mark_hook attribute.
+	(walk_type): Likewise.
+	(write_func_for_structure): Likewise.
+
 2016-01-12  Sandra Loosemore <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Option Summary) Move -no-canonical-prefixes to
