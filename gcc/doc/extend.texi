@@ -9559,17 +9559,18 @@ This compares the contents of @code{*@var{ptr}} with the contents of
 @code{*@var{expected}}. If equal, the operation is a @emph{read-modify-write}
 operation that writes @var{desired} into @code{*@var{ptr}}.  If they are not
 equal, the operation is a @emph{read} and the current contents of
-@code{*@var{ptr}} is written into @code{*@var{expected}}.  @var{weak} is true
-for weak compare_exchange, and false for the strong variation.  Many targets 
+@code{*@var{ptr}} are written into @code{*@var{expected}}.  @var{weak} is true
+for weak compare_exchange, which may fail spuriously, and false for
+the strong variation, which never fails spuriously.  Many targets
 only offer the strong variation and ignore the parameter.  When in doubt, use
 the strong variation.
 
-True is returned if @var{desired} is written into
-@code{*@var{ptr}} and the operation is considered to conform to the
+If @var{desired} is written into @code{*@var{ptr}} then true is returned
+and memory is affected according to the
 memory order specified by @var{success_memorder}.  There are no
 restrictions on what memory order can be used here.
 
-False is returned otherwise, and the operation is considered to conform
+Otherwise, false is returned and memory is affected according
 to @var{failure_memorder}. This memory order cannot be
 @code{__ATOMIC_RELEASE} nor @code{__ATOMIC_ACQ_REL}.  It also cannot be a
 stronger order than that specified by @var{success_memorder}.
@@ -9678,7 +9679,7 @@ alignment.  A value of 0 indicates typical alignment should be used.  The
 compiler may also ignore this parameter.
 
 @smallexample
-if (_atomic_always_lock_free (sizeof (long long), 0))
+if (__atomic_always_lock_free (sizeof (long long), 0))
 @end smallexample
 
 @end deftypefn
