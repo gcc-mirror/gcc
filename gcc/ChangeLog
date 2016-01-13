@@ -1,3 +1,14 @@
+2016-01-12  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/pr67755
+	* tree-ssa-threadupdate.c (struct ssa_local_info_t): Add new field
+	"need_profile_correction".
+	(thread_block_1): Initialize new field to false by default.  If we
+	have multiple thread paths through a common joiner to different
+	final targets, then set new field to true.
+	(compute_path_counts): Only do count adjustment when it's really
+	needed.
+
 2016-01-12  Sandra Loosemore <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Spec Files): Move section down in file, past

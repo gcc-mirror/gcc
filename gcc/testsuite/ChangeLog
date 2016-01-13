@@ -1,4 +1,9 @@
-2015-01-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+2016-01-13  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/67755
+	* gcc.dg/tree-ssa/pr67755.c: New test.
+
+2016-01-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.c-torture/unsorted/dump-noaddr.x (dump_compare): Replace static
 	pass number in output by a star.
