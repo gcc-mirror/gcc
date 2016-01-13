@@ -1,3 +1,9 @@
+2016-01-12  Jeff Law  <law@redhat.com>
+
+	PR target/63347
+	* haifa-sched.c (prune_ready_list): If we have a SCHED_GROUP_P insn
+	that needs to be queued, just queue it for a single cycle.
+
 2016-01-12  Renlin Li  <renlin.li@arm.com>
 
 	PR target/69082

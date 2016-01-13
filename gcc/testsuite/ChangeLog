@@ -1,3 +1,8 @@
+2016-01-12  Jeff Law  <law@redhat.com>
+
+	PR target/63347
+	* gcc.target/m68k/pr63347.c: New test.
+
 2016-01-12  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backport from mainline.
