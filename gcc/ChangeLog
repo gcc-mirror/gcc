@@ -1,3 +1,9 @@
+2016-01-13  Sandra Loosemore <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Code Gen Options): Move section up in file,
+	before target-specific options.  Update menu and option summary
+	to reflect the new section ordering.
+
 2016-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/invoke.texi (C Dialect Options): Adjust -std default for C++.
