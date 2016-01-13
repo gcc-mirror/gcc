@@ -5769,11 +5769,13 @@ check_for_overlaps (vec<fieldoff_s> fieldstack)
 
 /* Create a varinfo structure for NAME and DECL, and add it to VARMAP.
    This will also create any varinfo structures necessary for fields
-   of DECL.  DECL is a function parameter if HANDLE_PARAM is set.  */
+   of DECL.  DECL is a function parameter if HANDLE_PARAM is set.
+   HANDLED_STRUCT_TYPE is used to register struct types reached by following
+   restrict pointers.  This is needed to prevent infinite recursion.  */
 
 static varinfo_t
 create_variable_info_for_1 (tree decl, const char *name, bool add_id,
-			    bool handle_param)
+			    bool handle_param, bitmap handled_struct_type)
 {
   varinfo_t vi, newvi;
   tree decl_type = TREE_TYPE (decl);
@@ -5851,13 +5853,21 @@ create_variable_info_for_1 (tree decl, const char *name, bool add_id,
 	vi->only_restrict_pointers = 1;
       if (vi->only_restrict_pointers
 	  && !type_contains_placeholder_p (TREE_TYPE (decl_type))
-	  && handle_param)
+	  && handle_param
+	  && !bitmap_bit_p (handled_struct_type,
+			    TYPE_UID (TREE_TYPE (decl_type))))
 	{
 	  varinfo_t rvi;
 	  tree heapvar = build_fake_var_decl (TREE_TYPE (decl_type));
 	  DECL_EXTERNAL (heapvar) = 1;
+	  if (var_can_have_subvars (heapvar))
+	    bitmap_set_bit (handled_struct_type,
+			    TYPE_UID (TREE_TYPE (decl_type)));
 	  rvi = create_variable_info_for_1 (heapvar, "PARM_NOALIAS", true,
-					    true);
+					    true, handled_struct_type);
+	  if (var_can_have_subvars (heapvar))
+	    bitmap_clear_bit (handled_struct_type,
+			      TYPE_UID (TREE_TYPE (decl_type)));
 	  rvi->is_restrict_var = 1;
 	  insert_vi_for_tree (heapvar, rvi);
 	  make_constraint_from (vi, rvi->id);
@@ -5902,13 +5912,21 @@ create_variable_info_for_1 (tree decl, const char *name, bool add_id,
       newvi->only_restrict_pointers = fo->only_restrict_pointers;
       if (handle_param
 	  && newvi->only_restrict_pointers
-	  && !type_contains_placeholder_p (fo->restrict_pointed_type))
+	  && !type_contains_placeholder_p (fo->restrict_pointed_type)
+	  && !bitmap_bit_p (handled_struct_type,
+			    TYPE_UID (fo->restrict_pointed_type)))
 	{
 	  varinfo_t rvi;
 	  tree heapvar = build_fake_var_decl (fo->restrict_pointed_type);
 	  DECL_EXTERNAL (heapvar) = 1;
+	  if (var_can_have_subvars (heapvar))
+	    bitmap_set_bit (handled_struct_type,
+			    TYPE_UID (fo->restrict_pointed_type));
 	  rvi = create_variable_info_for_1 (heapvar, "PARM_NOALIAS", true,
-					    true);
+					    true, handled_struct_type);
+	  if (var_can_have_subvars (heapvar))
+	    bitmap_clear_bit (handled_struct_type,
+			      TYPE_UID (fo->restrict_pointed_type));
 	  rvi->is_restrict_var = 1;
 	  insert_vi_for_tree (heapvar, rvi);
 	  make_constraint_from (newvi, rvi->id);
@@ -5928,7 +5946,7 @@ create_variable_info_for_1 (tree decl, const char *name, bool add_id,
 static unsigned int
 create_variable_info_for (tree decl, const char *name, bool add_id)
 {
-  varinfo_t vi = create_variable_info_for_1 (decl, name, add_id, false);
+  varinfo_t vi = create_variable_info_for_1 (decl, name, add_id, false, NULL);
   unsigned int id = vi->id;
 
   insert_vi_for_tree (decl, vi);
@@ -6059,18 +6077,26 @@ static void
 intra_create_variable_infos (struct function *fn)
 {
   tree t;
+  bitmap handled_struct_type = NULL;
 
   /* For each incoming pointer argument arg, create the constraint ARG
      = NONLOCAL or a dummy variable if it is a restrict qualified
      passed-by-reference argument.  */
   for (t = DECL_ARGUMENTS (fn->decl); t; t = DECL_CHAIN (t))
     {
+      if (handled_struct_type == NULL)
+	handled_struct_type = BITMAP_ALLOC (NULL);
+
       varinfo_t p
-	= create_variable_info_for_1 (t, alias_get_name (t), false, true);
+	= create_variable_info_for_1 (t, alias_get_name (t), false, true,
+				      handled_struct_type);
       insert_vi_for_tree (t, p);
 
       make_param_constraints (p);
     }
+
+  if (handled_struct_type != NULL)
+    BITMAP_FREE (handled_struct_type);
 
   /* Add a constraint for a result decl that is passed by reference.  */
   if (DECL_RESULT (fn->decl)
