@@ -122,9 +122,10 @@ gtm_rwlock::read_lock (gtm_thread *tx)
 bool
 gtm_rwlock::write_lock_generic (gtm_thread *tx)
 {
-  // Try to acquire the write lock.
+  // Try to acquire the write lock.  Relaxed MO is fine because of the
+  // additional fence below.
   int w = 0;
-  if (unlikely (!writers.compare_exchange_strong (w, 1)))
+  if (unlikely (!writers.compare_exchange_strong (w, 1, memory_order_relaxed)))
     {
       // If this is an upgrade, we must not wait for other writers or
       // upgrades.
@@ -135,18 +136,20 @@ gtm_rwlock::write_lock_generic (gtm_thread *tx)
       // switch to contended mode.  We need seq_cst memory order to make the
       // Dekker-style synchronization work.
       if (w != 2)
-	w = writers.exchange (2);
+	w = writers.exchange (2, memory_order_relaxed);
       while (w != 0)
 	{
 	  futex_wait(&writers, 2);
-	  w = writers.exchange (2);
+	  w = writers.exchange (2, memory_order_relaxed);
 	}
     }
+  // This fence is both required for the Dekker-like synchronization we do
+  // here and is the acquire MO required to make us synchronize-with prior
+  // writers.
+  atomic_thread_fence (memory_order_seq_cst);
 
   // We have acquired the writer side of the R/W lock. Now wait for any
   // readers that might still be active.
-  // We don't need an extra barrier here because the CAS and the xchg
-  // operations have full barrier semantics already.
   // TODO In the worst case, this requires one wait/wake pair for each
   // active reader. Reduce this!
   for (gtm_thread *it = gtm_thread::list_of_threads; it != 0;
@@ -259,28 +262,24 @@ gtm_rwlock::read_unlock (gtm_thread *tx)
 void
 gtm_rwlock::write_unlock ()
 {
-  // This needs to have seq_cst memory order.
-  if (writers.fetch_sub (1) == 2)
+  // Release MO so that we synchronize with subsequent writers.
+  if (writers.exchange (0, memory_order_release) == 2)
     {
-      // There might be waiting writers, so wake them.
-      writers.store (0, memory_order_relaxed);
-      if (futex_wake(&writers, 1) == 0)
-	{
-	  // If we did not wake any waiting writers, we might indeed be the
-	  // last writer (this can happen because write_lock_generic()
-	  // exchanges 0 or 1 to 2 and thus might go to contended mode even if
-	  // no other thread holds the write lock currently). Therefore, we
-	  // have to wake up readers here as well.  Execute a barrier after
-	  // the previous relaxed reset of writers (Dekker-style), and fall
-	  // through to the normal reader wake-up code.
-	  atomic_thread_fence (memory_order_seq_cst);
-	}
-      else
+      // There might be waiting writers, so wake them.  If we woke any thread,
+      // we assume it to indeed be a writer; waiting writers will never give
+      // up, so we can assume that they will take care of anything else such
+      // as waking readers.
+      if (futex_wake(&writers, 1) > 0)
 	return;
+      // If we did not wake any waiting writers, we might indeed be the last
+      // writer (this can happen because write_lock_generic() exchanges 0 or 1
+      // to 2 and thus might go to contended mode even if no other thread
+      // holds the write lock currently). Therefore, we have to fall through
+      // to the normal reader wake-up code.
     }
+  // This fence is required because we do Dekker-like synchronization here.
+  atomic_thread_fence (memory_order_seq_cst);
   // No waiting writers, so wake up all waiting readers.
-  // Because the fetch_and_sub is a full barrier already, we don't need
-  // another barrier here (as in read_unlock()).
   if (readers.load (memory_order_relaxed) > 0)
     {
       // No additional barrier needed here.  The previous load must be in

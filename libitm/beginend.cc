@@ -619,8 +619,10 @@ GTM::gtm_thread::trycommit ()
           // acquisitions).  This ensures that if we read prior to other
           // reader transactions setting their shared_state to 0, then those
           // readers will observe our updates.  We can reuse the seq_cst fence
-          // in serial_lock.read_unlock() however, so we don't need another
-          // one here.
+          // in serial_lock.read_unlock() if we performed that; if not, we
+	  // issue the fence.
+	  if (do_read_unlock)
+	    atomic_thread_fence (memory_order_seq_cst);
 	  // TODO Don't just spin but also block using cond vars / futexes
 	  // here. Should probably be integrated with the serial lock code.
 	  for (gtm_thread *it = gtm_thread::list_of_threads; it != 0;
