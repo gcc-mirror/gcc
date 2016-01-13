@@ -1,3 +1,12 @@
+2016-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69156
+	* gimple.c (validate_type): Removed.
+	(gimple_builtin_call_types_compatible_p): Use
+	useless_type_conversion_p instead of validate_type.
+	* value-prof.c (gimple_stringop_fixed_value): Fold
+	icall_size to correct type.
+
 2016-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/extend.texi (__atomic Builtins): Clarify compare_exchange
@@ -47,7 +56,7 @@
 	* config/arm/arm-arches.def: Remove spurious whitespace in "armv8.1-a"
 	and "armv8.1-a+crc" entries.
 
-2016-01-13  Alexander Fomin <alexander.fomin@intel.com>
+2016-01-13  Alexander Fomin  <alexander.fomin@intel.com>
 
 	PR target/69228
 	* config/i386/sse.md (define_expand "avx512pf_gatherpf<mode>sf"):
@@ -97,7 +106,7 @@
 	(compute_path_counts): Only do count adjustment when it's really
 	needed.
 
-2016-01-12  Sandra Loosemore <sandra@codesourcery.com>
+2016-01-12  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Spec Files): Move section down in file, past
 	all command-line option descriptions.
@@ -111,7 +120,7 @@
 	(walk_type): Likewise.
 	(write_func_for_structure): Likewise.
 
-2016-01-12  Sandra Loosemore <sandra@codesourcery.com>
+2016-01-12  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Option Summary) Move -no-canonical-prefixes to
 	Directory Options, and -specs= to Overall Options.
@@ -138,7 +147,7 @@
 	* tree-vrp.c (adjust_range_with_scev): Check overflow in range
 	information computed for expression "init + nit * step".
 
-2016-01-12  Sandra Loosemore <sandra@codesourcery.com>
+2016-01-12  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Invoking GCC): Copy-edit.  Incorporate information
 	about name of GCC executable.  Remove deleted node from menu.
@@ -215,7 +224,7 @@
 	for permuted strided SLP loads and do not spuriously assign
 	to SLP_TREE_VEC_STMTS.
 
-2016-01-12  Andris Pavenis <andris.pavenis@iki.fi>
+2016-01-12  Andris Pavenis  <andris.pavenis@iki.fi>
 
 	* config/i386/djgpp.h (PREFERRED_DEBUGGING_TYPE): Define to DWARF2
 	(TARGET_ASM_OUTPUT_IDENT): Define to default_asm_output_ident_directive
@@ -361,7 +370,7 @@
 	* ifcvt.c (bb_ok_for_noce_convert_multiple_sets): Limit number of
 	conditionl moves.
 
-2016-01-11  Alexandre Oliva <aoliva@redhat.com>
+2016-01-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR bootstrap/69123
 	* var-tracking.c (drop_overlapping_mem_locs): Operate on all
@@ -586,7 +595,7 @@
 	depending on frame_pointer_needed before remaining integer and SSE
 	registers are saved.
 
-2016-01-07  Sandra Loosemore <sandra@codesourcery.com>
+2016-01-07  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR 1078
 	* doc/extend.texi (Nvidia PDX Function Attributes): New section.
@@ -662,7 +671,7 @@
 	EXPR instead of ARG.
 	* ubsan.h (ubsan_instrument_float_cast): Adjust declaration.
 
-2016-01-05  Sandra Loosemore <sandra@codesourcery.com>
+2016-01-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR 1078
 	* doc/extend.texi (RL78 Variable Attributes): New section.
@@ -702,19 +711,19 @@
 	* config/i386/sse.md: Replace xm with xBm in plusminus and
 	any_logic patterns.
 
-2016-01-05  Sandra Loosemore <sandra@codesourcery.com>
+2016-01-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR 1078
 	* doc/extend.texi (V850 Function Attributes): New section.
 	(V850 Variable Attributes): New section.
 
-2016-01-05  Sandra Loosemore <sandra@codesourcery.com>
+2016-01-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR 1078
 	* doc/extend.texi (MicroBlaze Function Attributes): Document
 	interrupt_handler and fast_interrupt attributes.
 
-2016-01-05  Sergei Trofimovich <siarheit@google.com>
+2016-01-05  Sergei Trofimovich  <siarheit@google.com>
 
 	PR other/60465
 	* config/ia64/ia64.c (ia64_expand_load_address): Use gprel64
@@ -813,7 +822,7 @@
 	* doc/install.texi (--with-multilib-list): Describe the meaning of the
 	option for arm*-*-* targets.
 
-2016-01-03  Sandra Loosemore <sandra@codesourcery.com>
+2016-01-03  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/extend.texi (Common Function Attributes): Move docs for
 	MSP430-specific attributes to....
@@ -823,7 +832,7 @@
 	entries and add a cross-reference to the corresponding function
 	attribute docs.
 
-2016-01-03  Vladimír Čunát <vcunat@gmail.com>
+2016-01-03  Vladimír Čunát  <vcunat@gmail.com>
 
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Fix
 	-finite-math typo.

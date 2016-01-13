@@ -2445,24 +2445,6 @@ gimple_ior_addresses_taken (bitmap addresses_taken, gimple *stmt)
 }
 
 
-/* Return true if TYPE1 and TYPE2 are compatible enough for builtin
-   processing.  */
-
-static bool
-validate_type (tree type1, tree type2)
-{
-  if (INTEGRAL_TYPE_P (type1)
-      && INTEGRAL_TYPE_P (type2))
-    ;
-  else if (POINTER_TYPE_P (type1)
-	   && POINTER_TYPE_P (type2))
-    ;
-  else if (TREE_CODE (type1)
-	   != TREE_CODE (type2))
-    return false;
-  return true;
-}
-
 /* Return true when STMTs arguments and return value match those of FNDECL,
    a decl of a builtin function.  */
 
@@ -2473,7 +2455,8 @@ gimple_builtin_call_types_compatible_p (const gimple *stmt, tree fndecl)
 
   tree ret = gimple_call_lhs (stmt);
   if (ret
-      && !validate_type (TREE_TYPE (ret), TREE_TYPE (TREE_TYPE (fndecl))))
+      && !useless_type_conversion_p (TREE_TYPE (ret),
+				     TREE_TYPE (TREE_TYPE (fndecl))))
     return false;
 
   tree targs = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
@@ -2484,7 +2467,7 @@ gimple_builtin_call_types_compatible_p (const gimple *stmt, tree fndecl)
       if (!targs)
 	return true;
       tree arg = gimple_call_arg (stmt, i);
-      if (!validate_type (TREE_TYPE (arg), TREE_VALUE (targs)))
+      if (!useless_type_conversion_p (TREE_VALUE (targs), TREE_TYPE (arg)))
 	return false;
       targs = TREE_CHAIN (targs);
     }
