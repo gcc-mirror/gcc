@@ -105,7 +105,7 @@ standard version were referred to as @dfn{C1X}.)
 By default, GCC provides some extensions to the C language that on
 rare occasions conflict with the C standard.  @xref{C
 Extensions,,Extensions to the C Language Family}.  Use of the
-@option{-std} options listed above will disable these extensions where
+@option{-std} options listed above disables these extensions where
 they conflict with the C standard version selected.  You may also
 select an extended version of the C language explicitly with
 @option{-std=gnu90} (for C90 with GNU extensions), @option{-std=gnu99}
@@ -171,8 +171,8 @@ information concerning the history of C that is available online, see
 
 @section C++ Language
 
-GCC supports the original ISO C++ standard (1998) and contains
-experimental support for the second ISO C++ standard (2011).
+GCC supports the original ISO C++ standard published in 1998,
+and the 2011 and 2014 revisions.
 
 The original ISO C++ standard was published as the ISO standard (ISO/IEC
 14882:1998) and amended by a Technical Corrigenda published in 2003
@@ -187,26 +187,46 @@ warnings).
 
 A revised ISO C++ standard was published in 2011 as ISO/IEC
 14882:2011, and is referred to as C++11; before its publication it was
-commonly referred to as C++0x.  C++11 contains several
-changes to the C++ language, most of which have been implemented in an
-experimental C++11 mode in GCC@.  For information
-regarding the C++11 features available in the experimental C++11 mode,
-see @uref{http://gcc.gnu.org/projects/@/cxx0x.html}. To select this
-standard in GCC, use the option @option{-std=c++11}; to obtain all the
-diagnostics required by the standard, you should also specify
-@option{-pedantic} (or @option{-pedantic-errors} if you want them to
-be errors rather than warnings).
+commonly referred to as C++0x.  C++11 contains several changes to the
+C++ language, all of which have been implemented in GCC@. For details
+see @uref{https://gcc.gnu.org/projects/@/cxx0x.html}.
+To select this standard in GCC, use the option @option{-std=c++11}.
+
+Another revised ISO C++ standard was published in 2014 as ISO/IEC
+14882:2014, and is referred to as C++14; before its publication it was
+sometimes referred to as C++1y.  C++14 contains several further
+changes to the C++ language, all of which have been implemented in GCC@.
+For details see @uref{https://gcc.gnu.org/projects/@/cxx1y.html}.
+To select this standard in GCC, use the option @option{-std=c++14}.
+
+GCC also supports the C++ Concepts Technical Specification,
+ISO/IEC TS 19217:2015, which allows constraints to be defined for templates,
+allowing template arguments to be checked and for templates to be
+overloaded or specialized based on the constraints. Support for C++ Concepts
+is included in an experimental C++1z mode that corresponds to the next
+revision of the ISO C++ standard, expected to be published in 2017. To enable
+C++1z support in GCC, use the option @option{-std=c++17} or
+@option{-std=c++1z}.
 
 More information about the C++ standards is available on the ISO C++
 committee's web site at @uref{http://www.open-std.org/@/jtc1/@/sc22/@/wg21/}.
 
-By default, GCC provides some extensions to the C++ language; @xref{C++
+To obtain all the diagnostics required by any of the standard versions
+described above you should specify @option{-pedantic}
+or @option{-pedantic-errors}, otherwise GCC will allow some non-ISO C++
+features as extensions. @xref{Warning Options}.
+
+By default, GCC also provides some additional extensions to the C++ language
+that on rare occasions conflict with the C++ standard.  @xref{C++
 Dialect Options,Options Controlling C++ Dialect}.  Use of the
-@option{-std} option listed above will disable these extensions.  You
-may also select an extended version of the C++ language explicitly with
-@option{-std=gnu++98} (for C++98 with GNU extensions) or
-@option{-std=gnu++11} (for C++11 with GNU extensions).  The default, if
-no C++ language dialect options are given, is @option{-std=gnu++98}.
+@option{-std} options listed above disables these extensions where they
+they conflict with the C++ standard version selected.  You may also
+select an extended version of the C++ language explicitly with
+@option{-std=gnu++98} (for C++98 with GNU extensions), or
+@option{-std=gnu++11} (for C++11 with GNU extensions), or
+@option{-std=gnu++14} (for C++14 with GNU extensions), or
+@option{-std=gnu++1z} (for C++1z with GNU extensions).  The default, if
+no C++ language dialect options are given, is @option{-std=gnu++14}.
 
 @section Objective-C and Objective-C++ Languages
 @cindex Objective-C

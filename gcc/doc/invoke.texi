@@ -1784,8 +1784,7 @@ additional defect reports. Same as @option{-ansi} for C++ code.
 
 @item gnu++98
 @itemx gnu++03
-GNU dialect of @option{-std=c++98}.  This is the default for
-C++ code.
+GNU dialect of @option{-std=c++98}.
 
 @item c++11
 @itemx c++0x
@@ -1805,6 +1804,7 @@ The name @samp{c++1y} is deprecated.
 @item gnu++14
 @itemx gnu++1y
 GNU dialect of @option{-std=c++14}.
+This is the default for C++ code.
 The name @samp{gnu++1y} is deprecated.
 
 @item c++1z
@@ -2132,6 +2132,10 @@ In this example, only @option{-fstrict-enums} is an option meant
 only for C++ programs; you can use the other options with any
 language supported by GCC@.
 
+Some options for compiling C programs, such as @option{-std}, are also
+relevant for C++ programs.
+@xref{C Dialect Options,,Options Controlling C Dialect}.
+
 Here is a list of options that are @emph{only} for compiling C++ programs:
 
 @table @gcctabopt
@@ -2317,7 +2321,8 @@ otherwise be invalid, or have different behavior.
 @opindex fno-gnu-keywords
 Do not recognize @code{typeof} as a keyword, so that code can use this
 word as an identifier.  You can use the keyword @code{__typeof__} instead.
-@option{-ansi} implies @option{-fno-gnu-keywords}.
+This option is implied by the strict ISO C++ dialects: @option{-ansi},
+@option{-std=c++98}, @option{-std=c++11}, etc.
 
 @item -fno-implicit-templates
 @opindex fno-implicit-templates
