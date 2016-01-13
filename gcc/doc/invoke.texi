@@ -166,10 +166,10 @@ in the following sections.
 @table @emph
 @item Overall Options
 @xref{Overall Options,,Options Controlling the Kind of Output}.
-@gccoptlist{-c  -S  -E  -o @var{file}  -no-canonical-prefixes  @gol
--pipe  -pass-exit-codes  @gol
--x @var{language}  -v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  @gol
---version -wrapper @@@var{file} -fplugin=@var{file} -fplugin-arg-@var{name}=@var{arg}  @gol
+@gccoptlist{-c  -S  -E  -o @var{file}  -x @var{language}  @gol
+-v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  --version @gol
+-pass-exit-codes  -pipe  -specs=@var{file}  -wrapper  @gol
+@@@var{file} -fplugin=@var{file} -fplugin-arg-@var{name}=@var{arg}  @gol
 -fdump-ada-spec@r{[}-slim@r{]} -fada-spec-parent=@var{unit} -fdump-go-spec=@var{file}}
 
 @item C Language Options
@@ -513,7 +513,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Directory Options
 @xref{Directory Options,,Options for Directory Search}.
 @gccoptlist{-B@var{prefix} -I@var{dir} -iplugindir=@var{dir} @gol
--iquote@var{dir} -L@var{dir} -specs=@var{file} -I- @gol
+-iquote@var{dir} -L@var{dir} -no-canonical-prefixes -I- @gol
 --sysroot=@var{dir} --no-sysroot-suffix}
 
 @item Machine Dependent Options
@@ -1342,15 +1342,6 @@ java
 Turn off any specification of a language, so that subsequent files are
 handled according to their file name suffixes (as they are if @option{-x}
 has not been used at all).
-
-@item -pass-exit-codes
-@opindex pass-exit-codes
-Normally the @command{gcc} program exits with the code of 1 if any
-phase of the compiler returns a non-success return code.  If you specify
-@option{-pass-exit-codes}, the @command{gcc} program instead returns with
-the numerically highest error produced by any phase returning an error
-indication.  The C, C++, and Fortran front ends return 4 if an internal
-compiler error is encountered.
 @end table
 
 If you only want some of the stages of compilation, you can use
@@ -1416,13 +1407,6 @@ program and of the preprocessor and the compiler proper.
 Like @option{-v} except the commands are not executed and arguments
 are quoted unless they contain only alphanumeric characters or @code{./-_}.
 This is useful for shell scripts to capture the driver-generated command lines.
-
-@item -pipe
-@opindex pipe
-Use pipes rather than temporary files for communication between the
-various stages of compilation.  This fails to work on some systems where
-the assembler is unable to read from a pipe; but the GNU assembler has
-no trouble.
 
 @item --help
 @opindex help
@@ -1556,15 +1540,35 @@ gcc -c -Q -O2 --help=optimizers > /tmp/O2-opts
 diff /tmp/O2-opts /tmp/O3-opts | grep enabled
 @end smallexample
 
-@item -no-canonical-prefixes
-@opindex no-canonical-prefixes
-Do not expand any symbolic links, resolve references to @samp{/../}
-or @samp{/./}, or make the path absolute when generating a relative
-prefix.
-
 @item --version
 @opindex version
 Display the version number and copyrights of the invoked GCC@.
+
+@item -pass-exit-codes
+@opindex pass-exit-codes
+Normally the @command{gcc} program exits with the code of 1 if any
+phase of the compiler returns a non-success return code.  If you specify
+@option{-pass-exit-codes}, the @command{gcc} program instead returns with
+the numerically highest error produced by any phase returning an error
+indication.  The C, C++, and Fortran front ends return 4 if an internal
+compiler error is encountered.
+
+@item -pipe
+@opindex pipe
+Use pipes rather than temporary files for communication between the
+various stages of compilation.  This fails to work on some systems where
+the assembler is unable to read from a pipe; but the GNU assembler has
+no trouble.
+
+@item -specs=@var{file}
+@opindex specs
+Process @var{file} after the compiler reads in the standard @file{specs}
+file, in order to override the defaults which the @command{gcc} driver
+program uses when determining what switches to pass to @command{cc1},
+@command{cc1plus}, @command{as}, @command{ld}, etc.  More than one
+@option{-specs=@var{file}} can be specified on the command line, and they
+are processed in order, from left to right.  @xref{Spec Files}, for
+information about the format of the @var{file}.
 
 @item -wrapper
 @opindex wrapper
@@ -11778,14 +11782,11 @@ As a special kludge, if the path provided by @option{-B} is
 9, then it is replaced by @file{[dir/]include}.  This is to help
 with boot-strapping the compiler.
 
-@item -specs=@var{file}
-@opindex specs
-Process @var{file} after the compiler reads in the standard @file{specs}
-file, in order to override the defaults which the @command{gcc} driver
-program uses when determining what switches to pass to @command{cc1},
-@command{cc1plus}, @command{as}, @command{ld}, etc.  More than one
-@option{-specs=@var{file}} can be specified on the command line, and they
-are processed in order, from left to right.
+@item -no-canonical-prefixes
+@opindex no-canonical-prefixes
+Do not expand any symbolic links, resolve references to @samp{/../}
+or @samp{/./}, or make the path absolute when generating a relative
+prefix.
 
 @item --sysroot=@var{dir}
 @opindex sysroot
