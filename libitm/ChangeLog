@@ -1,3 +1,19 @@
+2016-01-13  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.am (libitm_la_SOURCES) [ARCH_AARCH64]: Add vect128.cc
+	(libitm_la_SOURCES) [ARCH_ARM]: Add neon.cc
+	(libitm_la_SOURCES) [ARCH_PPC]: Add vect128.cc
+	(libitm_la_SOURCES) [ARCH_S390]: Add vect128.cc
+	* configure.ac (ARCH_AARCH64): New conditional.
+	(ARCH_PPC, ARCH_S390): Likewise.
+	* Makefile.in, configure: Rebuild.
+
+	* libitm.h (_ITM_TYPE_M128): Always define.
+	* vect64.cc: Split ...
+	* vect128.cc: ... out of...
+	* config/x86/x86_sse.cc: ... here.
+	* config/arm/neon.cc: New file.
+
 2016-01-13  Torvald Riegel  <triegel@redhat.com>
 
 	* beginend.cc (gtm_thread::trycommit): Fix privatization safety.

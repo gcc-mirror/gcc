@@ -607,8 +607,14 @@ ARCH_X86_AVX_FALSE
 ARCH_X86_AVX_TRUE
 ARCH_X86_FALSE
 ARCH_X86_TRUE
+ARCH_S390_FALSE
+ARCH_S390_TRUE
+ARCH_PPC_FALSE
+ARCH_PPC_TRUE
 ARCH_ARM_FALSE
 ARCH_ARM_TRUE
+ARCH_AARCH64_FALSE
+ARCH_AARCH64_TRUE
 link_itm
 XLDFLAGS
 XCFLAGS
@@ -9762,7 +9768,7 @@ _LT_EOF
 	if $NM -V 2>&1 | $GREP 'GNU' > /dev/null; then
 	  export_symbols_cmds='$NM -Bpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "W")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
 	else
-	  export_symbols_cmds='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
+	  export_symbols_cmds='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "L")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
 	fi
 	aix_use_runtimelinking=no
 
@@ -11790,7 +11796,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11793 "configure"
+#line 11799 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11896,7 +11902,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11899 "configure"
+#line 11905 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14248,7 +14254,7 @@ $as_echo_n "checking whether the $compiler linker ($LD) supports shared librarie
     if $NM -V 2>&1 | $GREP 'GNU' > /dev/null; then
       export_symbols_cmds_CXX='$NM -Bpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "W")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
     else
-      export_symbols_cmds_CXX='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
+      export_symbols_cmds_CXX='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "L")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
     fi
     ;;
   pw32*)
@@ -17603,12 +17609,36 @@ else
 fi
 
 
+ if test "$ARCH" = aarch64; then
+  ARCH_AARCH64_TRUE=
+  ARCH_AARCH64_FALSE='#'
+else
+  ARCH_AARCH64_TRUE='#'
+  ARCH_AARCH64_FALSE=
+fi
+
  if test "$ARCH" = arm; then
   ARCH_ARM_TRUE=
   ARCH_ARM_FALSE='#'
 else
   ARCH_ARM_TRUE='#'
   ARCH_ARM_FALSE=
+fi
+
+ if test "$ARCH" = powerpc -o "$ARCH" = powerpc64; then
+  ARCH_PPC_TRUE=
+  ARCH_PPC_FALSE='#'
+else
+  ARCH_PPC_TRUE='#'
+  ARCH_PPC_FALSE=
+fi
+
+ if test "$ARCH" = s390 -o "$ARCH" = s390x; then
+  ARCH_S390_TRUE=
+  ARCH_S390_FALSE='#'
+else
+  ARCH_S390_TRUE='#'
+  ARCH_S390_FALSE=
 fi
 
  if test "$ARCH" = x86; then
@@ -17788,8 +17818,20 @@ if test -z "${LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE}" && test -z "${LIBITM_BUILD
   as_fn_error "conditional \"LIBITM_BUILD_VERSIONED_SHLIB_SUN\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${ARCH_AARCH64_TRUE}" && test -z "${ARCH_AARCH64_FALSE}"; then
+  as_fn_error "conditional \"ARCH_AARCH64\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${ARCH_ARM_TRUE}" && test -z "${ARCH_ARM_FALSE}"; then
   as_fn_error "conditional \"ARCH_ARM\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ARCH_PPC_TRUE}" && test -z "${ARCH_PPC_FALSE}"; then
+  as_fn_error "conditional \"ARCH_PPC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ARCH_S390_TRUE}" && test -z "${ARCH_S390_FALSE}"; then
+  as_fn_error "conditional \"ARCH_S390\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ARCH_X86_TRUE}" && test -z "${ARCH_X86_FALSE}"; then

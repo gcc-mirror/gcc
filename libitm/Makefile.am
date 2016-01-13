@@ -62,16 +62,26 @@ libitm_la_SOURCES = \
 	query.cc retry.cc rwlock.cc useraction.cc util.cc \
 	sjlj.S tls.cc method-serial.cc method-gl.cc method-ml.cc
 
+if ARCH_AARCH64
+libitm_la_SOURCES += vect128.cc
+endif
 if ARCH_ARM
-libitm_la_SOURCES += hwcap.cc
+libitm_la_SOURCES += hwcap.cc neon.cc
+endif
+if ARCH_PPC
+libitm_la_SOURCES += vect128.cc
+vect128.lo : override CXXFLAGS += -maltivec
+endif
+if ARCH_S390
+libitm_la_SOURCES += vect128.cc
+vect128.lo : override CXXFLAGS += -march=z13
 endif
 if ARCH_X86
-libitm_la_SOURCES += x86_sse.cc x86_avx.cc
-# Make sure -msse is appended at the end.
-x86_sse.lo : override CXXFLAGS += -msse
+libitm_la_SOURCES += vect64.cc vect128.cc x86_avx.cc
+vect64.lo : override CXXFLAGS += -msse
+vect128.lo : override CXXFLAGS += -msse
 endif
 if ARCH_X86_AVX
-# Make sure -mavx is appended at the end.
 x86_avx.lo : override CXXFLAGS += -mavx
 endif
 
