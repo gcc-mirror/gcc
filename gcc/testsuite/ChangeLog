@@ -1,3 +1,7 @@
+2016-01-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr69225-7.c: New test.
+
 2016-01-13  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/tm/memopt-13.c: Update expected function.
