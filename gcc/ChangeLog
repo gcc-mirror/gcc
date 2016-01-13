@@ -1,3 +1,9 @@
+2016-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69013
+	* tree-ssa-uninit.c (prune_uninit_phi_opnds_in_unrealizable_paths):
+	Exchange assert for a test.
+
 2016-01-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
