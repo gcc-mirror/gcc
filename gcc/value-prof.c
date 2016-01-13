@@ -1697,7 +1697,8 @@ gimple_stringop_fixed_value (gcall *vcall_stmt, tree icall_size, int prob,
   gimple_set_vuse (vcall_stmt, NULL);
   update_stmt (vcall_stmt);
   icall_stmt = as_a <gcall *> (gimple_copy (vcall_stmt));
-  gimple_call_set_arg (icall_stmt, size_arg, icall_size);
+  gimple_call_set_arg (icall_stmt, size_arg,
+		       fold_convert (optype, icall_size));
   gsi_insert_before (&gsi, icall_stmt, GSI_SAME_STMT);
 
   /* Fix CFG. */

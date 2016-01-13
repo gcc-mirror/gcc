@@ -1,3 +1,8 @@
+2016-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69156
+	* gcc.dg/pr69156.c: New test.
+
 2016-01-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pr69225-7.c: New test.
@@ -19,7 +24,7 @@
 	PR tree-optimization/69169
 	* gcc.dg/pr69169.c: New test.
 
-2016-01-13  Alexander Fomin <alexander.fomin@intel.com>
+2016-01-13  Alexander Fomin  <alexander.fomin@intel.com>
 
 	PR target/69228
 	* gcc.target/i386/avx512pf-vscatterpf0dpd-1.c: Adjust.
@@ -250,7 +255,7 @@
 	for ix86 targets.
 	* gcc.dg/ifcvt-5.c: New test.
 
-2016-01-11  Alexandre Oliva <aoliva@redhat.com>
+2016-01-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR bootstrap/69123
 	* g++.dg/pr69123.C: New.
@@ -408,7 +413,7 @@
 	* g++.dg/pr66655_1.cc: Test support file.
 	* g++.dg/pr66655.h: Test header file.
 
-2016-01-07  Dominique d'Humieres <dominiq@lps.ens.fr>
+2016-01-07  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/66680
 	gfortran.dg/gomp/pr66680.f90: New test.
