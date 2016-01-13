@@ -18,4 +18,4 @@ int f()
   return lala.x[i];
 }
 
-/* { dg-final { scan-tree-dump-times "memmoveRtWt \\\(.*, &lacopy" 1 "tmedge" } } */
+/* { dg-final { scan-tree-dump-times "memcpyRtWn \\\(.*, &lacopy" 1 "tmedge" } } */

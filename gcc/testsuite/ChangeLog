@@ -1,3 +1,8 @@
+2016-01-13  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/tm/memopt-13.c: Update expected function.
+	* gcc.dg/tm/memopt-6.c: Likewise.
+
 2016-01-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr45685.c (dg-options): Add -mno-sse4.

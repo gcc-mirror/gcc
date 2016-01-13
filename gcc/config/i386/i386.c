@@ -35214,48 +35214,6 @@ static const struct builtin_description bdesc_tm[] =
   { OPTION_MASK_ISA_AVX, CODE_FOR_nothing, "__builtin__ITM_LM256", (enum ix86_builtins) BUILT_IN_TM_LOG_M256, UNKNOWN, VOID_FTYPE_PCVOID },
 };
 
-/* TM callbacks.  */
-
-/* Return the builtin decl needed to load a vector of TYPE.  */
-
-static tree
-ix86_builtin_tm_load (tree type)
-{
-  if (TREE_CODE (type) == VECTOR_TYPE)
-    {
-      switch (tree_to_uhwi (TYPE_SIZE (type)))
-	{
-	case 64:
-	  return builtin_decl_explicit (BUILT_IN_TM_LOAD_M64);
-	case 128:
-	  return builtin_decl_explicit (BUILT_IN_TM_LOAD_M128);
-	case 256:
-	  return builtin_decl_explicit (BUILT_IN_TM_LOAD_M256);
-	}
-    }
-  return NULL_TREE;
-}
-
-/* Return the builtin decl needed to store a vector of TYPE.  */
-
-static tree
-ix86_builtin_tm_store (tree type)
-{
-  if (TREE_CODE (type) == VECTOR_TYPE)
-    {
-      switch (tree_to_uhwi (TYPE_SIZE (type)))
-	{
-	case 64:
-	  return builtin_decl_explicit (BUILT_IN_TM_STORE_M64);
-	case 128:
-	  return builtin_decl_explicit (BUILT_IN_TM_STORE_M128);
-	case 256:
-	  return builtin_decl_explicit (BUILT_IN_TM_STORE_M256);
-	}
-    }
-  return NULL_TREE;
-}
-
 /* Initialize the transactional memory vector load/store builtins.  */
 
 static void
@@ -54339,12 +54297,6 @@ ix86_addr_space_zero_address_valid (addr_space_t as)
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
   ix86_builtin_vectorized_function
-
-#undef TARGET_VECTORIZE_BUILTIN_TM_LOAD
-#define TARGET_VECTORIZE_BUILTIN_TM_LOAD ix86_builtin_tm_load
-
-#undef TARGET_VECTORIZE_BUILTIN_TM_STORE
-#define TARGET_VECTORIZE_BUILTIN_TM_STORE ix86_builtin_tm_store
 
 #undef TARGET_VECTORIZE_BUILTIN_GATHER
 #define TARGET_VECTORIZE_BUILTIN_GATHER ix86_vectorize_builtin_gather
