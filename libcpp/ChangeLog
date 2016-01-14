@@ -1,3 +1,22 @@
+2016-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/69177
+	* line-map.c (LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES): New
+	constant.
+	(LINE_MAP_MAX_LOCATION_WITH_COLS): Add note about unit tests
+	to comment.
+	(can_be_stored_compactly_p): Reduce threshold from
+	LINE_MAP_MAX_LOCATION_WITH_COLS to
+	LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES.
+	(get_combined_adhoc_loc): Likewise.
+	(get_range_from_loc): Likewise.
+	(linemap_line_start): Ensure that a new ordinary map is created
+	when transitioning from range-packing being enabled to disabled,
+	at the LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES threshold.  Set
+	range_bits to 0 for new ordinary maps when beyond this limit.
+	Prevent the "increase the column bits of a freshly created map"
+	optimization if the range bits has reduced.
+
 2016-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69145

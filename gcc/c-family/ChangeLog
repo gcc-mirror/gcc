@@ -1,3 +1,12 @@
+2016-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/68819
+	* c-indentation.c (get_visual_column): Add location_t param.
+	Handle the column number being zero by effectively disabling the
+	warning, with an "inform".
+	(should_warn_for_misleading_indentation): Add location_t argument
+	for all uses of get_visual_column.
+
 2016-01-10  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/69029
