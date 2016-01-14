@@ -1,3 +1,11 @@
+2016-01-14  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/69014
+	* loop-doloop.c (record_reg_sets): New.
+	(doloop_optimize): Reject the transform if the sequence
+	clobbers registers live at the end of the loop block.
+	(doloop_optimize_loops): Enable df_live if needed. 
+
 2016-01-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def: Revert 2016-01-13 change.
