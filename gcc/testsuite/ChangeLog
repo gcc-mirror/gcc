@@ -1,3 +1,8 @@
+2016-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/69244
+	* gcc.dg/guality/pr69244.c: New test.
+
 2016-01-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/target-supports.exp (check_effective_target_issignaling):

@@ -295,7 +295,9 @@ move_plus_up (rtx x)
   subreg_reg_mode = GET_MODE (subreg_reg);
   if (GET_CODE (x) == SUBREG && GET_CODE (subreg_reg) == PLUS
       && GET_MODE_SIZE (x_mode) <= GET_MODE_SIZE (subreg_reg_mode)
-      && CONSTANT_P (XEXP (subreg_reg, 1)))
+      && CONSTANT_P (XEXP (subreg_reg, 1))
+      && GET_MODE_CLASS (x_mode) == MODE_INT
+      && GET_MODE_CLASS (subreg_reg_mode) == MODE_INT)
     {
       rtx cst = simplify_subreg (x_mode, XEXP (subreg_reg, 1), subreg_reg_mode,
 				 subreg_lowpart_offset (x_mode,

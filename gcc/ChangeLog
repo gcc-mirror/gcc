@@ -1,3 +1,11 @@
+2016-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/69244
+	* lra-eliminations.c (move_plus_up): Don't change anything if either
+	the outer or inner subreg mode is not MODE_INT.
+	* dwarf2out.c (mem_loc_descriptor): For SUBREG, if outer mode is
+	integral <= DWARF2_ADDR_SIZE, convert to untyped afterwards.
+
 2016-01-14  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* doc/md.texi (reduc_smin_@var{m}, reduc_smax_@var{m},

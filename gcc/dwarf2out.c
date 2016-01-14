@@ -13239,6 +13239,13 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
 	  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
 	  add_loc_descr (&mem_loc_result, cvt);
+	  if (GET_MODE_CLASS (mode) == MODE_INT
+	      && GET_MODE_SIZE (mode) <= DWARF2_ADDR_SIZE)
+	    {
+	      /* Convert it to untyped afterwards.  */
+	      cvt = new_loc_descr (DW_OP_GNU_convert, 0, 0);
+	      add_loc_descr (&mem_loc_result, cvt);
+	    }
 	}
       break;
 
