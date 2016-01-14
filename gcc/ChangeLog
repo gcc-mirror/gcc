@@ -1,3 +1,10 @@
+2016-01-14  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/69270
+	* tree-ssa-dom.c (ssa_name_has_boolean_range): New function.
+	(record_edge_info): Use it.  Convert boolean_{true,false}_node
+	to the type of op0.
+
 2016-01-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/66487
