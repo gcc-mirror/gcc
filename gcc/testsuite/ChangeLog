@@ -1,4 +1,4 @@
-2015-01-14 Ryan Burn  <contact@rnburn.com>
+2015-01-14  Ryan Burn  <contact@rnburn.com>
 
 	PR c++/69048
 	* g++.dg/cilk-plus/CK/pr69048.cc: New test.
