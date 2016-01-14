@@ -1,3 +1,9 @@
+2016-01-14  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* configure.ac: Replace the hard-coded -ldl requirement for
+	link_sanitizer_common with a configure time check for -ldl.
+	* configure: Regenerate.
+
 2015-11-24  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* include/system/linux/asm/ptrace.h: Move to ...
