@@ -1,3 +1,10 @@
+2016-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66856
+	* tree-vect-slp.c (vect_build_slp_tree): Refactor to build
+	SLP node only if it built successfully.
+	(vect_analyze_slp_instance): Adjust.
+
 2016-01-14  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69270
