@@ -1,3 +1,8 @@
+2016-01-14  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (ssa_name_has_boolean_range): Fix comment
+	typo.
+
 2016-01-14  Richard Henderson  <rth@redhat.com>
 
 	PR c/69272
