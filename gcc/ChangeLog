@@ -1,3 +1,9 @@
+2016-01-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* alias.c (compare_base_symbol_refs): New function.
+	(rtx_equal_for_memref_p, base_alias_check, memrefs_conflict_p): Use
+	it.
+
 2016-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/68146

@@ -158,6 +158,7 @@ static tree decl_for_component_ref (tree);
 static int write_dependence_p (const_rtx,
 			       const_rtx, machine_mode, rtx,
 			       bool, bool, bool);
+static int compare_base_symbol_refs (const_rtx, const_rtx);
 
 static void memory_modified_1 (rtx, const_rtx, void *);
 
@@ -1756,15 +1757,7 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
       return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
 
     case SYMBOL_REF:
-      {
-	tree x_decl = SYMBOL_REF_DECL (x);
-	tree y_decl = SYMBOL_REF_DECL (y);
-
-	if (!x_decl || !y_decl)
-	  return XSTR (x, 0) == XSTR (y, 0);
-	else
-	  return compare_base_decls (x_decl, y_decl) == 1;
-      }
+      return compare_base_symbol_refs (x, y) == 1;
 
     case ENTRY_VALUE:
       /* This is magic, don't go through canonicalization et al.  */
@@ -2056,6 +2049,67 @@ compare_base_decls (tree base1, tree base2)
   return ret;
 }
 
+/* Same as compare_base_decls but for SYMBOL_REF.  */
+
+static int
+compare_base_symbol_refs (const_rtx x_base, const_rtx y_base)
+{
+  tree x_decl = SYMBOL_REF_DECL (x_base);
+  tree y_decl = SYMBOL_REF_DECL (y_base);
+  bool binds_def = true;
+
+  if (XSTR (x_base, 0) == XSTR (y_base, 0))
+    return 1;
+  if (x_decl && y_decl)
+    return compare_base_decls (x_decl, y_decl);
+  if (x_decl || y_decl)
+    {
+      if (!x_decl)
+	{
+	  std::swap (x_decl, y_decl);
+	  std::swap (x_base, y_base);
+	}
+      /* We handle specially only section anchors and assume that other
+ 	 labels may overlap with user variables in an arbitrary way.  */
+      if (!SYMBOL_REF_HAS_BLOCK_INFO_P (y_base))
+        return -1;
+      /* Anchors contains static VAR_DECLs and CONST_DECLs.  We are safe
+	 to ignore CONST_DECLs because they are readonly.  */
+      if (TREE_CODE (x_decl) != VAR_DECL
+	  || (!TREE_STATIC (x_decl) && !TREE_PUBLIC (x_decl)))
+	return 0;
+
+      symtab_node *x_node = symtab_node::get_create (x_decl)
+			    ->ultimate_alias_target ();
+      /* External variable can not be in section anchor.  */
+      if (!x_node->definition)
+	return 0;
+      x_base = XEXP (DECL_RTL (x_node->decl), 0);
+      /* If not in anchor, we can disambiguate.  */
+      if (!SYMBOL_REF_HAS_BLOCK_INFO_P (x_base))
+	return 0;
+
+      /* We have an alias of anchored variable.  If it can be interposed;
+ 	 we must assume it may or may not alias its anchor.  */
+      binds_def = decl_binds_to_current_def_p (x_decl);
+    }
+  /* If we have variable in section anchor, we can compare by offset.  */
+  if (SYMBOL_REF_HAS_BLOCK_INFO_P (x_base)
+      && SYMBOL_REF_HAS_BLOCK_INFO_P (y_base))
+    {
+      if (SYMBOL_REF_BLOCK (x_base) != SYMBOL_REF_BLOCK (y_base))
+	return 0;
+      if (SYMBOL_REF_BLOCK_OFFSET (x_base) == SYMBOL_REF_BLOCK_OFFSET (y_base))
+	return binds_def ? 1 : -1;
+      if (SYMBOL_REF_ANCHOR_P (x_base) != SYMBOL_REF_ANCHOR_P (y_base))
+	return -1;
+      return 0;
+    }
+  /* In general we assume that memory locations pointed to by different labels
+     may overlap in undefined ways.  */
+  return -1;
+}
+
 /* Return 0 if the addresses X and Y are known to point to different
    objects, 1 if they might be pointers to the same object.  */
 
@@ -2111,18 +2165,10 @@ base_alias_check (rtx x, rtx x_base, rtx y, rtx y_base,
 	  || (int) GET_MODE_UNIT_SIZE (x_mode) < -INTVAL (XEXP (y, 1))))
     return 1;
 
-  if (GET_CODE (x_base) == SYMBOL_REF && GET_CODE (y_base) == SYMBOL_REF)
-    {
-      tree x_decl = SYMBOL_REF_DECL (x_base);
-      tree y_decl = SYMBOL_REF_DECL (y_base);
-
-      /* We can assume that no stores are made to labels.  */
-      if (!x_decl || !y_decl)
-	return 0;
-      return compare_base_decls (x_decl, y_decl) != 0;
-    }
-
   /* Differing symbols not accessed via AND never alias.  */
+  if (GET_CODE (x_base) == SYMBOL_REF && GET_CODE (y_base) == SYMBOL_REF)
+    return compare_base_symbol_refs (x_base, y_base) != 0;
+
   if (GET_CODE (x_base) != ADDRESS && GET_CODE (y_base) != ADDRESS)
     return 0;
 
@@ -2327,19 +2373,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 
   if (GET_CODE (x) == SYMBOL_REF && GET_CODE (y) == SYMBOL_REF)
     {
-      tree x_decl = SYMBOL_REF_DECL (x);
-      tree y_decl = SYMBOL_REF_DECL (y);
-      int cmp;
-
-      if (!x_decl || !y_decl)
-	{
-	  /* Label and normal symbol are never the same. */
-	  if (x_decl != y_decl)
-	    return 0;
-	  return offset_overlap_p (c, xsize, ysize);
-	}
-      else
-        cmp = compare_base_decls (x_decl, y_decl);
+      int cmp = compare_base_symbol_refs (x,y);
 
       /* If both decls are the same, decide by offsets.  */
       if (cmp == 1)
