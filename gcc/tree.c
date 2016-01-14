@@ -10393,7 +10393,7 @@ build_tm_vector_builtins (void)
   /* By default, 64 bit vectors go through the long long helpers.  */
 
   /* If a 128-bit vector is supported, declare those builtins.  */
-  if (!builtin_decl_declared_p (BUILT_IN_TM_STORE_M128)
+  if (!builtin_decl_explicit_p (BUILT_IN_TM_STORE_M128)
       && ((vtype = find_tm_vector_type (128, SImode))
 	  || (vtype = find_tm_vector_type (128, SFmode))))
     {
@@ -10430,7 +10430,7 @@ build_tm_vector_builtins (void)
     }
 
   /* If a 256-bit vector is supported, declare those builtins.  */
-  if (!builtin_decl_declared_p (BUILT_IN_TM_STORE_M256)
+  if (!builtin_decl_explicit_p (BUILT_IN_TM_STORE_M256)
       && ((vtype = find_tm_vector_type (256, SImode))
 	  || (vtype = find_tm_vector_type (256, SFmode))))
     {
