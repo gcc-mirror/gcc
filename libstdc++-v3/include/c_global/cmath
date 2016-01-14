@@ -1784,4 +1784,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #endif // C++11
 
+#if __STDCPP_WANT_MATH_SPEC_FUNCS__ == 1
+#  include <bits/specfun.h>
+#endif
+
 #endif
