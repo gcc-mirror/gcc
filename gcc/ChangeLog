@@ -1,3 +1,8 @@
+2016-01-14  Nicklas Bo Jensen  <nbjensen@gmail.com>
+
+        * doc/loop.texi (Loop Analysis and Representation): Document
+	loop_depth function.
+
 2016-01-14  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/68773
