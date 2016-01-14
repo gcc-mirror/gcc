@@ -1229,16 +1229,16 @@ tm_log_emit_stmt (tree addr, gimple *stmt)
 	unhandled_vec:
 	  switch (type_size)
 	    {
-	    case 1:
+	    case 8:
 	      code = BUILT_IN_TM_LOG_1;
 	      break;
-	    case 2:
+	    case 16:
 	      code = BUILT_IN_TM_LOG_2;
 	      break;
-	    case 4:
+	    case 32:
 	      code = BUILT_IN_TM_LOG_4;
 	      break;
-	    case 8:
+	    case 64:
 	      code = BUILT_IN_TM_LOG_8;
 	      break;
 	    }

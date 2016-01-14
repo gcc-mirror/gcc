@@ -1,3 +1,11 @@
+2016-01-14  Richard Henderson  <rth@redhat.com>
+
+	PR c/69272
+	PR tree-opt/68964
+	* trans-mem.c (tm_log_emit_stmt): Fix unit size to bit size.
+	* tree.c (build_tm_vector_builtins): Use builtin_decl_explicit_p
+	instead of builtin_decl_declared_p to test for declaration.
+
 2016-01-14  Nicklas Bo Jensen  <nbjensen@gmail.com>
 
         * doc/loop.texi (Loop Analysis and Representation): Document
