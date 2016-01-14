@@ -1,3 +1,15 @@
+2016-01-14  Nick Clifton  <nickc@redhat.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_neon_ok_nocache): Add an option
+	sequence that includes setting the ARM architecture to ARMv7-A.
+	* gcc.target/arm/attr-neon.c: Use dg-add-options to add the
+	command line options necessary to enable Neon support.
+	* gcc.target/arm/neon-vlshr-imm-1.c: Likewise.
+	* gcc.target/arm/neon-vshl-imm-1.c: Likewise.
+	* gcc.target/arm/neon-vshr-imm-1.c: Likewise.
+	* gcc.target/arm/pr69180.c: Likewise.
+
 2016-01-14  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69270
