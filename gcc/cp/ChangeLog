@@ -1,3 +1,9 @@
+2016-01-14  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/68773
+	* parser.c (cp_parser_oacc_declare, cp_parser_omp_declare_target): Don't
+	set force_output.
+
 2016-01-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/69261
