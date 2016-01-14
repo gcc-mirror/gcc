@@ -1,3 +1,8 @@
+2016-01-14  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR fortran/66680
+	* testsuite/libgomp.fortran/pr66680.f90: New test.
+
 2015-12-04  Release Manager
 
 	* GCC 5.3.0 released.
