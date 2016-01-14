@@ -1,3 +1,9 @@
+2016-01-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR testsuite/67509
+	* gfortran.dg/ieee/ieee_7.f90: For out of bound precision or
+	range tests use 100 * maximum instead of maximum + 1.
+
 2016-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/69244
