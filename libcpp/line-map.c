@@ -31,7 +31,16 @@ along with this program; see the file COPYING3.  If not see
    disabled).  */
 const unsigned int LINE_MAP_MAX_COLUMN_NUMBER = (1U << 12);
 
-/* Do not track column numbers if locations get higher than this.  */
+/* Do not pack ranges if locations get higher than this.
+   If you change this, update:
+     gcc.dg/plugin/location_overflow_plugin.c
+     gcc.dg/plugin/location-overflow-test-*.c.  */
+const source_location LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES = 0x50000000;
+
+/* Do not track column numbers if locations get higher than this.
+   If you change this, update:
+     gcc.dg/plugin/location_overflow_plugin.c
+     gcc.dg/plugin/location-overflow-test-*.c.  */
 const source_location LINE_MAP_MAX_LOCATION_WITH_COLS = 0x60000000;
 
 /* Highest possible source location encoded within an ordinary or
@@ -138,7 +147,7 @@ can_be_stored_compactly_p (struct line_maps *set,
   if (src_range.m_start < RESERVED_LOCATION_COUNT)
     return false;
 
-  if (locus >= LINE_MAP_MAX_LOCATION_WITH_COLS)
+  if (locus >= LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES)
     return false;
 
   /* All 3 locations must be within ordinary maps, typically, the same
@@ -175,7 +184,7 @@ get_combined_adhoc_loc (struct line_maps *set,
   /* Any ordinary locations ought to be "pure" at this point: no
      compressed ranges.  */
   linemap_assert (locus < RESERVED_LOCATION_COUNT
-		  || locus >= LINE_MAP_MAX_LOCATION_WITH_COLS
+		  || locus >= LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES
 		  || locus >= LINEMAPS_MACRO_LOWEST_LOCATION (set)
 		  || pure_location_p (set, locus));
 
@@ -284,7 +293,7 @@ get_range_from_loc (struct line_maps *set,
   /* For ordinary maps, extract packed range.  */
   if (loc >= RESERVED_LOCATION_COUNT
       && loc < LINEMAPS_MACRO_LOWEST_LOCATION (set)
-      && loc <= LINE_MAP_MAX_LOCATION_WITH_COLS)
+      && loc <= LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES)
     {
       const line_map *map = linemap_lookup (set, loc);
       const line_map_ordinary *ordmap = linemap_check_ordinary (map);
@@ -715,6 +724,8 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
 	  && line_delta * map->m_column_and_range_bits > 1000)
       || (max_column_hint >= (1U << effective_column_bits))
       || (max_column_hint <= 80 && effective_column_bits >= 10)
+      || (highest > LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES
+	  && map->m_range_bits > 0)
       || (highest > LINE_MAP_MAX_LOCATION_WITH_COLS
 	  && (set->max_column_hint || highest >= LINE_MAP_MAX_SOURCE_LOCATION)))
     add_map = true;
@@ -739,7 +750,10 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
       else
 	{
 	  column_bits = 7;
-	  range_bits = set->default_range_bits;
+	  if (highest <= LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES)
+	    range_bits = set->default_range_bits;
+	  else
+	    range_bits = 0;
 	  while (max_column_hint >= (1U << column_bits))
 	    column_bits++;
 	  max_column_hint = 1U << column_bits;
@@ -749,7 +763,8 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
 	 single line we can sometimes just increase its column_bits instead. */
       if (line_delta < 0
 	  || last_line != ORDINARY_MAP_STARTING_LINE_NUMBER (map)
-	  || SOURCE_COLUMN (map, highest) >= (1U << column_bits))
+	  || SOURCE_COLUMN (map, highest) >= (1U << column_bits)
+	  || range_bits < map->m_range_bits)
 	map = linemap_check_ordinary
 	        (const_cast <line_map *>
 		  (linemap_add (set, LC_RENAME,
