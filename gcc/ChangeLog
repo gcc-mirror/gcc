@@ -1,3 +1,11 @@
+2016-01-14  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/68773
+	* omp-low.c (expand_omp_target): Don't set force_output.
+	* varpool.c (varpool_node::get_create): Same.
+	* lto-cgraph.c (input_offload_tables): Mark entries in offload_vars and
+	offload_funcs with force_output.
+
 2016-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/69244

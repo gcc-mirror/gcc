@@ -1911,6 +1911,11 @@ input_offload_tables (void)
 	      tree fn_decl
 		= lto_file_decl_data_get_fn_decl (file_data, decl_index);
 	      vec_safe_push (offload_funcs, fn_decl);
+
+	      /* Prevent IPA from removing fn_decl as unreachable, since there
+		 may be no refs from the parent function to child_fn in offload
+		 LTO mode.  */
+	      cgraph_node::get (fn_decl)->mark_force_output ();
 	    }
 	  else if (tag == LTO_symtab_variable)
 	    {
@@ -1918,6 +1923,10 @@ input_offload_tables (void)
 	      tree var_decl
 		= lto_file_decl_data_get_var_decl (file_data, decl_index);
 	      vec_safe_push (offload_vars, var_decl);
+
+	      /* Prevent IPA from removing var_decl as unused, since there
+		 may be no refs to var_decl in offload LTO mode.  */
+	      varpool_node::get (var_decl)->force_output = 1;
 	    }
 	  else
 	    fatal_error (input_location,

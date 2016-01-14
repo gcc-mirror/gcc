@@ -35164,10 +35164,7 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 		    {
 		      g->have_offload = true;
 		      if (is_a <varpool_node *> (node))
-			{
-			  vec_safe_push (offload_vars, decl);
-			  node->force_output = 1;
-			}
+			vec_safe_push (offload_vars, decl);
 		    }
 		}
 	    }
@@ -35704,10 +35701,7 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
 		{
 		  g->have_offload = true;
 		  if (is_a <varpool_node *> (node))
-		    {
-		      vec_safe_push (offload_vars, t);
-		      node->force_output = 1;
-		    }
+		    vec_safe_push (offload_vars, t);
 		}
 	    }
 	}
