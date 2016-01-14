@@ -1,3 +1,8 @@
+2016-01-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c/69262
+	* gcc.dg/array-15.c: New test.
+
 2016-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/68146
