@@ -7247,6 +7247,10 @@ expand_field_assignment (const_rtx x)
       if (len >= HOST_BITS_PER_WIDE_INT)
 	break;
 
+      /* Don't try to compute in too wide unsupported modes.  */
+      if (!targetm.scalar_mode_supported_p (compute_mode))
+	break;
+
       /* Now compute the equivalent expression.  Make a copy of INNER
 	 for the SET_DEST in case it is a MEM into which we will substitute;
 	 we don't want shared RTL in that case.  */
