@@ -1,3 +1,12 @@
+2016-01-14  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/mips/mips-ps-3d.md (reduc_splus_v2sf): Remove.
+	(reduc_plus_scal_v2sf): New.
+	(reduc_smax_v2sf): Rename to...
+	(reduc_smax_scal_v2sf): ...here, make result SFmode, add vec_extract.
+	(reduc_smin_v2sf): Rename to...
+	(reduc_smin_scal_v2sf): ...here, make result SFmode, add vec_extract.
+
 2016-01-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* alias.c (compare_base_symbol_refs): New function.
