@@ -6287,8 +6287,19 @@ proc check_effective_target_pow10 { } {
     } "-lm" ]
 }
 
-# Return 1 if current options generate DFP instructions, 0 otherwise.
+# Return 1 if issignaling function exists.
+proc check_effective_target_issignaling {} {
+    return [check_runtime issignaling {
+	#define _GNU_SOURCE
+	#include <math.h>
+	int main ()
+	{
+	  return issignaling (0.0);
+	}
+    } "-lm" ]
+}
 
+# Return 1 if current options generate DFP instructions, 0 otherwise.
 proc check_effective_target_hard_dfp {} {
     return [check_no_messages_and_pattern hard_dfp "!adddd3" assembly {
 	typedef float d64 __attribute__((mode(DD)));

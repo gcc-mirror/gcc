@@ -1,3 +1,9 @@
+2016-01-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp (check_effective_target_issignaling):
+	New procedure.
+	* gcc.dg/pr61441.c: Require issignaling effective target.
+
 2016-01-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/68803
