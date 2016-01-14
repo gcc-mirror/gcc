@@ -1,3 +1,8 @@
+2016-01-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/68803
+	* gcc.target/powerpc/20050603-3.c: Add xfails for powerpc64le.
+
 2016-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/68819
