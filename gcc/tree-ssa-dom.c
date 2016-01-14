@@ -320,8 +320,8 @@ record_conditions (struct edge_info *edge_info, tree cond, tree inverted)
    otherwise.
 
    This can be because it is a boolean type, any type with
-   a single bit of precision, or has known range of values
-   it might old of [0..1] via VRP analysis.  */
+   a single bit of precision, or has known range of [0..1]
+   via VRP analysis.  */
 
 static bool
 ssa_name_has_boolean_range (tree op)
