@@ -1,3 +1,10 @@
+2016-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68060
+	* tree-vect-loop.c (vect_is_simple_reduction): Check the
+	outer loop reduction is only used in the inner loop before
+	detecting a double reduction.
+
 2016-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/68269

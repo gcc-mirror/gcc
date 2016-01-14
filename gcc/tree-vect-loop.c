@@ -2591,7 +2591,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
   struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
   edge latch_e = loop_latch_edge (loop);
   tree loop_arg = PHI_ARG_DEF_FROM_EDGE (phi, latch_e);
-  gimple *def_stmt, *def1 = NULL, *def2 = NULL;
+  gimple *def_stmt, *def1 = NULL, *def2 = NULL, *phi_use_stmt = NULL;
   enum tree_code orig_code, code;
   tree op1, op2, op3 = NULL_TREE, op4 = NULL_TREE;
   tree type;
@@ -2640,6 +2640,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
 			     "reduction used in loop.\n");
           return NULL;
         }
+
+      phi_use_stmt = use_stmt;
     }
 
   if (TREE_CODE (loop_arg) != SSA_NAME)
@@ -2722,7 +2724,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
 	  && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
           && loop->inner
           && flow_bb_inside_loop_p (loop->inner, gimple_bb (def1))
-          && is_gimple_assign (def1))
+          && is_gimple_assign (def1)
+	  && flow_bb_inside_loop_p (loop->inner, gimple_bb (phi_use_stmt)))
         {
           if (dump_enabled_p ())
             report_vect_op (MSG_NOTE, def_stmt,
