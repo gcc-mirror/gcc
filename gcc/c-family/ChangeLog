@@ -1,3 +1,9 @@
+2015-01-14 Ryan Burn  <contact@rnburn.com>
+
+	PR c++/69048
+	* cilk.c (create_cilk_wrapper_body): Call fold_build_cleanup_point_expr
+	 to add missing cleanup point.
+
 2016-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/68819

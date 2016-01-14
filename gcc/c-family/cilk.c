@@ -592,6 +592,11 @@ create_cilk_wrapper_body (tree stmt, struct wrapper_data *wd)
   for (p = wd->parms; p; p = TREE_CHAIN (p))
     DECL_CONTEXT (p) = fndecl;
 
+  /* The statement containing the spawn expression might create temporaries with
+     destructors defined; if so we need to add a CLEANUP_POINT_EXPR to ensure
+     the expression is properly gimplified.  */
+  stmt = fold_build_cleanup_point_expr (void_type_node, stmt);
+
   gcc_assert (!DECL_SAVED_TREE (fndecl));
   cilk_install_body_with_frame_cleanup (fndecl, stmt, (void *) wd);
   gcc_assert (DECL_SAVED_TREE (fndecl));
