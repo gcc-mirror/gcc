@@ -246,26 +246,6 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     }
 }
 
-/* Given optab UNOPTAB that reduces a vector to a scalar, find instead the old
-   optab that produces a vector with the reduction result in one element,
-   for a tree with type TYPE.  */
-
-optab
-scalar_reduc_to_vector (optab unoptab, const_tree type)
-{
-  switch (unoptab)
-    {
-    case reduc_plus_scal_optab:
-      return TYPE_UNSIGNED (type) ? reduc_uplus_optab : reduc_splus_optab;
-
-    case reduc_smin_scal_optab: return reduc_smin_optab;
-    case reduc_umin_scal_optab: return reduc_umin_optab;
-    case reduc_smax_scal_optab: return reduc_smax_optab;
-    case reduc_umax_scal_optab: return reduc_umax_optab;
-    default: return unknown_optab;
-    }
-}
-
 /* Function supportable_convert_operation
 
    Check whether an operation represented by the code CODE is a
