@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_neon_ok } */
-/* { dg-options "-O2 -mfloat-abi=softfp -ftree-vectorize" } */
+/* { dg-options "-O2 -ftree-vectorize" } */
+/* { dg-add-options arm_neon } */
 
 /* Verify that neon instructions are emitted once.  */
 void __attribute__ ((target("fpu=neon")))

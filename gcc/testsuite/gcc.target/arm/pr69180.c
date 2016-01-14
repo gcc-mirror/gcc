@@ -3,8 +3,8 @@
    #pragma GCC target.  */
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_neon_ok } */
-/* { dg-options "-mfloat-abi=softfp -mfpu=neon" } */
-
+/* { dg-options " " } */ /* Necessary to  prevent the harness from adding -ansi -pedantic-errors to the command line.  */
+/* { dg-add-options arm_neon } */
 #pragma GCC target ("fpu=neon-fp-armv8")
 
 #define __ARM_NEON_FP 0
