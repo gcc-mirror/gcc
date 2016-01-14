@@ -1,3 +1,8 @@
+2015-01-14 Ryan Burn  <contact@rnburn.com>
+
+	PR c++/69048
+	* g++.dg/cilk-plus/CK/pr69048.cc: New test.
+
 2016-01-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR testsuite/67509
