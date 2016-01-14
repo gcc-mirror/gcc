@@ -1,4 +1,24 @@
 2016-01-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* libgcc/config/rs6000/extendkftf2-sw.c: Revert 2016-01-13 change.
+	* libgcc/config/rs6000/fixkfti.c: Likewise.
+	* libgcc/config/rs6000/fixunskfti.c: Likewise.
+	* libgcc/config/rs6000/float128-hw.c: Likewise.
+	* libgcc/config/rs6000/float128-ifunc.c: Likewise.
+	* libgcc/config/rs6000/float128-sed: Likewise.
+	* libgcc/config/rs6000/floattikf.c: Likewise.
+	* libgcc/config/rs6000/floatuntikf.c: Likewise.
+	* libgcc/config/rs6000/quad-float128.h: Likewise.
+	* libgcc/config/rs6000/sfp-exceptions.c: Likewise.
+	* libgcc/config/rs6000/sfp-machine.h: Likewise.
+	* libgcc/config/rs6000/t-float128: Likewise.
+	* libgcc/config/rs6000/t-float128-hw: Likewise.
+	* libgcc/config/rs6000/trunctfkf2-sw.c: Likewise.
+	* libgcc/config.host: Likewise.
+	* libgcc/configure: Likewise.
+	* libgcc/configure.ac: Likewise.
+
+2016-01-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Steven Munroe <munroesj@linux.vnet.ibm.com>
 	    Tulio Magno Quites Machado Filho <tulioqm@br.ibm.com>
 

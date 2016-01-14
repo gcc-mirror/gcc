@@ -1,3 +1,11 @@
+2016-01-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def: Revert 2016-01-13 change.
+	* gcc/config/rs6000/rs6000.c: Likewise.
+	* gcc/config/rs6000/rs6000.h: Likewise.
+	* gcc/config/rs6000/rs6000.md: Likewise.
+	* gcc/doc/extend.texi: Likewsie.
+
 2016-01-14  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (ssa_name_has_boolean_range): Fix comment
