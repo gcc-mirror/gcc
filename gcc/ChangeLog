@@ -1,5 +1,19 @@
 2016-01-14  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* doc/md.texi (reduc_smin_@var{m}, reduc_smax_@var{m},
+	reduc_umin_@var{m}, reduc_umax_@var{m}, reduc_splus_@var{m},
+	reduc_uplus_@var{m}): Remove.
+	* expr.c (expand_expr_real_2): Remove expansion path for
+	reduc_[us](min|max|plus) optabs.
+	* optabs-tree.c (scalar_reduc_to_vector): Remove.
+	* optabs-tree.h (scalar_reduc_to_vector): Remove.
+	* optabs.def (reduc_smax_optab, reduc_smin_optab, reduc_splus_optab,
+	reduc_umax_optab, reduc_umin_optab, reduc_uplus_optab): Remove.
+	* tree-vect-loop.c (vectorizable_reduction): Remove test for
+	reduc_[us](min|max|plus) optabs.
+
+2016-01-14  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/mips/mips-ps-3d.md (reduc_splus_v2sf): Remove.
 	(reduc_plus_scal_v2sf): New.
 	(reduc_smax_v2sf): Rename to...

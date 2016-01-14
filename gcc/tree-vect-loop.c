@@ -5751,15 +5751,11 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	    }
 	  else if (optab_handler (reduc_optab, vec_mode) == CODE_FOR_nothing)
 	    {
-	      optab = scalar_reduc_to_vector (reduc_optab, vectype_out);
-	      if (optab_handler (optab, vec_mode) == CODE_FOR_nothing)
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "reduc op not supported by target.\n");
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "reduc op not supported by target.\n");
 
-		  epilog_reduc_code = ERROR_MARK;
-		}
+	      epilog_reduc_code = ERROR_MARK;
 	    }
 
 	  /* When epilog_reduc_code is ERROR_MARK then a reduction will be

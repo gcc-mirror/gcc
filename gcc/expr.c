@@ -9162,35 +9162,16 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
         this_optab = optab_for_tree_code (code, type, optab_default);
         machine_mode vec_mode = TYPE_MODE (TREE_TYPE (treeop0));
 
-	if (optab_handler (this_optab, vec_mode) != CODE_FOR_nothing)
-	  {
-	    struct expand_operand ops[2];
-	    enum insn_code icode = optab_handler (this_optab, vec_mode);
+	struct expand_operand ops[2];
+	enum insn_code icode = optab_handler (this_optab, vec_mode);
 
-	    create_output_operand (&ops[0], target, mode);
-	    create_input_operand (&ops[1], op0, vec_mode);
-	    if (maybe_expand_insn (icode, 2, ops))
-	      {
-		target = ops[0].value;
-		if (GET_MODE (target) != mode)
-		  return gen_lowpart (tmode, target);
-		return target;
-	      }
-	  }
-	/* Fall back to optab with vector result, and then extract scalar.  */
-	this_optab = scalar_reduc_to_vector (this_optab, type);
-        temp = expand_unop (vec_mode, this_optab, op0, NULL_RTX, unsignedp);
-        gcc_assert (temp);
-        /* The tree code produces a scalar result, but (somewhat by convention)
-           the optab produces a vector with the result in element 0 if
-           little-endian, or element N-1 if big-endian.  So pull the scalar
-           result out of that element.  */
-        int index = BYTES_BIG_ENDIAN ? GET_MODE_NUNITS (vec_mode) - 1 : 0;
-	int bitsize = GET_MODE_UNIT_BITSIZE (vec_mode);
-        temp = extract_bit_field (temp, bitsize, bitsize * index, unsignedp,
-				  target, mode, mode, false);
-        gcc_assert (temp);
-        return temp;
+	create_output_operand (&ops[0], target, mode);
+	create_input_operand (&ops[1], op0, vec_mode);
+	expand_insn (icode, 2, ops);
+	target = ops[0].value;
+	if (GET_MODE (target) != mode)
+	  return gen_lowpart (tmode, target);
+	return target;
       }
 
     case VEC_UNPACK_HI_EXPR:

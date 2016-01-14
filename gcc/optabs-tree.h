@@ -36,7 +36,6 @@ enum optab_subtype
    the second argument.  The third argument distinguishes between the types of
    vector shifts and rotates.  */
 optab optab_for_tree_code (enum tree_code, const_tree, enum optab_subtype);
-optab scalar_reduc_to_vector (optab, const_tree);
 bool supportable_convert_operation (enum tree_code, tree, tree, tree *,
 				    enum tree_code *);
 bool expand_vec_cmp_expr_p (tree, tree);
