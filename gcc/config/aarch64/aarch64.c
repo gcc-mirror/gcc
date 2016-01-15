@@ -6145,6 +6145,12 @@ aarch64_if_then_else_costs (rtx op0, rtx op1, rtx op2, int *cost, bool speed)
           || GET_CODE (op1) == NOT
           || (GET_CODE (op1) == PLUS && XEXP (op1, 1) == const1_rtx))
 	op1 = XEXP (op1, 0);
+      else if (GET_CODE (op1) == ZERO_EXTEND && GET_CODE (op2) == ZERO_EXTEND)
+	{
+	  /* CSEL with zero-extension (*cmovdi_insn_uxtw).  */
+	  op1 = XEXP (op1, 0);
+	  op2 = XEXP (op2, 0);
+	}
 
       *cost += rtx_cost (op1, VOIDmode, IF_THEN_ELSE, 1, speed);
       *cost += rtx_cost (op2, VOIDmode, IF_THEN_ELSE, 2, speed);

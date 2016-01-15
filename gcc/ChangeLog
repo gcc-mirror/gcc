@@ -1,5 +1,10 @@
 2016-01-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_if_then_else_costs): Handle
+	CSEL of zero_extended registers.
+
+2016-01-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_rtx_costs, COMPARE case):
 	Handle COMPARE of ZERO_EXTRACT against zero form of TST-immediate.
 
