@@ -1,3 +1,7 @@
+2016-01-15  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/arm/t-rtems: Add cortex-m7/fpv5-d16 multilib.
+
 2016-01-15  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* config/i386/i386.c (ix86_expand_branch): Don't split
