@@ -1,3 +1,7 @@
+2016-01-15  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.dg/tree-ssa/20040204-1.c: Do not xfail on S/390.
+
 2016-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68961
