@@ -1,7 +1,4 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
-
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,30 +15,35 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.4.2.1 [tuple.cnstr] Allocator-extended constructors
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
 
-#include <memory>
+// PR libstdc++/69293
+
 #include <tuple>
+#include <memory>
 
-struct MyAlloc { };
+using std::allocator;
+using std::allocator_arg_t;
+using std::uses_allocator;
+using std::tuple;
+using std::is_constructible;
 
-struct Type
+struct X
 {
-  typedef MyAlloc allocator_type; // uses_allocator<Type, MyAlloc> is true
-
-  explicit Type(int) { }
-
-  Type(std::allocator_arg_t, MyAlloc) { }
-  Type(MyAlloc) { }
+  using allocator_type = allocator<int>;
 };
 
-void test01()
+using alloc_type = X::allocator_type;
+
+static_assert(uses_allocator<X, alloc_type>{}, "");
+static_assert(!is_constructible<X, allocator_arg_t, alloc_type>{}, "");
+static_assert(!is_constructible<X, alloc_type>{}, "");
+
+void
+test01()
 {
-  using std::allocator_arg;
-  using std::tuple;
-
-  MyAlloc a;
-
-  tuple<Type> t(allocator_arg, a, 1);
+  alloc_type a;
+  std::tuple<X> t(std::allocator_arg, a); // this is required to be ill-formed
+  // { dg-error "static assertion failed" "" { target *-*-* } 89 }
 }
-// { dg-error "static assertion failed" "" { target *-*-* } 89 }
