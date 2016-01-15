@@ -1,4 +1,4 @@
-2015-01-15  Christian Bruel  <christian.bruel@st.com>
+2016-01-15  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/65837
 	* config/arm/arm-builtins.c (ARM_BUILTIN_CRYPTO_BASE): New enum tag.
