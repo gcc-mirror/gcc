@@ -319,8 +319,8 @@ record_conditions (struct edge_info *edge_info, tree cond, tree inverted)
 /* Return TRUE is OP, an SSA_NAME has a range of values [0..1], false
    otherwise.
 
-   This can be because it is a boolean type, any type with
-   a single bit of precision, or has known range of [0..1]
+   This can be because it is a boolean type, any unsigned integral
+   type with a single bit of precision, or has known range of [0..1]
    via VRP analysis.  */
 
 static bool
@@ -332,6 +332,7 @@ ssa_name_has_boolean_range (tree op)
 
   /* An integral type with a single bit of precision.  */
   if (INTEGRAL_TYPE_P (TREE_TYPE (op))
+      && TYPE_UNSIGNED (TREE_TYPE (op))
       && TYPE_PRECISION (TREE_TYPE (op)) == 1)
     return true;
 
@@ -425,10 +426,9 @@ record_edge_info (basic_block bb)
 	      && ssa_name_has_boolean_range (op0)
               && is_gimple_min_invariant (op1))
             {
-	      tree true_val = fold_convert (TREE_TYPE (op0),
-					    boolean_true_node);
-	      tree false_val = fold_convert (TREE_TYPE (op0),
-					     boolean_false_node);
+	      tree true_val = constant_boolean_node (true, TREE_TYPE (op0));
+	      tree false_val = constant_boolean_node (false, TREE_TYPE (op0));
+
               if (code == EQ_EXPR)
                 {
                   edge_info = allocate_edge_info (true_edge);

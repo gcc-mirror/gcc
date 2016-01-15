@@ -1,3 +1,11 @@
+2016-01-14  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/69270
+	* tree-ssa-dom.c (ssa_name_has_boolean_range): If the type has a
+	single bit of precision, verify it's also unsigned.
+	(record_edge_info): Use constant_boolean_node rather than fold_convert
+	to convert boolean_true/boolean_false to the right type.
+
 2016-01-14  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/69014
