@@ -8898,6 +8898,7 @@ aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
       arg++;
     }
   const struct aarch64_attribute_info *p_attr;
+  bool found = false;
   for (p_attr = aarch64_attributes; p_attr->name; p_attr++)
     {
       /* If the names don't match up, or the user has given an argument
@@ -8906,6 +8907,7 @@ aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
       if (strcmp (str_to_check, p_attr->name) != 0)
 	continue;
 
+      found = true;
       bool attr_need_arg_p = p_attr->attr_type == aarch64_attr_custom
 			      || p_attr->attr_type == aarch64_attr_enum;
 
@@ -8985,7 +8987,10 @@ aarch64_process_one_target_attr (char *arg_str, const char* pragma_or_attr)
 	}
     }
 
-  return true;
+  /* If we reached here we either have found an attribute and validated
+     it or didn't match any.  If we matched an attribute but its arguments
+     were malformed we will have returned false already.  */
+  return found;
 }
 
 /* Count how many times the character C appears in
