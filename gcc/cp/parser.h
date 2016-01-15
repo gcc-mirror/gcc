@@ -47,8 +47,6 @@ struct GTY (()) cp_token {
   ENUM_BITFIELD (rid) keyword : 8;
   /* Token flags.  */
   unsigned char flags;
-  /* Identifier for the pragma.  */
-  ENUM_BITFIELD (pragma_kind) pragma_kind : 8;
   /* True if this token is from a context where it is implicitly extern "C" */
   BOOL_BITFIELD implicit_extern_c : 1;
   /* True if an error has already been reported for this token, such as a
@@ -59,6 +57,7 @@ struct GTY (()) cp_token {
      it is no longer a valid token and it should be considered
      deleted.  */
   BOOL_BITFIELD purged_p : 1;
+  /* 5 unused bits.  */
   /* The location at which this token was found.  */
   location_t location;
   /* The value associated with this token, if any.  */

@@ -1,3 +1,17 @@
+2016-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/68271
+	* parser.h (cp_token): Remove pragma_kind field.  Add comment
+	with number of unused bits.
+	* parser.c (eof_token): Remove pragma_kind field initializer.
+	(cp_lexer_get_preprocessor_token): Don't set pragma_kind
+	field, don't clear CPP_PRAGMA u.value.
+	(cp_parser_pragma_kind): New function.
+	(cp_parser_omp_sections_scope, cp_parser_oacc_kernels_parallel,
+	cp_parser_omp_construct, cp_parser_initial_pragma,
+	cp_parser_pragma): Use cp_parser_pragma_kind instead of accessing
+	pragma_kind field.
+
 2016-01-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68847

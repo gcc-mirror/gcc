@@ -1,4 +1,10 @@
-2015-01-14 Ryan Burn  <contact@rnburn.com>
+2016-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/68271
+	* c-pragma.c (c_register_pragma_1): Adjust comment to note that
+	C++ FE no longer has limit on number of pragmas.
+
+2015-01-14  Ryan Burn  <contact@rnburn.com>
 
 	PR c++/69048
 	* cilk.c (create_cilk_wrapper_body): Call fold_build_cleanup_point_expr
