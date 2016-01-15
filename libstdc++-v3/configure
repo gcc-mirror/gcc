@@ -15539,9 +15539,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
   # Set atomicity_dir to builtins if all but the long long test above passes.
-  if test $glibcxx_cv_atomic_bool = yes \
-     && test $glibcxx_cv_atomic_short = yes \
-     && test $glibcxx_cv_atomic_int = yes; then
+  if test "$glibcxx_cv_atomic_bool" = yes \
+     && test "$glibcxx_cv_atomic_short" = yes \
+     && test "$glibcxx_cv_atomic_int" = yes; then
 
 $as_echo "#define _GLIBCXX_ATOMIC_BUILTINS 1" >>confdefs.h
 
@@ -18177,7 +18177,7 @@ fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_math11_overload" >&5
 $as_echo "$glibcxx_cv_math11_overload" >&6; }
       ;;
-    *-*-*gnu*)
+    *-*-*gnu* | *-*-aix*)
       # If <math.h> defines the obsolete isinf(double) and isnan(double)
       # functions (instead of or as well as the C99 generic macros) then we
       # can't define std::isinf(double) and std::isnan(double) in <cmath>
