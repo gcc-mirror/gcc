@@ -6490,6 +6490,23 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
               goto cost_minus;
             }
 
+	  if (GET_CODE (op0) == ZERO_EXTRACT && op1 == const0_rtx
+	      && GET_MODE (x) == CC_NZmode && CONST_INT_P (XEXP (op0, 1))
+	      && CONST_INT_P (XEXP (op0, 2)))
+	    {
+	      /* COMPARE of ZERO_EXTRACT form of TST-immediate.
+		 Handle it here directly rather than going to cost_logic
+		 since we know the immediate generated for the TST is valid
+		 so we can avoid creating an intermediate rtx for it only
+		 for costing purposes.  */
+	      if (speed)
+		*cost += extra_cost->alu.logical;
+
+	      *cost += rtx_cost (XEXP (op0, 0), GET_MODE (op0),
+				 ZERO_EXTRACT, 0, speed);
+	      return true;
+	    }
+
           if (GET_CODE (op1) == NEG)
             {
 	      /* CMN.  */

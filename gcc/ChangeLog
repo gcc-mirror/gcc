@@ -1,5 +1,10 @@
 2016-01-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_rtx_costs, COMPARE case):
+	Handle COMPARE of ZERO_EXTRACT against zero form of TST-immediate.
+
+2016-01-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_process_one_target_attr): Return
 	false when argument string is not found in the attributes table
 	at all.
