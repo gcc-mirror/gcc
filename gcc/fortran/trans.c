@@ -335,10 +335,13 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
      references.  */
   if (type && TREE_CODE (type) == ARRAY_TYPE
       && TYPE_MAXVAL (TYPE_DOMAIN (type)) != NULL_TREE
-      && TREE_CODE (TYPE_MAXVAL (TYPE_DOMAIN (type))) == VAR_DECL
+      && (TREE_CODE (TYPE_MAXVAL (TYPE_DOMAIN (type))) == VAR_DECL
+	  || TREE_CODE (TYPE_MAXVAL (TYPE_DOMAIN (type))) == INDIRECT_REF)
       && decl
-      && DECL_CONTEXT (TYPE_MAXVAL (TYPE_DOMAIN (type)))
-					== DECL_CONTEXT (decl))
+      && (TREE_CODE (TYPE_MAXVAL (TYPE_DOMAIN (type))) == INDIRECT_REF
+	  || TREE_CODE (decl) == FUNCTION_DECL
+	  || DECL_CONTEXT (TYPE_MAXVAL (TYPE_DOMAIN (type)))
+					== DECL_CONTEXT (decl)))
     span = TYPE_MAXVAL (TYPE_DOMAIN (type));
   else
     span = NULL_TREE;
@@ -354,7 +357,8 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
      and reference the element with pointer arithmetic.  */
   if ((decl && (TREE_CODE (decl) == FIELD_DECL
 		|| TREE_CODE (decl) == VAR_DECL
-		|| TREE_CODE (decl) == PARM_DECL)
+		|| TREE_CODE (decl) == PARM_DECL
+		|| TREE_CODE (decl) == FUNCTION_DECL)
        && ((GFC_DECL_SUBREF_ARRAY_P (decl)
 	    && !integer_zerop (GFC_DECL_SPAN (decl)))
 	   || GFC_DECL_CLASS (decl)

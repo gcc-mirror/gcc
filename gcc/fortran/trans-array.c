@@ -3165,7 +3165,8 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
 			     index, info->offset);
 
   if (expr && (is_subref_array (expr)
-	       || (expr->ts.deferred && expr->expr_type == EXPR_VARIABLE)))
+	       || (expr->ts.deferred && (expr->expr_type == EXPR_VARIABLE
+					 || expr->expr_type == EXPR_FUNCTION))))
     decl = expr->symtree->n.sym->backend_decl;
 
   tmp = build_fold_indirect_ref_loc (input_location, info->data);
@@ -5038,7 +5039,7 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 		     gfc_expr ** lower, gfc_expr ** upper, stmtblock_t * pblock,
 		     stmtblock_t * descriptor_block, tree * overflow,
 		     tree expr3_elem_size, tree *nelems, gfc_expr *expr3,
-		     tree expr3_desc, bool e3_is_array_constr)
+		     tree expr3_desc, bool e3_is_array_constr, gfc_expr *expr)
 {
   tree type;
   tree tmp;
@@ -5063,8 +5064,19 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
   offset = gfc_index_zero_node;
 
   /* Set the dtype.  */
-  tmp = gfc_conv_descriptor_dtype (descriptor);
-  gfc_add_modify (descriptor_block, tmp, gfc_get_dtype (type));
+  if (expr->ts.type == BT_CHARACTER && expr->ts.deferred
+      && TREE_CODE (expr->ts.u.cl->backend_decl) == VAR_DECL)
+    {
+      type = gfc_typenode_for_spec (&expr->ts);
+      tmp = gfc_conv_descriptor_dtype (descriptor);
+      gfc_add_modify (descriptor_block, tmp,
+		      gfc_get_dtype_rank_type (rank, type));
+    }
+  else
+    {
+      tmp = gfc_conv_descriptor_dtype (descriptor);
+      gfc_add_modify (descriptor_block, tmp, gfc_get_dtype (type));
+    }
 
   or_expr = boolean_false_node;
 
@@ -5446,7 +5458,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 			      ref->u.ar.as->corank, &offset, lower, upper,
 			      &se->pre, &set_descriptor_block, &overflow,
 			      expr3_elem_size, nelems, expr3, e3_arr_desc,
-			      e3_is_array_constr);
+			      e3_is_array_constr, expr);
 
   if (dimension)
     {

@@ -15320,9 +15320,9 @@ check_uop_procedure (gfc_symbol *sym, locus where)
     }
 
   if (sym->ts.type == BT_CHARACTER
-      && !(sym->ts.u.cl && sym->ts.u.cl->length)
-      && !(sym->result && sym->result->ts.u.cl
-	   && sym->result->ts.u.cl->length))
+      && !((sym->ts.u.cl && sym->ts.u.cl->length) || sym->ts.deferred)
+      && !(sym->result && ((sym->result->ts.u.cl
+	   && sym->result->ts.u.cl->length) || sym->result->ts.deferred)))
     {
       gfc_error ("User operator procedure %qs at %L cannot be assumed "
 		 "character length", sym->name, &where);
