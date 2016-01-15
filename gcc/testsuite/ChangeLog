@@ -1,3 +1,9 @@
+2016-01-15  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/69270
+	* gcc.dg/tree-ssa/pr69270-2.c: New test.
+	* gcc.dg/tree-ssa/pr69270-3.c: New test.
+
 2016-01-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/49630

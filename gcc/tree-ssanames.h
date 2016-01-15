@@ -75,6 +75,7 @@ extern enum value_range_type get_range_info (const_tree, wide_int *,
 					     wide_int *);
 extern void set_nonzero_bits (tree, const wide_int_ref &);
 extern wide_int get_nonzero_bits (const_tree);
+extern bool ssa_name_has_boolean_range (tree);
 extern void init_ssanames (struct function *, int);
 extern void fini_ssanames (struct function *);
 extern void ssanames_print_statistics (void);
