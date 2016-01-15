@@ -44,19 +44,19 @@ LIB2ADD = \
 HOST_LIBGCC2_CFLAGS += -Os -ffunction-sections -fdata-sections -mhwmult=none
 
 lib2_mul_none.o: $(srcdir)/config/msp430/lib2mul.c
-	$(gcc_compile) $^ -c -DMUL_NONE
+	$(gcc_compile) $< -c -DMUL_NONE
 
 lib2_mul_16bit.o: $(srcdir)/config/msp430/lib2mul.c
-	$(gcc_compile) $^ -c -DMUL_16
+	$(gcc_compile) $< -c -DMUL_16
 
 lib2hw_mul_16.o: $(srcdir)/config/msp430/lib2hw_mul.S
-	$(gcc_compile) $^ -c -DMUL_16
+	$(gcc_compile) $< -c -DMUL_16
 
 lib2hw_mul_32.o: $(srcdir)/config/msp430/lib2hw_mul.S
-	$(gcc_compile) $^ -c -DMUL_32
+	$(gcc_compile) $< -c -DMUL_32
 
 lib2hw_mul_f5.o: $(srcdir)/config/msp430/lib2hw_mul.S
-	$(gcc_compile) $^ -c -DMUL_F5
+	$(gcc_compile) $< -c -DMUL_F5
 
 libmul_none.a: lib2_mul_none.o
 	$(AR_CREATE_FOR_TARGET) $@ $^

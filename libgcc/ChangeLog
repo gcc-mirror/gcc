@@ -1,3 +1,10 @@
+2016-01-15  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/t-msp430 (lib2_mul_none.o): Only use the first
+	dependency as the source file to be compiled.
+	(lib2_mul_16bit.o, lib2hw_mul_16.o, lib2hw_mul_32.o)
+	(lib2hw_mul_f5.o): Likewise.
+
 2016-01-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* libgcc/config/rs6000/extendkftf2-sw.c: Revert 2016-01-13 change.
