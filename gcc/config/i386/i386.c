@@ -3150,13 +3150,13 @@ scalar_chain::compute_convert_gain ()
     }
 
   if (dump_file)
-    fprintf (dump_file, "  Instruction convertion gain: %d\n", gain);
+    fprintf (dump_file, "  Instruction conversion gain: %d\n", gain);
 
   EXECUTE_IF_SET_IN_BITMAP (defs_conv, 0, insn_uid, bi)
     cost += DF_REG_DEF_COUNT (insn_uid) * ix86_cost->mmxsse_to_integer;
 
   if (dump_file)
-    fprintf (dump_file, "  Registers convertion cost: %d\n", cost);
+    fprintf (dump_file, "  Registers conversion cost: %d\n", cost);
 
   gain -= cost;
 
@@ -3531,7 +3531,7 @@ convert_scalars_to_vector ()
 
   /* Find all instructions we want to convert into vector mode.  */
   if (dump_file)
-    fprintf (dump_file, "Searching for mode convertion candidates...\n");
+    fprintf (dump_file, "Searching for mode conversion candidates...\n");
 
   FOR_EACH_BB_FN (bb, cfun)
     {

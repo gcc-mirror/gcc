@@ -1,3 +1,8 @@
+2016-01-15  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* config/i386/i386.c (scalar_chain::compute_convert_gain): Fix typo.
+	(convert_scalars_to_vector): Likewise.
+
 2016-01-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/extend.texi (Type Traits): Fix grammar.
