@@ -1,3 +1,8 @@
+2016-01-15  Steve Ellcey  <sellcey@imgtec.com>
+
+	* include/ext/random.tcc: Use __builtin_isfinite instead of
+	std::isfinite.
+
 2016-01-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/std_mutex.h: Fix Doxygen @file name.
