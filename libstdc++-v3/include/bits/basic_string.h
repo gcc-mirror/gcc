@@ -4902,6 +4902,18 @@ _GLIBCXX_END_NAMESPACE_CXX11
       int
       compare(size_type __pos, size_type __n1, const _CharT* __s,
 	      size_type __n2) const;
+
+# ifdef _GLIBCXX_TM_TS_INTERNAL
+      friend void
+      ::_txnal_cow_string_C1_for_exceptions(void* that, const char* s,
+					    void* exc);
+      friend const char*
+      ::_txnal_cow_string_c_str(const void *that);
+      friend void
+      ::_txnal_cow_string_D1(void *that);
+      friend void
+      ::_txnal_cow_string_D1_commit(void *that);
+# endif
   };
 #endif  // !_GLIBCXX_USE_CXX11_ABI
 

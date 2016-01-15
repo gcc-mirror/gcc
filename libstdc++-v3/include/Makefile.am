@@ -1200,6 +1200,14 @@ stamp-cxx11-abi:
 	echo 0 > stamp-cxx11-abi
 endif
 
+if ENABLE_ALLOCATOR_NEW
+stamp-allocator-new:
+	echo 1 > stamp-allocator-new
+else
+stamp-allocator-new:
+	echo 0 > stamp-allocator-new
+endif
+
 # NB: The non-empty default ldbl_compat works around an AIX sed
 # oddity, see libstdc++/31957 for details.
 ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
@@ -1210,13 +1218,15 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 			      stamp-visibility \
 			      stamp-extern-template \
 			      stamp-dual-abi \
-			      stamp-cxx11-abi
+			      stamp-cxx11-abi \
+			      stamp-allocator-new
 	@date=`cat ${toplevel_srcdir}/gcc/DATESTAMP` ;\
 	ns_version=`cat stamp-namespace-version` ;\
 	visibility=`cat stamp-visibility` ;\
 	externtemplate=`cat stamp-extern-template` ;\
 	dualabi=`cat stamp-dual-abi` ;\
 	cxx11abi=`cat stamp-cxx11-abi` ;\
+	allocatornew=`cat stamp-allocator-new` ;\
 	ldbl_compat='s,g,g,' ;\
 	grep "^[	 ]*#[	 ]*define[	 ][	 ]*_GLIBCXX_LONG_DOUBLE_COMPAT[	 ][	 ]*1[	 ]*$$" \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
@@ -1227,6 +1237,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	-e "s,define _GLIBCXX_EXTERN_TEMPLATE$$, define _GLIBCXX_EXTERN_TEMPLATE $$externtemplate," \
 	-e "s,define _GLIBCXX_USE_DUAL_ABI, define _GLIBCXX_USE_DUAL_ABI $$dualabi," \
 	-e "s,define _GLIBCXX_USE_CXX11_ABI, define _GLIBCXX_USE_CXX11_ABI $$cxx11abi," \
+	-e "s,define _GLIBCXX_USE_ALLOCATOR_NEW, define _GLIBCXX_USE_ALLOCATOR_NEW $$allocatornew," \
 	-e "$$ldbl_compat" \
 	    < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCXX_HAVE_/g' \

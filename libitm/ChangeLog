@@ -1,3 +1,7 @@
+2015-01-15  Torvald Riegel  <triegel@redhat.com>
+
+	testsuite/libitm.c++/libstdc++-safeexc.C: New.
+
 2016-01-13  Torvald Riegel  <triegel@redhat.com>
 
 	* beginend.cc (gtm_thread::trycommit): Fix seq_cst fences.

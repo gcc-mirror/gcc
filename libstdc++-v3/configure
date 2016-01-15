@@ -700,6 +700,8 @@ GLIBCXX_C_HEADERS_C_TRUE
 C_INCLUDE_DIR
 ALLOCATOR_NAME
 ALLOCATOR_H
+ENABLE_ALLOCATOR_NEW_FALSE
+ENABLE_ALLOCATOR_NEW_TRUE
 CLOCALE_INTERNAL_H
 CLOCALE_CC
 CTIME_CC
@@ -11594,7 +11596,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11597 "configure"
+#line 11599 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11700,7 +11702,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11703 "configure"
+#line 11705 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15386,7 +15388,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15389 "configure"
+#line 15391 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15421,7 +15423,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15424 "configure"
+#line 15426 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15456,7 +15458,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15459 "configure"
+#line 15461 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15492,7 +15494,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15495 "configure"
+#line 15497 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15571,7 +15573,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15574 "configure"
+#line 15576 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15613,7 +15615,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15616 "configure"
+#line 15618 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15647,7 +15649,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15650 "configure"
+#line 15652 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -16280,6 +16282,7 @@ $as_echo "$enable_libstdcxx_allocator_flag" >&6; }
       ALLOCATOR_NAME=__gnu_cxx::__pool_alloc
       ;;
   esac
+
 
 
 
@@ -80294,6 +80297,99 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+# For Transactional Memory TS
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking how size_t is mangled" >&5
+$as_echo_n "checking how size_t is mangled... " >&6; }
+if test "${glibcxx_cv_size_t_mangling+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+extern __SIZE_TYPE__ x; extern unsigned long x;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_size_t_mangling=m
+else
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+extern __SIZE_TYPE__ x; extern unsigned int x;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_size_t_mangling=j
+else
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+extern __SIZE_TYPE__ x; extern unsigned long long x;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_size_t_mangling=y
+else
+
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+extern __SIZE_TYPE__ x; extern unsigned short x;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_size_t_mangling=t
+else
+  glibcxx_cv_size_t_mangling=x
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_size_t_mangling" >&5
+$as_echo "$glibcxx_cv_size_t_mangling" >&6; }
+  if test $glibcxx_cv_size_t_mangling = x; then
+    as_fn_error "Unknown underlying type for size_t" "$LINENO" 5
+  fi
+
+cat >>confdefs.h <<_ACEOF
+#define _GLIBCXX_MANGLE_SIZE_T $glibcxx_cv_size_t_mangling
+_ACEOF
+
+
+
 # Define documentation rules conditionally.
 
 # See if makeinfo has been installed and is modern enough
@@ -80752,6 +80848,15 @@ fi
 else
   GLIBCXX_BUILD_PCH_TRUE='#'
   GLIBCXX_BUILD_PCH_FALSE=
+fi
+
+
+    if test $enable_libstdcxx_allocator_flag = new; then
+  ENABLE_ALLOCATOR_NEW_TRUE=
+  ENABLE_ALLOCATOR_NEW_FALSE='#'
+else
+  ENABLE_ALLOCATOR_NEW_TRUE='#'
+  ENABLE_ALLOCATOR_NEW_FALSE=
 fi
 
 
@@ -81272,6 +81377,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${GLIBCXX_BUILD_PCH_TRUE}" && test -z "${GLIBCXX_BUILD_PCH_FALSE}"; then
   as_fn_error "conditional \"GLIBCXX_BUILD_PCH\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_ALLOCATOR_NEW_TRUE}" && test -z "${ENABLE_ALLOCATOR_NEW_FALSE}"; then
+  as_fn_error "conditional \"ENABLE_ALLOCATOR_NEW\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${GLIBCXX_C_HEADERS_C_TRUE}" && test -z "${GLIBCXX_C_HEADERS_C_FALSE}"; then

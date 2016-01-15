@@ -791,6 +791,9 @@
 /* Define if compatibility should be provided for -mlong-double-64. */
 #undef _GLIBCXX_LONG_DOUBLE_COMPAT
 
+/* Define to the letter to which size_t is mangled. */
+#undef _GLIBCXX_MANGLE_SIZE_T
+
 /* Define if ptrdiff_t is int. */
 #undef _GLIBCXX_PTRDIFF_T_IS_INT
 
