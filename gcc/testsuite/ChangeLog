@@ -1,3 +1,12 @@
+2016-01-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/68609
+	* gcc.target/powerpc/recip-1.c: Adjust for Goldschmidt's Algorithm.
+	* gcc.target/powerpc/recip-2.c: Same.
+	* gcc.target/powerpc/recip-3.c: Same.
+	* gcc.target/powerpc/recip-4.c: Same.
+	* gcc.target/powerpc/recip-sqrtf.c: Same.
+
 2016-01-15  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69270
