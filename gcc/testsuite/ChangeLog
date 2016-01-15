@@ -1,3 +1,8 @@
+2016-01-15  Jan Hubicka <hubicka@ucw.cz>
+
+	PR ipa/68148
+	* g++.dg/ipa/devirt-49.C: New testcase.
+
 2016-01-15  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/65837

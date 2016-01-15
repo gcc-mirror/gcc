@@ -1305,6 +1305,7 @@ sem_function::merge (sem_item *alias_item)
 
       /* If all callers was redirected, do not produce wrapper.  */
       if (alias->can_remove_if_no_direct_calls_p ()
+	  && !DECL_VIRTUAL_P (alias->decl)
 	  && !alias->has_aliases_p ())
 	{
 	  create_wrapper = false;

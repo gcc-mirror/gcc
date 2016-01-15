@@ -1,5 +1,12 @@
 2016-01-15  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/68148
+	* ipa-icf.c (sem_function::merge): Virtual functions may become
+	reachable even if they address is not taken and there are no
+	idrect calls.
+
+2016-01-15  Jan Hubicka  <hubicka@ucw.cz>
+
 	* lto-streamer-out.c (subtract_estimated_size): New function.
 	(get_symbol_initial_value): Use it.
 
