@@ -20332,7 +20332,7 @@ class type is considered is own base.  Requires: if @code{__is_class
 (base_type)} and @code{__is_class (derived_type)} are true and
 @code{base_type} and @code{derived_type} are not the same type
 (disregarding cv-qualifiers), @code{derived_type} shall be a complete
-type.  Diagnostic is produced if this requirement is not met.
+type.  A diagnostic is produced if this requirement is not met.
 
 @item __is_class (type)
 If @code{type} is a cv class type, and not a union type
