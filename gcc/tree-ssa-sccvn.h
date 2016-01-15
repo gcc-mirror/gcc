@@ -169,6 +169,9 @@ typedef struct vn_ssa_aux
   /* Statements to insert if needs_insertion is true.  */
   gimple_seq expr;
 
+  /* Saved SSA name info.  */
+  tree_ssa_name::ssa_name_info_type info;
+
   /* Unique identifier that all expressions with the same value have. */
   unsigned int value_id;
 
