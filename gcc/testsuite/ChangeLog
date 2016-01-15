@@ -1,5 +1,9 @@
 2016-01-15  Jan Hubicka <hubicka@ucw.cz>
 
+	* gcc.c-torture/execute/alias-4.c: New testcase.
+
+2016-01-15  Jan Hubicka <hubicka@ucw.cz>
+
 	PR ipa/68148
 	* g++.dg/ipa/devirt-49.C: New testcase.
 
