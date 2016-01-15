@@ -21699,6 +21699,19 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
     case DImode:
       if (TARGET_64BIT)
 	goto simple;
+      /* For 32-bit target DI comparison may be performed on
+	 SSE registers.  To allow this we should avoid split
+	 to SI mode which is achieved by doing xor in DI mode
+	 and then comparing with zero (which is recognized by
+	 STV pass).  We don't compare using xor when optimizing
+	 for size.  */
+      if (!optimize_insn_for_size_p ()
+	  && TARGET_STV
+	  && (code == EQ || code == NE))
+	{
+	  op0 = force_reg (mode, gen_rtx_XOR (mode, op0, op1));
+	  op1 = const0_rtx;
+	}
     case TImode:
       /* Expand DImode branch into multiple compare+branch.  */
       {
