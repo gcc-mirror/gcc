@@ -1,3 +1,7 @@
+2016-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Type Traits): Fix grammar.
+
 2016-01-15  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-inline.c (remap_decl): Use existing dclarations if
