@@ -6930,4 +6930,11 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 			 "OUTER LOOP VECTORIZED\n");
       dump_printf (MSG_NOTE, "\n");
     }
+
+  /* Free SLP instances here because otherwise stmt reference counting
+     won't work.  */
+  slp_instance instance;
+  FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (loop_vinfo), i, instance)
+    vect_free_slp_instance (instance);
+  LOOP_VINFO_SLP_INSTANCES (loop_vinfo).release ();
 }

@@ -54,6 +54,15 @@ vect_free_slp_tree (slp_tree node)
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     vect_free_slp_tree (child);
 
+  gimple *stmt;
+  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt)
+    /* After transform some stmts are removed and thus their vinfo is gone.  */
+    if (vinfo_for_stmt (stmt))
+      {
+	gcc_assert (STMT_VINFO_NUM_SLP_USES (vinfo_for_stmt (stmt)) > 0);
+	STMT_VINFO_NUM_SLP_USES (vinfo_for_stmt (stmt))--;
+      }
+
   SLP_TREE_CHILDREN (node).release ();
   SLP_TREE_SCALAR_STMTS (node).release ();
   SLP_TREE_VEC_STMTS (node).release ();
@@ -101,6 +110,10 @@ vect_create_new_slp_node (vec<gimple *> scalar_stmts)
   SLP_TREE_LOAD_PERMUTATION (node) = vNULL;
   SLP_TREE_TWO_OPERATORS (node) = false;
   SLP_TREE_DEF_TYPE (node) = vect_internal_def;
+
+  unsigned i;
+  FOR_EACH_VEC_ELT (scalar_stmts, i, stmt)
+    STMT_VINFO_NUM_SLP_USES (vinfo_for_stmt (stmt))++;
 
   return node;
 }
@@ -401,6 +414,20 @@ again:
   /* Swap operands.  */
   if (swapped)
     {
+      /* If there are already uses of this stmt in a SLP instance then
+         we've committed to the operand order and can't swap it.  */
+      if (STMT_VINFO_NUM_SLP_USES (vinfo_for_stmt (stmt)) != 0)
+	{
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "Build SLP failed: cannot swap operands of "
+			       "shared stmt ");
+	      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+	    }
+	  return -1;
+	}
+
       if (first_op_cond)
 	{
 	  tree cond = gimple_assign_rhs1 (stmt);
@@ -411,6 +438,12 @@ again:
       else
 	swap_ssa_operands (stmt, gimple_assign_rhs1_ptr (stmt),
 			   gimple_assign_rhs2_ptr (stmt));
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "swapped operands to match def types in ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+	}
     }
 
   return 0;
@@ -1007,6 +1040,23 @@ vect_build_slp_tree (vec_info *vinfo,
 	     behavior.  */
 	  && *npermutes < 4)
 	{
+	  /* Verify if we can safely swap or if we committed to a specific
+	     operand order already.  */
+	  for (j = 0; j < group_size; ++j)
+	    if (!matches[j]
+		&& STMT_VINFO_NUM_SLP_USES (vinfo_for_stmt (stmts[j])) != 0)
+	      {
+		if (dump_enabled_p ())
+		  {
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "Build SLP failed: cannot swap operands "
+				     "of shared stmt ");
+		    dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				      stmts[j], 0);
+		  }
+		goto fail;
+	      }
+
 	  /* Swap mismatched definition stmts.  */
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "Re-trying with swapped operands of stmts ");
@@ -1095,6 +1145,7 @@ vect_build_slp_tree (vec_info *vinfo,
 	  ++*npermutes;
 	}
 
+fail:
       gcc_assert (child == NULL);
       FOR_EACH_VEC_ELT (children, j, child)
 	vect_free_slp_tree (child);
@@ -2186,18 +2237,21 @@ new_bb_vec_info (gimple_stmt_iterator region_begin,
 static void
 destroy_bb_vec_info (bb_vec_info bb_vinfo)
 {
-  vec<slp_instance> slp_instances;
   slp_instance instance;
-  basic_block bb;
-  gimple_stmt_iterator si;
   unsigned i;
 
   if (!bb_vinfo)
     return;
 
-  bb = BB_VINFO_BB (bb_vinfo);
+  vect_destroy_datarefs (bb_vinfo);
+  free_dependence_relations (BB_VINFO_DDRS (bb_vinfo));
+  BB_VINFO_GROUPED_STORES (bb_vinfo).release ();
+  FOR_EACH_VEC_ELT (BB_VINFO_SLP_INSTANCES (bb_vinfo), i, instance)
+    vect_free_slp_instance (instance);
+  BB_VINFO_SLP_INSTANCES (bb_vinfo).release ();
+  destroy_cost_data (BB_VINFO_TARGET_COST_DATA (bb_vinfo));
 
-  for (si = bb_vinfo->region_begin;
+  for (gimple_stmt_iterator si = bb_vinfo->region_begin;
        gsi_stmt (si) != gsi_stmt (bb_vinfo->region_end); gsi_next (&si))
     {
       gimple *stmt = gsi_stmt (si);
@@ -2211,16 +2265,8 @@ destroy_bb_vec_info (bb_vec_info bb_vinfo)
       gimple_set_uid (stmt, -1);
     }
 
-  vect_destroy_datarefs (bb_vinfo);
-  free_dependence_relations (BB_VINFO_DDRS (bb_vinfo));
-  BB_VINFO_GROUPED_STORES (bb_vinfo).release ();
-  slp_instances = BB_VINFO_SLP_INSTANCES (bb_vinfo);
-  FOR_EACH_VEC_ELT (slp_instances, i, instance)
-    vect_free_slp_instance (instance);
-  BB_VINFO_SLP_INSTANCES (bb_vinfo).release ();
-  destroy_cost_data (BB_VINFO_TARGET_COST_DATA (bb_vinfo));
+  BB_VINFO_BB (bb_vinfo)->aux = NULL;
   free (bb_vinfo);
-  bb->aux = NULL;
 }
 
 
