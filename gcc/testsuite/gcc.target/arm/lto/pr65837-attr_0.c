@@ -1,9 +1,10 @@
 /* { dg-lto-do run } */
 /* { dg-require-effective-target arm_neon_hw } */
-/* { dg-lto-options {{-flto -mfpu=neon}} } */
-/* { dg-suppress-ld-options {-mfpu=neon} } */
+/* { dg-lto-options {{-flto}} } */
 
 #include "arm_neon.h"
+
+#pragma GCC target ("fpu=neon")
 
 float32x2_t a, b, c, e;
 
