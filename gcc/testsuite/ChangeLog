@@ -1,3 +1,8 @@
+2016-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/69246
+	* gcc.target/i386/pr69246.c: New test.
+
 2016-01-15  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gfortran.dg/bind_c_array_params_2.f90: Fix test patterns for

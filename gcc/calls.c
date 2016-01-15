@@ -272,12 +272,19 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
   rtx rounded_stack_size_rtx = GEN_INT (rounded_stack_size);
   rtx call, funmem, pat;
   int already_popped = 0;
-  HOST_WIDE_INT n_popped
-    = targetm.calls.return_pops_args (fndecl, funtype, stack_size);
+  HOST_WIDE_INT n_popped = 0;
+
+  /* Sibling call patterns never pop arguments (no sibcall(_value)_pop
+     patterns exist).  Any popping that the callee does on return will
+     be from our caller's frame rather than ours.  */
+  if (!(ecf_flags & ECF_SIBCALL))
+    {
+      n_popped += targetm.calls.return_pops_args (fndecl, funtype, stack_size);
 
 #ifdef CALL_POPS_ARGS
-  n_popped += CALL_POPS_ARGS (*get_cumulative_args (args_so_far));
+      n_popped += CALL_POPS_ARGS (*get_cumulative_args (args_so_far));
 #endif
+    }
 
   /* Ensure address is valid.  SYMBOL_REF is already valid, so no need,
      and we don't want to load it into a register as an optimization,

@@ -1,3 +1,8 @@
+2016-01-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/69246
+	* calls.c (emit_call_1): Force n_popped to zero for sibcalls.
+
 2016-01-15  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* config/i386/i386.c (scalar_chain::compute_convert_gain): Fix typo.
