@@ -40259,13 +40259,12 @@ rdseed_step:
 
       op0 = fixup_modeless_constant (op0, mode0);
 
-      if (GET_MODE (op0) == mode0
-	  || (GET_MODE (op0) == VOIDmode && op0 != constm1_rtx))
+      if (GET_MODE (op0) == mode0 || GET_MODE (op0) == VOIDmode)
 	{
 	  if (!insn_data[icode].operand[0].predicate (op0, mode0))
 	    op0 = copy_to_mode_reg (mode0, op0);
 	}
-      else if (op0 != constm1_rtx)
+      else
 	{
 	  op0 = copy_to_reg (op0);
 	  op0 = simplify_gen_subreg (mode0, op0, GET_MODE (op0), 0);

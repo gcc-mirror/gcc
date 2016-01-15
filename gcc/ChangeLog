@@ -1,3 +1,22 @@
+2016-01-15  Alexander Fomin  <alexander.fomin@intel.com>
+
+	Backport from mainline
+	2016-01-13  Alexander Fomin  <alexander.fomin@intel.com>
+
+	PR target/69228
+	* config/i386/sse.md (define_expand "avx512pf_gatherpf<mode>sf"):
+	Change first operand predicate from register_or_constm1_operand
+	to register_operand.
+	(define_expand "avx512pf_gatherpf<mode>df"): Likewise.
+	(define_expand "avx512pf_scatterpf<mode>sf"): Likewise.
+	(define_expand "avx512pf_scatterpf<mode>df"): Likewise.
+	(define_insn "*avx512pf_gatherpf<mode>sf"): Remove.
+	(define_insn "*avx512pf_gatherpf<mode>df"): Likewise.
+	(define_insn "*avx512pf_scatterpf<mode>sf"): Likewise.
+	(define_insn "*avx512pf_scatterpf<mode>df"): Likewise.
+	* config/i386/i386.c (ix86_expand_builtin): Remove first operand
+	comparison with constm1_rtx from vec_prefetch_gen part.
+
 2016-01-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69013

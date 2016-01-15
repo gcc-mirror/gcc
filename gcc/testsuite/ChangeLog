@@ -1,3 +1,18 @@
+2016-01-15  Alexander Fomin  <alexander.fomin@intel.com>
+
+	Backport from mainline
+	2016-01-13  Alexander Fomin  <alexander.fomin@intel.com>
+
+	PR target/69228
+	* gcc.target/i386/avx512pf-vscatterpf0dpd-1.c: Adjust.
+	* gcc.target/i386/avx512pf-vscatterpf0dps-1.c: Likewise.
+	* gcc.target/i386/avx512pf-vscatterpf0qpd-1.c: Likewise.
+	* gcc.target/i386/avx512pf-vscatterpf0qps-1.c: Likewise.
+	* gcc.target/i386/avx512pf-vscatterpf1dpd-1.c: Likewise.
+	* gcc.target/i386/avx512pf-vscatterpf1dps-1.c: Likewise.
+	* gcc.target/i386/avx512pf-vscatterpf1qpd-1.c: Likewise.
+	* gcc.target/i386/avx512pf-vscatterpf1qps-1.c: Likewise.
+
 2016-01-12  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backport from mainline r222186.
