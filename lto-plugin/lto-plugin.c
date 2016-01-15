@@ -628,7 +628,7 @@ all_symbols_read_handler (void)
   unsigned num_lto_args
     = num_claimed_files + num_offload_files + lto_wrapper_num_args + 2;
   char **lto_argv;
-  const char *linker_output_str;
+  const char *linker_output_str = NULL;
   const char **lto_arg_ptr;
   if (num_claimed_files + num_offload_files == 0)
     return LDPS_OK;
