@@ -1,3 +1,14 @@
+2016-01-15  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-inline.c (remap_decl): Use existing dclarations if
+	remapping a type and prevent_decl_creation_for_types.
+	(replace_locals_stmt): Do an initial remapping of non-VLA typed
+	decls first.  Do real remapping with
+	prevent_decl_creation_for_types set.
+	* tree-inline.h (copy_body_data): New field
+	prevent_decl_creation_for_types, moved remap_var_for_cilk to avoid
+	padding.
+
 2016-01-15  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.opt (mmvcle): More verbose help text.

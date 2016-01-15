@@ -140,14 +140,17 @@ struct copy_body_data
      the originals have been mapped to a value rather than to a
      variable.  */
   hash_map<tree, tree> *debug_map;
- 
-  /* Cilk keywords currently need to replace some variables that
-     ordinary nested functions do not.  */ 
-  bool remap_var_for_cilk;
 
   /* A map from the inlined functions dependence info cliques to
      equivalents in the function into which it is being inlined.  */
   hash_map<dependence_hash, unsigned short> *dependence_map;
+
+  /* Cilk keywords currently need to replace some variables that
+     ordinary nested functions do not.  */
+  bool remap_var_for_cilk;
+
+  /* Do not create new declarations when within type remapping.  */
+  bool prevent_decl_creation_for_types;
 };
 
 /* Weights of constructions for estimate_num_insns.  */

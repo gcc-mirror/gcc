@@ -340,8 +340,17 @@ remap_decl (tree decl, copy_body_data *id)
       return decl;
     }
 
-  /* If we didn't already have an equivalent for this declaration,
-     create one now.  */
+  /* When remapping a type within copy_gimple_seq_and_replace_locals, all
+     necessary DECLs have already been remapped and we do not want to duplicate
+     a decl coming from outside of the sequence we are copying.  */
+  if (!n
+      && id->prevent_decl_creation_for_types
+      && id->remapping_type_depth > 0
+      && (VAR_P (decl) || TREE_CODE (decl) == PARM_DECL))
+    return decl;
+
+  /* If we didn't already have an equivalent for this declaration, create one
+     now.  */
   if (!n)
     {
       /* Make a copy of the variable or label.  */
@@ -5225,8 +5234,19 @@ replace_locals_stmt (gimple_stmt_iterator *gsip,
       /* This will remap a lot of the same decls again, but this should be
 	 harmless.  */
       if (gimple_bind_vars (stmt))
-	gimple_bind_set_vars (stmt, remap_decls (gimple_bind_vars (stmt),
-						 NULL, id));
+	{
+	  tree old_var, decls = gimple_bind_vars (stmt);
+
+	  for (old_var = decls; old_var; old_var = DECL_CHAIN (old_var))
+	    if (!can_be_nonlocal (old_var, id)
+		&& ! variably_modified_type_p (TREE_TYPE (old_var), id->src_fn))
+	      remap_decl (old_var, id);
+
+	  gcc_checking_assert (!id->prevent_decl_creation_for_types);
+	  id->prevent_decl_creation_for_types = true;
+	  gimple_bind_set_vars (stmt, remap_decls (decls, NULL, id));
+	  id->prevent_decl_creation_for_types = false;
+	}
     }
 
   /* Keep iterating.  */
