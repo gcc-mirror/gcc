@@ -5986,6 +5986,10 @@ oacc_default_clause (struct gimplify_omp_ctx *ctx, tree decl, unsigned flags)
 {
   const char *rkind;
   bool on_device = false;
+  tree type = TREE_TYPE (decl);
+
+  if (lang_hooks.decls.omp_privatize_by_reference (decl))
+    type = TREE_TYPE (type);
 
   if ((ctx->region_type & (ORT_ACC_PARALLEL | ORT_ACC_KERNELS)) != 0
       && is_global_var (decl)
@@ -6004,7 +6008,7 @@ oacc_default_clause (struct gimplify_omp_ctx *ctx, tree decl, unsigned flags)
       /* Scalars are default 'copy' under kernels, non-scalars are default
 	 'present_or_copy'.  */
       flags |= GOVD_MAP;
-      if (!AGGREGATE_TYPE_P (TREE_TYPE (decl)))
+      if (!AGGREGATE_TYPE_P (type))
 	flags |= GOVD_MAP_FORCE;
 
       rkind = "kernels";
@@ -6012,12 +6016,6 @@ oacc_default_clause (struct gimplify_omp_ctx *ctx, tree decl, unsigned flags)
 
     case ORT_ACC_PARALLEL:
       {
-	tree type = TREE_TYPE (decl);
-
-	if (TREE_CODE (type) == REFERENCE_TYPE
-	    || POINTER_TYPE_P (type))
-	  type = TREE_TYPE (type);
-
 	if (on_device || AGGREGATE_TYPE_P (type))
 	  /* Aggregates default to 'present_or_copy'.  */
 	  flags |= GOVD_MAP;

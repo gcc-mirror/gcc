@@ -1,3 +1,7 @@
+2016-01-15  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/kernels-data.f90: New test.
+
 2016-01-12  James Norris  <jnorris@codesourcery.com>
 
 	* libgomp.texi: Updates for OpenACC.
