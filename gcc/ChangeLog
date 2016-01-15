@@ -1,3 +1,57 @@
+2016-01-15  Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_types_unopus_qualifiers):
+	New.
+	(TYPES_UNOPUS): Likewise.
+	* config/aarch64/aarch64-simd-builtins.def (lbtruncuv2sf): Correct
+	builtin type, from UNOP to UNOPUS.
+	(lbtruncuv4sf): Likewise.
+	(lbtruncuv2df): Likewise.
+	(lrounduv2sf): Likewise.
+	(lrounduv4sf): Likewise.
+	(lrounduv2df): Likewise.
+	(lroundusf): Likewise.
+	(lroundusf): Likewise.
+	(lceiluv2sf): Likewise.
+	(lceiluv4sf): Likewise.
+	(lceiluv2df): Likewise.
+	(lceilusf): Likewise.
+	(lceiludf): Likewise.
+	(lflooruv2sf): Likewise.
+	(lflooruv4sf): Likewise.
+	(lflooruv2df): Likewise.
+	(lfloorusf): Likewise.
+	(lfloorudf): Likewise.
+	(lfrintnuv2sf): Likewise.
+	(lfrintnuv4sf): Likewise.
+	(lfrintnuv2df): Likewise.
+	(lfrintnusf): Likewise.
+	(lfrintnudf): Likewise.
+	* config/aarch64/arm_neon.h (vcvt_u32_f32): Remove unncessary type
+	conversion.
+	(vcvtq_u32_f32): Likewise.
+	(vcvtq_u64_f64): Likewise.
+	(vcvta_u32_f32): Likewise.
+	(vcvtaq_u32_f32): Likewise.
+	(vcvtaq_u64_f64): Likewise.
+	(vcvtm_u32_f32): Likewise.
+	(vcvtmq_u32_f32): Likewise.
+	(vcvtmq_u64_f64): Likewise.
+	(vcvtn_u32_f32): Likwise.
+	(vcvtnq_u32_f32): Likewise.
+	(vcvtnq_u64_f64): Likewise.
+	(vcvtp_u32_f32): Likewise.
+	(vcvtpq_u32_f32): Likewise.
+	(vcvtpq_u64_f64): Likewise.
+	(vcvtmd_u64_f64): Likewise.
+	(vcvtms_u32_f32): Likewise.
+	(vcvtad_u64_f64): Likewise.
+	(vcvtas_u32_f32): Likewise.
+	(vcvtnd_u64_f64): Likewise.
+	(vcvtns_u32_f32): Likewise.
+	(vcvtpd_u64_f64): Likewise.
+	(vcvtps_u32_f32): Likewise.
+	
 2016-01-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_if_then_else_costs): Handle

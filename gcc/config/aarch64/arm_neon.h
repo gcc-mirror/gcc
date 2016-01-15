@@ -13203,9 +13203,7 @@ vcvt_s32_f32 (float32x2_t __a)
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vcvt_u32_f32 (float32x2_t __a)
 {
-  /* TODO: This cast should go away when builtins have
-     their correct types.  */
-  return (uint32x2_t) __builtin_aarch64_lbtruncuv2sfv2si (__a);
+  return __builtin_aarch64_lbtruncuv2sfv2si_us (__a);
 }
 
 __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
@@ -13217,9 +13215,7 @@ vcvtq_s32_f32 (float32x4_t __a)
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vcvtq_u32_f32 (float32x4_t __a)
 {
-  /* TODO: This cast should go away when builtins have
-     their correct types.  */
-  return (uint32x4_t) __builtin_aarch64_lbtruncuv4sfv4si (__a);
+  return __builtin_aarch64_lbtruncuv4sfv4si_us (__a);
 }
 
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
@@ -13231,9 +13227,7 @@ vcvtq_s64_f64 (float64x2_t __a)
 __extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
 vcvtq_u64_f64 (float64x2_t __a)
 {
-  /* TODO: This cast should go away when builtins have
-     their correct types.  */
-  return (uint64x2_t) __builtin_aarch64_lbtruncuv2dfv2di (__a);
+  return __builtin_aarch64_lbtruncuv2dfv2di_us (__a);
 }
 
 /* vcvta  */
@@ -13247,7 +13241,7 @@ vcvtad_s64_f64 (float64_t __a)
 __extension__ static __inline uint64_t __attribute__ ((__always_inline__))
 vcvtad_u64_f64 (float64_t __a)
 {
-  return __builtin_aarch64_lroundudfdi (__a);
+  return __builtin_aarch64_lroundudfdi_us (__a);
 }
 
 __extension__ static __inline int32_t __attribute__ ((__always_inline__))
@@ -13259,7 +13253,7 @@ vcvtas_s32_f32 (float32_t __a)
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 vcvtas_u32_f32 (float32_t __a)
 {
-  return __builtin_aarch64_lroundusfsi (__a);
+  return __builtin_aarch64_lroundusfsi_us (__a);
 }
 
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
@@ -13271,9 +13265,7 @@ vcvta_s32_f32 (float32x2_t __a)
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vcvta_u32_f32 (float32x2_t __a)
 {
-  /* TODO: This cast should go away when builtins have
-     their correct types.  */
-  return (uint32x2_t) __builtin_aarch64_lrounduv2sfv2si (__a);
+  return __builtin_aarch64_lrounduv2sfv2si_us (__a);
 }
 
 __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
@@ -13285,9 +13277,7 @@ vcvtaq_s32_f32 (float32x4_t __a)
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vcvtaq_u32_f32 (float32x4_t __a)
 {
-  /* TODO: This cast should go away when builtins have
-     their correct types.  */
-  return (uint32x4_t) __builtin_aarch64_lrounduv4sfv4si (__a);
+  return __builtin_aarch64_lrounduv4sfv4si_us (__a);
 }
 
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
@@ -13299,9 +13289,7 @@ vcvtaq_s64_f64 (float64x2_t __a)
 __extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
 vcvtaq_u64_f64 (float64x2_t __a)
 {
-  /* TODO: This cast should go away when builtins have
-     their correct types.  */
-  return (uint64x2_t) __builtin_aarch64_lrounduv2dfv2di (__a);
+  return __builtin_aarch64_lrounduv2dfv2di_us (__a);
 }
 
 /* vcvtm  */
@@ -13315,7 +13303,7 @@ vcvtmd_s64_f64 (float64_t __a)
 __extension__ static __inline uint64_t __attribute__ ((__always_inline__))
 vcvtmd_u64_f64 (float64_t __a)
 {
-  return __builtin_aarch64_lfloorudfdi (__a);
+  return __builtin_aarch64_lfloorudfdi_us (__a);
 }
 
 __extension__ static __inline int32_t __attribute__ ((__always_inline__))
@@ -13327,7 +13315,7 @@ vcvtms_s32_f32 (float32_t __a)
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 vcvtms_u32_f32 (float32_t __a)
 {
-  return __builtin_aarch64_lfloorusfsi (__a);
+  return __builtin_aarch64_lfloorusfsi_us (__a);
 }
 
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
@@ -13339,9 +13327,7 @@ vcvtm_s32_f32 (float32x2_t __a)
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vcvtm_u32_f32 (float32x2_t __a)
 {
-  /* TODO: This cast should go away when builtins have
-     their correct types.  */
-  return (uint32x2_t) __builtin_aarch64_lflooruv2sfv2si (__a);
+  return __builtin_aarch64_lflooruv2sfv2si_us (__a);
 }
 
 __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
@@ -13353,9 +13339,7 @@ vcvtmq_s32_f32 (float32x4_t __a)
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vcvtmq_u32_f32 (float32x4_t __a)
 {
-  /* TODO: This cast should go away when builtins have
-     their correct types.  */
-  return (uint32x4_t) __builtin_aarch64_lflooruv4sfv4si (__a);
+  return __builtin_aarch64_lflooruv4sfv4si_us (__a);
 }
 
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
@@ -13367,9 +13351,7 @@ vcvtmq_s64_f64 (float64x2_t __a)
 __extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
 vcvtmq_u64_f64 (float64x2_t __a)
 {
-  /* TODO: This cast should go away when builtins have
-     their correct types.  */
-  return (uint64x2_t) __builtin_aarch64_lflooruv2dfv2di (__a);
+  return __builtin_aarch64_lflooruv2dfv2di_us (__a);
 }
 
 /* vcvtn  */
@@ -13383,7 +13365,7 @@ vcvtnd_s64_f64 (float64_t __a)
 __extension__ static __inline uint64_t __attribute__ ((__always_inline__))
 vcvtnd_u64_f64 (float64_t __a)
 {
-  return __builtin_aarch64_lfrintnudfdi (__a);
+  return __builtin_aarch64_lfrintnudfdi_us (__a);
 }
 
 __extension__ static __inline int32_t __attribute__ ((__always_inline__))
@@ -13395,7 +13377,7 @@ vcvtns_s32_f32 (float32_t __a)
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 vcvtns_u32_f32 (float32_t __a)
 {
-  return __builtin_aarch64_lfrintnusfsi (__a);
+  return __builtin_aarch64_lfrintnusfsi_us (__a);
 }
 
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
@@ -13407,9 +13389,7 @@ vcvtn_s32_f32 (float32x2_t __a)
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vcvtn_u32_f32 (float32x2_t __a)
 {
-  /* TODO: This cast should go away when builtins have
-     their correct types.  */
-  return (uint32x2_t) __builtin_aarch64_lfrintnuv2sfv2si (__a);
+  return __builtin_aarch64_lfrintnuv2sfv2si_us (__a);
 }
 
 __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
@@ -13421,9 +13401,7 @@ vcvtnq_s32_f32 (float32x4_t __a)
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vcvtnq_u32_f32 (float32x4_t __a)
 {
-  /* TODO: This cast should go away when builtins have
-     their correct types.  */
-  return (uint32x4_t) __builtin_aarch64_lfrintnuv4sfv4si (__a);
+  return __builtin_aarch64_lfrintnuv4sfv4si_us (__a);
 }
 
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
@@ -13435,9 +13413,7 @@ vcvtnq_s64_f64 (float64x2_t __a)
 __extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
 vcvtnq_u64_f64 (float64x2_t __a)
 {
-  /* TODO: This cast should go away when builtins have
-     their correct types.  */
-  return (uint64x2_t) __builtin_aarch64_lfrintnuv2dfv2di (__a);
+  return __builtin_aarch64_lfrintnuv2dfv2di_us (__a);
 }
 
 /* vcvtp  */
@@ -13451,7 +13427,7 @@ vcvtpd_s64_f64 (float64_t __a)
 __extension__ static __inline uint64_t __attribute__ ((__always_inline__))
 vcvtpd_u64_f64 (float64_t __a)
 {
-  return __builtin_aarch64_lceiludfdi (__a);
+  return __builtin_aarch64_lceiludfdi_us (__a);
 }
 
 __extension__ static __inline int32_t __attribute__ ((__always_inline__))
@@ -13463,7 +13439,7 @@ vcvtps_s32_f32 (float32_t __a)
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 vcvtps_u32_f32 (float32_t __a)
 {
-  return __builtin_aarch64_lceilusfsi (__a);
+  return __builtin_aarch64_lceilusfsi_us (__a);
 }
 
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
@@ -13475,9 +13451,7 @@ vcvtp_s32_f32 (float32x2_t __a)
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vcvtp_u32_f32 (float32x2_t __a)
 {
-  /* TODO: This cast should go away when builtins have
-     their correct types.  */
-  return (uint32x2_t) __builtin_aarch64_lceiluv2sfv2si (__a);
+  return __builtin_aarch64_lceiluv2sfv2si_us (__a);
 }
 
 __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
@@ -13489,9 +13463,7 @@ vcvtpq_s32_f32 (float32x4_t __a)
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vcvtpq_u32_f32 (float32x4_t __a)
 {
-  /* TODO: This cast should go away when builtins have
-     their correct types.  */
-  return (uint32x4_t) __builtin_aarch64_lceiluv4sfv4si (__a);
+  return __builtin_aarch64_lceiluv4sfv4si_us (__a);
 }
 
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
@@ -13503,9 +13475,7 @@ vcvtpq_s64_f64 (float64x2_t __a)
 __extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
 vcvtpq_u64_f64 (float64x2_t __a)
 {
-  /* TODO: This cast should go away when builtins have
-     their correct types.  */
-  return (uint64x2_t) __builtin_aarch64_lceiluv2dfv2di (__a);
+  return __builtin_aarch64_lceiluv2dfv2di_us (__a);
 }
 
 /* vdup_n  */
