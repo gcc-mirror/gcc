@@ -1,5 +1,19 @@
 2016-01-15  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/66856
+	* tree-vect-loop.c (vect_transform_loop): Free SLP instances here.
+	* tree-vect-slp.c (vect_free_slp_tree): Decrement stmt reference count.
+	(vect_create_new_slp_node): Increment stmt reference count.
+	(vect_get_and_check_slp_defs): Make sure stmts are nor already in
+	an SLP tree before swapping operands.
+	(vect_build_slp_tree): Likewise.
+	(destroy_bb_vec_info): Free stmt info after SLP instances.
+	* tree-vect-stmts.c (new_stmt_vec_info): Initialize reference count.
+	* tree-vectorizer.h (struct _stmt_vec_info): Add num_slp_uses field.
+	(STMT_VINFO_NUM_SLP_USES): New macro.
+
+2016-01-15  Richard Biener  <rguenther@suse.de>
+
 	PR debug/69137
 	* dwarf2out.c (add_linkage_name_raw): New function split out from ...
 	(add_linkage_name): ... here.

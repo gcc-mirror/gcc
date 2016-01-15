@@ -601,6 +601,8 @@ typedef struct _stmt_vec_info {
   /* For reduction loops, this is the type of reduction.  */
   enum vect_reduction_type v_reduc_type;
 
+  /* The number of scalar stmt references from active SLP instances.  */
+  unsigned int num_slp_uses;
 } *stmt_vec_info;
 
 /* Access Functions.  */
@@ -653,6 +655,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED(S) (S)->loop_phi_evolution_base_unchanged
 #define STMT_VINFO_LOOP_PHI_EVOLUTION_PART(S) (S)->loop_phi_evolution_part
 #define STMT_VINFO_MIN_NEG_DIST(S)	(S)->min_neg_dist
+#define STMT_VINFO_NUM_SLP_USES(S)	(S)->num_slp_uses
 
 #define GROUP_FIRST_ELEMENT(S)          (S)->first_element
 #define GROUP_NEXT_ELEMENT(S)           (S)->next_element
