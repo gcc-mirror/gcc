@@ -7755,7 +7755,7 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
       /* We need to take care that values to BUILT_IN_NORMAL
          are reduced.  */
       for (i = 0; i < nargs; i++)
-	argarray[i] = maybe_constant_value (argarray[i]);
+	argarray[i] = fold_non_dependent_expr (argarray[i]);
 
       if (!check_builtin_function_arguments (fndecl, nargs, argarray))
 	return error_mark_node;

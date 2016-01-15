@@ -1,5 +1,8 @@
 2016-01-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/68847
+	* call.c (build_cxx_call): Use fold_non_dependent_expr.
+
 	* typeck2.c (cxx_incomplete_type_diagnostic): Use the location of
 	value.
 
