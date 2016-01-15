@@ -1,3 +1,28 @@
+2016-01-15  Torvald Riegel  <triegel@redhat.com>
+
+	* include/bits/basic_string.h (basic_string): Declare friends.
+	* include/bits/c++config (_GLIBCXX_TXN_SAFE,
+	_GLIBCXX_TXN_SAFE_DYN, _GLIBCXX_USE_ALLOCATOR_NEW): New.
+	* include/std/stdexcept (logic_error, domain_error, invalid_argument,
+	length_error, out_of_range, runtime_error, range_error,
+	underflow_error, overflow_error): Declare members as transaction-safe.
+	(logic_error, runtime_error): Declare friend functions.
+	* libsupc++/exception (exception, bad_exception): Declare members as
+	transaction-safe.
+	* src/c++11/cow-stdexcept.cc: Define transactional clones for the
+	transaction-safe members of exceptions and helper functions.
+	* libsupc++/eh_exception.cc: Adjust and define transactional clones.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.22) Add transactional clones.
+	(CXXABI_1.3.10): New.
+	* acinclude.m4 (GLIBCXX_CHECK_SIZE_T_MANGLING): New.
+	(GLIBCXX_ENABLE_ALLOCATOR): Set ENABLE_ALLOCATOR_NEW.
+	* configure.ac: Call GLIBCXX_CHECK_SIZE_T_MANGLING.
+	* include/Makefile.am: Write ENABLE_ALLOCATOR_NEW to c++config.h.
+	* include/Makefile.in: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* testsuite/util/testsuite_abi.cc (check_version): Add CXXABI_1.3.10.
+
 2016-01-15  Steve Ellcey  <sellcey@imgtec.com>
 
 	* include/ext/random.tcc: Use __builtin_isfinite instead of

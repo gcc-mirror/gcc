@@ -2594,6 +2594,8 @@ AC_DEFUN([GLIBCXX_ENABLE_ALLOCATOR], [
       ;;
   esac
 
+  GLIBCXX_CONDITIONAL(ENABLE_ALLOCATOR_NEW,
+		      test $enable_libstdcxx_allocator_flag = new)
   AC_SUBST(ALLOCATOR_H)
   AC_SUBST(ALLOCATOR_NAME)
 ])
@@ -4342,6 +4344,34 @@ dnl
 dnl
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
+])
+
+dnl
+dnl Check how size_t is mangled.  Copied from libitm.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_SIZE_T_MANGLING], [
+  AC_CACHE_CHECK([how size_t is mangled],
+                 glibcxx_cv_size_t_mangling, [
+    AC_TRY_COMPILE([], [extern __SIZE_TYPE__ x; extern unsigned long x;],
+                   [glibcxx_cv_size_t_mangling=m], [
+      AC_TRY_COMPILE([], [extern __SIZE_TYPE__ x; extern unsigned int x;],
+                     [glibcxx_cv_size_t_mangling=j], [
+        AC_TRY_COMPILE([],
+                       [extern __SIZE_TYPE__ x; extern unsigned long long x;],
+                       [glibcxx_cv_size_t_mangling=y], [
+          AC_TRY_COMPILE([],
+                         [extern __SIZE_TYPE__ x; extern unsigned short x;],
+                         [glibcxx_cv_size_t_mangling=t],
+                         [glibcxx_cv_size_t_mangling=x])
+        ])
+      ])
+    ])
+  ])
+  if test $glibcxx_cv_size_t_mangling = x; then
+    AC_MSG_ERROR([Unknown underlying type for size_t])
+  fi
+  AC_DEFINE_UNQUOTED(_GLIBCXX_MANGLE_SIZE_T, [$glibcxx_cv_size_t_mangling],
+    [Define to the letter to which size_t is mangled.])
 ])
 
 # Macros from the top-level gcc directory.
