@@ -1,3 +1,8 @@
+2016-01-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/69030
+	* gcc.target/i386/pr69030.c: New.
+
 2016-01-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/target_attr_17.c: New test.

@@ -396,17 +396,19 @@ assign_stack_slot_num_and_sort_pseudos (int *pseudo_regnos, int n)
 
 /* Recursively process LOC in INSN and change spilled pseudos to the
    corresponding memory or spilled hard reg.  Ignore spilled pseudos
-   created from the scratches.	*/
-static void
+   created from the scratches.  Return true if the pseudo nrefs equal
+   to 0 (don't change the pseudo in this case).  Otherwise return false.  */
+static bool
 remove_pseudos (rtx *loc, rtx_insn *insn)
 {
   int i;
   rtx hard_reg;
   const char *fmt;
   enum rtx_code code;
-
+  bool res = false;
+  
   if (*loc == NULL_RTX)
-    return;
+    return res;
   code = GET_CODE (*loc);
   if (code == REG && (i = REGNO (*loc)) >= FIRST_PSEUDO_REGISTER
       && lra_get_regno_hard_regno (i) < 0
@@ -416,6 +418,9 @@ remove_pseudos (rtx *loc, rtx_insn *insn)
 	 into scratches back.  */
       && ! lra_former_scratch_p (i))
     {
+      if (lra_reg_info[i].nrefs == 0
+	  && pseudo_slots[i].mem == NULL && spill_hard_reg[i] == NULL)
+	return true;
       if ((hard_reg = spill_hard_reg[i]) != NULL_RTX)
 	*loc = copy_rtx (hard_reg);
       else
@@ -425,22 +430,23 @@ remove_pseudos (rtx *loc, rtx_insn *insn)
 					false, false, 0, true);
 	  *loc = x != pseudo_slots[i].mem ? x : copy_rtx (x);
 	}
-      return;
+      return res;
     }
 
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	remove_pseudos (&XEXP (*loc, i), insn);
+	res = remove_pseudos (&XEXP (*loc, i), insn) || res;
       else if (fmt[i] == 'E')
 	{
 	  int j;
 
 	  for (j = XVECLEN (*loc, i) - 1; j >= 0; j--)
-	    remove_pseudos (&XVECEXP (*loc, i, j), insn);
+	    res = remove_pseudos (&XVECEXP (*loc, i, j), insn) || res;
 	}
     }
+  return res;
 }
 
 /* Convert spilled pseudos into their stack slots or spill hard regs,
@@ -450,7 +456,7 @@ static void
 spill_pseudos (void)
 {
   basic_block bb;
-  rtx_insn *insn;
+  rtx_insn *insn, *curr;
   int i;
   bitmap_head spilled_pseudos, changed_insns;
 
@@ -467,52 +473,70 @@ spill_pseudos (void)
     }
   FOR_EACH_BB_FN (bb, cfun)
     {
-      FOR_BB_INSNS (bb, insn)
-	if (bitmap_bit_p (&changed_insns, INSN_UID (insn)))
-	  {
-	    rtx *link_loc, link;
-	    remove_pseudos (&PATTERN (insn), insn);
-	    if (CALL_P (insn))
-	      remove_pseudos (&CALL_INSN_FUNCTION_USAGE (insn), insn);
-	    for (link_loc = &REG_NOTES (insn);
-		 (link = *link_loc) != NULL_RTX;
-		 link_loc = &XEXP (link, 1))
-	      {
-		switch (REG_NOTE_KIND (link))
-		  {
-		  case REG_FRAME_RELATED_EXPR:
-		  case REG_CFA_DEF_CFA:
-		  case REG_CFA_ADJUST_CFA:
-		  case REG_CFA_OFFSET:
-		  case REG_CFA_REGISTER:
-		  case REG_CFA_EXPRESSION:
-		  case REG_CFA_RESTORE:
-		  case REG_CFA_SET_VDRAP:
-		    remove_pseudos (&XEXP (link, 0), insn);
-		    break;
-		  default:
-		    break;
-		  }
-	      }
-	    if (lra_dump_file != NULL)
-	      fprintf (lra_dump_file,
-		       "Changing spilled pseudos to memory in insn #%u\n",
-		       INSN_UID (insn));
-	    lra_push_insn (insn);
-	    if (lra_reg_spill_p || targetm.different_addr_displacement_p ())
-	      lra_set_used_insn_alternative (insn, -1);
-	  }
-	else if (CALL_P (insn))
-	  /* Presence of any pseudo in CALL_INSN_FUNCTION_USAGE does
-	     not affect value of insn_bitmap of the corresponding
-	     lra_reg_info.  That is because we don't need to reload
-	     pseudos in CALL_INSN_FUNCTION_USAGEs.  So if we process
-	     only insns in the insn_bitmap of given pseudo here, we
-	     can miss the pseudo in some
-	     CALL_INSN_FUNCTION_USAGEs.  */
-	  remove_pseudos (&CALL_INSN_FUNCTION_USAGE (insn), insn);
-      bitmap_and_compl_into (df_get_live_in (bb), &spilled_pseudos);
-      bitmap_and_compl_into (df_get_live_out (bb), &spilled_pseudos);
+      FOR_BB_INSNS_SAFE (bb, insn, curr)
+	{
+	  bool removed_pseudo_p = false;
+	  
+	  if (bitmap_bit_p (&changed_insns, INSN_UID (insn)))
+	    {
+	      rtx *link_loc, link;
+
+	      removed_pseudo_p = remove_pseudos (&PATTERN (insn), insn);
+	      if (CALL_P (insn)
+		  && remove_pseudos (&CALL_INSN_FUNCTION_USAGE (insn), insn))
+		removed_pseudo_p = true;
+	      for (link_loc = &REG_NOTES (insn);
+		   (link = *link_loc) != NULL_RTX;
+		   link_loc = &XEXP (link, 1))
+		{
+		  switch (REG_NOTE_KIND (link))
+		    {
+		    case REG_FRAME_RELATED_EXPR:
+		    case REG_CFA_DEF_CFA:
+		    case REG_CFA_ADJUST_CFA:
+		    case REG_CFA_OFFSET:
+		    case REG_CFA_REGISTER:
+		    case REG_CFA_EXPRESSION:
+		    case REG_CFA_RESTORE:
+		    case REG_CFA_SET_VDRAP:
+		      if (remove_pseudos (&XEXP (link, 0), insn))
+			removed_pseudo_p = true;
+		      break;
+		    default:
+		      break;
+		    }
+		}
+	      if (lra_dump_file != NULL)
+		fprintf (lra_dump_file,
+			 "Changing spilled pseudos to memory in insn #%u\n",
+			 INSN_UID (insn));
+	      lra_push_insn (insn);
+	      if (lra_reg_spill_p || targetm.different_addr_displacement_p ())
+		lra_set_used_insn_alternative (insn, -1);
+	    }
+	  else if (CALL_P (insn)
+		   /* Presence of any pseudo in CALL_INSN_FUNCTION_USAGE
+		      does not affect value of insn_bitmap of the
+		      corresponding lra_reg_info.  That is because we
+		      don't need to reload pseudos in
+		      CALL_INSN_FUNCTION_USAGEs.  So if we process only
+		      insns in the insn_bitmap of given pseudo here, we
+		      can miss the pseudo in some
+		      CALL_INSN_FUNCTION_USAGEs.  */
+		   && remove_pseudos (&CALL_INSN_FUNCTION_USAGE (insn), insn))
+	    removed_pseudo_p = true;
+	  if (removed_pseudo_p)
+	    {
+	      lra_assert (DEBUG_INSN_P (insn));
+	      lra_set_insn_deleted (insn);
+	      if (lra_dump_file != NULL)
+		fprintf (lra_dump_file,
+			 "Debug insn #%u is deleted as containing removed pseudo\n",
+			 INSN_UID (insn));
+	    }
+	  bitmap_and_compl_into (df_get_live_in (bb), &spilled_pseudos);
+	  bitmap_and_compl_into (df_get_live_out (bb), &spilled_pseudos);
+	}
     }
   bitmap_clear (&spilled_pseudos);
   bitmap_clear (&changed_insns);
@@ -548,12 +572,14 @@ lra_spill (void)
     if (lra_reg_info[i].nrefs != 0 && lra_get_regno_hard_regno (i) < 0
 	/* We do not want to assign memory for former scratches.  */
 	&& ! lra_former_scratch_p (i))
-      {
-	spill_hard_reg[i] = NULL_RTX;
-	pseudo_regnos[n++] = i;
-      }
+      pseudo_regnos[n++] = i;
   lra_assert (n > 0);
   pseudo_slots = XNEWVEC (struct pseudo_slot, regs_num);
+  for (i = FIRST_PSEUDO_REGISTER; i < regs_num; i++)
+    {
+      spill_hard_reg[i] = NULL_RTX;
+      pseudo_slots[i].mem = NULL_RTX;
+    }
   slots = XNEWVEC (struct slot, regs_num);
   /* Sort regnos according their usage frequencies.  */
   qsort (pseudo_regnos, n, sizeof (int), regno_freq_compare);
