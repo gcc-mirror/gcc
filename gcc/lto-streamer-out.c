@@ -309,6 +309,41 @@ lto_is_streamable (tree expr)
 	     || TREE_CODE_CLASS (code) != tcc_statement);
 }
 
+/* Very rough estimate of streaming size of the initializer.  If we ignored
+   presence of strings, we could simply just count number of non-indexable
+   tree nodes and number of references to indexable nodes.  Strings however
+   may be very large and we do not want to dump them int othe global stream.
+
+   Count the size of initializer until the size in DATA is positive.  */
+
+static tree
+subtract_estimated_size (tree *tp, int *ws, void *data)
+{
+  long *sum = (long *)data;
+  if (tree_is_indexable (*tp))
+    {
+      /* Indexable tree is one reference to global stream.
+	 Guess it may be about 4 bytes.  */
+      *sum -= 4;
+      *ws = 0;
+    }
+  /* String table entry + base of tree node needs to be streamed.  */
+  if (TREE_CODE (*tp) == STRING_CST)
+    *sum -= TREE_STRING_LENGTH (*tp) + 8;
+  else
+    {
+      /* Identifiers are also variable length but should not appear
+	 naked in constructor.  */
+      gcc_checking_assert (TREE_CODE (*tp) != IDENTIFIER_NODE);
+      /* We do not really make attempt to work out size of pickled tree, as
+	 it is very variable. Make it bigger than the reference.  */
+      *sum -= 16;
+    }
+  if (*sum < 0)
+    return *tp;
+  return NULL_TREE;
+}
+
 
 /* For EXPR lookup and return what we want to stream to OB as DECL_INITIAL.  */
 
@@ -329,10 +364,16 @@ get_symbol_initial_value (lto_symtab_encoder_t encoder, tree expr)
       varpool_node *vnode;
       /* Extra section needs about 30 bytes; do not produce it for simple
 	 scalar values.  */
-      if (TREE_CODE (DECL_INITIAL (expr)) == CONSTRUCTOR
-	  || !(vnode = varpool_node::get (expr))
+      if (!(vnode = varpool_node::get (expr))
 	  || !lto_symtab_encoder_encode_initializer_p (encoder, vnode))
         initial = error_mark_node;
+      if (initial != error_mark_node)
+	{
+	  long max_size = 30;
+	  if (walk_tree (&initial, subtract_estimated_size, (void *)&max_size,
+			 NULL))
+	    initial = error_mark_node;
+	}
     }
 
   return initial;

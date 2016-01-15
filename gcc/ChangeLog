@@ -1,3 +1,8 @@
+2016-01-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer-out.c (subtract_estimated_size): New function.
+	(get_symbol_initial_value): Use it.
+
 2016-01-15  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/65837
