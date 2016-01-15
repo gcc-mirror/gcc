@@ -1,5 +1,12 @@
 2016-01-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/69293
+	* include/bits/uses_allocator.h (__uses_alloc<true, ...>): Add
+	static assertion that type is constructible from the arguments.
+	* testsuite/20_util/scoped_allocator/69293_neg.cc: New.
+	* testsuite/20_util/uses_allocator/69293_neg.cc: New.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Adjust dg-error.
+
 	PR libstdc++/69294
 	* acinclude.m4 (GLIBCXX_CHECK_MATH11_PROTO): Check for obsolete isinf
 	and isnan on AIX. Quote variables.

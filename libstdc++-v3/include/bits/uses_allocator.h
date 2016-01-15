@@ -85,7 +85,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         is_constructible<_Tp, allocator_arg_t, _Alloc, _Args...>::value,
         __uses_alloc1<_Alloc>,
        	__uses_alloc2<_Alloc>>::type
-    { };
+    {
+      static_assert(__or_<
+	  is_constructible<_Tp, allocator_arg_t, _Alloc, _Args...>,
+	  is_constructible<_Tp, _Args..., _Alloc>>::value, "construction with"
+	  " an allocator must be possible if uses_allocator is true");
+    };
 
   template<typename _Tp, typename _Alloc, typename... _Args>
     struct __uses_alloc<false, _Tp, _Alloc, _Args...>
