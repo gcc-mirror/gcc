@@ -1570,7 +1570,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      return __t; });
 	      __norm = std::sqrt(__sum);
 	    }
-	  while (__norm == _RealType(0) || ! std::isfinite(__norm));
+	  while (__norm == _RealType(0) || ! __builtin_isfinite(__norm));
 
 	  std::transform(__ret.begin(), __ret.end(), __ret.begin(),
 			 [__norm](_RealType __val){ return __val / __norm; });
