@@ -171,7 +171,7 @@ Schedule code for given CPU.
 
 mmvcle
 Target Report Mask(MVCLE) Save
-mvcle use.
+Use the mvcle instruction for block moves.
 
 mzvector
 Target Report Mask(ZVECTOR) Save
