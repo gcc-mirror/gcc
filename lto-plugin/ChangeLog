@@ -1,3 +1,8 @@
+2016-01-15  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (all_symbols_read_handler): Assign default
+	value to a string variable.
+
 2015-11-25  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/67548
