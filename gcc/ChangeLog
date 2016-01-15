@@ -1,3 +1,13 @@
+2016-01-15  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/69270
+	* tree-ssanames.c (ssa_name_has_boolean_range): Moved here from
+	tree-ssa-dom.c.  Improve test for [0..1] ranve from VRP.
+	* tree-ssa-dom.c (ssa_name_has_boolean_range): Remove.
+	* tree-ssanames.h (ssa_name_has_boolean_range): Prototype.
+	* tree-ssa-uncprop.c (associate_equivalences_with_edges): Use
+	ssa_name_has_boolean_range and constant_boolean_node.
+
 2016-01-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/69030

@@ -316,39 +316,6 @@ record_conditions (struct edge_info *edge_info, tree cond, tree inverted)
   edge_info->cond_equivalences.safe_push (c);
 }
 
-/* Return TRUE is OP, an SSA_NAME has a range of values [0..1], false
-   otherwise.
-
-   This can be because it is a boolean type, any unsigned integral
-   type with a single bit of precision, or has known range of [0..1]
-   via VRP analysis.  */
-
-static bool
-ssa_name_has_boolean_range (tree op)
-{
-  /* Boolean types always have a range [0..1].  */
-  if (TREE_CODE (TREE_TYPE (op)) == BOOLEAN_TYPE)
-    return true;
-
-  /* An integral type with a single bit of precision.  */
-  if (INTEGRAL_TYPE_P (TREE_TYPE (op))
-      && TYPE_UNSIGNED (TREE_TYPE (op))
-      && TYPE_PRECISION (TREE_TYPE (op)) == 1)
-    return true;
-
-  /* An integral type with more precision, but the object
-     only takes on values [0..1] as determined by VRP
-     analysis.  */
-  wide_int min, max;
-  if (INTEGRAL_TYPE_P (TREE_TYPE (op))
-      && get_range_info (op, &min, &max) == VR_RANGE
-      && wi::eq_p (min, 0)
-      && wi::eq_p (max, 1))
-    return true;
-
-  return false;
-}
-
 /* We have finished optimizing BB, record any information implied by
    taking a specific outgoing edge from BB.  */
 
