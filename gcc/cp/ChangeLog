@@ -1,3 +1,12 @@
+2016-01-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69257
+	* typeck.c (decay_conversion): Don't call mark_rvalue_use for
+	array/function-to-pointer conversion.  Call
+	complete_type_or_maybe_complain for lvalue-to-rvalue conversion.
+	* call.c (convert_like_real): Print call context if
+	decay_conversion errors.
+
 2016-01-14  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/68773
