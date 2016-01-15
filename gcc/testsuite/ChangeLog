@@ -1,5 +1,10 @@
 2016-01-15  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	PR c++/56194
+	* g++.dg/init/const9.C: Disable test on S/390.
+
+2016-01-15  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* g++.dg/Wframe-address.C: Test requires -mbackchain for s390*-*-*.
 	* g++.dg/Wno-frame-address.C: Ditto.
 
