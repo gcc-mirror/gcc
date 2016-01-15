@@ -1,3 +1,11 @@
+2016-01-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/68609
+	* config/rs6000/rs6000.c (rs6000_emit_msub): Delete.
+	(rs6000_emit_swsqrt): Convert to Goldschmidt's Algorithm
+	* config/rs6000/rs6000.md (sqrt<mode>2): Limit swsqrt to high
+	precision estimate.
+
 2016-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66856
