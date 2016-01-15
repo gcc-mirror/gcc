@@ -1,3 +1,8 @@
+2016-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* intrinsics/execute_command_line.c (set_cmdstat): Use "%s", msg
+	instead of msg to avoid -Wformat-security warning.
+
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
