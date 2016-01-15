@@ -579,6 +579,7 @@ GOMP_PLUGIN_target_task_completion (void *data)
     {
       ttask->state = GOMP_TARGET_TASK_FINISHED;
       gomp_mutex_unlock (&team->task_lock);
+      return;
     }
   ttask->state = GOMP_TARGET_TASK_FINISHED;
   gomp_target_task_completion (team, task);

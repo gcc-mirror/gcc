@@ -1,3 +1,7 @@
+2016-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* task.c (GOMP_PLUGIN_target_task_completion): Add missing return.
+
 2016-01-15  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/kernels-data.f90: New test.
