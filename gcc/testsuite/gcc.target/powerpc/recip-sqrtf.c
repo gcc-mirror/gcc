@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ffast-math -mcpu=power5 -mrecip" } */
+/* { dg-options "-O2 -ffast-math -mcpu=power6 -mrecip" } */
 
 extern float sqrtf (float);
 
