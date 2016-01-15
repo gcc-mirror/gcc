@@ -3037,6 +3037,73 @@ set_ssa_val_to (tree from, tree to)
 	       == get_addr_base_and_unit_offset (TREE_OPERAND (to, 0), &toff))
 	   && coff == toff))
     {
+      /* If we equate two SSA names we have to make the side-band info
+         of the leader conservative (and remember whatever original value
+	 was present).  */
+      if (TREE_CODE (to) == SSA_NAME)
+	{
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (to))
+	      && SSA_NAME_RANGE_INFO (to))
+	    {
+	      if (SSA_NAME_IS_DEFAULT_DEF (to)
+		  || dominated_by_p (CDI_DOMINATORS,
+				     gimple_bb (SSA_NAME_DEF_STMT (from)),
+				     gimple_bb (SSA_NAME_DEF_STMT (to))))
+		/* Keep the info from the dominator.  */
+		;
+	      else if (SSA_NAME_IS_DEFAULT_DEF (from)
+		       || dominated_by_p (CDI_DOMINATORS,
+					  gimple_bb (SSA_NAME_DEF_STMT (to)),
+					  gimple_bb (SSA_NAME_DEF_STMT (from))))
+		{
+		  /* Save old info.  */
+		  if (! VN_INFO (to)->info.range_info)
+		    VN_INFO (to)->info.range_info = SSA_NAME_RANGE_INFO (to);
+		  /* Use that from the dominator.  */
+		  SSA_NAME_RANGE_INFO (to) = SSA_NAME_RANGE_INFO (from);
+		}
+	      else
+		{
+		  /* Save old info.  */
+		  if (! VN_INFO (to)->info.range_info)
+		    VN_INFO (to)->info.range_info = SSA_NAME_RANGE_INFO (to);
+		  /* Rather than allocating memory and unioning the info
+		     just clear it.  */
+		  SSA_NAME_RANGE_INFO (to) = NULL;
+		}
+	    }
+	  else if (POINTER_TYPE_P (TREE_TYPE (to))
+		   && SSA_NAME_PTR_INFO (to))
+	    {
+	      if (SSA_NAME_IS_DEFAULT_DEF (to)
+		  || dominated_by_p (CDI_DOMINATORS,
+				     gimple_bb (SSA_NAME_DEF_STMT (from)),
+				     gimple_bb (SSA_NAME_DEF_STMT (to))))
+		/* Keep the info from the dominator.  */
+		;
+	      else if (SSA_NAME_IS_DEFAULT_DEF (from)
+		       || dominated_by_p (CDI_DOMINATORS,
+					  gimple_bb (SSA_NAME_DEF_STMT (to)),
+					  gimple_bb (SSA_NAME_DEF_STMT (from))))
+		{
+		  /* Save old info.  */
+		  if (! VN_INFO (to)->info.ptr_info)
+		    VN_INFO (to)->info.ptr_info = SSA_NAME_PTR_INFO (to);
+		  /* Use that from the dominator.  */
+		  SSA_NAME_PTR_INFO (to) = SSA_NAME_PTR_INFO (from);
+		}
+	      else
+		{
+		  /* Save old info.  */
+		  if (! VN_INFO (to)->info.ptr_info)
+		    VN_INFO (to)->info.ptr_info = SSA_NAME_PTR_INFO (to);
+		  /* Rather than allocating memory and unioning the info
+		     just clear it.  */
+		  SSA_NAME_PTR_INFO (to) = NULL;
+		}
+	    }
+	}
+
       VN_INFO (from)->valnum = to;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, " (changed)\n");
@@ -4152,9 +4219,17 @@ free_scc_vn (void)
     {
       tree name = ssa_name (i);
       if (name
-	  && has_VN_INFO (name)
-	  && VN_INFO (name)->needs_insertion)
-	release_ssa_name (name);
+	  && has_VN_INFO (name))
+	{
+	  if (VN_INFO (name)->needs_insertion)
+	    release_ssa_name (name);
+	  else if (POINTER_TYPE_P (TREE_TYPE (name))
+		   && VN_INFO (name)->info.ptr_info)
+	    SSA_NAME_PTR_INFO (name) = VN_INFO (name)->info.ptr_info;
+	  else if (INTEGRAL_TYPE_P (TREE_TYPE (name))
+		   && VN_INFO (name)->info.range_info)
+	    SSA_NAME_RANGE_INFO (name) = VN_INFO (name)->info.range_info;
+	}
     }
   obstack_free (&vn_ssa_aux_obstack, NULL);
   vn_ssa_aux_table.release ();

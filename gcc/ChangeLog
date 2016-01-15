@@ -1,3 +1,11 @@
+2016-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69117
+	* tree-ssa-sccvn.h (struct vn_ssa_aux): Add info member.
+	* tree-ssa-sccvn.c (set_ssa_val_to): Save and adjust SSA name info
+	of the leader conservatively.
+	(free_scc_vn): Restore original SSA name infos.
+
 2016-01-14  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69270
