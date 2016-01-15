@@ -1,3 +1,8 @@
+2016-01-15  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gimplify.c (oacc_default_clause): Decode reference and pointer
+	types for both kernels and parallel regions.
+
 2016-01-15  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/69246
