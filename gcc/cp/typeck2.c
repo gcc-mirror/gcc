@@ -475,13 +475,15 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
  retry:
   /* We must print an error message.  Be clever about what it says.  */
 
+  location_t loc = EXPR_LOC_OR_LOC (value, input_location);
+
   switch (TREE_CODE (type))
     {
     case RECORD_TYPE:
     case UNION_TYPE:
     case ENUMERAL_TYPE:
       if (!is_decl)
-	complained = emit_diagnostic (diag_kind, input_location, 0,
+	complained = emit_diagnostic (diag_kind, loc, 0,
 				      "invalid use of incomplete type %q#T",
 				      type);
       if (complained)
@@ -489,7 +491,7 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
       break;
 
     case VOID_TYPE:
-      emit_diagnostic (diag_kind, input_location, 0,
+      emit_diagnostic (diag_kind, loc, 0,
 		       "invalid use of %qT", type);
       break;
 
@@ -499,7 +501,7 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
 	  type = TREE_TYPE (type);
 	  goto retry;
 	}
-      emit_diagnostic (diag_kind, input_location, 0,
+      emit_diagnostic (diag_kind, loc, 0,
 		       "invalid use of array with unspecified bounds");
       break;
 
@@ -511,11 +513,11 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
 	  member = get_first_fn (member);
 	if (DECL_FUNCTION_MEMBER_P (member)
 	    && ! flag_ms_extensions)
-	  emit_diagnostic (diag_kind, input_location, 0,
+	  emit_diagnostic (diag_kind, loc, 0,
 			   "invalid use of member function %qD "
 			   "(did you forget the %<()%> ?)", member);
 	else
-	  emit_diagnostic (diag_kind, input_location, 0,
+	  emit_diagnostic (diag_kind, loc, 0,
 			   "invalid use of member %qD "
 			   "(did you forget the %<&%> ?)", member);
       }
@@ -523,28 +525,28 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
 
     case TEMPLATE_TYPE_PARM:
       if (is_auto (type))
-	emit_diagnostic (diag_kind, input_location, 0,
+	emit_diagnostic (diag_kind, loc, 0,
 			 "invalid use of %<auto%>");
       else
-	emit_diagnostic (diag_kind, input_location, 0,
+	emit_diagnostic (diag_kind, loc, 0,
 			 "invalid use of template type parameter %qT", type);
       break;
 
     case BOUND_TEMPLATE_TEMPLATE_PARM:
-      emit_diagnostic (diag_kind, input_location, 0,
+      emit_diagnostic (diag_kind, loc, 0,
 		       "invalid use of template template parameter %qT",
 		       TYPE_NAME (type));
       break;
 
     case TYPENAME_TYPE:
-      emit_diagnostic (diag_kind, input_location, 0,
+      emit_diagnostic (diag_kind, loc, 0,
 		       "invalid use of dependent type %qT", type);
       break;
 
     case LANG_TYPE:
       if (type == init_list_type_node)
 	{
-	  emit_diagnostic (diag_kind, input_location, 0,
+	  emit_diagnostic (diag_kind, loc, 0,
 			   "invalid use of brace-enclosed initializer list");
 	  break;
 	}
@@ -552,14 +554,14 @@ cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
       if (value && TREE_CODE (value) == COMPONENT_REF)
 	goto bad_member;
       else if (value && TREE_CODE (value) == ADDR_EXPR)
-	emit_diagnostic (diag_kind, input_location, 0,
+	emit_diagnostic (diag_kind, loc, 0,
 			 "address of overloaded function with no contextual "
 			 "type information");
       else if (value && TREE_CODE (value) == OVERLOAD)
-	emit_diagnostic (diag_kind, input_location, 0,
+	emit_diagnostic (diag_kind, loc, 0,
 			 "overloaded function with no contextual type information");
       else
-	emit_diagnostic (diag_kind, input_location, 0,
+	emit_diagnostic (diag_kind, loc, 0,
 			 "insufficient contextual information to determine type");
       break;
 

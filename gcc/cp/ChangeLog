@@ -1,5 +1,8 @@
 2016-01-15  Jason Merrill  <jason@redhat.com>
 
+	* typeck2.c (cxx_incomplete_type_diagnostic): Use the location of
+	value.
+
 	PR c++/69257
 	* typeck.c (decay_conversion): Don't call mark_rvalue_use for
 	array/function-to-pointer conversion.  Call
