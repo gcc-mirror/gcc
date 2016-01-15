@@ -1,5 +1,10 @@
 2016-01-15  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* g++.dg/Wframe-address.C: Test requires -mbackchain for s390*-*-*.
+	* g++.dg/Wno-frame-address.C: Ditto.
+
+2016-01-15  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	* gcc.dg/tree-ssa/20040204-1.c: Do not xfail on S/390.
 
 2016-01-15  Richard Biener  <rguenther@suse.de>
