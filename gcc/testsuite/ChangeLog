@@ -1,3 +1,10 @@
+2015-01-16  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/65837
+	* gcc.target/arm/attr-neon-builtin-fail2.c: New test.
+	* gcc.target/arm/lto/pr65837-attr_0.c: New test.
+	* gcc.target/arm/lto/pr65837_0.c: Fix skip condition and use ACLE name.
+
 2016-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69117

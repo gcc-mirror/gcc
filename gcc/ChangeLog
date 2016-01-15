@@ -1,3 +1,18 @@
+2015-01-16  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/65837
+	* config/arm/arm-builtins.c (ARM_BUILTIN_CRYPTO_BASE): New enum tag.
+	(arm_init_neon_builtins_internal): Rename arm_init_neon_builtins,
+	(arm_init_crypto_builtins_internal): Rename arm_init_crypto_builtins.
+	use add_builtin_function_ext_scope instead of add_builtin_function.
+	(neon_set_p, neon_crypto_set_p): Remove.
+	(arm_init_builtins): Always call arm_init_neon_builtins and
+	arm_init_crypto_builtins.
+	(arm_expand_builtin): Check that builtins are allowed for the arch.
+	* config/arm/arm-protos.h (arm_init_neon_builtins): Remove prototype.
+	* config/arm/arm.c (arm_valid_target_attribute_tree): Remove
+	arm_init_neon_builtins call.
+
 2016-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69117
@@ -142,7 +157,7 @@
 	* ipa-polymorphic-call.c (inlined_polymorphic_ctor_dtor_block_p):
 	use block_ultimate_origin
 	(noncall-stmt_may_be_vtbl_ptr_store): Likewise.
-	
+
 2016-01-13  Sandra Loosemore <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Submodel Options): Rename section to
