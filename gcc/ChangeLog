@@ -1,3 +1,11 @@
+2016-01-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/69030
+	* lra-spills.c (remove_pseudos): Check nrefs and make the function
+	returning bool.
+	(spill_pseudos): Delete debug insn for dead pseudo.
+	(lra_spill): Initiate spill_hard_reg and slots memory separately.
+
 2016-01-15  Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (aarch64_types_unopus_qualifiers):
@@ -51,7 +59,7 @@
 	(vcvtns_u32_f32): Likewise.
 	(vcvtpd_u64_f64): Likewise.
 	(vcvtps_u32_f32): Likewise.
-	
+
 2016-01-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_if_then_else_costs): Handle
