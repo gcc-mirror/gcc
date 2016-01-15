@@ -1377,8 +1377,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	&& TREE_CODE (sym->ts.u.cl->backend_decl) == PARM_DECL)
     {
       sym->ts.u.cl->passed_length = sym->ts.u.cl->backend_decl;
-      sym->ts.u.cl->backend_decl = NULL_TREE;
-      length = gfc_create_string_length (sym);
+      gcc_assert (POINTER_TYPE_P (TREE_TYPE (sym->ts.u.cl->passed_length)));
+      sym->ts.u.cl->backend_decl = build_fold_indirect_ref (sym->ts.u.cl->backend_decl);
     }
 
   fun_or_res = byref && (sym->attr.result
@@ -1420,8 +1420,11 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 		  /* We need to insert a indirect ref for param decls.  */
 		  if (sym->ts.u.cl->backend_decl
 		      && TREE_CODE (sym->ts.u.cl->backend_decl) == PARM_DECL)
+		    {
+		      sym->ts.u.cl->passed_length = sym->ts.u.cl->backend_decl;
 		    sym->ts.u.cl->backend_decl =
 			build_fold_indirect_ref (sym->ts.u.cl->backend_decl);
+		}
 		}
 	      /* For all other parameters make sure, that they are copied so
 		 that the value and any modifications are local to the routine
@@ -1431,6 +1434,10 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 		       && sym->ts.u.cl->backend_decl)
 		{
 		  sym->ts.u.cl->passed_length = sym->ts.u.cl->backend_decl;
+		  if (POINTER_TYPE_P (TREE_TYPE (sym->ts.u.cl->passed_length)))
+		    sym->ts.u.cl->backend_decl
+			= build_fold_indirect_ref (sym->ts.u.cl->backend_decl);
+		  else
 		  sym->ts.u.cl->backend_decl = NULL_TREE;
 		}
 	    }
@@ -2264,6 +2271,13 @@ create_function_arglist (gfc_symbol * sym)
 	      type = gfc_sym_type (arg);
 	      arg->backend_decl = backend_decl;
 	      type = build_reference_type (type);
+
+	      if (POINTER_TYPE_P (len_type))
+		{
+		  sym->ts.u.cl->passed_length = length;
+		  sym->ts.u.cl->backend_decl =
+		    build_fold_indirect_ref_loc (input_location, length);
+		}
 	    }
 	}
 
@@ -2347,7 +2361,10 @@ create_function_arglist (gfc_symbol * sym)
 	  if (f->sym->ts.u.cl->backend_decl == NULL
 	      || f->sym->ts.u.cl->backend_decl == length)
 	    {
-	      if (f->sym->ts.u.cl->backend_decl == NULL)
+	      if (POINTER_TYPE_P (len_type))
+		f->sym->ts.u.cl->backend_decl =
+			build_fold_indirect_ref_loc (input_location, length);
+	      else if (f->sym->ts.u.cl->backend_decl == NULL)
 		gfc_create_string_length (f->sym);
 
 	      /* Make sure PARM_DECL type doesn't point to incomplete type.  */
@@ -3975,12 +3992,19 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	      gfc_restore_backend_locus (&loc);
 
 	      /* Pass back the string length on exit.  */
+	      tmp = proc_sym->ts.u.cl->backend_decl;
+	      if (TREE_CODE (tmp) != INDIRECT_REF)
+		{
 	      tmp = proc_sym->ts.u.cl->passed_length;
 	      tmp = build_fold_indirect_ref_loc (input_location, tmp);
 	      tmp = fold_convert (gfc_charlen_type_node, tmp);
 	      tmp = fold_build2_loc (input_location, MODIFY_EXPR,
 				     gfc_charlen_type_node, tmp,
 				     proc_sym->ts.u.cl->backend_decl);
+		}
+	      else
+		tmp = NULL_TREE;
+
 	      gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);
 	    }
 	  else if (TREE_CODE (proc_sym->ts.u.cl->backend_decl) == VAR_DECL)

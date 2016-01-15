@@ -1437,7 +1437,7 @@ gfc_trans_critical (gfc_code *code)
 			  tree_cons (NULL_TREE, tmp, NULL_TREE),
 			  NULL_TREE);
       ASM_VOLATILE_P (tmp) = 1;
-  
+
       gfc_add_expr_to_block (&block, tmp);
     }
 
@@ -5298,7 +5298,6 @@ gfc_trans_allocate (gfc_code * code)
   tree label_finish;
   tree memsz;
   tree al_vptr, al_len;
-  tree def_str_len = NULL_TREE;
   /* If an expr3 is present, then store the tree for accessing its
      _vptr, and _len components in the variables, respectively.  The
      element size, i.e. _vptr%size, is stored in expr3_esize.  Any of
@@ -5688,7 +5687,6 @@ gfc_trans_allocate (gfc_code * code)
 	  expr3_esize = fold_build2_loc (input_location, MULT_EXPR,
 					 TREE_TYPE (se_sz.expr),
 					 tmp, se_sz.expr);
-	  def_str_len = gfc_evaluate_now (se_sz.expr, &block);
 	}
     }
 
@@ -5740,16 +5738,6 @@ gfc_trans_allocate (gfc_code * code)
 
       se.want_pointer = 1;
       se.descriptor_only = 1;
-
-      if (expr->ts.type == BT_CHARACTER
-	  && expr->ts.deferred
-	  && TREE_CODE (expr->ts.u.cl->backend_decl) == VAR_DECL
-	  && def_str_len != NULL_TREE)
-	{
-	  tmp = expr->ts.u.cl->backend_decl;
-	  gfc_add_modify (&block, tmp,
-			  fold_convert (TREE_TYPE (tmp), def_str_len));
-	}
 
       gfc_conv_expr (&se, expr);
       if (expr->ts.type == BT_CHARACTER && expr->ts.deferred)
@@ -5886,6 +5874,20 @@ gfc_trans_allocate (gfc_code * code)
 	      gfc_add_modify (&block, al_len,
 			      fold_convert (TREE_TYPE (al_len), expr3_len));
 	      /* Prevent setting the length twice.  */
+	      al_len_needs_set = false;
+	    }
+	  else if (expr->ts.type == BT_CHARACTER && al_len != NULL_TREE
+		   && code->ext.alloc.ts.u.cl->length)
+	    {
+	      /* Cover the cases where a string length is explicitly
+		 specified by a type spec for deferred length character
+		 arrays or unlimited polymorphic objects without a
+		 source= or mold= expression.  */
+	      gfc_init_se (&se_sz, NULL);
+	      gfc_conv_expr (&se_sz, code->ext.alloc.ts.u.cl->length);
+	      gfc_add_modify (&block, al_len,
+			      fold_convert (TREE_TYPE (al_len),
+					    se_sz.expr));
 	      al_len_needs_set = false;
 	    }
 	}
