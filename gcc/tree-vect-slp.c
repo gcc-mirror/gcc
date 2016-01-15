@@ -1453,18 +1453,20 @@ vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
 	  /* Record the cost for the vector loads.  */
 	  vect_model_load_cost (stmt_info, ncopies_for_cost, false,
 				node, prologue_cost_vec, body_cost_vec);
+	  return;
 	}
-      return;
     }
-
-  record_stmt_cost (body_cost_vec, ncopies_for_cost, vector_stmt,
-		    stmt_info, 0, vect_body);
-  if (SLP_TREE_TWO_OPERATORS (node))
+  else
     {
       record_stmt_cost (body_cost_vec, ncopies_for_cost, vector_stmt,
 			stmt_info, 0, vect_body);
-      record_stmt_cost (body_cost_vec, ncopies_for_cost, vec_perm,
-			stmt_info, 0, vect_body);
+      if (SLP_TREE_TWO_OPERATORS (node))
+	{
+	  record_stmt_cost (body_cost_vec, ncopies_for_cost, vector_stmt,
+			    stmt_info, 0, vect_body);
+	  record_stmt_cost (body_cost_vec, ncopies_for_cost, vec_perm,
+			    stmt_info, 0, vect_body);
+	}
     }
 
   /* Push SLP node def-type to stmts.  */

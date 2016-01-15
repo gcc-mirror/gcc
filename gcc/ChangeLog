@@ -1,3 +1,9 @@
+2016-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68961
+	* tree-vect-slp.c (vect_analyze_slp_cost_1): Consider cost
+	of invariants in stores again.
+
 2016-01-15  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/arm/t-rtems: Add cortex-m7/fpv5-d16 multilib.
