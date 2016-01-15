@@ -1,3 +1,7 @@
+2016-01-15  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* gcc.target/i386/pr65105-5.c: New test.
+
 2016-01-15  Jan Hubicka <hubicka@ucw.cz>
 
 	* gcc.c-torture/execute/alias-4.c: New testcase.
