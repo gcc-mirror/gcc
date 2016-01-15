@@ -18574,6 +18574,26 @@ add_src_coords_attributes (dw_die_ref die, tree decl)
 /* Add DW_AT_{,MIPS_}linkage_name attribute for the given decl.  */
 
 static void
+add_linkage_name_raw (dw_die_ref die, tree decl)
+{
+  /* Defer until we have an assembler name set.  */
+  if (!DECL_ASSEMBLER_NAME_SET_P (decl))
+    {
+      limbo_die_node *asm_name;
+
+      asm_name = ggc_cleared_alloc<limbo_die_node> ();
+      asm_name->die = die;
+      asm_name->created_for = decl;
+      asm_name->next = deferred_asm_name;
+      deferred_asm_name = asm_name;
+    }
+  else if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
+    add_linkage_attr (die, decl);
+}
+
+/* Add DW_AT_{,MIPS_}linkage_name attribute for the given decl if desired.  */
+
+static void
 add_linkage_name (dw_die_ref die, tree decl)
 {
   if (debug_info_level > DINFO_LEVEL_NONE
@@ -18581,21 +18601,7 @@ add_linkage_name (dw_die_ref die, tree decl)
       && TREE_PUBLIC (decl)
       && !(TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
       && die->die_tag != DW_TAG_member)
-    {
-      /* Defer until we have an assembler name set.  */
-      if (!DECL_ASSEMBLER_NAME_SET_P (decl))
-	{
-	  limbo_die_node *asm_name;
-
-	  asm_name = ggc_cleared_alloc<limbo_die_node> ();
-	  asm_name->die = die;
-	  asm_name->created_for = decl;
-	  asm_name->next = deferred_asm_name;
-	  deferred_asm_name = asm_name;
-	}
-      else if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
-	add_linkage_attr (die, decl);
-    }
+    add_linkage_name_raw (die, decl);
 }
 
 /* Add a DW_AT_name attribute and source coordinate attribute for the
@@ -22425,7 +22431,7 @@ gen_typedef_die (tree decl, dw_die_ref context_die)
 		 is the name of the typedef decl naming the anonymous
 		 struct.  This greatly eases the work of consumers of
 		 this debug info.  */
-	      add_linkage_attr (lookup_type_die (type), decl);
+	      add_linkage_name_raw (lookup_type_die (type), decl);
 	    }
 	}
 

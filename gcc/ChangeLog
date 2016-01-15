@@ -1,3 +1,12 @@
+2016-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR debug/69137
+	* dwarf2out.c (add_linkage_name_raw): New function split out from ...
+	(add_linkage_name): ... here.
+	(gen_typedef_die): Use add_linkage_name_raw instead of
+	add_linkage_attr to delay DECL_ASSEMBLER_NAME computation
+	if necessary.
+
 2016-01-15  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* gimplify.c (oacc_default_clause): Decode reference and pointer

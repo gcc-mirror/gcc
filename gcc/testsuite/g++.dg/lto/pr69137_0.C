@@ -1,0 +1,8 @@
+// { dg-lto-do link }
+// { dg-lto-options { { -std=c++11 -g -flto } } }
+// { dg-extra-ld-options "-r -nostdlib" }
+
+typedef struct {
+  typedef struct { } VarSelectorRecord;
+} Format14Cmap;
+void fn1() { Format14Cmap a; }
