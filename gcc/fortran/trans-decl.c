@@ -1422,9 +1422,9 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 		      && TREE_CODE (sym->ts.u.cl->backend_decl) == PARM_DECL)
 		    {
 		      sym->ts.u.cl->passed_length = sym->ts.u.cl->backend_decl;
-		    sym->ts.u.cl->backend_decl =
+		      sym->ts.u.cl->backend_decl =
 			build_fold_indirect_ref (sym->ts.u.cl->backend_decl);
-		}
+		    }
 		}
 	      /* For all other parameters make sure, that they are copied so
 		 that the value and any modifications are local to the routine
@@ -1438,7 +1438,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 		    sym->ts.u.cl->backend_decl
 			= build_fold_indirect_ref (sym->ts.u.cl->backend_decl);
 		  else
-		  sym->ts.u.cl->backend_decl = NULL_TREE;
+		    sym->ts.u.cl->backend_decl = NULL_TREE;
 		}
 	    }
 
@@ -3995,12 +3995,12 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	      tmp = proc_sym->ts.u.cl->backend_decl;
 	      if (TREE_CODE (tmp) != INDIRECT_REF)
 		{
-	      tmp = proc_sym->ts.u.cl->passed_length;
-	      tmp = build_fold_indirect_ref_loc (input_location, tmp);
-	      tmp = fold_convert (gfc_charlen_type_node, tmp);
-	      tmp = fold_build2_loc (input_location, MODIFY_EXPR,
-				     gfc_charlen_type_node, tmp,
-				     proc_sym->ts.u.cl->backend_decl);
+		  tmp = proc_sym->ts.u.cl->passed_length;
+		  tmp = build_fold_indirect_ref_loc (input_location, tmp);
+		  tmp = fold_convert (gfc_charlen_type_node, tmp);
+		  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+					 gfc_charlen_type_node, tmp,
+					 proc_sym->ts.u.cl->backend_decl);
 		}
 	      else
 		tmp = NULL_TREE;
