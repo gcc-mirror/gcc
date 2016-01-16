@@ -807,8 +807,8 @@ cp_expand_cond_array_notations (tree orig_stmt)
       if (!find_rank (EXPR_LOCATION (cond), cond, cond, true, &cond_rank)
 	  || !find_rank (EXPR_LOCATION (yes_expr), yes_expr, yes_expr, true,
 			 &yes_rank)
-	  || find_rank (EXPR_LOCATION (no_expr), no_expr, no_expr, true,
-			&no_rank))
+	  || !find_rank (EXPR_LOCATION (no_expr), no_expr, no_expr, true,
+			 &no_rank))
 	return error_mark_node;
       /* If the condition has a zero rank, then handle array notations in body
 	 separately.  */

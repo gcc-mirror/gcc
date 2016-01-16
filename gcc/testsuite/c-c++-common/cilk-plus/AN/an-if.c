@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fcilkplus" } */
+/* { dg-options "-fcilkplus -fdump-tree-original" } */
 
 #if HAVE_IO
 #include <stdio.h>
@@ -46,3 +46,6 @@ int main() {
     }
     return 0;
 }
+
+/* The C++ FE once emitted a bogus error_mark_node for this test case.  */
+/* { dg-final { scan-tree-dump-not "<<< error >>>" "original" } } */
