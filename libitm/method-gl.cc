@@ -291,12 +291,18 @@ public:
         // See begin_or_restart() for why we need release memory order here.
 	v = gl_mg::clear_locked(v) + 1;
 	o_gl_mg.orec.store(v, memory_order_release);
-
-	// Need to ensure privatization safety. Every other transaction must
-	// have a snapshot time that is at least as high as our commit time
-	// (i.e., our commit must be visible to them).
-	priv_time = v;
       }
+
+    // Need to ensure privatization safety. Every other transaction must have
+    // a snapshot time that is at least as high as our commit time (i.e., our
+    // commit must be visible to them).  Because of proxy privatization, we
+    // must ensure that even if we are a read-only transaction.  See
+    // ml_wt_dispatch::trycommit() for details: We can't get quite the same
+    // set of problems because we just use one orec and thus, for example,
+    // there cannot be concurrent writers -- but we can still get pending
+    // loads to privatized data when not ensuring privatization safety, which
+    // is problematic if the program unmaps the privatized memory.
+    priv_time = v;
     return true;
   }
 
