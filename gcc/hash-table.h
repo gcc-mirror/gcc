@@ -390,8 +390,8 @@ public:
   /* Return the current number of elements in this hash table. */
   size_t elements_with_deleted () const { return m_n_elements; }
 
-  /* This function clears all entries in the given hash table.  */
-  void empty ();
+  /* This function clears all entries in this hash table.  */
+  void empty () { if (elements ()) empty_slow (); }
 
   /* This function clears a specified SLOT in a hash table.  It is
      useful when you've already done the lookup and don't want to do it
@@ -498,6 +498,8 @@ private:
 					      gt_pointer_operator, void *);
 
   template<typename T> friend void gt_cleare_cache (hash_table<T> *);
+
+  void empty_slow ();
 
   value_type *alloc_entries (size_t n CXX_MEM_STAT_INFO) const;
   value_type *find_empty_slot_for_expand (hashval_t);
@@ -755,9 +757,11 @@ hash_table<Descriptor, Allocator>::expand ()
     ggc_free (oentries);
 }
 
+/* Implements empty() in cases where it isn't a no-op.  */
+
 template<typename Descriptor, template<typename Type> class Allocator>
 void
-hash_table<Descriptor, Allocator>::empty ()
+hash_table<Descriptor, Allocator>::empty_slow ()
 {
   size_t size = m_size;
   value_type *entries = m_entries;
