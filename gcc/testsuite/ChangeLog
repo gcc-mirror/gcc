@@ -1,5 +1,10 @@
 2016-01-16  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	PR c++/69091
+	* g++.dg/template/pr69091.C: New test.
+
+2016-01-16  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	* c-c++-common/cilk-plus/AN/an-if.c: Check that the original
 	dump does not contain an error_mark_node.
 	* c-c++-common/cilk-plus/CK/pr60469.c: Likewise.

@@ -1,5 +1,12 @@
 2016-01-16  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	PR c++/69091
+	* pt.c (type_dependent_expression_p): For a function template
+	specialization, a type is dependent iff any of its template
+	arguments are.
+
+2016-01-16  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	* cp-array-notation.c (cp_expand_cond_array_notations): Return
 	error_mark_node only if find_rank failed, not if it was
 	successful.
