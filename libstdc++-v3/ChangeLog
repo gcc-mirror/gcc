@@ -1,3 +1,9 @@
+2016-01-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Add
+	__int128 symbols.
+
 2016-01-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/69092
