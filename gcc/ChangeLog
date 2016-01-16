@@ -1,3 +1,10 @@
+2016-01-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostic/68899
+	* diagnostic-show-locus.c (layout::print_source_line): Move x
+	offset of line until after call to
+	get_line_width_without_trailing_whitespace.
+
 2016-01-15  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69270
