@@ -1,3 +1,16 @@
+2016-01-16  Sandra Loosemore <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Invoking GCC): Add new section to menu.
+	(Option Summary): Update to reflect new section and moved options.
+	(C++ Dialect Options): Move -fvtable-verify and related options.
+	(Debugging Options): Move Sanitizer, Pointer Bounds Checker,
+	and profiling-related options.
+	(Optimization Options): Move profile generation options and
+	-fstack-protector and related options.
+	(Instrumentation Options): New section incorporating moved options.
+	(Code Generation Options): Move -finstrument-functions and
+	related options, -fstack-check, -fstack-limit*, and -fbounds-check.
+
 2016-01-16  Tom de Vries  <tom@codesourcery.com>
 
 	* passes.def: Move pass_expand_omp_ssa out of pass_parallelize_loops.
