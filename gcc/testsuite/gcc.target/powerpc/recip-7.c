@@ -1,4 +1,4 @@
-/* { dg-do run { target { powerpc*-*-linux* } } } */
+/* { dg-do run { target { powerpc*-*-linux* powerpc*-ibm-aix* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-skip-if "" { powerpc*-*-*spe* } { "*" } { "" } } */
 /* { dg-require-effective-target ppc_recip_hw } */
