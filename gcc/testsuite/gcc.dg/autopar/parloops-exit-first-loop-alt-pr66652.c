@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target pthread } */
 /* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops-details" } */
 
 #include <stdio.h>
