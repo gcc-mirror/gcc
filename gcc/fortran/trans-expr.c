@@ -9284,7 +9284,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
     }
   else
     {
-    gfc_conv_expr (&lse, expr1);
+      gfc_conv_expr (&lse, expr1);
       if (gfc_option.rtcheck & GFC_RTCHECK_MEM
 	  && gfc_expr_attr (expr1).allocatable
 	  && expr1->rank
