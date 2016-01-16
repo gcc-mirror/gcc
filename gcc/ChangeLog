@@ -1,3 +1,10 @@
+2016-01-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* hash-table.h (hash_table::empty): Turn into an inline wrapper
+	that checks whether the table is already empty.  Rename the
+	original implementation to...
+	(hash_table::empty_slot): ...this new private function.
+
 2016-01-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR diagnostic/68899
