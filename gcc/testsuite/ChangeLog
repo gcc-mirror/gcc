@@ -1,5 +1,12 @@
 2016-01-16  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	* c-c++-common/cilk-plus/AN/an-if.c: Check that the original
+	dump does not contain an error_mark_node.
+	* c-c++-common/cilk-plus/CK/pr60469.c: Likewise.
+	* c-c++-common/cilk-plus/AN/fn_ptr-2.c: New xfail'd test.
+
+2016-01-16  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	PR c++/68936
 	* g++.dg/template/pr68936.C: New test.
 

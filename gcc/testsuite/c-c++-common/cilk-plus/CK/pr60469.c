@@ -1,6 +1,6 @@
 /* PR middle-end/60469 */
 /* { dg-do compile } */
-/* { dg-options "-fcilkplus" } */
+/* { dg-options "-fcilkplus -fdump-tree-original" } */
 
 void foo() {}
 
@@ -13,3 +13,6 @@ int main(int argc, char* argv[])
   _Cilk_spawn foo();
   return 0;
 }
+
+/* The C++ FE once emitted a bogus error_mark_node for this test case.  */
+/* { dg-final { scan-tree-dump-not "<<< error >>>" "original" } } */
