@@ -1,20 +1,17 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target pthread } */
 /* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops-details" } */
 
-/* Constant bound, reduction.  */
-
-#define N 4000
+/* Variable bound, reduction.  */
 
 unsigned int *a;
 
 unsigned int
-f (void)
+f (unsigned int n, unsigned int *__restrict__ a)
 {
   int i;
   unsigned int sum = 1;
 
-  for (i = 0; i < N; ++i)
+  for (i = 0; i < n; ++i)
     sum += a[i];
 
   return sum;

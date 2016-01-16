@@ -1,3 +1,16 @@
+2016-01-16  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/parloops-exit-first-loop-alt.c: Move ...
+	* gcc.dg/autopar/parloops-exit-first-loop-alt.c: ... here.  Remove
+	redundant dg-require-effective-target pthread.
+	* gcc.dg/parloops-exit-first-loop-alt-2.c: Same.
+	* gcc.dg/parloops-exit-first-loop-alt-3.c: Same.
+	* gcc.dg/parloops-exit-first-loop-alt-4.c: Same.
+	* gcc.dg/parloops-exit-first-loop-alt-5.c: Same.
+	* gcc.dg/parloops-exit-first-loop-alt-6.c: Same.
+	* gcc.dg/parloops-exit-first-loop-alt-7.c: Same.
+	* gcc.dg/parloops-exit-first-loop-alt-pr66652.c: Same.
+
 2016-01-16  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/68609
