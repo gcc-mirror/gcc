@@ -2747,7 +2747,6 @@ build_min_non_dep_call_vec (tree non_dep, tree fn, vec<tree, va_gc> *argvec)
     non_dep = TREE_OPERAND (non_dep, 0);
   TREE_TYPE (t) = TREE_TYPE (non_dep);
   TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (non_dep);
-  KOENIG_LOOKUP_P (t) = KOENIG_LOOKUP_P (non_dep);
   return convert_from_reference (t);
 }
 
@@ -2809,6 +2808,11 @@ build_min_non_dep_op_overload (enum tree_code op,
   va_end (p);
   call = build_min_non_dep_call_vec (non_dep, fn, args);
   release_tree_vector (args);
+
+  tree call_expr = call;
+  if (REFERENCE_REF_P (call_expr))
+    call_expr = TREE_OPERAND (call_expr, 0);
+  KOENIG_LOOKUP_P (call_expr) = KOENIG_LOOKUP_P (non_dep);
 
   return call;
 }

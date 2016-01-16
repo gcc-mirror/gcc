@@ -1,3 +1,11 @@
+2016-01-16  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/68936
+	* tree.c (build_min_non_dep_call_vec): Don't retain the
+	KOENIG_LOOKUP_P flag of the non-dependent expression that's
+	been built.
+	(build_min_non_dep_op_overload): Instead, do it here.
+
 2016-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/68271
