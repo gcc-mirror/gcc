@@ -12020,10 +12020,14 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
   gcc_assert (gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_ATOMIC_STORE);
   gsi_remove (&gsi, true);
   gsi = gsi_last_bb (store_bb);
+  stmt = gsi_stmt (gsi);
   gsi_remove (&gsi, true);
 
   if (gimple_in_ssa_p (cfun))
-    update_ssa (TODO_update_ssa_no_phi);
+    {
+      release_defs (stmt);
+      update_ssa (TODO_update_ssa_no_phi);
+    }
 
   return true;
 }
