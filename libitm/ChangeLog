@@ -1,3 +1,10 @@
+2016-01-16  Torvald Riegel  <triegel@redhat.com>
+
+	* method-gl.cc (gl_wt_dispatch::trycommit): Ensure proxy privatization
+	safety.
+	* method-ml.cc (ml_wt_dispatch::trycommit): Likewise.
+	* libitm/testsuite/libitm.c/priv-1.c: New.
+
 2015-01-15  Torvald Riegel  <triegel@redhat.com>
 
 	testsuite/libitm.c++/libstdc++-safeexc.C: New.
