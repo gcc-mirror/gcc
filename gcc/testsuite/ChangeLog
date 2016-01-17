@@ -1,3 +1,7 @@
+2016-01-17 John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/torture/builtin-integral-1.c: Require c99_runtime.
+
 2016-01-16  Tom de Vries  <tom@codesourcery.com>
 
 	* c-c++-common/goacc/kernels-alias-ipa-pta-4.c: New test.
