@@ -1,3 +1,12 @@
+2016-01-17  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	Backport from mainline
+	2016-01-12  Kugan Vivekanandarajah  <kuganv@linaro.org>
+		    Jim Wilson  <jim.wilson@linaro.org>
+
+	PR target/69194
+	* gcc.target/arm/pr69194.c: New test.
+
 2016-01-15  Alexander Fomin  <alexander.fomin@intel.com>
 
 	Backport from mainline

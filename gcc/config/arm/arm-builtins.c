@@ -2077,7 +2077,8 @@ arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
 	      if (!(*insn_data[icode].operand[opno].predicate)
                    (op[argc], mode[argc]))
 		op[argc] = (replace_equiv_address
-			    (op[argc], force_reg (Pmode, XEXP (op[argc], 0))));
+			    (op[argc],
+			     copy_to_mode_reg (Pmode, XEXP (op[argc], 0))));
               break;
 
 	    case NEON_ARG_STOP:
