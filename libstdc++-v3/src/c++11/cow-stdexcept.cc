@@ -278,8 +278,8 @@ _txnal_cow_string_C1_for_exceptions(void* that, const char* s, void *exc)
 static void* txnal_read_ptr(void* const * ptr)
 {
   static_assert(sizeof(uint64_t) == sizeof(void*)
-		|| sizeof(uint32_t) == sizeof(void*));
-  // FIXME make a true compile-time choice to prevent warnings.
+		|| sizeof(uint32_t) == sizeof(void*),
+		"Pointers must be 32 bits or 64 bits wide");
 #if __UINTPTR_MAX__ == __UINT64_MAX__
   return (void*)_ITM_RU8((const uint64_t*)ptr);
 #else
