@@ -12543,7 +12543,7 @@ mark_loops_in_oacc_kernels_region (basic_block region_entry,
   /* Don't parallelize the kernels region if it contains more than one outer
      loop.  */
   unsigned int nr_outer_loops = 0;
-  struct loop *single_outer;
+  struct loop *single_outer = NULL;
   for (struct loop *loop = outer->inner; loop != NULL; loop = loop->next)
     {
       gcc_assert (loop_outer (loop) == outer);

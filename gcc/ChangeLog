@@ -1,4 +1,9 @@
-2016-01-16  Sandra Loosemore <sandra@codesourcery.com>
+2016-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (mark_loops_in_oacc_kernels_region): Work around
+	-Wmaybe-uninitialized warning.
+
+2016-01-16  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Invoking GCC): Add new section to menu.
 	(Option Summary): Update to reflect new section and moved options.
