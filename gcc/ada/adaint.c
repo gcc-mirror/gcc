@@ -3281,7 +3281,7 @@ void __gnat_killprocesstree (int pid, int sig_num)
 
   /* kill child processes first */
 
-  while (d = readdir (dir))
+  while ((d = readdir (dir)) != NULL)
     {
       if ((d->d_type & DT_DIR) == DT_DIR)
         {
