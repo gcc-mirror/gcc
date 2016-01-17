@@ -1,3 +1,7 @@
+2016-01-17  Torvald Riegel  <triegel@redhat.com>
+
+	* src/c++11/cow-stdexcept.cc (txnal_read_ptr): Fix static_assert.
+
 2016-01-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Add
