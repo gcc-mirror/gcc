@@ -4398,6 +4398,62 @@ conv_arglist_function (gfc_se *se, gfc_expr *expr, const char *name)
 }
 
 
+/* This function tells whether the middle-end representation of the expression
+   E given as input may point to data otherwise accessible through a variable
+   (sub-)reference.
+   It is assumed that the only expressions that may alias are variables,
+   and array constructors if ARRAY_MAY_ALIAS is true and some of its elements
+   may alias.
+   This function is used to decide whether freeing an expression's allocatable
+   components is safe or should be avoided.
+
+   If ARRAY_MAY_ALIAS is true, an array constructor may alias if some of
+   its elements are copied from a variable.  This ARRAY_MAY_ALIAS trick
+   is necessary because for array constructors, aliasing depends on how
+   the array is used:
+    - If E is an array constructor used as argument to an elemental procedure,
+      the array, which is generated through shallow copy by the scalarizer,
+      is used directly and can alias the expressions it was copied from.
+    - If E is an array constructor used as argument to a non-elemental
+      procedure,the scalarizer is used in gfc_conv_expr_descriptor to generate
+      the array as in the previous case, but then that array is used
+      to initialize a new descriptor through deep copy.  There is no alias
+      possible in that case.
+   Thus, the ARRAY_MAY_ALIAS flag is necessary to distinguish the two cases
+   above.  */
+
+static bool
+expr_may_alias_variables (gfc_expr *e, bool array_may_alias)
+{
+  gfc_constructor *c;
+
+  if (e->expr_type == EXPR_VARIABLE)
+    return true;
+  else if (e->expr_type == EXPR_FUNCTION)
+    {
+      gfc_symbol *proc_ifc = gfc_get_proc_ifc_for_expr (e);
+
+      if ((proc_ifc->result->ts.type == BT_CLASS
+	   && proc_ifc->result->ts.u.derived->attr.is_class
+	   && CLASS_DATA (proc_ifc->result)->attr.class_pointer)
+	  || proc_ifc->result->attr.pointer)
+	return true;
+      else
+	return false;
+    }
+  else if (e->expr_type != EXPR_ARRAY || !array_may_alias)
+    return false;
+
+  for (c = gfc_constructor_first (e->value.constructor);
+       c; c = gfc_constructor_next (c))
+    if (c->expr
+	&& expr_may_alias_variables (c->expr, array_may_alias))
+      return true;
+
+  return false;
+}
+
+
 /* Generate code for a procedure call.  Note can return se->post != NULL.
    If se->direct_byref is set then se->expr contains the return parameter.
    Return nonzero, if the call has alternate specifiers.
@@ -4448,9 +4504,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
   comp = gfc_get_proc_ptr_comp (expr);
 
+  bool elemental_proc = (comp
+			 && comp->ts.interface
+			 && comp->ts.interface->attr.elemental)
+			|| (comp && comp->attr.elemental)
+			|| sym->attr.elemental;
+
   if (se->ss != NULL)
     {
-      if (!sym->attr.elemental && !(comp && comp->attr.elemental))
+      if (!elemental_proc)
 	{
 	  gcc_assert (se->ss->info->type == GFC_SS_FUNCTION);
 	  if (se->ss->info->useflags)
@@ -4500,6 +4562,23 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       e = arg->expr;
       fsym = formal ? formal->sym : NULL;
       parm_kind = MISSING;
+
+      /* If the procedure requires an explicit interface, the actual
+	 argument is passed according to the corresponding formal
+	 argument.  If the corresponding formal argument is a POINTER,
+	 ALLOCATABLE or assumed shape, we do not use g77's calling
+	 convention, and pass the address of the array descriptor
+	 instead.  Otherwise we use g77's calling convention, in other words
+	 pass the array data pointer without descriptor.  */
+      bool nodesc_arg = fsym != NULL
+			&& !(fsym->attr.pointer || fsym->attr.allocatable)
+			&& fsym->as
+			&& fsym->as->type != AS_ASSUMED_SHAPE
+			&& fsym->as->type != AS_ASSUMED_RANK;
+      if (comp)
+	nodesc_arg = nodesc_arg || !comp->attr.always_explicit;
+      else
+	nodesc_arg = nodesc_arg || !sym->attr.always_explicit;
 
       /* Class array expressions are sometimes coming completely unadorned
 	 with either arrayspec or _data component.  Correct that here.
@@ -5020,22 +5099,6 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	    }
 	  else
 	    {
-              /* If the procedure requires an explicit interface, the actual
-                 argument is passed according to the corresponding formal
-                 argument.  If the corresponding formal argument is a POINTER,
-                 ALLOCATABLE or assumed shape, we do not use g77's calling
-                 convention, and pass the address of the array descriptor
-                 instead. Otherwise we use g77's calling convention.  */
-	      bool f;
-	      f = (fsym != NULL)
-		  && !(fsym->attr.pointer || fsym->attr.allocatable)
-		  && fsym->as && fsym->as->type != AS_ASSUMED_SHAPE
-		  && fsym->as->type != AS_ASSUMED_RANK;
-	      if (comp)
-		f = f || !comp->attr.always_explicit;
-	      else
-		f = f || !sym->attr.always_explicit;
-
 	      /* If the argument is a function call that may not create
 		 a temporary for the result, we have to check that we
 		 can do it, i.e. that there is no alias between this
@@ -5080,7 +5143,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		   array of derived types.  In this case, the argument
 		   is converted to a temporary, which is passed and then
 		   written back after the procedure call.  */
-		gfc_conv_subref_array_arg (&parmse, e, f,
+		gfc_conv_subref_array_arg (&parmse, e, nodesc_arg,
 				fsym ? fsym->attr.intent : INTENT_INOUT,
 				fsym && fsym->attr.pointer);
 	      else if (gfc_is_class_array_ref (e, NULL)
@@ -5092,7 +5155,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		   OOP-TODO: Insert code so that if the dynamic type is
 		   the same as the declared type, copy-in/copy-out does
 		   not occur.  */
-		gfc_conv_subref_array_arg (&parmse, e, f,
+		gfc_conv_subref_array_arg (&parmse, e, nodesc_arg,
 				fsym ? fsym->attr.intent : INTENT_INOUT,
 				fsym && fsym->attr.pointer);
 
@@ -5103,12 +5166,13 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		   intent in.  */
 		{
 		  e->must_finalize = 1;
-		  gfc_conv_subref_array_arg (&parmse, e, f,
+		  gfc_conv_subref_array_arg (&parmse, e, nodesc_arg,
 					     INTENT_IN,
 					     fsym && fsym->attr.pointer);
 		}
 	      else
-	        gfc_conv_array_parameter (&parmse, e, f, fsym, sym->name, NULL);
+		gfc_conv_array_parameter (&parmse, e, nodesc_arg, fsym,
+					  sym->name, NULL);
 
 	      /* If an ALLOCATABLE dummy argument has INTENT(OUT) and is
 		 allocated on entry, it must be deallocated.  */
@@ -5150,7 +5214,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	     but do not always set fsym.  */
 	  if (e->expr_type == EXPR_VARIABLE
 	      && e->symtree->n.sym->attr.optional
-	      && ((e->rank != 0 && sym->attr.elemental)
+	      && ((e->rank != 0 && elemental_proc)
 		  || e->representation.length || e->ts.type == BT_CHARACTER
 		  || (e->rank != 0
 		      && (fsym == NULL
@@ -5185,13 +5249,16 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       gfc_add_block_to_block (&post, &parmse.post);
 
       /* Allocated allocatable components of derived types must be
-	 deallocated for non-variable scalars.  Non-variable arrays are
-	 dealt with in trans-array.c(gfc_conv_array_parameter).  */
+	 deallocated for non-variable scalars, array arguments to elemental
+	 procedures, and array arguments with descriptor to non-elemental
+	 procedures.  As bounds information for descriptorless arrays is no
+	 longer available here, they are dealt with in trans-array.c
+	 (gfc_conv_array_parameter).  */
       if (e && (e->ts.type == BT_DERIVED || e->ts.type == BT_CLASS)
 	    && e->ts.u.derived->attr.alloc_comp
-	    && !(e->symtree && e->symtree->n.sym->attr.pointer)
-	    && (e->expr_type != EXPR_VARIABLE && !e->rank))
-        {
+	    && (e->rank == 0 || elemental_proc || !nodesc_arg)
+	    && !expr_may_alias_variables (e, elemental_proc))
+	{
 	  int parm_rank;
 	  tmp = build_fold_indirect_ref_loc (input_location,
 					 parmse.expr);
@@ -6519,7 +6586,7 @@ gfc_trans_subarray_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 
   gfc_conv_expr (&rse, expr);
 
-  tmp = gfc_trans_scalar_assign (&lse, &rse, cm->ts, true, false, true);
+  tmp = gfc_trans_scalar_assign (&lse, &rse, cm->ts, true, true, true);
   gfc_add_expr_to_block (&body, tmp);
 
   gcc_assert (rse.ss == gfc_ss_terminator);
@@ -7404,20 +7471,6 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
 
   /* Take the address of that value.  */
   se->expr = gfc_build_addr_expr (NULL_TREE, var);
-  if (expr->ts.type == BT_DERIVED && expr->rank
-      && !gfc_is_finalizable (expr->ts.u.derived, NULL)
-      && expr->ts.u.derived->attr.alloc_comp
-      && expr->expr_type != EXPR_VARIABLE)
-    {
-      tree tmp;
-
-      tmp = build_fold_indirect_ref_loc (input_location, se->expr);
-      tmp = gfc_deallocate_alloc_comp (expr->ts.u.derived, tmp, expr->rank);
-
-      /* The components shall be deallocated before
-         their containing entity.  */
-      gfc_prepend_expr_to_block (&se->post, tmp);
-    }
 }
 
 

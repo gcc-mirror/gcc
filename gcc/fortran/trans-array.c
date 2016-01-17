@@ -7192,6 +7192,17 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
   if (no_pack || array_constructor || good_allocatable || ultimate_alloc_comp)
     {
       gfc_conv_expr_descriptor (se, expr);
+      /* Deallocate the allocatable components of structures that are
+	 not variable.  */
+      if ((expr->ts.type == BT_DERIVED || expr->ts.type == BT_CLASS)
+	   && expr->ts.u.derived->attr.alloc_comp
+	   && expr->expr_type != EXPR_VARIABLE)
+	{
+	  tmp = gfc_deallocate_alloc_comp (expr->ts.u.derived, se->expr, expr->rank);
+
+	  /* The components shall be deallocated before their containing entity.  */
+	  gfc_prepend_expr_to_block (&se->post, tmp);
+	}
       if (expr->ts.type == BT_CHARACTER)
 	se->string_length = expr->ts.u.cl->backend_decl;
       if (size)
@@ -7227,10 +7238,11 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
     }
 
   /* Deallocate the allocatable components of structures that are
-     not variable.  */
-  if ((expr->ts.type == BT_DERIVED || expr->ts.type == BT_CLASS)
-	&& expr->ts.u.derived->attr.alloc_comp
-	&& expr->expr_type != EXPR_VARIABLE)
+     not variable, for descriptorless arguments.
+     Arguments with a descriptor are handled in gfc_conv_procedure_call.  */
+  if (g77 && (expr->ts.type == BT_DERIVED || expr->ts.type == BT_CLASS)
+	  && expr->ts.u.derived->attr.alloc_comp
+	  && expr->expr_type != EXPR_VARIABLE)
     {
       tmp = build_fold_indirect_ref_loc (input_location, se->expr);
       tmp = gfc_deallocate_alloc_comp (expr->ts.u.derived, tmp, expr->rank);

@@ -1,3 +1,18 @@
+2016-01-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/61831
+	* gfortran.dg/derived_constructor_components_6.f90: New file.
+	* gfortran.dg/allocate_with_source_14.f03: Change count of
+	__builtin_malloc from 21 to 23.
+
+2016-01-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/66082
+	* gfortran.dg/alloc_comp_auto_array_3.f90: New file. Count of
+	__builtin_malloc increased from 3 to 4, relative to trunk.
+
 2016-01-17  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	Backport from mainline
