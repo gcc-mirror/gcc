@@ -1,5 +1,10 @@
 2016-01-18  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* tree-scalar-evolution.c (follow_copies_to_constant): New.
+	(analyze_initial_condition, analyze_scalar_evolution_1): Call previous.
+
+2016-01-18  Alan Lawrence  <alan.lawrence@arm.com>
+
 	PR target/63679
 	* tree-ssa-scopedtables.c (avail_expr_hash): Hash MEM_REF and ARRAY_REF
 	using get_ref_base_and_extent.
