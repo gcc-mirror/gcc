@@ -1,3 +1,9 @@
+2016-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69170
+	* tree-vect-slp.c (vect_build_slp_tree): Verify we are not
+	building a vector from scalar results of a pattern stmt.
+
 2016-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* haifa-sched.c (autopref_multipass_init): Work around
