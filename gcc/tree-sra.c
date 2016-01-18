@@ -328,6 +328,10 @@ candidate (unsigned uid)
    those which cannot be (because they are and need be used as a whole).  */
 static bitmap should_scalarize_away_bitmap, cannot_scalarize_away_bitmap;
 
+/* Bitmap of candidates in the constant pool, which cannot be scalarized
+   because this would produce non-constant expressions (e.g. Ada).  */
+static bitmap disqualified_constants;
+
 /* Obstack for creation of fancy names.  */
 static struct obstack name_obstack;
 
@@ -652,6 +656,7 @@ sra_initialize (void)
     (vec_safe_length (cfun->local_decls) / 2);
   should_scalarize_away_bitmap = BITMAP_ALLOC (NULL);
   cannot_scalarize_away_bitmap = BITMAP_ALLOC (NULL);
+  disqualified_constants = BITMAP_ALLOC (NULL);
   gcc_obstack_init (&name_obstack);
   base_access_vec = new hash_map<tree, auto_vec<access_p> >;
   memset (&sra_stats, 0, sizeof (sra_stats));
@@ -670,11 +675,19 @@ sra_deinitialize (void)
   candidates = NULL;
   BITMAP_FREE (should_scalarize_away_bitmap);
   BITMAP_FREE (cannot_scalarize_away_bitmap);
+  BITMAP_FREE (disqualified_constants);
   access_pool.release ();
   assign_link_pool.release ();
   obstack_free (&name_obstack, NULL);
 
   delete base_access_vec;
+}
+
+/* Return true if DECL is a VAR_DECL in the constant pool, false otherwise.  */
+
+static bool constant_decl_p (tree decl)
+{
+  return TREE_CODE (decl) == VAR_DECL && DECL_IN_CONSTANT_POOL (decl);
 }
 
 /* Remove DECL from candidates for SRA and write REASON to the dump file if
@@ -684,6 +697,8 @@ disqualify_candidate (tree decl, const char *reason)
 {
   if (bitmap_clear_bit (candidate_bitmap, DECL_UID (decl)))
     candidates->remove_elt_with_hash (decl, DECL_UID (decl));
+  if (constant_decl_p (decl))
+    bitmap_set_bit (disqualified_constants, DECL_UID (decl));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -835,8 +850,11 @@ create_access_1 (tree base, HOST_WIDE_INT offset, HOST_WIDE_INT size)
   return access;
 }
 
+static bool maybe_add_sra_candidate (tree);
+
 /* Create and insert access for EXPR. Return created access, or NULL if it is
-   not possible.  */
+   not possible.  Also scan for uses of constant pool as we go along and add
+   to candidates.  */
 
 static struct access *
 create_access (tree expr, gimple *stmt, bool write)
@@ -858,6 +876,25 @@ create_access (tree expr, gimple *stmt, bool write)
     }
   else
     ptr = false;
+
+  /* For constant-pool entries, check we can substitute the constant value.  */
+  if (constant_decl_p (base)
+      && (sra_mode == SRA_MODE_EARLY_INTRA || sra_mode == SRA_MODE_INTRA))
+    {
+      gcc_assert (!bitmap_bit_p (disqualified_constants, DECL_UID (base)));
+      if (expr != base
+	  && !is_gimple_reg_type (TREE_TYPE (expr))
+	  && dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  /* This occurs in Ada with accesses to ARRAY_RANGE_REFs,
+	     and elements of multidimensional arrays (which are
+	     multi-element arrays in their own right).  */
+	  fprintf (dump_file, "Allowing non-reg-type load of part"
+			      " of constant-pool entry: ");
+	  print_generic_expr (dump_file, expr, 0);
+	}
+      maybe_add_sra_candidate (base);
+    }
 
   if (!DECL_P (base) || !bitmap_bit_p (candidate_bitmap, DECL_UID (base)))
     return NULL;
@@ -918,6 +955,8 @@ static bool
 scalarizable_type_p (tree type)
 {
   gcc_assert (!is_gimple_reg_type (type));
+  if (type_contains_placeholder_p (type))
+    return false;
 
   switch (TREE_CODE (type))
   {
@@ -1852,7 +1891,10 @@ maybe_add_sra_candidate (tree var)
       reject (var, "not aggregate");
       return false;
     }
-  if (needs_to_live_in_memory (var))
+  /* Allow constant-pool entries (that "need to live in memory")
+     unless we are doing IPA SRA.  */
+  if (needs_to_live_in_memory (var)
+      && (sra_mode == SRA_MODE_EARLY_IPA || !constant_decl_p (var)))
     {
       reject (var, "needs to live in memory");
       return false;
@@ -3113,7 +3155,7 @@ load_assign_lhs_subreplacements (struct access *lacc,
 
 	      if (racc && racc->grp_to_be_replaced)
 		{
-		  if (racc->grp_write)
+		  if (racc->grp_write || constant_decl_p (racc->base))
 		    drhs = get_access_replacement (racc);
 		  else
 		    drhs = NULL;
@@ -3272,6 +3314,9 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
   racc = get_access_for_expr (rhs);
   if (!lacc && !racc)
     return SRA_AM_NONE;
+  /* Avoid modifying initializations of constant-pool replacements.  */
+  if (racc && (racc->replacement_decl == lhs))
+    return SRA_AM_NONE;
 
   loc = gimple_location (stmt);
   if (lacc && lacc->grp_to_be_replaced)
@@ -3388,7 +3433,8 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
       || contains_vce_or_bfcref_p (lhs)
       || stmt_ends_bb_p (stmt))
     {
-      if (access_has_children_p (racc))
+      /* No need to copy into a constant-pool, it comes pre-initialized.  */
+      if (access_has_children_p (racc) && !constant_decl_p (racc->base))
 	generate_subtree_copies (racc->first_child, rhs, racc->offset, 0, 0,
 				 gsi, false, false, loc);
       if (access_has_children_p (lacc))
@@ -3491,6 +3537,54 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
     }
 }
 
+/* Set any scalar replacements of values in the constant pool to the initial
+   value of the constant.  (Constant-pool decls like *.LC0 have effectively
+   been initialized before the program starts, we must do the same for their
+   replacements.)  Thus, we output statements like 'SR.1 = *.LC0[0];' into
+   the function's entry block.  */
+
+static void
+initialize_constant_pool_replacements (void)
+{
+  gimple_seq seq = NULL;
+  gimple_stmt_iterator gsi = gsi_start (seq);
+  bitmap_iterator bi;
+  unsigned i;
+
+  EXECUTE_IF_SET_IN_BITMAP (candidate_bitmap, 0, i, bi)
+    if (bitmap_bit_p (should_scalarize_away_bitmap, i)
+	&& !bitmap_bit_p (cannot_scalarize_away_bitmap, i))
+      {
+	tree var = candidate (i);
+	if (!constant_decl_p (var))
+	  continue;
+	vec<access_p> *access_vec = get_base_access_vector (var);
+	if (!access_vec)
+	  continue;
+	for (unsigned i = 0; i < access_vec->length (); i++)
+	  {
+	    struct access *access = (*access_vec)[i];
+	    if (!access->replacement_decl)
+	      continue;
+	    gassign *stmt = gimple_build_assign (
+	      get_access_replacement (access), unshare_expr (access->expr));
+	    if (dump_file && (dump_flags & TDF_DETAILS))
+	      {
+		fprintf (dump_file, "Generating constant initializer: ");
+		print_gimple_stmt (dump_file, stmt, 0, 1);
+		fprintf (dump_file, "\n");
+	      }
+	    gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
+	    update_stmt (stmt);
+	  }
+      }
+
+  seq = gsi_seq (gsi);
+  if (seq)
+    gsi_insert_seq_on_edge_immediate (
+      single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)), seq);
+}
+
 /* Traverse the function body and all modifications as decided in
    analyze_all_variable_accesses.  Return true iff the CFG has been
    changed.  */
@@ -3500,6 +3594,8 @@ sra_modify_function_body (void)
 {
   bool cfg_changed = false;
   basic_block bb;
+
+  initialize_constant_pool_replacements ();
 
   FOR_EACH_BB_FN (bb, cfun)
     {

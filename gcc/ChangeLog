@@ -1,3 +1,19 @@
+2016-01-18  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/63679
+	* tree-sra.c (disqualified_constants, constant_decl_p): New.
+	(sra_initialize): Allocate disqualified_constants.
+	(sra_deinitialize): Free disqualified_constants.
+	(disqualify_candidate): Update disqualified_constants when appropriate.
+	(create_access): Scan for constant-pool entries as we go along.
+	(scalarizable_type_p): Add check against type_contains_placeholder_p.
+	(maybe_add_sra_candidate): Allow constant-pool entries.
+	(load_assign_lhs_subreplacements): Bind debug for constant pool vars.
+	(initialize_constant_pool_replacements): New.
+	(sra_modify_assign): Avoid mangling assignments created by previous,
+	and don't generate writes into constant pool.
+	(sra_modify_function_body): Call initialize_constant_pool_replacements.
+
 2016-01-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* config/i386/i386.c (scalar_to_vector_candidate_p): Support
