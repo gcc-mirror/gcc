@@ -486,12 +486,12 @@ __mpx_wrapper_memmove (void *dst, const void *src, size_t n)
   /* When we copy exactly one pointer it is faster to
      just use bndldx + bndstx.  */
   if (n == sizeof (void *))
-  {
-    const void **s = (const void**)src;
-    void **d = (void**)dst;
-    *d = *s;
-    return dst;
-  }
+    {
+      void *const *s = (void *const *) src;
+      void **d = (void **) dst;
+      *d = *s;
+      return dst;
+    }
 
   memmove (dst, src, n);
 
