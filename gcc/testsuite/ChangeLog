@@ -1,6 +1,13 @@
 2016-01-18  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/63679
+	* gcc.dg/tree-ssa/ssa-dom-cse-5.c: New.
+	* gcc.dg/tree-ssa/ssa-dom-cse-6.c: New.
+	* gcc.dg/tree-ssa/ssa-dom-cse-7.c: New.
+
+2016-01-18  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/63679
 	* gcc.dg/tree-ssa/sra-17.c: New.
 	* gcc.dg/tree-ssa/sra-18.c: New.
 

@@ -1,6 +1,14 @@
 2016-01-18  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/63679
+	* tree-ssa-scopedtables.c (avail_expr_hash): Hash MEM_REF and ARRAY_REF
+	using get_ref_base_and_extent.
+	(equal_mem_array_ref_p): New.
+	(hashable_expr_equal_p): Add call to previous.
+
+2016-01-18  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/63679
 	* tree-sra.c (disqualified_constants, constant_decl_p): New.
 	(sra_initialize): Allocate disqualified_constants.
 	(sra_deinitialize): Free disqualified_constants.
