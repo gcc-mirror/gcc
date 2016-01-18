@@ -1,3 +1,8 @@
+2016-01-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mips/mips.h (ISA_HAS_PAIRED_SINGLE): Require
+	!TARGET_OCTEON.
+
 2016-01-18  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/69308

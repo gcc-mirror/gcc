@@ -1014,9 +1014,10 @@ struct mips_cpu_info {
 #define ISA_HAS_LXC1_SXC1	ISA_HAS_FP4
 
 /* ISA has paired-single instructions.  */
-#define ISA_HAS_PAIRED_SINGLE	(ISA_MIPS64				\
-				 || (mips_isa_rev >= 2			\
-				     && mips_isa_rev <= 5))
+#define ISA_HAS_PAIRED_SINGLE	((ISA_MIPS64				\
+				  || (mips_isa_rev >= 2			\
+				      && mips_isa_rev <= 5))		\
+				 && !TARGET_OCTEON)
 
 /* ISA has conditional trap instructions.  */
 #define ISA_HAS_COND_TRAP	(!ISA_MIPS1				\

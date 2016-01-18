@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-mips3d" } */
+/* { dg-options "-mips3d forbid_cpu=octeon.*" } */
 
 /* Test MIPS-3D absolute compare builtin functions */
 #include <stdlib.h>

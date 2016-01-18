@@ -1,3 +1,26 @@
+2016-01-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/mips/mips-3d-1.c: Use forbid_cpu=octeon.* in
+	dg-options.
+	* gcc.target/mips/mips-3d-2.c: Likewise.
+	* gcc.target/mips/mips-3d-3.c: Likewise.
+	* gcc.target/mips/mips-3d-4.c: Likewise.
+	* gcc.target/mips/mips-3d-5.c: Likewise.
+	* gcc.target/mips/mips-3d-6.c: Likewise.
+	* gcc.target/mips/mips-3d-7.c: Likewise.
+	* gcc.target/mips/mips-3d-8.c: Likewise.
+	* gcc.target/mips/mips-3d-9.c: Likewise.
+	* gcc.target/mips/mips-ps-1.c: Likewise.
+	* gcc.target/mips/mips-ps-2.c: Likewise.
+	* gcc.target/mips/mips-ps-3.c: Likewise.
+	* gcc.target/mips/mips-ps-4.c: Likewise.
+	* gcc.target/mips/mips-ps-5.c: Likewise.
+	* gcc.target/mips/mips-ps-6.c: Likewise.
+	* gcc.target/mips/mips-ps-7.c: Likewise.
+	* gcc.target/mips/mips-ps-type.c: Likewise.
+	* gcc.target/mips/mips-ps-type-2.c: Likewise.
+	* gcc.target/mips/mips16-attributes-6.c: Likewise.
+
 2016-01-18  Tom de Vries  <tom@codesourcery.com>
 
 	* c-c++-common/goacc/kernels-counter-vars-function-scope.c: New test.

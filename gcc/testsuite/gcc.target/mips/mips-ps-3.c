@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-mpaired-single" } */
+/* { dg-options "-mpaired-single forbid_cpu=octeon.*" } */
 
 /* Test MIPS paired-single conditional move */
 #include <stdlib.h>
