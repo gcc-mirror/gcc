@@ -1,3 +1,10 @@
+2016-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60637
+	* include/c_global/cmath (signbit) [__cplusplus < 201103L]: Use
+	__builtin_signbitf or __builtin_signbitl as appropriate.
+	* testsuite/26_numerics/headers/cmath/60637.cc: New.
+
 2016-01-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/69092
