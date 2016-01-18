@@ -1,5 +1,11 @@
 2016-01-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/69293
+	* include/std/functional (_Function_base::_M_not_empty_function):
+	Change overloads for pointers to take arguments by value.
+	* testsuite/20_util/function/cons/57465.cc: Add tests for
+	pointer-to-member cases.
+
 	PR libstdc++/69340
 	* src/c++11/cow-stdexcept.cc (_txnal_cow_string_C1_for_exceptions):
 	Use macros for exception handling and fix unused parameter warning.

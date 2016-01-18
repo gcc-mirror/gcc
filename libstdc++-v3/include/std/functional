@@ -1633,13 +1633,13 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
 	template<typename _Tp>
 	  static bool
-	  _M_not_empty_function(_Tp* const& __fp)
-	  { return __fp; }
+	  _M_not_empty_function(_Tp* __fp)
+	  { return __fp != nullptr; }
 
 	template<typename _Class, typename _Tp>
 	  static bool
-	  _M_not_empty_function(_Tp _Class::* const& __mp)
-	  { return __mp; }
+	  _M_not_empty_function(_Tp _Class::* __mp)
+	  { return __mp != nullptr; }
 
 	template<typename _Tp>
 	  static bool
