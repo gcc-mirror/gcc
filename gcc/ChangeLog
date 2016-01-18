@@ -1,3 +1,8 @@
+2016-01-18  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-parloops.c (pass_parallelize_loops::execute): Allow
+	pass_parallelize_loops to be run outside the loop pipeline.
+
 2016-01-18  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* tree-scalar-evolution.c (follow_copies_to_constant): New.

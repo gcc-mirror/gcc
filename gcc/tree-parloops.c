@@ -2844,23 +2844,41 @@ public:
 unsigned
 pass_parallelize_loops::execute (function *fun)
 {
-  if (number_of_loops (fun) <= 1)
-    return 0;
-
   tree nthreads = builtin_decl_explicit (BUILT_IN_OMP_GET_NUM_THREADS);
   if (nthreads == NULL_TREE)
     return 0;
 
+  bool in_loop_pipeline = scev_initialized_p ();
+  if (!in_loop_pipeline)
+    loop_optimizer_init (LOOPS_NORMAL
+			 | LOOPS_HAVE_RECORDED_EXITS);
+
+  if (number_of_loops (fun) <= 1)
+    return 0;
+
+  if (!in_loop_pipeline)
+    {
+      rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+      scev_initialize ();
+    }
+
+  unsigned int todo = 0;
   if (parallelize_loops ())
     {
       fun->curr_properties &= ~(PROP_gimple_eomp);
 
       checking_verify_loop_structure ();
 
-      return TODO_update_ssa;
+      todo |= TODO_update_ssa;
     }
 
-  return 0;
+  if (!in_loop_pipeline)
+    {
+      scev_finalize ();
+      loop_optimizer_finalize ();
+    }
+
+  return todo;
 }
 
 } // anon namespace
