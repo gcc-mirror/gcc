@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops-details" } */
+/* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops2-details" } */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,5 +21,5 @@ f (unsigned int n, unsigned int sum)
   return sum;
 }
 
-/* { dg-final { scan-tree-dump-times "parallelizing inner loop" 1 "parloops" } } */
-/* { dg-final { scan-tree-dump-times "alternative exit-first loop transform succeeded" 0 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "parallelizing inner loop" 1 "parloops2" } } */
+/* { dg-final { scan-tree-dump-times "alternative exit-first loop transform succeeded" 0 "parloops2" } } */

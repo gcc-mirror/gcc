@@ -1,3 +1,46 @@
+2016-01-18  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/autopar/outer-1.c: Update for new parloops instantiation.
+	* gcc.dg/autopar/outer-2.c: Same.
+	* gcc.dg/autopar/outer-3.c: Same.
+	* gcc.dg/autopar/outer-4.c: Same.
+	* gcc.dg/autopar/outer-5.c: Same.
+	* gcc.dg/autopar/outer-6.c: Same.
+	* gcc.dg/autopar/parallelization-1.c: Same.
+	* gcc.dg/autopar/parloops-exit-first-loop-alt-2.c: Same.
+	* gcc.dg/autopar/parloops-exit-first-loop-alt-3.c: Same.
+	* gcc.dg/autopar/parloops-exit-first-loop-alt-4.c: Same.
+	* gcc.dg/autopar/parloops-exit-first-loop-alt-5.c: Same.
+	* gcc.dg/autopar/parloops-exit-first-loop-alt-6.c: Same.
+	* gcc.dg/autopar/parloops-exit-first-loop-alt-7.c: Same.
+	* gcc.dg/autopar/parloops-exit-first-loop-alt-pr66652.c: Same.
+	* gcc.dg/autopar/parloops-exit-first-loop-alt.c: Same.
+	* gcc.dg/autopar/pr39500-1.c: Same.
+	* gcc.dg/autopar/pr39500-2.c: Same.
+	* gcc.dg/autopar/pr46193.c: Same.
+	* gcc.dg/autopar/pr46194.c: Same.
+	* gcc.dg/autopar/pr49580.c: Same.
+	* gcc.dg/autopar/pr49960-1.c: Same.
+	* gcc.dg/autopar/pr49960.c: Same.
+	* gcc.dg/autopar/pr68373.c: Same.
+	* gcc.dg/autopar/reduc-1.c: Same.
+	* gcc.dg/autopar/reduc-1char.c: Same.
+	* gcc.dg/autopar/reduc-1short.c: Same.
+	* gcc.dg/autopar/reduc-2.c: Same.
+	* gcc.dg/autopar/reduc-2char.c: Same.
+	* gcc.dg/autopar/reduc-2short.c: Same.
+	* gcc.dg/autopar/reduc-3.c: Same.
+	* gcc.dg/autopar/reduc-4.c: Same.
+	* gcc.dg/autopar/reduc-6.c: Same.
+	* gcc.dg/autopar/reduc-7.c: Same.
+	* gcc.dg/autopar/reduc-8.c: Same.
+	* gcc.dg/autopar/reduc-9.c: Same.
+	* gcc.dg/autopar/uns-outer-4.c: Same.
+	* gcc.dg/autopar/uns-outer-5.c: Same.
+	* gcc.dg/autopar/uns-outer-6.c: Same.
+	* gfortran.dg/parloops-exit-first-loop-alt-2.f95: Same.
+	* gfortran.dg/parloops-exit-first-loop-alt.f95: Same.
+
 2016-01-18  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/63679

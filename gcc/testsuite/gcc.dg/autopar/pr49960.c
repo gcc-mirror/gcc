@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-parallelize-loops=4 -fdump-tree-parloops-details -fdump-tree-optimized -fno-partial-inlining" } */
+/* { dg-options "-O2 -ftree-parallelize-loops=4 -fdump-tree-parloops2-details -fdump-tree-optimized -fno-partial-inlining" } */
 
 #include <stdio.h>
 #define MB 100
@@ -50,5 +50,5 @@ void main ()
 
 /* Check that the outer most loop doesn't get parallelized (thus no loop gets parallelized)  */
 
-/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 0 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 0 "parloops2" } } */
 /* { dg-final { scan-tree-dump-times "loopfn" 0 "optimized" } } */

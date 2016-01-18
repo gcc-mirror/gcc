@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops-details" } */
+/* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops2-details" } */
 
 unsigned int
 foo (int *a, unsigned int n)
@@ -11,4 +11,4 @@ foo (int *a, unsigned int n)
   return i;
 }
 
-/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 1 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 1 "parloops2" } } */

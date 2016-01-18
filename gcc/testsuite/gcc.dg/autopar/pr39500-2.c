@@ -1,7 +1,7 @@
 /* pr39500: autopar fails to parallel */
 /* origin: nemokingdom@gmail.com(LiFeng) */
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-parallelize-loops=4 -fdump-tree-parloops-details" } */
+/* { dg-options "-O2 -ftree-parallelize-loops=4 -fdump-tree-parloops2-details" } */
 
 int main (void)
 {
@@ -16,4 +16,4 @@ int main (void)
 
 /* This loop cannot be parallelized due to a dependence.  */
 
-/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 0 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 0 "parloops2" } } */

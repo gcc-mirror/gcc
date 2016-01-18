@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops-details" } */
+/* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops2-details" } */
 
 /* Variable bound, reduction.  */
 
@@ -17,4 +17,4 @@ f (unsigned int n, unsigned int *__restrict__ a)
   return sum;
 }
 
-/* { dg-final { scan-tree-dump-times "alternative exit-first loop transform succeeded" 1 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "alternative exit-first loop transform succeeded" 1 "parloops2" } } */
