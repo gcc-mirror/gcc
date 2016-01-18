@@ -1,3 +1,9 @@
+2016-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR lto/69337
+	* lto-symtab.c (lto_symtab_merge): Return early for mismatched
+	function vs. variable.
+
 2016-01-12  Richard Biener  <rguenther@suse.de>
 
 	PR lto/69077

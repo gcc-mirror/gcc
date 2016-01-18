@@ -303,6 +303,9 @@ lto_symtab_merge (symtab_node *prevailing, symtab_node *entry)
   if (prevailing_decl == decl)
     return true;
 
+  if (TREE_CODE (decl) != TREE_CODE (prevailing_decl))
+    return false;
+
   /* Merge decl state in both directions, we may still end up using
      the new decl.  */
   TREE_ADDRESSABLE (prevailing_decl) |= TREE_ADDRESSABLE (decl);
