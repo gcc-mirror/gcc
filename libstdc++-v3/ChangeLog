@@ -1,6 +1,6 @@
 2016-01-18  Jonathan Wakely  <jwakely@redhat.com>
 
-	PR libstdc++/69293
+	PR libstdc++/69243
 	* include/std/functional (_Function_base::_M_not_empty_function):
 	Change overloads for pointers to take arguments by value.
 	* testsuite/20_util/function/cons/57465.cc: Add tests for
