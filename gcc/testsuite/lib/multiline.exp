@@ -47,17 +47,18 @@
 # to have the testsuite verify the expected output.
 
 ############################################################################
-# Global variables.  Although global, these are intended to only be used from
-# within multiline.exp.
+# Global variables.
 ############################################################################
 
+# This is intended to only be used from within multiline.exp.
 # The line number of the last dg-begin-multiline-output directive.
 set _multiline_last_beginning_line -1
 
 # A list of
 #   first-line-number, last-line-number, lines
 # where each "lines" is a list of strings.
-set _multiline_expected_outputs []
+# This is cleared at the end of each test by gcc-dg.exp's wrapper for dg-test.
+set multiline_expected_outputs []
 
 ############################################################################
 # Exported functions.
@@ -94,9 +95,9 @@ proc dg-end-multiline-output { args } {
     verbose "lines: $lines" 3
     # Create an entry of the form:  first-line, last-line, lines
     set entry [list $_multiline_last_beginning_line $line $lines]
-    global _multiline_expected_outputs
-    lappend _multiline_expected_outputs $entry
-    verbose "within dg-end-multiline-output: _multiline_expected_outputs: $_multiline_expected_outputs" 3
+    global multiline_expected_outputs
+    lappend multiline_expected_outputs $entry
+    verbose "within dg-end-multiline-output: multiline_expected_outputs: $multiline_expected_outputs" 3
 
     set _multiline_last_beginning_line -1
 }
@@ -107,14 +108,12 @@ proc dg-end-multiline-output { args } {
 # those that weren't found.
 #
 # It returns a pruned version of its output.
-#
-# It also clears the list of expected multiline outputs.
 
 proc handle-multiline-outputs { text } {
-    global _multiline_expected_outputs
+    global multiline_expected_outputs
     global testname_with_flags
     set index 0
-    foreach entry $_multiline_expected_outputs {
+    foreach entry $multiline_expected_outputs {
 	verbose "  entry: $entry" 3
 	set start_line [lindex $entry 0]
 	set end_line   [lindex $entry 1]
@@ -139,9 +138,6 @@ proc handle-multiline-outputs { text } {
 
 	set index [expr $index + 1]
     }
-
-    # Clear the list of expected multiline outputs
-    set _multiline_expected_outputs []
 
     return $text
 }

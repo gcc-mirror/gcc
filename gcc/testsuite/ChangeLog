@@ -1,3 +1,21 @@
+2016-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/69181
+	* gcc.dg/pr69181-1.c: New test file.
+	* gcc.dg/pr69181-2.c: New test file.
+	* lib/gcc-dg.exp (dg-test): Consolidate post-test cleanup of
+	globals by moving it to...
+	(cleanup-after-saved-dg-test): ...this new function.  Add
+	"global additional_sources_used".  Add reset of global
+	multiline_expected_outputs to the empty list.
+	* lib/multiline.exp (_multiline_expected_outputs): Rename this
+	global to...
+	(multiline_expected_outputs): ...this, and updated comments to
+	note that it is modified from gcc-dg.exp.
+	(dg-end-multiline-output): Update for the above renaming.
+	(handle-multiline-outputs): Likewise.  Remove the clearing
+	of the expected outputs to the empty list.
+
 2016-01-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69297
