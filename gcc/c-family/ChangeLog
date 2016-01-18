@@ -1,3 +1,8 @@
+2016-01-18  Tom de Vries  <tom@codesourcery.com>
+
+	* c-omp.c (c_oacc_split_loop_clauses): Don't copy OMP_CLAUSE_REDUCTION,
+	classify as loop clause.
+
 2016-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/68271
