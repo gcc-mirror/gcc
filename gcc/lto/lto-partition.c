@@ -1077,8 +1077,8 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node *node)
 		  IDENTIFIER_POINTER
 		    (DECL_ASSEMBLER_NAME (s->get_alias_target()->decl))))
 	&& ((s->real_symbol_p ()
-             && !DECL_EXTERNAL (node->decl)
-	     && !TREE_PUBLIC (node->decl))
+             && !DECL_EXTERNAL (s->decl)
+	     && !TREE_PUBLIC (s->decl))
  	    || may_need_named_section_p (encoder, s))
 	&& (!encoder
 	    || lto_symtab_encoder_lookup (encoder, s) != LCC_NOT_FOUND))
