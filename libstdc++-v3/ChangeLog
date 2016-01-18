@@ -1,3 +1,14 @@
+2016-01-18  Torvald Riegel  <triegel@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_USE_WEAK_REF): New.
+	(_GLIBCXX_TXN_SAFE, _GLIBCXX_TXN_SAFE_DYN): Use	_GLIBCXX_USE_WEAK_REF
+	and move after its definition.
+	* config/os/aix/os_defines.h (_GLIBCXX_USE_WEAK_REF): Override.
+	* src/c++11/cow-stdexcept.cc: Use _GLIBCXX_USE_WEAK_REF instead of
+	__GXX_WEAK__, and only provide transactional clones if
+	_GLIBCXX_USE_WEAK_REF is true.  Don't provide stubs of libitm
+	functions.
+
 2016-01-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60637
