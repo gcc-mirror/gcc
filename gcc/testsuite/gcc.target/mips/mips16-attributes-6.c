@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mips16 addressing=absolute -mips3d" } */
+/* { dg-options "-mips16 addressing=absolute -mips3d forbid_cpu=octeon.*" } */
 
 static inline NOMIPS16 float
 i1 (float f)
