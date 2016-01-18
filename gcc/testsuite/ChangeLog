@@ -1,3 +1,9 @@
+2016-01-18  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/63679
+	* gcc.dg/tree-ssa/sra-17.c: New.
+	* gcc.dg/tree-ssa/sra-18.c: New.
+
 2016-01-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* gcc.target/i386/pr65105-5.c: Adjust to andn generation.
