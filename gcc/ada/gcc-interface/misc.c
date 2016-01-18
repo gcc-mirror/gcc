@@ -1035,7 +1035,7 @@ get_array_bit_stride (tree comp_type)
     {
       stride = fold_convert (bitsizetype, stride);
       stride = build_binary_op (MULT_EXPR, bitsizetype,
-				stride, build_int_cstu (bitsizetype, 8));
+				stride, build_int_cst (bitsizetype, 8));
     }
 
   for (int i = 0; i < info.ndimensions; ++i)
@@ -1053,10 +1053,10 @@ get_array_bit_stride (tree comp_type)
 			       fold_convert (sbitsizetype,
 					     info.dimen[i].lower_bound)),
       count = build_binary_op (PLUS_EXPR, sbitsizetype,
-			       count, build_int_cstu (sbitsizetype, 1));
+			       count, build_int_cst (sbitsizetype, 1));
       count = build_binary_op (MAX_EXPR, sbitsizetype,
 			       count,
-			       build_int_cstu (sbitsizetype, 0));
+			       build_int_cst (sbitsizetype, 0));
       count = fold_convert (bitsizetype, count);
       stride = build_binary_op (MULT_EXPR, bitsizetype, stride, count);
     }

@@ -3354,35 +3354,13 @@ gnat_type_for_mode (machine_mode mode, int unsignedp)
   return NULL_TREE;
 }
 
-/* Return the unsigned version of a TYPE_NODE, a scalar type.  */
+/* Return the signed or unsigned version of TYPE_NODE, a scalar type, the
+   signedness being specified by UNSIGNEDP.  */
 
 tree
-gnat_unsigned_type (tree type_node)
+gnat_signed_or_unsigned_type_for (int unsignedp, tree type_node)
 {
-  tree type = gnat_type_for_size (TYPE_PRECISION (type_node), 1);
-
-  if (TREE_CODE (type_node) == INTEGER_TYPE && TYPE_MODULAR_P (type_node))
-    {
-      type = copy_node (type);
-      TREE_TYPE (type) = type_node;
-    }
-  else if (TREE_TYPE (type_node)
-	   && TREE_CODE (TREE_TYPE (type_node)) == INTEGER_TYPE
-	   && TYPE_MODULAR_P (TREE_TYPE (type_node)))
-    {
-      type = copy_node (type);
-      TREE_TYPE (type) = TREE_TYPE (type_node);
-    }
-
-  return type;
-}
-
-/* Return the signed version of a TYPE_NODE, a scalar type.  */
-
-tree
-gnat_signed_type (tree type_node)
-{
-  tree type = gnat_type_for_size (TYPE_PRECISION (type_node), 0);
+  tree type = gnat_type_for_size (TYPE_PRECISION (type_node), unsignedp);
 
   if (TREE_CODE (type_node) == INTEGER_TYPE && TYPE_MODULAR_P (type_node))
     {
@@ -4936,8 +4914,8 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
      are no considerations of precision or size involved.  */
   else if (INTEGRAL_TYPE_P (type)
 	   && TYPE_RM_SIZE (type)
-	   && (0 != compare_tree_int (TYPE_RM_SIZE (type),
-				      GET_MODE_BITSIZE (TYPE_MODE (type)))
+	   && (tree_int_cst_compare (TYPE_RM_SIZE (type),
+				     TYPE_SIZE (type)) < 0
 	       || (AGGREGATE_TYPE_P (etype)
 		   && TYPE_REVERSE_STORAGE_ORDER (etype))))
     {
@@ -4973,8 +4951,8 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
      type with reverse storage order and we also proceed similarly.  */
   else if (INTEGRAL_TYPE_P (etype)
 	   && TYPE_RM_SIZE (etype)
-	   && (0 != compare_tree_int (TYPE_RM_SIZE (etype),
-				      GET_MODE_BITSIZE (TYPE_MODE (etype)))
+	   && (tree_int_cst_compare (TYPE_RM_SIZE (etype),
+				     TYPE_SIZE (etype)) < 0
 	       || (AGGREGATE_TYPE_P (type)
 		   && TYPE_REVERSE_STORAGE_ORDER (type))))
     {
@@ -5094,26 +5072,25 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
      is an integral type of the same precision and signedness or if the output
      is a biased type or if both the input and output are unsigned.  */
   if (!notrunc_p
-      && INTEGRAL_TYPE_P (type) && TYPE_RM_SIZE (type)
-      && !(code == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (type))
-      && 0 != compare_tree_int (TYPE_RM_SIZE (type),
-				GET_MODE_BITSIZE (TYPE_MODE (type)))
+      && INTEGRAL_TYPE_P (type)
+      && TYPE_RM_SIZE (type)
+      && tree_int_cst_compare (TYPE_RM_SIZE (type), TYPE_SIZE (type)) < 0
       && !(INTEGRAL_TYPE_P (etype)
 	   && TYPE_UNSIGNED (type) == TYPE_UNSIGNED (etype)
-	   && operand_equal_p (TYPE_RM_SIZE (type),
-			       (TYPE_RM_SIZE (etype) != 0
-				? TYPE_RM_SIZE (etype) : TYPE_SIZE (etype)),
-			       0))
+	   && tree_int_cst_compare (TYPE_RM_SIZE (type),
+				    TYPE_RM_SIZE (etype)
+				    ? TYPE_RM_SIZE (etype)
+				    : TYPE_SIZE (etype)) == 0)
+      && !(code == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (type))
       && !(TYPE_UNSIGNED (type) && TYPE_UNSIGNED (etype)))
     {
       tree base_type
-	= gnat_type_for_mode (TYPE_MODE (type), TYPE_UNSIGNED (type));
+	= gnat_type_for_size (TREE_INT_CST_LOW (TYPE_SIZE (type)),
+			      TYPE_UNSIGNED (type));
       tree shift_expr
 	= convert (base_type,
 		   size_binop (MINUS_EXPR,
-			       bitsize_int
-			       (GET_MODE_BITSIZE (TYPE_MODE (type))),
-			       TYPE_RM_SIZE (type)));
+			       TYPE_SIZE (type), TYPE_RM_SIZE (type)));
       expr
 	= convert (type,
 		   build_binary_op (RSHIFT_EXPR, base_type,
@@ -5434,7 +5411,7 @@ builtin_type_for_size (int size, bool unsignedp)
 static void
 install_builtin_elementary_types (void)
 {
-  signed_size_type_node = gnat_signed_type (size_type_node);
+  signed_size_type_node = gnat_signed_type_for (size_type_node);
   pid_type_node = integer_type_node;
   void_list_node = build_void_list_node ();
 
