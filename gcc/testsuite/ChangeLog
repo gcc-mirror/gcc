@@ -1,5 +1,28 @@
 2016-01-18  Tom de Vries  <tom@codesourcery.com>
 
+	* c-c++-common/goacc/kernels-counter-vars-function-scope.c: New test.
+	* c-c++-common/goacc/kernels-double-reduction.c: New test.
+	* c-c++-common/goacc/kernels-empty.c: New test.
+	* c-c++-common/goacc/kernels-eternal.c: New test.
+	* c-c++-common/goacc/kernels-loop-2.c: New test.
+	* c-c++-common/goacc/kernels-loop-3.c: New test.
+	* c-c++-common/goacc/kernels-loop-data-2.c: New test.
+	* c-c++-common/goacc/kernels-loop-data-enter-exit-2.c: New test.
+	* c-c++-common/goacc/kernels-loop-data-enter-exit.c: New test.
+	* c-c++-common/goacc/kernels-loop-data-update.c: New test.
+	* c-c++-common/goacc/kernels-loop-data.c: New test.
+	* c-c++-common/goacc/kernels-loop-g.c: New test.
+	* c-c++-common/goacc/kernels-loop-mod-not-zero.c: New test.
+	* c-c++-common/goacc/kernels-loop-n.c: New test.
+	* c-c++-common/goacc/kernels-loop-nest.c: New test.
+	* c-c++-common/goacc/kernels-loop.c: New test.
+	* c-c++-common/goacc/kernels-noreturn.c: New test.
+	* c-c++-common/goacc/kernels-one-counter-var.c: New test.
+	* c-c++-common/goacc/kernels-parallel-loop-data-enter-exit.c: New test.
+	* c-c++-common/goacc/kernels-reduction.c: New test.
+
+2016-01-18  Tom de Vries  <tom@codesourcery.com>
+
 	* gcc.dg/autopar/outer-1.c: Update for new parloops instantiation.
 	* gcc.dg/autopar/outer-2.c: Same.
 	* gcc.dg/autopar/outer-3.c: Same.
