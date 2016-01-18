@@ -1,3 +1,8 @@
+2016-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/69308
+	* gimple.c (gimple_could_trap_p_1): Handle GIMPLE_COND.
+
 2016-01-18  Tom de Vries  <tom@codesourcery.com>
 
 	* passes.def: Add pass_parallelize_loops to pass_oacc_kernels.
