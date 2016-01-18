@@ -1,3 +1,8 @@
+2016-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69297
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr69297.c: New testcase.
+
 2016-01-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.target/mips/mips-3d-1.c: Use forbid_cpu=octeon.* in

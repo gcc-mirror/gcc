@@ -2409,6 +2409,11 @@ vect_bb_slp_scalar_cost (basic_block bb,
       if ((*life)[i])
 	continue;
 
+      /* Count scalar stmts only once.  */
+      if (gimple_visited_p (stmt))
+	continue;
+      gimple_set_visited (stmt, true);
+
       stmt_info = vinfo_for_stmt (stmt);
       if (STMT_VINFO_DATA_REF (stmt_info))
         {
@@ -2450,6 +2455,11 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
 					      SLP_INSTANCE_TREE (instance),
 					      &life);
     }
+
+  /* Unset visited flag.  */
+  for (gimple_stmt_iterator gsi = bb_vinfo->region_begin;
+       gsi_stmt (gsi) != gsi_stmt (bb_vinfo->region_end); gsi_next (&gsi))
+    gimple_set_visited  (gsi_stmt (gsi), false);
 
   /* Complete the target-specific cost calculation.  */
   finish_cost (BB_VINFO_TARGET_COST_DATA (bb_vinfo), &vec_prologue_cost,
