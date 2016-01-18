@@ -50,4 +50,4 @@ void foo (double *p)
 }
 
 /* We should groups address type IV uses.  */
-/* { dg-final { scan-tree-dump-not "\\nuse 5\\n" "ivopts" } }  */
+/* { dg-final { scan-tree-dump-not "\\nuse 21\\n" "ivopts" } }  */
