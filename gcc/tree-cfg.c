@@ -3437,10 +3437,10 @@ verify_gimple_call (gcall *stmt)
 }
 
 /* Verifies the gimple comparison with the result type TYPE and
-   the operands OP0 and OP1.  */
+   the operands OP0 and OP1, comparison code is CODE.  */
 
 static bool
-verify_gimple_comparison (tree type, tree op0, tree op1)
+verify_gimple_comparison (tree type, tree op0, tree op1, enum tree_code code)
 {
   tree op0_type = TREE_TYPE (op0);
   tree op1_type = TREE_TYPE (op1);
@@ -3474,13 +3474,17 @@ verify_gimple_comparison (tree type, tree op0, tree op1)
       && (TREE_CODE (type) == BOOLEAN_TYPE
 	  || TYPE_PRECISION (type) == 1))
     {
-      if (TREE_CODE (op0_type) == VECTOR_TYPE
-	  || TREE_CODE (op1_type) == VECTOR_TYPE)
-        {
-          error ("vector comparison returning a boolean");
-          debug_generic_expr (op0_type);
-          debug_generic_expr (op1_type);
-          return true;
+      if ((TREE_CODE (op0_type) == VECTOR_TYPE
+	   || TREE_CODE (op1_type) == VECTOR_TYPE)
+	  && code != EQ_EXPR && code != NE_EXPR
+	  && !VECTOR_BOOLEAN_TYPE_P (op0_type)
+	  && !VECTOR_INTEGER_TYPE_P (op0_type))
+	{
+	  error ("unsupported operation or type for vector comparison"
+		 " returning a boolean");
+	  debug_generic_expr (op0_type);
+	  debug_generic_expr (op1_type);
+	  return true;
         }
     }
   /* Or a boolean vector type with the same element count
@@ -3861,7 +3865,7 @@ verify_gimple_assign_binary (gassign *stmt)
     case LTGT_EXPR:
       /* Comparisons are also binary, but the result type is not
 	 connected to the operand types.  */
-      return verify_gimple_comparison (lhs_type, rhs1, rhs2);
+      return verify_gimple_comparison (lhs_type, rhs1, rhs2, rhs_code);
 
     case WIDEN_MULT_EXPR:
       if (TREE_CODE (lhs_type) != INTEGER_TYPE)
@@ -4570,7 +4574,8 @@ verify_gimple_cond (gcond *stmt)
 
   return verify_gimple_comparison (boolean_type_node,
 				   gimple_cond_lhs (stmt),
-				   gimple_cond_rhs (stmt));
+				   gimple_cond_rhs (stmt),
+				   gimple_cond_code (stmt));
 }
 
 /* Verify the GIMPLE statement STMT.  Returns true if there is an

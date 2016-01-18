@@ -1,3 +1,17 @@
+2016-01-18  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR middle-end/68542
+	* fold-const.c (fold_binary_op_with_conditional_arg): Bail out for case
+	of mixind vector and scalar types.
+	(fold_relational_const): Add handling of vector
+	comparison with boolean result.
+	* tree-cfg.c (verify_gimple_comparison): Add argument CODE, allow
+	comparison of vector operands with boolean result for EQ/NE only.
+	(verify_gimple_assign_binary): Adjust call for verify_gimple_comparison.
+	(verify_gimple_cond): Likewise.
+	* tree-vrp.c (extract_code_and_val_from_cond_with_ops): Modify check on
+	valid type of VAL.
+
 2016-01-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/mips.h (ISA_HAS_PAIRED_SINGLE): Require
