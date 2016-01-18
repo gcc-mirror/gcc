@@ -35,6 +35,11 @@
  (and (match_code "const_int")
       (match_test "aarch64_uimm12_shift (ival)")))
 
+(define_constraint "Upl"
+  "@internal A constant that matches two uses of add instructions."
+  (and (match_code "const_int")
+       (match_test "aarch64_pluslong_strict_immedate (op, VOIDmode)")))
+
 (define_constraint "J"
  "A constant that can be used with a SUB operation (once negated)."
  (and (match_code "const_int")
