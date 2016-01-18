@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512f -O2" } */
-/* { dg-final { scan-assembler-times "vcvtsi2ss\[ \\t\]+\[^\n\]*\{rn-sae\}\[^\{\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vcvtsi2ss\[ \\t\]+\[^%\n\]*%e\[^\{\n\]*\{rn-sae\}\[^\{\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 

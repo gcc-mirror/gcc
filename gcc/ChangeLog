@@ -1,3 +1,19 @@
+2016-01-18  Alexander Fomin  <alexander.fomin@intel.com>
+
+	Backport from mainline
+	2015-10-09  Alexander Fomin  <alexander.fomin@intel.com>
+
+	PR target/67895
+	* config/i386/sse.md (define_insn "sse_cvtsi2ss<round_name>"):
+	Adjust embedded rounding/SAE specifier position.
+	(define_insn "sse_cvtsi2ssq<round_name>"): Likewise.
+	(define_insn "cvtusi2<ssescalarmodesuffix>32<round_name>"): Likewise.
+	(define_insn "cvtusi2<ssescalarmodesuffix>64<round_name>"): Likewise.
+	(define_insn "sse2_cvtsi2sdq<round_name>"): Likewise.
+	(define_insn "avx512dq_rangep<mode><mask_name><round_saeonly_name>"):
+	Likewise.
+	(define_insn "avx512dq_ranges<mode><round_saeonly_name>"): Likewise.
+
 2016-01-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
