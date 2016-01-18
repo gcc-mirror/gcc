@@ -1,5 +1,26 @@
 2016-01-18  Tom de Vries  <tom@codesourcery.com>
 
+	* omp-low.c (set_oacc_fn_attrib): Make extern.
+	* omp-low.h (set_oacc_fn_attrib): Declare.
+	* tree-parloops.c (struct reduction_info): Add reduc_addr field.
+	(create_call_for_reduction_1): Handle case that reduc_addr is non-NULL.
+	(create_parallel_loop, gen_parallel_loop, try_create_reduction_list):
+	Add and handle function parameter oacc_kernels_p.
+	(find_reduc_addr, get_omp_data_i_param): New function.
+	(ref_conflicts_with_region, oacc_entry_exit_ok_1)
+	(oacc_entry_exit_single_gang, oacc_entry_exit_ok): New function.
+	(parallelize_loops): Add and handle function parameter oacc_kernels_p.
+	Calculate dominance info.  Skip loops that are not in a kernels region
+	in oacc_kernels_p mode.  Skip inner loops of parallelized loops.
+	(pass_parallelize_loops::execute): Call parallelize_loops with
+	oacc_kernels_p argument.
+	(pass_parallelize_loops::clone, pass_parallelize_loops::set_pass_param):
+	New member function.
+	(pass_parallelize_loops::bool oacc_kernels_p): New member var.
+	* passes.def: Add argument to pass_parallelize_loops instantation.
+
+2016-01-18  Tom de Vries  <tom@codesourcery.com>
+
 	* tree-parloops.c (pass_parallelize_loops::execute): Allow
 	pass_parallelize_loops to be run outside the loop pipeline.
 

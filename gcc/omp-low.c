@@ -12401,7 +12401,7 @@ replace_oacc_fn_attrib (tree fn, tree dims)
    function attribute.  Push any that are non-constant onto the ARGS
    list, along with an appropriate GOMP_LAUNCH_DIM tag.  */
 
-static void
+void
 set_oacc_fn_attrib (tree fn, tree clauses, vec<tree> *args)
 {
   /* Must match GOMP_DIM ordering.  */
