@@ -1,3 +1,8 @@
+2016-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* mpxwrap/mpx_wrappers.c (__mpx_wrapper_memmove): Avoid
+	-Wdiscarded-qualifiers warning.  Fix up formatting.
+
 2015-12-29  Tsvetkova Alexandra  <aleksandra.tsvetkova@intel.com>
 
 	* libmpxwrap/mpx_wrappers.c (__mpx_wrapper_memmove): Special
