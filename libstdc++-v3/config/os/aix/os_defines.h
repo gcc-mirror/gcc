@@ -48,4 +48,7 @@
 #define __COMPATMATH__
 #endif
 
+// No support for referencing weak symbols without a definition.
+#define _GLIBCXX_USE_WEAK_REF 0
+
 #endif

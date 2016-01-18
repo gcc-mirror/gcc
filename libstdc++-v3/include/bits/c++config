@@ -483,20 +483,6 @@ namespace std
 
 #define _GLIBCXX_USE_ALLOCATOR_NEW
 
-// Conditionally enable annotations for the Transactional Memory TS on C++11.
-// Most of the following conditions are due to limitations in the current
-// implementation.
-#if __cplusplus >= 201103L && _GLIBCXX_USE_CXX11_ABI			\
-  && _GLIBCXX_USE_DUAL_ABI && __cpp_transactional_memory >= 201505L	\
-  &&  !_GLIBCXX_FULLY_DYNAMIC_STRING && __GXX_WEAK__ 			\
-  && _GLIBCXX_USE_ALLOCATOR_NEW
-#define _GLIBCXX_TXN_SAFE transaction_safe
-#define _GLIBCXX_TXN_SAFE_DYN transaction_safe_dynamic
-#else
-#define _GLIBCXX_TXN_SAFE
-#define _GLIBCXX_TXN_SAFE_DYN
-#endif
-
 #else // !__cplusplus
 # define _GLIBCXX_BEGIN_EXTERN_C
 # define _GLIBCXX_END_EXTERN_C
@@ -522,6 +508,28 @@ namespace std
 // macro causes these definitions to be weak.
 #ifndef _GLIBCXX_WEAK_DEFINITION
 # define _GLIBCXX_WEAK_DEFINITION
+#endif
+
+// By default, we assume that __GXX_WEAK__ also means that there is support
+// for declaring functions as weak while not defining such functions.  This
+// allows for referring to functions provided by other libraries (e.g.,
+// libitm) without depending on them if the respective features are not used.
+#ifndef _GLIBCXX_USE_WEAK_REF
+# define _GLIBCXX_USE_WEAK_REF __GXX_WEAK__
+#endif
+
+// Conditionally enable annotations for the Transactional Memory TS on C++11.
+// Most of the following conditions are due to limitations in the current
+// implementation.
+#if __cplusplus >= 201103L && _GLIBCXX_USE_CXX11_ABI			\
+  && _GLIBCXX_USE_DUAL_ABI && __cpp_transactional_memory >= 201505L	\
+  &&  !_GLIBCXX_FULLY_DYNAMIC_STRING && _GLIBCXX_USE_WEAK_REF		\
+  && _GLIBCXX_USE_ALLOCATOR_NEW
+#define _GLIBCXX_TXN_SAFE transaction_safe
+#define _GLIBCXX_TXN_SAFE_DYN transaction_safe_dynamic
+#else
+#define _GLIBCXX_TXN_SAFE
+#define _GLIBCXX_TXN_SAFE_DYN
 #endif
 
 
