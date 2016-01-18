@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -6027,7 +6027,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	 full view since the clause is on the partial view and we cannot have
 	 2 different GCC trees for the object.  The only bits of the full view
 	 we will use is the initializer, but it will be directly fetched.  */
-      if (Ekind(gnat_temp) == E_Constant
+      if (Ekind (gnat_temp) == E_Constant
 	  && Present (Address_Clause (gnat_temp))
 	  && Present (Full_View (gnat_temp)))
 	save_gnu_tree (Full_View (gnat_temp), error_mark_node, true);
@@ -8035,7 +8035,7 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
   /* If this is a variable and an initializer is attached to it, it must be
      valid for the context.  Similar to init_const in create_var_decl.  */
   if (TREE_CODE (gnu_decl) == VAR_DECL
-      && (gnu_init = DECL_INITIAL (gnu_decl)) != NULL_TREE
+      && (gnu_init = DECL_INITIAL (gnu_decl))
       && (!gnat_types_compatible_p (type, TREE_TYPE (gnu_init))
 	  || (TREE_STATIC (gnu_decl)
 	      && !initializer_constant_valid_p (gnu_init,
@@ -8128,7 +8128,7 @@ end_stmt_group (void)
      are cleanups, make a TRY_FINALLY_EXPR.  Last, if there is a BLOCK,
      make a BIND_EXPR.  Note that we nest in that because the cleanup may
      reference variables in the block.  */
-  if (gnu_retval == NULL_TREE)
+  if (!gnu_retval)
     gnu_retval = alloc_stmt_list ();
 
   if (group->cleanups)
@@ -9023,7 +9023,7 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
       break;
 
     default:
-      gcc_unreachable();
+      gcc_unreachable ();
     }
 
   check = fold_build3 (COND_EXPR, boolean_type_node, rhs_lt_zero, check_neg,
@@ -10083,7 +10083,39 @@ post_error_ne_tree_2 (const char *msg, Node_Id node, Entity_Id ent, tree t,
   Error_Msg_Uint_2 = UI_From_Int (num);
   post_error_ne_tree (msg, node, ent, t);
 }
-
+
+/* Return a label to branch to for the exception type in KIND or NULL_TREE
+   if none.  */
+
+tree
+get_exception_label (char kind)
+{
+  switch (kind)
+    {
+    case N_Raise_Constraint_Error:
+      return gnu_constraint_error_label_stack->last ();
+
+    case N_Raise_Storage_Error:
+      return gnu_storage_error_label_stack->last ();
+
+    case N_Raise_Program_Error:
+      return gnu_program_error_label_stack->last ();
+
+    default:
+      break;
+    }
+
+  return NULL_TREE;
+}
+
+/* Return the decl for the current elaboration procedure.  */
+
+tree
+get_elaboration_procedure (void)
+{
+  return gnu_elab_proc_stack->last ();
+}
+
 /* Initialize the table that maps GNAT codes to GCC codes for simple
    binary and unary operations.  */
 
@@ -10115,30 +10147,6 @@ init_code_table (void)
   gnu_codes[N_Op_Shift_Left] = LSHIFT_EXPR;
   gnu_codes[N_Op_Shift_Right] = RSHIFT_EXPR;
   gnu_codes[N_Op_Shift_Right_Arithmetic] = RSHIFT_EXPR;
-}
-
-/* Return a label to branch to for the exception type in KIND or NULL_TREE
-   if none.  */
-
-tree
-get_exception_label (char kind)
-{
-  if (kind == N_Raise_Constraint_Error)
-    return gnu_constraint_error_label_stack->last ();
-  else if (kind == N_Raise_Storage_Error)
-    return gnu_storage_error_label_stack->last ();
-  else if (kind == N_Raise_Program_Error)
-    return gnu_program_error_label_stack->last ();
-  else
-    return NULL_TREE;
-}
-
-/* Return the decl for the current elaboration procedure.  */
-
-tree
-get_elaboration_procedure (void)
-{
-  return gnu_elab_proc_stack->last ();
 }
 
 #include "gt-ada-trans.h"

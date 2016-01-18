@@ -1,5 +1,43 @@
 2016-01-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/ada-tree.h (TYPE_IMPLEMENTS_PACKED_ARRAY_P): Rename to
+	(TYPE_IMPL_PACKED_ARRAY_P): ...this.
+	(TYPE_CAN_HAVE_DEBUG_TYPE_P): Do not test TYPE_DEBUG_TYPE.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Simplify NULL_TREE tests
+	and tweak gnat_encodings tests throughout.
+	(initial_value_needs_conversion): Likewise.
+	(intrin_arglists_compatible_p): Likewise.
+	* gcc-interface/misc.c (gnat_print_type): Likewise.
+	(gnat_get_debug_type): Likewise.
+	(gnat_get_fixed_point_type_info): Likewise.
+	(gnat_get_array_descr_info): Likewise.
+	(get_array_bit_stride): Likewise.
+	(gnat_get_type_bias): Fix formatting.
+	(enumerate_modes): Likewise.
+	* gcc-interface/trans.c (gnat_to_gnu): Likewise.
+	(add_decl_expr): Simplify NULL_TREE test.
+	(end_stmt_group): Likewise.
+	(build_binary_op_trapv): Fix formatting.
+	(get_exception_label): Use switch statement.
+	(init_code_table): Move around.
+	* gcc-interface/utils.c (global_bindings_p): Simplify NULL_TREE test.
+	(gnat_poplevel): Likewise.
+	(gnat_set_type_context): Likewise.
+	(defer_or_set_type_context): Fix formatting.
+	(gnat_pushdecl): Simplify NULL_TREE test.
+	(maybe_pad_type): Likewise.
+	(add_parallel_type): Likewise.
+	(create_range_type): Likewise.
+	(process_deferred_decl_context): Likewise.
+	(convert): Likewise.
+	(def_builtin_1): Likewise.
+	* gcc-interface/utils2.c (find_common_type): Likewise.
+	(build_binary_op): Likewise.
+	(gnat_rewrite_reference): Likewise.
+	(get_inner_constant_reference): Likewise.
+
+2016-01-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/69219
 	* gcc-interface/trans.c (check_inlining_for_nested_subprog): Consider
 	the parent function instead of the current function in order to issue
