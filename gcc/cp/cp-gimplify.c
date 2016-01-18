@@ -1942,19 +1942,8 @@ cp_fold (tree x)
       if (VOID_TYPE_P (TREE_TYPE (x)))
 	return x;
 
-      if (!TREE_OPERAND (x, 0)
-	  || TREE_CODE (TREE_OPERAND (x, 0)) == NON_LVALUE_EXPR)
-	return x;
-
       loc = EXPR_LOCATION (x);
-      op0 = TREE_OPERAND (x, 0);
-
-      if (TREE_CODE (x) == NOP_EXPR
-	  && TREE_OVERFLOW_P (op0)
-	  && TREE_TYPE (x) == TREE_TYPE (op0))
-	return x;
-
-      op0 = cp_fold_maybe_rvalue (op0, rval_ops);
+      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
 
       if (op0 != TREE_OPERAND (x, 0))
         x = fold_build1_loc (loc, code, TREE_TYPE (x), op0);
@@ -2000,16 +1989,6 @@ cp_fold (tree x)
     case POSTDECREMENT_EXPR:
     case POSTINCREMENT_EXPR:
     case INIT_EXPR:
-
-	loc = EXPR_LOCATION (x);
-	op0 = cp_fold (TREE_OPERAND (x, 0));
-	op1 = cp_fold_rvalue (TREE_OPERAND (x, 1));
-
-	if (TREE_OPERAND (x, 0) != op0 || TREE_OPERAND (x, 1) != op1)
-	  x = build2_loc (loc, code, TREE_TYPE (x), op0, op1);
-
-	break;
-
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
     case COMPOUND_EXPR:
@@ -2054,25 +2033,12 @@ cp_fold (tree x)
       loc = EXPR_LOCATION (x);
       op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
       op1 = cp_fold_rvalue (TREE_OPERAND (x, 1));
-      if ((code == COMPOUND_EXPR || code == MODIFY_EXPR)
-	  && ((op1 && TREE_SIDE_EFFECTS (op1))
-	       || (op0 && TREE_SIDE_EFFECTS (op0))))
-	{
-	  if (op0 != TREE_OPERAND (x, 0) || op1 != TREE_OPERAND (x, 1))
-	    x = build2_loc (loc, code, TREE_TYPE (x), op0, op1);
-	  break;
-	}
-      if (TREE_CODE (x) == COMPOUND_EXPR && !op0)
-	op0 = build_empty_stmt (loc);
 
       if (op0 != TREE_OPERAND (x, 0) || op1 != TREE_OPERAND (x, 1))
 	x = fold_build2_loc (loc, code, TREE_TYPE (x), op0, op1);
       else
 	x = fold (x);
 
-      if (TREE_CODE (x) == COMPOUND_EXPR && TREE_OPERAND (x, 0) == NULL_TREE
-	  && TREE_OPERAND (x, 1))
-	return TREE_OPERAND (x, 1);
       break;
 
     case VEC_COND_EXPR:

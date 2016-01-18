@@ -1,5 +1,7 @@
 2016-01-18  Jason Merrill  <jason@redhat.com>
 
+	* cp-gimplify.c (cp_fold): Remove unnecessary special cases.
+
 	PR c++/68767
 	* cp-gimplify.c (cp_fold) [COND_EXPR]: Simplify.  Do fold COND_EXPR.
 	(contains_label_1, contains_label_p): Remove.
