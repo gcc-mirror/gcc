@@ -232,7 +232,8 @@ void _ITM_addUserCommitAction(void (*)(void *), uint64_t, void *) { };
 // that also notifies the TM runtime about allocations belonging to this
 // exception.
 void
-_txnal_cow_string_C1_for_exceptions(void* that, const char* s, void *exc)
+_txnal_cow_string_C1_for_exceptions(void* that, const char* s,
+				    void *exc __attribute__((unused)))
 {
   typedef std::basic_string<char> bs_type;
   bs_type *bs = (bs_type*) that;
@@ -249,17 +250,17 @@ _txnal_cow_string_C1_for_exceptions(void* that, const char* s, void *exc)
   // TODO Once this is supported, link the following allocation to this
   // exception: void *prev = _ITM_setAssociatedException(exc);
   bs_type::_Rep *rep;
-  try
+  __try
     {
       rep = (bs_type::_Rep*) _ZGTtnaX (len + sizeof (bs_type::_Rep));
     }
-  catch (...)
+  __catch (...)
     {
       // Pop the association with this exception.
       // TODO Once this is supported, link the following allocation to this
       // exception: _ITM_setAssociatedException(prev);
       // We do not need to instrument a rethrow.
-      throw;
+      __throw_exception_again;
     }
   // Pop the association with this exception.
   // TODO Once this is supported, link the following allocation to this

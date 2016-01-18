@@ -1,3 +1,9 @@
+2016-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69340
+	* src/c++11/cow-stdexcept.cc (_txnal_cow_string_C1_for_exceptions):
+	Use macros for exception handling and fix unused parameter warning.
+
 2016-01-17  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR libstdc++/68734
