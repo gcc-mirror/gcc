@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -538,11 +538,9 @@ extern tree gnat_type_for_mode (machine_mode mode, int unsignedp);
 /* Perform final processing on global declarations.  */
 extern void gnat_write_global_declarations (void);
 
-/* Return the unsigned version of a TYPE_NODE, a scalar type.  */
-extern tree gnat_unsigned_type (tree type_node);
-
-/* Return the signed version of a TYPE_NODE, a scalar type.  */
-extern tree gnat_signed_type (tree type_node);
+/* Return the signed or unsigned version of TYPE_NODE, a scalar type, the
+   signedness being specified by UNSIGNEDP.  */
+extern tree gnat_signed_or_unsigned_type_for (int unsignedp, tree type_node);
 
 /* Return 1 if the types T1 and T2 are compatible, i.e. if they can be
    transparently converted to each other.  */
@@ -898,11 +896,11 @@ extern tree build_call_raise (int msg, Node_Id gnat_node, char kind);
 
 /* Similar to build_call_raise, with extra information about the column
    where the check failed.  */
-extern tree build_call_raise_column (int msg, Node_Id gnat_node);
+extern tree build_call_raise_column (int msg, Node_Id gnat_node, char kind);
 
 /* Similar to build_call_raise_column, for an index or range check exception ,
    with extra information of the form "INDEX out of range FIRST..LAST".  */
-extern tree build_call_raise_range (int msg, Node_Id gnat_node,
+extern tree build_call_raise_range (int msg, Node_Id gnat_node, char kind,
 				    tree index, tree first, tree last);
 
 /* Return a CONSTRUCTOR of TYPE whose elements are V.  This is not the
@@ -1119,4 +1117,20 @@ return_type_with_variable_size_p (tree type)
     return true;
 
   return false;
+}
+
+/* Return the unsigned version of TYPE_NODE, a scalar type.  */
+
+static inline tree
+gnat_unsigned_type_for (tree type_node)
+{
+  return gnat_signed_or_unsigned_type_for (1, type_node);
+}
+
+/* Return the signed version of TYPE_NODE, a scalar type.  */
+
+static inline tree
+gnat_signed_type_for (tree type_node)
+{
+  return gnat_signed_or_unsigned_type_for (0, type_node);
 }

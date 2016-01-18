@@ -1716,7 +1716,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    TYPE_MODULAR_P (gnu_type) = 1;
 	    SET_TYPE_MODULUS (gnu_type, gnu_modulus);
 	    gnu_high = fold_build2 (MINUS_EXPR, gnu_type, gnu_modulus,
-				    convert (gnu_type, integer_one_node));
+				    build_int_cst (gnu_type, 1));
 	  }
 
 	/* If the upper bound is not maximal, make an extra subtype.  */
@@ -2113,8 +2113,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     gnat_index = Next_Index (gnat_index))
 	  {
 	    char field_name[16];
-	    tree gnu_index_base_type
-	      = get_unpadded_type (Base_Type (Etype (gnat_index)));
+	    tree gnu_index_type = get_unpadded_type (Etype (gnat_index));
+	    tree gnu_index_base_type = get_base_type (gnu_index_type);
 	    tree gnu_lb_field, gnu_hb_field, gnu_orig_min, gnu_orig_max;
 	    tree gnu_min, gnu_max, gnu_high;
 
@@ -2173,7 +2173,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    /* Update the maximum size of the array in elements.  */
 	    if (gnu_max_size)
 	      {
-		tree gnu_index_type = get_unpadded_type (Etype (gnat_index));
 		tree gnu_min
 		  = convert (sizetype, TYPE_MIN_VALUE (gnu_index_type));
 		tree gnu_max
@@ -2495,8 +2494,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		{
 		  tree gnu_base_min = convert (sizetype, gnu_base_orig_min);
 		  tree gnu_base_max = convert (sizetype, gnu_base_orig_max);
-		  tree gnu_base_index_base_type
-		    = get_base_type (gnu_base_index_type);
 		  tree gnu_base_base_min
 		    = convert (sizetype,
 			       TYPE_MIN_VALUE (gnu_base_index_base_type));

@@ -1555,12 +1555,12 @@ get_type_length (tree type, tree result_type)
 		       build_binary_op (MINUS_EXPR, comp_type,
 					convert (comp_type, hb),
 					convert (comp_type, lb)),
-		       convert (comp_type, integer_one_node));
+		       build_int_cst (comp_type, 1));
   length
     = build_cond_expr (result_type,
 		       build_binary_op (GE_EXPR, boolean_type_node, hb, lb),
 		       convert (result_type, length),
-		       convert (result_type, integer_zero_node));
+		       build_int_cst (result_type, 0));
   return length;
 }
 
@@ -1637,7 +1637,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       gnu_result
 	= build_binary_op (attribute == Attr_Pred ? MINUS_EXPR : PLUS_EXPR,
 			   gnu_result_type, gnu_expr,
-			   convert (gnu_result_type, integer_one_node));
+			   build_int_cst (gnu_result_type, 1));
       break;
 
     case Attr_Address:
@@ -2508,22 +2508,6 @@ Case_Statement_to_gnu (Node_Id gnat_node)
   gnu_expr = gnat_to_gnu (Expression (gnat_node));
   gnu_expr = convert (get_base_type (TREE_TYPE (gnu_expr)), gnu_expr);
 
-  /*  The range of values in a case statement is determined by the rules in
-      RM 5.4(7-9). In almost all cases, this range is represented by the Etype
-      of the expression. One exception arises in the case of a simple name that
-      is parenthesized. This still has the Etype of the name, but since it is
-      not a name, para 7 does not apply, and we need to go to the base type.
-      This is the only case where parenthesization affects the dynamic
-      semantics (i.e. the range of possible values at run time that is covered
-      by the others alternative).
-
-      Another exception is if the subtype of the expression is non-static.  In
-      that case, we also have to use the base type.  */
-  if (Paren_Count (Expression (gnat_node)) != 0
-      || !Is_OK_Static_Subtype (Underlying_Type
-				(Etype (Expression (gnat_node)))))
-    gnu_expr = convert (get_base_type (TREE_TYPE (gnu_expr)), gnu_expr);
-
   /* We build a SWITCH_EXPR that contains the code with interspersed
      CASE_LABEL_EXPRs for each label.  */
   if (!Sloc_to_locus (End_Location (gnat_node), &end_locus))
@@ -2894,7 +2878,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
       Entity_Id gnat_type = Etype (gnat_loop_var);
       tree gnu_type = get_unpadded_type (gnat_type);
       tree gnu_base_type = get_base_type (gnu_type);
-      tree gnu_one_node = convert (gnu_base_type, integer_one_node);
+      tree gnu_one_node = build_int_cst (gnu_base_type, 1);
       tree gnu_loop_var, gnu_loop_iv, gnu_first, gnu_last, gnu_stmt;
       enum tree_code update_code, test_code, shift_code;
       bool reverse = Reverse_Present (gnat_loop_spec), use_iv = false;
@@ -2990,7 +2974,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 
 	      gnu_first = convert (gnu_base_type, gnu_first);
 	      gnu_last = convert (gnu_base_type, gnu_last);
-	      gnu_one_node = convert (gnu_base_type, integer_one_node);
+	      gnu_one_node = build_int_cst (gnu_base_type, 1);
 	      use_iv = true;
 	    }
 
@@ -4682,12 +4666,14 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	      && (gnu_size = TYPE_SIZE (TREE_TYPE (gnu_actual)))
 	      && TREE_CODE (gnu_size) == INTEGER_CST
 	      && compare_tree_int (gnu_size, BITS_PER_WORD) <= 0)
-	    gnu_actual
-	      = unchecked_convert (DECL_ARG_TYPE (gnu_formal),
-				   convert (gnat_type_for_size
-					    (TREE_INT_CST_LOW (gnu_size), 1),
-					    integer_zero_node),
-				   false);
+	    {
+	      tree type_for_size
+		= gnat_type_for_size (TREE_INT_CST_LOW (gnu_size), 1);
+	      gnu_actual
+		= unchecked_convert (DECL_ARG_TYPE (gnu_formal),
+				     build_int_cst (type_for_size, 0),
+				     false);
+	    }
 	  else
 	    gnu_actual = convert (DECL_ARG_TYPE (gnu_formal), gnu_actual);
 	}
@@ -5497,10 +5483,9 @@ build_noreturn_cond (tree cond)
   return build1 (NOP_EXPR, boolean_type_node, t);
 }
 
-/* Subroutine of gnat_to_gnu to translate gnat_node, an N_Raise_xxx_Error,
-   to a GCC tree, which is returned.  GNU_RESULT_TYPE_P is a pointer to where
-   we should place the result type.  LABEL_P is true if there is a label to
-   branch to for the exception.  */
+/* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Raise_xxx_Error,
+   to a GCC tree and return it.  GNU_RESULT_TYPE_P is a pointer to where
+   we should place the result type.  */
 
 static tree
 Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
@@ -5514,13 +5499,13 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       && !get_exception_label (kind);
   tree gnu_result = NULL_TREE, gnu_cond = NULL_TREE;
 
-  *gnu_result_type_p = get_unpadded_type (Etype (gnat_node));
-
+  /* The following processing is not required for correctness.  Its purpose is
+     to give more precise error messages and to record some information.  */
   switch (reason)
     {
     case CE_Access_Check_Failed:
       if (with_extra_info)
-	gnu_result = build_call_raise_column (reason, gnat_node);
+	gnu_result = build_call_raise_column (reason, gnat_node, kind);
       break;
 
     case CE_Index_Check_Failed:
@@ -5566,7 +5551,7 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	      && Known_Esize (gnat_type)
 	      && UI_To_Int (Esize (gnat_type)) <= 32)
 	    gnu_result
-	      = build_call_raise_range (reason, gnat_node, gnu_index,
+	      = build_call_raise_range (reason, gnat_node, kind, gnu_index,
 					gnu_low_bound, gnu_high_bound);
 
 	  /* If optimization is enabled and we are inside a loop, we try to
@@ -5636,10 +5621,13 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       break;
     }
 
+  /* The following processing does the common work.  */
 common:
   if (!gnu_result)
     gnu_result = build_call_raise (reason, gnat_node, kind);
   set_expr_location_from_node (gnu_result, gnat_node);
+
+  *gnu_result_type_p = get_unpadded_type (Etype (gnat_node));
 
   /* If the type is VOID, this is a statement, so we need to generate the code
      for the call.  Handle a condition, if there is one.  */
@@ -5864,8 +5852,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	gnu_result = DECL_INITIAL (get_gnu_tree (Entity (gnat_node)));
       else
 	gnu_result
-	  = build_int_cst_type
-	      (gnu_result_type, UI_To_CC (Char_Literal_Value (gnat_node)));
+	  = build_int_cst (gnu_result_type,
+			   UI_To_CC (Char_Literal_Value (gnat_node)));
       break;
 
     case N_Real_Literal:
@@ -5893,7 +5881,7 @@ gnat_to_gnu (Node_Id gnat_node)
 			 ur_realval, Round_Even, gnat_node);
 
 	  if (UR_Is_Zero (ur_realval))
-	    gnu_result = convert (gnu_result_type, integer_zero_node);
+	    gnu_result = build_real (gnu_result_type, dconst0);
 	  else
 	    {
 	      REAL_VALUE_TYPE tmp;
@@ -6609,7 +6597,9 @@ gnat_to_gnu (Node_Id gnat_node)
 				    gnu_result_type, gnu_lhs, gnu_rhs);
       break;
 
-    case N_Op_Or:    case N_Op_And:      case N_Op_Xor:
+    case N_Op_And:
+    case N_Op_Or:
+    case N_Op_Xor:
       /* These can either be operations on booleans or on modular types.
 	 Fall through for boolean types since that's the way GNU_CODES is
 	 set up.  */
@@ -6630,16 +6620,24 @@ gnat_to_gnu (Node_Id gnat_node)
 
       /* ... fall through ... */
 
-    case N_Op_Eq:    case N_Op_Ne:	 case N_Op_Lt:
-    case N_Op_Le:    case N_Op_Gt:       case N_Op_Ge:
-    case N_Op_Add:   case N_Op_Subtract: case N_Op_Multiply:
-    case N_Op_Mod:   case N_Op_Rem:
+    case N_Op_Eq:
+    case N_Op_Ne:
+    case N_Op_Lt:
+    case N_Op_Le:
+    case N_Op_Gt:
+    case N_Op_Ge:
+    case N_Op_Add:
+    case N_Op_Subtract:
+    case N_Op_Multiply:
+    case N_Op_Mod:
+    case N_Op_Rem:
     case N_Op_Rotate_Left:
     case N_Op_Rotate_Right:
     case N_Op_Shift_Left:
     case N_Op_Shift_Right:
     case N_Op_Shift_Right_Arithmetic:
-    case N_And_Then: case N_Or_Else:
+    case N_And_Then:
+    case N_Or_Else:
       {
 	enum tree_code code = gnu_codes[kind];
 	bool ignore_lhs_overflow = false;
@@ -6682,8 +6680,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		   build_binary_op (MINUS_EXPR,
 				    gnu_count_type,
 				    gnu_max_shift,
-				    convert (gnu_count_type,
-					     integer_one_node)),
+				    build_int_cst (gnu_count_type, 1)),
 		   gnu_rhs);
 	  }
 
@@ -6693,13 +6690,13 @@ gnat_to_gnu (Node_Id gnat_node)
 	   the way down and causes a CE to be explicitly raised.  */
 	if (kind == N_Op_Shift_Right && !TYPE_UNSIGNED (gnu_type))
 	  {
-	    gnu_type = gnat_unsigned_type (gnu_type);
+	    gnu_type = gnat_unsigned_type_for (gnu_type);
 	    ignore_lhs_overflow = true;
 	  }
 	else if (kind == N_Op_Shift_Right_Arithmetic
 		 && TYPE_UNSIGNED (gnu_type))
 	  {
-	    gnu_type = gnat_signed_type (gnu_type);
+	    gnu_type = gnat_signed_type_for (gnu_type);
 	    ignore_lhs_overflow = true;
 	  }
 
@@ -6715,13 +6712,12 @@ gnat_to_gnu (Node_Id gnat_node)
 	/* Instead of expanding overflow checks for addition, subtraction
 	   and multiplication itself, the front end will leave this to
 	   the back end when Backend_Overflow_Checks_On_Target is set.
-	   As the GCC back end itself does not know yet how to properly
+	   As the back end itself does not know yet how to properly
 	   do overflow checking, do it here.  The goal is to push
 	   the expansions further into the back end over time.  */
-	if (Do_Overflow_Check (gnat_node) && Backend_Overflow_Checks_On_Target
-	    && (kind == N_Op_Add
-		|| kind == N_Op_Subtract
-		|| kind == N_Op_Multiply)
+	if (Do_Overflow_Check (gnat_node)
+	    && Backend_Overflow_Checks_On_Target
+	    && (code == PLUS_EXPR || code == MINUS_EXPR || code == MULT_EXPR)
 	    && !TYPE_UNSIGNED (gnu_type)
 	    && !FLOAT_TYPE_P (gnu_type))
 	  gnu_result = build_binary_op_trapv (code, gnu_type,
@@ -6746,7 +6742,7 @@ gnat_to_gnu (Node_Id gnat_node)
 				gnu_rhs,
 				convert (TREE_TYPE (gnu_rhs),
 					 TYPE_SIZE (gnu_type))),
-	       convert (gnu_type, integer_zero_node),
+	       build_int_cst (gnu_type, 0),
 	       gnu_result);
       }
       break;
@@ -6784,7 +6780,8 @@ gnat_to_gnu (Node_Id gnat_node)
 
       /* ... fall through ... */
 
-    case N_Op_Minus:  case N_Op_Abs:
+    case N_Op_Minus:
+    case N_Op_Abs:
       gnu_expr = gnat_to_gnu (Right_Opnd (gnat_node));
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
@@ -7382,7 +7379,7 @@ gnat_to_gnu (Node_Id gnat_node)
 				  true, true, NULL, gnat_node);
 
       add_stmt (build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_incoming_exc_ptr,
-				 convert (ptr_type_node, integer_zero_node)));
+				 build_int_cst (ptr_type_node, 0)));
       add_stmt (build_call_n_expr (reraise_zcx_decl, 1, gnu_expr));
       gnat_poplevel ();
       gnu_result = end_stmt_group ();
@@ -8861,7 +8858,7 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
   tree rhs = gnat_protect_expr (right);
   tree type_max = TYPE_MAX_VALUE (gnu_type);
   tree type_min = TYPE_MIN_VALUE (gnu_type);
-  tree zero = convert (gnu_type, integer_zero_node);
+  tree zero = build_int_cst (gnu_type, 0);
   tree gnu_expr, rhs_lt_zero, tmp1, tmp2;
   tree check_pos, check_neg, check;
 
@@ -9151,7 +9148,9 @@ emit_check (tree gnu_cond, tree gnu_expr, int reason, Node_Id gnat_node)
   return
     fold_build3 (COND_EXPR, TREE_TYPE (gnu_expr), gnu_cond,
 		 build2 (COMPOUND_EXPR, TREE_TYPE (gnu_expr), gnu_call,
-			 convert (TREE_TYPE (gnu_expr), integer_zero_node)),
+			 SCALAR_FLOAT_TYPE_P (TREE_TYPE (gnu_expr))
+			 ? build_real (TREE_TYPE (gnu_expr), dconst0)
+			 : build_int_cst (TREE_TYPE (gnu_expr), 0)),
 		 gnu_expr);
 }
 
@@ -9207,17 +9206,21 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
 	 comparing them properly.  Likewise, convert the upper bounds
 	 to unsigned types.  */
       if (INTEGRAL_TYPE_P (gnu_in_basetype) && TYPE_UNSIGNED (gnu_in_basetype))
-	gnu_in_lb = convert (gnat_signed_type (gnu_in_basetype), gnu_in_lb);
+	gnu_in_lb
+	  = convert (gnat_signed_type_for (gnu_in_basetype), gnu_in_lb);
 
       if (INTEGRAL_TYPE_P (gnu_in_basetype)
 	  && !TYPE_UNSIGNED (gnu_in_basetype))
-	gnu_in_ub = convert (gnat_unsigned_type (gnu_in_basetype), gnu_in_ub);
+	gnu_in_ub
+	  = convert (gnat_unsigned_type_for (gnu_in_basetype), gnu_in_ub);
 
       if (INTEGRAL_TYPE_P (gnu_base_type) && TYPE_UNSIGNED (gnu_base_type))
-	gnu_out_lb = convert (gnat_signed_type (gnu_base_type), gnu_out_lb);
+	gnu_out_lb
+	  = convert (gnat_signed_type_for (gnu_base_type), gnu_out_lb);
 
       if (INTEGRAL_TYPE_P (gnu_base_type) && !TYPE_UNSIGNED (gnu_base_type))
-	gnu_out_ub = convert (gnat_unsigned_type (gnu_base_type), gnu_out_ub);
+	gnu_out_ub
+	  = convert (gnat_unsigned_type_for (gnu_base_type), gnu_out_ub);
 
       /* Check each bound separately and only if the result bound
 	 is tighter than the bound on the input type.  Note that all the
@@ -9301,7 +9304,7 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
 	 to be scheduled in parallel with retrieval of the constant and
 	 conversion of the input to the calc_type (if necessary).  */
 
-      gnu_zero = convert (gnu_in_basetype, integer_zero_node);
+      gnu_zero = build_real (gnu_in_basetype, dconst0);
       gnu_result = gnat_protect_expr (gnu_result);
       gnu_conv = convert (calc_type, gnu_result);
       gnu_comp
@@ -10122,9 +10125,6 @@ get_elaboration_procedure (void)
 static void
 init_code_table (void)
 {
-  gnu_codes[N_And_Then] = TRUTH_ANDIF_EXPR;
-  gnu_codes[N_Or_Else] = TRUTH_ORIF_EXPR;
-
   gnu_codes[N_Op_And] = TRUTH_AND_EXPR;
   gnu_codes[N_Op_Or] = TRUTH_OR_EXPR;
   gnu_codes[N_Op_Xor] = TRUTH_XOR_EXPR;
@@ -10147,6 +10147,8 @@ init_code_table (void)
   gnu_codes[N_Op_Shift_Left] = LSHIFT_EXPR;
   gnu_codes[N_Op_Shift_Right] = RSHIFT_EXPR;
   gnu_codes[N_Op_Shift_Right_Arithmetic] = RSHIFT_EXPR;
+  gnu_codes[N_And_Then] = TRUTH_ANDIF_EXPR;
+  gnu_codes[N_Or_Else] = TRUTH_ORIF_EXPR;
 }
 
 #include "gt-ada-trans.h"

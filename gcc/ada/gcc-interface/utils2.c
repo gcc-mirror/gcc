@@ -592,7 +592,7 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
       result = gnat_protect_expr (result);
       result = fold_build3 (COND_EXPR, op_type,
 			    fold_build2 (LT_EXPR, boolean_type_node, result,
-					 convert (op_type, integer_zero_node)),
+					 build_int_cst (op_type, 0)),
 			    fold_build2 (PLUS_EXPR, op_type, result, modulus),
 			    result);
     }
@@ -1601,8 +1601,8 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	      {
 		if (integer_pow2p (fold_build2 (PLUS_EXPR, operation_type,
 						modulus,
-						convert (operation_type,
-							 integer_one_node))))
+						build_int_cst (operation_type,
+							       1))))
 		  result = fold_build2 (BIT_XOR_EXPR, operation_type,
 					operand, modulus);
 		else
@@ -1613,9 +1613,8 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 				      fold_build2 (NE_EXPR,
 						   boolean_type_node,
 						   operand,
-						   convert
-						     (operation_type,
-						      integer_zero_node)),
+						   build_int_cst
+						   (operation_type, 0)),
 				      result, operand);
 	      }
 	    else
@@ -1626,8 +1625,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 		   that constant for nonbinary modulus.  */
 
 		tree cnst = fold_build2 (MINUS_EXPR, operation_type, modulus,
-					 convert (operation_type,
-						  integer_one_node));
+					 build_int_cst (operation_type, 1));
 
 		if (mod_pow2)
 		  result = fold_build2 (BIT_XOR_EXPR, operation_type,
@@ -1748,6 +1746,32 @@ build_call_n_expr (tree fndecl, int n, ...)
   return fn;
 }
 
+/* Build a goto to LABEL for a raise, with an optional call to Local_Raise.
+   MSG gives the exception's identity for the call to Local_Raise, if any.  */
+
+static tree
+build_goto_raise (tree label, int msg)
+{
+  tree gnu_result = build1 (GOTO_EXPR, void_type_node, label);
+  Entity_Id local_raise = Get_Local_Raise_Call_Entity ();
+
+  /* If Local_Raise is present, build Local_Raise (Exception'Identity).  */
+  if (Present (local_raise))
+    {
+      tree gnu_local_raise = gnat_to_gnu_entity (local_raise, NULL_TREE, 0);
+      tree gnu_exception_entity
+	= gnat_to_gnu_entity (Get_RT_Exception_Entity (msg), NULL_TREE, 0);
+      tree gnu_call
+	= build_call_n_expr (gnu_local_raise, 1,
+			     build_unary_op (ADDR_EXPR, NULL_TREE,
+					     gnu_exception_entity));
+      gnu_result
+	= build2 (COMPOUND_EXPR, void_type_node, gnu_call, gnu_result);
+    }
+
+  return gnu_result;
+}
+
 /* Expand the SLOC of GNAT_NODE, if present, into tree location information
    pointed to by FILENAME, LINE and COL.  Fall back to the current location
    if GNAT_NODE is absent or has no SLOC.  */
@@ -1803,27 +1827,7 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
 
   /* If this is to be done as a goto, handle that case.  */
   if (label)
-    {
-      Entity_Id local_raise = Get_Local_Raise_Call_Entity ();
-      tree gnu_result = build1 (GOTO_EXPR, void_type_node, label);
-
-      /* If Local_Raise is present, build Local_Raise (Exception'Identity).  */
-      if (Present (local_raise))
-	{
-	  tree gnu_local_raise
-	    = gnat_to_gnu_entity (local_raise, NULL_TREE, 0);
-	  tree gnu_exception_entity
-	    = gnat_to_gnu_entity (Get_RT_Exception_Entity (msg), NULL_TREE, 0);
-	  tree gnu_call
-	    = build_call_n_expr (gnu_local_raise, 1,
-				 build_unary_op (ADDR_EXPR, NULL_TREE,
-						 gnu_exception_entity));
-	  gnu_result
-	    = build2 (COMPOUND_EXPR, void_type_node, gnu_call, gnu_result);
-	}
-
-      return gnu_result;
-    }
+    return build_goto_raise (label, msg);
 
   expand_sloc (gnat_node, &filename, &line, NULL);
 
@@ -1839,10 +1843,15 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
    where the check failed.  */
 
 tree
-build_call_raise_column (int msg, Node_Id gnat_node)
+build_call_raise_column (int msg, Node_Id gnat_node, char kind)
 {
   tree fndecl = gnat_raise_decls_ext[msg];
+  tree label = get_exception_label (kind);
   tree filename, line, col;
+
+  /* If this is to be done as a goto, handle that case.  */
+  if (label)
+    return build_goto_raise (label, msg);
 
   expand_sloc (gnat_node, &filename, &line, &col);
 
@@ -1858,11 +1867,16 @@ build_call_raise_column (int msg, Node_Id gnat_node)
    with extra information of the form "INDEX out of range FIRST..LAST".  */
 
 tree
-build_call_raise_range (int msg, Node_Id gnat_node,
+build_call_raise_range (int msg, Node_Id gnat_node, char kind,
 			tree index, tree first, tree last)
 {
   tree fndecl = gnat_raise_decls_ext[msg];
+  tree label = get_exception_label (kind);
   tree filename, line, col;
+
+  /* If this is to be done as a goto, handle that case.  */
+  if (label)
+    return build_goto_raise (label, msg);
 
   expand_sloc (gnat_node, &filename, &line, &col);
 
