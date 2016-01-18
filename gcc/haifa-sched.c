@@ -5599,8 +5599,8 @@ autopref_multipass_init (const rtx_insn *insn, int write)
 
       int i = 0;
       rtx prev_base = NULL_RTX;
-      int min_offset;
-      int max_offset;
+      int min_offset = 0;
+      int max_offset = 0;
 
       for (i = 0; i < n_elems; i++)
 	{
