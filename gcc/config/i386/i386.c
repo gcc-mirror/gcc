@@ -2815,7 +2815,11 @@ scalar_to_vector_candidate_p (rtx_insn *insn)
       return false;
     }
 
-  if (!REG_P (XEXP (src, 0)) && !MEM_P (XEXP (src, 0)))
+  if (!REG_P (XEXP (src, 0)) && !MEM_P (XEXP (src, 0))
+      /* Check for andnot case.  */
+      && (GET_CODE (src) != AND
+	  || GET_CODE (XEXP (src, 0)) != NOT
+	  || !REG_P (XEXP (XEXP (src, 0), 0))))
       return false;
 
   if (!REG_P (XEXP (src, 1)) && !MEM_P (XEXP (src, 1)))
@@ -3383,7 +3387,12 @@ scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 {
   *op = copy_rtx_if_shared (*op);
 
-  if (MEM_P (*op))
+  if (GET_CODE (*op) == NOT)
+    {
+      convert_op (&XEXP (*op, 0), insn);
+      PUT_MODE (*op, V2DImode);
+    }
+  else if (MEM_P (*op))
     {
       rtx tmp = gen_reg_rtx (DImode);
 

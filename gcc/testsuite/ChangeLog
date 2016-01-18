@@ -1,3 +1,7 @@
+2016-01-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* gcc.target/i386/pr65105-5.c: Adjust to andn generation.
+
 2016-01-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/inline12.adb: New test.
