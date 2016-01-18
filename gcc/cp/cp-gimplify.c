@@ -2125,9 +2125,22 @@ cp_fold (tree x)
       {
 	unsigned i;
 	constructor_elt *p;
+	bool changed = false;
 	vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (x);
+	vec<constructor_elt, va_gc> *nelts = NULL;
+	vec_safe_reserve (nelts, vec_safe_length (elts));
 	FOR_EACH_VEC_SAFE_ELT (elts, i, p)
-	  p->value = cp_fold (p->value);
+	  {
+	    tree op = cp_fold (p->value);
+	    constructor_elt e = { p->index, op };
+	    nelts->quick_push (e);
+	    if (op != p->value)
+	      changed = true;
+	  }
+	if (changed)
+	  x = build_constructor (TREE_TYPE (x), nelts);
+	else
+	  vec_free (nelts);
 	break;
       }
     case TREE_VEC:

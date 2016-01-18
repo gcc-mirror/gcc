@@ -1,5 +1,7 @@
 2016-01-18  Jason Merrill  <jason@redhat.com>
 
+	* cp-gimplify.c (cp_fold) [CONSTRUCTOR]: Don't clobber the input.
+
 	* cp-gimplify.c (cp_fold): Remove unnecessary special cases.
 
 	PR c++/68767
