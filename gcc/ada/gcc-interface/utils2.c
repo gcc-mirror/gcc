@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -223,8 +223,8 @@ find_common_type (tree t1, tree t2)
 	  || (TYPE_SIZE (t1) == TYPE_SIZE (t2)
 	      && !(TREE_CODE (t1) == RECORD_TYPE
 		   && TREE_CODE (t2) == RECORD_TYPE
-		   && get_variant_part (t1) != NULL_TREE
-		   && get_variant_part (t2) == NULL_TREE))))
+		   && get_variant_part (t1)
+		   && !get_variant_part (t2)))))
     return t1;
 
   /* Otherwise, if the lhs type is non-BLKmode, use it.  Note that we know
@@ -852,7 +852,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
     {
     case INIT_EXPR:
     case MODIFY_EXPR:
-      gcc_checking_assert (result_type == NULL_TREE);
+      gcc_checking_assert (!result_type);
 
       /* If there were integral or pointer conversions on the LHS, remove
 	 them; we'll be putting them back below if needed.  Likewise for
@@ -2408,7 +2408,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 }
 
 /* Indicate that we need to take the address of T and that it therefore
-   should not be allocated in a register.  Returns true if successful.  */
+   should not be allocated in a register.  Return true if successful.  */
 
 bool
 gnat_mark_addressable (tree t)
@@ -2704,7 +2704,7 @@ gnat_rewrite_reference (tree ref, rewrite_fn func, void *data, tree *init)
       break;
 
     case COMPOUND_EXPR:
-      gcc_assert (*init == NULL_TREE);
+      gcc_assert (!*init);
       *init = TREE_OPERAND (ref, 0);
       /* We expect only the pattern built in Call_to_gnu.  */
       gcc_assert (DECL_P (TREE_OPERAND (ref, 1))
@@ -2778,7 +2778,7 @@ get_inner_constant_reference (tree exp)
 	  break;
 
 	case COMPONENT_REF:
-	  if (TREE_OPERAND (exp, 2) != NULL_TREE)
+	  if (TREE_OPERAND (exp, 2))
 	    return NULL_TREE;
 
 	  if (!TREE_CONSTANT (DECL_FIELD_OFFSET (TREE_OPERAND (exp, 1))))
@@ -2788,8 +2788,7 @@ get_inner_constant_reference (tree exp)
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
 	  {
-	    if (TREE_OPERAND (exp, 2) != NULL_TREE
-	        || TREE_OPERAND (exp, 3) != NULL_TREE)
+	    if (TREE_OPERAND (exp, 2) || TREE_OPERAND (exp, 3))
 	      return NULL_TREE;
 
 	    tree array_type = TREE_TYPE (TREE_OPERAND (exp, 0));
@@ -2917,7 +2916,7 @@ gnat_invariant_expr (tree expr)
       switch (TREE_CODE (t))
 	{
 	case COMPONENT_REF:
-	  if (TREE_OPERAND (t, 2) != NULL_TREE)
+	  if (TREE_OPERAND (t, 2))
 	    return NULL_TREE;
 	  invariant_p |= DECL_INVARIANT_P (TREE_OPERAND (t, 1));
 	  break;
@@ -2925,8 +2924,8 @@ gnat_invariant_expr (tree expr)
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
 	  if (!TREE_CONSTANT (TREE_OPERAND (t, 1))
-	      || TREE_OPERAND (t, 2) != NULL_TREE
-	      || TREE_OPERAND (t, 3) != NULL_TREE)
+	      || TREE_OPERAND (t, 2)
+	      || TREE_OPERAND (t, 3))
 	    return NULL_TREE;
 	  break;
 

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1002,7 +1002,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 		/* We cannot evaluate the first arm of a COMPOUND_EXPR in the
 		   correct place for this case, hence the above test.  */
-		gcc_assert (init == NULL_TREE);
+		gcc_assert (!init);
 
 		/* No DECL_EXPR will be created so the expression needs to be
 		   marked manually because it will likely be shared.  */
@@ -2551,14 +2551,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 types, are biased or are wider than sizetype.  These are GNAT
 		 encodings, so we have to include them only when all encodings
 		 are requested.  */
-	      if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL
-		  && (TREE_CODE (gnu_orig_min) != INTEGER_CST
-		      || TREE_CODE (gnu_orig_max) != INTEGER_CST
-		      || TREE_CODE (gnu_index_type) != INTEGER_TYPE
-		      || (TREE_TYPE (gnu_index_type)
-			  && TREE_CODE (TREE_TYPE (gnu_index_type))
-			     != INTEGER_TYPE)
-		      || TYPE_BIASED_REPRESENTATION_P (gnu_index_type)))
+	      if ((TREE_CODE (gnu_orig_min) != INTEGER_CST
+		   || TREE_CODE (gnu_orig_max) != INTEGER_CST
+		   || TREE_CODE (gnu_index_type) != INTEGER_TYPE
+		   || (TREE_TYPE (gnu_index_type)
+		       && TREE_CODE (TREE_TYPE (gnu_index_type))
+			  != INTEGER_TYPE)
+		   || TYPE_BIASED_REPRESENTATION_P (gnu_index_type))
+		  && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
 		need_index_type_struct = true;
 	    }
 
@@ -2621,8 +2621,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    }
 
 	  /* Strip the ___XP suffix for standard DWARF.  */
-	  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL
-	      && Is_Packed_Array_Impl_Type (gnat_entity))
+	  if (Is_Packed_Array_Impl_Type (gnat_entity)
+	      && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
 	    {
 	      Entity_Id gnat_original_array_type
 		= Underlying_Type (Original_Array_Type (gnat_entity));
@@ -2717,8 +2717,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		{
 		  tree gnu_base_decl
 		    = gnat_to_gnu_entity (Etype (gnat_entity), NULL_TREE, 0);
-		  if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL
-		      && !DECL_ARTIFICIAL (gnu_base_decl))
+		  if (!DECL_ARTIFICIAL (gnu_base_decl)
+		      && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
 		    add_parallel_type (gnu_type,
 				       TREE_TYPE (TREE_TYPE (gnu_base_decl)));
 		}
@@ -4279,7 +4279,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		&& Present (gnat_renamed)
 		&& (Ekind (gnat_renamed) == E_Function
 		    || Ekind (gnat_renamed) == E_Procedure)
-		&& gnu_decl != NULL_TREE
+		&& gnu_decl
 		&& TREE_CODE (gnu_decl) == FUNCTION_DECL)
 	      {
 		tree decl = build_decl (input_location, IMPORTED_DECL,
@@ -4306,7 +4306,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       to let developers be notified on demand without risking false
 	       positives with common default sets of options.  */
 
-	    if (gnu_builtin_decl == NULL_TREE && warn_shadow)
+	    if (!gnu_builtin_decl && warn_shadow)
 	      post_error ("?gcc intrinsic not found for&!", gnat_entity);
 	  }
 
@@ -6171,8 +6171,8 @@ initial_value_needs_conversion (tree gnu_type, tree gnu_expr)
      without one, to keep the object simpler.  */
   if (TREE_CODE (gnu_type) == RECORD_TYPE
       && TREE_CODE (TREE_TYPE (gnu_expr)) == RECORD_TYPE
-      && get_variant_part (gnu_type) != NULL_TREE
-      && get_variant_part (TREE_TYPE (gnu_expr)) == NULL_TREE)
+      && get_variant_part (gnu_type)
+      && !get_variant_part (TREE_TYPE (gnu_expr)))
     return false;
 
   /* In all the other cases, convert the expression to the object's type.  */
@@ -8527,17 +8527,17 @@ intrin_arglists_compatible_p (intrin_binding_t * inb)
   /* Sequence position of the last argument we checked.  */
   int argpos = 0;
 
-  while (1)
+  while (true)
     {
       tree ada_type = function_args_iter_cond (&ada_iter);
       tree btin_type = function_args_iter_cond (&btin_iter);
 
       /* If we've exhausted both lists simultaneously, we're done.  */
-      if (ada_type == NULL_TREE && btin_type == NULL_TREE)
+      if (!ada_type && !btin_type)
 	break;
 
       /* If one list is shorter than the other, they fail to match.  */
-      if (ada_type == NULL_TREE || btin_type == NULL_TREE)
+      if (!ada_type || !btin_type)
 	return false;
 
       /* If we're done with the Ada args and not with the internal builtin
