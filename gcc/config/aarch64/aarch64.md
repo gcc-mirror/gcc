@@ -1590,96 +1590,120 @@
     (plus:GPI (match_operand:GPI 1 "register_operand" "")
 	      (match_operand:GPI 2 "aarch64_pluslong_operand" "")))]
   ""
-  "
-  if (!aarch64_plus_operand (operands[2], VOIDmode))
+{
+  if (aarch64_pluslong_strict_immedate (operands[2], <MODE>mode))
     {
-      if (can_create_pseudo_p ())
+      /* Give CSE the opportunity to share this constant across additions.  */
+      if (!cse_not_expected && can_create_pseudo_p ())
+        operands[2] = force_reg (<MODE>mode, operands[2]);
+
+      /* Split will refuse to operate on a modification to the stack pointer.
+	 Aid the prologue and epilogue expanders by splitting this now.  */
+      else if (reload_completed && operands[0] == stack_pointer_rtx)
 	{
-	  rtx tmp = gen_reg_rtx (<MODE>mode);
-	  emit_move_insn (tmp, operands[2]);
-	  operands[2] = tmp;
-	}
-      else
-	{
-	  HOST_WIDE_INT imm = INTVAL (operands[2]);
-	  imm = imm >= 0 ? imm & 0xfff : -(-imm & 0xfff);
-	  emit_insn (gen_add<mode>3 (operands[0], operands[1],
-				     GEN_INT (INTVAL (operands[2]) - imm)));
+	  HOST_WIDE_INT i = INTVAL (operands[2]);
+	  HOST_WIDE_INT s = (i >= 0 ? i & 0xfff : -(-i & 0xfff));
+	  emit_insn (gen_rtx_SET (operands[0],
+				  gen_rtx_PLUS (<MODE>mode, operands[1],
+						GEN_INT (i - s))));
 	  operands[1] = operands[0];
-	  operands[2] = GEN_INT (imm);
+	  operands[2] = GEN_INT (s);
 	}
     }
-  "
-)
+})
 
-;; Find add with a 2-instruction immediate and merge into 2 add instructions.
-
-(define_insn_and_split "*add<mode>3_pluslong"
+(define_insn "*add<mode>3_aarch64"
   [(set
-    (match_operand:GPI 0 "register_operand" "=r")
-    (plus:GPI (match_operand:GPI 1 "register_operand" "r")
-	      (match_operand:GPI 2 "aarch64_pluslong_immediate" "i")))]
-  "!aarch64_plus_operand (operands[2], VOIDmode)
-   && !aarch64_move_imm (INTVAL (operands[2]), <MODE>mode)"
-  "#"
-  "&& true"
-  [(set (match_dup 0) (plus:GPI (match_dup 1) (match_dup 3)))
-   (set (match_dup 0) (plus:GPI (match_dup 0) (match_dup 4)))]
-  "
-    {
-      HOST_WIDE_INT imm = INTVAL (operands[2]);
-      imm = imm >= 0 ? imm & 0xfff : -(-imm & 0xfff);
-      operands[3] = GEN_INT (INTVAL (operands[2]) - imm);
-      operands[4] = GEN_INT (imm);
-    }
-  "
-)
-
-(define_insn "*addsi3_aarch64"
-  [(set
-    (match_operand:SI 0 "register_operand" "=rk,rk,w,rk")
-    (plus:SI
-     (match_operand:SI 1 "register_operand" "%rk,rk,w,rk")
-     (match_operand:SI 2 "aarch64_plus_operand" "I,r,w,J")))]
+    (match_operand:GPI 0 "register_operand" "=rk,rk,w,rk,r")
+    (plus:GPI
+     (match_operand:GPI 1 "register_operand" "%rk,rk,w,rk,rk")
+     (match_operand:GPI 2 "aarch64_pluslong_operand" "I,r,w,J,Upl")))]
   ""
   "@
-  add\\t%w0, %w1, %2
-  add\\t%w0, %w1, %w2
-  add\\t%0.2s, %1.2s, %2.2s
-  sub\\t%w0, %w1, #%n2"
-  [(set_attr "type" "alu_imm,alu_sreg,neon_add,alu_imm")
-   (set_attr "simd" "*,*,yes,*")]
+  add\\t%<w>0, %<w>1, %2
+  add\\t%<w>0, %<w>1, %<w>2
+  add\\t%<rtn>0<vas>, %<rtn>1<vas>, %<rtn>2<vas>
+  sub\\t%<w>0, %<w>1, #%n2
+  #"
+  [(set_attr "type" "alu_imm,alu_sreg,neon_add,alu_imm,multiple")
+   (set_attr "simd" "*,*,yes,*,*")]
 )
 
 ;; zero_extend version of above
 (define_insn "*addsi3_aarch64_uxtw"
   [(set
-    (match_operand:DI 0 "register_operand" "=rk,rk,rk")
+    (match_operand:DI 0 "register_operand" "=rk,rk,rk,r")
     (zero_extend:DI
-     (plus:SI (match_operand:SI 1 "register_operand" "%rk,rk,rk")
-              (match_operand:SI 2 "aarch64_plus_operand" "I,r,J"))))]
+     (plus:SI (match_operand:SI 1 "register_operand" "%rk,rk,rk,rk")
+              (match_operand:SI 2 "aarch64_pluslong_operand" "I,r,J,Upl"))))]
   ""
   "@
   add\\t%w0, %w1, %2
   add\\t%w0, %w1, %w2
-  sub\\t%w0, %w1, #%n2"
-  [(set_attr "type" "alu_imm,alu_sreg,alu_imm")]
+  sub\\t%w0, %w1, #%n2
+  #"
+  [(set_attr "type" "alu_imm,alu_sreg,alu_imm,multiple")]
 )
 
-(define_insn "*adddi3_aarch64"
-  [(set
-    (match_operand:DI 0 "register_operand" "=rk,rk,rk,w")
-    (plus:DI
-     (match_operand:DI 1 "register_operand" "%rk,rk,rk,w")
-     (match_operand:DI 2 "aarch64_plus_operand" "I,r,J,w")))]
-  ""
-  "@
-  add\\t%x0, %x1, %2
-  add\\t%x0, %x1, %x2
-  sub\\t%x0, %x1, #%n2
-  add\\t%d0, %d1, %d2"
-  [(set_attr "type" "alu_imm,alu_sreg,alu_imm,neon_add")
-   (set_attr "simd" "*,*,*,yes")]
+;; If there's a free register, and we can load the constant with a
+;; single instruction, do so.  This has a chance to improve scheduling.
+(define_peephole2
+  [(match_scratch:GPI 3 "r")
+   (set (match_operand:GPI 0 "register_operand")
+	(plus:GPI
+	  (match_operand:GPI 1 "register_operand")
+	  (match_operand:GPI 2 "aarch64_pluslong_strict_immedate")))]
+  "aarch64_move_imm (INTVAL (operands[2]), <MODE>mode)"
+  [(set (match_dup 3) (match_dup 2))
+   (set (match_dup 0) (plus:GPI (match_dup 1) (match_dup 3)))]
+)
+
+(define_peephole2
+  [(match_scratch:SI 3 "r")
+   (set (match_operand:DI 0 "register_operand")
+	(zero_extend:DI
+	  (plus:SI
+	    (match_operand:SI 1 "register_operand")
+	    (match_operand:SI 2 "aarch64_pluslong_strict_immedate"))))]
+  "aarch64_move_imm (INTVAL (operands[2]), SImode)"
+  [(set (match_dup 3) (match_dup 2))
+   (set (match_dup 0) (zero_extend:DI (plus:SI (match_dup 1) (match_dup 3))))]
+)
+
+;; After peephole2 has had a chance to run, split any remaining long
+;; additions into two add immediates.
+(define_split
+  [(set (match_operand:GPI 0 "register_operand")
+	(plus:GPI
+	  (match_operand:GPI 1 "register_operand")
+	  (match_operand:GPI 2 "aarch64_pluslong_strict_immedate")))]
+  "epilogue_completed"
+  [(set (match_dup 0) (plus:GPI (match_dup 1) (match_dup 3)))
+   (set (match_dup 0) (plus:GPI (match_dup 0) (match_dup 4)))]
+  {
+    HOST_WIDE_INT i = INTVAL (operands[2]);
+    HOST_WIDE_INT s = (i >= 0 ? i & 0xfff : -(-i & 0xfff));
+    operands[3] = GEN_INT (i - s);
+    operands[4] = GEN_INT (s);
+  }
+)
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(zero_extend:DI
+	  (plus:SI
+	    (match_operand:SI 1 "register_operand")
+	    (match_operand:SI 2 "aarch64_pluslong_strict_immedate"))))]
+  "epilogue_completed"
+  [(set (match_dup 5) (plus:SI (match_dup 1) (match_dup 3)))
+   (set (match_dup 0) (zero_extend:DI (plus:SI (match_dup 5) (match_dup 4))))]
+  {
+    HOST_WIDE_INT i = INTVAL (operands[2]);
+    HOST_WIDE_INT s = (i >= 0 ? i & 0xfff : -(-i & 0xfff));
+    operands[3] = GEN_INT (i - s);
+    operands[4] = GEN_INT (s);
+    operands[5] = gen_lowpart (SImode, operands[0]);
+  }
 )
 
 (define_expand "addti3"

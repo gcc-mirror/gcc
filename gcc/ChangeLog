@@ -1,3 +1,18 @@
+2016-01-18  Richard Henderson  <rth@redhat.com>
+
+	PR target/69176
+	* config/aarch64/aarch64.md (add<GPI>3): Move long immediate
+	operands to pseudo only if CSE is expected.  Split long immediate
+	operands only after reload, and for the stack pointer.
+	(*add<GPI>3_pluslong): Remove.
+	(*addsi3_aarch64, *adddi3_aarch64): Merge into...
+	(*add<GPI>3_aarch64): ... here.  Add r/rk/Upl alternative.
+	(*addsi3_aarch64_uxtw): Add r/rk/Upl alternative.
+	(*add<GPI>3 peepholes): New.
+	(*add<GPI>3 splitters): New.
+	* config/aarch64/constraints.md (Upl): New.
+	* config/aarch64/predicates.md (aarch64_pluslong_strict_immedate): New.
+
 2016-01-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69297
@@ -408,7 +423,7 @@
 
 2016-01-14  Nicklas Bo Jensen  <nbjensen@gmail.com>
 
-        * doc/loop.texi (Loop Analysis and Representation): Document
+	* doc/loop.texi (Loop Analysis and Representation): Document
 	loop_depth function.
 
 2016-01-14  Tom de Vries  <tom@codesourcery.com>

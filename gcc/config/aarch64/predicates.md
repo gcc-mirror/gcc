@@ -107,6 +107,10 @@
   (and (match_code "const_int")
        (match_test "(INTVAL (op) < 0xffffff && INTVAL (op) > -0xffffff)")))
 
+(define_predicate "aarch64_pluslong_strict_immedate"
+  (and (match_operand 0 "aarch64_pluslong_immediate")
+       (not (match_operand 0 "aarch64_plus_immediate"))))
+
 (define_predicate "aarch64_pluslong_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_pluslong_immediate")))
