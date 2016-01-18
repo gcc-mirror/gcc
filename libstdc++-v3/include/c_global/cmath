@@ -880,7 +880,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     signbit(_Tp __f)
     {
       typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
-      return __builtin_signbit(__type(__f));
+      return sizeof(__type) == sizeof(float)
+	? __builtin_signbitf(__type(__f))
+	: sizeof(__type) == sizeof(double)
+	? __builtin_signbit(__type(__f))
+	: __builtin_signbitl(__type(__f));
     }
 
   template<typename _Tp>
