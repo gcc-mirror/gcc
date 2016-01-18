@@ -1,3 +1,8 @@
+2016-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69170
+	* gcc.dg/torture/pr69170.c: New testcase.
+
 2016-01-17 John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/torture/builtin-integral-1.c: Require c99_runtime.

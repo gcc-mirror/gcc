@@ -966,7 +966,12 @@ vect_build_slp_tree (vec_info *vinfo,
 	{
 	  /* If we have all children of child built up from scalars then just
 	     throw that away and build it up this node from scalars.  */
-	  if (!SLP_TREE_CHILDREN (child).is_empty ())
+	  if (!SLP_TREE_CHILDREN (child).is_empty ()
+	      /* ???  Rejecting patterns this way doesn't work.  We'd have to
+		 do extra work to cancel the pattern so the uses see the
+		 scalar version.  */
+	      && !is_pattern_stmt_p
+	            (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (child)[0])))
 	    {
 	      slp_tree grandchild;
 
@@ -1110,7 +1115,12 @@ vect_build_slp_tree (vec_info *vinfo,
 
 	      /* If we have all children of child built up from scalars then
 		 just throw that away and build it up this node from scalars.  */
-	      if (!SLP_TREE_CHILDREN (child).is_empty ())
+	      if (!SLP_TREE_CHILDREN (child).is_empty ()
+		  /* ???  Rejecting patterns this way doesn't work.  We'd have
+		     to do extra work to cancel the pattern so the uses see the
+		     scalar version.  */
+		  && !is_pattern_stmt_p
+			(vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (child)[0])))
 		{
 		  unsigned int j;
 		  slp_tree grandchild;
