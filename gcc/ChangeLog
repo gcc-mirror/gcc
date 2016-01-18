@@ -1,3 +1,10 @@
+2016-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69297
+	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Count each scalar
+	stmt at most once.
+	(vect_bb_vectorization_profitable_p): Clear visited flag again.
+
 2016-01-18  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR middle-end/68542
