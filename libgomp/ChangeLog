@@ -1,3 +1,30 @@
+2016-01-18  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-3.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-2.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-3.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-4.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-5.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-6.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-collapse.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-data-2.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-data-enter-exit-2.c:
+	Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-data-enter-exit.c:
+	Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-data-update.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-data.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-g.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-mod-not-zero.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-n.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-nest.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-parallel-loop-data-enter-exit.c:
+	Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-reduction.c: Same.
+
 2016-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* task.c (GOMP_PLUGIN_target_task_completion): Add missing return.
