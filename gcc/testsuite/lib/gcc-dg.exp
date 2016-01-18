@@ -826,33 +826,21 @@ proc output-exists-not { args } {
 if { [info procs saved-dg-test] == [list] } {
     rename dg-test saved-dg-test
 
-    proc dg-test { args } {
+    # Helper function for cleanups that should happen after the call
+    # to the real dg-test, whether or not it returns normally, or
+    # fails with an error.
+    proc cleanup-after-saved-dg-test { } {
 	global additional_files
 	global additional_sources
+	global additional_sources_used
 	global additional_prunes
-	global errorInfo
 	global compiler_conditional_xfail_data
 	global shouldfail
 	global testname_with_flags
 	global set_target_env_var
 	global keep_saved_temps_suffixes
+	global multiline_expected_outputs
 
-	if { [ catch { eval saved-dg-test $args } errmsg ] } {
-	    set saved_info $errorInfo
-	    set additional_files ""
-	    set additional_sources ""
-	    set additional_sources_used ""
-	    set additional_prunes ""
-	    set shouldfail 0
-	    if [info exists compiler_conditional_xfail_data] {
-		unset compiler_conditional_xfail_data
-	    }
-	    if [info exists testname_with_flags] {
-		unset testname_with_flags
-	    }
-	    unset_timeout_vars
-	    error $errmsg $saved_info
-	}
 	set additional_files ""
 	set additional_sources ""
 	set additional_sources_used ""
@@ -871,6 +859,18 @@ if { [info procs saved-dg-test] == [list] } {
 	if [info exists testname_with_flags] {
 	    unset testname_with_flags
 	}
+	set multiline_expected_outputs []
+    }
+
+    proc dg-test { args } {
+	global errorInfo
+
+	if { [ catch { eval saved-dg-test $args } errmsg ] } {
+	    set saved_info $errorInfo
+	    cleanup-after-saved-dg-test
+	    error $errmsg $saved_info
+	}
+	cleanup-after-saved-dg-test
     }
 }
 
