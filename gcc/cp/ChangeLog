@@ -1,3 +1,9 @@
+2016-01-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68767
+	* cp-gimplify.c (cp_fold) [COND_EXPR]: Simplify.  Do fold COND_EXPR.
+	(contains_label_1, contains_label_p): Remove.
+
 2016-01-16  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/69091
