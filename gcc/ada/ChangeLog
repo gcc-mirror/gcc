@@ -1,3 +1,10 @@
+2016-01-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/69219
+	* gcc-interface/trans.c (check_inlining_for_nested_subprog): Consider
+	the parent function instead of the current function in order to issue
+	the warning or the error.  Add guard for ignored functions.
+
 2015-12-06  Piotr Trojanek  <piotr.trojanek@gmail.com>
 
 	PR ada/60164
