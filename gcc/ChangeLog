@@ -1,3 +1,8 @@
+2016-01-18  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.c (thumb1_reorg): Check that the comparison is
+	against the constant 0.
+
 2016-01-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/68799
