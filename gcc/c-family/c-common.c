@@ -9765,15 +9765,19 @@ check_function_arguments_recurse (void (*callback)
 
   if (TREE_CODE (param) == COND_EXPR)
     {
-      tree cond = fold_for_warn (TREE_OPERAND (param, 0));
-      /* Check both halves of the conditional expression.  */
-      if (!integer_zerop (cond))
-	check_function_arguments_recurse (callback, ctx,
-					  TREE_OPERAND (param, 1), param_num);
-      if (!integer_nonzerop (cond))
-	check_function_arguments_recurse (callback, ctx,
-					  TREE_OPERAND (param, 2), param_num);
-      return;
+      /* Simplify to avoid warning for an impossible case.  */
+      param = fold_for_warn (param);
+      if (TREE_CODE (param) == COND_EXPR)
+	{
+	  /* Check both halves of the conditional expression.  */
+	  check_function_arguments_recurse (callback, ctx,
+					    TREE_OPERAND (param, 1),
+					    param_num);
+	  check_function_arguments_recurse (callback, ctx,
+					    TREE_OPERAND (param, 2),
+					    param_num);
+	  return;
+	}
     }
 
   (*callback) (ctx, param, param_num);

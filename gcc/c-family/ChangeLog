@@ -1,3 +1,9 @@
+2016-01-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68767
+	* c-common.c (check_function_arguments_recurse): Fold the whole
+	COND_EXPR, not just the condition.
+
 2016-01-18  Tom de Vries  <tom@codesourcery.com>
 
 	* c-omp.c (c_oacc_split_loop_clauses): Don't copy OMP_CLAUSE_REDUCTION,

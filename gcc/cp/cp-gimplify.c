@@ -1851,38 +1851,6 @@ cxx_omp_disregard_value_expr (tree decl, bool shared)
 	 && DECL_OMP_PRIVATIZED_MEMBER (decl);
 }
 
-/* Callback for walk_tree, looking for LABEL_EXPR.  Return *TP if it is
-   a LABEL_EXPR; otherwise return NULL_TREE.  Do not check the subtrees
-   of GOTO_EXPR.  */
-
-static tree
-contains_label_1 (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
-{
-  switch (TREE_CODE (*tp))
-    {
-    case LABEL_EXPR:
-      return *tp;
-
-    case GOTO_EXPR:
-      *walk_subtrees = 0;
-
-      /* ... fall through ...  */
-
-    default:
-      return NULL_TREE;
-    }
-}
-
-/* Return whether the sub-tree ST contains a label which is accessible from
-   outside the sub-tree.  */
-
-static bool
-contains_label_p (tree st)
-{
-  return
-   walk_tree_without_duplicates (&st, contains_label_1 , NULL) != NULL_TREE;
-}
-
 /* Perform folding on expression X.  */
 
 tree
@@ -2110,54 +2078,22 @@ cp_fold (tree x)
     case VEC_COND_EXPR:
     case COND_EXPR:
 
+      /* Don't bother folding a void condition, since it can't produce a
+	 constant value.  Also, some statement-level uses of COND_EXPR leave
+	 one of the branches NULL, so folding would crash.  */
+      if (VOID_TYPE_P (TREE_TYPE (x)))
+	return x;
+
       loc = EXPR_LOCATION (x);
       op0 = cp_fold_rvalue (TREE_OPERAND (x, 0));
-
-      if (TREE_SIDE_EFFECTS (op0))
-	break;
-
       op1 = cp_fold (TREE_OPERAND (x, 1));
       op2 = cp_fold (TREE_OPERAND (x, 2));
 
-      if (TREE_CODE (op0) == INTEGER_CST)
-	{
-	  tree un;
-
-	  if (integer_zerop (op0))
-	    {
-	      un = op1;
-	      r = op2;
-	    }
-	  else
-	    {
-	      un = op2;
-	      r = op1;
-	    }
-
-          if ((!TREE_SIDE_EFFECTS (un) || !contains_label_p (un))
-              && (! VOID_TYPE_P (TREE_TYPE (r)) || VOID_TYPE_P (x)))
-            {
-	      if (CAN_HAVE_LOCATION_P (r)
-		  && EXPR_LOCATION (r) != loc
-		  && !(TREE_CODE (r) == SAVE_EXPR
-		       || TREE_CODE (r) == TARGET_EXPR
-		       || TREE_CODE (r) == BIND_EXPR))
-	        {
-		  r = copy_node (r);
-		  SET_EXPR_LOCATION (r, loc);
-	        }
-	      x = r;
-	    }
-
-	  break;
-	}
-
-      if (VOID_TYPE_P (TREE_TYPE (x)))
-	break;
-
-      x = build3_loc (loc, code, TREE_TYPE (x), op0, op1, op2);
-
-      if (code != COND_EXPR)
+      if (op0 != TREE_OPERAND (x, 0)
+	  || op1 != TREE_OPERAND (x, 1)
+	  || op2 != TREE_OPERAND (x, 2))
+	x = fold_build3_loc (loc, code, TREE_TYPE (x), op0, op1, op2);
+      else
 	x = fold (x);
 
       break;
