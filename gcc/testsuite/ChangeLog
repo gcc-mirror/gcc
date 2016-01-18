@@ -1,6 +1,12 @@
 2016-01-18  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/63679
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Remove XFAIL for powerpc(32), hppa,
+	aarch64, sparc, s390. Add --param sra-max-scalarization-size-Ospeed.
+
+2016-01-18  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/63679
 	* gcc.dg/tree-ssa/ssa-dom-cse-5.c: New.
 	* gcc.dg/tree-ssa/ssa-dom-cse-6.c: New.
 	* gcc.dg/tree-ssa/ssa-dom-cse-7.c: New.
