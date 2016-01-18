@@ -1,7 +1,7 @@
 ! { dg-additional-options "-O2" }
 ! { dg-require-effective-target pthread }
 ! { dg-additional-options "-ftree-parallelize-loops=2" }
-! { dg-additional-options "-fdump-tree-parloops-details" }
+! { dg-additional-options "-fdump-tree-parloops2-details" }
 
 ! Constant bound, vector addition.
 
@@ -16,4 +16,4 @@ subroutine foo ()
   end do
 end subroutine foo
 
-! { dg-final { scan-tree-dump-times "alternative exit-first loop transform succeeded" 1 "parloops" } }
+! { dg-final { scan-tree-dump-times "alternative exit-first loop transform succeeded" 1 "parloops2" } }

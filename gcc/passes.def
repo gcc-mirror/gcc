@@ -124,7 +124,7 @@ along with GCC; see the file COPYING3.  If not see
 	      NEXT_PASS (pass_lim);
 	      NEXT_PASS (pass_dominator, false /* may_peel_loop_headers_p */);
 	      NEXT_PASS (pass_dce);
-	      /* pass_parallelize_loops_oacc_kernels */
+	      NEXT_PASS (pass_parallelize_loops, true /* oacc_kernels_p */);
 	      NEXT_PASS (pass_expand_omp_ssa);
 	      NEXT_PASS (pass_rebuild_cgraph_edges);
 	  POP_INSERT_PASSES ()

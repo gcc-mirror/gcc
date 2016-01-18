@@ -1,7 +1,7 @@
 /* pr39500: autopar fails to parallel */
 /* origin: nemokingdom@gmail.com(LiFeng) */
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-parallelize-loops=4 -fdump-tree-parloops-details" } */
+/* { dg-options "-O2 -ftree-parallelize-loops=4 -fdump-tree-parloops2-details" } */
 
 void abort (void);
 
@@ -24,4 +24,4 @@ int main (void)
 
 /* Check that the first loop in parloop got parallelized.  */
 
-/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 1 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 1 "parloops2" } } */

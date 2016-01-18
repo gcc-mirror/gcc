@@ -1,6 +1,6 @@
 /* PR tree-optimization/46194 */
 /* { dg-do compile } */
-/* { dg-options "-O -ftree-parallelize-loops=2 -fdump-tree-parloops-details" } */
+/* { dg-options "-O -ftree-parallelize-loops=2 -fdump-tree-parloops2-details" } */
 
 #define N 1000
 int a[N];
@@ -20,4 +20,4 @@ int foo (void)
 
 /* This loop cannot be parallelized due to a dependence.  */
 
-/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 0 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 0 "parloops2" } } */

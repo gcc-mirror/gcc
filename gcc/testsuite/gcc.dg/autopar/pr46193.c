@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops-details" } */
+/* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops2-details" } */
 
 extern void abort (void);
 
@@ -35,4 +35,4 @@ foo2 (int count, char **list)
   return maxaddr;
 }
 
-/* { dg-final { scan-tree-dump-times "parallelizing inner loop" 2 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "parallelizing inner loop" 2 "parloops2" } } */

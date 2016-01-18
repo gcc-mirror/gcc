@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops-details" } */
+/* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops2-details" } */
 
 /* Variable bound, vector addition, unsigned loop counter, signed bound.  */
 
@@ -13,4 +13,4 @@ f (int n, unsigned int *__restrict__ a, unsigned int *__restrict__ b,
     c[i] = a[i] + b[i];
 }
 
-/* { dg-final { scan-tree-dump-times "alternative exit-first loop transform succeeded" 1 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "alternative exit-first loop transform succeeded" 1 "parloops2" } } */

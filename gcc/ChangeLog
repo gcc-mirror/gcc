@@ -1,5 +1,9 @@
 2016-01-18  Tom de Vries  <tom@codesourcery.com>
 
+	* passes.def: Add pass_parallelize_loops to pass_oacc_kernels.
+
+2016-01-18  Tom de Vries  <tom@codesourcery.com>
+
 	* omp-low.c (set_oacc_fn_attrib): Make extern.
 	* omp-low.h (set_oacc_fn_attrib): Declare.
 	* tree-parloops.c (struct reduction_info): Add reduc_addr field.
