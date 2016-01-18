@@ -1522,6 +1522,34 @@ analyze_evolution_in_loop (gphi *loop_phi_node,
   return evolution_function;
 }
 
+/* Looks to see if VAR is a copy of a constant (via straightforward assignments
+   or degenerate phi's).  If so, returns the constant; else, returns VAR.  */
+
+static tree
+follow_copies_to_constant (tree var)
+{
+  tree res = var;
+  while (TREE_CODE (res) == SSA_NAME)
+    {
+      gimple *def = SSA_NAME_DEF_STMT (res);
+      if (gphi *phi = dyn_cast <gphi *> (def))
+	{
+	  if (tree rhs = degenerate_phi_result (phi))
+	    res = rhs;
+	  else
+	    break;
+	}
+      else if (gimple_assign_single_p (def))
+	/* Will exit loop if not an SSA_NAME.  */
+	res = gimple_assign_rhs1 (def);
+      else
+	break;
+    }
+  if (CONSTANT_CLASS_P (res))
+    return res;
+  return var;
+}
+
 /* Given a loop-phi-node, return the initial conditions of the
    variable on entry of the loop.  When the CCP has propagated
    constants into the loop-phi-node, the initial condition is
@@ -1574,21 +1602,9 @@ analyze_initial_condition (gphi *loop_phi_node)
   if (init_cond == chrec_not_analyzed_yet)
     init_cond = chrec_dont_know;
 
-  /* During early loop unrolling we do not have fully constant propagated IL.
-     Handle degenerate PHIs here to not miss important unrollings.  */
-  if (TREE_CODE (init_cond) == SSA_NAME)
-    {
-      gimple *def = SSA_NAME_DEF_STMT (init_cond);
-      if (gphi *phi = dyn_cast <gphi *> (def))
-	{
-	  tree res = degenerate_phi_result (phi);
-	  if (res != NULL_TREE
-	      /* Only allow invariants here, otherwise we may break
-		 loop-closed SSA form.  */
-	      && is_gimple_min_invariant (res))
-	    init_cond = res;
-	}
-    }
+  /* We may not have fully constant propagated IL.  Handle degenerate PHIs here
+     to not miss important early loop unrollings.  */
+  init_cond = follow_copies_to_constant (init_cond);
 
   if (dump_file && (dump_flags & TDF_SCEV))
     {
@@ -1968,8 +1984,8 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
   if (bb == NULL
       || !flow_bb_inside_loop_p (loop, bb))
     {
-      /* Keep the symbolic form.  */
-      res = var;
+      /* Keep symbolic form, but look through obvious copies for constants.  */
+      res = follow_copies_to_constant (var);
       goto set_and_end;
     }
 
