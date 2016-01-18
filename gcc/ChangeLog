@@ -1,3 +1,16 @@
+2016-01-18  Sandra Loosemore <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Invoking GCC): Add new section to menu.
+	(Option Summary): Update to reflect new section and moved options.
+	(C++ Dialect Options): Move -fstats to new section.
+	(Debugging Options): Move all dump, statistics, and other GCC
+	developer options to new section.  Rewrite section introduction
+	and re-order remaining options to put the more basic ones first.
+	(Optimization Options): Move -fira-verbose and -flto-report* to
+	new section.
+	(Developer Options): New section incorporating moved options.
+	* doc/cppopts.texi (-dM): Update cross-reference.
+
 2016-01-18  Richard Henderson  <rth@redhat.com>
 
 	PR target/69176
