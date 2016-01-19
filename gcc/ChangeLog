@@ -1,3 +1,10 @@
+2016-01-19  Jeff Law  <law@redhat.com>
+
+	PR middle-end/69347
+	* tree-ssa-threadbackwards.c
+	(fsm_find_control_statement_thread_paths): Do not try to lookup
+	FSM paths for SSA_NAMEs appearing in abnormal PHIs.
+
 2016-01-20  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* doc/lto.texi: Remove text that says only Gold has linker plugin
