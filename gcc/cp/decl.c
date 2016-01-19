@@ -13392,6 +13392,11 @@ finish_enum_value_list (tree enumtype)
 
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (enumtype, namespace_bindings_p ());
+
+  /* Each enumerator now has the type of its enumeration.  Clear the cache
+     so that this change in types doesn't confuse us later on.  */
+  clear_cv_cache ();
+  clear_fold_cache ();
 }
 
 /* Finishes the enum type. This is called only the first time an

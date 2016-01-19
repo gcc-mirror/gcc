@@ -6819,6 +6819,7 @@ extern bool cxx_omp_privatize_by_reference	(const_tree);
 extern bool cxx_omp_disregard_value_expr	(tree, bool);
 extern void cp_fold_function			(tree);
 extern tree cp_fully_fold			(tree);
+extern void clear_fold_cache			(void);
 
 /* in name-lookup.c */
 extern void suggest_alternatives_for            (location_t, tree);
@@ -6919,6 +6920,7 @@ extern bool var_in_constexpr_fn                 (tree);
 extern void explain_invalid_constexpr_fn        (tree);
 extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
+extern void clear_cv_cache			(void);
 
 /* In c-family/cilk.c */
 extern bool cilk_valid_spawn                    (tree);

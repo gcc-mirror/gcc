@@ -1,3 +1,8 @@
+2016-01-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/68586
+	* g++.dg/cpp0x/enum30.C: New test.
+
 2016-01-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69336
