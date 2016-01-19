@@ -26,12 +26,15 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <cmath>
 
 #ifndef _GLIBCXX_MATH_H
 #define _GLIBCXX_MATH_H 1
 
-#ifdef _GLIBCXX_NAMESPACE_C
+#if !defined __cplusplus || defined _GLIBCXX_INCLUDE_NEXT_C_HEADERS
+# include_next <math.h>
+#else
+# include <cmath>
+
 using std::abs;
 using std::acos;
 using std::asin;
@@ -72,5 +75,4 @@ using std::isunordered;
 #endif
 
 #endif
-
 #endif

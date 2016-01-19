@@ -69,7 +69,11 @@ namespace std
 
 #else
 
-#include <stdlib.h>
+// Need to ensure this finds the C library's <stdlib.h> not a libstdc++
+// wrapper that might already be installed later in the include search path.
+#define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
+#include_next <stdlib.h>
+#undef _GLIBCXX_INCLUDE_NEXT_C_HEADERS
 
 // Get rid of those macros defined in <stdlib.h> in lieu of real functions.
 #undef abort

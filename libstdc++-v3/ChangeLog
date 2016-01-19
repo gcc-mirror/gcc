@@ -1,3 +1,21 @@
+2016-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/14608
+	PR libstdc++/60401
+	* include/Makefile.am: Use c_compatibility math.h and stdlib.h for
+	--enable-cheaders=c_global configs.
+	* include/Makefile.in: Regenerate.
+	* include/c_compatibility/math.h: Remove obsolete _GLIBCXX_NAMESPACE_C
+	test and allow inclusion from C files.
+	* include/c_compatibility/stdlib.h: Likewise. Support freestanding.
+	(at_quick_exit, quick_exit): Add using directives.
+	* include/c_global/cmath: Use #include_next for math.h.
+	* include/c_global/cstdlib: Use #include_next for stdlib.h.
+	* testsuite/26_numerics/headers/cmath/14608.cc: New.
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
+	Remove xfail for most targets.
+	* testsuite/26_numerics/headers/cstdlib/60401.cc: New.
+
 2016-01-18  Torvald Riegel  <triegel@redhat.com>
 
 	* include/bits/c++config (_GLIBCXX_USE_WEAK_REF): New.
