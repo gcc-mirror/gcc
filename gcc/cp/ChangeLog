@@ -1,3 +1,8 @@
+2016-01-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59759
+	* pt.c (convert_template_argument): Handle VAR_DECL properly.
+
 2016-01-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/68586

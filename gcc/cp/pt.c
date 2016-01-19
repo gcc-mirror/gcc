@@ -19928,11 +19928,20 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       return unify_template_argument_mismatch (explain_p, parm, arg);
 
     case VAR_DECL:
-      /* A non-type template parameter that is a variable should be a
-	 an integral constant, in which case, it whould have been
-	 folded into its (constant) value. So we should not be getting
-	 a variable here.  */
-      gcc_unreachable ();
+      /* We might get a variable as a non-type template argument in parm if the
+	 corresponding parameter is type-dependent.  Make any necessary
+	 adjustments based on whether arg is a reference.  */
+      if (CONSTANT_CLASS_P (arg))
+	parm = fold_non_dependent_expr (parm);
+      else if (REFERENCE_REF_P (arg))
+	{
+	  tree sub = TREE_OPERAND (arg, 0);
+	  STRIP_NOPS (sub);
+	  if (TREE_CODE (sub) == ADDR_EXPR)
+	    arg = TREE_OPERAND (sub, 0);
+	}
+      /* Now use the normal expression code to check whether they match.  */
+      goto expr;
 
     case TYPE_ARGUMENT_PACK:
     case NONTYPE_ARGUMENT_PACK:
@@ -19965,7 +19974,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       if (is_overloaded_fn (parm) || type_unknown_p (parm))
 	return unify_success (explain_p);
       gcc_assert (EXPR_P (parm));
-
+    expr:
       /* We must be looking at an expression.  This can happen with
 	 something like:
 
