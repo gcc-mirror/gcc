@@ -3286,11 +3286,11 @@ static void output_ranges (void);
 static dw_line_info_table *new_line_info_table (void);
 static void output_line_info (bool);
 static void output_file_names (void);
-static dw_die_ref base_type_die (tree);
+static dw_die_ref base_type_die (tree, bool);
 static int is_base_type (tree);
 static dw_die_ref subrange_type_die (tree, tree, tree, tree, dw_die_ref);
 static int decl_quals (const_tree);
-static dw_die_ref modified_type_die (tree, int, dw_die_ref);
+static dw_die_ref modified_type_die (tree, int, bool, dw_die_ref);
 static dw_die_ref generic_parameter_die (tree, tree, bool, dw_die_ref);
 static dw_die_ref template_parameter_pack_die (tree, tree, dw_die_ref);
 static int type_is_enum (const_tree);
@@ -3362,7 +3362,7 @@ static dw_die_ref scope_die_for (tree, dw_die_ref);
 static inline int local_scope_p (dw_die_ref);
 static inline int class_scope_p (dw_die_ref);
 static inline int class_or_namespace_scope_p (dw_die_ref);
-static void add_type_attribute (dw_die_ref, tree, int, dw_die_ref);
+static void add_type_attribute (dw_die_ref, tree, int, bool, dw_die_ref);
 static void add_calling_convention_attribute (dw_die_ref, tree);
 static const char *type_tag (const_tree);
 static tree member_declared_type (const_tree);
@@ -10796,14 +10796,23 @@ output_line_info (bool prologue_only)
   ASM_OUTPUT_LABEL (asm_out_file, l2);
 }
 
+/* Return true if DW_AT_endianity should be emitted according to REVERSE.  */
+
+static inline bool
+need_endianity_attribute_p (bool reverse)
+{
+  return reverse && (dwarf_version >= 3 || !dwarf_strict);
+}
+
 /* Given a pointer to a tree node for some base type, return a pointer to
-   a DIE that describes the given type.
+   a DIE that describes the given type.  REVERSE is true if the type is
+   to be interpreted in the reverse storage order wrt the target order.
 
    This routine must only be called for GCC type nodes that correspond to
    Dwarf base (fundamental) types.  */
 
 static dw_die_ref
-base_type_die (tree type)
+base_type_die (tree type, bool reverse)
 {
   dw_die_ref base_type_result;
   enum dwarf_type encoding;
@@ -10912,6 +10921,10 @@ base_type_die (tree type)
 		   int_size_in_bytes (type));
   add_AT_unsigned (base_type_result, DW_AT_encoding, encoding);
 
+  if (need_endianity_attribute_p (reverse))
+    add_AT_unsigned (base_type_result, DW_AT_endianity,
+		     BYTES_BIG_ENDIAN ? DW_END_little : DW_END_big);
+
   if (fpt_used)
     {
       switch (fpt_info.scale_factor_kind)
@@ -10948,12 +10961,14 @@ base_type_die (tree type)
 	  gcc_unreachable ();
 	}
     }
-  if (type_bias != NULL)
+
+  if (type_bias)
     add_scalar_info (base_type_result, DW_AT_GNU_bias, type_bias,
 		     dw_scalar_form_constant
 		     | dw_scalar_form_exprloc
 		     | dw_scalar_form_reference,
 		     NULL);
+
   add_pubtype (type, base_type_result);
 
   return base_type_result;
@@ -11135,10 +11150,13 @@ get_nearest_type_subqualifiers (tree type, int type_quals, int qual_mask)
 }
 
 /* Given a pointer to an arbitrary ..._TYPE tree node, return a debugging
-   entry that chains various modifiers in front of the given type.  */
+   entry that chains the modifiers specified by CV_QUALS in front of the
+   given type.  REVERSE is true if the type is to be interpreted in the
+   reverse storage order wrt the target order.  */
 
 static dw_die_ref
-modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
+modified_type_die (tree type, int cv_quals, bool reverse,
+		   dw_die_ref context_die)
 {
   enum tree_code code = TREE_CODE (type);
   dw_die_ref mod_type_die;
@@ -11159,7 +11177,7 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
       tree debug_type = lang_hooks.types.get_debug_type (type);
 
       if (debug_type != NULL_TREE && debug_type != type)
-	return modified_type_die (debug_type, cv_quals, context_die);
+	return modified_type_die (debug_type, cv_quals, reverse, context_die);
     }
 
   cv_quals &= cv_qual_mask;
@@ -11196,7 +11214,12 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
   if (qualified_type)
     {
       mod_type_die = lookup_type_die (qualified_type);
-      if (mod_type_die)
+
+      /* DW_AT_endianity doesn't come from a qualifier on the type.  */
+      if (mod_type_die
+	  && (!need_endianity_attribute_p (reverse)
+	      || !is_base_type (type)
+	      || get_AT_unsigned (mod_type_die, DW_AT_endianity)))
 	return mod_type_die;
     }
 
@@ -11222,8 +11245,8 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
 	      || (cv_quals == dquals && DECL_ORIGINAL_TYPE (name) != type))
 	    /* cv-unqualified version of named type.  Just use
 	       the unnamed type to which it refers.  */
-	    return modified_type_die (DECL_ORIGINAL_TYPE (name),
-				      cv_quals, context_die);
+	    return modified_type_die (DECL_ORIGINAL_TYPE (name), cv_quals,
+				      reverse, context_die);
 	  /* Else cv-qualified version of named type; fall through.  */
 	}
     }
@@ -11248,7 +11271,7 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
 	 qualifiers.  */
       sub_quals = get_nearest_type_subqualifiers (type, cv_quals,
 						  cv_qual_mask);
-      mod_type_die = modified_type_die (type, sub_quals, context_die);
+      mod_type_die = modified_type_die (type, sub_quals, reverse, context_die);
 
       for (i = 0; i < sizeof (qual_info) / sizeof (qual_info[0]); i++)
 	if (qual_info[i].q & cv_quals & ~sub_quals)
@@ -11304,7 +11327,7 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
       item_type = TREE_TYPE (type);
     }
   else if (is_base_type (type))
-    mod_type_die = base_type_die (type);
+    mod_type_die = base_type_die (type, reverse);
   else
     {
       gen_type_die (type, context_die);
@@ -11361,6 +11384,7 @@ modified_type_die (tree type, int cv_quals, dw_die_ref context_die)
        types are possible in Ada.  */
     sub_die = modified_type_die (item_type,
 				 TYPE_QUALS_NO_ADDR_SPACE (item_type),
+				 reverse,
 				 context_die);
 
   if (sub_die != NULL)
@@ -11505,7 +11529,7 @@ generic_parameter_die (tree parm, tree arg,
 	  add_type_attribute (tmpl_die, tmpl_type,
 			      (TREE_THIS_VOLATILE (tmpl_type)
 			       ? TYPE_QUAL_VOLATILE : TYPE_UNQUALIFIED),
-			      parent_die);
+			      false, parent_die);
 	}
       else
 	{
@@ -12392,7 +12416,8 @@ base_type_for_mode (machine_mode mode, bool unsignedp)
     }
   type_die = lookup_type_die (type);
   if (!type_die)
-    type_die = modified_type_die (type, TYPE_UNQUALIFIED, comp_unit_die ());
+    type_die = modified_type_die (type, TYPE_UNQUALIFIED, false,
+				  comp_unit_die ());
   if (type_die == NULL || type_die->die_tag != DW_TAG_base_type)
     return NULL;
   return type_die;
@@ -17995,7 +18020,7 @@ static void
 add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
 		 int forms, const struct loc_descr_context *context)
 {
-  dw_die_ref ctx, decl_die;
+  dw_die_ref context_die, decl_die;
   dw_loc_list_ref list;
 
   bool strip_conversions = true;
@@ -18112,13 +18137,14 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
     return;
 
   if (current_function_decl == 0)
-    ctx = comp_unit_die ();
+    context_die = comp_unit_die ();
   else
-    ctx = lookup_decl_die (current_function_decl);
+    context_die = lookup_decl_die (current_function_decl);
 
-  decl_die = new_die (DW_TAG_variable, ctx, value);
+  decl_die = new_die (DW_TAG_variable, context_die, value);
   add_AT_flag (decl_die, DW_AT_artificial, 1);
-  add_type_attribute (decl_die, TREE_TYPE (value), TYPE_QUAL_CONST, ctx);
+  add_type_attribute (decl_die, TREE_TYPE (value), TYPE_QUAL_CONST, false,
+		      context_die);
   add_AT_location_description (decl_die, DW_AT_location, list);
   add_AT_die_ref (die, attr, decl_die);
 }
@@ -18292,7 +18318,7 @@ add_subscript_info (dw_die_ref type_die, tree type, bool collapse_p)
 		;
 	      else
 		add_type_attribute (subrange_die, TREE_TYPE (domain),
-				    TYPE_UNQUALIFIED, type_die);
+				    TYPE_UNQUALIFIED, false, type_die);
 	    }
 
 	  /* ??? If upper is NULL, the array has unspecified length,
@@ -18856,7 +18882,7 @@ class_or_namespace_scope_p (dw_die_ref context_die)
 
 static void
 add_type_attribute (dw_die_ref object_die, tree type, int cv_quals,
-		    dw_die_ref context_die)
+		    bool reverse, dw_die_ref context_die)
 {
   enum tree_code code  = TREE_CODE (type);
   dw_die_ref type_die  = NULL;
@@ -18878,6 +18904,7 @@ add_type_attribute (dw_die_ref object_die, tree type, int cv_quals,
 
   type_die = modified_type_die (type,
 				cv_quals | TYPE_QUALS_NO_ADDR_SPACE (type),
+				reverse,
 				context_die);
 
   if (type_die != NULL)
@@ -19114,7 +19141,10 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 	element_type = TREE_TYPE (element_type);
       }
 
-  add_type_attribute (array_die, element_type, TYPE_UNQUALIFIED, context_die);
+  add_type_attribute (array_die, element_type, TYPE_UNQUALIFIED,
+		      TREE_CODE (type) == ARRAY_TYPE
+		      && TYPE_REVERSE_STORAGE_ORDER (type),
+		      context_die);
 
   add_gnat_descriptive_type_attribute (array_die, type, context_die);
   if (TYPE_ARTIFICIAL (type))
@@ -19191,8 +19221,8 @@ gen_descr_array_type_die (tree type, struct array_descr_info *info,
 
       if (info->dimen[dim].bounds_type)
 	add_type_attribute (subrange_die,
-			    info->dimen[dim].bounds_type, 0,
-			    context_die);
+			    info->dimen[dim].bounds_type, TYPE_UNQUALIFIED,
+			    false, context_die);
       if (info->dimen[dim].lower_bound)
 	add_bound_info (subrange_die, DW_AT_lower_bound,
 			info->dimen[dim].lower_bound, &context);
@@ -19210,6 +19240,8 @@ gen_descr_array_type_die (tree type, struct array_descr_info *info,
 
   gen_type_die (info->element_type, context_die);
   add_type_attribute (array_die, info->element_type, TYPE_UNQUALIFIED,
+		      TREE_CODE (type) == ARRAY_TYPE
+		      && TYPE_REVERSE_STORAGE_ORDER (type),
 		      context_die);
 
   if (get_AT (array_die, DW_AT_name))
@@ -19229,7 +19261,7 @@ gen_entry_point_die (tree decl, dw_die_ref context_die)
     {
       add_name_and_src_coords_attributes (decl_die, decl);
       add_type_attribute (decl_die, TREE_TYPE (TREE_TYPE (decl)),
-			  TYPE_UNQUALIFIED, context_die);
+			  TYPE_UNQUALIFIED, false, context_die);
     }
 
   if (DECL_ABSTRACT_P (decl))
@@ -19319,7 +19351,7 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
       if (dwarf_version >= 3 || !dwarf_strict)
 	{
 	  tree underlying = lang_hooks.types.enum_underlying_base_type (type);
-	  add_type_attribute (type_die, underlying, TYPE_UNQUALIFIED,
+	  add_type_attribute (type_die, underlying, TYPE_UNQUALIFIED, false,
 			      context_die);
 	}
       if (TYPE_STUB_DECL (type) != NULL_TREE)
@@ -19485,11 +19517,12 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
 	  tree type = TREE_TYPE (node_or_origin);
 	  if (decl_by_reference_p (node_or_origin))
 	    add_type_attribute (parm_die, TREE_TYPE (type),
-				TYPE_UNQUALIFIED, context_die);
+				TYPE_UNQUALIFIED,
+				false, context_die);
 	  else
 	    add_type_attribute (parm_die, type,
 				decl_quals (node_or_origin),
-				context_die);
+				false, context_die);
 	}
       if (origin == NULL && DECL_ARTIFICIAL (node))
 	add_AT_flag (parm_die, DW_AT_artificial, 1);
@@ -19504,7 +19537,7 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
 
     case tcc_type:
       /* We were called with some kind of a ..._TYPE node.  */
-      add_type_attribute (parm_die, node_or_origin, TYPE_UNQUALIFIED,
+      add_type_attribute (parm_die, node_or_origin, TYPE_UNQUALIFIED, false,
 			  context_die);
       break;
 
@@ -20229,7 +20262,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	      dw_die_ref die = get_AT_ref (old_die, DW_AT_type);
 	      if (die == auto_die || die == decltype_auto_die)
 		add_type_attribute (subr_die, TREE_TYPE (TREE_TYPE (decl)),
-				    TYPE_UNQUALIFIED, context_die);
+				    TYPE_UNQUALIFIED, false, context_die);
 	    }
 	}
     }
@@ -20247,7 +20280,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	{
 	  add_prototyped_attribute (subr_die, TREE_TYPE (decl));
 	  add_type_attribute (subr_die, TREE_TYPE (TREE_TYPE (decl)),
-			      TYPE_UNQUALIFIED, context_die);
+			      TYPE_UNQUALIFIED, false, context_die);
 	}
 
       add_pure_or_virtual_attribute (subr_die, decl);
@@ -20914,7 +20947,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 	}
       var_die = new_die (DW_TAG_variable, com_die, decl);
       add_name_and_src_coords_attributes (var_die, decl);
-      add_type_attribute (var_die, TREE_TYPE (decl), decl_quals (decl),
+      add_type_attribute (var_die, TREE_TYPE (decl), decl_quals (decl), false,
 			  context_die);
       add_AT_flag (var_die, DW_AT_external, 1);
       if (loc)
@@ -21027,10 +21060,10 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
       tree type = TREE_TYPE (decl_or_origin);
 
       if (decl_by_reference_p (decl_or_origin))
-	add_type_attribute (var_die, TREE_TYPE (type), TYPE_UNQUALIFIED,
+	add_type_attribute (var_die, TREE_TYPE (type), TYPE_UNQUALIFIED, false,
 			    context_die);
       else
-	add_type_attribute (var_die, type, decl_quals (decl_or_origin),
+	add_type_attribute (var_die, type, decl_quals (decl_or_origin), false,
 			    context_die);
     }
 
@@ -21090,7 +21123,7 @@ gen_const_die (tree decl, dw_die_ref context_die)
   const_die = new_die (DW_TAG_constant, context_die, decl);
   equate_decl_number_to_die (decl, const_die);
   add_name_and_src_coords_attributes (const_die, decl);
-  add_type_attribute (const_die, type, TYPE_QUAL_CONST, context_die);
+  add_type_attribute (const_die, type, TYPE_QUAL_CONST, false, context_die);
   if (TREE_PUBLIC (decl))
     add_AT_flag (const_die, DW_AT_external, 1);
   if (DECL_ARTIFICIAL (decl))
@@ -21376,8 +21409,9 @@ gen_field_die (tree decl, struct vlr_context *ctx, dw_die_ref context_die)
 
   decl_die = new_die (DW_TAG_member, context_die, decl);
   add_name_and_src_coords_attributes (decl_die, decl);
-  add_type_attribute (decl_die, member_declared_type (decl),
-		      decl_quals (decl), context_die);
+  add_type_attribute (decl_die, member_declared_type (decl), decl_quals (decl),
+		      TYPE_REVERSE_STORAGE_ORDER (DECL_FIELD_CONTEXT (decl)),
+		      context_die);
 
   if (DECL_BIT_FIELD_TYPE (decl))
     {
@@ -21416,7 +21450,7 @@ gen_pointer_type_die (tree type, dw_die_ref context_die)
     = new_die (DW_TAG_pointer_type, scope_die_for (type, context_die), type);
 
   equate_type_number_to_die (type, ptr_die);
-  add_type_attribute (ptr_die, TREE_TYPE (type), TYPE_UNQUALIFIED,
+  add_type_attribute (ptr_die, TREE_TYPE (type), TYPE_UNQUALIFIED, false,
 		      context_die);
   add_AT_unsigned (mod_type_die, DW_AT_byte_size, PTR_SIZE);
 }
@@ -21437,7 +21471,7 @@ gen_reference_type_die (tree type, dw_die_ref context_die)
     ref_die = new_die (DW_TAG_reference_type, scope_die, type);
 
   equate_type_number_to_die (type, ref_die);
-  add_type_attribute (ref_die, TREE_TYPE (type), TYPE_UNQUALIFIED,
+  add_type_attribute (ref_die, TREE_TYPE (type), TYPE_UNQUALIFIED, false,
 		      context_die);
   add_AT_unsigned (mod_type_die, DW_AT_byte_size, PTR_SIZE);
 }
@@ -21455,7 +21489,7 @@ gen_ptr_to_mbr_type_die (tree type, dw_die_ref context_die)
   equate_type_number_to_die (type, ptr_die);
   add_AT_die_ref (ptr_die, DW_AT_containing_type,
 		  lookup_type_die (TYPE_OFFSET_BASETYPE (type)));
-  add_type_attribute (ptr_die, TREE_TYPE (type), TYPE_UNQUALIFIED,
+  add_type_attribute (ptr_die, TREE_TYPE (type), TYPE_UNQUALIFIED, false,
 		      context_die);
 }
 
@@ -21724,7 +21758,8 @@ gen_inheritance_die (tree binfo, tree access, tree type,
   dw_die_ref die = new_die (DW_TAG_inheritance, context_die, binfo);
   struct vlr_context ctx = { type, NULL };
 
-  add_type_attribute (die, BINFO_TYPE (binfo), TYPE_UNQUALIFIED, context_die);
+  add_type_attribute (die, BINFO_TYPE (binfo), TYPE_UNQUALIFIED, false,
+		      context_die);
   add_data_member_location_attribute (die, binfo, &ctx);
 
   if (BINFO_VIRTUAL_P (binfo))
@@ -22357,7 +22392,8 @@ gen_subroutine_type_die (tree type, dw_die_ref context_die)
 
   equate_type_number_to_die (type, subr_die);
   add_prototyped_attribute (subr_die, type);
-  add_type_attribute (subr_die, return_type, TYPE_UNQUALIFIED, context_die);
+  add_type_attribute (subr_die, return_type, TYPE_UNQUALIFIED, false,
+		      context_die);
   gen_formal_types_die (type, subr_die);
 
   if (get_AT (subr_die, DW_AT_name))
@@ -22435,7 +22471,8 @@ gen_typedef_die (tree decl, dw_die_ref context_die)
 	    }
 	}
 
-      add_type_attribute (type_die, type, decl_quals (decl), context_die);
+      add_type_attribute (type_die, type, decl_quals (decl), false,
+			  context_die);
 
       if (is_naming_typedef_decl (decl))
 	/* We want that all subsequent calls to lookup_type_die with
@@ -23066,7 +23103,7 @@ force_type_die (tree type)
       dw_die_ref context_die = get_context_die (TYPE_CONTEXT (type));
 
       type_die = modified_type_die (type, TYPE_QUALS_NO_ADDR_SPACE (type),
-				    context_die);
+				    false, context_die);
       gcc_assert (type_die);
     }
   return type_die;
