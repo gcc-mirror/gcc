@@ -13248,7 +13248,12 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  --c_inhibit_evaluation_warnings;
 
 	  if (TREE_CODE (expanded) == TREE_VEC)
-	    len = TREE_VEC_LENGTH (expanded);
+	    {
+	      len = TREE_VEC_LENGTH (expanded);
+	      /* Set TREE_USED for the benefit of -Wunused.  */
+	      for (int i = 0; i < len; i++)
+		TREE_USED (TREE_VEC_ELT (expanded, i)) = true;
+	    }
 
 	  if (expanded == error_mark_node)
 	    return error_mark_node;

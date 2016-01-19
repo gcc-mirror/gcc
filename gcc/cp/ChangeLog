@@ -1,3 +1,11 @@
+2016-01-19  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2016-01-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/68965
+	* pt.c (tsubst_copy): Mark elements in expanded vector as used.
+
 2016-01-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/68449
