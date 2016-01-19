@@ -1,3 +1,11 @@
+2016-01-19  Sandra Loosemore <sandra@codesourcery.com>
+
+	* doc/standards.texi: Copy-editing for grammar, markup, and sentence
+	flow throughout the file.  Fix broken link to Objective-C 2.0
+	documentation.
+	* doc/invoke.texi: More copy-editing; fix numerous typos and spelling
+	errors.
+
 2016-01-19  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* ccmp.c (expand_ccmp_expr_1): Avoid spurious unused warnings.
