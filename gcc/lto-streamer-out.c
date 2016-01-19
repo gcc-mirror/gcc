@@ -2320,7 +2320,8 @@ lto_output (void)
       if (cgraph_node *node = dyn_cast <cgraph_node *> (snode))
 	{
 	  if (lto_symtab_encoder_encode_body_p (encoder, node)
-	      && !node->alias)
+	      && !node->alias
+	      && (!node->thunk.thunk_p || !node->instrumented_version))
 	    {
 	      if (flag_checking)
 		{
