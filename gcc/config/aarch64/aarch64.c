@@ -6004,6 +6004,26 @@ aarch64_if_then_else_costs (rtx op0, rtx op1, rtx op2, int *cost, bool speed)
     }
   else if (GET_MODE_CLASS (GET_MODE (inner)) == MODE_CC)
     {
+      /* CCMP.  */
+      if ((GET_CODE (op1) == COMPARE) && CONST_INT_P (op2))
+	{
+	  /* Increase cost of CCMP reg, 0, imm, CC to prefer CMP reg, 0.  */
+	  if (XEXP (op1, 1) == const0_rtx)
+	    *cost += 1;
+	  if (speed)
+	    {
+	      machine_mode mode = GET_MODE (XEXP (op1, 0));
+	      const struct cpu_cost_table *extra_cost
+		= aarch64_tune_params.insn_extra_cost;
+
+	      if (GET_MODE_CLASS (mode) == MODE_INT)
+		*cost += extra_cost->alu.arith;
+	      else
+		*cost += extra_cost->fp[mode == DFmode].compare;
+	    }
+	  return true;
+	}
+
       /* It's a conditional operation based on the status flags,
 	 so it must be some flavor of CSEL.  */
 
