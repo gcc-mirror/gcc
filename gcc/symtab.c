@@ -504,7 +504,7 @@ const char *
 symtab_node::asm_name () const
 {
   if (!DECL_ASSEMBLER_NAME_SET_P (decl))
-    return lang_hooks.decl_printable_name (decl, 2);
+    return name ();
   return IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 }
 
@@ -513,6 +513,13 @@ symtab_node::asm_name () const
 const char *
 symtab_node::name () const
 {
+  if (!DECL_NAME (decl))
+    {
+      if (DECL_ASSEMBLER_NAME_SET_P (decl))
+	return asm_name ();
+      else
+        return "<unnamed>";
+    }
   return lang_hooks.decl_printable_name (decl, 2);
 }
 
