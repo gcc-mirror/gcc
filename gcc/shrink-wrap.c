@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "shrink-wrap.h"
 #include "regcprop.h"
 #include "rtl-iter.h"
+#include "valtrack.h"
 
 
 /* Return true if INSN requires the stack frame to be set up.
@@ -149,7 +150,8 @@ static bool
 move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
 			   const HARD_REG_SET uses,
 			   const HARD_REG_SET defs,
-			   bool *split_p)
+			   bool *split_p,
+			   struct dead_debug_local *debug)
 {
   rtx set, src, dest;
   bitmap live_out, live_in, bb_uses, bb_defs;
@@ -158,6 +160,8 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
   unsigned int end_sregno = FIRST_PSEUDO_REGISTER;
   basic_block next_block;
   edge live_edge;
+  rtx_insn *dinsn;
+  df_ref def;
 
   /* Look for a simple register assignment.  We don't use single_set here
      because we can't deal with any CLOBBERs, USEs, or REG_UNUSED secondary
@@ -302,6 +306,20 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
      move it as far as we can.  */
   do
     {
+      if (MAY_HAVE_DEBUG_INSNS)
+	{
+	  FOR_BB_INSNS_REVERSE (bb, dinsn)
+	    if (DEBUG_INSN_P (dinsn))
+	      {
+		df_ref use;
+		FOR_EACH_INSN_USE (use, dinsn)
+		  if (refers_to_regno_p (dregno, end_dregno,
+					 DF_REF_REG (use), (rtx *) NULL))
+		    dead_debug_add (debug, use, DF_REF_REGNO (use));
+	      }
+	    else if (dinsn == insn)
+	      break;
+	}
       live_out = df_get_live_out (bb);
       live_in = df_get_live_in (next_block);
       bb = next_block;
@@ -384,6 +402,12 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
 	SET_REGNO_REG_SET (bb_uses, i);
     }
 
+  /* Insert debug temps for dead REGs used in subsequent debug insns.  */
+  if (debug->used && !bitmap_empty_p (debug->used))
+    FOR_EACH_INSN_DEF (def, insn)
+      dead_debug_insert_temp (debug, DF_REF_REGNO (def), insn,
+			      DEBUG_TEMP_BEFORE_WITH_VALUE);
+
   emit_insn_after (PATTERN (insn), bb_note (bb));
   delete_insn (insn);
   return true;
@@ -404,6 +428,8 @@ prepare_shrink_wrap (basic_block entry_block)
   HARD_REG_SET uses, defs;
   df_ref def, use;
   bool split_p = false;
+  unsigned int i;
+  struct dead_debug_local debug;
 
   if (JUMP_P (BB_END (entry_block)))
     {
@@ -414,19 +440,22 @@ prepare_shrink_wrap (basic_block entry_block)
       copyprop_hardreg_forward_bb_without_debug_insn (entry_block);
     }
 
+  dead_debug_local_init (&debug, NULL, NULL);
   CLEAR_HARD_REG_SET (uses);
   CLEAR_HARD_REG_SET (defs);
+
   FOR_BB_INSNS_REVERSE_SAFE (entry_block, insn, curr)
     if (NONDEBUG_INSN_P (insn)
 	&& !move_insn_for_shrink_wrap (entry_block, insn, uses, defs,
-				       &split_p))
+				       &split_p, &debug))
       {
 	/* Add all defined registers to DEFs.  */
 	FOR_EACH_INSN_DEF (def, insn)
 	  {
 	    x = DF_REF_REG (def);
 	    if (REG_P (x) && HARD_REGISTER_P (x))
-	      SET_HARD_REG_BIT (defs, REGNO (x));
+	      for (i = REGNO (x); i < END_REGNO (x); i++)
+		SET_HARD_REG_BIT (defs, i);
 	  }
 
 	/* Add all used registers to USESs.  */
@@ -434,9 +463,12 @@ prepare_shrink_wrap (basic_block entry_block)
 	  {
 	    x = DF_REF_REG (use);
 	    if (REG_P (x) && HARD_REGISTER_P (x))
-	      SET_HARD_REG_BIT (uses, REGNO (x));
+	      for (i = REGNO (x); i < END_REGNO (x); i++)
+		SET_HARD_REG_BIT (uses, i);
 	  }
       }
+
+  dead_debug_local_finish (&debug, NULL);
 }
 
 /* Return whether basic block PRO can get the prologue.  It can not if it

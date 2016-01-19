@@ -1,3 +1,8 @@
+2016-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/65779
+	* gcc.dg/pr65779.c: New test.
+
 2016-01-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69352
