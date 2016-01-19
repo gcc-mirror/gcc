@@ -17729,6 +17729,23 @@ fn_type_unification (tree fn,
   return r;
 }
 
+/* TYPE is the type of a function parameter.  If TYPE is a (dependent)
+   ARRAY_TYPE, return the corresponding POINTER_TYPE to which it decays.
+   Otherwise return TYPE.  (We shouldn't see non-dependent ARRAY_TYPE
+   parameters because they get decayed as soon as they are declared.)  */
+
+static tree
+decay_dependent_array_parm_type (tree type)
+{
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      gcc_assert (uses_template_parms (type));
+      return type_decays_to (type);
+    }
+
+  return type;
+}
+
 /* Adjust types before performing type deduction, as described in
    [temp.deduct.call] and [temp.deduct.conv].  The rules in these two
    sections are symmetric.  PARM is the type of a function parameter
@@ -18166,6 +18183,8 @@ type_unification_real (tree tparms,
 
       arg = args[ia];
       ++ia;
+
+      parm = decay_dependent_array_parm_type (parm);
 
       if (unify_one_argument (tparms, targs, parm, arg, subr, strict,
 			      explain_p))
@@ -20169,6 +20188,9 @@ more_specialized_fn (tree pat1, tree pat2, int len)
           len = 0;
         }
 
+      arg1 = decay_dependent_array_parm_type (arg1);
+      arg2 = decay_dependent_array_parm_type (arg2);
+
       if (TREE_CODE (arg1) == REFERENCE_TYPE)
 	{
 	  ref1 = TYPE_REF_IS_RVALUE (arg1) + 1;
@@ -20454,7 +20476,10 @@ get_bindings (tree fn, tree decl, tree explicit_args, bool check_rettype)
   for (arg = decl_arg_types, ix = 0;
        arg != NULL_TREE && arg != void_list_node;
        arg = TREE_CHAIN (arg), ++ix)
-    args[ix] = TREE_VALUE (arg);
+    {
+      args[ix] = TREE_VALUE (arg);
+      args[ix] = decay_dependent_array_parm_type (args[ix]);
+    }
 
   if (fn_type_unification (fn, explicit_args, targs,
 			   args, ix,

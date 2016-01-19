@@ -10898,8 +10898,13 @@ grokdeclarator (const cp_declarator *declarator,
 
       if (TREE_CODE (type) == ARRAY_TYPE)
 	{
-	  /* Transfer const-ness of array into that of type pointed to.  */
-	  type = build_pointer_type (TREE_TYPE (type));
+	  /* Withhold decaying a dependent array type so that that during
+	     instantiation we can detect type deduction failure cases such as
+	     creating an array of void, creating a zero-size array, etc.  */
+	  if (dependent_type_p (type))
+	    ;
+	  else
+	    type = build_pointer_type (TREE_TYPE (type));
 	  type_quals = TYPE_UNQUALIFIED;
 	  array_parameter_p = true;
 	}
@@ -11696,7 +11701,8 @@ grokparms (tree parmlist, tree *parms)
 
 	  /* Top-level qualifiers on the parameters are
 	     ignored for function types.  */
-	  type = cp_build_qualified_type (type, 0);
+	  type = strip_top_quals (type);
+
 	  if (TREE_CODE (type) == METHOD_TYPE)
 	    {
 	      error ("parameter %qD invalidly declared method type", decl);
