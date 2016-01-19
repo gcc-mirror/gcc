@@ -225,7 +225,8 @@ avail_expr_hash (class expr_hash_elt *p)
 					       &reverse);
 	  /* Strictly, we could try to normalize variable-sized accesses too,
 	    but here we just deal with the common case.  */
-	  if (size == max_size)
+	  if (size != -1
+	      && size == max_size)
 	    {
 	      enum tree_code code = MEM_REF;
 	      hstate.add_object (code);
@@ -261,15 +262,22 @@ equal_mem_array_ref_p (tree t0, tree t1)
   bool rev0;
   HOST_WIDE_INT off0, sz0, max0;
   tree base0 = get_ref_base_and_extent (t0, &off0, &sz0, &max0, &rev0);
+  if (sz0 == -1
+      || sz0 != max0)
+    return false;
 
   bool rev1;
   HOST_WIDE_INT off1, sz1, max1;
   tree base1 = get_ref_base_and_extent (t1, &off1, &sz1, &max1, &rev1);
+  if (sz1 == -1
+      || sz1 != max1)
+    return false;
 
-  /* Types were compatible, so these are sanity checks.  */
+  if (rev0 != rev1)
+    return false;
+
+  /* Types were compatible, so this is a sanity check.  */
   gcc_assert (sz0 == sz1);
-  gcc_assert (max0 == max1);
-  gcc_assert (rev0 == rev1);
 
   return (off0 == off1) && operand_equal_p (base0, base1, 0);
 }

@@ -1,3 +1,10 @@
+2016-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69352
+	* tree-ssa-scopedtables.c (avail_expr_hash): Check for size == -1.
+	(equal_mem_array_ref_p): Constrain size and max size properly.
+	Compare the reverse flag.
+
 2016-01-19  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* ira.c (ira): Update regstat data if we deleted insns.
