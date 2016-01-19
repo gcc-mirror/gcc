@@ -17,7 +17,7 @@
 
 # Plugins for offload execution, Makefile.am fragment.
 #
-# Copyright (C) 2014-2015 Free Software Foundation, Inc.
+# Copyright (C) 2014-2016 Free Software Foundation, Inc.
 #
 # Contributed by Mentor Embedded.
 #
@@ -89,7 +89,8 @@ DIST_COMMON = $(top_srcdir)/plugin/Makefrag.am ChangeLog \
 	$(srcdir)/omp_lib.f90.in $(srcdir)/libgomp_f.h.in \
 	$(srcdir)/libgomp.spec.in $(srcdir)/../depcomp
 @PLUGIN_NVPTX_TRUE@am__append_1 = libgomp-plugin-nvptx.la
-@USE_FORTRAN_TRUE@am__append_2 = openacc.f90
+@PLUGIN_HSA_TRUE@am__append_2 = libgomp-plugin-hsa.la
+@USE_FORTRAN_TRUE@am__append_3 = openacc.f90
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -147,6 +148,17 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)" \
 	"$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
+@PLUGIN_HSA_TRUE@libgomp_plugin_hsa_la_DEPENDENCIES = libgomp.la \
+@PLUGIN_HSA_TRUE@	$(am__DEPENDENCIES_1)
+@PLUGIN_HSA_TRUE@am_libgomp_plugin_hsa_la_OBJECTS =  \
+@PLUGIN_HSA_TRUE@	libgomp_plugin_hsa_la-plugin-hsa.lo
+libgomp_plugin_hsa_la_OBJECTS = $(am_libgomp_plugin_hsa_la_OBJECTS)
+libgomp_plugin_hsa_la_LINK = $(LIBTOOL) --tag=CC \
+	$(libgomp_plugin_hsa_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgomp_plugin_hsa_la_LDFLAGS) $(LDFLAGS) -o $@
+@PLUGIN_HSA_TRUE@am_libgomp_plugin_hsa_la_rpath = -rpath \
+@PLUGIN_HSA_TRUE@	$(toolexeclibdir)
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_DEPENDENCIES = libgomp.la \
 @PLUGIN_NVPTX_TRUE@	$(am__DEPENDENCIES_1)
 @PLUGIN_NVPTX_TRUE@am_libgomp_plugin_nvptx_la_OBJECTS =  \
@@ -187,7 +199,8 @@ FCLD = $(FC)
 FCLINK = $(LIBTOOL) --tag=FC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(FCLD) $(AM_FCFLAGS) $(FCFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(libgomp_plugin_nvptx_la_SOURCES) $(libgomp_la_SOURCES)
+SOURCES = $(libgomp_plugin_hsa_la_SOURCES) \
+	$(libgomp_plugin_nvptx_la_SOURCES) $(libgomp_la_SOURCES)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
@@ -255,6 +268,8 @@ FC = @FC@
 FCFLAGS = @FCFLAGS@
 FGREP = @FGREP@
 GREP = @GREP@
+HSA_RUNTIME_INCLUDE = @HSA_RUNTIME_INCLUDE@
+HSA_RUNTIME_LIB = @HSA_RUNTIME_LIB@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -299,6 +314,10 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PERL = @PERL@
+PLUGIN_HSA = @PLUGIN_HSA@
+PLUGIN_HSA_CPPFLAGS = @PLUGIN_HSA_CPPFLAGS@
+PLUGIN_HSA_LDFLAGS = @PLUGIN_HSA_LDFLAGS@
+PLUGIN_HSA_LIBS = @PLUGIN_HSA_LIBS@
 PLUGIN_NVPTX = @PLUGIN_NVPTX@
 PLUGIN_NVPTX_CPPFLAGS = @PLUGIN_NVPTX_CPPFLAGS@
 PLUGIN_NVPTX_LDFLAGS = @PLUGIN_NVPTX_LDFLAGS@
@@ -391,7 +410,7 @@ libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 AM_CPPFLAGS = $(addprefix -I, $(search_path))
 AM_CFLAGS = $(XCFLAGS)
 AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
-toolexeclib_LTLIBRARIES = libgomp.la $(am__append_1)
+toolexeclib_LTLIBRARIES = libgomp.la $(am__append_1) $(am__append_2)
 nodist_toolexeclib_HEADERS = libgomp.spec
 
 # -Wc is only a libtool option.
@@ -415,7 +434,7 @@ libgomp_la_SOURCES = alloc.c barrier.c critical.c env.c error.c iter.c \
 	bar.c ptrlock.c time.c fortran.c affinity.c target.c \
 	splay-tree.c libgomp-plugin.c oacc-parallel.c oacc-host.c \
 	oacc-init.c oacc-mem.c oacc-async.c oacc-plugin.c oacc-cuda.c \
-	priority_queue.c $(am__append_2)
+	priority_queue.c $(am__append_3)
 
 # Nvidia PTX OpenACC plugin.
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_version_info = -version-info $(libtool_VERSION)
@@ -426,6 +445,16 @@ libgomp_la_SOURCES = alloc.c barrier.c critical.c env.c error.c iter.c \
 @PLUGIN_NVPTX_TRUE@	$(lt_host_flags) $(PLUGIN_NVPTX_LDFLAGS)
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_LIBADD = libgomp.la $(PLUGIN_NVPTX_LIBS)
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_LIBTOOLFLAGS = --tag=disable-static
+
+# Heterogenous Systems Architecture plugin
+@PLUGIN_HSA_TRUE@libgomp_plugin_hsa_version_info = -version-info $(libtool_VERSION)
+@PLUGIN_HSA_TRUE@libgomp_plugin_hsa_la_SOURCES = plugin/plugin-hsa.c
+@PLUGIN_HSA_TRUE@libgomp_plugin_hsa_la_CPPFLAGS = $(AM_CPPFLAGS) $(PLUGIN_HSA_CPPFLAGS)
+@PLUGIN_HSA_TRUE@libgomp_plugin_hsa_la_LDFLAGS =  \
+@PLUGIN_HSA_TRUE@	$(libgomp_plugin_hsa_version_info) \
+@PLUGIN_HSA_TRUE@	$(lt_host_flags) $(PLUGIN_HSA_LDFLAGS)
+@PLUGIN_HSA_TRUE@libgomp_plugin_hsa_la_LIBADD = libgomp.la $(PLUGIN_HSA_LIBS)
+@PLUGIN_HSA_TRUE@libgomp_plugin_hsa_la_LIBTOOLFLAGS = --tag=disable-static
 nodist_noinst_HEADERS = libgomp_f.h
 nodist_libsubinclude_HEADERS = omp.h openacc.h
 @USE_FORTRAN_TRUE@nodist_finclude_HEADERS = omp_lib.h omp_lib.f90 omp_lib.mod omp_lib_kinds.mod \
@@ -553,6 +582,8 @@ clean-toolexeclibLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
+libgomp-plugin-hsa.la: $(libgomp_plugin_hsa_la_OBJECTS) $(libgomp_plugin_hsa_la_DEPENDENCIES) $(EXTRA_libgomp_plugin_hsa_la_DEPENDENCIES) 
+	$(libgomp_plugin_hsa_la_LINK) $(am_libgomp_plugin_hsa_la_rpath) $(libgomp_plugin_hsa_la_OBJECTS) $(libgomp_plugin_hsa_la_LIBADD) $(LIBS)
 libgomp-plugin-nvptx.la: $(libgomp_plugin_nvptx_la_OBJECTS) $(libgomp_plugin_nvptx_la_DEPENDENCIES) $(EXTRA_libgomp_plugin_nvptx_la_DEPENDENCIES) 
 	$(libgomp_plugin_nvptx_la_LINK) $(am_libgomp_plugin_nvptx_la_rpath) $(libgomp_plugin_nvptx_la_OBJECTS) $(libgomp_plugin_nvptx_la_LIBADD) $(LIBS)
 libgomp.la: $(libgomp_la_OBJECTS) $(libgomp_la_DEPENDENCIES) $(EXTRA_libgomp_la_DEPENDENCIES) 
@@ -575,6 +606,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iter_ull.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgomp-plugin.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgomp_plugin_hsa_la-plugin-hsa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgomp_plugin_nvptx_la-plugin-nvptx.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/loop.Plo@am__quote@
@@ -622,6 +654,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+
+libgomp_plugin_hsa_la-plugin-hsa.lo: plugin/plugin-hsa.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libgomp_plugin_hsa_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgomp_plugin_hsa_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgomp_plugin_hsa_la-plugin-hsa.lo -MD -MP -MF $(DEPDIR)/libgomp_plugin_hsa_la-plugin-hsa.Tpo -c -o libgomp_plugin_hsa_la-plugin-hsa.lo `test -f 'plugin/plugin-hsa.c' || echo '$(srcdir)/'`plugin/plugin-hsa.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libgomp_plugin_hsa_la-plugin-hsa.Tpo $(DEPDIR)/libgomp_plugin_hsa_la-plugin-hsa.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='plugin/plugin-hsa.c' object='libgomp_plugin_hsa_la-plugin-hsa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(libgomp_plugin_hsa_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgomp_plugin_hsa_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgomp_plugin_hsa_la-plugin-hsa.lo `test -f 'plugin/plugin-hsa.c' || echo '$(srcdir)/'`plugin/plugin-hsa.c
 
 libgomp_plugin_nvptx_la-plugin-nvptx.lo: plugin/plugin-nvptx.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(libgomp_plugin_nvptx_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgomp_plugin_nvptx_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgomp_plugin_nvptx_la-plugin-nvptx.lo -MD -MP -MF $(DEPDIR)/libgomp_plugin_nvptx_la-plugin-nvptx.Tpo -c -o libgomp_plugin_nvptx_la-plugin-nvptx.lo `test -f 'plugin/plugin-nvptx.c' || echo '$(srcdir)/'`plugin/plugin-nvptx.c

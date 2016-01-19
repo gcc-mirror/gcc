@@ -1,3 +1,64 @@
+2016-01-19  Martin Jambor  <mjambor@suse.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	* plugin/Makefrag.am: Add HSA plugin requirements.
+	* plugin/configfrag.ac (HSA_RUNTIME_INCLUDE): New variable.
+	(HSA_RUNTIME_LIB): Likewise.
+	(HSA_RUNTIME_CPPFLAGS): Likewise.
+	(HSA_RUNTIME_INCLUDE): New substitution.
+	(HSA_RUNTIME_LIB): Likewise.
+	(HSA_RUNTIME_LDFLAGS): Likewise.
+	(hsa-runtime): New configure option.
+	(hsa-runtime-include): Likewise.
+	(hsa-runtime-lib): Likewise.
+	(PLUGIN_HSA): New substitution variable.
+	Fill HSA_RUNTIME_INCLUDE and HSA_RUNTIME_LIB according to the new
+	configure options.
+	(PLUGIN_HSA_CPPFLAGS): Likewise.
+	(PLUGIN_HSA_LDFLAGS): Likewise.
+	(PLUGIN_HSA_LIBS): Likewise.
+	Check that we have access to HSA run-time.
+	* libgomp-plugin.h (offload_target_type): New element
+	OFFLOAD_TARGET_TYPE_HSA.
+	* libgomp.h (gomp_target_task): New fields firstprivate_copies and
+	args.
+	(bool gomp_create_target_task): Updated.
+	(gomp_device_descr): Extra parameter of run_func and async_run_func,
+	new field can_run_func.
+	* libgomp_g.h (GOMP_target_ext): Update prototype.
+	* oacc-host.c (host_run): Added a new parameter args.
+	* target.c (calculate_firstprivate_requirements): New function.
+	(copy_firstprivate_data): Likewise.
+	(gomp_target_fallback_firstprivate): Use them.
+	(gomp_target_unshare_firstprivate): New function.
+	(gomp_get_target_fn_addr): Allow returning NULL for shared memory
+	devices.
+	(GOMP_target): Do host fallback for all shared memory devices.  Do not
+	pass any args to plugins.
+	(GOMP_target_ext): Introduce device-specific argument parameter args.
+	Allow host fallback if device shares memory.  Do not remap data if
+	device has shared memory.
+	(gomp_target_task_fn): Likewise.  Also treat shared memory devices
+	like host fallback for mappings.
+	(GOMP_target_data): Treat shared memory devices like host fallback.
+	(GOMP_target_data_ext): Likewise.
+	(GOMP_target_update): Likewise.
+	(GOMP_target_update_ext): Likewise.  Also pass NULL as args to
+	gomp_create_target_task.
+	(GOMP_target_enter_exit_data): Likewise.
+	(omp_target_alloc): Treat shared memory devices like host fallback.
+	(omp_target_free): Likewise.
+	(omp_target_is_present): Likewise.
+	(omp_target_memcpy): Likewise.
+	(omp_target_memcpy_rect): Likewise.
+	(omp_target_associate_ptr): Likewise.
+	(gomp_load_plugin_for_device): Also load can_run.
+	* task.c (GOMP_PLUGIN_target_task_completion): Free
+	firstprivate_copies.
+	(gomp_create_target_task): Accept new argument args and store it to
+	ttask.
+	* plugin/plugin-hsa.c: New file.
+
 2016-01-18  Tom de Vries  <tom@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-2.c: New test.

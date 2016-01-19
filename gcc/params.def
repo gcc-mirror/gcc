@@ -1183,6 +1183,11 @@ DEFPARAM (PARAM_MAX_RTL_IF_CONVERSION_INSNS,
 	  "Maximum number of insns in a basic block to consider for RTL "
 	  "if-conversion.",
 	  10, 0, 99)
+
+DEFPARAM (PARAM_HSA_GEN_DEBUG_STORES,
+	  "hsa-gen-debug-stores",
+	  "Level of hsa debug stores verbosity",
+	  0, 0, 1)
 /*
 
 Local variables:

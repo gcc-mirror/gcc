@@ -1992,6 +1992,28 @@ specifying paths @var{path1}, @dots{}, @var{pathN}.
 % @var{srcdir}/configure \
     --enable-offload-target=i686-unknown-linux-gnu=/path/to/i686/compiler,x86_64-pc-linux-gnu
 @end smallexample
+
+If @samp{hsa} is specified as one of the targets, the compiler will be
+built with support for HSA GPU accelerators.  Because the same
+compiler will emit the accelerator code, no path should be specified.
+
+@item --with-hsa-runtime=@var{pathname}
+@itemx --with-hsa-runtime-include=@var{pathname}
+@itemx --with-hsa-runtime-lib=@var{pathname}
+
+If you configure GCC with HSA offloading but do not have the HSA
+run-time library installed in a standard location then you can
+explicitly specify the directory where they are installed.  The
+@option{--with-hsa-runtime=@/@var{hsainstalldir}} option is a
+shorthand for
+@option{--with-hsa-runtime-lib=@/@var{hsainstalldir}/lib} and
+@option{--with-hsa-runtime-include=@/@var{hsainstalldir}/include}.
+
+@item --with-hsa-kmt-lib=@var{pathname}
+
+If you configure GCC with HSA offloading but do not have the HSA
+KMT library installed in a standard location then you can
+explicitly specify the directory where it resides.
 @end table
 
 @subheading Cross-Compiler-Specific Options

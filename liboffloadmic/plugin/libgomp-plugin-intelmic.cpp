@@ -528,7 +528,7 @@ GOMP_OFFLOAD_dev2dev (int device, void *dst_ptr, const void *src_ptr,
 
 extern "C" void
 GOMP_OFFLOAD_async_run (int device, void *tgt_fn, void *tgt_vars,
-			void *async_data)
+			void **, void *async_data)
 {
   TRACE ("(device = %d, tgt_fn = %p, tgt_vars = %p, async_data = %p)", device,
 	 tgt_fn, tgt_vars, async_data);
@@ -544,7 +544,7 @@ GOMP_OFFLOAD_async_run (int device, void *tgt_fn, void *tgt_vars,
 }
 
 extern "C" void
-GOMP_OFFLOAD_run (int device, void *tgt_fn, void *tgt_vars)
+GOMP_OFFLOAD_run (int device, void *tgt_fn, void *tgt_vars, void **)
 {
   TRACE ("(device = %d, tgt_fn = %p, tgt_vars = %p)", device, tgt_fn, tgt_vars);
 

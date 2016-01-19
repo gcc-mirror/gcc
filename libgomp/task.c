@@ -582,6 +582,7 @@ GOMP_PLUGIN_target_task_completion (void *data)
       return;
     }
   ttask->state = GOMP_TARGET_TASK_FINISHED;
+  free (ttask->firstprivate_copies);
   gomp_target_task_completion (team, task);
   gomp_mutex_unlock (&team->task_lock);
 }
@@ -594,7 +595,7 @@ bool
 gomp_create_target_task (struct gomp_device_descr *devicep,
 			 void (*fn) (void *), size_t mapnum, void **hostaddrs,
 			 size_t *sizes, unsigned short *kinds,
-			 unsigned int flags, void **depend,
+			 unsigned int flags, void **depend, void **args,
 			 enum gomp_target_task_state state)
 {
   struct gomp_thread *thr = gomp_thread ();
@@ -654,6 +655,7 @@ gomp_create_target_task (struct gomp_device_descr *devicep,
   ttask->devicep = devicep;
   ttask->fn = fn;
   ttask->mapnum = mapnum;
+  ttask->args = args;
   memcpy (ttask->hostaddrs, hostaddrs, mapnum * sizeof (void *));
   ttask->sizes = (size_t *) &ttask->hostaddrs[mapnum];
   memcpy (ttask->sizes, sizes, mapnum * sizeof (size_t));

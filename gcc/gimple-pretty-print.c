@@ -1187,6 +1187,9 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc, int flags)
 	case GF_OMP_FOR_KIND_CILKSIMD:
 	  pp_string (buffer, "#pragma simd");
 	  break;
+	case GF_OMP_FOR_KIND_GRID_LOOP:
+	  pp_string (buffer, "#pragma omp for grid_loop");
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -1493,6 +1496,9 @@ dump_gimple_omp_block (pretty_printer *buffer, gimple *gs, int spc, int flags)
 	  break;
 	case GIMPLE_OMP_SECTION:
 	  pp_string (buffer, "#pragma omp section");
+	  break;
+	case GIMPLE_OMP_GRID_BODY:
+	  pp_string (buffer, "#pragma omp gridified body");
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -2301,6 +2307,7 @@ pp_gimple_stmt_1 (pretty_printer *buffer, gimple *gs, int spc, int flags)
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_SECTION:
+    case GIMPLE_OMP_GRID_BODY:
       dump_gimple_omp_block (buffer, gs, spc, flags);
       break;
 

@@ -176,6 +176,7 @@ enum gomp_map_kind
 #define GOMP_DEVICE_NOT_HOST		4
 #define GOMP_DEVICE_NVIDIA_PTX		5
 #define GOMP_DEVICE_INTEL_MIC		6
+#define GOMP_DEVICE_HSA			7
 
 #define GOMP_DEVICE_ICV			-1
 #define GOMP_DEVICE_HOST_FALLBACK	-2
@@ -201,6 +202,7 @@ enum gomp_map_kind
 #define GOMP_VERSION	0
 #define GOMP_VERSION_NVIDIA_PTX 1
 #define GOMP_VERSION_INTEL_MIC 0
+#define GOMP_VERSION_HSA 0
 
 #define GOMP_VERSION_PACK(LIB, DEV) (((LIB) << 16) | (DEV))
 #define GOMP_VERSION_LIB(PACK) (((PACK) >> 16) & 0xffff)
@@ -227,5 +229,31 @@ enum gomp_map_kind
 #define GOMP_LAUNCH_DEVICE(X) (((X) >> GOMP_LAUNCH_DEVICE_SHIFT) & 0xfff)
 #define GOMP_LAUNCH_OP(X) (((X) >> GOMP_LAUNCH_OP_SHIFT) & 0xffff)
 #define GOMP_LAUNCH_OP_MAX 0xffff
+
+/* Bitmask to apply in order to find out the intended device of a target
+   argument.  */
+#define GOMP_TARGET_ARG_DEVICE_MASK		((1 << 7) - 1)
+/* The target argument is significant for all devices.  */
+#define GOMP_TARGET_ARG_DEVICE_ALL		0
+
+/* Flag set when the subsequent element in the device-specific argument
+   values.  */
+#define GOMP_TARGET_ARG_SUBSEQUENT_PARAM	(1 << 7)
+
+/* Bitmask to apply to a target argument to find out the value identifier.  */
+#define GOMP_TARGET_ARG_ID_MASK			(((1 << 8) - 1) << 8)
+/* Target argument index of NUM_TEAMS.  */
+#define GOMP_TARGET_ARG_NUM_TEAMS		(1 << 8)
+/* Target argument index of THREAD_LIMIT.  */
+#define GOMP_TARGET_ARG_THREAD_LIMIT		(2 << 8)
+
+/* If the value is directly embeded in target argument, it should be a 16-bit
+   at most and shifted by this many bits.  */
+#define GOMP_TARGET_ARG_VALUE_SHIFT		16
+
+/* HSA specific data structures.  */
+
+/* Identifiers of device-specific target arguments.  */
+#define GOMP_TARGET_ARG_HSA_KERNEL_ATTRIBUTES	(1 << 8)
 
 #endif
