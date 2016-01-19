@@ -4417,17 +4417,17 @@ get_memory_order_name (unsigned memmodel)
 {
   switch (memmodel)
     {
-    case __ATOMIC_RELAXED:
+    case MEMMODEL_RELAXED:
       return "__ATOMIC_RELAXED";
-    case __ATOMIC_CONSUME:
+    case MEMMODEL_CONSUME:
       return "__ATOMIC_CONSUME";
-    case __ATOMIC_ACQUIRE:
+    case MEMMODEL_ACQUIRE:
       return "__ATOMIC_ACQUIRE";
-    case __ATOMIC_RELEASE:
+    case MEMMODEL_RELEASE:
       return "__ATOMIC_RELEASE";
-    case __ATOMIC_ACQ_REL:
+    case MEMMODEL_ACQ_REL:
       return "__ATOMIC_ACQ_REL";
-    case __ATOMIC_SEQ_CST:
+    case MEMMODEL_SEQ_CST:
       return "__ATOMIC_SEQ_CST";
     default:
       return NULL;
@@ -4442,13 +4442,13 @@ get_memory_order (unsigned memmodel, location_t location)
 {
   switch (memmodel)
     {
-    case __ATOMIC_RELAXED:
+    case MEMMODEL_RELAXED:
       return BRIG_MEMORY_ORDER_RELAXED;
-    case __ATOMIC_ACQUIRE:
+    case MEMMODEL_ACQUIRE:
       return BRIG_MEMORY_ORDER_SC_ACQUIRE;
-    case __ATOMIC_RELEASE:
+    case MEMMODEL_RELEASE:
       return BRIG_MEMORY_ORDER_SC_RELEASE;
-    case __ATOMIC_ACQ_REL:
+    case MEMMODEL_ACQ_REL:
       return BRIG_MEMORY_ORDER_SC_ACQUIRE_RELEASE;
     default:
       HSA_SORRY_ATV (location,

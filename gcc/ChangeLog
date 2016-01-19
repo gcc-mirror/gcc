@@ -1,3 +1,8 @@
+2016-01-19  Richard Biener  <rguenther@suse.de>
+
+	* hsa-gen.c (get_memory_order_name): Use MEMMODEL_ constants.
+	(get_memory_order): Likewise.
+
 2016-01-19  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* tree-vect-stmts.c (vectorizable_store): Check
