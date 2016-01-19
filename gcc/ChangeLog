@@ -1,3 +1,17 @@
+2016-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/68446
+	* gcc.c (driver::decode_argv): Add call to
+	init_opts_obstack before init_options_struct.
+	* opts.c (init_opts_obstack): Remove idempotency.
+	(init_options_struct): Replace call to init_opts_obstack
+	with a gcc_assert to verify that it has already been called.
+	* toplev.c (toplev::main): Add call to init_opts_obstack before
+	calls to init_options_struct.
+	(toplev::finalize): Move cleanup of opts_obstack next to
+	cleanup of save_decoded_options, clearing the latter, and
+	save_decoded_options_count.
+
 2016-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/69135
