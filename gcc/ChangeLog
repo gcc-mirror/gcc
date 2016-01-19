@@ -1,5 +1,10 @@
 2016-01-19  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto-streamer-out.c (lto_output): Do not stream instrumentation
+	thunks.
+
+2016-01-19  Jan Hubicka  <hubicka@ucw.cz>
+
 	* symtab.c (symtab_node::asm_name): Do not call printable name directly.
 	(symtab_node::name): Report name as unnamed if DECL_NAME is not set.
 
