@@ -1,3 +1,8 @@
+2016-01-20  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* doc/lto.texi: Remove text that says only Gold has linker plugin
+	support.
+
 2016-01-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (need_endianity_attribute_p): New inline predicate.
