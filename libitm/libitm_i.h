@@ -36,7 +36,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unwind.h>
-#include "local_type_traits"
 #include "local_atomic"
 
 /* Don't require libgcc_s.so for exceptions.  */
@@ -48,13 +47,6 @@ extern void _Unwind_DeleteException (_Unwind_Exception*) __attribute__((weak));
 namespace GTM HIDDEN {
 
 using namespace std;
-
-// A helper template for accessing an unsigned integral of SIZE bytes.
-template<size_t SIZE> struct sized_integral { };
-template<> struct sized_integral<1> { typedef uint8_t type; };
-template<> struct sized_integral<2> { typedef uint16_t type; };
-template<> struct sized_integral<4> { typedef uint32_t type; };
-template<> struct sized_integral<8> { typedef uint64_t type; };
 
 typedef unsigned int gtm_word __attribute__((mode (word)));
 
