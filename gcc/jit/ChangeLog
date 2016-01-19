@@ -1,3 +1,34 @@
+2016-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/69144
+	* jit-playback.c (gcc::jit::playback::compile_to_file::postprocess):
+	Potentially add the temporary artifact to the tempdir's list of
+	tempfiles needing additional cleanup.
+	(gcc::jit::playback::context::extract_any_requested_dumps): Likewise
+	for the dumpfile.
+	* jit-tempdir.c (gcc::jit::tempdir::~tempdir): Clean up additional
+	tempfiles.
+	* jit-tempdir.h (gcc::jit::tempdir::add_temp_file): New method.
+	(gcc::jit::tempdir::m_tempfiles): New field.
+	* docs/cp/intro/tutorial04.rst: Update for changes to toyvm.cc.
+	* docs/examples/tut04-toyvm/toyvm.cc (class compilation_result):
+	New.
+	(toyvm_function::compile): Change return type from function ptr
+	to a compilation_result.
+	(toyvm_function::get_function_name): New accessor.
+	(toyvm_function::m_funcname): New field.
+	(get_function_name): Convert to...
+	(toyvm_function::make_function_name): ...this new method.
+	(toyvm_function::parse): Call make_function_name.
+	(toyvm_function::compile): Convert return type from function ptr
+	to a compilation_result.  Use get_function_name.
+	(compilation_state::compile): Convert return type from
+	gcc_jit_result * to a compilation_result.
+	(test_script): Update for above changes, extracting the code from
+	the compilation_result.
+	(main): Likewise.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
