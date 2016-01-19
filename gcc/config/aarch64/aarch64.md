@@ -289,6 +289,36 @@
   [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
 )
 
+(define_insn "fccmp<mode>"
+  [(set (match_operand:CCFP 1 "cc_register" "")
+	(if_then_else:CCFP
+	  (match_operator 4 "aarch64_comparison_operator"
+	   [(match_operand 0 "cc_register" "")
+	    (const_int 0)])
+	  (compare:CCFP
+	    (match_operand:GPF 2 "register_operand" "w")
+	    (match_operand:GPF 3 "register_operand" "w"))
+	  (match_operand 5 "immediate_operand")))]
+  "TARGET_FLOAT"
+  "fccmp\\t%<s>2, %<s>3, %k5, %m4"
+  [(set_attr "type" "fcmp<s>")]
+)
+
+(define_insn "fccmpe<mode>"
+  [(set (match_operand:CCFPE 1 "cc_register" "")
+	 (if_then_else:CCFPE
+	  (match_operator 4 "aarch64_comparison_operator"
+	   [(match_operand 0 "cc_register" "")
+	  (const_int 0)])
+	   (compare:CCFPE
+	    (match_operand:GPF 2 "register_operand" "w")
+	    (match_operand:GPF 3 "register_operand" "w"))
+	  (match_operand 5 "immediate_operand")))]
+  "TARGET_FLOAT"
+  "fccmpe\\t%<s>2, %<s>3, %k5, %m4"
+  [(set_attr "type" "fcmp<s>")]
+)
+
 ;; Expansion of signed mod by a power of 2 using CSNEG.
 ;; For x0 % n where n is a power of 2 produce:
 ;; negs   x1, x0
@@ -2852,7 +2882,7 @@
   [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
 )
 
-(define_insn "*cmp<mode>"
+(define_insn "fcmp<mode>"
   [(set (reg:CCFP CC_REGNUM)
         (compare:CCFP (match_operand:GPF 0 "register_operand" "w,w")
 		      (match_operand:GPF 1 "aarch64_fp_compare_operand" "Y,w")))]
@@ -2863,7 +2893,7 @@
   [(set_attr "type" "fcmp<s>")]
 )
 
-(define_insn "*cmpe<mode>"
+(define_insn "fcmpe<mode>"
   [(set (reg:CCFPE CC_REGNUM)
         (compare:CCFPE (match_operand:GPF 0 "register_operand" "w,w")
 		       (match_operand:GPF 1 "aarch64_fp_compare_operand" "Y,w")))]
