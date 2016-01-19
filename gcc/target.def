@@ -2611,29 +2611,29 @@ modes and they have different conditional execution capability, such as ARM.",
 DEFHOOK
 (gen_ccmp_first,
  "This function prepares to emit a comparison insn for the first compare in a\n\
- sequence of conditional comparisions.  It returns a appropriate @code{CC}\n\
- for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.  The insns to\n\
- prepare the compare are saved in @var{prep_seq} and the compare insns are\n\
- saved in @var{gen_seq}.  They will be emitted when all the compares in the\n\
- the conditional comparision are generated without error.  @var{code} is\n\
- the @code{rtx_code} of the compare for @var{op0} and @var{op1}.",
+ sequence of conditional comparisions.  It returns an appropriate comparison\n\
+ with @code{CC} for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.\n\
+ The insns to prepare the compare are saved in @var{prep_seq} and the compare\n\
+ insns are saved in @var{gen_seq}.  They will be emitted when all the\n\
+ compares in the the conditional comparision are generated without error.\n\
+ @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.",
  rtx, (rtx *prep_seq, rtx *gen_seq, int code, tree op0, tree op1),
  NULL)
 
 DEFHOOK
 (gen_ccmp_next,
- "This function prepare to emit a conditional comparison within a sequence of\n\
- conditional comparisons.  It returns a appropriate @code{CC} for passing to\n\
- @code{gen_ccmp_next} or @code{cbranch_optab}.  The insns to prepare the\n\
- compare are saved in @var{prep_seq} and the compare insns are saved in\n\
- @var{gen_seq}.  They will be emitted when all the compares in the conditional\n\
- comparision are generated without error.  The @var{prev} expression is the\n\
- result of a prior call to @code{gen_ccmp_first} or @code{gen_ccmp_next}.  It\n\
- may return @code{NULL} if the combination of @var{prev} and this comparison is\n\
- not supported, otherwise the result must be appropriate for passing to\n\
- @code{gen_ccmp_next} or @code{cbranch_optab}.  @var{code} is the\n\
- @code{rtx_code} of the compare for @var{op0} and @var{op1}.  @var{bit_code}\n\
- is @code{AND} or @code{IOR}, which is the op on the two compares.",
+ "This function prepares to emit a conditional comparison within a sequence\n\
+ of conditional comparisons.  It returns an appropriate comparison with\n\
+ @code{CC} for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.\n\
+ The insns to prepare the compare are saved in @var{prep_seq} and the compare\n\
+ insns are saved in @var{gen_seq}.  They will be emitted when all the\n\
+ compares in the conditional comparision are generated without error.  The\n\
+ @var{prev} expression is the result of a prior call to @code{gen_ccmp_first}\n\
+ or @code{gen_ccmp_next}.  It may return @code{NULL} if the combination of\n\
+ @var{prev} and this comparison is not supported, otherwise the result must\n\
+ be appropriate for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.\n\
+ @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.\n\
+ @var{bit_code} is @code{AND} or @code{IOR}, which is the op on the compares.",
  rtx, (rtx *prep_seq, rtx *gen_seq, rtx prev, int cmp_code, tree op0, tree op1, int bit_code),
  NULL)
 

@@ -11370,27 +11370,27 @@ modes and they have different conditional execution capability, such as ARM.
 
 @deftypefn {Target Hook} rtx TARGET_GEN_CCMP_FIRST (rtx *@var{prep_seq}, rtx *@var{gen_seq}, int @var{code}, tree @var{op0}, tree @var{op1})
 This function prepares to emit a comparison insn for the first compare in a
- sequence of conditional comparisions.  It returns a appropriate @code{CC}
- for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.  The insns to
- prepare the compare are saved in @var{prep_seq} and the compare insns are
- saved in @var{gen_seq}.  They will be emitted when all the compares in the
- the conditional comparision are generated without error.  @var{code} is
- the @code{rtx_code} of the compare for @var{op0} and @var{op1}.
+ sequence of conditional comparisions.  It returns an appropriate comparison
+ with @code{CC} for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.
+ The insns to prepare the compare are saved in @var{prep_seq} and the compare
+ insns are saved in @var{gen_seq}.  They will be emitted when all the
+ compares in the the conditional comparision are generated without error.
+ @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.
 @end deftypefn
 
 @deftypefn {Target Hook} rtx TARGET_GEN_CCMP_NEXT (rtx *@var{prep_seq}, rtx *@var{gen_seq}, rtx @var{prev}, int @var{cmp_code}, tree @var{op0}, tree @var{op1}, int @var{bit_code})
-This function prepare to emit a conditional comparison within a sequence of
- conditional comparisons.  It returns a appropriate @code{CC} for passing to
- @code{gen_ccmp_next} or @code{cbranch_optab}.  The insns to prepare the
- compare are saved in @var{prep_seq} and the compare insns are saved in
- @var{gen_seq}.  They will be emitted when all the compares in the conditional
- comparision are generated without error.  The @var{prev} expression is the
- result of a prior call to @code{gen_ccmp_first} or @code{gen_ccmp_next}.  It
- may return @code{NULL} if the combination of @var{prev} and this comparison is
- not supported, otherwise the result must be appropriate for passing to
- @code{gen_ccmp_next} or @code{cbranch_optab}.  @var{code} is the
- @code{rtx_code} of the compare for @var{op0} and @var{op1}.  @var{bit_code}
- is @code{AND} or @code{IOR}, which is the op on the two compares.
+This function prepares to emit a conditional comparison within a sequence
+ of conditional comparisons.  It returns an appropriate comparison with
+ @code{CC} for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.
+ The insns to prepare the compare are saved in @var{prep_seq} and the compare
+ insns are saved in @var{gen_seq}.  They will be emitted when all the
+ compares in the conditional comparision are generated without error.  The
+ @var{prev} expression is the result of a prior call to @code{gen_ccmp_first}
+ or @code{gen_ccmp_next}.  It may return @code{NULL} if the combination of
+ @var{prev} and this comparison is not supported, otherwise the result must
+ be appropriate for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.
+ @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.
+ @var{bit_code} is @code{AND} or @code{IOR}, which is the op on the compares.
 @end deftypefn
 
 @deftypefn {Target Hook} unsigned TARGET_LOOP_UNROLL_ADJUST (unsigned @var{nunroll}, struct loop *@var{loop})
