@@ -5185,19 +5185,27 @@ ira (FILE *f)
   setup_reg_equiv ();
   setup_reg_equiv_init ();
 
+  bool update_regstat = false;
+
   if (optimize && rebuild_p)
     {
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
       if (purge_all_dead_edges ())
-	delete_unreachable_blocks ();
+	{
+	  delete_unreachable_blocks ();
+	  update_regstat = true;
+	}
       timevar_pop (TV_JUMP);
     }
 
   allocated_reg_info_size = max_reg_num ();
 
   if (delete_trivially_dead_insns (get_insns (), max_reg_num ()))
-    df_analyze ();
+    {
+      df_analyze ();
+      update_regstat = true;
+    }
 
   /* It is not worth to do such improvement when we use a simple
      allocation because of -O0 usage or because the function is too
@@ -5308,7 +5316,7 @@ ira (FILE *f)
     check_allocation ();
 #endif
 
-  if (max_regno != max_regno_before_ira)
+  if (update_regstat || max_regno != max_regno_before_ira)
     {
       regstat_free_n_sets_and_refs ();
       regstat_free_ri ();
