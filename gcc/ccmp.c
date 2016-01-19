@@ -49,6 +49,10 @@ along with GCC; see the file COPYING3.  If not see
 	 - gen_ccmp_first expands the first compare in CCMP.
 	 - gen_ccmp_next expands the following compares.
 
+       Both hooks return a comparison with the CC register that is equivalent
+       to the value of the gimple comparison.  This is used by the next CCMP
+       and in the final conditional store.
+
      * We use cstorecc4 pattern to convert the CCmode intermediate to
        the integer mode result that expand_normal is expecting.
 
@@ -114,10 +118,12 @@ ccmp_candidate_p (gimple *g)
   return false;
 }
 
-/* PREV is the CC flag from precvious compares.  The function expands the
-   next compare based on G which ops previous compare with CODE.
+/* PREV is a comparison with the CC register which represents the
+   result of the previous CMP or CCMP.  The function expands the
+   next compare based on G which is ANDed/ORed with the previous
+   compare depending on CODE.
    PREP_SEQ returns all insns to prepare opearands for compare.
-   GEN_SEQ returnss all compare insns.  */
+   GEN_SEQ returns all compare insns.  */
 static rtx
 expand_ccmp_next (gimple *g, enum tree_code code, rtx prev,
 		  rtx *prep_seq, rtx *gen_seq)
@@ -210,7 +216,7 @@ expand_ccmp_expr_1 (gimple *g, rtx *prep_seq, rtx *gen_seq)
   return NULL_RTX;
 }
 
-/* Main entry to expand conditional compare statement G. 
+/* Main entry to expand conditional compare statement G.
    Return NULL_RTX if G is not a legal candidate or expand fail.
    Otherwise return the target.  */
 rtx
@@ -233,9 +239,10 @@ expand_ccmp_expr (gimple *g)
       enum insn_code icode;
       enum machine_mode cc_mode = CCmode;
       tree lhs = gimple_assign_lhs (g);
+      rtx_code cmp_code = GET_CODE (tmp);
 
 #ifdef SELECT_CC_MODE
-      cc_mode = SELECT_CC_MODE (NE, tmp, const0_rtx);
+      cc_mode = SELECT_CC_MODE (cmp_code, XEXP (tmp, 0), const0_rtx);
 #endif
       icode = optab_handler (cstore_optab, cc_mode);
       if (icode != CODE_FOR_nothing)
@@ -246,8 +253,8 @@ expand_ccmp_expr (gimple *g)
 	  emit_insn (prep_seq);
 	  emit_insn (gen_seq);
 
-	  tmp = emit_cstore (target, icode, NE, cc_mode, cc_mode,
-			     0, tmp, const0_rtx, 1, mode);
+	  tmp = emit_cstore (target, icode, cmp_code, cc_mode, cc_mode,
+			     0, XEXP (tmp, 0), const0_rtx, 1, mode);
 	  if (tmp)
 	    return tmp;
 	}

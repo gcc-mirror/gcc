@@ -1,3 +1,32 @@
+2016-01-19  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* target.def (gen_ccmp_first): Update documentation.
+	(gen_ccmp_next): Likewise.
+	* doc/tm.texi (gen_ccmp_first): Update documentation.
+	(gen_ccmp_next): Likewise.
+	* ccmp.c (expand_ccmp_expr): Extract cmp_code from return value of
+	expand_ccmp_expr_1.  Improve comments.
+	* config/aarch64/aarch64.md (ccmp_and): Use if_then_else for ccmp.
+	(ccmp_ior<mode>): Remove pattern.
+	(cmp<mode>): Remove expand.
+	(cmp): Globalize pattern.
+	(cstorecc4): Use cc_register.
+	(mov<mode>cc): Remove ccmp_cc_register check.
+	* config/aarch64/aarch64.c (aarch64_get_condition_code_1):
+	Simplify after removal of CC_DNE/* modes.
+	(aarch64_ccmp_mode_to_code): Remove.
+	(aarch64_print_operand): Remove 'K' case.  Merge 'm' and 'M' cases.
+	In 'k' case use integer as condition.
+	(aarch64_nzcv_codes): Remove inverted cases.
+	(aarch64_code_to_ccmode): Remove.
+	(aarch64_gen_ccmp_first): Use cmp pattern directly.  Return the correct
+	comparison with CC register to be used in folowing CCMP/branch/CSEL.
+	(aarch64_gen_ccmp_next): Use previous comparison and mode in CCMP
+	pattern.  Return the comparison with CC register.  Invert conditions
+	when bitcode is OR.
+	* config/aarch64/aarch64-modes.def: Remove CC_DNE/* modes.
+	* config/aarch64/predicates.md (ccmp_cc_register): Remove.
+
 2016-01-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraphunit.c (cgraph_node::reset): Clear thunk info and
