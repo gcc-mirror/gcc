@@ -538,10 +538,6 @@ plugin obtains the symbol resolution information which specifies
 which symbols provided by the claimed objects are bound from the
 rest of a binary being linked.
 
-Currently, the linker plugin  works only in combination
-with the Gold linker, but a GNU ld implementation is under
-development.
-
 GCC is designed to be independent of the rest of the toolchain
 and aims to support linkers without plugin support.  For this
 reason it does not use the linker plugin by default.  Instead,
