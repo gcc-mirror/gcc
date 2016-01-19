@@ -1,3 +1,9 @@
+2016-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/68824
+	* tsan/tsan_interceptors.cc (NEED_TLS_GET_ADDR, __tls_get_addr,
+	InitializeInterceptors): Cherry pick upstream r258119.
+
 2016-01-14  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* configure.ac: Replace the hard-coded -ldl requirement for
