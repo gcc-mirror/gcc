@@ -1,3 +1,11 @@
+2016-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2016-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/69135
+	* gcc.target/arm/pr69135_1.c: New test.
+
 2016-01-18  Alexander Fomin  <alexander.fomin@intel.com>
 
 	Backport from mainline

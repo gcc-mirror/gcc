@@ -1,3 +1,12 @@
+2016-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2016-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/69135
+	* config/arm/vfp.md (l<vrint_pattern><su_optab><mode>si2): Set "conds"
+	attribute to unconditional.  Remove %? from output template.
+
 2016-01-18  Alexander Fomin  <alexander.fomin@intel.com>
 
 	Backport from mainline
