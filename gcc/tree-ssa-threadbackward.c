@@ -99,6 +99,11 @@ fsm_find_control_statement_thread_paths (tree name,
 					 vec<basic_block, va_gc> *&path,
 					 bool seen_loop_phi)
 {
+  /* If NAME appears in an abnormal PHI, then don't try to trace its
+     value back through PHI nodes.  */
+  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+    return;
+
   gimple *def_stmt = SSA_NAME_DEF_STMT (name);
   basic_block var_bb = gimple_bb (def_stmt);
 
