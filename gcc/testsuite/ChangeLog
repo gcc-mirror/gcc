@@ -1,3 +1,10 @@
+2016-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/68820
+	* gcc.c-torture/execute/builtins/memops-asm.x: New file.
+	* gcc.c-torture/execute/builtins/strstr-asm.x: Ditto.
+	* gcc.c-torture/execute/builtins/strstr-asm.c: Remove dg-options.
+
 2016-01-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/66223
@@ -338,8 +345,7 @@
 
 2016-01-15  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
-	* gfortran.dg/bind_c_array_params_2.f90: Fix test patterns for
-	S/390.
+	* gfortran.dg/bind_c_array_params_2.f90: Fix test patterns for S/390.
 
 2016-01-15  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
