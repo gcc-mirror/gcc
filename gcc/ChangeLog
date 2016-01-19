@@ -1,3 +1,135 @@
+2016-01-19  Martin Jambor  <mjambor@suse.cz>
+	    Martin Liska  <mliska@suse.cz>
+	    Michael Matz <matz@suse.de>
+
+	* Makefile.in (OBJS): Add new source files.
+	(GTFILES): Add hsa.c.
+	* common.opt (disable_hsa): New variable.
+	(-Whsa): New warning.
+	* config.in (ENABLE_HSA): New.
+	* configure.ac: Treat hsa differently from other accelerators.
+	(OFFLOAD_TARGETS): Define ENABLE_OFFLOADING according to
+	$enable_offloading.
+	(ENABLE_HSA): Define ENABLE_HSA according to $enable_hsa.
+	* doc/install.texi (Configuration): Document --with-hsa-runtime,
+	--with-hsa-runtime-include, --with-hsa-runtime-lib and
+	--with-hsa-kmt-lib.
+	* doc/invoke.texi (-Whsa): Document.
+	(hsa-gen-debug-stores): Likewise.
+	* lto-wrapper.c (compile_images_for_offload_targets): Do not attempt
+	to invoke offload compiler for hsa acclerator.
+	* opts.c (common_handle_option): Determine whether HSA offloading
+	should be performed.
+	* params.def (PARAM_HSA_GEN_DEBUG_STORES): New parameter.
+	* builtin-types.def (BT_FN_VOID_UINT_PTR_INT_PTR): New.
+	(BT_FN_VOID_INT_OMPFN_SIZE_PTR_PTR_PTR_UINT_PTR_INT_INT): Removed.
+	(BT_FN_VOID_INT_OMPFN_SIZE_PTR_PTR_PTR_UINT_PTR_PTR): New.
+	* gimple-low.c (lower_stmt): Also handle GIMPLE_OMP_GRID_BODY.
+	* gimple-pretty-print.c (dump_gimple_omp_for): Also handle
+	GF_OMP_FOR_KIND_GRID_LOOP.
+	(dump_gimple_omp_block): Also handle GIMPLE_OMP_GRID_BODY.
+	(pp_gimple_stmt_1): Likewise.
+	* gimple-walk.c (walk_gimple_stmt): Likewise.
+	* gimple.c (gimple_build_omp_grid_body): New function.
+	(gimple_copy): Also handle GIMPLE_OMP_GRID_BODY.
+	* gimple.def (GIMPLE_OMP_GRID_BODY): New.
+	* gimple.h (enum gf_mask): Added GF_OMP_PARALLEL_GRID_PHONY,
+	GF_OMP_FOR_KIND_GRID_LOOP, GF_OMP_FOR_GRID_PHONY and
+	GF_OMP_TEAMS_GRID_PHONY.
+	(gimple_statement_omp_single_layout): Updated comments.
+	(gimple_build_omp_grid_body): New function.
+	(gimple_has_substatements): Also handle GIMPLE_OMP_GRID_BODY.
+	(gimple_omp_for_grid_phony): New function.
+	(gimple_omp_for_set_grid_phony): Likewise.
+	(gimple_omp_parallel_grid_phony): Likewise.
+	(gimple_omp_parallel_set_grid_phony): Likewise.
+	(gimple_omp_teams_grid_phony): Likewise.
+	(gimple_omp_teams_set_grid_phony): Likewise.
+	(gimple_return_set_retbnd): Also handle GIMPLE_OMP_GRID_BODY.
+	* omp-builtins.def (BUILT_IN_GOMP_OFFLOAD_REGISTER): New.
+	(BUILT_IN_GOMP_OFFLOAD_UNREGISTER): Likewise.
+	(BUILT_IN_GOMP_TARGET): Updated type.
+	* omp-low.c: Include symbol-summary.h, hsa.h and params.h.
+	(adjust_for_condition): New function.
+	(get_omp_for_step_from_incr): Likewise.
+	(extract_omp_for_data): Moved parts to adjust_for_condition and
+	get_omp_for_step_from_incr.
+	(build_outer_var_ref): Handle GIMPLE_OMP_GRID_BODY.
+	(fixup_child_record_type): Bail out if receiver_decl is NULL.
+	(scan_sharing_clauses): Handle OMP_CLAUSE__GRIDDIM_.
+	(scan_omp_parallel): Do not create child functions for phony
+	constructs.
+	(check_omp_nesting_restrictions): Handle GIMPLE_OMP_GRID_BODY.
+	(scan_omp_1_op): Checking assert we are not remapping to
+	ERROR_MARK.  Also also handle GIMPLE_OMP_GRID_BODY.
+	(parallel_needs_hsa_kernel_p): New function.
+	(expand_parallel_call): Register apprpriate parallel child
+	functions as HSA kernels.
+	(grid_launch_attributes_trees): New type.
+	(grid_attr_trees): New variable.
+	(grid_create_kernel_launch_attr_types): New function.
+	(grid_insert_store_range_dim): Likewise.
+	(grid_get_kernel_launch_attributes): Likewise.
+	(get_target_argument_identifier_1): Likewise.
+	(get_target_argument_identifier): Likewise.
+	(get_target_argument_value): Likewise.
+	(push_target_argument_according_to_value): Likewise.
+	(get_target_arguments): Likewise.
+	(expand_omp_target): Call get_target_arguments instead of looking
+	up for teams and thread limit.
+	(grid_expand_omp_for_loop): New function.
+	(grid_arg_decl_map): New type.
+	(grid_remap_kernel_arg_accesses): New function.
+	(grid_expand_target_kernel_body): New function.
+	(expand_omp): Call it.
+	(lower_omp_for): Do not emit phony constructs.
+	(lower_omp_taskreg): Do not emit phony constructs but create for them
+	a temporary variable receiver_decl.
+	(lower_omp_taskreg): Do not emit phony constructs.
+	(lower_omp_teams): Likewise.
+	(lower_omp_grid_body): New function.
+	(lower_omp_1): Call it.
+	(grid_reg_assignment_to_local_var_p): New function.
+	(grid_seq_only_contains_local_assignments): Likewise.
+	(grid_find_single_omp_among_assignments_1): Likewise.
+	(grid_find_single_omp_among_assignments): Likewise.
+	(grid_find_ungridifiable_statement): Likewise.
+	(grid_target_follows_gridifiable_pattern): Likewise.
+	(grid_remap_prebody_decls): Likewise.
+	(grid_copy_leading_local_assignments): Likewise.
+	(grid_process_kernel_body_copy): Likewise.
+	(grid_attempt_target_gridification): Likewise.
+	(grid_gridify_all_targets_stmt): Likewise.
+	(grid_gridify_all_targets): Likewise.
+	(execute_lower_omp): Call grid_gridify_all_targets.
+	(make_gimple_omp_edges): Handle GIMPLE_OMP_GRID_BODY.
+	* tree-core.h (omp_clause_code): Added OMP_CLAUSE__GRIDDIM_.
+	(tree_omp_clause): Added union field dimension.
+	* tree-pretty-print.c (dump_omp_clause): Handle OMP_CLAUSE__GRIDDIM_.
+	* tree.c (omp_clause_num_ops): Added number of arguments of
+	OMP_CLAUSE__GRIDDIM_.
+	(omp_clause_code_name): Added name of OMP_CLAUSE__GRIDDIM_.
+	(walk_tree_1): Handle OMP_CLAUSE__GRIDDIM_.
+	* tree.h (OMP_CLAUSE_GRIDDIM_DIMENSION): New.
+	(OMP_CLAUSE_SET_GRIDDIM_DIMENSION): Likewise.
+	(OMP_CLAUSE_GRIDDIM_SIZE): Likewise.
+	(OMP_CLAUSE_GRIDDIM_GROUP): Likewise.
+	* passes.def: Schedule pass_ipa_hsa and pass_gen_hsail.
+	* tree-pass.h (make_pass_gen_hsail): Declare.
+	(make_pass_ipa_hsa): Likewise.
+	* ipa-hsa.c: New file.
+	* lto-section-in.c (lto_section_name): Add hsa section name.
+	* lto-streamer.h (lto_section_type): Add hsa section.
+	* timevar.def (TV_IPA_HSA): New.
+        * hsa-brig-format.h: New file.
+	* hsa-brig.c: New file.
+	* hsa-dump.c: Likewise.
+	* hsa-gen.c: Likewise.
+	* hsa.c: Likewise.
+	* hsa.h: Likewise.
+	* toplev.c (compile_file): Call hsa_output_brig.
+	* hsa-regalloc.c: New file.
+
 2016-01-18  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69320

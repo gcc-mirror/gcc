@@ -239,6 +239,10 @@ Inserts call to __sanitizer_cov_trace_pc into every basic block.
 Variable
 bool dump_base_name_prefixed = false
 
+; Flag whether HSA generation has been explicitely disabled
+Variable
+bool flag_disable_hsa = false
+
 ###
 Driver
 
@@ -592,6 +596,10 @@ Common RejectNegative Joined UInteger Warning
 Wfree-nonheap-object
 Common Var(warn_free_nonheap_object) Init(1) Warning
 Warn when attempting to free a non-heap object.
+
+Whsa
+Common Var(warn_hsa) Init(1) Warning
+Warn when a function cannot be expanded to HSAIL.
 
 Winline
 Common Var(warn_inline) Warning

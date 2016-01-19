@@ -51,7 +51,8 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
   "ipcp_trans",
   "icf",
   "offload_table",
-  "mode_table"
+  "mode_table",
+  "hsa"
 };
 
 

@@ -305,7 +305,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wunused-but-set-parameter -Wunused-but-set-variable @gol
 -Wuseless-cast -Wvariadic-macros -Wvector-operation-performance @gol
 -Wvla -Wvolatile-register-var  -Wwrite-strings @gol
--Wzero-as-null-pointer-constant}
+-Wzero-as-null-pointer-constant -Whsa}
 
 @item C and Objective-C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
@@ -5693,6 +5693,10 @@ Suppress warnings when a positional initializer is used to initialize
 a structure that has been marked with the @code{designated_init}
 attribute.
 
+@item -Whsa
+Issue a warning when HSAIL cannot be emitted for the compiled function or
+OpenMP construct.
+
 @end table
 
 @node Debugging Options
@@ -9508,6 +9512,12 @@ dynamic, guided, auto, runtime).  The default is static.
 Maximum depth of recursion when querying properties of SSA names in things
 like fold routines.  One level of recursion corresponds to following a
 use-def chain.
+
+@item hsa-gen-debug-stores
+Enable emission of special debug stores within HSA kernels which are
+then read and reported by libgomp plugin.  Generation of these stores
+is disabled by default, use @option{--param hsa-gen-debug-stores=1} to
+enable it.
 @end table
 @end table
 

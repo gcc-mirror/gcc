@@ -144,6 +144,12 @@
 #endif
 
 
+/* Define this to enable support for generating HSAIL. */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_HSA
+#endif
+
+
 /* Define if gcc should always pass --build-id to linker. */
 #ifndef USED_FOR_TARGET
 #undef ENABLE_LD_BUILDID

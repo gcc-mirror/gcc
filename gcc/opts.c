@@ -1916,8 +1916,35 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_foffload_:
-      /* Deferred.  */
-      break;
+      {
+	const char *p = arg;
+	opts->x_flag_disable_hsa = true;
+	while (*p != 0)
+	  {
+	    const char *comma = strchr (p, ',');
+
+	    if ((strncmp (p, "disable", 7) == 0)
+		&& (p[7] == ',' || p[7] == '\0'))
+	      {
+		opts->x_flag_disable_hsa = true;
+		break;
+	      }
+
+	    if ((strncmp (p, "hsa", 3) == 0)
+		&& (p[3] == ',' || p[3] == '\0'))
+	      {
+#ifdef ENABLE_HSA
+		opts->x_flag_disable_hsa = false;
+#else
+		sorry ("HSA has not been enabled during configuration");
+#endif
+	      }
+	    if (!comma)
+	      break;
+	    p = comma + 1;
+	  }
+	break;
+      }
 
 #ifndef ACCEL_COMPILER
     case OPT_foffload_abi_:

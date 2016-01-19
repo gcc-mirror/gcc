@@ -376,6 +376,10 @@ DEFGSCODE(GIMPLE_OMP_TEAMS, "gimple_omp_teams", GSS_OMP_SINGLE_LAYOUT)
    CLAUSES is an OMP_CLAUSE chain holding the associated clauses.  */
 DEFGSCODE(GIMPLE_OMP_ORDERED, "gimple_omp_ordered", GSS_OMP_SINGLE_LAYOUT)
 
+/* GIMPLE_OMP_GRID_BODY <BODY> represents a parallel loop lowered for execution
+   on a GPU.  It is an artificial statement created by omp lowering.  */
+DEFGSCODE(GIMPLE_OMP_GRID_BODY, "gimple_omp_gpukernel", GSS_OMP)
+
 /* GIMPLE_PREDICT <PREDICT, OUTCOME> specifies a hint for branch prediction.
 
    PREDICT is one of the predictors from predict.def.

@@ -1,3 +1,10 @@
+2016-01-19  Martin Liska  <mliska@suse.cz>
+            Martin Jambor  <mjambor@suse.cz>
+
+	* lto-partition.c: Include "hsa.h"
+	(add_symbol_to_partition_1): Put hsa implementations into the
+	same partition as host implementations.
+
 2016-01-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/69003

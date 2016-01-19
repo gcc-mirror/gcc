@@ -1,3 +1,9 @@
+2016-01-19  Martin Jambor  <mjambor@suse.cz>
+
+	* types.def (BT_FN_VOID_UINT_PTR_INT_PTR): New.
+	(BT_FN_VOID_INT_OMPFN_SIZE_PTR_PTR_PTR_UINT_PTR_INT_INT): Removed.
+	(BT_FN_VOID_INT_OMPFN_SIZE_PTR_PTR_PTR_UINT_PTR_PTR): New.
+
 2016-01-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/64324

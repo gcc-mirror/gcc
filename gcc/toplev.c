@@ -75,6 +75,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcse.h"
 #include "tree-chkp.h"
 #include "omp-low.h"
+#include "hsa.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -517,6 +518,8 @@ compile_file (void)
 	chkp_finish_file ();
 
       omp_finish_file ();
+
+      hsa_output_brig ();
 
       output_shared_constant_pool ();
       output_object_blocks ();

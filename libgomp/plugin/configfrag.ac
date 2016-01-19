@@ -81,6 +81,62 @@ AC_SUBST(PLUGIN_NVPTX_CPPFLAGS)
 AC_SUBST(PLUGIN_NVPTX_LDFLAGS)
 AC_SUBST(PLUGIN_NVPTX_LIBS)
 
+# Look for HSA run-time, its includes and libraries
+
+HSA_RUNTIME_INCLUDE=
+HSA_RUNTIME_LIB=
+AC_SUBST(HSA_RUNTIME_INCLUDE)
+AC_SUBST(HSA_RUNTIME_LIB)
+HSA_RUNTIME_CPPFLAGS=
+HSA_RUNTIME_LDFLAGS=
+
+AC_ARG_WITH(hsa-runtime,
+	[AS_HELP_STRING([--with-hsa-runtime=PATH],
+		[specify prefix directory for installed HSA run-time package.
+		 Equivalent to --with-hsa-runtime-include=PATH/include
+		 plus --with-hsa-runtime-lib=PATH/lib])])
+AC_ARG_WITH(hsa-runtime-include,
+	[AS_HELP_STRING([--with-hsa-runtime-include=PATH],
+		[specify directory for installed HSA run-time include files])])
+AC_ARG_WITH(hsa-runtime-lib,
+	[AS_HELP_STRING([--with-hsa-runtime-lib=PATH],
+		[specify directory for the installed HSA run-time library])])
+if test "x$with_hsa_runtime" != x; then
+  HSA_RUNTIME_INCLUDE=$with_hsa_runtime/include
+  HSA_RUNTIME_LIB=$with_hsa_runtime/lib
+fi
+if test "x$with_hsa_runtime_include" != x; then
+  HSA_RUNTIME_INCLUDE=$with_hsa_runtime_include
+fi
+if test "x$with_hsa_runtime_lib" != x; then
+  HSA_RUNTIME_LIB=$with_hsa_runtime_lib
+fi
+if test "x$HSA_RUNTIME_INCLUDE" != x; then
+  HSA_RUNTIME_CPPFLAGS=-I$HSA_RUNTIME_INCLUDE
+fi
+if test "x$HSA_RUNTIME_LIB" != x; then
+  HSA_RUNTIME_LDFLAGS=-L$HSA_RUNTIME_LIB
+fi
+
+AC_ARG_WITH(hsa-kmt-lib,
+	[AS_HELP_STRING([--with-hsa-kmt-lib=PATH],
+		[specify directory for installed HSA KMT library.])])
+if test "x$with_hsa_kmt_lib" != x; then
+  HSA_RUNTIME_LDFLAGS="$HSA_RUNTIME_LDFLAGS -L$with_hsa_kmt_lib"
+  HSA_RUNTIME_LIB=
+fi
+
+PLUGIN_HSA=0
+PLUGIN_HSA_CPPFLAGS=
+PLUGIN_HSA_LDFLAGS=
+PLUGIN_HSA_LIBS=
+AC_SUBST(PLUGIN_HSA)
+AC_SUBST(PLUGIN_HSA_CPPFLAGS)
+AC_SUBST(PLUGIN_HSA_LDFLAGS)
+AC_SUBST(PLUGIN_HSA_LIBS)
+
+
+
 # Get offload targets and path to install tree of offloading compiler.
 offload_additional_options=
 offload_additional_lib_paths=
@@ -122,6 +178,49 @@ if test x"$enable_offload_targets" != x; then
 	    ;;
 	esac
 	;;
+      hsa*)
+	case "${target}" in
+	  x86_64-*-*)
+	    case " ${CC} ${CFLAGS} " in
+	      *" -m32 "*)
+	        PLUGIN_HSA=0
+		;;
+	      *)
+	        tgt_name=hsa
+	        PLUGIN_HSA=$tgt
+	        PLUGIN_HSA_CPPFLAGS=$HSA_RUNTIME_CPPFLAGS
+	        PLUGIN_HSA_LDFLAGS=$HSA_RUNTIME_LDFLAGS
+	        PLUGIN_HSA_LIBS="-lhsa-runtime64 -lhsakmt"
+
+	        PLUGIN_HSA_save_CPPFLAGS=$CPPFLAGS
+	        CPPFLAGS="$PLUGIN_HSA_CPPFLAGS $CPPFLAGS"
+	        PLUGIN_HSA_save_LDFLAGS=$LDFLAGS
+	        LDFLAGS="$PLUGIN_HSA_LDFLAGS $LDFLAGS"
+	        PLUGIN_HSA_save_LIBS=$LIBS
+	        LIBS="$PLUGIN_HSA_LIBS $LIBS"
+
+	        AC_LINK_IFELSE(
+	          [AC_LANG_PROGRAM(
+	            [#include "hsa.h"],
+	              [hsa_status_t status = hsa_init ()])],
+	          [PLUGIN_HSA=1])
+	        CPPFLAGS=$PLUGIN_HSA_save_CPPFLAGS
+	        LDFLAGS=$PLUGIN_HSA_save_LDFLAGS
+	        LIBS=$PLUGIN_HSA_save_LIBS
+	        case $PLUGIN_HSA in
+	          hsa*)
+	            HSA_PLUGIN=0
+	            AC_MSG_ERROR([HSA run-time package required for HSA support])
+	            ;;
+	        esac
+		;;
+	      esac
+    	    ;;
+	  *-*-*)
+	    PLUGIN_HSA=0
+            ;;
+        esac
+        ;;
       *)
 	AC_MSG_ERROR([unknown offload target specified])
 	;;
@@ -145,3 +244,6 @@ AC_DEFINE_UNQUOTED(OFFLOAD_TARGETS, "$offload_targets",
 AM_CONDITIONAL([PLUGIN_NVPTX], [test $PLUGIN_NVPTX = 1])
 AC_DEFINE_UNQUOTED([PLUGIN_NVPTX], [$PLUGIN_NVPTX],
   [Define to 1 if the NVIDIA plugin is built, 0 if not.])
+AM_CONDITIONAL([PLUGIN_HSA], [test $PLUGIN_HSA = 1])
+AC_DEFINE_UNQUOTED([PLUGIN_HSA], [$PLUGIN_HSA],
+  [Define to 1 if the HSA plugin is built, 0 if not.])

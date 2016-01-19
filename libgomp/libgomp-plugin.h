@@ -48,7 +48,8 @@ enum offload_target_type
   OFFLOAD_TARGET_TYPE_HOST = 2,
   /* OFFLOAD_TARGET_TYPE_HOST_NONSHM = 3 removed.  */
   OFFLOAD_TARGET_TYPE_NVIDIA_PTX = 5,
-  OFFLOAD_TARGET_TYPE_INTEL_MIC = 6
+  OFFLOAD_TARGET_TYPE_INTEL_MIC = 6,
+  OFFLOAD_TARGET_TYPE_HSA = 7
 };
 
 /* Auxiliary struct, used for transferring pairs of addresses from plugin
