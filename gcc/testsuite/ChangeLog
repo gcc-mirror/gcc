@@ -1,5 +1,9 @@
 2015-01-19  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* gcc.target/aarch64/ccmp_1.c: Add new tests.
+
+2015-01-19  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* gcc.target/aarch64/ccmp_1.c: New testcase.
 
 2016-01-19  Marek Polacek  <polacek@redhat.com>

@@ -80,5 +80,16 @@ f13 (int a, int b)
   return a == 3 || a == 0;
 }
 
-/* { dg-final { scan-assembler "fccmp\t" } } */
-/* { dg-final { scan-assembler "fccmpe\t" } } */
+/* { dg-final { scan-assembler "cmp\t(.)+32" } } */
+/* { dg-final { scan-assembler "cmp\t(.)+33" } } */
+/* { dg-final { scan-assembler "cmp\t(.)+34" } } */
+/* { dg-final { scan-assembler "cmp\t(.)+35" } } */
+
+/* { dg-final { scan-assembler-times "\tcmp\tw\[0-9\]+, 0" 4 } } */
+/* { dg-final { scan-assembler-times "fcmpe\t(.)+0\\.0" 2 } } */
+/* { dg-final { scan-assembler-times "fcmp\t(.)+0\\.0" 2 } } */
+
+/* { dg-final { scan-assembler "adds\t" } } */
+/* { dg-final { scan-assembler-times "\tccmp\t" 11 } } */
+/* { dg-final { scan-assembler-times "fccmp\t.*0\\.0" 1 } } */
+/* { dg-final { scan-assembler-times "fccmpe\t.*0\\.0" 1 } } */

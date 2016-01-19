@@ -1,4 +1,10 @@
-2016-01-19  Wilco Dijkstra  <wdijkstr@arm.com>
+2015-01-19  Wilco Dijkstra  <wdijkstr@arm.com>
+	    Jiong Wang  <jiong.wang@arm.com>
+
+	* ccmp.c (expand_ccmp_expr_1): Cost the instruction sequences
+	generated from different expand order.
+
+2015-01-19  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* /config/aarch64/aarch64.c (aarch64_if_then_else_costs):
 	Add support for CCMP costing.
