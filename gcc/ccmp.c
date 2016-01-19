@@ -170,7 +170,7 @@ expand_ccmp_expr_1 (gimple *g, rtx *prep_seq, rtx *gen_seq)
 	  int unsignedp0, unsignedp1;
 	  rtx_code rcode0, rcode1;
 	  int speed_p = optimize_insn_for_speed_p ();
-	  rtx tmp2, ret, ret2;
+	  rtx tmp2, ret = NULL_RTX, ret2 = NULL_RTX;
 	  unsigned cost1 = MAX_COST;
 	  unsigned cost2 = MAX_COST;
 
