@@ -1,3 +1,10 @@
+2016-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69336
+	* tree-ssa-scopedtables.c (avail_expr_hash): Handle all
+	handled components with get_ref_base_and_extent.
+	(equal_mem_array_ref_p): Adjust.
+
 2016-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/65779
