@@ -1,3 +1,11 @@
+2016-01-15  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/69320
+	* gcc.c-torture/pr69320-1.c: New test.
+	* gcc.c-torture/pr69320-2.c: New test.
+	* gcc.c-torture/pr69320-3.c: New test.
+	* gcc.c-torture/pr69320-4.c: New test.
+
 2016-01-18  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/11858
