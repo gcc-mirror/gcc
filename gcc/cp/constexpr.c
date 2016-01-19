@@ -4027,6 +4027,14 @@ maybe_constant_value (tree t, tree decl)
   return ret;
 }
 
+/* Dispose of the whole CV_CACHE.  */
+
+void
+clear_cv_cache (void)
+{
+  gt_cleare_cache (cv_cache);
+}
+
 /* Like maybe_constant_value but first fully instantiate the argument.
 
    Note: this is equivalent to instantiate_non_dependent_expr_sfinae

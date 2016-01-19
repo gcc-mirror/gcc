@@ -1896,6 +1896,14 @@ c_fully_fold (tree x, bool /*in_init*/, bool */*maybe_const*/)
 
 static GTY((cache, deletable)) cache_map fold_cache;
 
+/* Dispose of the whole FOLD_CACHE.  */
+
+void
+clear_fold_cache (void)
+{
+  gt_cleare_cache (fold_cache);
+}
+
 /*  This function tries to fold an expression X.
     To avoid combinatorial explosion, folding results are kept in fold_cache.
     If we are processing a template or X is invalid, we don't fold at all.
