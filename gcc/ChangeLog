@@ -1,3 +1,7 @@
+2016-01-19  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* ccmp.c (expand_ccmp_expr_1): Avoid spurious unused warnings.
+
 2016-01-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/66223
