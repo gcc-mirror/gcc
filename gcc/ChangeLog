@@ -1,3 +1,11 @@
+2016-01-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/66223
+	* ipa-devirt.c (is_cxa_pure_virtual_p): New function.
+	(maybe_record_node): Record cxa_pure_virtual as the only possible
+	target if there are not ohter candidates.
+	(possible_polymorphic_call_target_p): Accept cxa_pure_virtual.
+
 2016-01-19  Richard Biener  <rguenther@suse.de>
 
 	* hsa-gen.c (get_memory_order_name): Use MEMMODEL_ constants.
