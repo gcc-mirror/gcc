@@ -1,5 +1,13 @@
 2016-01-19  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR lto/69133
+	* cgraphunit.c (cgraph_node::expand_thunk): When forcing gimple
+	assume that the node has body.
+	* cgraph.c (cgraph_node::get_untransformed_body): Use gimple_body_p
+	check.
+	
+2016-01-19  Jan Hubicka  <hubicka@ucw.cz>
+
 	* lto-streamer-out.c (lto_output): Do not stream instrumentation
 	thunks.
 

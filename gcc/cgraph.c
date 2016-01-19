@@ -3305,10 +3305,12 @@ cgraph_node::get_untransformed_body (void)
   size_t len;
   tree decl = this->decl;
 
-  if (DECL_RESULT (decl))
+  /* Check if body is already there.  Either we have gimple body or
+     the function is thunk and in that case we set DECL_ARGUMENTS.  */
+  if (DECL_ARGUMENTS (decl) || gimple_has_body_p (decl))
     return false;
 
-  gcc_assert (in_lto_p);
+  gcc_assert (in_lto_p && !DECL_RESULT (decl));
 
   timevar_push (TV_IPA_LTO_GIMPLE_IN);
 

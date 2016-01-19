@@ -1664,7 +1664,9 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       greturn *ret;
       bool alias_is_noreturn = TREE_THIS_VOLATILE (alias);
 
-      if (in_lto_p)
+      /* We may be called from expand_thunk that releses body except for
+	 DECL_ARGUMENTS.  In this case force_gimple_thunk is true.  */
+      if (in_lto_p && !force_gimple_thunk)
 	get_untransformed_body ();
       a = DECL_ARGUMENTS (thunk_fndecl);
 
