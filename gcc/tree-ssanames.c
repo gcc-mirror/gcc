@@ -437,8 +437,7 @@ ssa_name_has_boolean_range (tree op)
      only takes on values [0..1] as determined by VRP
      analysis.  */
   if (INTEGRAL_TYPE_P (TREE_TYPE (op))
-      && (TYPE_PRECISION (TREE_TYPE (op)) > 1
-	  || TYPE_UNSIGNED (TREE_TYPE (op)))
+      && (TYPE_PRECISION (TREE_TYPE (op)) > 1)
       && wi::eq_p (get_nonzero_bits (op), 1))
     return true;
 

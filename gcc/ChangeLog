@@ -1,3 +1,14 @@
+2016-01-18  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/69320
+	* tree-ssa-dom.c (record_edge_info): For comparisons against a boolean
+	ranged object, do nothing if the RHS constant is not [0..1].
+	(optimize_stmt): Comparing a boolean ranged object against a
+	constant outside [0..1] results in a compile-time constant.
+
+	* tree-ssanames.c (ssa_name_has_boolean_range): Remove unnecessary
+	test.
+
 2016-01-18  Sandra Loosemore <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Invoking GCC): Add new section to menu.
