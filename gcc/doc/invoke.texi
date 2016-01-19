@@ -2742,9 +2742,9 @@ This warning is enabled by default.
 
 @item -Wlto-type-mismatch
 @opindex Wlto-type-mismatch
-@opindex Wno-lto-type-mistmach
+@opindex Wno-lto-type-mismatch
 
-During the link-time optimization warn about type mismatches in between
+During the link-time optimization warn about type mismatches in
 global declarations from different compilation units.
 Requires @option{-flto} to be enabled.  Enabled by default.
 
@@ -3261,7 +3261,7 @@ a message which is too long to fit on a single line.
 @item -fdiagnostics-color[=@var{WHEN}]
 @itemx -fno-diagnostics-color
 @opindex fdiagnostics-color
-@cindex highlight, color, colour
+@cindex highlight, color
 @vindex GCC_COLORS @r{environment variable}
 Use color in diagnostics.  @var{WHEN} is @samp{never}, @samp{always},
 or @samp{auto}.  The default depends on how the compiler has been configured,
@@ -3346,7 +3346,7 @@ option is known to the diagnostic machinery).  Specifying the
 @opindex fno-diagnostics-show-caret
 @opindex fdiagnostics-show-caret
 By default, each diagnostic emitted includes the original source line
-and a caret '^' indicating the column.  This option suppresses this
+and a caret @samp{^} indicating the column.  This option suppresses this
 information.  The source line is truncated to @var{n} characters, if
 the @option{-fmessage-length=n} option is given.  When the output is done
 to the terminal, the width is limited to the width given by the
@@ -5049,7 +5049,7 @@ types. @option{-Wconversion-null} is enabled by default.
 @item -Wzero-as-null-pointer-constant @r{(C++ and Objective-C++ only)}
 @opindex Wzero-as-null-pointer-constant
 @opindex Wno-zero-as-null-pointer-constant
-Warn when a literal '0' is used as null pointer constant.  This can
+Warn when a literal @samp{0} is used as null pointer constant.  This can
 be useful to facilitate the conversion to @code{nullptr} in C++11.
 
 @item -Wsubobject-linkage @r{(C++ and Objective-C++ only)}
@@ -5878,19 +5878,19 @@ except when selective scheduling is enabled.
 
 @item -gsplit-dwarf
 @opindex gsplit-dwarf
-Separate as much dwarf debugging information as possible into a
-separate output file with the extension .dwo.  This option allows
+Separate as much DWARF debugging information as possible into a
+separate output file with the extension @file{.dwo}.  This option allows
 the build system to avoid linking files with debug information.  To
-be useful, this option requires a debugger capable of reading .dwo
+be useful, this option requires a debugger capable of reading @file{.dwo}
 files.
 
 @item -gpubnames
 @opindex gpubnames
-Generate dwarf .debug_pubnames and .debug_pubtypes sections.
+Generate DWARF @code{.debug_pubnames} and @code{.debug_pubtypes} sections.
 
 @item -ggnu-pubnames
 @opindex ggnu-pubnames
-Generate .debug_pubnames and .debug_pubtypes sections in a format
+Generate @code{.debug_pubnames} and @code{.debug_pubtypes} sections in a format
 suitable for conversion into a GDB@ index.  This option is only useful
 with a linker that can produce GDB@ index version 7.
 
@@ -5906,18 +5906,17 @@ and on some objects @code{.debug_types} produces larger instead of smaller
 debugging information.
 
 @item -grecord-gcc-switches
+@item -gno-record-gcc-switches
 @opindex grecord-gcc-switches
+@opindex gno-record-gcc-switches
 This switch causes the command-line options used to invoke the
 compiler that may affect code generation to be appended to the
 DW_AT_producer attribute in DWARF debugging information.  The options
 are concatenated with spaces separating them from each other and from
-the compiler version.  See also @option{-frecord-gcc-switches} for another
-way of storing compiler options into the object file.  This is the default.
-
-@item -gno-record-gcc-switches
-@opindex gno-record-gcc-switches
-Disallow appending command-line options to the DW_AT_producer attribute
-in DWARF debugging information.
+the compiler version.  
+It is enabled by default.
+See also @option{-frecord-gcc-switches} for another
+way of storing compiler options into the object file.  
 
 @item -gstrict-dwarf
 @opindex gstrict-dwarf
@@ -7591,7 +7590,7 @@ The default is @samp{simple} at levels @option{-O}, @option{-Os}, and
 @opindex freorder-blocks-and-partition
 In addition to reordering basic blocks in the compiled function, in order
 to reduce number of taken branches, partitions hot and cold basic blocks
-into separate sections of the assembly and .o files, to improve
+into separate sections of the assembly and @file{.o} files, to improve
 paging and cache locality performance.
 
 This optimization is automatically turned off in the presence of
@@ -7825,6 +7824,9 @@ had been part of the same translation unit.
 
 To use the link-time optimizer, @option{-flto} and optimization
 options should be specified at compile time and during the final link.
+It is recommended that you compile all the files participating in the
+same link with the same options and also specify those options at
+link time.  
 For example:
 
 @smallexample
@@ -7855,15 +7857,15 @@ merges them together into a single GIMPLE representation and optimizes
 them as usual to produce @file{myprog}.
 
 The only important thing to keep in mind is that to enable link-time
-optimizations you need to use the GCC driver to perform the link-step.
+optimizations you need to use the GCC driver to perform the link step.
 GCC then automatically performs link-time optimization if any of the
 objects involved were compiled with the @option{-flto} command-line option.  
 You generally
 should specify the optimization options to be used for link-time
 optimization though GCC tries to be clever at guessing an
-optimization level to use from the options used at compile-time
-if you fail to specify one at link-time.  You can always override
-the automatic decision to do link-time optimization at link-time
+optimization level to use from the options used at compile time
+if you fail to specify one at link time.  You can always override
+the automatic decision to do link-time optimization at link time
 by passing @option{-fno-lto} to the link command.
 
 To make whole program optimization effective, it is necessary to make
@@ -7876,14 +7878,14 @@ the linker plugin is not available, @option{-fwhole-program} should be
 used to allow the compiler to make these assumptions, which leads
 to more aggressive optimization decisions.
 
-When @option{-fuse-linker-plugin} is not enabled then, when a file is
+When @option{-fuse-linker-plugin} is not enabled, when a file is
 compiled with @option{-flto}, the generated object file is larger than
 a regular object file because it contains GIMPLE bytecodes and the usual
 final code (see @option{-ffat-lto-objects}.  This means that
 object files with LTO information can be linked as normal object
 files; if @option{-fno-lto} is passed to the linker, no
 interprocedural optimizations are applied.  Note that when
-@option{-fno-fat-lto-objects} is enabled the compile-stage is faster
+@option{-fno-fat-lto-objects} is enabled the compile stage is faster
 but you cannot perform a regular, non-LTO link on them.
 
 Additionally, the optimization flags used to compile individual files
@@ -7909,22 +7911,21 @@ further processing.
 
 There are some code generation flags preserved by GCC when
 generating bytecodes, as they need to be used during the final link
-stage.  Generally options specified at link-time override those
-specified at compile-time.
+stage.  Generally options specified at link time override those
+specified at compile time.
 
 If you do not specify an optimization level option @option{-O} at
-link-time then GCC computes one based on the optimization levels
-used when compiling the object files.  The highest optimization
-level wins here.
+link time, then GCC uses the highest optimization level 
+used when compiling the object files.
 
-Currently, the following options and their setting are take from
-the first object file that explicitely specified it: 
+Currently, the following options and their settings are taken from
+the first object file that explicitly specifies them: 
 @option{-fPIC}, @option{-fpic}, @option{-fpie}, @option{-fcommon},
 @option{-fexceptions}, @option{-fnon-call-exceptions}, @option{-fgnu-tm}
 and all the @option{-m} target flags.
 
-Certain ABI changing flags are required to match in all compilation-units
-and trying to override this at link-time with a conflicting value
+Certain ABI-changing flags are required to match in all compilation units,
+and trying to override this at link time with a conflicting value
 is ignored.  This includes options such as @option{-freg-struct-return}
 and @option{-fpcc-struct-return}. 
 
@@ -7933,12 +7934,8 @@ Other options such as @option{-ffp-contract}, @option{-fno-strict-overflow},
 are passed through to the link stage and merged conservatively for
 conflicting translation units.  Specifically
 @option{-fno-strict-overflow}, @option{-fwrapv} and @option{-fno-trapv} take
-precedence and for example @option{-ffp-contract=off} takes precedence
-over @option{-ffp-contract=fast}.  You can override them at linke-time.
-
-It is recommended that you compile all the files participating in the
-same link with the same options and also specify those options at
-link time.
+precedence; and for example @option{-ffp-contract=off} takes precedence
+over @option{-ffp-contract=fast}.  You can override them at link time.
 
 If LTO encounters objects with C linkage declared with incompatible
 types in separate translation units to be linked together (undefined
@@ -8038,7 +8035,7 @@ the link-time optimization step directly from the WPA phase.
 @item -flto-odr-type-merging
 @opindex flto-odr-type-merging
 Enable streaming of mangled types names of C++ types and their unification
-at linktime.  This increases size of LTO object files, but enable
+at link time.  This increases size of LTO object files, but enables
 diagnostics about One Definition Rule violations.
 
 @item -flto-compression-level=@var{n}
@@ -8259,7 +8256,7 @@ it might, and @option{-fno-math-errno} is the default.
 
 Allow optimizations for floating-point arithmetic that (a) assume
 that arguments and results are valid and (b) may violate IEEE or
-ANSI standards.  When used at link-time, it may include libraries
+ANSI standards.  When used at link time, it may include libraries
 or startup files that change the default FPU control word or other
 similar optimizations.
 
@@ -8922,7 +8919,7 @@ doing loop versioning for alias in the vectorizer.
 
 @item vect-max-peeling-for-alignment
 The maximum number of loop peels to enhance access alignment
-for vectorizer. Value -1 means 'no limit'.
+for vectorizer. Value -1 means no limit.
 
 @item max-iterations-to-track
 The maximum number of iterations of a loop the brute-force algorithm
@@ -9219,7 +9216,7 @@ redundancies for loads and stores.  If this limit is hit the search
 is aborted and the load or store is not considered redundant.  The
 number of queries is algorithmically limited to the number of
 stores on all paths from the load to the function entry.
-The default maxmimum number of queries is 1000.
+The default maximum number of queries is 1000.
 
 @item ira-max-loops-num
 IRA uses regional register allocation by default.  If a function
@@ -9261,7 +9258,7 @@ motion optimization performed on them.  The default value of the
 parameter is 1000 for @option{-O1} and 10000 for @option{-O2} and above.
 
 @item loop-max-datarefs-for-datadeps
-Building data dapendencies is expensive for very large loops.  This
+Building data dependencies is expensive for very large loops.  This
 parameter limits the number of data references in loops that are
 considered for data dependence analysis.  These large loops are no
 handled by the optimizations using loop data dependencies.
@@ -9406,7 +9403,7 @@ The default value is 75.  A small positive adjustment is applied for
 statements with memory operands as those are even more profitable so sink.
 
 @item max-stores-to-sink
-The maximum number of conditional stores paires that can be sunk.  Set to 0
+The maximum number of conditional store pairs that can be sunk.  Set to 0
 if either vectorization (@option{-ftree-vectorize}) or if-conversion
 (@option{-ftree-loop-if-convert}) is disabled.  The default is 2.
 
@@ -9674,7 +9671,7 @@ out-of-bounds and use-after-free bugs.
 See @uref{https://github.com/google/sanitizers/wiki/AddressSanitizer} for
 more details.  The run-time behavior can be influenced using the
 @env{ASAN_OPTIONS} environment variable.  When set to @code{help=1},
-the available options are shown at startup of the instrumended program.  See
+the available options are shown at startup of the instrumented program.  See
 @url{https://github.com/google/sanitizers/wiki/AddressSanitizerFlags#run-time-flags}
 for a list of supported options.
 
@@ -9904,7 +9901,7 @@ is usable even in freestanding environments.
 @item -fsanitize-coverage=trace-pc
 @opindex fsanitize-coverage=trace-pc
 Enable coverage-guided fuzzing code instrumentation.
-Inserts call to __sanitizer_cov_trace_pc into every basic block.
+Inserts a call to @code{__sanitizer_cov_trace_pc} into every basic block.
 
 @item -fbounds-check
 @opindex fbounds-check
@@ -11765,8 +11762,8 @@ text / bss / data / heap / stack / dso start locations.
 
 @item -freport-bug
 @opindex freport-bug
-Collect and dump debug information into temporary file if ICE in C/C++
-compiler occured.
+Collect and dump debug information into a temporary file if an
+internal compiler error (ICE) occurs.
 
 @item -fdump-unnumbered
 @opindex fdump-unnumbered
@@ -12798,7 +12795,7 @@ Do not assume that unaligned memory references are handled by the system.
 @itemx -mno-omit-leaf-frame-pointer
 @opindex momit-leaf-frame-pointer
 @opindex mno-omit-leaf-frame-pointer
-Omit or keep the frame pointer in leaf functions.  The former behaviour is the
+Omit or keep the frame pointer in leaf functions.  The former behavior is the
 default.
 
 @item -mtls-dialect=desc
@@ -12983,7 +12980,7 @@ That allows code to run on hardware variants that lack these registers.
 
 @item -mprefer-short-insn-regs
 @opindex mprefer-short-insn-regs
-Preferrentially allocate registers that allow short instruction generation.
+Preferentially allocate registers that allow short instruction generation.
 This can result in increased instruction count, so this may either reduce or
 increase overall code size.
 
@@ -13275,31 +13272,31 @@ The following instructions are enabled: MPYW, and MPYUW.
 @item 2
 @opindex wlh1
 The multiply option is set to wlh1: 32x32 multiplier, fully
-pipelined (1 stage).  The following instructions are additionaly
+pipelined (1 stage).  The following instructions are additionally
 enabled: MPY, MPYU, MPYM, MPYMU, and MPY_S.
 
 @item 3
 @opindex wlh2
 The multiply option is set to wlh2: 32x32 multiplier, fully pipelined
-(2 stages).  The following instructions are additionaly enabled: MPY,
+(2 stages).  The following instructions are additionally enabled: MPY,
 MPYU, MPYM, MPYMU, and MPY_S.
 
 @item 4
 @opindex wlh3
 The multiply option is set to wlh3: Two 16x16 multiplier, blocking,
-sequential.  The following instructions are additionaly enabled: MPY,
+sequential.  The following instructions are additionally enabled: MPY,
 MPYU, MPYM, MPYMU, and MPY_S.
 
 @item 5
 @opindex wlh4
 The multiply option is set to wlh4: One 16x16 multiplier, blocking,
-sequential.  The following instructions are additionaly enabled: MPY,
+sequential.  The following instructions are additionally enabled: MPY,
 MPYU, MPYM, MPYMU, and MPY_S.
 
 @item 6
 @opindex wlh5
 The multiply option is set to wlh5: One 32x4 multiplier, blocking,
-sequential.  The following instructions are additionaly enabled: MPY,
+sequential.  The following instructions are additionally enabled: MPY,
 MPYU, MPYM, MPYMU, and MPY_S.
 
 @end table
@@ -13521,7 +13518,7 @@ Indicate target register priority for r0..r3 / r12..r15.
 
 @item -mlra-priority-noncompact
 @opindex mlra-priority-noncompact
-Reduce target regsiter priority for r0..r3 / r12..r15.
+Reduce target register priority for r0..r3 / r12..r15.
 
 @item -mno-millicode
 @opindex mno-millicode
@@ -14307,7 +14304,7 @@ the compiler and are subject to some limitations:
 The compiler never sets @code{EIND}.
 
 @item
-The compiler uses @code{EIND} implicitely in @code{EICALL}/@code{EIJMP}
+The compiler uses @code{EIND} implicitly in @code{EICALL}/@code{EIJMP}
 instructions or might read @code{EIND} directly in order to emulate an
 indirect call/jump by means of a @code{RET} instruction.
 
@@ -16476,7 +16473,7 @@ to 64 bits.  These are HP-UX specific flags.
 (Dis/En)able data speculative scheduling before reload.
 This results in generation of @code{ld.a} instructions and
 the corresponding check instructions (@code{ld.c} / @code{chk.a}).
-The default is 'disable'.
+The default setting is disabled.
 
 @item -msched-ar-data-spec
 @itemx -mno-sched-ar-data-spec
@@ -16485,7 +16482,7 @@ The default is 'disable'.
 (En/Dis)able data speculative scheduling after reload.
 This results in generation of @code{ld.a} instructions and
 the corresponding check instructions (@code{ld.c} / @code{chk.a}).
-The default is 'enable'.
+The default setting is enabled.
 
 @item -mno-sched-control-spec
 @itemx -msched-control-spec
@@ -16495,7 +16492,7 @@ The default is 'enable'.
 available only during region scheduling (i.e.@: before reload).
 This results in generation of the @code{ld.s} instructions and
 the corresponding check instructions @code{chk.s}.
-The default is 'disable'.
+The default setting is disabled.
 
 @item -msched-br-in-data-spec
 @itemx -mno-sched-br-in-data-spec
@@ -16504,7 +16501,7 @@ The default is 'disable'.
 (En/Dis)able speculative scheduling of the instructions that
 are dependent on the data speculative loads before reload.
 This is effective only with @option{-msched-br-data-spec} enabled.
-The default is 'enable'.
+The default setting is enabled.
 
 @item -msched-ar-in-data-spec
 @itemx -mno-sched-ar-in-data-spec
@@ -16513,7 +16510,7 @@ The default is 'enable'.
 (En/Dis)able speculative scheduling of the instructions that
 are dependent on the data speculative loads after reload.
 This is effective only with @option{-msched-ar-data-spec} enabled.
-The default is 'enable'.
+The default setting is enabled.
 
 @item -msched-in-control-spec
 @itemx -mno-sched-in-control-spec
@@ -16522,7 +16519,7 @@ The default is 'enable'.
 (En/Dis)able speculative scheduling of the instructions that
 are dependent on the control speculative loads.
 This is effective only with @option{-msched-control-spec} enabled.
-The default is 'enable'.
+The default setting is enabled.
 
 @item -mno-sched-prefer-non-data-spec-insns
 @itemx -msched-prefer-non-data-spec-insns
@@ -16531,7 +16528,7 @@ The default is 'enable'.
 If enabled, data-speculative instructions are chosen for schedule
 only if there are no other choices at the moment.  This makes
 the use of the data speculation much more conservative.
-The default is 'disable'.
+The default setting is disabled.
 
 @item -mno-sched-prefer-non-control-spec-insns
 @itemx -msched-prefer-non-control-spec-insns
@@ -16540,7 +16537,7 @@ The default is 'disable'.
 If enabled, control-speculative instructions are chosen for schedule
 only if there are no other choices at the moment.  This makes
 the use of the control speculation much more conservative.
-The default is 'disable'.
+The default setting is disabled.
 
 @item -mno-sched-count-spec-in-critical-path
 @itemx -msched-count-spec-in-critical-path
@@ -16549,7 +16546,7 @@ The default is 'disable'.
 If enabled, speculative dependencies are considered during
 computation of the instructions priorities.  This makes the use of the
 speculation a bit more conservative.
-The default is 'disable'.
+The default setting is disabled.
 
 @item -msched-spec-ldc
 @opindex msched-spec-ldc
@@ -18512,7 +18509,7 @@ to undefined behavior.
 @opindex mrelax-pic-calls
 Try to turn PIC calls that are normally dispatched via register
 @code{$25} into direct calls.  This is only possible if the linker can
-resolve the destination at link-time and if the destination is within
+resolve the destination at link time and if the destination is within
 range for a direct call.
 
 @option{-mrelax-pic-calls} is the default if GCC was configured to use
@@ -18796,7 +18793,7 @@ This option is also passed on to the assembler.
 This option enables or disables warnings about conflicts between the
 MCU name specified by the @option{-mmcu} option and the ISA set by the
 @option{-mcpu} option and/or the hardware multiply support set by the
-@option{-mhwmult} option.  It also toggles warnings about unrecognised
+@option{-mhwmult} option.  It also toggles warnings about unrecognized
 MCU names.  This option is on by default.
 
 @item -mcpu=
@@ -18834,7 +18831,7 @@ for the original 16-bit-only multiply supported by early MCUs.
 A value of @samp{auto} can also be given.  This tells GCC to deduce
 the hardware multiply support based upon the MCU name provided by the
 @option{-mmcu} option.  If no @option{-mmcu} option is specified or if
-the MCU name is not recognised then no hardware multiply support is
+the MCU name is not recognized then no hardware multiply support is
 assumed.  @code{auto} is the default setting.
 
 Hardware multiplies are normally performed by calling a library
@@ -18863,8 +18860,8 @@ do not have one of the @code{lower}, @code{upper}, @code{either} or
 @code{upper}, @code{either} or @code{any}.  The first three behave
 like the corresponding attribute.  The fourth possible value -
 @code{any} - is the default.  It leaves placement entirely up to the
-linker script and how it assigns the standard sections (.text, .data
-etc) to the memory regions.
+linker script and how it assigns the standard sections
+(@code{.text}, @code{.data}, etc) to the memory regions.
 
 @item -msilicon-errata=
 @opindex msilicon-errata
@@ -19018,14 +19015,14 @@ compiled with the same @option{-G} setting.
 Generate GP-relative accesses for all data objects in the program.  If you
 use this option, the entire data and BSS segments
 of your program must fit in 64K of memory and you must use an appropriate
-linker script to allocate them within the addressible range of the
+linker script to allocate them within the addressable range of the
 global pointer.
 
 @item all
 Generate GP-relative addresses for function pointers as well as data
 pointers.  If you use this option, the entire text, data, and BSS segments
 of your program must fit in 64K of memory and you must use an appropriate
-linker script to allocate them within the addressible range of the
+linker script to allocate them within the addressable range of the
 global pointer.
 
 @end table
@@ -19539,11 +19536,11 @@ support to use, unless this is overridden by an explicit
 @option{-mmul=none} option on the command line.  Thus specifying
 @option{-mcpu=g13} enables the use of the G13 hardware multiply
 peripheral and specifying @option{-mcpu=g10} disables the use of
-hardware multipications altogether.
+hardware multiplications altogether.
 
 Note, although the RL78/G14 core is the default target, specifying
 @option{-mcpu=g14} or @option{-mcpu=rl78} on the command line does
-change the behaviour of the toolchain since it also enables G14
+change the behavior of the toolchain since it also enables G14
 hardware multiply support.  If these options are not specified on the
 command line then software multiplication routines will be used even
 though the code targets the RL78 core.  This is for backwards
@@ -19762,7 +19759,7 @@ the AltiVec instruction set.  You may also need to set
 enhancements.
 
 When @option{-maltivec} is used, rather than @option{-maltivec=le} or
-@option{-maltivec=be}, the element order for Altivec intrinsics such
+@option{-maltivec=be}, the element order for AltiVec intrinsics such
 as @code{vec_splat}, @code{vec_extract}, and @code{vec_insert} 
 match array element order corresponding to the endianness of the
 target.  That is, element zero identifies the leftmost element in a
@@ -19772,23 +19769,23 @@ little-endian platform.
 
 @item -maltivec=be
 @opindex maltivec=be
-Generate Altivec instructions using big-endian element order,
+Generate AltiVec instructions using big-endian element order,
 regardless of whether the target is big- or little-endian.  This is
 the default when targeting a big-endian platform.
 
-The element order is used to interpret element numbers in Altivec
+The element order is used to interpret element numbers in AltiVec
 intrinsics such as @code{vec_splat}, @code{vec_extract}, and
 @code{vec_insert}.  By default, these match array element order
 corresponding to the endianness for the target.
 
 @item -maltivec=le
 @opindex maltivec=le
-Generate Altivec instructions using little-endian element order,
+Generate AltiVec instructions using little-endian element order,
 regardless of whether the target is big- or little-endian.  This is
 the default when targeting a little-endian platform.  This option is
 currently ignored when targeting a big-endian platform.
 
-The element order is used to interpret element numbers in Altivec
+The element order is used to interpret element numbers in AltiVec
 intrinsics such as @code{vec_splat}, @code{vec_extract}, and
 @code{vec_insert}.  By default, these match array element order
 corresponding to the endianness for the target.
@@ -21133,7 +21130,7 @@ define vector type variables and arguments.  @samp{vector} is only
 available when GNU extensions are enabled.  It will not be expanded
 when requesting strict standard compliance e.g. with @option{-std=c99}.
 In addition to the GCC low-level builtins @option{-mzvector} enables
-a set of builtins added for compatibility with Altivec-style
+a set of builtins added for compatibility with AltiVec-style
 implementations like Power and Cell.  In order to make use of these
 builtins the header file @file{vecintrin.h} needs to be included.
 @option{-mzvector} is disabled by default.
@@ -21487,7 +21484,7 @@ Control the IEEE compliance of floating-point comparisons, which affects the
 handling of cases where the result of a comparison is unordered.  By default
 @option{-mieee} is implicitly enabled.  If @option{-ffinite-math-only} is
 enabled @option{-mno-ieee} is implicitly set, which results in faster
-floating-point greater-equal and less-equal comparisons.  The implcit settings
+floating-point greater-equal and less-equal comparisons.  The implicit settings
 can be overridden by specifying either @option{-mieee} or @option{-mno-ieee}.
 
 @item -minline-ic_invalidate
@@ -24176,9 +24173,9 @@ privileges, isn't available.
 @item -fwritable-relocated-rdata
 @opindex fno-writable-relocated-rdata
 This option is available for MinGW and Cygwin targets.  It specifies
-that relocated-data in read-only section is put into .data
+that relocated-data in read-only section is put into the @code{.data}
 section.  This is a necessary for older runtimes not supporting
-modification of .rdata sections for pseudo-relocation.
+modification of @code{.rdata} sections for pseudo-relocation.
 
 @item -mpe-aligned-commons
 @opindex mpe-aligned-commons
@@ -24342,7 +24339,7 @@ strings to control their behavior.  The spec strings built into GCC can
 be overridden by using the @option{-specs=} command-line switch to specify
 a spec file.
 
-@dfn{Spec files} are plaintext files that are used to construct spec
+@dfn{Spec files} are plain-text files that are used to construct spec
 strings.  They consist of a sequence of directives separated by blank
 lines.  The type of directive is determined by the first non-whitespace
 character on the line, which can be one of the following:
