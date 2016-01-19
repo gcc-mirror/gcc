@@ -1,3 +1,8 @@
+2016-01-19  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* tree-vect-stmts.c (vectorizable_store): Check
+	rhs vectype.
+
 2016-01-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/68446
