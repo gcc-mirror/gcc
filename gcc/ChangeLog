@@ -1,3 +1,16 @@
+2016-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/65779
+	* shrink-wrap.c: Include valtrack.h.
+	(move_insn_for_shrink_wrap): Add DEBUG argument.  If
+	MAY_HAVE_DEBUG_INSNS, call dead_debug_add on DEBUG_INSNs
+	in between insn and where it will be moved to.  Call
+	dead_debug_insert_temp.
+	(prepare_shrink_wrap): Adjust caller.  Call dead_debug_local_init
+	first and dead_debug_local_finish at the end.
+	For uses and defs bitmap, handle all regs in between REGNO and
+	END_REGNO, not just the first one.
+
 2016-01-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69352
