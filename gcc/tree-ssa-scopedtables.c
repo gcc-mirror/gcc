@@ -214,7 +214,7 @@ avail_expr_hash (class expr_hash_elt *p)
     {
       /* T could potentially be a switch index or a goto dest.  */
       tree t = expr->ops.single.rhs;
-      if (TREE_CODE (t) == MEM_REF || TREE_CODE (t) == ARRAY_REF)
+      if (TREE_CODE (t) == MEM_REF || handled_component_p (t))
 	{
 	  /* Make equivalent statements of both these kinds hash together.
 	     Dealing with both MEM_REF and ARRAY_REF allows us not to care
@@ -252,9 +252,9 @@ avail_expr_hash (class expr_hash_elt *p)
 static bool
 equal_mem_array_ref_p (tree t0, tree t1)
 {
-  if (TREE_CODE (t0) != MEM_REF && TREE_CODE (t0) != ARRAY_REF)
+  if (TREE_CODE (t0) != MEM_REF && ! handled_component_p (t0))
     return false;
-  if (TREE_CODE (t1) != MEM_REF && TREE_CODE (t1) != ARRAY_REF)
+  if (TREE_CODE (t1) != MEM_REF && ! handled_component_p (t1))
     return false;
 
   if (!types_compatible_p (TREE_TYPE (t0), TREE_TYPE (t1)))
