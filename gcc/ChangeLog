@@ -1,3 +1,7 @@
+2016-01-19  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* ira.c (ira): Update regstat data if we deleted insns.
+
 2016-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/68955
@@ -13,7 +17,7 @@
 	assume that the node has body.
 	* cgraph.c (cgraph_node::get_untransformed_body): Use gimple_body_p
 	check.
-	
+
 2016-01-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-streamer-out.c (lto_output): Do not stream instrumentation
