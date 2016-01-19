@@ -990,6 +990,8 @@ lto_symtab_merge_symbols (void)
 tree
 lto_symtab_prevailing_virtual_decl (tree decl)
 {
+  if (DECL_ABSTRACT_P (decl))
+    return decl;
   gcc_checking_assert (!type_in_anonymous_namespace_p (DECL_CONTEXT (decl))
 		       && DECL_ASSEMBLER_NAME_SET_P (decl));
 

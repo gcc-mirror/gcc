@@ -1,3 +1,9 @@
+2016-01-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/69136
+	* lto-symtab.c (lto_symtab_prevailing_virtual_decl): Abstract
+	decls have no assemblernames.
+
 2016-01-19  Martin Liska  <mliska@suse.cz>
             Martin Jambor  <mjambor@suse.cz>
 
