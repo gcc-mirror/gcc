@@ -6,6 +6,9 @@
 	* cp-tree.h (clear_cv_cache, clear_fold_cache): Declare.
 	* decl.c (finish_enum_value_list): Call them.
 
+	PR c++/68965
+	* pt.c (tsubst_copy): Mark elements in expanded vector as used.
+
 2016-01-18  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/11858
