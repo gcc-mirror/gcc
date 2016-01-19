@@ -1,5 +1,15 @@
 2016-01-19  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* ccmp.c (ccmp_candidate_p): Remove integer-only restriction.
+	* config/aarch64/aarch64.md (fccmp<mode>): New pattern.
+	(fccmpe<mode>): Likewise.
+	(fcmp): Rename to fcmp and globalize pattern.
+	(fcmpe): Likewise.
+	* config/aarch64/aarch64.c (aarch64_gen_ccmp_first): Add FP support.
+	(aarch64_gen_ccmp_next): Add FP support.
+
+2015-01-19  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* target.def (gen_ccmp_first): Update documentation.
 	(gen_ccmp_next): Likewise.
 	* doc/tm.texi (gen_ccmp_first): Update documentation.

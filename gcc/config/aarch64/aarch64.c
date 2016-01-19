@@ -12964,6 +12964,18 @@ aarch64_gen_ccmp_first (rtx *prep_seq, rtx *gen_seq,
       icode = CODE_FOR_cmpdi;
       break;
 
+    case SFmode:
+      cmp_mode = SFmode;
+      cc_mode = aarch64_select_cc_mode ((rtx_code) code, op0, op1);
+      icode = cc_mode == CCFPEmode ? CODE_FOR_fcmpesf : CODE_FOR_fcmpsf;
+      break;
+
+    case DFmode:
+      cmp_mode = DFmode;
+      cc_mode = aarch64_select_cc_mode ((rtx_code) code, op0, op1);
+      icode = cc_mode == CCFPEmode ? CODE_FOR_fcmpedf : CODE_FOR_fcmpdf;
+      break;
+
     default:
       end_sequence ();
       return NULL_RTX;
@@ -13025,6 +13037,18 @@ aarch64_gen_ccmp_next (rtx *prep_seq, rtx *gen_seq, rtx prev, int cmp_code,
     case DImode:
       cmp_mode = DImode;
       icode = CODE_FOR_ccmpdi;
+      break;
+
+    case SFmode:
+      cmp_mode = SFmode;
+      cc_mode = aarch64_select_cc_mode ((rtx_code) cmp_code, op0, op1);
+      icode = cc_mode == CCFPEmode ? CODE_FOR_fccmpesf : CODE_FOR_fccmpsf;
+      break;
+
+    case DFmode:
+      cmp_mode = DFmode;
+      cc_mode = aarch64_select_cc_mode ((rtx_code) cmp_code, op0, op1);
+      icode = cc_mode == CCFPEmode ? CODE_FOR_fccmpedf : CODE_FOR_fccmpdf;
       break;
 
     default:

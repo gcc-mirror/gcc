@@ -96,12 +96,6 @@ ccmp_candidate_p (gimple *g)
       || gimple_bb (gs0) != gimple_bb (g))
     return false;
 
-  if (!(INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (gs0)))
-       || POINTER_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (gs0))))
-      || !(INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (gs1)))
-	   || POINTER_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (gs1)))))
-    return false;
-
   tcode0 = gimple_assign_rhs_code (gs0);
   tcode1 = gimple_assign_rhs_code (gs1);
   if (TREE_CODE_CLASS (tcode0) == tcc_comparison
