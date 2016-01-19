@@ -1,3 +1,12 @@
+2016-01-19  Sergei Trofimovich <siarheit@google.com>
+
+	Backport from mainline
+	PR other/60465
+	* config/ia64/ia64.c (ia64_expand_load_address): Use gprel64
+	for local symbolic operands.
+	* config/ia64/predicates.md (local_symbolic_operand64): New
+	predicate.
+
 2016-01-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline:
