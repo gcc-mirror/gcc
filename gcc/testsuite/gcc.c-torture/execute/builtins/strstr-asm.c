@@ -2,7 +2,6 @@
 
    Ensure all expected transformations of builtin strstr occur and
    perform correctly in presence of redirect.  */
-/* { dg-options "-ffat-lto-objects" } */
 
 #define ASMNAME(cname)  ASMNAME2 (__USER_LABEL_PREFIX__, cname)
 #define ASMNAME2(prefix, cname) STRING (prefix) cname
