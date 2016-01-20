@@ -28539,6 +28539,24 @@ $as_echo "#define TARGET_DEFAULT_LONG_DOUBLE_128 1" >>confdefs.h
 
 fi
 
+# Check if the target LIBC supports exporting the AT_PLATFORM and AT_HWCAP
+# values in the TCB.  Currently, only GLIBC 2.23 and later support this.
+gcc_cv_libc_provides_hwcap_in_tcb=no
+case "$target" in
+  powerpc*-*-linux*)
+
+if test $glibc_version_major -gt 2 \
+  || ( test $glibc_version_major -eq 2 && test $glibc_version_minor -ge 23 ); then :
+  gcc_cv_libc_provides_hwcap_in_tcb=yes
+fi
+    ;;
+esac
+if test x$gcc_cv_libc_provides_hwcap_in_tcb = xyes; then
+
+$as_echo "#define TARGET_LIBC_PROVIDES_HWCAP_IN_TCB 1" >>confdefs.h
+
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking dl_iterate_phdr in target C library" >&5
 $as_echo_n "checking dl_iterate_phdr in target C library... " >&6; }
 gcc_cv_target_dl_iterate_phdr=unknown

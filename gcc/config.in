@@ -2074,6 +2074,12 @@
 #endif
 
 
+/* Define if your target C Library provides the AT_HWCAP value in the TCB */
+#ifndef USED_FOR_TARGET
+#undef TARGET_LIBC_PROVIDES_HWCAP_IN_TCB
+#endif
+
+
 /* Define if your target C library provides stack protector support */
 #ifndef USED_FOR_TARGET
 #undef TARGET_LIBC_PROVIDES_SSP

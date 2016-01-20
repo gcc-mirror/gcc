@@ -1,3 +1,25 @@
+2016-01-20  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/ppc-auxv.h: New file.
+	* config/rs6000/rs6000-builtin.def (cpu_init): Add new builtin.
+	(cpu_is): Likewise.
+	(cpu_supports): Likewise.
+	* config/rs6000/rs6000.c: include "ppc-auxv.h".
+	(cpu_is_info): New variable.
+	(cpu_supports_info): Likewise.
+	(tcb_verification_symbol): Likewise.
+	(cpu_builtin_p): Likewise.
+	(cpu_expand_builtin): New function.
+	(rs6000_expand_ternop_builtin): Add support for CPU builtin functions.
+	(rs6000_init_builtins): Likewise.
+	(rs6000_elf_file_end): Emit HWCAP in TCB verification symbol.
+	* config/rs6000/rs6000.h (TLS_REGNUM): New define.
+	* configure.ac (gcc_cv_libc_provides_hwcap_in_tcb): New test.
+	* configure: Regenerate.
+	* config.in: Likewise.
+	* doc/extend.texi (PowerPC Built-in Functions): Document
+	__builtin_cpu_init, __builtin_cpu_is and __builtin_cpu_supports.
+
 2016-01-20  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/68609
