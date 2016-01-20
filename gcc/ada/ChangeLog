@@ -1,3 +1,46 @@
+2016-01-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch2.adb (Expand_Current_Value): Make an appropriate character
+	literal if the entity is of a character type.
+	* gcc-interface/lang.opt (fsigned-char): New option.
+	* gcc-interface/misc.c (gnat_handle_option): Accept it.
+	(gnat_init): Adjust comment.
+	* gcc-interface/gigi.h (finish_character_type): New prototype.
+	(maybe_character_type): New inline function.
+	(maybe_character_value): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Enumeration_Type>: For
+	a character of CHAR_TYPE_SIZE, make a signed type if flag_signed_char.
+	Set TYPE_ARTIFICIAL early and call finish_character_type on the type.
+	<E_Enumeration_Subtype>: For a subtype of character with RM_Size and
+	Esize equal to CHAR_TYPE_SIZE, make a signed type if flag_signed_char.
+	Copy TYPE_STRING_FLAG from type to subtype.
+	<E_Array_Type>: Deal with character index types.
+	<E_Array_Subtype>: Likewise.
+	* gcc-interface/trans.c (gigi): Replace unsigned_char_type_node with
+	char_type_node throughout.
+	(build_raise_check): Likewise.
+	(get_type_length): Deal with character types.
+	(Attribute_to_gnu) <Attr_Pos>: Likewise.  Remove obsolete range check
+	code.  Minor tweak.
+	<Attr_Pred>: Likewise.
+	(Loop_Statement_to_gnu): Likewise.
+	(Raise_Error_to_gnu): Likewise.
+	<N_Indexed_Component>: Deal with character index types.  Remove
+	obsolete code.
+	<N_Slice>: Likewise.
+	<N_Type_Conversion>: Deal with character types.  Minor tweak.
+	<N_Unchecked_Type_Conversion>: Likewise.
+	<N_In>: Likewise.
+	<N_Op_Eq>: Likewise.
+	(emit_index_check): Delete.
+	* gcc-interface/utils.c (finish_character_type): New function.
+	(gnat_signed_or_unsigned_type_for): Deal with built-in character types.
+	* gcc-interface/utils2.c (expand_sloc): Replace unsigned_char_type_node
+	with char_type_node.
+	(build_call_raise): Likewise.
+	(build_call_raise_column): Likewise.
+	(build_call_raise_range): Likewise.
+
 2016-01-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (build_call_raise_column): Adjust prototype.

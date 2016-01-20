@@ -169,7 +169,8 @@ gnat_handle_option (size_t scode, const char *arg, int value, int kind,
       break;
 
     case OPT_fshort_enums:
-      /* This is handled by the middle-end.  */
+    case OPT_fsigned_char:
+      /* These are handled by the middle-end.  */
       break;
 
     case OPT_fbuiltin_printf:
@@ -353,8 +354,7 @@ static bool
 gnat_init (void)
 {
   /* Do little here, most of the standard declarations are set up after the
-     front-end has been run.  Use the same `char' as C, this doesn't really
-     matter since we'll use the explicit `unsigned char' for Character.  */
+     front-end has been run.  Use the same `char' as C for Interfaces.C.  */
   build_common_tree_nodes (flag_signed_char, false);
 
   /* In Ada, we use an unsigned 8-bit type for the default boolean type.  */

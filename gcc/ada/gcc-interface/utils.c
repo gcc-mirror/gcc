@@ -1595,6 +1595,48 @@ record_builtin_type (const char *name, tree type, bool artificial_p)
     debug_hooks->type_decl (type_decl, false);
 }
 
+/* Finish constructing the character type CHAR_TYPE.
+
+  In Ada character types are enumeration types and, as a consequence, are
+  represented in the front-end by integral types holding the positions of
+  the enumeration values as defined by the language, which means that the
+  integral types are unsigned.
+
+  Unfortunately the signedness of 'char' in C is implementation-defined
+  and GCC even has the option -fsigned-char to toggle it at run time.
+  Since GNAT's philosophy is to be compatible with C by default, to wit
+  Interfaces.C.char is defined as a mere copy of Character, we may need
+  to declare character types as signed types in GENERIC and generate the
+  necessary adjustments to make them behave as unsigned types.
+
+  The overall strategy is as follows: if 'char' is unsigned, do nothing;
+  if 'char' is signed, translate character types of CHAR_TYPE_SIZE and
+  character subtypes with RM_Size = Esize = CHAR_TYPE_SIZE into signed
+  types.  The idea is to ensure that the bit pattern contained in the
+  Esize'd objects is not changed, even though the numerical value will
+  be interpreted differently depending on the signedness.
+
+  For character types, the bounds are implicit and, therefore, need to
+  be adjusted.  Morever, the debug info needs the unsigned version.  */
+
+void
+finish_character_type (tree char_type)
+{
+  if (TYPE_UNSIGNED (char_type))
+    return;
+
+  /* Make a copy of the unsigned version since we'll modify it below.  */
+  tree unsigned_char_type = copy_type (gnat_unsigned_type_for (char_type));
+
+  TYPE_NAME (unsigned_char_type) = TYPE_NAME (char_type);
+  TYPE_STRING_FLAG (unsigned_char_type) = TYPE_STRING_FLAG (char_type);
+  TYPE_ARTIFICIAL (unsigned_char_type) = TYPE_ARTIFICIAL (char_type);
+
+  SET_TYPE_DEBUG_TYPE (char_type, unsigned_char_type);
+  SET_TYPE_RM_MIN_VALUE (char_type, TYPE_MIN_VALUE (unsigned_char_type));
+  SET_TYPE_RM_MAX_VALUE (char_type, TYPE_MAX_VALUE (unsigned_char_type));
+}
+
 /* Given a record type RECORD_TYPE and a list of FIELD_DECL nodes FIELD_LIST,
    finish constructing the record type as a fat pointer type.  */
 
@@ -3360,6 +3402,9 @@ gnat_type_for_mode (machine_mode mode, int unsignedp)
 tree
 gnat_signed_or_unsigned_type_for (int unsignedp, tree type_node)
 {
+  if (type_node == char_type_node)
+    return unsignedp ? unsigned_char_type_node : signed_char_type_node;
+
   tree type = gnat_type_for_size (TYPE_PRECISION (type_node), unsignedp);
 
   if (TREE_CODE (type_node) == INTEGER_TYPE && TYPE_MODULAR_P (type_node))

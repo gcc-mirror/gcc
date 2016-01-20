@@ -1560,16 +1560,24 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
     case E_Enumeration_Type:
       /* A special case: for the types Character and Wide_Character in
 	 Standard, we do not list all the literals.  So if the literals
-	 are not specified, make this an unsigned integer type.  */
+	 are not specified, make this an integer type.  */
       if (No (First_Literal (gnat_entity)))
 	{
-	  gnu_type = make_unsigned_type (esize);
+	  if (esize == CHAR_TYPE_SIZE && flag_signed_char)
+	    gnu_type = make_signed_type (CHAR_TYPE_SIZE);
+	  else
+	    gnu_type = make_unsigned_type (esize);
 	  TYPE_NAME (gnu_type) = gnu_entity_name;
 
 	  /* Set TYPE_STRING_FLAG for Character and Wide_Character types.
 	     This is needed by the DWARF-2 back-end to distinguish between
 	     unsigned integer types and character types.  */
 	  TYPE_STRING_FLAG (gnu_type) = 1;
+
+	  /* This flag is needed by the call just below.  */
+	  TYPE_ARTIFICIAL (gnu_type) = artificial_p;
+
+	  finish_character_type (gnu_type);
 	}
       else
 	{
@@ -1765,12 +1773,19 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
 	esize = UI_To_Int (RM_Size (gnat_entity));
 
-      /* This should be an unsigned type if the base type is unsigned or
+      /* First subtypes of Character are treated as Character; otherwise
+	 this should be an unsigned type if the base type is unsigned or
 	 if the lower bound is constant and non-negative or if the type
 	 is biased.  */
-      if (Is_Unsigned_Type (Etype (gnat_entity))
-	  || Is_Unsigned_Type (gnat_entity)
-	  || Has_Biased_Representation (gnat_entity))
+      if (kind == E_Enumeration_Subtype
+	  && No (First_Literal (Etype (gnat_entity)))
+	  && Esize (gnat_entity) == RM_Size (gnat_entity)
+	  && esize == CHAR_TYPE_SIZE
+	  && flag_signed_char)
+	gnu_type = make_signed_type (CHAR_TYPE_SIZE);
+      else if (Is_Unsigned_Type (Etype (gnat_entity))
+	       || Is_Unsigned_Type (gnat_entity)
+	       || Has_Biased_Representation (gnat_entity))
 	gnu_type = make_unsigned_type (esize);
       else
 	gnu_type = make_signed_type (esize);
@@ -1788,6 +1803,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
       TYPE_BIASED_REPRESENTATION_P (gnu_type)
 	= Has_Biased_Representation (gnat_entity);
+
+      /* Set TYPE_STRING_FLAG for Character and Wide_Character subtypes.  */
+      TYPE_STRING_FLAG (gnu_type) = TYPE_STRING_FLAG (TREE_TYPE (gnu_type));
 
       /* Inherit our alias set from what we're a subtype of.  Subtypes
 	 are not different types and a pointer can designate any instance
@@ -2114,7 +2132,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  {
 	    char field_name[16];
 	    tree gnu_index_type = get_unpadded_type (Etype (gnat_index));
-	    tree gnu_index_base_type = get_base_type (gnu_index_type);
+	    tree gnu_index_base_type
+	      = maybe_character_type (get_base_type (gnu_index_type));
 	    tree gnu_lb_field, gnu_hb_field, gnu_orig_min, gnu_orig_max;
 	    tree gnu_min, gnu_max, gnu_high;
 
@@ -2363,7 +2382,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       gnat_base_index = Next_Index (gnat_base_index))
 	    {
 	      tree gnu_index_type = get_unpadded_type (Etype (gnat_index));
-	      tree gnu_index_base_type = get_base_type (gnu_index_type);
+	      tree gnu_index_base_type
+		= maybe_character_type (get_base_type (gnu_index_type));
 	      tree gnu_orig_min
 		= convert (gnu_index_base_type,
 			   TYPE_MIN_VALUE (gnu_index_type));
@@ -2375,7 +2395,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      tree gnu_base_index_type
 		= get_unpadded_type (Etype (gnat_base_index));
 	      tree gnu_base_index_base_type
-	        = get_base_type (gnu_base_index_type);
+	        = maybe_character_type (get_base_type (gnu_base_index_type));
 	      tree gnu_base_orig_min
 		= convert (gnu_base_index_base_type,
 			   TYPE_MIN_VALUE (gnu_base_index_type));

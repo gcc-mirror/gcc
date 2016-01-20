@@ -231,7 +231,6 @@ static void elaborate_all_entities (Node_Id);
 static void process_freeze_entity (Node_Id);
 static void process_decls (List_Id, List_Id, Node_Id, bool, bool);
 static tree emit_range_check (tree, Node_Id, Node_Id);
-static tree emit_index_check (tree, tree, tree, tree, Node_Id);
 static tree emit_check (tree, tree, int, Node_Id);
 static tree build_unary_op_trapv (enum tree_code, tree, tree, Node_Id);
 static tree build_binary_op_trapv (enum tree_code, tree, tree, tree, Node_Id);
@@ -354,7 +353,7 @@ gigi (Node_Id gnat_root,
   /* Record the builtin types.  Define `integer' and `character' first so that
      dbx will output them first.  */
   record_builtin_type ("integer", integer_type_node, false);
-  record_builtin_type ("character", unsigned_char_type_node, false);
+  record_builtin_type ("character", char_type_node, false);
   record_builtin_type ("boolean", boolean_type_node, false);
   record_builtin_type ("void", void_type_node, false);
 
@@ -364,8 +363,9 @@ gigi (Node_Id gnat_root,
 		 false);
 
   /* Likewise for character as the type for Standard.Character.  */
+  finish_character_type (char_type_node);
   save_gnu_tree (Base_Type (standard_character),
-		 TYPE_NAME (unsigned_char_type_node),
+		 TYPE_NAME (char_type_node),
 		 false);
 
   /* Likewise for boolean as the type for Standard.Boolean.  */
@@ -544,21 +544,21 @@ gigi (Node_Id gnat_root,
   others_decl
     = create_var_decl (get_identifier ("OTHERS"),
 		       get_identifier ("__gnat_others_value"),
-		       unsigned_char_type_node, NULL_TREE,
+		       char_type_node, NULL_TREE,
 		       true, false, true, false, false, true, false,
 		       NULL, Empty);
 
   all_others_decl
     = create_var_decl (get_identifier ("ALL_OTHERS"),
 		       get_identifier ("__gnat_all_others_value"),
-		       unsigned_char_type_node, NULL_TREE,
+		       char_type_node, NULL_TREE,
 		       true, false, true, false, false, true, false,
 		       NULL, Empty);
 
   unhandled_others_decl
     = create_var_decl (get_identifier ("UNHANDLED_OTHERS"),
 		       get_identifier ("__gnat_unhandled_others_value"),
-		       unsigned_char_type_node, NULL_TREE,
+		       char_type_node, NULL_TREE,
 		       true, false, true, false, false, true, false,
 		       NULL, Empty);
 
@@ -571,8 +571,7 @@ gigi (Node_Id gnat_root,
 	= create_subprog_decl
 	  (get_identifier ("__gnat_last_chance_handler"), NULL_TREE,
 	   build_function_type_list (void_type_node,
-				     build_pointer_type
-				     (unsigned_char_type_node),
+				     build_pointer_type (char_type_node),
 				     integer_type_node, NULL_TREE),
 	   NULL_TREE, is_disabled, false, true, true, true, true, false,
 	   NULL, Empty);
@@ -720,8 +719,7 @@ build_raise_check (int check, enum exception_info_kind kind)
       Name_Buffer[Name_Len] = 0;
       ftype
 	= build_function_type_list (void_type_node,
-				    build_pointer_type
-				    (unsigned_char_type_node),
+				    build_pointer_type (char_type_node),
 				    integer_type_node, NULL_TREE);
     }
   else
@@ -732,8 +730,7 @@ build_raise_check (int check, enum exception_info_kind kind)
       Name_Buffer[Name_Len + 4] = 0;
       ftype
 	= build_function_type_list (void_type_node,
-				    build_pointer_type
-				    (unsigned_char_type_node),
+				    build_pointer_type (char_type_node),
 				    integer_type_node, integer_type_node,
 				    t, t, NULL_TREE);
     }
@@ -1547,7 +1544,7 @@ static tree
 get_type_length (tree type, tree result_type)
 {
   tree comp_type = get_base_type (result_type);
-  tree base_type = get_base_type (type);
+  tree base_type = maybe_character_type (get_base_type (type));
   tree lb = convert (base_type, TYPE_MIN_VALUE (type));
   tree hb = convert (base_type, TYPE_MAX_VALUE (type));
   tree length
@@ -1605,13 +1602,11 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
     case Attr_Val:
       /* These are just conversions since representation clauses for
 	 enumeration types are handled in the front-end.  */
-      {
-	bool checkp = Do_Range_Check (First (Expressions (gnat_node)));
-	gnu_result = gnat_to_gnu (First (Expressions (gnat_node)));
-	gnu_result_type = get_unpadded_type (Etype (gnat_node));
-	gnu_result = convert_with_check (Etype (gnat_node), gnu_result,
-					 checkp, checkp, true, gnat_node);
-      }
+      gnu_expr = gnat_to_gnu (First (Expressions (gnat_node)));
+      if (attribute == Attr_Pos)
+	gnu_expr = maybe_character_value (gnu_expr);
+      gnu_result_type = get_unpadded_type (Etype (gnat_node));
+      gnu_result = convert (gnu_result_type, gnu_expr);
       break;
 
     case Attr_Pred:
@@ -1620,24 +1615,12 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	 clauses for enumeration types are handled in the front-end.  */
       gnu_expr = gnat_to_gnu (First (Expressions (gnat_node)));
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
-
-      if (Do_Range_Check (First (Expressions (gnat_node))))
-	{
-	  gnu_expr = gnat_protect_expr (gnu_expr);
-	  gnu_expr
-	    = emit_check
-	      (build_binary_op (EQ_EXPR, boolean_type_node,
-				gnu_expr,
-				attribute == Attr_Pred
-				? TYPE_MIN_VALUE (gnu_result_type)
-				: TYPE_MAX_VALUE (gnu_result_type)),
-	       gnu_expr, CE_Range_Check_Failed, gnat_node);
-	}
-
+      gnu_type = maybe_character_type (gnu_result_type);
+      if (TREE_TYPE (gnu_expr) != gnu_type)
+	gnu_expr = convert (gnu_type, gnu_expr);
       gnu_result
 	= build_binary_op (attribute == Attr_Pred ? MINUS_EXPR : PLUS_EXPR,
-			   gnu_result_type, gnu_expr,
-			   build_int_cst (gnu_result_type, 1));
+			   gnu_type, gnu_expr, build_int_cst (gnu_type, 1));
       break;
 
     case Attr_Address:
@@ -2877,7 +2860,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
       Entity_Id gnat_loop_var = Defining_Entity (gnat_loop_spec);
       Entity_Id gnat_type = Etype (gnat_loop_var);
       tree gnu_type = get_unpadded_type (gnat_type);
-      tree gnu_base_type = get_base_type (gnu_type);
+      tree gnu_base_type = maybe_character_type (get_base_type (gnu_type));
       tree gnu_one_node = build_int_cst (gnu_base_type, 1);
       tree gnu_loop_var, gnu_loop_iv, gnu_first, gnu_last, gnu_stmt;
       enum tree_code update_code, test_code, shift_code;
@@ -5514,7 +5497,7 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       if (Present (gnat_cond) && Nkind (gnat_cond) == N_Op_Not)
 	{
 	  Node_Id gnat_range, gnat_index, gnat_type;
-	  tree gnu_index, gnu_low_bound, gnu_high_bound, disp;
+	  tree gnu_type, gnu_index, gnu_low_bound, gnu_high_bound, disp;
 	  bool neg_p;
 	  struct loop_info_d *loop;
 
@@ -5543,7 +5526,17 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 
 	  gnat_index = Left_Opnd (Right_Opnd (gnat_cond));
 	  gnat_type = Etype (gnat_index);
+	  gnu_type = maybe_character_type (get_unpadded_type (gnat_type));
 	  gnu_index = gnat_to_gnu (gnat_index);
+
+	  if (TREE_TYPE (gnu_index) != gnu_type)
+	    {
+	      if (gnu_low_bound)
+		gnu_low_bound = convert (gnu_type, gnu_low_bound);
+	      if (gnu_high_bound)
+		gnu_high_bound = convert (gnu_type, gnu_high_bound);
+	      gnu_index = convert (gnu_type, gnu_index);
+	    }
 
 	  if (with_extra_info
 	      && gnu_low_bound
@@ -5589,7 +5582,7 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	      rci->high_bound = gnu_high_bound;
 	      rci->disp = disp;
 	      rci->neg_p = neg_p;
-	      rci->type = get_unpadded_type (gnat_type);
+	      rci->type = gnu_type;
 	      rci->inserted_cond
 		= build1 (SAVE_EXPR, boolean_type_node, boolean_true_node);
 	      vec_safe_push (loop->checks, rci);
@@ -6156,8 +6149,6 @@ gnat_to_gnu (Node_Id gnat_node)
 	    = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_array_object))),
 		       gnu_array_object);
 
-	gnu_result = gnu_array_object;
-
 	/* The failure of this assertion will very likely come from a missing
 	   expansion for a packed array access.  */
 	gcc_assert (TREE_CODE (TREE_TYPE (gnu_array_object)) == ARRAY_TYPE);
@@ -6184,22 +6175,17 @@ gnat_to_gnu (Node_Id gnat_node)
 	       i++, gnat_temp = Next (gnat_temp))
 	    gnat_expr_array[i] = gnat_temp;
 
+	/* Start with the prefix and build the successive references.  */
+	gnu_result = gnu_array_object;
+
 	for (i = 0, gnu_type = TREE_TYPE (gnu_array_object);
 	     i < ndim;
 	     i++, gnu_type = TREE_TYPE (gnu_type))
 	  {
 	    gcc_assert (TREE_CODE (gnu_type) == ARRAY_TYPE);
 	    gnat_temp = gnat_expr_array[i];
-	    gnu_expr = gnat_to_gnu (gnat_temp);
+	    gnu_expr = maybe_character_value (gnat_to_gnu (gnat_temp));
 	    struct loop_info_d *loop;
-
-	    if (Do_Range_Check (gnat_temp))
-	      gnu_expr
-		= emit_index_check
-		  (gnu_array_object, gnu_expr,
-		   TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type))),
-		   TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type))),
-		   gnat_temp);
 
 	    gnu_result
 	      = build_binary_op (ARRAY_REF, NULL_TREE, gnu_result, gnu_expr);
@@ -6251,88 +6237,25 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Slice:
       {
-	Node_Id gnat_range_node = Discrete_Range (gnat_node);
-	tree gnu_type;
+	tree gnu_array_object = gnat_to_gnu (Prefix (gnat_node));
 
-	gnu_result = gnat_to_gnu (Prefix (gnat_node));
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
-	/* Do any implicit dereferences of the prefix and do any needed
-	   range check.  */
-	gnu_result = maybe_implicit_deref (gnu_result);
-	gnu_result = maybe_unconstrained_array (gnu_result);
-	gnu_type = TREE_TYPE (gnu_result);
-	if (Do_Range_Check (gnat_range_node))
-	  {
-	    /* Get the bounds of the slice.  */
-	    tree gnu_index_type
-	      = TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_result_type));
-	    tree gnu_min_expr = TYPE_MIN_VALUE (gnu_index_type);
-	    tree gnu_max_expr = TYPE_MAX_VALUE (gnu_index_type);
-	    /* Get the permitted bounds.  */
-	    tree gnu_base_index_type
-	      = TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type));
-	    tree gnu_base_min_expr = SUBSTITUTE_PLACEHOLDER_IN_EXPR
-	      (TYPE_MIN_VALUE (gnu_base_index_type), gnu_result);
-	    tree gnu_base_max_expr = SUBSTITUTE_PLACEHOLDER_IN_EXPR
-	      (TYPE_MAX_VALUE (gnu_base_index_type), gnu_result);
-	    tree gnu_expr_l, gnu_expr_h, gnu_expr_type;
+	gnu_array_object = maybe_implicit_deref (gnu_array_object);
+	gnu_array_object = maybe_unconstrained_array (gnu_array_object);
 
-	   gnu_min_expr = gnat_protect_expr (gnu_min_expr);
-	   gnu_max_expr = gnat_protect_expr (gnu_max_expr);
-
-	    /* Derive a good type to convert everything to.  */
-	    gnu_expr_type = get_base_type (gnu_index_type);
-
-	    /* Test whether the minimum slice value is too small.  */
-	    gnu_expr_l = build_binary_op (LT_EXPR, boolean_type_node,
-					  convert (gnu_expr_type,
-						   gnu_min_expr),
-					  convert (gnu_expr_type,
-						   gnu_base_min_expr));
-
-	    /* Test whether the maximum slice value is too large.  */
-	    gnu_expr_h = build_binary_op (GT_EXPR, boolean_type_node,
-					  convert (gnu_expr_type,
-						   gnu_max_expr),
-					  convert (gnu_expr_type,
-						   gnu_base_max_expr));
-
-	    /* Build a slice index check that returns the low bound,
-	       assuming the slice is not empty.  */
-	    gnu_expr = emit_check
-	      (build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node,
-				gnu_expr_l, gnu_expr_h),
-	       gnu_min_expr, CE_Index_Check_Failed, gnat_node);
-
-	   /* Build a conditional expression that does the index checks and
-	      returns the low bound if the slice is not empty (max >= min),
-	      and returns the naked low bound otherwise (max < min), unless
-	      it is non-constant and the high bound is; this prevents VRP
-	      from inferring bogus ranges on the unlikely path.  */
-	    gnu_expr = fold_build3 (COND_EXPR, gnu_expr_type,
-				    build_binary_op (GE_EXPR, gnu_expr_type,
-						     convert (gnu_expr_type,
-							      gnu_max_expr),
-						     convert (gnu_expr_type,
-							      gnu_min_expr)),
-				    gnu_expr,
-				    TREE_CODE (gnu_min_expr) != INTEGER_CST
-				    && TREE_CODE (gnu_max_expr) == INTEGER_CST
-				    ? gnu_max_expr : gnu_min_expr);
-	  }
-	else
-	  /* Simply return the naked low bound.  */
-	  gnu_expr = TYPE_MIN_VALUE (TYPE_DOMAIN (gnu_result_type));
+	gnu_expr = TYPE_MIN_VALUE (TYPE_DOMAIN (gnu_result_type));
+	gnu_expr = maybe_character_value (gnu_expr);
 
 	/* If this is a slice with non-constant size of an array with constant
 	   size, set the maximum size for the allocation of temporaries.  */
 	if (!TREE_CONSTANT (TYPE_SIZE_UNIT (gnu_result_type))
-	    && TREE_CONSTANT (TYPE_SIZE_UNIT (gnu_type)))
-	  TYPE_ARRAY_MAX_SIZE (gnu_result_type) = TYPE_SIZE_UNIT (gnu_type);
+	    && TREE_CONSTANT (TYPE_SIZE_UNIT (TREE_TYPE (gnu_array_object))))
+	  TYPE_ARRAY_MAX_SIZE (gnu_result_type)
+	    = TYPE_SIZE_UNIT (TREE_TYPE (gnu_array_object));
 
 	gnu_result = build_binary_op (ARRAY_RANGE_REF, gnu_result_type,
-				      gnu_result, gnu_expr);
+				      gnu_array_object, gnu_expr);
       }
       break;
 
@@ -6472,8 +6395,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Type_Conversion:
     case N_Qualified_Expression:
-      /* Get the operand expression.  */
-      gnu_result = gnat_to_gnu (Expression (gnat_node));
+      gnu_expr = maybe_character_value (gnat_to_gnu (Expression (gnat_node)));
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
       /* If this is a qualified expression for a tagged type, we mark the type
@@ -6484,7 +6406,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	used_types_insert (gnu_result_type);
 
       gnu_result
-	= convert_with_check (Etype (gnat_node), gnu_result,
+	= convert_with_check (Etype (gnat_node), gnu_expr,
 			      Do_Overflow_Check (gnat_node),
 			      Do_Range_Check (Expression (gnat_node)),
 			      kind == N_Type_Conversion
@@ -6492,11 +6414,12 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Unchecked_Type_Conversion:
-      gnu_result = gnat_to_gnu (Expression (gnat_node));
+      gnu_expr = maybe_character_value (gnat_to_gnu (Expression (gnat_node)));
 
       /* Skip further processing if the conversion is deemed a no-op.  */
       if (unchecked_conversion_nop (gnat_node))
 	{
+	  gnu_result = gnu_expr;
 	  gnu_result_type = TREE_TYPE (gnu_result);
 	  break;
 	}
@@ -6508,7 +6431,7 @@ gnat_to_gnu (Node_Id gnat_node)
       if (STRICT_ALIGNMENT && POINTER_TYPE_P (gnu_result_type)
 	  && IN (Ekind (Etype (gnat_node)), Access_Kind))
 	{
-	  unsigned int align = known_alignment (gnu_result);
+	  unsigned int align = known_alignment (gnu_expr);
 	  tree gnu_obj_type = TREE_TYPE (gnu_result_type);
 	  unsigned int oalign = TYPE_ALIGN (gnu_obj_type);
 
@@ -6522,11 +6445,11 @@ gnat_to_gnu (Node_Id gnat_node)
       /* If we are converting a descriptor to a function pointer, first
 	 build the pointer.  */
       if (TARGET_VTABLE_USES_DESCRIPTORS
-	  && TREE_TYPE (gnu_result) == fdesc_type_node
+	  && TREE_TYPE (gnu_expr) == fdesc_type_node
 	  && POINTER_TYPE_P (gnu_result_type))
-	gnu_result = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_result);
+	gnu_expr = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_expr);
 
-      gnu_result = unchecked_convert (gnu_result_type, gnu_result,
+      gnu_result = unchecked_convert (gnu_result_type, gnu_expr,
 				      No_Truncation (gnat_node));
       break;
 
@@ -6559,6 +6482,14 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gcc_unreachable ();
 
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
+
+	tree gnu_op_type = maybe_character_type (TREE_TYPE (gnu_obj));
+	if (TREE_TYPE (gnu_obj) != gnu_op_type)
+	  {
+	    gnu_obj = convert (gnu_op_type, gnu_obj);
+	    gnu_low = convert (gnu_op_type, gnu_low);
+	    gnu_high = convert (gnu_op_type, gnu_high);
+	  }
 
 	/* If LOW and HIGH are identical, perform an equality test.  Otherwise,
 	   ensure that GNU_OBJ is evaluated only once and perform a full range
@@ -6660,6 +6591,13 @@ gnat_to_gnu (Node_Id gnat_node)
 	  {
 	    gnu_lhs = maybe_unconstrained_array (gnu_lhs);
 	    gnu_rhs = maybe_unconstrained_array (gnu_rhs);
+
+	    tree gnu_op_type = maybe_character_type (TREE_TYPE (gnu_lhs));
+	    if (TREE_TYPE (gnu_lhs) != gnu_op_type)
+	      {
+		gnu_lhs = convert (gnu_op_type, gnu_lhs);
+		gnu_rhs = convert (gnu_op_type, gnu_rhs);
+	      }
 	  }
 
 	/* If this is a shift whose count is not guaranteed to be correct,
@@ -9079,49 +9017,6 @@ emit_range_check (tree gnu_expr, Entity_Id gnat_range_type, Node_Id gnat_node)
 						 TYPE_MAX_VALUE
 						 (gnu_range_type))))),
      gnu_expr, CE_Range_Check_Failed, gnat_node);
-}
-
-/* Emit code for an index check.  GNU_ARRAY_OBJECT is the array object which
-   we are about to index, GNU_EXPR is the index expression to be checked,
-   GNU_LOW and GNU_HIGH are the lower and upper bounds against which GNU_EXPR
-   has to be checked.  Note that for index checking we cannot simply use the
-   emit_range_check function (although very similar code needs to be generated
-   in both cases) since for index checking the array type against which we are
-   checking the indices may be unconstrained and consequently we need to get
-   the actual index bounds from the array object itself (GNU_ARRAY_OBJECT).
-   The place where we need to do that is in subprograms having unconstrained
-   array formal parameters.  GNAT_NODE is the GNAT node conveying the source
-   location for which the error should be signaled.  */
-
-static tree
-emit_index_check (tree gnu_array_object, tree gnu_expr, tree gnu_low,
-		  tree gnu_high, Node_Id gnat_node)
-{
-  tree gnu_expr_check;
-
-  /* Checked expressions must be evaluated only once.  */
-  gnu_expr = gnat_protect_expr (gnu_expr);
-
-  /* Must do this computation in the base type in case the expression's
-     type is an unsigned subtypes.  */
-  gnu_expr_check = convert (get_base_type (TREE_TYPE (gnu_expr)), gnu_expr);
-
-  /* If GNU_LOW or GNU_HIGH are a PLACEHOLDER_EXPR, qualify them by
-     the object we are handling.  */
-  gnu_low = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_low, gnu_array_object);
-  gnu_high = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_high, gnu_array_object);
-
-  return emit_check
-    (build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node,
-		      build_binary_op (LT_EXPR, boolean_type_node,
-				       gnu_expr_check,
-				       convert (TREE_TYPE (gnu_expr_check),
-						gnu_low)),
-		      build_binary_op (GT_EXPR, boolean_type_node,
-				       gnu_expr_check,
-				       convert (TREE_TYPE (gnu_expr_check),
-						gnu_high))),
-     gnu_expr, CE_Index_Check_Failed, gnat_node);
 }
 
 /* GNU_COND contains the condition corresponding to an index, overflow or
