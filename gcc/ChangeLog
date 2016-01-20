@@ -1,3 +1,10 @@
+2016-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (arm_crypto_pragma_ok): Document new entry.
+	(arm_fp_ok): Likewise.
+	(arm_fp): Likewise.
+	(arm_crypto): Likewise.
+
 2016-01-20  Ilya Enkovich  <enkovich.gnu@gmail.com>
 	    Richard Biener  <rguenther@suse.de>
 

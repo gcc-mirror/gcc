@@ -1511,8 +1511,20 @@ Target generates decimal floating point instructions with current options.
 @item arm32
 ARM target generates 32-bit code.
 
+@item arm_crypto_pragma_ok
+@anchor{arm_crypto_pragma_ok}
+ARM target supports pragma target @code{fpu=crypto-neon-fp-armv8}.
+This may need @code{-mfpu=crypto-neon-fp-armv8} or equivalent options.
+Some multilibs may be incompatible with these options.
+
 @item arm_eabi
 ARM target adheres to the ABI for the ARM Architecture.
+
+@item arm_fp_ok
+@anchor{arm_fp_ok}
+ARM target defines @code{__ARM_FP} using @code{-mfloat-abi=softfp} or
+equivalent options.  Some multilibs may be incompatible with these
+options.
 
 @item arm_hf_eabi
 ARM target adheres to the VFP and Advanced SIMD Register Arguments
@@ -2047,6 +2059,17 @@ The supported values of @var{feature} for directive @code{dg-add-options}
 are:
 
 @table @code
+@item arm_crypto_pragma
+Crypto extension pragma support.  Only ARM targets support this
+feature, and only then in certain modes; see the
+@ref{arm_crypto_pragma_ok,,arm_crypto_pragma_ok effective target
+keyword}.
+
+@item arm_fp
+@code{__ARM_FP} definition.  Only ARM targets support this feature, and only then
+in certain modes; see the @ref{arm_fp_ok,,arm_fp_ok effective target
+keyword}.
+
 @item arm_neon
 NEON support.  Only ARM targets support this feature, and only then
 in certain modes; see the @ref{arm_neon_ok,,arm_neon_ok effective target
