@@ -1,10 +1,5 @@
 2016-01-20  H.J. Lu  <hongjiu.lu@intel.com>
 
-	Require non-x32 target for compile-time MPX tests
-
-	Compile-time MPX tests don't need the MPX run-time library.  They
-	should pass for non-x32 target.
-
 	PR testsuite/69366
 	* g++.dg/pr63995-1.C: Require non-x32 target, instead of,
 	the MPX run-time library, for compile-time MPX test.
