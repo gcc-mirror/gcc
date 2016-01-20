@@ -1,5 +1,6 @@
 2016-01-20  Jeff Law  <law@redhat.com>
 
+	PR target/25114
 	* config/m68k/predicates.md (pow2_m1_operand): New predicate
 	extracted from ...
 	(reg_or_pow2_m1_operand): Call pow2_m1_operand.
