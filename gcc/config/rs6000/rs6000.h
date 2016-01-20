@@ -1361,6 +1361,9 @@ enum data_align { align_abi, align_opt, align_both };
 /* Place to put static chain when calling a function that requires it.  */
 #define STATIC_CHAIN_REGNUM 11
 
+/* Base register for access to thread local storage variables.  */
+#define TLS_REGNUM ((TARGET_64BIT) ? 13 : 2)
+
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.

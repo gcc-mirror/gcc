@@ -13527,6 +13527,162 @@ implementing assertions.
 @node PowerPC Built-in Functions
 @subsection PowerPC Built-in Functions
 
+The following built-in functions are always available and can be used to
+check the PowerPC target platform type:
+
+@deftypefn {Built-in Function} void __builtin_cpu_init (void)
+This function is a @code{nop} on the PowerPC platform and is included solely
+to maintain API compatibility with the x86 builtins.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_cpu_is (const char *@var{cpuname})
+This function returns a value of @code{1} if the run-time CPU is of type
+@var{cpuname} and returns @code{0} otherwise. The following CPU names can be
+detected:
+
+@table @samp
+@item power9
+IBM POWER9 Server CPU.
+@item power8
+IBM POWER8 Server CPU.
+@item power7
+IBM POWER7 Server CPU.
+@item power6x
+IBM POWER6 Server CPU (RAW mode).
+@item power6
+IBM POWER6 Server CPU (Architected mode).
+@item power5+
+IBM POWER5+ Server CPU.
+@item power5
+IBM POWER5 Server CPU.
+@item ppc970
+IBM 970 Server CPU (ie, Apple G5).
+@item power4
+IBM POWER4 Server CPU.
+@item ppca2
+IBM A2 64-bit Embedded CPU
+@item ppc476
+IBM PowerPC 476FP 32-bit Embedded CPU.
+@item ppc464
+IBM PowerPC 464 32-bit Embedded CPU.
+@item ppc440
+PowerPC 440 32-bit Embedded CPU.
+@item ppc405
+PowerPC 405 32-bit Embedded CPU.
+@item ppc-cell-be
+IBM PowerPC Cell Broadband Engine Architecture CPU.
+@end table
+
+Here is an example:
+@smallexample
+if (__builtin_cpu_is ("power8"))
+  @{
+     do_power8 (); // POWER8 specific implementation.
+  @}
+else
+  @{
+     do_generic (); // Generic implementation.
+  @}
+@end smallexample
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_cpu_supports (const char *@var{feature})
+This function returns a value of @code{1} if the run-time CPU supports the HWCAP
+feature @var{feature} and returns @code{0} otherwise. The following features can be
+detected:
+
+@table @samp
+@item 4xxmac
+4xx CPU has a Multiply Accumulator.
+@item altivec
+CPU has a SIMD/Vector Unit.
+@item arch_2_05
+CPU supports ISA 2.05 (eg, POWER6)
+@item arch_2_06
+CPU supports ISA 2.06 (eg, POWER7)
+@item arch_2_07
+CPU supports ISA 2.07 (eg, POWER8)
+@item arch_3_00
+CPU supports ISA 3.00 (eg, POWER9)
+@item archpmu
+CPU supports the set of compatible performance monitoring events.
+@item booke
+CPU supports the Embedded ISA category.
+@item cellbe
+CPU has a CELL broadband engine.
+@item dfp
+CPU has a decimal floating point unit.
+@item dscr
+CPU supports the data stream control register.
+@item ebb
+CPU supports event base branching.
+@item efpdouble
+CPU has a SPE double precision floating point unit.
+@item efpsingle
+CPU has a SPE single precision floating point unit.
+@item fpu
+CPU has a floating point unit.
+@item htm
+CPU has hardware transaction memory instructions.
+@item htm-nosc
+Kernel aborts hardware transactions when a syscall is made.
+@item ic_snoop
+CPU supports icache snooping capabilities.
+@item ieee128
+CPU supports 128-bit IEEE binary floating point instructions.
+@item isel
+CPU supports the integer select instruction.
+@item mmu
+CPU has a memory management unit.
+@item notb
+CPU does not have a timebase (eg, 601 and 403gx).
+@item pa6t
+CPU supports the PA Semi 6T CORE ISA.
+@item power4
+CPU supports ISA 2.00 (eg, POWER4)
+@item power5
+CPU supports ISA 2.02 (eg, POWER5)
+@item power5+
+CPU supports ISA 2.03 (eg, POWER5+)
+@item power6x
+CPU supports ISA 2.05 (eg, POWER6) extended opcodes mffgpr and mftgpr.
+@item ppc32
+CPU supports 32-bit mode execution.
+@item ppc601
+CPU supports the old POWER ISA (eg, 601)
+@item ppc64
+CPU supports 64-bit mode execution.
+@item ppcle
+CPU supports a little-endian mode that uses address swizzling.
+@item smt
+CPU support simultaneous multi-threading.
+@item spe
+CPU has a signal processing extension unit.
+@item tar
+CPU supports the target address register.
+@item true_le
+CPU supports true little-endian mode.
+@item ucache
+CPU has unified I/D cache.
+@item vcrypto
+CPU supports the vector cryptography instructions.
+@item vsx
+CPU supports the vector-scalar extension.
+@end table
+
+Here is an example:
+@smallexample
+if (__builtin_cpu_supports ("fpu"))
+  @{
+     asm("fadd %0,%1,%2" : "=d"(dst) : "d"(src1), "d"(src2));
+  @}
+else
+  @{
+     dst = __fadd (src1, src2); // Software FP addition function.
+  @}
+@end smallexample
+@end deftypefn
+
 These built-in functions are available for the PowerPC family of
 processors:
 @smallexample
