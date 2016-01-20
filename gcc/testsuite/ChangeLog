@@ -1,3 +1,55 @@
+2016-01-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2016-01-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/69366
+	* g++.dg/pr63995-1.C: Require non-x32 target, instead of,
+	the MPX run-time library, for compile-time MPX test.
+	* gcc.target/i386/chkp-always_inline.c: Likewise.
+	* gcc.target/i386/chkp-bndret.c: Likewise.
+	* gcc.target/i386/chkp-builtins-1.c: Likewise.
+	* gcc.target/i386/chkp-builtins-2.c: Likewise.
+	* gcc.target/i386/chkp-builtins-3.c: Likewise.
+	* gcc.target/i386/chkp-builtins-4.c: Likewise.
+	* gcc.target/i386/chkp-const-check-1.c: Likewise.
+	* gcc.target/i386/chkp-const-check-2.c: Likewise.
+	* gcc.target/i386/chkp-hidden-def.c: Likewise.
+	* gcc.target/i386/chkp-label-address.c: Likewise.
+	* gcc.target/i386/chkp-lifetime-1.c: Likewise.
+	* gcc.target/i386/chkp-narrow-bounds.c: Likewise.
+	* gcc.target/i386/chkp-remove-bndint-1.c: Likewise.
+	* gcc.target/i386/chkp-remove-bndint-2.c: Likewise.
+	* gcc.target/i386/chkp-strchr.c: Likewise.
+	* gcc.target/i386/chkp-strlen-1.c: Likewise.
+	* gcc.target/i386/chkp-strlen-2.c: Likewise.
+	* gcc.target/i386/chkp-strlen-3.c: Likewise.
+	* gcc.target/i386/chkp-strlen-4.c: Likewise.
+	* gcc.target/i386/chkp-strlen-5.c: Likewise.
+	* gcc.target/i386/chkp-stropt-1.c: Likewise.
+	* gcc.target/i386/chkp-stropt-10.c: Likewise.
+	* gcc.target/i386/chkp-stropt-11.c: Likewise.
+	* gcc.target/i386/chkp-stropt-12.c: Likewise.
+	* gcc.target/i386/chkp-stropt-13.c: Likewise.
+	* gcc.target/i386/chkp-stropt-14.c: Likewise.
+	* gcc.target/i386/chkp-stropt-15.c: Likewise.
+	* gcc.target/i386/chkp-stropt-16.c: Likewise.
+	* gcc.target/i386/chkp-stropt-2.c: Likewise.
+	* gcc.target/i386/chkp-stropt-3.c: Likewise.
+	* gcc.target/i386/chkp-stropt-4.c: Likewise.
+	* gcc.target/i386/chkp-stropt-5.c: Likewise.
+	* gcc.target/i386/chkp-stropt-6.c: Likewise.
+	* gcc.target/i386/chkp-stropt-7.c: Likewise.
+	* gcc.target/i386/chkp-stropt-8.c: Likewise.
+	* gcc.target/i386/chkp-stropt-9.c: Likewise.
+	* gcc.target/i386/pr63995-2.c: Likewise.
+	* gcc.target/i386/pr64805.c: Likewise.
+	* gcc.target/i386/pr65044.c: Likewise.
+	* gcc.target/i386/pr65167.c: Likewise.
+	* gcc.target/i386/pr65183.c: Likewise.
+	* gcc.target/i386/pr65184.c: Likewise.
+	* gcc.target/i386/thunk-retbnd.c: Likewise.
+
 2016-01-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c/68513

@@ -1,5 +1,4 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
-/* { dg-require-effective-target mpx } */
+/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && { ! x32 } } } } */
 /* { dg-options "-O2 -g -fcheck-pointer-bounds -mmpx" } */
 
 int test1 (int i)
