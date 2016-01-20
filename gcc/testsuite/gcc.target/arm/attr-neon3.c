@@ -1,6 +1,12 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_crypto_ok } */
-/* { dg-options "-O2 -mfloat-abi=softfp -mfpu=vfp" } */
+/* { dg-require-effective-target arm_fp_ok } */
+/* { dg-options "-O2" } */
+/* { dg-add-options arm_fp } */
+
+/* Reset fpu to a value compatible with the next pragmas.  */
+#pragma GCC target ("fpu=vfp")
+#pragma GCC push_options
 
 #include <arm_neon.h>
 

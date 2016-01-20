@@ -1,6 +1,14 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_crypto_ok } */
-/* { dg-options "-O2 -mfloat-abi=softfp" } */
+/* Make sure we can force fpu=vfp before switching using the
+   pragma.  */
+/* { dg-require-effective-target arm_fp_ok } */
+/* { dg-require-effective-target arm_crypto_pragma_ok } */
+/* { dg-options "-O2 -march=armv8-a" } */
+/* { dg-add-options arm_fp } */
+
+/* Reset fpu to a value compatible with the next pragmas.  */
+#pragma GCC target ("fpu=vfp")
+#pragma GCC push_options
 
 #pragma GCC target ("fpu=crypto-neon-fp-armv8")
 
@@ -28,7 +36,7 @@ foo (void)
   return res[0];
 }
 
-#pragma GCC reset_options
+#pragma GCC pop_options
 
 /* Check that the FP version is correctly reset.  */
 
