@@ -1,5 +1,4 @@
-/* { dg-do compile } */
-/* { dg-require-effective-target mpx } */
+/* { dg-do compile { target { ! x32 } } } */
 /* { dg-options "-O2 -g -fcheck-pointer-bounds -mmpx -fcompare-debug" } */
 
 struct ts
