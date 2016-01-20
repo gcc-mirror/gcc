@@ -281,10 +281,7 @@ else
 fi
 AC_SUBST(link_itm)
 
-AM_CONDITIONAL([ARCH_AARCH64], [test "$ARCH" = aarch64])
 AM_CONDITIONAL([ARCH_ARM], [test "$ARCH" = arm])
-AM_CONDITIONAL([ARCH_PPC], [test "$ARCH" = powerpc -o "$ARCH" = powerpc64])
-AM_CONDITIONAL([ARCH_S390], [test "$ARCH" = s390 -o "$ARCH" = s390x])
 AM_CONDITIONAL([ARCH_X86], [test "$ARCH" = x86])
 AM_CONDITIONAL([ARCH_X86_AVX], [test "$libitm_cv_as_avx" = yes])
 AM_CONDITIONAL([ARCH_FUTEX], [test $enable_linux_futex = yes])

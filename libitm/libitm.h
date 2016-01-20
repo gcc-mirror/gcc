@@ -232,11 +232,7 @@ ITM_LOG(CE)
   ITM_BARRIERS(M256)
   ITM_LOG(M256)
 # endif
-#else
-  typedef int _ITM_TYPE_M128 __attribute__((vector_size(16), may_alias));
-  ITM_BARRIERS(M128)
-  ITM_LOG(M128)
-#endif
+#endif /* i386 */
 
 #undef ITM_BARRIERS
 #undef ITM_LOG
