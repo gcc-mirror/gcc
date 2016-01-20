@@ -268,7 +268,7 @@ handler (int sig __attribute__ ((unused)),
       __mpxrt_write_uint (VERB_ERROR, trapno, 10);
       __mpxrt_write (VERB_ERROR, ", ip = 0x");
       __mpxrt_write_uint (VERB_ERROR, ip, 16);
-      __mpxrt_write (VERB_BR, "\n");
+      __mpxrt_write (VERB_ERROR, "\n");
       exit (255);
     }
   else
@@ -277,7 +277,7 @@ handler (int sig __attribute__ ((unused)),
       __mpxrt_write_uint (VERB_ERROR, trapno, 10);
       __mpxrt_write (VERB_ERROR, "! at 0x");
       __mpxrt_write_uint (VERB_ERROR, ip, 16);
-      __mpxrt_write (VERB_BR, "\n");
+      __mpxrt_write (VERB_ERROR, "\n");
       exit (255);
     }
 }
