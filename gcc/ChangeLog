@@ -1,3 +1,8 @@
+2016-01-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68513
+	* match.pd ((x & ~m) | (y & m)): Only perform on GIMPLE.
+
 2016-01-19  Sergei Trofimovich <siarheit@google.com>
 
 	Backport from mainline
