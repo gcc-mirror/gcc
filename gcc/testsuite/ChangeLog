@@ -1,3 +1,7 @@
+2016-01-20  Jeff Law  <law@redhat.com>
+
+	* gcc.target/m68k/pr25114.c: New test.
+
 2016-01-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/arm/memset-inline-10.c: Added
