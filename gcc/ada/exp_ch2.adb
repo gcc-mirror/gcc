@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -193,7 +193,16 @@ package body Exp_Ch2 is
               Unchecked_Convert_To (T,
                 New_Occurrence_Of (Entity (Val), Loc)));
 
-         --  If constant is of an integer type, just make an appropriately
+         --  If constant is of a character type, just make an appropriate
+         --  character literal, which will get the proper type.
+
+         elsif Is_Character_Type (T) then
+            Rewrite (N,
+              Make_Character_Literal (Loc,
+                Chars => Chars (Val),
+                Char_Literal_Value => Expr_Rep_Value (Val)));
+
+         --  If constant is of an integer type, just make an appropriate
          --  integer literal, which will get the proper type.
 
          elsif Is_Integer_Type (T) then

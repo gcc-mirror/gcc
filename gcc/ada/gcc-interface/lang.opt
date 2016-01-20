@@ -76,6 +76,10 @@ fshort-enums
 Ada AdaWhy AdaSCIL
 Use the narrowest integer type possible for enumeration types.
 
+fsigned-char
+Ada AdaWhy AdaSCIL
+Make \"char\" signed by default.
+
 gant
 Ada AdaWhy AdaSCIL Joined Undocumented
 Catch typos.

@@ -1804,7 +1804,7 @@ expand_sloc (Node_Id gnat_node, tree *filename, tree *line, tree *col)
 
   const int len = strlen (str);
   *filename = build_string (len, str);
-  TREE_TYPE (*filename) = build_array_type (unsigned_char_type_node,
+  TREE_TYPE (*filename) = build_array_type (char_type_node,
 					    build_index_type (size_int (len)));
   *line = build_int_cst (NULL_TREE, line_number);
   if (col)
@@ -1834,7 +1834,7 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
   return
     build_call_n_expr (fndecl, 2,
 		       build1 (ADDR_EXPR,
-			       build_pointer_type (unsigned_char_type_node),
+			       build_pointer_type (char_type_node),
 			       filename),
 		       line);
 }
@@ -1858,7 +1858,7 @@ build_call_raise_column (int msg, Node_Id gnat_node, char kind)
   return
     build_call_n_expr (fndecl, 3,
 		       build1 (ADDR_EXPR,
-			       build_pointer_type (unsigned_char_type_node),
+			       build_pointer_type (char_type_node),
 			       filename),
 		       line, col);
 }
@@ -1883,7 +1883,7 @@ build_call_raise_range (int msg, Node_Id gnat_node, char kind,
   return
     build_call_n_expr (fndecl, 6,
 		       build1 (ADDR_EXPR,
-			       build_pointer_type (unsigned_char_type_node),
+			       build_pointer_type (char_type_node),
 			       filename),
 		       line, col,
 		       convert (integer_type_node, index),

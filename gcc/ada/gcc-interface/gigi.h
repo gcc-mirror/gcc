@@ -604,6 +604,9 @@ extern void build_dummy_unc_pointer_types (Entity_Id gnat_desig_type,
 extern void record_builtin_type (const char *name, tree type,
 				 bool artificial_p);
 
+/* Finish constructing the character type CHAR_TYPE.  */
+extern void finish_character_type (tree char_type);
+
 /* Given a record type RECORD_TYPE and a list of FIELD_DECL nodes FIELD_LIST,
    finish constructing the record type as a fat pointer type.  */
 extern void finish_fat_pointer_type (tree record_type, tree field_list);
@@ -1133,4 +1136,31 @@ static inline tree
 gnat_signed_type_for (tree type_node)
 {
   return gnat_signed_or_unsigned_type_for (0, type_node);
+}
+
+/* Adjust the character type TYPE if need be.  */
+
+static inline tree
+maybe_character_type (tree type)
+{
+  if (TYPE_STRING_FLAG (type) && !TYPE_UNSIGNED (type))
+    type = gnat_unsigned_type_for (type);
+
+  return type;
+}
+
+/* Adjust the character value EXPR if need be.  */
+
+static inline tree
+maybe_character_value (tree expr)
+{
+  tree type = TREE_TYPE (expr);
+
+  if (TYPE_STRING_FLAG (type) && !TYPE_UNSIGNED (type))
+    {
+      type = gnat_unsigned_type_for (type);
+      expr = convert (type, expr);
+    }
+
+  return expr;
 }
