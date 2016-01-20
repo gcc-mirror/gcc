@@ -47,4 +47,7 @@
 #define _GLIBCXX_USE_NANOSLEEP 1
 #define _GLIBCXX_USE_SCHED_YIELD 1
 
+// No support for referencing weak symbols without a definition.
+#define _GLIBCXX_USE_WEAK_REF 0
+
 #endif
