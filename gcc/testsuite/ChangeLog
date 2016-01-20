@@ -1,3 +1,8 @@
+2016-01-20  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR tree-optimization/69328
+	* gcc.dg/pr69328.c: New test.
+
 2016-01-20  Jeff Law  <law@redhat.com>
 
 	PR target/25114

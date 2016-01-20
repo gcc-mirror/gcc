@@ -1,3 +1,11 @@
+2016-01-20  Ilya Enkovich  <enkovich.gnu@gmail.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69328
+	* tree-vect-stmts.c (vect_is_simple_cond): Check compared
+	vectors have same number of elements.
+	(vectorizable_condition): Fix masked version recognition.
+
 2016-01-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69345
