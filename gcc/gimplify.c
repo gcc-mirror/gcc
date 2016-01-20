@@ -5305,12 +5305,38 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	    TREE_VALUE (link) = error_mark_node;
 	  tret = gimplify_expr (&TREE_VALUE (link), pre_p, post_p,
 				is_gimple_lvalue, fb_lvalue | fb_mayfail);
+	  if (tret != GS_ERROR)
+	    {
+	      /* Unlike output operands, memory inputs are not guaranteed
+		 to be lvalues by the FE, and while the expressions are
+		 marked addressable there, if it is e.g. a statement
+		 expression, temporaries in it might not end up being
+		 addressable.  They might be already used in the IL and thus
+		 it is too late to make them addressable now though.  */
+	      tree x = TREE_VALUE (link);
+	      while (handled_component_p (x))
+		x = TREE_OPERAND (x, 0);
+	      if (TREE_CODE (x) == MEM_REF
+		  && TREE_CODE (TREE_OPERAND (x, 0)) == ADDR_EXPR)
+		x = TREE_OPERAND (TREE_OPERAND (x, 0), 0);
+	      if ((TREE_CODE (x) == VAR_DECL
+		   || TREE_CODE (x) == PARM_DECL
+		   || TREE_CODE (x) == RESULT_DECL)
+		  && !TREE_ADDRESSABLE (x)
+		  && is_gimple_reg (x))
+		{
+		  warning_at (EXPR_LOC_OR_LOC (TREE_VALUE (link),
+					       input_location), 0,
+			      "memory input %d is not directly addressable",
+			      i);
+		  prepare_gimple_addressable (&TREE_VALUE (link), pre_p);
+		}
+	    }
 	  mark_addressable (TREE_VALUE (link));
 	  if (tret == GS_ERROR)
 	    {
-	      if (EXPR_HAS_LOCATION (TREE_VALUE (link)))
-	        input_location = EXPR_LOCATION (TREE_VALUE (link));
-	      error ("memory input %d is not directly addressable", i);
+	      error_at (EXPR_LOC_OR_LOC (TREE_VALUE (link), input_location),
+			"memory input %d is not directly addressable", i);
 	      ret = tret;
 	    }
 	}

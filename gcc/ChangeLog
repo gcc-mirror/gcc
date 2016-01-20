@@ -1,3 +1,11 @@
+2016-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/67653
+	* gimplify.c (gimplify_asm_expr): Warn if it is too late to
+	attempt to mark memory input operand addressable and
+	call prepare_gimple_addressable in that case.  Don't adjust
+	input_location for diagnostics, use error_at instead.
+
 2016-01-20  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/ppc-auxv.h: New file.
