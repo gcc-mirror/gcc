@@ -1,3 +1,11 @@
+2016-01-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2015-09-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/67439
+	* gcc.target/arm/pr67439_1.c: New test.
+
 2016-01-19  Sergei Trofimovich <siarheit@google.com>
 
 	Backport from mainline
