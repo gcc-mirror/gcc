@@ -1,5 +1,14 @@
 2016-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/60401
+	* include/c_compatibility/math.h (acosh, asinh, atanh, acbrt,
+	copysign, erf, erfc, exp2, expm1, fdim, fma, fmax, fmin, hypot, ilogb,
+	lgamma, llrint, llround, log1p, log2, logb, lrint, lround, nearbyint,
+	nextafter, nexttoward, remainder, remquo, rint, round, scalbln, scalbn,
+	tgamma, trunc) [__cplusplus >= 201103L && _GLIBCXX_USE_C99_MATH_TR1]:
+	Add using declarations.
+	* testsuite/26_numerics/headers/cmath/60401.cc: New.
+
 	PR libstdc++/69386
 	* include/c_global/ccomplex: Ensure C++ language linkage.
 	* include/c_global/cmath: Likewise.

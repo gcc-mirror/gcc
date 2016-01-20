@@ -74,5 +74,42 @@ using std::islessgreater;
 using std::isunordered;
 #endif
 
+#if __cplusplus >= 201103L && defined(_GLIBCXX_USE_C99_MATH_TR1)
+using std::acosh;
+using std::asinh;
+using std::atanh;
+using std::cbrt;
+using std::copysign;
+using std::erf;
+using std::erfc;
+using std::exp2;
+using std::expm1;
+using std::fdim;
+using std::fma;
+using std::fmax;
+using std::fmin;
+using std::hypot;
+using std::ilogb;
+using std::lgamma;
+using std::llrint;
+using std::llround;
+using std::log1p;
+using std::log2;
+using std::logb;
+using std::lrint;
+using std::lround;
+using std::nearbyint;
+using std::nextafter;
+using std::nexttoward;
+using std::remainder;
+using std::remquo;
+using std::rint;
+using std::round;
+using std::scalbln;
+using std::scalbn;
+using std::tgamma;
+using std::trunc;
+#endif // C++11 && _GLIBCXX_USE_C99_MATH_TR1
+
 #endif
 #endif
