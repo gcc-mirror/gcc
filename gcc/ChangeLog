@@ -1,3 +1,11 @@
+2016-01-20  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/68609
+	* config/rs6000/rs6000.c (rs6000_emit_swsqrt): Add vector sqrt
+	domain check.
+	* config/rs6000/vector.md (sqrt<mode>2): Call rs6000_emit_swsqrt
+	for V4SFmode.
+
 2016-01-20  Richard Henderson  <rth@redhat.com>
 
 	PR bootstrap/69343
@@ -43,7 +51,7 @@
 	(pc_or_label_operand): New predicate.
 	* config/m68k/m68k.md: Add new peephole2 patterns for GTU/LEU
 	tests for small integers that are 2^n - 1.
-	
+
 2016-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/invoke.texi (Options Summary): Add '.' after @xref.

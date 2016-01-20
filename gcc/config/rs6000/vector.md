@@ -270,7 +270,16 @@
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
 	(sqrt:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
-  "")
+{
+  if (<MODE>mode == V4SFmode
+      && !optimize_function_for_size_p (cfun)
+      && flag_finite_math_only && !flag_trapping_math
+      && flag_unsafe_math_optimizations)
+    {
+      rs6000_emit_swsqrt (operands[0], operands[1], 0);
+      DONE;
+    }
+})
 
 (define_expand "rsqrte<mode>2"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
