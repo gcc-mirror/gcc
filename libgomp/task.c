@@ -683,6 +683,7 @@ gomp_create_target_task (struct gomp_device_descr *devicep,
   ttask->state = state;
   ttask->task = task;
   ttask->team = team;
+  ttask->firstprivate_copies = NULL;
   task->fn = NULL;
   task->fn_data = ttask;
   task->final_task = 0;
