@@ -7445,6 +7445,10 @@ vect_is_simple_cond (tree cond, vec_info *vinfo, tree *comp_vectype)
 	   && TREE_CODE (rhs) != FIXED_CST)
     return false;
 
+  if (vectype1 && vectype2
+      && TYPE_VECTOR_SUBPARTS (vectype1) != TYPE_VECTOR_SUBPARTS (vectype2))
+    return false;
+
   *comp_vectype = vectype1 ? vectype1 : vectype2;
   return true;
 }
@@ -7548,13 +7552,9 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!vect_is_simple_use (else_clause, stmt_info->vinfo, &def_stmt, &dt))
     return false;
 
-  if (VECTOR_BOOLEAN_TYPE_P (comp_vectype))
-    {
-      vec_cmp_type = comp_vectype;
-      masked = true;
-    }
-  else
-    vec_cmp_type = build_same_sized_truth_vector_type (comp_vectype);
+  masked = !COMPARISON_CLASS_P (cond_expr);
+  vec_cmp_type = build_same_sized_truth_vector_type (comp_vectype);
+
   if (vec_cmp_type == NULL_TREE)
     return false;
 
