@@ -498,7 +498,7 @@ Objective-C and Objective-C++ Dialects}.
 -fstrict-volatile-bitfields -fsync-libcalls}
 
 @item Developer Options
-@xref{Developer Options,,GCC Developer Options}
+@xref{Developer Options,,GCC Developer Options}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
 -fchecking -fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
 -fdisable-ipa-@var{pass_name} @gol
