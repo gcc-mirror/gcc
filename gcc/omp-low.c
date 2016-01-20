@@ -13328,21 +13328,20 @@ expand_omp_target (struct omp_region *region)
 						     GOMP_ASYNC_SYNC));
 	if (tagging && t_async)
 	  {
-	    unsigned HOST_WIDE_INT i_async;
+	    unsigned HOST_WIDE_INT i_async = GOMP_LAUNCH_OP_MAX;
 
 	    if (TREE_CODE (t_async) == INTEGER_CST)
 	      {
 		/* See if we can pack the async arg in to the tag's
 		   operand.  */
 		i_async = TREE_INT_CST_LOW (t_async);
-
 		if (i_async < GOMP_LAUNCH_OP_MAX)
 		  t_async = NULL_TREE;
+		else
+		  i_async = GOMP_LAUNCH_OP_MAX;
 	      }
-	    if (t_async)
-	      i_async = GOMP_LAUNCH_OP_MAX;
-	    args.safe_push (oacc_launch_pack
-			    (GOMP_LAUNCH_ASYNC, NULL_TREE, i_async));
+	    args.safe_push (oacc_launch_pack (GOMP_LAUNCH_ASYNC, NULL_TREE,
+					      i_async));
 	  }
 	if (t_async)
 	  args.safe_push (t_async);
