@@ -1,3 +1,12 @@
+2016-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69386
+	* include/c_global/ccomplex: Ensure C++ language linkage.
+	* include/c_global/cmath: Likewise.
+	* include/c_global/cstdlib: Likewise.
+	* include/c_global/ctgmath: Likewise.
+	* testsuite/17_intro/headers/c++2011/linkage.cc: New.
+
 2016-01-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/14608

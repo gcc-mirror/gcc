@@ -115,6 +115,8 @@ namespace std
 #undef wcstombs
 #undef wctomb
 
+extern "C++"
+{
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -271,6 +273,8 @@ namespace std
 } // namespace std
 
 #endif // _GLIBCXX_USE_C99_STDLIB
+
+} // extern "C++"
 
 #endif // !_GLIBCXX_HOSTED
 
