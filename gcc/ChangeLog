@@ -1,5 +1,8 @@
 2016-01-21  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp-low.c (expand_omp_target): Avoid -Wmaybe-uninitialized
+	warning.  Fix up formatting.
+
 	PR middle-end/67653
 	* gimplify.c (gimplify_asm_expr): Warn if it is too late to
 	attempt to mark memory input operand addressable and
