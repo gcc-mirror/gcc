@@ -9,13 +9,15 @@ typedef int t;
 /* These should all be diagnosed, but only once, not for every
    identifier declared.  */
 struct s0 int x0, /* { dg-error "two or more data types" } */
-x1;
+/* { dg-error "storage size of 'x0' isn't known" "" { target *-*-* } 11 } */
+x1; /* { dg-error "storage size of 'x1' isn't known" } */ 
 
 char union u0 x2, /* { dg-error "two or more data types" } */
 x3;
 
 enum e0 struct s1 x4, /* { dg-error "two or more data types" } */
-x5;
+ /* { dg-error "storage size of 'x4' isn't known" "" { target *-*-* } 18 } */
+x5; /* { dg-error "storage size of 'x5' isn't known" } */
 
 short short x6, /* { dg-error "duplicate" } */
 x7;

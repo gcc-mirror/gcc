@@ -33,6 +33,7 @@ enum e3
 
 __typeof__ (struct s5 { int i; }) v5; /* { dg-warning "invalid in C\[+\]\[+\]" } */
 __typeof__ (struct t5) w5; /* { dg-bogus "invalid in C\[+\]\[+\]" } */
+  /* { dg-error "storage size of 'w5' isn't known" "" { target *-*-* } 35 } */
 
 int
 f1 (struct s1 *p)
@@ -64,4 +65,4 @@ f5 ()
   return &((struct t8) { });  /* { dg-warning "invalid in C\[+\]\[+\]" } */
 }
 
-/* { dg-error "invalid use of undefined type" "" { target *-*-* } 64 } */
+/* { dg-error "invalid use of undefined type" "" { target *-*-* } 65 } */

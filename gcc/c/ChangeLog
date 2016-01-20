@@ -1,3 +1,13 @@
+2016-01-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR c/24293
+	* c-tree.h (incomplete_record_decls): Declare.
+	* c-parser.c (incomplete_record_decls): Define.
+	(c_parser_translation_unit): Iterate through incomplete_record_decls and
+	report error if any decl has zero size.
+	* c-decl.c (finish_decl): Append static decl with incomplete struct/union
+	or enum type to incomplete_record_decls.
+
 2016-01-14  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/68773
