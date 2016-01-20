@@ -35,6 +35,8 @@
 # include <bits/c++0x_warning.h>
 #endif
 
+extern "C++" {
 #include <complex>
+}
 
 #endif

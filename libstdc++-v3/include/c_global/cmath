@@ -74,6 +74,8 @@
 #undef tan
 #undef tanh
 
+extern "C++"
+{
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -1789,5 +1791,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #if __STDCPP_WANT_MATH_SPEC_FUNCS__ == 1
 #  include <bits/specfun.h>
 #endif
+
+} // extern "C++"
 
 #endif

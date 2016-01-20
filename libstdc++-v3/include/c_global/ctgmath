@@ -35,7 +35,9 @@
 #  include <bits/c++0x_warning.h>
 #else
 #  include <cmath>
+extern "C++" {
 #  include <complex>
+}
 #endif
 
 #endif 
