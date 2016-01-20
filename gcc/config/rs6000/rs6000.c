@@ -32904,10 +32904,19 @@ rs6000_emit_swsqrt (rtx dst, rtx src, bool recip)
   if (!recip)
     {
       rtx zero = force_reg (mode, CONST0_RTX (mode));
-      rtx target = emit_conditional_move (e, GT, src, zero, mode,
-					  e, zero, mode, 0);
-      if (target != e)
-	emit_move_insn (e, target);
+
+      if (mode == SFmode)
+	{
+	  rtx target = emit_conditional_move (e, GT, src, zero, mode,
+					      e, zero, mode, 0);
+	  if (target != e)
+	    emit_move_insn (e, target);
+	}
+      else
+	{
+	  rtx cond = gen_rtx_GT (VOIDmode, e, zero);
+	  rs6000_emit_vector_cond_expr (e, e, zero, cond, src, zero);
+	}
     }
 
   /* g = sqrt estimate.  */
