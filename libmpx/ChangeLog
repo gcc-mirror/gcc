@@ -1,3 +1,7 @@
+2016-01-20  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* mpxrt/mpxrt.c (handler): Fix verbosity for error message.
+
 2016-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* mpxwrap/mpx_wrappers.c (__mpx_wrapper_memmove): Avoid
