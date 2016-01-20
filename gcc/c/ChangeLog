@@ -1,4 +1,4 @@
-2016-01-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+2016-01-20  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR c/24293
 	* c-tree.h (incomplete_record_decls): Declare.
