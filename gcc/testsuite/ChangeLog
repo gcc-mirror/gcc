@@ -1,3 +1,9 @@
+2016-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/67653
+	* c-c++-common/pr67653.c: New test.
+	* gcc.dg/torture/pr29119.c: Add dg-warning.
+
 2016-01-20  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/cpu-builtin-1.c: New test.
