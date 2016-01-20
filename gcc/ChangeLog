@@ -1,3 +1,12 @@
+2016-01-20  Jeff Law  <law@redhat.com>
+
+	* config/m68k/predicates.md (pow2_m1_operand): New predicate
+	extracted from ...
+	(reg_or_pow2_m1_operand): Call pow2_m1_operand.
+	(pc_or_label_operand): New predicate.
+	* config/m68k/m68k.md: Add new peephole2 patterns for GTU/LEU
+	tests for small integers that are 2^n - 1.
+	
 2016-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/invoke.texi (Options Summary): Add '.' after @xref.
