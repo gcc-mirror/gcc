@@ -1,3 +1,8 @@
+2016-01-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/memset-inline-10.c: Added
+	dg-require-effective-target arm_thumb2_ok.
+
 2016-01-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/debug/dwarf2/sso.c: New test.
