@@ -243,4 +243,24 @@ vn_valueize (tree name)
   return name;
 }
 
+/* Get at the original range info for NAME.  */
+
+inline range_info_def *
+VN_INFO_RANGE_INFO (tree name)
+{
+  return (VN_INFO (name)->info.range_info
+	  ? VN_INFO (name)->info.range_info
+	  : SSA_NAME_RANGE_INFO (name));
+}
+
+/* Get at the original pointer info for NAME.  */
+
+inline ptr_info_def *
+VN_INFO_PTR_INFO (tree name)
+{
+  return (VN_INFO (name)->info.ptr_info
+	  ? VN_INFO (name)->info.ptr_info
+	  : SSA_NAME_PTR_INFO (name));
+}
+
 #endif /* TREE_SSA_SCCVN_H  */

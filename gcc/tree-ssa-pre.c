@@ -4033,22 +4033,22 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	    {
 	      basic_block sprime_b = gimple_bb (SSA_NAME_DEF_STMT (sprime));
 	      if (POINTER_TYPE_P (TREE_TYPE (lhs))
-		  && SSA_NAME_PTR_INFO (lhs)
-		  && !SSA_NAME_PTR_INFO (sprime))
+		  && VN_INFO_PTR_INFO (lhs)
+		  && ! VN_INFO_PTR_INFO (sprime))
 		{
 		  duplicate_ssa_name_ptr_info (sprime,
-					       SSA_NAME_PTR_INFO (lhs));
+					       VN_INFO_PTR_INFO (lhs));
 		  if (b != sprime_b)
 		    mark_ptr_info_alignment_unknown
 			(SSA_NAME_PTR_INFO (sprime));
 		}
-	      else if (!POINTER_TYPE_P (TREE_TYPE (lhs))
-		       && SSA_NAME_RANGE_INFO (lhs)
-		       && !SSA_NAME_RANGE_INFO (sprime)
+	      else if (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+		       && VN_INFO_RANGE_INFO (lhs)
+		       && ! VN_INFO_RANGE_INFO (sprime)
 		       && b == sprime_b)
 		duplicate_ssa_name_range_info (sprime,
 					       SSA_NAME_RANGE_TYPE (lhs),
-					       SSA_NAME_RANGE_INFO (lhs));
+					       VN_INFO_RANGE_INFO (lhs));
 	    }
 
 	  /* Inhibit the use of an inserted PHI on a loop header when
