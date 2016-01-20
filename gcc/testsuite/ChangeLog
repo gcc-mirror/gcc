@@ -1,3 +1,12 @@
+2016-01-20  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR c/24293
+	* gcc.dg/pr24293.c: New test.
+	* gcc.dg/Wcxx-compat-8.c: Adjust to accept error due to
+	incomplete struct type.
+	* gcc.dg/declspec-1.c: Likewise.
+	* gcc.dg/pr63549.c: Likewise.
+
 2016-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/66612
