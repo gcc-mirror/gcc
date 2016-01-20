@@ -1,3 +1,11 @@
+2016-01-20  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	Backport from mainline r232619.
+	2016-01-20  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* mpxrt/mpxrt.c (handler): Fix verbosity for
+	error message.
+
 2015-12-04  Release Manager
 
 	* GCC 5.3.0 released.
