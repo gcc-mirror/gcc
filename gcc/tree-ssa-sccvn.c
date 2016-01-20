@@ -3092,7 +3092,11 @@ set_ssa_val_to (tree from, tree to)
 		  /* Use that from the dominator.  */
 		  SSA_NAME_PTR_INFO (to) = SSA_NAME_PTR_INFO (from);
 		}
-	      else
+	      else if (! SSA_NAME_PTR_INFO (from)
+		       /* Handle the case of trivially equivalent info.  */
+		       || memcmp (SSA_NAME_PTR_INFO (to),
+				  SSA_NAME_PTR_INFO (from),
+				  sizeof (ptr_info_def)) != 0)
 		{
 		  /* Save old info.  */
 		  if (! VN_INFO (to)->info.ptr_info)
