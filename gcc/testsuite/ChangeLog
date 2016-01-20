@@ -1,3 +1,9 @@
+2016-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/66612
+	* gcc.target/powerpc/20050830-1.c: Xfail the scan-assembler test
+	for bdn instruction.
+
 2016-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* lib/target-supports.exp
