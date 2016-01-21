@@ -1874,14 +1874,39 @@ gather_bbs::gather_bbs (cdi_direction direction, scop_p scop)
 {
 }
 
+/* Record in execution order the loops fully contained in the region.  */
+
+static void
+record_loop_in_sese (basic_block bb, sese_info_p region)
+{
+  loop_p father = bb->loop_father;
+  if (loop_in_sese_p (father, region->region))
+    {
+      bool found = false;
+      loop_p loop0;
+      int j;
+      FOR_EACH_VEC_ELT (region->loop_nest, j, loop0)
+	if (father == loop0)
+	  {
+	    found = true;
+	    break;
+	  }
+      if (!found)
+	region->loop_nest.safe_push (father);
+    }
+}
+
 /* Call-back for dom_walk executed before visiting the dominated
    blocks.  */
 
 edge
 gather_bbs::before_dom_children (basic_block bb)
 {
-  if (!bb_in_sese_p (bb, scop->scop_info->region))
+  sese_info_p region = scop->scop_info;
+  if (!bb_in_sese_p (bb, region->region))
     return NULL;
+
+  record_loop_in_sese (bb, region);
 
   gcond *stmt = single_pred_cond_non_loop_exit (bb);
 
@@ -1990,8 +2015,6 @@ build_scops (vec<scop_p> *scops)
 	  free_scop (scop);
 	  continue;
 	}
-
-      build_sese_loop_nests (scop->scop_info);
 
       find_scop_parameters (scop);
       graphite_dim_t max_dim = PARAM_VALUE (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS);
