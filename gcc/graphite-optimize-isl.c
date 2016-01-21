@@ -241,6 +241,7 @@ get_schedule_for_band (isl_band *band, int *dimensions)
 			   PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE));
   tile_umap = isl_union_map_from_map (isl_map_from_basic_map (tile_map));
   tile_umap = isl_union_map_align_params (tile_umap, space);
+  tile_umap = isl_union_map_coalesce (tile_umap);
   *dimensions = 2 * *dimensions;
 
   return isl_union_map_apply_range (partial_schedule, tile_umap);
@@ -292,14 +293,14 @@ get_schedule_for_band_list (isl_band_list *band_list)
       isl_space_free (space);
     }
 
-  return schedule;
+  return isl_union_map_coalesce (schedule);
 }
 
 static isl_union_map *
 get_schedule_map (isl_schedule *schedule)
 {
-  isl_band_list *bandList = isl_schedule_get_band_forest (schedule);
-  isl_union_map *schedule_map = get_schedule_for_band_list (bandList);
+  isl_band_list *band_list = isl_schedule_get_band_forest (schedule);
+  isl_union_map *schedule_map = get_schedule_for_band_list (band_list);
   isl_band_list_free (bandList);
   return schedule_map;
 }
@@ -327,15 +328,16 @@ apply_schedule_map_to_scop (scop_p scop, isl_union_map *schedule_map)
       isl_union_map *stmt_band
 	= isl_union_map_intersect_domain (isl_union_map_copy (schedule_map),
 					  isl_union_set_from_set (domain));
+      stmt_band = isl_union_map_coalesce (stmt_band);
       isl_union_map_foreach_map (stmt_band, get_single_map, &stmt_schedule);
       isl_map_free (pbb->transformed);
-      pbb->transformed = stmt_schedule;
+      pbb->transformed = isl_map_coalesce (stmt_schedule);
       isl_union_map_free (stmt_band);
     }
 }
 
 static isl_union_set *
-scop_get_domains (scop_p scop ATTRIBUTE_UNUSED)
+scop_get_domains (scop_p scop)
 {
   int i;
   poly_bb_p pbb;

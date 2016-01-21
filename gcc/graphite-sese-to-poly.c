@@ -143,6 +143,10 @@ build_pbb_scattering_polyhedrons (isl_aff *static_sched,
 	}
     }
 
+  /* Simplify the original schedule.  */
+  pbb->schedule = isl_map_coalesce (pbb->schedule);
+
+  /* At the beginning, set the transformed schedule to the original.  */
   pbb->transformed = isl_map_copy (pbb->schedule);
 }
 
@@ -482,7 +486,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
   isl_constraint *c = isl_inequality_alloc
       (isl_local_space_from_space (isl_space_copy (space)));
   c = isl_constraint_set_coefficient_si (c, isl_dim_set, pos, 1);
-  inner = isl_set_add_constraint (inner, c);
+  inner = isl_set_coalesce (isl_set_add_constraint (inner, c));
 
   /* loop_i <= cst_nb_iters */
   if (TREE_CODE (nb_iters) == INTEGER_CST)
@@ -513,7 +517,8 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
 				   isl_set_dim (valid, isl_dim_set));
 
       if (valid)
-	scop->param_context = isl_set_intersect (scop->param_context, valid);
+	scop->param_context = isl_set_coalesce
+	  (isl_set_intersect (scop->param_context, valid));
 
       isl_local_space *ls = isl_local_space_from_space (isl_space_copy (space));
       isl_aff *al = isl_aff_set_coefficient_si (isl_aff_zero_on_domain (ls),
@@ -541,7 +546,8 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
 	  isl_set *x = isl_pw_aff_ge_set (approx, aff);
 	  x = isl_set_project_out (x, isl_dim_set, 0,
 				   isl_set_dim (x, isl_dim_set));
-	  scop->param_context = isl_set_intersect (scop->param_context, x);
+	  scop->param_context = isl_set_coalesce
+	    (isl_set_intersect (scop->param_context, x));
 
 	  isl_constraint *c = isl_inequality_alloc
 	      (isl_local_space_from_space (isl_space_copy (space)));
@@ -557,6 +563,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
   else
     gcc_unreachable ();
 
+  inner = isl_set_coalesce (inner);
   if (loop->inner
       && !build_loop_iteration_domains (scop, loop->inner, nb + 1,
 					isl_set_copy (inner), doms))
@@ -648,7 +655,7 @@ add_condition_to_pbb (poly_bb_p pbb, gcond *stmt, enum tree_code code)
 
   cond = isl_set_coalesce (cond);
   cond = isl_set_set_tuple_id (cond, isl_set_get_tuple_id (pbb->domain));
-  pbb->domain = isl_set_intersect (pbb->domain, cond);
+  pbb->domain = isl_set_coalesce (isl_set_intersect (pbb->domain, cond));
   return true;
 }
 
@@ -749,7 +756,8 @@ add_param_constraints (scop_p scop, graphite_dim_t p)
       c = isl_constraint_set_constant_val (c, v);
       c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, 1);
 
-      scop->param_context = isl_set_add_constraint (scop->param_context, c);
+      scop->param_context = isl_set_coalesce
+	(isl_set_add_constraint (scop->param_context, c));
     }
 
   if (ub)
@@ -768,7 +776,8 @@ add_param_constraints (scop_p scop, graphite_dim_t p)
       c = isl_constraint_set_constant_val (c, v);
       c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, -1);
 
-      scop->param_context = isl_set_add_constraint (scop->param_context, c);
+      scop->param_context = isl_set_coalesce
+	(isl_set_add_constraint (scop->param_context, c));
     }
 }
 
@@ -911,7 +920,7 @@ pdr_add_memory_accesses (isl_map *acc, dr_info &dri)
       acc = set_index (acc, i + 1, aff);
     }
 
-  return acc;
+  return isl_map_coalesce (acc);
 }
 
 /* Return true when the LOW and HIGH bounds of an array reference REF are valid
@@ -972,7 +981,8 @@ pdr_add_data_dimensions (isl_set *subscript_sizes, scop_p scop,
       isl_set *valid = isl_pw_aff_nonneg_set (isl_pw_aff_copy (ub));
       valid = isl_set_project_out (valid, isl_dim_set, 0,
 				   isl_set_dim (valid, isl_dim_set));
-      scop->param_context = isl_set_intersect (scop->param_context, valid);
+      scop->param_context = isl_set_coalesce
+	(isl_set_intersect (scop->param_context, valid));
 
       isl_aff *aff
 	= isl_aff_zero_on_domain (isl_local_space_from_space (space));
@@ -992,7 +1002,7 @@ pdr_add_data_dimensions (isl_set *subscript_sizes, scop_p scop,
       subscript_sizes = isl_set_intersect (subscript_sizes, ubs);
     }
 
-  return subscript_sizes;
+  return isl_set_coalesce (subscript_sizes);
 }
 
 /* Build data accesses for DRI.  */
