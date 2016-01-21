@@ -1,3 +1,9 @@
+2016-01-21  Ajit Agarwal  <ajitkum@xilinx.com>
+
+	* config/microblaze/microblaze.h
+	(FIXED_REGISTERS): Update in macro.
+	(CALL_USED_REGISTERS): Update in macro.
+
 2016-01-21  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR rtl-optimization/68920
