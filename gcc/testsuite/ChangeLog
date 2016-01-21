@@ -1,3 +1,11 @@
+2016-01-21  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from mainline
+	2016-01-08  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/67781
+	* gcc.c-torture/execute/pr67781.c: New file.
+
 2016-01-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
