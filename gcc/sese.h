@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SESE_H
 #define GCC_SESE_H
 
+typedef hash_map<tree, tree> parameter_rename_map_t;
 typedef hash_map<basic_block, vec<basic_block> > bb_map_t;
 typedef hash_map<tree, vec<tree> > rename_map_t;
 typedef struct ifsese_s *ifsese;
@@ -84,6 +85,9 @@ typedef struct sese_info_t
      names, one has to select the definition corresponding to the immediate
      dominator.  */
   rename_map_t *rename_map;
+
+  /* Parameters to be renamed.  */
+  parameter_rename_map_t *parameter_rename_map;
 
   /* Loops completely contained in this SESE.  */
   vec<loop_p> loop_nest;
