@@ -1,3 +1,12 @@
+2016-01-21  Anton Blanchard  <anton@samba.org>
+	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/63354
+	* config/rs6000/linux64.h (TARGET_KEEP_LEAF_WHEN_PROFILED): New
+	#define.
+	* config/rs6000/rs6000.c (rs6000_keep_leaf_when_profiled): New
+	function.
+
 2016-01-21  Ajit Agarwal  <ajitkum@xilinx.com>
 
 	* config/microblaze/microblaze.c
