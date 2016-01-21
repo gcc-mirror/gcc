@@ -1,3 +1,9 @@
+2016-01-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/68990
+	* lra-coalesce.c (lra_coalesce): Invalidate value for the result
+	pseudo instead of inheritance ones.
+
 2016-01-21  Bernd Enlinger  <bernd.edlinger@hotmail.de>
 	    Nick Clifton  <nickc@redhat.com>
 
