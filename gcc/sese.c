@@ -43,56 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "sese.h"
 #include "tree-ssa-propagate.h"
 
-/* Record LOOP as occurring in REGION.  */
-
-static void
-sese_record_loop (sese_info_p region, loop_p loop)
-{
-  if (sese_contains_loop (region, loop))
-    return;
-
-  bitmap_set_bit (region->loops, loop->num);
-  region->loop_nest.safe_push (loop);
-}
-
-/* Build the loop nests contained in REGION.  Returns true when the
-   operation was successful.  */
-
-void
-build_sese_loop_nests (sese_info_p region)
-{
-  unsigned i;
-  basic_block bb;
-  struct loop *loop0, *loop1;
-
-  FOR_EACH_BB_FN (bb, cfun)
-    if (bb_in_sese_p (bb, region->region))
-      {
-	struct loop *loop = bb->loop_father;
-
-	/* Only add loops if they are completely contained in the SCoP.  */
-	if (loop->header == bb
-	    && bb_in_sese_p (loop->latch, region->region))
-	  sese_record_loop (region, loop);
-      }
-
-  /* Make sure that the loops in the SESE_LOOP_NEST are ordered.  It
-     can be the case that an inner loop is inserted before an outer
-     loop.  To avoid this, semi-sort once.  */
-  FOR_EACH_VEC_ELT (region->loop_nest, i, loop0)
-    {
-      if (region->loop_nest.length () == i + 1)
-	break;
-
-      loop1 = region->loop_nest[i + 1];
-      if (loop0->num > loop1->num)
-	{
-	  region->loop_nest[i] = loop1;
-	  region->loop_nest[i + 1] = loop0;
-	}
-    }
-}
-
 /* For a USE in BB, if BB is outside REGION, mark the USE in the
    LIVEOUTS set.  */
 
@@ -228,7 +178,6 @@ new_sese_info (edge entry, edge exit)
 
   region->region.entry = entry;
   region->region.exit = exit;
-  region->loops = BITMAP_ALLOC (NULL);
   region->loop_nest.create (3);
   region->params.create (3);
   region->rename_map = new rename_map_t;
@@ -244,9 +193,6 @@ new_sese_info (edge entry, edge exit)
 void
 free_sese_info (sese_info_p region)
 {
-  if (region->loops)
-    region->loops = BITMAP_ALLOC (NULL);
-
   region->params.release ();
   region->loop_nest.release ();
 

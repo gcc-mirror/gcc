@@ -1,6 +1,20 @@
 2016-01-21  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	* graphite-scop-detection.c (record_loop_in_sese): New.
+	(gather_bbs::before_dom_children): Call record_loop_in_sese.
+	(build_scops): Remove call to build_sese_loop_nests.
+	* sese.c (sese_record_loop): Remove.
+	(build_sese_loop_nests): Remove.
+	(new_sese_info): Remove region->loops.
+	(free_sese_info): Same.
+	* sese.h (sese_contains_loop): Same.
+	(build_sese_loop_nests): Remove.
+	(sese_contains_loop): Remove.
+
+2016-01-21  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
 	* graphite-scop-detection.c (loop_is_valid_scop): Renamed loop_is_valid_in_scop.
 	(scop_detection::harmful_stmt_in_region): Renamed harmful_loop_in_region.
 	Call loop_is_valid_in_scop.
