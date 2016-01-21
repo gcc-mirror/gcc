@@ -1,3 +1,3 @@
 // PR c++/66748
 
-enum __attribute__((abi_tag("foo"))) E {}; // { dg-error "redeclaration of" }
+enum __attribute__((abi_tag("foo"))) E {};
