@@ -1,3 +1,8 @@
+2016-01-21  Torvald Riegel  <triegel@redhat.com>
+
+	* testsuite/libitm.c++/libstdc++-safeexc.C: Not supported on darwin
+	or AIX.
+
 2016-01-19  Richard Henderson  <rth@redhat.com>
 
 	PR bootstrap/69343
