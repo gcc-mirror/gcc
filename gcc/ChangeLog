@@ -1,5 +1,10 @@
 2016-01-20  Sandra Loosemore <sandra@codesourcery.com>
 
+	* doc/invoke.texi (Instrumentation Options): Clarify -mmpx linking
+	requirements.
+
+2016-01-20  Sandra Loosemore <sandra@codesourcery.com>
+
 	* common.opt (feliminate-dwarf2-dups): Replace references to
 	"DWARF 2" with just "DWARF".
 	* config/ia64/ia64.opt (mdwarf2-asm): Likewise.
