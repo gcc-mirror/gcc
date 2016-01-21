@@ -123,5 +123,9 @@ mxl-mode-novectors
 Target Mask(XL_MODE_NOVECTORS)
 Description for mxl-mode-novectors.
 
+mxl-prefetch
+Target Mask(PREFETCH)
+Use hardware prefetch instruction
+
 mxl-mode-xilkernel
 Target

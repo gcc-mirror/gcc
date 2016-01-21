@@ -43,6 +43,9 @@
   (UNSPEC_TLS           106)    ;; jump table
 ])
 
+(define_c_enum "unspec" [
+  UNSPEC_IPREFETCH
+])
 
 ;;----------------------------------------------------
 ;; Instruction Attributes
@@ -508,6 +511,17 @@
   (set_attr "mode"	"SI")
   (set_attr "length"	"4,8")])
 
+(define_insn "iprefetch"
+  [(unspec [(match_operand:SI 0 "const_int_operand" "n")] UNSPEC_IPREFETCH)
+   (clobber (mem:BLK (scratch)))]
+   "TARGET_PREFETCH"
+  {
+    operands[2] = gen_rtx_REG (SImode, MB_ABI_ASM_TEMP_REGNUM);
+    return "mfs\t%2,rpc\n\twic\t%2,r0";
+  }
+  [(set_attr "type" "arith")
+   (set_attr "mode"  "SI")
+   (set_attr "length"    "8")])
 
 ;;----------------------------------------------------------------
 ;; Double Precision Subtraction
