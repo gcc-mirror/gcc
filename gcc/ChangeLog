@@ -1,6 +1,12 @@
 2016-01-21  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	* graphite-scop-detection.c (scop_detection::harmful_loop_in_region):
+	Discard unstructured if-then-else regions.
+
+2016-01-21  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
         * graphite-sese-to-poly.c (set_scop_parameter_dim): Remove.
         (cleanup_loop_iter_dom): Remove.
         (build_loop_iteration_domains): Remove.
