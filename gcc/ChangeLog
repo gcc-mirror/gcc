@@ -1,6 +1,20 @@
 2016-01-21  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	* graphite-isl-ast-to-gimple.c (enum phi_node_kind): New.
+	(class translate_isl_ast_to_gimple): Use phi_node_kind instead of bool.
+	(is_valid_rename): Same.
+	(translate_isl_ast_to_gimple::get_rename): Same.
+	(translate_isl_ast_to_gimple::rename_all_uses): Same.
+	(translate_isl_ast_to_gimple::rename_uses): Same.
+	(get_new_name): Check for close_phi nodes.
+	(copy_loop_phi_args): Use phi_node_kind.
+	(translate_isl_ast_to_gimple::copy_loop_close_phi_args): Same.
+	(translate_isl_ast_to_gimple::copy_cond_phi_args): Same.
+
+2016-01-21  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
 	Revert commit r229783.
 	* graphite-isl-ast-to-gimple.c (gcc_expression_from_isl_ast_expr_id):
 	Remove use of parameter_rename_map.

@@ -24,4 +24,4 @@ Program FOO
 
 end Program FOO
 
-! { dg-final { scan-tree-dump "tiled" "graphite" } }
+! { dg-final { scan-tree-dump-times "unsuccessful, reverting back to the original code." "1" "graphite" } }
