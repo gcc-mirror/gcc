@@ -4396,7 +4396,7 @@ LCF0:
 
     case $target in
       *-*-aix*)
-	gcc_GAS_CHECK_FEATURE([.ref support],
+	gcc_GAS_CHECK_FEATURE([AIX .ref support],
 	  gcc_cv_as_aix_ref, [2,21,0],,
 	  [	.csect stuff[[rw]]
 	     stuff:
@@ -4407,16 +4407,15 @@ LCF0:
 	  [AC_DEFINE(HAVE_AS_REF, 1,
 	    [Define if your assembler supports .ref])])
 	;;
-    esac
 
-    case $target in
-      *-*-aix*)
-	gcc_GAS_CHECK_FEATURE([dwarf location lists section support],
+	gcc_GAS_CHECK_FEATURE([AIX DWARF location lists section support],
 	  gcc_cv_as_aix_dwloc, [2,21,0],,
-	  [	.dwsect 0xB0000
+	  [	.dwsect 0xA0000
+	Lframe..0:
+		.vbyte 4,Lframe..0:
 	  ],,
 	  [AC_DEFINE(HAVE_XCOFF_DWARF_EXTRAS, 1,
-	    [Define if your assembler supports .dwsect 0xB0000])])
+	    [Define if your assembler supports AIX debug frame section label reference.])])
 	;;
     esac
     ;;

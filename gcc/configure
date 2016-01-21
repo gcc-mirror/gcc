@@ -26615,8 +26615,8 @@ fi
 
     case $target in
       *-*-aix*)
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .ref support" >&5
-$as_echo_n "checking assembler for .ref support... " >&6; }
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for AIX .ref support" >&5
+$as_echo_n "checking assembler for AIX .ref support... " >&6; }
 if test "${gcc_cv_as_aix_ref+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
@@ -26655,12 +26655,9 @@ $as_echo "#define HAVE_AS_REF 1" >>confdefs.h
 
 fi
 	;;
-    esac
 
-    case $target in
-      *-*-aix*)
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for dwarf location lists section support" >&5
-$as_echo_n "checking assembler for dwarf location lists section support... " >&6; }
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for AIX DWARF location lists section support" >&5
+$as_echo_n "checking assembler for AIX DWARF location lists section support... " >&6; }
 if test "${gcc_cv_as_aix_dwloc+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
@@ -26670,7 +26667,9 @@ else
   then gcc_cv_as_aix_dwloc=yes
 fi
   elif test x$gcc_cv_as != x; then
-    $as_echo '	.dwsect 0xB0000
+    $as_echo '	.dwsect 0xA0000
+	Lframe..0:
+		.vbyte 4,Lframe..0:
 	  ' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
