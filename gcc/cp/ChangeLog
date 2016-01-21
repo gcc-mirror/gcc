@@ -1,3 +1,11 @@
+2016-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43407
+	* decl.c (start_enum): Add attributes parameter.
+	* parser.c (cp_parser_enum_specifier): Pass it.
+	* pt.c (lookup_template_class_1): Pass it.
+	* cp-tree.h: Adjust.
+
 2016-01-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59759
