@@ -1,3 +1,12 @@
+2016-01-21  Bernd Enlinger  <bernd.edlinger@hotmail.de>
+	    Nick Clifton  <nickc@redhat.com>
+
+	PR target/69129
+	PR target/69012
+	* config/mips/mips.c (mips_compute_frame_info): Initialise
+	args_size and hard_frame_pointer_offset fields of the frame
+	structure before calling mips_global_pointer.
+
 2016-01-21  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure.ac (gcc_cv_as_dwloc): Test support for debug frame section
