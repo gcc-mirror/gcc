@@ -1,3 +1,9 @@
+2016-01-21  Roman Zhuykov  <zhroma@ispras.ru>
+
+	PR target/69252
+	* modulo-sched.c (optimize_sc):	Allow branch-scheduling to add a new
+	first stage.
+
 2016-01-21  Jeff Law  <law@redhat.com>
 
 	PR middle-end/69347

@@ -985,7 +985,7 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
       int row = SMODULO (branch_cycle, ps->ii);
       int num_splits = 0;
       sbitmap must_precede, must_follow, tmp_precede, tmp_follow;
-      int c;
+      int min_cycle, c;
 
       if (dump_file)
 	fprintf (dump_file, "\nTrying to schedule node %d "
@@ -1040,6 +1040,7 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
 	if (next_ps_i->id == g->closing_branch->cuid)
 	  break;
 
+      min_cycle = PS_MIN_CYCLE (ps) - SMODULO (PS_MIN_CYCLE (ps), ps->ii);
       remove_node_from_ps (ps, next_ps_i);
       success =
 	try_scheduling_node_in_cycle (ps, g->closing_branch->cuid, c,
@@ -1078,6 +1079,10 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
 				    PS_MIN_CYCLE (ps));
 	  ok = true;
 	}
+
+      /* This might have been added to a new first stage.  */
+      if (PS_MIN_CYCLE (ps) < min_cycle)
+	reset_sched_times (ps, 0);
 
       free (must_precede);
       free (must_follow);
