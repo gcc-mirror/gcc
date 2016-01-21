@@ -1,3 +1,16 @@
+2016-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69406
+	* include/bits/cpp_type_traits.h: Ensure C++ language linkage.
+	* include/ext/type_traits.h: Likewise.
+	* testsuite/17_intro/headers/c++2011/linkage.cc: Check autoconf macros
+	for presence of C headers.
+	* testsuite/ext/type_traits/add_unsigned_floating_neg.cc: Adjust
+	dg-error line number.
+	* testsuite/ext/type_traits/add_unsigned_integer_neg.cc: Likewise.
+	* testsuite/ext/type_traits/remove_unsigned_floating_neg.cc: Likewise.
+	* testsuite/ext/type_traits/remove_unsigned_integer_neg.cc: Likewise.
+
 2016-01-20  Torvald Riegel  <triegel@redhat.com>
 
 	PR libstdc++/69310
