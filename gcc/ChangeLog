@@ -1,3 +1,13 @@
+2016-01-21  Jeff Law  <law@redhat.com>
+
+	PR middle-end/69347
+	* tree-ssa-dom.c (dom_opt_dom_walker::thread_across_edge): Avoid
+	useless call to record_temporary_equivalences.
+	* tree-ssa-threadbackward.c (find_jump_threads_backwards): Just
+	allocate 10 slots in the bb_path vector and let it grow as needed.
+	(fsm_find_control_statement_thread_paths): Similarly for the next_path
+	vector.
+
 2016-01-21  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure.ac (gcc_cv_as_powerpc_mfcrf, gcc_cv_as_machine_directive):

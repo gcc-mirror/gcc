@@ -142,7 +142,7 @@ fsm_find_control_statement_thread_paths (tree name,
       int e_count = 0;
       edge_iterator ei;
       vec<basic_block, va_gc> *next_path;
-      vec_alloc (next_path, n_basic_blocks_for_fn (cfun));
+      vec_alloc (next_path, 10);
 
       /* When VAR_BB == LAST_BB_IN_PATH, then the first block in the path
 	 will already be in VISITED_BBS.  When they are not equal, then we
@@ -379,7 +379,7 @@ find_jump_threads_backwards (edge e)
     return;
 
   vec<basic_block, va_gc> *bb_path;
-  vec_alloc (bb_path, n_basic_blocks_for_fn (cfun));
+  vec_alloc (bb_path, 10);
   vec_safe_push (bb_path, e->dest);
   hash_set<basic_block> *visited_bbs = new hash_set<basic_block>;
 

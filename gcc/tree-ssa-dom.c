@@ -935,9 +935,6 @@ dom_opt_dom_walker::thread_across_edge (edge e)
   m_avail_exprs_stack->push_marker ();
   m_const_and_copies->push_marker ();
 
-  /* Traversing E may result in equivalences we can utilize.  */
-  record_temporary_equivalences (e, m_const_and_copies, m_avail_exprs_stack);
-
   /* With all the edge equivalences in the tables, go ahead and attempt
      to thread through E->dest.  */
   ::thread_across_edge (m_dummy_cond, e, false,
