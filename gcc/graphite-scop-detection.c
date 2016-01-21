@@ -336,6 +336,15 @@ make_close_phi_nodes_unique (basic_block bb)
     }
 }
 
+/* Return true when NAME is defined in LOOP.  */
+
+static bool
+defined_in_loop_p (tree name, loop_p loop)
+{
+  gcc_assert (TREE_CODE (name) == SSA_NAME);
+  return loop == loop_containing_stmt (SSA_NAME_DEF_STMT (name));
+}
+
 /* Transforms LOOP to the canonical loop closed SSA form.  */
 
 static void
@@ -376,7 +385,9 @@ canonicalize_loop_closed_ssa (loop_p loop)
 		use_operand_p use_p;
 		gphi *close_phi;
 
-		if (TREE_CODE (arg) != SSA_NAME)
+		/* Only add close phi nodes for SSA_NAMEs defined in LOOP.  */
+		if (TREE_CODE (arg) != SSA_NAME
+		    || !defined_in_loop_p (arg, loop))
 		  continue;
 
 		close_phi = create_phi_node (NULL_TREE, close);

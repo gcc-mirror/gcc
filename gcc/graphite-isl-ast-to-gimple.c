@@ -507,8 +507,8 @@ private:
 /* Return the tree variable that corresponds to the given isl ast identifier
    expression (an isl_ast_expr of type isl_ast_expr_id).
 
-   FIXME: We should replace blind conversation of id's type with derivation
-   of the optimal type when we get the corresponding isl support. Blindly
+   FIXME: We should replace blind conversion of id's type with derivation
+   of the optimal type when we get the corresponding isl support.  Blindly
    converting type sizes may be problematic when we switch to smaller
    types.  */
 

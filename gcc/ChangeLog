@@ -1,6 +1,14 @@
 2016-01-21  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+        * graphite-isl-ast-to-gimple.c: Fix comment.
+        * graphite-scop-detection.c (defined_in_loop_p): New.
+        (canonicalize_loop_closed_ssa): Do not add close phi nodes for SSA
+        names defined in loop.
+
+2016-01-21  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
 	* graphite-scop-detection.c (scop_detection::harmful_loop_in_region):
 	Discard unstructured if-then-else regions.
 
