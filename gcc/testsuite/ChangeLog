@@ -1,3 +1,8 @@
+2016-01-21  Nick Clifton  <nickc@redhat.com>
+
+	PR target/69129
+	* gcc.target/mips/pr69129.c: New.
+
 2016-01-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58046
