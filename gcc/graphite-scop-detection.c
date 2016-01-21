@@ -1088,7 +1088,11 @@ scop_detection::harmful_loop_in_region (sese_l scop) const
 	     any loop fully contained in the scop: other bbs are checked below
 	     in loop_is_valid_in_scop.  */
 	  if (harmful_stmt_in_bb (scop, bb))
-	    return true;
+	    {
+	      dom.release ();
+	      BITMAP_FREE (loops);
+	      return true;
+	    }
 	}
 
     }
@@ -1104,13 +1108,14 @@ scop_detection::harmful_loop_in_region (sese_l scop) const
 
       if (!loop_is_valid_in_scop (loop, scop))
 	{
+	  dom.release ();
 	  BITMAP_FREE (loops);
 	  return true;
 	}
     }
 
-  BITMAP_FREE (loops);
   dom.release ();
+  BITMAP_FREE (loops);
   return false;
 }
 
@@ -1503,7 +1508,10 @@ scop_detection::loop_body_is_valid_scop (loop_p loop, sese_l scop) const
       basic_block bb = bbs[i];
 
       if (harmful_stmt_in_bb (scop, bb))
-	return false;
+	{
+	  free (bbs);
+	  return false;
+	}
     }
   free (bbs);
 
