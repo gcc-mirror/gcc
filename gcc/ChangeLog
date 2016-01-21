@@ -1,3 +1,9 @@
+2016-01-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure.ac (gcc_cv_as_dwloc): Test support for debug frame section
+	label reference.
+	* configure: Regenerate.
+
 2016-01-21  Richard Biener  <rguenther@suse.de>
 
 	* graphite-optimize-isl.c (get_schedule_map): Fix typo.
