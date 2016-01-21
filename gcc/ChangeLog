@@ -1,3 +1,10 @@
+2016-01-21  Marcin Kościelnicki  <koriakin@0x04.net>
+
+	* config/s390/s390.md (pool_section_start): Use switch_to_section
+	to select proper read-only data section instead of hardcoding
+	.rodata.
+	(pool_section_end): Use switch_to_section to match the above.
+
 2016-01-21  Richard Biener  <rguenther@suse.de>
 
         PR tree-optimization/69378
