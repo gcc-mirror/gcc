@@ -1,3 +1,9 @@
+2016-01-20  Martin Sebor  <msebor@redhat.com>
+
+	PR c/69405
+	* c-common.c (sync_resolve_size): Avoid printing diagnostic about
+	an incompatible argument when the argument isn't a valid tree node.
+
 2016-01-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68767
