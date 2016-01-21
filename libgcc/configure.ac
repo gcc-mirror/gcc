@@ -373,6 +373,37 @@ esac
 ;;
 esac
 
+case ${host} in
+powerpc*-*-linux*)
+  AC_CACHE_CHECK([whether the PowerPC compiler can do __float128],
+		 [libgcc_cv_powerpc_float128],
+		 [AC_COMPILE_IFELSE(
+    [#pragma GCC target ("vsx,float128")
+     __float128 add (__float128 *a) { return *a + *(a+1); }],
+    [libgcc_cv_powerpc_float128=yes],
+    [libgcc_cv_powerpc_float128=no])])
+
+  AC_CACHE_CHECK([whether the PowerPC compiler can do hardware __float128],
+		 [libgcc_cv_powerpc_float128_hw],
+		 [AC_COMPILE_IFELSE(
+    [#pragma GCC target ("cpu=power9,float128,float128-hardware")
+     #include <sys/auxv.h>
+     #ifndef AT_PLATFORM
+     #error "AT_PLATFORM is not defined"
+     #endif
+     __float128 add (__float128 a, __float128 b)
+     {
+       __float128 ret;
+       __asm__ ("xsaddqp %0,%1,%2" : "=v" (ret) : "v" (a), "v" (b));
+       return ret;
+     }
+     void *add_resolver (void) { return (void *) add; }
+     __float128 add_ifunc (__float128, __float128)
+	__attribute__ ((__ifunc__ ("add_resolver")));],
+    [libgcc_cv_powerpc_float128_hw=yes],
+    [libgcc_cv_powerpc_float128_hw=no])])
+esac
+
 # Collect host-machine-specific information.
 . ${srcdir}/config.host
 
