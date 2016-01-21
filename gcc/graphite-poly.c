@@ -164,7 +164,6 @@ new_poly_bb (scop_p scop, gimple_poly_bb_p black_box)
   PBB_SCOP (pbb) = scop;
   pbb_set_black_box (pbb, black_box);
   PBB_DRS (pbb).create (3);
-  PBB_IS_REDUCTION (pbb) = false;
   GBB_PBB ((gimple_poly_bb_p) black_box) = pbb;
 
   return pbb;
