@@ -2969,6 +2969,87 @@ print_scc (FILE *out, vec<tree> scc)
   fprintf (out, "\n");
 }
 
+/* Return true if BB1 is dominated by BB2 taking into account edges
+   that are not executable.  */
+
+static bool
+dominated_by_p_w_unex (basic_block bb1, basic_block bb2)
+{
+  edge_iterator ei;
+  edge e;
+
+  if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
+    return true;
+
+  /* Before iterating we'd like to know if there exists a
+     (executable) path from bb2 to bb1 at all, if not we can
+     directly return false.  For now simply iterate once.  */
+
+  /* Iterate to the single executable bb1 predecessor.  */
+  if (EDGE_COUNT (bb1->preds) > 1)
+    {
+      edge prede = NULL;
+      FOR_EACH_EDGE (e, ei, bb1->preds)
+	if (e->flags & EDGE_EXECUTABLE)
+	  {
+	    if (prede)
+	      {
+		prede = NULL;
+		break;
+	      }
+	    prede = e;
+	  }
+      if (prede)
+	{
+	  bb1 = prede->src;
+
+	  /* Re-do the dominance check with changed bb1.  */
+	  if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
+	    return true;
+	}
+    }
+
+  /* Iterate to the single executable bb2 successor.  */
+  edge succe = NULL;
+  FOR_EACH_EDGE (e, ei, bb2->succs)
+    if (e->flags & EDGE_EXECUTABLE)
+      {
+	if (succe)
+	  {
+	    succe = NULL;
+	    break;
+	  }
+	succe = e;
+      }
+  if (succe)
+    {
+      /* Verify the reached block is only reached through succe.
+	 If there is only one edge we can spare us the dominator
+	 check and iterate directly.  */
+      if (EDGE_COUNT (succe->dest->preds) > 1)
+	{
+	  FOR_EACH_EDGE (e, ei, succe->dest->preds)
+	    if (e != succe
+		&& (e->flags & EDGE_EXECUTABLE))
+	      {
+		succe = NULL;
+		break;
+	      }
+	}
+      if (succe)
+	{
+	  bb2 = succe->dest;
+
+	  /* Re-do the dominance check with changed bb2.  */
+	  if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
+	    return true;
+	}
+    }
+
+  /* We could now iterate updating bb1 / bb2.  */
+  return false;
+}
+
 /* Set the value number of FROM to TO, return true if it has changed
    as a result.  */
 
@@ -3046,15 +3127,15 @@ set_ssa_val_to (tree from, tree to)
 	      && SSA_NAME_RANGE_INFO (to))
 	    {
 	      if (SSA_NAME_IS_DEFAULT_DEF (to)
-		  || dominated_by_p (CDI_DOMINATORS,
-				     gimple_bb (SSA_NAME_DEF_STMT (from)),
-				     gimple_bb (SSA_NAME_DEF_STMT (to))))
+		  || dominated_by_p_w_unex
+			(gimple_bb (SSA_NAME_DEF_STMT (from)),
+			 gimple_bb (SSA_NAME_DEF_STMT (to))))
 		/* Keep the info from the dominator.  */
 		;
 	      else if (SSA_NAME_IS_DEFAULT_DEF (from)
-		       || dominated_by_p (CDI_DOMINATORS,
-					  gimple_bb (SSA_NAME_DEF_STMT (to)),
-					  gimple_bb (SSA_NAME_DEF_STMT (from))))
+		       || dominated_by_p_w_unex
+			    (gimple_bb (SSA_NAME_DEF_STMT (to)),
+			     gimple_bb (SSA_NAME_DEF_STMT (from))))
 		{
 		  /* Save old info.  */
 		  if (! VN_INFO (to)->info.range_info)
@@ -3076,15 +3157,15 @@ set_ssa_val_to (tree from, tree to)
 		   && SSA_NAME_PTR_INFO (to))
 	    {
 	      if (SSA_NAME_IS_DEFAULT_DEF (to)
-		  || dominated_by_p (CDI_DOMINATORS,
-				     gimple_bb (SSA_NAME_DEF_STMT (from)),
-				     gimple_bb (SSA_NAME_DEF_STMT (to))))
+		  || dominated_by_p_w_unex
+			(gimple_bb (SSA_NAME_DEF_STMT (from)),
+			 gimple_bb (SSA_NAME_DEF_STMT (to))))
 		/* Keep the info from the dominator.  */
 		;
 	      else if (SSA_NAME_IS_DEFAULT_DEF (from)
-		       || dominated_by_p (CDI_DOMINATORS,
-					  gimple_bb (SSA_NAME_DEF_STMT (to)),
-					  gimple_bb (SSA_NAME_DEF_STMT (from))))
+		       || dominated_by_p_w_unex
+			    (gimple_bb (SSA_NAME_DEF_STMT (to)),
+			     gimple_bb (SSA_NAME_DEF_STMT (from))))
 		{
 		  /* Save old info.  */
 		  if (! VN_INFO (to)->info.ptr_info)
