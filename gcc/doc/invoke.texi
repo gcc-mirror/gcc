@@ -316,7 +316,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program}.
-@gccoptlist{-g  -g@var{level}  -gcoff  -gdwarf-@var{version} @gol
+@gccoptlist{-g  -g@var{level}  -gcoff  -gdwarf -gdwarf-@var{version} @gol
 -ggdb  -grecord-gcc-switches  -gno-record-gcc-switches @gol
 -gstabs  -gstabs+  -gstrict-dwarf  -gno-strict-dwarf @gol
 -gvms  -gxcoff  -gxcoff+ -gz@r{[}=@var{type}@r{]} @gol
@@ -5727,7 +5727,7 @@ information useful for debugging do not run at all, so that
 @item -g
 @opindex g
 Produce debugging information in the operating system's native format
-(stabs, COFF, XCOFF, or DWARF 2)@.  GDB can work with this debugging
+(stabs, COFF, XCOFF, or DWARF)@.  GDB can work with this debugging
 information.
 
 On most systems that use stabs format, @option{-g} enables use of extra
@@ -5741,12 +5741,13 @@ to generate the extra information, use @option{-gstabs+}, @option{-gstabs},
 @item -ggdb
 @opindex ggdb
 Produce debugging information for use by GDB@.  This means to use the
-most expressive format available (DWARF 2, stabs, or the native format
+most expressive format available (DWARF, stabs, or the native format
 if neither of those are supported), including GDB extensions if at all
 possible.
 
-@item -gdwarf-@var{version}
-@opindex gdwarf-@var{version}
+@item -gdwarf
+@itemx -gdwarf-@var{version}
+@opindex gdwarf
 Produce debugging information in DWARF format (if that is supported).
 The value of @var{version} may be either 2, 3, 4 or 5; the default version
 for most targets is 4.  DWARF Version 5 is only experimental.
@@ -5756,6 +5757,12 @@ use some non-conflicting DWARF 3 extensions in the unwind tables.
 
 Version 4 may require GDB 7.0 and @option{-fvar-tracking-assignments}
 for maximum benefit.
+
+GCC no longer supports DWARF Version 1, which is substantially
+different than Version 2 and later.  For historical reasons, some
+other DWARF-related options (including @option{-feliminate-dwarf2-dups} 
+and @option{-fno-dwarf2-cfi-asm}) retain a reference to DWARF Version 2
+in their names, but apply to all currently-supported versions of DWARF.
 
 @item -gstabs
 @opindex gstabs
@@ -5817,11 +5824,8 @@ Level 3 includes extra information, such as all the macro definitions
 present in the program.  Some debuggers support macro expansion when
 you use @option{-g3}.
 
-@option{-gdwarf-2} does not accept a concatenated debug level, because
-GCC used to support an option @option{-gdwarf} that meant to generate
-debug information in version 1 of the DWARF format (which is very
-different from version 2), and it would have been too confusing.  That
-debug format is long obsolete, but the option cannot be changed now.
+@option{-gdwarf} does not accept a concatenated debug level, to avoid
+confusion with @option{-gdwarf-@var{level}}.
 Instead use an additional @option{-g@var{level}} option to change the
 debug level for DWARF.
 
@@ -5943,9 +5947,9 @@ when producing object files.
 
 @item -feliminate-dwarf2-dups
 @opindex feliminate-dwarf2-dups
-Compress DWARF 2 debugging information by eliminating duplicated
+Compress DWARF debugging information by eliminating duplicated
 information about each symbol.  This option only makes sense when
-generating DWARF 2 debugging information with @option{-gdwarf-2}.
+generating DWARF debugging information.
 
 @item -femit-struct-debug-baseonly
 @opindex femit-struct-debug-baseonly
@@ -5958,7 +5962,7 @@ but at significant potential loss in type information to the debugger.
 See @option{-femit-struct-debug-reduced} for a less aggressive option.
 See @option{-femit-struct-debug-detailed} for more detailed control.
 
-This option works only with DWARF 2.
+This option works only with DWARF debug output.
 
 @item -femit-struct-debug-reduced
 @opindex femit-struct-debug-reduced
@@ -5972,7 +5976,7 @@ with some potential loss in type information to the debugger.
 See @option{-femit-struct-debug-baseonly} for a more aggressive option.
 See @option{-femit-struct-debug-detailed} for more detailed control.
 
-This option works only with DWARF 2.
+This option works only with DWARF debug output.
 
 @item -femit-struct-debug-detailed@r{[}=@var{spec-list}@r{]}
 @opindex femit-struct-debug-detailed
@@ -6020,18 +6024,18 @@ You may need to experiment to determine the best settings for your application.
 
 The default is @option{-femit-struct-debug-detailed=all}.
 
-This option works only with DWARF 2.
+This option works only with DWARF debug output.
 
 @item -fno-dwarf2-cfi-asm
 @opindex fdwarf2-cfi-asm
 @opindex fno-dwarf2-cfi-asm
-Emit DWARF 2 unwind info as compiler generated @code{.eh_frame} section
+Emit DWARF unwind info as compiler generated @code{.eh_frame} section
 instead of using GAS @code{.cfi_*} directives.
 
 @item -fno-eliminate-unused-debug-types
 @opindex feliminate-unused-debug-types
 @opindex fno-eliminate-unused-debug-types
-Normally, when producing DWARF 2 output, GCC avoids producing debug symbol 
+Normally, when producing DWARF output, GCC avoids producing debug symbol 
 output for types that are nowhere used in the source file being compiled.
 Sometimes it is useful to have GCC emit debugging
 information for all types declared in a compilation
@@ -11017,7 +11021,7 @@ that needs this handling enables it on your behalf.
 
 @item -fasynchronous-unwind-tables
 @opindex fasynchronous-unwind-tables
-Generate unwind table in DWARF 2 format, if supported by target machine.  The
+Generate unwind table in DWARF format, if supported by target machine.  The
 table is exact at each instruction boundary, so it can be used for stack
 unwinding from asynchronous events (such as debugger or garbage collector).
 
@@ -16427,7 +16431,7 @@ instructions.  The default is to use these instructions.
 @itemx -mdwarf2-asm
 @opindex mno-dwarf2-asm
 @opindex mdwarf2-asm
-Don't (or do) generate assembler code for the DWARF 2 line number debugging
+Don't (or do) generate assembler code for the DWARF line number debugging
 info.  This may be useful when not using the GNU assembler.
 
 @item -mearly-stop-bits
@@ -21020,7 +21024,7 @@ type. This is the default.
 Store (do not store) the address of the caller's frame as backchain pointer
 into the callee's stack frame.
 A backchain may be needed to allow debugging using tools that do not understand
-DWARF 2 call frame information.
+DWARF call frame information.
 When @option{-mno-packed-stack} is in effect, the backchain pointer is stored
 at the bottom of the stack frame; when @option{-mpacked-stack} is in effect,
 the backchain is placed into the topmost word of the 96/160 byte register

@@ -1234,7 +1234,7 @@ Perform early inlining.
 
 feliminate-dwarf2-dups
 Common Report Var(flag_eliminate_dwarf2_dups)
-Perform DWARF2 duplicate elimination.
+Perform DWARF duplicate elimination.
 
 fipa-sra
 Common Report Var(flag_ipa_sra) Init(0) Optimization

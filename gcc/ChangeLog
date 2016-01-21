@@ -1,3 +1,15 @@
+2016-01-20  Sandra Loosemore <sandra@codesourcery.com>
+
+	* common.opt (feliminate-dwarf2-dups): Replace references to
+	"DWARF 2" with just "DWARF".
+	* config/ia64/ia64.opt (mdwarf2-asm): Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/cpp.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	(Option Summary): Add -gdwarf to list of Debugging Options.
+	(Debugging Options): Document -gdwarf.
+	* doc/contrib.texi: Spell "DWARF" like that.
+
 2016-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (expand_omp_target): Avoid -Wmaybe-uninitialized

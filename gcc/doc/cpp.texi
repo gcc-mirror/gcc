@@ -2382,7 +2382,7 @@ These macros are defined when the target processor supports atomic compare
 and swap operations on operands 1, 2, 4, 8 or 16 bytes in length, respectively.
 
 @item __GCC_HAVE_DWARF2_CFI_ASM
-This macro is defined when the compiler is emitting Dwarf2 CFI directives
+This macro is defined when the compiler is emitting DWARF CFI directives
 to the assembler.  When this is defined, it is possible to emit those same
 directives in inline assembly.
 
