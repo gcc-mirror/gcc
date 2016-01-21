@@ -2,6 +2,7 @@
 
 	* configure.ac (gcc_cv_as_powerpc_mfcrf, gcc_cv_as_machine_directive):
 	Detangle.
+	* configure: Regenerate.
 
 2016-01-21  Pat Haugen  <pthaugen@us.ibm.com>
 
