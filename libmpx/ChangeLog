@@ -1,3 +1,7 @@
+2016-01-20  Matthias Klose  <doko@ubuntu.com>
+
+        * libtool-version: Remove.
+
 2016-01-20  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* mpxrt/mpxrt.c (handler): Fix verbosity for error message.
