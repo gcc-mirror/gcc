@@ -1,3 +1,7 @@
+2016-01-21  Richard Biener  <rguenther@suse.de>
+
+	* graphite-optimize-isl.c (get_schedule_map): Fix typo.
+
 2016-01-21  Marcin Kościelnicki  <koriakin@0x04.net>
 
 	* config/s390/s390.c (s390_asm_declare_function_size): Add code

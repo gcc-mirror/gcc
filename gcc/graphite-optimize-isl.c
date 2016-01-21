@@ -301,7 +301,7 @@ get_schedule_map (isl_schedule *schedule)
 {
   isl_band_list *band_list = isl_schedule_get_band_forest (schedule);
   isl_union_map *schedule_map = get_schedule_for_band_list (band_list);
-  isl_band_list_free (bandList);
+  isl_band_list_free (band_list);
   return schedule_map;
 }
 #endif
