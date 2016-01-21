@@ -3160,9 +3160,11 @@ translate_isl_ast_to_gimple::generate_isl_schedule (scop_p scop)
       bb_schedule = isl_map_intersect_domain (bb_schedule,
 					      isl_set_copy (pbb->domain));
       bb_schedule = extend_schedule (bb_schedule, nb_schedule_dims);
+      bb_schedule = isl_map_coalesce (bb_schedule);
       schedule_isl
 	= isl_union_map_union (schedule_isl,
 			       isl_union_map_from_map (bb_schedule));
+      schedule_isl = isl_union_map_coalesce (schedule_isl);
     }
   return schedule_isl;
 }

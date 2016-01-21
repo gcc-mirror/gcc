@@ -1,3 +1,30 @@
+2016-01-21  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-dependences.c (constrain_domain): Add call to isl_*_coalesce.
+	(add_pdr_constraints): Same.
+	(scop_get_reads): Same.
+	(scop_get_must_writes): Same.
+	(scop_get_may_writes): Same.
+	(scop_get_original_schedule): Same.
+	(extend_schedule): Same.
+	(apply_schedule_on_deps): Same.
+	(carries_deps): Same.
+	(compute_deps): Same.
+	(scop_get_dependences): Same.
+	* graphite-isl-ast-to-gimple.c
+	(translate_isl_ast_to_gimple::generate_isl_schedule): Same.
+	* graphite-optimize-isl.c (get_schedule_for_band): Same.
+	(get_schedule_for_band_list): Same.
+	(get_schedule_map): Same.
+	(apply_schedule_map_to_scop): Same.
+	* graphite-sese-to-poly.c (build_pbb_scattering_polyhedrons): Same.
+	(build_loop_iteration_domains): Same.
+	(add_condition_to_pbb): Same.
+	(add_param_constraints): Same.
+	(pdr_add_memory_accesses): Same.
+	(pdr_add_data_dimensions): Same.
+
 2016-01-20  Sandra Loosemore <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Instrumentation Options): Clarify -mmpx linking

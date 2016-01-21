@@ -49,7 +49,7 @@ constrain_domain (isl_map *map, isl_set *s)
 
   s = isl_set_set_tuple_id (s, id);
   isl_space_free (d);
-  return isl_map_intersect_domain (map, s);
+  return isl_map_coalesce (isl_map_intersect_domain (map, s));
 }
 
 /* Constrain pdr->accesses with pdr->subscript_sizes and pbb->domain.  */
@@ -59,8 +59,8 @@ add_pdr_constraints (poly_dr_p pdr, poly_bb_p pbb)
 {
   isl_map *x = isl_map_intersect_range (isl_map_copy (pdr->accesses),
 					isl_set_copy (pdr->subscript_sizes));
-  x = constrain_domain (x, isl_set_copy (pbb->domain));
-  return x;
+  x = isl_map_coalesce (x);
+  return constrain_domain (x, isl_set_copy (pbb->domain));
 }
 
 /* Returns all the memory reads in SCOP.  */
@@ -93,7 +93,7 @@ scop_get_reads (scop_p scop, vec<poly_bb_p> pbbs)
 	  }
     }
 
-  return res;
+  return isl_union_map_coalesce (res);
 }
 
 /* Returns all the memory must writes in SCOP.  */
@@ -126,7 +126,7 @@ scop_get_must_writes (scop_p scop, vec<poly_bb_p> pbbs)
 	  }
     }
 
-  return res;
+  return isl_union_map_coalesce (res);
 }
 
 /* Returns all the memory may writes in SCOP.  */
@@ -159,7 +159,7 @@ scop_get_may_writes (scop_p scop, vec<poly_bb_p> pbbs)
 	  }
     }
 
-  return res;
+  return isl_union_map_coalesce (res);
 }
 
 /* Returns all the original schedules in SCOP.  */
@@ -179,7 +179,7 @@ scop_get_original_schedule (scop_p scop, vec<poly_bb_p> pbbs)
 				isl_set_copy (pbb->domain)));
     }
 
-  return res;
+  return isl_union_map_coalesce (res);
 }
 
 /* Helper function used on each MAP of a isl_union_map.  Computes the
@@ -242,7 +242,7 @@ extend_schedule (__isl_take isl_union_map *x)
   str.umap = isl_union_map_empty (isl_union_map_get_space (x));
   isl_union_map_foreach_map (x, extend_schedule_1, (void *) &str);
   isl_union_map_free (x);
-  return str.umap;
+  return isl_union_map_coalesce (str.umap);
 }
 
 /* Applies SCHEDULE to the in and out dimensions of the dependences
@@ -252,22 +252,17 @@ static isl_map *
 apply_schedule_on_deps (__isl_keep isl_union_map *schedule,
 			__isl_keep isl_union_map *deps)
 {
-  isl_map *x;
-  isl_union_map *ux, *trans;
-
-  trans = isl_union_map_copy (schedule);
-  trans = extend_schedule (trans);
-  ux = isl_union_map_copy (deps);
+  isl_union_map *trans = extend_schedule (isl_union_map_copy (schedule));
+  isl_union_map *ux = isl_union_map_copy (deps);
   ux = isl_union_map_apply_domain (ux, isl_union_map_copy (trans));
   ux = isl_union_map_apply_range (ux, trans);
-  if (isl_union_map_is_empty (ux))
-    {
-      isl_union_map_free (ux);
-      return NULL;
-    }
-  x = isl_map_from_union_map (ux);
+  ux = isl_union_map_coalesce (ux);
 
-  return x;
+  if (!isl_union_map_is_empty (ux))
+    return isl_map_from_union_map (ux);
+
+  isl_union_map_free (ux);
+  return NULL;
 }
 
 /* Return true when DEPS is non empty and the intersection of LEX with
@@ -280,25 +275,19 @@ carries_deps (__isl_keep isl_union_map *schedule,
 	      __isl_keep isl_union_map *deps,
 	      int depth)
 {
-  bool res;
-  int i;
-  isl_space *space;
-  isl_map *lex, *x;
-  isl_constraint *ineq;
-
   if (isl_union_map_is_empty (deps))
     return false;
 
-  x = apply_schedule_on_deps (schedule, deps);
+  isl_map *x = apply_schedule_on_deps (schedule, deps);
   if (x == NULL)
     return false;
-  space = isl_map_get_space (x);
-  space = isl_space_range (space);
-  lex = isl_map_lex_le (space);
-  space = isl_map_get_space (x);
-  ineq = isl_inequality_alloc (isl_local_space_from_space (space));
 
-  for (i = 0; i < depth - 1; i++)
+  isl_space *space = isl_map_get_space (x);
+  isl_map *lex = isl_map_lex_le (isl_space_range (space));
+  isl_constraint *ineq = isl_inequality_alloc
+    (isl_local_space_from_space (isl_map_get_space (x)));
+
+  for (int i = 0; i < depth - 1; i++)
     lex = isl_map_equate (lex, isl_dim_in, i, isl_dim_out, i);
 
   /* in + 1 <= out  */
@@ -306,8 +295,9 @@ carries_deps (__isl_keep isl_union_map *schedule,
   ineq = isl_constraint_set_coefficient_si (ineq, isl_dim_in, depth - 1, -1);
   ineq = isl_constraint_set_constant_si (ineq, -1);
   lex = isl_map_add_constraint (lex, ineq);
+  lex = isl_map_coalesce (lex);
   x = isl_map_intersect (x, lex);
-  res = !isl_map_is_empty (x);
+  bool res = !isl_map_is_empty (x);
 
   isl_map_free (x);
   return res;
@@ -336,6 +326,8 @@ compute_deps (scop_p scop, vec<poly_bb_p> pbbs,
   isl_union_map *may_writes = scop_get_may_writes (scop, pbbs);
   isl_union_map *all_writes = isl_union_map_union
     (isl_union_map_copy (must_writes), isl_union_map_copy (may_writes));
+  all_writes = isl_union_map_coalesce (all_writes);
+
   isl_space *space = isl_union_map_get_space (all_writes);
   isl_union_map *empty = isl_union_map_empty (space);
   isl_union_map *original = scop_get_original_schedule (scop, pbbs);
@@ -416,6 +408,7 @@ scop_get_dependences (scop_p scop)
   dependences = isl_union_map_union (dependences, may_raw);
   dependences = isl_union_map_union (dependences, may_war);
   dependences = isl_union_map_union (dependences, may_waw);
+  dependences = isl_union_map_coalesce (dependences);
 
   if (dump_file)
     {
