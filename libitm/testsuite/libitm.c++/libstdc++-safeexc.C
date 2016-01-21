@@ -2,7 +2,10 @@
 // are indeed that.  Thus, this also tests the transactional clones in
 // libstdc++ and libsupc++.
 
-// { dg-do run }
+// Not supported on Darwin nor AIX because those lack the support for
+// weak references to undefined functions that we need in libstdc++ to make
+// exceptions transaction-safe.
+// { dg-do run { target { ! { *-*-darwin* powerpc-ibm-aix* } } } }
 
 #include <iostream>
 #include <exception>
