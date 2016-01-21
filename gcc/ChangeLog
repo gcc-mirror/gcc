@@ -1,3 +1,10 @@
+2016-01-21  Richard Biener  <rguenther@suse.de>
+
+        PR tree-optimization/69378
+	* tree-ssa-sccvn.c (dominated_by_p_w_unex): New function.
+	(set_ssa_val_to): Use it for dominance checks taking into
+	account not executable edges.
+
 2016-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69355
