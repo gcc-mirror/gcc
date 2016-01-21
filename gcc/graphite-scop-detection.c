@@ -554,7 +554,7 @@ public:
      region of code that can be represented in the polyhedral model.  SCOP
      defines the region we analyse.  */
 
-  bool loop_is_valid_scop (loop_p loop, sese_l scop) const;
+  bool loop_is_valid_in_scop (loop_p loop, sese_l scop) const;
 
   /* Return true when BEGIN is the preheader edge of a loop with a single exit
      END.  */
@@ -597,7 +597,7 @@ public:
      Limit the number of bbs between adjacent loops to
      PARAM_SCOP_MAX_NUM_BBS_BETWEEN_LOOPS.  */
 
-  bool harmful_stmt_in_region (sese_l scop) const;
+  bool harmful_loop_in_region (sese_l scop) const;
 
   /* Return true only when STMT is simple enough for being handled by Graphite.
      This depends on SCOP, as the parameters are initialized relatively to
@@ -777,8 +777,9 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
   if (!second)
     return first;
 
-  DEBUG_PRINT (dp << "[try-merging-sese] s1: "; print_sese (dump_file, first);
-	       dp << "[try-merging-sese] s2: ";
+  DEBUG_PRINT (dp << "[scop-detection] try merging sese s1: ";
+	       print_sese (dump_file, first);
+	       dp << "[scop-detection] try merging sese s2: ";
 	       print_sese (dump_file, second));
 
   /* Assumption: Both the sese's should be at the same loop depth or one scop
@@ -807,7 +808,7 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
 
   sese_l combined (entry, exit);
 
-  DEBUG_PRINT (dp << "checking combined sese: ";
+  DEBUG_PRINT (dp << "[scop-detection] checking combined sese: ";
 	       print_sese (dump_file, combined));
 
   /* FIXME: We could iterate to find the dom which dominates pdom, and pdom
@@ -849,7 +850,7 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
     }
 
   /* Analyze all the BBs in new sese.  */
-  if (harmful_stmt_in_region (combined))
+  if (harmful_loop_in_region (combined))
     return invalid_sese;
 
   DEBUG_PRINT (dp << "[merged-sese] s1: "; print_sese (dump_file, combined));
@@ -877,7 +878,7 @@ scop_detection::build_scop_depth (sese_l s, loop_p loop)
       return s;
     }
 
-  if (!loop_is_valid_scop (loop, s2))
+  if (!loop_is_valid_in_scop (loop, s2))
     return build_scop_depth (invalid_sese, loop->next);
 
   return build_scop_breadth (s2, loop);
@@ -954,7 +955,7 @@ scop_detection::can_represent_loop (loop_p loop, sese_l scop)
    defines the region we analyse.  */
 
 bool
-scop_detection::loop_is_valid_scop (loop_p loop, sese_l scop) const
+scop_detection::loop_is_valid_in_scop (loop_p loop, sese_l scop) const
 {
   if (!scop)
     return false;
@@ -1008,7 +1009,7 @@ scop_detection::add_scop (sese_l s)
   /* Do not add scops with only one loop.  */
   if (region_has_one_loop (s))
     {
-      DEBUG_PRINT (dp << "[scop-detection-fail] Discarding one loop SCoP.\n";
+      DEBUG_PRINT (dp << "[scop-detection-fail] Discarding one loop SCoP: ";
 		   print_sese (dump_file, s));
       return;
     }
@@ -1016,7 +1017,7 @@ scop_detection::add_scop (sese_l s)
   if (get_exit_bb (s) == EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       DEBUG_PRINT (dp << "[scop-detection-fail] "
-		      << "Discarding SCoP exiting to return.";
+		      << "Discarding SCoP exiting to return: ";
 		   print_sese (dump_file, s));
       return;
     }
@@ -1029,7 +1030,7 @@ scop_detection::add_scop (sese_l s)
   remove_intersecting_scops (s);
 
   scops.safe_push (s);
-  DEBUG_PRINT (dp << "Adding SCoP "; print_sese (dump_file, s));
+  DEBUG_PRINT (dp << "[scop-detection] Adding SCoP: "; print_sese (dump_file, s));
 }
 
 /* Return true when a statement in SCOP cannot be represented by Graphite.
@@ -1038,7 +1039,7 @@ scop_detection::add_scop (sese_l s)
    PARAM_SCOP_MAX_NUM_BBS_BETWEEN_LOOPS.  */
 
 bool
-scop_detection::harmful_stmt_in_region (sese_l scop) const
+scop_detection::harmful_loop_in_region (sese_l scop) const
 {
   basic_block exit_bb = get_exit_bb (scop);
   basic_block entry_bb = get_entry_bb (scop);
@@ -1056,6 +1057,7 @@ scop_detection::harmful_stmt_in_region (sese_l scop) const
       = get_dominated_to_depth (CDI_DOMINATORS, entry_bb, depth);
   int i;
   basic_block bb;
+  bitmap loops = BITMAP_ALLOC (NULL);
   FOR_EACH_VEC_ELT (dom, i, bb)
     {
       DEBUG_PRINT (dp << "Visiting bb_" << bb->index << "\n");
@@ -1072,16 +1074,42 @@ scop_detection::harmful_stmt_in_region (sese_l scop) const
       if (bb->flags & BB_IRREDUCIBLE_LOOP)
 	{
 	  dom.release ();
+	  BITMAP_FREE (loops);
 	  return true;
 	}
 
-      if (harmful_stmt_in_bb (scop, bb))
+      /* Collect all loops in the current region.  */
+      loop_p loop = bb->loop_father;
+      if (loop_in_sese_p (loop, scop))
+	bitmap_set_bit (loops, loop->num);
+      else
 	{
-	  dom.release ();
+	  /* We only check for harmful statements in basic blocks not part of
+	     any loop fully contained in the scop: other bbs are checked below
+	     in loop_is_valid_in_scop.  */
+	  if (harmful_stmt_in_bb (scop, bb))
+	    return true;
+	}
+
+    }
+
+  /* Go through all loops and check that they are still valid in the combined
+     scop.  */
+  unsigned j;
+  bitmap_iterator bi;
+  EXECUTE_IF_SET_IN_BITMAP (loops, 0, j, bi)
+    {
+      loop_p loop = (*current_loops->larray)[j];
+      gcc_assert (loop->num == (int) j);
+
+      if (!loop_is_valid_in_scop (loop, scop))
+	{
+	  BITMAP_FREE (loops);
 	  return true;
 	}
     }
 
+  BITMAP_FREE (loops);
   dom.release ();
   return false;
 }
