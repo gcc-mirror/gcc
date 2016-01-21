@@ -13030,8 +13030,12 @@ copy_type_enum (tree dst, tree src)
       TYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (src);
       SET_TYPE_MODE (dst, TYPE_MODE (src));
       TYPE_PRECISION (t) = TYPE_PRECISION (src);
-      TYPE_ALIGN (t) = TYPE_ALIGN (src);
-      TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (src);
+      unsigned valign = TYPE_ALIGN (src);
+      if (TYPE_USER_ALIGN (t))
+	valign = MAX (valign, TYPE_ALIGN (t));
+      else
+	TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (src);
+      TYPE_ALIGN (t) = valign;
       TYPE_UNSIGNED (t) = TYPE_UNSIGNED (src);
     }
 }

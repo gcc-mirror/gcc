@@ -1,5 +1,9 @@
 2016-01-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/40751
+	PR c++/64987
+	* decl.c (copy_type_enum): Respect TYPE_USER_ALIGN.
+
 	PR c++/43407
 	* decl.c (start_enum): Add attributes parameter.
 	* parser.c (cp_parser_enum_specifier): Pass it.
