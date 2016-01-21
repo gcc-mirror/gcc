@@ -1,6 +1,18 @@
 2016-01-21  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+        * graphite-sese-to-poly.c (set_scop_parameter_dim): Remove.
+        (cleanup_loop_iter_dom): Remove.
+        (build_loop_iteration_domains): Remove.
+        (build_scop_context): Remove.
+        (build_scop_iteration_domain): Remove.
+        (add_loop_constraints): New.
+        (build_iteration_domains): New.
+        (build_poly_scop): Call build_iteration_domains.
+
+2016-01-21  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
         * graphite-scop-detection.c
         (scop_detection::harmful_loop_in_region): Free dom and loops.
         (scop_detection::loop_body_is_valid_scop): Free bbs.
