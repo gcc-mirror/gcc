@@ -1,5 +1,19 @@
 2016-01-21  Ajit Agarwal  <ajitkum@xilinx.com>
 
+	* config/microblaze/microblaze.c
+	(get_branch_target): New.
+	(insert_wic_for_ilb_runout): New.
+	(insert_wic): New.
+	(microblaze_machine_dependent_reorg): New.
+	(TARGET_MACHINE_DEPENDENT_REORG): Define macro.
+	* config/microblaze/microblaze.md
+	(UNSPEC_IPREFETCH): Define.
+	(iprefetch): New pattern
+	* config/microblaze/microblaze.opt
+	(mxl-prefetch): New flag.
+
+2016-01-21  Ajit Agarwal  <ajitkum@xilinx.com>
+
 	* config/microblaze/microblaze.h
 	(FIXED_REGISTERS): Update in macro.
 	(CALL_USED_REGISTERS): Update in macro.
