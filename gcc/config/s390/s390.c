@@ -10149,6 +10149,10 @@ s390_save_gprs_to_fprs (void)
 	    emit_move_insn (gen_rtx_REG (DImode, cfun_gpr_save_slot (i)),
 			    gen_rtx_REG (DImode, i));
 	  RTX_FRAME_RELATED_P (insn) = 1;
+	  /* This prevents dwarf2cfi from interpreting the set.  Doing
+	     so it might emit def_cfa_register infos setting an FPR as
+	     new CFA.  */
+	  add_reg_note (insn, REG_CFA_REGISTER, PATTERN (insn));
 	}
     }
 }
