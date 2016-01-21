@@ -10704,8 +10704,11 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch)
     return size;
 
  incompatible:
-  error ("operand type %qT is incompatible with argument %d of %qE",
-	 argtype, 1, function);
+  /* Issue the diagnostic only if the argument is valid, otherwise
+     it would be redundant at best and could be misleading.  */
+  if (argtype != error_mark_node)
+    error ("operand type %qT is incompatible with argument %d of %qE",
+	   argtype, 1, function);
   return 0;
 }
 
