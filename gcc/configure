@@ -25904,10 +25904,8 @@ fi
     ;;
 
   powerpc*-*-*)
+
     case $target in
-      *-*-aix*) conftest_s='	.machine "pwr5"
-	.csect .text[PR]
-	mfcr 3,128';;
       *-*-darwin*)
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .machine directive support" >&5
 $as_echo_n "checking assembler for .machine directive support... " >&6; }
@@ -25940,7 +25938,14 @@ $as_echo "$gcc_cv_as_machine_directive" >&6; }
 	  echo you can get it from: ftp://gcc.gnu.org/pub/gcc/infrastructure/cctools-528.5.dmg >&2
 	  test x$build = x$target && exit 1
 	fi
-	conftest_s='	.text
+        ;;
+    esac
+
+    case $target in
+      *-*-aix*) conftest_s='	.machine "pwr5"
+	.csect .text[PR]
+	mfcr 3,128';;
+      *-*-darwin*) conftest_s='	.text
 	mfcr r3,128';;
       *) conftest_s='	.machine power4
 	.text

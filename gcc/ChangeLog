@@ -1,3 +1,8 @@
+2016-01-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure.ac (gcc_cv_as_powerpc_mfcrf, gcc_cv_as_machine_directive):
+	Detangle.
+
 2016-01-21  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/aix71.h (ASM_CPU_SPEC): Add entry for Power9.
