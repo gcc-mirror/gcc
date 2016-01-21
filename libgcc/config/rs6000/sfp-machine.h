@@ -1,7 +1,26 @@
+/* Decide whether to use 64 or 32-bit types to do the emulation.  If we are
+   doing IEEE-128 with VSX, use 64-bit emulation even if we are compiling for a
+   32-bit target.  */
+
+#if defined(_ARCH_PPC64) || defined(__VSX__) || defined(__FLOAT128__)
+#define _FP_W_TYPE_SIZE		64
+#define _FP_W_TYPE		unsigned long long
+#define _FP_WS_TYPE		signed long long
+#define _FP_I_TYPE		long long
+
+#ifdef _ARCH_PPC64
+typedef int TItype __attribute__ ((mode (TI)));
+typedef unsigned int UTItype __attribute__ ((mode (TI)));
+
+#define TI_BITS (__CHAR_BIT__ * (int)sizeof(TItype))
+#endif
+
+#else	/* 32-bits  */
 #define _FP_W_TYPE_SIZE		32
-#define _FP_W_TYPE		unsigned long
-#define _FP_WS_TYPE		signed long
-#define _FP_I_TYPE		long
+#define _FP_W_TYPE		unsigned int
+#define _FP_WS_TYPE		signed int
+#define _FP_I_TYPE		int
+#endif	/* 32-bits  */
 
 /* The type of the result of a floating point comparison.  This must
    match `__libgcc_cmp_return__' in GCC for the target.  */
@@ -10,18 +29,39 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 
 #define _FP_MUL_MEAT_S(R,X,Y)				\
   _FP_MUL_MEAT_1_wide(_FP_WFRACBITS_S,R,X,Y,umul_ppmm)
+
+#if (_FP_W_TYPE_SIZE==64)
+#define _FP_MUL_MEAT_D(R,X,Y)				\
+  _FP_MUL_MEAT_1_wide(_FP_WFRACBITS_D,R,X,Y,umul_ppmm)
+#define _FP_MUL_MEAT_Q(R,X,Y)				\
+  _FP_MUL_MEAT_2_wide(_FP_WFRACBITS_Q,R,X,Y,umul_ppmm)
+#else
 #define _FP_MUL_MEAT_D(R,X,Y)				\
   _FP_MUL_MEAT_2_wide(_FP_WFRACBITS_D,R,X,Y,umul_ppmm)
 #define _FP_MUL_MEAT_Q(R,X,Y)				\
   _FP_MUL_MEAT_4_wide(_FP_WFRACBITS_Q,R,X,Y,umul_ppmm)
+#endif
 
 #define _FP_DIV_MEAT_S(R,X,Y)	_FP_DIV_MEAT_1_loop(S,R,X,Y)
+
+#if (_FP_W_TYPE_SIZE==64)
+#define _FP_DIV_MEAT_D(R,X,Y)	_FP_DIV_MEAT_1_udiv(D,R,X,Y)
+#define _FP_DIV_MEAT_Q(R,X,Y)   _FP_DIV_MEAT_2_udiv(Q,R,X,Y)
+#else
 #define _FP_DIV_MEAT_D(R,X,Y)	_FP_DIV_MEAT_2_udiv(D,R,X,Y)
 #define _FP_DIV_MEAT_Q(R,X,Y)	_FP_DIV_MEAT_4_udiv(Q,R,X,Y)
+#endif
 
 #define _FP_NANFRAC_S		((_FP_QNANBIT_S << 1) - 1)
+
+#if (_FP_W_TYPE_SIZE==64)
+#define _FP_NANFRAC_D		((_FP_QNANBIT_D << 1) - 1)
+#define _FP_NANFRAC_Q		((_FP_QNANBIT_Q << 1) - 1), -1
+#else
 #define _FP_NANFRAC_D		((_FP_QNANBIT_D << 1) - 1), -1
 #define _FP_NANFRAC_Q		((_FP_QNANBIT_Q << 1) - 1), -1, -1, -1
+#endif
+
 #define _FP_NANSIGN_S		0
 #define _FP_NANSIGN_D		0
 #define _FP_NANSIGN_Q		0
@@ -64,6 +104,54 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 # endif
 #endif
 
+/* Only provide exception support if we have hardware floating point using
+   floating point registers and we can execute the mtfsf instruction.  This
+   would only be true if we are using the emulation routines for IEEE 128-bit
+   floating point on pre-ISA 3.0 machines without the IEEE 128-bit floating
+   point support.  */
+
+#ifndef ___NO_FPRS__
+#define ISA_BIT(x) (1LL << (63 - x))
+
+/* Use the same bits of the FPSCR.  */
+# define FP_EX_INVALID		ISA_BIT(34)
+# define FP_EX_OVERFLOW		ISA_BIT(35)
+# define FP_EX_UNDERFLOW	ISA_BIT(36)
+# define FP_EX_DIVZERO		ISA_BIT(37)
+# define FP_EX_INEXACT		ISA_BIT(38)
+# define FP_EX_ALL		(FP_EX_INVALID | FP_EX_OVERFLOW 	\
+				 | FP_EX_UNDERFLOW | FP_EX_DIVZERO	\
+				 | FP_EX_INEXACT)
+
+void __sfp_handle_exceptions (int);
+
+# define FP_HANDLE_EXCEPTIONS			\
+  do {						\
+    if (__builtin_expect (_fex, 0))		\
+      __sfp_handle_exceptions (_fex);		\
+  } while (0);
+/* A set bit indicates an exception is masked and a clear bit indicates it is
+   trapping.  */
+# define FP_TRAPPING_EXCEPTIONS (~_fpscr & (FP_EX_ALL >> 22))
+
+# define FP_RND_NEAREST	0x0
+# define FP_RND_ZERO	0x1
+# define FP_RND_PINF	0x2
+# define FP_RND_MINF	0x3
+# define FP_RND_MASK	0x3
+
+# define _FP_DECL_EX \
+  unsigned long long _fpscr __attribute__ ((unused)) = FP_RND_NEAREST
+
+#define FP_INIT_ROUNDMODE			\
+  do {						\
+    __asm__ __volatile__ ("mtfsf 255, %0"	\
+			  :			\
+			  : "f" (_fpscr));	\
+  } while (0)
+
+# define FP_ROUNDMODE	(_fpscr & FP_RND_MASK)
+#endif	/* !__NO_FPRS__ */
 
 /* Define ALIASNAME as a strong alias for NAME.  */
 # define strong_alias(name, aliasname) _strong_alias(name, aliasname)

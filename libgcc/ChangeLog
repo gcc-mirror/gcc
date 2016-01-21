@@ -1,3 +1,83 @@
+2016-01-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Steven Munroe <munroesj@linux.vnet.ibm.com>
+	    Tulio Magno Quites Machado Filho <tulioqm@br.ibm.com>
+
+	* config/rs6000/float128-sed: New files to convert TF names to KF
+	names for PowerPC IEEE 128-bit floating point support.
+	* config/rs6000/float128-sed-hw: Likewise.
+
+	* config/rs6000/float128-hw.c: New file for ISA 3.0 IEEE 128-bit
+	floating point hardware support.
+
+	* config/rs6000/float128-ifunc.c: New file to pick either IEEE
+	128-bit floating point software emulation or use ISA 3.0 hardware
+	support if it is available.
+
+	* config/rs6000/quad-float128.h: New file to support IEEE 128-bit
+	floating point.
+
+	* config/rs6000/extendkftf2-sw.c: New file, convert IEEE 128-bit
+	floating point to IBM extended double.
+
+	* config/rs6000/trunctfkf2-sw.c: New file, convert IBM extended
+	double to IEEE 128-bit floating point.
+
+	* config/rs6000/t-float128: New Makefile fragments to enable
+	building __float128 emulation support.
+	* config/rs6000/t-float128-hw: Likewise.
+
+	* config/rs6000/sfp-exceptions.c: New file to provide exception
+	support for IEEE 128-bit floating point.
+
+	* config/rs6000/floattikf.c: New files for converting between IEEE
+	128-bit floating point and signed/unsigned 128-bit integers.
+	* config/rs6000/fixunskfti.c: Likewise.
+	* config/rs6000/fixkfti.c: Likewise.
+	* config/rs6000/floatuntikf.c: Likewise.
+
+	* config/rs6000/sfp-machine.h (_FP_W_TYPE_SIZE): Use 64-bit types
+	when building on 64-bit systems, or when VSX is enabled.
+	(_FP_W_TYPE): Likewise.
+	(_FP_WS_TYPE): Likewise.
+	(_FP_I_TYPE): Likewise.
+	(TItype): Define on 64-bit systems.
+	(UTItype): Likewise.
+	(TI_BITS): Likewise.
+	(_FP_MUL_MEAT_D): Add support for using 64-bit types.
+	(_FP_MUL_MEAT_Q): Likewise.
+	(_FP_DIV_MEAT_D): Likewise.
+	(_FP_DIV_MEAT_Q): Likewise.
+	(_FP_NANFRAC_D): Likewise.
+	(_FP_NANFRAC_Q): Likewise.
+	(ISA_BIT): Add exception support if we are being compiled on a
+	machine with hardware floating point support to build the IEEE
+	128-bit emulation functions.
+	(FP_EX_INVALID): Likewise.
+	(FP_EX_OVERFLOW): Likewise.
+	(FP_EX_UNDERFLOW): Likewise.
+	(FP_EX_DIVZERO): Likewise.
+	(FP_EX_INEXACT): Likewise.
+	(FP_EX_ALL): Likewise.
+	(__sfp_handle_exceptions): Likewise.
+	(FP_HANDLE_EXCEPTIONS): Likewise.
+	(FP_RND_NEAREST): Likewise.
+	(FP_RND_ZERO): Likewise.
+	(FP_RND_PINF): Likewise.
+	(FP_RND_MINF): Likewise.
+	(FP_RND_MASK): Likewise.
+	(_FP_DECL_EX): Likewise.
+	(FP_INIT_ROUNDMODE): Likewise.
+	(FP_ROUNDMODE): Likewise.
+
+	* libgcc/config.host (powerpc*-*-linux*): If compiler can compile
+	VSX code, enable IEEE 128-bit floating point.  If the compiler can
+	compile IEEE 128-bit floating point code with ISA 3.0 IEEE 128-bit
+	floating point hardware instructions and it supports declaring
+	functions with the ifunc attribute, enable ifunc functions to
+	switch between software and hardware support.
+	* configure.ac (powerpc*-*-linux*): Likewise.
+	* configure: Regenerate.
+
 2016-01-15  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/t-msp430 (lib2_mul_none.o): Only use the first
