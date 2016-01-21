@@ -138,6 +138,14 @@ set_separate_option (__isl_take isl_schedule_node *node, void *user)
 }
 #endif
 
+enum phi_node_kind
+{
+  unknown_phi,
+  loop_phi,
+  close_phi,
+  cond_phi
+};
+
 class translate_isl_ast_to_gimple
 {
  public:
@@ -328,14 +336,14 @@ class translate_isl_ast_to_gimple
      SSA form.  */
 
   bool is_valid_rename (tree rename, basic_block def_bb, basic_block use_bb,
-			bool loop_phi, tree old_name, basic_block old_bb) const;
+			phi_node_kind, tree old_name, basic_block old_bb) const;
 
   /* Returns the expression associated to OLD_NAME (which is used in OLD_BB), in
      NEW_BB from RENAME_MAP.  LOOP_PHI is true when we want to rename OLD_NAME
      within a loop PHI instruction.  */
 
   tree get_rename (basic_block new_bb, tree old_name,
-		   basic_block old_bb, bool loop_phi) const;
+		   basic_block old_bb, phi_node_kind) const;
 
   /* For ops which are scev_analyzeable, we can regenerate a new name from
   its scalar evolution around LOOP.  */
@@ -355,7 +363,7 @@ class translate_isl_ast_to_gimple
      true when we want to rename an OP within a loop PHI instruction.  */
 
   tree get_new_name (basic_block new_bb, tree op,
-		     basic_block old_bb, bool loop_phi) const;
+		     basic_block old_bb, phi_node_kind) const;
 
   /* Collect all the operands of NEW_EXPR by recursively visiting each
      operand.  */
@@ -1373,7 +1381,7 @@ phi_uses_name (basic_block bb, tree name)
 bool
 translate_isl_ast_to_gimple::
 is_valid_rename (tree rename, basic_block def_bb, basic_block use_bb,
-		 bool loop_phi, tree old_name, basic_block old_bb) const
+		 phi_node_kind phi_kind, tree old_name, basic_block old_bb) const
 {
   /* The def of the rename must either dominate the uses or come from a
      back-edge.  Also the def must respect the loop closed ssa form.  */
@@ -1391,7 +1399,7 @@ is_valid_rename (tree rename, basic_block def_bb, basic_block use_bb,
   if (dominated_by_p (CDI_DOMINATORS, use_bb, def_bb))
     return true;
 
-  if (bb_contains_loop_phi_nodes (use_bb) && loop_phi)
+  if (bb_contains_loop_phi_nodes (use_bb) && phi_kind == loop_phi)
     {
       /* The loop-header dominates the loop-body.  */
       if (!dominated_by_p (CDI_DOMINATORS, def_bb, use_bb))
@@ -1410,14 +1418,13 @@ is_valid_rename (tree rename, basic_block def_bb, basic_block use_bb,
 }
 
 /* Returns the expression associated to OLD_NAME (which is used in OLD_BB), in
-   NEW_BB from RENAME_MAP.  LOOP_PHI is true when we want to rename OLD_NAME
-   within a loop PHI instruction.  */
+   NEW_BB from RENAME_MAP.  PHI_KIND determines the kind of phi node.  */
 
 tree
 translate_isl_ast_to_gimple::get_rename (basic_block new_bb,
 					 tree old_name,
 					 basic_block old_bb,
-					 bool loop_phi) const
+					 phi_node_kind phi_kind) const
 {
   gcc_assert (TREE_CODE (old_name) == SSA_NAME);
   vec <tree> *renames = region->rename_map->get (old_name);
@@ -1431,7 +1438,9 @@ translate_isl_ast_to_gimple::get_rename (basic_block new_bb,
       if (TREE_CODE (rename) == SSA_NAME)
 	{
 	  basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (rename));
-	  if (is_valid_rename (rename, bb, new_bb, loop_phi, old_name, old_bb))
+	  if (is_valid_rename (rename, bb, new_bb, phi_kind, old_name, old_bb)
+	      && (phi_kind == close_phi
+		  || flow_bb_inside_loop_p (bb->loop_father, new_bb)))
 	    return rename;
 	  return NULL_TREE;
 	}
@@ -1457,6 +1466,9 @@ translate_isl_ast_to_gimple::get_rename (basic_block new_bb,
 
       /* NEW_BB and T2_BB are in two unrelated if-clauses.  */
       if (!dominated_by_p (CDI_DOMINATORS, new_bb, t2_bb))
+	continue;
+
+      if (!flow_bb_inside_loop_p (t2_bb->loop_father, new_bb))
 	continue;
 
       /* Compute the nearest dominator.  */
@@ -1787,7 +1799,7 @@ translate_isl_ast_to_gimple::rename_all_uses (tree new_expr, basic_block new_bb,
   tree t;
   int i;
   FOR_EACH_VEC_ELT (ssa_names, i, t)
-    if (tree r = get_rename (new_bb, t, old_bb, false))
+    if (tree r = get_rename (new_bb, t, old_bb, unknown_phi))
       new_expr = substitute_ssa_name (new_expr, t, r);
 
   return new_expr;
@@ -1918,7 +1930,7 @@ translate_isl_ast_to_gimple::rename_uses (gimple *copy,
 
       changed = true;
       tree new_expr = get_rename (gsi_tgt->bb, old_name,
-				  old_bb, false);
+				  old_bb, unknown_phi);
 
       if (new_expr)
 	{
@@ -2017,19 +2029,19 @@ translate_isl_ast_to_gimple::get_def_bb_for_const (basic_block bb,
   return b1;
 }
 
-/* Get the new name of OP (from OLD_BB) to be used in NEW_BB.  LOOP_PHI is true
-   when we want to rename an OP within a loop PHI instruction.  */
+/* Get the new name of OP (from OLD_BB) to be used in NEW_BB.  PHI_KIND
+   determines the kind of phi node.  */
 
 tree
 translate_isl_ast_to_gimple::
 get_new_name (basic_block new_bb, tree op,
-	      basic_block old_bb, bool loop_phi) const
+	      basic_block old_bb, phi_node_kind phi_kind) const
 {
   /* For constants the names are the same.  */
   if (is_constant (op))
     return op;
 
-  return get_rename (new_bb, op, old_bb, loop_phi);
+  return get_rename (new_bb, op, old_bb, phi_kind);
 }
 
 /* Return a debug location for OP.  */
@@ -2084,7 +2096,7 @@ copy_loop_phi_args (gphi *old_phi, init_back_edge_pair_t &ibp_old_bb,
 
       tree old_name = gimple_phi_arg_def (old_phi, i);
       tree new_name = get_new_name (new_bb, old_name,
-				    gimple_bb (old_phi), true);
+				    gimple_bb (old_phi), loop_phi);
       if (new_name)
 	{
 	  add_phi_arg (new_phi, new_name, e, get_loc (old_name));
@@ -2346,7 +2358,7 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
       set_rename (res, new_res);
 
       tree old_name = gimple_phi_arg_def (old_close_phi, 0);
-      tree new_name = get_new_name (new_bb, old_name, old_bb, false);
+      tree new_name = get_new_name (new_bb, old_name, old_bb, close_phi);
 
       /* Predecessor basic blocks of a loop close phi should have been code
 	 generated before.  FIXME: This is fixable by merging PHIs from inner
@@ -2620,7 +2632,7 @@ translate_isl_ast_to_gimple::copy_cond_phi_args (gphi *phi, gphi *new_phi,
   for (unsigned i = 0; i < gimple_phi_num_args (phi); i++)
     {
       tree old_name = gimple_phi_arg_def (phi, i);
-      tree new_name = get_new_name (new_bb, old_name, old_bb, false);
+      tree new_name = get_new_name (new_bb, old_name, old_bb, cond_phi);
       old_phi_args[i] = old_name;
       if (new_name)
 	{

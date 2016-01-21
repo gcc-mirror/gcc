@@ -1,6 +1,11 @@
 2016-01-21  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	* gfortran.dg/graphite/interchange-3.f90: Adjust pattern.
+
+2016-01-21  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
         * gcc.dg/graphite/pr68976.c: New test.
 
 2016-01-21  Jakub Jelinek  <jakub@redhat.com>
