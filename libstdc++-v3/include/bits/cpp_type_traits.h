@@ -64,6 +64,8 @@
 // removed.
 //
 
+extern "C++" {
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -408,5 +410,6 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
+} // extern "C++"
 
 #endif //_CPP_TYPE_TRAITS_H

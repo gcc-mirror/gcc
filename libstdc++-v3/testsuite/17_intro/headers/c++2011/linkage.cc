@@ -20,15 +20,23 @@
 
 // libstdc++/69386
 
+#include <bits/c++config.h>
+
 extern "C"
 {
 #include <assert.h>
+#ifdef _GLIBCXX_HAVE_COMPLEX_H
 #include <complex.h>
+#endif
 #include <ctype.h>
 #include <errno.h>
+#ifdef _GLIBCXX_HAVE_FENV_H
 #include <fenv.h>
+#endif
 #include <float.h>
+#ifdef _GLIBCXX_HAVE_INTTYPES_H
 #include <inttypes.h>
+#endif
 #include <iso646.h>
 #include <limits.h>
 #include <locale.h>
@@ -36,15 +44,27 @@ extern "C"
 #include <setjmp.h>
 #include <signal.h>
 #include <stdarg.h>
+#ifdef _GLIBCXX_HAVE_STDBOOL_H
 #include <stdbool.h>
+#endif
 #include <stddef.h>
+#ifdef _GLIBCXX_HAVE_STDINT_H
 #include <stdint.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _GLIBCXX_HAVE_TGMATH_H
 #include <tgmath.h>
+#endif
 #include <time.h>
+#if __has_include(<uchar.h>)
 #include <uchar.h>
+#endif
+#ifdef _GLIBCXX_HAVE_WCHAR_H
 #include <wchar.h>
+#endif
+#ifdef _GLIBCXX_HAVE_WCTYPE_H
 #include <wctype.h>
+#endif
 }
