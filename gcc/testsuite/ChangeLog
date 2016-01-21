@@ -1,3 +1,9 @@
+2016-01-21  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR c++/68810
+	* g++.dg/cpp0x/constexpr-reinterpret1.C: Fix line number that is                                                                           
+	expected to generate an error.                                                                                                             
+
 2016-01-21  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR middle-end/66178
