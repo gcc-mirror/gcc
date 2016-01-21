@@ -9923,22 +9923,22 @@ is instrumented with checks of the pointer used for memory access against
 bounds associated with that pointer.  
 
 Currently there
-is only an implementation for Intel MPX available, thus x86 target
+is only an implementation for Intel MPX available, thus x86 GNU/Linux target
 and @option{-mmpx} are required to enable this feature.  
 MPX-based instrumentation requires
 a runtime library to enable MPX in hardware and handle bounds
 violation signals.  By default when @option{-fcheck-pointer-bounds}
 and @option{-mmpx} options are used to link a program, the GCC driver
-links against the @file{libmpx} runtime library and @file{libmpxwrappers}
-library.  It also passes '-z bndplt' to a linker in case it supports this
-option (which is checked on libmpx configuration).  Note that old versions
-of linker may ignore option.  Gold linker doesn't support '-z bndplt'
-option.  With no '-z bndplt' support in linker all calls to dynamic libraries
-lose passed bounds reducing overall protection level.  It's highly
-recommended to use linker with '-z bndplt' support.  In case such linker
-is not available it is adviced to always use @option{-static-libmpxwrappers}
-for better protection level or use @option{-static} to completely avoid
-external calls to dynamic libraries.  MPX-based instrumentation
+links against the @file{libmpx} and @file{libmpxwrappers} libraries.
+Bounds checking on calls to dynamic libraries requires a linker
+with @option{-z bndplt} support; if GCC was configured with a linker
+without support for this option (including the Gold linker and older
+versions of ld), a warning is given if you link with @option{-mmpx}
+without also specifying @option{-static}, since the overall effectiveness
+of the bounds checking protection is reduced.
+See also @option{-static-libmpxwrappers}.
+
+MPX-based instrumentation
 may be used for debugging and also may be included in production code
 to increase program security.  Depending on usage, you may
 have different requirements for the runtime library.  The current version
