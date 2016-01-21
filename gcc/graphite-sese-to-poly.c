@@ -431,159 +431,6 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
   return res;
 }
 
-/* Assign dimension for each parameter in SCOP.  */
-
-static void
-set_scop_parameter_dim (scop_p scop)
-{
-  sese_info_p region = scop->scop_info;
-  unsigned nbp = sese_nb_params (region);
-  isl_space *space = isl_space_set_alloc (scop->isl_context, nbp, 0);
-
-  unsigned i;
-  tree e;
-  FOR_EACH_VEC_ELT (region->params, i, e)
-    space = isl_space_set_dim_id (space, isl_dim_param, i,
-                                  isl_id_for_ssa_name (scop, e));
-
-  scop->param_context = isl_set_universe (space);
-}
-
-static inline bool
-cleanup_loop_iter_dom (isl_set *inner, isl_set *outer, isl_space *space, mpz_t g)
-{
-  isl_set_free (inner);
-  isl_set_free (outer);
-  isl_space_free (space);
-  mpz_clear (g);
-  return false;
-}
-
-/* Builds the constraint polyhedra for LOOP in SCOP.  OUTER_PH gives
-   the constraints for the surrounding loops.  */
-
-static bool
-build_loop_iteration_domains (scop_p scop, struct loop *loop,
-                              int nb,
-			      isl_set *outer, isl_set **doms)
-{
-
-  tree nb_iters = number_of_latch_executions (loop);
-  const sese_l& region = scop->scop_info->region;
-  gcc_assert (loop_in_sese_p (loop, region));
-
-  isl_set *inner = isl_set_copy (outer);
-  int pos = isl_set_dim (outer, isl_dim_set);
-  isl_val *v;
-  mpz_t g;
-
-  mpz_init (g);
-
-  inner = isl_set_add_dims (inner, isl_dim_set, 1);
-  isl_space *space = isl_set_get_space (inner);
-
-  /* 0 <= loop_i */
-  isl_constraint *c = isl_inequality_alloc
-      (isl_local_space_from_space (isl_space_copy (space)));
-  c = isl_constraint_set_coefficient_si (c, isl_dim_set, pos, 1);
-  inner = isl_set_coalesce (isl_set_add_constraint (inner, c));
-
-  /* loop_i <= cst_nb_iters */
-  if (TREE_CODE (nb_iters) == INTEGER_CST)
-    {
-      c = isl_inequality_alloc
-	  (isl_local_space_from_space (isl_space_copy (space)));
-      c = isl_constraint_set_coefficient_si (c, isl_dim_set, pos, -1);
-      tree_int_to_gmp (nb_iters, g);
-      v = isl_val_int_from_gmp (scop->isl_context, g);
-      c = isl_constraint_set_constant_val (c, v);
-      inner = isl_set_add_constraint (inner, c);
-    }
-
-  /* loop_i <= expr_nb_iters */
-  else if (!chrec_contains_undetermined (nb_iters))
-    {
-      isl_pw_aff *aff;
-
-      nb_iters = scalar_evolution_in_region (region, loop, nb_iters);
-
-      /* Bail out as we do not know the scev.  */
-      if (chrec_contains_undetermined (nb_iters))
-	return cleanup_loop_iter_dom (inner, outer, space, g);
-
-      aff = extract_affine (scop, nb_iters, isl_set_get_space (inner));
-      isl_set *valid = isl_pw_aff_nonneg_set (isl_pw_aff_copy (aff));
-      valid = isl_set_project_out (valid, isl_dim_set, 0,
-				   isl_set_dim (valid, isl_dim_set));
-
-      if (valid)
-	scop->param_context = isl_set_coalesce
-	  (isl_set_intersect (scop->param_context, valid));
-
-      isl_local_space *ls = isl_local_space_from_space (isl_space_copy (space));
-      isl_aff *al = isl_aff_set_coefficient_si (isl_aff_zero_on_domain (ls),
-						isl_dim_in, pos, 1);
-      isl_set *le = isl_pw_aff_le_set (isl_pw_aff_from_aff (al),
-				       isl_pw_aff_copy (aff));
-      inner = isl_set_intersect (inner, le);
-
-      widest_int nit;
-      if (max_stmt_executions (loop, &nit))
-	{
-	  /* Insert in the context the constraints from the
-	     estimation of the number of iterations NIT and the
-	     symbolic number of iterations (involving parameter
-	     names) NB_ITERS.  First, build the affine expression
-	     "NIT - NB_ITERS" and then say that it is positive,
-	     i.e., NIT approximates NB_ITERS: "NIT >= NB_ITERS".  */
-	  mpz_t g;
-	  mpz_init (g);
-	  wi::to_mpz (nit, g, SIGNED);
-	  mpz_sub_ui (g, g, 1);
-
-	  isl_pw_aff *approx
-	    = extract_affine_gmp (g, isl_set_get_space (inner));
-	  isl_set *x = isl_pw_aff_ge_set (approx, aff);
-	  x = isl_set_project_out (x, isl_dim_set, 0,
-				   isl_set_dim (x, isl_dim_set));
-	  scop->param_context = isl_set_coalesce
-	    (isl_set_intersect (scop->param_context, x));
-
-	  isl_constraint *c = isl_inequality_alloc
-	      (isl_local_space_from_space (isl_space_copy (space)));
-	  c = isl_constraint_set_coefficient_si (c, isl_dim_set, pos, -1);
-	  v = isl_val_int_from_gmp (scop->isl_context, g);
-	  mpz_clear (g);
-	  c = isl_constraint_set_constant_val (c, v);
-	  inner = isl_set_add_constraint (inner, c);
-	}
-      else
-	isl_pw_aff_free (aff);
-    }
-  else
-    gcc_unreachable ();
-
-  inner = isl_set_coalesce (inner);
-  if (loop->inner
-      && !build_loop_iteration_domains (scop, loop->inner, nb + 1,
-					isl_set_copy (inner), doms))
-    return cleanup_loop_iter_dom (inner, outer, space, g);
-
-  if (nb != 0
-      && loop->next
-      && loop_in_sese_p (loop->next, region)
-      && !build_loop_iteration_domains (scop, loop->next, nb,
-					isl_set_copy (outer), doms))
-    return cleanup_loop_iter_dom (inner, outer, space, g);
-
-  doms[loop->num] = inner;
-
-  isl_set_free (outer);
-  isl_space_free (space);
-  mpz_clear (g);
-  return true;
-}
-
 /* Returns a linear expression for tree T evaluated in PBB.  */
 
 static isl_pw_aff *
@@ -779,64 +626,6 @@ add_param_constraints (scop_p scop, graphite_dim_t p)
       scop->param_context = isl_set_coalesce
 	(isl_set_add_constraint (scop->param_context, c));
     }
-}
-
-/* Build the context of the SCOP.  The context usually contains extra
-   constraints that are added to the iteration domains that constrain
-   some parameters.  */
-
-static void
-build_scop_context (scop_p scop)
-{
-  graphite_dim_t p, n = scop_nb_params (scop);
-
-  for (p = 0; p < n; p++)
-    add_param_constraints (scop, p);
-}
-
-/* Build the iteration domains: the loops belonging to the current
-   SCOP, and that vary for the execution of the current basic block.
-   Returns false if there is no loop in SCOP.  */
-
-static bool
-build_scop_iteration_domain (scop_p scop)
-{
-  sese_info_p region = scop->scop_info;
-  int nb_loops = number_of_loops (cfun);
-  isl_set **doms = XCNEWVEC (isl_set *, nb_loops);
-  bool res = true;
-  int i;
-  struct loop *loop;
-  FOR_EACH_VEC_ELT (region->loop_nest, i, loop)
-    if (!loop_in_sese_p (loop_outer (loop), region->region)
-	&& !build_loop_iteration_domains (scop, loop, 0,
-					  isl_set_copy (scop->param_context), doms))
-      {
-	res = false;
-	goto cleanup;
-      }
-
-  poly_bb_p pbb;
-  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
-    {
-      loop = pbb_loop (pbb);
-
-      if (doms[loop->num])
-	pbb->domain = isl_set_copy (doms[loop->num]);
-      else
-	pbb->domain = isl_set_copy (scop->param_context);
-
-      pbb->domain = isl_set_set_tuple_id (pbb->domain,
-					  isl_id_for_pbb (scop, pbb));
-    }
-
- cleanup:
-  for (int i = 0; i < nb_loops; i++)
-    if (doms[i])
-      isl_set_free (doms[i]);
-
-  free (doms);
-  return res;
 }
 
 /* Add a constrain to the ACCESSES polyhedron for the alias set of
@@ -1109,16 +898,204 @@ build_scop_drs (scop_p scop)
     build_poly_sr (pbb);
 }
 
+/* Add constraints to DOMAIN for each loop from LOOP up to CONTEXT.  */
+
+static isl_set *
+add_loop_constraints (scop_p scop, __isl_take isl_set *domain, loop_p loop,
+		      loop_p context)
+{
+  if (loop == context)
+    return domain;
+  const sese_l &region = scop->scop_info->region;
+  if (!loop_in_sese_p (loop, region))
+    return domain;
+
+  /* Recursion all the way up to the context loop.  */
+  domain = add_loop_constraints (scop, domain, loop_outer (loop), context);
+
+  /* Then, build constraints over the loop in post-order: outer to inner.  */
+
+  int loop_index = isl_set_dim (domain, isl_dim_set);
+  if (dump_file)
+    fprintf (dump_file, "[sese-to-poly] adding one extra dimension to the "
+	     "domain for loop_%d.\n", loop->num);
+  domain = isl_set_add_dims (domain, isl_dim_set, 1);
+  isl_space *space = isl_set_get_space (domain);
+
+  /* 0 <= loop_i */
+  isl_local_space *ls = isl_local_space_from_space (isl_space_copy (space));
+  isl_constraint *c = isl_inequality_alloc (ls);
+  c = isl_constraint_set_coefficient_si (c, isl_dim_set, loop_index, 1);
+  if (dump_file)
+    {
+      fprintf (dump_file, "[sese-to-poly] adding constraint to the domain: ");
+      print_isl_constraint (dump_file, c);
+    }
+  domain = isl_set_add_constraint (domain, c);
+
+  tree nb_iters = number_of_latch_executions (loop);
+  if (TREE_CODE (nb_iters) == INTEGER_CST)
+    {
+      /* loop_i <= cst_nb_iters */
+      isl_local_space *ls = isl_local_space_from_space (space);
+      isl_constraint *c = isl_inequality_alloc (ls);
+      c = isl_constraint_set_coefficient_si (c, isl_dim_set, loop_index, -1);
+      mpz_t g;
+      mpz_init (g);
+      tree_int_to_gmp (nb_iters, g);
+      isl_val *v = isl_val_int_from_gmp (scop->isl_context, g);
+      mpz_clear (g);
+      c = isl_constraint_set_constant_val (c, v);
+      return isl_set_add_constraint (domain, c);
+    }
+  /* loop_i <= expr_nb_iters */
+  gcc_assert (!chrec_contains_undetermined (nb_iters));
+  nb_iters = scalar_evolution_in_region (region, loop, nb_iters);
+  gcc_assert (!chrec_contains_undetermined (nb_iters));
+
+  isl_pw_aff *aff_nb_iters = extract_affine (scop, nb_iters,
+					     isl_space_copy (space));
+  isl_set *valid = isl_pw_aff_nonneg_set (isl_pw_aff_copy (aff_nb_iters));
+  valid = isl_set_project_out (valid, isl_dim_set, 0,
+			       isl_set_dim (valid, isl_dim_set));
+
+  if (valid)
+    scop->param_context = isl_set_intersect (scop->param_context, valid);
+
+  ls = isl_local_space_from_space (isl_space_copy (space));
+  isl_aff *loop_i = isl_aff_set_coefficient_si (isl_aff_zero_on_domain (ls),
+						isl_dim_in, loop_index, 1);
+  isl_set *le = isl_pw_aff_le_set (isl_pw_aff_from_aff (loop_i),
+				   isl_pw_aff_copy (aff_nb_iters));
+  if (dump_file)
+    {
+      fprintf (dump_file, "[sese-to-poly] adding constraint to the domain: ");
+      print_isl_set (dump_file, le);
+    }
+  domain = isl_set_intersect (domain, le);
+
+  widest_int nit;
+  if (!max_stmt_executions (loop, &nit))
+    {
+      isl_pw_aff_free (aff_nb_iters);
+      isl_space_free (space);
+      return domain;
+    }
+
+  /* NIT is an upper bound to NB_ITERS: "NIT >= NB_ITERS", although we
+     do not know whether the loop executes at least once.  */
+  mpz_t g;
+  mpz_init (g);
+  wi::to_mpz (nit, g, SIGNED);
+  mpz_sub_ui (g, g, 1);
+
+  isl_pw_aff *approx = extract_affine_gmp (g, isl_space_copy (space));
+  isl_set *x = isl_pw_aff_ge_set (approx, aff_nb_iters);
+  x = isl_set_project_out (x, isl_dim_set, 0,
+			   isl_set_dim (x, isl_dim_set));
+  scop->param_context = isl_set_intersect (scop->param_context, x);
+
+  ls = isl_local_space_from_space (space);
+  c = isl_inequality_alloc (ls);
+  c = isl_constraint_set_coefficient_si (c, isl_dim_set, loop_index, -1);
+  isl_val *v = isl_val_int_from_gmp (scop->isl_context, g);
+  mpz_clear (g);
+  c = isl_constraint_set_constant_val (c, v);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "[sese-to-poly] adding constraint to the domain: ");
+      print_isl_constraint (dump_file, c);
+    }
+
+  return isl_set_add_constraint (domain, c);
+}
+
+/* Builds the original iteration domains for each pbb in the SCOP.  */
+
+static int
+build_iteration_domains (scop_p scop, __isl_keep isl_set *context, int index,
+			 loop_p context_loop)
+{
+  loop_p current = pbb_loop (scop->pbbs[index]);
+  isl_set *domain = isl_set_copy (context);
+  domain = add_loop_constraints (scop, domain, current, context_loop);
+  const sese_l &region = scop->scop_info->region;
+
+  int i;
+  poly_bb_p pbb;
+  FOR_EACH_VEC_ELT_FROM (scop->pbbs, i, pbb, index)
+    {
+      loop_p loop = pbb_loop (pbb);
+      if (current == loop)
+	{
+	  pbb->domain = isl_set_copy (domain);
+	  pbb->domain = isl_set_set_tuple_id (pbb->domain,
+					      isl_id_for_pbb (scop, pbb));
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "[sese-to-poly] set pbb_%d->domain: ",
+		       pbb_index (pbb));
+	      print_isl_set (dump_file, domain);
+	    }
+	  continue;
+	}
+
+      while (loop_in_sese_p (loop, region)
+	     && current != loop)
+	loop = loop_outer (loop);
+
+      if (current != loop)
+	{
+	  /* A statement in a different loop nest than CURRENT loop.  */
+	  isl_set_free (domain);
+	  return i;
+	}
+
+      /* A statement nested in the CURRENT loop.  */
+      i = build_iteration_domains (scop, domain, i, current);
+      i--;
+    }
+
+  isl_set_free (domain);
+  return i;
+}
+
+
+/* Assign dimension for each parameter in SCOP and add constraints for the
+   parameters.  */
+
+static void
+build_scop_context (scop_p scop)
+{
+  sese_info_p region = scop->scop_info;
+  unsigned nbp = sese_nb_params (region);
+  isl_space *space = isl_space_set_alloc (scop->isl_context, nbp, 0);
+
+  unsigned i;
+  tree e;
+  FOR_EACH_VEC_ELT (region->params, i, e)
+    space = isl_space_set_dim_id (space, isl_dim_param, i,
+                                  isl_id_for_ssa_name (scop, e));
+
+  scop->param_context = isl_set_universe (space);
+
+  graphite_dim_t p;
+  for (p = 0; p < nbp; p++)
+    add_param_constraints (scop, p);
+}
+
 /* Builds the polyhedral representation for a SESE region.  */
 
 bool
 build_poly_scop (scop_p scop)
 {
-  set_scop_parameter_dim (scop);
-  if (!build_scop_iteration_domain (scop))
-    return false;
-
   build_scop_context (scop);
+
+  unsigned i = 0;
+  unsigned n = scop->pbbs.length ();
+  while (i < n)
+    i = build_iteration_domains (scop, scop->param_context, i, NULL);
 
   if (!add_conditions_to_constraints (scop))
     return false;
