@@ -1,5 +1,9 @@
 2016-01-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/69187
+	PR target/65624
+	* gcc.target/arm/pr69187.c: New test.
+
 	PR c++/69355
 	* g++.dg/torture/pr69355.C: New test.
 
