@@ -9262,8 +9262,11 @@ work on multiple types.
 
 The definition given in the Intel documentation allows only for the use of
 the types @code{int}, @code{long}, @code{long long} or their unsigned
-counterparts.  GCC allows any integral scalar or pointer type that is
-1, 2, 4 or 8 bytes in length.
+counterparts.  GCC allows any scalar type that is 1, 2, 4 or 8 bytes in
+size other than the C type @code{_Bool} or the C++ type @code{bool}.
+Operations on pointer arguments are performed as if the operands were
+of the @code{uintptr_t} type.  That is, they are not scaled by the size
+of the type to which the pointer points.
 
 These functions are implemented in terms of the @samp{__atomic}
 builtins (@pxref{__atomic Builtins}).  They should not be used for new
@@ -9309,7 +9312,11 @@ accessible variables should be protected.
 @findex __sync_fetch_and_xor
 @findex __sync_fetch_and_nand
 These built-in functions perform the operation suggested by the name, and
-returns the value that had previously been in memory.  That is,
+returns the value that had previously been in memory.  That is, operations
+on integer operands have the following semantics.  Operations on pointer
+arguments are performed as if the operands were of the @code{uintptr_t}
+type.  That is, they are not scaled by the size of the type to which
+the pointer points.
 
 @smallexample
 @{ tmp = *ptr; *ptr @var{op}= value; return tmp; @}
@@ -9335,7 +9342,9 @@ as @code{*ptr = ~(tmp & value)} instead of @code{*ptr = ~tmp & value}.
 @findex __sync_xor_and_fetch
 @findex __sync_nand_and_fetch
 These built-in functions perform the operation suggested by the name, and
-return the new value.  That is,
+return the new value.  That is, operations on integer operands have
+the following semantics.  Operations on pointer operands are performed as
+if the operand's type were @code{uintptr_t}.
 
 @smallexample
 @{ *ptr @var{op}= value; return *ptr; @}
@@ -9592,7 +9601,9 @@ pointer.
 @deftypefnx {Built-in Function} @var{type} __atomic_or_fetch (@var{type} *ptr, @var{type} val, int memorder)
 @deftypefnx {Built-in Function} @var{type} __atomic_nand_fetch (@var{type} *ptr, @var{type} val, int memorder)
 These built-in functions perform the operation suggested by the name, and
-return the result of the operation.  That is,
+return the result of the operation.  Operations on pointer arguments are
+performed as if the operands were of the @code{uintptr_t} type.  That is,
+they are not scaled by the size of the type to which the pointer points.
 
 @smallexample
 @{ *ptr @var{op}= val; return *ptr; @}
@@ -9610,7 +9621,10 @@ type.  It must not be a Boolean type.  All memory orders are valid.
 @deftypefnx {Built-in Function} @var{type} __atomic_fetch_or (@var{type} *ptr, @var{type} val, int memorder)
 @deftypefnx {Built-in Function} @var{type} __atomic_fetch_nand (@var{type} *ptr, @var{type} val, int memorder)
 These built-in functions perform the operation suggested by the name, and
-return the value that had previously been in @code{*@var{ptr}}.  That is,
+return the value that had previously been in @code{*@var{ptr}}.  Operations
+on pointer arguments are performed as if the operands were of
+the @code{uintptr_t} type.  That is, they are not scaled by the size of
+the type to which the pointer points.
 
 @smallexample
 @{ tmp = *ptr; *ptr @var{op}= val; return tmp; @}

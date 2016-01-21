@@ -1,3 +1,10 @@
+2016-01-20  Martin Sebor  <msebor@redhat.com>
+
+	PR c/52291
+	* extend.texi (__sync Builtins): Clarify the semantics of
+	__sync_fetch_and_OP built-ins on pointers.
+	(__atomic Builtins): Same.
+
 2016-01-21  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
