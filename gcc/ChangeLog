@@ -1,3 +1,8 @@
+2016-01-21  Marcin Kościelnicki  <koriakin@0x04.net>
+
+	* config/s390/s390.c (s390_asm_declare_function_size): Add code
+	to actually emit the .size directive.
+
 2016-01-21   Stefan Sørensen  <stefan.sorensen@spectralink.com>
 	     Jakub Jelinek  <jakub@redhat.com>
 
