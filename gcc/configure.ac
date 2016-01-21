@@ -4406,7 +4406,6 @@ LCF0:
 	  ],,
 	  [AC_DEFINE(HAVE_AS_REF, 1,
 	    [Define if your assembler supports .ref])])
-	;;
 
 	gcc_GAS_CHECK_FEATURE([AIX DWARF location lists section support],
 	  gcc_cv_as_aix_dwloc, [2,21,0],,

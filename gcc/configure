@@ -26654,7 +26654,6 @@ if test $gcc_cv_as_aix_ref = yes; then
 $as_echo "#define HAVE_AS_REF 1" >>confdefs.h
 
 fi
-	;;
 
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for AIX DWARF location lists section support" >&5
 $as_echo_n "checking assembler for AIX DWARF location lists section support... " >&6; }
