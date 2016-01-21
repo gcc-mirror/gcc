@@ -1,3 +1,9 @@
+2016-01-21  Anton Blanchard  <anton@samba.org>
+	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/63354
+	* gcc.target/powerpc/pr63354.c:  New test.
+
 2016-01-21  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/68990
