@@ -1,3 +1,9 @@
+2016-01-21  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR rtl-optimization/68920
+	* ifcvt.c (cond_move_process_if_block): Limit number of conditional
+	moves.
+
 2016-01-21  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/68990
