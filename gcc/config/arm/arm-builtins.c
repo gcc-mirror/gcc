@@ -2246,7 +2246,7 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
   neon_builtin_datum *d =
 		&neon_builtin_data[fcode - ARM_BUILTIN_NEON_PATTERN_START];
   enum insn_code icode = d->code;
-  builtin_arg args[SIMD_MAX_BUILTIN_ARGS];
+  builtin_arg args[SIMD_MAX_BUILTIN_ARGS + 1];
   int num_args = insn_data[d->code].n_operands;
   int is_void = 0;
   int k;
