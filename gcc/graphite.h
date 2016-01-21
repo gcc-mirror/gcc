@@ -281,9 +281,6 @@ struct poly_bb
   /* A copy of the transformed scattering.  */
   isl_map *saved;
 
-  /* True when this PBB contains only a reduction statement.  */
-  bool is_reduction;
-
   /* The last basic block generated for this pbb.  */
   basic_block new_bb;
 };
@@ -291,7 +288,6 @@ struct poly_bb
 #define PBB_BLACK_BOX(PBB) ((gimple_poly_bb_p) PBB->black_box)
 #define PBB_SCOP(PBB) (PBB->scop)
 #define PBB_DRS(PBB) (PBB->drs)
-#define PBB_IS_REDUCTION(PBB) (PBB->is_reduction)
 
 extern poly_bb_p new_poly_bb (scop_p, gimple_poly_bb_p);
 extern void free_poly_bb (poly_bb_p);
