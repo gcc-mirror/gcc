@@ -8381,11 +8381,11 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	 if it's all in the wrong mode to form part of an address.
 	 And force_operand won't know whether to sign-extend or
 	 zero-extend.  */
-      if ((modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
-	  || mode != ptr_mode)
+      if (modifier != EXPAND_INITIALIZER
+	  && (modifier != EXPAND_SUM || mode != ptr_mode))
 	{
 	  expand_operands (treeop0, treeop1,
-			   subtarget, &op0, &op1, EXPAND_NORMAL);
+			   subtarget, &op0, &op1, modifier);
 	  if (op0 == const0_rtx)
 	    return op1;
 	  if (op1 == const0_rtx)
@@ -8424,8 +8424,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	 if it's all in the wrong mode to form part of an address.
 	 And force_operand won't know whether to sign-extend or
 	 zero-extend.  */
-      if ((modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
-	  || mode != ptr_mode)
+      if (modifier != EXPAND_INITIALIZER
+	  && (modifier != EXPAND_SUM || mode != ptr_mode))
 	goto binop;
 
       expand_operands (treeop0, treeop1,
