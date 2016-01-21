@@ -1,8 +1,13 @@
+2016-01-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/65996
+	gfortran.dg/pr65996.f90: New test.
+
 2016-01-21  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR c++/68810
 	* g++.dg/cpp0x/constexpr-reinterpret1.C: Fix line number that is                                                                           
-	expected to generate an error.                                                                                                             
+	expected to generate an error.
 
 2016-01-21  Bernd Schmidt  <bschmidt@redhat.com>
 
