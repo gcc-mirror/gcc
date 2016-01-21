@@ -57,7 +57,7 @@ Wolfgang Bangerth for processing tons of bug reports.
 Jon Beniston for his Microsoft Windows port of Java and port to Lattice Mico32.
 
 @item
-Daniel Berlin for better DWARF2 support, faster/better optimizations,
+Daniel Berlin for better DWARF 2 support, faster/better optimizations,
 improved alias analysis, plus migrating GCC to Bugzilla.
 
 @item
@@ -350,7 +350,7 @@ and for release management.
 
 @item
 Ron Guilmette implemented the @command{protoize} and @command{unprotoize}
-tools, the support for Dwarf symbolic debugging information, and much of
+tools, the support for DWARF 1 symbolic debugging information, and much of
 the support for System V Release 4.  He has also worked heavily on the
 Intel 386 and 860 support.
 

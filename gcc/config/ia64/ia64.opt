@@ -103,7 +103,7 @@ Do not inline square root.
 
 mdwarf2-asm
 Target Report Mask(DWARF2_ASM)
-Enable Dwarf 2 line debug info via GNU as.
+Enable DWARF line debug info via GNU as.
 
 mearly-stop-bits
 Target Report Mask(EARLY_STOP_BITS)

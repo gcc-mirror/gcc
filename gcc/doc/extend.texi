@@ -916,8 +916,8 @@ provided as built-in functions by GCC@.
 
 GCC can allocate complex automatic variables in a noncontiguous
 fashion; it's even possible for the real part to be in a register while
-the imaginary part is on the stack (or vice versa).  Only the DWARF 2
-debug info format can represent this, so use of DWARF 2 is recommended.
+the imaginary part is on the stack (or vice versa).  Only the DWARF
+debug info format can represent this, so use of DWARF is recommended.
 If you are using the stabs debug info format, GCC describes a noncontiguous
 complex variable as if it were two separate variables of noncomplex type.
 If the variable's actual name is @code{foo}, the two fictitious
@@ -1075,7 +1075,7 @@ the technical report.
 @end itemize
 
 Types @code{_Decimal32}, @code{_Decimal64}, and @code{_Decimal128}
-are supported by the DWARF 2 debug information format.
+are supported by the DWARF debug information format.
 
 @node Hex Floats
 @section Hex Floats
@@ -1249,7 +1249,7 @@ is incomplete:
 Pragmas to control overflow and rounding behaviors are not implemented.
 @end itemize
 
-Fixed-point types are supported by the DWARF 2 debug information format.
+Fixed-point types are supported by the DWARF debug information format.
 
 @node Named Address Spaces
 @section Named Address Spaces
