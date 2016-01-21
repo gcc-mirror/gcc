@@ -1,3 +1,13 @@
+2016-01-21  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR middle-end/66178
+	* expr.c (expand_expr_real_2) [PLUS_EXPR, MINUS_EXPR]: Don't
+	drop EXPAND_INITIALIZER.
+	* rtl.h (contains_symbolic_reference_p): Declare.
+	* rtlanal.c (contains_symbolic_reference_p): New function.
+	* simplify-rtx.c (simplify_binary_operation_1): Don't turn
+	a subtraction into a NOT if symbolic constants are involved.
+
 2016-01-21  Anton Blanchard  <anton@samba.org>
 	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 

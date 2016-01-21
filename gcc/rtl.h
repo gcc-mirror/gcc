@@ -2931,6 +2931,7 @@ extern void set_insn_deleted (rtx);
 
 extern rtx single_set_2 (const rtx_insn *, const_rtx);
 extern bool contains_symbol_ref_p (const_rtx);
+extern bool contains_symbolic_reference_p (const_rtx);
 
 /* Handle the cheap and common cases inline for performance.  */
 
