@@ -1,3 +1,8 @@
+2016-01-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/68990
+	* gcc.target/i386/pr68990: New.
+
 2016-01-21  Nick Clifton  <nickc@redhat.com>
 
 	PR target/69129
