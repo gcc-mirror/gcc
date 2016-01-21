@@ -1254,6 +1254,16 @@ translate_isl_ast_to_gimple::translate_isl_ast (loop_p context_loop,
       return translate_isl_ast_node_block (context_loop, node,
 					   next_e, ip);
 
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+    case isl_ast_node_mark:
+      {
+	isl_ast_node *n = isl_ast_node_mark_get_node (node);
+	edge e = translate_isl_ast (context_loop, n, next_e, ip);
+	isl_ast_node_free (n);
+	return e;
+      }
+#endif
+
     default:
       gcc_unreachable ();
     }
