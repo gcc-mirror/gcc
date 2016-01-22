@@ -1,3 +1,9 @@
+2016-01-22  Richard Henderson  <rth@redhat.com>
+
+	PR target/69416
+	* config/aarch64/aarch64.md (UNSPEC_NZCV): New.
+	(ccmp<mode>, fccmp<mode>, fccmpe<mode>): Use it.
+
 2016-01-22  Michael Matz  <matz@suse.de>
 
 	* system.h (string, algorithm): Include only conditionally.

@@ -129,6 +129,7 @@
     UNSPEC_RSQRT
     UNSPEC_RSQRTE
     UNSPEC_RSQRTS
+    UNSPEC_NZCV
 ])
 
 (define_c_enum "unspecv" [
@@ -280,7 +281,7 @@
 	  (compare:CC
 	    (match_operand:GPI 2 "register_operand" "r,r,r")
 	    (match_operand:GPI 3 "aarch64_ccmp_operand" "r,Uss,Usn"))
-	  (match_operand 5 "immediate_operand")))]
+	  (unspec:CC [(match_operand 5 "immediate_operand")] UNSPEC_NZCV)))]
   ""
   "@
    ccmp\\t%<w>2, %<w>3, %k5, %m4
@@ -298,7 +299,7 @@
 	  (compare:CCFP
 	    (match_operand:GPF 2 "register_operand" "w")
 	    (match_operand:GPF 3 "register_operand" "w"))
-	  (match_operand 5 "immediate_operand")))]
+	  (unspec:CCFP [(match_operand 5 "immediate_operand")] UNSPEC_NZCV)))]
   "TARGET_FLOAT"
   "fccmp\\t%<s>2, %<s>3, %k5, %m4"
   [(set_attr "type" "fcmp<s>")]
@@ -313,7 +314,7 @@
 	   (compare:CCFPE
 	    (match_operand:GPF 2 "register_operand" "w")
 	    (match_operand:GPF 3 "register_operand" "w"))
-	  (match_operand 5 "immediate_operand")))]
+	  (unspec:CCFPE [(match_operand 5 "immediate_operand")] UNSPEC_NZCV)))]
   "TARGET_FLOAT"
   "fccmpe\\t%<s>2, %<s>3, %k5, %m4"
   [(set_attr "type" "fcmp<s>")]
