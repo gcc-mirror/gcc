@@ -6496,21 +6496,25 @@ storage order with regard to the scalar storage order of the target:
 
 @itemize
 @item Taking the address of a scalar field of a @code{union} or a
-@code{struct} with reverse scalar storage order is not permitted and will
-yield an error.
+@code{struct} with reverse scalar storage order is not permitted and yields
+an error.
 @item Taking the address of an array field, whose component is scalar, of
 a @code{union} or a @code{struct} with reverse scalar storage order is
-permitted but will yield a warning, unless @option{-Wno-scalar-storage-order}
+permitted but yields a warning, unless @option{-Wno-scalar-storage-order}
 is specified.
 @item Taking the address of a @code{union} or a @code{struct} with reverse
 scalar storage order is permitted.
 @end itemize
 
 These restrictions exist because the storage order attribute is lost when
-the address of a scalar or the address of an array with scalar component
-is taken, so storing indirectly through this address will generally not work.
+the address of a scalar or the address of an array with scalar component is
+taken, so storing indirectly through this address generally does not work.
 The second case is nevertheless allowed to be able to perform a block copy
 from or to the array.
+
+Moreover, the use of type punning or aliasing to toggle the storage order
+is not supported; that is to say, a given scalar object cannot be accessed
+through distinct types that assign a different storage order to it.
 
 @item transparent_union
 @cindex @code{transparent_union} type attribute
