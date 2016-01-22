@@ -1,3 +1,8 @@
+2016-01-22  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* target.c (gomp_get_target_fn_addr): Allow host fallback if target
+	function wasn't mapped to the device with non-shared memory.
+
 2016-01-20  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* task.c (gomp_create_target_task): Set firstprivate_copies to NULL.

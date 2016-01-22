@@ -1436,12 +1436,7 @@ gomp_get_target_fn_addr (struct gomp_device_descr *devicep,
       splay_tree_key tgt_fn = splay_tree_lookup (&devicep->mem_map, &k);
       gomp_mutex_unlock (&devicep->lock);
       if (tgt_fn == NULL)
-	{
-	  if (devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
-	    return NULL;
-	  else
-	    gomp_fatal ("Target function wasn't mapped");
-	}
+	return NULL;
 
       return (void *) tgt_fn->tgt_offset;
     }
