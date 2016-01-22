@@ -111,5 +111,73 @@ using std::tgamma;
 using std::trunc;
 #endif // C++11 && _GLIBCXX_USE_C99_MATH_TR1
 
-#endif
-#endif
+#if __STDCPP_WANT_MATH_SPEC_FUNCS__ == 1
+using std::assoc_laguerref;
+using std::assoc_laguerrel;
+using std::assoc_laguerre;
+using std::assoc_legendref;
+using std::assoc_legendrel;
+using std::assoc_legendre;
+using std::betaf;
+using std::betal;
+using std::beta;
+using std::comp_ellint_1f;
+using std::comp_ellint_1l;
+using std::comp_ellint_1;
+using std::comp_ellint_2f;
+using std::comp_ellint_2l;
+using std::comp_ellint_2;
+using std::comp_ellint_3f;
+using std::comp_ellint_3l;
+using std::comp_ellint_3;
+using std::cyl_bessel_if;
+using std::cyl_bessel_il;
+using std::cyl_bessel_i;
+using std::cyl_bessel_jf;
+using std::cyl_bessel_jl;
+using std::cyl_bessel_j;
+using std::cyl_bessel_kf;
+using std::cyl_bessel_kl;
+using std::cyl_bessel_k;
+using std::cyl_neumannf;
+using std::cyl_neumannl;
+using std::cyl_neumann;
+using std::ellint_1f;
+using std::ellint_1l;
+using std::ellint_1;
+using std::ellint_2f;
+using std::ellint_2l;
+using std::ellint_2;
+using std::ellint_3f;
+using std::ellint_3l;
+using std::ellint_3;
+using std::expintf;
+using std::expintl;
+using std::expint;
+using std::hermitef;
+using std::hermitel;
+using std::hermite;
+using std::laguerref;
+using std::laguerrel;
+using std::laguerre;
+using std::legendref;
+using std::legendrel;
+using std::legendre;
+using std::riemann_zetaf;
+using std::riemann_zetal;
+using std::riemann_zeta;
+using std::sph_besself;
+using std::sph_bessell;
+using std::sph_bessel;
+using std::sph_legendref;
+using std::sph_legendrel;
+using std::sph_legendre;
+using std::sph_neumannf;
+using std::sph_neumannl;
+using std::sph_neumann;
+#endif // __STDCPP_WANT_MATH_SPEC_FUNCS__
+
+#endif // __cplusplus
+
+#endif // _GLIBCXX_MATH_H
+

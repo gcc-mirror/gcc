@@ -1,5 +1,4 @@
-// { dg-do compile { xfail *-*-* } }
-// { dg-excess-errors "" }
+// { dg-do compile }
 // { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__" }
 
 // Copyright (C) 2016 Free Software Foundation, Inc.
