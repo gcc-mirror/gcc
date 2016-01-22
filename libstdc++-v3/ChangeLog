@@ -1,3 +1,12 @@
+2016-01-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69413
+	* config/os/gnu-linux/os_defines.h: Define
+	_GLIBCXX_NO_OBSOLETE_ISINF_ISNAN_DYNAMIC.
+	* include/c_global/cmath (isinf, isnan): Check it.
+	* doc/xml/manual/internals.xml: Document it.
+	* doc/html/*: Regenerate.
+
 2016-01-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/69406
