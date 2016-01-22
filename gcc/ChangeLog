@@ -1,3 +1,11 @@
+2016-01-21  Jeff Law  <law@redhat.com>
+
+	PR middle-end/69347
+	* tree-ssa-dom.c (back_propagate_equivalences): Factored out of
+	record_temporary_equivalences.  Rewritten to avoid unnecessary calls
+	into dominated_by_p.
+	(cprop_into_successor_phis): Avoid unnecessary tests.
+
 2016-01-22  Richard Henderson  <rth@redhat.com>
 
 	PR target/69416

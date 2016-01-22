@@ -819,6 +819,74 @@ dom_valueize (tree t)
   return t;
 }
 
+/* We have just found an equivalence for LHS on an edge E.
+   Look backwards to other uses of LHS and see if we can derive
+   additional equivalences that are valid on edge E.  */
+static void
+back_propagate_equivalences (tree lhs, edge e,
+			     class const_and_copies *const_and_copies)
+{
+  use_operand_p use_p;
+  imm_use_iterator iter;
+  bitmap domby = NULL;
+  basic_block dest = e->dest;
+
+  /* Iterate over the uses of LHS to see if any dominate E->dest.
+     If so, they may create useful equivalences too.
+
+     ???  If the code gets re-organized to a worklist to catch more
+     indirect opportunities and it is made to handle PHIs then this
+     should only consider use_stmts in basic-blocks we have already visited.  */
+  FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
+    {
+      gimple *use_stmt = USE_STMT (use_p);
+
+      /* Often the use is in DEST, which we trivially know we can't use.
+	 This is cheaper than the dominator set tests below.  */
+      if (dest == gimple_bb (use_stmt))
+	continue;
+
+      /* Filter out statements that can never produce a useful
+	 equivalence.  */
+      tree lhs2 = gimple_get_lhs (use_stmt);
+      if (!lhs2 || TREE_CODE (lhs2) != SSA_NAME)
+	continue;
+
+      /* Profiling has shown the domination tests here can be fairly
+	 expensive.  We get significant improvements by building the
+	 set of blocks that dominate BB.  We can then just test
+	 for set membership below.
+
+	 We also initialize the set lazily since often the only uses
+	 are going to be in the same block as DEST.  */
+      if (!domby)
+	{
+	  domby = BITMAP_ALLOC (NULL);
+	  basic_block bb = get_immediate_dominator (CDI_DOMINATORS, dest);
+	  while (bb)
+	    {
+	      bitmap_set_bit (domby, bb->index);
+	      bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+	    }
+	}
+
+      /* This tests if USE_STMT does not dominate DEST.  */
+      if (!bitmap_bit_p (domby, gimple_bb (use_stmt)->index))
+	continue;
+
+      /* At this point USE_STMT dominates DEST and may result in a
+	 useful equivalence.  Try to simplify its RHS to a constant
+	 or SSA_NAME.  */
+      tree res = gimple_fold_stmt_to_constant_1 (use_stmt, dom_valueize,
+						 no_follow_ssa_edges);
+      if (res && (TREE_CODE (res) == SSA_NAME || is_gimple_min_invariant (res)))
+	record_equality (lhs2, res, const_and_copies);
+    }
+
+  if (domby)
+    BITMAP_FREE (domby);
+}
+
 /* Record into CONST_AND_COPIES and AVAIL_EXPRS_STACK any equivalences implied
    by traversing edge E (which are cached in E->aux).
 
@@ -836,19 +904,23 @@ record_temporary_equivalences (edge e,
   if (edge_info)
     {
       cond_equivalence *eq;
-      tree lhs = edge_info->lhs;
-      tree rhs = edge_info->rhs;
+      /* If we have 0 = COND or 1 = COND equivalences, record them
+	 into our expression hash tables.  */
+      for (i = 0; edge_info->cond_equivalences.iterate (i, &eq); ++i)
+	record_cond (eq, avail_exprs_stack);
 
-      /* If we have a simple NAME = VALUE equivalence, record it.  */
-      if (lhs)
-	record_equality (lhs, rhs, const_and_copies);
+      tree lhs = edge_info->lhs;
+      if (!lhs || TREE_CODE (lhs) != SSA_NAME)
+	return;
+
+      /* Record the simple NAME = VALUE equivalence.  */
+      tree rhs = edge_info->rhs;
+      record_equality (lhs, rhs, const_and_copies);
 
       /* If LHS is an SSA_NAME and RHS is a constant integer and LHS was
 	 set via a widening type conversion, then we may be able to record
 	 additional equivalences.  */
-      if (lhs
-	  && TREE_CODE (lhs) == SSA_NAME
-	  && TREE_CODE (rhs) == INTEGER_CST)
+      if (TREE_CODE (rhs) == INTEGER_CST)
 	{
 	  gimple *defstmt = SSA_NAME_DEF_STMT (lhs);
 
@@ -875,45 +947,10 @@ record_temporary_equivalences (edge e,
 	    }
 	}
 
-      /* If LHS is an SSA_NAME with a new equivalency then try if
-         stmts with uses of that LHS that dominate the edge destination
-	 simplify and allow further equivalences to be recorded.  */
-      if (lhs && TREE_CODE (lhs) == SSA_NAME)
-	{
-	  use_operand_p use_p;
-	  imm_use_iterator iter;
-	  FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
-	    {
-	      gimple *use_stmt = USE_STMT (use_p);
-
-	      /* Only bother to record more equivalences for lhs that
-	         can be directly used by e->dest.
-		 ???  If the code gets re-organized to a worklist to
-		 catch more indirect opportunities and it is made to
-		 handle PHIs then this should only consider use_stmts
-		 in basic-blocks we have already visited.  */
-	      if (e->dest == gimple_bb (use_stmt)
-		  || !dominated_by_p (CDI_DOMINATORS,
-				      e->dest, gimple_bb (use_stmt)))
-		continue;
-	      tree lhs2 = gimple_get_lhs (use_stmt);
-	      if (lhs2 && TREE_CODE (lhs2) == SSA_NAME)
-		{
-		  tree res
-		    = gimple_fold_stmt_to_constant_1 (use_stmt, dom_valueize,
-						      no_follow_ssa_edges);
-		  if (res
-		      && (TREE_CODE (res) == SSA_NAME
-			  || is_gimple_min_invariant (res)))
-		    record_equality (lhs2, res, const_and_copies);
-		}
-	    }
-	}
-
-      /* If we have 0 = COND or 1 = COND equivalences, record them
-	 into our expression hash tables.  */
-      for (i = 0; edge_info->cond_equivalences.iterate (i, &eq); ++i)
-	record_cond (eq, avail_exprs_stack);
+      /* Any equivalence found for LHS may result in additional
+	 equivalences for other uses of LHS that we have already
+	 processed.  */
+      back_propagate_equivalences (lhs, e, const_and_copies);
     }
 }
 
@@ -1321,8 +1358,6 @@ cprop_into_successor_phis (basic_block bb,
 	  new_val = SSA_NAME_VALUE (orig_val);
 	  if (new_val
 	      && new_val != orig_val
-	      && (TREE_CODE (new_val) == SSA_NAME
-		  || is_gimple_min_invariant (new_val))
 	      && may_propagate_copy (orig_val, new_val))
 	    propagate_value (orig_p, new_val);
 	}
