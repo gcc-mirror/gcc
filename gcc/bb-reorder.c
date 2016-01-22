@@ -91,6 +91,7 @@
 */
 
 #include "config.h"
+#define INCLUDE_ALGORITHM /* stable_sort */
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"

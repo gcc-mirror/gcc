@@ -51,6 +51,7 @@ write_header (void)
    machine description file.  */\n\
 \n\
 #include \"bconfig.h\"\n\
+#define INCLUDE_STRING\n\
 #include \"system.h\"\n\
 \n\
 /* It is necessary, but not entirely safe, to include the headers below\n\
