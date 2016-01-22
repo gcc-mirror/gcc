@@ -1,7 +1,7 @@
 /* Verify that we don't stack a frame for leaf functions when using
    -pg -mprofile-kernel.  */
 
-/* { dg-do compile { target { powerpc64*-linux-* } } } */
+/* { dg-do compile { target { powerpc*-*-linux* } } } */
 /* { dg-options "-O2 -pg -mprofile-kernel" } */
 /* { dg-require-effective-target powerpc64 } */
 /* { dg-final { scan-assembler-not "mtlr" } } */
