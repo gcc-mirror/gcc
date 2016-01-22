@@ -663,15 +663,27 @@
    (set_attr "type" "multiple")]
 )
 
-(define_insn "*thumb2_ior_scc_strict_it"
-  [(set (match_operand:SI 0 "s_register_operand" "=l,l")
+(define_insn_and_split "*thumb2_ior_scc_strict_it"
+  [(set (match_operand:SI 0 "s_register_operand" "=&r")
 	(ior:SI (match_operator:SI 2 "arm_comparison_operator"
 		 [(match_operand 3 "cc_register" "") (const_int 0)])
-		(match_operand:SI 1 "s_register_operand" "0,?l")))]
+		(match_operand:SI 1 "s_register_operand" "r")))]
   "TARGET_THUMB2 && arm_restrict_it"
-  "@
-   it\\t%d2\;mov%d2\\t%0, #1\;it\\t%d2\;orr%d2\\t%0, %1
-   mov\\t%0, #1\;orr\\t%0, %1\;it\\t%D2\;mov%D2\\t%0, %1"
+  "#" ; orr\\t%0, %1, #1\;it\\t%D2\;mov%D2\\t%0, %1
+  "&& reload_completed"
+  [(set (match_dup 0) (ior:SI (match_dup 1) (const_int 1)))
+   (cond_exec (match_dup 4)
+     (set (match_dup 0) (match_dup 1)))]
+  {
+    machine_mode mode = GET_MODE (operands[3]);
+    rtx_code rc = GET_CODE (operands[2]);
+
+    if (mode == CCFPmode || mode == CCFPEmode)
+      rc = reverse_condition_maybe_unordered (rc);
+    else
+      rc = reverse_condition (rc);
+    operands[4] = gen_rtx_fmt_ee (rc, VOIDmode, operands[3], const0_rtx);
+  }
   [(set_attr "conds" "use")
    (set_attr "length" "8")
    (set_attr "type" "multiple")]

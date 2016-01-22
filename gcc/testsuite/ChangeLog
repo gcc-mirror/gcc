@@ -1,3 +1,8 @@
+2016-01-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/69403
+	* gcc.c-torture/execute/pr69403.c: New test.
+
 2016-01-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55843
