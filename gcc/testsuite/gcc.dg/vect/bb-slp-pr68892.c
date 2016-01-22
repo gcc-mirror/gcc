@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-fvect-cost-model=dynamic" } */
+/* { dg-require-effective-target vect_double } */
 
 double a[128][128];
 double b[128];
