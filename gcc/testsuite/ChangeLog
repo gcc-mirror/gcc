@@ -1,3 +1,7 @@
+2016-01-22  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/vect/bb-slp-pr68892.c: Require vect_double.
+
 2016-01-21  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/68674
