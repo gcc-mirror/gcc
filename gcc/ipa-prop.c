@@ -402,9 +402,6 @@ static void
 ipa_set_jf_constant (struct ipa_jump_func *jfunc, tree constant,
 		     struct cgraph_edge *cs)
 {
-  constant = unshare_expr (constant);
-  if (constant && EXPR_P (constant))
-    SET_EXPR_LOCATION (constant, UNKNOWN_LOCATION);
   jfunc->type = IPA_JF_CONST;
   jfunc->value.constant.value = unshare_expr_without_location (constant);
 

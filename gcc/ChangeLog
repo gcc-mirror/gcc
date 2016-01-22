@@ -1,3 +1,7 @@
+2016-01-22  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* ipa-prop.c (ipa_set_jf_constant): Remove redundant unshare_expr.
+
 2016-01-22  Christian Bruel  <christian.bruel@st.com>
 
 	* config/arm/arm-c.c (arm_pragma_target_parse):
