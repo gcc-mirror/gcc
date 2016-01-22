@@ -1,3 +1,10 @@
+2016-01-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR testsuite/67489
+	* gcc.target/powerpc/p8vector-builtin-8.c: Remove { target int128
+	} from dg-do compile directive, and instead add {
+	dg-require-effective-target int128 }.
+
 2016-01-20  Martin Sebor  <msebor@redhat.com>
 
 	PR c/69405
