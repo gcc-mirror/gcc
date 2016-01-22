@@ -26,11 +26,6 @@
 	* config/aarch64/aarch64.c (toplevel): Define INCLUDE_STRING.
 	* common/config/aarch64/aarch64-common.c (toplevel): Ditto.
 
-2016-01-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-
-	* gcc.target/powerpc/pr63354.c: Restrict to Linux targets with
-	64-bit support.
-
 2016-01-22  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/68674
