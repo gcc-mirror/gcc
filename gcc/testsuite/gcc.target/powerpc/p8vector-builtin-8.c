@@ -1,5 +1,6 @@
-/* { dg-do compile { target int128 } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
+/* { dg-require-effective-target int128 } */
 /* { dg-options "-mpower8-vector -O2" } */
 
 #include <altivec.h>
