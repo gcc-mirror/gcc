@@ -1,3 +1,15 @@
+2016-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/66668
+	* dwarf2out.c (add_child_die_after): New function.
+	(dwarf_qual_info_t): New type.
+	(dwarf_qual_info): New variable.
+	(qualified_die_p): New function.
+	(modified_type_die): For -fdebug-types-section, ensure
+	canonical order of qualifiers.  Put qualified DIEs adjacent
+	to the corresponding non-qualified type DIE and search there
+	for existing qualified DIEs.
+
 2016-01-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/extend.texi (scalar_storage_order type attribute): Document

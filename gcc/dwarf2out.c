@@ -4970,6 +4970,25 @@ add_child_die (dw_die_ref die, dw_die_ref child_die)
   die->die_child = child_die;
 }
 
+/* Like add_child_die, but put CHILD_DIE after AFTER_DIE.  */
+
+static void
+add_child_die_after (dw_die_ref die, dw_die_ref child_die,
+		     dw_die_ref after_die)
+{
+  gcc_assert (die
+	      && child_die
+	      && after_die
+	      && die->die_child
+	      && die != child_die);
+
+  child_die->die_parent = die;
+  child_die->die_sib = after_die->die_sib;
+  after_die->die_sib = child_die;
+  if (die->die_child == after_die)
+    die->die_child = child_die;
+}
+
 /* Unassociate CHILD from its parent, and make its parent be
    NEW_PARENT.  */
 
@@ -11149,6 +11168,45 @@ get_nearest_type_subqualifiers (tree type, int type_quals, int qual_mask)
   return best_qual;
 }
 
+struct dwarf_qual_info_t { int q; enum dwarf_tag t; };
+static const dwarf_qual_info_t dwarf_qual_info[] =
+{
+  { TYPE_QUAL_CONST, DW_TAG_const_type },
+  { TYPE_QUAL_VOLATILE, DW_TAG_volatile_type },
+  { TYPE_QUAL_RESTRICT, DW_TAG_restrict_type },
+  { TYPE_QUAL_ATOMIC, DW_TAG_atomic_type }
+};
+static const unsigned int dwarf_qual_info_size
+  = sizeof (dwarf_qual_info) / sizeof (dwarf_qual_info[0]);
+
+/* If DIE is a qualified DIE of some base DIE with the same parent,
+   return the base DIE, otherwise return NULL.  Set MASK to the
+   qualifiers added compared to the returned DIE.  */
+
+static dw_die_ref
+qualified_die_p (dw_die_ref die, int *mask, unsigned int depth)
+{
+  unsigned int i;
+  for (i = 0; i < dwarf_qual_info_size; i++)
+    if (die->die_tag == dwarf_qual_info[i].t)
+      break;
+  if (i == dwarf_qual_info_size)
+    return NULL;
+  if (vec_safe_length (die->die_attr) != 1)
+    return NULL;
+  dw_die_ref type = get_AT_ref (die, DW_AT_type);
+  if (type == NULL || type->die_parent != die->die_parent)
+    return NULL;
+  *mask |= dwarf_qual_info[i].q;
+  if (depth)
+    {
+      dw_die_ref ret = qualified_die_p (type, mask, depth - 1);
+      if (ret)
+	return ret;
+    }
+  return type;
+}
+
 /* Given a pointer to an arbitrary ..._TYPE tree node, return a debugging
    entry that chains the modifiers specified by CV_QUALS in front of the
    given type.  REVERSE is true if the type is to be interpreted in the
@@ -11255,31 +11313,97 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 
   if (cv_quals)
     {
-      struct qual_info { int q; enum dwarf_tag t; };
-      static const struct qual_info qual_info[] =
-	{
-	  { TYPE_QUAL_ATOMIC, DW_TAG_atomic_type },
-	  { TYPE_QUAL_RESTRICT, DW_TAG_restrict_type },
-	  { TYPE_QUAL_VOLATILE, DW_TAG_volatile_type },
-	  { TYPE_QUAL_CONST, DW_TAG_const_type },
-	};
-      int sub_quals;
+      int sub_quals = 0, first_quals = 0;
       unsigned i;
+      dw_die_ref first = NULL, last = NULL;
 
       /* Determine a lesser qualified type that most closely matches
 	 this one.  Then generate DW_TAG_* entries for the remaining
 	 qualifiers.  */
       sub_quals = get_nearest_type_subqualifiers (type, cv_quals,
 						  cv_qual_mask);
+      if (sub_quals && use_debug_types)
+	{
+	  bool needed = false;
+	  /* If emitting type units, make sure the order of qualifiers
+	     is canonical.  Thus, start from unqualified type if
+	     an earlier qualifier is missing in sub_quals, but some later
+	     one is present there.  */
+	  for (i = 0; i < dwarf_qual_info_size; i++)
+	    if (dwarf_qual_info[i].q & cv_quals & ~sub_quals)
+	      needed = true;
+	    else if (needed && (dwarf_qual_info[i].q & cv_quals))
+	      {
+		sub_quals = 0;
+		break;
+	      }
+	}
       mod_type_die = modified_type_die (type, sub_quals, reverse, context_die);
+      if (mod_scope && mod_type_die && mod_type_die->die_parent == mod_scope)
+	{
+	  /* As not all intermediate qualified DIEs have corresponding
+	     tree types, ensure that qualified DIEs in the same scope
+	     as their DW_AT_type are emitted after their DW_AT_type,
+	     only with other qualified DIEs for the same type possibly
+	     in between them.  Determine the range of such qualified
+	     DIEs now (first being the base type, last being corresponding
+	     last qualified DIE for it).  */
+	  unsigned int count = 0;
+	  first = qualified_die_p (mod_type_die, &first_quals,
+				   dwarf_qual_info_size);
+	  if (first == NULL)
+	    first = mod_type_die;
+	  gcc_assert ((first_quals & ~sub_quals) == 0);
+	  for (count = 0, last = first;
+	       count < (1U << dwarf_qual_info_size);
+	       count++, last = last->die_sib)
+	    {
+	      int quals = 0;
+	      if (last == mod_scope->die_child)
+		break;
+	      if (qualified_die_p (last->die_sib, &quals, dwarf_qual_info_size)
+		  != first)
+		break;
+	    }
+	}
 
-      for (i = 0; i < sizeof (qual_info) / sizeof (qual_info[0]); i++)
-	if (qual_info[i].q & cv_quals & ~sub_quals)
+      for (i = 0; i < dwarf_qual_info_size; i++)
+	if (dwarf_qual_info[i].q & cv_quals & ~sub_quals)
 	  {
-	    dw_die_ref d = new_die (qual_info[i].t, mod_scope, type);
+	    dw_die_ref d;
+	    if (first && first != last)
+	      {
+		for (d = first->die_sib; ; d = d->die_sib)
+		  {
+		    int quals = 0;
+		    qualified_die_p (d, &quals, dwarf_qual_info_size);
+		    if (quals == (first_quals | dwarf_qual_info[i].q))
+		      break;
+		    if (d == last)
+		      {
+			d = NULL;
+			break;
+		      }
+		  }
+		if (d)
+		  {
+		    mod_type_die = d;
+		    continue;
+		  }
+	      }
+	    if (first)
+	      {
+		d = ggc_cleared_alloc<die_node> ();
+		d->die_tag = dwarf_qual_info[i].t;
+		add_child_die_after (mod_scope, d, last);
+		last = d;
+	      }
+	    else
+	      d = new_die (dwarf_qual_info[i].t, mod_scope, type);
 	    if (mod_type_die)
 	      add_AT_die_ref (d, DW_AT_type, mod_type_die);
 	    mod_type_die = d;
+	    first_quals |= dwarf_qual_info[i].q;
 	  }
     }
   else if (code == POINTER_TYPE || code == REFERENCE_TYPE)
