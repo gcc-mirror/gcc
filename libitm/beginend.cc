@@ -32,7 +32,11 @@ using namespace GTM;
 extern __thread gtm_thread_tls _gtm_thr_tls;
 #endif
 
-gtm_rwlock GTM::gtm_thread::serial_lock;
+// Put this at the start of a cacheline so that serial_lock's writers and
+// htm_fastpath fields are on the same cacheline, so that HW transactions
+// only have to pay one cacheline capacity to monitor both.
+gtm_rwlock GTM::gtm_thread::serial_lock
+  __attribute__((aligned(HW_CACHELINE_SIZE)));
 gtm_thread *GTM::gtm_thread::list_of_threads = 0;
 unsigned GTM::gtm_thread::number_of_threads = 0;
 
@@ -50,9 +54,6 @@ static pthread_mutex_t global_tid_lock = PTHREAD_MUTEX_INITIALIZER;
 // Provides a on-thread-exit callback used to release per-thread data.
 static pthread_key_t thr_release_key;
 static pthread_once_t thr_release_once = PTHREAD_ONCE_INIT;
-
-// See gtm_thread::begin_transaction.
-uint32_t GTM::htm_fastpath = 0;
 
 /* Allocate a transaction structure.  */
 void *
@@ -173,9 +174,11 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
   // lock's writer flag and thus abort if another thread is or becomes a
   // serial transaction.  Therefore, if the fastpath is enabled, then a
   // transaction is not executing as a HW transaction iff the serial lock is
-  // write-locked.  This allows us to use htm_fastpath and the serial lock's
-  // writer flag to reliable determine whether the current thread runs a HW
-  // transaction, and thus we do not need to maintain this information in
+  // write-locked.  Also, HW transactions monitor the fastpath control
+  // variable, so that they will only execute if dispatch_htm is still the
+  // current method group.  This allows us to use htm_fastpath and the serial
+  // lock's writers flag to reliable determine whether the current thread runs
+  // a HW transaction, and thus we do not need to maintain this information in
   // per-thread state.
   // If an uninstrumented code path is not available, we can still run
   // instrumented code from a HW transaction because the HTM fastpath kicks
@@ -187,9 +190,14 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
   // for any internal changes (e.g., they never abort visibly to the STM code
   // and thus do not trigger the standard retry handling).
 #ifndef HTM_CUSTOM_FASTPATH
-  if (likely(htm_fastpath && (prop & pr_hasNoAbort)))
+  if (likely(serial_lock.get_htm_fastpath() && (prop & pr_hasNoAbort)))
     {
-      for (uint32_t t = htm_fastpath; t; t--)
+      // Note that the snapshot of htm_fastpath that we take here could be
+      // outdated, and a different method group than dispatch_htm may have
+      // been chosen in the meantime.  Therefore, take care not not touch
+      // anything besides the serial lock, which is independent of method
+      // groups.
+      for (uint32_t t = serial_lock.get_htm_fastpath(); t; t--)
 	{
 	  uint32_t ret = htm_begin();
 	  if (htm_begin_success(ret))
@@ -197,9 +205,11 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
 	      // We are executing a transaction now.
 	      // Monitor the writer flag in the serial-mode lock, and abort
 	      // if there is an active or waiting serial-mode transaction.
+	      // Also checks that htm_fastpath is still nonzero and thus
+	      // HW transactions are allowed to run.
 	      // Note that this can also happen due to an enclosing
 	      // serial-mode transaction; we handle this case below.
-	      if (unlikely(serial_lock.is_write_locked()))
+	      if (unlikely(serial_lock.htm_fastpath_disabled()))
 		htm_abort();
 	      else
 		// We do not need to set a_saveLiveVariables because of HTM.
@@ -210,9 +220,12 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
 	  // retrying the transaction will be successful.
 	  if (!htm_abort_should_retry(ret))
 	    break;
+	  // Check whether the HTM fastpath has been disabled.
+	  if (!serial_lock.get_htm_fastpath())
+	    break;
 	  // Wait until any concurrent serial-mode transactions have finished.
 	  // This is an empty critical section, but won't be elided.
-	  if (serial_lock.is_write_locked())
+	  if (serial_lock.htm_fastpath_disabled())
 	    {
 	      tx = gtm_thr();
 	      if (unlikely(tx == NULL))
@@ -247,7 +260,7 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
   // HTM fastpath aborted, and that we thus have to decide whether to retry
   // the fastpath (returning a_tryHTMFastPath) or just proceed with the
   // fallback method.
-  if (likely(htm_fastpath && (prop & pr_HTMRetryableAbort)))
+  if (likely(serial_lock.get_htm_fastpath() && (prop & pr_HTMRetryableAbort)))
     {
       tx = gtm_thr();
       if (unlikely(tx == NULL))
@@ -261,13 +274,15 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
       // other fallback will use serial transactions, which don't use
       // restart_total but will reset it when committing.
       if (!(prop & pr_HTMRetriedAfterAbort))
-	tx->restart_total = htm_fastpath;
+	tx->restart_total = gtm_thread::serial_lock.get_htm_fastpath();
 
       if (--tx->restart_total > 0)
 	{
 	  // Wait until any concurrent serial-mode transactions have finished.
 	  // Essentially the same code as above.
-	  if (serial_lock.is_write_locked())
+	  if (!serial_lock.get_htm_fastpath())
+	    goto stop_custom_htm_fastpath;
+	  if (serial_lock.htm_fastpath_disabled())
 	    {
 	      if (tx->nesting > 0)
 		goto stop_custom_htm_fastpath;
@@ -691,7 +706,7 @@ _ITM_commitTransaction(void)
   // a serial-mode transaction.  If we are, then there will be no other
   // concurrent serial-mode transaction.
   // See gtm_thread::begin_transaction.
-  if (likely(htm_fastpath && !gtm_thread::serial_lock.is_write_locked()))
+  if (likely(!gtm_thread::serial_lock.htm_fastpath_disabled()))
     {
       htm_commit();
       return;
@@ -707,7 +722,7 @@ _ITM_commitTransactionEH(void *exc_ptr)
 {
 #if defined(USE_HTM_FASTPATH)
   // See _ITM_commitTransaction.
-  if (likely(htm_fastpath && !gtm_thread::serial_lock.is_write_locked()))
+  if (likely(!gtm_thread::serial_lock.htm_fastpath_disabled()))
     {
       htm_commit();
       return;

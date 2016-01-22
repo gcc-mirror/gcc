@@ -226,13 +226,13 @@ struct htm_mg : public method_group
     // Enable the HTM fastpath if the HW is available.  The fastpath is
     // initially disabled.
 #ifdef USE_HTM_FASTPATH
-    htm_fastpath = htm_init();
+    gtm_thread::serial_lock.set_htm_fastpath(htm_init());
 #endif
   }
   virtual void fini()
   {
     // Disable the HTM fastpath.
-    htm_fastpath = 0;
+    gtm_thread::serial_lock.set_htm_fastpath(0);
   }
 };
 
@@ -292,7 +292,7 @@ GTM::gtm_thread::serialirr_mode ()
 #if defined(USE_HTM_FASTPATH)
   // HTM fastpath.  If we are executing a HW transaction, don't go serial but
   // continue.  See gtm_thread::begin_transaction.
-  if (likely(htm_fastpath && !gtm_thread::serial_lock.is_write_locked()))
+  if (likely(!gtm_thread::serial_lock.htm_fastpath_disabled()))
     return;
 #endif
 

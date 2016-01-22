@@ -1,3 +1,21 @@
+2016-01-22  Torvald Riegel  <triegel@redhat.com>
+
+	* beginend.cc (GTM::gtm_thread::serial_lock): Put on cacheline
+	boundary.
+	(htm_fastpath): Remove.
+	(gtm_thread::begin_transaction): Fix HTM fastpath.
+	(_ITM_commitTransaction): Adapt.
+	(_ITM_commitTransactionEH): Adapt.
+	* libitm/config/linux/rwlock.h (gtm_rwlock): Add htm_fastpath member
+	and accessors.
+	* libitm/config/posix/rwlock.h (gtm_rwlock): Likewise.
+	* libitm/config/posix/rwlock.cc (gtm_rwlock::gtm_rwlock): Adapt.
+	* libitm/config/x86/sjlj.S (_ITM_beginTransaction): Fix HTM fastpath.
+	* libitm/libitm_i.h (htm_fastpath): Remove declaration.
+	* libitm/method-serial.cc (htm_mg): Adapt.
+	(gtm_thread::serialirr_mode): Adapt.
+	* libitm/query.cc (_ITM_inTransaction, _ITM_getTransactionId): Adapt.
+
 2016-01-21  Torvald Riegel  <triegel@redhat.com>
 
 	* testsuite/libitm.c++/libstdc++-safeexc.C: Not supported on darwin

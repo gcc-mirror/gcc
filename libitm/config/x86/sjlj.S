@@ -81,8 +81,9 @@ SYM(_ITM_beginTransaction):
 	   back to another execution method.  RTM restores all registers after
 	   a HW transaction abort, so we can do the SW setjmp after aborts,
 	   and we have to because we might choose a SW fall back.  However,
-	   we have to explicitly save/restore the first argument (edi).  */
-	cmpl	$0, SYM(gtm_htm_fastpath)(%rip)
+	   we have to explicitly save/restore the first argument (edi).
+	   The htm_fastpath field is the second int in gtm_rwlock.  */
+	cmpl	$0, (SYM(gtm_serial_lock)+4)(%rip)
 	jz	.Lno_htm
 	testl	$pr_hasNoAbort, %edi
 	jz	.Lno_htm
@@ -95,6 +96,10 @@ SYM(_ITM_beginTransaction):
 	   this case in the retry policy implementation.  */
 	cmpl	$0, SYM(gtm_serial_lock)(%rip)
 	jnz	1f
+	/* Now also check that HW transactions are still allowed to run (see
+	   gtm_thread::begin_transaction for why this is necessary).  */
+	cmpl	$0, (SYM(gtm_serial_lock)+4)(%rip)
+	jz	1f
 	/* Everything is good.  Run the transaction, preferably using the
 	   uninstrumented code path.  Note that the following works because
 	   pr_uninstrumentedCode == a_runUninstrumentedCode.  */
@@ -102,8 +107,9 @@ SYM(_ITM_beginTransaction):
 	mov	$a_runInstrumentedCode, %eax
 	cmovnz	%edi, %eax
 	ret
-	/* There is a serial-mode transaction, so abort (see htm_abort()
-	   regarding the abort code).  */
+	/* There is a serial-mode transaction or HW transactions are not
+	   allowed anymore, so abort (see htm_abort() regarding the abort
+	   code).  */
 1:	xabort	$0xff
 .Ltxn_abort:
 	/* If it might make sense to retry the HTM fast path, let the C++

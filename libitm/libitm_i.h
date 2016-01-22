@@ -344,11 +344,6 @@ extern abi_dispatch *dispatch_gl_wt();
 extern abi_dispatch *dispatch_ml_wt();
 extern abi_dispatch *dispatch_htm();
 
-// Control variable for the HTM fastpath that uses serial mode as fallback.
-// Non-zero if the HTM fastpath is enabled. See gtm_thread::begin_transaction.
-// Accessed from assembly language, thus the "asm" specifier on
-// the name, avoiding complex name mangling.
-extern uint32_t htm_fastpath __asm__(UPFX "gtm_htm_fastpath");
 
 } // namespace GTM
 
