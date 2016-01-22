@@ -1,3 +1,8 @@
+2016-01-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55843
+	* g++.dg/template/pr55843.C: New.
+
 2016-01-22  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR testsuite/66877
