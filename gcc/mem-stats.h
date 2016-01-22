@@ -200,7 +200,9 @@ struct mem_usage
   static inline void
   print_dash_line (size_t count = 140)
   {
-    fprintf (stderr, "%s\n", std::string (count, '-').c_str ());
+    while (count--)
+      fputc ('-', stderr);
+    fputc ('\n', stderr);
   }
 
   /* Dump header with NAME.  */

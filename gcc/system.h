@@ -198,7 +198,9 @@ extern int fprintf_unlocked (FILE *, const char *, ...);
    the ctype macros through safe-ctype.h */
 
 #ifdef __cplusplus
+#ifdef INCLUDE_STRING
 # include <string>
+#endif
 #endif
 
 /* There are an extraordinary number of issues with <ctype.h>.
@@ -215,8 +217,11 @@ extern int errno;
 #endif
 
 #ifdef __cplusplus
+#ifdef INCLUDE_ALGORITHM
 # include <algorithm>
+#endif
 # include <cstring>
+# include <new>
 # include <utility>
 #endif
 

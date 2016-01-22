@@ -1,3 +1,17 @@
+2016-01-22  Michael Matz  <matz@suse.de>
+
+	* system.h (string, algorithm): Include only conditionally.
+	(new): Include always under C++.
+	* bb-reorder.c (toplevel): Define INCLUDE_ALGORITHM.
+	* final.c (toplevel): Ditto.
+	* ipa-chkp.c (toplevel): Define INCLUDE_STRING.
+	* genconditions.c (write_header): Make gencondmd.c define
+	INCLUDE_STRING.
+	* mem-stats.h (mem_usage::print_dash_line): Don't use std::string.
+
+	* config/aarch64/aarch64.c (toplevel): Define INCLUDE_STRING.
+	* common/config/aarch64/aarch64-common.c (toplevel): Ditto.
+
 2016-01-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/pr63354.c: Restrict to Linux targets with
