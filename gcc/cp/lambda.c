@@ -207,15 +207,8 @@ tree
 lambda_capture_field_type (tree expr, bool explicit_init_p)
 {
   tree type;
-  if (explicit_init_p)
-    {
-      type = make_auto ();
-      type = do_auto_deduction (type, expr, type);
-    }
-  else
-    type = non_reference (unlowered_expr_type (expr));
-  if (type_dependent_expression_p (expr)
-      && !is_this_parameter (tree_strip_nop_conversions (expr)))
+  bool is_this = is_this_parameter (tree_strip_nop_conversions (expr));
+  if (!is_this && type_dependent_expression_p (expr))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
@@ -223,6 +216,13 @@ lambda_capture_field_type (tree expr, bool explicit_init_p)
       DECLTYPE_FOR_INIT_CAPTURE (type) = explicit_init_p;
       SET_TYPE_STRUCTURAL_EQUALITY (type);
     }
+  else if (!is_this && explicit_init_p)
+    {
+      type = make_auto ();
+      type = do_auto_deduction (type, expr, type);
+    }
+  else
+    type = non_reference (unlowered_expr_type (expr));
   return type;
 }
 

@@ -1,5 +1,9 @@
 2016-01-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/69392
+	* lambda.c (lambda_capture_field_type): Handle 'this' specially
+	for init-capture, too.
+
 	PR c++/65687
 	* decl.c (type_is_deprecated): Don't look into a typedef.
 
