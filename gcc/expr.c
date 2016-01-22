@@ -9597,7 +9597,16 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       decl_rtl = DECL_RTL (exp);
     expand_decl_rtl:
       gcc_assert (decl_rtl);
-      decl_rtl = copy_rtx (decl_rtl);
+
+      /* DECL_MODE might change when TYPE_MODE depends on attribute target
+	 settings for VECTOR_TYPE_P that might switch for the function.  */
+      if (currently_expanding_to_rtl
+	  && code == VAR_DECL && MEM_P (decl_rtl)
+	  && VECTOR_TYPE_P (type) && exp && DECL_MODE (exp) != mode)
+	decl_rtl = change_address (decl_rtl, TYPE_MODE (type), 0);
+      else
+	decl_rtl = copy_rtx (decl_rtl);
+
       /* Record writes to register variables.  */
       if (modifier == EXPAND_WRITE
 	  && REG_P (decl_rtl)
