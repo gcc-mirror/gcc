@@ -238,11 +238,8 @@ arm_pragma_target_parse (tree args, tree pop_target)
 	 compiler predefined macros.  */
       cpp_options *cpp_opts = cpp_get_options (parse_in);
       unsigned char saved_warn_unused_macros = cpp_opts->warn_unused_macros;
-      unsigned char saved_warn_builtin_macro_redefined
-	= cpp_opts->warn_builtin_macro_redefined;
 
       cpp_opts->warn_unused_macros = 0;
-      cpp_opts->warn_builtin_macro_redefined = 0;
 
       /* Update macros.  */
       gcc_assert (cur_opt->x_target_flags == target_flags);
@@ -261,7 +258,6 @@ arm_pragma_target_parse (tree args, tree pop_target)
 
       arm_cpu_builtins (parse_in);
 
-      cpp_opts->warn_builtin_macro_redefined = saved_warn_builtin_macro_redefined;
       cpp_opts->warn_unused_macros = saved_warn_unused_macros;
     }
 
