@@ -41,19 +41,27 @@ struct gtm_thread;
 // read-to-write upgrades do not have a higher priority than writers.
 //
 // Do not change the layout of this class; it must remain a POD type with
-// standard layout, and the WRITERS field must be first (i.e., so the
+// standard layout, and the writers field must be first (i.e., so the
 // assembler code can assume that its address is equal to the address of the
-// respective instance of the class).
+// respective instance of the class), and htm_fastpath must be second.
 
 class gtm_rwlock
 {
-  // TODO Put futexes on different cachelines?
   std::atomic<int> writers;       // Writers' futex.
+  // We put the HTM fastpath control variable here so that HTM fastpath
+  // transactions can check efficiently whether they are allowed to run.
+  // This must be accessed atomically because threads can load this value
+  // when they are neither a registered reader nor writer (i.e., when they
+  // attempt to execute the HTM fastpath).
+  std::atomic<uint32_t> htm_fastpath;
+  // TODO Put these futexes on different cachelines?  (writers and htm_fastpath
+  // should remain on the same cacheline.
   std::atomic<int> writer_readers;// A confirmed writer waits here for readers.
   std::atomic<int> readers;       // Readers wait here for writers (iff true).
 
  public:
-  gtm_rwlock() : writers(0), writer_readers(0), readers(0) {};
+  gtm_rwlock() : writers(0), htm_fastpath(0), writer_readers(0), readers(0)
+  { }
 
   void read_lock (gtm_thread *tx);
   void read_unlock (gtm_thread *tx);
@@ -64,12 +72,28 @@ class gtm_rwlock
   bool write_upgrade (gtm_thread *tx);
   void write_upgrade_finish (gtm_thread *tx);
 
-  // Returns true iff there is a concurrent active or waiting writer.
-  // This is primarily useful for simple HyTM approaches, and the value being
-  // checked is loaded with memory_order_relaxed.
-  bool is_write_locked()
+  // Returns true iff there is a concurrent active or waiting writer, or
+  // htm_fastpath is zero. This is primarily useful for simple HyTM
+  // approaches, and the values being checked are loaded with
+  // memory_order_relaxed.
+  bool htm_fastpath_disabled ()
   {
-    return writers.load (memory_order_relaxed) != 0;
+    return writers.load (memory_order_relaxed) != 0
+	|| htm_fastpath.load (memory_order_relaxed) == 0;
+  }
+
+  // This does not need to return an exact value, hence relaxed MO is
+  // sufficient.
+  uint32_t get_htm_fastpath ()
+  {
+    return htm_fastpath.load (memory_order_relaxed);
+  }
+  // This must only be called while having acquired the write lock, and other
+  // threads do not need to load an exact value; hence relaxed MO is
+  // sufficient.
+  void set_htm_fastpath (uint32_t val)
+  {
+    htm_fastpath.store (val, memory_order_relaxed);
   }
 
  protected:

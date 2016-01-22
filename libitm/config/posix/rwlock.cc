@@ -31,6 +31,7 @@ namespace GTM HIDDEN {
 
 gtm_rwlock::gtm_rwlock()
   : summary (0),
+    htm_fastpath (0),
     mutex (PTHREAD_MUTEX_INITIALIZER),
     c_readers (PTHREAD_COND_INITIALIZER),
     c_writers (PTHREAD_COND_INITIALIZER),
