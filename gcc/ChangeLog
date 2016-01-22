@@ -1,6 +1,6 @@
 2016-01-22  Christian Bruel  <christian.bruel@st.com>
 
-	* config/arm/arm-c.c (arm_pragma_target_parse)
+	* config/arm/arm-c.c (arm_pragma_target_parse):
 	Remove warn_builtin_macro_redefined overwrite.
 
 2016-01-22  Eric Botcazou  <ebotcazou@adacore.com>
