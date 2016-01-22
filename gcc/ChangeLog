@@ -1,3 +1,8 @@
+2016-01-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-inline.c (can_inline_edge_p): Back out overzealous check on
+	flag_non_call_exceptions compatibility.
+
 2016-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/66668
