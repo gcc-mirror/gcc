@@ -1,3 +1,13 @@
+2016-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69432
+	* config/i386/i386.c: Include dojump.h.
+	(expand_small_movmem_or_setmem,
+	expand_set_or_movmem_prologue_epilogue_by_misaligned_moves): Spelling
+	fixes.
+	(ix86_expand_set_or_movmem): Call do_pending_stack_adjust () early
+	if dynamic_check != -1.
+
 2016-01-21  Jeff Law  <law@redhat.com>
 
 	PR middle-end/69347

@@ -1,3 +1,8 @@
+2016-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69432
+	* g++.dg/opt/pr69432.C: New test.
+
 2016-01-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/pr63354c: Adjust target selector to include
