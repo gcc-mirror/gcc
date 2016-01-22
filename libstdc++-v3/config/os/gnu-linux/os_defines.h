@@ -45,4 +45,8 @@
 # undef _GLIBCXX_HAVE_GETS
 #endif
 
+// Glibc 2.23 removed the obsolete isinf and isnan declarations. Check the
+// version dynamically in case it has changed since libstdc++ was configured.
+#define _GLIBCXX_NO_OBSOLETE_ISINF_ISNAN_DYNAMIC __GLIBC_PREREQ(2,23)
+
 #endif
