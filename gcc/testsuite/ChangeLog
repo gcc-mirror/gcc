@@ -3,6 +3,11 @@
 	* gcc.target/powerpc/pr63354c: Adjust target selector to include
 	32-bit targets testing an -m64 multilib.
 
+2016-01-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr63354.c: Restrict to Linux targets with
+	64-bit support.
+
 2016-01-22  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.dg/vect/bb-slp-pr68892.c: Require vect_double.
