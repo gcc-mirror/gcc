@@ -431,12 +431,8 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 		 brought into a non-EH function unless we know that the callee
 		 does not throw.
 		 This is tracked by DECL_FUNCTION_PERSONALITY.  */
-	      || (check_match (flag_non_call_exceptions)
-		  /* TODO: We also may allow bringing !flag_non_call_exceptions
-		     to flag_non_call_exceptions function, but that may need
-		     extra work in tree-inline to add the extra EH edges.  */
-		  && (!opt_for_fn (callee->decl, flag_non_call_exceptions)
-		      || DECL_FUNCTION_PERSONALITY (callee->decl)))
+	      || (check_maybe_up (flag_non_call_exceptions)
+		  && DECL_FUNCTION_PERSONALITY (callee->decl))
 	      || (check_maybe_up (flag_exceptions)
 		  && DECL_FUNCTION_PERSONALITY (callee->decl))
 	      /* Strictly speaking only when the callee contains function
