@@ -1,3 +1,10 @@
+2016-01-21  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/68674
+	* gcc.target/i386/pr68674.c
+	* gcc.target/aarch64/pr68674.c
+	* gcc.target/arm/pr68674.c
+
 2016-01-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/69403
