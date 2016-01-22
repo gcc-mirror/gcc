@@ -1,3 +1,9 @@
+2016-01-22  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR testsuite/66877
+	* gcc.dg/vect/vect-over-widen-3-big-array.c: Only look for 1
+	vect_recog_over_widening_pattern in dump if we have vect_widen_shift.
+
 2016-01-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR testsuite/67489
