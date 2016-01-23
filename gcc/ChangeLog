@@ -1,3 +1,9 @@
+2016-01-23  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69426
+	* tree-parloops.c (eliminate_local_variables_stmt): Handle vdef of
+	removed clobber.
+
 2016-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssanames.c (release_free_names_and_compact_live_names): Replace
