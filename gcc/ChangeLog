@@ -1,5 +1,20 @@
 2016-01-23  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-ssanames.c (release_free_names_and_compact_live_names): Replace
+	"the the" with "the" in the comments.
+	* ipa-devirt.c (build_type_inheritance_graph,
+	update_type_inheritance_graph): Likewise.
+	* tree.c (build_function_type_list_1): Likewise.
+	* cfgloopmanip.c (scale_loop_profile): Likewise.
+	* tree-ssa-loop-ivopts.c (get_shiftadd_cost): Likewise.
+	* gimple-ssa-split-paths.c
+	(find_block_to_duplicate_for_splitting_paths): Likewise.
+	* tree-sra.c (init_subtree_with_zero, clobber_subtree): Likewise.
+	* expr.c (convert_move): Likewise.
+	* var-tracking.c (vt_stack_adjustments): Likewise.
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Likewise.
+	* tree-vrp.c (test_for_singularity): Likewise.
+
 	* tree-vect-stmts.c (vectorizable_condition): Build a VEC_COND_EXPR
 	directly instead of building a temporary tree.
 

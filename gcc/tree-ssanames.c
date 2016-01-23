@@ -759,8 +759,8 @@ replace_ssa_name_symbol (tree ssa_name, tree sym)
   TREE_TYPE (ssa_name) = TREE_TYPE (sym);
 }
 
-/* Release the vector of free SSA_NAMEs and compact the the
-   vector of SSA_NAMEs that are live.  */
+/* Release the vector of free SSA_NAMEs and compact the vector of SSA_NAMEs
+   that are live.  */
 
 static void
 release_free_names_and_compact_live_names (function *fun)

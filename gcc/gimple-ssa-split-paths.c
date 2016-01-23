@@ -74,7 +74,7 @@ find_block_to_duplicate_for_splitting_paths (basic_block latch)
 	    return NULL;
 
 	  /* And that BB's immediate dominator's successors are the
-	     the predecessors of BB.  */
+	     predecessors of BB.  */
 	  if (!find_edge (bb_idom, EDGE_PRED (bb, 0)->src)
 	      || !find_edge (bb_idom, EDGE_PRED (bb, 1)->src))
 	    return NULL;

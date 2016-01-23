@@ -569,7 +569,7 @@ scale_loop_profile (struct loop *loop, int scale, gcov_type iteration_bound)
 	}
 
       /* Roughly speaking we want to reduce the loop body profile by the
-	 the difference of loop iterations.  We however can do better if
+	 difference of loop iterations.  We however can do better if
 	 we look at the actual profile, if it is available.  */
       scale = RDIV (iteration_bound * scale, iterations);
       if (loop->header->count)

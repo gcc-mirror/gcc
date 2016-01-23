@@ -2813,7 +2813,7 @@ generate_subtree_copies (struct access *access, tree agg,
 }
 
 /* Assign zero to all scalar replacements in an access subtree.  ACCESS is the
-   the root of the subtree to be processed.  GSI is the statement iterator used
+   root of the subtree to be processed.  GSI is the statement iterator used
    for inserting statements which are added after the current statement if
    INSERT_AFTER is true or before it otherwise.  */
 
@@ -2853,7 +2853,7 @@ init_subtree_with_zero (struct access *access, gimple_stmt_iterator *gsi,
     init_subtree_with_zero (child, gsi, insert_after, loc);
 }
 
-/* Clobber all scalar replacements in an access subtree.  ACCESS is the the
+/* Clobber all scalar replacements in an access subtree.  ACCESS is the
    root of the subtree to be processed.  GSI is the statement iterator used
    for inserting statements which are added after the current statement if
    INSERT_AFTER is true or before it otherwise.  */
