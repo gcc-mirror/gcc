@@ -1,3 +1,9 @@
+2016-01-23  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69426
+	* tree-parloops.c (eliminate_local_variables_stmt): Handle vdef of
+	removed clobber.
+
 2016-01-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline

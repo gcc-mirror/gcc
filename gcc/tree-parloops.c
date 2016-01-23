@@ -741,6 +741,7 @@ eliminate_local_variables_stmt (edge entry, gimple_stmt_iterator *gsi,
     }
   else if (gimple_clobber_p (stmt))
     {
+      unlink_stmt_vdef (stmt);
       stmt = gimple_build_nop ();
       gsi_replace (gsi, stmt, false);
       dta.changed = true;
