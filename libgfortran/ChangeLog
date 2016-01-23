@@ -1,3 +1,10 @@
+2016-01-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libfortran/68744
+	* runtime/backtrace.c: Include gthr.h.
+	(show_backtrace): Use __gthread_active_p() to determine whether threads
+	are active.  Return if lbstate is NULL.
+
 2016-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* intrinsics/execute_command_line.c (set_cmdstat): Use "%s", msg
