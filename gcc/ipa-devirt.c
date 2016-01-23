@@ -2246,7 +2246,7 @@ build_type_inheritance_graph (void)
     odr_vtable_hash = new odr_vtable_hash_type (23);
 
   /* We reconstruct the graph starting of types of all methods seen in the
-     the unit.  */
+     unit.  */
   FOR_EACH_SYMBOL (n)
     if (is_a <cgraph_node *> (n)
 	&& DECL_VIRTUAL_P (n->decl)
@@ -3406,7 +3406,7 @@ update_type_inheritance_graph (void)
   free_polymorphic_call_targets_hash ();
   timevar_push (TV_IPA_INHERITANCE);
   /* We reconstruct the graph starting from types of all methods seen in the
-     the unit.  */
+     unit.  */
   FOR_EACH_FUNCTION (n)
     if (DECL_VIRTUAL_P (n->decl)
 	&& !n->definition

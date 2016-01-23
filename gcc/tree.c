@@ -8406,7 +8406,7 @@ build_function_type (tree value_type, tree arg_types)
 
 /* Build a function type.  The RETURN_TYPE is the type returned by the
    function.  If VAARGS is set, no void_type_node is appended to the
-   the list.  ARGP must be always be terminated be a NULL_TREE.  */
+   list.  ARGP must be always be terminated be a NULL_TREE.  */
 
 static tree
 build_function_type_list_1 (bool vaargs, tree return_type, va_list argp)

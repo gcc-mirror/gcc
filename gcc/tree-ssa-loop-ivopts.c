@@ -4234,7 +4234,7 @@ get_address_cost (bool symbol_present, bool var_present,
 }
 
  /* Calculate the SPEED or size cost of shiftadd EXPR in MODE.  MULT is the
-    the EXPR operand holding the shift.  COST0 and COST1 are the costs for
+    EXPR operand holding the shift.  COST0 and COST1 are the costs for
     calculating the operands of EXPR.  Returns true if successful, and returns
     the cost in COST.  */
 

@@ -485,7 +485,7 @@ convert_move (rtx to, rtx from, int unsignedp)
       /* No special multiword conversion insn; do it by hand.  */
       start_sequence ();
 
-      /* Since we will turn this into a no conflict block, we must ensure the
+      /* Since we will turn this into a no conflict block, we must ensure
          the source does not overlap the target so force it into an isolated
          register when maybe so.  Likewise for any MEM input, since the
          conversion sequence might require several references to it and we
