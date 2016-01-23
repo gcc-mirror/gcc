@@ -1,3 +1,13 @@
+2016-01-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/chkp-strlen-2.c: Define _GNU_SOURCE.
+	* gcc.target/i386/chkp-strlen-4.c: Move the definition of
+	_GNU_SOURCE from compile flags to the source.
+	* gcc.target/i386/chkp-stropt-12.c: Ditto.
+	* gcc.target/i386/chkp-stropt-16.c: Ditto.
+	* gcc.target/i386/chkp-stropt-4.c: Ditto.
+	* gcc.target/i386/chkp-stropt-8.c: Ditto.
+
 2016-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69432
@@ -43,9 +53,9 @@
 2016-01-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR testsuite/67489
-	* gcc.target/powerpc/p8vector-builtin-8.c: Remove { target int128
-	} from dg-do compile directive, and instead add {
-	dg-require-effective-target int128 }.
+	* gcc.target/powerpc/p8vector-builtin-8.c: Remove { target int128 }
+	from dg-do compile directive, and instead add
+	{ dg-require-effective-target int128 }.
 
 2016-01-20  Martin Sebor  <msebor@redhat.com>
 
@@ -60,7 +70,7 @@
 2016-01-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/65996
-	gfortran.dg/pr65996.f90: New test.
+	* gfortran.dg/pr65996.f90: New test.
 
 2016-01-21  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
@@ -111,7 +121,7 @@
 2016-01-21  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
-        * gcc.dg/graphite/pr68976.c: New test.
+	* gcc.dg/graphite/pr68976.c: New test.
 
 2016-01-21  Jakub Jelinek  <jakub@redhat.com>
 
