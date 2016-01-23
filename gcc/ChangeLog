@@ -1,5 +1,8 @@
 2016-01-23  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-vect-stmts.c (vectorizable_condition): Build a VEC_COND_EXPR
+	directly instead of building a temporary tree.
+
 	PR bootstrap/69434
 	* genrecog.c: Define INCLUDE_ALGORITHM before including system.h,
 	remove <algorithm> include.
