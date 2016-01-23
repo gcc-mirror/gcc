@@ -1,3 +1,8 @@
+2016-01-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libstdc++/69446
+	* config/os/hpux/os_defines.h (_GLIBCXX_USE_WEAK_REF): Define.
+
 2016-01-22  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	TR29124 C++ Special Math - <math.h> pulls funcs into global namespace.
