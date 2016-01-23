@@ -24,6 +24,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 
+#include <gthr.h>
+
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -137,7 +139,11 @@ show_backtrace (bool in_signal_handler)
   struct backtrace_state *lbstate;
   struct mystate state = { 0, false, in_signal_handler };
  
-  lbstate = backtrace_create_state (NULL, 1, error_callback, NULL);
+  lbstate = backtrace_create_state (NULL, __gthread_active_p (),
+				    error_callback, NULL);
+
+  if (lbstate == NULL)
+    return;
 
   if (!BACKTRACE_SUPPORTED || (in_signal_handler && BACKTRACE_USES_MALLOC))
     {
