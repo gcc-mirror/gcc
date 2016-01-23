@@ -1,3 +1,10 @@
+2016-01-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/58109
+	PR c++/69022
+	* g++.dg/cpp0x/alignas5.C: New test.
+	* g++.dg/ext/vector29.C: Same.
+
 2016-01-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/chkp-strlen-2.c: Define _GNU_SOURCE.

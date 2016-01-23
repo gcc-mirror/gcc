@@ -1193,7 +1193,8 @@ is_late_template_attribute (tree attr, tree decl)
 	 second and following arguments.  Attributes like mode, format,
 	 cleanup and several target specific attributes aren't late
 	 just because they have an IDENTIFIER_NODE as first argument.  */
-      if (arg == args && identifier_p (t))
+      if (arg == args && attribute_takes_identifier_p (name)
+	  && identifier_p (t))
 	continue;
 
       if (value_dependent_expression_p (t)
