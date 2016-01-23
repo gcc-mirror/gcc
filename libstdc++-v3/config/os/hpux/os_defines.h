@@ -99,6 +99,9 @@ typedef long int __padding_type;
    to null pointers when weak symbol support is on.  */
 #define _GLIBCXX_GTHREAD_USE_WEAK 0
 
+// No support for referencing weak symbols without a definition.
+#define _GLIBCXX_USE_WEAK_REF 0
+
 // The strtold function is obsolete and not C99 conformant on PA HP-UX.
 // It returns plus or minus _LDBL_MAX instead of plus or minus HUGE_VALL
 // if the correct value would cause overflow.  It doesn't handle "inf",
