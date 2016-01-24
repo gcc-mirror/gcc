@@ -1,3 +1,12 @@
+2016-01-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/69397
+	PR fortran/68442
+	* interface.c (gfc_arglist_matches_symbol): Replace assert with
+	a return false if not a procedure.
+	* resolve.c (resolve_generic_f): Test if we are resolving an
+	initialization expression and adjust error message accordingly.
+
 2016-01-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/66094
