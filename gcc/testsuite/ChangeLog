@@ -1,3 +1,20 @@
+2016-01-24  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	Revert:
+	2016-01-18  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/11858
+	PR c++/24663
+	PR c++/24664
+	* g++.dg/template/pr11858.C: New test.
+	* g++.dg/template/pr24663.C: New test.
+	* g++.dg/template/unify12.C: New test.
+	* g++.dg/template/unify13.C: New test.
+	* g++.dg/template/unify14.C: New test.
+	* g++.dg/template/unify15.C: New test.
+	* g++.dg/template/unify16.C: New test.
+	* g++.dg/template/unify17.C: New test.
+
 2016-01-24  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/68283
