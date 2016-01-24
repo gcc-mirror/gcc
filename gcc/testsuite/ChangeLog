@@ -1,3 +1,10 @@
+2016-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/69397
+	PR fortran/68442
+	* gfortran.dg/interface_38.f90: New test.
+	* gfortran.dg/interface_39.f90: New test.
+	
 2016-01-24  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	Revert:

@@ -3506,7 +3506,8 @@ gfc_arglist_matches_symbol (gfc_actual_arglist** args, gfc_symbol* sym)
   gfc_formal_arglist *dummy_args;
   bool r;
 
-  gcc_assert (sym->attr.flavor == FL_PROCEDURE);
+  if (sym->attr.flavor != FL_PROCEDURE)
+    return false;
 
   dummy_args = gfc_sym_get_dummy_args (sym);
 

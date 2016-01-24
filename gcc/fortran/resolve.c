@@ -2565,8 +2565,13 @@ generic:
      that possesses a matching interface.  14.1.2.4  */
   if (sym  && !intr && !gfc_is_intrinsic (sym, 0, expr->where))
     {
-      gfc_error ("There is no specific function for the generic %qs "
-		 "at %L", expr->symtree->n.sym->name, &expr->where);
+      if (gfc_init_expr_flag)
+	gfc_error ("Function %qs in initialization expression at %L "
+		   "must be an intrinsic function",
+		   expr->symtree->n.sym->name, &expr->where);
+      else
+	gfc_error ("There is no specific function for the generic %qs "
+		   "at %L", expr->symtree->n.sym->name, &expr->where);
       return false;
     }
 
