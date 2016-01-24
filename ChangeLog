@@ -1,3 +1,9 @@
+2016-01-24  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR bootstrap/69329
+	* Makefile.tpl (BASE_FLAGS_TO_PASS): Add LSAN_OPTIONS.
+	* Makefile.in: Regenerate.
+
 2016-01-12  Andris Pavenis  <andris.pavenis@iki.fi>
 
 	* configure.ac: Enable LTO for DJGPP
