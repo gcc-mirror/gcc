@@ -1,3 +1,14 @@
+2016-01-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66094
+	* frontend-passes.c (enum matrix_case):  Add case A2B2T for
+	MATMUL(A,TRANSPoSE(B)) where A and B are rank 2.
+	(inline_limit_check):  Also add A2B2T.
+	(matmul_lhs_realloc):  Handle A2B2T.
+	(check_conjg_variable):  Rename to
+	(check_conjg_transpose_variable):  and also count TRANSPOSE.
+	(inline_matmul_assign):  Handle A2B2T.
+
 2016-01-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/65996
