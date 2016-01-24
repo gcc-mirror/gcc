@@ -2194,7 +2194,7 @@ check_substring:
 symbol_attribute
 gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 {
-  int dimension, codimension, pointer, allocatable, target, n;
+  int dimension, codimension, pointer, allocatable, target;
   symbol_attribute attr;
   gfc_ref *ref;
   gfc_symbol *sym;
@@ -2253,22 +2253,9 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 	  case AR_UNKNOWN:
 	    /* If any of start, end or stride is not integer, there will
 	       already have been an error issued.  */
-	    for (n = 0; n < ref->u.ar.as->rank; n++)
-	      {
-		int errors;
-		gfc_get_errors (NULL, &errors);
-		if (((ref->u.ar.start[n]
-		      && ref->u.ar.start[n]->ts.type == BT_UNKNOWN)
-		     ||
-		     (ref->u.ar.end[n]
-		      && ref->u.ar.end[n]->ts.type == BT_UNKNOWN)
-		     ||
-		     (ref->u.ar.stride[n]
-		      && ref->u.ar.stride[n]->ts.type == BT_UNKNOWN))
-		    && errors > 0)
-		  break;
-	      }
-	    if (n == ref->u.ar.as->rank)
+	    int errors;
+	    gfc_get_errors (NULL, &errors);
+	    if (errors == 0)
 	      gfc_internal_error ("gfc_variable_attr(): Bad array reference");
 	  }
 
