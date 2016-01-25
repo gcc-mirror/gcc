@@ -784,3 +784,14 @@
 
 (define_predicate "any_mem_operand"
   (match_code "mem"))
+
+; Special predicate to match even-odd double register pair
+(define_predicate "even_register_operand"
+  (match_code "reg")
+  {
+   if ((GET_MODE (op) != mode) && (mode != VOIDmode))
+      return 0;
+
+   return (REG_P (op) && ((REGNO (op) >= FIRST_PSEUDO_REGISTER)
+			  || ((REGNO (op) & 1) == 0)));
+  })
