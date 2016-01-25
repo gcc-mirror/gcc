@@ -1,6 +1,12 @@
+2016-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69444
+	* config/rs6000/sfp-machine.h: Fix a typo in #ifndef - __NO_FPRS__
+	instead of ___NO_FPRS__.
+
 2016-01-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
-	    Steven Munroe <munroesj@linux.vnet.ibm.com>
-	    Tulio Magno Quites Machado Filho <tulioqm@br.ibm.com>
+	    Steven Munroe  <munroesj@linux.vnet.ibm.com>
+	    Tulio Magno Quites Machado Filho  <tulioqm@br.ibm.com>
 
 	* config/rs6000/float128-sed: New files to convert TF names to KF
 	names for PowerPC IEEE 128-bit floating point support.
@@ -106,8 +112,8 @@
 	* libgcc/configure.ac: Likewise.
 
 2016-01-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
-	    Steven Munroe <munroesj@linux.vnet.ibm.com>
-	    Tulio Magno Quites Machado Filho <tulioqm@br.ibm.com>
+	    Steven Munroe  <munroesj@linux.vnet.ibm.com>
+	    Tulio Magno Quites Machado Filho  <tulioqm@br.ibm.com>
 
 	* config/rs6000/sfp-exceptions.c: New file to provide exception
 	support for IEEE 128-bit floating point.
@@ -317,7 +323,7 @@
 	* config/rl78/divmodhi.S: Update return register to r8,r9.
 	Branch to main_loop_done_himode to pop registers before return.
 
-2015-10-09  Venkataramanan kumar <venkataramanan.kumar@amd.com>
+2015-10-09  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	* config/i386/cpuinfo.c (get_amd_cpu): Detect bdver4.
 	(__cpu_indicator_init): Fix model selection for AMD CPUs.
@@ -476,7 +482,7 @@
 	(SYNC_LOCK_RELEASE_2): Likewise.
 	(__sync_bool_compare_and_swap_##WIDTH): Correct return.
 
-2015-09-22  Kirill Yukhin <kirill.yukhin@intel.com>
+2015-09-22  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* libgcc/config/i386/cpuinfo.c (enum processor_features): Add
 	FEATURE_AVX512VL, FEATURE_AVX512BW, FEATURE_AVX512DQ,
@@ -658,7 +664,7 @@
 
 	* Makefile.in (CRTSTUFF_CFLAGS): Add $(NO_PIE_CFLAGS).
 
-2015-05-27  John Marino <gnugcc@marino.st>
+2015-05-27  John Marino  <gnugcc@marino.st>
 
 	* config.host (i[34567]86-*-freebsd*, x86_64-*-freebsd*): Set
 	md_unwind_header
@@ -989,7 +995,7 @@
 	func_ptr *dtor_list temporary variable to avoid "array subscript
 	is above array bounds" warnings.
 
-2014-12-09  Michael Haubenwallner <michael.haubenwallner@ssi-schaefer.com>
+2014-12-09  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* Makefile.in (with_aix_soname): Define.
 	* config/rs6000/t-slibgcc-aix: Act upon --with-aix-soname option.
@@ -1150,10 +1156,10 @@
 	introduced with 2014-10-21 trunk r216525.
 
 2014-10-21  Joern Rennecke  <joern.rennecke@embecosm.com>
-	    Vidya Praveen <vidya.praveen@atmel.com>
-	    Praveen Kumar Kaushik <Praveen_Kumar.Kaushik@atmel.com>
-	    Senthil Kumar Selvaraj <Senthil_Kumar.Selvaraj@atmel.com>
-	    Pitchumani Sivanupandi <Pitchumani.S@atmel.com>
+	    Vidya Praveen  <vidya.praveen@atmel.com>
+	    Praveen Kumar Kaushik  <Praveen_Kumar.Kaushik@atmel.com>
+	    Senthil Kumar Selvaraj  <Senthil_Kumar.Selvaraj@atmel.com>
+	    Pitchumani Sivanupandi  <Pitchumani.S@atmel.com>
 
 	* config/avr/lib1funcs.S (__do_global_dtors): Go back to descending
 	order.
@@ -2125,7 +2131,7 @@
 	(__atomic_nand_fetch_4): Add prefix op.
 	(__atomic_nand_fetch_8): Ditto.
 
-2014-01-21  Baruch Siach <barch@tkos.co.il>
+2014-01-21  Baruch Siach  <barch@tkos.co.il>
 
 	* config.host (tmake_file): add t-slibgcc-libgcc for xtensa*-*-linux*.
 
@@ -2664,7 +2670,7 @@
 
 2013-08-16  Maciej W. Rozycki  <macro@codesourcery.com>
 	    Catherine Moore  <clm@codesourcery.com>
-	    Richard Sandiford <rdsandiford@googlemail.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips16.S (CE_STARTFN, CE_ENDFN): New macros.
 	(RET_FUNCTION): Use them in place of STARTFN and ENDFN.
@@ -3189,13 +3195,13 @@
 	PR bootstrap/55571
 	* Makefile.in (libgcc_s.so): Depend on and link with libgcc.a.
 
-2012-12-04  Marcus Shawcroft <marcus.shawcroft@arm.com>
+2012-12-04  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/aarch64/sfp-machine.h (FP_EX_ALL): Define.
 	(FP_EX_SHIFT): Define.
 	(FP_TRAPPING_EXCEPTIONS): Define.
 
-2012-12-04  Marcus Shawcroft <marcus.shawcroft@arm.com>
+2012-12-04  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/aarch64/sfp-machine.h (FP_RND_MASK): Define.
 	(FP_ROUNDMODE): Use FP_RND_MASK.
@@ -3262,7 +3268,7 @@
 	* libgcov.c (gcov_exit): Remove merged program summary
 	comparison unless !GCOV_LOCKED.
 
-2012-11-15  Marcus Shawcroft <marcus.shawcroft@arm.com>
+2012-11-15  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* soft-fp: Updated from glibc upstream.
 
@@ -3304,11 +3310,11 @@
 	* config/i386/t-crtfm (crtfastmath.o): Compile with -mfxsr, remove
 	-minline-all-stringops from compile flags.
 
-2012-10-25  Ralf Corsépius <ralf.corsepius@rtems.org>
+2012-10-25  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config.host (sparc64-*-rtems*): Remove sparc/t-elf.
 
-2012-10-25  Ralf Corsépius <ralf.corsepius@rtems.org>
+2012-10-25  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config.host (sh*-*-rtems*): Add sh*-*-elf*'s extra_parts.
 
@@ -3343,7 +3349,7 @@
 	Remove typo'd and unnecessary alignment-LOC for .data.  Remove
 	no-longer-needed LDBU insns.
 
-2012-10-18  Sebastian Huber <sebastian.huber@embedded-brains.de>
+2012-10-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config.host
 	(arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*): Rename
@@ -4115,8 +4121,8 @@
 	(__doTMdeRegistrations): Likewise.
 
 2012-01-15  Georg-Johann Lay  <avr@gjlay.de>
-	    Anatoly Sokolov <aesok@post.ru>
-	    Eric Weddington <eric.weddington@atmel.com>
+	    Anatoly Sokolov  <aesok@post.ru>
+	    Eric Weddington  <eric.weddington@atmel.com>
 
 	PR target/52261
 	* config/avr/lib1funcs.S (__prologue_saves__): Handle AVR_XMEGA
@@ -4162,8 +4168,8 @@
 	* config/mips/libgcc-mips16.ver: Revert previous patch.
 	* config/mips/mips16.S (__mips16_rdhwr): Hide.
 
-2012-02-02  Sumanth G <sumanth.gundapaneni@kpitcummins.com>
-	    Jayant R Sonar <jayant.sonar@kpitcummins.com>
+2012-02-02  Sumanth G  <sumanth.gundapaneni@kpitcummins.com>
+	    Jayant R Sonar  <jayant.sonar@kpitcummins.com>
 
 	* config.host: Add National Semiconductor CR16 target (cr16-*-*).
 	* config/cr16/crti.S: New file.
@@ -6626,7 +6632,7 @@
 	to tmake_file.  Add crtfastmath.o to extra_parts.
 	* config/mips/t-crtfm: New.
 
-2010-05-19  Joel Sherrill <joel.sherrill@oarcorp.com>
+2010-05-19  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* config.host (sparc64-*-rtems*): New target.
 
@@ -6644,12 +6650,12 @@
 	* config.host (alpha*-dec-osf[45]*): Removed alpha*-dec-osf4*,
 	alpha-dec-osf5.0* support.
 
-2010-04-01  Ralf Corsépius <ralf.corsepius@rtems.org>
+2010-04-01  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config.host: Add lm32-*-rtems*.
 
 2010-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
-	    Uros Bizjak <ubizjak@gmail.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/39048
 	* config.host (i[34567]86-*-solaris2): Handle 32-bit Solaris 2/x86
@@ -6659,7 +6665,7 @@
 	* config/i386/libgcc-sol2.ver: New file.
 	* config/i386/t-sol2 (SHLIB_MAPFILES): Add it.
 
-2010-03-30  Jack Howarth <howarth@bromo.med.uc.edu>
+2010-03-30  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR c/43553
 	* Makefile.in (INTERNAL_CFLAGS): Add @set_use_emutls@.
@@ -6706,14 +6712,14 @@
 	config/moxie/t-moxie: New files.
 	* config.host: Add t-moxie-softfp reference.
 
-2009-11-18  Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
+2009-11-18  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
 	PR other/39888
 	* config/t-slibgcc-darwin: Fix embedded rpaths for
 	--enable-version-specific-runtime-libs, build extension stub
 	libs exposing features available from current libgcc_s.
 
-2009-11-11  Jon Beniston <jon@beniston.com>
+2009-11-11  Jon Beniston  <jon@beniston.com>
 
 	* config.host: Add lm32 targets.
 	* config/lm32: New directory.
@@ -6822,7 +6828,7 @@
 	* config.host: Add moxie support.
 	* config/moxie/t-moxie: New file.
 
-2009-05-29  David Billinghurst <billingd@gcc.gnu.org>
+2009-05-29  David Billinghurst  <billingd@gcc.gnu.org>
 
 	* config.host: Add i386/${host_address}/t-fprules-softfp and
 	t-softfp to tmake_file for i[34567]86-*-cygwin*.
@@ -7054,11 +7060,11 @@
 	* config.host (powerpc64-*-linux*, powerpc64-*-gnu*): Add t-softfp.
 	(powerpc-*-linux*spe*, powerpc-*-linux*): Likewise.
 
-2009-01-05  Joel Sherrill <joel.sherrill@oarcorp.com>
+2009-01-05  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* config.host: Add m32r*-*-rtems*.
 
-2008-12-01  Joel Sherrill <joel.sherrill@oarcorp.com>
+2008-12-01  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* config.host: Add m32c*-*-rtems*.
 
