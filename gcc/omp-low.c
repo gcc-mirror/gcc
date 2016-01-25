@@ -15878,6 +15878,14 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    SET_DECL_VALUE_EXPR (new_var, x);
 	    DECL_HAS_VALUE_EXPR_P (new_var) = 1;
 	  }
+	else
+	  {
+	    tree new_var = lookup_decl (var, ctx);
+	    x = create_tmp_var_raw (TREE_TYPE (new_var), get_name (new_var));
+	    gimple_add_tmp_var (x);
+	    SET_DECL_VALUE_EXPR (new_var, x);
+	    DECL_HAS_VALUE_EXPR_P (new_var) = 1;
+	  }
 	break;
       }
 
@@ -16493,6 +16501,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			x = build_fold_addr_expr (v);
 		      }
 		  }
+		new_var = DECL_VALUE_EXPR (new_var);
 		x = fold_convert (TREE_TYPE (new_var), x);
 		gimplify_expr (&x, &new_body, NULL, is_gimple_val, fb_rvalue);
 		gimple_seq_add_stmt (&new_body,

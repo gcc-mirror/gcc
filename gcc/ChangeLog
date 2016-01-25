@@ -1,3 +1,9 @@
+2016-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_omp_target) <case USE_DEVICE_PTR>: Set
+	DECL_VALUE_EXPR of new_var even for the non-array case.  Look
+	through DECL_VALUE_EXPR for expansion.
+
 2016-01-25  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* config/mips/mips.c (mips_compute_frame_info): Skip re-computing
