@@ -87,7 +87,10 @@ pack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, TREE_ADDRESSABLE (expr), 1);
   bp_pack_value (bp, TREE_THIS_VOLATILE (expr), 1);
   if (DECL_P (expr))
-    bp_pack_value (bp, DECL_UNSIGNED (expr), 1);
+    {
+      bp_pack_value (bp, DECL_UNSIGNED (expr), 1);
+      bp_pack_value (bp, DECL_NAMELESS (expr), 1);
+    }
   else if (TYPE_P (expr))
     bp_pack_value (bp, TYPE_UNSIGNED (expr), 1);
   else

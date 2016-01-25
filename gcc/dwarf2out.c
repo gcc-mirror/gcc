@@ -23094,6 +23094,7 @@ is_naming_typedef_decl (const_tree decl)
 {
   if (decl == NULL_TREE
       || TREE_CODE (decl) != TYPE_DECL
+      || DECL_NAMELESS (decl)
       || !is_tagged_type (TREE_TYPE (decl))
       || DECL_IS_BUILTIN (decl)
       || is_redundant_typedef (decl)
