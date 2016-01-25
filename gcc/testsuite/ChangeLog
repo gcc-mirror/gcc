@@ -1,3 +1,16 @@
+2016-01-25  Bilyan Borisov  <bilyan.borisov@arm.com>
+
+	* gcc.target/aarch64/simd/vcvt_s64_f64_1.c: New.
+	* gcc.target/aarch64/simd/vcvt_u64_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vcvta_s64_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vcvta_u64_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vcvtm_s64_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vcvtm_u64_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vcvtn_s64_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vcvtn_u64_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vcvtp_s64_f64_1.c: Likewise.
+	* gcc.target/aarch64/simd/vcvtp_u64_f64_1.c: Likewise.
+
 2016-01-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69376
