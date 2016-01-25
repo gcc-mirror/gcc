@@ -1,3 +1,7 @@
+2016-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/goacc/use_device-1.c: New test.
+
 2016-01-25  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69196
