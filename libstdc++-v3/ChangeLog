@@ -1,3 +1,23 @@
+2016-01-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69464
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/random.h (uniform_int_distribution): Move to
+	bits/uniform_int_dist.h.
+	* include/bits/random.tcc (uniform_int_distribution::operator(),
+	uniform_int_distribution::__generate_impl): Likewise.
+	* include/bits/uniform_int_dist.h: New header.
+	* include/bits/stl_algo.h [__cplusplus >= 201103L]: Include
+	<bits/uniform_int_dist.h> instead of <random>.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/
+	move_iterators/1.cc: Include correct header for uninitialized_copy.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy_n/
+	move_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/nth_element/58800.cc: Include correct
+	header for vector.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error lines.
+
 2016-01-23  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR libstdc++/69446
