@@ -1,3 +1,16 @@
+2016-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69376
+	* tree-ssa-sccvn.h (struct vn_ssa_aux): Add range_info_anti_range_p
+	flag.
+	(VN_INFO_ANTI_RANGE_P): New inline.
+	(VN_INFO_RANGE_TYPE): Likewise.
+	* tree-ssa-sccvn.c (set_ssa_val_to): Also record and copy
+	SSA_NAME_ANTI_RANGE_P.
+	(free_scc_vn): Restore SSA_NAME_ANTI_RANGE_P.
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Properly query VN_INFO_RANGE_TYPE.
+
 2016-01-25  Nick Clifton  <nickc@redhat.com>
 
 	PR target/66655
