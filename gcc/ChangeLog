@@ -1,3 +1,8 @@
+2016-01-25  Nick Clifton  <nickc@redhat.com>
+
+	PR target/66655
+	* config/i386/cygming.h (MAKE_DECL_ONE_ONLY): Remove definition.
+
 2016-01-23  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69426

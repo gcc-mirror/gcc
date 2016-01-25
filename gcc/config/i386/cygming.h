@@ -433,10 +433,6 @@ do {						\
     }                                 \
   while (0)
 
-/* Use the weak support for ONE_ONLY decls.  */
-#undef  MAKE_DECL_ONE_ONLY
-#define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
-
 #endif /* HAVE_GAS_WEAK */
 
 /* FIXME: SUPPORTS_WEAK && TARGET_HAVE_NAMED_SECTIONS is true,
