@@ -6481,10 +6481,10 @@ integral type should be used.
 When attached to a @code{union} or a @code{struct}, this attribute sets
 the storage order, aka endianness, of the scalar fields of the type, as
 well as the array fields whose component is scalar.  The supported
-endianness are @code{big-endian} and @code{little-endian}.  The attribute
+endiannesses are @code{big-endian} and @code{little-endian}.  The attribute
 has no effects on fields which are themselves a @code{union}, a @code{struct}
 or an array whose component is a @code{union} or a @code{struct}, and it is
-possible to have fields with a different scalar storage order than the
+possible for these fields to have a different scalar storage order than the
 enclosing type.
 
 This attribute is supported only for targets that use a uniform default
