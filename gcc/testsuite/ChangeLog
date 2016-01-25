@@ -1,3 +1,8 @@
+2016-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/69380
+	* g++.dg/tree-ssa/pr69336.C: Restrict to x86_64 and i?86.
+
 2016-01-25  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/69421
