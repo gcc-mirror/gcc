@@ -7528,6 +7528,7 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   int nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  tree vectype1 = NULL_TREE, vectype2 = NULL_TREE;
 
   if (slp_node || PURE_SLP_STMT (stmt_info))
     ncopies = 1;
@@ -7547,9 +7548,17 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
     return false;
 
   gimple *def_stmt;
-  if (!vect_is_simple_use (then_clause, stmt_info->vinfo, &def_stmt, &dt))
+  if (!vect_is_simple_use (then_clause, stmt_info->vinfo, &def_stmt, &dt,
+			   &vectype1))
     return false;
-  if (!vect_is_simple_use (else_clause, stmt_info->vinfo, &def_stmt, &dt))
+  if (!vect_is_simple_use (else_clause, stmt_info->vinfo, &def_stmt, &dt,
+			   &vectype2))
+    return false;
+
+  if (vectype1 && !useless_type_conversion_p (vectype, vectype1))
+    return false;
+
+  if (vectype2 && !useless_type_conversion_p (vectype, vectype2))
     return false;
 
   masked = !COMPARISON_CLASS_P (cond_expr);
