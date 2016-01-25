@@ -13218,6 +13218,18 @@ vcvtq_u32_f32 (float32x4_t __a)
   return __builtin_aarch64_lbtruncuv4sfv4si_us (__a);
 }
 
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vcvt_s64_f64 (float64x1_t __a)
+{
+  return (int64x1_t) {vcvtd_s64_f64 (__a[0])};
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vcvt_u64_f64 (float64x1_t __a)
+{
+  return (uint64x1_t) {vcvtd_u64_f64 (__a[0])};
+}
+
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
 vcvtq_s64_f64 (float64x2_t __a)
 {
@@ -13278,6 +13290,18 @@ __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vcvtaq_u32_f32 (float32x4_t __a)
 {
   return __builtin_aarch64_lrounduv4sfv4si_us (__a);
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vcvta_s64_f64 (float64x1_t __a)
+{
+  return (int64x1_t) {vcvtad_s64_f64 (__a[0])};
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vcvta_u64_f64 (float64x1_t __a)
+{
+  return (uint64x1_t) {vcvtad_u64_f64 (__a[0])};
 }
 
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
@@ -13342,6 +13366,18 @@ vcvtmq_u32_f32 (float32x4_t __a)
   return __builtin_aarch64_lflooruv4sfv4si_us (__a);
 }
 
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vcvtm_s64_f64 (float64x1_t __a)
+{
+  return (int64x1_t) {vcvtmd_s64_f64 (__a[0])};
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vcvtm_u64_f64 (float64x1_t __a)
+{
+  return (uint64x1_t) {vcvtmd_u64_f64 (__a[0])};
+}
+
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
 vcvtmq_s64_f64 (float64x2_t __a)
 {
@@ -13404,6 +13440,18 @@ vcvtnq_u32_f32 (float32x4_t __a)
   return __builtin_aarch64_lfrintnuv4sfv4si_us (__a);
 }
 
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vcvtn_s64_f64 (float64x1_t __a)
+{
+  return (int64x1_t) {vcvtnd_s64_f64 (__a[0])};
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vcvtn_u64_f64 (float64x1_t __a)
+{
+  return (uint64x1_t) {vcvtnd_u64_f64 (__a[0])};
+}
+
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
 vcvtnq_s64_f64 (float64x2_t __a)
 {
@@ -13464,6 +13512,18 @@ __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vcvtpq_u32_f32 (float32x4_t __a)
 {
   return __builtin_aarch64_lceiluv4sfv4si_us (__a);
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vcvtp_s64_f64 (float64x1_t __a)
+{
+  return (int64x1_t) {vcvtpd_s64_f64 (__a[0])};
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vcvtp_u64_f64 (float64x1_t __a)
+{
+  return (uint64x1_t) {vcvtpd_u64_f64 (__a[0])};
 }
 
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
