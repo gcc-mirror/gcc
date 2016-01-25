@@ -1,3 +1,8 @@
+2016-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR lto/69393
+	* testsuite/libgomp.c++/pr69393.C: New testcase.
+
 2016-01-22  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* target.c (gomp_get_target_fn_addr): Allow host fallback if target

@@ -1,5 +1,13 @@
 2016-01-25  Richard Biener  <rguenther@suse.de>
 
+	PR lto/69393
+	* dwarf2out.c (is_naming_typedef_decl): Not when DECL_NAMELESS.
+	* tree-streamer-out.c (pack_ts_base_value_fields): Stream
+	DECL_NAMELESS.
+	* tree-streamer-in.c (unpack_ts_base_value_fields): Likewise.
+
+2016-01-25  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/69376
 	* tree-ssa-sccvn.h (struct vn_ssa_aux): Add range_info_anti_range_p
 	flag.
