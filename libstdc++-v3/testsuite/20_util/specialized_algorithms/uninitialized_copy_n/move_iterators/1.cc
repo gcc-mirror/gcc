@@ -21,7 +21,7 @@
 
 #undef _GLIBCXX_CONCEPT_CHECKS
 
-#include <algorithm>
+#include <memory>
 #include <iterator>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>

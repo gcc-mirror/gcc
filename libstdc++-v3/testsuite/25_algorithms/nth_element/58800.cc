@@ -20,6 +20,7 @@
 // { dg-options "-std=gnu++11" }
 
 #include <algorithm>
+#include <vector>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
