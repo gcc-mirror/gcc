@@ -1,3 +1,9 @@
+2016-01-25  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/69469
+	* gcc.target/powerpc/vsx-vector-2.c: Adjust for Goldschmidt's
+	Algorithm.
+
 2016-01-25  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/69380
