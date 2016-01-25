@@ -83,4 +83,4 @@ int main(void)
   return 0;
 }
 
-// { dg-final { scan-tree-dump-not "cmap" "optimized" } }
+// { dg-final { scan-tree-dump-not "cmap" "optimized" { target x86_64-*-* i?86-*-* } } }
