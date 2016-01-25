@@ -1663,16 +1663,6 @@ dbds_continue_enumeration_p (const_basic_block bb, const void *stop)
    returns the state.  */
 
 enum bb_dom_status
-{
-  /* BB does not dominate latch of the LOOP.  */
-  DOMST_NONDOMINATING,
-  /* The LOOP is broken (there is no path from the header to its latch.  */
-  DOMST_LOOP_BROKEN,
-  /* BB dominates the latch of the LOOP.  */
-  DOMST_DOMINATING
-};
-
-static enum bb_dom_status
 determine_bb_domination_status (struct loop *loop, basic_block bb)
 {
   basic_block *bblocks;
@@ -2389,73 +2379,14 @@ static bool
 valid_jump_thread_path (vec<jump_thread_edge *> *path)
 {
   unsigned len = path->length ();
-  bool threaded_multiway_branch = false;
-  bool multiway_branch_in_path = false;
-  bool threaded_through_latch = false;
 
-  /* Check that the path is connected and see if there's a multi-way
-     branch on the path and whether or not a multi-way branch
-     is threaded.  */
+  /* Check that the path is connected.  */
   for (unsigned int j = 0; j < len - 1; j++)
     {
       edge e = (*path)[j]->e;
-      struct loop *loop = e->dest->loop_father;
-
       if (e->dest != (*path)[j+1]->e->src)
 	return false;
-
-      /* If we're threading through the loop latch back into the
-	 same loop and the destination does not dominate the loop
-	 latch, then this thread would create an irreducible loop.  */
-      if (loop->latch
-	  && loop_latch_edge (loop) == e
-	  && loop == path->last()->e->dest->loop_father
-	  && (determine_bb_domination_status (loop, path->last ()->e->dest)
-	       == DOMST_NONDOMINATING))
-	threaded_through_latch = true;
-
-      gimple *last = last_stmt (e->dest);
-      if (j == len - 2)
-	threaded_multiway_branch
-	  |= (last && gimple_code (last) == GIMPLE_SWITCH);
-      else
-	multiway_branch_in_path
-	  |= (last && gimple_code (last) == GIMPLE_SWITCH);
     }
-
-  /* If we are trying to thread through the loop latch to a block in the
-     loop that does not dominate the loop latch, then that will create an
-     irreducible loop.  We avoid that unless the jump thread has a multi-way
-     branch, in which case we have deemed it worth losing other
-     loop optimizations later if we can eliminate the multi-way branch.  */
-  if (!threaded_multiway_branch && threaded_through_latch)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file,
-		   "Thread through latch without threading a multiway "
-		   "branch.\n");
-	  dump_jump_thread_path (dump_file, *path, false);
-	}
-      return false;
-    }
-
-  /* When there is a multi-way branch on the path, then threading can
-     explode the CFG due to duplicating the edges for that multi-way
-     branch.  So like above, only allow a multi-way branch on the path
-     if we actually thread a multi-way branch.  */
-  if (!threaded_multiway_branch && multiway_branch_in_path)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file,
-		   "Thread through multiway branch without threading "
-		   "a multiway branch.\n");
-	  dump_jump_thread_path (dump_file, *path, false);
-	}
-      return false;
-    }
-
   return true;
 }
 

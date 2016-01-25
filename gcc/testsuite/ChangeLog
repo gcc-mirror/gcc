@@ -1,3 +1,10 @@
+2016-01-25  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/69196
+	PR tree-optimization/68398
+	* gcc.dg/tree-ssa/pr66752-3.c: Update expected output
+	* gcc.dg/tree-ssa/pr68198.c: Likewise.
+
 2016-01-25  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/69469

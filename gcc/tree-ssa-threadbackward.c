@@ -223,8 +223,10 @@ fsm_find_control_statement_thread_paths (tree name,
       if (TREE_CODE (arg) != INTEGER_CST)
 	continue;
 
+      /* Note BBI is not in the path yet, hence the +1 in the test below
+	 to make sure BBI is accounted for in the path length test.  */
       int path_length = path->length ();
-      if (path_length > PARAM_VALUE (PARAM_MAX_FSM_THREAD_LENGTH))
+      if (path_length + 1 > PARAM_VALUE (PARAM_MAX_FSM_THREAD_LENGTH))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "FSM jump-thread path not considered: "
@@ -251,31 +253,112 @@ fsm_find_control_statement_thread_paths (tree name,
       int j;
       loop_p loop = (*path)[0]->loop_father;
       bool path_crosses_loops = false;
+      bool threaded_through_latch = false;
+      bool multiway_branch_in_path = false;
+      bool threaded_multiway_branch = false;
 
       /* Count the number of instructions on the path: as these instructions
 	 will have to be duplicated, we will not record the path if there are
 	 too many instructions on the path.  Also check that all the blocks in
 	 the path belong to a single loop.  */
-      for (j = 1; j < path_length - 1; j++)
+      for (j = 0; j < path_length; j++)
 	{
 	  basic_block bb = (*path)[j];
 
-	  if (bb->loop_father != loop)
+	  /* Remember, blocks in the path are stored in opposite order
+	     in the PATH array.  The last entry in the array reprensents
+	     the block with an outgoing edge that we will redirect to the
+	     jump threading path.  Thus we don't care about that block's
+	     loop father, nor how many statements are in that block because
+	     it will not be copied or whether or not it ends in a multiway
+	     branch.  */
+	  if (j < path_length - 1)
 	    {
-	      path_crosses_loops = true;
-	      break;
+	      if (bb->loop_father != loop)
+		{
+		  path_crosses_loops = true;
+		  break;
+		}
+
+	      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+		{
+		  gimple *stmt = gsi_stmt (gsi);
+		  /* Do not count empty statements and labels.  */
+		  if (gimple_code (stmt) != GIMPLE_NOP
+		      && gimple_code (stmt) != GIMPLE_LABEL
+		      && !(gimple_code (stmt) == GIMPLE_ASSIGN
+			   && gimple_assign_rhs_code (stmt) == ASSERT_EXPR)
+		      && !is_gimple_debug (stmt))
+		    ++n_insns;
+		}
+
+	      gphi_iterator gsip;
+	      for (gsip = gsi_start_phis (bb);
+		   !gsi_end_p (gsip);
+		   gsi_next (&gsip))
+		{
+		  gphi *phi = gsip.phi ();
+		  tree dst = gimple_phi_result (phi);
+
+		  /* We consider any non-virtual PHI as a statement since it
+		     count result in a constant assignment or copy
+		     operation.  */
+		  if (!virtual_operand_p (dst))
+		    ++n_insns;
+		}
+
+	      /* We do not look at the block with the threaded branch
+		 in this loop.  So if any block with a last statement that
+		 is a GIMPLE_SWITCH or GIMPLE_GOTO is seen, then we have a
+		 multiway branch on our path.
+
+		 The block in PATH[0] is special, it's the block were we're
+		 going to be able to eliminate its branch.  */
+	      gimple *last = last_stmt (bb);
+	      if (last && (gimple_code (last) == GIMPLE_SWITCH
+			   || gimple_code (last) == GIMPLE_GOTO))
+		{
+		  if (j == 0)
+		    threaded_multiway_branch = true;
+		  else
+		    multiway_branch_in_path = true;
+		}
 	    }
 
-	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	    {
-	      gimple *stmt = gsi_stmt (gsi);
-	      /* Do not count empty statements and labels.  */
-	      if (gimple_code (stmt) != GIMPLE_NOP
-		  && gimple_code (stmt) != GIMPLE_LABEL
-		  && !is_gimple_debug (stmt))
-		++n_insns;
-	    }
+	  /* Note if we thread through the latch, we will want to include
+	     the last entry in the array when determining if we thread
+	     through the loop latch.  */
+	  if (loop->latch == bb)
+	    threaded_through_latch = true;
 	}
+
+      gimple *stmt = get_gimple_control_stmt ((*path)[0]);
+      gcc_assert (stmt);
+      /* We have found a constant value for ARG.  For GIMPLE_SWITCH
+	 and GIMPLE_GOTO, we use it as-is.  However, for a GIMPLE_COND
+	 we need to substitute, fold and simplify so we can determine
+	 the edge taken out of the last block.  */
+      if (gimple_code (stmt) == GIMPLE_COND)
+	{
+	  enum tree_code cond_code = gimple_cond_code (stmt);
+
+	  /* We know the underyling format of the condition.  */
+	  arg = fold_binary (cond_code, boolean_type_node,
+			     arg, gimple_cond_rhs (stmt));
+	}
+
+      /* If this path threaded through the loop latch back into the
+	 same loop and the destination does not dominate the loop
+	 latch, then this thread would create an irreducible loop.
+
+	 We have to know the outgoing edge to figure this out.  */
+      edge taken_edge = find_taken_edge ((*path)[0], arg);
+      bool creates_irreducible_loop = false;
+      if (threaded_through_latch
+	  && loop == taken_edge->dest->loop_father
+	  && (determine_bb_domination_status (loop, taken_edge->dest)
+	      == DOMST_NONDOMINATING))
+	creates_irreducible_loop = true;
 
       if (path_crosses_loops)
 	{
@@ -296,6 +379,33 @@ fsm_find_control_statement_thread_paths (tree name,
 	  continue;
 	}
 
+      /* We avoid creating irreducible loops unless we thread through
+	 a multiway branch, in which case we have deemed it worth losing other
+	 loop optimizations later.  */
+      if (!threaded_multiway_branch && creates_irreducible_loop)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "FSM would create irreducible loop without threading "
+		     "multiway branch.\n");
+	  path->pop ();
+	  continue;
+	}
+
+      /* When there is a multi-way branch on the path, then threading can
+	 explode the CFG due to duplicating the edges for that multi-way
+	 branch.  So like above, only allow a multi-way branch on the path
+	 if we actually thread a multi-way branch.  */
+      if (!threaded_multiway_branch && multiway_branch_in_path)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "FSM Thread through multiway branch without threading "
+		     "a multiway branch.\n");
+	  path->pop ();
+	  continue;
+	}
+
       vec<jump_thread_edge *> *jump_thread_path
 	= new vec<jump_thread_edge *> ();
 
@@ -309,22 +419,7 @@ fsm_find_control_statement_thread_paths (tree name,
 	  jump_thread_path->safe_push (x);
 	}
 
-      gimple *stmt = get_gimple_control_stmt ((*path)[0]);
-      gcc_assert (stmt);
-      /* We have found a constant value for ARG.  For GIMPLE_SWITCH
-	 and GIMPLE_GOTO, we use it as-is.  However, for a GIMPLE_COND
-	 we need to substitute, fold and simplify.  */
-      if (gimple_code (stmt) == GIMPLE_COND)
-	{
-	  enum tree_code cond_code = gimple_cond_code (stmt);
-
-	  /* We know the underyling format of the condition.  */
-	  arg = fold_binary (cond_code, boolean_type_node,
-			     arg, gimple_cond_rhs (stmt));
-	}
-
       /* Add the edge taken when the control variable has value ARG.  */
-      edge taken_edge = find_taken_edge ((*path)[0], arg);
       jump_thread_edge *x
 	= new jump_thread_edge (taken_edge, EDGE_NO_COPY_SRC_BLOCK);
       jump_thread_path->safe_push (x);
