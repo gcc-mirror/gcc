@@ -1,3 +1,21 @@
+2016-01-25  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/69196
+	PR tree-optimization/68398
+	* tree-ssa-threadupdate.h (enum bb_dom_status): Moved here from
+	tree-ssa-threadupdate.c.
+	(determine_bb_domination_status): Prototype
+	* tree-ssa-threadupdate.c (enum bb_dom_status): Remove
+	(determine_bb_domination_status): No longer static.
+	(valid_jump_thread_path): Remove code to detect characteristics
+	of the jump thread path not associated with correctness.
+	* tree-ssa-threadbackward.c (fsm_find_control_statment_thread_paths):
+	Correct test for thread path length.  Count PHIs for real operands as
+	statements that need to be copied.  Do not count ASSERT_EXPRs.
+	Look at all the blocks in the thread path.  Compute and selectively
+	filter thread paths based on threading through the latch, threading
+	a multiway branch or crossing a multiway branch.
+
 2016-01-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_keep_leaf_when_profiled):  Add
