@@ -1,3 +1,9 @@
+2016-01-25  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/69421
+	* tree-vect-stmts.c (vectorizable_condition): Check vectype
+	of operands is compatible with a statement vectype.
+
 2016-01-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/extend.texi (scalar_storage_order type attribute): Fix typo and
