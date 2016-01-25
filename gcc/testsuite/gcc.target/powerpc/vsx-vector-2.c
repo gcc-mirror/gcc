@@ -9,7 +9,7 @@
 /* { dg-final { scan-assembler "xvdivsp" } } */
 /* { dg-final { scan-assembler "vmadd" } } */
 /* { dg-final { scan-assembler "xvmsub" } } */
-/* { dg-final { scan-assembler "xvsqrtsp" } } */
+/* { dg-final { scan-assembler "xvrsqrtesp" } } */
 /* { dg-final { scan-assembler "xvcpsgnsp" } } */
 /* { dg-final { scan-assembler "xvrspim" } } */
 /* { dg-final { scan-assembler "xvrspip" } } */
