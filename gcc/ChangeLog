@@ -1,3 +1,8 @@
+2016-01-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_keep_leaf_when_profiled):  Add
+	decl with __attribute__ ((unused)) annotation.
+
 2016-01-25  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/69421

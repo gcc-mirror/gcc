@@ -1311,6 +1311,7 @@ static bool rs6000_secondary_reload_move (enum rs6000_reg_type,
 					  secondary_reload_info *,
 					  bool);
 rtl_opt_pass *make_pass_analyze_swaps (gcc::context*);
+static bool rs6000_keep_leaf_when_profiled () __attribute__ ((unused));
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
