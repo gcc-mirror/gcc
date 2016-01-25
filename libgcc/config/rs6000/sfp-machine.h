@@ -110,7 +110,7 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
    floating point on pre-ISA 3.0 machines without the IEEE 128-bit floating
    point support.  */
 
-#ifndef ___NO_FPRS__
+#ifndef __NO_FPRS__
 #define ISA_BIT(x) (1LL << (63 - x))
 
 /* Use the same bits of the FPSCR.  */
