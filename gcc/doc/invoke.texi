@@ -599,7 +599,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmixed-code -mq-class -mRcq -mRcw -msize-level=@var{level} @gol
 -mtune=@var{cpu} -mmultcost=@var{num} @gol
 -munalign-prob-threshold=@var{probability} -mmpy-option=@var{multo} @gol
--mdiv-rem -mcode-density}
+-mdiv-rem -mcode-density -mll64}
 
 @emph{ARM Options}
 @gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
@@ -13258,6 +13258,10 @@ Enable DIV/REM instructions for ARCv2 cores.
 @item -mcode-density
 @opindex mcode-density
 Enable code density instructions for ARC EM, default on for ARC HS.
+
+@item -mll64
+@opindex mll64
+Enable double load/store operations for ARC HS cores.
 
 @item -mmpy-option=@var{multo}
 @opindex mmpy-option

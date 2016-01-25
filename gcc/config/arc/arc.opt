@@ -409,3 +409,7 @@ Target Joined
 matomic
 Target Report Mask(ATOMIC)
 Enable atomic instructions.
+
+mll64
+Target Report Mask(LL64)
+Enable double load/store instructions for ARC HS.

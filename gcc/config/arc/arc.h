@@ -97,6 +97,10 @@ along with GCC; see the file COPYING3.  If not see
 	builtin_define ("__ARC_NORM__");\
 	builtin_define ("__Xnorm");	\
       }					\
+    if (TARGET_LL64)			\
+      {					\
+	builtin_define ("__ARC_LL64__");\
+      }					\
     if (TARGET_MUL64_SET)		\
       builtin_define ("__ARC_MUL64__");\
     if (TARGET_MULMAC_32BY16_SET)	\

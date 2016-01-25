@@ -420,6 +420,9 @@ static void arc_finalize_pic (void);
 #undef TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
 
+#undef TARGET_DWARF_REGISTER_SPAN
+#define TARGET_DWARF_REGISTER_SPAN arc_dwarf_register_span
+
 /* Try to keep the (mov:DF _, reg) as early as possible so
    that the d<add/sub/mul>h-lr insns appear together and can
    use the peephole2 pattern.  */
@@ -735,6 +738,10 @@ arc_init (void)
 
   if (TARGET_ATOMIC && !(TARGET_ARC700 || TARGET_HS))
     error ("-matomic is only supported for ARC700 or ARC HS cores");
+
+  /* ll64 ops only available for HS.  */
+  if (TARGET_LL64 && !TARGET_HS)
+    error ("-mll64 is only supported for ARC HS cores");
 
   arc_init_reg_tables ();
 
@@ -2175,9 +2182,26 @@ arc_save_restore (rtx base_reg,
 
       for (regno = 0; regno <= 31; regno++)
 	{
-	  if ((gmask & (1L << regno)) != 0)
+	  enum machine_mode mode = SImode;
+	  bool found = false;
+
+	  if (TARGET_LL64
+	      && (regno % 2 == 0)
+	      && ((gmask & (1L << regno)) != 0)
+	      && ((gmask & (1L << (regno+1))) != 0))
 	    {
-	      rtx reg = gen_rtx_REG (SImode, regno);
+	      found = true;
+	      mode  = DImode;
+	    }
+	  else if ((gmask & (1L << regno)) != 0)
+	    {
+	      found = true;
+	      mode  = SImode;
+	    }
+
+	  if (found)
+	    {
+	      rtx reg = gen_rtx_REG (mode, regno);
 	      rtx addr, mem;
 	      int cfa_adjust = *first_offset;
 
@@ -2193,7 +2217,7 @@ arc_save_restore (rtx base_reg,
 		  gcc_assert (SMALL_INT (offset));
 		  addr = plus_constant (Pmode, base_reg, offset);
 		}
-	      mem = gen_frame_mem (SImode, addr);
+	      mem = gen_frame_mem (mode, addr);
 	      if (epilogue_p)
 		{
 		  rtx insn =
@@ -2212,6 +2236,11 @@ arc_save_restore (rtx base_reg,
 	      else
 		frame_move_inc (mem, reg, base_reg, addr);
 	      offset += UNITS_PER_WORD;
+	      if (mode == DImode)
+		{
+		  offset += UNITS_PER_WORD;
+		  ++regno;
+		}
 	    } /* if */
 	} /* for */
     }/* if */
@@ -6986,9 +7015,8 @@ force_offsettable (rtx addr, HOST_WIDE_INT size, bool reuse)
   return addr;
 }
 
-/* Like move_by_pieces, but take account of load latency,
-   and actual offset ranges.
-   Return true on success.  */
+/* Like move_by_pieces, but take account of load latency, and actual
+   offset ranges.  Return true on success.  */
 
 bool
 arc_expand_movmem (rtx *operands)
@@ -7009,14 +7037,23 @@ arc_expand_movmem (rtx *operands)
   size = INTVAL (operands[2]);
   /* move_by_pieces_ninsns is static, so we can't use it.  */
   if (align >= 4)
-    n_pieces = (size + 2) / 4U + (size & 1);
+    {
+      if (TARGET_LL64)
+	n_pieces = (size + 4) / 8U + ((size >> 1) & 1) + (size & 1);
+      else
+	n_pieces = (size + 2) / 4U + (size & 1);
+    }
   else if (align == 2)
     n_pieces = (size + 1) / 2U;
   else
     n_pieces = size;
   if (n_pieces >= (unsigned int) (optimize_size ? 3 : 15))
     return false;
-  if (piece > 4)
+  /* Force 32 bit aligned and larger datum to use 64 bit transfers, if
+     possible.  */
+  if (TARGET_LL64 && (piece >= 4) && (size >= 8))
+    piece = 8;
+  else if (piece > 4)
     piece = 4;
   dst_addr = force_offsettable (XEXP (operands[0], 0), size, 0);
   src_addr = force_offsettable (XEXP (operands[1], 0), size, 0);
@@ -7027,8 +7064,8 @@ arc_expand_movmem (rtx *operands)
       rtx tmp;
       machine_mode mode;
 
-      if (piece > size)
-	piece = size & -size;
+      while (piece > size)
+	piece >>= 1;
       mode = smallest_mode_for_size (piece * BITS_PER_UNIT, MODE_INT);
       /* If we don't re-use temporaries, the scheduler gets carried away,
 	 and the register pressure gets unnecessarily high.  */
@@ -8463,12 +8500,11 @@ split_subsi (rtx *operands)
    Operand 0: destination register
    Operand 1: source register  */
 
-static rtx
+static bool
 arc_process_double_reg_moves (rtx *operands)
 {
   rtx dest = operands[0];
   rtx src  = operands[1];
-  rtx val;
 
   enum usesDxState { none, srcDx, destDx, maxDx };
   enum usesDxState state = none;
@@ -8483,9 +8519,7 @@ arc_process_double_reg_moves (rtx *operands)
     }
 
   if (state == none)
-    return NULL_RTX;
-
-  start_sequence ();
+    return false;
 
   if (state == srcDx)
     {
@@ -8532,29 +8566,35 @@ arc_process_double_reg_moves (rtx *operands)
   else
     gcc_unreachable ();
 
-  val = get_insns ();
-  end_sequence ();
-  return val;
+  return true;
 }
 
 /* operands 0..1 are the operands of a 64 bit move instruction.
    split it into two moves with operands 2/3 and 4/5.  */
 
-rtx
+void
 arc_split_move (rtx *operands)
 {
   machine_mode mode = GET_MODE (operands[0]);
   int i;
   int swap = 0;
   rtx xop[4];
-  rtx val;
 
   if (TARGET_DPFP)
   {
-    val = arc_process_double_reg_moves (operands);
-    if (val)
-      return val;
+    if (arc_process_double_reg_moves (operands))
+      return;
   }
+
+  if (TARGET_LL64
+      && ((memory_operand (operands[0], mode)
+	   && even_register_operand (operands[1], mode))
+	  || (memory_operand (operands[1], mode)
+	      && even_register_operand (operands[0], mode))))
+    {
+      emit_move_insn (operands[0], operands[1]);
+      return;
+    }
 
   for (i = 0; i < 2; i++)
     {
@@ -8603,18 +8643,10 @@ arc_split_move (rtx *operands)
       swap = 2;
       gcc_assert (!reg_overlap_mentioned_p (xop[2], xop[1]));
     }
-  operands[2+swap] = xop[0];
-  operands[3+swap] = xop[1];
-  operands[4-swap] = xop[2];
-  operands[5-swap] = xop[3];
 
-  start_sequence ();
-  emit_insn (gen_rtx_SET (operands[2], operands[3]));
-  emit_insn (gen_rtx_SET (operands[4], operands[5]));
-  val = get_insns ();
-  end_sequence ();
+  emit_move_insn (xop[0 + swap], xop[1 + swap]);
+  emit_move_insn (xop[2 - swap], xop[3 - swap]);
 
-  return val;
 }
 
 /* Select between the instruction output templates s_tmpl (for short INSNs)
@@ -9328,6 +9360,28 @@ arc_no_speculation_in_delay_slots_p ()
 {
   return true;
 }
+
+/* Return a parallel of registers to represent where to find the
+   register pieces if required, otherwise NULL_RTX.  */
+
+static rtx
+arc_dwarf_register_span (rtx rtl)
+{
+   enum machine_mode mode = GET_MODE (rtl);
+   unsigned regno;
+   rtx p;
+
+   if (GET_MODE_SIZE (mode) != 8)
+     return NULL_RTX;
+
+   p = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+   regno = REGNO (rtl);
+   XVECEXP (p, 0, 0) = gen_rtx_REG (SImode, regno);
+   XVECEXP (p, 0, 1) = gen_rtx_REG (SImode, regno + 1);
+
+   return p;
+}
+
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -984,7 +984,7 @@
 }")
 
 (define_insn_and_split "*movdi_insn"
-  [(set (match_operand:DI 0 "move_dest_operand" "=w,w,r,m")
+  [(set (match_operand:DI 0 "move_dest_operand"      "=w, w,r,m")
 	(match_operand:DI 1 "move_double_src_operand" "c,Hi,m,c"))]
   "register_operand (operands[0], DImode)
    || register_operand (operands[1], DImode)"
@@ -993,50 +993,36 @@
   switch (which_alternative)
     {
     default:
-    case 0 :
-      /* We normally copy the low-numbered register first.  However, if
-	 the first register operand 0 is the same as the second register of
-	 operand 1, we must copy in the opposite order.  */
-      if (REGNO (operands[0]) == REGNO (operands[1]) + 1)
-	return \"mov%? %R0,%R1\;mov%? %0,%1\";
-      else
-      return \"mov%? %0,%1\;mov%? %R0,%R1\";
-    case 1 :
-      return \"mov%? %L0,%L1\;mov%? %H0,%H1\";
-    case 2 :
-      /* If the low-address word is used in the address, we must load it
-	 last.  Otherwise, load it first.  Note that we cannot have
-	 auto-increment in that case since the address register is known to be
-	 dead.  */
-      if (refers_to_regno_p (REGNO (operands[0]), operands[1]))
-	return \"ld%V1 %R0,%R1\;ld%V1 %0,%1\";
-      else switch (GET_CODE (XEXP(operands[1], 0)))
-	{
-	case POST_MODIFY: case POST_INC: case POST_DEC:
-	  return \"ld%V1 %R0,%R1\;ld%U1%V1 %0,%1\";
-	case PRE_MODIFY: case PRE_INC: case PRE_DEC:
-	  return \"ld%U1%V1 %0,%1\;ld%V1 %R0,%R1\";
-	default:
-	  return \"ld%U1%V1 %0,%1\;ld%U1%V1 %R0,%R1\";
-	}
-    case 3 :
-      switch (GET_CODE (XEXP(operands[0], 0)))
-	{
-	case POST_MODIFY: case POST_INC: case POST_DEC:
-     	  return \"st%V0 %R1,%R0\;st%U0%V0 %1,%0\";
-	case PRE_MODIFY: case PRE_INC: case PRE_DEC:
-     	  return \"st%U0%V0 %1,%0\;st%V0 %R1,%R0\";
-	default:
-     	  return \"st%U0%V0 %1,%0\;st%U0%V0 %R1,%R0\";
-	}
+      return \"#\";
+
+    case 2:
+    if (TARGET_LL64
+	&& ((even_register_operand (operands[0], DImode)
+	     && memory_operand (operands[1], DImode))
+	    || (memory_operand (operands[0], DImode)
+	        && even_register_operand (operands[1], DImode))))
+      return \"ldd%U1%V1 %0,%1%&\";
+    return \"#\";
+
+    case 3:
+    if (TARGET_LL64
+	&& ((even_register_operand (operands[0], DImode)
+	     && memory_operand (operands[1], DImode))
+	    || (memory_operand (operands[0], DImode)
+	        && even_register_operand (operands[1], DImode))))
+     return \"std%U0%V0 %1,%0\";
+    return \"#\";
     }
 }"
-  "&& reload_completed && optimize"
-  [(set (match_dup 2) (match_dup 3)) (set (match_dup 4) (match_dup 5))]
-  "arc_split_move (operands);"
+  "reload_completed"
+  [(const_int 0)]
+  {
+   arc_split_move (operands);
+   DONE;
+  }
   [(set_attr "type" "move,move,load,store")
    ;; ??? The ld/st values could be 4 if it's [reg,bignum].
-   (set_attr "length" "8,16,16,16")])
+   (set_attr "length" "8,16,*,*")])
 
 
 ;; Floating point move insns.
@@ -1066,22 +1052,45 @@
   ""
   "if (prepare_move_operands (operands, DFmode)) DONE;")
 
-(define_insn "*movdf_insn"
+(define_insn_and_split "*movdf_insn"
   [(set (match_operand:DF 0 "move_dest_operand"      "=D,r,c,c,r,m")
 	(match_operand:DF 1 "move_double_src_operand" "r,D,c,E,m,c"))]
   "register_operand (operands[0], DFmode) || register_operand (operands[1], DFmode)"
-  "#"
+  "*
+{
+ switch (which_alternative)
+   {
+    default:
+      return \"#\";
+    case 4:
+    if (TARGET_LL64
+	&& ((even_register_operand (operands[0], DFmode)
+	     && memory_operand (operands[1], DFmode))
+	    || (memory_operand (operands[0], DFmode)
+	        && even_register_operand (operands[1], DFmode))))
+      return \"ldd%U1%V1 %0,%1%&\";
+    return \"#\";
+
+    case 5:
+    if (TARGET_LL64
+	&& ((even_register_operand (operands[0], DFmode)
+	     && memory_operand (operands[1], DFmode))
+	    || (memory_operand (operands[0], DFmode)
+		&& even_register_operand (operands[1], DFmode))))
+     return \"std%U0%V0 %1,%0\";
+    return \"#\";
+   }
+}"
+  "reload_completed"
+  [(const_int 0)]
+  {
+   arc_split_move (operands);
+   DONE;
+  }
   [(set_attr "type" "move,move,move,move,load,store")
    (set_attr "predicable" "no,no,yes,yes,no,no")
    ;; ??? The ld/st values could be 16 if it's [reg,bignum].
    (set_attr "length" "4,16,8,16,16,16")])
-
-(define_split
-  [(set (match_operand:DF 0 "move_dest_operand" "")
-	(match_operand:DF 1 "move_double_src_operand" ""))]
-  "reload_completed"
-  [(match_dup 2)]
-  "operands[2] = arc_split_move (operands);")
 
 (define_insn_and_split "*movdf_insn_nolrsr"
   [(set (match_operand:DF 0 "register_operand"       "=r")
