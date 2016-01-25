@@ -1,3 +1,9 @@
+2016-01-25  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR fortran/68283
+	* primary.c (gfc_variable_attr): revert revision r221955,
+	call gfc_internal_error only if there is no error.
+
 2016-01-17  Mikael Morin  <mikael@gcc.gnu.org>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 
