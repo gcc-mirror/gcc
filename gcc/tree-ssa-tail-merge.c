@@ -1618,6 +1618,7 @@ update_debug_stmt (gimple stmt)
 
       gimple_debug_bind_reset_value (stmt);
       update_stmt (stmt);
+      break;
     }
 }
 

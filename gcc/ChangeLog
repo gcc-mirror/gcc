@@ -1,3 +1,12 @@
+2016-01-25  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	PR tree-optimization/PR64091
+	2014-11-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-tail-merge.c (update_debug_stmt): After resetting
+	the stmt break from the loop over use operands.
+
 2016-01-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline

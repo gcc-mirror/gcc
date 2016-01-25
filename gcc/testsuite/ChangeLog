@@ -1,3 +1,11 @@
+2016-01-25  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	PR tree-optimization/PR64091
+	2014-11-27  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr64091.c: New testcase.
+
 2016-01-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
