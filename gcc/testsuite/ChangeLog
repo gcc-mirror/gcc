@@ -1,3 +1,9 @@
+2016-01-25  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR fortran/61831
+	* gfortran.dg/derived_constructor_comps_6.f90: Add missing } to fix
+	up dg-additional-options.
+
 2016-01-25  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/68283
