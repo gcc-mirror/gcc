@@ -3139,15 +3139,24 @@ set_ssa_val_to (tree from, tree to)
 		{
 		  /* Save old info.  */
 		  if (! VN_INFO (to)->info.range_info)
-		    VN_INFO (to)->info.range_info = SSA_NAME_RANGE_INFO (to);
+		    {
+		      VN_INFO (to)->info.range_info = SSA_NAME_RANGE_INFO (to);
+		      VN_INFO (to)->range_info_anti_range_p
+			= SSA_NAME_ANTI_RANGE_P (to);
+		    }
 		  /* Use that from the dominator.  */
 		  SSA_NAME_RANGE_INFO (to) = SSA_NAME_RANGE_INFO (from);
+		  SSA_NAME_ANTI_RANGE_P (to) = SSA_NAME_ANTI_RANGE_P (from);
 		}
 	      else
 		{
 		  /* Save old info.  */
 		  if (! VN_INFO (to)->info.range_info)
-		    VN_INFO (to)->info.range_info = SSA_NAME_RANGE_INFO (to);
+		    {
+		      VN_INFO (to)->info.range_info = SSA_NAME_RANGE_INFO (to);
+		      VN_INFO (to)->range_info_anti_range_p
+			= SSA_NAME_ANTI_RANGE_P (to);
+		    }
 		  /* Rather than allocating memory and unioning the info
 		     just clear it.  */
 		  SSA_NAME_RANGE_INFO (to) = NULL;
@@ -4313,7 +4322,11 @@ free_scc_vn (void)
 	    SSA_NAME_PTR_INFO (name) = VN_INFO (name)->info.ptr_info;
 	  else if (INTEGRAL_TYPE_P (TREE_TYPE (name))
 		   && VN_INFO (name)->info.range_info)
-	    SSA_NAME_RANGE_INFO (name) = VN_INFO (name)->info.range_info;
+	    {
+	      SSA_NAME_RANGE_INFO (name) = VN_INFO (name)->info.range_info;
+	      SSA_NAME_ANTI_RANGE_P (name)
+		= VN_INFO (name)->range_info_anti_range_p;
+	    }
 	}
     }
   obstack_free (&vn_ssa_aux_obstack, NULL);

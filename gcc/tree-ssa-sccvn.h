@@ -191,6 +191,9 @@ typedef struct vn_ssa_aux
      insertion of such with EXPR as definition is required before
      a use can be created of it.  */
   unsigned needs_insertion : 1;
+
+  /* Whether range-info is anti-range.  */
+  unsigned range_info_anti_range_p : 1;
 } *vn_ssa_aux_t;
 
 enum vn_lookup_kind { VN_NOWALK, VN_WALK, VN_WALKREWRITE };
@@ -251,6 +254,24 @@ VN_INFO_RANGE_INFO (tree name)
   return (VN_INFO (name)->info.range_info
 	  ? VN_INFO (name)->info.range_info
 	  : SSA_NAME_RANGE_INFO (name));
+}
+
+/* Whether the original range info of NAME is an anti-range.  */
+
+inline bool
+VN_INFO_ANTI_RANGE_P (tree name)
+{
+  return (VN_INFO (name)->info.range_info
+	  ? VN_INFO (name)->range_info_anti_range_p
+	  : SSA_NAME_ANTI_RANGE_P (name));
+}
+
+/* Get at the original range info kind for NAME.  */
+
+inline value_range_type
+VN_INFO_RANGE_TYPE (tree name)
+{
+  return VN_INFO_ANTI_RANGE_P (name) ? VR_ANTI_RANGE : VR_RANGE;
 }
 
 /* Get at the original pointer info for NAME.  */

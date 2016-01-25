@@ -4047,7 +4047,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		       && ! VN_INFO_RANGE_INFO (sprime)
 		       && b == sprime_b)
 		duplicate_ssa_name_range_info (sprime,
-					       SSA_NAME_RANGE_TYPE (lhs),
+					       VN_INFO_RANGE_TYPE (lhs),
 					       VN_INFO_RANGE_INFO (lhs));
 	    }
 
