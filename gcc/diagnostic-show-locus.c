@@ -159,6 +159,8 @@ class layout
   void print_any_fixits (int row, const rich_location *richloc);
 
  private:
+  void print_newline ();
+
   bool
   get_state_at_point (/* Inputs.  */
 		      int row, int column,
@@ -574,7 +576,7 @@ layout::print_source_line (int row, line_bounds *lbounds_out)
       pp_character (m_pp, c);
       line++;
     }
-  pp_newline (m_pp);
+  print_newline ();
 
   lbounds_out->m_first_non_ws = first_non_ws;
   lbounds_out->m_last_non_ws = last_non_ws;
@@ -616,7 +618,7 @@ layout::print_annotation_line (int row, const line_bounds lbounds)
 	  pp_character (m_pp, ' ');
 	}
     }
-  pp_newline (m_pp);
+  print_newline ();
 }
 
 /* If there are any fixit hints on source line ROW within RICHLOC, print them.
@@ -684,6 +686,18 @@ layout::print_any_fixits (int row, const rich_location *richloc)
 	    }
 	}
     }
+
+  /* Add a trailing newline, if necessary.  */
+  move_to_column (&column, 0);
+}
+
+/* Disable any colorization and emit a newline.  */
+
+void
+layout::print_newline ()
+{
+  m_colorizer.set_normal_text ();
+  pp_newline (m_pp);
 }
 
 /* Return true if (ROW/COLUMN) is within a range of the layout.
@@ -778,7 +792,7 @@ layout::move_to_column (int *column, int dest_column)
   /* Start a new line if we need to.  */
   if (*column > dest_column)
     {
-      pp_newline (m_pp);
+      print_newline ();
       *column = 0;
     }
 
@@ -798,6 +812,8 @@ void
 diagnostic_show_locus (diagnostic_context * context,
 		       const diagnostic_info *diagnostic)
 {
+  pp_newline (context->printer);
+
   if (!context->show_caret
       || diagnostic_location (diagnostic, 0) <= BUILTINS_LOCATION
       || diagnostic_location (diagnostic, 0) == context->last_location)
@@ -805,34 +821,23 @@ diagnostic_show_locus (diagnostic_context * context,
 
   context->last_location = diagnostic_location (diagnostic, 0);
 
-  pp_newline (context->printer);
-
   const char *saved_prefix = pp_get_prefix (context->printer);
   pp_set_prefix (context->printer, NULL);
 
-  {
-    layout layout (context, diagnostic);
-    int last_line = layout.get_last_line ();
-    for (int row = layout.get_first_line ();
-	 row <= last_line;
-	 row++)
-      {
-	/* Print the source line, followed by an annotation line
-	   consisting of any caret/underlines, then any fixits.
-	   If the source line can't be read, print nothing.  */
-	line_bounds lbounds;
-	if (layout.print_source_line (row, &lbounds))
-	  {
-	    layout.print_annotation_line (row, lbounds);
-	    layout.print_any_fixits (row, diagnostic->richloc);
-	  }
-      }
-
-    /* The closing scope here leads to the dtor for layout and thus
-       colorizer being called here, which affects the precise
-       place where colorization is turned off in the unittest
-       for colorized output.  */
-  }
+  layout layout (context, diagnostic);
+  int last_line = layout.get_last_line ();
+  for (int row = layout.get_first_line (); row <= last_line; row++)
+    {
+      /* Print the source line, followed by an annotation line
+	 consisting of any caret/underlines, then any fixits.
+	 If the source line can't be read, print nothing.  */
+      line_bounds lbounds;
+      if (layout.print_source_line (row, &lbounds))
+	{
+	  layout.print_annotation_line (row, lbounds);
+	  layout.print_any_fixits (row, diagnostic->richloc);
+	}
+    }
 
   pp_set_prefix (context->printer, saved_prefix);
 }

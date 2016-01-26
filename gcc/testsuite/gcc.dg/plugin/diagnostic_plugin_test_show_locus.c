@@ -137,7 +137,7 @@ custom_diagnostic_finalizer (diagnostic_context *context,
   pp_show_color (context->printer) = old_show_color;
 
   pp_destroy_prefix (context->printer);
-  pp_newline_and_flush (context->printer);
+  pp_flush (context->printer);
 }
 
 /* Exercise the diagnostic machinery to emit various warnings,

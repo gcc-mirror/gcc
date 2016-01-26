@@ -224,10 +224,12 @@ proc _build_multiline_regex { multiline index } {
 	    set rexp "${rexp}\\|"
 	} else {
 	    # Assume that we have a quoted source line.
-	    # Support arbitrary followup text on each line,
-	    # to deal with comments containing containing DejaGnu
-	    # directives.
-	    append rexp ".*"
+	    if {![string equal "" $line] }  {
+		# Support arbitrary followup text on each non-empty line,
+		# to deal with comments containing containing DejaGnu
+		# directives.
+		append rexp ".*"
+	    }
 	}
 	append rexp "\n"
     }
