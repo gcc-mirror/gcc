@@ -614,14 +614,16 @@ aarch64_init_simd_builtin_types (void)
       enum machine_mode mode = aarch64_simd_types[i].mode;
 
       if (aarch64_simd_types[i].itype == NULL)
-	aarch64_simd_types[i].itype =
-	  build_distinct_type_copy
-	    (build_vector_type (eltype, GET_MODE_NUNITS (mode)));
+	{
+	  aarch64_simd_types[i].itype
+	    = build_distinct_type_copy
+	      (build_vector_type (eltype, GET_MODE_NUNITS (mode)));
+	  SET_TYPE_STRUCTURAL_EQUALITY (aarch64_simd_types[i].itype);
+	}
 
       tdecl = add_builtin_type (aarch64_simd_types[i].name,
 				aarch64_simd_types[i].itype);
       TYPE_NAME (aarch64_simd_types[i].itype) = tdecl;
-      SET_TYPE_STRUCTURAL_EQUALITY (aarch64_simd_types[i].itype);
     }
 
 #define AARCH64_BUILD_SIGNED_TYPE(mode)  \

@@ -1,3 +1,10 @@
+2016-01-26  Roger Ferrer Ibáñez  <rofirrim@gmail.com>
+
+	PR target/67896
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_init_simd_builtin_types): Do not set structural
+	equality to __Poly{8,16,64,128}_t types.
+
 2016-01-26  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/69400
