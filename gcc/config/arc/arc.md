@@ -3346,8 +3346,9 @@
 
 (define_expand "cstoresi4"
   [(set (match_operand:SI 0 "dest_reg_operand" "")
-	(match_operator:SI 1 "ordered_comparison_operator" [(match_operand:SI 2 "nonmemory_operand" "")
-							    (match_operand:SI 3 "nonmemory_operand" "")]))]
+	(match_operator:SI 1 "ordered_comparison_operator"
+			   [(match_operand:SI 2 "nonmemory_operand" "")
+			    (match_operand:SI 3 "nonmemory_operand" "")]))]
   ""
 {
   if (!TARGET_CODE_DENSITY)
@@ -3358,6 +3359,9 @@
    emit_insn (gen_scc_insn (operands[0], operands[1]));
    DONE;
   }
+  if (!register_operand (operands[2], SImode))
+    operands[2] = force_reg (SImode, operands[2]);
+
 })
 
 (define_mode_iterator SDF [SF DF])
@@ -5414,7 +5418,7 @@
 
 (define_insn "arcset<code>"
   [(set (match_operand:SI 0 "register_operand"                "=r,r,r,r,r,r,r")
-	(arcCC_cond:SI (match_operand:SI 1 "nonmemory_operand" "0,r,0,r,0,0,r")
+	(arcCC_cond:SI (match_operand:SI 1 "register_operand"  "0,r,0,r,0,0,r")
 		       (match_operand:SI 2 "nonmemory_operand" "r,r,L,L,I,n,n")))]
   "TARGET_V2 && TARGET_CODE_DENSITY"
   "set<code>%? %0, %1, %2"
@@ -5427,7 +5431,7 @@
 
 (define_insn "arcsetltu"
   [(set (match_operand:SI 0 "register_operand"         "=r,r,r,r,r,  r,  r")
-	(ltu:SI (match_operand:SI 1 "nonmemory_operand" "0,r,0,r,0,  0,  r")
+	(ltu:SI (match_operand:SI 1 "register_operand"  "0,r,0,r,0,  0,  r")
 		(match_operand:SI 2 "nonmemory_operand" "r,r,L,L,I,  n,  n")))]
   "TARGET_V2 && TARGET_CODE_DENSITY"
   "setlo%? %0, %1, %2"
@@ -5440,7 +5444,7 @@
 
 (define_insn "arcsetgeu"
   [(set (match_operand:SI 0 "register_operand"         "=r,r,r,r,r,  r,  r")
-	(geu:SI (match_operand:SI 1 "nonmemory_operand" "0,r,0,r,0,  0,  r")
+	(geu:SI (match_operand:SI 1 "register_operand"  "0,r,0,r,0,  0,  r")
 		(match_operand:SI 2 "nonmemory_operand" "r,r,L,L,I,  n,  n")))]
   "TARGET_V2 && TARGET_CODE_DENSITY"
   "seths%? %0, %1, %2"
@@ -5454,7 +5458,7 @@
 ;; Special cases of SETCC
 (define_insn_and_split "arcsethi"
   [(set (match_operand:SI 0 "register_operand"         "=r,r,  r,r")
-	(gtu:SI (match_operand:SI 1 "nonmemory_operand" "r,r,  r,r")
+	(gtu:SI (match_operand:SI 1 "register_operand"  "r,r,  r,r")
 		(match_operand:SI 2 "nonmemory_operand" "0,r,C62,n")))]
   "TARGET_V2 && TARGET_CODE_DENSITY"
   "setlo%? %0, %2, %1"
@@ -5477,7 +5481,7 @@
 
 (define_insn_and_split "arcsetls"
   [(set (match_operand:SI 0 "register_operand"         "=r,r,  r,r")
-	(leu:SI (match_operand:SI 1 "nonmemory_operand" "r,r,  r,r")
+	(leu:SI (match_operand:SI 1 "register_operand"  "r,r,  r,r")
 		(match_operand:SI 2 "nonmemory_operand" "0,r,C62,n")))]
   "TARGET_V2 && TARGET_CODE_DENSITY"
   "seths%? %0, %2, %1"

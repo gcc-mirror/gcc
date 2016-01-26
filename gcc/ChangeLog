@@ -1,3 +1,12 @@
+2016-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
+
+        * config/arc/arc.md (cstoresi4): Force operand into register.
+        (arcset<code>): Fix predicate.
+        (arcsetltu): Likewise.
+        (arcsetgeu): Likewise.
+        (arcsethi): Likewise.
+        (arcsetls): Likewise.
+
 2016-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69483
