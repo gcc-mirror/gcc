@@ -1,3 +1,7 @@
+2016-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/ia64/ia64.c (ia64_expand_vecint_compare): Use gen_int_mode.
+
 2016-01-23  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69426
