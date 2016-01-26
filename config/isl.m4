@@ -117,6 +117,18 @@ AC_DEFUN([ISL_CHECK_VERSION],
       AC_MSG_RESULT([recommended isl version is 0.15, minimum required isl version 0.14 is deprecated])
     fi
 
+    AC_MSG_CHECKING([for isl-0.15])
+    AC_TRY_LINK([#include <isl/schedule.h>],
+                [isl_options_set_schedule_serialize_sccs (NULL, 0);],
+                [ac_has_isl_options_set_schedule_serialize_sccs=yes],
+                [ac_has_isl_options_set_schedule_serialize_sccs=no])
+    AC_MSG_RESULT($ac_has_isl_options_set_schedule_serialize_sccs)
+
+    if test x"$ac_has_isl_options_set_schedule_serialize_sccs" = x"yes"; then
+      islver="0.15"
+      AC_SUBST([islver])
+    fi
+
     CFLAGS=$_isl_saved_CFLAGS
     LDFLAGS=$_isl_saved_LDFLAGS
     LIBS=$_isl_saved_LIBS

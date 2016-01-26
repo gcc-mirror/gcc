@@ -1,3 +1,11 @@
+2016-01-25  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* Makefile.in: Regenerate.
+	* Makefile.tpl: Export ISLVER.
+	* configure: Regenerate.
+	* config/isl.m4: Detect isl-0.15.
+
 2016-01-24  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR bootstrap/69329

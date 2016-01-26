@@ -3698,6 +3698,7 @@ site.exp: ./config.status Makefile
 	  echo "set PLUGINCFLAGS \"$(PLUGINCFLAGS)\"" >> ./site.tmp; \
 	  echo "set GMPINC \"$(GMPINC)\"" >> ./site.tmp; \
 	fi
+	@echo "set ISLVER \"$(ISLVER)\"" >> ./site.tmp
 # If newlib has been configured, we need to pass -B to gcc so it can find
 # newlib's crt0.o if it exists.  This will cause a "path prefix not used"
 # message if it doesn't, but the testsuite is supposed to ignore the message -

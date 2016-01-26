@@ -650,6 +650,7 @@ extra_linker_plugin_flags
 extra_linker_plugin_configure_flags
 islinc
 isllibs
+islver
 poststage1_ldflags
 poststage1_libs
 stage1_ldflags
@@ -6046,6 +6047,34 @@ $as_echo "$gcc_cv_isl" >&6; }
     if test "${gcc_cv_isl}" = no ; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: recommended isl version is 0.15, minimum required isl version 0.14 is deprecated" >&5
 $as_echo "recommended isl version is 0.15, minimum required isl version 0.14 is deprecated" >&6; }
+    fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for isl-0.15" >&5
+$as_echo_n "checking for isl-0.15... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <isl/schedule.h>
+int
+main ()
+{
+isl_options_set_schedule_serialize_sccs (NULL, 0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_has_isl_options_set_schedule_serialize_sccs=yes
+else
+  ac_has_isl_options_set_schedule_serialize_sccs=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_isl_options_set_schedule_serialize_sccs" >&5
+$as_echo "$ac_has_isl_options_set_schedule_serialize_sccs" >&6; }
+
+    if test x"$ac_has_isl_options_set_schedule_serialize_sccs" = x"yes"; then
+      islver="0.15"
+
     fi
 
     CFLAGS=$_isl_saved_CFLAGS
