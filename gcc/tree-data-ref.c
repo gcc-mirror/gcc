@@ -1534,13 +1534,14 @@ initialize_data_dependence_relation (struct data_reference *a,
   /* The case where the references are exactly the same.  */
   if (operand_equal_p (DR_REF (a), DR_REF (b), 0))
     {
-     if (loop_nest.exists ()
-        && !object_address_invariant_in_loop_p (loop_nest[0],
-       					        DR_BASE_OBJECT (a)))
-      {
-        DDR_ARE_DEPENDENT (res) = chrec_dont_know;
-        return res;
-      }
+      if ((loop_nest.exists ()
+	   && !object_address_invariant_in_loop_p (loop_nest[0],
+						   DR_BASE_OBJECT (a)))
+	  || DR_NUM_DIMENSIONS (a) == 0)
+	{
+	  DDR_ARE_DEPENDENT (res) = chrec_dont_know;
+	  return res;
+	}
       DDR_AFFINE_P (res) = true;
       DDR_ARE_DEPENDENT (res) = NULL_TREE;
       DDR_SUBSCRIPTS (res).create (DR_NUM_DIMENSIONS (a));
@@ -1572,9 +1573,9 @@ initialize_data_dependence_relation (struct data_reference *a,
   /* If the base of the object is not invariant in the loop nest, we cannot
      analyze it.  TODO -- in fact, it would suffice to record that there may
      be arbitrary dependences in the loops where the base object varies.  */
-  if (loop_nest.exists ()
-      && !object_address_invariant_in_loop_p (loop_nest[0],
-     					      DR_BASE_OBJECT (a)))
+  if ((loop_nest.exists ()
+       && !object_address_invariant_in_loop_p (loop_nest[0], DR_BASE_OBJECT (a)))
+      || DR_NUM_DIMENSIONS (a) == 0)
     {
       DDR_ARE_DEPENDENT (res) = chrec_dont_know;
       return res;
