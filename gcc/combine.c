@@ -1454,15 +1454,21 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 		  && ! unmentioned_reg_p (note, SET_SRC (set))
 		  && (GET_MODE (note) == VOIDmode
 		      ? SCALAR_INT_MODE_P (GET_MODE (SET_DEST (set)))
-		      : GET_MODE (SET_DEST (set)) == GET_MODE (note)))
+		      : (GET_MODE (SET_DEST (set)) == GET_MODE (note)
+			 && (GET_CODE (SET_DEST (set)) != ZERO_EXTRACT
+			     || (GET_MODE (XEXP (SET_DEST (set), 0))
+				 == GET_MODE (note))))))
 		{
 		  /* Temporarily replace the set's source with the
 		     contents of the REG_EQUAL note.  The insn will
 		     be deleted or recognized by try_combine.  */
-		  rtx orig = SET_SRC (set);
+		  rtx orig_src = SET_SRC (set);
+		  rtx orig_dest = SET_DEST (set);
+		  if (GET_CODE (SET_DEST (set)) == ZERO_EXTRACT)
+		    SET_DEST (set) = XEXP (SET_DEST (set), 0);
 		  SET_SRC (set) = note;
 		  i2mod = temp;
-		  i2mod_old_rhs = copy_rtx (orig);
+		  i2mod_old_rhs = copy_rtx (orig_src);
 		  i2mod_new_rhs = copy_rtx (note);
 		  next = try_combine (insn, i2mod, NULL, NULL,
 				      &new_direct_jump_p,
@@ -1473,7 +1479,8 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 		      statistics_counter_event (cfun, "insn-with-note combine", 1);
 		      goto retry;
 		    }
-		  SET_SRC (set) = orig;
+		  SET_SRC (set) = orig_src;
+		  SET_DEST (set) = orig_dest;
 		}
 	    }
 
