@@ -99,7 +99,7 @@
 (define_mode_iterator VQI [V16QI V8HI V4SI])
 
 ;; Quad-width vector modes, with TImode added, for moves.
-(define_mode_iterator VQXMOV [V16QI V8HI V4SI V4SF V2DI TI])
+(define_mode_iterator VQXMOV [V16QI V8HI V8HF V4SI V4SF V2DI TI])
 
 ;; Opaque structure types wider than TImode.
 (define_mode_iterator VSTRUCT [EI OI CI XI])
@@ -114,7 +114,7 @@
 (define_mode_iterator VN [V8HI V4SI V2DI])
 
 ;; All supported vector modes (except singleton DImode).
-(define_mode_iterator VDQ [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF V2DI])
+(define_mode_iterator VDQ [V8QI V16QI V4HI V8HI V2SI V4SI V4HF V8HF V2SF V4SF V2DI])
 
 ;; All supported vector modes (except those with 64-bit integer elements).
 (define_mode_iterator VDQW [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF])
@@ -428,6 +428,7 @@
 ;; Register width from element mode
 (define_mode_attr V_reg [(V8QI "P") (V16QI "q")
                          (V4HI "P") (V8HI  "q")
+                         (V4HF "P") (V8HF  "q")
                          (V2SI "P") (V4SI  "q")
                          (V2SF "P") (V4SF  "q")
                          (DI   "P") (V2DI  "q")
@@ -576,6 +577,7 @@
 (define_mode_attr Is_float_mode [(V8QI "false") (V16QI "false")
                  (V4HI "false") (V8HI "false")
                  (V2SI "false") (V4SI "false")
+                 (V4HF "true") (V8HF "true")
                  (V2SF "true") (V4SF "true")
                  (DI "false") (V2DI "false")])
 
