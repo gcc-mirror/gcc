@@ -28,9 +28,9 @@ main (void)
       B[i] = i + 2;
       C[i] = i + 1;
     }
-  for(int i=0; i<MAX; i++)
+  for(i=0; i<MAX; i++)
     A[i] += B[i];
-  for(int i=0; i<MAX; i++)
+  for(i=0; i<MAX; i++)
     A[i] += C[i];
 
   for (i = 0; i < MAX; i++)

@@ -1,3 +1,8 @@
+2016-01-25  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
+	* Makefile.in: Set ISLVER in site.exp.
+
 2016-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (lower_omp_target) <case USE_DEVICE_PTR>: Set
