@@ -33,7 +33,8 @@ extern tree omp_member_access_dummy_var (tree);
 extern void replace_oacc_fn_attrib (tree, tree);
 extern tree build_oacc_routine_dims (tree);
 extern tree get_oacc_fn_attrib (tree);
-extern void set_oacc_fn_attrib (tree, tree, vec<tree> *);
+extern void set_oacc_fn_attrib (tree, tree, bool, vec<tree> *);
+extern bool oacc_fn_attrib_kernels_p (tree);
 extern int get_oacc_ifn_dim_arg (const gimple *);
 extern int get_oacc_fn_dim_size (tree, int);
 

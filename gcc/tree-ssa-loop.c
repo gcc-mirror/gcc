@@ -154,12 +154,7 @@ gate_oacc_kernels (function *fn)
   tree oacc_function_attr = get_oacc_fn_attrib (fn->decl);
   if (oacc_function_attr == NULL_TREE)
     return false;
-
-  tree val = TREE_VALUE (oacc_function_attr);
-  while (val != NULL_TREE && TREE_VALUE (val) == NULL_TREE)
-    val = TREE_CHAIN (val);
-
-  if (val != NULL_TREE)
+  if (!oacc_fn_attrib_kernels_p (oacc_function_attr))
     return false;
 
   struct loop *loop;
