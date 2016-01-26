@@ -689,22 +689,20 @@ tree
 translate_isl_ast_to_gimple::
 ternary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
 {
-  gcc_assert (isl_ast_expr_get_op_type (expr) == isl_ast_op_minus);
+  enum isl_ast_op_type t = isl_ast_expr_get_op_type (expr);
+  gcc_assert (t == isl_ast_op_cond || t == isl_ast_op_select);
   isl_ast_expr *arg_expr = isl_ast_expr_get_op_arg (expr, 0);
-  tree tree_first_expr
-    = gcc_expression_from_isl_expression (type, arg_expr, ip);
+  tree a = gcc_expression_from_isl_expression (type, arg_expr, ip);
   arg_expr = isl_ast_expr_get_op_arg (expr, 1);
-  tree tree_second_expr
-    = gcc_expression_from_isl_expression (type, arg_expr, ip);
+  tree b = gcc_expression_from_isl_expression (type, arg_expr, ip);
   arg_expr = isl_ast_expr_get_op_arg (expr, 2);
-  tree tree_third_expr
-    = gcc_expression_from_isl_expression (type, arg_expr, ip);
+  tree c = gcc_expression_from_isl_expression (type, arg_expr, ip);
   isl_ast_expr_free (expr);
 
   if (codegen_error)
     return NULL_TREE;
-  return fold_build3 (COND_EXPR, type, tree_first_expr,
-		      tree_second_expr, tree_third_expr);
+
+  return fold_build3 (COND_EXPR, type, a, b, c);
 }
 
 /* Converts a unary isl_ast_expr_op expression E to a GCC expression tree of
@@ -791,7 +789,6 @@ gcc_expression_from_isl_expr_op (tree type, __isl_take isl_ast_expr *expr,
     case isl_ast_op_call:
     case isl_ast_op_and_then:
     case isl_ast_op_or_else:
-    case isl_ast_op_select:
       gcc_unreachable ();
 
     case isl_ast_op_max:
@@ -822,6 +819,7 @@ gcc_expression_from_isl_expr_op (tree type, __isl_take isl_ast_expr *expr,
       return unary_op_to_tree (type, expr, ip);
 
     case isl_ast_op_cond:
+    case isl_ast_op_select:
       return ternary_op_to_tree (type, expr, ip);
 
     default:

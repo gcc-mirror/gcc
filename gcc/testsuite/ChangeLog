@@ -1,3 +1,8 @@
+2016-01-26  Abderrazek Zaafrani  <a.zaafrani@samsung.com>
+            Sebastian Pop  <s.pop@samsung.com>
+
+	* gcc.dg/graphite/isl-ast-op-select.c: New.
+
 2015-01-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/69385
