@@ -4560,8 +4560,7 @@ rs6000_option_override_internal (bool global_init_p)
       if (TARGET_LONG_DOUBLE_128 && !TARGET_IEEEQUAD)
 	REAL_MODE_FORMAT (TFmode) = &ibm_extended_format;
 
-      if (TARGET_TOC)
-	ASM_GENERATE_INTERNAL_LABEL (toc_label_name, "LCTOC", 1);
+      ASM_GENERATE_INTERNAL_LABEL (toc_label_name, "LCTOC", 1);
 
       /* We can only guarantee the availability of DI pseudo-ops when
 	 assembling for 64-bit targets.  */
@@ -23983,7 +23982,7 @@ rs6000_emit_load_toc_table (int fromprolog)
       ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (lab));
       lab = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
       if (flag_pic == 2)
-	got = gen_rtx_SYMBOL_REF (Pmode, toc_label_name);
+	got = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (toc_label_name));
       else
 	got = rs6000_got_sym ();
       tmp1 = tmp2 = dest;
@@ -24027,7 +24026,7 @@ rs6000_emit_load_toc_table (int fromprolog)
 	{
 	  rtx tocsym, lab;
 
-	  tocsym = gen_rtx_SYMBOL_REF (Pmode, toc_label_name);
+	  tocsym = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (toc_label_name));
 	  lab = gen_label_rtx ();
 	  emit_insn (gen_load_toc_v4_PIC_1b (tocsym, lab));
 	  emit_move_insn (dest, gen_rtx_REG (Pmode, LR_REGNO));
@@ -24040,10 +24039,7 @@ rs6000_emit_load_toc_table (int fromprolog)
   else if (TARGET_ELF && !TARGET_AIX && flag_pic == 0 && TARGET_MINIMAL_TOC)
     {
       /* This is for AIX code running in non-PIC ELF32.  */
-      char buf[30];
-      rtx realsym;
-      ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
-      realsym = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
+      rtx realsym = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (toc_label_name));
 
       emit_insn (gen_elf_high (dest, realsym));
       emit_insn (gen_elf_low (dest, dest, realsym));
@@ -31726,9 +31722,8 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
 
       (*targetm.asm_out.internal_label) (file, "LCL", rs6000_pic_labelno);
 
-      ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
       fprintf (file, "\t.long ");
-      assemble_name (file, buf);
+      assemble_name (file, toc_label_name);
       putc ('-', file);
       ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
       assemble_name (file, buf);

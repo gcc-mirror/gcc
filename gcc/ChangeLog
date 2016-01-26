@@ -1,3 +1,14 @@
+2016-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/68662
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Initialize
+	toc_label_name unconditionally.
+	(rs6000_emit_load_toc_table): Call ggc_strdup on toc_label_name for
+	SYMBOL_REF string.  Use toc_label_name instead of constructing
+	LCTOC1.
+	(rs6000_elf_declare_function_name): Use toc_label_name instead of
+	constructing LCTOC1.
+
 2016-01-26  Martin Sebor  <msebor@redhat.com>
 
 	PR other/69477
