@@ -2039,16 +2039,17 @@ tm_region_init (struct tm_region *region)
   struct tm_region *old_region;
   auto_vec<tm_region *> bb_regions;
 
-  all_tm_regions = region;
-  bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-
   /* We could store this information in bb->aux, but we may get called
      through get_all_tm_blocks() from another pass that may be already
      using bb->aux.  */
   bb_regions.safe_grow_cleared (last_basic_block_for_fn (cfun));
 
+  all_tm_regions = region;
+  bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   queue.safe_push (bb);
+  bitmap_set_bit (visited_blocks, bb->index);
   bb_regions[bb->index] = region;
+
   do
     {
       bb = queue.pop ();
