@@ -1,3 +1,8 @@
+2016-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69483
+	* c-parser.c (c_parser_translation_unit): Use FOR_EACH_VEC_ELT.
+
 2016-01-20  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR c/24293

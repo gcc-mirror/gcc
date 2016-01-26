@@ -195,6 +195,8 @@ canonicalize_constructor_val (tree cval, tree from_decl)
 	   || TREE_CODE (base) == FUNCTION_DECL)
 	  && !can_refer_decl_in_current_unit_p (base, from_decl))
 	return NULL_TREE;
+      if (TREE_TYPE (base) == error_mark_node)
+	return NULL_TREE;
       if (TREE_CODE (base) == VAR_DECL)
 	TREE_ADDRESSABLE (base) = 1;
       else if (TREE_CODE (base) == FUNCTION_DECL)
