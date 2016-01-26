@@ -183,6 +183,12 @@ enum {
 #ifdef TIOCSCTTY
   TIOCSCTTY_val = TIOCSCTTY,
 #endif
+#ifdef TIOCGPGRP
+  TIOCGPGRP_val = TIOCGPGRP,
+#endif
+#ifdef TIOCSPGRP
+  TIOCSPGRP_val = TIOCSPGRP,
+#endif
 #ifdef TIOCGPTN
   TIOCGPTN_val = TIOCGPTN,
 #endif
@@ -534,7 +540,7 @@ upcase_fields () {
 # GNU/Linux specific; it should do no harm if there is no
 # _user_regs_struct.
 regs=`grep '^type _user_regs_struct struct' gen-sysinfo.go || true`
-if test "$regs" == ""; then
+if test "$regs" = ""; then
   # s390
   regs=`grep '^type __user_regs_struct struct' gen-sysinfo.go || true`
   if test "$regs" != ""; then
@@ -878,11 +884,13 @@ grep '^type _addrinfo ' gen-sysinfo.go | \
       -e 's/ ai_/ Ai_/g' \
     >> ${OUT}
 
-# The addrinfo flags and errors.
+# The addrinfo and nameinfo flags and errors.
 grep '^const _AI_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(AI_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _EAI_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(EAI_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+grep '^const _NI_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(NI_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
 # The passwd struct.
 grep '^type _passwd ' gen-sysinfo.go | \
@@ -916,6 +924,16 @@ fi
 if ! grep '^const TIOCSCTTY' ${OUT} >/dev/null 2>&1; then
   if grep '^const _TIOCSCTTY_val' ${OUT} >/dev/null 2>&1; then
     echo 'const TIOCSCTTY = _TIOCSCTTY_val' >> ${OUT}
+  fi
+fi
+if ! grep '^const TIOCGPGRP' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _TIOCGPGRP_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const TIOCGPGRP = _TIOCGPGRP_val' >> ${OUT}
+  fi
+fi
+if ! grep '^const TIOCSPGRP' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _TIOCSPGRP_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const TIOCSPGRP = _TIOCSPGRP_val' >> ${OUT}
   fi
 fi
 if ! grep '^const TIOCGPTN' ${OUT} >/dev/null 2>&1; then
@@ -1433,6 +1451,11 @@ grep '^type _inotify_event ' gen-sysinfo.go | \
 # The GNU/Linux CLONE flags.
 grep '^const _CLONE_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(CLONE_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+# We need some CLONE constants that are not defined in older versions
+# of glibc.
+if ! grep '^const CLONE_NEWUSER ' ${OUT} > /dev/null 2>&1; then
+  echo "const CLONE_NEWUSER = 0x10000000" >> ${OUT}
+fi
 
 # Struct sizes.
 set cmsghdr Cmsghdr ip_mreq IPMreq ip_mreqn IPMreqn ipv6_mreq IPv6Mreq \
