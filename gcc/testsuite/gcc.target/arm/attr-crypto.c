@@ -2,7 +2,6 @@
 /* Make sure we can force fpu=vfp before switching using the
    pragma.  */
 /* { dg-require-effective-target arm_fp_ok } */
-/* { dg-require-effective-target arm_crypto_pragma_ok } */
 /* { dg-options "-O2 -march=armv8-a" } */
 /* { dg-add-options arm_fp } */
 
