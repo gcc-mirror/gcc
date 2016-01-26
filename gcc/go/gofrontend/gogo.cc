@@ -2699,6 +2699,15 @@ Gogo::lower_parse_tree()
 {
   Lower_parse_tree lower_parse_tree(this, NULL);
   this->traverse(&lower_parse_tree);
+
+  // There might be type definitions that involve expressions such as the
+  // array length.  Make sure to lower these expressions as well.  Otherwise,
+  // errors hidden within a type can introduce unexpected errors into later
+  // passes.
+  for (std::vector<Type*>::iterator p = this->verify_types_.begin();
+       p != this->verify_types_.end();
+       ++p)
+    Type::traverse(*p, &lower_parse_tree);
 }
 
 // Lower a block.
