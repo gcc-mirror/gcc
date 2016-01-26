@@ -546,7 +546,7 @@ default_diagnostic_finalizer (diagnostic_context *context,
 {
   diagnostic_show_locus (context, diagnostic);
   pp_destroy_prefix (context->printer);
-  pp_newline_and_flush (context->printer);
+  pp_flush (context->printer);
 }
 
 /* Interface to specify diagnostic kind overrides.  Returns the
@@ -879,37 +879,6 @@ diagnostic_append_note (diagnostic_context *context,
   saved_prefix = pp_get_prefix (context->printer);
   pp_set_prefix (context->printer,
                  diagnostic_build_prefix (context, &diagnostic));
-  pp_newline (context->printer);
-  pp_format (context->printer, &diagnostic.message);
-  pp_output_formatted_text (context->printer);
-  pp_destroy_prefix (context->printer);
-  pp_set_prefix (context->printer, saved_prefix);
-  diagnostic_show_locus (context, &diagnostic);
-  va_end (ap);
-}
-
-/* Same as diagnostic_append_note, but at RICHLOC. */
-
-void
-diagnostic_append_note_at_rich_loc (diagnostic_context *context,
-				    rich_location *richloc,
-				    const char * gmsgid, ...)
-{
-  diagnostic_info diagnostic;
-  va_list ap;
-  const char *saved_prefix;
-
-  va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, richloc, DK_NOTE);
-  if (context->inhibit_notes_p)
-    {
-      va_end (ap);
-      return;
-    }
-  saved_prefix = pp_get_prefix (context->printer);
-  pp_set_prefix (context->printer,
-                 diagnostic_build_prefix (context, &diagnostic));
-  pp_newline (context->printer);
   pp_format (context->printer, &diagnostic.message);
   pp_output_formatted_text (context->printer);
   pp_destroy_prefix (context->printer);

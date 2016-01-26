@@ -1,3 +1,10 @@
+2016-01-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/69006
+	* error.c (print_instantiation_partial_context_line): Add missing
+	newlines from output for the t == NULL case.
+	(print_instantiation_partial_context): Remove call to pp_newline.
+
 2016-01-24  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	Revert:

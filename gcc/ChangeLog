@@ -1,3 +1,24 @@
+2016-01-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/69006
+	* diagnostic-show-locus.c (layout::print_source_line): Replace
+	call to pp_newline with call to layout::print_newline.
+	(layout::print_annotation_line): Likewise.
+	(layout::move_to_column): Likewise.
+	(layout::print_any_fixits): After printing any fixits, print a
+	trailing newline, if necessary.
+	(layout::print_newline): New method, resetting any colorization
+	before a newline.
+	(diagnostic_show_locus): Move the pp_newline to before the
+	early bailout.  Remove dummy block enclosing the layout instance.
+	* diagnostic.c (default_diagnostic_finalizer): Replace invocation
+	of pp_newline_and_flush with pp_flush.
+	(diagnostic_append_note): Delete use of pp_newline.
+	(diagnostic_append_note_at_rich_loc): Delete.
+	* diagnostic.h (diagnostic_append_note_at_rich_loc): Delete.
+	* pretty-print.h (output_buffer_append_r): Reset buff->line_length
+	when newline characters are added to the buffer.
+
 2016-01-26  Michael Matz  <matz@suse.de>
 
 	* configure.ac (ac_cv_std_swap_in_utility): New test.

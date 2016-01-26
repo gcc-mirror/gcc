@@ -310,12 +310,36 @@ proc gcc-dg-test { prog do_what extra_tool_flags } {
     return [gcc-dg-test-1 gcc_target_compile $prog $do_what $extra_tool_flags]
 }
 
+# Global: should blank lines be allowed in the output?
+# By default, they should not be.  (PR other/69006)
+# However, there are some ways for them to validly occur.
+set allow_blank_lines 0
+
+# A command for use by testcases to mark themselves as expecting
+# blank lines in the output.
+
+proc dg-allow-blank-lines-in-output { args } {
+    global allow_blank_lines
+    set allow_blank_lines 1
+}
+
 proc gcc-dg-prune { system text } {
     global additional_prunes
 
     # Extra prune rules that will apply to tests defined in a .exp file.
     # Always remember to clear it in .exp file after executed all tests.
     global dg_runtest_extra_prunes
+
+    # Complain about blank lines in the output (PR other/69006)
+    global allow_blank_lines
+    if { !$allow_blank_lines } {
+	set num_blank_lines [llength [regexp -all -inline "\n\n" $text]]
+	if { $num_blank_lines } {
+	    global testname_with_flags
+	    fail "$testname_with_flags $num_blank_lines blank line(s) in output"
+	}
+	set allow_blank_lines 0
+    }
 
     set text [prune_gcc_output $text]
 

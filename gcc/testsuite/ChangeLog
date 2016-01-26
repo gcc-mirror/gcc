@@ -1,3 +1,23 @@
+2016-01-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/69006
+	* g++.dg/ext/timevar1.C: Add dg-allow-blank-lines-in-output
+	directive.
+	* gcc.dg/plugin/diagnostic-test-show-locus-color.c: Update
+	expected multiline output to reflect the colorization being
+	disabled before newlines.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
+	(custom_diagnostic_finalizer): Replace call to
+	pp_newline_and_flush with call to pp_flush.
+	* gcc.dg/unroll-2.c: Add dg-allow-blank-lines-in-output directive.
+	* gfortran.dg/implicit_class_1.f90: Likewise.
+	* lib/gcc-dg.exp (allow_blank_lines): New global.
+	(dg-allow-blank-lines-in-output): New procedure.
+	(gcc-dg-prune): Complain about blank lines in the output, unless
+	dg-allow-blank-lines-in-output was called.
+	* lib/multiline.exp (_build_multiline_regex): Only support
+	arbitrary followup text for non-blank-lines, not for blank lines.
+
 2016-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69483

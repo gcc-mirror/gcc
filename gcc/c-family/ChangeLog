@@ -1,3 +1,9 @@
+2016-01-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/69006
+	* c-opts.c (c_diagnostic_finalizer): Replace invocation of
+	pp_newline_and_flush with pp_flush.
+
 2016-01-20  Martin Sebor  <msebor@redhat.com>
 
 	PR c/69405
