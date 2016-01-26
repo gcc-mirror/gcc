@@ -1,5 +1,14 @@
 2016-01-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/68949
+	* constexpr.c (register_constexpr_fundef): Keep the un-massaged body.
+	(cxx_eval_call_expression): Don't look through clones.
+	* optimize.c (maybe_clone_body): Clear DECL_SAVED_TREE of the alias.
+	* semantics.c (expand_or_defer_fn_1): Keep DECL_SAVED_TREE of
+	maybe-in-charge *tor.
+
+2016-01-26  Jason Merrill  <jason@redhat.com>
+
 	PR c++/68782
 	* constexpr.c (cxx_eval_bare_aggregate): Update TREE_CONSTANT
 	and TREE_SIDE_EFFECTS.
