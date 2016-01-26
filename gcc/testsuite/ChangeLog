@@ -1,5 +1,9 @@
 2016-01-26  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* gcc.target/i386/pr68986-2.c: Remove -m32.
+
+2016-01-26  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/68986
 	* gcc.target/i386/pr68986-1.c: New test.
 	* gcc.target/i386/pr68986-2.c: Likewise.
