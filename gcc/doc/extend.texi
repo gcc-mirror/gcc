@@ -6307,9 +6307,6 @@ relevant type, and the code that the compiler generates for these
 pointer arithmetic operations is often more efficient for
 efficiently-aligned types than for other types.
 
-The @code{aligned} attribute can only increase the alignment; but you
-can decrease it by specifying @code{packed} as well.  See below.
-
 Note that the effectiveness of @code{aligned} attributes may be limited
 by inherent limitations in your linker.  On many systems, the linker is
 only able to arrange for variables to be aligned up to a certain maximum
@@ -6319,36 +6316,8 @@ up to a maximum of 8-byte alignment, then specifying @code{aligned(16)}
 in an @code{__attribute__} still only provides you with 8-byte
 alignment.  See your linker documentation for further information.
 
-@opindex fshort-enums
-Specifying this attribute for @code{struct} and @code{union} types is
-equivalent to specifying the @code{packed} attribute on each of the
-structure or union members.  Specifying the @option{-fshort-enums}
-flag on the line is equivalent to specifying the @code{packed}
-attribute on all @code{enum} definitions.
-
-In the following example @code{struct my_packed_struct}'s members are
-packed closely together, but the internal layout of its @code{s} member
-is not packed---to do that, @code{struct my_unpacked_struct} needs to
-be packed too.
-
-@smallexample
-struct my_unpacked_struct
- @{
-    char c;
-    int i;
- @};
-
-struct __attribute__ ((__packed__)) my_packed_struct
-  @{
-     char c;
-     int  i;
-     struct my_unpacked_struct s;
-  @};
-@end smallexample
-
-You may only specify this attribute on the definition of an @code{enum},
-@code{struct} or @code{union}, not on a @code{typedef} that does not
-also define the enumerated type, structure or union.
+The @code{aligned} attribute can only increase alignment.  Alignment
+can be decreased by specifying the @code{packed} attribute.  See below.
 
 @item bnd_variable_size
 @cindex @code{bnd_variable_size} type attribute
@@ -6475,6 +6444,37 @@ definition, specifies that each member (other than zero-width bit-fields)
 of the structure or union is placed to minimize the memory required.  When
 attached to an @code{enum} definition, it indicates that the smallest
 integral type should be used.
+
+@opindex fshort-enums
+Specifying the @code{packed} attribute for @code{struct} and @code{union}
+types is equivalent to specifying the @code{packed} attribute on each
+of the structure or union members.  Specifying the @option{-fshort-enums}
+flag on the command line is equivalent to specifying the @code{packed}
+attribute on all @code{enum} definitions.
+
+In the following example @code{struct my_packed_struct}'s members are
+packed closely together, but the internal layout of its @code{s} member
+is not packed---to do that, @code{struct my_unpacked_struct} needs to
+be packed too.
+
+@smallexample
+struct my_unpacked_struct
+ @{
+    char c;
+    int i;
+ @};
+
+struct __attribute__ ((__packed__)) my_packed_struct
+  @{
+     char c;
+     int  i;
+     struct my_unpacked_struct s;
+  @};
+@end smallexample
+
+You may only specify the @code{packed} attribute attribute on the definition
+of an @code{enum}, @code{struct} or @code{union}, not on a @code{typedef}
+that does not also define the enumerated type, structure or union.
 
 @item scalar_storage_order ("@var{endianness}")
 @cindex @code{scalar_storage_order} type attribute
