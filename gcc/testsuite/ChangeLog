@@ -1,3 +1,8 @@
+2016-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69442
+	* gcc.dg/pr69442.c: New test.
+
 2016-01-26  Roger Ferrer Ibáñez  <rofirrim@gmail.com>
 
 	PR target/67896
