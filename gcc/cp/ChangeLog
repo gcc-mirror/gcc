@@ -1,3 +1,11 @@
+2016-01-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68782
+	* constexpr.c (cxx_eval_bare_aggregate): Update TREE_CONSTANT
+	and TREE_SIDE_EFFECTS.
+	(cxx_eval_constant_expression) [CONSTRUCTOR]: Call
+	verify_constructor_flags.
+
 2016-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/68357
