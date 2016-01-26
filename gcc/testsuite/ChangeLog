@@ -1,3 +1,10 @@
+2016-01-26  Christian Bruel  <christian.bruel@st.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_crypto_pragma_ok_nocache): Remove.
+	(check_effective_target_arm_crypto_pragma_ok): Likewise.
+	* gcc.target/arm/attr-crypto.c: Remove arm_crypto_pragma_ok test.
+
 2016-01-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69452
