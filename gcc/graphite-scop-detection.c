@@ -533,21 +533,6 @@ public:
 
   static edge get_nearest_pdom_with_single_exit (basic_block dom);
 
-
-  /* Pretty printers.  */
-
-  static void print_edge (FILE *file, const_edge e)
-  {
-    fprintf (file, "edge (bb_%d, bb_%d)", e->src->index, e->dest->index);
-  }
-
-  static void print_sese (FILE *file, sese_l s)
-  {
-    fprintf (file, "(entry_"); print_edge (file, s.entry);
-    fprintf (file, ", exit_"); print_edge (file, s.exit);
-    fprintf (file, ")\n");
-  }
-
   /* Merge scops at same loop depth and returns the new sese.
      Returns a new SESE when merge was successful, INVALID_SESE otherwise.  */
 

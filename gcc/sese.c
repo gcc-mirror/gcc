@@ -585,3 +585,37 @@ scalar_evolution_in_region (const sese_l &region, loop_p loop, tree t)
 
   return instantiate_scev (before, loop, t);
 }
+
+/* Pretty print edge E to FILE.  */
+
+void
+print_edge (FILE *file, const_edge e)
+{
+  fprintf (file, "edge (bb_%d, bb_%d)", e->src->index, e->dest->index);
+}
+
+/* Pretty print sese S to FILE.  */
+
+void
+print_sese (FILE *file, const sese_l &s)
+{
+  fprintf (file, "(entry_"); print_edge (file, s.entry);
+  fprintf (file, ", exit_"); print_edge (file, s.exit);
+  fprintf (file, ")\n");
+}
+
+/* Pretty print edge E to STDERR.  */
+
+DEBUG_FUNCTION void
+debug_edge (const_edge e)
+{
+  print_edge (stderr, e);
+}
+
+/* Pretty print sese S to STDERR.  */
+
+DEBUG_FUNCTION void
+debug_sese (const sese_l &s)
+{
+  print_sese (stderr, s);
+}

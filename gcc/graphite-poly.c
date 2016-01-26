@@ -86,28 +86,6 @@ debug_iteration_domains (scop_p scop)
   print_iteration_domains (stderr, scop);
 }
 
-/* Apply graphite transformations to all the basic blocks of SCOP.  */
-
-bool
-apply_poly_transforms (scop_p scop)
-{
-  bool transform_done = false;
-
-  /* Generate code even if we did not apply any real transformation.
-     This also allows to check the performance for the identity
-     transformation: GIMPLE -> GRAPHITE -> GIMPLE.  */
-  if (flag_graphite_identity)
-    transform_done = true;
-
-  if (flag_loop_parallelize_all)
-    transform_done = true;
-
-  if (flag_loop_nest_optimize)
-    transform_done |= optimize_isl (scop);
-
-  return transform_done;
-}
-
 /* Create a new polyhedral data reference and add it to PBB.  It is
    defined by its ACCESSES, its TYPE, and the number of subscripts
    NB_SUBSCRIPTS.  */
@@ -142,7 +120,7 @@ new_poly_dr (poly_bb_p pbb, gimple *stmt, enum poly_dr_type type,
 
 /* Free polyhedral data reference PDR.  */
 
-void
+static void
 free_poly_dr (poly_dr_p pdr)
 {
   isl_map_free (pdr->accesses);
@@ -158,9 +136,13 @@ new_poly_bb (scop_p scop, gimple_poly_bb_p black_box)
   poly_bb_p pbb = XNEW (struct poly_bb);
 
   pbb->domain = NULL;
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  pbb->iterators = NULL;
+#else
   pbb->schedule = NULL;
   pbb->transformed = NULL;
   pbb->saved = NULL;
+#endif
   PBB_SCOP (pbb) = scop;
   pbb_set_black_box (pbb, black_box);
   PBB_DRS (pbb).create (3);
@@ -171,16 +153,25 @@ new_poly_bb (scop_p scop, gimple_poly_bb_p black_box)
 
 /* Free polyhedral black box.  */
 
-void
+static void
 free_poly_bb (poly_bb_p pbb)
 {
   int i;
   poly_dr_p pdr;
 
   isl_set_free (pbb->domain);
+  pbb->domain = NULL;
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  isl_set_free (pbb->iterators);
+  pbb->iterators = NULL;
+#else
   isl_map_free (pbb->schedule);
+  pbb->schedule = NULL;
   isl_map_free (pbb->transformed);
+  pbb->transformed = NULL;
   isl_map_free (pbb->saved);
+  pbb->saved = NULL;
+#endif
 
   if (PBB_DRS (pbb).exists ())
     FOR_EACH_VEC_ELT (PBB_DRS (pbb), i, pdr)
@@ -251,7 +242,7 @@ new_gimple_poly_bb (basic_block bb, vec<data_reference_p> drs,
 
 /* Frees GBB.  */
 
-void
+static void
 free_gimple_poly_bb (gimple_poly_bb_p gbb)
 {
   free_data_refs (GBB_DATA_REFS (gbb));
@@ -282,7 +273,12 @@ new_scop (edge entry, edge exit)
   sese_info_p region = new_sese_info (entry, exit);
   scop_p s = XNEW (struct scop);
 
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  s->original_schedule = NULL;
+  s->transformed_schedule = NULL;
+#else
   s->schedule = NULL;
+#endif
   s->param_context = NULL;
   scop_set_region (s, region);
   s->pbbs.create (3);
@@ -309,8 +305,17 @@ free_scop (scop_p scop)
   scop->drs.release ();
 
   isl_set_free (scop->param_context);
+  scop->param_context = NULL;
   isl_union_map_free (scop->dependence);
   scop->dependence = NULL;
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  isl_schedule_free (scop->original_schedule);
+  scop->original_schedule = NULL;
+  isl_schedule_free (scop->transformed_schedule);
+  scop->transformed_schedule = NULL;
+#else
+
+#endif
   XDELETE (scop);
 }
 
@@ -535,53 +540,61 @@ debug_scop_params (scop_p scop)
 
 extern isl_ctx *the_isl_ctx;
 void
-print_isl_set (FILE *f, isl_set *set)
+print_isl_set (FILE *f, __isl_keep isl_set *set)
 {
   isl_printer *p = isl_printer_to_file (the_isl_ctx, f);
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  p = isl_printer_set_yaml_style (p, ISL_YAML_STYLE_BLOCK);
+#endif
   p = isl_printer_print_set (p, set);
   p = isl_printer_print_str (p, "\n");
   isl_printer_free (p);
 }
 
 DEBUG_FUNCTION void
-debug_isl_set (isl_set *set)
+debug_isl_set (__isl_keep isl_set *set)
 {
   print_isl_set (stderr, set);
 }
 
 void
-print_isl_map (FILE *f, isl_map *map)
+print_isl_map (FILE *f, __isl_keep isl_map *map)
 {
   isl_printer *p = isl_printer_to_file (the_isl_ctx, f);
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  p = isl_printer_set_yaml_style (p, ISL_YAML_STYLE_BLOCK);
+#endif
   p = isl_printer_print_map (p, map);
   p = isl_printer_print_str (p, "\n");
   isl_printer_free (p);
 }
 
 DEBUG_FUNCTION void
-debug_isl_map (isl_map *map)
+debug_isl_map (__isl_keep isl_map *map)
 {
   print_isl_map (stderr, map);
 }
 
 void
-print_isl_union_map (FILE *f, isl_union_map *map)
+print_isl_union_map (FILE *f, __isl_keep isl_union_map *map)
 {
   isl_printer *p = isl_printer_to_file (the_isl_ctx, f);
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  p = isl_printer_set_yaml_style (p, ISL_YAML_STYLE_BLOCK);
+#endif
   p = isl_printer_print_union_map (p, map);
   p = isl_printer_print_str (p, "\n");
   isl_printer_free (p);
 }
 
 DEBUG_FUNCTION void
-debug_isl_union_map (isl_union_map *map)
+debug_isl_union_map (__isl_keep isl_union_map *map)
 {
   print_isl_union_map (stderr, map);
 }
 
-
 void
-print_isl_aff (FILE *f, isl_aff *aff)
+print_isl_aff (FILE *f, __isl_keep isl_aff *aff)
 {
   isl_printer *p = isl_printer_to_file (the_isl_ctx, f);
   p = isl_printer_print_aff (p, aff);
@@ -590,13 +603,13 @@ print_isl_aff (FILE *f, isl_aff *aff)
 }
 
 DEBUG_FUNCTION void
-debug_isl_aff (isl_aff *aff)
+debug_isl_aff (__isl_keep isl_aff *aff)
 {
   print_isl_aff (stderr, aff);
 }
 
 void
-print_isl_constraint (FILE *f, isl_constraint *c)
+print_isl_constraint (FILE *f, __isl_keep isl_constraint *c)
 {
   isl_printer *p = isl_printer_to_file (the_isl_ctx, f);
   p = isl_printer_print_constraint (p, c);
@@ -605,46 +618,49 @@ print_isl_constraint (FILE *f, isl_constraint *c)
 }
 
 DEBUG_FUNCTION void
-debug_isl_constraint (isl_constraint *c)
+debug_isl_constraint (__isl_keep isl_constraint *c)
 {
   print_isl_constraint (stderr, c);
 }
 
-/* Returns the number of iterations RES of the loop around PBB at
-   time(scattering) dimension TIME_DEPTH.  */
+void
+print_isl_schedule (FILE *f, __isl_keep isl_schedule *s)
+{
+  isl_printer *p = isl_printer_to_file (the_isl_ctx, f);
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  p = isl_printer_set_yaml_style (p, ISL_YAML_STYLE_BLOCK);
+#endif
+  p = isl_printer_print_schedule (p, s);
+  p = isl_printer_print_str (p, "\n");
+  isl_printer_free (p);
+}
+
+DEBUG_FUNCTION void
+debug_isl_schedule (__isl_keep isl_schedule *s)
+{
+  print_isl_schedule (stderr, s);
+}
 
 void
-pbb_number_of_iterations_at_time (poly_bb_p pbb,
-				  graphite_dim_t time_depth,
-				  mpz_t res)
+print_isl_ast (FILE *file, __isl_keep isl_ast_node *n)
 {
-  isl_set *transdomain;
-  isl_space *dc;
-  isl_aff *aff;
-  isl_val *isllb, *islub;
+  isl_printer *prn = isl_printer_to_file (the_isl_ctx, file);
+  prn = isl_printer_set_output_format (prn, ISL_FORMAT_C);
+  prn = isl_printer_print_ast_node (prn, n);
+  prn = isl_printer_print_str (prn, "\n");
+  isl_printer_free (prn);
+}
 
-  /* Map the iteration domain through the current scatter, and work
-     on the resulting set.  */
-  transdomain = isl_set_apply (isl_set_copy (pbb->domain),
-			       isl_map_copy (pbb->transformed));
+DEBUG_FUNCTION void
+debug_isl_ast (isl_ast_node *n)
+{
+  print_isl_ast (stderr, n);
+}
 
-  /* Select the time_depth' dimension via an affine expression.  */
-  dc = isl_set_get_space (transdomain);
-  aff = isl_aff_zero_on_domain (isl_local_space_from_space (dc));
-  aff = isl_aff_set_coefficient_si (aff, isl_dim_in, time_depth, 1);
-
-  /* And find the min/max for that function.  */
-  /* XXX isl check results?  */
-  isllb = isl_set_min_val (transdomain, aff);
-  islub = isl_set_max_val (transdomain, aff);
-
-  islub = isl_val_sub (islub, isllb);
-  islub = isl_val_add_ui (islub, 1);
-  isl_val_get_num_gmp (islub, res);
-
-  isl_val_free (islub);
-  isl_aff_free (aff);
-  isl_set_free (transdomain);
+DEBUG_FUNCTION void
+debug_scop_pbb (scop_p scop, int i)
+{
+  debug_pbb (scop->pbbs[i]);
 }
 
 #endif  /* HAVE_isl */

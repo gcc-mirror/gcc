@@ -92,24 +92,120 @@ get_schedule_for_node_st (__isl_take isl_schedule_node *node, void *user)
   return node;
 }
 
-/* get_schedule_map_st - Improve the schedule by performing other loop
-   optimizations. _st ending is for schedule tree version of this
-   function (see get_schedule_map below for the band forest version).
-
-   Do a depth-first post-order traversal of the nodes in a schedule
-   tree and apply get_schedule_for_node_st on them to improve the schedule.
-  */
-
-static __isl_give isl_union_map *
-get_schedule_map_st (__isl_keep isl_schedule *schedule)
+static isl_union_set *
+scop_get_domains (scop_p scop)
 {
+  int i;
+  poly_bb_p pbb;
+  isl_space *space = isl_set_get_space (scop->param_context);
+  isl_union_set *res = isl_union_set_empty (space);
 
-  schedule = isl_schedule_map_schedule_node_bottom_up (schedule,
-						       get_schedule_for_node_st,
-						       NULL);
-  isl_union_map *schedule_map = isl_schedule_get_map (schedule);
-  return schedule_map;
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
+    res = isl_union_set_add_set (res, isl_set_copy (pbb->domain));
+
+  return res;
 }
+
+/* Compute the schedule for SCOP based on its parameters, domain and set of
+   constraints.  Then apply the schedule to SCOP.  */
+
+static bool
+optimize_isl (scop_p scop)
+{
+  int old_max_operations = isl_ctx_get_max_operations (scop->isl_context);
+  int max_operations = PARAM_VALUE (PARAM_MAX_ISL_OPERATIONS);
+  if (max_operations)
+    isl_ctx_set_max_operations (scop->isl_context, max_operations);
+  isl_options_set_on_error (scop->isl_context, ISL_ON_ERROR_CONTINUE);
+
+  isl_union_set *domain = scop_get_domains (scop);
+
+  /* Simplify the dependences on the domain.  */
+  scop_get_dependences (scop);
+  isl_union_map *dependences
+    = isl_union_map_gist_domain (isl_union_map_copy (scop->dependence),
+				 isl_union_set_copy (domain));
+  isl_union_map *validity
+    = isl_union_map_gist_range (dependences, isl_union_set_copy (domain));
+
+  /* FIXME: proximity should not be validity.  */
+  isl_union_map *proximity = isl_union_map_copy (validity);
+
+  isl_schedule_constraints *sc = isl_schedule_constraints_on_domain (domain);
+  sc = isl_schedule_constraints_set_proximity (sc, proximity);
+  sc = isl_schedule_constraints_set_validity (sc, isl_union_map_copy (validity));
+  sc = isl_schedule_constraints_set_coincidence (sc, validity);
+
+  isl_options_set_schedule_serialize_sccs (scop->isl_context, 0);
+  isl_options_set_schedule_maximize_band_depth (scop->isl_context, 1);
+  isl_options_set_schedule_max_constant_term (scop->isl_context, 20);
+  isl_options_set_schedule_max_coefficient (scop->isl_context, 20);
+  isl_options_set_tile_scale_tile_loops (scop->isl_context, 0);
+  /* Generate loop upper bounds that consist of the current loop iterator, an
+     operator (< or <=) and an expression not involving the iterator.  If this
+     option is not set, then the current loop iterator may appear several times
+     in the upper bound.  See the isl manual for more details.  */
+  isl_options_set_ast_build_atomic_upper_bound (scop->isl_context, 1);
+
+  scop->transformed_schedule = isl_schedule_constraints_compute_schedule (sc);
+  scop->transformed_schedule =
+    isl_schedule_map_schedule_node_bottom_up (scop->transformed_schedule,
+					      get_schedule_for_node_st, NULL);
+  isl_options_set_on_error (scop->isl_context, ISL_ON_ERROR_ABORT);
+
+  isl_ctx_reset_operations (scop->isl_context);
+  isl_ctx_set_max_operations (scop->isl_context, old_max_operations);
+  if (!scop->transformed_schedule
+      || isl_ctx_last_error (scop->isl_context) == isl_error_quota)
+    {
+      if (dump_file && dump_flags)
+	fprintf (dump_file, "isl timed out --param max-isl-operations=%d\n",
+		 max_operations);
+      return false;
+    }
+
+  gcc_assert (scop->original_schedule);
+  isl_union_map *original = isl_schedule_get_map (scop->original_schedule);
+  isl_union_map *transformed = isl_schedule_get_map (scop->transformed_schedule);
+  bool same_schedule = isl_union_map_is_equal (original, transformed);
+  isl_union_map_free (original);
+  isl_union_map_free (transformed);
+
+  if (same_schedule)
+    {
+      if (dump_file)
+	{
+	  fprintf (dump_file, "[scheduler] isl optimized schedule is "
+		   "identical to the original schedule.\n");
+	  print_schedule_ast (dump_file, scop->original_schedule, scop);
+	}
+      isl_schedule_free (scop->transformed_schedule);
+      scop->transformed_schedule = isl_schedule_copy (scop->original_schedule);
+      return false;
+    }
+
+  return true;
+}
+
+/* Apply graphite transformations to all the basic blocks of SCOP.  */
+
+bool
+apply_poly_transforms (scop_p scop)
+{
+  if (flag_loop_nest_optimize)
+    return optimize_isl (scop);
+
+  if (!flag_graphite_identity && !flag_loop_parallelize_all)
+    return false;
+
+  /* Generate code even if we did not apply any real transformation.
+     This also allows to check the performance for the identity
+     transformation: GIMPLE -> GRAPHITE -> GIMPLE.  */
+  gcc_assert (scop->original_schedule);
+  scop->transformed_schedule = isl_schedule_copy (scop->original_schedule);
+  return true;
+}
+
 #else
 
 /* get_tile_map - Create a map that describes a n-dimensonal tiling.
@@ -304,7 +400,6 @@ get_schedule_map (isl_schedule *schedule)
   isl_band_list_free (band_list);
   return schedule_map;
 }
-#endif
 
 static isl_stat
 get_single_map (__isl_take isl_map *map, void *user)
@@ -350,12 +445,10 @@ scop_get_domains (scop_p scop)
   return res;
 }
 
-static const int CONSTANT_BOUND = 20;
-
 /* Compute the schedule for SCOP based on its parameters, domain and set of
    constraints.  Then apply the schedule to SCOP.  */
 
-bool
+static bool
 optimize_isl (scop_p scop)
 {
   int old_max_operations = isl_ctx_get_max_operations (scop->isl_context);
@@ -373,24 +466,10 @@ optimize_isl (scop_p scop)
   isl_union_map *validity = isl_union_map_copy (scop->dependence);
   isl_union_map *proximity = isl_union_map_copy (validity);
 
-  isl_options_set_schedule_max_constant_term (scop->isl_context, CONSTANT_BOUND);
-  isl_options_set_schedule_maximize_band_depth (scop->isl_context, 1);
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
-  /* isl 0.15 or later.  */
-  isl_options_set_schedule_serialize_sccs (scop->isl_context, 0);
-  isl_options_set_schedule_maximize_band_depth (scop->isl_context, 1);
-  isl_options_set_schedule_max_constant_term (scop->isl_context, 20);
-  isl_options_set_schedule_max_coefficient (scop->isl_context, 20);
-  isl_options_set_tile_scale_tile_loops (scop->isl_context, 0);
-  isl_options_set_coalesce_bounded_wrapping (scop->isl_context, 1);
-  isl_options_set_ast_build_exploit_nested_bounds (scop->isl_context, 1);
-  isl_options_set_ast_build_atomic_upper_bound (scop->isl_context, 1);
-#else
   isl_options_set_schedule_fuse (scop->isl_context, ISL_SCHEDULE_FUSE_MIN);
-#endif
-
   isl_schedule *schedule
     = isl_union_set_compute_schedule (domain, validity, proximity);
+
   isl_options_set_on_error (scop->isl_context, ISL_ON_ERROR_ABORT);
 
   isl_ctx_reset_operations (scop->isl_context);
@@ -405,20 +484,38 @@ optimize_isl (scop_p scop)
       return false;
     }
 
-  /* Attach the schedule to scop so that it can be used in code generation.
-     schedule freeing will occur in code generation.  */
   scop->schedule = schedule;
 
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
-  /* isl 0.15 or later.  */
-  isl_union_map *schedule_map = get_schedule_map_st (schedule);
-#else
   isl_union_map *schedule_map = get_schedule_map (schedule);
-#endif
   apply_schedule_map_to_scop (scop, schedule_map);
-
   isl_union_map_free (schedule_map);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "isl end schedule:\n");
+      print_isl_schedule (dump_file, scop->schedule);
+    }
+
   return true;
 }
+
+/* Apply graphite transformations to all the basic blocks of SCOP.  */
+
+bool
+apply_poly_transforms (scop_p scop)
+{
+  if (flag_loop_nest_optimize)
+    return optimize_isl (scop);
+
+  if (!flag_graphite_identity && !flag_loop_parallelize_all)
+    return false;
+
+  /* Generate code even if we did not apply any real transformation.
+     This also allows to check the performance for the identity
+     transformation: GIMPLE -> GRAPHITE -> GIMPLE.  */
+  return true;
+}
+
+#endif /* HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS */
 
 #endif /* HAVE_isl */

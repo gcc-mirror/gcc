@@ -77,6 +77,7 @@ isl_id_for_pbb (scop_p s, poly_bb_p pbb)
   return isl_id_alloc (s->isl_context, name, pbb);
 }
 
+#ifndef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
 /* Converts the STATIC_SCHEDULE of PBB into a scattering polyhedron.
    We generate SCATTERING_DIMENSIONS scattering dimensions.
 
@@ -221,6 +222,7 @@ build_scop_scattering (scop_p scop)
 
   isl_aff_free (static_sched);
 }
+#endif
 
 static isl_pw_aff *extract_affine (scop_p, tree, __isl_take isl_space *space);
 
@@ -440,10 +442,7 @@ create_pw_aff_from_tree (poly_bb_p pbb, tree t)
 
   t = scalar_evolution_in_region (scop->scop_info->region, pbb_loop (pbb), t);
 
-  /* Bail out as we do not know the scev.  */
-  if (chrec_contains_undetermined (t))
-    return NULL;
-
+  gcc_assert (!chrec_contains_undetermined (t));
   gcc_assert (!automatically_generated_chrec_p (t));
 
   return extract_affine (scop, t, isl_set_get_space (pbb->domain));
@@ -453,19 +452,11 @@ create_pw_aff_from_tree (poly_bb_p pbb, tree t)
    operator.  This allows us to invert the condition or to handle
    inequalities.  */
 
-static bool
+static void
 add_condition_to_pbb (poly_bb_p pbb, gcond *stmt, enum tree_code code)
 {
   isl_pw_aff *lhs = create_pw_aff_from_tree (pbb, gimple_cond_lhs (stmt));
-  if (!lhs)
-    return false;
-
   isl_pw_aff *rhs = create_pw_aff_from_tree (pbb, gimple_cond_rhs (stmt));
-  if (!rhs)
-    {
-      isl_pw_aff_free (lhs);
-      return false;
-    }
 
   isl_set *cond;
   switch (code)
@@ -495,20 +486,17 @@ add_condition_to_pbb (poly_bb_p pbb, gcond *stmt, enum tree_code code)
 	break;
 
       default:
-	isl_pw_aff_free (lhs);
-	isl_pw_aff_free (rhs);
-	return true;
+	gcc_unreachable ();
     }
 
   cond = isl_set_coalesce (cond);
   cond = isl_set_set_tuple_id (cond, isl_set_get_tuple_id (pbb->domain));
   pbb->domain = isl_set_coalesce (isl_set_intersect (pbb->domain, cond));
-  return true;
 }
 
 /* Add conditions to the domain of PBB.  */
 
-static bool
+static void
 add_conditions_to_domain (poly_bb_p pbb)
 {
   unsigned int i;
@@ -516,7 +504,7 @@ add_conditions_to_domain (poly_bb_p pbb)
   gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
 
   if (GBB_CONDITIONS (gbb).is_empty ())
-    return true;
+    return;
 
   FOR_EACH_VEC_ELT (GBB_CONDITIONS (gbb), i, stmt)
     switch (gimple_code (stmt))
@@ -534,36 +522,14 @@ add_conditions_to_domain (poly_bb_p pbb)
 	    if (!GBB_CONDITION_CASES (gbb)[i])
 	      code = invert_tree_comparison (code, false);
 
-	    if (!add_condition_to_pbb (pbb, cond_stmt, code))
-	      return false;
+	    add_condition_to_pbb (pbb, cond_stmt, code);
 	    break;
 	  }
-
-      case GIMPLE_SWITCH:
-	/* Switch statements are not supported right now - fall through.  */
 
       default:
 	gcc_unreachable ();
 	break;
       }
-
-  return true;
-}
-
-/* Traverses all the GBBs of the SCOP and add their constraints to the
-   iteration domains.  */
-
-static bool
-add_conditions_to_constraints (scop_p scop)
-{
-  int i;
-  poly_bb_p pbb;
-
-  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
-    if (!add_conditions_to_domain (pbb))
-      return false;
-
-  return true;
 }
 
 /* Add constraints on the possible values of parameter P from the type
@@ -898,6 +864,19 @@ build_scop_drs (scop_p scop)
     build_poly_sr (pbb);
 }
 
+/* Add to the iteration DOMAIN one extra dimension for LOOP->num.  */
+
+static isl_set *
+add_iter_domain_dimension (__isl_take isl_set *domain, loop_p loop, scop_p scop)
+{
+  int loop_index = isl_set_dim (domain, isl_dim_set);
+  domain = isl_set_add_dims (domain, isl_dim_set, 1);
+  char name[50];
+  snprintf (name, sizeof(name), "i%d", loop->num);
+  isl_id *label = isl_id_alloc (scop->isl_context, name, NULL);
+  return isl_set_set_dim_id (domain, isl_dim_set, loop_index, label);
+}
+
 /* Add constraints to DOMAIN for each loop from LOOP up to CONTEXT.  */
 
 static isl_set *
@@ -919,7 +898,7 @@ add_loop_constraints (scop_p scop, __isl_take isl_set *domain, loop_p loop,
   if (dump_file)
     fprintf (dump_file, "[sese-to-poly] adding one extra dimension to the "
 	     "domain for loop_%d.\n", loop->num);
-  domain = isl_set_add_dims (domain, isl_dim_set, 1);
+  domain = add_iter_domain_dimension (domain, loop, scop);
   isl_space *space = isl_set_get_space (domain);
 
   /* 0 <= loop_i */
@@ -1014,8 +993,8 @@ add_loop_constraints (scop_p scop, __isl_take isl_set *domain, loop_p loop,
 /* Builds the original iteration domains for each pbb in the SCOP.  */
 
 static int
-build_iteration_domains (scop_p scop, __isl_keep isl_set *context, int index,
-			 loop_p context_loop)
+build_iteration_domains (scop_p scop, __isl_keep isl_set *context,
+			 int index, loop_p context_loop)
 {
   loop_p current = pbb_loop (scop->pbbs[index]);
   isl_set *domain = isl_set_copy (context);
@@ -1029,9 +1008,14 @@ build_iteration_domains (scop_p scop, __isl_keep isl_set *context, int index,
       loop_p loop = pbb_loop (pbb);
       if (current == loop)
 	{
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+	  pbb->iterators = isl_set_copy (domain);
+#endif
 	  pbb->domain = isl_set_copy (domain);
 	  pbb->domain = isl_set_set_tuple_id (pbb->domain,
 					      isl_id_for_pbb (scop, pbb));
+	  add_conditions_to_domain (pbb);
+
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "[sese-to-poly] set pbb_%d->domain: ",
@@ -1061,7 +1045,6 @@ build_iteration_domains (scop_p scop, __isl_keep isl_set *context, int index,
   return i;
 }
 
-
 /* Assign dimension for each parameter in SCOP and add constraints for the
    parameters.  */
 
@@ -1085,6 +1068,289 @@ build_scop_context (scop_p scop)
     add_param_constraints (scop, p);
 }
 
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+
+/* Return true when loop A is nested in loop B.  */
+
+static bool
+nested_in (loop_p a, loop_p b)
+{
+  return b == find_common_loop (a, b);
+}
+
+/* Return the loop at a specific SCOP->pbbs[*INDEX].  */
+static loop_p
+loop_at (scop_p scop, int *index)
+{
+  return pbb_loop (scop->pbbs[*index]);
+}
+
+/* Return the index of any pbb belonging to loop or a subloop of A.  */
+
+static int
+index_outermost_in_loop (loop_p a, scop_p scop)
+{
+  int i, outermost = -1;
+  int last_depth = -1;
+  poly_bb_p pbb;
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
+    if (nested_in (pbb_loop (pbb), a)
+	&& (last_depth == -1
+	    || last_depth > (int) loop_depth (pbb_loop (pbb))))
+      {
+	outermost = i;
+	last_depth = loop_depth (pbb_loop (pbb));
+      }
+  return outermost;
+}
+
+/* Return the index of any pbb belonging to loop or a subloop of A.  */
+
+static int
+index_pbb_in_loop (loop_p a, scop_p scop)
+{
+  int i;
+  poly_bb_p pbb;
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
+    if (pbb_loop (pbb) == a)
+      return i;
+  return -1;
+}
+
+static poly_bb_p
+outermost_pbb_in (loop_p loop, scop_p scop)
+{
+  int x = index_pbb_in_loop (loop, scop);
+  if (x == -1)
+    x = index_outermost_in_loop (loop, scop);
+  return scop->pbbs[x];
+}
+
+static isl_schedule *
+add_in_sequence (__isl_take isl_schedule *a, __isl_take isl_schedule *b)
+{
+  gcc_assert (a || b);
+
+  if (!a)
+    return b;
+
+  if (!b)
+    return a;
+
+  return isl_schedule_sequence (a, b);
+}
+
+struct map_to_dimension_data {
+  int n;
+  isl_union_pw_multi_aff *res;
+};
+
+/* Create a function that maps the elements of SET to its N-th dimension and add
+   it to USER->res.  */
+
+static isl_stat
+add_outer_projection (__isl_take isl_set *set, void *user)
+{
+  struct map_to_dimension_data *data = (struct map_to_dimension_data *) user;
+  int dim = isl_set_dim (set, isl_dim_set);
+  isl_space *space = isl_set_get_space (set);
+
+  gcc_assert (dim >= data->n);
+  isl_pw_multi_aff *pma
+    = isl_pw_multi_aff_project_out_map (space, isl_dim_set, data->n,
+					dim - data->n);
+  data->res = isl_union_pw_multi_aff_add_pw_multi_aff (data->res, pma);
+
+  isl_set_free (set);
+  return isl_stat_ok;
+}
+
+/* Return SET in which all inner dimensions above N are removed.  */
+
+static isl_multi_union_pw_aff *
+outer_projection_mupa (__isl_take isl_union_set *set, int n)
+{
+  gcc_assert (n >= 0);
+  gcc_assert (set);
+  gcc_assert (!isl_union_set_is_empty (set));
+
+  isl_space *space = isl_union_set_get_space (set);
+  isl_union_pw_multi_aff *pwaff = isl_union_pw_multi_aff_empty (space);
+
+  struct map_to_dimension_data data = {n, pwaff};
+
+  if (isl_union_set_foreach_set (set, &add_outer_projection, &data) < 0)
+    data.res = isl_union_pw_multi_aff_free (data.res);
+
+  isl_union_set_free (set);
+  return isl_multi_union_pw_aff_from_union_pw_multi_aff (data.res);
+}
+
+/* Embed SCHEDULE in the constraints of the LOOP domain.  */
+
+static isl_schedule *
+add_loop_schedule (__isl_take isl_schedule *schedule, loop_p loop,
+		   scop_p scop)
+{
+  poly_bb_p pbb = outermost_pbb_in (loop, scop);
+  isl_set *iterators = pbb->iterators;
+
+  int empty = isl_set_is_empty (iterators);
+  if (empty < 0 || empty)
+    return empty < 0 ? isl_schedule_free (schedule) : schedule;
+
+  isl_space *space = isl_set_get_space (iterators);
+  int loop_index = isl_space_dim (space, isl_dim_set) - 1;
+
+  loop_p ploop = pbb_loop (pbb);
+  while (loop != ploop)
+    {
+      --loop_index;
+      ploop = loop_outer (ploop);
+    }
+
+  isl_local_space *ls = isl_local_space_from_space (space);
+  isl_aff *aff = isl_aff_var_on_domain (ls, isl_dim_set, loop_index);
+  isl_multi_aff *prefix = isl_multi_aff_from_aff (aff);
+  char name[50];
+  snprintf (name, sizeof(name), "L_%d", loop->num);
+  isl_id *label = isl_id_alloc (isl_schedule_get_ctx (schedule),
+				name, NULL);
+  prefix = isl_multi_aff_set_tuple_id (prefix, isl_dim_out, label);
+
+  int n = isl_multi_aff_dim (prefix, isl_dim_in);
+  isl_union_set *domain = isl_schedule_get_domain (schedule);
+  isl_multi_union_pw_aff *mupa = outer_projection_mupa (domain, n);
+  mupa = isl_multi_union_pw_aff_apply_multi_aff (mupa, prefix);
+  return isl_schedule_insert_partial_schedule (schedule, mupa);
+}
+
+/* Build schedule for the pbb at INDEX.  */
+
+static isl_schedule *
+build_schedule_pbb (scop_p scop, int *index)
+{
+  poly_bb_p pbb = scop->pbbs[*index];
+  ++*index;
+  isl_set *domain = isl_set_copy (pbb->domain);
+  isl_union_set *ud = isl_union_set_from_set (domain);
+  return isl_schedule_from_domain (ud);
+}
+
+static isl_schedule *build_schedule_loop_nest (scop_p, int *, loop_p);
+
+/* Build the schedule of the loop containing the SCOP pbb at INDEX.  */
+
+static isl_schedule *
+build_schedule_loop (scop_p scop, int *index)
+{
+  int max = scop->pbbs.length ();
+  gcc_assert (*index < max);
+  loop_p loop = loop_at (scop, index);
+
+  isl_schedule *s = NULL;
+  while (nested_in (loop_at (scop, index), loop))
+    {
+      if (loop == loop_at (scop, index))
+	s = add_in_sequence (s, build_schedule_pbb (scop, index));
+      else
+	s = add_in_sequence (s, build_schedule_loop_nest (scop, index, loop));
+
+      if (*index == max)
+	break;
+    }
+
+  return add_loop_schedule (s, loop, scop);
+}
+
+/* S is the schedule of the loop LOOP.  Embed the schedule S in all outer loops.
+   When CONTEXT_LOOP is null, embed the schedule in all loops contained in the
+   SCOP surrounding LOOP.  When CONTEXT_LOOP is non null, only embed S in the
+   maximal loop nest contained within CONTEXT_LOOP.  */
+
+static isl_schedule *
+embed_in_surrounding_loops (__isl_take isl_schedule *s, scop_p scop,
+			    loop_p loop, int *index, loop_p context_loop)
+{
+  loop_p outer = loop_outer (loop);
+  sese_l region = scop->scop_info->region;
+  if (context_loop == outer
+      || !loop_in_sese_p (outer, region))
+    return s;
+
+  int max = scop->pbbs.length ();
+  if (*index == max
+      || (context_loop && !nested_in (loop_at (scop, index), context_loop))
+      || (!context_loop
+	  && !loop_in_sese_p (find_common_loop (outer, loop_at (scop, index)),
+			      region)))
+    return embed_in_surrounding_loops (add_loop_schedule (s, outer, scop),
+				       scop, outer, index, context_loop);
+
+  bool a_pbb;
+  while ((a_pbb = (outer == loop_at (scop, index)))
+	 || nested_in (loop_at (scop, index), outer))
+    {
+      if (a_pbb)
+	s = add_in_sequence (s, build_schedule_pbb (scop, index));
+      else
+	s = add_in_sequence (s, build_schedule_loop (scop, index));
+
+      if (*index == max)
+	break;
+    }
+
+  /* We reached the end of the OUTER loop: embed S in OUTER.  */
+  return embed_in_surrounding_loops (add_loop_schedule (s, outer, scop), scop,
+				     outer, index, context_loop);
+}
+
+/* Build schedule for the full loop nest containing the pbb at INDEX.  When
+   CONTEXT_LOOP is null, build the schedule of all loops contained in the SCOP
+   surrounding the pbb.  When CONTEXT_LOOP is non null, only build the maximal loop
+   nest contained within CONTEXT_LOOP.  */
+
+static isl_schedule *
+build_schedule_loop_nest (scop_p scop, int *index, loop_p context_loop)
+{
+  gcc_assert (*index != (int) scop->pbbs.length ());
+
+  loop_p loop = loop_at (scop, index);
+  isl_schedule *s = build_schedule_loop (scop, index);
+  return embed_in_surrounding_loops (s, scop, loop, index, context_loop);
+}
+
+/* Build the schedule of the SCOP.  */
+
+static bool
+build_original_schedule (scop_p scop)
+{
+  int i = 0;
+  int n = scop->pbbs.length ();
+  while (i < n)
+    {
+      poly_bb_p pbb = scop->pbbs[i];
+      isl_schedule *s = NULL;
+      if (!loop_in_sese_p (pbb_loop (pbb), scop->scop_info->region))
+	s = build_schedule_pbb (scop, &i);
+      else
+	s = build_schedule_loop_nest (scop, &i, NULL);
+
+      scop->original_schedule = add_in_sequence (scop->original_schedule, s);
+    }
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "[sese-to-poly] original schedule:\n");
+      print_isl_schedule (dump_file, scop->original_schedule);
+    }
+  if (!scop->original_schedule)
+    return false;
+  return true;
+}
+
+#endif
+
 /* Builds the polyhedral representation for a SESE region.  */
 
 bool
@@ -1097,11 +1363,12 @@ build_poly_scop (scop_p scop)
   while (i < n)
     i = build_iteration_domains (scop, scop->param_context, i, NULL);
 
-  if (!add_conditions_to_constraints (scop))
-    return false;
-
   build_scop_drs (scop);
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  build_original_schedule (scop);
+#else
   build_scop_scattering (scop);
+#endif
   return true;
 }
 #endif  /* HAVE_isl */

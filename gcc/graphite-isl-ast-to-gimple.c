@@ -105,7 +105,7 @@ typedef std::map<isl_id *, tree> ivs_params;
 
 /* Free all memory allocated for isl's identifiers.  */
 
-void ivs_params_clear (ivs_params &ip)
+static void ivs_params_clear (ivs_params &ip)
 {
   std::map<isl_id *, tree>::iterator it;
   for (it = ip.begin ();
@@ -119,7 +119,7 @@ void ivs_params_clear (ivs_params &ip)
 
 /* Set the "separate" option for the schedule node.  */
 
-static __isl_give isl_schedule_node *
+static isl_schedule_node *
 set_separate_option (__isl_take isl_schedule_node *node, void *user)
 {
   if (user)
@@ -136,6 +136,27 @@ set_separate_option (__isl_take isl_schedule_node *node, void *user)
 
   return node;
 }
+
+/* Print SCHEDULE under an AST form on file F.  */
+
+void
+print_schedule_ast (FILE *f, __isl_keep isl_schedule *schedule, scop_p scop)
+{
+  isl_set *set = isl_set_params (isl_set_copy (scop->param_context));
+  isl_ast_build *context = isl_ast_build_from_context (set);
+  isl_ast_node *ast
+    = isl_ast_build_node_from_schedule (context, isl_schedule_copy (schedule));
+  isl_ast_build_free (context);
+  print_isl_ast (f, ast);
+  isl_ast_node_free (ast);
+}
+
+DEBUG_FUNCTION void
+debug_schedule_ast (__isl_keep isl_schedule *s, scop_p scop)
+{
+  print_schedule_ast (stderr, s, scop);
+}
+
 #endif
 
 enum phi_node_kind
@@ -288,13 +309,16 @@ class translate_isl_ast_to_gimple
 
   void add_parameters_to_ivs_params (scop_p scop, ivs_params &ip);
 
-  /* Get the maximal number of schedule dimensions in the scop SCOP.  */
-
-  int get_max_schedule_dimensions (scop_p scop);
-
   /* Generates a build, which specifies the constraints on the parameters.  */
 
   __isl_give isl_ast_build *generate_isl_context (scop_p scop);
+
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  /* Generate isl AST from schedule of SCOP.  */
+  __isl_give isl_ast_node * scop_to_isl_ast (scop_p scop);
+#else
+  /* Get the maximal number of schedule dimensions in the scop SCOP.  */
+  int get_max_schedule_dimensions (scop_p scop);
 
   /* Extend the schedule to NB_SCHEDULE_DIMS schedule dimensions.
 
@@ -302,34 +326,33 @@ class translate_isl_ast_to_gimple
      define an order and will just randomly choose an order.  The solution to
      this problem is to extend all schedules to the maximal number of schedule
      dimensions (using '0's for the remaining values).  */
-
   __isl_give isl_map *extend_schedule (__isl_take isl_map *schedule,
 				       int nb_schedule_dims);
 
   /* Generates a schedule, which specifies an order used to
      visit elements in a domain.  */
-
   __isl_give isl_union_map *generate_isl_schedule (scop_p scop);
-
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
-  /* Set the "separate" option for all schedules.  This helps reducing control
-     overhead.  */
-
-  __isl_give isl_schedule *
-    set_options_for_schedule_tree (__isl_take isl_schedule *schedule);
-#endif
 
   /* Set the separate option for all dimensions.
      This helps to reduce control overhead.  */
-
-  __isl_give isl_ast_build * set_options (__isl_take isl_ast_build *control,
-					  __isl_keep isl_union_map *schedule);
+  __isl_give isl_ast_build *set_options (__isl_take isl_ast_build *control,
+					 __isl_keep isl_union_map *schedule);
 
   /* Generate isl AST from schedule of SCOP.  Also, collects IVS_PARAMS in
      IP.  */
+  __isl_give isl_ast_node *scop_to_isl_ast (scop_p scop, ivs_params &ip);
 
-  __isl_give isl_ast_node * scop_to_isl_ast (scop_p scop, ivs_params &ip);
-
+  /* Prints NODE to FILE.  */
+  void print_isl_ast_node (FILE *file, __isl_keep isl_ast_node *node,
+			   __isl_keep isl_ctx *ctx) const
+  {
+    isl_printer *prn = isl_printer_to_file (ctx, file);
+    prn = isl_printer_set_output_format (prn, ISL_FORMAT_C);
+    prn = isl_printer_print_ast_node (prn, node);
+    prn = isl_printer_print_str (prn, "\n");
+    isl_printer_free (prn);
+  }
+#endif
 
   /* Return true if RENAME (defined in BB) is a valid use in NEW_BB.  The
      definition should flow into use, and the use should respect the loop-closed
@@ -484,11 +507,6 @@ class translate_isl_ast_to_gimple
 
   bool codegen_error_p () const
   { return codegen_error; }
-
-  /* Prints NODE to FILE.  */
-
-  void print_isl_ast_node (FILE *file, __isl_keep isl_ast_node *node,
-			   __isl_keep isl_ctx *ctx) const;
 
   /* Return true when OP is a constant tree.  */
 
@@ -1389,7 +1407,7 @@ is_valid_rename (tree rename, basic_block def_bb, basic_block use_bb,
     {
       if (dump_file)
 	{
-	  fprintf (dump_file, "[codegen] rename not in loop closed ssa:");
+	  fprintf (dump_file, "[codegen] rename not in loop closed ssa: ");
 	  print_generic_expr (dump_file, rename, 0);
 	  fprintf (dump_file, "\n");
 	}
@@ -3110,20 +3128,6 @@ translate_isl_ast_to_gimple::translate_pending_phi_nodes ()
     }
 }
 
-/* Prints NODE to FILE.  */
-
-void
-translate_isl_ast_to_gimple::print_isl_ast_node (FILE *file,
-						 __isl_keep isl_ast_node *node,
-						 __isl_keep isl_ctx *ctx) const
-{
-  isl_printer *prn = isl_printer_to_file (ctx, file);
-  prn = isl_printer_set_output_format (prn, ISL_FORMAT_C);
-  prn = isl_printer_print_ast_node (prn, node);
-  prn = isl_printer_print_str (prn, "\n");
-  isl_printer_free (prn);
-}
-
 /* Add isl's parameter identifiers and corresponding trees to ivs_params.  */
 
 void
@@ -3152,6 +3156,52 @@ translate_isl_ast_to_gimple::generate_isl_context (scop_p scop)
   return isl_ast_build_from_context (context_isl);
 }
 
+/* This method is executed before the construction of a for node.  */
+__isl_give isl_id *
+ast_build_before_for (__isl_keep isl_ast_build *build, void *user)
+{
+  isl_union_map *dependences = (isl_union_map *) user;
+  ast_build_info *for_info = XNEW (struct ast_build_info);
+  isl_union_map *schedule = isl_ast_build_get_schedule (build);
+  isl_space *schedule_space = isl_ast_build_get_schedule_space (build);
+  int dimension = isl_space_dim (schedule_space, isl_dim_out);
+  for_info->is_parallelizable =
+    !carries_deps (schedule, dependences, dimension);
+  isl_union_map_free (schedule);
+  isl_space_free (schedule_space);
+  isl_id *id = isl_id_alloc (isl_ast_build_get_ctx (build), "", for_info);
+  return id;
+}
+
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+
+/* Generate isl AST from schedule of SCOP.  */
+
+__isl_give isl_ast_node *
+translate_isl_ast_to_gimple::scop_to_isl_ast (scop_p scop)
+{
+  gcc_assert (scop->transformed_schedule);
+
+  /* Set the separate option to reduce control flow overhead.  */
+  isl_schedule *schedule = isl_schedule_map_schedule_node_bottom_up
+    (isl_schedule_copy (scop->transformed_schedule), set_separate_option, NULL);
+  isl_ast_build *context_isl = generate_isl_context (scop);
+
+  if (flag_loop_parallelize_all)
+    {
+      scop_get_dependences (scop);
+      context_isl =
+	isl_ast_build_set_before_each_for (context_isl, ast_build_before_for,
+					   scop->dependence);
+    }
+
+  isl_ast_node *ast_isl = isl_ast_build_node_from_schedule
+    (context_isl, schedule);
+  isl_ast_build_free (context_isl);
+  return ast_isl;
+}
+
+#else
 /* Get the maximal number of schedule dimensions in the scop SCOP.  */
 
 int
@@ -3229,36 +3279,6 @@ translate_isl_ast_to_gimple::generate_isl_schedule (scop_p scop)
   return schedule_isl;
 }
 
-/* This method is executed before the construction of a for node.  */
-__isl_give isl_id *
-ast_build_before_for (__isl_keep isl_ast_build *build, void *user)
-{
-  isl_union_map *dependences = (isl_union_map *) user;
-  ast_build_info *for_info = XNEW (struct ast_build_info);
-  isl_union_map *schedule = isl_ast_build_get_schedule (build);
-  isl_space *schedule_space = isl_ast_build_get_schedule_space (build);
-  int dimension = isl_space_dim (schedule_space, isl_dim_out);
-  for_info->is_parallelizable =
-    !carries_deps (schedule, dependences, dimension);
-  isl_union_map_free (schedule);
-  isl_space_free (schedule_space);
-  isl_id *id = isl_id_alloc (isl_ast_build_get_ctx (build), "", for_info);
-  return id;
-}
-
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
-/* Set the separate option for all schedules.  This helps reducing control
-   overhead.  */
-
-__isl_give isl_schedule *
-translate_isl_ast_to_gimple::set_options_for_schedule_tree
-(__isl_take isl_schedule *schedule)
-{
-  return isl_schedule_map_schedule_node_bottom_up
-    (schedule, set_separate_option, NULL);
-}
-#endif
-
 /* Set the separate option for all dimensions.
    This helps to reduce control overhead.  */
 
@@ -3283,7 +3303,6 @@ translate_isl_ast_to_gimple::set_options (__isl_take isl_ast_build *control,
 __isl_give isl_ast_node *
 translate_isl_ast_to_gimple::scop_to_isl_ast (scop_p scop, ivs_params &ip)
 {
-  isl_ast_node *ast_isl = NULL;
   /* Generate loop upper bounds that consist of the current loop iterator, an
      operator (< or <=) and an expression not involving the iterator.  If this
      option is not set, then the current loop iterator may appear several times
@@ -3302,23 +3321,18 @@ translate_isl_ast_to_gimple::scop_to_isl_ast (scop_p scop, ivs_params &ip)
 					   dependence);
     }
 
-#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  isl_ast_node *ast_isl = isl_ast_build_ast_from_schedule (context_isl,
+							   schedule_isl);
   if (scop->schedule)
     {
-      scop->schedule = set_options_for_schedule_tree (scop->schedule);
-      ast_isl = isl_ast_build_node_from_schedule (context_isl, scop->schedule);
-      isl_union_map_free(schedule_isl);
+      isl_schedule_free (scop->schedule);
+      scop->schedule = NULL;
     }
-  else
-    ast_isl = isl_ast_build_ast_from_schedule (context_isl, schedule_isl);
-#else
-  ast_isl = isl_ast_build_ast_from_schedule (context_isl, schedule_isl);
-  isl_schedule_free (scop->schedule);
-#endif
 
   isl_ast_build_free (context_isl);
   return ast_isl;
 }
+#endif
 
 /* Copy def from sese REGION to the newly created TO_REGION. TR is defined by
    DEF_STMT. GSI points to entry basic block of the TO_REGION.  */
@@ -3401,12 +3415,26 @@ graphite_regenerate_ast_isl (scop_p scop)
   ivs_params ip;
 
   timevar_push (TV_GRAPHITE_CODE_GEN);
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  t.add_parameters_to_ivs_params (scop, ip);
+  root_node = t.scop_to_isl_ast (scop);
+#else
   root_node = t.scop_to_isl_ast (scop, ip);
+#endif
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "AST generated by isl: \n");
-      t.print_isl_ast_node (dump_file, root_node, scop->isl_context);
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+      fprintf (dump_file, "[scheduler] original schedule:\n");
+      print_isl_schedule (dump_file, scop->original_schedule);
+      fprintf (dump_file, "[scheduler] isl transformed schedule:\n");
+      print_isl_schedule (dump_file, scop->transformed_schedule);
+
+      fprintf (dump_file, "[scheduler] original ast:\n");
+      print_schedule_ast (dump_file, scop->original_schedule, scop);
+#endif
+      fprintf (dump_file, "[scheduler] AST generated by isl:\n");
+      print_isl_ast (dump_file, root_node);
     }
 
   recompute_all_dominators ();
@@ -3431,8 +3459,8 @@ graphite_regenerate_ast_isl (scop_p scop)
   if (t.codegen_error_p ())
     {
       if (dump_file)
-	fprintf (dump_file, "[codegen] unsuccessful,"
-		 " reverting back to the original code.\n");
+	fprintf (dump_file, "codegen error: "
+		 "reverting back to the original code.\n");
       set_ifsese_condition (if_region, integer_zero_node);
     }
   else
@@ -3452,6 +3480,9 @@ graphite_regenerate_ast_isl (scop_p scop)
 	  scev_reset ();
 	  recompute_all_dominators ();
 	  graphite_verify ();
+
+	  if (dump_file)
+	    fprintf (dump_file, "[codegen] isl AST to Gimple succeeded.\n");
 	}
       else
 	{

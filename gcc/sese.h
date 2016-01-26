@@ -43,6 +43,11 @@ struct sese_l
   edge exit;
 };
 
+void print_edge (FILE *file, const_edge e);
+void print_sese (FILE *file, const sese_l &s);
+void dump_edge (const_edge e);
+void dump_sese (const sese_l &);
+
 /* Get the entry of an sese S.  */
 
 static inline basic_block
@@ -207,7 +212,7 @@ loop_in_sese_p (struct loop *loop, const sese_l &region)
     loop_2 is completely contained -> depth 1  */
 
 static inline unsigned int
-sese_loop_depth (sese_l &region, loop_p loop)
+sese_loop_depth (const sese_l &region, loop_p loop)
 {
   unsigned int depth = 0;
 
