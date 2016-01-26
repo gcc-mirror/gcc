@@ -1,3 +1,9 @@
+2016-01-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR rtl-optimization/69217
+	* var-tracking.c (tracked_record_parameter_p): Don't segfault if there
+	are no TYPE_FIELDS set for the record type.
+
 2016-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/68662
