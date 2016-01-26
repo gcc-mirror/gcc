@@ -1,6 +1,98 @@
 2016-01-25  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 
+	* graphite-poly.c (apply_poly_transforms): Simplify.
+	(print_isl_set): Use more readable format: ISL_YAML_STYLE_BLOCK.
+	(print_isl_map): Same.
+	(print_isl_union_map): Same.
+	(print_isl_schedule): New.
+	(debug_isl_schedule): New.
+	* graphite-dependences.c (scop_get_reads): Do not call
+	isl_union_map_add_map that is undocumented isl functionality.
+	(scop_get_must_writes): Same.
+	(scop_get_may_writes): Same.
+	(scop_get_original_schedule): Remove.
+	(scop_get_dependences): Do not call isl_union_map_compute_flow that
+	is deprecated in isl 0.15.  Instead, use isl_union_access_* interface.
+	(compute_deps): Remove.
+	* graphite-isl-ast-to-gimple.c (print_schedule_ast): New.
+	(debug_schedule_ast): New.
+	(translate_isl_ast_to_gimple::scop_to_isl_ast): Call set_separate_option.
+	(graphite_regenerate_ast_isl): Add dump.
+	(translate_isl_ast_to_gimple::scop_to_isl_ast): Generate code
+	from scop->transformed_schedule.
+	(graphite_regenerate_ast_isl): Add more dump.
+	* graphite-optimize-isl.c (optimize_isl): Set
+	scop->transformed_schedule.  Check whether schedules are equal.
+	(apply_poly_transforms): Move here.
+	* graphite-poly.c (apply_poly_transforms): ... from here.
+	(free_poly_bb): Static.
+	(free_scop): Static.
+	(pbb_number_of_iterations_at_time): Remove.
+	(print_isl_ast): New.
+	(debug_isl_ast): New.
+	(debug_scop_pbb): New.
+	* graphite-scop-detection.c (print_edge): Move.
+	(print_sese): Move.
+	* graphite-sese-to-poly.c (build_pbb_scattering_polyhedrons): Remove.
+	(build_scop_scattering): Remove.
+	(create_pw_aff_from_tree): Assert instead of bailing out.
+	(add_condition_to_pbb): Remove unused code, do not fail.
+	(add_conditions_to_domain): Same.
+	(add_conditions_to_constraints): Remove.
+	(build_scop_context): New.
+	(add_iter_domain_dimension): New.
+	(build_iteration_domains): Initialize pbb->iterators.
+	Call add_conditions_to_domain.
+	(nested_in): New.
+	(loop_at): New.
+	(index_outermost_in_loop): New.
+	(index_pbb_in_loop): New.
+	(outermost_pbb_in): New.
+	(add_in_sequence): New.
+	(add_outer_projection): New.
+	(outer_projection_mupa): New.
+	(add_loop_schedule): New.
+	(build_schedule_pbb): New.
+	(build_schedule_loop): New.
+	(embed_in_surrounding_loops): New.
+	(build_schedule_loop_nest): New.
+	(build_original_schedule): New.
+	(build_poly_scop): Call build_original_schedule.
+	* graphite.h: Declare print_isl_schedule and debug_isl_schedule.
+	(free_poly_dr): Remove.
+	(struct poly_bb): Add iterators.  Remove schedule, transformed, saved.
+	(free_poly_bb): Remove.
+	(debug_loop_vec): Remove.
+	(print_isl_ast): Declare.
+	(debug_isl_ast): Declare.
+	(scop_do_interchange): Remove.
+	(scop_do_strip_mine): Remove.
+	(scop_do_block): Remove.
+	(flatten_all_loops): Remove.
+	(optimize_isl): Remove.
+	(pbb_number_of_iterations_at_time): Remove.
+	(debug_scop_pbb): Declare.
+	(print_schedule_ast): Declare.
+	(debug_schedule_ast): Declare.
+	(struct scop): Remove schedule.  Add original_schedule,
+	transformed_schedule.
+	(free_gimple_poly_bb): Remove.
+	(print_generated_program): Remove.
+	(debug_generated_program): Remove.
+	(unify_scattering_dimensions): Remove.
+	* sese.c (print_edge): ... here.
+	(print_sese): ... here.
+	(debug_edge): ... here.
+	(debug_sese): ... here.
+	* sese.h (print_edge): Declare.
+	(print_sese): Declare.
+	(dump_edge): Declare.
+	(dump_sese): Declare.
+
+2016-01-25  Aditya Kumar  <aditya.k7@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
+
 	* Makefile.in: Set ISLVER in site.exp.
 
 2016-01-25  Jakub Jelinek  <jakub@redhat.com>

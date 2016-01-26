@@ -66,7 +66,7 @@ add_pdr_constraints (poly_dr_p pdr, poly_bb_p pbb)
 /* Returns all the memory reads in SCOP.  */
 
 static isl_union_map *
-scop_get_reads (scop_p scop, vec<poly_bb_p> pbbs)
+scop_get_reads (scop_p scop)
 {
   int i, j;
   poly_bb_p pbb;
@@ -74,7 +74,7 @@ scop_get_reads (scop_p scop, vec<poly_bb_p> pbbs)
   isl_space *space = isl_set_get_space (scop->param_context);
   isl_union_map *res = isl_union_map_empty (space);
 
-  FOR_EACH_VEC_ELT (pbbs, i, pbb)
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     {
       FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
 	if (pdr_read_p (pdr))
@@ -84,7 +84,9 @@ scop_get_reads (scop_p scop, vec<poly_bb_p> pbbs)
 		fprintf (dump_file, "Adding read to depedence graph: ");
 		print_pdr (dump_file, pdr);
 	      }
-	    res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
+	    isl_union_map *um
+	      = isl_union_map_from_map (add_pdr_constraints (pdr, pbb));
+	    res = isl_union_map_union (res, um);
 	    if (dump_file)
 	      {
 		fprintf (dump_file, "Reads depedence graph: ");
@@ -99,7 +101,7 @@ scop_get_reads (scop_p scop, vec<poly_bb_p> pbbs)
 /* Returns all the memory must writes in SCOP.  */
 
 static isl_union_map *
-scop_get_must_writes (scop_p scop, vec<poly_bb_p> pbbs)
+scop_get_must_writes (scop_p scop)
 {
   int i, j;
   poly_bb_p pbb;
@@ -107,7 +109,7 @@ scop_get_must_writes (scop_p scop, vec<poly_bb_p> pbbs)
   isl_space *space = isl_set_get_space (scop->param_context);
   isl_union_map *res = isl_union_map_empty (space);
 
-  FOR_EACH_VEC_ELT (pbbs, i, pbb)
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     {
       FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
 	if (pdr_write_p (pdr))
@@ -117,7 +119,9 @@ scop_get_must_writes (scop_p scop, vec<poly_bb_p> pbbs)
 		fprintf (dump_file, "Adding must write to depedence graph: ");
 		print_pdr (dump_file, pdr);
 	      }
-	    res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
+	    isl_union_map *um
+	      = isl_union_map_from_map (add_pdr_constraints (pdr, pbb));
+	    res = isl_union_map_union (res, um);
 	    if (dump_file)
 	      {
 		fprintf (dump_file, "Must writes depedence graph: ");
@@ -132,7 +136,7 @@ scop_get_must_writes (scop_p scop, vec<poly_bb_p> pbbs)
 /* Returns all the memory may writes in SCOP.  */
 
 static isl_union_map *
-scop_get_may_writes (scop_p scop, vec<poly_bb_p> pbbs)
+scop_get_may_writes (scop_p scop)
 {
   int i, j;
   poly_bb_p pbb;
@@ -140,7 +144,7 @@ scop_get_may_writes (scop_p scop, vec<poly_bb_p> pbbs)
   isl_space *space = isl_set_get_space (scop->param_context);
   isl_union_map *res = isl_union_map_empty (space);
 
-  FOR_EACH_VEC_ELT (pbbs, i, pbb)
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     {
       FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
 	if (pdr_may_write_p (pdr))
@@ -150,7 +154,9 @@ scop_get_may_writes (scop_p scop, vec<poly_bb_p> pbbs)
 		fprintf (dump_file, "Adding may write to depedence graph: ");
 		print_pdr (dump_file, pdr);
 	      }
-	    res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
+	    isl_union_map *um
+	      = isl_union_map_from_map (add_pdr_constraints (pdr, pbb));
+	    res = isl_union_map_union (res, um);
 	    if (dump_file)
 	      {
 		fprintf (dump_file, "May writes depedence graph: ");
@@ -162,6 +168,7 @@ scop_get_may_writes (scop_p scop, vec<poly_bb_p> pbbs)
   return isl_union_map_coalesce (res);
 }
 
+#ifndef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
 /* Returns all the original schedules in SCOP.  */
 
 static isl_union_map *
@@ -181,6 +188,7 @@ scop_get_original_schedule (scop_p scop, vec<poly_bb_p> pbbs)
 
   return isl_union_map_coalesce (res);
 }
+#endif
 
 /* Helper function used on each MAP of a isl_union_map.  Computes the
    maximal output dimension.  */
@@ -303,6 +311,95 @@ carries_deps (__isl_keep isl_union_map *schedule,
   return res;
 }
 
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+/* Compute the dependence relations for the SCOP:
+   RAW are read after write dependences,
+   WAR are write after read dependences,
+   WAW are write after write dependences.  */
+
+void
+scop_get_dependences (scop_p scop)
+{
+  if (scop->dependence)
+    return;
+
+  isl_union_map *reads = scop_get_reads (scop);
+  isl_union_map *must_writes = scop_get_must_writes (scop);
+  isl_union_map *may_writes = scop_get_may_writes (scop);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "\n--- Documentation for datarefs dump: ---\n");
+      fprintf (dump_file, "Statements on the iteration domain are mapped to"
+	       " array references.\n");
+      fprintf (dump_file, "  To read the following data references:\n\n");
+      fprintf (dump_file, "  S_5[i0] -> [106] : i0 >= 0 and i0 <= 3\n");
+      fprintf (dump_file, "  S_8[i0] -> [1, i0] : i0 >= 0 and i0 <= 3\n\n");
+
+      fprintf (dump_file, "  S_5[i0] is the dynamic instance of statement"
+	       " bb_5 in a loop that accesses all iterations 0 <= i0 <= 3.\n");
+      fprintf (dump_file, "  [1, i0] is a 'memref' with alias set 1"
+	       " and first subscript access i0.\n");
+      fprintf (dump_file, "  [106] is a 'scalar reference' which is the sum of"
+	       " SSA_NAME_VERSION 6"
+	       " and --param graphite-max-arrays-per-scop=100\n");
+      fprintf (dump_file, "-----------------------\n\n");
+
+      fprintf (dump_file, "data references (\n");
+      fprintf (dump_file, "  reads: ");
+      print_isl_union_map (dump_file, reads);
+      fprintf (dump_file, "  must_writes: ");
+      print_isl_union_map (dump_file, must_writes);
+      fprintf (dump_file, "  may_writes: ");
+      print_isl_union_map (dump_file, may_writes);
+      fprintf (dump_file, ")\n");
+    }
+
+  gcc_assert (scop->original_schedule);
+
+  isl_union_access_info *ai;
+  ai = isl_union_access_info_from_sink (isl_union_map_copy (reads));
+  ai = isl_union_access_info_set_must_source (ai, isl_union_map_copy (must_writes));
+  ai = isl_union_access_info_set_may_source (ai, may_writes);
+  ai = isl_union_access_info_set_schedule
+    (ai, isl_schedule_copy (scop->original_schedule));
+  isl_union_flow *flow = isl_union_access_info_compute_flow (ai);
+  isl_union_map *raw = isl_union_flow_get_must_dependence (flow);
+  isl_union_flow_free (flow);
+
+  ai = isl_union_access_info_from_sink (isl_union_map_copy (must_writes));
+  ai = isl_union_access_info_set_must_source (ai, must_writes);
+  ai = isl_union_access_info_set_may_source (ai, reads);
+  ai = isl_union_access_info_set_schedule
+    (ai, isl_schedule_copy (scop->original_schedule));
+  flow = isl_union_access_info_compute_flow (ai);
+
+  isl_union_map *waw = isl_union_flow_get_must_dependence (flow);
+  isl_union_map *war = isl_union_flow_get_may_dependence (flow);
+  war = isl_union_map_subtract (war, isl_union_map_copy (waw));
+  isl_union_flow_free (flow);
+
+  raw = isl_union_map_coalesce (raw);
+  waw = isl_union_map_coalesce (waw);
+  war = isl_union_map_coalesce (war);
+
+  isl_union_map *dependences = raw;
+  dependences = isl_union_map_union (dependences, war);
+  dependences = isl_union_map_union (dependences, waw);
+  dependences = isl_union_map_coalesce (dependences);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "data dependences (\n");
+      print_isl_union_map (dump_file, dependences);
+      fprintf (dump_file, ")\n");
+    }
+
+  scop->dependence = dependences;
+}
+
+#else
+
 /* Compute the original data dependences in SCOP for all the reads and
    writes in PBBS.  */
 
@@ -321,9 +418,9 @@ compute_deps (scop_p scop, vec<poly_bb_p> pbbs,
 	      isl_union_map **must_waw_no_source,
 	      isl_union_map **may_waw_no_source)
 {
-  isl_union_map *reads = scop_get_reads (scop, pbbs);
-  isl_union_map *must_writes = scop_get_must_writes (scop, pbbs);
-  isl_union_map *may_writes = scop_get_may_writes (scop, pbbs);
+  isl_union_map *reads = scop_get_reads (scop);
+  isl_union_map *must_writes = scop_get_must_writes (scop);
+  isl_union_map *may_writes = scop_get_may_writes (scop);
   isl_union_map *all_writes = isl_union_map_union
     (isl_union_map_copy (must_writes), isl_union_map_copy (may_writes));
   all_writes = isl_union_map_coalesce (all_writes);
@@ -427,5 +524,7 @@ scop_get_dependences (scop_p scop)
   scop->dependence = dependences;
   return dependences;
 }
+
+#endif /* HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS */
 
 #endif /* HAVE_isl */
