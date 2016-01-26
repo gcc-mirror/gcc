@@ -6534,6 +6534,40 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for std::swap in <utility>" >&5
+$as_echo_n "checking for std::swap in <utility>... " >&6; }
+if test "${ac_cv_std_swap_in_utility+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <utility>
+
+int
+main ()
+{
+int a, b; std::swap(a,b);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_cv_std_swap_in_utility=yes
+else
+  ac_cv_std_swap_in_utility=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_std_swap_in_utility" >&5
+$as_echo "$ac_cv_std_swap_in_utility" >&6; }
+if test $ac_cv_std_swap_in_utility = yes; then
+
+$as_echo "#define HAVE_SWAP_IN_UTILITY 1" >>confdefs.h
+
+fi
+
 # Check whether compiler is affected by placement new aliasing bug (PR 29286).
 # If the host compiler is affected by the bug, and we build with optimization
 # enabled (which happens e.g. when cross-compiling), the pool allocator may
@@ -18419,7 +18453,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18422 "configure"
+#line 18456 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18525,7 +18559,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18528 "configure"
+#line 18562 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

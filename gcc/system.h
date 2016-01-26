@@ -217,7 +217,7 @@ extern int errno;
 #endif
 
 #ifdef __cplusplus
-#ifdef INCLUDE_ALGORITHM
+#if defined (INCLUDE_ALGORITHM) || !defined (HAVE_SWAP_IN_UTILITY)
 # include <algorithm>
 #endif
 # include <cstring>
