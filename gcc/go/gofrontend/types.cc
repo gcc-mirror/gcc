@@ -2550,6 +2550,8 @@ Type::backend_type_size(Gogo* gogo, int64_t *psize)
 {
   if (!this->is_backend_type_size_known(gogo))
     return false;
+  if (this->is_error_type())
+    return false;
   Btype* bt = this->get_backend_placeholder(gogo);
   *psize = gogo->backend()->type_size(bt);
   if (*psize == -1)
@@ -6453,7 +6455,7 @@ Array_type::slice_gc_symbol(Gogo* gogo, Expression_list** vals,
   (*vals)->push_back(Expression::make_integer_ul(opval, uintptr_type, bloc));
   (*vals)->push_back(*offset);
 
-  if (element_size != 0)
+  if (element_size != 0 && ok)
     (*vals)->push_back(Expression::make_gc_symbol(element_type));
   this->advance_gc_offset(offset);
 }
@@ -6488,7 +6490,7 @@ Array_type::array_gc_symbol(Gogo* gogo, Expression_list** vals,
   Type* element_type = this->element_type();
   if (bound < 1 || !element_type->has_pointer())
     this->advance_gc_offset(offset);
-  else if (bound == 1 || iwidth <= 4 * pwidth)
+  else if (ok && (bound == 1 || iwidth <= 4 * pwidth))
     {
       for (unsigned int i = 0; i < bound; ++i)
 	Type::gc_symbol(gogo, element_type, vals, offset, stack_size);
