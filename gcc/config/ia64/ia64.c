@@ -1908,7 +1908,7 @@ ia64_expand_vecint_compare (enum rtx_code code, machine_mode mode,
 
 	    /* Subtract (-(INT MAX) - 1) from both operands to make
 	       them signed.  */
-	    mask = GEN_INT (0x80000000);
+	    mask = gen_int_mode (0x80000000, SImode);
 	    mask = gen_rtx_CONST_VECTOR (V2SImode, gen_rtvec (2, mask, mask));
 	    mask = force_reg (mode, mask);
 	    t1 = gen_reg_rtx (mode);
