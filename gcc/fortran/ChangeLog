@@ -1,3 +1,10 @@
+2016-01-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69385
+	* trans-expr.c (gfc_trans_assignment_1): Exclude initialization
+	assignments from check on assignment of scalars to unassigned
+	arrays and correct wrong code within the corresponding block.
+
 2016-01-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/69006

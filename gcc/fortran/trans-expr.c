@@ -9286,6 +9286,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
     {
       gfc_conv_expr (&lse, expr1);
       if (gfc_option.rtcheck & GFC_RTCHECK_MEM
+	  && !init_flag
 	  && gfc_expr_attr (expr1).allocatable
 	  && expr1->rank
 	  && !expr2->rank)
@@ -9293,14 +9294,17 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	  tree cond;
 	  const char* msg;
 
-	  tmp = expr1->symtree->n.sym->backend_decl;
-	  if (POINTER_TYPE_P (TREE_TYPE (tmp)))
-	    tmp = build_fold_indirect_ref_loc (input_location, tmp);
+	  /* We should only get array references here.  */
+	  gcc_assert (TREE_CODE (lse.expr) == POINTER_PLUS_EXPR
+		      || TREE_CODE (lse.expr) == ARRAY_REF);
 
-	  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
-	    tmp = gfc_conv_descriptor_data_get (tmp);
-	  else
-	    tmp = TREE_OPERAND (lse.expr, 0);
+	  /* 'tmp' is either the pointer to the array(POINTER_PLUS_EXPR)
+	     or the array itself(ARRAY_REF).  */
+	  tmp = TREE_OPERAND (lse.expr, 0);
+
+	  /* Provide the address of the array.  */
+	  if (TREE_CODE (lse.expr) == ARRAY_REF)
+	    tmp = gfc_build_addr_expr (NULL_TREE, tmp);
 
 	  cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
 				  tmp, build_int_cst (TREE_TYPE (tmp), 0));
