@@ -277,6 +277,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	case OPT_fwrapv:
 	case OPT_fopenmp:
 	case OPT_fopenacc:
+	case OPT_fcilkplus:
 	case OPT_fcheck_pointer_bounds:
 	  /* For selected options we can merge conservatively.  */
 	  for (j = 0; j < *decoded_options_count; ++j)
@@ -505,6 +506,7 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	case OPT_fwrapv:
 	case OPT_fopenmp:
 	case OPT_fopenacc:
+	case OPT_fcilkplus:
 	case OPT_ftrapv:
 	case OPT_fstrict_overflow:
 	case OPT_foffload_abi_:
@@ -557,6 +559,15 @@ append_linker_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	  /* Ignore these, they are determined by the input files.
 	     ???  We fail to diagnose a possible mismatch here.  */
 	  continue;
+
+	case OPT_fopenmp:
+	case OPT_fopenacc:
+	case OPT_fcilkplus:
+	  /* Ignore -fno-XXX form of these options, as otherwise
+	     corresponding builtins will not be enabled.  */
+	  if (option->value == 0)
+	    continue;
+	  break;
 
 	default:
 	  break;

@@ -1,3 +1,10 @@
+2016-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/69254
+	* lto-wrapper.c (merge_and_complain): Handle -fcilkplus.
+	(append_compiler_options): Handle -fcilkplus.
+	(append_linker_options): Ignore -fno-{openmp,openacc,cilkplus}.
+
 2016-01-26  Nick Clifton  <nickc@redhat.com>
 
 	PR target/66655
