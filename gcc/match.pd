@@ -1821,12 +1821,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for cmp (simple_comparison)
      scmp (swapped_simple_comparison)
  (simplify
-  (cmp (mult @0 INTEGER_CST@1) integer_zerop@2)
+  (cmp (mult@3 @0 INTEGER_CST@1) integer_zerop@2)
   /* Handle unfolded multiplication by zero.  */
   (if (integer_zerop (@1))
    (cmp @1 @2)
    (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
-	&& TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))
+	&& TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+	&& single_use (@3))
     /* If @1 is negative we swap the sense of the comparison.  */
     (if (tree_int_cst_sgn (@1) < 0)
      (scmp @0 @2)
