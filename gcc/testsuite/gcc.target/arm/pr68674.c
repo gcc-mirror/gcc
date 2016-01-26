@@ -1,7 +1,9 @@
 /* PR target/68674 */
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_neon_ok } */
-/* { dg-options "-O2 -mfloat-abi=softfp" } */
+/* { dg-require-effective-target arm_fp_ok } */
+/* { dg-options "-O2" } */
+/* { dg-add-options arm_fp } */
 
 #pragma GCC target ("fpu=vfp")
 
