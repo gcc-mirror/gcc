@@ -341,6 +341,20 @@ i386_pe_binds_local_p (const_tree exp)
       && TREE_PUBLIC (exp)
       && DECL_EXTERNAL (exp))
     return true;
+
+#ifndef MAKE_DECL_ONE_ONLY
+  /* PR target/66655: If a function has been marked as DECL_ONE_ONLY
+     but we do not the means to make it so, then do not allow it to
+     bind locally.  */
+  if (DECL_P (exp)
+      && TREE_CODE (exp) == FUNCTION_DECL
+      && TREE_PUBLIC (exp)
+      && DECL_ONE_ONLY (exp)
+      && ! DECL_EXTERNAL (exp)
+      && DECL_DECLARED_INLINE_P (exp))
+    return false;
+#endif
+  
   return default_binds_local_p_1 (exp, 0);
 }
 

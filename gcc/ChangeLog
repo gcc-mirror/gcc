@@ -1,3 +1,10 @@
+2016-01-26  Nick Clifton  <nickc@redhat.com>
+
+	PR target/66655
+	* config/i386/winnt.c (i386_pe_binds_local_p): If a function has
+	been marked as DECL_ONE_ONLY but we do not the means to make it
+	so, then do not allow it to bind locally.
+
 2016-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/69254
