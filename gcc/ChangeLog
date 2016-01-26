@@ -1,3 +1,11 @@
+2016-01-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68782
+	* tree.c (recompute_constructor_flags): Split out from
+	build_constructor.
+	(verify_constructor_flags): New.
+	* tree.h: Declare them.
+
 2016-01-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR rtl-optimization/69217

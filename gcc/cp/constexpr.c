@@ -2214,7 +2214,10 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
   vec<constructor_elt, va_gc> **p = &CONSTRUCTOR_ELTS (ctx->ctor);
   vec_alloc (*p, vec_safe_length (v));
 
-  unsigned i; tree index, value;
+  unsigned i;
+  tree index, value;
+  bool constant_p = true;
+  bool side_effects_p = false;
   FOR_EACH_CONSTRUCTOR_ELT (v, i, index, value)
     {
       constexpr_ctx new_ctx;
@@ -2231,6 +2234,11 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
 	break;
       if (elt != value)
 	changed = true;
+
+      if (!TREE_CONSTANT (elt))
+	constant_p = false;
+      if (TREE_SIDE_EFFECTS (elt))
+	side_effects_p = true;
       if (index && TREE_CODE (index) == COMPONENT_REF)
 	{
 	  /* This is an initialization of a vfield inside a base
@@ -2264,6 +2272,8 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
   /* We're done building this CONSTRUCTOR, so now we can interpret an
      element without an explicit initializer as value-initialized.  */
   CONSTRUCTOR_NO_IMPLICIT_ZERO (t) = false;
+  TREE_CONSTANT (t) = constant_p;
+  TREE_SIDE_EFFECTS (t) = side_effects_p;
   if (VECTOR_TYPE_P (TREE_TYPE (t)))
     t = fold (t);
   return t;
@@ -2826,6 +2836,8 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
     }
   type = TREE_TYPE (object);
   bool no_zero_init = true;
+
+  vec<tree,va_gc> *ctors = make_tree_vector ();
   while (!refs->is_empty())
     {
       if (*valp == NULL_TREE)
@@ -2836,6 +2848,8 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       /* If the value of object is already zero-initialized, any new ctors for
 	 subobjects will also be zero-initialized.  */
       no_zero_init = CONSTRUCTOR_NO_IMPLICIT_ZERO (*valp);
+
+      vec_safe_push (ctors, *valp);
 
       enum tree_code code = TREE_CODE (type);
       type = refs->pop();
@@ -2889,14 +2903,36 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       /* The hash table might have moved since the get earlier.  */
       valp = ctx->values->get (object);
       if (TREE_CODE (init) == CONSTRUCTOR)
-	/* An outer ctx->ctor might be pointing to *valp, so just replace
-	   its contents.  */
-	CONSTRUCTOR_ELTS (*valp) = CONSTRUCTOR_ELTS (init);
+	{
+	  /* An outer ctx->ctor might be pointing to *valp, so replace
+	     its contents.  */
+	  CONSTRUCTOR_ELTS (*valp) = CONSTRUCTOR_ELTS (init);
+	  TREE_CONSTANT (*valp) = TREE_CONSTANT (init);
+	  TREE_SIDE_EFFECTS (*valp) = TREE_SIDE_EFFECTS (init);
+	}
       else
 	*valp = init;
     }
   else
-    *valp = init;
+    {
+      *valp = init;
+
+      /* Update TREE_CONSTANT and TREE_SIDE_EFFECTS on enclosing
+	 CONSTRUCTORs.  */
+      tree elt;
+      unsigned i;
+      bool c = TREE_CONSTANT (init);
+      bool s = TREE_SIDE_EFFECTS (init);
+      if (!c || s)
+	FOR_EACH_VEC_SAFE_ELT (ctors, i, elt)
+	  {
+	    if (!c)
+	      TREE_CONSTANT (elt) = false;
+	    if (s)
+	      TREE_SIDE_EFFECTS (elt) = true;
+	  }
+    }
+  release_tree_vector (ctors);
 
   if (*non_constant_p)
     return t;
@@ -3579,9 +3615,17 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 
     case CONSTRUCTOR:
       if (TREE_CONSTANT (t))
-	/* Don't re-process a constant CONSTRUCTOR, but do fold it to
-	   VECTOR_CST if applicable.  */
-	return fold (t);
+	{
+	  /* Don't re-process a constant CONSTRUCTOR, but do fold it to
+	     VECTOR_CST if applicable.  */
+	  /* FIXME after GCC 6 branches, make the verify unconditional.  */
+	  if (CHECKING_P)
+	    verify_constructor_flags (t);
+	  else
+	    recompute_constructor_flags (t);
+	  if (TREE_CONSTANT (t))
+	    return fold (t);
+	}
       r = cxx_eval_bare_aggregate (ctx, t, lval,
 				   non_constant_p, overflow_p);
       break;
