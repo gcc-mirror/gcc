@@ -1,3 +1,13 @@
+2016-01-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/69400
+	* wide-int.cc (wi_pack): Take the precision as argument and
+	perform canonicalization here rather than in the callers.
+	Use the main loop to handle all full-width HWIs.  Add a
+	zero HWI if in_len isn't a full result.
+	(wi::divmod_internal): Update accordingly.
+	(wi::mul_internal): Likewise.  Simplify.
+
 2016-01-25  Aditya Kumar  <aditya.k7@samsung.com>
 	    Sebastian Pop  <s.pop@samsung.com>
 

@@ -1,3 +1,11 @@
+2016-01-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/69400
+	* gcc.dg/plugin/wide-int_plugin.c (test_wide_int_mod_trunc): New
+	function.
+	(plugin_init): Call it.
+	* gcc.dg/torture/pr69400.c: New test.
+
 2016-01-26  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/pr68674.c: Check and use arm_fp effective target.
