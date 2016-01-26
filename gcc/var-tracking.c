@@ -5128,7 +5128,8 @@ tracked_record_parameter_p (tree t)
   if (TREE_CODE (type) != RECORD_TYPE)
     return false;
 
-  if (DECL_CHAIN (TYPE_FIELDS (type)) == NULL_TREE)
+  if (TYPE_FIELDS (type) == NULL_TREE
+      || DECL_CHAIN (TYPE_FIELDS (type)) == NULL_TREE)
     return false;
 
   return true;
