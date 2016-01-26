@@ -1,3 +1,7 @@
+2016-01-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* jit-playback.c: Include pthread.h.
+
 2016-01-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/69144

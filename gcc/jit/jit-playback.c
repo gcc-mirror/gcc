@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "gcc.h"
 
+#include <pthread.h>
+
 #include "jit-playback.h"
 #include "jit-result.h"
 #include "jit-builtins.h"
