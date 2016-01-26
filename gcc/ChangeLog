@@ -1,3 +1,9 @@
+2016-01-26  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69110
+	* tree-data-ref.c (initialize_data_dependence_relation): Handle
+	DR_NUM_DIMENSIONS == 0.
+
 2016-01-25  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
