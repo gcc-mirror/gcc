@@ -1954,7 +1954,12 @@ cp_fold (tree x)
       op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
 
       if (op0 != TREE_OPERAND (x, 0))
-        x = fold_build1_loc (loc, code, TREE_TYPE (x), op0);
+	{
+	  if (op0 == error_mark_node)
+	    x = error_mark_node;
+	  else
+	    x = fold_build1_loc (loc, code, TREE_TYPE (x), op0);
+	}
       else
 	x = fold (x);
 
@@ -1986,7 +1991,12 @@ cp_fold (tree x)
       op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
 
       if (op0 != TREE_OPERAND (x, 0))
-        x = fold_build1_loc (loc, code, TREE_TYPE (x), op0);
+	{
+	  if (op0 == error_mark_node)
+	    x = error_mark_node;
+	  else
+	    x = fold_build1_loc (loc, code, TREE_TYPE (x), op0);
+	}
       else
 	x = fold (x);
 
@@ -2043,7 +2053,12 @@ cp_fold (tree x)
       op1 = cp_fold_rvalue (TREE_OPERAND (x, 1));
 
       if (op0 != TREE_OPERAND (x, 0) || op1 != TREE_OPERAND (x, 1))
-	x = fold_build2_loc (loc, code, TREE_TYPE (x), op0, op1);
+	{
+	  if (op0 == error_mark_node || op1 == error_mark_node)
+	    x = error_mark_node;
+	  else
+	    x = fold_build2_loc (loc, code, TREE_TYPE (x), op0, op1);
+	}
       else
 	x = fold (x);
 
@@ -2066,7 +2081,14 @@ cp_fold (tree x)
       if (op0 != TREE_OPERAND (x, 0)
 	  || op1 != TREE_OPERAND (x, 1)
 	  || op2 != TREE_OPERAND (x, 2))
-	x = fold_build3_loc (loc, code, TREE_TYPE (x), op0, op1, op2);
+	{
+	  if (op0 == error_mark_node
+	      || op1 == error_mark_node
+	      || op2 == error_mark_node)
+	    x = error_mark_node;
+	  else
+	    x = fold_build3_loc (loc, code, TREE_TYPE (x), op0, op1, op2);
+	}
       else
 	x = fold (x);
 
@@ -2093,9 +2115,18 @@ cp_fold (tree x)
 	  {
 	    r = cp_fold (CALL_EXPR_ARG (x, i));
 	    if (r != CALL_EXPR_ARG (x, i))
-	      changed = 1;
+	      {
+		if (r == error_mark_node)
+		  {
+		    x = error_mark_node;
+		    break;
+		  }
+		changed = 1;
+	      }
 	    CALL_EXPR_ARG (x, i) = r;
 	  }
+	if (x == error_mark_node)
+	  break;
 
 	optimize = nw;
 	r = fold (x);
@@ -2143,7 +2174,15 @@ cp_fold (tree x)
 	    constructor_elt e = { p->index, op };
 	    nelts->quick_push (e);
 	    if (op != p->value)
-	      changed = true;
+	      {
+		if (op == error_mark_node)
+		  {
+		    x = error_mark_node;
+		    changed = false;
+		    break;
+		  }
+		changed = true;
+	      }
 	  }
 	if (changed)
 	  x = build_constructor (TREE_TYPE (x), nelts);
@@ -2188,9 +2227,19 @@ cp_fold (tree x)
       op2 = cp_fold (TREE_OPERAND (x, 2));
       op3 = cp_fold (TREE_OPERAND (x, 3));
 
-      if (op0 != TREE_OPERAND (x, 0) || op1 != TREE_OPERAND (x, 1)
-	  || op2 != TREE_OPERAND (x, 2) || op3 != TREE_OPERAND (x, 3))
-	x = build4_loc (loc, code, TREE_TYPE (x), op0, op1, op2, op3);
+      if (op0 != TREE_OPERAND (x, 0)
+	  || op1 != TREE_OPERAND (x, 1)
+	  || op2 != TREE_OPERAND (x, 2)
+	  || op3 != TREE_OPERAND (x, 3))
+	{
+	  if (op0 == error_mark_node
+	      || op1 == error_mark_node
+	      || op2 == error_mark_node
+	      || op3 == error_mark_node)
+	    x = error_mark_node;
+	  else
+	    x = build4_loc (loc, code, TREE_TYPE (x), op0, op1, op2, op3);
+	}
 
       x = fold (x);
       break;
