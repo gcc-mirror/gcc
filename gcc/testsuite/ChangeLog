@@ -1,3 +1,10 @@
+2016-01-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/68986
+	* gcc.target/i386/pr68986-1.c: New test.
+	* gcc.target/i386/pr68986-2.c: Likewise.
+	* gcc.target/i386/pr68986-3.c: Likewise.
+
 2016-01-26  Christian Bruel  <christian.bruel@st.com>
 
 	* lib/target-supports.exp

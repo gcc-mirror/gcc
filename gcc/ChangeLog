@@ -1,3 +1,13 @@
+2016-01-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/68986
+	* config/i386/i386.c (ix86_compute_frame_layout): Move stack
+	alignment adjustment to ...
+	(ix86_update_stack_boundary): Here.  Don't over-align stack for
+	__tls_get_addr.
+	(ix86_finalize_stack_realign_flags): Use stack_alignment_needed
+	if __tls_get_addr is called.
+
 2016-01-26  Christian Bruel  <christian.bruel@st.com>
 
 	* doc/sourcebuild.texi (arm_crypto_pragma_ok): Remove.
