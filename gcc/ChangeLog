@@ -1,3 +1,12 @@
+2016-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69452
+	* tree-ssa-loop-im.c (move_computations_dom_walker): Remove.
+	(move_computations_dom_walker::before_dom_children): Rename
+	to ...
+	(move_computations_worker): This.
+	(move_computations): Perform an RPO rather than a DOM walk.
+
 2016-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69442
