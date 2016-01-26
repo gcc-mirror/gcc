@@ -1,3 +1,10 @@
+2016-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/68357
+	* cp-gimplify.c (cp_fold): If some operand folds to error_mark_node,
+	return error_mark_node instead of building trees with error_mark_node
+	operands.
+
 2016-01-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/69006
