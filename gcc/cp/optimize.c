@@ -646,6 +646,8 @@ maybe_clone_body (tree fn)
 	{
 	  if (expand_or_defer_fn_1 (clone))
 	    emit_associated_thunks (clone);
+	  /* We didn't generate a body, so remove the empty one.  */
+	  DECL_SAVED_TREE (clone) = NULL_TREE;
 	}
       else
 	expand_or_defer_fn (clone);
