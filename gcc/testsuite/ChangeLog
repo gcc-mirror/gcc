@@ -1,3 +1,8 @@
+2016-01-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/68620
+	* gcc.target/arm/pr68620.c: New test.
+
 2016-01-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pr68986-2.c: Remove -m32.

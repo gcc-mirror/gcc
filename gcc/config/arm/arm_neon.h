@@ -5302,14 +5302,26 @@ vget_lane_s32 (int32x2_t __a, const int __b)
    were marked always-inline so there were no call sites, the declaration
    would nonetheless raise an error.  Hence, we must use a macro instead.  */
 
-#define vget_lane_f16(__v, __idx)		\
-  __extension__					\
-    ({						\
-      float16x4_t __vec = (__v);		\
-      __builtin_arm_lane_check (4, __idx);	\
-      float16_t __res = __vec[__idx];		\
-      __res;					\
-    })
+  /* For big-endian, GCC's vector indices are reversed within each 64
+     bits compared to the architectural lane indices used by Neon
+     intrinsics.  */
+#ifdef __ARM_BIG_ENDIAN
+#define __ARM_NUM_LANES(__v) (sizeof (__v) / sizeof (__v[0]))
+#define __arm_lane(__vec, __idx) (__idx ^ (__ARM_NUM_LANES(__vec) - 1))
+#define __arm_laneq(__vec, __idx) (__idx ^ (__ARM_NUM_LANES(__vec)/2 - 1))
+#else
+#define __arm_lane(__vec, __idx) __idx
+#define __arm_laneq(__vec, __idx) __idx
+#endif
+
+#define vget_lane_f16(__v, __idx)			\
+  __extension__						\
+  ({							\
+    float16x4_t __vec = (__v);				\
+    __builtin_arm_lane_check (4, __idx);		\
+    float16_t __res = __vec[__arm_lane(__vec, __idx)];	\
+    __res;						\
+  })
 #endif
 
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
@@ -5379,14 +5391,14 @@ vgetq_lane_s32 (int32x4_t __a, const int __b)
 }
 
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
-#define vgetq_lane_f16(__v, __idx)		\
-  __extension__					\
-    ({						\
-      float16x8_t __vec = (__v);		\
-      __builtin_arm_lane_check (8, __idx);	\
-      float16_t __res = __vec[__idx];		\
-      __res;					\
-    })
+#define vgetq_lane_f16(__v, __idx)			\
+  __extension__						\
+  ({							\
+    float16x8_t __vec = (__v);				\
+    __builtin_arm_lane_check (8, __idx);		\
+    float16_t __res = __vec[__arm_laneq(__vec, __idx)];	\
+    __res;						\
+  })
 #endif
 
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
@@ -5458,13 +5470,13 @@ vset_lane_s32 (int32_t __a, int32x2_t __b, const int __c)
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 #define vset_lane_f16(__e, __v, __idx)		\
   __extension__					\
-    ({						\
-      float16_t __elem = (__e);			\
-      float16x4_t __vec = (__v);		\
-      __builtin_arm_lane_check (4, __idx);	\
-      __vec[__idx] = __elem;			\
-      __vec;					\
-    })
+  ({						\
+    float16_t __elem = (__e);			\
+    float16x4_t __vec = (__v);			\
+    __builtin_arm_lane_check (4, __idx);	\
+    __vec[__arm_lane (__vec, __idx)] = __elem;	\
+    __vec;					\
+  })
 #endif
 
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
@@ -5536,13 +5548,13 @@ vsetq_lane_s32 (int32_t __a, int32x4_t __b, const int __c)
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 #define vsetq_lane_f16(__e, __v, __idx)		\
   __extension__					\
-    ({						\
-      float16_t __elem = (__e);			\
-      float16x8_t __vec = (__v);		\
-      __builtin_arm_lane_check (8, __idx);	\
-      __vec[__idx] = __elem;			\
-      __vec;					\
-    })
+  ({						\
+    float16_t __elem = (__e);			\
+    float16x8_t __vec = (__v);			\
+    __builtin_arm_lane_check (8, __idx);	\
+    __vec[__arm_laneq (__vec, __idx)] = __elem;	\
+    __vec;					\
+  })
 #endif
 
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))

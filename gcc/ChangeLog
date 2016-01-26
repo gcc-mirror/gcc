@@ -1,3 +1,23 @@
+2016-01-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/68620
+	* config/arm/arm.c (neon_valid_immediate): Handle FP16 vectors.
+	* config/arm/arm_neon.h (__ARM_NUM_LANES, __arm_lane, arm_lanq):
+	New helper macros.
+	(vget_lane_f16): Handle big-endian.
+	(vgetq_lane_f16): Likewise.
+	(vset_lane_f16): Likewise.
+	(vsetq_lane_f16): Likewise.
+	* config/arm/iterators.md (VQXMOV): Add V8HF.
+	(VDQ): Add V4HF and V8HF.
+	(V_reg): Handle V4HF and V8HF.
+	(Is_float_mode): Likewise.
+	* config/arm/neon.md (movv4hf, movv8hf, neon_vdup_nv4hf,
+	neon_vdup_nv8hf): New patterns.
+	(vec_set<mode>_internal, vec_extract<mode>, neon_vld1_dup<mode>):
+	Use VD_LANE iterator.
+	(neon_vld1_dup<mode>): Use VQ2 iterator.
+
 2016-01-26  Nathan Sidwell  <nathan@acm.org>
 
 	* omp-low.h (oacc_fn_attrib_kernels_p): Declare.
