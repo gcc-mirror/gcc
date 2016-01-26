@@ -1705,6 +1705,12 @@
 #endif
 
 
+/* Define if <utility> defines std::swap. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_SWAP_IN_UTILITY
+#endif
+
+
 /* Define to 1 if you have the `sysconf' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_SYSCONF
@@ -1865,7 +1871,8 @@
 #endif
 
 
-/* Define if your assembler supports .dwsect 0xB0000 */
+/* Define if your assembler supports AIX debug frame section label reference.
+   */
 #ifndef USED_FOR_TARGET
 #undef HAVE_XCOFF_DWARF_EXTRAS
 #endif
