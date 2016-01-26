@@ -1,3 +1,8 @@
+2016-01-26  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69110
+	* testsuite/libgomp.c/pr69110.c: New test.
+
 2016-01-25  Richard Biener  <rguenther@suse.de>
 
 	PR lto/69393
