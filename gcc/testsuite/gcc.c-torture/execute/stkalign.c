@@ -1,3 +1,4 @@
+/* { dg-xfail-run-if "invalid assumption" { sparc*-*-* && lp64 } "*" "" } */
 /* { dg-options "-fno-inline" } */
 
 #include <assert.h>

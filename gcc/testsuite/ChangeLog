@@ -1,3 +1,7 @@
+2016-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/stkalign.c: XFAIL run on SPARC 64-bit.
+
 2016-01-26  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69110
