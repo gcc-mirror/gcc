@@ -1,3 +1,9 @@
+2016-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69483
+	* gcc.dg/pr69483.c: New test.
+	* g++.dg/opt/pr69483.C: New test.
+
 2016-01-26  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR target/68620

@@ -1431,15 +1431,14 @@ c_parser_translation_unit (c_parser *parser)
       while (c_parser_next_token_is_not (parser, CPP_EOF));
     }
 
-  for (unsigned i = 0; i < incomplete_record_decls.length (); ++i)
-    {
-      tree decl = incomplete_record_decls[i];
-      if (DECL_SIZE (decl) == NULL_TREE && TREE_TYPE (decl) != error_mark_node)
-	{
-	  error ("storage size of %q+D isn%'t known", decl);
-	  TREE_TYPE (decl) = error_mark_node;
-	}
-    }
+  unsigned int i;
+  tree decl;
+  FOR_EACH_VEC_ELT (incomplete_record_decls, i, decl)
+    if (DECL_SIZE (decl) == NULL_TREE && TREE_TYPE (decl) != error_mark_node)
+      {
+	error ("storage size of %q+D isn%'t known", decl);
+	TREE_TYPE (decl) = error_mark_node;
+      }
 }
 
 /* Parse an external declaration (C90 6.7, C99 6.9).
