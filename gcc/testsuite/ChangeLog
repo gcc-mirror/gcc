@@ -1,3 +1,8 @@
+2016-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69452
+	* gcc.dg/torture/pr69452.c: New testcase.
+
 2016-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69442
