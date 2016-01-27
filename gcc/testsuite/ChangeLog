@@ -1,3 +1,7 @@
+2016-01-27  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/tree-ssa/ivopt_5.c: New test.
+
 2016-01-27  Ryan Burn  <contact@rnburn.com>
 
 	PR cilkplus/69267

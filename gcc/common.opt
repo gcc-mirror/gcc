@@ -1380,6 +1380,10 @@ Common Report Var(flag_hoist_adjacent_loads) Optimization
 Enable hoisting adjacent loads to encourage generating conditional move
 instructions.
 
+fkeep-gc-roots-live
+Common Undocumented Report Var(flag_keep_gc_roots_live) Optimization
+; Always keep a pointer to a live memory block
+
 floop-parallelize-all
 Common Report Var(flag_loop_parallelize_all) Optimization
 Mark all loops as parallel.
