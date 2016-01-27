@@ -1,3 +1,9 @@
+2016-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69166
+	* tree-vect-loop.c (vect_is_simple_reduction): Always check
+	reduction code for commutativity / associativity.
+
 2016-01-27  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/69355

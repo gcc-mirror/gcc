@@ -2750,17 +2750,17 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
       && SSA_NAME_DEF_STMT (op1) == phi)
     code = PLUS_EXPR;
 
-  if (check_reduction)
+  if (code == COND_EXPR)
     {
-      if (code == COND_EXPR)
+      if (check_reduction)
 	*v_reduc_type = COND_REDUCTION;
-      else if (!commutative_tree_code (code) || !associative_tree_code (code))
-	{
-	  if (dump_enabled_p ())
-	    report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
-			    "reduction: not commutative/associative: ");
-	  return NULL;
-	}
+    }
+  else if (!commutative_tree_code (code) || !associative_tree_code (code))
+    {
+      if (dump_enabled_p ())
+	report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
+			"reduction: not commutative/associative: ");
+      return NULL;
     }
 
   if (get_gimple_rhs_class (code) != GIMPLE_BINARY_RHS)
@@ -2856,11 +2856,11 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
      and therefore vectorizing reductions in the inner-loop during
      outer-loop vectorization is safe.  */
 
-  if (*v_reduc_type != COND_REDUCTION)
+  if (*v_reduc_type != COND_REDUCTION
+      && check_reduction)
     {
       /* CHECKME: check for !flag_finite_math_only too?  */
-      if (SCALAR_FLOAT_TYPE_P (type) && !flag_associative_math
-	  && check_reduction)
+      if (SCALAR_FLOAT_TYPE_P (type) && !flag_associative_math)
 	{
 	  /* Changing the order of operations changes the semantics.  */
 	  if (dump_enabled_p ())
@@ -2868,7 +2868,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
 			"reduction: unsafe fp math optimization: ");
 	  return NULL;
 	}
-      else if (INTEGRAL_TYPE_P (type) && check_reduction)
+      else if (INTEGRAL_TYPE_P (type))
 	{
 	  if (!operation_no_trapping_overflow (type, code))
 	    {
@@ -2891,7 +2891,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
 	      return NULL;
 	    }
 	}
-      else if (SAT_FIXED_POINT_TYPE_P (type) && check_reduction)
+      else if (SAT_FIXED_POINT_TYPE_P (type))
 	{
 	  /* Changing the order of operations changes the semantics.  */
 	  if (dump_enabled_p ())
