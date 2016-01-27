@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -ftree-parallelize-loops=2 -fno-tree-loop-im -fdump-tree-parloops2-details" } */
+/* { dg-options "-O1 -ftree-parallelize-loops=2 -fno-tree-loop-im -fdump-tree-parloops-details" } */
 
 #define N 1000
 
@@ -13,5 +13,5 @@ foo (void)
     ++i;
 }
 
-/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 0 "parloops2" } } */
-/* { dg-final { scan-tree-dump-times "FAILED: data dependencies exist across iterations" 1 "parloops2" } } */
+/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 0 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "FAILED: data dependencies exist across iterations" 1 "parloops" } } */
