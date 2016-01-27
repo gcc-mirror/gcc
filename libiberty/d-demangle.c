@@ -399,7 +399,9 @@ dlang_function_args (string *decl, const char *mangled)
 	  return mangled;
 	case 'Y': /* (variadic T t, ...) style.  */
 	  mangled++;
-	  string_append (decl, ", ...");
+	  if (n != 0)
+	    string_append (decl, ", ");
+	  string_append (decl, "...");
 	  return mangled;
 	case 'Z': /* Normal function.  */
 	  mangled++;

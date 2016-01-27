@@ -342,6 +342,10 @@ _D8demangle4testFaaYv
 demangle.test(char, char, ...)
 #
 --format=dlang
+_D8demangle4testFYv
+demangle.test(...)
+#
+--format=dlang
 _D8demangle4testFaaZv
 demangle.test(char, char)
 #
