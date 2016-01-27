@@ -1,3 +1,9 @@
+2016-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69399
+	* wide-int.h (wi::lrshift): For larger precisions, only
+	use fast path if shift is known to be < HOST_BITS_PER_WIDE_INT.
+
 2016-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
 
         * config/arc/predicates.md (proper_comparison_operator): Reject
