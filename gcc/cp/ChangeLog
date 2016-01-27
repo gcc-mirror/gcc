@@ -1,5 +1,10 @@
 2016-01-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/68949
+	* optimize.c (maybe_clone_body): Clear DECL_SAVED_TREE of the alias.
+	* semantics.c (expand_or_defer_fn_1): Keep DECL_SAVED_TREE of
+	maybe-in-charge *tor.
+
 	PR c++/69131
 	* method.c (walk_field_subobs): Add dtor_from_ctor parm.
 	(process_subob_fn): Likewise.  Don't consider triviality if true.
