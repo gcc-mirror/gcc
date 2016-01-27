@@ -430,7 +430,7 @@ builtin_macro (cpp_reader *pfile, cpp_hashnode *node, source_location loc)
       if (pfile->state.in_directive)
 	return 0;
 
-      return _cpp_do__Pragma (pfile);
+      return _cpp_do__Pragma (pfile, loc);
     }
 
   buf = _cpp_builtin_macro_text (pfile, node);

@@ -688,7 +688,7 @@ extern int _cpp_handle_directive (cpp_reader *, int);
 extern void _cpp_define_builtin (cpp_reader *, const char *);
 extern char ** _cpp_save_pragma_names (cpp_reader *);
 extern void _cpp_restore_pragma_names (cpp_reader *, char **);
-extern int _cpp_do__Pragma (cpp_reader *);
+extern int _cpp_do__Pragma (cpp_reader *, source_location);
 extern void _cpp_init_directives (cpp_reader *);
 extern void _cpp_init_internal_pragmas (cpp_reader *);
 extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,

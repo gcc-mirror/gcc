@@ -1,3 +1,15 @@
+2016-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/69126
+	* directives.c (destringize_and_run): Add expansion_loc param; use
+	it when handling unexpanded pragmas to fixup the locations of the
+	synthesized tokens.
+	(_cpp_do__Pragma): Add expansion_loc param and use it when calling
+	destringize_and_run.
+	* internal.h (_cpp_do__Pragma): Add expansion_loc param.
+	* macro.c (builtin_macro): Pass expansion location of _Pragma to
+	_cpp_do__Pragma.
+
 2016-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/69177
