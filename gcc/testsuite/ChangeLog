@@ -1,3 +1,7 @@
+2016-01-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/and-1.c: Remove nand test for powerpc*-*-*.
+
 2016-01-27  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/autopar/pr69110.c: Fix pass number.
