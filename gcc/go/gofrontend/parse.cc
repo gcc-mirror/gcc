@@ -419,6 +419,8 @@ Parse::array_type(bool may_use_ellipsis)
     }
 
   Type* element_type = this->type();
+  if (element_type->is_error_type())
+    return Type::make_error_type();
 
   return Type::make_array_type(element_type, length);
 }
