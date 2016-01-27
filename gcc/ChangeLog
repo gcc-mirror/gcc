@@ -1,3 +1,9 @@
+2016-01-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/69512
+	* config/i386/i386.md (*zext<mode>_doubleword_and): New pattern.
+	(*zext<mode>_doubleword): Disable for TARGET_ZERO_EXTEND_WITH_AND.
+
 2016-01-27  Thomas Klausner  <wiz@NetBSD.org>
 
 	PR target/68380
