@@ -1,3 +1,11 @@
+2016-01-27  Ian Lance Taylor  <iant@google.com>
+
+	* common.opt (fkeep-gc-roots-live): New undocumented option.
+	* tree-ssa-loop-ivopts.c (add_candidate_1): If
+	-fkeep-gc-roots-live, skip pointers.
+	(add_iv_candidate_for_biv): Handle add_candidate_1 returning
+	NULL.
+
 2016-01-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/69512
