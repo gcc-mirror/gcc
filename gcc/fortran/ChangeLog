@@ -1,3 +1,8 @@
+2016-01-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/69484
+	* invoke.texi: Fix documentation of -Wall with respect to -Wtabs.
+
 2016-01-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/69385
