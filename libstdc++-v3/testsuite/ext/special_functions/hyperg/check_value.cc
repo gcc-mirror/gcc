@@ -1,5 +1,6 @@
-// { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__" }
-//
+// { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__ -ffp-contract=off" }
+// { dg-additional-options "-ffloat-store" { target { m68*-*-* || ia32 } } }
+
 // Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free

@@ -1,3 +1,11 @@
+2016-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69295
+	* testsuite/ext/special_functions/hyperg/check_value.cc: Use
+	-ffp-contract=off, and -ffloat-store to disable excess precision.
+	* testsuite/special_functions/02_assoc_legendre/check_value.cc: Use
+	-ffp-contract=off.
+
 2016-01-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/69478
