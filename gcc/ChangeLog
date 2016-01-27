@@ -1,4 +1,9 @@
-2016-01-20  Christian Bruel  <christian.bruel@st.com>
+2016-01-27  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/driver-rs6000.c (detect_processor_aix): Add
+	power9.
+
+2016-01-27  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/69245
 	* config/arm/arm-c.c (arm_pragma_target_parse): Add comments.
