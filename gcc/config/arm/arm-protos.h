@@ -332,6 +332,7 @@ extern bool arm_autoinc_modes_ok_p (machine_mode, enum arm_auto_incmodes);
 extern void arm_emit_eabi_attribute (const char *, int, int);
 
 extern void arm_reset_previous_fndecl (void);
+extern void save_restore_target_globals (tree);
 
 /* Defined in gcc/common/config/arm-common.c.  */
 extern const char *arm_rewrite_selected_cpu (const char *name);
