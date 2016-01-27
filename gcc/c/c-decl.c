@@ -10741,11 +10741,22 @@ c_write_global_declarations_1 (tree globals)
       if (TREE_CODE (decl) == FUNCTION_DECL
 	  && DECL_INITIAL (decl) == 0
 	  && DECL_EXTERNAL (decl)
-	  && !TREE_PUBLIC (decl)
-	  && C_DECL_USED (decl))
+	  && !TREE_PUBLIC (decl))
 	{
-	  pedwarn (input_location, 0, "%q+F used but never defined", decl);
-	  TREE_NO_WARNING (decl) = 1;
+	  if (C_DECL_USED (decl))
+	    {
+	      pedwarn (input_location, 0, "%q+F used but never defined", decl);
+	      TREE_NO_WARNING (decl) = 1;
+	    }
+	  /* For -Wunused-function warn about unused static prototypes.  */
+	  else if (warn_unused_function
+		   && ! DECL_ARTIFICIAL (decl)
+		   && ! TREE_NO_WARNING (decl))
+	    {
+	      warning (OPT_Wunused_function,
+		       "%q+F declared %<static%> but never defined", decl);
+	      TREE_NO_WARNING (decl) = 1;
+	    }
 	}
 
       wrapup_global_declaration_1 (decl);
