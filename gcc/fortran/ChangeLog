@@ -1,3 +1,11 @@
+2016-01-27  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/p69268
+	* trans-stmt.c (gfc_trans_allocate): Make sure the source=
+	expression is evaluated once only. Use gfc_trans_assignment ()
+	instead of explicitly calling gfc_trans_string_copy () to
+	reduce the code complexity in trans_allocate.
+
 2016-01-25  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR fortran/68283

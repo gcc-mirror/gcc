@@ -67,6 +67,6 @@ contains
 !    allocate(res, source = arg) ! Caused an ICE
 !  end subroutine
 end
-! { dg-final { scan-tree-dump-times "builtin_malloc" 15 "original" } }
-! { dg-final { scan-tree-dump-times "builtin_free" 17 "original" } }
+! { dg-final { scan-tree-dump-times "builtin_malloc" 16 "original" } }
+! { dg-final { scan-tree-dump-times "builtin_free" 16 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
