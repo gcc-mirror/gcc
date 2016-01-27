@@ -223,6 +223,10 @@ dlang_call_convention (string *decl, const char *mangled)
       mangled++;
       string_append (decl, "extern(C++) ");
       break;
+    case 'Y': /* (Objective-C) */
+      mangled++;
+      string_append (decl, "extern(Objective-C) ");
+      break;
     default:
       return NULL;
     }
@@ -539,7 +543,7 @@ dlang_type (string *decl, const char *mangled)
       switch (*mangled)
 	{
 	case 'F': case 'U': case 'W':
-	case 'V': case 'R':
+	case 'V': case 'R': case 'Y':
 	  mangled = dlang_function_type (decl, mangled);
 	  string_append (decl, "function");
 	  return mangled;
@@ -1338,7 +1342,7 @@ dlang_call_convention_p (const char *mangled)
   switch (*mangled)
     {
     case 'F': case 'U': case 'V':
-    case 'W': case 'R':
+    case 'W': case 'R': case 'Y':
       return 1;
 
     default:

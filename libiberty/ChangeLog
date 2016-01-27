@@ -1,5 +1,13 @@
 2016-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* d-demangle.c (dlang_call_convention): Handle extern Objective-C
+	function calling convention.
+	(dlang_call_convention_p): Likewise.
+	(dlang_type): Likewise.
+	* testsuite/d-demangle-expected: Add coverage tests.
+
+2016-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* d-demangle.c (dlang_function_args): Append ',' for variadic functions
 	only if parameters were seen before the elipsis symbol.
 	* testsuite/d-demangle-expected: Add coverage test for parameter-less
