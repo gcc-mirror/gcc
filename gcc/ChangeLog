@@ -1,3 +1,8 @@
+2016-01-27  Claudiu Zissulescu  <claziss@synopsys.com>
+
+        * config/arc/predicates.md (proper_comparison_operator): Reject
+        constant-constant comparison.
+
 2016-01-26  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69110

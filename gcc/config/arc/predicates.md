@@ -510,6 +510,8 @@
     /* From combiner.  */
     case QImode: case HImode: case DImode: case SFmode: case DFmode:
       return 0;
+    case VOIDmode:
+      return 0;
     default:
       gcc_unreachable ();
   }
