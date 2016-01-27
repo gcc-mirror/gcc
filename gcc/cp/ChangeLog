@@ -1,3 +1,9 @@
+2016-01-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/69379
+	* constexpr.c (cxx_eval_constant_expression): Handle PTRMEM_CSTs
+	wrapped in NOP_EXPRs.
+
 2016-01-27  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/69317
