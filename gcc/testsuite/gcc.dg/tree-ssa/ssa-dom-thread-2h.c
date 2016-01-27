@@ -13,9 +13,6 @@ void dont_thread_2 (int first)
 
   do
     {
-      bla ();
-      bla ();
-      bla ();
       if (first)
 	foo ();
       else
@@ -28,5 +25,5 @@ void dont_thread_2 (int first)
 
 /* Peeling off the first iteration would make threading through
    the loop latch safe, but we don't do that currently.  */
-/* { dg-final { scan-tree-dump-not "Jumps threaded" "vrp1"} } */
-/* { dg-final { scan-tree-dump-not "Jumps threaded" "dom2"} } */
+/* { dg-final { scan-tree-dump "Jumps threaded: 1" "vrp1"} } */
+/* { dg-final { scan-tree-dump "Jumps threaded: 1" "dom2"} } */

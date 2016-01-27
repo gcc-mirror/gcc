@@ -1,3 +1,16 @@
+2016-01-25  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/68398
+        PR tree-optimization/69196
+	* gcc.dg/tree-ssa/pr66752-3.c: Update expected output.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2c.c: Add extra statements on thread
+	path to avoid new heuristic allowing more irreducible regions
+	* gcc.dg/tree-ssa/ssa-dom-thread-2d.c: Likewise.
+	* gcc.dg/tree-ssa/vrp46.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Update expected output.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2g.c: New test.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2h.c: Likewise.
+
 2016-01-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c/68062
