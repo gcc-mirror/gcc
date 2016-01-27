@@ -1,4 +1,8 @@
-2015-01-27  Paul Thomas  <pault@gcc.gnu.org>
+2016-01-27  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/execute/pr69447.c: New test.
+
+2016-01-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/69385
 	* gfortran.dg/alloc_comp_assign_15.f03: New test.

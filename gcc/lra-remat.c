@@ -77,6 +77,9 @@ static int call_used_regs_arr[FIRST_PSEUDO_REGISTER];
 /* Bitmap used for different calculations.  */
 static bitmap_head temp_bitmap;
 
+/* Registers accessed via subreg_p.  */
+static bitmap_head subreg_regs;
+
 typedef struct cand *cand_t;
 typedef const struct cand *const_cand_t;
 
@@ -383,30 +386,30 @@ operand_to_remat (rtx_insn *insn)
     return -1;
   /* First find a pseudo which can be rematerialized.  */
   for (reg = id->regs; reg != NULL; reg = reg->next)
-    /* True FRAME_POINTER_NEEDED might be because we can not follow
-       changing sp offsets, e.g. alloca is used.  If the insn contains
-       stack pointer in such case, we can not rematerialize it as we
-       can not know sp offset at a rematerialization place.  */
-    if (reg->regno == STACK_POINTER_REGNUM && frame_pointer_needed)
-      return -1;
-    else if (reg->type == OP_OUT && ! reg->subreg_p
-	     && find_regno_note (insn, REG_UNUSED, reg->regno) == NULL)
-      {
-	/* We permits only one spilled reg.  */
-	if (found_reg != NULL)
-	  return -1;
-	found_reg = reg;
-      }
-    /* IRA calculates conflicts separately for subregs of two words
-       pseudo.  Even if the pseudo lives, e.g. one its subreg can be
-       used lately, another subreg hard register can be already used
-       for something else.  In such case, it is not safe to
-       rematerialize the insn.  */
-    else if (reg->type == OP_IN && reg->subreg_p
-	     && reg->regno >= FIRST_PSEUDO_REGISTER
-	     && (GET_MODE_SIZE (PSEUDO_REGNO_MODE (reg->regno))
-		 == 2 * UNITS_PER_WORD))
-      return -1;
+    {
+      /* True FRAME_POINTER_NEEDED might be because we can not follow
+	 changing sp offsets, e.g. alloca is used.  If the insn contains
+	 stack pointer in such case, we can not rematerialize it as we
+	 can not know sp offset at a rematerialization place.  */
+      if (reg->regno == STACK_POINTER_REGNUM && frame_pointer_needed)
+	return -1;
+      else if (reg->type == OP_OUT && ! reg->subreg_p
+	       && find_regno_note (insn, REG_UNUSED, reg->regno) == NULL)
+	{
+	  /* We permits only one spilled reg.  */
+	  if (found_reg != NULL)
+	    return -1;
+	  found_reg = reg;
+        }
+      /* IRA calculates conflicts separately for subregs of two words
+	 pseudo.  Even if the pseudo lives, e.g. one its subreg can be
+	 used lately, another subreg hard register can be already used
+	 for something else.  In such case, it is not safe to
+	 rematerialize the insn.  */
+      if (reg->regno >= FIRST_PSEUDO_REGISTER
+	  && bitmap_bit_p (&subreg_regs, reg->regno))
+	return -1;
+    }
   if (found_reg == NULL)
     return -1;
   if (found_reg->regno < FIRST_PSEUDO_REGISTER)
@@ -631,6 +634,9 @@ dump_candidates_and_remat_bb_data (void)
       lra_dump_bitmap_with_title ("avout cands in BB",
 				  &get_remat_bb_data (bb)->avout_cands, bb->index);
     }
+  fprintf (lra_dump_file, "subreg regs:");
+  dump_regset (&subreg_regs, lra_dump_file);
+  putc ('\n', lra_dump_file);
 }
 
 /* Free all BB data.  */
@@ -655,21 +661,24 @@ finish_remat_bb_data (void)
 
 
 
-/* Update changed_regs and dead_regs of BB from INSN.  */
+/* Update changed_regs, dead_regs, subreg_regs of BB from INSN.  */
 static void
 set_bb_regs (basic_block bb, rtx_insn *insn)
 {
   lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
+  remat_bb_data_t bb_info = get_remat_bb_data (bb);
   struct lra_insn_reg *reg;
 
   for (reg = id->regs; reg != NULL; reg = reg->next)
-    if (reg->type != OP_IN)
-      bitmap_set_bit (&get_remat_bb_data (bb)->changed_regs, reg->regno);
-    else
-      {
-	if (find_regno_note (insn, REG_DEAD, (unsigned) reg->regno) != NULL)
-	  bitmap_set_bit (&get_remat_bb_data (bb)->dead_regs, reg->regno);
-      }
+    {
+      unsigned regno = reg->regno;
+      if (reg->type != OP_IN)
+        bitmap_set_bit (&bb_info->changed_regs, regno);
+      else if (find_regno_note (insn, REG_DEAD, regno) != NULL)
+	bitmap_set_bit (&bb_info->dead_regs, regno);
+      if (regno >= FIRST_PSEUDO_REGISTER && reg->subreg_p)
+	bitmap_set_bit (&subreg_regs, regno);
+    }
   if (CALL_P (insn))
     for (int i = 0; i < call_used_regs_arr_len; i++)
       bitmap_set_bit (&get_remat_bb_data (bb)->dead_regs,
@@ -1284,10 +1293,11 @@ lra_remat (void)
     if (call_used_regs[i])
       call_used_regs_arr[call_used_regs_arr_len++] = i;
   initiate_cand_table ();
-  create_cands ();
   create_remat_bb_data ();
   bitmap_initialize (&temp_bitmap, &reg_obstack);
+  bitmap_initialize (&subreg_regs, &reg_obstack);
   calculate_local_reg_remat_bb_data ();
+  create_cands ();
   calculate_livein_cands ();
   calculate_gen_cands ();
   bitmap_initialize (&all_blocks, &reg_obstack);
@@ -1298,6 +1308,7 @@ lra_remat (void)
   result = do_remat ();
   all_cands.release ();
   bitmap_clear (&temp_bitmap);
+  bitmap_clear (&subreg_regs);
   finish_remat_bb_data ();
   finish_cand_table ();
   bitmap_clear (&all_blocks);
