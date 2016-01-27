@@ -12035,11 +12035,7 @@ ix86_update_stack_boundary (void)
   /* __tls_get_addr needs to be called with 16-byte aligned stack.  */
   if (ix86_tls_descriptor_calls_expanded_in_cfun
       && crtl->preferred_stack_boundary < 128)
-    {
-      crtl->preferred_stack_boundary = 128;
-      if (crtl->stack_alignment_needed < 128)
-	crtl->stack_alignment_needed = 128;
-    }
+    crtl->preferred_stack_boundary = 128;
 }
 
 /* Handle the TARGET_GET_DRAP_RTX hook.  Return NULL if no DRAP is

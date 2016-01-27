@@ -1,3 +1,9 @@
+2016-01-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/68986
+	* config/i386/i386.c (ix86_update_stack_boundary): Don't
+	change stack_alignment_needed for __tls_get_addr call.
+
 2016-01-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (print_operand): Rollback 's' removal.
