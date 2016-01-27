@@ -21,12 +21,12 @@ begin
   Put ("A1 :");
   Dump (A1'Address, R1'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "A1 : e2 59 d1 48 b4 aa d9 bb\n" }
+  -- { dg-output "A1 : e2 59 d1 48 b4 aa d9 bb.*\n" }
 
   Put ("A2 :");
   Dump (A2'Address, R1'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "A2 : 84 8d 15 9e 15 5b 35 df\n" }
+  -- { dg-output "A2 : 84 8d 15 9e 15 5b 35 df.*\n" }
 
   N1 := A1.N;
   C1 := N1.C1;
@@ -34,13 +34,13 @@ begin
   C3 := N1.C3;
 
   Put_Line("C1 :" & C1'Img);
-  -- { dg-output "C1 : 171\n" }
+  -- { dg-output "C1 : 171.*\n" }
 
   Put_Line("C2 :" & C2'Img);
-  -- { dg-output "C2 : 205\n" }
+  -- { dg-output "C2 : 205.*\n" }
 
   Put_Line("C3 :" & C3'Img);
-  -- { dg-output "C3 : 239\n" }
+  -- { dg-output "C3 : 239.*\n" }
 
   N1.C1 := C1;
   N1.C2 := C2;
@@ -53,13 +53,13 @@ begin
   C3 := N2.C3;
 
   Put_Line("C1 :" & C1'Img);
-  -- { dg-output "C1 : 171\n" }
+  -- { dg-output "C1 : 171.*\n" }
 
   Put_Line("C2 :" & C2'Img);
-  -- { dg-output "C2 : 205\n" }
+  -- { dg-output "C2 : 205.*\n" }
 
   Put_Line("C3 :" & C3'Img);
-  -- { dg-output "C3 : 239\n" }
+  -- { dg-output "C3 : 239.*\n" }
 
   N2.C1 := C1;
   N2.C2 := C2;
@@ -69,11 +69,11 @@ begin
   Put ("A1 :");
   Dump (A1'Address, R1'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "A1 : e2 59 d1 48 b4 aa d9 bb\n" }
+  -- { dg-output "A1 : e2 59 d1 48 b4 aa d9 bb.*\n" }
 
   Put ("A2 :");
   Dump (A2'Address, R1'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "A2 : 84 8d 15 9e 15 5b 35 df\n" }
+  -- { dg-output "A2 : 84 8d 15 9e 15 5b 35 df.*\n" }
 
 end;

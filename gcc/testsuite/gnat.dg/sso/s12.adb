@@ -20,12 +20,12 @@ begin
   Put ("A11 :");
   Dump (A11'Address, Arr11'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "A11 : 12 00 ab 00 34 00 cd 00 12 00 ab 00 34 00 cd 00\n" }
+  -- { dg-output "A11 : 12 00 ab 00 34 00 cd 00 12 00 ab 00 34 00 cd 00.*\n" }
 
   Put ("A22 :");
   Dump (A22'Address, Arr22'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "A22 : 00 ab 00 12 00 cd 00 34 00 ab 00 12 00 cd 00 34\n" }
+  -- { dg-output "A22 : 00 ab 00 12 00 cd 00 34 00 ab 00 12 00 cd 00 34.*\n" }
 
   A1 := (A11(1,1), A11(1,2), A11(2,1));
   C1 := A1(1);
@@ -33,13 +33,13 @@ begin
   C3 := A1(3);
 
   Put_Line("C1 :" & C1'Img);
-  -- { dg-output "C1 : 11206674\n" }
+  -- { dg-output "C1 : 11206674.*\n" }
 
   Put_Line("C2 :" & C2'Img);
-  -- { dg-output "C2 : 13434932\n" }
+  -- { dg-output "C2 : 13434932.*\n" }
 
   Put_Line("C3 :" & C3'Img);
-  -- { dg-output "C3 : 11206674\n" }
+  -- { dg-output "C3 : 11206674.*\n" }
 
   A1(1) := C1;
   A1(2) := C2;
@@ -52,13 +52,13 @@ begin
   C3 := A2(3);
 
   Put_Line("C1 :" & C1'Img);
-  -- { dg-output "C1 : 11206674\n" }
+  -- { dg-output "C1 : 11206674.*\n" }
 
   Put_Line("C2 :" & C2'Img);
-  -- { dg-output "C2 : 13434932\n" }
+  -- { dg-output "C2 : 13434932.*\n" }
 
   Put_Line("C3 :" & C3'Img);
-  -- { dg-output "C3 : 11206674\n" }
+  -- { dg-output "C3 : 11206674.*\n" }
 
   A2(1) := C1;
   A2(2) := C2;
@@ -68,10 +68,10 @@ begin
   Put ("A11 :");
   Dump (A11'Address, Arr11'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "A11 : 12 00 ab 00 34 00 cd 00 12 00 ab 00 34 00 cd 00\n" }
+  -- { dg-output "A11 : 12 00 ab 00 34 00 cd 00 12 00 ab 00 34 00 cd 00.*\n" }
 
   Put ("A22 :");
   Dump (A22'Address, Arr22'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "A22 : 00 ab 00 12 00 cd 00 34 00 ab 00 12 00 cd 00 34\n" }
+  -- { dg-output "A22 : 00 ab 00 12 00 cd 00 34 00 ab 00 12 00 cd 00 34.*\n" }
 end;

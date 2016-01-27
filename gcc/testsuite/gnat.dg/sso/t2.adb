@@ -21,7 +21,7 @@ begin
   Put ("Local_R1 :");
   Dump (Local_R1'Address, R1'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "Local_R1 : e5 59 d1 48 b0 a0 c1 03\n" }
+  -- { dg-output "Local_R1 : e5 59 d1 48 b0 a0 c1 03.*\n" }
 
   Local_R2.S1 := My_R2.S1 - 1;
   Local_R2.I := My_R2.I + 1;
@@ -34,7 +34,7 @@ begin
   Put ("Local_R2 :");
   Dump (Local_R2'Address, R2'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "Local_R2 : 44 8d 15 9e 40 58 34 1e\n" }
+  -- { dg-output "Local_R2 : 44 8d 15 9e 40 58 34 1e.*\n" }
 
   Local_R1 := (S1 => 2,
                I  => 16#12345678#,
@@ -44,7 +44,7 @@ begin
   Put ("Local_R1 :");
   Dump (Local_R1'Address, R1'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "Local_R1 : e2 59 d1 48 b4 aa d9 bb\n" }
+  -- { dg-output "Local_R1 : e2 59 d1 48 b4 aa d9 bb.*\n" }
 
   Local_R2 := (S1 => 2,
                I  => 16#12345678#,
@@ -54,7 +54,7 @@ begin
   Put ("Local_R2 :");
   Dump (Local_R2'Address, R2'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "Local_R2 : 84 8d 15 9e 15 5b 35 df\n" }
+  -- { dg-output "Local_R2 : 84 8d 15 9e 15 5b 35 df.*\n" }
 
   Local_R1.S1   := Local_R1.S1 - 1;
   Local_R1.I    := Local_R1.I + 1;
@@ -67,7 +67,7 @@ begin
   Put ("Local_R1 :");
   Dump (Local_R1'Address, R1'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "Local_R1 : e5 59 d1 48 b0 a0 c1 03\n" }
+  -- { dg-output "Local_R1 : e5 59 d1 48 b0 a0 c1 03.*\n" }
 
   Local_R2.S1   := Local_R2.S1 - 1;
   Local_R2.I    := Local_R2.I + 1;
@@ -80,5 +80,5 @@ begin
   Put ("Local_R2 :");
   Dump (Local_R2'Address, R2'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "Local_R2 : 44 8d 15 9e 40 58 34 1e\n" }
+  -- { dg-output "Local_R2 : 44 8d 15 9e 40 58 34 1e.*\n" }
 end;

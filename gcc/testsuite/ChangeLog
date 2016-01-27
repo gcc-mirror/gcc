@@ -1,3 +1,8 @@
+2016-01-27  Rainer Emrich  <rainer@emrich-ebersheim.de>
+
+	PR ada/69488
+	* gnat.dg/sso/*.adb: Robustify dg-output directives.
+
 2016-01-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/69379
