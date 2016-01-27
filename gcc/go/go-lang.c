@@ -150,6 +150,9 @@ go_langhook_init_options_struct (struct gcc_options *opts)
   opts->x_flag_exceptions = 1;
   opts->x_flag_non_call_exceptions = 1;
 
+  /* We need to keep pointers live for the garbage collector.  */
+  opts->x_flag_keep_gc_roots_live = 1;
+
   /* Go programs expect runtime.Callers to work, and that uses
      libbacktrace that uses debug info.  Set the debug info level to 1
      by default.  In post_options we will set the debug type if the
