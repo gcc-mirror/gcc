@@ -779,8 +779,7 @@ create_cilk_wrapper (tree exp, tree *args_out)
    gimple sequences from the caller of gimplify_cilk_spawn.  */
 
 void
-cilk_gimplify_call_params_in_spawned_fn (tree *expr_p, gimple_seq *pre_p,
-					 gimple_seq *post_p)
+cilk_gimplify_call_params_in_spawned_fn (tree *expr_p, gimple_seq *pre_p)
 {
   int ii = 0;
   tree *fix_parm_expr = expr_p;
@@ -797,8 +796,8 @@ cilk_gimplify_call_params_in_spawned_fn (tree *expr_p, gimple_seq *pre_p,
 
   if (TREE_CODE (*fix_parm_expr) == CALL_EXPR)
     for (ii = 0; ii < call_expr_nargs (*fix_parm_expr); ii++)
-      gimplify_expr (&CALL_EXPR_ARG (*fix_parm_expr, ii), pre_p, post_p,
-		     is_gimple_reg, fb_rvalue);
+      gimplify_arg (&CALL_EXPR_ARG (*fix_parm_expr, ii), pre_p,
+		    EXPR_LOCATION (*fix_parm_expr));
 }
 
 

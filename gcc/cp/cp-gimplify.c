@@ -98,7 +98,7 @@ cilk_cp_gimplify_call_params_in_spawned_fn (tree *expr_p, gimple_seq *pre_p,
 {
   int ii = 0;
 
-  cilk_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);  
+  cilk_gimplify_call_params_in_spawned_fn (expr_p, pre_p);
   if (TREE_CODE (*expr_p) == AGGR_INIT_EXPR)
     for (ii = 0; ii < aggr_init_expr_nargs (*expr_p); ii++)
       gimplify_expr (&AGGR_INIT_EXPR_ARG (*expr_p, ii), pre_p, post_p,
