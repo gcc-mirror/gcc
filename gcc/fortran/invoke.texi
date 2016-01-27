@@ -743,7 +743,7 @@ Enables commonly used warning options pertaining to usage that
 we recommend avoiding and that we believe are easy to avoid.
 This currently includes @option{-Waliasing}, @option{-Wampersand},
 @option{-Wconversion}, @option{-Wsurprising}, @option{-Wc-binding-type},
-@option{-Wintrinsics-std}, @option{-Wno-tabs}, @option{-Wintrinsic-shadow},
+@option{-Wintrinsics-std}, @option{-Wtabs}, @option{-Wintrinsic-shadow},
 @option{-Wline-truncation}, @option{-Wtarget-lifetime},
 @option{-Winteger-division}, @option{-Wreal-q-constant} and @option{-Wunused}.
 
