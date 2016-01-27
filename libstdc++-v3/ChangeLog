@@ -1,3 +1,7 @@
+2016-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/whatis.cc: Include <random>.
+
 2016-01-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/69295
