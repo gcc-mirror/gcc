@@ -1846,7 +1846,12 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
 
   if (!found)
     {
-      if (tree_int_cst_lt (index, array_type_nelts_top (TREE_TYPE (ary))))
+      tree nelts = array_type_nelts_top (TREE_TYPE (ary));
+      /* For VLAs, the number of elements won't be an integer constant.  */
+      nelts = cxx_eval_constant_expression (ctx, nelts, false, non_constant_p,
+					    overflow_p);
+      VERIFY_CONSTANT (nelts);
+      if (tree_int_cst_lt (index, nelts))
 	{
 	  if (TREE_CODE (ary) == CONSTRUCTOR
 	      && CONSTRUCTOR_NO_IMPLICIT_ZERO (ary))
