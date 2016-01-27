@@ -1,3 +1,10 @@
+2016-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/66869
+	* c-decl.c (c_write_global_declarations_1): Warn with
+	warn_unused_function if static prototype without definition
+	is not C_DECL_USED.
+
 2016-01-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c/68062
