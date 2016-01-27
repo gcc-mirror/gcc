@@ -8901,10 +8901,11 @@ is_scalar_reallocatable_lhs (gfc_expr *expr)
 	&& !expr->ref)
     return true;
 
-  /* All that can be left are allocatable components.  */
-  if ((expr->symtree->n.sym->ts.type != BT_DERIVED
+  /* All that can be left are allocatable components.  However, we do
+     not check for allocatable components here because the expression
+     could be an allocatable component of a pointer component.  */
+  if (expr->symtree->n.sym->ts.type != BT_DERIVED
 	&& expr->symtree->n.sym->ts.type != BT_CLASS)
-	|| !expr->symtree->n.sym->ts.u.derived->attr.alloc_comp)
     return false;
 
   /* Find an allocatable component ref last.  */
