@@ -781,6 +781,11 @@ hsa_summary_t::link_functions (cgraph_node *gpu, cgraph_node *host,
   TREE_OPTIMIZATION (fn_opts)->x_flag_tree_loop_vectorize = false;
   TREE_OPTIMIZATION (fn_opts)->x_flag_tree_slp_vectorize = false;
   DECL_FUNCTION_SPECIFIC_OPTIMIZATION (gdecl) = fn_opts;
+
+  /* Create reference between a kernel and a corresponding host implementation
+     to quarantee LTO streaming to a same LTRANS.  */
+  if (kind == HSA_KERNEL)
+    gpu->create_reference (host, IPA_REF_ADDR);
 }
 
 /* Add a HOST function to HSA summaries.  */
