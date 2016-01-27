@@ -1,3 +1,9 @@
+2016-01-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/68062
+	* typeck.c (cp_build_binary_op): Promote operand to unsigned, if
+	needed.  Add -Wsign-compare warning.
+
 2016-01-27  Ryan Burn  <contact@rnburn.com>
 
 	PR cilkplus/69267

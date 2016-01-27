@@ -11048,6 +11048,20 @@ build_binary_op (location_t location, enum tree_code code,
               return error_mark_node;
             }
 
+	  /* It's not precisely specified how the usual arithmetic
+	     conversions apply to the vector types.  Here, we use
+	     the unsigned type if one of the operands is signed and
+	     the other one is unsigned.  */
+	  if (TYPE_UNSIGNED (type0) != TYPE_UNSIGNED (type1))
+	    {
+	      if (!TYPE_UNSIGNED (type0))
+		op0 = build1 (VIEW_CONVERT_EXPR, type1, op0);
+	      else
+		op1 = build1 (VIEW_CONVERT_EXPR, type0, op1);
+	      warning_at (location, OPT_Wsign_compare, "comparison between "
+			  "types %qT and %qT", type0, type1);
+	    }
+
           /* Always construct signed integer vector type.  */
           intt = c_common_type_for_size (GET_MODE_BITSIZE
 					   (TYPE_MODE (TREE_TYPE (type0))), 0);
@@ -11200,6 +11214,20 @@ build_binary_op (location_t location, enum tree_code code,
                                   "number of elements");
               return error_mark_node;
             }
+
+	  /* It's not precisely specified how the usual arithmetic
+	     conversions apply to the vector types.  Here, we use
+	     the unsigned type if one of the operands is signed and
+	     the other one is unsigned.  */
+	  if (TYPE_UNSIGNED (type0) != TYPE_UNSIGNED (type1))
+	    {
+	      if (!TYPE_UNSIGNED (type0))
+		op0 = build1 (VIEW_CONVERT_EXPR, type1, op0);
+	      else
+		op1 = build1 (VIEW_CONVERT_EXPR, type0, op1);
+	      warning_at (location, OPT_Wsign_compare, "comparison between "
+			  "types %qT and %qT", type0, type1);
+	    }
 
           /* Always construct signed integer vector type.  */
           intt = c_common_type_for_size (GET_MODE_BITSIZE
