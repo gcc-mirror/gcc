@@ -1753,7 +1753,8 @@ get__Pragma_string (cpp_reader *pfile)
 /* Destringize IN into a temporary buffer, by removing the first \ of
    \" and \\ sequences, and process the result as a #pragma directive.  */
 static void
-destringize_and_run (cpp_reader *pfile, const cpp_string *in)
+destringize_and_run (cpp_reader *pfile, const cpp_string *in,
+		     source_location expansion_loc)
 {
   const unsigned char *src, *limit;
   char *dest, *result;
@@ -1833,6 +1834,12 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in)
 	      toks = XRESIZEVEC (cpp_token, toks, maxcount);
 	    }
 	  toks[count] = *cpp_get_token (pfile);
+	  /* _Pragma is a builtin, so we're not within a macro-map, and so
+	     the token locations are set to bogus ordinary locations
+	     near to, but after that of the "_Pragma".
+	     Paper over this by setting them equal to the location of the
+	     _Pragma itself (PR preprocessor/69126).  */
+	  toks[count].src_loc = expansion_loc;
 	  /* Macros have been already expanded by cpp_get_token
 	     if the pragma allowed expansion.  */
 	  toks[count++].flags |= NO_EXPAND;
@@ -1867,14 +1874,14 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in)
 
 /* Handle the _Pragma operator.  Return 0 on error, 1 if ok.  */
 int
-_cpp_do__Pragma (cpp_reader *pfile)
+_cpp_do__Pragma (cpp_reader *pfile, source_location expansion_loc)
 {
   const cpp_token *string = get__Pragma_string (pfile);
   pfile->directive_result.type = CPP_PADDING;
 
   if (string)
     {
-      destringize_and_run (pfile, &string->val.str);
+      destringize_and_run (pfile, &string->val.str, expansion_loc);
       return 1;
     }
   cpp_error (pfile, CPP_DL_ERROR,

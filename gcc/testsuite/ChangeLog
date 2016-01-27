@@ -1,3 +1,8 @@
+2016-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/69126
+	* c-c++-common/pr69126.c: New test case.
+
 2016-01-27  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/tree-ssa/ivopt_5.c: New test.
