@@ -1,3 +1,8 @@
+2016-01-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/69379
+	* g++.dg/pr69379.C: New test.
+
 2016-01-27  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/69317
