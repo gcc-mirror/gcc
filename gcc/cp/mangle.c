@@ -3657,13 +3657,13 @@ mangle_decl (const tree decl)
 	    warning_at (DECL_SOURCE_LOCATION (G.entity), OPT_Wabi,
 			"the mangled name of %qD changed between "
 			"-fabi-version=%d (%D) and -fabi-version=%d (%D)",
-			G.entity, warn_abi_version, id2,
-			flag_abi_version, id);
+			G.entity, save_ver, id2,
+			warn_abi_version, id);
 	  else
 	    warning_at (DECL_SOURCE_LOCATION (G.entity), OPT_Wabi,
 			"the mangled name of %qD changes between "
 			"-fabi-version=%d (%D) and -fabi-version=%d (%D)",
-			G.entity, flag_abi_version, id,
+			G.entity, save_ver, id,
 			warn_abi_version, id2);
 	}
 

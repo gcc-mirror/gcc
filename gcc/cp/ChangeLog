@@ -1,3 +1,9 @@
+2016-01-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/69317
+	* mangle.c (mangle_decl): Reference the correct (saved) version
+	of the ABI in -Wabi diagnostics.
+
 2016-01-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/69496
