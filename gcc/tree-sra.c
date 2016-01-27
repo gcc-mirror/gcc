@@ -2421,7 +2421,7 @@ analyze_access_subtree (struct access *root, struct access *parent,
 
       if (covered_to < limit)
 	hole = true;
-      if (scalar)
+      if (scalar || !allow_replacements)
 	root->grp_total_scalarization = 0;
     }
 

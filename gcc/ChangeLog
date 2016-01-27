@@ -1,3 +1,9 @@
+2016-01-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/69355
+	* tree-sra.c (analyze_access_subtree): Correct hole detection when
+	total_scalarization fails.
+
 2016-01-27  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/driver-rs6000.c (detect_processor_aix): Add
