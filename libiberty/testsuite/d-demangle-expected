@@ -394,6 +394,10 @@ _D8demangle4testFDRZaZv
 demangle.test(extern(C++) char() delegate)
 #
 --format=dlang
+_D8demangle4testFDYZaZv
+demangle.test(extern(Objective-C) char() delegate)
+#
+--format=dlang
 _D8demangle4testFPFZaZv
 demangle.test(char() function)
 #
@@ -412,6 +416,10 @@ demangle.test(extern(Pascal) char() function)
 --format=dlang
 _D8demangle4testFPRZaZv
 demangle.test(extern(C++) char() function)
+#
+--format=dlang
+_D8demangle4testFPYZaZv
+demangle.test(extern(Objective-C) char() function)
 #
 --format=dlang
 _D8demangle4testFDFNaZaZv
