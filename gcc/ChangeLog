@@ -1,3 +1,14 @@
+2016-01-20  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/69245
+	* config/arm/arm-c.c (arm_pragma_target_parse): Add comments.
+	Move arm_reset_previous_fndecl and set_target_option_current_node in
+	the conditional part.  Call save_restore_target_globals.
+	* config/arm/arm.c (arm_set_current_function):
+	Refactor to better support #pragma target and attribute mix.
+	Call save_restore_target_globals.
+	* config/arm/arm-protos.h (save_restore_target_globals): New function.
+
 2016-01-27  Martin Liska  <mliska@suse.cz>
 
 	* hsa.c (hsa_summary_t::link_functions): Create IPA_REF_ADDR
