@@ -74,8 +74,10 @@ test (void)
 #endif
     TEST (log2 (d), LARGE_NEG_EDOM);
   TEST (log10 (d), LARGE_NEG_EDOM);
-  /* Disabled due to glibc PR 6792, fixed in Apr 2015.  */
+#if defined(__GLIBC__) && (__GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 22))
+  /* Disabled due to glibc PR 6792, fixed in glibc 2.22.  */
   if (0)
+#endif
     TEST (log1p (d), LARGE_NEG_EDOM);
   TEST (exp (d), POWER_ERANGE);
 #if (defined (__sun__) || defined(__hppa__)) && defined (__unix__)
@@ -85,7 +87,11 @@ test (void)
 #endif
     {
       TEST (exp2 (d), POWER_ERANGE);
-      TEST (expm1 (d), POWER_ERANGE);
+#if defined(__GLIBC__) && (__GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 11))
+      /* Disabled due to glibc PR 6788, fixed in glibc 2.11.  */
+      if (0)
+#endif
+	TEST (expm1 (d), POWER_ERANGE);
     }
   TEST (sqrt (d), LARGE_NEG_EDOM);
   TEST (pow (100.0, d), POWER_ERANGE);
