@@ -1,3 +1,10 @@
+2016-01-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69131
+	* method.c (walk_field_subobs): Add dtor_from_ctor parm.
+	(process_subob_fn): Likewise.  Don't consider triviality if true.
+	(synthesize_method_walk): Pass it.
+
 2016-01-19  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
