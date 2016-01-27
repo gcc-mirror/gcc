@@ -1,3 +1,18 @@
+2016-01-27  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/68398
+	PR tree-optimization/69196
+	* params.def (PARAM_FSM_SCALE_PATH_STMTS): New parameter.
+	(PARAM_FSM_SCALE_PATH_BLOCKS): Likewise.
+	* tree-ssa-threadbackward.c (fsm_find_control_statement_thread_paths):
+	Only count PHIs in the last block in the path.  The others will
+	const/copy propagate away.  Add heuristic to allow more irreducible
+	subloops to be created when it is likely profitable to do so.
+
+	* tree-ssa-threadbackward.c (fsm_find_control_statement_thread_paths):
+	Fix typo in comment.  Use gsi_after_labels and remove the GIMPLE_LABEL
+	check from within the loop.  Use gsi_next_nondebug rather than gsi_next.
+
 2016-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/69254

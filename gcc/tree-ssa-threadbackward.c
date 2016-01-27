@@ -266,7 +266,7 @@ fsm_find_control_statement_thread_paths (tree name,
 	  basic_block bb = (*path)[j];
 
 	  /* Remember, blocks in the path are stored in opposite order
-	     in the PATH array.  The last entry in the array reprensents
+	     in the PATH array.  The last entry in the array represents
 	     the block with an outgoing edge that we will redirect to the
 	     jump threading path.  Thus we don't care about that block's
 	     loop father, nor how many statements are in that block because
@@ -280,30 +280,16 @@ fsm_find_control_statement_thread_paths (tree name,
 		  break;
 		}
 
-	      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	      for (gsi = gsi_after_labels (bb);
+		   !gsi_end_p (gsi);
+		   gsi_next_nondebug (&gsi))
 		{
 		  gimple *stmt = gsi_stmt (gsi);
 		  /* Do not count empty statements and labels.  */
 		  if (gimple_code (stmt) != GIMPLE_NOP
-		      && gimple_code (stmt) != GIMPLE_LABEL
 		      && !(gimple_code (stmt) == GIMPLE_ASSIGN
 			   && gimple_assign_rhs_code (stmt) == ASSERT_EXPR)
 		      && !is_gimple_debug (stmt))
-		    ++n_insns;
-		}
-
-	      gphi_iterator gsip;
-	      for (gsip = gsi_start_phis (bb);
-		   !gsi_end_p (gsip);
-		   gsi_next (&gsip))
-		{
-		  gphi *phi = gsip.phi ();
-		  tree dst = gimple_phi_result (phi);
-
-		  /* We consider any non-virtual PHI as a statement since it
-		     count result in a constant assignment or copy
-		     operation.  */
-		  if (!virtual_operand_p (dst))
 		    ++n_insns;
 		}
 
@@ -360,6 +346,24 @@ fsm_find_control_statement_thread_paths (tree name,
 	      == DOMST_NONDOMINATING))
 	creates_irreducible_loop = true;
 
+      /* PHIs in the final target and only the final target will need
+	 to be duplicated.  So only count those against the number
+	 of statements.  */
+      gphi_iterator gsip;
+      for (gsip = gsi_start_phis (taken_edge->dest);
+	   !gsi_end_p (gsip);
+	   gsi_next (&gsip))
+	{
+	  gphi *phi = gsip.phi ();
+	  tree dst = gimple_phi_result (phi);
+
+	  /* We consider any non-virtual PHI as a statement since it
+	     count result in a constant assignment or copy
+	     operation.  */
+	  if (!virtual_operand_p (dst))
+	    ++n_insns;
+	}
+
       if (path_crosses_loops)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -379,10 +383,18 @@ fsm_find_control_statement_thread_paths (tree name,
 	  continue;
 	}
 
-      /* We avoid creating irreducible loops unless we thread through
+      /* We avoid creating irreducible inner loops unless we thread through
 	 a multiway branch, in which case we have deemed it worth losing other
-	 loop optimizations later.  */
-      if (!threaded_multiway_branch && creates_irreducible_loop)
+	 loop optimizations later.
+
+	 We also consider it worth creating an irreducible inner loop if
+	 the number of copied statement is low relative to the length of
+	 the path -- in that case there's little the traditional loop optimizer
+	 would have done anyway, so an irreducible loop is not so bad.  */
+      if (!threaded_multiway_branch && creates_irreducible_loop
+	  && (n_insns * PARAM_VALUE (PARAM_FSM_SCALE_PATH_STMTS)
+	      > path_length * PARAM_VALUE (PARAM_FSM_SCALE_PATH_BLOCKS)))
+
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,

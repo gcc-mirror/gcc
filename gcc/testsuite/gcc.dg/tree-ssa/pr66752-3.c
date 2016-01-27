@@ -32,10 +32,9 @@ foo (int N, int c, int b, int *a)
    pt--;
 }
 
-/* There are 3 FSM jump threading opportunities, one of which will
-   get filtered.  */
-/* { dg-final { scan-tree-dump-times "Registering FSM" 2 "vrp1"} } */
-/* { dg-final { scan-tree-dump-times "FSM would create irreducible loop" 1 "vrp1"} } */
+/* There are 3 FSM jump threading opportunities, all of which will be
+   realized, which will eliminate testing of FLAG, completely.  */
+/* { dg-final { scan-tree-dump-times "Registering FSM" 3 "vrp1"} } */
 
 /* There should be no assignments or references to FLAG.  */
 /* { dg-final { scan-tree-dump-not "flag" "optimized"} } */
