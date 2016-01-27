@@ -1,3 +1,8 @@
+2016-01-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/69496
+	* g++.dg/ext/constexpr-vla1.C: New test.
+
 2016-01-20  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/69245

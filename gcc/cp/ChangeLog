@@ -1,3 +1,9 @@
+2016-01-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/69496
+	* constexpr.c (cxx_eval_array_reference): Evaluate the number of
+	elements of the array.
+
 2016-01-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68949
