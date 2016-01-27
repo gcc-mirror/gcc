@@ -1,3 +1,13 @@
+2016-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/69254
+	* sanitizer.def: Add BEGIN_SANITIZER_BUILTINS and
+	END_SANITIZER_BUILTINS markers using DEF_BUILTIN_STUB.
+	* asan.c (DEF_BUILTIN_STUB): Temporarily define.
+	* tree-streamer-in.c: Include asan.h.
+	(streamer_get_builtin_tree): For builtins in sanitizer
+	range call initialize_sanitizer_builtins and retry.
+
 2016-01-27  Ian Lance Taylor  <iant@google.com>
 
 	* common.opt (fkeep-gc-roots-live): New undocumented option.

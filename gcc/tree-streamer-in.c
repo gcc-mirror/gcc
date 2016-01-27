@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "ipa-chkp.h"
 #include "gomp-constants.h"
+#include "asan.h"
 
 
 /* Read a STRING_CST from the string table in DATA_IN using input
@@ -1136,13 +1137,21 @@ streamer_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
 	fatal_error (input_location,
 		     "machine independent builtin code out of range");
       result = builtin_decl_explicit (fcode);
-      if (!result
-	  && fcode > BEGIN_CHKP_BUILTINS
-	  && fcode < END_CHKP_BUILTINS)
+      if (!result)
 	{
-	  fcode = (enum built_in_function) (fcode - BEGIN_CHKP_BUILTINS - 1);
-	  result = builtin_decl_explicit (fcode);
-	  result = chkp_maybe_clone_builtin_fndecl (result);
+	  if (fcode > BEGIN_CHKP_BUILTINS && fcode < END_CHKP_BUILTINS)
+	    {
+	      fcode = (enum built_in_function)
+		      (fcode - BEGIN_CHKP_BUILTINS - 1);
+	      result = builtin_decl_explicit (fcode);
+	      result = chkp_maybe_clone_builtin_fndecl (result);
+	    }
+	  else if (fcode > BEGIN_SANITIZER_BUILTINS
+		   && fcode < END_SANITIZER_BUILTINS)
+	    {
+	      initialize_sanitizer_builtins ();
+	      result = builtin_decl_explicit (fcode);
+	    }
 	}
       gcc_assert (result);
     }

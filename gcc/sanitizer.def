@@ -20,11 +20,15 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Before including this file, you should define a macro:
 
+     DEF_BUILTIN_STUB(ENUM, NAME)
      DEF_SANITIZER_BUILTIN (ENUM, NAME, TYPE, ATTRS)
 
    See builtins.def for details.
    The builtins are created by the C-family of FEs in c-family/c-common.c,
    for other FEs by asan.c.  */
+
+/* This has to come before all the sanitizer builtins.  */
+DEF_BUILTIN_STUB(BEGIN_SANITIZER_BUILTINS, (const char *)0)
 
 /* Address Sanitizer */
 DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_INIT, "__asan_init",
@@ -515,3 +519,6 @@ DEF_SANITIZER_BUILTIN(BUILT_IN_UBSAN_HANDLE_DYNAMIC_TYPE_CACHE_MISS_ABORT,
 DEF_SANITIZER_BUILTIN(BUILT_IN_SANITIZER_COV_TRACE_PC,
 		      "__sanitizer_cov_trace_pc",
 		      BT_FN_VOID, ATTR_NOTHROW_LEAF_LIST)
+
+/* This has to come after all the sanitizer builtins.  */
+DEF_BUILTIN_STUB(END_SANITIZER_BUILTINS, (const char *)0)
