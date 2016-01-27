@@ -12583,69 +12583,7 @@ Map_construction_expression::do_dump_expression(
   ast_dump_context->ostream() << "}";
 }
 
-// A general composite literal.  This is lowered to a type specific
-// version.
-
-class Composite_literal_expression : public Parser_expression
-{
- public:
-  Composite_literal_expression(Type* type, int depth, bool has_keys,
-			       Expression_list* vals, bool all_are_names,
-			       Location location)
-    : Parser_expression(EXPRESSION_COMPOSITE_LITERAL, location),
-      type_(type), depth_(depth), vals_(vals), has_keys_(has_keys),
-      all_are_names_(all_are_names)
-  { }
-
- protected:
-  int
-  do_traverse(Traverse* traverse);
-
-  Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
-
-  Expression*
-  do_copy()
-  {
-    return new Composite_literal_expression(this->type_, this->depth_,
-					    this->has_keys_,
-					    (this->vals_ == NULL
-					     ? NULL
-					     : this->vals_->copy()),
-					    this->all_are_names_,
-					    this->location());
-  }
-
-  void
-  do_dump_expression(Ast_dump_context*) const;
-  
- private:
-  Expression*
-  lower_struct(Gogo*, Type*);
-
-  Expression*
-  lower_array(Type*);
-
-  Expression*
-  make_array(Type*, const std::vector<unsigned long>*, Expression_list*);
-
-  Expression*
-  lower_map(Gogo*, Named_object*, Statement_inserter*, Type*);
-
-  // The type of the composite literal.
-  Type* type_;
-  // The depth within a list of composite literals within a composite
-  // literal, when the type is omitted.
-  int depth_;
-  // The values to put in the composite literal.
-  Expression_list* vals_;
-  // If this is true, then VALS_ is a list of pairs: a key and a
-  // value.  In an array initializer, a missing key will be NULL.
-  bool has_keys_;
-  // If this is true, then HAS_KEYS_ is true, and every key is a
-  // simple identifier.
-  bool all_are_names_;
-};
+// Class Composite_literal_expression.
 
 // Traversal.
 
@@ -12664,12 +12602,17 @@ Composite_literal_expression::do_traverse(Traverse* traverse)
       // The type may not be resolvable at this point.
       Type* type = this->type_;
 
-      for (int depth = this->depth_; depth > 0; --depth)
+      for (int depth = 0; depth < this->depth_; ++depth)
         {
           if (type->array_type() != NULL)
             type = type->array_type()->element_type();
           else if (type->map_type() != NULL)
-            type = type->map_type()->val_type();
+            {
+              if (this->key_path_[depth])
+                type = type->map_type()->key_type();
+              else
+                type = type->map_type()->val_type();
+            }
           else
             {
               // This error will be reported during lowering.
@@ -12723,12 +12666,17 @@ Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function,
 {
   Type* type = this->type_;
 
-  for (int depth = this->depth_; depth > 0; --depth)
+  for (int depth = 0; depth < this->depth_; ++depth)
     {
       if (type->array_type() != NULL)
 	type = type->array_type()->element_type();
       else if (type->map_type() != NULL)
-	type = type->map_type()->val_type();
+        {
+          if (this->key_path_[depth])
+            type = type->map_type()->key_type();
+          else
+            type = type->map_type()->val_type();
+        }
       else
 	{
 	  if (!type->is_error())
