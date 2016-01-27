@@ -1,3 +1,8 @@
+2016-01-27  Ryan Burn  <contact@rnburn.com>
+
+	PR cilkplus/69267
+	* g++.dg/cilk-plus/CK/pr69267.cc: New test.
+
 2016-01-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/69512

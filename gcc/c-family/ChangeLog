@@ -1,3 +1,12 @@
+2016-01-27  Ryan Burn  <contact@rnburn.com>
+
+	PR cilkplus/69267
+	* cilk.c (cilk_gimplify_call_params_in_spawned_fn): Change to use
+	gimplify_arg. Removed superfluous post_p argument.
+	* c-family.h (cilk_gimplify_call_params_in_spawned_fn): Removed
+	superfluous post_p argument.
+	* c-gimplify.c (c_gimplify_expr): Likewise.
+
 2016-01-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/69006
