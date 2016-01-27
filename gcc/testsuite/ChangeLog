@@ -1,3 +1,11 @@
+2016-01-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/69317
+	* g++.dg/abi/Wabi-2-2.C: New test.
+	* g++.dg/abi/Wabi-2-3.C: New test.
+	* g++.dg/abi/Wabi-3-2.C: New test.
+	* g++.dg/abi/Wabi-3-3.C: New test.
+
 2016-01-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69166
