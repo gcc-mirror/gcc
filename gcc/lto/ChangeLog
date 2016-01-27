@@ -1,3 +1,8 @@
+2016-01-27  Martin Liska  <mliska@suse.cz>
+
+	* lto-partition.c (add_symbol_to_partition_1): Remove usage
+	of hsa_summaries.
+
 2016-01-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/69136
