@@ -28483,7 +28483,7 @@ fi
 	 # realistically usable GNU/Hurd configurations.
 	 # All supported versions of musl provide it as well
 	 gcc_cv_libc_provides_ssp=yes;;
-       *-*-darwin* | *-*-freebsd*)
+       *-*-darwin* | *-*-freebsd* | *-*-netbsd*)
 	 ac_fn_cxx_check_func "$LINENO" "__stack_chk_fail" "ac_cv_func___stack_chk_fail"
 if test "x$ac_cv_func___stack_chk_fail" = x""yes; then :
   gcc_cv_libc_provides_ssp=yes

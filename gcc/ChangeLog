@@ -1,3 +1,9 @@
+2016-01-27  Thomas Klausner  <wiz@NetBSD.org>
+
+	PR target/68380
+	* configure.ac: NetBSD provides SSP in its C library.
+	* configure: Updated.
+
 2016-01-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69166
