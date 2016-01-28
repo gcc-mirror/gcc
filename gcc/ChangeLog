@@ -1,5 +1,11 @@
 2016-01-28  Sebastian Pop  <s.pop@samsung.com>
 
+	* graphite-isl-ast-to-gimple.c (class translate_isl_ast_to_gimple):
+	Remove comments from class declarations: they are already in the code
+	close by the defs.
+
+2016-01-28  Sebastian Pop  <s.pop@samsung.com>
+
 	* graphite-isl-ast-to-gimple.c (binary_op_to_tree): Call codegen_error_p.
 	(ternary_op_to_tree): Same.
 	(unary_op_to_tree): Same.
