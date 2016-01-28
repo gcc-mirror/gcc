@@ -438,16 +438,14 @@ class translate_isl_ast_to_gimple
 			    vec<tree> iv_map);
 
   /* Duplicates the statements of basic block BB into basic block NEW_BB
-     and compute the new induction variables according to the IV_MAP.
-     CODEGEN_ERROR is set when the code generation cannot continue.  */
+     and compute the new induction variables according to the IV_MAP.  */
 
   bool graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 				       vec<tree> iv_map);
 
   /* Copies BB and includes in the copied BB all the statements that can
      be reached following the use-def chains from the memory accesses,
-     and returns the next edge following this new block.  codegen_error is
-     set when the code generation cannot continue.  */
+     and returns the next edge following this new block.  */
 
   edge copy_bb_and_scalar_dependences (basic_block bb, edge next_e,
 				       vec<tree> iv_map);
@@ -480,8 +478,7 @@ class translate_isl_ast_to_gimple
      RENAME_MAP, inserting the gimplification code at GSI_TGT, for the
      translation REGION, with the original copied statement in LOOP, and using
      the induction variable renaming map IV_MAP.  Returns true when something
-     has been renamed.  codegen_error is set when the code generation cannot
-     continue.  */
+     has been renamed.  */
 
   bool rename_uses (gimple *copy, gimple_stmt_iterator *gsi_tgt,
 		    basic_block old_bb, loop_p loop, vec<tree> iv_map);
@@ -597,7 +594,7 @@ binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
   enum isl_ast_op_type expr_type = isl_ast_expr_get_op_type (expr);
   isl_ast_expr_free (expr);
 
-  if (codegen_error)
+  if (codegen_error_p ())
     return NULL_TREE;
 
   switch (expr_type)
@@ -699,7 +696,7 @@ ternary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
   tree c = gcc_expression_from_isl_expression (type, arg_expr, ip);
   isl_ast_expr_free (expr);
 
-  if (codegen_error)
+  if (codegen_error_p ())
     return NULL_TREE;
 
   return fold_build3 (COND_EXPR, type, a, b, c);
@@ -716,7 +713,8 @@ unary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
   isl_ast_expr *arg_expr = isl_ast_expr_get_op_arg (expr, 0);
   tree tree_expr = gcc_expression_from_isl_expression (type, arg_expr, ip);
   isl_ast_expr_free (expr);
-  return codegen_error ? NULL_TREE : fold_build1 (NEGATE_EXPR, type, tree_expr);
+  return codegen_error_p () ? NULL_TREE
+    : fold_build1 (NEGATE_EXPR, type, tree_expr);
 }
 
 /* Converts an isl_ast_expr_op expression E with unknown number of arguments
@@ -743,7 +741,7 @@ nary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
   isl_ast_expr *arg_expr = isl_ast_expr_get_op_arg (expr, 0);
   tree res = gcc_expression_from_isl_expression (type, arg_expr, ip);
 
-  if (codegen_error)
+  if (codegen_error_p ())
     {
       isl_ast_expr_free (expr);
       return NULL_TREE;
@@ -755,7 +753,7 @@ nary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
       arg_expr = isl_ast_expr_get_op_arg (expr, i);
       tree t = gcc_expression_from_isl_expression (type, arg_expr, ip);
 
-      if (codegen_error)
+      if (codegen_error_p ())
 	{
 	  isl_ast_expr_free (expr);
 	  return NULL_TREE;
@@ -775,7 +773,7 @@ translate_isl_ast_to_gimple::
 gcc_expression_from_isl_expr_op (tree type, __isl_take isl_ast_expr *expr,
 				 ivs_params &ip)
 {
-  if (codegen_error)
+  if (codegen_error_p ())
     {
       isl_ast_expr_free (expr);
       return NULL_TREE;
@@ -837,7 +835,7 @@ translate_isl_ast_to_gimple::
 gcc_expression_from_isl_expression (tree type, __isl_take isl_ast_expr *expr,
 				    ivs_params &ip)
 {
-  if (codegen_error)
+  if (codegen_error_p ())
     {
       isl_ast_expr_free (expr);
       return NULL_TREE;
@@ -879,7 +877,7 @@ graphite_create_new_loop (edge entry_edge, __isl_keep isl_ast_node *node_for,
   tree stride = gcc_expression_from_isl_expression (type, for_inc, ip);
 
   /* To fail code generation, we generate wrong code until we discard it.  */
-  if (codegen_error)
+  if (codegen_error_p ())
     stride = integer_zero_node;
 
   tree ivvar = create_tmp_var (type, "graphite_IV");
@@ -1025,13 +1023,16 @@ graphite_create_new_loop_guard (edge entry_edge,
     build_nonstandard_integer_type (graphite_expression_type_precision, 0);
   isl_ast_expr *for_init = isl_ast_node_for_get_init (node_for);
   *lb = gcc_expression_from_isl_expression (*type, for_init, ip);
+
   /* To fail code generation, we generate wrong code until we discard it.  */
-  if (codegen_error)
+  if (codegen_error_p ())
     *lb = integer_zero_node;
+
   isl_ast_expr *upper_bound = get_upper_bound (node_for);
   *ub = gcc_expression_from_isl_expression (*type, upper_bound, ip);
+
   /* To fail code generation, we generate wrong code until we discard it.  */
-  if (codegen_error)
+  if (codegen_error_p ())
     *ub = integer_zero_node;
   
   /* When ub is simply a constant or a parameter, use lb <= ub.  */
@@ -1115,8 +1116,9 @@ build_iv_mapping (vec<tree> iv_map, gimple_poly_bb_p gbb,
       tree type =
 	build_nonstandard_integer_type (graphite_expression_type_precision, 0);
       tree t = gcc_expression_from_isl_expression (type, arg_expr, ip);
+
       /* To fail code generation, we generate wrong code until we discard it.  */
-      if (codegen_error)
+      if (codegen_error_p ())
 	t = integer_zero_node;
 
       loop_p old_loop = gbb_loop_at_index (gbb, region, i - 1);
@@ -1216,8 +1218,9 @@ graphite_create_new_guard (edge entry_edge, __isl_take isl_ast_expr *if_cond,
   tree type =
     build_nonstandard_integer_type (graphite_expression_type_precision, 0);
   tree cond_expr = gcc_expression_from_isl_expression (type, if_cond, ip);
+
   /* To fail code generation, we generate wrong code until we discard it.  */
-  if (codegen_error)
+  if (codegen_error_p ())
     cond_expr = integer_zero_node;
 
   edge exit_edge = create_empty_if_region_on_edge (entry_edge, cond_expr);
@@ -2159,7 +2162,7 @@ translate_isl_ast_to_gimple::copy_loop_phi_nodes (basic_block bb,
 					 gimple_phi_result_ptr (new_phi));
       set_rename (res, new_res);
       codegen_error = !copy_loop_phi_args (phi, ibp_old_bb, new_phi,
-					  ibp_new_bb, true);
+					   ibp_new_bb, true);
       update_stmt (new_phi);
 
       if (dump_file)
@@ -2808,8 +2811,7 @@ translate_isl_ast_to_gimple::set_rename_for_each_def (gimple *stmt)
 }
 
 /* Duplicates the statements of basic block BB into basic block NEW_BB
-   and compute the new induction variables according to the IV_MAP.
-   CODEGEN_ERROR is set when the code generation cannot continue.  */
+   and compute the new induction variables according to the IV_MAP.  */
 
 bool
 translate_isl_ast_to_gimple::graphite_copy_stmts_from_block (basic_block bb,
@@ -2921,8 +2923,7 @@ translate_isl_ast_to_gimple::edge_for_new_close_phis (basic_block bb)
 
 /* Copies BB and includes in the copied BB all the statements that can
    be reached following the use-def chains from the memory accesses,
-   and returns the next edge following this new block.  codegen_error is
-   set when the code generation cannot continue.  */
+   and returns the next edge following this new block.  */
 
 edge
 translate_isl_ast_to_gimple::copy_bb_and_scalar_dependences (basic_block bb,
@@ -3107,7 +3108,7 @@ translate_isl_ast_to_gimple::translate_pending_phi_nodes ()
 	  fprintf (dump_file, "[codegen] to new-phi: ");
 	  print_gimple_stmt (dump_file, new_phi, 0, 0);
 	}
-      if (codegen_error)
+      if (codegen_error_p ())
 	return;
     }
 }
