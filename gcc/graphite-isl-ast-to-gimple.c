@@ -1833,31 +1833,18 @@ get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
   tree scev = scalar_evolution_in_region (region->region, loop, old_name);
 
   /* At this point we should know the exact scev for each
-     scalar SSA_NAME used in the scop: all the other scalar
-     SSA_NAMEs should have been translated out of SSA using
-     arrays with one element.  */
-  tree new_expr;
-  if (chrec_contains_undetermined (scev))
-    {
-      codegen_error = true;
-      return build_zero_cst (TREE_TYPE (old_name));
-    }
+     scalar SSA_NAME used in the scop.  */
+  gcc_assert (!chrec_contains_undetermined (scev));
 
-  new_expr = chrec_apply_map (scev, iv_map);
+  tree new_expr = chrec_apply_map (scev, iv_map);
 
   /* The apply should produce an expression tree containing
      the uses of the new induction variables.  We should be
      able to use new_expr instead of the old_name in the newly
      generated loop nest.  */
-  if (chrec_contains_undetermined (new_expr)
-      || tree_contains_chrecs (new_expr, NULL))
-    {
-      codegen_error = true;
-      return build_zero_cst (TREE_TYPE (old_name));
-    }
+  gcc_assert (!chrec_contains_undetermined (new_expr)
+	      && !tree_contains_chrecs (new_expr, NULL));
 
-  /* We should check all the operands and all of them should dominate the use at
-     new_expr.  */
   if (TREE_CODE (new_expr) == SSA_NAME)
     {
       basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (new_expr));
@@ -1898,8 +1885,7 @@ get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
    substitution map RENAME_MAP, inserting the gimplification code at
    GSI_TGT, for the translation REGION, with the original copied
    statement in LOOP, and using the induction variable renaming map
-   IV_MAP.  Returns true when something has been renamed.  codegen_error
-   is set when the code generation cannot continue.  */
+   IV_MAP.  Returns true when something has been renamed.  */
 
 bool
 translate_isl_ast_to_gimple::rename_uses (gimple *copy,

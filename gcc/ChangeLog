@@ -1,3 +1,8 @@
+2016-01-28  Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-isl-ast-to-gimple.c (get_rename_from_scev): Assert instead of
+	setting codegen_error to fail codegen.
+
 2016-01-28  Jason Merrill  <jason@redhat.com>
 
 	* tree.h (BINFO_FLAG_0): Rename from BINFO_MARKED.
