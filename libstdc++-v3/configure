@@ -18177,14 +18177,14 @@ fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_math11_overload" >&5
 $as_echo "$glibcxx_cv_math11_overload" >&6; }
       ;;
-    *-*-*gnu* | *-*-aix*)
+    *-*-*gnu* | *-*-aix* | *-*-hpux*)
       # If <math.h> defines the obsolete isinf(double) and isnan(double)
       # functions (instead of or as well as the C99 generic macros) then we
       # can't define std::isinf(double) and std::isnan(double) in <cmath>
       # and must use the ones from <math.h> instead.
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for obsolete isinf and isnan functions in <math.h>" >&5
-$as_echo_n "checking for obsolete isinf and isnan functions in <math.h>... " >&6; }
-        if test "${glibcxx_cv_obsolete_isinf_isnan+set}" = set; then :
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for obsolete isinf function in <math.h>" >&5
+$as_echo_n "checking for obsolete isinf function in <math.h>... " >&6; }
+        if test "${glibcxx_cv_obsolete_isinf+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -18192,38 +18192,67 @@ else
 /* end confdefs.h.  */
 #include <math.h>
              #undef isinf
-             #undef isnan
              namespace std {
                using ::isinf;
                bool isinf(float);
                bool isinf(long double);
-               using ::isnan;
-               bool isnan(float);
-               bool isnan(long double);
              }
              using std::isinf;
-             using std::isnan;
-             bool b = isinf(0.0) || isnan(0.0);
+             bool b = isinf(0.0);
 
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-  glibcxx_cv_obsolete_isinf_isnan=yes
+  glibcxx_cv_obsolete_isinf=yes
 else
-  glibcxx_cv_obsolete_isinf_isnan=no
+  glibcxx_cv_obsolete_isinf=no
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_obsolete_isinf" >&5
+$as_echo "$glibcxx_cv_obsolete_isinf" >&6; }
+      if test $glibcxx_cv_obsolete_isinf = yes; then
 
-
-      if test $glibcxx_cv_obsolete_isinf_isnan = yes; then
-
-$as_echo "#define HAVE_OBSOLETE_ISINF_ISNAN 1" >>confdefs.h
+$as_echo "#define HAVE_OBSOLETE_ISINF 1" >>confdefs.h
 
       fi
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_obsolete_isinf_isnan" >&5
-$as_echo "$glibcxx_cv_obsolete_isinf_isnan" >&6; }
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for obsolete isnan function in <math.h>" >&5
+$as_echo_n "checking for obsolete isnan function in <math.h>... " >&6; }
+        if test "${glibcxx_cv_obsolete_isnan+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+             #undef isnan
+             namespace std {
+               using ::isnan;
+               bool isnan(float);
+               bool isnan(long double);
+             }
+             using std::isnan;
+             bool b = isnan(0.0);
+
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_obsolete_isnan=yes
+else
+  glibcxx_cv_obsolete_isnan=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_obsolete_isnan" >&5
+$as_echo "$glibcxx_cv_obsolete_isnan" >&6; }
+      if test $glibcxx_cv_obsolete_isnan = yes; then
+
+$as_echo "#define HAVE_OBSOLETE_ISNAN 1" >>confdefs.h
+
+      fi
       ;;
   esac
 

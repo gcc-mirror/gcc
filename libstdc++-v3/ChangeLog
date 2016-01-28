@@ -1,3 +1,14 @@
+2016-01-28  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libstdc++/69450
+	* acinclude.m4 (GLIBCXX_CHECK_MATH11_PROTO): Split check for obsolete
+	isinf and isnan functions into two independent checks.  Check on hpux.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/c_global/cmath (isinf(double), isnan(double)): Use
+	_GLIBCXX_HAVE_OBSOLETE_ISINF and _GLIBCXX_HAVE_OBSOLETE_ISNAN,
+	respectively.
+
 2016-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libstdc++-prettyprinters/whatis.cc: Include <random>.

@@ -300,8 +300,11 @@
 /* Define to 1 if you have the <nan.h> header file. */
 #undef HAVE_NAN_H
 
-/* Define if <math.h> defines obsolete isinf and isnan functions. */
-#undef HAVE_OBSOLETE_ISINF_ISNAN
+/* Define if <math.h> defines obsolete isinf function. */
+#undef HAVE_OBSOLETE_ISINF
+
+/* Define if <math.h> defines obsolete isnan function. */
+#undef HAVE_OBSOLETE_ISNAN
 
 /* Define if poll is available in <poll.h>. */
 #undef HAVE_POLL
