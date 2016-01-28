@@ -1,3 +1,9 @@
+2016-01-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/69355
+	* tree-sra.c (analyze_access_subtree): Correct hole detection when
+	total_scalarization fails.
+
 2016-01-26  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69110
