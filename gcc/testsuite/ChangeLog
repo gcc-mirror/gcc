@@ -1,3 +1,9 @@
+2016-01-28  Steve Ellcey  <sellcey@imgtec.com>
+
+	PR target/68400
+	* gcc.target/mips/mips.exp (mips_option_groups): Add stack-protector.
+	* gcc.target/mips/pr68400.c: New test.
+
 2016-01-28  Martin Sebor  <msebor@redhat.com>
 
 	PR target/17381
