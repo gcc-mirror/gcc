@@ -1,3 +1,8 @@
+2016-01-28  Steve Ellcey  <sellcey@imgtec.com>
+
+	PR target/68400
+	* config/mips/mips.c (and_operands_ok): Add MIPS16 check.
+
 2016-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/69542
