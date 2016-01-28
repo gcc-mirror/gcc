@@ -1,3 +1,11 @@
+2016-01-28  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/24208
+	* parser.c (LEXER_DEBUGGING_ENABLED_P): New macro.
+	(cp_lexer_debugging_p): Use it.
+	(cp_lexer_start_debugging): Likewise.
+	(cp_lexer_stop_debugging): Likewise.
+
 2016-01-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c/68062
