@@ -2889,9 +2889,8 @@ or @code{access_protected_node}.  If bases are always public,
 @code{BINFO_BASE_ACCESSES} may be @code{NULL}.
 
 @code{BINFO_VIRTUAL_P} is used to specify whether the binfo is inherited
-virtually or not.  The other flags, @code{BINFO_MARKED_P} and
-@code{BINFO_FLAG_1} to @code{BINFO_FLAG_6} can be used for language
-specific use.
+virtually or not.  The other flags, @code{BINFO_FLAG_0} to
+@code{BINFO_FLAG_6}, can be used for language specific use.
 
 The following macros can be used on a tree node representing a class-type.
 

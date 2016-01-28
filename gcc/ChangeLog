@@ -1,3 +1,7 @@
+2016-01-28  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (BINFO_FLAG_0): Rename from BINFO_MARKED.
+
 2016-01-28  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_if_then_else_costs):
