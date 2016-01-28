@@ -14,7 +14,7 @@
 
 2016-01-27  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/69385
+	PR fortran/69422
 	* gfortran.dg/alloc_comp_assign_15.f03: New test.
 
 2016-01-27  Jakub Jelinek  <jakub@redhat.com>

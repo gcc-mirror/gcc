@@ -5,7 +5,7 @@
 
 2016-01-27  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/69385
+	PR fortran/69422
 	* trans-expr.c (is_scalar_reallocatable_lhs): Remove the check
 	for allocatable components, whilst checking if the symbol is a
 	derived or class entity..
