@@ -694,7 +694,7 @@ calculate_local_reg_remat_bb_data (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
-      if (INSN_P (insn))
+      if (NONDEBUG_INSN_P (insn))
 	set_bb_regs (bb, insn);
 }
 
