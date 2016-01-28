@@ -1,3 +1,33 @@
+2016-01-28  Richard Henderson  <rth@redhat.com>
+
+	PR target/69305
+	* config/aarch64/aarch64-modes.def (CC_Cmode): New
+	* config/aarch64/aarch64-protos.h: Update.
+	* config/aarch64/aarch64.c (aarch64_zero_extend_const_eq): New.
+	(aarch64_select_cc_mode): Add check for use of CC_Cmode.
+	(aarch64_get_condition_code_1): Handle CC_Cmode.
+	* config/aarch64/aarch64.md (addti3): Use adddi3_compareC.
+	(*add<mode>3_compareC_cconly_imm): New.
+	(*add<mode>3_compareC_cconly): New.
+	(*add<mode>3_compareC_imm): New.
+	(add<mode>3_compareC): New.
+	(add<mode>3_carryin, *addsi3_carryin_uxtw): Sort compare operand
+	to be first.  Use aarch64_carry_operation.
+	(*add<mode>3_carryin_alt1, *addsi3_carryin_alt1_uxtw): Remove.
+	(*add<mode>3_carryin_alt2, *addsi3_carryin_alt2_uxtw): Remove.
+	(*add<mode>3_carryin_alt3, *addsi3_carryin_alt3_uxtw): Remove.
+	(subti3): Use subdi3_compare1.
+	(*sub<mode>3_compare0): Rename from sub<mode>3_compare0.
+	(sub<mode>3_compare1): New.
+	(*sub<mode>3_carryin0, *subsi3_carryin_uxtw): New.
+	(*sub<mode>3_carryin): Use aarch64_borrow_operation.
+	(*subsi3_carryin_uxtw): Likewise.
+	(*ngc<mode>, *ngcsi_uxtw): Likewise.
+	(*sub<mode>3_carryin_alt, *subsi3_carryin_alt_uxtw): New.
+	* config/aarch64/iterators.md (DWI): New.
+	* config/aarch64/predicates.md (aarch64_carry_operation): New.
+	(aarch64_borrow_operation): New.
+
 2016-01-28  Abderrazek Zaafrani  <a.zaafrani@samsung.com>
 
 	* graphite-optimize-isl.c (optimize_isl): Print a different debug

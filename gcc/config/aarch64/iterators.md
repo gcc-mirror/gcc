@@ -350,6 +350,9 @@
 ;; For constraints used in scalar immediate vector moves
 (define_mode_attr hq [(HI "h") (QI "q")])
 
+;; For doubling width of an integer mode
+(define_mode_attr DWI [(QI "HI") (HI "SI") (SI "DI") (DI "TI")])
+
 ;; For scalar usage of vector/FP registers
 (define_mode_attr v [(QI "b") (HI "h") (SI "s") (DI "d")
 		    (SF "s") (DF "d")

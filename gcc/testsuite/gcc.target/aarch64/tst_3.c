@@ -9,4 +9,4 @@ f1 (int x)
   return x;
 }
 
-/* { dg-final { scan-assembler "tst\t(x|w)\[0-9\]*.*1" } } */
+/* { dg-final { scan-assembler "(tst|ands)\t(x|w)\[0-9\]*.*1" } } */
