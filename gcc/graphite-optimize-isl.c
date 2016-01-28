@@ -477,8 +477,15 @@ optimize_isl (scop_p scop)
   if (!schedule || isl_ctx_last_error (scop->isl_context) == isl_error_quota)
     {
       if (dump_file && dump_flags)
-	fprintf (dump_file, "isl timed out --param max-isl-operations=%d\n",
-		 max_operations);
+	{
+	  if (!schedule)
+	    fprintf (dump_file, "isl did not return any schedule.\n",
+		     max_operations);
+	  else
+	    fprintf (dump_file, "isl timed out --param max-isl-operations=%d\n",
+		     max_operations);
+	}
+
       if (schedule)
 	isl_schedule_free (schedule);
       return false;

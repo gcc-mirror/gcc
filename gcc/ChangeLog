@@ -1,3 +1,8 @@
+2016-01-28  Abderrazek Zaafrani  <a.zaafrani@samsung.com>
+
+	* graphite-optimize-isl.c (optimize_isl): Print a different debug
+	message when isl does not return a valid schedule.
+
 2016-01-28  Sebastian Pop  <s.pop@samsung.com>
 
 	* graphite-isl-ast-to-gimple.c (class translate_isl_ast_to_gimple):
