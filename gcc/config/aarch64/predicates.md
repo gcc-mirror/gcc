@@ -242,6 +242,25 @@
   return aarch64_get_condition_code (op) >= 0;
 })
 
+(define_special_predicate "aarch64_carry_operation"
+  (match_code "ne,geu")
+{
+  if (XEXP (op, 1) != const0_rtx)
+    return false;
+  machine_mode ccmode = (GET_CODE (op) == NE ? CC_Cmode : CCmode);
+  rtx op0 = XEXP (op, 0);
+  return REG_P (op0) && REGNO (op0) == CC_REGNUM && GET_MODE (op0) == ccmode;
+})
+
+(define_special_predicate "aarch64_borrow_operation"
+  (match_code "eq,ltu")
+{
+  if (XEXP (op, 1) != const0_rtx)
+    return false;
+  machine_mode ccmode = (GET_CODE (op) == EQ ? CC_Cmode : CCmode);
+  rtx op0 = XEXP (op, 0);
+  return REG_P (op0) && REGNO (op0) == CC_REGNUM && GET_MODE (op0) == ccmode;
+})
 
 ;; True if the operand is memory reference suitable for a load/store exclusive.
 (define_predicate "aarch64_sync_memory_operand"
