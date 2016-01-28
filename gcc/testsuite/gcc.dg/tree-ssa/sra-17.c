@@ -15,5 +15,5 @@ main (int argc, char **argv)
   abort ();
 }
 
-/* { dg-final { scan-tree-dump-times "Removing load: a = \\\*.LC0;" 1 "esra" } } */
-/* { dg-final { scan-tree-dump-times "SR.\[0-9_\]+ = \\\*.LC0\\\[" 4 "esra" } } */
+/* { dg-final { scan-tree-dump-times "Removing load: a = \\\*\\.?LC\\.?\\.?0;" 1 "esra" } } */
+/* { dg-final { scan-tree-dump-times "SR\\.\[0-9_\]+ = \\\*\\.?LC\\.?\\.?0\\\[" 4 "esra" } } */
