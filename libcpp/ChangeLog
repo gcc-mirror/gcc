@@ -1,3 +1,7 @@
+2016-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* directives.c (destringize_and_run): Adjust prototype.
+
 2016-01-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/69126

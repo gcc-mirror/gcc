@@ -122,7 +122,8 @@ static void do_pragma_error (cpp_reader *);
 static void do_linemarker (cpp_reader *);
 static const cpp_token *get_token_no_padding (cpp_reader *);
 static const cpp_token *get__Pragma_string (cpp_reader *);
-static void destringize_and_run (cpp_reader *, const cpp_string *);
+static void destringize_and_run (cpp_reader *, const cpp_string *,
+				 source_location);
 static int parse_answer (cpp_reader *, struct answer **, int, source_location);
 static cpp_hashnode *parse_assertion (cpp_reader *, struct answer **, int);
 static struct answer ** find_answer (cpp_hashnode *, const struct answer *);
