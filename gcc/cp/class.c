@@ -2608,9 +2608,7 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
 	  /* There was no existing virtual thunk (which takes
 	     precedence).  So find the binfo of the base function's
 	     return type within the overriding function's return type.
-	     We cannot call lookup base here, because we're inside a
-	     dfs_walk, and will therefore clobber the BINFO_MARKED
-	     flags.  Fortunately we know the covariancy is valid (it
+	     Fortunately we know the covariancy is valid (it
 	     has already been checked), so we can just iterate along
 	     the binfos, which have been chained in inheritance graph
 	     order.  Of course it is lame that we have to repeat the

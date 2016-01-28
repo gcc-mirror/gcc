@@ -1,3 +1,11 @@
+2016-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67407
+	* search.c (dfs_walk_once, dfs_walk_once_r)
+	(dfs_walk_once_accessible_r, dfs_walk_once_accessible): Use
+	hash_set instead of BINFO_MARKED.
+	(dfs_unmark_r): Remove.
+
 2016-01-28  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/24208
