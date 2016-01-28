@@ -2186,39 +2186,54 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
       fi
       AC_MSG_RESULT([$glibcxx_cv_math11_overload])
       ;;
-    *-*-*gnu* | *-*-aix*)
+    *-*-*gnu* | *-*-aix* | *-*-hpux*)
       # If <math.h> defines the obsolete isinf(double) and isnan(double)
       # functions (instead of or as well as the C99 generic macros) then we
       # can't define std::isinf(double) and std::isnan(double) in <cmath>
       # and must use the ones from <math.h> instead.
-      AC_MSG_CHECKING([for obsolete isinf and isnan functions in <math.h>])
-        AC_CACHE_VAL(glibcxx_cv_obsolete_isinf_isnan, [
+      AC_MSG_CHECKING([for obsolete isinf function in <math.h>])
+        AC_CACHE_VAL(glibcxx_cv_obsolete_isinf, [
           AC_COMPILE_IFELSE([AC_LANG_SOURCE(
             [#include <math.h>
              #undef isinf
-             #undef isnan
              namespace std {
                using ::isinf;
                bool isinf(float);
                bool isinf(long double);
+             }
+             using std::isinf;
+             bool b = isinf(0.0);
+          ])],
+          [glibcxx_cv_obsolete_isinf=yes],
+          [glibcxx_cv_obsolete_isinf=no]
+        )])
+      AC_MSG_RESULT([$glibcxx_cv_obsolete_isinf])
+      if test $glibcxx_cv_obsolete_isinf = yes; then
+        AC_DEFINE(HAVE_OBSOLETE_ISINF, 1,
+                  [Define if <math.h> defines obsolete isinf function.])
+      fi
+
+      AC_MSG_CHECKING([for obsolete isnan function in <math.h>])
+        AC_CACHE_VAL(glibcxx_cv_obsolete_isnan, [
+          AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+            [#include <math.h>
+             #undef isnan
+             namespace std {
                using ::isnan;
                bool isnan(float);
                bool isnan(long double);
              }
-             using std::isinf;
              using std::isnan;
-             bool b = isinf(0.0) || isnan(0.0);
+             bool b = isnan(0.0);
           ])],
-          [glibcxx_cv_obsolete_isinf_isnan=yes],
-          [glibcxx_cv_obsolete_isinf_isnan=no]
+          [glibcxx_cv_obsolete_isnan=yes],
+          [glibcxx_cv_obsolete_isnan=no]
         )])
-
-
-      if test $glibcxx_cv_obsolete_isinf_isnan = yes; then
-        AC_DEFINE(HAVE_OBSOLETE_ISINF_ISNAN, 1,
-                  [Define if <math.h> defines obsolete isinf and isnan functions.])
+      AC_MSG_RESULT([$glibcxx_cv_obsolete_isnan])
+      if test $glibcxx_cv_obsolete_isnan = yes; then
+        AC_DEFINE(HAVE_OBSOLETE_ISNAN, 1,
+                  [Define if <math.h> defines obsolete isnan function.])
       fi
-      AC_MSG_RESULT([$glibcxx_cv_obsolete_isinf_isnan])
       ;;
   esac
 

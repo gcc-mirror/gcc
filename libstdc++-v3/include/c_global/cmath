@@ -610,7 +610,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   isinf(float __x)
   { return __builtin_isinf(__x); }
 
-#if _GLIBCXX_HAVE_OBSOLETE_ISINF_ISNAN \
+#if _GLIBCXX_HAVE_OBSOLETE_ISINF \
   && !_GLIBCXX_NO_OBSOLETE_ISINF_ISNAN_DYNAMIC
   using ::isinf;
 #else
@@ -635,7 +635,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   isnan(float __x)
   { return __builtin_isnan(__x); }
 
-#if _GLIBCXX_HAVE_OBSOLETE_ISINF_ISNAN \
+#if _GLIBCXX_HAVE_OBSOLETE_ISNAN \
   && !_GLIBCXX_NO_OBSOLETE_ISINF_ISNAN_DYNAMIC
   using ::isnan;
 #else
