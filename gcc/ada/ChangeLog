@@ -1,3 +1,10 @@
+2016-01-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (enum attr_type): Rename into...
+	(enum attrib_type): ...this.
+	(struct attrib): Adjust.
+	* gcc-interface/decl.c (prepend_one_attribute): Likewise.
+
 2016-01-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch2.adb (Expand_Current_Value): Make an appropriate character
