@@ -1,3 +1,9 @@
+2016-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69466
+	* tree-vect-loop-manip.c (slpeel_duplicate_current_defs_from_edges):
+	Account for PHIs we couldn't duplicate.
+
 2016-01-28  Martin Liska  <mliska@suse.cz>
 
 	PR pch/68758
