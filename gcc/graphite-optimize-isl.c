@@ -479,8 +479,7 @@ optimize_isl (scop_p scop)
       if (dump_file && dump_flags)
 	{
 	  if (!schedule)
-	    fprintf (dump_file, "isl did not return any schedule.\n",
-		     max_operations);
+	    fprintf (dump_file, "isl did not return any schedule.\n");
 	  else
 	    fprintf (dump_file, "isl timed out --param max-isl-operations=%d\n",
 		     max_operations);
