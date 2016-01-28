@@ -1,5 +1,9 @@
 2016-01-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR pch/68176
+	* files.c (_cpp_find_file): Set file->implicit_preinclude even if
+	included from file->implicit_preinclude header.
+
 	* directives.c (destringize_and_run): Adjust prototype.
 
 2016-01-27  David Malcolm  <dmalcolm@redhat.com>

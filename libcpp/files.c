@@ -522,7 +522,10 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
     return entry->u.file;
 
   file = make_cpp_file (pfile, start_dir, fname);
-  file->implicit_preinclude = implicit_preinclude;
+  file->implicit_preinclude
+    = (implicit_preinclude
+       || (pfile->buffer
+	   && pfile->buffer->file->implicit_preinclude));
 
   /* Try each path in the include chain.  */
   for (; !fake ;)
