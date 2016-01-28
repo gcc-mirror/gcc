@@ -6010,7 +6010,7 @@ aarch64_if_then_else_costs (rtx op0, rtx op1, rtx op2, int *cost, bool speed)
   else if (GET_MODE_CLASS (GET_MODE (inner)) == MODE_CC)
     {
       /* CCMP.  */
-      if ((GET_CODE (op1) == COMPARE) && CONST_INT_P (op2))
+      if (GET_CODE (op1) == COMPARE)
 	{
 	  /* Increase cost of CCMP reg, 0, imm, CC to prefer CMP reg, 0.  */
 	  if (XEXP (op1, 1) == const0_rtx)
