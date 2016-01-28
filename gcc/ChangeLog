@@ -1,3 +1,13 @@
+2016-01-28  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/69447
+	* lra-remat.c (subreg_regs): New.
+	(dump_candidates_and_remat_bb_data): Dump it.
+	(operand_to_remat): Reject if operand in subreg_regs.
+	(set_bb_regs): Collect subreg_regs.
+	(lra_remat): Init and free subreg_regs.  Compute
+	calculate_local_reg_remat_bb_data before create_cands.
+
 2016-01-28  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/69355
