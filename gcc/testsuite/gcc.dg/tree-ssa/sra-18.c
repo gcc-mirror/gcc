@@ -21,8 +21,8 @@ main (int argc, char **argv)
   abort ();
 }
 
-/* { dg-final { scan-tree-dump-times "Removing load: a = \\\*.LC0;" 1 "esra" } } */
-/* { dg-final { scan-tree-dump-times "SR.\[0-9_\]+ = \\\*.LC0\\.b\\\[0\\\]\\.f\\\[0\\\]\\.x" 1 "esra" } } */
-/* { dg-final { scan-tree-dump-times "SR.\[0-9_\]+ = \\\*.LC0\\.b\\\[0\\\]\\.f\\\[1\\\]\\.x" 1 "esra" } } */
-/* { dg-final { scan-tree-dump-times "SR.\[0-9_\]+ = \\\*.LC0\\.b\\\[1\\\]\\.f\\\[0\\\]\\.x" 1 "esra" } } */
-/* { dg-final { scan-tree-dump-times "SR.\[0-9_\]+ = \\\*.LC0\\.b\\\[1\\\]\\.f\\\[1\\\]\\.x" 1 "esra" } } */
+/* { dg-final { scan-tree-dump-times "Removing load: a = \\\*\\.?LC\\.?\\.?0;" 1 "esra" } } */
+/* { dg-final { scan-tree-dump-times "SR\\.\[0-9_\]+ = \\\*\\.?LC\\.?\\.?0\\.b\\\[0\\\]\\.f\\\[0\\\]\\.x" 1 "esra" } } */
+/* { dg-final { scan-tree-dump-times "SR\\.\[0-9_\]+ = \\\*\\.?LC\\.?\\.?0\\.b\\\[0\\\]\\.f\\\[1\\\]\\.x" 1 "esra" } } */
+/* { dg-final { scan-tree-dump-times "SR\\.\[0-9_\]+ = \\\*\\.?LC\\.?\\.?0\\.b\\\[1\\\]\\.f\\\[0\\\]\\.x" 1 "esra" } } */
+/* { dg-final { scan-tree-dump-times "SR\\.\[0-9_\]+ = \\\*\\.?LC\\.?\\.?0\\.b\\\[1\\\]\\.f\\\[1\\\]\\.x" 1 "esra" } } */

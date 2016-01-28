@@ -1,3 +1,9 @@
+2016-01-28  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/63679
+	* gcc.dg/tree-ssa/sra-17.c: Adjust regex for more label styles.
+	* gcc.dg/tree-ssa/sra-18.c: Same.
+
 2016-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/62536
