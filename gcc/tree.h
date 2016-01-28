@@ -2096,7 +2096,7 @@ extern machine_mode element_mode (const_tree t);
 #define BINFO_VIRTUAL_P(NODE) (TREE_BINFO_CHECK (NODE)->base.static_flag)
 
 /* Flags for language dependent use.  */
-#define BINFO_MARKED(NODE) TREE_LANG_FLAG_0 (TREE_BINFO_CHECK (NODE))
+#define BINFO_FLAG_0(NODE) TREE_LANG_FLAG_0 (TREE_BINFO_CHECK (NODE))
 #define BINFO_FLAG_1(NODE) TREE_LANG_FLAG_1 (TREE_BINFO_CHECK (NODE))
 #define BINFO_FLAG_2(NODE) TREE_LANG_FLAG_2 (TREE_BINFO_CHECK (NODE))
 #define BINFO_FLAG_3(NODE) TREE_LANG_FLAG_3 (TREE_BINFO_CHECK (NODE))
