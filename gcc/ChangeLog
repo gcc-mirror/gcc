@@ -1,3 +1,8 @@
+2016-01-28  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (output_cbranch): Don't statically predict
+	branches if using guessed profile.
+
 2016-01-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* graphite-optimize-isl.c (optimize_isl): Fix dump.
