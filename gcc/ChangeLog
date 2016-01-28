@@ -1,3 +1,13 @@
+2016-01-28  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (ccmp<mode>): Disassemble
+	immediate as %1.
+	(add<mode>3_compare0): Likewise.
+	(addsi3_compare0_uxtw): Likewise.
+	(add<mode>3nr_compare0): Likewise.
+	(compare_neg<mode>): Likewise.
+	(<optab><mode>3): Likewise.
+
 2016-01-28  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* tree-vect-stmts.c (vectorizable_comparison): Add
