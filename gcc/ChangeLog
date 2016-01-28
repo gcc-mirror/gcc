@@ -1,3 +1,9 @@
+2016-01-28  Martin Liska  <mliska@suse.cz>
+
+	PR pch/68758
+	* ggc-common.c (gt_pch_save): Use ENABLE_VALGRIND_ANNOTATIONS macro
+	instead of ENABLE_VALGRIND_CHECKING.
+
 2016-01-27  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/69447

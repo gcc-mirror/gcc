@@ -492,7 +492,7 @@ gt_pch_save (FILE *f)
 
   ggc_pch_prepare_write (state.d, state.f);
 
-#if defined ENABLE_VALGRIND_CHECKING && defined VALGRIND_GET_VBITS
+#if defined ENABLE_VALGRIND_ANNOTATIONS && defined VALGRIND_GET_VBITS
   vec<char> vbits = vNULL;
 #endif
 
@@ -504,7 +504,7 @@ gt_pch_save (FILE *f)
 	  this_object_size = state.ptrs[i]->size;
 	  this_object = XRESIZEVAR (char, this_object, this_object_size);
 	}
-#if defined ENABLE_VALGRIND_CHECKING && defined VALGRIND_GET_VBITS
+#if defined ENABLE_VALGRIND_ANNOTATIONS && defined VALGRIND_GET_VBITS
       /* obj might contain uninitialized bytes, e.g. in the trailing
 	 padding of the object.  Avoid warnings by making the memory
 	 temporarily defined and then restoring previous state.  */
@@ -561,7 +561,7 @@ gt_pch_save (FILE *f)
 			    state.ptrs[i]->note_ptr_fn == gt_pch_p_S);
       if (state.ptrs[i]->note_ptr_fn != gt_pch_p_S)
 	memcpy (state.ptrs[i]->obj, this_object, state.ptrs[i]->size);
-#if defined ENABLE_VALGRIND_CHECKING && defined VALGRIND_GET_VBITS
+#if defined ENABLE_VALGRIND_ANNOTATIONS && defined VALGRIND_GET_VBITS
       if (__builtin_expect (get_vbits == 1, 0))
 	{
 	  (void) VALGRIND_SET_VBITS (state.ptrs[i]->obj, vbits.address (),
@@ -575,7 +575,7 @@ gt_pch_save (FILE *f)
 	}
 #endif
     }
-#if defined ENABLE_VALGRIND_CHECKING && defined VALGRIND_GET_VBITS
+#if defined ENABLE_VALGRIND_ANNOTATIONS && defined VALGRIND_GET_VBITS
   vbits.release ();
 #endif
 
