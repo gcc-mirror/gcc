@@ -1,3 +1,7 @@
+2016-01-28  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* gcc.dg/declare-simd.c: New test.
+
 2016-01-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69466

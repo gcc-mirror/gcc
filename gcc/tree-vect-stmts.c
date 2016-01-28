@@ -7764,7 +7764,7 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
 
-  if (!VECTOR_BOOLEAN_TYPE_P (vectype))
+  if (!vectype || !VECTOR_BOOLEAN_TYPE_P (vectype))
     return false;
 
   mask_type = vectype;
