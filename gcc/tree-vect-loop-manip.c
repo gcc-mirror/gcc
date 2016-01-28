@@ -727,17 +727,26 @@ slpeel_duplicate_current_defs_from_edges (edge from, edge to)
 
   for (gsi_from = gsi_start_phis (from->dest),
        gsi_to = gsi_start_phis (to->dest);
-       !gsi_end_p (gsi_from) && !gsi_end_p (gsi_to);
-       gsi_next (&gsi_from), gsi_next (&gsi_to))
+       !gsi_end_p (gsi_from) && !gsi_end_p (gsi_to);)
     {
       gimple *from_phi = gsi_stmt (gsi_from);
       gimple *to_phi = gsi_stmt (gsi_to);
       tree from_arg = PHI_ARG_DEF_FROM_EDGE (from_phi, from);
+      if (TREE_CODE (from_arg) != SSA_NAME)
+	{	
+	  gsi_next (&gsi_from);
+	  continue;
+	}
       tree to_arg = PHI_ARG_DEF_FROM_EDGE (to_phi, to);
-      if (TREE_CODE (from_arg) == SSA_NAME
-	  && TREE_CODE (to_arg) == SSA_NAME
-	  && get_current_def (to_arg) == NULL_TREE)
+      if (TREE_CODE (to_arg) != SSA_NAME)
+	{	
+	  gsi_next (&gsi_to);
+	  continue;
+	}
+      if (get_current_def (to_arg) == NULL_TREE)
 	set_current_def (to_arg, get_current_def (from_arg));
+      gsi_next (&gsi_from);
+      gsi_next (&gsi_to);
     }
 }
 
