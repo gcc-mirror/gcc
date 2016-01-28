@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -ffinite-math-only" } */
 
 int
 f1 (int a)

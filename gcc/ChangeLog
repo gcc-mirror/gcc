@@ -1,5 +1,10 @@
 2016-01-28  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_if_then_else_costs):
+	Remove CONST_INT_P check in CCMP cost calculation.
+
+2016-01-28  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64.c (generic_vector_cost):
 	Set vec_permute_cost.
 	(cortexa57_vector_cost): Likewise.
