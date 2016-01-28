@@ -151,7 +151,7 @@ struct value_annotation_hasher : ggc_cache_ptr_hash<tree_int_map>
 static GTY ((cache)) hash_table<value_annotation_hasher> *annotate_value_cache;
 
 static void prepend_one_attribute (struct attrib **,
-				   enum attr_type, tree, tree, Node_Id);
+				   enum attrib_type, tree, tree, Node_Id);
 static void prepend_one_attribute_pragma (struct attrib **, Node_Id);
 static void prepend_attributes (struct attrib **, Entity_Id);
 static tree elaborate_expression (Node_Id, Entity_Id, const char *, bool, bool,
@@ -6258,14 +6258,14 @@ elaborate_entity (Entity_Id gnat_entity)
 
 static void
 prepend_one_attribute (struct attrib **attr_list,
-		       enum attr_type attr_type,
+		       enum attrib_type attrib_type,
 		       tree attr_name,
 		       tree attr_args,
 		       Node_Id attr_error_point)
 {
   struct attrib * attr = (struct attrib *) xmalloc (sizeof (struct attrib));
 
-  attr->type = attr_type;
+  attr->type = attrib_type;
   attr->name = attr_name;
   attr->args = attr_args;
   attr->error_point = attr_error_point;
@@ -6281,7 +6281,7 @@ prepend_one_attribute_pragma (struct attrib **attr_list, Node_Id gnat_pragma)
 {
   const Node_Id gnat_arg = Pragma_Argument_Associations (gnat_pragma);
   tree gnu_arg0 = NULL_TREE, gnu_arg1 = NULL_TREE;
-  enum attr_type etype;
+  enum attrib_type etype;
 
   /* Map the pragma at hand.  Skip if this isn't one we know how to handle.  */
   switch (Get_Pragma_Id (Chars (Pragma_Identifier (gnat_pragma))))

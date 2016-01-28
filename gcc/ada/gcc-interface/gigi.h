@@ -342,7 +342,7 @@ extern bool fp_arith_may_widen;
 
 /* Data structures used to represent attributes.  */
 
-enum attr_type
+enum attrib_type
 {
   ATTR_MACHINE_ATTRIBUTE,
   ATTR_LINK_ALIAS,
@@ -356,7 +356,7 @@ enum attr_type
 struct attrib
 {
   struct attrib *next;
-  enum attr_type type;
+  enum attrib_type type;
   tree name;
   tree args;
   Node_Id error_point;
