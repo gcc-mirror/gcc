@@ -1,3 +1,9 @@
+2016-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/62536
+	* decl.c (gfc_match_end): Only unnest and remove BLOCK namespaces
+	when the END encountered does not match a BLOCK's end.
+
 2016-01-27  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/69484
