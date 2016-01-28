@@ -315,6 +315,7 @@ static const struct cpu_vector_cost generic_vector_cost =
   1, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
   1, /* vec_stmt_cost  */
+  2, /* vec_permute_cost  */
   1, /* vec_to_scalar_cost  */
   1, /* scalar_to_vec_cost  */
   1, /* vec_align_load_cost  */
@@ -332,6 +333,7 @@ static const struct cpu_vector_cost cortexa57_vector_cost =
   4, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
   3, /* vec_stmt_cost  */
+  3, /* vec_permute_cost  */
   8, /* vec_to_scalar_cost  */
   8, /* scalar_to_vec_cost  */
   5, /* vec_align_load_cost  */
@@ -348,6 +350,7 @@ static const struct cpu_vector_cost exynosm1_vector_cost =
   5, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
   3, /* vec_stmt_cost  */
+  3, /* vec_permute_cost  */
   3, /* vec_to_scalar_cost  */
   3, /* scalar_to_vec_cost  */
   5, /* vec_align_load_cost  */
@@ -365,6 +368,7 @@ static const struct cpu_vector_cost xgene1_vector_cost =
   5, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
   2, /* vec_stmt_cost  */
+  2, /* vec_permute_cost  */
   4, /* vec_to_scalar_cost  */
   4, /* scalar_to_vec_cost  */
   10, /* vec_align_load_cost  */
@@ -7574,6 +7578,8 @@ aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	return aarch64_tune_params.vec_costs->cond_not_taken_branch_cost;
 
       case vec_perm:
+	return aarch64_tune_params.vec_costs->vec_permute_cost;
+
       case vec_promote_demote:
 	return aarch64_tune_params.vec_costs->vec_stmt_cost;
 

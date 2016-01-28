@@ -156,9 +156,10 @@ struct cpu_vector_cost
   const int scalar_load_cost;		 /* Cost of scalar load.  */
   const int scalar_store_cost;		 /* Cost of scalar store.  */
   const int vec_stmt_cost;		 /* Cost of any vector operation,
-					    excluding load, store,
+					    excluding load, store, permute,
 					    vector-to-scalar and
 					    scalar-to-vector operation.  */
+  const int vec_permute_cost;		 /* Cost of permute operation.  */
   const int vec_to_scalar_cost;		 /* Cost of vec-to-scalar operation.  */
   const int scalar_to_vec_cost;		 /* Cost of scalar-to-vector
 					    operation.  */

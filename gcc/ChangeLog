@@ -1,5 +1,16 @@
 2016-01-28  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* config/aarch64/aarch64.c (generic_vector_cost):
+	Set vec_permute_cost.
+	(cortexa57_vector_cost): Likewise.
+	(exynosm1_vector_cost): Likewise.
+	(xgene1_vector_cost): Likewise.
+	(aarch64_builtin_vectorization_cost): Use vec_permute_cost.
+	* config/aarch64/aarch64-protos.h (cpu_vector_cost):
+	Add vec_permute_cost entry.
+
+2016-01-28  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64.md (ccmp<mode>): Disassemble
 	immediate as %1.
 	(add<mode>3_compare0): Likewise.
