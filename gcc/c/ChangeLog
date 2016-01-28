@@ -1,3 +1,9 @@
+2016-01-28  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c (build_binary_op) [GE_EXPR]: Move the duplicated hunk of
+	code...
+	(build_binary_op) [EQ_EXPR]: ... here.
+
 2016-01-27  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
