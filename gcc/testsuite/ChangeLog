@@ -1,3 +1,10 @@
+2016-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/62536
+	* gfortran.dg/block_15.f08: New test.
+	* gfortran.dg/block_end_error_1.f90: Need to catch additional error
+	on incorrectly closed BLOCK.
+
 2016-01-28  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* gcc.dg/declare-simd.c: New test.
