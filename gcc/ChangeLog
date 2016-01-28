@@ -1,3 +1,9 @@
+2016-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/69542
+	* lra-remat.c (calculate_local_reg_remat_bb_data): Only consider
+	non-debug insns.
+
 2016-01-28  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/69447
