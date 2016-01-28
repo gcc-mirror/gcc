@@ -257,6 +257,7 @@ set mips_option_groups {
     lsa "(|!)HAS_LSA"
     section_start "-Wl,--section-start=.*"
     frame-header "-mframe-header-opt|-mno-frame-header-opt"
+    stack-protector "-fstack-protector"
 }
 
 for { set option 0 } { $option < 32 } { incr option } {
