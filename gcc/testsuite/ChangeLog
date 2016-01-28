@@ -1,3 +1,8 @@
+2016-01-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/69459
+	* gcc.target/i386/pr69459.c: New test.
+
 2016-01-28  Steve Ellcey  <sellcey@imgtec.com>
 
 	PR target/68400
@@ -71,7 +76,7 @@
 2016-01-25  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/68398
-        PR tree-optimization/69196
+	PR tree-optimization/69196
 	* gcc.dg/tree-ssa/pr66752-3.c: Update expected output.
 	* gcc.dg/tree-ssa/ssa-dom-thread-2c.c: Add extra statements on thread
 	path to avoid new heuristic allowing more irreducible regions
