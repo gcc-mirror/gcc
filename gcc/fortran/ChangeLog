@@ -1,3 +1,11 @@
+2016-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/62536
+	* decl.c: Prevent setting gfc_current_ns to NULL when block statement's
+	nesting is incomplete.  There is already an error conditon, so having
+	gfc_current_ns pointing to an eventually wrong namespace does not matter
+	that much.
+
 2016-01-27  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/p69268

@@ -6454,9 +6454,16 @@ cleanup:
 	  prev_ns = ns;
 	  ns = ns->sibling;
 	}
-  
-      gfc_free_namespace (gfc_current_ns);
-      gfc_current_ns = parent_ns;
+
+      if (parent_ns)
+	{
+	  /* Free the current namespace only when the parent one exists.  This
+	     prevents an ICE when more END BLOCK then BLOCK statements are
+	     present.  It does not mean any further harm, because we already
+	     have errored.  */
+	  gfc_free_namespace (gfc_current_ns);
+	  gfc_current_ns = parent_ns;
+	}
     }
 
   return MATCH_ERROR;

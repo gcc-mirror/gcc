@@ -1,3 +1,8 @@
+2016-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/62536
+	* gfortran.dg/block_14.f08: New test.
+
 2016-01-27  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
