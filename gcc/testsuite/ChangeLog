@@ -1,3 +1,11 @@
+2016-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/69509
+	PR c++/69516
+	* g++.dg/ext/constexpr-vla2.C: New test.
+	* g++.dg/ext/constexpr-vla3.C: New test.
+	* g++.dg/ubsan/vla-1.C: Remove dg-shouldfail.
+
 2016-01-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/69537

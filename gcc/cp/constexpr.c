@@ -1833,6 +1833,19 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
       return t;
     }
 
+  tree nelts = array_type_nelts_top (TREE_TYPE (ary));
+  /* For VLAs, the number of elements won't be an integer constant.  */
+  nelts = cxx_eval_constant_expression (ctx, nelts, false, non_constant_p,
+					overflow_p);
+  VERIFY_CONSTANT (nelts);
+  if (!tree_int_cst_lt (index, nelts))
+    {
+      if (!ctx->quiet)
+	error ("array subscript out of bound");
+      *non_constant_p = true;
+      return t;
+    }
+
   bool found;
   if (TREE_CODE (ary) == CONSTRUCTOR)
     {
@@ -1846,37 +1859,23 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
 
   if (!found)
     {
-      tree nelts = array_type_nelts_top (TREE_TYPE (ary));
-      /* For VLAs, the number of elements won't be an integer constant.  */
-      nelts = cxx_eval_constant_expression (ctx, nelts, false, non_constant_p,
-					    overflow_p);
-      VERIFY_CONSTANT (nelts);
-      if (tree_int_cst_lt (index, nelts))
+      if (TREE_CODE (ary) == CONSTRUCTOR
+	  && CONSTRUCTOR_NO_IMPLICIT_ZERO (ary))
 	{
-	  if (TREE_CODE (ary) == CONSTRUCTOR
-	      && CONSTRUCTOR_NO_IMPLICIT_ZERO (ary))
-	    {
-	      /* 'ary' is part of the aggregate initializer we're currently
-		 building; if there's no initializer for this element yet,
-		 that's an error. */
-	      if (!ctx->quiet)
-		error ("accessing uninitialized array element");
-	      *non_constant_p = true;
-	      return t;
-	    }
-
-	  /* If it's within the array bounds but doesn't have an explicit
-	     initializer, it's value-initialized.  */
-	  tree val = build_value_init (elem_type, tf_warning_or_error);
-	  return cxx_eval_constant_expression (ctx, val,
-					       lval,
-					       non_constant_p, overflow_p);
+	  /* 'ary' is part of the aggregate initializer we're currently
+	     building; if there's no initializer for this element yet,
+	     that's an error.  */
+	  if (!ctx->quiet)
+	    error ("accessing uninitialized array element");
+	  *non_constant_p = true;
+	  return t;
 	}
 
-      if (!ctx->quiet)
-	error ("array subscript out of bound");
-      *non_constant_p = true;
-      return t;
+      /* If it's within the array bounds but doesn't have an explicit
+	 initializer, it's value-initialized.  */
+      tree val = build_value_init (elem_type, tf_warning_or_error);
+      return cxx_eval_constant_expression (ctx, val, lval, non_constant_p,
+					   overflow_p);
     }
 
   if (TREE_CODE (ary) == CONSTRUCTOR)
