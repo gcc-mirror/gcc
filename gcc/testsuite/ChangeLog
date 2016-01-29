@@ -1,3 +1,10 @@
+2016-01-29  Andrew Bennett  <andrew.bennett@imgtec.com>
+
+	* gcc.target/mips/p5600-bonding.c (dg-options): Force the test to be
+	always built for p5600.
+	* gcc.target/mips/mips.exp (mips-dg-options): Add support for the
+	isa=p5600 dg-option.
+
 2016-01-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69547
