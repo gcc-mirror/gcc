@@ -1,5 +1,15 @@
 2016-01-29  Uros Bizjak  <ubizjak@gmail.com>
 
+	Backport from mainline
+	2016-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69551
+	* config/i386/i386.c (ix86_expand_vector_set) <case V4SImode>: For
+	SSE1, copy target into the temporary reg first before recursing
+	on it.
+
+2016-01-29  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/69459
 	* config/i386/constraints.md (C): Only accept constant zero operand.
 	(BC): New constraint.

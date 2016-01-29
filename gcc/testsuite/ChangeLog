@@ -1,5 +1,13 @@
 2016-01-29  Uros Bizjak  <ubizjak@gmail.com>
 
+	Backport from mainline
+	2016-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69551
+	* gcc.target/i386/pr69551.c: New test.
+
+2016-01-29  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/69459
 	* gcc.target/i386/pr69459.c: New test.
 
