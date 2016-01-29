@@ -462,7 +462,8 @@ mark_aliased_reaching_defs_necessary_1 (ao_ref *ref, tree vdef, void *data)
   gimple *def_stmt = SSA_NAME_DEF_STMT (vdef);
 
   /* All stmts we visit are necessary.  */
-  mark_operand_necessary (vdef);
+  if (! gimple_clobber_p (def_stmt))
+    mark_operand_necessary (vdef);
 
   /* If the stmt lhs kills ref, then we can stop walking.  */
   if (gimple_has_lhs (def_stmt)
@@ -584,7 +585,8 @@ mark_all_reaching_defs_necessary_1 (ao_ref *ref ATTRIBUTE_UNUSED,
 	  }
     }
 
-  mark_operand_necessary (vdef);
+  if (! gimple_clobber_p (def_stmt))
+    mark_operand_necessary (vdef);
 
   return false;
 }

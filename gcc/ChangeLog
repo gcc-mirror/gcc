@@ -1,3 +1,10 @@
+2016-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69547
+	* tree-ssa-dce.c (mark_aliased_reaching_defs_necessary_1):
+	Do not mark clobbers necessary.
+	(mark_all_reaching_defs_necessary_1): Likewise.
+
 2016-01-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390-c.c (s390_resolve_overloaded_builtin): Format
