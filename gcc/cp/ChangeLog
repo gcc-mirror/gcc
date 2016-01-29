@@ -1,3 +1,12 @@
+2016-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/69509
+	PR c++/69516
+	* constexpr.c (cxx_eval_array_reference): Give the "array subscript
+	out of bound" error earlier.
+	* init.c (build_vec_init): Change NE_EXPR into GT_EXPR.  Update the
+	commentary.
+
 2016-01-29  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* name-lookup.c (begin_scope): After reusing a cp_binding_level

@@ -1,6 +1,5 @@
 // { dg-do run }
 // { dg-options "-Wno-vla -fsanitize=undefined" }
-// { dg-shouldfail "ubsan" }
 // { dg-output "index 1 out of bounds" }
 
 void f(int i) {

@@ -4008,7 +4008,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 		&& (num_initialized_elts
 		    == tree_to_shwi (maxindex) + 1))))
     {
-      /* If the ITERATOR is equal to -1, then we don't have to loop;
+      /* If the ITERATOR is lesser or equal to -1, then we don't have to loop;
 	 we've already initialized all the elements.  */
       tree for_stmt;
       tree elt_init;
@@ -4016,7 +4016,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 
       for_stmt = begin_for_stmt (NULL_TREE, NULL_TREE);
       finish_for_init_stmt (for_stmt);
-      finish_for_cond (build2 (NE_EXPR, boolean_type_node, iterator,
+      finish_for_cond (build2 (GT_EXPR, boolean_type_node, iterator,
 			       build_int_cst (TREE_TYPE (iterator), -1)),
 		       for_stmt, false);
       elt_init = cp_build_unary_op (PREDECREMENT_EXPR, iterator, 0,
