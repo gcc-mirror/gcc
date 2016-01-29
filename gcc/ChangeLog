@@ -1,3 +1,8 @@
+2016-01-28  Sebastian Pop  <s.pop@samsung.com>
+
+	* graphite-isl-ast-to-gimple.c (get_rename_from_scev): Revert assert
+	back to setting codegen_error to fail codegen.
+
 2016-01-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/69459
