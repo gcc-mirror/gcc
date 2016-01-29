@@ -5464,7 +5464,7 @@
   [(set (match_operand:V2DF 0 "register_operand" "=v")
 	(float_extend:V2DF
 	  (vec_select:V2SF
-	    (match_operand:V4SF 1 "vector_operand" "vBm")
+	    (match_operand:V4SF 1 "vector_operand" "vm")
 	    (parallel [(const_int 0) (const_int 1)]))))]
   "TARGET_SSE2 && <mask_avx512vl_condition>"
   "%vcvtps2pd\t{%1, %0<mask_operand2>|%0<mask_operand2>, %q1}"
