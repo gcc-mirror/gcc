@@ -1,3 +1,9 @@
+2016-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/69462
+	* ginclude/float.h: Also provide FLT_EVAL_METHOD and DECIMAL_DIG
+	for C++-11.
+
 2016-01-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/69537
