@@ -209,6 +209,7 @@ fixincludes		Bruce Korb		<bkorb@gnu.org>
 *gimpl*			Jason Merrill		<jason@redhat.com>
 gcse.c			Jeff Law		<law@redhat.com>
 global opt framework	Jeff Law		<law@redhat.com>
+hsa			Martin Jambor		<mjambor@suse.cz>
 jump.c			David S. Miller		<davem@redhat.com>
 web pages		Gerald Pfeifer		<gerald@pfeifer.com>
 config.sub/config.guess	Ben Elliston		<config-patches@gnu.org>
