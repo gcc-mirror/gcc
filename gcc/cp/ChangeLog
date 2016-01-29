@@ -1,3 +1,9 @@
+2016-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/66869
+	* decl.c (wrapup_globals_for_namespace): Warn about unused static
+	function declarations.
+
 2016-01-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/69509
