@@ -1557,8 +1557,8 @@ begin_scope (scope_kind kind, tree entity)
   if (!ENABLE_SCOPE_CHECKING && free_binding_level)
     {
       scope = free_binding_level;
-      memset (scope, 0, sizeof (cp_binding_level));
       free_binding_level = scope->level_chain;
+      memset (scope, 0, sizeof (cp_binding_level));
     }
   else
     scope = ggc_cleared_alloc<cp_binding_level> ();
