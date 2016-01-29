@@ -1,3 +1,8 @@
+2016-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/66137
+	* gcc.target/i386/pr66137.c: New test.
+
 2016-01-29  Andrew Bennett  <andrew.bennett@imgtec.com>
 
 	* gcc.target/mips/p5600-bonding.c (dg-options): Force the test to be
