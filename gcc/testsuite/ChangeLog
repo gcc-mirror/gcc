@@ -1,3 +1,8 @@
+2016-01-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/69355
+	* gcc.dg/tree-ssa/pr69355.c: New test.
+
 2016-01-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

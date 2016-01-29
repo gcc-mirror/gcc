@@ -1,3 +1,9 @@
+2016-01-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/69355
+	* tree-sra.c (analyze_access_subtree): Correct hole detection when
+	total_scalarization fails.
+
 2016-01-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
