@@ -1,3 +1,9 @@
+2016-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/69518
+	* c-decl.c (finish_struct): Clear C_TYPE_INCOMPLETE_VARS in
+	all type variants, not just TYPE_MAIN_VARIANT.
+
 2016-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/66869

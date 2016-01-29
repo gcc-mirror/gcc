@@ -7842,6 +7842,14 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       }
   }
 
+  /* Note: C_TYPE_INCOMPLETE_VARS overloads TYPE_VFIELD which is used
+     in dwarf2out via rest_of_decl_compilation below and means
+     something totally different.  Since we will be clearing
+     C_TYPE_INCOMPLETE_VARS shortly after we iterate through them,
+     clear it ahead of time and avoid problems in dwarf2out.  Ideally,
+     C_TYPE_INCOMPLETE_VARS should use some language specific
+     node.  */
+  tree incomplete_vars = C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (t));
   for (x = TYPE_MAIN_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
     {
       TYPE_FIELDS (x) = TYPE_FIELDS (t);
@@ -7849,6 +7857,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       C_TYPE_FIELDS_READONLY (x) = C_TYPE_FIELDS_READONLY (t);
       C_TYPE_FIELDS_VOLATILE (x) = C_TYPE_FIELDS_VOLATILE (t);
       C_TYPE_VARIABLE_SIZE (x) = C_TYPE_VARIABLE_SIZE (t);
+      C_TYPE_INCOMPLETE_VARS (x) = NULL_TREE;
     }
 
   /* If this was supposed to be a transparent union, but we can't
@@ -7862,17 +7871,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
     }
 
   /* If this structure or union completes the type of any previous
-     variable declaration, lay it out and output its rtl.
-
-     Note: C_TYPE_INCOMPLETE_VARS overloads TYPE_VFIELD which is used
-     in dwarf2out via rest_of_decl_compilation below and means
-     something totally different.  Since we will be clearing
-     C_TYPE_INCOMPLETE_VARS shortly after we iterate through them,
-     clear it ahead of time and avoid problems in dwarf2out.  Ideally,
-     C_TYPE_INCOMPLETE_VARS should use some language specific
-     node.  */
-  tree incomplete_vars = C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (t));
-  C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (t)) = 0;
+     variable declaration, lay it out and output its rtl.  */
   for (x = incomplete_vars; x; x = TREE_CHAIN (x))
     {
       tree decl = TREE_VALUE (x);
