@@ -1,5 +1,8 @@
 2016-01-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/69551
+	* gcc.target/i386/pr69551.c: New test.
+
 	PR target/66137
 	* gcc.target/i386/pr66137.c: New test.
 
