@@ -1,3 +1,9 @@
+2016-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/69537
+	* match.pd: Allow all integral types when simplifying a
+	widening or sign-changing conversion.
+
 2016-01-28  Sebastian Pop  <s.pop@samsung.com>
 
 	* graphite-isl-ast-to-gimple.c (get_rename_from_scev): Revert assert
