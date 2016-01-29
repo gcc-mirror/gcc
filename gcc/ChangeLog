@@ -1,3 +1,17 @@
+2016-01-29  Martin Jambor  <mjambor@suse.cz>
+
+	* hsa-gen.c (get_memory_order_name): Mask with MEMMODEL_BASE_MASK.
+	Use short lowercase names.
+	(get_memory_order): Mask with MEMMODEL_BASE_MASK.  Support
+	MEMMODEL_CONSUME with acquire semantics and MEMMODEL_SEQ_CST with
+	acq_rel one.  Protect warning agains segfaults if
+	get_memory_order_name returns NULL.
+	(gen_hsa_ternary_atomic_for_builtin): Support with MEMMODEL_SEQ_CST
+	with release semantics.  Do not warn if get_memory_order already did.
+	(gen_hsa_insns_for_call): Support with MEMMODEL_SEQ_CST with acquire
+	semantics.  Fix check for relaxed or acquire semantics.  Do not warn
+	if get_memory_order already did.
+
 2016-01-29  Sebastian Pop  <s.pop@samsung.com>
 
 	* doc/install.texi: Document that isl-0.16 is supported.
