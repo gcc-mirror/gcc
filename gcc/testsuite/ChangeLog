@@ -1,3 +1,8 @@
+2016-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69551
+	* gcc.target/i386/pr69551.c: New test.
+
 2016-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/69542
