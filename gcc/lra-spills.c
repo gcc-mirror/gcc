@@ -760,44 +760,14 @@ lra_final_code_change (void)
 	  
 	  struct lra_static_insn_data *static_id = id->insn_static_data;
 	  bool insn_change_p = false;
-	  
-          for (i = id->insn_static_data->n_operands - 1; i >= 0; i--)
-	    {
-	      if (! DEBUG_INSN_P (insn) && static_id->operand[i].is_operator)
-		continue;
-	      
-	      rtx op = *id->operand_loc[i];
-	      
-	      if (static_id->operand[i].type == OP_OUT
-		  && GET_CODE (op) == SUBREG && REG_P (SUBREG_REG (op))
-		  && ! LRA_SUBREG_P (op))
-		{
-		  hard_regno = REGNO (SUBREG_REG (op));
-		  /* We can not always remove sub-registers of
-		     hard-registers as we may lose information that
-		     only a part of registers is changed and
-		     subsequent optimizations may do wrong
-		     transformations (e.g. dead code eliminations).
-		     We can not also keep all sub-registers as the
-		     subsequent optimizations can not handle all such
-		     cases.  Here is a compromise which works.  */
-		  if ((GET_MODE_SIZE (GET_MODE (op))
-		       < GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))))
-		      && (hard_regno_nregs[hard_regno][GET_MODE (SUBREG_REG (op))]
-			  == hard_regno_nregs[hard_regno][GET_MODE (op)])
-#ifdef STACK_REGS
-		      && (hard_regno < FIRST_STACK_REG
-			  || hard_regno > LAST_STACK_REG)
-#endif
-		      )
-		    continue;
-		}
-	      if (alter_subregs (id->operand_loc[i], ! DEBUG_INSN_P (insn)))
-		{
-		  lra_update_dup (id, i);
-		  insn_change_p = true;
-		}
-	    }
+
+	  for (i = id->insn_static_data->n_operands - 1; i >= 0; i--)
+	    if ((DEBUG_INSN_P (insn) || ! static_id->operand[i].is_operator)
+		&& alter_subregs (id->operand_loc[i], ! DEBUG_INSN_P (insn)))
+	      {
+		lra_update_dup (id, i);
+		insn_change_p = true;
+	      }
 	  if (insn_change_p)
 	    lra_update_operator_dups (id);
 	}
