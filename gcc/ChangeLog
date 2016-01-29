@@ -1,5 +1,11 @@
 2016-01-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
+	* config/s390/s390-c.c (s390_resolve_overloaded_builtin): Format
+	declaration name with %qs and print it in both error messages.
+	Also fix indentation.
+
+2016-01-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
 	PR other/69006
 	* config/s390/s390-c.c (s390_resolve_overloaded_builtin): Remove
 	trailing blank line from error message.
