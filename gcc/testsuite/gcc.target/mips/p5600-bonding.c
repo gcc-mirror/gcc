@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-dp -mtune=p5600  -mno-micromips -mno-mips16" } */
+/* { dg-options "-dp isa=p5600 -mtune=p5600 -mno-micromips -mno-mips16" } */
 /* { dg-skip-if "Bonding needs peephole optimization." { *-*-* } { "-O0" "-O1" } { "" } } */
 typedef int VINT32 __attribute__ ((vector_size((16))));
 

@@ -142,6 +142,9 @@
 #   isa=loongson
 #	select a Loongson processor
 #
+#   isa=p5600
+#      select a P5600 processor
+#
 #   addressing=absolute
 #	force absolute addresses to be used
 #
@@ -1010,6 +1013,10 @@ proc mips-dg-options { args } {
 	if { [string equal $spec "isa=loongson"] } {
 	    if { ![regexp {^-march=loongson} $arch] } {
 		set arch "-march=loongson2f"
+	    }
+	} elseif { [string equal $spec "isa=p5600"] } {
+	    if { ![regexp {^-march=p5600} $arch] } {
+		set arch "-march=p5600"
 	    }
 	} else {
 	    if { ![regexp {^(isa(?:|_rev))(=|<=|>=)([0-9]*)$} \
