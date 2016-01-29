@@ -4415,20 +4415,20 @@ get_address_from_value (tree val, hsa_bb *hbb)
 static const char *
 get_memory_order_name (unsigned memmodel)
 {
-  switch (memmodel)
+  switch (memmodel & MEMMODEL_BASE_MASK)
     {
     case MEMMODEL_RELAXED:
-      return "__ATOMIC_RELAXED";
+      return "relaxed";
     case MEMMODEL_CONSUME:
-      return "__ATOMIC_CONSUME";
+      return "consume";
     case MEMMODEL_ACQUIRE:
-      return "__ATOMIC_ACQUIRE";
+      return "acquire";
     case MEMMODEL_RELEASE:
-      return "__ATOMIC_RELEASE";
+      return "release";
     case MEMMODEL_ACQ_REL:
-      return "__ATOMIC_ACQ_REL";
+      return "acq_rel";
     case MEMMODEL_SEQ_CST:
-      return "__ATOMIC_SEQ_CST";
+      return "seq_cst";
     default:
       return NULL;
     }
@@ -4440,21 +4440,31 @@ get_memory_order_name (unsigned memmodel)
 static BrigMemoryOrder
 get_memory_order (unsigned memmodel, location_t location)
 {
-  switch (memmodel)
+  switch (memmodel & MEMMODEL_BASE_MASK)
     {
     case MEMMODEL_RELAXED:
       return BRIG_MEMORY_ORDER_RELAXED;
+    case MEMMODEL_CONSUME:
+      /* HSA does not have an equivalent, but we can use the slightly stronger
+	 ACQUIRE.  */
     case MEMMODEL_ACQUIRE:
       return BRIG_MEMORY_ORDER_SC_ACQUIRE;
     case MEMMODEL_RELEASE:
       return BRIG_MEMORY_ORDER_SC_RELEASE;
     case MEMMODEL_ACQ_REL:
+    case MEMMODEL_SEQ_CST:
+      /* Callers implementing a simple load or store need to remove the release
+	 or acquire part respectively.  */
       return BRIG_MEMORY_ORDER_SC_ACQUIRE_RELEASE;
     default:
-      HSA_SORRY_ATV (location,
-		     "support for HSA does not implement memory model: %s",
-		     get_memory_order_name (memmodel));
-      return BRIG_MEMORY_ORDER_NONE;
+      {
+	const char *mmname = get_memory_order_name (memmodel);
+	HSA_SORRY_ATV (location,
+		       "support for HSA does not implement the specified "
+		       " memory model%s %s",
+		       mmname ? ": " : "", mmname ? mmname : "");
+	return BRIG_MEMORY_ORDER_NONE;
+      }
     }
 }
 
@@ -4523,13 +4533,20 @@ gen_hsa_ternary_atomic_for_builtin (bool ret_orig,
       nops = 2;
     }
 
-  if (acode == BRIG_ATOMIC_ST && memorder != BRIG_MEMORY_ORDER_RELAXED
-      && memorder != BRIG_MEMORY_ORDER_SC_RELEASE)
+  if (acode == BRIG_ATOMIC_ST)
     {
-      HSA_SORRY_ATV (gimple_location (stmt),
-		     "support for HSA does not implement memory model for "
-		     "ATOMIC_ST: %s", get_memory_order_name (mmodel));
-      return;
+      if (memorder == BRIG_MEMORY_ORDER_SC_ACQUIRE_RELEASE)
+	memorder = BRIG_MEMORY_ORDER_SC_RELEASE;
+
+      if (memorder != BRIG_MEMORY_ORDER_RELAXED
+	  && memorder != BRIG_MEMORY_ORDER_SC_RELEASE
+	  && memorder != BRIG_MEMORY_ORDER_NONE)
+	{
+	  HSA_SORRY_ATV (gimple_location (stmt),
+			 "support for HSA does not implement memory model for "
+			 "ATOMIC_ST: %s", get_memory_order_name (mmodel));
+	  return;
+	}
     }
 
   hsa_insn_atomic *atominsn = new hsa_insn_atomic (nops, opcode, acode, mtype,
@@ -4872,8 +4889,12 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
 	BrigMemoryOrder memorder = get_memory_order (mmodel,
 						     gimple_location (stmt));
 
+	if (memorder == BRIG_MEMORY_ORDER_SC_ACQUIRE_RELEASE)
+	  memorder = BRIG_MEMORY_ORDER_SC_ACQUIRE;
+
 	if (memorder != BRIG_MEMORY_ORDER_RELAXED
-	    && memorder != BRIG_MEMORY_ORDER_SC_RELEASE)
+	    && memorder != BRIG_MEMORY_ORDER_SC_ACQUIRE
+	    && memorder != BRIG_MEMORY_ORDER_NONE)
 	  {
 	    HSA_SORRY_ATV (gimple_location (stmt),
 			   "support for HSA does not implement "
