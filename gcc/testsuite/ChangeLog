@@ -1,3 +1,8 @@
+2016-01-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/69459
+	* gcc.target/i386/pr69459.c: New test.
+
 2016-01-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/and-1.c: Remove nand test for powerpc*-*-*.

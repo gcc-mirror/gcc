@@ -18,7 +18,7 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;;; Unused letters:
-;;;     B     H
+;;;           H
 ;;;           h j
 
 ;; Integer register constraints.
@@ -156,6 +156,10 @@
   (and (not (match_test "TARGET_X32"))
        (match_operand 0 "memory_operand")))
 
+(define_constraint "BC"
+  "@internal SSE constant operand."
+  (match_test "standard_sse_constant_p (op)"))
+
 ;; Integer constant constraints.
 (define_constraint "I"
   "Integer constant in the range 0 @dots{} 31, for 32-bit shifts."
@@ -206,8 +210,8 @@
 
 ;; This can theoretically be any mode's CONST0_RTX.
 (define_constraint "C"
-  "Standard SSE floating point constant."
-  (match_test "standard_sse_constant_p (op)"))
+  "SSE constant zero operand."
+  (match_test "standard_sse_constant_p (op) == 1"))
 
 ;; Constant-or-symbol-reference constraints.
 
