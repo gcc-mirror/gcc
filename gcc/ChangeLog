@@ -1,3 +1,8 @@
+2016-01-29  Steve Ellcey  <sellcey@imgtec.com>
+
+	PR target/65604
+	* config/mips/mips.c (mips_output_division): Check flag_delayed_branch.
+
 2016-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69551
