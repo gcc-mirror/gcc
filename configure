@@ -6021,8 +6021,8 @@ $as_echo "$as_me: WARNING: using in-tree isl, disabling version check" >&2;}
     LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs} ${gmplibs}"
     LIBS="${_isl_saved_LIBS} -lisl -lgmp"
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for isl 0.15 (or deprecated 0.14)" >&5
-$as_echo_n "checking for isl 0.15 (or deprecated 0.14)... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for isl 0.16, 0.15, or deprecated 0.14" >&5
+$as_echo_n "checking for isl 0.16, 0.15, or deprecated 0.14... " >&6; }
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <isl/ctx.h>
@@ -6045,12 +6045,12 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$gcc_cv_isl" >&6; }
 
     if test "${gcc_cv_isl}" = no ; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: recommended isl version is 0.15, minimum required isl version 0.14 is deprecated" >&5
-$as_echo "recommended isl version is 0.15, minimum required isl version 0.14 is deprecated" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: recommended isl version is 0.16 or 0.15, the minimum required isl version 0.14 is deprecated" >&5
+$as_echo "recommended isl version is 0.16 or 0.15, the minimum required isl version 0.14 is deprecated" >&6; }
     fi
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for isl-0.15" >&5
-$as_echo_n "checking for isl-0.15... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for isl 0.16 or 0.15" >&5
+$as_echo_n "checking for isl 0.16 or 0.15... " >&6; }
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <isl/schedule.h>
