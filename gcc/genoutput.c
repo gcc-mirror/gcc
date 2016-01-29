@@ -1019,6 +1019,7 @@ main (int argc, char **argv)
       case DEFINE_REGISTER_CONSTRAINT:
       case DEFINE_ADDRESS_CONSTRAINT:
       case DEFINE_MEMORY_CONSTRAINT:
+      case DEFINE_SPECIAL_MEMORY_CONSTRAINT:
 	note_constraint (&info);
 	break;
 

@@ -1,3 +1,37 @@
+2016-01-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/69299
+	* config/i386/constraints.md (Bm): Describe as special memory
+	constraint.
+	* doc/md.texi (DEFINE_SPECIAL_MEMORY_CONSTRAINT): Describe it.
+	* genoutput.c (main): Process DEFINE_SPECIAL_MEMORY_CONSTRAINT.
+	* genpreds.c (struct constraint_data): Add is_special_memory.
+	(have_special_memory_constraints, special_memory_start): New
+	static vars.
+	(special_memory_end): Ditto.
+	(add_constraint): Add new arg is_special_memory.  Add code to
+	process its true value.  Update have_special_memory_constraints.
+	(process_define_constraint): Pass the new arg.
+	(process_define_register_constraint): Ditto.
+	(choose_enum_order): Process special memory.
+	(write_tm_preds_h): Generate enum const CT_SPECIAL_MEMORY and
+	function insn_extra_special_memory_constraint.
+	(main): Process DEFINE_SPECIAL_MEMORY_CONSTRAINT.
+	* gensupport.c (process_rtx): Process
+	DEFINE_SPECIAL_MEMORY_CONSTRAINT.
+	* ira-costs.c (record_reg_classes): Process CT_SPECIAL_MEMORY.
+	* ira-lives.c (single_reg_class): Use
+	insn_extra_special_memory_constraint.
+	* ira.c (ira_setup_alts): Process CT_SPECIAL_MEMORY.
+	* lra-constraints.c (process_alt_operands): Ditto.
+	(curr_insn_transform): Use insn_extra_special_memory_constraint.
+	* recog.c (asm_operand_ok, preprocess_constraints): Process
+	CT_SPECIAL_MEMORY.
+	* reload.c (find_reloads): Ditto.
+	* rtl.def (DEFINE_SPECIFAL_MEMORY_CONSTRAINT): New.
+	* stmt.c (parse_input_constraint): Use
+	insn_extra_special_memory_constraint.
+
 2016-01-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/69530

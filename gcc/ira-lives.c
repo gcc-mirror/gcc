@@ -774,6 +774,7 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 	  /* ??? Is this the best way to handle memory constraints?  */
 	  cn = lookup_constraint (constraints);
 	  if (insn_extra_memory_constraint (cn)
+	      || insn_extra_special_memory_constraint (cn)
 	      || insn_extra_address_constraint (cn))
 	    return NO_REGS;
 	  if (constraint_satisfied_p (op, cn)

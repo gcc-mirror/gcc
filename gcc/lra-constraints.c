@@ -400,7 +400,7 @@ valid_address_p (struct address_info *ad)
 }
 
 /* Return true if the eliminated form of memory reference OP satisfies
-   extra memory constraint CONSTRAINT.  */
+   extra (special) memory constraint CONSTRAINT.  */
 static bool
 satisfies_memory_constraint_p (rtx op, enum constraint_num constraint)
 {
@@ -2036,6 +2036,14 @@ process_alt_operands (int only_alternative)
 
 		    case CT_FIXED_FORM:
 		      if (constraint_satisfied_p (op, cn))
+			win = true;
+		      break;
+
+		    case CT_SPECIAL_MEMORY:
+		      if (MEM_P (op)
+			  && satisfies_memory_constraint_p (op, cn))
+			win = true;
+		      else if (spilled_pseudo_p (op))
 			win = true;
 		      break;
 		    }
@@ -3701,7 +3709,8 @@ curr_insn_transform (bool check_only_p)
 		 constraint += CONSTRAINT_LEN (c, constraint))
 	      {
 		enum constraint_num cn = lookup_constraint (constraint);
-		if (insn_extra_memory_constraint (cn)
+		if ((insn_extra_memory_constraint (cn)
+		     || insn_extra_special_memory_constraint (cn))
 		    && satisfies_memory_constraint_p (tem, cn))
 		  break;
 	      }

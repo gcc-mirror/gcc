@@ -1035,6 +1035,7 @@ DEF_RTL_EXPR(DEFINE_REGISTER_CONSTRAINT, "define_register_constraint", "sss", RT
       RTL object.  */
 DEF_RTL_EXPR(DEFINE_CONSTRAINT, "define_constraint", "sse", RTX_EXTRA)
 DEF_RTL_EXPR(DEFINE_MEMORY_CONSTRAINT, "define_memory_constraint", "sse", RTX_EXTRA)
+DEF_RTL_EXPR(DEFINE_SPECIAL_MEMORY_CONSTRAINT, "define_special_memory_constraint", "sse", RTX_EXTRA)
 DEF_RTL_EXPR(DEFINE_ADDRESS_CONSTRAINT, "define_address_constraint", "sse", RTX_EXTRA)
 
 
