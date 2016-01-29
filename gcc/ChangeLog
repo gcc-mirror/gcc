@@ -1,3 +1,7 @@
+2016-01-29  Sebastian Pop  <s.pop@samsung.com>
+
+	* doc/install.texi: Document that isl-0.16 is supported.
+
 2016-01-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/69299
