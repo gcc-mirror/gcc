@@ -1,3 +1,8 @@
+2016-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/69537
+	* gcc.dg/uninit-21.c: New testcase.
+
 2016-01-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/69459
