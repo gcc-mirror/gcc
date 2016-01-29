@@ -879,6 +879,24 @@ wrapup_globals_for_namespace (tree name_space, void* data ATTRIBUTE_UNUSED)
   tree *vec = statics->address ();
   int len = statics->length ();
 
+  if (warn_unused_function)
+    {
+      tree decl;
+      unsigned int i;
+      FOR_EACH_VEC_SAFE_ELT (statics, i, decl)
+	if (TREE_CODE (decl) == FUNCTION_DECL
+	    && DECL_INITIAL (decl) == 0
+	    && DECL_EXTERNAL (decl)
+	    && !TREE_PUBLIC (decl)
+	    && !DECL_ARTIFICIAL (decl)
+	    && !TREE_NO_WARNING (decl))
+	  {
+	    warning (OPT_Wunused_function,
+		     "%q+F declared %<static%> but never defined", decl);
+	    TREE_NO_WARNING (decl) = 1;
+	  }
+    }
+
   /* Write out any globals that need to be output.  */
   return wrapup_global_declarations (vec, len);
 }

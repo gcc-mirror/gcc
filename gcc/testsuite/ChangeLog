@@ -1,3 +1,8 @@
+2016-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/66869
+	* g++.dg/warn/Wunused-function2.C: New test.
+
 2016-01-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Require a hardware vector
