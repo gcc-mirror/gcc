@@ -904,13 +904,14 @@ s390_resolve_overloaded_builtin (location_t loc,
 
   if (last_match_type == INT_MAX)
     {
-      error_at (loc, "invalid parameter combination for intrinsic");
+      error_at (loc, "invalid parameter combination for intrinsic %qs",
+		IDENTIFIER_POINTER (DECL_NAME (ob_fndecl)));
       return error_mark_node;
     }
   else if (num_matches > 1)
     {
-      error_at (loc, "ambiguous overload for intrinsic: %s",
-	     IDENTIFIER_POINTER (DECL_NAME (ob_fndecl)));
+      error_at (loc, "ambiguous overload for intrinsic %qs",
+		IDENTIFIER_POINTER (DECL_NAME (ob_fndecl)));
       return error_mark_node;
     }
 
