@@ -1,3 +1,8 @@
+2016-01-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/69459
+	* gcc.target/i386/pr69459.c: New test.
+
 2016-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69551
@@ -147,8 +152,8 @@
 
 2016-01-19  Jeff Law  <law@redhat.com>
 
-        Backport from mainline
-        2016-01-12  Jeff Law  <law@redhat.com>
+	Backport from mainline
+	2016-01-12  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/67755
 	* gcc.dg/tree-ssa/pr67755.c: New test.
@@ -811,7 +816,7 @@
 2015-11-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/68106
-	* testsuite/gcc.target/aarch64/pr68106.c: New.
+	* gcc.target/aarch64/pr68106.c: New.
 
 2015-01-25  Paul Thomas  <pault@gcc.gnu.org>
 
@@ -931,8 +936,8 @@
 	Backport from mainline
 	2015-10-09  Martin Jambor  <mjambor@suse.cz>
 
-        * gcc.dg/ipa/ipa-sra-10.c: New test.
-        * gcc.dg/torture/pr67794.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-10.c: New test.
+	* gcc.dg/torture/pr67794.c: Likewise.
 
 2015-10-22  Paul Thomas  <pault@gcc.gnu.org>
 
@@ -4053,7 +4058,7 @@
 
 2015-03-05  Martin Sebor  <msebor@redhat.com>
 
-	* PR testsuite/63175
+	PR testsuite/63175
 	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a.c (main1): Move
 	checking of results into main to prevent it from getting optimized
 	away.

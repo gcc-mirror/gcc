@@ -1,3 +1,13 @@
+2016-01-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/69459
+	* config/i386/constraints.md (C): Only accept constant zero operand.
+	(BC): New constraint.
+	* config/i386/sse.md (*mov<mode>_internal): Use BC constraint
+	instead of C constraint.
+	* doc/md.texi (Machine Constraints): Update description
+	of C constraint.
+
 2016-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69551
@@ -317,7 +327,8 @@
 	2015-12-02  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/predicates.md (const_mask_operand): New predicate.
-	* config/s390/s390-builtins.def: Set a smaller bitmask for a few builtins.
+	* config/s390/s390-builtins.def: Set a smaller bitmask for a
+	few builtins.
 	* config/s390/vector.md: Change predicate from immediate_operand
 	to either const_int_operand or const_mask_operand.  Add special
 	insn conditions on patterns which have to exclude certain values.
@@ -451,7 +462,7 @@
 2015-12-14  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backport from mainline.
-	2015-12-09  James Greenhalgh  <james.greenhalgh@arm.com> 
+	2015-12-09  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR rtl-optimization/67609
 	* config/aarch64/aarch64-protos.h
@@ -590,7 +601,7 @@
 	Backport from mainline
 	2015-09-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
-	PR rtl-optimization/67037    
+	PR rtl-optimization/67037
 	* lra-constraints.c (process_addr_reg): Use copy_rtx when necessary.
 
 2015-11-26  David Edelsohn  <dje.gcc@gmail.com>
@@ -862,12 +873,12 @@
 	(contains_type_p): Fix out of range check, clear dynamic flag.
 
 	2015-10-23  Jan Hubicka  <hubicka@ucw.cz>
- 
+
 	PR ipa/pr67600
 	* ipa-polymorphic-call.c
 	(ipa_polymorphic_call_context::get_dynamic_type): Do not confuse
 	instance offset with offset of outer type.
- 
+
 	2015-10-12  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/67783
@@ -876,7 +887,7 @@
 	quadratic behavior.
 
 	2015-10-11  Jan Hubicka  <hubicka@ucw.cz>
- 
+
 	PR ipa/67056
 	* ipa-polymorphic-call.c (possible_placement_new): If cur_offset
 	is negative we don't know the type.

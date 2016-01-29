@@ -149,6 +149,7 @@
 ;;  s  Sibcall memory operand, not valid for TARGET_X32
 ;;  w  Call memory operand, not valid for TARGET_X32
 ;;  z  Constant call address operand.
+;;  C  SSE constant operand.
 
 (define_constraint "Bs"
   "@internal Sibcall memory operand."
@@ -163,6 +164,10 @@
 (define_constraint "Bz"
   "@internal Constant call address operand."
   (match_operand 0 "constant_call_address_operand"))
+
+(define_constraint "BC"
+  "@internal SSE constant operand."
+  (match_test "standard_sse_constant_p (op)"))
 
 ;; Integer constant constraints.
 (define_constraint "I"
@@ -214,8 +219,8 @@
 
 ;; This can theoretically be any mode's CONST0_RTX.
 (define_constraint "C"
-  "Standard SSE floating point constant."
-  (match_test "standard_sse_constant_p (op)"))
+  "SSE constant zero operand."
+  (match_test "standard_sse_constant_p (op) == 1"))
 
 ;; Constant-or-symbol-reference constraints.
 
