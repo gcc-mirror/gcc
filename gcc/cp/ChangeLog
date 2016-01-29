@@ -1,3 +1,9 @@
+2016-01-29  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* name-lookup.c (begin_scope): After reusing a cp_binding_level
+	structure, update free_binding_level before the structure's
+	level_chain field gets cleared, not after.
+
 2016-01-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67407
