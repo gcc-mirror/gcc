@@ -1,3 +1,8 @@
+2016-01-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Require a hardware vector
+	support for test to succeed.
+
 2016-01-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/69509
