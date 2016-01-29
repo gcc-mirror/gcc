@@ -1,3 +1,8 @@
+2016-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* ginclude/stdarg.h: Test __cplusplus instead of
+	__GXX_EXPERIMENTAL_CXX0X__.
+
 2016-01-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69547
