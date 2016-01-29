@@ -521,6 +521,7 @@ process_rtx (rtx desc, file_location loc)
     case DEFINE_CONSTRAINT:
     case DEFINE_REGISTER_CONSTRAINT:
     case DEFINE_MEMORY_CONSTRAINT:
+    case DEFINE_SPECIAL_MEMORY_CONSTRAINT:
     case DEFINE_ADDRESS_CONSTRAINT:
       queue_pattern (desc, &define_pred_tail, loc);
       break;

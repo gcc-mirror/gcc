@@ -783,6 +783,12 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 			win = 1;
 		      break;
 
+		    case CT_SPECIAL_MEMORY:
+		      insn_allows_mem[i] = allows_mem[i] = 1;
+		      if (MEM_P (op) && constraint_satisfied_p (op, cn))
+			win = 1;
+		      break;
+
 		    case CT_ADDRESS:
 		      /* Every address can be reloaded to fit.  */
 		      allows_addr = 1;

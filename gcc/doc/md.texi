@@ -4424,6 +4424,20 @@ The syntax and semantics are otherwise identical to
 @code{define_constraint}.
 @end deffn
 
+@deffn {MD Expression} define_special_memory_constraint name docstring exp
+Use this expression for constraints that match a subset of all memory
+operands: that is, @code{reload} can not make them match by reloading
+the address as it is described for @code{define_memory_constraint} or
+such address reload is undesirable with the performance point of view.
+
+For example, @code{define_special_memory_constraint} can be useful if
+specifically aligned memory is necessary or desirable for some insn
+operand.
+
+The syntax and semantics are otherwise identical to
+@code{define_constraint}.
+@end deffn
+
 @deffn {MD Expression} define_address_constraint name docstring exp
 Use this expression for constraints that match a subset of all address
 operands: that is, @code{reload} can make the constraint match by

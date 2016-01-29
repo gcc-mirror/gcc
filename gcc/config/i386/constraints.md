@@ -162,7 +162,7 @@
   "@internal GOT memory operand."
   (match_operand 0 "GOT_memory_operand"))
 
-(define_constraint "Bm"
+(define_special_memory_constraint "Bm"
   "@internal Vector memory operand."
   (match_operand 0 "vector_memory_operand"))
 

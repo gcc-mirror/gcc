@@ -1868,6 +1868,7 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 
 			case CT_ADDRESS:
 			case CT_MEMORY:
+			case CT_SPECIAL_MEMORY:
 			  goto op_success;
 
 			case CT_FIXED_FORM:

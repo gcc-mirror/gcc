@@ -3471,6 +3471,23 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 			offmemok = 1;
 			break;
 
+		      case CT_SPECIAL_MEMORY:
+			if (force_reload)
+			  break;
+			if (constraint_satisfied_p (operand, cn))
+			  win = 1;
+			/* Likewise if the address will be reloaded because
+			   reg_equiv_address is nonzero.  For reg_equiv_mem
+			   we have to check.  */
+			else if (REG_P (operand)
+				 && REGNO (operand) >= FIRST_PSEUDO_REGISTER
+				 && reg_renumber[REGNO (operand)] < 0
+				 && reg_equiv_mem (REGNO (operand)) != 0
+				 && (constraint_satisfied_p
+				     (reg_equiv_mem (REGNO (operand)), cn)))
+			  win = 1;
+			break;
+
 		      case CT_ADDRESS:
 			if (constraint_satisfied_p (operand, cn))
 			  win = 1;
