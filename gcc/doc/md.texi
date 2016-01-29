@@ -3996,7 +3996,7 @@ Integer constant in the range 0 @dots{} 127, for 128-bit shifts.
 Standard 80387 floating point constant.
 
 @item C
-Standard SSE floating point constant.
+SSE constant zero operand.
 
 @item e
 32-bit signed integer constant, or a symbolic reference known
