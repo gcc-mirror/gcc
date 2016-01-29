@@ -1,3 +1,8 @@
+2016-01-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (sse2_cvtps2pd<mask_name>): Replace vBm
+	with vm.
+
 2016-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* ginclude/stdarg.h: Test __cplusplus instead of
