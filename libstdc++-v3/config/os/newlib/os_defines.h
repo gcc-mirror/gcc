@@ -53,6 +53,9 @@
 // their dtors are called
 #define _GLIBCXX_THREAD_ATEXIT_WIN32 1
 
+// See libstdc++/69506
+#define _GLIBCXX_USE_WEAK_REF 0
+
 #endif
 
 #endif

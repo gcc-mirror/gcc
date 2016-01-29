@@ -1,3 +1,8 @@
+2016-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69506
+	* config/os/newlib/os_defines.h (_GLIBCXX_USE_WEAK_REF): Define.
+
 2016-01-28  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR libstdc++/69450
