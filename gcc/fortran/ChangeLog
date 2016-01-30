@@ -1,3 +1,9 @@
+2016-01-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69566
+	* trans-expr.c (gfc_conv_procedure_call): Correct expression
+	for 'ulim_copy', which was missing a test for 'comp'.
+
 2016-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/62536
