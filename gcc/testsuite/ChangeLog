@@ -1,3 +1,8 @@
+2016-01-30  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/66707
+	gfortran.dg/common_23.f90: New test.
+
 2016-01-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/65546
