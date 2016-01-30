@@ -3121,49 +3121,49 @@ gfc_restore_last_undo_checkpoint (void)
 
   FOR_EACH_VEC_ELT (latest_undo_chgset->syms, i, p)
     {
-      if (p->gfc_new)
+      /* Symbol was new. Or was old and just put in common */
+      if ((p->gfc_new
+	   || (p->attr.in_common && !p->old_symbol->attr.in_common ))
+	  && p->attr.in_common && p->common_block && p->common_block->head)
 	{
-	  /* Symbol was new.  */
-	  if (p->attr.in_common && p->common_block && p->common_block->head)
+	  /* If the symbol was added to any common block, it
+	     needs to be removed to stop the resolver looking
+	     for a (possibly) dead symbol.  */
+
+	  if (p->common_block->head == p && !p->common_next)
 	    {
-	      /* If the symbol was added to any common block, it
-		 needs to be removed to stop the resolver looking
-		 for a (possibly) dead symbol.  */
-
-	      if (p->common_block->head == p && !p->common_next)
+	      gfc_symtree st, *st0;
+	      st0 = find_common_symtree (p->ns->common_root,
+					 p->common_block);
+	      if (st0)
 		{
-		  gfc_symtree st, *st0;
-		  st0 = find_common_symtree (p->ns->common_root,
-					     p->common_block);
-		  if (st0)
-		    {
-		      st.name = st0->name;
-		      gfc_delete_bbt (&p->ns->common_root, &st, compare_symtree);
-		      free (st0);
-		    }
-		}
-
-	      if (p->common_block->head == p)
-	        p->common_block->head = p->common_next;
-	      else
-		{
-		  gfc_symbol *cparent, *csym;
-
-		  cparent = p->common_block->head;
-		  csym = cparent->common_next;
-
-		  while (csym != p)
-		    {
-		      cparent = csym;
-		      csym = csym->common_next;
-		    }
-
-		  gcc_assert(cparent->common_next == p);
-
-		  cparent->common_next = csym->common_next;
+		  st.name = st0->name;
+		  gfc_delete_bbt (&p->ns->common_root, &st, compare_symtree);
+		  free (st0);
 		}
 	    }
 
+	  if (p->common_block->head == p)
+	    p->common_block->head = p->common_next;
+	  else
+	    {
+	      gfc_symbol *cparent, *csym;
+
+	      cparent = p->common_block->head;
+	      csym = cparent->common_next;
+
+	      while (csym != p)
+		{
+		  cparent = csym;
+		  csym = csym->common_next;
+		}
+
+	      gcc_assert(cparent->common_next == p);
+	      cparent->common_next = csym->common_next;
+	    }
+	}
+      if (p->gfc_new)
+	{
 	  /* The derived type is saved in the symtree with the first
 	     letter capitalized; the all lower-case version to the
 	     derived type contains its associated generic function.  */

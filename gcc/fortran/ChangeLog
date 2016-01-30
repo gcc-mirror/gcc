@@ -1,3 +1,11 @@
+2016-01-30  Bud Davis  <jmdavis@link.com>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/59746
+	* symbol.c (gfc_restore_last_undo_checkpoint): Delete
+	a common block symbol if it was put in the list.
+
 2016-01-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/69484
