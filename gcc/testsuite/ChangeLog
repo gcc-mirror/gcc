@@ -1,3 +1,8 @@
+2016-01-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69566
+	* gfortran.dg/unlimited_polymorphic_25.f03: New test.
+
 2016-01-30  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/68490

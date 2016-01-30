@@ -4723,8 +4723,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
      is the third and fourth argument to such a function call a value
      denoting the number of elements to copy (i.e., most of the time the
      length of a deferred length string).  */
-  ulim_copy = formal == NULL && UNLIMITED_POLY (sym)
-      && strcmp ("_copy", comp->name) == 0;
+  ulim_copy = (formal == NULL)
+	       && UNLIMITED_POLY (sym)
+	       && comp && (strcmp ("_copy", comp->name) == 0);
 
   /* Evaluate the arguments.  */
   for (arg = args, argc = 0; arg != NULL;
