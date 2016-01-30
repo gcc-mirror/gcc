@@ -1,3 +1,13 @@
+2016-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69546
+	* wide-int.cc (wi::divmod_internal): For unsigned division
+	where both operands fit into uhwi, if o1 is 1 and o0 has
+	msb set, if divident_prec is larger than bits per hwi,
+	clear another quotient word and return 2 instead of 1.
+	Similarly for remainder with msb in HWI set, if dividend_prec
+	is larger than bits per hwi.
+
 2016-01-29  Martin Jambor  <mjambor@suse.cz>
 
 	* hsa-gen.c (get_memory_order_name): Mask with MEMMODEL_BASE_MASK.
