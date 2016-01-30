@@ -1,3 +1,10 @@
+2016-01-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/65546
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31a.c: Correct
+	condition being checked, and disable it when the target supports
+	misaligned loads and stores.
+
 2016-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/69518
