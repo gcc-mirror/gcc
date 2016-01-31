@@ -8482,11 +8482,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	      tree attributes
 		= lookup_attribute (tags[ix], TYPE_ATTRIBUTES (template_type));
 
-	      if (!attributes)
-		;
-	      else if (!TREE_CHAIN (attributes) && !TYPE_ATTRIBUTES (t))
-		TYPE_ATTRIBUTES (t) = attributes;
-	      else
+	      if (attributes)
 		TYPE_ATTRIBUTES (t)
 		  = tree_cons (TREE_PURPOSE (attributes),
 			       TREE_VALUE (attributes),
