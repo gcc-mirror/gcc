@@ -1314,7 +1314,22 @@ strip_typedefs (tree t, bool *remove_attributes)
     case FUNCTION_TYPE:
     case METHOD_TYPE:
       {
-	tree arg_types = NULL, arg_node, arg_type;
+	tree arg_types = NULL, arg_node, arg_node2, arg_type;
+	bool changed;
+
+	/* Because we stomp on TREE_PURPOSE of TYPE_ARG_TYPES in many places
+	   around the compiler (e.g. cp_parser_late_parsing_default_args), we
+	   can't expect that re-hashing a function type will find a previous
+	   equivalent type, so try to reuse the input type if nothing has
+	   changed.  If the type is itself a variant, that will change.  */
+	bool is_variant = typedef_variant_p (t);
+	if (remove_attributes
+	    && (TYPE_ATTRIBUTES (t) || TYPE_USER_ALIGN (t)))
+	  is_variant = true;
+
+	type = strip_typedefs (TREE_TYPE (t), remove_attributes);
+	changed = type != TREE_TYPE (t) || is_variant;
+
 	for (arg_node = TYPE_ARG_TYPES (t);
 	     arg_node;
 	     arg_node = TREE_CHAIN (arg_node))
@@ -1324,10 +1339,26 @@ strip_typedefs (tree t, bool *remove_attributes)
 	    arg_type = strip_typedefs (TREE_VALUE (arg_node),
 				       remove_attributes);
 	    gcc_assert (arg_type);
+	    if (arg_type == TREE_VALUE (arg_node) && !changed)
+	      continue;
 
-	    arg_types =
-	      tree_cons (TREE_PURPOSE (arg_node), arg_type, arg_types);
+	    if (!changed)
+	      {
+		changed = true;
+		for (arg_node2 = TYPE_ARG_TYPES (t);
+		     arg_node2 != arg_node;
+		     arg_node2 = TREE_CHAIN (arg_node2))
+		  arg_types
+		    = tree_cons (TREE_PURPOSE (arg_node2),
+				 TREE_VALUE (arg_node2), arg_types);
+	      }
+
+	    arg_types
+	      = tree_cons (TREE_PURPOSE (arg_node), arg_type, arg_types);
 	  }
+
+	if (!changed)
+	  return t;
 
 	if (arg_types)
 	  arg_types = nreverse (arg_types);
@@ -1337,7 +1368,6 @@ strip_typedefs (tree t, bool *remove_attributes)
 	if (arg_node)
 	  arg_types = chainon (arg_types, void_list_node);
 
-	type = strip_typedefs (TREE_TYPE (t), remove_attributes);
 	if (TREE_CODE (t) == METHOD_TYPE)
 	  {
 	    tree class_type = TREE_TYPE (TREE_VALUE (arg_types));
