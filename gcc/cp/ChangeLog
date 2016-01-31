@@ -1,3 +1,10 @@
+2016-01-31  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/68763
+	* tree.c (strip_typedefs) [FUNCTION_TYPE]: Avoid building a new
+	function type if nothing is changing.
+
 2016-01-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/69009
