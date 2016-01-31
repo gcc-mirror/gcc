@@ -1,5 +1,9 @@
 2016-01-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/69009
+	* pt.c (partial_specialization_p, impartial_args): New.
+	(instantiate_decl): Call impartial_args.
+
 	* mangle.c (maybe_check_abi_tags): New.
 	(write_guarded_var_name): Call it.
 	(mangle_ref_init_variable): Call check_abi_tags.
