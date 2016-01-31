@@ -3931,6 +3931,30 @@ mangle_conv_op_name_for_type (const tree type)
   return identifier;
 }
 
+/* Handle ABI backwards compatibility for past bugs where we didn't call
+   check_abi_tags in places where it's needed: call check_abi_tags and warn if
+   it makes a difference.  */
+
+static void
+maybe_check_abi_tags (tree t)
+{
+  tree attr = lookup_attribute ("abi_tag", DECL_ATTRIBUTES (t));
+  tree oldtags = NULL_TREE;
+  if (attr)
+    oldtags = TREE_VALUE (attr);
+
+  check_abi_tags (t);
+
+  if (!attr)
+    attr = lookup_attribute ("abi_tag", DECL_ATTRIBUTES (t));
+  if (attr && TREE_VALUE (attr) != oldtags
+      && abi_version_crosses (10))
+    warning_at (DECL_SOURCE_LOCATION (t), OPT_Wabi,
+		"the mangled name of the initialization guard variable for"
+		"%qD changes between -fabi-version=%d and -fabi-version=%d",
+		t, flag_abi_version, warn_abi_version);
+}
+
 /* Write out the appropriate string for this variable when generating
    another mangled name based on this one.  */
 
@@ -3943,7 +3967,15 @@ write_guarded_var_name (const tree variable)
        to the reference, not the temporary.  */
     write_string (IDENTIFIER_POINTER (DECL_NAME (variable)) + 4);
   else
-    write_name (variable, /*ignore_local_scope=*/0);
+    {
+      /* Before ABI v10 we were failing to call check_abi_tags here.  So if
+	 we're in pre-10 mode, wait until after write_name to call it.  */
+      if (abi_version_at_least (10))
+	maybe_check_abi_tags (variable);
+      write_name (variable, /*ignore_local_scope=*/0);
+      if (!abi_version_at_least (10))
+	maybe_check_abi_tags (variable);
+    }
 }
 
 /* Return an identifier for the name of an initialization guard
@@ -4007,6 +4039,7 @@ mangle_ref_init_variable (const tree variable)
 {
   start_mangling (variable);
   write_string ("_ZGR");
+  check_abi_tags (variable);
   write_name (variable, /*ignore_local_scope=*/0);
   /* Avoid name clashes with aggregate initialization of multiple
      references at once.  */
