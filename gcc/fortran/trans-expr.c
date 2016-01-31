@@ -5621,7 +5621,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       if (sym->name[0] == '_' && e && e->ts.type == BT_CHARACTER
 	  && strncmp (sym->name, "__vtab_CHARACTER", 16) == 0
 	  && arg->next && arg->next->expr
-	  && arg->next->expr->ts.type == BT_DERIVED
+	  && (arg->next->expr->ts.type == BT_DERIVED
+	      || arg->next->expr->ts.type == BT_CLASS)
 	  && arg->next->expr->ts.u.derived->attr.unlimited_polymorphic)
 	vec_safe_push (stringargs, parmse.string_length);
 
