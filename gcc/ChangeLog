@@ -1,3 +1,8 @@
+2016-02-01  Martin Liska  <mliska@suse.cz>
+
+	* mem-stats-traits.h: Add copyright header.
+	* mem-stats.h: Likewise.
+
 2016-02-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69579
