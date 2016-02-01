@@ -1,5 +1,8 @@
 2016-01-31  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR debug/68244
+	* g++.dg/parse/parens3.C: Use register "4" on hppa.
+
 	* gcc.dg/tree-ssa/vector-5.c: Add -fno-common option on hppa*-*-hpux*.
 
 2016-01-31  Paul Thomas  <pault@gcc.gnu.org>
