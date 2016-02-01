@@ -26,12 +26,13 @@
  *  This is a Standard C++ Library header.
  */
 
-#ifndef _GLIBCXX_STDLIB_H
-#define _GLIBCXX_STDLIB_H 1
-
 #if !defined __cplusplus || defined _GLIBCXX_INCLUDE_NEXT_C_HEADERS
 # include_next <stdlib.h>
 #else
+
+#ifndef _GLIBCXX_STDLIB_H
+#define _GLIBCXX_STDLIB_H 1
+
 # include <cstdlib>
 
 using std::abort;
@@ -81,5 +82,5 @@ using std::wctomb;
 #endif // _GLIBCXX_USE_WCHAR_T
 #endif
 
-#endif
-#endif
+#endif // _GLIBCXX_STDLIB_H
+#endif // __cplusplus
