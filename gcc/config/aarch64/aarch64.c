@@ -1115,6 +1115,16 @@ aarch64_split_simd_move (rtx dst, rtx src)
     }
 }
 
+bool
+aarch64_zero_extend_const_eq (machine_mode xmode, rtx x,
+			      machine_mode ymode, rtx y)
+{
+  rtx r = simplify_const_unary_operation (ZERO_EXTEND, xmode, y, ymode);
+  gcc_assert (r != NULL);
+  return rtx_equal_p (x, r);
+}
+			      
+
 static rtx
 aarch64_force_temporary (machine_mode mode, rtx x, rtx value)
 {
@@ -3751,6 +3761,13 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
     return ((code == GT || code == GE || code == LE || code == LT)
 	    ? CC_SESWPmode : CC_ZESWPmode);
 
+  /* A test for unsigned overflow.  */
+  if ((GET_MODE (x) == DImode || GET_MODE (x) == TImode)
+      && code == NE
+      && GET_CODE (x) == PLUS
+      && GET_CODE (y) == ZERO_EXTEND)
+    return CC_Cmode;
+
   /* For everything else, return CCmode.  */
   return CCmode;
 }
@@ -3897,6 +3914,15 @@ aarch64_get_condition_code_1 (enum machine_mode mode, enum rtx_code comp_code)
 	{
 	case NE: return AARCH64_NE;
 	case EQ: return AARCH64_EQ;
+	default: return -1;
+	}
+      break;
+
+    case CC_Cmode:
+      switch (comp_code)
+	{
+	case NE: return AARCH64_CS;
+	case EQ: return AARCH64_CC;
 	default: return -1;
 	}
       break;

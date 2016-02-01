@@ -200,6 +200,7 @@ bool aarch64_label_mentioned_p (rtx);
 bool aarch64_legitimate_pic_operand_p (rtx);
 bool aarch64_modes_tieable_p (machine_mode mode1,
 			      machine_mode mode2);
+bool aarch64_zero_extend_const_eq (machine_mode, rtx, machine_mode, rtx);
 bool aarch64_move_imm (HOST_WIDE_INT, machine_mode);
 bool aarch64_mov_operand_p (rtx, enum aarch64_symbol_context,
 			    machine_mode);
