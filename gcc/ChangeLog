@@ -1,3 +1,11 @@
+2016-02-01  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/68580
+	* params.def (FSM_MAXIMUM_PHI_ARGUMENTS): New param.
+	* tree-ssa-threadbackward.c
+	(fsm_find_control_statement_thread_paths): Do not try to walk
+	through large PHI nodes.
+
 2016-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* ifcvt.c (bb_ok_for_noce_convert_multiple_sets): Return false
