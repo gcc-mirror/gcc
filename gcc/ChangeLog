@@ -1,5 +1,9 @@
 2016-02-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* ifcvt.c (bb_ok_for_noce_convert_multiple_sets): Return false
+	when count is incremented above limit, don't analyze further
+	insns afterwards.
+
 	* omp-low.c (oacc_parse_default_dims): Avoid
 	-Wsign-compare warning, make sure value fits into int
 	rather than just unsigned int.
