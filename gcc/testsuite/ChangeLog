@@ -1,5 +1,8 @@
 2016-02-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/69592
+	* gcc.dg/pr69592.c: New test.
+
 	PR preprocessor/69543
 	PR c/69558
 	* gcc.dg/pr69543.c: New test.

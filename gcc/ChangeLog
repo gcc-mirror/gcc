@@ -1,3 +1,11 @@
+2016-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/69592
+	* rtlanal.c (nonzero_bits_binary_arith_p): New inline function.
+	(cached_nonzero_bits): Use it instead of ARITHMETIC_P.
+	(num_sign_bit_copies_binary_arith_p): New inline function.
+	(cached_num_sign_bit_copies): Use it instead of ARITHMETIC_P.
+
 2016-02-01  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69580
