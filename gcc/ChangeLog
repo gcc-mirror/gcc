@@ -1,3 +1,9 @@
+2016-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (oacc_parse_default_dims): Avoid
+	-Wsign-compare warning, make sure value fits into int
+	rather than just unsigned int.
+
 2016-02-01  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/67921
