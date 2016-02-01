@@ -1,3 +1,7 @@
+2016-02-01  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.target/powerpc/pr17381.c: Remove duplicate copy of the test body.
+
 2016-02-01  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/67921
