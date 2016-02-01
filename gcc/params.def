@@ -1150,6 +1150,11 @@ DEFPARAM (PARAM_FSM_SCALE_PATH_STMTS,
 	  "Scale factor to apply to the number of statements in a threading path when comparing to the number of (scaled) blocks.",
 	  2, 1, 10)
 
+DEFPARAM (PARAM_FSM_MAXIMUM_PHI_ARGUMENTS,
+	  "fsm-maximum-phi-arguments",
+	  "Maximum number of arguments a PHI may have before the FSM threader will not try to thread through its block.",
+	  100, 1, 999999)
+
 DEFPARAM (PARAM_FSM_SCALE_PATH_BLOCKS,
 	  "fsm-scale-path-blocks",
 	  "Scale factor to apply to the number of blocks in a threading path when comparing to the number of (scaled) statements.",

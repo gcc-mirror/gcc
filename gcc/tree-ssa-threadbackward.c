@@ -114,7 +114,9 @@ fsm_find_control_statement_thread_paths (tree name,
      eventually one of the phi arguments will be an integer constant.  In the
      future, this could be extended to also handle simple assignments of
      arithmetic operations.  */
-  if (gimple_code (def_stmt) != GIMPLE_PHI)
+  if (gimple_code (def_stmt) != GIMPLE_PHI
+      || (gimple_phi_num_args (def_stmt)
+	  >= (unsigned) PARAM_VALUE (PARAM_FSM_MAXIMUM_PHI_ARGUMENTS)))
     return;
 
   /* Avoid infinite recursion.  */
@@ -200,247 +202,253 @@ fsm_find_control_statement_thread_paths (tree name,
 
   /* Iterate over the arguments of PHI.  */
   unsigned int i;
-  for (i = 0; i < gimple_phi_num_args (phi); i++)
+  if (gimple_phi_num_args (phi)
+      < (unsigned) PARAM_VALUE (PARAM_FSM_MAXIMUM_PHI_ARGUMENTS))
     {
-      tree arg = gimple_phi_arg_def (phi, i);
-      basic_block bbi = gimple_phi_arg_edge (phi, i)->src;
-
-      /* Skip edges pointing outside the current loop.  */
-      if (!arg || var_bb->loop_father != bbi->loop_father)
-	continue;
-
-      if (TREE_CODE (arg) == SSA_NAME)
+      for (i = 0; i < gimple_phi_num_args (phi); i++)
 	{
-	  vec_safe_push (path, bbi);
-	  /* Recursively follow SSA_NAMEs looking for a constant definition.  */
-	  fsm_find_control_statement_thread_paths (arg, visited_bbs, path,
-						   seen_loop_phi);
+	  tree arg = gimple_phi_arg_def (phi, i);
+	  basic_block bbi = gimple_phi_arg_edge (phi, i)->src;
 
-	  path->pop ();
-	  continue;
-	}
+	  /* Skip edges pointing outside the current loop.  */
+	  if (!arg || var_bb->loop_father != bbi->loop_father)
+	    continue;
 
-      if (TREE_CODE (arg) != INTEGER_CST)
-	continue;
-
-      /* Note BBI is not in the path yet, hence the +1 in the test below
-	 to make sure BBI is accounted for in the path length test.  */
-      int path_length = path->length ();
-      if (path_length + 1 > PARAM_VALUE (PARAM_MAX_FSM_THREAD_LENGTH))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "FSM jump-thread path not considered: "
-		     "the number of basic blocks on the path "
-		     "exceeds PARAM_MAX_FSM_THREAD_LENGTH.\n");
-	  continue;
-	}
-
-      if (max_threaded_paths <= 0)
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "FSM jump-thread path not considered: "
-		     "the number of previously recorded FSM paths to thread "
-		     "exceeds PARAM_MAX_FSM_THREAD_PATHS.\n");
-	  continue;
-	}
-
-      /* Add BBI to the path.  */
-      vec_safe_push (path, bbi);
-      ++path_length;
-
-      int n_insns = 0;
-      gimple_stmt_iterator gsi;
-      int j;
-      loop_p loop = (*path)[0]->loop_father;
-      bool path_crosses_loops = false;
-      bool threaded_through_latch = false;
-      bool multiway_branch_in_path = false;
-      bool threaded_multiway_branch = false;
-
-      /* Count the number of instructions on the path: as these instructions
-	 will have to be duplicated, we will not record the path if there are
-	 too many instructions on the path.  Also check that all the blocks in
-	 the path belong to a single loop.  */
-      for (j = 0; j < path_length; j++)
-	{
-	  basic_block bb = (*path)[j];
-
-	  /* Remember, blocks in the path are stored in opposite order
-	     in the PATH array.  The last entry in the array represents
-	     the block with an outgoing edge that we will redirect to the
-	     jump threading path.  Thus we don't care about that block's
-	     loop father, nor how many statements are in that block because
-	     it will not be copied or whether or not it ends in a multiway
-	     branch.  */
-	  if (j < path_length - 1)
+	  if (TREE_CODE (arg) == SSA_NAME)
 	    {
-	      if (bb->loop_father != loop)
-		{
-		  path_crosses_loops = true;
-		  break;
-		}
+	      vec_safe_push (path, bbi);
+	      /* Recursively follow SSA_NAMEs looking for a constant
+		 definition.  */
+	      fsm_find_control_statement_thread_paths (arg, visited_bbs, path,
+						       seen_loop_phi);
 
-	      for (gsi = gsi_after_labels (bb);
-		   !gsi_end_p (gsi);
-		   gsi_next_nondebug (&gsi))
-		{
-		  gimple *stmt = gsi_stmt (gsi);
-		  /* Do not count empty statements and labels.  */
-		  if (gimple_code (stmt) != GIMPLE_NOP
-		      && !(gimple_code (stmt) == GIMPLE_ASSIGN
-			   && gimple_assign_rhs_code (stmt) == ASSERT_EXPR)
-		      && !is_gimple_debug (stmt))
-		    ++n_insns;
-		}
-
-	      /* We do not look at the block with the threaded branch
-		 in this loop.  So if any block with a last statement that
-		 is a GIMPLE_SWITCH or GIMPLE_GOTO is seen, then we have a
-		 multiway branch on our path.
-
-		 The block in PATH[0] is special, it's the block were we're
-		 going to be able to eliminate its branch.  */
-	      gimple *last = last_stmt (bb);
-	      if (last && (gimple_code (last) == GIMPLE_SWITCH
-			   || gimple_code (last) == GIMPLE_GOTO))
-		{
-		  if (j == 0)
-		    threaded_multiway_branch = true;
-		  else
-		    multiway_branch_in_path = true;
-		}
+	      path->pop ();
+	      continue;
 	    }
 
-	  /* Note if we thread through the latch, we will want to include
-	     the last entry in the array when determining if we thread
-	     through the loop latch.  */
-	  if (loop->latch == bb)
-	    threaded_through_latch = true;
-	}
+	  if (TREE_CODE (arg) != INTEGER_CST)
+	    continue;
 
-      gimple *stmt = get_gimple_control_stmt ((*path)[0]);
-      gcc_assert (stmt);
-      /* We have found a constant value for ARG.  For GIMPLE_SWITCH
-	 and GIMPLE_GOTO, we use it as-is.  However, for a GIMPLE_COND
-	 we need to substitute, fold and simplify so we can determine
-	 the edge taken out of the last block.  */
-      if (gimple_code (stmt) == GIMPLE_COND)
-	{
-	  enum tree_code cond_code = gimple_cond_code (stmt);
+	  /* Note BBI is not in the path yet, hence the +1 in the test below
+	     to make sure BBI is accounted for in the path length test.  */
+	  int path_length = path->length ();
+	  if (path_length + 1 > PARAM_VALUE (PARAM_MAX_FSM_THREAD_LENGTH))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "FSM jump-thread path not considered: "
+			 "the number of basic blocks on the path "
+			 "exceeds PARAM_MAX_FSM_THREAD_LENGTH.\n");
+	      continue;
+	    }
 
-	  /* We know the underyling format of the condition.  */
-	  arg = fold_binary (cond_code, boolean_type_node,
-			     arg, gimple_cond_rhs (stmt));
-	}
+	  if (max_threaded_paths <= 0)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "FSM jump-thread path not considered: "
+			 "the number of previously recorded FSM paths to "
+			 "thread exceeds PARAM_MAX_FSM_THREAD_PATHS.\n");
+	      continue;
+	    }
 
-      /* If this path threaded through the loop latch back into the
-	 same loop and the destination does not dominate the loop
-	 latch, then this thread would create an irreducible loop.
+	  /* Add BBI to the path.  */
+	  vec_safe_push (path, bbi);
+	  ++path_length;
 
-	 We have to know the outgoing edge to figure this out.  */
-      edge taken_edge = find_taken_edge ((*path)[0], arg);
-      bool creates_irreducible_loop = false;
-      if (threaded_through_latch
-	  && loop == taken_edge->dest->loop_father
-	  && (determine_bb_domination_status (loop, taken_edge->dest)
-	      == DOMST_NONDOMINATING))
-	creates_irreducible_loop = true;
+	  int n_insns = 0;
+	  gimple_stmt_iterator gsi;
+	  int j;
+	  loop_p loop = (*path)[0]->loop_father;
+	  bool path_crosses_loops = false;
+	  bool threaded_through_latch = false;
+	  bool multiway_branch_in_path = false;
+	  bool threaded_multiway_branch = false;
 
-      /* PHIs in the final target and only the final target will need
-	 to be duplicated.  So only count those against the number
-	 of statements.  */
-      gphi_iterator gsip;
-      for (gsip = gsi_start_phis (taken_edge->dest);
-	   !gsi_end_p (gsip);
-	   gsi_next (&gsip))
-	{
-	  gphi *phi = gsip.phi ();
-	  tree dst = gimple_phi_result (phi);
+	  /* Count the number of instructions on the path: as these instructions
+	     will have to be duplicated, we will not record the path if there
+	     are too many instructions on the path.  Also check that all the
+	     blocks in the path belong to a single loop.  */
+	  for (j = 0; j < path_length; j++)
+	    {
+	      basic_block bb = (*path)[j];
 
-	  /* We consider any non-virtual PHI as a statement since it
-	     count result in a constant assignment or copy
-	     operation.  */
-	  if (!virtual_operand_p (dst))
-	    ++n_insns;
-	}
+	      /* Remember, blocks in the path are stored in opposite order
+		 in the PATH array.  The last entry in the array represents
+		 the block with an outgoing edge that we will redirect to the
+		 jump threading path.  Thus we don't care about that block's
+		 loop father, nor how many statements are in that block because
+		 it will not be copied or whether or not it ends in a multiway
+		 branch.  */
+	      if (j < path_length - 1)
+		{
+		  if (bb->loop_father != loop)
+		    {
+		      path_crosses_loops = true;
+		      break;
+		    }
 
-      if (path_crosses_loops)
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "FSM jump-thread path not considered: "
-		     "the path crosses loops.\n");
-	  path->pop ();
-	  continue;
-	}
+		  for (gsi = gsi_after_labels (bb);
+		       !gsi_end_p (gsi);
+		       gsi_next_nondebug (&gsi))
+		    {
+		      gimple *stmt = gsi_stmt (gsi);
+		      /* Do not count empty statements and labels.  */
+		      if (gimple_code (stmt) != GIMPLE_NOP
+			  && !(gimple_code (stmt) == GIMPLE_ASSIGN
+			       && gimple_assign_rhs_code (stmt) == ASSERT_EXPR)
+			  && !is_gimple_debug (stmt))
+			++n_insns;
+		    }
 
-      if (n_insns >= PARAM_VALUE (PARAM_MAX_FSM_THREAD_PATH_INSNS))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "FSM jump-thread path not considered: "
-		     "the number of instructions on the path "
-		     "exceeds PARAM_MAX_FSM_THREAD_PATH_INSNS.\n");
-	  path->pop ();
-	  continue;
-	}
+		  /* We do not look at the block with the threaded branch
+		     in this loop.  So if any block with a last statement that
+		     is a GIMPLE_SWITCH or GIMPLE_GOTO is seen, then we have a
+		     multiway branch on our path.
 
-      /* We avoid creating irreducible inner loops unless we thread through
-	 a multiway branch, in which case we have deemed it worth losing other
-	 loop optimizations later.
+		     The block in PATH[0] is special, it's the block were we're
+		     going to be able to eliminate its branch.  */
+		  gimple *last = last_stmt (bb);
+		  if (last && (gimple_code (last) == GIMPLE_SWITCH
+			       || gimple_code (last) == GIMPLE_GOTO))
+		    {
+		      if (j == 0)
+			threaded_multiway_branch = true;
+		      else
+			multiway_branch_in_path = true;
+		    }
+		}
 
-	 We also consider it worth creating an irreducible inner loop if
-	 the number of copied statement is low relative to the length of
-	 the path -- in that case there's little the traditional loop optimizer
-	 would have done anyway, so an irreducible loop is not so bad.  */
-      if (!threaded_multiway_branch && creates_irreducible_loop
-	  && (n_insns * PARAM_VALUE (PARAM_FSM_SCALE_PATH_STMTS)
-	      > path_length * PARAM_VALUE (PARAM_FSM_SCALE_PATH_BLOCKS)))
+	      /* Note if we thread through the latch, we will want to include
+		 the last entry in the array when determining if we thread
+		 through the loop latch.  */
+	      if (loop->latch == bb)
+		threaded_through_latch = true;
+	    }
 
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file,
-		     "FSM would create irreducible loop without threading "
-		     "multiway branch.\n");
-	  path->pop ();
-	  continue;
-	}
+	  gimple *stmt = get_gimple_control_stmt ((*path)[0]);
+	  gcc_assert (stmt);
+	  /* We have found a constant value for ARG.  For GIMPLE_SWITCH
+	     and GIMPLE_GOTO, we use it as-is.  However, for a GIMPLE_COND
+	     we need to substitute, fold and simplify so we can determine
+	     the edge taken out of the last block.  */
+	  if (gimple_code (stmt) == GIMPLE_COND)
+	    {
+	      enum tree_code cond_code = gimple_cond_code (stmt);
 
-      /* When there is a multi-way branch on the path, then threading can
-	 explode the CFG due to duplicating the edges for that multi-way
-	 branch.  So like above, only allow a multi-way branch on the path
-	 if we actually thread a multi-way branch.  */
-      if (!threaded_multiway_branch && multiway_branch_in_path)
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file,
-		     "FSM Thread through multiway branch without threading "
-		     "a multiway branch.\n");
-	  path->pop ();
-	  continue;
-	}
+	      /* We know the underyling format of the condition.  */
+	      arg = fold_binary (cond_code, boolean_type_node,
+				 arg, gimple_cond_rhs (stmt));
+	    }
 
-      vec<jump_thread_edge *> *jump_thread_path
-	= new vec<jump_thread_edge *> ();
+	  /* If this path threaded through the loop latch back into the
+	     same loop and the destination does not dominate the loop
+	     latch, then this thread would create an irreducible loop.
 
-      /* Record the edges between the blocks in PATH.  */
-      for (j = 0; j < path_length - 1; j++)
-	{
-	  edge e = find_edge ((*path)[path_length - j - 1],
-			      (*path)[path_length - j - 2]);
-	  gcc_assert (e);
-	  jump_thread_edge *x = new jump_thread_edge (e, EDGE_FSM_THREAD);
+	     We have to know the outgoing edge to figure this out.  */
+	  edge taken_edge = find_taken_edge ((*path)[0], arg);
+	  bool creates_irreducible_loop = false;
+	  if (threaded_through_latch
+	      && loop == taken_edge->dest->loop_father
+	      && (determine_bb_domination_status (loop, taken_edge->dest)
+		  == DOMST_NONDOMINATING))
+	    creates_irreducible_loop = true;
+
+	  /* PHIs in the final target and only the final target will need
+	     to be duplicated.  So only count those against the number
+	     of statements.  */
+	  gphi_iterator gsip;
+	  for (gsip = gsi_start_phis (taken_edge->dest);
+	       !gsi_end_p (gsip);
+	       gsi_next (&gsip))
+	    {
+	      gphi *phi = gsip.phi ();
+	      tree dst = gimple_phi_result (phi);
+
+	      /* We consider any non-virtual PHI as a statement since it
+		 count result in a constant assignment or copy
+		 operation.  */
+	      if (!virtual_operand_p (dst))
+		++n_insns;
+	    }
+
+	  if (path_crosses_loops)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "FSM jump-thread path not considered: "
+			 "the path crosses loops.\n");
+	      path->pop ();
+	      continue;
+	    }
+
+	  if (n_insns >= PARAM_VALUE (PARAM_MAX_FSM_THREAD_PATH_INSNS))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "FSM jump-thread path not considered: "
+			 "the number of instructions on the path "
+			 "exceeds PARAM_MAX_FSM_THREAD_PATH_INSNS.\n");
+	      path->pop ();
+	      continue;
+	    }
+
+	  /* We avoid creating irreducible inner loops unless we thread through
+	     a multiway branch, in which case we have deemed it worth losing
+	     other loop optimizations later.
+
+	     We also consider it worth creating an irreducible inner loop if
+	     the number of copied statement is low relative to the length of
+	     the path -- in that case there's little the traditional loop
+	     optimizer would have done anyway, so an irreducible loop is not
+	     so bad.  */
+	  if (!threaded_multiway_branch && creates_irreducible_loop
+	      && (n_insns * PARAM_VALUE (PARAM_FSM_SCALE_PATH_STMTS)
+		  > path_length * PARAM_VALUE (PARAM_FSM_SCALE_PATH_BLOCKS)))
+
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "FSM would create irreducible loop without threading "
+			 "multiway branch.\n");
+	      path->pop ();
+	      continue;
+	    }
+
+	  /* When there is a multi-way branch on the path, then threading can
+	     explode the CFG due to duplicating the edges for that multi-way
+	     branch.  So like above, only allow a multi-way branch on the path
+	     if we actually thread a multi-way branch.  */
+	  if (!threaded_multiway_branch && multiway_branch_in_path)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "FSM Thread through multiway branch without threading "
+			 "a multiway branch.\n");
+	      path->pop ();
+	      continue;
+	    }
+
+	  vec<jump_thread_edge *> *jump_thread_path
+	    = new vec<jump_thread_edge *> ();
+
+	  /* Record the edges between the blocks in PATH.  */
+	  for (j = 0; j < path_length - 1; j++)
+	    {
+	      edge e = find_edge ((*path)[path_length - j - 1],
+				  (*path)[path_length - j - 2]);
+	      gcc_assert (e);
+	      jump_thread_edge *x = new jump_thread_edge (e, EDGE_FSM_THREAD);
+	      jump_thread_path->safe_push (x);
+	    }
+
+	  /* Add the edge taken when the control variable has value ARG.  */
+	  jump_thread_edge *x
+	    = new jump_thread_edge (taken_edge, EDGE_NO_COPY_SRC_BLOCK);
 	  jump_thread_path->safe_push (x);
+
+	  register_jump_thread (jump_thread_path);
+	  --max_threaded_paths;
+
+	  /* Remove BBI from the path.  */
+	  path->pop ();
 	}
-
-      /* Add the edge taken when the control variable has value ARG.  */
-      jump_thread_edge *x
-	= new jump_thread_edge (taken_edge, EDGE_NO_COPY_SRC_BLOCK);
-      jump_thread_path->safe_push (x);
-
-      register_jump_thread (jump_thread_path);
-      --max_threaded_paths;
-
-      /* Remove BBI from the path.  */
-      path->pop ();
     }
 
   /* Remove all the nodes that we added from NEXT_PATH.  */
