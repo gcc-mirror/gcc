@@ -1,3 +1,8 @@
+2016-02-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c: New.
+	* testsuite/libgomp.oacc-fortran/routine-7.f90: Serialize loop.
+
 2016-01-26  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69110

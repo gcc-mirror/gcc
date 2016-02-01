@@ -1372,6 +1372,10 @@ fopenacc
 C ObjC C++ ObjC++ LTO Var(flag_openacc)
 Enable OpenACC.
 
+fopenacc-dim=
+C ObjC C++ ObjC++ LTO Joined Var(flag_openacc_dims)
+Specify default OpenACC compute dimensions.
+
 fopenmp
 C ObjC C++ ObjC++ LTO Var(flag_openmp)
 Enable OpenMP (implies -frecursive in Fortran).
