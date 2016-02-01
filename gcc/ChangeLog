@@ -1,3 +1,7 @@
+2016-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* postreload.c (reload_cse_simplify): Remove dead code.
+
 2016-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/69570
