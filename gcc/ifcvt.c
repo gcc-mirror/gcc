@@ -3295,7 +3295,7 @@ bb_ok_for_noce_convert_multiple_sets (basic_block test_bb,
   if (count > limit)
     return false;
 
-  return count > 0;
+  return count > 1;
 }
 
 /* Given a simple IF-THEN-JOIN or IF-THEN-ELSE-JOIN block, attempt to convert

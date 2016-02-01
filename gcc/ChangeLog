@@ -1,3 +1,9 @@
+2016-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/69570
+	* ifcvt.c (bb_ok_for_noce_convert_multiple_sets): Return true only
+	if there is more than one set, not if there is a single set.
+
 2016-02-01  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/69535

@@ -1,3 +1,8 @@
+2016-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/69570
+	* g++.dg/opt/pr69570.C: New test.
+
 2016-02-01  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/pr69535.c: New test.
