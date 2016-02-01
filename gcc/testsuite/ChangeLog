@@ -1,3 +1,10 @@
+2016-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/69543
+	PR c/69558
+	* gcc.dg/pr69543.c: New test.
+	* gcc.dg/pr69558.c: New test.
+
 2016-02-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/65940
