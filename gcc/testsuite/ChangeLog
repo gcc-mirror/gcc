@@ -1,5 +1,9 @@
 2016-01-31  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR testsuite/69584
+	* gcc.dg/tree-ssa/sra-17.c: Fix regexps to work on hpux.
+	* gcc.dg/tree-ssa/sra-18.c: Likewise.
+
 	PR debug/68244
 	* g++.dg/parse/parens3.C: Use register "4" on hppa.
 
