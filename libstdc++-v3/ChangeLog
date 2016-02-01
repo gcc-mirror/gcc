@@ -1,3 +1,9 @@
+2016-02-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR libstdc++/69581
+	* include/c_compatibility/math.h: Move header guards.
+	* include/c_compatibility/stdlib.h: Likewise.
+
 2016-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/69506
