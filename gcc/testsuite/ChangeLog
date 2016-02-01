@@ -1,3 +1,7 @@
+2016-02-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/other/anon5.C (dg-opetions): Use -gdwarf-2 instead of -g.
+
 2016-02-01  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.target/powerpc/pr17381.c: Remove duplicate copy of the test body.

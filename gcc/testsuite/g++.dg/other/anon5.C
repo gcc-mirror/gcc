@@ -1,6 +1,6 @@
 // PR c++/34094
 // { dg-do link { target { ! { *-*-darwin* *-*-hpux* *-*-solaris2.* } } } }
-// { dg-options "-g" }
+// { dg-options "-gdwarf-2" }
 // Ignore additional message on powerpc-ibm-aix
 // { dg-prune-output "obtain more information" } */
 // Ignore additional messages on Linux/x86 with PIE
