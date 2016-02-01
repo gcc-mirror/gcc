@@ -1,5 +1,10 @@
 2016-02-01  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/69556
+	* match.pd: Guard (C1/X)*C2 -> (C1*C2)/X with single_use.
+
+2016-02-01  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/69574
 	* tree-chrec.c (hide_evolution_in_other_loops_than_loop): Instead
 	of asserting return chrec_dont_know.

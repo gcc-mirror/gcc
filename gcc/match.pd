@@ -445,8 +445,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Fold (C1/X)*C2 into (C1*C2)/X.  */
 (simplify
- (mult (rdiv:s REAL_CST@0 @1) REAL_CST@2)
-  (if (flag_associative_math)
+ (mult (rdiv@3 REAL_CST@0 @1) REAL_CST@2)
+  (if (flag_associative_math
+       && single_use (@3))
    (with
     { tree tem = const_binop (MULT_EXPR, type, @0, @2); }
     (if (tem)
