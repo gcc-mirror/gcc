@@ -1,3 +1,7 @@
+2016-02-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c.opt (fopenacc-dim=): New option.
+
 2016-01-27  Ryan Burn  <contact@rnburn.com>
 
 	PR cilkplus/69267

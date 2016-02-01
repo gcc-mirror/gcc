@@ -1963,9 +1963,13 @@ Programming Interface v2.0 @w{@uref{http://www.openacc.org/}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
 have support for @option{-pthread}.
 
-Note that this is an experimental feature, incomplete, and subject to
-change in future versions of GCC.  See
-@w{@uref{https://gcc.gnu.org/wiki/OpenACC}} for more information.
+@item -fopenacc-dim=@var{geom}
+@opindex fopenacc-dim
+@cindex OpenACC accelerator programming
+Specify default compute dimensions for parallel offload regions that do
+not explicitly specify.  The @var{geom} value is a triple of
+':'-separated sizes, in order 'gang', 'worker' and, 'vector'.  A size
+can be omitted, to use a target-specific default value.
 
 @item -fopenmp
 @opindex fopenmp

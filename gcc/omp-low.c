@@ -20238,13 +20238,80 @@ oacc_xform_loop (gcall *call)
   gsi_replace_with_seq (&gsi, seq, true);
 }
 
+/* Default partitioned and minimum partitioned dimensions.  */
+
+static int oacc_default_dims[GOMP_DIM_MAX];
+static int oacc_min_dims[GOMP_DIM_MAX];
+
+/* Parse the default dimension parameter.  This is a set of
+   :-separated optional compute dimensions.  Each specified dimension
+   is a positive integer.  When device type support is added, it is
+   planned to be a comma separated list of such compute dimensions,
+   with all but the first prefixed by the colon-terminated device
+   type.  */
+
+static void
+oacc_parse_default_dims (const char *dims)
+{
+  int ix;
+
+  for (ix = GOMP_DIM_MAX; ix--;)
+    {
+      oacc_default_dims[ix] = -1;
+      oacc_min_dims[ix] = 1;
+    }
+
+#ifndef ACCEL_COMPILER
+  /* Cannot be overridden on the host.  */
+  dims = NULL;
+#endif
+  if (dims)
+    {
+      const char *pos = dims;
+
+      for (ix = 0; *pos && ix != GOMP_DIM_MAX; ix++)
+	{
+	  if (ix)
+	    {
+	      if (*pos != ':')
+		goto malformed;
+	      pos++;
+	    }
+
+	  if (*pos != ':')
+	    {
+	      long val;
+	      const char *eptr;
+
+	      errno = 0;
+	      val = strtol (pos, CONST_CAST (char **, &eptr), 10);
+	      if (errno || val <= 0 || (unsigned)val != val)
+		goto malformed;
+	      pos = eptr;
+	      oacc_default_dims[ix] = (int)val;
+	    }
+	}
+      if (*pos)
+	{
+	malformed:
+	  error_at (UNKNOWN_LOCATION,
+		    "-fopenacc-dim operand is malformed at '%s'", pos);
+	}
+    }
+
+  /* Allow the backend to validate the dimensions.  */
+  targetm.goacc.validate_dims (NULL_TREE, oacc_default_dims, -1);
+  targetm.goacc.validate_dims (NULL_TREE, oacc_min_dims, -2);
+}
+
 /* Validate and update the dimensions for offloaded FN.  ATTRS is the
    raw attribute.  DIMS is an array of dimensions, which is filled in.
    LEVEL is the partitioning level of a routine, or -1 for an offload
-   region itself.  */
+   region itself. USED is the mask of partitioned execution in the
+   function.  */
 
 static void
-oacc_validate_dims (tree fn, tree attrs, int *dims, int level)
+oacc_validate_dims (tree fn, tree attrs, int *dims, int level, unsigned used)
 {
   tree purpose[GOMP_DIM_MAX];
   unsigned ix;
@@ -20265,11 +20332,29 @@ oacc_validate_dims (tree fn, tree attrs, int *dims, int level)
 
   bool changed = targetm.goacc.validate_dims (fn, dims, level);
 
-  /* Default anything left to 1.  */
+  /* Default anything left to 1 or a partitioned default.  */
   for (ix = 0; ix != GOMP_DIM_MAX; ix++)
     if (dims[ix] < 0)
       {
-	dims[ix] = 1;
+	/* The OpenACC spec says 'If the [num_gangs] clause is not
+	   specified, an implementation-defined default will be used;
+	   the default may depend on the code within the construct.' 
+	   (2.5.6).  Thus an implementation is free to choose
+	   non-unity default for a parallel region that doesn't have
+	   any gang-partitioned loops.  However, it appears that there
+	   is a sufficient body of user code that expects non-gang
+	   partitioned regions to not execute in gang-redundant mode.
+	   So we (a) don't warn about the non-portability and (b) pick
+	   the minimum permissible dimension size when there is no
+	   partitioned execution.  Otherwise we pick the global
+	   default for the dimension, which the user can control.  The
+	   same wording and logic applies to num_workers and
+	   vector_length, however the worker- or vector- single
+	   execution doesn't have the same impact as gang-redundant
+	   execution.  (If the minimum gang-level partioning is not 1,
+	   the target is probably too confusing.)  */
+	dims[ix] = (used & GOMP_DIM_MASK (ix)
+		    ? oacc_default_dims[ix] : oacc_min_dims[ix]);
 	changed = true;
       }
 
@@ -20719,14 +20804,15 @@ oacc_loop_process (oacc_loop *loop)
 
 /* Walk the OpenACC loop heirarchy checking and assigning the
    programmer-specified partitionings.  OUTER_MASK is the partitioning
-   this loop is contained within.  Return true if we contain an
-   auto-partitionable loop.  */
+   this loop is contained within.  Return mask of partitioning
+   encountered.  If any auto loops are discovered, set GOMP_DIM_MAX
+   bit.  */
 
-static bool
+static unsigned
 oacc_loop_fixed_partitions (oacc_loop *loop, unsigned outer_mask)
 {
   unsigned this_mask = loop->mask;
-  bool has_auto = false;
+  unsigned mask_all = 0;
   bool noisy = true;
 
 #ifdef ACCEL_COMPILER
@@ -20760,7 +20846,7 @@ oacc_loop_fixed_partitions (oacc_loop *loop, unsigned outer_mask)
 	    }
 	}
       if (auto_par && (loop->flags & OLF_INDEPENDENT))
-	has_auto = true;
+	mask_all |= GOMP_DIM_MASK (GOMP_DIM_MAX);
     }
 
   if (this_mask & outer_mask)
@@ -20814,16 +20900,16 @@ oacc_loop_fixed_partitions (oacc_loop *loop, unsigned outer_mask)
     }
 
   loop->mask = this_mask;
+  mask_all |= this_mask;
+  
+  if (loop->child)
+    mask_all |= oacc_loop_fixed_partitions (loop->child,
+					    outer_mask | this_mask);
 
-  if (loop->child
-      && oacc_loop_fixed_partitions (loop->child, outer_mask | this_mask))
-    has_auto = true;
+  if (loop->sibling)
+    mask_all |= oacc_loop_fixed_partitions (loop->sibling, outer_mask);
 
-  if (loop->sibling
-      && oacc_loop_fixed_partitions (loop->sibling, outer_mask))
-    has_auto = true;
-
-  return has_auto;
+  return mask_all;
 }
 
 /* Walk the OpenACC loop heirarchy to assign auto-partitioned loops.
@@ -20865,6 +20951,11 @@ oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask)
 	warning_at (loop->loc, 0,
 		    "insufficient partitioning available to parallelize loop");
 
+      if (dump_file)
+	fprintf (dump_file, "Auto loop %s:%d assigned %d\n",
+		 LOCATION_FILE (loop->loc), LOCATION_LINE (loop->loc),
+		 this_mask);
+
       loop->mask = this_mask;
     }
   inner_mask |= loop->mask;
@@ -20876,13 +20967,19 @@ oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask)
 }
 
 /* Walk the OpenACC loop heirarchy to check and assign partitioning
-   axes.  */
+   axes.  Return mask of partitioning.  */
 
-static void
+static unsigned
 oacc_loop_partition (oacc_loop *loop, unsigned outer_mask)
 {
-  if (oacc_loop_fixed_partitions (loop, outer_mask))
-    oacc_loop_auto_partitions (loop, outer_mask);
+  unsigned mask_all = oacc_loop_fixed_partitions (loop, outer_mask);
+
+  if (mask_all & GOMP_DIM_MASK (GOMP_DIM_MAX))
+    {
+      mask_all ^= GOMP_DIM_MASK (GOMP_DIM_MAX);
+      mask_all |= oacc_loop_auto_partitions (loop, outer_mask);
+    }
+  return mask_all;
 }
 
 /* Default fork/join early expander.  Delete the function calls if
@@ -20958,6 +21055,13 @@ execute_oacc_device_lower ()
     /* Not an offloaded function.  */
     return 0;
 
+  /* Parse the default dim argument exactly once.  */
+  if ((const void *)flag_openacc_dims != &flag_openacc_dims)
+    {
+      oacc_parse_default_dims (flag_openacc_dims);
+      flag_openacc_dims = (char *)&flag_openacc_dims;
+    } 
+
   /* Discover, partition and process the loops.  */
   oacc_loop *loops = oacc_loop_discovery ();
   int fn_level = oacc_fn_attrib_level (attrs);
@@ -20969,10 +21073,10 @@ execute_oacc_device_lower ()
 	     : "Function is routine level %d\n", fn_level);
 
   unsigned outer_mask = fn_level >= 0 ? GOMP_DIM_MASK (fn_level) - 1 : 0;
-  oacc_loop_partition (loops, outer_mask);
-
+  unsigned used_mask = oacc_loop_partition (loops, outer_mask);
   int dims[GOMP_DIM_MAX];
-  oacc_validate_dims (current_function_decl, attrs, dims, fn_level);
+
+  oacc_validate_dims (current_function_decl, attrs, dims, fn_level, used_mask);
 
   if (dump_file)
     {

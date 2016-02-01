@@ -578,6 +578,10 @@ fopenacc
 Fortran LTO
 ; Documented in C
 
+fopenacc-dim=
+Fortran LTO Joined Var(flag_openacc_dims)
+; Documented in C
+
 fopenmp
 Fortran LTO
 ; Documented in C

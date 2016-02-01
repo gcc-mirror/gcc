@@ -1,3 +1,7 @@
+2016-02-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* lang.opt (fopenacc-dim=): New option.
+
 2016-01-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/67564

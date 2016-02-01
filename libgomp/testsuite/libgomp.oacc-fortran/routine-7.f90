@@ -41,7 +41,7 @@ program main
   end do
 
   !$acc parallel copy (b)
-  !$acc loop
+  !$acc loop seq
     do i = 1, N
       call worker (b)
     end do
@@ -56,7 +56,7 @@ program main
   end do
 
   !$acc parallel copy (a)
-  !$acc loop
+  !$acc loop seq
     do i = 1, N
       call vector (a)
     end do

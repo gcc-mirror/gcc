@@ -5767,11 +5767,12 @@ to use it.
 @deftypefn {Target Hook} bool TARGET_GOACC_VALIDATE_DIMS (tree @var{decl}, int *@var{dims}, int @var{fn_level})
 This hook should check the launch dimensions provided for an OpenACC
 compute region, or routine.  Defaulted values are represented as -1
-and non-constant values as 0. The @var{fn_level} is negative for the
+and non-constant values as 0.  The @var{fn_level} is negative for the
 function corresponding to the compute region.  For a routine is is the
-outermost level at which partitioned execution may be spawned.  It
-should fill in anything that needs to default to non-unity and verify
-non-defaults.  Diagnostics should be issued as appropriate.  Return
+outermost level at which partitioned execution may be spawned.  The hook
+should verify non-default values.  If DECL is NULL, global defaults
+are being validated and unspecified defaults should be filled in.
+Diagnostics should be issued as appropriate.  Return
 true, if changes have been made.  You must override this hook to
 provide dimensions larger than 1.
 @end deftypefn

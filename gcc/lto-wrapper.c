@@ -287,10 +287,23 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    append_option (decoded_options, decoded_options_count, foption);
 	  /* -fmath-errno > -fno-math-errno,
 	     -fsigned-zeros > -fno-signed-zeros,
-	     -ftrapping-math -> -fno-trapping-math,
+	     -ftrapping-math > -fno-trapping-math,
 	     -fwrapv > -fno-wrapv.  */
 	  else if (foption->value > (*decoded_options)[j].value)
 	    (*decoded_options)[j] = *foption;
+	  break;
+
+	case OPT_fopenacc_dim_:
+	  /* Append or check identical.  */
+	  for (j = 0; j < *decoded_options_count; ++j)
+	    if ((*decoded_options)[j].opt_index == foption->opt_index)
+	      break;
+	  if (j == *decoded_options_count)
+	    append_option (decoded_options, decoded_options_count, foption);
+	  else if (strcmp ((*decoded_options)[j].arg, foption->arg))
+	    fatal_error (input_location,
+			 "Option %s with different values",
+			 foption->orig_option_with_args_text);
 	  break;
 
 	case OPT_freg_struct_return:
@@ -506,6 +519,7 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	case OPT_fwrapv:
 	case OPT_fopenmp:
 	case OPT_fopenacc:
+	case OPT_fopenacc_dim_:
 	case OPT_fcilkplus:
 	case OPT_ftrapv:
 	case OPT_fstrict_overflow:

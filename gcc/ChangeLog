@@ -1,3 +1,22 @@
+2016-02-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/nvptx.c (PTX_GANG_DEFAULT): New.
+	(nvptx_goacc_validate_dims): Extend to handle global defaults.
+	* target.def (OACC_VALIDATE_DIMS): Extend documentation.
+	* doc/tm.texti: Rebuilt.
+	* doc/invoke.texi (fopenacc-dim): Document.
+	* lto-wrapper.c (merge_and_complain): Add OPT_fopenacc_dim_ case.
+	(append_compiler_options): Likewise.
+	* omp-low.c (oacc_default_dims, oacc_min_dims): New.
+	(oacc_parse_default_dims): New.
+	(oacc_validate_dims): Add USED arg.  Select non-unity default when
+	possible.
+	(oacc_loop_fixed_partitions): Return mask of used partitions.
+	(oacc_loop_auto_partitions): Emit dump info.
+	(oacc_loop_partition): Return mask of used partitions.
+	(execute_oacc_device_lower): Parse default dimension arg.  Adjust
+	loop partitioning and validation calls.
+
 2016-02-01  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/69556
