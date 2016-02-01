@@ -20285,10 +20285,10 @@ oacc_parse_default_dims (const char *dims)
 
 	      errno = 0;
 	      val = strtol (pos, CONST_CAST (char **, &eptr), 10);
-	      if (errno || val <= 0 || (unsigned)val != val)
+	      if (errno || val <= 0 || (int) val != val)
 		goto malformed;
 	      pos = eptr;
-	      oacc_default_dims[ix] = (int)val;
+	      oacc_default_dims[ix] = (int) val;
 	    }
 	}
       if (*pos)
