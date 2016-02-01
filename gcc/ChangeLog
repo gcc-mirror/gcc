@@ -1,3 +1,9 @@
+2016-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69579
+	* tree-ssa-loop-ivcanon.c (propagate_constants_for_unrolling):
+	Do not propagate through abnormal PHI results.
+
 2016-02-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* postreload.c (reload_cse_simplify): Remove dead code.

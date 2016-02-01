@@ -1208,7 +1208,9 @@ propagate_constants_for_unrolling (basic_block bb)
       tree result = gimple_phi_result (phi);
       tree arg = gimple_phi_arg_def (phi, 0);
 
-      if (gimple_phi_num_args (phi) == 1 && TREE_CODE (arg) == INTEGER_CST)
+      if (! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (result)
+	  && gimple_phi_num_args (phi) == 1
+	  && TREE_CODE (arg) == INTEGER_CST)
 	{
 	  propagate_into_all_uses (result, arg);
 	  gsi_remove (&gsi, true);

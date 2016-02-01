@@ -1,3 +1,8 @@
+2016-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69579
+	* gcc.dg/setjmp-6.c: New testcase.
+
 2016-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/69570
