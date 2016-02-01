@@ -1,3 +1,10 @@
+2016-02-01  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/67921
+	* fold-const.c (split_tree): New parameters.  Convert pointer
+	type variable part to proper type before negating. 
+	(fold_binary_loc): Pass new arguments to split_tree.
+
 2016-02-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/nvptx/nvptx.c (PTX_GANG_DEFAULT): New.

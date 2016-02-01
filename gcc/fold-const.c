@@ -109,7 +109,8 @@ enum comparison_code {
 
 static bool negate_expr_p (tree);
 static tree negate_expr (tree);
-static tree split_tree (tree, enum tree_code, tree *, tree *, tree *, int);
+static tree split_tree (location_t, tree, tree, enum tree_code,
+			tree *, tree *, tree *, int);
 static tree associate_trees (location_t, tree, tree, enum tree_code, tree);
 static enum comparison_code comparison_to_compcode (enum tree_code);
 static enum tree_code compcode_to_comparison (enum comparison_code);
@@ -767,7 +768,10 @@ negate_expr (tree t)
    literal for which we use *MINUS_LITP instead.
 
    If NEGATE_P is true, we are negating all of IN, again except a literal
-   for which we use *MINUS_LITP instead.
+   for which we use *MINUS_LITP instead.  If a variable part is of pointer
+   type, it is negated after converting to TYPE.  This prevents us from
+   generating illegal MINUS pointer expression.  LOC is the location of
+   the converted variable part.
 
    If IN is itself a literal or constant, return it as appropriate.
 
@@ -775,8 +779,8 @@ negate_expr (tree t)
    same type as IN, but they will have the same signedness and mode.  */
 
 static tree
-split_tree (tree in, enum tree_code code, tree *conp, tree *litp,
-	    tree *minus_litp, int negate_p)
+split_tree (location_t loc, tree in, tree type, enum tree_code code,
+	    tree *conp, tree *litp, tree *minus_litp, int negate_p)
 {
   tree var = 0;
 
@@ -833,7 +837,12 @@ split_tree (tree in, enum tree_code code, tree *conp, tree *litp,
       if (neg_conp_p)
 	*conp = negate_expr (*conp);
       if (neg_var_p)
-	var = negate_expr (var);
+	{
+	  /* Convert to TYPE before negating a pointer type expr.  */
+	  if (var && POINTER_TYPE_P (TREE_TYPE (var)))
+	    var = fold_convert_loc (loc, type, var);
+	  var = negate_expr (var);
+	}
     }
   else if (TREE_CODE (in) == BIT_NOT_EXPR
 	   && code == PLUS_EXPR)
@@ -854,6 +863,9 @@ split_tree (tree in, enum tree_code code, tree *conp, tree *litp,
       else if (*minus_litp)
 	*litp = *minus_litp, *minus_litp = 0;
       *conp = negate_expr (*conp);
+      /* Convert to TYPE before negating a pointer type expr.  */
+      if (var && POINTER_TYPE_P (TREE_TYPE (var)))
+	var = fold_convert_loc (loc, type, var);
       var = negate_expr (var);
     }
 
@@ -9621,9 +9633,10 @@ fold_binary_loc (location_t loc,
 	     then the result with variables.  This increases the chances of
 	     literals being recombined later and of generating relocatable
 	     expressions for the sum of a constant and literal.  */
-	  var0 = split_tree (arg0, code, &con0, &lit0, &minus_lit0, 0);
-	  var1 = split_tree (arg1, code, &con1, &lit1, &minus_lit1,
-			     code == MINUS_EXPR);
+	  var0 = split_tree (loc, arg0, type, code,
+			     &con0, &lit0, &minus_lit0, 0);
+	  var1 = split_tree (loc, arg1, type, code,
+			     &con1, &lit1, &minus_lit1, code == MINUS_EXPR);
 
 	  /* Recombine MINUS_EXPR operands by using PLUS_EXPR.  */
 	  if (code == MINUS_EXPR)
