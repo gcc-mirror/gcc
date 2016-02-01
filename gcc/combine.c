@@ -7887,11 +7887,25 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	       && GET_CODE (SUBREG_REG (XEXP (x, 0))) == LSHIFTRT
 	       && (i = exact_log2 (UINTVAL (XEXP (x, 1)) + 1)) >= 0)
 	{
-	  new_rtx = make_compound_operation (XEXP (SUBREG_REG (XEXP (x, 0)), 0),
-					 next_code);
-	  new_rtx = make_extraction (GET_MODE (SUBREG_REG (XEXP (x, 0))), new_rtx, 0,
-				 XEXP (SUBREG_REG (XEXP (x, 0)), 1), i, 1,
-				 0, in_code == COMPARE);
+	  rtx inner_x0 = SUBREG_REG (XEXP (x, 0));
+	  machine_mode inner_mode = GET_MODE (inner_x0);
+	  new_rtx = make_compound_operation (XEXP (inner_x0, 0), next_code);
+	  new_rtx = make_extraction (inner_mode, new_rtx, 0,
+				     XEXP (inner_x0, 1),
+				     i, 1, 0, in_code == COMPARE);
+
+	  if (new_rtx)
+	    {
+	      /* If we narrowed the mode when dropping the subreg, then
+		 we must zero-extend to keep the semantics of the AND.  */
+	      if (GET_MODE_SIZE (inner_mode) >= GET_MODE_SIZE (mode))
+		;
+	      else if (SCALAR_INT_MODE_P (inner_mode))
+		new_rtx = simplify_gen_unary (ZERO_EXTEND, mode,
+					      new_rtx, inner_mode);
+	      else
+		new_rtx = NULL;
+	    }
 
 	  /* If that didn't give anything, see if the AND simplifies on
 	     its own.  */

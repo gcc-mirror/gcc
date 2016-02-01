@@ -1,3 +1,9 @@
+2016-02-01  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/69535
+	* combine.c (make_compound_operation): When looking through a
+	subreg, make sure to re-extend to the width of the outer mode.
+
 2016-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69546
