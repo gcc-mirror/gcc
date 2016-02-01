@@ -1,3 +1,10 @@
+2016-02-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/68741
+	* inclhack.def (hpux_vsscanf): New fix.
+	* fixincl.x: Regenerated.
+	* tests/base/stdio.h [HPUX_VSSCANF_CHECK]: New test.
+
 2015-12-04  Release Manager
 
 	* GCC 5.3.0 released.
