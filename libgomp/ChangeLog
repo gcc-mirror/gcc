@@ -1,3 +1,7 @@
+2016-02-02  James Norris  <jnorris@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/declare-4.c: Fix clause.
+
 2016-02-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* libgomp.map (GOACC_2.0): Remove GOACC_host_data.
