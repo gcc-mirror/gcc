@@ -1,5 +1,10 @@
 2016-02-02  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/69595
+	* gcc.dg/Warray-bounds-17.c: New testcase.
+
+2016-02-02  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/69606
 	* gcc.dg/torture/pr69606.c: New testcase.
 
