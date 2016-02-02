@@ -1,3 +1,7 @@
+2016-02-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/iamcu/test_empty_structs_and_unions.c: New test.
+
 2016-02-02  James Norris  <jnorris@codesourcery.com>
 
 	* c-c++-common/goacc/routine-5.c: Add tests.
