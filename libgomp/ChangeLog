@@ -1,3 +1,9 @@
+2016-02-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/configfrag.ac: Don't configure for offloading target if
+	we don't build the corresponding plugin.
+	* configure: Regenerate.
+
 2016-02-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c: New.
