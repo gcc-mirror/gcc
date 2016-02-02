@@ -1,3 +1,7 @@
+2016-02-02  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2016-01-29  Sebastian Pop  <s.pop@samsung.com>
 
 	* config/isl.m4: Add comments about isl-0.16.
