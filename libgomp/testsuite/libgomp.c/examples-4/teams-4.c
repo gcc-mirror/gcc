@@ -32,7 +32,7 @@ float dotprod (float B[], float C[], int n)
   float sum = 0;
 
   #pragma omp target map(to: B[0:n], C[0:n]) map(tofrom:sum)
-    #pragma omp teams num_teams(8) thread_limit(16)
+    #pragma omp teams num_teams(8) thread_limit(16) reduction(+:sum)
       #pragma omp distribute parallel for reduction(+:sum) \
 					  dist_schedule(static, 1024) \
 					  schedule(static, 64)
