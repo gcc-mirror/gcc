@@ -637,6 +637,7 @@ PLUGIN_HSA_LIBS
 PLUGIN_HSA_LDFLAGS
 PLUGIN_HSA_CPPFLAGS
 PLUGIN_HSA
+HSA_KMT_LIB
 HSA_RUNTIME_LIB
 HSA_RUNTIME_INCLUDE
 PLUGIN_NVPTX_LIBS
@@ -11144,7 +11145,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11147 "configure"
+#line 11148 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11250,7 +11251,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11253 "configure"
+#line 11254 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15292,6 +15293,9 @@ if test "x$HSA_RUNTIME_LIB" != x; then
   HSA_RUNTIME_LDFLAGS=-L$HSA_RUNTIME_LIB
 fi
 
+HSA_KMT_LIB=
+
+HSA_KMT_LDFLAGS=
 
 # Check whether --with-hsa-kmt-lib was given.
 if test "${with_hsa_kmt_lib+set}" = set; then :
@@ -15299,8 +15303,10 @@ if test "${with_hsa_kmt_lib+set}" = set; then :
 fi
 
 if test "x$with_hsa_kmt_lib" != x; then
-  HSA_RUNTIME_LDFLAGS="$HSA_RUNTIME_LDFLAGS -L$with_hsa_kmt_lib"
-  HSA_RUNTIME_LIB=
+  HSA_KMT_LIB=$with_hsa_kmt_lib
+fi
+if test "x$HSA_KMT_LIB" != x; then
+  HSA_KMT_LDFLAGS=-L$HSA_KMT_LIB
 fi
 
 PLUGIN_HSA=0
@@ -15378,7 +15384,7 @@ rm -f core conftest.err conftest.$ac_objext \
 	        tgt_name=hsa
 	        PLUGIN_HSA=$tgt
 	        PLUGIN_HSA_CPPFLAGS=$HSA_RUNTIME_CPPFLAGS
-	        PLUGIN_HSA_LDFLAGS=$HSA_RUNTIME_LDFLAGS
+	        PLUGIN_HSA_LDFLAGS="$HSA_RUNTIME_LDFLAGS $HSA_KMT_LDFLAGS"
 	        PLUGIN_HSA_LIBS="-lhsa-runtime64 -lhsakmt"
 
 	        PLUGIN_HSA_save_CPPFLAGS=$CPPFLAGS
