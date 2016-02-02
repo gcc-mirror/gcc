@@ -1,3 +1,8 @@
+2016-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* wide-int.cc (canonize_uhwi): New function.
+	(wi::divmod_internal): Use it.
+
 2016-02-02  James Norris  <jnorris@codesourcery.com
 
 	* gimplify.c (omp_notice_variable): Add usage check.
