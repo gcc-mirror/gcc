@@ -4,7 +4,7 @@
 #include <openacc.h>
 
 float b;
-#pragma acc declare link (b)
+#pragma acc declare create (b)
 
 #pragma acc routine
 int
