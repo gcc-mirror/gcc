@@ -1,5 +1,9 @@
 2016-02-02  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* plugin/configfrag.ac (offload_additional_options)
+	(offload_additional_lib_paths): Don't amend for hsa offloading.
+	* configure: Regenerate.
+
 	* plugin/configfrag.ac: Don't configure for offloading target if
 	we don't build the corresponding plugin.
 	* configure: Regenerate.
