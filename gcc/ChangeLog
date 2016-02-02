@@ -1,3 +1,8 @@
+2016-02-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/67032
+	* config/i386/i386.c (geode_cost): Increase cost of MMX and SSE moves.
+
 2016-02-02  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* config/avr/avr.c (avr_option_override): Set
@@ -84,7 +89,7 @@
 
 	PR tree-optimization/67921
 	* fold-const.c (split_tree): New parameters.  Convert pointer
-	type variable part to proper type before negating. 
+	type variable part to proper type before negating.
 	(fold_binary_loc): Pass new arguments to split_tree.
 
 2016-02-01  Nathan Sidwell  <nathan@codesourcery.com>
