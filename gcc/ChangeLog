@@ -1,3 +1,8 @@
+2016-02-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/67032
+	* config/i386/i386.c (geode_cost): Increase cost of MMX and SSE moves.
+
 2016-02-02  Alan Modra  <amodra@gmail.com>
 
 	PR target/69548
