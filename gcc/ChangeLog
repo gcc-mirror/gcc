@@ -1,3 +1,14 @@
+2016-02-02  Alan Modra  <amodra@gmail.com>
+
+	PR target/68662
+	* config/rs6000/rs6000.c (need_toc_init): New var, set it
+	whenever toc_label_name used.
+	(rs6000_file_start): Don't set up toc section here,
+	(rs6000_output_function_epilogue): do so here instead,
+	(rs6000_xcoff_file_start): and here.
+	* config/rs6000/rs6000.md (load_toc_aix_si): Set need_toc_init.
+	(load_toc_aix_di): Likewise.
+
 2016-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/69592
