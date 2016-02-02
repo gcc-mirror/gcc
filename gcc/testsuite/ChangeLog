@@ -1,3 +1,7 @@
+2016-02-02  James Norris  <jnorris@codesourcery.com>
+
+	* c-c++-common/goacc/routine-5.c: Add tests.
+
 2016-02-02  Alexander Monakov  <amonakov@ispras.ru>
 
 	* gcc.target/nvptx/unsigned-cmp.c: New test.

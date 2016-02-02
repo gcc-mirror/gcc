@@ -6087,9 +6087,9 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
   if (ctx->region_type == ORT_NONE)
     return lang_hooks.decls.omp_disregard_value_expr (decl, false);
 
-  /* Threadprivate variables are predetermined.  */
   if (is_global_var (decl))
     {
+      /* Threadprivate variables are predetermined.  */
       if (DECL_THREAD_LOCAL_P (decl))
 	return omp_notice_threadprivate_variable (ctx, decl, NULL_TREE);
 
@@ -6099,6 +6099,30 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 
 	  if (value && DECL_P (value) && DECL_THREAD_LOCAL_P (value))
 	    return omp_notice_threadprivate_variable (ctx, decl, value);
+	}
+
+      if (gimplify_omp_ctxp->outer_context == NULL
+	  && VAR_P (decl)
+	  && get_oacc_fn_attrib (current_function_decl))
+	{
+	  location_t loc = DECL_SOURCE_LOCATION (decl);
+
+	  if (lookup_attribute ("omp declare target link",
+				DECL_ATTRIBUTES (decl)))
+	    {
+	      error_at (loc,
+			"%qE with %<link%> clause used in %<routine%> function",
+			DECL_NAME (decl));
+	      return false;
+	    }
+	  else if (!lookup_attribute ("omp declare target",
+				      DECL_ATTRIBUTES (decl)))
+	    {
+	      error_at (loc,
+			"%qE requires a %<declare%> directive for use "
+			"in a %<routine%> function", DECL_NAME (decl));
+	      return false;
+	    }
 	}
     }
 

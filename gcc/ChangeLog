@@ -1,3 +1,7 @@
+2016-02-02  James Norris  <jnorris@codesourcery.com
+
+	* gimplify.c (omp_notice_variable): Add usage check.
+
 2016-02-02  Alexander Monakov  <amonakov@ispras.ru>
 
 	* config/nvptx/nvptx.c (nvptx_print_operand): Treat LEU, GEU, LTU, GTU
