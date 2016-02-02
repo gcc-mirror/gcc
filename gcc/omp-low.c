@@ -13186,6 +13186,7 @@ expand_omp_target (struct omp_region *region)
       start_ix = BUILT_IN_GOACC_PARALLEL;
       break;
     case GF_OMP_TARGET_KIND_OACC_DATA:
+    case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
       start_ix = BUILT_IN_GOACC_DATA_START;
       break;
     case GF_OMP_TARGET_KIND_OACC_UPDATE:
@@ -13196,9 +13197,6 @@ expand_omp_target (struct omp_region *region)
       break;
     case GF_OMP_TARGET_KIND_OACC_DECLARE:
       start_ix = BUILT_IN_GOACC_DECLARE;
-      break;
-    case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
-      start_ix = BUILT_IN_GOACC_HOST_DATA;
       break;
     default:
       gcc_unreachable ();
@@ -13324,7 +13322,6 @@ expand_omp_target (struct omp_region *region)
     case BUILT_IN_GOACC_DATA_START:
     case BUILT_IN_GOACC_DECLARE:
     case BUILT_IN_GOMP_TARGET_DATA:
-    case BUILT_IN_GOACC_HOST_DATA:
       break;
     case BUILT_IN_GOMP_TARGET:
     case BUILT_IN_GOMP_TARGET_UPDATE:

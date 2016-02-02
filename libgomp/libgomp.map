@@ -394,7 +394,6 @@ GOACC_2.0.1 {
   global:
 	GOACC_declare;
 	GOACC_parallel_keyed;
-	GOACC_host_data;
 } GOACC_2.0;
 
 GOMP_PLUGIN_1.0 {

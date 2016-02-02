@@ -1,3 +1,9 @@
+2016-02-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-builtins.def (BUILT_IN_GOACC_HOST_DATA): Remove.
+	* omp-low.c (expand_omp_target): Use BUILT_IN_GOACC_DATA_START
+	instead.
+
 2016-02-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69606

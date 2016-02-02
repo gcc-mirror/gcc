@@ -1,5 +1,8 @@
 2016-02-02  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* libgomp.map (GOACC_2.0): Remove GOACC_host_data.
+	* oacc-parallel.c (GOACC_host_data): Remove function definition.
+
 	* testsuite/lib/libgomp.exp: Skip hsa offloading for OpenACC test
 	cases.
 
