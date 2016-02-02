@@ -333,6 +333,9 @@ typedef struct _loop_vec_info : public vec_info {
      loop version without if-conversion.  */
   struct loop *scalar_loop;
 
+  /* Mark loops having masked stores.  */
+  bool has_mask_store;
+
 } *loop_vec_info;
 
 /* Access Functions.  */
@@ -368,6 +371,7 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_PEELING_FOR_NITER(L)    (L)->peeling_for_niter
 #define LOOP_VINFO_NO_DATA_DEPENDENCIES(L) (L)->no_data_dependencies
 #define LOOP_VINFO_SCALAR_LOOP(L)	   (L)->scalar_loop
+#define LOOP_VINFO_HAS_MASK_STORE(L)       (L)->has_mask_store
 #define LOOP_VINFO_SCALAR_ITERATION_COST(L) (L)->scalar_cost_vec
 #define LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST(L) (L)->single_scalar_iteration_cost
 
@@ -1013,6 +1017,7 @@ extern void vect_get_vec_defs (tree, tree, gimple *, vec<tree> *,
 			       vec<tree> *, slp_tree, int);
 extern tree vect_gen_perm_mask_any (tree, const unsigned char *);
 extern tree vect_gen_perm_mask_checked (tree, const unsigned char *);
+extern void optimize_mask_stores (struct loop*);
 
 /* In tree-vect-data-refs.c.  */
 extern bool vect_can_force_dr_alignment_p (const_tree, unsigned int);

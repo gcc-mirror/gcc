@@ -1,3 +1,20 @@
+2016-02-02  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR middle-end/68542
+	* config/i386/i386.c (ix86_expand_branch): Add support for conditional
+	branch with vector comparison.
+	* config/i386/sse.md (VI48_AVX): New mode iterator.
+	(define_expand "cbranch<mode>4): Add support for conditional branch
+	with vector comparison.
+	* tree-vect-loop.c (optimize_mask_stores): New function.
+	* tree-vect-stmts.c (vectorizable_mask_load_store): Initialize
+	has_mask_store field of vect_info.
+	* tree-vectorizer.c (vectorize_loops): Invoke optimaze_mask_stores for
+	vectorized loops having masked stores after vec_info destroy.
+	* tree-vectorizer.h (loop_vec_info): Add new has_mask_store field and
+	correspondent macros.
+	(optimize_mask_stores): Add prototype.
+
 2016-02-02  Alan Modra  <amodra@gmail.com>
 
 	PR target/69548

@@ -2023,6 +2023,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
     {
       tree vec_rhs = NULL_TREE, vec_mask = NULL_TREE;
       prev_stmt_info = NULL;
+      LOOP_VINFO_HAS_MASK_STORE (loop_vinfo) = true;
       for (i = 0; i < ncopies; i++)
 	{
 	  unsigned align, misalign;

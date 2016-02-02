@@ -1,3 +1,9 @@
+2016-02-02  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR middle-end/68542
+	* gcc.dg/vect/vect-mask-store-move-1.c: New test.
+	* gcc.target/i386/avx2-vect-mask-store-move1.c: New test.
+
 2016-02-02  Alan Modra  <amodra@gmail.com>
 
 	PR target/69548
