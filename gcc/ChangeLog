@@ -1,3 +1,8 @@
+2016-02-02  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config/nvptx/nvptx.c (nvptx_print_operand): Treat LEU, GEU, LTU, GTU
+	like LE, GE, LT, GT when emitting relational operator.
+
 2016-02-02  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* ira-costs.c (find_costs_and_classes): Add extra argument.
