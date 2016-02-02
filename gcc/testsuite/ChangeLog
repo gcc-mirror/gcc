@@ -1,3 +1,8 @@
+2016-02-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69606
+	* gcc.dg/torture/pr69606.c: New testcase.
+
 2016-02-02  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR middle-end/68542

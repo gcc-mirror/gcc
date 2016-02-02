@@ -1,3 +1,9 @@
+2016-02-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69606
+	* tree-ssa-math-opts.c (bswap_replace): Clear flow sensitive
+	info on the result before moving a stmt.
+
 2016-02-02  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR middle-end/68542

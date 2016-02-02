@@ -2622,6 +2622,8 @@ bswap_replace (gimple *cur_stmt, gimple *src_stmt, tree fndecl,
       /* Move cur_stmt just before  one of the load of the original
 	 to ensure it has the same VUSE.  See PR61517 for what could
 	 go wrong.  */
+      if (gimple_bb (cur_stmt) != gimple_bb (src_stmt))
+	reset_flow_sensitive_info (gimple_assign_lhs (cur_stmt));
       gsi_move_before (&gsi, &gsi_ins);
       gsi = gsi_for_stmt (cur_stmt);
 
