@@ -724,6 +724,24 @@ aarch64_err_no_fpadvsimd (machine_mode mode, const char *msg)
     error ("%qs feature modifier is incompatible with %s %s", "+nofp", mc, msg);
 }
 
+/* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS.
+   The register allocator chooses ALL_REGS if FP_REGS and GENERAL_REGS have
+   the same cost even if ALL_REGS has a much larger cost.  This results in bad
+   allocations and spilling.  To avoid this we force the class to GENERAL_REGS
+   if the mode is integer.  */
+
+static reg_class_t
+aarch64_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class)
+{
+  enum machine_mode mode;
+
+  if (allocno_class != ALL_REGS)
+    return allocno_class;
+
+  mode = PSEUDO_REGNO_MODE (regno);
+  return FLOAT_MODE_P (mode) || VECTOR_MODE_P (mode) ? FP_REGS : GENERAL_REGS;
+}
+
 static unsigned int
 aarch64_min_divisions_for_recip_mul (enum machine_mode mode)
 {
@@ -14008,6 +14026,10 @@ aarch64_optab_supported_p (int op, machine_mode, machine_mode,
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS  aarch64_init_builtins
+
+#undef TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS
+#define TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS \
+  aarch64_ira_change_pseudo_allocno_class
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P aarch64_legitimate_address_hook_p

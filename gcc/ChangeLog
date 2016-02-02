@@ -1,3 +1,9 @@
+2016-02-02  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c
+	(TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS): New define.
+	(aarch64_ira_change_pseudo_allocno_class): New function.
+
 2016-02-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/67032

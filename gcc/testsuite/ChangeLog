@@ -1,3 +1,11 @@
+2016-02-02  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/scalar_shift_1.c
+	(test_corners_sisd_di): Improve force to SIMD register.
+	(test_corners_sisd_si): Likewise.
+	* gcc.target/aarch64/vect-ld1r-compile-fp.c:
+	Remove scan-assembler check for ldr.
+
 2016-02-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69595
