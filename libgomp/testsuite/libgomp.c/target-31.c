@@ -36,7 +36,18 @@ main ()
       u3[i] = k + i;
     #pragma omp parallel num_threads (1)
     {
-      if (c != 3 || d != 4 || g[0] != 9 || g[1] != 10 || h[0] != 11 || h[1] != 12 || k != 14 || m[0] != 17 || m[1] != 18)
+      int v1, v2, v3;
+      #pragma omp atomic read
+	v1 = c;
+      #pragma omp atomic read
+	v2 = g[0];
+      #pragma omp atomic read
+	v3 = g[1];
+      if ((v1 < 3 || v1 > 6)
+	  || d != 4
+	  || (v2 < 9 || v2 > 15 || (v2 & 1) == 0)
+	  || (v3 < 10 || v3 > 19 || ((v3 - 10) % 3) != 0)
+	  || h[0] != 11 || h[1] != 12 || k != 14 || m[0] != 17 || m[1] != 18)
 	#pragma omp atomic write
 	  err = 1;
       b = omp_get_team_num ();

@@ -1,5 +1,9 @@
 2016-02-02  Alexander Monakov  <amonakov@ispras.ru>
 
+	* testsuite/libgomp.c/target-31.c: Fix testcase.
+
+2016-02-02  Alexander Monakov  <amonakov@ispras.ru>
+
 	* testsuite/libgomp.c/examples-4/teams-3.c: Add missing reduction
 	clause.
 	* testsuite/libgomp.c/examples-4/teams-4.c: Likewise.
