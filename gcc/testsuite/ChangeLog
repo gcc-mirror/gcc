@@ -1,3 +1,7 @@
+2016-02-02  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gcc.target/nvptx/unsigned-cmp.c: New test.
+
 2016-02-02  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/scalar_shift_1.c

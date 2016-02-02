@@ -2031,28 +2031,20 @@ nvptx_print_operand (FILE *file, rtx x, int code)
 	    fputs (".ne", file);
 	  break;
 	case LE:
+	case LEU:
 	  fputs (".le", file);
 	  break;
 	case GE:
+	case GEU:
 	  fputs (".ge", file);
 	  break;
 	case LT:
+	case LTU:
 	  fputs (".lt", file);
 	  break;
 	case GT:
-	  fputs (".gt", file);
-	  break;
-	case LEU:
-	  fputs (".ls", file);
-	  break;
-	case GEU:
-	  fputs (".hs", file);
-	  break;
-	case LTU:
-	  fputs (".lo", file);
-	  break;
 	case GTU:
-	  fputs (".hi", file);
+	  fputs (".gt", file);
 	  break;
 	case LTGT:
 	  fputs (".ne", file);
