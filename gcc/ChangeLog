@@ -1,5 +1,18 @@
 2016-02-02  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* ira-costs.c (find_costs_and_classes): Add extra argument.
+	* target.def (ira_change_pseudo_allocno_class): Add parameter.
+	* targhooks.h (ira_change_pseudo_allocno_class): Likewise.
+	* targhooks.c (ira_change_pseudo_allocno_class): Likewise.
+	* config/aarch64/aarch64.c (aarch64_ira_change_pseudo_allocno_class)
+	Add best_class parameter, and return it if not ALL_REGS.
+	* config/mips/mips.c (mips_ira_change_pseudo_allocno_class):
+	Add parameter.
+	* doc/tm.texi (TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS):
+	Update target hook.
+
+2016-02-02  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* config/aarch64/aarch64.c
 	(TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS): New define.
 	(aarch64_ira_change_pseudo_allocno_class): New function.

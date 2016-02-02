@@ -19916,7 +19916,8 @@ mips_lra_p (void)
 /* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS.  */
 
 static reg_class_t
-mips_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class)
+mips_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class,
+				      reg_class_t best_class ATTRIBUTE_UNUSED)
 {
   /* LRA will allocate an FPR for an integer mode pseudo instead of spilling
      to memory if an FPR is present in the allocno class.  It is rare that
