@@ -2853,9 +2853,9 @@ value that the middle-end intended.
 
 @end defmac
 
-@deftypefn {Target Hook} reg_class_t TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS (int, @var{reg_class_t})
+@deftypefn {Target Hook} reg_class_t TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS (int, @var{reg_class_t}, @var{reg_class_t})
 A target hook which can change allocno class for given pseudo from
-  allocno class calculated by IRA.
+  allocno and best class calculated by IRA.
   
   The default version of this target hook always returns given class.
 @end deftypefn

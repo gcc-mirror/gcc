@@ -148,7 +148,8 @@ extern rtx default_static_chain (const_tree, bool);
 extern void default_trampoline_init (rtx, tree, rtx);
 extern int default_return_pops_args (tree, tree, int);
 extern reg_class_t default_branch_target_register_class (void);
-extern reg_class_t default_ira_change_pseudo_allocno_class (int, reg_class_t);
+extern reg_class_t default_ira_change_pseudo_allocno_class (int, reg_class_t,
+							    reg_class_t);
 extern bool default_lra_p (void);
 extern int default_register_priority (int);
 extern bool default_register_usage_leveling_p (void);

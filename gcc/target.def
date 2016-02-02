@@ -4874,10 +4874,10 @@ This is currently used only by the C and C++ front ends.",
 DEFHOOK
 (ira_change_pseudo_allocno_class,
  "A target hook which can change allocno class for given pseudo from\n\
-  allocno class calculated by IRA.\n\
+  allocno and best class calculated by IRA.\n\
   \n\
   The default version of this target hook always returns given class.",
- reg_class_t, (int, reg_class_t),
+ reg_class_t, (int, reg_class_t, reg_class_t),
  default_ira_change_pseudo_allocno_class)
 
 /* Return true if we use LRA instead of reload.  */

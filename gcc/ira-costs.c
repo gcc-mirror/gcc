@@ -1858,7 +1858,7 @@ find_costs_and_classes (FILE *dump_file)
 	    }
 	  if ((new_class
 	       = (reg_class) (targetm.ira_change_pseudo_allocno_class
-			      (i, regno_aclass[i]))) != regno_aclass[i])
+			      (i, regno_aclass[i], best))) != regno_aclass[i])
 	    {
 	      regno_aclass[i] = new_class;
 	      if (hard_reg_set_subset_p (reg_class_contents[new_class],
