@@ -1,5 +1,11 @@
 2016-02-02  Alan Modra  <amodra@gmail.com>
 
+	PR target/69548
+	* config/rs6000/predicates.md (quad_int_reg_operand): Don't
+	allow subregs.
+
+2016-02-02  Alan Modra  <amodra@gmail.com>
+
 	PR target/68662
 	* config/rs6000/rs6000.c (need_toc_init): New var, set it
 	whenever toc_label_name used.
