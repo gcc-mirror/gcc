@@ -2094,6 +2094,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_and:c (ordered @0 @0) (ordered:c@2 @0 @1))
  @2)
 
+/* Simple range test simplifications.  */
+/* A < B || A >= B -> true.  */
+(for test1 (lt le ne)
+     test2 (ge gt eq)
+ (simplify
+  (bit_ior:c (test1 @0 @1) (test2 @0 @1))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       || VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0)))
+   { constant_boolean_node (true, type); })))
+/* A < B && A >= B -> false.  */
+(for test1 (lt lt lt le ne eq)
+     test2 (ge gt eq gt eq gt)
+ (simplify
+  (bit_and:c (test1 @0 @1) (test2 @0 @1))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       || VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0)))
+   { constant_boolean_node (false, type); })))
+
 /* -A CMP -B -> B CMP A.  */
 (for cmp (tcc_comparison)
      scmp (swapped_tcc_comparison)

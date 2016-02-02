@@ -1,3 +1,8 @@
+2016-02-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69595
+	* match.pd: Add range test simplifications to true/false.
+
 2016-02-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* omp-builtins.def (BUILT_IN_GOACC_HOST_DATA): Remove.
