@@ -43,6 +43,7 @@
 #include "expr.h"
 #include "langhooks.h"
 #include "cfgrtl.h"
+#include "params.h"
 #include "builtins.h"
 #include "context.h"
 #include "tree-pass.h"
@@ -409,6 +410,15 @@ avr_option_override (void)
 
   if (avr_strict_X)
     flag_caller_saves = 0;
+
+  /* Allow optimizer to introduce store data races. This used to be the
+     default - it was changed because bigger targets did not see any
+     performance decrease. For the AVR though, disallowing data races
+     introduces additional code in LIM and increases reg pressure.  */
+
+  maybe_set_param_value (PARAM_ALLOW_STORE_DATA_RACES, 1,
+      global_options.x_param_values,
+      global_options_set.x_param_values);
 
   /* Unwind tables currently require a frame pointer for correctness,
      see toplev.c:process_options().  */

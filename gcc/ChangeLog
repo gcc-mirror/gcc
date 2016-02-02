@@ -1,3 +1,8 @@
+2016-02-02  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* config/avr/avr.c (avr_option_override): Set
+	PARAM_ALLOW_STORE_DATA_RACES to 1.
+
 2016-02-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69595
