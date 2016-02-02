@@ -1,3 +1,8 @@
+2016-02-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* c-c++-common/vector-compare-4.c: Prune "non-standard ABI extension"
+	warning.
+
 2016-02-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/iamcu/test_empty_structs_and_unions.c: New test.
