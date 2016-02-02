@@ -1,3 +1,9 @@
+2016-02-02  Alan Modra  <amodra@gmail.com>
+
+	PR target/69548
+	* config/rs6000/predicates.md (quad_int_reg_operand): Don't
+	allow subregs.
+
 2016-01-29  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/69355
