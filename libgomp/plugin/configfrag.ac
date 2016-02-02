@@ -118,12 +118,17 @@ if test "x$HSA_RUNTIME_LIB" != x; then
   HSA_RUNTIME_LDFLAGS=-L$HSA_RUNTIME_LIB
 fi
 
+HSA_KMT_LIB=
+AC_SUBST(HSA_KMT_LIB)
+HSA_KMT_LDFLAGS=
 AC_ARG_WITH(hsa-kmt-lib,
 	[AS_HELP_STRING([--with-hsa-kmt-lib=PATH],
 		[specify directory for installed HSA KMT library.])])
 if test "x$with_hsa_kmt_lib" != x; then
-  HSA_RUNTIME_LDFLAGS="$HSA_RUNTIME_LDFLAGS -L$with_hsa_kmt_lib"
-  HSA_RUNTIME_LIB=
+  HSA_KMT_LIB=$with_hsa_kmt_lib
+fi
+if test "x$HSA_KMT_LIB" != x; then
+  HSA_KMT_LDFLAGS=-L$HSA_KMT_LIB
 fi
 
 PLUGIN_HSA=0
@@ -190,7 +195,7 @@ if test x"$enable_offload_targets" != x; then
 	        tgt_name=hsa
 	        PLUGIN_HSA=$tgt
 	        PLUGIN_HSA_CPPFLAGS=$HSA_RUNTIME_CPPFLAGS
-	        PLUGIN_HSA_LDFLAGS=$HSA_RUNTIME_LDFLAGS
+	        PLUGIN_HSA_LDFLAGS="$HSA_RUNTIME_LDFLAGS $HSA_KMT_LDFLAGS"
 	        PLUGIN_HSA_LIBS="-lhsa-runtime64 -lhsakmt"
 
 	        PLUGIN_HSA_save_CPPFLAGS=$CPPFLAGS

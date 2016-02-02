@@ -184,7 +184,7 @@ proc libgomp_init { args } {
     }
     lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/.."
 
-    # For build-tree testing, also consider the CUDA paths used for builing.
+    # For build-tree testing, also consider the library paths used for builing.
     # For installed testing, we assume all that to be provided in the sysroot.
     if { $blddir != "" } {
 	global cuda_driver_include
@@ -199,6 +199,14 @@ proc libgomp_init { args } {
 	if { $cuda_driver_lib != "" } {
 	    lappend ALWAYS_CFLAGS "additional_flags=-L$cuda_driver_lib"
 	    append always_ld_library_path ":$cuda_driver_lib"
+	}
+	global hsa_runtime_lib
+	global hsa_kmt_lib
+	if { $hsa_runtime_lib != "" } {
+	    append always_ld_library_path ":$hsa_runtime_lib"
+	}
+	if { $hsa_kmt_lib != "" } {
+	    append always_ld_library_path ":$hsa_kmt_lib"
 	}
     }
 
