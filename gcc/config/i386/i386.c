@@ -21684,6 +21684,30 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
   machine_mode mode = GET_MODE (op0);
   rtx tmp;
 
+  /* Handle special case - vector comparsion with boolean result, transform
+     it using ptest instruction.  */
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+    {
+      rtx flag = gen_rtx_REG (CCZmode, FLAGS_REG);
+      machine_mode p_mode = GET_MODE_SIZE (mode) == 32 ? V4DImode : V2DImode;
+
+      gcc_assert (code == EQ || code == NE);
+      /* Generate XOR since we can't check that one operand is zero vector.  */
+      tmp = gen_reg_rtx (mode);
+      emit_insn (gen_rtx_SET (tmp, gen_rtx_XOR (mode, op0, op1)));
+      tmp = gen_lowpart (p_mode, tmp);
+      emit_insn (gen_rtx_SET (gen_rtx_REG (CCmode, FLAGS_REG),
+			      gen_rtx_UNSPEC (CCmode,
+					      gen_rtvec (2, tmp, tmp),
+					      UNSPEC_PTEST)));
+      tmp = gen_rtx_fmt_ee (code, VOIDmode, flag, const0_rtx);
+      tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
+				  gen_rtx_LABEL_REF (VOIDmode, label),
+				  pc_rtx);
+      emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+      return;
+    }
+
   switch (mode)
     {
     case SFmode:

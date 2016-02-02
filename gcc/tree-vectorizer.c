@@ -604,12 +604,18 @@ vectorize_loops (void)
   for (i = 1; i < vect_loops_num; i++)
     {
       loop_vec_info loop_vinfo;
+      bool has_mask_store;
 
       loop = get_loop (cfun, i);
       if (!loop)
 	continue;
       loop_vinfo = (loop_vec_info) loop->aux;
+      has_mask_store = false;
+      if (loop_vinfo)
+	has_mask_store = LOOP_VINFO_HAS_MASK_STORE (loop_vinfo);
       destroy_loop_vec_info (loop_vinfo, true);
+      if (has_mask_store)
+	optimize_mask_stores (loop);
       loop->aux = NULL;
     }
 

@@ -6938,3 +6938,195 @@ vect_transform_loop (loop_vec_info loop_vinfo)
     vect_free_slp_instance (instance);
   LOOP_VINFO_SLP_INSTANCES (loop_vinfo).release ();
 }
+
+/* The code below is trying to perform simple optimization - revert
+   if-conversion for masked stores, i.e. if the mask of a store is zero
+   do not perform it and all stored value producers also if possible.
+   For example,
+     for (i=0; i<n; i++)
+       if (c[i])
+	{
+	  p1[i] += 1;
+	  p2[i] = p3[i] +2;
+	}
+   this transformation will produce the following semi-hammock:
+
+   if (!mask__ifc__42.18_165 == { 0, 0, 0, 0, 0, 0, 0, 0 })
+     {
+       vect__11.19_170 = MASK_LOAD (vectp_p1.20_168, 0B, mask__ifc__42.18_165);
+       vect__12.22_172 = vect__11.19_170 + vect_cst__171;
+       MASK_STORE (vectp_p1.23_175, 0B, mask__ifc__42.18_165, vect__12.22_172);
+       vect__18.25_182 = MASK_LOAD (vectp_p3.26_180, 0B, mask__ifc__42.18_165);
+       vect__19.28_184 = vect__18.25_182 + vect_cst__183;
+       MASK_STORE (vectp_p2.29_187, 0B, mask__ifc__42.18_165, vect__19.28_184);
+     }
+*/
+
+void
+optimize_mask_stores (struct loop *loop)
+{
+  basic_block *bbs = get_loop_body (loop);
+  unsigned nbbs = loop->num_nodes;
+  unsigned i;
+  basic_block bb;
+  gimple_stmt_iterator gsi;
+  gimple *stmt, *stmt1 = NULL;
+  auto_vec<gimple *> worklist;
+
+  vect_location = find_loop_location (loop);
+  /* Pick up all masked stores in loop if any.  */
+  for (i = 0; i < nbbs; i++)
+    {
+      bb = bbs[i];
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  stmt = gsi_stmt (gsi);
+	  if (is_gimple_call (stmt)
+	      && gimple_call_internal_p (stmt)
+	      && gimple_call_internal_fn (stmt) == IFN_MASK_STORE)
+	    worklist.safe_push (stmt);
+	}
+    }
+
+  free (bbs);
+  if (worklist.is_empty ())
+    return;
+
+  /* Loop has masked stores.  */
+  while (!worklist.is_empty ())
+    {
+      gimple *last, *last_store;
+      edge e, efalse;
+      tree mask;
+      basic_block store_bb, join_bb;
+      gimple_stmt_iterator gsi_to;
+      tree vdef, new_vdef;
+      gphi *phi;
+      tree vectype;
+      tree zero;
+
+      last = worklist.pop ();
+      mask = gimple_call_arg (last, 2);
+      bb = gimple_bb (last);
+      /* Create new bb.  */
+      e = split_block (bb, last);
+      join_bb = e->dest;
+      store_bb = create_empty_bb (bb);
+      add_bb_to_loop (store_bb, loop);
+      e->flags = EDGE_TRUE_VALUE;
+      efalse = make_edge (bb, store_bb, EDGE_FALSE_VALUE);
+      /* Put STORE_BB to likely part.  */
+      efalse->probability = PROB_UNLIKELY;
+      store_bb->frequency = PROB_ALWAYS - EDGE_FREQUENCY (efalse);
+      make_edge (store_bb, join_bb, EDGE_FALLTHRU);
+      if (dom_info_available_p (CDI_DOMINATORS))
+	set_immediate_dominator (CDI_DOMINATORS, store_bb, bb);
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Create new block %d to sink mask stores.",
+			 store_bb->index);
+      /* Create vector comparison with boolean result.  */
+      vectype = TREE_TYPE (mask);
+      zero = build_zero_cst (vectype);
+      stmt = gimple_build_cond (EQ_EXPR, mask, zero, NULL_TREE, NULL_TREE);
+      gsi = gsi_last_bb (bb);
+      gsi_insert_after (&gsi, stmt, GSI_SAME_STMT);
+      /* Create new PHI node for vdef of the last masked store:
+	 .MEM_2 = VDEF <.MEM_1>
+	 will be converted to
+	 .MEM.3 = VDEF <.MEM_1>
+	 and new PHI node will be created in join bb
+	 .MEM_2 = PHI <.MEM_1, .MEM_3>
+      */
+      vdef = gimple_vdef (last);
+      new_vdef = make_ssa_name (gimple_vop (cfun), last);
+      gimple_set_vdef (last, new_vdef);
+      phi = create_phi_node (vdef, join_bb);
+      add_phi_arg (phi, new_vdef, EDGE_SUCC (store_bb, 0), UNKNOWN_LOCATION);
+
+      /* Put all masked stores with the same mask to STORE_BB if possible.  */
+      while (true)
+	{
+	  gimple_stmt_iterator gsi_from;
+	  /* Move masked store to STORE_BB.  */
+	  last_store = last;
+	  gsi = gsi_for_stmt (last);
+	  gsi_from = gsi;
+	  /* Shift GSI to the previous stmt for further traversal.  */
+	  gsi_prev (&gsi);
+	  gsi_to = gsi_start_bb (store_bb);
+	  gsi_move_before (&gsi_from, &gsi_to);
+	  /* Setup GSI_TO to the non-empty block start.  */
+	  gsi_to = gsi_start_bb (store_bb);
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "Move stmt to created bb\n");
+	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, last, 0);
+	    }
+	    /* Move all stored value producers if possible.  */
+	    while (!gsi_end_p (gsi))
+	      {
+		tree lhs;
+		imm_use_iterator imm_iter;
+		use_operand_p use_p;
+		bool res;
+		stmt1 = gsi_stmt (gsi);
+		/* Do not consider statements writing to memory.  */
+		if (gimple_vdef (stmt1))
+		  break;
+		gsi_from = gsi;
+		gsi_prev (&gsi);
+		lhs = gimple_get_lhs (stmt1);
+		if (!lhs)
+		  break;
+
+		/* LHS of vectorized stmt must be SSA_NAME.  */
+		if (TREE_CODE (lhs) != SSA_NAME)
+		  break;
+
+		/* Skip scalar statements.  */
+		if (!VECTOR_TYPE_P (TREE_TYPE (lhs)))
+		  continue;
+
+		/* Check that LHS does not have uses outside of STORE_BB.  */
+		res = true;
+		FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
+		  {
+		    gimple *use_stmt;
+		    use_stmt = USE_STMT (use_p);
+		    if (gimple_bb (use_stmt) != store_bb)
+		      {
+			res = false;
+			break;
+		      }
+		  }
+		if (!res)
+		  break;
+
+		if (gimple_vuse (stmt1)
+		    && gimple_vuse (stmt1) != gimple_vuse (last_store))
+		  break;
+
+		/* Can move STMT1 to STORE_BB.  */
+		if (dump_enabled_p ())
+		  {
+		    dump_printf_loc (MSG_NOTE, vect_location,
+				     "Move stmt to created bb\n");
+		    dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt1, 0);
+		  }
+		gsi_move_before (&gsi_from, &gsi_to);
+		/* Shift GSI_TO for further insertion.  */
+		gsi_prev (&gsi_to);
+	      }
+	    /* Put other masked stores with the same mask to STORE_BB.  */
+	    if (worklist.is_empty ()
+		|| gimple_call_arg (worklist.last (), 2) != mask
+		|| worklist.last () != stmt1)
+	      break;
+	    last = worklist.pop ();
+	}
+      add_phi_arg (phi, gimple_vuse (last_store), e, UNKNOWN_LOCATION);
+    }
+}
