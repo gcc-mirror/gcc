@@ -42,14 +42,16 @@ load_file libgomp-test-support.exp
 set offload_targets_s [split $offload_targets ","]
 set offload_targets_s_openacc {}
 foreach offload_target_openacc $offload_targets_s {
+    # Translate to OpenACC names, or skip if not yet supported.
     switch $offload_target_openacc {
 	intelmic {
-	    # Skip; will all FAIL because of missing
-	    # GOMP_OFFLOAD_CAP_OPENACC_200.
 	    continue
 	}
 	nvptx {
 	    set offload_target_openacc "nvidia"
+	}
+	hsa {
+	    continue
 	}
     }
     lappend offload_targets_s_openacc "$offload_target_openacc"

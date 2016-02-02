@@ -1,5 +1,8 @@
 2016-02-02  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/lib/libgomp.exp: Skip hsa offloading for OpenACC test
+	cases.
+
 	* plugin/configfrag.ac (HSA_KMT_LIB, HSA_KMT_LDFLAGS): New
 	variables.
 	* testsuite/libgomp-test-support.exp.in (hsa_runtime_lib)
