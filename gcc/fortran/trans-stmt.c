@@ -5180,7 +5180,7 @@ gfc_trans_allocate (gfc_code * code)
      _vptr, _len and element_size for expr3.  */
   if (code->expr3)
     {
-      bool vtab_needed = false;
+      bool vtab_needed = false, is_coarray = gfc_is_coarray (code->expr3);
       /* expr3_tmp gets the tree when code->expr3.mold is set, i.e.,
 	 the expression is only needed to get the _vptr, _len a.s.o.  */
       tree expr3_tmp = NULL_TREE;
@@ -5245,7 +5245,8 @@ gfc_trans_allocate (gfc_code * code)
 		{
 		  tree var;
 
-		  tmp = build_fold_indirect_ref_loc (input_location,
+		  tmp = is_coarray ? se.expr
+				  : build_fold_indirect_ref_loc (input_location,
 						     se.expr);
 
 		  /* We need a regular (non-UID) symbol here, therefore give a
@@ -5297,6 +5298,16 @@ gfc_trans_allocate (gfc_code * code)
 	  else if (expr3_tmp != NULL_TREE
 		   && (VAR_P (expr3_tmp) ||!code->expr3->ref))
 	    tmp = gfc_class_vptr_get (expr3_tmp);
+	  else if (is_coarray && expr3 != NULL_TREE)
+	    {
+	      /* Get the ref to coarray's data.  May be wrapped in a
+		 NOP_EXPR.  */
+	      tmp = POINTER_TYPE_P (TREE_TYPE (expr3)) ? TREE_OPERAND (expr3, 0)
+						       : tmp;
+	      /* Get to the base variable, i.e., strip _data.data.  */
+	      tmp = TREE_OPERAND (TREE_OPERAND (tmp, 0), 0);
+	      tmp = gfc_class_vptr_get (tmp);
+	    }
 	  else
 	    {
 	      rhs = gfc_find_and_cut_at_last_class_ref (code->expr3);

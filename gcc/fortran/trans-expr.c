@@ -1019,6 +1019,7 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
   tree fcn;
   tree fcn_type;
   tree from_data;
+  tree from_class_base = NULL;
   tree from_len;
   tree to_data;
   tree to_len;
@@ -1035,21 +1036,41 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
   from_len = to_len = NULL_TREE;
 
   if (from != NULL_TREE)
-    fcn = gfc_class_vtab_copy_get (from);
+    {
+      /* Check that from is a class.  When the class is part of a coarray,
+	 then from is a common pointer and is to be used as is.  */
+      tmp = POINTER_TYPE_P (TREE_TYPE (from)) && !DECL_P (from)
+	  ? TREE_OPERAND (from, 0) : from;
+      if (GFC_CLASS_TYPE_P (TREE_TYPE (tmp))
+	  || (DECL_P (tmp) && GFC_DECL_CLASS (tmp)))
+	{
+	  from_class_base = from;
+	  from_data = gfc_class_data_get (from_class_base);
+	}
+      else
+	{
+	  /* For arrays two component_refs can be present.  */
+	  if (TREE_CODE (tmp) == COMPONENT_REF)
+	    tmp = TREE_OPERAND (tmp, 0);
+	  if (TREE_CODE (tmp) == COMPONENT_REF)
+	    tmp = TREE_OPERAND (tmp, 0);
+	  from_class_base = tmp;
+	  from_data = from;
+	}
+      fcn = gfc_class_vtab_copy_get (from_class_base);
+    }
   else
-    fcn = gfc_class_vtab_copy_get (to);
+    {
+      fcn = gfc_class_vtab_copy_get (to);
+      from_data = gfc_class_vtab_def_init_get (to);
+    }
 
   fcn_type = TREE_TYPE (TREE_TYPE (fcn));
 
-  if (from != NULL_TREE)
-      from_data = gfc_class_data_get (from);
-  else
-    from_data = gfc_class_vtab_def_init_get (to);
-
   if (unlimited)
     {
-      if (from != NULL_TREE && unlimited)
-	from_len = gfc_class_len_get (from);
+      if (from_class_base != NULL_TREE)
+	from_len = gfc_class_len_get (from_class_base);
       else
 	from_len = integer_zero_node;
     }

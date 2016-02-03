@@ -1,3 +1,11 @@
+2016-02-03  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/67451
+	PR fortran/69418
+	* gfortran.dg/coarray_allocate_2.f08: New test.
+	* gfortran.dg/coarray_allocate_3.f08: New test.
+	* gfortran.dg/coarray_allocate_4.f08: New test.
+
 2016-02-02  Alan Modra  <amodra@gmail.com>
 
 	PR target/69548
