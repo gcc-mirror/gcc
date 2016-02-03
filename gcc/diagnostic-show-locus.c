@@ -722,9 +722,10 @@ layout::get_state_at_point (/* Inputs.  */
 
 	  /* Are we at the range's caret?  is it visible? */
 	  out_state->draw_caret_p = false;
-	  if (row == range->m_caret.m_line
+	  if (range->m_show_caret_p
+	      && row == range->m_caret.m_line
 	      && column == range->m_caret.m_column)
-	    out_state->draw_caret_p = range->m_show_caret_p;
+	    out_state->draw_caret_p = true;
 
 	  /* Within a multiline range, don't display any underline
 	     in any leading or trailing whitespace on a line.
