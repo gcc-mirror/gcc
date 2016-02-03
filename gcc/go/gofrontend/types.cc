@@ -2307,7 +2307,10 @@ class Sort_methods
   bool
   operator()(const std::pair<std::string, const Method*>& m1,
 	     const std::pair<std::string, const Method*>& m2) const
-  { return m1.first < m2.first; }
+  {
+    return (Gogo::unpack_hidden_name(m1.first)
+	    < Gogo::unpack_hidden_name(m2.first));
+  }
 };
 
 // Return a composite literal for the type method table for this type.
@@ -7684,7 +7687,8 @@ Interface_type::get_backend_methods(Gogo* gogo)
       mfields[i].location = loc;
 
       // Sanity check: the names should be sorted.
-      go_assert(p->name() > last_name);
+      go_assert(Gogo::unpack_hidden_name(p->name())
+		> Gogo::unpack_hidden_name(last_name));
       last_name = p->name();
     }
 
@@ -10489,7 +10493,10 @@ struct Typed_identifier_list_sort
  public:
   bool
   operator()(const Typed_identifier& t1, const Typed_identifier& t2) const
-  { return t1.name() < t2.name(); }
+  {
+    return (Gogo::unpack_hidden_name(t1.name())
+	    < Gogo::unpack_hidden_name(t2.name()));
+  }
 };
 
 void
