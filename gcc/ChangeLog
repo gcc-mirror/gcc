@@ -1,5 +1,9 @@
 2016-02-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/69627
+	* diagnostic-show-locus.c (layout::get_state_at_point): Don't read
+	range->m_caret fields if range->m_show_caret_p is false.
+
 	PR target/69644
 	* config/rs6000/rs6000.c (rs6000_expand_atomic_compare_and_swap):
 	Force oldval into register if it does not satisfy reg_or_short_operand

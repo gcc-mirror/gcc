@@ -1,5 +1,8 @@
 2016-02-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/69627
+	* gcc.dg/pr69627.c: New test.
+
 	PR target/69644
 	* gcc.dg/pr69644.c: New test.
 
