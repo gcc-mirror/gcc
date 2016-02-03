@@ -22,9 +22,10 @@ var (
 )
 
 type Reader struct {
-	r       io.ReaderAt
-	File    []*File
-	Comment string
+	r             io.ReaderAt
+	File          []*File
+	Comment       string
+	decompressors map[uint16]Decompressor
 }
 
 type ReadCloser struct {
@@ -34,6 +35,7 @@ type ReadCloser struct {
 
 type File struct {
 	FileHeader
+	zip          *Reader
 	zipr         io.ReaderAt
 	zipsize      int64
 	headerOffset int64
@@ -95,7 +97,7 @@ func (z *Reader) init(r io.ReaderAt, size int64) error {
 	// a bad one, and then only report a ErrFormat or UnexpectedEOF if
 	// the file count modulo 65536 is incorrect.
 	for {
-		f := &File{zipr: r, zipsize: size}
+		f := &File{zip: z, zipr: r, zipsize: size}
 		err = readDirectoryHeader(f, buf)
 		if err == ErrFormat || err == io.ErrUnexpectedEOF {
 			break
@@ -111,6 +113,24 @@ func (z *Reader) init(r io.ReaderAt, size int64) error {
 		return err
 	}
 	return nil
+}
+
+// RegisterDecompressor registers or overrides a custom decompressor for a
+// specific method ID. If a decompressor for a given method is not found,
+// Reader will default to looking up the decompressor at the package level.
+func (z *Reader) RegisterDecompressor(method uint16, dcomp Decompressor) {
+	if z.decompressors == nil {
+		z.decompressors = make(map[uint16]Decompressor)
+	}
+	z.decompressors[method] = dcomp
+}
+
+func (z *Reader) decompressor(method uint16) Decompressor {
+	dcomp := z.decompressors[method]
+	if dcomp == nil {
+		dcomp = decompressor(method)
+	}
+	return dcomp
 }
 
 // Close closes the Zip file, rendering it unusable for I/O.
@@ -140,7 +160,7 @@ func (f *File) Open() (rc io.ReadCloser, err error) {
 	}
 	size := int64(f.CompressedSize64)
 	r := io.NewSectionReader(f.zipr, f.headerOffset+bodyOffset, size)
-	dcomp := decompressor(f.Method)
+	dcomp := f.zip.decompressor(f.Method)
 	if dcomp == nil {
 		err = ErrAlgorithm
 		return
@@ -261,39 +281,59 @@ func readDirectoryHeader(f *File, r io.Reader) error {
 	f.Extra = d[filenameLen : filenameLen+extraLen]
 	f.Comment = string(d[filenameLen+extraLen:])
 
+	needUSize := f.UncompressedSize == ^uint32(0)
+	needCSize := f.CompressedSize == ^uint32(0)
+	needHeaderOffset := f.headerOffset == int64(^uint32(0))
+
 	if len(f.Extra) > 0 {
+		// Best effort to find what we need.
+		// Other zip authors might not even follow the basic format,
+		// and we'll just ignore the Extra content in that case.
 		b := readBuf(f.Extra)
 		for len(b) >= 4 { // need at least tag and size
 			tag := b.uint16()
 			size := b.uint16()
 			if int(size) > len(b) {
-				return ErrFormat
+				break
 			}
 			if tag == zip64ExtraId {
-				// update directory values from the zip64 extra block
+				// update directory values from the zip64 extra block.
+				// They should only be consulted if the sizes read earlier
+				// are maxed out.
+				// See golang.org/issue/13367.
 				eb := readBuf(b[:size])
-				if len(eb) >= 8 {
+
+				if needUSize {
+					needUSize = false
+					if len(eb) < 8 {
+						return ErrFormat
+					}
 					f.UncompressedSize64 = eb.uint64()
 				}
-				if len(eb) >= 8 {
+				if needCSize {
+					needCSize = false
+					if len(eb) < 8 {
+						return ErrFormat
+					}
 					f.CompressedSize64 = eb.uint64()
 				}
-				if len(eb) >= 8 {
+				if needHeaderOffset {
+					needHeaderOffset = false
+					if len(eb) < 8 {
+						return ErrFormat
+					}
 					f.headerOffset = int64(eb.uint64())
 				}
+				break
 			}
 			b = b[size:]
 		}
-		// Should have consumed the whole header.
-		// But popular zip & JAR creation tools are broken and
-		// may pad extra zeros at the end, so accept those
-		// too. See golang.org/issue/8186.
-		for _, v := range b {
-			if v != 0 {
-				return ErrFormat
-			}
-		}
 	}
+
+	if needUSize || needCSize || needHeaderOffset {
+		return ErrFormat
+	}
+
 	return nil
 }
 
@@ -376,14 +416,16 @@ func readDirectoryEnd(r io.ReaderAt, size int64) (dir *directoryEnd, err error) 
 	}
 	d.comment = string(b[:l])
 
-	p, err := findDirectory64End(r, directoryEndOffset)
-	if err == nil && p >= 0 {
-		err = readDirectory64End(r, p, d)
+	// These values mean that the file can be a zip64 file
+	if d.directoryRecords == 0xffff || d.directorySize == 0xffff || d.directoryOffset == 0xffffffff {
+		p, err := findDirectory64End(r, directoryEndOffset)
+		if err == nil && p >= 0 {
+			err = readDirectory64End(r, p, d)
+		}
+		if err != nil {
+			return nil, err
+		}
 	}
-	if err != nil {
-		return nil, err
-	}
-
 	// Make sure directoryOffset points to somewhere in our file.
 	if o := int64(d.directoryOffset); o < 0 || o >= size {
 		return nil, ErrFormat
@@ -407,8 +449,13 @@ func findDirectory64End(r io.ReaderAt, directoryEndOffset int64) (int64, error) 
 	if sig := b.uint32(); sig != directory64LocSignature {
 		return -1, nil
 	}
-	b = b[4:]       // skip number of the disk with the start of the zip64 end of central directory
-	p := b.uint64() // relative offset of the zip64 end of central directory record
+	if b.uint32() != 0 { // number of the disk with the start of the zip64 end of central directory
+		return -1, nil // the file is not a valid zip64-file
+	}
+	p := b.uint64()      // relative offset of the zip64 end of central directory record
+	if b.uint32() != 1 { // total number of disks
+		return -1, nil // the file is not a valid zip64-file
+	}
 	return int64(p), nil
 }
 

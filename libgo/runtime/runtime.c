@@ -20,23 +20,28 @@ enum {
 // The cached value is a uint32 in which the low bit
 // is the "crash" setting and the top 31 bits are the
 // gotraceback value.
-static uint32 traceback_cache = ~(uint32)0;
+enum {
+	tracebackCrash = 1 << 0,
+	tracebackAll = 1 << 1,
+	tracebackShift = 2,
+};
+static uint32 traceback_cache = 2 << tracebackShift;
+static uint32 traceback_env;
 
 extern volatile intgo runtime_MemProfileRate
   __asm__ (GOSYM_PREFIX "runtime.MemProfileRate");
 
 
-// The GOTRACEBACK environment variable controls the
-// behavior of a Go program that is crashing and exiting.
-//	GOTRACEBACK=0   suppress all tracebacks
-//	GOTRACEBACK=1   default behavior - show tracebacks but exclude runtime frames
-//	GOTRACEBACK=2   show tracebacks including runtime frames
-//	GOTRACEBACK=crash   show tracebacks including runtime frames, then crash (core dump etc)
+// gotraceback returns the current traceback settings.
+//
+// If level is 0, suppress all tracebacks.
+// If level is 1, show tracebacks, but exclude runtime frames.
+// If level is 2, show tracebacks including runtime frames.
+// If all is set, print all goroutine stacks. Otherwise, print just the current goroutine.
+// If crash is set, crash (core dump, etc) after tracebacking.
 int32
 runtime_gotraceback(bool *crash)
 {
-	String s;
-	const byte *p;
 	uint32 x;
 
 	if(crash != nil)
@@ -44,20 +49,9 @@ runtime_gotraceback(bool *crash)
 	if(runtime_m()->traceback != 0)
 		return runtime_m()->traceback;
 	x = runtime_atomicload(&traceback_cache);
-	if(x == ~(uint32)0) {
-		s = runtime_getenv("GOTRACEBACK");
-		p = s.str;
-		if(s.len == 0)
-			x = 1<<1;
-		else if(s.len == 5 && runtime_strcmp((const char *)p, "crash") == 0)
-			x = (2<<1) | 1;
-		else
-			x = runtime_atoi(p, s.len)<<1;	
-		runtime_atomicstore(&traceback_cache, x);
-	}
 	if(crash != nil)
-		*crash = x&1;
-	return x>>1;
+		*crash = x&tracebackCrash;
+	return x>>tracebackShift;
 }
 
 static int32	argc;
@@ -319,6 +313,31 @@ runtime_signalstack(byte *p, int32 n)
 		*(int *)0xf1 = 0xf1;
 }
 
+void setTraceback(String level)
+  __asm__ (GOSYM_PREFIX "runtime_debug.SetTraceback");
+
+void setTraceback(String level) {
+	uint32 t;
+
+	if (level.len == 4 && __builtin_memcmp(level.str, "none", 4) == 0) {
+		t = 0;
+	} else if (level.len == 0 || (level.len == 6 && __builtin_memcmp(level.str, "single", 6) == 0)) {
+		t = 1 << tracebackShift;
+	} else if (level.len == 3 && __builtin_memcmp(level.str, "all", 3) == 0) {
+		t = (1<<tracebackShift) | tracebackAll;
+	} else if (level.len == 6 && __builtin_memcmp(level.str, "system", 6) == 0) {
+		t = (2<<tracebackShift) | tracebackAll;
+	} else if (level.len == 5 && __builtin_memcmp(level.str, "crash", 5) == 0) {
+		t = (2<<tracebackShift) | tracebackAll | tracebackCrash;
+	} else {
+		t = (runtime_atoi(level.str, level.len)<<tracebackShift) | tracebackAll;
+	}
+
+	t |= traceback_env;
+
+	runtime_atomicstore(&traceback_cache, t);
+}
+
 DebugVars	runtime_debug;
 
 // Holds variables parsed from GODEBUG env var,
@@ -331,11 +350,22 @@ static struct {
 	int32*	value;
 } dbgvar[] = {
 	{"allocfreetrace", &runtime_debug.allocfreetrace},
+	{"cgocheck", &runtime_debug.cgocheck},
 	{"efence", &runtime_debug.efence},
+	{"gccheckmark", &runtime_debug.gccheckmark},
+	{"gcpacertrace", &runtime_debug.gcpacertrace},
+	{"gcshrinkstackoff", &runtime_debug.gcshrinkstackoff},
+	{"gcstackbarrieroff", &runtime_debug.gcstackbarrieroff},
+	{"gcstackbarrierall", &runtime_debug.gcstackbarrierall},
+	{"gcstoptheworld", &runtime_debug.gcstoptheworld},
 	{"gctrace", &runtime_debug.gctrace},
 	{"gcdead", &runtime_debug.gcdead},
+	{"invalidptr", &runtime_debug.invalidptr},
+	{"sbrk", &runtime_debug.sbrk},
+	{"scavenge", &runtime_debug.scavenge},
 	{"scheddetail", &runtime_debug.scheddetail},
 	{"schedtrace", &runtime_debug.schedtrace},
+	{"wbshadow", &runtime_debug.wbshadow},
 };
 
 void
@@ -345,17 +375,7 @@ runtime_parsedebugvars(void)
 	const byte *p, *pn;
 	intgo len;
 	intgo i, n;
-	bool tmp;
 	
-	// gotraceback caches the GOTRACEBACK setting in traceback_cache.
-	// gotraceback can be called before the environment is available.
-	// traceback_cache must be reset after the environment is made
-	// available, in order for the environment variable to take effect.
-	// The code is fixed differently in Go 1.4.
-	// This is a limited fix for Go 1.3.3.
-	traceback_cache = ~(uint32)0;
-	runtime_gotraceback(&tmp);
-
 	s = runtime_getenv("GODEBUG");
 	if(s.len == 0)
 		return;
@@ -378,6 +398,20 @@ runtime_parsedebugvars(void)
 		len -= (pn - p) - 1;
 		p = pn + 1;
 	}
+
+	setTraceback(runtime_getenv("GOTRACEBACK"));
+	traceback_env = traceback_cache;
+}
+
+// SetTracebackEnv is like runtime/debug.SetTraceback, but it raises
+// the "environment" traceback level, so later calls to
+// debug.SetTraceback (e.g., from testing timeouts) can't lower it.
+void SetTracebackEnv(String level)
+  __asm__ (GOSYM_PREFIX "runtime.SetTracebackEnv");
+
+void SetTracebackEnv(String level) {
+	setTraceback(level);
+	traceback_env = traceback_cache;
 }
 
 // Poor mans 64-bit division.

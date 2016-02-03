@@ -1,3 +1,9 @@
+2016-02-03  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.am (go_cmd_gofmt_files): Update to Go 1.6rc1 by adding
+	internal.go.
+	* Makefile.in: Rebuild.
+
 2015-12-02  Ian Lance Taylor  <iant@google.com>
 
 	PR go/66147

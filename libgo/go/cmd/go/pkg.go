@@ -118,7 +118,7 @@ func (p *Package) vendored(imports []string) []string {
 	seen := make(map[string]bool)
 	var all []string
 	for _, path := range imports {
-		path, _ = vendoredImportPath(p, path)
+		path = vendoredImportPath(p, path)
 		if !seen[path] {
 			seen[path] = true
 			all = append(all, path)
@@ -156,7 +156,7 @@ func (p *Package) copyBuild(pp *build.Package) {
 	if buildContext.Compiler == "gccgo" {
 		p.Standard = stdpkg[p.ImportPath]
 	} else {
-		p.Standard = p.Goroot && p.ImportPath != "" && !strings.Contains(p.ImportPath, ".")
+		p.Standard = p.Goroot && p.ImportPath != "" && isStandardImportPath(p.ImportPath)
 	}
 	p.GoFiles = pp.GoFiles
 	p.CgoFiles = pp.CgoFiles
@@ -179,6 +179,19 @@ func (p *Package) copyBuild(pp *build.Package) {
 	p.TestImports = pp.TestImports
 	p.XTestGoFiles = pp.XTestGoFiles
 	p.XTestImports = pp.XTestImports
+}
+
+// isStandardImportPath reports whether $GOROOT/src/path should be considered
+// part of the standard distribution. For historical reasons we allow people to add
+// their own code to $GOROOT instead of using $GOPATH, but we assume that
+// code will start with a domain name (dot in the first element).
+func isStandardImportPath(path string) bool {
+	i := strings.Index(path, "/")
+	if i < 0 {
+		i = len(path)
+	}
+	elem := path[:i]
+	return !strings.Contains(elem, ".")
 }
 
 // A PackageError describes an error loading information about a package.
@@ -254,11 +267,14 @@ func reloadPackage(arg string, stk *importStack) *Package {
 	return loadPackage(arg, stk)
 }
 
-// The Go 1.5 vendoring experiment is enabled by setting GO15VENDOREXPERIMENT=1.
+// The Go 1.5 vendoring experiment was enabled by setting GO15VENDOREXPERIMENT=1.
+// In Go 1.6 this is on by default and is disabled by setting GO15VENDOREXPERIMENT=0.
+// In Go 1.7 the variable will stop having any effect.
 // The variable is obnoxiously long so that years from now when people find it in
 // their profiles and wonder what it does, there is some chance that a web search
 // might answer the question.
-var go15VendorExperiment = os.Getenv("GO15VENDOREXPERIMENT") == "1"
+// There is a copy of this variable in src/go/build/build.go. Delete that one when this one goes away.
+var go15VendorExperiment = os.Getenv("GO15VENDOREXPERIMENT") != "0"
 
 // dirToImportPath returns the pseudo-import path we use for a package
 // outside the Go path.  It begins with _/ and then contains the full path
@@ -314,11 +330,14 @@ func loadImport(path, srcDir string, parent *Package, stk *importStack, importPo
 	importPath := path
 	origPath := path
 	isLocal := build.IsLocalImport(path)
-	var vendorSearch []string
 	if isLocal {
 		importPath = dirToImportPath(filepath.Join(srcDir, path))
 	} else if mode&useVendor != 0 {
-		path, vendorSearch = vendoredImportPath(parent, path)
+		// We do our own vendor resolution, because we want to
+		// find out the key to use in packageCache without the
+		// overhead of repeated calls to buildContext.Import.
+		// The code is also needed in a few other places anyway.
+		path = vendoredImportPath(parent, path)
 		importPath = path
 	}
 
@@ -345,29 +364,12 @@ func loadImport(path, srcDir string, parent *Package, stk *importStack, importPo
 	//
 	// TODO: After Go 1, decide when to pass build.AllowBinary here.
 	// See issue 3268 for mistakes to avoid.
-	bp, err := buildContext.Import(path, srcDir, build.ImportComment)
-
-	// If we got an error from go/build about package not found,
-	// it contains the directories from $GOROOT and $GOPATH that
-	// were searched. Add to that message the vendor directories
-	// that were searched.
-	if err != nil && len(vendorSearch) > 0 {
-		// NOTE(rsc): The direct text manipulation here is fairly awful,
-		// but it avoids defining new go/build API (an exported error type)
-		// late in the Go 1.5 release cycle. If this turns out to be a more general
-		// problem we could define a real error type when the decision can be
-		// considered more carefully.
-		text := err.Error()
-		if strings.Contains(text, "cannot find package \"") && strings.Contains(text, "\" in any of:\n\t") {
-			old := strings.SplitAfter(text, "\n")
-			lines := []string{old[0]}
-			for _, dir := range vendorSearch {
-				lines = append(lines, "\t"+dir+" (vendor tree)\n")
-			}
-			lines = append(lines, old[1:]...)
-			err = errors.New(strings.Join(lines, ""))
-		}
+	buildMode := build.ImportComment
+	if !go15VendorExperiment || mode&useVendor == 0 || path != origPath {
+		// Not vendoring, or we already found the vendored path.
+		buildMode |= build.IgnoreVendor
 	}
+	bp, err := buildContext.Import(path, srcDir, buildMode)
 	bp.ImportPath = importPath
 	if gobin != "" {
 		bp.BinDir = gobin
@@ -377,7 +379,7 @@ func loadImport(path, srcDir string, parent *Package, stk *importStack, importPo
 		err = fmt.Errorf("code in directory %s expects import %q", bp.Dir, bp.ImportComment)
 	}
 	p.load(stk, bp, err)
-	if p.Error != nil && len(importPos) > 0 {
+	if p.Error != nil && p.Error.Pos == "" && len(importPos) > 0 {
 		pos := importPos[0]
 		pos.Filename = shortPath(pos.Filename)
 		p.Error.Pos = pos.String()
@@ -411,14 +413,11 @@ func isDir(path string) bool {
 
 // vendoredImportPath returns the expansion of path when it appears in parent.
 // If parent is x/y/z, then path might expand to x/y/z/vendor/path, x/y/vendor/path,
-// x/vendor/path, vendor/path, or else stay x/y/z if none of those exist.
+// x/vendor/path, vendor/path, or else stay path if none of those exist.
 // vendoredImportPath returns the expanded path or, if no expansion is found, the original.
-// If no expansion is found, vendoredImportPath also returns a list of vendor directories
-// it searched along the way, to help prepare a useful error message should path turn
-// out not to exist.
-func vendoredImportPath(parent *Package, path string) (found string, searched []string) {
+func vendoredImportPath(parent *Package, path string) (found string) {
 	if parent == nil || parent.Root == "" || !go15VendorExperiment {
-		return path, nil
+		return path
 	}
 	dir := filepath.Clean(parent.Dir)
 	root := filepath.Join(parent.Root, "src")
@@ -438,7 +437,7 @@ func vendoredImportPath(parent *Package, path string) (found string, searched []
 			continue
 		}
 		targ := filepath.Join(dir[:i], vpath)
-		if isDir(targ) {
+		if isDir(targ) && hasGoFiles(targ) {
 			// We started with parent's dir c:\gopath\src\foo\bar\baz\quux\xyzzy.
 			// We know the import path for parent's dir.
 			// We chopped off some number of path elements and
@@ -453,14 +452,26 @@ func vendoredImportPath(parent *Package, path string) (found string, searched []
 				// and found c:\gopath\src\vendor\path.
 				// We chopped \foo\bar (length 8) but the import path is "foo/bar" (length 7).
 				// Use "vendor/path" without any prefix.
-				return vpath, nil
+				return vpath
 			}
-			return parent.ImportPath[:len(parent.ImportPath)-chopped] + "/" + vpath, nil
+			return parent.ImportPath[:len(parent.ImportPath)-chopped] + "/" + vpath
 		}
-		// Note the existence of a vendor directory in case path is not found anywhere.
-		searched = append(searched, targ)
 	}
-	return path, searched
+	return path
+}
+
+// hasGoFiles reports whether dir contains any files with names ending in .go.
+// For a vendor check we must exclude directories that contain no .go files.
+// Otherwise it is not possible to vendor just a/b/c and still import the
+// non-vendored a/b. See golang.org/issue/13832.
+func hasGoFiles(dir string) bool {
+	fis, _ := ioutil.ReadDir(dir)
+	for _, fi := range fis {
+		if !fi.IsDir() && strings.HasSuffix(fi.Name(), ".go") {
+			return true
+		}
+	}
+	return false
 }
 
 // reusePackage reuses package p to satisfy the import at the top
@@ -522,7 +533,7 @@ func disallowInternal(srcDir string, p *Package, stk *importStack) *Package {
 		i-- // rewind over slash in ".../internal"
 	}
 	parent := p.Dir[:i+len(p.Dir)-len(p.ImportPath)]
-	if hasPathPrefix(filepath.ToSlash(srcDir), filepath.ToSlash(parent)) {
+	if hasFilePathPrefix(filepath.Clean(srcDir), filepath.Clean(parent)) {
 		return p
 	}
 
@@ -619,7 +630,7 @@ func disallowVendorVisibility(srcDir string, p *Package, stk *importStack) *Pack
 		return p
 	}
 	parent := p.Dir[:truncateTo]
-	if hasPathPrefix(filepath.ToSlash(srcDir), filepath.ToSlash(parent)) {
+	if hasFilePathPrefix(filepath.Clean(srcDir), filepath.Clean(parent)) {
 		return p
 	}
 
@@ -712,6 +723,7 @@ func expandScanner(err error) error {
 
 var raceExclude = map[string]bool{
 	"runtime/race": true,
+	"runtime/msan": true,
 	"runtime/cgo":  true,
 	"cmd/cgo":      true,
 	"syscall":      true,
@@ -725,6 +737,7 @@ var cgoExclude = map[string]bool{
 var cgoSyscallExclude = map[string]bool{
 	"runtime/cgo":  true,
 	"runtime/race": true,
+	"runtime/msan": true,
 }
 
 // load populates p using information from bp, err, which should
@@ -829,25 +842,38 @@ func (p *Package) load(stk *importStack, bp *build.Package, err error) *Package 
 		importPaths = append(importPaths, "syscall")
 	}
 
-	// Currently build mode c-shared, or -linkshared, forces
+	// Currently build modes c-shared, pie, and -linkshared force
 	// external linking mode, and external linking mode forces an
 	// import of runtime/cgo.
-	if p.Name == "main" && !p.Goroot && (buildBuildmode == "c-shared" || buildLinkshared) {
+	if p.Name == "main" && !p.Goroot && (buildBuildmode == "c-shared" || buildBuildmode == "pie" || buildLinkshared) {
 		importPaths = append(importPaths, "runtime/cgo")
 	}
 
-	// Everything depends on runtime, except runtime and unsafe.
-	if !p.Standard || (p.ImportPath != "runtime" && p.ImportPath != "unsafe") {
+	// Everything depends on runtime, except runtime, its internal
+	// subpackages, and unsafe.
+	if !p.Standard || (p.ImportPath != "runtime" && !strings.HasPrefix(p.ImportPath, "runtime/internal/") && p.ImportPath != "unsafe") {
 		importPaths = append(importPaths, "runtime")
 		// When race detection enabled everything depends on runtime/race.
 		// Exclude certain packages to avoid circular dependencies.
 		if buildRace && (!p.Standard || !raceExclude[p.ImportPath]) {
 			importPaths = append(importPaths, "runtime/race")
 		}
+		// MSan uses runtime/msan.
+		if buildMSan && (!p.Standard || !raceExclude[p.ImportPath]) {
+			importPaths = append(importPaths, "runtime/msan")
+		}
 		// On ARM with GOARM=5, everything depends on math for the link.
 		if p.Name == "main" && goarch == "arm" {
 			importPaths = append(importPaths, "math")
 		}
+	}
+
+	// Runtime and its internal packages depend on runtime/internal/sys,
+	// so that they pick up the generated zversion.go file.
+	// This can be an issue particularly for runtime/internal/atomic;
+	// see issue 13655.
+	if p.Standard && (p.ImportPath == "runtime" || strings.HasPrefix(p.ImportPath, "runtime/internal/")) && p.ImportPath != "runtime/internal/sys" {
+		importPaths = append(importPaths, "runtime/internal/sys")
 	}
 
 	// Build list of full paths to all Go files in the package,
@@ -931,6 +957,17 @@ func (p *Package) load(stk *importStack, bp *build.Package, err error) *Package 
 				}
 			}
 		}
+		if p.Standard && !p1.Standard && p.Error == nil {
+			p.Error = &PackageError{
+				ImportStack: stk.copy(),
+				Err:         fmt.Sprintf("non-standard import %q in standard package %q", path, p.ImportPath),
+			}
+			pos := p.build.ImportPos[path]
+			if len(pos) > 0 {
+				p.Error.Pos = pos[0].String()
+			}
+		}
+
 		path = p1.ImportPath
 		importPaths[i] = path
 		if i < len(p.Imports) {
@@ -1613,15 +1650,24 @@ func packagesAndErrors(args []string) []*Package {
 	}
 
 	args = importPaths(args)
-	var pkgs []*Package
-	var stk importStack
-	var set = make(map[string]bool)
+	var (
+		pkgs    []*Package
+		stk     importStack
+		seenArg = make(map[string]bool)
+		seenPkg = make(map[*Package]bool)
+	)
 
 	for _, arg := range args {
-		if !set[arg] {
-			pkgs = append(pkgs, loadPackage(arg, &stk))
-			set[arg] = true
+		if seenArg[arg] {
+			continue
 		}
+		seenArg[arg] = true
+		pkg := loadPackage(arg, &stk)
+		if seenPkg[pkg] {
+			continue
+		}
+		seenPkg[pkg] = true
+		pkgs = append(pkgs, pkg)
 	}
 	computeStale(pkgs...)
 
@@ -1792,7 +1838,16 @@ var (
 	goBuildEnd    = []byte("\"\n \xff")
 
 	elfPrefix = []byte("\x7fELF")
+
+	machoPrefixes = [][]byte{
+		{0xfe, 0xed, 0xfa, 0xce},
+		{0xfe, 0xed, 0xfa, 0xcf},
+		{0xce, 0xfa, 0xed, 0xfe},
+		{0xcf, 0xfa, 0xed, 0xfe},
+	}
 )
+
+var BuildIDReadSize = 32 * 1024 // changed for testing
 
 // ReadBuildIDFromBinary reads the build ID from a binary.
 //
@@ -1808,10 +1863,11 @@ func ReadBuildIDFromBinary(filename string) (id string, err error) {
 		return "", &os.PathError{Op: "parse", Path: filename, Err: errBuildIDUnknown}
 	}
 
-	// Read the first 16 kB of the binary file.
+	// Read the first 32 kB of the binary file.
 	// That should be enough to find the build ID.
 	// In ELF files, the build ID is in the leading headers,
-	// which are typically less than 4 kB, not to mention 16 kB.
+	// which are typically less than 4 kB, not to mention 32 kB.
+	// In Mach-O files, there's no limit, so we have to parse the file.
 	// On other systems, we're trying to read enough that
 	// we get the beginning of the text segment in the read.
 	// The offset where the text segment begins in a hello
@@ -1819,7 +1875,6 @@ func ReadBuildIDFromBinary(filename string) (id string, err error) {
 	//
 	//	Plan 9: 0x20
 	//	Windows: 0x600
-	//	Mach-O: 0x2000
 	//
 	f, err := os.Open(filename)
 	if err != nil {
@@ -1827,7 +1882,7 @@ func ReadBuildIDFromBinary(filename string) (id string, err error) {
 	}
 	defer f.Close()
 
-	data := make([]byte, 16*1024)
+	data := make([]byte, BuildIDReadSize)
 	_, err = io.ReadFull(f, data)
 	if err == io.ErrUnexpectedEOF {
 		err = nil
@@ -1839,7 +1894,17 @@ func ReadBuildIDFromBinary(filename string) (id string, err error) {
 	if bytes.HasPrefix(data, elfPrefix) {
 		return readELFGoBuildID(filename, f, data)
 	}
+	for _, m := range machoPrefixes {
+		if bytes.HasPrefix(data, m) {
+			return readMachoGoBuildID(filename, f, data)
+		}
+	}
 
+	return readRawGoBuildID(filename, data)
+}
+
+// readRawGoBuildID finds the raw build ID stored in text segment data.
+func readRawGoBuildID(filename string, data []byte) (id string, err error) {
 	i := bytes.Index(data, goBuildPrefix)
 	if i < 0 {
 		// Missing. Treat as successful but build ID empty.

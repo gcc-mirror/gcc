@@ -34,8 +34,8 @@
 		%b	decimalless scientific notation with exponent a power of two,
 			in the manner of strconv.FormatFloat with the 'b' format,
 			e.g. -123456p-78
-		%e	scientific notation, e.g. -1234.456e+78
-		%E	scientific notation, e.g. -1234.456E+78
+		%e	scientific notation, e.g. -1.234456e+78
+		%E	scientific notation, e.g. -1.234456E+78
 		%f	decimal point but no exponent, e.g. 123.456
 		%F	synonym for %f
 		%g	%e for large exponents, %f otherwise
@@ -138,8 +138,8 @@
 	formatting considerations apply for operands that implement
 	certain interfaces. In order of application:
 
-	1. If the operand is a reflect.Value, the concrete value it
-	holds is printed as if it was the operand.
+	1. If the operand is a reflect.Value, the operand is replaced by the
+	concrete value that it holds, and printing continues with the next rule.
 
 	2. If an operand implements the Formatter interface, it will
 	be invoked. Formatter provides fine control of formatting.

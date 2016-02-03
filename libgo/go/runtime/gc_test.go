@@ -18,58 +18,12 @@ func TestGcSys(t *testing.T) {
 	if os.Getenv("GOGC") == "off" {
 		t.Skip("skipping test; GOGC=off in environment")
 	}
-	data := struct{ Short bool }{testing.Short()}
-	got := executeTest(t, testGCSysSource, &data)
+	got := runTestProg(t, "testprog", "GCSys")
 	want := "OK\n"
 	if got != want {
 		t.Fatalf("expected %q, but got %q", want, got)
 	}
 }
-
-const testGCSysSource = `
-package main
-
-import (
-	"fmt"
-	"runtime"
-)
-
-func main() {
-	runtime.GOMAXPROCS(1)
-	memstats := new(runtime.MemStats)
-	runtime.GC()
-	runtime.ReadMemStats(memstats)
-	sys := memstats.Sys
-
-	runtime.MemProfileRate = 0 // disable profiler
-
-	itercount := 1000000
-{{if .Short}}
-	itercount = 100000
-{{end}}
-	for i := 0; i < itercount; i++ {
-		workthegc()
-	}
-
-	// Should only be using a few MB.
-	// We allocated 100 MB or (if not short) 1 GB.
-	runtime.ReadMemStats(memstats)
-	if sys > memstats.Sys {
-		sys = 0
-	} else {
-		sys = memstats.Sys - sys
-	}
-	if sys > 16<<20 {
-		fmt.Printf("using too much memory: %d bytes\n", sys)
-		return
-	}
-	fmt.Printf("OK\n")
-}
-
-func workthegc() []byte {
-	return make([]byte, 1029)
-}
-`
 
 func TestGcDeepNesting(t *testing.T) {
 	type T [2][2][2][2][2][2][2][2][2][2]*int
@@ -197,6 +151,39 @@ func TestHugeGCInfo(t *testing.T) {
 		})
 	}
 }
+
+/*
+func TestPeriodicGC(t *testing.T) {
+	// Make sure we're not in the middle of a GC.
+	runtime.GC()
+
+	var ms1, ms2 runtime.MemStats
+	runtime.ReadMemStats(&ms1)
+
+	// Make periodic GC run continuously.
+	orig := *runtime.ForceGCPeriod
+	*runtime.ForceGCPeriod = 0
+
+	// Let some periodic GCs happen. In a heavily loaded system,
+	// it's possible these will be delayed, so this is designed to
+	// succeed quickly if things are working, but to give it some
+	// slack if things are slow.
+	var numGCs uint32
+	const want = 2
+	for i := 0; i < 20 && numGCs < want; i++ {
+		time.Sleep(5 * time.Millisecond)
+
+		// Test that periodic GC actually happened.
+		runtime.ReadMemStats(&ms2)
+		numGCs = ms2.NumGC - ms1.NumGC
+	}
+	*runtime.ForceGCPeriod = orig
+
+	if numGCs < want {
+		t.Fatalf("no periodic GC: got %v GCs, want >= 2", numGCs)
+	}
+}
+*/
 
 func BenchmarkSetTypePtr(b *testing.B) {
 	benchSetType(b, new(*byte))
@@ -481,10 +468,12 @@ func TestAssertE2T2Liveness(t *testing.T) {
 	testIfaceEqual(io.EOF)
 }
 
+var a bool
+
+//go:noinline
 func testIfaceEqual(x interface{}) {
 	if x == "abc" {
-		// Prevent inlining
-		panic("")
+		a = true
 	}
 }
 

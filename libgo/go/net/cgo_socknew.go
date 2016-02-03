@@ -25,8 +25,8 @@ func cgoSockaddrInet4(ip IP) *syscall.RawSockaddr {
 	return (*syscall.RawSockaddr)(unsafe.Pointer(&sa))
 }
 
-func cgoSockaddrInet6(ip IP) *syscall.RawSockaddr {
-	sa := syscall.RawSockaddrInet6{Family: syscall.AF_INET6}
+func cgoSockaddrInet6(ip IP, zone int) *syscall.RawSockaddr {
+	sa := syscall.RawSockaddrInet6{Family: syscall.AF_INET6, Scope_id: uint32(zone)}
 	copy(sa.Addr[:], ip)
 	return (*syscall.RawSockaddr)(unsafe.Pointer(&sa))
 }

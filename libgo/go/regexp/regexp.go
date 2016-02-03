@@ -104,6 +104,17 @@ func (re *Regexp) String() string {
 	return re.expr
 }
 
+// Copy returns a new Regexp object copied from re.
+//
+// When using a Regexp in multiple goroutines, giving each goroutine
+// its own copy helps to avoid lock contention.
+func (re *Regexp) Copy() *Regexp {
+	r := *re
+	r.mu = sync.Mutex{}
+	r.machine = nil
+	return &r
+}
+
 // Compile parses a regular expression and returns, if successful,
 // a Regexp object that can be used to match against text.
 //
@@ -482,6 +493,10 @@ func (re *Regexp) replaceAll(bsrc []byte, src string, nmatch int, repl func(dst 
 	} else {
 		endPos = len(src)
 	}
+	if nmatch > re.prog.NumCap {
+		nmatch = re.prog.NumCap
+	}
+
 	for searchPos <= endPos {
 		a := re.doExecute(nil, bsrc, src, searchPos, nmatch)
 		if len(a) == 0 {

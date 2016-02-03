@@ -76,6 +76,7 @@ go_cmd_go_files = \
 go_cmd_gofmt_files = \
 	$(cmdsrcdir)/gofmt/doc.go \
 	$(cmdsrcdir)/gofmt/gofmt.go \
+	$(cmdsrcdir)/gofmt/internal.go \
 	$(cmdsrcdir)/gofmt/rewrite.go \
 	$(cmdsrcdir)/gofmt/simplify.go
 

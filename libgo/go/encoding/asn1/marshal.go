@@ -414,7 +414,7 @@ func marshalBody(out *forkableWriter, value reflect.Value, params fieldParameter
 		return nil
 	case timeType:
 		t := value.Interface().(time.Time)
-		if params.timeType == tagGeneralizedTime || outsideUTCRange(t) {
+		if params.timeType == TagGeneralizedTime || outsideUTCRange(t) {
 			return marshalGeneralizedTime(out, t)
 		} else {
 			return marshalUTCTime(out, t)
@@ -493,9 +493,9 @@ func marshalBody(out *forkableWriter, value reflect.Value, params fieldParameter
 		return
 	case reflect.String:
 		switch params.stringType {
-		case tagIA5String:
+		case TagIA5String:
 			return marshalIA5String(out, v.String())
-		case tagPrintableString:
+		case TagPrintableString:
 			return marshalPrintableString(out, v.String())
 		default:
 			return marshalUTF8String(out, v.String())
@@ -506,6 +506,9 @@ func marshalBody(out *forkableWriter, value reflect.Value, params fieldParameter
 }
 
 func marshalField(out *forkableWriter, v reflect.Value, params fieldParameters) (err error) {
+	if !v.IsValid() {
+		return fmt.Errorf("asn1: cannot marshal nil value")
+	}
 	// If the field is an interface{} then recurse into it.
 	if v.Kind() == reflect.Interface && v.Type().NumMethod() == 0 {
 		return marshalField(out, v.Elem(), params)
@@ -552,18 +555,18 @@ func marshalField(out *forkableWriter, v reflect.Value, params fieldParameters) 
 		err = StructuralError{fmt.Sprintf("unknown Go type: %v", v.Type())}
 		return
 	}
-	class := classUniversal
+	class := ClassUniversal
 
-	if params.timeType != 0 && tag != tagUTCTime {
+	if params.timeType != 0 && tag != TagUTCTime {
 		return StructuralError{"explicit time type given to non-time member"}
 	}
 
-	if params.stringType != 0 && tag != tagPrintableString {
+	if params.stringType != 0 && tag != TagPrintableString {
 		return StructuralError{"explicit string type given to non-string member"}
 	}
 
 	switch tag {
-	case tagPrintableString:
+	case TagPrintableString:
 		if params.stringType == 0 {
 			// This is a string without an explicit string type. We'll use
 			// a PrintableString if the character set in the string is
@@ -573,24 +576,24 @@ func marshalField(out *forkableWriter, v reflect.Value, params fieldParameters) 
 					if !utf8.ValidString(v.String()) {
 						return errors.New("asn1: string not valid UTF-8")
 					}
-					tag = tagUTF8String
+					tag = TagUTF8String
 					break
 				}
 			}
 		} else {
 			tag = params.stringType
 		}
-	case tagUTCTime:
-		if params.timeType == tagGeneralizedTime || outsideUTCRange(v.Interface().(time.Time)) {
-			tag = tagGeneralizedTime
+	case TagUTCTime:
+		if params.timeType == TagGeneralizedTime || outsideUTCRange(v.Interface().(time.Time)) {
+			tag = TagGeneralizedTime
 		}
 	}
 
 	if params.set {
-		if tag != tagSequence {
+		if tag != TagSequence {
 			return StructuralError{"non sequence tagged as set"}
 		}
-		tag = tagSet
+		tag = TagSet
 	}
 
 	tags, body := out.fork()
@@ -610,7 +613,7 @@ func marshalField(out *forkableWriter, v reflect.Value, params fieldParameters) 
 	if !params.explicit && params.tag != nil {
 		// implicit tag.
 		tag = *params.tag
-		class = classContextSpecific
+		class = ClassContextSpecific
 	}
 
 	err = marshalTagAndLength(tags, tagAndLength{class, tag, bodyLen, isCompound})
@@ -620,14 +623,14 @@ func marshalField(out *forkableWriter, v reflect.Value, params fieldParameters) 
 
 	if params.explicit {
 		err = marshalTagAndLength(explicitTag, tagAndLength{
-			class:      classContextSpecific,
+			class:      ClassContextSpecific,
 			tag:        *params.tag,
 			length:     bodyLen + tags.Len(),
 			isCompound: true,
 		})
 	}
 
-	return nil
+	return err
 }
 
 // Marshal returns the ASN.1 encoding of val.
@@ -648,5 +651,5 @@ func Marshal(val interface{}) ([]byte, error) {
 		return nil, err
 	}
 	_, err = f.writeTo(&out)
-	return out.Bytes(), nil
+	return out.Bytes(), err
 }

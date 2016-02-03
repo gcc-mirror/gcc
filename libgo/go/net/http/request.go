@@ -90,8 +90,11 @@ type Request struct {
 	// request.
 	URL *url.URL
 
-	// The protocol version for incoming requests.
-	// Client requests always use HTTP/1.1.
+	// The protocol version for incoming server requests.
+	//
+	// For client requests these fields are ignored. The HTTP
+	// client code always uses either HTTP/1.1 or HTTP/2.
+	// See the docs on Transport for details.
 	Proto      string // "HTTP/1.0"
 	ProtoMajor int    // 1
 	ProtoMinor int    // 0
@@ -354,7 +357,7 @@ const defaultUserAgent = "Go-http-client/1.1"
 // hasn't been set to "identity", Write adds "Transfer-Encoding:
 // chunked" to the header. Body is closed after it is sent.
 func (r *Request) Write(w io.Writer) error {
-	return r.write(w, false, nil)
+	return r.write(w, false, nil, nil)
 }
 
 // WriteProxy is like Write but writes the request in the form
@@ -364,11 +367,16 @@ func (r *Request) Write(w io.Writer) error {
 // In either case, WriteProxy also writes a Host header, using
 // either r.Host or r.URL.Host.
 func (r *Request) WriteProxy(w io.Writer) error {
-	return r.write(w, true, nil)
+	return r.write(w, true, nil, nil)
 }
 
+// errMissingHost is returned by Write when there is no Host or URL present in
+// the Request.
+var errMissingHost = errors.New("http: Request.Write on Request with no Host or URL set")
+
 // extraHeaders may be nil
-func (req *Request) write(w io.Writer, usingProxy bool, extraHeaders Header) error {
+// waitForContinue may be nil
+func (req *Request) write(w io.Writer, usingProxy bool, extraHeaders Header, waitForContinue func() bool) error {
 	// Find the target host. Prefer the Host: header, but if that
 	// is not given, use the host from the request URL.
 	//
@@ -376,7 +384,7 @@ func (req *Request) write(w io.Writer, usingProxy bool, extraHeaders Header) err
 	host := cleanHost(req.Host)
 	if host == "" {
 		if req.URL == nil {
-			return errors.New("http: Request.Write on Request with no Host or URL set")
+			return errMissingHost
 		}
 		host = cleanHost(req.URL.Host)
 	}
@@ -419,10 +427,8 @@ func (req *Request) write(w io.Writer, usingProxy bool, extraHeaders Header) err
 	// Use the defaultUserAgent unless the Header contains one, which
 	// may be blank to not send the header.
 	userAgent := defaultUserAgent
-	if req.Header != nil {
-		if ua := req.Header["User-Agent"]; len(ua) > 0 {
-			userAgent = ua[0]
-		}
+	if _, ok := req.Header["User-Agent"]; ok {
+		userAgent = req.Header.Get("User-Agent")
 	}
 	if userAgent != "" {
 		_, err = fmt.Fprintf(w, "User-Agent: %s\r\n", userAgent)
@@ -456,6 +462,21 @@ func (req *Request) write(w io.Writer, usingProxy bool, extraHeaders Header) err
 	_, err = io.WriteString(w, "\r\n")
 	if err != nil {
 		return err
+	}
+
+	// Flush and wait for 100-continue if expected.
+	if waitForContinue != nil {
+		if bw, ok := w.(*bufio.Writer); ok {
+			err = bw.Flush()
+			if err != nil {
+				return err
+			}
+		}
+
+		if !waitForContinue() {
+			req.closeBody()
+			return nil
+		}
 	}
 
 	// Write body and trailer
@@ -531,6 +552,23 @@ func ParseHTTPVersion(vers string) (major, minor int, ok bool) {
 	return major, minor, true
 }
 
+func validMethod(method string) bool {
+	/*
+	     Method         = "OPTIONS"                ; Section 9.2
+	                    | "GET"                    ; Section 9.3
+	                    | "HEAD"                   ; Section 9.4
+	                    | "POST"                   ; Section 9.5
+	                    | "PUT"                    ; Section 9.6
+	                    | "DELETE"                 ; Section 9.7
+	                    | "TRACE"                  ; Section 9.8
+	                    | "CONNECT"                ; Section 9.9
+	                    | extension-method
+	   extension-method = token
+	     token          = 1*<any CHAR except CTLs or separators>
+	*/
+	return len(method) > 0 && strings.IndexFunc(method, isNotToken) == -1
+}
+
 // NewRequest returns a new Request given a method, URL, and optional body.
 //
 // If the provided body is also an io.Closer, the returned
@@ -544,6 +582,15 @@ func ParseHTTPVersion(vers string) (major, minor int, ok bool) {
 // type's documentation for the difference between inbound and outbound
 // request fields.
 func NewRequest(method, urlStr string, body io.Reader) (*Request, error) {
+	if method == "" {
+		// We document that "" means "GET" for Request.Method, and people have
+		// relied on that from NewRequest, so keep that working.
+		// We still enforce validMethod for non-empty methods.
+		method = "GET"
+	}
+	if !validMethod(method) {
+		return nil, fmt.Errorf("net/http: invalid method %q", method)
+	}
 	u, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, err
@@ -643,8 +690,15 @@ func putTextprotoReader(r *textproto.Reader) {
 }
 
 // ReadRequest reads and parses an incoming request from b.
-func ReadRequest(b *bufio.Reader) (req *Request, err error) {
+func ReadRequest(b *bufio.Reader) (req *Request, err error) { return readRequest(b, deleteHostHeader) }
 
+// Constants for readRequest's deleteHostHeader parameter.
+const (
+	deleteHostHeader = true
+	keepHostHeader   = false
+)
+
+func readRequest(b *bufio.Reader, deleteHostHeader bool) (req *Request, err error) {
 	tp := newTextprotoReader(b)
 	req = new(Request)
 
@@ -711,7 +765,9 @@ func ReadRequest(b *bufio.Reader) (req *Request, err error) {
 	if req.Host == "" {
 		req.Host = req.Header.get("Host")
 	}
-	delete(req.Header, "Host")
+	if deleteHostHeader {
+		delete(req.Header, "Host")
+	}
 
 	fixPragmaCacheControl(req.Header)
 
@@ -1005,4 +1061,103 @@ func (r *Request) closeBody() {
 	if r.Body != nil {
 		r.Body.Close()
 	}
+}
+
+func (r *Request) isReplayable() bool {
+	if r.Body == nil {
+		switch valueOrDefault(r.Method, "GET") {
+		case "GET", "HEAD", "OPTIONS", "TRACE":
+			return true
+		}
+	}
+	return false
+}
+
+func validHostHeader(h string) bool {
+	// The latests spec is actually this:
+	//
+	// http://tools.ietf.org/html/rfc7230#section-5.4
+	//     Host = uri-host [ ":" port ]
+	//
+	// Where uri-host is:
+	//     http://tools.ietf.org/html/rfc3986#section-3.2.2
+	//
+	// But we're going to be much more lenient for now and just
+	// search for any byte that's not a valid byte in any of those
+	// expressions.
+	for i := 0; i < len(h); i++ {
+		if !validHostByte[h[i]] {
+			return false
+		}
+	}
+	return true
+}
+
+// See the validHostHeader comment.
+var validHostByte = [256]bool{
+	'0': true, '1': true, '2': true, '3': true, '4': true, '5': true, '6': true, '7': true,
+	'8': true, '9': true,
+
+	'a': true, 'b': true, 'c': true, 'd': true, 'e': true, 'f': true, 'g': true, 'h': true,
+	'i': true, 'j': true, 'k': true, 'l': true, 'm': true, 'n': true, 'o': true, 'p': true,
+	'q': true, 'r': true, 's': true, 't': true, 'u': true, 'v': true, 'w': true, 'x': true,
+	'y': true, 'z': true,
+
+	'A': true, 'B': true, 'C': true, 'D': true, 'E': true, 'F': true, 'G': true, 'H': true,
+	'I': true, 'J': true, 'K': true, 'L': true, 'M': true, 'N': true, 'O': true, 'P': true,
+	'Q': true, 'R': true, 'S': true, 'T': true, 'U': true, 'V': true, 'W': true, 'X': true,
+	'Y': true, 'Z': true,
+
+	'!':  true, // sub-delims
+	'$':  true, // sub-delims
+	'%':  true, // pct-encoded (and used in IPv6 zones)
+	'&':  true, // sub-delims
+	'(':  true, // sub-delims
+	')':  true, // sub-delims
+	'*':  true, // sub-delims
+	'+':  true, // sub-delims
+	',':  true, // sub-delims
+	'-':  true, // unreserved
+	'.':  true, // unreserved
+	':':  true, // IPv6address + Host expression's optional port
+	';':  true, // sub-delims
+	'=':  true, // sub-delims
+	'[':  true,
+	'\'': true, // sub-delims
+	']':  true,
+	'_':  true, // unreserved
+	'~':  true, // unreserved
+}
+
+func validHeaderName(v string) bool {
+	if len(v) == 0 {
+		return false
+	}
+	return strings.IndexFunc(v, isNotToken) == -1
+}
+
+// validHeaderValue reports whether v is a valid "field-value" according to
+// http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2 :
+//
+//        message-header = field-name ":" [ field-value ]
+//        field-value    = *( field-content | LWS )
+//        field-content  = <the OCTETs making up the field-value
+//                         and consisting of either *TEXT or combinations
+//                         of token, separators, and quoted-string>
+//
+// http://www.w3.org/Protocols/rfc2616/rfc2616-sec2.html#sec2.2 :
+//
+//        TEXT           = <any OCTET except CTLs,
+//                          but including LWS>
+//        LWS            = [CRLF] 1*( SP | HT )
+//        CTL            = <any US-ASCII control character
+//                         (octets 0 - 31) and DEL (127)>
+func validHeaderValue(v string) bool {
+	for i := 0; i < len(v); i++ {
+		b := v[i]
+		if isCTL(b) && !isLWS(b) {
+			return false
+		}
+	}
+	return true
 }

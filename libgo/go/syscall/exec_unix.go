@@ -65,12 +65,6 @@ import (
 //sysnb raw_setgroups(size int, list unsafe.Pointer) (err Errno)
 //setgroups(size Size_t, list *Gid_t) _C_int
 
-//sysnb raw_setuid(uid int) (err Errno)
-//setuid(uid Uid_t) _C_int
-
-//sysnb raw_setgid(gid int) (err Errno)
-//setgid(gid Gid_t) _C_int
-
 // Lock synchronizing creation of new file descriptors with fork.
 //
 // We want the child in a fork/exec sequence to inherit only the

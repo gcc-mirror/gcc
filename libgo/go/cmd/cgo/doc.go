@@ -117,16 +117,26 @@ The standard C numeric types are available under the names
 C.char, C.schar (signed char), C.uchar (unsigned char),
 C.short, C.ushort (unsigned short), C.int, C.uint (unsigned int),
 C.long, C.ulong (unsigned long), C.longlong (long long),
-C.ulonglong (unsigned long long), C.float, C.double.
+C.ulonglong (unsigned long long), C.float, C.double,
+C.complexfloat (complex float), and C.complexdouble (complex double).
 The C type void* is represented by Go's unsafe.Pointer.
+The C types __int128_t and __uint128_t are represented by [16]byte.
 
 To access a struct, union, or enum type directly, prefix it with
 struct_, union_, or enum_, as in C.struct_stat.
+
+The size of any C type T is available as C.sizeof_T, as in
+C.sizeof_struct_stat.
 
 As Go doesn't have support for C's union type in the general case,
 C's union types are represented as a Go byte array with the same length.
 
 Go structs cannot embed fields with C types.
+
+Go code can not refer to zero-sized fields that occur at the end of
+non-empty C structs.  To get the address of such a field (which is the
+only operation you can do with a zero-sized field) you must take the
+address of the struct and add the size of the struct.
 
 Cgo translates C types into equivalent unexported Go types.
 Because the translations are unexported, a Go package should not
@@ -188,10 +198,10 @@ by making copies of the data.  In pseudo-Go definitions:
 	// C string to Go string
 	func C.GoString(*C.char) string
 
-	// C string, length to Go string
+	// C data with explicit length to Go string
 	func C.GoStringN(*C.char, C.int) string
 
-	// C pointer, length to Go []byte
+	// C data with explicit length to Go []byte
 	func C.GoBytes(unsafe.Pointer, C.int) []byte
 
 C references to Go
@@ -220,6 +230,55 @@ contain any definitions, only declarations. If a file contains both
 definitions and declarations, then the two output files will produce
 duplicate symbols and the linker will fail. To avoid this, definitions
 must be placed in preambles in other files, or in C source files.
+
+Passing pointers
+
+Go is a garbage collected language, and the garbage collector needs to
+know the location of every pointer to Go memory.  Because of this,
+there are restrictions on passing pointers between Go and C.
+
+In this section the term Go pointer means a pointer to memory
+allocated by Go (such as by using the & operator or calling the
+predefined new function) and the term C pointer means a pointer to
+memory allocated by C (such as by a call to C.malloc).  Whether a
+pointer is a Go pointer or a C pointer is a dynamic property
+determined by how the memory was allocated; it has nothing to do with
+the type of the pointer.
+
+Go code may pass a Go pointer to C provided the Go memory to which it
+points does not contain any Go pointers.  The C code must preserve
+this property: it must not store any Go pointers in Go memory, even
+temporarily.  When passing a pointer to a field in a struct, the Go
+memory in question is the memory occupied by the field, not the entire
+struct.  When passing a pointer to an element in an array or slice,
+the Go memory in question is the entire array or the entire backing
+array of the slice.
+
+C code may not keep a copy of a Go pointer after the call returns.
+
+A Go function called by C code may not return a Go pointer.  A Go
+function called by C code may take C pointers as arguments, and it may
+store non-pointer or C pointer data through those pointers, but it may
+not store a Go pointer in memory pointed to by a C pointer.  A Go
+function called by C code may take a Go pointer as an argument, but it
+must preserve the property that the Go memory to which it points does
+not contain any Go pointers.
+
+Go code may not store a Go pointer in C memory.  C code may store Go
+pointers in C memory, subject to the rule above: it must stop storing
+the Go pointer when the C function returns.
+
+These rules are checked dynamically at runtime.  The checking is
+controlled by the cgocheck setting of the GODEBUG environment
+variable.  The default setting is GODEBUG=cgocheck=1, which implements
+reasonably cheap dynamic checks.  These checks may be disabled
+entirely using GODEBUG=cgocheck=0.  Complete checking of pointer
+handling, at some cost in run time, is available via GODEBUG=cgocheck=2.
+
+It is possible to defeat this enforcement by using the unsafe package,
+and of course there is nothing stopping the C code from doing anything
+it likes.  However, programs that break these rules are likely to fail
+in unexpected and unpredictable ways.
 
 Using cgo directly
 
@@ -391,17 +450,13 @@ the translation process.
 
 Translating Go
 
-[The rest of this comment refers to 6g, the Go compiler that is part
-of the amd64 port of the gc Go toolchain. Everything here applies to
-another architecture's compilers as well.]
-
 Given the input Go files x.go and y.go, cgo generates these source
 files:
 
-	x.cgo1.go       # for 6g
-	y.cgo1.go       # for 6g
-	_cgo_gotypes.go # for 6g
-	_cgo_import.go  # for 6g (if -dynout _cgo_import.go)
+	x.cgo1.go       # for gc (cmd/compile)
+	y.cgo1.go       # for gc
+	_cgo_gotypes.go # for gc
+	_cgo_import.go  # for gc (if -dynout _cgo_import.go)
 	x.cgo2.c        # for gcc
 	y.cgo2.c        # for gcc
 	_cgo_defun.c    # for gcc (if -gccgo)
@@ -464,7 +519,7 @@ Linking
 
 Once the _cgo_export.c and *.cgo2.c files have been compiled with gcc,
 they need to be linked into the final binary, along with the libraries
-they might depend on (in the case of puts, stdio). 6l has been
+they might depend on (in the case of puts, stdio). cmd/link has been
 extended to understand basic ELF files, but it does not understand ELF
 in the full complexity that modern C libraries embrace, so it cannot
 in general generate direct references to the system libraries.
@@ -495,23 +550,23 @@ _cgo_import.go, which looks like:
 	//go:cgo_import_dynamic _ _ "libc.so.6"
 
 In the end, the compiled Go package, which will eventually be
-presented to 6l as part of a larger program, contains:
+presented to cmd/link as part of a larger program, contains:
 
-	_go_.6        # 6g-compiled object for _cgo_gotypes.go, _cgo_import.go, *.cgo1.go
+	_go_.o        # gc-compiled object for _cgo_gotypes.go, _cgo_import.go, *.cgo1.go
 	_all.o        # gcc-compiled object for _cgo_export.c, *.cgo2.c
 
-The final program will be a dynamic executable, so that 6l can avoid
+The final program will be a dynamic executable, so that cmd/link can avoid
 needing to process arbitrary .o files. It only needs to process the .o
 files generated from C files that cgo writes, and those are much more
 limited in the ELF or other features that they use.
 
-In essence, the _cgo_import.6 file includes the extra linking
-directives that 6l is not sophisticated enough to derive from _all.o
+In essence, the _cgo_import.o file includes the extra linking
+directives that cmd/link is not sophisticated enough to derive from _all.o
 on its own. Similarly, the _all.o uses dynamic references to real
-system object code because 6l is not sophisticated enough to process
+system object code because cmd/link is not sophisticated enough to process
 the real code.
 
-The main benefits of this system are that 6l remains relatively simple
+The main benefits of this system are that cmd/link remains relatively simple
 (it does not need to implement a complete ELF and Mach-O linker) and
 that gcc is not needed after the package is compiled. For example,
 package net uses cgo for access to name resolution functions provided
@@ -540,17 +595,17 @@ system calls.
 
 Internal and External Linking
 
-The text above describes "internal" linking, in which 6l parses and
+The text above describes "internal" linking, in which cmd/link parses and
 links host object files (ELF, Mach-O, PE, and so on) into the final
-executable itself. Keeping 6l simple means we cannot possibly
+executable itself. Keeping cmd/link simple means we cannot possibly
 implement the full semantics of the host linker, so the kinds of
 objects that can be linked directly into the binary is limited (other
 code can only be used as a dynamic library). On the other hand, when
-using internal linking, 6l can generate Go binaries by itself.
+using internal linking, cmd/link can generate Go binaries by itself.
 
 In order to allow linking arbitrary object files without requiring
 dynamic libraries, cgo supports an "external" linking mode too. In
-external linking mode, 6l does not process any host object files.
+external linking mode, cmd/link does not process any host object files.
 Instead, it collects all the Go code and writes a single go.o object
 file containing it. Then it invokes the host linker (usually gcc) to
 combine the go.o object file and any supporting non-Go code into a
@@ -582,8 +637,8 @@ to be made when linking the final binary.
 Linking Directives
 
 In either linking mode, package-specific directives must be passed
-through to 6l. These are communicated by writing //go: directives in a
-Go source file compiled by 6g. The directives are copied into the .6
+through to cmd/link. These are communicated by writing //go: directives in a
+Go source file compiled by gc. The directives are copied into the .o
 object file and then processed by the linker.
 
 The directives are:
@@ -672,7 +727,7 @@ Example
 As a simple example, consider a package that uses cgo to call C.sin.
 The following code will be generated by cgo:
 
-	// compiled by 6g
+	// compiled by gc
 
 	//go:cgo_ldflag "-lm"
 
@@ -708,7 +763,7 @@ Otherwise the link will be an internal one.
 The linking directives are used according to the kind of final link
 used.
 
-In internal mode, 6l itself processes all the host object files, in
+In internal mode, cmd/link itself processes all the host object files, in
 particular foo.cgo2.o. To do so, it uses the cgo_import_dynamic and
 cgo_dynamic_linker directives to learn that the otherwise undefined
 reference to sin in foo.cgo2.o should be rewritten to refer to the
@@ -716,56 +771,56 @@ symbol sin with version GLIBC_2.2.5 from the dynamic library
 "libm.so.6", and the binary should request "/lib/ld-linux.so.2" as its
 runtime dynamic linker.
 
-In external mode, 6l does not process any host object files, in
-particular foo.cgo2.o. It links together the 6g-generated object
+In external mode, cmd/link does not process any host object files, in
+particular foo.cgo2.o. It links together the gc-generated object
 files, along with any other Go code, into a go.o file. While doing
-that, 6l will discover that there is no definition for
-_cgo_gcc_Cfunc_sin, referred to by the 6g-compiled source file. This
-is okay, because 6l also processes the cgo_import_static directive and
+that, cmd/link will discover that there is no definition for
+_cgo_gcc_Cfunc_sin, referred to by the gc-compiled source file. This
+is okay, because cmd/link also processes the cgo_import_static directive and
 knows that _cgo_gcc_Cfunc_sin is expected to be supplied by a host
-object file, so 6l does not treat the missing symbol as an error when
+object file, so cmd/link does not treat the missing symbol as an error when
 creating go.o. Indeed, the definition for _cgo_gcc_Cfunc_sin will be
 provided to the host linker by foo2.cgo.o, which in turn will need the
-symbol 'sin'. 6l also processes the cgo_ldflag directives, so that it
+symbol 'sin'. cmd/link also processes the cgo_ldflag directives, so that it
 knows that the eventual host link command must include the -lm
 argument, so that the host linker will be able to find 'sin' in the
 math library.
 
-6l Command Line Interface
+cmd/link Command Line Interface
 
-The go command and any other Go-aware build systems invoke 6l
-to link a collection of packages into a single binary. By default, 6l will
+The go command and any other Go-aware build systems invoke cmd/link
+to link a collection of packages into a single binary. By default, cmd/link will
 present the same interface it does today:
 
-	6l main.a
+	cmd/link main.a
 
-produces a file named 6.out, even if 6l does so by invoking the host
+produces a file named a.out, even if cmd/link does so by invoking the host
 linker in external linking mode.
 
-By default, 6l will decide the linking mode as follows: if the only
+By default, cmd/link will decide the linking mode as follows: if the only
 packages using cgo are those on a whitelist of standard library
-packages (net, os/user, runtime/cgo), 6l will use internal linking
-mode. Otherwise, there are non-standard cgo packages involved, and 6l
+packages (net, os/user, runtime/cgo), cmd/link will use internal linking
+mode. Otherwise, there are non-standard cgo packages involved, and cmd/link
 will use external linking mode. The first rule means that a build of
 the godoc binary, which uses net but no other cgo, can run without
 needing gcc available. The second rule means that a build of a
 cgo-wrapped library like sqlite3 can generate a standalone executable
 instead of needing to refer to a dynamic library. The specific choice
-can be overridden using a command line flag: 6l -linkmode=internal or
-6l -linkmode=external.
+can be overridden using a command line flag: cmd/link -linkmode=internal or
+cmd/link -linkmode=external.
 
-In an external link, 6l will create a temporary directory, write any
+In an external link, cmd/link will create a temporary directory, write any
 host object files found in package archives to that directory (renamed
 to avoid conflicts), write the go.o file to that directory, and invoke
 the host linker. The default value for the host linker is $CC, split
 into fields, or else "gcc". The specific host linker command line can
-be overridden using command line flags: 6l -extld=clang
+be overridden using command line flags: cmd/link -extld=clang
 -extldflags='-ggdb -O3'.  If any package in a build includes a .cc or
 other file compiled by the C++ compiler, the go tool will use the
 -extld option to set the host linker to the C++ compiler.
 
 These defaults mean that Go-aware build systems can ignore the linking
-changes and keep running plain '6l' and get reasonable results, but
+changes and keep running plain 'cmd/link' and get reasonable results, but
 they can also control the linking details if desired.
 
 */

@@ -5,6 +5,7 @@
 package http_test
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -177,6 +178,36 @@ Cases:
 	}
 }
 
+func TestServeFile_DotDot(t *testing.T) {
+	tests := []struct {
+		req        string
+		wantStatus int
+	}{
+		{"/testdata/file", 200},
+		{"/../file", 400},
+		{"/..", 400},
+		{"/../", 400},
+		{"/../foo", 400},
+		{"/..\\foo", 400},
+		{"/file/a", 200},
+		{"/file/a..", 200},
+		{"/file/a/..", 400},
+		{"/file/a\\..", 400},
+	}
+	for _, tt := range tests {
+		req, err := ReadRequest(bufio.NewReader(strings.NewReader("GET " + tt.req + " HTTP/1.1\r\nHost: foo\r\n\r\n")))
+		if err != nil {
+			t.Errorf("bad request %q: %v", tt.req, err)
+			continue
+		}
+		rec := httptest.NewRecorder()
+		ServeFile(rec, req, "testdata/file")
+		if rec.Code != tt.wantStatus {
+			t.Errorf("for request %q, status = %d; want %d", tt.req, rec.Code, tt.wantStatus)
+		}
+	}
+}
+
 var fsRedirectTestData = []struct {
 	original, redirect string
 }{
@@ -280,6 +311,49 @@ func TestFileServerEscapesNames(t *testing.T) {
 			t.Errorf("test %q: listing dir, filename escaped to %q, want %q", test.name, trimmed, test.escaped)
 		}
 		res.Body.Close()
+	}
+}
+
+func TestFileServerSortsNames(t *testing.T) {
+	defer afterTest(t)
+	const contents = "I am a fake file"
+	dirMod := time.Unix(123, 0).UTC()
+	fileMod := time.Unix(1000000000, 0).UTC()
+	fs := fakeFS{
+		"/": &fakeFileInfo{
+			dir:     true,
+			modtime: dirMod,
+			ents: []*fakeFileInfo{
+				{
+					basename: "b",
+					modtime:  fileMod,
+					contents: contents,
+				},
+				{
+					basename: "a",
+					modtime:  fileMod,
+					contents: contents,
+				},
+			},
+		},
+	}
+
+	ts := httptest.NewServer(FileServer(&fs))
+	defer ts.Close()
+
+	res, err := Get(ts.URL)
+	if err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+	defer res.Body.Close()
+
+	b, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		t.Fatalf("read Body: %v", err)
+	}
+	s := string(b)
+	if !strings.Contains(s, "<a href=\"a\">a</a>\n<a href=\"b\">b</a>") {
+		t.Errorf("output appears to be unsorted:\n%s", s)
 	}
 }
 
@@ -434,14 +508,27 @@ func TestServeFileFromCWD(t *testing.T) {
 	}
 }
 
-func TestServeFileWithContentEncoding(t *testing.T) {
+// Tests that ServeFile doesn't add a Content-Length if a Content-Encoding is
+// specified.
+func TestServeFileWithContentEncoding_h1(t *testing.T) { testServeFileWithContentEncoding(t, h1Mode) }
+func TestServeFileWithContentEncoding_h2(t *testing.T) { testServeFileWithContentEncoding(t, h2Mode) }
+func testServeFileWithContentEncoding(t *testing.T, h2 bool) {
 	defer afterTest(t)
-	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+	cst := newClientServerTest(t, h2, HandlerFunc(func(w ResponseWriter, r *Request) {
 		w.Header().Set("Content-Encoding", "foo")
 		ServeFile(w, r, "testdata/file")
+
+		// Because the testdata is so small, it would fit in
+		// both the h1 and h2 Server's write buffers. For h1,
+		// sendfile is used, though, forcing a header flush at
+		// the io.Copy. http2 doesn't do a header flush so
+		// buffers all 11 bytes and then adds its own
+		// Content-Length. To prevent the Server's
+		// Content-Length and test ServeFile only, flush here.
+		w.(Flusher).Flush()
 	}))
-	defer ts.Close()
-	resp, err := Get(ts.URL)
+	defer cst.close()
+	resp, err := cst.c.Get(cst.ts.URL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -807,6 +894,28 @@ func TestServeContent(t *testing.T) {
 	}
 }
 
+// Issue 12991
+func TestServerFileStatError(t *testing.T) {
+	rec := httptest.NewRecorder()
+	r, _ := NewRequest("GET", "http://foo/", nil)
+	redirect := false
+	name := "file.txt"
+	fs := issue12991FS{}
+	ExportServeFile(rec, r, fs, name, redirect)
+	if body := rec.Body.String(); !strings.Contains(body, "403") || !strings.Contains(body, "Forbidden") {
+		t.Errorf("wanted 403 forbidden message; got: %s", body)
+	}
+}
+
+type issue12991FS struct{}
+
+func (issue12991FS) Open(string) (File, error) { return issue12991File{}, nil }
+
+type issue12991File struct{ File }
+
+func (issue12991File) Stat() (os.FileInfo, error) { return nil, os.ErrPermission }
+func (issue12991File) Close() error               { return nil }
+
 func TestServeContentErrorMessages(t *testing.T) {
 	defer afterTest(t)
 	fs := fakeFS{
@@ -852,13 +961,16 @@ func TestLinuxSendfile(t *testing.T) {
 	}
 	defer ln.Close()
 
-	trace := "trace=sendfile"
-	if runtime.GOARCH != "alpha" {
-		trace = trace + ",sendfile64"
+	syscalls := "sendfile,sendfile64"
+	switch runtime.GOARCH {
+	case "mips64", "mips64le", "alpha":
+		// mips64 strace doesn't support sendfile64 and will error out
+		// if we specify that with `-e trace='.
+		syscalls = "sendfile"
 	}
 
 	var buf bytes.Buffer
-	child := exec.Command("strace", "-f", "-q", "-e", trace, os.Args[0], "-test.run=TestLinuxSendfileChild")
+	child := exec.Command("strace", "-f", "-q", "-e", "trace="+syscalls, os.Args[0], "-test.run=TestLinuxSendfileChild")
 	child.ExtraFiles = append(child.ExtraFiles, lnf)
 	child.Env = append([]string{"GO_WANT_HELPER_PROCESS=1"}, os.Environ()...)
 	child.Stdout = &buf
@@ -878,7 +990,7 @@ func TestLinuxSendfile(t *testing.T) {
 	res.Body.Close()
 
 	// Force child to exit cleanly.
-	Get(fmt.Sprintf("http://%s/quit", ln.Addr()))
+	Post(fmt.Sprintf("http://%s/quit", ln.Addr()), "", nil)
 	child.Wait()
 
 	rx := regexp.MustCompile(`sendfile(64)?\(\d+,\s*\d+,\s*NULL,\s*\d+\)\s*=\s*\d+\s*\n`)

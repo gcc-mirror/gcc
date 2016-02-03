@@ -10,6 +10,8 @@ package net
 import (
 	"io"
 	"os"
+	"time"
+	_ "unsafe" // For go:linkname
 )
 
 type file struct {
@@ -70,14 +72,20 @@ func open(name string) (*file, error) {
 	return &file{fd, make([]byte, 0, os.Getpagesize()), false}, nil
 }
 
-func byteIndex(s string, c byte) int {
-	for i := 0; i < len(s); i++ {
-		if s[i] == c {
-			return i
-		}
+func stat(name string) (mtime time.Time, size int64, err error) {
+	st, err := os.Stat(name)
+	if err != nil {
+		return time.Time{}, 0, err
 	}
-	return -1
+	return st.ModTime(), st.Size(), nil
 }
+
+// byteIndex is strings.IndexByte. It returns the index of the
+// first instance of c in s, or -1 if c is not present in s.
+// strings.IndexByte is implemented in  runtime/asm_$GOARCH.s
+//go:linkname byteIndex strings.IndexByte
+//extern strings.IndexByte
+func byteIndex(s string, c byte) int
 
 // Count occurrences in s of any bytes in t.
 func countAnyByte(s string, t string) int {
@@ -120,14 +128,26 @@ const big = 0xFFFFFF
 // Returns number, new offset, success.
 func dtoi(s string, i0 int) (n int, i int, ok bool) {
 	n = 0
+	neg := false
+	if len(s) > 0 && s[0] == '-' {
+		neg = true
+		s = s[1:]
+	}
 	for i = i0; i < len(s) && '0' <= s[i] && s[i] <= '9'; i++ {
 		n = n*10 + int(s[i]-'0')
 		if n >= big {
-			return 0, i, false
+			if neg {
+				return -big, i + 1, false
+			}
+			return big, i, false
 		}
 	}
 	if i == i0 {
 		return 0, i, false
+	}
+	if neg {
+		n = -n
+		i++
 	}
 	return n, i, true
 }
@@ -314,14 +334,10 @@ func foreachField(x []byte, fn func(field []byte) error) error {
 
 // bytesIndexByte is bytes.IndexByte. It returns the index of the
 // first instance of c in s, or -1 if c is not present in s.
-func bytesIndexByte(s []byte, c byte) int {
-	for i, b := range s {
-		if b == c {
-			return i
-		}
-	}
-	return -1
-}
+// bytes.IndexByte is implemented in  runtime/asm_$GOARCH.s
+//go:linkname bytesIndexByte bytes.IndexByte
+//extern bytes.IndexByte
+func bytesIndexByte(s []byte, c byte) int
 
 // stringsHasSuffix is strings.HasSuffix. It reports whether s ends in
 // suffix.

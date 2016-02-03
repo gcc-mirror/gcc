@@ -45,10 +45,10 @@ var sysdir = func() *sysDir {
 	switch runtime.GOOS {
 	case "android":
 		return &sysDir{
-			"/system/etc",
+			"/system/framework",
 			[]string{
-				"audio_policy.conf",
-				"system_fonts.xml",
+				"ext.jar",
+				"framework.jar",
 			},
 		}
 	case "darwin":
@@ -292,6 +292,48 @@ func TestReaddirnames(t *testing.T) {
 func TestReaddir(t *testing.T) {
 	testReaddir(".", dot, t)
 	testReaddir(sysdir.name, sysdir.files, t)
+}
+
+func benchmarkReaddirname(path string, b *testing.B) {
+	var nentries int
+	for i := 0; i < b.N; i++ {
+		f, err := Open(path)
+		if err != nil {
+			b.Fatalf("open %q failed: %v", path, err)
+		}
+		ns, err := f.Readdirnames(-1)
+		f.Close()
+		if err != nil {
+			b.Fatalf("readdirnames %q failed: %v", path, err)
+		}
+		nentries = len(ns)
+	}
+	b.Logf("benchmarkReaddirname %q: %d entries", path, nentries)
+}
+
+func benchmarkReaddir(path string, b *testing.B) {
+	var nentries int
+	for i := 0; i < b.N; i++ {
+		f, err := Open(path)
+		if err != nil {
+			b.Fatalf("open %q failed: %v", path, err)
+		}
+		fs, err := f.Readdir(-1)
+		f.Close()
+		if err != nil {
+			b.Fatalf("readdir %q failed: %v", path, err)
+		}
+		nentries = len(fs)
+	}
+	b.Logf("benchmarkReaddir %q: %d entries", path, nentries)
+}
+
+func BenchmarkReaddirname(b *testing.B) {
+	benchmarkReaddirname(".", b)
+}
+
+func BenchmarkReaddir(b *testing.B) {
+	benchmarkReaddir(".", b)
 }
 
 // Read the directory one entry at a time.
@@ -539,6 +581,12 @@ func TestHardLink(t *testing.T) {
 	if runtime.GOOS == "plan9" {
 		t.Skip("skipping on plan9, hardlinks not supported")
 	}
+	// From Android release M (Marshmallow), hard linking files is blocked
+	// and an attempt to call link() on a file will return EACCES.
+	// - https://code.google.com/p/android-developer-preview/issues/detail?id=3150
+	if runtime.GOOS == "android" {
+		t.Skip("skipping on android, hardlinks not supported")
+	}
 	defer chtmpdir(t)()
 	from, to := "hardlinktestfrom", "hardlinktestto"
 	Remove(from) // Just in case.
@@ -670,7 +718,7 @@ func TestSymlink(t *testing.T) {
 
 func TestLongSymlink(t *testing.T) {
 	switch runtime.GOOS {
-	case "plan9", "nacl":
+	case "android", "plan9", "nacl":
 		t.Skipf("skipping on %s", runtime.GOOS)
 	case "windows":
 		if !supportsSymlinks {
@@ -723,9 +771,6 @@ func TestRename(t *testing.T) {
 }
 
 func TestRenameOverwriteDest(t *testing.T) {
-	if runtime.GOOS == "plan9" {
-		t.Skip("skipping on plan9")
-	}
 	defer chtmpdir(t)()
 	from, to := "renamefrom", "renameto"
 	// Just in case.

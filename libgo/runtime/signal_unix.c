@@ -24,14 +24,15 @@ runtime_initsig(void)
 		if((t->flags == 0) || (t->flags & SigDefault))
 			continue;
 
+		t->fwdsig = runtime_getsig(i);
+
 		// For some signals, we respect an inherited SIG_IGN handler
 		// rather than insist on installing our own default handler.
 		// Even these signals can be fetched using the os/signal package.
 		switch(t->sig) {
 		case SIGHUP:
 		case SIGINT:
-			if(runtime_getsig(i) == GO_SIG_IGN) {
-				t->flags = SigNotify | SigIgnored;
+			if(t->fwdsig == GO_SIG_IGN) {
 				continue;
 			}
 		}
@@ -60,8 +61,7 @@ runtime_sigenable(uint32 sig)
 
 	if((t->flags & SigNotify) && !(t->flags & SigHandling)) {
 		t->flags |= SigHandling;
-		if(runtime_getsig(i) == GO_SIG_IGN)
-			t->flags |= SigIgnored;
+		t->fwdsig = runtime_getsig(i);
 		runtime_setsig(i, runtime_sighandler, true);
 	}
 }
@@ -83,12 +83,9 @@ runtime_sigdisable(uint32 sig)
 	if(t == nil)
 		return;
 
-	if((t->flags & SigNotify) && (t->flags & SigHandling)) {
+	if((sig == SIGHUP || sig == SIGINT) && t->fwdsig == GO_SIG_IGN) {
 		t->flags &= ~SigHandling;
-		if(t->flags & SigIgnored)
-			runtime_setsig(i, GO_SIG_IGN, true);
-		else
-			runtime_setsig(i, GO_SIG_DFL, true);
+		runtime_setsig(i, t->fwdsig, true);
 	}
 }
 
@@ -130,18 +127,6 @@ runtime_resetcpuprofiler(int32 hz)
 		runtime_setitimer(ITIMER_PROF, &it, nil);
 	}
 	runtime_m()->profilehz = hz;
-}
-
-void
-os_sigpipe(void)
-{
-	int32 i;
-
-	for(i = 0; runtime_sigtab[i].sig != -1; i++)
-		if(runtime_sigtab[i].sig == SIGPIPE)
-			break;
-	runtime_setsig(i, GO_SIG_DFL, false);
-	runtime_raise(SIGPIPE);
 }
 
 void
