@@ -15,12 +15,31 @@
 # <http://www.gnu.org/licenses/>.
 
 # Return 1 if compilation with -fsanitize=thread is error-free for trivial
-# code, 0 otherwise.
+# code, 0 otherwise.  Also set what to do by default here, depending on the
+# result of a runtime test.
 
 proc check_effective_target_fsanitize_thread {} {
-    return [check_runtime fsanitize_thread {
+    global individual_timeout
+    global dg-do-what-default
+
+    if ![check_no_compiler_messages fsanitize_thread executable {
 	int main (void) { return 0; }
-    } "-fsanitize=thread"]
+    }] {
+        return 0
+    }
+
+    # Lower timeout value in case test does not terminate properly.
+    set individual_timeout 20
+    if [check_runtime_nocache tsan_works {
+	int main () { return 0; }
+    }] {
+	set dg-do-what-default run
+    } else {
+	set dg-do-what-default link
+    }
+    unset individual_timeout
+
+    return 1
 }
 
 #
@@ -100,22 +119,6 @@ proc tsan_init { args } {
 	} else {
 	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=thread -g"
 	}
-    }
-
-    set dg-do-what-default run
-    if { $link_flags != "" } {
-	global individual_timeout
-
-	# Lower timeout value in case test does not terminate properly.
-	set individual_timeout 20
-	if [check_runtime_nocache tsan_works {
-		int main () { return 0; }
-	    } "-fsanitize=thread -g"] {
-	    set dg-do-what-default run
-	} else {
-	    set dg-do-what-default compile
-	}
-	unset individual_timeout
     }
 }
 
