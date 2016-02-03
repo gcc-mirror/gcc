@@ -1,3 +1,9 @@
+2016-02-03  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/69118
+	* config/i386/sse.md (define_insn "avx512f_maskcmp<mode>3"):
+	Fix target.
+
 2016-02-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* wide-int.cc (canonize_uhwi): New function.
