@@ -9632,13 +9632,14 @@ Type::build_stub_methods(Gogo* gogo, const Type* type, const Methods* methods,
 	package = NULL;
       else
 	package = type->named_type()->named_object()->package();
+      std::string stub_name = name + "$stub";
       Named_object* stub;
       if (package != NULL)
-	stub = Named_object::make_function_declaration(name, package,
+	stub = Named_object::make_function_declaration(stub_name, package,
 						       stub_type, location);
       else
 	{
-	  stub = gogo->start_function(name, stub_type, false,
+	  stub = gogo->start_function(stub_name, stub_type, false,
 				      fntype->location());
 	  Type::build_one_stub_method(gogo, m, buf, stub_params,
 				      fntype->is_varargs(), location);

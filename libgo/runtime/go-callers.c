@@ -74,6 +74,8 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
       p = __builtin_strrchr (function, '$');
       if (p != NULL && __builtin_strcmp(p, "$recover") == 0)
 	return 0;
+      if (p != NULL && __builtin_strncmp(p, "$stub", 5) == 0)
+	return 0;
     }
 
   if (arg->skip > 0)
