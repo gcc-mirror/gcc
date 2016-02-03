@@ -1,3 +1,9 @@
+2016-02-03  Vladimir Makarov  <vmakarov@redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
+
+	PR target/69461
+	* gcc.target/powerpc/pr69461.c: New.
+
 2016-02-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/tsan-dg.exp (tsan_init): Move check if tsan executable
