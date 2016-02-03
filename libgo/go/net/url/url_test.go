@@ -6,6 +6,8 @@ package url
 
 import (
 	"fmt"
+	"io"
+	"net"
 	"reflect"
 	"strings"
 	"testing"
@@ -330,7 +332,7 @@ var urltests = []URLTest{
 		},
 		"",
 	},
-	// host subcomponent; IPv6 address with zone identifier in RFC 6847
+	// host subcomponent; IPv6 address with zone identifier in RFC 6874
 	{
 		"http://[fe80::1%25en0]/", // alphanum zone identifier
 		&URL{
@@ -340,7 +342,7 @@ var urltests = []URLTest{
 		},
 		"",
 	},
-	// host and port subcomponents; IPv6 address with zone identifier in RFC 6847
+	// host and port subcomponents; IPv6 address with zone identifier in RFC 6874
 	{
 		"http://[fe80::1%25en0]:8080/", // alphanum zone identifier
 		&URL{
@@ -350,7 +352,7 @@ var urltests = []URLTest{
 		},
 		"",
 	},
-	// host subcomponent; IPv6 address with zone identifier in RFC 6847
+	// host subcomponent; IPv6 address with zone identifier in RFC 6874
 	{
 		"http://[fe80::1%25%65%6e%301-._~]/", // percent-encoded+unreserved zone identifier
 		&URL{
@@ -360,7 +362,7 @@ var urltests = []URLTest{
 		},
 		"http://[fe80::1%25en01-._~]/",
 	},
-	// host and port subcomponents; IPv6 address with zone identifier in RFC 6847
+	// host and port subcomponents; IPv6 address with zone identifier in RFC 6874
 	{
 		"http://[fe80::1%25%65%6e%301-._~]:8080/", // percent-encoded+unreserved zone identifier
 		&URL{
@@ -421,6 +423,122 @@ var urltests = []URLTest{
 			Host:    "example.com",
 			Path:    "/oid/[order_id]",
 			RawPath: "/oid/[order_id]",
+		},
+		"",
+	},
+	// golang.org/issue/12200 (colon with empty port)
+	{
+		"http://192.168.0.2:8080/foo",
+		&URL{
+			Scheme: "http",
+			Host:   "192.168.0.2:8080",
+			Path:   "/foo",
+		},
+		"",
+	},
+	{
+		"http://192.168.0.2:/foo",
+		&URL{
+			Scheme: "http",
+			Host:   "192.168.0.2:",
+			Path:   "/foo",
+		},
+		"",
+	},
+	{
+		// Malformed IPv6 but still accepted.
+		"http://2b01:e34:ef40:7730:8e70:5aff:fefe:edac:8080/foo",
+		&URL{
+			Scheme: "http",
+			Host:   "2b01:e34:ef40:7730:8e70:5aff:fefe:edac:8080",
+			Path:   "/foo",
+		},
+		"",
+	},
+	{
+		// Malformed IPv6 but still accepted.
+		"http://2b01:e34:ef40:7730:8e70:5aff:fefe:edac:/foo",
+		&URL{
+			Scheme: "http",
+			Host:   "2b01:e34:ef40:7730:8e70:5aff:fefe:edac:",
+			Path:   "/foo",
+		},
+		"",
+	},
+	{
+		"http://[2b01:e34:ef40:7730:8e70:5aff:fefe:edac]:8080/foo",
+		&URL{
+			Scheme: "http",
+			Host:   "[2b01:e34:ef40:7730:8e70:5aff:fefe:edac]:8080",
+			Path:   "/foo",
+		},
+		"",
+	},
+	{
+		"http://[2b01:e34:ef40:7730:8e70:5aff:fefe:edac]:/foo",
+		&URL{
+			Scheme: "http",
+			Host:   "[2b01:e34:ef40:7730:8e70:5aff:fefe:edac]:",
+			Path:   "/foo",
+		},
+		"",
+	},
+	// golang.org/issue/7991 and golang.org/issue/12719 (non-ascii %-encoded in host)
+	{
+		"http://hello.世界.com/foo",
+		&URL{
+			Scheme: "http",
+			Host:   "hello.世界.com",
+			Path:   "/foo",
+		},
+		"http://hello.%E4%B8%96%E7%95%8C.com/foo",
+	},
+	{
+		"http://hello.%e4%b8%96%e7%95%8c.com/foo",
+		&URL{
+			Scheme: "http",
+			Host:   "hello.世界.com",
+			Path:   "/foo",
+		},
+		"http://hello.%E4%B8%96%E7%95%8C.com/foo",
+	},
+	{
+		"http://hello.%E4%B8%96%E7%95%8C.com/foo",
+		&URL{
+			Scheme: "http",
+			Host:   "hello.世界.com",
+			Path:   "/foo",
+		},
+		"",
+	},
+	// golang.org/issue/10433 (path beginning with //)
+	{
+		"http://example.com//foo",
+		&URL{
+			Scheme: "http",
+			Host:   "example.com",
+			Path:   "//foo",
+		},
+		"",
+	},
+	// test that we can reparse the host names we accept.
+	{
+		"myscheme://authority<\"hi\">/foo",
+		&URL{
+			Scheme: "myscheme",
+			Host:   "authority<\"hi\">",
+			Path:   "/foo",
+		},
+		"",
+	},
+	// spaces in hosts are disallowed but escaped spaces in IPv6 scope IDs are grudgingly OK.
+	// This happens on Windows.
+	// golang.org/issue/14002
+	{
+		"tcp://[2020::2020:20:2020:2020%25Windows%20Loves%20Spaces]:2020",
+		&URL{
+			Scheme: "tcp",
+			Host:   "[2020::2020:20:2020:2020%Windows Loves Spaces]:2020",
 		},
 		"",
 	},
@@ -1091,6 +1209,14 @@ var requritests = []RequestURITest{
 		},
 		"opaque?q=go+language",
 	},
+	{
+		&URL{
+			Scheme: "http",
+			Host:   "example.com",
+			Path:   "//foo",
+		},
+		"//foo",
+	},
 }
 
 func TestRequestURI(t *testing.T) {
@@ -1124,16 +1250,17 @@ func TestParseAuthority(t *testing.T) {
 		{"http://[::1]a", true},
 		{"http://[::1]%23", true},
 		{"http://[::1%25en0]", false},     // valid zone id
-		{"http://[::1]:", true},           // colon, but no port
-		{"http://[::1]:%38%30", true},     // no hex in port
-		{"http://[::1%25%10]", false},     // TODO: reject the %10 after the valid zone %25 separator?
+		{"http://[::1]:", false},          // colon, but no port OK
+		{"http://[::1]:%38%30", true},     // not allowed: % encoding only for non-ASCII
+		{"http://[::1%25%41]", false},     // RFC 6874 allows over-escaping in zone
 		{"http://[%10::1]", true},         // no %xx escapes in IP address
 		{"http://[::1]/%48", false},       // %xx in path is fine
-		{"http://%41:8080/", true},        // TODO: arguably we should accept reg-name with %xx
+		{"http://%41:8080/", true},        // not allowed: % encoding only for non-ASCII
 		{"mysql://x@y(z:123)/foo", false}, // golang.org/issue/12023
 		{"mysql://x@y(1.2.3.4:123)/foo", false},
 		{"mysql://x@y([2001:db8::1]:123)/foo", false},
 		{"http://[]%20%48%54%54%50%2f%31%2e%31%0a%4d%79%48%65%61%64%65%72%3a%20%31%32%33%0a%0a/", true}, // golang.org/issue/11208
+		{"http://a b.com/", true},                                                                       // no space in host name please
 	}
 	for _, tt := range tests {
 		u, err := Parse(tt.in)
@@ -1226,6 +1353,87 @@ func TestShouldEscape(t *testing.T) {
 	for _, tt := range shouldEscapeTests {
 		if shouldEscape(tt.in, tt.mode) != tt.escape {
 			t.Errorf("shouldEscape(%q, %v) returned %v; expected %v", tt.in, tt.mode, !tt.escape, tt.escape)
+		}
+	}
+}
+
+type timeoutError struct {
+	timeout bool
+}
+
+func (e *timeoutError) Error() string { return "timeout error" }
+func (e *timeoutError) Timeout() bool { return e.timeout }
+
+type temporaryError struct {
+	temporary bool
+}
+
+func (e *temporaryError) Error() string   { return "temporary error" }
+func (e *temporaryError) Temporary() bool { return e.temporary }
+
+type timeoutTemporaryError struct {
+	timeoutError
+	temporaryError
+}
+
+func (e *timeoutTemporaryError) Error() string { return "timeout/temporary error" }
+
+var netErrorTests = []struct {
+	err       error
+	timeout   bool
+	temporary bool
+}{{
+	err:       &Error{"Get", "http://google.com/", &timeoutError{timeout: true}},
+	timeout:   true,
+	temporary: false,
+}, {
+	err:       &Error{"Get", "http://google.com/", &timeoutError{timeout: false}},
+	timeout:   false,
+	temporary: false,
+}, {
+	err:       &Error{"Get", "http://google.com/", &temporaryError{temporary: true}},
+	timeout:   false,
+	temporary: true,
+}, {
+	err:       &Error{"Get", "http://google.com/", &temporaryError{temporary: false}},
+	timeout:   false,
+	temporary: false,
+}, {
+	err:       &Error{"Get", "http://google.com/", &timeoutTemporaryError{timeoutError{timeout: true}, temporaryError{temporary: true}}},
+	timeout:   true,
+	temporary: true,
+}, {
+	err:       &Error{"Get", "http://google.com/", &timeoutTemporaryError{timeoutError{timeout: false}, temporaryError{temporary: true}}},
+	timeout:   false,
+	temporary: true,
+}, {
+	err:       &Error{"Get", "http://google.com/", &timeoutTemporaryError{timeoutError{timeout: true}, temporaryError{temporary: false}}},
+	timeout:   true,
+	temporary: false,
+}, {
+	err:       &Error{"Get", "http://google.com/", &timeoutTemporaryError{timeoutError{timeout: false}, temporaryError{temporary: false}}},
+	timeout:   false,
+	temporary: false,
+}, {
+	err:       &Error{"Get", "http://google.com/", io.EOF},
+	timeout:   false,
+	temporary: false,
+}}
+
+// Test that url.Error implements net.Error and that it forwards
+func TestURLErrorImplementsNetError(t *testing.T) {
+	for i, tt := range netErrorTests {
+		err, ok := tt.err.(net.Error)
+		if !ok {
+			t.Errorf("%d: %T does not implement net.Error", i+1, tt.err)
+			continue
+		}
+		if err.Timeout() != tt.timeout {
+			t.Errorf("%d: err.Timeout(): want %v, have %v", i+1, tt.timeout, err.Timeout())
+			continue
+		}
+		if err.Temporary() != tt.temporary {
+			t.Errorf("%d: err.Temporary(): want %v, have %v", i+1, tt.temporary, err.Temporary())
 		}
 	}
 }

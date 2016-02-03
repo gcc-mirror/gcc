@@ -6,13 +6,16 @@
 
 package syscall
 
-import "unsafe"
+import (
+	"internal/race"
+	"unsafe"
+)
 
 //sys	sendfile(outfd int, infd int, offset *Offset_t, count int) (written int, err error)
 //sendfile(outfd _C_int, infd _C_int, offset *Offset_t, count Size_t) Ssize_t
 func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err error) {
-	if raceenabled {
-		raceReleaseMerge(unsafe.Pointer(&ioSync))
+	if race.Enabled {
+		race.ReleaseMerge(unsafe.Pointer(&ioSync))
 	}
 	var soff Offset_t
 	var psoff *Offset_t

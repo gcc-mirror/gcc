@@ -44,7 +44,7 @@ func (check *Checker) builtin(x *operand, call *ast.CallExpr, id builtinId) (_ b
 	switch id {
 	default:
 		// make argument getter
-		arg, nargs, _ = unpack(func(x *operand, i int) { check.expr(x, call.Args[i]) }, nargs, false)
+		arg, nargs, _ = unpack(func(x *operand, i int) { check.multiExpr(x, call.Args[i]) }, nargs, false)
 		if arg == nil {
 			return
 		}
@@ -95,7 +95,7 @@ func (check *Checker) builtin(x *operand, call *ast.CallExpr, id builtinId) (_ b
 		// spec: "As a special case, append also accepts a first argument assignable
 		// to type []byte with a second argument of string type followed by ... .
 		// This form appends the bytes of the string.
-		if nargs == 2 && call.Ellipsis.IsValid() && x.assignableTo(check.conf, NewSlice(universeByte)) {
+		if nargs == 2 && call.Ellipsis.IsValid() && x.assignableTo(check.conf, NewSlice(universeByte), nil) {
 			arg(x, 1)
 			if x.mode == invalid {
 				return
@@ -200,77 +200,96 @@ func (check *Checker) builtin(x *operand, call *ast.CallExpr, id builtinId) (_ b
 		}
 
 	case _Complex:
-		// complex(x, y realT) complexT
-		if !check.complexArg(x) {
-			return
-		}
-
+		// complex(x, y floatT) complexT
 		var y operand
 		arg(&y, 1)
 		if y.mode == invalid {
 			return
 		}
-		if !check.complexArg(&y) {
+
+		// convert or check untyped arguments
+		d := 0
+		if isUntyped(x.typ) {
+			d |= 1
+		}
+		if isUntyped(y.typ) {
+			d |= 2
+		}
+		switch d {
+		case 0:
+			// x and y are typed => nothing to do
+		case 1:
+			// only x is untyped => convert to type of y
+			check.convertUntyped(x, y.typ)
+		case 2:
+			// only y is untyped => convert to type of x
+			check.convertUntyped(&y, x.typ)
+		case 3:
+			// x and y are untyped =>
+			// 1) if both are constants, convert them to untyped
+			//    floating-point numbers if possible,
+			// 2) if one of them is not constant (possible because
+			//    it contains a shift that is yet untyped), convert
+			//    both of them to float64 since they must have the
+			//    same type to succeed (this will result in an error
+			//    because shifts of floats are not permitted)
+			if x.mode == constant_ && y.mode == constant_ {
+				toFloat := func(x *operand) {
+					if isNumeric(x.typ) && constant.Sign(constant.Imag(x.val)) == 0 {
+						x.typ = Typ[UntypedFloat]
+					}
+				}
+				toFloat(x)
+				toFloat(&y)
+			} else {
+				check.convertUntyped(x, Typ[Float64])
+				check.convertUntyped(&y, Typ[Float64])
+				// x and y should be invalid now, but be conservative
+				// and check below
+			}
+		}
+		if x.mode == invalid || y.mode == invalid {
 			return
 		}
 
-		check.convertUntyped(x, y.typ)
-		if x.mode == invalid {
-			return
-		}
-		check.convertUntyped(&y, x.typ)
-		if y.mode == invalid {
-			return
-		}
-
+		// both argument types must be identical
 		if !Identical(x.typ, y.typ) {
 			check.invalidArg(x.pos(), "mismatched types %s and %s", x.typ, y.typ)
 			return
 		}
 
+		// the argument types must be of floating-point type
+		if !isFloat(x.typ) {
+			check.invalidArg(x.pos(), "arguments have type %s, expected floating-point", x.typ)
+			return
+		}
+
+		// if both arguments are constants, the result is a constant
 		if x.mode == constant_ && y.mode == constant_ {
-			x.val = constant.BinaryOp(x.val, token.ADD, constant.MakeImag(y.val))
+			x.val = constant.BinaryOp(constant.ToFloat(x.val), token.ADD, constant.MakeImag(constant.ToFloat(y.val)))
 		} else {
 			x.mode = value
 		}
 
-		realT := x.typ
-		complexT := Typ[Invalid]
-		switch realT.Underlying().(*Basic).kind {
+		// determine result type
+		var res BasicKind
+		switch x.typ.Underlying().(*Basic).kind {
 		case Float32:
-			complexT = Typ[Complex64]
+			res = Complex64
 		case Float64:
-			complexT = Typ[Complex128]
-		case UntypedInt, UntypedRune, UntypedFloat:
-			if x.mode == constant_ {
-				realT = defaultType(realT).(*Basic)
-				complexT = Typ[UntypedComplex]
-			} else {
-				// untyped but not constant; probably because one
-				// operand is a non-constant shift of untyped lhs
-				realT = Typ[Float64]
-				complexT = Typ[Complex128]
-			}
+			res = Complex128
+		case UntypedFloat:
+			res = UntypedComplex
 		default:
-			check.invalidArg(x.pos(), "float32 or float64 arguments expected")
-			return
+			unreachable()
 		}
+		resTyp := Typ[res]
 
-		x.typ = complexT
 		if check.Types != nil && x.mode != constant_ {
-			check.recordBuiltinType(call.Fun, makeSig(complexT, realT, realT))
+			check.recordBuiltinType(call.Fun, makeSig(resTyp, x.typ, x.typ))
 		}
 
-		if x.mode != constant_ {
-			// The arguments have now their final types, which at run-
-			// time will be materialized. Update the expression trees.
-			// If the current types are untyped, the materialized type
-			// is the respective default type.
-			// (If the result is constant, the arguments are never
-			// materialized and there is nothing to do.)
-			check.updateExprType(x.expr, realT, true)
-			check.updateExprType(y.expr, realT, true)
-		}
+		x.typ = resTyp
 
 	case _Copy:
 		// copy(x, y []T) int
@@ -322,7 +341,7 @@ func (check *Checker) builtin(x *operand, call *ast.CallExpr, id builtinId) (_ b
 			return
 		}
 
-		if !x.assignableTo(check.conf, m.key) {
+		if !x.assignableTo(check.conf, m.key, nil) {
 			check.invalidArg(x.pos(), "%s is not assignable to %s", x, m.key)
 			return
 		}
@@ -333,12 +352,37 @@ func (check *Checker) builtin(x *operand, call *ast.CallExpr, id builtinId) (_ b
 		}
 
 	case _Imag, _Real:
-		// imag(complexT) realT
-		// real(complexT) realT
+		// imag(complexT) floatT
+		// real(complexT) floatT
+
+		// convert or check untyped argument
+		if isUntyped(x.typ) {
+			if x.mode == constant_ {
+				// an untyped constant number can alway be considered
+				// as a complex constant
+				if isNumeric(x.typ) {
+					x.typ = Typ[UntypedComplex]
+				}
+			} else {
+				// an untyped non-constant argument may appear if
+				// it contains a (yet untyped non-constant) shift
+				// epression: convert it to complex128 which will
+				// result in an error (shift of complex value)
+				check.convertUntyped(x, Typ[Complex128])
+				// x should be invalid now, but be conservative and check
+				if x.mode == invalid {
+					return
+				}
+			}
+		}
+
+		// the argument must be of complex type
 		if !isComplex(x.typ) {
-			check.invalidArg(x.pos(), "%s must be a complex number", x)
+			check.invalidArg(x.pos(), "argument has type %s, expected complex type", x.typ)
 			return
 		}
+
+		// if the argument is a constant, the result is a constant
 		if x.mode == constant_ {
 			if id == _Real {
 				x.val = constant.Real(x.val)
@@ -348,22 +392,26 @@ func (check *Checker) builtin(x *operand, call *ast.CallExpr, id builtinId) (_ b
 		} else {
 			x.mode = value
 		}
-		var k BasicKind
+
+		// determine result type
+		var res BasicKind
 		switch x.typ.Underlying().(*Basic).kind {
 		case Complex64:
-			k = Float32
+			res = Float32
 		case Complex128:
-			k = Float64
+			res = Float64
 		case UntypedComplex:
-			k = UntypedFloat
+			res = UntypedFloat
 		default:
 			unreachable()
 		}
+		resTyp := Typ[res]
 
 		if check.Types != nil && x.mode != constant_ {
-			check.recordBuiltinType(call.Fun, makeSig(Typ[k], x.typ))
+			check.recordBuiltinType(call.Fun, makeSig(resTyp, x.typ))
 		}
-		x.typ = Typ[k]
+
+		x.typ = resTyp
 
 	case _Make:
 		// make(T, n)
@@ -423,8 +471,8 @@ func (check *Checker) builtin(x *operand, call *ast.CallExpr, id builtinId) (_ b
 	case _Panic:
 		// panic(x)
 		T := new(Interface)
-		if !check.assignment(x, T) {
-			assert(x.mode == invalid)
+		check.assignment(x, T, "argument to panic")
+		if x.mode == invalid {
 			return
 		}
 
@@ -443,8 +491,9 @@ func (check *Checker) builtin(x *operand, call *ast.CallExpr, id builtinId) (_ b
 				if i > 0 {
 					arg(x, i) // first argument already evaluated
 				}
-				if !check.assignment(x, nil) {
-					assert(x.mode == invalid)
+				check.assignment(x, nil, "argument to "+predeclaredFuncs[id].name)
+				if x.mode == invalid {
+					// TODO(gri) "use" all arguments?
 					return
 				}
 				params[i] = x.typ
@@ -466,8 +515,8 @@ func (check *Checker) builtin(x *operand, call *ast.CallExpr, id builtinId) (_ b
 
 	case _Alignof:
 		// unsafe.Alignof(x T) uintptr
-		if !check.assignment(x, nil) {
-			assert(x.mode == invalid)
+		check.assignment(x, nil, "argument to unsafe.Alignof")
+		if x.mode == invalid {
 			return
 		}
 
@@ -523,8 +572,8 @@ func (check *Checker) builtin(x *operand, call *ast.CallExpr, id builtinId) (_ b
 
 	case _Sizeof:
 		// unsafe.Sizeof(x T) uintptr
-		if !check.assignment(x, nil) {
-			assert(x.mode == invalid)
+		check.assignment(x, nil, "argument to unsafe.Sizeof")
+		if x.mode == invalid {
 			return
 		}
 
@@ -615,13 +664,4 @@ func unparen(e ast.Expr) ast.Expr {
 		}
 		e = p.X
 	}
-}
-
-func (check *Checker) complexArg(x *operand) bool {
-	t, _ := x.typ.Underlying().(*Basic)
-	if t != nil && (t.info&IsFloat != 0 || t.kind == UntypedInt || t.kind == UntypedRune) {
-		return true
-	}
-	check.invalidArg(x.pos(), "%s must be a float32, float64, or an untyped non-complex numeric constant", x)
-	return false
 }

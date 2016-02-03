@@ -294,6 +294,7 @@ go_cmd_go_files = \
 go_cmd_gofmt_files = \
 	$(cmdsrcdir)/gofmt/doc.go \
 	$(cmdsrcdir)/gofmt/gofmt.go \
+	$(cmdsrcdir)/gofmt/internal.go \
 	$(cmdsrcdir)/gofmt/rewrite.go \
 	$(cmdsrcdir)/gofmt/simplify.go
 
@@ -563,8 +564,8 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-@NATIVE_FALSE@install-exec-local:
 @NATIVE_FALSE@uninstall-local:
+@NATIVE_FALSE@install-exec-local:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-noinstPROGRAMS \

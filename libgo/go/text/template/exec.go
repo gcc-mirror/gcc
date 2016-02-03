@@ -78,7 +78,23 @@ func doublePercent(str string) string {
 	return str
 }
 
-// errorf formats the error and terminates processing.
+// TODO: It would be nice if ExecError was more broken down, but
+// the way ErrorContext embeds the template name makes the
+// processing too clumsy.
+
+// ExecError is the custom error type returned when Execute has an
+// error evaluating its template. (If a write error occurs, the actual
+// error is returned; it will not be of type ExecError.)
+type ExecError struct {
+	Name string // Name of template.
+	Err  error  // Pre-formatted error.
+}
+
+func (e ExecError) Error() string {
+	return e.Err.Error()
+}
+
+// errorf records an ExecError and terminates processing.
 func (s *state) errorf(format string, args ...interface{}) {
 	name := doublePercent(s.tmpl.Name())
 	if s.node == nil {
@@ -87,7 +103,24 @@ func (s *state) errorf(format string, args ...interface{}) {
 		location, context := s.tmpl.ErrorContext(s.node)
 		format = fmt.Sprintf("template: %s: executing %q at <%s>: %s", location, name, doublePercent(context), format)
 	}
-	panic(fmt.Errorf(format, args...))
+	panic(ExecError{
+		Name: s.tmpl.Name(),
+		Err:  fmt.Errorf(format, args...),
+	})
+}
+
+// writeError is the wrapper type used internally when Execute has an
+// error writing to its output. We strip the wrapper in errRecover.
+// Note that this is not an implementation of error, so it cannot escape
+// from the package as an error value.
+type writeError struct {
+	Err error // Original error.
+}
+
+func (s *state) writeError(err error) {
+	panic(writeError{
+		Err: err,
+	})
 }
 
 // errRecover is the handler that turns panics into returns from the top
@@ -98,8 +131,10 @@ func errRecover(errp *error) {
 		switch err := e.(type) {
 		case runtime.Error:
 			panic(e)
-		case error:
-			*errp = err
+		case writeError:
+			*errp = err.Err // Strip the wrapper.
+		case ExecError:
+			*errp = err // Keep the wrapper.
 		default:
 			panic(e)
 		}
@@ -145,7 +180,7 @@ func (t *Template) Execute(wr io.Writer, data interface{}) (err error) {
 }
 
 // DefinedTemplates returns a string listing the defined templates,
-// prefixed by the string "defined templates are: ". If there are none,
+// prefixed by the string "; defined templates are: ". If there are none,
 // it returns the empty string. For generating an error message here
 // and in html/template.
 func (t *Template) DefinedTemplates() string {
@@ -193,7 +228,7 @@ func (s *state) walk(dot reflect.Value, node parse.Node) {
 		s.walkTemplate(dot, node)
 	case *parse.TextNode:
 		if _, err := s.wr.Write(node.Text); err != nil {
-			s.errorf("%s", err)
+			s.writeError(err)
 		}
 	case *parse.WithNode:
 		s.walkIfOrWith(parse.NodeWith, dot, node.Pipe, node.List, node.ElseList)
@@ -222,8 +257,13 @@ func (s *state) walkIfOrWith(typ parse.NodeType, dot reflect.Value, pipe *parse.
 	}
 }
 
-// isTrue reports whether the value is 'true', in the sense of not the zero of its type,
-// and whether the value has a meaningful truth value.
+// IsTrue reports whether the value is 'true', in the sense of not the zero of its type,
+// and whether the value has a meaningful truth value. This is the definition of
+// truth used by if and other such actions.
+func IsTrue(val interface{}) (truth, ok bool) {
+	return isTrue(reflect.ValueOf(val))
+}
+
 func isTrue(val reflect.Value) (truth, ok bool) {
 	if !val.IsValid() {
 		// Something like var x interface{}, never set. It's a form of nil.
@@ -483,7 +523,7 @@ func (s *state) evalField(dot reflect.Value, fieldName string, node parse.Node, 
 		return zero
 	}
 	typ := receiver.Type()
-	receiver, _ = indirect(receiver)
+	receiver, isNil := indirect(receiver)
 	// Unless it's an interface, need to get to a value of type *T to guarantee
 	// we see all methods of T and *T.
 	ptr := receiver
@@ -495,7 +535,6 @@ func (s *state) evalField(dot reflect.Value, fieldName string, node parse.Node, 
 	}
 	hasArgs := len(args) > 1 || final.IsValid()
 	// It's not a method; must be a field of a struct or an element of a map. The receiver must not be nil.
-	receiver, isNil := indirect(receiver)
 	if isNil {
 		s.errorf("nil pointer evaluating %s.%s", typ, fieldName)
 	}
@@ -789,15 +828,10 @@ func (s *state) evalEmptyInterface(dot reflect.Value, n parse.Node) reflect.Valu
 }
 
 // indirect returns the item at the end of indirection, and a bool to indicate if it's nil.
-// We indirect through pointers and empty interfaces (only) because
-// non-empty interfaces have methods we might need.
 func indirect(v reflect.Value) (rv reflect.Value, isNil bool) {
 	for ; v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface; v = v.Elem() {
 		if v.IsNil() {
 			return v, true
-		}
-		if v.Kind() == reflect.Interface && v.NumMethod() > 0 {
-			break
 		}
 	}
 	return v, false
@@ -811,7 +845,10 @@ func (s *state) printValue(n parse.Node, v reflect.Value) {
 	if !ok {
 		s.errorf("can't print %s of type %s", n, v.Type())
 	}
-	fmt.Fprint(s.wr, iface)
+	_, err := fmt.Fprint(s.wr, iface)
+	if err != nil {
+		s.writeError(err)
+	}
 }
 
 // printableValue returns the, possibly indirected, interface value inside v that

@@ -79,6 +79,14 @@ internally at Google all begin with 'google', and paths
 denoting remote repositories begin with the path to the code,
 such as 'github.com/user/repo'.
 
+Packages in a program need not have unique package names,
+but there are two reserved package names with special meaning.
+The name main indicates a command, not a library.
+Commands are built into binaries and cannot be imported.
+The name documentation indicates documentation for
+a non-Go program in the directory. Files in package documentation
+are ignored by the go command.
+
 As a special case, if the package list is a list of .go files from a
 single directory, the command is applied to a single synthesized
 package made up of exactly those files, ignoring any build constraints
@@ -261,10 +269,10 @@ unless it is being referred to by that import path. In this way, import comments
 let package authors make sure the custom import path is used and not a
 direct path to the underlying code hosting site.
 
-If the vendoring experiment is enabled (see 'go help gopath'),
-then import path checking is disabled for code found within vendor trees.
-This makes it possible to copy code into alternate locations in vendor trees
-without needing to update import comments.
+If vendoring is enabled (see 'go help gopath'), then import path checking is
+disabled for code found within vendor trees. This makes it possible to copy
+code into alternate locations in vendor trees without needing to update import
+comments.
 
 See https://golang.org/s/go14customimport for details.
 	`,
@@ -307,7 +315,7 @@ DIR/bin/quux, not DIR/bin/foo/quux.  The "foo/" prefix is stripped
 so that you can add DIR/bin to your PATH to get at the
 installed commands.  If the GOBIN environment variable is
 set, commands are installed to the directory it names instead
-of DIR/bin.
+of DIR/bin. GOBIN must be an absolute path.
 
 Here's an example directory layout:
 
@@ -365,13 +373,10 @@ See https://golang.org/s/go14internal for details.
 
 Vendor Directories
 
-Go 1.5 includes experimental support for using local copies
-of external dependencies to satisfy imports of those dependencies,
-often referred to as vendoring. Setting the environment variable
-GO15VENDOREXPERIMENT=1 enables that experimental support.
+Go 1.6 includes support for using local copies of external dependencies
+to satisfy imports of those dependencies, often referred to as vendoring.
 
-When the vendor experiment is enabled,
-code below a directory named "vendor" is importable only
+Code below a directory named "vendor" is importable only
 by code in the directory tree rooted at the parent of "vendor",
 and only using an import path that omits the prefix up to and
 including the vendor element.
@@ -409,12 +414,18 @@ top-level "crash/bang".
 Code in vendor directories is not subject to import path
 checking (see 'go help importpath').
 
-When the vendor experiment is enabled, 'go get' checks out
-submodules when checking out or updating a git repository
-(see 'go help get').
+When 'go get' checks out or updates a git repository, it now also
+updates submodules.
 
-The vendoring semantics are an experiment, and they may change
-in future releases. Once settled, they will be on by default.
+Vendor directories do not affect the placement of new repositories
+being checked out for the first time by 'go get': those are always
+placed in the main GOPATH, never in a vendor subtree.
+
+In Go 1.5, as an experiment, setting the environment variable
+GO15VENDOREXPERIMENT=1 enabled these features.
+As of Go 1.6 they are on by default. To turn them off, set
+GO15VENDOREXPERIMENT=0. In Go 1.7, the environment
+variable will stop having any effect.
 
 See https://golang.org/s/go15vendor for details.
 	`,
@@ -487,7 +498,7 @@ Special-purpose environment variables:
 		File names in stack traces are rewritten from GOROOT to
 		GOROOT_FINAL.
 	GO15VENDOREXPERIMENT
-		Set to 1 to enable the Go 1.5 vendoring experiment.
+		Set to 0 to disable vendoring semantics.
 	GO_EXTLINK_ENABLED
 		Whether the linker should use external linking mode
 		when using -linkmode=auto with code that uses cgo.
@@ -570,5 +581,10 @@ are:
 	-buildmode=exe
 		Build the listed main packages and everything they import into
 		executables. Packages not named main are ignored.
+
+	-buildmode=pie
+		Build the listed main packages and everything they import into
+		position independent executables (PIE). Packages not named
+		main are ignored.
 `,
 }

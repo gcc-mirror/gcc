@@ -88,7 +88,6 @@ func verifyInt(i int64, t *testing.T) {
 	encState := newEncoderState(b)
 	encState.encodeInt(i)
 	decState := newDecodeState(newDecBuffer(b.Bytes()))
-	decState.buf = make([]byte, 8)
 	j := decState.decodeInt()
 	if i != j {
 		t.Errorf("Encode/Decode: sent %#x received %#x", uint64(i), uint64(j))
@@ -127,7 +126,6 @@ var bytesResult = []byte{0x07, 0x05, 'h', 'e', 'l', 'l', 'o'}
 func newDecodeState(buf *decBuffer) *decoderState {
 	d := new(decoderState)
 	d.b = buf
-	d.buf = make([]byte, uint64Size)
 	return d
 }
 
@@ -1488,7 +1486,7 @@ func TestErrorInvalidTypeId(t *testing.T) {
 		var foo struct{}
 		err := d.Decode(&foo)
 		if err != errBadType {
-			t.Fatal("decode: expected %s, got %s", errBadType, err)
+			t.Fatalf("decode: expected %s, got %s", errBadType, err)
 		}
 	}
 }

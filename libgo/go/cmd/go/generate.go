@@ -22,7 +22,7 @@ import (
 
 var cmdGenerate = &Command{
 	Run:       runGenerate,
-	UsageLine: "generate [-run regexp] [file.go... | packages]",
+	UsageLine: "generate [-run regexp] [-n] [-v] [-x] [build flags] [file.go... | packages]",
 	Short:     "generate Go files by processing source",
 	Long: `
 Generate runs commands described by directives within existing
@@ -115,11 +115,13 @@ Go generate accepts one specific flag:
 		any trailing spaces and final newline) matches the
 		expression.
 
-It also accepts the standard build flags -v, -n, and -x.
+It also accepts the standard build flags including -v, -n, and -x.
 The -v flag prints the names of packages and files as they are
 processed.
 The -n flag prints commands that would be executed.
 The -x flag prints commands as they are executed.
+
+For more about build flags, see 'go help build'.
 
 For more about specifying packages, see 'go help packages'.
 	`,
@@ -179,6 +181,7 @@ type Generator struct {
 	pkg      string
 	commands map[string][]string
 	lineNum  int // current line number.
+	env      []string
 }
 
 // run runs the generators in the current file.
@@ -242,6 +245,7 @@ func (g *Generator) run() (ok bool) {
 			}
 		}
 
+		g.setEnv()
 		words := g.split(string(buf))
 		if len(words) == 0 {
 			g.errorf("no arguments to directive")
@@ -267,6 +271,19 @@ func (g *Generator) run() (ok bool) {
 
 func isGoGenerate(buf []byte) bool {
 	return bytes.HasPrefix(buf, []byte("//go:generate ")) || bytes.HasPrefix(buf, []byte("//go:generate\t"))
+}
+
+// setEnv sets the extra environment variables used when executing a
+// single go:generate command.
+func (g *Generator) setEnv() {
+	g.env = []string{
+		"GOARCH=" + runtime.GOARCH,
+		"GOOS=" + runtime.GOOS,
+		"GOFILE=" + g.file,
+		"GOLINE=" + strconv.Itoa(g.lineNum),
+		"GOPACKAGE=" + g.pkg,
+		"DOLLAR=" + "$",
+	}
 }
 
 // split breaks the line into words, evaluating quoted
@@ -345,22 +362,13 @@ func (g *Generator) errorf(format string, args ...interface{}) {
 // expandVar expands the $XXX invocation in word. It is called
 // by os.Expand.
 func (g *Generator) expandVar(word string) string {
-	switch word {
-	case "GOARCH":
-		return buildContext.GOARCH
-	case "GOOS":
-		return buildContext.GOOS
-	case "GOFILE":
-		return g.file
-	case "GOLINE":
-		return fmt.Sprint(g.lineNum)
-	case "GOPACKAGE":
-		return g.pkg
-	case "DOLLAR":
-		return "$"
-	default:
-		return os.Getenv(word)
+	w := word + "="
+	for _, e := range g.env {
+		if strings.HasPrefix(e, w) {
+			return e[len(w):]
+		}
 	}
+	return os.Getenv(word)
 }
 
 // identLength returns the length of the identifier beginning the string.
@@ -396,13 +404,7 @@ func (g *Generator) exec(words []string) {
 	cmd.Stderr = os.Stderr
 	// Run the command in the package directory.
 	cmd.Dir = g.dir
-	env := []string{
-		"GOARCH=" + runtime.GOARCH,
-		"GOOS=" + runtime.GOOS,
-		"GOFILE=" + g.file,
-		"GOPACKAGE=" + g.pkg,
-	}
-	cmd.Env = mergeEnvLists(env, origEnv)
+	cmd.Env = mergeEnvLists(g.env, origEnv)
 	err := cmd.Run()
 	if err != nil {
 		g.errorf("running %q: %s", words[0], err)

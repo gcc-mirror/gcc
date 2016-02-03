@@ -33,6 +33,9 @@ var _ = log.Printf
 //   INSERT|<tablename>|col=val,col2=val2,col3=?
 //   SELECT|<tablename>|projectcol1,projectcol2|filtercol=?,filtercol2=?
 //
+// Any of these can be preceded by PANIC|<method>|, to cause the
+// named method on fakeStmt to panic.
+//
 // When opening a fakeDriver's database, it starts empty with no
 // tables.  All tables and data are stored in memory only.
 type fakeDriver struct {
@@ -111,6 +114,7 @@ type fakeStmt struct {
 
 	cmd   string
 	table string
+	panic string
 
 	closed bool
 
@@ -153,12 +157,32 @@ func TestDrivers(t *testing.T) {
 	}
 }
 
+// hook to simulate connection failures
+var hookOpenErr struct {
+	sync.Mutex
+	fn func() error
+}
+
+func setHookOpenErr(fn func() error) {
+	hookOpenErr.Lock()
+	defer hookOpenErr.Unlock()
+	hookOpenErr.fn = fn
+}
+
 // Supports dsn forms:
 //    <dbname>
 //    <dbname>;<opts>  (only currently supported option is `badConn`,
 //                      which causes driver.ErrBadConn to be returned on
 //                      every other conn.Begin())
 func (d *fakeDriver) Open(dsn string) (driver.Conn, error) {
+	hookOpenErr.Lock()
+	fn := hookOpenErr.fn
+	hookOpenErr.Unlock()
+	if fn != nil {
+		if err := fn(); err != nil {
+			return nil, err
+		}
+	}
 	parts := strings.Split(dsn, ";")
 	if len(parts) < 1 {
 		return nil, errors.New("fakedb: no database name")
@@ -479,9 +503,15 @@ func (c *fakeConn) Prepare(query string) (driver.Stmt, error) {
 	if len(parts) < 1 {
 		return nil, errf("empty query")
 	}
+	stmt := &fakeStmt{q: query, c: c}
+	if len(parts) >= 3 && parts[0] == "PANIC" {
+		stmt.panic = parts[1]
+		parts = parts[2:]
+	}
 	cmd := parts[0]
+	stmt.cmd = cmd
 	parts = parts[1:]
-	stmt := &fakeStmt{q: query, c: c, cmd: cmd}
+
 	c.incrStat(&c.stmtsMade)
 	switch cmd {
 	case "WIPE":
@@ -504,6 +534,9 @@ func (c *fakeConn) Prepare(query string) (driver.Stmt, error) {
 }
 
 func (s *fakeStmt) ColumnConverter(idx int) driver.ValueConverter {
+	if s.panic == "ColumnConverter" {
+		panic(s.panic)
+	}
 	if len(s.placeholderConverter) == 0 {
 		return driver.DefaultParameterConverter
 	}
@@ -511,6 +544,9 @@ func (s *fakeStmt) ColumnConverter(idx int) driver.ValueConverter {
 }
 
 func (s *fakeStmt) Close() error {
+	if s.panic == "Close" {
+		panic(s.panic)
+	}
 	if s.c == nil {
 		panic("nil conn in fakeStmt.Close")
 	}
@@ -530,6 +566,9 @@ var errClosed = errors.New("fakedb: statement has been closed")
 var hookExecBadConn func() bool
 
 func (s *fakeStmt) Exec(args []driver.Value) (driver.Result, error) {
+	if s.panic == "Exec" {
+		panic(s.panic)
+	}
 	if s.closed {
 		return nil, errClosed
 	}
@@ -614,6 +653,9 @@ func (s *fakeStmt) execInsert(args []driver.Value, doInsert bool) (driver.Result
 var hookQueryBadConn func() bool
 
 func (s *fakeStmt) Query(args []driver.Value) (driver.Rows, error) {
+	if s.panic == "Query" {
+		panic(s.panic)
+	}
 	if s.closed {
 		return nil, errClosed
 	}
@@ -696,16 +738,31 @@ rows:
 }
 
 func (s *fakeStmt) NumInput() int {
+	if s.panic == "NumInput" {
+		panic(s.panic)
+	}
 	return s.placeholders
 }
 
+// hook to simulate broken connections
+var hookCommitBadConn func() bool
+
 func (tx *fakeTx) Commit() error {
 	tx.c.currTx = nil
+	if hookCommitBadConn != nil && hookCommitBadConn() {
+		return driver.ErrBadConn
+	}
 	return nil
 }
 
+// hook to simulate broken connections
+var hookRollbackBadConn func() bool
+
 func (tx *fakeTx) Rollback() error {
 	tx.c.currTx = nil
+	if hookRollbackBadConn != nil && hookRollbackBadConn() {
+		return driver.ErrBadConn
+	}
 	return nil
 }
 

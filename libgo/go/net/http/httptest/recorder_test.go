@@ -6,6 +6,7 @@ package httptest
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"testing"
 )
@@ -34,6 +35,14 @@ func TestRecorder(t *testing.T) {
 		return func(rec *ResponseRecorder) error {
 			if rec.Flushed != want {
 				return fmt.Errorf("Flushed = %v; want %v", rec.Flushed, want)
+			}
+			return nil
+		}
+	}
+	hasHeader := func(key, want string) checkFunc {
+		return func(rec *ResponseRecorder) error {
+			if got := rec.HeaderMap.Get(key); got != want {
+				return fmt.Errorf("header %s = %q; want %q", key, got, want)
 			}
 			return nil
 		}
@@ -68,12 +77,58 @@ func TestRecorder(t *testing.T) {
 			check(hasStatus(200), hasContents("hi first"), hasFlush(false)),
 		},
 		{
+			"write string",
+			func(w http.ResponseWriter, r *http.Request) {
+				io.WriteString(w, "hi first")
+			},
+			check(
+				hasStatus(200),
+				hasContents("hi first"),
+				hasFlush(false),
+				hasHeader("Content-Type", "text/plain; charset=utf-8"),
+			),
+		},
+		{
 			"flush",
 			func(w http.ResponseWriter, r *http.Request) {
 				w.(http.Flusher).Flush() // also sends a 200
 				w.WriteHeader(201)
 			},
 			check(hasStatus(200), hasFlush(true)),
+		},
+		{
+			"Content-Type detection",
+			func(w http.ResponseWriter, r *http.Request) {
+				io.WriteString(w, "<html>")
+			},
+			check(hasHeader("Content-Type", "text/html; charset=utf-8")),
+		},
+		{
+			"no Content-Type detection with Transfer-Encoding",
+			func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Transfer-Encoding", "some encoding")
+				io.WriteString(w, "<html>")
+			},
+			check(hasHeader("Content-Type", "")), // no header
+		},
+		{
+			"no Content-Type detection if set explicitly",
+			func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "some/type")
+				io.WriteString(w, "<html>")
+			},
+			check(hasHeader("Content-Type", "some/type")),
+		},
+		{
+			"Content-Type detection doesn't crash if HeaderMap is nil",
+			func(w http.ResponseWriter, r *http.Request) {
+				// Act as if the user wrote new(httptest.ResponseRecorder)
+				// rather than using NewRecorder (which initializes
+				// HeaderMap)
+				w.(*ResponseRecorder).HeaderMap = nil
+				io.WriteString(w, "<html>")
+			},
+			check(hasHeader("Content-Type", "text/html; charset=utf-8")),
 		},
 	}
 	r, _ := http.NewRequest("GET", "http://foo.com/", nil)

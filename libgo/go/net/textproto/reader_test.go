@@ -205,6 +205,32 @@ func TestReadMIMEHeaderNonCompliant(t *testing.T) {
 	}
 }
 
+// Test that continued lines are properly trimmed. Issue 11204.
+func TestReadMIMEHeaderTrimContinued(t *testing.T) {
+	// In this header, \n and \r\n terminated lines are mixed on purpose.
+	// We expect each line to be trimmed (prefix and suffix) before being concatenated.
+	// Keep the spaces as they are.
+	r := reader("" + // for code formatting purpose.
+		"a:\n" +
+		" 0 \r\n" +
+		"b:1 \t\r\n" +
+		"c: 2\r\n" +
+		" 3\t\n" +
+		"  \t 4  \r\n\n")
+	m, err := r.ReadMIMEHeader()
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := MIMEHeader{
+		"A": {"0"},
+		"B": {"1"},
+		"C": {"2 3 4"},
+	}
+	if !reflect.DeepEqual(m, want) {
+		t.Fatalf("ReadMIMEHeader mismatch.\n got: %q\nwant: %q", m, want)
+	}
+}
+
 type readResponseTest struct {
 	in       string
 	inCode   int
@@ -255,6 +281,35 @@ func TestRFC959Lines(t *testing.T) {
 		if msg != tt.wantMsg {
 			t.Errorf("#%d: msg=%q, want %q", i, msg, tt.wantMsg)
 		}
+	}
+}
+
+// Test that multi-line errors are appropriately and fully read. Issue 10230.
+func TestReadMultiLineError(t *testing.T) {
+	r := reader("550-5.1.1 The email account that you tried to reach does not exist. Please try\n" +
+		"550-5.1.1 double-checking the recipient's email address for typos or\n" +
+		"550-5.1.1 unnecessary spaces. Learn more at\n" +
+		"Unexpected but legal text!\n" +
+		"550 5.1.1 https://support.google.com/mail/answer/6596 h20si25154304pfd.166 - gsmtp\n")
+
+	wantMsg := "5.1.1 The email account that you tried to reach does not exist. Please try\n" +
+		"5.1.1 double-checking the recipient's email address for typos or\n" +
+		"5.1.1 unnecessary spaces. Learn more at\n" +
+		"Unexpected but legal text!\n" +
+		"5.1.1 https://support.google.com/mail/answer/6596 h20si25154304pfd.166 - gsmtp"
+
+	code, msg, err := r.ReadResponse(250)
+	if err == nil {
+		t.Errorf("ReadResponse: no error, want error")
+	}
+	if code != 550 {
+		t.Errorf("ReadResponse: code=%d, want %d", code, 550)
+	}
+	if msg != wantMsg {
+		t.Errorf("ReadResponse: msg=%q, want %q", msg, wantMsg)
+	}
+	if err.Error() != "550 "+wantMsg {
+		t.Errorf("ReadResponse: error=%q, want %q", err.Error(), "550 "+wantMsg)
 	}
 }
 

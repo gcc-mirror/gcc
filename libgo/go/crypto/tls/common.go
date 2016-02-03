@@ -255,7 +255,8 @@ type Config struct {
 
 	// Certificates contains one or more certificate chains
 	// to present to the other side of the connection.
-	// Server configurations must include at least one certificate.
+	// Server configurations must include at least one certificate
+	// or else set GetCertificate.
 	Certificates []Certificate
 
 	// NameToCertificate maps from a certificate name to an element of
@@ -285,7 +286,8 @@ type Config struct {
 
 	// ServerName is used to verify the hostname on the returned
 	// certificates unless InsecureSkipVerify is given. It is also included
-	// in the client's handshake to support virtual hosting.
+	// in the client's handshake to support virtual hosting unless it is
+	// an IP address.
 	ServerName string
 
 	// ClientAuth determines the server's policy for

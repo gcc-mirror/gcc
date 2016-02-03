@@ -33,105 +33,107 @@ extern void __splitstack_setcontext(void *context[10]);
 #define D SigDefault
 
 /* Signal actions.  This collects the sigtab tables for several
-   different targets from the master library.  SIGKILL, SIGCONT, and
-   SIGSTOP are not listed, as we don't want to set signal handlers for
-   them.  */
+   different targets from the master library.  SIGKILL and SIGSTOP are
+   not listed, as we don't want to set signal handlers for them.  */
 
 SigTab runtime_sigtab[] = {
 #ifdef SIGHUP
-  { SIGHUP,	N + K },
+  { SIGHUP,	N + K, NULL },
 #endif
 #ifdef SIGINT
-  { SIGINT, 	N + K },
+  { SIGINT, 	N + K, NULL  },
 #endif
 #ifdef SIGQUIT
-  { SIGQUIT, 	N + T },
+  { SIGQUIT, 	N + T, NULL  },
 #endif
 #ifdef SIGILL
-  { SIGILL, 	T },
+  { SIGILL, 	T, NULL  },
 #endif
 #ifdef SIGTRAP
-  { SIGTRAP, 	T },
+  { SIGTRAP, 	T, NULL  },
 #endif
 #ifdef SIGABRT
-  { SIGABRT, 	N + T },
+  { SIGABRT, 	N + T, NULL  },
 #endif
 #ifdef SIGBUS
-  { SIGBUS, 	P },
+  { SIGBUS, 	P, NULL  },
 #endif
 #ifdef SIGFPE
-  { SIGFPE, 	P },
+  { SIGFPE, 	P, NULL  },
 #endif
 #ifdef SIGUSR1
-  { SIGUSR1, 	N },
+  { SIGUSR1, 	N, NULL  },
 #endif
 #ifdef SIGSEGV
-  { SIGSEGV, 	P },
+  { SIGSEGV, 	P, NULL  },
 #endif
 #ifdef SIGUSR2
-  { SIGUSR2, 	N },
+  { SIGUSR2, 	N, NULL  },
 #endif
 #ifdef SIGPIPE
-  { SIGPIPE, 	N },
+  { SIGPIPE, 	N, NULL  },
 #endif
 #ifdef SIGALRM
-  { SIGALRM, 	N },
+  { SIGALRM, 	N, NULL  },
 #endif
 #ifdef SIGTERM
-  { SIGTERM, 	N + K },
+  { SIGTERM, 	N + K, NULL  },
 #endif
 #ifdef SIGSTKFLT
-  { SIGSTKFLT, 	T },
+  { SIGSTKFLT, 	T, NULL  },
 #endif
 #ifdef SIGCHLD
-  { SIGCHLD, 	N },
+  { SIGCHLD, 	N, NULL  },
+#endif
+#ifdef SIGCONT
+  { SIGCONT,	N + D, NULL  },
 #endif
 #ifdef SIGTSTP
-  { SIGTSTP, 	N + D },
+  { SIGTSTP, 	N + D, NULL  },
 #endif
 #ifdef SIGTTIN
-  { SIGTTIN, 	N + D },
+  { SIGTTIN, 	N + D, NULL  },
 #endif
 #ifdef SIGTTOU
-  { SIGTTOU, 	N + D },
+  { SIGTTOU, 	N + D, NULL  },
 #endif
 #ifdef SIGURG
-  { SIGURG, 	N },
+  { SIGURG, 	N, NULL  },
 #endif
 #ifdef SIGXCPU
-  { SIGXCPU, 	N },
+  { SIGXCPU, 	N, NULL  },
 #endif
 #ifdef SIGXFSZ
-  { SIGXFSZ, 	N },
+  { SIGXFSZ, 	N, NULL  },
 #endif
 #ifdef SIGVTALRM
-  { SIGVTALRM, 	N },
+  { SIGVTALRM, 	N, NULL  },
 #endif
 #ifdef SIGPROF
-  { SIGPROF, 	N },
+  { SIGPROF, 	N, NULL  },
 #endif
 #ifdef SIGWINCH
-  { SIGWINCH, 	N },
+  { SIGWINCH, 	N, NULL  },
 #endif
 #ifdef SIGIO
-  { SIGIO, 	N },
+  { SIGIO, 	N, NULL  },
 #endif
 #ifdef SIGPWR
-  { SIGPWR, 	N },
+  { SIGPWR, 	N, NULL  },
 #endif
 #ifdef SIGSYS
-  { SIGSYS, 	N },
+  { SIGSYS, 	N, NULL  },
 #endif
 #ifdef SIGEMT
-  { SIGEMT,	T },
+  { SIGEMT,	T, NULL  },
 #endif
 #ifdef SIGINFO
-  { SIGINFO,	N },
+  { SIGINFO,	N, NULL  },
 #endif
 #ifdef SIGTHR
-  { SIGTHR,	N },
+  { SIGTHR,	N, NULL  },
 #endif
-  { -1,		0 }
+  { -1,		0, NULL  }
 };
 #undef N
 #undef K
@@ -525,6 +527,9 @@ os_sigpipe (void)
 {
   struct sigaction sa;
   int i;
+
+  if (__go_sigsend (SIGPIPE))
+    return;
 
   memset (&sa, 0, sizeof sa);
 

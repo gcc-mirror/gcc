@@ -7,6 +7,7 @@ package elf
 
 import (
 	"bytes"
+	"compress/zlib"
 	"debug/dwarf"
 	"encoding/binary"
 	"errors"
@@ -57,6 +58,12 @@ type SectionHeader struct {
 	Info      uint32
 	Addralign uint64
 	Entsize   uint64
+
+	// FileSize is the size of this section in the file in bytes.
+	// If a section is compressed, FileSize is the size of the
+	// compressed data, while Size (above) is the size of the
+	// uncompressed data.
+	FileSize uint64
 }
 
 // A Section represents a single section in an ELF file.
@@ -69,17 +76,23 @@ type Section struct {
 	// If a client wants Read and Seek it must use
 	// Open() to avoid fighting over the seek offset
 	// with other clients.
+	//
+	// ReaderAt may be nil if the section is not easily available
+	// in a random-access form. For example, a compressed section
+	// may have a nil ReaderAt.
 	io.ReaderAt
 	sr *io.SectionReader
+
+	compressionType   CompressionType
+	compressionOffset int64
 }
 
 // Data reads and returns the contents of the ELF section.
+// Even if the section is stored compressed in the ELF file,
+// Data returns uncompressed data.
 func (s *Section) Data() ([]byte, error) {
-	dat := make([]byte, s.sr.Size())
-	n, err := s.sr.ReadAt(dat, 0)
-	if n == len(dat) {
-		err = nil
-	}
+	dat := make([]byte, s.Size)
+	n, err := io.ReadFull(s.Open(), dat)
 	return dat[0:n], err
 }
 
@@ -93,7 +106,24 @@ func (f *File) stringTable(link uint32) ([]byte, error) {
 }
 
 // Open returns a new ReadSeeker reading the ELF section.
-func (s *Section) Open() io.ReadSeeker { return io.NewSectionReader(s.sr, 0, 1<<63-1) }
+// Even if the section is stored compressed in the ELF file,
+// the ReadSeeker reads uncompressed data.
+func (s *Section) Open() io.ReadSeeker {
+	if s.Flags&SHF_COMPRESSED == 0 {
+		return io.NewSectionReader(s.sr, 0, 1<<63-1)
+	}
+	if s.compressionType == COMPRESS_ZLIB {
+		return &readSeekerFromReader{
+			reset: func() (io.Reader, error) {
+				fr := io.NewSectionReader(s.sr, s.compressionOffset, int64(s.FileSize)-s.compressionOffset)
+				return zlib.NewReader(fr)
+			},
+			size: int64(s.Size),
+		}
+	}
+	err := &FormatError{int64(s.Offset), "unknown compression type", s.compressionType}
+	return errorReader{err}
+}
 
 // A ProgHeader represents a single ELF program header.
 type ProgHeader struct {
@@ -343,7 +373,7 @@ func NewFile(r io.ReaderAt) (*File, error) {
 				Flags:     SectionFlag(sh.Flags),
 				Addr:      uint64(sh.Addr),
 				Offset:    uint64(sh.Off),
-				Size:      uint64(sh.Size),
+				FileSize:  uint64(sh.Size),
 				Link:      uint32(sh.Link),
 				Info:      uint32(sh.Info),
 				Addralign: uint64(sh.Addralign),
@@ -359,7 +389,7 @@ func NewFile(r io.ReaderAt) (*File, error) {
 				Type:      SectionType(sh.Type),
 				Flags:     SectionFlag(sh.Flags),
 				Offset:    uint64(sh.Off),
-				Size:      uint64(sh.Size),
+				FileSize:  uint64(sh.Size),
 				Addr:      uint64(sh.Addr),
 				Link:      uint32(sh.Link),
 				Info:      uint32(sh.Info),
@@ -367,8 +397,35 @@ func NewFile(r io.ReaderAt) (*File, error) {
 				Entsize:   uint64(sh.Entsize),
 			}
 		}
-		s.sr = io.NewSectionReader(r, int64(s.Offset), int64(s.Size))
-		s.ReaderAt = s.sr
+		s.sr = io.NewSectionReader(r, int64(s.Offset), int64(s.FileSize))
+
+		if s.Flags&SHF_COMPRESSED == 0 {
+			s.ReaderAt = s.sr
+			s.Size = s.FileSize
+		} else {
+			// Read the compression header.
+			switch f.Class {
+			case ELFCLASS32:
+				ch := new(Chdr32)
+				if err := binary.Read(s.sr, f.ByteOrder, ch); err != nil {
+					return nil, err
+				}
+				s.compressionType = CompressionType(ch.Type)
+				s.Size = uint64(ch.Size)
+				s.Addralign = uint64(ch.Addralign)
+				s.compressionOffset = int64(binary.Size(ch))
+			case ELFCLASS64:
+				ch := new(Chdr64)
+				if err := binary.Read(s.sr, f.ByteOrder, ch); err != nil {
+					return nil, err
+				}
+				s.compressionType = CompressionType(ch.Type)
+				s.Size = ch.Size
+				s.Addralign = ch.Addralign
+				s.compressionOffset = int64(binary.Size(ch))
+			}
+		}
+
 		f.Sections[i] = s
 	}
 
@@ -537,6 +594,8 @@ func (f *File) applyRelocations(dst []byte, rels []byte) error {
 		return f.applyRelocationsPPC(dst, rels)
 	case f.Class == ELFCLASS64 && f.Machine == EM_PPC64:
 		return f.applyRelocationsPPC64(dst, rels)
+	case f.Class == ELFCLASS64 && f.Machine == EM_MIPS:
+		return f.applyRelocationsMIPS64(dst, rels)
 	case f.Class == ELFCLASS64 && f.Machine == EM_S390:
 		return f.applyRelocationsS390x(dst, rels)
 	default:
@@ -802,6 +861,58 @@ func (f *File) applyRelocationsPPC64(dst []byte, rels []byte) error {
 	return nil
 }
 
+func (f *File) applyRelocationsMIPS64(dst []byte, rels []byte) error {
+	// 24 is the size of Rela64.
+	if len(rels)%24 != 0 {
+		return errors.New("length of relocation section is not a multiple of 24")
+	}
+
+	symbols, _, err := f.getSymbols(SHT_SYMTAB)
+	if err != nil {
+		return err
+	}
+
+	b := bytes.NewReader(rels)
+	var rela Rela64
+
+	for b.Len() > 0 {
+		binary.Read(b, f.ByteOrder, &rela)
+		var symNo uint64
+		var t R_MIPS
+		if f.ByteOrder == binary.BigEndian {
+			symNo = rela.Info >> 32
+			t = R_MIPS(rela.Info & 0xff)
+		} else {
+			symNo = rela.Info & 0xffffffff
+			t = R_MIPS(rela.Info >> 56)
+		}
+
+		if symNo == 0 || symNo > uint64(len(symbols)) {
+			continue
+		}
+		sym := &symbols[symNo-1]
+		if SymType(sym.Info&0xf) != STT_SECTION {
+			// We don't handle non-section relocations for now.
+			continue
+		}
+
+		switch t {
+		case R_MIPS_64:
+			if rela.Off+8 >= uint64(len(dst)) || rela.Addend < 0 {
+				continue
+			}
+			f.ByteOrder.PutUint64(dst[rela.Off:rela.Off+8], uint64(rela.Addend))
+		case R_MIPS_32:
+			if rela.Off+4 >= uint64(len(dst)) || rela.Addend < 0 {
+				continue
+			}
+			f.ByteOrder.PutUint32(dst[rela.Off:rela.Off+4], uint32(rela.Addend))
+		}
+	}
+
+	return nil
+}
+
 func (f *File) applyRelocationsS390x(dst []byte, rels []byte) error {
 	// 24 is the size of Rela64.
 	if len(rels)%24 != 0 {
@@ -852,6 +963,22 @@ func (f *File) DWARF() (*dwarf.Data, error) {
 			return nil, err
 		}
 
+		if len(b) >= 12 && string(b[:4]) == "ZLIB" {
+			dlen := binary.BigEndian.Uint64(b[4:12])
+			dbuf := make([]byte, dlen)
+			r, err := zlib.NewReader(bytes.NewBuffer(b[12:]))
+			if err != nil {
+				return nil, err
+			}
+			if _, err := io.ReadFull(r, dbuf); err != nil {
+				return nil, err
+			}
+			if err := r.Close(); err != nil {
+				return nil, err
+			}
+			b = dbuf
+		}
+
 		for _, r := range f.Sections {
 			if r.Type != SHT_RELA && r.Type != SHT_REL {
 				continue
@@ -876,17 +1003,23 @@ func (f *File) DWARF() (*dwarf.Data, error) {
 	// Don't bother loading others.
 	var dat = map[string][]byte{"abbrev": nil, "info": nil, "str": nil, "line": nil, "ranges": nil}
 	for i, s := range f.Sections {
-		if !strings.HasPrefix(s.Name, ".debug_") {
+		suffix := ""
+		switch {
+		case strings.HasPrefix(s.Name, ".debug_"):
+			suffix = s.Name[7:]
+		case strings.HasPrefix(s.Name, ".zdebug_"):
+			suffix = s.Name[8:]
+		default:
 			continue
 		}
-		if _, ok := dat[s.Name[7:]]; !ok {
+		if _, ok := dat[suffix]; !ok {
 			continue
 		}
 		b, err := sectionData(i, s)
 		if err != nil {
 			return nil, err
 		}
-		dat[s.Name[7:]] = b
+		dat[suffix] = b
 	}
 
 	d, err := dwarf.New(dat["abbrev"], nil, nil, dat["info"], dat["line"], nil, dat["ranges"], dat["str"])

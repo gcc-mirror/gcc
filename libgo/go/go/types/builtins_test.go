@@ -126,6 +126,8 @@ func TestBuiltinSignatures(t *testing.T) {
 }
 
 func testBuiltinSignature(t *testing.T, name, src0, want string) {
+	t.Skip("skipping for gccgo--no default importer")
+
 	src := fmt.Sprintf(`package p; import "unsafe"; type _ unsafe.Pointer /* use unsafe */; func _() { %s }`, src0)
 	f, err := parser.ParseFile(fset, "", src, 0)
 	if err != nil {

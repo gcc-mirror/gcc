@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/build"
-	"go/importer"
+	// "go/importer"
 	"go/parser"
 	"go/scanner"
 	"go/token"
@@ -33,7 +33,10 @@ var (
 
 	// Use the same importer for all std lib tests to
 	// avoid repeated importing of the same packages.
-	stdLibImporter = importer.Default()
+
+	// importer.Default panics for gccgo
+	// stdLibImporter = importer.Default()
+	stdLibImporter Importer
 )
 
 func TestStdlib(t *testing.T) {
@@ -76,6 +79,8 @@ func firstComment(filename string) string {
 }
 
 func testTestDir(t *testing.T, path string, ignore ...string) {
+	t.Skip("skipping for gccgo")
+
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		t.Fatal(err)
@@ -127,6 +132,10 @@ func testTestDir(t *testing.T, path string, ignore ...string) {
 func TestStdTest(t *testing.T) {
 	testenv.MustHaveGoBuild(t)
 
+	if testing.Short() && testenv.Builder() == "" {
+		t.Skip("skipping in short mode")
+	}
+
 	// test/recover4.go is only built for Linux and Darwin.
 	// TODO(gri) Remove once tests consider +build tags (issue 10370).
 	if runtime.GOOS != "linux" && runtime.GOOS != "darwin" {
@@ -142,14 +151,15 @@ func TestStdTest(t *testing.T) {
 func TestStdFixed(t *testing.T) {
 	testenv.MustHaveGoBuild(t)
 
+	if testing.Short() && testenv.Builder() == "" {
+		t.Skip("skipping in short mode")
+	}
+
 	testTestDir(t, filepath.Join(runtime.GOROOT(), "test", "fixedbugs"),
 		"bug248.go", "bug302.go", "bug369.go", // complex test instructions - ignore
-		"bug459.go",      // possibly incorrect test - see issue 6703 (pending spec clarification)
-		"issue3924.go",   // possibly incorrect test - see issue 6671 (pending spec clarification)
-		"issue6889.go",   // gc-specific test
-		"issue7746.go",   // large constants - consumes too much memory
-		"issue11326.go",  // large constants
-		"issue11326b.go", // large constants
+		"issue6889.go",  // gc-specific test
+		"issue7746.go",  // large constants - consumes too much memory
+		"issue11362.go", // canonical import path check
 	)
 }
 
@@ -166,6 +176,8 @@ var excluded = map[string]bool{
 
 // typecheck typechecks the given package files.
 func typecheck(t *testing.T, path string, filenames []string) {
+	t.Skip("skipping for gccgo")
+
 	fset := token.NewFileSet()
 
 	// parse package files
@@ -250,7 +262,7 @@ func pkgFilenames(dir string) ([]string, error) {
 
 func walkDirs(t *testing.T, dir string) {
 	// limit run time for short tests
-	if testing.Short() && time.Since(start) >= 750*time.Millisecond {
+	if testing.Short() && time.Since(start) >= 10*time.Millisecond {
 		return
 	}
 

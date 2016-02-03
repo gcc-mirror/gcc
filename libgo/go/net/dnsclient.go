@@ -40,15 +40,20 @@ func reverseaddr(addr string) (arpa string, err error) {
 func answer(name, server string, dns *dnsMsg, qtype uint16) (cname string, addrs []dnsRR, err error) {
 	addrs = make([]dnsRR, 0, len(dns.answer))
 
-	if dns.rcode == dnsRcodeNameError && dns.recursion_available {
+	if dns.rcode == dnsRcodeNameError {
 		return "", nil, &DNSError{Err: errNoSuchHost.Error(), Name: name, Server: server}
 	}
 	if dns.rcode != dnsRcodeSuccess {
 		// None of the error codes make sense
 		// for the query we sent.  If we didn't get
 		// a name error and we didn't get success,
-		// the server is behaving incorrectly.
-		return "", nil, &DNSError{Err: "server misbehaving", Name: name, Server: server}
+		// the server is behaving incorrectly or
+		// having temporary trouble.
+		err := &DNSError{Err: "server misbehaving", Name: name, Server: server}
+		if dns.rcode == dnsRcodeServerFailure {
+			err.IsTemporary = true
+		}
+		return "", nil, err
 	}
 
 	// Look for the name.
@@ -154,6 +159,28 @@ func isDomainName(s string) bool {
 	}
 
 	return ok
+}
+
+// absDomainName returns an absoulte domain name which ends with a
+// trailing dot to match pure Go reverse resolver and all other lookup
+// routines.
+// See golang.org/issue/12189.
+// But we don't want to add dots for local names from /etc/hosts.
+// It's hard to tell so we settle on the heuristic that names without dots
+// (like "localhost" or "myhost") do not get trailing dots, but any other
+// names do.
+func absDomainName(b []byte) string {
+	hasDots := false
+	for _, x := range b {
+		if x == '.' {
+			hasDots = true
+			break
+		}
+	}
+	if hasDots && b[len(b)-1] != '.' {
+		b = append(b, '.')
+	}
+	return string(b)
 }
 
 // An SRV represents a single DNS SRV record.

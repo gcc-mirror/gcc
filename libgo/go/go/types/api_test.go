@@ -32,6 +32,7 @@ func pkgFor(path, source string, info *Info) (*Package, error) {
 }
 
 func mustTypecheck(t *testing.T, path, source string, info *Info) string {
+	t.Skip("skipping for gccgo--no importer")
 	pkg, err := pkgFor(path, source, info)
 	if err != nil {
 		name := path
@@ -54,14 +55,14 @@ func TestValuesInfo(t *testing.T) {
 		{`package a1; const _ = 0`, `0`, `untyped int`, `0`},
 		{`package a2; const _ = 'A'`, `'A'`, `untyped rune`, `65`},
 		{`package a3; const _ = 0.`, `0.`, `untyped float`, `0`},
-		{`package a4; const _ = 0i`, `0i`, `untyped complex`, `0`},
+		{`package a4; const _ = 0i`, `0i`, `untyped complex`, `(0 + 0i)`},
 		{`package a5; const _ = "foo"`, `"foo"`, `untyped string`, `"foo"`},
 
 		{`package b0; var _ = false`, `false`, `bool`, `false`},
 		{`package b1; var _ = 0`, `0`, `int`, `0`},
 		{`package b2; var _ = 'A'`, `'A'`, `rune`, `65`},
 		{`package b3; var _ = 0.`, `0.`, `float64`, `0`},
-		{`package b4; var _ = 0i`, `0i`, `complex128`, `0`},
+		{`package b4; var _ = 0i`, `0i`, `complex128`, `(0 + 0i)`},
 		{`package b5; var _ = "foo"`, `"foo"`, `string`, `"foo"`},
 
 		{`package c0a; var _ = bool(false)`, `false`, `bool`, `false`},
@@ -80,9 +81,9 @@ func TestValuesInfo(t *testing.T) {
 		{`package c3b; var _ = float32(0.)`, `float32(0.)`, `float32`, `0`},
 		{`package c3c; type T float32; var _ = T(0.)`, `T(0.)`, `c3c.T`, `0`},
 
-		{`package c4a; var _ = complex64(0i)`, `0i`, `complex64`, `0`},
-		{`package c4b; var _ = complex64(0i)`, `complex64(0i)`, `complex64`, `0`},
-		{`package c4c; type T complex64; var _ = T(0i)`, `T(0i)`, `c4c.T`, `0`},
+		{`package c4a; var _ = complex64(0i)`, `0i`, `complex64`, `(0 + 0i)`},
+		{`package c4b; var _ = complex64(0i)`, `complex64(0i)`, `complex64`, `(0 + 0i)`},
+		{`package c4c; type T complex64; var _ = T(0i)`, `T(0i)`, `c4c.T`, `(0 + 0i)`},
 
 		{`package c5a; var _ = string("foo")`, `"foo"`, `string`, `"foo"`},
 		{`package c5b; var _ = string("foo")`, `string("foo")`, `string`, `"foo"`},
@@ -97,10 +98,10 @@ func TestValuesInfo(t *testing.T) {
 		{`package e1; const _ = float32(-1e-200)`, `float32(-1e-200)`, `float32`, `0`},
 		{`package e2; const _ = float64( 1e-2000)`, `float64(1e-2000)`, `float64`, `0`},
 		{`package e3; const _ = float64(-1e-2000)`, `float64(-1e-2000)`, `float64`, `0`},
-		{`package e4; const _ = complex64( 1e-200)`, `complex64(1e-200)`, `complex64`, `0`},
-		{`package e5; const _ = complex64(-1e-200)`, `complex64(-1e-200)`, `complex64`, `0`},
-		{`package e6; const _ = complex128( 1e-2000)`, `complex128(1e-2000)`, `complex128`, `0`},
-		{`package e7; const _ = complex128(-1e-2000)`, `complex128(-1e-2000)`, `complex128`, `0`},
+		{`package e4; const _ = complex64( 1e-200)`, `complex64(1e-200)`, `complex64`, `(0 + 0i)`},
+		{`package e5; const _ = complex64(-1e-200)`, `complex64(-1e-200)`, `complex64`, `(0 + 0i)`},
+		{`package e6; const _ = complex128( 1e-2000)`, `complex128(1e-2000)`, `complex128`, `(0 + 0i)`},
+		{`package e7; const _ = complex128(-1e-2000)`, `complex128(-1e-2000)`, `complex128`, `(0 + 0i)`},
 
 		{`package f0 ; var _ float32 =  1e-200`, `1e-200`, `float32`, `0`},
 		{`package f1 ; var _ float32 = -1e-200`, `-1e-200`, `float32`, `0`},
@@ -108,12 +109,12 @@ func TestValuesInfo(t *testing.T) {
 		{`package f3a; var _ float64 = -1e-2000`, `-1e-2000`, `float64`, `0`},
 		{`package f2b; var _         =  1e-2000`, `1e-2000`, `float64`, `0`},
 		{`package f3b; var _         = -1e-2000`, `-1e-2000`, `float64`, `0`},
-		{`package f4 ; var _ complex64  =  1e-200 `, `1e-200`, `complex64`, `0`},
-		{`package f5 ; var _ complex64  = -1e-200 `, `-1e-200`, `complex64`, `0`},
-		{`package f6a; var _ complex128 =  1e-2000i`, `1e-2000i`, `complex128`, `0`},
-		{`package f7a; var _ complex128 = -1e-2000i`, `-1e-2000i`, `complex128`, `0`},
-		{`package f6b; var _            =  1e-2000i`, `1e-2000i`, `complex128`, `0`},
-		{`package f7b; var _            = -1e-2000i`, `-1e-2000i`, `complex128`, `0`},
+		{`package f4 ; var _ complex64  =  1e-200 `, `1e-200`, `complex64`, `(0 + 0i)`},
+		{`package f5 ; var _ complex64  = -1e-200 `, `-1e-200`, `complex64`, `(0 + 0i)`},
+		{`package f6a; var _ complex128 =  1e-2000i`, `1e-2000i`, `complex128`, `(0 + 0i)`},
+		{`package f7a; var _ complex128 = -1e-2000i`, `-1e-2000i`, `complex128`, `(0 + 0i)`},
+		{`package f6b; var _            =  1e-2000i`, `1e-2000i`, `complex128`, `(0 + 0i)`},
+		{`package f7b; var _            = -1e-2000i`, `-1e-2000i`, `complex128`, `(0 + 0i)`},
 	}
 
 	for _, test := range tests {
@@ -143,7 +144,7 @@ func TestValuesInfo(t *testing.T) {
 		}
 
 		// check that value is correct
-		if got := tv.Value.String(); got != test.val {
+		if got := tv.Value.ExactString(); got != test.val {
 			t.Errorf("package %s: got value %s; want %s", name, got, test.val)
 		}
 	}
@@ -797,7 +798,7 @@ func main() {
 	makePkg("main", mainSrc)
 
 	for e, sel := range selections {
-		sel.String() // assertion: must not panic
+		_ = sel.String() // assertion: must not panic
 
 		start := fset.Position(e.Pos()).Offset
 		end := fset.Position(e.End()).Offset
@@ -872,6 +873,7 @@ var _ = a.C2
 }
 
 func TestLookupFieldOrMethod(t *testing.T) {
+	t.Skip("skipping for gccgo--no importer")
 	// Test cases assume a lookup of the form a.f or x.f, where a stands for an
 	// addressable value, and x for a non-addressable value (even though a variable
 	// for ease of test case writing).

@@ -540,9 +540,12 @@ func TestTCPStress(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer ln.Close()
+	done := make(chan bool)
 	// Acceptor.
 	go func() {
+		defer func() {
+			done <- true
+		}()
 		for {
 			c, err := ln.Accept()
 			if err != nil {
@@ -560,7 +563,6 @@ func TestTCPStress(t *testing.T) {
 			}(c)
 		}
 	}()
-	done := make(chan bool)
 	for i := 0; i < conns; i++ {
 		// Client connection.
 		go func() {
@@ -584,4 +586,6 @@ func TestTCPStress(t *testing.T) {
 	for i := 0; i < conns; i++ {
 		<-done
 	}
+	ln.Close()
+	<-done
 }

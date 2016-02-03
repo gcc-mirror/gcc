@@ -750,3 +750,56 @@ func TestIssue5880(t *testing.T) {
 		t.Errorf("Marshal generated invalid UTF-8: %x", data)
 	}
 }
+
+func TestIssue11405(t *testing.T) {
+	testCases := []string{
+		"<root>",
+		"<root><foo>",
+		"<root><foo></foo>",
+	}
+	for _, tc := range testCases {
+		d := NewDecoder(strings.NewReader(tc))
+		var err error
+		for {
+			_, err = d.Token()
+			if err != nil {
+				break
+			}
+		}
+		if _, ok := err.(*SyntaxError); !ok {
+			t.Errorf("%s: Token: Got error %v, want SyntaxError", tc, err)
+		}
+	}
+}
+
+func TestIssue12417(t *testing.T) {
+	testCases := []struct {
+		s  string
+		ok bool
+	}{
+		{`<?xml encoding="UtF-8" version="1.0"?><root/>`, true},
+		{`<?xml encoding="UTF-8" version="1.0"?><root/>`, true},
+		{`<?xml encoding="utf-8" version="1.0"?><root/>`, true},
+		{`<?xml encoding="uuu-9" version="1.0"?><root/>`, false},
+	}
+	for _, tc := range testCases {
+		d := NewDecoder(strings.NewReader(tc.s))
+		var err error
+		for {
+			_, err = d.Token()
+			if err != nil {
+				if err == io.EOF {
+					err = nil
+				}
+				break
+			}
+		}
+		if err != nil && tc.ok {
+			t.Errorf("%q: Encoding charset: expected no error, got %s", tc.s, err)
+			continue
+		}
+		if err == nil && !tc.ok {
+			t.Errorf("%q: Encoding charset: expected error, got nil", tc.s)
+		}
+	}
+}

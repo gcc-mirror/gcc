@@ -411,6 +411,7 @@ const (
 	SHF_OS_NONCONFORMING SectionFlag = 0x100      /* OS-specific processing required. */
 	SHF_GROUP            SectionFlag = 0x200      /* Member of section group. */
 	SHF_TLS              SectionFlag = 0x400      /* Section contains TLS data. */
+	SHF_COMPRESSED       SectionFlag = 0x800      /* Section is compressed. */
 	SHF_MASKOS           SectionFlag = 0x0ff00000 /* OS-specific semantics. */
 	SHF_MASKPROC         SectionFlag = 0xf0000000 /* Processor-specific semantics. */
 )
@@ -426,10 +427,33 @@ var shfStrings = []intName{
 	{0x100, "SHF_OS_NONCONFORMING"},
 	{0x200, "SHF_GROUP"},
 	{0x400, "SHF_TLS"},
+	{0x800, "SHF_COMPRESSED"},
 }
 
 func (i SectionFlag) String() string   { return flagName(uint32(i), shfStrings, false) }
 func (i SectionFlag) GoString() string { return flagName(uint32(i), shfStrings, true) }
+
+// Section compression type.
+type CompressionType int
+
+const (
+	COMPRESS_ZLIB   CompressionType = 1          /* ZLIB compression. */
+	COMPRESS_LOOS   CompressionType = 0x60000000 /* First OS-specific. */
+	COMPRESS_HIOS   CompressionType = 0x6fffffff /* Last OS-specific. */
+	COMPRESS_LOPROC CompressionType = 0x70000000 /* First processor-specific type. */
+	COMPRESS_HIPROC CompressionType = 0x7fffffff /* Last processor-specific type. */
+)
+
+var compressionStrings = []intName{
+	{0, "COMPRESS_ZLIB"},
+	{0x60000000, "COMPRESS_LOOS"},
+	{0x6fffffff, "COMPRESS_HIOS"},
+	{0x70000000, "COMPRESS_LOPROC"},
+	{0x7fffffff, "COMPRESS_HIPROC"},
+}
+
+func (i CompressionType) String() string   { return stringName(uint32(i), compressionStrings, false) }
+func (i CompressionType) GoString() string { return stringName(uint32(i), compressionStrings, true) }
 
 // Prog.Type
 type ProgType int
@@ -1246,6 +1270,115 @@ var r386Strings = []intName{
 func (i R_386) String() string   { return stringName(uint32(i), r386Strings, false) }
 func (i R_386) GoString() string { return stringName(uint32(i), r386Strings, true) }
 
+// Relocation types for MIPS.
+type R_MIPS int
+
+const (
+	R_MIPS_NONE          R_MIPS = 0
+	R_MIPS_16            R_MIPS = 1
+	R_MIPS_32            R_MIPS = 2
+	R_MIPS_REL32         R_MIPS = 3
+	R_MIPS_26            R_MIPS = 4
+	R_MIPS_HI16          R_MIPS = 5  /* high 16 bits of symbol value */
+	R_MIPS_LO16          R_MIPS = 6  /* low 16 bits of symbol value */
+	R_MIPS_GPREL16       R_MIPS = 7  /* GP-relative reference  */
+	R_MIPS_LITERAL       R_MIPS = 8  /* Reference to literal section  */
+	R_MIPS_GOT16         R_MIPS = 9  /* Reference to global offset table */
+	R_MIPS_PC16          R_MIPS = 10 /* 16 bit PC relative reference */
+	R_MIPS_CALL16        R_MIPS = 11 /* 16 bit call thru glbl offset tbl */
+	R_MIPS_GPREL32       R_MIPS = 12
+	R_MIPS_SHIFT5        R_MIPS = 16
+	R_MIPS_SHIFT6        R_MIPS = 17
+	R_MIPS_64            R_MIPS = 18
+	R_MIPS_GOT_DISP      R_MIPS = 19
+	R_MIPS_GOT_PAGE      R_MIPS = 20
+	R_MIPS_GOT_OFST      R_MIPS = 21
+	R_MIPS_GOT_HI16      R_MIPS = 22
+	R_MIPS_GOT_LO16      R_MIPS = 23
+	R_MIPS_SUB           R_MIPS = 24
+	R_MIPS_INSERT_A      R_MIPS = 25
+	R_MIPS_INSERT_B      R_MIPS = 26
+	R_MIPS_DELETE        R_MIPS = 27
+	R_MIPS_HIGHER        R_MIPS = 28
+	R_MIPS_HIGHEST       R_MIPS = 29
+	R_MIPS_CALL_HI16     R_MIPS = 30
+	R_MIPS_CALL_LO16     R_MIPS = 31
+	R_MIPS_SCN_DISP      R_MIPS = 32
+	R_MIPS_REL16         R_MIPS = 33
+	R_MIPS_ADD_IMMEDIATE R_MIPS = 34
+	R_MIPS_PJUMP         R_MIPS = 35
+	R_MIPS_RELGOT        R_MIPS = 36
+	R_MIPS_JALR          R_MIPS = 37
+
+	R_MIPS_TLS_DTPMOD32    R_MIPS = 38 /* Module number 32 bit */
+	R_MIPS_TLS_DTPREL32    R_MIPS = 39 /* Module-relative offset 32 bit */
+	R_MIPS_TLS_DTPMOD64    R_MIPS = 40 /* Module number 64 bit */
+	R_MIPS_TLS_DTPREL64    R_MIPS = 41 /* Module-relative offset 64 bit */
+	R_MIPS_TLS_GD          R_MIPS = 42 /* 16 bit GOT offset for GD */
+	R_MIPS_TLS_LDM         R_MIPS = 43 /* 16 bit GOT offset for LDM */
+	R_MIPS_TLS_DTPREL_HI16 R_MIPS = 44 /* Module-relative offset, high 16 bits */
+	R_MIPS_TLS_DTPREL_LO16 R_MIPS = 45 /* Module-relative offset, low 16 bits */
+	R_MIPS_TLS_GOTTPREL    R_MIPS = 46 /* 16 bit GOT offset for IE */
+	R_MIPS_TLS_TPREL32     R_MIPS = 47 /* TP-relative offset, 32 bit */
+	R_MIPS_TLS_TPREL64     R_MIPS = 48 /* TP-relative offset, 64 bit */
+	R_MIPS_TLS_TPREL_HI16  R_MIPS = 49 /* TP-relative offset, high 16 bits */
+	R_MIPS_TLS_TPREL_LO16  R_MIPS = 50 /* TP-relative offset, low 16 bits */
+)
+
+var rmipsStrings = []intName{
+	{0, "R_MIPS_NONE"},
+	{1, "R_MIPS_16"},
+	{2, "R_MIPS_32"},
+	{3, "R_MIPS_REL32"},
+	{4, "R_MIPS_26"},
+	{5, "R_MIPS_HI16"},
+	{6, "R_MIPS_LO16"},
+	{7, "R_MIPS_GPREL16"},
+	{8, "R_MIPS_LITERAL"},
+	{9, "R_MIPS_GOT16"},
+	{10, "R_MIPS_PC16"},
+	{11, "R_MIPS_CALL16"},
+	{12, "R_MIPS_GPREL32"},
+	{16, "R_MIPS_SHIFT5"},
+	{17, "R_MIPS_SHIFT6"},
+	{18, "R_MIPS_64"},
+	{19, "R_MIPS_GOT_DISP"},
+	{20, "R_MIPS_GOT_PAGE"},
+	{21, "R_MIPS_GOT_OFST"},
+	{22, "R_MIPS_GOT_HI16"},
+	{23, "R_MIPS_GOT_LO16"},
+	{24, "R_MIPS_SUB"},
+	{25, "R_MIPS_INSERT_A"},
+	{26, "R_MIPS_INSERT_B"},
+	{27, "R_MIPS_DELETE"},
+	{28, "R_MIPS_HIGHER"},
+	{29, "R_MIPS_HIGHEST"},
+	{30, "R_MIPS_CALL_HI16"},
+	{31, "R_MIPS_CALL_LO16"},
+	{32, "R_MIPS_SCN_DISP"},
+	{33, "R_MIPS_REL16"},
+	{34, "R_MIPS_ADD_IMMEDIATE"},
+	{35, "R_MIPS_PJUMP"},
+	{36, "R_MIPS_RELGOT"},
+	{37, "R_MIPS_JALR"},
+	{38, "R_MIPS_TLS_DTPMOD32"},
+	{39, "R_MIPS_TLS_DTPREL32"},
+	{40, "R_MIPS_TLS_DTPMOD64"},
+	{41, "R_MIPS_TLS_DTPREL64"},
+	{42, "R_MIPS_TLS_GD"},
+	{43, "R_MIPS_TLS_LDM"},
+	{44, "R_MIPS_TLS_DTPREL_HI16"},
+	{45, "R_MIPS_TLS_DTPREL_LO16"},
+	{46, "R_MIPS_TLS_GOTTPREL"},
+	{47, "R_MIPS_TLS_TPREL32"},
+	{48, "R_MIPS_TLS_TPREL64"},
+	{49, "R_MIPS_TLS_TPREL_HI16"},
+	{50, "R_MIPS_TLS_TPREL_LO16"},
+}
+
+func (i R_MIPS) String() string   { return stringName(uint32(i), rmipsStrings, false) }
+func (i R_MIPS) GoString() string { return stringName(uint32(i), rmipsStrings, true) }
+
 // Relocation types for PowerPC.
 type R_PPC int
 
@@ -1835,6 +1968,13 @@ type Dyn32 struct {
 	Val uint32 /* Integer/Address value. */
 }
 
+// ELF32 Compression header.
+type Chdr32 struct {
+	Type      uint32
+	Size      uint32
+	Addralign uint32
+}
+
 /*
  * Relocation entries.
  */
@@ -1927,6 +2067,14 @@ type Prog64 struct {
 type Dyn64 struct {
 	Tag int64  /* Entry type. */
 	Val uint64 /* Integer/address value */
+}
+
+// ELF64 Compression header.
+type Chdr64 struct {
+	Type      uint32
+	_         uint32 /* Reserved. */
+	Size      uint64
+	Addralign uint64
 }
 
 /*
