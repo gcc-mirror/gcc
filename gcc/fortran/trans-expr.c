@@ -1103,7 +1103,14 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
 	}
       else
 	{
-	  from_data = gfc_class_data_get (from);
+	  /* Check that from is a class.  When the class is part of a coarray,
+	     then from is a common pointer and is to be used as is.  */
+	  tmp = POINTER_TYPE_P (TREE_TYPE (from))
+	      ? build_fold_indirect_ref (from) : from;
+	  from_data =
+	      (GFC_CLASS_TYPE_P (TREE_TYPE (tmp))
+	       || (DECL_P (tmp) && GFC_DECL_CLASS (tmp)))
+	      ? gfc_class_data_get (from) : from;
 	  is_from_desc = GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (from_data));
 	}
      }

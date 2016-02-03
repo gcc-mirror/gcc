@@ -1,3 +1,13 @@
+2016-02-03  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/67451
+	PR fortran/69418
+	* trans-expr.c (gfc_copy_class_to_class): For coarrays just the
+	pointer is passed.  Take it as is without trying to deref the
+	_data component.
+	* trans-stmt.c (gfc_trans_allocate): Take care of coarrays as
+	argument to source=-expression.
+
 2016-02-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* lang.opt (fopenacc-dim=): New option.
