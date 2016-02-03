@@ -1,3 +1,10 @@
+2016-02-03  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/69056
+	* pt.c (try_one_overload): Handle comparing argument packs so
+	that there is no conflict if we deduced more arguments of an
+	argument pack than were explicitly specified.
+
 2016-01-31  Jakub Jelinek  <jakub@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 

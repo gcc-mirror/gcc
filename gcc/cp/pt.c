@@ -18736,6 +18736,28 @@ try_one_overload (tree tparms,
 	   template args used in the function parm list with our own
 	   template parms.  Discard them.  */
 	TREE_VEC_ELT (tempargs, i) = NULL_TREE;
+      else if (oldelt && ARGUMENT_PACK_P (oldelt))
+	{
+	  /* Check that the argument at each index of the deduced argument pack
+	     is equivalent to the corresponding explicitly specified argument.
+	     We may have deduced more arguments than were explicitly specified,
+	     and that's OK.  */
+	  gcc_assert (ARGUMENT_PACK_INCOMPLETE_P (oldelt));
+	  gcc_assert (ARGUMENT_PACK_ARGS (oldelt)
+		      == ARGUMENT_PACK_EXPLICIT_ARGS (oldelt));
+
+	  tree explicit_pack = ARGUMENT_PACK_ARGS (oldelt);
+	  tree deduced_pack = ARGUMENT_PACK_ARGS (elt);
+
+	  if (TREE_VEC_LENGTH (deduced_pack)
+	      < TREE_VEC_LENGTH (explicit_pack))
+	    return 0;
+
+	  for (int j = 0; j < TREE_VEC_LENGTH (explicit_pack); j++)
+	    if (!template_args_equal (TREE_VEC_ELT (explicit_pack, j),
+				      TREE_VEC_ELT (deduced_pack, j)))
+	      return 0;
+	}
       else if (oldelt && !template_args_equal (oldelt, elt))
 	return 0;
     }
