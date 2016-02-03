@@ -110,7 +110,7 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
    floating point on pre-ISA 3.0 machines without the IEEE 128-bit floating
    point support.  */
 
-#ifndef __NO_FPRS__
+#ifdef __FLOAT128__
 #define ISA_BIT(x) (1LL << (63 - x))
 
 /* Use the same bits of the FPSCR.  */
@@ -151,7 +151,7 @@ void __sfp_handle_exceptions (int);
   } while (0)
 
 # define FP_ROUNDMODE	(_fpscr & FP_RND_MASK)
-#endif	/* !__NO_FPRS__ */
+#endif	/* !__FLOAT128__ */
 
 /* Define ALIASNAME as a strong alias for NAME.  */
 # define strong_alias(name, aliasname) _strong_alias(name, aliasname)

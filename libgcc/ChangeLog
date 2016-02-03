@@ -1,3 +1,9 @@
+2016-02-03  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	PR bootstrap/69611
+	* config/rs6000/sfp-machine.h: Guard __sfp_exceptions with
+	__FLOAT128__ to compile only for __float128 capable targets.
+
 2016-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69444
