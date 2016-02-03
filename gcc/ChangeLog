@@ -1,3 +1,12 @@
+2016-02-03  Vladimir Makarov  <vmakarov@redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
+
+	PR target/69461
+	* lra-constraints.c (simplify_operand_subreg): Check additionally
+	address validity after potential reloading.
+	(process_address_1): Check insns validity.  In case of failure do
+	nothing.
+
 2016-02-03  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/69118
