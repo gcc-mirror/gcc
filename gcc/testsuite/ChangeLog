@@ -1,3 +1,12 @@
+2016-02-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/tsan-dg.exp (tsan_init): Move check if tsan executable
+	works from here ...
+	(check_effective_target_fsanitize_thread): ... to here.  Do not
+	specify additional compile flags for the test source.
+	* lib/asan-dg.exp (check_effective_target_fsanitize_address): Do not
+	specify additional compile flags for the test source.
+
 2016-02-03  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/ccmp_1.c: Fix test issue.

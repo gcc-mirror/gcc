@@ -20,7 +20,7 @@
 proc check_effective_target_fsanitize_address {} {
     return [check_no_compiler_messages fsanitize_address executable {
 	int main (void) { return 0; }
-    } "-fsanitize=address"]
+    }]
 }
 
 proc asan_include_flags {} {
