@@ -2605,7 +2605,7 @@
 	(match_operator:<avx512fmaskmode> 3 "sse_comparison_operator"
 	  [(match_operand:VF 1 "register_operand" "v")
 	   (match_operand:VF 2 "nonimmediate_operand" "vm")]))]
-  "TARGET_SSE"
+  "TARGET_AVX512F"
   "vcmp%D3<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "ssecmp")
    (set_attr "length_immediate" "1")
