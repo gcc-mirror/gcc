@@ -1,3 +1,16 @@
+2016-02-03  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.dg/vect/vect-outer-1-big-array.c: Drop vect_multiple_sizes;
+	use same scan-tree-dump-times on all platforms.
+	* gcc.dg/vect/vect-outer-1.c: Likewise.
+	* gcc.dg/vect/vect-outer-1a-big-array.c: Likewise.
+	* gcc.dg/vect/vect-outer-1a.c: Likewise.
+	* gcc.dg/vect/vect-outer-1b-big-array.c: Likewise.
+	* gcc.dg/vect/vect-outer-1b.c: Likewise.
+	* gcc.dg/vect/vect-outer-2b.c: Likewise.
+	* gcc.dg/vect/vect-outer-3b.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-s8b.c: Likewise.
+
 2016-02-02  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* c-c++-common/vector-compare-4.c: Prune "non-standard ABI extension"
