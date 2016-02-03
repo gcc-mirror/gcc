@@ -1,3 +1,7 @@
+2016-02-03  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/ccmp_1.c: Fix test issue.
+
 2016-02-03  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/67451
