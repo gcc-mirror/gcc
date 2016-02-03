@@ -1,3 +1,8 @@
+2016-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69644
+	* gcc.dg/pr69644.c: New test.
+
 2016-02-03  Mike Stump  <mikestump@comcast.net>
 
 	* lib/compat.exp (compat-get-options-main): Add dg-timeout-factor
