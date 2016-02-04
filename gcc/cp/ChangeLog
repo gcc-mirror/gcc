@@ -1,3 +1,8 @@
+2016-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* class.c (find_flexarrays): Don't declare dom variable.
+	(diagnose_flexarray): Likewise.
+
 2016-02-02  Martain Sebor  <msebor@redhat.com>
 
 	PR c++/69251
