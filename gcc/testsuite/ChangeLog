@@ -1,3 +1,7 @@
+2016-02-04  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/asan/pr69276.C: New test.
+
 2016-02-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/65932
