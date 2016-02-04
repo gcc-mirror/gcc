@@ -1,3 +1,7 @@
+2016-02-04  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* g++.dg/cpp0x/constexpr-ptrmem5.C: New test.
+
 2016-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/69669
@@ -81,7 +85,7 @@
 2016-02-03  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/69056
-	g++.dg/cpp0x/pr69056.C: New test.
+	* g++.dg/cpp0x/pr69056.C: New test.
 
 2016-02-03  Vladimir Makarov  <vmakarov@redhat.com>
 	    Alexandre Oliva  <aoliva@redhat.com>

@@ -1,3 +1,8 @@
+2016-02-04  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* constexpr.c (cxx_eval_binary_expression): Fold equality
+	comparisons involving PTRMEM_CSTs.
+
 2016-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* class.c (find_flexarrays): Don't declare dom variable.
