@@ -20737,6 +20737,9 @@ rs6000_expand_atomic_compare_and_swap (rtx operands[])
   else if (reg_overlap_mentioned_p (retval, oldval))
     oldval = copy_to_reg (oldval);
 
+  if (mode != TImode && !reg_or_short_operand (oldval, mode))
+    oldval = copy_to_mode_reg (mode, oldval);
+
   mem = rs6000_pre_atomic_barrier (mem, mod_s);
 
   label1 = NULL_RTX;
@@ -20751,10 +20754,8 @@ rs6000_expand_atomic_compare_and_swap (rtx operands[])
 
   x = retval;
   if (mask)
-    {
-      x = expand_simple_binop (SImode, AND, retval, mask,
-			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
-    }
+    x = expand_simple_binop (SImode, AND, retval, mask,
+			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
 
   cond = gen_reg_rtx (CCmode);
   /* If we have TImode, synthesize a comparison.  */
