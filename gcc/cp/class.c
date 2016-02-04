@@ -6683,7 +6683,7 @@ find_flexarrays (tree t, flexmems_t *fmem)
 	continue;
 
       /* Determine the upper bound of the array if it has one.  */
-      if (tree dom = TYPE_DOMAIN (fldtype))
+      if (TYPE_DOMAIN (fldtype))
 	{
 	  if (fmem->array)
 	    {
@@ -6694,7 +6694,7 @@ find_flexarrays (tree t, flexmems_t *fmem)
 	      if (!fmem->after)
 		fmem->after = fld;
 	    }
-	  else if (integer_all_onesp (TYPE_MAX_VALUE (dom)))
+	  else if (integer_all_onesp (TYPE_MAX_VALUE (TYPE_DOMAIN (fldtype))))
 	    /* Remember the first zero-length array unless a flexible array
 	       member has already been seen.  */
 	    fmem->array = fld;
@@ -6732,7 +6732,7 @@ diagnose_flexarrays (tree t, const flexmems_t *fmem)
 
   const char *msg = 0;
 
-  if (const_tree dom = TYPE_DOMAIN (TREE_TYPE (fmem->array)))
+  if (TYPE_DOMAIN (TREE_TYPE (fmem->array)))
     {
       if (fmem->after)
 	msg = G_("zero-size array member %qD not at end of %q#T");
