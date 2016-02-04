@@ -23605,13 +23605,6 @@ arm_scalar_mode_supported_p (machine_mode mode)
     return default_scalar_mode_supported_p (mode);
 }
 
-/* Emit code to reinterpret one Neon type as another, without altering bits.  */
-void
-neon_reinterpret (rtx dest, rtx src)
-{
-  emit_move_insn (dest, gen_lowpart (GET_MODE (dest), src));
-}
-
 /* Set up OPERANDS for a register copy from SRC to DEST, taking care
    not to early-clobber SRC registers in the process.
 
