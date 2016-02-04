@@ -1,3 +1,11 @@
+2016-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2016-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69644
+	* gcc.dg/pr69644.c: New test.
+
 2016-02-02  Alan Modra  <amodra@gmail.com>
 
 	PR target/69548
