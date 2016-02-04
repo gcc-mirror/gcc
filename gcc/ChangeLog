@@ -1,3 +1,10 @@
+2016-02-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/64682
+	PR rtl-optimization/69567
+	* combine.c (distribute_notes) <REG_DEAD>: Place the death note
+	before I2 only if the register is both used and set in I2.
+
 2016-02-04  DJ Delorie  <dj@redhat.com>
 
 	* config/msp430/msp430.c (msp430_start_function): Add function type.
