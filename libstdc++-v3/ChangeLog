@@ -1,5 +1,7 @@
 2016-02-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/html/index.html: Regenerate.
+
 	* doc/xml/manual/containers.xml: Add cross-reference to Dual ABI.
 	* doc/xml/manual/spine.xml: Update copyright years and author blurb.
 	* doc/html/*: Regenerate.
