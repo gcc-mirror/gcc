@@ -2111,6 +2111,7 @@ msp430_start_function (FILE *file, const char *name, tree decl)
     }
 
   switch_to_section (function_section (decl));
+  ASM_OUTPUT_TYPE_DIRECTIVE(file, name, "function");
   ASM_OUTPUT_FUNCTION_LABEL (file, name, decl);
 }
 
