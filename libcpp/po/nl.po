@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 5.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2015-04-13 20:12+0000\n"
+"POT-Creation-Date: 2016-01-31 15:50+0000\n"
 "PO-Revision-Date: 2015-07-23 19:42+0200\n"
 "Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
@@ -41,7 +41,7 @@ msgstr "geen implementatie van iconv beschikbaar; kan niet omzetten van %s naar 
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "teken 0x%lx zit niet in de basis brontekenset\n"
 
-#: charset.c:798 charset.c:1452
+#: charset.c:798 charset.c:1453
 msgid "converting to execution character set"
 msgstr "omzetting naar uitvoeringstekenset"
 
@@ -50,49 +50,49 @@ msgstr "omzetting naar uitvoeringstekenset"
 msgid "character 0x%lx is not unibyte in execution character set"
 msgstr "teken 0x%lx is niet enkelbyte in de uitvoeringstekenset"
 
-#: charset.c:998
+#: charset.c:997
 msgid "universal character names are only valid in C++ and C99"
 msgstr "universele tekennamen zijn alleen geldig in C++ en C99"
 
-#: charset.c:1002
+#: charset.c:1001
 msgid "C99's universal character names are incompatible with C90"
 msgstr "universele tekennamen van C99 zijn zijn incompatibel met C90"
 
-#: charset.c:1005
+#: charset.c:1004
 #, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
 msgstr "de betekenis van '\\%c' is anders in traditioneel C"
 
-#: charset.c:1014
+#: charset.c:1013
 msgid "In _cpp_valid_ucn but not a UCN"
 msgstr "In '_cpp_valid_ucn' maar het is geen UCN"
 
-#: charset.c:1039
+#: charset.c:1041
 #, c-format
 msgid "incomplete universal character name %.*s"
 msgstr "onvolledige universele tekennaam %.*s"
 
-#: charset.c:1054
+#: charset.c:1056
 #, c-format
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s is geen geldige universele tekennaam"
 
-#: charset.c:1064 lex.c:1218
+#: charset.c:1066 lex.c:1236
 msgid "'$' in identifier or number"
 msgstr "'$' in naam of getal"
 
 # "identifier" is een verdomd rottig woord om te vertalen...
-#: charset.c:1074
+#: charset.c:1076
 #, c-format
 msgid "universal character %.*s is not valid in an identifier"
 msgstr "universeel teken %.*s is niet geldig in een naam"
 
-#: charset.c:1078
+#: charset.c:1080
 #, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "universeel teken %.*s is niet geldig aan het begin van een naam"
 
-#: charset.c:1110 charset.c:1682
+#: charset.c:1110 charset.c:1684
 msgid "converting UCN to source character set"
 msgstr "omzetting van UCN naar brontekenset"
 
@@ -139,472 +139,472 @@ msgstr "onbekende escape sequence: '\\%s'"
 msgid "converting escape sequence to execution character set"
 msgstr "omzetting van escape sequence naar uitvoeringstekenset"
 
-#: charset.c:1517 charset.c:1581
+#: charset.c:1518 charset.c:1582
 msgid "character constant too long for its type"
 msgstr "tekenconstante is te lang voor zijn type"
 
-#: charset.c:1520
+#: charset.c:1521
 msgid "multi-character character constant"
 msgstr "tekenconstante bevat meerdere tekens"
 
-#: charset.c:1620
+#: charset.c:1622
 msgid "empty character constant"
 msgstr "lege tekenconstante"
 
-#: charset.c:1729
+#: charset.c:1731
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "fout bij omzetten van %s naar %s"
 
-#: directives.c:224 directives.c:267
+#: directives.c:225 directives.c:268
 #, c-format
 msgid "extra tokens at end of #%s directive"
 msgstr "overbodige tokens aan einde van #%s commando"
 
-#: directives.c:374
+#: directives.c:375
 #, c-format
 msgid "#%s is a GCC extension"
 msgstr "#%s is een uitbreiding van GCC"
 
-#: directives.c:379
+#: directives.c:380
 #, c-format
 msgid "#%s is a deprecated GCC extension"
 msgstr "#%s is een afgekeurde uitbreiding van GCC"
 
-#: directives.c:392
+#: directives.c:393
 msgid "suggest not using #elif in traditional C"
 msgstr "gebruik liefst geen #elif in traditioneel C"
 
-#: directives.c:395
+#: directives.c:396
 #, c-format
 msgid "traditional C ignores #%s with the # indented"
 msgstr "traditioneel C negeert #%s wanneer het # geïndenteerd is"
 
-#: directives.c:399
+#: directives.c:400
 #, c-format
 msgid "suggest hiding #%s from traditional C with an indented #"
 msgstr "verberg #%s liefst van traditioneel C via een geïndenteerd #"
 
-#: directives.c:425
+#: directives.c:426
 msgid "embedding a directive within macro arguments is not portable"
 msgstr "het plaatsen van een commando binnen macro-argumenten is niet overdraagbaar"
 
-#: directives.c:445
+#: directives.c:446
 msgid "style of line directive is a GCC extension"
 msgstr "dit soort #line commando is een uitbreiding van GCC"
 
-#: directives.c:500
+#: directives.c:501
 #, c-format
 msgid "invalid preprocessing directive #%s"
 msgstr "ongeldig preprocessing-commando #%s"
 
-#: directives.c:568
+#: directives.c:569
 msgid "\"defined\" cannot be used as a macro name"
 msgstr "\"defined\" kan niet als macronaam gebruikt worden"
 
-#: directives.c:573
+#: directives.c:574
 msgid "\"__has_include__\" cannot be used as a macro name"
 msgstr "\"__has_include__\" kan niet als macronaam gebruikt worden"
 
-#: directives.c:579
+#: directives.c:580
 #, c-format
 msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
 msgstr "\"%s\" kan niet als macronaam gebruikt worden omdat het een operator is in C++"
 
-#: directives.c:582
+#: directives.c:583
 #, c-format
 msgid "no macro name given in #%s directive"
 msgstr "geen macronaam opgegeven in #%s commando"
 
 # lap! hier heb ik het zitten... wat is verdorie een betere vertaling voor identifier?
 # Dit is wel langer maar zegt denk ik wel waar het om gaat.
-#: directives.c:585
+#: directives.c:586
 msgid "macro names must be identifiers"
 msgstr "macronamen moeten voldoen aan de regels voor namen in C/C++"
 
 # niet perfect, maar beter dan "wordt ongedefinieerd", "wordt geondefinieerd" of iets dergelijks...
-#: directives.c:634 directives.c:639
+#: directives.c:635 directives.c:640
 #, c-format
 msgid "undefining \"%s\""
 msgstr "definitie van \"%s\" wordt ongedaan gemaakt"
 
-#: directives.c:694
+#: directives.c:695
 msgid "missing terminating > character"
 msgstr "afsluitend '>'-teken ontbreekt"
 
-#: directives.c:753
+#: directives.c:754
 #, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr "#%s verwacht \"BESTAND\" of <BESTAND>"
 
-#: directives.c:799
+#: directives.c:800
 #, c-format
 msgid "empty filename in #%s"
 msgstr "lege bestandsnaam in #%s"
 
-#: directives.c:809
+#: directives.c:810
 msgid "#include nested too deeply"
 msgstr "#include is te diep genest"
 
-#: directives.c:850
+#: directives.c:851
 msgid "#include_next in primary source file"
 msgstr "#include_next in primair bronbestand"
 
-#: directives.c:876
+#: directives.c:877
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr "ongeldige vlag \"%s\" in #line commando"
 
-#: directives.c:936
+#: directives.c:937
 msgid "unexpected end of file after #line"
 msgstr "onverwacht einde van bestand na #line"
 
-#: directives.c:939
+#: directives.c:940
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "\"%s\" (na #line) is geen positieve integer"
 
-#: directives.c:945 directives.c:947
+#: directives.c:946 directives.c:948
 msgid "line number out of range"
 msgstr "regelnummer buiten bereik"
 
-#: directives.c:960 directives.c:1040
+#: directives.c:961 directives.c:1042
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "\"%s\" is geen geldige bestandsnaam"
 
-#: directives.c:1000
+#: directives.c:1002
 #, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "\"%s\" (na #) is geen positieve integer"
 
 # FIXME: most likely shouldn't have been marked as translatable
-#: directives.c:1095 directives.c:1097 directives.c:1099 directives.c:1685
+#: directives.c:1103 directives.c:1105 directives.c:1107 directives.c:1693
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.c:1123
+#: directives.c:1131
 #, c-format
 msgid "invalid #%s directive"
 msgstr "ongeldig #%s commando"
 
 # goede vertaling voor 'mismatched'?
-#: directives.c:1186
+#: directives.c:1194
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr "registratie van pragma's in naamsruimte \"%s\" met niet-overeenkomstige naamsexpansie"
 
 # moet namespace hier ook vertaald worden?
-#: directives.c:1195
+#: directives.c:1203
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr "registratie van pragma \"%s\" met naamsexpansie maar geen naamsruimte"
 
 # moet namespace hier ook vertaald worden?
-#: directives.c:1213
+#: directives.c:1221
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr "registratie van \"%s\" zowel als pragma en als pragma-naamsruimte"
 
-#: directives.c:1216
+#: directives.c:1224
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "#pragma %s %s is reeds geregistreerd"
 
-#: directives.c:1219
+#: directives.c:1227
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr "#pragma %s is reeds geregistreerd"
 
 # betere vertaling voor 'handler'?
-#: directives.c:1249
+#: directives.c:1257
 msgid "registering pragma with NULL handler"
 msgstr "registratie van pragma met NULL als afhandelingsroutine"
 
-#: directives.c:1466
+#: directives.c:1474
 msgid "#pragma once in main file"
 msgstr "#pragma once in hoofdbestand"
 
-#: directives.c:1489
+#: directives.c:1497
 msgid "invalid #pragma push_macro directive"
 msgstr "ongeldig #pragma push_macro commando"
 
-#: directives.c:1544
+#: directives.c:1552
 msgid "invalid #pragma pop_macro directive"
 msgstr "ongeldig #pragma pop_macro commando"
 
-#: directives.c:1599
+#: directives.c:1607
 msgid "invalid #pragma GCC poison directive"
 msgstr "ongeldig #pragma GCC poison commando"
 
-#: directives.c:1608
+#: directives.c:1616
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "bestaande macro \"%s\" wordt 'vergiftigd'"
 
-#: directives.c:1627
+#: directives.c:1635
 msgid "#pragma system_header ignored outside include file"
 msgstr "#pragma system_header wordt genegeerd buiten een invoegbestand"
 
-#: directives.c:1652
+#: directives.c:1660
 #, c-format
 msgid "cannot find source file %s"
 msgstr "kan bronbestand %s niet vinden"
 
-#: directives.c:1656
+#: directives.c:1664
 #, c-format
 msgid "current file is older than %s"
 msgstr "huidig bestand is ouder dan %s"
 
-#: directives.c:1680
+#: directives.c:1688
 #, c-format
 msgid "invalid \"#pragma GCC %s\" directive"
 msgstr "ongeldig \"#pragma GCC %s\"-commando"
 
-#: directives.c:1874
+#: directives.c:1889
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma verwacht als argument een stringconstante tussen haakjes"
 
-#: directives.c:1995
+#: directives.c:2010
 msgid "#else without #if"
 msgstr "#else zonder #if"
 
-#: directives.c:2000
+#: directives.c:2015
 msgid "#else after #else"
 msgstr "#else na #else"
 
 # of gewoon "de conditie"?
-#: directives.c:2002 directives.c:2035
+#: directives.c:2017 directives.c:2050
 msgid "the conditional began here"
 msgstr "het conditionele blok begon hier"
 
-#: directives.c:2028
+#: directives.c:2043
 msgid "#elif without #if"
 msgstr "#elif zonder #if"
 
-#: directives.c:2033
+#: directives.c:2048
 msgid "#elif after #else"
 msgstr "#elif na #else"
 
-#: directives.c:2064
+#: directives.c:2079
 msgid "#endif without #if"
 msgstr "#endif zonder #if"
 
-#: directives.c:2144
+#: directives.c:2159
 msgid "missing '(' after predicate"
 msgstr "'(' ontbreekt na predicaat"
 
-#: directives.c:2159
+#: directives.c:2174
 msgid "missing ')' to complete answer"
 msgstr "')' ontbreekt als afronding van het antwoord"
 
-#: directives.c:2179
+#: directives.c:2194
 msgid "predicate's answer is empty"
 msgstr "antwoord van het predicaat is leeg"
 
 # dit moet beter kunnen...
-#: directives.c:2206
+#: directives.c:2221
 msgid "assertion without predicate"
 msgstr "assertie zonder predicaat"
 
 # ... dit klinkt echt niet - maar wat is hier een beter vertaling voor identifier?
-#: directives.c:2209
+#: directives.c:2224
 msgid "predicate must be an identifier"
 msgstr "predicaat moet een naam zijn"
 
 # is "asserteren" wel een echt woord?
-#: directives.c:2295
+#: directives.c:2310
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "\"%s\" opnieuw geasserteerd"
 
-#: directives.c:2587
+#: directives.c:2602
 #, c-format
 msgid "unterminated #%s"
 msgstr "niet-beëindigde #%s"
 
-#: directives-only.c:221 lex.c:2433 traditional.c:167
+#: directives-only.c:221 lex.c:2460 traditional.c:167
 msgid "unterminated comment"
 msgstr "niet-beëindigd commentaar"
 
-#: errors.c:231
-msgid "stdout"
-msgstr "standaarduitvoer"
-
 # FIXME: hoort niet echt een vertaalbare string te zijn :-)
-#: errors.c:233
+#: errors.c:233 errors.c:246
 #, c-format
 msgid "%s: %s"
 msgstr "%s: %s"
 
-#: expr.c:512 expr.c:629
+#: errors.c:244
+msgid "stdout"
+msgstr "standaarduitvoer"
+
+#: expr.c:517 expr.c:634
 msgid "fixed-point constants are a GCC extension"
 msgstr "fixed-point constantes zijn een uitbreiding van GCC"
 
-#: expr.c:537
+#: expr.c:542
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "ongeldige prefix \"0b\" voor floating-point constante"
 
-#: expr.c:550
+#: expr.c:555
 msgid "use of C++11 hexadecimal floating constant"
 msgstr "gebruik van een C++11 hexadecimale floating-point constante"
 
-#: expr.c:553
+#: expr.c:558
 msgid "use of C99 hexadecimal floating constant"
 msgstr "gebruik van een C99 hexadecimale floating-point constante"
 
-#: expr.c:597
+#: expr.c:602
 #, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr "ongeldige suffix \"%.*s\" aan floating-point constante"
 
-#: expr.c:608 expr.c:668
+#: expr.c:613 expr.c:673
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "traditioneel C aanvaardt de \"%.*s\" suffix niet"
 
-#: expr.c:616
+#: expr.c:621
 msgid "suffix for double constant is a GCC extension"
 msgstr "het gebruik van een suffix voor double constantes is een uitbreiding van GCC"
 
-#: expr.c:622
+#: expr.c:627
 #, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "ongeldige suffix \"%.*s\" bij hexadecimale floating-point constante"
 
-#: expr.c:633
+#: expr.c:638
 msgid "decimal float constants are a GCC extension"
 msgstr "decimale floating-point constantes zijn een uitbreiding van GCC"
 
-#: expr.c:651
+#: expr.c:656
 #, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "ongeldige suffix \"%.*s\" aan integerconstante"
 
-#: expr.c:676
+#: expr.c:681
 msgid "use of C++11 long long integer constant"
 msgstr "gebruik van een C++11 long long integerconstante"
 
-#: expr.c:677
+#: expr.c:682
 msgid "use of C99 long long integer constant"
 msgstr "gebruik van een C99 long long integerconstante"
 
-#: expr.c:693
+#: expr.c:698
 msgid "imaginary constants are a GCC extension"
 msgstr "imaginaire constantes zijn een uitbreiding van GCC"
 
-#: expr.c:699
+#: expr.c:704
 msgid "binary constants are a C++14 feature or GCC extension"
 msgstr "binaire constantes zijn een C++14-functie of een uitbreiding van GCC"
 
-#: expr.c:701
+#: expr.c:706
 msgid "binary constants are a GCC extension"
 msgstr "binaire constantes zijn een uitbreiding van GCC"
 
-#: expr.c:796
+#: expr.c:801
 msgid "integer constant is too large for its type"
 msgstr "integerconstante is te groot voor zijn type"
 
-#: expr.c:827
+#: expr.c:832
 msgid "integer constant is so large that it is unsigned"
 msgstr "integerconstante is zo groot dat hij tekenloos is"
 
-#: expr.c:922
+#: expr.c:927
 msgid "missing ')' after \"defined\""
 msgstr "')' ontbreekt na \"defined\""
 
-#: expr.c:929
+#: expr.c:934
 msgid "operator \"defined\" requires an identifier"
 msgstr "de \"defined\" operator vereist een naam als argument"
 
-#: expr.c:937
+#: expr.c:942
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr "(\"%s\" is een alternatieve schrijfwijze voor \"%s\" in C++)"
 
-#: expr.c:947
+#: expr.c:952
 msgid "this use of \"defined\" may not be portable"
 msgstr "dit gebruik van \"define\" is mogelijk niet overdraagbaar"
 
-#: expr.c:1007
+#: expr.c:1012
 msgid "user-defined literal in preprocessor expression"
 msgstr "gebruikergedefinieerde constante in preprocessor-expressie"
 
-#: expr.c:1012
+#: expr.c:1017
 msgid "floating constant in preprocessor expression"
 msgstr "floating-point constante in preprocessor-expressie"
 
-#: expr.c:1018
+#: expr.c:1023
 msgid "imaginary number in preprocessor expression"
 msgstr "imaginair getal in preprocessor-expressie"
 
-#: expr.c:1070
+#: expr.c:1076
 #, c-format
 msgid "\"%s\" is not defined"
 msgstr "\"%s\" is niet gedefinieerd"
 
-#: expr.c:1083
+#: expr.c:1089
 msgid "assertions are a GCC extension"
 msgstr "assertions zijn een uitbreiding van GCC"
 
-#: expr.c:1086
+#: expr.c:1092
 msgid "assertions are a deprecated extension"
 msgstr "assertions zijn een afgekeurde uitbreiding"
 
-#: expr.c:1331
+#: expr.c:1338
 #, c-format
 msgid "unbalanced stack in %s"
 msgstr "niet-gebalanceerde stack in %s"
 
-#: expr.c:1351
+#: expr.c:1358
 #, c-format
 msgid "impossible operator '%u'"
 msgstr "operator '%u' is onmogelijk"
 
-#: expr.c:1452
+#: expr.c:1459
 msgid "missing ')' in expression"
 msgstr "')' ontbreekt in expressie"
 
-#: expr.c:1481
+#: expr.c:1488
 msgid "'?' without following ':'"
 msgstr "'?' zonder daaropvolgende ':'"
 
-#: expr.c:1491
+#: expr.c:1498
 msgid "integer overflow in preprocessor expression"
 msgstr "integer-overflow in preprocessor-expressie"
 
-#: expr.c:1496
+#: expr.c:1503
 msgid "missing '(' in expression"
 msgstr "'(' ontbreekt in expressie"
 
-#: expr.c:1528
+#: expr.c:1535
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr "de linker operand van \"%s\" verandert van teken indien hij gepromoveerd wordt"
 
-#: expr.c:1533
+#: expr.c:1540
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr "de rechter operand van \"%s\" verandert van teken indien hij gepromoveerd wordt"
 
-#: expr.c:1792
+#: expr.c:1799
 msgid "traditional C rejects the unary plus operator"
 msgstr "traditioneel C verwerpt de unaire plus-operator"
 
-#: expr.c:1890
+#: expr.c:1897
 msgid "comma operator in operand of #if"
 msgstr "komma-operator in operand van '#if'"
 
-#: expr.c:2026
+#: expr.c:2033
 msgid "division by zero in #if"
 msgstr "deling door nul in '#if'"
 
-#: expr.c:2123
+#: expr.c:2130
 msgid "operator \"__has_include__\" requires a header string"
 msgstr "de \"__has_include__\" operator vereist een headerstring"
 
-#: expr.c:2139
+#: expr.c:2146
 msgid "missing ')' after \"__has_include__\""
 msgstr "')' ontbreekt na \"__has_include__\""
 
@@ -612,335 +612,341 @@ msgstr "')' ontbreekt na \"__has_include__\""
 msgid "NULL directory in find_file"
 msgstr "directory is NULL in 'find_file'"
 
-#: files.c:561
+#: files.c:564
 msgid "one or more PCH files were found, but they were invalid"
 msgstr "een of meer PCH-bestanden werden gevonden, maar ze waren ongeldig"
 
-#: files.c:564
+#: files.c:567
 msgid "use -Winvalid-pch for more information"
 msgstr "gebruik -Winvalid-pch voor meer informatie"
 
-#: files.c:668
+#: files.c:671
 #, c-format
 msgid "%s is a block device"
 msgstr "%s is een blok-apparaat"
 
-#: files.c:685
+#: files.c:688
 #, c-format
 msgid "%s is too large"
 msgstr "%s is te groot"
 
-#: files.c:725
+#: files.c:728
 #, c-format
 msgid "%s is shorter than expected"
 msgstr "%s is korter dan verwacht"
 
-#: files.c:961
+#: files.c:964
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr "geen invoegpad waarin naar %s gezocht kan worden"
 
 # goede vertaling voor "include guard"?
-#: files.c:1411
+#: files.c:1419
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Meerdere invoegbeschermingen zouden nuttig kunnen zijn voor:\n"
 
-#: init.c:546
+#: init.c:549
 msgid "cppchar_t must be an unsigned type"
 msgstr "'cppchar_t' moet een tekenloos type zijn"
 
-#: init.c:550
+#: init.c:553
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr "preprocessor-rekensommen hebben een maximale precisie van %lu bits; de doelomgeving vereist %lu bits"
 
-#: init.c:557
+#: init.c:560
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr "CPP-rekensommen moet minstens even precies zijn als een int in de doelomgeving"
 
-#: init.c:560
+#: init.c:563
 msgid "target char is less than 8 bits wide"
 msgstr "char is minder dan 8 bits breed in de doelomgeving"
 
-#: init.c:564
+#: init.c:567
 msgid "target wchar_t is narrower than target char"
 msgstr "'wchar_t' is smaller dan char in de doelomgeving"
 
-#: init.c:568
+#: init.c:571
 msgid "target int is narrower than target char"
 msgstr "int is smaller dan char in de doelomgeving"
 
-#: init.c:573
+#: init.c:576
 msgid "CPP half-integer narrower than CPP character"
 msgstr "CPP half-integer is smaller dan een CPP char"
 
-#: init.c:577
+#: init.c:580
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "CPP kan op deze host geen brede tekenconstantes aan van meer dan %lu bits, maar de doelomgeving vereist %lu bits"
 
-#: lex.c:1011
+#: lex.c:1029
 msgid "backslash and newline separated by space"
 msgstr "backslash en newline gescheiden door spatie(s)"
 
-#: lex.c:1016
+#: lex.c:1034
 msgid "backslash-newline at end of file"
 msgstr "backslash-newline aan einde van bestand"
 
-#: lex.c:1032
+#: lex.c:1050
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr "trigraph ??%c is omgezet naar %c"
 
-#: lex.c:1040
+#: lex.c:1058
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "trigraph ??%c is genegeerd; gebruik -trigraphs om ondersteuning in te schakelen"
 
-#: lex.c:1089
+#: lex.c:1107
 msgid "\"/*\" within comment"
 msgstr "\"/*\" binnen commentaar"
 
-#: lex.c:1147
+#: lex.c:1165
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "%s binnen preprocessor-commando"
 
-#: lex.c:1156
+#: lex.c:1174
 msgid "null character(s) ignored"
 msgstr "nulteken(s) worden genegeerd"
 
-#: lex.c:1193
+#: lex.c:1211
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "'%.*s' zit niet in NFKC"
 
-#: lex.c:1196
+#: lex.c:1214
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "'%.*s' zit niet in NFC"
 
-#: lex.c:1265 lex.c:1354
+#: lex.c:1284 lex.c:1373
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "poging tot gebruik van 'vergiftigde' \"%s\""
 
-#: lex.c:1275 lex.c:1364
+#: lex.c:1294 lex.c:1383
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
 msgstr "__VA_ARGS__ mag enkel voorkomen in de expansie van een C++11 variadische macro"
 
-#: lex.c:1279 lex.c:1368
+#: lex.c:1298 lex.c:1387
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ mag enkel voorkomen in de expansie van een C99 variadische macro"
 
 # "identifier" is lastig te vertalen; ik neem meestal 'naam', maar hier klinkt dat niet...
-#: lex.c:1286 lex.c:1375
+#: lex.c:1305 lex.c:1394
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "de aanduiding \"%s\" is een speciale operatornaam in C++"
 
 # betere vertaling voor "raw string delimiter"?
-#: lex.c:1665
+#: lex.c:1684
 msgid "raw string delimiter longer than 16 characters"
 msgstr "rauwe stringscheiding is langer dan 16 tekens"
 
-#: lex.c:1669
+#: lex.c:1688
 msgid "invalid new-line in raw string delimiter"
 msgstr "ongeldige newline in rauwe stringscheiding"
 
-#: lex.c:1673
+#: lex.c:1692
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "ongeldig teken '%c' in rauwe stringscheiding"
 
-#: lex.c:1722 lex.c:1744
+#: lex.c:1741 lex.c:1763
 msgid "unterminated raw string"
 msgstr "niet-beëindigde rauwe string"
 
-#: lex.c:1765 lex.c:1894
+#: lex.c:1784 lex.c:1914
 msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
 msgstr "ongeldige suffix aan constante; C++11 vereist een spatie tussen constante en stringmacro"
 
-#: lex.c:1876
+#: lex.c:1896
 msgid "null character(s) preserved in literal"
 msgstr "nulteken(s) in een constante worden behouden"
 
-#: lex.c:1879
+#: lex.c:1899
 #, c-format
 msgid "missing terminating %c character"
 msgstr "afsluitend %c-teken ontbreekt"
 
-#: lex.c:2447 lex.c:2481
+#: lex.c:1932
+#, fuzzy
+#| msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
+msgid "C++11 requires a space between string literal and macro"
+msgstr "ongeldige suffix aan constante; C++11 vereist een spatie tussen constante en stringmacro"
+
+#: lex.c:2474 lex.c:2508
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "commentaar in C++-stijl is niet toegestaan in ISO C90"
 
-#: lex.c:2449 lex.c:2460 lex.c:2483
+#: lex.c:2476 lex.c:2487 lex.c:2510
 msgid "(this will be reported only once per input file)"
 msgstr "(dit wordt per invoerbestand maar één keer gemeld)"
 
-#: lex.c:2458
+#: lex.c:2485
 msgid "C++ style comments are incompatible with C90"
 msgstr "commentaar in C++-stijl is incompatibel met C90"
 
-#: lex.c:2489
+#: lex.c:2516
 msgid "multi-line comment"
 msgstr "commentaar gespreid over meerdere regels"
 
 # lijkt een vreemde boodschap...
-#: lex.c:2833
+#: lex.c:2873
 #, c-format
 msgid "unspellable token %s"
 msgstr "kan token %s niet spellen"
 
-#: macro.c:200
+#: macro.c:202
 #, c-format
 msgid "macro \"%s\" is not used"
 msgstr "macro \"%s\" wordt nergens gebruikt"
 
-#: macro.c:238 macro.c:470
+#: macro.c:240 macro.c:472
 #, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr "ongeldige ingebouwde macro \"%s\""
 
-#: macro.c:245 macro.c:342
+#: macro.c:247 macro.c:344
 #, c-format
 msgid "macro \"%s\" might prevent reproducible builds"
 msgstr "macro \"%s\" kan reproduceerbare compilaties verhinderen"
 
-#: macro.c:276
+#: macro.c:278
 msgid "could not determine file timestamp"
 msgstr "kan tijdsstempel van bestand niet achterhalen"
 
-#: macro.c:377
+#: macro.c:379
 msgid "could not determine date and time"
 msgstr "kan datum en tijd niet achterhalen"
 
-#: macro.c:393
+#: macro.c:395
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
 msgstr "expansie van __COUNTER__ binnenin commando terwijl -fdirectives-only opgegeven is"
 
-#: macro.c:581
+#: macro.c:583
 msgid "invalid string literal, ignoring final '\\'"
 msgstr "ongeldige stringconstante; laatste '\\' wordt genegeerd"
 
-#: macro.c:643
+#: macro.c:645
 #, c-format
 msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
 msgstr "het plakken van \"%s\" en \"%s\" levert geen geldig preprocessing token op"
 
-#: macro.c:767
+#: macro.c:769
 msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "ISO C++11 vereist minstens één argument voor de \"...\" in een variadische macro"
 
-#: macro.c:771
+#: macro.c:773
 msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "ISO C99 vereist minstens één argument voor de \"...\" in een variadische macro"
 
-#: macro.c:778
+#: macro.c:780
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr "macro \"%s\" vereist %u argumenten, maar er werden er slechts %u opgegeven"
 
-#: macro.c:783
+#: macro.c:785
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "macro \"%s\" kreeg %u argumenten, maar heeft er slechts %u nodig"
 
-#: macro.c:977 traditional.c:819
+#: macro.c:979 traditional.c:819
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "niet-beëindigde argumentenlijst bij aanroep van macro \"%s\""
 
-#: macro.c:1128
+#: macro.c:1130
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "functie-achtige macro \"%s\" moet in traditioneel C altijd met argumenten gebruikt worden"
 
-#: macro.c:1814
+#: macro.c:1813
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
 msgstr "aanroep van macro %s argument %d: lege macro-argumenten zijn ongedefinieerd in ISO C++98"
 
-#: macro.c:1822 macro.c:1831
+#: macro.c:1821 macro.c:1830
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
 msgstr "aanroep van macro %s argument %d: lege macro-argumenten zijn ongedefinieerd in ISO C90"
 
-#: macro.c:2800
+#: macro.c:2794
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "herhaalde macro-parameter \"%s\""
 
-#: macro.c:2849
+#: macro.c:2843
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr "\"%s\" mag niet voorkomen in lijst van macro-parameters"
 
-#: macro.c:2857
+#: macro.c:2851
 msgid "macro parameters must be comma-separated"
 msgstr "macro-parameters moet door komma's gescheiden worden"
 
-#: macro.c:2875
+#: macro.c:2869
 msgid "parameter name missing"
 msgstr "parameternaam ontbreekt"
 
-#: macro.c:2896
+#: macro.c:2890
 msgid "anonymous variadic macros were introduced in C++11"
 msgstr "anonieme variadische macro's werden geïntroduceerd in C++11"
 
-#: macro.c:2900 macro.c:2905
+#: macro.c:2894 macro.c:2899
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "anonieme variadische macro's werden geïntroduceerd in C99"
 
 # variadic? " met variabele argumentenlijst" is nogal lang...
-#: macro.c:2912
+#: macro.c:2906
 msgid "ISO C++ does not permit named variadic macros"
 msgstr "ISO C++ staat geen benoemde variadische macro's toe"
 
 # variadic? " met variabele argumentenlijst" is nogal lang...
-#: macro.c:2915
+#: macro.c:2909
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO C staat geen benoemde variadische macro's toe"
 
-#: macro.c:2925
+#: macro.c:2919
 msgid "missing ')' in macro parameter list"
 msgstr "')' ontbreekt in lijst van macro-parameters"
 
-#: macro.c:2976
+#: macro.c:2970
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "'##' mag niet voorkomen aan het begin of einde van een macro-expansie"
 
-#: macro.c:3013
+#: macro.c:3007
 msgid "ISO C++11 requires whitespace after the macro name"
 msgstr "ISO C++11 vereist witruimte na de macronaam"
 
-#: macro.c:3016
+#: macro.c:3010
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "ISO C99 vereist witruimte na de macronaam"
 
-#: macro.c:3041
+#: macro.c:3035
 msgid "missing whitespace after the macro name"
 msgstr "witruimte ontbreekt na de macronaam"
 
-#: macro.c:3075
+#: macro.c:3069
 msgid "'#' is not followed by a macro parameter"
 msgstr "'#' wordt niet gevolgd door de naam van een macro-parameter"
 
-#: macro.c:3236
+#: macro.c:3230
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "\"%s\" opnieuw gedefinieerd"
 
-#: macro.c:3241
+#: macro.c:3235
 msgid "this is the location of the previous definition"
 msgstr "dit is de plaats van de eerdere definitie"
 
-#: macro.c:3302
+#: macro.c:3296
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "macro-argument \"%s\" zou string gemaakt worden in traditioneel C"
 
-#: macro.c:3329
+#: macro.c:3323
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr "ongeldig hash-type %d in 'cpp_macro_definition'"
