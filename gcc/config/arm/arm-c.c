@@ -195,6 +195,7 @@ arm_cpu_cpp_builtins (struct cpp_reader * pfile)
 /* Hook to validate the current #pragma GCC target and set the arch custom
    mode state.  If ARGS is NULL, then POP_TARGET is used to reset
    the options.  */
+
 static bool
 arm_pragma_target_parse (tree args, tree pop_target)
 {
@@ -243,7 +244,7 @@ arm_pragma_target_parse (tree args, tree pop_target)
 
       /* Don't warn for macros that have context sensitive values depending on
 	 other attributes.
-	 See warn_of_redefinition, Reset after cpp_create_definition.  */
+	 See warn_of_redefinition, reset after cpp_create_definition.  */
       tree acond_macro = get_identifier ("__ARM_NEON_FP");
       C_CPP_HASHNODE (acond_macro)->flags |= NODE_CONDITIONAL ;
 
@@ -267,7 +268,6 @@ arm_pragma_target_parse (tree args, tree pop_target)
 	 function basis in arm_set_current_function.  */
       if (cur_tree == target_option_default_node)
 	save_restore_target_globals (cur_tree);
-
     }
 
   return true;
