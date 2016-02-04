@@ -771,6 +771,10 @@
    <cstdio> in namespace std for C++98. */
 #undef _GLIBCXX98_USE_C99_STDIO
 
+/* Define if C99 functions or macros in <stdlib.h> should be imported in
+   <cstdlib> in namespace std for C++98. */
+#undef _GLIBCXX98_USE_C99_STDLIB
+
 /* Define if C99 functions or macros in <wchar.h> should be imported in
    <cwchar> in namespace std for C++98. */
 #undef _GLIBCXX98_USE_C99_WCHAR

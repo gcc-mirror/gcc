@@ -1059,6 +1059,35 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
         in <cstdio> in namespace std for C++98.])
     fi
 
+    # Check for the existence in <stdlib.h> of lldiv_t, et. al.
+    AC_MSG_CHECKING([for ISO C99 support in <stdlib.h> for C++98])
+    AC_CACHE_VAL(glibcxx_cv_c99_stdlib_cxx98, [
+      GCC_TRY_COMPILE_OR_LINK(
+        [#include <stdlib.h>
+         volatile float f;
+         volatile long double ld;
+         volatile unsigned long long ll;
+         lldiv_t mydivt;],
+        [char* tmp;
+         f = strtof("gnu", &tmp);
+         ld = strtold("gnu", &tmp);
+         ll = strtoll("gnu", &tmp, 10);
+         ll = strtoull("gnu", &tmp, 10);
+         ll = llabs(10);
+         mydivt = lldiv(10,1);
+         ll = mydivt.quot;
+         ll = mydivt.rem;
+         ll = atoll("10");
+         _Exit(0);
+        ], [glibcxx_cv_c99_stdlib_cxx98=yes], [glibcxx_cv_c99_stdlib_cxx98=no])
+    ])
+    AC_MSG_RESULT($glibcxx_cv_c99_stdlib_cxx98)
+    if test x"$glibcxx_cv_c99_stdlib_cxx98" = x"yes"; then
+      AC_DEFINE(_GLIBCXX98_USE_C99_STDLIB, 1,
+        [Define if C99 functions or macros in <stdlib.h> should be imported
+        in <cstdlib> in namespace std for C++98.])
+    fi
+
     # Check for the existence in <wchar.h> of wcstold, etc.
     if test x"$ac_has_wchar_h" = xyes &&
        test x"$ac_has_wctype_h" = xyes; then

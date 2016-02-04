@@ -1,5 +1,12 @@
 2016-02-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/69626
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Check C99 stdlib.h functions
+	with -std=c++98 and define _GLIBCXX98_USE_C99_STDLIB.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* testsuite/21_strings/c_strings/char/69626.cc: New.
+
 	* doc/html/index.html: Regenerate.
 
 	* doc/xml/manual/containers.xml: Add cross-reference to Dual ABI.
