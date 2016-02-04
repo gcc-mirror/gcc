@@ -1593,7 +1593,7 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
 			    bool /*lval*/,
 			    bool *non_constant_p, bool *overflow_p)
 {
-  tree r;
+  tree r = NULL_TREE;
   tree orig_lhs = TREE_OPERAND (t, 0);
   tree orig_rhs = TREE_OPERAND (t, 1);
   tree lhs, rhs;
@@ -1612,7 +1612,25 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
   location_t loc = EXPR_LOCATION (t);
   enum tree_code code = TREE_CODE (t);
   tree type = TREE_TYPE (t);
-  r = fold_binary_loc (loc, code, type, lhs, rhs);
+
+  if (code == EQ_EXPR || code == NE_EXPR)
+    {
+      bool is_code_eq = (code == EQ_EXPR);
+
+      if (TREE_CODE (lhs) == PTRMEM_CST
+	  && TREE_CODE (rhs) == PTRMEM_CST)
+	r = constant_boolean_node (cp_tree_equal (lhs, rhs) == is_code_eq,
+				   type);
+      else if ((TREE_CODE (lhs) == PTRMEM_CST
+		|| TREE_CODE (rhs) == PTRMEM_CST)
+	       && (null_member_pointer_value_p (lhs)
+		   || null_member_pointer_value_p (rhs)))
+	r = constant_boolean_node (!is_code_eq, type);
+    }
+
+  if (r == NULL_TREE)
+    r = fold_binary_loc (loc, code, type, lhs, rhs);
+
   if (r == NULL_TREE)
     {
       if (lhs == orig_lhs && rhs == orig_rhs)
