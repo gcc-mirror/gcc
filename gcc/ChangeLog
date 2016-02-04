@@ -1,3 +1,8 @@
+2016-02-04  Victoria Stepanyan  <victoria.stepanyan@amd.com>
+
+	* gcc/config/i386/x86-tune.def: Disable default prefetching 
+	for -march=znver1.
+
 2016-02-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Vladimir Makarov  <vmakarov@redhat.com>
 
