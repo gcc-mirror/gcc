@@ -8645,19 +8645,15 @@ fold_sizeof_expr (tree t)
   return r;
 }
 
-/* Given the SIZE (i.e., number of elements) in an array, compute an
-   appropriate index type for the array.  When SIZE is null, the array
-   is a flexible array member.  If non-NULL, NAME is the name of
-   the entity being declared.  */
+/* Given the SIZE (i.e., number of elements) in an array, compute
+   an appropriate index type for the array.  If non-NULL, NAME is
+   the name of the entity being declared.  */
 
 tree
 compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 {
   tree itype;
   tree osize = size;
-
-  if (size == NULL_TREE)
-    return build_index_type (NULL_TREE);
 
   if (error_operand_p (size))
     return error_mark_node;
@@ -10967,11 +10963,10 @@ grokdeclarator (const cp_declarator *declarator,
 		error ("flexible array member in union");
 		type = error_mark_node;
 	      }
-	    else
+	    else 
 	      {
-		tree itype = compute_array_index_type (dname, NULL_TREE,
-						       tf_warning_or_error);
-		type = build_cplus_array_type (TREE_TYPE (type), itype);
+		/* Flexible array member has a null domain.  */
+		type = build_cplus_array_type (TREE_TYPE (type), NULL_TREE);
 	      }
 	  }
 
