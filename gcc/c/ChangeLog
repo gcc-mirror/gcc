@@ -1,3 +1,9 @@
+2016-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69669
+	* c-decl.c (finish_enum): When honoring mode attribute,
+	make sure to use proper TYPE_MIN_VALUE and TYPE_MAX_VALUE.
+
 2016-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/69518
