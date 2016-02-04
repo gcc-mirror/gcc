@@ -170,7 +170,7 @@ expand_ccmp_expr_1 (gimple *g, rtx *prep_seq, rtx *gen_seq)
 	  int unsignedp0, unsignedp1;
 	  rtx_code rcode0, rcode1;
 	  int speed_p = optimize_insn_for_speed_p ();
-	  rtx tmp2, ret = NULL_RTX, ret2 = NULL_RTX;
+	  rtx tmp2 = NULL_RTX, ret = NULL_RTX, ret2 = NULL_RTX;
 	  unsigned cost1 = MAX_COST;
 	  unsigned cost2 = MAX_COST;
 
@@ -183,19 +183,25 @@ expand_ccmp_expr_1 (gimple *g, rtx *prep_seq, rtx *gen_seq)
 					gimple_assign_rhs1 (gs0),
 					gimple_assign_rhs2 (gs0));
 
-	  tmp2 = targetm.gen_ccmp_first (&prep_seq_2, &gen_seq_2, rcode1,
-					 gimple_assign_rhs1 (gs1),
-					 gimple_assign_rhs2 (gs1));
-
-	  if (!tmp && !tmp2)
-	    return NULL_RTX;
-
 	  if (tmp != NULL)
 	    {
 	      ret = expand_ccmp_next (gs1, code, tmp, &prep_seq_1, &gen_seq_1);
 	      cost1 = seq_cost (safe_as_a <rtx_insn *> (prep_seq_1), speed_p);
 	      cost1 += seq_cost (safe_as_a <rtx_insn *> (gen_seq_1), speed_p);
 	    }
+
+	  /* FIXME: Temporary workaround for PR69619.
+	     Avoid exponential compile time due to expanding gs0 and gs1 twice.
+	     If gs0 and gs1 are complex, the cost will be high, so avoid
+	     reevaluation if above an arbitrary threshold.  */
+	  if (tmp == NULL || cost1 < COSTS_N_INSNS (25))
+	    tmp2 = targetm.gen_ccmp_first (&prep_seq_2, &gen_seq_2, rcode1,
+					   gimple_assign_rhs1 (gs1),
+					   gimple_assign_rhs2 (gs1));
+
+	  if (!tmp && !tmp2)
+	    return NULL_RTX;
+
 	  if (tmp2 != NULL)
 	    {
 	      ret2 = expand_ccmp_next (gs0, code, tmp2, &prep_seq_2,
