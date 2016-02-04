@@ -20,6 +20,10 @@
     <year>2010</year>
     <year>2011</year>
     <year>2012</year>
+    <year>2013</year>
+    <year>2014</year>
+    <year>2015</year>
+    <year>2016</year>
     <holder>
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.fsf.org">FSF</link>
     </holder>
@@ -140,7 +144,8 @@
 
   <author><personname><firstname>Jonathan</firstname><surname>Wakely</surname></personname><personblurb>
       <para>
-	shared_ptr, markup editing and styling
+	Implementation Status, Dual ABI, Linking, shared_ptr,
+        markup editing and styling.
       </para>
     </personblurb></author>
 
