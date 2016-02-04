@@ -1,3 +1,9 @@
+2016-02-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/65932
+	PR target/67714
+	* gcc.c-torture/execute/pr67714.c: New test.
+
 2016-02-04  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/69454
