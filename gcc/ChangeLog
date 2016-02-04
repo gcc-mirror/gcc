@@ -1,3 +1,8 @@
+2016-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/69368
+	* tree-dfa.c (get_ref_base_and_extent): Remove unreachable code.
+
 2016-02-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/69577

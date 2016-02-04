@@ -588,15 +588,6 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
       exp = TREE_OPERAND (exp, 0);
     }
 
-  /* We need to deal with variable arrays ending structures.  */
-  if (seen_variable_array_ref
-      && maxsize != -1
-      && (TYPE_SIZE (TREE_TYPE (exp)) == NULL_TREE
-	  || TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) != INTEGER_CST
-	  || (bit_offset + maxsize
-	      == wi::to_offset (TYPE_SIZE (TREE_TYPE (exp))))))
-    maxsize = -1;
-
  done:
   if (!wi::fits_shwi_p (bitsize) || wi::neg_p (bitsize))
     {
