@@ -1,3 +1,12 @@
+2016-02-04  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/69667
+	* config/rs6000/rs6000.md (mov<mode>_64bit_dm): Use 'd' constraint
+	instead of 'ws', and 'wh' instead of 'wm' since TFmode/IFmode are
+	not allowed into the traditional Altivec registers.
+	(movtd_64bit_nodm): Likewise.
+	(mov<mode>_32bit, FMOVE128_FPR iterator): Likewise.
+
 2016-02-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* config/aarch64/cortex-a57-fma-steering.c
