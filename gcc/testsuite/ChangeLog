@@ -1,3 +1,19 @@
+2016-02-03  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/69251
+	PR c++/69253
+	PR c++/69290
+	PR c++/69277
+	PR c++/69349
+	* g++.dg/ext/flexarray-mangle-2.C: New test.
+	* g++.dg/ext/flexarray-mangle.C: New test.
+	* g++.dg/ext/flexarray-subst.C: New test.
+	* g++.dg/ext/flexary11.C: New test.
+	* g++.dg/ext/flexary12.C: New test.
+	* g++.dg/ext/flexary13.C: New test.
+	* g++.dg/ext/flexary14.C: New test.
+	* g++.dg/other/dump-ada-spec-2.C: Adjust.
+
 2016-02-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/iamcu/test_passing_unions.c (check_union_passing6):
