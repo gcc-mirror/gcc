@@ -540,16 +540,10 @@ extern int arm_arch_crc;
    type, but kept valid in the wider mode.  The signedness of the
    extension may differ from that of the type.  */
 
-/* It is far faster to zero extend chars than to sign extend them */
-
 #define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE)	\
   if (GET_MODE_CLASS (MODE) == MODE_INT		\
       && GET_MODE_SIZE (MODE) < 4)      	\
     {						\
-      if (MODE == QImode)			\
-	UNSIGNEDP = 1;				\
-      else if (MODE == HImode)			\
-	UNSIGNEDP = 1;				\
       (MODE) = SImode;				\
     }
 

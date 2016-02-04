@@ -1,3 +1,10 @@
+2016-02-04  Jim Wilson  <jim.wilson@linaro.org>
+
+	PR target/65932
+	PR target/67714
+	* config/arm/arm.h (PROMOTE_MODE): Don't set UNSIGNEDP for QImode and
+	HImode.
+
 2016-02-04  Christian Bruel  <christian.bruel@st.com>
 
 	* config/arm/arm-c.c (arm_reset_previous_fndecl): Style fix and typo.
