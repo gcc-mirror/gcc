@@ -8399,7 +8399,8 @@ rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict)
       && legitimate_constant_pool_address_p (x, mode,
 					     reg_ok_strict || lra_in_progress))
     return 1;
-  if (reg_offset_p && reg_addr[mode].fused_toc && toc_fusion_mem_wrapped (x, mode))
+  if (reg_offset_p && reg_addr[mode].fused_toc && GET_CODE (x) == UNSPEC
+      && XINT (x, 1) == UNSPEC_FUSION_ADDIS)
     return 1;
   /* For TImode, if we have load/store quad and TImode in VSX registers, only
      allow register indirect addresses.  This will allow the values to go in
