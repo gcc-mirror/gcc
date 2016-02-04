@@ -1,3 +1,9 @@
+2016-02-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/aarch64/cortex-a57-fma-steering.c
+	(aarch64_register_fma_steering): Remove "static" from arguments
+	to register_pass.
+
 2016-02-04  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/69619
