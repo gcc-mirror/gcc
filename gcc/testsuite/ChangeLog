@@ -1,3 +1,8 @@
+2016-02-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/69577
+	* gcc.target/i386/pr69577.c: New test.
+
 2016-02-04  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/asan/pr69276.C: New test.

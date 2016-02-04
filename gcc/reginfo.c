@@ -1244,8 +1244,16 @@ simplifiable_subregs (const subreg_shape &shape)
 static HARD_REG_SET **valid_mode_changes;
 static obstack valid_mode_changes_obstack;
 
+/* Restrict the choice of register for SUBREG_REG (SUBREG) based
+   on information about SUBREG.
+
+   If PARTIAL_DEF, SUBREG is a partial definition of a multipart inner
+   register and we want to ensure that the other parts of the inner
+   register are correctly preserved.  If !PARTIAL_DEF we need to
+   ensure that SUBREG itself can be formed.  */
+
 static void
-record_subregs_of_mode (rtx subreg)
+record_subregs_of_mode (rtx subreg, bool partial_def)
 {
   unsigned int regno;
 
@@ -1256,15 +1264,41 @@ record_subregs_of_mode (rtx subreg)
   if (regno < FIRST_PSEUDO_REGISTER)
     return;
 
+  subreg_shape shape (shape_of_subreg (subreg));
+  if (partial_def)
+    {
+      /* The number of independently-accessible SHAPE.outer_mode values
+	 in SHAPE.inner_mode is GET_MODE_SIZE (SHAPE.inner_mode) / SIZE.
+	 We need to check that the assignment will preserve all the other
+	 SIZE-byte chunks in the inner register besides the one that
+	 includes SUBREG.
+
+	 In practice it is enough to check whether an equivalent
+	 SHAPE.inner_mode value in an adjacent SIZE-byte chunk can be formed.
+	 If the underlying registers are small enough, both subregs will
+	 be valid.  If the underlying registers are too large, one of the
+	 subregs will be invalid.
+
+	 This relies on the fact that we've already been passed
+	 SUBREG with PARTIAL_DEF set to false.  */
+      unsigned int size = MAX (REGMODE_NATURAL_SIZE (shape.inner_mode),
+			       GET_MODE_SIZE (shape.outer_mode));
+      gcc_checking_assert (size < GET_MODE_SIZE (shape.inner_mode));
+      if (shape.offset >= size)
+	shape.offset -= size;
+      else
+	shape.offset += size;
+    }
+
   if (valid_mode_changes[regno])
     AND_HARD_REG_SET (*valid_mode_changes[regno],
-		      simplifiable_subregs (shape_of_subreg (subreg)));
+		      simplifiable_subregs (shape));
   else
     {
       valid_mode_changes[regno]
 	= XOBNEW (&valid_mode_changes_obstack, HARD_REG_SET);
       COPY_HARD_REG_SET (*valid_mode_changes[regno],
-			 simplifiable_subregs (shape_of_subreg (subreg)));
+			 simplifiable_subregs (shape));
     }
 }
 
@@ -1277,7 +1311,7 @@ find_subregs_of_mode (rtx x)
   int i;
 
   if (code == SUBREG)
-    record_subregs_of_mode (x);
+    record_subregs_of_mode (x, false);
 
   /* Time for some deep diving.  */
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -1305,7 +1339,14 @@ init_subregs_of_mode (void)
   FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       if (NONDEBUG_INSN_P (insn))
-        find_subregs_of_mode (PATTERN (insn));
+	{
+	  find_subregs_of_mode (PATTERN (insn));
+	  df_ref def;
+	  FOR_EACH_INSN_DEF (def, insn)
+	    if (DF_REF_FLAGS_IS_SET (def, DF_REF_PARTIAL)
+		&& df_read_modify_subreg_p (DF_REF_REG (def)))
+	      record_subregs_of_mode (DF_REF_REG (def), true);
+	}
 }
 
 const HARD_REG_SET *
