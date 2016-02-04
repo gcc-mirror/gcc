@@ -1,3 +1,10 @@
+2016-02-04  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/69276
+	* asan.c (has_stmt_been_instrumented_p): Instrument gimple calls
+	that are gimple_store_p.
+	(maybe_instrument_call): Likewise.
+
 2016-02-04  Bin Cheng  <bin.cheng@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_legitimize_address): Force
