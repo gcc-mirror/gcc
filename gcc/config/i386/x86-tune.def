@@ -218,7 +218,7 @@ DEF_TUNE (X86_TUNE_FOUR_JUMP_LIMIT, "four_jump_limit",
    at -O3.  For the moment, the prefetching seems badly tuned for Intel
    chips.  */
 DEF_TUNE (X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL, "software_prefetching_beneficial",
-          m_K6_GEODE | m_AMD_MULTIPLE)
+          m_K6_GEODE | m_ATHLON_K8 | m_AMDFAM10 | m_BDVER | m_BTVER)
 
 /* X86_TUNE_LCP_STALL: Avoid an expensive length-changing prefix stall
    on 16-bit immediate moves into memory on Core2 and Corei7.  */
