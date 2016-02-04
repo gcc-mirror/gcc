@@ -1,3 +1,8 @@
+2016-02-04  Bin Cheng  <bin.cheng@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_legitimize_address): Force
+	register scaling out of memory reference and comment why.
+
 2016-02-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/65932

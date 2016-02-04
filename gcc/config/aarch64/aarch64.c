@@ -4988,13 +4988,18 @@ aarch64_legitimize_address (rtx x, rtx /* orig_x  */, machine_mode mode)
 	       Rt = Ra + Rc;
 	       addr = Rt + Rb<<SCALE.
 
-	     Here we split CONST out of memory referece because:
+	     TODO: We really should split CONST out of memory referece
+	     because:
 	       a) We depend on GIMPLE optimizers to pick up common sub
 		  expression involving the scaling operation.
 	       b) The index Rb is likely a loop iv, it's better to split
 		  the CONST so that computation of new base Rt is a loop
 		  invariant and can be moved out of loop.  This is more
-		  important when the original base Ra is sfp related.  */
+		  important when the original base Ra is sfp related.
+
+	     Unfortunately, GIMPLE optimizers (e.g., SLSR) can not handle
+	     this kind of CSE opportunity at the time of this change, we
+	     have to force register scaling expr out of memory ref now.  */
 	  else if (REG_P (op0) || REG_P (op1))
 	    {
 	      machine_mode addr_mode = GET_MODE (x);
@@ -5004,14 +5009,13 @@ aarch64_legitimize_address (rtx x, rtx /* orig_x  */, machine_mode mode)
 	      if (REG_P (op1))
 		std::swap (op0, op1);
 
-	      rtx addr = gen_rtx_PLUS (addr_mode, op1, base);
+	      rtx addr = plus_constant (addr_mode, base, offset);
 
 	      if (aarch64_legitimate_address_hook_p (mode, addr, false))
 		{
-		  base = force_operand (plus_constant (addr_mode,
-						       op0, offset),
+		  base = force_operand (gen_rtx_PLUS (addr_mode, op1, op0),
 					NULL_RTX);
-		  return gen_rtx_PLUS (addr_mode, op1, base);
+		  return plus_constant (addr_mode, base, offset);
 		}
 	    }
 	}
