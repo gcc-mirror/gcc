@@ -1,3 +1,9 @@
+2016-02-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/69619
+	* ccmp.c (expand_ccmp_expr_1): Avoid evaluating gs0/gs1
+	twice when complex.
+
 2016-02-04  Mike Frysinger  <vapier@gentoo.org>
 
 	* doc/invoke.texi: Delete -mno-fma4.
