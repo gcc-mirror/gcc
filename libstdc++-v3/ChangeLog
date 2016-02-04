@@ -1,3 +1,9 @@
+2016-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/containers.xml: Add cross-reference to Dual ABI.
+	* doc/xml/manual/spine.xml: Update copyright years and author blurb.
+	* doc/html/*: Regenerate.
+
 2016-02-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR libstdc++/69581
