@@ -1,3 +1,14 @@
+2016-02-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/69577
+	Revert:
+	2015-10-29  Richard Henderson  <rth@redhat.com>
+
+	PR target/68124
+	PR rtl-opt/67609
+	* config/i386/i386.c (ix86_cannot_change_mode_class): Tighten
+	sse check to the exact conditions of PR 67609.
+
 2016-02-04  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/69667
