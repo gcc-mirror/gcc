@@ -2,6 +2,13 @@
 
 	PR target/65932
 	PR target/67714
+	* cse.c (cse_insn): Pass NULL to fold_rtx when initially
+	folding the source of a SET.
+
+2016-02-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/65932
+	PR target/67714
 	* config/arm/arm.c (arm_new_rtx_costs, MULT case): Properly extract
 	the operands of the SIGN_EXTENDs from a SMUL[TB][TB] rtx.
 
