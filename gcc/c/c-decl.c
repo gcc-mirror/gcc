@@ -8037,7 +8037,24 @@ finish_enum (tree enumtype, tree values, tree attributes)
   precision = MAX (tree_int_cst_min_precision (minnode, sign),
 		   tree_int_cst_min_precision (maxnode, sign));
 
-  if (TYPE_PACKED (enumtype) || precision > TYPE_PRECISION (integer_type_node))
+  /* If the precision of the type was specified with an attribute and it
+     was too small, give an error.  Otherwise, use it.  */
+  if (TYPE_PRECISION (enumtype) && lookup_attribute ("mode", attributes))
+    {
+      if (precision > TYPE_PRECISION (enumtype))
+	{
+	  TYPE_PRECISION (enumtype) = 0;
+	  error ("specified mode too small for enumeral values");
+	}
+      else
+	precision = TYPE_PRECISION (enumtype);
+    }
+  else
+    TYPE_PRECISION (enumtype) = 0;
+
+  if (TYPE_PACKED (enumtype)
+      || precision > TYPE_PRECISION (integer_type_node)
+      || TYPE_PRECISION (enumtype))
     {
       tem = c_common_type_for_size (precision, sign == UNSIGNED ? 1 : 0);
       if (tem == NULL)
@@ -8054,17 +8071,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
   TYPE_UNSIGNED (enumtype) = TYPE_UNSIGNED (tem);
   TYPE_ALIGN (enumtype) = TYPE_ALIGN (tem);
   TYPE_SIZE (enumtype) = 0;
-
-  /* If the precision of the type was specified with an attribute and it
-     was too small, give an error.  Otherwise, use it.  */
-  if (TYPE_PRECISION (enumtype)
-      && lookup_attribute ("mode", attributes))
-    {
-      if (precision > TYPE_PRECISION (enumtype))
-	error ("specified mode too small for enumeral values");
-    }
-  else
-    TYPE_PRECISION (enumtype) = TYPE_PRECISION (tem);
+  TYPE_PRECISION (enumtype) = TYPE_PRECISION (tem);
 
   layout_type (enumtype);
 
