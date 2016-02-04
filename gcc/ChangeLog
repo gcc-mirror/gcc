@@ -1,3 +1,14 @@
+2016-02-04  Jakub Jelinek  <jakub@redhat.com>
+	    Ilya Enkovich  <enkovich.gnu@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/69454
+	* config/i386/i386.c (convert_scalars_to_vector): Remove
+	stack alignment fixes.
+	(ix86_option_override_internal): Disable TARGET_STV if stack
+	might not be aligned enough.
+	(ix86_minimum_alignment): Assert that TARGET_STV is false.
+
 2016-02-04  Victoria Stepanyan  <victoria.stepanyan@amd.com>
 
 	* gcc/config/i386/x86-tune.def: Disable default prefetching 

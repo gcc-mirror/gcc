@@ -3588,16 +3588,6 @@ convert_scalars_to_vector ()
   bitmap_obstack_release (NULL);
   df_process_deferred_rescans ();
 
-  /* Conversion means we may have 128bit register spills/fills
-     which require aligned stack.  */
-  if (converted_insns)
-    {
-      if (crtl->stack_alignment_needed < 128)
-	crtl->stack_alignment_needed = 128;
-      if (crtl->stack_alignment_estimated < 128)
-	crtl->stack_alignment_estimated = 128;
-    }
-
   return 0;
 }
 
@@ -5453,6 +5443,13 @@ ix86_option_override_internal (bool main_args_p,
     opts->x_target_flags |= MASK_VZEROUPPER;
   if (!(opts_set->x_target_flags & MASK_STV))
     opts->x_target_flags |= MASK_STV;
+  /* Disable STV if -mpreferred-stack-boundary=2 or
+     -mincoming-stack-boundary=2 - the needed
+     stack realignment will be extra cost the pass doesn't take into
+     account and the pass can't realign the stack.  */
+  if (ix86_preferred_stack_boundary < 64
+      || ix86_incoming_stack_boundary < 64)
+    opts->x_target_flags &= ~MASK_STV;
   if (!ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL]
       && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
     opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_LOAD;
@@ -29323,7 +29320,10 @@ ix86_minimum_alignment (tree exp, machine_mode mode,
   if ((mode == DImode || (type && TYPE_MODE (type) == DImode))
       && (!type || !TYPE_USER_ALIGN (type))
       && (!decl || !DECL_USER_ALIGN (decl)))
-    return 32;
+    {
+      gcc_checking_assert (!TARGET_STV);
+      return 32;
+    }
 
   return align;
 }
