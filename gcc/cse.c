@@ -4636,7 +4636,7 @@ cse_insn (rtx_insn *insn)
 
       /* Simplify and foldable subexpressions in SRC.  Then get the fully-
 	 simplified result, which may not necessarily be valid.  */
-      src_folded = fold_rtx (src, insn);
+      src_folded = fold_rtx (src, NULL);
 
 #if 0
       /* ??? This caused bad code to be generated for the m68k port with -O2.
