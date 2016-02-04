@@ -1,3 +1,7 @@
+2016-02-04  Mike Frysinger  <vapier@gentoo.org>
+
+	* doc/invoke.texi: Delete -mno-fma4.
+
 2016-02-04  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/69577
