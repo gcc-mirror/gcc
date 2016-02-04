@@ -23462,9 +23462,6 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mfma4
 @opindex mfma4
 @need 200
-@itemx -mno-fma4
-@opindex mno-fma4
-@need 200
 @itemx -mprefetchwt1
 @opindex mprefetchwt1
 @need 200
