@@ -1,5 +1,5 @@
 /* Tree inlining.
-   Copyright (C) 2001-2015 Free Software Foundation, Inc.
+   Copyright (C) 2001-2016 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -340,8 +340,17 @@ remap_decl (tree decl, copy_body_data *id)
       return decl;
     }
 
-  /* If we didn't already have an equivalent for this declaration,
-     create one now.  */
+  /* When remapping a type within copy_gimple_seq_and_replace_locals, all
+     necessary DECLs have already been remapped and we do not want to duplicate
+     a decl coming from outside of the sequence we are copying.  */
+  if (!n
+      && id->prevent_decl_creation_for_types
+      && id->remapping_type_depth > 0
+      && (VAR_P (decl) || TREE_CODE (decl) == PARM_DECL))
+    return decl;
+
+  /* If we didn't already have an equivalent for this declaration, create one
+     now.  */
   if (!n)
     {
       /* Make a copy of the variable or label.  */
@@ -1518,13 +1527,15 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	    gtransaction *new_trans_stmt;
 	    s1 = remap_gimple_seq (gimple_transaction_body (old_trans_stmt),
 				   id);
-	    copy = new_trans_stmt
-	      = gimple_build_transaction (
-		  s1,
-		  gimple_transaction_label (old_trans_stmt));
-	    gimple_transaction_set_subcode (
-              new_trans_stmt,
+	    copy = new_trans_stmt = gimple_build_transaction (s1);
+	    gimple_transaction_set_subcode (new_trans_stmt,
 	      gimple_transaction_subcode (old_trans_stmt));
+	    gimple_transaction_set_label_norm (new_trans_stmt,
+	      gimple_transaction_label_norm (old_trans_stmt));
+	    gimple_transaction_set_label_uninst (new_trans_stmt,
+	      gimple_transaction_label_uninst (old_trans_stmt));
+	    gimple_transaction_set_label_over (new_trans_stmt,
+	      gimple_transaction_label_over (old_trans_stmt));
 	  }
 	  break;
 
@@ -2864,8 +2875,6 @@ copy_debug_stmt (gdebug *stmt, copy_body_data *id)
   else if (gimple_debug_source_bind_p (stmt))
     {
       gimple_debug_source_bind_set_var (stmt, t);
-      walk_tree (gimple_debug_source_bind_get_value_ptr (stmt),
-		 remap_gimple_op_r, &wi, NULL);
       /* When inlining and source bind refers to one of the optimized
 	 away parameters, change the source bind into normal debug bind
 	 referring to the corresponding DEBUG_EXPR_DECL that should have
@@ -2889,7 +2898,10 @@ copy_debug_stmt (gdebug *stmt, copy_body_data *id)
 		    break;
 		  }
 	    }
-	}      
+	}
+      if (gimple_debug_source_bind_p (stmt))
+	walk_tree (gimple_debug_source_bind_get_value_ptr (stmt),
+		   remap_gimple_op_r, &wi, NULL);
     }
 
   processing_debug_stmt = 0;
@@ -5115,6 +5127,8 @@ mark_local_labels_stmt (gimple_stmt_iterator *gsip,
   return NULL_TREE;
 }
 
+static gimple_seq duplicate_remap_omp_clause_seq (gimple_seq seq,
+						  struct walk_stmt_info *wi);
 
 /* Called via walk_gimple_seq by copy_gimple_seq_and_replace_local.
    Using the splay_tree pointed to by ST (which is really a `splay_tree'),
@@ -5159,6 +5173,35 @@ replace_locals_op (tree *tp, int *walk_subtrees, void *data)
 	  TREE_OPERAND (expr, 3) = NULL_TREE;
 	}
     }
+  else if (TREE_CODE (expr) == OMP_CLAUSE)
+    {
+      /* Before the omplower pass completes, some OMP clauses can contain
+	 sequences that are neither copied by gimple_seq_copy nor walked by
+	 walk_gimple_seq.  To make copy_gimple_seq_and_replace_locals work even
+	 in those situations, we have to copy and process them explicitely.  */
+
+      if (OMP_CLAUSE_CODE (expr) == OMP_CLAUSE_LASTPRIVATE)
+	{
+	  gimple_seq seq = OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (expr);
+	  seq = duplicate_remap_omp_clause_seq (seq, wi);
+	  OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (expr) = seq;
+	}
+      else if (OMP_CLAUSE_CODE (expr) == OMP_CLAUSE_LINEAR)
+	{
+	  gimple_seq seq = OMP_CLAUSE_LINEAR_GIMPLE_SEQ (expr);
+	  seq = duplicate_remap_omp_clause_seq (seq, wi);
+	  OMP_CLAUSE_LINEAR_GIMPLE_SEQ (expr) = seq;
+	}
+      else if (OMP_CLAUSE_CODE (expr) == OMP_CLAUSE_REDUCTION)
+	{
+	  gimple_seq seq = OMP_CLAUSE_REDUCTION_GIMPLE_INIT (expr);
+	  seq = duplicate_remap_omp_clause_seq (seq, wi);
+	  OMP_CLAUSE_REDUCTION_GIMPLE_INIT (expr) = seq;
+	  seq = OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (expr);
+	  seq = duplicate_remap_omp_clause_seq (seq, wi);
+	  OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (expr) = seq;
+	}
+    }
 
   /* Keep iterating.  */
   return NULL_TREE;
@@ -5191,14 +5234,40 @@ replace_locals_stmt (gimple_stmt_iterator *gsip,
       /* This will remap a lot of the same decls again, but this should be
 	 harmless.  */
       if (gimple_bind_vars (stmt))
-	gimple_bind_set_vars (stmt, remap_decls (gimple_bind_vars (stmt),
-						 NULL, id));
+	{
+	  tree old_var, decls = gimple_bind_vars (stmt);
+
+	  for (old_var = decls; old_var; old_var = DECL_CHAIN (old_var))
+	    if (!can_be_nonlocal (old_var, id)
+		&& ! variably_modified_type_p (TREE_TYPE (old_var), id->src_fn))
+	      remap_decl (old_var, id);
+
+	  gcc_checking_assert (!id->prevent_decl_creation_for_types);
+	  id->prevent_decl_creation_for_types = true;
+	  gimple_bind_set_vars (stmt, remap_decls (decls, NULL, id));
+	  id->prevent_decl_creation_for_types = false;
+	}
     }
 
   /* Keep iterating.  */
   return NULL_TREE;
 }
 
+/* Create a copy of SEQ and remap all decls in it.  */
+
+static gimple_seq
+duplicate_remap_omp_clause_seq (gimple_seq seq, struct walk_stmt_info *wi)
+{
+  if (!seq)
+    return NULL;
+
+  /* If there are any labels in OMP sequences, they can be only referred to in
+     the sequence itself and therefore we can do both here.  */
+  walk_gimple_seq (seq, mark_local_labels_stmt, NULL, wi);
+  gimple_seq copy = gimple_seq_copy (seq);
+  walk_gimple_seq (copy, replace_locals_stmt, replace_locals_op, wi);
+  return copy;
+}
 
 /* Copies everything in SEQ and replaces variables and labels local to
    current_function_decl.  */
@@ -5621,6 +5690,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
   basic_block old_entry_block, bb;
   auto_vec<gimple *, 10> init_stmts;
   tree vars = NULL_TREE;
+  bitmap debug_args_to_skip = args_to_skip;
 
   gcc_assert (TREE_CODE (old_decl) == FUNCTION_DECL
 	      && TREE_CODE (new_decl) == FUNCTION_DECL);
@@ -5693,9 +5763,8 @@ tree_function_versioning (tree old_decl, tree new_decl,
   /* Copy the function's static chain.  */
   p = DECL_STRUCT_FUNCTION (old_decl)->static_chain_decl;
   if (p)
-    DECL_STRUCT_FUNCTION (new_decl)->static_chain_decl =
-      copy_static_chain (DECL_STRUCT_FUNCTION (old_decl)->static_chain_decl,
-			 &id);
+    DECL_STRUCT_FUNCTION (new_decl)->static_chain_decl
+      = copy_static_chain (p, &id);
 
   /* If there's a tree_map, prepare for substitution.  */
   if (tree_map)
@@ -5705,29 +5774,39 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	replace_info = (*tree_map)[i];
 	if (replace_info->replace_p)
 	  {
+	    int parm_num = -1;
 	    if (!replace_info->old_tree)
 	      {
-		int i = replace_info->parm_num;
+		int p = replace_info->parm_num;
 		tree parm;
-		tree req_type;
+		tree req_type, new_type;
 
-		for (parm = DECL_ARGUMENTS (old_decl); i; parm = DECL_CHAIN (parm))
-		  i --;
+		for (parm = DECL_ARGUMENTS (old_decl); p;
+		     parm = DECL_CHAIN (parm))
+		  p--;
 		replace_info->old_tree = parm;
+		parm_num = replace_info->parm_num;
 		req_type = TREE_TYPE (parm);
-		if (!useless_type_conversion_p (req_type, TREE_TYPE (replace_info->new_tree)))
+		new_type = TREE_TYPE (replace_info->new_tree);
+		if (!useless_type_conversion_p (req_type, new_type))
 		  {
 		    if (fold_convertible_p (req_type, replace_info->new_tree))
-		      replace_info->new_tree = fold_build1 (NOP_EXPR, req_type, replace_info->new_tree);
-		    else if (TYPE_SIZE (req_type) == TYPE_SIZE (TREE_TYPE (replace_info->new_tree)))
-		      replace_info->new_tree = fold_build1 (VIEW_CONVERT_EXPR, req_type, replace_info->new_tree);
+		      replace_info->new_tree
+			= fold_build1 (NOP_EXPR, req_type,
+				       replace_info->new_tree);
+		    else if (TYPE_SIZE (req_type) == TYPE_SIZE (new_type))
+		      replace_info->new_tree
+			= fold_build1 (VIEW_CONVERT_EXPR, req_type,
+				       replace_info->new_tree);
 		    else
 		      {
 			if (dump_file)
 			  {
 			    fprintf (dump_file, "    const ");
-			    print_generic_expr (dump_file, replace_info->new_tree, 0);
-			    fprintf (dump_file, "  can't be converted to param ");
+			    print_generic_expr (dump_file,
+						replace_info->new_tree, 0);
+			    fprintf (dump_file,
+				     "  can't be converted to param ");
 			    print_generic_expr (dump_file, parm, 0);
 			    fprintf (dump_file, "\n");
 			  }
@@ -5745,14 +5824,38 @@ tree_function_versioning (tree old_decl, tree new_decl,
 					    &vars);
 		if (init)
 		  init_stmts.safe_push (init);
+		if (MAY_HAVE_DEBUG_STMTS && args_to_skip)
+		  {
+		    if (parm_num == -1)
+		      {
+			tree parm;
+			int p;
+			for (parm = DECL_ARGUMENTS (old_decl), p = 0; parm;
+			     parm = DECL_CHAIN (parm), p++)
+			  if (parm == replace_info->old_tree)
+			    {
+			      parm_num = p;
+			      break;
+			    }
+		      }
+		    if (parm_num != -1)
+		      {
+			if (debug_args_to_skip == args_to_skip)
+			  {
+			    debug_args_to_skip = BITMAP_ALLOC (NULL);
+			    bitmap_copy (debug_args_to_skip, args_to_skip);
+			  }
+			bitmap_clear_bit (debug_args_to_skip, parm_num);
+		      }
+		  }
 	      }
 	  }
       }
   /* Copy the function's arguments.  */
   if (DECL_ARGUMENTS (old_decl) != NULL_TREE)
-    DECL_ARGUMENTS (new_decl) =
-      copy_arguments_for_versioning (DECL_ARGUMENTS (old_decl), &id,
-      				     args_to_skip, &vars);
+    DECL_ARGUMENTS (new_decl)
+      = copy_arguments_for_versioning (DECL_ARGUMENTS (old_decl), &id,
+				       args_to_skip, &vars);
 
   DECL_INITIAL (new_decl) = remap_blocks (DECL_INITIAL (id.src_fn), &id);
   BLOCK_SUPERCONTEXT (DECL_INITIAL (new_decl)) = new_decl;
@@ -5867,6 +5970,69 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	}
     }
 
+  if (debug_args_to_skip && MAY_HAVE_DEBUG_STMTS)
+    {
+      tree parm;
+      vec<tree, va_gc> **debug_args = NULL;
+      unsigned int len = 0;
+      for (parm = DECL_ARGUMENTS (old_decl), i = 0;
+	   parm; parm = DECL_CHAIN (parm), i++)
+	if (bitmap_bit_p (debug_args_to_skip, i) && is_gimple_reg (parm))
+	  {
+	    tree ddecl;
+
+	    if (debug_args == NULL)
+	      {
+		debug_args = decl_debug_args_insert (new_decl);
+		len = vec_safe_length (*debug_args);
+	      }
+	    ddecl = make_node (DEBUG_EXPR_DECL);
+	    DECL_ARTIFICIAL (ddecl) = 1;
+	    TREE_TYPE (ddecl) = TREE_TYPE (parm);
+	    DECL_MODE (ddecl) = DECL_MODE (parm);
+	    vec_safe_push (*debug_args, DECL_ORIGIN (parm));
+	    vec_safe_push (*debug_args, ddecl);
+	  }
+      if (debug_args != NULL)
+	{
+	  /* On the callee side, add
+	     DEBUG D#Y s=> parm
+	     DEBUG var => D#Y
+	     stmts to the first bb where var is a VAR_DECL created for the
+	     optimized away parameter in DECL_INITIAL block.  This hints
+	     in the debug info that var (whole DECL_ORIGIN is the parm
+	     PARM_DECL) is optimized away, but could be looked up at the
+	     call site as value of D#X there.  */
+	  tree var = vars, vexpr;
+	  gimple_stmt_iterator cgsi
+	    = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+	  gimple *def_temp;
+	  var = vars;
+	  i = vec_safe_length (*debug_args);
+	  do
+	    {
+	      i -= 2;
+	      while (var != NULL_TREE
+		     && DECL_ABSTRACT_ORIGIN (var) != (**debug_args)[i])
+		var = TREE_CHAIN (var);
+	      if (var == NULL_TREE)
+		break;
+	      vexpr = make_node (DEBUG_EXPR_DECL);
+	      parm = (**debug_args)[i];
+	      DECL_ARTIFICIAL (vexpr) = 1;
+	      TREE_TYPE (vexpr) = TREE_TYPE (parm);
+	      DECL_MODE (vexpr) = DECL_MODE (parm);
+	      def_temp = gimple_build_debug_bind (var, vexpr, NULL);
+	      gsi_insert_before (&cgsi, def_temp, GSI_NEW_STMT);
+	      def_temp = gimple_build_debug_source_bind (vexpr, parm, NULL);
+	      gsi_insert_before (&cgsi, def_temp, GSI_NEW_STMT);
+	    }
+	  while (i > len);
+	}
+    }
+
+  if (debug_args_to_skip && debug_args_to_skip != args_to_skip)
+    BITMAP_FREE (debug_args_to_skip);
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
 

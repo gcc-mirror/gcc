@@ -1,5 +1,5 @@
 # GCC target-specific configuration file.
-# Copyright (C) 1997-2015 Free Software Foundation, Inc.
+# Copyright (C) 1997-2016 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -236,8 +236,10 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
-# Currently there are no obsolete targets.
- nothing				\
+ *-interix*				\
+ | *-knetbsd-*				\
+ | *-openbsd2*				\
+ | *-openbsd3*				\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -372,7 +374,8 @@ i[34567]86-*-*)
 		       xsavesintrin.h avx512dqintrin.h avx512bwintrin.h
 		       avx512vlintrin.h avx512vlbwintrin.h avx512vldqintrin.h
 		       avx512ifmaintrin.h avx512ifmavlintrin.h avx512vbmiintrin.h
-		       avx512vbmivlintrin.h clwbintrin.h pcommitintrin.h mwaitxintrin.h"
+		       avx512vbmivlintrin.h clwbintrin.h pcommitintrin.h
+		       mwaitxintrin.h clzerointrin.h pkuintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -393,7 +396,8 @@ x86_64-*-*)
 		       xsavesintrin.h avx512dqintrin.h avx512bwintrin.h
 		       avx512vlintrin.h avx512vlbwintrin.h avx512vldqintrin.h
 		       avx512ifmaintrin.h avx512ifmavlintrin.h avx512vbmiintrin.h
-		       avx512vbmivlintrin.h clwbintrin.h pcommitintrin.h mwaitxintrin.h"
+		       avx512vbmivlintrin.h clwbintrin.h pcommitintrin.h
+		       mwaitxintrin.h clzerointrin.h pkuintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -2236,6 +2240,7 @@ msp430*-*-*)
 	c_target_objs="msp430-c.o"
 	cxx_target_objs="msp430-c.o"
 	tmake_file="${tmake_file} msp430/t-msp430"
+	extra_gcc_objs="driver-msp430.o"
 	;;
 nds32le-*-*)
 	target_cpu_default="0"
@@ -4386,6 +4391,9 @@ case ${target} in
 		;;
 	i[34567]86-*-gnu*)
 		tmake_file="$tmake_file i386/t-gnu"
+		;;
+	i[34567]86-*-msdosdjgpp*)
+		tmake_file="${tmake_file} i386/t-djgpp"
 		;;
 	i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
 		;;

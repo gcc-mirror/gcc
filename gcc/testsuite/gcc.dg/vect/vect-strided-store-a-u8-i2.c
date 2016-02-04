@@ -26,6 +26,8 @@ main1 ()
       b[i] = i * 2;
       if (i%3 == 0)
         a[i] = 10; 
+      /* Prevent vectorization.  */
+      __asm__ volatile ("" : : : "memory");
     }
 
   for (i = 0; i < N; i++)

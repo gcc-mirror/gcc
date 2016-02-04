@@ -1,5 +1,5 @@
 /* Process declarations and variables for C++ compiler.
-   Copyright (C) 1988-2015 Free Software Foundation, Inc.
+   Copyright (C) 1988-2016 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -354,6 +354,7 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
   tree expr;
   tree orig_array_expr = array_expr;
   tree orig_index_exp = index_exp;
+  tree overload = NULL_TREE;
 
   if (error_operand_p (array_expr) || error_operand_p (index_exp))
     return error_mark_node;
@@ -379,7 +380,7 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
       if (decltype_p)
 	complain |= tf_decltype;
       expr = build_new_op (loc, ARRAY_REF, LOOKUP_NORMAL, array_expr,
-			   index_exp, NULL_TREE, /*overload=*/NULL, complain);
+			   index_exp, NULL_TREE, &overload, complain);
     }
   else
     {
@@ -424,8 +425,14 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
       expr = build_array_ref (input_location, array_expr, index_exp);
     }
   if (processing_template_decl && expr != error_mark_node)
-    return build_min_non_dep (ARRAY_REF, expr, orig_array_expr, orig_index_exp,
-			      NULL_TREE, NULL_TREE);
+    {
+      if (overload != NULL_TREE)
+	return (build_min_non_dep_op_overload
+		(ARRAY_REF, expr, overload, orig_array_expr, orig_index_exp));
+
+      return build_min_non_dep (ARRAY_REF, expr, orig_array_expr, orig_index_exp,
+				NULL_TREE, NULL_TREE);
+    }
   return expr;
 }
 
@@ -1186,7 +1193,8 @@ is_late_template_attribute (tree attr, tree decl)
 	 second and following arguments.  Attributes like mode, format,
 	 cleanup and several target specific attributes aren't late
 	 just because they have an IDENTIFIER_NODE as first argument.  */
-      if (arg == args && identifier_p (t))
+      if (arg == args && attribute_takes_identifier_p (name)
+	  && identifier_p (t))
 	continue;
 
       if (value_dependent_expression_p (t)
@@ -1813,7 +1821,8 @@ comdat_linkage (tree decl)
 	}
     }
 
-  DECL_COMDAT (decl) = 1;
+  if (TREE_PUBLIC (decl))
+    DECL_COMDAT (decl) = 1;
 }
 
 /* For win32 we also want to put explicit instantiations in
@@ -4215,6 +4224,9 @@ decl_maybe_constant_var_p (tree decl)
     return false;
   if (DECL_DECLARED_CONSTEXPR_P (decl))
     return true;
+  if (DECL_HAS_VALUE_EXPR_P (decl))
+    /* A proxy isn't constant.  */
+    return false;
   return (CP_TYPE_CONST_NON_VOLATILE_P (type)
 	  && INTEGRAL_OR_ENUMERATION_TYPE_P (type));
 }

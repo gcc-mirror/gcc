@@ -20,8 +20,8 @@ import (
 	"text/tabwriter"
 )
 
-// BUG(rsc): Profiles are incomplete and inaccurate on NetBSD and OS X.
-// See https://golang.org/issue/6047 for details.
+// BUG(rsc): Profiles are only as good as the kernel support used to generate them.
+// See https://golang.org/issue/13841 for details about known problems.
 
 // A Profile is a collection of stack traces showing the call sequences
 // that led to instances of a particular event, such as allocation.
@@ -579,6 +579,14 @@ var cpu struct {
 // StartCPUProfile enables CPU profiling for the current process.
 // While profiling, the profile will be buffered and written to w.
 // StartCPUProfile returns an error if profiling is already enabled.
+//
+// On Unix-like systems, StartCPUProfile does not work by default for
+// Go code built with -buildmode=c-archive or -buildmode=c-shared.
+// StartCPUProfile relies on the SIGPROF signal, but that signal will
+// be delivered to the main program's SIGPROF signal handler (if any)
+// not to the one used by Go.  To make it work, call os/signal.Notify
+// for syscall.SIGPROF, but note that doing so may break any profiling
+// being done by the main program.
 func StartCPUProfile(w io.Writer) error {
 	// The runtime routines allow a variable profiling rate,
 	// but in practice operating systems cannot trigger signals

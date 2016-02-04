@@ -1,6 +1,6 @@
 // Move, forward and identity for C++0x + swap -*- C++ -*-
 
-// Copyright (C) 2007-2015 Free Software Foundation, Inc.
+// Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -198,9 +198,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, size_t _Nm>
     inline
 #if __cplusplus >= 201103L
-    typename enable_if<__is_swappable_impl::__is_swappable<_Tp>::value>::type
+    typename enable_if<__is_swappable<_Tp>::value>::type
     swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
-    noexcept(noexcept(swap(*__a, *__b)))
+    noexcept(__is_nothrow_swappable<_Tp>::value)
 #else
     void
     swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])

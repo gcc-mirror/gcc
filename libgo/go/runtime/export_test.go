@@ -6,7 +6,9 @@
 
 package runtime
 
-import "unsafe"
+import (
+	"unsafe"
+)
 
 //var Fadd64 = fadd64
 //var Fsub64 = fsub64
@@ -135,22 +137,22 @@ func setenvs([]string)
 var Envs = envs
 var SetEnvs = setenvs
 
-//var BigEndian = _BigEndian
+//var BigEndian = sys.BigEndian
 
 // For benchmarking.
 
 /*
 func BenchSetType(n int, x interface{}) {
-	e := *(*eface)(unsafe.Pointer(&x))
+	e := *efaceOf(&x)
 	t := e._type
 	var size uintptr
 	var p unsafe.Pointer
 	switch t.kind & kindMask {
-	case _KindPtr:
+	case kindPtr:
 		t = (*ptrtype)(unsafe.Pointer(t)).elem
 		size = t.size
 		p = e.data
-	case _KindSlice:
+	case kindSlice:
 		slice := *(*struct {
 			ptr      unsafe.Pointer
 			len, cap uintptr
@@ -167,8 +169,15 @@ func BenchSetType(n int, x interface{}) {
 	})
 }
 
-const PtrSize = ptrSize
+const PtrSize = sys.PtrSize
 
 var TestingAssertE2I2GC = &testingAssertE2I2GC
 var TestingAssertE2T2GC = &testingAssertE2T2GC
+
+var ForceGCPeriod = &forcegcperiod
 */
+
+// SetTracebackEnv is like runtime/debug.SetTraceback, but it raises
+// the "environment" traceback level, so later calls to
+// debug.SetTraceback (e.g., from testing timeouts) can't lower it.
+func SetTracebackEnv(level string)

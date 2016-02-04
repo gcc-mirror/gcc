@@ -231,12 +231,6 @@ offload (const char *file, uint64_t line, int device, const char *name,
 }
 
 static void
-unregister_main_image ()
-{
-  __offload_unregister_image (&main_target_image);
-}
-
-static void
 register_main_image ()
 {
   /* Do not check the return value, because old versions of liboffloadmic did
@@ -246,12 +240,6 @@ register_main_image ()
   /* liboffloadmic will call GOMP_PLUGIN_target_task_completion when
      asynchronous task on target is completed.  */
   __offload_register_task_callback (GOMP_PLUGIN_target_task_completion);
-
-  if (atexit (unregister_main_image) != 0)
-    {
-      fprintf (stderr, "%s: atexit failed\n", __FILE__);
-      exit (1);
-    }
 }
 
 /* liboffloadmic loads and runs offload_target_main on all available devices
@@ -269,8 +257,9 @@ extern "C" void
 GOMP_OFFLOAD_fini_device (int device)
 {
   TRACE ("(device = %d)", device);
-  /* Unreachable for GOMP_OFFLOAD_CAP_OPENMP_400.  */
-  abort ();
+
+  /* liboffloadmic will finalize target processes on all available devices.  */
+  __offload_unregister_image (&main_target_image);
 }
 
 static void
@@ -539,7 +528,7 @@ GOMP_OFFLOAD_dev2dev (int device, void *dst_ptr, const void *src_ptr,
 
 extern "C" void
 GOMP_OFFLOAD_async_run (int device, void *tgt_fn, void *tgt_vars,
-			void *async_data)
+			void **, void *async_data)
 {
   TRACE ("(device = %d, tgt_fn = %p, tgt_vars = %p, async_data = %p)", device,
 	 tgt_fn, tgt_vars, async_data);
@@ -555,9 +544,9 @@ GOMP_OFFLOAD_async_run (int device, void *tgt_fn, void *tgt_vars,
 }
 
 extern "C" void
-GOMP_OFFLOAD_run (int device, void *tgt_fn, void *tgt_vars)
+GOMP_OFFLOAD_run (int device, void *tgt_fn, void *tgt_vars, void **)
 {
   TRACE ("(device = %d, tgt_fn = %p, tgt_vars = %p)", device, tgt_fn, tgt_vars);
 
-  GOMP_OFFLOAD_async_run (device, tgt_fn, tgt_vars, NULL);
+  GOMP_OFFLOAD_async_run (device, tgt_fn, tgt_vars, NULL, NULL);
 }

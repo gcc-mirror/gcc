@@ -1,6 +1,6 @@
 // The  -*- C++ -*- type traits classes for internal use in libstdc++
 
-// Copyright (C) 2000-2015 Free Software Foundation, Inc.
+// Copyright (C) 2000-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -63,6 +63,8 @@
 // Update 2005: types are also provided and <bits/type_traits.h> has been
 // removed.
 //
+
+extern "C++" {
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -408,5 +410,6 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
+} // extern "C++"
 
 #endif //_CPP_TYPE_TRAITS_H

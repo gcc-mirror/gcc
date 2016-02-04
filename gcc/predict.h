@@ -1,5 +1,5 @@
 /* Definitions for branch prediction routines in the GNU compiler.
-   Copyright (C) 2001-2015 Free Software Foundation, Inc.
+   Copyright (C) 2001-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -54,8 +54,10 @@ extern bool probably_never_executed_bb_p (struct function *, const_basic_block);
 extern bool probably_never_executed_edge_p (struct function *, edge);
 extern bool optimize_function_for_size_p (struct function *);
 extern bool optimize_function_for_speed_p (struct function *);
+extern optimization_type function_optimization_type (struct function *);
 extern bool optimize_bb_for_size_p (const_basic_block);
 extern bool optimize_bb_for_speed_p (const_basic_block);
+extern optimization_type bb_optimization_type (const_basic_block);
 extern bool optimize_edge_for_size_p (edge);
 extern bool optimize_edge_for_speed_p (edge);
 extern bool optimize_insn_for_size_p (void);

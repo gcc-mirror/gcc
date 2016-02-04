@@ -1,5 +1,5 @@
 /* Vectorizer
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -107,6 +107,8 @@ struct _slp_tree {
   unsigned int vec_stmts_size;
   /* Whether the scalar computations use two different operators.  */
   bool two_operators;
+  /* The DEF type of this node.  */
+  enum vect_def_type def_type;
 };
 
 
@@ -139,6 +141,7 @@ typedef struct _slp_instance {
 #define SLP_TREE_NUMBER_OF_VEC_STMTS(S)          (S)->vec_stmts_size
 #define SLP_TREE_LOAD_PERMUTATION(S)             (S)->load_permutation
 #define SLP_TREE_TWO_OPERATORS(S)		 (S)->two_operators
+#define SLP_TREE_DEF_TYPE(S)			 (S)->def_type
 
 
 
@@ -330,6 +333,9 @@ typedef struct _loop_vec_info : public vec_info {
      loop version without if-conversion.  */
   struct loop *scalar_loop;
 
+  /* Mark loops having masked stores.  */
+  bool has_mask_store;
+
 } *loop_vec_info;
 
 /* Access Functions.  */
@@ -365,6 +371,7 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_PEELING_FOR_NITER(L)    (L)->peeling_for_niter
 #define LOOP_VINFO_NO_DATA_DEPENDENCIES(L) (L)->no_data_dependencies
 #define LOOP_VINFO_SCALAR_LOOP(L)	   (L)->scalar_loop
+#define LOOP_VINFO_HAS_MASK_STORE(L)       (L)->has_mask_store
 #define LOOP_VINFO_SCALAR_ITERATION_COST(L) (L)->scalar_cost_vec
 #define LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST(L) (L)->single_scalar_iteration_cost
 
@@ -518,11 +525,13 @@ typedef struct _stmt_vec_info {
   tree dr_step;
   tree dr_aligned_to;
 
-  /* For loop PHI nodes, the evolution part of it.  This makes sure
+  /* For loop PHI nodes, the base and evolution part of it.  This makes sure
      this information is still available in vect_update_ivs_after_vectorizer
      where we may not be able to re-analyze the PHI nodes evolution as
      peeling for the prologue loop can make it unanalyzable.  The evolution
-     part is still correct though.  */
+     part is still correct after peeling, but the base may have changed from
+     the version here.  */
+  tree loop_phi_evolution_base_unchanged;
   tree loop_phi_evolution_part;
 
   /* Used for various bookkeeping purposes, generally holding a pointer to
@@ -596,6 +605,8 @@ typedef struct _stmt_vec_info {
   /* For reduction loops, this is the type of reduction.  */
   enum vect_reduction_type v_reduc_type;
 
+  /* The number of scalar stmt references from active SLP instances.  */
+  unsigned int num_slp_uses;
 } *stmt_vec_info;
 
 /* Access Functions.  */
@@ -645,8 +656,10 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
 #define STMT_VINFO_GROUP_GAP(S)            (S)->gap
 #define STMT_VINFO_GROUP_SAME_DR_STMT(S)   (S)->same_dr_stmt
 #define STMT_VINFO_GROUPED_ACCESS(S)      ((S)->first_element != NULL && (S)->data_ref_info)
+#define STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED(S) (S)->loop_phi_evolution_base_unchanged
 #define STMT_VINFO_LOOP_PHI_EVOLUTION_PART(S) (S)->loop_phi_evolution_part
 #define STMT_VINFO_MIN_NEG_DIST(S)	(S)->min_neg_dist
+#define STMT_VINFO_NUM_SLP_USES(S)	(S)->num_slp_uses
 
 #define GROUP_FIRST_ELEMENT(S)          (S)->first_element
 #define GROUP_NEXT_ELEMENT(S)           (S)->next_element
@@ -712,7 +725,10 @@ set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
       stmt_vec_info_vec.safe_push (info);
     }
   else
-    stmt_vec_info_vec[uid - 1] = info;
+    {
+      gcc_checking_assert (info == NULL);
+      stmt_vec_info_vec[uid - 1] = info;
+    }
 }
 
 /* Return the earlier statement between STMT1 and STMT2.  */
@@ -1001,6 +1017,7 @@ extern void vect_get_vec_defs (tree, tree, gimple *, vec<tree> *,
 			       vec<tree> *, slp_tree, int);
 extern tree vect_gen_perm_mask_any (tree, const unsigned char *);
 extern tree vect_gen_perm_mask_checked (tree, const unsigned char *);
+extern void optimize_mask_stores (struct loop*);
 
 /* In tree-vect-data-refs.c.  */
 extern bool vect_can_force_dr_alignment_p (const_tree, unsigned int);

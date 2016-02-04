@@ -2,7 +2,7 @@
 // { dg-options "-Wall" { target *-*-* } }
 // -*- C++ -*-
  
-// Copyright (C) 2004-2015 Free Software Foundation, Inc.
+// Copyright (C) 2004-2016 Free Software Foundation, Inc.
  
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -70,9 +70,11 @@ case_labels(bitmask_type b)
       break;
     case std::_S_ios_fmtflags_end:
       break;
-    case std::_S_ios_fmtflags_min:
+    case __INT_MAX__:
       break;
-    case std::_S_ios_fmtflags_max:
+    case ~__INT_MAX__:
       break;
     }
+  static_assert( sizeof(std::underlying_type_t<bitmask_type>) == sizeof(int),
+      "underlying type has same range of values as int");
 }

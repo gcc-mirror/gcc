@@ -1,5 +1,5 @@
 ;; Constraint definitions for Synopsys DesignWare ARC.
-;; Copyright (C) 2007-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2016 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -421,3 +421,9 @@
    An unsigned 6-bit integer constant, up to 62."
   (and (match_code "const_int")
        (match_test "UNSIGNED_INT6 (ival - 1)")))
+
+;; Memory constraint used for atomic ops.
+(define_memory_constraint "ATO"
+  "A memory with only a base register"
+  (match_operand 0 "mem_noofs_operand"))
+

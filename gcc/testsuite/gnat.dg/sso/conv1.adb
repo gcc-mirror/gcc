@@ -36,15 +36,15 @@ begin
    X_L.S := 12345;
    X_L.C := 'a';
    Dump ("X_L", X_L.S, X_L.C);
-   -- { dg-output "X_L = \\(S => 12345, C => 'a'\\)\n" }
+   -- { dg-output "X_L = \\(S => 12345, C => 'a'\\).*\n" }
 
    X_H.S := 23456;
    X_H.C := 'b';
    Dump ("X_H", X_H.S, X_H.C);
-   -- { dg-output "X_H = \\(S => 23456, C => 'b'\\)\n" }
+   -- { dg-output "X_H = \\(S => 23456, C => 'b'\\).*\n" }
 
    X_H := R_H (X_L);
    Dump ("X_H", X_H.S, X_H.C);
-   -- { dg-output "X_H = \\(S => 12345, C => 'a'\\)\n" }
+   -- { dg-output "X_H = \\(S => 12345, C => 'a'\\).*\n" }
 
 end;

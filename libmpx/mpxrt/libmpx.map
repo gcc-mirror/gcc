@@ -3,3 +3,8 @@ LIBMPX_1.0
   local:
 	*;
 };
+LIBMPX_2.0
+{
+  global:
+    get_bd;
+} LIBMPX_1.0;

@@ -1,5 +1,5 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2218,6 +2218,7 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
   pass_fini_dump_file (pass);
 
   current_pass = NULL;
+  redirect_edge_var_map_empty ();
 
   /* Signal this is a suitable GC collection point.  */
   if (!(todo_after & TODO_do_not_ggc_collect))
@@ -2370,6 +2371,7 @@ execute_one_pass (opt_pass *pass)
 		|| pass->type != RTL_PASS);
 
   current_pass = NULL;
+  redirect_edge_var_map_empty ();
 
   if (todo_after & TODO_discard_function)
     {

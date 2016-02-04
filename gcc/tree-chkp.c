@@ -1,5 +1,5 @@
 /* Pointer Bounds Checker insrumentation pass.
-   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
    Contributed by Ilya Enkovich (ilya.enkovich@intel.com)
 
 This file is part of GCC.
@@ -1664,8 +1664,10 @@ chkp_find_bound_slots_1 (const_tree type, bitmap have_bound,
 				     offs + field_offs);
 	  }
     }
-  else if (TREE_CODE (type) == ARRAY_TYPE)
+  else if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
     {
+      /* The object type is an array of complete type, i.e., other
+	 than a flexible array.  */
       tree maxval = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
       tree etype = TREE_TYPE (type);
       HOST_WIDE_INT esize = TREE_INT_CST_LOW (TYPE_SIZE (etype));
@@ -2157,7 +2159,11 @@ static bool
 chkp_call_returns_bounds_p (gcall *call)
 {
   if (gimple_call_internal_p (call))
-    return false;
+    {
+      if (gimple_call_internal_fn (call) == IFN_VA_ARG)
+	return true;
+      return false;
+    }
 
   if (gimple_call_builtin_p (call, BUILT_IN_CHKP_NARROW_PTR_BOUNDS)
       || chkp_gimple_call_builtin_p (call, BUILT_IN_CHKP_NARROW))
@@ -2488,6 +2494,69 @@ chkp_build_bndstx (tree addr, tree ptr, tree bounds,
       print_gimple_stmt (dump_file, gsi_stmt (*gsi), 0, TDF_VOPS|TDF_MEMSYMS);
       print_gimple_stmt (dump_file, stmt, 2, TDF_VOPS|TDF_MEMSYMS);
     }
+}
+
+/* This function is called when call statement
+   is inlined and therefore we can't use bndret
+   for its LHS anymore.  Function fixes bndret
+   call using new RHS value if possible.  */
+void
+chkp_fixup_inlined_call (tree lhs, tree rhs)
+{
+  tree addr, bounds;
+  gcall *retbnd, *bndldx;
+
+  if (!BOUNDED_P (lhs))
+    return;
+
+  /* Search for retbnd call.  */
+  retbnd = chkp_retbnd_call_by_val (lhs);
+  if (!retbnd)
+    return;
+
+  /* Currently only handle cases when call is replaced
+     with a memory access.  In this case bndret call
+     may be replaced with bndldx call.  Otherwise we
+     have to search for bounds which may cause wrong
+     result due to various optimizations applied.  */
+  switch (TREE_CODE (rhs))
+    {
+    case VAR_DECL:
+      if (DECL_REGISTER (rhs))
+	return;
+      break;
+
+    case MEM_REF:
+      break;
+
+    case ARRAY_REF:
+    case COMPONENT_REF:
+      addr = get_base_address (rhs);
+      if (!DECL_P (addr)
+	  && TREE_CODE (addr) != MEM_REF)
+	return;
+      if (DECL_P (addr) && DECL_REGISTER (addr))
+	return;
+      break;
+
+    default:
+      return;
+    }
+
+  /* Create a new statements sequence with bndldx call.  */
+  gimple_stmt_iterator gsi = gsi_for_stmt (retbnd);
+  addr = build_fold_addr_expr (rhs);
+  chkp_build_bndldx (addr, lhs, &gsi);
+  bndldx = as_a <gcall *> (gsi_stmt (gsi));
+
+  /* Remove bndret call.  */
+  bounds = gimple_call_lhs (retbnd);
+  gsi = gsi_for_stmt (retbnd);
+  gsi_remove (&gsi, true);
+
+  /* Link new bndldx call.  */
+  gimple_call_set_lhs (bndldx, bounds);
+  update_stmt (bndldx);
 }
 
 /* Compute bounds for pointer NODE which was assigned in
@@ -2909,6 +2978,8 @@ chkp_make_static_bounds (tree obj)
 			    get_identifier (bnd_var_name),
 			    pointer_bounds_type_node);
     }
+
+  free (bnd_var_name);
 
   TREE_PUBLIC (bnd_var) = 0;
   TREE_USED (bnd_var) = 1;

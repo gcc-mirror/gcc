@@ -41,9 +41,9 @@ func parseMetaGoImports(r io.Reader) (imports []metaImport, err error) {
 	d.Strict = false
 	var t xml.Token
 	for {
-		t, err = d.Token()
+		t, err = d.RawToken()
 		if err != nil {
-			if err == io.EOF {
+			if err == io.EOF || len(imports) > 0 {
 				err = nil
 			}
 			return

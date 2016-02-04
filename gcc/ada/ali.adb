@@ -119,6 +119,7 @@ package body ALI is
       Static_Elaboration_Model_Used          := False;
       Task_Dispatching_Policy_Specified      := ' ';
       Unreserve_All_Interrupts_Specified     := False;
+      Frontend_Exceptions_Specified          := False;
       Zero_Cost_Exceptions_Specified         := False;
    end Initialize_ALI;
 
@@ -900,6 +901,7 @@ package body ALI is
         Unit_Exception_Table         => False,
         Ver                          => (others => ' '),
         Ver_Len                      => 0,
+        Frontend_Exceptions          => False,
         Zero_Cost_Exceptions         => False);
 
       --  Now we acquire the input lines from the ALI file. Note that the
@@ -1090,6 +1092,18 @@ package body ALI is
                Partition_Elaboration_Policy_Specified := Getc;
                ALIs.Table (Id).Partition_Elaboration_Policy :=
                  Partition_Elaboration_Policy_Specified;
+
+            --  Processing for FX
+
+            elsif C = 'F' then
+               C := Getc;
+
+               if C = 'X' then
+                  ALIs.Table (Id).Frontend_Exceptions := True;
+                  Frontend_Exceptions_Specified := True;
+               else
+                  Fatal_Error_Ignore;
+               end if;
 
             --  Processing for GP
 

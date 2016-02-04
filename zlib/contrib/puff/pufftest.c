@@ -1,8 +1,8 @@
 /*
  * pufftest.c
- * Copyright (C) 2002-2010 Mark Adler
+ * Copyright (C) 2002-2013 Mark Adler
  * For conditions of distribution and use, see copyright notice in puff.h
- * version 2.2, 25 Apr 2010
+ * version 2.3, 21 Jan 2013
  */
 
 /* Example of how to use puff().

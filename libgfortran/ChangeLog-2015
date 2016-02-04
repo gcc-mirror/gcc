@@ -1,0 +1,410 @@
+2015-12-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/68987
+	io/format.c (format_error): Remove unneeded memory cleanup.
+
+2015-12-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/68867
+	* io/write.c (set_fnode_default): For kind=16, set the decimal precision
+	depending on the platform binary precision, 106 or 113.
+
+2015-12-05  Juoko Orava <jouko.orava@iki.fi>
+
+	PR fortran/50201
+	* io/write_float.def: Avoid marking quadmath_snprintf as an untyped
+	weak reference, which fixing linking with -static.
+
+2015-11-26  Tobias Burnus  <burnus@net-b.de>
+	    Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+
+        * caf/libcaf.h (_gfortran_caf_event_post,
+	_gfortran_caf_event_wait,_gfortran_caf_event_query): New prototypes.
+        * caf/single.c (_gfortran_caf_event_post,
+	_gfortran_caf_event_wait,_gfortran_caf_event_query): Implement.
+
+2015-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/52251
+	* io/transfer.c (formatted_transfer_scalar_write): Reset skips count.
+	(finalize_transfer): For ADVANCE_NO, emit pending spaces and reset the
+	skip count.
+
+2015-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/write_float.def (output_float): Move block determining
+	room for leading zero to before checkng g0 formatting.
+
+2015-09-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/67527
+	PR libfortran/67535
+	PR libfortran/67536
+	* io/io.h: Use unsigned values for 31-bit left shifts.
+	* io/unix.c (buf_read): Do not call memcpy() with NULL pointer arg.
+	* io/write.c (nml_write_obj): Likewise.
+
+2015-09-05  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/53379
+	* libgfortran.h (exit_error): New prototype.
+	* runtime/error.c (exit_error): New function.
+	(os_error): Call exit_error instead of exit.
+	(runtime_error): Likewise.
+	(runtime_error_at): Likewise.
+	(internal_error): Likewise.
+	(generate_error): Likewise.
+	(notify_std): Likewise.
+	* runtime/stop.c (error_stop_string): Likewise.
+	(error_stop_numeric): Likewise.
+
+2015-09-04  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/unix.h (delete_file): Remove prototype.
+	* io/unix.c (delete_file): Remove function.
+	* io/close.c (st_close): Replace delete_file and unlink with
+	remove.
+	* io/open.c (already_open): Replace unlink with remove.
+
+2015-09-02  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/67414
+	* io/write.c (gfc_itoa): Move to runtime/string.c.
+	* libgfortran.h (show_backtrace): Make arg bool.
+	(gfc_itoa): New prototype.
+	* runtime/backtrace.c (struct mystate): Change type of try_simple
+	field, add in_signal_handler field.
+	(error_callback): Print out error number, or if not in a signal
+	handler, the error message.
+	(show_backtrace): Change type of arg, change initialization of
+	struct mystate.
+	(backtrace): Call show_backtrace with correct arg type.
+	* runtime/compile_options.c (backtrace_handler): Call with correct
+	arg type.
+	* runtime/error.c (sys_abort): Likewise.
+	(gf_strerror): Handle newlocale() failure.
+	* runtime/string.c (gfc_itoa): Function moved here from
+	io/write.c.
+
+2015-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/47571
+	* acinclude.m4 (LIBGFOR_GTHREAD_WEAK): Reinstate.
+	* configure.ac: Call LIBGFOR_GTHREAD_WEAK again.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2015-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/47571
+	* acinclude.m4 (LIBGFOR_GTHREAD_WEAK): Remove.
+	(LIBGFOR_CHECK_WEAKREF): New test.
+	* configure.ac: Call LIBGFOR_CHECK_WEAKREF instead of
+	LIBGFOR_GTHREAD_WEAK.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* intrinsics/system_clock.c: Use SUPPORTS_WEAKREF instead of
+	SUPPORTS_WEAK and GTHREAD_USE_WEAK.
+
+2015-08-29 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/67367
+	* io/unix.c (buf_read): Check for error condition and if found
+	return the error code.
+
+2015-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* acinclude.m4: Remove LIBGFOR_CHECK_ATTRIBUTE_DLLEXPORT.
+	* configure.ac: Remove checks for strcasestr, execl, close,
+	getrlimit, readlink, getppid, powl, erfl, j0l, j1l, y0l, y1l,
+	tgammal, and lgammal.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2015-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* io/unix.c (min): Remove unused macro.
+
+2015-08-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/53668
+	* intrinsics/malloc.c: Adapt comments.
+
+2015-08-28  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* configure.ac: Auto-detect newlib function support unless we
+	know there are issues when configuring for a host.
+	* configure: Regenerate.
+
+2015-08-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/29600
+	* Makefile.am: Add generated/shape_i{1,2}.c
+	* Makefile.in: Regenerate.
+	* generated/shape_i1.c: New generated file.
+	* generated/shape_i2.c: New generated file.
+	* generated/shape_i4.c: Regenerate.
+	* generated/shape_i8.c: Regenerate.
+	* generated/shape_i16.c: Regenerate.
+	* gfortran.map (GFORTRAN_1.7): Add _gfortran_shape_{1,2}.
+	* m4/shape.m4: Fix parameter type.
+
+2015-08-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgfortran.h (show_variables): Remove prototype.
+	* runtime/environ.c (print_spaces, var_source, show_integer,
+	show_boolean, show_sep, show_string): Remove functions.
+	* runtime/main.c (init): Remove dead code.
+
+2015-08-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* io/unit.c (get_internal_unit): Make default sign mode unspecified.
+	(init_units): Make default sign mode unspecified.
+
+2015-08-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgfortran.h (check_buffered): Remove unused prototype.
+
+2015-08-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/57496
+	* io/write_float.def: Use built-in type-generic functions defined
+	by libgfortran.h for isfinite, isnan, and signbit.
+
+2015-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/54572
+	* Makefile.am (libgfortran_la_LDFLAGS): Link in libbacktrace.
+	(AM_CPPFLAGS): Add libbacktrace directories to include paths.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Remove checks for strtok_r, wait, execve, pipe,
+	and dup2. Remove call to GCC_CHECK_UNWIND_GETIPINFO.
+	* libgfortran.h (full_exe_path, find_addr2line, backtrace): Remove
+	prototypes.
+	(show_backtrace): Add prototype.
+	* runtime/backtrace.c: Rework file entirely.
+	* runtime/compile_options.c (backtrace_handler): Rename backtrace
+	to show_backtrace.
+	(maybe_find_addr2line): Remove function.
+	(set_options): Remove call to maybe_find_addr2line.
+	* runtime/error.c (sys_abort): Rename backtrace to show_backtrace.
+	* runtime/main.c (store_exe_path): Empty function body.
+	(full_exe_path, gfstrtok_r, find_addr2line): Remove functions.
+	(cleanup): Don't free removed variables.
+	* runtime/minimal.c (full_exe_path): Remove function.
+	(set_args): Don't set exe_path.
+
+2015-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/62296
+	* intrinsics/execute_command_line.c (EXEC_INVALIDCOMMAND): New
+	error code.
+	(cmdmsg_values): New error message.
+	(set_cmdstat): Rework runtime error.
+	(execute_command_line): Handle invalid command line error status.
+
+2015-08-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR libfortran/67140
+	* intrinsics/mvbits.c: Fix build for platforms without c_int128_t.
+
+2015-08-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR libfortran/67140
+	* gfortran.map: Add _gfortran_mvbits_i16.
+	* intrinsics/mvbits.c: Generate mvbits for c_int128_t.
+
+2015-08-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/66936
+	* io/unix.c (__MINGW32__): Undefine HAVE_UMASK.
+
+2015-08-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/66458
+	* runtime/main.c (init): Only call set_fpu() if requested by user.
+
+2015-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* runtime/compile_options.c (set_options): Fix typos.
+
+2015-08-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h (get_fpu_trap_exceptions): Add temporary variable
+	to improve generated code.
+
+2015-08-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/64022
+	* ieee/ieee_exceptions.F90: Support all real kinds.
+	* ieee/ieee_arithmetic.F90: Likewise.
+	* ieee/ieee_helper.c (ieee_class_helper_10,
+	ieee_class_helper_16): New functions
+	* gfortran.map (GFORTRAN_1.7): Add entries.
+
+2015-07-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR libgfortran/66650
+	* libgfortran.h (GFC_DTYPE_SIZE_MASK): Rewrite to avoid
+	"left shift of negative value" warning.
+
+2015-07-14  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/66861
+	* io/unix.c (compare_file_filename): Verify that u->filename is
+	non-NULL before strcmp.
+	(find_file0): Likewise.
+
+2015-07-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/40267
+	* Makefile.am: Remove libgfortranbegin targets.
+	* Makefile.in: Regenerate.
+	* fmain.c: Remove.
+
+2015-04-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* acinclude.m4 (GTHREAD_USE_WEAK): Define as 0 for *-*-musl*.
+	* configure: Regenerate.
+
+2015-04-21 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/65234
+	* io/format.c (parse_format_list): Set the seen_dd flag in all
+	cases where a data descriptor has been seen.
+
+2015-04-21 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/56743
+	* io/list_read.c (CASE_SEPARATORS): Add case for '!'.
+	(is_separator): Add condition for '!'.
+	(eat_separator): Use notify_std to warn or errord if '!' is
+	encountered before a proper separator.
+
+2015-04-14 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/65089
+	* io/format.h (free_format): New function to free memory
+	allocated for building format error messages.
+	* io/format.c (format_error): Add checks before freeing memory
+	to avoid potential segfaults and free formatting data when
+	needed on error conditions. Always allocate and NULL terminate
+	the string.
+	* io/transfer.c (st_read_done, st_write_done): Use new
+	free_format function to clean up memory allocations when done.
+
+2015-03-28 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/65596
+	* io/transfer.c (data_transfer_init): If in namelist mode and
+	delimiter is not specified, set it to DELIM_QUOTE, independent
+	of -std.
+	* io/unit.c (init_units): Set flags.delim to the correct
+	initial value of DELIM_UNSPECIFIED.
+
+2015-03-25 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/65541
+	* io/write.c (nml_write_obj): Convert '+' to '%' before emitting
+	object names in namelists.
+
+2015-03-22 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/59513
+	* io/transfer.c (data_transfer_init): Do not error for
+	-std=legacy.
+
+2015-03-16 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/64432
+	* intrinsics/system_clock.c (system_clock4, system_clock8):
+	Cleanup some whitespace.
+
+2015-03-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* caf/single.c (caf_runtime_error): Revert 2014-11-28 changes.
+	* runtime/minimal.c (STRERR_MAXSZ): Don't define.
+	(runtime_error_at, sys_abort): Bring more in line with the
+	non-LIBGFOR_MINIMAL code.
+	(runtime_warning_at, internal_error): New functions.
+
+2015-03-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/65200
+	* io/open.c (new_unit): Use gf_strerror rather than hardcoding
+	error messages for different errno values.
+	* io/unix.c (regular_file2): Handle EPERM in addition to EACCES.
+
+2015-03-10  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* caf/libcaf.h (_gfortran_caf_sync_memory): New prototype.
+	* caf/single.c (_gfortran_caf_sync_memory): Implement.
+	(_gfortran_caf_sync_all, _gfortran_caf_sync_image): Add
+	__asm__ __volatile___ ("":::"memory").
+
+2015-02-10 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/57822
+	* io/write_float.def (output_float): Apply fix of previous patch
+	to correctly calculate the exponent number of digits and take
+	care of wide character output.
+
+2015-02-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/57822
+	* io/write_float.def (output_float): If doing g0 editing and
+	exponent is zero, do not emit exponent.
+
+2015-02-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/60956
+	* io/fbuf.c (fbuf_flush_list): New function that only flushes
+	if current fbuf position exceeds a limit.
+	* io/fbuf.h: Declare the new function.
+	* io/io.h (enum unit_mode): Add two new modes.
+	* io/list_read.c (list_formatted_read_scalar): Call new function.
+	* io/write.c: Include fbuf.h. (list_formatted_write_scalar):
+	Call new function.
+
+2015-01-24  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/64770
+	* io/unit.c (filename_from_unit): Check that u->filename != NULL
+	before calling strdup.
+
+2015-01-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/61933
+	* io/inquire.c (inquire_via_unit): Set existing to true for
+	any negative unit that is currently connected and any positive
+	units within range of KIND=4 value.  The unit value for any out
+	of range case that may occur if the user is using a KIND=8 will
+	have been set to -2 which is reserved and can never be opened,
+	and therefore the unit does not exist.
+
+2015-01-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/61933
+	* io/inquire.c (inquire_via_unit): Set existing to true if a
+	gfc_unit stucture was found for the given unit number.
+	* runtime/error.c (translate_error): Add case for
+	LIBERROR_INQUIRE_INTERNAL_UNIT.
+
+2015-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2015-01-02  Tobias Burnus  <burnus@net-b.de>
+
+	* caf/single.c (_gfortran_caf_co_reduce): New function.
+	* caf/libcaf.h (_gfortran_caf_co_reduce): New prototype.
+
+Copyright (C) 2015 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

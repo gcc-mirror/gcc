@@ -3,7 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2015 Free Software Foundation, Inc.
+   Copyright (C) 1998-2016 Free Software Foundation, Inc.
    Written by Mark Mitchell (mmitchell@usa.net) based on code found
    formerly in parse.y and pt.c.
 
@@ -1672,8 +1672,8 @@ force_paren_expr (tree expr)
 
 /* Finish a parenthesized expression EXPR.  */
 
-tree
-finish_parenthesized_expr (tree expr)
+cp_expr
+finish_parenthesized_expr (cp_expr expr)
 {
   if (EXPR_P (expr))
     /* This inhibits warnings in c_common_truthvalue_conversion.  */
@@ -1688,7 +1688,7 @@ finish_parenthesized_expr (tree expr)
   if (TREE_CODE (expr) == STRING_CST)
     PAREN_STRING_LITERAL_P (expr) = 1;
 
-  expr = force_paren_expr (expr);
+  expr = cp_expr (force_paren_expr (expr), expr.get_location ());
 
   return expr;
 }
@@ -1929,7 +1929,17 @@ finish_qualified_id_expr (tree qualifying_class,
     return error_mark_node;
 
   if (template_p)
-    check_template_keyword (expr);
+    {
+      if (TREE_CODE (expr) == UNBOUND_CLASS_TEMPLATE)
+	/* cp_parser_lookup_name thought we were looking for a type,
+	   but we're actually looking for a declaration.  */
+	expr = build_qualified_name (/*type*/NULL_TREE,
+				     TYPE_CONTEXT (expr),
+				     TYPE_IDENTIFIER (expr),
+				     /*template_p*/true);
+      else
+	check_template_keyword (expr);
+    }
 
   /* If EXPR occurs as the operand of '&', use special handling that
      permits a pointer-to-member.  */
@@ -2164,8 +2174,8 @@ empty_expr_stmt_p (tree expr_stmt)
    the function (or functions) to call; ARGS are the arguments to the
    call.  Returns the functions to be considered by overload resolution.  */
 
-tree
-perform_koenig_lookup (tree fn, vec<tree, va_gc> *args,
+cp_expr
+perform_koenig_lookup (cp_expr fn, vec<tree, va_gc> *args,
 		       tsubst_flags_t complain)
 {
   tree identifier = NULL_TREE;
@@ -2460,10 +2470,23 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
    is indicated by CODE, which should be POSTINCREMENT_EXPR or
    POSTDECREMENT_EXPR.)  */
 
-tree
-finish_increment_expr (tree expr, enum tree_code code)
+cp_expr
+finish_increment_expr (cp_expr expr, enum tree_code code)
 {
-  return build_x_unary_op (input_location, code, expr, tf_warning_or_error);
+  /* input_location holds the location of the trailing operator token.
+     Build a location of the form:
+       expr++
+       ~~~~^~
+     with the caret at the operator token, ranging from the start
+     of EXPR to the end of the operator token.  */
+  location_t combined_loc = make_location (input_location,
+					   expr.get_start (),
+					   get_finish (input_location));
+  cp_expr result = build_x_unary_op (combined_loc, code, expr,
+				     tf_warning_or_error);
+  /* TODO: build_x_unary_op doesn't honor the location, so set it here.  */
+  result.set_location (combined_loc);
+  return result;
 }
 
 /* Finish a use of `this'.  Returns an expression for `this'.  */
@@ -2557,11 +2580,21 @@ finish_pseudo_destructor_expr (tree object, tree scope, tree destructor,
 
 /* Finish an expression of the form CODE EXPR.  */
 
-tree
-finish_unary_op_expr (location_t loc, enum tree_code code, tree expr,
+cp_expr
+finish_unary_op_expr (location_t op_loc, enum tree_code code, cp_expr expr,
 		      tsubst_flags_t complain)
 {
-  tree result = build_x_unary_op (loc, code, expr, complain);
+  /* Build a location of the form:
+       ++expr
+       ^~~~~~
+     with the caret at the operator token, ranging from the start
+     of the operator token to the end of EXPR.  */
+  location_t combined_loc = make_location (op_loc,
+					   op_loc, expr.get_finish ());
+  cp_expr result = build_x_unary_op (combined_loc, code, expr, complain);
+  /* TODO: build_x_unary_op doesn't always honor the location.  */
+  result.set_location (combined_loc);
+
   tree result_ovl, expr_ovl;
 
   if (!(complain & tf_warning))
@@ -2581,7 +2614,7 @@ finish_unary_op_expr (location_t loc, enum tree_code code, tree expr,
     result_ovl = cp_fully_fold (result_ovl);
 
   if (CONSTANT_CLASS_P (result_ovl) && TREE_OVERFLOW_P (result_ovl))
-    overflow_warning (input_location, result_ovl);
+    overflow_warning (combined_loc, result_ovl);
 
   return result;
 }
@@ -3198,27 +3231,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
   if (!mark_used (decl, complain) && !(complain & tf_error))
     return error_mark_node;
 
-  /* Core issue 696: "[At the July 2009 meeting] the CWG expressed
-     support for an approach in which a reference to a local
-     [constant] automatic variable in a nested class or lambda body
-     would enter the expression as an rvalue, which would reduce
-     the complexity of the problem"
-
-     FIXME update for final resolution of core issue 696.  */
-  if (decl_maybe_constant_var_p (decl))
-    {
-      if (processing_template_decl)
-	/* In a template, the constant value may not be in a usable
-	   form, so wait until instantiation time.  */
-	return decl;
-      else if (decl_constant_var_p (decl))
-	{
-	  tree t = maybe_constant_value (convert_from_reference (decl));
-	  if (TREE_CONSTANT (t))
-	    return t;
-	}
-    }
-
+  bool saw_generic_lambda = false;
   if (parsing_nsdmi ())
     containing_function = NULL_TREE;
   else
@@ -3231,6 +3244,9 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
       {
 	tree closure = DECL_CONTEXT (containing_function);
 	lambda_expr = CLASSTYPE_LAMBDA_EXPR (closure);
+
+	if (generic_lambda_fn_p (containing_function))
+	  saw_generic_lambda = true;
 
 	if (TYPE_CLASS_SCOPE_P (closure))
 	  /* A lambda in an NSDMI (c++/64496).  */
@@ -3247,6 +3263,35 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
 	containing_function
 	  = decl_function_context (containing_function);
       }
+
+  /* Core issue 696: "[At the July 2009 meeting] the CWG expressed
+     support for an approach in which a reference to a local
+     [constant] automatic variable in a nested class or lambda body
+     would enter the expression as an rvalue, which would reduce
+     the complexity of the problem"
+
+     FIXME update for final resolution of core issue 696.  */
+  if (decl_maybe_constant_var_p (decl))
+    {
+      if (processing_template_decl && !saw_generic_lambda)
+	/* In a non-generic lambda within a template, wait until instantiation
+	   time to decide whether to capture.  For a generic lambda, we can't
+	   wait until we instantiate the op() because the closure class is
+	   already defined at that point.  FIXME to get the semantics exactly
+	   right we need to partially-instantiate the lambda body so the only
+	   dependencies left are on the generic parameters themselves.  This
+	   probably means moving away from our current model of lambdas in
+	   templates (instantiating the closure type) to one based on creating
+	   the closure type when instantiating the lambda context.  That is
+	   probably also the way to handle lambdas within pack expansions.  */
+	return decl;
+      else if (decl_constant_var_p (decl))
+	{
+	  tree t = maybe_constant_value (convert_from_reference (decl));
+	  if (TREE_CONSTANT (t))
+	    return t;
+	}
+    }
 
   if (lambda_expr && VAR_P (decl)
       && DECL_ANON_UNION_VAR_P (decl))
@@ -3324,7 +3369,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
    the use of "this" explicit.
 
    Upon return, *IDK will be filled in appropriately.  */
-tree
+cp_expr
 finish_id_expression (tree id_expression,
 		      tree decl,
 		      tree scope,
@@ -3669,7 +3714,7 @@ finish_id_expression (tree id_expression,
 	}
     }
 
-  return decl;
+  return cp_expr (decl, location);
 }
 
 /* Implement the __typeof keyword: Return the type of EXPR, suitable for
@@ -3818,8 +3863,9 @@ calculate_bases_helper (tree type)
   vec<tree, va_gc> *vector = make_tree_vector();
 
   /* Now add non-virtual base classes in order of construction */
-  dfs_walk_all (TYPE_BINFO (type),
-                dfs_calculate_bases_pre, dfs_calculate_bases_post, &vector);
+  if (TYPE_BINFO (type))
+    dfs_walk_all (TYPE_BINFO (type),
+		  dfs_calculate_bases_pre, dfs_calculate_bases_post, &vector);
   return vector;
 }
 
@@ -3853,13 +3899,18 @@ calculate_bases (tree type)
   vec_safe_splice (vector, nonvbases);
   release_tree_vector (nonvbases);
 
-  /* Last element is entire class, so don't copy */
-  bases_vec = make_tree_vec (vector->length () - 1);
-
-  for (i = 0; i < vector->length () - 1; ++i)
+  /* Note that during error recovery vector->length can even be zero.  */
+  if (vector->length () > 1)
     {
-      TREE_VEC_ELT (bases_vec, i) = (*vector)[i];
+      /* Last element is entire class, so don't copy */
+      bases_vec = make_tree_vec (vector->length() - 1);
+
+      for (i = 0; i < vector->length () - 1; ++i)
+	TREE_VEC_ELT (bases_vec, i) = (*vector)[i];
     }
+  else
+    bases_vec = make_tree_vec (0);
+
   release_tree_vector (vector);
   return bases_vec;
 }
@@ -4112,9 +4163,8 @@ expand_or_defer_fn_1 (tree fn)
       /* We don't want to process FN again, so pretend we've written
 	 it out, even though we haven't.  */
       TREE_ASM_WRITTEN (fn) = 1;
-      /* If this is an instantiation of a constexpr function, keep
-	 DECL_SAVED_TREE for explain_invalid_constexpr_fn.  */
-      if (!is_instantiation_of_constexpr (fn))
+      /* If this is a constexpr function, keep DECL_SAVED_TREE.  */
+      if (!DECL_DECLARED_CONSTEXPR_P (fn))
 	DECL_SAVED_TREE (fn) = NULL_TREE;
       return false;
     }
@@ -7386,6 +7436,24 @@ finish_oacc_data (tree clauses, tree block)
   TREE_TYPE (stmt) = void_type_node;
   OACC_DATA_CLAUSES (stmt) = clauses;
   OACC_DATA_BODY (stmt) = block;
+
+  return add_stmt (stmt);
+}
+
+/* Generate OACC_HOST_DATA, with CLAUSES and BLOCK as its compound
+   statement.  */
+
+tree
+finish_oacc_host_data (tree clauses, tree block)
+{
+  tree stmt;
+
+  block = finish_omp_structured_block (block);
+
+  stmt = make_node (OACC_HOST_DATA);
+  TREE_TYPE (stmt) = void_type_node;
+  OACC_HOST_DATA_CLAUSES (stmt) = clauses;
+  OACC_HOST_DATA_BODY (stmt) = block;
 
   return add_stmt (stmt);
 }

@@ -1,6 +1,5 @@
 /* { dg-require-effective-target vect_int } */
 
-#include <stdlib.h>
 #include "tree-vect.h"
 
 int seeIf256ByteArrayIsConstant(

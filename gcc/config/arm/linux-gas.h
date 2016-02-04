@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    ARM Linux-based GNU systems version.
-   Copyright (C) 1997-2015 Free Software Foundation, Inc.
+   Copyright (C) 1997-2016 Free Software Foundation, Inc.
    Contributed by Russell King  <rmk92@ecs.soton.ac.uk>.
 
    This file is part of GCC.

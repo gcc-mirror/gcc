@@ -1,6 +1,6 @@
 // Specific definitions for newlib  -*- C++ -*-
 
-// Copyright (C) 2000-2015 Free Software Foundation, Inc.
+// Copyright (C) 2000-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,6 +52,9 @@
 // __cxa_thread_atexit to prevent modules from being unloaded before
 // their dtors are called
 #define _GLIBCXX_THREAD_ATEXIT_WIN32 1
+
+// See libstdc++/69506
+#define _GLIBCXX_USE_WEAK_REF 0
 
 #endif
 

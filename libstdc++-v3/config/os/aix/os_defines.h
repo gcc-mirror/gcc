@@ -1,6 +1,6 @@
 // Specific definitions for AIX  -*- C++ -*-
 
-// Copyright (C) 2000-2015 Free Software Foundation, Inc.
+// Copyright (C) 2000-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,5 +47,8 @@
 #ifndef __COMPATMATH__
 #define __COMPATMATH__
 #endif
+
+// No support for referencing weak symbols without a definition.
+#define _GLIBCXX_USE_WEAK_REF 0
 
 #endif

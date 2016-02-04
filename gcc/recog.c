@@ -1,5 +1,5 @@
 /* Subroutines used by or related to instruction recognition.
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1791,6 +1791,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	      break;
 
 	    case CT_MEMORY:
+	    case CT_SPECIAL_MEMORY:
 	      /* Every memory operand can be reloaded to fit.  */
 	      result = result || memory_operand (op, VOIDmode);
 	      break;
@@ -2403,6 +2404,7 @@ preprocess_constraints (int n_operands, int n_alternatives,
 		      break;
 
 		    case CT_MEMORY:
+		    case CT_SPECIAL_MEMORY:
 		      op_alt[i].memory_ok = 1;
 		      break;
 

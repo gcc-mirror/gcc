@@ -1,7 +1,9 @@
 /* Check that calling a neon builtin from a function compiled with vfp fails.  */
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_fp_ok } */
 /* { dg-require-effective-target arm_neon_ok } */
-/* { dg-options "-O2 -mfloat-abi=softfp" } */
+/* { dg-options "-O2" } */
+/* { dg-add-options arm_fp } */
 
 #include <arm_neon.h>
 
@@ -12,6 +14,5 @@ foo (uint8x16_t *p)
   *p = vmovq_n_u8 (3); /* { dg-message "called from here" } */
 }
 
-/* { dg-error "inlining failed in call to always_inline" "" { target *-*-* } 0 }
- */
+/* { dg-error "inlining failed in call to always_inline" "" { target *-*-* } 0 } */
 

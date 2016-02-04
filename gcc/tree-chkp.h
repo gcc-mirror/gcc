@@ -1,5 +1,5 @@
 /* Declaration of interface functions of Pointer Bounds Checker.
-   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -59,5 +59,6 @@ extern tree chkp_insert_retbnd_call (tree bndval, tree retval,
 				     gimple_stmt_iterator *gsi);
 extern gcall *chkp_copy_call_skip_bounds (gcall *call);
 extern bool chkp_redirect_edge (cgraph_edge *e);
+extern void chkp_fixup_inlined_call (tree lhs, tree rhs);
 
 #endif /* GCC_TREE_CHKP_H */

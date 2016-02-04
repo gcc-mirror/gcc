@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2015 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2016 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -32,12 +32,13 @@ using namespace GTM;
 extern __thread gtm_thread_tls _gtm_thr_tls;
 #endif
 
-gtm_rwlock GTM::gtm_thread::serial_lock;
+// Put this at the start of a cacheline so that serial_lock's writers and
+// htm_fastpath fields are on the same cacheline, so that HW transactions
+// only have to pay one cacheline capacity to monitor both.
+gtm_rwlock GTM::gtm_thread::serial_lock
+  __attribute__((aligned(HW_CACHELINE_SIZE)));
 gtm_thread *GTM::gtm_thread::list_of_threads = 0;
 unsigned GTM::gtm_thread::number_of_threads = 0;
-
-gtm_stmlock GTM::gtm_stmlock_array[LOCK_ARRAY_SIZE];
-atomic<gtm_version> GTM::gtm_clock;
 
 /* ??? Move elsewhere when we figure out library initialization.  */
 uint64_t GTM::gtm_spin_count_var = 1000;
@@ -53,9 +54,6 @@ static pthread_mutex_t global_tid_lock = PTHREAD_MUTEX_INITIALIZER;
 // Provides a on-thread-exit callback used to release per-thread data.
 static pthread_key_t thr_release_key;
 static pthread_once_t thr_release_once = PTHREAD_ONCE_INIT;
-
-// See gtm_thread::begin_transaction.
-uint32_t GTM::htm_fastpath = 0;
 
 /* Allocate a transaction structure.  */
 void *
@@ -176,9 +174,11 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
   // lock's writer flag and thus abort if another thread is or becomes a
   // serial transaction.  Therefore, if the fastpath is enabled, then a
   // transaction is not executing as a HW transaction iff the serial lock is
-  // write-locked.  This allows us to use htm_fastpath and the serial lock's
-  // writer flag to reliable determine whether the current thread runs a HW
-  // transaction, and thus we do not need to maintain this information in
+  // write-locked.  Also, HW transactions monitor the fastpath control
+  // variable, so that they will only execute if dispatch_htm is still the
+  // current method group.  This allows us to use htm_fastpath and the serial
+  // lock's writers flag to reliable determine whether the current thread runs
+  // a HW transaction, and thus we do not need to maintain this information in
   // per-thread state.
   // If an uninstrumented code path is not available, we can still run
   // instrumented code from a HW transaction because the HTM fastpath kicks
@@ -190,9 +190,14 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
   // for any internal changes (e.g., they never abort visibly to the STM code
   // and thus do not trigger the standard retry handling).
 #ifndef HTM_CUSTOM_FASTPATH
-  if (likely(htm_fastpath && (prop & pr_hasNoAbort)))
+  if (likely(serial_lock.get_htm_fastpath() && (prop & pr_hasNoAbort)))
     {
-      for (uint32_t t = htm_fastpath; t; t--)
+      // Note that the snapshot of htm_fastpath that we take here could be
+      // outdated, and a different method group than dispatch_htm may have
+      // been chosen in the meantime.  Therefore, take care not not touch
+      // anything besides the serial lock, which is independent of method
+      // groups.
+      for (uint32_t t = serial_lock.get_htm_fastpath(); t; t--)
 	{
 	  uint32_t ret = htm_begin();
 	  if (htm_begin_success(ret))
@@ -200,9 +205,11 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
 	      // We are executing a transaction now.
 	      // Monitor the writer flag in the serial-mode lock, and abort
 	      // if there is an active or waiting serial-mode transaction.
+	      // Also checks that htm_fastpath is still nonzero and thus
+	      // HW transactions are allowed to run.
 	      // Note that this can also happen due to an enclosing
 	      // serial-mode transaction; we handle this case below.
-	      if (unlikely(serial_lock.is_write_locked()))
+	      if (unlikely(serial_lock.htm_fastpath_disabled()))
 		htm_abort();
 	      else
 		// We do not need to set a_saveLiveVariables because of HTM.
@@ -213,9 +220,12 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
 	  // retrying the transaction will be successful.
 	  if (!htm_abort_should_retry(ret))
 	    break;
+	  // Check whether the HTM fastpath has been disabled.
+	  if (!serial_lock.get_htm_fastpath())
+	    break;
 	  // Wait until any concurrent serial-mode transactions have finished.
 	  // This is an empty critical section, but won't be elided.
-	  if (serial_lock.is_write_locked())
+	  if (serial_lock.htm_fastpath_disabled())
 	    {
 	      tx = gtm_thr();
 	      if (unlikely(tx == NULL))
@@ -250,7 +260,7 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
   // HTM fastpath aborted, and that we thus have to decide whether to retry
   // the fastpath (returning a_tryHTMFastPath) or just proceed with the
   // fallback method.
-  if (likely(htm_fastpath && (prop & pr_HTMRetryableAbort)))
+  if (likely(serial_lock.get_htm_fastpath() && (prop & pr_HTMRetryableAbort)))
     {
       tx = gtm_thr();
       if (unlikely(tx == NULL))
@@ -264,13 +274,15 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
       // other fallback will use serial transactions, which don't use
       // restart_total but will reset it when committing.
       if (!(prop & pr_HTMRetriedAfterAbort))
-	tx->restart_total = htm_fastpath;
+	tx->restart_total = gtm_thread::serial_lock.get_htm_fastpath();
 
       if (--tx->restart_total > 0)
 	{
 	  // Wait until any concurrent serial-mode transactions have finished.
 	  // Essentially the same code as above.
-	  if (serial_lock.is_write_locked())
+	  if (!serial_lock.get_htm_fastpath())
+	    goto stop_custom_htm_fastpath;
+	  if (serial_lock.htm_fastpath_disabled())
 	    {
 	      if (tx->nesting > 0)
 		goto stop_custom_htm_fastpath;
@@ -571,8 +583,9 @@ GTM::gtm_thread::trycommit ()
   gtm_word priv_time = 0;
   if (abi_disp()->trycommit (priv_time))
     {
-      // The transaction is now inactive. Everything that we still have to do
-      // will not synchronize with other transactions anymore.
+      // The transaction is now finished but we will still access some shared
+      // data if we have to ensure privatization safety.
+      bool do_read_unlock = false;
       if (state & gtm_thread::STATE_SERIAL)
         {
           gtm_thread::serial_lock.write_unlock ();
@@ -581,7 +594,27 @@ GTM::gtm_thread::trycommit ()
           priv_time = 0;
         }
       else
-	gtm_thread::serial_lock.read_unlock (this);
+	{
+	  // If we have to ensure privatization safety, we must not yet
+	  // release the read lock and become inactive because (1) we still
+	  // have to go through the list of all transactions, which can be
+	  // modified by serial mode threads, and (2) we interpret each
+	  // transactions' shared_state in the context of what we believe to
+	  // be the current method group (and serial mode transactions can
+	  // change the method group).  Therefore, if we have to ensure
+	  // privatization safety, delay becoming inactive but set a maximum
+	  // snapshot time (we have committed and thus have an empty snapshot,
+	  // so it will always be most recent).  Use release MO so that this
+	  // synchronizes with other threads observing our snapshot time.
+	  if (priv_time)
+	    {
+	      do_read_unlock = true;
+	      shared_state.store((~(typeof gtm_thread::shared_state)0) - 1,
+		  memory_order_release);
+	    }
+	  else
+	    gtm_thread::serial_lock.read_unlock (this);
+	}
       state = 0;
 
       // We can commit the undo log after dispatch-specific commit and after
@@ -601,8 +634,10 @@ GTM::gtm_thread::trycommit ()
           // acquisitions).  This ensures that if we read prior to other
           // reader transactions setting their shared_state to 0, then those
           // readers will observe our updates.  We can reuse the seq_cst fence
-          // in serial_lock.read_unlock() however, so we don't need another
-          // one here.
+          // in serial_lock.read_unlock() if we performed that; if not, we
+	  // issue the fence.
+	  if (do_read_unlock)
+	    atomic_thread_fence (memory_order_seq_cst);
 	  // TODO Don't just spin but also block using cond vars / futexes
 	  // here. Should probably be integrated with the serial lock code.
 	  for (gtm_thread *it = gtm_thread::list_of_threads; it != 0;
@@ -621,8 +656,11 @@ GTM::gtm_thread::trycommit ()
 	    }
 	}
 
-      // After ensuring privatization safety, we execute potentially
-      // privatizing actions (e.g., calling free()). User actions are first.
+      // After ensuring privatization safety, we are now truly inactive and
+      // thus can release the read lock.  We will also execute potentially
+      // privatizing actions (e.g., calling free()).  User actions are first.
+      if (do_read_unlock)
+	gtm_thread::serial_lock.read_unlock (this);
       commit_user_actions ();
       commit_allocations (false, 0);
 
@@ -668,7 +706,7 @@ _ITM_commitTransaction(void)
   // a serial-mode transaction.  If we are, then there will be no other
   // concurrent serial-mode transaction.
   // See gtm_thread::begin_transaction.
-  if (likely(htm_fastpath && !gtm_thread::serial_lock.is_write_locked()))
+  if (likely(!gtm_thread::serial_lock.htm_fastpath_disabled()))
     {
       htm_commit();
       return;
@@ -684,7 +722,7 @@ _ITM_commitTransactionEH(void *exc_ptr)
 {
 #if defined(USE_HTM_FASTPATH)
   // See _ITM_commitTransaction.
-  if (likely(htm_fastpath && !gtm_thread::serial_lock.is_write_locked()))
+  if (likely(!gtm_thread::serial_lock.htm_fastpath_disabled()))
     {
       htm_commit();
       return;

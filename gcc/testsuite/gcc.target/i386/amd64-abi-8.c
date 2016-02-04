@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -mno-sse -mskip-rax-setup" } */
 /* { dg-final { scan-assembler-not "xorl\[\\t \]*\\\%eax,\[\\t \]*%eax" } } */
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Runs doxygen and massages the output files.
-# Copyright (C) 2001-2015 Free Software Foundation, Inc.
+# Copyright (C) 2001-2016 Free Software Foundation, Inc.
 #
 # Synopsis:  run_doxygen --mode=[html|latex|man|xml] --host_alias=<alias> \
 #                        v3srcdir \
@@ -332,6 +332,23 @@ done
 for f in *__profile_*; do
     newname=`echo $f | sed 's/__profile_/__profile::/'`
     mv $f $newname
+done
+
+# Remove inline namespaces used for versioning.
+for f in *_V2_*; do
+    newname=`echo $f | sed 's/_V2_/::/'`
+    sed 's/::_V2::/::/g' $f > $newname
+    rm $f
+done
+for f in *_experimental_filesystem_v?_*; do
+    newname=`echo $f | sed 's/_filesystem_v._/::filesystem::/'`
+    sed 's/::filesystem::v.::/::filesystem::/g' $f > $newname
+    rm $f
+done
+for f in *experimental_fundamentals_v?_*; do
+    newname=`echo $f | sed 's/experimental_.*_v[[:digit:]]_/experimental::/'`
+    sed 's/::experimental::fundamentals_v[[:digit:]]::/::experimental::/g' $f > $newname
+    rm $f
 done
 
 # Then, clean up other top-level namespaces.

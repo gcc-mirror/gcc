@@ -1,6 +1,6 @@
 /* Implementation of the EXECUTE_COMMAND_LINE intrinsic.
-   Copyright (C) 2009-2015 Free Software Foundation, Inc.
-   Contributed by FranÃ§ois-Xavier Coudert.
+   Copyright (C) 2009-2016 Free Software Foundation, Inc.
+   Contributed by François-Xavier Coudert.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 
@@ -55,7 +55,7 @@ set_cmdstat (int *cmdstat, int value)
 #define MSGLEN 200
       char msg[MSGLEN] = "EXECUTE_COMMAND_LINE: ";
       strncat (msg, cmdmsg_values[value], MSGLEN - strlen(msg) - 1);
-      runtime_error (msg);
+      runtime_error ("%s", msg);
     }
 }
 

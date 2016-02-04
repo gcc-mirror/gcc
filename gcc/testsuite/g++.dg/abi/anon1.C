@@ -2,4 +2,4 @@
 
 namespace { enum E { E1 }; } void f(E e) { }
 
-// { dg-final { scan-assembler-not "globl" } }
+// { dg-final { scan-assembler-not "globl" { xfail { powerpc-ibm-aix* } } } } 

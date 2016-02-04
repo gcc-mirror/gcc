@@ -192,6 +192,9 @@ package Lib.Writ is
    --              the units in this file, where x is the first character
    --              (upper case) of the policy name (e.g. 'C' for Concurrent).
 
+   --         FX  Units in this file use front-end exceptions, with explicit
+   --             handlers to trigger AT-END actions on exception paths.
+
    --         GP   Set if this compilation was done in GNATprove mode, either
    --              from direct use of GNATprove, or from use of -gnatdF.
 

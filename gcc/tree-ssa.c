@@ -1,5 +1,5 @@
 /* Miscellaneous SSA utility functions.
-   Copyright (C) 2001-2015 Free Software Foundation, Inc.
+   Copyright (C) 2001-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -119,10 +119,10 @@ redirect_edge_var_map_vector (edge e)
 /* Clear the edge variable mappings.  */
 
 void
-redirect_edge_var_map_destroy (void)
+redirect_edge_var_map_empty (void)
 {
-  delete edge_var_maps;
-  edge_var_maps = NULL;
+  if (edge_var_maps)
+    edge_var_maps->empty ();
 }
 
 
@@ -1124,11 +1124,10 @@ delete_tree_ssa (struct function *fn)
   if (fn->gimple_df->decls_to_pointers != NULL)
     delete fn->gimple_df->decls_to_pointers;
   fn->gimple_df->decls_to_pointers = NULL;
-  fn->gimple_df->modified_noreturn_calls = NULL;
   fn->gimple_df = NULL;
 
   /* We no longer need the edge variable maps.  */
-  redirect_edge_var_map_destroy ();
+  redirect_edge_var_map_empty ();
 }
 
 /* Return true if EXPR is a useless type conversion, otherwise return

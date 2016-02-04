@@ -1,5 +1,5 @@
 /* Generic single linked list to keep various information 
-   Copyright (C) 1993-2015 Free Software Foundation, Inc.
+   Copyright (C) 1993-2016 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup.
 
 This file is part of GCC.

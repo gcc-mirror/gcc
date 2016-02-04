@@ -1,5 +1,5 @@
 ;; Machine description for NVPTX.
-;; Copyright (C) 2014-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2016 Free Software Foundation, Inc.
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;;
 ;; This file is part of GCC.
@@ -20,19 +20,6 @@
 
 (define_c_enum "unspec" [
    UNSPEC_ARG_REG
-   UNSPEC_FROM_GLOBAL
-   UNSPEC_FROM_LOCAL
-   UNSPEC_FROM_PARAM
-   UNSPEC_FROM_SHARED
-   UNSPEC_FROM_CONST
-   UNSPEC_TO_GLOBAL
-   UNSPEC_TO_LOCAL
-   UNSPEC_TO_PARAM
-   UNSPEC_TO_SHARED
-   UNSPEC_TO_CONST
-
-   UNSPEC_CPLX_LOWPART
-   UNSPEC_CPLX_HIGHPART
 
    UNSPEC_COPYSIGN
    UNSPEC_LOG2
@@ -50,8 +37,6 @@
    UNSPEC_ALLOCA
 
    UNSPEC_DIM_SIZE
-
-   UNSPEC_SHARED_DATA
 
    UNSPEC_BIT_CONV
 
@@ -75,103 +60,28 @@
 (define_attr "subregs_ok" "false,true"
   (const_string "false"))
 
+;; The nvptx operand predicates, in general, don't permit subregs and
+;; only literal constants, which differ from the generic ones, which
+;; permit subregs and symbolc constants (as appropriate)
 (define_predicate "nvptx_register_operand"
-  (match_code "reg,subreg")
+  (match_code "reg")
 {
-  if (REG_P (op))
-    return !HARD_REGISTER_P (op);
-  if (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))
-    return false;
-  if (GET_CODE (op) == SUBREG)
-    return false;
   return register_operand (op, mode);
 })
 
-(define_predicate "nvptx_reg_or_mem_operand"
-  (match_code "mem,reg,subreg")
-{
-  if (REG_P (op))
-    return !HARD_REGISTER_P (op);
-  if (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))
-    return false;
-  if (GET_CODE (op) == SUBREG)
-    return false;
-  return memory_operand (op, mode) || register_operand (op, mode);
-})
-
-;; Allow symbolic constants.
-(define_predicate "symbolic_operand"
-  (match_code "symbol_ref,const"))
-
-;; Allow registers or symbolic constants.  We can allow frame, arg or stack
-;; pointers here since they are actually symbolic constants.
-(define_predicate "nvptx_register_or_symbolic_operand"
-  (match_code "reg,subreg,symbol_ref,const")
-{
-  if (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))
-    return false;
-  if (GET_CODE (op) == SUBREG)
-    return false;
-  if (CONSTANT_P (op))
-    return true;
-  return register_operand (op, mode);
-})
-
-;; Registers or constants for normal instructions.  Does not allow symbolic
-;; constants.
-(define_predicate "nvptx_nonmemory_operand"
-  (match_code "reg,subreg,const_int,const_double")
-{
-  if (REG_P (op))
-    return !HARD_REGISTER_P (op);
-  if (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))
-    return false;
-  if (GET_CODE (op) == SUBREG)
-    return false;
-  return nonmemory_operand (op, mode);
-})
-
-;; A source operand for a move instruction.  This is the only predicate we use
-;; that accepts symbolic constants.
-(define_predicate "nvptx_general_operand"
-  (match_code "reg,subreg,mem,const,symbol_ref,label_ref,const_int,const_double")
-{
-  if (REG_P (op))
-    return !HARD_REGISTER_P (op);
-  return general_operand (op, mode);
-})
-
-;; A destination operand for a move instruction.  This is the only destination
-;; predicate that accepts the return register since it requires special handling.
 (define_predicate "nvptx_nonimmediate_operand"
-  (match_code "reg,subreg,mem")
+  (match_code "mem,reg")
 {
-  if (REG_P (op))
-    return (op != frame_pointer_rtx
-	    && op != arg_pointer_rtx
-	    && op != stack_pointer_rtx);
-  return nonimmediate_operand (op, mode);
+  return (REG_P (op) ? register_operand (op, mode)
+          : memory_operand (op, mode));
 })
 
-(define_predicate "const_0_operand"
-  (and (match_code "const_int,const_double,const_vector")
-       (match_test "op == CONST0_RTX (GET_MODE (op))")))
-
-(define_predicate "global_mem_operand"
-  (and (match_code "mem")
-       (match_test "MEM_ADDR_SPACE (op) == ADDR_SPACE_GLOBAL")))
-
-(define_predicate "const_mem_operand"
-  (and (match_code "mem")
-       (match_test "MEM_ADDR_SPACE (op) == ADDR_SPACE_CONST")))
-
-(define_predicate "param_mem_operand"
-  (and (match_code "mem")
-       (match_test "MEM_ADDR_SPACE (op) == ADDR_SPACE_PARAM")))
-
-(define_predicate "shared_mem_operand"
-  (and (match_code "mem")
-       (match_test "MEM_ADDR_SPACE (op) == ADDR_SPACE_SHARED")))
+(define_predicate "nvptx_nonmemory_operand"
+  (match_code "reg,const_int,const_double")
+{
+  return (REG_P (op) ? register_operand (op, mode)
+          : immediate_operand (op, mode));
+})
 
 (define_predicate "const0_operand"
   (and (match_code "const_int")
@@ -191,18 +101,10 @@
   (match_code "eq,ne,le,ge,lt,gt,uneq,unle,unge,unlt,ungt,unordered,ordered"))
 
 ;; Test for a valid operand for a call instruction.
-(define_special_predicate "call_insn_operand"
+(define_predicate "call_insn_operand"
   (match_code "symbol_ref,reg")
 {
-  if (GET_CODE (op) == SYMBOL_REF)
-    {
-      tree decl = SYMBOL_REF_DECL (op);
-      /* This happens for libcalls.  */
-      if (decl == NULL_TREE)
-        return true;
-      return TREE_CODE (SYMBOL_REF_DECL (op)) == FUNCTION_DECL;
-    }
-  return true;
+  return REG_P (op) || SYMBOL_REF_FUNCTION_P (op);
 })
 
 ;; Return true if OP is a call with parallel USEs of the argument
@@ -216,11 +118,7 @@
     {
       rtx elt = XVECEXP (op, 0, i);
 
-      if (GET_CODE (elt) != USE
-          || GET_CODE (XEXP (elt, 0)) != REG
-          || XEXP (elt, 0) == frame_pointer_rtx
-          || XEXP (elt, 0) == arg_pointer_rtx
-          || XEXP (elt, 0) == stack_pointer_rtx)
+      if (GET_CODE (elt) != USE || !REG_P (XEXP (elt, 0)))
         return false;
     }
   return true;
@@ -278,236 +176,64 @@
    %.\\tsetp.eq.u32\\t%0, 1, 1;")
 
 (define_insn "*mov<mode>_insn"
-  [(set (match_operand:QHSDIM 0 "nvptx_nonimmediate_operand" "=R,R,R,m")
-	(match_operand:QHSDIM 1 "general_operand" "n,Ri,m,R"))]
-  "!(MEM_P (operands[0])
-     && (!REG_P (operands[1]) || REGNO (operands[1]) <= LAST_VIRTUAL_REGISTER))"
+  [(set (match_operand:QHSDIM 0 "nonimmediate_operand" "=R,R,m")
+	(match_operand:QHSDIM 1 "general_operand" "Ri,m,R"))]
+  "!MEM_P (operands[0]) || REG_P (operands[1])"
 {
-  if (which_alternative == 2)
+  if (which_alternative == 1)
     return "%.\\tld%A1%u1\\t%0, %1;";
-  if (which_alternative == 3)
+  if (which_alternative == 2)
     return "%.\\tst%A0%u0\\t%0, %1;";
 
-  rtx dst = operands[0];
-  rtx src = operands[1];
-
-  enum machine_mode dst_mode = nvptx_underlying_object_mode (dst);
-  enum machine_mode src_mode = nvptx_underlying_object_mode (src);
-  if (GET_CODE (dst) == SUBREG)
-    dst = SUBREG_REG (dst);
-  if (GET_CODE (src) == SUBREG)
-    src = SUBREG_REG (src);
-  if (src_mode == QImode)
-    src_mode = SImode;
-  if (dst_mode == QImode)
-    dst_mode = SImode;
-  if (CONSTANT_P (src))
-    {
-      if (GET_MODE_CLASS (dst_mode) != MODE_INT)
-        return "%.\\tmov.b%T0\\t%0, %1;";
-      else
-        return "%.\\tmov%t0\\t%0, %1;";
-    }
-
-  /* Special handling for the return register; we allow this register to
-     only occur in the destination of a move insn.  */
-  if (REG_P (dst) && REGNO (dst) == NVPTX_RETURN_REGNUM
-      && dst_mode == HImode)
-    dst_mode = SImode;
-  if (dst_mode == src_mode)
-    return "%.\\tmov%t0\\t%0, %1;";
-  /* Mode-punning between floating point and integer.  */
-  if (GET_MODE_SIZE (dst_mode) == GET_MODE_SIZE (src_mode))
-    return "%.\\tmov.b%T0\\t%0, %1;";
-  return "%.\\tcvt%t0%t1\\t%0, %1;";
+  return nvptx_output_mov_insn (operands[0], operands[1]);
 }
   [(set_attr "subregs_ok" "true")])
 
 (define_insn "*mov<mode>_insn"
-  [(set (match_operand:SDFM 0 "nvptx_nonimmediate_operand" "=R,R,m")
+  [(set (match_operand:SDFM 0 "nonimmediate_operand" "=R,R,m")
 	(match_operand:SDFM 1 "general_operand" "RF,m,R"))]
-  "!(MEM_P (operands[0]) && !REG_P (operands[1]))"
+  "!MEM_P (operands[0]) || REG_P (operands[1])"
 {
   if (which_alternative == 1)
     return "%.\\tld%A1%u0\\t%0, %1;";
   if (which_alternative == 2)
     return "%.\\tst%A0%u1\\t%0, %1;";
 
-  rtx dst = operands[0];
-  rtx src = operands[1];
-  if (GET_CODE (dst) == SUBREG)
-    dst = SUBREG_REG (dst);
-  if (GET_CODE (src) == SUBREG)
-    src = SUBREG_REG (src);
-  enum machine_mode dst_mode = GET_MODE (dst);
-  enum machine_mode src_mode = GET_MODE (src);
-  if (dst_mode == src_mode)
-    return "%.\\tmov%t0\\t%0, %1;";
-  if (GET_MODE_SIZE (dst_mode) == GET_MODE_SIZE (src_mode))
-    return "%.\\tmov.b%T0\\t%0, %1;";
-  gcc_unreachable ();
+  return nvptx_output_mov_insn (operands[0], operands[1]);
 }
   [(set_attr "subregs_ok" "true")])
 
 (define_insn "load_arg_reg<mode>"
   [(set (match_operand:QHIM 0 "nvptx_register_operand" "=R")
-	(unspec:QHIM [(match_operand 1 "const_int_operand" "i")]
+	(unspec:QHIM [(match_operand 1 "const_int_operand" "n")]
 		     UNSPEC_ARG_REG))]
   ""
   "%.\\tcvt%t0.u32\\t%0, %%ar%1;")
 
 (define_insn "load_arg_reg<mode>"
   [(set (match_operand:SDISDFM 0 "nvptx_register_operand" "=R")
-	(unspec:SDISDFM [(match_operand 1 "const_int_operand" "i")]
+	(unspec:SDISDFM [(match_operand 1 "const_int_operand" "n")]
 			UNSPEC_ARG_REG))]
   ""
   "%.\\tmov%t0\\t%0, %%ar%1;")
 
 (define_expand "mov<mode>"
-  [(set (match_operand:QHSDISDFM 0 "nvptx_nonimmediate_operand" "")
+  [(set (match_operand:QHSDISDFM 0 "nonimmediate_operand" "")
 	(match_operand:QHSDISDFM 1 "general_operand" ""))]
   ""
 {
-  operands[1] = nvptx_maybe_convert_symbolic_operand (operands[1]);
-  /* Record the mode of the return register so that we can prevent
-     later optimization passes from changing it.  */
-  if (REG_P (operands[0]) && REGNO (operands[0]) == NVPTX_RETURN_REGNUM
-      && cfun)
-    {
-      if (cfun->machine->ret_reg_mode == VOIDmode)
-	cfun->machine->ret_reg_mode = GET_MODE (operands[0]);
-      else
-        gcc_assert (cfun->machine->ret_reg_mode == GET_MODE (operands[0]));
-    }
-
-  /* Hard registers are often actually symbolic operands on this target.
-     Don't allow them when storing to memory.  */
-  if (MEM_P (operands[0])
-      && (!REG_P (operands[1])
-	  || REGNO (operands[1]) <= LAST_VIRTUAL_REGISTER))
+  if (MEM_P (operands[0]) && !REG_P (operands[1]))
     {
       rtx tmp = gen_reg_rtx (<MODE>mode);
       emit_move_insn (tmp, operands[1]);
       emit_move_insn (operands[0], tmp);
       DONE;
     }
-  if (GET_CODE (operands[1]) == SYMBOL_REF)
-    nvptx_record_needed_fndecl (SYMBOL_REF_DECL (operands[1]));
-})
-
-(define_insn "highpartscsf2"
-  [(set (match_operand:SF 0 "nvptx_register_operand" "=R")
-	(unspec:SF [(match_operand:SC 1 "nvptx_register_operand")]
-		   UNSPEC_CPLX_HIGHPART))]
-  ""
-  "%.\\tmov%t0\\t%0, %f1$1;")
-
-(define_insn "set_highpartsfsc2"
-  [(set (match_operand:SC 0 "nvptx_register_operand" "+R")
-	(unspec:SC [(match_dup 0)
-		    (match_operand:SF 1 "nvptx_register_operand")]
-		   UNSPEC_CPLX_HIGHPART))]
-  ""
-  "%.\\tmov%t1\\t%f0$1, %1;")
-
-(define_insn "lowpartscsf2"
-  [(set (match_operand:SF 0 "nvptx_register_operand" "=R")
-	(unspec:SF [(match_operand:SC 1 "nvptx_register_operand")]
-		   UNSPEC_CPLX_LOWPART))]
-  ""
-  "%.\\tmov%t0\\t%0, %f1$0;")
-
-(define_insn "set_lowpartsfsc2"
-  [(set (match_operand:SC 0 "nvptx_register_operand" "+R")
-	(unspec:SC [(match_dup 0)
-		    (match_operand:SF 1 "nvptx_register_operand")]
-		   UNSPEC_CPLX_LOWPART))]
-  ""
-  "%.\\tmov%t1\\t%f0$0, %1;")
-
-(define_expand "mov<mode>"
-  [(set (match_operand:SDCM 0 "nvptx_nonimmediate_operand" "")
-	(match_operand:SDCM 1 "general_operand" ""))]
-  ""
-{
-  enum machine_mode submode = <MODE>mode == SCmode ? SFmode : DFmode;
-  int sz = GET_MODE_SIZE (submode);
-  rtx xops[4];
-  rtx punning_reg = NULL_RTX;
-  rtx copyback = NULL_RTX;
-
-  if (GET_CODE (operands[0]) == SUBREG)
-    {
-      rtx inner = SUBREG_REG (operands[0]);
-      enum machine_mode inner_mode = GET_MODE (inner);
-      int sz2 = GET_MODE_SIZE (inner_mode);
-      gcc_assert (sz2 >= sz);
-      cfun->machine->punning_buffer_size
-        = MAX (cfun->machine->punning_buffer_size, sz2);
-      if (punning_reg == NULL_RTX)
-	punning_reg = gen_rtx_REG (Pmode, NVPTX_PUNNING_BUFFER_REGNUM);
-      copyback = gen_move_insn (inner, gen_rtx_MEM (inner_mode, punning_reg));
-      operands[0] = gen_rtx_MEM (<MODE>mode, punning_reg);
-    }
-  if (GET_CODE (operands[1]) == SUBREG)
-    {
-      rtx inner = SUBREG_REG (operands[1]);
-      enum machine_mode inner_mode = GET_MODE (inner);
-      int sz2 = GET_MODE_SIZE (inner_mode);
-      gcc_assert (sz2 >= sz);
-      cfun->machine->punning_buffer_size
-        = MAX (cfun->machine->punning_buffer_size, sz2);
-      if (punning_reg == NULL_RTX)
-	punning_reg = gen_rtx_REG (Pmode, NVPTX_PUNNING_BUFFER_REGNUM);
-      emit_move_insn (gen_rtx_MEM (inner_mode, punning_reg), inner);
-      operands[1] = gen_rtx_MEM (<MODE>mode, punning_reg);
-    }
-
-  if (REG_P (operands[0]) && submode == SFmode)
-    {
-      xops[0] = gen_reg_rtx (submode);
-      xops[1] = gen_reg_rtx (submode);
-    }
-  else
-    {
-      xops[0] = gen_lowpart (submode, operands[0]);
-      if (MEM_P (operands[0]))
-	xops[1] = adjust_address_nv (operands[0], submode, sz);
-      else
-	xops[1] = gen_highpart (submode, operands[0]);
-    }
-
-  if (REG_P (operands[1]) && submode == SFmode)
-    {
-      xops[2] = gen_reg_rtx (submode);
-      xops[3] = gen_reg_rtx (submode);
-      emit_insn (gen_lowpartscsf2 (xops[2], operands[1]));
-      emit_insn (gen_highpartscsf2 (xops[3], operands[1]));
-    }
-  else
-    {
-      xops[2] = gen_lowpart (submode, operands[1]);
-      if (MEM_P (operands[1]))
-	xops[3] = adjust_address_nv (operands[1], submode, sz);
-      else
-	xops[3] = gen_highpart (submode, operands[1]);
-    }
-
-  emit_move_insn (xops[0], xops[2]);
-  emit_move_insn (xops[1], xops[3]);
-  if (REG_P (operands[0]) && submode == SFmode)
-    {
-      emit_insn (gen_set_lowpartsfsc2 (operands[0], xops[0]));
-      emit_insn (gen_set_highpartsfsc2 (operands[0], xops[1]));
-    }
-  if (copyback)
-    emit_insn (copyback);
-  DONE;
 })
 
 (define_insn "zero_extendqihi2"
   [(set (match_operand:HI 0 "nvptx_register_operand" "=R,R")
-	(zero_extend:HI (match_operand:QI 1 "nvptx_reg_or_mem_operand" "R,m")))]
+	(zero_extend:HI (match_operand:QI 1 "nvptx_nonimmediate_operand" "R,m")))]
   ""
   "@
    %.\\tcvt.u16.u%T1\\t%0, %1;
@@ -516,7 +242,7 @@
 
 (define_insn "zero_extend<mode>si2"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R,R")
-	(zero_extend:SI (match_operand:QHIM 1 "nvptx_reg_or_mem_operand" "R,m")))]
+	(zero_extend:SI (match_operand:QHIM 1 "nvptx_nonimmediate_operand" "R,m")))]
   ""
   "@
    %.\\tcvt.u32.u%T1\\t%0, %1;
@@ -525,7 +251,7 @@
 
 (define_insn "zero_extend<mode>di2"
   [(set (match_operand:DI 0 "nvptx_register_operand" "=R,R")
-	(zero_extend:DI (match_operand:QHSIM 1 "nvptx_reg_or_mem_operand" "R,m")))]
+	(zero_extend:DI (match_operand:QHSIM 1 "nvptx_nonimmediate_operand" "R,m")))]
   ""
   "@
    %.\\tcvt.u64.u%T1\\t%0, %1;
@@ -534,7 +260,7 @@
 
 (define_insn "extend<mode>si2"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R,R")
-	(sign_extend:SI (match_operand:QHIM 1 "nvptx_reg_or_mem_operand" "R,m")))]
+	(sign_extend:SI (match_operand:QHIM 1 "nvptx_nonimmediate_operand" "R,m")))]
   ""
   "@
    %.\\tcvt.s32.s%T1\\t%0, %1;
@@ -543,7 +269,7 @@
 
 (define_insn "extend<mode>di2"
   [(set (match_operand:DI 0 "nvptx_register_operand" "=R,R")
-	(sign_extend:DI (match_operand:QHSIM 1 "nvptx_reg_or_mem_operand" "R,m")))]
+	(sign_extend:DI (match_operand:QHSIM 1 "nvptx_nonimmediate_operand" "R,m")))]
   ""
   "@
    %.\\tcvt.s64.s%T1\\t%0, %1;
@@ -551,7 +277,7 @@
   [(set_attr "subregs_ok" "true")])
 
 (define_insn "trunchiqi2"
-  [(set (match_operand:QI 0 "nvptx_reg_or_mem_operand" "=R,m")
+  [(set (match_operand:QI 0 "nvptx_nonimmediate_operand" "=R,m")
 	(truncate:QI (match_operand:HI 1 "nvptx_register_operand" "R,R")))]
   ""
   "@
@@ -560,7 +286,7 @@
   [(set_attr "subregs_ok" "true")])
 
 (define_insn "truncsi<mode>2"
-  [(set (match_operand:QHIM 0 "nvptx_reg_or_mem_operand" "=R,m")
+  [(set (match_operand:QHIM 0 "nvptx_nonimmediate_operand" "=R,m")
 	(truncate:QHIM (match_operand:SI 1 "nvptx_register_operand" "R,R")))]
   ""
   "@
@@ -569,51 +295,13 @@
   [(set_attr "subregs_ok" "true")])
 
 (define_insn "truncdi<mode>2"
-  [(set (match_operand:QHSIM 0 "nvptx_reg_or_mem_operand" "=R,m")
+  [(set (match_operand:QHSIM 0 "nvptx_nonimmediate_operand" "=R,m")
 	(truncate:QHSIM (match_operand:DI 1 "nvptx_register_operand" "R,R")))]
   ""
   "@
    %.\\tcvt%t0.u64\\t%0, %1;
    %.\\tst%A0.u%T0\\t%0, %1;"
   [(set_attr "subregs_ok" "true")])
-
-;; Pointer address space conversions
-
-(define_int_iterator cvt_code
-  [UNSPEC_FROM_GLOBAL
-   UNSPEC_FROM_LOCAL
-   UNSPEC_FROM_SHARED
-   UNSPEC_FROM_CONST
-   UNSPEC_TO_GLOBAL
-   UNSPEC_TO_LOCAL
-   UNSPEC_TO_SHARED
-   UNSPEC_TO_CONST])
-
-(define_int_attr cvt_name
-  [(UNSPEC_FROM_GLOBAL "from_global")
-   (UNSPEC_FROM_LOCAL "from_local")
-   (UNSPEC_FROM_SHARED "from_shared")
-   (UNSPEC_FROM_CONST "from_const")
-   (UNSPEC_TO_GLOBAL "to_global")
-   (UNSPEC_TO_LOCAL "to_local")
-   (UNSPEC_TO_SHARED "to_shared")
-   (UNSPEC_TO_CONST "to_const")])
-
-(define_int_attr cvt_str
-  [(UNSPEC_FROM_GLOBAL ".global")
-   (UNSPEC_FROM_LOCAL ".local")
-   (UNSPEC_FROM_SHARED ".shared")
-   (UNSPEC_FROM_CONST ".const")
-   (UNSPEC_TO_GLOBAL ".to.global")
-   (UNSPEC_TO_LOCAL ".to.local")
-   (UNSPEC_TO_SHARED ".to.shared")
-   (UNSPEC_TO_CONST ".to.const")])
-
-(define_insn "convaddr_<cvt_name><mode>"
-  [(set (match_operand:P 0 "nvptx_register_operand" "=R")
-	(unspec:P [(match_operand:P 1 "nvptx_register_or_symbolic_operand" "Rs")] cvt_code))]
-  ""
-  "%.\\tcvta<cvt_str>%t0\\t%0, %1;")
 
 ;; Integer arithmetic
 
@@ -731,7 +419,7 @@
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
 	(clz:SI (match_operand:SDIM 1 "nvptx_register_operand" "R")))]
   ""
-  "%.\\tclz.b%T0\\t%0, %1;")
+  "%.\\tclz.b%T1\\t%0, %1;")
 
 (define_expand "ctz<mode>2"
   [(set (match_operand:SI 0 "nvptx_register_operand" "")
@@ -994,7 +682,7 @@
 
 (define_insn "call_insn"
   [(match_parallel 2 "call_operation"
-    [(call (mem:QI (match_operand:SI 0 "call_insn_operand" "Rs"))
+    [(call (mem:QI (match_operand 0 "call_insn_operand" "Rs"))
 	   (match_operand 1))])]
   ""
 {
@@ -1004,7 +692,7 @@
 (define_insn "call_value_insn"
   [(match_parallel 3 "call_operation"
     [(set (match_operand 0 "nvptx_register_operand" "=R")
-	  (call (mem:QI (match_operand:SI 1 "call_insn_operand" "Rs"))
+	  (call (mem:QI (match_operand 1 "call_insn_operand" "Rs"))
 		(match_operand 2)))])]
   ""
 {
@@ -1332,7 +1020,7 @@
   [(trap_if (match_operator 0 "nvptx_comparison_operator"
 			    [(match_operand:SDIM 1 "nvptx_register_operand")
 			     (match_operand:SDIM 2 "nvptx_nonmemory_operand")])
-	    (match_operand 3 "const_0_operand"))]
+	    (match_operand 3 "const0_operand"))]
   ""
 {
   rtx t = nvptx_expand_compare (operands[0]);
@@ -1400,7 +1088,7 @@
 
 (define_expand "oacc_fork"
   [(set (match_operand:SI 0 "nvptx_nonmemory_operand" "")
-        (match_operand:SI 1 "nvptx_general_operand" ""))
+        (match_operand:SI 1 "general_operand" ""))
    (unspec_volatile:SI [(match_operand:SI 2 "const_int_operand" "")]
 		        UNSPECV_FORKED)]
   ""
@@ -1413,7 +1101,7 @@
 
 (define_expand "oacc_join"
   [(set (match_operand:SI 0 "nvptx_nonmemory_operand" "")
-        (match_operand:SI 1 "nvptx_general_operand" ""))
+        (match_operand:SI 1 "general_operand" ""))
    (unspec_volatile:SI [(match_operand:SI 2 "const_int_operand" "")]
 		        UNSPECV_JOIN)]
   ""
@@ -1453,20 +1141,6 @@
 		    UNSPEC_BIT_CONV))]
   ""
   "%.\\tmov.b64\\t%0, {%1,%2};")
-
-(define_insn "worker_load<mode>"
-  [(set (match_operand:SDISDFM 0 "nvptx_register_operand" "=R")
-        (unspec:SDISDFM [(match_operand:SDISDFM 1 "memory_operand" "m")]
-			 UNSPEC_SHARED_DATA))]
-  ""
-  "%.\\tld.shared%u0\\t%0, %1;")
-
-(define_insn "worker_store<mode>"
-  [(set (unspec:SDISDFM [(match_operand:SDISDFM 1 "memory_operand" "=m")]
-			 UNSPEC_SHARED_DATA)
-	(match_operand:SDISDFM 0 "nvptx_register_operand" "R"))]
-  ""
-  "%.\\tst.shared%u1\\t%1, %0;")
 
 ;; Atomic insns.
 

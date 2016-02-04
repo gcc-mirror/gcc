@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2015 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2016 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -49,7 +49,7 @@ _ITM_inTransaction (void)
   // a transaction and thus we can't deduce this by looking at just the serial
   // lock.  This function isn't used in practice currently, so the easiest
   // way to handle it is to just abort.
-  if (htm_fastpath && htm_transaction_active())
+  if (gtm_thread::serial_lock.get_htm_fastpath() && htm_transaction_active())
     htm_abort();
 #endif
   struct gtm_thread *tx = gtm_thr();
@@ -69,7 +69,7 @@ _ITM_getTransactionId (void)
 {
 #if defined(USE_HTM_FASTPATH)
   // See ITM_inTransaction.
-  if (htm_fastpath && htm_transaction_active())
+  if (gtm_thread::serial_lock.get_htm_fastpath() && htm_transaction_active())
     htm_abort();
 #endif
   struct gtm_thread *tx = gtm_thr();

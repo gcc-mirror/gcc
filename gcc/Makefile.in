@@ -1,7 +1,7 @@
 # Makefile for GNU Compiler Collection
 # Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 1987-2015 Free Software Foundation, Inc.
+# Copyright (C) 1987-2016 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -365,7 +365,7 @@ ZLIBINC = @zlibinc@
 GMPLIBS = @GMPLIBS@
 GMPINC = @GMPINC@
 
-# How to find ISL
+# How to find isl.
 ISLLIBS = @ISLLIBS@
 ISLINC = @ISLINC@
 
@@ -978,6 +978,7 @@ GCC_PLUGIN_H = gcc-plugin.h highlev-plugin-common.h plugin.def \
 PLUGIN_H = plugin.h $(GCC_PLUGIN_H)
 PLUGIN_VERSION_H = plugin-version.h configargs.h
 CONTEXT_H = context.h
+GENSUPPORT_H = gensupport.h read-md.h optabs.def
 
 #
 # Now figure out from those variables how to compile and link.
@@ -1296,6 +1297,11 @@ OBJS = \
 	graphite-sese-to-poly.o \
 	gtype-desc.o \
 	haifa-sched.o \
+	hsa.o \
+	hsa-gen.o \
+	hsa-regalloc.o \
+	hsa-brig.o \
+	hsa-dump.o \
 	hw-doloop.o \
 	hwint.o \
 	ifcvt.o \
@@ -1320,6 +1326,7 @@ OBJS = \
 	ipa-icf.o \
 	ipa-icf-gimple.o \
 	ipa-reference.o \
+	ipa-hsa.o \
 	ipa-ref.o \
 	ipa-utils.o \
 	ipa.o \
@@ -1426,6 +1433,7 @@ OBJS = \
 	tsan.o \
 	ubsan.o \
 	sanopt.o \
+	sancov.o \
 	tree-call-cdce.o \
 	tree-cfg.o \
 	tree-cfgcleanup.o \
@@ -2399,8 +2407,10 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/ubsan.c \
   $(srcdir)/tsan.c \
   $(srcdir)/sanopt.c \
+  $(srcdir)/sancov.c \
   $(srcdir)/ipa-devirt.c \
   $(srcdir)/internal-fn.h \
+  $(srcdir)/hsa.c \
   @all_gtfiles@
 
 # Compute the list of GT header files from the corresponding C sources,
@@ -2476,7 +2486,7 @@ build/version.o:  version.c version.h \
 build/errors.o : errors.c $(BCONFIG_H) $(SYSTEM_H) errors.h
 build/gensupport.o: gensupport.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h	\
   $(GTM_H) $(RTL_BASE_H) $(OBSTACK_H) errors.h $(HASHTAB_H)		\
-  $(READ_MD_H) gensupport.h
+  $(READ_MD_H) $(GENSUPPORT_H)
 build/ggc-none.o : ggc-none.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h 	\
   $(GGC_H)
 build/min-insn-modes.o : min-insn-modes.c $(BCONFIG_H) $(SYSTEM_H)	\
@@ -2487,7 +2497,7 @@ build/read-md.o: read-md.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h		\
   $(HASHTAB_H) errors.h $(READ_MD_H)
 build/read-rtl.o: read-rtl.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h	\
   $(GTM_H) $(RTL_BASE_H) $(OBSTACK_H) $(HASHTAB_H) $(READ_MD_H)		\
-  gensupport.h
+  $(GENSUPPORT_H)
 build/rtl.o: rtl.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H)	\
   $(RTL_H) $(GGC_H) errors.h
 build/vec.o : vec.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(VEC_H)	\
@@ -2509,38 +2519,38 @@ build/gencondmd.o : \
 
 # ...these are the programs themselves.
 build/genattr.o : genattr.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
-  coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
+  coretypes.h $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)
 build/genattr-common.o : genattr-common.c $(RTL_BASE_H) $(BCONFIG_H)	\
-  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
+  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)
 build/genattrtab.o : genattrtab.c $(RTL_BASE_H) $(OBSTACK_H)		\
   $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(GGC_H)	\
-  $(READ_MD_H) gensupport.h $(FNMATCH_H)
+  $(READ_MD_H) $(GENSUPPORT_H) $(FNMATCH_H)
 build/genautomata.o : genautomata.c $(RTL_BASE_H) $(OBSTACK_H)		\
   $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(VEC_H)	\
-  $(HASHTAB_H) gensupport.h $(FNMATCH_H)
+  $(HASHTAB_H) $(GENSUPPORT_H) $(FNMATCH_H)
 build/gencheck.o : gencheck.c all-tree.def $(BCONFIG_H) $(GTM_H)	\
 	$(SYSTEM_H) coretypes.h tree.def c-family/c-common.def		\
 	$(lang_tree_files) gimple.def
 build/genchecksum.o : genchecksum.c $(BCONFIG_H) $(SYSTEM_H) $(MD5_H)
 build/gencodes.o : gencodes.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
-  coretypes.h $(GTM_H) errors.h gensupport.h
+  coretypes.h $(GTM_H) errors.h $(GENSUPPORT_H)
 build/genconditions.o : genconditions.c $(RTL_BASE_H) $(BCONFIG_H)	\
   $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(HASHTAB_H) $(READ_MD_H)	\
-  gensupport.h
+  $(GENSUPPORT_H)
 build/genconfig.o : genconfig.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
-  coretypes.h $(GTM_H) errors.h gensupport.h
+  coretypes.h $(GTM_H) errors.h $(GENSUPPORT_H)
 build/genconstants.o : genconstants.c $(BCONFIG_H) $(SYSTEM_H)		\
   coretypes.h errors.h $(READ_MD_H)
 build/genemit.o : genemit.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
-  coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
+  coretypes.h $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H) internal-fn.def
 build/genenums.o : genenums.c $(BCONFIG_H) $(SYSTEM_H)			\
   coretypes.h errors.h $(READ_MD_H)
 build/genextract.o : genextract.c $(RTL_BASE_H) $(BCONFIG_H)		\
-  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
+  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)
 build/genflags.o : genflags.c $(RTL_BASE_H) $(OBSTACK_H) $(BCONFIG_H)	\
-  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
+  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)
 build/gentarget-def.o : gentarget-def.c $(BCONFIG_H) $(SYSTEM_H)	\
-  coretypes.h $(GTM_H) $(RTL_BASE_H) errors.h $(READ_MD_H) gensupport.h	\
+  coretypes.h $(GTM_H) $(RTL_BASE_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)	\
   $(HASH_TABLE_H) target-insns.def
 build/gengenrtl.o : gengenrtl.c $(BCONFIG_H) $(SYSTEM_H) rtl.def
 
@@ -2582,23 +2592,23 @@ build/genmddeps.o: genmddeps.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h	\
 build/genmodes.o : genmodes.c $(BCONFIG_H) $(SYSTEM_H) errors.h		\
   $(HASHTAB_H) machmode.def $(extra_modes_file)
 build/genopinit.o : genopinit.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
-  coretypes.h $(GTM_H) errors.h gensupport.h optabs.def
+  coretypes.h $(GTM_H) errors.h $(GENSUPPORT_H) optabs.def
 build/genoutput.o : genoutput.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
-  coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
+  coretypes.h $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)
 build/genpeep.o : genpeep.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
-  coretypes.h $(GTM_H) errors.h gensupport.h toplev.h $(DIAGNOSTIC_CORE_H)
+  coretypes.h $(GTM_H) errors.h $(GENSUPPORT_H) toplev.h $(DIAGNOSTIC_CORE_H)
 build/genpreds.o : genpreds.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
-  coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h $(OBSTACK_H)
+  coretypes.h $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H) $(OBSTACK_H)
 build/genrecog.o : genrecog.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
-  coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h		\
+  coretypes.h $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)		\
   $(HASH_TABLE_H) inchash.h
 build/genhooks.o : genhooks.c $(TARGET_DEF) $(C_TARGET_DEF)		\
   $(COMMON_TARGET_DEF) $(BCONFIG_H) $(SYSTEM_H) errors.h
 build/genmddump.o : genmddump.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
-  coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
+  coretypes.h $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)
 build/genmatch.o : genmatch.c $(BCONFIG_H) $(SYSTEM_H) \
   coretypes.h errors.h $(HASH_TABLE_H) hash-map.h $(GGC_H) is-a.h \
-  tree.def builtins.def
+  tree.def builtins.def internal-fn.def
 build/gencfn-macros.o : gencfn-macros.c $(BCONFIG_H) $(SYSTEM_H)	\
   coretypes.h errors.h $(HASH_TABLE_H) hash-set.h builtins.def internal-fn.def
 
@@ -3688,6 +3698,7 @@ site.exp: ./config.status Makefile
 	  echo "set PLUGINCFLAGS \"$(PLUGINCFLAGS)\"" >> ./site.tmp; \
 	  echo "set GMPINC \"$(GMPINC)\"" >> ./site.tmp; \
 	fi
+	@echo "set ISLVER \"$(ISLVER)\"" >> ./site.tmp
 # If newlib has been configured, we need to pass -B to gcc so it can find
 # newlib's crt0.o if it exists.  This will cause a "path prefix not used"
 # message if it doesn't, but the testsuite is supposed to ignore the message -

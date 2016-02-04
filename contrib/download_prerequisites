@@ -20,7 +20,7 @@
 # along with this program. If not, see http://www.gnu.org/licenses/.
 
 # If you want to disable Graphite loop optimizations while building GCC,
-# DO NOT set GRAPHITE_LOOP_OPT as yes so that the ISL package will not
+# DO NOT set GRAPHITE_LOOP_OPT as yes so that the isl package will not
 # be downloaded.
 GRAPHITE_LOOP_OPT=yes
 
@@ -48,7 +48,7 @@ ln -sf $MPC mpc || exit 1
 
 # Necessary to build GCC with the Graphite loop optimizations.
 if [ "$GRAPHITE_LOOP_OPT" = "yes" ] ; then
-  ISL=isl-0.14
+  ISL=isl-0.15
 
   wget ftp://gcc.gnu.org/pub/gcc/infrastructure/$ISL.tar.bz2 || exit 1
   tar xjf $ISL.tar.bz2  || exit 1

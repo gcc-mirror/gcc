@@ -1,5 +1,5 @@
 /* Mainly the interface between cpplib and the C front ends.
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1262,4 +1262,30 @@ lex_charconst (const cpp_token *token)
     value = build_int_cst (type, (cppchar_signed_t) result);
 
   return value;
+}
+
+/* Helper function for c_parser_peek_conflict_marker
+   and cp_lexer_peek_conflict_marker.
+   Given a possible conflict marker token of kind TOK1_KIND
+   consisting of a pair of characters, get the token kind for the
+   standalone final character.  */
+
+enum cpp_ttype
+conflict_marker_get_final_tok_kind (enum cpp_ttype tok1_kind)
+{
+  switch (tok1_kind)
+    {
+    default: gcc_unreachable ();
+    case CPP_LSHIFT:
+      /* "<<" and '<' */
+      return CPP_LESS;
+
+    case CPP_EQ_EQ:
+      /* "==" and '=' */
+      return CPP_EQ;
+
+    case CPP_RSHIFT:
+      /* ">>" and '>' */
+      return CPP_GREATER;
+    }
 }

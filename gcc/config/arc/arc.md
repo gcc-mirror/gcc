@@ -1,5 +1,5 @@
 ;; Machine description of the Synopsys DesignWare ARC cpu for GNU C compiler
-;; Copyright (C) 1994-2015 Free Software Foundation, Inc.
+;; Copyright (C) 1994-2016 Free Software Foundation, Inc.
 
 ;; Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
 ;; behalf of Synopsys Inc.
@@ -104,29 +104,66 @@
 ;;                            GOTBASE.(Referenced as @GOTOFF)
 ;;  ----------------------------------------------------------------------------
 
+(define_c_enum "unspec" [
+  DUMMY_0
+  DUMMY_1
+  DUMMY_2
+  ARC_UNSPEC_PLT
+  ARC_UNSPEC_GOT
+  ARC_UNSPEC_GOTOFF
+  UNSPEC_ARC_NORM
+  UNSPEC_ARC_NORMW
+  UNSPEC_ARC_SWAP
+  UNSPEC_ARC_DIVAW
+  UNSPEC_ARC_DIRECT
+  UNSPEC_ARC_LP
+  UNSPEC_ARC_CASESI
+  UNSPEC_ARC_FFS
+  UNSPEC_ARC_FLS
+  UNSPEC_ARC_MEMBAR
+  UNSPEC_ARC_DMACH
+  UNSPEC_ARC_DMACHU
+  UNSPEC_ARC_DMACWH
+  UNSPEC_ARC_DMACWHU
+  UNSPEC_ARC_QMACH
+  UNSPEC_ARC_QMACHU
+  UNSPEC_ARC_QMPYH
+  UNSPEC_ARC_QMPYHU
+  UNSPEC_ARC_VMAC2H
+  UNSPEC_ARC_VMAC2HU
+  UNSPEC_ARC_VMPY2H
+  UNSPEC_ARC_VMPY2HU
+  ])
+
+(define_c_enum "vunspec" [
+  VUNSPEC_ARC_RTIE
+  VUNSPEC_ARC_SYNC
+  VUNSPEC_ARC_BRK
+  VUNSPEC_ARC_FLAG
+  VUNSPEC_ARC_SLEEP
+  VUNSPEC_ARC_SWI
+  VUNSPEC_ARC_CORE_READ
+  VUNSPEC_ARC_CORE_WRITE
+  VUNSPEC_ARC_LR
+  VUNSPEC_ARC_SR
+  VUNSPEC_ARC_TRAP_S
+  VUNSPEC_ARC_UNIMP_S
+  VUNSPEC_ARC_KFLAG
+  VUNSPEC_ARC_CLRI
+  VUNSPEC_ARC_SETI
+  VUNSPEC_ARC_NOP
+  VUNSPEC_ARC_STACK_IRQ
+  VUNSPEC_ARC_DEXCL
+  VUNSPEC_ARC_DEXCL_NORES
+  VUNSPEC_ARC_LR_HIGH
+  VUNSPEC_ARC_EX
+  VUNSPEC_ARC_CAS
+  VUNSPEC_ARC_SC
+  VUNSPEC_ARC_LL
+  ])
 
 (define_constants
-  [(UNSPEC_SWAP 13) ; swap generation through builtins. candidate for scheduling
-   (UNSPEC_MUL64 14) ; mul64 generation through builtins. candidate for scheduling
-   (UNSPEC_MULU64 15) ; mulu64 generation through builtins. candidate for scheduling
-   (UNSPEC_DIVAW 16) ; divaw generation through builtins. candidate for scheduling
-   (UNSPEC_DIRECT 17)
-   (UNSPEC_PROF 18) ; profile callgraph counter
-   (UNSPEC_LP 19) ; to set LP_END
-   (UNSPEC_CASESI 20)
-   (VUNSPEC_RTIE 17) ; blockage insn for rtie generation
-   (VUNSPEC_SYNC 18) ; blockage insn for sync generation
-   (VUNSPEC_BRK 19) ; blockage insn for brk generation
-   (VUNSPEC_FLAG 20) ; blockage insn for flag generation
-   (VUNSPEC_SLEEP 21) ; blockage insn for sleep generation
-   (VUNSPEC_SWI 22) ; blockage insn for swi generation
-   (VUNSPEC_CORE_READ 23) ; blockage insn for reading a core register
-   (VUNSPEC_CORE_WRITE 24) ; blockage insn for writing to a core register
-   (VUNSPEC_LR 25) ; blockage insn for reading an auxiliary register
-   (VUNSPEC_SR 26) ; blockage insn for writing to an auxiliary register
-   (VUNSPEC_TRAP_S 27) ; blockage insn for trap_s generation
-   (VUNSPEC_UNIMP_S 28) ; blockage insn for unimp_s generation
-   (VUNSPEC_NOP 29) ; volatile NOP
+  [(UNSPEC_PROF 18) ; profile callgraph counter
 
    (R0_REG 0)
    (R1_REG 1)
@@ -138,10 +175,6 @@
    (ILINK2_REGNUM 30)
    (RETURN_ADDR_REGNUM 31)
    (MUL64_OUT_REG 58)
-
-   (VUNSPEC_DEXCL 32) ; blockage insn for reading an auxiliary register without LR support
-   (VUNSPEC_DEXCL_NORES 33) ; blockage insn for reading an auxiliary register without LR support
-   (VUNSPEC_LR_HIGH 34) ; blockage insn for reading an auxiliary register
 
    (LP_COUNT 60)
    (CC_REG 61)
@@ -710,7 +743,7 @@
 (define_insn "store_direct"
   [(set (match_operand:SI 0 "move_dest_operand" "=m")
       (unspec:SI [(match_operand:SI 1 "register_operand" "c")]
-       UNSPEC_DIRECT))]
+       UNSPEC_ARC_DIRECT))]
   ""
   "st%U0 %1,%0\;st%U0.di %1,%0"
   [(set_attr "type" "store")])
@@ -951,7 +984,7 @@
 }")
 
 (define_insn_and_split "*movdi_insn"
-  [(set (match_operand:DI 0 "move_dest_operand" "=w,w,r,m")
+  [(set (match_operand:DI 0 "move_dest_operand"      "=w, w,r,m")
 	(match_operand:DI 1 "move_double_src_operand" "c,Hi,m,c"))]
   "register_operand (operands[0], DImode)
    || register_operand (operands[1], DImode)"
@@ -960,50 +993,36 @@
   switch (which_alternative)
     {
     default:
-    case 0 :
-      /* We normally copy the low-numbered register first.  However, if
-	 the first register operand 0 is the same as the second register of
-	 operand 1, we must copy in the opposite order.  */
-      if (REGNO (operands[0]) == REGNO (operands[1]) + 1)
-	return \"mov%? %R0,%R1\;mov%? %0,%1\";
-      else
-      return \"mov%? %0,%1\;mov%? %R0,%R1\";
-    case 1 :
-      return \"mov%? %L0,%L1\;mov%? %H0,%H1\";
-    case 2 :
-      /* If the low-address word is used in the address, we must load it
-	 last.  Otherwise, load it first.  Note that we cannot have
-	 auto-increment in that case since the address register is known to be
-	 dead.  */
-      if (refers_to_regno_p (REGNO (operands[0]), operands[1]))
-	return \"ld%V1 %R0,%R1\;ld%V1 %0,%1\";
-      else switch (GET_CODE (XEXP(operands[1], 0)))
-	{
-	case POST_MODIFY: case POST_INC: case POST_DEC:
-	  return \"ld%V1 %R0,%R1\;ld%U1%V1 %0,%1\";
-	case PRE_MODIFY: case PRE_INC: case PRE_DEC:
-	  return \"ld%U1%V1 %0,%1\;ld%V1 %R0,%R1\";
-	default:
-	  return \"ld%U1%V1 %0,%1\;ld%U1%V1 %R0,%R1\";
-	}
-    case 3 :
-      switch (GET_CODE (XEXP(operands[0], 0)))
-	{
-	case POST_MODIFY: case POST_INC: case POST_DEC:
-     	  return \"st%V0 %R1,%R0\;st%U0%V0 %1,%0\";
-	case PRE_MODIFY: case PRE_INC: case PRE_DEC:
-     	  return \"st%U0%V0 %1,%0\;st%V0 %R1,%R0\";
-	default:
-     	  return \"st%U0%V0 %1,%0\;st%U0%V0 %R1,%R0\";
-	}
+      return \"#\";
+
+    case 2:
+    if (TARGET_LL64
+	&& ((even_register_operand (operands[0], DImode)
+	     && memory_operand (operands[1], DImode))
+	    || (memory_operand (operands[0], DImode)
+	        && even_register_operand (operands[1], DImode))))
+      return \"ldd%U1%V1 %0,%1%&\";
+    return \"#\";
+
+    case 3:
+    if (TARGET_LL64
+	&& ((even_register_operand (operands[0], DImode)
+	     && memory_operand (operands[1], DImode))
+	    || (memory_operand (operands[0], DImode)
+	        && even_register_operand (operands[1], DImode))))
+     return \"std%U0%V0 %1,%0\";
+    return \"#\";
     }
 }"
-  "&& reload_completed && optimize"
-  [(set (match_dup 2) (match_dup 3)) (set (match_dup 4) (match_dup 5))]
-  "arc_split_move (operands);"
+  "reload_completed"
+  [(const_int 0)]
+  {
+   arc_split_move (operands);
+   DONE;
+  }
   [(set_attr "type" "move,move,load,store")
    ;; ??? The ld/st values could be 4 if it's [reg,bignum].
-   (set_attr "length" "8,16,16,16")])
+   (set_attr "length" "8,16,*,*")])
 
 
 ;; Floating point move insns.
@@ -1033,22 +1052,45 @@
   ""
   "if (prepare_move_operands (operands, DFmode)) DONE;")
 
-(define_insn "*movdf_insn"
+(define_insn_and_split "*movdf_insn"
   [(set (match_operand:DF 0 "move_dest_operand"      "=D,r,c,c,r,m")
 	(match_operand:DF 1 "move_double_src_operand" "r,D,c,E,m,c"))]
   "register_operand (operands[0], DFmode) || register_operand (operands[1], DFmode)"
-  "#"
+  "*
+{
+ switch (which_alternative)
+   {
+    default:
+      return \"#\";
+    case 4:
+    if (TARGET_LL64
+	&& ((even_register_operand (operands[0], DFmode)
+	     && memory_operand (operands[1], DFmode))
+	    || (memory_operand (operands[0], DFmode)
+	        && even_register_operand (operands[1], DFmode))))
+      return \"ldd%U1%V1 %0,%1%&\";
+    return \"#\";
+
+    case 5:
+    if (TARGET_LL64
+	&& ((even_register_operand (operands[0], DFmode)
+	     && memory_operand (operands[1], DFmode))
+	    || (memory_operand (operands[0], DFmode)
+		&& even_register_operand (operands[1], DFmode))))
+     return \"std%U0%V0 %1,%0\";
+    return \"#\";
+   }
+}"
+  "reload_completed"
+  [(const_int 0)]
+  {
+   arc_split_move (operands);
+   DONE;
+  }
   [(set_attr "type" "move,move,move,move,load,store")
    (set_attr "predicable" "no,no,yes,yes,no,no")
    ;; ??? The ld/st values could be 16 if it's [reg,bignum].
    (set_attr "length" "4,16,8,16,16,16")])
-
-(define_split
-  [(set (match_operand:DF 0 "move_dest_operand" "")
-	(match_operand:DF 1 "move_double_src_operand" ""))]
-  "reload_completed"
-  [(match_dup 2)]
-  "operands[2] = arc_split_move (operands);")
 
 (define_insn_and_split "*movdf_insn_nolrsr"
   [(set (match_operand:DF 0 "register_operand"       "=r")
@@ -1077,10 +1119,10 @@
     ; dexcl2 r0, r1, r0
     (set (match_dup 4) ; aka r0result
      	 ; aka DF, r1, r0
-	 (unspec_volatile:SI [(match_dup 1) (match_dup 5) (match_dup 4)] VUNSPEC_DEXCL ))
+	 (unspec_volatile:SI [(match_dup 1) (match_dup 5) (match_dup 4)] VUNSPEC_ARC_DEXCL ))
     ; Generate the second, which makes sure operand5 and operand4 values
     ; are put back in the Dx register properly.
-    (unspec_volatile:SI [(match_dup 1) (match_dup 5) (match_dup 4)] VUNSPEC_DEXCL_NORES )
+    (unspec_volatile:SI [(match_dup 1) (match_dup 5) (match_dup 4)] VUNSPEC_ARC_DEXCL_NORES )
 
     ; Note: we cannot use a (clobber (match_scratch)) here because
     ; the combine pass will end up replacing uses of it with 0
@@ -1108,9 +1150,9 @@
 ;; Note: loadqi_update has no 16-bit variant
 (define_insn "*loadqi_update"
   [(set (match_operand:QI 3 "dest_reg_operand" "=r,r")
-	(match_operator:QI 4 "load_update_operand"
-	 [(match_operand:SI 1 "register_operand" "0,0")
-	  (match_operand:SI 2 "nonmemory_operand" "rI,Cal")]))
+        (match_operator:QI 4 "any_mem_operand"
+         [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
+                   (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))]))
    (set (match_operand:SI 0 "dest_reg_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1120,9 +1162,9 @@
 
 (define_insn "*load_zeroextendqisi_update"
   [(set (match_operand:SI 3 "dest_reg_operand" "=r,r")
-	(zero_extend:SI (match_operator:QI 4 "load_update_operand"
-			 [(match_operand:SI 1 "register_operand" "0,0")
-			  (match_operand:SI 2 "nonmemory_operand" "rI,Cal")])))
+	(zero_extend:SI (match_operator:QI 4 "any_mem_operand"
+			 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
+			           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))])))
    (set (match_operand:SI 0 "dest_reg_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1132,9 +1174,9 @@
 
 (define_insn "*load_signextendqisi_update"
   [(set (match_operand:SI 3 "dest_reg_operand" "=r,r")
-	(sign_extend:SI (match_operator:QI 4 "load_update_operand"
-			 [(match_operand:SI 1 "register_operand" "0,0")
-			  (match_operand:SI 2 "nonmemory_operand" "rI,Cal")])))
+	(sign_extend:SI (match_operator:QI 4 "any_mem_operand"
+			 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
+			           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))])))
    (set (match_operand:SI 0 "dest_reg_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1143,9 +1185,9 @@
    (set_attr "length" "4,8")])
 
 (define_insn "*storeqi_update"
-  [(set (match_operator:QI 4 "store_update_operand"
-	 [(match_operand:SI 1 "register_operand" "0")
-	  (match_operand:SI 2 "short_immediate_operand" "I")])
+  [(set (match_operator:QI 4 "any_mem_operand"
+	 [(plus:SI (match_operand:SI 1 "register_operand" "0")
+	           (match_operand:SI 2 "short_immediate_operand" "I"))])
 	(match_operand:QI 3 "register_operand" "c"))
    (set (match_operand:SI 0 "dest_reg_operand" "=w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
@@ -1158,9 +1200,9 @@
 ;; Note: no 16-bit variant for this pattern
 (define_insn "*loadhi_update"
   [(set (match_operand:HI 3 "dest_reg_operand" "=r,r")
-	(match_operator:HI 4 "load_update_operand"
-	 [(match_operand:SI 1 "register_operand" "0,0")
-	  (match_operand:SI 2 "nonmemory_operand" "rI,Cal")]))
+	(match_operator:HI 4 "any_mem_operand"
+	 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
+	           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))]))
    (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1170,9 +1212,9 @@
 
 (define_insn "*load_zeroextendhisi_update"
   [(set (match_operand:SI 3 "dest_reg_operand" "=r,r")
-	(zero_extend:SI (match_operator:HI 4 "load_update_operand"
-			 [(match_operand:SI 1 "register_operand" "0,0")
-			  (match_operand:SI 2 "nonmemory_operand" "rI,Cal")])))
+	(zero_extend:SI (match_operator:HI 4 "any_mem_operand"
+			 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
+			           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))])))
    (set (match_operand:SI 0 "dest_reg_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1183,9 +1225,9 @@
 ;; Note: no 16-bit variant for this instruction
 (define_insn "*load_signextendhisi_update"
   [(set (match_operand:SI 3 "dest_reg_operand" "=r,r")
-	(sign_extend:SI (match_operator:HI 4 "load_update_operand"
-			 [(match_operand:SI 1 "register_operand" "0,0")
-			  (match_operand:SI 2 "nonmemory_operand" "rI,Cal")])))
+	(sign_extend:SI (match_operator:HI 4 "any_mem_operand"
+			 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
+			           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))])))
    (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1194,9 +1236,9 @@
    (set_attr "length" "4,8")])
 
 (define_insn "*storehi_update"
-  [(set (match_operator:HI 4 "store_update_operand"
-	 [(match_operand:SI 1 "register_operand" "0")
-	  (match_operand:SI 2 "short_immediate_operand" "I")])
+  [(set (match_operator:HI 4 "any_mem_operand"
+	 [(plus:SI (match_operand:SI 1 "register_operand" "0")
+	           (match_operand:SI 2 "short_immediate_operand" "I"))])
 	(match_operand:HI 3 "register_operand" "c"))
    (set (match_operand:SI 0 "dest_reg_operand" "=w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
@@ -1208,9 +1250,9 @@
 ;; No 16-bit variant for this instruction pattern
 (define_insn "*loadsi_update"
   [(set (match_operand:SI 3 "dest_reg_operand" "=r,r")
-	(match_operator:SI 4 "load_update_operand"
-	 [(match_operand:SI 1 "register_operand" "0,0")
-	  (match_operand:SI 2 "nonmemory_operand" "rI,Cal")]))
+	(match_operator:SI 4 "any_mem_operand"
+	 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
+	           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))]))
    (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1219,9 +1261,9 @@
    (set_attr "length" "4,8")])
 
 (define_insn "*storesi_update"
-  [(set (match_operator:SI 4 "store_update_operand"
-	 [(match_operand:SI 1 "register_operand" "0")
-	  (match_operand:SI 2 "short_immediate_operand" "I")])
+  [(set (match_operator:SI 4 "any_mem_operand"
+	 [(plus:SI (match_operand:SI 1 "register_operand" "0")
+	           (match_operand:SI 2 "short_immediate_operand" "I"))])
 	(match_operand:SI 3 "register_operand" "c"))
    (set (match_operand:SI 0 "dest_reg_operand" "=w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
@@ -1232,9 +1274,9 @@
 
 (define_insn "*loadsf_update"
   [(set (match_operand:SF 3 "dest_reg_operand" "=r,r")
-	(match_operator:SF 4 "load_update_operand"
-	 [(match_operand:SI 1 "register_operand" "0,0")
-	  (match_operand:SI 2 "nonmemory_operand" "rI,Cal")]))
+	(match_operator:SF 4 "any_mem_operand"
+	 [(plus:SI (match_operand:SI 1 "register_operand" "0,0")
+	           (match_operand:SI 2 "nonmemory_operand" "rI,Cal"))]))
    (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1243,9 +1285,9 @@
    (set_attr "length" "4,8")])
 
 (define_insn "*storesf_update"
-  [(set (match_operator:SF 4 "store_update_operand"
-	 [(match_operand:SI 1 "register_operand" "0")
-	  (match_operand:SI 2 "short_immediate_operand" "I")])
+  [(set (match_operator:SF 4 "any_mem_operand"
+	 [(plus:SI (match_operand:SI 1 "register_operand" "0")
+	           (match_operand:SI 2 "short_immediate_operand" "I"))])
 	(match_operand:SF 3 "register_operand" "c"))
    (set (match_operand:SI 0 "dest_reg_operand" "=w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
@@ -3304,8 +3346,9 @@
 
 (define_expand "cstoresi4"
   [(set (match_operand:SI 0 "dest_reg_operand" "")
-	(match_operator:SI 1 "ordered_comparison_operator" [(match_operand:SI 2 "nonmemory_operand" "")
-							    (match_operand:SI 3 "nonmemory_operand" "")]))]
+	(match_operator:SI 1 "ordered_comparison_operator"
+			   [(match_operand:SI 2 "nonmemory_operand" "")
+			    (match_operand:SI 3 "nonmemory_operand" "")]))]
   ""
 {
   if (!TARGET_CODE_DENSITY)
@@ -3316,6 +3359,9 @@
    emit_insn (gen_scc_insn (operands[0], operands[1]));
    DONE;
   }
+  if (!register_operand (operands[2], SImode))
+    operands[2] = force_reg (SImode, operands[2]);
+
 })
 
 (define_mode_iterator SDF [SF DF])
@@ -3640,7 +3686,7 @@
 		      (pc)))
    (set (match_dup 6)
 	(unspec:SI [(match_operand 3 "" "")
-		    (match_dup 5) (match_dup 7)] UNSPEC_CASESI))
+		    (match_dup 5) (match_dup 7)] UNSPEC_ARC_CASESI))
    (parallel [(set (pc) (match_dup 6)) (use (match_dup 7))])]
   ""
   "
@@ -3678,7 +3724,7 @@
   [(set (match_operand:SI 0 "register_operand"             "=Rcq,r,r")
 	(unspec:SI [(match_operand:SI 1 "nonmemory_operand" "Rcq,c,Cal")
 		    (match_operand:SI 2 "register_operand"  "Rcq,c,c")
-		    (label_ref (match_operand 3 "" ""))] UNSPEC_CASESI))]
+		    (label_ref (match_operand 3 "" ""))] UNSPEC_ARC_CASESI))]
   ""
   "*
 {
@@ -3743,7 +3789,7 @@
 (define_insn "casesi_compact_jump"
   [(set (pc)
 	(unspec:SI [(match_operand:SI 0 "register_operand" "c,q")]
-		   UNSPEC_CASESI))
+		   UNSPEC_ARC_CASESI))
    (use (label_ref (match_operand 1 "" "")))
    (clobber (match_scratch:SI 2 "=q,0"))]
   "TARGET_COMPACT_CASESI"
@@ -3994,7 +4040,7 @@
    (set_attr "length" "2")])
 
 (define_insn "nopv"
-  [(unspec_volatile [(const_int 0)] VUNSPEC_NOP)]
+  [(unspec_volatile [(const_int 0)] VUNSPEC_ARC_NOP)]
   ""
   "nop%?"
   [(set_attr "type" "misc")
@@ -4239,7 +4285,7 @@
 (define_insn "swap"
   [(set (match_operand:SI  0 "dest_reg_operand" "=w,w,w")
 	(unspec:SI [(match_operand:SI 1 "general_operand" "L,Cal,c")]
-			    UNSPEC_SWAP))]
+			    UNSPEC_ARC_SWAP))]
   "TARGET_SWAP"
   "@
    swap \t%0, %1
@@ -4248,41 +4294,11 @@
   [(set_attr "length" "4,8,4")
    (set_attr "type" "two_cycle_core,two_cycle_core,two_cycle_core")])
 
-;; FIXME: an intrinsic for multiply is daft.  Can we remove this?
-(define_insn "mul64"
-  [(unspec [(match_operand:SI 0 "general_operand" "%q,r,r,r")
-		     (match_operand:SI 1 "general_operand" "q,rL,I,Cal")]
-		   UNSPEC_MUL64)]
-  "TARGET_MUL64_SET"
-  "@
-   mul64%? \t0, %0, %1%&
-   mul64%? \t0, %0, %1
-   mul64 \t0, %0, %1
-   mul64%? \t0, %0, %S1"
-  [(set_attr "length" "2,4,4,8")
-  (set_attr "iscompact" "true,false,false,false")
-  (set_attr "type" "binary,binary,binary,binary")
-  (set_attr "cond" "canuse,canuse, nocond, canuse")])
-
-(define_insn "mulu64"
-  [(unspec [(match_operand:SI 0 "general_operand" "%r,r,r,r")
-		     (match_operand:SI 1 "general_operand" "rL,I,r,Cal")]
-		   UNSPEC_MULU64)]
-  "TARGET_MUL64_SET"
-  "@
-   mulu64%? \t0, %0, %1
-   mulu64 \t0, %0, %1
-   mulu64 \t0, %0, %1
-   mulu64%? \t0, %0, %S1"
-  [(set_attr "length" "4,4,4,8")
-   (set_attr "type" "binary,binary,binary,binary")
-   (set_attr "cond" "canuse,nocond,nocond,canuse")])
-
 (define_insn "divaw"
   [(set (match_operand:SI 0 "dest_reg_operand" "=&w,&w,&w")
 			  (unspec:SI [(div:SI (match_operand:SI 1 "general_operand" "r,Cal,r")
 					   (match_operand:SI 2 "general_operand" "r,r,Cal"))]
-					   UNSPEC_DIVAW))]
+					   UNSPEC_ARC_DIVAW))]
   "TARGET_ARC700 || TARGET_EA_SET"
   "@
    divaw \t%0, %1, %2
@@ -4293,7 +4309,7 @@
 
 (define_insn "flag"
   [(unspec_volatile [(match_operand:SI 0 "nonmemory_operand" "rL,I,Cal")]
-		   VUNSPEC_FLAG)]
+		   VUNSPEC_ARC_FLAG)]
   ""
   "@
     flag%? %0
@@ -4306,7 +4322,7 @@
 
 (define_insn "brk"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "N")]
-		   VUNSPEC_BRK)]
+		   VUNSPEC_ARC_BRK)]
   ""
   "brk"
   [(set_attr "length" "4")
@@ -4314,7 +4330,7 @@
 
 (define_insn "rtie"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "N")]
-		   VUNSPEC_RTIE)]
+		   VUNSPEC_ARC_RTIE)]
   ""
   "rtie"
   [(set_attr "length" "4")
@@ -4323,7 +4339,7 @@
 
 (define_insn "sync"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "N")]
-		   VUNSPEC_SYNC)]
+		   VUNSPEC_ARC_SYNC)]
   ""
   "sync"
   [(set_attr "length" "4")
@@ -4331,7 +4347,7 @@
 
 (define_insn "swi"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "N")]
-		   VUNSPEC_SWI)]
+		   VUNSPEC_ARC_SWI)]
   ""
   "*
 {
@@ -4346,7 +4362,7 @@
 
 (define_insn "sleep"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "L")]
-		   VUNSPEC_SLEEP)]
+		   VUNSPEC_ARC_SLEEP)]
   "check_if_valid_sleep_operand(operands,0)"
   "sleep %0"
   [(set_attr "length" "4")
@@ -4355,7 +4371,7 @@
 (define_insn "core_read"
   [(set (match_operand:SI  0 "dest_reg_operand" "=r,r")
 	(unspec_volatile:SI [(match_operand:SI 1 "general_operand" "Hn,!r")]
-			    VUNSPEC_CORE_READ))]
+			    VUNSPEC_ARC_CORE_READ))]
   ""
   "*
     if (check_if_valid_regno_const (operands, 1))
@@ -4368,7 +4384,7 @@
 (define_insn "core_write"
   [(unspec_volatile [(match_operand:SI 0 "general_operand" "r,r")
 		     (match_operand:SI 1 "general_operand" "Hn,!r")]
-		   VUNSPEC_CORE_WRITE)]
+		   VUNSPEC_ARC_CORE_WRITE)]
   ""
   "*
     if (check_if_valid_regno_const (operands, 1))
@@ -4381,7 +4397,7 @@
 (define_insn "lr"
   [(set (match_operand:SI  0 "dest_reg_operand" "=r,r,r,r")
 	(unspec_volatile:SI [(match_operand:SI 1 "general_operand" "I,HCal,r,D")]
-			    VUNSPEC_LR))]
+			    VUNSPEC_ARC_LR))]
   ""
   "lr\t%0, [%1]"
   [(set_attr "length" "4,8,4,8")
@@ -4390,7 +4406,7 @@
 (define_insn "sr"
   [(unspec_volatile [(match_operand:SI 0 "general_operand" "Cal,r,r,r")
 		     (match_operand:SI 1 "general_operand" "Ir,I,HCal,r")]
-		   VUNSPEC_SR)]
+		   VUNSPEC_ARC_SR)]
   ""
   "sr\t%S0, [%1]"
   [(set_attr "length" "8,4,8,4")
@@ -4398,8 +4414,8 @@
 
 (define_insn "trap_s"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "L,Cal")]
-		   VUNSPEC_TRAP_S)]
-  "TARGET_ARC700"
+		   VUNSPEC_ARC_TRAP_S)]
+  "!TARGET_ARC600_FAMILY"
 {
   if (which_alternative == 0)
     {
@@ -4417,8 +4433,8 @@
 
 (define_insn "unimp_s"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "N")]
-		   VUNSPEC_UNIMP_S)]
-  "TARGET_ARC700"
+		   VUNSPEC_ARC_UNIMP_S)]
+  "!TARGET_ARC600_FAMILY"
   "unimp_s"
   [(set_attr "length" "4")
   (set_attr "type" "misc")])
@@ -4861,7 +4877,7 @@
 ; hoist the SETs.
 ;(define_insn "doloop_begin_i"
 ;  [(set (reg:SI LP_START) (pc))
-;   (set (reg:SI LP_END) (unspec:SI [(pc)] UNSPEC_LP))
+;   (set (reg:SI LP_END) (unspec:SI [(pc)] UNSPEC_ARC_LP))
 ;   (use (match_operand 0 "const_int_operand" "n"))]
 ;  ""
 ;  "lp .L__GCC__LP%0"
@@ -4875,7 +4891,7 @@
 ;
 ; N in XVECEXP PATTERN (lp, 0 N)
 ;  V              rtl                 purpose
-;  0           unspec UNSPEC_LP     identify pattern
+;  0           unspec UNSPEC_ARC_LP identify pattern
 ;  1           clobber LP_START     show LP_START is set
 ;  2           clobber LP_END       show LP_END is set
 ;  3           use operand0         loop count pseudo register
@@ -4890,7 +4906,7 @@
 ; There is no point is reloading this insn - then lp_count would still not
 ; be available for the loop end.
 (define_insn "doloop_begin_i"
-  [(unspec:SI [(pc)] UNSPEC_LP)
+  [(unspec:SI [(pc)] UNSPEC_ARC_LP)
    (clobber (reg:SI LP_START))
    (clobber (reg:SI LP_END))
    (use (match_operand:SI 0 "register_operand" "l,l,????*X"))
@@ -5402,7 +5418,7 @@
 
 (define_insn "arcset<code>"
   [(set (match_operand:SI 0 "register_operand"                "=r,r,r,r,r,r,r")
-	(arcCC_cond:SI (match_operand:SI 1 "nonmemory_operand" "0,r,0,r,0,0,r")
+	(arcCC_cond:SI (match_operand:SI 1 "register_operand"  "0,r,0,r,0,0,r")
 		       (match_operand:SI 2 "nonmemory_operand" "r,r,L,L,I,n,n")))]
   "TARGET_V2 && TARGET_CODE_DENSITY"
   "set<code>%? %0, %1, %2"
@@ -5415,7 +5431,7 @@
 
 (define_insn "arcsetltu"
   [(set (match_operand:SI 0 "register_operand"         "=r,r,r,r,r,  r,  r")
-	(ltu:SI (match_operand:SI 1 "nonmemory_operand" "0,r,0,r,0,  0,  r")
+	(ltu:SI (match_operand:SI 1 "register_operand"  "0,r,0,r,0,  0,  r")
 		(match_operand:SI 2 "nonmemory_operand" "r,r,L,L,I,  n,  n")))]
   "TARGET_V2 && TARGET_CODE_DENSITY"
   "setlo%? %0, %1, %2"
@@ -5428,7 +5444,7 @@
 
 (define_insn "arcsetgeu"
   [(set (match_operand:SI 0 "register_operand"         "=r,r,r,r,r,  r,  r")
-	(geu:SI (match_operand:SI 1 "nonmemory_operand" "0,r,0,r,0,  0,  r")
+	(geu:SI (match_operand:SI 1 "register_operand"  "0,r,0,r,0,  0,  r")
 		(match_operand:SI 2 "nonmemory_operand" "r,r,L,L,I,  n,  n")))]
   "TARGET_V2 && TARGET_CODE_DENSITY"
   "seths%? %0, %1, %2"
@@ -5442,7 +5458,7 @@
 ;; Special cases of SETCC
 (define_insn_and_split "arcsethi"
   [(set (match_operand:SI 0 "register_operand"         "=r,r,  r,r")
-	(gtu:SI (match_operand:SI 1 "nonmemory_operand" "r,r,  r,r")
+	(gtu:SI (match_operand:SI 1 "register_operand"  "r,r,  r,r")
 		(match_operand:SI 2 "nonmemory_operand" "0,r,C62,n")))]
   "TARGET_V2 && TARGET_CODE_DENSITY"
   "setlo%? %0, %2, %1"
@@ -5465,7 +5481,7 @@
 
 (define_insn_and_split "arcsetls"
   [(set (match_operand:SI 0 "register_operand"         "=r,r,  r,r")
-	(leu:SI (match_operand:SI 1 "nonmemory_operand" "r,r,  r,r")
+	(leu:SI (match_operand:SI 1 "register_operand"  "r,r,  r,r")
 		(match_operand:SI 2 "nonmemory_operand" "0,r,C62,n")))]
   "TARGET_V2 && TARGET_CODE_DENSITY"
   "seths%? %0, %2, %1"
@@ -5527,7 +5543,91 @@
    (set_attr "predicable" "yes,no,no,yes,no")
    (set_attr "cond"       "canuse,nocond,nocond,canuse,nocond")])
 
+(define_insn "kflag"
+  [(unspec_volatile [(match_operand:SI 0 "nonmemory_operand" "rL,I,Cal")]
+		   VUNSPEC_ARC_KFLAG)]
+  "TARGET_V2"
+  "@
+    kflag%? %0
+    kflag %0
+    kflag%? %S0"
+  [(set_attr "length" "4,4,8")
+   (set_attr "type" "misc,misc,misc")
+   (set_attr "predicable" "yes,no,yes")
+   (set_attr "cond" "clob,clob,clob")])
+
+(define_insn "clri"
+  [(set (match_operand:SI  0 "dest_reg_operand" "=r")
+	(unspec_volatile:SI [(match_operand:SI 1 "immediate_operand" "N")]
+			    VUNSPEC_ARC_CLRI))]
+  "TARGET_V2"
+  "clri  %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "misc")])
+
+(define_insn "ffs"
+  [(set (match_operand:SI  0 "dest_reg_operand" "=w,w")
+	(unspec:SI [(match_operand:SI 1 "general_operand" "cL,Cal")]
+			    UNSPEC_ARC_FFS))]
+  "TARGET_NORM && TARGET_V2"
+  "@
+   ffs \t%0, %1
+   ffs \t%0, %S1"
+  [(set_attr "length" "4,8")
+   (set_attr "type" "two_cycle_core,two_cycle_core")])
+
+(define_insn "ffs_f"
+  [(set (match_operand:SI  0 "dest_reg_operand" "=w,w")
+	(unspec:SI [(match_operand:SI 1 "general_operand" "cL,Cal")]
+			    UNSPEC_ARC_FFS))
+   (set (reg:CC_ZN CC_REG)
+	(compare:CC_ZN (match_dup 1) (const_int 0)))]
+  "TARGET_NORM && TARGET_V2"
+  "@
+   ffs.f\t%0, %1
+   ffs.f\t%0, %S1"
+  [(set_attr "length" "4,8")
+   (set_attr "type" "two_cycle_core,two_cycle_core")])
+
+(define_expand "ffssi2"
+  [(parallel [(set (match_dup 2)
+		   (unspec:SI [(match_operand:SI 1 "register_operand" "")]
+			      UNSPEC_ARC_FFS))
+	      (set (reg:CC_ZN CC_REG)
+		   (compare:CC_ZN (match_dup 1) (const_int 0)))])
+   (set (match_dup 2) (plus:SI (match_dup 2) (const_int 1)))
+   (set (match_operand:SI 0 "dest_reg_operand" "")
+	(if_then_else:SI (eq:SI (reg:CC_ZN CC_REG) (const_int 0))
+			 (const_int 0)
+			 (match_dup 2)))]
+  "TARGET_NORM && TARGET_V2"
+  {
+   operands[2] = gen_reg_rtx (SImode);
+   })
+
+(define_insn "fls"
+  [(set (match_operand:SI  0 "dest_reg_operand" "=w,w")
+	(unspec:SI [(match_operand:SI 1 "general_operand" "cL,Cal")]
+			    UNSPEC_ARC_FLS))]
+  "TARGET_NORM && TARGET_V2"
+  "@
+   fls \t%0, %1
+   fls \t%0, %S1"
+  [(set_attr "length" "4,8")
+   (set_attr "type" "two_cycle_core,two_cycle_core")])
+
+(define_insn "seti"
+  [(unspec_volatile:SI [(match_operand:SI 0 "general_operand" "rL")]
+		       VUNSPEC_ARC_SETI)]
+  "TARGET_V2"
+  "seti  %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "misc")])
+
 ;; include the arc-FPX instructions
 (include "fpx.md")
 
 (include "simdext.md")
+
+;; include atomic extensions
+(include "atomic.md")

@@ -1,5 +1,5 @@
 /* Dead store elimination
-   Copyright (C) 2004-2015 Free Software Foundation, Inc.
+   Copyright (C) 2004-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -316,10 +316,10 @@ class dse_dom_walker : public dom_walker
 public:
   dse_dom_walker (cdi_direction direction) : dom_walker (direction) {}
 
-  virtual void before_dom_children (basic_block);
+  virtual edge before_dom_children (basic_block);
 };
 
-void
+edge
 dse_dom_walker::before_dom_children (basic_block bb)
 {
   gimple_stmt_iterator gsi;
@@ -332,6 +332,7 @@ dse_dom_walker::before_dom_children (basic_block bb)
       else
 	gsi_prev (&gsi);
     }
+  return NULL;
 }
 
 namespace {

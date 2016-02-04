@@ -1,5 +1,5 @@
 /* Perform doloop optimizations
-   Copyright (C) 2004-2015 Free Software Foundation, Inc.
+   Copyright (C) 2004-2016 Free Software Foundation, Inc.
    Based on code by Michael P. Hayes (m.hayes@elec.canterbury.ac.nz)
 
 This file is part of GCC.
@@ -34,6 +34,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "dumpfile.h"
 #include "loop-unroll.h"
+#include "regs.h"
+#include "df.h"
 
 /* This module is used to modify loops with a determinable number of
    iterations to use special low-overhead looping instructions.
@@ -573,6 +575,27 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
     }
 }
 
+/* Called through note_stores.  */
+
+static void
+record_reg_sets (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
+{
+  bitmap mod = (bitmap)data;
+  if (REG_P (x))
+    {
+      unsigned int regno = REGNO (x);
+      if (HARD_REGISTER_P (x))
+	{
+	  unsigned int end_regno = end_hard_regno (GET_MODE (x), regno);
+	  do
+	    bitmap_set_bit (mod, regno);
+	  while (++regno < end_regno);
+	}
+      else
+	bitmap_set_bit (mod, regno);
+    }
+}
+
 /* Process loop described by LOOP validating that the loop is suitable for
    conversion to use a low overhead looping instruction, replacing the jump
    insn where suitable.  Returns true if the loop was successfully
@@ -706,6 +729,26 @@ doloop_optimize (struct loop *loop)
       return false;
     }
 
+  /* Ensure that the new sequence doesn't clobber a register that
+     is live at the end of the block.  */
+  {
+    bitmap modified = BITMAP_ALLOC (NULL);
+
+    for (rtx_insn *i = doloop_seq; i != NULL; i = NEXT_INSN (i))
+      note_stores (PATTERN (i), record_reg_sets, modified);
+
+    basic_block loop_end = desc->out_edge->src;
+    bool fail = bitmap_intersect_p (df_get_live_out (loop_end), modified);
+    BITMAP_FREE (modified);
+
+    if (fail)
+      {
+	if (dump_file)
+	  fprintf (dump_file, "Doloop: doloop pattern clobbers live out\n");
+	return false;
+      }
+  }
+
   doloop_modify (loop, desc, doloop_seq, condition, count);
   return true;
 }
@@ -717,10 +760,19 @@ doloop_optimize_loops (void)
 {
   struct loop *loop;
 
+  if (optimize == 1)
+    {
+      df_live_add_problem ();
+      df_live_set_all_dirty ();
+    }
+
   FOR_EACH_LOOP (loop, 0)
     {
       doloop_optimize (loop);
     }
+
+  if (optimize == 1)
+    df_remove_problem (df_live);
 
   iv_analysis_done ();
 

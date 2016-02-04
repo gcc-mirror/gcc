@@ -1,5 +1,5 @@
 /* Generic routines for manipulating SSA_NAME expressions
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -411,6 +411,39 @@ get_nonzero_bits (const_tree name)
   return ri->get_nonzero_bits ();
 }
 
+/* Return TRUE is OP, an SSA_NAME has a range of values [0..1], false
+   otherwise.
+
+   This can be because it is a boolean type, any unsigned integral
+   type with a single bit of precision, or has known range of [0..1]
+   via VRP analysis.  */
+
+bool
+ssa_name_has_boolean_range (tree op)
+{
+  gcc_assert (TREE_CODE (op) == SSA_NAME);
+
+  /* Boolean types always have a range [0..1].  */
+  if (TREE_CODE (TREE_TYPE (op)) == BOOLEAN_TYPE)
+    return true;
+
+  /* An integral type with a single bit of precision.  */
+  if (INTEGRAL_TYPE_P (TREE_TYPE (op))
+      && TYPE_UNSIGNED (TREE_TYPE (op))
+      && TYPE_PRECISION (TREE_TYPE (op)) == 1)
+    return true;
+
+  /* An integral type with more precision, but the object
+     only takes on values [0..1] as determined by VRP
+     analysis.  */
+  if (INTEGRAL_TYPE_P (TREE_TYPE (op))
+      && (TYPE_PRECISION (TREE_TYPE (op)) > 1)
+      && wi::eq_p (get_nonzero_bits (op), 1))
+    return true;
+
+  return false;
+}
+
 /* We no longer need the SSA_NAME expression VAR, release it so that
    it may be reused.
 
@@ -726,8 +759,8 @@ replace_ssa_name_symbol (tree ssa_name, tree sym)
   TREE_TYPE (ssa_name) = TREE_TYPE (sym);
 }
 
-/* Release the vector of free SSA_NAMEs and compact the the
-   vector of SSA_NAMEs that are live.  */
+/* Release the vector of free SSA_NAMEs and compact the vector of SSA_NAMEs
+   that are live.  */
 
 static void
 release_free_names_and_compact_live_names (function *fun)

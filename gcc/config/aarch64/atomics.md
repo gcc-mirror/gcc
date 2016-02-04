@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 processor synchronization primitives.
-;; Copyright (C) 2009-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2016 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -428,7 +428,7 @@
        (match_dup 2)
        (match_operand:SI 3 "const_int_operand")]
       UNSPECV_ATOMIC_LDOP))
-     (clobber (match_scratch:ALLI 4 "=r"))]
+     (clobber (match_scratch:ALLI 4 "=&r"))]
   "TARGET_LSE"
   "#"
   "&& reload_completed"
@@ -481,7 +481,7 @@
 )
 
 (define_insn "atomic_store<mode>"
-  [(set (match_operand:ALLI 0 "memory_operand" "=Q")
+  [(set (match_operand:ALLI 0 "aarch64_sync_memory_operand" "=Q")
     (unspec_volatile:ALLI
       [(match_operand:ALLI 1 "general_operand" "rZ")
        (match_operand:SI 2 "const_int_operand")]			;; model

@@ -345,7 +345,7 @@ var listenerBacklog = maxListenerBacklog()
 // Multiple goroutines may invoke methods on a Listener simultaneously.
 type Listener interface {
 	// Accept waits for and returns the next connection to the listener.
-	Accept() (c Conn, err error)
+	Accept() (Conn, error)
 
 	// Close closes the listener.
 	// Any blocked Accept operations will be unblocked and return errors.
@@ -426,7 +426,16 @@ func (e *OpError) Error() string {
 	return s
 }
 
-var noDeadline = time.Time{}
+var (
+	// aLongTimeAgo is a non-zero time, far in the past, used for
+	// immediate cancelation of dials.
+	aLongTimeAgo = time.Unix(233431200, 0)
+
+	// nonDeadline and noCancel are just zero values for
+	// readability with functions taking too many parameters.
+	noDeadline = time.Time{}
+	noCancel   = (chan struct{})(nil)
+)
 
 type timeout interface {
 	Timeout() bool
@@ -520,10 +529,11 @@ var (
 
 // DNSError represents a DNS lookup error.
 type DNSError struct {
-	Err       string // description of the error
-	Name      string // name looked for
-	Server    string // server used
-	IsTimeout bool   // if true, timed out; not all timeouts set this
+	Err         string // description of the error
+	Name        string // name looked for
+	Server      string // server used
+	IsTimeout   bool   // if true, timed out; not all timeouts set this
+	IsTemporary bool   // if true, error is temporary; not all errors set this
 }
 
 func (e *DNSError) Error() string {
@@ -546,7 +556,7 @@ func (e *DNSError) Timeout() bool { return e.IsTimeout }
 // Temporary reports whether the DNS error is known to be temporary.
 // This is not always known; a DNS lookup may fail due to a temporary
 // error and return a DNSError for which Temporary returns false.
-func (e *DNSError) Temporary() bool { return e.IsTimeout }
+func (e *DNSError) Temporary() bool { return e.IsTimeout || e.IsTemporary }
 
 type writerOnly struct {
 	io.Writer

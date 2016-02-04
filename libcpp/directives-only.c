@@ -1,5 +1,5 @@
 /* CPP Library - directive only preprocessing for distributed compilation.
-   Copyright (C) 2007-2015 Free Software Foundation, Inc.
+   Copyright (C) 2007-2016 Free Software Foundation, Inc.
    Contributed by Ollie Wild <aaw@google.com>.
 
 This program is free software; you can redistribute it and/or modify it

@@ -51,6 +51,8 @@
 --  It is designed to be a bottom-level (leaf) package.
 
 with Interfaces.C;
+with System.OS_Constants;
+
 package System.OS_Interface is
    pragma Preelaborate;
 
@@ -60,6 +62,7 @@ package System.OS_Interface is
    subtype rtems_id       is Interfaces.C.unsigned;
 
    subtype int            is Interfaces.C.int;
+   subtype char           is Interfaces.C.char;
    subtype short          is Interfaces.C.short;
    subtype long           is Interfaces.C.long;
    subtype unsigned       is Interfaces.C.unsigned;
@@ -68,7 +71,6 @@ package System.OS_Interface is
    subtype unsigned_char  is Interfaces.C.unsigned_char;
    subtype plain_char     is Interfaces.C.plain_char;
    subtype size_t         is Interfaces.C.size_t;
-
    -----------
    -- Errno --
    -----------
@@ -76,11 +78,11 @@ package System.OS_Interface is
    function errno return int;
    pragma Import (C, errno, "__get_errno");
 
-   EAGAIN    : constant := 11;
-   EINTR     : constant := 4;
-   EINVAL    : constant := 22;
-   ENOMEM    : constant := 12;
-   ETIMEDOUT : constant := 116;
+   EAGAIN    : constant := System.OS_Constants.EAGAIN;
+   EINTR     : constant := System.OS_Constants.EINTR;
+   EINVAL    : constant := System.OS_Constants.EINVAL;
+   ENOMEM    : constant := System.OS_Constants.ENOMEM;
+   ETIMEDOUT : constant := System.OS_Constants.ETIMEDOUT;
 
    -------------
    -- Signals --
@@ -448,6 +450,7 @@ package System.OS_Interface is
       ss_low_priority     : int;
       ss_replenish_period : timespec;
       ss_initial_budget   : timespec;
+      sched_ss_max_repl   : int;
    end record;
    pragma Convention (C, struct_sched_param);
 
@@ -621,43 +624,34 @@ private
    end record;
    pragma Convention (C, timespec);
 
-   CLOCK_REALTIME :  constant clockid_t := 1;
-   CLOCK_MONOTONIC : constant clockid_t := 4;
+   CLOCK_REALTIME :  constant clockid_t := System.OS_Constants.CLOCK_REALTIME;
+   CLOCK_MONOTONIC : constant clockid_t := System.OS_Constants.CLOCK_MONOTONIC;
+
+   subtype char_array is Interfaces.C.char_array;
 
    type pthread_attr_t is record
-      is_initialized  : int;
-      stackaddr       : System.Address;
-      stacksize       : int;
-      contentionscope : int;
-      inheritsched    : int;
-      schedpolicy     : int;
-      schedparam      : struct_sched_param;
-      cputime_clocked_allowed : int;
-      detatchstate    : int;
+      Data : char_array (1 .. OS_Constants.PTHREAD_ATTR_SIZE);
    end record;
    pragma Convention (C, pthread_attr_t);
+   for pthread_attr_t'Alignment use Interfaces.C.double'Alignment;
 
    type pthread_condattr_t is record
-      flags           : int;
-      process_shared  : int;
+      Data : char_array (1 .. OS_Constants.PTHREAD_CONDATTR_SIZE);
    end record;
    pragma Convention (C, pthread_condattr_t);
+   for pthread_condattr_t'Alignment use Interfaces.C.double'Alignment;
 
    type pthread_mutexattr_t is record
-      is_initialized  : int;
-      process_shared  : int;
-      prio_ceiling    : int;
-      protocol        : int;
-      mutex_type      : int;
-      recursive       : int;
-   end record;
+      Data : char_array (1 .. OS_Constants.PTHREAD_MUTEXATTR_SIZE);
+   end  record;
    pragma Convention (C, pthread_mutexattr_t);
+   for pthread_mutexattr_t'Alignment use Interfaces.C.double'Alignment;
 
    type pthread_rwlockattr_t is record
-      is_initialized  : int;
-      process_shared  : int;
+      Data : char_array (1 .. OS_Constants.PTHREAD_RWLOCKATTR_SIZE);
    end record;
    pragma Convention (C, pthread_rwlockattr_t);
+   for pthread_rwlockattr_t'Alignment use Interfaces.C.double'Alignment;
 
    type pthread_t is new rtems_id;
 

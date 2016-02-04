@@ -8368,13 +8368,15 @@ package body Sem_Util is
    ------------------------------
 
    function Has_Compatible_Alignment
-     (Obj  : Entity_Id;
-      Expr : Node_Id) return Alignment_Result
+     (Obj         : Entity_Id;
+      Expr        : Node_Id;
+      Layout_Done : Boolean) return Alignment_Result
    is
       function Has_Compatible_Alignment_Internal
-        (Obj     : Entity_Id;
-         Expr    : Node_Id;
-         Default : Alignment_Result) return Alignment_Result;
+        (Obj         : Entity_Id;
+         Expr        : Node_Id;
+         Layout_Done : Boolean;
+         Default     : Alignment_Result) return Alignment_Result;
       --  This is the internal recursive function that actually does the work.
       --  There is one additional parameter, which says what the result should
       --  be if no alignment information is found, and there is no definite
@@ -8387,9 +8389,10 @@ package body Sem_Util is
       ---------------------------------------
 
       function Has_Compatible_Alignment_Internal
-        (Obj     : Entity_Id;
-         Expr    : Node_Id;
-         Default : Alignment_Result) return Alignment_Result
+        (Obj         : Entity_Id;
+         Expr        : Node_Id;
+         Layout_Done : Boolean;
+         Default     : Alignment_Result) return Alignment_Result
       is
          Result : Alignment_Result := Known_Compatible;
          --  Holds the current status of the result. Note that once a value of
@@ -8439,14 +8442,14 @@ package body Sem_Util is
             then
                Set_Result
                  (Has_Compatible_Alignment_Internal
-                    (Obj, Prefix (Expr), Known_Compatible));
+                    (Obj, Prefix (Expr), Layout_Done, Known_Compatible));
 
             --  In all other cases, we need a full check on the prefix
 
             else
                Set_Result
                  (Has_Compatible_Alignment_Internal
-                    (Obj, Prefix (Expr), Unknown));
+                    (Obj, Prefix (Expr), Layout_Done, Unknown));
             end if;
          end Check_Prefix;
 
@@ -8465,14 +8468,14 @@ package body Sem_Util is
 
       begin
          --  If Expr is a selected component, we must make sure there is no
-         --  potentially troublesome component clause, and that the record is
-         --  not packed.
+         --  potentially troublesome component clause and that the record is
+         --  not packed if the layout is not done.
 
          if Nkind (Expr) = N_Selected_Component then
 
-            --  Packed record always generate unknown alignment
+            --  Packing generates unknown alignment if layout is not done
 
-            if Is_Packed (Etype (Prefix (Expr))) then
+            if Is_Packed (Etype (Prefix (Expr))) and then not Layout_Done then
                Set_Result (Unknown);
             end if;
 
@@ -8483,7 +8486,7 @@ package body Sem_Util is
 
          --  If Expr is an indexed component, we must make sure there is no
          --  potentially troublesome Component_Size clause and that the array
-         --  is not bit-packed.
+         --  is not bit-packed if the layout is not done.
 
          elsif Nkind (Expr) = N_Indexed_Component then
             declare
@@ -8491,9 +8494,9 @@ package body Sem_Util is
                Ind : constant Node_Id   := First_Index (Typ);
 
             begin
-               --  Bit packed array always generates unknown alignment
+               --  Packing generates unknown alignment if layout is not done
 
-               if Is_Bit_Packed_Array (Typ) then
+               if Is_Bit_Packed_Array (Typ) and then not Layout_Done then
                   Set_Result (Unknown);
                end if;
 
@@ -8695,7 +8698,8 @@ package body Sem_Util is
 
       --  Now do the internal call that does all the work
 
-      return Has_Compatible_Alignment_Internal (Obj, Expr, Unknown);
+      return
+        Has_Compatible_Alignment_Internal (Obj, Expr, Layout_Done, Unknown);
    end Has_Compatible_Alignment;
 
    ----------------------

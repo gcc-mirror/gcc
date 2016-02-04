@@ -1,6 +1,6 @@
 // Exception Handling support header for -*- C++ -*-
 
-// Copyright (C) 1995-2015 Free Software Foundation, Inc.
+// Copyright (C) 1995-2016 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -61,11 +61,12 @@ namespace std
   {
   public:
     exception() _GLIBCXX_USE_NOEXCEPT { }
-    virtual ~exception() _GLIBCXX_USE_NOEXCEPT;
+    virtual ~exception() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
 
     /** Returns a C-style character string describing the general cause
      *  of the current error.  */
-    virtual const char* what() const _GLIBCXX_USE_NOEXCEPT;
+    virtual const char*
+    what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
   };
 
   /** If an %exception is thrown which is not listed in a function's
@@ -77,10 +78,11 @@ namespace std
 
     // This declaration is not useless:
     // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
-    virtual ~bad_exception() _GLIBCXX_USE_NOEXCEPT;
+    virtual ~bad_exception() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
 
     // See comment in eh_exception.cc.
-    virtual const char* what() const _GLIBCXX_USE_NOEXCEPT;
+    virtual const char*
+    what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
   };
 
   /// If you write a replacement %terminate handler, it must be of this type.

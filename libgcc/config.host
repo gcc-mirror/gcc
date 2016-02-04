@@ -1,5 +1,5 @@
 # libgcc host-specific configuration file.
-# Copyright (C) 1997-2015 Free Software Foundation, Inc.
+# Copyright (C) 1997-2016 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -293,6 +293,9 @@ case ${host} in
         extra_parts="$extra_parts crt1.o gcrt1.o"
         ;;
     esac
+  fi
+  if test x$enable_vtable_verify = xyes; then
+    extra_parts="$extra_parts vtv_start.o vtv_end.o vtv_start_preinit.o vtv_end_preinit.o"
   fi
   ;;
 *-*-uclinux*)
@@ -939,6 +942,7 @@ moxie-*-rtems*)
 	;;
 msp430*-*-elf)
 	tmake_file="$tm_file t-crtstuff t-fdpbit msp430/t-msp430"
+        extra_parts="$extra_parts libmul_none.a libmul_16.a libmul_32.a libmul_f5.a"
 	;;
 nds32*-elf*)
 	# Basic makefile fragment and extra_parts for crt stuff.
@@ -1059,6 +1063,15 @@ powerpc*-*-linux*)
 		exit 1
 		;;
 	esac
+
+	if test $libgcc_cv_powerpc_float128 = yes; then
+		tmake_file="${tmake_file} rs6000/t-float128"
+	fi
+
+	if test $libgcc_cv_powerpc_float128_hw = yes; then
+		tmake_file="${tmake_file} rs6000/t-float128-hw"
+	fi
+
 	extra_parts="$extra_parts ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	md_unwind_header=rs6000/linux-unwind.h
 	;;
@@ -1345,6 +1358,7 @@ case ${host} in
 i[34567]86-*-darwin* | x86_64-*-darwin* | \
   i[34567]86-*-kfreebsd*-gnu | x86_64-*-kfreebsd*-gnu | \
   i[34567]86-*-linux* | x86_64-*-linux* | \
+  i[34567]86-*-msdosdjgpp* | \
   i[34567]86-*-gnu* | \
   i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]* | \
   i[34567]86-*-cygwin* | x86_64-*-cygwin* | \

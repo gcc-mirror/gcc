@@ -1,5 +1,5 @@
 /* Default common target hooks initializer.
-   Copyright (C) 2011-2015 Free Software Foundation, Inc.
+   Copyright (C) 2011-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

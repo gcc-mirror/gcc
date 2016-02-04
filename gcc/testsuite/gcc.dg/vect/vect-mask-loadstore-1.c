@@ -1,7 +1,6 @@
 /* { dg-additional-options "-Ofast -fno-common" } */
 /* { dg-additional-options "-Ofast -fno-common -mavx" { target avx_runtime } } */
 
-#include <stdlib.h>
 #include "tree-vect.h"
 
 __attribute__((noinline, noclone)) void

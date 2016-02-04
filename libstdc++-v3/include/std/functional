@@ -1,6 +1,6 @@
 // <functional> -*- C++ -*-
 
-// Copyright (C) 2001-2015 Free Software Foundation, Inc.
+// Copyright (C) 2001-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -184,6 +184,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : _Weak_result_type_impl<typename remove_cv<_Functor>::type>
     { };
 
+  template<typename _Tp, typename _Up = typename decay<_Tp>::type>
+    struct _Unwrap
+    {
+      using type = _Tp&&;
+
+      // Equivalent to std::forward<_Tp>
+      static constexpr _Tp&&
+      _S_fwd(_Tp& __t) noexcept { return static_cast<_Tp&&>(__t); }
+    };
+
+  template<typename _Tp, typename _Up>
+    struct _Unwrap<_Tp, reference_wrapper<_Up>>
+    {
+      using type = _Up&;
+
+      // Get an lvalue-reference from a reference_wrapper.
+      static _Up&
+      _S_fwd(const _Tp& __t) noexcept { __t.get(); }
+    };
+
+  // Used by __invoke_impl instead of std::forward<_Tp> so that a
+  // reference_wrapper is converted to an lvalue-reference.
+  template<typename _Tp>
+    inline typename _Unwrap<_Tp>::type
+    __invfwd(typename remove_reference<_Tp>::type& __t) noexcept
+    { return _Unwrap<_Tp>::_S_fwd(__t); }
+
   template<typename _Res, typename _Fn, typename... _Args>
     inline _Res
     __invoke_impl(__invoke_other, _Fn&& __f, _Args&&... __args)
@@ -194,42 +221,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _Res
     __invoke_impl(__invoke_memfun_ref, _MemFun&& __f, _Tp&& __t,
 		  _Args&&... __args)
-    noexcept(noexcept((forward<_Tp>(__t).*__f)(forward<_Args>(__args)...)))
-    { return (forward<_Tp>(__t).*__f)(forward<_Args>(__args)...); }
-
-  template<typename _Res, typename _MemFun, typename _Tp, typename... _Args>
-    inline _Res
-    __invoke_impl(__invoke_memfun_ref, _MemFun&& __f,
-		  reference_wrapper<_Tp> __t, _Args&&... __args)
-    noexcept(noexcept((__t.get().*__f)(forward<_Args>(__args)...)))
-    { return (__t.get().*__f)(forward<_Args>(__args)...); }
+    noexcept(noexcept(
+	  (__invfwd<_Tp>(__t).*__f)(std::forward<_Args>(__args)...)))
+    { return (__invfwd<_Tp>(__t).*__f)(std::forward<_Args>(__args)...); }
 
   template<typename _Res, typename _MemFun, typename _Tp, typename... _Args>
     inline _Res
     __invoke_impl(__invoke_memfun_deref, _MemFun&& __f, _Tp&& __t,
 		  _Args&&... __args)
-    noexcept(noexcept(((*forward<_Tp>(__t)).*__f)(forward<_Args>(__args)...)))
-    { return ((*forward<_Tp>(__t)).*__f)(forward<_Args>(__args)...); }
+    noexcept(noexcept(
+	  ((*std::forward<_Tp>(__t)).*__f)(std::forward<_Args>(__args)...)))
+    {
+      return ((*std::forward<_Tp>(__t)).*__f)(std::forward<_Args>(__args)...);
+    }
 
   template<typename _Res, typename _MemFun, typename _Tp, typename... _Args>
     inline _Res
     __invoke_impl(__invoke_memobj_ref, _MemFun&& __f, _Tp&& __t)
-    noexcept(noexcept(forward<_Tp>(__t).*__f))
-    { return forward<_Tp>(__t).*__f; }
-
-  template<typename _Res, typename _MemFun, typename _Tp, typename... _Args>
-    inline _Res
-    __invoke_impl(__invoke_memobj_ref, _MemFun&& __f,
-		  reference_wrapper<_Tp> __t)
-    noexcept(noexcept(__t.get().*__f))
-    { return __t.get().*__f; }
+    noexcept(noexcept(__invfwd<_Tp>(__t).*__f))
+    { return __invfwd<_Tp>(__t).*__f; }
 
   template<typename _Res, typename _MemFun, typename _Tp, typename... _Args>
     inline _Res
     __invoke_impl(__invoke_memobj_deref, _MemFun&& __f, _Tp&& __t,
 		  _Args&&... __args)
-    noexcept(noexcept((*forward<_Tp>(__t)).*__f))
-    { return (*forward<_Tp>(__t)).*__f; }
+    noexcept(noexcept((*std::forward<_Tp>(__t)).*__f))
+    { return (*std::forward<_Tp>(__t)).*__f; }
 
   /// Invoke a callable object.
   template<typename _Callable, typename... _Args>
@@ -590,8 +607,9 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       template<typename... _Args>
 	auto
 	operator()(_Args&&... __args) const
-	noexcept(noexcept(std::__invoke(_M_pmf, forward<_Args>(__args)...)))
-	-> decltype(std::__invoke(_M_pmf, forward<_Args>(__args)...))
+	noexcept(noexcept(
+	      std::__invoke(_M_pmf, std::forward<_Args>(__args)...)))
+	-> decltype(std::__invoke(_M_pmf, std::forward<_Args>(__args)...))
 	{ return std::__invoke(_M_pmf, std::forward<_Args>(__args)...); }
     };
 
@@ -614,7 +632,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       template<typename _Tp>
 	auto
 	operator()(_Tp&& __obj) const
-	noexcept(noexcept(std::__invoke(_M_pm, forward<_Tp>(__obj))))
+	noexcept(noexcept(std::__invoke(_M_pm, std::forward<_Tp>(__obj))))
 	-> decltype(std::__invoke(_M_pm, std::forward<_Tp>(__obj)))
 	{ return std::__invoke(_M_pm, std::forward<_Tp>(__obj)); }
     };
@@ -641,9 +659,11 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     }
 
   /**
-   *  @brief Determines if the given type _Tp is a function object
+   *  @brief Determines if the given type _Tp is a function object that
    *  should be treated as a subexpression when evaluating calls to
-   *  function objects returned by bind(). [TR1 3.6.1]
+   *  function objects returned by bind().
+   *
+   *  C++11 [func.bind.isbind].
    *  @ingroup binders
    */
   template<typename _Tp>
@@ -652,7 +672,9 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
   /**
    *  @brief Determines if the given type _Tp is a placeholder in a
-   *  bind() expression and, if so, which placeholder it is. [TR1 3.6.2]
+   *  bind() expression and, if so, which placeholder it is.
+   *
+   *  C++11 [func.bind.isplace].
    *  @ingroup binders
    */
   template<typename _Tp>
@@ -727,45 +749,16 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     : public integral_constant<int, _Num>
     { };
 
-  /**
-   * Used by _Safe_tuple_element to indicate that there is no tuple
-   * element at this position.
-   */
-  struct _No_tuple_element;
 
-  /**
-   * Implementation helper for _Safe_tuple_element. This primary
-   * template handles the case where it is safe to use @c
-   * tuple_element.
-   */
-  template<std::size_t __i, typename _Tuple, bool _IsSafe>
-    struct _Safe_tuple_element_impl
-    : tuple_element<__i, _Tuple> { };
-
-  /**
-   * Implementation helper for _Safe_tuple_element. This partial
-   * specialization handles the case where it is not safe to use @c
-   * tuple_element. We just return @c _No_tuple_element.
-   */
-  template<std::size_t __i, typename _Tuple>
-    struct _Safe_tuple_element_impl<__i, _Tuple, false>
-    {
-      typedef _No_tuple_element type;
-    };
-
-  /**
-   * Like tuple_element, but returns @c _No_tuple_element when
-   * tuple_element would return an error.
-   */
+  // Like tuple_element_t but SFINAE-friendly.
  template<std::size_t __i, typename _Tuple>
-   struct _Safe_tuple_element
-   : _Safe_tuple_element_impl<__i, _Tuple,
-			      (__i < tuple_size<_Tuple>::value)>
-   { };
+   using _Safe_tuple_element_t
+     = typename enable_if<(__i < tuple_size<_Tuple>::value),
+			  tuple_element<__i, _Tuple>>::type::type;
 
   /**
    *  Maps an argument to bind() into an actual argument to the bound
-   *  function object [TR1 3.6.3/5]. Only the first parameter should
+   *  function object [func.bind.bind]/10. Only the first parameter should
    *  be specified: the rest are used to determine among the various
    *  implementations. Note that, although this class is a function
    *  object, it isn't entirely normal because it takes only two
@@ -781,20 +774,19 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
   /**
    *  If the argument is reference_wrapper<_Tp>, returns the
-   *  underlying reference. [TR1 3.6.3/5 bullet 1]
+   *  underlying reference.
+   *  C++11 [func.bind.bind] p10 bullet 1.
    */
   template<typename _Tp>
     class _Mu<reference_wrapper<_Tp>, false, false>
     {
     public:
-      typedef _Tp& result_type;
-
       /* Note: This won't actually work for const volatile
        * reference_wrappers, because reference_wrapper::get() is const
        * but not volatile-qualified. This might be a defect in the TR.
        */
       template<typename _CVRef, typename _Tuple>
-	result_type
+	_Tp&
 	operator()(_CVRef& __arg, _Tuple&) const volatile
 	{ return __arg.get(); }
     };
@@ -802,7 +794,8 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
   /**
    *  If the argument is a bind expression, we invoke the underlying
    *  function object with the same cv-qualifiers as we are given and
-   *  pass along all of our arguments (unwrapped). [TR1 3.6.3/5 bullet 2]
+   *  pass along all of our arguments (unwrapped).
+   *  C++11 [func.bind.bind] p10 bullet 2.
    */
   template<typename _Arg>
     class _Mu<_Arg, true, false>
@@ -836,55 +829,32 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
   /**
    *  If the argument is a placeholder for the Nth argument, returns
    *  a reference to the Nth argument to the bind function object.
-   *  [TR1 3.6.3/5 bullet 3]
+   *  C++11 [func.bind.bind] p10 bullet 3.
    */
   template<typename _Arg>
     class _Mu<_Arg, false, true>
     {
     public:
-      template<typename _Signature> class result;
-
-      template<typename _CVMu, typename _CVArg, typename _Tuple>
-	class result<_CVMu(_CVArg, _Tuple)>
-	{
-	  // Add a reference, if it hasn't already been done for us.
-	  // This allows us to be a little bit sloppy in constructing
-	  // the tuple that we pass to result_of<...>.
-	  typedef typename _Safe_tuple_element<(is_placeholder<_Arg>::value
-						- 1), _Tuple>::type
-	    __base_type;
-
-	public:
-	  typedef typename add_rvalue_reference<__base_type>::type type;
-	};
-
       template<typename _Tuple>
-	typename result<_Mu(_Arg, _Tuple)>::type
+	_Safe_tuple_element_t<(is_placeholder<_Arg>::value - 1), _Tuple>&&
 	operator()(const volatile _Arg&, _Tuple& __tuple) const volatile
 	{
-	  return std::forward<typename result<_Mu(_Arg, _Tuple)>::type>(
+	  using __type
+	    = __tuple_element_t<(is_placeholder<_Arg>::value - 1), _Tuple>;
+	  return std::forward<__type>(
 	      ::std::get<(is_placeholder<_Arg>::value - 1)>(__tuple));
 	}
     };
 
   /**
    *  If the argument is just a value, returns a reference to that
-   *  value. The cv-qualifiers on the reference are the same as the
-   *  cv-qualifiers on the _Mu object. [TR1 3.6.3/5 bullet 4]
+   *  value. The cv-qualifiers on the reference are determined by the caller.
+   *  C++11 [func.bind.bind] p10 bullet 4.
    */
   template<typename _Arg>
     class _Mu<_Arg, false, false>
     {
     public:
-      template<typename _Signature> struct result;
-
-      template<typename _CVMu, typename _CVArg, typename _Tuple>
-	struct result<_CVMu(_CVArg, _Tuple)>
-	{
-	  typedef typename add_lvalue_reference<_CVArg>::type type;
-	};
-
-      // Pick up the cv-qualifiers of the argument
       template<typename _CVArg, typename _Tuple>
 	_CVArg&&
 	operator()(_CVArg&& __arg, _Tuple&) const volatile
@@ -1021,7 +991,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
       // Call unqualified
       template<typename... _Args, typename _Result
-	= decltype( std::declval<_Functor>()(
+	= decltype( std::declval<_Functor&>()(
 	      _Mu<_Bound_args>()( std::declval<_Bound_args&>(),
 				  std::declval<tuple<_Args...>&>() )... ) )>
 	_Result
@@ -1035,7 +1005,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       // Call as const
       template<typename... _Args, typename _Result
 	= decltype( std::declval<typename enable_if<(sizeof...(_Args) >= 0),
-		       typename add_const<_Functor>::type>::type>()(
+		       typename add_const<_Functor>::type&>::type>()(
 	      _Mu<_Bound_args>()( std::declval<const _Bound_args&>(),
 				  std::declval<tuple<_Args...>&>() )... ) )>
 	_Result
@@ -1049,7 +1019,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       // Call as volatile
       template<typename... _Args, typename _Result
 	= decltype( std::declval<typename enable_if<(sizeof...(_Args) >= 0),
-                       typename add_volatile<_Functor>::type>::type>()(
+                       typename add_volatile<_Functor>::type&>::type>()(
 	      _Mu<_Bound_args>()( std::declval<volatile _Bound_args&>(),
 				  std::declval<tuple<_Args...>&>() )... ) )>
 	_Result
@@ -1063,7 +1033,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       // Call as const volatile
       template<typename... _Args, typename _Result
 	= decltype( std::declval<typename enable_if<(sizeof...(_Args) >= 0),
-                       typename add_cv<_Functor>::type>::type>()(
+                       typename add_cv<_Functor>::type&>::type>()(
 	      _Mu<_Bound_args>()( std::declval<const volatile _Bound_args&>(),
 				  std::declval<tuple<_Args...>&>() )... ) )>
 	_Result
@@ -1663,13 +1633,13 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 
 	template<typename _Tp>
 	  static bool
-	  _M_not_empty_function(_Tp* const& __fp)
-	  { return __fp; }
+	  _M_not_empty_function(_Tp* __fp)
+	  { return __fp != nullptr; }
 
 	template<typename _Class, typename _Tp>
 	  static bool
-	  _M_not_empty_function(_Tp _Class::* const& __mp)
-	  { return __mp; }
+	  _M_not_empty_function(_Tp _Class::* __mp)
+	  { return __mp != nullptr; }
 
 	template<typename _Tp>
 	  static bool
@@ -1782,7 +1752,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       static _Res
       _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
       {
-	return __callable_functor(**_Base::_M_get_pointer(__functor))(
+	return std::__callable_functor(**_Base::_M_get_pointer(__functor))(
 	      std::forward<_ArgTypes>(__args)...);
       }
     };
@@ -1797,7 +1767,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
       static void
       _M_invoke(const _Any_data& __functor, _ArgTypes&&... __args)
       {
-	__callable_functor(**_Base::_M_get_pointer(__functor))(
+	std::__callable_functor(**_Base::_M_get_pointer(__functor))(
 	    std::forward<_ArgTypes>(__args)...);
       }
     };
@@ -1876,19 +1846,14 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     {
       typedef _Res _Signature_type(_ArgTypes...);
 
-      template<typename _Functor>
-	using _Invoke = decltype(__callable_functor(std::declval<_Functor&>())
-				 (std::declval<_ArgTypes>()...) );
+      template<typename _Func,
+	       typename _Res2 = typename result_of<_Func(_ArgTypes...)>::type>
+	struct _Callable : __check_func_return_type<_Res2, _Res> { };
 
       // Used so the return type convertibility checks aren't done when
       // performing overload resolution for copy construction/assignment.
       template<typename _Tp>
-	using _NotSelf = __not_<is_same<_Tp, function>>;
-
-      template<typename _Functor>
-	using _Callable
-	  = __and_<_NotSelf<_Functor>,
-		   __check_func_return_type<_Invoke<_Functor>, _Res>>;
+	struct _Callable<function, _Tp> : false_type { };
 
       template<typename _Cond, typename _Tp>
 	using _Requires = typename enable_if<_Cond::value, _Tp>::type;
@@ -1953,6 +1918,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
        *  reference_wrapper<F>, this function will not throw.
        */
       template<typename _Functor,
+	       typename = _Requires<__not_<is_same<_Functor, function>>, void>,
 	       typename = _Requires<_Callable<_Functor>, void>>
 	function(_Functor);
 
@@ -2145,7 +2111,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     }
 
   template<typename _Res, typename... _ArgTypes>
-    template<typename _Functor, typename>
+    template<typename _Functor, typename, typename>
       function<_Res(_ArgTypes...)>::
       function(_Functor __f)
       : _Function_base()

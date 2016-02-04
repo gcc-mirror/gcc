@@ -39,6 +39,7 @@ extern char **environ;
 #include <libkern/OSAtomic.h>
 #include <mach-o/dyld.h>
 #include <mach/mach.h>
+#include <mach/vm_statistics.h>
 #include <pthread.h>
 #include <sched.h>
 #include <signal.h>
@@ -57,6 +58,7 @@ namespace __sanitizer {
 // ---------------------- sanitizer_libc.h
 uptr internal_mmap(void *addr, size_t length, int prot, int flags,
                    int fd, u64 offset) {
+  if (fd == -1) fd = VM_MAKE_TAG(VM_MEMORY_ANALYSIS_TOOL);
   return (uptr)mmap(addr, length, prot, flags, fd, offset);
 }
 
@@ -367,8 +369,18 @@ uptr GetRSS() {
   return info.resident_size;
 }
 
-void *internal_start_thread(void (*func)(void *arg), void *arg) { return 0; }
-void internal_join_thread(void *th) { }
+void *internal_start_thread(void(*func)(void *arg), void *arg) {
+  // Start the thread with signals blocked, otherwise it can steal user signals.
+  __sanitizer_sigset_t set, old;
+  internal_sigfillset(&set);
+  internal_sigprocmask(SIG_SETMASK, &set, &old);
+  pthread_t th;
+  pthread_create(&th, 0, (void*(*)(void *arg))func, arg);
+  internal_sigprocmask(SIG_SETMASK, &old, 0);
+  return th;
+}
+
+void internal_join_thread(void *th) { pthread_join((pthread_t)th, 0); }
 
 void GetPcSpBp(void *context, uptr *pc, uptr *sp, uptr *bp) {
   ucontext_t *ucontext = (ucontext_t*)context;

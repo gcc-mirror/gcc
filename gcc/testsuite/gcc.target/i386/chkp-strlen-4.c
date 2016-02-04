@@ -1,9 +1,9 @@
-/* { dg-do compile } */
-/* { dg-require-effective-target mpx } */
+/* { dg-do compile { target { ! x32 } } } */
 /* { dg-require-effective-target mempcpy } */
-/* { dg-options "-fcheck-pointer-bounds -mmpx -O2 -fdump-tree-strlen -D_GNU_SOURCE" } */
+/* { dg-options "-fcheck-pointer-bounds -mmpx -O2 -fdump-tree-strlen" } */
 /* { dg-final { scan-tree-dump-times "strlen" 1 "strlen" } } */
 
+#define _GNU_SOURCE
 #include "string.h"
 
 char * test (char *str1, char *str2)

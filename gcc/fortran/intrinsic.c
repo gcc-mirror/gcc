@@ -1,6 +1,6 @@
 /* Build up a list of intrinsic subroutines and functions for the
    name-resolution stage.
-   Copyright (C) 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 2000-2016 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -1659,9 +1659,11 @@ add_functions (void)
 
   make_generic ("count", GFC_ISYM_COUNT, GFC_STD_F95);
 
-  add_sym_3 ("cshift", GFC_ISYM_CSHIFT, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
-	     gfc_check_cshift, NULL, gfc_resolve_cshift,
-	     ar, BT_REAL, dr, REQUIRED, sh, BT_INTEGER, di, REQUIRED,
+  add_sym_3 ("cshift", GFC_ISYM_CSHIFT, CLASS_TRANSFORMATIONAL, ACTUAL_NO,
+	     BT_REAL, dr, GFC_STD_F95,
+	     gfc_check_cshift, gfc_simplify_cshift, gfc_resolve_cshift,
+	     ar, BT_REAL, dr, REQUIRED,
+	     sh, BT_INTEGER, di, REQUIRED,
 	     dm, BT_INTEGER, ii, OPTIONAL);
 
   make_generic ("cshift", GFC_ISYM_CSHIFT, GFC_STD_F95);
@@ -3161,6 +3163,13 @@ add_subroutines (void)
   add_sym_1s ("cpu_time", GFC_ISYM_CPU_TIME, CLASS_IMPURE, BT_UNKNOWN, 0,
 	      GFC_STD_F95, gfc_check_cpu_time, NULL, gfc_resolve_cpu_time,
 	      tm, BT_REAL, dr, REQUIRED, INTENT_OUT);
+
+  add_sym_3s ("event_query", GFC_ISYM_EVENT_QUERY, CLASS_ATOMIC,
+	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
+	      gfc_check_event_query, NULL, gfc_resolve_event_query,
+	      "event", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      c, BT_INTEGER, di, OPTIONAL, INTENT_IN,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   /* More G77 compatibility garbage.  */
   add_sym_2s ("ctime", GFC_ISYM_CTIME, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,

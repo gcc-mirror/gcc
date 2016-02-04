@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    builtins used in the GNU compiler.
-   Copyright (C) 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 2000-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -210,7 +210,8 @@ along with GCC; see the file COPYING3.  If not see
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
 	       true, true, true, ATTRS, true, \
 	      (flag_sanitize & (SANITIZE_ADDRESS | SANITIZE_THREAD \
-				| SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT)))
+				| SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT) \
+	       || flag_sanitize_coverage))
 
 #undef DEF_CILKPLUS_BUILTIN
 #define DEF_CILKPLUS_BUILTIN(ENUM, NAME, TYPE, ATTRS)  \

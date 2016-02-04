@@ -3,7 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2015 Free Software Foundation, Inc.
+   Copyright (C) 1998-2016 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -207,15 +207,8 @@ tree
 lambda_capture_field_type (tree expr, bool explicit_init_p)
 {
   tree type;
-  if (explicit_init_p)
-    {
-      type = make_auto ();
-      type = do_auto_deduction (type, expr, type);
-    }
-  else
-    type = non_reference (unlowered_expr_type (expr));
-  if (type_dependent_expression_p (expr)
-      && !is_this_parameter (tree_strip_nop_conversions (expr)))
+  bool is_this = is_this_parameter (tree_strip_nop_conversions (expr));
+  if (!is_this && type_dependent_expression_p (expr))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
@@ -223,6 +216,13 @@ lambda_capture_field_type (tree expr, bool explicit_init_p)
       DECLTYPE_FOR_INIT_CAPTURE (type) = explicit_init_p;
       SET_TYPE_STRUCTURAL_EQUALITY (type);
     }
+  else if (!is_this && explicit_init_p)
+    {
+      type = make_auto ();
+      type = do_auto_deduction (type, expr, type);
+    }
+  else
+    type = non_reference (unlowered_expr_type (expr));
   return type;
 }
 
@@ -851,6 +851,16 @@ prepare_op_call (tree fn, int nargs)
   return t;
 }
 
+/* Return true iff CALLOP is the op() for a generic lambda.  */
+
+bool
+generic_lambda_fn_p (tree callop)
+{
+  return (LAMBDA_FUNCTION_P (callop)
+	  && DECL_TEMPLATE_INFO (callop)
+	  && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (callop)));
+}
+
 /* If the closure TYPE has a static op(), also add a conversion to function
    pointer.  */
 
@@ -867,9 +877,7 @@ maybe_add_lambda_conv_op (tree type)
   if (processing_template_decl)
     return;
 
-  bool const generic_lambda_p
-    = (DECL_TEMPLATE_INFO (callop)
-    && DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (callop)) == callop);
+  bool const generic_lambda_p = generic_lambda_fn_p (callop);
 
   if (!generic_lambda_p && DECL_INITIAL (callop) == NULL_TREE)
     {
@@ -1052,6 +1060,15 @@ maybe_add_lambda_conv_op (tree type)
 
   if (generic_lambda_p)
     fn = add_inherited_template_parms (fn, DECL_TI_TEMPLATE (callop));
+
+  if (flag_sanitize & SANITIZE_NULL)
+    {
+      /* Don't UBsan this function; we're deliberately calling op() with a null
+	 object argument.  */
+      tree attrs = build_tree_list (get_identifier ("no_sanitize_undefined"),
+				    NULL_TREE);
+      cplus_decl_attributes (&fn, attrs, 0);
+    }
 
   add_method (type, fn, NULL_TREE);
 

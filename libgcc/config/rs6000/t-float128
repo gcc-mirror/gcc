@@ -1,0 +1,95 @@
+# Support for adding __float128 to the powerpc.
+
+# The standard 128-bit floating point support functions are TFmode.  Most
+# PowerPC targets use a long double format that has a pair of doubles to give
+# you more precision, but no extra expoenent range.  This long double format is
+# mostly compatible with the format used by the IBM XL compilers.  Some of the
+# names used by the IBM double-double format use TF in them, so we rename
+# all of the functions provided for the new IEEE 128-bit support.
+#
+# We use the TF functions in soft-fp for 128-bit floating point support, using
+# sed to transform the names in the files from TF names to KF names.
+
+# Emulator functions from the soft-fp directory
+fp128_softfp_funcs	= addkf3 subkf3 mulkf3 divkf3 negkf2 \
+			  unordkf2 eqkf2 gekf2 lekf2 \
+			  extendsfkf2 extenddfkf2 trunckfsf2 trunckfdf2 \
+			  fixkfsi fixkfdi fixunskfsi fixunskfdi \
+			  floatsikf floatdikf floatunsikf floatundikf
+
+fp128_softfp_src	= $(addsuffix -sw.c,$(fp128_softfp_funcs))
+fp128_softfp_static_obj	= $(addsuffix -sw$(objext),$(fp128_softfp_funcs))
+fp128_softfp_shared_obj	= $(addsuffix -sw_s$(objext),$(fp128_softfp_funcs))
+fp128_softfp_obj	= $(fp128_softfp_static_obj) $(fp128_softfp_shared_obj)
+
+# New functions for software emulation
+fp128_ppc_funcs		= floattikf floatuntikf fixkfti fixunskfti \
+			  extendkftf2-sw trunctfkf2-sw \
+			  sfp-exceptions
+
+fp128_ppc_src		= $(addprefix $(srcdir)/config/rs6000/,$(addsuffix \
+				.c,$(fp128_ppc_funcs)))
+fp128_ppc_static_obj	= $(addsuffix $(objext),$(fp128_ppc_funcs))
+fp128_ppc_shared_obj	= $(addsuffix _s$(objext),$(fp128_ppc_funcs))
+fp128_ppc_obj		= $(fp128_ppc_static_obj) $(fp128_ppc_shared_obj)
+
+# All functions
+fp128_funcs		= $(fp128_softfp_funcs) $(fp128_ppc_funcs) \
+			  $(fp128_hw_funcs) $(fp128_ifunc_funcs)
+
+fp128_src		= $(fp128_softfp_src) $(fp128_ppc_src) \
+			  $(fp128_hw_src) $(fp128_ifunc_src)
+
+fp128_obj		= $(fp128_softfp_obj) $(fp128_ppc_obj) \
+			  $(fp128_hw_obj) $(fp128_ifunc_obj)
+
+fp128_sed		= $(srcdir)/config/rs6000/float128-sed$(fp128_sed_hw)
+fp128_dep		= $(fp128_sed) $(srcdir)/config/rs6000/t-float128
+
+fp128_includes		= $(srcdir)/soft-fp/double.h \
+			  $(srcdir)/soft-fp/op-1.h \
+			  $(srcdir)/soft-fp/op-4.h \
+			  $(srcdir)/soft-fp/op-common.h \
+			  $(srcdir)/soft-fp/single.h \
+			  $(srcdir)/soft-fp/extended.h \
+			  $(srcdir)/soft-fp/op-2.h \
+			  $(srcdir)/soft-fp/op-8.h \
+			  $(srcdir)/soft-fp/quad.h \
+			  $(srcdir)/soft-fp/soft-fp.h
+
+# Build the emulator without ISA 3.0 hardware support.
+FP128_CFLAGS_SW		 = -Wno-type-limits -mvsx -mfloat128 \
+			   -mno-float128-hardware \
+			   -I$(srcdir)/soft-fp \
+			   -I$(srcdir)/config/rs6000 \
+			   $(FLOAT128_HW_INSNS)
+
+$(fp128_softfp_obj)	 : INTERNAL_CFLAGS += $(FP128_CFLAGS_SW)
+$(fp128_ppc_obj)	 : INTERNAL_CFLAGS += $(FP128_CFLAGS_SW)
+$(fp128_obj)		 : $(fp128_includes)
+$(fp128_obj)		 : $(srcdir)/config/rs6000/quad-float128.h
+
+$(fp128_softfp_src) : $(srcdir)/soft-fp/$(subst -sw,,$(subst kf,tf,$@)) $(fp128_dep)
+	@src="$(srcdir)/soft-fp/$(subst -sw,,$(subst kf,tf,$@))"; \
+	echo "Create $@"; \
+	(echo "/* file created from $$src */"; \
+	 echo; \
+	 sed -f $(fp128_sed) < $$src) > $@
+
+.PHONY: test clean-float128
+
+test:
+	@echo "fp128_src:"; \
+	for x in $(fp128_src); do echo "    $$x"; done; \
+	echo; \
+	echo "fp128_obj:"; \
+	for x in $(fp128_obj); do echo "    $$x"; done;
+
+clean-float128:
+	rm -rf $(fp128_softfp_src)
+	@$(MULTICLEAN) multi-clean DO=clean-float128
+
+# For now, only put it in the static library
+# LIB2ADD += $(fp128_src)
+
+LIB2ADD_ST += $(fp128_src)

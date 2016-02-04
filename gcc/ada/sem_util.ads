@@ -991,17 +991,21 @@ package Sem_Util is
    --  that the values are arranged in increasing order of problematicness.
 
    function Has_Compatible_Alignment
-     (Obj  : Entity_Id;
-      Expr : Node_Id) return Alignment_Result;
+     (Obj         : Entity_Id;
+      Expr        : Node_Id;
+      Layout_Done : Boolean) return Alignment_Result;
    --  Obj is an object entity, and expr is a node for an object reference. If
    --  the alignment of the object referenced by Expr is known to be compatible
    --  with the alignment of Obj (i.e. is larger or the same), then the result
    --  is Known_Compatible. If the alignment of the object referenced by Expr
    --  is known to be less than the alignment of Obj, then Known_Incompatible
    --  is returned. If neither condition can be reliably established at compile
-   --  time, then Unknown is returned. This is used to determine if alignment
-   --  checks are required for address clauses, and also whether copies must
-   --  be made when objects are passed by reference.
+   --  time, then Unknown is returned. If Layout_Done is True, the function can
+   --  assume that the information on size and alignment of types and objects
+   --  is present in the tree. This is used to determine if alignment checks
+   --  are required for address clauses (Layout_Done is False in this case) as
+   --  well as to issue appropriate warnings for them in the post compilation
+   --  phase (Layout_Done is True in this case).
    --
    --  Note: Known_Incompatible does not mean that at run time the alignment
    --  of Expr is known to be wrong for Obj, just that it can be determined

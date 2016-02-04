@@ -1,5 +1,5 @@
 /* Tree SCC value numbering
-   Copyright (C) 2007-2015 Free Software Foundation, Inc.
+   Copyright (C) 2007-2016 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
    This file is part of GCC.
@@ -169,6 +169,9 @@ typedef struct vn_ssa_aux
   /* Statements to insert if needs_insertion is true.  */
   gimple_seq expr;
 
+  /* Saved SSA name info.  */
+  tree_ssa_name::ssa_name_info_type info;
+
   /* Unique identifier that all expressions with the same value have. */
   unsigned int value_id;
 
@@ -188,6 +191,9 @@ typedef struct vn_ssa_aux
      insertion of such with EXPR as definition is required before
      a use can be created of it.  */
   unsigned needs_insertion : 1;
+
+  /* Whether range-info is anti-range.  */
+  unsigned range_info_anti_range_p : 1;
 } *vn_ssa_aux_t;
 
 enum vn_lookup_kind { VN_NOWALK, VN_WALK, VN_WALKREWRITE };
@@ -238,6 +244,44 @@ vn_valueize (tree name)
       return tem == VN_TOP ? name : tem;
     }
   return name;
+}
+
+/* Get at the original range info for NAME.  */
+
+inline range_info_def *
+VN_INFO_RANGE_INFO (tree name)
+{
+  return (VN_INFO (name)->info.range_info
+	  ? VN_INFO (name)->info.range_info
+	  : SSA_NAME_RANGE_INFO (name));
+}
+
+/* Whether the original range info of NAME is an anti-range.  */
+
+inline bool
+VN_INFO_ANTI_RANGE_P (tree name)
+{
+  return (VN_INFO (name)->info.range_info
+	  ? VN_INFO (name)->range_info_anti_range_p
+	  : SSA_NAME_ANTI_RANGE_P (name));
+}
+
+/* Get at the original range info kind for NAME.  */
+
+inline value_range_type
+VN_INFO_RANGE_TYPE (tree name)
+{
+  return VN_INFO_ANTI_RANGE_P (name) ? VR_ANTI_RANGE : VR_RANGE;
+}
+
+/* Get at the original pointer info for NAME.  */
+
+inline ptr_info_def *
+VN_INFO_PTR_INFO (tree name)
+{
+  return (VN_INFO (name)->info.ptr_info
+	  ? VN_INFO (name)->info.ptr_info
+	  : SSA_NAME_PTR_INFO (name));
 }
 
 #endif /* TREE_SSA_SCCVN_H  */

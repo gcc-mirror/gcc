@@ -1,5 +1,5 @@
 # End .init and .fini sections.
-# Copyright (C) 2010-2015 Free Software Foundation, Inc.
+# Copyright (C) 2010-2016 Free Software Foundation, Inc.
 # Contributed by Embecosm on behalf of Adapteva, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it

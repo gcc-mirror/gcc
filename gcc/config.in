@@ -144,6 +144,12 @@
 #endif
 
 
+/* Define this to enable support for generating HSAIL. */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_HSA
+#endif
+
+
 /* Define if gcc should always pass --build-id to linker. */
 #ifndef USED_FOR_TARGET
 #undef ENABLE_LD_BUILDID
@@ -259,6 +265,12 @@
 #endif
 
 
+/* Define if your assembler supports architecture modifiers. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_ARCHITECTURE_MODIFIERS
+#endif
+
+
 /* Define if your avr assembler supports --mlink-relax option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_AVR_MLINK_RELAX_OPTION
@@ -324,6 +336,12 @@
    preserves file table indices exactly as given. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_DWARF2_DEBUG_LINE
+#endif
+
+
+/* Define if your assembler supports the R_PPC64_ENTRY relocation. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_ENTRY_MARKERS
 #endif
 
 
@@ -502,6 +520,12 @@
 #endif
 
 
+/* Define if your assembler supports .machine and .machinemode. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_MACHINE_MACHINEMODE
+#endif
+
+
 /* Define if your assembler supports mfcr field. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_MFCRF
@@ -615,6 +639,12 @@
    against hidden symbols. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_SPARC_UA_PCREL_HIDDEN
+#endif
+
+
+/* Define if your assembler supports .stabs. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_STABS_DIRECTIVE
 #endif
 
 
@@ -1354,21 +1384,9 @@
 #endif
 
 
-/* Define if isl_ctx_get_max_operations exists. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_ISL_CTX_MAX_OPERATIONS
-#endif
-
-
 /* Define if isl_options_set_schedule_serialize_sccs exists. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
-#endif
-
-
-/* Define if isl_schedule_constraints_compute_schedule exists. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE
 #endif
 
 
@@ -1687,6 +1705,12 @@
 #endif
 
 
+/* Define if <utility> defines std::swap. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_SWAP_IN_UTILITY
+#endif
+
+
 /* Define to 1 if you have the `sysconf' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_SYSCONF
@@ -1847,7 +1871,8 @@
 #endif
 
 
-/* Define if your assembler supports .dwsect 0xB0000 */
+/* Define if your assembler supports AIX debug frame section label reference.
+   */
 #ifndef USED_FOR_TARGET
 #undef HAVE_XCOFF_DWARF_EXTRAS
 #endif
@@ -2053,6 +2078,12 @@
 /* GNU C Library minor version number used on the target, or 0. */
 #ifndef USED_FOR_TARGET
 #undef TARGET_GLIBC_MINOR
+#endif
+
+
+/* Define if your target C Library provides the AT_HWCAP value in the TCB */
+#ifndef USED_FOR_TARGET
+#undef TARGET_LIBC_PROVIDES_HWCAP_IN_TCB
 #endif
 
 

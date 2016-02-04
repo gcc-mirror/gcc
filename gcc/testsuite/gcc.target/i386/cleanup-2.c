@@ -1,4 +1,4 @@
-/* { dg-do run { target { *-*-linux* && { ! { ia32 } } } } } */
+/* { dg-do run { target { *-*-linux* && { ! ia32 } } } } */
 /* { dg-options "-fexceptions -fnon-call-exceptions -fasynchronous-unwind-tables -O2" } */
 /* Test complex CFA value expressions.  */
 

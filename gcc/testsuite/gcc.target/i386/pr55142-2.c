@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-require-effective-target maybe_x32 } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-O3 -mx32 -maddress-mode=long -fpic" } */

@@ -358,7 +358,7 @@ package body Sem_Prag is
 
       Others_Seen : Boolean := False;
       --  This flag is set when an "others" choice is encountered. It is used
-      --  to detect multiple illegal occurences of "others".
+      --  to detect multiple illegal occurrences of "others".
 
       procedure Analyze_Contract_Case (CCase : Node_Id);
       --  Verify the legality of a single contract case
@@ -411,7 +411,7 @@ package body Sem_Prag is
                Preanalyze_Assert_Expression (Case_Guard, Standard_Boolean);
 
                --  Emit a clarification message when the case guard contains
-               --  at leat one undefined reference, possibly due to contract
+               --  at least one undefined reference, possibly due to contract
                --  "freezing".
 
                if Errors /= Serious_Errors_Detected
@@ -426,7 +426,7 @@ package body Sem_Prag is
             Preanalyze_Assert_Expression (Conseq, Standard_Boolean);
 
             --  Emit a clarification message when the consequence contains
-            --  at leat one undefined reference, possibly due to contract
+            --  at least one undefined reference, possibly due to contract
             --  "freezing".
 
             if Errors /= Serious_Errors_Detected
@@ -23230,8 +23230,8 @@ package body Sem_Prag is
       Errors := Serious_Errors_Detected;
       Preanalyze_Assert_Expression (Expr, Standard_Boolean);
 
-      --  Emit a clarification message when the expression contains at leat one
-      --  undefined reference, possibly due to contract "freezing".
+      --  Emit a clarification message when the expression contains at least
+      --  one undefined reference, possibly due to contract "freezing".
 
       if Errors /= Serious_Errors_Detected
         and then Present (Freeze_Id)
@@ -26712,7 +26712,7 @@ package body Sem_Prag is
    begin
       Global_Seen := False;
 
-      --  Process all formal parameters of entries, [generic] subprograms and
+      --  Process all formal parameters of entries, [generic] subprograms, and
       --  their bodies.
 
       if Ekind_In (Subp_Id, E_Entry,
@@ -26744,7 +26744,7 @@ package body Sem_Prag is
                Append_New_Elmt (Formal, Subp_Outputs);
 
                --  Out parameters can act as inputs when the related type is
-               --  tagged, unconstrained array, unconstrained record or record
+               --  tagged, unconstrained array, unconstrained record, or record
                --  with unconstrained components.
 
                if Ekind (Formal) = E_Out_Parameter

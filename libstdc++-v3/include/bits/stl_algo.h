@@ -1,6 +1,6 @@
 // Algorithm implementation -*- C++ -*-
 
-// Copyright (C) 2001-2015 Free Software Foundation, Inc.
+// Copyright (C) 2001-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -63,7 +63,7 @@
 #include <bits/predefined_ops.h>
 
 #if __cplusplus >= 201103L
-#include <random>     // for std::uniform_int_distribution
+#include <bits/uniform_int_dist.h>
 #endif
 
 // See concept_check.h for the __glibcxx_*_requires macros.

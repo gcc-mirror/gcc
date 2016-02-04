@@ -1,6 +1,7 @@
+// { dg-do compile }
 // { dg-options "-std=gnu++11" }
 //
-// Copyright (C) 2011-2015 Free Software Foundation, Inc.
+// Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,9 +30,31 @@ test01()
 
   const size_t len = 3;
   typedef array<int, len> array_type;
-  VERIFY( (is_same<tuple_element<0, array_type>::type, int>::value == true) );
-  VERIFY( (is_same<tuple_element<1, array_type>::type, int>::value == true) );
-  VERIFY( (is_same<tuple_element<2, array_type>::type, int>::value == true) );
+
+  static_assert(is_same<tuple_element<0, array_type>::type, int>::value, "" );
+  static_assert(is_same<tuple_element<1, array_type>::type, int>::value, "" );
+  static_assert(is_same<tuple_element<2, array_type>::type, int>::value, "");
+
+  static_assert(is_same<tuple_element<0, const array_type>::type,
+                const int>::value, "");
+  static_assert(is_same<tuple_element<1, const array_type>::type,
+                const int>::value, "");
+  static_assert(is_same<tuple_element<2, const array_type>::type,
+                const int>::value, "");
+
+  static_assert(is_same<tuple_element<0, volatile array_type>::type,
+                volatile int>::value, "");
+  static_assert(is_same<tuple_element<1, volatile array_type>::type,
+                volatile int>::value, "");
+  static_assert( (is_same<tuple_element<2, volatile array_type>::type,
+           volatile int>::value == true) );
+
+  static_assert(is_same<tuple_element<0, const volatile array_type>::type,
+                const volatile int>::value, "");
+  static_assert(is_same<tuple_element<1, const volatile array_type>::type,
+                const volatile int>::value, "");
+  static_assert(is_same<tuple_element<2, const volatile array_type>::type,
+                const volatile int>::value, "");
 }
 
 int main()

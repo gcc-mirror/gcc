@@ -1,6 +1,6 @@
 // Specific definitions for Darwin -*- C++ -*-
 
-// Copyright (C) 2004-2015 Free Software Foundation, Inc.
+// Copyright (C) 2004-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,5 +46,8 @@
 // sched_yield are always available, so use them.
 #define _GLIBCXX_USE_NANOSLEEP 1
 #define _GLIBCXX_USE_SCHED_YIELD 1
+
+// No support for referencing weak symbols without a definition.
+#define _GLIBCXX_USE_WEAK_REF 0
 
 #endif

@@ -147,3 +147,58 @@ void test_caret_on_leading_whitespace (void)
    { dg-end-multiline-output "" } */
 #endif
 }
+
+/* Unit test for rendering of insertion fixit hints
+   (example taken from PR 62316).  */
+
+void test_fixit_insert (void)
+{
+#if 0
+   int a[2][2] = { 0, 1 , 2, 3 }; /* { dg-warning "insertion hints" } */
+/* { dg-begin-multiline-output "" }
+    int a[2][2] = { 0, 1 , 2, 3 };
+                    ^~~~
+                    {   }
+   { dg-end-multiline-output "" } */
+#endif
+}
+
+/* Unit test for rendering of "remove" fixit hints.  */
+
+void test_fixit_remove (void)
+{
+#if 0
+  int a;; /* { dg-warning "example of a removal hint" } */
+/* { dg-begin-multiline-output "" }
+   int a;;
+         ^
+         -
+   { dg-end-multiline-output "" } */
+#endif
+}
+
+/* Unit test for rendering of "replace" fixit hints.  */
+
+void test_fixit_replace (void)
+{
+#if 0
+  gtk_widget_showall (dlg); /* { dg-warning "example of a replacement hint" } */
+/* { dg-begin-multiline-output "" }
+   gtk_widget_showall (dlg);
+   ^~~~~~~~~~~~~~~~~~
+   gtk_widget_show_all
+   { dg-end-multiline-output "" } */
+#endif
+}
+
+/* Test of "%q+D" format code.  */
+
+int test_percent_q_plus_d (void)
+{
+  int local = 0; /* { dg-warning "example of plus in format code" } */
+/* { dg-begin-multiline-output "" }
+   int local = 0;
+       ^~~~~
+   { dg-end-multiline-output "" } */
+  return local;
+}

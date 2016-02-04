@@ -7,5 +7,5 @@ struct S
   __extension__ unsigned char data[];
 };
 
-/* { dg-final { scan-ada-spec "array \\(0 .. -1\\)" } } */
+/* { dg-final { scan-ada-spec "array \\(0 .. 0\\)" } } */
 /* { dg-final { cleanup-ada-spec } } */

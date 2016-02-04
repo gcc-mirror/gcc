@@ -1,4 +1,7 @@
 /* { dg-require-effective-target vect_int } */
+/* We now if-convert the loop unconditonally as the memory locations
+   are always stored to.  */
+/* { dg-additional-options "-fno-tree-loop-if-convert" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"

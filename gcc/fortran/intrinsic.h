@@ -1,6 +1,6 @@
 /* Header file for intrinsics check, resolve and simplify function
    prototypes.
-   Copyright (C) 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 2000-2016 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -70,6 +70,7 @@ bool gfc_check_dprod (gfc_expr *, gfc_expr *);
 bool gfc_check_dshift (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_eoshift (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_dtime_etime (gfc_expr *);
+bool gfc_check_event_query (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_fgetputc (gfc_expr *, gfc_expr *);
 bool gfc_check_fgetput (gfc_expr *);
 bool gfc_check_float (gfc_expr *);
@@ -271,6 +272,7 @@ gfc_expr *gfc_simplify_conjg (gfc_expr *);
 gfc_expr *gfc_simplify_cos (gfc_expr *);
 gfc_expr *gfc_simplify_cosh (gfc_expr *);
 gfc_expr *gfc_simplify_count (gfc_expr *, gfc_expr *, gfc_expr *);
+gfc_expr *gfc_simplify_cshift (gfc_expr *, gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_dcmplx (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_dble (gfc_expr *);
 gfc_expr *gfc_simplify_digits (gfc_expr *);
@@ -461,6 +463,7 @@ void gfc_resolve_dtime_sub (gfc_code *);
 void gfc_resolve_eoshift (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
 			  gfc_expr *);
 void gfc_resolve_etime_sub (gfc_code *);
+void gfc_resolve_event_query (gfc_code *);
 void gfc_resolve_exp (gfc_expr *, gfc_expr *);
 void gfc_resolve_exponent (gfc_expr *, gfc_expr *);
 void gfc_resolve_extends_type_of (gfc_expr *, gfc_expr *, gfc_expr *);

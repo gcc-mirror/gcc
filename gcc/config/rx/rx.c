@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Renesas RX processors.
-   Copyright (C) 2008-2015 Free Software Foundation, Inc.
+   Copyright (C) 2008-2016 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -2857,6 +2857,9 @@ rx_warn_func_return (tree decl)
 static bool
 rx_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 {
+  if (TARGET_JSR)
+    return false;
+
   /* Do not allow indirect tailcalls.  The
      sibcall patterns do not support them.  */
   if (decl == NULL)

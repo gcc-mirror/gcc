@@ -1,5 +1,5 @@
 // go-gcc.cc -- Go frontend to gcc IR.
-// Copyright (C) 2011-2015 Free Software Foundation, Inc.
+// Copyright (C) 2011-2016 Free Software Foundation, Inc.
 // Contributed by Ian Lance Taylor, Google.
 
 // This file is part of GCC.
@@ -1322,7 +1322,6 @@ Gcc_backend::string_constant_expression(const std::string& val)
   tree const_char_type = build_qualified_type(unsigned_char_type_node,
 					      TYPE_QUAL_CONST);
   tree string_type = build_array_type(const_char_type, index_type);
-  string_type = build_variant_type_copy(string_type);
   TYPE_STRING_FLAG(string_type) = 1;
   tree string_val = build_string(val.length(), val.data());
   TREE_TYPE(string_val) = string_type;

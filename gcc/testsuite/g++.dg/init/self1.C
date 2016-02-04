@@ -1,5 +1,4 @@
 // PR c++/29106
-// { dg-do run } 
 
 int i;
 

@@ -1,5 +1,5 @@
 /* Perform optimizations on tree structure.
-   Copyright (C) 1998-2015 Free Software Foundation, Inc.
+   Copyright (C) 1998-2016 Free Software Foundation, Inc.
    Written by Mark Michell (mark@codesourcery.com).
 
 This file is part of GCC.
@@ -646,6 +646,8 @@ maybe_clone_body (tree fn)
 	{
 	  if (expand_or_defer_fn_1 (clone))
 	    emit_associated_thunks (clone);
+	  /* We didn't generate a body, so remove the empty one.  */
+	  DECL_SAVED_TREE (clone) = NULL_TREE;
 	}
       else
 	expand_or_defer_fn (clone);

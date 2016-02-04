@@ -1,5 +1,5 @@
 /* Diagnostic subroutines for printing source-code
-   Copyright (C) 1999-2015 Free Software Foundation, Inc.
+   Copyright (C) 1999-2016 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -78,6 +78,7 @@ class colorizer
 
   void set_range (int range_idx) { set_state (range_idx); }
   void set_normal_text () { set_state (STATE_NORMAL_TEXT); }
+  void set_fixit_hint () { set_state (0); }
 
  private:
   void set_state (int state);
@@ -139,8 +140,8 @@ struct line_bounds
 /* A class to control the overall layout when printing a diagnostic.
 
    The layout is determined within the constructor.
-   It is then printed by repeatedly calling the "print_source_line"
-   and "print_annotation_line" methods.
+   It is then printed by repeatedly calling the "print_source_line",
+   "print_annotation_line" and "print_any_fixits" methods.
 
    We assume we have disjoint ranges.  */
 
@@ -155,8 +156,11 @@ class layout
 
   bool print_source_line (int row, line_bounds *lbounds_out);
   void print_annotation_line (int row, const line_bounds lbounds);
+  void print_any_fixits (int row, const rich_location *richloc);
 
  private:
+  void print_newline ();
+
   bool
   get_state_at_point (/* Inputs.  */
 		      int row, int column,
@@ -167,6 +171,9 @@ class layout
   int
   get_x_bound_for_row (int row, int caret_column,
 		       int last_non_ws);
+
+  void
+  move_to_column (int *column, int dest_column);
 
  private:
   diagnostic_context *m_context;
@@ -439,7 +446,7 @@ layout::layout (diagnostic_context * context,
     {
       /* This diagnostic printer can only cope with "sufficiently sane" ranges.
 	 Ignore any ranges that are awkward to handle.  */
-      location_range *loc_range = richloc->get_range (idx);
+      const location_range *loc_range = richloc->get_range (idx);
 
       /* If any part of the range isn't in the same file as the primary
 	 location of this diagnostic, ignore the range.  */
@@ -451,16 +458,38 @@ layout::layout (diagnostic_context * context,
 	if (loc_range->m_caret.file != m_exploc.file)
 	  continue;
 
+      /* Everything is now known to be in the correct source file,
+	 but it may require further sanitization.  */
+      layout_range ri (loc_range);
+
+      /* If we have a range that finishes before it starts (perhaps
+	 from something built via macro expansion), printing the
+	 range is likely to be nonsensical.  Also, attempting to do so
+	 breaks assumptions within the printing code  (PR c/68473).  */
+      if (loc_range->m_start.line > loc_range->m_finish.line)
+	{
+	  /* Is this the primary location?  */
+	  if (m_layout_ranges.length () == 0)
+	    {
+	      /* We want to print the caret for the primary location, but
+		 we must sanitize away m_start and m_finish.  */
+	      ri.m_start = ri.m_caret;
+	      ri.m_finish = ri.m_caret;
+	    }
+	  else
+	    /* This is a non-primary range; ignore it.  */
+	    continue;
+	}
+
       /* Passed all the tests; add the range to m_layout_ranges so that
 	 it will be printed.  */
-      layout_range ri (loc_range);
       m_layout_ranges.safe_push (ri);
 
       /* Update m_first_line/m_last_line if necessary.  */
-      if (loc_range->m_start.line < m_first_line)
-	m_first_line = loc_range->m_start.line;
-      if (loc_range->m_finish.line > m_last_line)
-	m_last_line = loc_range->m_finish.line;
+      if (ri.m_start.m_line < m_first_line)
+	m_first_line = ri.m_start.m_line;
+      if (ri.m_finish.m_line > m_last_line)
+	m_last_line = ri.m_finish.m_line;
     }
 
   /* Adjust m_x_offset.
@@ -497,14 +526,13 @@ layout::print_source_line (int row, line_bounds *lbounds_out)
   if (!line)
     return false;
 
-  line += m_x_offset;
-
   m_colorizer.set_normal_text ();
 
   /* We will stop printing the source line at any trailing
      whitespace.  */
   line_width = get_line_width_without_trailing_whitespace (line,
 							   line_width);
+  line += m_x_offset;
 
   pp_space (m_pp);
   int first_non_ws = INT_MAX;
@@ -548,7 +576,7 @@ layout::print_source_line (int row, line_bounds *lbounds_out)
       pp_character (m_pp, c);
       line++;
     }
-  pp_newline (m_pp);
+  print_newline ();
 
   lbounds_out->m_first_non_ws = first_non_ws;
   lbounds_out->m_last_non_ws = last_non_ws;
@@ -590,6 +618,85 @@ layout::print_annotation_line (int row, const line_bounds lbounds)
 	  pp_character (m_pp, ' ');
 	}
     }
+  print_newline ();
+}
+
+/* If there are any fixit hints on source line ROW within RICHLOC, print them.
+   They are printed in order, attempting to combine them onto lines, but
+   starting new lines if necessary.  */
+
+void
+layout::print_any_fixits (int row, const rich_location *richloc)
+{
+  int column = 0;
+  for (unsigned int i = 0; i < richloc->get_num_fixit_hints (); i++)
+    {
+      fixit_hint *hint = richloc->get_fixit_hint (i);
+      if (hint->affects_line_p (m_exploc.file, row))
+	{
+	  /* For now we assume each fixit hint can only touch one line.  */
+	  switch (hint->get_kind ())
+	    {
+	    case fixit_hint::INSERT:
+	      {
+		fixit_insert *insert = static_cast <fixit_insert *> (hint);
+		/* This assumes the insertion just affects one line.  */
+		int start_column
+		  = LOCATION_COLUMN (insert->get_location ());
+		move_to_column (&column, start_column);
+		m_colorizer.set_fixit_hint ();
+		pp_string (m_pp, insert->get_string ());
+		m_colorizer.set_normal_text ();
+		column += insert->get_length ();
+	      }
+	      break;
+
+	    case fixit_hint::REMOVE:
+	      {
+		fixit_remove *remove = static_cast <fixit_remove *> (hint);
+		/* This assumes the removal just affects one line.  */
+		source_range src_range = remove->get_range ();
+		int start_column = LOCATION_COLUMN (src_range.m_start);
+		int finish_column = LOCATION_COLUMN (src_range.m_finish);
+		move_to_column (&column, start_column);
+		for (int column = start_column; column <= finish_column; column++)
+		  {
+		    m_colorizer.set_fixit_hint ();
+		    pp_character (m_pp, '-');
+		    m_colorizer.set_normal_text ();
+		  }
+	      }
+	      break;
+
+	    case fixit_hint::REPLACE:
+	      {
+		fixit_replace *replace = static_cast <fixit_replace *> (hint);
+		int start_column
+		  = LOCATION_COLUMN (replace->get_range ().m_start);
+		move_to_column (&column, start_column);
+		m_colorizer.set_fixit_hint ();
+		pp_string (m_pp, replace->get_string ());
+		m_colorizer.set_normal_text ();
+		column += replace->get_length ();
+	      }
+	      break;
+
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+    }
+
+  /* Add a trailing newline, if necessary.  */
+  move_to_column (&column, 0);
+}
+
+/* Disable any colorization and emit a newline.  */
+
+void
+layout::print_newline ()
+{
+  m_colorizer.set_normal_text ();
   pp_newline (m_pp);
 }
 
@@ -675,6 +782,27 @@ layout::get_x_bound_for_row (int row, int caret_column,
   return result;
 }
 
+/* Given *COLUMN as an x-coordinate, print spaces to position
+   successive output at DEST_COLUMN, printing a newline if necessary,
+   and updating *COLUMN.  */
+
+void
+layout::move_to_column (int *column, int dest_column)
+{
+  /* Start a new line if we need to.  */
+  if (*column > dest_column)
+    {
+      print_newline ();
+      *column = 0;
+    }
+
+  while (*column < dest_column)
+    {
+      pp_space (m_pp);
+      (*column)++;
+    }
+}
+
 } /* End of anonymous namespace.  */
 
 /* Print the physical source code corresponding to the location of
@@ -684,6 +812,8 @@ void
 diagnostic_show_locus (diagnostic_context * context,
 		       const diagnostic_info *diagnostic)
 {
+  pp_newline (context->printer);
+
   if (!context->show_caret
       || diagnostic_location (diagnostic, 0) <= BUILTINS_LOCATION
       || diagnostic_location (diagnostic, 0) == context->last_location)
@@ -691,31 +821,23 @@ diagnostic_show_locus (diagnostic_context * context,
 
   context->last_location = diagnostic_location (diagnostic, 0);
 
-  pp_newline (context->printer);
-
   const char *saved_prefix = pp_get_prefix (context->printer);
   pp_set_prefix (context->printer, NULL);
 
-  {
-    layout layout (context, diagnostic);
-    int last_line = layout.get_last_line ();
-    for (int row = layout.get_first_line ();
-	 row <= last_line;
-	 row++)
-      {
-	/* Print the source line, followed by an annotation line
-	   consisting of any caret/underlines.  If the source line can't
-	   be read, print nothing.  */
-	line_bounds lbounds;
-	if (layout.print_source_line (row, &lbounds))
+  layout layout (context, diagnostic);
+  int last_line = layout.get_last_line ();
+  for (int row = layout.get_first_line (); row <= last_line; row++)
+    {
+      /* Print the source line, followed by an annotation line
+	 consisting of any caret/underlines, then any fixits.
+	 If the source line can't be read, print nothing.  */
+      line_bounds lbounds;
+      if (layout.print_source_line (row, &lbounds))
+	{
 	  layout.print_annotation_line (row, lbounds);
-      }
-
-    /* The closing scope here leads to the dtor for layout and thus
-       colorizer being called here, which affects the precise
-       place where colorization is turned off in the unittest
-       for colorized output.  */
-  }
+	  layout.print_any_fixits (row, diagnostic->richloc);
+	}
+    }
 
   pp_set_prefix (context->printer, saved_prefix);
 }

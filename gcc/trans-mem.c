@@ -1,5 +1,5 @@
 /* Passes for transactional memory support.
-   Copyright (C) 2008-2015 Free Software Foundation, Inc.
+   Copyright (C) 2008-2016 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -1190,7 +1190,6 @@ static void
 tm_log_emit_stmt (tree addr, gimple *stmt)
 {
   tree type = TREE_TYPE (addr);
-  tree size = TYPE_SIZE_UNIT (type);
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   gimple *log;
   enum built_in_function code = BUILT_IN_TM_LOG;
@@ -1201,43 +1200,60 @@ tm_log_emit_stmt (tree addr, gimple *stmt)
     code = BUILT_IN_TM_LOG_DOUBLE;
   else if (type == long_double_type_node)
     code = BUILT_IN_TM_LOG_LDOUBLE;
-  else if (tree_fits_uhwi_p (size))
+  else if (TYPE_SIZE (type) != NULL
+	   && tree_fits_uhwi_p (TYPE_SIZE (type)))
     {
-      unsigned int n = tree_to_uhwi (size);
-      switch (n)
+      unsigned HOST_WIDE_INT type_size = tree_to_uhwi (TYPE_SIZE (type));
+
+      if (TREE_CODE (type) == VECTOR_TYPE)
 	{
-	case 1:
-	  code = BUILT_IN_TM_LOG_1;
-	  break;
-	case 2:
-	  code = BUILT_IN_TM_LOG_2;
-	  break;
-	case 4:
-	  code = BUILT_IN_TM_LOG_4;
-	  break;
-	case 8:
-	  code = BUILT_IN_TM_LOG_8;
-	  break;
-	default:
-	  code = BUILT_IN_TM_LOG;
-	  if (TREE_CODE (type) == VECTOR_TYPE)
+	  switch (type_size)
 	    {
-	      if (n == 8 && builtin_decl_explicit (BUILT_IN_TM_LOG_M64))
-		code = BUILT_IN_TM_LOG_M64;
-	      else if (n == 16 && builtin_decl_explicit (BUILT_IN_TM_LOG_M128))
-		code = BUILT_IN_TM_LOG_M128;
-	      else if (n == 32 && builtin_decl_explicit (BUILT_IN_TM_LOG_M256))
-		code = BUILT_IN_TM_LOG_M256;
+	    case 64:
+	      code = BUILT_IN_TM_LOG_M64;
+	      break;
+	    case 128:
+	      code = BUILT_IN_TM_LOG_M128;
+	      break;
+	    case 256:
+	      code = BUILT_IN_TM_LOG_M256;
+	      break;
+	    default:
+	      goto unhandled_vec;
 	    }
-	  break;
+	  if (!builtin_decl_explicit_p (code))
+	    goto unhandled_vec;
+	}
+      else
+	{
+	unhandled_vec:
+	  switch (type_size)
+	    {
+	    case 8:
+	      code = BUILT_IN_TM_LOG_1;
+	      break;
+	    case 16:
+	      code = BUILT_IN_TM_LOG_2;
+	      break;
+	    case 32:
+	      code = BUILT_IN_TM_LOG_4;
+	      break;
+	    case 64:
+	      code = BUILT_IN_TM_LOG_8;
+	      break;
+	    }
 	}
     }
 
+  if (code != BUILT_IN_TM_LOG && !builtin_decl_explicit_p (code))
+    code = BUILT_IN_TM_LOG;
+  tree decl = builtin_decl_explicit (code);
+
   addr = gimplify_addr (&gsi, addr);
   if (code == BUILT_IN_TM_LOG)
-    log = gimple_build_call (builtin_decl_explicit (code), 2, addr,  size);
+    log = gimple_build_call (decl, 2, addr, TYPE_SIZE_UNIT (type));
   else
-    log = gimple_build_call (builtin_decl_explicit (code), 1, addr);
+    log = gimple_build_call (decl, 1, addr);
   gsi_insert_before (&gsi, log, GSI_SAME_STMT);
 }
 
@@ -1608,6 +1624,27 @@ examine_call_tm (unsigned *state, gimple_stmt_iterator *gsi)
   *state |= GTMA_HAVE_LOAD | GTMA_HAVE_STORE;
 }
 
+/* Iterate through the statements in the sequence, moving labels
+   (and thus edges) of transactions from "label_norm" to "label_uninst".  */
+
+static tree
+make_tm_uninst (gimple_stmt_iterator *gsi, bool *handled_ops_p,
+                struct walk_stmt_info *)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+
+  if (gtransaction *txn = dyn_cast <gtransaction *> (stmt))
+    {
+      *handled_ops_p = true;
+      txn->label_uninst = txn->label_norm;
+      txn->label_norm = NULL;
+    }
+  else
+    *handled_ops_p = !gimple_has_substatements (stmt);
+
+  return NULL_TREE;
+}
+
 /* Lower a GIMPLE_TRANSACTION statement.  */
 
 static void
@@ -1670,19 +1707,48 @@ lower_transaction (gimple_stmt_iterator *gsi, struct walk_stmt_info *wi)
 
   g = gimple_build_try (gimple_transaction_body (stmt),
 			gimple_seq_alloc_with_stmt (g), GIMPLE_TRY_FINALLY);
-  gsi_insert_after (gsi, g, GSI_CONTINUE_LINKING);
 
-  gimple_transaction_set_body (stmt, NULL);
+  /* For a (potentially) outer transaction, create two paths.  */
+  gimple_seq uninst = NULL;
+  if (outer_state == NULL)
+    {
+      uninst = copy_gimple_seq_and_replace_locals (g);
+      /* In the uninstrumented copy, reset inner transactions to have only
+	 an uninstrumented code path.  */
+      memset (&this_wi, 0, sizeof (this_wi));
+      walk_gimple_seq (uninst, make_tm_uninst, NULL, &this_wi);
+    }
+
+  tree label1 = create_artificial_label (UNKNOWN_LOCATION);
+  gsi_insert_after (gsi, gimple_build_label (label1), GSI_CONTINUE_LINKING);
+  gsi_insert_after (gsi, g, GSI_CONTINUE_LINKING);
+  gimple_transaction_set_label_norm (stmt, label1);
 
   /* If the transaction calls abort or if this is an outer transaction,
      add an "over" label afterwards.  */
-  if ((this_state & (GTMA_HAVE_ABORT))
+  tree label3 = NULL;
+  if ((this_state & GTMA_HAVE_ABORT)
+      || outer_state == NULL
       || (gimple_transaction_subcode (stmt) & GTMA_IS_OUTER))
     {
-      tree label = create_artificial_label (UNKNOWN_LOCATION);
-      gimple_transaction_set_label (stmt, label);
-      gsi_insert_after (gsi, gimple_build_label (label), GSI_CONTINUE_LINKING);
+      label3 = create_artificial_label (UNKNOWN_LOCATION);
+      gimple_transaction_set_label_over (stmt, label3);
     }
+
+  if (uninst != NULL)
+    {
+      gsi_insert_after (gsi, gimple_build_goto (label3), GSI_CONTINUE_LINKING);
+
+      tree label2 = create_artificial_label (UNKNOWN_LOCATION);
+      gsi_insert_after (gsi, gimple_build_label (label2), GSI_CONTINUE_LINKING);
+      gsi_insert_seq_after (gsi, uninst, GSI_CONTINUE_LINKING);
+      gimple_transaction_set_label_uninst (stmt, label2);
+    }
+
+  if (label3 != NULL)
+    gsi_insert_after (gsi, gimple_build_label (label3), GSI_CONTINUE_LINKING);
+
+  gimple_transaction_set_body (stmt, NULL);
 
   /* Record the set of operations found for use later.  */
   this_state |= gimple_transaction_subcode (stmt) & GTMA_DECLARATION_MASK;
@@ -1973,16 +2039,17 @@ tm_region_init (struct tm_region *region)
   struct tm_region *old_region;
   auto_vec<tm_region *> bb_regions;
 
-  all_tm_regions = region;
-  bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-
   /* We could store this information in bb->aux, but we may get called
      through get_all_tm_blocks() from another pass that may be already
      using bb->aux.  */
   bb_regions.safe_grow_cleared (last_basic_block_for_fn (cfun));
 
+  all_tm_regions = region;
+  bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   queue.safe_push (bb);
+  bitmap_set_bit (visited_blocks, bb->index);
   bb_regions[bb->index] = region;
+
   do
     {
       bb = queue.pop ();
@@ -2121,44 +2188,66 @@ transaction_subcode_ior (struct tm_region *region, unsigned flags)
 static gcall *
 build_tm_load (location_t loc, tree lhs, tree rhs, gimple_stmt_iterator *gsi)
 {
-  enum built_in_function code = END_BUILTINS;
-  tree t, type = TREE_TYPE (rhs), decl;
+  tree t, type = TREE_TYPE (rhs);
   gcall *gcall;
 
+  built_in_function code;
   if (type == float_type_node)
     code = BUILT_IN_TM_LOAD_FLOAT;
   else if (type == double_type_node)
     code = BUILT_IN_TM_LOAD_DOUBLE;
   else if (type == long_double_type_node)
     code = BUILT_IN_TM_LOAD_LDOUBLE;
-  else if (TYPE_SIZE_UNIT (type) != NULL
-	   && tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
+  else
     {
-      switch (tree_to_uhwi (TYPE_SIZE_UNIT (type)))
+      if (TYPE_SIZE (type) == NULL || !tree_fits_uhwi_p (TYPE_SIZE (type)))
+	return NULL;
+      unsigned HOST_WIDE_INT type_size = tree_to_uhwi (TYPE_SIZE (type));
+
+      if (TREE_CODE (type) == VECTOR_TYPE)
 	{
-	case 1:
-	  code = BUILT_IN_TM_LOAD_1;
-	  break;
-	case 2:
-	  code = BUILT_IN_TM_LOAD_2;
-	  break;
-	case 4:
-	  code = BUILT_IN_TM_LOAD_4;
-	  break;
-	case 8:
-	  code = BUILT_IN_TM_LOAD_8;
-	  break;
+	  switch (type_size)
+	    {
+	    case 64:
+	      code = BUILT_IN_TM_LOAD_M64;
+	      break;
+	    case 128:
+	      code = BUILT_IN_TM_LOAD_M128;
+	      break;
+	    case 256:
+	      code = BUILT_IN_TM_LOAD_M256;
+	      break;
+	    default:
+	      goto unhandled_vec;
+	    }
+	  if (!builtin_decl_explicit_p (code))
+	    goto unhandled_vec;
+	}
+      else
+	{
+	unhandled_vec:
+	  switch (type_size)
+	    {
+	    case 8:
+	      code = BUILT_IN_TM_LOAD_1;
+	      break;
+	    case 16:
+	      code = BUILT_IN_TM_LOAD_2;
+	      break;
+	    case 32:
+	      code = BUILT_IN_TM_LOAD_4;
+	      break;
+	    case 64:
+	      code = BUILT_IN_TM_LOAD_8;
+	      break;
+	    default:
+	      return NULL;
+	    }
 	}
     }
 
-  if (code == END_BUILTINS)
-    {
-      decl = targetm.vectorize.builtin_tm_load (type);
-      if (!decl)
-	return NULL;
-    }
-  else
-    decl = builtin_decl_explicit (code);
+  tree decl = builtin_decl_explicit (code);
+  gcc_assert (decl);
 
   t = gimplify_addr (gsi, rhs);
   gcall = gimple_build_call (decl, 1, t);
@@ -2193,44 +2282,66 @@ build_tm_load (location_t loc, tree lhs, tree rhs, gimple_stmt_iterator *gsi)
 static gcall *
 build_tm_store (location_t loc, tree lhs, tree rhs, gimple_stmt_iterator *gsi)
 {
-  enum built_in_function code = END_BUILTINS;
   tree t, fn, type = TREE_TYPE (rhs), simple_type;
   gcall *gcall;
 
+  built_in_function code;
   if (type == float_type_node)
     code = BUILT_IN_TM_STORE_FLOAT;
   else if (type == double_type_node)
     code = BUILT_IN_TM_STORE_DOUBLE;
   else if (type == long_double_type_node)
     code = BUILT_IN_TM_STORE_LDOUBLE;
-  else if (TYPE_SIZE_UNIT (type) != NULL
-	   && tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
+  else
     {
-      switch (tree_to_uhwi (TYPE_SIZE_UNIT (type)))
+      if (TYPE_SIZE (type) == NULL || !tree_fits_uhwi_p (TYPE_SIZE (type)))
+	return NULL;
+      unsigned HOST_WIDE_INT type_size = tree_to_uhwi (TYPE_SIZE (type));
+
+      if (TREE_CODE (type) == VECTOR_TYPE)
 	{
-	case 1:
-	  code = BUILT_IN_TM_STORE_1;
-	  break;
-	case 2:
-	  code = BUILT_IN_TM_STORE_2;
-	  break;
-	case 4:
-	  code = BUILT_IN_TM_STORE_4;
-	  break;
-	case 8:
-	  code = BUILT_IN_TM_STORE_8;
-	  break;
+	  switch (type_size)
+	    {
+	    case 64:
+	      code = BUILT_IN_TM_STORE_M64;
+	      break;
+	    case 128:
+	      code = BUILT_IN_TM_STORE_M128;
+	      break;
+	    case 256:
+	      code = BUILT_IN_TM_STORE_M256;
+	      break;
+	    default:
+	      goto unhandled_vec;
+	    }
+	  if (!builtin_decl_explicit_p (code))
+	    goto unhandled_vec;
+	}
+      else
+	{
+	unhandled_vec:
+	  switch (type_size)
+	    {
+	    case 8:
+	      code = BUILT_IN_TM_STORE_1;
+	      break;
+	    case 16:
+	      code = BUILT_IN_TM_STORE_2;
+	      break;
+	    case 32:
+	      code = BUILT_IN_TM_STORE_4;
+	      break;
+	    case 64:
+	      code = BUILT_IN_TM_STORE_8;
+	      break;
+	    default:
+	      return NULL;
+	    }
 	}
     }
 
-  if (code == END_BUILTINS)
-    {
-      fn = targetm.vectorize.builtin_tm_store (type);
-      if (!fn)
-	return NULL;
-    }
-  else
-    fn = builtin_decl_explicit (code);
+  fn = builtin_decl_explicit (code);
+  gcc_assert (fn);
 
   simple_type = TREE_VALUE (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn))));
 
@@ -2292,63 +2403,80 @@ expand_assign_tm (struct tm_region *region, gimple_stmt_iterator *gsi)
       return;
     }
 
+  if (load_p)
+    transaction_subcode_ior (region, GTMA_HAVE_LOAD);
+  if (store_p)
+    transaction_subcode_ior (region, GTMA_HAVE_STORE);
+
   // Remove original load/store statement.
   gsi_remove (gsi, true);
 
+  // Attempt to use a simple load/store helper function.
   if (load_p && !store_p)
-    {
-      transaction_subcode_ior (region, GTMA_HAVE_LOAD);
-      gcall = build_tm_load (loc, lhs, rhs, gsi);
-    }
+    gcall = build_tm_load (loc, lhs, rhs, gsi);
   else if (store_p && !load_p)
-    {
-      transaction_subcode_ior (region, GTMA_HAVE_STORE);
-      gcall = build_tm_store (loc, lhs, rhs, gsi);
-    }
+    gcall = build_tm_store (loc, lhs, rhs, gsi);
+
+  // If gcall has not been set, then we do not have a simple helper
+  // function available for the type.  This may be true of larger
+  // structures, vectors, and non-standard float types.
   if (!gcall)
     {
-      tree lhs_addr, rhs_addr, tmp;
+      tree lhs_addr, rhs_addr, ltmp = NULL, copy_fn;
 
-      if (load_p)
-	transaction_subcode_ior (region, GTMA_HAVE_LOAD);
-      if (store_p)
-	transaction_subcode_ior (region, GTMA_HAVE_STORE);
-
-      /* ??? Figure out if there's any possible overlap between the LHS
-	 and the RHS and if not, use MEMCPY.  */
-
-      if (load_p && is_gimple_reg (lhs))
+      // If this is a type that we couldn't handle above, but it's
+      // in a register, we must spill it to memory for the copy.
+      if (is_gimple_reg (lhs))
 	{
-	  tmp = create_tmp_var (TREE_TYPE (lhs));
-	  lhs_addr = build_fold_addr_expr (tmp);
+	  ltmp = create_tmp_var (TREE_TYPE (lhs));
+	  lhs_addr = build_fold_addr_expr (ltmp);
+	}
+      else
+	lhs_addr = gimplify_addr (gsi, lhs);
+      if (is_gimple_reg (rhs))
+	{
+	  tree rtmp = create_tmp_var (TREE_TYPE (rhs));
+	  rhs_addr = build_fold_addr_expr (rtmp);
+	  gcall = gimple_build_assign (rtmp, rhs);
+	  gsi_insert_before (gsi, gcall, GSI_SAME_STMT);
+	}
+      else
+	rhs_addr = gimplify_addr (gsi, rhs);
+
+      // Choose the appropriate memory transfer function.
+      if (load_p && store_p)
+	{
+	  // ??? Figure out if there's any possible overlap between
+	  // the LHS and the RHS and if not, use MEMCPY.
+	  copy_fn = builtin_decl_explicit (BUILT_IN_TM_MEMMOVE);
+	}
+      else if (load_p)
+	{
+	  // Note that the store is non-transactional and cannot overlap.
+	  copy_fn = builtin_decl_explicit (BUILT_IN_TM_MEMCPY_RTWN);
 	}
       else
 	{
-	  tmp = NULL_TREE;
-	  lhs_addr = gimplify_addr (gsi, lhs);
+	  // Note that the load is non-transactional and cannot overlap.
+	  copy_fn = builtin_decl_explicit (BUILT_IN_TM_MEMCPY_RNWT);
 	}
-      rhs_addr = gimplify_addr (gsi, rhs);
-      gcall = gimple_build_call (builtin_decl_explicit (BUILT_IN_TM_MEMMOVE),
-				 3, lhs_addr, rhs_addr,
+
+      gcall = gimple_build_call (copy_fn, 3, lhs_addr, rhs_addr,
 				 TYPE_SIZE_UNIT (TREE_TYPE (lhs)));
       gimple_set_location (gcall, loc);
       gsi_insert_before (gsi, gcall, GSI_SAME_STMT);
 
-      if (tmp)
+      if (ltmp)
 	{
-	  gcall = gimple_build_assign (lhs, tmp);
+	  gcall = gimple_build_assign (lhs, ltmp);
 	  gsi_insert_before (gsi, gcall, GSI_SAME_STMT);
 	}
     }
 
-  /* Now that we have the load/store in its instrumented form, add
-     thread private addresses to the log if applicable.  */
+  // Now that we have the load/store in its instrumented form, add
+  // thread private addresses to the log if applicable.
   if (!store_p)
     requires_barrier (region->entry_block, lhs, gcall);
-
-  // The calls to build_tm_{store,load} above inserted the instrumented
-  // call into the stream.
-  // gsi_insert_before (gsi, gcall, GSI_SAME_STMT);
 }
 
 
@@ -4113,35 +4241,6 @@ maybe_push_queue (struct cgraph_node *node,
     }
 }
 
-/* Duplicate the basic blocks in QUEUE for use in the uninstrumented
-   code path.  QUEUE are the basic blocks inside the transaction
-   represented in REGION.
-
-   Later in split_code_paths() we will add the conditional to choose
-   between the two alternatives.  */
-
-static void
-ipa_uninstrument_transaction (struct tm_region *region,
-			      vec<basic_block> queue)
-{
-  gimple *transaction = region->transaction_stmt;
-  basic_block transaction_bb = gimple_bb (transaction);
-  int n = queue.length ();
-  basic_block *new_bbs = XNEWVEC (basic_block, n);
-
-  copy_bbs (queue.address (), n, new_bbs, NULL, 0, NULL, NULL, transaction_bb,
-	    true);
-  edge e = make_edge (transaction_bb, new_bbs[0], EDGE_TM_UNINSTRUMENTED);
-  add_phi_args_after_copy (new_bbs, n, e);
-
-  // Now we will have a GIMPLE_ATOMIC with 3 possible edges out of it.
-  //   a) EDGE_FALLTHRU into the transaction
-  //   b) EDGE_TM_ABORT out of the transaction
-  //   c) EDGE_TM_UNINSTRUMENTED into the uninstrumented blocks.
-
-  free (new_bbs);
-}
-
 /* A subroutine of ipa_tm_scan_calls_transaction and ipa_tm_scan_calls_clone.
    Queue all callees within block BB.  */
 
@@ -4189,43 +4288,23 @@ static void
 ipa_tm_scan_calls_transaction (struct tm_ipa_cg_data *d,
 			       cgraph_node_queue *callees_p)
 {
-  struct tm_region *r;
-
   d->transaction_blocks_normal = BITMAP_ALLOC (&tm_obstack);
   d->all_tm_regions = all_tm_regions;
 
-  for (r = all_tm_regions; r; r = r->next)
+  for (tm_region *r = all_tm_regions; r; r = r->next)
     {
       vec<basic_block> bbs;
       basic_block bb;
       unsigned i;
 
       bbs = get_tm_region_blocks (r->entry_block, r->exit_blocks, NULL,
-				  d->transaction_blocks_normal, false);
-
-      // Generate the uninstrumented code path for this transaction.
-      ipa_uninstrument_transaction (r, bbs);
+				  d->transaction_blocks_normal, false, false);
 
       FOR_EACH_VEC_ELT (bbs, i, bb)
 	ipa_tm_scan_calls_block (callees_p, bb, false);
 
       bbs.release ();
     }
-
-  // ??? copy_bbs should maintain cgraph edges for the blocks as it is
-  // copying them, rather than forcing us to do this externally.
-  cgraph_edge::rebuild_edges ();
-
-  // ??? In ipa_uninstrument_transaction we don't try to update dominators
-  // because copy_bbs doesn't return a VEC like iterate_fix_dominators expects.
-  // Instead, just release dominators here so update_ssa recomputes them.
-  free_dominance_info (CDI_DOMINATORS);
-
-  // When building the uninstrumented code path, copy_bbs will have invoked
-  // create_new_def_for starting an "ssa update context".  There is only one
-  // instance of this context, so resolve ssa updates before moving on to
-  // the next function.
-  update_ssa (TODO_update_ssa);
 }
 
 /* Scan all calls in NODE as if this is the transactional clone,

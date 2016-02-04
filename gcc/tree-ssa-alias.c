@@ -1,5 +1,5 @@
 /* Alias analysis for trees.
-   Copyright (C) 2004-2015 Free Software Foundation, Inc.
+   Copyright (C) 2004-2016 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -194,7 +194,7 @@ ptr_deref_may_alias_decl_p (tree ptr, tree decl)
 	ptr = TREE_OPERAND (base, 0);
       else if (base
 	       && DECL_P (base))
-	return base == decl;
+	return compare_base_decls (base, decl) != 0;
       else if (base
 	       && CONSTANT_CLASS_P (base))
 	return false;
@@ -805,8 +805,10 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
       ref2 = TREE_OPERAND (TREE_OPERAND (ref2, 0), 0);
     }
 
-  /* We must have the same base DECL.  */
-  gcc_assert (ref1 == ref2);
+  /* Bases must be either same or uncomparable.  */
+  gcc_checking_assert (ref1 == ref2
+		       || (DECL_P (ref1) && DECL_P (ref2)
+			   && compare_base_decls (ref1, ref2) != 0));
 
   /* Pop the stacks in parallel and examine the COMPONENT_REFs of the same
      rank.  This is sufficient because we start from the same DECL and you
@@ -989,7 +991,7 @@ decl_refs_may_alias_p (tree ref1, tree base1,
   gcc_checking_assert (DECL_P (base1) && DECL_P (base2));
 
   /* If both references are based on different variables, they cannot alias.  */
-  if (base1 != base2)
+  if (compare_base_decls (base1, base2) == 0)
     return false;
 
   /* If both references are based on the same variable, they cannot alias if
@@ -1746,7 +1748,7 @@ ref_maybe_used_by_call_p_1 (gcall *call, ao_ref *ref)
 	 IL and remove this check instead.  */
       if (node
 	  && (not_read = ipa_reference_get_not_read_global (node))
-	  && bitmap_bit_p (not_read, DECL_UID (base)))
+	  && bitmap_bit_p (not_read, ipa_reference_var_uid (base)))
 	goto process_args;
     }
 
@@ -2132,7 +2134,7 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref)
 
       if (node
 	  && (not_written = ipa_reference_get_not_written_global (node))
-	  && bitmap_bit_p (not_written, DECL_UID (base)))
+	  && bitmap_bit_p (not_written, ipa_reference_var_uid (base)))
 	return false;
     }
 

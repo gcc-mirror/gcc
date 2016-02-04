@@ -1,5 +1,5 @@
 /* Expression parser.
-   Copyright (C) 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 2000-2016 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -69,7 +69,7 @@ gfc_match_defined_op_name (char *result, int error_flag)
   for (i = 0; name[i]; i++)
     if (!ISALPHA (name[i]))
       {
-	gfc_error ("Bad character %<%c%> in OPERATOR name at %C", name[i]);
+	gfc_error ("Bad character %qc in OPERATOR name at %C", name[i]);
 	return MATCH_ERROR;
       }
 

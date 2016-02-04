@@ -1,6 +1,6 @@
 #!/bin/sh
 # Generate arm-tables.opt from the lists in *.def.
-# Copyright (C) 2011-2015 Free Software Foundation, Inc.
+# Copyright (C) 2011-2016 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -23,7 +23,7 @@ cat <<EOF
 ; Generated automatically by genopt.sh from arm-cores.def, arm-arches.def
 ; and arm-fpus.def.
 
-; Copyright (C) 2011-2015 Free Software Foundation, Inc.
+; Copyright (C) 2011-2016 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;

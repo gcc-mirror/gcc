@@ -7,6 +7,7 @@ package main
 import (
 	"bytes"
 	"debug/elf"
+	"debug/macho"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -69,11 +70,11 @@ func readELFNote(filename, name string, typ int32) ([]byte, error) {
 
 var elfGoNote = []byte("Go\x00\x00")
 
-// readELFGoBuildID the Go build ID string from an ELF binary.
-// The Go build ID is stored in a note described by an ELF PT_NOTE prog header.
-// The caller has already opened filename, to get f, and read the first 4 kB out, in data.
+// The Go build ID is stored in a note described by an ELF PT_NOTE prog
+// header.  The caller has already opened filename, to get f, and read
+// at least 4 kB out, in data.
 func readELFGoBuildID(filename string, f *os.File, data []byte) (buildid string, err error) {
-	// Assume the note content is in the first 4 kB, already read.
+	// Assume the note content is in the data, already read.
 	// Rewrite the ELF header to set shnum to 0, so that we can pass
 	// the data to elf.NewFile and it will decode the Prog list but not
 	// try to read the section headers and the string table from disk.
@@ -95,22 +96,92 @@ func readELFGoBuildID(filename string, f *os.File, data []byte) (buildid string,
 		return "", &os.PathError{Path: filename, Op: "parse", Err: err}
 	}
 	for _, p := range ef.Progs {
-		if p.Type != elf.PT_NOTE || p.Off >= uint64(len(data)) || p.Off+p.Filesz >= uint64(len(data)) || p.Filesz < 16 {
+		if p.Type != elf.PT_NOTE || p.Filesz < 16 {
 			continue
 		}
 
-		note := data[p.Off : p.Off+p.Filesz]
-		nameSize := ef.ByteOrder.Uint32(note)
-		valSize := ef.ByteOrder.Uint32(note[4:])
-		tag := ef.ByteOrder.Uint32(note[8:])
-		name := note[12:16]
-		if nameSize != 4 || 16+valSize > uint32(len(note)) || tag != elfGoBuildIDTag || !bytes.Equal(name, elfGoNote) {
-			continue
+		var note []byte
+		if p.Off+p.Filesz < uint64(len(data)) {
+			note = data[p.Off : p.Off+p.Filesz]
+		} else {
+			// For some linkers, such as the Solaris linker,
+			// the buildid may not be found in data (which
+			// likely contains the first 16kB of the file)
+			// or even the first few megabytes of the file
+			// due to differences in note segment placement;
+			// in that case, extract the note data manually.
+			_, err = f.Seek(int64(p.Off), 0)
+			if err != nil {
+				return "", err
+			}
+
+			note = make([]byte, p.Filesz)
+			_, err = io.ReadFull(f, note)
+			if err != nil {
+				return "", err
+			}
 		}
 
-		return string(note[16 : 16+valSize]), nil
+		filesz := p.Filesz
+		for filesz >= 16 {
+			nameSize := ef.ByteOrder.Uint32(note)
+			valSize := ef.ByteOrder.Uint32(note[4:])
+			tag := ef.ByteOrder.Uint32(note[8:])
+			name := note[12:16]
+			if nameSize == 4 && 16+valSize <= uint32(len(note)) && tag == elfGoBuildIDTag && bytes.Equal(name, elfGoNote) {
+				return string(note[16 : 16+valSize]), nil
+			}
+
+			nameSize = (nameSize + 3) &^ 3
+			valSize = (valSize + 3) &^ 3
+			notesz := uint64(12 + nameSize + valSize)
+			if filesz <= notesz {
+				break
+			}
+			filesz -= notesz
+			note = note[notesz:]
+		}
 	}
 
 	// No note. Treat as successful but build ID empty.
 	return "", nil
+}
+
+// The Go build ID is stored at the beginning of the Mach-O __text segment.
+// The caller has already opened filename, to get f, and read a few kB out, in data.
+// Sadly, that's not guaranteed to hold the note, because there is an arbitrary amount
+// of other junk placed in the file ahead of the main text.
+func readMachoGoBuildID(filename string, f *os.File, data []byte) (buildid string, err error) {
+	// If the data we want has already been read, don't worry about Mach-O parsing.
+	// This is both an optimization and a hedge against the Mach-O parsing failing
+	// in the future due to, for example, the name of the __text section changing.
+	if b, err := readRawGoBuildID(filename, data); b != "" && err == nil {
+		return b, err
+	}
+
+	mf, err := macho.NewFile(f)
+	if err != nil {
+		return "", &os.PathError{Path: filename, Op: "parse", Err: err}
+	}
+
+	sect := mf.Section("__text")
+	if sect == nil {
+		// Every binary has a __text section. Something is wrong.
+		return "", &os.PathError{Path: filename, Op: "parse", Err: fmt.Errorf("cannot find __text section")}
+	}
+
+	// It should be in the first few bytes, but read a lot just in case,
+	// especially given our past problems on OS X with the build ID moving.
+	// There shouldn't be much difference between reading 4kB and 32kB:
+	// the hard part is getting to the data, not transferring it.
+	n := sect.Size
+	if n > uint64(BuildIDReadSize) {
+		n = uint64(BuildIDReadSize)
+	}
+	buf := make([]byte, n)
+	if _, err := f.ReadAt(buf, int64(sect.Offset)); err != nil {
+		return "", err
+	}
+
+	return readRawGoBuildID(filename, buf)
 }

@@ -1,5 +1,5 @@
 /* Induction variable optimizations.
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -253,13 +253,13 @@ struct iv_common_cand
   tree base;
   tree step;
   /* IV uses from which this common candidate is derived.  */
-  vec<iv_use *> uses;
+  auto_vec<iv_use *> uses;
   hashval_t hash;
 };
 
 /* Hashtable helpers.  */
 
-struct iv_common_cand_hasher : free_ptr_hash <iv_common_cand>
+struct iv_common_cand_hasher : delete_ptr_hash <iv_common_cand>
 {
   static inline hashval_t hash (const iv_common_cand *);
   static inline bool equal (const iv_common_cand *, const iv_common_cand *);
@@ -2815,6 +2815,16 @@ add_candidate_1 (struct ivopts_data *data,
   struct iv_cand *cand = NULL;
   tree type, orig_type;
 
+  /* -fkeep-gc-roots-live means that we have to keep a real pointer
+     live, but the ivopts code may replace a real pointer with one
+     pointing before or after the memory block that is then adjusted
+     into the memory block during the loop.  FIXME: It would likely be
+     better to actually force the pointer live and still use ivopts;
+     for example, it would be enough to write the pointer into memory
+     and keep it there until after the loop.  */
+  if (flag_keep_gc_roots_live && POINTER_TYPE_P (TREE_TYPE (base)))
+    return NULL;
+
   /* For non-original variables, make sure their values are computed in a type
      that does not invoke undefined behavior on overflows (since in general,
      we cannot prove that these induction variables are non-wrapping).  */
@@ -3083,8 +3093,11 @@ add_iv_candidate_for_biv (struct ivopts_data *data, struct iv *iv)
 	  cand = add_candidate_1 (data,
 				  iv->base, iv->step, true, IP_ORIGINAL, NULL,
 				  SSA_NAME_DEF_STMT (def));
-	  cand->var_before = iv->ssa_name;
-	  cand->var_after = def;
+	  if (cand)
+	    {
+	      cand->var_before = iv->ssa_name;
+	      cand->var_after = def;
+	    }
 	}
       else
 	gcc_assert (gimple_bb (phi) == data->current_loop->header);
@@ -3127,7 +3140,7 @@ record_common_cand (struct ivopts_data *data, tree base,
   slot = data->iv_common_cand_tab->find_slot (&ent, INSERT);
   if (*slot == NULL)
     {
-      *slot = XNEW (struct iv_common_cand);
+      *slot = new iv_common_cand ();
       (*slot)->base = base;
       (*slot)->step = step;
       (*slot)->uses.create (8);
@@ -4234,7 +4247,7 @@ get_address_cost (bool symbol_present, bool var_present,
 }
 
  /* Calculate the SPEED or size cost of shiftadd EXPR in MODE.  MULT is the
-    the EXPR operand holding the shift.  COST0 and COST1 are the costs for
+    EXPR operand holding the shift.  COST0 and COST1 are the costs for
     calculating the operands of EXPR.  Returns true if successful, and returns
     the cost in COST.  */
 

@@ -211,11 +211,15 @@ func cgoLookupPTR(addr string) ([]string, error, bool) {
 	acquireThread()
 	defer releaseThread()
 
-	ip := ParseIP(addr)
+	var zone string
+	ip := parseIPv4(addr)
+	if ip == nil {
+		ip, zone = parseIPv6(addr, true)
+	}
 	if ip == nil {
 		return nil, &DNSError{Err: "invalid address", Name: addr}, true
 	}
-	sa, salen := cgoSockaddr(ip)
+	sa, salen := cgoSockaddr(ip, zone)
 	if sa == nil {
 		return nil, &DNSError{Err: "invalid address " + ip.String(), Name: addr}, true
 	}
@@ -247,20 +251,15 @@ func cgoLookupPTR(addr string) ([]string, error, bool) {
 			break
 		}
 	}
-	// Add trailing dot to match pure Go reverse resolver
-	// and all other lookup routines. See golang.org/issue/12189.
-	if len(b) > 0 && b[len(b)-1] != '.' {
-		b = append(b, '.')
-	}
-	return []string{string(b)}, nil, true
+	return []string{absDomainName(b)}, nil, true
 }
 
-func cgoSockaddr(ip IP) (*syscall.RawSockaddr, syscall.Socklen_t) {
+func cgoSockaddr(ip IP, zone string) (*syscall.RawSockaddr, syscall.Socklen_t) {
 	if ip4 := ip.To4(); ip4 != nil {
 		return cgoSockaddrInet4(ip4), syscall.Socklen_t(syscall.SizeofSockaddrInet4)
 	}
 	if ip6 := ip.To16(); ip6 != nil {
-		return cgoSockaddrInet6(ip6), syscall.Socklen_t(syscall.SizeofSockaddrInet6)
+		return cgoSockaddrInet6(ip6, zoneToInt(zone)), syscall.Socklen_t(syscall.SizeofSockaddrInet6)
 	}
 	return nil, 0
 }

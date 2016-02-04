@@ -7,7 +7,6 @@
 
 #define VEC_T __m128
 #define FP_T float
-#define ASM_SUFFIX "s"
 
 #define ROUND_INTRIN(x, mode) _mm_round_ss(x, x, mode)
 #define ROUND_MODE _MM_FROUND_NINT

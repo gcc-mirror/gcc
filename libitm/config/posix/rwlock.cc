@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2015 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2016 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -31,6 +31,7 @@ namespace GTM HIDDEN {
 
 gtm_rwlock::gtm_rwlock()
   : summary (0),
+    htm_fastpath (0),
     mutex (PTHREAD_MUTEX_INITIALIZER),
     c_readers (PTHREAD_COND_INITIALIZER),
     c_writers (PTHREAD_COND_INITIALIZER),
@@ -199,6 +200,26 @@ gtm_rwlock::write_lock_generic (gtm_thread *tx)
       // If we have not seen any readers, we will not wait.
       if (readers == 0)
 	break;
+
+      // If this is an upgrade, we have to break deadlocks with
+      // privatization safety.  This may fail on our side, in which
+      // case we need to cancel our attempt to upgrade.  Also, we do not
+      // block using the convdar but just spin so that we never have to be
+      // woken.
+      // FIXME This is horribly inefficient -- but so is not being able
+      // to use futexes in this case.
+      if (tx != 0)
+	{
+	  pthread_mutex_unlock (&this->mutex);
+	  if (!abi_disp ()->snapshot_most_recent ())
+	    {
+	      write_unlock ();
+	      return false;
+	    }
+	  pthread_mutex_lock (&this->mutex);
+	  continue;
+	}
+
 
       // We've seen a number of readers, so we publish this number and wait.
       this->a_readers = readers;

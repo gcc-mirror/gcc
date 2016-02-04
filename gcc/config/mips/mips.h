@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
-   Copyright (C) 1989-2015 Free Software Foundation, Inc.
+   Copyright (C) 1989-2016 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64-bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -1014,9 +1014,10 @@ struct mips_cpu_info {
 #define ISA_HAS_LXC1_SXC1	ISA_HAS_FP4
 
 /* ISA has paired-single instructions.  */
-#define ISA_HAS_PAIRED_SINGLE	(ISA_MIPS64				\
-				 || (mips_isa_rev >= 2			\
-				     && mips_isa_rev <= 5))
+#define ISA_HAS_PAIRED_SINGLE	((ISA_MIPS64				\
+				  || (mips_isa_rev >= 2			\
+				      && mips_isa_rev <= 5))		\
+				 && !TARGET_OCTEON)
 
 /* ISA has conditional trap instructions.  */
 #define ISA_HAS_COND_TRAP	(!ISA_MIPS1				\
@@ -3273,6 +3274,13 @@ struct GTY(())  machine_function {
   /* True if none of the functions that are called by this function need
      stack space allocated for their arguments.  */
   bool optimize_call_stack;
+
+  /* True if one of the functions calling this function may not allocate
+     a frame header.  */
+  bool callers_may_not_allocate_frame;
+
+  /* True if GCC stored callee saved registers in the frame header.  */
+  bool use_frame_header_for_callee_saved_regs;
 };
 #endif
 

@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2015 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2016 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -3915,9 +3915,9 @@ indicates that that register will be equal to @var{op} at run time; the
 scope of this equivalence differs between the two types of notes.  The
 value which the insn explicitly copies into the register may look
 different from @var{op}, but they will be equal at run time.  If the
-output of the single @code{set} is a @code{strict_low_part} expression,
-the note refers to the register that is contained in @code{SUBREG_REG}
-of the @code{subreg} expression.
+output of the single @code{set} is a @code{strict_low_part} or
+@code{zero_extract} expression, the note refers to the register that
+is contained in its first operand.
 
 For @code{REG_EQUIV}, the register is equivalent to @var{op} throughout
 the entire function, and could validly be replaced in all its

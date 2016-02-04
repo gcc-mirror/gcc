@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Sun SPARC.
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -506,6 +506,7 @@ extern enum cmodel sparc_cmodel;
 /* FIXME, this is wrong when TARGET_ARCH64 and TARGET_STACK_BIAS, because
    then %sp+2047 is 128-bit aligned so %sp is really only byte-aligned.  */
 #define STACK_BOUNDARY (TARGET_ARCH64 ? 128 : 64)
+
 /* Temporary hack until the FIXME above is fixed.  */
 #define SPARC_STACK_BOUNDARY_HACK (TARGET_ARCH64 && TARGET_STACK_BIAS)
 
@@ -683,6 +684,31 @@ extern enum cmodel sparc_cmodel;
   1, 1, 1, 1, 1, 1, 1, 1,	\
   0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 1,	\
+				\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+				\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+				\
+  1, 1, 1, 1, 1, 1, 1}
+
+/* 1 for registers not available across function calls.
+   Unlike the above, this need not include the FIXED_REGISTERS, but any
+   registers that can be used without being saved.
+   The latter must include the registers where values are returned
+   and the register where structure-value addresses are passed.
+   Aside from that, you can include as many other registers as you like.  */
+
+#define CALL_REALLY_USED_REGISTERS  \
+ {1, 1, 1, 1, 1, 1, 1, 1,	\
+  1, 1, 1, 1, 1, 1, 1, 1,	\
+  0, 0, 0, 0, 0, 0, 0, 0,	\
+  0, 0, 0, 0, 0, 0, 0, 0,	\
 				\
   1, 1, 1, 1, 1, 1, 1, 1,	\
   1, 1, 1, 1, 1, 1, 1, 1,	\
@@ -1150,9 +1176,8 @@ extern char leaf_reg_remap[];
    On SPARC, these are the "output" registers.  v9 also uses %f0-%f31.  */
 
 #define FUNCTION_ARG_REGNO_P(N) \
-(TARGET_ARCH64 \
- ? (((N) >= 8 && (N) <= 13) || ((N) >= 32 && (N) <= 63)) \
- : ((N) >= 8 && (N) <= 13))
+  (((N) >= 8 && (N) <= 13)	\
+   || (TARGET_ARCH64 && TARGET_FPU && (N) >= 32 && (N) <= 63))
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
@@ -1776,3 +1801,5 @@ extern int sparc_indent_opcode;
 
 /* Define this to 1 if the FE_EXCEPT values defined in fenv.h start at 1.  */
 #define SPARC_LOW_FE_EXCEPT_VALUES 0
+
+#define TARGET_SUPPORTS_WIDE_INT 1

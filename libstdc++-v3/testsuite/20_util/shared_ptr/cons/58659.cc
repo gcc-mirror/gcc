@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++11" }
 
-// Copyright (C) 2013-2015 Free Software Foundation, Inc.
+// Copyright (C) 2013-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,6 +50,14 @@ namespace std
         VERIFY(n == 1 && p == (void*)storage && allocated);
         allocated = false;
       }
+
+      template<typename _Up, typename... _Args>
+        void construct(_Up* __p, _Args&&... __args)
+        { ::new(__p) _Up(std::forward<_Args>(__args)...); }
+
+      template<typename _Up>
+        void destroy(_Up* __p)
+        { __p->~_Up(); }
 
       static char storage[sizeof(spcd)];
       static bool allocated;

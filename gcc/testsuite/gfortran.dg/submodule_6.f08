@@ -1,6 +1,10 @@
 ! { dg-do run }
+! { dg-require-effective-target lto }
+! { dg-options "-flto" }
 !
-! Checks that the results of module procedures have the correct characteristics.
+! Checks that the results of module procedures have the correct characteristics
+! and that submodules use the module version of vtables (PR66762). This latter
+! requires the -flto compile option.
 !
 ! Contributed by Reinhold Bader  <reinhold.bader@lrz.de>
 !

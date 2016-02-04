@@ -1,5 +1,5 @@
 /* Target hook definitions.
-   Copyright (C) 2001-2015 Free Software Foundation, Inc.
+   Copyright (C) 2001-2016 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -1648,11 +1648,12 @@ DEFHOOK
 (validate_dims,
 "This hook should check the launch dimensions provided for an OpenACC\n\
 compute region, or routine.  Defaulted values are represented as -1\n\
-and non-constant values as 0. The @var{fn_level} is negative for the\n\
+and non-constant values as 0.  The @var{fn_level} is negative for the\n\
 function corresponding to the compute region.  For a routine is is the\n\
-outermost level at which partitioned execution may be spawned.  It\n\
-should fill in anything that needs to default to non-unity and verify\n\
-non-defaults.  Diagnostics should be issued as appropriate.  Return\n\
+outermost level at which partitioned execution may be spawned.  The hook\n\
+should verify non-default values.  If DECL is NULL, global defaults\n\
+are being validated and unspecified defaults should be filled in.\n\
+Diagnostics should be issued as appropriate.  Return\n\
 true, if changes have been made.  You must override this hook to\n\
 provide dimensions larger than 1.",
 bool, (tree decl, int *dims, int fn_level),
@@ -1807,24 +1808,6 @@ parameter is true if the memory access is defined in a packed struct.",
  bool,
  (machine_mode mode, const_tree type, int misalignment, bool is_packed),
  default_builtin_support_vector_misalignment)
-
-/* Return the builtin decl needed to load a vector of TYPE.  */
-DEFHOOK
-(builtin_tm_load,
- "This hook should return the built-in decl needed to load a vector of the "
- "given type within a transaction.",
- tree,
- (tree),
- default_builtin_tm_load_store)
-
-/* Return the builtin decl needed to store a vector of TYPE.  */
-DEFHOOK
-(builtin_tm_store,
- "This hook should return the built-in decl needed to store a vector of the "
- "given type within a transaction.",
- tree,
- (tree),
- default_builtin_tm_load_store)
 
 /* Returns the preferred mode for SIMD operations for the specified
    scalar mode.  */
@@ -2459,17 +2442,13 @@ identical versions.",
  tree, (void *decl), NULL)
 
 /* Returns a code for a target-specific builtin that implements
-   reciprocal of the function, or NULL_TREE if not available.  */
+   reciprocal of a target-specific function, or NULL_TREE if not available.  */
 DEFHOOK
 (builtin_reciprocal,
- "This hook should return the DECL of a function that implements reciprocal of\n\
-the builtin function with builtin function code @var{fn}, or\n\
-@code{NULL_TREE} if such a function is not available.  @var{md_fn} is true\n\
-when @var{fn} is a code of a machine-dependent builtin function.  When\n\
-@var{sqrt} is true, additional optimizations that apply only to the reciprocal\n\
-of a square root function are performed, and only reciprocals of @code{sqrt}\n\
-function are valid.",
- tree, (unsigned fn, bool md_fn, bool sqrt),
+ "This hook should return the DECL of a function that implements the\n\
+reciprocal of the machine-specific builtin function @var{fndecl}, or\n\
+@code{NULL_TREE} if such a function is not available.",
+ tree, (tree fndecl),
  default_builtin_reciprocal)
 
 /* For a vendor-specific TYPE, return a pointer to a statically-allocated
@@ -2633,29 +2612,29 @@ modes and they have different conditional execution capability, such as ARM.",
 DEFHOOK
 (gen_ccmp_first,
  "This function prepares to emit a comparison insn for the first compare in a\n\
- sequence of conditional comparisions.  It returns a appropriate @code{CC}\n\
- for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.  The insns to\n\
- prepare the compare are saved in @var{prep_seq} and the compare insns are\n\
- saved in @var{gen_seq}.  They will be emitted when all the compares in the\n\
- the conditional comparision are generated without error.  @var{code} is\n\
- the @code{rtx_code} of the compare for @var{op0} and @var{op1}.",
+ sequence of conditional comparisions.  It returns an appropriate comparison\n\
+ with @code{CC} for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.\n\
+ The insns to prepare the compare are saved in @var{prep_seq} and the compare\n\
+ insns are saved in @var{gen_seq}.  They will be emitted when all the\n\
+ compares in the the conditional comparision are generated without error.\n\
+ @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.",
  rtx, (rtx *prep_seq, rtx *gen_seq, int code, tree op0, tree op1),
  NULL)
 
 DEFHOOK
 (gen_ccmp_next,
- "This function prepare to emit a conditional comparison within a sequence of\n\
- conditional comparisons.  It returns a appropriate @code{CC} for passing to\n\
- @code{gen_ccmp_next} or @code{cbranch_optab}.  The insns to prepare the\n\
- compare are saved in @var{prep_seq} and the compare insns are saved in\n\
- @var{gen_seq}.  They will be emitted when all the compares in the conditional\n\
- comparision are generated without error.  The @var{prev} expression is the\n\
- result of a prior call to @code{gen_ccmp_first} or @code{gen_ccmp_next}.  It\n\
- may return @code{NULL} if the combination of @var{prev} and this comparison is\n\
- not supported, otherwise the result must be appropriate for passing to\n\
- @code{gen_ccmp_next} or @code{cbranch_optab}.  @var{code} is the\n\
- @code{rtx_code} of the compare for @var{op0} and @var{op1}.  @var{bit_code}\n\
- is @code{AND} or @code{IOR}, which is the op on the two compares.",
+ "This function prepares to emit a conditional comparison within a sequence\n\
+ of conditional comparisons.  It returns an appropriate comparison with\n\
+ @code{CC} for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.\n\
+ The insns to prepare the compare are saved in @var{prep_seq} and the compare\n\
+ insns are saved in @var{gen_seq}.  They will be emitted when all the\n\
+ compares in the conditional comparision are generated without error.  The\n\
+ @var{prev} expression is the result of a prior call to @code{gen_ccmp_first}\n\
+ or @code{gen_ccmp_next}.  It may return @code{NULL} if the combination of\n\
+ @var{prev} and this comparison is not supported, otherwise the result must\n\
+ be appropriate for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.\n\
+ @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.\n\
+ @var{bit_code} is @code{AND} or @code{IOR}, which is the op on the compares.",
  rtx, (rtx *prep_seq, rtx *gen_seq, rtx prev, int cmp_code, tree op0, tree op1, int bit_code),
  NULL)
 
@@ -3437,6 +3416,23 @@ move would be greater than that of a library call.",
  bool, (unsigned HOST_WIDE_INT size, unsigned int alignment,
         enum by_pieces_operation op, bool speed_p),
  default_use_by_pieces_infrastructure_p)
+
+DEFHOOK
+(optab_supported_p,
+ "Return true if the optimizers should use optab @var{op} with\n\
+modes @var{mode1} and @var{mode2} for optimization type @var{opt_type}.\n\
+The optab is known to have an associated @file{.md} instruction\n\
+whose C condition is true.  @var{mode2} is only meaningful for conversion\n\
+optabs; for direct optabs it is a copy of @var{mode1}.\n\
+\n\
+For example, when called with @var{op} equal to @code{rint_optab} and\n\
+@var{mode1} equal to @code{DFmode}, the hook should say whether the\n\
+optimizers should use optab @code{rintdf2}.\n\
+\n\
+The default hook returns true for all inputs.",
+ bool, (int op, machine_mode mode1, machine_mode mode2,
+	optimization_type opt_type),
+ default_optab_supported_p)
 
 /* True for MODE if the target expects that registers in this mode will
    be allocated to registers in a small register class.  The compiler is
@@ -4878,10 +4874,10 @@ This is currently used only by the C and C++ front ends.",
 DEFHOOK
 (ira_change_pseudo_allocno_class,
  "A target hook which can change allocno class for given pseudo from\n\
-  allocno class calculated by IRA.\n\
+  allocno and best class calculated by IRA.\n\
   \n\
   The default version of this target hook always returns given class.",
- reg_class_t, (int, reg_class_t),
+ reg_class_t, (int, reg_class_t, reg_class_t),
  default_ira_change_pseudo_allocno_class)
 
 /* Return true if we use LRA instead of reload.  */

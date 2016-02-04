@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,15 +73,14 @@ package body Exp_Sel is
       Stmt : Node_Id;
 
    begin
-      if Exception_Mechanism = Back_End_Exceptions then
 
-         --  With ZCX, aborts are not defered in handlers
+      --  With ZCX exceptions, aborts are not defered in handlers. With SJLJ,
+      --  they are deferred at the beginning of Abort_Signal handlers.
 
+      if ZCX_Exceptions then
          Stmt := Make_Null_Statement (Loc);
-      else
-         --  With FE SJLJ, aborts are defered at the beginning of Abort_Signal
-         --  handlers.
 
+      else
          Stmt :=
            Make_Procedure_Call_Statement (Loc,
              Name => New_Occurrence_Of (RTE (RE_Abort_Undefer), Loc),

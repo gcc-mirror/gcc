@@ -1,5 +1,5 @@
 /* Target Definitions for NVPTX.
-   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -46,7 +46,8 @@
 /* Chosen such that we won't have to deal with multi-word subregs.  */
 #define UNITS_PER_WORD 8
 
-#define PARM_BOUNDARY 8
+/* Alignments in bits.  */
+#define PARM_BOUNDARY 32
 #define STACK_BOUNDARY 64
 #define FUNCTION_BOUNDARY 32
 #define BIGGEST_ALIGNMENT 64
@@ -69,6 +70,7 @@
 #define FLOAT_TYPE_SIZE 32
 #define DOUBLE_TYPE_SIZE 64
 #define LONG_DOUBLE_TYPE_SIZE 64
+#define TARGET_SUPPORTS_WIDE_INT 1
 
 #undef SIZE_TYPE
 #define SIZE_TYPE (TARGET_ABI64 ? "long unsigned int" : "unsigned int")
@@ -76,53 +78,31 @@
 #define PTRDIFF_TYPE (TARGET_ABI64 ? "long int" : "int")
 
 #define POINTER_SIZE (TARGET_ABI64 ? 64 : 32)
-
 #define Pmode (TARGET_ABI64 ? DImode : SImode)
 
 /* Registers.  Since ptx is a virtual target, we just define a few
-   hard registers for special purposes and leave pseudos unallocated.  */
-
+   hard registers for special purposes and leave pseudos unallocated.
+   We have to have some available hard registers, to keep gcc setup
+   happy.  */
 #define FIRST_PSEUDO_REGISTER 16
-#define FIXED_REGISTERS					\
-  { 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1 }
-#define CALL_USED_REGISTERS				\
-  { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
+#define FIXED_REGISTERS	    { 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+#define CALL_USED_REGISTERS { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
 
-#define HARD_REGNO_NREGS(regno, mode)	((void)(regno), (void)(mode), 1)
-#define CANNOT_CHANGE_MODE_CLASS(M1, M2, CLS) ((CLS) == RETURN_REG)
-#define HARD_REGNO_MODE_OK(REG, MODE) nvptx_hard_regno_mode_ok (REG, MODE)
+#define HARD_REGNO_NREGS(REG, MODE)		\
+  ((void)(REG), (void)(MODE), 1)
+#define CANNOT_CHANGE_MODE_CLASS(M1, M2, CLS)	\
+  ((void)(M1), (void)(M2), (void)(CLS), true)
+#define HARD_REGNO_MODE_OK(REG, MODE)		\
+     ((void)(REG), (void)(MODE), true)
 
 /* Register Classes.  */
-
-enum reg_class
-  {
-    NO_REGS,
-    RETURN_REG,
-    ALL_REGS,
-    LIM_REG_CLASSES
-  };
-
+enum reg_class             {  NO_REGS,    ALL_REGS,	LIM_REG_CLASSES };
+#define REG_CLASS_NAMES    { "NO_REGS",  "ALL_REGS" }
+#define REG_CLASS_CONTENTS { { 0x0000 }, { 0xFFFF } }
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-#define REG_CLASS_NAMES {	  \
-    "RETURN_REG",		  \
-    "NO_REGS",			  \
-    "ALL_REGS" }
-
-#define REG_CLASS_CONTENTS	\
-{				\
-  /* NO_REGS.  */		\
-  { 0x0000 },			\
-  /* RETURN_REG.  */		\
-  { 0x0008 },			\
-  /* ALL_REGS.  */		\
-  { 0xFFFF },			\
-}
-
 #define GENERAL_REGS ALL_REGS
-
-#define REGNO_REG_CLASS(R) ((R) == 4 ? RETURN_REG : ALL_REGS)
-
+#define REGNO_REG_CLASS(R) ((void)(R), ALL_REGS)
 #define BASE_REG_CLASS ALL_REGS
 #define INDEX_REG_CLASS NO_REGS
 
@@ -135,18 +115,12 @@ enum reg_class
 #define MODES_TIEABLE_P(M1, M2) false
 
 #define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE)		\
-  if (GET_MODE_CLASS (MODE) == MODE_INT			\
-      && GET_MODE_SIZE (MODE) < GET_MODE_SIZE (SImode))	\
+  if ((MODE) == QImode || (MODE) == HImode)		\
     {							\
       (MODE) = SImode;					\
+      (void)(UNSIGNEDP);				\
+      (void)(TYPE);					\
     }
-
-/* Address spaces.  */
-#define ADDR_SPACE_GLOBAL 1
-#define ADDR_SPACE_SHARED 3
-#define ADDR_SPACE_CONST 4
-#define ADDR_SPACE_LOCAL 5
-#define ADDR_SPACE_PARAM 101
 
 /* Stack and Calling.  */
 
@@ -154,37 +128,37 @@ enum reg_class
 #define FRAME_GROWS_DOWNWARD 0
 #define STACK_GROWS_DOWNWARD 1
 
+#define NVPTX_RETURN_REGNUM 0
 #define STACK_POINTER_REGNUM 1
-#define HARD_FRAME_POINTER_REGNUM 2
-#define NVPTX_PUNNING_BUFFER_REGNUM 3
-#define NVPTX_RETURN_REGNUM 4
-#define FRAME_POINTER_REGNUM 15
-#define ARG_POINTER_REGNUM 14
-#define RETURN_ADDR_REGNO 13
+#define FRAME_POINTER_REGNUM 2
+#define ARG_POINTER_REGNUM 3
+#define STATIC_CHAIN_REGNUM 4
 
-#define STATIC_CHAIN_REGNUM 12
-#define OUTGOING_ARG_POINTER_REGNUM 11
-#define OUTGOING_STATIC_CHAIN_REGNUM 10
+#define REGISTER_NAMES							\
+  {									\
+    "%value", "%stack", "%frame", "%args", "%chain", "%hr5", "%hr6", "%hr7", \
+    "%hr8", "%hr9", "%hr10", "%hr11", "%hr12", "%hr13", "%hr14", "%hr15" \
+  }
 
-#define FIRST_PARM_OFFSET(FNDECL) 0
+#define FIRST_PARM_OFFSET(FNDECL) ((void)(FNDECL), 0)
 #define PUSH_ARGS_REVERSED 1
-
 #define ACCUMULATE_OUTGOING_ARGS 1
+
+/* Avoid using the argument pointer for frame-related things.  */
+#define FRAME_POINTER_CFA_OFFSET(FNDECL) ((void)(FNDECL), 0)
 
 #ifdef HOST_WIDE_INT
 struct nvptx_args {
-  union tree_node *fntype;
+  tree fntype;
   /* Number of arguments passed in registers so far.  */
   int count;
-  /* Offset into the stdarg area so far.  */
-  HOST_WIDE_INT off;
 };
 #endif
 
 #define CUMULATIVE_ARGS struct nvptx_args
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
-  do { (CUM).fntype = (FNTYPE); (CUM).count = 0; (CUM).off = 0; } while (0)
+  ((CUM).fntype = (FNTYPE), (CUM).count = 0, (void)0)
 
 #define FUNCTION_ARG_REGNO_P(r) 0
 
@@ -202,8 +176,7 @@ struct nvptx_args {
    expand_builtin_setjmp_receiver from generating invalid insns.  */
 #define ELIMINABLE_REGS					\
   {							\
-    { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},	\
-    { ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}	\
+    { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM}	\
   }
 
 /* Define the offset between two registers, one to be eliminated, and the other
@@ -222,15 +195,15 @@ struct nvptx_args {
 #if defined HOST_WIDE_INT
 struct GTY(()) machine_function
 {
-  rtx_expr_list *call_args;
-  rtx start_call;
-  tree funtype;
-  bool has_call_with_varargs;
-  bool has_call_with_sc;
-  HOST_WIDE_INT outgoing_stdarg_size;
-  int ret_reg_mode; /* machine_mode not defined yet. */
-  int punning_buffer_size;
-  rtx axis_predicate[2];
+  rtx_expr_list *call_args;  /* Arg list for the current call.  */
+  bool doing_call; /* Within a CALL_ARGS ... CALL_ARGS_END sequence.  */
+  bool is_varadic;  /* This call is varadic  */
+  bool has_varadic;  /* Current function has a varadic call.  */
+  bool has_chain; /* Current function has outgoing static chain.  */
+  int num_args;	/* Number of args of current call.  */
+  int return_mode; /* Return mode of current fn.
+		      (machine_mode not defined yet.) */
+  rtx axis_predicate[2]; /* Neutering predicates.  */
 };
 #endif
 
@@ -256,15 +229,6 @@ struct GTY(()) machine_function
 #define ASM_APP_ON "\t// #APP \n"
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "\t// #NO_APP \n"
-
-#define ASM_OUTPUT_COMMON(stream, name, size, rounded)
-#define ASM_OUTPUT_LOCAL(stream, name, size, rounded)
-
-#define REGISTER_NAMES							\
-  {									\
-    "%hr0", "%outargs", "%hfp", "%punbuffer", "%retval", "%retval_in", "%hr6", "%hr7",	\
-    "%hr8", "%hr9", "%hr10", "%hr11", "%hr12", "%hr13", "%argp", "%frame" \
-  }
 
 #define DBX_REGISTER_NUMBER(N) N
 
@@ -302,38 +266,11 @@ struct GTY(()) machine_function
 
 #undef  ASM_OUTPUT_ALIGNED_DECL_COMMON
 #define ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN)	\
-  do									\
-    {									\
-      fprintf (FILE, "// BEGIN%s VAR DEF: ",				\
-	       TREE_PUBLIC (DECL) ? " GLOBAL" : "");			\
-      assemble_name_raw (FILE, NAME);					\
-      fputc ('\n', FILE);						\
-      const char *sec = nvptx_section_for_decl (DECL);			\
-      fprintf (FILE, ".visible%s.align %d .b8 ", sec,			\
-	       (ALIGN) / BITS_PER_UNIT);				\
-      assemble_name ((FILE), (NAME));					\
-      if ((SIZE) > 0)							\
-	fprintf (FILE, "[" HOST_WIDE_INT_PRINT_DEC"]", (SIZE));		\
-      fprintf (FILE, ";\n");						\
-    }									\
-  while (0)
+  nvptx_output_aligned_decl (FILE, NAME, DECL, SIZE, ALIGN)
 
 #undef  ASM_OUTPUT_ALIGNED_DECL_LOCAL
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN)	\
-  do									\
-    {									\
-      fprintf (FILE, "// BEGIN VAR DEF: ");				\
-      assemble_name_raw (FILE, NAME);					\
-      fputc ('\n', FILE);						\
-      const char *sec = nvptx_section_for_decl (DECL);			\
-      fprintf (FILE, ".visible%s.align %d .b8 ", sec,			\
-	       (ALIGN) / BITS_PER_UNIT);				\
-      assemble_name ((FILE), (NAME));					\
-      if ((SIZE) > 0)							\
-	fprintf (FILE, "[" HOST_WIDE_INT_PRINT_DEC"]", (SIZE));		\
-      fprintf (FILE, ";\n");						\
-    }									\
-  while (0)
+  nvptx_output_aligned_decl (FILE, NAME, DECL, SIZE, ALIGN)
 
 #define CASE_VECTOR_PC_RELATIVE flag_pic
 #define JUMP_TABLES_IN_TEXT_SECTION flag_pic

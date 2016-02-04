@@ -1,5 +1,5 @@
 /* Generic hooks for the RTL middle-end.
-   Copyright (C) 2004-2015 Free Software Foundation, Inc.
+   Copyright (C) 2004-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

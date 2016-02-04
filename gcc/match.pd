@@ -2,7 +2,7 @@
    This file is consumed by genmatch which produces gimple-match.c
    and generic-match.c from it.
 
-   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
    Contributed by Richard Biener <rguenther@suse.de>
    and Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
 
@@ -295,7 +295,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (trunc_mod @0 (convert? (negate @1)))
  (if (!TYPE_UNSIGNED (type)
       && !TYPE_OVERFLOW_TRAPS (type)
-      && tree_nop_conversion_p (type, TREE_TYPE (@1)))
+      && tree_nop_conversion_p (type, TREE_TYPE (@1))
+      /* Avoid this transformation if X might be INT_MIN or
+	 Y might be -1, because we would then change valid
+	 INT_MIN % -(-1) into invalid INT_MIN % -1.  */
+      && (expr_not_equal_to (@0, TYPE_MIN_VALUE (type))
+	  || expr_not_equal_to (@1, wi::minus_one (TYPE_PRECISION
+							(TREE_TYPE (@1))))))
   (trunc_mod @0 (convert @1))))
 
 /* X - (X / Y) * Y is the same as X % Y.  */
@@ -439,8 +445,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Fold (C1/X)*C2 into (C1*C2)/X.  */
 (simplify
- (mult (rdiv:s REAL_CST@0 @1) REAL_CST@2)
-  (if (flag_associative_math)
+ (mult (rdiv@3 REAL_CST@0 @1) REAL_CST@2)
+  (if (flag_associative_math
+       && single_use (@3))
    (with
     { tree tem = const_binop (MULT_EXPR, type, @0, @2); }
     (if (tem)
@@ -1815,12 +1822,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for cmp (simple_comparison)
      scmp (swapped_simple_comparison)
  (simplify
-  (cmp (mult @0 INTEGER_CST@1) integer_zerop@2)
+  (cmp (mult@3 @0 INTEGER_CST@1) integer_zerop@2)
   /* Handle unfolded multiplication by zero.  */
   (if (integer_zerop (@1))
    (cmp @1 @2)
    (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
-	&& TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))
+	&& TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+	&& single_use (@3))
     /* If @1 is negative we swap the sense of the comparison.  */
     (if (tree_int_cst_sgn (@1) < 0)
      (scmp @0 @2)
@@ -1828,15 +1836,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  
 /* Simplify comparison of something with itself.  For IEEE
    floating-point, we can only do some of these simplifications.  */
-(simplify
- (eq @0 @0)
- (if (! FLOAT_TYPE_P (TREE_TYPE (@0))
-      || ! HONOR_NANS (TYPE_MODE (TREE_TYPE (@0))))
-  { constant_boolean_node (true, type); }))
-(for cmp (ge le)
+(for cmp (eq ge le)
  (simplify
   (cmp @0 @0)
-  (eq @0 @0)))
+  (if (! FLOAT_TYPE_P (TREE_TYPE (@0))
+       || ! HONOR_NANS (TYPE_MODE (TREE_TYPE (@0))))
+   { constant_boolean_node (true, type); }
+   (if (cmp != EQ_EXPR)
+    (eq @0 @0)))))
 (for cmp (ne gt lt)
  (simplify
   (cmp @0 @0)
@@ -1856,15 +1863,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Fold ~X op ~Y as Y op X.  */
 (for cmp (simple_comparison)
  (simplify
-  (cmp (bit_not @0) (bit_not @1))
-  (cmp @1 @0)))
+  (cmp (bit_not@2 @0) (bit_not@3 @1))
+  (if (single_use (@2) && single_use (@3))
+   (cmp @1 @0))))
 
 /* Fold ~X op C as X op' ~C, where op' is the swapped comparison.  */
 (for cmp (simple_comparison)
      scmp (swapped_simple_comparison)
  (simplify
-  (cmp (bit_not @0) CONSTANT_CLASS_P@1)
-  (if (TREE_CODE (@1) == INTEGER_CST || TREE_CODE (@1) == VECTOR_CST)
+  (cmp (bit_not@2 @0) CONSTANT_CLASS_P@1)
+  (if (single_use (@2)
+       && (TREE_CODE (@1) == INTEGER_CST || TREE_CODE (@1) == VECTOR_CST))
    (scmp @0 (bit_not @1)))))
 
 (for cmp (simple_comparison)
@@ -2085,6 +2094,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_and:c (ordered @0 @0) (ordered:c@2 @0 @1))
  @2)
 
+/* Simple range test simplifications.  */
+/* A < B || A >= B -> true.  */
+(for test1 (lt le ne)
+     test2 (ge gt eq)
+ (simplify
+  (bit_ior:c (test1 @0 @1) (test2 @0 @1))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       || VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0)))
+   { constant_boolean_node (true, type); })))
+/* A < B && A >= B -> false.  */
+(for test1 (lt lt lt le ne eq)
+     test2 (ge gt eq gt eq gt)
+ (simplify
+  (bit_and:c (test1 @0 @1) (test2 @0 @1))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       || VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0)))
+   { constant_boolean_node (false, type); })))
+
 /* -A CMP -B -> B CMP A.  */
 (for cmp (tcc_comparison)
      scmp (swapped_tcc_comparison)
@@ -2113,7 +2140,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for cmp (simple_comparison)
  (simplify
   (cmp (convert@0 @00) (convert?@1 @10))
-  (if (TREE_CODE (TREE_TYPE (@0)) == INTEGER_TYPE
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
        /* Disable this optimization if we're casting a function pointer
 	  type on targets that require function pointer canonicalization.  */
        && !(targetm.have_canonicalize_funcptr_for_compare ()
@@ -2565,15 +2592,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (fns (fns @0))
   (fns @0)))
 /* f(x) -> x if x is integer valued and f does nothing for such values.  */
-(for fns (TRUNC FLOOR CEIL ROUND NEARBYINT)
+(for fns (TRUNC FLOOR CEIL ROUND NEARBYINT RINT)
  (simplify
   (fns integer_valued_real_p@0)
-  @0))
-/* Same for rint.  We have to check flag_errno_math because
-   integer_valued_real_p accepts +Inf, -Inf and NaNs as integers.  */
-(if (!flag_errno_math)
- (simplify
-  (RINT integer_valued_real_p@0)
   @0))
 
 /* hypot(x,0) and hypot(0,x) -> abs(x).  */
@@ -2783,7 +2804,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  BUILT_IN_RINTF BUILT_IN_RINTF)
  /* truncl(extend(x)) and trunc(extend(x)) -> extend(truncf(x)), etc.,
     if x is a float.  */
- (if (optimize && canonicalize_math_p ())
+ (if (optimize && canonicalize_math_p ()
+      && targetm.libc_has_function (function_c99_misc))
   (simplify
    (froms (convert float_value_p@0))
    (convert (tos @0)))))

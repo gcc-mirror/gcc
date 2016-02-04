@@ -12,8 +12,9 @@ void rotins (unsigned int x)
   b.y = (x<<12) | (x>>20);
 }
 
-/* { dg-final { scan-assembler-not {\mrlwinm} } } */
+/* The XFAILs are PR68803.  */
+/* { dg-final { scan-assembler-not {\mrlwinm} { xfail powerpc64le-*-* } } } */
 /* { dg-final { scan-assembler-not {\mrldic} } } */
 /* { dg-final { scan-assembler-not {\mrot[lr]} } } */
 /* { dg-final { scan-assembler-not {\ms[lr][wd]} } } */
-/* { dg-final { scan-assembler-times {\mrl[wd]imi} 1 } } */
+/* { dg-final { scan-assembler-times {\mrl[wd]imi} 1 { xfail powerpc64le-*-* } } } */

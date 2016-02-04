@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for SPARC.
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -2086,13 +2086,6 @@ sparc_emit_set_symbolic_const64 (rtx op0, rtx op1, rtx temp)
     }
 }
 
-#if HOST_BITS_PER_WIDE_INT == 32
-static void
-sparc_emit_set_const64 (rtx op0 ATTRIBUTE_UNUSED, rtx op1 ATTRIBUTE_UNUSED)
-{
-  gcc_unreachable ();
-}
-#else
 /* These avoid problems when cross compiling.  If we do not
    go through all this hair then the optimizer will see
    invalid REG_EQUAL notes or in some cases none at all.  */
@@ -2636,8 +2629,7 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
    *    sllx	%reg, 32, %reg
    *	or	%reg, low_bits, %reg
    */
-  if (SPARC_SIMM13_P(low_bits)
-      && ((int)low_bits > 0))
+  if (SPARC_SIMM13_P (low_bits) && ((int)low_bits > 0))
     {
       sparc_emit_set_const64_quick2 (op0, temp, high_bits, low_bits, 32);
       return;
@@ -2646,7 +2638,6 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
   /* The easiest way when all else fails, is full decomposition.  */
   sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits);
 }
-#endif /* HOST_BITS_PER_WIDE_INT == 32 */
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point,
@@ -3675,6 +3666,7 @@ sparc_cannot_force_const_mem (machine_mode mode, rtx x)
   switch (GET_CODE (x))
     {
     case CONST_INT:
+    case CONST_WIDE_INT:
     case CONST_DOUBLE:
     case CONST_VECTOR:
       /* Accept all non-symbolic constants.  */
@@ -3775,9 +3767,6 @@ sparc_legitimate_constant_p (machine_mode mode, rtx x)
       break;
 
     case CONST_DOUBLE:
-      if (GET_MODE (x) == VOIDmode)
-        return true;
-
       /* Floating point constants are generally not ok.
 	 The only exception is 0.0 and all-ones in VIS.  */
       if (TARGET_VIS
@@ -3832,7 +3821,7 @@ constant_address_p (rtx x)
 
 /* Nonzero if the constant value X is a legitimate general operand
    when generating PIC code.  It is given that flag_pic is on and
-   that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
+   that X satisfies CONSTANT_P.  */
 
 bool
 legitimate_pic_operand_p (rtx x)
@@ -6151,30 +6140,28 @@ sparc_strict_argument_naming (cumulative_args_t ca ATTRIBUTE_UNUSED)
       that is eligible for promotion in integer registers.
     - FP_REGS_P: the record contains at least one field or sub-field
       that is eligible for promotion in floating-point registers.
-    - PACKED_P: the record contains at least one field that is packed.
-
-   Sub-fields are not taken into account for the PACKED_P predicate.  */
+    - PACKED_P: the record contains at least one field that is packed.  */
 
 static void
 scan_record_type (const_tree type, int *intregs_p, int *fpregs_p,
 		  int *packed_p)
 {
-  tree field;
-
-  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
       if (TREE_CODE (field) == FIELD_DECL)
 	{
-	  if (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE)
-	    scan_record_type (TREE_TYPE (field), intregs_p, fpregs_p, 0);
-	  else if ((FLOAT_TYPE_P (TREE_TYPE (field))
-		   || TREE_CODE (TREE_TYPE (field)) == VECTOR_TYPE)
+	  tree field_type = TREE_TYPE (field);
+
+	  if (TREE_CODE (field_type) == RECORD_TYPE)
+	    scan_record_type (field_type, intregs_p, fpregs_p, packed_p);
+	  else if ((FLOAT_TYPE_P (field_type)
+		   || TREE_CODE (field_type) == VECTOR_TYPE)
 		  && TARGET_FPU)
 	    *fpregs_p = 1;
 	  else
 	    *intregs_p = 1;
 
-	  if (packed_p && DECL_PACKED (field))
+	  if (DECL_PACKED (field))
 	    *packed_p = 1;
 	}
     }
@@ -6658,9 +6645,10 @@ function_arg_record_value (const_tree type, machine_mode mode,
 
       parms.nregs += intslots;
     }
-  nregs = parms.nregs;
 
   /* Allocate the vector and handle some annoying special cases.  */
+  nregs = parms.nregs;
+
   if (nregs == 0)
     {
       /* ??? Empty structure has no value?  Duh?  */
@@ -6672,16 +6660,15 @@ function_arg_record_value (const_tree type, machine_mode mode,
 	     load.  */
 	  return gen_rtx_REG (mode, regbase);
 	}
-      else
-	{
-	  /* ??? C++ has structures with no fields, and yet a size.  Give up
-	     for now and pass everything back in integer registers.  */
-	  nregs = (typesize + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-	}
+
+      /* ??? C++ has structures with no fields, and yet a size.  Give up
+	 for now and pass everything back in integer registers.  */
+      nregs = (typesize + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
       if (nregs + slotno > SPARC_INT_ARG_MAX)
 	nregs = SPARC_INT_ARG_MAX - slotno;
     }
-  gcc_assert (nregs != 0);
+
+  gcc_assert (nregs > 0);
 
   parms.ret = gen_rtx_PARALLEL (mode, rtvec_alloc (parms.stack + nregs));
 
@@ -7199,17 +7186,16 @@ sparc_struct_value_rtx (tree fndecl, int incoming)
 	  && TYPE_SIZE_UNIT (TREE_TYPE (fndecl))
 	  && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (fndecl))) == INTEGER_CST)
 	{
-	  /* We must check and adjust the return address, as it is
-	     optional as to whether the return object is really
-	     provided.  */
-	  rtx ret_reg = gen_rtx_REG (Pmode, 31);
+	  /* We must check and adjust the return address, as it is optional
+	     as to whether the return object is really provided.  */
+	  rtx ret_reg = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
 	  rtx scratch = gen_reg_rtx (SImode);
 	  rtx_code_label *endlab = gen_label_rtx ();
 
-	  /* Calculate the return object size */
+	  /* Calculate the return object size.  */
 	  tree size = TYPE_SIZE_UNIT (TREE_TYPE (fndecl));
 	  rtx size_rtx = GEN_INT (TREE_INT_CST_LOW (size) & 0xfff);
-	  /* Construct a temporary return value */
+	  /* Construct a temporary return value.  */
 	  rtx temp_val
 	    = assign_stack_local (Pmode, TREE_INT_CST_LOW (size), 0);
 
@@ -7221,13 +7207,13 @@ sparc_struct_value_rtx (tree fndecl, int incoming)
 	  emit_move_insn (scratch, gen_rtx_MEM (SImode,
 						plus_constant (Pmode,
 							       ret_reg, 8)));
-	  /* Assume the size is valid and pre-adjust */
+	  /* Assume the size is valid and pre-adjust.  */
 	  emit_insn (gen_add3_insn (ret_reg, ret_reg, GEN_INT (4)));
 	  emit_cmp_and_jump_insns (scratch, size_rtx, EQ, const0_rtx, SImode,
 				   0, endlab);
 	  emit_insn (gen_sub3_insn (ret_reg, ret_reg, GEN_INT (4)));
 	  /* Write the address of the memory pointed to by temp_val into
-	     the memory pointed to by mem */
+	     the memory pointed to by mem.  */
 	  emit_move_insn (mem, XEXP (temp_val, 0));
 	  emit_label (endlab);
 	}
@@ -8352,6 +8338,7 @@ epilogue_renumber (register rtx *where, int test)
     case CC0:
     case PC:
     case CONST_INT:
+    case CONST_WIDE_INT:
     case CONST_DOUBLE:
       return 0;
 
@@ -8897,8 +8884,6 @@ sparc_print_operand (FILE *file, rtx x, int code)
 	HOST_WIDE_INT i;
 	if (GET_CODE(x) == CONST_INT)
 	  i = INTVAL (x);
-	else if (GET_CODE(x) == CONST_DOUBLE)
-	  i = CONST_DOUBLE_LOW (x);
 	else
 	  {
 	    output_operand_lossage ("invalid %%s operand");
@@ -8945,21 +8930,10 @@ sparc_print_operand (FILE *file, rtx x, int code)
       output_addr_const (file, XEXP (x, 1));
       fputc (')', file);
     }
-  else if (GET_CODE (x) == CONST_DOUBLE
-	   && (GET_MODE (x) == VOIDmode
-	       || GET_MODE_CLASS (GET_MODE (x)) == MODE_INT))
-    {
-      if (CONST_DOUBLE_HIGH (x) == 0)
-	fprintf (file, "%u", (unsigned int) CONST_DOUBLE_LOW (x));
-      else if (CONST_DOUBLE_HIGH (x) == -1
-	       && CONST_DOUBLE_LOW (x) < 0)
-	fprintf (file, "%d", (int) CONST_DOUBLE_LOW (x));
-      else
-	output_operand_lossage ("long long constant not a valid immediate operand");
-    }
   else if (GET_CODE (x) == CONST_DOUBLE)
-    output_operand_lossage ("floating point constant not a valid immediate operand");
-  else { output_addr_const (file, x); }
+    output_operand_lossage ("floating-point constant not a valid immediate operand");
+  else
+    output_addr_const (file, x);
 }
 
 /* Implement TARGET_PRINT_OPERAND_ADDRESS.  */
@@ -9053,8 +9027,7 @@ sparc_assemble_integer (rtx x, unsigned int size, int aligned_p)
 {
   /* ??? We only output .xword's for symbols and only then in environments
      where the assembler can handle them.  */
-  if (aligned_p && size == 8
-      && (GET_CODE (x) != CONST_INT && GET_CODE (x) != CONST_DOUBLE))
+  if (aligned_p && size == 8 && GET_CODE (x) != CONST_INT)
     {
       if (TARGET_V9)
 	{
@@ -9353,8 +9326,8 @@ supersparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   enum attr_type insn_type;
 
-  if (! recog_memoized (insn))
-    return 0;
+  if (recog_memoized (insn) < 0)
+    return cost;
 
   insn_type = get_attr_type (insn);
 
@@ -9487,7 +9460,7 @@ hypersparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 }
 
 static int
-sparc_adjust_cost(rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
+sparc_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep, int cost)
 {
   switch (sparc_cpu)
     {
@@ -9603,10 +9576,8 @@ set_extends (rtx_insn *insn)
     case LSHIFTRT:
       return GET_MODE (SET_SRC (pat)) == SImode;
       /* Positive integers leave the high bits zero.  */
-    case CONST_DOUBLE:
-      return ! (CONST_DOUBLE_LOW (SET_SRC (pat)) & 0x80000000);
     case CONST_INT:
-      return ! (INTVAL (SET_SRC (pat)) & 0x80000000);
+      return !(INTVAL (SET_SRC (pat)) & 0x80000000);
     case ASHIFTRT:
     case SIGN_EXTEND:
       return - (GET_MODE (SET_SRC (pat)) == SImode);
@@ -10904,12 +10875,19 @@ sparc_rtx_costs (rtx x, machine_mode mode, int outer_code,
   switch (code)
     {
     case CONST_INT:
-      if (INTVAL (x) < 0x1000 && INTVAL (x) >= -0x1000)
-	{
-	  *total = 0;
-	  return true;
-	}
-      /* FALLTHRU */
+      if (SMALL_INT (x))
+	*total = 0;
+      else
+	*total = 2;
+      return true;
+
+    case CONST_WIDE_INT:
+      *total = 0;
+      if (!SPARC_SIMM13_P (CONST_WIDE_INT_ELT (x, 0)))
+	*total += 2;
+      if (!SPARC_SIMM13_P (CONST_WIDE_INT_ELT (x, 1)))
+	*total += 2;
+      return true;
 
     case HIGH:
       *total = 2;
@@ -10922,15 +10900,7 @@ sparc_rtx_costs (rtx x, machine_mode mode, int outer_code,
       return true;
 
     case CONST_DOUBLE:
-      if (mode == VOIDmode
-	  && ((CONST_DOUBLE_HIGH (x) == 0
-	       && CONST_DOUBLE_LOW (x) < 0x1000)
-	      || (CONST_DOUBLE_HIGH (x) == -1
-		  && CONST_DOUBLE_LOW (x) < 0
-		  && CONST_DOUBLE_LOW (x) >= -0x1000)))
-	*total = 0;
-      else
-	*total = 8;
+      *total = 8;
       return true;
 
     case MEM:
@@ -11001,18 +10971,6 @@ sparc_rtx_costs (rtx x, machine_mode mode, int outer_code,
 		{
 		  unsigned HOST_WIDE_INT value = INTVAL (XEXP (x, 1));
 		  for (nbits = 0; value != 0; value &= value - 1)
-		    nbits++;
-		}
-	      else if (GET_CODE (XEXP (x, 1)) == CONST_DOUBLE
-		       && GET_MODE (XEXP (x, 1)) == VOIDmode)
-		{
-		  rtx x1 = XEXP (x, 1);
-		  unsigned HOST_WIDE_INT value1 = CONST_DOUBLE_LOW (x1);
-		  unsigned HOST_WIDE_INT value2 = CONST_DOUBLE_HIGH (x1);
-
-		  for (nbits = 0; value1 != 0; value1 &= value1 - 1)
-		    nbits++;
-		  for (; value2 != 0; value2 &= value2 - 1)
 		    nbits++;
 		}
 	      else

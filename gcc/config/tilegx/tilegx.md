@@ -1,5 +1,5 @@
 ;; Machine description for Tilera TILE-Gx chip for GCC.
-;; Copyright (C) 2011-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2016 Free Software Foundation, Inc.
 ;; Contributed by Walter Lee (walt@tilera.com)
 ;;
 ;; This file is part of GCC.
@@ -1799,13 +1799,16 @@
 
 (define_expand "clzsi2"
   [(set (match_dup 2)
-        (ashift:DI (match_operand:SI 1 "reg_or_0_operand" "")
+	(zero_extend:DI (match_operand:SI 1 "reg_or_0_operand" "")))
+   (set (match_dup 2)
+	(ashift:DI (match_dup 2)
                    (const_int 32)))
-   (set (subreg:DI (match_operand:SI 0 "register_operand" "") 0)
-	(clz:DI (match_dup 2)))]
+   (set (match_dup 2)
+	(clz:DI (match_dup 2)))
+   (set (match_operand:SI 0 "register_operand" "")
+	(subreg:SI (match_dup 2) 0))]
    ""
    {
-     operands[1] = simplify_gen_subreg (DImode, operands[1], SImode, 0);
      operands[2] = gen_reg_rtx (DImode);
    })
 

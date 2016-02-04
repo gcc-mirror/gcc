@@ -1,6 +1,6 @@
 /* { dg-options "-O1 -funsafe-math-optimizations -ftrapping-math -fdump-tree-recip -fdump-tree-optimized" } */
 /* { dg-do compile } */
-/* { dg-warning "-fassociative-math disabled" "" { target *-*-* } 1 } */
+/* { dg-warning "-fassociative-math disabled" "" { target *-*-* } 0 } */
 
 /* Test the reciprocal optimizations together with trapping math.  */
 

@@ -8,9 +8,12 @@ package os
 
 import (
 	"runtime"
-	"sync/atomic"
 	"syscall"
 )
+
+func sameFile(fs1, fs2 *fileStat) bool {
+	return fs1.sys.Dev == fs2.sys.Dev && fs1.sys.Ino == fs2.sys.Ino
+}
 
 func rename(oldname, newname string) error {
 	e := syscall.Rename(oldname, newname)
@@ -33,7 +36,6 @@ type file struct {
 	fd      int
 	name    string
 	dirinfo *dirInfo // nil unless directory being read
-	nepipe  int32    // number of consecutive EPIPE in Write
 }
 
 // Fd returns the integer Unix file descriptor referencing the open file.
@@ -62,13 +64,12 @@ type dirInfo struct {
 	dir *syscall.DIR // from opendir
 }
 
+// epipecheck raises SIGPIPE if we get an EPIPE error on standard
+// output or standard error. See the SIGPIPE docs in os/signal, and
+// issue 11845.
 func epipecheck(file *File, e error) {
-	if e == syscall.EPIPE {
-		if atomic.AddInt32(&file.nepipe, 1) >= 10 {
-			sigpipe()
-		}
-	} else {
-		atomic.StoreInt32(&file.nepipe, 0)
+	if e == syscall.EPIPE && (file.fd == 1 || file.fd == 2) {
+		sigpipe()
 	}
 }
 
@@ -89,8 +90,21 @@ func OpenFile(name string, flag int, perm FileMode) (*File, error) {
 		}
 	}
 
-	r, e := syscall.Open(name, flag|syscall.O_CLOEXEC, syscallMode(perm))
-	if e != nil {
+	var r int
+	for {
+		var e error
+		r, e = syscall.Open(name, flag|syscall.O_CLOEXEC, syscallMode(perm))
+		if e == nil {
+			break
+		}
+
+		// On OS X, sigaction(2) doesn't guarantee that SA_RESTART will cause
+		// open(2) to be restarted for regular files. This is easy to reproduce on
+		// fuse file systems (see http://golang.org/issue/11180).
+		if runtime.GOOS == "darwin" && e == syscall.EINTR {
+			continue
+		}
+
 		return nil, &PathError{"open", name, e}
 	}
 
@@ -150,23 +164,25 @@ func (f *File) Stat() (FileInfo, error) {
 	if f == nil {
 		return nil, ErrInvalid
 	}
-	var stat syscall.Stat_t
-	err := syscall.Fstat(f.fd, &stat)
+	var fs fileStat
+	err := syscall.Fstat(f.fd, &fs.sys)
 	if err != nil {
 		return nil, &PathError{"stat", f.name, err}
 	}
-	return fileInfoFromStat(&stat, f.name), nil
+	fillFileStatFromSys(&fs, f.name)
+	return &fs, nil
 }
 
 // Stat returns a FileInfo describing the named file.
 // If there is an error, it will be of type *PathError.
 func Stat(name string) (FileInfo, error) {
-	var stat syscall.Stat_t
-	err := syscall.Stat(name, &stat)
+	var fs fileStat
+	err := syscall.Stat(name, &fs.sys)
 	if err != nil {
 		return nil, &PathError{"stat", name, err}
 	}
-	return fileInfoFromStat(&stat, name), nil
+	fillFileStatFromSys(&fs, name)
+	return &fs, nil
 }
 
 // Lstat returns a FileInfo describing the named file.
@@ -174,12 +190,13 @@ func Stat(name string) (FileInfo, error) {
 // describes the symbolic link.  Lstat makes no attempt to follow the link.
 // If there is an error, it will be of type *PathError.
 func Lstat(name string) (FileInfo, error) {
-	var stat syscall.Stat_t
-	err := syscall.Lstat(name, &stat)
+	var fs fileStat
+	err := syscall.Lstat(name, &fs.sys)
 	if err != nil {
 		return nil, &PathError{"lstat", name, err}
 	}
-	return fileInfoFromStat(&stat, name), nil
+	fillFileStatFromSys(&fs, name)
+	return &fs, nil
 }
 
 func (f *File) readdir(n int) (fi []FileInfo, err error) {

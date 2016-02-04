@@ -1,5 +1,5 @@
 /* Definitions for describing one tree-ssa optimization pass.
-   Copyright (C) 2004-2015 Free Software Foundation, Inc.
+   Copyright (C) 2004-2016 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
 
 This file is part of GCC.
@@ -351,6 +351,8 @@ extern gimple_opt_pass *make_pass_asan (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_asan_O0 (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_tsan (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_tsan_O0 (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_sancov (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_sancov_O0 (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_cf (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_refactor_eh (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_eh (gcc::context *ctxt);
@@ -415,6 +417,7 @@ extern gimple_opt_pass *make_pass_lower_omp (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_diagnose_omp_blocks (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_expand_omp (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_expand_omp_ssa (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_omp_target_link (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_oacc_device_lower (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_object_sizes (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_strlen (gcc::context *ctxt);
@@ -465,6 +468,10 @@ extern gimple_opt_pass *make_pass_strength_reduction (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_vtable_verify (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_ubsan (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_sanopt (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_oacc_kernels (gcc::context *ctxt);
+extern simple_ipa_opt_pass *make_pass_ipa_oacc (gcc::context *ctxt);
+extern simple_ipa_opt_pass *make_pass_ipa_oacc_kernels (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_gen_hsail (gcc::context *ctxt);
 
 /* IPA Passes */
 extern simple_ipa_opt_pass *make_pass_ipa_lower_emutls (gcc::context *ctxt);
@@ -489,6 +496,7 @@ extern ipa_opt_pass_d *make_pass_ipa_cp (gcc::context *ctxt);
 extern ipa_opt_pass_d *make_pass_ipa_icf (gcc::context *ctxt);
 extern ipa_opt_pass_d *make_pass_ipa_devirt (gcc::context *ctxt);
 extern ipa_opt_pass_d *make_pass_ipa_reference (gcc::context *ctxt);
+extern ipa_opt_pass_d *make_pass_ipa_hsa (gcc::context *ctxt);
 extern ipa_opt_pass_d *make_pass_ipa_pure_const (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_pta (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_tm (gcc::context *ctxt);

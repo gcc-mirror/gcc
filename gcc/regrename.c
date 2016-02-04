@@ -1,5 +1,5 @@
 /* Register renaming for the GNU compiler.
-   Copyright (C) 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 2000-2016 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1360,8 +1360,8 @@ scan_rtx_address (rtx_insn *insn, rtx *loc, enum reg_class cl,
     case PRE_MODIFY:
       /* If the target doesn't claim to handle autoinc, this must be
 	 something special, like a stack push.  Kill this chain.  */
-    if (!AUTO_INC_DEC)
-      action = mark_all_read;
+      if (!AUTO_INC_DEC)
+	action = mark_all_read;
 
       break;
 
@@ -1677,6 +1677,12 @@ build_def_use (basic_block bb)
 		      untracked_operands |= 1 << matches;
 		    }
 		}
+#ifdef STACK_REGS
+	      if (regstack_completed
+		  && REG_P (op)
+		  && IN_RANGE (REGNO (op), FIRST_STACK_REG, LAST_STACK_REG))
+		untracked_operands |= 1 << i;
+#endif
 	      /* If there's an in-out operand with a register that is not
 		 being tracked at all yet, open a chain.  */
 	      if (recog_data.operand_type[i] == OP_INOUT

@@ -1,4 +1,4 @@
-/* { dg-do run { xfail *-*-* } } */
+/* { dg-do run } */
 
 struct A { int t; };
 struct B { char t; };

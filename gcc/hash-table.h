@@ -1,5 +1,5 @@
 /* A type-safe hash table template.
-   Copyright (C) 2012-2015 Free Software Foundation, Inc.
+   Copyright (C) 2012-2016 Free Software Foundation, Inc.
    Contributed by Lawrence Crowl <crowl@google.com>
 
 This file is part of GCC.
@@ -361,7 +361,12 @@ class hash_table
   typedef typename Descriptor::compare_type compare_type;
 
 public:
-  explicit hash_table (size_t, bool ggc = false, bool gather_mem_stats = true,
+  explicit hash_table (size_t, bool ggc = false,
+		       bool gather_mem_stats = GATHER_STATISTICS,
+		       mem_alloc_origin origin = HASH_TABLE_ORIGIN
+		       CXX_MEM_STAT_INFO);
+  explicit hash_table (const hash_table &, bool ggc = false,
+		       bool gather_mem_stats = GATHER_STATISTICS,
 		       mem_alloc_origin origin = HASH_TABLE_ORIGIN
 		       CXX_MEM_STAT_INFO);
   ~hash_table ();
@@ -371,7 +376,8 @@ public:
   create_ggc (size_t n CXX_MEM_STAT_INFO)
   {
     hash_table *table = ggc_alloc<hash_table> ();
-    new (table) hash_table (n, true, true, HASH_TABLE_ORIGIN PASS_MEM_STAT);
+    new (table) hash_table (n, true, GATHER_STATISTICS,
+			    HASH_TABLE_ORIGIN PASS_MEM_STAT);
     return table;
   }
 
@@ -384,8 +390,8 @@ public:
   /* Return the current number of elements in this hash table. */
   size_t elements_with_deleted () const { return m_n_elements; }
 
-  /* This function clears all entries in the given hash table.  */
-  void empty ();
+  /* This function clears all entries in this hash table.  */
+  void empty () { if (elements ()) empty_slow (); }
 
   /* This function clears a specified SLOT in a hash table.  It is
      useful when you've already done the lookup and don't want to do it
@@ -493,6 +499,8 @@ private:
 
   template<typename T> friend void gt_cleare_cache (hash_table<T> *);
 
+  void empty_slow ();
+
   value_type *alloc_entries (size_t n CXX_MEM_STAT_INFO) const;
   value_type *find_empty_slot_for_expand (hashval_t);
   void expand ();
@@ -577,6 +585,35 @@ hash_table<Descriptor, Allocator>::hash_table (size_t size, bool ggc, bool
   m_entries = alloc_entries (size PASS_MEM_STAT);
   m_size = size;
   m_size_prime_index = size_prime_index;
+}
+
+template<typename Descriptor, template<typename Type> class Allocator>
+hash_table<Descriptor, Allocator>::hash_table (const hash_table &h, bool ggc,
+					       bool gather_mem_stats,
+					       mem_alloc_origin origin
+					       MEM_STAT_DECL) :
+  m_n_elements (h.m_n_elements), m_n_deleted (h.m_n_deleted),
+  m_searches (0), m_collisions (0), m_ggc (ggc),
+  m_gather_mem_stats (gather_mem_stats)
+{
+  size_t size = h.m_size;
+
+  if (m_gather_mem_stats)
+    hash_table_usage.register_descriptor (this, origin, ggc
+					  FINAL_PASS_MEM_STAT);
+
+  value_type *nentries = alloc_entries (size PASS_MEM_STAT);
+  for (size_t i = 0; i < size; ++i)
+    {
+      value_type &entry = h.m_entries[i];
+      if (is_deleted (entry))
+	mark_deleted (nentries[i]);
+      else if (!is_empty (entry))
+	nentries[i] = entry;
+    }
+  m_entries = nentries;
+  m_size = size;
+  m_size_prime_index = h.m_size_prime_index;
 }
 
 template<typename Descriptor, template<typename Type> class Allocator>
@@ -720,9 +757,11 @@ hash_table<Descriptor, Allocator>::expand ()
     ggc_free (oentries);
 }
 
+/* Implements empty() in cases where it isn't a no-op.  */
+
 template<typename Descriptor, template<typename Type> class Allocator>
 void
-hash_table<Descriptor, Allocator>::empty ()
+hash_table<Descriptor, Allocator>::empty_slow ()
 {
   size_t size = m_size;
   value_type *entries = m_entries;

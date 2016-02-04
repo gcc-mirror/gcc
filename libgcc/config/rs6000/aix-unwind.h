@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for AIX.
-   Copyright (C) 2011-2015 Free Software Foundation, Inc.
+   Copyright (C) 2011-2016 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -64,7 +64,7 @@
 #endif
 
 /* Now on to MD_FALLBACK_FRAME_STATE_FOR.
-   32bit AIX 5.2 and 5.3 only at this stage.  */
+   32bit AIX 5.2, 5.3 and 7.1 only at this stage.  */
 
 #include <stdlib.h>
 #include <stddef.h>
@@ -128,8 +128,9 @@ ucontext_for (struct _Unwind_Context *context)
 {
   const unsigned int * ra = context->ra;
 
-  /* AIX 5.2 and 5.3, threaded or not, share common patterns and feature
-     variants depending on the configured kernel (unix_mp or unix_64).  */
+  /* AIX 5.2, 5.3 and 7.1, threaded or not, share common patterns
+     and feature variants depending on the configured kernel (unix_mp
+     or unix_64).  */
 
   if (*(ra - 5) == 0x4c00012c     /* isync             */
       && *(ra - 4) == 0x80ec0000  /* lwz     r7,0(r12) */
@@ -149,6 +150,10 @@ ucontext_for (struct _Unwind_Context *context)
 
 	      /* AIX 5.3 */
 	    case 0x835a0570:  /* lwz r26,1392(r26) */
+	      return (ucontext_t *)(context->cfa + 0x40);
+
+	      /* AIX 7.1 */
+	    case 0x2c1a0000:  /* cmpwi   r26,0 */
 	      return (ucontext_t *)(context->cfa + 0x40);
 		
 	    default:

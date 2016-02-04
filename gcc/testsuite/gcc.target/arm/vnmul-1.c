@@ -1,7 +1,8 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_vfp_ok } */
+/* { dg-require-effective-target arm_fp_ok } */
 /* { dg-skip-if "need fp instructions" { *-*-* } { "-mfloat-abi=soft" } { "" } } */
-/* { dg-options "-O2 -fno-rounding-math -mfpu=vfp -mfloat-abi=hard" } */
+/* { dg-options "-O2 -fno-rounding-math" } */
+/* { dg-add-options arm_fp } */
 
 double
 foo_d (double a, double b)

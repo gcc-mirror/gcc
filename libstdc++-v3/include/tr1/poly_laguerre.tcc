@@ -1,6 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006-2015 Free Software Foundation, Inc.
+// Copyright (C) 2006-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,8 +43,15 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+#if __STDCPP_WANT_MATH_SPEC_FUNCS__
+# define _GLIBCXX_MATH_NS ::std
+#elif defined(_GLIBCXX_TR1_CMATH)
 namespace tr1
 {
+# define _GLIBCXX_MATH_NS ::std::tr1
+#else
+# error do not include this header directly, use <cmath> or <tr1/cmath>
+#endif
   // [5.2] Special functions
 
   // Implementation-space details.
@@ -80,8 +87,8 @@ namespace tr1
                         * __eta * __eta * __cos2th * __sin2th;
 
 #if _GLIBCXX_USE_C99_MATH_TR1
-      const _Tp __lg_b = std::tr1::lgamma(_Tp(__n) + __b);
-      const _Tp __lnfact = std::tr1::lgamma(_Tp(__n + 1));
+      const _Tp __lg_b = _GLIBCXX_MATH_NS::lgamma(_Tp(__n) + __b);
+      const _Tp __lnfact = _GLIBCXX_MATH_NS::lgamma(_Tp(__n + 1));
 #else
       const _Tp __lg_b = __log_gamma(_Tp(__n) + __b);
       const _Tp __lnfact = __log_gamma(_Tp(__n + 1));
@@ -312,8 +319,11 @@ namespace tr1
     { return __poly_laguerre<unsigned int, _Tp>(__n, 0, __x); }
 
   _GLIBCXX_END_NAMESPACE_VERSION
-  } // namespace std::tr1::__detail
-}
+  } // namespace __detail
+#undef _GLIBCXX_MATH_NS
+#if ! __STDCPP_WANT_MATH_SPEC_FUNCS__ && defined(_GLIBCXX_TR1_CMATH)
+} // namespace tr1
+#endif
 }
 
 #endif // _GLIBCXX_TR1_POLY_LAGUERRE_TCC

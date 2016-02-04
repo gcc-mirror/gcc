@@ -1,5 +1,5 @@
 /* OpenMP directive translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2005-2015 Free Software Foundation, Inc.
+   Copyright (C) 2005-2016 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -1771,7 +1771,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	  clause_code = OMP_CLAUSE_UNIFORM;
 	  goto add_clause;
 	case OMP_LIST_USE_DEVICE:
-	  clause_code = OMP_CLAUSE_USE_DEVICE;
+	  clause_code = OMP_CLAUSE_USE_DEVICE_PTR;
 	  goto add_clause;
 	case OMP_LIST_DEVICE_RESIDENT:
 	  clause_code = OMP_CLAUSE_DEVICE_RESIDENT;
@@ -2630,28 +2630,20 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
     }
   if (clauses->gang)
     {
-      if (clauses->gang_expr)
+      tree arg;
+      c = build_omp_clause (where.lb->location, OMP_CLAUSE_GANG);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+      if (clauses->gang_num_expr)
 	{
-	  tree gang_var
-	    = gfc_convert_expr_to_tree (block, clauses->gang_expr);
-	  c = build_omp_clause (where.lb->location, OMP_CLAUSE_GANG);
-	  if (clauses->gang_static)
-	    OMP_CLAUSE_GANG_STATIC_EXPR (c) = gang_var;
-	  else
-	    OMP_CLAUSE_GANG_EXPR (c) = gang_var;
-	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+	  arg = gfc_convert_expr_to_tree (block, clauses->gang_num_expr);
+	  OMP_CLAUSE_GANG_EXPR (c) = arg;
 	}
-      else if (clauses->gang_static)
+      if (clauses->gang_static)
 	{
-	  /* This corresponds to gang (static: *).  */
-	  c = build_omp_clause (where.lb->location, OMP_CLAUSE_GANG);
-	  OMP_CLAUSE_GANG_STATIC_EXPR (c) = integer_minus_one_node;
-	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
-	}
-      else
-	{
-	  c = build_omp_clause (where.lb->location, OMP_CLAUSE_GANG);
-	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+	  arg = clauses->gang_static_expr
+	    ? gfc_convert_expr_to_tree (block, clauses->gang_static_expr)
+	    : integer_minus_one_node;
+	  OMP_CLAUSE_GANG_STATIC_EXPR (c) = arg;
 	}
     }
 
@@ -3476,8 +3468,9 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
 	      sizeof (construct_clauses));
       loop_clauses.collapse = construct_clauses.collapse;
       loop_clauses.gang = construct_clauses.gang;
-      loop_clauses.gang_expr = construct_clauses.gang_expr;
       loop_clauses.gang_static = construct_clauses.gang_static;
+      loop_clauses.gang_num_expr = construct_clauses.gang_num_expr;
+      loop_clauses.gang_static_expr = construct_clauses.gang_static_expr;
       loop_clauses.vector = construct_clauses.vector;
       loop_clauses.vector_expr = construct_clauses.vector_expr;
       loop_clauses.worker = construct_clauses.worker;
@@ -3491,8 +3484,9 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
       loop_clauses.lists[OMP_LIST_REDUCTION]
 	= construct_clauses.lists[OMP_LIST_REDUCTION];
       construct_clauses.gang = false;
-      construct_clauses.gang_expr = NULL;
       construct_clauses.gang_static = false;
+      construct_clauses.gang_num_expr = NULL;
+      construct_clauses.gang_static_expr = NULL;
       construct_clauses.vector = false;
       construct_clauses.vector_expr = NULL;
       construct_clauses.worker = false;
@@ -3503,6 +3497,7 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
       construct_clauses.independent = false;
       construct_clauses.tile_list = NULL;
       construct_clauses.lists[OMP_LIST_PRIVATE] = NULL;
+      construct_clauses.lists[OMP_LIST_REDUCTION] = NULL;
       oacc_clauses = gfc_trans_omp_clauses (&block, &construct_clauses,
 					    code->loc);
     }
@@ -4302,7 +4297,7 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
 
       /* By default, every gfc_code is a single unit of work.  */
       ompws_flags |= OMPWS_CURR_SINGLEUNIT;
-      ompws_flags &= ~OMPWS_SCALARIZER_WS;
+      ompws_flags &= ~(OMPWS_SCALARIZER_WS | OMPWS_SCALARIZER_BODY);
 
       switch (code->op)
 	{
@@ -4421,13 +4416,24 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
 }
 
 tree
-gfc_trans_oacc_declare (stmtblock_t *block, gfc_namespace *ns)
+gfc_trans_oacc_declare (gfc_code *code)
 {
-  tree oacc_clauses;
-  oacc_clauses = gfc_trans_omp_clauses (block, ns->oacc_declare_clauses,
-					ns->oacc_declare_clauses->loc);
-  return build1_loc (ns->oacc_declare_clauses->loc.lb->location,
-		     OACC_DECLARE, void_type_node, oacc_clauses);
+  stmtblock_t block;
+  tree stmt, oacc_clauses;
+  enum tree_code construct_code;
+
+  construct_code = OACC_DATA;
+
+  gfc_start_block (&block);
+
+  oacc_clauses = gfc_trans_omp_clauses (&block, code->ext.oacc_declare->clauses,
+					code->loc);
+  stmt = gfc_trans_omp_code (code->block->next, true);
+  stmt = build2_loc (input_location, construct_code, void_type_node, stmt,
+		     oacc_clauses);
+  gfc_add_expr_to_block (&block, stmt);
+
+  return gfc_finish_block (&block);
 }
 
 tree
@@ -4455,6 +4461,8 @@ gfc_trans_oacc_directive (gfc_code *code)
       return gfc_trans_oacc_wait_directive (code);
     case EXEC_OACC_ATOMIC:
       return gfc_trans_omp_atomic (code);
+    case EXEC_OACC_DECLARE:
+      return gfc_trans_oacc_declare (code);
     default:
       gcc_unreachable ();
     }

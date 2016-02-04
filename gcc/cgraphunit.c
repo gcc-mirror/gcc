@@ -1,5 +1,5 @@
 /* Driver of optimization process
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -366,11 +366,14 @@ cgraph_node::reset (void)
   memset (&local, 0, sizeof (local));
   memset (&global, 0, sizeof (global));
   memset (&rtl, 0, sizeof (rtl));
+  memset (&thunk, 0, sizeof (cgraph_thunk_info));
   analyzed = false;
   definition = false;
   alias = false;
+  transparent_alias = false;
   weakref = false;
   cpp_implicit_alias = false;
+  instrumented_version = NULL;
 
   remove_callees ();
   remove_all_references ();
@@ -575,6 +578,7 @@ cgraph_node::analyze (void)
       cgraph_node *t = cgraph_node::get (thunk.alias);
 
       create_edge (t, NULL, 0, CGRAPH_FREQ_BASE);
+      callees->can_throw_external = !TREE_NOTHROW (t->decl);
       /* Target code in expand_thunk may need the thunk's target
 	 to be analyzed, so recurse here.  */
       if (!t->analyzed)
@@ -593,7 +597,7 @@ cgraph_node::analyze (void)
       thunk.alias = NULL;
     }
   if (alias)
-    resolve_alias (cgraph_node::get (alias_target));
+    resolve_alias (cgraph_node::get (alias_target), transparent_alias);
   else if (dispatcher_function)
     {
       /* Generate the dispatcher body of multi-versioned functions.  */
@@ -956,7 +960,7 @@ check_global_declaration (symtab_node *snode)
       && ! DECL_ABSTRACT_ORIGIN (decl)
       && ! TREE_PUBLIC (decl)
       /* A volatile variable might be used in some non-obvious way.  */
-      && ! TREE_THIS_VOLATILE (decl)
+      && (! VAR_P (decl) || ! TREE_THIS_VOLATILE (decl))
       /* Global register variables must be declared to reserve them.  */
       && ! (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
       /* Global ctors and dtors are called by the runtime.  */
@@ -1253,6 +1257,7 @@ handle_alias_pairs (void)
 	      node->alias_target = p->target;
 	      node->weakref = true;
 	      node->alias = true;
+	      node->transparent_alias = true;
 	    }
 	  alias_pairs->unordered_remove (i);
 	  continue;
@@ -1661,7 +1666,9 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       greturn *ret;
       bool alias_is_noreturn = TREE_THIS_VOLATILE (alias);
 
-      if (in_lto_p)
+      /* We may be called from expand_thunk that releses body except for
+	 DECL_ARGUMENTS.  In this case force_gimple_thunk is true.  */
+      if (in_lto_p && !force_gimple_thunk)
 	get_untransformed_body ();
       a = DECL_ARGUMENTS (thunk_fndecl);
 
@@ -1907,15 +1914,18 @@ cgraph_node::assemble_thunks_and_aliases (void)
   FOR_EACH_ALIAS (this, ref)
     {
       cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
-      bool saved_written = TREE_ASM_WRITTEN (decl);
+      if (!alias->transparent_alias)
+	{
+	  bool saved_written = TREE_ASM_WRITTEN (decl);
 
-      /* Force assemble_alias to really output the alias this time instead
-	 of buffering it in same alias pairs.  */
-      TREE_ASM_WRITTEN (decl) = 1;
-      do_assemble_alias (alias->decl,
-			 DECL_ASSEMBLER_NAME (decl));
-      alias->assemble_thunks_and_aliases ();
-      TREE_ASM_WRITTEN (decl) = saved_written;
+	  /* Force assemble_alias to really output the alias this time instead
+	     of buffering it in same alias pairs.  */
+	  TREE_ASM_WRITTEN (decl) = 1;
+	  do_assemble_alias (alias->decl,
+			     DECL_ASSEMBLER_NAME (decl));
+	  alias->assemble_thunks_and_aliases ();
+	  TREE_ASM_WRITTEN (decl) = saved_written;
+	}
     }
 }
 
@@ -2204,6 +2214,13 @@ output_in_order (bool no_reorder)
 	  break;
 
 	case ORDER_VAR:
+#ifdef ACCEL_COMPILER
+	  /* Do not assemble "omp declare target link" vars.  */
+	  if (DECL_HAS_VALUE_EXPR_P (nodes[i].u.v->decl)
+	      && lookup_attribute ("omp declare target link",
+				   DECL_ATTRIBUTES (nodes[i].u.v->decl)))
+	    break;
+#endif
 	  nodes[i].u.v->assemble_decl ();
 	  break;
 

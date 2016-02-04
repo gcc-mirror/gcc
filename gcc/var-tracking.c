@@ -1,5 +1,5 @@
 /* Variable tracking routines for the GNU compiler.
-   Copyright (C) 2002-2015 Free Software Foundation, Inc.
+   Copyright (C) 2002-2016 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -871,7 +871,7 @@ vt_stack_adjustments (void)
 	     pointer is often restored via a load-multiple instruction
 	     and so no stack_adjust offset is recorded for it.  This means
 	     that the stack offset at the end of the epilogue block is the
-	     the same as the offset before the epilogue, whereas other paths
+	     same as the offset before the epilogue, whereas other paths
 	     to the exit block will have the correct stack_adjust.
 
 	     It is safe to ignore these differences because (a) we never
@@ -2224,7 +2224,7 @@ struct overlapping_mems
 };
 
 /* Remove all MEMs that overlap with COMS->LOC from the location list
-   of a hash table entry for a value.  COMS->ADDR must be a
+   of a hash table entry for a onepart variable.  COMS->ADDR must be a
    canonicalized form of COMS->LOC's address, and COMS->LOC must be
    canonicalized itself.  */
 
@@ -2235,7 +2235,7 @@ drop_overlapping_mem_locs (variable **slot, overlapping_mems *coms)
   rtx mloc = coms->loc, addr = coms->addr;
   variable *var = *slot;
 
-  if (var->onepart == ONEPART_VALUE)
+  if (var->onepart != NOT_ONEPART)
     {
       location_chain *loc, **locp;
       bool changed = false;
@@ -4682,11 +4682,11 @@ dataflow_set_preserve_mem_locs (variable **slot, dataflow_set *set)
 	{
 	  for (loc = var->var_part[0].loc_chain; loc; loc = loc->next)
 	    {
-	      /* We want to remove dying MEMs that doesn't refer to DECL.  */
+	      /* We want to remove dying MEMs that don't refer to DECL.  */
 	      if (GET_CODE (loc->loc) == MEM
 		  && (MEM_EXPR (loc->loc) != decl
 		      || INT_MEM_OFFSET (loc->loc) != 0)
-		  && !mem_dies_at_call (loc->loc))
+		  && mem_dies_at_call (loc->loc))
 		break;
 	      /* We want to move here MEMs that do refer to DECL.  */
 	      else if (GET_CODE (loc->loc) == VALUE
@@ -4769,14 +4769,14 @@ dataflow_set_preserve_mem_locs (variable **slot, dataflow_set *set)
 }
 
 /* Remove all MEMs from the location list of a hash table entry for a
-   value.  */
+   onepart variable.  */
 
 int
 dataflow_set_remove_mem_locs (variable **slot, dataflow_set *set)
 {
   variable *var = *slot;
 
-  if (var->onepart == ONEPART_VALUE)
+  if (var->onepart != NOT_ONEPART)
     {
       location_chain *loc, **locp;
       bool changed = false;
@@ -4921,6 +4921,63 @@ onepart_variable_different_p (variable *var1, variable *var2)
   return lc1 != lc2;
 }
 
+/* Return true if one-part variables VAR1 and VAR2 are different.
+   They must be in canonical order.  */
+
+static void
+dump_onepart_variable_differences (variable *var1, variable *var2)
+{
+  location_chain *lc1, *lc2;
+
+  gcc_assert (var1 != var2);
+  gcc_assert (dump_file);
+  gcc_assert (dv_as_opaque (var1->dv) == dv_as_opaque (var2->dv));
+  gcc_assert (var1->n_var_parts == 1
+	      && var2->n_var_parts == 1);
+
+  lc1 = var1->var_part[0].loc_chain;
+  lc2 = var2->var_part[0].loc_chain;
+
+  gcc_assert (lc1 && lc2);
+
+  while (lc1 && lc2)
+    {
+      switch (loc_cmp (lc1->loc, lc2->loc))
+	{
+	case -1:
+	  fprintf (dump_file, "removed: ");
+	  print_rtl_single (dump_file, lc1->loc);
+	  lc1 = lc1->next;
+	  continue;
+	case 0:
+	  break;
+	case 1:
+	  fprintf (dump_file, "added: ");
+	  print_rtl_single (dump_file, lc2->loc);
+	  lc2 = lc2->next;
+	  continue;
+	default:
+	  gcc_unreachable ();
+	}
+      lc1 = lc1->next;
+      lc2 = lc2->next;
+    }
+
+  while (lc1)
+    {
+      fprintf (dump_file, "removed: ");
+      print_rtl_single (dump_file, lc1->loc);
+      lc1 = lc1->next;
+    }
+
+  while (lc2)
+    {
+      fprintf (dump_file, "added: ");
+      print_rtl_single (dump_file, lc2->loc);
+      lc2 = lc2->next;
+    }
+}
+
 /* Return true if variables VAR1 and VAR2 are different.  */
 
 static bool
@@ -4964,19 +5021,32 @@ dataflow_set_different (dataflow_set *old_set, dataflow_set *new_set)
 {
   variable_iterator_type hi;
   variable *var1;
+  bool diffound = false;
+  bool details = (dump_file && (dump_flags & TDF_DETAILS));
+
+#define RETRUE					\
+  do						\
+    {						\
+      if (!details)				\
+	return true;				\
+      else					\
+	diffound = true;			\
+    }						\
+  while (0)
 
   if (old_set->vars == new_set->vars)
     return false;
 
   if (shared_hash_htab (old_set->vars)->elements ()
       != shared_hash_htab (new_set->vars)->elements ())
-    return true;
+    RETRUE;
 
   FOR_EACH_HASH_TABLE_ELEMENT (*shared_hash_htab (old_set->vars),
 			       var1, variable, hi)
     {
       variable_table_type *htab = shared_hash_htab (new_set->vars);
       variable *var2 = htab->find_with_hash (var1->dv, dv_htab_hash (var1->dv));
+
       if (!var2)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4984,26 +5054,49 @@ dataflow_set_different (dataflow_set *old_set, dataflow_set *new_set)
 	      fprintf (dump_file, "dataflow difference found: removal of:\n");
 	      dump_var (var1);
 	    }
-	  return true;
+	  RETRUE;
 	}
-
-      if (variable_different_p (var1, var2))
+      else if (variable_different_p (var1, var2))
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
+	  if (details)
 	    {
 	      fprintf (dump_file, "dataflow difference found: "
 		       "old and new follow:\n");
 	      dump_var (var1);
+	      if (dv_onepart_p (var1->dv))
+		dump_onepart_variable_differences (var1, var2);
 	      dump_var (var2);
 	    }
-	  return true;
+	  RETRUE;
 	}
     }
 
-  /* No need to traverse the second hashtab, if both have the same number
-     of elements and the second one had all entries found in the first one,
-     then it can't have any extra entries.  */
-  return false;
+  /* There's no need to traverse the second hashtab unless we want to
+     print the details.  If both have the same number of elements and
+     the second one had all entries found in the first one, then the
+     second can't have any extra entries.  */
+  if (!details)
+    return diffound;
+
+  FOR_EACH_HASH_TABLE_ELEMENT (*shared_hash_htab (new_set->vars),
+			       var1, variable, hi)
+    {
+      variable_table_type *htab = shared_hash_htab (old_set->vars);
+      variable *var2 = htab->find_with_hash (var1->dv, dv_htab_hash (var1->dv));
+      if (!var2)
+	{
+	  if (details)
+	    {
+	      fprintf (dump_file, "dataflow difference found: addition of:\n");
+	      dump_var (var1);
+	    }
+	  RETRUE;
+	}
+    }
+
+#undef RETRUE
+
+  return diffound;
 }
 
 /* Free the contents of dataflow set SET.  */
@@ -5018,6 +5111,28 @@ dataflow_set_destroy (dataflow_set *set)
 
   shared_hash_destroy (set->vars);
   set->vars = NULL;
+}
+
+/* Return true if T is a tracked parameter with non-degenerate record type.  */
+
+static bool
+tracked_record_parameter_p (tree t)
+{
+  if (TREE_CODE (t) != PARM_DECL)
+    return false;
+
+  if (DECL_MODE (t) == BLKmode)
+    return false;
+
+  tree type = TREE_TYPE (t);
+  if (TREE_CODE (type) != RECORD_TYPE)
+    return false;
+
+  if (TYPE_FIELDS (type) == NULL_TREE
+      || DECL_CHAIN (TYPE_FIELDS (type)) == NULL_TREE)
+    return false;
+
+  return true;
 }
 
 /* Shall EXPR be tracked?  */
@@ -5064,11 +5179,9 @@ track_expr_p (tree expr, bool need_rtl)
 					   &maxsize, &reverse);
 	      if (!DECL_P (innerdecl)
 		  || DECL_IGNORED_P (innerdecl)
-		  /* Do not track declarations for parts of tracked parameters
-		     since we want to track them as a whole instead.  */
-		  || (TREE_CODE (innerdecl) == PARM_DECL
-		      && DECL_MODE (innerdecl) != BLKmode
-		      && TREE_CODE (TREE_TYPE (innerdecl)) != UNION_TYPE)
+		  /* Do not track declarations for parts of tracked record
+		     parameters since we want to track them as a whole.  */
+		  || tracked_record_parameter_p (innerdecl)
 		  || TREE_STATIC (innerdecl)
 		  || bitsize <= 0
 		  || bitpos + bitsize > 256
@@ -5774,11 +5887,6 @@ reverse_op (rtx val, const_rtx expr, rtx_insn *insn)
 	    return;
 	}
       ret = simplify_gen_binary (code, GET_MODE (val), val, arg);
-      if (ret == val)
-	/* Ensure ret isn't VALUE itself (which can happen e.g. for
-	   (plus (reg1) (reg2)) when reg2 is known to be 0), as that
-	   breaks a lot of routines during var-tracking.  */
-	ret = gen_rtx_fmt_ee (PLUS, GET_MODE (val), val, const0_rtx);
       break;
     default:
       gcc_unreachable ();
@@ -5933,18 +6041,11 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
   resolve = preserve = !cselib_preserved_value_p (v);
 
   /* We cannot track values for multiple-part variables, so we track only
-     locations for tracked parameters passed either by invisible reference
-     or directly in multiple locations.  */
+     locations for tracked record parameters.  */
   if (track_p
       && REG_P (loc)
       && REG_EXPR (loc)
-      && TREE_CODE (REG_EXPR (loc)) == PARM_DECL
-      && DECL_MODE (REG_EXPR (loc)) != BLKmode
-      && TREE_CODE (TREE_TYPE (REG_EXPR (loc))) != UNION_TYPE
-      && ((MEM_P (DECL_INCOMING_RTL (REG_EXPR (loc)))
-	   && XEXP (DECL_INCOMING_RTL (REG_EXPR (loc)), 0) != arg_pointer_rtx)
-          || (GET_CODE (DECL_INCOMING_RTL (REG_EXPR (loc))) == PARALLEL
-	      && XVECLEN (DECL_INCOMING_RTL (REG_EXPR (loc)), 0) > 1)))
+      && tracked_record_parameter_p (REG_EXPR (loc)))
     {
       /* Although we don't use the value here, it could be used later by the
 	 mere virtue of its existence as the operand of the reverse operation

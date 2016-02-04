@@ -97,7 +97,7 @@ struct rtc_device
 extern void rtc_time_to_tm(unsigned long time, struct rtc_time *tm);
 extern struct rtc_device *rtc_class_open(const char *name);
 extern void rtc_class_close(struct rtc_device *rtc);
-
+extern int rtc_set_time (struct rtc_device *rtc, struct rtc_time *tm);
 
 int rtc_set_ntp_time(struct timespec now)
 {

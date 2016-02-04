@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-lim1-details" } */
+/* { dg-options "-O -fdump-tree-lim2-details" } */
 
 extern const int srcshift;
 
@@ -11,4 +11,4 @@ void foo (int *srcdata, int *dstdata)
     dstdata[i] = srcdata[i] << srcshift;
 }
 
-/* { dg-final { scan-tree-dump "Moving statement" "lim1" } } */
+/* { dg-final { scan-tree-dump "Moving statement" "lim2" } } */

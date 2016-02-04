@@ -1,5 +1,5 @@
 /* Deal with interfaces.
-   Copyright (C) 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 2000-2016 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2020,7 +2020,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
   /* F2008, C1241.  */
   if (formal->attr.pointer && formal->attr.contiguous
-      && !gfc_is_simply_contiguous (actual, true))
+      && !gfc_is_simply_contiguous (actual, true, false))
     {
       if (where)
 	gfc_error ("Actual argument to contiguous pointer dummy %qs at %L "
@@ -2131,15 +2131,17 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
   if (formal->attr.codimension)
     {
-      /* F2008, 12.5.2.8.  */
+      /* F2008, 12.5.2.8 + Corrig 2 (IR F08/0048).  */
+      /* F2015, 12.5.2.8.  */
       if (formal->attr.dimension
 	  && (formal->attr.contiguous || formal->as->type != AS_ASSUMED_SHAPE)
 	  && gfc_expr_attr (actual).dimension
-	  && !gfc_is_simply_contiguous (actual, true))
+	  && !gfc_is_simply_contiguous (actual, true, true))
 	{
 	  if (where)
 	    gfc_error ("Actual argument to %qs at %L must be simply "
-		       "contiguous", formal->name, &actual->where);
+		       "contiguous or an element of such an array",
+		       formal->name, &actual->where);
 	  return 0;
 	}
 
@@ -2157,6 +2159,21 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		       formal->name, &actual->where);
 	  return 0;
 	}
+
+      /* TS18508, C702/C703.  */
+      if (formal->attr.intent != INTENT_INOUT
+	  && (((formal->ts.type == BT_DERIVED || formal->ts.type == BT_CLASS)
+	       && formal->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+	       && formal->ts.u.derived->intmod_sym_id == ISOFORTRAN_EVENT_TYPE)
+	      || formal->attr.event_comp))
+
+    	{
+	  if (where)
+	    gfc_error ("Actual argument to non-INTENT(INOUT) dummy %qs at %L, "
+		       "which is EVENT_TYPE or has a EVENT_TYPE component",
+		       formal->name, &actual->where);
+	  return 0;
+	}
     }
 
   /* F2008, C1239/C1240.  */
@@ -2164,7 +2181,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       && (actual->symtree->n.sym->attr.asynchronous
          || actual->symtree->n.sym->attr.volatile_)
       &&  (formal->attr.asynchronous || formal->attr.volatile_)
-      && actual->rank && formal->as && !gfc_is_simply_contiguous (actual, true)
+      && actual->rank && formal->as
+      && !gfc_is_simply_contiguous (actual, true, false)
       && ((formal->as->type != AS_ASSUMED_SHAPE
 	   && formal->as->type != AS_ASSUMED_RANK && !formal->attr.pointer)
 	  || formal->attr.contiguous))
@@ -3385,6 +3403,19 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	      break;
 	    }
 
+	  if (a->expr
+	      && (a->expr->ts.type == BT_DERIVED || a->expr->ts.type == BT_CLASS)
+	      && ((a->expr->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+		   && a->expr->ts.u.derived->intmod_sym_id
+		      == ISOFORTRAN_EVENT_TYPE)
+		  || gfc_expr_attr (a->expr).event_comp))
+	    {
+	      gfc_error ("Actual argument of EVENT_TYPE or with EVENT_TYPE "
+			 "component at %L requires an explicit interface for "
+			 "procedure %qs", &a->expr->where, sym->name);
+	      break;
+	    }
+
 	  if (a->expr && a->expr->expr_type == EXPR_NULL
 	      && a->expr->ts.type == BT_UNKNOWN)
 	    {
@@ -3475,7 +3506,8 @@ gfc_arglist_matches_symbol (gfc_actual_arglist** args, gfc_symbol* sym)
   gfc_formal_arglist *dummy_args;
   bool r;
 
-  gcc_assert (sym->attr.flavor == FL_PROCEDURE);
+  if (sym->attr.flavor != FL_PROCEDURE)
+    return false;
 
   dummy_args = gfc_sym_get_dummy_args (sym);
 

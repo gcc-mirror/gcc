@@ -1,6 +1,5 @@
-
 /* Perform branch target register load optimizations.
-   Copyright (C) 2001-2015 Free Software Foundation, Inc.
+   Copyright (C) 2001-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -188,14 +187,14 @@ basic_block_freq (const_basic_block bb)
   return bb->frequency;
 }
 
-/* If X references (sets or reads) any branch target register, return one
-   such register.  If EXCLUDEP is set, disregard any references within
-   that location.  */
+/* If the rtx at *XP references (sets or reads) any branch target
+   register, return one such register.  If EXCLUDEP is set, disregard
+   any references within that location.  */
 static rtx *
-find_btr_use (rtx x, rtx *excludep = 0)
+find_btr_use (rtx *xp, rtx *excludep = 0)
 {
   subrtx_ptr_iterator::array_type array;
-  FOR_EACH_SUBRTX_PTR (iter, array, &x, NONCONST)
+  FOR_EACH_SUBRTX_PTR (iter, array, xp, NONCONST)
     {
       rtx *loc = *iter;
       if (loc == excludep)
@@ -232,7 +231,7 @@ insn_sets_btr_p (const rtx_insn *insn, int check_const, int *regno)
       if (REG_P (dest)
 	  && TEST_HARD_REG_BIT (all_btrs, REGNO (dest)))
 	{
-	  gcc_assert (!find_btr_use (src));
+	  gcc_assert (!find_btr_use (&src));
 
 	  if (!check_const || CONSTANT_P (src))
 	    {
@@ -324,7 +323,7 @@ new_btr_user (basic_block bb, int insn_luid, rtx_insn *insn)
      to decide whether we can replace all target register
      uses easily.
    */
-  rtx *usep = find_btr_use (PATTERN (insn));
+  rtx *usep = find_btr_use (&PATTERN (insn));
   rtx use;
   btr_user *user = NULL;
 
@@ -335,7 +334,7 @@ new_btr_user (basic_block bb, int insn_luid, rtx_insn *insn)
       /* We want to ensure that USE is the only use of a target
 	 register in INSN, so that we know that to rewrite INSN to use
 	 a different target register, all we have to do is replace USE.  */
-      unambiguous_single_use = !find_btr_use (PATTERN (insn), usep);
+      unambiguous_single_use = !find_btr_use (&PATTERN (insn), usep);
       if (!unambiguous_single_use)
 	usep = NULL;
     }
@@ -511,7 +510,7 @@ compute_defs_uses_and_gen (btr_heap_t *all_btr_defs, btr_def **def_array,
 		}
 	      else
 		{
-		  if (find_btr_use (PATTERN (insn)))
+		  if (find_btr_use (&PATTERN (insn)))
 		    {
 		      btr_user *user = new_btr_user (bb, insn_luid, insn);
 

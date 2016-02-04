@@ -1,6 +1,6 @@
 // -*- C++ -*- compatibility header.
 
-// Copyright (C) 2002-2015 Free Software Foundation, Inc.
+// Copyright (C) 2002-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,33 +26,48 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <cstdlib>
+#if !defined __cplusplus || defined _GLIBCXX_INCLUDE_NEXT_C_HEADERS
+# include_next <stdlib.h>
+#else
 
 #ifndef _GLIBCXX_STDLIB_H
 #define _GLIBCXX_STDLIB_H 1
 
-#ifdef _GLIBCXX_NAMESPACE_C
+# include <cstdlib>
+
+using std::abort;
+using std::atexit;
+using std::exit;
+#if __cplusplus >= 201103L
+# ifdef _GLIBCXX_HAVE_AT_QUICK_EXIT
+  using std::at_quick_exit;
+# endif
+# ifdef _GLIBCXX_HAVE_QUICK_EXIT
+  using std::quick_exit;
+# endif
+#endif
+
+#if _GLIBCXX_HOSTED
 using std::div_t;
 using std::ldiv_t;
 
-using std::abort;
 using std::abs;
-using std::atexit;
 using std::atof;
 using std::atoi;
 using std::atol;
 using std::bsearch;
 using std::calloc;
 using std::div;
-using std::exit;
 using std::free;
 using std::getenv;
 using std::labs;
 using std::ldiv;
 using std::malloc;
+#ifdef _GLIBCXX_HAVE_MBSTATE_T
 using std::mblen;
 using std::mbstowcs;
 using std::mbtowc;
+#endif // _GLIBCXX_HAVE_MBSTATE_T
 using std::qsort;
 using std::rand;
 using std::realloc;
@@ -61,8 +76,11 @@ using std::strtod;
 using std::strtol;
 using std::strtoul;
 using std::system;
+#ifdef _GLIBCXX_USE_WCHAR_T
 using std::wcstombs;
 using std::wctomb;
+#endif // _GLIBCXX_USE_WCHAR_T
 #endif
 
-#endif
+#endif // _GLIBCXX_STDLIB_H
+#endif // __cplusplus

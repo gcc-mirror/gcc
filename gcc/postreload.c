@@ -1,5 +1,5 @@
 /* Perform simple optimizations to clean up the result of reload.
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -106,10 +106,6 @@ reload_cse_simplify (rtx_insn *insn, rtx testreg)
 
       if (!count && reload_cse_noop_set_p (body))
 	{
-	  rtx value = SET_DEST (body);
-	  if (REG_P (value)
-	      && ! REG_FUNCTION_VALUE_P (value))
-	    value = 0;
 	  if (check_for_inc_dec (insn))
 	    delete_insn_and_edges (insn);
 	  /* We're done with this insn.  */

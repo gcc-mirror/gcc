@@ -1,6 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006-2015 Free Software Foundation, Inc.
+// Copyright (C) 2006-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,8 +38,13 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+#if __STDCPP_WANT_MATH_SPEC_FUNCS__
+#elif defined(_GLIBCXX_TR1_CMATH)
 namespace tr1
 {
+#else
+# error do not include this header directly, use <cmath> or <tr1/cmath>
+#endif
   namespace __detail
   {
   _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -128,7 +133,9 @@ namespace tr1
 
   _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
-}
+#if ! __STDCPP_WANT_MATH_SPEC_FUNCS__ && defined(_GLIBCXX_TR1_CMATH)
+} // namespace tr1
+#endif
 }
 
 #endif // _GLIBCXX_TR1_SPECIAL_FUNCTION_UTIL_H

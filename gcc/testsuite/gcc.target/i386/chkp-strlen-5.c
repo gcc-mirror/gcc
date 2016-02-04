@@ -1,5 +1,4 @@
-/* { dg-do compile } */
-/* { dg-require-effective-target mpx } */
+/* { dg-do compile { target { ! x32 } } } */
 /* { dg-options "-fcheck-pointer-bounds -mmpx -O2 -fdump-tree-strlen" } */
 /* { dg-final { scan-tree-dump-times "strlen" 2 "strlen" } } */
 /* { dg-final { scan-tree-dump "memcpy" "strlen" } } */

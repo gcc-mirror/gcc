@@ -1,5 +1,5 @@
 /* A pass for lowering trees to RTL.
-   Copyright (C) 2004-2015 Free Software Foundation, Inc.
+   Copyright (C) 2004-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -184,10 +184,15 @@ set_rtl (tree t, rtx x)
 				      || SUBREG_P (XEXP (x, 0)))
 				  && (REG_P (XEXP (x, 1))
 				      || SUBREG_P (XEXP (x, 1))))
+			      /* We need to accept PARALLELs for RESUT_DECLs
+				 because of vector types with BLKmode returned
+				 in multiple registers, but they are supposed
+				 to be uncoalesced.  */
 			      || (GET_CODE (x) == PARALLEL
 				  && SSAVAR (t)
 				  && TREE_CODE (SSAVAR (t)) == RESULT_DECL
-				  && !flag_tree_coalesce_vars))
+				  && (GET_MODE (x) == BLKmode
+				      || !flag_tree_coalesce_vars)))
 			   : (MEM_P (x) || x == pc_rtx
 			      || (GET_CODE (x) == CONCAT
 				  && MEM_P (XEXP (x, 0))
@@ -198,11 +203,14 @@ set_rtl (tree t, rtx x)
      PARM_DECLs and RESULT_DECLs, we'll have been called by
      set_parm_rtl, which will give us the default def, so we don't
      have to compute it ourselves.  For RESULT_DECLs, we accept mode
-     mismatches too, as long as we're not coalescing across variables,
-     so that we don't reject BLKmode PARALLELs or unpromoted REGs.  */
+     mismatches too, as long as we have BLKmode or are not coalescing
+     across variables, so that we don't reject BLKmode PARALLELs or
+     unpromoted REGs.  */
   gcc_checking_assert (!x || x == pc_rtx || TREE_CODE (t) != SSA_NAME
-		       || (SSAVAR (t) && TREE_CODE (SSAVAR (t)) == RESULT_DECL
-			   && !flag_tree_coalesce_vars)
+		       || (SSAVAR (t)
+			   && TREE_CODE (SSAVAR (t)) == RESULT_DECL
+			   && (promote_ssa_mode (t, NULL) == BLKmode
+			       || !flag_tree_coalesce_vars))
 		       || !use_register_for_decl (t)
 		       || GET_MODE (x) == promote_ssa_mode (t, NULL));
 
@@ -1542,6 +1550,9 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
 
   if (TREE_TYPE (var) != error_mark_node && TREE_CODE (var) == VAR_DECL)
     {
+      if (is_global_var (var))
+	return 0;
+
       /* Because we don't know if VAR will be in register or on stack,
 	 we conservatively assume it will be on stack even if VAR is
 	 eventually put into register after RA pass.  For non-automatic
@@ -3534,6 +3545,12 @@ expand_gimple_stmt_1 (gimple *stmt)
 	  {
 	    tree result = DECL_RESULT (current_function_decl);
 
+	    /* Mark we have return statement with missing bounds.  */
+	    if (!bnd
+		&& chkp_function_instrumented_p (cfun->decl)
+		&& !DECL_P (op0))
+	      bnd = error_mark_node;
+
 	    /* If we are not returning the current function's RESULT_DECL,
 	       build an assignment to it.  */
 	    if (op0 != result)
@@ -3550,9 +3567,6 @@ expand_gimple_stmt_1 (gimple *stmt)
 		op0 = build2 (MODIFY_EXPR, TREE_TYPE (result),
 			      result, op0);
 	      }
-	    /* Mark we have return statement with missing bounds.  */
-	    if (!bnd && chkp_function_instrumented_p (cfun->decl))
-	      bnd = error_mark_node;
 	  }
 
 	if (!op0)
@@ -6291,7 +6305,7 @@ pass_expand::execute (function *fun)
   expand_phi_nodes (&SA);
 
   /* Release any stale SSA redirection data.  */
-  redirect_edge_var_map_destroy ();
+  redirect_edge_var_map_empty ();
 
   /* Register rtl specific functions for cfg.  */
   rtl_register_cfg_hooks ();

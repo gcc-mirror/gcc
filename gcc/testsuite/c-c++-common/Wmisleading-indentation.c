@@ -890,4 +890,16 @@ fn_39 (void)
        i < 10;
        i++);
   foo (i);
+
+  do foo (0); while (flagA);
 }
+
+/* We shouldn't complain about the following function.  */
+#define emit
+void pr69122 (void)
+{
+  if (flagA)
+       foo (0);
+  emit foo (1);
+}
+#undef emit

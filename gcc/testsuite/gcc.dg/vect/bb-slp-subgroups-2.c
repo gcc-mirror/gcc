@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_perm } */
 /* PR tree-optimization/67682.  */
 
 #include "tree-vect.h"

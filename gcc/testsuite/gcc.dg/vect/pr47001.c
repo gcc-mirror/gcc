@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 
-#include <stdlib.h>
+extern void abort (void);
 
 #define N 128
 

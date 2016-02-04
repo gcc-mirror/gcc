@@ -1,5 +1,5 @@
 /* Description of builtins used by the ARM backend.
-   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -526,6 +526,8 @@ enum arm_builtins
 #define CRYPTO3(L, U, M1, M2, M3, M4) \
   ARM_BUILTIN_CRYPTO_##U,
 
+  ARM_BUILTIN_CRYPTO_BASE,
+
 #include "crypto.def"
 
 #undef CRYPTO1
@@ -893,8 +895,13 @@ arm_init_simd_builtin_scalar_types (void)
 					     "__builtin_neon_uti");
 }
 
+/* Set up all the NEON builtins, even builtins for instructions that are not
+   in the current target ISA to allow the user to compile particular modules
+   with different target specific options that differ from the command line
+   options. Such builtins will be rejected in arm_expand_builtin.  */
+
 static void
-arm_init_neon_builtins_internal (void)
+arm_init_neon_builtins (void)
 {
   unsigned int i, fcode = ARM_BUILTIN_NEON_PATTERN_START;
 
@@ -1018,7 +1025,7 @@ arm_init_neon_builtins_internal (void)
 }
 
 static void
-arm_init_crypto_builtins_internal (void)
+arm_init_crypto_builtins (void)
 {
   tree V16UQI_type_node
     = arm_simd_builtin_type (V16QImode, true, false);
@@ -1096,25 +1103,6 @@ arm_init_crypto_builtins_internal (void)
   #undef FT1
   #undef FT2
   #undef FT3
-}
-
-static bool neon_set_p = false;
-static bool neon_crypto_set_p = false;
-
-void
-arm_init_neon_builtins (void)
-{
-  if (! neon_set_p)
-    {
-      neon_set_p = true;
-      arm_init_neon_builtins_internal ();
-    }
-
-  if (! neon_crypto_set_p && TARGET_CRYPTO && TARGET_HARD_FLOAT)
-    {
-      neon_crypto_set_p = true;
-      arm_init_crypto_builtins_internal ();
-    }
 }
 
 #undef NUM_DREG_TYPES
@@ -1777,8 +1765,12 @@ arm_init_builtins (void)
      arm_init_neon_builtins which uses it.  */
   arm_init_fp16_builtins ();
 
-  if (TARGET_NEON)
-    arm_init_neon_builtins ();
+  if (TARGET_HARD_FLOAT)
+    {
+      arm_init_neon_builtins ();
+
+      arm_init_crypto_builtins ();
+    }
 
   if (TARGET_CRC32)
     arm_init_crc32_builtins ();
@@ -2146,7 +2138,8 @@ constant_arg:
 	      if (!(*insn_data[icode].operand[opno].predicate)
                    (op[argc], mode[argc]))
 		op[argc] = (replace_equiv_address
-			    (op[argc], force_reg (Pmode, XEXP (op[argc], 0))));
+			    (op[argc],
+			     copy_to_mode_reg (Pmode, XEXP (op[argc], 0))));
               break;
 
 	    case NEON_ARG_STOP:
@@ -2225,6 +2218,15 @@ constant_arg:
 static rtx
 arm_expand_neon_builtin (int fcode, tree exp, rtx target)
 {
+  /* Check in the context of the function making the call whether the
+     builtin is supported.  */
+  if (! TARGET_NEON)
+    {
+      fatal_error (input_location,
+		   "You must enable NEON instructions (e.g. -mfloat-abi=softfp -mfpu=neon) to use these intrinsics.");
+      return const0_rtx;
+    }
+
   if (fcode == ARM_BUILTIN_NEON_LANE_CHECK)
     {
       /* Builtin is only to check bounds of the lane passed to some intrinsics
@@ -2244,7 +2246,7 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
   neon_builtin_datum *d =
 		&neon_builtin_data[fcode - ARM_BUILTIN_NEON_PATTERN_START];
   enum insn_code icode = d->code;
-  builtin_arg args[SIMD_MAX_BUILTIN_ARGS];
+  builtin_arg args[SIMD_MAX_BUILTIN_ARGS + 1];
   int num_args = insn_data[d->code].n_operands;
   int is_void = 0;
   int k;
@@ -2334,6 +2336,16 @@ arm_expand_builtin (tree exp,
 
   if (fcode >= ARM_BUILTIN_NEON_BASE)
     return arm_expand_neon_builtin (fcode, exp, target);
+
+  /* Check in the context of the function making the call whether the
+     builtin is supported.  */
+  if (fcode >= ARM_BUILTIN_CRYPTO_BASE
+      && (!TARGET_CRYPTO || !TARGET_HARD_FLOAT))
+    {
+      fatal_error (input_location,
+		   "You must enable crypto intrinsics (e.g. include -mfloat-abi=softfp -mfpu=crypto-neon...) to use these intrinsics.");
+      return const0_rtx;
+    }
 
   switch (fcode)
     {

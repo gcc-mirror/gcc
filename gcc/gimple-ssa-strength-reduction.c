@@ -1,5 +1,5 @@
 /* Straight-line strength reduction.
-   Copyright (C) 2012-2015 Free Software Foundation, Inc.
+   Copyright (C) 2012-2016 Free Software Foundation, Inc.
    Contributed by Bill Schmidt, IBM <wschmidt@linux.ibm.com>
 
 This file is part of GCC.
@@ -1649,12 +1649,12 @@ class find_candidates_dom_walker : public dom_walker
 public:
   find_candidates_dom_walker (cdi_direction direction)
     : dom_walker (direction) {}
-  virtual void before_dom_children (basic_block);
+  virtual edge before_dom_children (basic_block);
 };
 
 /* Find strength-reduction candidates in block BB.  */
 
-void
+edge
 find_candidates_dom_walker::before_dom_children (basic_block bb)
 {
   bool speed = optimize_bb_for_speed_p (bb);
@@ -1737,6 +1737,7 @@ find_candidates_dom_walker::before_dom_children (basic_block bb)
 	    }
 	}
     }
+  return NULL;
 }
 
 /* Dump a candidate for debug.  */
@@ -2229,7 +2230,7 @@ create_phi_basis (slsr_cand_t c, gimple *from_phi, tree basis_name,
   slsr_cand_t basis = lookup_cand (c->basis);
   int nargs = gimple_phi_num_args (from_phi);
   basic_block phi_bb = gimple_bb (from_phi);
-  slsr_cand_t phi_cand = base_cand_from_table (gimple_phi_result (from_phi));
+  slsr_cand_t phi_cand = *stmt_cand_map->get (from_phi);
   auto_vec<tree> phi_args (nargs);
 
   /* Process each argument of the existing phi that represents
@@ -2338,7 +2339,7 @@ phi_add_costs (gimple *phi, slsr_cand_t c, int one_add_cost)
 {
   unsigned i;
   int cost = 0;
-  slsr_cand_t phi_cand = base_cand_from_table (gimple_phi_result (phi));
+  slsr_cand_t phi_cand = *stmt_cand_map->get (phi);
 
   /* If we work our way back to a phi that isn't dominated by the hidden
      basis, this isn't a candidate for replacement.  Indicate this by
@@ -2549,7 +2550,7 @@ static void
 record_phi_increments (slsr_cand_t basis, gimple *phi)
 {
   unsigned i;
-  slsr_cand_t phi_cand = base_cand_from_table (gimple_phi_result (phi));
+  slsr_cand_t phi_cand = *stmt_cand_map->get (phi);
   
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
@@ -2621,7 +2622,7 @@ phi_incr_cost (slsr_cand_t c, const widest_int &incr, gimple *phi,
   unsigned i;
   int cost = 0;
   slsr_cand_t basis = lookup_cand (c->basis);
-  slsr_cand_t phi_cand = base_cand_from_table (gimple_phi_result (phi));
+  slsr_cand_t phi_cand = *stmt_cand_map->get (phi);
 
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
@@ -2965,7 +2966,7 @@ ncd_with_phi (slsr_cand_t c, const widest_int &incr, gphi *phi,
 {
   unsigned i;
   slsr_cand_t basis = lookup_cand (c->basis);
-  slsr_cand_t phi_cand = base_cand_from_table (gimple_phi_result (phi));
+  slsr_cand_t phi_cand = *stmt_cand_map->get (phi);
 
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
@@ -3175,7 +3176,7 @@ all_phi_incrs_profitable (slsr_cand_t c, gimple *phi)
 {
   unsigned i;
   slsr_cand_t basis = lookup_cand (c->basis);
-  slsr_cand_t phi_cand = base_cand_from_table (gimple_phi_result (phi));
+  slsr_cand_t phi_cand = *stmt_cand_map->get (phi);
 
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {

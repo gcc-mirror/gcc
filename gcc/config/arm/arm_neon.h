@@ -1,6 +1,6 @@
 /* ARM NEON intrinsics include file.
 
-   Copyright (C) 2006-2015 Free Software Foundation, Inc.
+   Copyright (C) 2006-2016 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is part of GCC.
@@ -1157,6 +1157,56 @@ vqrdmulhq_s32 (int32x4_t __a, int32x4_t __b)
 {
   return (int32x4_t)__builtin_neon_vqrdmulhv4si (__a, __b);
 }
+
+#ifdef __ARM_FEATURE_QRDMX
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vqrdmlah_s16 (int16x4_t __a, int16x4_t __b, int16x4_t __c)
+{
+  return (int16x4_t)__builtin_neon_vqrdmlahv4hi (__a, __b, __c);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vqrdmlah_s32 (int32x2_t __a, int32x2_t __b, int32x2_t __c)
+{
+  return (int32x2_t)__builtin_neon_vqrdmlahv2si (__a, __b, __c);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vqrdmlahq_s16 (int16x8_t __a, int16x8_t __b, int16x8_t __c)
+{
+  return (int16x8_t)__builtin_neon_vqrdmlahv8hi (__a, __b, __c);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vqrdmlahq_s32 (int32x4_t __a, int32x4_t __b, int32x4_t __c)
+{
+  return (int32x4_t)__builtin_neon_vqrdmlahv4si (__a, __b, __c);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vqrdmlsh_s16 (int16x4_t __a, int16x4_t __b, int16x4_t __c)
+{
+  return (int16x4_t)__builtin_neon_vqrdmlshv4hi (__a, __b, __c);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vqrdmlsh_s32 (int32x2_t __a, int32x2_t __b, int32x2_t __c)
+{
+  return (int32x2_t)__builtin_neon_vqrdmlshv2si (__a, __b, __c);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vqrdmlshq_s16 (int16x8_t __a, int16x8_t __b, int16x8_t __c)
+{
+  return (int16x8_t)__builtin_neon_vqrdmlshv8hi (__a, __b, __c);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vqrdmlshq_s32 (int32x4_t __a, int32x4_t __b, int32x4_t __c)
+{
+  return (int32x4_t)__builtin_neon_vqrdmlshv4si (__a, __b, __c);
+}
+#endif
 
 __extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
 vmull_s8 (int8x8_t __a, int8x8_t __b)
@@ -5252,14 +5302,26 @@ vget_lane_s32 (int32x2_t __a, const int __b)
    were marked always-inline so there were no call sites, the declaration
    would nonetheless raise an error.  Hence, we must use a macro instead.  */
 
-#define vget_lane_f16(__v, __idx)		\
-  __extension__					\
-    ({						\
-      float16x4_t __vec = (__v);		\
-      __builtin_arm_lane_check (4, __idx);	\
-      float16_t __res = __vec[__idx];		\
-      __res;					\
-    })
+  /* For big-endian, GCC's vector indices are reversed within each 64
+     bits compared to the architectural lane indices used by Neon
+     intrinsics.  */
+#ifdef __ARM_BIG_ENDIAN
+#define __ARM_NUM_LANES(__v) (sizeof (__v) / sizeof (__v[0]))
+#define __arm_lane(__vec, __idx) (__idx ^ (__ARM_NUM_LANES(__vec) - 1))
+#define __arm_laneq(__vec, __idx) (__idx ^ (__ARM_NUM_LANES(__vec)/2 - 1))
+#else
+#define __arm_lane(__vec, __idx) __idx
+#define __arm_laneq(__vec, __idx) __idx
+#endif
+
+#define vget_lane_f16(__v, __idx)			\
+  __extension__						\
+  ({							\
+    float16x4_t __vec = (__v);				\
+    __builtin_arm_lane_check (4, __idx);		\
+    float16_t __res = __vec[__arm_lane(__vec, __idx)];	\
+    __res;						\
+  })
 #endif
 
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
@@ -5329,14 +5391,14 @@ vgetq_lane_s32 (int32x4_t __a, const int __b)
 }
 
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
-#define vgetq_lane_f16(__v, __idx)		\
-  __extension__					\
-    ({						\
-      float16x8_t __vec = (__v);		\
-      __builtin_arm_lane_check (8, __idx);	\
-      float16_t __res = __vec[__idx];		\
-      __res;					\
-    })
+#define vgetq_lane_f16(__v, __idx)			\
+  __extension__						\
+  ({							\
+    float16x8_t __vec = (__v);				\
+    __builtin_arm_lane_check (8, __idx);		\
+    float16_t __res = __vec[__arm_laneq(__vec, __idx)];	\
+    __res;						\
+  })
 #endif
 
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
@@ -5408,13 +5470,13 @@ vset_lane_s32 (int32_t __a, int32x2_t __b, const int __c)
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 #define vset_lane_f16(__e, __v, __idx)		\
   __extension__					\
-    ({						\
-      float16_t __elem = (__e);			\
-      float16x4_t __vec = (__v);		\
-      __builtin_arm_lane_check (4, __idx);	\
-      __vec[__idx] = __elem;			\
-      __vec;					\
-    })
+  ({						\
+    float16_t __elem = (__e);			\
+    float16x4_t __vec = (__v);			\
+    __builtin_arm_lane_check (4, __idx);	\
+    __vec[__arm_lane (__vec, __idx)] = __elem;	\
+    __vec;					\
+  })
 #endif
 
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
@@ -5486,13 +5548,13 @@ vsetq_lane_s32 (int32_t __a, int32x4_t __b, const int __c)
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
 #define vsetq_lane_f16(__e, __v, __idx)		\
   __extension__					\
-    ({						\
-      float16_t __elem = (__e);			\
-      float16x8_t __vec = (__v);		\
-      __builtin_arm_lane_check (8, __idx);	\
-      __vec[__idx] = __elem;			\
-      __vec;					\
-    })
+  ({						\
+    float16_t __elem = (__e);			\
+    float16x8_t __vec = (__v);			\
+    __builtin_arm_lane_check (8, __idx);	\
+    __vec[__arm_laneq (__vec, __idx)] = __elem;	\
+    __vec;					\
+  })
 #endif
 
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
@@ -7045,6 +7107,56 @@ vqrdmulh_lane_s32 (int32x2_t __a, int32x2_t __b, const int __c)
 {
   return (int32x2_t)__builtin_neon_vqrdmulh_lanev2si (__a, __b, __c);
 }
+
+#ifdef __ARM_FEATURE_QRDMX
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vqrdmlahq_lane_s16 (int16x8_t __a, int16x8_t __b, int16x4_t __c, const int __d)
+{
+  return (int16x8_t)__builtin_neon_vqrdmlah_lanev8hi (__a, __b, __c, __d);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vqrdmlahq_lane_s32 (int32x4_t __a, int32x4_t __b, int32x2_t __c, const int __d)
+{
+  return (int32x4_t)__builtin_neon_vqrdmlah_lanev4si (__a, __b, __c, __d);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vqrdmlah_lane_s16 (int16x4_t __a, int16x4_t __b, int16x4_t __c, const int __d)
+{
+  return (int16x4_t)__builtin_neon_vqrdmlah_lanev4hi (__a, __b, __c, __d);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vqrdmlah_lane_s32 (int32x2_t __a, int32x2_t __b, int32x2_t __c, const int __d)
+{
+  return (int32x2_t)__builtin_neon_vqrdmlah_lanev2si (__a, __b, __c, __d);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vqrdmlshq_lane_s16 (int16x8_t __a, int16x8_t __b, int16x4_t __c, const int __d)
+{
+  return (int16x8_t)__builtin_neon_vqrdmlsh_lanev8hi (__a, __b, __c, __d);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vqrdmlshq_lane_s32 (int32x4_t __a, int32x4_t __b, int32x2_t __c, const int __d)
+{
+  return (int32x4_t)__builtin_neon_vqrdmlsh_lanev4si (__a, __b, __c, __d);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vqrdmlsh_lane_s16 (int16x4_t __a, int16x4_t __b, int16x4_t __c, const int __d)
+{
+  return (int16x4_t)__builtin_neon_vqrdmlsh_lanev4hi (__a, __b, __c, __d);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vqrdmlsh_lane_s32 (int32x2_t __a, int32x2_t __b, int32x2_t __c, const int __d)
+{
+  return (int32x2_t)__builtin_neon_vqrdmlsh_lanev2si (__a, __b, __c, __d);
+}
+#endif
 
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
 vmul_n_s16 (int16x4_t __a, int16_t __b)

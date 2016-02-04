@@ -2791,7 +2791,7 @@ __gnat_locate_exec_on_path (char *exec_name)
   WS2SC (apath_val, wapath_val, EXPAND_BUFFER_SIZE);
 
 #else
-  char *path_val = getenv ("PATH");
+  const char *path_val = getenv ("PATH");
 
   /* If PATH is not defined, proceed with __gnat_locate_exec anyway, so we can
      find files that contain directory names.  */
@@ -3281,7 +3281,7 @@ void __gnat_killprocesstree (int pid, int sig_num)
 
   /* kill child processes first */
 
-  while (d = readdir (dir))
+  while ((d = readdir (dir)) != NULL)
     {
       if ((d->d_type & DT_DIR) == DT_DIR)
         {

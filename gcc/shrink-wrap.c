@@ -1,5 +1,5 @@
 /* Shrink-wrapping related optimizations.
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "shrink-wrap.h"
 #include "regcprop.h"
 #include "rtl-iter.h"
+#include "valtrack.h"
 
 
 /* Return true if INSN requires the stack frame to be set up.
@@ -149,7 +150,8 @@ static bool
 move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
 			   const HARD_REG_SET uses,
 			   const HARD_REG_SET defs,
-			   bool *split_p)
+			   bool *split_p,
+			   struct dead_debug_local *debug)
 {
   rtx set, src, dest;
   bitmap live_out, live_in, bb_uses, bb_defs;
@@ -158,6 +160,8 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
   unsigned int end_sregno = FIRST_PSEUDO_REGISTER;
   basic_block next_block;
   edge live_edge;
+  rtx_insn *dinsn;
+  df_ref def;
 
   /* Look for a simple register assignment.  We don't use single_set here
      because we can't deal with any CLOBBERs, USEs, or REG_UNUSED secondary
@@ -302,6 +306,20 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
      move it as far as we can.  */
   do
     {
+      if (MAY_HAVE_DEBUG_INSNS)
+	{
+	  FOR_BB_INSNS_REVERSE (bb, dinsn)
+	    if (DEBUG_INSN_P (dinsn))
+	      {
+		df_ref use;
+		FOR_EACH_INSN_USE (use, dinsn)
+		  if (refers_to_regno_p (dregno, end_dregno,
+					 DF_REF_REG (use), (rtx *) NULL))
+		    dead_debug_add (debug, use, DF_REF_REGNO (use));
+	      }
+	    else if (dinsn == insn)
+	      break;
+	}
       live_out = df_get_live_out (bb);
       live_in = df_get_live_in (next_block);
       bb = next_block;
@@ -384,6 +402,12 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
 	SET_REGNO_REG_SET (bb_uses, i);
     }
 
+  /* Insert debug temps for dead REGs used in subsequent debug insns.  */
+  if (debug->used && !bitmap_empty_p (debug->used))
+    FOR_EACH_INSN_DEF (def, insn)
+      dead_debug_insert_temp (debug, DF_REF_REGNO (def), insn,
+			      DEBUG_TEMP_BEFORE_WITH_VALUE);
+
   emit_insn_after (PATTERN (insn), bb_note (bb));
   delete_insn (insn);
   return true;
@@ -404,6 +428,8 @@ prepare_shrink_wrap (basic_block entry_block)
   HARD_REG_SET uses, defs;
   df_ref def, use;
   bool split_p = false;
+  unsigned int i;
+  struct dead_debug_local debug;
 
   if (JUMP_P (BB_END (entry_block)))
     {
@@ -414,19 +440,22 @@ prepare_shrink_wrap (basic_block entry_block)
       copyprop_hardreg_forward_bb_without_debug_insn (entry_block);
     }
 
+  dead_debug_local_init (&debug, NULL, NULL);
   CLEAR_HARD_REG_SET (uses);
   CLEAR_HARD_REG_SET (defs);
+
   FOR_BB_INSNS_REVERSE_SAFE (entry_block, insn, curr)
     if (NONDEBUG_INSN_P (insn)
 	&& !move_insn_for_shrink_wrap (entry_block, insn, uses, defs,
-				       &split_p))
+				       &split_p, &debug))
       {
 	/* Add all defined registers to DEFs.  */
 	FOR_EACH_INSN_DEF (def, insn)
 	  {
 	    x = DF_REF_REG (def);
 	    if (REG_P (x) && HARD_REGISTER_P (x))
-	      SET_HARD_REG_BIT (defs, REGNO (x));
+	      for (i = REGNO (x); i < END_REGNO (x); i++)
+		SET_HARD_REG_BIT (defs, i);
 	  }
 
 	/* Add all used registers to USESs.  */
@@ -434,9 +463,12 @@ prepare_shrink_wrap (basic_block entry_block)
 	  {
 	    x = DF_REF_REG (use);
 	    if (REG_P (x) && HARD_REGISTER_P (x))
-	      SET_HARD_REG_BIT (uses, REGNO (x));
+	      for (i = REGNO (x); i < END_REGNO (x); i++)
+		SET_HARD_REG_BIT (uses, i);
 	  }
       }
+
+  dead_debug_local_finish (&debug, NULL);
 }
 
 /* Return whether basic block PRO can get the prologue.  It can not if it
@@ -722,8 +754,8 @@ try_shrink_wrapping (edge *entry_edge, bitmap_head *bb_with,
 	{
 	  pro = get_immediate_dominator (CDI_DOMINATORS, pro);
 
-	  bitmap_set_bit (bb_with, pro->index);
-	  vec.quick_push (pro);
+	  if (bitmap_set_bit (bb_with, pro->index))
+	    vec.quick_push (pro);
 	}
 
       basic_block bb = vec.pop ();
@@ -734,8 +766,8 @@ try_shrink_wrapping (edge *entry_edge, bitmap_head *bb_with,
 
 	    pro = get_immediate_dominator (CDI_DOMINATORS, pro);
 
-	    bitmap_set_bit (bb_with, pro->index);
-	    vec.quick_push (pro);
+	    if (bitmap_set_bit (bb_with, pro->index))
+	      vec.quick_push (pro);
 	  }
 
       FOR_EACH_EDGE (e, ei, bb->succs)
@@ -744,35 +776,74 @@ try_shrink_wrapping (edge *entry_edge, bitmap_head *bb_with,
 	  vec.quick_push (e->dest);
     }
 
-  vec.release ();
-
   if (dump_file)
     fprintf (dump_file, "Avoiding non-duplicatable blocks, PRO is now %d\n",
 	     pro->index);
 
   /* If we can move PRO back without having to duplicate more blocks, do so.
+     We do this because putting the prologue earlier is better for scheduling.
+
      We can move back to a block PRE if every path from PRE will eventually
-     need a prologue, that is, PRO is a post-dominator of PRE.  */
+     need a prologue, that is, PRO is a post-dominator of PRE.  PRE needs
+     to dominate every block reachable from itself.  We keep in BB_TMP a
+     bitmap of the blocks reachable from PRE that we already found, and in
+     VEC a stack of those we still need to consider.
+
+     Any block reachable from PRE is also reachable from all predecessors
+     of PRE, so if we find we need to move PRE back further we can leave
+     everything not considered so far on the stack.  Any block dominated
+     by PRE is also dominated by all other dominators of PRE, so anything
+     found good for some PRE does not need to be reconsidered later.
+
+     We don't need to update BB_WITH because none of the new blocks found
+     can jump to a block that does not need the prologue.  */
 
   if (pro != entry)
     {
       calculate_dominance_info (CDI_POST_DOMINATORS);
 
+      bitmap bb_tmp = BITMAP_ALLOC (NULL);
+      bitmap_copy (bb_tmp, bb_with);
       basic_block last_ok = pro;
+      vec.truncate (0);
+
       while (pro != entry)
 	{
 	  basic_block pre = get_immediate_dominator (CDI_DOMINATORS, pro);
 	  if (!dominated_by_p (CDI_POST_DOMINATORS, pre, pro))
 	    break;
 
+	  if (bitmap_set_bit (bb_tmp, pre->index))
+	    vec.quick_push (pre);
+
+	  bool ok = true;
+	  while (!vec.is_empty ())
+	    {
+	      if (!dominated_by_p (CDI_DOMINATORS, vec.last (), pre))
+		{
+		  ok = false;
+		  break;
+		}
+
+	      basic_block bb = vec.pop ();
+	      FOR_EACH_EDGE (e, ei, bb->succs)
+		if (bitmap_set_bit (bb_tmp, e->dest->index))
+		  vec.quick_push (e->dest);
+	    }
+
+	  if (ok && can_get_prologue (pre, prologue_clobbered))
+	    last_ok = pre;
+
 	  pro = pre;
-	  if (can_get_prologue (pro, prologue_clobbered))
-	    last_ok = pro;
 	}
+
       pro = last_ok;
 
+      BITMAP_FREE (bb_tmp);
       free_dominance_info (CDI_POST_DOMINATORS);
     }
+
+  vec.release ();
 
   if (dump_file)
     fprintf (dump_file, "Bumping back to anticipatable blocks, PRO is now %d\n",

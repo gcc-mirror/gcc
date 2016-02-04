@@ -9103,7 +9103,7 @@ _LT_EOF
 	if $NM -V 2>&1 | $GREP 'GNU' > /dev/null; then
 	  export_symbols_cmds='$NM -Bpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "W")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
 	else
-	  export_symbols_cmds='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
+	  export_symbols_cmds='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "L")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
 	fi
 	aix_use_runtimelinking=no
 
@@ -11726,7 +11726,10 @@ if test "${libbacktrace_cv_sys_sync+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   if test -n "${with_target_subdir}"; then
-   libbacktrace_cv_sys_sync=yes
+   case "${host}" in
+   hppa*-*-hpux*) libbacktrace_cv_sys_sync=no ;;
+   *) libbacktrace_cv_sys_sync=yes ;;
+   esac
  else
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -12301,9 +12304,10 @@ else
     # simply assume that if we have mman.h, we have mmap.
     have_mmap=yes
     case "${host}" in
-    spu-*-*)
+    spu-*-*|*-*-msdosdjgpp)
         # The SPU does not have mmap, but it has a sys/mman.h header file
         # containing "mmap_eaddr" and the mmap flags, confusing the test.
+        # DJGPP also has sys/man.h, but no mmap
 	have_mmap=no ;;
     esac
   else

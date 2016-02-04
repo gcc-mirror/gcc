@@ -1,6 +1,6 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -34,9 +34,6 @@ static tree dfs_lookup_base (tree, void *);
 static tree dfs_dcast_hint_pre (tree, void *);
 static tree dfs_dcast_hint_post (tree, void *);
 static tree dfs_debug_mark (tree, void *);
-static tree dfs_walk_once_r (tree, tree (*pre_fn) (tree, void *),
-			     tree (*post_fn) (tree, void *), void *data);
-static void dfs_unmark_r (tree);
 static int check_hidden_convs (tree, int, int, tree, tree, tree);
 static tree split_conversions (tree, tree, tree, tree);
 static int lookup_conversions_r (tree, int, int,
@@ -44,10 +41,6 @@ static int lookup_conversions_r (tree, int, int,
 static int look_for_overrides_r (tree, tree);
 static tree lookup_field_r (tree, void *);
 static tree dfs_accessible_post (tree, void *);
-static tree dfs_walk_once_accessible_r (tree, bool, bool,
-					tree (*pre_fn) (tree, void *),
-					tree (*post_fn) (tree, void *),
-					void *data);
 static tree dfs_walk_once_accessible (tree, bool,
 				      tree (*pre_fn) (tree, void *),
 				      tree (*post_fn) (tree, void *),
@@ -1271,7 +1264,8 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
   /* Make sure we're looking for a member of the current instantiation in the
      right partial specialization.  */
   if (flag_concepts && dependent_type_p (type))
-    type = currently_open_class (type);
+    if (tree t = currently_open_class (type))
+      type = t;
 
   if (!basetype_path)
     basetype_path = TYPE_BINFO (type);
@@ -1825,7 +1819,8 @@ dfs_walk_all (tree binfo, tree (*pre_fn) (tree, void *),
 
 static tree
 dfs_walk_once_r (tree binfo, tree (*pre_fn) (tree, void *),
-		 tree (*post_fn) (tree, void *), void *data)
+		 tree (*post_fn) (tree, void *), hash_set<tree> *pset,
+		 void *data)
 {
   tree rval;
   unsigned ix;
@@ -1848,13 +1843,10 @@ dfs_walk_once_r (tree binfo, tree (*pre_fn) (tree, void *),
   for (ix = 0; BINFO_BASE_ITERATE (binfo, ix, base_binfo); ix++)
     {
       if (BINFO_VIRTUAL_P (base_binfo))
-	{
-	  if (BINFO_MARKED (base_binfo))
-	    continue;
-	  BINFO_MARKED (base_binfo) = 1;
-	}
+	if (pset->add (base_binfo))
+	  continue;
 
-      rval = dfs_walk_once_r (base_binfo, pre_fn, post_fn, data);
+      rval = dfs_walk_once_r (base_binfo, pre_fn, post_fn, pset, data);
       if (rval)
 	return rval;
     }
@@ -1869,30 +1861,6 @@ dfs_walk_once_r (tree binfo, tree (*pre_fn) (tree, void *),
     }
 
   return NULL_TREE;
-}
-
-/* Worker for dfs_walk_once. Recursively unmark the virtual base binfos of
-   BINFO.  */
-
-static void
-dfs_unmark_r (tree binfo)
-{
-  unsigned ix;
-  tree base_binfo;
-
-  /* Process the basetypes.  */
-  for (ix = 0; BINFO_BASE_ITERATE (binfo, ix, base_binfo); ix++)
-    {
-      if (BINFO_VIRTUAL_P (base_binfo))
-	{
-	  if (!BINFO_MARKED (base_binfo))
-	    continue;
-	  BINFO_MARKED (base_binfo) = 0;
-	}
-      /* Only walk, if it can contain more virtual bases.  */
-      if (CLASSTYPE_VBASECLASSES (BINFO_TYPE (base_binfo)))
-	dfs_unmark_r (base_binfo);
-    }
 }
 
 /* Like dfs_walk_all, except that binfos are not multiply walked.  For
@@ -1917,22 +1885,8 @@ dfs_walk_once (tree binfo, tree (*pre_fn) (tree, void *),
     rval = dfs_walk_all (binfo, pre_fn, post_fn, data);
   else
     {
-      rval = dfs_walk_once_r (binfo, pre_fn, post_fn, data);
-      if (!BINFO_INHERITANCE_CHAIN (binfo))
-	{
-	  /* We are at the top of the hierarchy, and can use the
-	     CLASSTYPE_VBASECLASSES list for unmarking the virtual
-	     bases.  */
-	  vec<tree, va_gc> *vbases;
-	  unsigned ix;
-	  tree base_binfo;
-
-	  for (vbases = CLASSTYPE_VBASECLASSES (BINFO_TYPE (binfo)), ix = 0;
-	       vec_safe_iterate (vbases, ix, &base_binfo); ix++)
-	    BINFO_MARKED (base_binfo) = 0;
-	}
-      else
-	dfs_unmark_r (binfo);
+      hash_set<tree> pset;
+      rval = dfs_walk_once_r (binfo, pre_fn, post_fn, &pset, data);
     }
 
   active--;
@@ -1946,7 +1900,7 @@ dfs_walk_once (tree binfo, tree (*pre_fn) (tree, void *),
    indicates whether bases should be marked during traversal.  */
 
 static tree
-dfs_walk_once_accessible_r (tree binfo, bool friends_p, bool once,
+dfs_walk_once_accessible_r (tree binfo, bool friends_p, hash_set<tree> *pset,
 			    tree (*pre_fn) (tree, void *),
 			    tree (*post_fn) (tree, void *), void *data)
 {
@@ -1970,9 +1924,9 @@ dfs_walk_once_accessible_r (tree binfo, bool friends_p, bool once,
   /* Find the next child binfo to walk.  */
   for (ix = 0; BINFO_BASE_ITERATE (binfo, ix, base_binfo); ix++)
     {
-      bool mark = once && BINFO_VIRTUAL_P (base_binfo);
+      bool mark = pset && BINFO_VIRTUAL_P (base_binfo);
 
-      if (mark && BINFO_MARKED (base_binfo))
+      if (mark && pset->contains (base_binfo))
 	continue;
 
       /* If the base is inherited via private or protected
@@ -1991,9 +1945,9 @@ dfs_walk_once_accessible_r (tree binfo, bool friends_p, bool once,
 	}
 
       if (mark)
-	BINFO_MARKED (base_binfo) = 1;
+	pset->add (base_binfo);
 
-      rval = dfs_walk_once_accessible_r (base_binfo, friends_p, once,
+      rval = dfs_walk_once_accessible_r (base_binfo, friends_p, pset,
 					 pre_fn, post_fn, data);
       if (rval)
 	return rval;
@@ -2020,28 +1974,14 @@ dfs_walk_once_accessible (tree binfo, bool friends_p,
 			    tree (*pre_fn) (tree, void *),
 			    tree (*post_fn) (tree, void *), void *data)
 {
-  bool diamond_shaped = CLASSTYPE_DIAMOND_SHAPED_P (BINFO_TYPE (binfo));
-  tree rval = dfs_walk_once_accessible_r (binfo, friends_p, diamond_shaped,
+  hash_set<tree> *pset = NULL;
+  if (CLASSTYPE_DIAMOND_SHAPED_P (BINFO_TYPE (binfo)))
+    pset = new hash_set<tree>;
+  tree rval = dfs_walk_once_accessible_r (binfo, friends_p, pset,
 					  pre_fn, post_fn, data);
 
-  if (diamond_shaped)
-    {
-      if (!BINFO_INHERITANCE_CHAIN (binfo))
-	{
-	  /* We are at the top of the hierarchy, and can use the
-	     CLASSTYPE_VBASECLASSES list for unmarking the virtual
-	     bases.  */
-	  vec<tree, va_gc> *vbases;
-	  unsigned ix;
-	  tree base_binfo;
-
-	  for (vbases = CLASSTYPE_VBASECLASSES (BINFO_TYPE (binfo)), ix = 0;
-	       vec_safe_iterate (vbases, ix, &base_binfo); ix++)
-	    BINFO_MARKED (base_binfo) = 0;
-	}
-      else
-	dfs_unmark_r (binfo);
-    }
+  if (pset)
+    delete pset;
   return rval;
 }
 

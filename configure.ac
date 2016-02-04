@@ -1,6 +1,6 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
 #   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
-#   2014, 2015 Free Software Foundation, Inc.
+#   2014, 2015, 2016 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -397,7 +397,7 @@ esac
 # Decide the default method for compressing debug sections.
 # Provide a configure time option to override our default.
 AC_ARG_ENABLE(compressed_debug_sections,
-[AS_HELP_STRING([--enable-compressed-debug-sections={all,gas,gold,ld}],
+[AS_HELP_STRING([--enable-compressed-debug-sections={all,gas,gold,ld,none}],
 		[Enable compressed debug sections for gas, gold or ld by
 		 default])],
 [
@@ -1022,6 +1022,14 @@ esac
 
 case "${target}" in
   *-*-chorusos)
+    ;;
+  aarch64-*-darwin*)
+    noconfigdirs="$noconfigdirs ld gas gdb gprof"
+    noconfigdirs="$noconfigdirs sim target-rda"
+    ;;
+  arm-*-darwin*)
+    noconfigdirs="$noconfigdirs ld gas gdb gprof"
+    noconfigdirs="$noconfigdirs sim target-rda"
     ;;
   powerpc-*-darwin*)
     noconfigdirs="$noconfigdirs ld gas gdb gprof"
@@ -1765,31 +1773,31 @@ AC_ARG_WITH(boot-ldflags,
  fi])
 AC_SUBST(poststage1_ldflags)
 
-# GCC GRAPHITE dependency ISL.
+# GCC GRAPHITE dependency isl.
 # Basic setup is inlined here, actual checks are in config/isl.m4
 
 AC_ARG_WITH(isl,
   [AS_HELP_STRING(
    [--with-isl=PATH],
-   [Specify prefix directory for the installed ISL package.
+   [Specify prefix directory for the installed isl package.
     Equivalent to --with-isl-include=PATH/include
     plus --with-isl-lib=PATH/lib])])
 
 # Treat --without-isl as a request to disable
 # GRAPHITE support and skip all following checks.
 if test "x$with_isl" != "xno"; then
-  # Check for ISL
+  # Check for isl
   dnl Provide configure switches and initialize islinc & isllibs
   dnl with user input.
   ISL_INIT_FLAGS
-  dnl The versions of ISL that work for Graphite
+  dnl The versions of isl that work for Graphite
   ISL_CHECK_VERSION()
-  dnl Only execute fail-action, if ISL has been requested.
+  dnl Only execute fail-action, if isl has been requested.
   ISL_IF_FAILED([
-    AC_MSG_ERROR([Unable to find a usable ISL.  See config.log for details.])])
+    AC_MSG_ERROR([Unable to find a usable isl.  See config.log for details.])])
 fi
 
-# If the ISL check failed, disable builds of in-tree variant of ISL
+# If the isl check failed, disable builds of in-tree variant of isl
 if test "x$with_isl" = xno ||
    test "x$gcc_cv_isl" = xno; then
   noconfigdirs="$noconfigdirs isl"
@@ -1809,7 +1817,7 @@ ACX_ELF_TARGET_IFELSE([# ELF platforms build the lto-plugin always.
   build_lto_plugin=yes
 ],[if test x"$default_enable_lto" = x"yes" ; then
     case $target in
-      *-apple-darwin9* | *-cygwin* | *-mingw*) ;;
+      *-apple-darwin9* | *-cygwin* | *-mingw* | *djgpp*) ;;
       # On other non-ELF platforms, LTO has yet to be validated.
       *) enable_lto=no ;;
     esac
@@ -1820,7 +1828,7 @@ ACX_ELF_TARGET_IFELSE([# ELF platforms build the lto-plugin always.
   # warn during gcc/ subconfigure; unless you're bootstrapping with
   # -flto it won't be needed until after installation anyway.
     case $target in
-      *-cygwin* | *-mingw* | *-apple-darwin*) ;;
+      *-cygwin* | *-mingw* | *-apple-darwin* | *djgpp*) ;;
       *) if test x"$enable_lto" = x"yes"; then
 	AC_MSG_ERROR([LTO support is not enabled for this target.])
         fi

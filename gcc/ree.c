@@ -1,5 +1,5 @@
 /* Redundant Extension Elimination pass for the GNU compiler.
-   Copyright (C) 2010-2015 Free Software Foundation, Inc.
+   Copyright (C) 2010-2016 Free Software Foundation, Inc.
    Contributed by Ilya Enkovich (ilya.enkovich@intel.com)
 
    Based on the Redundant Zero-extension elimination pass contributed by
@@ -331,16 +331,6 @@ combine_set_extension (ext_cand *cand, rtx_insn *curr_insn, rtx *orig_set)
     new_reg = gen_rtx_REG (cand->mode, REGNO (SET_DEST (cand_pat)));
   else
     new_reg = gen_rtx_REG (cand->mode, REGNO (SET_DEST (*orig_set)));
-
-#if 0
-  /* Rethinking test.  Temporarily disabled.  */
-  /* We're going to be widening the result of DEF_INSN, ensure that doing so
-     doesn't change the number of hard registers needed for the result.  */
-  if (HARD_REGNO_NREGS (REGNO (new_reg), cand->mode)
-      != HARD_REGNO_NREGS (REGNO (SET_DEST (*orig_set)),
-			   GET_MODE (SET_DEST (*orig_set))))
-	return false;
-#endif
 
   /* Merge constants by directly moving the constant into the register under
      some conditions.  Recall that RTL constants are sign-extended.  */
@@ -770,6 +760,12 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
       if (state->defs_list.length () != 1)
 	return false;
 
+      /* We don't have the structure described above if there are
+	 conditional moves in between the def and the candidate,
+	 and we will not handle them correctly.  See PR68194.  */
+      if (state->copies_list.length () > 0)
+	return false;
+
       /* We require the candidate not already be modified.  It may,
 	 for example have been changed from a (sign_extend (reg))
 	 into (zero_extend (sign_extend (reg))).
@@ -1079,6 +1075,18 @@ add_removable_extension (const_rtx expr, rtx_insn *insn,
 		return;
 	      }
 	  }
+
+      /* Fourth, if the extended version occupies more registers than the
+	 original and the source of the extension is the same hard register
+	 as the destination of the extension, then we can not eliminate
+	 the extension without deep analysis, so just punt.
+
+	 We allow this when the registers are different because the
+	 code in combine_reaching_defs will handle that case correctly.  */
+      if ((HARD_REGNO_NREGS (REGNO (dest), mode)
+	   != HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg)))
+	  && reg_overlap_mentioned_p (dest, reg))
+	return;
 
       /* Then add the candidate to the list and insert the reaching definitions
          into the definition map.  */

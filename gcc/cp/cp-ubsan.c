@@ -1,5 +1,5 @@
 /* UndefinedBehaviorSanitizer, undefined behavior detector.
-   Copyright (C) 2014 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -32,9 +32,7 @@ cp_ubsan_instrument_vptr_p (tree type)
   if (!flag_rtti || flag_sanitize_undefined_trap_on_error)
     return false;
 
-  if (current_function_decl
-      && lookup_attribute ("no_sanitize_undefined",
-			   DECL_ATTRIBUTES (current_function_decl)))
+  if (!do_ubsan_in_current_function ())
     return false;
 
   if (type)
@@ -245,13 +243,14 @@ cp_ubsan_instrument_member_accesses (tree *t_p)
 /* Instrument downcast.  */
 
 tree
-cp_ubsan_maybe_instrument_downcast (location_t loc, tree type, tree op)
+cp_ubsan_maybe_instrument_downcast (location_t loc, tree type,
+				    tree intype, tree op)
 {
   if (!POINTER_TYPE_P (type)
+      || !POINTER_TYPE_P (intype)
       || !POINTER_TYPE_P (TREE_TYPE (op))
-      || !CLASS_TYPE_P (TREE_TYPE (type))
       || !CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (op)))
-      || !DERIVED_FROM_P (TREE_TYPE (TREE_TYPE (op)), TREE_TYPE (type)))
+      || !is_properly_derived_from (TREE_TYPE (type), TREE_TYPE (intype)))
     return NULL_TREE;
 
   return cp_ubsan_maybe_instrument_vptr (loc, op, TREE_TYPE (type), true,

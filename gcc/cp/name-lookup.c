@@ -1,5 +1,5 @@
 /* Definitions for C++ name lookup routines.
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -1557,8 +1557,8 @@ begin_scope (scope_kind kind, tree entity)
   if (!ENABLE_SCOPE_CHECKING && free_binding_level)
     {
       scope = free_binding_level;
-      memset (scope, 0, sizeof (cp_binding_level));
       free_binding_level = scope->level_chain;
+      memset (scope, 0, sizeof (cp_binding_level));
     }
   else
     scope = ggc_cleared_alloc<cp_binding_level> ();
@@ -5659,7 +5659,7 @@ arg_assoc (struct arg_lookup *k, tree n)
 /* Performs Koenig lookup depending on arguments, where fns
    are the functions found in normal lookup.  */
 
-static tree
+static cp_expr
 lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
 {
   struct arg_lookup k;
@@ -5720,10 +5720,10 @@ lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
 
 /* Wrapper for lookup_arg_dependent_1.  */
 
-tree
+cp_expr
 lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
 {
-  tree ret;
+  cp_expr ret;
   bool subtime;
   subtime = timevar_cond_start (TV_NAME_LOOKUP);
   ret = lookup_arg_dependent_1 (name, fns, args);

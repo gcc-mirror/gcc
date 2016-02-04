@@ -4441,13 +4441,13 @@ package body Ch3 is
 
                else
                   Error_Msg_SC ("aspect specifications not allowed here");
-
-                  --  Assume that this is a misplaced aspect specification
-                  --  within a declarative list. After discarding the
-                  --  misplaced aspects we can continue the scan.
-
-                  Done := False;
                end if;
+
+               --  Assume that this is a misplaced aspect specification within
+               --  a declarative list. After discarding the misplaced aspects
+               --  we can continue the scan.
+
+               Done := False;
 
                declare
                   Dummy_Node : constant Node_Id :=

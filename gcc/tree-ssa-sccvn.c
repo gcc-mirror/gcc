@@ -1,5 +1,5 @@
 /* SCC value numbering for trees
-   Copyright (C) 2006-2015 Free Software Foundation, Inc.
+   Copyright (C) 2006-2016 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -750,8 +750,11 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	case MEM_REF:
 	  /* The base address gets its own vn_reference_op_s structure.  */
 	  temp.op0 = TREE_OPERAND (ref, 1);
-	  if (tree_fits_shwi_p (TREE_OPERAND (ref, 1)))
-	    temp.off = tree_to_shwi (TREE_OPERAND (ref, 1));
+	    {
+	      offset_int off = mem_ref_offset (ref);
+	      if (wi::fits_shwi_p (off))
+		temp.off = off.to_shwi ();
+	    }
 	  temp.clique = MR_DEPENDENCE_CLIQUE (ref);
 	  temp.base = MR_DEPENDENCE_BASE (ref);
 	  temp.reverse = REF_REVERSE_STORAGE_ORDER (ref);
@@ -1367,8 +1370,9 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 	  else
 	    {
 	      unsigned char buf[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
-	      if (native_encode_expr (ctor, buf, size, off) > 0)
-		return native_interpret_expr (ref->type, buf, size);
+	      int len = native_encode_expr (ctor, buf, size, off);
+	      if (len > 0)
+		return native_interpret_expr (ref->type, buf, len);
 	    }
 	}
     }
@@ -2965,6 +2969,87 @@ print_scc (FILE *out, vec<tree> scc)
   fprintf (out, "\n");
 }
 
+/* Return true if BB1 is dominated by BB2 taking into account edges
+   that are not executable.  */
+
+static bool
+dominated_by_p_w_unex (basic_block bb1, basic_block bb2)
+{
+  edge_iterator ei;
+  edge e;
+
+  if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
+    return true;
+
+  /* Before iterating we'd like to know if there exists a
+     (executable) path from bb2 to bb1 at all, if not we can
+     directly return false.  For now simply iterate once.  */
+
+  /* Iterate to the single executable bb1 predecessor.  */
+  if (EDGE_COUNT (bb1->preds) > 1)
+    {
+      edge prede = NULL;
+      FOR_EACH_EDGE (e, ei, bb1->preds)
+	if (e->flags & EDGE_EXECUTABLE)
+	  {
+	    if (prede)
+	      {
+		prede = NULL;
+		break;
+	      }
+	    prede = e;
+	  }
+      if (prede)
+	{
+	  bb1 = prede->src;
+
+	  /* Re-do the dominance check with changed bb1.  */
+	  if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
+	    return true;
+	}
+    }
+
+  /* Iterate to the single executable bb2 successor.  */
+  edge succe = NULL;
+  FOR_EACH_EDGE (e, ei, bb2->succs)
+    if (e->flags & EDGE_EXECUTABLE)
+      {
+	if (succe)
+	  {
+	    succe = NULL;
+	    break;
+	  }
+	succe = e;
+      }
+  if (succe)
+    {
+      /* Verify the reached block is only reached through succe.
+	 If there is only one edge we can spare us the dominator
+	 check and iterate directly.  */
+      if (EDGE_COUNT (succe->dest->preds) > 1)
+	{
+	  FOR_EACH_EDGE (e, ei, succe->dest->preds)
+	    if (e != succe
+		&& (e->flags & EDGE_EXECUTABLE))
+	      {
+		succe = NULL;
+		break;
+	      }
+	}
+      if (succe)
+	{
+	  bb2 = succe->dest;
+
+	  /* Re-do the dominance check with changed bb2.  */
+	  if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
+	    return true;
+	}
+    }
+
+  /* We could now iterate updating bb1 / bb2.  */
+  return false;
+}
+
 /* Set the value number of FROM to TO, return true if it has changed
    as a result.  */
 
@@ -3033,6 +3118,86 @@ set_ssa_val_to (tree from, tree to)
 	       == get_addr_base_and_unit_offset (TREE_OPERAND (to, 0), &toff))
 	   && coff == toff))
     {
+      /* If we equate two SSA names we have to make the side-band info
+         of the leader conservative (and remember whatever original value
+	 was present).  */
+      if (TREE_CODE (to) == SSA_NAME)
+	{
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (to))
+	      && SSA_NAME_RANGE_INFO (to))
+	    {
+	      if (SSA_NAME_IS_DEFAULT_DEF (to)
+		  || dominated_by_p_w_unex
+			(gimple_bb (SSA_NAME_DEF_STMT (from)),
+			 gimple_bb (SSA_NAME_DEF_STMT (to))))
+		/* Keep the info from the dominator.  */
+		;
+	      else if (SSA_NAME_IS_DEFAULT_DEF (from)
+		       || dominated_by_p_w_unex
+			    (gimple_bb (SSA_NAME_DEF_STMT (to)),
+			     gimple_bb (SSA_NAME_DEF_STMT (from))))
+		{
+		  /* Save old info.  */
+		  if (! VN_INFO (to)->info.range_info)
+		    {
+		      VN_INFO (to)->info.range_info = SSA_NAME_RANGE_INFO (to);
+		      VN_INFO (to)->range_info_anti_range_p
+			= SSA_NAME_ANTI_RANGE_P (to);
+		    }
+		  /* Use that from the dominator.  */
+		  SSA_NAME_RANGE_INFO (to) = SSA_NAME_RANGE_INFO (from);
+		  SSA_NAME_ANTI_RANGE_P (to) = SSA_NAME_ANTI_RANGE_P (from);
+		}
+	      else
+		{
+		  /* Save old info.  */
+		  if (! VN_INFO (to)->info.range_info)
+		    {
+		      VN_INFO (to)->info.range_info = SSA_NAME_RANGE_INFO (to);
+		      VN_INFO (to)->range_info_anti_range_p
+			= SSA_NAME_ANTI_RANGE_P (to);
+		    }
+		  /* Rather than allocating memory and unioning the info
+		     just clear it.  */
+		  SSA_NAME_RANGE_INFO (to) = NULL;
+		}
+	    }
+	  else if (POINTER_TYPE_P (TREE_TYPE (to))
+		   && SSA_NAME_PTR_INFO (to))
+	    {
+	      if (SSA_NAME_IS_DEFAULT_DEF (to)
+		  || dominated_by_p_w_unex
+			(gimple_bb (SSA_NAME_DEF_STMT (from)),
+			 gimple_bb (SSA_NAME_DEF_STMT (to))))
+		/* Keep the info from the dominator.  */
+		;
+	      else if (SSA_NAME_IS_DEFAULT_DEF (from)
+		       || dominated_by_p_w_unex
+			    (gimple_bb (SSA_NAME_DEF_STMT (to)),
+			     gimple_bb (SSA_NAME_DEF_STMT (from))))
+		{
+		  /* Save old info.  */
+		  if (! VN_INFO (to)->info.ptr_info)
+		    VN_INFO (to)->info.ptr_info = SSA_NAME_PTR_INFO (to);
+		  /* Use that from the dominator.  */
+		  SSA_NAME_PTR_INFO (to) = SSA_NAME_PTR_INFO (from);
+		}
+	      else if (! SSA_NAME_PTR_INFO (from)
+		       /* Handle the case of trivially equivalent info.  */
+		       || memcmp (SSA_NAME_PTR_INFO (to),
+				  SSA_NAME_PTR_INFO (from),
+				  sizeof (ptr_info_def)) != 0)
+		{
+		  /* Save old info.  */
+		  if (! VN_INFO (to)->info.ptr_info)
+		    VN_INFO (to)->info.ptr_info = SSA_NAME_PTR_INFO (to);
+		  /* Rather than allocating memory and unioning the info
+		     just clear it.  */
+		  SSA_NAME_PTR_INFO (to) = NULL;
+		}
+	    }
+	}
+
       VN_INFO (from)->valnum = to;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, " (changed)\n");
@@ -3217,8 +3382,11 @@ visit_reference_op_load (tree lhs, tree op, gimple *stmt)
 	      gimple_seq stmts = NULL;
 	      result = maybe_push_res_to_seq (rcode, TREE_TYPE (op), ops,
 					      &stmts);
-	      gcc_assert (result && gimple_seq_singleton_p (stmts));
-	      new_stmt = gimple_seq_first_stmt (stmts);
+	      if (result)
+		{
+		  gcc_assert (gimple_seq_singleton_p (stmts));
+		  new_stmt = gimple_seq_first_stmt (stmts);
+		}
 	    }
 	  else
 	    /* The expression is already available.  */
@@ -4145,9 +4313,21 @@ free_scc_vn (void)
     {
       tree name = ssa_name (i);
       if (name
-	  && has_VN_INFO (name)
-	  && VN_INFO (name)->needs_insertion)
-	release_ssa_name (name);
+	  && has_VN_INFO (name))
+	{
+	  if (VN_INFO (name)->needs_insertion)
+	    release_ssa_name (name);
+	  else if (POINTER_TYPE_P (TREE_TYPE (name))
+		   && VN_INFO (name)->info.ptr_info)
+	    SSA_NAME_PTR_INFO (name) = VN_INFO (name)->info.ptr_info;
+	  else if (INTEGRAL_TYPE_P (TREE_TYPE (name))
+		   && VN_INFO (name)->info.range_info)
+	    {
+	      SSA_NAME_RANGE_INFO (name) = VN_INFO (name)->info.range_info;
+	      SSA_NAME_ANTI_RANGE_P (name)
+		= VN_INFO (name)->range_info_anti_range_p;
+	    }
+	}
     }
   obstack_free (&vn_ssa_aux_obstack, NULL);
   vn_ssa_aux_table.release ();
@@ -4204,10 +4384,10 @@ class sccvn_dom_walker : public dom_walker
 {
 public:
   sccvn_dom_walker ()
-    : dom_walker (CDI_DOMINATORS), fail (false), cond_stack (vNULL) {}
+    : dom_walker (CDI_DOMINATORS, true), fail (false), cond_stack (vNULL) {}
   ~sccvn_dom_walker ();
 
-  virtual void before_dom_children (basic_block);
+  virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
 
   void record_cond (basic_block,
@@ -4310,67 +4490,48 @@ sccvn_dom_walker::after_dom_children (basic_block bb)
 
 /* Value number all statements in BB.  */
 
-void
+edge
 sccvn_dom_walker::before_dom_children (basic_block bb)
 {
   edge e;
   edge_iterator ei;
 
   if (fail)
-    return;
-
-  /* If any of the predecessor edges that do not come from blocks dominated
-     by us are still marked as possibly executable consider this block
-     reachable.  */
-  bool reachable = bb == ENTRY_BLOCK_PTR_FOR_FN (cfun);
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    if (!dominated_by_p (CDI_DOMINATORS, e->src, bb))
-      reachable |= (e->flags & EDGE_EXECUTABLE);
-
-  /* If the block is not reachable all outgoing edges are not
-     executable.  Neither are incoming edges with src dominated by us.  */
-  if (!reachable)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Marking all outgoing edges of unreachable "
-		 "BB %d as not executable\n", bb->index);
-
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	e->flags &= ~EDGE_EXECUTABLE;
-
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	{
-	  if (dominated_by_p (CDI_DOMINATORS, e->src, bb))
-	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file, "Marking backedge from BB %d into "
-			 "unreachable BB %d as not executable\n",
-			 e->src->index, bb->index);
-	      e->flags &= ~EDGE_EXECUTABLE;
-	    }
-	}
-      return;
-    }
+    return NULL;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Visiting BB %d\n", bb->index);
 
   /* If we have a single predecessor record the equivalence from a
      possible condition on the predecessor edge.  */
-  if (single_pred_p (bb))
+  edge pred_e = NULL;
+  FOR_EACH_EDGE (e, ei, bb->preds)
     {
-      edge e = single_pred_edge (bb);
+      /* Ignore simple backedges from this to allow recording conditions
+         in loop headers.  */
+      if (dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
+	continue;
+      if (! pred_e)
+	pred_e = e;
+      else
+	{
+	  pred_e = NULL;
+	  break;
+	}
+    }
+  if (pred_e)
+    {
       /* Check if there are multiple executable successor edges in
 	 the source block.  Otherwise there is no additional info
 	 to be recorded.  */
       edge e2;
-      FOR_EACH_EDGE (e2, ei, e->src->succs)
-	if (e2 != e
+      FOR_EACH_EDGE (e2, ei, pred_e->src->succs)
+	if (e2 != pred_e
 	    && e2->flags & EDGE_EXECUTABLE)
 	  break;
       if (e2 && (e2->flags & EDGE_EXECUTABLE))
 	{
-	  gimple *stmt = last_stmt (e->src);
+	  gimple *stmt = last_stmt (pred_e->src);
 	  if (stmt
 	      && gimple_code (stmt) == GIMPLE_COND)
 	    {
@@ -4378,11 +4539,11 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
 	      tree lhs = gimple_cond_lhs (stmt);
 	      tree rhs = gimple_cond_rhs (stmt);
 	      record_conds (bb, code, lhs, rhs,
-			    (e->flags & EDGE_TRUE_VALUE) != 0);
+			    (pred_e->flags & EDGE_TRUE_VALUE) != 0);
 	      code = invert_tree_comparison (code, HONOR_NANS (lhs));
 	      if (code != ERROR_MARK)
 		record_conds (bb, code, lhs, rhs,
-			      (e->flags & EDGE_TRUE_VALUE) == 0);
+			      (pred_e->flags & EDGE_TRUE_VALUE) == 0);
 	    }
 	}
     }
@@ -4397,7 +4558,7 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
 	  && !DFS (res))
 	{
 	  fail = true;
-	  return;
+	  return NULL;
 	}
     }
   for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
@@ -4410,20 +4571,20 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
 	    && !DFS (op))
 	  {
 	    fail = true;
-	    return;
+	    return NULL;
 	  }
     }
 
   /* Finally look at the last stmt.  */
   gimple *stmt = last_stmt (bb);
   if (!stmt)
-    return;
+    return NULL;
 
   enum gimple_code code = gimple_code (stmt);
   if (code != GIMPLE_COND
       && code != GIMPLE_SWITCH
       && code != GIMPLE_GOTO)
-    return;
+    return NULL;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -4466,19 +4627,17 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
       gcc_unreachable ();
     }
   if (!val)
-    return;
+    return NULL;
 
   edge taken = find_taken_edge (bb, vn_valueize (val));
   if (!taken)
-    return;
+    return NULL;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Marking all edges out of BB %d but (%d -> %d) as "
 	     "not executable\n", bb->index, bb->index, taken->dest->index);
 
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    if (e != taken)
-      e->flags &= ~EDGE_EXECUTABLE;
+  return taken;
 }
 
 /* Do SCCVN.  Returns true if it finished, false if we bailed out
@@ -4488,7 +4647,6 @@ sccvn_dom_walker::before_dom_children (basic_block bb)
 bool
 run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
 {
-  basic_block bb;
   size_t i;
 
   default_vn_walk_kind = default_vn_walk_kind_;
@@ -4516,15 +4674,6 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
 		bitmap_set_bit (const_parms, SSA_NAME_VERSION (name));
 	    }
 	}
-    }
-
-  /* Mark all edges as possibly executable.  */
-  FOR_ALL_BB_FN (bb, cfun)
-    {
-      edge_iterator ei;
-      edge e;
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	e->flags |= EDGE_EXECUTABLE;
     }
 
   /* Walk all blocks in dominator order, value-numbering stmts

@@ -1,5 +1,5 @@
 /* { dg-do link } */
-/* { dg-options "-O2 -fipa-pta -fdump-ipa-pta-details -fdump-tree-fre2 -fno-ipa-icf" } */
+/* { dg-options "-O2 -fipa-pta -fdump-ipa-pta2-details -fdump-tree-fre3 -fno-ipa-icf" } */
 
 static int x, y;
 
@@ -19,7 +19,7 @@ void *anyfn_global;
 
 /* Even though not referenced in this TU we should have added constraints
    for the initializer.  */
-/* { dg-final { scan-ipa-dump "ex = &local_address_taken" "pta" } } */
+/* { dg-final { scan-ipa-dump "ex = &local_address_taken" "pta2" } } */
 void (*ex)(int *) = local_address_taken;
 
 extern void link_error (void);
@@ -38,11 +38,11 @@ int main()
      uses to be messed up even further.  */
   /* ???  As we don't expand the ESCAPED solution we either get x printed here
      or not based on the phase of the moon.  */
-  /* { dg-final { scan-ipa-dump "local_address_taken.arg0 = { ESCAPED NONLOCAL y x }" "pta" { xfail *-*-* } } } */
-  /* { dg-final { scan-ipa-dump "local_address_taken.clobber = { ESCAPED NONLOCAL y x }" "pta" { xfail *-*-* } } } */
-  /* { dg-final { scan-ipa-dump "local_address_taken.use = { }" "pta" { xfail *-*-* } } } */
+  /* { dg-final { scan-ipa-dump "local_address_taken.arg0 = { ESCAPED NONLOCAL y x }" "pta2" { xfail *-*-* } } } */
+  /* { dg-final { scan-ipa-dump "local_address_taken.clobber = { ESCAPED NONLOCAL y x }" "pta2" { xfail *-*-* } } } */
+  /* { dg-final { scan-ipa-dump "local_address_taken.use = { }" "pta2" { xfail *-*-* } } } */
   /* ??? But make sure x really escaped.  */
-  /* { dg-final { scan-ipa-dump "ESCAPED = {\[^\n\}\]* x \[^\n\}\]*}" "pta" } } */
+  /* { dg-final { scan-ipa-dump "ESCAPED = {\[^\n\}\]* x \[^\n\}\]*}" "pta2" } } */
   (*anyfn) (&x);
   x = 0;
   local (&y);
@@ -54,7 +54,7 @@ int main()
   local_address_taken (&y);
   /* As we are computing flow- and context-insensitive we may not
      CSE the load of x here.  */
-  /* { dg-final { scan-tree-dump " = x;" "fre2" } } */
+  /* { dg-final { scan-tree-dump " = x;" "fre3" } } */
   return x;
 }
 

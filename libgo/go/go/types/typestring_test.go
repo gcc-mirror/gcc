@@ -18,6 +18,7 @@ import (
 const filename = "<src>"
 
 func makePkg(t *testing.T, src string) (*Package, error) {
+	t.Skip("skipping for gccgo--no importer")
 	fset := token.NewFileSet()
 	file, err := parser.ParseFile(fset, filename, src, parser.DeclarationErrors)
 	if err != nil {
@@ -139,6 +140,7 @@ func TestTypeString(t *testing.T) {
 }
 
 func TestQualifiedTypeString(t *testing.T) {
+	t.Skip("skipping for gccgo--no importer")
 	p, _ := pkgFor("p.go", "package p; type T int", nil)
 	q, _ := pkgFor("q.go", "package q", nil)
 
@@ -148,6 +150,7 @@ func TestQualifiedTypeString(t *testing.T) {
 		this *Package
 		want string
 	}{
+		{nil, nil, "<nil>"},
 		{pT, nil, "p.T"},
 		{pT, p, "T"},
 		{pT, q, "p.T"},

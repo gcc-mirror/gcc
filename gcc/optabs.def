@@ -1,5 +1,5 @@
 /* Definitions for operation tables, or "optabs".
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,8 +17,29 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Entries here are categorized C, D, N, V.  See genopinit.c for details
-   on the meaning of the categories and for the pattern dollar codes.  */
+/* The entries in optabs.def are categorized:
+     C: A "conversion" optab, which uses two modes; has libcall data.
+     N: A "normal" optab, which uses one mode; has libcall data.
+     D: A "direct" optab, which uses one mode; does not have libcall data.
+     V: An "oVerflow" optab.  Like N, but does not record its code in
+        code_to_optab.
+
+     CX, NX, VX: An extra pattern entry for a conversion or normal optab.
+
+   These patterns may be present in the MD file with names that contain
+   the mode(s) used and the name of the operation.  This array contains
+   a list of optabs that need to be initialized.  Within each name,
+   $a and $b are used to match a short mode name (the part of the mode
+   name not including `mode' and converted to lower-case).
+
+   $I means that only full integer modes should be considered for the
+   next mode, and $F means that only float modes should be considered.
+   $P means that both full and partial integer modes should be considered.
+   $Q means that only fixed-point modes should be considered.
+
+   The pattern may be NULL if the optab exists only for the libcalls
+   that we plan to attach to it, and there are no named patterns in
+   the md files.  */
 
 /* The extension libcalls are used for float extension.  */
 OPTAB_CL(sext_optab, "extend$b$a2", SIGN_EXTEND, "extend", gen_extend_conv_libfunc)
@@ -197,6 +218,8 @@ OPTAB_D (ctrap_optab, "ctrap$a4")
 OPTAB_D (addv4_optab, "addv$I$a4")
 OPTAB_D (subv4_optab, "subv$I$a4")
 OPTAB_D (mulv4_optab, "mulv$I$a4")
+OPTAB_D (uaddv4_optab, "uaddv$I$a4")
+OPTAB_D (usubv4_optab, "usubv$I$a4")
 OPTAB_D (umulv4_optab, "umulv$I$a4")
 OPTAB_D (negv3_optab, "negv$I$a3")
 OPTAB_D (addptr3_optab, "addptr$a3")
@@ -244,6 +267,7 @@ OPTAB_D (log_optab, "log$a2")
 OPTAB_D (logb_optab, "logb$a2")
 OPTAB_D (pow_optab, "pow$a3")
 OPTAB_D (remainder_optab, "remainder$a3")
+OPTAB_D (rsqrt_optab, "rsqrt$a2")
 OPTAB_D (scalb_optab, "scalb$a3")
 OPTAB_D (signbit_optab, "signbit$F$a2")
 OPTAB_D (significand_optab, "significand$a2")
@@ -251,19 +275,16 @@ OPTAB_D (sin_optab, "sin$a2")
 OPTAB_D (sincos_optab, "sincos$a3")
 OPTAB_D (tan_optab, "tan$a2")
 
+/* C99 implementations of fmax/fmin.  */
+OPTAB_D (fmax_optab, "fmax$a3")
+OPTAB_D (fmin_optab, "fmin$a3")
+
 /* Vector reduction to a scalar.  */
 OPTAB_D (reduc_smax_scal_optab, "reduc_smax_scal_$a")
 OPTAB_D (reduc_smin_scal_optab, "reduc_smin_scal_$a")
 OPTAB_D (reduc_plus_scal_optab, "reduc_plus_scal_$a")
 OPTAB_D (reduc_umax_scal_optab, "reduc_umax_scal_$a")
 OPTAB_D (reduc_umin_scal_optab, "reduc_umin_scal_$a")
-/* (Old) Vector reduction, returning a vector with the result in one lane.  */
-OPTAB_D (reduc_smax_optab, "reduc_smax_$a")
-OPTAB_D (reduc_smin_optab, "reduc_smin_$a")
-OPTAB_D (reduc_splus_optab, "reduc_splus_$a")
-OPTAB_D (reduc_umax_optab, "reduc_umax_$a")
-OPTAB_D (reduc_umin_optab, "reduc_umin_$a")
-OPTAB_D (reduc_uplus_optab, "reduc_uplus_$a")
 
 OPTAB_D (sdot_prod_optab, "sdot_prod$I$a")
 OPTAB_D (ssum_widen_optab, "widen_ssum$I$a3")

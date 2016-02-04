@@ -49,6 +49,7 @@ package body Targparm is
       DEN,  --   Denorm
       EXS,  --   Exit_Status_Supported
       FEL,  --   Frontend_Layout
+      FEX,  --   Frontend_Exceptions
       FFO,  --   Fractional_Fixed_Ops
       MOV,  --   Machine_Overflows
       MRN,  --   Machine_Rounds
@@ -64,7 +65,7 @@ package body Targparm is
       SNZ,  --   Signed_Zeros
       SSL,  --   Suppress_Standard_Library
       UAM,  --   Use_Ada_Main_Program_Name
-      ZCD); --   ZCX_By_Default
+      ZCX); --   ZCX_By_Default
 
    Targparm_Flags : array (Targparm_Tags) of Boolean := (others => False);
    --  Flag is set True if corresponding parameter is scanned
@@ -82,6 +83,7 @@ package body Targparm is
    DEN_Str : aliased constant Source_Buffer := "Denorm";
    EXS_Str : aliased constant Source_Buffer := "Exit_Status_Supported";
    FEL_Str : aliased constant Source_Buffer := "Frontend_Layout";
+   FEX_Str : aliased constant Source_Buffer := "Frontend_Exceptions";
    FFO_Str : aliased constant Source_Buffer := "Fractional_Fixed_Ops";
    MOV_Str : aliased constant Source_Buffer := "Machine_Overflows";
    MRN_Str : aliased constant Source_Buffer := "Machine_Rounds";
@@ -97,7 +99,7 @@ package body Targparm is
    SNZ_Str : aliased constant Source_Buffer := "Signed_Zeros";
    SSL_Str : aliased constant Source_Buffer := "Suppress_Standard_Library";
    UAM_Str : aliased constant Source_Buffer := "Use_Ada_Main_Program_Name";
-   ZCD_Str : aliased constant Source_Buffer := "ZCX_By_Default";
+   ZCX_Str : aliased constant Source_Buffer := "ZCX_By_Default";
 
    --  The following defines a set of pointers to the above strings,
    --  indexed by the tag values.
@@ -115,6 +117,7 @@ package body Targparm is
       DEN_Str'Access,
       EXS_Str'Access,
       FEL_Str'Access,
+      FEX_Str'Access,
       FFO_Str'Access,
       MOV_Str'Access,
       MRN_Str'Access,
@@ -130,7 +133,7 @@ package body Targparm is
       SNZ_Str'Access,
       SSL_Str'Access,
       UAM_Str'Access,
-      ZCD_Str'Access);
+      ZCX_Str'Access);
 
    -----------------------
    -- Local Subprograms --
@@ -804,6 +807,7 @@ package body Targparm is
                      when DEN => Denorm_On_Target                    := Result;
                      when EXS => Exit_Status_Supported_On_Target     := Result;
                      when FEL => Frontend_Layout_On_Target           := Result;
+                     when FEX => Frontend_Exceptions_On_Target       := Result;
                      when FFO => Fractional_Fixed_Ops_On_Target      := Result;
                      when MOV => Machine_Overflows_On_Target         := Result;
                      when MRN => Machine_Rounds_On_Target            := Result;
@@ -819,7 +823,7 @@ package body Targparm is
                      when SSL => Suppress_Standard_Library_On_Target := Result;
                      when SNZ => Signed_Zeros_On_Target              := Result;
                      when UAM => Use_Ada_Main_Program_Name_On_Target := Result;
-                     when ZCD => ZCX_By_Default_On_Target            := Result;
+                     when ZCX => ZCX_By_Default_On_Target            := Result;
 
                      goto Line_Loop_Continue;
                   end case;

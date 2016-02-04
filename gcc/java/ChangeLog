@@ -1,3 +1,9 @@
+2016-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* jcf-dump.c (version): Update copyright notice dates.
+
 2015-11-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	* boehm.c: Remove unused header files.
@@ -23282,7 +23288,7 @@ Tue Mar  9 11:52:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	New directory.
 
 
-Copyright (C) 1996-2015 Free Software Foundation, Inc.
+Copyright (C) 1996-2016 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

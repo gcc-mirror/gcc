@@ -1,5 +1,5 @@
 /* GCC core type declarations.
-   Copyright (C) 2002-2015 Free Software Foundation, Inc.
+   Copyright (C) 2002-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -198,6 +198,18 @@ enum node_frequency {
   /* Optimize this function hard
      (set only when profile feedback is available or via function attribute). */
   NODE_FREQUENCY_HOT
+};
+
+/* Ways of optimizing code.  */
+enum optimization_type {
+  /* Prioritize speed over size.  */
+  OPTIMIZE_FOR_SPEED,
+
+  /* Only do things that are good for both size and speed.  */
+  OPTIMIZE_FOR_BOTH,
+
+  /* Prioritize size over speed.  */
+  OPTIMIZE_FOR_SIZE
 };
 
 /* Possible initialization status of a variable.   When requested

@@ -3,7 +3,10 @@ set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
 
 project(zlib C)
 
-set(VERSION "1.2.7")
+set(VERSION "1.2.8")
+
+option(ASM686 "Enable building i686 assembly implementation")
+option(AMD64 "Enable building amd64 assembly implementation")
 
 set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "Installation directory for executables")
 set(INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE PATH "Installation directory for libraries")
@@ -121,9 +124,42 @@ set(ZLIB_SRCS
 )
 
 if(NOT MINGW)
-    set(ZLIB_SRCS ${ZLIB_SRCS}
+    set(ZLIB_DLL_SRCS
         win32/zlib1.rc # If present will override custom build rule below.
     )
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCC)
+    if(ASM686)
+        set(ZLIB_ASMS contrib/asm686/match.S)
+    elseif (AMD64)
+        set(ZLIB_ASMS contrib/amd64/amd64-match.S)
+    endif ()
+
+	if(ZLIB_ASMS)
+		add_definitions(-DASMV)
+		set_source_files_properties(${ZLIB_ASMS} PROPERTIES LANGUAGE C COMPILE_FLAGS -DNO_UNDERLINE)
+	endif()
+endif()
+
+if(MSVC)
+    if(ASM686)
+		ENABLE_LANGUAGE(ASM_MASM)
+        set(ZLIB_ASMS
+			contrib/masmx86/inffas32.asm
+			contrib/masmx86/match686.asm
+		)
+    elseif (AMD64)
+		ENABLE_LANGUAGE(ASM_MASM)
+        set(ZLIB_ASMS
+			contrib/masmx64/gvmat64.asm
+			contrib/masmx64/inffasx64.asm
+		)
+    endif()
+
+	if(ZLIB_ASMS)
+		add_definitions(-DASMV -DASMINF)
+	endif()
 endif()
 
 # parse the full version number from zlib.h and include in ZLIB_FULL_VERSION
@@ -134,7 +170,7 @@ string(REGEX REPLACE ".*#define[ \t]+ZLIB_VERSION[ \t]+\"([-0-9A-Za-z.]+)\".*"
 if(MINGW)
     # This gets us DLL resource information when compiling on MinGW.
     if(NOT CMAKE_RC_COMPILER)
-        SET(CMAKE_RC_COMPILER windres.exe)
+        set(CMAKE_RC_COMPILER windres.exe)
     endif()
 
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj
@@ -144,11 +180,11 @@ if(MINGW)
                             -I ${CMAKE_CURRENT_BINARY_DIR}
                             -o ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj
                             -i ${CMAKE_CURRENT_SOURCE_DIR}/win32/zlib1.rc)
-    set(ZLIB_SRCS ${ZLIB_SRCS} ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
+    set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
 endif(MINGW)
 
-add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
-add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
 set_target_properties(zlib PROPERTIES SOVERSION 1)
 
@@ -166,7 +202,9 @@ endif()
 if(UNIX)
     # On unix-like platforms the library is almost always called libz
    set_target_properties(zlib zlibstatic PROPERTIES OUTPUT_NAME z)
-   set_target_properties(zlib PROPERTIES LINK_FLAGS "-Wl,--version-script,${CMAKE_CURRENT_SOURCE_DIR}/zlib.map")
+   if(NOT APPLE)
+     set_target_properties(zlib PROPERTIES LINK_FLAGS "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/zlib.map\"")
+   endif()
 elseif(BUILD_SHARED_LIBS AND WIN32)
     # Creates zlib1.dll when building shared library version
     set_target_properties(zlib PROPERTIES SUFFIX "1.dll")

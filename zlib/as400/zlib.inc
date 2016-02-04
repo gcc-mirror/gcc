@@ -1,7 +1,7 @@
       *  ZLIB.INC - Interface to the general purpose compression library
       *
       *  ILE RPG400 version by Patrick Monnerat, DATASPHERE.
-      *  Version 1.2.7
+      *  Version 1.2.8
       *
       *
       *  WARNING:
@@ -22,12 +22,12 @@
       *
       *  Versioning information.
       *
-     D ZLIB_VERSION    C                   '1.2.7'
-     D ZLIB_VERNUM     C                   X'1270'
+     D ZLIB_VERSION    C                   '1.2.8'
+     D ZLIB_VERNUM     C                   X'1280'
      D ZLIB_VER_MAJOR  C                   1
      D ZLIB_VER_MINOR  C                   2
      D ZLIB_VER_REVISION...
-     D                 C                   7
+     D                 C                   8
      D ZLIB_VER_SUBREVISION...
      D                 C                   0
       *
@@ -358,6 +358,12 @@
      D  strm                               like(z_stream)                       Expansion stream
      D  dictionary                65535    const options(*varsize)              Dictionary bytes
      D  dictLength                   10U 0 value                                Dictionary length
+      *
+     D inflateGetDictionary...
+     D                 PR            10I 0 extproc('inflateGetDictionary')      Get dictionary
+     D  strm                               like(z_stream)                       Expansion stream
+     D  dictionary                65535    options(*varsize)                    Dictionary bytes
+     D  dictLength                   10U 0                                      Dictionary length
       *
      D inflateSync     PR            10I 0 extproc('inflateSync')               Sync. expansion
      D  strm                               like(z_stream)                       Expansion stream

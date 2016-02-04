@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390
-   Copyright (C) 1999-2015 Free Software Foundation, Inc.
+   Copyright (C) 1999-2016 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com).
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
@@ -50,48 +50,112 @@ enum processor_flags
 
 #define TARGET_CPU_IEEE_FLOAT \
 	(s390_arch_flags & PF_IEEE_FLOAT)
+#define TARGET_CPU_IEEE_FLOAT_P(opts) \
+	(opts->x_s390_arch_flags & PF_IEEE_FLOAT)
 #define TARGET_CPU_ZARCH \
 	(s390_arch_flags & PF_ZARCH)
+#define TARGET_CPU_ZARCH_P(opts) \
+	(opts->x_s390_arch_flags & PF_ZARCH)
 #define TARGET_CPU_LONG_DISPLACEMENT \
 	(s390_arch_flags & PF_LONG_DISPLACEMENT)
+#define TARGET_CPU_LONG_DISPLACEMENT_P(opts) \
+	(opts->x_s390_arch_flags & PF_LONG_DISPLACEMENT)
 #define TARGET_CPU_EXTIMM \
- 	(s390_arch_flags & PF_EXTIMM)
+	(s390_arch_flags & PF_EXTIMM)
+#define TARGET_CPU_EXTIMM_P(opts) \
+	(opts->x_s390_arch_flags & PF_EXTIMM)
 #define TARGET_CPU_DFP \
- 	(s390_arch_flags & PF_DFP)
+	(s390_arch_flags & PF_DFP)
+#define TARGET_CPU_DFP_P(opts) \
+	(opts->x_s390_arch_flags & PF_DFP)
 #define TARGET_CPU_Z10 \
- 	(s390_arch_flags & PF_Z10)
+	(s390_arch_flags & PF_Z10)
+#define TARGET_CPU_Z10_P(opts) \
+	(opts->x_s390_arch_flags & PF_Z10)
 #define TARGET_CPU_Z196 \
- 	(s390_arch_flags & PF_Z196)
+	(s390_arch_flags & PF_Z196)
+#define TARGET_CPU_Z196_P(opts) \
+	(opts->x_s390_arch_flags & PF_Z196)
 #define TARGET_CPU_ZEC12 \
- 	(s390_arch_flags & PF_ZEC12)
+	(s390_arch_flags & PF_ZEC12)
+#define TARGET_CPU_ZEC12_P(opts) \
+	(opts->x_s390_arch_flags & PF_ZEC12)
 #define TARGET_CPU_HTM \
- 	(s390_arch_flags & PF_TX)
+	(s390_arch_flags & PF_TX)
+#define TARGET_CPU_HTM_P(opts) \
+	(opts->x_s390_arch_flags & PF_TX)
 #define TARGET_CPU_Z13 \
-        (s390_arch_flags & PF_Z13)
+	(s390_arch_flags & PF_Z13)
+#define TARGET_CPU_Z13_P(opts) \
+        (opts->x_s390_arch_flags & PF_Z13)
 #define TARGET_CPU_VX \
         (s390_arch_flags & PF_VX)
+#define TARGET_CPU_VX_P(opts) \
+	(opts->x_s390_arch_flags & PF_VX)
+
+#define TARGET_HARD_FLOAT_P(opts) (!TARGET_SOFT_FLOAT_P(opts))
 
 /* These flags indicate that the generated code should run on a cpu
    providing the respective hardware facility when run in
    z/Architecture mode.  */
 
 #define TARGET_LONG_DISPLACEMENT \
-       (TARGET_ZARCH && TARGET_CPU_LONG_DISPLACEMENT)
+	(TARGET_ZARCH && TARGET_CPU_LONG_DISPLACEMENT)
+#define TARGET_LONG_DISPLACEMENT_P(opts) \
+	(TARGET_ZARCH_P (opts->x_target_flags) \
+	 && TARGET_CPU_LONG_DISPLACEMENT_P (opts))
 #define TARGET_EXTIMM \
-       (TARGET_ZARCH && TARGET_CPU_EXTIMM)
+	(TARGET_ZARCH && TARGET_CPU_EXTIMM)
+#define TARGET_EXTIMM_P(opts) \
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_EXTIMM_P (opts))
 #define TARGET_DFP \
-       (TARGET_ZARCH && TARGET_CPU_DFP && TARGET_HARD_FLOAT)
+	(TARGET_ZARCH && TARGET_CPU_DFP && TARGET_HARD_FLOAT)
+#define TARGET_DFP_P(opts) \
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_DFP_P (opts) \
+	 && TARGET_HARD_FLOAT_P (opts->x_target_flags))
 #define TARGET_Z10 \
-       (TARGET_ZARCH && TARGET_CPU_Z10)
+	(TARGET_ZARCH && TARGET_CPU_Z10)
+#define TARGET_Z10_P(opts) \
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_Z10_P (opts))
 #define TARGET_Z196 \
-       (TARGET_ZARCH && TARGET_CPU_Z196)
+	(TARGET_ZARCH && TARGET_CPU_Z196)
+#define TARGET_Z196_P(opts) \
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_Z196_P (opts))
 #define TARGET_ZEC12 \
-       (TARGET_ZARCH && TARGET_CPU_ZEC12)
+	(TARGET_ZARCH && TARGET_CPU_ZEC12)
+#define TARGET_ZEC12_P(opts) \
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_ZEC12_P (opts))
 #define TARGET_HTM (TARGET_OPT_HTM)
+#define TARGET_HTM_P(opts) (TARGET_OPT_HTM_P (opts->x_target_flags))
 #define TARGET_Z13 \
-       (TARGET_ZARCH && TARGET_CPU_Z13)
+	(TARGET_ZARCH && TARGET_CPU_Z13)
+#define TARGET_Z13_P(opts) \
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_Z13_P (opts))
 #define TARGET_VX \
-       (TARGET_ZARCH && TARGET_CPU_VX && TARGET_OPT_VX && TARGET_HARD_FLOAT)
+	(TARGET_ZARCH && TARGET_CPU_VX && TARGET_OPT_VX && TARGET_HARD_FLOAT)
+#define TARGET_VX_P(opts) \
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_VX_P (opts) \
+	 && TARGET_OPT_VX_P (opts->x_target_flags) \
+	 && TARGET_HARD_FLOAT_P (opts->x_target_flags))
+
+#ifdef HAVE_AS_MACHINE_MACHINEMODE
+#define S390_USE_TARGET_ATTRIBUTE 1
+#else
+#define S390_USE_TARGET_ATTRIBUTE 0
+#endif
+
+#ifdef HAVE_AS_ARCHITECTURE_MODIFIERS
+#define S390_USE_ARCHITECTURE_MODIFIERS 1
+#else
+#define S390_USE_ARCHITECTURE_MODIFIERS 0
+#endif
+
+#if S390_USE_TARGET_ATTRIBUTE
+/* For switching between functions with different target attributes.  */
+#define SWITCHABLE_TARGET 1
+#endif
+
+#define TARGET_SUPPORTS_WIDE_INT 1
 
 /* Use the ABI introduced with IBM z13:
    - pass vector arguments <= 16 bytes in VRs
@@ -150,7 +214,7 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
   MARCH_MTUNE_NATIVE_SPECS,					\
   "%{!m31:%{!m64:-m" S390_TARGET_BITS_STRING "}}",		\
   "%{!mesa:%{!mzarch:%{m31:-mesa}%{m64:-mzarch}}}",		\
-  "%{!march=*:%{mesa:-march=g5}%{mzarch:-march=z900}}"
+  "%{!march=*:-march=z900}"
 
 /* Constants needed to control the TEST DATA CLASS (TDC) instruction.  */
 #define S390_TDC_POSITIVE_ZERO                     (1 << 11)
@@ -937,6 +1001,16 @@ do {									\
 #define ASM_OUTPUT_FUNCTION_LABEL(FILE, NAME, DECL) \
   s390_asm_output_function_label (FILE, NAME, DECL)
 
+#if S390_USE_TARGET_ATTRIBUTE
+/* Hook to output .machine and .machinemode at start of function.  */
+#undef ASM_OUTPUT_FUNCTION_PREFIX
+#define ASM_OUTPUT_FUNCTION_PREFIX s390_asm_output_function_prefix
+
+/* Hook to output .machine and .machinemode at end of function.  */
+#undef ASM_DECLARE_FUNCTION_SIZE
+#define ASM_DECLARE_FUNCTION_SIZE s390_asm_declare_function_size
+#endif
+
 /* Miscellaneous parameters.  */
 
 /* Specify the machine mode that this machine uses for the index in the
@@ -963,12 +1037,35 @@ do {									\
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 64, 1)
 
 /* Machine-specific symbol_ref flags.  */
-#define SYMBOL_FLAG_ALIGN1	          (SYMBOL_FLAG_MACH_DEP << 0)
-#define SYMBOL_REF_ALIGN1_P(X)		\
-  ((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_ALIGN1))
-#define SYMBOL_FLAG_NOT_NATURALLY_ALIGNED (SYMBOL_FLAG_MACH_DEP << 1)
-#define SYMBOL_REF_NOT_NATURALLY_ALIGNED_P(X) \
-  ((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_NOT_NATURALLY_ALIGNED))
+#define SYMBOL_FLAG_ALIGN_SHIFT	  SYMBOL_FLAG_MACH_DEP_SHIFT
+#define SYMBOL_FLAG_ALIGN_MASK    \
+  ((SYMBOL_FLAG_MACH_DEP << 0) | (SYMBOL_FLAG_MACH_DEP << 1))
+
+#define SYMBOL_FLAG_SET_ALIGN(X, A) \
+    (SYMBOL_REF_FLAGS (X) = (SYMBOL_REF_FLAGS (X) & ~SYMBOL_FLAG_ALIGN_MASK) \
+     | (A << SYMBOL_FLAG_ALIGN_SHIFT))
+
+#define SYMBOL_FLAG_GET_ALIGN(X) \
+    ((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_ALIGN_MASK) >> SYMBOL_FLAG_ALIGN_SHIFT)
+
+/* Helpers to access symbol_ref flags.  They are used in
+   check_symref_alignment() and larl_operand to detect if the
+   available alignment matches the required one.  We do not use
+   a positive check like _ALIGN2 because in that case we would have
+   to annotate every symbol_ref.  However, we only want to touch
+   the symbol_refs that can be misaligned and assume that the others
+   are correctly aligned.  Hence, if a symbol_ref does not have
+   a _NOTALIGN flag it is supposed to be correctly aligned.  */
+#define SYMBOL_FLAG_SET_NOTALIGN2(X) SYMBOL_FLAG_SET_ALIGN(X, 1)
+#define SYMBOL_FLAG_SET_NOTALIGN4(X) SYMBOL_FLAG_SET_ALIGN(X, 2)
+#define SYMBOL_FLAG_SET_NOTALIGN8(X) SYMBOL_FLAG_SET_ALIGN(X, 3)
+
+#define SYMBOL_FLAG_NOTALIGN2_P(X) (SYMBOL_FLAG_GET_ALIGN(X) == 1)
+#define SYMBOL_FLAG_NOTALIGN4_P(X) (SYMBOL_FLAG_GET_ALIGN(X) == 2 \
+				    || SYMBOL_FLAG_GET_ALIGN(X) == 1)
+#define SYMBOL_FLAG_NOTALIGN8_P(X) (SYMBOL_FLAG_GET_ALIGN(X) == 3 \
+				    || SYMBOL_FLAG_GET_ALIGN(X) == 2 \
+				    || SYMBOL_FLAG_GET_ALIGN(X) == 1)
 
 /* Check whether integer displacement is in range for a short displacement.  */
 #define SHORT_DISP_IN_RANGE(d) ((d) >= 0 && (d) <= 4095)

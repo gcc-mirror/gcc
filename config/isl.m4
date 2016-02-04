@@ -19,23 +19,23 @@
 
 # ISL_INIT_FLAGS ()
 # -------------------------
-# Provide configure switches for ISL support.
+# Provide configure switches for isl support.
 # Initialize isllibs/islinc according to the user input.
 AC_DEFUN([ISL_INIT_FLAGS],
 [
   AC_ARG_WITH([isl-include],
     [AS_HELP_STRING(
       [--with-isl-include=PATH],
-      [Specify directory for installed ISL include files])])
+      [Specify directory for installed isl include files])])
   AC_ARG_WITH([isl-lib],
     [AS_HELP_STRING(
       [--with-isl-lib=PATH],
-      [Specify the directory for the installed ISL library])])
+      [Specify the directory for the installed isl library])])
 
   AC_ARG_ENABLE(isl-version-check,
     [AS_HELP_STRING(
       [--disable-isl-version-check],
-      [disable check for ISL version])],
+      [disable check for isl version])],
     ENABLE_ISL_CHECK=$enableval,
     ENABLE_ISL_CHECK=yes)
   
@@ -58,15 +58,15 @@ AC_DEFUN([ISL_INIT_FLAGS],
   if test "x${with_isl_lib}" != x; then
     isllibs="-L$with_isl_lib"
   fi
-  dnl If no --with-isl flag was specified and there is in-tree ISL
+  dnl If no --with-isl flag was specified and there is in-tree isl
   dnl source, set up flags to use that and skip any version tests
-  dnl as we cannot run them before building ISL.
+  dnl as we cannot run them before building isl.
   if test "x${islinc}" = x && test "x${isllibs}" = x \
      && test -d ${srcdir}/isl; then
     isllibs='-L$$r/$(HOST_SUBDIR)/isl/'"$lt_cv_objdir"' '
     islinc='-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include'
     ENABLE_ISL_CHECK=no
-    AC_MSG_WARN([using in-tree ISL, disabling version check])
+    AC_MSG_WARN([using in-tree isl, disabling version check])
   fi
 
   isllibs="${isllibs} -lisl"
@@ -75,7 +75,7 @@ AC_DEFUN([ISL_INIT_FLAGS],
 
 # ISL_REQUESTED (ACTION-IF-REQUESTED, ACTION-IF-NOT)
 # ----------------------------------------------------
-# Provide actions for failed ISL detection.
+# Provide actions for failed isl detection.
 AC_DEFUN([ISL_REQUESTED],
 [
   AC_REQUIRE([ISL_INIT_FLAGS])
@@ -94,7 +94,7 @@ AC_DEFUN([ISL_REQUESTED],
 
 # ISL_CHECK_VERSION ISL_CHECK_VERSION ()
 # ----------------------------------------------------------------
-# Test that ISL contains functionality added to the minimum expected version.
+# Test whether isl contains functionality added to the minimum expected version.
 AC_DEFUN([ISL_CHECK_VERSION],
 [
   if test "${ENABLE_ISL_CHECK}" = yes ; then
@@ -103,14 +103,31 @@ AC_DEFUN([ISL_CHECK_VERSION],
     _isl_saved_LIBS=$LIBS
 
     CFLAGS="${_isl_saved_CFLAGS} ${islinc} ${gmpinc}"
-    LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs}"
-    LIBS="${_isl_saved_LIBS} -lisl"
+    LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs} ${gmplibs}"
+    LIBS="${_isl_saved_LIBS} -lisl -lgmp"
 
-    AC_MSG_CHECKING([for compatible ISL])
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <isl/val.h>]], [[;]])],
-	[gcc_cv_isl=yes],
-	[gcc_cv_isl=no])
+    AC_MSG_CHECKING([for isl 0.16, 0.15, or deprecated 0.14])
+    AC_TRY_LINK([#include <isl/ctx.h>],
+                [isl_ctx_get_max_operations (isl_ctx_alloc ());],
+                [gcc_cv_isl=yes],
+                [gcc_cv_isl=no])
     AC_MSG_RESULT([$gcc_cv_isl])
+
+    if test "${gcc_cv_isl}" = no ; then
+      AC_MSG_RESULT([recommended isl version is 0.16 or 0.15, the minimum required isl version 0.14 is deprecated])
+    fi
+
+    AC_MSG_CHECKING([for isl 0.16 or 0.15])
+    AC_TRY_LINK([#include <isl/schedule.h>],
+                [isl_options_set_schedule_serialize_sccs (NULL, 0);],
+                [ac_has_isl_options_set_schedule_serialize_sccs=yes],
+                [ac_has_isl_options_set_schedule_serialize_sccs=no])
+    AC_MSG_RESULT($ac_has_isl_options_set_schedule_serialize_sccs)
+
+    if test x"$ac_has_isl_options_set_schedule_serialize_sccs" = x"yes"; then
+      islver="0.15"
+      AC_SUBST([islver])
+    fi
 
     CFLAGS=$_isl_saved_CFLAGS
     LDFLAGS=$_isl_saved_LDFLAGS

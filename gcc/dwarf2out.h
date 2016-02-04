@@ -1,5 +1,5 @@
 /* dwarf2out.h - Various declarations for functions found in dwarf2out.c
-   Copyright (C) 1998-2015 Free Software Foundation, Inc.
+   Copyright (C) 1998-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,6 +29,7 @@ typedef struct dw_val_node *dw_val_ref;
 typedef struct dw_cfi_node *dw_cfi_ref;
 typedef struct dw_loc_descr_node *dw_loc_descr_ref;
 typedef struct dw_loc_list_struct *dw_loc_list_ref;
+typedef struct dw_discr_list_node *dw_discr_list_ref;
 typedef wide_int *wide_int_ptr;
 
 
@@ -150,7 +151,9 @@ enum dw_val_class
   dw_val_class_data8,
   dw_val_class_decl_ref,
   dw_val_class_vms_delta,
-  dw_val_class_high_pc
+  dw_val_class_high_pc,
+  dw_val_class_discr_value,
+  dw_val_class_discr_list
 };
 
 /* Describe a floating point constant value, or a vector constant value.  */
@@ -159,6 +162,25 @@ struct GTY(()) dw_vec_const {
   unsigned char * GTY((atomic)) array;
   unsigned length;
   unsigned elt_size;
+};
+
+/* Describe a single value that a discriminant can match.
+
+   Discriminants (in the "record variant part" meaning) are scalars.
+   dw_discr_list_ref and dw_discr_value are a mean to describe a set of
+   discriminant values that are matched by a particular variant.
+
+   Discriminants can be signed or unsigned scalars, and can be discriminants
+   values.  Both have to be consistent, though.  */
+
+struct GTY(()) dw_discr_value {
+  int pos; /* Whether the discriminant value is positive (unsigned).  */
+  union
+    {
+      HOST_WIDE_INT GTY ((tag ("0"))) sval;
+      unsigned HOST_WIDE_INT GTY ((tag ("1"))) uval;
+    }
+  GTY ((desc ("%1.pos"))) v;
 };
 
 struct addr_table_entry;
@@ -197,6 +219,8 @@ struct GTY(()) dw_val_node {
 	  char * lbl1;
 	  char * lbl2;
 	} GTY ((tag ("dw_val_class_vms_delta"))) val_vms_delta;
+      dw_discr_value GTY ((tag ("dw_val_class_discr_value"))) val_discr_value;
+      dw_discr_list_ref GTY ((tag ("dw_val_class_discr_list"))) val_discr_list;
     }
   GTY ((desc ("%1.val_class"))) v;
 };
@@ -210,11 +234,35 @@ struct GTY((chain_next ("%h.dw_loc_next"))) dw_loc_descr_node {
   /* Used to distinguish DW_OP_addr with a direct symbol relocation
      from DW_OP_addr with a dtp-relative symbol relocation.  */
   unsigned int dtprel : 1;
+  /* For DW_OP_pick operations: true iff. it targets a DWARF prodecure
+     argument.  In this case, it needs to be relocated according to the current
+     frame offset.  */
+  unsigned int frame_offset_rel : 1;
   int dw_loc_addr;
+#if ENABLE_CHECKING
+  /* When translating a function into a DWARF procedure, contains the frame
+     offset *before* evaluating this operation.  It is -1 when not yet
+     initialized.  */
+  int dw_loc_frame_offset;
+#endif
   dw_val_node dw_loc_oprnd1;
   dw_val_node dw_loc_oprnd2;
 };
 
+/* A variant (inside a record variant part) is selected when the corresponding
+   discriminant matches its set of values (see the comment for dw_discr_value).
+   The following datastructure holds such matching information.  */
+
+struct GTY(()) dw_discr_list_node {
+  dw_discr_list_ref dw_discr_next;
+
+  dw_discr_value dw_discr_lower_bound;
+  dw_discr_value dw_discr_upper_bound;
+  /* This node represents only the value in dw_discr_lower_bound when it's
+     zero.  It represents the range between the two fields (bounds included)
+     otherwise.  */
+  int dw_discr_range;
+};
 
 /* Interface from dwarf2out.c to dwarf2cfi.c.  */
 extern struct dw_loc_descr_node *build_cfa_loc
@@ -268,6 +316,8 @@ enum array_descr_ordering
   array_descr_ordering_column_major
 };
 
+#define DWARF2OUT_ARRAY_DESCR_INFO_MAX_DIMEN 16
+
 struct array_descr_info
 {
   int ndimensions;
@@ -277,6 +327,8 @@ struct array_descr_info
   tree data_location;
   tree allocated;
   tree associated;
+  tree stride;
+  bool stride_in_bits;
   struct array_descr_dimen
     {
       /* GCC uses sizetype for array indices, so lower_bound and upper_bound
@@ -285,8 +337,40 @@ struct array_descr_info
       tree bounds_type;
       tree lower_bound;
       tree upper_bound;
+
+      /* Only Fortran uses more than one dimension for array types.  For other
+	 languages, the stride can be rather specified for the whole array.  */
       tree stride;
-    } dimen[10];
+    } dimen[DWARF2OUT_ARRAY_DESCR_INFO_MAX_DIMEN];
+};
+
+enum fixed_point_scale_factor
+{
+  fixed_point_scale_factor_binary,
+  fixed_point_scale_factor_decimal,
+  fixed_point_scale_factor_arbitrary
+};
+
+struct fixed_point_type_info
+{
+  /* A scale factor is the value one has to multiply with physical data in
+     order to get the fixed point logical data.  The DWARF standard enables one
+     to encode it in three ways.  */
+  enum fixed_point_scale_factor scale_factor_kind;
+  union
+    {
+      /* For binary scale factor, the scale factor is: 2 ** binary.  */
+      int binary;
+      /* For decimal scale factor, the scale factor is: 10 ** binary.  */
+      int decimal;
+      /* For arbitrary scale factor, the scale factor is:
+	 numerator / denominator.  */
+      struct
+	{
+	  unsigned HOST_WIDE_INT numerator;
+	  HOST_WIDE_INT denominator;
+	} arbitrary;
+    } scale_factor;
 };
 
 void dwarf2out_c_finalize (void);

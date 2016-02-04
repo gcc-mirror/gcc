@@ -34,7 +34,7 @@
 --  string hash functions in Ada.Containers.
 --
 --  The algorithm used here is not appropriate for applications that require
---  cryptographically strong hashes, or for application which wish to use very
+--  cryptographically strong hashes, or for applications that wish to use very
 --  wide hash values as pseudo unique identifiers. In such cases please refer
 --  to GNAT.SHA1 and GNAT.MD5.
 

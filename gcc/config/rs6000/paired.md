@@ -1,5 +1,5 @@
 ;; PowerPC paired single and double hummer description
-;; Copyright (C) 2007-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2016 Free Software Foundation, Inc.
 ;; Contributed by David Edelsohn <edelsohn@gnu.org> and Revital Eres
 ;; <eres@il.ibm.com>
 
@@ -421,45 +421,62 @@
   DONE;
 })
 
-(define_expand "reduc_smax_v2sf"
-  [(match_operand:V2SF 0 "gpc_reg_operand" "=f")
+(define_expand "reduc_smax_scal_v2sf"
+  [(match_operand:SF 0 "gpc_reg_operand" "=f")
    (match_operand:V2SF 1 "gpc_reg_operand" "f")]
   "TARGET_PAIRED_FLOAT"
 {
   rtx tmp_swap = gen_reg_rtx (V2SFmode);
   rtx tmp = gen_reg_rtx (V2SFmode);
+  rtx vec_res = gen_reg_rtx (V2SFmode);
+  rtx di_res = gen_reg_rtx (DImode);
 
   emit_insn (gen_paired_merge10 (tmp_swap, operands[1], operands[1]));
   emit_insn (gen_subv2sf3 (tmp, operands[1], tmp_swap));
-  emit_insn (gen_selv2sf4 (operands[0], tmp, operands[1], tmp_swap, CONST0_RTX (SFmode)));
+  emit_insn (gen_selv2sf4 (vec_res, tmp, operands[1], tmp_swap,
+			   CONST0_RTX (SFmode)));
+  emit_move_insn (di_res, simplify_gen_subreg (DImode, vec_res, V2SFmode, 0));
+  emit_move_insn (operands[0], simplify_gen_subreg (SFmode, di_res, DImode,
+						    BYTES_BIG_ENDIAN ? 4 : 0));
 
   DONE;
 })
 
-(define_expand "reduc_smin_v2sf"
-  [(match_operand:V2SF 0 "gpc_reg_operand" "=f")
+(define_expand "reduc_smin_scal_v2sf"
+  [(match_operand:SF 0 "gpc_reg_operand" "=f")
    (match_operand:V2SF 1 "gpc_reg_operand" "f")]
   "TARGET_PAIRED_FLOAT"
 {
   rtx tmp_swap = gen_reg_rtx (V2SFmode);
   rtx tmp = gen_reg_rtx (V2SFmode);
+  rtx vec_res = gen_reg_rtx (V2SFmode);
+  rtx di_res = gen_reg_rtx (DImode);
 
   emit_insn (gen_paired_merge10 (tmp_swap, operands[1], operands[1]));
   emit_insn (gen_subv2sf3 (tmp, operands[1], tmp_swap));
-  emit_insn (gen_selv2sf4 (operands[0], tmp, tmp_swap, operands[1], CONST0_RTX (SFmode)));
+  emit_insn (gen_selv2sf4 (vec_res, tmp, tmp_swap, operands[1],
+			   CONST0_RTX (SFmode)));
+  emit_move_insn (di_res, simplify_gen_subreg (DImode, vec_res, V2SFmode, 0));
+  emit_move_insn (operands[0], simplify_gen_subreg (SFmode, di_res, DImode,
+						    BYTES_BIG_ENDIAN ? 4 : 0));
 
   DONE;
 })
 
-(define_expand "reduc_splus_v2sf"
-  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
+(define_expand "reduc_plus_scal_v2sf"
+  [(set (match_operand:SF 0 "gpc_reg_operand" "=f")
         (match_operand:V2SF 1 "gpc_reg_operand" "f"))]
   "TARGET_PAIRED_FLOAT"
-  "
 {
-  emit_insn (gen_paired_sum1 (operands[0], operands[1], operands[1], operands[1]));
+  rtx vec_res = gen_reg_rtx (V2SFmode);
+  rtx di_res = gen_reg_rtx (DImode);
+
+  emit_insn (gen_paired_sum1 (vec_res, operands[1], operands[1], operands[1]));
+  emit_move_insn (di_res, simplify_gen_subreg (DImode, vec_res, V2SFmode, 0));
+  emit_move_insn (operands[0], simplify_gen_subreg (SFmode, di_res, DImode,
+						    BYTES_BIG_ENDIAN ? 4 : 0));
   DONE;
-}")
+})
 
 (define_expand "movmisalignv2sf"
   [(set (match_operand:V2SF 0 "nonimmediate_operand" "")

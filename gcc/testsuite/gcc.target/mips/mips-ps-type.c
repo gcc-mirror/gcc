@@ -1,7 +1,7 @@
 /* Test v2sf calculations.  The nmadd and nmsub patterns need
    -ffinite-math-only.  */
 /* { dg-do compile } */ 
-/* { dg-options "-mpaired-single -mgp64 -ffinite-math-only" } */
+/* { dg-options "-mpaired-single -mgp64 -ffinite-math-only forbid_cpu=octeon.*" } */
 /* { dg-skip-if "nmadd and nmsub need combine" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler "\tcvt.ps.s\t" } } */
 /* { dg-final { scan-assembler "\tmov.ps\t" } } */

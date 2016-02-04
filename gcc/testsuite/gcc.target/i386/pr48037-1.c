@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O -fno-math-errno" } */
 
 typedef double __m128d __attribute__((vector_size(16)));

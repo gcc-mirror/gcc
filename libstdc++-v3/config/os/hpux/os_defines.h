@@ -1,6 +1,6 @@
 // Specific definitions for HPUX  -*- C++ -*-
 
-// Copyright (C) 2000-2015 Free Software Foundation, Inc.
+// Copyright (C) 2000-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -98,6 +98,9 @@ typedef long int __padding_type;
    are weak; gthread relies on such unsatisfied references being resolved
    to null pointers when weak symbol support is on.  */
 #define _GLIBCXX_GTHREAD_USE_WEAK 0
+
+// No support for referencing weak symbols without a definition.
+#define _GLIBCXX_USE_WEAK_REF 0
 
 // The strtold function is obsolete and not C99 conformant on PA HP-UX.
 // It returns plus or minus _LDBL_MAX instead of plus or minus HUGE_VALL

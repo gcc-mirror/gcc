@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --               Copyright (C) 1991-1994, Florida State University          --
---            Copyright (C) 1995-2014, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2015, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the GNU/kFreeBSD (GNU/LinuxThreads) version of this package
+--  This is the GNU/kFreeBSD (POSIX Threads) version of this package
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by children of System.
@@ -198,7 +198,23 @@ package System.OS_Interface is
    -- Time --
    ----------
 
+   Time_Slice_Supported : constant Boolean := True;
+   --  Indicates whether time slicing is supported (i.e SCHED_RR is supported)
+
    type timespec is private;
+
+   function nanosleep (rqtp, rmtp : access timespec) return int;
+   pragma Import (C, nanosleep, "nanosleep");
+
+   type clockid_t is private;
+
+   CLOCK_REALTIME : constant clockid_t;
+
+   function clock_gettime
+     (clock_id : clockid_t;
+      tp       : access timespec)
+      return int;
+   pragma Import (C, clock_gettime, "clock_gettime");
 
    function To_Duration (TS : timespec) return Duration;
    pragma Inline (To_Duration);
@@ -236,6 +252,16 @@ package System.OS_Interface is
    function getpid return pid_t;
    pragma Import (C, getpid, "getpid");
 
+   ---------
+   -- LWP --
+   ---------
+
+   function lwp_self return System.Address;
+   --  lwp_self does not exist on this thread library, revert to pthread_self
+   --  which is the closest approximation (with getpid). This function is
+   --  needed to share 7staprop.adb across POSIX-like targets.
+   pragma Import (C, lwp_self, "pthread_self");
+
    -------------
    -- Threads --
    -------------
@@ -261,6 +287,18 @@ package System.OS_Interface is
    type pthread_key_t       is private;
 
    PTHREAD_CREATE_DETACHED : constant := 1;
+   PTHREAD_CREATE_JOINABLE : constant := 0;
+
+   PTHREAD_SCOPE_PROCESS : constant := 0;
+   PTHREAD_SCOPE_SYSTEM  : constant := 2;
+
+   --  Read/Write lock not supported on kfreebsd. To add support both types
+   --  pthread_rwlock_t and pthread_rwlockattr_t must properly be defined
+   --  with the associated routines pthread_rwlock_[init/destroy] and
+   --  pthread_rwlock_[rdlock/wrlock/unlock].
+
+   subtype pthread_rwlock_t     is pthread_mutex_t;
+   subtype pthread_rwlockattr_t is pthread_mutexattr_t;
 
    -----------
    -- Stack --
@@ -284,9 +322,29 @@ package System.OS_Interface is
    Alternate_Stack_Size : constant := 0;
    --  No alternate signal stack is used on this platform
 
+   Stack_Base_Available : constant Boolean := False;
+   --  Indicates whether the stack base is available on this target
+
    function Get_Stack_Base (thread : pthread_t) return Address;
    pragma Inline (Get_Stack_Base);
-   --  This is a dummy procedure to share some GNULLI files
+   --  returns the stack base of the specified thread. Only call this function
+   --  when Stack_Base_Available is True.
+
+   function Get_Page_Size return size_t;
+   function Get_Page_Size return Address;
+   pragma Import (C, Get_Page_Size, "getpagesize");
+   --  Returns the size of a page
+
+   PROT_NONE  : constant := 0;
+   PROT_READ  : constant := 1;
+   PROT_WRITE : constant := 2;
+   PROT_EXEC  : constant := 4;
+   PROT_ALL   : constant := PROT_READ + PROT_WRITE + PROT_EXEC;
+   PROT_ON    : constant := PROT_NONE;
+   PROT_OFF   : constant := PROT_ALL;
+
+   function mprotect (addr : Address; len : size_t; prot : int) return int;
+   pragma Import (C, mprotect);
 
    ---------------------------------------
    -- Nonstandard Thread Initialization --
@@ -375,6 +433,36 @@ package System.OS_Interface is
    -- POSIX.1c  Section 13 --
    --------------------------
 
+   PTHREAD_PRIO_NONE    : constant := 0;
+   PTHREAD_PRIO_PROTECT : constant := 2;
+   PTHREAD_PRIO_INHERIT : constant := 1;
+
+   function pthread_mutexattr_setprotocol
+     (attr     : access pthread_mutexattr_t;
+      protocol : int) return int;
+   pragma Import
+      (C, pthread_mutexattr_setprotocol, "pthread_mutexattr_setprotocol");
+
+   function pthread_mutexattr_getprotocol
+     (attr     : access pthread_mutexattr_t;
+      protocol : access int) return int;
+   pragma Import
+     (C, pthread_mutexattr_getprotocol, "pthread_mutexattr_getprotocol");
+
+   function pthread_mutexattr_setprioceiling
+     (attr     : access pthread_mutexattr_t;
+      prioceiling : int) return int;
+   pragma Import
+     (C, pthread_mutexattr_setprioceiling,
+      "pthread_mutexattr_setprioceiling");
+
+   function pthread_mutexattr_getprioceiling
+     (attr     : access pthread_mutexattr_t;
+      prioceiling : access int) return int;
+   pragma Import
+     (C, pthread_mutexattr_getprioceiling,
+      "pthread_mutexattr_getprioceiling");
+
    type struct_sched_param is record
       sched_priority : int;  --  scheduling priority
    end record;
@@ -385,6 +473,28 @@ package System.OS_Interface is
       policy : int;
       param  : access struct_sched_param) return int;
    pragma Import (C, pthread_setschedparam, "pthread_setschedparam");
+
+   function pthread_attr_setscope
+     (attr            : access pthread_attr_t;
+      contentionscope : int) return int;
+   pragma Import (C, pthread_attr_setscope, "pthread_attr_setscope");
+
+   function pthread_attr_getscope
+     (attr            : access pthread_attr_t;
+      contentionscope : access int) return int;
+   pragma Import (C, pthread_attr_getscope, "pthread_attr_getscope");
+
+   function pthread_attr_setinheritsched
+     (attr            : access pthread_attr_t;
+      inheritsched : int) return int;
+   pragma Import
+     (C, pthread_attr_setinheritsched, "pthread_attr_setinheritsched");
+
+   function pthread_attr_getinheritsched
+     (attr         : access pthread_attr_t;
+      inheritsched : access int) return int;
+   pragma Import
+     (C, pthread_attr_getinheritsched, "pthread_attr_getinheritsched");
 
    function pthread_attr_setschedpolicy
      (attr   : access pthread_attr_t;
@@ -495,6 +605,9 @@ private
       tv_nsec : long;
    end record;
    pragma Convention (C, timespec);
+
+   type clockid_t is new int;
+   CLOCK_REALTIME : constant clockid_t := 0;
 
    type pthread_attr_t is record
       detachstate   : int;

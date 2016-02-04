@@ -1,5 +1,5 @@
 ;; Pipeline description for the AppliedMicro Titan core.
-;;   Copyright (C) 2010-2015 Free Software Foundation, Inc.
+;;   Copyright (C) 2010-2016 Free Software Foundation, Inc.
 ;;   Contributed by Theobroma Systems Design und Consulting GmbH
 ;;
 ;; This file is part of GCC.

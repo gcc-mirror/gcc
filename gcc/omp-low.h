@@ -1,5 +1,5 @@
 /* Header file for openMP lowering directives.
-   Copyright (C) 2013-2015 Free Software Foundation, Inc.
+   Copyright (C) 2013-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -33,6 +33,8 @@ extern tree omp_member_access_dummy_var (tree);
 extern void replace_oacc_fn_attrib (tree, tree);
 extern tree build_oacc_routine_dims (tree);
 extern tree get_oacc_fn_attrib (tree);
+extern void set_oacc_fn_attrib (tree, tree, bool, vec<tree> *);
+extern bool oacc_fn_attrib_kernels_p (tree);
 extern int get_oacc_ifn_dim_arg (const gimple *);
 extern int get_oacc_fn_dim_size (tree, int);
 

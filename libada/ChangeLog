@@ -1,3 +1,7 @@
+2016-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2015-04-10  Jakub Jelinek  <jakub@redhat.com>
 	    Iain Sandoe  <iain@codesourcery.com>
 
@@ -351,8 +355,8 @@
 	* configure: Generate.
 
 	* New directory, new ChangeLog.
-
-Copyright (C) 2003-2015 Free Software Foundation, Inc.
+
+Copyright (C) 2003-2016 Free Software Foundation, Inc.
 
 This ChangeLog is free software; the Free Software Foundation gives
 unlimited permission to copy, distribute, and modify it.

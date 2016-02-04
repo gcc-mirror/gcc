@@ -228,7 +228,6 @@ install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
 link_libmpx = @link_libmpx@
-link_mpx = @link_mpx@
 localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@

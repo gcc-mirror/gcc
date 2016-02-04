@@ -1,5 +1,5 @@
 ;; ARM Cortex-A8 NEON scheduling description.
-;; Copyright (C) 2007-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2016 Free Software Foundation, Inc.
 ;; Contributed by CodeSourcery.
 
 ;; This file is part of GCC.

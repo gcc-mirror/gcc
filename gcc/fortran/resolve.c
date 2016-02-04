@@ -1,5 +1,5 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001-2015 Free Software Foundation, Inc.
+   Copyright (C) 2001-2016 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2565,8 +2565,13 @@ generic:
      that possesses a matching interface.  14.1.2.4  */
   if (sym  && !intr && !gfc_is_intrinsic (sym, 0, expr->where))
     {
-      gfc_error ("There is no specific function for the generic %qs "
-		 "at %L", expr->symtree->n.sym->name, &expr->where);
+      if (gfc_init_expr_flag)
+	gfc_error ("Function %qs in initialization expression at %L "
+		   "must be an intrinsic function",
+		   expr->symtree->n.sym->name, &expr->where);
+      else
+	gfc_error ("There is no specific function for the generic %qs "
+		   "at %L", expr->symtree->n.sym->name, &expr->where);
       return false;
     }
 
@@ -3560,7 +3565,7 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
-      sprintf (msg, _("Operand of unary numeric operator '%s' at %%L is %s"),
+      sprintf (msg, _("Operand of unary numeric operator %%<%s%%> at %%L is %s"),
 	       gfc_op2string (e->value.op.op), gfc_typename (&e->ts));
       goto bad_op;
 
@@ -3576,7 +3581,7 @@ resolve_operator (gfc_expr *e)
 	}
 
       sprintf (msg,
-	       _("Operands of binary numeric operator '%s' at %%L are %s/%s"),
+	       _("Operands of binary numeric operator %%<%s%%> at %%L are %s/%s"),
 	       gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
 	       gfc_typename (&op2->ts));
       goto bad_op;
@@ -3610,7 +3615,7 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
-      sprintf (msg, _("Operands of logical operator '%s' at %%L are %s/%s"),
+      sprintf (msg, _("Operands of logical operator %%<%s%%> at %%L are %s/%s"),
 	       gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
 	       gfc_typename (&op2->ts));
 
@@ -3695,7 +3700,7 @@ resolve_operator (gfc_expr *e)
 		 ? ".eqv." : ".neqv.", gfc_op2string (e->value.op.op));
       else
 	sprintf (msg,
-		 _("Operands of comparison operator '%s' at %%L are %s/%s"),
+		 _("Operands of comparison operator %%<%s%%> at %%L are %s/%s"),
 		 gfc_op2string (e->value.op.op), gfc_typename (&op1->ts),
 		 gfc_typename (&op2->ts));
 
@@ -3703,13 +3708,14 @@ resolve_operator (gfc_expr *e)
 
     case INTRINSIC_USER:
       if (e->value.op.uop->op == NULL)
-	sprintf (msg, _("Unknown operator '%s' at %%L"), e->value.op.uop->name);
+	sprintf (msg, _("Unknown operator %%<%s%%> at %%L"),
+		 e->value.op.uop->name);
       else if (op2 == NULL)
-	sprintf (msg, _("Operand of user operator '%s' at %%L is %s"),
+	sprintf (msg, _("Operand of user operator %%<%s%%> at %%L is %s"),
 		 e->value.op.uop->name, gfc_typename (&op1->ts));
       else
 	{
-	  sprintf (msg, _("Operands of user operator '%s' at %%L are %s/%s"),
+	  sprintf (msg, _("Operands of user operator %%<%s%%> at %%L are %s/%s"),
 		   e->value.op.uop->name, gfc_typename (&op1->ts),
 		   gfc_typename (&op2->ts));
 	  e->value.op.uop->op->sym->attr.referenced = 1;
@@ -7055,6 +7061,21 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 		      &code->expr3->where, &e->where);
 	  goto failure;
 	}
+
+      /* Check TS18508, C702/C703.  */
+      if (code->expr3->ts.type == BT_DERIVED
+	  && ((codimension && gfc_expr_attr (code->expr3).event_comp)
+	      || (code->expr3->ts.u.derived->from_intmod
+		     == INTMOD_ISO_FORTRAN_ENV
+		  && code->expr3->ts.u.derived->intmod_sym_id
+		     == ISOFORTRAN_EVENT_TYPE)))
+	{
+	  gfc_error ("The source-expr at %L shall neither be of type "
+		     "EVENT_TYPE nor have a EVENT_TYPE component if "
+		      "allocate-object at %L is a coarray",
+		      &code->expr3->where, &e->where);
+	  goto failure;
+	}
     }
 
   /* Check F08:C629.  */
@@ -7105,6 +7126,13 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 	 when the allocated type is different from the declared type but
 	 no SOURCE exists by setting expr3.  */
       code->expr3 = gfc_default_initializer (&code->ext.alloc.ts);
+    }
+  else if (flag_coarray != GFC_FCOARRAY_LIB && e->ts.type == BT_DERIVED
+	   && e->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+	   && e->ts.u.derived->intmod_sym_id == ISOFORTRAN_EVENT_TYPE)
+    {
+      /* We have to zero initialize the integer variable.  */
+      code->expr3 = gfc_get_int_expr (gfc_default_integer_kind, &e->where, 0);
     }
   else if (!code->expr3)
     {
@@ -8706,21 +8734,40 @@ find_reachable_labels (gfc_code *block)
 
 
 static void
-resolve_lock_unlock (gfc_code *code)
+resolve_lock_unlock_event (gfc_code *code)
 {
   if (code->expr1->expr_type == EXPR_FUNCTION
       && code->expr1->value.function.isym
       && code->expr1->value.function.isym->id == GFC_ISYM_CAF_GET)
     remove_caf_get_intrinsic (code->expr1);
 
-  if (code->expr1->ts.type != BT_DERIVED
-      || code->expr1->expr_type != EXPR_VARIABLE
-      || code->expr1->ts.u.derived->from_intmod != INTMOD_ISO_FORTRAN_ENV
-      || code->expr1->ts.u.derived->intmod_sym_id != ISOFORTRAN_LOCK_TYPE
-      || code->expr1->rank != 0
-      || (!gfc_is_coarray (code->expr1) && !gfc_is_coindexed (code->expr1)))
+  if ((code->op == EXEC_LOCK || code->op == EXEC_UNLOCK)
+      && (code->expr1->ts.type != BT_DERIVED
+	  || code->expr1->expr_type != EXPR_VARIABLE
+	  || code->expr1->ts.u.derived->from_intmod != INTMOD_ISO_FORTRAN_ENV
+	  || code->expr1->ts.u.derived->intmod_sym_id != ISOFORTRAN_LOCK_TYPE
+	  || code->expr1->rank != 0
+	  || (!gfc_is_coarray (code->expr1) &&
+	      !gfc_is_coindexed (code->expr1))))
     gfc_error ("Lock variable at %L must be a scalar of type LOCK_TYPE",
 	       &code->expr1->where);
+  else if ((code->op == EXEC_EVENT_POST || code->op == EXEC_EVENT_WAIT)
+	   && (code->expr1->ts.type != BT_DERIVED
+	       || code->expr1->expr_type != EXPR_VARIABLE
+	       || code->expr1->ts.u.derived->from_intmod
+		  != INTMOD_ISO_FORTRAN_ENV
+	       || code->expr1->ts.u.derived->intmod_sym_id
+		  != ISOFORTRAN_EVENT_TYPE
+	       || code->expr1->rank != 0))
+    gfc_error ("Event variable at %L must be a scalar of type EVENT_TYPE",
+	       &code->expr1->where);
+  else if (code->op == EXEC_EVENT_POST && !gfc_is_coarray (code->expr1)
+	   && !gfc_is_coindexed (code->expr1))
+    gfc_error ("Event variable argument at %L must be a coarray or coindexed",
+	       &code->expr1->where);
+  else if (code->op == EXEC_EVENT_WAIT && !gfc_is_coarray (code->expr1))
+    gfc_error ("Event variable argument at %L must be a coarray but not "
+	       "coindexed", &code->expr1->where);
 
   /* Check STAT.  */
   if (code->expr2
@@ -8746,17 +8793,23 @@ resolve_lock_unlock (gfc_code *code)
 				    _("ERRMSG variable")))
     return;
 
-  /* Check ACQUIRED_LOCK.  */
-  if (code->expr4
+  /* Check for LOCK the ACQUIRED_LOCK.  */
+  if (code->op != EXEC_EVENT_WAIT && code->expr4
       && (code->expr4->ts.type != BT_LOGICAL || code->expr4->rank != 0
 	  || code->expr4->expr_type != EXPR_VARIABLE))
     gfc_error ("ACQUIRED_LOCK= argument at %L must be a scalar LOGICAL "
 	       "variable", &code->expr4->where);
 
-  if (code->expr4
+  if (code->op != EXEC_EVENT_WAIT && code->expr4
       && !gfc_check_vardef_context (code->expr4, false, false, false,
 				    _("ACQUIRED_LOCK variable")))
     return;
+
+  /* Check for EVENT WAIT the UNTIL_COUNT.  */
+  if (code->op == EXEC_EVENT_WAIT && code->expr4
+      && (code->expr4->ts.type != BT_INTEGER || code->expr4->rank != 0))
+    gfc_error ("UNTIL_COUNT= argument at %L must be a scalar INTEGER "
+	       "expression", &code->expr4->where);
 }
 
 
@@ -8804,6 +8857,7 @@ resolve_critical (gfc_code *code)
   symtree->n.sym->as->cotype = AS_EXPLICIT;
   symtree->n.sym->as->lower[0] = gfc_get_int_expr (gfc_default_integer_kind,
 						   NULL, 1);
+  gfc_commit_symbols();
 }
 
 
@@ -9373,6 +9427,7 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_OACC_ENTER_DATA:
 	case EXEC_OACC_EXIT_DATA:
 	case EXEC_OACC_ATOMIC:
+	case EXEC_OACC_ROUTINE:
 	case EXEC_OMP_ATOMIC:
 	case EXEC_OMP_CRITICAL:
 	case EXEC_OMP_DISTRIBUTE:
@@ -10402,7 +10457,9 @@ start:
 
 	case EXEC_LOCK:
 	case EXEC_UNLOCK:
-	  resolve_lock_unlock (code);
+	case EXEC_EVENT_POST:
+	case EXEC_EVENT_WAIT:
+	  resolve_lock_unlock_event (code);
 	  break;
 
 	case EXEC_ENTRY:
@@ -10695,6 +10752,7 @@ start:
 	case EXEC_OACC_ENTER_DATA:
 	case EXEC_OACC_EXIT_DATA:
 	case EXEC_OACC_ATOMIC:
+	case EXEC_OACC_DECLARE:
 	  gfc_resolve_oacc_directive (code, ns);
 	  break;
 
@@ -13999,6 +14057,19 @@ resolve_symbol (gfc_symbol *sym)
       return;
     }
 
+  /* TS18508, C702/C703.  */
+  if (sym->ts.type == BT_DERIVED
+      && ((sym->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+	   && sym->ts.u.derived->intmod_sym_id == ISOFORTRAN_EVENT_TYPE)
+	  || sym->ts.u.derived->attr.event_comp)
+      && !sym->attr.codimension && !sym->ts.u.derived->attr.coarray_comp)
+    {
+      gfc_error ("Variable %s at %L of type EVENT_TYPE or with subcomponent of "
+		 "type LOCK_TYPE must be a coarray", sym->name,
+		 &sym->declared_at);
+      return;
+    }
+
   /* An assumed-size array with INTENT(OUT) shall not be of a type for which
      default initialization is defined (5.1.2.4.4).  */
   if (sym->ts.type == BT_DERIVED
@@ -14024,6 +14095,15 @@ resolve_symbol (gfc_symbol *sym)
       && sym->attr.intent == INTENT_OUT && sym->attr.lock_comp)
     {
       gfc_error ("Dummy argument %qs at %L of LOCK_TYPE shall not be "
+		 "INTENT(OUT)", sym->name, &sym->declared_at);
+      return;
+    }
+
+  /* TS18508.  */
+  if (sym->ts.type == BT_DERIVED && sym->attr.dummy
+      && sym->attr.intent == INTENT_OUT && sym->attr.event_comp)
+    {
+      gfc_error ("Dummy argument %qs at %L of EVENT_TYPE shall not be "
 		 "INTENT(OUT)", sym->name, &sym->declared_at);
       return;
     }
@@ -15245,9 +15325,9 @@ check_uop_procedure (gfc_symbol *sym, locus where)
     }
 
   if (sym->ts.type == BT_CHARACTER
-      && !(sym->ts.u.cl && sym->ts.u.cl->length)
-      && !(sym->result && sym->result->ts.u.cl
-	   && sym->result->ts.u.cl->length))
+      && !((sym->ts.u.cl && sym->ts.u.cl->length) || sym->ts.deferred)
+      && !(sym->result && ((sym->result->ts.u.cl
+	   && sym->result->ts.u.cl->length) || sym->result->ts.deferred)))
     {
       gfc_error ("User operator procedure %qs at %L cannot be assumed "
 		 "character length", sym->name, &where);

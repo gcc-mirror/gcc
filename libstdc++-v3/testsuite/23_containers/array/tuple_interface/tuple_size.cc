@@ -1,6 +1,7 @@
+// { dg-do compile }
 // { dg-options "-std=gnu++11" }
 //
-// Copyright (C) 2011-2015 Free Software Foundation, Inc.
+// Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,13 +30,19 @@ test01()
   {
     const size_t len = 5;
     typedef array<int, len> array_type;
-    VERIFY( tuple_size<array_type>::value == 5 );
+    static_assert(tuple_size<array_type>::value == 5, "");
+    static_assert(tuple_size<const array_type>::value == 5, "");
+    static_assert(tuple_size<volatile array_type>::value == 5, "");
+    static_assert(tuple_size<const volatile array_type>::value == 5, "");
   }
 
   {
     const size_t len = 0;
     typedef array<float, len> array_type;
-    VERIFY( tuple_size<array_type>::value == 0 );
+    static_assert(tuple_size<array_type>::value == 0, "");
+    static_assert(tuple_size<const array_type>::value == 0, "");
+    static_assert(tuple_size<volatile array_type>::value == 0, "");
+    static_assert(tuple_size<const volatile array_type>::value == 0, "");
   }
 }
 

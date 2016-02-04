@@ -1,5 +1,5 @@
 ;; Code and mode itertator and attribute definitions for the ARM backend
-;; Copyright (C) 2010-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2016 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -99,7 +99,7 @@
 (define_mode_iterator VQI [V16QI V8HI V4SI])
 
 ;; Quad-width vector modes, with TImode added, for moves.
-(define_mode_iterator VQXMOV [V16QI V8HI V4SI V4SF V2DI TI])
+(define_mode_iterator VQXMOV [V16QI V8HI V8HF V4SI V4SF V2DI TI])
 
 ;; Opaque structure types wider than TImode.
 (define_mode_iterator VSTRUCT [EI OI CI XI])
@@ -114,7 +114,7 @@
 (define_mode_iterator VN [V8HI V4SI V2DI])
 
 ;; All supported vector modes (except singleton DImode).
-(define_mode_iterator VDQ [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF V2DI])
+(define_mode_iterator VDQ [V8QI V16QI V4HI V8HI V2SI V4SI V4HF V8HF V2SF V4SF V2DI])
 
 ;; All supported vector modes (except those with 64-bit integer elements).
 (define_mode_iterator VDQW [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF])
@@ -308,6 +308,8 @@
 
 (define_int_iterator VMAXMINF [UNSPEC_VMAX UNSPEC_VMIN])
 
+(define_int_iterator VMAXMINFNM [UNSPEC_VMAXNM UNSPEC_VMINNM])
+
 (define_int_iterator VPADDL [UNSPEC_VPADDL_S UNSPEC_VPADDL_U])
 
 (define_int_iterator VPADAL [UNSPEC_VPADAL_S UNSPEC_VPADAL_U])
@@ -361,6 +363,8 @@
 
 (define_int_iterator CRYPTO_SELECTING [UNSPEC_SHA1C UNSPEC_SHA1M
                                        UNSPEC_SHA1P])
+
+(define_int_iterator VQRDMLH_AS [UNSPEC_VQRDMLAH UNSPEC_VQRDMLSH])
 
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
@@ -424,6 +428,7 @@
 ;; Register width from element mode
 (define_mode_attr V_reg [(V8QI "P") (V16QI "q")
                          (V4HI "P") (V8HI  "q")
+                         (V4HF "P") (V8HF  "q")
                          (V2SI "P") (V4SI  "q")
                          (V2SF "P") (V4SF  "q")
                          (DI   "P") (V2DI  "q")
@@ -572,6 +577,7 @@
 (define_mode_attr Is_float_mode [(V8QI "false") (V16QI "false")
                  (V4HI "false") (V8HI "false")
                  (V2SI "false") (V4SI "false")
+                 (V4HF "true") (V8HF "true")
                  (V2SF "true") (V4SF "true")
                  (DI "false") (V2DI "false")])
 
@@ -743,6 +749,13 @@
   (UNSPEC_VPMIN "min") (UNSPEC_VPMIN_U "min")
 ])
 
+(define_int_attr fmaxmin [
+  (UNSPEC_VMAXNM "fmax") (UNSPEC_VMINNM "fmin")])
+
+(define_int_attr fmaxmin_op [
+  (UNSPEC_VMAXNM "vmaxnm") (UNSPEC_VMINNM "vminnm")
+])
+
 (define_int_attr shift_op [
   (UNSPEC_VSHL_S "shl") (UNSPEC_VSHL_U "shl")
   (UNSPEC_VRSHL_S "rshl") (UNSPEC_VRSHL_U "rshl")
@@ -831,3 +844,6 @@
                                (simple_return " && use_simple_return_p ()")])
 (define_code_attr return_cond_true [(return " && USE_RETURN_INSN (TRUE)")
                                (simple_return " && use_simple_return_p ()")])
+
+;; Attributes for VQRDMLAH/VQRDMLSH
+(define_int_attr neon_rdma_as [(UNSPEC_VQRDMLAH "a") (UNSPEC_VQRDMLSH "s")])

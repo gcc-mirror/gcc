@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C++.
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -650,8 +650,8 @@ cp_convert_and_check (tree type, tree expr, tsubst_flags_t complain)
       folded_result = fold_simple (folded_result);
       if (!TREE_OVERFLOW_P (folded)
 	  && folded_result != error_mark_node)
-	warnings_for_convert_and_check (input_location, type, folded,
-					folded_result);
+	warnings_for_convert_and_check (EXPR_LOC_OR_LOC (expr, input_location),
+					type, folded, folded_result);
     }
 
   return result;
@@ -1229,11 +1229,12 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 
     case TARGET_EXPR:
       /* Don't bother with the temporary object returned from a function if
-	 we don't use it and don't need to destroy it.  We'll still
+	 we don't use it, don't need to destroy it, and won't abort in
+	 assign_temp.  We'll still
 	 allocate space for it in expand_call or declare_return_variable,
 	 but we don't need to track it through all the tree phases.  */
       if (TARGET_EXPR_IMPLICIT_P (expr)
-	  && TYPE_HAS_TRIVIAL_DESTRUCTOR (TREE_TYPE (expr)))
+	  && !TREE_ADDRESSABLE (TREE_TYPE (expr)))
 	{
 	  tree init = TARGET_EXPR_INITIAL (expr);
 	  if (TREE_CODE (init) == AGGR_INIT_EXPR

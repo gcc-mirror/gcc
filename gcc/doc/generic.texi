@@ -1,4 +1,4 @@
-@c Copyright (C) 2004-2015 Free Software Foundation, Inc.
+@c Copyright (C) 2004-2016 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1950,11 +1950,15 @@ this initialization replaces the @code{DECL_STMT}.  These variables
 will never require cleanups.  The scope of these variables is just the
 body
 
-Variable-length arrays (VLAs) complicate this process, as their
-size often refers to variables initialized earlier in the block.
-To handle this, we currently split the block at that point, and
-move the VLA into a new, inner @code{BIND_EXPR}.  This strategy
-may change in the future.
+Variable-length arrays (VLAs) complicate this process, as their size
+often refers to variables initialized earlier in the block and their
+initialization involves an explicit stack allocation.  To handle this,
+we add an indirection and replace them with a pointer to stack space
+allocated by means of @code{alloca}.  In most cases, we also arrange
+for this space to be reclaimed when the enclosing @code{BIND_EXPR} is
+exited, the exception to this being when there is an explicit call to
+@code{alloca} in the source code, in which case the stack is left
+depressed on exit of the @code{BIND_EXPR}.
 
 A C++ program will usually contain more @code{BIND_EXPR}s than
 there are syntactic blocks in the source code, since several C++
@@ -2885,9 +2889,8 @@ or @code{access_protected_node}.  If bases are always public,
 @code{BINFO_BASE_ACCESSES} may be @code{NULL}.
 
 @code{BINFO_VIRTUAL_P} is used to specify whether the binfo is inherited
-virtually or not.  The other flags, @code{BINFO_MARKED_P} and
-@code{BINFO_FLAG_1} to @code{BINFO_FLAG_6} can be used for language
-specific use.
+virtually or not.  The other flags, @code{BINFO_FLAG_0} to
+@code{BINFO_FLAG_6}, can be used for language specific use.
 
 The following macros can be used on a tree node representing a class-type.
 

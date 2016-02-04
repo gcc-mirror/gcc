@@ -11,7 +11,7 @@ struct A
 template <typename T> struct B
 {
   T &foo ();
-  B () { foo.~T (); }	// { dg-error "10:invalid use of member" }
+  B () { foo.~T (); }	// { dg-error "15:invalid use of member" }
 };
 
 B<int> b;
@@ -19,7 +19,7 @@ B<int> b;
 template <typename T, typename S> struct C
 {
   T t;
-  C () { t.~S (); }	// { dg-error "10:is not of type" }
+  C () { t.~S (); }	// { dg-error "13:is not of type" }
 };
 
 C<int, long int> c;

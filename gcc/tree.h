@@ -1,5 +1,5 @@
 /* Definitions for the ubiquitous 'tree' type for GNU compilers.
-   Copyright (C) 1989-2015 Free Software Foundation, Inc.
+   Copyright (C) 1989-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1453,6 +1453,11 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_SHARED_FIRSTPRIVATE(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_SHARED)->base.public_flag)
 
+/* True on a SHARED clause if a scalar is not modified in the body and
+   thus could be optimized as firstprivate.  */
+#define OMP_CLAUSE_SHARED_READONLY(NODE) \
+  TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_SHARED))
+
 #define OMP_CLAUSE_IF_MODIFIER(NODE)	\
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_IF)->omp_clause.subcode.if_modifier)
 
@@ -1631,6 +1636,14 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_TILE_LIST(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_TILE), 0)
 
+#define OMP_CLAUSE__GRIDDIM__DIMENSION(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__GRIDDIM_)\
+   ->omp_clause.subcode.dimension)
+#define OMP_CLAUSE__GRIDDIM__SIZE(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__GRIDDIM_), 0)
+#define OMP_CLAUSE__GRIDDIM__GROUP(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__GRIDDIM_), 1)
+
 /* SSA_NAME accessors.  */
 
 /* Returns the IDENTIFIER_NODE giving the SSA name a name or NULL_TREE
@@ -1788,6 +1801,7 @@ extern void protected_set_expr_location (tree, location_t);
 #define TYPE_MAIN_VARIANT(NODE) (TYPE_CHECK (NODE)->type_common.main_variant)
 #define TYPE_CONTEXT(NODE) (TYPE_CHECK (NODE)->type_common.context)
 
+#define TYPE_MODE_RAW(NODE) (TYPE_CHECK (NODE)->type_common.mode)
 #define TYPE_MODE(NODE) \
   (VECTOR_TYPE_P (TYPE_CHECK (NODE)) \
    ? vector_type_mode (NODE) : (NODE)->type_common.mode)
@@ -2082,7 +2096,7 @@ extern machine_mode element_mode (const_tree t);
 #define BINFO_VIRTUAL_P(NODE) (TREE_BINFO_CHECK (NODE)->base.static_flag)
 
 /* Flags for language dependent use.  */
-#define BINFO_MARKED(NODE) TREE_LANG_FLAG_0 (TREE_BINFO_CHECK (NODE))
+#define BINFO_FLAG_0(NODE) TREE_LANG_FLAG_0 (TREE_BINFO_CHECK (NODE))
 #define BINFO_FLAG_1(NODE) TREE_LANG_FLAG_1 (TREE_BINFO_CHECK (NODE))
 #define BINFO_FLAG_2(NODE) TREE_LANG_FLAG_2 (TREE_BINFO_CHECK (NODE))
 #define BINFO_FLAG_3(NODE) TREE_LANG_FLAG_3 (TREE_BINFO_CHECK (NODE))
@@ -3763,6 +3777,10 @@ extern int allocate_decl_uid (void);
 extern tree make_node_stat (enum tree_code MEM_STAT_DECL);
 #define make_node(t) make_node_stat (t MEM_STAT_INFO)
 
+/* Free tree node.  */
+
+extern void free_node (tree);
+
 /* Make a copy of a node, with all the same contents.  */
 
 extern tree copy_node_stat (tree MEM_STAT_DECL);
@@ -3900,6 +3918,8 @@ extern tree build_vector_stat (tree, tree * MEM_STAT_DECL);
 #define build_vector(t,v) build_vector_stat (t, v MEM_STAT_INFO)
 extern tree build_vector_from_ctor (tree, vec<constructor_elt, va_gc> *);
 extern tree build_vector_from_val (tree, tree);
+extern void recompute_constructor_flags (tree);
+extern void verify_constructor_flags (tree);
 extern tree build_constructor (tree, vec<constructor_elt, va_gc> *);
 extern tree build_constructor_single (tree, tree, tree);
 extern tree build_constructor_from_list (tree, tree);
@@ -4310,6 +4330,10 @@ extern tree staticp (tree);
    and only evaluate EXP once.  */
 
 extern tree save_expr (tree);
+
+/* Return true if T is function-invariant.  */
+
+extern bool tree_invariant_p (tree);
 
 /* Look inside EXPR into any simple arithmetic operations.  Return the
    outermost non-arithmetic or non-invariant node.  */
@@ -4807,7 +4831,9 @@ extern void DEBUG_FUNCTION verify_type (const_tree t);
 extern bool gimple_canonical_types_compatible_p (const_tree, const_tree,
 						 bool trust_type_canonical = true);
 extern bool type_with_interoperable_signedness (const_tree);
-/* Return simplified tree code of type that is used for canonical type merging.  */
+
+/* Return simplified tree code of type that is used for canonical type
+   merging.  */
 inline enum tree_code
 tree_code_for_canonical_type_merging (enum tree_code code)
 {
@@ -4827,6 +4853,23 @@ tree_code_for_canonical_type_merging (enum tree_code code)
   if (code == REFERENCE_TYPE)
     return POINTER_TYPE;
   return code;
+}
+
+/* Return ture if get_alias_set care about TYPE_CANONICAL of given type.
+   We don't define the types for pointers, arrays and vectors.  The reason is
+   that pointers are handled specially: ptr_type_node accesses conflict with
+   accesses to all other pointers.  This is done by alias.c.
+   Because alias sets of arrays and vectors are the same as types of their
+   elements, we can't compute canonical type either.  Otherwise we could go
+   form void *[10] to int *[10] (because they are equivalent for canonical type
+   machinery) and get wrong TBAA.  */
+
+inline bool
+canonical_type_used_p (const_tree t)
+{
+  return !(POINTER_TYPE_P (t)
+	   || TREE_CODE (t) == ARRAY_TYPE
+	   || TREE_CODE (t) == VECTOR_TYPE);
 }
 
 #define tree_map_eq tree_map_base_eq
@@ -5337,6 +5380,16 @@ type_with_alias_set_p (const_tree t)
   return false;
 }
 
+extern location_t get_pure_location (location_t loc);
+
+/* Get the endpoint of any range encoded within location LOC.  */
+
+static inline location_t
+get_finish (location_t loc)
+{
+  return get_range_from_loc (line_table, loc).m_finish;
+}
+
 extern location_t set_block (location_t loc, tree block);
 
 extern void gt_ggc_mx (tree &);
@@ -5344,11 +5397,12 @@ extern void gt_pch_nx (tree &);
 extern void gt_pch_nx (tree &, gt_pointer_operator, void *);
 
 extern bool nonnull_arg_p (const_tree);
+extern bool is_redundant_typedef (const_tree);
 
-extern void
+extern location_t
 set_source_range (tree expr, location_t start, location_t finish);
 
-extern void
+extern location_t
 set_source_range (tree expr, source_range src_range);
 
 static inline source_range
@@ -5357,6 +5411,9 @@ get_decl_source_range (tree decl)
   location_t loc = DECL_SOURCE_LOCATION (decl);
   return get_range_from_loc (line_table, loc);
 }
+
+extern location_t
+make_location (location_t caret, location_t start, location_t finish);
 
 /* Return true if it makes sense to promote/demote from_type to to_type. */
 inline bool

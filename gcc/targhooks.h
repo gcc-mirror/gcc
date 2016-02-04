@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -90,7 +90,7 @@ extern tree default_builtin_vectorized_conversion (unsigned int, tree, tree);
 
 extern int default_builtin_vectorization_cost (enum vect_cost_for_stmt, tree, int);
 
-extern tree default_builtin_reciprocal (unsigned int, bool, bool);
+extern tree default_builtin_reciprocal (tree);
 
 extern HOST_WIDE_INT default_vector_alignment (const_tree);
 
@@ -148,7 +148,8 @@ extern rtx default_static_chain (const_tree, bool);
 extern void default_trampoline_init (rtx, tree, rtx);
 extern int default_return_pops_args (tree, tree, int);
 extern reg_class_t default_branch_target_register_class (void);
-extern reg_class_t default_ira_change_pseudo_allocno_class (int, reg_class_t);
+extern reg_class_t default_ira_change_pseudo_allocno_class (int, reg_class_t,
+							    reg_class_t);
 extern bool default_lra_p (void);
 extern int default_register_priority (int);
 extern bool default_register_usage_leveling_p (void);
@@ -250,4 +251,7 @@ extern void default_setup_incoming_vararg_bounds (cumulative_args_t ca ATTRIBUTE
 						  tree type ATTRIBUTE_UNUSED,
 						  int *pretend_arg_size ATTRIBUTE_UNUSED,
 						  int second_time ATTRIBUTE_UNUSED);
+extern bool default_optab_supported_p (int, machine_mode, machine_mode,
+				       optimization_type);
+
 #endif /* GCC_TARGHOOKS_H */

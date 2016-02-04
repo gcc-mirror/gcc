@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2015 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2016 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -95,6 +95,7 @@ class serialirr_dispatch : public abi_dispatch
   virtual gtm_restart_reason begin_or_restart() { return NO_RESTART; }
   virtual bool trycommit(gtm_word& priv_time) { return true; }
   virtual void rollback(gtm_transaction_cp *cp) { abort(); }
+  virtual bool snapshot_most_recent() { return true; }
 
   virtual abi_dispatch* closed_nesting_alternative()
   {
@@ -149,6 +150,7 @@ public:
   // Local undo will handle this.
   // trydropreference() need not be changed either.
   virtual void rollback(gtm_transaction_cp *cp) { }
+  virtual bool snapshot_most_recent() { return true; }
 
   CREATE_DISPATCH_METHODS(virtual, )
   CREATE_DISPATCH_METHODS_MEM()
@@ -210,6 +212,8 @@ class serialirr_onwrite_dispatch : public serialirr_dispatch
     if (tx->state & gtm_thread::STATE_IRREVOCABLE)
       abort();
   }
+
+  virtual bool snapshot_most_recent() { return true; }
 };
 
 // This group is pure HTM with serial mode as a fallback.  There is no
@@ -222,13 +226,13 @@ struct htm_mg : public method_group
     // Enable the HTM fastpath if the HW is available.  The fastpath is
     // initially disabled.
 #ifdef USE_HTM_FASTPATH
-    htm_fastpath = htm_init();
+    gtm_thread::serial_lock.set_htm_fastpath(htm_init());
 #endif
   }
   virtual void fini()
   {
     // Disable the HTM fastpath.
-    htm_fastpath = 0;
+    gtm_thread::serial_lock.set_htm_fastpath(0);
   }
 };
 
@@ -288,7 +292,7 @@ GTM::gtm_thread::serialirr_mode ()
 #if defined(USE_HTM_FASTPATH)
   // HTM fastpath.  If we are executing a HW transaction, don't go serial but
   // continue.  See gtm_thread::begin_transaction.
-  if (likely(htm_fastpath && !gtm_thread::serial_lock.is_write_locked()))
+  if (likely(!gtm_thread::serial_lock.htm_fastpath_disabled()))
     return;
 #endif
 

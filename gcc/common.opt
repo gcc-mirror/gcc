@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003-2015 Free Software Foundation, Inc.
+; Copyright (C) 2003-2016 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -45,6 +45,12 @@ int optimize_fast
 ; have already been done before the gimple was written.
 Variable
 bool in_lto_p = false
+
+; This variable is set to non-0 only by LTO front-end.  1 indicates that
+; the output produced will be used for incrmeental linking (thus weak symbols
+; can still be bound).
+Variable
+int flag_incremental_link = 0
 
 ; 0 means straightforward implementation of complex divide acceptable.
 ; 1 means wide ranges of inputs must work for complex divide.
@@ -161,6 +167,11 @@ bool flag_stack_usage_info = false
 Variable
 int flag_debug_asm
 
+
+; Balance between GNAT encodings and standard DWARF to emit.
+Variable
+enum dwarf_gnat_encodings gnat_encodings = DWARF_GNAT_ENCODINGS_DEFAULT
+
 ; -dP causes the rtl to be emitted as a comment in assembly.
 Variable
 int flag_dump_rtl_in_asm
@@ -219,9 +230,18 @@ unsigned int flag_sanitize
 Variable
 unsigned int flag_sanitize_recover = SANITIZE_UNDEFINED | SANITIZE_NONDEFAULT | SANITIZE_KERNEL_ADDRESS
 
+fsanitize-coverage=trace-pc
+Common Report Var(flag_sanitize_coverage)
+Enable coverage-guided fuzzing code instrumentation.
+Inserts call to __sanitizer_cov_trace_pc into every basic block.
+
 ; Flag whether a prefix has been added to dump_base_name
 Variable
 bool dump_base_name_prefixed = false
+
+; Flag whether HSA generation has been explicitely disabled
+Variable
+bool flag_disable_hsa = false
 
 ###
 Driver
@@ -570,12 +590,16 @@ Common Var(flag_fatal_errors)
 Exit on the first error occurred.
 
 Wframe-larger-than=
-Common RejectNegative Joined UInteger
+Common RejectNegative Joined UInteger Warning
 -Wframe-larger-than=<number>	Warn if a function's stack frame requires more than <number> bytes.
 
 Wfree-nonheap-object
 Common Var(warn_free_nonheap_object) Init(1) Warning
 Warn when attempting to free a non-heap object.
+
+Whsa
+Common Var(warn_hsa) Init(1) Warning
+Warn when a function cannot be expanded to HSAIL.
 
 Winline
 Common Var(warn_inline) Warning
@@ -601,7 +625,7 @@ Common Var(warn_unsafe_loop_optimizations) Warning
 Warn if the loop cannot be optimized due to nontrivial assumptions.
 
 Wmissing-noreturn
-Common Alias(Wsuggest-attribute=noreturn)
+Common Warning Alias(Wsuggest-attribute=noreturn)
 
 Wodr
 Common Var(warn_odr_violations) Init(1) Warning
@@ -1210,7 +1234,7 @@ Perform early inlining.
 
 feliminate-dwarf2-dups
 Common Report Var(flag_eliminate_dwarf2_dups)
-Perform DWARF2 duplicate elimination.
+Perform DWARF duplicate elimination.
 
 fipa-sra
 Common Report Var(flag_ipa_sra) Init(0) Optimization
@@ -1326,6 +1350,22 @@ Common Report Var(flag_gcse_after_reload) Optimization
 Perform global common subexpression elimination after register allocation has
 finished.
 
+Enum
+Name(dwarf_gnat_encodings) Type(int)
+
+EnumValue
+Enum(dwarf_gnat_encodings) String(all) Value(DWARF_GNAT_ENCODINGS_ALL)
+
+EnumValue
+Enum(dwarf_gnat_encodings) String(gdb) Value(DWARF_GNAT_ENCODINGS_GDB)
+
+EnumValue
+Enum(dwarf_gnat_encodings) String(minimal) Value(DWARF_GNAT_ENCODINGS_MINIMAL)
+
+fgnat-encodings=
+Common Enum(dwarf_gnat_encodings) Joined RejectNegative Report Undocumented Var(gnat_encodings)
+-fgnat-encodings=[all|gdb|minimal]	Select the balance between GNAT encodings and standard DWARF emitted in the debug information
+
 ; This option is not documented yet as its semantics will change.
 fgraphite
 Common Report Var(flag_graphite) Optimization
@@ -1339,6 +1379,10 @@ fhoist-adjacent-loads
 Common Report Var(flag_hoist_adjacent_loads) Optimization
 Enable hoisting adjacent loads to encourage generating conditional move
 instructions.
+
+fkeep-gc-roots-live
+Common Undocumented Report Var(flag_keep_gc_roots_live) Optimization
+; Always keep a pointer to a live memory block
 
 floop-parallelize-all
 Common Report Var(flag_loop_parallelize_all) Optimization
@@ -1373,8 +1417,8 @@ Common Ignore
 Does nothing. Preserved for backward compatibility.
 
 floop-nest-optimize
-Common Report Var(flag_loop_optimize_isl) Optimization
-Enable the ISL based loop nest optimizer.
+Common Report Var(flag_loop_nest_optimize) Optimization
+Enable the loop nest optimizer.
 
 fstrict-volatile-bitfields
 Common Report Var(flag_strict_volatile_bitfields) Init(-1) Optimization
@@ -1877,7 +1921,7 @@ Common Var(common_deferred_options) Defer
 
 frandom-seed=
 Common Joined RejectNegative Var(common_deferred_options) Defer
--frandom-seed=<number>	Make compile reproducible using <number>.
+-frandom-seed=<string>	Make compile reproducible using <string>.
 
 ; This switch causes the command line that was used to create an
 ; object file to be recorded into the object file.  The exact format

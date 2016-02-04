@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2016 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -42,23 +42,6 @@
 (define_predicate "aarch64_ccmp_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_ccmp_immediate")))
-
-(define_special_predicate "ccmp_cc_register"
-  (and (match_code "reg")
-       (and (match_test "REGNO (op) == CC_REGNUM")
-	    (ior (match_test "mode == GET_MODE (op)")
-		 (match_test "mode == VOIDmode
-			      && (GET_MODE (op) == CC_DNEmode
-				  || GET_MODE (op) == CC_DEQmode
-				  || GET_MODE (op) == CC_DLEmode
-				  || GET_MODE (op) == CC_DLTmode
-				  || GET_MODE (op) == CC_DGEmode
-				  || GET_MODE (op) == CC_DGTmode
-				  || GET_MODE (op) == CC_DLEUmode
-				  || GET_MODE (op) == CC_DLTUmode
-				  || GET_MODE (op) == CC_DGEUmode
-				  || GET_MODE (op) == CC_DGTUmode)"))))
-)
 
 (define_predicate "aarch64_simd_register"
   (and (match_code "reg")
@@ -107,6 +90,10 @@
   (and (match_code "const_int")
        (match_test "(INTVAL (op) < 0xffffff && INTVAL (op) > -0xffffff)")))
 
+(define_predicate "aarch64_pluslong_strict_immedate"
+  (and (match_operand 0 "aarch64_pluslong_immediate")
+       (not (match_operand 0 "aarch64_plus_immediate"))))
+
 (define_predicate "aarch64_pluslong_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_pluslong_immediate")))
@@ -144,6 +131,11 @@
 (define_predicate "aarch64_imm3"
   (and (match_code "const_int")
        (match_test "(unsigned HOST_WIDE_INT) INTVAL (op) <= 4")))
+
+;; An immediate that fits into 24 bits.
+(define_predicate "aarch64_imm24"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (UINTVAL (op), 0, 0xffffff)")))
 
 (define_predicate "aarch64_pwr_imm3"
   (and (match_code "const_int")
@@ -250,6 +242,25 @@
   return aarch64_get_condition_code (op) >= 0;
 })
 
+(define_special_predicate "aarch64_carry_operation"
+  (match_code "ne,geu")
+{
+  if (XEXP (op, 1) != const0_rtx)
+    return false;
+  machine_mode ccmode = (GET_CODE (op) == NE ? CC_Cmode : CCmode);
+  rtx op0 = XEXP (op, 0);
+  return REG_P (op0) && REGNO (op0) == CC_REGNUM && GET_MODE (op0) == ccmode;
+})
+
+(define_special_predicate "aarch64_borrow_operation"
+  (match_code "eq,ltu")
+{
+  if (XEXP (op, 1) != const0_rtx)
+    return false;
+  machine_mode ccmode = (GET_CODE (op) == EQ ? CC_Cmode : CCmode);
+  rtx op0 = XEXP (op, 0);
+  return REG_P (op0) && REGNO (op0) == CC_REGNUM && GET_MODE (op0) == ccmode;
+})
 
 ;; True if the operand is memory reference suitable for a load/store exclusive.
 (define_predicate "aarch64_sync_memory_operand"

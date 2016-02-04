@@ -1182,7 +1182,11 @@ package body Lib.Writ is
          Write_Info_Str (" UA");
       end if;
 
-      if Exception_Mechanism = Back_End_Exceptions then
+      if Front_End_Exceptions then
+         Write_Info_Str (" FX");
+      end if;
+
+      if ZCX_Exceptions then
          Write_Info_Str (" ZX");
       end if;
 

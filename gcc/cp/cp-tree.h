@@ -1,5 +1,5 @@
 /* Definitions for C++ parsing and type checking.
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -39,6 +39,68 @@ c-common.h, not after.
 #endif
 #include "c-family/c-common.h"
 #include "diagnostic.h"
+
+/* A tree node, together with a location, so that we can track locations
+   (and ranges) during parsing.
+
+   The location is redundant for node kinds that have locations,
+   but not all node kinds do (e.g. constants, and references to
+   params, locals, etc), so we stash a copy here.  */
+
+class cp_expr
+{
+public:
+  cp_expr () :
+    m_value (NULL), m_loc (UNKNOWN_LOCATION) {}
+
+  cp_expr (tree value) :
+    m_value (value), m_loc (EXPR_LOCATION (m_value)) {}
+
+  cp_expr (tree value, location_t loc):
+    m_value (value), m_loc (loc) {}
+
+  cp_expr (const cp_expr &other) :
+    m_value (other.m_value), m_loc (other.m_loc) {}
+
+  /* Implicit conversions to tree.  */
+  operator tree () const { return m_value; }
+  tree & operator* () { return m_value; }
+  tree & operator-> () { return m_value; }
+
+  tree get_value () const { return m_value; }
+  location_t get_location () const { return m_loc; }
+  location_t get_start () const
+  {
+    source_range src_range = get_range_from_loc (line_table, m_loc);
+    return src_range.m_start;
+  }
+  location_t get_finish () const
+  {
+    source_range src_range = get_range_from_loc (line_table, m_loc);
+    return src_range.m_finish;
+  }
+
+  void set_location (location_t loc)
+  {
+    protected_set_expr_location (m_value, loc);
+    m_loc = loc;
+  }
+
+  void set_range (location_t start, location_t finish)
+  {
+    set_location (make_location (m_loc, start, finish));
+  }
+
+ private:
+  tree m_value;
+  location_t m_loc;
+};
+
+inline bool
+operator == (const cp_expr &lhs, tree rhs)
+{
+  return lhs.get_value () == rhs;
+}
 
 #include "name-lookup.h"
 
@@ -5726,7 +5788,7 @@ extern bool grok_op_properties			(tree, bool);
 extern tree xref_tag				(enum tag_types, tree, tag_scope, bool);
 extern tree xref_tag_from_type			(tree, tree, tag_scope);
 extern bool xref_basetypes			(tree, tree);
-extern tree start_enum				(tree, tree, tree, bool, bool *);
+extern tree start_enum				(tree, tree, tree, tree, bool, bool *);
 extern void finish_enum_value_list		(tree);
 extern void finish_enum				(tree);
 extern void build_enumerator			(tree, tree, tree, tree, location_t);
@@ -6053,7 +6115,8 @@ extern int template_class_depth			(tree);
 extern int is_specialization_of			(tree, tree);
 extern bool is_specialization_of_friend		(tree, tree);
 extern tree get_pattern_parm			(tree, tree);
-extern int comp_template_args			(tree, tree);
+extern int comp_template_args			(tree, tree, tree * = NULL,
+						 tree * = NULL);
 extern tree maybe_process_partial_specialization (tree);
 extern tree most_specialized_instantiation	(tree);
 extern void print_candidates			(tree);
@@ -6095,6 +6158,7 @@ extern bool reregister_specialization		(tree, tree, tree);
 extern tree instantiate_non_dependent_expr	(tree);
 extern tree instantiate_non_dependent_expr_sfinae (tree, tsubst_flags_t);
 extern tree instantiate_non_dependent_expr_internal (tree, tsubst_flags_t);
+extern tree instantiate_non_dependent_or_null   (tree);
 extern bool variable_template_specialization_p  (tree);
 extern bool alias_type_or_template_p            (tree);
 extern bool alias_template_specialization_p     (const_tree);
@@ -6291,7 +6355,7 @@ extern tree finish_asm_stmt			(int, tree, tree, tree, tree,
 						 tree);
 extern tree finish_label_stmt			(tree);
 extern void finish_label_decl			(tree);
-extern tree finish_parenthesized_expr		(tree);
+extern cp_expr finish_parenthesized_expr	(cp_expr);
 extern tree force_paren_expr			(tree);
 extern tree finish_non_static_data_member       (tree, tree, tree);
 extern tree begin_stmt_expr			(void);
@@ -6299,15 +6363,15 @@ extern tree finish_stmt_expr_expr		(tree, tree);
 extern tree finish_stmt_expr			(tree, bool);
 extern tree stmt_expr_value_expr		(tree);
 bool empty_expr_stmt_p				(tree);
-extern tree perform_koenig_lookup		(tree, vec<tree, va_gc> *,
+extern cp_expr perform_koenig_lookup		(cp_expr, vec<tree, va_gc> *,
 						 tsubst_flags_t);
 extern tree finish_call_expr			(tree, vec<tree, va_gc> **, bool,
 						 bool, tsubst_flags_t);
 extern tree finish_template_variable		(tree, tsubst_flags_t = tf_warning_or_error);
-extern tree finish_increment_expr		(tree, enum tree_code);
+extern cp_expr finish_increment_expr		(cp_expr, enum tree_code);
 extern tree finish_this_expr			(void);
 extern tree finish_pseudo_destructor_expr       (tree, tree, tree, location_t);
-extern tree finish_unary_op_expr		(location_t, enum tree_code, tree,
+extern cp_expr finish_unary_op_expr		(location_t, enum tree_code, cp_expr,
 						 tsubst_flags_t);
 extern tree finish_compound_literal		(tree, tree, tsubst_flags_t);
 extern tree finish_fname			(tree);
@@ -6321,7 +6385,7 @@ extern tree finish_base_specifier		(tree, tree, bool);
 extern void finish_member_declaration		(tree);
 extern bool outer_automatic_var_p		(tree);
 extern tree process_outer_var_ref		(tree, tsubst_flags_t);
-extern tree finish_id_expression		(tree, tree, tree,
+extern cp_expr finish_id_expression		(tree, tree, tree,
 						 cp_id_kind *,
 						 bool, bool, bool *,
 						 bool, bool, bool, bool,
@@ -6360,6 +6424,7 @@ extern void finish_omp_threadprivate		(tree);
 extern tree begin_omp_structured_block		(void);
 extern tree finish_omp_structured_block		(tree);
 extern tree finish_oacc_data			(tree, tree);
+extern tree finish_oacc_host_data		(tree, tree);
 extern tree finish_omp_construct		(enum tree_code, tree, tree);
 extern tree begin_omp_parallel			(void);
 extern tree finish_omp_parallel			(tree, tree);
@@ -6409,11 +6474,13 @@ extern tree maybe_resolve_dummy			(tree, bool);
 extern tree current_nonlambda_function		(void);
 extern tree nonlambda_method_basetype		(void);
 extern tree current_nonlambda_scope		(void);
+extern bool generic_lambda_fn_p			(tree);
 extern void maybe_add_lambda_conv_op            (tree);
 extern bool is_lambda_ignored_entity            (tree);
 
 /* in tree.c */
 extern int cp_tree_operand_length		(const_tree);
+extern int cp_tree_code_length			(enum tree_code);
 void cp_free_lang_data 				(tree t);
 extern tree force_target_expr			(tree, tree, tsubst_flags_t);
 extern tree build_target_expr_with_type		(tree, tree, tsubst_flags_t);
@@ -6450,6 +6517,7 @@ extern tree build_min				(enum tree_code, tree, ...);
 extern tree build_min_nt_loc			(location_t, enum tree_code,
 						 ...);
 extern tree build_min_non_dep			(enum tree_code, tree, ...);
+extern tree build_min_non_dep_op_overload	(enum tree_code, tree, tree, ...);
 extern tree build_min_non_dep_call_vec		(tree, tree, vec<tree, va_gc> *);
 extern tree build_cplus_new			(tree, tree, tsubst_flags_t);
 extern tree build_aggr_init_expr		(tree, tree);
@@ -6563,9 +6631,9 @@ extern tree unlowered_expr_type                 (const_tree);
 extern tree decay_conversion			(tree,
                                                  tsubst_flags_t,
                                                  bool = true);
-extern tree build_class_member_access_expr      (tree, tree, tree, bool,
+extern tree build_class_member_access_expr      (cp_expr, tree, tree, bool,
 						 tsubst_flags_t);
-extern tree finish_class_member_access_expr     (tree, tree, bool, 
+extern tree finish_class_member_access_expr     (cp_expr, tree, bool,
 						 tsubst_flags_t);
 extern tree build_x_indirect_ref		(location_t, tree,
 						 ref_operator, tsubst_flags_t);
@@ -6587,7 +6655,7 @@ extern tree build_x_binary_op			(location_t,
 extern tree build_x_array_ref			(location_t, tree, tree,
 						 tsubst_flags_t);
 extern tree build_x_unary_op			(location_t,
-						 enum tree_code, tree,
+						 enum tree_code, cp_expr,
                                                  tsubst_flags_t);
 extern tree cp_build_addr_expr			(tree, tsubst_flags_t);
 extern tree cp_build_unary_op                   (enum tree_code, tree, int, 
@@ -6607,8 +6675,10 @@ extern tree build_static_cast			(tree, tree, tsubst_flags_t);
 extern tree build_reinterpret_cast		(tree, tree, tsubst_flags_t);
 extern tree build_const_cast			(tree, tree, tsubst_flags_t);
 extern tree build_c_cast			(location_t, tree, tree);
+extern cp_expr build_c_cast			(location_t loc, tree type,
+						 cp_expr expr);
 extern tree cp_build_c_cast			(tree, tree, tsubst_flags_t);
-extern tree build_x_modify_expr			(location_t, tree,
+extern cp_expr build_x_modify_expr		(location_t, tree,
 						 enum tree_code, tree,
 						 tsubst_flags_t);
 extern tree cp_build_modify_expr		(tree, enum tree_code, tree,
@@ -6747,7 +6817,9 @@ extern tree cxx_omp_clause_dtor			(tree, tree);
 extern void cxx_omp_finish_clause		(tree, gimple_seq *);
 extern bool cxx_omp_privatize_by_reference	(const_tree);
 extern bool cxx_omp_disregard_value_expr	(tree, bool);
+extern void cp_fold_function			(tree);
 extern tree cp_fully_fold			(tree);
+extern void clear_fold_cache			(void);
 
 /* in name-lookup.c */
 extern void suggest_alternatives_for            (location_t, tree);
@@ -6801,6 +6873,7 @@ extern bool constraints_satisfied_p             (tree, tree);
 extern bool equivalent_constraints              (tree, tree);
 extern bool equivalently_constrained            (tree, tree);
 extern bool subsumes_constraints                (tree, tree);
+extern bool strictly_subsumes			(tree, tree);
 extern int more_constrained                     (tree, tree);
 
 extern void diagnose_constraints                (location_t, tree, tree);
@@ -6847,6 +6920,7 @@ extern bool var_in_constexpr_fn                 (tree);
 extern void explain_invalid_constexpr_fn        (tree);
 extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
+extern void clear_cv_cache			(void);
 
 /* In c-family/cilk.c */
 extern bool cilk_valid_spawn                    (tree);
@@ -6854,7 +6928,7 @@ extern bool cilk_valid_spawn                    (tree);
 /* In cp-ubsan.c */
 extern void cp_ubsan_maybe_instrument_member_call (tree);
 extern void cp_ubsan_instrument_member_accesses (tree *);
-extern tree cp_ubsan_maybe_instrument_downcast	(location_t, tree, tree);
+extern tree cp_ubsan_maybe_instrument_downcast	(location_t, tree, tree, tree);
 extern tree cp_ubsan_maybe_instrument_cast_to_vbase (location_t, tree, tree);
 
 /* -- end of C++ */

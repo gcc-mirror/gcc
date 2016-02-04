@@ -1,5 +1,5 @@
 /* Simplify intrinsic functions at compile-time.
-   Copyright (C) 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 2000-2016 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -1785,6 +1785,94 @@ gfc_simplify_count (gfc_expr *mask, gfc_expr *dim, gfc_expr *kind)
   return !dim || mask->rank == 1 ?
     simplify_transformation_to_scalar (result, mask, mask, gfc_count) :
     simplify_transformation_to_array (result, mask, dim, mask, gfc_count, NULL);
+}
+
+
+gfc_expr *
+gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
+{
+  gfc_expr *a, *result;
+  int dm;
+
+  /* DIM is only useful for rank > 1, but deal with it here as one can
+     set DIM = 1 for rank = 1.  */
+  if (dim)
+    {
+      if (!gfc_is_constant_expr (dim))
+	return NULL;
+      dm = mpz_get_si (dim->value.integer);
+    }
+  else
+    dm = 1;
+
+  /* Copy array into 'a', simplify it, and then test for a constant array.  */
+  a = gfc_copy_expr (array);
+  gfc_simplify_expr (a, 0);
+  if (!is_constant_array_expr (a))
+    {
+      gfc_free_expr (a);
+      return NULL;
+    }
+
+  if (a->rank == 1)
+    {
+      gfc_constructor *ca, *cr;
+      mpz_t size;
+      int i, j, shft, sz;
+
+      if (!gfc_is_constant_expr (shift))
+	{
+	  gfc_free_expr (a);
+	  return NULL;
+	}
+
+      shft = mpz_get_si (shift->value.integer);
+
+      /*  Case (i):  If ARRAY has rank one, element i of the result is
+	  ARRAY (1 + MODULO (i + SHIFT - 1, SIZE (ARRAY))).  */
+
+      mpz_init (size);
+      gfc_array_size (a, &size);
+      sz = mpz_get_si (size);
+      mpz_clear (size);
+
+      /* Adjust shft to deal with right or left shifts. */
+      shft = shft < 0 ? 1 - shft : shft;
+
+      /* Special case: Shift to the original order!  */
+      if (shft % sz == 0)
+	return a;
+
+      result = gfc_copy_expr (a);
+      cr = gfc_constructor_first (result->value.constructor);
+      for (i = 0; i < sz; i++, cr = gfc_constructor_next (cr))
+	{
+	  j = (i + shft) % sz;
+	  ca = gfc_constructor_first (a->value.constructor);
+	  while (j-- > 0)
+	    ca = gfc_constructor_next (ca);
+	  cr->expr = gfc_copy_expr (ca->expr);
+	}
+
+      gfc_free_expr (a);
+      return result;
+    }
+  else
+    {
+      /* FIXME: Deal with rank > 1 arrays.  For now, don't leak memory.  */
+
+      /* GCC bootstrap is too stupid to realize that the above code for dm
+	 is correct.  First, dim can be specified for a rank 1 array.  It is
+	 not needed in this nor used here.  Second, the code is simply waiting
+	 for someone to implement rank > 1 simplification.   For now, add a
+	 pessimization to the code that has a zero valid reason to be here.  */
+      if (dm > array->rank)
+	gcc_unreachable ();
+
+      gfc_free_expr (a);
+    }
+
+  return NULL;
 }
 
 
@@ -6089,10 +6177,11 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
 	}
     }
   else
-    /* FIXME: Returning here avoids a regression in array_simplify_1.f90.
-       Replace NULL with gcc_unreachable() after implementing
-       gfc_simplify_cshift().  */
-    return NULL;
+    {
+      gfc_error ("Simplification of SPREAD at %L not yet implemented",
+		 &source->where);
+      return &gfc_bad_expr;
+    }
 
   if (source->ts.type == BT_CHARACTER)
     result->ts.u.cl = source->ts.u.cl;

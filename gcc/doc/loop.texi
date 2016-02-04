@@ -1,4 +1,4 @@
-@c Copyright (C) 2006-2015 Free Software Foundation, Inc.
+@c Copyright (C) 2006-2016 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -173,8 +173,6 @@ loop structure (that are kept up-to-date at all times) are:
 loop.
 @item @code{num_nodes}: Number of basic blocks in the loop (including
 the basic blocks of the sub-loops).
-@item @code{depth}: The depth of the loop in the loops tree, i.e., the
-number of super-loops of the loop.
 @item @code{outer}, @code{inner}, @code{next}: The super-loop, the first
 sub-loop, and the sibling of the loop in the loops tree.
 @end itemize
@@ -186,6 +184,8 @@ should not be accessed directly.
 The most important functions to query loop structures are:
 
 @itemize
+@item @code{loop_depth}: The depth of the loop in the loops tree, i.e., the
+number of super-loops of the loop.
 @item @code{flow_loops_dump}: Dumps the information about loops to a
 file.
 @item @code{verify_loop_structure}: Checks consistency of the loop

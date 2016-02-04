@@ -19,6 +19,7 @@ import (
 	"encoding/asn1"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"io"
 	"math/big"
 	"net"
@@ -56,6 +57,9 @@ func marshalPublicKey(pub interface{}) (publicKeyBytes []byte, publicKeyAlgorith
 			N: pub.N,
 			E: pub.E,
 		})
+		if err != nil {
+			return nil, pkix.AlgorithmIdentifier{}, err
+		}
 		publicKeyAlgorithm.Algorithm = oidPublicKeyRSA
 		// This is a NULL parameters value which is technically
 		// superfluous, but most other code includes it and, by
@@ -170,6 +174,28 @@ const (
 	ECDSAWithSHA384
 	ECDSAWithSHA512
 )
+
+var algoName = [...]string{
+	MD2WithRSA:      "MD2-RSA",
+	MD5WithRSA:      "MD5-RSA",
+	SHA1WithRSA:     "SHA1-RSA",
+	SHA256WithRSA:   "SHA256-RSA",
+	SHA384WithRSA:   "SHA384-RSA",
+	SHA512WithRSA:   "SHA512-RSA",
+	DSAWithSHA1:     "DSA-SHA1",
+	DSAWithSHA256:   "DSA-SHA256",
+	ECDSAWithSHA1:   "ECDSA-SHA1",
+	ECDSAWithSHA256: "ECDSA-SHA256",
+	ECDSAWithSHA384: "ECDSA-SHA384",
+	ECDSAWithSHA512: "ECDSA-SHA512",
+}
+
+func (algo SignatureAlgorithm) String() string {
+	if 0 < algo && int(algo) < len(algoName) {
+		return algoName[algo]
+	}
+	return strconv.Itoa(int(algo))
+}
 
 type PublicKeyAlgorithm int
 
@@ -538,6 +564,13 @@ type Certificate struct {
 // involves algorithms that are not currently implemented.
 var ErrUnsupportedAlgorithm = errors.New("x509: cannot verify signature: algorithm unimplemented")
 
+// An InsecureAlgorithmError
+type InsecureAlgorithmError SignatureAlgorithm
+
+func (e InsecureAlgorithmError) Error() string {
+	return fmt.Sprintf("x509: cannot verify signature: insecure algorithm %v", SignatureAlgorithm(e))
+}
+
 // ConstraintViolationError results when a requested usage is not permitted by
 // a certificate. For example: checking a signature when the public key isn't a
 // certificate signing key.
@@ -648,6 +681,8 @@ func checkSignature(algo SignatureAlgorithm, signed, signature []byte, publicKey
 		hashType = crypto.SHA384
 	case SHA512WithRSA, ECDSAWithSHA512:
 		hashType = crypto.SHA512
+	case MD2WithRSA, MD5WithRSA:
+		return InsecureAlgorithmError(algo)
 	default:
 		return ErrUnsupportedAlgorithm
 	}
@@ -906,10 +941,6 @@ func parseCertificate(in *certificate) (*Certificate, error) {
 		return nil, err
 	}
 
-	if in.TBSCertificate.SerialNumber.Sign() < 0 {
-		return nil, errors.New("x509: negative serial number")
-	}
-
 	out.Version = in.TBSCertificate.Version + 1
 	out.SerialNumber = in.TBSCertificate.SerialNumber
 
@@ -1017,7 +1048,7 @@ func parseCertificate(in *certificate) (*Certificate, error) {
 				}
 
 			case 31:
-				// RFC 5280, 4.2.1.14
+				// RFC 5280, 4.2.1.13
 
 				// CRLDistributionPoints ::= SEQUENCE SIZE (1..MAX) OF DistributionPoint
 				//
@@ -1038,6 +1069,11 @@ func parseCertificate(in *certificate) (*Certificate, error) {
 				}
 
 				for _, dp := range cdp {
+					// Per RFC 5280, 4.2.1.13, one of distributionPoint or cRLIssuer may be empty.
+					if len(dp.DistributionPoint.FullName.Bytes) == 0 {
+						continue
+					}
+
 					var n asn1.RawValue
 					if _, err := asn1.Unmarshal(dp.DistributionPoint.FullName.Bytes, &n); err != nil {
 						return nil, err
@@ -1704,9 +1740,7 @@ type CertificateRequest struct {
 
 	Subject pkix.Name
 
-	// Attributes is a collection of attributes providing
-	// additional information about the subject of the certificate.
-	// See RFC 2986 section 4.1.
+	// Attributes is the dried husk of a bug and shouldn't be used.
 	Attributes []pkix.AttributeTypeAndValueSET
 
 	// Extensions contains raw X.509 extensions. When parsing CSRs, this
@@ -1779,6 +1813,38 @@ func parseRawAttributes(rawAttributes []asn1.RawValue) []pkix.AttributeTypeAndVa
 		}
 	}
 	return attributes
+}
+
+// parseCSRExtensions parses the attributes from a CSR and extracts any
+// requested extensions.
+func parseCSRExtensions(rawAttributes []asn1.RawValue) ([]pkix.Extension, error) {
+	// pkcs10Attribute reflects the Attribute structure from section 4.1 of
+	// https://tools.ietf.org/html/rfc2986.
+	type pkcs10Attribute struct {
+		Id     asn1.ObjectIdentifier
+		Values []asn1.RawValue `asn1:"set"`
+	}
+
+	var ret []pkix.Extension
+	for _, rawAttr := range rawAttributes {
+		var attr pkcs10Attribute
+		if rest, err := asn1.Unmarshal(rawAttr.FullBytes, &attr); err != nil || len(rest) != 0 || len(attr.Values) == 0 {
+			// Ignore attributes that don't parse.
+			continue
+		}
+
+		if !attr.Id.Equal(oidExtensionRequest) {
+			continue
+		}
+
+		var extensions []pkix.Extension
+		if _, err := asn1.Unmarshal(attr.Values[0].FullBytes, &extensions); err != nil {
+			return nil, err
+		}
+		ret = append(ret, extensions...)
+	}
+
+	return ret, nil
 }
 
 // CreateCertificateRequest creates a new certificate based on a template. The
@@ -1983,38 +2049,15 @@ func parseCertificateRequest(in *certificateRequest) (*CertificateRequest, error
 
 	out.Subject.FillFromRDNSequence(&subject)
 
-	var extensions []pkix.AttributeTypeAndValue
-
-	for _, atvSet := range out.Attributes {
-		if !atvSet.Type.Equal(oidExtensionRequest) {
-			continue
-		}
-
-		for _, atvs := range atvSet.Value {
-			extensions = append(extensions, atvs...)
-		}
+	if out.Extensions, err = parseCSRExtensions(in.TBSCSR.RawAttributes); err != nil {
+		return nil, err
 	}
 
-	out.Extensions = make([]pkix.Extension, 0, len(extensions))
-
-	for _, e := range extensions {
-		value, ok := e.Value.([]byte)
-		if !ok {
-			return nil, errors.New("x509: extension attribute contained non-OCTET STRING data")
-		}
-
-		out.Extensions = append(out.Extensions, pkix.Extension{
-			Id:    e.Type,
-			Value: value,
-		})
-
-		if len(e.Type) == 4 && e.Type[0] == 2 && e.Type[1] == 5 && e.Type[2] == 29 {
-			switch e.Type[3] {
-			case 17:
-				out.DNSNames, out.EmailAddresses, out.IPAddresses, err = parseSANExtension(value)
-				if err != nil {
-					return nil, err
-				}
+	for _, extension := range out.Extensions {
+		if extension.Id.Equal(oidExtensionSubjectAltName) {
+			out.DNSNames, out.EmailAddresses, out.IPAddresses, err = parseSANExtension(extension.Value)
+			if err != nil {
+				return nil, err
 			}
 		}
 	}

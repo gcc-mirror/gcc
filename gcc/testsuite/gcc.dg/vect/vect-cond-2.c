@@ -1,6 +1,5 @@
 /* { dg-require-effective-target vect_condition } */
 
-#include <stdlib.h> 
 #include "tree-vect.h"
 
 #define N 16

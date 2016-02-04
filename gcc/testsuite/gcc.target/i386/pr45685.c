@@ -1,5 +1,5 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
-/* { dg-options "-O3" } */
+/* { dg-do compile { target { ! ia32 } } } */
+/* { dg-options "-O3 -mno-sse4" } */
 
 typedef unsigned long long int uint64_t;
 typedef long long int int64_t;

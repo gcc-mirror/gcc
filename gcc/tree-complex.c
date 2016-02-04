@@ -1,5 +1,5 @@
 /* Lower complex number operations to scalar operations.
-   Copyright (C) 2004-2015 Free Software Foundation, Inc.
+   Copyright (C) 2004-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "tree-hasher.h"
 #include "cfgloop.h"
+#include "cfganal.h"
 
 
 /* For each complex ssa name, a lattice value.  We're interested in finding
@@ -68,6 +69,11 @@ static int_tree_htab_type *complex_variable_components;
 
 /* For each complex SSA_NAME, a pair of ssa names for the components.  */
 static vec<tree> complex_ssa_name_components;
+
+/* Vector of PHI triplets (original complex PHI and corresponding real and
+   imag PHIs if real and/or imag PHIs contain temporarily
+   non-SSA_NAME/non-invariant args that need to be replaced by SSA_NAMEs.  */
+static vec<gphi *> phis_to_revisit;
 
 /* Lookup UID in the complex_variable_components hashtable and return the
    associated tree.  */
@@ -588,7 +594,7 @@ set_component_ssa_name (tree ssa_name, bool imag_p, tree value)
 
 static tree
 extract_component (gimple_stmt_iterator *gsi, tree t, bool imagpart_p,
-		   bool gimple_p)
+		   bool gimple_p, bool phiarg_p = false)
 {
   switch (TREE_CODE (t))
     {
@@ -619,7 +625,10 @@ extract_component (gimple_stmt_iterator *gsi, tree t, bool imagpart_p,
       }
 
     case SSA_NAME:
-      return get_component_ssa_name (t, imagpart_p);
+      t = get_component_ssa_name (t, imagpart_p);
+      if (TREE_CODE (t) == SSA_NAME && SSA_NAME_DEF_STMT (t) == NULL)
+	gcc_assert (phiarg_p);
+      return t;
 
     default:
       gcc_unreachable ();
@@ -721,31 +730,48 @@ update_phi_components (basic_block bb)
 
       if (is_complex_reg (gimple_phi_result (phi)))
 	{
-	  tree lr, li;
-	  gimple *pr = NULL, *pi = NULL;
-	  unsigned int i, n;
+	  gphi *p[2] = { NULL, NULL };
+	  unsigned int i, j, n;
+	  bool revisit_phi = false;
 
-	  lr = get_component_ssa_name (gimple_phi_result (phi), false);
-	  if (TREE_CODE (lr) == SSA_NAME)
-	    pr = create_phi_node (lr, bb);
-
-	  li = get_component_ssa_name (gimple_phi_result (phi), true);
-	  if (TREE_CODE (li) == SSA_NAME)
-	    pi = create_phi_node (li, bb);
+	  for (j = 0; j < 2; j++)
+	    {
+	      tree l = get_component_ssa_name (gimple_phi_result (phi), j > 0);
+	      if (TREE_CODE (l) == SSA_NAME)
+		p[j] = create_phi_node (l, bb);
+	    }
 
 	  for (i = 0, n = gimple_phi_num_args (phi); i < n; ++i)
 	    {
 	      tree comp, arg = gimple_phi_arg_def (phi, i);
-	      if (pr)
-		{
-		  comp = extract_component (NULL, arg, false, false);
-		  SET_PHI_ARG_DEF (pr, i, comp);
-		}
-	      if (pi)
-		{
-		  comp = extract_component (NULL, arg, true, false);
-		  SET_PHI_ARG_DEF (pi, i, comp);
-		}
+	      for (j = 0; j < 2; j++)
+		if (p[j])
+		  {
+		    comp = extract_component (NULL, arg, j > 0, false, true);
+		    if (TREE_CODE (comp) == SSA_NAME
+			&& SSA_NAME_DEF_STMT (comp) == NULL)
+		      {
+			/* For the benefit of any gimple simplification during
+			   this pass that might walk SSA_NAME def stmts,
+			   don't add SSA_NAMEs without definitions into the
+			   PHI arguments, but put a decl in there instead
+			   temporarily, and revisit this PHI later on.  */
+			if (SSA_NAME_VAR (comp))
+			  comp = SSA_NAME_VAR (comp);
+			else
+			  comp = create_tmp_reg (TREE_TYPE (comp),
+						 get_name (comp));
+			revisit_phi = true;
+		      }
+		    SET_PHI_ARG_DEF (p[j], i, comp);
+		  }
+	    }
+
+	  if (revisit_phi)
+	    {
+	      phis_to_revisit.safe_push (phi);
+	      phis_to_revisit.safe_push (p[0]);
+	      phis_to_revisit.safe_push (p[1]);
 	    }
 	}
     }
@@ -1612,9 +1638,10 @@ expand_complex_operations_1 (gimple_stmt_iterator *gsi)
 static unsigned int
 tree_lower_complex (void)
 {
-  int old_last_basic_block;
   gimple_stmt_iterator gsi;
   basic_block bb;
+  int n_bbs, i;
+  int *rpo;
 
   if (!init_dont_simulate_again ())
     return 0;
@@ -1632,16 +1659,38 @@ tree_lower_complex (void)
 
   update_parameter_components ();
 
-  /* ??? Ideally we'd traverse the blocks in breadth-first order.  */
-  old_last_basic_block = last_basic_block_for_fn (cfun);
-  FOR_EACH_BB_FN (bb, cfun)
+  rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  n_bbs = pre_and_rev_post_order_compute (NULL, rpo, false);
+  for (i = 0; i < n_bbs; i++)
     {
-      if (bb->index >= old_last_basic_block)
-	continue;
-
+      bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
       update_phi_components (bb);
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	expand_complex_operations_1 (&gsi);
+    }
+
+  free (rpo);
+
+  if (!phis_to_revisit.is_empty ())
+    {
+      unsigned int n = phis_to_revisit.length ();
+      for (unsigned int j = 0; j < n; j += 3)
+	for (unsigned int k = 0; k < 2; k++)
+	  if (gphi *phi = phis_to_revisit[j + k + 1])
+	    {
+	      unsigned int m = gimple_phi_num_args (phi);
+	      for (unsigned int l = 0; l < m; ++l)
+		{
+		  tree op = gimple_phi_arg_def (phi, l);
+		  if (TREE_CODE (op) == SSA_NAME
+		      || is_gimple_min_invariant (op))
+		    continue;
+		  tree arg = gimple_phi_arg_def (phis_to_revisit[j], l);
+		  op = extract_component (NULL, arg, k > 0, false, false);
+		  SET_PHI_ARG_DEF (phi, l, op);
+		}
+	    }
+      phis_to_revisit.release ();
     }
 
   gsi_commit_edge_inserts ();

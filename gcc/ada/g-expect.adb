@@ -1348,17 +1348,22 @@ package body GNAT.Expect is
 
       Portable_Execvp (Pid.Pid'Access, Cmd & ASCII.NUL, Args);
 
-      --  The following commands are not executed on Unix systems, and are only
-      --  required for Windows systems. We are now in the parent process.
+      --  The following lines are only required for Windows systems and will
+      --  not be executed on Unix systems, but we use the same condition as
+      --  above to avoid warnings on uninitialized variables on Unix systems.
+      --  We are now in the parent process.
 
-      --  Restore the old descriptors
+      if No_Fork_On_Target then
 
-      Dup2 (Input,  GNAT.OS_Lib.Standin);
-      Dup2 (Output, GNAT.OS_Lib.Standout);
-      Dup2 (Error,  GNAT.OS_Lib.Standerr);
-      Close (Input);
-      Close (Output);
-      Close (Error);
+         --  Restore the old descriptors
+
+         Dup2 (Input,  GNAT.OS_Lib.Standin);
+         Dup2 (Output, GNAT.OS_Lib.Standout);
+         Dup2 (Error,  GNAT.OS_Lib.Standerr);
+         Close (Input);
+         Close (Output);
+         Close (Error);
+      end if;
    end Set_Up_Child_Communications;
 
    ---------------------------

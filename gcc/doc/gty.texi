@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2015 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2016 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -260,16 +260,6 @@ clear pointers in the variable.
 garbage collection runs, there's no need to mark anything pointed to
 by this variable, it can just be set to @code{NULL} instead.  This is used
 to keep a list of free structures around for re-use.
-
-@findex mark_hook
-@item mark_hook ("@var{hook-routine-name}")
-
-If provided for a structure or union type, the given
-@var{hook-routine-name} (between double-quotes) is the name of a
-routine called when the garbage collector has just marked the data as
-reachable. This routine should not change the data, or call any ggc
-routine. Its only argument is a pointer to the just marked (const)
-structure or union.
 
 @findex maybe_undef
 @item maybe_undef

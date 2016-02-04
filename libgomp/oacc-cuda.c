@@ -1,6 +1,6 @@
 /* OpenACC Runtime Library: CUDA support glue.
 
-   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 

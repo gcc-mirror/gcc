@@ -1,4 +1,4 @@
-@c Copyright (C) 2010-2015 Free Software Foundation, Inc.
+@c Copyright (C) 2010-2016 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 @c Contributed by Jan Hubicka <jh@suse.cz> and
@@ -537,10 +537,6 @@ final object file before the actual linking is made.  The linker
 plugin obtains the symbol resolution information which specifies
 which symbols provided by the claimed objects are bound from the
 rest of a binary being linked.
-
-Currently, the linker plugin  works only in combination
-with the Gold linker, but a GNU ld implementation is under
-development.
 
 GCC is designed to be independent of the rest of the toolchain
 and aims to support linkers without plugin support.  For this

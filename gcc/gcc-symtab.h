@@ -2,7 +2,7 @@
    FIXME - This file should be named symtab.h, but that name conflicts
            with libcpp's symtab.h.
 
-   Copyright (C) 2013-2015 Free Software Foundation, Inc.
+   Copyright (C) 2013-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

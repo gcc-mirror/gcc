@@ -1,4 +1,4 @@
-#  Copyright (C) 2010-2015 Free Software Foundation, Inc.
+#  Copyright (C) 2010-2016 Free Software Foundation, Inc.
 #  Contributed by Michael Meissner (meissner@linux.vnet.ibm.com)
 #
 # This program is free software; you can redistribute it and/or modify it

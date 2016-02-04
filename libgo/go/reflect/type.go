@@ -756,10 +756,10 @@ func (t *interfaceType) MethodByName(name string) (m Method, ok bool) {
 // A StructField describes a single field in a struct.
 type StructField struct {
 	// Name is the field name.
+	Name string
 	// PkgPath is the package path that qualifies a lower case (unexported)
 	// field name.  It is empty for upper case (exported) field names.
 	// See https://golang.org/ref/spec#Uniqueness_of_identifiers
-	Name    string
 	PkgPath string
 
 	Type      Type      // field type
@@ -1730,6 +1730,33 @@ func isReflexive(t *rtype) bool {
 	default:
 		// Func, Map, Slice, Invalid
 		panic("isReflexive called on non-key type " + t.String())
+	}
+}
+
+// needKeyUpdate reports whether map overwrites require the key to be copied.
+func needKeyUpdate(t *rtype) bool {
+	switch t.Kind() {
+	case Bool, Int, Int8, Int16, Int32, Int64, Uint, Uint8, Uint16, Uint32, Uint64, Uintptr, Chan, Ptr, UnsafePointer:
+		return false
+	case Float32, Float64, Complex64, Complex128, Interface, String:
+		// Float keys can be updated from +0 to -0.
+		// String keys can be updated to use a smaller backing store.
+		// Interfaces might have floats of strings in them.
+		return true
+	case Array:
+		tt := (*arrayType)(unsafe.Pointer(t))
+		return needKeyUpdate(tt.elem)
+	case Struct:
+		tt := (*structType)(unsafe.Pointer(t))
+		for _, f := range tt.fields {
+			if needKeyUpdate(f.typ) {
+				return true
+			}
+		}
+		return false
+	default:
+		// Func, Map, Slice, Invalid
+		panic("needKeyUpdate called on non-key type " + t.String())
 	}
 }
 

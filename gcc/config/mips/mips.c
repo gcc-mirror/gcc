@@ -1,5 +1,5 @@
 /* Subroutines used for MIPS code generation.
-   Copyright (C) 1989-2015 Free Software Foundation, Inc.
+   Copyright (C) 1989-2016 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
    64-bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -8006,9 +8006,18 @@ mask_low_and_shift_p (machine_mode mode, rtx mask, rtx shift, int maxlen)
 bool
 and_operands_ok (machine_mode mode, rtx op1, rtx op2)
 {
-  return (memory_operand (op1, mode)
-	  ? and_load_operand (op2, mode)
-	  : and_reg_operand (op2, mode));
+
+  if (memory_operand (op1, mode))
+    {
+      if (TARGET_MIPS16) {
+	struct mips_address_info addr;
+	if (!mips_classify_address (&addr, op1, mode, false))
+	  return false;
+      }
+      return and_load_operand (op2, mode);
+    }
+  else
+    return and_reg_operand (op2, mode);
 }
 
 /* The canonical form of a mask-low-and-shift-left operation is
@@ -10321,6 +10330,10 @@ mips_compute_frame_info (void)
   HOST_WIDE_INT offset, size;
   unsigned int regno, i;
 
+  /* Skip re-computing the frame info after reload completed.  */
+  if (reload_completed)
+    return;
+
   /* Set this function's interrupt properties.  */
   if (mips_interrupt_type_p (TREE_TYPE (current_function_decl)))
     {
@@ -10346,8 +10359,6 @@ mips_compute_frame_info (void)
   frame = &cfun->machine->frame;
   memset (frame, 0, sizeof (*frame));
   size = get_frame_size ();
-
-  cfun->machine->global_pointer = mips_global_pointer ();
 
   /* The first two blocks contain the outgoing argument area and the $gp save
      slot.  This area isn't needed in leaf functions.  We can also skip it
@@ -10375,6 +10386,26 @@ mips_compute_frame_info (void)
       frame->args_size = crtl->outgoing_args_size;
       frame->cprestore_size = MIPS_GP_SAVE_AREA_SIZE;
     }
+
+  /* MIPS16 code offsets the frame pointer by the size of the outgoing
+     arguments.  This tends to increase the chances of using unextended
+     instructions for local variables and incoming arguments.  */
+  if (TARGET_MIPS16)
+    frame->hard_frame_pointer_offset = frame->args_size;
+
+  /* PR 69129 / 69012: Beware of a possible race condition.  mips_global_pointer
+     might call mips_cfun_has_inflexible_gp_ref_p which in turn can call
+     mips_find_gp_ref which will iterate over the current insn sequence.
+     If any of these insns use the cprestore_save_slot_operand or
+     cprestore_load_slot_operand predicates in order to be recognised then
+     they will call mips_cprestore_address_p which calls
+     mips_get_cprestore_base_and_offset which expects the frame information
+     to be filled in...  In fact mips_get_cprestore_base_and_offset only
+     needs the args_size and hard_frame_pointer_offset fields to be filled
+     in, which is why the global_pointer field is initialised here and not
+     earlier.  */
+  cfun->machine->global_pointer = mips_global_pointer ();
+
   offset = frame->args_size + frame->cprestore_size;
 
   /* Move above the local variables.  */
@@ -10474,6 +10505,35 @@ mips_compute_frame_info (void)
       frame->cop0_sp_offset = offset - UNITS_PER_WORD;
     }
 
+  /* Determine if we can save the callee-saved registers in the frame
+     header.  Restrict this to functions where there is no other reason
+     to allocate stack space so that we can eliminate the instructions
+     that modify the stack pointer.  */
+
+  if (TARGET_OLDABI
+      && optimize > 0
+      && flag_frame_header_optimization
+      && !MAIN_NAME_P (DECL_NAME (current_function_decl))
+      && cfun->machine->varargs_size == 0
+      && crtl->args.pretend_args_size == 0
+      && frame->var_size == 0
+      && frame->num_acc == 0
+      && frame->num_cop0_regs == 0
+      && frame->num_fp == 0
+      && frame->num_gp > 0
+      && frame->num_gp <= MAX_ARGS_IN_REGISTERS
+      && !GENERATE_MIPS16E_SAVE_RESTORE
+      && !cfun->machine->interrupt_handler_p
+      && cfun->machine->does_not_use_frame_header
+      && cfun->machine->optimize_call_stack
+      && !cfun->machine->callers_may_not_allocate_frame
+      && !mips_cfun_has_cprestore_slot_p ())
+    {
+      offset = 0;
+      frame->gp_sp_offset = REG_PARM_STACK_SPACE(cfun) - UNITS_PER_WORD;
+      cfun->machine->use_frame_header_for_callee_saved_regs = true;
+    }
+
   /* Move above the callee-allocated varargs save area.  */
   offset += MIPS_STACK_ALIGN (cfun->machine->varargs_size);
   frame->arg_pointer_offset = offset;
@@ -10491,12 +10551,6 @@ mips_compute_frame_info (void)
     frame->acc_save_offset = frame->acc_sp_offset - offset;
   if (frame->num_cop0_regs > 0)
     frame->cop0_save_offset = frame->cop0_sp_offset - offset;
-
-  /* MIPS16 code offsets the frame pointer by the size of the outgoing
-     arguments.  This tends to increase the chances of using unextended
-     instructions for local variables and incoming arguments.  */
-  if (TARGET_MIPS16)
-    frame->hard_frame_pointer_offset = frame->args_size;
 }
 
 /* Return the style of GP load sequence that is being used for the
@@ -11335,11 +11389,12 @@ mips_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 
       /* Step 3: the loop
 
-	while (TEST_ADDR != LAST_ADDR)
+	do
 	  {
 	    TEST_ADDR = TEST_ADDR + PROBE_INTERVAL
 	    probe at TEST_ADDR
 	  }
+	while (TEST_ADDR != LAST_ADDR)
 
 	probes at FIRST + N * PROBE_INTERVAL for values of N from 1
 	until it is equal to ROUNDED_SIZE.  */
@@ -11365,37 +11420,30 @@ const char *
 mips_output_probe_stack_range (rtx reg1, rtx reg2)
 {
   static int labelno = 0;
-  char loop_lab[32], end_lab[32], tmp[64];
+  char loop_lab[32], tmp[64];
   rtx xops[2];
 
-  ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno);
-  ASM_GENERATE_INTERNAL_LABEL (end_lab, "LPSRE", labelno++);
+  ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno++);
 
+  /* Loop.  */
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_lab);
 
-  /* Jump to END_LAB if TEST_ADDR == LAST_ADDR.  */
-  xops[0] = reg1;
-  xops[1] = reg2;
-  strcpy (tmp, "%(%<beq\t%0,%1,");
-  output_asm_insn (strcat (tmp, &end_lab[1]), xops);
- 
   /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
+  xops[0] = reg1;
   xops[1] = GEN_INT (-PROBE_INTERVAL);
   if (TARGET_64BIT && TARGET_LONG64)
     output_asm_insn ("daddiu\t%0,%0,%1", xops);
   else
     output_asm_insn ("addiu\t%0,%0,%1", xops);
 
-  /* Probe at TEST_ADDR and branch.  */
-  fprintf (asm_out_file, "\tb\t");
-  assemble_name_raw (asm_out_file, loop_lab);
-  fputc ('\n', asm_out_file);
+  /* Probe at TEST_ADDR, test if TEST_ADDR == LAST_ADDR and branch.  */
+  xops[1] = reg2;
+  strcpy (tmp, "%(%<bne\t%0,%1,");
+  output_asm_insn (strcat (tmp, &loop_lab[1]), xops); 
   if (TARGET_64BIT)
     output_asm_insn ("sd\t$0,0(%0)%)", xops);
   else
     output_asm_insn ("sw\t$0,0(%0)%)", xops);
-
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, end_lab);
 
   return "";
 }
@@ -11592,12 +11640,15 @@ mips_expand_prologue (void)
 	    }
 	  else
 	    {
-	      rtx insn = gen_add3_insn (stack_pointer_rtx,
-					stack_pointer_rtx,
-					GEN_INT (-step1));
-	      RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
-	      mips_frame_barrier ();
-	      size -= step1;
+	      if (step1 != 0)
+		{
+		  rtx insn = gen_add3_insn (stack_pointer_rtx,
+					    stack_pointer_rtx,
+					    GEN_INT (-step1));
+		  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
+		  mips_frame_barrier ();
+		  size -= step1;
+		}
 	    }
 	  mips_for_each_saved_acc (size, mips_save_reg);
 	  mips_for_each_saved_gpr_and_fpr (size, mips_save_reg);
@@ -11722,9 +11773,9 @@ mips_epilogue_emit_cfa_restores (void)
   rtx_insn *insn;
 
   insn = get_last_insn ();
-  gcc_assert (insn && !REG_NOTES (insn));
   if (mips_epilogue.cfa_restores)
     {
+      gcc_assert (insn && !REG_NOTES (insn));
       RTX_FRAME_RELATED_P (insn) = 1;
       REG_NOTES (insn) = mips_epilogue.cfa_restores;
       mips_epilogue.cfa_restores = 0;
@@ -11975,7 +12026,9 @@ mips_expand_epilogue (bool sibcall_p)
 	mips_deallocate_stack (stack_pointer_rtx, GEN_INT (step2), 0);
     }
 
-  if (!use_jraddiusp_p)
+  if (cfun->machine->use_frame_header_for_callee_saved_regs)
+    mips_epilogue_emit_cfa_restores ();
+  else if (!use_jraddiusp_p)
     gcc_assert (!mips_epilogue.cfa_restores);
 
   /* Add in the __builtin_eh_return stack adjustment.  We need to
@@ -12077,7 +12130,8 @@ mips_can_use_return_insn (void)
   if (mips16_cfun_returns_in_fpr_p ())
     return false;
 
-  return cfun->machine->frame.total_size == 0;
+  return (cfun->machine->frame.total_size == 0
+	  && !cfun->machine->use_frame_header_for_callee_saved_regs);
 }
 
 /* Return true if register REGNO can store a value of mode MODE.
@@ -13658,9 +13712,17 @@ mips_output_division (const char *division, rtx *operands)
 	}
       else
 	{
-	  output_asm_insn ("%(bne\t%2,%.,1f", operands);
-	  output_asm_insn (s, operands);
-	  s = "break\t7%)\n1:";
+	  if (flag_delayed_branch)
+	    {
+	      output_asm_insn ("%(bne\t%2,%.,1f", operands);
+	      output_asm_insn (s, operands);
+	      s = "break\t7%)\n1:";
+	    }
+	  else
+	    {
+	      output_asm_insn (s, operands);
+	      s = "bne\t%2,%.,1f\n\tnop\n\tbreak\t7\n1:";
+	    }
 	}
     }
   return s;
@@ -19854,7 +19916,8 @@ mips_lra_p (void)
 /* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS.  */
 
 static reg_class_t
-mips_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class)
+mips_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class,
+				      reg_class_t best_class ATTRIBUTE_UNUSED)
 {
   /* LRA will allocate an FPR for an integer mode pseudo instead of spilling
      to memory if an FPR is present in the allocno class.  It is rare that
@@ -19876,6 +19939,32 @@ mips_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class)
   if (INTEGRAL_MODE_P (PSEUDO_REGNO_MODE (regno)) && allocno_class == ALL_REGS)
     return GR_REGS;
   return allocno_class;
+}
+
+/* Implement TARGET_PROMOTE_FUNCTION_MODE */
+
+/* This function is equivalent to default_promote_function_mode_always_promote
+   except that it returns a promoted mode even if type is NULL_TREE.  This is
+   needed by libcalls which have no type (only a mode) such as fixed conversion
+   routines that take a signed or unsigned char/short argument and convert it
+   to a fixed type.  */
+
+static machine_mode
+mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
+                            machine_mode mode,
+                            int *punsignedp ATTRIBUTE_UNUSED,
+                            const_tree fntype ATTRIBUTE_UNUSED,
+                            int for_return ATTRIBUTE_UNUSED)
+{
+  int unsignedp;
+
+  if (type != NULL_TREE)
+    return promote_mode (type, mode, punsignedp);
+
+  unsignedp = *punsignedp;
+  PROMOTE_MODE (mode, unsignedp, type);
+  *punsignedp = unsignedp;
+  return mode;
 }
 
 /* Initialize the GCC target structure.  */
@@ -19981,10 +20070,7 @@ mips_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class)
 #define TARGET_GIMPLIFY_VA_ARG_EXPR mips_gimplify_va_arg_expr
 
 #undef  TARGET_PROMOTE_FUNCTION_MODE
-#define TARGET_PROMOTE_FUNCTION_MODE default_promote_function_mode_always_promote
-#undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
-
+#define TARGET_PROMOTE_FUNCTION_MODE mips_promote_function_mode
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE mips_function_value
 #undef TARGET_LIBCALL_VALUE

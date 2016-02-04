@@ -1,5 +1,5 @@
 ;;  Machine Description for Renesas RL78 processors
-;;  Copyright (C) 2011-2015 Free Software Foundation, Inc.
+;;  Copyright (C) 2011-2016 Free Software Foundation, Inc.
 ;;  Contributed by Red Hat.
 
 ;; This file is part of GCC.
@@ -364,7 +364,7 @@
                || satisfies_constraint_Cs1 (op)")
   )
 
-(define_memory_constraint "Wfr"
+(define_constraint "Wfr"
   "ES/CS far pointer"
   (and (match_code "mem")
        (match_test "rl78_far_p (op)"))

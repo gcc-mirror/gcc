@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
-#include <stdlib.h>
+
+extern void abort (void);
 
 #define N 128
 

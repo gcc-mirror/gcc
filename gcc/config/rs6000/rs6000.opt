@@ -1,6 +1,6 @@
 ; Options for the rs6000 port of the compiler
 ;
-; Copyright (C) 2005-2015 Free Software Foundation, Inc.
+; Copyright (C) 2005-2016 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -632,3 +632,7 @@ Enable/disable IEEE 128-bit floating point via the __float128 keyword.
 mfloat128-hardware
 Target Report Mask(FLOAT128_HW) Var(rs6000_isa_flags)
 Enable/disable using IEEE 128-bit floating point instructions.
+
+mfloat128-convert
+Target Undocumented Mask(FLOAT128_CVT) Var(rs6000_isa_flags)
+Enable/disable default conversions between __float128 & long double.

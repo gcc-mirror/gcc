@@ -1,5 +1,5 @@
 /* Pretty formatting of GENERIC trees in C syntax.
-   Copyright (C) 2001-2015 Free Software Foundation, Inc.
+   Copyright (C) 2001-2016 Free Software Foundation, Inc.
    Adapted from c-pretty-print.c by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -326,9 +326,6 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, int flags)
       goto print_remap;
     case OMP_CLAUSE_DEVICE_RESIDENT:
       name = "device_resident";
-      goto print_remap;
-    case OMP_CLAUSE_USE_DEVICE:
-      name = "use_device";
       goto print_remap;
     case OMP_CLAUSE_TO_DECLARE:
       name = "to";
@@ -942,6 +939,18 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, int flags)
       pp_string (pp, "tile(");
       dump_generic_node (pp, OMP_CLAUSE_TILE_LIST (clause),
 			 spc, flags, false);
+      pp_right_paren (pp);
+      break;
+
+    case OMP_CLAUSE__GRIDDIM_:
+      pp_string (pp, "_griddim_(");
+      pp_unsigned_wide_integer (pp, OMP_CLAUSE__GRIDDIM__DIMENSION (clause));
+      pp_colon (pp);
+      dump_generic_node (pp, OMP_CLAUSE__GRIDDIM__SIZE (clause), spc, flags,
+			 false);
+      pp_comma (pp);
+      dump_generic_node (pp, OMP_CLAUSE__GRIDDIM__GROUP (clause), spc, flags,
+			 false);
       pp_right_paren (pp);
       break;
 

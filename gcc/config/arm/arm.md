@@ -1,5 +1,5 @@
 ;;- Machine description for ARM for GNU compiler
-;;  Copyright (C) 1991-2015 Free Software Foundation, Inc.
+;;  Copyright (C) 1991-2016 Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;  and Martin Simmons (@harleqn.co.uk).
 ;;  More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -105,6 +105,9 @@
 (define_attr "fpu" "none,vfp"
   (const (symbol_ref "arm_fpu_attr")))
 
+; Predicated means that the insn form is conditionally executed based on a
+; predicate.  We default to 'no' because no Thumb patterns match this rule
+; and not all ARM insns do.
 (define_attr "predicated" "yes,no" (const_string "no"))
 
 ; LENGTH of an instruction (in bytes)
@@ -377,7 +380,7 @@
                                 arm1136jfs,cortexa5,cortexa7,cortexa8,\
                                 cortexa9,cortexa12,cortexa15,cortexa17,\
                                 cortexa53,cortexa57,cortexm4,cortexm7,\
-				marvell_pj4,xgene1")
+				exynosm1,marvell_pj4,xgene1")
 	       (eq_attr "tune_cortexr4" "yes"))
           (const_string "no")
           (const_string "yes"))))
@@ -416,6 +419,7 @@
 (include "cortex-m7.md")
 (include "cortex-m4.md")
 (include "cortex-m4-fpu.md")
+(include "exynos-m1.md")
 (include "vfp11.md")
 (include "marvell-pj4.md")
 (include "xgene1.md")
@@ -3224,8 +3228,22 @@
   "#"   ; "orr%?\\t%0, %1, %2\;bic%?\\t%0, %0, %3"
   "&& reload_completed"
   [(set (match_dup 0) (ior:SI (match_dup 1) (match_dup 2)))
-   (set (match_dup 0) (and:SI (not:SI (match_dup 3)) (match_dup 0)))]
-  ""
+   (set (match_dup 0) (and:SI (match_dup 4) (match_dup 5)))]
+  {
+     /* If operands[3] is a constant make sure to fold the NOT into it
+	to avoid creating a NOT of a CONST_INT.  */
+    rtx not_rtx = simplify_gen_unary (NOT, SImode, operands[3], SImode);
+    if (CONST_INT_P (not_rtx))
+      {
+	operands[4] = operands[0];
+	operands[5] = not_rtx;
+      }
+    else
+      {
+	operands[5] = operands[0];
+	operands[4] = not_rtx;
+      }
+  }
   [(set_attr "length" "8")
    (set_attr "ce_count" "2")
    (set_attr "predicable" "yes")
@@ -4219,7 +4237,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "=l,r")
 	(unspec:SI [(match_operand:SI 1 "memory_operand" "Uw,m")]
 		   UNSPEC_UNALIGNED_LOAD))]
-  "unaligned_access && TARGET_32BIT"
+  "unaligned_access"
   "ldr%?\t%0, %1\t@ unaligned"
   [(set_attr "arch" "t2,any")
    (set_attr "length" "2,4")
@@ -4232,7 +4250,7 @@
 	(sign_extend:SI
 	  (unspec:HI [(match_operand:HI 1 "memory_operand" "Uw,Uh")]
 		     UNSPEC_UNALIGNED_LOAD)))]
-  "unaligned_access && TARGET_32BIT"
+  "unaligned_access"
   "ldrsh%?\t%0, %1\t@ unaligned"
   [(set_attr "arch" "t2,any")
    (set_attr "length" "2,4")
@@ -4245,7 +4263,7 @@
 	(zero_extend:SI
 	  (unspec:HI [(match_operand:HI 1 "memory_operand" "Uw,m")]
 		     UNSPEC_UNALIGNED_LOAD)))]
-  "unaligned_access && TARGET_32BIT"
+  "unaligned_access"
   "ldrh%?\t%0, %1\t@ unaligned"
   [(set_attr "arch" "t2,any")
    (set_attr "length" "2,4")
@@ -4257,7 +4275,7 @@
   [(set (match_operand:SI 0 "memory_operand" "=Uw,m")
 	(unspec:SI [(match_operand:SI 1 "s_register_operand" "l,r")]
 		   UNSPEC_UNALIGNED_STORE))]
-  "unaligned_access && TARGET_32BIT"
+  "unaligned_access"
   "str%?\t%1, %0\t@ unaligned"
   [(set_attr "arch" "t2,any")
    (set_attr "length" "2,4")
@@ -4269,66 +4287,13 @@
   [(set (match_operand:HI 0 "memory_operand" "=Uw,m")
 	(unspec:HI [(match_operand:HI 1 "s_register_operand" "l,r")]
 		   UNSPEC_UNALIGNED_STORE))]
-  "unaligned_access && TARGET_32BIT"
+  "unaligned_access"
   "strh%?\t%1, %0\t@ unaligned"
   [(set_attr "arch" "t2,any")
    (set_attr "length" "2,4")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no")
    (set_attr "type" "store1")])
-
-;; Unaligned double-word load and store.
-;; Split after reload into two unaligned single-word accesses.
-;; It prevents lower_subreg from splitting some other aligned
-;; double-word accesses too early. Used for internal memcpy.
-
-(define_insn_and_split "unaligned_loaddi"
-  [(set (match_operand:DI 0 "s_register_operand" "=l,r")
-	(unspec:DI [(match_operand:DI 1 "memory_operand" "o,o")]
-		   UNSPEC_UNALIGNED_LOAD))]
-  "unaligned_access && TARGET_32BIT"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 0) (unspec:SI [(match_dup 1)] UNSPEC_UNALIGNED_LOAD))
-   (set (match_dup 2) (unspec:SI [(match_dup 3)] UNSPEC_UNALIGNED_LOAD))]
-  {
-    operands[2] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[3] = gen_highpart (SImode, operands[1]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-
-    /* If the first destination register overlaps with the base address,
-       swap the order in which the loads are emitted.  */
-    if (reg_overlap_mentioned_p (operands[0], operands[1]))
-      {
-        std::swap (operands[1], operands[3]);
-        std::swap (operands[0], operands[2]);
-      }
-  }
-  [(set_attr "arch" "t2,any")
-   (set_attr "length" "4,8")
-   (set_attr "predicable" "yes")
-   (set_attr "type" "load2")])
-
-(define_insn_and_split "unaligned_storedi"
-  [(set (match_operand:DI 0 "memory_operand" "=o,o")
-	(unspec:DI [(match_operand:DI 1 "s_register_operand" "l,r")]
-		   UNSPEC_UNALIGNED_STORE))]
-  "unaligned_access && TARGET_32BIT"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 0) (unspec:SI [(match_dup 1)] UNSPEC_UNALIGNED_STORE))
-   (set (match_dup 2) (unspec:SI [(match_dup 3)] UNSPEC_UNALIGNED_STORE))]
-  {
-    operands[2] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[3] = gen_highpart (SImode, operands[1]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-  }
-  [(set_attr "arch" "t2,any")
-   (set_attr "length" "4,8")
-   (set_attr "predicable" "yes")
-   (set_attr "type" "store2")])
 
 
 (define_insn "*extv_reg"
@@ -7712,23 +7677,6 @@
 )
 
 
-;; Note: not used for armv5+ because the sequence used (ldr pc, ...) is not
-;; considered a function call by the branch predictor of some cores (PR40887).
-;; Falls back to blx rN (*call_reg_armv5).
-
-(define_insn "*call_mem"
-  [(call (mem:SI (match_operand:SI 0 "call_memory_operand" "m"))
-	 (match_operand 1 "" ""))
-   (use (match_operand 2 "" ""))
-   (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM && !arm_arch5 && !SIBLING_CALL_P (insn)"
-  "*
-  return output_call_mem (operands);
-  "
-  [(set_attr "length" "12")
-   (set_attr "type" "call")]
-)
-
 (define_expand "call_value"
   [(parallel [(set (match_operand       0 "" "")
 	           (call (match_operand 1 "memory_operand" "")
@@ -7787,23 +7735,6 @@
   "TARGET_ARM && !arm_arch5 && !SIBLING_CALL_P (insn)"
   "*
   return output_call (&operands[1]);
-  "
-  [(set_attr "length" "12")
-   (set_attr "type" "call")]
-)
-
-;; Note: see *call_mem
-
-(define_insn "*call_value_mem"
-  [(set (match_operand 0 "" "")
-	(call (mem:SI (match_operand:SI 1 "call_memory_operand" "m"))
-	      (match_operand 2 "" "")))
-   (use (match_operand 3 "" ""))
-   (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM && !arm_arch5 && (!CONSTANT_ADDRESS_P (XEXP (operands[1], 0)))
-   && !SIBLING_CALL_P (insn)"
-  "*
-  return output_call_mem (&operands[1]);
   "
   [(set_attr "length" "12")
    (set_attr "type" "call")]
@@ -8233,7 +8164,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec_volatile:SI [(match_operand:SI 1 "register_operand" "0")
 			     (match_operand:SI 2 "register_operand" "r")]
-			     UNSPEC_PROBE_STACK_RANGE))]
+			     VUNSPEC_PROBE_STACK_RANGE))]
   "TARGET_32BIT"
 {
   return output_probe_stack_range (operands[0], operands[2]);

@@ -137,7 +137,7 @@ custom_diagnostic_finalizer (diagnostic_context *context,
   pp_show_color (context->printer) = old_show_color;
 
   pp_destroy_prefix (context->printer);
-  pp_newline_and_flush (context->printer);
+  pp_flush (context->printer);
 }
 
 /* Exercise the diagnostic machinery to emit various warnings,
@@ -224,9 +224,11 @@ test_show_locus (function *fun)
       source_range src_range;
       src_range.m_start = get_loc (line, 12);
       src_range.m_finish = get_loc (line, 20);
-      rich_location richloc (line_table, caret);
-      richloc.set_range (0, src_range, true, false);
-      warning_at_rich_loc (&richloc, 0, "test");
+      location_t combined_loc = COMBINE_LOCATION_DATA (line_table,
+						       caret,
+						       src_range,
+						       NULL);
+      warning_at (combined_loc, 0, "test");
     }
 
   /* Example of a very wide line, where the information of interest
@@ -238,9 +240,11 @@ test_show_locus (function *fun)
       source_range src_range;
       src_range.m_start = get_loc (line, 90);
       src_range.m_finish = get_loc (line, 98);
-      rich_location richloc (line_table, caret);
-      richloc.set_range (0, src_range, true, false);
-      warning_at_rich_loc (&richloc, 0, "test");
+      location_t combined_loc = COMBINE_LOCATION_DATA (line_table,
+						       caret,
+						       src_range,
+						       NULL);
+      warning_at (combined_loc, 0, "test");
     }
 
   /* Example of multiple carets.  */
@@ -256,6 +260,41 @@ test_show_locus (function *fun)
       warning_at_rich_loc (&richloc, 0, "test");
       global_dc->caret_chars[0] = '^';
       global_dc->caret_chars[1] = '^';
+    }
+
+  /* Tests of rendering fixit hints.  */
+  if (0 == strcmp (fnname, "test_fixit_insert"))
+    {
+      const int line = fnstart_line + 2;
+      source_range src_range;
+      src_range.m_start = get_loc (line, 19);
+      src_range.m_finish = get_loc (line, 22);
+      rich_location richloc (src_range);
+      richloc.add_fixit_insert (src_range.m_start, "{");
+      richloc.add_fixit_insert (get_loc (line, 23), "}");
+      warning_at_rich_loc (&richloc, 0, "example of insertion hints");
+    }
+
+  if (0 == strcmp (fnname, "test_fixit_remove"))
+    {
+      const int line = fnstart_line + 2;
+      source_range src_range;
+      src_range.m_start = get_loc (line, 8);
+      src_range.m_finish = get_loc (line, 8);
+      rich_location richloc (src_range);
+      richloc.add_fixit_remove (src_range);
+      warning_at_rich_loc (&richloc, 0, "example of a removal hint");
+    }
+
+  if (0 == strcmp (fnname, "test_fixit_replace"))
+    {
+      const int line = fnstart_line + 2;
+      source_range src_range;
+      src_range.m_start = get_loc (line, 2);
+      src_range.m_finish = get_loc (line, 19);
+      rich_location richloc (src_range);
+      richloc.add_fixit_replace (src_range, "gtk_widget_show_all");
+      warning_at_rich_loc (&richloc, 0, "example of a replacement hint");
     }
 
   /* Example of two carets where both carets appear to have an off-by-one
@@ -277,6 +316,17 @@ test_show_locus (function *fun)
       warning_at_rich_loc (&richloc, 0, "test");
       global_dc->caret_chars[0] = '^';
       global_dc->caret_chars[1] = '^';
+    }
+
+  /* Example of using the "%q+D" format code, which as well as printing
+     a quoted decl, overrides the given location to use the location of
+     the decl.  */
+  if (0 == strcmp (fnname, "test_percent_q_plus_d"))
+    {
+      const int line = fnstart_line + 3;
+      tree local = (*fun->local_decls)[0];
+      warning_at (input_location, 0,
+		  "example of plus in format code for %q+D", local);
     }
 }
 

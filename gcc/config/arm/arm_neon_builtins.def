@@ -1,5 +1,5 @@
 /* NEON builtin definitions for ARM.
-   Copyright (C) 2013-2015 Free Software Foundation, Inc.
+   Copyright (C) 2013-2016 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -45,6 +45,8 @@ VAR4 (BINOP, vqdmulh, v4hi, v2si, v8hi, v4si)
 VAR4 (BINOP, vqrdmulh, v4hi, v2si, v8hi, v4si)
 VAR2 (TERNOP, vqdmlal, v4hi, v2si)
 VAR2 (TERNOP, vqdmlsl, v4hi, v2si)
+VAR4 (TERNOP, vqrdmlah, v4hi, v2si, v8hi, v4si)
+VAR4 (TERNOP, vqrdmlsh, v4hi, v2si, v8hi, v4si)
 VAR3 (BINOP, vmullp, v8qi, v4hi, v2si)
 VAR3 (BINOP, vmulls, v8qi, v4hi, v2si)
 VAR3 (BINOP, vmullu, v8qi, v4hi, v2si)
@@ -58,6 +60,8 @@ VAR4 (BINOP, vqdmulh_n, v4hi, v2si, v8hi, v4si)
 VAR4 (BINOP, vqrdmulh_n, v4hi, v2si, v8hi, v4si)
 VAR4 (SETLANE, vqdmulh_lane, v4hi, v2si, v8hi, v4si)
 VAR4 (SETLANE, vqrdmulh_lane, v4hi, v2si, v8hi, v4si)
+VAR4 (MAC_LANE, vqrdmlah_lane, v4hi, v2si, v8hi, v4si)
+VAR4 (MAC_LANE, vqrdmlsh_lane, v4hi, v2si, v8hi, v4si)
 VAR2 (BINOP, vqdmull, v4hi, v2si)
 VAR8 (BINOP, vshls, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di)
 VAR8 (BINOP, vshlu, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di)

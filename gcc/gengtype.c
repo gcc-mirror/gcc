@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002-2015 Free Software Foundation, Inc.
+   Copyright (C) 2002-2016 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1607,7 +1607,7 @@ static outf_p
 create_file (const char *name, const char *oname)
 {
   static const char *const hdr[] = {
-    "   Copyright (C) 2004-2015 Free Software Foundation, Inc.\n",
+    "   Copyright (C) 2004-2016 Free Software Foundation, Inc.\n",
     "\n",
     "This file is part of GCC.\n",
     "\n",
@@ -2407,7 +2407,6 @@ struct write_types_data
   const char *marker_routine;
   const char *reorder_note_routine;
   const char *comment;
-  int skip_hooks;		/* skip hook generation if non zero */
   enum write_types_kinds kind;
 };
 
@@ -2677,8 +2676,6 @@ walk_type (type_p t, struct walk_type_data *d)
       maybe_undef_p = 1;
     else if (strcmp (oo->name, "desc") == 0 && oo->kind == OPTION_STRING)
       desc = oo->info.string;
-    else if (strcmp (oo->name, "mark_hook") == 0)
-      ;
     else if (strcmp (oo->name, "nested_ptr") == 0 
 	     && oo->kind == OPTION_NESTED)
       nested_ptr_d = (const struct nested_ptr_data *) oo->info.nested;
@@ -2918,7 +2915,6 @@ walk_type (type_p t, struct walk_type_data *d)
 	const char *oldval = d->val;
 	const char *oldprevval1 = d->prev_val[1];
 	const char *oldprevval2 = d->prev_val[2];
-	const char *struct_mark_hook = NULL;
 	const int union_p = t->kind == TYPE_UNION;
 	int seen_default_p = 0;
 	options_p o;
@@ -2942,13 +2938,6 @@ walk_type (type_p t, struct walk_type_data *d)
 	  if (!desc && strcmp (o->name, "desc") == 0
 	      && o->kind == OPTION_STRING)
 	    desc = o->info.string;
-	  else if (!struct_mark_hook && strcmp (o->name, "mark_hook") == 0
-		   && o->kind == OPTION_STRING)
-	    struct_mark_hook = o->info.string;
-
-	if (struct_mark_hook)
-	  oprintf (d->of, "%*s%s (&%s);\n",
-		   d->indent, "", struct_mark_hook, oldval);
 
 	d->prev_val[2] = oldval;
 	d->prev_val[1] = oldprevval2;
@@ -3473,7 +3462,6 @@ write_func_for_structure (type_p orig_s, type_p s,
   const char *chain_next = NULL;
   const char *chain_prev = NULL;
   const char *chain_circular = NULL;
-  const char *mark_hook_name = NULL;
   options_p opt;
   struct walk_type_data d;
 
@@ -3509,9 +3497,6 @@ write_func_for_structure (type_p orig_s, type_p s,
     else if (strcmp (opt->name, "chain_circular") == 0
 	     && opt->kind == OPTION_STRING)
       chain_circular = opt->info.string;
-    else if (strcmp (opt->name, "mark_hook") == 0
-	     && opt->kind == OPTION_STRING)
-      mark_hook_name = opt->info.string;
     else if (strcmp (opt->name, "for_user") == 0)
       for_user = true;
   if (chain_prev != NULL && chain_next == NULL)
@@ -3576,17 +3561,11 @@ write_func_for_structure (type_p orig_s, type_p s,
       oprintf (d.of, "))\n");
       if (chain_circular != NULL)
 	oprintf (d.of, "    return;\n  do\n");
-      if (mark_hook_name && !wtd->skip_hooks)
-	{
-	  oprintf (d.of, "    {\n");
-	  oprintf (d.of, "      %s (xlimit);\n   ", mark_hook_name);
-	}
+
       oprintf (d.of, "   xlimit = (");
       d.prev_val[2] = "*xlimit";
       output_escaped_param (&d, chain_next, "chain_next");
       oprintf (d.of, ");\n");
-      if (mark_hook_name && !wtd->skip_hooks)
-	oprintf (d.of, "    }\n");
       if (chain_prev != NULL)
 	{
 	  oprintf (d.of, "  if (x != xlimit)\n");
@@ -3618,18 +3597,12 @@ write_func_for_structure (type_p orig_s, type_p s,
 	      output_mangled_typename (d.of, orig_s);
 	    }
 	  oprintf (d.of, "));\n");
-	  if (mark_hook_name && !wtd->skip_hooks)
-	    oprintf (d.of, "  %s (xlimit);\n", mark_hook_name);
 	  oprintf (d.of, "  do\n");
 	}
       else
 	oprintf (d.of, "  while (x != xlimit)\n");
     }
   oprintf (d.of, "    {\n");
-  if (mark_hook_name && chain_next == NULL && !wtd->skip_hooks)
-    {
-      oprintf (d.of, "      %s (x);\n", mark_hook_name);
-    }
 
   d.prev_val[2] = "*x";
   d.indent = 6;
@@ -3789,14 +3762,14 @@ write_types (outf_p output_header, type_p structures,
 static const struct write_types_data ggc_wtd = {
   "ggc_m", NULL, "ggc_mark", "ggc_test_and_set_mark", NULL,
   "GC marker procedures.  ",
-  FALSE, WTK_GGC
+  WTK_GGC
 };
 
 static const struct write_types_data pch_wtd = {
   "pch_n", "pch_p", "gt_pch_note_object", "gt_pch_note_object",
   "gt_pch_note_reorder",
   "PCH type-walking procedures.  ",
-  TRUE, WTK_PCH
+  WTK_PCH
 };
 
 /* Write out the local pointer-walking routines.  */

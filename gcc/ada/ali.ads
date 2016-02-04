@@ -199,6 +199,10 @@ package ALI is
       --  Set to True if unit exception table pointer generated. Not set if 'P'
       --  appears in Ignore_Lines.
 
+      Frontend_Exceptions : Boolean;
+      --  Set to True if file was compiled with front-end exceptions. Not set
+      --  if 'P' appears in Ignore_Lines.
+
       Zero_Cost_Exceptions : Boolean;
       --  Set to True if file was compiled with zero cost exceptions. Not set
       --  if 'P' appears in Ignore_Lines.
@@ -473,6 +477,10 @@ package ALI is
    Dynamic_Elaboration_Checks_Specified : Boolean := False;
    --  Set to False by Initialize_ALI. Set to True if Scan_ALI reads
    --  a unit for which dynamic elaboration checking is enabled.
+
+   Frontend_Exceptions_Specified : Boolean := False;
+   --  Set to False by Initialize_ALI. Set to True if an ali file is read that
+   --  has a P line specifying the generation of front-end exceptions.
 
    GNATprove_Mode_Specified : Boolean := False;
    --  Set to True if an ali file was produced in GNATprove mode.

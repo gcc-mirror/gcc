@@ -1,5 +1,5 @@
 /* Loop optimizations over tree-ssa.
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
+#include "omp-low.h"
+#include "diagnostic-core.h"
 
 
 /* A pass making sure loops are fixed up.  */
@@ -139,6 +141,143 @@ gimple_opt_pass *
 make_pass_tree_loop (gcc::context *ctxt)
 {
   return new pass_tree_loop (ctxt);
+}
+
+/* Gate for oacc kernels pass group.  */
+
+static bool
+gate_oacc_kernels (function *fn)
+{
+  if (flag_tree_parallelize_loops <= 1)
+    return false;
+
+  tree oacc_function_attr = get_oacc_fn_attrib (fn->decl);
+  if (oacc_function_attr == NULL_TREE)
+    return false;
+  if (!oacc_fn_attrib_kernels_p (oacc_function_attr))
+    return false;
+
+  struct loop *loop;
+  FOR_EACH_LOOP (loop, 0)
+    if (loop->in_oacc_kernels_region)
+      return true;
+
+  return false;
+}
+
+/* The oacc kernels superpass.  */
+
+namespace {
+
+const pass_data pass_data_oacc_kernels =
+{
+  GIMPLE_PASS, /* type */
+  "oacc_kernels", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  TV_TREE_LOOP, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_oacc_kernels : public gimple_opt_pass
+{
+public:
+  pass_oacc_kernels (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_oacc_kernels, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *fn) { return gate_oacc_kernels (fn); }
+
+}; // class pass_oacc_kernels
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_oacc_kernels (gcc::context *ctxt)
+{
+  return new pass_oacc_kernels (ctxt);
+}
+
+/* The ipa oacc superpass.  */
+
+namespace {
+
+const pass_data pass_data_ipa_oacc =
+{
+  SIMPLE_IPA_PASS, /* type */
+  "ipa_oacc", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  TV_TREE_LOOP, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_ipa_oacc : public simple_ipa_opt_pass
+{
+public:
+  pass_ipa_oacc (gcc::context *ctxt)
+    : simple_ipa_opt_pass (pass_data_ipa_oacc, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+  {
+    return (optimize
+	    /* Don't bother doing anything if the program has errors.  */
+	    && !seen_error ()
+	    && flag_openacc
+	    && flag_tree_parallelize_loops > 1);
+  }
+
+}; // class pass_ipa_oacc
+
+} // anon namespace
+
+simple_ipa_opt_pass *
+make_pass_ipa_oacc (gcc::context *ctxt)
+{
+  return new pass_ipa_oacc (ctxt);
+}
+
+/* The ipa oacc kernels pass.  */
+
+namespace {
+
+const pass_data pass_data_ipa_oacc_kernels =
+{
+  SIMPLE_IPA_PASS, /* type */
+  "ipa_oacc_kernels", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  TV_TREE_LOOP, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_ipa_oacc_kernels : public simple_ipa_opt_pass
+{
+public:
+  pass_ipa_oacc_kernels (gcc::context *ctxt)
+    : simple_ipa_opt_pass (pass_data_ipa_oacc_kernels, ctxt)
+  {}
+
+}; // class pass_ipa_oacc_kernels
+
+} // anon namespace
+
+simple_ipa_opt_pass *
+make_pass_ipa_oacc_kernels (gcc::context *ctxt)
+{
+  return new pass_ipa_oacc_kernels (ctxt);
 }
 
 /* The no-loop superpass.  */

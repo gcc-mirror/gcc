@@ -1,5 +1,5 @@
 /* Trampoline support for MeP
-   Copyright (C) 2004-2015 Free Software Foundation, Inc.
+   Copyright (C) 2004-2016 Free Software Foundation, Inc.
    Contributed by Red Hat Inc.
 
 This file is free software; you can redistribute it and/or modify it

@@ -1,4 +1,4 @@
-/* Copyright (C) 2004-2015 Free Software Foundation
+/* Copyright (C) 2004-2016 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -46,7 +46,7 @@ public class Main
 			   + ") "
 			   + System.getProperty("java.vm.version"));
 	System.out.println();
-	System.out.println("Copyright 2015 Free Software Foundation, Inc.");
+	System.out.println("Copyright 2016 Free Software Foundation, Inc.");
 	System.out.println("This is free software; see the source for copying conditions.  There is NO");
 	System.out.println("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
 	return;

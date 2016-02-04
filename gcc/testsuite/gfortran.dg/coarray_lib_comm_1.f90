@@ -1,6 +1,6 @@
 ! { dg-do run }
-! { dg-options "-fdump-tree-original -fcoarray=lib -lcaf_single -latomic" { target libatomic_available } }
-! { dg-options "-fdump-tree-original -fcoarray=lib -lcaf_single" { target { ! libatomic_available } } }
+! { dg-options "-fdump-tree-original -fcoarray=lib -lcaf_single" }
+! { dg-additional-options "-latomic" { target libatomic_available } }
 !
 ! Some dependency-analysis check for coarray communication
 !

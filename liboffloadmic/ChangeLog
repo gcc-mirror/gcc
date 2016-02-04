@@ -1,3 +1,20 @@
+2016-01-20  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_run): Pass extra NULL
+	to GOMP_OFFLOAD_async_run.
+
+2016-01-19  Martin Jambor  <mjambor@suse.cz>
+
+	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_async_run): New
+	unused parameter.
+	(GOMP_OFFLOAD_run): Likewise.
+
+2015-12-14  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (unregister_main_image): Remove.
+	(register_main_image): Do not call unregister_main_image at exit.
+	(GOMP_OFFLOAD_fini_device): Allow for OpenMP.  Unregister main image.
+
 2015-11-19  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* plugin/libgomp-plugin-intelmic.cpp (struct TargetImageDesc): New.

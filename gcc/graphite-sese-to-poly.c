@@ -1,5 +1,5 @@
 /* Conversion of SESE regions to Polyhedra.
-   Copyright (C) 2009-2015 Free Software Foundation, Inc.
+   Copyright (C) 2009-2016 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com>.
 
 This file is part of GCC.
@@ -18,28 +18,11 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define USES_ISL
+
 #include "config.h"
 
 #ifdef HAVE_isl
-/* Workaround for GMP 5.1.3 bug, see PR56019.  */
-#include <stddef.h>
-
-#include <isl/constraint.h>
-#include <isl/set.h>
-#include <isl/map.h>
-#include <isl/union_map.h>
-#include <isl/constraint.h>
-#include <isl/aff.h>
-#include <isl/val.h>
-
-/* Since ISL-0.13, the extern is in val_gmp.h.  */
-#if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
-extern "C" {
-#endif
-#include <isl/val_gmp.h>
-#if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
-}
-#endif
 
 #include "system.h"
 #include "coretypes.h"
@@ -63,9 +46,18 @@ extern "C" {
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
 #include "domwalk.h"
-#include "graphite-poly.h"
 #include "tree-ssa-propagate.h"
-#include "graphite-sese-to-poly.h"
+
+#include <isl/constraint.h>
+#include <isl/set.h>
+#include <isl/map.h>
+#include <isl/union_map.h>
+#include <isl/constraint.h>
+#include <isl/aff.h>
+#include <isl/val.h>
+#include <isl/val_gmp.h>
+
+#include "graphite.h"
 
 /* Assigns to RES the value of the INTEGER_CST T.  */
 
@@ -75,7 +67,7 @@ tree_int_to_gmp (tree t, mpz_t res)
   wi::to_mpz (t, res, TYPE_SIGN (TREE_TYPE (t)));
 }
 
-/* Return an ISL identifier for the polyhedral basic block PBB.  */
+/* Return an isl identifier for the polyhedral basic block PBB.  */
 
 static isl_id *
 isl_id_for_pbb (scop_p s, poly_bb_p pbb)
@@ -85,6 +77,7 @@ isl_id_for_pbb (scop_p s, poly_bb_p pbb)
   return isl_id_alloc (s->isl_context, name, pbb);
 }
 
+#ifndef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
 /* Converts the STATIC_SCHEDULE of PBB into a scattering polyhedron.
    We generate SCATTERING_DIMENSIONS scattering dimensions.
 
@@ -113,78 +106,55 @@ isl_id_for_pbb (scop_p s, poly_bb_p pbb)
    | 0   0   1   0   0   0   0   0  -5  = 0  */
 
 static void
-build_pbb_minimal_scattering_polyhedrons (isl_aff *static_sched, poly_bb_p pbb,
-					  int *sequence_dims,
-					  int nb_sequence_dim)
+build_pbb_scattering_polyhedrons (isl_aff *static_sched,
+				  poly_bb_p pbb)
 {
-  int local_dim = isl_set_dim (pbb->domain, isl_dim_set);
+  isl_val *val;
 
-  /* Remove a sequence dimension if irrelevant to domain of current pbb.  */
-  int actual_nb_dim = 0;
-  for (int i = 0; i < nb_sequence_dim; i++)
-    if (sequence_dims[i] <= local_dim)
-      actual_nb_dim++;
+  int scattering_dimensions = isl_set_dim (pbb->domain, isl_dim_set) * 2 + 1;
 
-  /* Build an array that combines sequence dimensions and loops dimensions info.
-     This is used later to compute the static scattering polyhedrons.  */
-  bool *sequence_and_loop_dims = NULL;
-  if (local_dim + actual_nb_dim > 0)
-    {
-      sequence_and_loop_dims = XNEWVEC (bool, local_dim + actual_nb_dim);
-
-      int i = 0, j = 0;
-      for (; i < local_dim; i++)
-	{
-	  if (sequence_dims && sequence_dims[j] == i)
-	    {
-	      /* True for sequence dimension.  */
-	      sequence_and_loop_dims[i + j] = true;
-	      j++;
-	    }
-	  /* False for loop dimension.  */
-	  sequence_and_loop_dims[i + j] = false;
-	}
-      /* Fake loops make things shifted by one.  */
-      if (sequence_dims && sequence_dims[j] == i)
-	sequence_and_loop_dims[i + j] = true;
-    }
-
-  int scattering_dimensions = local_dim + actual_nb_dim;
   isl_space *dc = isl_set_get_space (pbb->domain);
-  isl_space *dm = isl_space_add_dims (isl_space_from_domain (dc), isl_dim_out,
-				      scattering_dimensions);
+  isl_space *dm = isl_space_add_dims (isl_space_from_domain (dc),
+				      isl_dim_out, scattering_dimensions);
   pbb->schedule = isl_map_universe (dm);
 
-  int k = 0;
   for (int i = 0; i < scattering_dimensions; i++)
     {
-      if (!sequence_and_loop_dims[i])
+      /* Textual order inside this loop.  */
+      if ((i % 2) == 0)
 	{
-	  /* Iterations of this loop - loop dimension.  */
-	  pbb->schedule = isl_map_equate (pbb->schedule, isl_dim_in, k,
-					  isl_dim_out, i);
-	  k++;
-	  continue;
+	  isl_constraint *c = isl_equality_alloc
+	      (isl_local_space_from_space (isl_map_get_space (pbb->schedule)));
+
+	  val = isl_aff_get_coefficient_val (static_sched, isl_dim_in, i / 2);
+	  gcc_assert (val && isl_val_is_int (val));
+
+	  val = isl_val_neg (val);
+	  c = isl_constraint_set_constant_val (c, val);
+	  c = isl_constraint_set_coefficient_si (c, isl_dim_out, i, 1);
+	  pbb->schedule = isl_map_add_constraint (pbb->schedule, c);
 	}
 
-      /* Textual order inside this loop - sequence dimension.  */
-      isl_space *s = isl_map_get_space (pbb->schedule);
-      isl_local_space *ls = isl_local_space_from_space (s);
-      isl_constraint *c = isl_equality_alloc (ls);
-      isl_val *val = isl_aff_get_coefficient_val (static_sched, isl_dim_in, k);
-      gcc_assert (val && isl_val_is_int (val));
-      val = isl_val_neg (val);
-      c = isl_constraint_set_constant_val (c, val);
-      c = isl_constraint_set_coefficient_si (c, isl_dim_out, i, 1);
-      pbb->schedule = isl_map_add_constraint (pbb->schedule, c);
+      /* Iterations of this loop.  */
+      else /* if ((i % 2) == 1) */
+	{
+	  int loop = (i - 1) / 2;
+	  pbb->schedule = isl_map_equate (pbb->schedule, isl_dim_in, loop,
+					  isl_dim_out, i);
+	}
     }
 
-  XDELETEVEC (sequence_and_loop_dims);
+  /* Simplify the original schedule.  */
+  pbb->schedule = isl_map_coalesce (pbb->schedule);
+
+  /* At the beginning, set the transformed schedule to the original.  */
   pbb->transformed = isl_map_copy (pbb->schedule);
 }
 
-/* Build the static schedule for BB.  This function minimizes the number of
-   dimensions used for pbb sequences.
+/* Build for BB the static schedule.
+
+   The static schedule is a Dewey numbering of the abstract syntax
+   tree: http://en.wikipedia.org/wiki/Dewey_Decimal_Classification
 
    The following example informally defines the static schedule:
 
@@ -192,94 +162,40 @@ build_pbb_minimal_scattering_polyhedrons (isl_aff *static_sched, poly_bb_p pbb,
    for (i: ...)
      {
        for (j: ...)
-	{
-	  B
-	  C
-	}
-     }
-   for (i: ...)
-     {
+         {
+           B
+           C
+         }
+
        for (k: ...)
-	{
-	  D
-	  E
-	}
+         {
+           D
+           E
+         }
      }
    F
 
    Static schedules for A to F:
 
-   A (0)
-   B (1 i0 i1 0)
-   C (1 i0 i1 1)
-   D (2 i0 i1 2)
-   E (2 i0 i1 3)
-   F (3)
+     DEPTH
+     0 1 2
+   A 0
+   B 1 0 0
+   C 1 0 1
+   D 1 1 0
+   E 1 1 1
+   F 2
 */
 
 static void
-build_scop_minimal_scattering (scop_p scop)
+build_scop_scattering (scop_p scop)
 {
   gimple_poly_bb_p previous_gbb = NULL;
-  int *temp_for_sequence_dims = NULL;
-  int i;
-  poly_bb_p pbb;
-
-  /* Go through the pbbs to determine the minimum number of dimensions needed to
-     build the static schedule.  */
-  int nb_dims = 0;
-  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
-    {
-      int dim = isl_set_dim (pbb->domain, isl_dim_set);
-      if (dim > nb_dims)
-	nb_dims = dim;
-    }
-
-  /* One extra dimension for the outer fake loop.  */
-  nb_dims++;
-  temp_for_sequence_dims = XCNEWVEC (int, nb_dims);
-
-  /* Record the number of common loops for each dimension.  */
-  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
-    {
-      gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
-      int prefix = 0;
-
-      if (previous_gbb)
-	{
-	  prefix = nb_common_loops (scop->scop_info->region, previous_gbb, gbb);
-	  temp_for_sequence_dims[prefix] += 1;
-	}
-      previous_gbb = gbb;
-    }
-
-  /* Analyze the info in temp_for_sequence_dim and determine the minimal number
-     of sequence dimensions.  A dimension that did not appear as common
-     dimension should not be considered as a sequence dimension.  */
-  int nb_sequence_params = 0;
-  for (i = 0; i < nb_dims; i++)
-    if (temp_for_sequence_dims[i] > 0)
-      nb_sequence_params++;
-
-  int *sequence_dims = NULL;
-  if (nb_sequence_params > 0)
-    {
-      int j = 0;
-      sequence_dims = XNEWVEC (int, nb_sequence_params);
-      for (i = 0; i < nb_dims; i++)
-	if (temp_for_sequence_dims[i] > 0)
-	  {
-	    sequence_dims[j] = i;
-	    j++;
-	  }
-    }
-
-  XDELETEVEC (temp_for_sequence_dims);
-
   isl_space *dc = isl_set_get_space (scop->param_context);
+  isl_aff *static_sched;
+
   dc = isl_space_add_dims (dc, isl_dim_set, number_of_loops (cfun));
-  isl_local_space *local_space = isl_local_space_from_space (dc);
-  isl_aff *static_sched = isl_aff_zero_on_domain (local_space);
+  static_sched = isl_aff_zero_on_domain (isl_local_space_from_space (dc));
 
   /* We have to start schedules at 0 on the first component and
      because we cannot compare_prefix_loops against a previous loop,
@@ -287,7 +203,8 @@ build_scop_minimal_scattering (scop_p scop)
      incremented before copying.  */
   static_sched = isl_aff_add_coefficient_si (static_sched, isl_dim_in, 0, -1);
 
-  previous_gbb = NULL;
+  int i;
+  poly_bb_p pbb;
   FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
     {
       gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
@@ -300,57 +217,12 @@ build_scop_minimal_scattering (scop_p scop)
 
       static_sched = isl_aff_add_coefficient_si (static_sched, isl_dim_in,
 						 prefix, 1);
-      build_pbb_minimal_scattering_polyhedrons (static_sched, pbb,
-						sequence_dims, nb_sequence_params);
+      build_pbb_scattering_polyhedrons (static_sched, pbb);
     }
 
-  XDELETEVEC (sequence_dims);
   isl_aff_free (static_sched);
 }
-
-/* Build the original schedule showing the orginal order of execution
-   of statement instances.
-
-   The following example shows the original schedule:
-
-   for (i: ...)
-     {
-       for (j: ...)
-         {
-           A
-         }
-       B
-     }
-   C
-   for (i: ...)
-     {
-       D
-     }
-
-   Static schedules for A to D expressed in a union map:
-   {
-     S_A[i0, i1] -> [0, i0, 0, i1];
-     S_B[i0]     -> [0, i0, 1];
-     S_C[]       -> [1];
-     S_D[i0]     -> [2, i0, 0]
-   }
-*/
-
-static void
-build_scop_original_schedule (scop_p scop)
-{
-  int i;
-  poly_bb_p pbb;
-
-  isl_space *space = isl_set_get_space (scop->param_context);
-  isl_union_map *res = isl_union_map_empty (space);
-
-  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
-    res = isl_union_map_add_map (res, isl_map_copy (pbb->schedule));
-
-  scop->original_schedule = res;
-}
-
+#endif
 
 static isl_pw_aff *extract_affine (scop_p, tree, __isl_take isl_space *space);
 
@@ -394,27 +266,17 @@ extract_affine_mul (scop_p s, tree e, __isl_take isl_space *space)
   return isl_pw_aff_mul (lhs, rhs);
 }
 
-/* Return an ISL identifier from the name of the ssa_name E.  */
+/* Return an isl identifier from the name of the ssa_name E.  */
 
 static isl_id *
 isl_id_for_ssa_name (scop_p s, tree e)
 {
-  const char *name = get_name (e);
-  isl_id *id;
-
-  if (name)
-    id = isl_id_alloc (s->isl_context, name, e);
-  else
-    {
-      char name1[10];
-      snprintf (name1, sizeof (name1), "P_%d", SSA_NAME_VERSION (e));
-      id = isl_id_alloc (s->isl_context, name1, e);
-    }
-
-  return id;
+  char name1[10];
+  snprintf (name1, sizeof (name1), "P_%d", SSA_NAME_VERSION (e));
+  return isl_id_alloc (s->isl_context, name1, e);
 }
 
-/* Return an ISL identifier for the data reference DR.  Data references and
+/* Return an isl identifier for the data reference DR.  Data references and
    scalar references get the same isl_id.  They need to be comparable and are
    distinguished through the first dimension, which contains the alias set or
    SSA_NAME_VERSION number.  */
@@ -571,137 +433,6 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
   return res;
 }
 
-/* Assign dimension for each parameter in SCOP.  */
-
-static void
-set_scop_parameter_dim (scop_p scop)
-{
-  sese_info_p region = scop->scop_info;
-  unsigned nbp = sese_nb_params (region);
-  isl_space *space = isl_space_set_alloc (scop->isl_context, nbp, 0);
-
-  unsigned i;
-  tree e;
-  FOR_EACH_VEC_ELT (region->params, i, e)
-    space = isl_space_set_dim_id (space, isl_dim_param, i,
-                                  isl_id_for_ssa_name (scop, e));
-
-  scop->param_context = isl_set_universe (space);
-}
-
-/* Builds the constraint polyhedra for LOOP in SCOP.  OUTER_PH gives
-   the constraints for the surrounding loops.  */
-
-static void
-build_loop_iteration_domains (scop_p scop, struct loop *loop,
-                              int nb,
-			      isl_set *outer, isl_set **doms)
-{
-
-  tree nb_iters = number_of_latch_executions (loop);
-  sese_l region = scop->scop_info->region;
-  gcc_assert (loop_in_sese_p (loop, region));
-
-  isl_set *inner = isl_set_copy (outer);
-  int pos = isl_set_dim (outer, isl_dim_set);
-  isl_val *v;
-  mpz_t g;
-
-  mpz_init (g);
-
-  inner = isl_set_add_dims (inner, isl_dim_set, 1);
-  isl_space *space = isl_set_get_space (inner);
-
-  /* 0 <= loop_i */
-  isl_constraint *c = isl_inequality_alloc
-      (isl_local_space_from_space (isl_space_copy (space)));
-  c = isl_constraint_set_coefficient_si (c, isl_dim_set, pos, 1);
-  inner = isl_set_add_constraint (inner, c);
-
-  /* loop_i <= cst_nb_iters */
-  if (TREE_CODE (nb_iters) == INTEGER_CST)
-    {
-      c = isl_inequality_alloc
-	  (isl_local_space_from_space (isl_space_copy (space)));
-      c = isl_constraint_set_coefficient_si (c, isl_dim_set, pos, -1);
-      tree_int_to_gmp (nb_iters, g);
-      v = isl_val_int_from_gmp (scop->isl_context, g);
-      c = isl_constraint_set_constant_val (c, v);
-      inner = isl_set_add_constraint (inner, c);
-    }
-
-  /* loop_i <= expr_nb_iters */
-  else if (!chrec_contains_undetermined (nb_iters))
-    {
-      isl_pw_aff *aff;
-
-      nb_iters = scalar_evolution_in_region (region, loop, nb_iters);
-
-      aff = extract_affine (scop, nb_iters, isl_set_get_space (inner));
-      isl_set *valid = isl_pw_aff_nonneg_set (isl_pw_aff_copy (aff));
-      valid = isl_set_project_out (valid, isl_dim_set, 0,
-				   isl_set_dim (valid, isl_dim_set));
-      scop->param_context = isl_set_intersect (scop->param_context, valid);
-
-      isl_local_space *ls = isl_local_space_from_space (isl_space_copy (space));
-      isl_aff *al = isl_aff_set_coefficient_si (isl_aff_zero_on_domain (ls),
-						isl_dim_in, pos, 1);
-      isl_set *le = isl_pw_aff_le_set (isl_pw_aff_from_aff (al),
-				       isl_pw_aff_copy (aff));
-      inner = isl_set_intersect (inner, le);
-
-      widest_int nit;
-      if (max_stmt_executions (loop, &nit))
-	{
-	  /* Insert in the context the constraints from the
-	     estimation of the number of iterations NIT and the
-	     symbolic number of iterations (involving parameter
-	     names) NB_ITERS.  First, build the affine expression
-	     "NIT - NB_ITERS" and then say that it is positive,
-	     i.e., NIT approximates NB_ITERS: "NIT >= NB_ITERS".  */
-	  mpz_t g;
-	  mpz_init (g);
-	  wi::to_mpz (nit, g, SIGNED);
-	  mpz_sub_ui (g, g, 1);
-
-	  isl_pw_aff *approx
-	    = extract_affine_gmp (g, isl_set_get_space (inner));
-	  isl_set *x = isl_pw_aff_ge_set (approx, aff);
-	  x = isl_set_project_out (x, isl_dim_set, 0,
-				   isl_set_dim (x, isl_dim_set));
-	  scop->param_context = isl_set_intersect (scop->param_context, x);
-
-	  isl_constraint *c = isl_inequality_alloc
-	      (isl_local_space_from_space (isl_space_copy (space)));
-	  c = isl_constraint_set_coefficient_si (c, isl_dim_set, pos, -1);
-	  v = isl_val_int_from_gmp (scop->isl_context, g);
-	  mpz_clear (g);
-	  c = isl_constraint_set_constant_val (c, v);
-	  inner = isl_set_add_constraint (inner, c);
-	}
-      else
-	isl_pw_aff_free (aff);
-    }
-  else
-    gcc_unreachable ();
-
-  if (loop->inner)
-    build_loop_iteration_domains (scop, loop->inner, nb + 1,
-				  isl_set_copy (inner), doms);
-
-  if (nb != 0
-      && loop->next
-      && loop_in_sese_p (loop->next, region))
-    build_loop_iteration_domains (scop, loop->next, nb,
-				  isl_set_copy (outer), doms);
-
-  doms[loop->num] = inner;
-
-  isl_set_free (outer);
-  isl_space_free (space);
-  mpz_clear (g);
-}
-
 /* Returns a linear expression for tree T evaluated in PBB.  */
 
 static isl_pw_aff *
@@ -710,6 +441,8 @@ create_pw_aff_from_tree (poly_bb_p pbb, tree t)
   scop_p scop = PBB_SCOP (pbb);
 
   t = scalar_evolution_in_region (scop->scop_info->region, pbb_loop (pbb), t);
+
+  gcc_assert (!chrec_contains_undetermined (t));
   gcc_assert (!automatically_generated_chrec_p (t));
 
   return extract_affine (scop, t, isl_set_get_space (pbb->domain));
@@ -724,8 +457,8 @@ add_condition_to_pbb (poly_bb_p pbb, gcond *stmt, enum tree_code code)
 {
   isl_pw_aff *lhs = create_pw_aff_from_tree (pbb, gimple_cond_lhs (stmt));
   isl_pw_aff *rhs = create_pw_aff_from_tree (pbb, gimple_cond_rhs (stmt));
-  isl_set *cond;
 
+  isl_set *cond;
   switch (code)
     {
       case LT_EXPR:
@@ -753,14 +486,12 @@ add_condition_to_pbb (poly_bb_p pbb, gcond *stmt, enum tree_code code)
 	break;
 
       default:
-	isl_pw_aff_free (lhs);
-	isl_pw_aff_free (rhs);
-	return;
+	gcc_unreachable ();
     }
 
   cond = isl_set_coalesce (cond);
   cond = isl_set_set_tuple_id (cond, isl_set_get_tuple_id (pbb->domain));
-  pbb->domain = isl_set_intersect (pbb->domain, cond);
+  pbb->domain = isl_set_coalesce (isl_set_intersect (pbb->domain, cond));
 }
 
 /* Add conditions to the domain of PBB.  */
@@ -795,26 +526,10 @@ add_conditions_to_domain (poly_bb_p pbb)
 	    break;
 	  }
 
-      case GIMPLE_SWITCH:
-	/* Switch statements are not supported right now - fall through.  */
-
       default:
 	gcc_unreachable ();
 	break;
       }
-}
-
-/* Traverses all the GBBs of the SCOP and add their constraints to the
-   iteration domains.  */
-
-static void
-add_conditions_to_constraints (scop_p scop)
-{
-  int i;
-  poly_bb_p pbb;
-
-  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
-    add_conditions_to_domain (pbb);
 }
 
 /* Add constraints on the possible values of parameter P from the type
@@ -854,7 +569,8 @@ add_param_constraints (scop_p scop, graphite_dim_t p)
       c = isl_constraint_set_constant_val (c, v);
       c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, 1);
 
-      scop->param_context = isl_set_add_constraint (scop->param_context, c);
+      scop->param_context = isl_set_coalesce
+	(isl_set_add_constraint (scop->param_context, c));
     }
 
   if (ub)
@@ -873,60 +589,9 @@ add_param_constraints (scop_p scop, graphite_dim_t p)
       c = isl_constraint_set_constant_val (c, v);
       c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, -1);
 
-      scop->param_context = isl_set_add_constraint (scop->param_context, c);
+      scop->param_context = isl_set_coalesce
+	(isl_set_add_constraint (scop->param_context, c));
     }
-}
-
-/* Build the context of the SCOP.  The context usually contains extra
-   constraints that are added to the iteration domains that constrain
-   some parameters.  */
-
-static void
-build_scop_context (scop_p scop)
-{
-  graphite_dim_t p, n = scop_nb_params (scop);
-
-  for (p = 0; p < n; p++)
-    add_param_constraints (scop, p);
-}
-
-/* Build the iteration domains: the loops belonging to the current
-   SCOP, and that vary for the execution of the current basic block.
-   Returns false if there is no loop in SCOP.  */
-
-static void
-build_scop_iteration_domain (scop_p scop)
-{
-  sese_info_p region = scop->scop_info;
-  int nb_loops = number_of_loops (cfun);
-  isl_set **doms = XCNEWVEC (isl_set *, nb_loops);
-
-  int i;
-  struct loop *loop;
-  FOR_EACH_VEC_ELT (region->loop_nest, i, loop)
-    if (!loop_in_sese_p (loop_outer (loop), region->region))
-      build_loop_iteration_domains (scop, loop, 0,
-				    isl_set_copy (scop->param_context), doms);
-
-  poly_bb_p pbb;
-  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
-    {
-      loop = pbb_loop (pbb);
-
-      if (doms[loop->num])
-	pbb->domain = isl_set_copy (doms[loop->num]);
-      else
-	pbb->domain = isl_set_copy (scop->param_context);
-
-      pbb->domain = isl_set_set_tuple_id (pbb->domain,
-					  isl_id_for_pbb (scop, pbb));
-    }
-
-  for (int i = 0; i < nb_loops; i++)
-    if (doms[i])
-      isl_set_free (doms[i]);
-
-  free (doms);
 }
 
 /* Add a constrain to the ACCESSES polyhedron for the alias set of
@@ -1003,14 +668,41 @@ pdr_add_memory_accesses (isl_map *acc, dr_info &dri)
   for (i = 0; i < nb_subscripts; i++)
     {
       isl_pw_aff *aff;
-      tree afn = DR_ACCESS_FN (dr, nb_subscripts - 1 - i);
+      tree afn = DR_ACCESS_FN (dr, i);
 
       aff = extract_affine (scop, afn,
 			    isl_space_domain (isl_map_get_space (acc)));
       acc = set_index (acc, i + 1, aff);
     }
 
-  return acc;
+  return isl_map_coalesce (acc);
+}
+
+/* Return true when the LOW and HIGH bounds of an array reference REF are valid
+   to extract constraints on accessed elements of the array.  Returning false is
+   the conservative answer.  */
+
+static bool
+bounds_are_valid (tree ref, tree low, tree high)
+{
+  if (!high)
+    return false;
+
+  if (!tree_fits_shwi_p (low)
+      || !tree_fits_shwi_p (high))
+    return false;
+
+  /* 1-element arrays at end of structures may extend over
+     their declared size.  */
+  if (array_at_struct_end_p (ref)
+      && operand_equal_p (low, high, 0))
+    return false;
+
+  /* Fortran has some arrays where high bound is -1 and low is 0.  */
+  if (integer_onep (fold_build2 (LT_EXPR, boolean_type_node, high, low)))
+    return false;
+
+  return true;
 }
 
 /* Add constrains representing the size of the accessed data to the
@@ -1033,51 +725,39 @@ pdr_add_data_dimensions (isl_set *subscript_sizes, scop_p scop,
       tree low = array_ref_low_bound (ref);
       tree high = array_ref_up_bound (ref);
 
-      /* XXX The PPL code dealt separately with
-         subscript - low >= 0 and high - subscript >= 0 in case one of
-	 the two bounds isn't known.  Do the same here?  */
+      if (!bounds_are_valid (ref, low, high))
+	continue;
 
-      if (tree_fits_shwi_p (low)
-	  && high
-	  && tree_fits_shwi_p (high)
-	  /* 1-element arrays at end of structures may extend over
-	     their declared size.  */
-	  && !(array_at_struct_end_p (ref)
-	       && operand_equal_p (low, high, 0)))
-	{
-	  isl_id *id;
-	  isl_aff *aff;
-	  isl_set *univ, *lbs, *ubs;
-	  isl_pw_aff *index;
-	  isl_set *valid;
-	  isl_space *space = isl_set_get_space (subscript_sizes);
-	  isl_pw_aff *lb = extract_affine_int (low, isl_space_copy (space));
-	  isl_pw_aff *ub = extract_affine_int (high, isl_space_copy (space));
+      isl_space *space = isl_set_get_space (subscript_sizes);
+      isl_pw_aff *lb = extract_affine_int (low, isl_space_copy (space));
+      isl_pw_aff *ub = extract_affine_int (high, isl_space_copy (space));
 
-	  /* high >= 0 */
-	  valid = isl_pw_aff_nonneg_set (isl_pw_aff_copy (ub));
-	  valid = isl_set_project_out (valid, isl_dim_set, 0,
-				       isl_set_dim (valid, isl_dim_set));
-	  scop->param_context = isl_set_intersect (scop->param_context, valid);
+      /* high >= 0 */
+      isl_set *valid = isl_pw_aff_nonneg_set (isl_pw_aff_copy (ub));
+      valid = isl_set_project_out (valid, isl_dim_set, 0,
+				   isl_set_dim (valid, isl_dim_set));
+      scop->param_context = isl_set_coalesce
+	(isl_set_intersect (scop->param_context, valid));
 
-	  aff = isl_aff_zero_on_domain (isl_local_space_from_space (space));
-	  aff = isl_aff_add_coefficient_si (aff, isl_dim_in, i + 1, 1);
-	  univ = isl_set_universe (isl_space_domain (isl_aff_get_space (aff)));
-	  index = isl_pw_aff_alloc (univ, aff);
+      isl_aff *aff
+	= isl_aff_zero_on_domain (isl_local_space_from_space (space));
+      aff = isl_aff_add_coefficient_si (aff, isl_dim_in, i + 1, 1);
+      isl_set *univ
+	= isl_set_universe (isl_space_domain (isl_aff_get_space (aff)));
+      isl_pw_aff *index = isl_pw_aff_alloc (univ, aff);
 
-	  id = isl_set_get_tuple_id (subscript_sizes);
-	  lb = isl_pw_aff_set_tuple_id (lb, isl_dim_in, isl_id_copy (id));
-	  ub = isl_pw_aff_set_tuple_id (ub, isl_dim_in, id);
+      isl_id *id = isl_set_get_tuple_id (subscript_sizes);
+      lb = isl_pw_aff_set_tuple_id (lb, isl_dim_in, isl_id_copy (id));
+      ub = isl_pw_aff_set_tuple_id (ub, isl_dim_in, id);
 
-	  /* low <= sub_i <= high */
-	  lbs = isl_pw_aff_ge_set (isl_pw_aff_copy (index), lb);
-	  ubs = isl_pw_aff_le_set (index, ub);
-	  subscript_sizes = isl_set_intersect (subscript_sizes, lbs);
-	  subscript_sizes = isl_set_intersect (subscript_sizes, ubs);
-	}
+      /* low <= sub_i <= high */
+      isl_set *lbs = isl_pw_aff_ge_set (isl_pw_aff_copy (index), lb);
+      isl_set *ubs = isl_pw_aff_le_set (index, ub);
+      subscript_sizes = isl_set_intersect (subscript_sizes, lbs);
+      subscript_sizes = isl_set_intersect (subscript_sizes, ubs);
     }
 
-  return subscript_sizes;
+  return isl_set_coalesce (subscript_sizes);
 }
 
 /* Build data accesses for DRI.  */
@@ -1141,8 +821,8 @@ build_poly_sr (poly_bb_p pbb)
 {
   scop_p scop = PBB_SCOP (pbb);
   gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
-  vec<scalar_use> reads = gbb->read_scalar_refs;
-  vec<tree> writes = gbb->write_scalar_refs;
+  vec<scalar_use> &reads = gbb->read_scalar_refs;
+  vec<tree> &writes = gbb->write_scalar_refs;
 
   isl_space *dc = isl_set_get_space (pbb->domain);
   int nb_out = 1;
@@ -1184,22 +864,511 @@ build_scop_drs (scop_p scop)
     build_poly_sr (pbb);
 }
 
+/* Add to the iteration DOMAIN one extra dimension for LOOP->num.  */
+
+static isl_set *
+add_iter_domain_dimension (__isl_take isl_set *domain, loop_p loop, scop_p scop)
+{
+  int loop_index = isl_set_dim (domain, isl_dim_set);
+  domain = isl_set_add_dims (domain, isl_dim_set, 1);
+  char name[50];
+  snprintf (name, sizeof(name), "i%d", loop->num);
+  isl_id *label = isl_id_alloc (scop->isl_context, name, NULL);
+  return isl_set_set_dim_id (domain, isl_dim_set, loop_index, label);
+}
+
+/* Add constraints to DOMAIN for each loop from LOOP up to CONTEXT.  */
+
+static isl_set *
+add_loop_constraints (scop_p scop, __isl_take isl_set *domain, loop_p loop,
+		      loop_p context)
+{
+  if (loop == context)
+    return domain;
+  const sese_l &region = scop->scop_info->region;
+  if (!loop_in_sese_p (loop, region))
+    return domain;
+
+  /* Recursion all the way up to the context loop.  */
+  domain = add_loop_constraints (scop, domain, loop_outer (loop), context);
+
+  /* Then, build constraints over the loop in post-order: outer to inner.  */
+
+  int loop_index = isl_set_dim (domain, isl_dim_set);
+  if (dump_file)
+    fprintf (dump_file, "[sese-to-poly] adding one extra dimension to the "
+	     "domain for loop_%d.\n", loop->num);
+  domain = add_iter_domain_dimension (domain, loop, scop);
+  isl_space *space = isl_set_get_space (domain);
+
+  /* 0 <= loop_i */
+  isl_local_space *ls = isl_local_space_from_space (isl_space_copy (space));
+  isl_constraint *c = isl_inequality_alloc (ls);
+  c = isl_constraint_set_coefficient_si (c, isl_dim_set, loop_index, 1);
+  if (dump_file)
+    {
+      fprintf (dump_file, "[sese-to-poly] adding constraint to the domain: ");
+      print_isl_constraint (dump_file, c);
+    }
+  domain = isl_set_add_constraint (domain, c);
+
+  tree nb_iters = number_of_latch_executions (loop);
+  if (TREE_CODE (nb_iters) == INTEGER_CST)
+    {
+      /* loop_i <= cst_nb_iters */
+      isl_local_space *ls = isl_local_space_from_space (space);
+      isl_constraint *c = isl_inequality_alloc (ls);
+      c = isl_constraint_set_coefficient_si (c, isl_dim_set, loop_index, -1);
+      mpz_t g;
+      mpz_init (g);
+      tree_int_to_gmp (nb_iters, g);
+      isl_val *v = isl_val_int_from_gmp (scop->isl_context, g);
+      mpz_clear (g);
+      c = isl_constraint_set_constant_val (c, v);
+      return isl_set_add_constraint (domain, c);
+    }
+  /* loop_i <= expr_nb_iters */
+  gcc_assert (!chrec_contains_undetermined (nb_iters));
+  nb_iters = scalar_evolution_in_region (region, loop, nb_iters);
+  gcc_assert (!chrec_contains_undetermined (nb_iters));
+
+  isl_pw_aff *aff_nb_iters = extract_affine (scop, nb_iters,
+					     isl_space_copy (space));
+  isl_set *valid = isl_pw_aff_nonneg_set (isl_pw_aff_copy (aff_nb_iters));
+  valid = isl_set_project_out (valid, isl_dim_set, 0,
+			       isl_set_dim (valid, isl_dim_set));
+
+  if (valid)
+    scop->param_context = isl_set_intersect (scop->param_context, valid);
+
+  ls = isl_local_space_from_space (isl_space_copy (space));
+  isl_aff *loop_i = isl_aff_set_coefficient_si (isl_aff_zero_on_domain (ls),
+						isl_dim_in, loop_index, 1);
+  isl_set *le = isl_pw_aff_le_set (isl_pw_aff_from_aff (loop_i),
+				   isl_pw_aff_copy (aff_nb_iters));
+  if (dump_file)
+    {
+      fprintf (dump_file, "[sese-to-poly] adding constraint to the domain: ");
+      print_isl_set (dump_file, le);
+    }
+  domain = isl_set_intersect (domain, le);
+
+  widest_int nit;
+  if (!max_stmt_executions (loop, &nit))
+    {
+      isl_pw_aff_free (aff_nb_iters);
+      isl_space_free (space);
+      return domain;
+    }
+
+  /* NIT is an upper bound to NB_ITERS: "NIT >= NB_ITERS", although we
+     do not know whether the loop executes at least once.  */
+  mpz_t g;
+  mpz_init (g);
+  wi::to_mpz (nit, g, SIGNED);
+  mpz_sub_ui (g, g, 1);
+
+  isl_pw_aff *approx = extract_affine_gmp (g, isl_space_copy (space));
+  isl_set *x = isl_pw_aff_ge_set (approx, aff_nb_iters);
+  x = isl_set_project_out (x, isl_dim_set, 0,
+			   isl_set_dim (x, isl_dim_set));
+  scop->param_context = isl_set_intersect (scop->param_context, x);
+
+  ls = isl_local_space_from_space (space);
+  c = isl_inequality_alloc (ls);
+  c = isl_constraint_set_coefficient_si (c, isl_dim_set, loop_index, -1);
+  isl_val *v = isl_val_int_from_gmp (scop->isl_context, g);
+  mpz_clear (g);
+  c = isl_constraint_set_constant_val (c, v);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "[sese-to-poly] adding constraint to the domain: ");
+      print_isl_constraint (dump_file, c);
+    }
+
+  return isl_set_add_constraint (domain, c);
+}
+
+/* Builds the original iteration domains for each pbb in the SCOP.  */
+
+static int
+build_iteration_domains (scop_p scop, __isl_keep isl_set *context,
+			 int index, loop_p context_loop)
+{
+  loop_p current = pbb_loop (scop->pbbs[index]);
+  isl_set *domain = isl_set_copy (context);
+  domain = add_loop_constraints (scop, domain, current, context_loop);
+  const sese_l &region = scop->scop_info->region;
+
+  int i;
+  poly_bb_p pbb;
+  FOR_EACH_VEC_ELT_FROM (scop->pbbs, i, pbb, index)
+    {
+      loop_p loop = pbb_loop (pbb);
+      if (current == loop)
+	{
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+	  pbb->iterators = isl_set_copy (domain);
+#endif
+	  pbb->domain = isl_set_copy (domain);
+	  pbb->domain = isl_set_set_tuple_id (pbb->domain,
+					      isl_id_for_pbb (scop, pbb));
+	  add_conditions_to_domain (pbb);
+
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "[sese-to-poly] set pbb_%d->domain: ",
+		       pbb_index (pbb));
+	      print_isl_set (dump_file, domain);
+	    }
+	  continue;
+	}
+
+      while (loop_in_sese_p (loop, region)
+	     && current != loop)
+	loop = loop_outer (loop);
+
+      if (current != loop)
+	{
+	  /* A statement in a different loop nest than CURRENT loop.  */
+	  isl_set_free (domain);
+	  return i;
+	}
+
+      /* A statement nested in the CURRENT loop.  */
+      i = build_iteration_domains (scop, domain, i, current);
+      i--;
+    }
+
+  isl_set_free (domain);
+  return i;
+}
+
+/* Assign dimension for each parameter in SCOP and add constraints for the
+   parameters.  */
+
+static void
+build_scop_context (scop_p scop)
+{
+  sese_info_p region = scop->scop_info;
+  unsigned nbp = sese_nb_params (region);
+  isl_space *space = isl_space_set_alloc (scop->isl_context, nbp, 0);
+
+  unsigned i;
+  tree e;
+  FOR_EACH_VEC_ELT (region->params, i, e)
+    space = isl_space_set_dim_id (space, isl_dim_param, i,
+                                  isl_id_for_ssa_name (scop, e));
+
+  scop->param_context = isl_set_universe (space);
+
+  graphite_dim_t p;
+  for (p = 0; p < nbp; p++)
+    add_param_constraints (scop, p);
+}
+
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+
+/* Return true when loop A is nested in loop B.  */
+
+static bool
+nested_in (loop_p a, loop_p b)
+{
+  return b == find_common_loop (a, b);
+}
+
+/* Return the loop at a specific SCOP->pbbs[*INDEX].  */
+static loop_p
+loop_at (scop_p scop, int *index)
+{
+  return pbb_loop (scop->pbbs[*index]);
+}
+
+/* Return the index of any pbb belonging to loop or a subloop of A.  */
+
+static int
+index_outermost_in_loop (loop_p a, scop_p scop)
+{
+  int i, outermost = -1;
+  int last_depth = -1;
+  poly_bb_p pbb;
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
+    if (nested_in (pbb_loop (pbb), a)
+	&& (last_depth == -1
+	    || last_depth > (int) loop_depth (pbb_loop (pbb))))
+      {
+	outermost = i;
+	last_depth = loop_depth (pbb_loop (pbb));
+      }
+  return outermost;
+}
+
+/* Return the index of any pbb belonging to loop or a subloop of A.  */
+
+static int
+index_pbb_in_loop (loop_p a, scop_p scop)
+{
+  int i;
+  poly_bb_p pbb;
+  FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
+    if (pbb_loop (pbb) == a)
+      return i;
+  return -1;
+}
+
+static poly_bb_p
+outermost_pbb_in (loop_p loop, scop_p scop)
+{
+  int x = index_pbb_in_loop (loop, scop);
+  if (x == -1)
+    x = index_outermost_in_loop (loop, scop);
+  return scop->pbbs[x];
+}
+
+static isl_schedule *
+add_in_sequence (__isl_take isl_schedule *a, __isl_take isl_schedule *b)
+{
+  gcc_assert (a || b);
+
+  if (!a)
+    return b;
+
+  if (!b)
+    return a;
+
+  return isl_schedule_sequence (a, b);
+}
+
+struct map_to_dimension_data {
+  int n;
+  isl_union_pw_multi_aff *res;
+};
+
+/* Create a function that maps the elements of SET to its N-th dimension and add
+   it to USER->res.  */
+
+static isl_stat
+add_outer_projection (__isl_take isl_set *set, void *user)
+{
+  struct map_to_dimension_data *data = (struct map_to_dimension_data *) user;
+  int dim = isl_set_dim (set, isl_dim_set);
+  isl_space *space = isl_set_get_space (set);
+
+  gcc_assert (dim >= data->n);
+  isl_pw_multi_aff *pma
+    = isl_pw_multi_aff_project_out_map (space, isl_dim_set, data->n,
+					dim - data->n);
+  data->res = isl_union_pw_multi_aff_add_pw_multi_aff (data->res, pma);
+
+  isl_set_free (set);
+  return isl_stat_ok;
+}
+
+/* Return SET in which all inner dimensions above N are removed.  */
+
+static isl_multi_union_pw_aff *
+outer_projection_mupa (__isl_take isl_union_set *set, int n)
+{
+  gcc_assert (n >= 0);
+  gcc_assert (set);
+  gcc_assert (!isl_union_set_is_empty (set));
+
+  isl_space *space = isl_union_set_get_space (set);
+  isl_union_pw_multi_aff *pwaff = isl_union_pw_multi_aff_empty (space);
+
+  struct map_to_dimension_data data = {n, pwaff};
+
+  if (isl_union_set_foreach_set (set, &add_outer_projection, &data) < 0)
+    data.res = isl_union_pw_multi_aff_free (data.res);
+
+  isl_union_set_free (set);
+  return isl_multi_union_pw_aff_from_union_pw_multi_aff (data.res);
+}
+
+/* Embed SCHEDULE in the constraints of the LOOP domain.  */
+
+static isl_schedule *
+add_loop_schedule (__isl_take isl_schedule *schedule, loop_p loop,
+		   scop_p scop)
+{
+  poly_bb_p pbb = outermost_pbb_in (loop, scop);
+  isl_set *iterators = pbb->iterators;
+
+  int empty = isl_set_is_empty (iterators);
+  if (empty < 0 || empty)
+    return empty < 0 ? isl_schedule_free (schedule) : schedule;
+
+  isl_space *space = isl_set_get_space (iterators);
+  int loop_index = isl_space_dim (space, isl_dim_set) - 1;
+
+  loop_p ploop = pbb_loop (pbb);
+  while (loop != ploop)
+    {
+      --loop_index;
+      ploop = loop_outer (ploop);
+    }
+
+  isl_local_space *ls = isl_local_space_from_space (space);
+  isl_aff *aff = isl_aff_var_on_domain (ls, isl_dim_set, loop_index);
+  isl_multi_aff *prefix = isl_multi_aff_from_aff (aff);
+  char name[50];
+  snprintf (name, sizeof(name), "L_%d", loop->num);
+  isl_id *label = isl_id_alloc (isl_schedule_get_ctx (schedule),
+				name, NULL);
+  prefix = isl_multi_aff_set_tuple_id (prefix, isl_dim_out, label);
+
+  int n = isl_multi_aff_dim (prefix, isl_dim_in);
+  isl_union_set *domain = isl_schedule_get_domain (schedule);
+  isl_multi_union_pw_aff *mupa = outer_projection_mupa (domain, n);
+  mupa = isl_multi_union_pw_aff_apply_multi_aff (mupa, prefix);
+  return isl_schedule_insert_partial_schedule (schedule, mupa);
+}
+
+/* Build schedule for the pbb at INDEX.  */
+
+static isl_schedule *
+build_schedule_pbb (scop_p scop, int *index)
+{
+  poly_bb_p pbb = scop->pbbs[*index];
+  ++*index;
+  isl_set *domain = isl_set_copy (pbb->domain);
+  isl_union_set *ud = isl_union_set_from_set (domain);
+  return isl_schedule_from_domain (ud);
+}
+
+static isl_schedule *build_schedule_loop_nest (scop_p, int *, loop_p);
+
+/* Build the schedule of the loop containing the SCOP pbb at INDEX.  */
+
+static isl_schedule *
+build_schedule_loop (scop_p scop, int *index)
+{
+  int max = scop->pbbs.length ();
+  gcc_assert (*index < max);
+  loop_p loop = loop_at (scop, index);
+
+  isl_schedule *s = NULL;
+  while (nested_in (loop_at (scop, index), loop))
+    {
+      if (loop == loop_at (scop, index))
+	s = add_in_sequence (s, build_schedule_pbb (scop, index));
+      else
+	s = add_in_sequence (s, build_schedule_loop_nest (scop, index, loop));
+
+      if (*index == max)
+	break;
+    }
+
+  return add_loop_schedule (s, loop, scop);
+}
+
+/* S is the schedule of the loop LOOP.  Embed the schedule S in all outer loops.
+   When CONTEXT_LOOP is null, embed the schedule in all loops contained in the
+   SCOP surrounding LOOP.  When CONTEXT_LOOP is non null, only embed S in the
+   maximal loop nest contained within CONTEXT_LOOP.  */
+
+static isl_schedule *
+embed_in_surrounding_loops (__isl_take isl_schedule *s, scop_p scop,
+			    loop_p loop, int *index, loop_p context_loop)
+{
+  loop_p outer = loop_outer (loop);
+  sese_l region = scop->scop_info->region;
+  if (context_loop == outer
+      || !loop_in_sese_p (outer, region))
+    return s;
+
+  int max = scop->pbbs.length ();
+  if (*index == max
+      || (context_loop && !nested_in (loop_at (scop, index), context_loop))
+      || (!context_loop
+	  && !loop_in_sese_p (find_common_loop (outer, loop_at (scop, index)),
+			      region)))
+    return embed_in_surrounding_loops (add_loop_schedule (s, outer, scop),
+				       scop, outer, index, context_loop);
+
+  bool a_pbb;
+  while ((a_pbb = (outer == loop_at (scop, index)))
+	 || nested_in (loop_at (scop, index), outer))
+    {
+      if (a_pbb)
+	s = add_in_sequence (s, build_schedule_pbb (scop, index));
+      else
+	s = add_in_sequence (s, build_schedule_loop (scop, index));
+
+      if (*index == max)
+	break;
+    }
+
+  /* We reached the end of the OUTER loop: embed S in OUTER.  */
+  return embed_in_surrounding_loops (add_loop_schedule (s, outer, scop), scop,
+				     outer, index, context_loop);
+}
+
+/* Build schedule for the full loop nest containing the pbb at INDEX.  When
+   CONTEXT_LOOP is null, build the schedule of all loops contained in the SCOP
+   surrounding the pbb.  When CONTEXT_LOOP is non null, only build the maximal loop
+   nest contained within CONTEXT_LOOP.  */
+
+static isl_schedule *
+build_schedule_loop_nest (scop_p scop, int *index, loop_p context_loop)
+{
+  gcc_assert (*index != (int) scop->pbbs.length ());
+
+  loop_p loop = loop_at (scop, index);
+  isl_schedule *s = build_schedule_loop (scop, index);
+  return embed_in_surrounding_loops (s, scop, loop, index, context_loop);
+}
+
+/* Build the schedule of the SCOP.  */
+
+static bool
+build_original_schedule (scop_p scop)
+{
+  int i = 0;
+  int n = scop->pbbs.length ();
+  while (i < n)
+    {
+      poly_bb_p pbb = scop->pbbs[i];
+      isl_schedule *s = NULL;
+      if (!loop_in_sese_p (pbb_loop (pbb), scop->scop_info->region))
+	s = build_schedule_pbb (scop, &i);
+      else
+	s = build_schedule_loop_nest (scop, &i, NULL);
+
+      scop->original_schedule = add_in_sequence (scop->original_schedule, s);
+    }
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "[sese-to-poly] original schedule:\n");
+      print_isl_schedule (dump_file, scop->original_schedule);
+    }
+  if (!scop->original_schedule)
+    return false;
+  return true;
+}
+
+#endif
+
 /* Builds the polyhedral representation for a SESE region.  */
 
-void
+bool
 build_poly_scop (scop_p scop)
 {
-  set_scop_parameter_dim (scop);
-  build_scop_iteration_domain (scop);
   build_scop_context (scop);
-  add_conditions_to_constraints (scop);
+
+  unsigned i = 0;
+  unsigned n = scop->pbbs.length ();
+  while (i < n)
+    i = build_iteration_domains (scop, scop->param_context, i, NULL);
 
   build_scop_drs (scop);
-  build_scop_minimal_scattering (scop);
-  build_scop_original_schedule (scop);
-
-  /* This SCoP has been translated to the polyhedral
-     representation.  */
-  scop->poly_scop_p = true;
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  build_original_schedule (scop);
+#else
+  build_scop_scattering (scop);
+#endif
+  return true;
 }
 #endif  /* HAVE_isl */

@@ -57,12 +57,16 @@ ADAFLAGS= -gnatpg -gnata
 # For finding the GCC build dir, which is used far too much
 GCC_DIR=../gcc
 
+# Full path to top source directory
+ftop_srcdir := $(shell cd $(srcdir)/..;${PWD_COMMAND})
+
 # Absolute srcdir for gcc (why do we want absolute?  I dunno)
 fsrcdir := $(shell cd $(srcdir)/../gcc/; ${PWD_COMMAND})
 
 # Useful "subroutines" for the excess includes
-INCLUDES_FOR_SUBDIR = -I. -I.. -I../.. -I$(fsrcdir)/ada -I$(fsrcdir)/config \
-	-I$(fsrcdir)/../include -I$(fsrcdir)
+INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
+		      -iquote $(fsrcdir)/ada -iquote $(fsrcdir)/config \
+		      -iquote $(fsrcdir) -I$(ftop_srcdir)/include
 ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
 
 CXX_LFLAGS = \

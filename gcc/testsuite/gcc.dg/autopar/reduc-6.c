@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-parallelize-loops=4 -fdump-tree-parloops-details -fdump-tree-optimized" } */
+/* { dg-options "-O2 -ftree-parallelize-loops=4 -fdump-tree-parloops2-details -fdump-tree-optimized" } */
 
 #include <stdarg.h>
 #include <stdlib.h>
@@ -56,6 +56,6 @@ int main (void)
 
 
 /* need -ffast-math to  parallelize these loops.  */
-/* { dg-final { scan-tree-dump-times "Detected reduction" 0 "parloops" } } */
-/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 1 "parloops" } } */
-/* { dg-final { scan-tree-dump-times "FAILED: it is not a part of reduction" 3 "parloops" } } */
+/* { dg-final { scan-tree-dump-times "Detected reduction" 0 "parloops2" } } */
+/* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 1 "parloops2" } } */
+/* { dg-final { scan-tree-dump-times "FAILED: it is not a part of reduction" 3 "parloops2" } } */

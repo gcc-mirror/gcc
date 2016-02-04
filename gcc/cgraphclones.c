@@ -1,5 +1,5 @@
 /* Callgraph clones
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -328,6 +328,7 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   new_thunk = cgraph_node::create (new_decl);
   set_new_clone_decl_and_node_flags (new_thunk);
   new_thunk->definition = true;
+  new_thunk->local.can_change_signature = node->local.can_change_signature;
   new_thunk->thunk = thunk->thunk;
   new_thunk->unique_name = in_lto_p;
   new_thunk->former_clone_of = thunk->decl;
@@ -433,7 +434,7 @@ cgraph_node::create_clone (tree new_decl, gcov_type gcov_count, int freq,
   new_node->tp_first_run = tp_first_run;
   new_node->tm_clone = tm_clone;
   new_node->icf_merged = icf_merged;
-  new_node->merged = merged;
+  new_node->merged_comdat = merged_comdat;
 
   new_node->clone.tree_map = NULL;
   new_node->clone.args_to_skip = args_to_skip;

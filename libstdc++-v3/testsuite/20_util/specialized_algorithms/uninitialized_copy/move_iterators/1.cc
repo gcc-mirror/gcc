@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++11" }
 
-// Copyright (C) 2007-2015 Free Software Foundation, Inc.
+// Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,7 +19,7 @@
 
 #undef _GLIBCXX_CONCEPT_CHECKS
 
-#include <algorithm>
+#include <memory>
 #include <iterator>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>

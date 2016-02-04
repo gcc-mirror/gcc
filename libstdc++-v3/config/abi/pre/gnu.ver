@@ -1,6 +1,6 @@
 ## Linker script for GNU versioning (GNU ld 2.13.91+ only.)
 ##
-## Copyright (C) 2002-2015 Free Software Foundation, Inc.
+## Copyright (C) 2002-2016 Free Software Foundation, Inc.
 ##
 ## This file is part of the GNU ISO C++ Library.  This library is free
 ## software; you can redistribute it and/or modify it under the
@@ -1876,6 +1876,37 @@ GLIBCXX_3.4.22 {
     _ZNSt6thread6_StateD[012]Ev;
     _ZNSt6thread15_M_start_threadESt10unique_ptrINS_6_StateESt14default_deleteIS1_EEPFvvE;
 
+    # Support for the Transactional Memory TS (N4514)
+    _ZGTtNSt11logic_errorC[12]EPKc;
+    _ZGTtNSt11logic_errorC[12]ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE;
+    _ZGTtNKSt11logic_error4whatEv;
+    _ZGTtNSt11logic_errorD[012]Ev;
+    _ZGTtNSt12domain_errorC[12]EPKc;
+    _ZGTtNSt12domain_errorC[12]ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE;
+    _ZGTtNSt12domain_errorD[012]Ev;
+    _ZGTtNSt16invalid_argumentC[12]EPKc;
+    _ZGTtNSt16invalid_argumentC[12]ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE;
+    _ZGTtNSt16invalid_argumentD[012]Ev;
+    _ZGTtNSt12length_errorC[12]EPKc;
+    _ZGTtNSt12length_errorC[12]ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE;
+    _ZGTtNSt12length_errorD[012]Ev;
+    _ZGTtNSt12out_of_rangeC[12]EPKc;
+    _ZGTtNSt12out_of_rangeC[12]ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE;
+    _ZGTtNSt12out_of_rangeD[012]Ev;
+    _ZGTtNSt13runtime_errorC[12]EPKc;
+    _ZGTtNSt13runtime_errorC[12]ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE;
+    _ZGTtNKSt13runtime_error4whatEv;
+    _ZGTtNSt13runtime_errorD[012]Ev;
+    _ZGTtNSt11range_errorC[12]EPKc;
+    _ZGTtNSt11range_errorC[12]ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE;
+    _ZGTtNSt11range_errorD[012]Ev;
+    _ZGTtNSt14overflow_errorC[12]EPKc;
+    _ZGTtNSt14overflow_errorC[12]ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE;
+    _ZGTtNSt14overflow_errorD[012]Ev;
+    _ZGTtNSt15underflow_errorC[12]EPKc;
+    _ZGTtNSt15underflow_errorC[12]ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE;
+    _ZGTtNSt15underflow_errorD[012]Ev;
+
 } GLIBCXX_3.4.21;
 
 # Symbols in the support library (libsupc++) have their own tag.
@@ -2108,6 +2139,16 @@ CXXABI_1.3.9 {
     _ZdaPv[jmy];
 
 } CXXABI_1.3.8;
+
+CXXABI_1.3.10 {
+
+    # Support for the Transactional Memory TS (N4514)
+    _ZGTtNKSt9exceptionD1Ev;
+    _ZGTtNKSt9exception4whatEv;
+    _ZGTtNKSt13bad_exceptionD1Ev;
+    _ZGTtNKSt13bad_exception4whatEv;
+
+} CXXABI_1.3.9;
 
 # Symbols in the support library (libsupc++) supporting transactional memory.
 CXXABI_TM_1 {

@@ -1,5 +1,5 @@
 /* IRA hard register and memory cost calculation for allocnos or pseudos.
-   Copyright (C) 2006-2015 Free Software Foundation, Inc.
+   Copyright (C) 2006-2016 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -442,6 +442,9 @@ copy_cost (rtx x, machine_mode mode, reg_class_t rclass, bool to_p,
      copy it.  */
   sri.prev_sri = prev_sri;
   sri.extra_cost = 0;
+  /* PR 68770: Secondary reload might examine the t_icode field.  */
+  sri.t_icode = CODE_FOR_nothing;
+
   secondary_class = targetm.secondary_reload (to_p, x, rclass, mode, &sri);
 
   if (secondary_class != NO_REGS)
@@ -777,6 +780,12 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		      /* Every MEM can be reloaded to fit.  */
 		      insn_allows_mem[i] = allows_mem[i] = 1;
 		      if (MEM_P (op))
+			win = 1;
+		      break;
+
+		    case CT_SPECIAL_MEMORY:
+		      insn_allows_mem[i] = allows_mem[i] = 1;
+		      if (MEM_P (op) && constraint_satisfied_p (op, cn))
 			win = 1;
 		      break;
 
@@ -1849,7 +1858,7 @@ find_costs_and_classes (FILE *dump_file)
 	    }
 	  if ((new_class
 	       = (reg_class) (targetm.ira_change_pseudo_allocno_class
-			      (i, regno_aclass[i]))) != regno_aclass[i])
+			      (i, regno_aclass[i], best))) != regno_aclass[i])
 	    {
 	      regno_aclass[i] = new_class;
 	      if (hard_reg_set_subset_p (reg_class_contents[new_class],

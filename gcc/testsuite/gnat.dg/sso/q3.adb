@@ -16,22 +16,22 @@ begin
   Put ("A1 :");
   Dump (A1'Address, R1'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "A1 : e2 59 d1 48 b4 aa d9 bb\n" }
+  -- { dg-output "A1 : e2 59 d1 48 b4 aa d9 bb.*\n" }
 
   Put ("B1 :");
   Dump (B1'Address, R1'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "B1 : e2 59 d1 48 b4 aa d9 bb\n" }
+  -- { dg-output "B1 : e2 59 d1 48 b4 aa d9 bb.*\n" }
 
   Put ("A2 :");
   Dump (A2'Address, R2'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "A2 : 84 8d 15 9e 15 5b 35 df\n" }
+  -- { dg-output "A2 : 84 8d 15 9e 15 5b 35 df.*\n" }
 
   Put ("B2 :");
   Dump (B2'Address, R2'Max_Size_In_Storage_Elements);
   New_Line;
-  -- { dg-output "B2 : 84 8d 15 9e 15 5b 35 df\n" }
+  -- { dg-output "B2 : 84 8d 15 9e 15 5b 35 df.*\n" }
 
   if A1.S1 /= B1.S1 then
     raise Program_Error;

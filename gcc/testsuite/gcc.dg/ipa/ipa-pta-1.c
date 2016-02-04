@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O -fipa-pta -fdump-ipa-pta-details" } */
+/* { dg-options "-O -fipa-pta -fdump-ipa-pta2-details" } */
 
 static int __attribute__((noinline))
 foo (int *p, int *q)
@@ -45,8 +45,8 @@ int main()
    not seen by IPA PTA (if the address escapes the unit which we only compute
    during IPA PTA...).  Thus the solution also includes NONLOCAL.  */
 
-/* { dg-final { scan-ipa-dump "fn_1 = { bar foo }" "pta" } } */
-/* { dg-final { scan-ipa-dump "bar.arg0 = { NONLOCAL a }" "pta" } } */
-/* { dg-final { scan-ipa-dump "bar.arg1 = { NONLOCAL a }" "pta" } } */
-/* { dg-final { scan-ipa-dump "foo.arg0 = { NONLOCAL a }" "pta" } } */
-/* { dg-final { scan-ipa-dump "foo.arg1 = { NONLOCAL a }" "pta" } } */
+/* { dg-final { scan-ipa-dump "fn_1 = { bar foo }" "pta2" } } */
+/* { dg-final { scan-ipa-dump "bar.arg0 = { NONLOCAL a }" "pta2" } } */
+/* { dg-final { scan-ipa-dump "bar.arg1 = { NONLOCAL a }" "pta2" } } */
+/* { dg-final { scan-ipa-dump "foo.arg0 = { NONLOCAL a }" "pta2" } } */
+/* { dg-final { scan-ipa-dump "foo.arg1 = { NONLOCAL a }" "pta2" } } */

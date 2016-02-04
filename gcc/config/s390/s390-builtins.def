@@ -1,5 +1,5 @@
 /* Builtin definitions for IBM S/390 and zSeries
-   Copyright (C) 2015 Free Software Foundation, Inc.
+   Copyright (C) 2015-2016 Free Software Foundation, Inc.
 
    Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
 
@@ -361,6 +361,15 @@ B_DEF      (s390_vrepib,                vec_splatsv16qi,    0,                  
 B_DEF      (s390_vrepih,                vec_splatsv8hi,     0,                  B_VX,               O1_S16,             BT_FN_V8HI_SHORT)
 B_DEF      (s390_vrepif,                vec_splatsv4si,     0,                  B_VX,               O1_S16,             BT_FN_V4SI_SHORT)
 B_DEF      (s390_vrepig,                vec_splatsv2di,     0,                  B_VX,               O1_S16,             BT_FN_V2DI_SHORT)
+
+B_DEF      (s390_vec_splat_u8,          vec_splatsv16qi,    0,                  B_VX,               O1_U8,              BT_FN_UV16QI_UCHAR)
+B_DEF      (s390_vec_splat_s8,          vec_splatsv16qi,    0,                  B_VX,               O1_S8,              BT_FN_V16QI_SCHAR)
+B_DEF      (s390_vec_splat_u16,         vec_splatsv8hi,     0,                  B_VX,               O1_U16,             BT_FN_UV8HI_USHORT)
+B_DEF      (s390_vec_splat_s16,         vec_splatsv8hi,     0,                  B_VX,               O1_S16,             BT_FN_V8HI_SHORT)
+B_DEF      (s390_vec_splat_u32,         vec_splatsv4si,     0,                  B_VX,               O1_U16,             BT_FN_UV4SI_USHORT)
+B_DEF      (s390_vec_splat_s32,         vec_splatsv4si,     0,                  B_VX,               O1_S16,             BT_FN_V4SI_SHORT)
+B_DEF      (s390_vec_splat_u64,         vec_splatsv2di,     0,                  B_VX,               O1_U16,             BT_FN_UV2DI_USHORT)
+B_DEF      (s390_vec_splat_s64,         vec_splatsv2di,     0,                  B_VX,               O1_S16,             BT_FN_V2DI_SHORT)
 
 OB_DEF     (s390_vec_insert,            s390_vec_insert_s8, s390_vec_insert_dbl,B_VX,               BT_FN_OV4SI_INT_OV4SI_INT)
 OB_DEF_VAR (s390_vec_insert_s8,         s390_vlvgb,         O3_ELEM,            BT_OV_V16QI_SCHAR_V16QI_INT)
@@ -2461,15 +2470,15 @@ OB_DEF     (s390_vec_ctd,               s390_vec_ctd_s64,   s390_vec_ctd_u64,   
 OB_DEF_VAR (s390_vec_ctd_s64,           s390_vec_ctd_s64,   O2_U5,              BT_OV_V2DF_V2DI_INT)                     /* vcdgb */
 OB_DEF_VAR (s390_vec_ctd_u64,           s390_vec_ctd_u64,   O2_U5,              BT_OV_V2DF_UV2DI_INT)                    /* vcdlgb */
 
-B_DEF      (s390_vec_ctd_s64,           vec_ctd_s64,        0,                  B_VX,               O2_U5,              BT_FN_V2DF_V2DI_INT)                     /* vcdgb */
-B_DEF      (s390_vec_ctd_u64,           vec_ctd_u64,        0,                  B_VX,               O2_U5,              BT_FN_V2DF_UV2DI_INT)                    /* vcdlgb */
-B_DEF      (s390_vcdgb,                 vec_di_to_df_s64,   0,                  B_VX,               O2_U5,              BT_FN_V2DF_V2DI_INT)
-B_DEF      (s390_vcdlgb,                vec_di_to_df_u64,   0,                  B_VX,               O2_U5,              BT_FN_V2DF_UV2DI_INT)
-B_DEF      (s390_vec_ctsl,              vec_ctsl,           0,                  B_VX,               O2_U5,              BT_FN_V2DI_V2DF_INT)                     /* vcgdb */
-B_DEF      (s390_vec_ctul,              vec_ctul,           0,                  B_VX,               O2_U5,              BT_FN_UV2DI_V2DF_INT)                    /* vclgdb */
-B_DEF      (s390_vcgdb,                 vec_df_to_di_s64,   0,                  B_VX,               O2_U5,              BT_FN_V2DI_V2DF_INT)
-B_DEF      (s390_vclgdb,                vec_df_to_di_u64,   0,                  B_VX,               O2_U5,              BT_FN_UV2DI_V2DF_INT)
-B_DEF      (s390_vfidb,                 vfidb,              0,                  B_VX,               O2_U4 | O3_U4,      BT_FN_V2DF_V2DF_UCHAR_UCHAR)
+B_DEF      (s390_vec_ctd_s64,           vec_ctd_s64,        0,                  B_VX,               O2_U3,              BT_FN_V2DF_V2DI_INT)                     /* vcdgb */
+B_DEF      (s390_vec_ctd_u64,           vec_ctd_u64,        0,                  B_VX,               O2_U3,              BT_FN_V2DF_UV2DI_INT)                    /* vcdlgb */
+B_DEF      (s390_vcdgb,                 vec_di_to_df_s64,   0,                  B_VX,               O2_U3,              BT_FN_V2DF_V2DI_INT)                     /* vcdgb */
+B_DEF      (s390_vcdlgb,                vec_di_to_df_u64,   0,                  B_VX,               O2_U3,              BT_FN_V2DF_UV2DI_INT)                    /* vcdlgb */
+B_DEF      (s390_vec_ctsl,              vec_ctsl,           0,                  B_VX,               O2_U3,              BT_FN_V2DI_V2DF_INT)                     /* vcgdb */
+B_DEF      (s390_vec_ctul,              vec_ctul,           0,                  B_VX,               O2_U3,              BT_FN_UV2DI_V2DF_INT)                    /* vclgdb */
+B_DEF      (s390_vcgdb,                 vec_df_to_di_s64,   0,                  B_VX,               O2_U3,              BT_FN_V2DI_V2DF_INT)                     /* vcgdb */
+B_DEF      (s390_vclgdb,                vec_df_to_di_u64,   0,                  B_VX,               O2_U3,              BT_FN_UV2DI_V2DF_INT)                    /* vclgdb */
+B_DEF      (s390_vfidb,                 vfidb,              0,                  B_VX,               O2_U4 | O3_U3,      BT_FN_V2DF_V2DF_UCHAR_UCHAR)
 B_DEF      (s390_vec_ld2f,              vec_ld2f,           0,                  B_VX,               0,                  BT_FN_V2DF_FLTCONSTPTR)                  /* vldeb */
 B_DEF      (s390_vec_st2f,              vec_st2f,           0,                  B_VX,               0,                  BT_FN_VOID_V2DF_FLTPTR)                  /* vledb */
 B_DEF      (s390_vfmadb,                fmav2df4,           0,                  B_VX,               0,                  BT_FN_V2DF_V2DF_V2DF_V2DF)

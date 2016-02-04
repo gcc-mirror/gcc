@@ -1,6 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006-2015 Free Software Foundation, Inc.
+// Copyright (C) 2006-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,8 +46,15 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+#if __STDCPP_WANT_MATH_SPEC_FUNCS__
+# define _GLIBCXX_MATH_NS ::std
+#elif defined(_GLIBCXX_TR1_CMATH)
 namespace tr1
 {
+# define _GLIBCXX_MATH_NS ::std::tr1
+#else
+# error do not include this header directly, use <cmath> or <tr1/cmath>
+#endif
   // [5.2] Special functions
 
   // Implementation-space details.
@@ -163,7 +170,7 @@ namespace tr1
       if (__s < _Tp(0))
         {
 #if _GLIBCXX_USE_C99_MATH_TR1
-          if (std::tr1::fmod(__s,_Tp(2)) == _Tp(0))
+          if (_GLIBCXX_MATH_NS::fmod(__s,_Tp(2)) == _Tp(0))
             return _Tp(0);
           else
 #endif
@@ -173,7 +180,7 @@ namespace tr1
                      * __numeric_constants<_Tp>::__pi(), __s)
                      * std::sin(__numeric_constants<_Tp>::__pi_2() * __s)
 #if _GLIBCXX_USE_C99_MATH_TR1
-                     * std::exp(std::tr1::lgamma(_Tp(1) - __s))
+                     * std::exp(_GLIBCXX_MATH_NS::lgamma(_Tp(1) - __s))
 #else
                      * std::exp(__log_gamma(_Tp(1) - __s))
 #endif
@@ -192,9 +199,9 @@ namespace tr1
           for (unsigned int __j = 0; __j <= __i; ++__j)
             {
 #if _GLIBCXX_USE_C99_MATH_TR1
-              _Tp __bincoeff =  std::tr1::lgamma(_Tp(1 + __i))
-                              - std::tr1::lgamma(_Tp(1 + __j))
-                              - std::tr1::lgamma(_Tp(1 + __i - __j));
+              _Tp __bincoeff =  _GLIBCXX_MATH_NS::lgamma(_Tp(1 + __i))
+                              - _GLIBCXX_MATH_NS::lgamma(_Tp(1 + __j))
+                              - _GLIBCXX_MATH_NS::lgamma(_Tp(1 + __i - __j));
 #else
               _Tp __bincoeff =  __log_gamma(_Tp(1 + __i))
                               - __log_gamma(_Tp(1 + __j))
@@ -297,7 +304,7 @@ namespace tr1
           __zeta *= std::pow(_Tp(2) * __numeric_constants<_Tp>::__pi(), __s)
                  * std::sin(__numeric_constants<_Tp>::__pi_2() * __s)
 #if _GLIBCXX_USE_C99_MATH_TR1
-                 * std::exp(std::tr1::lgamma(_Tp(1) - __s))
+                 * std::exp(_GLIBCXX_MATH_NS::lgamma(_Tp(1) - __s))
 #else
                  * std::exp(__log_gamma(_Tp(1) - __s))
 #endif
@@ -320,7 +327,7 @@ namespace tr1
                                 * __numeric_constants<_Tp>::__pi(), __s)
                          * std::sin(__numeric_constants<_Tp>::__pi_2() * __s)
 #if _GLIBCXX_USE_C99_MATH_TR1
-                             * std::tr1::tgamma(_Tp(1) - __s)
+                             * _GLIBCXX_MATH_NS::tgamma(_Tp(1) - __s)
 #else
                              * std::exp(__log_gamma(_Tp(1) - __s))
 #endif
@@ -375,9 +382,9 @@ namespace tr1
           for (unsigned int __j = 0; __j <= __i; ++__j)
             {
 #if _GLIBCXX_USE_C99_MATH_TR1
-              _Tp __bincoeff =  std::tr1::lgamma(_Tp(1 + __i))
-                              - std::tr1::lgamma(_Tp(1 + __j))
-                              - std::tr1::lgamma(_Tp(1 + __i - __j));
+              _Tp __bincoeff =  _GLIBCXX_MATH_NS::lgamma(_Tp(1 + __i))
+                              - _GLIBCXX_MATH_NS::lgamma(_Tp(1 + __j))
+                              - _GLIBCXX_MATH_NS::lgamma(_Tp(1 + __i - __j));
 #else
               _Tp __bincoeff =  __log_gamma(_Tp(1 + __i))
                               - __log_gamma(_Tp(1 + __j))
@@ -426,8 +433,11 @@ namespace tr1
     { return __hurwitz_zeta_glob(__a, __s); }
 
   _GLIBCXX_END_NAMESPACE_VERSION
-  } // namespace std::tr1::__detail
-}
+  } // namespace __detail
+#undef _GLIBCXX_MATH_NS
+#if ! __STDCPP_WANT_MATH_SPEC_FUNCS__ && defined(_GLIBCXX_TR1_CMATH)
+} // namespace tr1
+#endif
 }
 
 #endif // _GLIBCXX_TR1_RIEMANN_ZETA_TCC

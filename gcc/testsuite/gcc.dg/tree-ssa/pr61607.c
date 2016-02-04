@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Os -fno-tree-fre -fdump-tree-dom1" } */
+/* { dg-options "-Os -fno-tree-fre -fdump-tree-dom2" } */
 
 void foo(int *);
 void f2(int dst[3], int R)
@@ -23,6 +23,6 @@ void f2(int dst[3], int R)
 /* There should be precisely two conditionals.  One for the loop condition
    and one for the test after the loop.  Previously we failed to eliminate
    the second conditional after the loop.  */
-/* { dg-final { scan-tree-dump-times "if" 2 "dom1"} } */
+/* { dg-final { scan-tree-dump-times "if" 2 "dom2"} } */
 
 

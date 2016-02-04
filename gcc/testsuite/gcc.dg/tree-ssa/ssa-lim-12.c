@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-lim1" } */
+/* { dg-options "-O -fdump-tree-lim2" } */
 
 int a[1024];
 
@@ -23,4 +23,4 @@ void bar (int x, int z)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "!= 0 ? " 2 "lim1" } } */
+/* { dg-final { scan-tree-dump-times "!= 0 ? " 2 "lim2" } } */

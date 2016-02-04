@@ -1,5 +1,5 @@
 /* Common hooks for Texas Instruments MSP430.
-   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -27,9 +27,9 @@
 #include "opts.h"
 #include "flags.h"
 
-/* Handle -mcpu= and -mmcu= here.  We want to ensure that only one
-   of these two options - the last specified on the command line -
-   is passed on to the msp430 backend.  */
+/* Check for generic -mcpu= and -mmcu= names here.  If found then we
+   convert to a baseline cpu name.  Otherwise we allow the option to
+   be passed on to the backend where it can be checked more fully.  */
 
 static bool
 msp430_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
@@ -46,13 +46,11 @@ msp430_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 	  || strcasecmp (decoded->arg, "430xv2") == 0)
 	{
 	  target_cpu = "msp430x";
-	  target_mcu = NULL;
 	}
       else if (strcasecmp (decoded->arg, "msp430") == 0
 	       || strcasecmp (decoded->arg, "430") == 0)
 	{
 	  target_cpu = "msp430";
-	  target_mcu = NULL;
 	}
       else
 	{
@@ -77,8 +75,6 @@ msp430_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 	  target_cpu = "msp430x";
 	  target_mcu = NULL;
 	}
-      else
-	target_cpu = NULL;
       break;
     }
       

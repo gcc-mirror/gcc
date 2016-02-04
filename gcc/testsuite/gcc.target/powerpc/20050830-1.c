@@ -1,7 +1,8 @@
 /* Make sure the doloop optimization is done for this loop. */
 /* { dg-do compile { target powerpc*-*-* } } */
 /* { dg-options "-O2" } */
-/* { dg-final { scan-assembler "bdn" } } */
+/* XFAIL for now, see PR66612.  */
+/* { dg-final { scan-assembler "bdn" { xfail *-*-* } } } */
 extern int a[];
 int foo(int w) {
   int n = w;

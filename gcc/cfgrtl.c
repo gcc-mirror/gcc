@@ -1,5 +1,5 @@
 /* Control flow graph manipulation code for GNU compiler.
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4299,6 +4299,7 @@ void
 cfg_layout_finalize (void)
 {
   checking_verify_flow_info ();
+  free_dominance_info (CDI_DOMINATORS);
   force_one_exit_fallthru ();
   rtl_register_cfg_hooks ();
   if (reload_completed && !targetm.have_epilogue ())

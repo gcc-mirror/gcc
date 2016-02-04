@@ -19,9 +19,10 @@ int main1 ()
   for (i=0; i < N+1; i++)
     {
       ib[i] = i;
-      /* Avoid vectorization.  */
       if (i%3 == 0)
         ib[i] = 5;
+      /* Avoid vectorization.  */
+      __asm__ volatile ("" : : : "memory");
     }
 
   for (i = 1; i < N+1; i++)

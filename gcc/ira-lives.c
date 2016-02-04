@@ -1,5 +1,5 @@
 /* IRA processing allocno lives to build allocno live ranges.
-   Copyright (C) 2006-2015 Free Software Foundation, Inc.
+   Copyright (C) 2006-2016 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -774,6 +774,7 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 	  /* ??? Is this the best way to handle memory constraints?  */
 	  cn = lookup_constraint (constraints);
 	  if (insn_extra_memory_constraint (cn)
+	      || insn_extra_special_memory_constraint (cn)
 	      || insn_extra_address_constraint (cn))
 	    return NO_REGS;
 	  if (constraint_satisfied_p (op, cn)

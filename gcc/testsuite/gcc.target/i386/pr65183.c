@@ -1,5 +1,4 @@
-/* { dg-do compile } */
-/* { dg-require-effective-target mpx } */
+/* { dg-do compile { target { ! x32 } } } */
 /* { dg-options "-O -fcheck-pointer-bounds -fchkp-use-nochk-string-functions -mmpx" } */
 
 extern void bar(void *);

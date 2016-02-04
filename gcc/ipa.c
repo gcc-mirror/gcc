@@ -1,5 +1,5 @@
 /* Basic IPA optimizations and utilities.
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -543,6 +543,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	      node->definition = false;
 	      node->cpp_implicit_alias = false;
 	      node->alias = false;
+	      node->transparent_alias = false;
 	      node->thunk.thunk_p = false;
 	      node->weakref = false;
 	      /* After early inlining we drop always_inline attributes on

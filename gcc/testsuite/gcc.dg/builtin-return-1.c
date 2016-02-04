@@ -2,7 +2,7 @@
 /* Originator: Andrew Church <gcczilla@achurch.org> */
 /* { dg-do run } */
 /* { dg-xfail-run-if "PR36571 untyped return is char register" { "avr-*-*" } { "*" } { "" } } */
-/* { dg-require-effective-target alloca } */
+/* { dg-require-effective-target untyped_assembly } */
 /* This used to fail on SPARC because the (undefined) return
    value of 'bar' was overwriting that of 'foo'.  */
 

@@ -1,6 +1,6 @@
 ; Options for the IA-32 and AMD64 ports of the compiler.
 
-; Copyright (C) 2005-2015 Free Software Foundation, Inc.
+; Copyright (C) 2005-2016 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -751,10 +751,6 @@ mclflushopt
 Target Report Mask(ISA_CLFLUSHOPT) Var(ix86_isa_flags) Save
 Support CLFLUSHOPT instructions.
 
-mclzero
-Target Report Mask(ISA_CLZERO) Var(ix86_isa_flags) Save
-Support CLZERO instructions.
-
 mclwb
 Target Report Mask(ISA_CLWB) Var(ix86_isa_flags) Save
 Support CLWB instruction.
@@ -875,6 +871,14 @@ Support MPX code generation.
 mmwaitx
 Target Report Mask(ISA_MWAITX) Var(ix86_isa_flags) Save
 Support MWAITX and MONITORX built-in functions and code generation.
+
+mclzero
+Target Report Mask(ISA_CLZERO) Var(ix86_isa_flags) Save
+Support CLZERO built-in functions and code generation.
+
+mpku
+Target Report Mask(ISA_PKU) Var(ix86_isa_flags) Save
+Support PKU built-in functions and code generation.
 
 mstack-protector-guard=
 Target RejectNegative Joined Enum(stack_protector_guard) Var(ix86_stack_protector_guard) Init(SSP_TLS)

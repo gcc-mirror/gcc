@@ -59,6 +59,7 @@ host_modules= { module= gmp; lib_path=.libs; bootstrap=true;
 	        target="none-${host_vendor}-${host_os}"; };
 host_modules= { module= mpfr; lib_path=.libs; bootstrap=true;
 		extra_configure_flags='--disable-shared @extra_mpfr_configure_flags@';
+		extra_make_flags='AM_CFLAGS="-DNO_ASM"';
 		no_install= true; };
 host_modules= { module= mpc; lib_path=.libs; bootstrap=true;
 		extra_configure_flags='--disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@';
@@ -534,6 +535,7 @@ dependencies = { module=all-m4; on=all-build-texinfo; };
 // on libgcc and newlib/libgloss.
 lang_env_dependencies = { module=libjava; cxx=true; };
 lang_env_dependencies = { module=libitm; cxx=true; };
+lang_env_dependencies = { module=libffi; cxx=true; };
 lang_env_dependencies = { module=libcilkrts; cxx=true; };
 lang_env_dependencies = { module=liboffloadmic; cxx=true; };
 lang_env_dependencies = { module=newlib; no_c=true; };

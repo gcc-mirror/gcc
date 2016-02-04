@@ -1,6 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006-2015 Free Software Foundation, Inc.
+// Copyright (C) 2006-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,8 +48,15 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+#if __STDCPP_WANT_MATH_SPEC_FUNCS__
+# define _GLIBCXX_MATH_NS ::std
+#elif defined(_GLIBCXX_TR1_CMATH)
 namespace tr1
 {
+# define _GLIBCXX_MATH_NS ::std::tr1
+#else
+# error do not include this header directly, use <cmath> or <tr1/cmath>
+#endif
   // [5.2] Special functions
 
   // Implementation-space details.
@@ -243,14 +250,14 @@ namespace tr1
           const _Tp __sgn = ( __m % 2 == 1 ? -_Tp(1) : _Tp(1));
           const _Tp __y_mp1m_factor = __x * std::sqrt(_Tp(2 * __m + 3));
 #if _GLIBCXX_USE_C99_MATH_TR1
-          const _Tp __lncirc = std::tr1::log1p(-__x * __x);
+          const _Tp __lncirc = _GLIBCXX_MATH_NS::log1p(-__x * __x);
 #else
           const _Tp __lncirc = std::log(_Tp(1) - __x * __x);
 #endif
           //  Gamma(m+1/2) / Gamma(m)
 #if _GLIBCXX_USE_C99_MATH_TR1
-          const _Tp __lnpoch = std::tr1::lgamma(_Tp(__m + _Tp(0.5L)))
-                             - std::tr1::lgamma(_Tp(__m));
+          const _Tp __lnpoch = _GLIBCXX_MATH_NS::lgamma(_Tp(__m + _Tp(0.5L)))
+                             - _GLIBCXX_MATH_NS::lgamma(_Tp(__m));
 #else
           const _Tp __lnpoch = __log_gamma(_Tp(__m + _Tp(0.5L)))
                              - __log_gamma(_Tp(__m));
@@ -296,8 +303,11 @@ namespace tr1
     }
 
   _GLIBCXX_END_NAMESPACE_VERSION
-  } // namespace std::tr1::__detail
-}
+  } // namespace __detail
+#undef _GLIBCXX_MATH_NS
+#if ! __STDCPP_WANT_MATH_SPEC_FUNCS__ && defined(_GLIBCXX_TR1_CMATH)
+} // namespace tr1
+#endif
 }
 
 #endif // _GLIBCXX_TR1_LEGENDRE_FUNCTION_TCC

@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2015 Free Software Foundation, Inc.
+# Copyright (C) 1997-2016 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -142,6 +142,9 @@
 #   isa=loongson
 #	select a Loongson processor
 #
+#   isa=p5600
+#      select a P5600 processor
+#
 #   addressing=absolute
 #	force absolute addresses to be used
 #
@@ -257,6 +260,7 @@ set mips_option_groups {
     lsa "(|!)HAS_LSA"
     section_start "-Wl,--section-start=.*"
     frame-header "-mframe-header-opt|-mno-frame-header-opt"
+    stack-protector "-fstack-protector"
 }
 
 for { set option 0 } { $option < 32 } { incr option } {
@@ -1009,6 +1013,10 @@ proc mips-dg-options { args } {
 	if { [string equal $spec "isa=loongson"] } {
 	    if { ![regexp {^-march=loongson} $arch] } {
 		set arch "-march=loongson2f"
+	    }
+	} elseif { [string equal $spec "isa=p5600"] } {
+	    if { ![regexp {^-march=p5600} $arch] } {
+		set arch "-march=p5600"
 	    }
 	} else {
 	    if { ![regexp {^(isa(?:|_rev))(=|<=|>=)([0-9]*)$} \

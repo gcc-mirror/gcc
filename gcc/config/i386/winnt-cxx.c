@@ -1,6 +1,6 @@
 /* Target support for C++ classes on Windows.
    Contributed by Danny Smith (dannysmith@users.sourceforge.net)
-   Copyright (C) 2005-2015 Free Software Foundation, Inc.
+   Copyright (C) 2005-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988-2015 Free Software Foundation, Inc.
+   Copyright (C) 1988-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4791,6 +4791,12 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	   TREE_TYPE (decl) = error_mark_node;
 	 }
 
+      if ((RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))
+	  || TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
+	  && DECL_SIZE (decl) == NULL_TREE
+	  && TREE_STATIC (decl))
+	incomplete_record_decls.safe_push (decl);
+
       if (is_global_var (decl) && DECL_SIZE (decl) != 0)
 	{
 	  if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST)
@@ -5351,6 +5357,8 @@ grokdeclarator (const struct c_declarator *declarator,
   tree returned_attrs = NULL_TREE;
   bool bitfield = width != NULL;
   tree element_type;
+  tree orig_qual_type = NULL;
+  size_t orig_qual_indirect = 0;
   struct c_arg_info *arg_info = 0;
   addr_space_t as1, as2, address_space;
   location_t loc = UNKNOWN_LOCATION;
@@ -5389,9 +5397,9 @@ grokdeclarator (const struct c_declarator *declarator,
 	case cdk_function:
 	case cdk_pointer:
 	  funcdef_syntax = (decl->kind == cdk_function);
-	  decl = decl->declarator;
 	  if (first_non_attr_kind == cdk_attrs)
 	    first_non_attr_kind = decl->kind;
+	  decl = decl->declarator;
 	  break;
 
 	case cdk_attrs:
@@ -5513,12 +5521,17 @@ grokdeclarator (const struct c_declarator *declarator,
   if ((TREE_CODE (type) == ARRAY_TYPE
        || first_non_attr_kind == cdk_array)
       && TYPE_QUALS (element_type))
-    type = TYPE_MAIN_VARIANT (type);
+    {
+      orig_qual_type = type;
+      type = TYPE_MAIN_VARIANT (type);
+    }
   type_quals = ((constp ? TYPE_QUAL_CONST : 0)
 		| (restrictp ? TYPE_QUAL_RESTRICT : 0)
 		| (volatilep ? TYPE_QUAL_VOLATILE : 0)
 		| (atomicp ? TYPE_QUAL_ATOMIC : 0)
 		| ENCODE_QUAL_ADDR_SPACE (address_space));
+  if (type_quals != TYPE_QUALS (element_type))
+    orig_qual_type = NULL_TREE;
 
   /* Applying the _Atomic qualifier to an array type (through the use
      of typedefs or typeof) must be detected here.  If the qualifier
@@ -5944,6 +5957,18 @@ grokdeclarator (const struct c_declarator *declarator,
 	      {
 		error_at (loc, "array type has incomplete element type %qT",
 			  type);
+		/* See if we can be more helpful.  */
+		if (TREE_CODE (type) == ARRAY_TYPE)
+		  {
+		    if (name)
+		      inform (loc, "declaration of %qE as multidimensional "
+			      "array must have bounds for all dimensions "
+			      "except the first", name);
+		    else
+		      inform (loc, "declaration of multidimensional array "
+			      "must have bounds for all dimensions except "
+			      "the first");
+		  }
 		type = error_mark_node;
 	      }
 	    else
@@ -6013,6 +6038,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		array_ptr_attrs = NULL_TREE;
 		array_parm_static = 0;
 	      }
+	    orig_qual_indirect++;
 	    break;
 	  }
 	case cdk_function:
@@ -6022,6 +6048,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	       attributes.  */
 	    bool really_funcdef = false;
 	    tree arg_types;
+	    orig_qual_type = NULL_TREE;
 	    if (funcdef_flag)
 	      {
 		const struct c_declarator *t = declarator->declarator;
@@ -6122,7 +6149,9 @@ grokdeclarator (const struct c_declarator *declarator,
 	      pedwarn (loc, OPT_Wpedantic,
 		       "ISO C forbids qualified function types");
 	    if (type_quals)
-	      type = c_build_qualified_type (type, type_quals);
+	      type = c_build_qualified_type (type, type_quals, orig_qual_type,
+					     orig_qual_indirect);
+	    orig_qual_type = NULL_TREE;
 	    size_varies = false;
 
 	    /* When the pointed-to type involves components of variable size,
@@ -6304,7 +6333,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	pedwarn (loc, OPT_Wpedantic,
 		 "ISO C forbids qualified function types");
       if (type_quals)
-	type = c_build_qualified_type (type, type_quals);
+	type = c_build_qualified_type (type, type_quals, orig_qual_type,
+				       orig_qual_indirect);
       decl = build_decl (declarator->id_loc,
 			 TYPE_DECL, declarator->u.id, type);
       if (declspecs->explicit_signed_p)
@@ -6357,7 +6387,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	pedwarn (loc, OPT_Wpedantic,
 		 "ISO C forbids const or volatile function types");
       if (type_quals)
-	type = c_build_qualified_type (type, type_quals);
+	type = c_build_qualified_type (type, type_quals, orig_qual_type,
+				       orig_qual_indirect);
       return type;
     }
 
@@ -6404,8 +6435,16 @@ grokdeclarator (const struct c_declarator *declarator,
 	  {
 	    /* Transfer const-ness of array into that of type pointed to.  */
 	    type = TREE_TYPE (type);
+	    if (orig_qual_type != NULL_TREE)
+	      {
+		if (orig_qual_indirect == 0)
+		  orig_qual_type = TREE_TYPE (orig_qual_type);
+		else
+		  orig_qual_indirect--;
+	      }
 	    if (type_quals)
-	      type = c_build_qualified_type (type, type_quals);
+	      type = c_build_qualified_type (type, type_quals, orig_qual_type,
+					     orig_qual_indirect);
 	    type = c_build_pointer_type (type);
 	    type_quals = array_ptr_quals;
 	    if (type_quals)
@@ -6496,7 +6535,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	    TYPE_DOMAIN (type) = build_range_type (sizetype, size_zero_node,
 						   NULL_TREE);
 	  }
-	type = c_build_qualified_type (type, type_quals);
+	type = c_build_qualified_type (type, type_quals, orig_qual_type,
+				       orig_qual_indirect);
 	decl = build_decl (declarator->id_loc,
 			   FIELD_DECL, declarator->u.id, type);
 	DECL_NONADDRESSABLE_P (decl) = bitfield;
@@ -6608,7 +6648,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	/* An uninitialized decl with `extern' is a reference.  */
 	int extern_ref = !initialized && storage_class == csc_extern;
 
-	type = c_build_qualified_type (type, type_quals);
+	type = c_build_qualified_type (type, type_quals, orig_qual_type,
+				       orig_qual_indirect);
 
 	/* C99 6.2.2p7: It is invalid (compile-time undefined
 	   behavior) to create an 'extern' declaration for a
@@ -6913,11 +6954,11 @@ get_parm_info (bool ellipsis, tree expr)
     {
       if (TYPE_QUALS (TREE_TYPE (b->decl)) != TYPE_UNQUALIFIED
 	  || C_DECL_REGISTER (b->decl))
-	error ("%<void%> as only parameter may not be qualified");
+	error_at (b->locus, "%<void%> as only parameter may not be qualified");
 
       /* There cannot be an ellipsis.  */
       if (ellipsis)
-	error ("%<void%> must be the only parameter");
+	error_at (b->locus, "%<void%> must be the only parameter");
 
       arg_info->types = void_list_node;
       return arg_info;
@@ -6946,13 +6987,14 @@ get_parm_info (bool ellipsis, tree expr)
 
 	  /* Check for forward decls that never got their actual decl.  */
 	  if (TREE_ASM_WRITTEN (decl))
-	    error ("parameter %q+D has just a forward declaration", decl);
+	    error_at (b->locus,
+		      "parameter %q+D has just a forward declaration", decl);
 	  /* Check for (..., void, ...) and issue an error.  */
 	  else if (VOID_TYPE_P (type) && !DECL_NAME (decl))
 	    {
 	      if (!gave_void_only_once_err)
 		{
-		  error ("%<void%> must be the only parameter");
+		  error_at (b->locus, "%<void%> must be the only parameter");
 		  gave_void_only_once_err = true;
 		}
 	    }
@@ -6991,13 +7033,13 @@ get_parm_info (bool ellipsis, tree expr)
 	    {
 	      if (b->id)
 		/* The %s will be one of 'struct', 'union', or 'enum'.  */
-		warning_at (input_location, 0,
+		warning_at (b->locus, 0,
 			    "%<%s %E%> declared inside parameter list"
 			    " will not be visible outside of this definition or"
 			    " declaration", keyword, b->id);
 	      else
 		/* The %s will be one of 'struct', 'union', or 'enum'.  */
-		warning_at (input_location, 0,
+		warning_at (b->locus, 0,
 			    "anonymous %s declared inside parameter list"
 			    " will not be visible outside of this definition or"
 			    " declaration", keyword);
@@ -7213,7 +7255,8 @@ start_struct (location_t loc, enum tree_code code, tree name,
     }
 
   C_TYPE_BEING_DEFINED (ref) = 1;
-  TYPE_PACKED (ref) = flag_pack_struct;
+  for (tree v = TYPE_MAIN_VARIANT (ref); v; v = TYPE_NEXT_VARIANT (v))
+    TYPE_PACKED (v) = flag_pack_struct;
 
   *enclosing_struct_parse_info = struct_parse_info;
   struct_parse_info = XNEW (struct c_struct_parse_info);
@@ -7799,6 +7842,14 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       }
   }
 
+  /* Note: C_TYPE_INCOMPLETE_VARS overloads TYPE_VFIELD which is used
+     in dwarf2out via rest_of_decl_compilation below and means
+     something totally different.  Since we will be clearing
+     C_TYPE_INCOMPLETE_VARS shortly after we iterate through them,
+     clear it ahead of time and avoid problems in dwarf2out.  Ideally,
+     C_TYPE_INCOMPLETE_VARS should use some language specific
+     node.  */
+  tree incomplete_vars = C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (t));
   for (x = TYPE_MAIN_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
     {
       TYPE_FIELDS (x) = TYPE_FIELDS (t);
@@ -7806,6 +7857,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       C_TYPE_FIELDS_READONLY (x) = C_TYPE_FIELDS_READONLY (t);
       C_TYPE_FIELDS_VOLATILE (x) = C_TYPE_FIELDS_VOLATILE (t);
       C_TYPE_VARIABLE_SIZE (x) = C_TYPE_VARIABLE_SIZE (t);
+      C_TYPE_INCOMPLETE_VARS (x) = NULL_TREE;
     }
 
   /* If this was supposed to be a transparent union, but we can't
@@ -7819,17 +7871,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
     }
 
   /* If this structure or union completes the type of any previous
-     variable declaration, lay it out and output its rtl.
-
-     Note: C_TYPE_INCOMPLETE_VARS overloads TYPE_VFIELD which is used
-     in dwarf2out via rest_of_decl_compilation below and means
-     something totally different.  Since we will be clearing
-     C_TYPE_INCOMPLETE_VARS shortly after we iterate through them,
-     clear it ahead of time and avoid problems in dwarf2out.  Ideally,
-     C_TYPE_INCOMPLETE_VARS should use some language specific
-     node.  */
-  tree incomplete_vars = C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (t));
-  C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (t)) = 0;
+     variable declaration, lay it out and output its rtl.  */
   for (x = incomplete_vars; x; x = TREE_CHAIN (x))
     {
       tree decl = TREE_VALUE (x);
@@ -10698,11 +10740,22 @@ c_write_global_declarations_1 (tree globals)
       if (TREE_CODE (decl) == FUNCTION_DECL
 	  && DECL_INITIAL (decl) == 0
 	  && DECL_EXTERNAL (decl)
-	  && !TREE_PUBLIC (decl)
-	  && C_DECL_USED (decl))
+	  && !TREE_PUBLIC (decl))
 	{
-	  pedwarn (input_location, 0, "%q+F used but never defined", decl);
-	  TREE_NO_WARNING (decl) = 1;
+	  if (C_DECL_USED (decl))
+	    {
+	      pedwarn (input_location, 0, "%q+F used but never defined", decl);
+	      TREE_NO_WARNING (decl) = 1;
+	    }
+	  /* For -Wunused-function warn about unused static prototypes.  */
+	  else if (warn_unused_function
+		   && ! DECL_ARTIFICIAL (decl)
+		   && ! TREE_NO_WARNING (decl))
+	    {
+	      warning (OPT_Wunused_function,
+		       "%q+F declared %<static%> but never defined", decl);
+	      TREE_NO_WARNING (decl) = 1;
+	    }
 	}
 
       wrapup_global_declaration_1 (decl);

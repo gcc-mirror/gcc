@@ -1,7 +1,7 @@
 /* Generate pattern matching and transform code shared between
    GENERIC and GIMPLE folding code from match-and-simplify description.
 
-   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
    Contributed by Richard Biener <rguenther@suse.de>
    and Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
 
@@ -1397,7 +1397,8 @@ struct sinfo
   unsigned cnt;
 };
 
-struct sinfo_hashmap_traits : simple_hashmap_traits <pointer_hash <dt_simplify> >
+struct sinfo_hashmap_traits : simple_hashmap_traits<pointer_hash<dt_simplify>,
+						    sinfo *>
 {
   static inline hashval_t hash (const key_type &);
   static inline bool equal_keys (const key_type &, const key_type &);
@@ -1850,7 +1851,8 @@ struct capture_info
       bool force_single_use;
       bool cond_expr_cond_p;
       unsigned long toplevel_msk;
-      int result_use_count;
+      unsigned match_use_count;
+      unsigned result_use_count;
       unsigned same_as;
       capture *c;
     };
@@ -1900,6 +1902,7 @@ capture_info::walk_match (operand *o, unsigned toplevel_arg,
   if (capture *c = dyn_cast <capture *> (o))
     {
       unsigned where = c->where;
+      info[where].match_use_count++;
       info[where].toplevel_msk |= 1 << toplevel_arg;
       info[where].force_no_side_effects_p |= conditional_p;
       info[where].cond_expr_cond_p |= cond_expr_cond_p;
@@ -3105,22 +3108,19 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	  else if (is_a <predicate_id *> (opr))
 	    is_predicate = true;
 	  /* Search for captures used multiple times in the result expression
-	     and dependent on TREE_SIDE_EFFECTS emit a SAVE_EXPR.  */
+	     and wrap them in a SAVE_EXPR.  Allow as many uses as in the
+	     original expression.  */
 	  if (!is_predicate)
 	    for (int i = 0; i < s->capture_max + 1; ++i)
 	      {
-		if (cinfo.info[i].same_as != (unsigned)i)
+		if (cinfo.info[i].same_as != (unsigned)i
+		    || cinfo.info[i].cse_p)
 		  continue;
-		if (!cinfo.info[i].force_no_side_effects_p
-		    && cinfo.info[i].result_use_count > 1)
-		  {
-		    fprintf_indent (f, indent,
-				    "if (TREE_SIDE_EFFECTS (captures[%d]))\n",
-				    i);
-		    fprintf_indent (f, indent,
-				    "  captures[%d] = save_expr (captures[%d]);\n",
-				    i, i);
-		  }
+		if (cinfo.info[i].result_use_count
+		    > cinfo.info[i].match_use_count)
+		  fprintf_indent (f, indent,
+				  "if (! tree_invariant_p (captures[%d])) "
+				  "return NULL_TREE;\n", i);
 	      }
 	  for (unsigned j = 0; j < e->ops.length (); ++j)
 	    {

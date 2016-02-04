@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for ATMEL AVR micro controllers
-   Copyright (C) 1998-2015 Free Software Foundation, Inc.
+   Copyright (C) 1998-2016 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
    This file is part of GCC.
@@ -43,6 +43,7 @@
 #include "expr.h"
 #include "langhooks.h"
 #include "cfgrtl.h"
+#include "params.h"
 #include "builtins.h"
 #include "context.h"
 #include "tree-pass.h"
@@ -409,6 +410,15 @@ avr_option_override (void)
 
   if (avr_strict_X)
     flag_caller_saves = 0;
+
+  /* Allow optimizer to introduce store data races. This used to be the
+     default - it was changed because bigger targets did not see any
+     performance decrease. For the AVR though, disallowing data races
+     introduces additional code in LIM and increases reg pressure.  */
+
+  maybe_set_param_value (PARAM_ALLOW_STORE_DATA_RACES, 1,
+      global_options.x_param_values,
+      global_options_set.x_param_values);
 
   /* Unwind tables currently require a frame pointer for correctness,
      see toplev.c:process_options().  */
@@ -2428,6 +2438,27 @@ avr_print_operand (FILE *file, rtx x, int code)
     fputs (cond_string (reverse_condition (GET_CODE (x))), file);
   else
     avr_print_operand_address (file, VOIDmode, x);
+}
+
+
+/* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
+
+/* Prefer sequence of loads/stores for moves of size upto
+   two - two pairs of load/store instructions are always better
+   than the 5 instruction sequence for a loop (1 instruction
+   for loop counter setup, and 4 for the body of the loop). */
+
+static bool
+avr_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
+				     unsigned int align ATTRIBUTE_UNUSED,
+				     enum by_pieces_operation op,
+				     bool speed_p)
+{
+
+  if (op != MOVE_BY_PIECES || (speed_p && (size > (MOVE_MAX_PIECES))))
+    return default_use_by_pieces_infrastructure_p (size, align, op, speed_p);
+
+  return size <= (MOVE_MAX_PIECES);
 }
 
 
@@ -13762,6 +13793,10 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 #define TARGET_PRINT_OPERAND_ADDRESS avr_print_operand_address
 #undef  TARGET_PRINT_OPERAND_PUNCT_VALID_P
 #define TARGET_PRINT_OPERAND_PUNCT_VALID_P avr_print_operand_punct_valid_p
+
+#undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
+#define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
+  avr_use_by_pieces_infrastructure_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

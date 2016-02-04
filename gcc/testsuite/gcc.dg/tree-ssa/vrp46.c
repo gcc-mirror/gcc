@@ -12,6 +12,8 @@ func_18 ( int t )
   for (0; 1; ++l_889)
     {
       int t1 = 0;
+      func_98 (0);
+      func_98 (0);
       if (func_81 (1))
 	{
 	  int rhs = l_895;

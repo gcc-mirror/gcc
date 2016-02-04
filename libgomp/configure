@@ -627,10 +627,19 @@ LIBGOMP_BUILD_VERSIONED_SHLIB_FALSE
 LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE
 OPT_LDFLAGS
 SECTION_LDFLAGS
+PLUGIN_HSA_FALSE
+PLUGIN_HSA_TRUE
 PLUGIN_NVPTX_FALSE
 PLUGIN_NVPTX_TRUE
 offload_additional_lib_paths
 offload_additional_options
+PLUGIN_HSA_LIBS
+PLUGIN_HSA_LDFLAGS
+PLUGIN_HSA_CPPFLAGS
+PLUGIN_HSA
+HSA_KMT_LIB
+HSA_RUNTIME_LIB
+HSA_RUNTIME_INCLUDE
 PLUGIN_NVPTX_LIBS
 PLUGIN_NVPTX_LDFLAGS
 PLUGIN_NVPTX_CPPFLAGS
@@ -782,6 +791,10 @@ enable_maintainer_mode
 with_cuda_driver
 with_cuda_driver_include
 with_cuda_driver_lib
+with_hsa_runtime
+with_hsa_runtime_include
+with_hsa_runtime_lib
+with_hsa_kmt_lib
 enable_linux_futex
 enable_tls
 enable_symvers
@@ -1453,6 +1466,17 @@ Optional Packages:
   --with-cuda-driver-lib=PATH
                           specify directory for the installed CUDA driver
                           library
+  --with-hsa-runtime=PATH specify prefix directory for installed HSA run-time
+                          package. Equivalent to
+                          --with-hsa-runtime-include=PATH/include plus
+                          --with-hsa-runtime-lib=PATH/lib
+  --with-hsa-runtime-include=PATH
+                          specify directory for installed HSA run-time include
+                          files
+  --with-hsa-runtime-lib=PATH
+                          specify directory for the installed HSA run-time
+                          library
+  --with-hsa-kmt-lib=PATH specify directory for installed HSA KMT library.
 
 Some influential environment variables:
   CC          C compiler command
@@ -9093,7 +9117,7 @@ _LT_EOF
 	if $NM -V 2>&1 | $GREP 'GNU' > /dev/null; then
 	  export_symbols_cmds='$NM -Bpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "W")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
 	else
-	  export_symbols_cmds='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
+	  export_symbols_cmds='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "L")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
 	fi
 	aix_use_runtimelinking=no
 
@@ -11121,7 +11145,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11124 "configure"
+#line 11148 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11227,7 +11251,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11230 "configure"
+#line 11254 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12953,7 +12977,7 @@ _LT_EOF
 	if $NM -V 2>&1 | $GREP 'GNU' > /dev/null; then
 	  export_symbols_cmds_FC='$NM -Bpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "W")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
 	else
-	  export_symbols_cmds_FC='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
+	  export_symbols_cmds_FC='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "L")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
 	fi
 	aix_use_runtimelinking=no
 
@@ -15090,7 +15114,7 @@ esac
 
 # Plugins for offload execution, configure.ac fragment.  -*- mode: autoconf -*-
 #
-# Copyright (C) 2014-2015 Free Software Foundation, Inc.
+# Copyright (C) 2014-2016 Free Software Foundation, Inc.
 #
 # Contributed by Mentor Embedded.
 #
@@ -15225,6 +15249,77 @@ PLUGIN_NVPTX_LIBS=
 
 
 
+# Look for HSA run-time, its includes and libraries
+
+HSA_RUNTIME_INCLUDE=
+HSA_RUNTIME_LIB=
+
+
+HSA_RUNTIME_CPPFLAGS=
+HSA_RUNTIME_LDFLAGS=
+
+
+# Check whether --with-hsa-runtime was given.
+if test "${with_hsa_runtime+set}" = set; then :
+  withval=$with_hsa_runtime;
+fi
+
+
+# Check whether --with-hsa-runtime-include was given.
+if test "${with_hsa_runtime_include+set}" = set; then :
+  withval=$with_hsa_runtime_include;
+fi
+
+
+# Check whether --with-hsa-runtime-lib was given.
+if test "${with_hsa_runtime_lib+set}" = set; then :
+  withval=$with_hsa_runtime_lib;
+fi
+
+if test "x$with_hsa_runtime" != x; then
+  HSA_RUNTIME_INCLUDE=$with_hsa_runtime/include
+  HSA_RUNTIME_LIB=$with_hsa_runtime/lib
+fi
+if test "x$with_hsa_runtime_include" != x; then
+  HSA_RUNTIME_INCLUDE=$with_hsa_runtime_include
+fi
+if test "x$with_hsa_runtime_lib" != x; then
+  HSA_RUNTIME_LIB=$with_hsa_runtime_lib
+fi
+if test "x$HSA_RUNTIME_INCLUDE" != x; then
+  HSA_RUNTIME_CPPFLAGS=-I$HSA_RUNTIME_INCLUDE
+fi
+if test "x$HSA_RUNTIME_LIB" != x; then
+  HSA_RUNTIME_LDFLAGS=-L$HSA_RUNTIME_LIB
+fi
+
+HSA_KMT_LIB=
+
+HSA_KMT_LDFLAGS=
+
+# Check whether --with-hsa-kmt-lib was given.
+if test "${with_hsa_kmt_lib+set}" = set; then :
+  withval=$with_hsa_kmt_lib;
+fi
+
+if test "x$with_hsa_kmt_lib" != x; then
+  HSA_KMT_LIB=$with_hsa_kmt_lib
+fi
+if test "x$HSA_KMT_LIB" != x; then
+  HSA_KMT_LDFLAGS=-L$HSA_KMT_LIB
+fi
+
+PLUGIN_HSA=0
+PLUGIN_HSA_CPPFLAGS=
+PLUGIN_HSA_LDFLAGS=
+PLUGIN_HSA_LIBS=
+
+
+
+
+
+
+
 # Get offload targets and path to install tree of offloading compiler.
 offload_additional_options=
 offload_additional_lib_paths=
@@ -15234,6 +15329,7 @@ if test x"$enable_offload_targets" != x; then
   for tgt in `echo $enable_offload_targets | sed -e 's#,# #g'`; do
     tgt_dir=`echo $tgt | grep '=' | sed 's/.*=//'`
     tgt=`echo $tgt | sed 's/=.*//'`
+    tgt_name=
     case $tgt in
       *-intelmic-* | *-intelmicemul-*)
 	tgt_name=intelmic
@@ -15277,16 +15373,77 @@ rm -f core conftest.err conftest.$ac_objext \
 	    ;;
 	esac
 	;;
+      hsa*)
+	case "${target}" in
+	  x86_64-*-*)
+	    case " ${CC} ${CFLAGS} " in
+	      *" -m32 "*)
+	        PLUGIN_HSA=0
+		;;
+	      *)
+	        tgt_name=hsa
+	        PLUGIN_HSA=$tgt
+	        PLUGIN_HSA_CPPFLAGS=$HSA_RUNTIME_CPPFLAGS
+	        PLUGIN_HSA_LDFLAGS="$HSA_RUNTIME_LDFLAGS $HSA_KMT_LDFLAGS"
+	        PLUGIN_HSA_LIBS="-lhsa-runtime64 -lhsakmt"
+
+	        PLUGIN_HSA_save_CPPFLAGS=$CPPFLAGS
+	        CPPFLAGS="$PLUGIN_HSA_CPPFLAGS $CPPFLAGS"
+	        PLUGIN_HSA_save_LDFLAGS=$LDFLAGS
+	        LDFLAGS="$PLUGIN_HSA_LDFLAGS $LDFLAGS"
+	        PLUGIN_HSA_save_LIBS=$LIBS
+	        LIBS="$PLUGIN_HSA_LIBS $LIBS"
+
+	        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include "hsa.h"
+int
+main ()
+{
+hsa_status_t status = hsa_init ()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  PLUGIN_HSA=1
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	        CPPFLAGS=$PLUGIN_HSA_save_CPPFLAGS
+	        LDFLAGS=$PLUGIN_HSA_save_LDFLAGS
+	        LIBS=$PLUGIN_HSA_save_LIBS
+	        case $PLUGIN_HSA in
+	          hsa*)
+	            HSA_PLUGIN=0
+	            as_fn_error "HSA run-time package required for HSA support" "$LINENO" 5
+	            ;;
+	        esac
+		;;
+	      esac
+    	    ;;
+	  *-*-*)
+	    PLUGIN_HSA=0
+            ;;
+        esac
+        ;;
       *)
 	as_fn_error "unknown offload target specified" "$LINENO" 5
 	;;
     esac
-    if test x"$offload_targets" = x; then
+    if test x"$tgt_name" = x; then
+      # Don't configure libgomp for this offloading target if we don't build
+      # the corresponding plugin.
+      continue
+    elif test x"$offload_targets" = x; then
       offload_targets=$tgt_name
     else
       offload_targets=$offload_targets,$tgt_name
     fi
-    if test x"$tgt_dir" != x; then
+    if test "$tgt_name" = hsa; then
+      # Offloading compilation is all handled by the target compiler.
+      :
+    elif test x"$tgt_dir" != x; then
       offload_additional_options="$offload_additional_options -B$tgt_dir/libexec/gcc/\$(target_alias)/\$(gcc_version) -B$tgt_dir/bin"
       offload_additional_lib_paths="$offload_additional_lib_paths:$tgt_dir/lib64:$tgt_dir/lib:$tgt_dir/lib32"
     else
@@ -15311,6 +15468,19 @@ fi
 
 cat >>confdefs.h <<_ACEOF
 #define PLUGIN_NVPTX $PLUGIN_NVPTX
+_ACEOF
+
+ if test $PLUGIN_HSA = 1; then
+  PLUGIN_HSA_TRUE=
+  PLUGIN_HSA_FALSE='#'
+else
+  PLUGIN_HSA_TRUE='#'
+  PLUGIN_HSA_FALSE=
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define PLUGIN_HSA $PLUGIN_HSA
 _ACEOF
 
 
@@ -16710,6 +16880,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${PLUGIN_NVPTX_TRUE}" && test -z "${PLUGIN_NVPTX_FALSE}"; then
   as_fn_error "conditional \"PLUGIN_NVPTX\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${PLUGIN_HSA_TRUE}" && test -z "${PLUGIN_HSA_FALSE}"; then
+  as_fn_error "conditional \"PLUGIN_HSA\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE}" && test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_FALSE}"; then

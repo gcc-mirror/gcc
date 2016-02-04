@@ -88,6 +88,13 @@ the standard.
 to an expression that yields 0 if and only if the system headers
 are exposing proper support for the related set of functions.  If defined,
 it must be 0 while bootstrapping the compiler/rebuilding the library.
+   </p><p><code class="code">_GLIBCXX_NO_OBSOLETE_ISINF_ISNAN_DYNAMIC</code> may be defined
+to an expression that yields 0 if and only if the system headers
+are exposing non-standard <code class="code">isinf(double)</code> and
+<code class="code">isnan(double)</code> functions in the global namespace. Those functions
+should be detected automatically by the <code class="code">configure</code> script when
+libstdc++ is built but if their presence depends on compilation flags or
+other macros the static configuration can be overridden.
    </p><p>Finally, you should bracket the entire file in an include-guard, like
 this:
    </p><pre class="programlisting">

@@ -1,5 +1,5 @@
 /* Loop header copying on trees.
-   Copyright (C) 2004-2015 Free Software Foundation, Inc.
+   Copyright (C) 2004-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -164,6 +164,8 @@ public:
   
   /* Initialize and finalize loop structures, copying headers inbetween.  */
   virtual unsigned int execute (function *);
+
+  opt_pass * clone () { return new pass_ch (m_ctxt); }
 
 protected:
   /* ch_base method: */

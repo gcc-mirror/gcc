@@ -109,6 +109,12 @@ static const char *ReportTypeString(ReportType typ) {
   return "";
 }
 
+#if SANITIZER_MAC
+static const char *const kInterposedFunctionPrefix = "wrap_";
+#else
+static const char *const kInterposedFunctionPrefix = "__interceptor_";
+#endif
+
 void PrintStack(const ReportStack *ent) {
   if (ent == 0 || ent->frames == 0) {
     Printf("    [failed to restore the stack]\n\n");
@@ -119,7 +125,7 @@ void PrintStack(const ReportStack *ent) {
     InternalScopedString res(2 * GetPageSizeCached());
     RenderFrame(&res, common_flags()->stack_trace_format, i, frame->info,
                 common_flags()->symbolize_vs_style,
-                common_flags()->strip_path_prefix, "__interceptor_");
+                common_flags()->strip_path_prefix, kInterposedFunctionPrefix);
     Printf("%s\n", res.data());
   }
   Printf("\n");
@@ -163,9 +169,14 @@ static void PrintLocation(const ReportLocation *loc) {
   Printf("%s", d.Location());
   if (loc->type == ReportLocationGlobal) {
     const DataInfo &global = loc->global;
-    Printf("  Location is global '%s' of size %zu at %p (%s+%p)\n\n",
-           global.name, global.size, global.start,
-           StripModuleName(global.module), global.module_offset);
+    if (global.size != 0)
+      Printf("  Location is global '%s' of size %zu at %p (%s+%p)\n\n",
+             global.name, global.size, global.start,
+             StripModuleName(global.module), global.module_offset);
+    else
+      Printf("  Location is global '%s' at %p (%s+%p)\n\n", global.name,
+             global.start, StripModuleName(global.module),
+             global.module_offset);
   } else if (loc->type == ReportLocationHeap) {
     char thrbuf[kThreadBufSize];
     Printf("  Location is heap block of size %zu at %p allocated by %s:\n",

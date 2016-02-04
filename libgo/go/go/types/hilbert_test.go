@@ -24,6 +24,8 @@ var (
 )
 
 func TestHilbert(t *testing.T) {
+	t.Skip("skipping for gccgo--no importer")
+
 	// generate source
 	src := program(*H, *out)
 	if *out != "" {

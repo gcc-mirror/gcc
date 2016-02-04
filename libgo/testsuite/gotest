@@ -618,7 +618,7 @@ xno)
 		wait $pid
 		status=$?
 		if ! test -f gotest-timeout; then
-		    sleeppid=`ps -o pid,ppid,cmd | grep " $alarmpid " | grep sleep | sed -e 's/ *\([0-9]*\) .*$/\1/'`
+		    sleeppid=`ps -o pid,ppid,comm | grep " $alarmpid " | grep sleep | sed -e 's/ *\([0-9]*\) .*$/\1/'`
 		    kill $alarmpid
 		    wait $alarmpid
 		    if test "$sleeppid" != ""; then

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Synopsys DesignWare ARC cpu.
-   Copyright (C) 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 2000-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -41,6 +41,10 @@ extern int arc_output_commutative_cond_exec (rtx *operands, bool);
 extern bool arc_expand_movmem (rtx *operands);
 extern bool prepare_move_operands (rtx *operands, machine_mode mode);
 extern void emit_shift (enum rtx_code, rtx, rtx, rtx);
+extern void arc_expand_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
+extern void arc_split_compare_and_swap (rtx *);
+extern void arc_expand_compare_and_swap (rtx *);
+
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
@@ -100,7 +104,7 @@ extern void arc_toggle_unalign (void);
 extern void split_addsi (rtx *);
 extern void split_subsi (rtx *);
 extern void arc_pad_return (void);
-extern rtx arc_split_move (rtx *);
+extern void arc_split_move (rtx *);
 extern int arc_verify_short (rtx_insn *insn, int unalign, int);
 extern const char *arc_short_long (rtx_insn *insn, const char *, const char *);
 extern rtx arc_regno_use_in (unsigned int, rtx);

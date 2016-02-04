@@ -1,5 +1,5 @@
 /* Operations with very long integers.
-   Copyright (C) 2012-2015 Free Software Foundation, Inc.
+   Copyright (C) 2012-2016 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -115,6 +115,20 @@ canonize (HOST_WIDE_INT *val, unsigned int len, unsigned int precision)
     }
 
   /* The number is 0 or -1.  */
+  return 1;
+}
+
+/* VAL[0] is the unsigned result of an operation.  Canonize it by adding
+   another 0 block if needed, and return number of blocks needed.  */
+
+static inline unsigned int
+canonize_uhwi (HOST_WIDE_INT *val, unsigned int precision)
+{
+  if (val[0] < 0 && precision > HOST_BITS_PER_WIDE_INT)
+    {
+      val[1] = 0;
+      return 2;
+    }
   return 1;
 }
 
@@ -1214,30 +1228,32 @@ wi_unpack (unsigned HOST_HALF_WIDE_INT *result, const HOST_WIDE_INT *input,
     result[j++] = mask;
 }
 
-/* The inverse of wi_unpack.  IN_LEN is the the number of input
-   blocks.  The number of output blocks will be half this amount.  */
-static void
-wi_pack (unsigned HOST_WIDE_INT *result,
+/* The inverse of wi_unpack.  IN_LEN is the number of input
+   blocks and PRECISION is the precision of the result.  Return the
+   number of blocks in the canonicalized result.  */
+static unsigned int
+wi_pack (HOST_WIDE_INT *result,
 	 const unsigned HOST_HALF_WIDE_INT *input,
-	 unsigned int in_len)
+	 unsigned int in_len, unsigned int precision)
 {
   unsigned int i = 0;
   unsigned int j = 0;
+  unsigned int blocks_needed = BLOCKS_NEEDED (precision);
 
-  while (i + 2 < in_len)
+  while (i + 1 < in_len)
     {
-      result[j++] = (unsigned HOST_WIDE_INT)input[i]
-	| ((unsigned HOST_WIDE_INT)input[i + 1]
-	   << HOST_BITS_PER_HALF_WIDE_INT);
+      result[j++] = ((unsigned HOST_WIDE_INT) input[i]
+		     | ((unsigned HOST_WIDE_INT) input[i + 1]
+			<< HOST_BITS_PER_HALF_WIDE_INT));
       i += 2;
     }
 
   /* Handle the case where in_len is odd.   For this we zero extend.  */
   if (in_len & 1)
-    result[j++] = (unsigned HOST_WIDE_INT)input[i];
-  else
-    result[j++] = (unsigned HOST_WIDE_INT)input[i]
-      | ((unsigned HOST_WIDE_INT)input[i + 1] << HOST_BITS_PER_HALF_WIDE_INT);
+    result[j++] = (unsigned HOST_WIDE_INT) input[i];
+  else if (j < blocks_needed)
+    result[j++] = 0;
+  return canonize (result, j, precision);
 }
 
 /* Multiply Op1 by Op2.  If HIGH is set, only the upper half of the
@@ -1460,19 +1476,8 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1val,
 	  *overflow = true;
     }
 
-  if (high)
-    {
-      /* compute [prec] <- ([prec] * [prec]) >> [prec] */
-      wi_pack ((unsigned HOST_WIDE_INT *) val,
-	       &r[half_blocks_needed], half_blocks_needed);
-      return canonize (val, blocks_needed, prec);
-    }
-  else
-    {
-      /* compute [prec] <- ([prec] * [prec]) && ((1 << [prec]) - 1) */
-      wi_pack ((unsigned HOST_WIDE_INT *) val, r, half_blocks_needed);
-      return canonize (val, blocks_needed, prec);
-    }
+  int r_offset = high ? half_blocks_needed : 0;
+  return wi_pack (val, &r[r_offset], half_blocks_needed, prec);
 }
 
 /* Compute the population count of X.  */
@@ -1797,15 +1802,19 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
     {
       unsigned HOST_WIDE_INT o0 = dividend.to_uhwi ();
       unsigned HOST_WIDE_INT o1 = divisor.to_uhwi ();
+      unsigned int quotient_len = 1;
 
       if (quotient)
-	quotient[0] = o0 / o1;
+	{
+	  quotient[0] = o0 / o1;
+	  quotient_len = canonize_uhwi (quotient, dividend_prec);
+	}
       if (remainder)
 	{
 	  remainder[0] = o0 % o1;
-	  *remainder_len = 1;
+	  *remainder_len = canonize_uhwi (remainder, dividend_prec);
 	}
-      return 1;
+      return quotient_len;
     }
 
   /* Make the divisor and dividend positive and remember what we
@@ -1847,8 +1856,7 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
   unsigned int quotient_len = 0;
   if (quotient)
     {
-      wi_pack ((unsigned HOST_WIDE_INT *) quotient, b_quotient, m);
-      quotient_len = canonize (quotient, (m + 1) / 2, dividend_prec);
+      quotient_len = wi_pack (quotient, b_quotient, m, dividend_prec);
       /* The quotient is neg if exactly one of the divisor or dividend is
 	 neg.  */
       if (dividend_neg != divisor_neg)
@@ -1859,8 +1867,7 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
 
   if (remainder)
     {
-      wi_pack ((unsigned HOST_WIDE_INT *) remainder, b_remainder, n);
-      *remainder_len = canonize (remainder, (n + 1) / 2, dividend_prec);
+      *remainder_len = wi_pack (remainder, b_remainder, n, dividend_prec);
       /* The remainder is always the same sign as the dividend.  */
       if (dividend_neg)
 	*remainder_len = wi::sub_large (remainder, zeros, 1, remainder,

@@ -1,5 +1,5 @@
 /* Support routines for Splitting Paths to loop backedges
-   Copyright (C) 2015 Free Software Foundation, Inc.
+   Copyright (C) 2015-2016 Free Software Foundation, Inc.
    Contributed by Ajit Kumar Agarwal <ajitkum@xilinx.com>.
 
  This file is part of GCC.
@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "gimple-iterator.h"
 #include "tracer.h"
+#include "predict.h"
 
 /* Given LATCH, the latch block in a loop, see if the shape of the
    path reaching LATCH is suitable for being split by duplication.
@@ -73,7 +74,7 @@ find_block_to_duplicate_for_splitting_paths (basic_block latch)
 	    return NULL;
 
 	  /* And that BB's immediate dominator's successors are the
-	     the predecessors of BB.  */
+	     predecessors of BB.  */
 	  if (!find_edge (bb_idom, EDGE_PRED (bb, 0)->src)
 	      || !find_edge (bb_idom, EDGE_PRED (bb, 1)->src))
 	    return NULL;
@@ -180,15 +181,21 @@ split_paths ()
 
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
+      /* Only split paths if we are optimizing this loop for speed.  */
+      if (!optimize_loop_for_speed_p (loop))
+	continue;
+
       /* See if there is a block that we can duplicate to split the
 	 path to the loop latch.  */
-      basic_block bb = find_block_to_duplicate_for_splitting_paths (loop->latch);
+      basic_block bb
+	= find_block_to_duplicate_for_splitting_paths (loop->latch);
 
       /* BB is the merge point for an IF-THEN-ELSE we want to transform.
 
-	 Essentially we want to create two duplicates of BB and append
-	 a duplicate to the THEN and ELSE clauses.  This will split the
-	 path leading to the latch.  BB will be unreachable and removed.  */
+	 Essentially we want to create a duplicate of bb and redirect the
+	 first predecessor of BB to the duplicate (leaving the second
+	 predecessor as is.  This will split the path leading to the latch
+	 re-using BB to avoid useless copying.  */
       if (bb && is_feasible_trace (bb))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -196,9 +203,7 @@ split_paths ()
 		     "Duplicating join block %d into predecessor paths\n",
 		     bb->index);
 	  basic_block pred0 = EDGE_PRED (bb, 0)->src;
-	  basic_block pred1 = EDGE_PRED (bb, 1)->src;
 	  transform_duplicate (pred0, bb);
-	  transform_duplicate (pred1, bb);
 	  changed = true;
 	}
     }

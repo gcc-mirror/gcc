@@ -1,5 +1,5 @@
 /* Register Transfer Language (RTL) definitions for GCC
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2931,6 +2931,7 @@ extern void set_insn_deleted (rtx);
 
 extern rtx single_set_2 (const rtx_insn *, const_rtx);
 extern bool contains_symbol_ref_p (const_rtx);
+extern bool contains_symbolic_reference_p (const_rtx);
 
 /* Handle the cheap and common cases inline for performance.  */
 
@@ -3657,7 +3658,6 @@ extern void init_alias_analysis (void);
 extern void end_alias_analysis (void);
 extern void vt_equate_reg_base_value (const_rtx, const_rtx);
 extern bool memory_modified_in_insn_p (const_rtx, const_rtx);
-extern bool memory_must_be_modified_in_insn_p (const_rtx, const_rtx);
 extern bool may_be_sp_based_p (rtx);
 extern rtx gen_hard_reg_clobber (machine_mode, unsigned int);
 extern rtx get_reg_known_value (unsigned int);

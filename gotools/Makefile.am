@@ -30,7 +30,7 @@ LIBGODEP = $(libgodir)/libgo.la
 
 if NATIVE
 # Use the compiler we just built.
-GOCOMPILER = $(GOC_FOR_TARGET)
+GOCOMPILER = $(GOC_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET)
 else
 GOCOMPILER = $(GOC)
 endif
@@ -76,6 +76,7 @@ go_cmd_go_files = \
 go_cmd_gofmt_files = \
 	$(cmdsrcdir)/gofmt/doc.go \
 	$(cmdsrcdir)/gofmt/gofmt.go \
+	$(cmdsrcdir)/gofmt/internal.go \
 	$(cmdsrcdir)/gofmt/rewrite.go \
 	$(cmdsrcdir)/gofmt/simplify.go
 

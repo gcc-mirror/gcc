@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-dom1" } */
+/* { dg-options "-O1 -fdump-tree-dom2" } */
   
 void bar1 (void);
 void bar2 (void);
@@ -17,4 +17,4 @@ foo (unsigned int a, unsigned int b)
    true (to reach the second condition we know a < b via the first
    conditional.  */
 
-/* { dg-final { scan-tree-dump-times "if " 1 "dom1" } } */
+/* { dg-final { scan-tree-dump-times "if " 1 "dom2" } } */

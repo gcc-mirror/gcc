@@ -1,5 +1,5 @@
 /* Single-image implementation of GNU Fortran Coarray Library
-   Copyright (C) 2011-2015 Free Software Foundation, Inc.
+   Copyright (C) 2011-2016 Free Software Foundation, Inc.
    Contributed by Tobias Burnus <burnus@net-b.de>
 
 This file is part of the GNU Fortran Coarray Runtime Library (libcaf).
@@ -101,7 +101,8 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
   void *local;
 
   if (type == CAF_REGTYPE_LOCK_STATIC || type == CAF_REGTYPE_LOCK_ALLOC
-      || type == CAF_REGTYPE_CRITICAL)
+      || type == CAF_REGTYPE_CRITICAL || type == CAF_REGTYPE_EVENT_STATIC
+      || type == CAF_REGTYPE_EVENT_ALLOC)
     local = calloc (size, sizeof (bool));
   else
     local = malloc (size);
@@ -133,7 +134,8 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
     *stat = 0;
 
   if (type == CAF_REGTYPE_COARRAY_STATIC || type == CAF_REGTYPE_LOCK_STATIC
-      || type == CAF_REGTYPE_CRITICAL)
+      || type == CAF_REGTYPE_CRITICAL || type == CAF_REGTYPE_EVENT_STATIC
+      || type == CAF_REGTYPE_EVENT_ALLOC)
     {
       caf_static_t *tmp = malloc (sizeof (caf_static_t));
       tmp->prev  = caf_static_list;
@@ -1071,6 +1073,45 @@ _gfortran_caf_atomic_op (int op, caf_token_t token, size_t offset,
     *stat = 0;
 }
 
+void
+_gfortran_caf_event_post (caf_token_t token, size_t index, 
+			  int image_index __attribute__ ((unused)), 
+			  int *stat, char *errmsg __attribute__ ((unused)), 
+			  int errmsg_len __attribute__ ((unused)))
+{
+  uint32_t value = 1;
+  uint32_t *event = (uint32_t *) ((char *) TOKEN (token) + index*sizeof(uint32_t));
+  __atomic_fetch_add (event, (uint32_t) value, __ATOMIC_RELAXED);
+  
+  if(stat)
+    *stat = 0;
+}
+
+void
+_gfortran_caf_event_wait (caf_token_t token, size_t index, 
+			  int until_count, int *stat,
+			  char *errmsg __attribute__ ((unused)), 
+			  int errmsg_len __attribute__ ((unused)))
+{
+  uint32_t *event = (uint32_t *) ((char *) TOKEN (token) + index*sizeof(uint32_t));
+  uint32_t value = (uint32_t)-until_count;
+   __atomic_fetch_add (event, (uint32_t) value, __ATOMIC_RELAXED);
+  
+   if(stat)
+    *stat = 0;    
+}
+
+void
+_gfortran_caf_event_query (caf_token_t token, size_t index, 
+			   int image_index __attribute__ ((unused)), 
+			   int *count, int *stat)
+{
+  uint32_t *event = (uint32_t *) ((char *) TOKEN (token) + index*sizeof(uint32_t));
+  __atomic_load (event, (uint32_t *) count, __ATOMIC_RELAXED);
+  
+  if(stat)
+    *stat = 0;
+}
 
 void
 _gfortran_caf_lock (caf_token_t token, size_t index,

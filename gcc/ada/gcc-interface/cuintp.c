@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -52,8 +52,8 @@
    the integer value itself.  The origin of the Uints_Ptr table is adjusted so
    that a Uint value of Uint_Bias indexes the first element.
 
-   First define a utility function that operates like build_int_cst_type for
-   integral types and does a conversion for floating-point types.  */
+   First define a utility function that is build_int_cst for integral types and
+   does a conversion for floating-point types.  */
 
 static tree
 build_cst_from_int (tree type, HOST_WIDE_INT low)
@@ -61,7 +61,7 @@ build_cst_from_int (tree type, HOST_WIDE_INT low)
   if (SCALAR_FLOAT_TYPE_P (type))
     return convert (type, build_int_cst (gnat_type_for_size (32, 0), low));
   else
-    return build_int_cst_type (type, low);
+    return build_int_cst (type, low);
 }
 
 /* Similar to UI_To_Int, but return a GCC INTEGER_CST or REAL_CST node,

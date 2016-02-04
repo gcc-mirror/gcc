@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -158,7 +158,6 @@ varpool_node::get_create (tree decl)
 	  g->have_offload = true;
 	  if (!in_lto_p)
 	    vec_safe_push (offload_vars, decl);
-	  node->force_output = 1;
 	}
     }
 
@@ -296,9 +295,11 @@ varpool_node::get_constructor (void)
 
   /* We may have renamed the declaration, e.g., a static function.  */
   name = lto_get_decl_name_mapping (file_data, name);
+  struct lto_in_decl_state *decl_state
+	 = lto_get_function_in_decl_state (file_data, decl);
 
   data = lto_get_section_data (file_data, LTO_section_function_body,
-			       name, &len);
+			       name, &len, decl_state->compressed);
   if (!data)
     fatal_error (input_location, "%s: section %s is missing",
 		 file_data->file_name,
@@ -308,7 +309,7 @@ varpool_node::get_constructor (void)
   gcc_assert (DECL_INITIAL (decl) != error_mark_node);
   lto_stats.num_function_bodies++;
   lto_free_section_data (file_data, LTO_section_function_body, name,
-			 data, len);
+			 data, len, decl_state->compressed);
   lto_free_function_in_decl_state_for_node (this);
   timevar_pop (TV_IPA_LTO_CTORS_IN);
   return DECL_INITIAL (decl);
@@ -440,7 +441,7 @@ ctor_for_folding (tree decl)
       gcc_assert (!DECL_INITIAL (decl)
 		  || (node->alias && node->get_alias_target () == real_node)
 		  || DECL_INITIAL (decl) == error_mark_node);
-      if (node->weakref)
+      while (node->transparent_alias && node->analyzed)
 	{
 	  node = node->get_alias_target ();
 	  decl = node->decl;
@@ -490,11 +491,11 @@ varpool_node::get_availability (void)
   if (DECL_IN_CONSTANT_POOL (decl)
       || DECL_VIRTUAL_P (decl))
     return AVAIL_AVAILABLE;
-  if (alias && weakref)
+  if (transparent_alias && definition)
     {
       enum availability avail;
 
-      ultimate_alias_target (&avail)->get_availability ();
+      ultimate_alias_target (&avail);
       return avail;
     }
   /* If the variable can be overwritten, return OVERWRITABLE.  Takes
@@ -536,8 +537,9 @@ varpool_node::assemble_aliases (void)
   FOR_EACH_ALIAS (this, ref)
     {
       varpool_node *alias = dyn_cast <varpool_node *> (ref->referring);
-      do_assemble_alias (alias->decl,
-			 DECL_ASSEMBLER_NAME (decl));
+      if (!alias->transparent_alias)
+	do_assemble_alias (alias->decl,
+			   DECL_ASSEMBLER_NAME (decl));
       alias->assemble_aliases ();
     }
 }
@@ -665,7 +667,14 @@ symbol_table::remove_unreferenced_decls (void)
 	      && vnode->analyzed)
 	    enqueue_node (vnode, &first);
 	  else
-	    referenced.add (node);
+	    {
+	      referenced.add (vnode);
+	      while (vnode && vnode->alias && vnode->definition)
+		{
+		  vnode = vnode->get_alias_target ();
+	          referenced.add (vnode);
+		}
+	    }
 	}
     }
   if (dump_file)
@@ -738,6 +747,13 @@ symbol_table::output_variables (void)
       /* Handled in output_in_order.  */
       if (node->no_reorder)
 	continue;
+#ifdef ACCEL_COMPILER
+      /* Do not assemble "omp declare target link" vars.  */
+      if (DECL_HAS_VALUE_EXPR_P (node->decl)
+	  && lookup_attribute ("omp declare target link",
+			       DECL_ATTRIBUTES (node->decl)))
+	continue;
+#endif
       if (node->assemble_decl ())
         changed = true;
     }
@@ -760,7 +776,7 @@ varpool_node::create_alias (tree alias, tree decl)
   alias_node->definition = true;
   alias_node->alias_target = decl;
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (alias)) != NULL)
-    alias_node->weakref = true;
+    alias_node->weakref = alias_node->transparent_alias = true;
   return alias_node;
 }
 

@@ -1,6 +1,6 @@
 /* C++-specific tree lowering bits; see also c-gimplify.c and tree-gimple.c.
 
-   Copyright (C) 2002-2015 Free Software Foundation, Inc.
+   Copyright (C) 2002-2016 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
 
 This file is part of GCC.
@@ -98,7 +98,7 @@ cilk_cp_gimplify_call_params_in_spawned_fn (tree *expr_p, gimple_seq *pre_p,
 {
   int ii = 0;
 
-  cilk_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);  
+  cilk_gimplify_call_params_in_spawned_fn (expr_p, pre_p);
   if (TREE_CODE (*expr_p) == AGGR_INIT_EXPR)
     for (ii = 0; ii < aggr_init_expr_nargs (*expr_p); ii++)
       gimplify_expr (&AGGR_INIT_EXPR_ARG (*expr_p, ii), pre_p, post_p,
@@ -263,7 +263,14 @@ genericize_cp_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
 	loop = stmt_list;
     }
   else
-    loop = build1_loc (start_locus, LOOP_EXPR, void_type_node, stmt_list);
+    {
+      location_t loc = start_locus;
+      if (!cond || integer_nonzerop (cond))
+	loc = EXPR_LOCATION (expr_first (body));
+      if (loc == UNKNOWN_LOCATION)
+	loc = start_locus;
+      loop = build1_loc (loc, LOOP_EXPR, void_type_node, stmt_list);
+    }
 
   stmt_list = NULL;
   append_to_statement_list (loop, &stmt_list);
@@ -610,13 +617,18 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	 LHS of an assignment might also be involved in the RHS, as in bug
 	 25979.  */
     case INIT_EXPR:
-      if (fn_contains_cilk_spawn_p (cfun)
-	  && cilk_detect_spawn_and_unwrap (expr_p)
-	  && !seen_error ())
+      if (fn_contains_cilk_spawn_p (cfun))
 	{
-	  cilk_cp_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);
-	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
+	  if (cilk_detect_spawn_and_unwrap (expr_p))
+	    {
+	      cilk_cp_gimplify_call_params_in_spawned_fn (expr_p,
+							  pre_p, post_p);
+	      return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
+	    }
+	  if (seen_error () && contains_cilk_spawn_stmt (*expr_p))
+	    return GS_ERROR;
 	}
+
       cp_gimplify_init_expr (expr_p);
       if (TREE_CODE (*expr_p) != INIT_EXPR)
 	return GS_OK;
@@ -725,16 +737,16 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       break;
 
     case CILK_SPAWN_STMT:
-      gcc_assert 
-	(fn_contains_cilk_spawn_p (cfun) 
-	 && cilk_detect_spawn_and_unwrap (expr_p));
+      gcc_assert(fn_contains_cilk_spawn_p (cfun)
+		 && cilk_detect_spawn_and_unwrap (expr_p));
 
-      /* If errors are seen, then just process it as a CALL_EXPR.  */
       if (!seen_error ())
 	{
 	  cilk_cp_gimplify_call_params_in_spawned_fn (expr_p, pre_p, post_p);
 	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
 	}
+      return GS_ERROR;
+
     case CALL_EXPR:
       if (fn_contains_cilk_spawn_p (cfun)
 	  && cilk_detect_spawn_and_unwrap (expr_p)
@@ -980,6 +992,15 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
     }
 
   return NULL;
+}
+
+/* Fold ALL the trees!  FIXME we should be able to remove this, but
+   apparently that still causes optimization regressions.  */
+
+void
+cp_fold_function (tree fndecl)
+{
+  cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_r, NULL, NULL);
 }
 
 /* Perform any pre-gimplification lowering of C++ front end trees to
@@ -1466,10 +1487,6 @@ cp_genericize (tree fndecl)
 {
   tree t;
 
-  /* Fold ALL the trees!  FIXME we should be able to remove this, but
-     apparently that still causes optimization regressions.  */
-  cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_r, NULL, NULL);
-
   /* Fix up the types of parms passed by invisible reference.  */
   for (t = DECL_ARGUMENTS (fndecl); t; t = DECL_CHAIN (t))
     if (TREE_ADDRESSABLE (TREE_TYPE (t)))
@@ -1834,38 +1851,6 @@ cxx_omp_disregard_value_expr (tree decl, bool shared)
 	 && DECL_OMP_PRIVATIZED_MEMBER (decl);
 }
 
-/* Callback for walk_tree, looking for LABEL_EXPR.  Return *TP if it is
-   a LABEL_EXPR; otherwise return NULL_TREE.  Do not check the subtrees
-   of GOTO_EXPR.  */
-
-static tree
-contains_label_1 (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
-{
-  switch (TREE_CODE (*tp))
-    {
-    case LABEL_EXPR:
-      return *tp;
-
-    case GOTO_EXPR:
-      *walk_subtrees = 0;
-
-      /* ... fall through ...  */
-
-    default:
-      return NULL_TREE;
-    }
-}
-
-/* Return whether the sub-tree ST contains a label which is accessible from
-   outside the sub-tree.  */
-
-static bool
-contains_label_p (tree st)
-{
-  return
-   walk_tree_without_duplicates (&st, contains_label_1 , NULL) != NULL_TREE;
-}
-
 /* Perform folding on expression X.  */
 
 tree
@@ -1874,7 +1859,50 @@ cp_fully_fold (tree x)
   return cp_fold (x);
 }
 
+/* Fold expression X which is used as an rvalue if RVAL is true.  */
+
+static tree
+cp_fold_maybe_rvalue (tree x, bool rval)
+{
+  if (rval && DECL_P (x))
+    {
+      tree v = decl_constant_value (x);
+      if (v != error_mark_node)
+	x = v;
+    }
+  return cp_fold (x);
+}
+
+/* Fold expression X which is used as an rvalue.  */
+
+static tree
+cp_fold_rvalue (tree x)
+{
+  return cp_fold_maybe_rvalue (x, true);
+}
+
+/* c-common interface to cp_fold.  If IN_INIT, this is in a static initializer
+   and certain changes are made to the folding done.  Or should be (FIXME).  We
+   never touch maybe_const, as it is only used for the C front-end
+   C_MAYBE_CONST_EXPR.  */
+
+tree
+c_fully_fold (tree x, bool /*in_init*/, bool */*maybe_const*/)
+{
+  /* c_fully_fold is only used on rvalues, and we need to fold CONST_DECL to
+     INTEGER_CST.  */
+  return cp_fold_rvalue (x);
+}
+
 static GTY((cache, deletable)) cache_map fold_cache;
+
+/* Dispose of the whole FOLD_CACHE.  */
+
+void
+clear_fold_cache (void)
+{
+  gt_cleare_cache (fold_cache);
+}
 
 /*  This function tries to fold an expression X.
     To avoid combinatorial explosion, folding results are kept in fold_cache.
@@ -1890,12 +1918,13 @@ cp_fold (tree x)
   tree org_x = x, r = NULL_TREE;
   enum tree_code code;
   location_t loc;
+  bool rval_ops = true;
 
-  if (!x || error_operand_p (x))
+  if (!x || x == error_mark_node)
     return x;
 
   if (processing_template_decl
-      || (EXPR_P (x) && !TREE_TYPE (x)))
+      || (EXPR_P (x) && (!TREE_TYPE (x) || TREE_TYPE (x) == error_mark_node)))
     return x;
 
   /* Don't bother to cache DECLs or constants.  */
@@ -1913,6 +1942,7 @@ cp_fold (tree x)
       break;
 
     case VIEW_CONVERT_EXPR:
+      rval_ops = false;
     case CONVERT_EXPR:
     case NOP_EXPR:
     case NON_LVALUE_EXPR:
@@ -1920,24 +1950,18 @@ cp_fold (tree x)
       if (VOID_TYPE_P (TREE_TYPE (x)))
 	return x;
 
-      if (!TREE_OPERAND (x, 0)
-	  || TREE_CODE (TREE_OPERAND (x, 0)) == NON_LVALUE_EXPR)
-	return x;
-
       loc = EXPR_LOCATION (x);
-      op0 = TREE_OPERAND (x, 0);
-
-      if (TREE_CODE (x) == NOP_EXPR
-	  && TREE_OVERFLOW_P (op0)
-	  && TREE_TYPE (x) == TREE_TYPE (op0))
-	return x;
-
-      op0 = cp_fold (op0);
+      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
 
       if (op0 != TREE_OPERAND (x, 0))
-        x = build1_loc (loc, code, TREE_TYPE (x), op0);
-
-      x = fold (x);
+	{
+	  if (op0 == error_mark_node)
+	    x = error_mark_node;
+	  else
+	    x = fold_build1_loc (loc, code, TREE_TYPE (x), op0);
+	}
+      else
+	x = fold (x);
 
       /* Conversion of an out-of-range value has implementation-defined
 	 behavior; the language considers it different from arithmetic
@@ -1948,10 +1972,10 @@ cp_fold (tree x)
 
       break;
 
-    case SAVE_EXPR:
     case ADDR_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
+      rval_ops = false;
     case CONJ_EXPR:
     case FIX_TRUNC_EXPR:
     case FLOAT_EXPR:
@@ -1964,12 +1988,17 @@ cp_fold (tree x)
     case INDIRECT_REF:
 
       loc = EXPR_LOCATION (x);
-      op0 = cp_fold (TREE_OPERAND (x, 0));
+      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
 
       if (op0 != TREE_OPERAND (x, 0))
-        x = build1_loc (loc, code, TREE_TYPE (x), op0);
-
-      x = fold (x);
+	{
+	  if (op0 == error_mark_node)
+	    x = error_mark_node;
+	  else
+	    x = fold_build1_loc (loc, code, TREE_TYPE (x), op0);
+	}
+      else
+	x = fold (x);
 
       gcc_assert (TREE_CODE (x) != COND_EXPR
 		  || !VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (x, 0))));
@@ -1978,19 +2007,11 @@ cp_fold (tree x)
     case POSTDECREMENT_EXPR:
     case POSTINCREMENT_EXPR:
     case INIT_EXPR:
-
-	loc = EXPR_LOCATION (x);
-	op0 = cp_fold (TREE_OPERAND (x, 0));
-	op1 = cp_fold (TREE_OPERAND (x, 1));
-
-	if (TREE_OPERAND (x, 0) != op0 || TREE_OPERAND (x, 1) != op1)
-	  x = build2_loc (loc, code, TREE_TYPE (x), op0, op1);
-
-	break;
-
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
     case COMPOUND_EXPR:
+    case MODIFY_EXPR:
+      rval_ops = false;
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -2026,79 +2047,49 @@ cp_fold (tree x)
     case UNGT_EXPR: case UNGE_EXPR:
     case UNEQ_EXPR: case LTGT_EXPR:
     case RANGE_EXPR: case COMPLEX_EXPR:
-    case MODIFY_EXPR:
 
       loc = EXPR_LOCATION (x);
-      op0 = cp_fold (TREE_OPERAND (x, 0));
-      op1 = cp_fold (TREE_OPERAND (x, 1));
-      if ((code == COMPOUND_EXPR || code == MODIFY_EXPR)
-	  && ((op1 && TREE_SIDE_EFFECTS (op1))
-	       || (op0 && TREE_SIDE_EFFECTS (op0))))
-	break;
-      if (TREE_CODE (x) == COMPOUND_EXPR && !op0)
-	op0 = build_empty_stmt (loc);
+      op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
+      op1 = cp_fold_rvalue (TREE_OPERAND (x, 1));
 
       if (op0 != TREE_OPERAND (x, 0) || op1 != TREE_OPERAND (x, 1))
-	x = build2_loc (loc, code, TREE_TYPE (x), op0, op1);
+	{
+	  if (op0 == error_mark_node || op1 == error_mark_node)
+	    x = error_mark_node;
+	  else
+	    x = fold_build2_loc (loc, code, TREE_TYPE (x), op0, op1);
+	}
+      else
+	x = fold (x);
 
-      x = fold (x);
-
-      if (TREE_CODE (x) == COMPOUND_EXPR && TREE_OPERAND (x, 0) == NULL_TREE
-	  && TREE_OPERAND (x, 1))
-	return TREE_OPERAND (x, 1);
       break;
 
     case VEC_COND_EXPR:
     case COND_EXPR:
 
+      /* Don't bother folding a void condition, since it can't produce a
+	 constant value.  Also, some statement-level uses of COND_EXPR leave
+	 one of the branches NULL, so folding would crash.  */
+      if (VOID_TYPE_P (TREE_TYPE (x)))
+	return x;
+
       loc = EXPR_LOCATION (x);
-      op0 = cp_fold (TREE_OPERAND (x, 0));
-
-      if (TREE_SIDE_EFFECTS (op0))
-	break;
-
+      op0 = cp_fold_rvalue (TREE_OPERAND (x, 0));
       op1 = cp_fold (TREE_OPERAND (x, 1));
       op2 = cp_fold (TREE_OPERAND (x, 2));
 
-      if (TREE_CODE (op0) == INTEGER_CST)
+      if (op0 != TREE_OPERAND (x, 0)
+	  || op1 != TREE_OPERAND (x, 1)
+	  || op2 != TREE_OPERAND (x, 2))
 	{
-	  tree un;
-
-	  if (integer_zerop (op0))
-	    {
-	      un = op1;
-	      r = op2;
-	    }
+	  if (op0 == error_mark_node
+	      || op1 == error_mark_node
+	      || op2 == error_mark_node)
+	    x = error_mark_node;
 	  else
-	    {
-	      un = op2;
-	      r = op1;
-	    }
-
-          if ((!TREE_SIDE_EFFECTS (un) || !contains_label_p (un))
-              && (! VOID_TYPE_P (TREE_TYPE (r)) || VOID_TYPE_P (x)))
-            {
-	      if (CAN_HAVE_LOCATION_P (r)
-		  && EXPR_LOCATION (r) != loc
-		  && !(TREE_CODE (r) == SAVE_EXPR
-		       || TREE_CODE (r) == TARGET_EXPR
-		       || TREE_CODE (r) == BIND_EXPR))
-	        {
-		  r = copy_node (r);
-		  SET_EXPR_LOCATION (r, loc);
-	        }
-	      x = r;
-	    }
-
-	  break;
+	    x = fold_build3_loc (loc, code, TREE_TYPE (x), op0, op1, op2);
 	}
-
-      if (VOID_TYPE_P (TREE_TYPE (x)))
-	break;
-
-      x = build3_loc (loc, code, TREE_TYPE (x), op0, op1, op2);
-
-      if (code != COND_EXPR)
+      else
 	x = fold (x);
 
       break;
@@ -2124,9 +2115,18 @@ cp_fold (tree x)
 	  {
 	    r = cp_fold (CALL_EXPR_ARG (x, i));
 	    if (r != CALL_EXPR_ARG (x, i))
-	      changed = 1;
+	      {
+		if (r == error_mark_node)
+		  {
+		    x = error_mark_node;
+		    break;
+		  }
+		changed = 1;
+	      }
 	    CALL_EXPR_ARG (x, i) = r;
 	  }
+	if (x == error_mark_node)
+	  break;
 
 	optimize = nw;
 	r = fold (x);
@@ -2164,9 +2164,30 @@ cp_fold (tree x)
       {
 	unsigned i;
 	constructor_elt *p;
+	bool changed = false;
 	vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (x);
+	vec<constructor_elt, va_gc> *nelts = NULL;
+	vec_safe_reserve (nelts, vec_safe_length (elts));
 	FOR_EACH_VEC_SAFE_ELT (elts, i, p)
-	  p->value = cp_fold (p->value);
+	  {
+	    tree op = cp_fold (p->value);
+	    constructor_elt e = { p->index, op };
+	    nelts->quick_push (e);
+	    if (op != p->value)
+	      {
+		if (op == error_mark_node)
+		  {
+		    x = error_mark_node;
+		    changed = false;
+		    break;
+		  }
+		changed = true;
+	      }
+	  }
+	if (changed)
+	  x = build_constructor (TREE_TYPE (x), nelts);
+	else
+	  vec_free (nelts);
 	break;
       }
     case TREE_VEC:
@@ -2206,9 +2227,19 @@ cp_fold (tree x)
       op2 = cp_fold (TREE_OPERAND (x, 2));
       op3 = cp_fold (TREE_OPERAND (x, 3));
 
-      if (op0 != TREE_OPERAND (x, 0) || op1 != TREE_OPERAND (x, 1)
-	  || op2 != TREE_OPERAND (x, 2) || op3 != TREE_OPERAND (x, 3))
-	x = build4_loc (loc, code, TREE_TYPE (x), op0, op1, op2, op3);
+      if (op0 != TREE_OPERAND (x, 0)
+	  || op1 != TREE_OPERAND (x, 1)
+	  || op2 != TREE_OPERAND (x, 2)
+	  || op3 != TREE_OPERAND (x, 3))
+	{
+	  if (op0 == error_mark_node
+	      || op1 == error_mark_node
+	      || op2 == error_mark_node
+	      || op3 == error_mark_node)
+	    x = error_mark_node;
+	  else
+	    x = build4_loc (loc, code, TREE_TYPE (x), op0, op1, op2, op3);
+	}
 
       x = fold (x);
       break;

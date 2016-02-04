@@ -5,99 +5,12 @@
 package mime
 
 import (
-	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"strings"
 	"testing"
 )
-
-func ExampleWordEncoder_Encode() {
-	fmt.Println(QEncoding.Encode("utf-8", "¡Hola, señor!"))
-	fmt.Println(QEncoding.Encode("utf-8", "Hello!"))
-	fmt.Println(BEncoding.Encode("UTF-8", "¡Hola, señor!"))
-	fmt.Println(QEncoding.Encode("ISO-8859-1", "Caf\xE9"))
-	// Output:
-	// =?utf-8?q?=C2=A1Hola,_se=C3=B1or!?=
-	// Hello!
-	// =?UTF-8?b?wqFIb2xhLCBzZcOxb3Ih?=
-	// =?ISO-8859-1?q?Caf=E9?=
-}
-
-func ExampleWordDecoder_Decode() {
-	dec := new(WordDecoder)
-	header, err := dec.Decode("=?utf-8?q?=C2=A1Hola,_se=C3=B1or!?=")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(header)
-
-	dec.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
-		switch charset {
-		case "x-case":
-			// Fake character set for example.
-			// Real use would integrate with packages such
-			// as code.google.com/p/go-charset
-			content, err := ioutil.ReadAll(input)
-			if err != nil {
-				return nil, err
-			}
-			return bytes.NewReader(bytes.ToUpper(content)), nil
-		default:
-			return nil, fmt.Errorf("unhandled charset %q", charset)
-		}
-	}
-	header, err = dec.Decode("=?x-case?q?hello!?=")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(header)
-	// Output:
-	// ¡Hola, señor!
-	// HELLO!
-}
-
-func ExampleWordDecoder_DecodeHeader() {
-	dec := new(WordDecoder)
-	header, err := dec.DecodeHeader("=?utf-8?q?=C3=89ric?= <eric@example.org>, =?utf-8?q?Ana=C3=AFs?= <anais@example.org>")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(header)
-
-	header, err = dec.DecodeHeader("=?utf-8?q?=C2=A1Hola,?= =?utf-8?q?_se=C3=B1or!?=")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(header)
-
-	dec.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
-		switch charset {
-		case "x-case":
-			// Fake character set for example.
-			// Real use would integrate with packages such
-			// as code.google.com/p/go-charset
-			content, err := ioutil.ReadAll(input)
-			if err != nil {
-				return nil, err
-			}
-			return bytes.NewReader(bytes.ToUpper(content)), nil
-		default:
-			return nil, fmt.Errorf("unhandled charset %q", charset)
-		}
-	}
-	header, err = dec.DecodeHeader("=?x-case?q?hello_?= =?x-case?q?world!?=")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(header)
-	// Output:
-	// Éric <eric@example.org>, Anaïs <anais@example.org>
-	// ¡Hola, señor!
-	// HELLO WORLD!
-}
 
 func TestEncodeWord(t *testing.T) {
 	utf8, iso88591 := "utf-8", "iso-8859-1"
@@ -114,6 +27,14 @@ func TestEncodeWord(t *testing.T) {
 		{QEncoding, iso88591, "a", "a"},
 		{QEncoding, utf8, "123 456", "123 456"},
 		{QEncoding, utf8, "\t !\"#$%&'()*+,-./ :;<>?@[\\]^_`{|}~", "\t !\"#$%&'()*+,-./ :;<>?@[\\]^_`{|}~"},
+		{QEncoding, utf8, strings.Repeat("é", 10), "=?utf-8?q?" + strings.Repeat("=C3=A9", 10) + "?="},
+		{QEncoding, utf8, strings.Repeat("é", 11), "=?utf-8?q?" + strings.Repeat("=C3=A9", 10) + "?= =?utf-8?q?=C3=A9?="},
+		{QEncoding, iso88591, strings.Repeat("\xe9", 22), "=?iso-8859-1?q?" + strings.Repeat("=E9", 22) + "?="},
+		{QEncoding, utf8, strings.Repeat("\x80", 22), "=?utf-8?q?" + strings.Repeat("=80", 21) + "?= =?utf-8?q?=80?="},
+		{BEncoding, utf8, strings.Repeat("é", 24), "=?utf-8?b?" + strings.Repeat("w6nDqcOp", 8) + "?="},
+		{BEncoding, utf8, strings.Repeat("é", 27), "=?utf-8?b?" + strings.Repeat("w6nDqcOp", 8) + "?= =?utf-8?b?w6nDqcOp?="},
+		{BEncoding, iso88591, strings.Repeat("\xe9", 45), "=?iso-8859-1?b?" + strings.Repeat("6enp", 15) + "?="},
+		{BEncoding, utf8, strings.Repeat("\x80", 51), "=?utf-8?b?" + strings.Repeat("gICA", 16) + "?= =?utf-8?b?gICA?="},
 	}
 
 	for _, test := range tests {

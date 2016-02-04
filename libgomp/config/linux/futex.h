@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2015 Free Software Foundation, Inc.
+/* Copyright (C) 2010-2016 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of the GNU Offloading and Multi Processing Library

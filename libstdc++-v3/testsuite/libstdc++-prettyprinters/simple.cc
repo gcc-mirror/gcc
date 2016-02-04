@@ -1,9 +1,9 @@
 // If you modify this, please update simple11.cc and debug.cc as well.
 
 // { dg-do run }
-// { dg-options "-g -O0" }
+// { dg-options "-g -O0 -std=gnu++98" }
 
-// Copyright (C) 2011-2015 Free Software Foundation, Inc.
+// Copyright (C) 2011-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -74,7 +74,10 @@ main()
 // { dg-final { note-test mpiter {{first = "zardoz", second = 23}} } }
 
   // PR 67440
-  const std::set<int> const_intset = {2, 3};
+  std::set<int> intset;
+  intset.insert(2);
+  intset.insert(3);
+  const std::set<int> const_intset = intset;
 // { dg-final { note-test const_intset {std::set with 2 elements = {[0] = 2, [1] = 3}} } }
 
   std::set<std::string> sp;

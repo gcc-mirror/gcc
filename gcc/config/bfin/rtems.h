@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a bfin
-   Copyright (C) 2006-2015 Free Software Foundation, Inc.
+   Copyright (C) 2006-2016 Free Software Foundation, Inc.
    Contributed by Ralf Corsépius (ralf.corsepius@rtems.org).
 
 This file is part of GCC.

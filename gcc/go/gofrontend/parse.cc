@@ -419,6 +419,8 @@ Parse::array_type(bool may_use_ellipsis)
     }
 
   Type* element_type = this->type();
+  if (element_type->is_error_type())
+    return Type::make_error_type();
 
   return Type::make_array_type(element_type, length);
 }
@@ -2737,7 +2739,7 @@ Parse::composite_lit(Type* type, int depth, Location location)
 	  // This must be a composite literal inside another composite
 	  // literal, with the type omitted for the inner one.
 	  val = this->composite_lit(type, depth + 1, token->location());
-	  is_type_omitted = true;
+          is_type_omitted = true;
 	}
 
       token = this->peek_token();
@@ -2749,11 +2751,14 @@ Parse::composite_lit(Type* type, int depth, Location location)
 	}
       else
 	{
-	  if (is_type_omitted && !val->is_error_expression())
-	    {
-	      error_at(this->location(), "unexpected %<:%>");
-	      val = Expression::make_error(this->location());
-	    }
+          if (is_type_omitted)
+            {
+              // VAL is a nested composite literal with an omitted type being
+              // used a key.  Record this information in VAL so that the correct
+              // type is associated with the literal value if VAL is a
+              // map literal.
+              val->complit()->update_key_path(depth);
+            }
 
 	  this->advance_token();
 

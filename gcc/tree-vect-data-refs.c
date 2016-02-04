@@ -1,5 +1,5 @@
 /* Data References Analysis and Manipulation Utilities for Vectorization.
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -1215,6 +1215,12 @@ vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
           && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
         continue;
 
+      /* Strided accesses perform only component accesses, alignment is
+         irrelevant for them.  */
+      if (STMT_VINFO_STRIDED_P (stmt_info)
+	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+	continue;
+
       save_misalignment = DR_MISALIGNMENT (dr);
       vect_update_misalignment_for_peel (dr, elem->dr, elem->npeel);
       vect_get_data_access_cost (dr, &inside_cost, &outside_cost,
@@ -1489,7 +1495,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                  size (vector size / 8).  Vectorization factor will 8.  If both
                  access are misaligned by 3, the first one needs one scalar
                  iteration to be aligned, and the second one needs 5.  But the
-                 the first one will be aligned also by peeling 5 scalar
+		 first one will be aligned also by peeling 5 scalar
                  iterations, and in that case both accesses will be aligned.
                  Hence, except for the immediate peeling amount, we also want
                  to try to add full vector size, while we don't exceed
@@ -1820,7 +1826,16 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
              misalignment of DR_i must be set to unknown.  */
 	  FOR_EACH_VEC_ELT (datarefs, i, dr)
 	    if (dr != dr0)
-	      vect_update_misalignment_for_peel (dr, dr0, npeel);
+	      {
+		/* Strided accesses perform only component accesses, alignment
+		   is irrelevant for them.  */
+		stmt_info = vinfo_for_stmt (DR_STMT (dr));
+		if (STMT_VINFO_STRIDED_P (stmt_info)
+		    && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+		  continue;
+
+		vect_update_misalignment_for_peel (dr, dr0, npeel);
+	      }
 
           LOOP_VINFO_UNALIGNED_DR (loop_vinfo) = dr0;
           if (npeel)
@@ -2102,11 +2117,16 @@ vect_slp_analyze_and_verify_node_alignment (slp_tree node)
      the node is permuted in which case we start from the first
      element in the group.  */
   gimple *first_stmt = SLP_TREE_SCALAR_STMTS (node)[0];
+  data_reference_p first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
   if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
     first_stmt = GROUP_FIRST_ELEMENT (vinfo_for_stmt (first_stmt));
 
   data_reference_p dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
   if (! vect_compute_data_ref_alignment (dr)
+      /* For creating the data-ref pointer we need alignment of the
+	 first element anyway.  */
+      || (dr != first_dr
+	  && ! vect_compute_data_ref_alignment (first_dr))
       || ! verify_data_ref_alignment (dr))
     {
       if (dump_enabled_p ())
@@ -2166,16 +2186,33 @@ vect_analyze_group_access_1 (struct data_reference *dr)
   HOST_WIDE_INT dr_step = -1;
   HOST_WIDE_INT groupsize, last_accessed_element = 1;
   bool slp_impossible = false;
-  struct loop *loop = NULL;
-
-  if (loop_vinfo)
-    loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   /* For interleaving, GROUPSIZE is STEP counted in elements, i.e., the
      size of the interleaving group (including gaps).  */
   if (tree_fits_shwi_p (step))
     {
       dr_step = tree_to_shwi (step);
+      /* Check that STEP is a multiple of type size.  Otherwise there is
+         a non-element-sized gap at the end of the group which we
+	 cannot represent in GROUP_GAP or GROUP_SIZE.
+	 ???  As we can handle non-constant step fine here we should
+	 simply remove uses of GROUP_GAP between the last and first
+	 element and instead rely on DR_STEP.  GROUP_SIZE then would
+	 simply not include that gap.  */
+      if ((dr_step % type_size) != 0)
+	{
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+	                       "Step ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, step);
+	      dump_printf (MSG_NOTE,
+			   " is not a multiple of the element size for ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr));
+	      dump_printf (MSG_NOTE, "\n");
+	    }
+	  return false;
+	}
       groupsize = absu_hwi (dr_step) / type_size;
     }
   else
@@ -2204,24 +2241,6 @@ vect_analyze_group_access_1 (struct data_reference *dr)
 	      dump_printf (MSG_NOTE, " step ");
 	      dump_generic_expr (MSG_NOTE, TDF_SLIM, step);
 	      dump_printf (MSG_NOTE, "\n");
-	    }
-
-	  if (loop_vinfo)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-		                 "Data access with gaps requires scalar "
-		                 "epilogue loop\n");
-              if (loop->inner)
-                {
-                  if (dump_enabled_p ())
-                    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                     "Peeling for outer loop is not"
-                                     " supported\n");
-                  return false;
-                }
-
-              LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = true;
 	    }
 
 	  return true;
@@ -2378,29 +2397,6 @@ vect_analyze_group_access_1 (struct data_reference *dr)
           if (bb_vinfo)
             BB_VINFO_GROUPED_STORES (bb_vinfo).safe_push (stmt);
         }
-
-      /* If there is a gap in the end of the group or the group size cannot
-         be made a multiple of the vector element count then we access excess
-	 elements in the last iteration and thus need to peel that off.  */
-      if (loop_vinfo
-	  && (groupsize - last_accessed_element > 0
-	      || exact_log2 (groupsize) == -1))
-
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-	                     "Data access with gaps requires scalar "
-	                     "epilogue loop\n");
-          if (loop->inner)
-            {
-              if (dump_enabled_p ())
-                dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                 "Peeling for outer loop is not supported\n");
-              return false;
-            }
-
-          LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = true;
-	}
     }
 
   return true;
@@ -2545,6 +2541,8 @@ compare_tree (tree t1, tree t2)
   if (t2 == NULL)
     return 1;
 
+  STRIP_NOPS (t1);
+  STRIP_NOPS (t2);
 
   if (TREE_CODE (t1) != TREE_CODE (t2))
     return TREE_CODE (t1) < TREE_CODE (t2) ? -1 : 1;
@@ -2613,6 +2611,12 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
   /* Stabilize sort.  */
   if (dra == drb)
     return 0;
+
+  /* DRs in different loops never belong to the same group.  */
+  loop_p loopa = gimple_bb (DR_STMT (dra))->loop_father;
+  loop_p loopb = gimple_bb (DR_STMT (drb))->loop_father;
+  if (loopa != loopb)
+    return loopa->num < loopb->num ? -1 : 1;
 
   /* Ordering of DRs according to base.  */
   if (!operand_equal_p (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb), 0))
@@ -2705,6 +2709,12 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	     matters we can push those to a worklist and re-iterate
 	     over them.  The we can just skip ahead to the next DR here.  */
 
+	  /* DRs in a different loop should not be put into the same
+	     interleaving group.  */
+	  if (gimple_bb (DR_STMT (dra))->loop_father
+	      != gimple_bb (DR_STMT (drb))->loop_father)
+	    break;
+
 	  /* Check that the data-refs have same first location (except init)
 	     and they are both either store or load (not load and store,
 	     not masked loads or stores).  */
@@ -2746,7 +2756,8 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	  /* If init_b == init_a + the size of the type * k, we have an
 	     interleaving, and DRA is accessed before DRB.  */
 	  HOST_WIDE_INT type_size_a = tree_to_uhwi (sza);
-	  if ((init_b - init_a) % type_size_a != 0)
+	  if (type_size_a == 0
+	      || (init_b - init_a) % type_size_a != 0)
 	    break;
 
 	  /* If we have a store, the accesses are adjacent.  This splits
@@ -3851,6 +3862,7 @@ again:
 	      return false;
 	    }
 
+	  free_data_ref (datarefs[i]);
 	  datarefs[i] = dr;
 	  STMT_VINFO_GATHER_SCATTER_P (stmt_info) = gatherscatter;
 	}

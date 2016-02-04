@@ -1,5 +1,5 @@
 /* Common VxWorks target definitions for GNU compiler.
-   Copyright (C) 1999-2015 Free Software Foundation, Inc.
+   Copyright (C) 1999-2016 Free Software Foundation, Inc.
    Contributed by Wind River Systems.
    Rewritten by CodeSourcery, LLC.
 
@@ -71,13 +71,13 @@ along with GCC; see the file COPYING3.  If not see
  %{mrtp:%{!shared:%{!non-static:-static}		\
  		  %{non-static:--force-dynamic --export-dynamic}}}"
 
-/* For VxWorks, the system provides libc_internal.a.  This is a superset
-   of libgcc.a; we want to use it.  Make sure not to dynamically export
-   any of its symbols, though.  Always look for libgcc.a first so that
-   we get the latest versions of the GNU intrinsics during our builds.  */
+/* For VxWorks static rtps, the system provides libc_internal.a, a superset
+   of libgcc.a that we want to use.  Make sure not to dynamically export any
+   of its symbols, though, and always look for libgcc.a first so that we get
+   the latest versions of the GNU intrinsics during our builds.  */
 #undef VXWORKS_LIBGCC_SPEC
 #define VXWORKS_LIBGCC_SPEC \
-  "-lgcc %{mrtp:--exclude-libs=libc_internal,libgcc -lc_internal}"
+  "-lgcc %{mrtp:%{!shared:--exclude-libs=libc_internal,libgcc -lc_internal}}"
 
 #undef VXWORKS_STARTFILE_SPEC
 #define	VXWORKS_STARTFILE_SPEC "%{mrtp:%{!shared:-l:crt0.o}}"

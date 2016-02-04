@@ -136,3 +136,26 @@ common /blk/ i1
 !$acc end parallel
 
 end subroutine
+
+! { dg-error "Array 'ia2' is not permitted in reduction" "" { target "*-*-*" } 27 }
+! { dg-error "Array 'ra1' is not permitted in reduction" "" { target "*-*-*" } 29 }
+! { dg-error "Array 'ca1' is not permitted in reduction" "" { target "*-*-*" } 31 }
+! { dg-error "Array 'da1' is not permitted in reduction" "" { target "*-*-*" } 33 }
+! { dg-error "Array 'la1' is not permitted in reduction" "" { target "*-*-*" } 35 }
+! { dg-error "Array 'aa1' is not permitted in reduction" "" { target "*-*-*" } 65 }
+! { dg-error "Array 'ia1' is not permitted in reduction" "" { target "*-*-*" } 67 }
+! { dg-error "Array 'la1' is not permitted in reduction" "" { target "*-*-*" } 71 }
+! { dg-error "Array 'ta1' is not permitted in reduction" "" { target "*-*-*" } 77 }
+! { dg-error "Array 'ia2' is not permitted in reduction" "" { target "*-*-*" } 81 }
+! { dg-error "Array 'ra1' is not permitted in reduction" "" { target "*-*-*" } 85 }
+! { dg-error "Array 'da1' is not permitted in reduction" "" { target "*-*-*" } 89 }
+! { dg-error "Array 'ca1' is not permitted in reduction" "" { target "*-*-*" } 93 }
+! { dg-error "Array 'ta1' is not permitted in reduction" "" { target "*-*-*" } 99 }
+! { dg-error "Array 'ca1' is not permitted in reduction" "" { target "*-*-*" } 103 }
+! { dg-error "Array 'la1' is not permitted in reduction" "" { target "*-*-*" } 107 }
+! { dg-error "Array 'ta1' is not permitted in reduction" "" { target "*-*-*" } 113 }
+! { dg-error "Array 'ra1' is not permitted in reduction" "" { target "*-*-*" } 117 }
+! { dg-error "Array 'da1' is not permitted in reduction" "" { target "*-*-*" } 121 }
+! { dg-error "Array 'ca1' is not permitted in reduction" "" { target "*-*-*" } 125 }
+! { dg-error "Array 'la1' is not permitted in reduction" "" { target "*-*-*" } 129 }
+! { dg-error "Array 'ta1' is not permitted in reduction" "" { target "*-*-*" } 135 }

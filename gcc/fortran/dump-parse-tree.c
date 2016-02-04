@@ -1,5 +1,5 @@
 /* Parse tree dumper
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
 This file is part of GCC.
@@ -1146,10 +1146,24 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
   if (omp_clauses->gang)
     {
       fputs (" GANG", dumpfile);
-      if (omp_clauses->gang_expr)
+      if (omp_clauses->gang_num_expr || omp_clauses->gang_static_expr)
 	{
 	  fputc ('(', dumpfile);
-	  show_expr (omp_clauses->gang_expr);
+	  if (omp_clauses->gang_num_expr)
+	    {
+	      fprintf (dumpfile, "num:");
+	      show_expr (omp_clauses->gang_num_expr);
+	    }
+	  if (omp_clauses->gang_num_expr && omp_clauses->gang_static)
+	    fputc (',', dumpfile);
+	  if (omp_clauses->gang_static)
+	    {
+	      fprintf (dumpfile, "static:");
+	      if (omp_clauses->gang_static_expr)
+		show_expr (omp_clauses->gang_static_expr);
+	      else
+		fputc ('*', dumpfile);
+	    }
 	  fputc (')', dumpfile);
 	}
     }
@@ -1647,6 +1661,33 @@ show_code_node (int level, gfc_code *c)
 	show_expr (c->expr1);
       else
 	fputs ("* ", dumpfile);
+      if (c->expr2 != NULL)
+	{
+	  fputs (" stat=", dumpfile);
+	  show_expr (c->expr2);
+	}
+      if (c->expr3 != NULL)
+	{
+	  fputs (" errmsg=", dumpfile);
+	  show_expr (c->expr3);
+	}
+      break;
+
+    case EXEC_EVENT_POST:
+    case EXEC_EVENT_WAIT:
+      if (c->op == EXEC_EVENT_POST)
+	fputs ("EVENT POST ", dumpfile);
+      else
+	fputs ("EVENT WAIT ", dumpfile);
+
+      fputs ("event-variable=", dumpfile);
+      if (c->expr1 != NULL)
+	show_expr (c->expr1);
+      if (c->expr4 != NULL)
+	{
+	  fputs (" until_count=", dumpfile);
+	  show_expr (c->expr4);
+	}
       if (c->expr2 != NULL)
 	{
 	  fputs (" stat=", dumpfile);
@@ -2570,12 +2611,16 @@ show_namespace (gfc_namespace *ns)
   for (eq = ns->equiv; eq; eq = eq->next)
     show_equiv (eq);
 
-  if (ns->oacc_declare_clauses)
+  if (ns->oacc_declare)
     {
+      struct gfc_oacc_declare *decl;
       /* Dump !$ACC DECLARE clauses.  */
-      show_indent ();
-      fprintf (dumpfile, "!$ACC DECLARE");
-      show_omp_clauses (ns->oacc_declare_clauses);
+      for (decl = ns->oacc_declare; decl; decl = decl->next)
+	{
+	  show_indent ();
+	  fprintf (dumpfile, "!$ACC DECLARE");
+	  show_omp_clauses (decl->clauses);
+	}
     }
 
   fputc ('\n', dumpfile);

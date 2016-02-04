@@ -1,6 +1,6 @@
 /* Input functions for reading LTO sections.
 
-   Copyright (C) 2009-2015 Free Software Foundation, Inc.
+   Copyright (C) 2009-2016 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -51,7 +51,8 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
   "ipcp_trans",
   "icf",
   "offload_table",
-  "mode_table"
+  "mode_table",
+  "hsa"
 };
 
 
@@ -130,7 +131,7 @@ const char *
 lto_get_section_data (struct lto_file_decl_data *file_data,
 		      enum lto_section_type section_type,
 		      const char *name,
-		      size_t *len)
+		      size_t *len, bool decompress)
 {
   const char *data = (get_section_f) (file_data, section_type, name, len);
   const size_t header_length = sizeof (struct lto_data_header);
@@ -142,9 +143,10 @@ lto_get_section_data (struct lto_file_decl_data *file_data,
   if (data == NULL)
     return NULL;
 
-  /* FIXME lto: WPA mode does not write compressed sections, so for now
-     suppress uncompression if flag_ltrans.  */
-  if (!flag_ltrans)
+  /* WPA->ltrans streams are not compressed with exception of function bodies
+     and variable initializers that has been verbatim copied from earlier
+     compilations.  */
+  if (!flag_ltrans || decompress)
     {
       /* Create a mapping header containing the underlying data and length,
 	 and prepend this to the uncompression buffer.  The uncompressed data
@@ -170,6 +172,16 @@ lto_get_section_data (struct lto_file_decl_data *file_data,
   return data;
 }
 
+/* Get the section data without any header parsing or uncompression.  */
+
+const char *
+lto_get_raw_section_data (struct lto_file_decl_data *file_data,
+			  enum lto_section_type section_type,
+			  const char *name,
+			  size_t *len)
+{
+  return (get_section_f) (file_data, section_type, name, len);
+}
 
 /* Free the data found from the above call.  The first three
    parameters are the same as above.  DATA is the data to be freed and
@@ -180,7 +192,7 @@ lto_free_section_data (struct lto_file_decl_data *file_data,
 		       enum lto_section_type section_type,
 		       const char *name,
 		       const char *data,
-		       size_t len)
+		       size_t len, bool decompress)
 {
   const size_t header_length = sizeof (struct lto_data_header);
   const char *real_data = data - header_length;
@@ -189,9 +201,7 @@ lto_free_section_data (struct lto_file_decl_data *file_data,
 
   gcc_assert (free_section_f);
 
-  /* FIXME lto: WPA mode does not write compressed sections, so for now
-     suppress uncompression mapping if flag_ltrans.  */
-  if (flag_ltrans)
+  if (flag_ltrans && !decompress)
     {
       (free_section_f) (file_data, section_type, name, data, len);
       return;
@@ -203,6 +213,17 @@ lto_free_section_data (struct lto_file_decl_data *file_data,
   free (CONST_CAST (char *, real_data));
 }
 
+/* Free data allocated by lto_get_raw_section_data.  */
+
+void
+lto_free_raw_section_data (struct lto_file_decl_data *file_data,
+		           enum lto_section_type section_type,
+		           const char *name,
+		           const char *data,
+		           size_t len)
+{
+  (free_section_f) (file_data, section_type, name, data, len);
+}
 
 /* Load a section of type SECTION_TYPE from FILE_DATA, parse the
    header and then return an input block pointing to the section.  The

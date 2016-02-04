@@ -1,5 +1,5 @@
 /* 64-bit multiplication support for TILEPro.
-   Copyright (C) 2011-2015 Free Software Foundation, Inc.
+   Copyright (C) 2011-2016 Free Software Foundation, Inc.
    Contributed by Walter Lee (walt@tilera.com)
 
    This file is free software; you can redistribute it and/or modify it

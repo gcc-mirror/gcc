@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2015 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -127,7 +127,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef FLT_ROUNDS
 #define FLT_ROUNDS 1
 
-#if defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+#if (defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) \
+     || (defined (__cplusplus) && __cplusplus >= 201103L)
 /* The floating-point expression evaluation method.
         -1  indeterminate
          0  evaluate all operations and constants just to the range and

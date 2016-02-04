@@ -1,5 +1,5 @@
 /* Callgraph based analysis of static variables.
-   Copyright (C) 2004-2015 Free Software Foundation, Inc.
+   Copyright (C) 2004-2016 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -1124,11 +1124,18 @@ pure_const_read_summary (void)
     }
 }
 
+/* We only propagate across edges that can throw externally and their callee
+   is not interposable.  */
 
 static bool
-ignore_edge (struct cgraph_edge *e)
+ignore_edge_for_nothrow (struct cgraph_edge *e)
 {
-  return (!e->can_throw_external);
+  if (!e->can_throw_external || TREE_NOTHROW (e->callee->decl))
+    return true;
+
+  enum availability avail;
+  cgraph_node *n = e->callee->function_or_virtual_thunk_symbol (&avail);
+  return (avail <= AVAIL_INTERPOSABLE || TREE_NOTHROW (n->decl));
 }
 
 /* Return true if NODE is self recursive function.
@@ -1157,6 +1164,17 @@ cdtor_p (cgraph_node *n, void *)
   return false;
 }
 
+/* We only propagate across edges with non-interposable callee.  */
+
+static bool
+ignore_edge_for_pure_const (struct cgraph_edge *e)
+{
+  enum availability avail;
+  e->callee->function_or_virtual_thunk_symbol (&avail);
+  return (avail <= AVAIL_INTERPOSABLE);
+}
+
+
 /* Produce transitive closure over the callgraph and compute pure/const
    attributes.  */
 
@@ -1172,7 +1190,8 @@ propagate_pure_const (void)
   struct ipa_dfs_info * w_info;
   bool remove_p = false;
 
-  order_pos = ipa_reduced_postorder (order, true, false, NULL);
+  order_pos = ipa_reduced_postorder (order, true, false,
+				     ignore_edge_for_pure_const);
   if (dump_file)
     {
       cgraph_node::dump_cgraph (dump_file);
@@ -1219,7 +1238,7 @@ propagate_pure_const (void)
 	  if (pure_const_state == IPA_NEITHER)
 	    break;
 
-	  /* For overwritable nodes we can not assume anything.  */
+	  /* For interposable nodes we can not assume anything.  */
 	  if (w->get_availability () == AVAIL_INTERPOSABLE)
 	    {
 	      worse_state (&pure_const_state, &looping,
@@ -1228,7 +1247,7 @@ propagate_pure_const (void)
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
 		  fprintf (dump_file,
-			   "    Overwritable. state %s looping %i\n",
+			   "    Interposable. state %s looping %i\n",
 			   pure_const_names[w_l->state_previously_known],
 			   w_l->looping_previously_known);
 		}
@@ -1244,7 +1263,8 @@ propagate_pure_const (void)
 	    looping = true;
 
 	  /* Now walk the edges and merge in callee properties.  */
-	  for (e = w->callees; e; e = e->next_callee)
+	  for (e = w->callees; e && pure_const_state != IPA_NEITHER;
+	       e = e->next_callee)
 	    {
 	      enum availability avail;
 	      struct cgraph_node *y = e->callee->
@@ -1302,11 +1322,10 @@ propagate_pure_const (void)
 	      if (pure_const_state == IPA_NEITHER)
 	        break;
 	    }
-	  if (pure_const_state == IPA_NEITHER)
-	    break;
 
 	  /* Now process the indirect call.  */
-          for (ie = w->indirect_calls; ie; ie = ie->next_callee)
+          for (ie = w->indirect_calls;
+	       ie && pure_const_state != IPA_NEITHER; ie = ie->next_callee)
 	    {
 	      enum pure_const_state_e edge_state = IPA_CONST;
 	      bool edge_looping = false;
@@ -1325,11 +1344,10 @@ propagate_pure_const (void)
 	      if (pure_const_state == IPA_NEITHER)
 	        break;
 	    }
-	  if (pure_const_state == IPA_NEITHER)
-	    break;
 
 	  /* And finally all loads and stores.  */
-	  for (i = 0; w->iterate_reference (i, ref); i++)
+	  for (i = 0; w->iterate_reference (i, ref)
+	       && pure_const_state != IPA_NEITHER; i++)
 	    {
 	      enum pure_const_state_e ref_state = IPA_CONST;
 	      bool ref_looping = false;
@@ -1419,7 +1437,8 @@ propagate_pure_const (void)
 	      && this_state > w_l->state_previously_known)
 	    {
               this_state = w_l->state_previously_known;
-	      this_looping |= w_l->looping_previously_known;
+	      if (this_state == IPA_NEITHER)
+	        this_looping = w_l->looping_previously_known;
 	    }
 	  if (!this_looping && self_recursive_p (w))
 	    this_looping = true;
@@ -1491,7 +1510,8 @@ propagate_nothrow (void)
   int i;
   struct ipa_dfs_info * w_info;
 
-  order_pos = ipa_reduced_postorder (order, true, false, ignore_edge);
+  order_pos = ipa_reduced_postorder (order, true, false,
+				     ignore_edge_for_nothrow);
   if (dump_file)
     {
       cgraph_node::dump_cgraph (dump_file);
@@ -1515,32 +1535,38 @@ propagate_nothrow (void)
       while (w && !can_throw)
 	{
 	  struct cgraph_edge *e, *ie;
-	  funct_state w_l = get_function_state (w);
 
-	  if (w_l->can_throw
-	      || w->get_availability () == AVAIL_INTERPOSABLE)
-	    can_throw = true;
-
-	  for (e = w->callees; e && !can_throw; e = e->next_callee)
+	  if (!TREE_NOTHROW (w->decl))
 	    {
-	      enum availability avail;
-	      struct cgraph_node *y = e->callee->
-				function_or_virtual_thunk_symbol (&avail);
+	      funct_state w_l = get_function_state (w);
 
-	      if (avail > AVAIL_INTERPOSABLE)
+	      if (w_l->can_throw
+		  || w->get_availability () == AVAIL_INTERPOSABLE)
+		can_throw = true;
+
+	      for (e = w->callees; e && !can_throw; e = e->next_callee)
 		{
-		  funct_state y_l = get_function_state (y);
+		  enum availability avail;
 
-		  if (y_l->can_throw && !TREE_NOTHROW (w->decl)
-		      && e->can_throw_external)
+		  if (!e->can_throw_external || TREE_NOTHROW (e->callee->decl))
+		    continue;
+
+		  struct cgraph_node *y = e->callee->
+				    function_or_virtual_thunk_symbol (&avail);
+
+		  /* We can use info about the callee only if we know it can
+		     not be interposed.  */
+		  if (avail <= AVAIL_INTERPOSABLE
+		      || (!TREE_NOTHROW (y->decl)
+			  && get_function_state (y)->can_throw))
 		    can_throw = true;
 		}
-	      else if (e->can_throw_external && !TREE_NOTHROW (y->decl))
-	        can_throw = true;
+	      for (ie = w->indirect_calls; ie && !can_throw;
+		   ie = ie->next_callee)
+		if (ie->can_throw_external
+		    && !(ie->indirect_info->ecf_flags & ECF_NOTHROW))
+		  can_throw = true;
 	    }
-          for (ie = w->indirect_calls; ie && !can_throw; ie = ie->next_callee)
-	    if (ie->can_throw_external)
-	      can_throw = true;
 	  w_info = (struct ipa_dfs_info *) w->aux;
 	  w = w_info->next_cycle;
 	}
@@ -1650,7 +1676,7 @@ skip_function_for_local_pure_const (struct cgraph_node *node)
   if (node->get_availability () <= AVAIL_INTERPOSABLE)
     {
       if (dump_file)
-        fprintf (dump_file, "Function is not available or overwritable; not analyzing.\n");
+        fprintf (dump_file, "Function is not available or interposable; not analyzing.\n");
       return true;
     }
   return false;

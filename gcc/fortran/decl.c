@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002-2015 Free Software Foundation, Inc.
+   Copyright (C) 2002-2016 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1194,7 +1194,7 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	  if (sym->as != NULL && sym->as->type == AS_ASSUMED_SHAPE
 	      && !gfc_notify_std (GFC_STD_F2008_TS, "Assumed-shape array %qs "
 				  "at %L as dummy argument to the BIND(C) "
-				  "procedure '%s' at %L", sym->name, 
+				  "procedure %qs at %L", sym->name,
 				  &(sym->declared_at), 
 				  sym->ns->proc_name->name, 
 				  &(sym->ns->proc_name->declared_at)))
@@ -2023,9 +2023,9 @@ variable_decl (int elem)
       if (sym != NULL && (sym->attr.dummy || sym->attr.result))
 	{
 	  m = MATCH_ERROR;
-	  gfc_error ("'%s' at %C is a redefinition of the declaration "
+	  gfc_error ("%qs at %C is a redefinition of the declaration "
 		     "in the corresponding interface for MODULE "
-		     "PROCEDURE '%s'", sym->name,
+		     "PROCEDURE %qs", sym->name,
 		     gfc_current_ns->proc_name->name);
 	  goto cleanup;
 	}
@@ -4817,14 +4817,26 @@ ok:
       goto cleanup;
     }
 
-  if (formal)
+  /* gfc_error_now used in following and return with MATCH_YES because
+     doing otherwise results in a cascade of extraneous errors and in
+     some cases an ICE in symbol.c(gfc_release_symbol).  */
+  if (progname->attr.module_procedure && progname->attr.host_assoc)
     {
+      bool arg_count_mismatch = false;
+
+      if (!formal && head)
+	arg_count_mismatch = true;
+
+      /* Abbreviated module procedure declaration is not meant to have any
+	 formal arguments!  */
+      if (!progname->abr_modproc_decl && formal && !head)
+	arg_count_mismatch = true;
+
       for (p = formal, q = head; p && q; p = p->next, q = q->next)
 	{
 	  if ((p->next != NULL && q->next == NULL)
 	      || (p->next == NULL && q->next != NULL))
-	    gfc_error_now ("Mismatch in number of MODULE PROCEDURE "
-		           "formal arguments at %C");
+	    arg_count_mismatch = true;
 	  else if ((p->sym == NULL && q->sym == NULL)
 		    || strcmp (p->sym->name, q->sym->name) == 0)
 	    continue;
@@ -4833,6 +4845,10 @@ ok:
 			   "argument names (%s/%s) at %C",
 			   p->sym->name, q->sym->name);
 	}
+
+      if (arg_count_mismatch)
+	gfc_error_now ("Mismatch in number of MODULE PROCEDURE "
+		       "formal arguments at %C");
     }
 
   return MATCH_YES;
@@ -6311,6 +6327,7 @@ gfc_match_end (gfc_statement *st)
   gfc_namespace *parent_ns, *ns, *prev_ns;
   gfc_namespace **nsp;
   bool abreviated_modproc_decl;
+  bool got_matching_end = false;
 
   old_loc = gfc_current_locus;
   if (gfc_match ("end") != MATCH_YES)
@@ -6494,6 +6511,8 @@ gfc_match_end (gfc_statement *st)
 		 ? "END PROCEDURE" : gfc_ascii_statement(*st), &old_loc);
       goto cleanup;
     }
+  else
+    got_matching_end = true;
 
   old_loc = gfc_current_locus;
   /* If we're at the end, make sure a block name wasn't required.  */
@@ -6565,7 +6584,7 @@ cleanup:
   /* If we are missing an END BLOCK, we created a half-ready namespace.
      Remove it from the parent namespace's sibling list.  */
 
-  while (state == COMP_BLOCK)
+  while (state == COMP_BLOCK && !got_matching_end)
     {
       parent_ns = gfc_current_ns->parent;
 
@@ -6585,7 +6604,7 @@ cleanup:
 	  prev_ns = ns;
 	  ns = ns->sibling;
 	}
-  
+
       gfc_free_namespace (gfc_current_ns);
       gfc_current_ns = parent_ns;
       gfc_state_stack = gfc_state_stack->previous;
@@ -7666,7 +7685,7 @@ gfc_match_submod_proc (void)
 
   /* Make sure that the result field is appropriately filled, even though
      the result symbol will be replaced later on.  */
-  if (sym->ts.interface->attr.function)
+  if (sym->ts.interface && sym->ts.interface->attr.function)
     {
       if (sym->ts.interface->result
 	  && sym->ts.interface->result != sym->ts.interface)

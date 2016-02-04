@@ -1,7 +1,7 @@
 # configure.ac for GCC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright (C) 1997-2015 Free Software Foundation, Inc.
+# Copyright (C) 1997-2016 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -414,6 +414,15 @@ template <typename T> struct X { };
 template <>
 struct X<long long> { typedef long long t; };
 ]], [[X<int64_t>::t x;]])],[],[AC_MSG_ERROR([error verifying int64_t uses long long])])
+fi
+
+AC_CACHE_CHECK(for std::swap in <utility>, ac_cv_std_swap_in_utility, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <utility>
+]], [[int a, b; std::swap(a,b);]])],[ac_cv_std_swap_in_utility=yes],[ac_cv_std_swap_in_utility=no])])
+if test $ac_cv_std_swap_in_utility = yes; then
+  AC_DEFINE(HAVE_SWAP_IN_UTILITY, 1,
+  [Define if <utility> defines std::swap.])
 fi
 
 # Check whether compiler is affected by placement new aliasing bug (PR 29286).
@@ -940,6 +949,13 @@ AC_SUBST(accel_dir_suffix)
 
 for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
   tgt=`echo $tgt | sed 's/=.*//'`
+
+  if echo "$tgt" | grep "^hsa" > /dev/null ; then
+    enable_hsa=1
+  else
+    enable_offloading=1
+  fi
+
   if test x"$offload_targets" = x; then
     offload_targets=$tgt
   else
@@ -948,12 +964,17 @@ for tgt in `echo $enable_offload_targets | sed 's/,/ /g'`; do
 done
 AC_DEFINE_UNQUOTED(OFFLOAD_TARGETS, "$offload_targets",
   [Define to offload targets, separated by commas.])
-if test x"$offload_targets" != x; then
+if test x"$enable_offloading" != x; then
   AC_DEFINE(ENABLE_OFFLOADING, 1,
     [Define this to enable support for offloading.])
 else
   AC_DEFINE(ENABLE_OFFLOADING, 0,
     [Define this to enable support for offloading.])
+fi
+
+if test x"$enable_hsa" = x1 ; then
+  AC_DEFINE(ENABLE_HSA, 1,
+    [Define this to enable support for generating HSAIL.])
 fi
 
 AC_ARG_WITH(multilib-list,
@@ -2909,6 +2930,11 @@ AC_DEFINE_UNQUOTED(HAVE_GAS_SHF_MERGE,
   [`if test $gcc_cv_as_shf_merge = yes; then echo 1; else echo 0; fi`],
 [Define 0/1 if your assembler supports marking sections with SHF_MERGE flag.])
 
+gcc_GAS_CHECK_FEATURE([stabs directive], gcc_cv_as_stabs_directive, ,,
+[.stabs "gcc2_compiled.",60,0,0,0],,
+[AC_DEFINE(HAVE_AS_STABS_DIRECTIVE, 1,
+  [Define if your assembler supports .stabs.])])
+
 gcc_GAS_CHECK_FEATURE([COMDAT group support (GNU as)],
  gcc_cv_as_comdat_group,
  [elf,2,16,0], [--fatal-warnings],
@@ -4155,10 +4181,8 @@ value:'
     ;;
 
   powerpc*-*-*)
+
     case $target in
-      *-*-aix*) conftest_s='	.machine "pwr5"
-	.csect .text[[PR]]
-	mfcr 3,128';;
       *-*-darwin*)
 	gcc_GAS_CHECK_FEATURE([.machine directive support],
 	  gcc_cv_as_machine_directive,,,
@@ -4168,7 +4192,14 @@ value:'
 	  echo you can get it from: ftp://gcc.gnu.org/pub/gcc/infrastructure/cctools-528.5.dmg >&2
 	  test x$build = x$target && exit 1
 	fi
-	conftest_s='	.text
+        ;;
+    esac
+
+    case $target in
+      *-*-aix*) conftest_s='	.machine "pwr5"
+	.csect .text[[PR]]
+	mfcr 3,128';;
+      *-*-darwin*) conftest_s='	.text
 	mfcr r3,128';;
       *) conftest_s='	.machine power4
 	.text
@@ -4371,9 +4402,15 @@ LCF0:
       [AC_DEFINE(HAVE_AS_TLS_MARKERS, 1,
 	  [Define if your assembler supports arg info for __tls_get_addr.])])
 
+    gcc_GAS_CHECK_FEATURE([prologue entry point marker support],
+      gcc_cv_as_powerpc_entry_markers, [2,26,0],-a64 --fatal-warnings,
+      [ .reloc .,R_PPC64_ENTRY; nop],,
+      [AC_DEFINE(HAVE_AS_ENTRY_MARKERS, 1,
+	  [Define if your assembler supports the R_PPC64_ENTRY relocation.])])
+
     case $target in
       *-*-aix*)
-	gcc_GAS_CHECK_FEATURE([.ref support],
+	gcc_GAS_CHECK_FEATURE([AIX .ref support],
 	  gcc_cv_as_aix_ref, [2,21,0],,
 	  [	.csect stuff[[rw]]
 	     stuff:
@@ -4383,17 +4420,15 @@ LCF0:
 	  ],,
 	  [AC_DEFINE(HAVE_AS_REF, 1,
 	    [Define if your assembler supports .ref])])
-	;;
-    esac
 
-    case $target in
-      *-*-aix*)
-	gcc_GAS_CHECK_FEATURE([dwarf location lists section support],
+	gcc_GAS_CHECK_FEATURE([AIX DWARF location lists section support],
 	  gcc_cv_as_aix_dwloc, [2,21,0],,
-	  [	.dwsect 0xB0000
+	  [	.dwsect 0xA0000
+	Lframe..0:
+		.vbyte 4,Lframe..0:
 	  ],,
 	  [AC_DEFINE(HAVE_XCOFF_DWARF_EXTRAS, 1,
-	    [Define if your assembler supports .dwsect 0xB0000])])
+	    [Define if your assembler supports AIX debug frame section label reference.])])
 	;;
     esac
     ;;
@@ -4558,6 +4593,19 @@ pointers into PC-relative form.])
       [.gnu_attribute 8,1],,
       [AC_DEFINE(HAVE_AS_GNU_ATTRIBUTE, 1,
 	  [Define if your assembler supports .gnu_attribute.])])
+    gcc_GAS_CHECK_FEATURE([.machine and .machinemode support],
+      gcc_cv_as_s390_machine_machinemode, [2,24,0],,
+      [	.machinemode push
+	.machinemode pop
+	.machine push
+	.machine pop],,
+      [AC_DEFINE(HAVE_AS_MACHINE_MACHINEMODE, 1,
+	  [Define if your assembler supports .machine and .machinemode.])])
+    gcc_GAS_CHECK_FEATURE([architecture modifiers support],
+      gcc_cv_as_s390_architecture_modifiers, [2,26,0],,
+      [	.machine z13+vx ],,
+      [AC_DEFINE(HAVE_AS_ARCHITECTURE_MODIFIERS, 1,
+	  [Define if your assembler supports architecture modifiers.])])
     ;;
 esac
 
@@ -5441,7 +5489,7 @@ AC_CACHE_CHECK(__stack_chk_fail in target C library,
 	 # realistically usable GNU/Hurd configurations.
 	 # All supported versions of musl provide it as well
 	 gcc_cv_libc_provides_ssp=yes;;
-       *-*-darwin* | *-*-freebsd*)
+       *-*-darwin* | *-*-freebsd* | *-*-netbsd*)
 	 AC_CHECK_FUNC(__stack_chk_fail,[gcc_cv_libc_provides_ssp=yes],
            [echo "no __stack_chk_fail on this target"])
         ;;
@@ -5506,6 +5554,19 @@ esac
 if test x$gcc_cv_target_ldbl128 = xyes; then
   AC_DEFINE(TARGET_DEFAULT_LONG_DOUBLE_128, 1,
 	    [Define if TFmode long double should be the default])
+fi
+
+# Check if the target LIBC supports exporting the AT_PLATFORM and AT_HWCAP
+# values in the TCB.  Currently, only GLIBC 2.23 and later support this.
+gcc_cv_libc_provides_hwcap_in_tcb=no
+case "$target" in
+  powerpc*-*-linux*)
+    GCC_GLIBC_VERSION_GTE_IFELSE([2], [23], [gcc_cv_libc_provides_hwcap_in_tcb=yes], )
+    ;;
+esac
+if test x$gcc_cv_libc_provides_hwcap_in_tcb = xyes; then
+  AC_DEFINE(TARGET_LIBC_PROVIDES_HWCAP_IN_TCB, 1,
+	    [Define if your target C Library provides the AT_HWCAP value in the TCB])
 fi
 
 AC_MSG_CHECKING(dl_iterate_phdr in target C library)
@@ -5884,28 +5945,19 @@ fi
 AC_ARG_VAR(GMPLIBS,[How to link GMP])
 AC_ARG_VAR(GMPINC,[How to find GMP include files])
 
-AC_ARG_VAR(ISLLIBS,[How to link ISL])
-AC_ARG_VAR(ISLINC,[How to find ISL include files])
+AC_ARG_VAR(ISLLIBS,[How to link isl])
+AC_ARG_VAR(ISLINC,[How to find isl include files])
 if test "x${ISLLIBS}" != "x" ; then 
    AC_DEFINE(HAVE_isl, 1, [Define if isl is in use.])
 fi
 
-# Check whether isl_schedule_constraints_compute_schedule is available;
-# it's new in ISL-0.13.
 # Check whether isl_options_set_schedule_serialize_sccs is available;
-# it's new in ISL-0.15.
+# it's new in isl 0.15.
 if test "x${ISLLIBS}" != "x" ; then
   saved_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS="$CXXFLAGS $ISLINC"
+  CXXFLAGS="$CXXFLAGS $ISLINC $GMPINC"
   saved_LIBS="$LIBS"
   LIBS="$LIBS $ISLLIBS $GMPLIBS"
-
-  AC_MSG_CHECKING([Checking for isl_schedule_constraints_compute_schedule])
-  AC_TRY_LINK([#include <isl/schedule.h>],
-              [isl_schedule_constraints_compute_schedule (NULL);],
-              [ac_has_isl_schedule_constraints_compute_schedule=yes],
-              [ac_has_isl_schedule_constraints_compute_schedule=no])
-  AC_MSG_RESULT($ac_has_isl_schedule_constraints_compute_schedule)
 
   AC_MSG_CHECKING([Checking for isl_options_set_schedule_serialize_sccs])
   AC_TRY_LINK([#include <isl/schedule.h>],
@@ -5914,28 +5966,12 @@ if test "x${ISLLIBS}" != "x" ; then
               [ac_has_isl_options_set_schedule_serialize_sccs=no])
   AC_MSG_RESULT($ac_has_isl_options_set_schedule_serialize_sccs)
 
-  AC_MSG_CHECKING([Checking for isl_ctx_get_max_operations])
-  AC_TRY_LINK([#include <isl/ctx.h>],
-              [isl_ctx_get_max_operations (isl_ctx_alloc ());],
-              [ac_has_isl_ctx_get_max_operations=yes],
-              [ac_has_isl_ctx_get_max_operations=no])
-  AC_MSG_RESULT($ac_has_isl_ctx_get_max_operations)
-
   LIBS="$saved_LIBS"
   CXXFLAGS="$saved_CXXFLAGS"
-
-  if test x"$ac_has_isl_schedule_constraints_compute_schedule" = x"yes"; then
-     AC_DEFINE(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE, 1,
-               [Define if isl_schedule_constraints_compute_schedule exists.])
-  fi
 
   if test x"$ac_has_isl_options_set_schedule_serialize_sccs" = x"yes"; then
      AC_DEFINE(HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS, 1,
                [Define if isl_options_set_schedule_serialize_sccs exists.])
-  fi
-  if test x"$ac_has_isl_ctx_get_max_operations" = x"yes"; then
-     AC_DEFINE(HAVE_ISL_CTX_MAX_OPERATIONS, 1,
-               [Define if isl_ctx_get_max_operations exists.])
   fi
 fi
 

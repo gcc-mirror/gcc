@@ -1,5 +1,5 @@
 ;; Predicate definitions for Renesas RX.
-;; Copyright (C) 2008-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2008-2016 Free Software Foundation, Inc.
 ;; Contributed by Red Hat.
 ;;
 ;; This file is part of GCC.
@@ -24,7 +24,9 @@
 ;; Only registers and symbol refs are allowed.
 
 (define_predicate "rx_call_operand"
-  (match_code "symbol_ref,reg")
+  (ior (match_code "reg")
+       (and (match_test "!TARGET_JSR")
+	    (match_code "symbol_ref")))
 )
 
 ;; For sibcall operations we can only use a symbolic address.

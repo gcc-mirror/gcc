@@ -1,7 +1,7 @@
 /* Data structures and declarations used for reading and writing
    GIMPLE to a file stream.
 
-   Copyright (C) 2009-2015 Free Software Foundation, Inc.
+   Copyright (C) 2009-2016 Free Software Foundation, Inc.
    Contributed by Doug Kwan <dougkwan@google.com>
 
 This file is part of GCC.
@@ -244,6 +244,7 @@ enum lto_section_type
   LTO_section_ipa_icf,
   LTO_section_offload_table,
   LTO_section_mode_table,
+  LTO_section_ipa_hsa,
   LTO_N_SECTION_TYPES		/* Must be last.  */
 };
 
@@ -407,9 +408,6 @@ struct lto_simple_header : lto_header
 
 struct lto_simple_header_with_strings : lto_simple_header
 {
-  /* Size of main gimple body of function.  */
-  int32_t main_size;
-
   /* Size of the string table.  */
   int32_t string_size;
 };
@@ -504,6 +502,9 @@ struct GTY((for_user)) lto_in_decl_state
   /* If this in-decl state is associated with a function. FN_DECL
      point to the FUNCTION_DECL. */
   tree fn_decl;
+
+  /* True if decl state is compressed.  */
+  bool compressed;
 };
 
 typedef struct lto_in_decl_state *lto_in_decl_state_ptr;
@@ -537,6 +538,9 @@ struct lto_out_decl_state
   /* If this out-decl state belongs to a function, fn_decl points to that
      function.  Otherwise, it is NULL. */
   tree fn_decl;
+
+  /* True if decl state is compressed.  */
+  bool compressed;
 };
 
 typedef struct lto_out_decl_state *lto_out_decl_state_ptr;
@@ -761,10 +765,18 @@ extern void lto_set_in_hooks (struct lto_file_decl_data **,
 extern struct lto_file_decl_data **lto_get_file_decl_data (void);
 extern const char *lto_get_section_data (struct lto_file_decl_data *,
 					 enum lto_section_type,
-					 const char *, size_t *);
+					 const char *, size_t *,
+					 bool decompress = false);
+extern const char *lto_get_raw_section_data (struct lto_file_decl_data *,
+					     enum lto_section_type,
+					     const char *, size_t *);
 extern void lto_free_section_data (struct lto_file_decl_data *,
-				   enum lto_section_type,
-				   const char *, const char *, size_t);
+			           enum lto_section_type,
+				   const char *, const char *, size_t,
+				   bool decompress = false);
+extern void lto_free_raw_section_data (struct lto_file_decl_data *,
+				       enum lto_section_type,
+				       const char *, const char *, size_t);
 extern htab_t lto_create_renaming_table (void);
 extern void lto_record_renamed_decl (struct lto_file_decl_data *,
 				     const char *, const char *);
@@ -785,6 +797,7 @@ extern void lto_value_range_error (const char *,
 extern void lto_begin_section (const char *, bool);
 extern void lto_end_section (void);
 extern void lto_write_data (const void *, unsigned int);
+extern void lto_write_raw_data (const void *, unsigned int);
 extern void lto_write_stream (struct lto_output_stream *);
 extern bool lto_output_decl_index (struct lto_output_stream *,
 			    struct lto_tree_ref_encoder *,
@@ -926,11 +939,6 @@ void cl_optimization_stream_out (struct bitpack_d *, struct cl_optimization *);
 
 void cl_optimization_stream_in (struct bitpack_d *, struct cl_optimization *);
 
-
-/* In lto-symtab.c.  */
-extern void lto_symtab_merge_decls (void);
-extern void lto_symtab_merge_symbols (void);
-extern tree lto_symtab_prevailing_decl (tree decl);
 
 
 /* In lto-opts.c.  */

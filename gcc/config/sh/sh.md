@@ -1,5 +1,5 @@
 ;;- Machine description for Renesas / SuperH SH.
-;;  Copyright (C) 1993-2015 Free Software Foundation, Inc.
+;;  Copyright (C) 1993-2016 Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -13744,12 +13744,11 @@ label:
 
 (define_insn "rsqrtsf2"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
-	(div:SF (match_operand:SF 1 "immediate_operand" "i")
-		(sqrt:SF (match_operand:SF 2 "fp_arith_reg_operand" "0"))))
+	(unspec:SF [(match_operand:SF 1 "fp_arith_reg_operand" "0")]
+		   UNSPEC_FSRRA))
    (clobber (reg:SI FPSCR_STAT_REG))
    (use (reg:SI FPSCR_MODES_REG))]
-  "TARGET_FPU_ANY && TARGET_FSRRA
-   && operands[1] == CONST1_RTX (SFmode)"
+  "TARGET_FPU_ANY && TARGET_FSRRA"
   "fsrra	%0"
   [(set_attr "type" "fsrra")
    (set_attr "fp_mode" "single")])

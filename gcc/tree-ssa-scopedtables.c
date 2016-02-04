@@ -1,5 +1,5 @@
 /* Header file for SSA dominator optimizations.
-   Copyright (C) 2013-2015 Free Software Foundation, Inc.
+   Copyright (C) 2013-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "tree-eh.h"
 #include "internal-fn.h"
+#include "tree-dfa.h"
 
 static bool hashable_expr_equal_p (const struct hashable_expr *,
 				   const struct hashable_expr *);
@@ -209,9 +210,76 @@ avail_expr_hash (class expr_hash_elt *p)
   const struct hashable_expr *expr = p->expr ();
   inchash::hash hstate;
 
+  if (expr->kind == EXPR_SINGLE)
+    {
+      /* T could potentially be a switch index or a goto dest.  */
+      tree t = expr->ops.single.rhs;
+      if (TREE_CODE (t) == MEM_REF || handled_component_p (t))
+	{
+	  /* Make equivalent statements of both these kinds hash together.
+	     Dealing with both MEM_REF and ARRAY_REF allows us not to care
+	     about equivalence with other statements not considered here.  */
+	  bool reverse;
+	  HOST_WIDE_INT offset, size, max_size;
+	  tree base = get_ref_base_and_extent (t, &offset, &size, &max_size,
+					       &reverse);
+	  /* Strictly, we could try to normalize variable-sized accesses too,
+	    but here we just deal with the common case.  */
+	  if (size != -1
+	      && size == max_size)
+	    {
+	      enum tree_code code = MEM_REF;
+	      hstate.add_object (code);
+	      inchash::add_expr (base, hstate);
+	      hstate.add_object (offset);
+	      hstate.add_object (size);
+	      return hstate.end ();
+	    }
+	}
+    }
+
   inchash::add_hashable_expr (expr, hstate);
 
   return hstate.end ();
+}
+
+/* Compares trees T0 and T1 to see if they are MEM_REF or ARRAY_REFs equivalent
+   to each other.  (That is, they return the value of the same bit of memory.)
+
+   Return TRUE if the two are so equivalent; FALSE if not (which could still
+   mean the two are equivalent by other means).  */
+
+static bool
+equal_mem_array_ref_p (tree t0, tree t1)
+{
+  if (TREE_CODE (t0) != MEM_REF && ! handled_component_p (t0))
+    return false;
+  if (TREE_CODE (t1) != MEM_REF && ! handled_component_p (t1))
+    return false;
+
+  if (!types_compatible_p (TREE_TYPE (t0), TREE_TYPE (t1)))
+    return false;
+  bool rev0;
+  HOST_WIDE_INT off0, sz0, max0;
+  tree base0 = get_ref_base_and_extent (t0, &off0, &sz0, &max0, &rev0);
+  if (sz0 == -1
+      || sz0 != max0)
+    return false;
+
+  bool rev1;
+  HOST_WIDE_INT off1, sz1, max1;
+  tree base1 = get_ref_base_and_extent (t1, &off1, &sz1, &max1, &rev1);
+  if (sz1 == -1
+      || sz1 != max1)
+    return false;
+
+  if (rev0 != rev1)
+    return false;
+
+  /* Types were compatible, so this is a sanity check.  */
+  gcc_assert (sz0 == sz1);
+
+  return (off0 == off1) && operand_equal_p (base0, base1, 0);
 }
 
 /* Compare two hashable_expr structures for equivalence.  They are
@@ -246,9 +314,10 @@ hashable_expr_equal_p (const struct hashable_expr *expr0,
   switch (expr0->kind)
     {
     case EXPR_SINGLE:
-      return operand_equal_p (expr0->ops.single.rhs,
-                              expr1->ops.single.rhs, 0);
-
+      return equal_mem_array_ref_p (expr0->ops.single.rhs,
+				    expr1->ops.single.rhs)
+	     || operand_equal_p (expr0->ops.single.rhs,
+				 expr1->ops.single.rhs, 0);
     case EXPR_UNARY:
       if (expr0->ops.unary.op != expr1->ops.unary.op)
         return false;

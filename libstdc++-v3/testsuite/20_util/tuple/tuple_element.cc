@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++11" }
 // { dg-do compile }
 
-// Copyright (C) 2007-2015 Free Software Foundation, Inc.
+// Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,4 +35,10 @@ main()
   foo q1;
   tuple_element<0,tuple<foo,void,int> >::type q2(q1);
   tuple_element<2,tuple<void,int,foo> >::type q3(q1);
+  tuple_element<0,const tuple<foo,void,int> >::type q4(q1);
+  tuple_element<2,const tuple<void,int,foo> >::type q5(q1);
+  tuple_element<0,volatile tuple<foo,void,int> >::type q6(q1);
+  tuple_element<2,volatile tuple<void,int,foo> >::type q7(q1);
+  tuple_element<0,const volatile tuple<foo,void,int> >::type q8(q1);
+  tuple_element<2,const volatile tuple<void,int,foo> >::type q9(q1);
 }

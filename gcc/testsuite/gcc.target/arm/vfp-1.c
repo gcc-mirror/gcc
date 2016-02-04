@@ -1,6 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mfpu=vfp -mfloat-abi=softfp -ffp-contract=off" } */
-/* { dg-require-effective-target arm_vfp_ok } */
+/* { dg-require-effective-target arm_fp_ok } */
+/* { dg-options "-O2 -ffp-contract=off" } */
+/* { dg-add-options arm_fp } */
 /* { dg-skip-if "need fp instructions" { *-*-* } { "-mfloat-abi=soft" } { "" } } */
 
 extern float fabsf (float);

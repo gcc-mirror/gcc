@@ -38,7 +38,7 @@ BEGIN {
 !skipping && $0 ~ cppline && 
 (exclude == "" || $3 !~ exclude) && (include == "" || $3 ~ include) {
   skipping = 1;
-  printf "%s\n", "#include <" gensub(cppline, "\\2", "", $0) ">"
+  printf "%s\n", "#include <" gensub(cppline, "\\2", 1, $0) ">"
   next;
 }
 skipping && /^# [0-9]+ / && $3 == lastincluded {

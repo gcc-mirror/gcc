@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2015 Free Software Foundation, Inc.
+   Copyright (C) 1991-2016 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -131,6 +131,7 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_ARM_P(flags)    (!TARGET_THUMB_P (flags))
 #define TARGET_THUMB1_P(flags) (TARGET_THUMB_P (flags) && !arm_arch_thumb2)
 #define TARGET_THUMB2_P(flags) (TARGET_THUMB_P (flags) && arm_arch_thumb2)
+#define TARGET_32BIT_P(flags)  (TARGET_ARM_P (flags) || TARGET_THUMB2_P (flags))
 
 /* Run-time Target Specification.  */
 #define TARGET_SOFT_FLOAT		(arm_float_abi == ARM_FLOAT_ABI_SOFT)
@@ -216,6 +217,9 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_NEON							\
   (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP			\
    && ARM_FPU_FSET_HAS (TARGET_FPU_FEATURES, FPU_FL_NEON))
+
+/* FPU supports ARMv8.1 Adv.SIMD extensions.  */
+#define TARGET_NEON_RDMA (TARGET_NEON && arm_arch8_1)
 
 /* Q-bit is present.  */
 #define TARGET_ARM_QBIT \
@@ -435,6 +439,9 @@ extern int arm_arch7em;
 
 /* Nonzero if this chip supports the ARM Architecture 8 extensions.  */
 extern int arm_arch8;
+
+/* Nonzero if this chip supports the ARM Architecture 8.1 extensions.  */
+extern int arm_arch8_1;
 
 /* Nonzero if this chip can benefit from load scheduling.  */
 extern int arm_ld_sched;

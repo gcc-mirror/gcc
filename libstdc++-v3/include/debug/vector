@@ -1,6 +1,6 @@
 // Debugging vector implementation -*- C++ -*-
 
-// Copyright (C) 2003-2015 Free Software Foundation, Inc.
+// Copyright (C) 2003-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,9 +37,12 @@
 
 namespace __gnu_debug
 {
-  /// Special vector safe base class to add a guaranteed capacity information
-  /// useful to detect code relying on the libstdc++ reallocation management
-  /// implementation detail.
+  /** @brief Base class for Debug Mode vector.
+   *
+   * Adds information about the guaranteed capacity, which is useful for
+   * detecting code which relies on non-portable implementation details of
+   * the libstdc++ reallocation policy.
+   */
   template<typename _SafeSequence,
 	   typename _BaseSequence>
     class _Safe_vector

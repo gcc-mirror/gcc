@@ -1,5 +1,5 @@
 ;; Constraint definitions for Moxie
-;; Copyright (C) 2009-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2016 Free Software Foundation, Inc.
 ;; Contributed by Anthony Green <green@moxielogic.com>
 
 ;; This file is part of GCC.

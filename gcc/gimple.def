@@ -1,6 +1,6 @@
 /* This file contains the definitions of the GIMPLE IR tuples used in GCC.
 
-   Copyright (C) 2007-2015 Free Software Foundation, Inc.
+   Copyright (C) 2007-2016 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -375,6 +375,10 @@ DEFGSCODE(GIMPLE_OMP_TEAMS, "gimple_omp_teams", GSS_OMP_SINGLE_LAYOUT)
    BODY is the sequence of statements to execute in the ordered section.
    CLAUSES is an OMP_CLAUSE chain holding the associated clauses.  */
 DEFGSCODE(GIMPLE_OMP_ORDERED, "gimple_omp_ordered", GSS_OMP_SINGLE_LAYOUT)
+
+/* GIMPLE_OMP_GRID_BODY <BODY> represents a parallel loop lowered for execution
+   on a GPU.  It is an artificial statement created by omp lowering.  */
+DEFGSCODE(GIMPLE_OMP_GRID_BODY, "gimple_omp_gpukernel", GSS_OMP)
 
 /* GIMPLE_PREDICT <PREDICT, OUTCOME> specifies a hint for branch prediction.
 

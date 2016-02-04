@@ -1,5 +1,5 @@
 /* Definitions for 64-bit PowerPC running FreeBSD using the ELF format
-   Copyright (C) 2012-2015 Free Software Foundation, Inc.
+   Copyright (C) 2012-2016 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -65,6 +65,13 @@ extern int dot_symbols;
 #define INVALID_64BIT "-m%s not supported in this configuration"
 #define INVALID_32BIT INVALID_64BIT
 
+/* Use LINUX64 instead of FREEBSD64 for compat with e.g. sysv4le.h */
+#ifdef LINUX64_DEFAULT_ABI_ELFv2
+#define ELFv2_ABI_CHECK (rs6000_elf_abi != 1)
+#else
+#define ELFv2_ABI_CHECK (rs6000_elf_abi == 2)
+#endif
+
 #undef  SUBSUBTARGET_OVERRIDE_OPTIONS
 #define SUBSUBTARGET_OVERRIDE_OPTIONS				\
   do								\
@@ -83,6 +90,12 @@ extern int dot_symbols;
 	    {							\
 	      rs6000_isa_flags &= ~OPTION_MASK_RELOCATABLE;	\
 	      error (INVALID_64BIT, "relocatable");		\
+	    }							\
+	  if (ELFv2_ABI_CHECK)					\
+	    {							\
+	      rs6000_current_abi = ABI_ELFv2;			\
+	      if (dot_symbols)					\
+		error ("-mcall-aixdesc incompatible with -mabi=elfv2"); \
 	    }							\
 	  if (rs6000_isa_flags & OPTION_MASK_EABI)		\
 	    {							\
@@ -154,10 +167,7 @@ extern int dot_symbols;
   { "link_os_freebsd_spec32",	LINK_OS_FREEBSD_SPEC32 },     		\
   { "link_os_freebsd_spec64",	LINK_OS_FREEBSD_SPEC64 },
 
-#define FREEBSD_DYNAMIC_LINKER32 "/libexec/ld-elf32.so.1"
-#define FREEBSD_DYNAMIC_LINKER64 "/libexec/ld-elf.so.1"
-
-#define LINK_OS_FREEBSD_SPEC_DEF32 "\
+#define LINK_OS_FREEBSD_SPEC_DEF "\
   %{p:%nconsider using `-pg' instead of `-p' with gprof(1)} \
   %{v:-V} \
   %{assert*} %{R*} %{rpath*} %{defsym*} \
@@ -165,25 +175,13 @@ extern int dot_symbols;
   %{!shared: \
     %{!static: \
       %{rdynamic: -export-dynamic} \
-      %{!dynamic-linker:-dynamic-linker " FREEBSD_DYNAMIC_LINKER32 "}} \
+      %{!dynamic-linker:-dynamic-linker " FBSD_DYNAMIC_LINKER "}} \
     %{static:-Bstatic}} \
   %{symbolic:-Bsymbolic}"
 
-#define LINK_OS_FREEBSD_SPEC_DEF64 "\
-  %{p:%nconsider using `-pg' instead of `-p' with gprof(1)} \
-  %{v:-V} \
-  %{assert*} %{R*} %{rpath*} %{defsym*} \
-  %{shared:-Bshareable %{h*} %{soname*}} \
-  %{!shared: \
-    %{!static: \
-      %{rdynamic: -export-dynamic} \
-      %{!dynamic-linker:-dynamic-linker " FREEBSD_DYNAMIC_LINKER64 "}} \
-    %{static:-Bstatic}} \
-  %{symbolic:-Bsymbolic}"
-
-#define LINK_OS_FREEBSD_SPEC32 "-melf32ppc_fbsd " LINK_OS_FREEBSD_SPEC_DEF32
+#define LINK_OS_FREEBSD_SPEC32 "-melf32ppc_fbsd " LINK_OS_FREEBSD_SPEC_DEF
   
-#define LINK_OS_FREEBSD_SPEC64 "-melf64ppc_fbsd " LINK_OS_FREEBSD_SPEC_DEF64
+#define LINK_OS_FREEBSD_SPEC64 "-melf64ppc_fbsd " LINK_OS_FREEBSD_SPEC_DEF
 
 #undef	MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS { "m64" }
@@ -304,7 +302,7 @@ extern int dot_symbols;
 
 /* rs6000.h gets this wrong for FreeBSD.  We use the GCC defaults instead.  */
 #undef WCHAR_TYPE
-#define	WCHAR_TYPE      (TARGET_64BIT ? "int" : "long int")
+
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 

@@ -1,4 +1,5 @@
-#include <stdlib.h>
+extern void abort (void);
+
 #include <stdarg.h>
 
 static int a[1000];

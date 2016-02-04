@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -600,9 +600,7 @@ default_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 /* Reciprocal.  */
 
 tree
-default_builtin_reciprocal (unsigned int fn ATTRIBUTE_UNUSED,
-			    bool md_fn ATTRIBUTE_UNUSED,
-			    bool sqrt ATTRIBUTE_UNUSED)
+default_builtin_reciprocal (tree)
 {
   return NULL_TREE;
 }
@@ -901,7 +899,8 @@ default_branch_target_register_class (void)
 
 reg_class_t
 default_ira_change_pseudo_allocno_class (int regno ATTRIBUTE_UNUSED,
-					 reg_class_t cl)
+					 reg_class_t cl,
+					 reg_class_t best_cl ATTRIBUTE_UNUSED)
 {
   return cl;
 }
@@ -1953,6 +1952,14 @@ can_use_doloop_if_innermost (const widest_int &, const widest_int &,
 			     unsigned int loop_depth, bool)
 {
   return loop_depth == 1;
+}
+
+/* Default implementation of TARGET_OPTAB_SUPPORTED_P.  */
+
+bool
+default_optab_supported_p (int, machine_mode, machine_mode, optimization_type)
+{
+  return true;
 }
 
 #include "gt-targhooks.h"

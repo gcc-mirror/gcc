@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015 Free Software Foundation, Inc.
+# Copyright (C) 2012-2016 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -98,6 +98,8 @@ MULTILIB_MATCHES       += march?armv8-a=mcpu?xgene1
 
 # Arch Matches
 MULTILIB_MATCHES       += march?armv8-a=march?armv8-a+crc
+MULTILIB_MATCHES       += march?armv8-a=march?armv8.1-a
+MULTILIB_MATCHES       += march?armv8-a=march?armv8.1-a+crc
 
 # FPU matches
 MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv3

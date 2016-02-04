@@ -49,7 +49,7 @@ Boston, MA 02110-1301, USA.  */
 
 /*
 
-@deftypefn Extension char** dupargv (char **@var{vector})
+@deftypefn Extension char** dupargv (char * const *@var{vector})
 
 Duplicate an argument vector.  Simply scans through @var{vector},
 duplicating each argument until the terminating @code{NULL} is found.
@@ -62,7 +62,7 @@ argument vector.
 */
 
 char **
-dupargv (char **argv)
+dupargv (char * const *argv)
 {
   int argc;
   char **copy;
@@ -76,11 +76,7 @@ dupargv (char **argv)
 
   /* the strings */
   for (argc = 0; argv[argc] != NULL; argc++)
-    {
-      int len = strlen (argv[argc]);
-      copy[argc] = (char *) xmalloc (len + 1);
-      strcpy (copy[argc], argv[argc]);
-    }
+    copy[argc] = xstrdup (argv[argc]);
   copy[argc] = NULL;
   return copy;
 }
@@ -283,7 +279,7 @@ char **buildargv (const char *input)
 
 /*
 
-@deftypefn Extension int writeargv (const char **@var{argv}, FILE *@var{file})
+@deftypefn Extension int writeargv (char * const *@var{argv}, FILE *@var{file})
 
 Write each member of ARGV, handling all necessary quoting, to the file
 named by FILE, separated by whitespace.  Return 0 on success, non-zero
@@ -294,7 +290,7 @@ if an error occurred while writing to FILE.
 */
 
 int
-writeargv (char **argv, FILE *f)
+writeargv (char * const *argv, FILE *f)
 {
   int status = 0;
 
@@ -467,7 +463,7 @@ expandargv (int *argcp, char ***argvp)
 
 /*
 
-@deftypefn Extension int countargv (char **@var{argv})
+@deftypefn Extension int countargv (char * const *@var{argv})
 
 Return the number of elements in @var{argv}.
 Returns zero if @var{argv} is NULL.
@@ -477,7 +473,7 @@ Returns zero if @var{argv} is NULL.
 */
 
 int
-countargv (char **argv)
+countargv (char * const *argv)
 {
   int argc;
 

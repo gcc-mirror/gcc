@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2015 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2016 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1514,6 +1514,12 @@ ARM target generates 32-bit code.
 @item arm_eabi
 ARM target adheres to the ABI for the ARM Architecture.
 
+@item arm_fp_ok
+@anchor{arm_fp_ok}
+ARM target defines @code{__ARM_FP} using @code{-mfloat-abi=softfp} or
+equivalent options.  Some multilibs may be incompatible with these
+options.
+
 @item arm_hf_eabi
 ARM target adheres to the VFP and Advanced SIMD Register Arguments
 variant of the ABI for the ARM Architecture (as selected with
@@ -1581,6 +1587,15 @@ Some multilibs may be incompatible with these options.
 @item arm_v8_neon_ok
 ARM target supports @code{-mfpu=neon-fp-armv8 -mfloat-abi=softfp}.
 Some multilibs may be incompatible with these options.
+
+@item arm_v8_1a_neon_ok
+ARM target supports options to generate ARMv8.1 Adv.SIMD instructions.
+Some multilibs may be incompatible with these options.
+
+@item arm_v8_1a_neon_hw
+ARM target supports executing ARMv8.1 Adv.SIMD instructions.  Some
+multilibs may be incompatible with the options needed.  Implies
+arm_v8_1a_neon_ok.
 
 @item arm_prefer_ldrd_strd
 ARM target prefers @code{LDRD} and @code{STRD} instructions over
@@ -1824,6 +1839,9 @@ time) should be run on this target.  This can be enabled by setting the
 Test system runs executables on a simulator (i.e. slowly) rather than
 hardware (i.e. fast).
 
+@item stabs
+Target supports the stabs debugging format.
+
 @item stdint_types
 Target has the basic signed and unsigned C types in @code{stdint.h}.
 This will be obsolete when GCC ensures a working @code{stdint.h} for
@@ -2035,6 +2053,11 @@ The supported values of @var{feature} for directive @code{dg-add-options}
 are:
 
 @table @code
+@item arm_fp
+@code{__ARM_FP} definition.  Only ARM targets support this feature, and only then
+in certain modes; see the @ref{arm_fp_ok,,arm_fp_ok effective target
+keyword}.
+
 @item arm_neon
 NEON support.  Only ARM targets support this feature, and only then
 in certain modes; see the @ref{arm_neon_ok,,arm_neon_ok effective target

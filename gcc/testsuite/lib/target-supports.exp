@@ -1,4 +1,4 @@
-#   Copyright (C) 1999-2015 Free Software Foundation, Inc.
+#   Copyright (C) 1999-2016 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -938,6 +938,15 @@ proc check_effective_target_pthread {} {
     } "-pthread"]
 }
 
+# Return 1 if compilation with -gstabs is error-free for trivial
+# code, 0 otherwise.
+
+proc check_effective_target_stabs {} {
+    return [check_no_compiler_messages stabs object {
+	void foo (void) { }
+    } "-gstabs"]
+}
+
 # Return 1 if compilation with -mpe-aligned-commons is error-free
 # for trivial code, 0 otherwise.
 
@@ -1432,6 +1441,11 @@ proc check_effective_target_cilkplus { } {
     if { [istarget avr-*-*] } {
 	return 0;
     }
+
+    if { ! [check_effective_target_pthread] } {
+	return 0;
+    }
+
     return 1
 }
 
@@ -2608,6 +2622,15 @@ proc check_effective_target_aarch64_little_endian { } {
     }]
 }
 
+# Return 1 if this is a compiler supporting ARC atomic operations
+proc check_effective_target_arc_atomic { } {
+    return [check_no_compiler_messages arc_atomic assembly {
+	#if !defined(__ARC_ATOMIC__)
+	#error FOO
+	#endif
+    }]
+}
+
 # Return 1 if this is an arm target using 32-bit instructions
 proc check_effective_target_arm32 { } {
     if { ![istarget arm*-*-*] } {
@@ -2721,6 +2744,47 @@ proc check_effective_target_arm_hard_vfp_ok { } {
     }
 }
 
+# Return 1 if this is an ARM target defining __ARM_FP. We may need
+# -mfloat-abi=softfp or equivalent options.  Some multilibs may be
+# incompatible with these options.  Also set et_arm_fp_flags to the
+# best options to add.
+
+proc check_effective_target_arm_fp_ok_nocache { } {
+    global et_arm_fp_flags
+    set et_arm_fp_flags ""
+    if { [check_effective_target_arm32] } {
+	foreach flags {"" "-mfloat-abi=softfp" "-mfloat-abi=hard"} {
+	    if { [check_no_compiler_messages_nocache arm_fp_ok object {
+		#ifndef __ARM_FP
+		#error __ARM_FP not defined
+		#endif
+	    } "$flags"] } {
+		set et_arm_fp_flags $flags
+		return 1
+	    }
+	}
+    }
+
+    return 0
+}
+
+proc check_effective_target_arm_fp_ok { } {
+    return [check_cached_effective_target arm_fp_ok \
+		check_effective_target_arm_fp_ok_nocache]
+}
+
+# Add the options needed to define __ARM_FP.  We need either
+# -mfloat-abi=softfp or -mfloat-abi=hard, but if one is already
+# specified by the multilib, use it.
+
+proc add_options_for_arm_fp { flags } {
+    if { ! [check_effective_target_arm_fp_ok] } {
+	return "$flags"
+    }
+    global et_arm_fp_flags
+    return "$flags $et_arm_fp_flags"
+}
+
 # Return 1 if this is an ARM target that supports DSP multiply with
 # current multilib flags.
 
@@ -2753,7 +2817,7 @@ proc check_effective_target_arm_unaligned { } {
 proc check_effective_target_arm_crypto_ok_nocache { } {
     global et_arm_crypto_flags
     set et_arm_crypto_flags ""
-    if { [check_effective_target_arm32] } {
+    if { [check_effective_target_arm_v8_neon_ok] } {
 	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=crypto-neon-fp-armv8" "-mfpu=crypto-neon-fp-armv8 -mfloat-abi=softfp"} {
 	    if { [check_no_compiler_messages_nocache arm_crypto_ok object {
 		#include "arm_neon.h"
@@ -2816,6 +2880,17 @@ proc add_options_for_arm_v8_neon { flags } {
     return "$flags $et_arm_v8_neon_flags -march=armv8-a"
 }
 
+# Add the options needed for ARMv8.1 Adv.SIMD.  Also adds the ARMv8 NEON
+# options for AArch64 and for ARM.
+
+proc add_options_for_arm_v8_1a_neon { flags } {
+    if { ! [check_effective_target_arm_v8_1a_neon_ok] } {
+	return "$flags"
+    }
+    global et_arm_v8_1a_neon_flags
+    return "$flags $et_arm_v8_1a_neon_flags -march=armv8.1-a"
+}
+
 proc add_options_for_arm_crc { flags } {
     if { ! [check_effective_target_arm_crc_ok] } {
         return "$flags"
@@ -2854,7 +2929,7 @@ proc check_effective_target_arm_neon_ok_nocache { } {
     global et_arm_neon_flags
     set et_arm_neon_flags ""
     if { [check_effective_target_arm32] } {
-	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon" "-mfpu=neon -mfloat-abi=softfp"} {
+	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon" "-mfpu=neon -mfloat-abi=softfp" "-mfpu=neon -mfloat-abi=softfp -march=armv7-a"} {
 	    if { [check_no_compiler_messages_nocache arm_neon_ok object {
 		int dummy;
 		#ifndef __ARM_NEON__
@@ -2897,8 +2972,8 @@ proc check_effective_target_arm_crc_ok { } {
 
 # Return 1 if this is an ARM target supporting -mfpu=neon-fp16
 # -mfloat-abi=softfp or equivalent options.  Some multilibs may be
-# incompatible with these options.  Also set et_arm_neon_flags to the
-# best options to add.
+# incompatible with these options.  Also set et_arm_neon_fp16_flags to
+# the best options to add.
 
 proc check_effective_target_arm_neon_fp16_ok_nocache { } {
     global et_arm_neon_fp16_flags
@@ -3102,7 +3177,8 @@ foreach { armfunc armflag armdef } { v4 "-march=armv4 -marm" __ARM_ARCH_4__
 				     v7r "-march=armv7-r" __ARM_ARCH_7R__
 				     v7m "-march=armv7-m -mthumb" __ARM_ARCH_7M__
 				     v7em "-march=armv7e-m -mthumb" __ARM_ARCH_7EM__
-				     v8a "-march=armv8-a" __ARM_ARCH_8A__ } {
+				     v8a "-march=armv8-a" __ARM_ARCH_8A__
+				     v8_1a "-march=armv8.1a" __ARM_ARCH_8A__ } {
     eval [string map [list FUNC $armfunc FLAG $armflag DEF $armdef ] {
 	proc check_effective_target_arm_arch_FUNC_ok { } {
 	    if { [ string match "*-marm*" "FLAG" ] &&
@@ -3259,6 +3335,41 @@ proc check_effective_target_arm_neonv2_hw { } {
     } [add_options_for_arm_neonv2 ""]]
 }
 
+# Return 1 if the target supports the ARMv8.1 Adv.SIMD extension, 0
+# otherwise.  The test is valid for AArch64 and ARM.  Record the command
+# line options needed.
+
+proc check_effective_target_arm_v8_1a_neon_ok_nocache { } {
+    global et_arm_v8_1a_neon_flags
+    set et_arm_v8_1a_neon_flags ""
+
+    if { ![istarget arm*-*-*] && ![istarget aarch64*-*-*] } {
+	return 0;
+    }
+
+    # Iterate through sets of options to find the compiler flags that
+    # need to be added to the -march option.  Start with the empty set
+    # since AArch64 only needs the -march setting.
+    foreach flags {"" "-mfpu=neon-fp-armv8" "-mfloat-abi=softfp" \
+		       "-mfpu=neon-fp-armv8 -mfloat-abi=softfp"} {
+	if { [check_no_compiler_messages_nocache arm_v8_1a_neon_ok object {
+	    #if !defined (__ARM_FEATURE_QRDMX)
+	    #error "__ARM_FEATURE_QRDMX not defined"
+	    #endif
+	} "$flags -march=armv8.1-a"] } {
+	    set et_arm_v8_1a_neon_flags "$flags -march=armv8.1-a"
+	    return 1
+	}
+    }
+
+    return 0;
+}
+
+proc check_effective_target_arm_v8_1a_neon_ok { } {
+    return [check_cached_effective_target arm_v8_1a_neon_ok \
+		check_effective_target_arm_v8_1a_neon_ok_nocache]
+}
+
 # Return 1 if the target supports executing ARMv8 NEON instructions, 0
 # otherwise.
 
@@ -3275,6 +3386,44 @@ proc check_effective_target_arm_v8_neon_hw { } {
 	  return 0;
 	}
     } [add_options_for_arm_v8_neon ""]]
+}
+
+# Return 1 if the target supports executing the ARMv8.1 Adv.SIMD extension, 0
+# otherwise.  The test is valid for AArch64 and ARM.
+
+proc check_effective_target_arm_v8_1a_neon_hw { } {
+    if { ![check_effective_target_arm_v8_1a_neon_ok] } {
+	return 0;
+    }
+    return [check_runtime arm_v8_1a_neon_hw_available {
+	int
+	main (void)
+	{
+	  #ifdef __ARM_ARCH_ISA_A64
+	  __Int32x2_t a = {0, 1};
+	  __Int32x2_t b = {0, 2};
+	  __Int32x2_t result;
+
+	  asm ("sqrdmlah %0.2s, %1.2s, %2.2s"
+	       : "=w"(result)
+	       : "w"(a), "w"(b)
+	       : /* No clobbers.  */);
+
+	  #else
+
+	  __simd64_int32_t a = {0, 1};
+	  __simd64_int32_t b = {0, 2};
+	  __simd64_int32_t result;
+
+	  asm ("vqrdmlah.s32 %P0, %P1, %P2"
+	       : "=w"(result)
+	       : "w"(a), "w"(b)
+	       : /* No clobbers.  */);
+	  #endif
+
+	  return result[0];
+	}
+    } [add_options_for_arm_v8_1a_neon ""]]
 }
 
 # Return 1 if this is a ARM target with NEON enabled.
@@ -4163,6 +4312,7 @@ proc check_effective_target_vect_widen_sum_hi_to_si_pattern { } {
     } else {
         set et_vect_widen_sum_hi_to_si_pattern_saved 0
         if { [istarget powerpc*-*-*]
+             || [istarget aarch64*-*-*]
              || [istarget ia64-*-*] } {
             set et_vect_widen_sum_hi_to_si_pattern_saved 1
         }
@@ -4767,6 +4917,25 @@ proc check_effective_target_vect_element_align { } {
     return $et_vect_element_align
 }
 
+# Return 1 if the target supports vector LOAD_LANES operations, 0 otherwise.
+
+proc check_effective_target_vect_load_lanes { } {
+    global et_vect_load_lanes
+
+    if [info exists et_vect_load_lanes] {
+	verbose "check_effective_target_vect_load_lanes: using cached result" 2
+    } else {
+	set et_vect_load_lanes 0
+	if { ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok])
+	     || [istarget aarch64*-*-*] } {
+	    set et_vect_load_lanes 1
+	}
+    }
+
+    verbose "check_effective_target_vect_load_lanes: returning $et_vect_load_lanes" 2
+    return $et_vect_load_lanes
+}
+
 # Return 1 if the target supports vector conditional operations, 0 otherwise.
 
 proc check_effective_target_vect_condition { } {
@@ -5348,6 +5517,7 @@ proc check_effective_target_sync_int_128_runtime { } {
 # Return 1 if the target supports atomic operations on "long long".
 #
 # Note: 32bit x86 targets require -march=pentium in dg-options.
+# Note: 32bit s390 targets require -mzarch in dg-options.
 
 proc check_effective_target_sync_long_long { } {
     if { [istarget x86_64-*-*] || [istarget i?86-*-*])
@@ -5355,6 +5525,7 @@ proc check_effective_target_sync_long_long { } {
 	 || [istarget arm*-*-*]
 	 || [istarget alpha*-*-*]
 	 || ([istarget sparc*-*-*] && [check_effective_target_lp64])
+	 || [istarget s390*-*-*]
 	 || [istarget spu-*-*] } {
 	return 1
     } else {
@@ -5487,6 +5658,8 @@ proc check_effective_target_bswap32 { } {
 }
 
 # Return 1 if the target supports 64-bit byte swap instructions.
+#
+# Note: 32bit s390 targets require -mzarch in dg-options.
 
 proc check_effective_target_bswap64 { } {
     global et_bswap64_saved
@@ -5521,6 +5694,7 @@ proc check_effective_target_sync_int_long { } {
 	     || [istarget crisv32-*-*] || [istarget cris-*-*]
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
 	     || [istarget spu-*-*]
+	     || ([istarget arc*-*-*] && [check_effective_target_arc_atomic])
 	     || [check_effective_target_mips_llsc] } {
            set et_sync_int_long_saved 1
         }
@@ -5552,6 +5726,7 @@ proc check_effective_target_sync_char_short { } {
 	     || [istarget crisv32-*-*] || [istarget cris-*-*]
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
 	     || [istarget spu-*-*]
+	     || ([istarget arc*-*-*] && [check_effective_target_arc_atomic])
 	     || [check_effective_target_mips_llsc] } {
            set et_sync_char_short_saved 1
         }
@@ -6153,8 +6328,19 @@ proc check_effective_target_pow10 { } {
     } "-lm" ]
 }
 
-# Return 1 if current options generate DFP instructions, 0 otherwise.
+# Return 1 if issignaling function exists.
+proc check_effective_target_issignaling {} {
+    return [check_runtime issignaling {
+	#define _GNU_SOURCE
+	#include <math.h>
+	int main ()
+	{
+	  return issignaling (0.0);
+	}
+    } "-lm" ]
+}
 
+# Return 1 if current options generate DFP instructions, 0 otherwise.
 proc check_effective_target_hard_dfp {} {
     return [check_no_messages_and_pattern hard_dfp "!adddd3" assembly {
 	typedef float d64 __attribute__((mode(DD)));

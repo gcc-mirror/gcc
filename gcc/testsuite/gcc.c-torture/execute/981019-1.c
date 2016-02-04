@@ -1,4 +1,4 @@
-/* { dg-skip-if "ptxas seg faults" { nvptx-*-* } { "-O2" "-O3*" } { "" } } */
+/* { dg-skip-if "ptxas seg faults" { nvptx-*-* } { "-O3*" } { "" } } */
 
 extern int f2(void);
 extern int f3(void);

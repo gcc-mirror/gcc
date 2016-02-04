@@ -18,10 +18,13 @@ func Abs(x float64) float64 {
 }
 
 func abs(x float64) float64 {
-	switch {
-	case x < 0:
+	// TODO: once golang.org/issue/13095 is fixed, change this to:
+	// return Float64frombits(Float64bits(x) &^ (1 << 63))
+	// But for now, this generates better code and can also be inlined:
+	if x < 0 {
 		return -x
-	case x == 0:
+	}
+	if x == 0 {
 		return 0 // return correctly abs(-0)
 	}
 	return x

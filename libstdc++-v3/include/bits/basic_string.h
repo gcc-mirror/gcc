@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997-2015 Free Software Foundation, Inc.
+// Copyright (C) 1997-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -323,7 +323,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<class _Iterator>
         static void
         _S_copy_chars(_CharT* __p, _Iterator __k1, _Iterator __k2)
-	_GLIBCXX_NOEXCEPT
         {
 	  for (; __k1 != __k2; ++__k1, (void)++__p)
 	    traits_type::assign(*__p, *__k1); // These types are off.
@@ -2901,7 +2900,6 @@ _GLIBCXX_END_NAMESPACE_CXX11
       template<class _Iterator>
         static void
         _S_copy_chars(_CharT* __p, _Iterator __k1, _Iterator __k2)
-	_GLIBCXX_NOEXCEPT
         {
 	  for (; __k1 != __k2; ++__k1, (void)++__p)
 	    traits_type::assign(*__p, *__k1); // These types are off.
@@ -4904,6 +4902,18 @@ _GLIBCXX_END_NAMESPACE_CXX11
       int
       compare(size_type __pos, size_type __n1, const _CharT* __s,
 	      size_type __n2) const;
+
+# ifdef _GLIBCXX_TM_TS_INTERNAL
+      friend void
+      ::_txnal_cow_string_C1_for_exceptions(void* that, const char* s,
+					    void* exc);
+      friend const char*
+      ::_txnal_cow_string_c_str(const void *that);
+      friend void
+      ::_txnal_cow_string_D1(void *that);
+      friend void
+      ::_txnal_cow_string_D1_commit(void *that);
+# endif
   };
 #endif  // !_GLIBCXX_USE_CXX11_ABI
 

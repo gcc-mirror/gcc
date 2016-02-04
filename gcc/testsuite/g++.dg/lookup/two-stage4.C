@@ -8,7 +8,7 @@ template<typename T> bool operator==(wrap<T>, wrap<T>);
 template<typename T>
 void g(T, wrap<wrap<int> > x)
 {
-  bool b = x == x; // { dg-bogus "" "" { xfail *-*-* } }
+  bool b = x == x; // { dg-bogus "" "" }
 }
 
 template<typename T> void operator==(wrap<wrap<T> >, wrap<wrap<T> >);

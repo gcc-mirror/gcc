@@ -1,5 +1,5 @@
 ;; Scheduling description for IBM POWER6 processor.
-;;   Copyright (C) 2006-2015 Free Software Foundation, Inc.
+;;   Copyright (C) 2006-2016 Free Software Foundation, Inc.
 ;;   Contributed by Peter Steinmetz (steinmtz@us.ibm.com)
 ;;
 ;; This file is part of GCC.

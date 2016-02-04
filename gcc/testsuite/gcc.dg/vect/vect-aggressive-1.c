@@ -2,7 +2,6 @@
 /* { dg-require-effective-target vect_simd_clones } */
 /* { dg-additional-options "-fopenmp-simd" } */
 
-#include <stdlib.h>
 #include "tree-vect.h"
 
 #define N 64

@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime Common Private Definitions
-   Copyright (C) 2010-2015 Free Software Foundation, Inc.
+   Copyright (C) 2010-2016 Free Software Foundation, Inc.
    Contributed by Nicola Pero
 
 This file is part of GCC.

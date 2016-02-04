@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (C) 2009-2015 Free Software Foundation, Inc.
+# Copyright (C) 2009-2016 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,4 +55,7 @@ if gdb.current_objfile () is not None:
     if not dir_ in sys.path:
         sys.path.insert(0, dir_)
 
-import libstdcxx.v6
+# Call a function as a plain import would not execute body of the included file
+# on repeated reloads of this object file.
+from libstdcxx.v6 import register_libstdcxx_printers
+register_libstdcxx_printers(gdb.current_objfile())

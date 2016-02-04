@@ -1,5 +1,5 @@
 /* Vector API for GNU compiler.
-   Copyright (C) 2004-2015 Free Software Foundation, Inc.
+   Copyright (C) 2004-2016 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
    Re-implemented in C++ by Diego Novillo <dnovillo@google.com>
 
@@ -1700,6 +1700,18 @@ inline bool
 vec<T, va_heap, vl_ptr>::using_auto_storage () const
 {
   return m_vec->m_vecpfx.m_using_auto_storage;
+}
+
+/* Release VEC and call release of all element vectors.  */
+
+template<typename T>
+inline void
+release_vec_vec (vec<vec<T> > &vec)
+{
+  for (unsigned i = 0; i < vec.length (); i++)
+    vec[i].release ();
+
+  vec.release ();
 }
 
 #if (GCC_VERSION >= 3000)

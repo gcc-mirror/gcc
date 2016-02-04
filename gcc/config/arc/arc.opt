@@ -1,6 +1,6 @@
 ; Options for the Synopsys DesignWare ARC port of the compiler
 ;
-; Copyright (C) 2005-2015 Free Software Foundation, Inc.
+; Copyright (C) 2005-2016 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -59,11 +59,11 @@ Target RejectNegative Joined UInteger Var(arc_mpy_option) Init(2)
 
 mdiv-rem
 Target Report Mask(DIVREM)
-Enable DIV-REM instructions for ARCv2
+Enable DIV-REM instructions for ARCv2.
 
 mcode-density
 Target Report Mask(CODE_DENSITY)
-Enable code density instructions for ARCv2
+Enable code density instructions for ARCv2.
 
 mmixed-code
 Target Report Mask(MIXED_CODE_SET)
@@ -340,14 +340,6 @@ mrtsc
 Target Report
 Enable 64-bit Time-Stamp Counter extension instruction.
 
-mno-epilogue-cfi
-Target Report RejectNegative InverseMask(EPILOGUE_CFI)
-Disable generation of cfi for epilogues.
-
-mepilogue-cfi
-Target RejectNegative Mask(EPILOGUE_CFI)
-Enable generation of cfi for epilogues.
-
 EB
 Target
 Pass -EB option through to linker.
@@ -414,3 +406,10 @@ Target Joined
 mmac_
 Target Joined
 
+matomic
+Target Report Mask(ATOMIC)
+Enable atomic instructions.
+
+mll64
+Target Report Mask(LL64)
+Enable double load/store instructions for ARC HS.

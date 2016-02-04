@@ -1,5 +1,5 @@
 /* Conditional Dead Call Elimination pass for the GNU compiler.
-   Copyright (C) 2008-2015 Free Software Foundation, Inc.
+   Copyright (C) 2008-2016 Free Software Foundation, Inc.
    Contributed by Xinliang David Li <davidxl@google.com>
 
 This file is part of GCC.
@@ -959,7 +959,8 @@ use_internal_fn (gcall *call)
 {
   unsigned nconds = 0;
   auto_vec<gimple *, 12> conds;
-  gen_shrink_wrap_conditions (call, conds, &nconds);
+  if (can_test_argument_range (call))
+    gen_shrink_wrap_conditions (call, conds, &nconds);
   if (nconds == 0 && !edom_only_function (call))
     return false;
 

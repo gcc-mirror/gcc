@@ -1,5 +1,5 @@
 /* Loop autoparallelization.
-   Copyright (C) 2006-2015 Free Software Foundation, Inc.
+   Copyright (C) 2006-2016 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr> 
    Zdenek Dvorak <dvorakz@suse.cz> and Razya Ladelsky <razya@il.ibm.com>.
 
@@ -53,6 +53,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "params.h"
 #include "params-enum.h"
+#include "tree-ssa-alias.h"
+#include "tree-eh.h"
+#include "gomp-constants.h"
+#include "tree-dfa.h"
 
 /* This pass tries to distribute iterations of loops into several threads.
    The implementation is straightforward -- for each loop we test whether its
@@ -192,6 +196,8 @@ struct reduction_info
 				   of the reduction variable when existing the loop. */
   tree initial_value;		/* The initial value of the reduction var before entering the loop.  */
   tree field;			/*  the name of the field in the parloop data structure intended for reduction.  */
+  tree reduc_addr;		/* The address of the reduction variable for
+				   openacc reductions.  */
   tree init;			/* reduction initialization value.  */
   gphi *new_phi;		/* (helper field) Newly created phi node whose result
 				   will be passed to the atomic operation.  Represents
@@ -719,6 +725,7 @@ eliminate_local_variables_stmt (edge entry, gimple_stmt_iterator *gsi,
     }
   else if (gimple_clobber_p (stmt))
     {
+      unlink_stmt_vdef (stmt);
       stmt = gimple_build_nop ();
       gsi_replace (gsi, stmt, false);
       dta.changed = true;
@@ -1085,10 +1092,29 @@ create_call_for_reduction_1 (reduction_info **slot, struct clsn_data *clsn_data)
   tree tmp_load, name;
   gimple *load;
 
-  load_struct = build_simple_mem_ref (clsn_data->load);
-  t = build3 (COMPONENT_REF, type, load_struct, reduc->field, NULL_TREE);
+  if (reduc->reduc_addr == NULL_TREE)
+    {
+      load_struct = build_simple_mem_ref (clsn_data->load);
+      t = build3 (COMPONENT_REF, type, load_struct, reduc->field, NULL_TREE);
 
-  addr = build_addr (t);
+      addr = build_addr (t);
+    }
+  else
+    {
+      /* Set the address for the atomic store.  */
+      addr = reduc->reduc_addr;
+
+      /* Remove the non-atomic store '*addr = sum'.  */
+      tree res = PHI_RESULT (reduc->keep_res);
+      use_operand_p use_p;
+      gimple *stmt;
+      bool single_use_p = single_imm_use (res, &use_p, &stmt);
+      gcc_assert (single_use_p);
+      replace_uses_by (gimple_vdef (stmt),
+		       gimple_vuse (stmt));
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      gsi_remove (&gsi, true);
+    }
 
   /* Create phi node.  */
   bb = clsn_data->load_bb;
@@ -1769,6 +1795,10 @@ try_transform_to_exit_first_loop_alt (struct loop *loop,
   if (!gimple_seq_nondebug_singleton_p (bb_seq (loop->latch)))
     return false;
 
+  /* Check whether the latch contains no phis.  */
+  if (phi_nodes (loop->latch) != NULL)
+    return false;
+
   /* Check whether the latch contains the loop iv increment.  */
   edge back = single_succ_edge (loop->latch);
   edge exit = single_dom_exit (loop);
@@ -1990,10 +2020,11 @@ transform_to_exit_first_loop (struct loop *loop,
 
 static void
 create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
-		      tree new_data, unsigned n_threads, location_t loc)
+		      tree new_data, unsigned n_threads, location_t loc,
+		      bool oacc_kernels_p)
 {
   gimple_stmt_iterator gsi;
-  basic_block bb, paral_bb, for_bb, ex_bb, continue_bb;
+  basic_block for_bb, ex_bb, continue_bb;
   tree t, param;
   gomp_parallel *omp_par_stmt;
   gimple *omp_return_stmt1, *omp_return_stmt2;
@@ -2005,40 +2036,50 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   edge exit, nexit, guard, end, e;
 
   /* Prepare the GIMPLE_OMP_PARALLEL statement.  */
-  bb = loop_preheader_edge (loop)->src;
-  paral_bb = single_pred (bb);
-  gsi = gsi_last_bb (paral_bb);
-
-  t = build_omp_clause (loc, OMP_CLAUSE_NUM_THREADS);
-  OMP_CLAUSE_NUM_THREADS_EXPR (t)
-    = build_int_cst (integer_type_node, n_threads);
-  omp_par_stmt = gimple_build_omp_parallel (NULL, t, loop_fn, data);
-  gimple_set_location (omp_par_stmt, loc);
-
-  gsi_insert_after (&gsi, omp_par_stmt, GSI_NEW_STMT);
-
-  /* Initialize NEW_DATA.  */
-  if (data)
+  if (oacc_kernels_p)
     {
-      gassign *assign_stmt;
-
-      gsi = gsi_after_labels (bb);
-
-      param = make_ssa_name (DECL_ARGUMENTS (loop_fn));
-      assign_stmt = gimple_build_assign (param, build_fold_addr_expr (data));
-      gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
-
-      assign_stmt = gimple_build_assign (new_data,
-				  fold_convert (TREE_TYPE (new_data), param));
-      gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
+      tree clause = build_omp_clause (loc, OMP_CLAUSE_NUM_GANGS);
+      OMP_CLAUSE_NUM_GANGS_EXPR (clause)
+	= build_int_cst (integer_type_node, n_threads);
+      set_oacc_fn_attrib (cfun->decl, clause, true, NULL);
     }
+  else
+    {
+      basic_block bb = loop_preheader_edge (loop)->src;
+      basic_block paral_bb = single_pred (bb);
+      gsi = gsi_last_bb (paral_bb);
 
-  /* Emit GIMPLE_OMP_RETURN for GIMPLE_OMP_PARALLEL.  */
-  bb = split_loop_exit_edge (single_dom_exit (loop));
-  gsi = gsi_last_bb (bb);
-  omp_return_stmt1 = gimple_build_omp_return (false);
-  gimple_set_location (omp_return_stmt1, loc);
-  gsi_insert_after (&gsi, omp_return_stmt1, GSI_NEW_STMT);
+      t = build_omp_clause (loc, OMP_CLAUSE_NUM_THREADS);
+      OMP_CLAUSE_NUM_THREADS_EXPR (t)
+	= build_int_cst (integer_type_node, n_threads);
+      omp_par_stmt = gimple_build_omp_parallel (NULL, t, loop_fn, data);
+      gimple_set_location (omp_par_stmt, loc);
+
+      gsi_insert_after (&gsi, omp_par_stmt, GSI_NEW_STMT);
+
+      /* Initialize NEW_DATA.  */
+      if (data)
+	{
+	  gassign *assign_stmt;
+
+	  gsi = gsi_after_labels (bb);
+
+	  param = make_ssa_name (DECL_ARGUMENTS (loop_fn));
+	  assign_stmt = gimple_build_assign (param, build_fold_addr_expr (data));
+	  gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
+
+	  assign_stmt = gimple_build_assign (new_data,
+					     fold_convert (TREE_TYPE (new_data), param));
+	  gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
+	}
+
+      /* Emit GIMPLE_OMP_RETURN for GIMPLE_OMP_PARALLEL.  */
+      bb = split_loop_exit_edge (single_dom_exit (loop));
+      gsi = gsi_last_bb (bb);
+      omp_return_stmt1 = gimple_build_omp_return (false);
+      gimple_set_location (omp_return_stmt1, loc);
+      gsi_insert_after (&gsi, omp_return_stmt1, GSI_NEW_STMT);
+    }
 
   /* Extract data for GIMPLE_OMP_FOR.  */
   gcc_assert (loop->header == single_dom_exit (loop)->src);
@@ -2082,7 +2123,12 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
 	 value is not modified in the loop, and we're done with this phi.  */
       if (!(gimple_code (def_stmt) == GIMPLE_PHI
 	    && gimple_bb (def_stmt) == loop->header))
-	continue;
+	{
+	  locus = gimple_phi_arg_location_from_edge (phi, exit);
+	  add_phi_arg (phi, def, guard, locus);
+	  add_phi_arg (phi, def, end, locus);
+	  continue;
+	}
 
       gphi *stmt = as_a <gphi *> (def_stmt);
       def = PHI_ARG_DEF_FROM_EDGE (stmt, loop_preheader_edge (loop));
@@ -2098,39 +2144,50 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   PENDING_STMT (e) = NULL;
 
   /* Emit GIMPLE_OMP_FOR.  */
+  if (oacc_kernels_p)
+    /* In combination with the NUM_GANGS on the parallel.  */
+    t = build_omp_clause (loc, OMP_CLAUSE_GANG);
+  else
+    {
+      t = build_omp_clause (loc, OMP_CLAUSE_SCHEDULE);
+      int chunk_size = PARAM_VALUE (PARAM_PARLOOPS_CHUNK_SIZE);
+      enum PARAM_PARLOOPS_SCHEDULE_KIND schedule_type \
+	= (enum PARAM_PARLOOPS_SCHEDULE_KIND) PARAM_VALUE (PARAM_PARLOOPS_SCHEDULE);
+      switch (schedule_type)
+	{
+	case PARAM_PARLOOPS_SCHEDULE_KIND_static:
+	  OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_STATIC;
+	  break;
+	case PARAM_PARLOOPS_SCHEDULE_KIND_dynamic:
+	  OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_DYNAMIC;
+	  break;
+	case PARAM_PARLOOPS_SCHEDULE_KIND_guided:
+	  OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_GUIDED;
+	  break;
+	case PARAM_PARLOOPS_SCHEDULE_KIND_auto:
+	  OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_AUTO;
+	  chunk_size = 0;
+	  break;
+	case PARAM_PARLOOPS_SCHEDULE_KIND_runtime:
+	  OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_RUNTIME;
+	  chunk_size = 0;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      if (chunk_size != 0)
+	OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (t)
+	  = build_int_cst (integer_type_node, chunk_size);
+    }
+
+  for_stmt = gimple_build_omp_for (NULL,
+				   (oacc_kernels_p
+				    ? GF_OMP_FOR_KIND_OACC_LOOP
+				    : GF_OMP_FOR_KIND_FOR),
+				   t, 1, NULL);
+
   gimple_cond_set_lhs (cond_stmt, cvar_base);
   type = TREE_TYPE (cvar);
-  t = build_omp_clause (loc, OMP_CLAUSE_SCHEDULE);
-  int chunk_size = PARAM_VALUE (PARAM_PARLOOPS_CHUNK_SIZE);
-  enum PARAM_PARLOOPS_SCHEDULE_KIND schedule_type \
-    = (enum PARAM_PARLOOPS_SCHEDULE_KIND) PARAM_VALUE (PARAM_PARLOOPS_SCHEDULE);
-  switch (schedule_type)
-    {
-    case PARAM_PARLOOPS_SCHEDULE_KIND_static:
-      OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_STATIC;
-      break;
-    case PARAM_PARLOOPS_SCHEDULE_KIND_dynamic:
-      OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_DYNAMIC;
-      break;
-    case PARAM_PARLOOPS_SCHEDULE_KIND_guided:
-      OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_GUIDED;
-      break;
-    case PARAM_PARLOOPS_SCHEDULE_KIND_auto:
-      OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_AUTO;
-      chunk_size = 0;
-      break;
-    case PARAM_PARLOOPS_SCHEDULE_KIND_runtime:
-      OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_RUNTIME;
-      chunk_size = 0;
-      break;
-    default:
-      gcc_unreachable ();
-    }
-  if (chunk_size != 0)
-    OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (t)
-      = build_int_cst (integer_type_node, chunk_size);
-
-  for_stmt = gimple_build_omp_for (NULL, GF_OMP_FOR_KIND_FOR, t, 1, NULL);
   gimple_set_location (for_stmt, loc);
   gimple_omp_for_set_index (for_stmt, 0, initvar);
   gimple_omp_for_set_initial (for_stmt, 0, cvar_init);
@@ -2172,7 +2229,8 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
 static void
 gen_parallel_loop (struct loop *loop,
 		   reduction_info_table_type *reduction_list,
-		   unsigned n_threads, struct tree_niter_desc *niter)
+		   unsigned n_threads, struct tree_niter_desc *niter,
+		   bool oacc_kernels_p)
 {
   tree many_iterations_cond, type, nit;
   tree arg_struct, new_arg_struct;
@@ -2253,40 +2311,44 @@ gen_parallel_loop (struct loop *loop,
   if (stmts)
     gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
 
-  if (loop->inner)
-    m_p_thread=2;
-  else
-    m_p_thread=MIN_PER_THREAD;
-
-   many_iterations_cond =
-     fold_build2 (GE_EXPR, boolean_type_node,
-                nit, build_int_cst (type, m_p_thread * n_threads));
-
-  many_iterations_cond
-    = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
-		   invert_truthvalue (unshare_expr (niter->may_be_zero)),
-		   many_iterations_cond);
-  many_iterations_cond
-    = force_gimple_operand (many_iterations_cond, &stmts, false, NULL_TREE);
-  if (stmts)
-    gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
-  if (!is_gimple_condexpr (many_iterations_cond))
+  if (!oacc_kernels_p)
     {
+      if (loop->inner)
+	m_p_thread=2;
+      else
+	m_p_thread=MIN_PER_THREAD;
+
+      many_iterations_cond =
+	fold_build2 (GE_EXPR, boolean_type_node,
+		     nit, build_int_cst (type, m_p_thread * n_threads));
+
       many_iterations_cond
-	= force_gimple_operand (many_iterations_cond, &stmts,
-				true, NULL_TREE);
+	= fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+		       invert_truthvalue (unshare_expr (niter->may_be_zero)),
+		       many_iterations_cond);
+      many_iterations_cond
+	= force_gimple_operand (many_iterations_cond, &stmts, false, NULL_TREE);
       if (stmts)
 	gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
+      if (!is_gimple_condexpr (many_iterations_cond))
+	{
+	  many_iterations_cond
+	    = force_gimple_operand (many_iterations_cond, &stmts,
+				    true, NULL_TREE);
+	  if (stmts)
+	    gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop),
+					      stmts);
+	}
+
+      initialize_original_copy_tables ();
+
+      /* We assume that the loop usually iterates a lot.  */
+      prob = 4 * REG_BR_PROB_BASE / 5;
+      loop_version (loop, many_iterations_cond, NULL,
+		    prob, prob, REG_BR_PROB_BASE - prob, true);
+      update_ssa (TODO_update_ssa);
+      free_original_copy_tables ();
     }
-
-  initialize_original_copy_tables ();
-
-  /* We assume that the loop usually iterates a lot.  */
-  prob = 4 * REG_BR_PROB_BASE / 5;
-  loop_version (loop, many_iterations_cond, NULL,
-		prob, prob, REG_BR_PROB_BASE - prob, true);
-  update_ssa (TODO_update_ssa);
-  free_original_copy_tables ();
 
   /* Base all the induction variables in LOOP on a single control one.  */
   canonicalize_loop_ivs (loop, &nit, true);
@@ -2306,6 +2368,9 @@ gen_parallel_loop (struct loop *loop,
     }
   else
     {
+      if (oacc_kernels_p)
+	n_threads = 1;
+
       /* Fall back on the method that handles more cases, but duplicates the
 	 loop body: move the exit condition of LOOP to the beginning of its
 	 header, and duplicate the part of the last iteration that gets disabled
@@ -2322,19 +2387,34 @@ gen_parallel_loop (struct loop *loop,
   entry = loop_preheader_edge (loop);
   exit = single_dom_exit (loop);
 
-  eliminate_local_variables (entry, exit);
-  /* In the old loop, move all variables non-local to the loop to a structure
-     and back, and create separate decls for the variables used in loop.  */
-  separate_decls_in_region (entry, exit, reduction_list, &arg_struct,
-			    &new_arg_struct, &clsn_data);
+  /* This rewrites the body in terms of new variables.  This has already
+     been done for oacc_kernels_p in pass_lower_omp/lower_omp ().  */
+  if (!oacc_kernels_p)
+    {
+      eliminate_local_variables (entry, exit);
+      /* In the old loop, move all variables non-local to the loop to a
+	 structure and back, and create separate decls for the variables used in
+	 loop.  */
+      separate_decls_in_region (entry, exit, reduction_list, &arg_struct,
+				&new_arg_struct, &clsn_data);
+    }
+  else
+    {
+      arg_struct = NULL_TREE;
+      new_arg_struct = NULL_TREE;
+      clsn_data.load = NULL_TREE;
+      clsn_data.load_bb = exit->dest;
+      clsn_data.store = NULL_TREE;
+      clsn_data.store_bb = NULL;
+    }
 
   /* Create the parallel constructs.  */
   loc = UNKNOWN_LOCATION;
   cond_stmt = last_stmt (loop->header);
   if (cond_stmt)
     loc = gimple_location (cond_stmt);
-  create_parallel_loop (loop, create_loop_fn (loc), arg_struct,
-			new_arg_struct, n_threads, loc);
+  create_parallel_loop (loop, create_loop_fn (loc), arg_struct, new_arg_struct,
+			n_threads, loc, oacc_kernels_p);
   if (reduction_list->elements () > 0)
     create_call_for_reduction (loop, reduction_list, &clsn_data);
 
@@ -2433,7 +2513,7 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 
   simple_loop_info = vect_analyze_loop_form (loop);
   if (simple_loop_info == NULL)
-    return;
+    goto gather_done;
 
   for (gsi = gsi_start_phis (loop->header); !gsi_end_p (gsi); gsi_next (&gsi))
     {
@@ -2474,6 +2554,8 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 	  gimple *inner_stmt;
 	  bool single_use_p = single_imm_use (res, &use_p, &inner_stmt);
 	  gcc_assert (single_use_p);
+	  if (gimple_code (inner_stmt) != GIMPLE_PHI)
+	    continue;
 	  gphi *inner_phi = as_a <gphi *> (inner_stmt);
 	  if (simple_iv (loop->inner, loop->inner, PHI_RESULT (inner_phi),
 			 &iv, true))
@@ -2492,8 +2574,12 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
   destroy_loop_vec_info (simple_loop_info, true);
   destroy_loop_vec_info (simple_inner_loop_info, true);
 
+ gather_done:
   /* Release the claim on gimple_uid.  */
   free_stmt_vec_info_vec ();
+
+  if (reduction_list->elements () == 0)
+    return;
 
   /* As gimple_uid is used by the vectorizer in between vect_analyze_loop_form
      and free_stmt_vec_info_vec, we can set gimple_uid of reduc_phi stmts only
@@ -2527,12 +2613,65 @@ try_get_loop_niter (loop_p loop, struct tree_niter_desc *niter)
   return true;
 }
 
+/* Return the default def of the first function argument.  */
+
+static tree
+get_omp_data_i_param (void)
+{
+  tree decl = DECL_ARGUMENTS (cfun->decl);
+  gcc_assert (DECL_CHAIN (decl) == NULL_TREE);
+  return ssa_default_def (cfun, decl);
+}
+
+/* For PHI in loop header of LOOP, look for pattern:
+
+   <bb preheader>
+   .omp_data_i = &.omp_data_arr;
+   addr = .omp_data_i->sum;
+   sum_a = *addr;
+
+   <bb header>:
+   sum_b = PHI <sum_a (preheader), sum_c (latch)>
+
+   and return addr.  Otherwise, return NULL_TREE.  */
+
+static tree
+find_reduc_addr (struct loop *loop, gphi *phi)
+{
+  edge e = loop_preheader_edge (loop);
+  tree arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
+  gimple *stmt = SSA_NAME_DEF_STMT (arg);
+  if (!gimple_assign_single_p (stmt))
+    return NULL_TREE;
+  tree memref = gimple_assign_rhs1 (stmt);
+  if (TREE_CODE (memref) != MEM_REF)
+    return NULL_TREE;
+  tree addr = TREE_OPERAND (memref, 0);
+
+  gimple *stmt2 = SSA_NAME_DEF_STMT (addr);
+  if (!gimple_assign_single_p (stmt2))
+    return NULL_TREE;
+  tree compref = gimple_assign_rhs1 (stmt2);
+  if (TREE_CODE (compref) != COMPONENT_REF)
+    return NULL_TREE;
+  tree addr2 = TREE_OPERAND (compref, 0);
+  if (TREE_CODE (addr2) != MEM_REF)
+    return NULL_TREE;
+  addr2 = TREE_OPERAND (addr2, 0);
+  if (TREE_CODE (addr2) != SSA_NAME
+      || addr2 != get_omp_data_i_param ())
+    return NULL_TREE;
+
+  return addr;
+}
+
 /* Try to initialize REDUCTION_LIST for code generation part.
    REDUCTION_LIST describes the reductions.  */
 
 static bool
 try_create_reduction_list (loop_p loop,
-			   reduction_info_table_type *reduction_list)
+			   reduction_info_table_type *reduction_list,
+			   bool oacc_kernels_p)
 {
   edge exit = single_dom_exit (loop);
   gphi_iterator gsi;
@@ -2591,6 +2730,14 @@ try_create_reduction_list (loop_p loop,
 			 "  FAILED: it is not a part of reduction.\n");
 	      return false;
 	    }
+	  if (red->keep_res != NULL)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "  FAILED: reduction has multiple exit phis.\n");
+	      return false;
+	    }
+	  red->keep_res = phi;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "reduction phi is  ");
@@ -2624,8 +2771,403 @@ try_create_reduction_list (loop_p loop,
 	}
     }
 
+  if (oacc_kernels_p)
+    {
+      for (gsi = gsi_start_phis (loop->header); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gphi *phi = gsi.phi ();
+	  tree def = PHI_RESULT (phi);
+	  affine_iv iv;
+
+	  if (!virtual_operand_p (def)
+	      && !simple_iv (loop, loop, def, &iv, true))
+	    {
+	      tree addr = find_reduc_addr (loop, phi);
+	      if (addr == NULL_TREE)
+		return false;
+	      struct reduction_info *red = reduction_phi (reduction_list, phi);
+	      red->reduc_addr = addr;
+	    }
+	}
+    }
 
   return true;
+}
+
+/* Return true if LOOP contains phis with ADDR_EXPR in args.  */
+
+static bool
+loop_has_phi_with_address_arg (struct loop *loop)
+{
+  basic_block *bbs = get_loop_body (loop);
+  bool res = false;
+
+  unsigned i, j;
+  gphi_iterator gsi;
+  for (i = 0; i < loop->num_nodes; i++)
+    for (gsi = gsi_start_phis (bbs[i]); !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	gphi *phi = gsi.phi ();
+	for (j = 0; j < gimple_phi_num_args (phi); j++)
+	  {
+	    tree arg = gimple_phi_arg_def (phi, j);
+	    if (TREE_CODE (arg) == ADDR_EXPR)
+	      {
+		/* This should be handled by eliminate_local_variables, but that
+		   function currently ignores phis.  */
+		res = true;
+		goto end;
+	      }
+	  }
+      }
+ end:
+  free (bbs);
+
+  return res;
+}
+
+/* Return true if memory ref REF (corresponding to the stmt at GSI in
+   REGIONS_BB[I]) conflicts with the statements in REGIONS_BB[I] after gsi,
+   or the statements in REGIONS_BB[I + n].  REF_IS_STORE indicates if REF is a
+   store.  Ignore conflicts with SKIP_STMT.  */
+
+static bool
+ref_conflicts_with_region (gimple_stmt_iterator gsi, ao_ref *ref,
+			   bool ref_is_store, vec<basic_block> region_bbs,
+			   unsigned int i, gimple *skip_stmt)
+{
+  basic_block bb = region_bbs[i];
+  gsi_next (&gsi);
+
+  while (true)
+    {
+      for (; !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (stmt == skip_stmt)
+	    {
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "skipping reduction store: ");
+		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		}
+	      continue;
+	    }
+
+	  if (!gimple_vdef (stmt)
+	      && !gimple_vuse (stmt))
+	    continue;
+
+	  if (gimple_code (stmt) == GIMPLE_RETURN)
+	    continue;
+
+	  if (ref_is_store)
+	    {
+	      if (ref_maybe_used_by_stmt_p (stmt, ref))
+		{
+		  if (dump_file)
+		    {
+		      fprintf (dump_file, "Stmt ");
+		      print_gimple_stmt (dump_file, stmt, 0, 0);
+		    }
+		  return true;
+		}
+	    }
+	  else
+	    {
+	      if (stmt_may_clobber_ref_p_1 (stmt, ref))
+		{
+		  if (dump_file)
+		    {
+		      fprintf (dump_file, "Stmt ");
+		      print_gimple_stmt (dump_file, stmt, 0, 0);
+		    }
+		  return true;
+		}
+	    }
+	}
+      i++;
+      if (i == region_bbs.length ())
+	break;
+      bb = region_bbs[i];
+      gsi = gsi_start_bb (bb);
+    }
+
+  return false;
+}
+
+/* Return true if the bbs in REGION_BBS but not in in_loop_bbs can be executed
+   in parallel with REGION_BBS containing the loop.  Return the stores of
+   reduction results in REDUCTION_STORES.  */
+
+static bool
+oacc_entry_exit_ok_1 (bitmap in_loop_bbs, vec<basic_block> region_bbs,
+		      reduction_info_table_type *reduction_list,
+		      bitmap reduction_stores)
+{
+  tree omp_data_i = get_omp_data_i_param ();
+
+  unsigned i;
+  basic_block bb;
+  FOR_EACH_VEC_ELT (region_bbs, i, bb)
+    {
+      if (bitmap_bit_p (in_loop_bbs, bb->index))
+	continue;
+
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  gimple *skip_stmt = NULL;
+
+	  if (is_gimple_debug (stmt)
+	      || gimple_code (stmt) == GIMPLE_COND)
+	    continue;
+
+	  ao_ref ref;
+	  bool ref_is_store = false;
+	  if (gimple_assign_load_p (stmt))
+	    {
+	      tree rhs = gimple_assign_rhs1 (stmt);
+	      tree base = get_base_address (rhs);
+	      if (TREE_CODE (base) == MEM_REF
+		  && operand_equal_p (TREE_OPERAND (base, 0), omp_data_i, 0))
+		continue;
+
+	      tree lhs = gimple_assign_lhs (stmt);
+	      if (TREE_CODE (lhs) == SSA_NAME
+		  && has_single_use (lhs))
+		{
+		  use_operand_p use_p;
+		  gimple *use_stmt;
+		  single_imm_use (lhs, &use_p, &use_stmt);
+		  if (gimple_code (use_stmt) == GIMPLE_PHI)
+		    {
+		      struct reduction_info *red;
+		      red = reduction_phi (reduction_list, use_stmt);
+		      tree val = PHI_RESULT (red->keep_res);
+		      if (has_single_use (val))
+			{
+			  single_imm_use (val, &use_p, &use_stmt);
+			  if (gimple_store_p (use_stmt))
+			    {
+			      unsigned int id
+				= SSA_NAME_VERSION (gimple_vdef (use_stmt));
+			      bitmap_set_bit (reduction_stores, id);
+			      skip_stmt = use_stmt;
+			      if (dump_file)
+				{
+				  fprintf (dump_file, "found reduction load: ");
+				  print_gimple_stmt (dump_file, stmt, 0, 0);
+				}
+			    }
+			}
+		    }
+		}
+
+	      ao_ref_init (&ref, rhs);
+	    }
+	  else if (gimple_store_p (stmt))
+	    {
+	      ao_ref_init (&ref, gimple_assign_lhs (stmt));
+	      ref_is_store = true;
+	    }
+	  else if (gimple_code (stmt) == GIMPLE_OMP_RETURN)
+	    continue;
+	  else if (!gimple_has_side_effects (stmt)
+		   && !gimple_could_trap_p (stmt)
+		   && !stmt_could_throw_p (stmt)
+		   && !gimple_vdef (stmt)
+		   && !gimple_vuse (stmt))
+	    continue;
+	  else if (is_gimple_call (stmt)
+		   && gimple_call_internal_p (stmt)
+		   && gimple_call_internal_fn (stmt) == IFN_GOACC_DIM_POS)
+	    continue;
+	  else if (gimple_code (stmt) == GIMPLE_RETURN)
+	    continue;
+	  else
+	    {
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "Unhandled stmt in entry/exit: ");
+		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		}
+	      return false;
+	    }
+
+	  if (ref_conflicts_with_region (gsi, &ref, ref_is_store, region_bbs,
+					 i, skip_stmt))
+	    {
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "conflicts with entry/exit stmt: ");
+		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		}
+	      return false;
+	    }
+	}
+    }
+
+  return true;
+}
+
+/* Find stores inside REGION_BBS and outside IN_LOOP_BBS, and guard them with
+   gang_pos == 0, except when the stores are REDUCTION_STORES.  Return true
+   if any changes were made.  */
+
+static bool
+oacc_entry_exit_single_gang (bitmap in_loop_bbs, vec<basic_block> region_bbs,
+			     bitmap reduction_stores)
+{
+  tree gang_pos = NULL_TREE;
+  bool changed = false;
+
+  unsigned i;
+  basic_block bb;
+  FOR_EACH_VEC_ELT (region_bbs, i, bb)
+    {
+      if (bitmap_bit_p (in_loop_bbs, bb->index))
+	continue;
+
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+
+	  if (!gimple_store_p (stmt))
+	    {
+	      /* Update gsi to point to next stmt.  */
+	      gsi_next (&gsi);
+	      continue;
+	    }
+
+	  if (bitmap_bit_p (reduction_stores,
+			    SSA_NAME_VERSION (gimple_vdef (stmt))))
+	    {
+	      if (dump_file)
+		{
+		  fprintf (dump_file,
+			   "skipped reduction store for single-gang"
+			   " neutering: ");
+		  print_gimple_stmt (dump_file, stmt, 0, 0);
+		}
+
+	      /* Update gsi to point to next stmt.  */
+	      gsi_next (&gsi);
+	      continue;
+	    }
+
+	  changed = true;
+
+	  if (gang_pos == NULL_TREE)
+	    {
+	      tree arg = build_int_cst (integer_type_node, GOMP_DIM_GANG);
+	      gcall *gang_single
+		= gimple_build_call_internal (IFN_GOACC_DIM_POS, 1, arg);
+	      gang_pos = make_ssa_name (integer_type_node);
+	      gimple_call_set_lhs (gang_single, gang_pos);
+	      gimple_stmt_iterator start
+		= gsi_start_bb (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+	      tree vuse = ssa_default_def (cfun, gimple_vop (cfun));
+	      gimple_set_vuse (gang_single, vuse);
+	      gsi_insert_before (&start, gang_single, GSI_SAME_STMT);
+	    }
+
+	  if (dump_file)
+	    {
+	      fprintf (dump_file,
+		       "found store that needs single-gang neutering: ");
+	      print_gimple_stmt (dump_file, stmt, 0, 0);
+	    }
+
+	  {
+	    /* Split block before store.  */
+	    gimple_stmt_iterator gsi2 = gsi;
+	    gsi_prev (&gsi2);
+	    edge e;
+	    if (gsi_end_p (gsi2))
+	      {
+		e = split_block_after_labels (bb);
+		gsi2 = gsi_last_bb (bb);
+	      }
+	    else
+	      e = split_block (bb, gsi_stmt (gsi2));
+	    basic_block bb2 = e->dest;
+
+	    /* Split block after store.  */
+	    gimple_stmt_iterator gsi3 = gsi_start_bb (bb2);
+	    edge e2 = split_block (bb2, gsi_stmt (gsi3));
+	    basic_block bb3 = e2->dest;
+
+	    gimple *cond
+	      = gimple_build_cond (EQ_EXPR, gang_pos, integer_zero_node,
+				   NULL_TREE, NULL_TREE);
+	    gsi_insert_after (&gsi2, cond, GSI_NEW_STMT);
+
+	    edge e3 = make_edge (bb, bb3, EDGE_FALSE_VALUE);
+	    e->flags = EDGE_TRUE_VALUE;
+
+	    tree vdef = gimple_vdef (stmt);
+	    tree vuse = gimple_vuse (stmt);
+
+	    tree phi_res = copy_ssa_name (vdef);
+	    gphi *new_phi = create_phi_node (phi_res, bb3);
+	    replace_uses_by (vdef, phi_res);
+	    add_phi_arg (new_phi, vuse, e3, UNKNOWN_LOCATION);
+	    add_phi_arg (new_phi, vdef, e2, UNKNOWN_LOCATION);
+
+	    /* Update gsi to point to next stmt.  */
+	    bb = bb3;
+	    gsi = gsi_start_bb (bb);
+	  }
+	}
+    }
+
+  return changed;
+}
+
+/* Return true if the statements before and after the LOOP can be executed in
+   parallel with the function containing the loop.  Resolve conflicting stores
+   outside LOOP by guarding them such that only a single gang executes them.  */
+
+static bool
+oacc_entry_exit_ok (struct loop *loop,
+		    reduction_info_table_type *reduction_list)
+{
+  basic_block *loop_bbs = get_loop_body_in_dom_order (loop);
+  vec<basic_block> region_bbs
+    = get_all_dominated_blocks (CDI_DOMINATORS, ENTRY_BLOCK_PTR_FOR_FN (cfun));
+
+  bitmap in_loop_bbs = BITMAP_ALLOC (NULL);
+  bitmap_clear (in_loop_bbs);
+  for (unsigned int i = 0; i < loop->num_nodes; i++)
+    bitmap_set_bit (in_loop_bbs, loop_bbs[i]->index);
+
+  bitmap reduction_stores = BITMAP_ALLOC (NULL);
+  bool res = oacc_entry_exit_ok_1 (in_loop_bbs, region_bbs, reduction_list,
+				   reduction_stores);
+
+  if (res)
+    {
+      bool changed = oacc_entry_exit_single_gang (in_loop_bbs, region_bbs,
+						  reduction_stores);
+      if (changed)
+	{
+	  free_dominance_info (CDI_DOMINATORS);
+	  calculate_dominance_info (CDI_DOMINATORS);
+	}
+    }
+
+  free (loop_bbs);
+
+  BITMAP_FREE (in_loop_bbs);
+  BITMAP_FREE (reduction_stores);
+
+  return res;
 }
 
 /* Detect parallel loops and generate parallel code using libgomp
@@ -2633,7 +3175,7 @@ try_create_reduction_list (loop_p loop,
    otherwise.  */
 
 static bool
-parallelize_loops (void)
+parallelize_loops (bool oacc_kernels_p)
 {
   unsigned n_threads = flag_tree_parallelize_loops;
   bool changed = false;
@@ -2645,19 +3187,29 @@ parallelize_loops (void)
   source_location loop_loc;
 
   /* Do not parallelize loops in the functions created by parallelization.  */
-  if (parallelized_function_p (cfun->decl))
+  if (!oacc_kernels_p
+      && parallelized_function_p (cfun->decl))
     return false;
+
+  /* Do not parallelize loops in offloaded functions.  */
+  if (!oacc_kernels_p
+      && get_oacc_fn_attrib (cfun->decl) != NULL)
+     return false;
+
   if (cfun->has_nonlocal_label)
     return false;
 
   gcc_obstack_init (&parloop_obstack);
   reduction_info_table_type reduction_list (10);
 
+  calculate_dominance_info (CDI_DOMINATORS);
+
   FOR_EACH_LOOP (loop, 0)
     {
       if (loop == skip_loop)
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
+	  if (!loop->in_oacc_kernels_region
+	      && dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,
 		     "Skipping loop %d as inner loop of parallelized loop\n",
 		     loop->num);
@@ -2669,6 +3221,22 @@ parallelize_loops (void)
 	skip_loop = NULL;
 
       reduction_list.empty ();
+
+      if (oacc_kernels_p)
+	{
+	  if (!loop->in_oacc_kernels_region)
+	    continue;
+
+	  /* Don't try to parallelize inner loops in an oacc kernels region.  */
+	  if (loop->inner)
+	    skip_loop = loop->inner;
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "Trying loop %d with header bb %d in oacc kernels"
+		     " region\n", loop->num, loop->header->index);
+	}
+
       if (dump_file && (dump_flags & TDF_DETAILS))
       {
         fprintf (dump_file, "Trying loop %d as candidate\n",loop->num);
@@ -2710,6 +3278,7 @@ parallelize_loops (void)
       /* FIXME: Bypass this check as graphite doesn't update the
 	 count and frequency correctly now.  */
       if (!flag_loop_parallelize_all
+	  && !oacc_kernels_p
 	  && ((estimated != -1
 	       && estimated <= (HOST_WIDE_INT) n_threads * MIN_PER_THREAD)
 	      /* Do not bother with loops in cold areas.  */
@@ -2719,12 +3288,23 @@ parallelize_loops (void)
       if (!try_get_loop_niter (loop, &niter_desc))
 	continue;
 
-      if (!try_create_reduction_list (loop, &reduction_list))
+      if (!try_create_reduction_list (loop, &reduction_list, oacc_kernels_p))
+	continue;
+
+      if (loop_has_phi_with_address_arg (loop))
 	continue;
 
       if (!flag_loop_parallelize_all
 	  && !loop_parallel_p (loop, &parloop_obstack))
 	continue;
+
+      if (oacc_kernels_p
+	&& !oacc_entry_exit_ok (loop, &reduction_list))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "entry/exit not ok: FAILED\n");
+	  continue;
+	}
 
       changed = true;
       skip_loop = loop->inner;
@@ -2739,8 +3319,9 @@ parallelize_loops (void)
 	  fprintf (dump_file, "\nloop at %s:%d: ",
 		   LOCATION_FILE (loop_loc), LOCATION_LINE (loop_loc));
       }
+
       gen_parallel_loop (loop, &reduction_list,
-			 n_threads, &niter_desc);
+			 n_threads, &niter_desc, oacc_kernels_p);
     }
 
   obstack_free (&parloop_obstack, NULL);
@@ -2775,31 +3356,62 @@ class pass_parallelize_loops : public gimple_opt_pass
 {
 public:
   pass_parallelize_loops (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_parallelize_loops, ctxt)
+    : gimple_opt_pass (pass_data_parallelize_loops, ctxt),
+      oacc_kernels_p (false)
   {}
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_tree_parallelize_loops > 1; }
   virtual unsigned int execute (function *);
+  opt_pass * clone () { return new pass_parallelize_loops (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param)
+    {
+      gcc_assert (n == 0);
+      oacc_kernels_p = param;
+    }
 
+ private:
+  bool oacc_kernels_p;
 }; // class pass_parallelize_loops
 
 unsigned
 pass_parallelize_loops::execute (function *fun)
 {
+  tree nthreads = builtin_decl_explicit (BUILT_IN_OMP_GET_NUM_THREADS);
+  if (nthreads == NULL_TREE)
+    return 0;
+
+  bool in_loop_pipeline = scev_initialized_p ();
+  if (!in_loop_pipeline)
+    loop_optimizer_init (LOOPS_NORMAL
+			 | LOOPS_HAVE_RECORDED_EXITS);
+
   if (number_of_loops (fun) <= 1)
     return 0;
 
-  if (parallelize_loops ())
+  if (!in_loop_pipeline)
+    {
+      rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+      scev_initialize ();
+    }
+
+  unsigned int todo = 0;
+  if (parallelize_loops (oacc_kernels_p))
     {
       fun->curr_properties &= ~(PROP_gimple_eomp);
 
       checking_verify_loop_structure ();
 
-      return TODO_update_ssa;
+      todo |= TODO_update_ssa;
     }
 
-  return 0;
+  if (!in_loop_pipeline)
+    {
+      scev_finalize ();
+      loop_optimizer_finalize ();
+    }
+
+  return todo;
 }
 
 } // anon namespace

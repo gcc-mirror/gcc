@@ -1,3 +1,341 @@
+2016-02-02  Alexander Monakov  <amonakov@ispras.ru>
+
+	* testsuite/libgomp.c/target-31.c: Fix testcase.
+
+2016-02-02  Alexander Monakov  <amonakov@ispras.ru>
+
+	* testsuite/libgomp.c/examples-4/teams-3.c: Add missing reduction
+	clause.
+	* testsuite/libgomp.c/examples-4/teams-4.c: Likewise.
+	* testsuite/libgomp.fortran/examples-4/teams-3.f90: Add missing
+	reduction and map clauses.
+	* testsuite/libgomp.fortran/examples-4/teams-4.f90: Likewise.
+
+2016-02-02  James Norris  <jnorris@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/declare-4.c: Fix clause.
+
+2016-02-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp.map (GOACC_2.0): Remove GOACC_host_data.
+	* oacc-parallel.c (GOACC_host_data): Remove function definition.
+
+	* testsuite/lib/libgomp.exp: Skip hsa offloading for OpenACC test
+	cases.
+
+	* plugin/configfrag.ac (HSA_KMT_LIB, HSA_KMT_LDFLAGS): New
+	variables.
+	* testsuite/libgomp-test-support.exp.in (hsa_runtime_lib)
+	(hsa_kmt_lib): Set variables.
+	* testsuite/lib/libgomp.exp (libgomp_init): Use them to amend
+	always_ld_library_path.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+	* plugin/configfrag.ac (offload_additional_options)
+	(offload_additional_lib_paths): Don't amend for hsa offloading.
+	* configure: Regenerate.
+
+	* plugin/configfrag.ac: Don't configure for offloading target if
+	we don't build the corresponding plugin.
+	* configure: Regenerate.
+
+2016-02-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c: New.
+	* testsuite/libgomp.oacc-fortran/routine-7.f90: Serialize loop.
+
+2016-01-26  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69110
+	* testsuite/libgomp.c/pr69110.c: New test.
+
+2016-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR lto/69393
+	* testsuite/libgomp.c++/pr69393.C: New testcase.
+
+2016-01-22  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* target.c (gomp_get_target_fn_addr): Allow host fallback if target
+	function wasn't mapped to the device with non-shared memory.
+
+2016-01-20  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* task.c (gomp_create_target_task): Set firstprivate_copies to NULL.
+
+2016-01-19  Martin Jambor  <mjambor@suse.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	* plugin/Makefrag.am: Add HSA plugin requirements.
+	* plugin/configfrag.ac (HSA_RUNTIME_INCLUDE): New variable.
+	(HSA_RUNTIME_LIB): Likewise.
+	(HSA_RUNTIME_CPPFLAGS): Likewise.
+	(HSA_RUNTIME_INCLUDE): New substitution.
+	(HSA_RUNTIME_LIB): Likewise.
+	(HSA_RUNTIME_LDFLAGS): Likewise.
+	(hsa-runtime): New configure option.
+	(hsa-runtime-include): Likewise.
+	(hsa-runtime-lib): Likewise.
+	(PLUGIN_HSA): New substitution variable.
+	Fill HSA_RUNTIME_INCLUDE and HSA_RUNTIME_LIB according to the new
+	configure options.
+	(PLUGIN_HSA_CPPFLAGS): Likewise.
+	(PLUGIN_HSA_LDFLAGS): Likewise.
+	(PLUGIN_HSA_LIBS): Likewise.
+	Check that we have access to HSA run-time.
+	* libgomp-plugin.h (offload_target_type): New element
+	OFFLOAD_TARGET_TYPE_HSA.
+	* libgomp.h (gomp_target_task): New fields firstprivate_copies and
+	args.
+	(bool gomp_create_target_task): Updated.
+	(gomp_device_descr): Extra parameter of run_func and async_run_func,
+	new field can_run_func.
+	* libgomp_g.h (GOMP_target_ext): Update prototype.
+	* oacc-host.c (host_run): Added a new parameter args.
+	* target.c (calculate_firstprivate_requirements): New function.
+	(copy_firstprivate_data): Likewise.
+	(gomp_target_fallback_firstprivate): Use them.
+	(gomp_target_unshare_firstprivate): New function.
+	(gomp_get_target_fn_addr): Allow returning NULL for shared memory
+	devices.
+	(GOMP_target): Do host fallback for all shared memory devices.  Do not
+	pass any args to plugins.
+	(GOMP_target_ext): Introduce device-specific argument parameter args.
+	Allow host fallback if device shares memory.  Do not remap data if
+	device has shared memory.
+	(gomp_target_task_fn): Likewise.  Also treat shared memory devices
+	like host fallback for mappings.
+	(GOMP_target_data): Treat shared memory devices like host fallback.
+	(GOMP_target_data_ext): Likewise.
+	(GOMP_target_update): Likewise.
+	(GOMP_target_update_ext): Likewise.  Also pass NULL as args to
+	gomp_create_target_task.
+	(GOMP_target_enter_exit_data): Likewise.
+	(omp_target_alloc): Treat shared memory devices like host fallback.
+	(omp_target_free): Likewise.
+	(omp_target_is_present): Likewise.
+	(omp_target_memcpy): Likewise.
+	(omp_target_memcpy_rect): Likewise.
+	(omp_target_associate_ptr): Likewise.
+	(gomp_load_plugin_for_device): Also load can_run.
+	* task.c (GOMP_PLUGIN_target_task_completion): Free
+	firstprivate_copies.
+	(gomp_create_target_task): Accept new argument args and store it to
+	ttask.
+	* plugin/plugin-hsa.c: New file.
+
+2016-01-18  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-3.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-2.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-3.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-4.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-5.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-6.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-collapse.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-data-2.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-data-enter-exit-2.c:
+	Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-data-enter-exit.c:
+	Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-data-update.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-data.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-g.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-mod-not-zero.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-n.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-nest.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop.c: Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-parallel-loop-data-enter-exit.c:
+	Same.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-reduction.c: Same.
+
+2016-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* task.c (GOMP_PLUGIN_target_task_completion): Add missing return.
+
+2016-01-15  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/kernels-data.f90: New test.
+
+2016-01-12  James Norris  <jnorris@codesourcery.com>
+
+	* libgomp.texi: Updates for OpenACC.
+
+2016-01-11  Alexander Monakov  <amonakov@ispras.ru>
+
+	* plugin/plugin-nvptx.c (link_ptx): Do not set CU_JIT_TARGET.
+
+2016-01-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR fortran/66680
+	* testsuite/libgomp.fortran/pr66680.f90: New test.
+
+2016-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/68960
+	* testsuite/libgomp.c/pr68960.c: New test.
+
+2016-01-06  Nathan Sidwell  <nathan@acm.org>
+
+	* openacc.h (acc_on_device): Add routine pragma for C++ wrapper.
+	* testsuite/libgomp.oacc-c-c++-common/acc-on-device-2.c: New.
+
+2016-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* libgomp.texi: Bump @copying's copyright year.
+
+2015-12-31  Nathan Sidwell  <nathan@acm.org>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-2.c: Correct
+	dg-additional-options syntax.
+	* testsuite/libgomp.oacc-c-c++-common/loop-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-g-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-g-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-1.c: Likewise.
+
+2015-12-15  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* libgomp.h (REFCOUNT_LINK): Define.
+	(struct splay_tree_key_s): Add link_key.
+	* target.c (gomp_map_vars): Treat REFCOUNT_LINK objects as not mapped.
+	Replace target address of the pointer with target address of newly
+	mapped object in the splay tree.  Set link pointer on target to the
+	device address of the mapped object.
+	(gomp_unmap_vars): Restore target address of the pointer in the splay
+	tree for REFCOUNT_LINK objects after unmapping.
+	(gomp_load_image_to_device): Set refcount to REFCOUNT_LINK for "omp
+	declare target link" objects.
+	(gomp_unload_image_from_device): Replace j with i.  Force unmap of all
+	"omp declare target link" objects, which were mapped for the image.
+	(gomp_exit_data): Restore target address of the pointer in the splay
+	tree for REFCOUNT_LINK objects after unmapping.
+	* testsuite/libgomp.c/target-link-1.c: New file.
+
+2015-12-14  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* libgomp.h (gomp_device_state): New enum.
+	(struct gomp_device_descr): Replace is_initialized with state.
+	(gomp_fini_device): Remove declaration.
+	* oacc-host.c (host_dispatch): Use state instead of is_initialized.
+	* oacc-init.c (acc_init_1): Use state instead of is_initialized.
+	(acc_shutdown_1): Likewise.  Inline gomp_fini_device.
+	(acc_set_device_type): Use state instead of is_initialized.
+	(acc_set_device_num): Likewise.
+	* target.c (resolve_device): Use state instead of is_initialized.
+	Do not initialize finalized device.
+	(gomp_map_vars): Do nothing if device is finalized.
+	(gomp_unmap_vars): Likewise.
+	(gomp_update): Likewise.
+	(GOMP_offload_register_ver): Use state instead of is_initialized.
+	(GOMP_offload_unregister_ver): Likewise.
+	(gomp_init_device): Likewise.
+	(gomp_unload_device): Likewise.
+	(gomp_fini_device): Remove.
+	(gomp_get_target_fn_addr): Do nothing if device is finalized.
+	(GOMP_target): Go to host fallback if device is finalized.
+	(GOMP_target_ext): Likewise.
+	(gomp_exit_data): Do nothing if device is finalized.
+	(gomp_target_task_fn): Go to host fallback if device is finalized.
+	(gomp_target_fini): New static function.
+	(gomp_target_init): Use state instead of is_initialized.
+	Call gomp_target_fini at exit.
+
+2015-12-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/68716
+	* testsuite/libgomp.c/omp-nested-2.c: New test.
+
+2015-12-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/host_data-2.c: Restrict to
+	target openacc_nvidia_accel_selected.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-5.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-3.c: Remove file.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-6.c: Remove file.
+
+2015-12-01  Julian Brown  <julian@codesourcery.com>
+	    James Norris  <James_Norris@mentor.com>
+
+	* oacc-parallel.c (GOACC_host_data): New function.
+	* libgomp.map (GOACC_host_data): Add to GOACC_2.0.1.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-3.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-4.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-5.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-6.c: New test.
+
+2015-11-30  James Norris  <jnorris@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	libgomp/
+	* libgomp.oacc-fortran/routine-5.f90: New test.
+	* libgomp.oacc-fortran/routine-7.f90: New test.
+	* libgomp.oacc-fortran/routine-9.f90: New test.
+
+2015-11-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/46032
+	* testsuite/libgomp.c/pr46032.c: New test.
+
+2015-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/68579
+	* task.c (gomp_task_run_post_handle_depend_hash): New forward decl.
+	(gomp_create_target_task): Call it before freeing
+	GOMP_TARGET_TASK_DATA tasks.
+
+	PR c/63326
+	* testsuite/libgomp.c/cancel-parallel-2.c (foo): Add semicolon
+	in between case label and OpenMP standalone directives.
+	* testsuite/libgomp.c++/cancel-parallel-2.C (foo): Likewise.
+
+2015-11-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure: Regenerate.
+
+2015-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/target-35.c: New test.
+
+2015-11-22  James Norris  <jnorris@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/declare-1.f90: New test.
+	* testsuite/libgomp.oacc-fortran/declare-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-4.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-5.f90: Likewise.
+
+2015-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/68221
+	* testsuite/libgomp.c/reduction-11.c: Remove xfail.
+	* testsuite/libgomp.c/reduction-12.c: Likewise.
+	* testsuite/libgomp.c++/reduction-11.C: Likewise.
+	* testsuite/libgomp.c++/reduction-12.C: Likewise.
+
 2015-11-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* libgomp.oacc-c-c++-common/reduction-dbl.c: New.
@@ -6952,3 +7290,9 @@
 2005-05-03  Richard Henderson  <rth@redhat.com>
 
 	Initial implementation and checkin.
+
+Copyright (C) 2005-2016 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

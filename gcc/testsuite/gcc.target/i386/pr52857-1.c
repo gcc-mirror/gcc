@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-g -O -mx32 -maddress-mode=long" } */
 
 extern void get_BID128 (int *);

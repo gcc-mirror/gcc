@@ -1,6 +1,6 @@
 /* Read the GIMPLE representation from a file stream.
 
-   Copyright (C) 2009-2015 Free Software Foundation, Inc.
+   Copyright (C) 2009-2016 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
    Re-implemented by Diego Novillo <dnovillo@google.com>
 
@@ -1231,7 +1231,9 @@ lto_read_body_or_constructor (struct lto_file_decl_data *file_data, struct symta
 	      if (TYPE_P (t))
 		{
 		  gcc_assert (TYPE_CANONICAL (t) == NULL_TREE);
-		  TYPE_CANONICAL (t) = TYPE_MAIN_VARIANT (t);
+		  if (type_with_alias_set_p (t)
+		      && canonical_type_used_p (t))
+		    TYPE_CANONICAL (t) = TYPE_MAIN_VARIANT (t);
 		  if (TYPE_MAIN_VARIANT (t) != t)
 		    {
 		      gcc_assert (TYPE_NEXT_VARIANT (t) == NULL_TREE);

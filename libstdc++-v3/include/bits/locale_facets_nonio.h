@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2007-2015 Free Software Foundation, Inc.
+// Copyright (C) 2007-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -709,7 +709,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *
        *  @param __s        Start of string to parse.
        *  @param __end      End of string to parse.
-       *  @param __io       Source of the locale.
+       *  @param __f        Source of the locale.
        *  @param __err      Error flags to set.
        *  @param __tm       Pointer to struct tm to fill in.
        *  @param __format   Format specifier.

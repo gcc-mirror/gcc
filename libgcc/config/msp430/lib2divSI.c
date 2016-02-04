@@ -1,5 +1,5 @@
 /* SI mode divide routines for libgcc for MSP430
-   Copyright (C) 2012-2015 Free Software Foundation, Inc.
+   Copyright (C) 2012-2016 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -40,3 +40,32 @@ typedef int           word_type     __attribute__ ((mode (__word__)));
 #define NAME_MODE	si
 
 #include "msp430-divmod.h"
+
+/* ---------------------------------------------------------------------*/
+
+/* There is a typo in the MSP430 ABI document.  It calls the unsigned
+   long integer division function __mspabi_divlu when it should be
+   __mspabi_divul.  Likewise the unsigned long long integer division
+   function is called __mspabi_divllu when it should be __mspabi_divull.
+
+   Earlier versions of this toolchain used generate the ABI compliant
+   names, so in order to support object files built with those tools
+   we provide stub functions that call the correct routines.  */
+
+asm (".global __mspabi_divlu\n\
+         .set __mspabi_divlu, __mspabi_divul");
+
+/* We cannot use the same trick for __mspabi_divllu as that is defined
+   in a different file.  Instead we create a stub here.  The cost of
+   executing the branch instruction will be trivial compared to the
+   cost of executing a long long division.  */
+
+#ifdef __MSP430X_LARGE__
+asm (".global __mspabi_divllu\n\
+      __mspabi_divllu:\n\
+           BRA #__mspabi_divull");
+#else
+asm (".global __mspabi_divllu\n\
+      __mspabi_divllu:\n\
+           BR #__mspabi_divull");
+#endif

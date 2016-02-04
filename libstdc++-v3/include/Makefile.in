@@ -410,9 +410,10 @@ bits_headers = \
 	${bits_srcdir}/locale_facets_nonio.tcc \
 	${bits_srcdir}/localefwd.h \
 	${bits_srcdir}/mask_array.h \
+	${bits_srcdir}/specfun.h \
 	${bits_srcdir}/memoryfwd.h \
 	${bits_srcdir}/move.h \
-	${bits_srcdir}/mutex.h \
+	${bits_srcdir}/std_mutex.h \
 	${bits_srcdir}/ostream.tcc \
 	${bits_srcdir}/ostream_insert.h \
 	${bits_srcdir}/parse_numbers.h \
@@ -469,6 +470,7 @@ bits_headers = \
 	${bits_srcdir}/stl_vector.h \
 	${bits_srcdir}/streambuf.tcc \
 	${bits_srcdir}/stringfwd.h \
+	${bits_srcdir}/uniform_int_dist.h \
 	${bits_srcdir}/unique_ptr.h \
 	${bits_srcdir}/unordered_map.h \
 	${bits_srcdir}/unordered_set.h \
@@ -1022,7 +1024,9 @@ c_compatibility_builddir = .
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@c_compatibility_headers = \
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/complex.h \
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/fenv.h \
-@GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/tgmath.h
+@GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/tgmath.h \
+@GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/math.h \
+@GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/stdlib.h
 
 @GLIBCXX_C_HEADERS_C_STD_TRUE@c_compatibility_headers = 
 @GLIBCXX_C_HEADERS_C_TRUE@c_compatibility_headers = \
@@ -1630,6 +1634,11 @@ stamp-host: ${host_headers} ${bits_host_headers} ${ext_host_headers} ${host_head
 @ENABLE_CXX11_ABI_FALSE@stamp-cxx11-abi:
 @ENABLE_CXX11_ABI_FALSE@	echo 0 > stamp-cxx11-abi
 
+@ENABLE_ALLOCATOR_NEW_TRUE@stamp-allocator-new:
+@ENABLE_ALLOCATOR_NEW_TRUE@	echo 1 > stamp-allocator-new
+@ENABLE_ALLOCATOR_NEW_FALSE@stamp-allocator-new:
+@ENABLE_ALLOCATOR_NEW_FALSE@	echo 0 > stamp-allocator-new
+
 # NB: The non-empty default ldbl_compat works around an AIX sed
 # oddity, see libstdc++/31957 for details.
 ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
@@ -1640,13 +1649,15 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 			      stamp-visibility \
 			      stamp-extern-template \
 			      stamp-dual-abi \
-			      stamp-cxx11-abi
+			      stamp-cxx11-abi \
+			      stamp-allocator-new
 	@date=`cat ${toplevel_srcdir}/gcc/DATESTAMP` ;\
 	ns_version=`cat stamp-namespace-version` ;\
 	visibility=`cat stamp-visibility` ;\
 	externtemplate=`cat stamp-extern-template` ;\
 	dualabi=`cat stamp-dual-abi` ;\
 	cxx11abi=`cat stamp-cxx11-abi` ;\
+	allocatornew=`cat stamp-allocator-new` ;\
 	ldbl_compat='s,g,g,' ;\
 	grep "^[	 ]*#[	 ]*define[	 ][	 ]*_GLIBCXX_LONG_DOUBLE_COMPAT[	 ][	 ]*1[	 ]*$$" \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
@@ -1657,6 +1668,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	-e "s,define _GLIBCXX_EXTERN_TEMPLATE$$, define _GLIBCXX_EXTERN_TEMPLATE $$externtemplate," \
 	-e "s,define _GLIBCXX_USE_DUAL_ABI, define _GLIBCXX_USE_DUAL_ABI $$dualabi," \
 	-e "s,define _GLIBCXX_USE_CXX11_ABI, define _GLIBCXX_USE_CXX11_ABI $$cxx11abi," \
+	-e "s,define _GLIBCXX_USE_ALLOCATOR_NEW, define _GLIBCXX_USE_ALLOCATOR_NEW $$allocatornew," \
 	-e "$$ldbl_compat" \
 	    < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCXX_HAVE_/g' \

@@ -342,6 +342,10 @@ _D8demangle4testFaaYv
 demangle.test(char, char, ...)
 #
 --format=dlang
+_D8demangle4testFYv
+demangle.test(...)
+#
+--format=dlang
 _D8demangle4testFaaZv
 demangle.test(char, char)
 #
@@ -390,24 +394,32 @@ _D8demangle4testFDRZaZv
 demangle.test(extern(C++) char() delegate)
 #
 --format=dlang
-_D8demangle4testFFZaZv
+_D8demangle4testFDYZaZv
+demangle.test(extern(Objective-C) char() delegate)
+#
+--format=dlang
+_D8demangle4testFPFZaZv
 demangle.test(char() function)
 #
 --format=dlang
-_D8demangle4testFUZaZv
+_D8demangle4testFPUZaZv
 demangle.test(extern(C) char() function)
 #
 --format=dlang
-_D8demangle4testFWZaZv
+_D8demangle4testFPWZaZv
 demangle.test(extern(Windows) char() function)
 #
 --format=dlang
-_D8demangle4testFVZaZv
+_D8demangle4testFPVZaZv
 demangle.test(extern(Pascal) char() function)
 #
 --format=dlang
-_D8demangle4testFRZaZv
+_D8demangle4testFPRZaZv
 demangle.test(extern(C++) char() function)
+#
+--format=dlang
+_D8demangle4testFPYZaZv
+demangle.test(extern(Objective-C) char() function)
 #
 --format=dlang
 _D8demangle4testFDFNaZaZv
@@ -466,59 +478,59 @@ _D8demangle4testFNjNkDFNjZaZv
 demangle.test(return char() return delegate)
 #
 --format=dlang
-_D8demangle4testFFNaZaZv
+_D8demangle4testFPFNaZaZv
 demangle.test(char() pure function)
 #
 --format=dlang
-_D8demangle4testFFNbZaZv
+_D8demangle4testFPFNbZaZv
 demangle.test(char() nothrow function)
 #
 --format=dlang
-_D8demangle4testFFNcZaZv
+_D8demangle4testFPFNcZaZv
 demangle.test(char() ref function)
 #
 --format=dlang
-_D8demangle4testFFNdZaZv
+_D8demangle4testFPFNdZaZv
 demangle.test(char() @property function)
 #
 --format=dlang
-_D8demangle4testFFNeZaZv
+_D8demangle4testFPFNeZaZv
 demangle.test(char() @trusted function)
 #
 --format=dlang
-_D8demangle4testFFNfZaZv
+_D8demangle4testFPFNfZaZv
 demangle.test(char() @safe function)
 #
 --format=dlang
-_D8demangle4testFFNiZaZv
+_D8demangle4testFPFNiZaZv
 demangle.test(char() @nogc function)
 #
 --format=dlang
-_D8demangle4testFFNaNbZaZv
+_D8demangle4testFPFNaNbZaZv
 demangle.test(char() pure nothrow function)
 #
 --format=dlang
-_D8demangle4testFFNbNaZaZv
+_D8demangle4testFPFNbNaZaZv
 demangle.test(char() nothrow pure function)
 #
 --format=dlang
-_D8demangle4testFFNdNfNaZaZv
+_D8demangle4testFPFNdNfNaZaZv
 demangle.test(char() @property @safe pure function)
 #
 --format=dlang
-_D8demangle4testFNjFZaZv
+_D8demangle4testFNjPFZaZv
 demangle.test(char() function)
 #
 --format=dlang
-_D8demangle4testFNkFZaZv
+_D8demangle4testFNkPFZaZv
 demangle.test(return char() function)
 #
 --format=dlang
-_D8demangle4testFFNjZaZv
+_D8demangle4testFPFNjZaZv
 demangle.test(char() return function)
 #
 --format=dlang
-_D8demangle4testFNjNkFNjZaZv
+_D8demangle4testFNjNkPFNjZaZv
 demangle.test(return char() return function)
 #
 --format=dlang
@@ -989,7 +1001,7 @@ object.TypeInfo_Array.argTypes(out TypeInfo, out TypeInfo)
 #
 --format=dlang
 _D2rt6dmain211_d_run_mainUiPPaPUAAaZiZ7tryExecMFMDFZvZv
-rt.dmain2._d_run_main(int, char**, extern(C) int(char[][]) function*).tryExec(scope void() delegate)
+rt.dmain2._d_run_main(int, char**, extern(C) int(char[][]) function).tryExec(scope void() delegate)
 #
 --format=dlang
 _D6object9Exception6__ctorMFNaNbNfAyaAyamC6object9ThrowableZC9Exception

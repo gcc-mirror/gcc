@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2015 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2016 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -36,7 +36,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unwind.h>
-#include "local_type_traits"
 #include "local_atomic"
 
 /* Don't require libgcc_s.so for exceptions.  */
@@ -48,13 +47,6 @@ extern void _Unwind_DeleteException (_Unwind_Exception*) __attribute__((weak));
 namespace GTM HIDDEN {
 
 using namespace std;
-
-// A helper template for accessing an unsigned integral of SIZE bytes.
-template<size_t SIZE> struct sized_integral { };
-template<> struct sized_integral<1> { typedef uint8_t type; };
-template<> struct sized_integral<2> { typedef uint16_t type; };
-template<> struct sized_integral<4> { typedef uint32_t type; };
-template<> struct sized_integral<8> { typedef uint64_t type; };
 
 typedef unsigned int gtm_word __attribute__((mode (word)));
 
@@ -82,8 +74,6 @@ enum gtm_restart_reason
 #include "target.h"
 #include "rwlock.h"
 #include "aatree.h"
-#include "cacheline.h"
-#include "stmlock.h"
 #include "dispatch.h"
 #include "containers.h"
 
@@ -106,12 +96,10 @@ namespace GTM HIDDEN {
 // the template used inside gtm_thread can instantiate.
 struct gtm_alloc_action
 {
-  // Iff free_fn_sz is nonzero, it must be used instead of free_fn.
-  union
-  {
-    void (*free_fn)(void *);
-    void (*free_fn_sz)(void *, size_t);
-  };
+  // Iff free_fn_sz is nonzero, it must be used instead of free_fn, and vice
+  // versa.
+  void (*free_fn)(void *);
+  void (*free_fn_sz)(void *, size_t);
   size_t sz;
   // If true, this is an allocation; we discard the log entry on outermost
   // commit, and deallocate on abort.  If false, this is a deallocation and
@@ -356,13 +344,6 @@ extern abi_dispatch *dispatch_gl_wt();
 extern abi_dispatch *dispatch_ml_wt();
 extern abi_dispatch *dispatch_htm();
 
-extern gtm_cacheline_mask gtm_mask_stack(gtm_cacheline *, gtm_cacheline_mask);
-
-// Control variable for the HTM fastpath that uses serial mode as fallback.
-// Non-zero if the HTM fastpath is enabled. See gtm_thread::begin_transaction.
-// Accessed from assembly language, thus the "asm" specifier on
-// the name, avoiding complex name mangling.
-extern uint32_t htm_fastpath __asm__(UPFX "gtm_htm_fastpath");
 
 } // namespace GTM
 

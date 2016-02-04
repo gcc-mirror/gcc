@@ -1,5 +1,5 @@
 /* Various declarations for language-independent pretty-print subroutines.
-   Copyright (C) 2002-2015 Free Software Foundation, Inc.
+   Copyright (C) 2002-2016 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -37,14 +37,7 @@ struct text_info
   void **x_data;
   rich_location *m_richloc;
 
-  inline void set_location (unsigned int idx, location_t loc, bool caret_p)
-  {
-    source_range src_range;
-    src_range.m_start = loc;
-    src_range.m_finish = loc;
-    set_range (idx, src_range, caret_p);
-  }
-  void set_range (unsigned int idx, source_range range, bool caret_p);
+  void set_location (unsigned int idx, location_t loc, bool caret_p);
   location_t get_location (unsigned int index_of_location) const;
 };
 
@@ -132,7 +125,11 @@ output_buffer_append_r (output_buffer *buff, const char *start, int length)
 {
   gcc_checking_assert (start);
   obstack_grow (buff->obstack, start, length);
-  buff->line_length += length;
+  for (int i = 0; i < length; i++)
+    if (start[i] == '\n')
+      buff->line_length = 0;
+    else
+      buff->line_length++;
 }
 
 /*  Return a pointer to the last character emitted in the

@@ -1,6 +1,6 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1097,7 +1097,7 @@ is_trivially_xible (enum tree_code code, tree to, tree from)
 static void
 process_subob_fn (tree fn, tree *spec_p, bool *trivial_p,
 		  bool *deleted_p, bool *constexpr_p,
-		  bool diag, tree arg)
+		  bool diag, tree arg, bool dtor_from_ctor = false)
 {
   if (!fn || fn == error_mark_node)
     goto bad;
@@ -1109,7 +1109,7 @@ process_subob_fn (tree fn, tree *spec_p, bool *trivial_p,
       *spec_p = merge_exception_specifiers (*spec_p, raises);
     }
 
-  if (!trivial_fn_p (fn))
+  if (!trivial_fn_p (fn) && !dtor_from_ctor)
     {
       if (trivial_p)
 	*trivial_p = false;
@@ -1142,14 +1142,17 @@ process_subob_fn (tree fn, tree *spec_p, bool *trivial_p,
 }
 
 /* Subroutine of synthesized_method_walk to allow recursion into anonymous
-   aggregates.  */
+   aggregates.  If DTOR_FROM_CTOR is true, we're walking subobject destructors
+   called from a synthesized constructor, in which case we don't consider
+   the triviality of the subobject destructor.  */
 
 static void
 walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 		   int quals, bool copy_arg_p, bool move_p,
 		   bool assign_p, tree *spec_p, bool *trivial_p,
 		   bool *deleted_p, bool *constexpr_p,
-		   bool diag, int flags, tsubst_flags_t complain)
+		   bool diag, int flags, tsubst_flags_t complain,
+		   bool dtor_from_ctor)
 {
   tree field;
   for (field = fields; field; field = DECL_CHAIN (field))
@@ -1268,7 +1271,7 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 	  walk_field_subobs (TYPE_FIELDS (mem_type), fnname, sfk, quals,
 			     copy_arg_p, move_p, assign_p, spec_p, trivial_p,
 			     deleted_p, constexpr_p,
-			     diag, flags, complain);
+			     diag, flags, complain, dtor_from_ctor);
 	  continue;
 	}
 
@@ -1285,7 +1288,7 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
       rval = locate_fn_flags (mem_type, fnname, argtype, flags, complain);
 
       process_subob_fn (rval, spec_p, trivial_p, deleted_p,
-			constexpr_p, diag, field);
+			constexpr_p, diag, field, dtor_from_ctor);
     }
 }
 
@@ -1468,7 +1471,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	     dtors would be a double-fault).  */
 	  process_subob_fn (rval, NULL, NULL,
 			    deleted_p, NULL, false,
-			    basetype);
+			    basetype, /*dtor_from_ctor*/true);
 	}
 
       if (check_vdtor && type_has_virtual_destructor (basetype))
@@ -1515,7 +1518,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 				      NULL_TREE, flags, complain);
 	      process_subob_fn (rval, NULL, NULL,
 				deleted_p, NULL, false,
-				basetype);
+				basetype, /*dtor_from_ctor*/true);
 	    }
 	}
     }
@@ -1524,13 +1527,13 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   walk_field_subobs (TYPE_FIELDS (ctype), fnname, sfk, quals,
 		     copy_arg_p, move_p, assign_p, spec_p, trivial_p,
 		     deleted_p, constexpr_p,
-		     diag, flags, complain);
+		     diag, flags, complain, /*dtor_from_ctor*/false);
   if (ctor_p)
     walk_field_subobs (TYPE_FIELDS (ctype), complete_dtor_identifier,
 		       sfk_destructor, TYPE_UNQUALIFIED, false,
 		       false, false, NULL, NULL,
 		       deleted_p, NULL,
-		       false, flags, complain);
+		       false, flags, complain, /*dtor_from_ctor*/true);
 
   pop_scope (scope);
 

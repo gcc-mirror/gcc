@@ -1,6 +1,6 @@
 # Provide a weak definition of the library ID, for the benefit of certain
 # configure scripts.	 
-# Copyright (C) 2012-2015 Free Software Foundation, Inc.
+# Copyright (C) 2012-2016 Free Software Foundation, Inc.
 # Contributed by KPIT Cummins Infosystems Limited.
 
 # This file is free software; you can redistribute it and/or modify it

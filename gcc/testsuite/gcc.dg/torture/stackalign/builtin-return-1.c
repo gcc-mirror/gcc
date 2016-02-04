@@ -26,15 +26,13 @@ int bar(int n)
 				   STACK_ARGUMENTS_SIZE));
 }
 
-char *g;
-
 int main(void)
 {
   /* Allocate 64 bytes on the stack to make sure that __builtin_apply
      can read at least 64 bytes above the return address.  */
   char dummy[64];
 
-  g = dummy;
+  __asm__ ("" : : "" (dummy));
 
   if (bar(1) != 2)
     abort();

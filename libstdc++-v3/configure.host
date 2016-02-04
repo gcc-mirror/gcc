@@ -367,7 +367,18 @@ case "${host}" in
     port_specific_symbol_files="\$(srcdir)/../config/os/bsd/darwin/ppc-extra.ver"
     ;;
   *-*-solaris2.1[0-9])
-    abi_baseline_pair=solaris2.10
+    # On Solaris 10 with Solaris ld, there's no COMDAT support.  GNU ld always
+    # provides it, as does Solaris ld since Solaris 11, leading to different
+    # baselines.
+    case "${host_os}:${with_gnu_ld}" in
+      # with_gnu_ld may either be unset (default) or no (with --without-gnu-ld).
+      solaris2.10: | solaris2.10:no)
+        abi_baseline_pair=solaris2.10
+	;;
+      *)
+        abi_baseline_pair=solaris2.11
+	;;
+    esac
     abi_baseline_subdir_switch=--print-multi-os-directory
     ;;
 esac

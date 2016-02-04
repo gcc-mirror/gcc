@@ -38,6 +38,48 @@ package body Opt is
    SU : constant := Storage_Unit;
    --  Shorthand for System.Storage_Unit
 
+   -------------------------
+   -- Back_End_Exceptions --
+   -------------------------
+
+   function Back_End_Exceptions return Boolean is
+   begin
+      return
+        Exception_Mechanism = Back_End_SJLJ
+          or else
+        Exception_Mechanism = Back_End_ZCX;
+   end Back_End_Exceptions;
+
+   -------------------------
+   -- Front_End_Exceptions --
+   -------------------------
+
+   function Front_End_Exceptions return Boolean is
+   begin
+      return Exception_Mechanism = Front_End_SJLJ;
+   end Front_End_Exceptions;
+
+   --------------------
+   -- SJLJ_Exceptions --
+   --------------------
+
+   function SJLJ_Exceptions return Boolean is
+   begin
+      return
+        Exception_Mechanism = Back_End_SJLJ
+          or else
+        Exception_Mechanism = Front_End_SJLJ;
+   end SJLJ_Exceptions;
+
+   --------------------
+   -- ZCX_Exceptions --
+   --------------------
+
+   function ZCX_Exceptions return Boolean is
+   begin
+      return Exception_Mechanism = Back_End_ZCX;
+   end ZCX_Exceptions;
+
    ----------------------------------
    -- Register_Opt_Config_Switches --
    ----------------------------------

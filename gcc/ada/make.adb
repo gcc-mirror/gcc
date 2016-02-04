@@ -1798,9 +1798,7 @@ package body Make is
             --  according to the lang-specs.h.settings.
 
             for K in First_Arg .. Last_Arg loop
-               if Args.Table (K).all = "-mrtp"
-                  or else Args.Table (K).all = "-fsjlj"
-               then
+               if Args.Table (K).all = "-mrtp" then
                   Number_Of_Switches := Number_Of_Switches - 1;
                end if;
             end loop;

@@ -1,5 +1,5 @@
 ;; Predicate definitions for IA-64.
-;; Copyright (C) 2004-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2016 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -91,6 +91,32 @@
 	 they deserve a slap on the wrist (such as provided by a relocation
 	 overflow), but that just leads to bugzilla noise.  */
       return (offset >= 0 && offset <= size);
+
+    default:
+      gcc_unreachable ();
+    }
+})
+
+;; True if OP refers to a local symbol [+any offset].
+;; To be encoded as:
+;;   movl % = @gprel(symbol+offset)
+;;   add  % = %, gp
+(define_predicate "local_symbolic_operand64"
+  (match_code "symbol_ref,const")
+{
+  switch (GET_CODE (op))
+    {
+    case CONST:
+      op = XEXP (op, 0);
+      if (GET_CODE (op) != PLUS
+	  || GET_CODE (XEXP (op, 0)) != SYMBOL_REF
+	  || GET_CODE (XEXP (op, 1)) != CONST_INT)
+	return false;
+      op = XEXP (op, 0);
+      /* FALLTHRU */
+
+    case SYMBOL_REF:
+	return SYMBOL_REF_LOCAL_P (op);
 
     default:
       gcc_unreachable ();

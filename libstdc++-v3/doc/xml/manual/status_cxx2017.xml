@@ -216,6 +216,19 @@ not in any particular release.
       <entry/>
     </row>
 
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/p0013r1.html">
+	  P0013R1
+	</link>
+      </entry>
+      <entry>
+        Logical Operator Type Traits (revision 1)
+      </entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
   </tbody>
 </tgroup>
 </table>
@@ -353,6 +366,16 @@ not in any particular release.
       <entry>Library Fundamentals 2 TS</entry>
     </row>
 
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/p0013r1.html">
+	  P0013R1
+	</link>
+      </entry>
+      <entry>Logical Operator Type Traits (revision 1)</entry>
+      <entry>Y</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
 
 
   </tbody>

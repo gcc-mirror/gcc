@@ -1,6 +1,6 @@
 /* Plugin for NVPTX execution.
 
-   Copyright (C) 2013-2015 Free Software Foundation, Inc.
+   Copyright (C) 2013-2016 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -712,8 +712,8 @@ static void
 link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
 	  unsigned num_objs)
 {
-  CUjit_option opts[7];
-  void *optvals[7];
+  CUjit_option opts[6];
+  void *optvals[6];
   float elapsed = 0.0;
 #define LOGSIZE 8192
   char elog[LOGSIZE];
@@ -742,10 +742,7 @@ link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
   opts[5] = CU_JIT_LOG_VERBOSE;
   optvals[5] = (void *) 1;
 
-  opts[6] = CU_JIT_TARGET;
-  optvals[6] = (void *) CU_TARGET_COMPUTE_30;
-
-  r = cuLinkCreate (7, opts, optvals, &linkstate);
+  r = cuLinkCreate (6, opts, optvals, &linkstate);
   if (r != CUDA_SUCCESS)
     GOMP_PLUGIN_fatal ("cuLinkCreate error: %s", cuda_error (r));
 

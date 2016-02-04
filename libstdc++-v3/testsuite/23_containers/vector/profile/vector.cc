@@ -2,6 +2,8 @@
 // Advice: set tmp as 10000
 
 // { dg-options "-DITERATIONS=20" { target simulator } }
+// AIX requires higher memory limit
+// { dg-additional-options "-Wl,-bmaxdata:0x20000000" { target { powerpc-ibm-aix* } } }
 
 #ifndef ITERATIONS
 #define ITERATIONS 2000

@@ -47,6 +47,11 @@ DEFTREECODE (PLUS_NOMOD_EXPR, "plus_nomod_expr", tcc_binary, 2)
    This is used for loops and never shows up in the tree.  */
 DEFTREECODE (MINUS_NOMOD_EXPR, "minus_nomod_expr", tcc_binary, 2)
 
+/* An expression that computes an exponentiation.  Operand 0 is the base and
+   Operand 1 is the exponent.  This node is never passed to GCC: it is only
+   used internally to describe fixed point types scale factors.  */
+DEFTREECODE (POWER_EXPR, "power_expr", tcc_binary, 2)
+
 /* Same as ADDR_EXPR, except that if the operand represents a bit field,
    return the address of the byte containing the bit.  This is used
    for the Address attribute and never shows up in the tree.  */

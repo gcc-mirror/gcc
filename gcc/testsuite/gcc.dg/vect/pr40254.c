@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdarg.h>
 #include "tree-vect.h"
 

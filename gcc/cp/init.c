@@ -1,5 +1,5 @@
 /* Handle initialization things in C++.
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -729,9 +729,14 @@ perform_member_init (tree member, tree init)
 	      || same_type_ignoring_top_level_qualifiers_p (type,
 							    TREE_TYPE (init)))
 	    {
-	      init = build_vec_init_expr (type, init, tf_warning_or_error);
-	      init = build2 (INIT_EXPR, type, decl, init);
-	      finish_expr_stmt (init);
+	      if (TYPE_DOMAIN (type) && TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
+		{
+		  /* Initialize the array only if it's not a flexible
+		     array member (i.e., if it has an upper bound).  */
+		  init = build_vec_init_expr (type, init, tf_warning_or_error);
+		  init = build2 (INIT_EXPR, type, decl, init);
+		  finish_expr_stmt (init);
+		}
 	    }
 	  else
 	    error ("invalid initializer for array member %q#D", member);
@@ -2075,6 +2080,8 @@ constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p)
 	  && TREE_CODE (init) == TREE_LIST
 	  && TREE_CHAIN (init) == NULL_TREE)
 	init = TREE_VALUE (init);
+      /* Instantiate a non-dependent initializer.  */
+      init = instantiate_non_dependent_or_null (init);
       if (!init
 	  || !TREE_TYPE (init)
 	  || !TREE_CONSTANT (init)
@@ -2087,6 +2094,11 @@ constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p)
  		 same everywhere.  */
 	      && (TREE_CODE (init) == CONSTRUCTOR
 		  || TREE_CODE (init) == STRING_CST)))
+	break;
+      /* Don't return a CONSTRUCTOR for a variable with partial run-time
+	 initialization, since it doesn't represent the entire value.  */
+      if (TREE_CODE (init) == CONSTRUCTOR
+	  && !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
 	break;
       decl = unshare_expr (init);
     }
@@ -3996,7 +4008,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 		&& (num_initialized_elts
 		    == tree_to_shwi (maxindex) + 1))))
     {
-      /* If the ITERATOR is equal to -1, then we don't have to loop;
+      /* If the ITERATOR is lesser or equal to -1, then we don't have to loop;
 	 we've already initialized all the elements.  */
       tree for_stmt;
       tree elt_init;
@@ -4004,7 +4016,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 
       for_stmt = begin_for_stmt (NULL_TREE, NULL_TREE);
       finish_for_init_stmt (for_stmt);
-      finish_for_cond (build2 (NE_EXPR, boolean_type_node, iterator,
+      finish_for_cond (build2 (GT_EXPR, boolean_type_node, iterator,
 			       build_int_cst (TREE_TYPE (iterator), -1)),
 		       for_stmt, false);
       elt_init = cp_build_unary_op (PREDECREMENT_EXPR, iterator, 0,
@@ -4439,6 +4451,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
       else
 	{
 	  /* Handle deleting a null pointer.  */
+	  warning_sentinel s (warn_address);
 	  ifexp = fold (cp_build_binary_op (input_location,
 					    NE_EXPR, addr, nullptr_node,
 					    complain));

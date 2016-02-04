@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2015 Free Software Foundation, Inc.
+   Copyright (C) 2009-2016 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -156,9 +156,10 @@ struct cpu_vector_cost
   const int scalar_load_cost;		 /* Cost of scalar load.  */
   const int scalar_store_cost;		 /* Cost of scalar store.  */
   const int vec_stmt_cost;		 /* Cost of any vector operation,
-					    excluding load, store,
+					    excluding load, store, permute,
 					    vector-to-scalar and
 					    scalar-to-vector operation.  */
+  const int vec_permute_cost;		 /* Cost of permute operation.  */
   const int vec_to_scalar_cost;		 /* Cost of vec-to-scalar operation.  */
   const int scalar_to_vec_cost;		 /* Cost of scalar-to-vector
 					    operation.  */
@@ -269,6 +270,9 @@ int aarch64_get_condition_code (rtx);
 bool aarch64_bitmask_imm (HOST_WIDE_INT val, machine_mode);
 int aarch64_branch_cost (bool, bool);
 enum aarch64_symbol_type aarch64_classify_symbolic_expression (rtx);
+bool aarch64_cannot_change_mode_class (machine_mode,
+				       machine_mode,
+				       enum reg_class);
 bool aarch64_const_vec_all_same_int_p (rtx, HOST_WIDE_INT);
 bool aarch64_constant_address_p (rtx);
 bool aarch64_expand_movmem (rtx *);
@@ -286,6 +290,7 @@ void aarch64_declare_function_name (FILE *, const char*, tree);
 bool aarch64_legitimate_pic_operand_p (rtx);
 bool aarch64_modes_tieable_p (machine_mode mode1,
 			      machine_mode mode2);
+bool aarch64_zero_extend_const_eq (machine_mode, rtx, machine_mode, rtx);
 bool aarch64_move_imm (HOST_WIDE_INT, machine_mode);
 bool aarch64_mov_operand_p (rtx, machine_mode);
 int aarch64_simd_attr_length_rglist (enum machine_mode);
@@ -326,6 +331,7 @@ int aarch64_uxt_size (int, HOST_WIDE_INT);
 int aarch64_vec_fpconst_pow_of_2 (rtx);
 rtx aarch64_final_eh_return_addr (void);
 rtx aarch64_legitimize_reload_address (rtx *, machine_mode, int, int, int);
+rtx aarch64_mask_from_zextract_ops (rtx, rtx);
 const char *aarch64_output_move_struct (rtx *operands);
 rtx aarch64_return_addr (int, rtx);
 rtx aarch64_simd_gen_const_vector_dup (machine_mode, int);
@@ -340,6 +346,7 @@ void aarch64_asm_output_labelref (FILE *, const char *);
 void aarch64_cpu_cpp_builtins (cpp_reader *);
 void aarch64_elf_asm_named_section (const char *, unsigned, tree);
 const char * aarch64_gen_far_branch (rtx *, int, const char *, const char *);
+const char * aarch64_output_probe_stack_range (rtx, rtx);
 void aarch64_err_no_fpadvsimd (machine_mode, const char *);
 void aarch64_expand_epilogue (bool);
 void aarch64_expand_mov_immediate (rtx, rtx);
@@ -407,7 +414,7 @@ rtx aarch64_expand_builtin (tree exp,
 			    int ignore ATTRIBUTE_UNUSED);
 tree aarch64_builtin_decl (unsigned, bool ATTRIBUTE_UNUSED);
 
-tree aarch64_builtin_rsqrt (unsigned int, bool);
+tree aarch64_builtin_rsqrt (unsigned int);
 
 tree aarch64_builtin_vectorized_function (unsigned int, tree, tree);
 

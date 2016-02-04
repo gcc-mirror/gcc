@@ -50,8 +50,13 @@ main()
 #endif
   if (is_same<decltype(wfoo)::char_type, wchar_t>::value != true) __builtin_abort();
   if (sizeof(wfoo.chars)/sizeof(wchar_t) != 2) __builtin_abort();
+#if __SIZEOF_WCHAR_T__ == 2
+  if (wfoo.chars[0] != 258) __builtin_abort();
+  if (wfoo.chars[1] != 772) __builtin_abort();
+#else
   if (wfoo.chars[0] != 16909060) __builtin_abort();
   if (wfoo.chars[1] != 84281096) __builtin_abort();
+#endif
 
   auto foou = u"\x0102\x0304\x0506\x0708"_foo;
   if (is_same<decltype(foou)::char_type, char16_t>::value != true) __builtin_abort();

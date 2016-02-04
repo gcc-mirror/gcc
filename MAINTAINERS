@@ -209,6 +209,7 @@ fixincludes		Bruce Korb		<bkorb@gnu.org>
 *gimpl*			Jason Merrill		<jason@redhat.com>
 gcse.c			Jeff Law		<law@redhat.com>
 global opt framework	Jeff Law		<law@redhat.com>
+hsa			Martin Jambor		<mjambor@suse.cz>
 jump.c			David S. Miller		<davem@redhat.com>
 web pages		Gerald Pfeifer		<gerald@pfeifer.com>
 config.sub/config.guess	Ben Elliston		<config-patches@gnu.org>
@@ -377,6 +378,7 @@ Simon Dardis					<simon.dardis@imgtec.com>
 Bud Davis					<jmdavis@link.com>
 Chris Demetriou					<cgd@google.com>
 Sameera Deshpande				<sameera.deshpande@arm.com>
+Wilco Dijkstra					<wdijkstr@arm.com>
 Benoit Dupont de Dinechin			<benoit.dupont-de-dinechin@st.com>
 Michael Eager					<eager@eagercon.com>
 Bernd Edlinger					<bernd.edlinger@hotmail.de>
@@ -388,6 +390,7 @@ Marc Espie					<espie@cvs.openbsd.org>
 Ansgar Esztermann				<ansgar@thphy.uni-duesseldorf.de>
 Doug Evans					<dje@google.com>
 Chris Fairles					<cfairles@gcc.gnu.org>
+Alessandro Fanfarillo				<fanfarillo.gcc@gmail.com>
 Changpeng Fang					<changpeng.fang@amd.com>
 Li Feng						<nemokingdom@gmail.com>
 Max Filippov					<jcmvbkbc@gmail.com>
@@ -524,6 +527,7 @@ Andrea Ornstein					<andrea.ornstein@st.com>
 Patrick Palka					<ppalka@gcc.gnu.org>
 Seongbae Park					<seongbae.park@gmail.com>
 Devang Patel					<dpatel@apple.com>
+Andris Pavenis					<andris.pavenis@iki.fi>
 Fernando Pereira				<pronesto@gmail.com>
 Kaushik Phatak					<kaushik.phatak@kpitcummins.com>
 Nicolas Pitre					<nico@cam.org>
@@ -552,6 +556,7 @@ Matthew Sachs					<msachs@apple.com>
 Hariharan Sandanagobalane			<hariharan.gcc@gmail.com>
 Iain Sandoe					<iain@codesourcery.com>
 Duncan Sands					<baldrick@gcc.gnu.org>
+Sujoy Saraswati					<sujoy.saraswati@hpe.com>
 Trevor Saunders					<tsaunders@mozilla.com>
 William Schmidt					<wschmidt@linux.vnet.ibm.com>
 Tilo Schwarz					<tilo@tilo-schwarz.de>
@@ -630,6 +635,7 @@ Yufeng Zhang					<yufeng.zhang@arm.com>
 Shujing Zhao					<pearly.zhao@oracle.com>
 Jon Ziegler					<jonz@apple.com>
 Roman Zippel					<zippel@linux-m68k.org>
+Claudiu Zissulescu				<claziss@synopsys.com>
 Josef Zlomek					<josef.zlomek@email.cz>
 
 			Bug database only accounts

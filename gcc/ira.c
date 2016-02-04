@@ -1,5 +1,5 @@
 /* Integrated Register Allocator (IRA) entry point.
-   Copyright (C) 2006-2015 Free Software Foundation, Inc.
+   Copyright (C) 2006-2016 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -1800,7 +1800,13 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 	    {
 	      insn_constraints[nop * recog_data.n_alternatives + nalt] = p;
 	      while (*p && *p != ',')
-		p++;
+		{
+		  /* We only support one commutative marker, the first
+		     one.  We already set commutative above.  */
+		  if (*p == '%' && commutative < 0)
+		    commutative = nop;
+		  p++;
+		}
 	      if (*p)
 		p++;
 	    }
@@ -1831,11 +1837,7 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 		    break;
 		  
 		  case '%':
-		    /* We only support one commutative marker, the
-		       first one.  We already set commutative
-		       above.  */
-		    if (commutative < 0)
-		      commutative = nop;
+		    /* The commutative modifier is handled above.  */
 		    break;
 
 		  case '0':  case '1':  case '2':  case '3':  case '4':
@@ -1866,6 +1868,7 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 
 			case CT_ADDRESS:
 			case CT_MEMORY:
+			case CT_SPECIAL_MEMORY:
 			  goto op_success;
 
 			case CT_FIXED_FORM:
@@ -5183,19 +5186,27 @@ ira (FILE *f)
   setup_reg_equiv ();
   setup_reg_equiv_init ();
 
+  bool update_regstat = false;
+
   if (optimize && rebuild_p)
     {
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
       if (purge_all_dead_edges ())
-	delete_unreachable_blocks ();
+	{
+	  delete_unreachable_blocks ();
+	  update_regstat = true;
+	}
       timevar_pop (TV_JUMP);
     }
 
   allocated_reg_info_size = max_reg_num ();
 
   if (delete_trivially_dead_insns (get_insns (), max_reg_num ()))
-    df_analyze ();
+    {
+      df_analyze ();
+      update_regstat = true;
+    }
 
   /* It is not worth to do such improvement when we use a simple
      allocation because of -O0 usage or because the function is too
@@ -5306,7 +5317,7 @@ ira (FILE *f)
     check_allocation ();
 #endif
 
-  if (max_regno != max_regno_before_ira)
+  if (update_regstat || max_regno != max_regno_before_ira)
     {
       regstat_free_n_sets_and_refs ();
       regstat_free_ri ();

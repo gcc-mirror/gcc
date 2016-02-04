@@ -1,5 +1,5 @@
 ;;  Machine Description for Renesas RL78 processors
-;;  Copyright (C) 2011-2015 Free Software Foundation, Inc.
+;;  Copyright (C) 2011-2016 Free Software Foundation, Inc.
 ;;  Contributed by Red Hat.
 
 ;; This file is part of GCC.
@@ -589,7 +589,7 @@
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
   ""
-  "bf\tA.%B0, $%1"
+  "bt\tA.%B0, $1f\n\tbr !!%1\n\t1:"
   [(set (attr "update_Z") (const_string "clobber"))]
 )
 
@@ -601,7 +601,7 @@
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
   ""
-  "bt\tA.%B0, $%1"
+  "bf\tA.%B0, $1f\n\tbr !!%1\n\t1:"
   [(set (attr "update_Z") (const_string "clobber"))]
 )
 

@@ -1,4 +1,4 @@
-// { dg-do run { xfail *-*-* } }
+// { dg-do run }
 
 char z[10] = { 0 };
 

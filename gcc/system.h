@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
-   Copyright (C) 1998-2015 Free Software Foundation, Inc.
+   Copyright (C) 1998-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -198,7 +198,9 @@ extern int fprintf_unlocked (FILE *, const char *, ...);
    the ctype macros through safe-ctype.h */
 
 #ifdef __cplusplus
+#ifdef INCLUDE_STRING
 # include <string>
+#endif
 #endif
 
 /* There are an extraordinary number of issues with <ctype.h>.
@@ -215,8 +217,11 @@ extern int errno;
 #endif
 
 #ifdef __cplusplus
+#if defined (INCLUDE_ALGORITHM) || !defined (HAVE_SWAP_IN_UTILITY)
 # include <algorithm>
+#endif
 # include <cstring>
+# include <new>
 # include <utility>
 #endif
 
@@ -798,9 +803,12 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
    compiling gcc, so that the autoconf declaration tests for malloc
    etc don't spuriously fail.  */
 #ifdef IN_GCC
+
+#ifndef USES_ISL
 #undef calloc
 #undef strdup
  #pragma GCC poison calloc strdup
+#endif
 
 #if !defined(FLEX_SCANNER) && !defined(YYBISON)
 #undef malloc

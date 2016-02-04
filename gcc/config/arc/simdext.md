@@ -1,5 +1,5 @@
 ;; Machine description of the Synopsys DesignWare ARC cpu for GNU C compiler
-;; Copyright (C) 2007-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2016 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 
@@ -17,119 +17,117 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(define_constants
-  [
+(define_c_enum "unspec" [
   ;; Va, Vb, Vc builtins
-  (UNSPEC_ARC_SIMD_VADDAW     1000)
-  (UNSPEC_ARC_SIMD_VADDW      1001)
-  (UNSPEC_ARC_SIMD_VAVB       1002)
-  (UNSPEC_ARC_SIMD_VAVRB      1003)
-  (UNSPEC_ARC_SIMD_VDIFAW     1004)
-  (UNSPEC_ARC_SIMD_VDIFW      1005)
-  (UNSPEC_ARC_SIMD_VMAXAW     1006)
-  (UNSPEC_ARC_SIMD_VMAXW      1007)
-  (UNSPEC_ARC_SIMD_VMINAW     1008)
-  (UNSPEC_ARC_SIMD_VMINW      1009)
-  (UNSPEC_ARC_SIMD_VMULAW     1010)
-  (UNSPEC_ARC_SIMD_VMULFAW    1011)
-  (UNSPEC_ARC_SIMD_VMULFW     1012)
-  (UNSPEC_ARC_SIMD_VMULW      1013)
-  (UNSPEC_ARC_SIMD_VSUBAW     1014)
-  (UNSPEC_ARC_SIMD_VSUBW      1015)
-  (UNSPEC_ARC_SIMD_VSUMMW     1016)
-  (UNSPEC_ARC_SIMD_VAND       1017)
-  (UNSPEC_ARC_SIMD_VANDAW     1018)
-  (UNSPEC_ARC_SIMD_VBIC       1019)
-  (UNSPEC_ARC_SIMD_VBICAW     1020)
-  (UNSPEC_ARC_SIMD_VOR        1021)
-  (UNSPEC_ARC_SIMD_VXOR       1022)
-  (UNSPEC_ARC_SIMD_VXORAW     1023)
-  (UNSPEC_ARC_SIMD_VEQW       1024)
-  (UNSPEC_ARC_SIMD_VLEW       1025)
-  (UNSPEC_ARC_SIMD_VLTW       1026)
-  (UNSPEC_ARC_SIMD_VNEW       1027)
-  (UNSPEC_ARC_SIMD_VMR1AW     1028)
-  (UNSPEC_ARC_SIMD_VMR1W      1029)
-  (UNSPEC_ARC_SIMD_VMR2AW     1030)
-  (UNSPEC_ARC_SIMD_VMR2W      1031)
-  (UNSPEC_ARC_SIMD_VMR3AW     1032)
-  (UNSPEC_ARC_SIMD_VMR3W      1033)
-  (UNSPEC_ARC_SIMD_VMR4AW     1034)
-  (UNSPEC_ARC_SIMD_VMR4W      1035)
-  (UNSPEC_ARC_SIMD_VMR5AW     1036)
-  (UNSPEC_ARC_SIMD_VMR5W      1037)
-  (UNSPEC_ARC_SIMD_VMR6AW     1038)
-  (UNSPEC_ARC_SIMD_VMR6W      1039)
-  (UNSPEC_ARC_SIMD_VMR7AW     1040)
-  (UNSPEC_ARC_SIMD_VMR7W      1041)
-  (UNSPEC_ARC_SIMD_VMRB       1042)
-  (UNSPEC_ARC_SIMD_VH264F     1043)
-  (UNSPEC_ARC_SIMD_VH264FT    1044)
-  (UNSPEC_ARC_SIMD_VH264FW    1045)
-  (UNSPEC_ARC_SIMD_VVC1F      1046)
-  (UNSPEC_ARC_SIMD_VVC1FT     1047)
+  UNSPEC_ARC_SIMD_VADDAW
+  UNSPEC_ARC_SIMD_VADDW
+  UNSPEC_ARC_SIMD_VAVB
+  UNSPEC_ARC_SIMD_VAVRB
+  UNSPEC_ARC_SIMD_VDIFAW
+  UNSPEC_ARC_SIMD_VDIFW
+  UNSPEC_ARC_SIMD_VMAXAW
+  UNSPEC_ARC_SIMD_VMAXW
+  UNSPEC_ARC_SIMD_VMINAW
+  UNSPEC_ARC_SIMD_VMINW
+  UNSPEC_ARC_SIMD_VMULAW
+  UNSPEC_ARC_SIMD_VMULFAW
+  UNSPEC_ARC_SIMD_VMULFW
+  UNSPEC_ARC_SIMD_VMULW
+  UNSPEC_ARC_SIMD_VSUBAW
+  UNSPEC_ARC_SIMD_VSUBW
+  UNSPEC_ARC_SIMD_VSUMMW
+  UNSPEC_ARC_SIMD_VAND
+  UNSPEC_ARC_SIMD_VANDAW
+  UNSPEC_ARC_SIMD_VBIC
+  UNSPEC_ARC_SIMD_VBICAW
+  UNSPEC_ARC_SIMD_VOR
+  UNSPEC_ARC_SIMD_VXOR
+  UNSPEC_ARC_SIMD_VXORAW
+  UNSPEC_ARC_SIMD_VEQW
+  UNSPEC_ARC_SIMD_VLEW
+  UNSPEC_ARC_SIMD_VLTW
+  UNSPEC_ARC_SIMD_VNEW
+  UNSPEC_ARC_SIMD_VMR1AW
+  UNSPEC_ARC_SIMD_VMR1W
+  UNSPEC_ARC_SIMD_VMR2AW
+  UNSPEC_ARC_SIMD_VMR2W
+  UNSPEC_ARC_SIMD_VMR3AW
+  UNSPEC_ARC_SIMD_VMR3W
+  UNSPEC_ARC_SIMD_VMR4AW
+  UNSPEC_ARC_SIMD_VMR4W
+  UNSPEC_ARC_SIMD_VMR5AW
+  UNSPEC_ARC_SIMD_VMR5W
+  UNSPEC_ARC_SIMD_VMR6AW
+  UNSPEC_ARC_SIMD_VMR6W
+  UNSPEC_ARC_SIMD_VMR7AW
+  UNSPEC_ARC_SIMD_VMR7W
+  UNSPEC_ARC_SIMD_VMRB
+  UNSPEC_ARC_SIMD_VH264F
+  UNSPEC_ARC_SIMD_VH264FT
+  UNSPEC_ARC_SIMD_VH264FW
+  UNSPEC_ARC_SIMD_VVC1F
+  UNSPEC_ARC_SIMD_VVC1FT
   ;; Va, Vb, rc/limm builtins
-  (UNSPEC_ARC_SIMD_VBADDW     1050)
-  (UNSPEC_ARC_SIMD_VBMAXW     1051)
-  (UNSPEC_ARC_SIMD_VBMINW     1052)
-  (UNSPEC_ARC_SIMD_VBMULAW    1053)
-  (UNSPEC_ARC_SIMD_VBMULFW    1054)
-  (UNSPEC_ARC_SIMD_VBMULW     1055)
-  (UNSPEC_ARC_SIMD_VBRSUBW    1056)
-  (UNSPEC_ARC_SIMD_VBSUBW     1057)
+  UNSPEC_ARC_SIMD_VBADDW
+  UNSPEC_ARC_SIMD_VBMAXW
+  UNSPEC_ARC_SIMD_VBMINW
+  UNSPEC_ARC_SIMD_VBMULAW
+  UNSPEC_ARC_SIMD_VBMULFW
+  UNSPEC_ARC_SIMD_VBMULW
+  UNSPEC_ARC_SIMD_VBRSUBW
+  UNSPEC_ARC_SIMD_VBSUBW
 
   ;; Va, Vb, Ic builtins
-  (UNSPEC_ARC_SIMD_VASRW      1060)
-  (UNSPEC_ARC_SIMD_VSR8       1061)
-  (UNSPEC_ARC_SIMD_VSR8AW     1062)
+  UNSPEC_ARC_SIMD_VASRW
+  UNSPEC_ARC_SIMD_VSR8
+  UNSPEC_ARC_SIMD_VSR8AW
 
   ;; Va, Vb, Ic builtins
-  (UNSPEC_ARC_SIMD_VASRRWi    1065)
-  (UNSPEC_ARC_SIMD_VASRSRWi   1066)
-  (UNSPEC_ARC_SIMD_VASRWi     1067)
-  (UNSPEC_ARC_SIMD_VASRPWBi   1068)
-  (UNSPEC_ARC_SIMD_VASRRPWBi  1069)
-  (UNSPEC_ARC_SIMD_VSR8AWi    1070)
-  (UNSPEC_ARC_SIMD_VSR8i      1071)
+  UNSPEC_ARC_SIMD_VASRRWi
+  UNSPEC_ARC_SIMD_VASRSRWi
+  UNSPEC_ARC_SIMD_VASRWi
+  UNSPEC_ARC_SIMD_VASRPWBi
+  UNSPEC_ARC_SIMD_VASRRPWBi
+  UNSPEC_ARC_SIMD_VSR8AWi
+  UNSPEC_ARC_SIMD_VSR8i
 
   ;; Va, Vb, u8 (simm) builtins
-  (UNSPEC_ARC_SIMD_VMVAW      1075)
-  (UNSPEC_ARC_SIMD_VMVW       1076)
-  (UNSPEC_ARC_SIMD_VMVZW      1077)
-  (UNSPEC_ARC_SIMD_VD6TAPF    1078)
+  UNSPEC_ARC_SIMD_VMVAW
+  UNSPEC_ARC_SIMD_VMVW
+  UNSPEC_ARC_SIMD_VMVZW
+  UNSPEC_ARC_SIMD_VD6TAPF
 
   ;; Va, rlimm, u8 (simm) builtins
-  (UNSPEC_ARC_SIMD_VMOVAW     1080)
-  (UNSPEC_ARC_SIMD_VMOVW      1081)
-  (UNSPEC_ARC_SIMD_VMOVZW     1082)
+  UNSPEC_ARC_SIMD_VMOVAW
+  UNSPEC_ARC_SIMD_VMOVW
+  UNSPEC_ARC_SIMD_VMOVZW
 
   ;; Va, Vb builtins
-  (UNSPEC_ARC_SIMD_VABSAW     1085)
-  (UNSPEC_ARC_SIMD_VABSW      1086)
-  (UNSPEC_ARC_SIMD_VADDSUW    1087)
-  (UNSPEC_ARC_SIMD_VSIGNW     1088)
-  (UNSPEC_ARC_SIMD_VEXCH1     1089)
-  (UNSPEC_ARC_SIMD_VEXCH2     1090)
-  (UNSPEC_ARC_SIMD_VEXCH4     1091)
-  (UNSPEC_ARC_SIMD_VUPBAW     1092)
-  (UNSPEC_ARC_SIMD_VUPBW      1093)
-  (UNSPEC_ARC_SIMD_VUPSBAW    1094)
-  (UNSPEC_ARC_SIMD_VUPSBW     1095)
+  UNSPEC_ARC_SIMD_VABSAW
+  UNSPEC_ARC_SIMD_VABSW
+  UNSPEC_ARC_SIMD_VADDSUW
+  UNSPEC_ARC_SIMD_VSIGNW
+  UNSPEC_ARC_SIMD_VEXCH1
+  UNSPEC_ARC_SIMD_VEXCH2
+  UNSPEC_ARC_SIMD_VEXCH4
+  UNSPEC_ARC_SIMD_VUPBAW
+  UNSPEC_ARC_SIMD_VUPBW
+  UNSPEC_ARC_SIMD_VUPSBAW
+  UNSPEC_ARC_SIMD_VUPSBW
 
-  (UNSPEC_ARC_SIMD_VDIRUN     1100)
-  (UNSPEC_ARC_SIMD_VDORUN     1101)
-  (UNSPEC_ARC_SIMD_VDIWR      1102)
-  (UNSPEC_ARC_SIMD_VDOWR      1103)
+  UNSPEC_ARC_SIMD_VDIRUN
+  UNSPEC_ARC_SIMD_VDORUN
+  UNSPEC_ARC_SIMD_VDIWR
+  UNSPEC_ARC_SIMD_VDOWR
 
-  (UNSPEC_ARC_SIMD_VREC      1105)
-  (UNSPEC_ARC_SIMD_VRUN      1106)
-  (UNSPEC_ARC_SIMD_VRECRUN   1107)
-  (UNSPEC_ARC_SIMD_VENDREC   1108)
+  UNSPEC_ARC_SIMD_VREC
+  UNSPEC_ARC_SIMD_VRUN
+  UNSPEC_ARC_SIMD_VRECRUN
+  UNSPEC_ARC_SIMD_VENDREC
 
-  (UNSPEC_ARC_SIMD_VCAST     1200)
-  (UNSPEC_ARC_SIMD_VINTI     1201)
-   ]
-)
+  UNSPEC_ARC_SIMD_VCAST
+  UNSPEC_ARC_SIMD_VINTI
+  ])
 
 ;; Scheduler descriptions for the simd instructions
 (define_insn_reservation "simd_lat_0_insn" 1
@@ -138,19 +136,19 @@
 
 (define_insn_reservation "simd_lat_1_insn" 2
        (eq_attr "type" "simd_vcompare, simd_vlogic,
-                        simd_vmove_else_zero, simd_varith_1cycle")
+			simd_vmove_else_zero, simd_varith_1cycle")
   "issue+simd_unit, nothing")
 
 (define_insn_reservation "simd_lat_2_insn" 3
        (eq_attr "type" "simd_valign, simd_vpermute,
-                        simd_vpack, simd_varith_2cycle")
+			simd_vpack, simd_varith_2cycle")
   "issue+simd_unit, nothing*2")
 
 (define_insn_reservation "simd_lat_3_insn" 4
        (eq_attr "type" "simd_valign_with_acc, simd_vpack_with_acc,
-                        simd_vlogic_with_acc, simd_vload128,
-                        simd_vmove_with_acc, simd_vspecial_3cycle,
-                        simd_varith_with_acc")
+			simd_vlogic_with_acc, simd_vload128,
+			simd_vmove_with_acc, simd_vspecial_3cycle,
+			simd_varith_with_acc")
   "issue+simd_unit, nothing*3")
 
 (define_insn_reservation "simd_lat_4_insn" 5
@@ -917,7 +915,7 @@
 
 (define_insn "vmvaw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
-        (unspec:V8HI [(match_operand:V8HI 1 "vector_register_operand"  "v")
+	(unspec:V8HI [(match_operand:V8HI 1 "vector_register_operand"  "v")
 		      (match_operand:SI 2 "immediate_operand" "P")] UNSPEC_ARC_SIMD_VMVAW))]
   "TARGET_SIMD_SET"
   "vmvaw %0, %1, %2"
@@ -927,7 +925,7 @@
 
 (define_insn "vmvw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
-        (unspec:V8HI [(match_operand:V8HI 1 "vector_register_operand"  "v")
+	(unspec:V8HI [(match_operand:V8HI 1 "vector_register_operand"  "v")
 		      (match_operand:SI 2 "immediate_operand" "P")] UNSPEC_ARC_SIMD_VMVW))]
   "TARGET_SIMD_SET"
   "vmvw %0, %1, %2"
@@ -937,7 +935,7 @@
 
 (define_insn "vmvzw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
-        (unspec:V8HI [(match_operand:V8HI 1 "vector_register_operand"  "v")
+	(unspec:V8HI [(match_operand:V8HI 1 "vector_register_operand"  "v")
 		      (match_operand:SI 2 "immediate_operand" "P")] UNSPEC_ARC_SIMD_VMVZW))]
   "TARGET_SIMD_SET"
   "vmvzw %0, %1, %2"
@@ -947,7 +945,7 @@
 
 (define_insn "vd6tapf_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
-        (unspec:V8HI [(match_operand:V8HI 1 "vector_register_operand"  "v")
+	(unspec:V8HI [(match_operand:V8HI 1 "vector_register_operand"  "v")
 		      (match_operand:SI 2 "immediate_operand" "P")] UNSPEC_ARC_SIMD_VD6TAPF))]
   "TARGET_SIMD_SET"
   "vd6tapf %0, %1, %2"
@@ -958,7 +956,7 @@
 ;; Va, rlimm, u8 (simm) insns
 (define_insn "vmovaw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
-        (unspec:V8HI [(match_operand:SI 1 "nonmemory_operand"  "r")
+	(unspec:V8HI [(match_operand:SI 1 "nonmemory_operand"  "r")
 		      (match_operand:SI 2 "immediate_operand" "P")] UNSPEC_ARC_SIMD_VMOVAW))]
   "TARGET_SIMD_SET"
   "vmovaw %0, %1, %2"
@@ -968,7 +966,7 @@
 
 (define_insn "vmovw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
-        (unspec:V8HI [(match_operand:SI 1 "nonmemory_operand"  "r")
+	(unspec:V8HI [(match_operand:SI 1 "nonmemory_operand"  "r")
 		      (match_operand:SI 2 "immediate_operand" "P")] UNSPEC_ARC_SIMD_VMOVW))]
   "TARGET_SIMD_SET"
   "vmovw %0, %1, %2"
@@ -978,7 +976,7 @@
 
 (define_insn "vmovzw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
-        (unspec:V8HI [(match_operand:SI 1 "nonmemory_operand"  "r")
+	(unspec:V8HI [(match_operand:SI 1 "nonmemory_operand"  "r")
 		      (match_operand:SI 2 "immediate_operand" "P")] UNSPEC_ARC_SIMD_VMOVZW))]
   "TARGET_SIMD_SET"
   "vmovzw %0, %1, %2"
@@ -1123,7 +1121,7 @@
 ; DMA setup instructions
 (define_insn "vdirun_insn"
   [(set (match_operand:SI 0 "arc_simd_dma_register_operand"           "=d")
-        (unspec_volatile:SI [(match_operand:SI 1 "nonmemory_operand"  "r")
+	(unspec_volatile:SI [(match_operand:SI 1 "nonmemory_operand"  "r")
 			     (match_operand:SI 2 "nonmemory_operand" "r")] UNSPEC_ARC_SIMD_VDIRUN))]
   "TARGET_SIMD_SET"
   "vdirun %1, %2"
@@ -1133,7 +1131,7 @@
 
 (define_insn "vdorun_insn"
   [(set (match_operand:SI 0 "arc_simd_dma_register_operand"              "=d")
-        (unspec_volatile:SI [(match_operand:SI 1 "nonmemory_operand"     "r")
+	(unspec_volatile:SI [(match_operand:SI 1 "nonmemory_operand"     "r")
 			     (match_operand:SI 2 "nonmemory_operand"     "r")] UNSPEC_ARC_SIMD_VDORUN))]
   "TARGET_SIMD_SET"
   "vdorun %1, %2"
@@ -1143,7 +1141,7 @@
 
 (define_insn "vdiwr_insn"
   [(set (match_operand:SI 0 "arc_simd_dma_register_operand"           "=d,d")
-        (unspec_volatile:SI [(match_operand:SI 1 "nonmemory_operand"  "r,Cal")] UNSPEC_ARC_SIMD_VDIWR))]
+	(unspec_volatile:SI [(match_operand:SI 1 "nonmemory_operand"  "r,Cal")] UNSPEC_ARC_SIMD_VDIWR))]
   "TARGET_SIMD_SET"
   "vdiwr %0, %1"
   [(set_attr "type" "simd_dma")
@@ -1152,7 +1150,7 @@
 
 (define_insn "vdowr_insn"
   [(set (match_operand:SI 0 "arc_simd_dma_register_operand"           "=d,d")
-        (unspec_volatile:SI [(match_operand:SI 1 "nonmemory_operand"  "r,Cal")] UNSPEC_ARC_SIMD_VDOWR))]
+	(unspec_volatile:SI [(match_operand:SI 1 "nonmemory_operand"  "r,Cal")] UNSPEC_ARC_SIMD_VDOWR))]
   "TARGET_SIMD_SET"
   "vdowr %0, %1"
   [(set_attr "type" "simd_dma")

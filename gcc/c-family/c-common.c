@@ -1,5 +1,5 @@
 /* Subroutines shared by all languages that are variants of C.
-   Copyright (C) 1992-2015 Free Software Foundation, Inc.
+   Copyright (C) 1992-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -299,7 +299,6 @@ const struct fname_var_t fname_vars[] =
 /* Global visibility options.  */
 struct visibility_flags visibility_options;
 
-static tree c_fully_fold_internal (tree expr, bool, bool *, bool *, bool);
 static tree check_case_value (location_t, tree);
 static bool check_case_bounds (location_t, tree, tree, tree *, tree *,
 			       bool *);
@@ -395,7 +394,6 @@ static tree handle_bnd_variable_size_attribute (tree *, tree, tree, int, bool *)
 static tree handle_bnd_legacy (tree *, tree, tree, int, bool *);
 static tree handle_bnd_instrument (tree *, tree, tree, int, bool *);
 
-static void check_function_nonnull (tree, int, tree *);
 static void check_nonnull_arg (void *, tree, unsigned HOST_WIDE_INT);
 static bool nonnull_check_p (tree, unsigned HOST_WIDE_INT);
 static bool get_nonnull_operand (tree, unsigned HOST_WIDE_INT *);
@@ -818,9 +816,11 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_omp_declare_simd_attribute, false },
   { "cilk simd function",     0, -1, true,  false, false,
 			      handle_omp_declare_simd_attribute, false },
-  { "simd",		      0, 0, true,  false, false,
+  { "simd",		      0, 1, true,  false, false,
 			      handle_simd_attribute, false },
   { "omp declare target",     0, 0, true, false, false,
+			      handle_omp_declare_target_attribute, false },
+  { "omp declare target link", 0, 0, true, false, false,
 			      handle_omp_declare_target_attribute, false },
   { "alloc_align",	      1, 1, false, true, true,
 			      handle_alloc_align_attribute, false },
@@ -1095,580 +1095,17 @@ fix_string_type (tree value)
   return value;
 }
 
-/* If DISABLE is true, stop issuing warnings.  This is used when
-   parsing code that we know will not be executed.  This function may
-   be called multiple times, and works as a stack.  */
-
-static void
-c_disable_warnings (bool disable)
-{
-  if (disable)
-    {
-      ++c_inhibit_evaluation_warnings;
-      fold_defer_overflow_warnings ();
-    }
-}
-
-/* If ENABLE is true, reenable issuing warnings.  */
-
-static void
-c_enable_warnings (bool enable)
-{
-  if (enable)
-    {
-      --c_inhibit_evaluation_warnings;
-      fold_undefer_and_ignore_overflow_warnings ();
-    }
-}
-
-/* Fully fold EXPR, an expression that was not folded (beyond integer
-   constant expressions and null pointer constants) when being built
-   up.  If IN_INIT, this is in a static initializer and certain
-   changes are made to the folding done.  Clear *MAYBE_CONST if
-   MAYBE_CONST is not NULL and EXPR is definitely not a constant
-   expression because it contains an evaluated operator (in C99) or an
-   operator outside of sizeof returning an integer constant (in C90)
-   not permitted in constant expressions, or because it contains an
-   evaluated arithmetic overflow.  (*MAYBE_CONST should typically be
-   set to true by callers before calling this function.)  Return the
-   folded expression.  Function arguments have already been folded
-   before calling this function, as have the contents of SAVE_EXPR,
-   TARGET_EXPR, BIND_EXPR, VA_ARG_EXPR, OBJ_TYPE_REF and
-   C_MAYBE_CONST_EXPR.  */
-
-tree
-c_fully_fold (tree expr, bool in_init, bool *maybe_const)
-{
-  tree ret;
-  tree eptype = NULL_TREE;
-  bool dummy = true;
-  bool maybe_const_itself = true;
-  location_t loc = EXPR_LOCATION (expr);
-
-  /* This function is not relevant to C++ because C++ folds while
-     parsing, and may need changes to be correct for C++ when C++
-     stops folding while parsing.  */
-  if (c_dialect_cxx ())
-    gcc_unreachable ();
-
-  if (!maybe_const)
-    maybe_const = &dummy;
-  if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
-    {
-      eptype = TREE_TYPE (expr);
-      expr = TREE_OPERAND (expr, 0);
-    }
-  ret = c_fully_fold_internal (expr, in_init, maybe_const,
-			       &maybe_const_itself, false);
-  if (eptype)
-    ret = fold_convert_loc (loc, eptype, ret);
-  *maybe_const &= maybe_const_itself;
-  return ret;
-}
-
-/* Internal helper for c_fully_fold.  EXPR and IN_INIT are as for
-   c_fully_fold.  *MAYBE_CONST_OPERANDS is cleared because of operands
-   not permitted, while *MAYBE_CONST_ITSELF is cleared because of
-   arithmetic overflow (for C90, *MAYBE_CONST_OPERANDS is carried from
-   both evaluated and unevaluated subexpressions while
-   *MAYBE_CONST_ITSELF is carried from only evaluated
-   subexpressions).  FOR_INT_CONST indicates if EXPR is an expression
-   with integer constant operands, and if any of the operands doesn't
-   get folded to an integer constant, don't fold the expression itself.  */
+/* Fold X for consideration by one of the warning functions when checking
+   whether an expression has a constant value.  */
 
 static tree
-c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
-		       bool *maybe_const_itself, bool for_int_const)
+fold_for_warn (tree x)
 {
-  tree ret = expr;
-  enum tree_code code = TREE_CODE (expr);
-  enum tree_code_class kind = TREE_CODE_CLASS (code);
-  location_t loc = EXPR_LOCATION (expr);
-  tree op0, op1, op2, op3;
-  tree orig_op0, orig_op1, orig_op2;
-  bool op0_const = true, op1_const = true, op2_const = true;
-  bool op0_const_self = true, op1_const_self = true, op2_const_self = true;
-  bool nowarning = TREE_NO_WARNING (expr);
-  bool unused_p;
-  source_range old_range;
-
-  /* This function is not relevant to C++ because C++ folds while
-     parsing, and may need changes to be correct for C++ when C++
-     stops folding while parsing.  */
   if (c_dialect_cxx ())
-    gcc_unreachable ();
-
-  /* Constants, declarations, statements, errors, SAVE_EXPRs and
-     anything else not counted as an expression cannot usefully be
-     folded further at this point.  */
-  if (!IS_EXPR_CODE_CLASS (kind)
-      || kind == tcc_statement
-      || code == SAVE_EXPR)
-    return expr;
-
-  if (IS_EXPR_CODE_CLASS (kind))
-    old_range = EXPR_LOCATION_RANGE (expr);
-
-  /* Operands of variable-length expressions (function calls) have
-     already been folded, as have __builtin_* function calls, and such
-     expressions cannot occur in constant expressions.  */
-  if (kind == tcc_vl_exp)
-    {
-      *maybe_const_operands = false;
-      ret = fold (expr);
-      goto out;
-    }
-
-  if (code == C_MAYBE_CONST_EXPR)
-    {
-      tree pre = C_MAYBE_CONST_EXPR_PRE (expr);
-      tree inner = C_MAYBE_CONST_EXPR_EXPR (expr);
-      if (C_MAYBE_CONST_EXPR_NON_CONST (expr))
-	*maybe_const_operands = false;
-      if (C_MAYBE_CONST_EXPR_INT_OPERANDS (expr))
-	{
-	  *maybe_const_itself = false;
-	  inner = c_fully_fold_internal (inner, in_init, maybe_const_operands,
-					 maybe_const_itself, true);
-	}
-      if (pre && !in_init)
-	ret = build2 (COMPOUND_EXPR, TREE_TYPE (expr), pre, inner);
-      else
-	ret = inner;
-      goto out;
-    }
-
-  /* Assignment, increment, decrement, function call and comma
-     operators, and statement expressions, cannot occur in constant
-     expressions if evaluated / outside of sizeof.  (Function calls
-     were handled above, though VA_ARG_EXPR is treated like a function
-     call here, and statement expressions are handled through
-     C_MAYBE_CONST_EXPR to avoid folding inside them.)  */
-  switch (code)
-    {
-    case MODIFY_EXPR:
-    case PREDECREMENT_EXPR:
-    case PREINCREMENT_EXPR:
-    case POSTDECREMENT_EXPR:
-    case POSTINCREMENT_EXPR:
-    case COMPOUND_EXPR:
-      *maybe_const_operands = false;
-      break;
-
-    case VA_ARG_EXPR:
-    case TARGET_EXPR:
-    case BIND_EXPR:
-    case OBJ_TYPE_REF:
-      *maybe_const_operands = false;
-      ret = fold (expr);
-      goto out;
-
-    default:
-      break;
-    }
-
-  /* Fold individual tree codes as appropriate.  */
-  switch (code)
-    {
-    case COMPOUND_LITERAL_EXPR:
-      /* Any non-constancy will have been marked in a containing
-	 C_MAYBE_CONST_EXPR; there is no more folding to do here.  */
-      goto out;
-
-    case COMPONENT_REF:
-      orig_op0 = op0 = TREE_OPERAND (expr, 0);
-      op1 = TREE_OPERAND (expr, 1);
-      op2 = TREE_OPERAND (expr, 2);
-      op0 = c_fully_fold_internal (op0, in_init, maybe_const_operands,
-				   maybe_const_itself, for_int_const);
-      STRIP_TYPE_NOPS (op0);
-      if (op0 != orig_op0)
-	ret = build3 (COMPONENT_REF, TREE_TYPE (expr), op0, op1, op2);
-      if (ret != expr)
-	{
-	  TREE_READONLY (ret) = TREE_READONLY (expr);
-	  TREE_THIS_VOLATILE (ret) = TREE_THIS_VOLATILE (expr);
-	}
-      goto out;
-
-    case ARRAY_REF:
-      orig_op0 = op0 = TREE_OPERAND (expr, 0);
-      orig_op1 = op1 = TREE_OPERAND (expr, 1);
-      op2 = TREE_OPERAND (expr, 2);
-      op3 = TREE_OPERAND (expr, 3);
-      op0 = c_fully_fold_internal (op0, in_init, maybe_const_operands,
-				   maybe_const_itself, for_int_const);
-      STRIP_TYPE_NOPS (op0);
-      op1 = c_fully_fold_internal (op1, in_init, maybe_const_operands,
-				   maybe_const_itself, for_int_const);
-      STRIP_TYPE_NOPS (op1);
-      op1 = decl_constant_value_for_optimization (op1);
-      if (op0 != orig_op0 || op1 != orig_op1)
-	ret = build4 (ARRAY_REF, TREE_TYPE (expr), op0, op1, op2, op3);
-      if (ret != expr)
-	{
-	  TREE_READONLY (ret) = TREE_READONLY (expr);
-	  TREE_SIDE_EFFECTS (ret) = TREE_SIDE_EFFECTS (expr);
-	  TREE_THIS_VOLATILE (ret) = TREE_THIS_VOLATILE (expr);
-	}
-      ret = fold (ret);
-      goto out;
-
-    case COMPOUND_EXPR:
-    case MODIFY_EXPR:
-    case PREDECREMENT_EXPR:
-    case PREINCREMENT_EXPR:
-    case POSTDECREMENT_EXPR:
-    case POSTINCREMENT_EXPR:
-    case PLUS_EXPR:
-    case MINUS_EXPR:
-    case MULT_EXPR:
-    case POINTER_PLUS_EXPR:
-    case TRUNC_DIV_EXPR:
-    case CEIL_DIV_EXPR:
-    case FLOOR_DIV_EXPR:
-    case TRUNC_MOD_EXPR:
-    case RDIV_EXPR:
-    case EXACT_DIV_EXPR:
-    case LSHIFT_EXPR:
-    case RSHIFT_EXPR:
-    case BIT_IOR_EXPR:
-    case BIT_XOR_EXPR:
-    case BIT_AND_EXPR:
-    case LT_EXPR:
-    case LE_EXPR:
-    case GT_EXPR:
-    case GE_EXPR:
-    case EQ_EXPR:
-    case NE_EXPR:
-    case COMPLEX_EXPR:
-    case TRUTH_AND_EXPR:
-    case TRUTH_OR_EXPR:
-    case TRUTH_XOR_EXPR:
-    case UNORDERED_EXPR:
-    case ORDERED_EXPR:
-    case UNLT_EXPR:
-    case UNLE_EXPR:
-    case UNGT_EXPR:
-    case UNGE_EXPR:
-    case UNEQ_EXPR:
-      /* Binary operations evaluating both arguments (increment and
-	 decrement are binary internally in GCC).  */
-      orig_op0 = op0 = TREE_OPERAND (expr, 0);
-      orig_op1 = op1 = TREE_OPERAND (expr, 1);
-      op0 = c_fully_fold_internal (op0, in_init, maybe_const_operands,
-				   maybe_const_itself, for_int_const);
-      STRIP_TYPE_NOPS (op0);
-      if (code != MODIFY_EXPR
-	  && code != PREDECREMENT_EXPR
-	  && code != PREINCREMENT_EXPR
-	  && code != POSTDECREMENT_EXPR
-	  && code != POSTINCREMENT_EXPR)
-	op0 = decl_constant_value_for_optimization (op0);
-      /* The RHS of a MODIFY_EXPR was fully folded when building that
-	 expression for the sake of conversion warnings.  */
-      if (code != MODIFY_EXPR)
-	op1 = c_fully_fold_internal (op1, in_init, maybe_const_operands,
-				     maybe_const_itself, for_int_const);
-      STRIP_TYPE_NOPS (op1);
-      op1 = decl_constant_value_for_optimization (op1);
-
-      if (for_int_const && (TREE_CODE (op0) != INTEGER_CST
-			    || TREE_CODE (op1) != INTEGER_CST))
-	goto out;
-
-      if (op0 != orig_op0 || op1 != orig_op1 || in_init)
-	ret = in_init
-	  ? fold_build2_initializer_loc (loc, code, TREE_TYPE (expr), op0, op1)
-	  : fold_build2_loc (loc, code, TREE_TYPE (expr), op0, op1);
-      else
-	ret = fold (expr);
-      if (TREE_OVERFLOW_P (ret)
-	  && !TREE_OVERFLOW_P (op0)
-	  && !TREE_OVERFLOW_P (op1))
-	overflow_warning (EXPR_LOC_OR_LOC (expr, input_location), ret);
-      if (code == LSHIFT_EXPR
-	  && TREE_CODE (orig_op0) != INTEGER_CST
-	  && TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
-	  && TREE_CODE (op0) == INTEGER_CST
-	  && c_inhibit_evaluation_warnings == 0
-	  && tree_int_cst_sgn (op0) < 0)
-	warning_at (loc, OPT_Wshift_negative_value,
-		    "left shift of negative value");
-      if ((code == LSHIFT_EXPR || code == RSHIFT_EXPR)
-	  && TREE_CODE (orig_op1) != INTEGER_CST
-	  && TREE_CODE (op1) == INTEGER_CST
-	  && (TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
-	      || TREE_CODE (TREE_TYPE (orig_op0)) == FIXED_POINT_TYPE)
-	  && TREE_CODE (TREE_TYPE (orig_op1)) == INTEGER_TYPE
-	  && c_inhibit_evaluation_warnings == 0)
-	{
-	  if (tree_int_cst_sgn (op1) < 0)
-	    warning_at (loc, OPT_Wshift_count_negative,
-			(code == LSHIFT_EXPR
-			 ? G_("left shift count is negative")
-			 : G_("right shift count is negative")));
-	  else if (compare_tree_int (op1,
-				     TYPE_PRECISION (TREE_TYPE (orig_op0)))
-		   >= 0)
-	    warning_at (loc, OPT_Wshift_count_overflow,
-			(code == LSHIFT_EXPR
-			 ? G_("left shift count >= width of type")
-			 : G_("right shift count >= width of type")));
-	}
-      if (code == LSHIFT_EXPR
-	  /* If either OP0 has been folded to INTEGER_CST...  */
-	  && ((TREE_CODE (orig_op0) != INTEGER_CST
-	       && TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
-	       && TREE_CODE (op0) == INTEGER_CST)
-	      /* ...or if OP1 has been folded to INTEGER_CST...  */
-	      || (TREE_CODE (orig_op1) != INTEGER_CST
-		  && TREE_CODE (TREE_TYPE (orig_op1)) == INTEGER_TYPE
-		  && TREE_CODE (op1) == INTEGER_CST))
-	  && c_inhibit_evaluation_warnings == 0)
-	/* ...then maybe we can detect an overflow.  */
-	maybe_warn_shift_overflow (loc, op0, op1);
-      if ((code == TRUNC_DIV_EXPR
-	   || code == CEIL_DIV_EXPR
-	   || code == FLOOR_DIV_EXPR
-	   || code == EXACT_DIV_EXPR
-	   || code == TRUNC_MOD_EXPR)
-	  && TREE_CODE (orig_op1) != INTEGER_CST
-	  && TREE_CODE (op1) == INTEGER_CST
-	  && (TREE_CODE (TREE_TYPE (orig_op0)) == INTEGER_TYPE
-	      || TREE_CODE (TREE_TYPE (orig_op0)) == FIXED_POINT_TYPE)
-	  && TREE_CODE (TREE_TYPE (orig_op1)) == INTEGER_TYPE)
-	warn_for_div_by_zero (loc, op1);
-      goto out;
-
-    case INDIRECT_REF:
-    case FIX_TRUNC_EXPR:
-    case FLOAT_EXPR:
-    CASE_CONVERT:
-    case ADDR_SPACE_CONVERT_EXPR:
-    case VIEW_CONVERT_EXPR:
-    case NON_LVALUE_EXPR:
-    case NEGATE_EXPR:
-    case BIT_NOT_EXPR:
-    case TRUTH_NOT_EXPR:
-    case ADDR_EXPR:
-    case CONJ_EXPR:
-    case REALPART_EXPR:
-    case IMAGPART_EXPR:
-      /* Unary operations.  */
-      orig_op0 = op0 = TREE_OPERAND (expr, 0);
-      op0 = c_fully_fold_internal (op0, in_init, maybe_const_operands,
-				   maybe_const_itself, for_int_const);
-      STRIP_TYPE_NOPS (op0);
-      if (code != ADDR_EXPR && code != REALPART_EXPR && code != IMAGPART_EXPR)
-	op0 = decl_constant_value_for_optimization (op0);
-
-      if (for_int_const && TREE_CODE (op0) != INTEGER_CST)
-	goto out;
-
-      /* ??? Cope with user tricks that amount to offsetof.  The middle-end is
-	 not prepared to deal with them if they occur in initializers.  */
-      if (op0 != orig_op0
-	  && code == ADDR_EXPR
-	  && (op1 = get_base_address (op0)) != NULL_TREE
-	  && INDIRECT_REF_P (op1)
-	  && TREE_CONSTANT (TREE_OPERAND (op1, 0)))
-	ret = fold_convert_loc (loc, TREE_TYPE (expr), fold_offsetof_1 (op0));
-      else if (op0 != orig_op0 || in_init)
-	ret = in_init
-	  ? fold_build1_initializer_loc (loc, code, TREE_TYPE (expr), op0)
-	  : fold_build1_loc (loc, code, TREE_TYPE (expr), op0);
-      else
-	ret = fold (expr);
-      if (code == INDIRECT_REF
-	  && ret != expr
-	  && INDIRECT_REF_P (ret))
-	{
-	  TREE_READONLY (ret) = TREE_READONLY (expr);
-	  TREE_SIDE_EFFECTS (ret) = TREE_SIDE_EFFECTS (expr);
-	  TREE_THIS_VOLATILE (ret) = TREE_THIS_VOLATILE (expr);
-	}
-      switch (code)
-	{
-	case FIX_TRUNC_EXPR:
-	case FLOAT_EXPR:
-	CASE_CONVERT:
-	  /* Don't warn about explicit conversions.  We will already
-	     have warned about suspect implicit conversions.  */
-	  break;
-
-	default:
-	  if (TREE_OVERFLOW_P (ret) && !TREE_OVERFLOW_P (op0))
-	    overflow_warning (EXPR_LOCATION (expr), ret);
-	  break;
-	}
-      goto out;
-
-    case TRUTH_ANDIF_EXPR:
-    case TRUTH_ORIF_EXPR:
-      /* Binary operations not necessarily evaluating both
-	 arguments.  */
-      orig_op0 = op0 = TREE_OPERAND (expr, 0);
-      orig_op1 = op1 = TREE_OPERAND (expr, 1);
-      op0 = c_fully_fold_internal (op0, in_init, &op0_const, &op0_const_self,
-				   for_int_const);
-      STRIP_TYPE_NOPS (op0);
-
-      unused_p = (op0 == (code == TRUTH_ANDIF_EXPR
-			  ? truthvalue_false_node
-			  : truthvalue_true_node));
-      c_disable_warnings (unused_p);
-      op1 = c_fully_fold_internal (op1, in_init, &op1_const, &op1_const_self,
-				   for_int_const);
-      STRIP_TYPE_NOPS (op1);
-      c_enable_warnings (unused_p);
-
-      if (for_int_const
-	  && (TREE_CODE (op0) != INTEGER_CST
-	      /* Require OP1 be an INTEGER_CST only if it's evaluated.  */
-	      || (!unused_p && TREE_CODE (op1) != INTEGER_CST)))
-	goto out;
-
-      if (op0 != orig_op0 || op1 != orig_op1 || in_init)
-	ret = in_init
-	  ? fold_build2_initializer_loc (loc, code, TREE_TYPE (expr), op0, op1)
-	  : fold_build2_loc (loc, code, TREE_TYPE (expr), op0, op1);
-      else
-	ret = fold (expr);
-      *maybe_const_operands &= op0_const;
-      *maybe_const_itself &= op0_const_self;
-      if (!(flag_isoc99
-	    && op0_const
-	    && op0_const_self
-	    && (code == TRUTH_ANDIF_EXPR
-		? op0 == truthvalue_false_node
-		: op0 == truthvalue_true_node)))
-	*maybe_const_operands &= op1_const;
-      if (!(op0_const
-	    && op0_const_self
-	    && (code == TRUTH_ANDIF_EXPR
-		? op0 == truthvalue_false_node
-		: op0 == truthvalue_true_node)))
-	*maybe_const_itself &= op1_const_self;
-      goto out;
-
-    case COND_EXPR:
-      orig_op0 = op0 = TREE_OPERAND (expr, 0);
-      orig_op1 = op1 = TREE_OPERAND (expr, 1);
-      orig_op2 = op2 = TREE_OPERAND (expr, 2);
-      op0 = c_fully_fold_internal (op0, in_init, &op0_const, &op0_const_self,
-				   for_int_const);
-
-      STRIP_TYPE_NOPS (op0);
-      c_disable_warnings (op0 == truthvalue_false_node);
-      op1 = c_fully_fold_internal (op1, in_init, &op1_const, &op1_const_self,
-				   for_int_const);
-      STRIP_TYPE_NOPS (op1);
-      c_enable_warnings (op0 == truthvalue_false_node);
-
-      c_disable_warnings (op0 == truthvalue_true_node);
-      op2 = c_fully_fold_internal (op2, in_init, &op2_const, &op2_const_self,
-				   for_int_const);
-      STRIP_TYPE_NOPS (op2);
-      c_enable_warnings (op0 == truthvalue_true_node);
-
-      if (for_int_const
-	  && (TREE_CODE (op0) != INTEGER_CST
-	      /* Only the evaluated operand must be an INTEGER_CST.  */
-	      || (op0 == truthvalue_true_node
-		  ? TREE_CODE (op1) != INTEGER_CST
-		  : TREE_CODE (op2) != INTEGER_CST)))
-	goto out;
-
-      if (op0 != orig_op0 || op1 != orig_op1 || op2 != orig_op2)
-	ret = fold_build3_loc (loc, code, TREE_TYPE (expr), op0, op1, op2);
-      else
-	ret = fold (expr);
-      *maybe_const_operands &= op0_const;
-      *maybe_const_itself &= op0_const_self;
-      if (!(flag_isoc99
-	    && op0_const
-	    && op0_const_self
-	    && op0 == truthvalue_false_node))
-	*maybe_const_operands &= op1_const;
-      if (!(op0_const
-	    && op0_const_self
-	    && op0 == truthvalue_false_node))
-	*maybe_const_itself &= op1_const_self;
-      if (!(flag_isoc99
-	    && op0_const
-	    && op0_const_self
-	    && op0 == truthvalue_true_node))
-	*maybe_const_operands &= op2_const;
-      if (!(op0_const
-	    && op0_const_self
-	    && op0 == truthvalue_true_node))
-	*maybe_const_itself &= op2_const_self;
-      goto out;
-
-    case EXCESS_PRECISION_EXPR:
-      /* Each case where an operand with excess precision may be
-	 encountered must remove the EXCESS_PRECISION_EXPR around
-	 inner operands and possibly put one around the whole
-	 expression or possibly convert to the semantic type (which
-	 c_fully_fold does); we cannot tell at this stage which is
-	 appropriate in any particular case.  */
-      gcc_unreachable ();
-
-    default:
-      /* Various codes may appear through folding built-in functions
-	 and their arguments.  */
-      goto out;
-    }
-
- out:
-  /* Some folding may introduce NON_LVALUE_EXPRs; all lvalue checks
-     have been done by this point, so remove them again.  */
-  nowarning |= TREE_NO_WARNING (ret);
-  STRIP_TYPE_NOPS (ret);
-  if (nowarning && !TREE_NO_WARNING (ret))
-    {
-      if (!CAN_HAVE_LOCATION_P (ret))
-	ret = build1 (NOP_EXPR, TREE_TYPE (ret), ret);
-      TREE_NO_WARNING (ret) = 1;
-    }
-  if (ret != expr)
-    {
-      protected_set_expr_location (ret, loc);
-      if (IS_EXPR_CODE_CLASS (kind))
-	set_source_range (ret, old_range.m_start, old_range.m_finish);
-    }
-  return ret;
-}
-
-/* If not optimizing, EXP is not a VAR_DECL, or EXP has array type,
-   return EXP.  Otherwise, return either EXP or its known constant
-   value (if it has one), but return EXP if EXP has mode BLKmode.  ???
-   Is the BLKmode test appropriate?  */
-
-tree
-decl_constant_value_for_optimization (tree exp)
-{
-  tree ret;
-
-  /* This function is only used by C, for c_fully_fold and other
-     optimization, and may not be correct for C++.  */
-  if (c_dialect_cxx ())
-    gcc_unreachable ();
-
-  if (!optimize
-      || !VAR_P (exp)
-      || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
-      || DECL_MODE (exp) == BLKmode)
-    return exp;
-
-  ret = decl_constant_value (exp);
-  /* Avoid unwanted tree sharing between the initializer and current
-     function's body where the tree can be modified e.g. by the
-     gimplifier.  */
-  if (ret != exp && TREE_STATIC (exp))
-    ret = unshare_expr (ret);
-  return ret;
+    return c_fully_fold (x, /*for_init*/false, /*maybe_constp*/NULL);
+  else
+    /* The C front-end has already folded X appropriately.  */
+    return x;
 }
 
 /* Print a warning if a constant expression had overflow in folding.
@@ -1784,6 +1221,9 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
      programmer. That is, an expression such as op && MASK
      where op should not be any boolean expression, nor a
      constant, and mask seems to be a non-boolean integer constant.  */
+  if (TREE_CODE (op_right) == CONST_DECL)
+    /* An enumerator counts as a constant.  */
+    op_right = DECL_INITIAL (op_right);
   if (!truth_value_p (code_left)
       && INTEGRAL_TYPE_P (TREE_TYPE (op_left))
       && !CONSTANT_CLASS_P (op_left)
@@ -1804,7 +1244,8 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
 
   /* We do not warn for constants because they are typical of macro
      expansions that test for features.  */
-  if (CONSTANT_CLASS_P (op_left) || CONSTANT_CLASS_P (op_right))
+  if (CONSTANT_CLASS_P (fold_for_warn (op_left))
+      || CONSTANT_CLASS_P (fold_for_warn (op_right)))
     return;
 
   /* This warning only makes sense with logical operands.  */
@@ -1924,7 +1365,8 @@ warn_tautological_cmp (location_t loc, enum tree_code code, tree lhs, tree rhs)
 
   /* We do not warn for constants because they are typical of macro
      expansions that test for features, sizeof, and similar.  */
-  if (CONSTANT_CLASS_P (fold (lhs)) || CONSTANT_CLASS_P (fold (rhs)))
+  if (CONSTANT_CLASS_P (fold_for_warn (lhs))
+      || CONSTANT_CLASS_P (fold_for_warn (rhs)))
     return;
 
   /* Don't warn for e.g.
@@ -4352,10 +3794,21 @@ c_register_builtin_type (tree type, const char* name)
 
 /* Print an error message for invalid operands to arith operation
    CODE with TYPE0 for operand 0, and TYPE1 for operand 1.
-   LOCATION is the location of the message.  */
+   RICHLOC is a rich location for the message, containing either
+   three separate locations for each of the operator and operands
+
+      lhs op rhs
+      ~~~ ^~ ~~~
+
+   (C FE), or one location ranging over all over them
+
+      lhs op rhs
+      ~~~~^~~~~~
+
+   (C++ FE).  */
 
 void
-binary_op_error (location_t location, enum tree_code code,
+binary_op_error (rich_location *richloc, enum tree_code code,
 		 tree type0, tree type1)
 {
   const char *opname;
@@ -4407,9 +3860,9 @@ binary_op_error (location_t location, enum tree_code code,
     default:
       gcc_unreachable ();
     }
-  error_at (location,
-	    "invalid operands to binary %s (have %qT and %qT)", opname,
-	    type0, type1);
+  error_at_rich_loc (richloc,
+		     "invalid operands to binary %s (have %qT and %qT)",
+		     opname, type0, type1);
 }
 
 /* Given an expression as a tree, return its original type.  Do this
@@ -4651,8 +4104,10 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
 	}
 
       if (TREE_CODE (primop0) != INTEGER_CST
-	  /* Don't warn if it's from a macro.  */
-	  && !from_macro_expansion_at (EXPR_LOCATION (primop0)))
+	  /* Don't warn if it's from a (non-system) macro.  */
+	  && !(from_macro_expansion_at
+	       (expansion_point_location_if_in_system_header
+		(EXPR_LOCATION (primop0)))))
 	{
 	  if (val == truthvalue_false_node)
 	    warning_at (loc, OPT_Wtype_limits,
@@ -7785,7 +7240,8 @@ handle_transparent_union_attribute (tree *node, tree name,
 	  *node = type = build_duplicate_type (type);
 	}
 
-      TYPE_TRANSPARENT_AGGR (type) = 1;
+      for (tree t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+        TYPE_TRANSPARENT_AGGR (t) = 1;
       return NULL_TREE;
     }
 
@@ -9029,7 +8485,7 @@ handle_omp_declare_simd_attribute (tree *, tree, tree, int, bool *)
 /* Handle a "simd" attribute.  */
 
 static tree
-handle_simd_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
+handle_simd_attribute (tree *node, tree name, tree args, int, bool *no_add_attrs)
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
     {
@@ -9042,9 +8498,41 @@ handle_simd_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
 	  *no_add_attrs = true;
 	}
       else
-	DECL_ATTRIBUTES (*node)
-	  = tree_cons (get_identifier ("omp declare simd"),
-		       NULL_TREE, DECL_ATTRIBUTES (*node));
+	{
+	  tree t = get_identifier ("omp declare simd");
+	  tree attr = NULL_TREE;
+	  if (args)
+	    {
+	      tree id = TREE_VALUE (args);
+
+	      if (TREE_CODE (id) != STRING_CST)
+		{
+		  error ("attribute %qE argument not a string", name);
+		  *no_add_attrs = true;
+		  return NULL_TREE;
+		}
+
+	      if (strcmp (TREE_STRING_POINTER (id), "notinbranch") == 0)
+		attr = build_omp_clause (DECL_SOURCE_LOCATION (*node),
+					 OMP_CLAUSE_NOTINBRANCH);
+	      else
+		if (strcmp (TREE_STRING_POINTER (id), "inbranch") == 0)
+		  attr = build_omp_clause (DECL_SOURCE_LOCATION (*node),
+					   OMP_CLAUSE_INBRANCH);
+		else
+		{
+		  error ("only %<inbranch%> and %<notinbranch%> flags are "
+			 "allowed for %<__simd__%> attribute");
+		  *no_add_attrs = true;
+		  return NULL_TREE;
+		}
+	    }
+
+	  DECL_ATTRIBUTES (*node) = tree_cons (t,
+					       build_tree_list (NULL_TREE,
+								attr),
+					       DECL_ATTRIBUTES (*node));
+	}
     }
   else
     {
@@ -9608,11 +9096,10 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 
 /* Check the argument list of a function call for null in argument slots
    that are marked as requiring a non-null pointer argument.  The NARGS
-   arguments are passed in the array ARGARRAY.
-*/
+   arguments are passed in the array ARGARRAY.  */
 
 static void
-check_function_nonnull (tree attrs, int nargs, tree *argarray)
+check_function_nonnull (location_t loc, tree attrs, int nargs, tree *argarray)
 {
   tree a;
   int i;
@@ -9632,7 +9119,7 @@ check_function_nonnull (tree attrs, int nargs, tree *argarray)
 
   if (a != NULL_TREE)
     for (i = 0; i < nargs; i++)
-      check_function_arguments_recurse (check_nonnull_arg, NULL, argarray[i],
+      check_function_arguments_recurse (check_nonnull_arg, &loc, argarray[i],
 					i + 1);
   else
     {
@@ -9648,7 +9135,7 @@ check_function_nonnull (tree attrs, int nargs, tree *argarray)
 	    }
 
 	  if (a != NULL_TREE)
-	    check_function_arguments_recurse (check_nonnull_arg, NULL,
+	    check_function_arguments_recurse (check_nonnull_arg, &loc,
 					      argarray[i], i + 1);
 	}
     }
@@ -9734,9 +9221,10 @@ nonnull_check_p (tree args, unsigned HOST_WIDE_INT param_num)
    via check_function_arguments_recurse.  */
 
 static void
-check_nonnull_arg (void * ARG_UNUSED (ctx), tree param,
-		   unsigned HOST_WIDE_INT param_num)
+check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
 {
+  location_t *ploc = (location_t *) ctx;
+
   /* Just skip checking the argument if it's not a pointer.  This can
      happen if the "nonnull" attribute was given without an operand
      list (which means to check every pointer argument).  */
@@ -9745,8 +9233,8 @@ check_nonnull_arg (void * ARG_UNUSED (ctx), tree param,
     return;
 
   if (integer_zerop (param))
-    warning (OPT_Wnonnull, "null argument where non-null required "
-	     "(argument %lu)", (unsigned long) param_num);
+    warning_at (*ploc, OPT_Wnonnull, "null argument where non-null required "
+		"(argument %lu)", (unsigned long) param_num);
 }
 
 /* Helper for nonnull attribute handling; fetch the operand number
@@ -9985,7 +9473,6 @@ parse_optimize_options (tree args, bool attr_p)
   bool ret = true;
   unsigned opt_argc;
   unsigned i;
-  int saved_flag_strict_aliasing;
   const char **opt_argv;
   struct cl_decoded_option *decoded_options;
   unsigned int decoded_options_count;
@@ -10078,8 +9565,6 @@ parse_optimize_options (tree args, bool attr_p)
   for (i = 1; i < opt_argc; i++)
     opt_argv[i] = (*optimize_args)[i];
 
-  saved_flag_strict_aliasing = flag_strict_aliasing;
-
   /* Now parse the options.  */
   decode_cmdline_options_to_array_default_mask (opt_argc, opt_argv,
 						&decoded_options,
@@ -10089,9 +9574,6 @@ parse_optimize_options (tree args, bool attr_p)
 		  input_location, global_dc);
 
   targetm.override_options_after_change();
-
-  /* Don't allow changing -fstrict-aliasing.  */
-  flag_strict_aliasing = saved_flag_strict_aliasing;
 
   optimize_args->truncate (0);
   return ret;
@@ -10195,15 +9677,17 @@ handle_designated_init_attribute (tree *node, tree name, tree, int,
 
 
 /* Check for valid arguments being passed to a function with FNTYPE.
-   There are NARGS arguments in the array ARGARRAY.  */
+   There are NARGS arguments in the array ARGARRAY.  LOC should be used for
+   diagnostics.  */
 void
-check_function_arguments (const_tree fntype, int nargs, tree *argarray)
+check_function_arguments (location_t loc, const_tree fntype, int nargs,
+			  tree *argarray)
 {
   /* Check for null being passed in a pointer argument that must be
      non-null.  We also need to do this if format checking is enabled.  */
 
   if (warn_nonnull)
-    check_function_nonnull (TYPE_ATTRIBUTES (fntype), nargs, argarray);
+    check_function_nonnull (loc, TYPE_ATTRIBUTES (fntype), nargs, argarray);
 
   /* Check for errors in format strings.  */
 
@@ -10281,12 +9765,19 @@ check_function_arguments_recurse (void (*callback)
 
   if (TREE_CODE (param) == COND_EXPR)
     {
-      /* Check both halves of the conditional expression.  */
-      check_function_arguments_recurse (callback, ctx,
-					TREE_OPERAND (param, 1), param_num);
-      check_function_arguments_recurse (callback, ctx,
-					TREE_OPERAND (param, 2), param_num);
-      return;
+      /* Simplify to avoid warning for an impossible case.  */
+      param = fold_for_warn (param);
+      if (TREE_CODE (param) == COND_EXPR)
+	{
+	  /* Check both halves of the conditional expression.  */
+	  check_function_arguments_recurse (callback, ctx,
+					    TREE_OPERAND (param, 1),
+					    param_num);
+	  check_function_arguments_recurse (callback, ctx,
+					    TREE_OPERAND (param, 2),
+					    param_num);
+	  return;
+	}
     }
 
   (*callback) (ctx, param, param_num);
@@ -10688,9 +10179,7 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
       gcc_unreachable ();
     }
   if (done_lexing)
-    richloc->set_range (0,
-			source_range::from_location (input_location),
-			true, true);
+    richloc->set_range (line_table, 0, input_location, true);
   diagnostic_set_info_translated (&diagnostic, msg, ap,
 				  richloc, dlevel);
   diagnostic_override_option_index (&diagnostic,
@@ -11173,11 +10662,16 @@ builtin_type_for_size (int size, bool unsignedp)
 /* A helper function for resolve_overloaded_builtin in resolving the
    overloaded __sync_ builtins.  Returns a positive power of 2 if the
    first operand of PARAMS is a pointer to a supported data type.
-   Returns 0 if an error is encountered.  */
+   Returns 0 if an error is encountered.
+   FETCH is true when FUNCTION is one of the _FETCH_OP_ or _OP_FETCH_
+   built-ins.  */
 
 static int
-sync_resolve_size (tree function, vec<tree, va_gc> *params)
+sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch)
 {
+  /* Type of the argument.  */
+  tree argtype;
+  /* Type the argument points to.  */
   tree type;
   int size;
 
@@ -11187,7 +10681,7 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params)
       return 0;
     }
 
-  type = TREE_TYPE ((*params)[0]);
+  argtype = type = TREE_TYPE ((*params)[0]);
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       /* Force array-to-pointer decay for C++.  */
@@ -11202,12 +10696,19 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params)
   if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
     goto incompatible;
 
+  if (fetch && TREE_CODE (type) == BOOLEAN_TYPE)
+    goto incompatible;
+
   size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
   if (size == 1 || size == 2 || size == 4 || size == 8 || size == 16)
     return size;
 
  incompatible:
-  error ("incompatible type for argument %d of %qE", 1, function);
+  /* Issue the diagnostic only if the argument is valid, otherwise
+     it would be redundant at best and could be misleading.  */
+  if (argtype != error_mark_node)
+    error ("operand type %qT is incompatible with argument %d of %qE",
+	   argtype, 1, function);
   return 0;
 }
 
@@ -11766,6 +11267,11 @@ resolve_overloaded_builtin (location_t loc, tree function,
 			    vec<tree, va_gc> *params)
 {
   enum built_in_function orig_code = DECL_FUNCTION_CODE (function);
+
+  /* Is function one of the _FETCH_OP_ or _OP_FETCH_ built-ins?
+     Those are not valid to call with a pointer to _Bool (or C++ bool)
+     and so must be rejected.  */
+  bool fetch_op = true;
   bool orig_format = true;
   tree new_return = NULL_TREE;
 
@@ -11841,6 +11347,10 @@ resolve_overloaded_builtin (location_t loc, tree function,
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_N:
     case BUILT_IN_ATOMIC_LOAD_N:
     case BUILT_IN_ATOMIC_STORE_N:
+      {
+	fetch_op = false;
+	/* Fallthrough to further processing.  */
+      }
     case BUILT_IN_ATOMIC_ADD_FETCH_N:
     case BUILT_IN_ATOMIC_SUB_FETCH_N:
     case BUILT_IN_ATOMIC_AND_FETCH_N:
@@ -11874,7 +11384,16 @@ resolve_overloaded_builtin (location_t loc, tree function,
     case BUILT_IN_SYNC_LOCK_TEST_AND_SET_N:
     case BUILT_IN_SYNC_LOCK_RELEASE_N:
       {
-	int n = sync_resolve_size (function, params);
+	/* The following are not _FETCH_OPs and must be accepted with
+	   pointers to _Bool (or C++ bool).  */
+	if (fetch_op)
+	  fetch_op =
+	    (orig_code != BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N
+	     && orig_code != BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_N
+	     && orig_code != BUILT_IN_SYNC_LOCK_TEST_AND_SET_N
+	     && orig_code != BUILT_IN_SYNC_LOCK_RELEASE_N);
+
+	int n = sync_resolve_size (function, params, fetch_op);
 	tree new_function, first_param, result;
 	enum built_in_function fncode;
 
@@ -12564,9 +12083,14 @@ maybe_warn_bool_compare (location_t loc, enum tree_code code, tree op0,
   if (TREE_CODE_CLASS (code) != tcc_comparison)
     return;
 
-  tree cst = (TREE_CODE (op0) == INTEGER_CST)
-	     ? op0 : (TREE_CODE (op1) == INTEGER_CST) ? op1 : NULL_TREE;
-  if (!cst)
+  tree f, cst;
+  if (f = fold_for_warn (op0),
+      TREE_CODE (f) == INTEGER_CST)
+    cst = op0 = f;
+  else if (f = fold_for_warn (op1),
+	   TREE_CODE (f) == INTEGER_CST)
+    cst = op1 = f;
+  else
     return;
 
   if (!integer_zerop (cst) && !integer_onep (cst))
@@ -12629,8 +12153,11 @@ maybe_warn_shift_overflow (location_t loc, tree op0, tree op1)
 
   unsigned int min_prec = (wi::min_precision (op0, SIGNED)
 			   + TREE_INT_CST_LOW (op1));
-  /* Handle the left-shifting 1 into the sign bit case.  */
-  if (min_prec == prec0 + 1)
+  /* Handle the case of left-shifting 1 into the sign bit.
+   * However, shifting 1 _out_ of the sign bit, as in
+   * INT_MIN << 1, is considered an overflow.
+   */
+  if (!tree_int_cst_sign_bit(op0) && min_prec == prec0 + 1)
     {
       /* Never warn for C++14 onwards.  */
       if (cxx_dialect >= cxx14)

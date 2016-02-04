@@ -1,3 +1,126 @@
+2016-01-22  Torvald Riegel  <triegel@redhat.com>
+
+	* beginend.cc (GTM::gtm_thread::serial_lock): Put on cacheline
+	boundary.
+	(htm_fastpath): Remove.
+	(gtm_thread::begin_transaction): Fix HTM fastpath.
+	(_ITM_commitTransaction): Adapt.
+	(_ITM_commitTransactionEH): Adapt.
+	* libitm/config/linux/rwlock.h (gtm_rwlock): Add htm_fastpath member
+	and accessors.
+	* libitm/config/posix/rwlock.h (gtm_rwlock): Likewise.
+	* libitm/config/posix/rwlock.cc (gtm_rwlock::gtm_rwlock): Adapt.
+	* libitm/config/x86/sjlj.S (_ITM_beginTransaction): Fix HTM fastpath.
+	* libitm/libitm_i.h (htm_fastpath): Remove declaration.
+	* libitm/method-serial.cc (htm_mg): Adapt.
+	(gtm_thread::serialirr_mode): Adapt.
+	* libitm/query.cc (_ITM_inTransaction, _ITM_getTransactionId): Adapt.
+
+2016-01-21  Torvald Riegel  <triegel@redhat.com>
+
+	* testsuite/libitm.c++/libstdc++-safeexc.C: Not supported on darwin
+	or AIX.
+
+2016-01-19  Richard Henderson  <rth@redhat.com>
+
+	PR bootstrap/69343
+	PR bootstrap/69339
+	Revert:
+	2016-01-13  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.am (libitm_la_SOURCES) [ARCH_AARCH64]: Add vect128.cc
+	(libitm_la_SOURCES) [ARCH_ARM]: Add neon.cc
+	(libitm_la_SOURCES) [ARCH_PPC]: Add vect128.cc
+	(libitm_la_SOURCES) [ARCH_S390]: Add vect128.cc
+	* configure.ac (ARCH_AARCH64): New conditional.
+	(ARCH_PPC, ARCH_S390): Likewise.
+	* Makefile.in, configure: Rebuild.
+
+	* libitm.h (_ITM_TYPE_M128): Always define.
+	* vect64.cc: Split ...
+	* vect128.cc: ... out of...
+	* config/x86/x86_sse.cc: ... here.
+	* config/arm/neon.cc: New file.
+
+2016-01-19  Torvald Riegel  <triegel@redhat.com>
+
+	* local_type_traits: Remove file.
+	* libitm_i.h: Don't include it anymore.
+	(sized_integral): Remove.
+
+2016-01-16  Torvald Riegel  <triegel@redhat.com>
+
+	* method-gl.cc (gl_wt_dispatch::trycommit): Ensure proxy privatization
+	safety.
+	* method-ml.cc (ml_wt_dispatch::trycommit): Likewise.
+	* libitm/testsuite/libitm.c/priv-1.c: New.
+
+2015-01-15  Torvald Riegel  <triegel@redhat.com>
+
+	testsuite/libitm.c++/libstdc++-safeexc.C: New.
+
+2016-01-13  Torvald Riegel  <triegel@redhat.com>
+
+	* beginend.cc (gtm_thread::trycommit): Fix seq_cst fences.
+	* config/linux/rwlock.cc (gtm_rwlock::write_lock_generic): Likewise.
+	(gtm_rwlock::write_unlock): Likewise.
+
+2016-01-13  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.am (libitm_la_SOURCES) [ARCH_AARCH64]: Add vect128.cc
+	(libitm_la_SOURCES) [ARCH_ARM]: Add neon.cc
+	(libitm_la_SOURCES) [ARCH_PPC]: Add vect128.cc
+	(libitm_la_SOURCES) [ARCH_S390]: Add vect128.cc
+	* configure.ac (ARCH_AARCH64): New conditional.
+	(ARCH_PPC, ARCH_S390): Likewise.
+	* Makefile.in, configure: Rebuild.
+
+	* libitm.h (_ITM_TYPE_M128): Always define.
+	* vect64.cc: Split ...
+	* vect128.cc: ... out of...
+	* config/x86/x86_sse.cc: ... here.
+	* config/arm/neon.cc: New file.
+
+2016-01-13  Torvald Riegel  <triegel@redhat.com>
+
+	* beginend.cc (gtm_thread::trycommit): Fix privatization safety.
+	* config/linux/rwlock.cc (gtm_rwlock::write_lock_generic): Likewise.
+	* config/posix/rwlock.cc (gtm_rwlock::write_lock_generic): Likewise.
+	* dispatch.h (abi_dispatch::snapshot_most_recent): New.
+	* method-gl.cc (gl_wt_dispatch::snapshot_most_recent): New.
+	* method-ml.cc (ml_wt_dispatch::snapshot_most_recent): New.
+	* method-serial.cc (serial_dispatch::snapshot_most_recent): New.
+	(serialirr_dispatch::snapshot_most_recent): New.
+	(serialirr_onwrite_dispatch::snapshot_most_recent): New.
+
+2016-01-12  Torvald Riegel  <triegel@redhat.com>
+
+	* libitm_i.h (gtm_mask_stack): Remove.
+	* beginend.cc (gtm_stmlock_array, gtm_clock): Likewise.
+	* stmlock.h: Remove file.
+	* config/alpha/cacheline.h: Likewise.
+	* config/generic/cacheline.h: Likewise.
+	* config/powerpc/cacheline.h: Likewise.
+	* config/sparc/cacheline.h: Likewise.
+	* config/x86/cacheline.h: Likewise.
+
+2016-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+	* libitm.texi: Bump @copying's copyright year.
+
+2015-11-26  Torvald Riegel  <triegel@redhat.com>
+
+	* method-ml.cc (ml_mg): Use multiplicative instead of simple hashing.
+	(ml_wt_dispatch::pre_write): Adapt.
+	(ml_wt_dispatch::pre_load): Likewise.
+
+2015-11-22  Torvald Riegel  <triegel@redhat.com>
+
+	* libitm_i.h (gtm_alloc_action): Remove union.
+	* testsuite/libitm.c/alloc-1.c: New.
+
 2015-11-19  Torvald Riegel  <triegel@redhat.com>
 
 	* testsuite/libitm.c++/eh-5.C: New.
@@ -1845,3 +1968,9 @@
 2008-11-21  Richard Henderson  <rth@redhat.com>
 
 	* Initial commit.
+
+Copyright (C) 2008-2016 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

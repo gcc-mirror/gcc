@@ -1,5 +1,5 @@
 /* Configuration for GCC for Intel 80386 running DJGPP.
-   Copyright (C) 1988-2015 Free Software Foundation, Inc.
+   Copyright (C) 1988-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,6 +21,31 @@ along with GCC; see the file COPYING3.  If not see
 #define PATH_SEPARATOR ';'
 
 #define HOST_EXECUTABLE_SUFFIX ".exe"
+
+/* Define standard DJGPP installation paths.  */
+/* We override default /usr or /usr/local part with /dev/env/DJDIR which */
+/* points to actual DJGPP installation directory.  */
+
+/* Native system include directory */
+#undef NATIVE_SYSTEM_HEADER_DIR
+#define NATIVE_SYSTEM_HEADER_DIR "/dev/env/DJDIR/include/"
+
+/* Search for as.exe and ld.exe in DJGPP's binary directory.  */
+#undef MD_EXEC_PREFIX
+#define MD_EXEC_PREFIX "/dev/env/DJDIR/bin/"
+
+/* Standard DJGPP library and startup files */
+#undef STANDARD_STARTFILE_PREFIX_1
+#define STANDARD_STARTFILE_PREFIX_1 "/dev/env/DJDIR/lib/"
+
+/* Define STANDARD_STARTFILE_PREFIX_2 equal to STANDARD_STARTFILE_PREFIX_1
+   to avoid gcc.c redefining it to /usr/lib */
+#undef STANDARD_STARTFILE_PREFIX_2
+#define STANDARD_STARTFILE_PREFIX_1 "/dev/env/DJDIR/lib/"
+
+/* Make sure that gcc will not look for .h files in /usr/local/include
+   unless user explicitly requests it.  */
+#undef LOCAL_INCLUDE_DIR
 
 /* System dependent initialization for collect2
    to tell system() to act like Unix.  */
@@ -57,12 +82,12 @@ along with GCC; see the file COPYING3.  If not see
            to try and figure out what's wrong.  */ \
         char *djgpp = getenv ("DJGPP"); \
         if (djgpp == NULL) \
-          fatal ("environment variable DJGPP not defined"); \
+          fatal_error (UNKNOWN_LOCATION, "environment variable DJGPP not defined"); \
         else if (access (djgpp, R_OK) == 0) \
-          fatal ("environment variable DJGPP points to missing file '%s'", \
+          fatal_error (UNKNOWN_LOCATION, "environment variable DJGPP points to missing file '%s'", \
                  djgpp); \
         else \
-          fatal ("environment variable DJGPP points to corrupt file '%s'", \
+          fatal_error (UNKNOWN_LOCATION, "environment variable DJGPP points to corrupt file '%s'", \
                   djgpp); \
       } \
   } while (0)
@@ -80,4 +105,11 @@ along with GCC; see the file COPYING3.  If not see
       _fixpath ((PATH), fixed_path);		\
       strcat (fixed_path, "/");			\
       (PATH) = xstrdup (fixed_path);		\
-    } 
+    }
+
+#undef MAX_OFILE_ALIGNMENT
+#define MAX_OFILE_ALIGNMENT 128
+
+/* DJGPP versions up to current (2.05) have ftw.h but only ftw() not nftw().
+   Disable use of ftw.h */
+#undef HAVE_FTW_H

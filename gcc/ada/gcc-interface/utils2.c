@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -223,8 +223,8 @@ find_common_type (tree t1, tree t2)
 	  || (TYPE_SIZE (t1) == TYPE_SIZE (t2)
 	      && !(TREE_CODE (t1) == RECORD_TYPE
 		   && TREE_CODE (t2) == RECORD_TYPE
-		   && get_variant_part (t1) != NULL_TREE
-		   && get_variant_part (t2) == NULL_TREE))))
+		   && get_variant_part (t1)
+		   && !get_variant_part (t2)))))
     return t1;
 
   /* Otherwise, if the lhs type is non-BLKmode, use it.  Note that we know
@@ -592,7 +592,7 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
       result = gnat_protect_expr (result);
       result = fold_build3 (COND_EXPR, op_type,
 			    fold_build2 (LT_EXPR, boolean_type_node, result,
-					 convert (op_type, integer_zero_node)),
+					 build_int_cst (op_type, 0)),
 			    fold_build2 (PLUS_EXPR, op_type, result, modulus),
 			    result);
     }
@@ -852,7 +852,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
     {
     case INIT_EXPR:
     case MODIFY_EXPR:
-      gcc_checking_assert (result_type == NULL_TREE);
+      gcc_checking_assert (!result_type);
 
       /* If there were integral or pointer conversions on the LHS, remove
 	 them; we'll be putting them back below if needed.  Likewise for
@@ -1601,8 +1601,8 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	      {
 		if (integer_pow2p (fold_build2 (PLUS_EXPR, operation_type,
 						modulus,
-						convert (operation_type,
-							 integer_one_node))))
+						build_int_cst (operation_type,
+							       1))))
 		  result = fold_build2 (BIT_XOR_EXPR, operation_type,
 					operand, modulus);
 		else
@@ -1613,9 +1613,8 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 				      fold_build2 (NE_EXPR,
 						   boolean_type_node,
 						   operand,
-						   convert
-						     (operation_type,
-						      integer_zero_node)),
+						   build_int_cst
+						   (operation_type, 0)),
 				      result, operand);
 	      }
 	    else
@@ -1626,8 +1625,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 		   that constant for nonbinary modulus.  */
 
 		tree cnst = fold_build2 (MINUS_EXPR, operation_type, modulus,
-					 convert (operation_type,
-						  integer_one_node));
+					 build_int_cst (operation_type, 1));
 
 		if (mod_pow2)
 		  result = fold_build2 (BIT_XOR_EXPR, operation_type,
@@ -1748,6 +1746,32 @@ build_call_n_expr (tree fndecl, int n, ...)
   return fn;
 }
 
+/* Build a goto to LABEL for a raise, with an optional call to Local_Raise.
+   MSG gives the exception's identity for the call to Local_Raise, if any.  */
+
+static tree
+build_goto_raise (tree label, int msg)
+{
+  tree gnu_result = build1 (GOTO_EXPR, void_type_node, label);
+  Entity_Id local_raise = Get_Local_Raise_Call_Entity ();
+
+  /* If Local_Raise is present, build Local_Raise (Exception'Identity).  */
+  if (Present (local_raise))
+    {
+      tree gnu_local_raise = gnat_to_gnu_entity (local_raise, NULL_TREE, 0);
+      tree gnu_exception_entity
+	= gnat_to_gnu_entity (Get_RT_Exception_Entity (msg), NULL_TREE, 0);
+      tree gnu_call
+	= build_call_n_expr (gnu_local_raise, 1,
+			     build_unary_op (ADDR_EXPR, NULL_TREE,
+					     gnu_exception_entity));
+      gnu_result
+	= build2 (COMPOUND_EXPR, void_type_node, gnu_call, gnu_result);
+    }
+
+  return gnu_result;
+}
+
 /* Expand the SLOC of GNAT_NODE, if present, into tree location information
    pointed to by FILENAME, LINE and COL.  Fall back to the current location
    if GNAT_NODE is absent or has no SLOC.  */
@@ -1780,7 +1804,7 @@ expand_sloc (Node_Id gnat_node, tree *filename, tree *line, tree *col)
 
   const int len = strlen (str);
   *filename = build_string (len, str);
-  TREE_TYPE (*filename) = build_array_type (unsigned_char_type_node,
+  TREE_TYPE (*filename) = build_array_type (char_type_node,
 					    build_index_type (size_int (len)));
   *line = build_int_cst (NULL_TREE, line_number);
   if (col)
@@ -1803,34 +1827,14 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
 
   /* If this is to be done as a goto, handle that case.  */
   if (label)
-    {
-      Entity_Id local_raise = Get_Local_Raise_Call_Entity ();
-      tree gnu_result = build1 (GOTO_EXPR, void_type_node, label);
-
-      /* If Local_Raise is present, build Local_Raise (Exception'Identity).  */
-      if (Present (local_raise))
-	{
-	  tree gnu_local_raise
-	    = gnat_to_gnu_entity (local_raise, NULL_TREE, 0);
-	  tree gnu_exception_entity
-	    = gnat_to_gnu_entity (Get_RT_Exception_Entity (msg), NULL_TREE, 0);
-	  tree gnu_call
-	    = build_call_n_expr (gnu_local_raise, 1,
-				 build_unary_op (ADDR_EXPR, NULL_TREE,
-						 gnu_exception_entity));
-	  gnu_result
-	    = build2 (COMPOUND_EXPR, void_type_node, gnu_call, gnu_result);
-	}
-
-      return gnu_result;
-    }
+    return build_goto_raise (label, msg);
 
   expand_sloc (gnat_node, &filename, &line, NULL);
 
   return
     build_call_n_expr (fndecl, 2,
 		       build1 (ADDR_EXPR,
-			       build_pointer_type (unsigned_char_type_node),
+			       build_pointer_type (char_type_node),
 			       filename),
 		       line);
 }
@@ -1839,17 +1843,22 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
    where the check failed.  */
 
 tree
-build_call_raise_column (int msg, Node_Id gnat_node)
+build_call_raise_column (int msg, Node_Id gnat_node, char kind)
 {
   tree fndecl = gnat_raise_decls_ext[msg];
+  tree label = get_exception_label (kind);
   tree filename, line, col;
+
+  /* If this is to be done as a goto, handle that case.  */
+  if (label)
+    return build_goto_raise (label, msg);
 
   expand_sloc (gnat_node, &filename, &line, &col);
 
   return
     build_call_n_expr (fndecl, 3,
 		       build1 (ADDR_EXPR,
-			       build_pointer_type (unsigned_char_type_node),
+			       build_pointer_type (char_type_node),
 			       filename),
 		       line, col);
 }
@@ -1858,18 +1867,23 @@ build_call_raise_column (int msg, Node_Id gnat_node)
    with extra information of the form "INDEX out of range FIRST..LAST".  */
 
 tree
-build_call_raise_range (int msg, Node_Id gnat_node,
+build_call_raise_range (int msg, Node_Id gnat_node, char kind,
 			tree index, tree first, tree last)
 {
   tree fndecl = gnat_raise_decls_ext[msg];
+  tree label = get_exception_label (kind);
   tree filename, line, col;
+
+  /* If this is to be done as a goto, handle that case.  */
+  if (label)
+    return build_goto_raise (label, msg);
 
   expand_sloc (gnat_node, &filename, &line, &col);
 
   return
     build_call_n_expr (fndecl, 6,
 		       build1 (ADDR_EXPR,
-			       build_pointer_type (unsigned_char_type_node),
+			       build_pointer_type (char_type_node),
 			       filename),
 		       line, col,
 		       convert (integer_type_node, index),
@@ -2408,7 +2422,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 }
 
 /* Indicate that we need to take the address of T and that it therefore
-   should not be allocated in a register.  Returns true if successful.  */
+   should not be allocated in a register.  Return true if successful.  */
 
 bool
 gnat_mark_addressable (tree t)
@@ -2664,6 +2678,8 @@ gnat_rewrite_reference (tree ref, rewrite_fn func, void *data, tree *init)
     CASE_CONVERT:
     case FLOAT_EXPR:
     case FIX_TRUNC_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
     case VIEW_CONVERT_EXPR:
       result
 	= build1 (code, type,
@@ -2702,7 +2718,7 @@ gnat_rewrite_reference (tree ref, rewrite_fn func, void *data, tree *init)
       break;
 
     case COMPOUND_EXPR:
-      gcc_assert (*init == NULL_TREE);
+      gcc_assert (!*init);
       *init = TREE_OPERAND (ref, 0);
       /* We expect only the pattern built in Call_to_gnu.  */
       gcc_assert (DECL_P (TREE_OPERAND (ref, 1))
@@ -2733,7 +2749,8 @@ gnat_rewrite_reference (tree ref, rewrite_fn func, void *data, tree *init)
       break;
 
     case ERROR_MARK:
-      return error_mark_node;
+    case NULL_EXPR:
+      return ref;
 
     default:
       gcc_unreachable ();
@@ -2775,7 +2792,7 @@ get_inner_constant_reference (tree exp)
 	  break;
 
 	case COMPONENT_REF:
-	  if (TREE_OPERAND (exp, 2) != NULL_TREE)
+	  if (TREE_OPERAND (exp, 2))
 	    return NULL_TREE;
 
 	  if (!TREE_CONSTANT (DECL_FIELD_OFFSET (TREE_OPERAND (exp, 1))))
@@ -2785,8 +2802,7 @@ get_inner_constant_reference (tree exp)
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
 	  {
-	    if (TREE_OPERAND (exp, 2) != NULL_TREE
-	        || TREE_OPERAND (exp, 3) != NULL_TREE)
+	    if (TREE_OPERAND (exp, 2) || TREE_OPERAND (exp, 3))
 	      return NULL_TREE;
 
 	    tree array_type = TREE_TYPE (TREE_OPERAND (exp, 0));
@@ -2813,6 +2829,52 @@ done:
   return exp;
 }
 
+/* Return true if EXPR is the addition or the subtraction of a constant and,
+   if so, set *ADD to the addend, *CST to the constant and *MINUS_P to true
+   if this is a subtraction.  */
+
+bool
+is_simple_additive_expression (tree expr, tree *add, tree *cst, bool *minus_p)
+{
+  /* Skip overflow checks.  */
+  if (TREE_CODE (expr) == COND_EXPR
+      && TREE_CODE (COND_EXPR_THEN (expr)) == COMPOUND_EXPR
+      && TREE_CODE (TREE_OPERAND (COND_EXPR_THEN (expr), 0)) == CALL_EXPR
+      && get_callee_fndecl (TREE_OPERAND (COND_EXPR_THEN (expr), 0))
+         == gnat_raise_decls[CE_Overflow_Check_Failed])
+    expr = COND_EXPR_ELSE (expr);
+
+  if (TREE_CODE (expr) == PLUS_EXPR)
+    {
+      if (TREE_CONSTANT (TREE_OPERAND (expr, 0)))
+	{
+	  *add = TREE_OPERAND (expr, 1);
+	  *cst = TREE_OPERAND (expr, 0);
+	  *minus_p = false;
+	  return true;
+	}
+      else if (TREE_CONSTANT (TREE_OPERAND (expr, 1)))
+	{
+	  *add = TREE_OPERAND (expr, 0);
+	  *cst = TREE_OPERAND (expr, 1);
+	  *minus_p = false;
+	  return true;
+	}
+    }
+  else if (TREE_CODE (expr) == MINUS_EXPR)
+    {
+      if (TREE_CONSTANT (TREE_OPERAND (expr, 1)))
+	{
+	  *add = TREE_OPERAND (expr, 0);
+	  *cst = TREE_OPERAND (expr, 1);
+	  *minus_p = true;
+	  return true;
+	}
+    }
+
+  return false;
+}
+
 /* If EXPR is an expression that is invariant in the current function, in the
    sense that it can be evaluated anywhere in the function and any number of
    times, return EXPR or an equivalent expression.  Otherwise return NULL.  */
@@ -2821,6 +2883,8 @@ tree
 gnat_invariant_expr (tree expr)
 {
   const tree type = TREE_TYPE (expr);
+  tree add, cst;
+  bool minus_p;
 
   expr = remove_conversions (expr, false);
 
@@ -2846,21 +2910,14 @@ gnat_invariant_expr (tree expr)
   if (TREE_CONSTANT (expr))
     return fold_convert (type, expr);
 
-  /* Skip overflow checks since they don't change the invariantness.  */
-  if (TREE_CODE (expr) == COND_EXPR
-      && TREE_CODE (COND_EXPR_THEN (expr)) == COMPOUND_EXPR
-      && TREE_CODE (TREE_OPERAND (COND_EXPR_THEN (expr), 0)) == CALL_EXPR
-      && get_callee_fndecl (TREE_OPERAND (COND_EXPR_THEN (expr), 0))
-         == gnat_raise_decls[CE_Overflow_Check_Failed])
-    expr = COND_EXPR_ELSE (expr);
-
   /* Deal with addition or subtraction of constants.  */
-  if (TREE_CODE (expr) == PLUS_EXPR || TREE_CODE (expr) == MINUS_EXPR)
+  if (is_simple_additive_expression (expr, &add, &cst, &minus_p))
     {
-      tree op0 = gnat_invariant_expr (TREE_OPERAND (expr, 0));
-      tree op1 = TREE_OPERAND (expr, 1);
-      if (op0 && TREE_CONSTANT (op1))
-	return fold_build2 (TREE_CODE (expr), type, op0, op1);
+      add = gnat_invariant_expr (add);
+      if (add)
+	return
+	  fold_build2 (minus_p ? MINUS_EXPR : PLUS_EXPR, type,
+		       fold_convert (type, add), fold_convert (type, cst));
       else
 	return NULL_TREE;
     }
@@ -2873,7 +2930,7 @@ gnat_invariant_expr (tree expr)
       switch (TREE_CODE (t))
 	{
 	case COMPONENT_REF:
-	  if (TREE_OPERAND (t, 2) != NULL_TREE)
+	  if (TREE_OPERAND (t, 2))
 	    return NULL_TREE;
 	  invariant_p |= DECL_INVARIANT_P (TREE_OPERAND (t, 1));
 	  break;
@@ -2881,8 +2938,8 @@ gnat_invariant_expr (tree expr)
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
 	  if (!TREE_CONSTANT (TREE_OPERAND (t, 1))
-	      || TREE_OPERAND (t, 2) != NULL_TREE
-	      || TREE_OPERAND (t, 3) != NULL_TREE)
+	      || TREE_OPERAND (t, 2)
+	      || TREE_OPERAND (t, 3))
 	    return NULL_TREE;
 	  break;
 

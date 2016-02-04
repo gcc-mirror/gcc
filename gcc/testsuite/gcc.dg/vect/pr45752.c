@@ -1,4 +1,6 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_perm } */
+/* { dg-additional-options "--param tree-reassoc-width=1" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -33,7 +35,7 @@
 #define M34 7716
 #define M44 16
 
-#define N 16
+#define N 20
 
 void foo (unsigned int *__restrict__ pInput,
           unsigned int *__restrict__ pOutput,
@@ -75,10 +77,12 @@ void foo (unsigned int *__restrict__ pInput,
 int main (int argc, const char* argv[])
 {
   unsigned int input[N], output[N], i, input2[N], output2[N];
-  unsigned int check_results[N] = {3208, 1334, 28764, 35679, 2789, 13028,
-    4754, 168364, 91254, 12399, 22848, 8174, 307964, 146829, 22009, 0};
-  unsigned int check_results2[N] = {7136, 2702, 84604, 57909, 6633, 16956,
-    6122, 224204, 113484, 16243, 26776, 9542, 363804, 169059, 25853, 0};
+  unsigned int check_results[N]
+    = {3208, 1334, 28764, 35679, 2789, 13028, 4754, 168364, 91254, 12399, 
+    22848, 8174, 307964, 146829, 22009, 32668, 11594, 447564, 202404, 31619 };
+  unsigned int check_results2[N]
+    = {7136, 2702, 84604, 57909, 6633, 16956, 6122, 224204, 113484, 16243, 
+    26776, 9542, 363804, 169059, 25853, 36596, 12962, 503404, 224634, 35463 };
 
   check_vect ();
 
@@ -101,7 +105,8 @@ int main (int argc, const char* argv[])
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect"  } } */
-/* { dg-final { scan-tree-dump "permutation requires at least three vectors" "vect" { target vect_perm } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect"  } } */
+/* Currently interleaving is not supported for a group-size of 5.  */
 
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "gaps requires scalar epilogue loop" 0 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" } } */

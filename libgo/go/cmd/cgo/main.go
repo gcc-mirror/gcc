@@ -42,6 +42,7 @@ type Package struct {
 	GoFiles     []string // list of Go files
 	GccFiles    []string // list of gcc output files
 	Preamble    string   // collected preamble for _cgo_export.h
+	CgoChecks   []string // see unsafeCheckPointerName
 }
 
 // A File collects information about a single Go input file.
@@ -51,6 +52,7 @@ type File struct {
 	Package  string              // Package name
 	Preamble string              // C preamble (doc comment on import "C")
 	Ref      []*Ref              // all references to C.xxx in AST
+	Calls    []*ast.CallExpr     // all calls to C.xxx in AST
 	ExpFunc  []*ExpFunc          // exported functions for this file
 	Name     map[string]*Name    // map from Go name to Name
 }
@@ -132,43 +134,47 @@ func usage() {
 }
 
 var ptrSizeMap = map[string]int64{
-	"386":     4,
-	"alpha":   8,
-	"amd64":   8,
-	"arm":     4,
-	"arm64":   8,
-	"m68k":    4,
-	"mipso32": 4,
-	"mipsn32": 4,
-	"mipso64": 8,
-	"mipsn64": 8,
-	"ppc":     4,
-	"ppc64":   8,
-	"ppc64le": 8,
-	"s390":    4,
-	"s390x":   8,
-	"sparc":   4,
-	"sparc64": 8,
+	"386":      4,
+	"alpha":    8,
+	"amd64":    8,
+	"arm":      4,
+	"arm64":    8,
+	"m68k":     4,
+	"mipso32":  4,
+	"mipsn32":  4,
+	"mipso64":  8,
+	"mipsn64":  8,
+	"mips64":   8,
+	"mips64le": 8,
+	"ppc":      4,
+	"ppc64":    8,
+	"ppc64le":  8,
+	"s390":     4,
+	"s390x":    8,
+	"sparc":    4,
+	"sparc64":  8,
 }
 
 var intSizeMap = map[string]int64{
-	"386":     4,
-	"alpha":   8,
-	"amd64":   8,
-	"arm":     4,
-	"arm64":   8,
-	"m68k":    4,
-	"mipso32": 4,
-	"mipsn32": 4,
-	"mipso64": 8,
-	"mipsn64": 8,
-	"ppc":     4,
-	"ppc64":   8,
-	"ppc64le": 8,
-	"s390":    4,
-	"s390x":   8,
-	"sparc":   4,
-	"sparc64": 8,
+	"386":      4,
+	"alpha":    8,
+	"amd64":    8,
+	"arm":      4,
+	"arm64":    8,
+	"m68k":     4,
+	"mipso32":  4,
+	"mipsn32":  4,
+	"mipso64":  8,
+	"mipsn64":  8,
+	"mips64":   8,
+	"mips64le": 8,
+	"ppc":      4,
+	"ppc64":    8,
+	"ppc64le":  8,
+	"s390":     4,
+	"s390x":    8,
+	"sparc":    4,
+	"sparc64":  8,
 }
 
 var cPrefix string
@@ -297,11 +303,7 @@ func main() {
 		if nerrors > 0 {
 			os.Exit(2)
 		}
-		pkg := f.Package
-		if dir := os.Getenv("CGOPKGPATH"); dir != "" {
-			pkg = filepath.Join(dir, pkg)
-		}
-		p.PackagePath = pkg
+		p.PackagePath = f.Package
 		p.Record(f)
 		if *godefs {
 			os.Stdout.WriteString(p.godefs(f, input))

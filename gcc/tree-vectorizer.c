@@ -1,5 +1,5 @@
 /* Vectorizer
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -536,7 +536,13 @@ vectorize_loops (void)
 	  continue;
 
         if (!dbg_cnt (vect_loop))
-	  break;
+	  {
+	    /* We may miss some if-converted loops due to
+	       debug counter.  Set any_ifcvt_loops to visit
+	       them at finalization.  */
+	    any_ifcvt_loops = true;
+	    break;
+	  }
 
 	gimple *loop_vectorized_call = vect_loop_vectorized_call (loop);
 	if (loop_vectorized_call)
@@ -598,12 +604,18 @@ vectorize_loops (void)
   for (i = 1; i < vect_loops_num; i++)
     {
       loop_vec_info loop_vinfo;
+      bool has_mask_store;
 
       loop = get_loop (cfun, i);
       if (!loop)
 	continue;
       loop_vinfo = (loop_vec_info) loop->aux;
+      has_mask_store = false;
+      if (loop_vinfo)
+	has_mask_store = LOOP_VINFO_HAS_MASK_STORE (loop_vinfo);
       destroy_loop_vec_info (loop_vinfo, true);
+      if (has_mask_store)
+	optimize_mask_stores (loop);
       loop->aux = NULL;
     }
 

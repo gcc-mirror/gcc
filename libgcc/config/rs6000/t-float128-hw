@@ -1,0 +1,35 @@
+# Support for adding __float128 hardware support to the powerpc.
+# Tell the float128 functions that the ISA 3.0 hardware support can
+# be compiled it to be selected via IFUNC functions.
+
+FLOAT128_HW_INSNS	= -DFLOAT128_HW_INSNS
+
+# New functions for hardware support
+fp128_hw_funcs		= float128-hw
+fp128_hw_src		= $(srcdir)/config/rs6000/float128-hw.c
+fp128_hw_static_obj	= float128-hw$(objext)
+fp128_hw_shared_obj	= float128-hw_s$(objext)
+fp128_hw_obj		= $(fp128_hw_static_obj) $(fp128_hw_shared_obj)
+
+fp128_ifunc_funcs	= float128-ifunc
+fp128_ifunc_src		= $(srcdir)/config/rs6000/float128-ifunc.c
+fp128_ifunc_static_obj	= float128-ifunc$(objext)
+fp128_ifunc_shared_obj	= float128-ifunc_s$(objext)
+fp128_ifunc_obj		= $(fp128_ifunc_static_obj) $(fp128_ifunc_shared_obj)
+
+# Add _sw suffix to names to allow ifunc support.
+fp128_sed_hw		= -hw
+
+# Build the hardware support functions with appropriate hardware support
+FP128_CFLAGS_HW		 = -Wno-type-limits -mvsx -mfloat128 \
+			   -mpower8-vector -mpower9-vector \
+			   -mfloat128-hardware \
+			   -I$(srcdir)/soft-fp \
+			   -I$(srcdir)/config/rs6000 \
+			   $(FLOAT128_HW_INSNS)
+
+$(fp128_hw_obj)		 : INTERNAL_CFLAGS += $(FP128_CFLAGS_HW)
+$(fp128_hw_obj)		 : $(srcdir)/config/rs6000/t-float128-hw
+
+$(fp128_ifunc_obj)	 : INTERNAL_CFLAGS += $(FP128_CFLAGS_SW)
+$(fp128_ifunc_obj)	 : $(srcdir)/config/rs6000/t-float128-hw

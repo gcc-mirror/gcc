@@ -1,6 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006-2015 Free Software Foundation, Inc.
+// Copyright (C) 2006-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,12 +46,19 @@
 #ifndef _GLIBCXX_TR1_GAMMA_TCC
 #define _GLIBCXX_TR1_GAMMA_TCC 1
 
-#include "special_function_util.h"
+#include <tr1/special_function_util.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+#if __STDCPP_WANT_MATH_SPEC_FUNCS__
+# define _GLIBCXX_MATH_NS ::std
+#elif defined(_GLIBCXX_TR1_CMATH)
 namespace tr1
 {
+# define _GLIBCXX_MATH_NS ::std::tr1
+#else
+# error do not include this header directly, use <cmath> or <tr1/cmath>
+#endif
   // Implementation-space details.
   namespace __detail
   {
@@ -282,9 +289,9 @@ namespace tr1
                       = std::numeric_limits<_Tp>::max_exponent10
                       * std::log(_Tp(10)) - _Tp(1);
 #if _GLIBCXX_USE_C99_MATH_TR1
-      _Tp __coeff =  std::tr1::lgamma(_Tp(1 + __n))
-                  - std::tr1::lgamma(_Tp(1 + __k))
-                  - std::tr1::lgamma(_Tp(1 + __n - __k));
+      _Tp __coeff =  _GLIBCXX_MATH_NS::lgamma(_Tp(1 + __n))
+                  - _GLIBCXX_MATH_NS::lgamma(_Tp(1 + __k))
+                  - _GLIBCXX_MATH_NS::lgamma(_Tp(1 + __n - __k));
 #else
       _Tp __coeff =  __log_gamma(_Tp(1 + __n))
                   - __log_gamma(_Tp(1 + __k))
@@ -449,7 +456,7 @@ namespace tr1
         {
           const _Tp __hzeta = __hurwitz_zeta(_Tp(__n + 1), __x);
 #if _GLIBCXX_USE_C99_MATH_TR1
-          const _Tp __ln_nfact = std::tr1::lgamma(_Tp(__n + 1));
+          const _Tp __ln_nfact = _GLIBCXX_MATH_NS::lgamma(_Tp(__n + 1));
 #else
           const _Tp __ln_nfact = __log_gamma(_Tp(__n + 1));
 #endif
@@ -461,9 +468,12 @@ namespace tr1
     }
 
   _GLIBCXX_END_NAMESPACE_VERSION
-  } // namespace std::tr1::__detail
-}
-}
+  } // namespace __detail
+#undef _GLIBCXX_MATH_NS
+#if ! __STDCPP_WANT_MATH_SPEC_FUNCS__ && defined(_GLIBCXX_TR1_CMATH)
+} // namespace tr1
+#endif
+} // namespace std
 
 #endif // _GLIBCXX_TR1_GAMMA_TCC
 

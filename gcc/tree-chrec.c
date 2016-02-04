@@ -1,5 +1,5 @@
 /* Chains of recurrences.
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -728,12 +728,12 @@ hide_evolution_in_other_loops_than_loop (tree chrec,
 	/* There is no evolution in this loop.  */
 	return initial_condition (chrec);
 
+      else if (flow_loop_nested_p (loop, chloop))
+	return hide_evolution_in_other_loops_than_loop (CHREC_LEFT (chrec),
+							loop_num);
+
       else
-	{
-	  gcc_assert (flow_loop_nested_p (loop, chloop));
-	  return hide_evolution_in_other_loops_than_loop (CHREC_LEFT (chrec),
-							  loop_num);
-	}
+	return chrec_dont_know;
 
     default:
       return chrec;

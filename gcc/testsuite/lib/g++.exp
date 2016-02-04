@@ -1,4 +1,4 @@
-# Copyright (C) 1992-2015 Free Software Foundation, Inc.
+# Copyright (C) 1992-2016 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,6 +32,10 @@ load_lib target-libpath.exp
 
 
 set gpp_compile_options ""
+set gpp_std_list { }
+if [info exists env(GXX_TESTSUITE_STDS)] {
+    set gpp_std_list [split $env(GXX_TESTSUITE_STDS) ","]
+}
 
 #
 # g++_version -- extract and print the version number of the compiler
@@ -366,6 +370,14 @@ proc ${tool}_option_proc { option } {
 	    lappend gpp_compile_options "additional_flags=$x"
 	}
 	verbose -log "gpp_compile_options set to $gpp_compile_options"
+	return 1
+    } elseif [regexp "^--stds=" $option] {
+	global gpp_std_list
+	regsub "^--stds=" $option "" option
+	foreach x [split $option ","] {
+	    lappend gpp_std_list "$x"
+	}
+	verbose -log "gpp_std_list set to $gpp_std_list"
 	return 1
     } else {
 	return 0

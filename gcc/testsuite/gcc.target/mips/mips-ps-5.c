@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mpaired-single -mgp64 -ftree-vectorize" } */
+/* { dg-options "-mpaired-single -mgp64 -ftree-vectorize forbid_cpu=octeon.*" } */
 /* { dg-skip-if "requires vectorization" { *-*-* } { "-O0" "-Os" } { "" } } */
 
 extern float a[] __attribute__ ((aligned (8)));

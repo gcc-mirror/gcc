@@ -1,4 +1,4 @@
-#   Copyright (C) 2000-2015 Free Software Foundation, Inc.
+#   Copyright (C) 2000-2016 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,6 +45,8 @@ set tests [prune $tests $srcdir/$subdir/plugin/*]
 set tests [prune $tests $srcdir/$subdir/special/*]
 set tests [prune $tests $srcdir/$subdir/tls/*]
 set tests [prune $tests $srcdir/$subdir/vect/*]
+set tests [prune $tests $srcdir/$subdir/goacc/*]
+set tests [prune $tests $srcdir/$subdir/goacc-gomp/*]
 set tests [prune $tests $srcdir/$subdir/gomp/*]
 set tests [prune $tests $srcdir/$subdir/tree-prof/*]
 set tests [prune $tests $srcdir/$subdir/torture/*]

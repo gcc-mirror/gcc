@@ -1,5 +1,5 @@
 /* Managing temporary directories and their content within libgccjit.so
-   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -58,6 +58,10 @@ class tempdir : public log_user
   const char * get_path_s_file () const { return m_path_s_file; }
   const char * get_path_so_file () const { return m_path_so_file; }
 
+  /* Add PATH to the vec of tempfiles that must be unlinked.
+     Take ownership of the buffer PATH; it will be freed.  */
+  void add_temp_file (char *path) { m_tempfiles.safe_push (path); }
+
  private:
   /* Was GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES set?  If so, keep the
      on-disk tempdir around after this wrapper object goes away.  */
@@ -74,6 +78,10 @@ class tempdir : public log_user
   char *m_path_s_file;
   char *m_path_so_file;
 
+  /* Other files within the tempdir to be cleaned up:
+     - certain ahead-of-time compilation artifacts (.o and .exe files)
+     - dumpfiles that were requested via gcc_jit_context_enable_dump.  */
+  auto_vec <char *> m_tempfiles;
 };
 
 } // namespace gcc::jit

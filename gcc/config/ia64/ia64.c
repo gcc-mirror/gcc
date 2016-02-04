@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1999-2015 Free Software Foundation, Inc.
+   Copyright (C) 1999-2016 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
 		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -1105,6 +1105,15 @@ ia64_expand_load_address (rtx dest, rtx src)
     emit_insn (gen_load_fptr (dest, src));
   else if (sdata_symbolic_operand (src, VOIDmode))
     emit_insn (gen_load_gprel (dest, src));
+  else if (local_symbolic_operand64 (src, VOIDmode))
+    {
+      /* We want to use @gprel rather than @ltoff relocations for local
+	 symbols:
+	  - @gprel does not require dynamic linker
+	  - and does not use .sdata section
+	 https://gcc.gnu.org/bugzilla/60465 */
+      emit_insn (gen_load_gprel64 (dest, src));
+    }
   else
     {
       HOST_WIDE_INT addend = 0;
@@ -1899,7 +1908,7 @@ ia64_expand_vecint_compare (enum rtx_code code, machine_mode mode,
 
 	    /* Subtract (-(INT MAX) - 1) from both operands to make
 	       them signed.  */
-	    mask = GEN_INT (0x80000000);
+	    mask = gen_int_mode (0x80000000, SImode);
 	    mask = gen_rtx_CONST_VECTOR (V2SImode, gen_rtvec (2, mask, mask));
 	    mask = force_reg (mode, mask);
 	    t1 = gen_reg_rtx (mode);
@@ -3293,7 +3302,7 @@ ia64_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size,
   else if (size <= PROBE_INTERVAL)
     emit_stack_probe (r2);
 
-  /* The run-time loop is made up of 8 insns in the generic case while this
+  /* The run-time loop is made up of 9 insns in the generic case while this
      compile-time loop is made up of 5+2*(n-2) insns for n # of intervals.  */
   else if (size <= 4 * PROBE_INTERVAL)
     {
@@ -3356,11 +3365,12 @@ ia64_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size,
 
       /* Step 3: the loop
 
-	 while (TEST_ADDR != LAST_ADDR)
+	 do
 	   {
 	     TEST_ADDR = TEST_ADDR + PROBE_INTERVAL
 	     probe at TEST_ADDR
 	   }
+	 while (TEST_ADDR != LAST_ADDR)
 
 	 probes at FIRST + N * PROBE_INTERVAL for values of N from 1
 	 until it is equal to ROUNDED_SIZE.  */
@@ -3391,35 +3401,32 @@ const char *
 output_probe_stack_range (rtx reg1, rtx reg2)
 {
   static int labelno = 0;
-  char loop_lab[32], end_lab[32];
+  char loop_lab[32];
   rtx xops[3];
 
-  ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno);
-  ASM_GENERATE_INTERNAL_LABEL (end_lab, "LPSRE", labelno++);
+  ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno++);
 
+  /* Loop.  */
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_lab);
 
-  /* Jump to END_LAB if TEST_ADDR == LAST_ADDR.  */
-  xops[0] = reg1;
-  xops[1] = reg2;
-  xops[2] = gen_rtx_REG (BImode, PR_REG (6));
-  output_asm_insn ("cmp.eq %2, %I2 = %0, %1", xops);
-  fprintf (asm_out_file, "\t(%s) br.cond.dpnt ", reg_names [REGNO (xops[2])]);
-  assemble_name_raw (asm_out_file, end_lab);
-  fputc ('\n', asm_out_file);
-
   /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
+  xops[0] = reg1;
   xops[1] = GEN_INT (-PROBE_INTERVAL);
   output_asm_insn ("addl %0 = %1, %0", xops);
   fputs ("\t;;\n", asm_out_file);
 
-  /* Probe at TEST_ADDR and branch.  */
+  /* Probe at TEST_ADDR.  */
   output_asm_insn ("probe.w.fault %0, 0", xops);
-  fprintf (asm_out_file, "\tbr ");
+
+  /* Test if TEST_ADDR == LAST_ADDR.  */
+  xops[1] = reg2;
+  xops[2] = gen_rtx_REG (BImode, PR_REG (6));
+  output_asm_insn ("cmp.eq %2, %I2 = %0, %1", xops);
+
+  /* Branch.  */
+  fprintf (asm_out_file, "\t(%s) br.cond.dpnt ", reg_names [PR_REG (7)]);
   assemble_name_raw (asm_out_file, loop_lab);
   fputc ('\n', asm_out_file);
-
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, end_lab);
 
   return "";
 }

@@ -1,5 +1,5 @@
 ;; Predicate definitions for Motorola 68000.
-;; Copyright (C) 2005-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2016 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -253,7 +253,17 @@
 (define_predicate "reg_or_pow2_m1_operand"
   (match_code "reg,const_int")
 {
-  return (REG_P (op)
-	  || (GET_CODE (op) == CONST_INT
-	      && exact_log2 (INTVAL (op) + 1) >= 0));
+  return (REG_P (op) || pow2_m1_operand (op, VOIDmode));
 })
+
+;; Used to detect a constant that is all ones in its lower bits.
+(define_predicate "pow2_m1_operand"
+  (match_code "const_int")
+{
+  return (GET_CODE (op) == CONST_INT && exact_log2 (INTVAL (op) + 1) >= 0);
+})
+
+;; Used to detect valid targets for conditional branches
+;; Used to detect (pc) or (label_ref) in some jumping patterns to cut down
+(define_predicate "pc_or_label_operand"
+  (match_code "pc,label_ref"))

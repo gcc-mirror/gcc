@@ -51,7 +51,6 @@ func evalSymlinks(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
 	p, err := toShort(path)
 	if err != nil {
 		return "", err

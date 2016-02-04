@@ -7,7 +7,6 @@
 
 #define VEC_T __m128d
 #define FP_T double
-#define ASM_SUFFIX "l"
 
 #define ROUND_INTRIN(x, mode) _mm_floor_sd(x, x)
 #define ROUND_MODE _MM_FROUND_FLOOR

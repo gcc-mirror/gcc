@@ -1,6 +1,6 @@
 /* MIPS SDE threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 2006-2015 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2016 Free Software Foundation, Inc.
    Contributed by Nigel Stephens <nigel@mips.com>
 
 This file is part of GCC.

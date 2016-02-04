@@ -1,5 +1,5 @@
 /* Definitions of various defaults for tm.h macros.
-   Copyright (C) 1992-2015 Free Software Foundation, Inc.
+   Copyright (C) 1992-2016 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com)
 
 This file is part of GCC.
@@ -1487,5 +1487,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #endif /* GCC_INSN_FLAGS_H  */
+
+#ifndef DWARF_GNAT_ENCODINGS_DEFAULT
+#define DWARF_GNAT_ENCODINGS_DEFAULT DWARF_GNAT_ENCODINGS_GDB
+#endif
 
 #endif  /* ! GCC_DEFAULTS_H */

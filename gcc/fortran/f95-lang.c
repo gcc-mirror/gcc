@@ -1,5 +1,5 @@
 /* gfortran backend interface
-   Copyright (C) 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 2000-2016 Free Software Foundation, Inc.
    Contributed by Paul Brook.
 
 This file is part of GCC.
@@ -92,6 +92,8 @@ static const struct attribute_spec gfc_attribute_table[] =
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
        affects_type_identity } */
   { "omp declare target", 0, 0, true,  false, false,
+    gfc_handle_omp_declare_target_attribute, false },
+  { "oacc function", 0, -1, true,  false, false,
     gfc_handle_omp_declare_target_attribute, false },
   { NULL,		  0, 0, false, false, false, NULL, false }
 };

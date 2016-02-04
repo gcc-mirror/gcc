@@ -1,4 +1,4 @@
-// Copyright (C) 2010-2015 Free Software Foundation, Inc.
+// Copyright (C) 2010-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,14 +46,9 @@ void test02()
   const int dummy = 0;
   std::bind(Inc(), _1)(dummy);                  // { dg-error  "no match" }
   std::bind(&Inc::f, Inc(), std::ref(dummy))(); // { dg-error  "no match" }
-  // { dg-error "no match" "" { target *-*-* } 594 }
-  // { dg-error "no type" "" { target *-*-* } 237 }
 }
 
-// { dg-error "rvalue|const" "" { target *-*-* } 1024 }
-// { dg-error "rvalue|const" "" { target *-*-* } 1038 }
-// { dg-error "rvalue|const" "" { target *-*-* } 1052 }
-// { dg-error "rvalue|const" "" { target *-*-* } 1066 }
+// { dg-excess-errors "reasons for deduction/substitution failures" }
 
 int main()
 {

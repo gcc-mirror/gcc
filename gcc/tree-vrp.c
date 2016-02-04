@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005-2015 Free Software Foundation, Inc.
+   Copyright (C) 2005-2016 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>.
 
 This file is part of GCC.
@@ -3015,7 +3015,7 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	      return;
 	    }
 	}
-      else
+      else if (!symbolic_range_p (&vr0) && !symbolic_range_p (&vr1))
 	{
 	  extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
 	  return;
@@ -4259,6 +4259,27 @@ adjust_range_with_scev (value_range *vr, struct loop *loop,
 	      /* Likewise if the addition did.  */
 	      if (maxvr.type == VR_RANGE)
 		{
+		  value_range initvr = VR_INITIALIZER;
+
+		  if (TREE_CODE (init) == SSA_NAME)
+		    initvr = *(get_value_range (init));
+		  else if (is_gimple_min_invariant (init))
+		    set_value_range_to_value (&initvr, init, NULL);
+		  else
+		    return;
+
+		  /* Check if init + nit * step overflows.  Though we checked
+		     scev {init, step}_loop doesn't wrap, it is not enough
+		     because the loop may exit immediately.  Overflow could
+		     happen in the plus expression in this case.  */
+		  if ((dir == EV_DIR_DECREASES
+		       && (is_negative_overflow_infinity (maxvr.min)
+			   || compare_values (maxvr.min, initvr.min) != -1))
+		      || (dir == EV_DIR_GROWS
+			  && (is_positive_overflow_infinity (maxvr.max)
+			      || compare_values (maxvr.max, initvr.max) != 1)))
+		    return;
+
 		  tmin = maxvr.min;
 		  tmax = maxvr.max;
 		}
@@ -4322,6 +4343,17 @@ adjust_range_with_scev (value_range *vr, struct loop *loop,
       || (is_negative_overflow_infinity (min)
 	  && is_positive_overflow_infinity (max)))
     return;
+
+  /* Even for valid range info, sometimes overflow flag will leak in.
+     As GIMPLE IL should have no constants with TREE_OVERFLOW set, we
+     drop them except for +-overflow_infinity which still need special
+     handling in vrp pass.  */
+  if (TREE_OVERFLOW_P (min)
+      && ! is_negative_overflow_infinity (min))
+    min = drop_tree_overflow (min);
+  if (TREE_OVERFLOW_P (max)
+      && ! is_positive_overflow_infinity (max))
+    max = drop_tree_overflow (max);
 
   set_value_range (vr, VR_RANGE, min, max, vr->equiv);
 }
@@ -5035,8 +5067,9 @@ extract_code_and_val_from_cond_with_ops (tree name, enum tree_code cond_code,
   if (invert)
     comp_code = invert_tree_comparison (comp_code, 0);
 
-  /* VRP does not handle float types.  */
-  if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (val)))
+  /* VRP only handles integral and pointer types.  */
+  if (! INTEGRAL_TYPE_P (TREE_TYPE (val))
+      && ! POINTER_TYPE_P (TREE_TYPE (val)))
     return false;
 
   /* Do not register always-false predicates.
@@ -8931,7 +8964,7 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
    modulo.  */
 
 static bool
-simplify_div_or_mod_using_ranges (gimple *stmt)
+simplify_div_or_mod_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
 {
   enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
   tree val = NULL;
@@ -8960,12 +8993,19 @@ simplify_div_or_mod_using_ranges (gimple *stmt)
     }
 
   if (!integer_pow2p (op1))
-    return false;
+    {
+      /* X % -Y can be only optimized into X % Y either if
+	 X is not INT_MIN, or Y is not -1.  Fold it now, as after
+	 remove_range_assertions the range info might be not available
+	 anymore.  */
+      if (rhs_code == TRUNC_MOD_EXPR
+	  && fold_stmt (gsi, follow_single_use_edges))
+	return true;
+      return false;
+    }
 
   if (TYPE_UNSIGNED (TREE_TYPE (op0)))
-    {
-      val = integer_one_node;
-    }
+    val = integer_one_node;
   else
     {
       bool sop = false;
@@ -9217,8 +9257,8 @@ test_for_singularity (enum tree_code cond_code, tree op0,
   tree min = NULL;
   tree max = NULL;
 
-  /* Extract minimum/maximum values which satisfy the
-     the conditional as it was written.  */
+  /* Extract minimum/maximum values which satisfy the conditional as it was
+     written.  */
   if (cond_code == LE_EXPR || cond_code == LT_EXPR)
     {
       /* This should not be negative infinity; there is no overflow
@@ -9460,7 +9500,8 @@ simplify_cond_using_ranges (gcond *stmt)
 
       if (TREE_CODE (innerop) == SSA_NAME
 	  && !POINTER_TYPE_P (TREE_TYPE (innerop))
-         && desired_pro_or_demotion_p (TREE_TYPE (innerop), TREE_TYPE (op0)))
+	  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (innerop)
+	  && desired_pro_or_demotion_p (TREE_TYPE (innerop), TREE_TYPE (op0)))
 	{
 	  value_range *vr = get_value_range (innerop);
 
@@ -9491,8 +9532,8 @@ simplify_cond_using_ranges (gcond *stmt)
 		  else
 		    location = gimple_location (stmt);
 		  warning_at (location, OPT_Wstrict_overflow,
-		      "assuming signed overflow does not occur when "
-		      "simplifying conditional");
+			      "assuming signed overflow does not occur when "
+			      "simplifying conditional");
 		}
 
 	      tree newconst = fold_convert (TREE_TYPE (innerop), op1);
@@ -9879,7 +9920,7 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	case TRUNC_MOD_EXPR:
 	  if (TREE_CODE (rhs1) == SSA_NAME
 	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
-	    return simplify_div_or_mod_using_ranges (stmt);
+	    return simplify_div_or_mod_using_ranges (gsi, stmt);
 	  break;
 
       /* Transform ABS (X) into X or -X as appropriate.  */
@@ -10189,16 +10230,6 @@ vrp_finalize (bool warn_array_bounds_p)
       fprintf (dump_file, "\n");
     }
 
-  substitute_and_fold (op_with_constant_singleton_value_range,
-		       vrp_fold_stmt, false);
-
-  if (warn_array_bounds && warn_array_bounds_p)
-    check_all_array_refs ();
-
-  /* We must identify jump threading opportunities before we release
-     the datastructures built by VRP.  */
-  identify_jump_threads ();
-
   /* Set value range to non pointer SSA_NAMEs.  */
   for (i  = 0; i < num_vr_values; i++)
     if (vr_value[i])
@@ -10218,6 +10249,16 @@ vrp_finalize (bool warn_array_bounds_p)
 	set_range_info (name, vr_value[i]->type, vr_value[i]->min,
 			vr_value[i]->max);
       }
+
+  substitute_and_fold (op_with_constant_singleton_value_range,
+		       vrp_fold_stmt, false);
+
+  if (warn_array_bounds && warn_array_bounds_p)
+    check_all_array_refs ();
+
+  /* We must identify jump threading opportunities before we release
+     the datastructures built by VRP.  */
+  identify_jump_threads ();
 
   /* Free allocated memory.  */
   for (i = 0; i < num_vr_values; i++)

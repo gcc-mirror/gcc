@@ -1,3 +1,101 @@
+2016-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/68176
+	* files.c (_cpp_find_file): Set file->implicit_preinclude even if
+	included from file->implicit_preinclude header.
+
+	* directives.c (destringize_and_run): Adjust prototype.
+
+2016-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/69126
+	* directives.c (destringize_and_run): Add expansion_loc param; use
+	it when handling unexpanded pragmas to fixup the locations of the
+	synthesized tokens.
+	(_cpp_do__Pragma): Add expansion_loc param and use it when calling
+	destringize_and_run.
+	* internal.h (_cpp_do__Pragma): Add expansion_loc param.
+	* macro.c (builtin_macro): Pass expansion location of _Pragma to
+	_cpp_do__Pragma.
+
+2016-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/69177
+	* line-map.c (LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES): New
+	constant.
+	(LINE_MAP_MAX_LOCATION_WITH_COLS): Add note about unit tests
+	to comment.
+	(can_be_stored_compactly_p): Reduce threshold from
+	LINE_MAP_MAX_LOCATION_WITH_COLS to
+	LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES.
+	(get_combined_adhoc_loc): Likewise.
+	(get_range_from_loc): Likewise.
+	(linemap_line_start): Ensure that a new ordinary map is created
+	when transitioning from range-packing being enabled to disabled,
+	at the LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES threshold.  Set
+	range_bits to 0 for new ordinary maps when beyond this limit.
+	Prevent the "increase the column bits of a freshly created map"
+	optimization if the range bits has reduced.
+
+2016-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69145
+	* files.c (cpp_included_before): If IS_ADHOC_LOC (location), lookup
+	real location from the line_table.
+
+2016-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2015-12-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* line-map.c (get_combined_adhoc_loc): Remove condition
+	on locus < RESERVED_LOCATION_COUNT when considering
+	whether a caret == start == finish location can be
+	simply stored as the caret location.
+
+2015-12-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (rich_location::set_range): Add line_maps *
+	param; convert param from source_range to source_location.  Drop
+	"overwrite_loc_p" param.
+	* line-map.c (rich_location::set_range): Likewise, acting as if
+	"overwrite_loc_p" were true, and getting range from the location.
+
+2015-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 62314
+	* include/line-map.h (source_range::intersects_line_p): New
+	method.
+	(rich_location::~rich_location): New.
+	(rich_location::add_fixit_insert): New method.
+	(rich_location::add_fixit_remove): New method.
+	(rich_location::add_fixit_replace): New method.
+	(rich_location::get_num_fixit_hints): New accessor.
+	(rich_location::get_fixit_hint): New accessor.
+	(rich_location::MAX_FIXIT_HINTS): New constant.
+	(rich_location::m_num_fixit_hints): New field.
+	(rich_location::m_fixit_hints): New field.
+	(class fixit_hint): New class.
+	(class fixit_insert): New class.
+	(class fixit_remove): New class.
+	(class fixit_replace): New class.
+	* line-map.c (source_range::intersects_line_p): New method.
+	(rich_location::rich_location): Add initialization of
+	m_num_fixit_hints to both ctors.
+	(rich_location::~rich_location): New.
+	(rich_location::add_fixit_insert): New method.
+	(rich_location::add_fixit_remove): New method.
+	(rich_location::add_fixit_replace): New method.
+	(fixit_insert::fixit_insert): New.
+	(fixit_insert::~fixit_insert): New.
+	(fixit_insert::affects_line_p): New.
+	(fixit_remove::fixit_remove): New.
+	(fixit_remove::affects_line_p): New.
+	(fixit_replace::fixit_replace): New.
+	(fixit_replace::~fixit_replace): New.
+	(fixit_replace::affects_line_p): New.
+
 2015-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/60736
@@ -4316,3 +4414,9 @@
 	* include/mkdeps.h: Moved from gcc.  Change header guard name.
 	* include/symtab.h: Moved from gcc/hashtable.h.  Change header
 	guard name.
+
+Copyright (C) 2004-2016 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

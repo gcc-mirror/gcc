@@ -1,5 +1,5 @@
 /* Builtins' description for AArch64 SIMD architecture.
-   Copyright (C) 2011-2015 Free Software Foundation, Inc.
+   Copyright (C) 2011-2016 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -118,6 +118,10 @@ static enum aarch64_type_qualifiers
 aarch64_types_unopu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned };
 #define TYPES_UNOPU (aarch64_types_unopu_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_unopus_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_none };
+#define TYPES_UNOPUS (aarch64_types_unopus_qualifiers)
 static enum aarch64_type_qualifiers
 aarch64_types_binop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_maybe_immediate };
@@ -610,14 +614,16 @@ aarch64_init_simd_builtin_types (void)
       enum machine_mode mode = aarch64_simd_types[i].mode;
 
       if (aarch64_simd_types[i].itype == NULL)
-	aarch64_simd_types[i].itype =
-	  build_distinct_type_copy
-	    (build_vector_type (eltype, GET_MODE_NUNITS (mode)));
+	{
+	  aarch64_simd_types[i].itype
+	    = build_distinct_type_copy
+	      (build_vector_type (eltype, GET_MODE_NUNITS (mode)));
+	  SET_TYPE_STRUCTURAL_EQUALITY (aarch64_simd_types[i].itype);
+	}
 
       tdecl = add_builtin_type (aarch64_simd_types[i].name,
 				aarch64_simd_types[i].itype);
       TYPE_NAME (aarch64_simd_types[i].itype) = tdecl;
-      SET_TYPE_STRUCTURAL_EQUALITY (aarch64_simd_types[i].itype);
     }
 
 #define AARCH64_BUILD_SIGNED_TYPE(mode)  \
@@ -1176,19 +1182,19 @@ aarch64_expand_builtin_rsqrt (int fcode, tree exp, rtx target)
   switch (fcode)
     {
       case AARCH64_BUILTIN_RSQRT_DF:
-	gen = gen_aarch64_rsqrt_df2;
+	gen = gen_rsqrtdf2;
 	break;
       case AARCH64_BUILTIN_RSQRT_SF:
-	gen = gen_aarch64_rsqrt_sf2;
+	gen = gen_rsqrtsf2;
 	break;
       case AARCH64_BUILTIN_RSQRT_V2DF:
-	gen = gen_aarch64_rsqrt_v2df2;
+	gen = gen_rsqrtv2df2;
 	break;
       case AARCH64_BUILTIN_RSQRT_V2SF:
-	gen = gen_aarch64_rsqrt_v2sf2;
+	gen = gen_rsqrtv2sf2;
 	break;
       case AARCH64_BUILTIN_RSQRT_V4SF:
-	gen = gen_aarch64_rsqrt_v4sf2;
+	gen = gen_rsqrtv4sf2;
 	break;
       default: gcc_unreachable ();
     }
@@ -1405,24 +1411,14 @@ aarch64_builtin_vectorized_function (unsigned int fn, tree type_out,
 /* Return builtin for reciprocal square root.  */
 
 tree
-aarch64_builtin_rsqrt (unsigned int fn, bool md_fn)
+aarch64_builtin_rsqrt (unsigned int fn)
 {
-  if (md_fn)
-    {
-      if (fn == AARCH64_SIMD_BUILTIN_UNOP_sqrtv2df)
-	return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_V2DF];
-      if (fn == AARCH64_SIMD_BUILTIN_UNOP_sqrtv2sf)
-	return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_V2SF];
-      if (fn == AARCH64_SIMD_BUILTIN_UNOP_sqrtv4sf)
-	return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_V4SF];
-    }
-  else
-    {
-      if (fn == BUILT_IN_SQRT)
-	return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_DF];
-      if (fn == BUILT_IN_SQRTF)
-	return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_SF];
-    }
+  if (fn == AARCH64_SIMD_BUILTIN_UNOP_sqrtv2df)
+    return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_V2DF];
+  if (fn == AARCH64_SIMD_BUILTIN_UNOP_sqrtv2sf)
+    return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_V2SF];
+  if (fn == AARCH64_SIMD_BUILTIN_UNOP_sqrtv4sf)
+    return aarch64_builtin_decls[AARCH64_BUILTIN_RSQRT_V4SF];
   return NULL_TREE;
 }
 
@@ -1468,7 +1464,7 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       if (fndecl)
 	{
 	  int fcode = DECL_FUNCTION_CODE (fndecl);
-	  int nargs = gimple_call_num_args (stmt);
+	  unsigned nargs = gimple_call_num_args (stmt);
 	  tree *args = (nargs > 0
 			? gimple_call_arg_ptr (stmt, 0)
 			: &error_mark_node);
@@ -1492,7 +1488,54 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 		new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
 						REDUC_MIN_EXPR, args[0]);
 		break;
-
+	      BUILTIN_GPF (BINOP, fmulx, 0)
+		{
+		  gcc_assert (nargs == 2);
+		  bool a0_cst_p = TREE_CODE (args[0]) == REAL_CST;
+		  bool a1_cst_p = TREE_CODE (args[1]) == REAL_CST;
+		  if (a0_cst_p || a1_cst_p)
+		    {
+		      if (a0_cst_p && a1_cst_p)
+			{
+			  tree t0 = TREE_TYPE (args[0]);
+			  real_value a0 = (TREE_REAL_CST (args[0]));
+			  real_value a1 = (TREE_REAL_CST (args[1]));
+			  if (real_equal (&a1, &dconst0))
+			    std::swap (a0, a1);
+			  /* According to real_equal (), +0 equals -0.  */
+			  if (real_equal (&a0, &dconst0) && real_isinf (&a1))
+			    {
+			      real_value res = dconst2;
+			      res.sign = a0.sign ^ a1.sign;
+			      new_stmt =
+				gimple_build_assign (gimple_call_lhs (stmt),
+						     REAL_CST,
+						     build_real (t0, res));
+			    }
+			  else
+			    new_stmt =
+			      gimple_build_assign (gimple_call_lhs (stmt),
+						   MULT_EXPR,
+						   args[0], args[1]);
+			}
+		      else /* a0_cst_p ^ a1_cst_p.  */
+			{
+			  real_value const_part = a0_cst_p
+			    ? TREE_REAL_CST (args[0]) : TREE_REAL_CST (args[1]);
+			  if (!real_equal (&const_part, &dconst0)
+			      && !real_isinf (&const_part))
+			    new_stmt =
+			      gimple_build_assign (gimple_call_lhs (stmt),
+						   MULT_EXPR, args[0], args[1]);
+			}
+		    }
+		  if (new_stmt)
+		    {
+		      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+		      gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+		    }
+		  break;
+		}
 	    default:
 	      break;
 	    }

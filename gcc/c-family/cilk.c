@@ -1,6 +1,6 @@
 /* This file is part of the Intel(R) Cilk(TM) Plus support
    This file contains the CilkPlus Intrinsics
-   Copyright (C) 2013-2015 Free Software Foundation, Inc.
+   Copyright (C) 2013-2016 Free Software Foundation, Inc.
    Contributed by Balaji V. Iyer <balaji.v.iyer@intel.com>,
    Intel Corporation
 
@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "tree-iterator.h"
 #include "tree-inline.h"
-#include "toplev.h" 
+#include "toplev.h"
 #include "calls.h"
 #include "cilk.h"
 
@@ -76,6 +76,7 @@ struct wrapper_data
   tree block;
 };
 
+static tree contains_cilk_spawn_stmt_walker (tree *tp, int *, void *);
 static void extract_free_variables (tree, struct wrapper_data *,
 				    enum add_variable_type);
 static HOST_WIDE_INT cilk_wrapper_count;
@@ -235,7 +236,19 @@ recognize_spawn (tree exp, tree *exp0)
     }
   /* _Cilk_spawn can't be wrapped in expression such as PLUS_EXPR.  */
   else if (contains_cilk_spawn_stmt (exp))
-    error_at (EXPR_LOCATION (exp), "invalid use of %<_Cilk_spawn%>");
+    {
+      location_t loc = EXPR_LOCATION (exp);
+      if (loc == UNKNOWN_LOCATION)
+	{
+	  tree stmt = walk_tree (&exp,
+				 contains_cilk_spawn_stmt_walker,
+				 NULL,
+				 NULL);
+	  gcc_assert (stmt != NULL_TREE);
+	  loc = EXPR_LOCATION (stmt);
+	}
+      error_at (loc, "invalid use of %<_Cilk_spawn%>");
+    }
   return spawn_found;
 }
 
@@ -579,6 +592,11 @@ create_cilk_wrapper_body (tree stmt, struct wrapper_data *wd)
   for (p = wd->parms; p; p = TREE_CHAIN (p))
     DECL_CONTEXT (p) = fndecl;
 
+  /* The statement containing the spawn expression might create temporaries with
+     destructors defined; if so we need to add a CLEANUP_POINT_EXPR to ensure
+     the expression is properly gimplified.  */
+  stmt = fold_build_cleanup_point_expr (void_type_node, stmt);
+
   gcc_assert (!DECL_SAVED_TREE (fndecl));
   cilk_install_body_with_frame_cleanup (fndecl, stmt, (void *) wd);
   gcc_assert (DECL_SAVED_TREE (fndecl));
@@ -761,8 +779,7 @@ create_cilk_wrapper (tree exp, tree *args_out)
    gimple sequences from the caller of gimplify_cilk_spawn.  */
 
 void
-cilk_gimplify_call_params_in_spawned_fn (tree *expr_p, gimple_seq *pre_p,
-					 gimple_seq *post_p)
+cilk_gimplify_call_params_in_spawned_fn (tree *expr_p, gimple_seq *pre_p)
 {
   int ii = 0;
   tree *fix_parm_expr = expr_p;
@@ -779,8 +796,8 @@ cilk_gimplify_call_params_in_spawned_fn (tree *expr_p, gimple_seq *pre_p,
 
   if (TREE_CODE (*fix_parm_expr) == CALL_EXPR)
     for (ii = 0; ii < call_expr_nargs (*fix_parm_expr); ii++)
-      gimplify_expr (&CALL_EXPR_ARG (*fix_parm_expr, ii), pre_p, post_p,
-		     is_gimple_reg, fb_rvalue);
+      gimplify_arg (&CALL_EXPR_ARG (*fix_parm_expr, ii), pre_p,
+		    EXPR_LOCATION (*fix_parm_expr));
 }
 
 
@@ -844,6 +861,7 @@ gimplify_cilk_spawn (tree *spawn_p)
 			    call2, build_empty_stmt (EXPR_LOCATION (call1)));
   append_to_statement_list (spawn_expr, spawn_p);
 
+  free (arg_array);
   return GS_OK;
 }
 

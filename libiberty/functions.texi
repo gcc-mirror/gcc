@@ -176,7 +176,7 @@ Concatenate zero or more of strings and return the result in freshly
 @end deftypefn
 
 @c argv.c:470
-@deftypefn Extension int countargv (char **@var{argv})
+@deftypefn Extension int countargv (char * const *@var{argv})
 
 Return the number of elements in @var{argv}.
 Returns zero if @var{argv} is NULL.
@@ -213,7 +213,7 @@ make it easy to compose the values of multiple blocks.
 @end deftypefn
 
 @c argv.c:52
-@deftypefn Extension char** dupargv (char **@var{vector})
+@deftypefn Extension char** dupargv (char * const *@var{vector})
 
 Duplicate an argument vector.  Simply scans through @var{vector},
 duplicating each argument until the terminating @code{NULL} is found.
@@ -1915,7 +1915,7 @@ does the return value.  The third argument is unused in @libib{}.
 @end deftypefn
 
 @c argv.c:286
-@deftypefn Extension int writeargv (const char **@var{argv}, FILE *@var{file})
+@deftypefn Extension int writeargv (char * const *@var{argv}, FILE *@var{file})
 
 Write each member of ARGV, handling all necessary quoting, to the file
 named by FILE, separated by whitespace.  Return 0 on success, non-zero

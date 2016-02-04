@@ -1,5 +1,5 @@
 /* Various declarations for language-independent diagnostics subroutines.
-   Copyright (C) 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 2000-2016 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -293,10 +293,6 @@ extern void diagnostic_set_info_translated (diagnostic_info *, const char *,
      ATTRIBUTE_GCC_DIAG(2,0);
 extern void diagnostic_append_note (diagnostic_context *, location_t,
                                     const char *, ...) ATTRIBUTE_GCC_DIAG(3,4);
-extern void diagnostic_append_note_at_rich_loc (diagnostic_context *,
-						rich_location *,
-						const char *, ...)
-  ATTRIBUTE_GCC_DIAG(3,4);
 #endif
 extern char *diagnostic_build_prefix (diagnostic_context *, const diagnostic_info *);
 void default_diagnostic_starter (diagnostic_context *, diagnostic_info *);

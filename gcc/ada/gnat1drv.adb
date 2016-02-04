@@ -527,9 +527,26 @@ procedure Gnat1drv is
 
       --  Set and check exception mechanism
 
-      if Targparm.ZCX_By_Default_On_Target then
-         Exception_Mechanism := Back_End_Exceptions;
-      end if;
+      case Targparm.Frontend_Exceptions_On_Target is
+         when True =>
+            case Targparm.ZCX_By_Default_On_Target is
+               when True =>
+                  Write_Line
+                    ("Run-time library configured incorrectly");
+                  Write_Line
+                    ("(requesting support for Frontend ZCX exceptions)");
+                  raise Unrecoverable_Error;
+               when False =>
+                  Exception_Mechanism := Front_End_SJLJ;
+            end case;
+         when False =>
+            case Targparm.ZCX_By_Default_On_Target is
+               when True =>
+                  Exception_Mechanism := Back_End_ZCX;
+               when False =>
+                  Exception_Mechanism := Back_End_SJLJ;
+            end case;
+      end case;
 
       --  Set proper status for overflow check mechanism
 

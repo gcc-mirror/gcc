@@ -33,8 +33,8 @@
   end if
 
   if (ieee_selected_real_kind(0,0,3) /= -5) call abort
-  if (ieee_selected_real_kind(precision(0._maxreal)+1) /= -1) call abort
-  if (ieee_selected_real_kind(0,range(0._maxreal)+1) /= -2) call abort
-  if (ieee_selected_real_kind(precision(0._maxreal)+1,range(0._maxreal)+1) /= -3) call abort
+  if (ieee_selected_real_kind(100*precision(0._maxreal)) /= -1) call abort
+  if (ieee_selected_real_kind(0,100*range(0._maxreal)) /= -2) call abort
+  if (ieee_selected_real_kind(100*precision(0._maxreal),100*range(0._maxreal)) /= -3) call abort
 
 end

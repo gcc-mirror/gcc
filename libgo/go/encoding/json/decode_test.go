@@ -728,7 +728,7 @@ func TestErrorMessageFromMisusedString(t *testing.T) {
 }
 
 func noSpace(c rune) rune {
-	if isSpace(c) {
+	if isSpace(byte(c)) { //only used for ascii
 		return -1
 	}
 	return c
@@ -1218,12 +1218,12 @@ func TestStringKind(t *testing.T) {
 
 	data, err := Marshal(m1)
 	if err != nil {
-		t.Errorf("Unexpected error marshalling: %v", err)
+		t.Errorf("Unexpected error marshaling: %v", err)
 	}
 
 	err = Unmarshal(data, &m2)
 	if err != nil {
-		t.Errorf("Unexpected error unmarshalling: %v", err)
+		t.Errorf("Unexpected error unmarshaling: %v", err)
 	}
 
 	if !reflect.DeepEqual(m1, m2) {
@@ -1250,6 +1250,27 @@ func TestByteKind(t *testing.T) {
 	}
 	if !reflect.DeepEqual(a, b) {
 		t.Errorf("expected %v == %v", a, b)
+	}
+}
+
+// The fix for issue 8962 introduced a regression.
+// Issue 12921.
+func TestSliceOfCustomByte(t *testing.T) {
+	type Uint8 uint8
+
+	a := []Uint8("hello")
+
+	data, err := Marshal(a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var b []Uint8
+	err = Unmarshal(data, &b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(a, b) {
+		t.Fatal("expected %v == %v", a, b)
 	}
 }
 

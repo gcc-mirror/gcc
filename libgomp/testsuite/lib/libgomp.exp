@@ -42,14 +42,16 @@ load_file libgomp-test-support.exp
 set offload_targets_s [split $offload_targets ","]
 set offload_targets_s_openacc {}
 foreach offload_target_openacc $offload_targets_s {
+    # Translate to OpenACC names, or skip if not yet supported.
     switch $offload_target_openacc {
 	intelmic {
-	    # Skip; will all FAIL because of missing
-	    # GOMP_OFFLOAD_CAP_OPENACC_200.
 	    continue
 	}
 	nvptx {
 	    set offload_target_openacc "nvidia"
+	}
+	hsa {
+	    continue
 	}
     }
     lappend offload_targets_s_openacc "$offload_target_openacc"
@@ -184,7 +186,7 @@ proc libgomp_init { args } {
     }
     lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/.."
 
-    # For build-tree testing, also consider the CUDA paths used for builing.
+    # For build-tree testing, also consider the library paths used for builing.
     # For installed testing, we assume all that to be provided in the sysroot.
     if { $blddir != "" } {
 	global cuda_driver_include
@@ -199,6 +201,14 @@ proc libgomp_init { args } {
 	if { $cuda_driver_lib != "" } {
 	    lappend ALWAYS_CFLAGS "additional_flags=-L$cuda_driver_lib"
 	    append always_ld_library_path ":$cuda_driver_lib"
+	}
+	global hsa_runtime_lib
+	global hsa_kmt_lib
+	if { $hsa_runtime_lib != "" } {
+	    append always_ld_library_path ":$hsa_runtime_lib"
+	}
+	if { $hsa_kmt_lib != "" } {
+	    append always_ld_library_path ":$hsa_kmt_lib"
 	}
     }
 

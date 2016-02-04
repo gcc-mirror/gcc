@@ -1,3 +1,13 @@
+2016-01-06  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	PR other/67627
+	* Makefile.am (all-multi): Add dependency.
+	* Makefile.in: Regenerate.
+
+2016-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2015-11-18  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/65083
@@ -233,3 +243,9 @@
 2012-05-01  Richard Henderson  <rth@redhat.com>
 
 	* Initial commit.
+
+Copyright (C) 2012-2016 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

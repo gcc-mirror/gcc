@@ -1,5 +1,5 @@
 /* Demangler for the D programming language
-   Copyright 2014, 2015 Free Software Foundation, Inc.
+   Copyright 2014, 2015, 2016 Free Software Foundation, Inc.
    Written by Iain Buclaw (ibuclaw@gdcproject.org)
 
 This file is part of the libiberty library.
@@ -223,6 +223,10 @@ dlang_call_convention (string *decl, const char *mangled)
       mangled++;
       string_append (decl, "extern(C++) ");
       break;
+    case 'Y': /* (Objective-C) */
+      mangled++;
+      string_append (decl, "extern(Objective-C) ");
+      break;
     default:
       return NULL;
     }
@@ -399,7 +403,9 @@ dlang_function_args (string *decl, const char *mangled)
 	  return mangled;
 	case 'Y': /* (variadic T t, ...) style.  */
 	  mangled++;
-	  string_append (decl, ", ...");
+	  if (n != 0)
+	    string_append (decl, ", ");
+	  string_append (decl, "...");
 	  return mangled;
 	case 'Z': /* Normal function.  */
 	  mangled++;
@@ -533,6 +539,15 @@ dlang_type (string *decl, const char *mangled)
     }
     case 'P': /* pointer (T*) */
       mangled++;
+      /* Function pointer types don't include the trailing asterisk.  */
+      switch (*mangled)
+	{
+	case 'F': case 'U': case 'W':
+	case 'V': case 'R': case 'Y':
+	  mangled = dlang_function_type (decl, mangled);
+	  string_append (decl, "function");
+	  return mangled;
+	}
       mangled = dlang_type (decl, mangled);
       string_append (decl, "*");
       return mangled;
@@ -563,13 +578,6 @@ dlang_type (string *decl, const char *mangled)
     case 'B': /* tuple T */
       mangled++;
       return dlang_parse_tuple (decl, mangled);
-
-    /* Function types */
-    case 'F': case 'U': case 'W':
-    case 'V': case 'R':
-      mangled = dlang_function_type (decl, mangled);
-      string_append (decl, "function");
-      return mangled;
 
     /* Basic types */
     case 'n':
@@ -1334,7 +1342,7 @@ dlang_call_convention_p (const char *mangled)
   switch (*mangled)
     {
     case 'F': case 'U': case 'V':
-    case 'W': case 'R':
+    case 'W': case 'R': case 'Y':
       return 1;
 
     default:

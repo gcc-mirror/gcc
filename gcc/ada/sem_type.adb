@@ -137,7 +137,7 @@ package body Sem_Type is
    --  entities. We do not introduce explicit versions of primitive operators
    --  for each type definition. As a result, there is only one entity
    --  corresponding to predefined addition on all numeric types, etc. The
-   --  back-end resolves predefined operators according to their type. The
+   --  back end resolves predefined operators according to their type. The
    --  visibility of primitive operations then reduces to the visibility of the
    --  resulting type: (a + b) is a legal interpretation of some primitive
    --  operator + if the type of the result (which must also be the type of a
@@ -1223,7 +1223,7 @@ package body Sem_Type is
 
       elsif From_Limited_With (T1) then
 
-         --  If the expected type is the non-limited view of a type, the
+         --  If the expected type is the nonlimited view of a type, the
          --  expression may have the limited view. If that one in turn is
          --  incomplete, get full view if available.
 
@@ -2620,7 +2620,7 @@ package body Sem_Type is
 
       if Ekind (Target_Typ) = E_Incomplete_Type then
 
-         --  We must have either a full view or a non-limited view of the type
+         --  We must have either a full view or a nonlimited view of the type
          --  to locate the list of ancestors.
 
          if Present (Full_View (Target_Typ)) then
@@ -2630,7 +2630,7 @@ package body Sem_Type is
             Target_Typ := Non_Limited_View (Target_Typ);
          end if;
 
-         --  Protect the frontend against previously detected errors
+         --  Protect the front end against previously detected errors
 
          if Ekind (Target_Typ) = E_Incomplete_Type then
             return False;

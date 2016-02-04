@@ -1,5 +1,5 @@
 /* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
-   Copyright (C) 1992-2015 Free Software Foundation, Inc.
+   Copyright (C) 1992-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -814,8 +814,15 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
 
   struct cl_option_handlers handlers;
   set_default_handlers (&handlers);
-  control_warning_option (option_index, (int) kind, kind != DK_IGNORED,
-			  loc, lang_mask, &handlers,
+  const char *arg = NULL;
+  if (cl_options[option_index].flags & CL_JOINED)
+    arg = option_string + 1 + cl_options[option_index].opt_len;
+  /* FIXME: input_location isn't the best location here, but it is
+     what we used to do here before and changing it breaks e.g.
+     PR69543 and PR69558.  */
+  control_warning_option (option_index, (int) kind,
+			  arg, kind != DK_IGNORED,
+			  input_location, lang_mask, &handlers,
 			  &global_options, &global_options_set,
 			  global_dc);
 }
@@ -1251,6 +1258,7 @@ static const struct omp_pragma_def oacc_pragmas[] = {
   { "declare", PRAGMA_OACC_DECLARE },
   { "enter", PRAGMA_OACC_ENTER_DATA },
   { "exit", PRAGMA_OACC_EXIT_DATA },
+  { "host_data", PRAGMA_OACC_HOST_DATA },
   { "kernels", PRAGMA_OACC_KERNELS },
   { "loop", PRAGMA_OACC_LOOP },
   { "parallel", PRAGMA_OACC_PARALLEL },
@@ -1367,8 +1375,9 @@ c_register_pragma_1 (const char *space, const char *name,
       id = registered_pragmas.length ();
       id += PRAGMA_FIRST_EXTERNAL - 1;
 
-      /* The C++ front end allocates 8 bits in cp_token; the C front end
-	 allocates 8 bits in c_token.  At present this is sufficient.  */
+      /* The C front end allocates 8 bits in c_token.  The C++ front end
+	 keeps the pragma kind in the form of INTEGER_CST, so no small
+	 limit applies.  At present this is sufficient.  */
       gcc_assert (id < 256);
     }
 

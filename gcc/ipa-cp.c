@@ -1,5 +1,5 @@
 /* Interprocedural constant propagation
-   Copyright (C) 2005-2015 Free Software Foundation, Inc.
+   Copyright (C) 2005-2016 Free Software Foundation, Inc.
 
    Contributed by Razya Ladelsky <RAZYA@il.ibm.com> and Martin Jambor
    <mjambor@suse.cz>
@@ -613,7 +613,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
       return false;
     }
 
-  if (!optimize_function_for_speed_p (DECL_STRUCT_FUNCTION (node->decl)))
+  if (node->optimize_for_size_p ())
     {
       if (dump_file)
         fprintf (dump_file, "Not considering %s for cloning; "
@@ -1877,6 +1877,18 @@ propagate_aggs_accross_jump_function (struct cgraph_edge *cs,
   return ret;
 }
 
+/* Return true if on the way cfrom CS->caller to the final (non-alias and
+   non-thunk) destination, the call passes through a thunk.  */
+
+static bool
+call_passes_through_thunk_p (cgraph_edge *cs)
+{
+  cgraph_node *alias_or_thunk = cs->callee;
+  while (alias_or_thunk->alias)
+    alias_or_thunk = alias_or_thunk->get_alias_target ();
+  return alias_or_thunk->thunk.thunk_p;
+}
+
 /* Propagate constants from the caller to the callee of CS.  INFO describes the
    caller.  */
 
@@ -1885,7 +1897,7 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
 {
   struct ipa_node_params *callee_info;
   enum availability availability;
-  struct cgraph_node *callee, *alias_or_thunk;
+  cgraph_node *callee;
   struct ipa_edge_args *args;
   bool ret = false;
   int i, args_count, parms_count;
@@ -1923,10 +1935,7 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
   /* If this call goes through a thunk we must not propagate to the first (0th)
      parameter.  However, we might need to uncover a thunk from below a series
      of aliases first.  */
-  alias_or_thunk = cs->callee;
-  while (alias_or_thunk->alias)
-    alias_or_thunk = alias_or_thunk->get_alias_target ();
-  if (alias_or_thunk->thunk.thunk_p)
+  if (call_passes_through_thunk_p (cs))
     {
       ret |= set_all_contains_variable (ipa_get_parm_lattices (callee_info,
 							       0));
@@ -2068,15 +2077,22 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
       unsigned HOST_WIDE_INT offset;
       if (vtable_pointer_value_to_vtable (t, &vtable, &offset))
 	{
+	  bool can_refer;
 	  target = gimple_get_virt_method_for_vtable (ie->indirect_info->otr_token,
-						      vtable, offset);
-	  if (target)
+						      vtable, offset, &can_refer);
+	  if (can_refer)
 	    {
-	      if ((TREE_CODE (TREE_TYPE (target)) == FUNCTION_TYPE
-		   && DECL_FUNCTION_CODE (target) == BUILT_IN_UNREACHABLE)
+	      if (!target
+		  || (TREE_CODE (TREE_TYPE (target)) == FUNCTION_TYPE
+		      && DECL_FUNCTION_CODE (target) == BUILT_IN_UNREACHABLE)
 		  || !possible_polymorphic_call_target_p
 		       (ie, cgraph_node::get (target)))
-		target = ipa_impossible_devirt_target (ie, target);
+		{
+		  /* Do not speculate builtin_unreachable, it is stupid!  */
+		  if (ie->indirect_info->vptr_changed)
+		    return NULL;
+		  target = ipa_impossible_devirt_target (ie, target);
+		}
               *speculative = ie->indirect_info->vptr_changed;
 	      if (!*speculative)
 	        return target;
@@ -2154,7 +2170,11 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 
   if (target && !possible_polymorphic_call_target_p (ie,
 						     cgraph_node::get (target)))
-    target = ipa_impossible_devirt_target (ie, target);
+    {
+      if (*speculative)
+	return NULL;
+      target = ipa_impossible_devirt_target (ie, target);
+    }
 
   return target;
 }
@@ -2267,7 +2287,7 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 {
   if (time_benefit == 0
       || !opt_for_fn (node->decl, flag_ipa_cp_clone)
-      || !optimize_function_for_speed_p (DECL_STRUCT_FUNCTION (node->decl)))
+      || node->optimize_for_size_p ())
     return false;
 
   gcc_assert (size_cost > 0);
@@ -2387,12 +2407,14 @@ gather_context_independent_values (struct ipa_node_params *info,
 	*removable_params_cost
 	  += ipa_get_param_move_cost (info, i);
 
+      if (!ipa_is_param_used (info, i))
+	continue;
+
       ipcp_lattice<ipa_polymorphic_call_context> *ctxlat = &plats->ctxlat;
+      /* Do not account known context as reason for cloning.  We can see
+	 if it permits devirtualization.  */
       if (ctxlat->is_single_const ())
-	{
-	  (*known_contexts)[i] = ctxlat->values->value;
-	  ret = true;
-	}
+	(*known_contexts)[i] = ctxlat->values->value;
 
       if (known_aggs)
 	{
@@ -2494,7 +2516,10 @@ estimate_local_effects (struct cgraph_node *node)
 						    &known_contexts, &known_aggs,
 						    &removable_params_cost);
   known_aggs_ptrs = agg_jmp_p_vec_for_t_vec (known_aggs);
-  if (always_const)
+  int devirt_bonus = devirtualization_time_bonus (node, known_csts,
+					   known_contexts, known_aggs_ptrs);
+  if (always_const || devirt_bonus
+      || (removable_params_cost && node->local.can_change_signature))
     {
       struct caller_statistics stats;
       inline_hints hints;
@@ -2505,8 +2530,7 @@ estimate_local_effects (struct cgraph_node *node)
 					      false);
       estimate_ipcp_clone_size_and_time (node, known_csts, known_contexts,
 					 known_aggs_ptrs, &size, &time, &hints);
-      time -= devirtualization_time_bonus (node, known_csts, known_contexts,
-					   known_aggs_ptrs);
+      time -= devirt_bonus;
       time -= hint_time_bonus (hints);
       time -= removable_params_cost;
       size -= stats.n_calls * removable_params_cost;
@@ -2515,8 +2539,7 @@ estimate_local_effects (struct cgraph_node *node)
 	fprintf (dump_file, " - context independent values, size: %i, "
 		 "time_benefit: %i\n", size, base_time - time);
 
-      if (size <= 0
-	  || node->will_be_removed_from_program_if_no_direct_calls_p ())
+      if (size <= 0 || node->local.local)
 	{
 	  info->do_clone_for_all_contexts = true;
 	  base_time = time;
@@ -2544,6 +2567,10 @@ estimate_local_effects (struct cgraph_node *node)
 		     "max_new_size would be reached with %li.\n",
 		     size + overall_size);
 	}
+      else if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "   Not cloning for all contexts because "
+		 "!good_cloning_opportunity_p.\n");
+	
     }
 
   for (i = 0; i < count ; i++)
@@ -3493,7 +3520,11 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
 	  struct ipa_jump_func *jump_func;
 	  tree t;
 
-          if (i >= ipa_get_cs_argument_count (IPA_EDGE_REF (cs)))
+          if (i >= ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
+	      || (i == 0
+		  && call_passes_through_thunk_p (cs))
+	      || (!cs->callee->instrumentation_clone
+		  && cs->callee->function_symbol ()->instrumentation_clone))
             {
               newval = NULL_TREE;
               break;
@@ -4419,7 +4450,7 @@ identify_dead_nodes (struct cgraph_node *node)
 {
   struct cgraph_node *v;
   for (v = node; v ; v = ((struct ipa_dfs_info *) v->aux)->next_cycle)
-    if (v->will_be_removed_from_program_if_no_direct_calls_p ()
+    if (v->local.local
 	&& !v->call_for_symbol_thunks_and_aliases
 	     (has_undead_caller_from_outside_scc_p, NULL, true))
       IPA_NODE_REF (v)->node_dead = 1;

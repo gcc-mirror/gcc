@@ -23,13 +23,25 @@ struct POD {
 
 enum { N = 123 };
 
+#if defined (__arm__) && defined (__ARM_EABI__)
+// On ARM EABI the cookie is always 8 bytes as per Section 3.2.2 of
+// http://infocenter.arm.com/help/topic/com.arm.doc.ihi0041d/IHI0041D_cppabi.pdf
+static const size_t cookie_size = 8;
+#else
+// On all other targets, the cookie size is the size of size_t
+// GCC, and ideally the C++ standard, should provide an API to
+// retrieve this constant.)
+static const size_t cookie_size = sizeof (size_t);
+#endif
+
 inline __attribute__ ((always_inline))
 void* operator new[] (size_t n)
 {
     // Verify that array new is invoked with an argument large enough
     // for the array and a size_t cookie to store the number of elements.
     // (This holds for classes with user-defined types but not POD types).
-    if (n != N * sizeof (UDClass) + sizeof n) abort ();
+ 
+  if (n != N * sizeof (UDClass) + cookie_size) abort ();
     return malloc (n);
 }
 
@@ -60,7 +72,7 @@ void* operator new[] (size_t n, UDClass *p)
     // Verify that placement array new overload for a class type with
     // a user-defined ctor and dtor is invoked with an argument large
     // enough for the array and a cookie.
-    if (n != N * sizeof (UDClass) + sizeof n) abort ();
+    if (n != N * sizeof (UDClass) + cookie_size) abort ();
     return p;
 }
 

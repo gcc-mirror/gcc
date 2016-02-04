@@ -1,5 +1,5 @@
 /* CPP Library. (Directive handling.)
-   Copyright (C) 1986-2015 Free Software Foundation, Inc.
+   Copyright (C) 1986-2016 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -122,7 +122,8 @@ static void do_pragma_error (cpp_reader *);
 static void do_linemarker (cpp_reader *);
 static const cpp_token *get_token_no_padding (cpp_reader *);
 static const cpp_token *get__Pragma_string (cpp_reader *);
-static void destringize_and_run (cpp_reader *, const cpp_string *);
+static void destringize_and_run (cpp_reader *, const cpp_string *,
+				 source_location);
 static int parse_answer (cpp_reader *, struct answer **, int, source_location);
 static cpp_hashnode *parse_assertion (cpp_reader *, struct answer **, int);
 static struct answer ** find_answer (cpp_hashnode *, const struct answer *);
@@ -1753,7 +1754,8 @@ get__Pragma_string (cpp_reader *pfile)
 /* Destringize IN into a temporary buffer, by removing the first \ of
    \" and \\ sequences, and process the result as a #pragma directive.  */
 static void
-destringize_and_run (cpp_reader *pfile, const cpp_string *in)
+destringize_and_run (cpp_reader *pfile, const cpp_string *in,
+		     source_location expansion_loc)
 {
   const unsigned char *src, *limit;
   char *dest, *result;
@@ -1833,6 +1835,12 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in)
 	      toks = XRESIZEVEC (cpp_token, toks, maxcount);
 	    }
 	  toks[count] = *cpp_get_token (pfile);
+	  /* _Pragma is a builtin, so we're not within a macro-map, and so
+	     the token locations are set to bogus ordinary locations
+	     near to, but after that of the "_Pragma".
+	     Paper over this by setting them equal to the location of the
+	     _Pragma itself (PR preprocessor/69126).  */
+	  toks[count].src_loc = expansion_loc;
 	  /* Macros have been already expanded by cpp_get_token
 	     if the pragma allowed expansion.  */
 	  toks[count++].flags |= NO_EXPAND;
@@ -1867,14 +1875,14 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in)
 
 /* Handle the _Pragma operator.  Return 0 on error, 1 if ok.  */
 int
-_cpp_do__Pragma (cpp_reader *pfile)
+_cpp_do__Pragma (cpp_reader *pfile, source_location expansion_loc)
 {
   const cpp_token *string = get__Pragma_string (pfile);
   pfile->directive_result.type = CPP_PADDING;
 
   if (string)
     {
-      destringize_and_run (pfile, &string->val.str);
+      destringize_and_run (pfile, &string->val.str, expansion_loc);
       return 1;
     }
   cpp_error (pfile, CPP_DL_ERROR,

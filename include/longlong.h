@@ -1086,7 +1086,7 @@ extern UDItype __umulsidi3 (USItype, USItype);
   } while (0)
 #endif
 
-#if defined(__sh__) && !__SHMEDIA__ && W_TYPE_SIZE == 32
+#if defined(__sh__) && (!defined (__SHMEDIA__) || !__SHMEDIA__) && W_TYPE_SIZE == 32
 #ifndef __sh1__
 #define umul_ppmm(w1, w0, u, v) \
   __asm__ (								\
@@ -1159,7 +1159,7 @@ extern UDItype __umulsidi3 (USItype, USItype);
 
 #endif /* __sh__ */
 
-#if defined (__SH5__) && __SHMEDIA__ && W_TYPE_SIZE == 32
+#if defined (__SH5__) && defined (__SHMEDIA__) && __SHMEDIA__ && W_TYPE_SIZE == 32
 #define __umulsidi3(u,v) ((UDItype)(USItype)u*(USItype)v)
 #define count_leading_zeros(count, x) \
   do									\

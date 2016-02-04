@@ -1,4 +1,4 @@
-/* Copyright (C) 1999-2015 Free Software Foundation, Inc.
+/* Copyright (C) 1999-2016 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod  <amacleod@cygnus.com>
                   Andrew Haley  <aph@cygnus.com>
 

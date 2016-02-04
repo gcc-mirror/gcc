@@ -18,13 +18,14 @@ func TestMemStats(t *testing.T) {
 	st := new(MemStats)
 	ReadMemStats(st)
 
-	// Everything except HeapReleased and HeapIdle, because they indeed can be 0.
+	// Everything except HeapReleased, HeapIdle, and NumGC,
+	// because they indeed can be 0.
 	if st.Alloc == 0 || st.TotalAlloc == 0 || st.Sys == 0 || st.Lookups == 0 ||
 		st.Mallocs == 0 || st.Frees == 0 || st.HeapAlloc == 0 || st.HeapSys == 0 ||
 		st.HeapInuse == 0 || st.HeapObjects == 0 || st.StackInuse == 0 ||
 		st.StackSys == 0 || st.MSpanInuse == 0 || st.MSpanSys == 0 || st.MCacheInuse == 0 ||
 		st.MCacheSys == 0 || st.BuckHashSys == 0 || st.GCSys == 0 || st.OtherSys == 0 ||
-		st.NextGC == 0 || st.NumGC == 0 {
+		st.NextGC == 0 {
 		t.Fatalf("Zero value: %+v", *st)
 	}
 
@@ -58,6 +59,14 @@ func TestMemStats(t *testing.T) {
 		if st.PauseTotalNs != pauseTotal {
 			t.Fatalf("PauseTotalNs(%d) != sum PauseNs(%d)", st.PauseTotalNs, pauseTotal)
 		}
+		for i := int(st.NumGC); i < len(st.PauseNs); i++ {
+			if st.PauseNs[i] != 0 {
+				t.Fatalf("Non-zero PauseNs[%d]: %+v", i, st)
+			}
+			if st.PauseEnd[i] != 0 {
+				t.Fatalf("Non-zero PauseEnd[%d]: %+v", i, st)
+			}
+		}
 	} else {
 		if st.PauseTotalNs < pauseTotal {
 			t.Fatalf("PauseTotalNs(%d) < sum PauseNs(%d)", st.PauseTotalNs, pauseTotal)
@@ -80,6 +89,23 @@ func TestStringConcatenationAllocs(t *testing.T) {
 	// Only string concatenation allocates.
 	if n != 1 {
 		t.Fatalf("want 1 allocation, got %v", n)
+	}
+}
+
+func TestTinyAlloc(t *testing.T) {
+	const N = 16
+	var v [N]unsafe.Pointer
+	for i := range v {
+		v[i] = unsafe.Pointer(new(byte))
+	}
+
+	chunks := make(map[uintptr]bool, N)
+	for _, p := range v {
+		chunks[uintptr(p)&^7] = true
+	}
+
+	if len(chunks) == N {
+		t.Fatal("no bytes allocated within the same 8-byte chunk")
 	}
 }
 

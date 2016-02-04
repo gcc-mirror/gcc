@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM RS/6000.
-   Copyright (C) 1991-2015 Free Software Foundation, Inc.
+   Copyright (C) 1991-2016 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -71,6 +71,7 @@
 #include "gstab.h"  /* for N_SLINE */
 #endif
 #include "case-cfn-macros.h"
+#include "ppc-auxv.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -208,7 +209,7 @@ tree rs6000_builtin_types[RS6000_BTI_MAX];
 tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
 
 /* Flag to say the TOC is initialized */
-int toc_initialized;
+int toc_initialized, need_toc_init;
 char toc_label_name[10];
 
 /* Cached value of rs6000_variable_issue. This is cached in
@@ -292,6 +293,88 @@ static struct
   { "rsqrtf",	 (RECIP_SF_RSQRT | RECIP_V4SF_RSQRT) },
   { "rsqrtd",	 (RECIP_DF_RSQRT | RECIP_V2DF_RSQRT) },
 };
+
+/* Used by __builtin_cpu_is(), mapping from PLATFORM names to values.  */
+static const struct
+{
+  const char *cpu;
+  unsigned int cpuid;
+} cpu_is_info[] = {
+  { "power9",	   PPC_PLATFORM_POWER9 },
+  { "power8",	   PPC_PLATFORM_POWER8 },
+  { "power7",	   PPC_PLATFORM_POWER7 },
+  { "power6x",	   PPC_PLATFORM_POWER6X },
+  { "power6",	   PPC_PLATFORM_POWER6 },
+  { "power5+",	   PPC_PLATFORM_POWER5_PLUS },
+  { "power5",	   PPC_PLATFORM_POWER5 },
+  { "ppc970",	   PPC_PLATFORM_PPC970 },
+  { "power4",	   PPC_PLATFORM_POWER4 },
+  { "ppca2",	   PPC_PLATFORM_PPCA2 },
+  { "ppc476",	   PPC_PLATFORM_PPC476 },
+  { "ppc464",	   PPC_PLATFORM_PPC464 },
+  { "ppc440",	   PPC_PLATFORM_PPC440 },
+  { "ppc405",	   PPC_PLATFORM_PPC405 },
+  { "ppc-cell-be", PPC_PLATFORM_CELL_BE }
+};
+
+/* Used by __builtin_cpu_supports(), mapping from HWCAP names to masks.  */
+static const struct
+{
+  const char *hwcap;
+  int mask;
+  unsigned int id;
+} cpu_supports_info[] = {
+  /* AT_HWCAP masks.  */
+  { "4xxmac",		PPC_FEATURE_HAS_4xxMAC,		0 },
+  { "altivec",		PPC_FEATURE_HAS_ALTIVEC,	0 },
+  { "arch_2_05",	PPC_FEATURE_ARCH_2_05,		0 },
+  { "arch_2_06",	PPC_FEATURE_ARCH_2_06,		0 },
+  { "archpmu",		PPC_FEATURE_PERFMON_COMPAT,	0 },
+  { "booke",		PPC_FEATURE_BOOKE,		0 },
+  { "cellbe",		PPC_FEATURE_CELL_BE,		0 },
+  { "dfp",		PPC_FEATURE_HAS_DFP,		0 },
+  { "efpdouble",	PPC_FEATURE_HAS_EFP_DOUBLE,	0 },
+  { "efpsingle",	PPC_FEATURE_HAS_EFP_SINGLE,	0 },
+  { "fpu",		PPC_FEATURE_HAS_FPU,		0 },
+  { "ic_snoop",		PPC_FEATURE_ICACHE_SNOOP,	0 },
+  { "mmu",		PPC_FEATURE_HAS_MMU,		0 },
+  { "notb",		PPC_FEATURE_NO_TB,		0 },
+  { "pa6t",		PPC_FEATURE_PA6T,		0 },
+  { "power4",		PPC_FEATURE_POWER4,		0 },
+  { "power5",		PPC_FEATURE_POWER5,		0 },
+  { "power5+",		PPC_FEATURE_POWER5_PLUS,	0 },
+  { "power6x",		PPC_FEATURE_POWER6_EXT,		0 },
+  { "ppc32",		PPC_FEATURE_32,			0 },
+  { "ppc601",		PPC_FEATURE_601_INSTR,		0 },
+  { "ppc64",		PPC_FEATURE_64,			0 },
+  { "ppcle",		PPC_FEATURE_PPC_LE,		0 },
+  { "smt",		PPC_FEATURE_SMT,		0 },
+  { "spe",		PPC_FEATURE_HAS_SPE,		0 },
+  { "true_le",		PPC_FEATURE_TRUE_LE,		0 },
+  { "ucache",		PPC_FEATURE_UNIFIED_CACHE,	0 },
+  { "vsx",		PPC_FEATURE_HAS_VSX,		0 },
+
+  /* AT_HWCAP2 masks.  */
+  { "arch_2_07",	PPC_FEATURE2_ARCH_2_07,		1 },
+  { "dscr",		PPC_FEATURE2_HAS_DSCR,		1 },
+  { "ebb",		PPC_FEATURE2_HAS_EBB,		1 },
+  { "htm",		PPC_FEATURE2_HAS_HTM,		1 },
+  { "htm-nosc",		PPC_FEATURE2_HTM_NOSC,		1 },
+  { "isel",		PPC_FEATURE2_HAS_ISEL,		1 },
+  { "tar",		PPC_FEATURE2_HAS_TAR,		1 },
+  { "vcrypto",		PPC_FEATURE2_HAS_VEC_CRYPTO,	1 },
+  { "arch_3_00",	PPC_FEATURE2_ARCH_3_00,		1 },
+  { "ieee128",		PPC_FEATURE2_HAS_IEEE128,	1 }
+};
+
+/* Newer LIBCs explicitly export this symbol to declare that they provide
+   the AT_PLATFORM and AT_HWCAP/AT_HWCAP2 values in the TCB.  We emit a
+   reference to this symbol whenever we expand a CPU builtin, so that
+   we never link against an old LIBC.  */
+const char *tcb_verification_symbol = "__parse_hwcap_and_convert_at_platform";
+
+/* True if we have expanded a CPU builtin.  */
+bool cpu_builtin_p;
 
 /* Pointer to function (in rs6000-c.c) that can define or undefine target
    macros that have changed.  Languages that don't support the preprocessor
@@ -407,6 +490,13 @@ mode_supports_pre_modify_p (machine_mode mode)
 {
   return ((reg_addr[mode].addr_mask[RELOAD_REG_ANY] & RELOAD_REG_PRE_MODIFY)
 	  != 0);
+}
+
+/* Return true if we have D-form addressing in altivec registers.  */
+static inline bool
+mode_supports_vmx_dform (machine_mode mode)
+{
+  return ((reg_addr[mode].addr_mask[RELOAD_REG_VMX] & RELOAD_REG_OFFSET) != 0);
 }
 
 
@@ -1221,6 +1311,7 @@ static bool rs6000_secondary_reload_move (enum rs6000_reg_type,
 					  secondary_reload_info *,
 					  bool);
 rtl_opt_pass *make_pass_analyze_swaps (gcc::context*);
+static bool rs6000_keep_leaf_when_profiled () __attribute__ ((unused));
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
@@ -1715,6 +1806,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_INVALID_BINARY_OP
 #define TARGET_INVALID_BINARY_OP rs6000_invalid_binary_op
+
+#undef TARGET_OPTAB_SUPPORTED_P
+#define TARGET_OPTAB_SUPPORTED_P rs6000_optab_supported_p
 
 
 /* Processor table.  */
@@ -2263,7 +2357,9 @@ rs6000_debug_reg_global (void)
 	   "f  reg_class = %s\n"
 	   "v  reg_class = %s\n"
 	   "wa reg_class = %s\n"
+	   "wb reg_class = %s\n"
 	   "wd reg_class = %s\n"
+	   "we reg_class = %s\n"
 	   "wf reg_class = %s\n"
 	   "wg reg_class = %s\n"
 	   "wh reg_class = %s\n"
@@ -2272,6 +2368,7 @@ rs6000_debug_reg_global (void)
 	   "wk reg_class = %s\n"
 	   "wl reg_class = %s\n"
 	   "wm reg_class = %s\n"
+	   "wo reg_class = %s\n"
 	   "wp reg_class = %s\n"
 	   "wq reg_class = %s\n"
 	   "wr reg_class = %s\n"
@@ -2288,7 +2385,9 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_f]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_v]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wa]],
+	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wb]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wd]],
+	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_we]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wf]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wg]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wh]],
@@ -2297,6 +2396,7 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wk]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wl]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wm]],
+	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wo]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wp]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wq]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wr]],
@@ -2669,9 +2769,15 @@ rs6000_setup_reg_addr_masks (void)
 	    }
 
 	  /* GPR and FPR registers can do REG+OFFSET addressing, except
-	     possibly for SDmode.  */
+	     possibly for SDmode.  ISA 3.0 (i.e. power9) adds D-form
+	     addressing for scalars to altivec registers.  */
 	  if ((addr_mask != 0) && !indexed_only_p
-	      && (rc == RELOAD_REG_GPR || rc == RELOAD_REG_FPR))
+	      && msize <= 8
+	      && (rc == RELOAD_REG_GPR
+		  || rc == RELOAD_REG_FPR
+		  || (rc == RELOAD_REG_VMX
+		      && TARGET_P9_DFORM
+		      && (m2 == DFmode || m2 == SFmode))))
 	    addr_mask |= RELOAD_REG_OFFSET;
 
 	  /* VMX registers can do (REG & -16) and ((REG+REG) & -16)
@@ -2995,7 +3101,15 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	rs6000_constraints[RS6000_CONSTRAINT_wp] = VSX_REGS;	/* TFmode  */
     }
 
-  /* Support for new direct moves.  */
+  /* Support for new D-form instructions.  */
+  if (TARGET_P9_DFORM)
+    rs6000_constraints[RS6000_CONSTRAINT_wb] = ALTIVEC_REGS;
+
+  /* Support for ISA 3.0 (power9) vectors.  */
+  if (TARGET_P9_VECTOR)
+    rs6000_constraints[RS6000_CONSTRAINT_wo] = VSX_REGS;
+
+  /* Support for new direct moves (ISA 3.0 + 64bit).  */
   if (TARGET_DIRECT_MOVE_128)
     rs6000_constraints[RS6000_CONSTRAINT_we] = VSX_REGS;
 
@@ -4446,8 +4560,7 @@ rs6000_option_override_internal (bool global_init_p)
       if (TARGET_LONG_DOUBLE_128 && !TARGET_IEEEQUAD)
 	REAL_MODE_FORMAT (TFmode) = &ibm_extended_format;
 
-      if (TARGET_TOC)
-	ASM_GENERATE_INTERNAL_LABEL (toc_label_name, "LCTOC", 1);
+      ASM_GENERATE_INTERNAL_LABEL (toc_label_name, "LCTOC", 1);
 
       /* We can only guarantee the availability of DI pseudo-ops when
 	 assembling for 64-bit targets.  */
@@ -5568,13 +5681,6 @@ rs6000_file_start (void)
 
   if (DEFAULT_ABI == ABI_ELFv2)
     fprintf (file, "\t.abiversion 2\n");
-
-  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2
-      || (TARGET_ELF && flag_pic == 2))
-    {
-      switch_to_section (toc_section);
-      switch_to_section (text_section);
-    }
 }
 
 
@@ -8805,8 +8911,9 @@ rs6000_const_vec (machine_mode mode)
 rtx
 rs6000_gen_le_vsx_permute (rtx source, machine_mode mode)
 {
-  /* Use ROTATE instead of VEC_SELECT on IEEE 128-bit floating point.  */
-  if (FLOAT128_VECTOR_P (mode))
+  /* Use ROTATE instead of VEC_SELECT on IEEE 128-bit floating point, and
+     128-bit integers if they are allowed in VSX registers.  */
+  if (FLOAT128_VECTOR_P (mode) || mode == TImode)
     return gen_rtx_ROTATE (mode, source, GEN_INT (64));
   else
     {
@@ -8879,6 +8986,7 @@ rs6000_emit_le_vsx_move (rtx dest, rtx source, machine_mode mode)
 {
   gcc_assert (!BYTES_BIG_ENDIAN
 	      && VECTOR_MEM_VSX_P (mode)
+	      && !TARGET_P9_VECTOR
 	      && !gpr_or_gpr_p (dest, source)
 	      && (MEM_P (source) ^ MEM_P (dest)));
 
@@ -13348,6 +13456,101 @@ htm_expand_builtin (tree exp, rtx target, bool * expandedp)
   return NULL_RTX;
 }
 
+/* Expand the CPU builtin in FCODE and store the result in TARGET.  */
+
+static rtx
+cpu_expand_builtin (enum rs6000_builtins fcode, tree exp ATTRIBUTE_UNUSED,
+		    rtx target)
+{
+  /* __builtin_cpu_init () is a nop, so expand to nothing.  */
+  if (fcode == RS6000_BUILTIN_CPU_INIT)
+    return const0_rtx;
+
+  if (target == 0 || GET_MODE (target) != SImode)
+    target = gen_reg_rtx (SImode);
+
+#ifdef TARGET_LIBC_PROVIDES_HWCAP_IN_TCB
+  tree arg = TREE_OPERAND (CALL_EXPR_ARG (exp, 0), 0);
+  if (TREE_CODE (arg) != STRING_CST)
+    {
+      error ("builtin %s only accepts a string argument",
+	     rs6000_builtin_info[(size_t) fcode].name);
+      return const0_rtx;
+    }
+
+  if (fcode == RS6000_BUILTIN_CPU_IS)
+    {
+      const char *cpu = TREE_STRING_POINTER (arg);
+      rtx cpuid = NULL_RTX;
+      for (size_t i = 0; i < ARRAY_SIZE (cpu_is_info); i++)
+	if (strcmp (cpu, cpu_is_info[i].cpu) == 0)
+	  {
+	    /* The CPUID value in the TCB is offset by _DL_FIRST_PLATFORM.  */
+	    cpuid = GEN_INT (cpu_is_info[i].cpuid + _DL_FIRST_PLATFORM);
+	    break;
+	  }
+      if (cpuid == NULL_RTX)
+	{
+	  /* Invalid CPU argument.  */
+	  error ("cpu %s is an invalid argument to builtin %s",
+		 cpu, rs6000_builtin_info[(size_t) fcode].name);
+	  return const0_rtx;
+	}
+
+      rtx platform = gen_reg_rtx (SImode);
+      rtx tcbmem = gen_const_mem (SImode,
+				  gen_rtx_PLUS (Pmode,
+						gen_rtx_REG (Pmode, TLS_REGNUM),
+						GEN_INT (TCB_PLATFORM_OFFSET)));
+      emit_move_insn (platform, tcbmem);
+      emit_insn (gen_eqsi3 (target, platform, cpuid));
+    }
+  else if (fcode == RS6000_BUILTIN_CPU_SUPPORTS)
+    {
+      const char *hwcap = TREE_STRING_POINTER (arg);
+      rtx mask = NULL_RTX;
+      int hwcap_offset;
+      for (size_t i = 0; i < ARRAY_SIZE (cpu_supports_info); i++)
+	if (strcmp (hwcap, cpu_supports_info[i].hwcap) == 0)
+	  {
+	    mask = GEN_INT (cpu_supports_info[i].mask);
+	    hwcap_offset = TCB_HWCAP_OFFSET (cpu_supports_info[i].id);
+	    break;
+	  }
+      if (mask == NULL_RTX)
+	{
+	  /* Invalid HWCAP argument.  */
+	  error ("hwcap %s is an invalid argument to builtin %s",
+		 hwcap, rs6000_builtin_info[(size_t) fcode].name);
+	  return const0_rtx;
+	}
+
+      rtx tcb_hwcap = gen_reg_rtx (SImode);
+      rtx tcbmem = gen_const_mem (SImode,
+				  gen_rtx_PLUS (Pmode,
+						gen_rtx_REG (Pmode, TLS_REGNUM),
+						GEN_INT (hwcap_offset)));
+      emit_move_insn (tcb_hwcap, tcbmem);
+      rtx scratch1 = gen_reg_rtx (SImode);
+      emit_insn (gen_rtx_SET (scratch1, gen_rtx_AND (SImode, tcb_hwcap, mask)));
+      rtx scratch2 = gen_reg_rtx (SImode);
+      emit_insn (gen_eqsi3 (scratch2, scratch1, const0_rtx));
+      emit_insn (gen_rtx_SET (target, gen_rtx_XOR (SImode, scratch2, const1_rtx)));
+    }
+
+  /* Record that we have expanded a CPU builtin, so that we can later
+     emit a reference to the special symbol exported by LIBC to ensure we
+     do not link against an old LIBC that doesn't support this feature.  */
+  cpu_builtin_p = true;
+
+#else
+  /* For old LIBCs, always return FALSE.  */
+  emit_move_insn (target, GEN_INT (0));
+#endif /* TARGET_LIBC_PROVIDES_HWCAP_IN_TCB */
+
+  return target;
+}
+
 static rtx
 rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 {
@@ -14674,6 +14877,11 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case RS6000_BUILTIN_MTFSF:
       return rs6000_expand_mtfsf_builtin (CODE_FOR_rs6000_mtfsf, exp);
 
+    case RS6000_BUILTIN_CPU_INIT:
+    case RS6000_BUILTIN_CPU_IS:
+    case RS6000_BUILTIN_CPU_SUPPORTS:
+      return cpu_expand_builtin (fcode, exp, target);
+
     case ALTIVEC_BUILTIN_MASK_FOR_LOAD:
     case ALTIVEC_BUILTIN_MASK_FOR_STORE:
       {
@@ -15062,6 +15270,14 @@ rs6000_init_builtins (void)
 				    intSI_type_node, double_type_node,
 				    NULL_TREE);
   def_builtin ("__builtin_mtfsf", ftype, RS6000_BUILTIN_MTFSF);
+
+  ftype = build_function_type_list (void_type_node, NULL_TREE);
+  def_builtin ("__builtin_cpu_init", ftype, RS6000_BUILTIN_CPU_INIT);
+
+  ftype = build_function_type_list (bool_int_type_node, const_ptr_type_node,
+				    NULL_TREE);
+  def_builtin ("__builtin_cpu_is", ftype, RS6000_BUILTIN_CPU_IS);
+  def_builtin ("__builtin_cpu_supports", ftype, RS6000_BUILTIN_CPU_SUPPORTS);
 
 #if TARGET_XCOFF
   /* AIX libm provides clog as __clog.  */
@@ -16475,8 +16691,6 @@ init_float128_ieee (machine_mode mode)
       set_optab_libfunc (lt_optab, mode, "__ltkf2");
       set_optab_libfunc (le_optab, mode, "__lekf2");
       set_optab_libfunc (unord_optab, mode, "__unordkf2");
-      set_optab_libfunc (cmp_optab, mode, "__cmpokf2");		/* fcmpo */
-      set_optab_libfunc (ucmp_optab, mode, "__cmpukf2");	/* fcmpu */
 
       set_conv_libfunc (sext_optab, mode, SFmode, "__extendsfkf2");
       set_conv_libfunc (sext_optab, mode, DFmode, "__extenddfkf2");
@@ -18260,8 +18474,10 @@ rs6000_secondary_reload (bool in_p,
 
   /* If this is a scalar floating point value and we want to load it into the
      traditional Altivec registers, do it via a move via a traditional floating
-     point register.  Also make sure that non-zero constants use a FPR.  */
+     point register, unless we have D-form addressing.  Also make sure that
+     non-zero constants use a FPR.  */
   if (!done_p && reg_addr[mode].scalar_in_vmx_p
+      && !mode_supports_vmx_dform (mode)
       && (rclass == VSX_REGS || rclass == ALTIVEC_REGS)
       && (memory_p || (GET_CODE (x) == CONST_DOUBLE)))
     {
@@ -18825,10 +19041,14 @@ rs6000_preferred_reload_class (rtx x, enum reg_class rclass)
 	  return NO_REGS;
 	}
 
-      /* If this is a scalar floating point value, prefer the traditional
-	 floating point registers so that we can use D-form (register+offset)
-	 addressing.  */
-      if (GET_MODE_SIZE (mode) < 16)
+      /* D-form addressing can easily reload the value.  */
+      if (mode_supports_vmx_dform (mode))
+	return rclass;
+
+      /* If this is a scalar floating point value and we don't have D-form
+	 addressing, prefer the traditional floating point registers so that we
+	 can use D-form (register+offset) addressing.  */
+      if (GET_MODE_SIZE (mode) < 16 && rclass == VSX_REGS)
 	return FLOAT_REGS;
 
       /* Prefer the Altivec registers if Altivec is handling the vector
@@ -18977,6 +19197,7 @@ rs6000_secondary_reload_class (enum reg_class rclass, machine_mode mode,
      instead of reloading the secondary memory address for Altivec moves.  */
   if (TARGET_VSX
       && GET_MODE_SIZE (mode) < 16
+      && !mode_supports_vmx_dform (mode)
       && (((rclass == GENERAL_REGS || rclass == BASE_REGS)
            && (regno >= 0 && ALTIVEC_REGNO_P (regno)))
           || ((rclass == VSX_REGS || rclass == ALTIVEC_REGS)
@@ -19721,6 +19942,14 @@ print_operand (FILE *file, rtx x, int code)
 	fprintf (file, "%d", 128 >> (REGNO (x) - CR0_REGNO));
       return;
 
+    case 's':
+      /* Low 5 bits of 32 - value */
+      if (! INT_P (x))
+	output_operand_lossage ("invalid %%s value");
+      else
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, (32 - INTVAL (x)) & 31);
+      return;
+
     case 't':
       /* Like 'J' but get to the OVERFLOW/UNORDERED bit.  */
       gcc_assert (REG_P (x) && GET_MODE (x) == CCmode);
@@ -20127,6 +20356,7 @@ rs6000_output_addr_const_extra (FILE *file, rtx x)
 	  {
 	    putc ('-', file);
 	    assemble_name (file, toc_label_name);
+	    need_toc_init = 1;
 	  }
 	else if (TARGET_ELF)
 	  fputs ("@toc", file);
@@ -20264,7 +20494,9 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
   rtx op0 = XEXP (cmp, 0);
   rtx op1 = XEXP (cmp, 1);
 
-  if (FLOAT_MODE_P (mode))
+  if (!TARGET_FLOAT128_HW && FLOAT128_VECTOR_P (mode))
+    comp_mode = CCmode;
+  else if (FLOAT_MODE_P (mode))
     comp_mode = CCFPmode;
   else if (code == GTU || code == LTU
 	   || code == GEU || code == LEU)
@@ -20470,106 +20702,77 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
       emit_insn (cmp);
     }
 
-  /* IEEE 128-bit support in VSX registers.  If we do not have IEEE 128-bit
-     hardware, the comparison functions (__cmpokf2 and __cmpukf2) returns 0..15
-     that is laid out the same way as the PowerPC CR register would for a
-     normal floating point comparison from the fcmpo and fcmpu
-     instructions.  */
-  else if (!TARGET_FLOAT128_HW && FLOAT128_IEEE_P (mode))
+  /* IEEE 128-bit support in VSX registers when we do not have hardware
+     support.  */
+  else if (!TARGET_FLOAT128_HW && FLOAT128_VECTOR_P (mode))
     {
-      rtx and_reg = gen_reg_rtx (SImode);
+      rtx libfunc = NULL_RTX;
+      bool uneq_or_ltgt = false;
       rtx dest = gen_reg_rtx (SImode);
-      rtx libfunc = optab_libfunc (ucmp_optab, mode);
-      HOST_WIDE_INT mask_value = 0;
-
-      /* Values that __cmpokf2/__cmpukf2 returns.  */
-#define PPC_CMP_UNORDERED	0x1		/* isnan (a) || isnan (b).  */
-#define PPC_CMP_EQUAL		0x2		/* a == b.  */
-#define PPC_CMP_GREATER_THEN	0x4		/* a > b.  */
-#define PPC_CMP_LESS_THEN	0x8		/* a < b.  */
 
       switch (code)
 	{
 	case EQ:
-	  mask_value = PPC_CMP_EQUAL;
-	  code = NE;
-	  break;
-
 	case NE:
-	  mask_value = PPC_CMP_EQUAL;
-	  code = EQ;
+	  libfunc = optab_libfunc (eq_optab, mode);
 	  break;
 
 	case GT:
-	  mask_value = PPC_CMP_GREATER_THEN;
-	  code = NE;
-	  break;
-
 	case GE:
-	  mask_value = PPC_CMP_GREATER_THEN | PPC_CMP_EQUAL;
-	  code = NE;
+	  libfunc = optab_libfunc (ge_optab, mode);
 	  break;
 
 	case LT:
-	  mask_value = PPC_CMP_LESS_THEN;
-	  code = NE;
-	  break;
-
 	case LE:
-	  mask_value = PPC_CMP_LESS_THEN | PPC_CMP_EQUAL;
-	  code = NE;
-	  break;
-
-	case UNLE:
-	  mask_value = PPC_CMP_GREATER_THEN;
-	  code = EQ;
-	  break;
-
-	case UNLT:
-	  mask_value = PPC_CMP_GREATER_THEN | PPC_CMP_EQUAL;
-	  code = EQ;
-	  break;
-
-	case UNGE:
-	  mask_value = PPC_CMP_LESS_THEN;
-	  code = EQ;
-	  break;
-
-	case UNGT:
-	  mask_value = PPC_CMP_LESS_THEN | PPC_CMP_EQUAL;
-	  code = EQ;
-	  break;
-
-	case UNEQ:
-	  mask_value = PPC_CMP_EQUAL | PPC_CMP_UNORDERED;
-	  code = NE;
-
-	case LTGT:
-	  mask_value = PPC_CMP_EQUAL | PPC_CMP_UNORDERED;
-	  code = EQ;
+	  libfunc = optab_libfunc (le_optab, mode);
 	  break;
 
 	case UNORDERED:
-	  mask_value = PPC_CMP_UNORDERED;
-	  code = NE;
+	case ORDERED:
+	  libfunc = optab_libfunc (unord_optab, mode);
+	  code = (code == UNORDERED) ? NE : EQ;
 	  break;
 
-	case ORDERED:
-	  mask_value = PPC_CMP_UNORDERED;
-	  code = EQ;
+	case UNGE:
+	case UNGT:
+	  libfunc = optab_libfunc (le_optab, mode);
+	  code = (code == UNGE) ? GE : GT;
+	  break;
+
+	case UNLE:
+	case UNLT:
+	  libfunc = optab_libfunc (ge_optab, mode);
+	  code = (code == UNLE) ? LE : LT;
+	  break;
+
+	case UNEQ:
+	case LTGT:
+	  libfunc = optab_libfunc (le_optab, mode);
+	  uneq_or_ltgt = true;
+	  code = (code = UNEQ) ? NE : EQ;
 	  break;
 
 	default:
 	  gcc_unreachable ();
 	}
 
-      gcc_assert (mask_value != 0);
-      and_reg = emit_library_call_value (libfunc, and_reg, LCT_CONST, SImode, 2,
-					 op0, mode, op1, mode);
+      gcc_assert (libfunc);
+      dest = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
+				      SImode, 2, op0, mode, op1, mode);
 
-      emit_insn (gen_andsi3 (dest, and_reg, GEN_INT (mask_value)));
-      compare_result = gen_reg_rtx (CCmode);
-      comp_mode = CCmode;
+      /* If this is UNEQ or LTGT, we call __lekf2, which returns -1 for less
+	 than, 0 for equal, +1 for greater, and +2 for nan.  We add 1, to give
+	 a value of 0..3, and then do and AND immediate of 1 to isolate whether
+	 it is 0/Nan (i.e. bottom bit is 0), or less than/greater than
+	 (i.e. bottom bit is 1).  */
+      if (uneq_or_ltgt)
+	{
+	  rtx add_result = gen_reg_rtx (SImode);
+	  rtx and_result = gen_reg_rtx (SImode);
+	  emit_insn (gen_addsi3 (add_result, dest, GEN_INT (1)));
+	  emit_insn (gen_andsi3 (and_result, add_result, GEN_INT (1)));
+	  dest = and_result;
+	}
 
       emit_insn (gen_rtx_SET (compare_result,
 			      gen_rtx_COMPARE (comp_mode, dest, const0_rtx)));
@@ -20673,24 +20876,29 @@ rs6000_invalid_binary_op (int op ATTRIBUTE_UNUSED,
     mode2 = GET_MODE_INNER (mode2);
 
   /* Don't allow IEEE 754R 128-bit binary floating point and IBM extended
-     double to intermix.  */
+     double to intermix unless -mfloat128-convert.  */
   if (mode1 == mode2)
     return NULL;
 
-  if ((mode1 == KFmode && mode2 == IFmode)
-      || (mode1 == IFmode && mode2 == KFmode))
-    return N_("__float128 and __ibm128 cannot be used in the same expression");
+  if (!TARGET_FLOAT128_CVT)
+    {
+      if ((mode1 == KFmode && mode2 == IFmode)
+	  || (mode1 == IFmode && mode2 == KFmode))
+	return N_("__float128 and __ibm128 cannot be used in the same "
+		  "expression");
 
-  if (TARGET_IEEEQUAD
-      && ((mode1 == IFmode && mode2 == TFmode)
-	  || (mode1 == TFmode && mode2 == IFmode)))
-    return N_("__ibm128 and long double cannot be used in the same expression");
+      if (TARGET_IEEEQUAD
+	  && ((mode1 == IFmode && mode2 == TFmode)
+	      || (mode1 == TFmode && mode2 == IFmode)))
+	return N_("__ibm128 and long double cannot be used in the same "
+		  "expression");
 
-  if (!TARGET_IEEEQUAD
-      && ((mode1 == KFmode && mode2 == TFmode)
-	  || (mode1 == TFmode && mode2 == KFmode)))
-    return N_("__float128 and long double cannot be used in the same "
-	      "expression");
+      if (!TARGET_IEEEQUAD
+	  && ((mode1 == KFmode && mode2 == TFmode)
+	      || (mode1 == TFmode && mode2 == KFmode)))
+	return N_("__float128 and long double cannot be used in the same "
+		  "expression");
+    }
 
   return NULL;
 }
@@ -21218,14 +21426,15 @@ output_cbranch (rtx op, const char *label, int reversed, rtx_insn *insn)
       /* PROB is the difference from 50%.  */
       int prob = XINT (note, 0) - REG_BR_PROB_BASE / 2;
 
-      /* Only hint for highly probable/improbable branches on newer
-	 cpus as static prediction overrides processor dynamic
-	 prediction.  For older cpus we may as well always hint, but
+      /* Only hint for highly probable/improbable branches on newer cpus when
+	 we have real profile data, as static prediction overrides processor
+	 dynamic prediction.  For older cpus we may as well always hint, but
 	 assume not taken for branches that are very close to 50% as a
 	 mispredicted taken branch is more expensive than a
 	 mispredicted not-taken branch.  */
       if (rs6000_always_hint
 	  || (abs (prob) > REG_BR_PROB_BASE / 100 * 48
+	      && (profile_status_for_fn (cfun) != PROFILE_GUESSED)
 	      && br_prob_note_reliable_p (note)))
 	{
 	  if (abs (prob) > REG_BR_PROB_BASE / 20
@@ -23776,7 +23985,10 @@ rs6000_emit_load_toc_table (int fromprolog)
       ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (lab));
       lab = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
       if (flag_pic == 2)
-	got = gen_rtx_SYMBOL_REF (Pmode, toc_label_name);
+	{
+	  got = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (toc_label_name));
+	  need_toc_init = 1;
+	}
       else
 	got = rs6000_got_sym ();
       tmp1 = tmp2 = dest;
@@ -23820,7 +24032,8 @@ rs6000_emit_load_toc_table (int fromprolog)
 	{
 	  rtx tocsym, lab;
 
-	  tocsym = gen_rtx_SYMBOL_REF (Pmode, toc_label_name);
+	  tocsym = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (toc_label_name));
+	  need_toc_init = 1;
 	  lab = gen_label_rtx ();
 	  emit_insn (gen_load_toc_v4_PIC_1b (tocsym, lab));
 	  emit_move_insn (dest, gen_rtx_REG (Pmode, LR_REGNO));
@@ -23833,11 +24046,9 @@ rs6000_emit_load_toc_table (int fromprolog)
   else if (TARGET_ELF && !TARGET_AIX && flag_pic == 0 && TARGET_MINIMAL_TOC)
     {
       /* This is for AIX code running in non-PIC ELF32.  */
-      char buf[30];
-      rtx realsym;
-      ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
-      realsym = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
+      rtx realsym = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (toc_label_name));
 
+      need_toc_init = 1;
       emit_insn (gen_elf_high (dest, realsym));
       emit_insn (gen_elf_low (dest, dest, realsym));
     }
@@ -24858,6 +25069,31 @@ split_stack_arg_pointer_used_p (void)
 	  }
       }
   return bitmap_bit_p (DF_LR_OUT (bb), 12);
+}
+
+/* Return whether we need to emit an ELFv2 global entry point prologue.  */
+
+static bool
+rs6000_global_entry_point_needed_p (void)
+{
+  /* Only needed for the ELFv2 ABI.  */
+  if (DEFAULT_ABI != ABI_ELFv2)
+    return false;
+
+  /* With -msingle-pic-base, we assume the whole program shares the same
+     TOC, so no global entry point prologues are needed anywhere.  */
+  if (TARGET_SINGLE_PIC_BASE)
+    return false;
+
+  /* Ensure we have a global entry point for thunks.   ??? We could
+     avoid that if the target routine doesn't need a global entry point,
+     but we do not know whether this is the case at this point.  */
+  if (cfun->is_thunk)
+    return true;
+
+  /* For regular functions, rs6000_emit_prologue sets this flag if the
+     routine ever uses the TOC pointer.  */
+  return cfun->machine->r2_setup_needed;
 }
 
 /* Emit function prologue as insns.  */
@@ -25923,12 +26159,52 @@ rs6000_output_function_prologue (FILE *file,
 
   /* ELFv2 ABI r2 setup code and local entry point.  This must follow
      immediately after the global entry point label.  */
-  if (DEFAULT_ABI == ABI_ELFv2 && cfun->machine->r2_setup_needed)
+  if (rs6000_global_entry_point_needed_p ())
     {
       const char *name = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
 
-      fprintf (file, "0:\taddis 2,12,.TOC.-0b@ha\n");
-      fprintf (file, "\taddi 2,2,.TOC.-0b@l\n");
+      (*targetm.asm_out.internal_label) (file, "LCF", rs6000_pic_labelno);
+
+      if (TARGET_CMODEL != CMODEL_LARGE)
+	{
+	  /* In the small and medium code models, we assume the TOC is less
+	     2 GB away from the text section, so it can be computed via the
+	     following two-instruction sequence.  */
+	  char buf[256];
+
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
+	  fprintf (file, "0:\taddis 2,12,.TOC.-");
+	  assemble_name (file, buf);
+	  fprintf (file, "@ha\n");
+	  fprintf (file, "\taddi 2,2,.TOC.-");
+	  assemble_name (file, buf);
+	  fprintf (file, "@l\n");
+	}
+      else
+	{
+	  /* In the large code model, we allow arbitrary offsets between the
+	     TOC and the text section, so we have to load the offset from
+	     memory.  The data field is emitted directly before the global
+	     entry point in rs6000_elf_declare_function_name.  */
+	  char buf[256];
+
+#ifdef HAVE_AS_ENTRY_MARKERS
+	  /* If supported by the linker, emit a marker relocation.  If the
+	     total code size of the final executable or shared library
+	     happens to fit into 2 GB after all, the linker will replace
+	     this code sequence with the sequence for the small or medium
+	     code model.  */
+	  fprintf (file, "\t.reloc .,R_PPC64_ENTRY\n");
+#endif
+	  fprintf (file, "\tld 2,");
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_labelno);
+	  assemble_name (file, buf);
+	  fprintf (file, "-");
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
+	  assemble_name (file, buf);
+	  fprintf (file, "(12)\n");
+	  fprintf (file, "\tadd 2,2,12\n");
+	}
 
       fputs ("\t.localentry\t", file);
       assemble_name (file, name);
@@ -25964,6 +26240,14 @@ rs6000_output_function_prologue (FILE *file,
     }
 
   rs6000_pic_labelno++;
+}
+
+/* -mprofile-kernel code calls mcount before the function prolog,
+   so a profiled leaf function should stay a leaf function.  */
+static bool
+rs6000_keep_leaf_when_profiled ()
+{
+  return TARGET_PROFILE_KERNEL;
 }
 
 /* Non-zero if vmx regs are restored before the frame pop, zero if
@@ -27301,6 +27585,17 @@ rs6000_output_function_epilogue (FILE *file,
 
       fputs ("\t.align 2\n", file);
     }
+
+  /* Arrange to define .LCTOC1 label, if not already done.  */
+  if (need_toc_init)
+    {
+      need_toc_init = 0;
+      if (!toc_initialized)
+	{
+	  switch_to_section (toc_section);
+	  switch_to_section (current_function_section ());
+	}
+    }
 }
 
 /* -fsplit-stack support.  */
@@ -27591,13 +27886,6 @@ rs6000_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 			simple_return_rtx)));
   SIBLING_CALL_P (insn) = 1;
   emit_barrier ();
-
-  /* Ensure we have a global entry point for the thunk.   ??? We could
-     avoid that if the target routine doesn't need a global entry point,
-     but we do not know whether this is the case at this point.  */
-  if (DEFAULT_ABI == ABI_ELFv2
-      && !TARGET_SINGLE_PIC_BASE)
-    cfun->machine->r2_setup_needed = true;
 
   /* Run just enough of rest_of_compilation to get the insns emitted.
      There's not really enough bulk here to make other passes such as
@@ -28516,8 +28804,8 @@ rs6000_adjust_cost (rtx_insn *insn, rtx link, rtx_insn *dep_insn, int cost)
 {
   enum attr_type attr_type;
 
-  if (! recog_memoized (insn))
-    return 0;
+  if (recog_memoized (insn) < 0 || recog_memoized (dep_insn) < 0)
+    return cost;
 
   switch (REG_NOTE_KIND (link))
     {
@@ -31453,9 +31741,9 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
 
       (*targetm.asm_out.internal_label) (file, "LCL", rs6000_pic_labelno);
 
-      ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
       fprintf (file, "\t.long ");
-      assemble_name (file, buf);
+      assemble_name (file, toc_label_name);
+      need_toc_init = 1;
       putc ('-', file);
       ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
       assemble_name (file, buf);
@@ -31464,6 +31752,18 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
 
   ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
   ASM_DECLARE_RESULT (file, DECL_RESULT (decl));
+
+  if (TARGET_CMODEL == CMODEL_LARGE && rs6000_global_entry_point_needed_p ())
+    {
+      char buf[256];
+
+      (*targetm.asm_out.internal_label) (file, "LCL", rs6000_pic_labelno);
+
+      fprintf (file, "\t.quad .TOC.-");
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
+      assemble_name (file, buf);
+      putc ('\n', file);
+    }
 
   if (DEFAULT_ABI == ABI_AIX)
     {
@@ -31516,6 +31816,17 @@ rs6000_elf_file_end (void)
 
   if (flag_split_stack)
     file_end_indicate_split_stack ();
+
+  if (cpu_builtin_p)
+    {
+      /* We have expanded a CPU builtin, so we need to emit a reference to
+	 the special symbol that LIBC uses to declare it supports the
+	 AT_PLATFORM and AT_HWCAP/AT_HWCAP2 in the TCB feature.  */
+      switch_to_section (data_section);
+      fprintf (asm_out_file, "\t.align %u\n", TARGET_32BIT ? 2 : 3);
+      fprintf (asm_out_file, "\t%s %s\n",
+	       TARGET_32BIT ? ".long" : ".quad", tcb_verification_symbol);
+    }
 }
 #endif
 
@@ -31825,6 +32136,7 @@ rs6000_xcoff_file_start (void)
   fputc ('\n', asm_out_file);
   if (write_symbols != NO_DEBUG)
     switch_to_section (private_data_section);
+  switch_to_section (toc_section);
   switch_to_section (text_section);
   if (profile_flag)
     fprintf (asm_out_file, "\t.extern %s\n", RS6000_MCOUNT);
@@ -31888,13 +32200,15 @@ rs6000_declare_alias (struct symtab_node *n, void *d)
           if (dollar_inside) {
 	      if (data->function_descriptor)
                 fprintf(data->file, "\t.rename .%s,\".%s\"\n", buffer, name);
-	      else
-                fprintf(data->file, "\t.rename %s,\"%s\"\n", buffer, name);
+	      fprintf(data->file, "\t.rename %s,\"%s\"\n", buffer, name);
 	    }
 	  if (data->function_descriptor)
-	    fputs ("\t.globl .", data->file);
-	  else
-	    fputs ("\t.globl ", data->file);
+	    {
+	      fputs ("\t.globl .", data->file);
+	      RS6000_OUTPUT_BASENAME (data->file, buffer);
+	      putc ('\n', data->file);
+	    }
+	  fputs ("\t.globl ", data->file);
 	  RS6000_OUTPUT_BASENAME (data->file, buffer);
 	  putc ('\n', data->file);
 	}
@@ -31908,14 +32222,16 @@ rs6000_declare_alias (struct symtab_node *n, void *d)
       if (dollar_inside)
 	{
 	  if (data->function_descriptor)
-            fprintf(data->file, "\t.rename %s,\"%s\"\n", buffer, name);
-	  else
             fprintf(data->file, "\t.rename .%s,\".%s\"\n", buffer, name);
+	  fprintf(data->file, "\t.rename %s,\"%s\"\n", buffer, name);
 	}
       if (data->function_descriptor)
-	fputs ("\t.lglobl .", data->file);
-      else
-	fputs ("\t.lglobl ", data->file);
+	{
+	  fputs ("\t.lglobl .", data->file);
+	  RS6000_OUTPUT_BASENAME (data->file, buffer);
+	  putc ('\n', data->file);
+	}
+      fputs ("\t.lglobl ", data->file);
       RS6000_OUTPUT_BASENAME (data->file, buffer);
       putc ('\n', data->file);
     }
@@ -32611,49 +32927,25 @@ rs6000_memory_move_cost (machine_mode mode, reg_class_t rclass,
    reciprocal of the function, or NULL_TREE if not available.  */
 
 static tree
-rs6000_builtin_reciprocal (unsigned int fn, bool md_fn,
-			   bool sqrt ATTRIBUTE_UNUSED)
+rs6000_builtin_reciprocal (tree fndecl)
 {
-  if (optimize_insn_for_size_p ())
-    return NULL_TREE;
-
-  if (md_fn)
-    switch (fn)
-      {
-      case VSX_BUILTIN_XVSQRTDP:
-	if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))
-	  return NULL_TREE;
-
-	return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_2DF];
-
-      case VSX_BUILTIN_XVSQRTSP:
-	if (!RS6000_RECIP_AUTO_RSQRTE_P (V4SFmode))
-	  return NULL_TREE;
-
-	return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_4SF];
-
-      default:
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    case VSX_BUILTIN_XVSQRTDP:
+      if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))
 	return NULL_TREE;
-      }
 
-  else
-    switch (fn)
-      {
-      case BUILT_IN_SQRT:
-	if (!RS6000_RECIP_AUTO_RSQRTE_P (DFmode))
-	  return NULL_TREE;
+      return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_2DF];
 
-	return rs6000_builtin_decls[RS6000_BUILTIN_RSQRT];
-
-      case BUILT_IN_SQRTF:
-	if (!RS6000_RECIP_AUTO_RSQRTE_P (SFmode))
-	  return NULL_TREE;
-
-	return rs6000_builtin_decls[RS6000_BUILTIN_RSQRTF];
-
-      default:
+    case VSX_BUILTIN_XVSQRTSP:
+      if (!RS6000_RECIP_AUTO_RSQRTE_P (V4SFmode))
 	return NULL_TREE;
-      }
+
+      return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_4SF];
+
+    default:
+      return NULL_TREE;
+    }
 }
 
 /* Load up a constant.  If the mode is a vector mode, splat the value across
@@ -32704,29 +32996,6 @@ rs6000_emit_madd (rtx target, rtx m1, rtx m2, rtx a)
     emit_move_insn (target, dst);
 }
 
-/* Generate a FMSUB instruction: dst = fma(m1, m2, -a).  */
-
-static void
-rs6000_emit_msub (rtx target, rtx m1, rtx m2, rtx a)
-{
-  machine_mode mode = GET_MODE (target);
-  rtx dst;
-
-  /* Altivec does not support fms directly;
-     generate in terms of fma in that case.  */
-  if (optab_handler (fms_optab, mode) != CODE_FOR_nothing)
-    dst = expand_ternary_op (mode, fms_optab, m1, m2, a, target, 0);
-  else
-    {
-      a = expand_unop (mode, neg_optab, a, NULL_RTX, 0);
-      dst = expand_ternary_op (mode, fma_optab, m1, m2, a, target, 0);
-    }
-  gcc_assert (dst != NULL);
-
-  if (dst != target)
-    emit_move_insn (target, dst);
-}
-    
 /* Generate a FNMSUB instruction: dst = -fma(m1, m2, -a).  */
 
 static void
@@ -32825,15 +33094,16 @@ rs6000_emit_swdiv (rtx dst, rtx n, rtx d, bool note_p)
     add_reg_note (get_last_insn (), REG_EQUAL, gen_rtx_DIV (mode, n, d));
 }
 
-/* Newton-Raphson approximation of single/double-precision floating point
-   rsqrt.  Assumes no trapping math and finite arguments.  */
+/* Goldschmidt's Algorithm for single/double-precision floating point
+   sqrt and rsqrt.  Assumes no trapping math and finite arguments.  */
 
 void
-rs6000_emit_swrsqrt (rtx dst, rtx src)
+rs6000_emit_swsqrt (rtx dst, rtx src, bool recip)
 {
   machine_mode mode = GET_MODE (src);
-  rtx x0 = gen_reg_rtx (mode);
-  rtx y = gen_reg_rtx (mode);
+  rtx e = gen_reg_rtx (mode);
+  rtx g = gen_reg_rtx (mode);
+  rtx h = gen_reg_rtx (mode);
 
   /* Low precision estimates guarantee 5 bits of accuracy.  High
      precision estimates guarantee 14 bits of accuracy.  SFmode
@@ -32844,41 +33114,78 @@ rs6000_emit_swrsqrt (rtx dst, rtx src)
   if (mode == DFmode || mode == V2DFmode)
     passes++;
 
-  REAL_VALUE_TYPE dconst3_2;
   int i;
-  rtx halfthree;
+  rtx mhalf;
   enum insn_code code = optab_handler (smul_optab, mode);
   insn_gen_fn gen_mul = GEN_FCN (code);
 
   gcc_assert (code != CODE_FOR_nothing);
 
-  /* Load up the constant 1.5 either as a scalar, or as a vector.  */
-  real_from_integer (&dconst3_2, VOIDmode, 3, SIGNED);
-  SET_REAL_EXP (&dconst3_2, REAL_EXP (&dconst3_2) - 1);
+  mhalf = rs6000_load_constant_and_splat (mode, dconsthalf);
 
-  halfthree = rs6000_load_constant_and_splat (mode, dconst3_2);
+  /* e = rsqrt estimate */
+  emit_insn (gen_rtx_SET (e, gen_rtx_UNSPEC (mode, gen_rtvec (1, src),
+					     UNSPEC_RSQRT)));
 
-  /* x0 = rsqrt estimate */
-  emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, src),
-					      UNSPEC_RSQRT)));
-
-  /* y = 0.5 * src = 1.5 * src - src -> fewer constants */
-  rs6000_emit_msub (y, src, halfthree, src);
-
-  for (i = 0; i < passes; i++)
+  /* If (src == 0.0) filter infinity to prevent NaN for sqrt(0.0).  */
+  if (!recip)
     {
-      rtx x1 = gen_reg_rtx (mode);
-      rtx u = gen_reg_rtx (mode);
-      rtx v = gen_reg_rtx (mode);
+      rtx zero = force_reg (mode, CONST0_RTX (mode));
 
-      /* x1 = x0 * (1.5 - y * (x0 * x0)) */
-      emit_insn (gen_mul (u, x0, x0));
-      rs6000_emit_nmsub (v, y, u, halfthree);
-      emit_insn (gen_mul (x1, x0, v));
-      x0 = x1;
+      if (mode == SFmode)
+	{
+	  rtx target = emit_conditional_move (e, GT, src, zero, mode,
+					      e, zero, mode, 0);
+	  if (target != e)
+	    emit_move_insn (e, target);
+	}
+      else
+	{
+	  rtx cond = gen_rtx_GT (VOIDmode, e, zero);
+	  rs6000_emit_vector_cond_expr (e, e, zero, cond, src, zero);
+	}
     }
 
-  emit_move_insn (dst, x0);
+  /* g = sqrt estimate.  */
+  emit_insn (gen_mul (g, e, src));
+  /* h = 1/(2*sqrt) estimate.  */
+  emit_insn (gen_mul (h, e, mhalf));
+
+  if (recip)
+    {
+      if (passes == 1)
+	{
+	  rtx t = gen_reg_rtx (mode);
+	  rs6000_emit_nmsub (t, g, h, mhalf);
+	  /* Apply correction directly to 1/rsqrt estimate.  */
+	  rs6000_emit_madd (dst, e, t, e);
+	}
+      else
+	{
+	  for (i = 0; i < passes; i++)
+	    {
+	      rtx t1 = gen_reg_rtx (mode);
+	      rtx g1 = gen_reg_rtx (mode);
+	      rtx h1 = gen_reg_rtx (mode);
+
+	      rs6000_emit_nmsub (t1, g, h, mhalf);
+	      rs6000_emit_madd (g1, g, t1, g);
+	      rs6000_emit_madd (h1, h, t1, h);
+
+	      g = g1;
+	      h = h1;
+	    }
+	  /* Multiply by 2 for 1/rsqrt.  */
+	  emit_insn (gen_add3_insn (dst, h, h));
+	}
+    }
+  else
+    {
+      rtx t = gen_reg_rtx (mode);
+      rs6000_emit_nmsub (t, g, h, mhalf);
+      rs6000_emit_madd (dst, g, t, g);
+    }
+
   return;
 }
 
@@ -36553,13 +36860,56 @@ const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
 	  rtx base, offset;
 	  if (GET_CODE (tocrel_body) != SET)
 	    return false;
-	  if (!toc_relative_expr_p (SET_SRC (tocrel_body), false))
+	  /* There is an extra level of indirection for small/large
+	     code models.  */
+	  rtx tocrel_expr = SET_SRC (tocrel_body);
+	  if (GET_CODE (tocrel_expr) == MEM)
+	    tocrel_expr = XEXP (tocrel_expr, 0);
+	  if (!toc_relative_expr_p (tocrel_expr, false))
 	    return false;
 	  split_const (XVECEXP (tocrel_base, 0, 0), &base, &offset);
 	  if (GET_CODE (base) != SYMBOL_REF || !CONSTANT_POOL_ADDRESS_P (base))
 	    return false;
 	}
     }
+  return true;
+}
+
+/* Return TRUE iff OP matches a V2DF reduction pattern.  See the
+   definition of vsx_reduc_<VEC_reduc_name>_v2df in vsx.md.  */
+static bool
+v2df_reduction_p (rtx op)
+{
+  if (GET_MODE (op) != V2DFmode)
+    return false;
+  
+  enum rtx_code code = GET_CODE (op);
+  if (code != PLUS && code != SMIN && code != SMAX)
+    return false;
+
+  rtx concat = XEXP (op, 0);
+  if (GET_CODE (concat) != VEC_CONCAT)
+    return false;
+
+  rtx select0 = XEXP (concat, 0);
+  rtx select1 = XEXP (concat, 1);
+  if (GET_CODE (select0) != VEC_SELECT || GET_CODE (select1) != VEC_SELECT)
+    return false;
+
+  rtx reg0 = XEXP (select0, 0);
+  rtx reg1 = XEXP (select1, 0);
+  if (!rtx_equal_p (reg0, reg1) || !REG_P (reg0))
+    return false;
+
+  rtx parallel0 = XEXP (select0, 1);
+  rtx parallel1 = XEXP (select1, 1);
+  if (GET_CODE (parallel0) != PARALLEL || GET_CODE (parallel1) != PARALLEL)
+    return false;
+
+  if (!rtx_equal_p (XVECEXP (parallel0, 0, 0), const1_rtx)
+      || !rtx_equal_p (XVECEXP (parallel1, 0, 0), const0_rtx))
+    return false;
+
   return true;
 }
 
@@ -36634,6 +36984,8 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  *special = SH_XXPERMDI;
 	  return 1;
 	}
+      else if (v2df_reduction_p (op))
+	return 1;
       else
 	return 0;
 
@@ -36697,6 +37049,9 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	    return 0;
 	  case UNSPEC_VSPLT_DIRECT:
 	    *special = SH_SPLAT;
+	    return 1;
+	  case UNSPEC_REDUC_PLUS:
+	  case UNSPEC_REDUC:
 	    return 1;
 	  }
       }
@@ -36820,6 +37175,15 @@ insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
     {
       *special = SH_CONCAT;
       return 1;
+    }
+
+  /* V2DF reductions are always swappable.  */
+  if (GET_CODE (body) == PARALLEL)
+    {
+      rtx expr = XVECEXP (body, 0, 0);
+      if (GET_CODE (expr) == SET
+	  && v2df_reduction_p (SET_SRC (expr)))
+	return 1;
     }
 
   /* An UNSPEC_VPERM is ok if the mask operand is loaded from the
@@ -37234,10 +37598,19 @@ adjust_vperm (rtx_insn *insn)
      to set tocrel_base; otherwise it would be unnecessary as we've
      already established it will return true.  */
   rtx base, offset;
-  if (!toc_relative_expr_p (SET_SRC (PATTERN (tocrel_insn)), false))
+  rtx tocrel_expr = SET_SRC (PATTERN (tocrel_insn));
+  /* There is an extra level of indirection for small/large code models.  */
+  if (GET_CODE (tocrel_expr) == MEM)
+    tocrel_expr = XEXP (tocrel_expr, 0);
+  if (!toc_relative_expr_p (tocrel_expr, false))
     gcc_unreachable ();
   split_const (XVECEXP (tocrel_base, 0, 0), &base, &offset);
   rtx const_vector = get_pool_constant (base);
+  /* With the extra indirection, get_pool_constant will produce the
+     real constant from the reg_equal expression, so get the real
+     constant.  */
+  if (GET_CODE (const_vector) == SYMBOL_REF)
+    const_vector = get_pool_constant (const_vector);
   gcc_assert (GET_CODE (const_vector) == CONST_VECTOR);
 
   /* Create an adjusted mask from the initial mask.  */
@@ -37682,7 +38055,7 @@ public:
   virtual bool gate (function *)
     {
       return (optimize > 0 && !BYTES_BIG_ENDIAN && TARGET_VSX
-	      && rs6000_optimize_swaps);
+	      && !TARGET_P9_VECTOR && rs6000_optimize_swaps);
     }
 
   virtual unsigned int execute (function *fun)
@@ -37863,6 +38236,22 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   *update = build2 (COMPOUND_EXPR, void_type_node, update_mffs, update_mtfsf);
 }
 
+/* Implement the TARGET_OPTAB_SUPPORTED_P hook.  */
+
+static bool
+rs6000_optab_supported_p (int op, machine_mode mode1, machine_mode,
+			  optimization_type opt_type)
+{
+  switch (op)
+    {
+    case rsqrt_optab:
+      return (opt_type == OPTIMIZE_FOR_SPEED
+	      && RS6000_RECIP_AUTO_RSQRTE_P (mode1));
+
+    default:
+      return true;
+    }
+}
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

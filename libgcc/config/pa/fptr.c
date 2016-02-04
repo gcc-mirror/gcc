@@ -1,5 +1,5 @@
 /* Subroutine for function pointer canonicalization on PA-RISC with ELF32.
-   Copyright (C) 2002-2015 Free Software Foundation, Inc.
+   Copyright (C) 2002-2016 Free Software Foundation, Inc.
    Contributed by John David Anglin (dave.anglin@nrc.ca).
 
 This file is part of GCC.
@@ -40,7 +40,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    the template should it be necessary to change the current branch
    position.  */
 #define NOFFSETS 2
-static int fixup_branch_offset[NOFFSETS] = { 32, -4 };
+static int fixup_branch_offset[NOFFSETS] = { -4, 32 };
 
 #define GET_FIELD(X, FROM, TO) \
   ((X) >> (31 - (TO)) & ((1 << ((TO) - (FROM) + 1)) - 1))
@@ -64,9 +64,10 @@ unsigned int __canonicalize_funcptr_for_compare (fptr_t)
 unsigned int
 __canonicalize_funcptr_for_compare (fptr_t fptr)
 {
-  static unsigned int fixup_plabel[2];
-  static fixup_t fixup;
-  unsigned int *plabel, *got;
+  static unsigned int fixup_plabel[2] __attribute__((used));
+  fixup_t fixup;
+  unsigned int *got, *iptr, *plabel;
+  int i;
 
   /* -1 and page 0 are special.  -1 is used in crtend to mark the end of
      a list of function pointers.  Also return immediately if the plabel
@@ -87,41 +88,32 @@ __canonicalize_funcptr_for_compare (fptr_t fptr)
   if (got !=  &_GLOBAL_OFFSET_TABLE_)
     return plabel[0];
 
-  /* Initialize our plabel for calling fixup if we haven't done so already.
-     This code needs to be thread safe but we don't have to be too careful
-     as the result is invariant.  */
-  if (!fixup)
+  /* Find the first "bl" branch in the offset search list.  This is a
+     call to _dl_fixup or a magic branch to fixup at the beginning of the
+     trampoline template.  The fixup function does the actual runtime
+     resolution of function descriptors.  We only look for "bl" branches
+     with a 17-bit pc-relative displacement.  */
+  for (i = 0; i < NOFFSETS; i++)
     {
-      int i;
-      unsigned int *iptr;
-
-      /* Find the first "bl" branch in the offset search list.  This is a
-	 call to fixup or a magic branch to fixup at the beginning of the
-	 trampoline template.  The fixup function does the actual runtime
-	 resolution of function descriptors.  We only look for "bl" branches
-	 with a 17-bit pc-relative displacement.  */
-      for (i = 0; i < NOFFSETS; i++)
-	{
-	  iptr = (unsigned int *) (got[-2] + fixup_branch_offset[i]);
-	  if ((*iptr & 0xfc00e000) == 0xe8000000)
-	    break;
-	}
-
-      /* This should not happen... */
-      if (i == NOFFSETS)
-	return ~0;
-
-      /* Extract the 17-bit displacement from the instruction.  */
-      iptr += SIGN_EXTEND (GET_FIELD (*iptr, 19, 28) |
-			   GET_FIELD (*iptr, 29, 29) << 10 |
-			   GET_FIELD (*iptr, 11, 15) << 11 |
-			   GET_FIELD (*iptr, 31, 31) << 16, 17);
-
-      /* Build a plabel for an indirect call to fixup.  */
-      fixup_plabel[0] = (unsigned int) iptr + 8;  /* address of fixup */
-      fixup_plabel[1] = got[-1];		  /* ltp for fixup */
-      fixup = (fixup_t) ((int) fixup_plabel | 3);
+      iptr = (unsigned int *) (got[-2] + fixup_branch_offset[i]);
+      if ((*iptr & 0xfc00e000) == 0xe8000000)
+	break;
     }
+
+  /* This should not happen... */
+  if (i == NOFFSETS)
+    return ~0;
+
+  /* Extract the 17-bit displacement from the instruction.  */
+  iptr += SIGN_EXTEND (GET_FIELD (*iptr, 19, 28) |
+		       GET_FIELD (*iptr, 29, 29) << 10 |
+		       GET_FIELD (*iptr, 11, 15) << 11 |
+		       GET_FIELD (*iptr, 31, 31) << 16, 17);
+
+  /* Build a plabel for an indirect call to _dl_fixup.  */
+  fixup_plabel[0] = (unsigned int) iptr + 8;	/* address of fixup */
+  fixup_plabel[1] = got[-1];			/* ltp for fixup */
+  fixup = (fixup_t) ((int) fixup_plabel | 3);
 
   /* Call fixup to resolve the function address.  got[1] contains the
      link_map pointer and plabel[1] the relocation offset.  */

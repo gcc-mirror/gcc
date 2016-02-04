@@ -1,5 +1,5 @@
 /* IBM RS/6000 CPU names..
-   Copyright (C) 1991-2015 Free Software Foundation, Inc.
+   Copyright (C) 1991-2016 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -67,6 +67,7 @@
 				 | OPTION_MASK_ISEL			\
 				 | OPTION_MASK_MODULO			\
 				 | OPTION_MASK_P9_FUSION		\
+				 | OPTION_MASK_P9_DFORM			\
 				 | OPTION_MASK_P9_VECTOR)
 
 #define POWERPC_7400_MASK	(OPTION_MASK_PPC_GFXOPT | OPTION_MASK_ALTIVEC)

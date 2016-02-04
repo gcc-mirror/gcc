@@ -1,5 +1,5 @@
 /* Definitions of x86 tunable features.
-   Copyright (C) 2013-2015 Free Software Foundation, Inc.
+   Copyright (C) 2013-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -550,3 +550,8 @@ DEF_TUNE (X86_TUNE_PROMOTE_QI_REGS, "promote_qi_regs", 0)
    unrolling small loop less important. For, such architectures we adjust
    the unroll factor so that the unrolled loop fits the loop buffer.  */
 DEF_TUNE (X86_TUNE_ADJUST_UNROLL, "adjust_unroll_factor", m_BDVER3 | m_BDVER4)
+
+/* X86_TUNE_ONE_IF_CONV_INSNS: Restrict a number of set insns to be
+   if-converted to one.  */
+DEF_TUNE (X86_TUNE_ONE_IF_CONV_INSN, "one_if_conv_insn",
+	  m_SILVERMONT | m_KNL | m_INTEL | m_CORE_ALL | m_GENERIC)

@@ -1,5 +1,5 @@
 ;; Predicate definitions for Synopsys DesignWare ARC.
-;; Copyright (C) 2007-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2016 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -460,42 +460,6 @@
 }
 )
 
-;; Return true if OP is valid load with update operand.
-(define_predicate "load_update_operand"
-  (match_code "mem")
-{
-  if (GET_CODE (op) != MEM
-      || GET_MODE (op) != mode)
-    return 0;
-  op = XEXP (op, 0);
-  if (GET_CODE (op) != PLUS
-      || GET_MODE (op) != Pmode
-      || !register_operand (XEXP (op, 0), Pmode)
-      || !nonmemory_operand (XEXP (op, 1), Pmode))
-    return 0;
-  return 1;
-
-}
-)
-
-;; Return true if OP is valid store with update operand.
-(define_predicate "store_update_operand"
-  (match_code "mem")
-{
-  if (GET_CODE (op) != MEM
-      || GET_MODE (op) != mode)
-    return 0;
-  op = XEXP (op, 0);
-  if (GET_CODE (op) != PLUS
-      || GET_MODE (op) != Pmode
-      || !register_operand (XEXP (op, 0), Pmode)
-      || !(GET_CODE (XEXP (op, 1)) == CONST_INT
-	   && SMALL_INT (INTVAL (XEXP (op, 1)))))
-    return 0;
-  return 1;
-}
-)
-
 ;; Return true if OP is a non-volatile non-immediate operand.
 ;; Volatile memory refs require a special "cache-bypass" instruction
 ;; and only the standard movXX patterns are set up to handle them.
@@ -545,6 +509,8 @@
       return 1;
     /* From combiner.  */
     case QImode: case HImode: case DImode: case SFmode: case DFmode:
+      return 0;
+    case VOIDmode:
       return 0;
     default:
       gcc_unreachable ();
@@ -813,3 +779,21 @@
 (define_predicate "short_const_int_operand"
   (and (match_operand 0 "const_int_operand")
        (match_test "satisfies_constraint_C16 (op)")))
+
+(define_predicate "mem_noofs_operand"
+  (and (match_code "mem")
+       (match_code "reg" "0")))
+
+(define_predicate "any_mem_operand"
+  (match_code "mem"))
+
+; Special predicate to match even-odd double register pair
+(define_predicate "even_register_operand"
+  (match_code "reg")
+  {
+   if ((GET_MODE (op) != mode) && (mode != VOIDmode))
+      return 0;
+
+   return (REG_P (op) && ((REGNO (op) >= FIRST_PSEUDO_REGISTER)
+			  || ((REGNO (op) & 1) == 0)));
+  })

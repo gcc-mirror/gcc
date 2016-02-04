@@ -28,7 +28,7 @@ init_round (FP_T *src)
 static FP_T
 do_round (FP_T f, int type)
 {
-  short saved_cw, new_cw, clr_mask;
+  unsigned short saved_cw, new_cw, clr_mask;
   FP_T ret;
 
   if ((type & 4))
@@ -42,16 +42,15 @@ do_round (FP_T f, int type)
       clr_mask = ~0x0C3F;
     }
 
-  __asm__ ("fld" ASM_SUFFIX " %0" : : "m" (*&f));
+  __asm__ ("fnstcw %0" : "=m" (saved_cw));
 
-  __asm__ ("fstcw %0" : "=m" (*&saved_cw));
   new_cw = saved_cw & clr_mask;
   new_cw |= type;
-  __asm__ ("fldcw %0" : : "m" (*&new_cw));
 
-  __asm__ ("frndint\n"
-	   "fstp" ASM_SUFFIX " %0\n" : "=m" (*&ret));
-  __asm__ ("fldcw %0" : : "m" (*&saved_cw));
+  __asm__ ("fldcw %2\n\t"
+	   "frndint\n\t"
+	   "fldcw %3" : "=t" (ret)
+		      : "0" (f), "m" (new_cw), "m" (saved_cw));
   return ret;
 }
 

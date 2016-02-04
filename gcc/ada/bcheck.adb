@@ -56,7 +56,7 @@ package body Bcheck is
    procedure Check_Consistent_Restrictions;
    procedure Check_Consistent_Restriction_No_Default_Initialization;
    procedure Check_Consistent_SSO_Default;
-   procedure Check_Consistent_Zero_Cost_Exception_Handling;
+   procedure Check_Consistent_Exception_Handling;
 
    procedure Consistency_Error_Msg (Msg : String);
    --  Produce an error or a warning message, depending on whether an
@@ -88,8 +88,10 @@ package body Bcheck is
          Check_Consistent_SSO_Default;
       end if;
 
-      if Zero_Cost_Exceptions_Specified then
-         Check_Consistent_Zero_Cost_Exception_Handling;
+      if Zero_Cost_Exceptions_Specified
+        or else Frontend_Exceptions_Specified
+      then
+         Check_Consistent_Exception_Handling;
       end if;
 
       Check_Consistent_Normalize_Scalars;
@@ -1164,27 +1166,30 @@ package body Bcheck is
       end loop;
    end Check_Consistent_SSO_Default;
 
-   ---------------------------------------------------
-   -- Check_Consistent_Zero_Cost_Exception_Handling --
-   ---------------------------------------------------
+   -----------------------------------------
+   -- Check_Consistent_Exception_Handling --
+   -----------------------------------------
 
-   --  Check consistent zero cost exception handling. The rule is that
-   --  all units must have the same exception handling mechanism.
+   --  All units must have the same exception handling mechanism.
 
-   procedure Check_Consistent_Zero_Cost_Exception_Handling is
+   procedure Check_Consistent_Exception_Handling is
    begin
       Check_Mechanism : for A1 in ALIs.First + 1 .. ALIs.Last loop
-         if ALIs.Table (A1).Zero_Cost_Exceptions /=
-            ALIs.Table (ALIs.First).Zero_Cost_Exceptions
+         if (ALIs.Table (A1).Zero_Cost_Exceptions /=
+              ALIs.Table (ALIs.First).Zero_Cost_Exceptions)
+           or else
+            (ALIs.Table (A1).Frontend_Exceptions /=
+              ALIs.Table (ALIs.First).Frontend_Exceptions)
          then
             Error_Msg_File_1 := ALIs.Table (A1).Sfile;
             Error_Msg_File_2 := ALIs.Table (ALIs.First).Sfile;
 
-            Consistency_Error_Msg ("{ and { compiled with different "
-                                            & "exception handling mechanisms");
+            Consistency_Error_Msg
+              ("{ and { compiled with different exception handling "
+               & "mechanisms");
          end if;
       end loop Check_Mechanism;
-   end Check_Consistent_Zero_Cost_Exception_Handling;
+   end Check_Consistent_Exception_Handling;
 
    -------------------------------
    -- Check_Duplicated_Subunits --

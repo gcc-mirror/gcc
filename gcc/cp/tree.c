@@ -1,5 +1,5 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -184,6 +184,12 @@ lvalue_kind (const_tree ref)
 				    : TREE_OPERAND (ref, 0));
       op2_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 2));
       break;
+
+    case MODOP_EXPR:
+      /* We expect to see unlowered MODOP_EXPRs only during
+	 template processing.  */
+      gcc_assert (processing_template_decl);
+      return clk_ordinary;
 
     case MODIFY_EXPR:
     case TYPEID_EXPR:
@@ -995,7 +1001,8 @@ move (tree expr)
    the C version of this function does not properly maintain canonical
    types (which are not used in C).  */
 tree
-c_build_qualified_type (tree type, int type_quals)
+c_build_qualified_type (tree type, int type_quals, tree /* orig_qual_type */,
+			size_t /* orig_qual_indirect */)
 {
   return cp_build_qualified_type (type, type_quals);
 }
@@ -1307,7 +1314,22 @@ strip_typedefs (tree t, bool *remove_attributes)
     case FUNCTION_TYPE:
     case METHOD_TYPE:
       {
-	tree arg_types = NULL, arg_node, arg_type;
+	tree arg_types = NULL, arg_node, arg_node2, arg_type;
+	bool changed;
+
+	/* Because we stomp on TREE_PURPOSE of TYPE_ARG_TYPES in many places
+	   around the compiler (e.g. cp_parser_late_parsing_default_args), we
+	   can't expect that re-hashing a function type will find a previous
+	   equivalent type, so try to reuse the input type if nothing has
+	   changed.  If the type is itself a variant, that will change.  */
+	bool is_variant = typedef_variant_p (t);
+	if (remove_attributes
+	    && (TYPE_ATTRIBUTES (t) || TYPE_USER_ALIGN (t)))
+	  is_variant = true;
+
+	type = strip_typedefs (TREE_TYPE (t), remove_attributes);
+	changed = type != TREE_TYPE (t) || is_variant;
+
 	for (arg_node = TYPE_ARG_TYPES (t);
 	     arg_node;
 	     arg_node = TREE_CHAIN (arg_node))
@@ -1317,10 +1339,26 @@ strip_typedefs (tree t, bool *remove_attributes)
 	    arg_type = strip_typedefs (TREE_VALUE (arg_node),
 				       remove_attributes);
 	    gcc_assert (arg_type);
+	    if (arg_type == TREE_VALUE (arg_node) && !changed)
+	      continue;
 
-	    arg_types =
-	      tree_cons (TREE_PURPOSE (arg_node), arg_type, arg_types);
+	    if (!changed)
+	      {
+		changed = true;
+		for (arg_node2 = TYPE_ARG_TYPES (t);
+		     arg_node2 != arg_node;
+		     arg_node2 = TREE_CHAIN (arg_node2))
+		  arg_types
+		    = tree_cons (TREE_PURPOSE (arg_node2),
+				 TREE_VALUE (arg_node2), arg_types);
+	      }
+
+	    arg_types
+	      = tree_cons (TREE_PURPOSE (arg_node), arg_type, arg_types);
 	  }
+
+	if (!changed)
+	  return t;
 
 	if (arg_types)
 	  arg_types = nreverse (arg_types);
@@ -1330,7 +1368,6 @@ strip_typedefs (tree t, bool *remove_attributes)
 	if (arg_node)
 	  arg_types = chainon (arg_types, void_list_node);
 
-	type = strip_typedefs (TREE_TYPE (t), remove_attributes);
 	if (TREE_CODE (t) == METHOD_TYPE)
 	  {
 	    tree class_type = TREE_TYPE (TREE_VALUE (arg_types));
@@ -2741,6 +2778,73 @@ build_min_non_dep_call_vec (tree non_dep, tree fn, vec<tree, va_gc> *argvec)
   TREE_TYPE (t) = TREE_TYPE (non_dep);
   TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (non_dep);
   return convert_from_reference (t);
+}
+
+/* Similar to build_min_non_dep, but for expressions that have been resolved to
+   a call to an operator overload.  OP is the operator that has been
+   overloaded.  NON_DEP is the non-dependent expression that's been built,
+   which should be a CALL_EXPR or an INDIRECT_REF to a CALL_EXPR.  OVERLOAD is
+   the overload that NON_DEP is calling.  */
+
+tree
+build_min_non_dep_op_overload (enum tree_code op,
+			       tree non_dep,
+			       tree overload, ...)
+{
+  va_list p;
+  int nargs, expected_nargs;
+  tree fn, call;
+  vec<tree, va_gc> *args;
+
+  if (REFERENCE_REF_P (non_dep))
+    non_dep = TREE_OPERAND (non_dep, 0);
+
+  nargs = call_expr_nargs (non_dep);
+
+  expected_nargs = cp_tree_code_length (op);
+  if (op == POSTINCREMENT_EXPR
+      || op == POSTDECREMENT_EXPR)
+    expected_nargs += 1;
+  gcc_assert (nargs == expected_nargs);
+
+  args = make_tree_vector ();
+  va_start (p, overload);
+
+  if (TREE_CODE (TREE_TYPE (overload)) == FUNCTION_TYPE)
+    {
+      fn = overload;
+      for (int i = 0; i < nargs; i++)
+	{
+	  tree arg = va_arg (p, tree);
+	  vec_safe_push (args, arg);
+	}
+    }
+  else if (TREE_CODE (TREE_TYPE (overload)) == METHOD_TYPE)
+    {
+      tree object = va_arg (p, tree);
+      tree binfo = TYPE_BINFO (TREE_TYPE (object));
+      tree method = build_baselink (binfo, binfo, overload, NULL_TREE);
+      fn = build_min (COMPONENT_REF, TREE_TYPE (overload),
+		      object, method, NULL_TREE);
+      for (int i = 1; i < nargs; i++)
+	{
+	  tree arg = va_arg (p, tree);
+	  vec_safe_push (args, arg);
+	}
+    }
+  else
+   gcc_unreachable ();
+
+  va_end (p);
+  call = build_min_non_dep_call_vec (non_dep, fn, args);
+  release_tree_vector (args);
+
+  tree call_expr = call;
+  if (REFERENCE_REF_P (call_expr))
+    call_expr = TREE_OPERAND (call_expr, 0);
+  KOENIG_LOOKUP_P (call_expr) = KOENIG_LOOKUP_P (non_dep);
+
+  return call;
 }
 
 tree
@@ -4363,6 +4467,19 @@ cp_tree_operand_length (const_tree t)
 {
   enum tree_code code = TREE_CODE (t);
 
+  if (TREE_CODE_CLASS (code) == tcc_vl_exp)
+    return VL_EXP_OPERAND_LENGTH (t);
+
+  return cp_tree_code_length (code);
+}
+
+/* Like cp_tree_operand_length, but takes a tree_code CODE.  */
+
+int
+cp_tree_code_length (enum tree_code code)
+{
+  gcc_assert (TREE_CODE_CLASS (code) != tcc_vl_exp);
+
   switch (code)
     {
     case PREINCREMENT_EXPR:
@@ -4378,7 +4495,7 @@ cp_tree_operand_length (const_tree t)
       return 1;
 
     default:
-      return TREE_OPERAND_LENGTH (t);
+      return TREE_CODE_LENGTH (code);
     }
 }
 

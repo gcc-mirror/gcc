@@ -1,5 +1,5 @@
 /* Single entry single exit control flow regions.
-   Copyright (C) 2008-2015 Free Software Foundation, Inc.
+   Copyright (C) 2008-2016 Free Software Foundation, Inc.
    Contributed by Jan Sjodin <jan.sjodin@amd.com> and
    Sebastian Pop <sebastian.pop@amd.com>.
 
@@ -42,56 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "sese.h"
 #include "tree-ssa-propagate.h"
-
-/* Record LOOP as occurring in REGION.  */
-
-static void
-sese_record_loop (sese_info_p region, loop_p loop)
-{
-  if (sese_contains_loop (region, loop))
-    return;
-
-  bitmap_set_bit (region->loops, loop->num);
-  region->loop_nest.safe_push (loop);
-}
-
-/* Build the loop nests contained in REGION.  Returns true when the
-   operation was successful.  */
-
-void
-build_sese_loop_nests (sese_info_p region)
-{
-  unsigned i;
-  basic_block bb;
-  struct loop *loop0, *loop1;
-
-  FOR_EACH_BB_FN (bb, cfun)
-    if (bb_in_sese_p (bb, region->region))
-      {
-	struct loop *loop = bb->loop_father;
-
-	/* Only add loops if they are completely contained in the SCoP.  */
-	if (loop->header == bb
-	    && bb_in_sese_p (loop->latch, region->region))
-	  sese_record_loop (region, loop);
-      }
-
-  /* Make sure that the loops in the SESE_LOOP_NEST are ordered.  It
-     can be the case that an inner loop is inserted before an outer
-     loop.  To avoid this, semi-sort once.  */
-  FOR_EACH_VEC_ELT (region->loop_nest, i, loop0)
-    {
-      if (region->loop_nest.length () == i + 1)
-	break;
-
-      loop1 = region->loop_nest[i + 1];
-      if (loop0->num > loop1->num)
-	{
-	  region->loop_nest[i] = loop1;
-	  region->loop_nest[i + 1] = loop0;
-	}
-    }
-}
 
 /* For a USE in BB, if BB is outside REGION, mark the USE in the
    LIVEOUTS set.  */
@@ -228,13 +178,14 @@ new_sese_info (edge entry, edge exit)
 
   region->region.entry = entry;
   region->region.exit = exit;
-  region->loops = BITMAP_ALLOC (NULL);
   region->loop_nest.create (3);
   region->params.create (3);
   region->rename_map = new rename_map_t;
+  region->parameter_rename_map = new parameter_rename_map_t;
   region->copied_bb_map = new bb_map_t;
   region->bbs.create (3);
   region->incomplete_phis.create (3);
+
 
   return region;
 }
@@ -244,9 +195,6 @@ new_sese_info (edge entry, edge exit)
 void
 free_sese_info (sese_info_p region)
 {
-  if (region->loops)
-    region->loops = BITMAP_ALLOC (NULL);
-
   region->params.release ();
   region->loop_nest.release ();
 
@@ -259,9 +207,11 @@ free_sese_info (sese_info_p region)
     (*it).second.release ();
 
   delete region->rename_map;
+  delete region->parameter_rename_map;
   delete region->copied_bb_map;
 
   region->rename_map = NULL;
+  region->parameter_rename_map = NULL;
   region->copied_bb_map = NULL;
 
   region->bbs.release ();
@@ -301,8 +251,6 @@ sese_insert_phis_for_liveouts (sese_info_p region, basic_block bb,
   bitmap_iterator bi;
   bitmap liveouts = BITMAP_ALLOC (NULL);
 
-  update_ssa (TODO_update_ssa);
-
   sese_build_liveouts (region, liveouts);
 
   EXECUTE_IF_SET_IN_BITMAP (liveouts, 0, i, bi)
@@ -310,8 +258,6 @@ sese_insert_phis_for_liveouts (sese_info_p region, basic_block bb,
       sese_add_exit_phis_edge (bb, ssa_name (i), false_e, true_e);
 
   BITMAP_FREE (liveouts);
-
-  update_ssa (TODO_update_ssa);
 }
 
 /* Returns the outermost loop in SCOP that contains BB.  */
@@ -527,7 +473,7 @@ set_ifsese_condition (ifsese if_region, tree condition)
    when T depends on memory that may change in REGION.  */
 
 bool
-invariant_in_sese_p_rec (tree t, sese_l &region, bool *has_vdefs)
+invariant_in_sese_p_rec (tree t, const sese_l &region, bool *has_vdefs)
 {
   if (!defined_in_sese_p (t, region))
     return true;
@@ -600,7 +546,7 @@ scev_analyzable_p (tree def, sese_l &region)
    is not defined in the REGION is considered a parameter.  */
 
 tree
-scalar_evolution_in_region (sese_l &region, loop_p loop, tree t)
+scalar_evolution_in_region (const sese_l &region, loop_p loop, tree t)
 {
   gimple *def;
   struct loop *def_loop;
@@ -613,6 +559,8 @@ scalar_evolution_in_region (sese_l &region, loop_p loop, tree t)
 
   if (TREE_CODE (t) != SSA_NAME
       || loop_in_sese_p (loop, region))
+    /* FIXME: we would need instantiate SCEV to work on a region, and be more
+       flexible wrt. memory loads that may be invariant in the region.  */
     return instantiate_scev (before, loop,
 			     analyze_scalar_evolution (loop, t));
 
@@ -636,4 +584,38 @@ scalar_evolution_in_region (sese_l &region, loop_p loop, tree t)
     return chrec_dont_know;
 
   return instantiate_scev (before, loop, t);
+}
+
+/* Pretty print edge E to FILE.  */
+
+void
+print_edge (FILE *file, const_edge e)
+{
+  fprintf (file, "edge (bb_%d, bb_%d)", e->src->index, e->dest->index);
+}
+
+/* Pretty print sese S to FILE.  */
+
+void
+print_sese (FILE *file, const sese_l &s)
+{
+  fprintf (file, "(entry_"); print_edge (file, s.entry);
+  fprintf (file, ", exit_"); print_edge (file, s.exit);
+  fprintf (file, ")\n");
+}
+
+/* Pretty print edge E to STDERR.  */
+
+DEBUG_FUNCTION void
+debug_edge (const_edge e)
+{
+  print_edge (stderr, e);
+}
+
+/* Pretty print sese S to STDERR.  */
+
+DEBUG_FUNCTION void
+debug_sese (const sese_l &s)
+{
+  print_sese (stderr, s);
 }

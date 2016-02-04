@@ -21,6 +21,8 @@ import (
 var benchmark = flag.Bool("b", false, "run benchmarks")
 
 func TestSelf(t *testing.T) {
+	t.Skip("skipping for gccgo--no importer")
+
 	fset := token.NewFileSet()
 	files, err := pkgFiles(fset, ".")
 	if err != nil {

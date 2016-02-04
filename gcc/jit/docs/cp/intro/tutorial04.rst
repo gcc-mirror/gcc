@@ -1,4 +1,4 @@
-.. Copyright (C) 2014-2015 Free Software Foundation, Inc.
+.. Copyright (C) 2014-2016 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -297,14 +297,13 @@ Compiling the context
 Having finished looping over the blocks and populating them with
 statements, the context is complete.
 
-We can now compile it, and extract machine code from the result:
+We can now compile it, extract machine code from the result, and
+run it:
 
    .. literalinclude:: ../../examples/tut04-toyvm/toyvm.cc
-    :start-after: /* We've now finished populating the context.  Compile it.  */
-    :end-before: /* (this leaks "result" and "funcname") */
+    :start-after: /* Wrapper around a gcc_jit_result *.  */
+    :end-before: /* Functions are compiled to this function ptr type.  */
     :language: c++
-
-We can now run the result:
 
    .. literalinclude:: ../../examples/tut04-toyvm/toyvm.cc
     :start-after: /* JIT-compilation.  */

@@ -17,7 +17,7 @@ foo (int *x)
     int thr = omp_get_thread_num ();
     switch (x[thr])
       {
-      case 4:
+      case 4:;
 	#pragma omp cancel parallel
 	break;
       case 3:
@@ -31,7 +31,7 @@ foo (int *x)
       case 2:
 	usleep (1000);
 	/* FALLTHRU */
-      case 1:
+      case 1:;
 	#pragma omp cancellation point parallel
 	break;
       }

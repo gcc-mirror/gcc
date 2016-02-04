@@ -1,6 +1,6 @@
 // Specific definitions for GNU/Linux  -*- C++ -*-
 
-// Copyright (C) 2000-2015 Free Software Foundation, Inc.
+// Copyright (C) 2000-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,5 +44,9 @@
 #if __GLIBC_PREREQ(2,15) && defined(_GNU_SOURCE)
 # undef _GLIBCXX_HAVE_GETS
 #endif
+
+// Glibc 2.23 removed the obsolete isinf and isnan declarations. Check the
+// version dynamically in case it has changed since libstdc++ was configured.
+#define _GLIBCXX_NO_OBSOLETE_ISINF_ISNAN_DYNAMIC __GLIBC_PREREQ(2,23)
 
 #endif

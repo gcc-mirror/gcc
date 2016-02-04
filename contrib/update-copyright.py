@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (C) 2013 Free Software Foundation, Inc.
+# Copyright (C) 2013-2016 Free Software Foundation, Inc.
 #
 # This script is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -696,6 +696,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('James Theiler, Brian Gough')
         self.add_external_author ('Makoto Matsumoto and Takuji Nishimura,')
         self.add_external_author ('National Research Council of Canada.')
+        self.add_external_author ('NVIDIA Corporation')
         self.add_external_author ('Peter Dimov and Multi Media Ltd.')
         self.add_external_author ('Peter Dimov')
         self.add_external_author ('Pipeline Associates, Inc.')

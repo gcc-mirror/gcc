@@ -937,6 +937,9 @@ except that they are all lower case.
 @c **********************************
 @c * GNU Free Documentation License *
 @c **********************************
+@node GNU Free Documentation License,Index, Program Structure, Top
+@unnumberedsec GNU Free Documentation License
+@set nodefaultgnufreedocumentationlicensenode
 @include fdl.texi
 @c GNU Free Documentation License
 @cindex GNU Free Documentation License

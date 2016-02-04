@@ -1,0 +1,195 @@
+/* Copyright (C) 2015-2016 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it under
+   the terms of the GNU General Public License as published by the Free
+   Software Foundation; either version 3, or (at your option) any later
+   version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+   WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+   for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* This file contains the definitions and documentation for the
+   builtins defined in the ARC part of the GNU compiler.  Before
+   including this file, define a macro
+
+   DEF_BUILTIN(NAME, N_ARGS, TYPE, ICODE, MASK)
+
+   NAME:    `__builtin_arc_name' will be the user-level name of the builtin.
+            `ARC_BUILTIN_NAME' will be the internal builtin's id.
+   N_ARGS:  Number of input arguments.  If special treatment is needed,
+            set to -1 and handle it by hand, see arc.c:arc_expand_builtin().
+   TYPE:    A tree node describing the prototype of the built-in.
+   ICODE:   Name of attached insn or expander.  If special treatment in arc.c
+            is needed to expand the built-in, use `nothing'.
+   MASK:    CPU selector mask.  */
+
+/* Special builtins.  */
+DEF_BUILTIN (NOP,        0, void_ftype_void,        nothing,     1)
+DEF_BUILTIN (RTIE,       0, void_ftype_void,        rtie,        1)
+DEF_BUILTIN (SYNC,       0, void_ftype_void,        sync,        TARGET_ARC700)
+DEF_BUILTIN (BRK,        0, void_ftype_void,        brk,         1)
+DEF_BUILTIN (SWI,        0, void_ftype_void,        swi,         1)
+DEF_BUILTIN (UNIMP_S,    0, void_ftype_void,        unimp_s,     !TARGET_ARC600_FAMILY)
+DEF_BUILTIN (TRAP_S,     1, void_ftype_usint,       trap_s,      !TARGET_ARC600_FAMILY)
+DEF_BUILTIN (ALIGNED,    2, int_ftype_pcvoid_int,   nothing,     1)
+DEF_BUILTIN (CLRI,       0, int_ftype_void,         clri,        TARGET_V2)
+DEF_BUILTIN (SLEEP,      1, void_ftype_usint,       sleep,       1)
+
+DEF_BUILTIN (FLAG,       1, void_ftype_usint,       flag,       1)
+DEF_BUILTIN (SR,         2, void_ftype_usint_usint, sr,         1)
+DEF_BUILTIN (KFLAG,      1, void_ftype_usint,       kflag,      TARGET_V2)
+DEF_BUILTIN (CORE_WRITE, 2, void_ftype_usint_usint, core_write, 1)
+DEF_BUILTIN (SETI,       1, void_ftype_int,         seti,       TARGET_V2)
+
+/* Regular builtins.  */
+DEF_BUILTIN (NORM,       1, int_ftype_int,          clrsbsi2,   TARGET_NORM)
+DEF_BUILTIN (NORMW,      1, int_ftype_short,        normw,      TARGET_NORM)
+DEF_BUILTIN (SWAP,       1, int_ftype_int,          swap,       TARGET_SWAP)
+DEF_BUILTIN (DIVAW,      2, int_ftype_int_int,      divaw,      TARGET_EA_SET)
+DEF_BUILTIN (CORE_READ,  1, usint_ftype_usint,      core_read,  1)
+DEF_BUILTIN (LR,         1, usint_ftype_usint,      lr,         1)
+DEF_BUILTIN (FFS,        1, int_ftype_int,          ffs,        (TARGET_EM && TARGET_NORM) || TARGET_HS)
+DEF_BUILTIN (FLS,        1, int_ftype_int,          fls,        (TARGET_EM && TARGET_NORM) || TARGET_HS)
+
+/* ARC SIMD extenssion.  */
+/* BEGIN SIMD marker.  */
+DEF_BUILTIN (SIMD_BEGIN, 0, void_ftype_void, nothing, 0)
+
+DEF_BUILTIN ( VADDAW, 2, v8hi_ftype_v8hi_v8hi,  vaddaw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VADDW, 2, v8hi_ftype_v8hi_v8hi,   vaddw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (   VAVB, 2, v8hi_ftype_v8hi_v8hi,    vavb_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VAVRB, 2, v8hi_ftype_v8hi_v8hi,   vavrb_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VDIFAW, 2, v8hi_ftype_v8hi_v8hi,  vdifaw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VDIFW, 2, v8hi_ftype_v8hi_v8hi,   vdifw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VMAXAW, 2, v8hi_ftype_v8hi_v8hi,  vmaxaw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VMAXW, 2, v8hi_ftype_v8hi_v8hi,   vmaxw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VMINAW, 2, v8hi_ftype_v8hi_v8hi,  vminaw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VMINW, 2, v8hi_ftype_v8hi_v8hi,   vminw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VMULAW, 2, v8hi_ftype_v8hi_v8hi,  vmulaw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VMULFAW, 2, v8hi_ftype_v8hi_v8hi, vmulfaw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VMULFW, 2, v8hi_ftype_v8hi_v8hi,  vmulfw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VMULW, 2, v8hi_ftype_v8hi_v8hi,   vmulw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VSUBAW, 2, v8hi_ftype_v8hi_v8hi,  vsubaw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VSUBW, 2, v8hi_ftype_v8hi_v8hi,   vsubw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VSUMMW, 2, v8hi_ftype_v8hi_v8hi,  vsummw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (   VAND, 2, v8hi_ftype_v8hi_v8hi,    vand_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VANDAW, 2, v8hi_ftype_v8hi_v8hi,  vandaw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (   VBIC, 2, v8hi_ftype_v8hi_v8hi,    vbic_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VBICAW, 2, v8hi_ftype_v8hi_v8hi,  vbicaw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (    VOR, 2, v8hi_ftype_v8hi_v8hi,     vor_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (   VXOR, 2, v8hi_ftype_v8hi_v8hi,    vxor_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VXORAW, 2, v8hi_ftype_v8hi_v8hi,  vxoraw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (   VEQW, 2, v8hi_ftype_v8hi_v8hi,    veqw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (   VLEW, 2, v8hi_ftype_v8hi_v8hi,    vlew_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (   VLTW, 2, v8hi_ftype_v8hi_v8hi,    vltw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (   VNEW, 2, v8hi_ftype_v8hi_v8hi,    vnew_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VMR1AW, 2, v8hi_ftype_v8hi_v8hi,  vmr1aw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VMR1W, 2, v8hi_ftype_v8hi_v8hi,   vmr1w_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VMR2AW, 2, v8hi_ftype_v8hi_v8hi,  vmr2aw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VMR2W, 2, v8hi_ftype_v8hi_v8hi,   vmr2w_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VMR3AW, 2, v8hi_ftype_v8hi_v8hi,  vmr3aw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VMR3W, 2, v8hi_ftype_v8hi_v8hi,   vmr3w_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VMR4AW, 2, v8hi_ftype_v8hi_v8hi,  vmr4aw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VMR4W, 2, v8hi_ftype_v8hi_v8hi,   vmr4w_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VMR5AW, 2, v8hi_ftype_v8hi_v8hi,  vmr5aw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VMR5W, 2, v8hi_ftype_v8hi_v8hi,   vmr5w_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VMR6AW, 2, v8hi_ftype_v8hi_v8hi,  vmr6aw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VMR6W, 2, v8hi_ftype_v8hi_v8hi,   vmr6w_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VMR7AW, 2, v8hi_ftype_v8hi_v8hi,  vmr7aw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VMR7W, 2, v8hi_ftype_v8hi_v8hi,   vmr7w_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (   VMRB, 2, v8hi_ftype_v8hi_v8hi,    vmrb_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VH264F, 2, v8hi_ftype_v8hi_v8hi,  vh264f_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VH264FT, 2, v8hi_ftype_v8hi_v8hi, vh264ft_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VH264FW, 2, v8hi_ftype_v8hi_v8hi, vh264fw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VVC1F, 2, v8hi_ftype_v8hi_v8hi,   vvc1f_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VVC1FT, 2, v8hi_ftype_v8hi_v8hi,  vvc1ft_insn, TARGET_SIMD_SET)
+
+DEF_BUILTIN ( VBADDW, 2, v8hi_ftype_v8hi_int,  vbaddw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VBMAXW, 2, v8hi_ftype_v8hi_int,  vbmaxw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VBMINW, 2, v8hi_ftype_v8hi_int,  vbminw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VBMULAW, 2, v8hi_ftype_v8hi_int, vbmulaw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VBMULFW, 2, v8hi_ftype_v8hi_int, vbmulfw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VBMULW, 2, v8hi_ftype_v8hi_int,  vbmulw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VBRSUBW, 2, v8hi_ftype_v8hi_int, vbrsubw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VBSUBW, 2, v8hi_ftype_v8hi_int,  vbsubw_insn, TARGET_SIMD_SET)
+
+/* Va, Vb, Ic instructions.  */
+DEF_BUILTIN ( VASRW, 2, v8hi_ftype_v8hi_int,  vasrw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VSR8, 2, v8hi_ftype_v8hi_int,   vsr8_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VSR8AW, 2, v8hi_ftype_v8hi_int, vsr8aw_insn, TARGET_SIMD_SET)
+
+/* Va, Vb, u6 instructions.  */
+DEF_BUILTIN (  VASRRWi, 2, v8hi_ftype_v8hi_int,   vasrrwi_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VASRSRWi, 2, v8hi_ftype_v8hi_int,  vasrsrwi_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (   VASRWi, 2, v8hi_ftype_v8hi_int,    vasrwi_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VASRPWBi, 2, v8hi_ftype_v8hi_int,  vasrpwbi_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VASRRPWBi, 2, v8hi_ftype_v8hi_int, vasrrpwbi_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VSR8AWi, 2, v8hi_ftype_v8hi_int,   vsr8awi_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (    VSR8i, 2, v8hi_ftype_v8hi_int,     vsr8i_insn, TARGET_SIMD_SET)
+
+/* Va, Vb, u8 (simm) instructions.  */
+DEF_BUILTIN (  VMVAW, 2, v8hi_ftype_v8hi_int,   vmvaw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (   VMVW, 2, v8hi_ftype_v8hi_int,    vmvw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VMVZW, 2, v8hi_ftype_v8hi_int,   vmvzw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VD6TAPF, 2, v8hi_ftype_v8hi_int, vd6tapf_insn, TARGET_SIMD_SET)
+
+/* Va, rlimm, u8 (simm) instructions.  */
+DEF_BUILTIN (VMOVAW, 2, v8hi_ftype_int_int, vmovaw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VMOVW, 2, v8hi_ftype_int_int,  vmovw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VMOVZW, 2, v8hi_ftype_int_int, vmovzw_insn, TARGET_SIMD_SET)
+
+/* Va, Vb instructions.  */
+DEF_BUILTIN ( VABSAW, 1, v8hi_ftype_v8hi,  vabsaw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VABSW, 1, v8hi_ftype_v8hi,   vabsw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VADDSUW, 1, v8hi_ftype_v8hi, vaddsuw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VSIGNW, 1, v8hi_ftype_v8hi,  vsignw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VEXCH1, 1, v8hi_ftype_v8hi,  vexch1_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VEXCH2, 1, v8hi_ftype_v8hi,  vexch2_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VEXCH4, 1, v8hi_ftype_v8hi,  vexch4_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VUPBAW, 1, v8hi_ftype_v8hi,  vupbaw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VUPBW, 1, v8hi_ftype_v8hi,   vupbw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VUPSBAW, 1, v8hi_ftype_v8hi, vupsbaw_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VUPSBW, 1, v8hi_ftype_v8hi,  vupsbw_insn, TARGET_SIMD_SET)
+
+/* SIMD special DIb, rlimm, rlimm instructions.  */
+DEF_BUILTIN (VDIRUN, 2, void_ftype_int_int, vdirun_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VDORUN, 2, void_ftype_int_int, vdorun_insn, TARGET_SIMD_SET)
+
+/* SIMD special DIb, limm, rlimm instructions.  */
+DEF_BUILTIN (VDIWR, 2, void_ftype_int_int, vdiwr_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VDOWR, 2, void_ftype_int_int, vdowr_insn, TARGET_SIMD_SET)
+
+/* rlimm instructions.  */
+DEF_BUILTIN (   VREC, 1, void_ftype_int,    vrec_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (   VRUN, 1, void_ftype_int,    vrun_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VRECRUN, 1, void_ftype_int, vrecrun_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VENDREC, 1, void_ftype_int, vendrec_insn, TARGET_SIMD_SET)
+
+/* Va, [Ib,u8] instructions.  */
+DEF_BUILTIN (VLD32WH, 3, v8hi_ftype_v8hi_int_int, vld32wh_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VLD32WL, 3, v8hi_ftype_v8hi_int_int, vld32wl_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VLD64, 3, v8hi_ftype_v8hi_int_int,   vld64_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (  VLD32, 3, v8hi_ftype_v8hi_int_int,   vld32_insn, TARGET_SIMD_SET)
+
+DEF_BUILTIN (VLD64W, 2, v8hi_ftype_int_int,      vld64w_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VLD128, 2, v8hi_ftype_int_int,      vld128_insn, TARGET_SIMD_SET)
+
+DEF_BUILTIN (VST128, 3, void_ftype_v8hi_int_int, vst128_insn, TARGET_SIMD_SET)
+DEF_BUILTIN ( VST64, 3, void_ftype_v8hi_int_int,  vst64_insn, TARGET_SIMD_SET)
+
+/* Va, [Ib, u8] instructions.  */
+DEF_BUILTIN (VST16_N, 4, void_ftype_v8hi_int_int_int, vst16_n_insn, TARGET_SIMD_SET)
+DEF_BUILTIN (VST32_N, 4, void_ftype_v8hi_int_int_int, vst32_n_insn, TARGET_SIMD_SET)
+
+DEF_BUILTIN (VINTI, 1, void_ftype_int, vinti_insn, TARGET_SIMD_SET)
+
+/* END SIMD marker.  */
+DEF_BUILTIN (SIMD_END, 0, void_ftype_void, nothing, 0)

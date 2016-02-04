@@ -1,6 +1,6 @@
 /* Test whether all of the 64-bit function specific options are accepted
    without error.  */
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 
 extern void test_abm (void)			__attribute__((__target__("abm")));
 extern void test_aes (void)			__attribute__((__target__("aes")));

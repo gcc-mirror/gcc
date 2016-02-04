@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -94,6 +94,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "cilk.h"
 #include "cfgexpand.h"
+#include "gimplify.h"
 
 /* Estimate runtime of function can easilly run into huge numbers with many
    nested loops.  Be sure we can compute time * INLINE_SIZE_SCALE * 2 in an
@@ -1773,9 +1774,9 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 	     unordered one.  Be sure it is not confused with NON_CONSTANT.  */
 	  if (this_code != ERROR_MARK)
 	    {
-	      struct predicate p = add_condition (summary, index, &aggpos,
-						  this_code,
-						  gimple_cond_rhs (last));
+	      struct predicate p = add_condition
+		 (summary, index, &aggpos, this_code,
+		  unshare_expr_without_location (gimple_cond_rhs (last)));
 	      e->aux = edge_predicate_pool.allocate ();
 	      *(struct predicate *) e->aux = p;
 	    }
@@ -1861,12 +1862,15 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
       if (!min && !max)
 	p = true_predicate ();
       else if (!max)
-	p = add_condition (summary, index, &aggpos, EQ_EXPR, min);
+	p = add_condition (summary, index, &aggpos, EQ_EXPR,
+			   unshare_expr_without_location (min));
       else
 	{
 	  struct predicate p1, p2;
-	  p1 = add_condition (summary, index, &aggpos, GE_EXPR, min);
-	  p2 = add_condition (summary, index, &aggpos, LE_EXPR, max);
+	  p1 = add_condition (summary, index, &aggpos, GE_EXPR,
+			      unshare_expr_without_location (min));
+	  p2 = add_condition (summary, index, &aggpos, LE_EXPR,
+			      unshare_expr_without_location (max));
 	  p = and_predicates (summary->conds, &p1, &p2);
 	}
       *(struct predicate *) e->aux
@@ -3704,7 +3708,7 @@ simple_edge_hints (struct cgraph_edge *edge)
 
   if (callee->lto_file_data && edge->caller->lto_file_data
       && edge->caller->lto_file_data != callee->lto_file_data
-      && !callee->merged)
+      && !callee->merged_comdat && !callee->icf_merged)
     hints |= INLINE_HINT_cross_module;
 
   return hints;

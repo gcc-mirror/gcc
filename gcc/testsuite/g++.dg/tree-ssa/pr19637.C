@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-ipa-icf -fdump-tree-dom1" } */
+/* { dg-options "-O2 -fno-ipa-icf -fdump-tree-dom2" } */
 
 #include <new>
 
@@ -29,4 +29,4 @@ int foo_void_offset(void)
   return reinterpret_cast<Foo *>(&i[0])->i[0];
 }
 
-/* { dg-final { scan-tree-dump-times "return 1;" 3 "dom1" } } */
+/* { dg-final { scan-tree-dump-times "return 1;" 3 "dom2" } } */

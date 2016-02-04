@@ -3,7 +3,7 @@
 ;; expander, and the actual vector instructions will be in altivec.md and
 ;; vsx.md
 
-;; Copyright (C) 2009-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2016 Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 
 ;; This file is part of GCC.
@@ -113,6 +113,7 @@
     }
   if (!BYTES_BIG_ENDIAN
       && VECTOR_MEM_VSX_P (<MODE>mode)
+      && !TARGET_P9_VECTOR
       && !gpr_or_gpr_p (operands[0], operands[1])
       && (memory_operand (operands[0], <MODE>mode)
           ^ memory_operand (operands[1], <MODE>mode)))
@@ -269,7 +270,16 @@
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
 	(sqrt:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
-  "")
+{
+  if (<MODE>mode == V4SFmode
+      && !optimize_function_for_size_p (cfun)
+      && flag_finite_math_only && !flag_trapping_math
+      && flag_unsafe_math_optimizations)
+    {
+      rs6000_emit_swsqrt (operands[0], operands[1], 0);
+      DONE;
+    }
+})
 
 (define_expand "rsqrte<mode>2"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")

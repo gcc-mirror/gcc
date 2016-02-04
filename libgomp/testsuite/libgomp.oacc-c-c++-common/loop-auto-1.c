@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-additional-options "-O2" */
+/* { dg-additional-options "-O2" } */
 
 #include <stdio.h>
 #include <openacc.h>

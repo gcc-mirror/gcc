@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fnon-call-exceptions -fdump-tree-lim1-details -w" } */
+/* { dg-options "-O -fnon-call-exceptions -fdump-tree-lim2-details -w" } */
 
 extern volatile int y;
 
@@ -16,4 +16,4 @@ foo (double a, int x)
 
 // The expression 1.0 / 0.0 should not be treated as a loop invariant
 // if it may throw an exception.
-// { dg-final { scan-tree-dump-times "invariant up to" 0 "lim1" } }
+// { dg-final { scan-tree-dump-times "invariant up to" 0 "lim2" } }

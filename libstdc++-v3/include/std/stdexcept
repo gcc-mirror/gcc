@@ -1,6 +1,6 @@
 // Standard exception classes  -*- C++ -*-
 
-// Copyright (C) 2001-2015 Free Software Foundation, Inc.
+// Copyright (C) 2001-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -117,11 +117,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   public:
     /** Takes a character string describing the error.  */
     explicit 
-    logic_error(const string& __arg);
+    logic_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 
 #if __cplusplus >= 201103L
     explicit
-    logic_error(const char*);
+    logic_error(const char*) _GLIBCXX_TXN_SAFE;
 #endif
 
 #if _GLIBCXX_USE_CXX11_ABI || _GLIBCXX_DEFINE_STDEXCEPT_COPY_OPS
@@ -129,12 +129,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     logic_error& operator=(const logic_error&) _GLIBCXX_USE_NOEXCEPT;
 #endif
 
-    virtual ~logic_error() _GLIBCXX_USE_NOEXCEPT;
+    virtual ~logic_error() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
 
     /** Returns a C-style character string describing the general cause of
      *  the current error (the same string passed to the ctor).  */
     virtual const char* 
-    what() const _GLIBCXX_USE_NOEXCEPT;
+    what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
+
+# ifdef _GLIBCXX_TM_TS_INTERNAL
+    friend void*
+    ::_txnal_logic_error_get_msg(void* e);
+# endif
   };
 
   /** Thrown by the library, or by you, to report domain errors (domain in
@@ -142,9 +147,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class domain_error : public logic_error 
   {
   public:
-    explicit domain_error(const string& __arg);
+    explicit domain_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
-    explicit domain_error(const char*);
+    explicit domain_error(const char*) _GLIBCXX_TXN_SAFE;
 #endif
     virtual ~domain_error() _GLIBCXX_USE_NOEXCEPT;
   };
@@ -153,9 +158,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class invalid_argument : public logic_error 
   {
   public:
-    explicit invalid_argument(const string& __arg);
+    explicit invalid_argument(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
-    explicit invalid_argument(const char*);
+    explicit invalid_argument(const char*) _GLIBCXX_TXN_SAFE;
 #endif
     virtual ~invalid_argument() _GLIBCXX_USE_NOEXCEPT;
   };
@@ -165,9 +170,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class length_error : public logic_error 
   {
   public:
-    explicit length_error(const string& __arg);
+    explicit length_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
-    explicit length_error(const char*);
+    explicit length_error(const char*) _GLIBCXX_TXN_SAFE;
 #endif
     virtual ~length_error() _GLIBCXX_USE_NOEXCEPT;
   };
@@ -177,9 +182,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class out_of_range : public logic_error 
   {
   public:
-    explicit out_of_range(const string& __arg);
+    explicit out_of_range(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
-    explicit out_of_range(const char*);
+    explicit out_of_range(const char*) _GLIBCXX_TXN_SAFE;
 #endif
     virtual ~out_of_range() _GLIBCXX_USE_NOEXCEPT;
   };
@@ -196,11 +201,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   public:
     /** Takes a character string describing the error.  */
     explicit 
-    runtime_error(const string& __arg);
+    runtime_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 
 #if __cplusplus >= 201103L
     explicit
-    runtime_error(const char*);
+    runtime_error(const char*) _GLIBCXX_TXN_SAFE;
 #endif
 
 #if _GLIBCXX_USE_CXX11_ABI || _GLIBCXX_DEFINE_STDEXCEPT_COPY_OPS
@@ -208,21 +213,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     runtime_error& operator=(const runtime_error&) _GLIBCXX_USE_NOEXCEPT;
 #endif
 
-    virtual ~runtime_error() _GLIBCXX_USE_NOEXCEPT;
+    virtual ~runtime_error() _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
 
     /** Returns a C-style character string describing the general cause of
      *  the current error (the same string passed to the ctor).  */
     virtual const char* 
-    what() const _GLIBCXX_USE_NOEXCEPT;
+    what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT;
+
+# ifdef _GLIBCXX_TM_TS_INTERNAL
+    friend void*
+    ::_txnal_runtime_error_get_msg(void* e);
+# endif
   };
 
   /** Thrown to indicate range errors in internal computations.  */
   class range_error : public runtime_error 
   {
   public:
-    explicit range_error(const string& __arg);
+    explicit range_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
-    explicit range_error(const char*);
+    explicit range_error(const char*) _GLIBCXX_TXN_SAFE;
 #endif
     virtual ~range_error() _GLIBCXX_USE_NOEXCEPT;
   };
@@ -231,9 +241,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class overflow_error : public runtime_error 
   {
   public:
-    explicit overflow_error(const string& __arg);
+    explicit overflow_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
-    explicit overflow_error(const char*);
+    explicit overflow_error(const char*) _GLIBCXX_TXN_SAFE;
 #endif
     virtual ~overflow_error() _GLIBCXX_USE_NOEXCEPT;
   };
@@ -242,9 +252,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class underflow_error : public runtime_error 
   {
   public:
-    explicit underflow_error(const string& __arg);
+    explicit underflow_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
-    explicit underflow_error(const char*);
+    explicit underflow_error(const char*) _GLIBCXX_TXN_SAFE;
 #endif
     virtual ~underflow_error() _GLIBCXX_USE_NOEXCEPT;
   };

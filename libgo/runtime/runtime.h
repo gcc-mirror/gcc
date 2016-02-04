@@ -329,6 +329,7 @@ struct	SigTab
 {
 	int32	sig;
 	int32	flags;
+	void*   fwdsig;
 };
 enum
 {
@@ -338,8 +339,7 @@ enum
 	SigPanic = 1<<3,	// if the signal is from the kernel, panic
 	SigDefault = 1<<4,	// if the signal isn't explicitly requested, don't monitor it
 	SigHandling = 1<<5,	// our signal handler is registered
-	SigIgnored = 1<<6,	// the signal was ignored before we registered for it
-	SigGoExit = 1<<7,	// cause all runtime procs to exit (only used on Plan 9).
+	SigGoExit = 1<<6,	// cause all runtime procs to exit (only used on Plan 9).
 };
 
 // Layout of in-memory per-function information prepared by linker
@@ -450,11 +450,22 @@ struct CgoMal
 struct DebugVars
 {
 	int32	allocfreetrace;
+	int32   cgocheck;
 	int32	efence;
+	int32   gccheckmark;
+	int32   gcpacertrace;
+	int32   gcshrinkstackoff;
+	int32   gcstackbarrieroff;
+	int32   gcstackbarrierall;
+	int32   gcstoptheworld;
 	int32	gctrace;
 	int32	gcdead;
+	int32   invalidptr;
+	int32   sbrk;
+	int32   scavenge;
 	int32	scheddetail;
 	int32	schedtrace;
+	int32   wbshadow;
 };
 
 extern bool runtime_precisestack;

@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -431,12 +431,8 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 		 brought into a non-EH function unless we know that the callee
 		 does not throw.
 		 This is tracked by DECL_FUNCTION_PERSONALITY.  */
-	      || (check_match (flag_non_call_exceptions)
-		  /* TODO: We also may allow bringing !flag_non_call_exceptions
-		     to flag_non_call_exceptions function, but that may need
-		     extra work in tree-inline to add the extra EH edges.  */
-		  && (!opt_for_fn (callee->decl, flag_non_call_exceptions)
-		      || DECL_FUNCTION_PERSONALITY (callee->decl)))
+	      || (check_maybe_up (flag_non_call_exceptions)
+		  && DECL_FUNCTION_PERSONALITY (callee->decl))
 	      || (check_maybe_up (flag_exceptions)
 		  && DECL_FUNCTION_PERSONALITY (callee->decl))
 	      /* Strictly speaking only when the callee contains function
@@ -466,7 +462,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
          optimized with the optimization flags of module they are used in.
 	 Also do not care about mixing up size/speed optimization when
 	 DECL_DISREGARD_INLINE_LIMITS is set.  */
-      else if ((callee->merged
+      else if ((callee->merged_comdat
 	        && !lookup_attribute ("optimize",
 				      DECL_ATTRIBUTES (caller->decl)))
 	       || DECL_DISREGARD_INLINE_LIMITS (callee->decl))

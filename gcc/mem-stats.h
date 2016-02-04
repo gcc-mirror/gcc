@@ -1,9 +1,30 @@
+/* A memory statistics tracking infrastructure.
+   Copyright (C) 2015-2016 Free Software Foundation, Inc.
+   Contributed by Martin Liska  <mliska@suse.cz>
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
 #ifndef GCC_MEM_STATS_H
 #define GCC_MEM_STATS_H
 
 /* Forward declaration.  */
 template<typename Key, typename Value,
-	 typename Traits = simple_hashmap_traits<default_hash_traits<Key> > >
+	 typename Traits = simple_hashmap_traits<default_hash_traits<Key>,
+						 Value> >
 class hash_map;
 
 #define LOCATION_LINE_EXTRA_SPACE 30
@@ -199,7 +220,9 @@ struct mem_usage
   static inline void
   print_dash_line (size_t count = 140)
   {
-    fprintf (stderr, "%s\n", std::string (count, '-').c_str ());
+    while (count--)
+      fputc ('-', stderr);
+    fputc ('\n', stderr);
   }
 
   /* Dump header with NAME.  */

@@ -1,5 +1,5 @@
 /* Subroutines used for macro/preprocessor support on the ia-32.
-   Copyright (C) 2008-2015 Free Software Foundation, Inc.
+   Copyright (C) 2008-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -439,6 +439,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__CLWB__");
   if (isa_flag & OPTION_MASK_ISA_MWAITX)
     def_or_undef (parse_in, "__MWAITX__");
+  if (isa_flag & OPTION_MASK_ISA_PKU)
+    def_or_undef (parse_in, "__PKU__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");

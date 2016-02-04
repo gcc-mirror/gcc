@@ -1,5 +1,5 @@
 /* Process declarations and variables for C++ compiler.
-   Copyright (C) 1988-2015 Free Software Foundation, Inc.
+   Copyright (C) 1988-2016 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -878,6 +878,24 @@ wrapup_globals_for_namespace (tree name_space, void* data ATTRIBUTE_UNUSED)
   vec<tree, va_gc> *statics = level->static_decls;
   tree *vec = statics->address ();
   int len = statics->length ();
+
+  if (warn_unused_function)
+    {
+      tree decl;
+      unsigned int i;
+      FOR_EACH_VEC_SAFE_ELT (statics, i, decl)
+	if (TREE_CODE (decl) == FUNCTION_DECL
+	    && DECL_INITIAL (decl) == 0
+	    && DECL_EXTERNAL (decl)
+	    && !TREE_PUBLIC (decl)
+	    && !DECL_ARTIFICIAL (decl)
+	    && !TREE_NO_WARNING (decl))
+	  {
+	    warning (OPT_Wunused_function,
+		     "%q+F declared %<static%> but never defined", decl);
+	    TREE_NO_WARNING (decl) = 1;
+	  }
+    }
 
   /* Write out any globals that need to be output.  */
   return wrapup_global_declarations (vec, len);
@@ -4555,8 +4573,9 @@ check_tag_decl (cp_decl_specifier_seq *declspecs,
     permerror (input_location, "declaration does not declare anything");
   else if (declared_type != NULL_TREE && type_uses_auto (declared_type))
     {
-      error ("%<auto%> can only be specified for variables "
-	     "or function declarations");
+      error_at (declspecs->locations[ds_type_spec],
+		"%<auto%> can only be specified for variables "
+		"or function declarations");
       return error_mark_node;
     }
   /* Check for an anonymous union.  */
@@ -7478,7 +7497,8 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
 
   /* Don't get confused by a CONSTRUCTOR for some other type.  */
   if (initial_value && TREE_CODE (initial_value) == CONSTRUCTOR
-      && !BRACE_ENCLOSED_INITIALIZER_P (initial_value))
+      && !BRACE_ENCLOSED_INITIALIZER_P (initial_value)
+      && TREE_CODE (TREE_TYPE (initial_value)) != ARRAY_TYPE)
     return 1;
 
   if (initial_value)
@@ -8626,14 +8646,18 @@ fold_sizeof_expr (tree t)
 }
 
 /* Given the SIZE (i.e., number of elements) in an array, compute an
-   appropriate index type for the array.  If non-NULL, NAME is the
-   name of the thing being declared.  */
+   appropriate index type for the array.  When SIZE is null, the array
+   is a flexible array member.  If non-NULL, NAME is the name of
+   the entity being declared.  */
 
 tree
 compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 {
   tree itype;
   tree osize = size;
+
+  if (size == NULL_TREE)
+    return build_index_type (NULL_TREE);
 
   if (error_operand_p (size))
     return error_mark_node;
@@ -9764,11 +9788,18 @@ grokdeclarator (const cp_declarator *declarator,
   if (storage_class == sc_static)
     staticp = 1 + (decl_context == FIELD);
 
-  if (virtualp && staticp == 2)
+  if (virtualp)
     {
-      error ("member %qD cannot be declared both virtual and static", dname);
-      storage_class = sc_none;
-      staticp = 0;
+      if (staticp == 2)
+	{
+	  error ("member %qD cannot be declared both %<virtual%> "
+		 "and %<static%>", dname);
+	  storage_class = sc_none;
+	  staticp = 0;
+	}
+      if (constexpr_p)
+	error ("member %qD cannot be declared both %<virtual%> "
+	       "and %<constexpr%>", dname);
     }
   friendp = decl_spec_seq_has_spec_p (declspecs, ds_friend);
 
@@ -10148,7 +10179,8 @@ grokdeclarator (const cp_declarator *declarator,
 		      explicitp = 2;
 		    if (virtualp)
 		      {
-			permerror (input_location, "constructors cannot be declared virtual");
+			permerror (input_location,
+				   "constructors cannot be declared %<virtual%>");
 			virtualp = 0;
 		      }
 		    if (decl_context == FIELD
@@ -10904,7 +10936,7 @@ grokdeclarator (const cp_declarator *declarator,
     }
 
   {
-    tree decl;
+    tree decl = NULL_TREE;
 
     if (decl_context == PARM)
       {
@@ -10928,9 +10960,19 @@ grokdeclarator (const cp_declarator *declarator,
 	if (!staticp && TREE_CODE (type) == ARRAY_TYPE
 	    && TYPE_DOMAIN (type) == NULL_TREE)
 	  {
-	    tree itype = compute_array_index_type (dname, integer_zero_node,
-						   tf_warning_or_error);
-	    type = build_cplus_array_type (TREE_TYPE (type), itype);
+	    if (ctype
+		&& (TREE_CODE (ctype) == UNION_TYPE
+		    || TREE_CODE (ctype) == QUAL_UNION_TYPE))
+	      {
+		error ("flexible array member in union");
+		type = error_mark_node;
+	      }
+	    else
+	      {
+		tree itype = compute_array_index_type (dname, NULL_TREE,
+						       tf_warning_or_error);
+		type = build_cplus_array_type (TREE_TYPE (type), itype);
+	      }
 	  }
 
 	if (type == error_mark_node)
@@ -10973,7 +11015,7 @@ grokdeclarator (const cp_declarator *declarator,
 		   ARM 9.5 */
 		if (virtualp && TREE_CODE (ctype) == UNION_TYPE)
 		  {
-		    error ("function %qD declared virtual inside a union",
+		    error ("function %qD declared %<virtual%> inside a union",
 			   unqualified_id);
 		    return error_mark_node;
 		  }
@@ -10982,7 +11024,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  {
 		    if (virtualp)
 		      {
-			error ("%qD cannot be declared virtual, since it "
+			error ("%qD cannot be declared %<virtual%>, since it "
 			       "is always static",
 			       unqualified_id);
 			virtualp = 0;
@@ -11098,17 +11140,21 @@ grokdeclarator (const cp_declarator *declarator,
 		     || !COMPLETE_TYPE_P (TREE_TYPE (type))
 		     || initialized == 0))
 	  {
-	    if (unqualified_id)
+	    if (TREE_CODE (type) != ARRAY_TYPE
+		|| !COMPLETE_TYPE_P (TREE_TYPE (type)))
 	      {
-		error ("field %qD has incomplete type %qT",
-		       unqualified_id, type);
-		cxx_incomplete_type_inform (strip_array_types (type));
-	      }
-	    else
-	      error ("name %qT has incomplete type", type);
+		if (unqualified_id)
+		  {
+		    error ("field %qD has incomplete type %qT",
+			   unqualified_id, type);
+		    cxx_incomplete_type_inform (strip_array_types (type));
+		  }
+		else
+		  error ("name %qT has incomplete type", type);
 
-	    type = error_mark_node;
-	    decl = NULL_TREE;
+		type = error_mark_node;
+		decl = NULL_TREE;
+	      }
 	  }
 	else
 	  {
@@ -11562,9 +11608,13 @@ type_is_deprecated (tree type)
   enum tree_code code;
   if (TREE_DEPRECATED (type))
     return type;
-  if (TYPE_NAME (type)
-      && TREE_DEPRECATED (TYPE_NAME (type)))
-    return type;
+  if (TYPE_NAME (type))
+    {
+      if (TREE_DEPRECATED (TYPE_NAME (type)))
+	return type;
+      else
+	return NULL_TREE;
+    }
 
   /* Do warn about using typedefs to a deprecated class.  */
   if (OVERLOAD_TYPE_P (type) && type != TYPE_MAIN_VARIANT (type))
@@ -12996,8 +13046,12 @@ copy_type_enum (tree dst, tree src)
       TYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (src);
       SET_TYPE_MODE (dst, TYPE_MODE (src));
       TYPE_PRECISION (t) = TYPE_PRECISION (src);
-      TYPE_ALIGN (t) = TYPE_ALIGN (src);
-      TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (src);
+      unsigned valign = TYPE_ALIGN (src);
+      if (TYPE_USER_ALIGN (t))
+	valign = MAX (valign, TYPE_ALIGN (t));
+      else
+	TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (src);
+      TYPE_ALIGN (t) = valign;
       TYPE_UNSIGNED (t) = TYPE_UNSIGNED (src);
     }
 }
@@ -13011,6 +13065,8 @@ copy_type_enum (tree dst, tree src)
    the enumeration type. This should be NULL_TREE if no storage type
    was specified.
 
+   ATTRIBUTES are any attributes specified after the enum-key.
+
    SCOPED_ENUM_P is true if this is a scoped enumeration type.
 
    if IS_NEW is not NULL, gets TRUE iff a new type is created.
@@ -13021,7 +13077,7 @@ copy_type_enum (tree dst, tree src)
 
 tree
 start_enum (tree name, tree enumtype, tree underlying_type,
-	    bool scoped_enum_p, bool *is_new)
+	    tree attributes, bool scoped_enum_p, bool *is_new)
 {
   tree prevtype = NULL_TREE;
   gcc_assert (identifier_p (name));
@@ -13128,6 +13184,8 @@ start_enum (tree name, tree enumtype, tree underlying_type,
     }
 
   SET_SCOPED_ENUM_P (enumtype, scoped_enum_p);
+
+  cplus_decl_attributes (&enumtype, attributes, (int)ATTR_FLAG_TYPE_IN_PLACE);
 
   if (underlying_type)
     {
@@ -13358,6 +13416,11 @@ finish_enum_value_list (tree enumtype)
 
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (enumtype, namespace_bindings_p ());
+
+  /* Each enumerator now has the type of its enumeration.  Clear the cache
+     so that this change in types doesn't confuse us later on.  */
+  clear_cv_cache ();
+  clear_fold_cache ();
 }
 
 /* Finishes the enum type. This is called only the first time an
@@ -14579,6 +14642,14 @@ finish_function (int flags)
      the NRV transformation.   */
   maybe_save_function_definition (fndecl);
 
+  /* Invoke the pre-genericize plugin before we start munging things.  */
+  if (!processing_template_decl)
+    invoke_plugin_callbacks (PLUGIN_PRE_GENERICIZE, fndecl);
+
+  /* Perform delayed folding before NRV transformation.  */
+  if (!processing_template_decl)
+    cp_fold_function (fndecl);
+
   /* Set up the named return value optimization, if we can.  Candidate
      variables are selected in check_return_expr.  */
   if (current_function_return_value)
@@ -14685,7 +14756,6 @@ finish_function (int flags)
   if (!processing_template_decl)
     {
       struct language_function *f = DECL_SAVED_FUNCTION_DATA (fndecl);
-      invoke_plugin_callbacks (PLUGIN_PRE_GENERICIZE, fndecl);
       cp_genericize (fndecl);
       /* Clear out the bits we don't need.  */
       f->x_current_class_ptr = NULL;

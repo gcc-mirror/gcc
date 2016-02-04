@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
-   Copyright (C) 1999-2015 Free Software Foundation, Inc.
+   Copyright (C) 1999-2016 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com) and
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "backend.h"
 #include "target.h"
+#include "target-globals.h"
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
@@ -40,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "cgraph.h"
 #include "diagnostic-core.h"
+#include "diagnostic.h"
 #include "alias.h"
 #include "fold-const.h"
 #include "print-tree.h"
@@ -74,9 +76,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "rtl-iter.h"
 #include "intl.h"
+#include "tm-constrs.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
+
+/* Remember the last target of s390_set_current_function.  */
+static GTY(()) tree s390_previous_fndecl;
 
 /* Define the specific costs for a given cpu.  */
 
@@ -115,7 +121,7 @@ struct processor_costs
   const int dsgr;
 };
 
-const struct processor_costs *s390_cost;
+#define s390_cost ((const struct processor_costs *)(s390_cost_pointer))
 
 static const
 struct processor_costs z900_cost =
@@ -307,6 +313,27 @@ struct processor_costs zEC12_cost =
   COSTS_N_INSNS (160),   /* DR expanded */
   COSTS_N_INSNS (160),   /* DSGFR cracked */
   COSTS_N_INSNS (160),   /* DSGR cracked */
+};
+
+static struct
+{
+  const char *const name;
+  const enum processor_type processor;
+  const struct processor_costs *cost;
+}
+const processor_table[] =
+{
+  { "g5",     PROCESSOR_9672_G5,     &z900_cost },
+  { "g6",     PROCESSOR_9672_G6,     &z900_cost },
+  { "z900",   PROCESSOR_2064_Z900,   &z900_cost },
+  { "z990",   PROCESSOR_2084_Z990,   &z990_cost },
+  { "z9-109", PROCESSOR_2094_Z9_109, &z9_109_cost },
+  { "z9-ec",  PROCESSOR_2094_Z9_EC,  &z9_109_cost },
+  { "z10",    PROCESSOR_2097_Z10,    &z10_cost },
+  { "z196",   PROCESSOR_2817_Z196,   &z196_cost },
+  { "zEC12",  PROCESSOR_2827_ZEC12,  &zEC12_cost },
+  { "z13",    PROCESSOR_2964_Z13,    &zEC12_cost },
+  { "native", PROCESSOR_NATIVE,      NULL }
 };
 
 extern int reload_completed;
@@ -612,10 +639,6 @@ s390_init_builtins (void)
 				       NULL, NULL);
   tree noreturn_attr = tree_cons (get_identifier ("noreturn"), NULL, NULL);
   tree c_uint64_type_node;
-  unsigned int bflags_mask = (BFLAGS_MASK_INIT);
-
-  bflags_mask |= (TARGET_VX)  ? B_VX  : 0;
-  bflags_mask |= (TARGET_HTM) ? B_HTM : 0;
 
   /* The uint64_type_node from tree.c is not compatible to the C99
      uint64_t data type.  What we want is c_uint64_type_node from
@@ -628,46 +651,46 @@ s390_init_builtins (void)
 
 #undef DEF_TYPE
 #define DEF_TYPE(INDEX, BFLAGS, NODE, CONST_P)		\
-  if ((BFLAGS) == 0 || ((BFLAGS) & bflags_mask))	\
+  if (s390_builtin_types[INDEX] == NULL)		\
     s390_builtin_types[INDEX] = (!CONST_P) ?		\
       (NODE) : build_type_variant ((NODE), 1, 0);
 
 #undef DEF_POINTER_TYPE
 #define DEF_POINTER_TYPE(INDEX, BFLAGS, INDEX_BASE)			\
-  if ((BFLAGS) == 0 || ((BFLAGS) & bflags_mask))			\
+  if (s390_builtin_types[INDEX] == NULL)				\
     s390_builtin_types[INDEX] =						\
       build_pointer_type (s390_builtin_types[INDEX_BASE]);
 
 #undef DEF_DISTINCT_TYPE
 #define DEF_DISTINCT_TYPE(INDEX, BFLAGS, INDEX_BASE)			\
-  if ((BFLAGS) == 0 || ((BFLAGS) & bflags_mask))			\
+  if (s390_builtin_types[INDEX] == NULL)				\
     s390_builtin_types[INDEX] =						\
       build_distinct_type_copy (s390_builtin_types[INDEX_BASE]);
 
 #undef DEF_VECTOR_TYPE
 #define DEF_VECTOR_TYPE(INDEX, BFLAGS, INDEX_BASE, ELEMENTS)		\
-  if ((BFLAGS) == 0 || ((BFLAGS) & bflags_mask))			\
+  if (s390_builtin_types[INDEX] == NULL)				\
     s390_builtin_types[INDEX] =						\
       build_vector_type (s390_builtin_types[INDEX_BASE], ELEMENTS);
 
 #undef DEF_OPAQUE_VECTOR_TYPE
 #define DEF_OPAQUE_VECTOR_TYPE(INDEX, BFLAGS, INDEX_BASE, ELEMENTS)	\
-  if ((BFLAGS) == 0 || ((BFLAGS) & bflags_mask))			\
+  if (s390_builtin_types[INDEX] == NULL)				\
     s390_builtin_types[INDEX] =						\
       build_opaque_vector_type (s390_builtin_types[INDEX_BASE], ELEMENTS);
 
 #undef DEF_FN_TYPE
 #define DEF_FN_TYPE(INDEX, BFLAGS, args...)			\
-  if ((BFLAGS) == 0 || ((BFLAGS) & bflags_mask))		\
+  if (s390_builtin_fn_types[INDEX] == NULL)			\
     s390_builtin_fn_types[INDEX] =				\
-    build_function_type_list (args, NULL_TREE);
+      build_function_type_list (args, NULL_TREE);
 #undef DEF_OV_TYPE
 #define DEF_OV_TYPE(...)
 #include "s390-builtin-types.def"
 
 #undef B_DEF
 #define B_DEF(NAME, PATTERN, ATTRS, BFLAGS, OPFLAGS, FNTYPE)		\
-  if (((BFLAGS) & ~bflags_mask) == 0)					\
+  if (s390_builtin_decls[S390_BUILTIN_##NAME] == NULL)			\
     s390_builtin_decls[S390_BUILTIN_##NAME] =				\
       add_builtin_function ("__builtin_" #NAME,				\
 			    s390_builtin_fn_types[FNTYPE],		\
@@ -677,7 +700,8 @@ s390_init_builtins (void)
 			    ATTRS);
 #undef OB_DEF
 #define OB_DEF(NAME, FIRST_VAR_NAME, LAST_VAR_NAME, BFLAGS, FNTYPE)	\
-  if (((BFLAGS) & ~bflags_mask) == 0)					\
+  if (s390_builtin_decls[S390_OVERLOADED_BUILTIN_##NAME + S390_BUILTIN_MAX] \
+      == NULL)								\
     s390_builtin_decls[S390_OVERLOADED_BUILTIN_##NAME + S390_BUILTIN_MAX] = \
       add_builtin_function ("__builtin_" #NAME,				\
 			    s390_builtin_fn_types[FNTYPE],		\
@@ -761,10 +785,29 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   if (TARGET_DEBUG_ARG)
     {
       fprintf (stderr,
-	       "s390_expand_builtin, code = %4d, %s\n",
-	       (int)fcode, IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+	       "s390_expand_builtin, code = %4d, %s, bflags = 0x%x\n",
+	       (int)fcode, IDENTIFIER_POINTER (DECL_NAME (fndecl)),
+	       bflags_for_builtin (fcode));
     }
 
+  if (S390_USE_TARGET_ATTRIBUTE)
+    {
+      unsigned int bflags;
+
+      bflags = bflags_for_builtin (fcode);
+      if ((bflags & B_HTM) && !TARGET_HTM)
+	{
+	  error ("Builtin %qF is not supported without -mhtm "
+		 "(default with -march=zEC12 and higher).", fndecl);
+	  return const0_rtx;
+	}
+      if ((bflags & B_VX) && !TARGET_VX)
+	{
+	  error ("Builtin %qF is not supported without -mvx "
+		 "(default with -march=z13 and higher).", fndecl);
+	  return const0_rtx;
+	}
+    }
   if (fcode >= S390_OVERLOADED_BUILTIN_VAR_OFFSET
       && fcode < S390_ALL_BUILTIN_MAX)
     {
@@ -834,6 +877,15 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       insn_op = &insn_data[icode].operand[arity + nonvoid];
       op[arity] = expand_expr (arg, NULL_RTX, insn_op->mode, EXPAND_NORMAL);
 
+      /* expand_expr truncates constants to the target mode only if it
+	 is "convenient".  However, our checks below rely on this
+	 being done.  */
+      if (CONST_INT_P (op[arity])
+	  && SCALAR_INT_MODE_P (insn_op->mode)
+	  && GET_MODE (op[arity]) != insn_op->mode)
+	op[arity] = GEN_INT (trunc_int_for_mode (INTVAL (op[arity]),
+						 insn_op->mode));
+
       /* Wrap the expanded RTX for pointer types into a MEM expr with
 	 the proper mode.  This allows us to use e.g. (match_operand
 	 "memory_operand"..) in the insn patterns instead of (mem
@@ -895,14 +947,6 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	  return const0_rtx;
 	}
       arity++;
-    }
-
-  if (last_vec_mode != VOIDmode && !TARGET_VX)
-    {
-      error ("Vector type builtin %qF is not supported without -mvx "
-	     "(default with -march=z13).",
-	     fndecl);
-      return const0_rtx;
     }
 
   switch (arity)
@@ -1279,7 +1323,7 @@ s390_tm_ccmode (rtx op1, rtx op2, bool mixed)
 {
   int bit0, bit1;
 
-  /* ??? Fixme: should work on CONST_DOUBLE as well.  */
+  /* ??? Fixme: should work on CONST_WIDE_INT as well.  */
   if (GET_CODE (op1) != CONST_INT || GET_CODE (op2) != CONST_INT)
     return VOIDmode;
 
@@ -3311,6 +3355,7 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case LABEL_REF:
     case SYMBOL_REF:
     case CONST_DOUBLE:
+    case CONST_WIDE_INT:
     case MEM:
       *total = 0;
       return true;
@@ -3618,7 +3663,7 @@ tls_symbolic_reference_mentioned_p (rtx op)
 
 /* Return true if OP is a legitimate general operand when
    generating PIC code.  It is given that flag_pic is on
-   and that OP satisfies CONSTANT_P or is a CONST_DOUBLE.  */
+   and that OP satisfies CONSTANT_P.  */
 
 int
 legitimate_pic_operand_p (rtx op)
@@ -3633,7 +3678,7 @@ legitimate_pic_operand_p (rtx op)
 }
 
 /* Returns true if the constant value OP is a legitimate general operand.
-   It is given that OP satisfies CONSTANT_P or is a CONST_DOUBLE.  */
+   It is given that OP satisfies CONSTANT_P.  */
 
 static bool
 s390_legitimate_constant_p (machine_mode mode, rtx op)
@@ -3643,9 +3688,11 @@ s390_legitimate_constant_p (machine_mode mode, rtx op)
       if (GET_MODE_SIZE (mode) != 16)
 	return 0;
 
-      if (!const0_operand (op, mode)
-	  && !s390_contiguous_bitmask_vector_p (op, NULL, NULL)
-	  && !s390_bytemask_vector_p (op, NULL))
+      if (!satisfies_constraint_j00 (op)
+	  && !satisfies_constraint_jm1 (op)
+	  && !satisfies_constraint_jKK (op)
+	  && !satisfies_constraint_jxx (op)
+	  && !satisfies_constraint_jyy (op))
 	return 0;
     }
 
@@ -3685,6 +3732,7 @@ s390_cannot_force_const_mem (machine_mode mode, rtx x)
     {
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_WIDE_INT:
     case CONST_VECTOR:
       /* Accept all non-symbolic constants.  */
       return false;
@@ -3785,8 +3833,9 @@ legitimate_reload_constant_p (rtx op)
     return true;
 
   /* Accept double-word operands that can be split.  */
-  if (GET_CODE (op) == CONST_INT
-      && trunc_int_for_mode (INTVAL (op), word_mode) != INTVAL (op))
+  if (GET_CODE (op) == CONST_WIDE_INT
+      || (GET_CODE (op) == CONST_INT
+	  && trunc_int_for_mode (INTVAL (op), word_mode) != INTVAL (op)))
     {
       machine_mode dword_mode = word_mode == SImode ? DImode : TImode;
       rtx hi = operand_subword (op, 0, 0, dword_mode);
@@ -3826,14 +3875,12 @@ legitimate_reload_fp_constant_p (rtx op)
 static bool
 legitimate_reload_vector_constant_p (rtx op)
 {
-  /* FIXME: Support constant vectors with all the same 16 bit unsigned
-     operands.  These can be loaded with vrepi.  */
-
   if (TARGET_VX && GET_MODE_SIZE (GET_MODE (op)) == 16
-      && (const0_operand (op, GET_MODE (op))
-	  || constm1_operand (op, GET_MODE (op))
-	  || s390_contiguous_bitmask_vector_p (op, NULL, NULL)
-	  || s390_bytemask_vector_p (op, NULL)))
+      && (satisfies_constraint_j00 (op)
+	  || satisfies_constraint_jm1 (op)
+	  || satisfies_constraint_jKK (op)
+	  || satisfies_constraint_jxx (op)
+	  || satisfies_constraint_jyy (op)))
     return true;
 
   return false;
@@ -3852,6 +3899,7 @@ s390_preferred_reload_class (rtx op, reg_class_t rclass)
       case CONST_VECTOR:
       case CONST_DOUBLE:
       case CONST_INT:
+      case CONST_WIDE_INT:
 	if (reg_class_subset_p (GENERAL_REGS, rclass)
 	    && legitimate_reload_constant_p (op))
 	  return GENERAL_REGS;
@@ -3922,15 +3970,30 @@ s390_check_symref_alignment (rtx addr, HOST_WIDE_INT alignment)
   HOST_WIDE_INT addend;
   rtx symref;
 
+  /* The "required alignment" might be 0 (e.g. for certain structs
+     accessed via BLKmode).  Early abort in this case, as well as when
+     an alignment > 8 is required.  */
+  if (alignment < 2 || alignment > 8)
+    return false;
+
   if (!s390_loadrelative_operand_p (addr, &symref, &addend))
     return false;
 
   if (addend & (alignment - 1))
     return false;
 
-  if (GET_CODE (symref) == SYMBOL_REF
-      && !SYMBOL_REF_NOT_NATURALLY_ALIGNED_P (symref))
-    return true;
+  if (GET_CODE (symref) == SYMBOL_REF)
+    {
+      /* We have load-relative instructions for 2-byte, 4-byte, and
+         8-byte alignment so allow only these.  */
+      switch (alignment)
+	{
+	case 8:	return !SYMBOL_FLAG_NOTALIGN8_P (symref);
+	case 4:	return !SYMBOL_FLAG_NOTALIGN4_P (symref);
+	case 2:	return !SYMBOL_FLAG_NOTALIGN2_P (symref);
+	default: return false;
+	}
+    }
 
   if (GET_CODE (symref) == UNSPEC
       && alignment <= UNITS_PER_LONG)
@@ -3988,6 +4051,7 @@ s390_reload_symref_address (rtx reg, rtx mem, rtx scratch, bool tomem)
   /* Reload might have pulled a constant out of the literal pool.
      Force it back in.  */
   if (CONST_INT_P (mem) || GET_CODE (mem) == CONST_DOUBLE
+      || GET_CODE (mem) == CONST_WIDE_INT
       || GET_CODE (mem) == CONST_VECTOR
       || GET_CODE (mem) == CONST)
     mem = force_const_mem (GET_MODE (reg), mem);
@@ -4062,7 +4126,7 @@ s390_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
       if (in_p
 	  && s390_loadrelative_operand_p (x, &symref, &offset)
 	  && mode == Pmode
-	  && !SYMBOL_REF_ALIGN1_P (symref)
+	  && !SYMBOL_FLAG_NOTALIGN2_P (symref)
 	  && (offset & 1) == 1)
 	sri->icode = ((mode == DImode) ? CODE_FOR_reloaddi_larl_odd_addend_z10
 		      : CODE_FOR_reloadsi_larl_odd_addend_z10);
@@ -5178,7 +5242,12 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
   else if (TARGET_MVCLE)
     {
       val = force_not_mem (convert_modes (Pmode, QImode, val, 1));
-      emit_insn (gen_setmem_long (dst, convert_to_mode (Pmode, len, 1), val));
+      if (TARGET_64BIT)
+	emit_insn (gen_setmem_long_di (dst, convert_to_mode (Pmode, len, 1),
+				       val));
+      else
+	emit_insn (gen_setmem_long_si (dst, convert_to_mode (Pmode, len, 1),
+				       val));
     }
 
   else
@@ -6070,29 +6139,70 @@ s390_expand_vcond (rtx target, rtx then, rtx els,
   machine_mode result_mode;
   rtx result_target;
 
+  machine_mode target_mode = GET_MODE (target);
+  machine_mode cmp_mode = GET_MODE (cmp_op1);
+  rtx op = (cond == LT) ? els : then;
+
+  /* Try to optimize x < 0 ? -1 : 0 into (signed) x >> 31
+     and x < 0 ? 1 : 0 into (unsigned) x >> 31.  Likewise
+     for short and byte (x >> 15 and x >> 7 respectively).  */
+  if ((cond == LT || cond == GE)
+      && target_mode == cmp_mode
+      && cmp_op2 == CONST0_RTX (cmp_mode)
+      && op == CONST0_RTX (target_mode)
+      && s390_vector_mode_supported_p (target_mode)
+      && GET_MODE_CLASS (target_mode) == MODE_VECTOR_INT)
+    {
+      rtx negop = (cond == LT) ? then : els;
+
+      int shift = GET_MODE_BITSIZE (GET_MODE_INNER (target_mode)) - 1;
+
+      /* if x < 0 ? 1 : 0 or if x >= 0 ? 0 : 1 */
+      if (negop == CONST1_RTX (target_mode))
+	{
+	  rtx res = expand_simple_binop (cmp_mode, LSHIFTRT, cmp_op1,
+					 GEN_INT (shift), target,
+					 1, OPTAB_DIRECT);
+	  if (res != target)
+	    emit_move_insn (target, res);
+	  return;
+	}
+
+      /* if x < 0 ? -1 : 0 or if x >= 0 ? 0 : -1 */
+      else if (all_ones_operand (negop, target_mode))
+	{
+	  rtx res = expand_simple_binop (cmp_mode, ASHIFTRT, cmp_op1,
+					 GEN_INT (shift), target,
+					 0, OPTAB_DIRECT);
+	  if (res != target)
+	    emit_move_insn (target, res);
+	  return;
+	}
+    }
+
   /* We always use an integral type vector to hold the comparison
      result.  */
-  result_mode = GET_MODE (cmp_op1) == V2DFmode ? V2DImode : GET_MODE (cmp_op1);
+  result_mode = cmp_mode == V2DFmode ? V2DImode : cmp_mode;
   result_target = gen_reg_rtx (result_mode);
 
-  /* Alternatively this could be done by reload by lowering the cmp*
-     predicates.  But it appears to be better for scheduling etc. to
-     have that in early.  */
+  /* We allow vector immediates as comparison operands that
+     can be handled by the optimization above but not by the
+     following code.  Hence, force them into registers here.  */
   if (!REG_P (cmp_op1))
-    cmp_op1 = force_reg (GET_MODE (target), cmp_op1);
+    cmp_op1 = force_reg (target_mode, cmp_op1);
 
   if (!REG_P (cmp_op2))
-    cmp_op2 = force_reg (GET_MODE (target), cmp_op2);
+    cmp_op2 = force_reg (target_mode, cmp_op2);
 
   s390_expand_vec_compare (result_target, cond,
 			   cmp_op1, cmp_op2);
 
   /* If the results are supposed to be either -1 or 0 we are done
      since this is what our compare instructions generate anyway.  */
-  if (constm1_operand (then, GET_MODE (then))
+  if (all_ones_operand (then, GET_MODE (then))
       && const0_operand (els, GET_MODE (els)))
     {
-      emit_move_insn (target, gen_rtx_SUBREG (GET_MODE (target),
+      emit_move_insn (target, gen_rtx_SUBREG (target_mode,
 					      result_target, 0));
       return;
     }
@@ -6101,10 +6211,10 @@ s390_expand_vcond (rtx target, rtx then, rtx els,
   /* This gets triggered e.g.
      with gcc.c-torture/compile/pr53410-1.c */
   if (!REG_P (then))
-    then = force_reg (GET_MODE (target), then);
+    then = force_reg (target_mode, then);
 
   if (!REG_P (els))
-    els = force_reg (GET_MODE (target), els);
+    els = force_reg (target_mode, els);
 
   tmp = gen_rtx_fmt_ee (EQ, VOIDmode,
 			result_target,
@@ -6112,9 +6222,9 @@ s390_expand_vcond (rtx target, rtx then, rtx els,
 
   /* We compared the result against zero above so we have to swap then
      and els here.  */
-  tmp = gen_rtx_IF_THEN_ELSE (GET_MODE (target), tmp, els, then);
+  tmp = gen_rtx_IF_THEN_ELSE (target_mode, tmp, els, then);
 
-  gcc_assert (GET_MODE (target) == GET_MODE (then));
+  gcc_assert (target_mode == GET_MODE (then));
   emit_insn (gen_rtx_SET (target, tmp));
 }
 
@@ -6676,6 +6786,65 @@ s390_function_num_hotpatch_hw (tree decl,
     }
 }
 
+/* Write the current .machine and .machinemode specification to the assembler
+   file.  */
+
+#ifdef HAVE_AS_MACHINE_MACHINEMODE
+static void
+s390_asm_output_machine_for_arch (FILE *asm_out_file)
+{
+  fprintf (asm_out_file, "\t.machinemode %s\n",
+	   (TARGET_ZARCH) ? "zarch" : "esa");
+  fprintf (asm_out_file, "\t.machine \"%s", processor_table[s390_arch].name);
+  if (S390_USE_ARCHITECTURE_MODIFIERS)
+    {
+      int cpu_flags;
+
+      cpu_flags = processor_flags_table[(int) s390_arch];
+      if (TARGET_HTM && !(cpu_flags & PF_TX))
+	fprintf (asm_out_file, "+htm");
+      else if (!TARGET_HTM && (cpu_flags & PF_TX))
+	fprintf (asm_out_file, "+nohtm");
+      if (TARGET_VX && !(cpu_flags & PF_VX))
+	fprintf (asm_out_file, "+vx");
+      else if (!TARGET_VX && (cpu_flags & PF_VX))
+	fprintf (asm_out_file, "+novx");
+    }
+  fprintf (asm_out_file, "\"\n");
+}
+
+/* Write an extra function header before the very start of the function.  */
+
+void
+s390_asm_output_function_prefix (FILE *asm_out_file,
+				 const char *fnname ATTRIBUTE_UNUSED)
+{
+  if (DECL_FUNCTION_SPECIFIC_TARGET (current_function_decl) == NULL)
+    return;
+  /* Since only the function specific options are saved but not the indications
+     which options are set, it's too much work here to figure out which options
+     have actually changed.  Thus, generate .machine and .machinemode whenever a
+     function has the target attribute or pragma.  */
+  fprintf (asm_out_file, "\t.machinemode push\n");
+  fprintf (asm_out_file, "\t.machine push\n");
+  s390_asm_output_machine_for_arch (asm_out_file);
+}
+
+/* Write an extra function footer after the very end of the function.  */
+
+void
+s390_asm_declare_function_size (FILE *asm_out_file,
+				const char *fnname, tree decl)
+{
+  if (!flag_inhibit_size_directive)
+    ASM_OUTPUT_MEASURED_SIZE (asm_out_file, fnname);
+  if (DECL_FUNCTION_SPECIFIC_TARGET (decl) == NULL)
+    return;
+  fprintf (asm_out_file, "\t.machine pop\n");
+  fprintf (asm_out_file, "\t.machinemode pop\n");
+}
+#endif
+
 /* Write the extra assembler code needed to declare a function properly.  */
 
 void
@@ -6717,6 +6886,28 @@ s390_asm_output_function_label (FILE *asm_out_file, const char *fname,
       ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (function_alignment));
     }
 
+  if (S390_USE_TARGET_ATTRIBUTE && TARGET_DEBUG_ARG)
+    {
+      asm_fprintf (asm_out_file, "\t# fn:%s ar%d\n", fname, s390_arch);
+      asm_fprintf (asm_out_file, "\t# fn:%s tu%d\n", fname, s390_tune);
+      asm_fprintf (asm_out_file, "\t# fn:%s sg%d\n", fname, s390_stack_guard);
+      asm_fprintf (asm_out_file, "\t# fn:%s ss%d\n", fname, s390_stack_size);
+      asm_fprintf (asm_out_file, "\t# fn:%s bc%d\n", fname, s390_branch_cost);
+      asm_fprintf (asm_out_file, "\t# fn:%s wf%d\n", fname,
+		   s390_warn_framesize);
+      asm_fprintf (asm_out_file, "\t# fn:%s ba%d\n", fname, TARGET_BACKCHAIN);
+      asm_fprintf (asm_out_file, "\t# fn:%s hd%d\n", fname, TARGET_HARD_DFP);
+      asm_fprintf (asm_out_file, "\t# fn:%s hf%d\n", fname, !TARGET_SOFT_FLOAT);
+      asm_fprintf (asm_out_file, "\t# fn:%s ht%d\n", fname, TARGET_OPT_HTM);
+      asm_fprintf (asm_out_file, "\t# fn:%s vx%d\n", fname, TARGET_OPT_VX);
+      asm_fprintf (asm_out_file, "\t# fn:%s ps%d\n", fname,
+		   TARGET_PACKED_STACK);
+      asm_fprintf (asm_out_file, "\t# fn:%s se%d\n", fname, TARGET_SMALL_EXEC);
+      asm_fprintf (asm_out_file, "\t# fn:%s mv%d\n", fname, TARGET_MVCLE);
+      asm_fprintf (asm_out_file, "\t# fn:%s zv%d\n", fname, TARGET_ZVECTOR);
+      asm_fprintf (asm_out_file, "\t# fn:%s wd%d\n", fname,
+		   s390_warn_dynamicstack_p);
+    }
   ASM_OUTPUT_LABEL (asm_out_file, fname);
   if (hw_after > 0)
     asm_fprintf (asm_out_file,
@@ -7095,15 +7286,16 @@ print_operand (FILE *file, rtx x, int code)
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, ival);
       break;
 
-    case CONST_DOUBLE:
-      gcc_assert (GET_MODE (x) == VOIDmode);
+    case CONST_WIDE_INT:
       if (code == 'b')
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, CONST_DOUBLE_LOW (x) & 0xff);
+        fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+		 CONST_WIDE_INT_ELT (x, 0) & 0xff);
       else if (code == 'x')
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, CONST_DOUBLE_LOW (x) & 0xffff);
+        fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+		 CONST_WIDE_INT_ELT (x, 0) & 0xffff);
       else if (code == 'h')
         fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-		 ((CONST_DOUBLE_LOW (x) & 0xffff) ^ 0x8000) - 0x8000);
+		 ((CONST_WIDE_INT_ELT (x, 0) & 0xffff) ^ 0x8000) - 0x8000);
       else
 	{
 	  if (code == 0)
@@ -7117,6 +7309,11 @@ print_operand (FILE *file, rtx x, int code)
     case CONST_VECTOR:
       switch (code)
 	{
+	case 'h':
+	  gcc_assert (const_vec_duplicate_p (x));
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+		   ((INTVAL (XVECEXP (x, 0, 0)) & 0xffff) ^ 0x8000) - 0x8000);
+	  break;
 	case 'e':
 	case 's':
 	  {
@@ -9389,10 +9586,17 @@ s390_init_frame_layout (void)
 	 as base register to avoid save/restore overhead.  */
       if (!base_used)
 	cfun->machine->base_reg = NULL_RTX;
-      else if (crtl->is_leaf && !df_regs_ever_live_p (5))
-	cfun->machine->base_reg = gen_rtx_REG (Pmode, 5);
       else
-	cfun->machine->base_reg = gen_rtx_REG (Pmode, BASE_REGNUM);
+	{
+	  int br = 0;
+
+	  if (crtl->is_leaf)
+	    /* Prefer r5 (most likely to be free).  */
+	    for (br = 5; br >= 2 && df_regs_ever_live_p (br); br--)
+	      ;
+	  cfun->machine->base_reg =
+	    gen_rtx_REG (Pmode, (br >= 2) ? br : BASE_REGNUM);
+	}
 
       s390_register_info ();
       s390_frame_info ();
@@ -11813,29 +12017,39 @@ s390_encode_section_info (tree decl, rtx rtl, int first)
 
   if (TREE_CODE (decl) == VAR_DECL)
     {
-      /* If a variable has a forced alignment to < 2 bytes, mark it
-	 with SYMBOL_FLAG_ALIGN1 to prevent it from being used as LARL
-	 operand.  */
-      if (DECL_USER_ALIGN (decl) && DECL_ALIGN (decl) < 16)
-	SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_ALIGN1;
-      if (!DECL_SIZE (decl)
-	  || !DECL_ALIGN (decl)
-	  || !tree_fits_shwi_p (DECL_SIZE (decl))
-	  || (DECL_ALIGN (decl) <= 64
-	      && DECL_ALIGN (decl) != tree_to_shwi (DECL_SIZE (decl))))
-	SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_NOT_NATURALLY_ALIGNED;
+      /* Store the alignment to be able to check if we can use
+	 a larl/load-relative instruction.  We only handle the cases
+	 that can go wrong (i.e. no FUNC_DECLs).  If a symref does
+	 not have any flag we assume it to be correctly aligned.  */
+
+      if (DECL_ALIGN (decl) % 64)
+	SYMBOL_FLAG_SET_NOTALIGN8 (XEXP (rtl, 0));
+
+      if (DECL_ALIGN (decl) % 32)
+	SYMBOL_FLAG_SET_NOTALIGN4 (XEXP (rtl, 0));
+
+      if (DECL_ALIGN (decl) == 0 || DECL_ALIGN (decl) % 16)
+	SYMBOL_FLAG_SET_NOTALIGN2 (XEXP (rtl, 0));
     }
 
   /* Literal pool references don't have a decl so they are handled
      differently here.  We rely on the information in the MEM_ALIGN
-     entry to decide upon natural alignment.  */
+     entry to decide upon the alignment.  */
   if (MEM_P (rtl)
       && GET_CODE (XEXP (rtl, 0)) == SYMBOL_REF
       && TREE_CONSTANT_POOL_ADDRESS_P (XEXP (rtl, 0))
-      && (MEM_ALIGN (rtl) == 0
-	  || GET_MODE_BITSIZE (GET_MODE (rtl)) == 0
-	  || MEM_ALIGN (rtl) < GET_MODE_BITSIZE (GET_MODE (rtl))))
-    SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_NOT_NATURALLY_ALIGNED;
+      && MEM_ALIGN (rtl) != 0
+      && GET_MODE_BITSIZE (GET_MODE (rtl)) != 0)
+    {
+      if (MEM_ALIGN (rtl) % 64)
+	SYMBOL_FLAG_SET_NOTALIGN8 (XEXP (rtl, 0));
+
+      if (MEM_ALIGN (rtl) % 32)
+	SYMBOL_FLAG_SET_NOTALIGN4 (XEXP (rtl, 0));
+
+      if (MEM_ALIGN (rtl) == 0 || MEM_ALIGN (rtl) % 16)
+	SYMBOL_FLAG_SET_NOTALIGN2 (XEXP (rtl, 0));
+    }
 }
 
 /* Output thunk to FILE that implements a C++ virtual function call (with
@@ -13394,6 +13608,218 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
     }
 }
 
+/* Restore the current options.  This is a hook function and also called
+   internally.  */
+
+static void
+s390_function_specific_restore (struct gcc_options *opts,
+				struct cl_target_option *ptr ATTRIBUTE_UNUSED)
+{
+  opts->x_s390_cost_pointer = (long)processor_table[opts->x_s390_tune].cost;
+}
+
+static void
+s390_option_override_internal (bool main_args_p,
+			       struct gcc_options *opts,
+			       const struct gcc_options *opts_set)
+{
+  const char *prefix;
+  const char *suffix;
+
+  /* Set up prefix/suffix so the error messages refer to either the command
+     line argument, or the attribute(target).  */
+  if (main_args_p)
+    {
+      prefix = "-m";
+      suffix = "";
+    }
+  else
+    {
+      prefix = "option(\"";
+      suffix = "\")";
+    }
+
+
+  /* Architecture mode defaults according to ABI.  */
+  if (!(opts_set->x_target_flags & MASK_ZARCH))
+    {
+      if (TARGET_64BIT)
+	opts->x_target_flags |= MASK_ZARCH;
+      else
+	opts->x_target_flags &= ~MASK_ZARCH;
+    }
+
+  /* Set the march default in case it hasn't been specified on cmdline.  */
+  if (!opts_set->x_s390_arch)
+    opts->x_s390_arch = PROCESSOR_2064_Z900;
+  else if (opts->x_s390_arch == PROCESSOR_9672_G5
+	   || opts->x_s390_arch == PROCESSOR_9672_G6)
+    warning (OPT_Wdeprecated, "%sarch=%s%s is deprecated and will be removed "
+	     "in future releases; use at least %sarch=z900%s",
+	     prefix, opts->x_s390_arch == PROCESSOR_9672_G5 ? "g5" : "g6",
+	     suffix, prefix, suffix);
+
+  opts->x_s390_arch_flags = processor_flags_table[(int) opts->x_s390_arch];
+
+  /* Determine processor to tune for.  */
+  if (!opts_set->x_s390_tune)
+    opts->x_s390_tune = opts->x_s390_arch;
+  else if (opts->x_s390_tune == PROCESSOR_9672_G5
+	   || opts->x_s390_tune == PROCESSOR_9672_G6)
+    warning (OPT_Wdeprecated, "%stune=%s%s is deprecated and will be removed "
+	     "in future releases; use at least %stune=z900%s",
+	     prefix, opts->x_s390_tune == PROCESSOR_9672_G5 ? "g5" : "g6",
+	     suffix, prefix, suffix);
+
+  opts->x_s390_tune_flags = processor_flags_table[opts->x_s390_tune];
+
+  /* Sanity checks.  */
+  if (opts->x_s390_arch == PROCESSOR_NATIVE
+      || opts->x_s390_tune == PROCESSOR_NATIVE)
+    gcc_unreachable ();
+  if (TARGET_ZARCH_P (opts->x_target_flags) && !TARGET_CPU_ZARCH_P (opts))
+    error ("z/Architecture mode not supported on %s",
+	   processor_table[(int)opts->x_s390_arch].name);
+  if (TARGET_64BIT && !TARGET_ZARCH_P (opts->x_target_flags))
+    error ("64-bit ABI not supported in ESA/390 mode");
+
+  /* Enable hardware transactions if available and not explicitly
+     disabled by user.  E.g. with -m31 -march=zEC12 -mzarch */
+  if (!TARGET_OPT_HTM_P (opts_set->x_target_flags))
+    {
+      if (TARGET_CPU_HTM_P (opts) && TARGET_ZARCH_P (opts->x_target_flags))
+	opts->x_target_flags |= MASK_OPT_HTM;
+      else
+	opts->x_target_flags &= ~MASK_OPT_HTM;
+    }
+
+  if (TARGET_OPT_VX_P (opts_set->x_target_flags))
+    {
+      if (TARGET_OPT_VX_P (opts->x_target_flags))
+	{
+	  if (!TARGET_CPU_VX_P (opts))
+	    error ("hardware vector support not available on %s",
+		   processor_table[(int)opts->x_s390_arch].name);
+	  if (TARGET_SOFT_FLOAT_P (opts->x_target_flags))
+	    error ("hardware vector support not available with -msoft-float");
+	}
+    }
+  else
+    {
+      if (TARGET_CPU_VX_P (opts))
+	/* Enable vector support if available and not explicitly disabled
+	   by user.  E.g. with -m31 -march=z13 -mzarch */
+	opts->x_target_flags |= MASK_OPT_VX;
+      else
+	opts->x_target_flags &= ~MASK_OPT_VX;
+    }
+
+  /* Use hardware DFP if available and not explicitly disabled by
+     user. E.g. with -m31 -march=z10 -mzarch   */
+  if (!TARGET_HARD_DFP_P (opts_set->x_target_flags))
+    {
+      if (TARGET_DFP_P (opts))
+	opts->x_target_flags |= MASK_HARD_DFP;
+      else
+	opts->x_target_flags &= ~MASK_HARD_DFP;
+    }
+
+  if (TARGET_HARD_DFP_P (opts->x_target_flags) && !TARGET_DFP_P (opts))
+    {
+      if (TARGET_HARD_DFP_P (opts_set->x_target_flags))
+	{
+	  if (!TARGET_CPU_DFP_P (opts))
+	    error ("hardware decimal floating point instructions"
+		   " not available on %s",
+		   processor_table[(int)opts->x_s390_arch].name);
+	  if (!TARGET_ZARCH_P (opts->x_target_flags))
+	    error ("hardware decimal floating point instructions"
+		   " not available in ESA/390 mode");
+	}
+      else
+	opts->x_target_flags &= ~MASK_HARD_DFP;
+    }
+
+  if (TARGET_SOFT_FLOAT_P (opts_set->x_target_flags)
+      && TARGET_SOFT_FLOAT_P (opts->x_target_flags))
+    {
+      if (TARGET_HARD_DFP_P (opts_set->x_target_flags)
+	  && TARGET_HARD_DFP_P (opts->x_target_flags))
+	error ("-mhard-dfp can%'t be used in conjunction with -msoft-float");
+
+      opts->x_target_flags &= ~MASK_HARD_DFP;
+    }
+
+  if (TARGET_BACKCHAIN_P (opts->x_target_flags)
+      && TARGET_PACKED_STACK_P (opts->x_target_flags)
+      && TARGET_HARD_FLOAT_P (opts->x_target_flags))
+    error ("-mbackchain -mpacked-stack -mhard-float are not supported "
+	   "in combination");
+
+  if (opts->x_s390_stack_size)
+    {
+      if (opts->x_s390_stack_guard >= opts->x_s390_stack_size)
+	error ("stack size must be greater than the stack guard value");
+      else if (opts->x_s390_stack_size > 1 << 16)
+	error ("stack size must not be greater than 64k");
+    }
+  else if (opts->x_s390_stack_guard)
+    error ("-mstack-guard implies use of -mstack-size");
+
+#ifdef TARGET_DEFAULT_LONG_DOUBLE_128
+  if (!TARGET_LONG_DOUBLE_128_P (opts_set->x_target_flags))
+    opts->x_target_flags |= MASK_LONG_DOUBLE_128;
+#endif
+
+  if (opts->x_s390_tune >= PROCESSOR_2097_Z10)
+    {
+      maybe_set_param_value (PARAM_MAX_UNROLLED_INSNS, 100,
+			     opts->x_param_values,
+			     opts_set->x_param_values);
+      maybe_set_param_value (PARAM_MAX_UNROLL_TIMES, 32,
+			     opts->x_param_values,
+			     opts_set->x_param_values);
+      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEELED_INSNS, 2000,
+			     opts->x_param_values,
+			     opts_set->x_param_values);
+      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEEL_TIMES, 64,
+			     opts->x_param_values,
+			     opts_set->x_param_values);
+    }
+
+  maybe_set_param_value (PARAM_MAX_PENDING_LIST_LENGTH, 256,
+			 opts->x_param_values,
+			 opts_set->x_param_values);
+  /* values for loop prefetching */
+  maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE, 256,
+			 opts->x_param_values,
+			 opts_set->x_param_values);
+  maybe_set_param_value (PARAM_L1_CACHE_SIZE, 128,
+			 opts->x_param_values,
+			 opts_set->x_param_values);
+  /* s390 has more than 2 levels and the size is much larger.  Since
+     we are always running virtualized assume that we only get a small
+     part of the caches above l1.  */
+  maybe_set_param_value (PARAM_L2_CACHE_SIZE, 1500,
+			 opts->x_param_values,
+			 opts_set->x_param_values);
+  maybe_set_param_value (PARAM_PREFETCH_MIN_INSN_TO_MEM_RATIO, 2,
+			 opts->x_param_values,
+			 opts_set->x_param_values);
+  maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES, 6,
+			 opts->x_param_values,
+			 opts_set->x_param_values);
+
+  /* Use the alternative scheduling-pressure algorithm by default.  */
+  maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, 2,
+                         opts->x_param_values,
+                         opts_set->x_param_values);
+
+  /* Call target specific restore function to do post-init work.  At the moment,
+     this just sets opts->x_s390_cost_pointer.  */
+  s390_function_specific_restore (opts, NULL);
+}
+
 static void
 s390_option_override (void)
 {
@@ -13455,180 +13881,18 @@ s390_option_override (void)
   /* Set up function hooks.  */
   init_machine_status = s390_init_machine_status;
 
-  /* Architecture mode defaults according to ABI.  */
-  if (!(target_flags_explicit & MASK_ZARCH))
-    {
-      if (TARGET_64BIT)
-	target_flags |= MASK_ZARCH;
-      else
-	target_flags &= ~MASK_ZARCH;
-    }
+  s390_option_override_internal (true, &global_options, &global_options_set);
 
-  /* Set the march default in case it hasn't been specified on
-     cmdline.  */
-  if (s390_arch == PROCESSOR_max)
-    {
-      s390_arch_string = TARGET_ZARCH? "z900" : "g5";
-      s390_arch = TARGET_ZARCH ? PROCESSOR_2064_Z900 : PROCESSOR_9672_G5;
-      s390_arch_flags = processor_flags_table[(int)s390_arch];
-    }
-
-  /* Determine processor to tune for.  */
-  if (s390_tune == PROCESSOR_max)
-    {
-      s390_tune = s390_arch;
-      s390_tune_flags = s390_arch_flags;
-    }
-
-  /* Sanity checks.  */
-  if (s390_arch == PROCESSOR_NATIVE || s390_tune == PROCESSOR_NATIVE)
-    gcc_unreachable ();
-  if (TARGET_ZARCH && !TARGET_CPU_ZARCH)
-    error ("z/Architecture mode not supported on %s", s390_arch_string);
-  if (TARGET_64BIT && !TARGET_ZARCH)
-    error ("64-bit ABI not supported in ESA/390 mode");
-
-  /* Use hardware DFP if available and not explicitly disabled by
-     user. E.g. with -m31 -march=z10 -mzarch   */
-  if (!(target_flags_explicit & MASK_HARD_DFP) && TARGET_DFP)
-    target_flags |= MASK_HARD_DFP;
-
-  /* Enable hardware transactions if available and not explicitly
-     disabled by user.  E.g. with -m31 -march=zEC12 -mzarch */
-  if (!(target_flags_explicit & MASK_OPT_HTM) && TARGET_CPU_HTM && TARGET_ZARCH)
-    target_flags |= MASK_OPT_HTM;
-
-  if (target_flags_explicit & MASK_OPT_VX)
-    {
-      if (TARGET_OPT_VX)
-	{
-	  if (!TARGET_CPU_VX)
-	    error ("hardware vector support not available on %s",
-		   s390_arch_string);
-	  if (TARGET_SOFT_FLOAT)
-	    error ("hardware vector support not available with -msoft-float");
-	}
-    }
-  else if (TARGET_CPU_VX)
-    /* Enable vector support if available and not explicitly disabled
-       by user.  E.g. with -m31 -march=z13 -mzarch */
-    target_flags |= MASK_OPT_VX;
-
-  if (TARGET_HARD_DFP && !TARGET_DFP)
-    {
-      if (target_flags_explicit & MASK_HARD_DFP)
-	{
-	  if (!TARGET_CPU_DFP)
-	    error ("hardware decimal floating point instructions"
-		   " not available on %s", s390_arch_string);
-	  if (!TARGET_ZARCH)
-	    error ("hardware decimal floating point instructions"
-		   " not available in ESA/390 mode");
-	}
-      else
-	target_flags &= ~MASK_HARD_DFP;
-    }
-
-  if ((target_flags_explicit & MASK_SOFT_FLOAT) && TARGET_SOFT_FLOAT)
-    {
-      if ((target_flags_explicit & MASK_HARD_DFP) && TARGET_HARD_DFP)
-	error ("-mhard-dfp can%'t be used in conjunction with -msoft-float");
-
-      target_flags &= ~MASK_HARD_DFP;
-    }
-
-  /* Set processor cost function.  */
-  switch (s390_tune)
-    {
-    case PROCESSOR_2084_Z990:
-      s390_cost = &z990_cost;
-      break;
-    case PROCESSOR_2094_Z9_109:
-    case PROCESSOR_2094_Z9_EC:
-      s390_cost = &z9_109_cost;
-      break;
-    case PROCESSOR_2097_Z10:
-      s390_cost = &z10_cost;
-      break;
-    case PROCESSOR_2817_Z196:
-      s390_cost = &z196_cost;
-      break;
-    case PROCESSOR_2827_ZEC12:
-    case PROCESSOR_2964_Z13:
-      s390_cost = &zEC12_cost;
-      break;
-    default:
-      s390_cost = &z900_cost;
-    }
-
-  if (TARGET_BACKCHAIN && TARGET_PACKED_STACK && TARGET_HARD_FLOAT)
-    error ("-mbackchain -mpacked-stack -mhard-float are not supported "
-	   "in combination");
-
-  if (s390_stack_size)
-    {
-      if (s390_stack_guard >= s390_stack_size)
-	error ("stack size must be greater than the stack guard value");
-      else if (s390_stack_size > 1 << 16)
-	error ("stack size must not be greater than 64k");
-    }
-  else if (s390_stack_guard)
-    error ("-mstack-guard implies use of -mstack-size");
-
-#ifdef TARGET_DEFAULT_LONG_DOUBLE_128
-  if (!(target_flags_explicit & MASK_LONG_DOUBLE_128))
-    target_flags |= MASK_LONG_DOUBLE_128;
-#endif
-
-  if (s390_tune >= PROCESSOR_2097_Z10)
-    {
-      maybe_set_param_value (PARAM_MAX_UNROLLED_INSNS, 100,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_MAX_UNROLL_TIMES, 32,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEELED_INSNS, 2000,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEEL_TIMES, 64,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-    }
-
-  maybe_set_param_value (PARAM_MAX_PENDING_LIST_LENGTH, 256,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
-  /* values for loop prefetching */
-  maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE, 256,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
-  maybe_set_param_value (PARAM_L1_CACHE_SIZE, 128,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
-  /* s390 has more than 2 levels and the size is much larger.  Since
-     we are always running virtualized assume that we only get a small
-     part of the caches above l1.  */
-  maybe_set_param_value (PARAM_L2_CACHE_SIZE, 1500,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
-  maybe_set_param_value (PARAM_PREFETCH_MIN_INSN_TO_MEM_RATIO, 2,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
-  maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES, 6,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
+  /* Save the initial options in case the user does function specific
+     options.  */
+  target_option_default_node = build_target_option_node (&global_options);
+  target_option_current_node = target_option_default_node;
 
   /* This cannot reside in s390_option_optimization_table since HAVE_prefetch
      requires the arch flags to be evaluated already.  Since prefetching
      is beneficial on s390, we enable it if available.  */
   if (flag_prefetch_loop_arrays < 0 && HAVE_prefetch && optimize >= 3)
     flag_prefetch_loop_arrays = 1;
-
-  /* Use the alternative scheduling-pressure algorithm by default.  */
-  maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, 2,
-                         global_options.x_param_values,
-                         global_options_set.x_param_values);
 
   if (TARGET_TPF)
     {
@@ -13655,6 +13919,386 @@ s390_option_override (void)
     };
   register_pass (&insert_pass_s390_early_mach);
 }
+
+#if S390_USE_TARGET_ATTRIBUTE
+/* Inner function to process the attribute((target(...))), take an argument and
+   set the current options from the argument. If we have a list, recursively go
+   over the list.  */
+
+static bool
+s390_valid_target_attribute_inner_p (tree args,
+				     struct gcc_options *opts,
+				     struct gcc_options *new_opts_set,
+				     bool force_pragma)
+{
+  char *next_optstr;
+  bool ret = true;
+
+#define S390_ATTRIB(S,O,A)  { S, sizeof (S)-1, O, A, 0 }
+#define S390_PRAGMA(S,O,A)  { S, sizeof (S)-1, O, A, 1 }
+  static const struct
+  {
+    const char *string;
+    size_t len;
+    int opt;
+    int has_arg;
+    int only_as_pragma;
+  } attrs[] = {
+    /* enum options */
+    S390_ATTRIB ("arch=", OPT_march_, 1),
+    S390_ATTRIB ("tune=", OPT_mtune_, 1),
+    /* uinteger options */
+    S390_ATTRIB ("stack-guard=", OPT_mstack_guard_, 1),
+    S390_ATTRIB ("stack-size=", OPT_mstack_size_, 1),
+    S390_ATTRIB ("branch-cost=", OPT_mbranch_cost_, 1),
+    S390_ATTRIB ("warn-framesize=", OPT_mwarn_framesize_, 1),
+    /* flag options */
+    S390_ATTRIB ("backchain", OPT_mbackchain, 0),
+    S390_ATTRIB ("hard-dfp", OPT_mhard_dfp, 0),
+    S390_ATTRIB ("hard-float", OPT_mhard_float, 0),
+    S390_ATTRIB ("htm", OPT_mhtm, 0),
+    S390_ATTRIB ("vx", OPT_mvx, 0),
+    S390_ATTRIB ("packed-stack", OPT_mpacked_stack, 0),
+    S390_ATTRIB ("small-exec", OPT_msmall_exec, 0),
+    S390_ATTRIB ("soft-float", OPT_msoft_float, 0),
+    S390_ATTRIB ("mvcle", OPT_mmvcle, 0),
+    S390_PRAGMA ("zvector", OPT_mzvector, 0),
+    /* boolean options */
+    S390_ATTRIB ("warn-dynamicstack", OPT_mwarn_dynamicstack, 0),
+  };
+#undef S390_ATTRIB
+#undef S390_PRAGMA
+
+  /* If this is a list, recurse to get the options.  */
+  if (TREE_CODE (args) == TREE_LIST)
+    {
+      bool ret = true;
+      int num_pragma_values;
+      int i;
+
+      /* Note: attribs.c:decl_attributes prepends the values from
+	 current_target_pragma to the list of target attributes.  To determine
+	 whether we're looking at a value of the attribute or the pragma we
+	 assume that the first [list_length (current_target_pragma)] values in
+	 the list are the values from the pragma.  */
+      num_pragma_values = (!force_pragma && current_target_pragma != NULL)
+	? list_length (current_target_pragma) : 0;
+      for (i = 0; args; args = TREE_CHAIN (args), i++)
+	{
+	  bool is_pragma;
+
+	  is_pragma = (force_pragma || i < num_pragma_values);
+	  if (TREE_VALUE (args)
+	      && !s390_valid_target_attribute_inner_p (TREE_VALUE (args),
+						       opts, new_opts_set,
+						       is_pragma))
+	    {
+	      ret = false;
+	    }
+	}
+      return ret;
+    }
+
+  else if (TREE_CODE (args) != STRING_CST)
+    {
+      error ("attribute %<target%> argument not a string");
+      return false;
+    }
+
+  /* Handle multiple arguments separated by commas.  */
+  next_optstr = ASTRDUP (TREE_STRING_POINTER (args));
+
+  while (next_optstr && *next_optstr != '\0')
+    {
+      char *p = next_optstr;
+      char *orig_p = p;
+      char *comma = strchr (next_optstr, ',');
+      size_t len, opt_len;
+      int opt;
+      bool opt_set_p;
+      char ch;
+      unsigned i;
+      int mask = 0;
+      enum cl_var_type var_type;
+      bool found;
+
+      if (comma)
+	{
+	  *comma = '\0';
+	  len = comma - next_optstr;
+	  next_optstr = comma + 1;
+	}
+      else
+	{
+	  len = strlen (p);
+	  next_optstr = NULL;
+	}
+
+      /* Recognize no-xxx.  */
+      if (len > 3 && p[0] == 'n' && p[1] == 'o' && p[2] == '-')
+	{
+	  opt_set_p = false;
+	  p += 3;
+	  len -= 3;
+	}
+      else
+	opt_set_p = true;
+
+      /* Find the option.  */
+      ch = *p;
+      found = false;
+      for (i = 0; i < ARRAY_SIZE (attrs); i++)
+	{
+	  opt_len = attrs[i].len;
+	  if (ch == attrs[i].string[0]
+	      && ((attrs[i].has_arg) ? len > opt_len : len == opt_len)
+	      && memcmp (p, attrs[i].string, opt_len) == 0)
+	    {
+	      opt = attrs[i].opt;
+	      if (!opt_set_p && cl_options[opt].cl_reject_negative)
+		continue;
+	      mask = cl_options[opt].var_value;
+	      var_type = cl_options[opt].var_type;
+	      found = true;
+	      break;
+	    }
+	}
+
+      /* Process the option.  */
+      if (!found)
+	{
+	  error ("attribute(target(\"%s\")) is unknown", orig_p);
+	  return false;
+	}
+      else if (attrs[i].only_as_pragma && !force_pragma)
+	{
+	  /* Value is not allowed for the target attribute.  */
+	  error ("Value %qs is not supported by attribute %<target%>",
+		 attrs[i].string);
+	  return false;
+	}
+
+      else if (var_type == CLVC_BIT_SET || var_type == CLVC_BIT_CLEAR)
+	{
+	  if (var_type == CLVC_BIT_CLEAR)
+	    opt_set_p = !opt_set_p;
+
+	  if (opt_set_p)
+	    opts->x_target_flags |= mask;
+	  else
+	    opts->x_target_flags &= ~mask;
+	  new_opts_set->x_target_flags |= mask;
+	}
+
+      else if (cl_options[opt].var_type == CLVC_BOOLEAN)
+	{
+	  int value;
+
+	  if (cl_options[opt].cl_uinteger)
+	    {
+	      /* Unsigned integer argument.  Code based on the function
+		 decode_cmdline_option () in opts-common.c.  */
+	      value = integral_argument (p + opt_len);
+	    }
+	  else
+	    value = (opt_set_p) ? 1 : 0;
+
+	  if (value != -1)
+	    {
+	      struct cl_decoded_option decoded;
+
+	      /* Value range check; only implemented for numeric and boolean
+		 options at the moment.  */
+	      generate_option (opt, NULL, value, CL_TARGET, &decoded);
+	      s390_handle_option (opts, new_opts_set, &decoded, input_location);
+	      set_option (opts, new_opts_set, opt, value,
+			  p + opt_len, DK_UNSPECIFIED, input_location,
+			  global_dc);
+	    }
+	  else
+	    {
+	      error ("attribute(target(\"%s\")) is unknown", orig_p);
+	      ret = false;
+	    }
+	}
+
+      else if (cl_options[opt].var_type == CLVC_ENUM)
+	{
+	  bool arg_ok;
+	  int value;
+
+	  arg_ok = opt_enum_arg_to_value (opt, p + opt_len, &value, CL_TARGET);
+	  if (arg_ok)
+	    set_option (opts, new_opts_set, opt, value,
+			p + opt_len, DK_UNSPECIFIED, input_location,
+			global_dc);
+	  else
+	    {
+	      error ("attribute(target(\"%s\")) is unknown", orig_p);
+	      ret = false;
+	    }
+	}
+
+      else
+	gcc_unreachable ();
+    }
+  return ret;
+}
+
+/* Return a TARGET_OPTION_NODE tree of the target options listed or NULL.  */
+
+tree
+s390_valid_target_attribute_tree (tree args,
+				  struct gcc_options *opts,
+				  const struct gcc_options *opts_set,
+				  bool force_pragma)
+{
+  tree t = NULL_TREE;
+  struct gcc_options new_opts_set;
+
+  memset (&new_opts_set, 0, sizeof (new_opts_set));
+
+  /* Process each of the options on the chain.  */
+  if (! s390_valid_target_attribute_inner_p (args, opts, &new_opts_set,
+					     force_pragma))
+    return error_mark_node;
+
+  /* If some option was set (even if it has not changed), rerun
+     s390_option_override_internal, and then save the options away.  */
+  if (new_opts_set.x_target_flags
+      || new_opts_set.x_s390_arch
+      || new_opts_set.x_s390_tune
+      || new_opts_set.x_s390_stack_guard
+      || new_opts_set.x_s390_stack_size
+      || new_opts_set.x_s390_branch_cost
+      || new_opts_set.x_s390_warn_framesize
+      || new_opts_set.x_s390_warn_dynamicstack_p)
+    {
+      const unsigned char *src = (const unsigned char *)opts_set;
+      unsigned char *dest = (unsigned char *)&new_opts_set;
+      unsigned int i;
+
+      /* Merge the original option flags into the new ones.  */
+      for (i = 0; i < sizeof(*opts_set); i++)
+	dest[i] |= src[i];
+
+      /* Do any overrides, such as arch=xxx, or tune=xxx support.  */
+      s390_option_override_internal (false, opts, &new_opts_set);
+      /* Save the current options unless we are validating options for
+	 #pragma.  */
+      t = build_target_option_node (opts);
+    }
+  return t;
+}
+
+/* Hook to validate attribute((target("string"))).  */
+
+static bool
+s390_valid_target_attribute_p (tree fndecl,
+			       tree ARG_UNUSED (name),
+			       tree args,
+			       int ARG_UNUSED (flags))
+{
+  struct gcc_options func_options;
+  tree new_target, new_optimize;
+  bool ret = true;
+
+  /* attribute((target("default"))) does nothing, beyond
+     affecting multi-versioning.  */
+  if (TREE_VALUE (args)
+      && TREE_CODE (TREE_VALUE (args)) == STRING_CST
+      && TREE_CHAIN (args) == NULL_TREE
+      && strcmp (TREE_STRING_POINTER (TREE_VALUE (args)), "default") == 0)
+    return true;
+
+  tree old_optimize = build_optimization_node (&global_options);
+
+  /* Get the optimization options of the current function.  */
+  tree func_optimize = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
+
+  if (!func_optimize)
+    func_optimize = old_optimize;
+
+  /* Init func_options.  */
+  memset (&func_options, 0, sizeof (func_options));
+  init_options_struct (&func_options, NULL);
+  lang_hooks.init_options_struct (&func_options);
+
+  cl_optimization_restore (&func_options, TREE_OPTIMIZATION (func_optimize));
+
+  /* Initialize func_options to the default before its target options can
+     be set.  */
+  cl_target_option_restore (&func_options,
+			    TREE_TARGET_OPTION (target_option_default_node));
+
+  new_target = s390_valid_target_attribute_tree (args, &func_options,
+						 &global_options_set,
+						 (args ==
+						  current_target_pragma));
+  new_optimize = build_optimization_node (&func_options);
+  if (new_target == error_mark_node)
+    ret = false;
+  else if (fndecl && new_target)
+    {
+      DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = new_target;
+      if (old_optimize != new_optimize)
+	DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) = new_optimize;
+    }
+  return ret;
+}
+
+/* Restore targets globals from NEW_TREE and invalidate s390_previous_fndecl
+   cache.  */
+
+void
+s390_activate_target_options (tree new_tree)
+{
+  cl_target_option_restore (&global_options, TREE_TARGET_OPTION (new_tree));
+  if (TREE_TARGET_GLOBALS (new_tree))
+    restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
+  else if (new_tree == target_option_default_node)
+    restore_target_globals (&default_target_globals);
+  else
+    TREE_TARGET_GLOBALS (new_tree) = save_target_globals_default_opts ();
+  s390_previous_fndecl = NULL_TREE;
+}
+
+/* Establish appropriate back-end context for processing the function
+   FNDECL.  The argument might be NULL to indicate processing at top
+   level, outside of any function scope.  */
+static void
+s390_set_current_function (tree fndecl)
+{
+  /* Only change the context if the function changes.  This hook is called
+     several times in the course of compiling a function, and we don't want to
+     slow things down too much or call target_reinit when it isn't safe.  */
+  if (fndecl == s390_previous_fndecl)
+    return;
+
+  tree old_tree;
+  if (s390_previous_fndecl == NULL_TREE)
+    old_tree = target_option_current_node;
+  else if (DECL_FUNCTION_SPECIFIC_TARGET (s390_previous_fndecl))
+    old_tree = DECL_FUNCTION_SPECIFIC_TARGET (s390_previous_fndecl);
+  else
+    old_tree = target_option_default_node;
+
+  if (fndecl == NULL_TREE)
+    {
+      if (old_tree != target_option_current_node)
+	s390_activate_target_options (target_option_current_node);
+      return;
+    }
+
+  tree new_tree = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
+  if (new_tree == NULL_TREE)
+    new_tree = target_option_default_node;
+
+  if (old_tree != new_tree)
+    s390_activate_target_options (new_tree);
+  s390_previous_fndecl = fndecl;
+}
+#endif
 
 /* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
 
@@ -13793,6 +14437,15 @@ s390_vector_alignment (const_tree type)
 
   return MIN (64, tree_to_shwi (TYPE_SIZE (type)));
 }
+
+#ifdef HAVE_AS_MACHINE_MACHINEMODE
+/* Implement TARGET_ASM_FILE_START.  */
+static void
+s390_asm_file_start (void)
+{
+  s390_asm_output_machine_for_arch (asm_out_file);
+}
+#endif
 
 /* Implement TARGET_ASM_FILE_END.  */
 static void
@@ -14093,8 +14746,24 @@ s390_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1, const_tree ty
 #undef TARGET_INVALID_BINARY_OP
 #define TARGET_INVALID_BINARY_OP s390_invalid_binary_op
 
+#ifdef HAVE_AS_MACHINE_MACHINEMODE
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START s390_asm_file_start
+#endif
+
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END s390_asm_file_end
+
+#if S390_USE_TARGET_ATTRIBUTE
+#undef TARGET_SET_CURRENT_FUNCTION
+#define TARGET_SET_CURRENT_FUNCTION s390_set_current_function
+
+#undef TARGET_OPTION_VALID_ATTRIBUTE_P
+#define TARGET_OPTION_VALID_ATTRIBUTE_P s390_valid_target_attribute_p
+#endif
+
+#undef TARGET_OPTION_RESTORE
+#define TARGET_OPTION_RESTORE s390_function_specific_restore
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

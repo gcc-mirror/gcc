@@ -180,6 +180,7 @@ GLIBCXX_ENABLE_VTABLE_VERIFY([no])
 
 # Checks for operating systems support that doesn't require linking.
 GLIBCXX_CHECK_STDIO_PROTO
+GLIBCXX_CHECK_MATH11_PROTO
 GLIBCXX_CHECK_SYSTEM_ERROR
 GLIBCXX_CHECK_UCHAR_H
 
@@ -406,6 +407,9 @@ GLIBCXX_CHECK_GTHREADS
 AC_CHECK_HEADERS([fcntl.h dirent.h sys/statvfs.h utime.h])
 GLIBCXX_ENABLE_FILESYSTEM_TS
 GLIBCXX_CHECK_FILESYSTEM_DEPS
+
+# For Transactional Memory TS
+GLIBCXX_CHECK_SIZE_T_MANGLING
 
 # Define documentation rules conditionally.
 

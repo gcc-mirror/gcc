@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997-2015 Free Software Foundation, Inc.
+// Copyright (C) 1997-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -69,7 +69,11 @@ namespace std
 
 #else
 
-#include <stdlib.h>
+// Need to ensure this finds the C library's <stdlib.h> not a libstdc++
+// wrapper that might already be installed later in the include search path.
+#define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
+#include_next <stdlib.h>
+#undef _GLIBCXX_INCLUDE_NEXT_C_HEADERS
 
 // Get rid of those macros defined in <stdlib.h> in lieu of real functions.
 #undef abort
@@ -111,6 +115,8 @@ namespace std
 #undef wcstombs
 #undef wctomb
 
+extern "C++"
+{
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -267,6 +273,8 @@ namespace std
 } // namespace std
 
 #endif // _GLIBCXX_USE_C99_STDLIB
+
+} // extern "C++"
 
 #endif // !_GLIBCXX_HOSTED
 

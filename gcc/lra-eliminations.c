@@ -1,5 +1,5 @@
 /* Code for RTL register eliminations.
-   Copyright (C) 2010-2015 Free Software Foundation, Inc.
+   Copyright (C) 2010-2016 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -279,6 +279,36 @@ get_elimination (rtx reg)
   return &self_elim_table;
 }
 
+/* Transform (subreg (plus reg const)) to (plus (subreg reg) const)
+   when it is possible.  Return X or the transformation result if the
+   transformation is done.  */
+static rtx
+move_plus_up (rtx x)
+{
+  rtx subreg_reg;
+  enum machine_mode x_mode, subreg_reg_mode;
+  
+  if (GET_CODE (x) != SUBREG || !subreg_lowpart_p (x))
+    return x;
+  subreg_reg = SUBREG_REG (x);
+  x_mode = GET_MODE (x);
+  subreg_reg_mode = GET_MODE (subreg_reg);
+  if (GET_CODE (x) == SUBREG && GET_CODE (subreg_reg) == PLUS
+      && GET_MODE_SIZE (x_mode) <= GET_MODE_SIZE (subreg_reg_mode)
+      && CONSTANT_P (XEXP (subreg_reg, 1))
+      && GET_MODE_CLASS (x_mode) == MODE_INT
+      && GET_MODE_CLASS (subreg_reg_mode) == MODE_INT)
+    {
+      rtx cst = simplify_subreg (x_mode, XEXP (subreg_reg, 1), subreg_reg_mode,
+				 subreg_lowpart_offset (x_mode,
+							subreg_reg_mode));
+      if (cst && CONSTANT_P (cst))
+	return gen_rtx_PLUS (x_mode, lowpart_subreg (x_mode, subreg_reg,
+						     subreg_reg_mode), cst);
+    }
+  return x;
+}
+
 /* Scan X and replace any eliminable registers (such as fp) with a
    replacement (such as sp) if SUBST_P, plus an offset.  The offset is
    a change in the offset between the eliminable register and its
@@ -407,6 +437,8 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 					 subst_p, update_p,
 					 update_sp_offset, full_p);
 
+	new0 = move_plus_up (new0);
+	new1 = move_plus_up (new1);
 	if (new0 != XEXP (x, 0) || new1 != XEXP (x, 1))
 	  return form_sum (new0, new1);
       }

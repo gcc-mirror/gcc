@@ -1,6 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006-2015 Free Software Foundation, Inc.
+// Copyright (C) 2006-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,8 +43,15 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+#if __STDCPP_WANT_MATH_SPEC_FUNCS__
+# define _GLIBCXX_MATH_NS ::std
+#elif defined(_GLIBCXX_TR1_CMATH)
 namespace tr1
 {
+# define _GLIBCXX_MATH_NS ::std::tr1
+#else
+# error do not include this header directly, use <cmath> or <tr1/cmath>
+#endif
   // [5.2] Special functions
 
   // Implementation-space details.
@@ -222,7 +229,7 @@ namespace tr1
     __conf_hyperg(_Tp __a, _Tp __c, _Tp __x)
     {
 #if _GLIBCXX_USE_C99_MATH_TR1
-      const _Tp __c_nint = std::tr1::nearbyint(__c);
+      const _Tp __c_nint = _GLIBCXX_MATH_NS::nearbyint(__c);
 #else
       const _Tp __c_nint = static_cast<int>(__c + _Tp(0.5L));
 #endif
@@ -723,9 +730,9 @@ namespace tr1
     __hyperg(_Tp __a, _Tp __b, _Tp __c, _Tp __x)
     {
 #if _GLIBCXX_USE_C99_MATH_TR1
-      const _Tp __a_nint = std::tr1::nearbyint(__a);
-      const _Tp __b_nint = std::tr1::nearbyint(__b);
-      const _Tp __c_nint = std::tr1::nearbyint(__c);
+      const _Tp __a_nint = _GLIBCXX_MATH_NS::nearbyint(__a);
+      const _Tp __b_nint = _GLIBCXX_MATH_NS::nearbyint(__b);
+      const _Tp __c_nint = _GLIBCXX_MATH_NS::nearbyint(__c);
 #else
       const _Tp __a_nint = static_cast<int>(__a + _Tp(0.5L));
       const _Tp __b_nint = static_cast<int>(__b + _Tp(0.5L));
@@ -768,8 +775,11 @@ namespace tr1
     }
 
   _GLIBCXX_END_NAMESPACE_VERSION
-  } // namespace std::tr1::__detail
-}
+  } // namespace __detail
+#undef _GLIBCXX_MATH_NS
+#if ! __STDCPP_WANT_MATH_SPEC_FUNCS__ && defined(_GLIBCXX_TR1_CMATH)
+} // namespace tr1
+#endif
 }
 
 #endif // _GLIBCXX_TR1_HYPERGEOMETRIC_TCC

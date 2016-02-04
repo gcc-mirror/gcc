@@ -2,6 +2,7 @@
 /* { dg-require-effective-target bswap64 } */
 /* { dg-require-effective-target stdint_types } */
 /* { dg-options "-O2 -fdump-tree-bswap" } */
+/* { dg-additional-options "-mzarch" { target s390*-*-* } } */
 
 #include <stdint.h>
 

@@ -1,6 +1,6 @@
 /* Call-backs for C++ error reporting.
    This code is non-reentrant.
-   Copyright (C) 1993-2015 Free Software Foundation, Inc.
+   Copyright (C) 1993-2016 Free Software Foundation, Inc.
    This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify
@@ -875,7 +875,7 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
     case ARRAY_TYPE:
       pp_maybe_space (pp);
       pp_cxx_left_bracket (pp);
-      if (TYPE_DOMAIN (t))
+      if (TYPE_DOMAIN (t) && TYPE_MAX_VALUE (TYPE_DOMAIN (t)))
 	{
 	  tree dtype = TYPE_DOMAIN (t);
 	  tree max = TYPE_MAX_VALUE (dtype);
@@ -953,7 +953,7 @@ dump_global_iord (cxx_pretty_printer *pp, tree t)
   else
     gcc_unreachable ();
 
-  pp_printf (pp, p, LOCATION_FILE (input_location));
+  pp_printf (pp, p, DECL_SOURCE_FILE (t));
 }
 
 static void
@@ -3365,8 +3365,8 @@ print_instantiation_partial_context_line (diagnostic_context *context,
     {
       pp_verbatim (context->printer,
 		   recursive_p
-		   ? _("recursively required from here")
-		   : _("required from here"));
+		   ? _("recursively required from here\n")
+		   : _("required from here\n"));
     }
 }
 
@@ -3450,7 +3450,6 @@ print_instantiation_partial_context (diagnostic_context *context,
     }
   print_instantiation_partial_context_line (context, NULL, loc,
 					    /*recursive_p=*/false);
-  pp_newline (context->printer);
 }
 
 /* Called from cp_thing to print the template context for an error.  */

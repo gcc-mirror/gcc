@@ -12,6 +12,13 @@ import (
 	"unsafe"
 )
 
+func init() {
+	// We're testing the runtime, so make tracebacks show things
+	// in the runtime. This only raises the level, so it won't
+	// override GOTRACEBACK=crash from the user.
+	SetTracebackEnv("system")
+}
+
 var errf error
 
 func errfn() error {
@@ -301,5 +308,17 @@ func TestAppendSliceGrowth(t *testing.T) {
 		if i&(i-1) == 0 {
 			want = 2 * i
 		}
+	}
+}
+
+func TestGoroutineProfileTrivial(t *testing.T) {
+	n1, ok := GoroutineProfile(nil) // should fail, there's at least 1 goroutine
+	if n1 < 1 || ok {
+		t.Fatalf("GoroutineProfile(nil) = %d, %v, want >0, false", n1, ok)
+	}
+
+	n2, ok := GoroutineProfile(make([]StackRecord, n1))
+	if n2 != n1 || !ok {
+		t.Fatalf("GoroutineProfile(%d) = %d, %v, want %d, true", n1, n2, ok, n1)
 	}
 }

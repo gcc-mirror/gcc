@@ -1,5 +1,5 @@
-/* Translation of ISL AST to Gimple.
-   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+/* Translation of isl AST to Gimple.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
    Contributed by Roman Gareev <gareevroman@gmail.com>.
 
 This file is part of GCC.
@@ -18,27 +18,11 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define USES_ISL
+
 #include "config.h"
 
 #ifdef HAVE_isl
-/* Workaround for GMP 5.1.3 bug, see PR56019.  */
-#include <stddef.h>
-
-#include <isl/constraint.h>
-#include <isl/set.h>
-#include <isl/union_set.h>
-#include <isl/map.h>
-#include <isl/union_map.h>
-#include <isl/ast_build.h>
-
-/* Since ISL-0.13, the extern is in val_gmp.h.  */
-#if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
-extern "C" {
-#endif
-#include <isl/val_gmp.h>
-#if !defined(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE) && defined(__cplusplus)
-}
-#endif
 
 #include "system.h"
 #include "coretypes.h"
@@ -59,19 +43,17 @@ extern "C" {
 #include "tree-pass.h"
 #include "cfgloop.h"
 #include "tree-data-ref.h"
-#include "graphite-poly.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-scalar-evolution.h"
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "tree-into-ssa.h"
 #include "ssa-iterators.h"
-#include "graphite-isl-ast-to-gimple.h"
 #include "tree-cfg.h"
 #include "gimple-pretty-print.h"
 #include "cfganal.h"
 #include "value-prof.h"
-
+#include "graphite.h"
 #include <map>
 
 /* We always try to use signed 128 bit types, but fall back to smaller types
@@ -116,14 +98,14 @@ graphite_verify (void)
   checking_verify_loop_closed_ssa (true);
 }
 
-/* IVS_PARAMS maps ISL's scattering and parameter identifiers
+/* IVS_PARAMS maps isl's scattering and parameter identifiers
    to corresponding trees.  */
 
 typedef std::map<isl_id *, tree> ivs_params;
 
-/* Free all memory allocated for ISL's identifiers.  */
+/* Free all memory allocated for isl's identifiers.  */
 
-void ivs_params_clear (ivs_params &ip)
+static void ivs_params_clear (ivs_params &ip)
 {
   std::map<isl_id *, tree>::iterator it;
   for (it = ip.begin ();
@@ -133,353 +115,204 @@ void ivs_params_clear (ivs_params &ip)
     }
 }
 
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+
+/* Set the "separate" option for the schedule node.  */
+
+static isl_schedule_node *
+set_separate_option (__isl_take isl_schedule_node *node, void *user)
+{
+  if (user)
+    return node;
+
+  if (isl_schedule_node_get_type (node) != isl_schedule_node_band)
+    return node;
+
+  /* Set the "separate" option unless it is set earlier to another option.  */
+  if (isl_schedule_node_band_member_get_ast_loop_type (node, 0)
+      == isl_ast_loop_default)
+    return isl_schedule_node_band_member_set_ast_loop_type
+      (node, 0, isl_ast_loop_separate);
+
+  return node;
+}
+
+/* Print SCHEDULE under an AST form on file F.  */
+
+void
+print_schedule_ast (FILE *f, __isl_keep isl_schedule *schedule, scop_p scop)
+{
+  isl_set *set = isl_set_params (isl_set_copy (scop->param_context));
+  isl_ast_build *context = isl_ast_build_from_context (set);
+  isl_ast_node *ast
+    = isl_ast_build_node_from_schedule (context, isl_schedule_copy (schedule));
+  isl_ast_build_free (context);
+  print_isl_ast (f, ast);
+  isl_ast_node_free (ast);
+}
+
+DEBUG_FUNCTION void
+debug_schedule_ast (__isl_keep isl_schedule *s, scop_p scop)
+{
+  print_schedule_ast (stderr, s, scop);
+}
+
+#endif
+
+enum phi_node_kind
+{
+  unknown_phi,
+  loop_phi,
+  close_phi,
+  cond_phi
+};
+
 class translate_isl_ast_to_gimple
 {
  public:
   translate_isl_ast_to_gimple (sese_info_p r)
-    : region (r), codegen_error (false)
-    { }
-
-  /* Translates an ISL AST node NODE to GCC representation in the
-     context of a SESE.  */
+    : region (r), codegen_error (false) { }
   edge translate_isl_ast (loop_p context_loop, __isl_keep isl_ast_node *node,
 			  edge next_e, ivs_params &ip);
-
-  /* Translates an isl_ast_node_for to Gimple.  */
   edge translate_isl_ast_node_for (loop_p context_loop,
 				   __isl_keep isl_ast_node *node,
 				   edge next_e, ivs_params &ip);
-
-  /* Create the loop for a isl_ast_node_for.
-
-     - NEXT_E is the edge where new generated code should be attached.  */
   edge translate_isl_ast_for_loop (loop_p context_loop,
 				   __isl_keep isl_ast_node *node_for,
 				   edge next_e,
 				   tree type, tree lb, tree ub,
 				   ivs_params &ip);
-
-  /* Translates an isl_ast_node_if to Gimple.  */
   edge translate_isl_ast_node_if (loop_p context_loop,
 				  __isl_keep isl_ast_node *node,
 				  edge next_e, ivs_params &ip);
-
-  /* Translates an isl_ast_node_user to Gimple.
-
-     FIXME: We should remove iv_map.create (loop->num + 1), if it is
-     possible.  */
   edge translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
 				    edge next_e, ivs_params &ip);
-
-  /* Translates an isl_ast_node_block to Gimple.  */
   edge translate_isl_ast_node_block (loop_p context_loop,
 				     __isl_keep isl_ast_node *node,
 				     edge next_e, ivs_params &ip);
-
-  /* Converts a unary isl_ast_expr_op expression E to a GCC expression tree of
-     type TYPE.  */
   tree unary_op_to_tree (tree type, __isl_take isl_ast_expr *expr,
 			 ivs_params &ip);
-
-  /* Converts a binary isl_ast_expr_op expression E to a GCC expression tree of
-     type TYPE.  */
   tree binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr,
 			  ivs_params &ip);
-
-  /* Converts a ternary isl_ast_expr_op expression E to a GCC expression tree of
-     type TYPE.  */
   tree ternary_op_to_tree (tree type, __isl_take isl_ast_expr *expr,
 			   ivs_params &ip);
-
-  /* Converts an isl_ast_expr_op expression E with unknown number of arguments
-     to a GCC expression tree of type TYPE.  */
   tree nary_op_to_tree (tree type, __isl_take isl_ast_expr *expr,
 			ivs_params &ip);
-
-  /* Converts an ISL AST expression E back to a GCC expression tree of
-     type TYPE.  */
   tree gcc_expression_from_isl_expression (tree type,
 					   __isl_take isl_ast_expr *,
 					   ivs_params &ip);
-
-  /* Return the tree variable that corresponds to the given isl ast identifier
-     expression (an isl_ast_expr of type isl_ast_expr_id).
-
-     FIXME: We should replace blind conversation of id's type with derivation
-     of the optimal type when we get the corresponding isl support.  Blindly
-     converting type sizes may be problematic when we switch to smaller
-     types.  */
   tree gcc_expression_from_isl_ast_expr_id (tree type,
 					    __isl_keep isl_ast_expr *expr_id,
 					    ivs_params &ip);
-
-  /* Converts an isl_ast_expr_int expression E to a GCC expression tree of
-     type TYPE.  */
   tree gcc_expression_from_isl_expr_int (tree type,
 					 __isl_take isl_ast_expr *expr);
-
-  /* Converts an isl_ast_expr_op expression E to a GCC expression tree of
-     type TYPE.  */
   tree gcc_expression_from_isl_expr_op (tree type,
 					__isl_take isl_ast_expr *expr,
 					ivs_params &ip);
-
-  /* Creates a new LOOP corresponding to isl_ast_node_for.  Inserts an
-     induction variable for the new LOOP.  New LOOP is attached to CFG
-     starting at ENTRY_EDGE.  LOOP is inserted into the loop tree and
-     becomes the child loop of the OUTER_LOOP.  NEWIVS_INDEX binds
-     ISL's scattering name to the induction variable created for the
-     loop of STMT.  The new induction variable is inserted in the NEWIVS
-     vector and is of type TYPE.  */
   struct loop *graphite_create_new_loop (edge entry_edge,
 					 __isl_keep isl_ast_node *node_for,
 					 loop_p outer, tree type,
 					 tree lb, tree ub, ivs_params &ip);
-
-  /* All loops generated by create_empty_loop_on_edge have the form of
-     a post-test loop:
-
-     do
-
-     {
-     body of the loop;
-     } while (lower bound < upper bound);
-
-     We create a new if region protecting the loop to be executed, if
-     the execution count is zero (lower bound > upper bound).  */
   edge graphite_create_new_loop_guard (edge entry_edge,
 				       __isl_keep isl_ast_node *node_for,
 				       tree *type,
 				       tree *lb, tree *ub, ivs_params &ip);
-
-  /* Creates a new if region corresponding to ISL's cond.  */
   edge graphite_create_new_guard (edge entry_edge,
 				  __isl_take isl_ast_expr *if_cond,
 				  ivs_params &ip);
-
-  /* Inserts in iv_map a tuple (OLD_LOOP->num, NEW_NAME) for the induction
-     variables of the loops around GBB in SESE.
-
-     FIXME: Instead of using a vec<tree> that maps each loop id to a possible
-     chrec, we could consider using a map<int, tree> that maps loop ids to the
-     corresponding tree expressions.  */
   void build_iv_mapping (vec<tree> iv_map, gimple_poly_bb_p gbb,
 			 __isl_keep isl_ast_expr *user_expr, ivs_params &ip,
 			 sese_l &region);
-
-  /* Patch the missing arguments of the phi nodes.  */
-
   void translate_pending_phi_nodes (void);
-
-  /* Add ISL's parameter identifiers and corresponding trees to ivs_params.  */
-
   void add_parameters_to_ivs_params (scop_p scop, ivs_params &ip);
-
-  /* Get the maximal number of schedule dimensions in the scop SCOP.  */
-
-  int get_max_schedule_dimensions (scop_p scop);
-
-  /* Generates a build, which specifies the constraints on the parameters.  */
-
   __isl_give isl_ast_build *generate_isl_context (scop_p scop);
 
-  /* Extend the schedule to NB_SCHEDULE_DIMS schedule dimensions.
-
-     For schedules with different dimensionality, the isl AST generator can not
-     define an order and will just randomly choose an order.  The solution to
-     this problem is to extend all schedules to the maximal number of schedule
-     dimensions (using '0's for the remaining values).  */
-
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  __isl_give isl_ast_node * scop_to_isl_ast (scop_p scop);
+#else
+  int get_max_schedule_dimensions (scop_p scop);
   __isl_give isl_map *extend_schedule (__isl_take isl_map *schedule,
 				       int nb_schedule_dims);
-
-  /* Generates a schedule, which specifies an order used to
-     visit elements in a domain.  */
-
   __isl_give isl_union_map *generate_isl_schedule (scop_p scop);
-
-  /* Set the separate option for all dimensions.
-     This helps to reduce control overhead.  */
-
-  __isl_give isl_ast_build * set_options (__isl_take isl_ast_build *control,
-					  __isl_keep isl_union_map *schedule);
-
-  /* Generate isl AST from schedule of SCOP.  Also, collects IVS_PARAMS in
-     IP.  */
-
-  __isl_give isl_ast_node * scop_to_isl_ast (scop_p scop, ivs_params &ip);
-
-
-  /* Return true if RENAME (defined in BB) is a valid use in NEW_BB.  The
-     definition should flow into use, and the use should respect the loop-closed
-     SSA form.  */
+  __isl_give isl_ast_build *set_options (__isl_take isl_ast_build *control,
+					 __isl_keep isl_union_map *schedule);
+  __isl_give isl_ast_node *scop_to_isl_ast (scop_p scop, ivs_params &ip);
+#endif
 
   bool is_valid_rename (tree rename, basic_block def_bb, basic_block use_bb,
-			bool loop_phi, tree old_name, basic_block old_bb) const;
-
-  /* Returns the expression associated to OLD_NAME (which is used in OLD_BB), in
-     NEW_BB from RENAME_MAP.  LOOP_PHI is true when we want to rename OLD_NAME
-     within a loop PHI instruction.  */
-
+			phi_node_kind, tree old_name, basic_block old_bb) const;
   tree get_rename (basic_block new_bb, tree old_name,
-		   basic_block old_bb, bool loop_phi) const;
-
-  /* For ops which are scev_analyzeable, we can regenerate a new name from
-  its scalar evolution around LOOP.  */
-
+		   basic_block old_bb, phi_node_kind) const;
   tree get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
 			     basic_block new_bb, basic_block old_bb,
 			     vec<tree> iv_map);
-
-  /* Returns a basic block that could correspond to where a constant was defined
-     in the original code.  In the original code OLD_BB had the definition, we
-     need to find which basic block out of the copies of old_bb, in the new
-     region, should a definition correspond to if it has to reach BB.  */
-
   basic_block get_def_bb_for_const (basic_block bb, basic_block old_bb) const;
-
-  /* Get the new name of OP (from OLD_BB) to be used in NEW_BB.  LOOP_PHI is
-     true when we want to rename an OP within a loop PHI instruction.  */
-
   tree get_new_name (basic_block new_bb, tree op,
-		     basic_block old_bb, bool loop_phi) const;
-
-  /* Collect all the operands of NEW_EXPR by recursively visiting each
-     operand.  */
-
+		     basic_block old_bb, phi_node_kind) const;
   void collect_all_ssa_names (tree new_expr, vec<tree> *vec_ssa);
-
-  /* Copy the PHI arguments from OLD_PHI to the NEW_PHI.  The arguments to
-     NEW_PHI must be found unless they can be POSTPONEd for later.  */
-
   bool copy_loop_phi_args (gphi *old_phi, init_back_edge_pair_t &ibp_old_bb,
 			   gphi *new_phi, init_back_edge_pair_t &ibp_new_bb,
 			   bool postpone);
-
-  /* Copy loop phi nodes from BB to NEW_BB.  */
-
   bool copy_loop_phi_nodes (basic_block bb, basic_block new_bb);
-
-  /* Copy all the loop-close phi args from BB to NEW_BB.  */
-
+  bool add_close_phis_to_merge_points (gphi *old_phi, gphi *new_phi,
+				       tree default_value);
+  tree add_close_phis_to_outer_loops (tree last_merge_name, edge merge_e,
+				      gimple *old_close_phi);
   bool copy_loop_close_phi_args (basic_block old_bb, basic_block new_bb,
 				 bool postpone);
-
-  /* Copy loop close phi nodes from BB to NEW_BB.  */
-
   bool copy_loop_close_phi_nodes (basic_block old_bb, basic_block new_bb);
-
-  /* Copy the arguments of cond-phi node PHI, to NEW_PHI in the codegenerated
-     region.  If postpone is true and it isn't possible to copy any arg of PHI,
-     the PHI is added to the REGION->INCOMPLETE_PHIS to be codegenerated later.
-     Returns false if the copying was unsuccessful.  */
-
   bool copy_cond_phi_args (gphi *phi, gphi *new_phi, vec<tree> iv_map,
 			   bool postpone);
-
-  /* Copy cond phi nodes from BB to NEW_BB.  A cond-phi node is a basic block
-  containing phi nodes coming from two predecessors, and none of them are back
-  edges.  */
-
   bool copy_cond_phi_nodes (basic_block bb, basic_block new_bb,
 			    vec<tree> iv_map);
-
-  /* Duplicates the statements of basic block BB into basic block NEW_BB
-     and compute the new induction variables according to the IV_MAP.
-     CODEGEN_ERROR is set when the code generation cannot continue.  */
-
   bool graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 				       vec<tree> iv_map);
-
-  /* Copies BB and includes in the copied BB all the statements that can
-     be reached following the use-def chains from the memory accesses,
-     and returns the next edge following this new block.  codegen_error is
-     set when the code generation cannot continue.  */
-
   edge copy_bb_and_scalar_dependences (basic_block bb, edge next_e,
 				       vec<tree> iv_map);
-
-  /* Given a basic block containing close-phi it returns the new basic block
-     where to insert a copy of the close-phi nodes.  All the uses in close phis
-     should come from a single loop otherwise it returns NULL.  */
   edge edge_for_new_close_phis (basic_block bb);
-
-  /* Add NEW_NAME as the ARGNUM-th arg of NEW_PHI which is in NEW_BB.
-     DOMINATING_PRED is the predecessor basic block of OLD_BB which dominates
-     the other pred of OLD_BB as well.  If no such basic block exists then it is
-     NULL.  NON_DOMINATING_PRED is a pred which does not dominate OLD_BB, it
-     cannot be NULL.
-
-     Case1: OLD_BB->preds {BB1, BB2} and BB1 does not dominate BB2 and vice
-     versa.  In this case DOMINATING_PRED = NULL.
-
-     Case2: OLD_BB->preds {BB1, BB2} and BB1 dominates BB2.
-
-     Returns true on successful copy of the args, false otherwise.  */
-
   bool add_phi_arg_for_new_expr (tree old_phi_args[2], tree new_phi_args[2],
 				 edge old_bb_dominating_edge,
 				 edge old_bb_non_dominating_edge,
 				 gphi *phi, gphi *new_phi,
 				 basic_block new_bb);
-
-  /* Renames the scalar uses of the statement COPY, using the substitution map
-     RENAME_MAP, inserting the gimplification code at GSI_TGT, for the
-     translation REGION, with the original copied statement in LOOP, and using
-     the induction variable renaming map IV_MAP.  Returns true when something
-     has been renamed.  codegen_error is set when the code generation cannot
-     continue.  */
-
   bool rename_uses (gimple *copy, gimple_stmt_iterator *gsi_tgt,
 		    basic_block old_bb, loop_p loop, vec<tree> iv_map);
-
-  /* Register in RENAME_MAP the rename tuple (OLD_NAME, EXPR).
-     When OLD_NAME and EXPR are the same we assert.  */
-
   void set_rename (tree old_name, tree expr);
-
-  /* Create new names for all the definitions created by COPY and add
-     replacement mappings for each new name.  */
-
   void set_rename_for_each_def (gimple *stmt);
-
-  /* Insert each statement from SEQ at its earliest insertion p.  */
-
   void gsi_insert_earliest (gimple_seq seq);
-
-  /* Rename all the operands of NEW_EXPR by recursively visiting each
-     operand.  */
-
   tree rename_all_uses (tree new_expr, basic_block new_bb, basic_block old_bb);
-
-  bool codegen_error_p () const
-  { return codegen_error; }
-
-  /* Prints NODE to FILE.  */
-
-  void print_isl_ast_node (FILE *file, __isl_keep isl_ast_node *node,
-			   __isl_keep isl_ctx *ctx) const;
+  bool codegen_error_p () const { return codegen_error; }
+  bool is_constant (tree op) const
+  {
+    return TREE_CODE (op) == INTEGER_CST
+      || TREE_CODE (op) == REAL_CST
+      || TREE_CODE (op) == COMPLEX_CST
+      || TREE_CODE (op) == VECTOR_CST;
+  }
 
 private:
+  /* The region to be translated.  */
   sese_info_p region;
 
-  /* This flag is set when an error occurred during the translation of ISL AST
+  /* This flag is set when an error occurred during the translation of isl AST
      to Gimple.  */
   bool codegen_error;
+
+  /* A vector of all the edges at if_condition merge points.  */
+  auto_vec<edge, 2> merge_points;
 };
 
 /* Return the tree variable that corresponds to the given isl ast identifier
    expression (an isl_ast_expr of type isl_ast_expr_id).
 
-   FIXME: We should replace blind conversation of id's type with derivation
-   of the optimal type when we get the corresponding isl support. Blindly
+   FIXME: We should replace blind conversion of id's type with derivation
+   of the optimal type when we get the corresponding isl support.  Blindly
    converting type sizes may be problematic when we switch to smaller
    types.  */
 
-tree
-translate_isl_ast_to_gimple::
+tree translate_isl_ast_to_gimple::
 gcc_expression_from_isl_ast_expr_id (tree type,
-				     __isl_keep isl_ast_expr *expr_id,
+				     __isl_take isl_ast_expr *expr_id,
 				     ivs_params &ip)
 {
   gcc_assert (isl_ast_expr_get_type (expr_id) == isl_ast_expr_id);
@@ -491,14 +324,17 @@ gcc_expression_from_isl_ast_expr_id (tree type,
 	      "Could not map isl_id to tree expression");
   isl_ast_expr_free (expr_id);
   tree t = res->second;
-  return fold_convert (type, t);
+  tree *val = region->parameter_rename_map->get(t);
+
+  if (!val)
+   val = &t;
+  return fold_convert (type, *val);
 }
 
 /* Converts an isl_ast_expr_int expression E to a GCC expression tree of
    type TYPE.  */
 
-tree
-translate_isl_ast_to_gimple::
+tree translate_isl_ast_to_gimple::
 gcc_expression_from_isl_expr_int (tree type, __isl_take isl_ast_expr *expr)
 {
   gcc_assert (isl_ast_expr_get_type (expr) == isl_ast_expr_int);
@@ -519,16 +355,20 @@ gcc_expression_from_isl_expr_int (tree type, __isl_take isl_ast_expr *expr)
 /* Converts a binary isl_ast_expr_op expression E to a GCC expression tree of
    type TYPE.  */
 
-tree
-translate_isl_ast_to_gimple::
+tree translate_isl_ast_to_gimple::
 binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
 {
   isl_ast_expr *arg_expr = isl_ast_expr_get_op_arg (expr, 0);
   tree tree_lhs_expr = gcc_expression_from_isl_expression (type, arg_expr, ip);
   arg_expr = isl_ast_expr_get_op_arg (expr, 1);
   tree tree_rhs_expr = gcc_expression_from_isl_expression (type, arg_expr, ip);
+
   enum isl_ast_op_type expr_type = isl_ast_expr_get_op_type (expr);
   isl_ast_expr_free (expr);
+
+  if (codegen_error_p ())
+    return NULL_TREE;
+
   switch (expr_type)
     {
     case isl_ast_op_add:
@@ -541,15 +381,47 @@ binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
       return fold_build2 (MULT_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_div:
+      /* As isl operates on arbitrary precision numbers, we may end up with
+	 division by 2^64 that is folded to 0.  */
+      if (integer_zerop (tree_rhs_expr))
+	{
+	  codegen_error = true;
+	  return NULL_TREE;
+	}
       return fold_build2 (EXACT_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_pdiv_q:
+      /* As isl operates on arbitrary precision numbers, we may end up with
+	 division by 2^64 that is folded to 0.  */
+      if (integer_zerop (tree_rhs_expr))
+	{
+	  codegen_error = true;
+	  return NULL_TREE;
+	}
       return fold_build2 (TRUNC_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
+#if HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+    /* isl 0.15 or later.  */
+    case isl_ast_op_zdiv_r:
+#endif
     case isl_ast_op_pdiv_r:
+      /* As isl operates on arbitrary precision numbers, we may end up with
+	 division by 2^64 that is folded to 0.  */
+      if (integer_zerop (tree_rhs_expr))
+	{
+	  codegen_error = true;
+	  return NULL_TREE;
+	}
       return fold_build2 (TRUNC_MOD_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_fdiv_q:
+      /* As isl operates on arbitrary precision numbers, we may end up with
+	 division by 2^64 that is folded to 0.  */
+      if (integer_zerop (tree_rhs_expr))
+	{
+	  codegen_error = true;
+	  return NULL_TREE;
+	}
       return fold_build2 (FLOOR_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
 
     case isl_ast_op_and:
@@ -582,44 +454,43 @@ binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
 /* Converts a ternary isl_ast_expr_op expression E to a GCC expression tree of
    type TYPE.  */
 
-tree
-translate_isl_ast_to_gimple::
+tree translate_isl_ast_to_gimple::
 ternary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
 {
-  gcc_assert (isl_ast_expr_get_op_type (expr) == isl_ast_op_minus);
+  enum isl_ast_op_type t = isl_ast_expr_get_op_type (expr);
+  gcc_assert (t == isl_ast_op_cond || t == isl_ast_op_select);
   isl_ast_expr *arg_expr = isl_ast_expr_get_op_arg (expr, 0);
-  tree tree_first_expr
-    = gcc_expression_from_isl_expression (type, arg_expr, ip);
+  tree a = gcc_expression_from_isl_expression (type, arg_expr, ip);
   arg_expr = isl_ast_expr_get_op_arg (expr, 1);
-  tree tree_second_expr
-    = gcc_expression_from_isl_expression (type, arg_expr, ip);
+  tree b = gcc_expression_from_isl_expression (type, arg_expr, ip);
   arg_expr = isl_ast_expr_get_op_arg (expr, 2);
-  tree tree_third_expr
-    = gcc_expression_from_isl_expression (type, arg_expr, ip);
+  tree c = gcc_expression_from_isl_expression (type, arg_expr, ip);
   isl_ast_expr_free (expr);
-  return fold_build3 (COND_EXPR, type, tree_first_expr,
-		      tree_second_expr, tree_third_expr);
+
+  if (codegen_error_p ())
+    return NULL_TREE;
+
+  return fold_build3 (COND_EXPR, type, a, b, c);
 }
 
 /* Converts a unary isl_ast_expr_op expression E to a GCC expression tree of
    type TYPE.  */
 
-tree
-translate_isl_ast_to_gimple::
+tree translate_isl_ast_to_gimple::
 unary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
 {
   gcc_assert (isl_ast_expr_get_op_type (expr) == isl_ast_op_minus);
   isl_ast_expr *arg_expr = isl_ast_expr_get_op_arg (expr, 0);
   tree tree_expr = gcc_expression_from_isl_expression (type, arg_expr, ip);
   isl_ast_expr_free (expr);
-  return fold_build1 (NEGATE_EXPR, type, tree_expr);
+  return codegen_error_p () ? NULL_TREE
+    : fold_build1 (NEGATE_EXPR, type, tree_expr);
 }
 
 /* Converts an isl_ast_expr_op expression E with unknown number of arguments
    to a GCC expression tree of type TYPE.  */
 
-tree
-translate_isl_ast_to_gimple::
+tree translate_isl_ast_to_gimple::
 nary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
 {
   enum tree_code op_code;
@@ -638,11 +509,25 @@ nary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
     }
   isl_ast_expr *arg_expr = isl_ast_expr_get_op_arg (expr, 0);
   tree res = gcc_expression_from_isl_expression (type, arg_expr, ip);
+
+  if (codegen_error_p ())
+    {
+      isl_ast_expr_free (expr);
+      return NULL_TREE;
+    }
+
   int i;
   for (i = 1; i < isl_ast_expr_get_op_n_arg (expr); i++)
     {
       arg_expr = isl_ast_expr_get_op_arg (expr, i);
       tree t = gcc_expression_from_isl_expression (type, arg_expr, ip);
+
+      if (codegen_error_p ())
+	{
+	  isl_ast_expr_free (expr);
+	  return NULL_TREE;
+	}
+
       res = fold_build2 (op_code, type, res, t);
     }
   isl_ast_expr_free (expr);
@@ -652,11 +537,16 @@ nary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
 /* Converts an isl_ast_expr_op expression E to a GCC expression tree of
    type TYPE.  */
 
-tree
-translate_isl_ast_to_gimple::
+tree translate_isl_ast_to_gimple::
 gcc_expression_from_isl_expr_op (tree type, __isl_take isl_ast_expr *expr,
 				 ivs_params &ip)
 {
+  if (codegen_error_p ())
+    {
+      isl_ast_expr_free (expr);
+      return NULL_TREE;
+    }
+
   gcc_assert (isl_ast_expr_get_type (expr) == isl_ast_expr_op);
   switch (isl_ast_expr_get_op_type (expr))
     {
@@ -665,7 +555,6 @@ gcc_expression_from_isl_expr_op (tree type, __isl_take isl_ast_expr *expr,
     case isl_ast_op_call:
     case isl_ast_op_and_then:
     case isl_ast_op_or_else:
-    case isl_ast_op_select:
       gcc_unreachable ();
 
     case isl_ast_op_max:
@@ -679,6 +568,10 @@ gcc_expression_from_isl_expr_op (tree type, __isl_take isl_ast_expr *expr,
     case isl_ast_op_pdiv_q:
     case isl_ast_op_pdiv_r:
     case isl_ast_op_fdiv_q:
+#if HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+    /* isl 0.15 or later.  */
+    case isl_ast_op_zdiv_r:
+#endif
     case isl_ast_op_and:
     case isl_ast_op_or:
     case isl_ast_op_eq:
@@ -692,6 +585,7 @@ gcc_expression_from_isl_expr_op (tree type, __isl_take isl_ast_expr *expr,
       return unary_op_to_tree (type, expr, ip);
 
     case isl_ast_op_cond:
+    case isl_ast_op_select:
       return ternary_op_to_tree (type, expr, ip);
 
     default:
@@ -701,14 +595,19 @@ gcc_expression_from_isl_expr_op (tree type, __isl_take isl_ast_expr *expr,
   return NULL_TREE;
 }
 
-/* Converts an ISL AST expression E back to a GCC expression tree of
+/* Converts an isl AST expression E back to a GCC expression tree of
    type TYPE.  */
 
-tree
-translate_isl_ast_to_gimple::
+tree translate_isl_ast_to_gimple::
 gcc_expression_from_isl_expression (tree type, __isl_take isl_ast_expr *expr,
 				    ivs_params &ip)
 {
+  if (codegen_error_p ())
+    {
+      isl_ast_expr_free (expr);
+      return NULL_TREE;
+    }
+
   switch (isl_ast_expr_get_type (expr))
     {
     case isl_ast_expr_id:
@@ -731,18 +630,22 @@ gcc_expression_from_isl_expression (tree type, __isl_take isl_ast_expr *expr,
    induction variable for the new LOOP.  New LOOP is attached to CFG
    starting at ENTRY_EDGE.  LOOP is inserted into the loop tree and
    becomes the child loop of the OUTER_LOOP.  NEWIVS_INDEX binds
-   ISL's scattering name to the induction variable created for the
+   isl's scattering name to the induction variable created for the
    loop of STMT.  The new induction variable is inserted in the NEWIVS
    vector and is of type TYPE.  */
 
-struct loop *
-translate_isl_ast_to_gimple::
+struct loop *translate_isl_ast_to_gimple::
 graphite_create_new_loop (edge entry_edge, __isl_keep isl_ast_node *node_for,
 			  loop_p outer, tree type, tree lb, tree ub,
 			  ivs_params &ip)
 {
   isl_ast_expr *for_inc = isl_ast_node_for_get_inc (node_for);
   tree stride = gcc_expression_from_isl_expression (type, for_inc, ip);
+
+  /* To fail code generation, we generate wrong code until we discard it.  */
+  if (codegen_error_p ())
+    stride = integer_zero_node;
+
   tree ivvar = create_tmp_var (type, "graphite_IV");
   tree iv, iv_after_increment;
   loop_p loop = create_empty_loop_on_edge
@@ -764,8 +667,7 @@ graphite_create_new_loop (edge entry_edge, __isl_keep isl_ast_node *node_for,
 
    - NEXT_E is the edge where new generated code should be attached.  */
 
-edge
-translate_isl_ast_to_gimple::
+edge translate_isl_ast_to_gimple::
 translate_isl_ast_for_loop (loop_p context_loop,
 			    __isl_keep isl_ast_node *node_for, edge next_e,
 			    tree type, tree lb, tree ub,
@@ -787,7 +689,8 @@ translate_isl_ast_for_loop (loop_p context_loop,
   if (!next_e || codegen_error_p ())
     return NULL;
 
-  redirect_edge_succ_nodup (next_e, after);
+  if (next_e->dest != after)
+    redirect_edge_succ_nodup (next_e, after);
   set_immediate_dominator (CDI_DOMINATORS, next_e->dest, next_e->src);
 
   if (flag_loop_parallelize_all)
@@ -871,8 +774,7 @@ get_upper_bound (__isl_keep isl_ast_node *node_for)
    We create a new if region protecting the loop to be executed, if
    the execution count is zero (lower bound > upper bound).  */
 
-edge
-translate_isl_ast_to_gimple::
+edge translate_isl_ast_to_gimple::
 graphite_create_new_loop_guard (edge entry_edge,
 				__isl_keep isl_ast_node *node_for, tree *type,
 				tree *lb, tree *ub, ivs_params &ip)
@@ -885,8 +787,17 @@ graphite_create_new_loop_guard (edge entry_edge,
     build_nonstandard_integer_type (graphite_expression_type_precision, 0);
   isl_ast_expr *for_init = isl_ast_node_for_get_init (node_for);
   *lb = gcc_expression_from_isl_expression (*type, for_init, ip);
+
+  /* To fail code generation, we generate wrong code until we discard it.  */
+  if (codegen_error_p ())
+    *lb = integer_zero_node;
+
   isl_ast_expr *upper_bound = get_upper_bound (node_for);
   *ub = gcc_expression_from_isl_expression (*type, upper_bound, ip);
+
+  /* To fail code generation, we generate wrong code until we discard it.  */
+  if (codegen_error_p ())
+    *ub = integer_zero_node;
   
   /* When ub is simply a constant or a parameter, use lb <= ub.  */
   if (TREE_CODE (*ub) == INTEGER_CST || TREE_CODE (*ub) == SSA_NAME)
@@ -917,8 +828,7 @@ graphite_create_new_loop_guard (edge entry_edge,
 
 /* Translates an isl_ast_node_for to Gimple. */
 
-edge
-translate_isl_ast_to_gimple::
+edge translate_isl_ast_to_gimple::
 translate_isl_ast_node_for (loop_p context_loop, __isl_keep isl_ast_node *node,
 			    edge next_e, ivs_params &ip)
 {
@@ -928,12 +838,21 @@ translate_isl_ast_node_for (loop_p context_loop, __isl_keep isl_ast_node *node,
 						&lb, &ub, ip);
 
   if (last_e == next_e)
-    /* There was no guard generated.  */
-    return translate_isl_ast_for_loop (context_loop, node, last_e,
-				       type, lb, ub, ip);
+    {
+      /* There was no guard generated.  */
+      last_e = single_succ_edge (split_edge (last_e));
+
+      translate_isl_ast_for_loop (context_loop, node, next_e,
+				  type, lb, ub, ip);
+      return last_e;
+    }
 
   edge true_e = get_true_edge_from_guard_bb (next_e->dest);
+  merge_points.safe_push (last_e);
+
+  last_e = single_succ_edge (split_edge (last_e));
   translate_isl_ast_for_loop (context_loop, node, true_e, type, lb, ub, ip);
+
   return last_e;
 }
 
@@ -944,8 +863,7 @@ translate_isl_ast_node_for (loop_p context_loop, __isl_keep isl_ast_node *node,
    chrec, we could consider using a map<int, tree> that maps loop ids to the
    corresponding tree expressions.  */
 
-void
-translate_isl_ast_to_gimple::
+void translate_isl_ast_to_gimple::
 build_iv_mapping (vec<tree> iv_map, gimple_poly_bb_p gbb,
 		  __isl_keep isl_ast_expr *user_expr, ivs_params &ip,
 		  sese_l &region)
@@ -960,6 +878,11 @@ build_iv_mapping (vec<tree> iv_map, gimple_poly_bb_p gbb,
       tree type =
 	build_nonstandard_integer_type (graphite_expression_type_precision, 0);
       tree t = gcc_expression_from_isl_expression (type, arg_expr, ip);
+
+      /* To fail code generation, we generate wrong code until we discard it.  */
+      if (codegen_error_p ())
+	t = integer_zero_node;
+
       loop_p old_loop = gbb_loop_at_index (gbb, region, i - 1);
       iv_map[old_loop->num] = t;
     }
@@ -969,8 +892,7 @@ build_iv_mapping (vec<tree> iv_map, gimple_poly_bb_p gbb,
 
    FIXME: We should remove iv_map.create (loop->num + 1), if it is possible.  */
 
-edge
-translate_isl_ast_to_gimple::
+edge translate_isl_ast_to_gimple::
 translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
 			     edge next_e, ivs_params &ip)
 {
@@ -1000,16 +922,17 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
   build_iv_mapping (iv_map, gbb, user_expr, ip, pbb->scop->scop_info->region);
   isl_ast_expr_free (user_expr);
 
+  basic_block old_bb = GBB_BB (gbb);
   if (dump_file)
     {
-      fprintf (dump_file, "[codegen] copying from basic block\n");
+      fprintf (dump_file,
+	       "[codegen] copying from bb_%d on edge (bb_%d, bb_%d)\n",
+	       old_bb->index, next_e->src->index, next_e->dest->index);
       print_loops_bb (dump_file, GBB_BB (gbb), 0, 3);
-      fprintf (dump_file, "\n[codegen] to new basic block\n");
-      print_loops_bb (dump_file, next_e->src, 0, 3);
+
     }
 
-  next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb), next_e,
-					   iv_map);
+  next_e = copy_bb_and_scalar_dependences (old_bb, next_e, iv_map);
 
   iv_map.release ();
 
@@ -1018,16 +941,7 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
 
   if (dump_file)
     {
-      fprintf (dump_file, "\n[codegen] (after copy) new basic block\n");
-      print_loops_bb (dump_file, next_e->src, 0, 3);
-    }
-
-  mark_virtual_operands_for_renaming (cfun);
-  update_ssa (TODO_update_ssa);
-
-  if (dump_file)
-    {
-      fprintf (dump_file, "\n[codegen] (after update SSA) new basic block\n");
+      fprintf (dump_file, "[codegen] (after copy) new basic block\n");
       print_loops_bb (dump_file, next_e->src, 0, 3);
     }
 
@@ -1036,8 +950,7 @@ translate_isl_ast_node_user (__isl_keep isl_ast_node *node,
 
 /* Translates an isl_ast_node_block to Gimple. */
 
-edge
-translate_isl_ast_to_gimple::
+edge translate_isl_ast_to_gimple::
 translate_isl_ast_node_block (loop_p context_loop,
 			      __isl_keep isl_ast_node *node,
 			      edge next_e, ivs_params &ip)
@@ -1055,24 +968,27 @@ translate_isl_ast_node_block (loop_p context_loop,
   return next_e;
 }
  
-/* Creates a new if region corresponding to ISL's cond.  */
+/* Creates a new if region corresponding to isl's cond.  */
 
-edge
-translate_isl_ast_to_gimple::
+edge translate_isl_ast_to_gimple::
 graphite_create_new_guard (edge entry_edge, __isl_take isl_ast_expr *if_cond,
 			   ivs_params &ip)
 {
   tree type =
     build_nonstandard_integer_type (graphite_expression_type_precision, 0);
   tree cond_expr = gcc_expression_from_isl_expression (type, if_cond, ip);
+
+  /* To fail code generation, we generate wrong code until we discard it.  */
+  if (codegen_error_p ())
+    cond_expr = integer_zero_node;
+
   edge exit_edge = create_empty_if_region_on_edge (entry_edge, cond_expr);
   return exit_edge;
 }
 
 /* Translates an isl_ast_node_if to Gimple.  */
 
-edge
-translate_isl_ast_to_gimple::
+edge translate_isl_ast_to_gimple::
 translate_isl_ast_node_if (loop_p context_loop,
 			   __isl_keep isl_ast_node *node,
 			   edge next_e, ivs_params &ip)
@@ -1080,8 +996,9 @@ translate_isl_ast_node_if (loop_p context_loop,
   gcc_assert (isl_ast_node_get_type (node) == isl_ast_node_if);
   isl_ast_expr *if_cond = isl_ast_node_if_get_cond (node);
   edge last_e = graphite_create_new_guard (next_e, if_cond, ip);
-
   edge true_e = get_true_edge_from_guard_bb (next_e->dest);
+  merge_points.safe_push (last_e);
+
   isl_ast_node *then_node = isl_ast_node_if_get_then (node);
   translate_isl_ast (context_loop, then_node, true_e, ip);
   isl_ast_node_free (then_node);
@@ -1090,17 +1007,17 @@ translate_isl_ast_node_if (loop_p context_loop,
   isl_ast_node *else_node = isl_ast_node_if_get_else (node);
   if (isl_ast_node_get_type (else_node) != isl_ast_node_error)
     translate_isl_ast (context_loop, else_node, false_e, ip);
+
   isl_ast_node_free (else_node);
   return last_e;
 }
 
-/* Translates an ISL AST node NODE to GCC representation in the
+/* Translates an isl AST node NODE to GCC representation in the
    context of a SESE.  */
 
-edge
-translate_isl_ast_to_gimple::translate_isl_ast (loop_p context_loop,
-						__isl_keep isl_ast_node *node,
-						edge next_e, ivs_params &ip)
+edge translate_isl_ast_to_gimple::
+translate_isl_ast (loop_p context_loop, __isl_keep isl_ast_node *node,
+		   edge next_e, ivs_params &ip)
 {
   if (codegen_error_p ())
     return NULL;
@@ -1125,6 +1042,16 @@ translate_isl_ast_to_gimple::translate_isl_ast (loop_p context_loop,
       return translate_isl_ast_node_block (context_loop, node,
 					   next_e, ip);
 
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+    case isl_ast_node_mark:
+      {
+	isl_ast_node *n = isl_ast_node_mark_get_node (node);
+	edge e = translate_isl_ast (context_loop, n, next_e, ip);
+	isl_ast_node_free (n);
+	return e;
+      }
+#endif
+
     default:
       gcc_unreachable ();
     }
@@ -1134,7 +1061,7 @@ translate_isl_ast_to_gimple::translate_isl_ast (loop_p context_loop,
    at the exit of loop which takes one argument that is the last value of the
    variable being used out of the loop.  */
 
-bool
+static bool
 bb_contains_loop_close_phi_nodes (basic_block bb)
 {
   return single_pred_p (bb)
@@ -1144,7 +1071,7 @@ bb_contains_loop_close_phi_nodes (basic_block bb)
 /* Return true when BB contains loop phi nodes.  A loop phi node is the loop
    header containing phi nodes which has one init-edge and one back-edge.  */
 
-bool
+static bool
 bb_contains_loop_phi_nodes (basic_block bb)
 {
   gcc_assert (EDGE_COUNT (bb->preds) <= 2);
@@ -1227,10 +1154,9 @@ phi_uses_name (basic_block bb, tree name)
    definition should flow into use, and the use should respect the loop-closed
    SSA form.  */
 
-bool
-translate_isl_ast_to_gimple::
+bool translate_isl_ast_to_gimple::
 is_valid_rename (tree rename, basic_block def_bb, basic_block use_bb,
-		 bool loop_phi, tree old_name, basic_block old_bb) const
+		 phi_node_kind phi_kind, tree old_name, basic_block old_bb) const
 {
   /* The def of the rename must either dominate the uses or come from a
      back-edge.  Also the def must respect the loop closed ssa form.  */
@@ -1238,8 +1164,9 @@ is_valid_rename (tree rename, basic_block def_bb, basic_block use_bb,
     {
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n[codegen] rename not in loop closed ssa:");
+	  fprintf (dump_file, "[codegen] rename not in loop closed ssa: ");
 	  print_generic_expr (dump_file, rename, 0);
+	  fprintf (dump_file, "\n");
 	}
       return false;
     }
@@ -1247,7 +1174,7 @@ is_valid_rename (tree rename, basic_block def_bb, basic_block use_bb,
   if (dominated_by_p (CDI_DOMINATORS, use_bb, def_bb))
     return true;
 
-  if (bb_contains_loop_phi_nodes (use_bb) && loop_phi)
+  if (bb_contains_loop_phi_nodes (use_bb) && phi_kind == loop_phi)
     {
       /* The loop-header dominates the loop-body.  */
       if (!dominated_by_p (CDI_DOMINATORS, def_bb, use_bb))
@@ -1266,14 +1193,11 @@ is_valid_rename (tree rename, basic_block def_bb, basic_block use_bb,
 }
 
 /* Returns the expression associated to OLD_NAME (which is used in OLD_BB), in
-   NEW_BB from RENAME_MAP.  LOOP_PHI is true when we want to rename OLD_NAME
-   within a loop PHI instruction.  */
+   NEW_BB from RENAME_MAP.  PHI_KIND determines the kind of phi node.  */
 
-tree
-translate_isl_ast_to_gimple::get_rename (basic_block new_bb,
-					 tree old_name,
-					 basic_block old_bb,
-					 bool loop_phi) const
+tree translate_isl_ast_to_gimple::
+get_rename (basic_block new_bb, tree old_name, basic_block old_bb,
+	    phi_node_kind phi_kind) const
 {
   gcc_assert (TREE_CODE (old_name) == SSA_NAME);
   vec <tree> *renames = region->rename_map->get (old_name);
@@ -1284,9 +1208,19 @@ translate_isl_ast_to_gimple::get_rename (basic_block new_bb,
   if (1 == renames->length ())
     {
       tree rename = (*renames)[0];
-      basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (rename));
-      if (is_valid_rename (rename, bb, new_bb, loop_phi, old_name, old_bb))
+      if (TREE_CODE (rename) == SSA_NAME)
+	{
+	  basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (rename));
+	  if (is_valid_rename (rename, bb, new_bb, phi_kind, old_name, old_bb)
+	      && (phi_kind == close_phi
+		  || flow_bb_inside_loop_p (bb->loop_father, new_bb)))
+	    return rename;
+	  return NULL_TREE;
+	}
+
+      if (is_constant (rename))
 	return rename;
+
       return NULL_TREE;
     }
 
@@ -1307,6 +1241,9 @@ translate_isl_ast_to_gimple::get_rename (basic_block new_bb,
       if (!dominated_by_p (CDI_DOMINATORS, new_bb, t2_bb))
 	continue;
 
+      if (!flow_bb_inside_loop_p (t2_bb->loop_father, new_bb))
+	continue;
+
       /* Compute the nearest dominator.  */
       if (!t1 || dominated_by_p (CDI_DOMINATORS, t2_bb, t1_bb))
 	{
@@ -1321,15 +1258,16 @@ translate_isl_ast_to_gimple::get_rename (basic_block new_bb,
 /* Register in RENAME_MAP the rename tuple (OLD_NAME, EXPR).
    When OLD_NAME and EXPR are the same we assert.  */
 
-void
-translate_isl_ast_to_gimple::set_rename (tree old_name, tree expr)
+void translate_isl_ast_to_gimple::
+set_rename (tree old_name, tree expr)
 {
   if (dump_file)
     {
-      fprintf (dump_file, "\n[codegen] setting rename: old_name = ");
+      fprintf (dump_file, "[codegen] setting rename: old_name = ");
       print_generic_expr (dump_file, old_name, 0);
       fprintf (dump_file, ", new_name = ");
       print_generic_expr (dump_file, expr, 0);
+      fprintf (dump_file, "\n");
     }
 
   if (old_name == expr)
@@ -1346,6 +1284,13 @@ translate_isl_ast_to_gimple::set_rename (tree old_name, tree expr)
       r.safe_push (expr);
       region->rename_map->put (old_name, r);
     }
+
+  tree t;
+  int i;
+  /* For a parameter of a scop we don't want to rename it.  */
+  FOR_EACH_VEC_ELT (region->params, i, t)
+    if (old_name == t)
+      region->parameter_rename_map->put(old_name, expr);
 }
 
 /* Return an iterator to the instructions comes last in the execution order.
@@ -1384,8 +1329,8 @@ later_of_the_two (gimple_stmt_iterator gsi1, gimple_stmt_iterator gsi2)
 
 /* Insert each statement from SEQ at its earliest insertion p.  */
 
-void
-translate_isl_ast_to_gimple::gsi_insert_earliest (gimple_seq seq)
+void translate_isl_ast_to_gimple::
+gsi_insert_earliest (gimple_seq seq)
 {
   update_modified_stmts (seq);
   sese_l &codegen_region = region->if_region->true_region->region;
@@ -1445,7 +1390,7 @@ translate_isl_ast_to_gimple::gsi_insert_earliest (gimple_seq seq)
 
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n[codegen] inserting statement: ");
+	  fprintf (dump_file, "[codegen] inserting statement: ");
 	  print_gimple_stmt (dump_file, use_stmt, 0, TDF_VOPS | TDF_MEMSYMS);
 	  print_loops_bb (dump_file, gimple_bb (use_stmt), 0, 3);
 	}
@@ -1455,9 +1400,8 @@ translate_isl_ast_to_gimple::gsi_insert_earliest (gimple_seq seq)
 /* Collect all the operands of NEW_EXPR by recursively visiting each
    operand.  */
 
-void
-translate_isl_ast_to_gimple::collect_all_ssa_names (tree new_expr,
-						    vec<tree> *vec_ssa)
+void translate_isl_ast_to_gimple::
+collect_all_ssa_names (tree new_expr, vec<tree> *vec_ssa)
 {
 
   /* Rename all uses in new_expr.  */
@@ -1475,8 +1419,8 @@ translate_isl_ast_to_gimple::collect_all_ssa_names (tree new_expr,
     }
 }
 
-/* This is abridged version of the function:
-   tree.c:substitute_in_expr (tree exp, tree f, tree r). */
+/* This is abridged version of the function copied from:
+   tree.c:substitute_in_expr (tree exp, tree f, tree r).  */
 
 static tree
 substitute_ssa_name (tree exp, tree f, tree r)
@@ -1618,16 +1562,15 @@ substitute_ssa_name (tree exp, tree f, tree r)
 
 /* Rename all the operands of NEW_EXPR by recursively visiting each operand.  */
 
-tree
-translate_isl_ast_to_gimple::rename_all_uses (tree new_expr, basic_block new_bb,
-					      basic_block old_bb)
+tree translate_isl_ast_to_gimple::
+rename_all_uses (tree new_expr, basic_block new_bb, basic_block old_bb)
 {
   auto_vec<tree, 2> ssa_names;
   collect_all_ssa_names (new_expr, &ssa_names);
   tree t;
   int i;
   FOR_EACH_VEC_ELT (ssa_names, i, t)
-    if (tree r = get_rename (new_bb, t, old_bb, false))
+    if (tree r = get_rename (new_bb, t, old_bb, unknown_phi))
       new_expr = substitute_ssa_name (new_expr, t, r);
 
   return new_expr;
@@ -1636,8 +1579,7 @@ translate_isl_ast_to_gimple::rename_all_uses (tree new_expr, basic_block new_bb,
 /* For ops which are scev_analyzeable, we can regenerate a new name from its
    scalar evolution around LOOP.  */
 
-tree
-translate_isl_ast_to_gimple::
+tree translate_isl_ast_to_gimple::
 get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
 		      basic_block new_bb, basic_block old_bb,
 		      vec<tree> iv_map)
@@ -1668,8 +1610,6 @@ get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
       return build_zero_cst (TREE_TYPE (old_name));
     }
 
-  /* We should check all the operands and all of them should dominate the use at
-     new_expr.  */
   if (TREE_CODE (new_expr) == SSA_NAME)
     {
       basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (new_expr));
@@ -1681,15 +1621,23 @@ get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
     }
 
   new_expr = rename_all_uses (new_expr, new_bb, old_bb);
-  /* We should check all the operands and all of them should dominate the use at
+
+  /* We check all the operands and all of them should dominate the use at
      new_expr.  */
-  if (TREE_CODE (new_expr) == SSA_NAME)
+  auto_vec <tree, 2> new_ssa_names;
+  collect_all_ssa_names (new_expr, &new_ssa_names);
+  int i;
+  tree new_ssa_name;
+  FOR_EACH_VEC_ELT (new_ssa_names, i, new_ssa_name)
     {
-      basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (new_expr));
-      if (bb && !dominated_by_p (CDI_DOMINATORS, new_bb, bb))
+      if (TREE_CODE (new_ssa_name) == SSA_NAME)
 	{
-	  codegen_error = true;
-	  return build_zero_cst (TREE_TYPE (old_name));
+	  basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (new_ssa_name));
+	  if (bb && !dominated_by_p (CDI_DOMINATORS, new_bb, bb))
+	    {
+	      codegen_error = true;
+	      return build_zero_cst (TREE_TYPE (old_name));
+	    }
 	}
     }
 
@@ -1702,14 +1650,11 @@ get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
    substitution map RENAME_MAP, inserting the gimplification code at
    GSI_TGT, for the translation REGION, with the original copied
    statement in LOOP, and using the induction variable renaming map
-   IV_MAP.  Returns true when something has been renamed.  codegen_error
-   is set when the code generation cannot continue.  */
+   IV_MAP.  Returns true when something has been renamed.  */
 
-bool
-translate_isl_ast_to_gimple::rename_uses (gimple *copy,
-					  gimple_stmt_iterator *gsi_tgt,
-					  basic_block old_bb,
-					  loop_p loop, vec<tree> iv_map)
+bool translate_isl_ast_to_gimple::
+rename_uses (gimple *copy, gimple_stmt_iterator *gsi_tgt, basic_block old_bb,
+	     loop_p loop, vec<tree> iv_map)
 {
   bool changed = false;
 
@@ -1727,7 +1672,7 @@ translate_isl_ast_to_gimple::rename_uses (gimple *copy,
 
   if (dump_file)
     {
-      fprintf (dump_file, "\n[codegen] renaming uses of stmt: ");
+      fprintf (dump_file, "[codegen] renaming uses of stmt: ");
       print_gimple_stmt (dump_file, copy, 0, 0);
     }
 
@@ -1739,8 +1684,9 @@ translate_isl_ast_to_gimple::rename_uses (gimple *copy,
 
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n[codegen] renaming old_name = ");
+	  fprintf (dump_file, "[codegen] renaming old_name = ");
 	  print_generic_expr (dump_file, old_name, 0);
+	  fprintf (dump_file, "\n");
 	}
 
       if (TREE_CODE (old_name) != SSA_NAME
@@ -1749,7 +1695,7 @@ translate_isl_ast_to_gimple::rename_uses (gimple *copy,
 
       changed = true;
       tree new_expr = get_rename (gsi_tgt->bb, old_name,
-				  old_bb, false);
+				  old_bb, unknown_phi);
 
       if (new_expr)
 	{
@@ -1758,8 +1704,9 @@ translate_isl_ast_to_gimple::rename_uses (gimple *copy,
 
 	  if (dump_file)
 	    {
-	      fprintf (dump_file, "\n[codegen] from rename_map: new_name = ");
+	      fprintf (dump_file, "[codegen] from rename_map: new_name = ");
 	      print_generic_expr (dump_file, new_expr, 0);
+	      fprintf (dump_file, "\n");
 	    }
 
 	  if (type_old_name != type_new_expr
@@ -1787,8 +1734,9 @@ translate_isl_ast_to_gimple::rename_uses (gimple *copy,
 
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n[codegen] not in rename map, scev: ");
+	  fprintf (dump_file, "[codegen] not in rename map, scev: ");
 	  print_generic_expr (dump_file, new_expr, 0);
+	  fprintf (dump_file, "\n");
 	}
 
       gsi_insert_earliest (stmts);
@@ -1814,9 +1762,8 @@ translate_isl_ast_to_gimple::rename_uses (gimple *copy,
    need to find which basic block out of the copies of old_bb, in the new
    region, should a definition correspond to if it has to reach BB.  */
 
-basic_block
-translate_isl_ast_to_gimple::get_def_bb_for_const (basic_block bb,
-						   basic_block old_bb) const
+basic_block translate_isl_ast_to_gimple::
+get_def_bb_for_const (basic_block bb, basic_block old_bb) const
 {
   vec <basic_block> *bbs = region->copied_bb_map->get (old_bb);
 
@@ -1846,22 +1793,18 @@ translate_isl_ast_to_gimple::get_def_bb_for_const (basic_block bb,
   return b1;
 }
 
-/* Get the new name of OP (from OLD_BB) to be used in NEW_BB.  LOOP_PHI is true
-   when we want to rename an OP within a loop PHI instruction.  */
+/* Get the new name of OP (from OLD_BB) to be used in NEW_BB.  PHI_KIND
+   determines the kind of phi node.  */
 
-tree
-translate_isl_ast_to_gimple::
+tree translate_isl_ast_to_gimple::
 get_new_name (basic_block new_bb, tree op,
-	      basic_block old_bb, bool loop_phi) const
+	      basic_block old_bb, phi_node_kind phi_kind) const
 {
   /* For constants the names are the same.  */
-  if (TREE_CODE (op) == INTEGER_CST
-      || TREE_CODE (op) == REAL_CST
-      || TREE_CODE (op) == COMPLEX_CST
-      || TREE_CODE (op) == VECTOR_CST)
+  if (is_constant (op))
     return op;
 
-  return get_rename (new_bb, op, old_bb, loop_phi);
+  return get_rename (new_bb, op, old_bb, phi_kind);
 }
 
 /* Return a debug location for OP.  */
@@ -1897,8 +1840,7 @@ get_edges (basic_block bb)
 /* Copy the PHI arguments from OLD_PHI to the NEW_PHI.  The arguments to NEW_PHI
    must be found unless they can be POSTPONEd for later.  */
 
-bool
-translate_isl_ast_to_gimple::
+bool translate_isl_ast_to_gimple::
 copy_loop_phi_args (gphi *old_phi, init_back_edge_pair_t &ibp_old_bb,
 		    gphi *new_phi, init_back_edge_pair_t &ibp_new_bb,
 		    bool postpone)
@@ -1916,7 +1858,7 @@ copy_loop_phi_args (gphi *old_phi, init_back_edge_pair_t &ibp_old_bb,
 
       tree old_name = gimple_phi_arg_def (old_phi, i);
       tree new_name = get_new_name (new_bb, old_name,
-				    gimple_bb (old_phi), true);
+				    gimple_bb (old_phi), loop_phi);
       if (new_name)
 	{
 	  add_phi_arg (new_phi, new_name, e, get_loc (old_name));
@@ -1934,7 +1876,7 @@ copy_loop_phi_args (gphi *old_phi, init_back_edge_pair_t &ibp_old_bb,
 	     names yet.  */
 	  region->incomplete_phis.safe_push (std::make_pair (old_phi, new_phi));
 	  if (dump_file)
-	    fprintf (dump_file, "\n[codegen] postpone loop phi nodes: ");
+	    fprintf (dump_file, "[codegen] postpone loop phi nodes.\n");
 	}
       else
 	/* Either we should add the arg to phi or, we should postpone.  */
@@ -1945,12 +1887,11 @@ copy_loop_phi_args (gphi *old_phi, init_back_edge_pair_t &ibp_old_bb,
 
 /* Copy loop phi nodes from BB to NEW_BB.  */
 
-bool
-translate_isl_ast_to_gimple::copy_loop_phi_nodes (basic_block bb,
-						  basic_block new_bb)
+bool translate_isl_ast_to_gimple::
+copy_loop_phi_nodes (basic_block bb, basic_block new_bb)
 {
   if (dump_file)
-    fprintf (dump_file, "\n[codegen] copying loop phi nodes in bb_%d.",
+    fprintf (dump_file, "[codegen] copying loop phi nodes in bb_%d.\n",
 	     new_bb->index);
 
   /* Loop phi nodes should have only two arguments.  */
@@ -1977,8 +1918,14 @@ translate_isl_ast_to_gimple::copy_loop_phi_nodes (basic_block bb,
 					 gimple_phi_result_ptr (new_phi));
       set_rename (res, new_res);
       codegen_error = !copy_loop_phi_args (phi, ibp_old_bb, new_phi,
-					  ibp_new_bb, true);
+					   ibp_new_bb, true);
       update_stmt (new_phi);
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "[codegen] creating loop-phi node: ");
+	  print_gimple_stmt (dump_file, new_phi, 0, 0);
+	}
     }
 
   return true;
@@ -2039,22 +1986,124 @@ find_init_value_close_phi (gphi *phi)
   return find_init_value (def);
 }
 
+
+tree translate_isl_ast_to_gimple::
+add_close_phis_to_outer_loops (tree last_merge_name, edge last_e,
+			       gimple *old_close_phi)
+{
+  sese_l &codegen_region = region->if_region->true_region->region;
+  gimple *stmt = SSA_NAME_DEF_STMT (last_merge_name);
+  basic_block bb = gimple_bb (stmt);
+  if (!bb_in_sese_p (bb, codegen_region))
+    return last_merge_name;
+
+  loop_p loop = bb->loop_father;
+  if (!loop_in_sese_p (loop, codegen_region))
+    return last_merge_name;
+
+  edge e = single_exit (loop);
+
+  if (dominated_by_p (CDI_DOMINATORS, e->dest, last_e->src))
+    return last_merge_name;
+
+  tree old_name = gimple_phi_arg_def (old_close_phi, 0);
+  tree old_close_phi_name = gimple_phi_result (old_close_phi);
+
+  bb = e->dest;
+  if (!bb_contains_loop_close_phi_nodes (bb) || !single_succ_p (bb))
+    bb = split_edge (e);
+
+  gphi *close_phi = create_phi_node (SSA_NAME_VAR (last_merge_name), bb);
+  tree res = create_new_def_for (last_merge_name, close_phi,
+				 gimple_phi_result_ptr (close_phi));
+  set_rename (old_close_phi_name, res);
+  add_phi_arg (close_phi, last_merge_name, e, get_loc (old_name));
+  last_merge_name = res;
+
+  return add_close_phis_to_outer_loops (last_merge_name, last_e, old_close_phi);
+}
+
+/* Add phi nodes to all merge points of all the diamonds enclosing the loop of
+   the close phi node PHI.  */
+
+bool translate_isl_ast_to_gimple::
+add_close_phis_to_merge_points (gphi *old_close_phi, gphi *new_close_phi,
+				tree default_value)
+{
+  sese_l &codegen_region = region->if_region->true_region->region;
+  basic_block default_value_bb = get_entry_bb (codegen_region);
+  if (SSA_NAME == TREE_CODE (default_value))
+    {
+      gimple *stmt = SSA_NAME_DEF_STMT (default_value);
+      if (!stmt || gimple_code (stmt) == GIMPLE_NOP)
+	return false;
+      default_value_bb = gimple_bb (stmt);
+    }
+
+  basic_block new_close_phi_bb = gimple_bb (new_close_phi);
+
+  tree old_close_phi_name = gimple_phi_result (old_close_phi);
+  tree new_close_phi_name = gimple_phi_result (new_close_phi);
+  tree last_merge_name = new_close_phi_name;
+  tree old_name = gimple_phi_arg_def (old_close_phi, 0);
+
+  int i;
+  edge merge_e;
+  FOR_EACH_VEC_ELT_REVERSE (merge_points, i, merge_e)
+    {
+      basic_block new_merge_bb = merge_e->src;
+      if (!dominated_by_p (CDI_DOMINATORS, new_merge_bb, default_value_bb))
+	continue;
+
+      last_merge_name = add_close_phis_to_outer_loops (last_merge_name, merge_e,
+						       old_close_phi);
+
+      gphi *merge_phi = create_phi_node (SSA_NAME_VAR (old_close_phi_name), new_merge_bb);
+      tree merge_res = create_new_def_for (old_close_phi_name, merge_phi,
+					   gimple_phi_result_ptr (merge_phi));
+      set_rename (old_close_phi_name, merge_res);
+
+      edge from_loop = NULL, from_default_value = NULL;
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, new_merge_bb->preds)
+	if (dominated_by_p (CDI_DOMINATORS, e->src, new_close_phi_bb))
+	  from_loop = e;
+	else
+	  from_default_value = e;
+
+      /* Because CDI_POST_DOMINATORS are not updated, we only rely on
+	 CDI_DOMINATORS, which may not handle all cases where new_close_phi_bb
+	 is contained in another condition.  */
+      if (!from_default_value || !from_loop)
+	return false;
+
+      add_phi_arg (merge_phi, last_merge_name, from_loop, get_loc (old_name));
+      add_phi_arg (merge_phi, default_value, from_default_value, get_loc (old_name));
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "[codegen] Adding guard-phi: ");
+	  print_gimple_stmt (dump_file, merge_phi, 0, 0);
+	}
+
+      update_stmt (merge_phi);
+      last_merge_name = merge_res;
+    }
+
+  return true;
+}
+
 /* Copy all the loop-close phi args from BB to NEW_BB.  */
 
-bool
-translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
-						       basic_block new_bb,
-						       bool postpone)
+bool translate_isl_ast_to_gimple::
+copy_loop_close_phi_args (basic_block old_bb, basic_block new_bb, bool postpone)
 {
-  /* The successor of bb having close phi should be a merge of the diamond
-     inserted to guard the loop during codegen.  */
-  basic_block succ_new_bb = single_succ (new_bb);
-
   for (gphi_iterator psi = gsi_start_phis (old_bb); !gsi_end_p (psi);
        gsi_next (&psi))
     {
-      gphi *phi = psi.phi ();
-      tree res = gimple_phi_result (phi);
+      gphi *old_close_phi = psi.phi ();
+      tree res = gimple_phi_result (old_close_phi);
       if (virtual_operand_p (res))
 	continue;
 
@@ -2062,13 +2111,13 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
 	/* Loop close phi nodes should not be scev_analyzable_p.  */
 	gcc_unreachable ();
 
-      gphi *new_phi = create_phi_node (SSA_NAME_VAR (res), new_bb);
-      tree new_res = create_new_def_for (res, new_phi,
-					 gimple_phi_result_ptr (new_phi));
+      gphi *new_close_phi = create_phi_node (SSA_NAME_VAR (res), new_bb);
+      tree new_res = create_new_def_for (res, new_close_phi,
+					 gimple_phi_result_ptr (new_close_phi));
       set_rename (res, new_res);
 
-      tree old_name = gimple_phi_arg_def (phi, 0);
-      tree new_name = get_new_name (new_bb, old_name, old_bb, false);
+      tree old_name = gimple_phi_arg_def (old_close_phi, 0);
+      tree new_name = get_new_name (new_bb, old_name, old_bb, close_phi);
 
       /* Predecessor basic blocks of a loop close phi should have been code
 	 generated before.  FIXME: This is fixable by merging PHIs from inner
@@ -2076,60 +2125,43 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
       if (!new_name)
 	return false;
 
-      add_phi_arg (new_phi, new_name, single_pred_edge (new_bb),
+      add_phi_arg (new_close_phi, new_name, single_pred_edge (new_bb),
 		   get_loc (old_name));
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n[codegen] Adding loop-closed phi: ");
-	  print_gimple_stmt (dump_file, new_phi, 0, 0);
+	  fprintf (dump_file, "[codegen] Adding loop close phi: ");
+	  print_gimple_stmt (dump_file, new_close_phi, 0, 0);
 	}
 
-      update_stmt (new_phi);
+      update_stmt (new_close_phi);
 
       /* When there is no loop guard around this codegenerated loop, there is no
 	 need to collect the close-phi arg.  */
-      if (2 != EDGE_COUNT (succ_new_bb->preds)
-	  || bb_contains_loop_phi_nodes (succ_new_bb))
+      if (merge_points.is_empty ())
 	continue;
 
       /* Add a PHI in the succ_new_bb for each close phi of the loop.  */
-      tree init = find_init_value_close_phi (new_phi);
+      tree default_value = find_init_value_close_phi (new_close_phi);
 
-      /* A close phi must come from a loop-phi having an init value.  */
-      if (!init)
+      /* A close phi must come from a loop-phi having a default value.  */
+      if (!default_value)
 	{
 	  if (!postpone)
 	    return false;
 
-	  region->incomplete_phis.safe_push (std::make_pair (phi, new_phi));
+	  region->incomplete_phis.safe_push (std::make_pair (old_close_phi,
+							     new_close_phi));
 	  if (dump_file)
 	    {
-	      fprintf (dump_file, "\n[codegen] postpone close phi nodes: ");
-	      print_gimple_stmt (dump_file, new_phi, 0, 0);
+	      fprintf (dump_file, "[codegen] postpone close phi nodes: ");
+	      print_gimple_stmt (dump_file, new_close_phi, 0, 0);
 	    }
 	  continue;
 	}
 
-      gphi *merge_phi = create_phi_node (SSA_NAME_VAR (res), succ_new_bb);
-      tree merge_res = create_new_def_for (res, merge_phi,
-					   gimple_phi_result_ptr (merge_phi));
-      set_rename (res, merge_res);
-
-      edge from_loop = single_succ_edge (new_bb);
-      add_phi_arg (merge_phi, new_res, from_loop, get_loc (old_name));
-
-      /* The edge coming from loop guard.  */
-      edge other = from_loop == (*succ_new_bb->preds)[0]
-	? (*succ_new_bb->preds)[1] : (*succ_new_bb->preds)[0];
-
-      add_phi_arg (merge_phi, init, other, get_loc (old_name));
-      if (dump_file)
-	{
-	  fprintf (dump_file, "\n[codegen] Adding guard-phi: ");
-	  print_gimple_stmt (dump_file, merge_phi, 0, 0);
-	}
-
-      update_stmt (new_phi);
+      if (!add_close_phis_to_merge_points (old_close_phi, new_close_phi,
+					   default_value))
+	return false;
     }
 
   return true;
@@ -2137,12 +2169,11 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_args (basic_block old_bb,
 
 /* Copy loop close phi nodes from BB to NEW_BB.  */
 
-bool
-translate_isl_ast_to_gimple::copy_loop_close_phi_nodes (basic_block old_bb,
-							basic_block new_bb)
+bool translate_isl_ast_to_gimple::
+copy_loop_close_phi_nodes (basic_block old_bb, basic_block new_bb)
 {
   if (dump_file)
-    fprintf (dump_file, "\n[codegen] copying loop closed phi nodes in bb_%d.",
+    fprintf (dump_file, "[codegen] copying loop close phi nodes in bb_%d.\n",
 	     new_bb->index);
   /* Loop close phi nodes should have only one argument.  */
   gcc_assert (1 == EDGE_COUNT (old_bb->preds));
@@ -2164,8 +2195,7 @@ translate_isl_ast_to_gimple::copy_loop_close_phi_nodes (basic_block old_bb,
 
    Returns true on successful copy of the args, false otherwise.  */
 
-bool
-translate_isl_ast_to_gimple::
+bool translate_isl_ast_to_gimple::
 add_phi_arg_for_new_expr (tree old_phi_args[2], tree new_phi_args[2],
 			  edge old_bb_dominating_edge,
 			  edge old_bb_non_dominating_edge,
@@ -2327,13 +2357,11 @@ add_phi_arg_for_new_expr (tree old_phi_args[2], tree new_phi_args[2],
    the PHI is added to the REGION->INCOMPLETE_PHIS to be codegenerated later.
    Returns false if the copying was unsuccessful.  */
 
-bool
-translate_isl_ast_to_gimple::copy_cond_phi_args (gphi *phi, gphi *new_phi,
-						 vec<tree> iv_map,
-						 bool postpone)
+bool translate_isl_ast_to_gimple::
+copy_cond_phi_args (gphi *phi, gphi *new_phi, vec<tree> iv_map, bool postpone)
 {
   if (dump_file)
-    fprintf (dump_file, "\n[codegen] copying cond phi args: ");
+    fprintf (dump_file, "[codegen] copying cond phi args.\n");
   gcc_assert (2 == gimple_phi_num_args (phi));
 
   basic_block new_bb = gimple_bb (new_phi);
@@ -2359,7 +2387,7 @@ translate_isl_ast_to_gimple::copy_cond_phi_args (gphi *phi, gphi *new_phi,
   for (unsigned i = 0; i < gimple_phi_num_args (phi); i++)
     {
       tree old_name = gimple_phi_arg_def (phi, i);
-      tree new_name = get_new_name (new_bb, old_name, old_bb, false);
+      tree new_name = get_new_name (new_bb, old_name, old_bb, cond_phi);
       old_phi_args[i] = old_name;
       if (new_name)
 	{
@@ -2374,8 +2402,9 @@ translate_isl_ast_to_gimple::copy_cond_phi_args (gphi *phi, gphi *new_phi,
 	  if (dump_file)
 	    {
 	      fprintf (dump_file,
-		       "\n[codegen] parameter argument to phi, new_expr: ");
+		       "[codegen] parameter argument to phi, new_expr: ");
 	      print_generic_expr (dump_file, new_phi_args[i], 0);
+	      fprintf (dump_file, "\n");
 	    }
 	  continue;
 	}
@@ -2402,8 +2431,9 @@ translate_isl_ast_to_gimple::copy_cond_phi_args (gphi *phi, gphi *new_phi,
 	      if (dump_file)
 		{
 		  fprintf (dump_file,
-			   "\n[codegen] scev analyzeable, new_expr: ");
+			   "[codegen] scev analyzeable, new_expr: ");
 		  print_generic_expr (dump_file, new_expr, 0);
+		  fprintf (dump_file, "\n");
 		}
 	      gsi_insert_earliest (stmts);
 	      new_phi_args [i] = new_name;
@@ -2415,7 +2445,7 @@ translate_isl_ast_to_gimple::copy_cond_phi_args (gphi *phi, gphi *new_phi,
 
 	  if (dump_file)
 	    {
-	      fprintf (dump_file, "\n[codegen] postpone cond phi nodes: ");
+	      fprintf (dump_file, "[codegen] postpone cond phi nodes: ");
 	      print_gimple_stmt (dump_file, new_phi, 0, 0);
 	    }
 
@@ -2442,16 +2472,14 @@ translate_isl_ast_to_gimple::copy_cond_phi_args (gphi *phi, gphi *new_phi,
    containing phi nodes coming from two predecessors, and none of them are back
    edges.  */
 
-bool
-translate_isl_ast_to_gimple::copy_cond_phi_nodes (basic_block bb,
-						  basic_block new_bb,
-						  vec<tree> iv_map)
+bool translate_isl_ast_to_gimple::
+copy_cond_phi_nodes (basic_block bb, basic_block new_bb, vec<tree> iv_map)
 {
 
   gcc_assert (!bb_contains_loop_close_phi_nodes (bb));
 
   if (dump_file)
-    fprintf (dump_file, "\n[codegen] copying cond phi nodes in bb_%d:",
+    fprintf (dump_file, "[codegen] copying cond phi nodes in bb_%d.\n",
 	     new_bb->index);
 
   /* Cond phi nodes should have exactly two arguments.  */
@@ -2503,14 +2531,22 @@ should_copy_to_new_region (gimple *stmt, sese_info_p region)
       && scev_analyzable_p (lhs, region->region))
     return false;
 
+  /* Do not copy parameters that have been generated in the header of the
+     scop.  */
+  if (is_gimple_assign (stmt)
+      && (lhs = gimple_assign_lhs (stmt))
+      && TREE_CODE (lhs) == SSA_NAME
+      && region->parameter_rename_map->get(lhs))
+    return false;
+
   return true;
 }
 
 /* Create new names for all the definitions created by COPY and add replacement
    mappings for each new name.  */
 
-void
-translate_isl_ast_to_gimple::set_rename_for_each_def (gimple *stmt)
+void translate_isl_ast_to_gimple::
+set_rename_for_each_def (gimple *stmt)
 {
   def_operand_p def_p;
   ssa_op_iter op_iter;
@@ -2523,13 +2559,11 @@ translate_isl_ast_to_gimple::set_rename_for_each_def (gimple *stmt)
 }
 
 /* Duplicates the statements of basic block BB into basic block NEW_BB
-   and compute the new induction variables according to the IV_MAP.
-   CODEGEN_ERROR is set when the code generation cannot continue.  */
+   and compute the new induction variables according to the IV_MAP.  */
 
-bool
-translate_isl_ast_to_gimple::graphite_copy_stmts_from_block (basic_block bb,
-							     basic_block new_bb,
-							     vec<tree> iv_map)
+bool translate_isl_ast_to_gimple::
+graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
+				vec<tree> iv_map)
 {
   /* Iterator poining to the place where new statement (s) will be inserted.  */
   gimple_stmt_iterator gsi_tgt = gsi_last_bb (new_bb);
@@ -2548,7 +2582,7 @@ translate_isl_ast_to_gimple::graphite_copy_stmts_from_block (basic_block bb,
 
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n[codegen] inserting statement: ");
+	  fprintf (dump_file, "[codegen] inserting statement: ");
 	  print_gimple_stmt (dump_file, copy, 0, 0);
 	}
 
@@ -2568,6 +2602,25 @@ translate_isl_ast_to_gimple::graphite_copy_stmts_from_block (basic_block bb,
       if (codegen_error_p ())
 	return false;
 
+      /* For each SSA_NAME in the parameter_rename_map rename their usage.  */
+      ssa_op_iter iter;
+      use_operand_p use_p;
+      if (!is_gimple_debug (copy))
+	FOR_EACH_SSA_USE_OPERAND (use_p, copy, iter, SSA_OP_USE)
+	  {
+	    tree old_name = USE_FROM_PTR (use_p);
+
+	    if (TREE_CODE (old_name) != SSA_NAME
+		|| SSA_NAME_IS_DEFAULT_DEF (old_name))
+	      continue;
+
+	    tree *new_expr = region->parameter_rename_map->get (old_name);
+	    if (!new_expr)
+	      continue;
+
+	    replace_exp (use_p, *new_expr);
+	  }
+
       update_stmt (copy);
     }
 
@@ -2579,8 +2632,8 @@ translate_isl_ast_to_gimple::graphite_copy_stmts_from_block (basic_block bb,
    to insert a copy of the close-phi nodes.  All the uses in close phis should
    come from a single loop otherwise it returns NULL.  */
 
-edge
-translate_isl_ast_to_gimple::edge_for_new_close_phis (basic_block bb)
+edge translate_isl_ast_to_gimple::
+edge_for_new_close_phis (basic_block bb)
 {
   /* Make sure that NEW_BB is the new_loop->exit->dest.  We find the definition
      of close phi in the original code and then find the mapping of basic block
@@ -2617,13 +2670,10 @@ translate_isl_ast_to_gimple::edge_for_new_close_phis (basic_block bb)
 
 /* Copies BB and includes in the copied BB all the statements that can
    be reached following the use-def chains from the memory accesses,
-   and returns the next edge following this new block.  codegen_error is
-   set when the code generation cannot continue.  */
+   and returns the next edge following this new block.  */
 
-edge
-translate_isl_ast_to_gimple::copy_bb_and_scalar_dependences (basic_block bb,
-							     edge next_e,
-							     vec<tree> iv_map)
+edge translate_isl_ast_to_gimple::
+copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
 {
   int num_phis = number_of_phi_nodes (bb);
 
@@ -2638,34 +2688,11 @@ translate_isl_ast_to_gimple::copy_bb_and_scalar_dependences (basic_block bb,
 	}
     }
 
-  basic_block new_bb = split_edge (next_e);
-  if (num_phis > 0 && bb_contains_loop_phi_nodes (bb))
-    {
-      basic_block phi_bb = next_e->dest->loop_father->header;
-
-      /* At this point we are unable to codegenerate by still preserving the SSA
-	 structure because maybe the loop is completely unrolled and the PHIs
-	 and cross-bb scalar dependencies are untrackable w.r.t. the original
-	 code.  See gfortran.dg/graphite/pr29832.f90.  */
-      if (EDGE_COUNT (bb->preds) != EDGE_COUNT (phi_bb->preds))
-	{
-	  codegen_error = true;
-	  return NULL;
-	}
-
-      if (dump_file)
-	fprintf (dump_file, "\n[codegen] bb_%d contains loop phi nodes",
-		 bb->index);
-      if (!copy_loop_phi_nodes (bb, phi_bb))
-	{
-	  codegen_error = true;
-	  return NULL;
-	}
-    }
-  else if (bb_contains_loop_close_phi_nodes (bb))
+  basic_block new_bb = NULL;
+  if (bb_contains_loop_close_phi_nodes (bb))
     {
       if (dump_file)
-	fprintf (dump_file, "\n[codegen] bb_%d contains close phi nodes",
+	fprintf (dump_file, "[codegen] bb_%d contains close phi nodes.\n",
 		 bb->index);
 
       edge e = edge_for_new_close_phis (bb);
@@ -2675,7 +2702,11 @@ translate_isl_ast_to_gimple::copy_bb_and_scalar_dependences (basic_block bb,
 	  return NULL;
 	}
 
-      basic_block phi_bb = split_edge (e);
+      basic_block phi_bb = e->dest;
+
+      if (!bb_contains_loop_close_phi_nodes (phi_bb) || !single_succ_p (phi_bb))
+	phi_bb = split_edge (e);
+
       gcc_assert (single_pred_edge (phi_bb)->src->loop_father
 		  != single_pred_edge (phi_bb)->dest->loop_father);
 
@@ -2684,31 +2715,84 @@ translate_isl_ast_to_gimple::copy_bb_and_scalar_dependences (basic_block bb,
 	  codegen_error = true;
 	  return NULL;
 	}
+
+      if (e == next_e)
+	new_bb = phi_bb;
+      else
+	new_bb = split_edge (next_e);
     }
-  else if (num_phis > 0)
+  else
     {
-      if (dump_file)
-	fprintf (dump_file, "\n[codegen] bb_%d contains cond phi nodes",
-		 bb->index);
-
-      basic_block phi_bb = single_pred (new_bb);
-      loop_p loop_father = new_bb->loop_father;
-
-      /* Move back until we find the block with two predecessors.  */
-      while (single_pred_p (phi_bb))
-	phi_bb = single_pred_edge (phi_bb)->src;
-
-      /* If a corresponding merge-point was not found, then abort codegen.  */
-      if (phi_bb->loop_father != loop_father
-	  || !copy_cond_phi_nodes (bb, phi_bb, iv_map))
+      new_bb = split_edge (next_e);
+      if (num_phis > 0 && bb_contains_loop_phi_nodes (bb))
 	{
-	  codegen_error = true;
-	  return NULL;
+	  basic_block phi_bb = next_e->dest->loop_father->header;
+
+	  /* At this point we are unable to codegenerate by still preserving the SSA
+	     structure because maybe the loop is completely unrolled and the PHIs
+	     and cross-bb scalar dependencies are untrackable w.r.t. the original
+	     code.  See gfortran.dg/graphite/pr29832.f90.  */
+	  if (EDGE_COUNT (bb->preds) != EDGE_COUNT (phi_bb->preds))
+	    {
+	      codegen_error = true;
+	      return NULL;
+	    }
+
+	  /* In case isl did some loop peeling, like this:
+
+	       S_8(0);
+	       for (int c1 = 1; c1 <= 5; c1 += 1) {
+	         S_8(c1);
+	       }
+	       S_8(6);
+
+	     there should be no loop-phi nodes in S_8(0).
+
+	     FIXME: We need to reason about dynamic instances of S_8, i.e., the
+	     values of all scalar variables: for the moment we instantiate only
+	     SCEV analyzable expressions on the iteration domain, and we need to
+	     extend that to reductions that cannot be analyzed by SCEV.  */
+	  if (!bb_in_sese_p (phi_bb, region->if_region->true_region->region))
+	    {
+	      codegen_error = true;
+	      return NULL;
+	    }
+
+	  if (dump_file)
+	    fprintf (dump_file, "[codegen] bb_%d contains loop phi nodes.\n",
+		     bb->index);
+	  if (!copy_loop_phi_nodes (bb, phi_bb))
+	    {
+	      codegen_error = true;
+	      return NULL;
+	    }
+	}
+      else if (num_phis > 0)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "[codegen] bb_%d contains cond phi nodes.\n",
+		     bb->index);
+
+	  basic_block phi_bb = single_pred (new_bb);
+	  loop_p loop_father = new_bb->loop_father;
+
+	  /* Move back until we find the block with two predecessors.  */
+	  while (single_pred_p (phi_bb))
+	    phi_bb = single_pred_edge (phi_bb)->src;
+
+	  /* If a corresponding merge-point was not found, then abort codegen.  */
+	  if (phi_bb->loop_father != loop_father
+	      || !bb_in_sese_p (phi_bb, region->if_region->true_region->region)
+	      || !copy_cond_phi_nodes (bb, phi_bb, iv_map))
+	    {
+	      codegen_error = true;
+	      return NULL;
+	    }
 	}
     }
 
   if (dump_file)
-    fprintf (dump_file, "\n[codegen] copying from bb_%d to bb_%d",
+    fprintf (dump_file, "[codegen] copying from bb_%d to bb_%d.\n",
 	     bb->index, new_bb->index);
 
   vec <basic_block> *copied_bbs = region->copied_bb_map->get (bb);
@@ -2733,8 +2817,8 @@ translate_isl_ast_to_gimple::copy_bb_and_scalar_dependences (basic_block bb,
 
 /* Patch the missing arguments of the phi nodes.  */
 
-void
-translate_isl_ast_to_gimple::translate_pending_phi_nodes ()
+void translate_isl_ast_to_gimple::
+translate_pending_phi_nodes ()
 {
   int i;
   phi_rename *rename;
@@ -2751,7 +2835,7 @@ translate_isl_ast_to_gimple::translate_pending_phi_nodes ()
 
       if (dump_file)
 	{
-	  fprintf (dump_file, "\n[codegen] translating pending old-phi: ");
+	  fprintf (dump_file, "[codegen] translating pending old-phi: ");
 	  print_gimple_stmt (dump_file, old_phi, 0, 0);
 	}
 
@@ -2769,28 +2853,15 @@ translate_isl_ast_to_gimple::translate_pending_phi_nodes ()
 	  fprintf (dump_file, "[codegen] to new-phi: ");
 	  print_gimple_stmt (dump_file, new_phi, 0, 0);
 	}
+      if (codegen_error_p ())
+	return;
     }
 }
 
-/* Prints NODE to FILE.  */
+/* Add isl's parameter identifiers and corresponding trees to ivs_params.  */
 
-void
-translate_isl_ast_to_gimple::print_isl_ast_node (FILE *file,
-						 __isl_keep isl_ast_node *node,
-						 __isl_keep isl_ctx *ctx) const
-{
-  isl_printer *prn = isl_printer_to_file (ctx, file);
-  prn = isl_printer_set_output_format (prn, ISL_FORMAT_C);
-  prn = isl_printer_print_ast_node (prn, node);
-  prn = isl_printer_print_str (prn, "\n");
-  isl_printer_free (prn);
-}
-
-/* Add ISL's parameter identifiers and corresponding trees to ivs_params.  */
-
-void
-translate_isl_ast_to_gimple::add_parameters_to_ivs_params (scop_p scop,
-							   ivs_params &ip)
+void translate_isl_ast_to_gimple::
+add_parameters_to_ivs_params (scop_p scop, ivs_params &ip)
 {
   sese_info_p region = scop->scop_info;
   unsigned nb_parameters = isl_set_dim (scop->param_context, isl_dim_param);
@@ -2807,17 +2878,63 @@ translate_isl_ast_to_gimple::add_parameters_to_ivs_params (scop_p scop,
 
 /* Generates a build, which specifies the constraints on the parameters.  */
 
-__isl_give isl_ast_build *
-translate_isl_ast_to_gimple::generate_isl_context (scop_p scop)
+__isl_give isl_ast_build *translate_isl_ast_to_gimple::
+generate_isl_context (scop_p scop)
 {
   isl_set *context_isl = isl_set_params (isl_set_copy (scop->param_context));
   return isl_ast_build_from_context (context_isl);
 }
 
+/* This method is executed before the construction of a for node.  */
+__isl_give isl_id *
+ast_build_before_for (__isl_keep isl_ast_build *build, void *user)
+{
+  isl_union_map *dependences = (isl_union_map *) user;
+  ast_build_info *for_info = XNEW (struct ast_build_info);
+  isl_union_map *schedule = isl_ast_build_get_schedule (build);
+  isl_space *schedule_space = isl_ast_build_get_schedule_space (build);
+  int dimension = isl_space_dim (schedule_space, isl_dim_out);
+  for_info->is_parallelizable =
+    !carries_deps (schedule, dependences, dimension);
+  isl_union_map_free (schedule);
+  isl_space_free (schedule_space);
+  isl_id *id = isl_id_alloc (isl_ast_build_get_ctx (build), "", for_info);
+  return id;
+}
+
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+
+/* Generate isl AST from schedule of SCOP.  */
+
+__isl_give isl_ast_node *translate_isl_ast_to_gimple::
+scop_to_isl_ast (scop_p scop)
+{
+  gcc_assert (scop->transformed_schedule);
+
+  /* Set the separate option to reduce control flow overhead.  */
+  isl_schedule *schedule = isl_schedule_map_schedule_node_bottom_up
+    (isl_schedule_copy (scop->transformed_schedule), set_separate_option, NULL);
+  isl_ast_build *context_isl = generate_isl_context (scop);
+
+  if (flag_loop_parallelize_all)
+    {
+      scop_get_dependences (scop);
+      context_isl =
+	isl_ast_build_set_before_each_for (context_isl, ast_build_before_for,
+					   scop->dependence);
+    }
+
+  isl_ast_node *ast_isl = isl_ast_build_node_from_schedule
+    (context_isl, schedule);
+  isl_ast_build_free (context_isl);
+  return ast_isl;
+}
+
+#else
 /* Get the maximal number of schedule dimensions in the scop SCOP.  */
 
-int
-translate_isl_ast_to_gimple::get_max_schedule_dimensions (scop_p scop)
+int translate_isl_ast_to_gimple::
+get_max_schedule_dimensions (scop_p scop)
 {
   int i;
   poly_bb_p pbb;
@@ -2840,9 +2957,8 @@ translate_isl_ast_to_gimple::get_max_schedule_dimensions (scop_p scop)
    problem is to extend all schedules to the maximal number of schedule
    dimensions (using '0's for the remaining values).  */
 
-__isl_give isl_map *
-translate_isl_ast_to_gimple::extend_schedule (__isl_take isl_map *schedule,
-					      int nb_schedule_dims)
+__isl_give isl_map *translate_isl_ast_to_gimple::
+extend_schedule (__isl_take isl_map *schedule, int nb_schedule_dims)
 {
   int tmp_dims = isl_map_dim (schedule, isl_dim_out);
   schedule =
@@ -2862,8 +2978,8 @@ translate_isl_ast_to_gimple::extend_schedule (__isl_take isl_map *schedule,
 /* Generates a schedule, which specifies an order used to
    visit elements in a domain.  */
 
-__isl_give isl_union_map *
-translate_isl_ast_to_gimple::generate_isl_schedule (scop_p scop)
+__isl_give isl_union_map *translate_isl_ast_to_gimple::
+generate_isl_schedule (scop_p scop)
 {
   int nb_schedule_dims = get_max_schedule_dimensions (scop);
   int i;
@@ -2882,36 +2998,21 @@ translate_isl_ast_to_gimple::generate_isl_schedule (scop_p scop)
       bb_schedule = isl_map_intersect_domain (bb_schedule,
 					      isl_set_copy (pbb->domain));
       bb_schedule = extend_schedule (bb_schedule, nb_schedule_dims);
+      bb_schedule = isl_map_coalesce (bb_schedule);
       schedule_isl
 	= isl_union_map_union (schedule_isl,
 			       isl_union_map_from_map (bb_schedule));
+      schedule_isl = isl_union_map_coalesce (schedule_isl);
     }
   return schedule_isl;
-}
-
-/* This method is executed before the construction of a for node.  */
-__isl_give isl_id *
-ast_build_before_for (__isl_keep isl_ast_build *build, void *user)
-{
-  isl_union_map *dependences = (isl_union_map *) user;
-  ast_build_info *for_info = XNEW (struct ast_build_info);
-  isl_union_map *schedule = isl_ast_build_get_schedule (build);
-  isl_space *schedule_space = isl_ast_build_get_schedule_space (build);
-  int dimension = isl_space_dim (schedule_space, isl_dim_out);
-  for_info->is_parallelizable =
-    !carries_deps (schedule, dependences, dimension);
-  isl_union_map_free (schedule);
-  isl_space_free (schedule_space);
-  isl_id *id = isl_id_alloc (isl_ast_build_get_ctx (build), "", for_info);
-  return id;
 }
 
 /* Set the separate option for all dimensions.
    This helps to reduce control overhead.  */
 
-__isl_give isl_ast_build *
-translate_isl_ast_to_gimple::set_options (__isl_take isl_ast_build *control,
-					  __isl_keep isl_union_map *schedule)
+__isl_give isl_ast_build *translate_isl_ast_to_gimple::
+set_options (__isl_take isl_ast_build *control,
+	     __isl_keep isl_union_map *schedule)
 {
   isl_ctx *ctx = isl_union_map_get_ctx (schedule);
   isl_space *range_space = isl_space_set_alloc (ctx, 0, 1);
@@ -2927,8 +3028,8 @@ translate_isl_ast_to_gimple::set_options (__isl_take isl_ast_build *control,
 
 /* Generate isl AST from schedule of SCOP.  Also, collects IVS_PARAMS in IP.  */
 
-__isl_give isl_ast_node *
-translate_isl_ast_to_gimple::scop_to_isl_ast (scop_p scop, ivs_params &ip)
+__isl_give isl_ast_node *translate_isl_ast_to_gimple::
+scop_to_isl_ast (scop_p scop, ivs_params &ip)
 {
   /* Generate loop upper bounds that consist of the current loop iterator, an
      operator (< or <=) and an expression not involving the iterator.  If this
@@ -2940,27 +3041,93 @@ translate_isl_ast_to_gimple::scop_to_isl_ast (scop_p scop, ivs_params &ip)
   isl_union_map *schedule_isl = generate_isl_schedule (scop);
   isl_ast_build *context_isl = generate_isl_context (scop);
   context_isl = set_options (context_isl, schedule_isl);
-  isl_union_map *dependences = NULL;
   if (flag_loop_parallelize_all)
     {
-      dependences = scop_get_dependences (scop);
+      isl_union_map *dependence = scop_get_dependences (scop);
       context_isl =
 	isl_ast_build_set_before_each_for (context_isl, ast_build_before_for,
-					   dependences);
+					   dependence);
     }
+
   isl_ast_node *ast_isl = isl_ast_build_ast_from_schedule (context_isl,
 							   schedule_isl);
-  if (dependences)
-    isl_union_map_free (dependences);
+  if (scop->schedule)
+    {
+      isl_schedule_free (scop->schedule);
+      scop->schedule = NULL;
+    }
+
   isl_ast_build_free (context_isl);
   return ast_isl;
 }
+#endif
 
-/* GIMPLE Loop Generator: generates loops from STMT in GIMPLE form for
-   the given SCOP.  Return true if code generation succeeded.
+/* Copy def from sese REGION to the newly created TO_REGION. TR is defined by
+   DEF_STMT. GSI points to entry basic block of the TO_REGION.  */
 
-   FIXME: This is not yet a full implementation of the code generator
-   with ISL ASTs.  Generation of GIMPLE code has to be completed.  */
+static void
+copy_def (tree tr, gimple *def_stmt, sese_info_p region, sese_info_p to_region,
+	  gimple_stmt_iterator *gsi)
+{
+  if (!defined_in_sese_p (tr, region->region))
+    return;
+
+  ssa_op_iter iter;
+  use_operand_p use_p;
+  FOR_EACH_SSA_USE_OPERAND (use_p, def_stmt, iter, SSA_OP_USE)
+    {
+      tree use_tr = USE_FROM_PTR (use_p);
+
+      /* Do not copy parameters that have been generated in the header of the
+	 scop.  */
+      if (region->parameter_rename_map->get(use_tr))
+	continue;
+
+      gimple *def_of_use = SSA_NAME_DEF_STMT (use_tr);
+      if (!def_of_use)
+	continue;
+
+      copy_def (use_tr, def_of_use, region, to_region, gsi);
+    }
+
+  gimple *copy = gimple_copy (def_stmt);
+  gsi_insert_after (gsi, copy, GSI_NEW_STMT);
+
+  /* Create new names for all the definitions created by COPY and
+     add replacement mappings for each new name.  */
+  def_operand_p def_p;
+  ssa_op_iter op_iter;
+  FOR_EACH_SSA_DEF_OPERAND (def_p, copy, op_iter, SSA_OP_ALL_DEFS)
+    {
+      tree old_name = DEF_FROM_PTR (def_p);
+      tree new_name = create_new_def_for (old_name, copy, def_p);
+      region->parameter_rename_map->put(old_name, new_name);
+    }
+
+  update_stmt (copy);
+}
+
+static void
+copy_internal_parameters (sese_info_p region, sese_info_p to_region)
+{
+  /* For all the parameters which definitino is in the if_region->false_region,
+     insert code on true_region (if_region->true_region->entry). */
+
+  int i;
+  tree tr;
+  gimple_stmt_iterator gsi = gsi_start_bb(to_region->region.entry->dest);
+
+  FOR_EACH_VEC_ELT (region->params, i, tr)
+    {
+      // If def is not in region.
+      gimple *def_stmt = SSA_NAME_DEF_STMT (tr);
+      if (def_stmt)
+	copy_def (tr, def_stmt, region, to_region, &gsi);
+    }
+}
+
+/* GIMPLE Loop Generator: generates loops in GIMPLE form for the given SCOP.
+   Return true if code generation succeeded.  */
 
 bool
 graphite_regenerate_ast_isl (scop_p scop)
@@ -2973,12 +3140,26 @@ graphite_regenerate_ast_isl (scop_p scop)
   ivs_params ip;
 
   timevar_push (TV_GRAPHITE_CODE_GEN);
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+  t.add_parameters_to_ivs_params (scop, ip);
+  root_node = t.scop_to_isl_ast (scop);
+#else
   root_node = t.scop_to_isl_ast (scop, ip);
+#endif
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "\nISL AST generated by ISL: \n");
-      t.print_isl_ast_node (dump_file, root_node, scop->isl_context);
+#ifdef HAVE_ISL_OPTIONS_SET_SCHEDULE_SERIALIZE_SCCS
+      fprintf (dump_file, "[scheduler] original schedule:\n");
+      print_isl_schedule (dump_file, scop->original_schedule);
+      fprintf (dump_file, "[scheduler] isl transformed schedule:\n");
+      print_isl_schedule (dump_file, scop->transformed_schedule);
+
+      fprintf (dump_file, "[scheduler] original ast:\n");
+      print_schedule_ast (dump_file, scop->original_schedule, scop);
+#endif
+      fprintf (dump_file, "[scheduler] AST generated by isl:\n");
+      print_isl_ast (dump_file, root_node);
     }
 
   recompute_all_dominators ();
@@ -2990,6 +3171,9 @@ graphite_regenerate_ast_isl (scop_p scop)
 
   loop_p context_loop = region->region.entry->src->loop_father;
 
+  /* Copy all the parameters which are defined in the region.  */
+  copy_internal_parameters(if_region->false_region, if_region->true_region);
+
   edge e = single_succ_edge (if_region->true_region->region.entry->dest);
   basic_block bb = split_edge (e);
 
@@ -3000,8 +3184,8 @@ graphite_regenerate_ast_isl (scop_p scop)
   if (t.codegen_error_p ())
     {
       if (dump_file)
-	fprintf (dump_file, "\n[codegen] unsuccessful,"
-		 " reverting back to the original code.");
+	fprintf (dump_file, "codegen error: "
+		 "reverting back to the original code.\n");
       set_ifsese_condition (if_region, integer_zero_node);
     }
   else
@@ -3021,12 +3205,15 @@ graphite_regenerate_ast_isl (scop_p scop)
 	  scev_reset ();
 	  recompute_all_dominators ();
 	  graphite_verify ();
+
+	  if (dump_file)
+	    fprintf (dump_file, "[codegen] isl AST to Gimple succeeded.\n");
 	}
       else
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "\n[codegen] unsuccessful in translating"
-		     " pending phis, reverting back to the original code.");
+	    fprintf (dump_file, "[codegen] unsuccessful in translating"
+		     " pending phis, reverting back to the original code.\n");
 	  set_ifsese_condition (if_region, integer_zero_node);
 	}
     }
@@ -3048,7 +3235,7 @@ graphite_regenerate_ast_isl (scop_p scop)
 	if (loop->can_be_parallel)
 	  num_no_dependency++;
 
-      fprintf (dump_file, "\n%d loops carried no dependency.\n",
+      fprintf (dump_file, "%d loops carried no dependency.\n",
 	       num_no_dependency);
     }
 

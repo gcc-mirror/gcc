@@ -1,5 +1,5 @@
 /* Definitions of target machine for Intel MCU psABI.
-   Copyright (C) 2015 Free Software Foundation, Inc.
+   Copyright (C) 2015-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -94,3 +94,19 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
         goto DONE;							\
       }									\
   } while (0)
+
+#undef SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
+
+#undef WCHAR_TYPE
+#define WCHAR_TYPE "long int"
+
+#undef WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE BITS_PER_WORD
+
+/* Use int, instead of long int, for int32_t and uint32_t.  */
+#undef STDINT_LONG32
+#define STDINT_LONG32 0

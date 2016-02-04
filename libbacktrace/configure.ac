@@ -1,5 +1,5 @@
 # configure.ac -- Backtrace configure script.
-# Copyright (C) 2012-2015 Free Software Foundation, Inc.
+# Copyright (C) 2012-2016 Free Software Foundation, Inc.
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -172,7 +172,10 @@ AC_SUBST(PIC_FLAG)
 AC_CACHE_CHECK([__sync extensions],
 [libbacktrace_cv_sys_sync],
 [if test -n "${with_target_subdir}"; then
-   libbacktrace_cv_sys_sync=yes
+   case "${host}" in
+   hppa*-*-hpux*) libbacktrace_cv_sys_sync=no ;;
+   *) libbacktrace_cv_sys_sync=yes ;;
+   esac
  else
    AC_LINK_IFELSE(
      [AC_LANG_PROGRAM([int i;],
@@ -267,9 +270,10 @@ else
     # simply assume that if we have mman.h, we have mmap.
     have_mmap=yes
     case "${host}" in
-    spu-*-*)
+    spu-*-*|*-*-msdosdjgpp)
         # The SPU does not have mmap, but it has a sys/mman.h header file
         # containing "mmap_eaddr" and the mmap flags, confusing the test.
+        # DJGPP also has sys/man.h, but no mmap
 	have_mmap=no ;;
     esac
   else

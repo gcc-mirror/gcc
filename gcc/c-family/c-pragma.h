@@ -1,5 +1,5 @@
 /* Pragma related interfaces.
-   Copyright (C) 1995-2015 Free Software Foundation, Inc.
+   Copyright (C) 1995-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -33,6 +33,7 @@ enum pragma_kind {
   PRAGMA_OACC_DECLARE,
   PRAGMA_OACC_ENTER_DATA,
   PRAGMA_OACC_EXIT_DATA,
+  PRAGMA_OACC_HOST_DATA,
   PRAGMA_OACC_KERNELS,
   PRAGMA_OACC_LOOP,
   PRAGMA_OACC_PARALLEL,
@@ -167,6 +168,7 @@ enum pragma_omp_clause {
   PRAGMA_OACC_CLAUSE_SELF,
   PRAGMA_OACC_CLAUSE_SEQ,
   PRAGMA_OACC_CLAUSE_TILE,
+  PRAGMA_OACC_CLAUSE_USE_DEVICE,
   PRAGMA_OACC_CLAUSE_VECTOR,
   PRAGMA_OACC_CLAUSE_VECTOR_LENGTH,
   PRAGMA_OACC_CLAUSE_WAIT,

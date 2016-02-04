@@ -60,6 +60,9 @@
 /* Define to 1 if you have the `strtoull' function. */
 #undef HAVE_STRTOULL
 
+/* Define to 1 if the system has the type `struct _Mutex_Control'. */
+#undef HAVE_STRUCT__MUTEX_CONTROL
+
 /* Define to 1 if the target runtime linker supports binding the same symbol
    to different versions. */
 #undef HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT
@@ -118,6 +121,9 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* Define to 1 if the HSA plugin is built, 0 if not. */
+#undef PLUGIN_HSA
 
 /* Define to 1 if the NVIDIA plugin is built, 0 if not. */
 #undef PLUGIN_NVPTX

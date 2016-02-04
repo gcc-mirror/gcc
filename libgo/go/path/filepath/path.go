@@ -258,7 +258,7 @@ func Rel(basepath, targpath string) (string, error) {
 	targVol := VolumeName(targpath)
 	base := Clean(basepath)
 	targ := Clean(targpath)
-	if targ == base {
+	if sameWord(targ, base) {
 		return ".", nil
 	}
 	base = base[len(baseVol):]
@@ -269,8 +269,8 @@ func Rel(basepath, targpath string) (string, error) {
 	// Can't use IsAbs - `\a` and `a` are both relative in Windows.
 	baseSlashed := len(base) > 0 && base[0] == Separator
 	targSlashed := len(targ) > 0 && targ[0] == Separator
-	if baseSlashed != targSlashed || baseVol != targVol {
-		return "", errors.New("Rel: can't make " + targ + " relative to " + base)
+	if baseSlashed != targSlashed || !sameWord(baseVol, targVol) {
+		return "", errors.New("Rel: can't make " + targpath + " relative to " + basepath)
 	}
 	// Position base[b0:bi] and targ[t0:ti] at the first differing elements.
 	bl := len(base)
@@ -283,7 +283,7 @@ func Rel(basepath, targpath string) (string, error) {
 		for ti < tl && targ[ti] != Separator {
 			ti++
 		}
-		if targ[t0:ti] != base[b0:bi] {
+		if !sameWord(targ[t0:ti], base[b0:bi]) {
 			break
 		}
 		if bi < bl {
@@ -296,7 +296,7 @@ func Rel(basepath, targpath string) (string, error) {
 		t0 = ti
 	}
 	if base[b0:bi] == ".." {
-		return "", errors.New("Rel: can't make " + targ + " relative to " + base)
+		return "", errors.New("Rel: can't make " + targpath + " relative to " + basepath)
 	}
 	if b0 != bl {
 		// Base elements left. Must go up before going down.

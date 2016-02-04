@@ -1,5 +1,5 @@
 /* Exception handling and frame unwind runtime interface routines.
-   Copyright (C) 2001-2015 Free Software Foundation, Inc.
+   Copyright (C) 2001-2016 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -221,8 +221,6 @@ _Unwind_SjLj_Resume_or_Rethrow (struct _Unwind_Exception *);
    compatible with the standard ABI for IA-64, we inline these.  */
 
 #ifdef __ia64__
-#include <stdlib.h>
-
 static inline _Unwind_Ptr
 _Unwind_GetDataRelBase (struct _Unwind_Context *_C)
 {
@@ -233,7 +231,7 @@ _Unwind_GetDataRelBase (struct _Unwind_Context *_C)
 static inline _Unwind_Ptr
 _Unwind_GetTextRelBase (struct _Unwind_Context *_C __attribute__ ((__unused__)))
 {
-  abort ();
+  __builtin_abort ();
   return 0;
 }
 

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-mpaired-single" } */
+/* { dg-options "-mpaired-single forbid_cpu=octeon.*" } */
 
 /* Test v2sf calculations */
 #include <stdlib.h>

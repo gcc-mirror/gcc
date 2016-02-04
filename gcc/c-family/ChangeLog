@@ -1,3 +1,241 @@
+2016-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/69543
+	PR c/69558
+	* c-pragma.c (handle_pragma_diagnostic): Pass input_location
+	instead of loc to control_warning_option.
+
+2016-02-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c.opt (fopenacc-dim=): New option.
+
+2016-01-27  Ryan Burn  <contact@rnburn.com>
+
+	PR cilkplus/69267
+	* cilk.c (cilk_gimplify_call_params_in_spawned_fn): Change to use
+	gimplify_arg. Removed superfluous post_p argument.
+	* c-family.h (cilk_gimplify_call_params_in_spawned_fn): Removed
+	superfluous post_p argument.
+	* c-gimplify.c (c_gimplify_expr): Likewise.
+
+2016-01-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/69006
+	* c-opts.c (c_diagnostic_finalizer): Replace invocation of
+	pp_newline_and_flush with pp_flush.
+
+2016-01-20  Martin Sebor  <msebor@redhat.com>
+
+	PR c/69405
+	* c-common.c (sync_resolve_size): Avoid printing diagnostic about
+	an incompatible argument when the argument isn't a valid tree node.
+
+2016-01-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68767
+	* c-common.c (check_function_arguments_recurse): Fold the whole
+	COND_EXPR, not just the condition.
+
+2016-01-18  Tom de Vries  <tom@codesourcery.com>
+
+	* c-omp.c (c_oacc_split_loop_clauses): Don't copy OMP_CLAUSE_REDUCTION,
+	classify as loop clause.
+
+2016-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/68271
+	* c-pragma.c (c_register_pragma_1): Adjust comment to note that
+	C++ FE no longer has limit on number of pragmas.
+
+2015-01-14  Ryan Burn  <contact@rnburn.com>
+
+	PR c++/69048
+	* cilk.c (create_cilk_wrapper_body): Call fold_build_cleanup_point_expr
+	to add missing cleanup point.
+
+2016-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/68819
+	* c-indentation.c (get_visual_column): Add location_t param.
+	Handle the column number being zero by effectively disabling the
+	warning, with an "inform".
+	(should_warn_for_misleading_indentation): Add location_t argument
+	for all uses of get_visual_column.
+
+2016-01-10  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/69029
+	* c-indentation.c (should_warn_for_misleading_indentation):
+	Don't warn about do-while statements.
+
+2016-01-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/68966
+	* c-common.c (sync_resolve_size): Reject first argument when it's
+	a pointer to _Bool.
+
+2016-01-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/69122
+	* c-indentation.c (get_visual_column): Remove default argument.
+	(should_warn_for_misleading_indentation): For the multiline case,
+	update call to get_visual_column for next_stmt_exploc so that it
+	captures the location of the first non-whitespace character in the
+	relevant line.  Don't issue warnings if there is non-whitespace
+	before the next statement.
+
+2016-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2015-12-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (binary_op_error): Convert first param from
+	location_t to rich_location * and use it when emitting an error.
+	* c-common.h (binary_op_error): Convert first param from
+	location_t to rich_location *.
+
+2015-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.h (conflict_marker_get_final_tok_kind): New prototype.
+	* c-lex.c (conflict_marker_get_final_tok_kind): New function.
+
+2015-12-15  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* c-common.c (c_common_attribute_table): Handle "omp declare target
+	link" attribute.
+
+2015-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/68833
+	* c.opt (Wmissing-format-attribute, Wnormalized): Add Warning option.
+
+2014-12-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/68815
+	* c-format.c (gcc_gfc_char_table): Add 'q' flag to remaining
+	specifiers (%d, %i,%u and %c).
+
+2015-12-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* c.opt (Wmisleading-indentation): Add to -Wall for C and C++.
+
+2015-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48088
+	PR c/68657
+	* c.opt (Wfloat-conversion, Wsign-conversion): Add Warning.
+	* c-pragma.c (handle_pragma_diagnostic): Adjust
+	control_warning_option caller.
+
+2015-12-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_cpp_error): Update for change to
+	rich_location::set_range.
+
+2015-12-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	* c-common.c (maybe_warn_shift_overflow): Warn on all overflows if
+	shifting 1 out of the sign bit.
+
+2015-12-04  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* c-common.c (c_common_attribute_table[]): Update max arguments
+	count for "simd" attribute.
+	(handle_simd_attribute): Parse "notinbranch" and "inbranch" arguments.
+
+2015-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/57580
+	* c-ppoutput.c (print): Change printed field to bool.
+	Move src_file last for smaller padding.
+	(init_pp_output): Set print.printed to false instead of 0.
+	(scan_translation_unit): Fix up formatting.  Set print.printed
+	to true after printing something other than newline.
+	(scan_translation_unit_trad): Set print.printed to true instead of 1.
+	(maybe_print_line_1): Set print.printed to false instead of 0.
+	(print_line_1): Likewise.
+	(do_line_change): Set print.printed to true instead of 1.
+	(cb_define, dump_queued_macros, cb_include, cb_def_pragma,
+	dump_macro): Set print.printed to false after printing newline.
+
+2015-12-02  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (fold_for_warn): New.
+	(warn_logical_operator, warn_tautological_cmp)
+	(check_function_arguments_recurse, maybe_warn_bool_compare): Use it.
+
+	* c-common.c (c_disable_warnings, c_enable_warnings, c_fully_fold)
+	(c_fully_fold_internal, decl_constant_value_for_optimization):
+	Move to c/c-fold.c.
+	* c-common.h: Don't declare decl_constant_value_for_optimization.
+
+2015-12-02  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/68162
+	* c-common.h (c_build_qualified_type): Add extra default
+	arguments.
+
+2015-12-01  Julian Brown  <julian@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <James_Norris@mentor.com>
+
+	* c-pragma.c (oacc_pragmas): Add PRAGMA_OACC_HOST_DATA.
+	* c-pragma.h (pragma_kind): Add PRAGMA_OACC_HOST_DATA.
+	(pragma_omp_clause): Add PRAGMA_OACC_CLAUSE_USE_DEVICE.
+
+2015-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (print_ada_macros): Remove redundant blank line.
+	(decl_sloc_common): Delete and move bulk of processing to...
+	(decl_sloc): ...here.
+	(pp_ada_tree_identifier): Remove reference to QUAL_UNION_TYPE.
+	(dump_ada_double_name): Remove S parameter and compute the suffix.
+	(dump_ada_array_type): Add PARENT parameter.  Simplify computation of
+	element type and deal with an anonymous one.
+	(dump_ada_template): Use RECORD_OR_UNION_TYPE_P macro.
+	(dump_generic_ada_node): Tweak.  Adjust call to dump_ada_array_type
+	and remove reference to QUAL_UNION_TYPE.
+	(dump_nested_types): Make 2 passes on the fields and move bulk to...
+	(dump_nested_type): ...here.  New function extracted from above.
+	Generate a full declaration for anonymous element type of arrays.
+	(print_ada_declaration): Really skip anonymous declarations.  Remove
+	references to QUAL_UNION_TYPE.  Adjust call to dump_ada_array_type.
+	Clean up processing of declarations of array types and objects.
+	(print_ada_struct_decl): Remove reference to QUAL_UNION_TYPE.
+	Remove obsolete code and tidy up.
+
+2015-11-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR c/67581
+	* c-common.c (handle_transparent_union_attribute): Update
+	also type variants.
+
+2015-11-27  Martin Liska  <mliska@suse.cz>
+
+	PR c++/68312
+	* array-notation-common.c (cilkplus_extract_an_triplets):
+	Release vector of vectors.
+	* cilk.c (gimplify_cilk_spawn): Free allocated memory.
+
+2015-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/68527
+	* c-ada-spec.c (dump_nested_types): Add guard for error_mark_node.
+	(print_ada_struct_decl): Likewise.
+
+2015-11-23  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR c++/68001
+	* c-gimplify.c (c_gimplify_expr): Stop the process if see an error.
+	* cilk.c (recognize_spawn): Determine location in a more precise
+	way.
+
+2015-11-19  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (shorten_compare): But look through macros from
+	system headers.
+
 2015-11-18  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (shorten_compare): Don't -Wtype-limits if the
@@ -164,8 +402,8 @@
 2015-11-03  Bernd Schmidt <bschmidt@redhat.com>
 
 	PR c++-common/67882
-	* c-family/c-common.h (fold_offsetof_1): Add argument.
-	* c-family/c-common.c (fold_offsetof_1): Diagnose more invalid
+	* c-common.h (fold_offsetof_1): Add argument.
+	* c-common.c (fold_offsetof_1): Diagnose more invalid
 	offsetof expressions that reference elements past the end of
 	an array.
 
@@ -479,6 +717,10 @@
 	* c-opts.c (set_std_cxx1z): Set flag_concepts.
 	* c.opt (fconcepts): New.
 
+2015-08-02  Martin Sebor  <msebor@redhat.com>
+
+	* c.opt (-Wframe-address): New warning option.
+
 2015-08-02  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* c-indentation.c (should_warn_for_misleading_indentation):
@@ -628,11 +870,11 @@
 2015-06-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement N4197 - Adding u8 character literals
-	* c-family/c-ada-spec.c (print_ada_macros): Treat CPP_UTF8CHAR like
+	* c-ada-spec.c (print_ada_macros): Treat CPP_UTF8CHAR like
 	CPP_CHAR.
-	* c-family/c-common.c (c_parse_error): Print CPP_UTF8CHAR and
+	* c-common.c (c_parse_error): Print CPP_UTF8CHAR and
 	CPP_UTF8CHAR_USERDEF tokens.
-	* c-family/c-lex.c (c_lex_with_flags): Treat CPP_UTF8CHAR_USERDEF
+	* c-lex.c (c_lex_with_flags): Treat CPP_UTF8CHAR_USERDEF
 	and CPP_UTF8CHAR tokens.
 	(lex_charconst): Treat CPP_UTF8CHAR token.
 
@@ -789,6 +1031,11 @@
 
 	* c-common.h (c_parse_final_cleanups): New prototype.
 	* c-opts.c (c_common_parse_file): Call c_parse_final_cleanups.
+
+2015-06-04  Sriraman Tallam  <tmsriram@google.com>
+
+	* c-common.c (noplt): New attribute.
+	(handle_noplt_attribute): New handler.
 
 2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
 
@@ -5819,7 +6066,7 @@
 	* c-common.c: Include gt-c-family-c-common.h.
 	* c-pragma.c: Include gt-c-family-c-pragma.h.
 
-Copyright (C) 2010-2015 Free Software Foundation, Inc.
+Copyright (C) 2010-2016 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

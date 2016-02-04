@@ -1,5 +1,5 @@
 /* RTL simplification functions for GNU compiler.
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1703,6 +1703,12 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	}
 
       real_from_integer (&d, mode, std::make_pair (op, op_mode), SIGNED);
+
+      /* Avoid the folding if flag_signaling_nans is on and
+         operand is a signaling NaN.  */
+      if (HONOR_SNANS (mode) && REAL_VALUE_ISSIGNALING_NAN (d))
+        return 0;
+
       d = real_value_truncate (mode, d);
       return const_double_from_real_value (d, mode);
     }
@@ -1721,6 +1727,12 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	}
 
       real_from_integer (&d, mode, std::make_pair (op, op_mode), UNSIGNED);
+
+      /* Avoid the folding if flag_signaling_nans is on and
+         operand is a signaling NaN.  */
+      if (HONOR_SNANS (mode) && REAL_VALUE_ISSIGNALING_NAN (d))
+        return 0;
+
       d = real_value_truncate (mode, d);
       return const_double_from_real_value (d, mode);
     }
@@ -1825,16 +1837,25 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	  d = real_value_negate (&d);
 	  break;
 	case FLOAT_TRUNCATE:
-	  d = real_value_truncate (mode, d);
+	  /* Don't perform the operation if flag_signaling_nans is on
+	     and the operand is a signaling NaN.  */
+	  if (!(HONOR_SNANS (mode) && REAL_VALUE_ISSIGNALING_NAN (d)))
+	    d = real_value_truncate (mode, d);
 	  break;
 	case FLOAT_EXTEND:
 	  /* All this does is change the mode, unless changing
 	     mode class.  */
-	  if (GET_MODE_CLASS (mode) != GET_MODE_CLASS (GET_MODE (op)))
+	  /* Don't perform the operation if flag_signaling_nans is on
+	     and the operand is a signaling NaN.  */
+	  if (GET_MODE_CLASS (mode) != GET_MODE_CLASS (GET_MODE (op))
+	      && !(HONOR_SNANS (mode) && REAL_VALUE_ISSIGNALING_NAN (d)))
 	    real_convert (&d, mode, &d);
 	  break;
 	case FIX:
-	  real_arithmetic (&d, FIX_TRUNC_EXPR, &d, NULL);
+	  /* Don't perform the operation if flag_signaling_nans is on
+	     and the operand is a signaling NaN.  */
+	  if (!(HONOR_SNANS (mode) && REAL_VALUE_ISSIGNALING_NAN (d)))
+	    real_arithmetic (&d, FIX_TRUNC_EXPR, &d, NULL);
 	  break;
 	case NOT:
 	  {
@@ -2256,8 +2277,11 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
       if (!HONOR_SIGNED_ZEROS (mode) && trueop0 == CONST0_RTX (mode))
 	return simplify_gen_unary (NEG, mode, op1, mode);
 
-      /* (-1 - a) is ~a.  */
-      if (trueop0 == constm1_rtx)
+      /* (-1 - a) is ~a, unless the expression contains symbolic
+	 constants, in which case not retaining additions and
+	 subtractions could cause invalid assembly to be produced.  */
+      if (trueop0 == constm1_rtx
+	  && !contains_symbolic_reference_p (op1))
 	return simplify_gen_unary (NOT, mode, op1, mode);
 
       /* Subtracting 0 has no effect unless the mode has signed zeros
@@ -3886,14 +3910,19 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
       else
 	{
 	  REAL_VALUE_TYPE f0, f1, value, result;
+	  const REAL_VALUE_TYPE *opr0, *opr1;
 	  bool inexact;
 
-	  real_convert (&f0, mode, CONST_DOUBLE_REAL_VALUE (op0));
-	  real_convert (&f1, mode, CONST_DOUBLE_REAL_VALUE (op1));
+	  opr0 = CONST_DOUBLE_REAL_VALUE (op0);
+	  opr1 = CONST_DOUBLE_REAL_VALUE (op1);
 
 	  if (HONOR_SNANS (mode)
-	      && (REAL_VALUE_ISNAN (f0) || REAL_VALUE_ISNAN (f1)))
+	      && (REAL_VALUE_ISSIGNALING_NAN (*opr0)
+	          || REAL_VALUE_ISSIGNALING_NAN (*opr1)))
 	    return 0;
+
+	  real_convert (&f0, mode, opr0);
+	  real_convert (&f1, mode, opr1);
 
 	  if (code == DIV
 	      && real_equal (&f1, &dconst0)

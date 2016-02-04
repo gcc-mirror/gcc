@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2015 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2016 Free Software Foundation, Inc.
 
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -916,8 +916,8 @@ provided as built-in functions by GCC@.
 
 GCC can allocate complex automatic variables in a noncontiguous
 fashion; it's even possible for the real part to be in a register while
-the imaginary part is on the stack (or vice versa).  Only the DWARF 2
-debug info format can represent this, so use of DWARF 2 is recommended.
+the imaginary part is on the stack (or vice versa).  Only the DWARF
+debug info format can represent this, so use of DWARF is recommended.
 If you are using the stabs debug info format, GCC describes a noncontiguous
 complex variable as if it were two separate variables of noncomplex type.
 If the variable's actual name is @code{foo}, the two fictitious
@@ -954,22 +954,20 @@ typedef _Complex float __attribute__((mode(TC))) _Complex128;
 typedef _Complex float __attribute__((mode(XC))) _Complex80;
 @end smallexample
 
-On PowerPC Linux, Freebsd and Darwin systems, the default for
-@code{long double} is to use the IBM extended floating point format
-that uses a pair of @code{double} values to extend the precision.
-This means that the mode @code{TCmode} was already used by the
-traditional IBM long double format, and you would need to use the mode
-@code{KCmode}:
+On PowerPC 64-bit Linux systems there are currently problems in using
+the complex @code{__float128} type.  When these problems are fixed,
+you would use:
 
 @smallexample
 typedef _Complex float __attribute__((mode(KC))) _Complex128;
 @end smallexample
 
-Not all targets support additional floating-point types.  @code{__float80}
-and @code{__float128} types are supported on x86 and IA-64 targets.
-The @code{__float128} type is supported on hppa HP-UX.
-The @code{__float128} type is supported on PowerPC systems by default
-if the vector scalar instruction set (VSX) is enabled.
+Not all targets support additional floating-point types.
+@code{__float80} and @code{__float128} types are supported on x86 and
+IA-64 targets.  The @code{__float128} type is supported on hppa HP-UX.
+The @code{__float128} type is supported on PowerPC 64-bit Linux
+systems by default if the vector scalar instruction set (VSX) is
+enabled.
 
 On the PowerPC, @code{__ibm128} provides access to the IBM extended
 double format, and it is intended to be used by the library functions
@@ -1077,7 +1075,7 @@ the technical report.
 @end itemize
 
 Types @code{_Decimal32}, @code{_Decimal64}, and @code{_Decimal128}
-are supported by the DWARF 2 debug information format.
+are supported by the DWARF debug information format.
 
 @node Hex Floats
 @section Hex Floats
@@ -1251,7 +1249,7 @@ is incomplete:
 Pragmas to control overflow and rounding behaviors are not implemented.
 @end itemize
 
-Fixed-point types are supported by the DWARF 2 debug information format.
+Fixed-point types are supported by the DWARF debug information format.
 
 @node Named Address Spaces
 @section Named Address Spaces
@@ -1658,9 +1656,7 @@ variable-length arrays are more elegant.
 There are other differences between these two methods.  Space allocated
 with @code{alloca} exists until the containing @emph{function} returns.
 The space for a variable-length array is deallocated as soon as the array
-name's scope ends.  (If you use both variable-length arrays and
-@code{alloca} in the same function, deallocation of a variable-length array
-also deallocates anything more recently allocated with @code{alloca}.)
+name's scope ends, unless you also use @code{alloca} in this scope.
 
 You can also use variable-length arrays as arguments to functions:
 
@@ -2275,6 +2271,7 @@ GCC plugins may provide their own attributes.
 * MSP430 Function Attributes::
 * NDS32 Function Attributes::
 * Nios II Function Attributes::
+* Nvidia PTX Function Attributes::
 * PowerPC Function Attributes::
 * RL78 Function Attributes::
 * RX Function Attributes::
@@ -2282,6 +2279,7 @@ GCC plugins may provide their own attributes.
 * SH Function Attributes::
 * SPU Function Attributes::
 * Symbian OS Function Attributes::
+* V850 Function Attributes::
 * Visium Function Attributes::
 * x86 Function Attributes::
 * Xstormy16 Function Attributes::
@@ -2881,6 +2879,12 @@ prologue which decides whether to split the stack.  Functions with the
 @code{no_split_stack} attribute do not have that prologue, and thus
 may run with only a small amount of stack space available.
 
+@item no_stack_limit
+@cindex @code{no_stack_limit} function attribute
+This attribute locally overrides the @option{-fstack-limit-register}
+and @option{-fstack-limit-symbol} command-line options; it has the effect
+of disabling stack limit checking in the function it applies to.
+
 @item noclone
 @cindex @code{noclone} function attribute
 This function attribute prevents a function from being considered for
@@ -2936,6 +2940,36 @@ my_memcpy (void *dest, const void *src, size_t len)
         __attribute__((nonnull));
 @end smallexample
 
+@item noplt
+@cindex @code{noplt} function attribute
+The @code{noplt} attribute is the counterpart to option @option{-fno-plt}.
+Calls to functions marked with this attribute in position-independent code
+do not use the PLT.
+
+@smallexample
+@group
+/* Externally defined function foo.  */
+int foo () __attribute__ ((noplt));
+
+int
+main (/* @r{@dots{}} */)
+@{
+  /* @r{@dots{}} */
+  foo ();
+  /* @r{@dots{}} */
+@}
+@end group
+@end smallexample
+
+The @code{noplt} attribute on function @code{foo}
+tells the compiler to assume that
+the function @code{foo} is externally defined and that the call to
+@code{foo} must avoid the PLT
+in position-independent code.
+
+In position-dependent code, a few targets also convert calls to
+functions that are marked to not use the PLT to use the GOT instead.
+
 @item noreturn
 @cindex @code{noreturn} function attribute
 @cindex functions that never return
@@ -2980,35 +3014,6 @@ function cannot throw an exception.  For example, most functions in
 the standard C library can be guaranteed not to throw an exception
 with the notable exceptions of @code{qsort} and @code{bsearch} that
 take function pointer arguments.
-
-@item noplt
-@cindex @code{noplt} function attribute
-The @code{noplt} attribute is the counterpart to option @option{-fno-plt} and
-does not use PLT for calls to functions marked with this attribute in position
-independent code. 
-
-@smallexample
-@group
-/* Externally defined function foo.  */
-int foo () __attribute__ ((noplt));
-
-int
-main (/* @r{@dots{}} */)
-@{
-  /* @r{@dots{}} */
-  foo ();
-  /* @r{@dots{}} */
-@}
-@end group
-@end smallexample
-
-The @code{noplt} attribute on function foo tells the compiler to assume that
-the function foo is externally defined and the call to foo must avoid the PLT
-in position independent code.
-
-Additionally, a few targets also convert calls to those functions that are
-marked to not use the PLT to use the GOT instead for non-position independent
-code.
 
 @item optimize
 @cindex @code{optimize} function attribute
@@ -3124,40 +3129,35 @@ with a copy that redefines NULL appropriately.
 The warnings for missing or incorrect sentinels are enabled with
 @option{-Wformat}.
 
-@item stack_protect
-@cindex @code{stack_protect} function attribute
-This function attribute make a stack protection of the function if 
-flags @option{fstack-protector} or @option{fstack-protector-strong}
-or @option{fstack-protector-explicit} are set.
-
-@item target_clones (@var{options})
-@cindex @code{target_clones} function attribute
-The @code{target_clones} attribute is used to specify that a function is to
-be cloned into multiple versions compiled with different target options
-than specified on the command line.  The supported options and restrictions
-are the same as for @code{target} attribute.
-
-For instance on an x86, you could compile a function with
-@code{target_clones("sse4.1,avx")}. It will create 2 function clones,
-one compiled with @option{-msse4.1} and another with @option{-mavx}.
-At the function call it will create resolver @code{ifunc}, that will
-dynamically call a clone suitable for current architecture.
-
 @item simd
-@cindex @code{simd} function attribute.
+@itemx simd("@var{mask}")
+@cindex @code{simd} function attribute
 This attribute enables creation of one or more function versions that
 can process multiple arguments using SIMD instructions from a
 single invocation.  Specifying this attribute allows compiler to
 assume that such versions are available at link time (provided
 in the same or another translation unit).  Generated versions are
-target dependent and described in corresponding Vector ABI document.  For
+target-dependent and described in the corresponding Vector ABI document.  For
 x86_64 target this document can be found
 @w{@uref{https://sourceware.org/glibc/wiki/libmvec?action=AttachFile&do=view&target=VectorABI.txt,here}}.
+
+The optional argument @var{mask} may have the value
+@code{notinbranch} or @code{inbranch},
+and instructs the compiler to generate non-masked or masked
+clones correspondingly. By default, all clones are generated.
+
 The attribute should not be used together with Cilk Plus @code{vector}
 attribute on the same function.
-If the attribute is specified and @code{#pragma omp declare simd}
-present on a declaration and @code{-fopenmp} or @code{-fopenmp-simd}
+
+If the attribute is specified and @code{#pragma omp declare simd} is
+present on a declaration and the @option{-fopenmp} or @option{-fopenmp-simd}
 switch is specified, then the attribute is ignored.
+
+@item stack_protect
+@cindex @code{stack_protect} function attribute
+This attribute adds stack protection code to the function if 
+flags @option{-fstack-protector}, @option{-fstack-protector-strong}
+or @option{-fstack-protector-explicit} are set.
 
 @item target (@var{options})
 @cindex @code{target} function attribute
@@ -3195,6 +3195,19 @@ The options supported are specific to each target; refer to @ref{x86
 Function Attributes}, @ref{PowerPC Function Attributes},
 @ref{ARM Function Attributes},and @ref{Nios II Function Attributes},
 for details.
+
+@item target_clones (@var{options})
+@cindex @code{target_clones} function attribute
+The @code{target_clones} attribute is used to specify that a function
+be cloned into multiple versions compiled with different target options
+than specified on the command line.  The supported options and restrictions
+are the same as for @code{target} attribute.
+
+For instance, on an x86, you could compile a function with
+@code{target_clones("sse4.1,avx")}.  GCC creates two function clones,
+one compiled with @option{-msse4.1} and another with @option{-mavx}.
+It also creates a resolver function (see the @code{ifunc} attribute
+above) that dynamically selects a clone suitable for current architecture.
 
 @item unused
 @cindex @code{unused} function attribute
@@ -3383,55 +3396,6 @@ performing a reloadable link on them.
 At present, a declaration to which @code{weakref} is attached can
 only be @code{static}.
 
-@item lower
-@itemx upper
-@itemx either
-@cindex lower memory region on the MSP430
-@cindex upper memory region on the MSP430
-@cindex either memory region on the MSP430
-On the MSP430 target these attributes can be used to specify whether
-the function or variable should be placed into low memory, high
-memory, or the placement should be left to the linker to decide.  The
-attributes are only significant if compiling for the MSP430X
-architecture.
-
-The attributes work in conjunction with a linker script that has been
-augmented to specify where to place sections with a @code{.lower} and
-a @code{.upper} prefix.  So for example as well as placing the
-@code{.data} section the script would also specify the placement of a
-@code{.lower.data} and a @code{.upper.data} section.  The intention
-being that @code{lower} sections are placed into a small but easier to
-access memory region and the upper sections are placed into a larger, but
-slower to access region.
-
-The @code{either} attribute is special.  It tells the linker to place
-the object into the corresponding @code{lower} section if there is
-room for it.  If there is insufficient room then the object is placed
-into the corresponding @code{upper} section instead.  Note - the
-placement algorithm is not very sophisticated.  It will not attempt to
-find an optimal packing of the @code{lower} sections.  It just makes
-one pass over the objects and does the best that it can.  Using the
-@option{-ffunction-sections} and @option{-fdata-sections} command line
-options can help the packing however, since they produce smaller,
-easier to pack regions.
-
-@item reentrant
-On the MSP430 a function can be given the @code{reentant} attribute.
-This makes the function disable interrupts upon entry and enable
-interrupts upon exit.  Reentrant functions cannot be @code{naked}.
-
-@item critical
-On the MSP430 a function can be given the @code{critical} attribute.
-This makes the function disable interrupts upon entry and restore the
-previous interrupt enabled/disabled state upon exit.  A function
-cannot have both the @code{reentrant} and @code{critical} attributes.
-Critical functions cannot be @code{naked}.
-
-@item wakeup
-On the MSP430 a function can be given the @code{wakeup} attribute.
-Such a function must also have the @code{interrupt} attribute.  When a
-function with the @code{wakeup} attribute exists the processor will be
-woken up from any low-power state in which it may be residing.
 
 @end table
 
@@ -4243,6 +4207,17 @@ the @code{rtbd} instead of @code{rtsd}.
 @smallexample
 void f () __attribute__ ((break_handler));
 @end smallexample
+
+@item interrupt_handler
+@itemx fast_interrupt 
+@cindex @code{interrupt_handler} function attribute, MicroBlaze
+@cindex @code{fast_interrupt} function attribute, MicroBlaze
+These attributes indicate that the specified function is an interrupt
+handler.  Use the @code{fast_interrupt} attribute to indicate handlers
+used in low-latency interrupt mode, and @code{interrupt_handler} for
+interrupts that do not use low-latency handlers.  In both cases, GCC
+emits appropriate prologue code and generates a return from the handler
+using @code{rtid} instead of @code{rtsd}.
 @end table
 
 @node Microsoft Windows Function Attributes
@@ -4520,6 +4495,38 @@ This attribute only applies to interrupt functions.  It is silently
 ignored if applied to a non-interrupt function.  A wakeup interrupt
 function will rouse the processor from any low-power state that it
 might be in when the function exits.
+
+@item lower
+@itemx upper
+@itemx either
+@cindex @code{lower} function attribute, MSP430
+@cindex @code{upper} function attribute, MSP430
+@cindex @code{either} function attribute, MSP430
+On the MSP430 target these attributes can be used to specify whether
+the function or variable should be placed into low memory, high
+memory, or the placement should be left to the linker to decide.  The
+attributes are only significant if compiling for the MSP430X
+architecture.
+
+The attributes work in conjunction with a linker script that has been
+augmented to specify where to place sections with a @code{.lower} and
+a @code{.upper} prefix.  So, for example, as well as placing the
+@code{.data} section, the script also specifies the placement of a
+@code{.lower.data} and a @code{.upper.data} section.  The intention
+is that @code{lower} sections are placed into a small but easier to
+access memory region and the upper sections are placed into a larger, but
+slower to access, region.
+
+The @code{either} attribute is special.  It tells the linker to place
+the object into the corresponding @code{lower} section if there is
+room for it.  If there is insufficient room then the object is placed
+into the corresponding @code{upper} section instead.  Note that the
+placement algorithm is not very sophisticated.  It does not attempt to
+find an optimal packing of the @code{lower} sections.  It just makes
+one pass over the objects and does the best that it can.  Using the
+@option{-ffunction-sections} and @option{-fdata-sections} command-line
+options can help the packing, however, since they produce smaller,
+easier to pack regions.
 @end table
 
 @node NDS32 Function Attributes
@@ -4625,6 +4632,22 @@ command-line option, to select a predefined set of custom instructions
 named @var{name}.
 @xref{Nios II Options}, for more information.
 @end table
+@end table
+
+@node Nvidia PTX Function Attributes
+@subsection Nvidia PTX Function Attributes
+
+These function attributes are supported by the Nvidia PTX back end:
+
+@table @code
+@item kernel
+@cindex @code{kernel} attribute, Nvidia PTX
+This attribute indicates that the corresponding function should be compiled
+as a kernel function, which can be invoked from the host via the CUDA RT 
+library.
+By default functions are only callable only from other PTX functions.
+
+Kernel functions must have @code{void} return type.
 @end table
 
 @node PowerPC Function Attributes
@@ -4942,6 +4965,50 @@ number of halfwords to be added after the function label.  For
 both arguments the maximum allowed value is 1000000.
 
 If both arguments are zero, hotpatching is disabled.
+
+@item target (@var{options})
+@cindex @code{target} function attribute
+As discussed in @ref{Common Function Attributes}, this attribute
+allows specification of target-specific compilation options.
+
+On S/390, the following options are supported:
+
+@table @samp
+@item arch=
+@item tune=
+@item stack-guard=
+@item stack-size=
+@item branch-cost=
+@item warn-framesize=
+@item backchain
+@itemx no-backchain
+@item hard-dfp
+@itemx no-hard-dfp
+@item hard-float
+@itemx soft-float
+@item htm
+@itemx no-htm
+@item vx
+@itemx no-vx
+@item packed-stack
+@itemx no-packed-stack
+@item small-exec
+@itemx no-small-exec
+@item mvcle
+@itemx no-mvcle
+@item warn-dynamicstack
+@itemx no-warn-dynamicstack
+@end table
+
+The options work exactly like the S/390 specific command line
+options (without the prefix @option{-m}) except that they do not
+change any feature macros.  For example,
+
+@smallexample
+@code{target("no-vx")}
+@end smallexample
+
+does not undefine the @code{__VEC__} macro.
 @end table
 
 @node SH Function Attributes
@@ -5049,6 +5116,22 @@ depended upon to work reliably and are not supported.
 
 @xref{Microsoft Windows Function Attributes}, for discussion of the
 @code{dllexport} and @code{dllimport} attributes.
+
+@node V850 Function Attributes
+@subsection V850 Function Attributes
+
+The V850 back end supports these function attributes:
+
+@table @code
+@item interrupt
+@itemx interrupt_handler
+@cindex @code{interrupt} function attribute, V850
+@cindex @code{interrupt_handler} function attribute, V850
+Use these attributes to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when either attribute is present.
+@end table
 
 @node Visium Function Attributes
 @subsection Visium Function Attributes
@@ -5387,7 +5470,9 @@ attributes.
 * Microsoft Windows Variable Attributes::
 * MSP430 Variable Attributes::
 * PowerPC Variable Attributes::
+* RL78 Variable Attributes::
 * SPU Variable Attributes::
+* V850 Variable Attributes::
 * x86 Variable Attributes::
 * Xstormy16 Variable Attributes::
 @end menu
@@ -5987,13 +6072,13 @@ The @code{shared} attribute is only available on Microsoft Windows@.
 
 @table @code
 @item noinit
-@cindex @code{noinit} MSP430 variable attribute
+@cindex @code{noinit} variable attribute, MSP430 
 Any data with the @code{noinit} attribute will not be initialised by
 the C runtime startup code, or the program loader.  Not initialising
 data in this way can reduce program startup times.
 
 @item persistent
-@cindex @code{persistent} MSP430 variable attribute
+@cindex @code{persistent} variable attribute, MSP430 
 Any variable with the @code{persistent} attribute will not be
 initialised by the C runtime startup code.  Instead its value will be
 set once, when the application is loaded, and then never initialised
@@ -6006,12 +6091,12 @@ placed.
 @item lower
 @itemx upper
 @itemx either
-@cindex @code{lower} memory region on the MSP430
-@cindex @code{upper} memory region on the MSP430
-@cindex @code{either} memory region on the MSP430
+@cindex @code{lower} variable attribute, MSP430 
+@cindex @code{upper} variable attribute, MSP430 
+@cindex @code{either} variable attribute, MSP430 
 These attributes are the same as the MSP430 function attributes of the
-same name.  These attributes can be applied to both functions and
-variables.
+same name (@pxref{MSP430 Function Attributes}).  
+These attributes can be applied to both functions and variables.
 @end table
 
 @node PowerPC Variable Attributes
@@ -6029,6 +6114,14 @@ documentation in @ref{x86 Variable Attributes}.
 For documentation of @code{altivec} attribute please see the
 documentation in @ref{PowerPC Type Attributes}.
 
+@node RL78 Variable Attributes
+@subsection RL78 Variable Attributes
+
+@cindex @code{saddr} variable attribute, RL78
+The RL78 back end supports the @code{saddr} variable attribute.  This
+specifies placement of the corresponding variable in the SADDR area,
+which can be accessed more efficiently than the default memory region.
+
 @node SPU Variable Attributes
 @subsection SPU Variable Attributes
 
@@ -6036,6 +6129,29 @@ documentation in @ref{PowerPC Type Attributes}.
 The SPU supports the @code{spu_vector} attribute for variables.  For
 documentation of this attribute please see the documentation in
 @ref{SPU Type Attributes}.
+
+@node V850 Variable Attributes
+@subsection V850 Variable Attributes
+
+These variable attributes are supported by the V850 back end:
+
+@table @code
+
+@item sda
+@cindex @code{sda} variable attribute, V850
+Use this attribute to explicitly place a variable in the small data area,
+which can hold up to 64 kilobytes.
+
+@item tda
+@cindex @code{tda} variable attribute, V850
+Use this attribute to explicitly place a variable in the tiny data area,
+which can hold up to 256 bytes in total.
+
+@item zda
+@cindex @code{zda} variable attribute, V850
+Use this attribute to explicitly place a variable in the first 32 kilobytes
+of memory.
+@end table
 
 @node x86 Variable Attributes
 @subsection x86 Variable Attributes
@@ -6191,9 +6307,6 @@ relevant type, and the code that the compiler generates for these
 pointer arithmetic operations is often more efficient for
 efficiently-aligned types than for other types.
 
-The @code{aligned} attribute can only increase the alignment; but you
-can decrease it by specifying @code{packed} as well.  See below.
-
 Note that the effectiveness of @code{aligned} attributes may be limited
 by inherent limitations in your linker.  On many systems, the linker is
 only able to arrange for variables to be aligned up to a certain maximum
@@ -6203,36 +6316,8 @@ up to a maximum of 8-byte alignment, then specifying @code{aligned(16)}
 in an @code{__attribute__} still only provides you with 8-byte
 alignment.  See your linker documentation for further information.
 
-@opindex fshort-enums
-Specifying this attribute for @code{struct} and @code{union} types is
-equivalent to specifying the @code{packed} attribute on each of the
-structure or union members.  Specifying the @option{-fshort-enums}
-flag on the line is equivalent to specifying the @code{packed}
-attribute on all @code{enum} definitions.
-
-In the following example @code{struct my_packed_struct}'s members are
-packed closely together, but the internal layout of its @code{s} member
-is not packed---to do that, @code{struct my_unpacked_struct} needs to
-be packed too.
-
-@smallexample
-struct my_unpacked_struct
- @{
-    char c;
-    int i;
- @};
-
-struct __attribute__ ((__packed__)) my_packed_struct
-  @{
-     char c;
-     int  i;
-     struct my_unpacked_struct s;
-  @};
-@end smallexample
-
-You may only specify this attribute on the definition of an @code{enum},
-@code{struct} or @code{union}, not on a @code{typedef} that does not
-also define the enumerated type, structure or union.
+The @code{aligned} attribute can only increase alignment.  Alignment
+can be decreased by specifying the @code{packed} attribute.  See below.
 
 @item bnd_variable_size
 @cindex @code{bnd_variable_size} type attribute
@@ -6360,15 +6445,46 @@ of the structure or union is placed to minimize the memory required.  When
 attached to an @code{enum} definition, it indicates that the smallest
 integral type should be used.
 
+@opindex fshort-enums
+Specifying the @code{packed} attribute for @code{struct} and @code{union}
+types is equivalent to specifying the @code{packed} attribute on each
+of the structure or union members.  Specifying the @option{-fshort-enums}
+flag on the command line is equivalent to specifying the @code{packed}
+attribute on all @code{enum} definitions.
+
+In the following example @code{struct my_packed_struct}'s members are
+packed closely together, but the internal layout of its @code{s} member
+is not packed---to do that, @code{struct my_unpacked_struct} needs to
+be packed too.
+
+@smallexample
+struct my_unpacked_struct
+ @{
+    char c;
+    int i;
+ @};
+
+struct __attribute__ ((__packed__)) my_packed_struct
+  @{
+     char c;
+     int  i;
+     struct my_unpacked_struct s;
+  @};
+@end smallexample
+
+You may only specify the @code{packed} attribute attribute on the definition
+of an @code{enum}, @code{struct} or @code{union}, not on a @code{typedef}
+that does not also define the enumerated type, structure or union.
+
 @item scalar_storage_order ("@var{endianness}")
 @cindex @code{scalar_storage_order} type attribute
 When attached to a @code{union} or a @code{struct}, this attribute sets
 the storage order, aka endianness, of the scalar fields of the type, as
 well as the array fields whose component is scalar.  The supported
-endianness are @code{big-endian} and @code{little-endian}.  The attribute
+endiannesses are @code{big-endian} and @code{little-endian}.  The attribute
 has no effects on fields which are themselves a @code{union}, a @code{struct}
 or an array whose component is a @code{union} or a @code{struct}, and it is
-possible to have fields with a different scalar storage order than the
+possible for these fields to have a different scalar storage order than the
 enclosing type.
 
 This attribute is supported only for targets that use a uniform default
@@ -6380,21 +6496,25 @@ storage order with regard to the scalar storage order of the target:
 
 @itemize
 @item Taking the address of a scalar field of a @code{union} or a
-@code{struct} with reverse scalar storage order is not permitted and will
-yield an error.
+@code{struct} with reverse scalar storage order is not permitted and yields
+an error.
 @item Taking the address of an array field, whose component is scalar, of
 a @code{union} or a @code{struct} with reverse scalar storage order is
-permitted but will yield a warning, unless @option{-Wno-scalar-storage-order}
+permitted but yields a warning, unless @option{-Wno-scalar-storage-order}
 is specified.
 @item Taking the address of a @code{union} or a @code{struct} with reverse
 scalar storage order is permitted.
 @end itemize
 
 These restrictions exist because the storage order attribute is lost when
-the address of a scalar or the address of an array with scalar component
-is taken, so storing indirectly through this address will generally not work.
+the address of a scalar or the address of an array with scalar component is
+taken, so storing indirectly through this address generally does not work.
 The second case is nevertheless allowed to be able to perform a block copy
 from or to the array.
+
+Moreover, the use of type punning or aliasing to toggle the storage order
+is not supported; that is to say, a given scalar object cannot be accessed
+through distinct types that assign a different storage order to it.
 
 @item transparent_union
 @cindex @code{transparent_union} type attribute
@@ -9146,8 +9266,11 @@ work on multiple types.
 
 The definition given in the Intel documentation allows only for the use of
 the types @code{int}, @code{long}, @code{long long} or their unsigned
-counterparts.  GCC allows any integral scalar or pointer type that is
-1, 2, 4 or 8 bytes in length.
+counterparts.  GCC allows any scalar type that is 1, 2, 4 or 8 bytes in
+size other than the C type @code{_Bool} or the C++ type @code{bool}.
+Operations on pointer arguments are performed as if the operands were
+of the @code{uintptr_t} type.  That is, they are not scaled by the size
+of the type to which the pointer points.
 
 These functions are implemented in terms of the @samp{__atomic}
 builtins (@pxref{__atomic Builtins}).  They should not be used for new
@@ -9193,12 +9316,19 @@ accessible variables should be protected.
 @findex __sync_fetch_and_xor
 @findex __sync_fetch_and_nand
 These built-in functions perform the operation suggested by the name, and
-returns the value that had previously been in memory.  That is,
+returns the value that had previously been in memory.  That is, operations
+on integer operands have the following semantics.  Operations on pointer
+arguments are performed as if the operands were of the @code{uintptr_t}
+type.  That is, they are not scaled by the size of the type to which
+the pointer points.
 
 @smallexample
 @{ tmp = *ptr; *ptr @var{op}= value; return tmp; @}
 @{ tmp = *ptr; *ptr = ~(tmp & value); return tmp; @}   // nand
 @end smallexample
+
+The object pointed to by the first argument must be of integer or pointer
+type.  It must not be a Boolean type.
 
 @emph{Note:} GCC 4.4 and later implement @code{__sync_fetch_and_nand}
 as @code{*ptr = ~(tmp & value)} instead of @code{*ptr = ~tmp & value}.
@@ -9216,12 +9346,17 @@ as @code{*ptr = ~(tmp & value)} instead of @code{*ptr = ~tmp & value}.
 @findex __sync_xor_and_fetch
 @findex __sync_nand_and_fetch
 These built-in functions perform the operation suggested by the name, and
-return the new value.  That is,
+return the new value.  That is, operations on integer operands have
+the following semantics.  Operations on pointer operands are performed as
+if the operand's type were @code{uintptr_t}.
 
 @smallexample
 @{ *ptr @var{op}= value; return *ptr; @}
 @{ *ptr = ~(*ptr & value); return *ptr; @}   // nand
 @end smallexample
+
+The same constraints on arguments apply as for the corresponding
+@code{__sync_op_and_fetch} built-in functions.
 
 @emph{Note:} GCC 4.4 and later implement @code{__sync_nand_and_fetch}
 as @code{*ptr = ~(*ptr & value)} instead of
@@ -9437,17 +9572,18 @@ This compares the contents of @code{*@var{ptr}} with the contents of
 @code{*@var{expected}}. If equal, the operation is a @emph{read-modify-write}
 operation that writes @var{desired} into @code{*@var{ptr}}.  If they are not
 equal, the operation is a @emph{read} and the current contents of
-@code{*@var{ptr}} is written into @code{*@var{expected}}.  @var{weak} is true
-for weak compare_exchange, and false for the strong variation.  Many targets 
+@code{*@var{ptr}} are written into @code{*@var{expected}}.  @var{weak} is true
+for weak compare_exchange, which may fail spuriously, and false for
+the strong variation, which never fails spuriously.  Many targets
 only offer the strong variation and ignore the parameter.  When in doubt, use
 the strong variation.
 
-True is returned if @var{desired} is written into
-@code{*@var{ptr}} and the operation is considered to conform to the
+If @var{desired} is written into @code{*@var{ptr}} then true is returned
+and memory is affected according to the
 memory order specified by @var{success_memorder}.  There are no
 restrictions on what memory order can be used here.
 
-False is returned otherwise, and the operation is considered to conform
+Otherwise, false is returned and memory is affected according
 to @var{failure_memorder}. This memory order cannot be
 @code{__ATOMIC_RELEASE} nor @code{__ATOMIC_ACQ_REL}.  It also cannot be a
 stronger order than that specified by @var{success_memorder}.
@@ -9469,13 +9605,16 @@ pointer.
 @deftypefnx {Built-in Function} @var{type} __atomic_or_fetch (@var{type} *ptr, @var{type} val, int memorder)
 @deftypefnx {Built-in Function} @var{type} __atomic_nand_fetch (@var{type} *ptr, @var{type} val, int memorder)
 These built-in functions perform the operation suggested by the name, and
-return the result of the operation. That is,
+return the result of the operation.  Operations on pointer arguments are
+performed as if the operands were of the @code{uintptr_t} type.  That is,
+they are not scaled by the size of the type to which the pointer points.
 
 @smallexample
 @{ *ptr @var{op}= val; return *ptr; @}
 @end smallexample
 
-All memory orders are valid.
+The object pointed to by the first argument must be of integer or pointer
+type.  It must not be a Boolean type.  All memory orders are valid.
 
 @end deftypefn
 
@@ -9486,13 +9625,17 @@ All memory orders are valid.
 @deftypefnx {Built-in Function} @var{type} __atomic_fetch_or (@var{type} *ptr, @var{type} val, int memorder)
 @deftypefnx {Built-in Function} @var{type} __atomic_fetch_nand (@var{type} *ptr, @var{type} val, int memorder)
 These built-in functions perform the operation suggested by the name, and
-return the value that had previously been in @code{*@var{ptr}}.  That is,
+return the value that had previously been in @code{*@var{ptr}}.  Operations
+on pointer arguments are performed as if the operands were of
+the @code{uintptr_t} type.  That is, they are not scaled by the size of
+the type to which the pointer points.
 
 @smallexample
 @{ tmp = *ptr; *ptr @var{op}= val; return tmp; @}
 @end smallexample
 
-All memory orders are valid.
+The same constraints on arguments apply as for the corresponding
+@code{__atomic_op_fetch} built-in functions.  All memory orders are valid.
 
 @end deftypefn
 
@@ -9554,7 +9697,7 @@ alignment.  A value of 0 indicates typical alignment should be used.  The
 compiler may also ignore this parameter.
 
 @smallexample
-if (_atomic_always_lock_free (sizeof (long long), 0))
+if (__atomic_always_lock_free (sizeof (long long), 0))
 @end smallexample
 
 @end deftypefn
@@ -13401,6 +13544,162 @@ implementing assertions.
 
 @node PowerPC Built-in Functions
 @subsection PowerPC Built-in Functions
+
+The following built-in functions are always available and can be used to
+check the PowerPC target platform type:
+
+@deftypefn {Built-in Function} void __builtin_cpu_init (void)
+This function is a @code{nop} on the PowerPC platform and is included solely
+to maintain API compatibility with the x86 builtins.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_cpu_is (const char *@var{cpuname})
+This function returns a value of @code{1} if the run-time CPU is of type
+@var{cpuname} and returns @code{0} otherwise. The following CPU names can be
+detected:
+
+@table @samp
+@item power9
+IBM POWER9 Server CPU.
+@item power8
+IBM POWER8 Server CPU.
+@item power7
+IBM POWER7 Server CPU.
+@item power6x
+IBM POWER6 Server CPU (RAW mode).
+@item power6
+IBM POWER6 Server CPU (Architected mode).
+@item power5+
+IBM POWER5+ Server CPU.
+@item power5
+IBM POWER5 Server CPU.
+@item ppc970
+IBM 970 Server CPU (ie, Apple G5).
+@item power4
+IBM POWER4 Server CPU.
+@item ppca2
+IBM A2 64-bit Embedded CPU
+@item ppc476
+IBM PowerPC 476FP 32-bit Embedded CPU.
+@item ppc464
+IBM PowerPC 464 32-bit Embedded CPU.
+@item ppc440
+PowerPC 440 32-bit Embedded CPU.
+@item ppc405
+PowerPC 405 32-bit Embedded CPU.
+@item ppc-cell-be
+IBM PowerPC Cell Broadband Engine Architecture CPU.
+@end table
+
+Here is an example:
+@smallexample
+if (__builtin_cpu_is ("power8"))
+  @{
+     do_power8 (); // POWER8 specific implementation.
+  @}
+else
+  @{
+     do_generic (); // Generic implementation.
+  @}
+@end smallexample
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_cpu_supports (const char *@var{feature})
+This function returns a value of @code{1} if the run-time CPU supports the HWCAP
+feature @var{feature} and returns @code{0} otherwise. The following features can be
+detected:
+
+@table @samp
+@item 4xxmac
+4xx CPU has a Multiply Accumulator.
+@item altivec
+CPU has a SIMD/Vector Unit.
+@item arch_2_05
+CPU supports ISA 2.05 (eg, POWER6)
+@item arch_2_06
+CPU supports ISA 2.06 (eg, POWER7)
+@item arch_2_07
+CPU supports ISA 2.07 (eg, POWER8)
+@item arch_3_00
+CPU supports ISA 3.00 (eg, POWER9)
+@item archpmu
+CPU supports the set of compatible performance monitoring events.
+@item booke
+CPU supports the Embedded ISA category.
+@item cellbe
+CPU has a CELL broadband engine.
+@item dfp
+CPU has a decimal floating point unit.
+@item dscr
+CPU supports the data stream control register.
+@item ebb
+CPU supports event base branching.
+@item efpdouble
+CPU has a SPE double precision floating point unit.
+@item efpsingle
+CPU has a SPE single precision floating point unit.
+@item fpu
+CPU has a floating point unit.
+@item htm
+CPU has hardware transaction memory instructions.
+@item htm-nosc
+Kernel aborts hardware transactions when a syscall is made.
+@item ic_snoop
+CPU supports icache snooping capabilities.
+@item ieee128
+CPU supports 128-bit IEEE binary floating point instructions.
+@item isel
+CPU supports the integer select instruction.
+@item mmu
+CPU has a memory management unit.
+@item notb
+CPU does not have a timebase (eg, 601 and 403gx).
+@item pa6t
+CPU supports the PA Semi 6T CORE ISA.
+@item power4
+CPU supports ISA 2.00 (eg, POWER4)
+@item power5
+CPU supports ISA 2.02 (eg, POWER5)
+@item power5+
+CPU supports ISA 2.03 (eg, POWER5+)
+@item power6x
+CPU supports ISA 2.05 (eg, POWER6) extended opcodes mffgpr and mftgpr.
+@item ppc32
+CPU supports 32-bit mode execution.
+@item ppc601
+CPU supports the old POWER ISA (eg, 601)
+@item ppc64
+CPU supports 64-bit mode execution.
+@item ppcle
+CPU supports a little-endian mode that uses address swizzling.
+@item smt
+CPU support simultaneous multi-threading.
+@item spe
+CPU has a signal processing extension unit.
+@item tar
+CPU supports the target address register.
+@item true_le
+CPU supports true little-endian mode.
+@item ucache
+CPU has unified I/D cache.
+@item vcrypto
+CPU supports the vector cryptography instructions.
+@item vsx
+CPU supports the vector-scalar extension.
+@end table
+
+Here is an example:
+@smallexample
+if (__builtin_cpu_supports ("fpu"))
+  @{
+     asm("fadd %0,%1,%2" : "=d"(dst) : "d"(src1), "d"(src2));
+  @}
+else
+  @{
+     dst = __fadd (src1, src2); // Software FP addition function.
+  @}
+@end smallexample
+@end deftypefn
 
 These built-in functions are available for the PowerPC family of
 processors:
@@ -18291,6 +18590,19 @@ void __builtin_ia32_monitorx (void *, unsigned int, unsigned int)
 void __builtin_ia32_mwaitx (unsigned int, unsigned int, unsigned int)
 @end smallexample
 
+The following built-in functions are available when @option{-mclzero} is used.
+All of them generate the machine instruction that is part of the name.
+@smallexample
+void __builtin_i32_clzero (void *)
+@end smallexample
+
+The following built-in functions are available when @option{-mpku} is used.
+They generate reads and writes to PKRU.
+@smallexample
+void __builtin_ia32_wrpkru (unsigned int)
+unsigned int __builtin_ia32_rdpkru ()
+@end smallexample
+
 @node x86 transactional memory intrinsics
 @subsection x86 Transactional Memory Intrinsics
 
@@ -18435,6 +18747,7 @@ for further explanation.
 * M32C Pragmas::
 * MeP Pragmas::
 * RS/6000 and PowerPC Pragmas::
+* S/390 Pragmas::
 * Darwin Pragmas::
 * Solaris Pragmas::
 * Symbol-Renaming Pragmas::
@@ -18608,6 +18921,26 @@ declarations.
 @c Describe h8300 pragmas here.
 @c Describe sh pragmas here.
 @c Describe v850 pragmas here.
+
+@node S/390 Pragmas
+@subsection S/390 Pragmas
+
+The pragmas defined by the S/390 target correspond to the S/390
+target function attributes and some the additional options:
+
+@table @samp
+@item zvector
+@itemx no-zvector
+@end table
+
+Note that options of the pragma, unlike options of the target
+attribute, do change the value of preprocessor macros like
+@code{__VEC__}.  They can be specified as below:
+
+@smallexample
+#pragma GCC target("string[,string]...")
+#pragma GCC target("string"[,"string"]...)
+@end smallexample
 
 @node Darwin Pragmas
 @subsection Darwin Pragmas
@@ -20173,7 +20506,7 @@ class type is considered is own base.  Requires: if @code{__is_class
 (base_type)} and @code{__is_class (derived_type)} are true and
 @code{base_type} and @code{derived_type} are not the same type
 (disregarding cv-qualifiers), @code{derived_type} shall be a complete
-type.  Diagnostic is produced if this requirement is not met.
+type.  A diagnostic is produced if this requirement is not met.
 
 @item __is_class (type)
 If @code{type} is a cv class type, and not a union type

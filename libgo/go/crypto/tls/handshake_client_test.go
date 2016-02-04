@@ -19,6 +19,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -294,6 +295,22 @@ func TestHandshakeClientRSARC4(t *testing.T) {
 	}
 	runClientTestTLS10(t, test)
 	runClientTestTLS11(t, test)
+	runClientTestTLS12(t, test)
+}
+
+func TestHandshakeClientRSAAES128GCM(t *testing.T) {
+	test := &clientTest{
+		name:    "AES128-GCM-SHA256",
+		command: []string{"openssl", "s_server", "-cipher", "AES128-GCM-SHA256"},
+	}
+	runClientTestTLS12(t, test)
+}
+
+func TestHandshakeClientRSAAES256GCM(t *testing.T) {
+	test := &clientTest{
+		name:    "AES256-GCM-SHA384",
+		command: []string{"openssl", "s_server", "-cipher", "AES256-GCM-SHA384"},
+	}
 	runClientTestTLS12(t, test)
 }
 
@@ -599,4 +616,81 @@ func TestHandshakClientSCTs(t *testing.T) {
 		},
 	}
 	runClientTestTLS12(t, test)
+}
+
+func TestNoIPAddressesInSNI(t *testing.T) {
+	for _, ipLiteral := range []string{"1.2.3.4", "::1"} {
+		c, s := net.Pipe()
+
+		go func() {
+			client := Client(c, &Config{ServerName: ipLiteral})
+			client.Handshake()
+		}()
+
+		var header [5]byte
+		if _, err := io.ReadFull(s, header[:]); err != nil {
+			t.Fatal(err)
+		}
+		recordLen := int(header[3])<<8 | int(header[4])
+
+		record := make([]byte, recordLen)
+		if _, err := io.ReadFull(s, record[:]); err != nil {
+			t.Fatal(err)
+		}
+		s.Close()
+
+		if bytes.Index(record, []byte(ipLiteral)) != -1 {
+			t.Errorf("IP literal %q found in ClientHello: %x", ipLiteral, record)
+		}
+	}
+}
+
+func TestServerSelectingUnconfiguredCipherSuite(t *testing.T) {
+	// This checks that the server can't select a cipher suite that the
+	// client didn't offer. See #13174.
+
+	c, s := net.Pipe()
+	errChan := make(chan error, 1)
+
+	go func() {
+		client := Client(c, &Config{
+			ServerName:   "foo",
+			CipherSuites: []uint16{TLS_RSA_WITH_AES_128_GCM_SHA256},
+		})
+		errChan <- client.Handshake()
+	}()
+
+	var header [5]byte
+	if _, err := io.ReadFull(s, header[:]); err != nil {
+		t.Fatal(err)
+	}
+	recordLen := int(header[3])<<8 | int(header[4])
+
+	record := make([]byte, recordLen)
+	if _, err := io.ReadFull(s, record); err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a ServerHello that selects a different cipher suite than the
+	// sole one that the client offered.
+	serverHello := &serverHelloMsg{
+		vers:        VersionTLS12,
+		random:      make([]byte, 32),
+		cipherSuite: TLS_RSA_WITH_AES_256_GCM_SHA384,
+	}
+	serverHelloBytes := serverHello.marshal()
+
+	s.Write([]byte{
+		byte(recordTypeHandshake),
+		byte(VersionTLS12 >> 8),
+		byte(VersionTLS12 & 0xff),
+		byte(len(serverHelloBytes) >> 8),
+		byte(len(serverHelloBytes)),
+	})
+	s.Write(serverHelloBytes)
+	s.Close()
+
+	if err := <-errChan; !strings.Contains(err.Error(), "unconfigured cipher") {
+		t.Fatalf("Expected error about unconfigured cipher suite but got %q", err)
+	}
 }

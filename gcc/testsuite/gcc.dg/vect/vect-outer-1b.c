@@ -22,5 +22,4 @@ foo (){
 }
 
 /* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "grouped access in outer loop" 1 "vect" { target { ! vect_multiple_sizes } } } } */
-/* { dg-final { scan-tree-dump-times "grouped access in outer loop" 2 "vect" { target vect_multiple_sizes } } } */
+/* { dg-final { scan-tree-dump-times "grouped access in outer loop" 1 "vect" } } */

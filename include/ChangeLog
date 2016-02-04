@@ -1,3 +1,32 @@
+2016-01-19  Martin Jambor  <mjambor@suse.cz>
+
+	* gomp-constants.h (GOMP_DEVICE_HSA): New macro.
+	(GOMP_VERSION_HSA): Likewise.
+	(GOMP_TARGET_ARG_DEVICE_MASK): Likewise.
+	(GOMP_TARGET_ARG_DEVICE_ALL): Likewise.
+	(GOMP_TARGET_ARG_SUBSEQUENT_PARAM): Likewise.
+	(GOMP_TARGET_ARG_ID_MASK): Likewise.
+	(GOMP_TARGET_ARG_NUM_TEAMS): Likewise.
+	(GOMP_TARGET_ARG_THREAD_LIMIT): Likewise.
+	(GOMP_TARGET_ARG_VALUE_SHIFT): Likewise.
+	(GOMP_TARGET_ARG_HSA_KERNEL_ATTRIBUTES): Likewise.
+
+2016-01-07  Mike Frysinger  <vapier@gentoo.org>
+
+	* longlong.h: Change !__SHMEDIA__ to
+	(!defined (__SHMEDIA__) || !__SHMEDIA__).
+	Change __SHMEDIA__ to defined (__SHMEDIA__) && __SHMEDIA__.
+
+2016-01-05  Mike Frysinger  <vapier@gentoo.org>
+
+	* libiberty.h (dupargv): Change arg to char * const *.
+	(writeargv, countargv): Likewise.
+
+2015-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* vtv-change-permission.h (VTV_PAGE_SIZE) [__sun__ && __svr4__ &&
+	__sparc__]: Define.
+
 2015-11-12  James Norris  <jnorris@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 

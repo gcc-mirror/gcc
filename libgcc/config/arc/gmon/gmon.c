@@ -1,7 +1,7 @@
 /*-
  * Copyright (c) 1983, 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
- * Copyright (C) 2007-2015 Free Software Foundation, Inc.
+ * Copyright (C) 2007-2016 Free Software Foundation, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions

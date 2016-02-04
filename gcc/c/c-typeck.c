@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cilk.h"
 #include "gomp-constants.h"
 #include "spellcheck.h"
+#include "gcc-rich-location.h"
 
 /* Possible cases of implicit bad conversions.  Used to select
    diagnostic messages in convert_for_assignment.  */
@@ -2277,6 +2278,33 @@ lookup_field_fuzzy (tree type, tree component)
   return find_closest_identifier (component, &candidates);
 }
 
+/* Support function for build_component_ref's error-handling.
+
+   Given DATUM_TYPE, and "DATUM.COMPONENT", where DATUM is *not* a
+   struct or union, should we suggest "DATUM->COMPONENT" as a hint?  */
+
+static bool
+should_suggest_deref_p (tree datum_type)
+{
+  /* We don't do it for Objective-C, since Objective-C 2.0 dot-syntax
+     allows "." for ptrs; we could be handling a failed attempt
+     to access a property.  */
+  if (c_dialect_objc ())
+    return false;
+
+  /* Only suggest it for pointers...  */
+  if (TREE_CODE (datum_type) != POINTER_TYPE)
+    return false;
+
+  /* ...to structs/unions.  */
+  tree underlying_type = TREE_TYPE (datum_type);
+  enum tree_code code = TREE_CODE (underlying_type);
+  if (code == RECORD_TYPE || code == UNION_TYPE)
+    return true;
+  else
+    return false;
+}
+
 /* Make an expression to refer to the COMPONENT field of structure or
    union value DATUM.  COMPONENT is an IDENTIFIER_NODE.  LOC is the
    location of the COMPONENT_REF.  */
@@ -2319,6 +2347,18 @@ build_component_ref (location_t loc, tree datum, tree component)
 	  else
 	    error_at (loc, "%qT has no member named %qE", type, component);
 	  return error_mark_node;
+	}
+
+      /* Accessing elements of atomic structures or unions is undefined
+	 behavior (C11 6.5.2.3#5).  */
+      if (TYPE_ATOMIC (type) && c_inhibit_evaluation_warnings == 0)
+	{
+	  if (code == RECORD_TYPE)
+	    warning_at (loc, 0, "accessing a member %qE of an atomic "
+			"structure %qE", component, datum);
+	  else
+	    warning_at (loc, 0, "accessing a member %qE of an atomic "
+			"union %qE", component, datum);
 	}
 
       /* Chain the COMPONENT_REFs if necessary down to the FIELD.
@@ -2368,6 +2408,18 @@ build_component_ref (location_t loc, tree datum, tree component)
       while (field);
 
       return ref;
+    }
+  else if (should_suggest_deref_p (type))
+    {
+      /* Special-case the error message for "ptr.field" for the case
+	 where the user has confused "." vs "->".  */
+      rich_location richloc (line_table, loc);
+      /* "loc" should be the "." token.  */
+      richloc.add_fixit_replace (source_range::from_location (loc), "->");
+      error_at_rich_loc (&richloc,
+			 "%qE is a pointer; did you mean to use %<->%>?",
+			 datum);
+      return error_mark_node;
     }
   else if (code != ERROR_MARK)
     error_at (loc,
@@ -2996,7 +3048,7 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
     return error_mark_node;
 
   /* Check that the arguments to the function are valid.  */
-  check_function_arguments (fntype, nargs, argarray);
+  check_function_arguments (loc, fntype, nargs, argarray);
 
   if (name != NULL_TREE
       && !strncmp (IDENTIFIER_POINTER (name), "__builtin_", 10))
@@ -3646,9 +3698,9 @@ pointer_diff (location_t loc, tree op0, tree op1)
   return convert (restype, result);
 }
 
-/* Expand atomic compound assignments into an approriate sequence as
-   specified by the C11 standard section 6.5.16.2.   
-    given 
+/* Expand atomic compound assignments into an appropriate sequence as
+   specified by the C11 standard section 6.5.16.2.
+
        _Atomic T1 E1
        T2 E2
        E1 op= E2
@@ -3680,26 +3732,25 @@ loop:
 done:
   feupdateenv (&fenv);
 
-  Also note that the compiler is simply issuing the generic form of
-  the atomic operations.  This requires temp(s) and has their address
-  taken.  The atomic processing is smart enough to figure out when the
-  size of an object can utilize a lock-free version, and convert the
-  built-in call to the appropriate lock-free routine.  The optimizers
-  will then dispose of any temps that are no longer required, and
-  lock-free implementations are utilized as long as there is target
-  support for the required size.
+  The compiler will issue the __atomic_fetch_* built-in when possible,
+  otherwise it will generate the generic form of the atomic operations.
+  This requires temp(s) and has their address taken.  The atomic processing
+  is smart enough to figure out when the size of an object can utilize
+  a lock-free version, and convert the built-in call to the appropriate
+  lock-free routine.  The optimizers will then dispose of any temps that
+  are no longer required, and lock-free implementations are utilized as
+  long as there is target support for the required size.
 
   If the operator is NOP_EXPR, then this is a simple assignment, and
   an __atomic_store is issued to perform the assignment rather than
-  the above loop.
-
-*/
+  the above loop.  */
 
 /* Build an atomic assignment at LOC, expanding into the proper
    sequence to store LHS MODIFYCODE= RHS.  Return a value representing
-   the result of the operation, unless RETURN_OLD_P in which case
+   the result of the operation, unless RETURN_OLD_P, in which case
    return the old value of LHS (this is only for postincrement and
    postdecrement).  */
+
 static tree
 build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
 		     tree rhs, bool return_old_p)
@@ -3766,6 +3817,93 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
       return build2 (COMPOUND_EXPR, nonatomic_lhs_type, compound_stmt, val);
     }
 
+  /* Attempt to implement the atomic operation as an __atomic_fetch_* or
+     __atomic_*_fetch built-in rather than a CAS loop.  atomic_bool type
+     isn't applicable for such builtins.  ??? Do we want to handle enums?  */
+  if ((TREE_CODE (lhs_type) == INTEGER_TYPE || POINTER_TYPE_P (lhs_type))
+      && TREE_CODE (rhs_type) == INTEGER_TYPE)
+    {
+      built_in_function fncode;
+      switch (modifycode)
+	{
+	case PLUS_EXPR:
+	case POINTER_PLUS_EXPR:
+	  fncode = (return_old_p
+		    ? BUILT_IN_ATOMIC_FETCH_ADD_N
+		    : BUILT_IN_ATOMIC_ADD_FETCH_N);
+	  break;
+	case MINUS_EXPR:
+	  fncode = (return_old_p
+		    ? BUILT_IN_ATOMIC_FETCH_SUB_N
+		    : BUILT_IN_ATOMIC_SUB_FETCH_N);
+	  break;
+	case BIT_AND_EXPR:
+	  fncode = (return_old_p
+		    ? BUILT_IN_ATOMIC_FETCH_AND_N
+		    : BUILT_IN_ATOMIC_AND_FETCH_N);
+	  break;
+	case BIT_IOR_EXPR:
+	  fncode = (return_old_p
+		    ? BUILT_IN_ATOMIC_FETCH_OR_N
+		    : BUILT_IN_ATOMIC_OR_FETCH_N);
+	  break;
+	case BIT_XOR_EXPR:
+	  fncode = (return_old_p
+		    ? BUILT_IN_ATOMIC_FETCH_XOR_N
+		    : BUILT_IN_ATOMIC_XOR_FETCH_N);
+	  break;
+	default:
+	  goto cas_loop;
+	}
+
+      /* We can only use "_1" through "_16" variants of the atomic fetch
+	 built-ins.  */
+      unsigned HOST_WIDE_INT size = tree_to_uhwi (TYPE_SIZE_UNIT (lhs_type));
+      if (size != 1 && size != 2 && size != 4 && size != 8 && size != 16)
+	goto cas_loop;
+
+      /* If this is a pointer type, we need to multiply by the size of
+	 the pointer target type.  */
+      if (POINTER_TYPE_P (lhs_type))
+	{
+	  if (!COMPLETE_TYPE_P (TREE_TYPE (lhs_type))
+	      /* ??? This would introduce -Wdiscarded-qualifiers
+		 warning: __atomic_fetch_* expect volatile void *
+		 type as the first argument.  (Assignments between
+		 atomic and non-atomic objects are OK.) */
+	      || TYPE_RESTRICT (lhs_type))
+	    goto cas_loop;
+	  tree sz = TYPE_SIZE_UNIT (TREE_TYPE (lhs_type));
+	  rhs = fold_build2_loc (loc, MULT_EXPR, ptrdiff_type_node,
+				 convert (ptrdiff_type_node, rhs),
+				 convert (ptrdiff_type_node, sz));
+	}
+
+      /* Build __atomic_fetch_* (&lhs, &val, SEQ_CST), or
+	 __atomic_*_fetch (&lhs, &val, SEQ_CST).  */
+      fndecl = builtin_decl_explicit (fncode);
+      params->quick_push (lhs_addr);
+      params->quick_push (rhs);
+      params->quick_push (seq_cst);
+      func_call = c_build_function_call_vec (loc, vNULL, fndecl, params, NULL);
+
+      newval = create_tmp_var_raw (nonatomic_lhs_type);
+      TREE_ADDRESSABLE (newval) = 1;
+      TREE_NO_WARNING (newval) = 1;
+      rhs = build4 (TARGET_EXPR, nonatomic_lhs_type, newval, func_call,
+		    NULL_TREE, NULL_TREE);
+      SET_EXPR_LOCATION (rhs, loc);
+      add_stmt (rhs);
+
+      /* Finish the compound statement.  */
+      compound_stmt = c_end_compound_stmt (loc, compound_stmt, false);
+
+      /* NEWVAL is the value which was stored, return a COMPOUND_STMT of
+	 the statement and that value.  */
+      return build2 (COMPOUND_EXPR, nonatomic_lhs_type, compound_stmt, newval);
+    }
+
+cas_loop:
   /* Create the variables and labels required for the op= form.  */
   old = create_tmp_var_raw (nonatomic_lhs_type);
   old_addr = build_unary_op (loc, ADDR_EXPR, old, 0);
@@ -3775,6 +3913,7 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
   newval = create_tmp_var_raw (nonatomic_lhs_type);
   newval_addr = build_unary_op (loc, ADDR_EXPR, newval, 0);
   TREE_ADDRESSABLE (newval) = 1;
+  TREE_NO_WARNING (newval) = 1;
 
   loop_decl = create_artificial_label (loc);
   loop_label = build1 (LABEL_EXPR, void_type_node, loop_decl);
@@ -9505,24 +9644,36 @@ c_finish_return (location_t loc, tree retval, tree origtype)
       if ((warn_return_type || flag_isoc99)
 	  && valtype != 0 && TREE_CODE (valtype) != VOID_TYPE)
 	{
+	  bool warned_here;
 	  if (flag_isoc99)
-	    pedwarn (loc, 0, "%<return%> with no value, in "
-		     "function returning non-void");
+	    warned_here = pedwarn
+	      (loc, 0,
+	       "%<return%> with no value, in function returning non-void");
 	  else
-	    warning_at (loc, OPT_Wreturn_type, "%<return%> with no value, "
-			"in function returning non-void");
+	    warned_here = warning_at
+	      (loc, OPT_Wreturn_type,
+	       "%<return%> with no value, in function returning non-void");
 	  no_warning = true;
+	  if (warned_here)
+	    inform (DECL_SOURCE_LOCATION (current_function_decl),
+		    "declared here");
 	}
     }
   else if (valtype == 0 || TREE_CODE (valtype) == VOID_TYPE)
     {
       current_function_returns_null = 1;
+      bool warned_here;
       if (TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
-	pedwarn (xloc, 0,
-		 "%<return%> with a value, in function returning void");
+	warned_here = pedwarn
+	  (xloc, 0,
+	   "%<return%> with a value, in function returning void");
       else
-	pedwarn (xloc, OPT_Wpedantic, "ISO C forbids "
-		 "%<return%> with expression, in function returning void");
+	warned_here = pedwarn
+	  (xloc, OPT_Wpedantic, "ISO C forbids "
+	   "%<return%> with expression, in function returning void");
+      if (warned_here)
+	inform (DECL_SOURCE_LOCATION (current_function_decl),
+		"declared here");
     }
   else
     {
@@ -10091,7 +10242,7 @@ c_process_expr_stmt (location_t loc, tree expr)
      out which is the result.  */
   if (!STATEMENT_LIST_STMT_EXPR (cur_stmt_list)
       && warn_unused_value)
-    emit_side_effect_warnings (loc, expr);
+    emit_side_effect_warnings (EXPR_LOC_OR_LOC (expr, loc), expr);
 
   exprv = expr;
   while (TREE_CODE (exprv) == COMPOUND_EXPR)
@@ -10897,6 +11048,20 @@ build_binary_op (location_t location, enum tree_code code,
               return error_mark_node;
             }
 
+	  /* It's not precisely specified how the usual arithmetic
+	     conversions apply to the vector types.  Here, we use
+	     the unsigned type if one of the operands is signed and
+	     the other one is unsigned.  */
+	  if (TYPE_UNSIGNED (type0) != TYPE_UNSIGNED (type1))
+	    {
+	      if (!TYPE_UNSIGNED (type0))
+		op0 = build1 (VIEW_CONVERT_EXPR, type1, op0);
+	      else
+		op1 = build1 (VIEW_CONVERT_EXPR, type0, op1);
+	      warning_at (location, OPT_Wsign_compare, "comparison between "
+			  "types %qT and %qT", type0, type1);
+	    }
+
           /* Always construct signed integer vector type.  */
           intt = c_common_type_for_size (GET_MODE_BITSIZE
 					   (TYPE_MODE (TREE_TYPE (type0))), 0);
@@ -11050,6 +11215,20 @@ build_binary_op (location_t location, enum tree_code code,
               return error_mark_node;
             }
 
+	  /* It's not precisely specified how the usual arithmetic
+	     conversions apply to the vector types.  Here, we use
+	     the unsigned type if one of the operands is signed and
+	     the other one is unsigned.  */
+	  if (TYPE_UNSIGNED (type0) != TYPE_UNSIGNED (type1))
+	    {
+	      if (!TYPE_UNSIGNED (type0))
+		op0 = build1 (VIEW_CONVERT_EXPR, type1, op0);
+	      else
+		op1 = build1 (VIEW_CONVERT_EXPR, type0, op1);
+	      warning_at (location, OPT_Wsign_compare, "comparison between "
+			  "types %qT and %qT", type0, type1);
+	    }
+
           /* Always construct signed integer vector type.  */
           intt = c_common_type_for_size (GET_MODE_BITSIZE
 					   (TYPE_MODE (TREE_TYPE (type0))), 0);
@@ -11150,7 +11329,10 @@ build_binary_op (location_t location, enum tree_code code,
       && (!tree_int_cst_equal (TYPE_SIZE (type0), TYPE_SIZE (type1))
 	  || !vector_types_compatible_elements_p (type0, type1)))
     {
-      binary_op_error (location, code, type0, type1);
+      gcc_rich_location richloc (location);
+      richloc.maybe_add_expr (orig_op0);
+      richloc.maybe_add_expr (orig_op1);
+      binary_op_error (&richloc, code, type0, type1);
       return error_mark_node;
     }
 
@@ -11389,7 +11571,10 @@ build_binary_op (location_t location, enum tree_code code,
 
   if (!result_type)
     {
-      binary_op_error (location, code, TREE_TYPE (op0), TREE_TYPE (op1));
+      gcc_rich_location richloc (location);
+      richloc.maybe_add_expr (orig_op0);
+      richloc.maybe_add_expr (orig_op1);
+      binary_op_error (&richloc, code, TREE_TYPE (op0), TREE_TYPE (op1));
       return error_mark_node;
     }
 
@@ -11587,6 +11772,25 @@ c_finish_oacc_data (location_t loc, tree clauses, tree block)
   TREE_TYPE (stmt) = void_type_node;
   OACC_DATA_CLAUSES (stmt) = clauses;
   OACC_DATA_BODY (stmt) = block;
+  SET_EXPR_LOCATION (stmt, loc);
+
+  return add_stmt (stmt);
+}
+
+/* Generate OACC_HOST_DATA, with CLAUSES and BLOCK as its compound
+   statement.  LOC is the location of the OACC_HOST_DATA.  */
+
+tree
+c_finish_oacc_host_data (location_t loc, tree clauses, tree block)
+{
+  tree stmt;
+
+  block = c_end_compound_stmt (loc, block, true);
+
+  stmt = make_node (OACC_HOST_DATA);
+  TREE_TYPE (stmt) = void_type_node;
+  OACC_HOST_DATA_CLAUSES (stmt) = clauses;
+  OACC_HOST_DATA_BODY (stmt) = block;
   SET_EXPR_LOCATION (stmt, loc);
 
   return add_stmt (stmt);
@@ -13278,10 +13482,15 @@ c_finish_transaction (location_t loc, tree block, int flags)
 }
 
 /* Make a variant type in the proper way for C/C++, propagating qualifiers
-   down to the element type of an array.  */
+   down to the element type of an array.  If ORIG_QUAL_TYPE is not
+   NULL, then it should be used as the qualified type
+   ORIG_QUAL_INDIRECT levels down in array type derivation (to
+   preserve information about the typedef name from which an array
+   type was derived).  */
 
 tree
-c_build_qualified_type (tree type, int type_quals)
+c_build_qualified_type (tree type, int type_quals, tree orig_qual_type,
+			size_t orig_qual_indirect)
 {
   if (type == error_mark_node)
     return type;
@@ -13290,18 +13499,22 @@ c_build_qualified_type (tree type, int type_quals)
     {
       tree t;
       tree element_type = c_build_qualified_type (TREE_TYPE (type),
-						  type_quals);
+						  type_quals, orig_qual_type,
+						  orig_qual_indirect - 1);
 
       /* See if we already have an identically qualified type.  */
-      for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
-	{
-	  if (TYPE_QUALS (strip_array_types (t)) == type_quals
-	      && TYPE_NAME (t) == TYPE_NAME (type)
-	      && TYPE_CONTEXT (t) == TYPE_CONTEXT (type)
-	      && attribute_list_equal (TYPE_ATTRIBUTES (t),
-				       TYPE_ATTRIBUTES (type)))
-	    break;
-	}
+      if (orig_qual_type && orig_qual_indirect == 0)
+	t = orig_qual_type;
+      else
+	for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+	  {
+	    if (TYPE_QUALS (strip_array_types (t)) == type_quals
+		&& TYPE_NAME (t) == TYPE_NAME (type)
+		&& TYPE_CONTEXT (t) == TYPE_CONTEXT (type)
+		&& attribute_list_equal (TYPE_ATTRIBUTES (t),
+					 TYPE_ATTRIBUTES (type)))
+	      break;
+	  }
       if (!t)
 	{
           tree domain = TYPE_DOMAIN (type);
@@ -13345,7 +13558,9 @@ c_build_qualified_type (tree type, int type_quals)
       type_quals &= ~TYPE_QUAL_RESTRICT;
     }
 
-  tree var_type = build_qualified_type (type, type_quals);
+  tree var_type = (orig_qual_type && orig_qual_indirect == 0
+		   ? orig_qual_type
+		   : build_qualified_type (type, type_quals));
   /* A variant type does not inherit the list of incomplete vars from the
      type main variant.  */
   if (RECORD_OR_UNION_TYPE_P (var_type))
@@ -13356,20 +13571,28 @@ c_build_qualified_type (tree type, int type_quals)
 /* Build a VA_ARG_EXPR for the C parser.  */
 
 tree
-c_build_va_arg (location_t loc, tree expr, tree type)
+c_build_va_arg (location_t loc1, tree expr, location_t loc2, tree type)
 {
   if (error_operand_p (type))
     return error_mark_node;
+  /* VA_ARG_EXPR cannot be used for a scalar va_list with reverse storage
+     order because it takes the address of the expression.  */
+  else if (handled_component_p (expr)
+	   && reverse_storage_order_for_component_p (expr))
+    {
+      error_at (loc1, "cannot use %<va_arg%> with reverse storage order");
+      return error_mark_node;
+    }
   else if (!COMPLETE_TYPE_P (type))
     {
-      error_at (loc, "second argument to %<va_arg%> is of incomplete "
+      error_at (loc2, "second argument to %<va_arg%> is of incomplete "
 		"type %qT", type);
       return error_mark_node;
     }
   else if (warn_cxx_compat && TREE_CODE (type) == ENUMERAL_TYPE)
-    warning_at (loc, OPT_Wc___compat,
+    warning_at (loc2, OPT_Wc___compat,
 		"C++ requires promoted type, not enum type, in %<va_arg%>");
-  return build_va_arg (loc, expr, type);
+  return build_va_arg (loc2, expr, type);
 }
 
 /* Return truthvalue of whether T1 is the same tree structure as T2.

@@ -700,6 +700,8 @@ GLIBCXX_C_HEADERS_C_TRUE
 C_INCLUDE_DIR
 ALLOCATOR_NAME
 ALLOCATOR_H
+ENABLE_ALLOCATOR_NEW_FALSE
+ENABLE_ALLOCATOR_NEW_TRUE
 CLOCALE_INTERNAL_H
 CLOCALE_CC
 CTIME_CC
@@ -9539,7 +9541,7 @@ _LT_EOF
 	if $NM -V 2>&1 | $GREP 'GNU' > /dev/null; then
 	  export_symbols_cmds='$NM -Bpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "W")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
 	else
-	  export_symbols_cmds='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
+	  export_symbols_cmds='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "L")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
 	fi
 	aix_use_runtimelinking=no
 
@@ -11594,7 +11596,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11597 "configure"
+#line 11599 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11700,7 +11702,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11703 "configure"
+#line 11705 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14058,7 +14060,7 @@ $as_echo_n "checking whether the $compiler linker ($LD) supports shared librarie
     if $NM -V 2>&1 | $GREP 'GNU' > /dev/null; then
       export_symbols_cmds_CXX='$NM -Bpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "W")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
     else
-      export_symbols_cmds_CXX='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
+      export_symbols_cmds_CXX='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "L")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
     fi
     ;;
   pw32*)
@@ -15386,7 +15388,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15389 "configure"
+#line 15391 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15421,7 +15423,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15424 "configure"
+#line 15426 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15456,7 +15458,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15459 "configure"
+#line 15461 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15492,7 +15494,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15495 "configure"
+#line 15497 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15537,9 +15539,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
   # Set atomicity_dir to builtins if all but the long long test above passes.
-  if test $glibcxx_cv_atomic_bool = yes \
-     && test $glibcxx_cv_atomic_short = yes \
-     && test $glibcxx_cv_atomic_int = yes; then
+  if test "$glibcxx_cv_atomic_bool" = yes \
+     && test "$glibcxx_cv_atomic_short" = yes \
+     && test "$glibcxx_cv_atomic_int" = yes; then
 
 $as_echo "#define _GLIBCXX_ATOMIC_BUILTINS 1" >>confdefs.h
 
@@ -15571,7 +15573,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15574 "configure"
+#line 15576 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15613,7 +15615,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15616 "configure"
+#line 15618 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15647,7 +15649,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15650 "configure"
+#line 15652 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -16280,6 +16282,7 @@ $as_echo "$enable_libstdcxx_allocator_flag" >&6; }
       ALLOCATOR_NAME=__gnu_cxx::__pool_alloc
       ;;
   esac
+
 
 
 
@@ -18041,6 +18044,10 @@ $as_echo "$enable_vtable_verify" >&6; }
         VTV_CXXFLAGS="-fvtable-verify=std -Wl,-u,_vtable_map_vars_start -Wl,-u,_vtable_map_vars_end"
         VTV_CXXLINKFLAGS="-L${toplevel_builddir}/libvtv/.libs -Wl,-rpath,${toplevel_builddir}/libvtv/.libs"
         ;;
+      solaris2*)
+        VTV_CXXFLAGS="-fvtable-verify=std -Wl,-u_vtable_map_vars_start,-u_vtable_map_vars_end"
+        VTV_CXXLINKFLAGS="-L${toplevel_builddir}/libvtv/.libs -Wl,-R -Wl,${toplevel_builddir}/libvtv/.libs"
+        ;;
       *)
         VTV_CXXFLAGS="-fvtable-verify=std -Wl,-u_vtable_map_vars_start,-u_vtable_map_vars_end"
         VTV_CXXLINKFLAGS="-L${toplevel_builddir}/libvtv/.libs -Wl,--rpath -Wl,${toplevel_builddir}/libvtv/.libs"
@@ -18111,6 +18118,145 @@ $as_echo "#define HAVE_GETS 1" >>confdefs.h
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_gets" >&5
 $as_echo "$glibcxx_cv_gets" >&6; }
 
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=c++11"
+
+  case "$host" in
+    *-*-solaris2.*)
+      # Solaris 12 introduced the C++11 <math.h> overloads.  A backport to
+      # a Solaris 11.3 SRU is likely, maybe even a Solaris 10 patch.
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for C++11 <math.h> overloads" >&5
+$as_echo_n "checking for C++11 <math.h> overloads... " >&6; }
+      if test "${glibcxx_cv_math11_overload+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+	   #undef isfinite
+	   namespace std {
+	     inline bool isfinite(float __x)
+	     { return __builtin_isfinite(__x); }
+	   }
+
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_math11_overload=no
+else
+  glibcxx_cv_math11_overload=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+
+      # autoheader cannot handle indented templates.
+
+
+      if test $glibcxx_cv_math11_overload = yes; then
+        $as_echo "#define __CORRECT_ISO_CPP11_MATH_H_PROTO 1" >>confdefs.h
+
+      fi
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_math11_overload" >&5
+$as_echo "$glibcxx_cv_math11_overload" >&6; }
+      ;;
+    *-*-*gnu* | *-*-aix* | *-*-hpux*)
+      # If <math.h> defines the obsolete isinf(double) and isnan(double)
+      # functions (instead of or as well as the C99 generic macros) then we
+      # can't define std::isinf(double) and std::isnan(double) in <cmath>
+      # and must use the ones from <math.h> instead.
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for obsolete isinf function in <math.h>" >&5
+$as_echo_n "checking for obsolete isinf function in <math.h>... " >&6; }
+        if test "${glibcxx_cv_obsolete_isinf+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+             #undef isinf
+             namespace std {
+               using ::isinf;
+               bool isinf(float);
+               bool isinf(long double);
+             }
+             using std::isinf;
+             bool b = isinf(0.0);
+
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_obsolete_isinf=yes
+else
+  glibcxx_cv_obsolete_isinf=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_obsolete_isinf" >&5
+$as_echo "$glibcxx_cv_obsolete_isinf" >&6; }
+      if test $glibcxx_cv_obsolete_isinf = yes; then
+
+$as_echo "#define HAVE_OBSOLETE_ISINF 1" >>confdefs.h
+
+      fi
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for obsolete isnan function in <math.h>" >&5
+$as_echo_n "checking for obsolete isnan function in <math.h>... " >&6; }
+        if test "${glibcxx_cv_obsolete_isnan+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+             #undef isnan
+             namespace std {
+               using ::isnan;
+               bool isnan(float);
+               bool isnan(long double);
+             }
+             using std::isnan;
+             bool b = isnan(0.0);
+
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_obsolete_isnan=yes
+else
+  glibcxx_cv_obsolete_isnan=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_obsolete_isnan" >&5
+$as_echo "$glibcxx_cv_obsolete_isnan" >&6; }
+      if test $glibcxx_cv_obsolete_isnan = yes; then
+
+$as_echo "#define HAVE_OBSOLETE_ISNAN 1" >>confdefs.h
+
+      fi
+      ;;
+  esac
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -80180,6 +80326,99 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+# For Transactional Memory TS
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking how size_t is mangled" >&5
+$as_echo_n "checking how size_t is mangled... " >&6; }
+if test "${glibcxx_cv_size_t_mangling+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+extern __SIZE_TYPE__ x; extern unsigned long x;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_size_t_mangling=m
+else
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+extern __SIZE_TYPE__ x; extern unsigned int x;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_size_t_mangling=j
+else
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+extern __SIZE_TYPE__ x; extern unsigned long long x;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_size_t_mangling=y
+else
+
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+extern __SIZE_TYPE__ x; extern unsigned short x;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_size_t_mangling=t
+else
+  glibcxx_cv_size_t_mangling=x
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_size_t_mangling" >&5
+$as_echo "$glibcxx_cv_size_t_mangling" >&6; }
+  if test $glibcxx_cv_size_t_mangling = x; then
+    as_fn_error "Unknown underlying type for size_t" "$LINENO" 5
+  fi
+
+cat >>confdefs.h <<_ACEOF
+#define _GLIBCXX_MANGLE_SIZE_T $glibcxx_cv_size_t_mangling
+_ACEOF
+
+
+
 # Define documentation rules conditionally.
 
 # See if makeinfo has been installed and is modern enough
@@ -80638,6 +80877,15 @@ fi
 else
   GLIBCXX_BUILD_PCH_TRUE='#'
   GLIBCXX_BUILD_PCH_FALSE=
+fi
+
+
+    if test $enable_libstdcxx_allocator_flag = new; then
+  ENABLE_ALLOCATOR_NEW_TRUE=
+  ENABLE_ALLOCATOR_NEW_FALSE='#'
+else
+  ENABLE_ALLOCATOR_NEW_TRUE='#'
+  ENABLE_ALLOCATOR_NEW_FALSE=
 fi
 
 
@@ -81158,6 +81406,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${GLIBCXX_BUILD_PCH_TRUE}" && test -z "${GLIBCXX_BUILD_PCH_FALSE}"; then
   as_fn_error "conditional \"GLIBCXX_BUILD_PCH\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_ALLOCATOR_NEW_TRUE}" && test -z "${ENABLE_ALLOCATOR_NEW_FALSE}"; then
+  as_fn_error "conditional \"ENABLE_ALLOCATOR_NEW\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${GLIBCXX_C_HEADERS_C_TRUE}" && test -z "${GLIBCXX_C_HEADERS_C_FALSE}"; then

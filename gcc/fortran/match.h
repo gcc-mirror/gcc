@@ -1,5 +1,5 @@
 /* All matcher functions.
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
 This file is part of GCC.
@@ -69,6 +69,8 @@ match gfc_match_assignment (void);
 match gfc_match_if (gfc_statement *);
 match gfc_match_else (void);
 match gfc_match_elseif (void);
+match gfc_match_event_post (void);
+match gfc_match_event_wait (void);
 match gfc_match_critical (void);
 match gfc_match_block (void);
 match gfc_match_associate (void);

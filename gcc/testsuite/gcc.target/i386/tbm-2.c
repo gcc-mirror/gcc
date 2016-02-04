@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -mtbm" } */
 /* { dg-final { scan-assembler "bextr\[^\\n]*(%|)rax" } } */
 /* { dg-final { scan-assembler "blcfill\[^\\n]*(%|)rax" } } */

@@ -1,5 +1,5 @@
 /* PR target/39082 */
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2" } */
 /* { dg-additional-options "-mabi=sysv" { target x86_64-*-mingw* } } */
 

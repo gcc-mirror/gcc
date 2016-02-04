@@ -1,5 +1,5 @@
 /* Managing temporary directories and their content within libgccjit.so
-   Copyright (C) 2014-2015 Free Software Foundation, Inc.
+   Copyright (C) 2014-2016 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -121,7 +121,7 @@ gcc::jit::tempdir::~tempdir ()
     fprintf (stderr, "intermediate files written to %s\n", m_path_tempdir);
   else
     {
-      /* Clean up .s/.so and tempdir. */
+      /* Clean up .s/.so.  */
       if (m_path_s_file)
 	{
 	  log ("unlinking .s file: %s", m_path_s_file);
@@ -132,6 +132,17 @@ gcc::jit::tempdir::~tempdir ()
 	  log ("unlinking .so file: %s", m_path_so_file);
 	  unlink (m_path_so_file);
 	}
+
+      /* Clean up any other tempfiles.  */
+      int i;
+      char *tempfile;
+      FOR_EACH_VEC_ELT (m_tempfiles, i, tempfile)
+	{
+	  log ("unlinking tempfile: %s", tempfile);
+	  unlink (tempfile);
+	}
+
+      /* The tempdir should now be empty; remove it.  */
       if (m_path_tempdir)
 	{
 	  log ("removing tempdir: %s", m_path_tempdir);
@@ -145,4 +156,9 @@ gcc::jit::tempdir::~tempdir ()
   free (m_path_c_file);
   free (m_path_s_file);
   free (m_path_so_file);
+
+  int i;
+  char *tempfile;
+  FOR_EACH_VEC_ELT (m_tempfiles, i, tempfile)
+    free (tempfile);
 }

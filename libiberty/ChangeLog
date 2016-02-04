@@ -1,3 +1,72 @@
+2016-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_call_convention): Handle extern Objective-C
+	function calling convention.
+	(dlang_call_convention_p): Likewise.
+	(dlang_type): Likewise.
+	* testsuite/d-demangle-expected: Add coverage tests.
+
+2016-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_function_args): Append ',' for variadic functions
+	only if parameters were seen before the elipsis symbol.
+	* testsuite/d-demangle-expected: Add coverage test for parameter-less
+	variadic functions.
+
+2016-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_type): Handle function types only in the context
+	of seeing a pointer type symbol.
+	* testsuite/d-demangle-expected: Update function pointer tests.
+
+2016-01-05  Mike Frysinger  <vapier@gentoo.org>
+
+	* argv.c (dupargv): Change arg to char * const *.  Update comment.
+	(writeargv, countargv): Likewise.
+	* functions.texi (dupargv, writeargv, countargv): Likewise.
+
+2016-01-05  Mike Frysinger  <vapier@gentoo.org>
+
+	* argv.c (dupargv): Replace strlen/xmalloc/strcpy with xstrdup.
+
+2015-12-28  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* crc32.c: In the documentation, don't refer to GDB's
+	now-nonexistent crc32 implementation.  In the table-generation
+	program embedded within the documentation, change the type of
+	the induction variables i and j from int to unsigned int, to
+	avoid undefined behavior.
+
+2015-12-21  Nick Clifton  <nickc@redhat.com>
+
+	PR 66827
+	* regex.c (EXTRACT_NUMBER): Cast sign byte to unsigned before left
+	shifting.
+
+2015-11-27  Pedro Alves  <palves@redhat.com>
+
+	PR other/61321
+	PR other/61233
+	* demangle.h (enum demangle_component_type)
+	<DEMANGLE_COMPONENT_CONVERSION>: New value.
+	* cp-demangle.c (d_demangle_callback, d_make_comp): Handle
+	DEMANGLE_COMPONENT_CONVERSION.
+	(is_ctor_dtor_or_conversion): Handle DEMANGLE_COMPONENT_CONVERSION
+	instead of DEMANGLE_COMPONENT_CAST.
+	(d_operator_name): Return a DEMANGLE_COMPONENT_CONVERSION
+	component if handling a conversion.
+	(d_count_templates_scopes, d_print_comp_inner): Handle
+	DEMANGLE_COMPONENT_CONVERSION.
+	(d_print_comp_inner): Handle DEMANGLE_COMPONENT_CONVERSION instead
+	of DEMANGLE_COMPONENT_CAST.
+	(d_print_cast): Rename as ...
+	(d_print_conversion): ... this.  Adjust comments.
+	(d_print_cast): Rewrite - simply print the left subcomponent.
+	* cp-demint.c (cplus_demangle_fill_component): Handle
+	DEMANGLE_COMPONENT_CONVERSION.
+
+	* testsuite/demangle-expected: Add tests.
+
 2015-11-12  Mike Stump  <mikestump@comcast.net>
 
 	* Makefile.in (etags tags TAGS): Use && instead of ;.

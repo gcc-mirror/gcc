@@ -1,5 +1,5 @@
 /* Post-reload compare elimination.
-   Copyright (C) 2010-2015 Free Software Foundation, Inc.
+   Copyright (C) 2010-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -248,7 +248,7 @@ public:
   find_comparison_dom_walker (cdi_direction direction)
     : dom_walker (direction) {}
 
-  virtual void before_dom_children (basic_block);
+  virtual edge before_dom_children (basic_block);
 };
 
 /* Return true if conforming COMPARE with EH_NOTE is redundant with comparison
@@ -294,7 +294,7 @@ can_eliminate_compare (rtx compare, rtx eh_note, struct comparison *cmp)
    compare in the BB is live at the end of the block, install the compare
    in BB->AUX.  Called via dom_walker.walk ().  */
 
-void
+edge
 find_comparison_dom_walker::before_dom_children (basic_block bb)
 {
   struct comparison *last_cmp;
@@ -426,6 +426,8 @@ find_comparison_dom_walker::before_dom_children (basic_block bb)
      remove EH edges.  */
   if (need_purge)
     purge_dead_edges (bb);
+
+  return NULL;
 }
 
 /* Find all comparisons in the function.  */

@@ -1,5 +1,5 @@
 /* Specific flags and argument handling of the Fortran front-end.
-   Copyright (C) 1997-2015 Free Software Foundation, Inc.
+   Copyright (C) 1997-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -276,7 +276,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
 	case OPT__version:
 	  printf ("GNU Fortran %s%s\n", pkgversion_string, version_string);
-	  printf ("Copyright %s 2015 Free Software Foundation, Inc.\n",
+	  printf ("Copyright %s 2016 Free Software Foundation, Inc.\n",
 		  _("(C)"));
 	  fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),

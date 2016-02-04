@@ -15,5 +15,5 @@ void f2(int x)
         }
     }
 }
-/* { dg-final { scan-tree-dump-times "eh_must_not_throw" 1 "tmlower" } } */
+/* { dg-final { scan-tree-dump-times "eh_must_not_throw" 2 "tmlower" } } */
 /* { dg-final { scan-tree-dump-times "ITM_RU" 1 "tmmark" } } */

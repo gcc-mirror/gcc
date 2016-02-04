@@ -1,7 +1,8 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_vfp_ok } */
+/* { dg-require-effective-target arm_fp_ok } */
 /* { dg-skip-if "need fp instructions" { *-*-* } { "-mfloat-abi=soft" } { "" } } */
-/* { dg-options "-O -mfpu=vfp -mfloat-abi=softfp" } */
+/* { dg-options "-O" } */
+/* { dg-add-options arm_fp } */
 /* { dg-final { scan-assembler-not "\tbl\t" } } */
 /* { dg-final { scan-assembler-not "__aeabi" } } */
 int x, y;

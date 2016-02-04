@@ -468,11 +468,11 @@ class Archive_iterator
   }
 
   bool
-  operator==(const Archive_iterator p) const
+  operator==(const Archive_iterator& p) const
   { return this->off_ == p->off; }
 
   bool
-  operator!=(const Archive_iterator p) const
+  operator!=(const Archive_iterator& p) const
   { return this->off_ != p->off; }
 
  private:

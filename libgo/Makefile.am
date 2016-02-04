@@ -846,9 +846,7 @@ go_net_common_files = \
 	go/net/parse.go \
 	go/net/pipe.go \
 	go/net/fd_poll_runtime.go \
-	go/net/port.go \
 	go/net/port_unix.go \
-	go/net/race0.go \
 	$(go_net_sendfile_file) \
 	go/net/sock_posix.go \
 	$(go_net_sock_file) \
@@ -1018,7 +1016,7 @@ go_os_files = \
 	$(go_os_sys_file) \
 	$(go_os_cloexec_file) \
 	go/os/types.go \
-	go/os/types_notwin.go
+	go/os/types_unix.go
 
 go_path_files = \
 	go/path/match.go \
@@ -1100,7 +1098,8 @@ go_strings_files = \
 	go/strings/replace.go \
 	go/strings/search.go \
 	go/strings/strings.go \
-	go/strings/strings_decl.go
+	go/strings/strings_decl.go \
+	go/strings/strings_generic.go
 go_strings_c_files = \
 	go/strings/indexbyte.c
 
@@ -1109,7 +1108,6 @@ go_sync_files = \
 	go/sync/mutex.go \
 	go/sync/once.go \
 	go/sync/pool.go \
-	go/sync/race0.go \
 	go/sync/runtime.go \
 	go/sync/rwmutex.go \
 	go/sync/waitgroup.go
@@ -1196,7 +1194,6 @@ go_compress_bzip2_files = \
 go_compress_flate_files = \
 	go/compress/flate/copy.go \
 	go/compress/flate/deflate.go \
-	go/compress/flate/fixedhuff.go \
 	go/compress/flate/huffman_bit_writer.go \
 	go/compress/flate/huffman_code.go \
 	go/compress/flate/inflate.go \
@@ -1367,7 +1364,8 @@ go_debug_dwarf_files = \
 	go/debug/dwarf/unit.go
 go_debug_elf_files = \
 	go/debug/elf/elf.go \
-	go/debug/elf/file.go
+	go/debug/elf/file.go \
+	go/debug/elf/reader.go
 go_debug_gosym_files = \
 	go/debug/gosym/pclntab.go \
 	go/debug/gosym/symtab.go
@@ -1450,7 +1448,6 @@ go_go_build_files = \
 	go/go/build/read.go \
 	go/go/build/syslist.go
 go_go_constant_files = \
-	go/go/constant/go14.go \
 	go/go/constant/value.go
 go_go_doc_files = \
 	go/go/doc/comment.go \
@@ -1461,7 +1458,8 @@ go_go_doc_files = \
 	go/go/doc/reader.go \
 	go/go/doc/synopsis.go
 go_go_format_files = \
-	go/go/format/format.go
+	go/go/format/format.go \
+	go/go/format/internal.go
 go_go_importer_files = \
 	go/go/importer/importer.go
 go_go_parser_files = \
@@ -1489,7 +1487,6 @@ go_go_types_files = \
 	go/go/types/eval.go \
 	go/go/types/expr.go \
 	go/go/types/exprstring.go \
-	go/go/types/go12.go \
 	go/go/types/initorder.go \
 	go/go/types/labels.go \
 	go/go/types/lookup.go \
@@ -1512,6 +1509,7 @@ go_go_types_files = \
 	go/go/types/universe.go
 
 go_go_internal_gcimporter_files = \
+	go/go/internal/gcimporter/bimport.go \
 	go/go/internal/gcimporter/exportdata.go \
 	go/go/internal/gcimporter/gcimporter.go
 go_go_internal_gccgoimporter_files = \
@@ -1578,20 +1576,46 @@ go_index_suffixarray_files = \
 	go/index/suffixarray/qsufsort.go \
 	go/index/suffixarray/suffixarray.go
 
-go_internal_format_files = \
-	go/internal/format/format.go
+go_internal_golang_org_x_net_http2_hpack_files = \
+	go/internal/golang.org/x/net/http2/hpack/encode.go \
+	go/internal/golang.org/x/net/http2/hpack/hpack.go \
+	go/internal/golang.org/x/net/http2/hpack/huffman.go \
+	go/internal/golang.org/x/net/http2/hpack/tables.go
+go_internal_race_files = \
+	go/internal/race/doc.go \
+	go/internal/race/norace.go
 go_internal_singleflight_files = \
 	go/internal/singleflight/singleflight.go
 
 if LIBGO_IS_LINUX
-internal_syscall_unix_getrandom_file = go/internal/syscall/unix/getrandom_linux.go
+if LIBGO_IS_386
+internal_syscall_unix_getrandom_files = go/internal/syscall/unix/getrandom_linux.go go/internal/syscall/unix/getrandom_linux_386.go
 else
-internal_syscall_unix_getrandom_file =
+if LIBGO_IS_X86_64
+internal_syscall_unix_getrandom_files = go/internal/syscall/unix/getrandom_linux.go go/internal/syscall/unix/getrandom_linux_amd64.go
+else
+if LIBGO_IS_ARM
+internal_syscall_unix_getrandom_files = go/internal/syscall/unix/getrandom_linux.go go/internal/syscall/unix/getrandom_linux_arm.go
+else
+if LIBGO_IS_PPC64
+internal_syscall_unix_getrandom_files = go/internal/syscall/unix/getrandom_linux.go go/internal/syscall/unix/getrandom_linux_ppc64x.go
+else
+if LIBGO_IS_MIPS64
+internal_syscall_unix_getrandom_files = go/internal/syscall/unix/getrandom_linux.go go/internal/syscall/unix/getrandom_linux_mips64x.go
+else
+internal_syscall_unix_getrandom_files = go/internal/syscall/unix/getrandom_linux.go go/internal/syscall/unix/getrandom_linux_generic.go
+endif
+endif
+endif
+endif
+endif
+else
+internal_syscall_unix_getrandom_files =
 endif
 
 go_internal_syscall_unix_files = \
 	go/internal/syscall/unix/dummy.go \
-	$(internal_syscall_unix_getrandom_file)
+	$(internal_syscall_unix_getrandom_files)
 
 go_internal_testenv_files = \
 	go/internal/testenv/testenv.go
@@ -1608,15 +1632,19 @@ go_math_big_files = \
 	go/math/big/arith.go \
 	go/math/big/arith_decl_pure.go \
 	go/math/big/decimal.go \
+	go/math/big/doc.go \
 	go/math/big/float.go \
 	go/math/big/floatconv.go \
+	go/math/big/floatmarsh.go \
 	go/math/big/ftoa.go \
 	go/math/big/int.go \
+	go/math/big/intmarsh.go \
 	go/math/big/intconv.go \
 	go/math/big/nat.go \
 	go/math/big/natconv.go \
 	go/math/big/rat.go \
 	go/math/big/ratconv.go \
+	go/math/big/ratmarsh.go \
 	go/math/big/roundingmode_string.go
 go_math_cmplx_files = \
 	go/math/cmplx/abs.go \
@@ -1654,9 +1682,11 @@ go_net_http_files = \
 	go/net/http/cookie.go \
 	go/net/http/filetransport.go \
 	go/net/http/fs.go \
+	go/net/http/h2_bundle.go \
 	go/net/http/header.go \
 	go/net/http/jar.go \
 	go/net/http/lex.go \
+	go/net/http/method.go \
 	go/net/http/request.go \
 	go/net/http/response.go \
 	go/net/http/server.go \
@@ -1698,7 +1728,8 @@ go_net_http_httputil_files = \
 	go/net/http/httputil/persist.go \
 	go/net/http/httputil/reverseproxy.go
 go_net_http_internal_files = \
-	go/net/http/internal/chunked.go
+	go/net/http/internal/chunked.go \
+	go/net/http/internal/testcert.go
 
 if LIBGO_IS_LINUX
 go_net_internal_socktest_sys = go/net/internal/socktest/sys_cloexec.go
@@ -1731,6 +1762,7 @@ go_os_exec_files = \
 	go/os/exec/lp_unix.go
 
 go_os_signal_files = \
+	go/os/signal/doc.go \
 	go/os/signal/signal.go \
 	go/os/signal/signal_unix.go
 
@@ -1999,7 +2031,7 @@ go_base_syscall_files = \
 	go/syscall/syscall_errno.go \
 	go/syscall/libcall_support.go \
 	go/syscall/libcall_posix.go \
-	go/syscall/race0.go \
+	go/syscall/msan0.go \
 	go/syscall/socket.go \
 	go/syscall/sockcmsg_unix.go \
 	go/syscall/str.go \
@@ -2229,7 +2261,8 @@ libgo_go_objs = \
 	image/jpeg.lo \
 	image/png.lo \
 	index/suffixarray.lo \
-	internal/format.lo \
+	internal/golang.org/x/net/http2/hpack.lo \
+	internal/race.lo \
 	internal/singleflight.lo \
 	internal/syscall/unix.lo \
 	internal/testenv.lo \
@@ -2358,7 +2391,7 @@ CHECK = \
 	elif test "$(GOBENCH)" != ""; then \
 	  $(SHELL) $(srcdir)/testsuite/gotest --goarch=$(GOARCH) --goos=$(GOOS) --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" --bench="$(GOBENCH)" $(GOTESTFLAGS) $(go_$(subst /,_,$(@D))_test_files); \
 	else \
-	  if $(SHELL) $(srcdir)/testsuite/gotest --goarch=$(GOARCH) --goos=$(GOOS) --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" $(GOTESTFLAGS) $(go_$(subst /,_,$(@D))_test_files) >>$@-testlog 2>&1; then \
+	  if $(SHELL) $(srcdir)/testsuite/gotest --goarch=$(GOARCH) --goos=$(GOOS) --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --pkgpath="$(@D)" --pkgfiles="$(go_$(subst .,_,$(subst /,_,$(@D)))_files)" $(GOTESTFLAGS) $(go_$(subst /,_,$(@D))_test_files) >>$@-testlog 2>&1; then \
 	    echo "PASS: $(@D)" >> $@-testlog; \
 	    echo "PASS: $(@D)"; \
 	    echo "PASS: $(@D)" > $@-testsum; \
@@ -3350,14 +3383,23 @@ index/suffixarray/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: index/suffixarray/check
 
-@go_include@ internal/format.lo.dep
-internal/format.lo.dep: $(go_internal_format_files)
+@go_include@ internal/golang.org/x/net/http2/hpack.lo.dep
+internal/golang.org/x/net/http2/hpack.lo.dep: $(go_internal_golang_org_x_net_http2_hpack_files)
 	$(BUILDDEPS)
-internal/format.lo: $(go_internal_format_files)
+internal/golang.org/x/net/http2/hpack.lo: $(go_internal_golang_org_x_net_http2_hpack_files)
 	$(BUILDPACKAGE)
-internal/format/check: $(CHECK_DEPS)
+internal/golang.org/x/net/http2/hpack/check: $(CHECK_DEPS)
 	@$(CHECK)
-.PHONY: internal/format/check
+.PHONY: internal/golang.org/x/net/http2/hpack/check
+
+@go_include@ internal/race.lo.dep
+internal/race.lo.dep: $(go_internal_race_files)
+	$(BUILDDEPS)
+internal/race.lo: $(go_internal_race_files)
+	$(BUILDPACKAGE)
+internal/race/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: internal/race/check
 
 @go_include@ internal/singleflight.lo.dep
 internal/singleflight.lo.dep: $(go_internal_singleflight_files)
@@ -4013,7 +4055,9 @@ image/color/palette.gox: image/color/palette.lo
 index/suffixarray.gox: index/suffixarray.lo
 	$(BUILDGOX)
 
-internal/format.gox: internal/format.lo
+internal/golang.org/x/net/http2/hpack.gox: internal/golang.org/x/net/http2/hpack.lo
+	$(BUILDGOX)
+internal/race.gox: internal/race.lo
 	$(BUILDGOX)
 internal/singleflight.gox: internal/singleflight.lo
 	$(BUILDGOX)
@@ -4217,6 +4261,7 @@ TEST_PACKAGES = \
 	image/jpeg/check \
 	image/png/check \
 	index/suffixarray/check \
+	internal/golang.org/x/net/http2/hpack/check \
 	internal/singleflight/check \
 	internal/trace/check \
 	io/ioutil/check \

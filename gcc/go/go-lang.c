@@ -1,5 +1,5 @@
 /* go-lang.c -- Go frontend gcc interface.
-   Copyright (C) 2009-2015 Free Software Foundation, Inc.
+   Copyright (C) 2009-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -149,6 +149,9 @@ go_langhook_init_options_struct (struct gcc_options *opts)
   /* Exceptions are used to handle recovering from panics.  */
   opts->x_flag_exceptions = 1;
   opts->x_flag_non_call_exceptions = 1;
+
+  /* We need to keep pointers live for the garbage collector.  */
+  opts->x_flag_keep_gc_roots_live = 1;
 
   /* Go programs expect runtime.Callers to work, and that uses
      libbacktrace that uses debug info.  Set the debug info level to 1

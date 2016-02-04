@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997-2015 Free Software Foundation, Inc.
+// Copyright (C) 1997-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -121,9 +121,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__ix < numeric_limits<int>::max())
 	  {
 	    __newsize = __ix + 1;
+	    /* We still need to catch bad_alloc even though we use
+	       a nothrow new, because the new-expression can throw
+	       a bad_array_new_length.  */
 	    __try
-	      { __words = new _Words[__newsize]; }
+	      { __words = new (std::nothrow) _Words[__newsize]; }
 	    __catch(const std::bad_alloc&)
+	      { __words = nullptr; }
+	    if (!__words)
 	      {
 		_M_streambuf_state |= badbit;
 		if (_M_streambuf_state & _M_exception)

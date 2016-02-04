@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++11" }
 // { dg-do compile }
 
-// Copyright (C) 2015 Free Software Foundation, Inc.
+// Copyright (C) 2015-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,32 +29,195 @@
 namespace funny {
   struct F {};
   void swap(F&, F&) = delete;
+  void swap(F(&)[5], F(&)[5]) noexcept;
+  void swap(F(&)[6], F(&)[6]);
+  struct A {};
+  void swap(A&, A&) noexcept(false);
+}
+namespace std {
+  template<>
+  void swap<funny::A>(funny::A&, funny::A&) noexcept
+  {
+  }
+
+  template<>
+  void swap<funny::A>(funny::A(&)[3], funny::A(&)[3]) noexcept(false)
+  {
+  }
+}
+namespace ns1 {
+  struct SwapThrow {};
+  void swap(SwapThrow&, SwapThrow&);
+  void swap(SwapThrow(&)[3], SwapThrow(&)[3]) noexcept;
+}
+
+namespace ns2 {
+  struct SwapThrow {
+    SwapThrow() noexcept = default;
+    SwapThrow(const SwapThrow&) noexcept(false);
+    SwapThrow& operator=(const SwapThrow&) noexcept(false);
+  };
+}
+
+namespace ns3 {
+  struct SwapNoThrow {
+    SwapNoThrow() noexcept = default;
+    SwapNoThrow(const SwapNoThrow&) noexcept(false);
+    SwapNoThrow& operator =(const SwapNoThrow&) noexcept(false);
+  };
+  void swap(SwapNoThrow&, SwapNoThrow&) noexcept;
+}
+
+namespace ns4 {
+  struct SwapNoThrow {};
+}
+
+namespace ns5 {
+  struct SwapThrow {
+    SwapThrow() noexcept = default;
+    SwapThrow(SwapThrow&&) noexcept;
+    SwapThrow& operator=(const SwapThrow&) noexcept(false);
+  };
 }
 void test01()
 {
   using std::__is_nothrow_swappable;
-  using std::__is_swappable_impl::__is_swappable;
   using namespace __gnu_test;
   // Positive tests.
-  static_assert(test_property<__is_swappable, int>(true), "");
   static_assert(test_property<__is_nothrow_swappable, int>(true), "");
+  static_assert(test_property<__is_nothrow_swappable, bool>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    decltype(nullptr)>(true), "");
+  static_assert(test_property<__is_nothrow_swappable, int&>(true), "");
+  static_assert(test_property<__is_nothrow_swappable, int&&>(true), "");
   static_assert(test_property<__is_nothrow_swappable, int[1]>(true), "");
+  static_assert(test_property<__is_nothrow_swappable, int[1][2]>(true), "");
+  static_assert(test_property<__is_nothrow_swappable, int[1][2][3]>(true), "");
+  static_assert(test_property<__is_nothrow_swappable, funny::F[5]>(true), "");
+  static_assert(test_property<__is_nothrow_swappable, EnumType>(true), "");
+  static_assert(test_property<__is_nothrow_swappable, PODType>(true), "");
+  static_assert(test_property<__is_nothrow_swappable, UnionType>(true), "");
   static_assert(test_property<__is_nothrow_swappable,
-		std::pair<int, int>>(true), "");
+    construct::SE>(true), "");
   static_assert(test_property<__is_nothrow_swappable,
-		std::tuple<int>>(true), "");
+    construct::Empty>(true), "");
+  static_assert(test_property<__is_nothrow_swappable, void*>(true), "");
+  static_assert(test_property<__is_nothrow_swappable, void(*)()>(true), "");
+  static_assert(test_property<__is_nothrow_swappable, int const*>(true), "");
+  static_assert(test_property<__is_nothrow_swappable, ClassType*>(true), "");
   static_assert(test_property<__is_nothrow_swappable,
-		std::array<int, 1>>(true), "");
+    int ClassType::*>(true), "");
   static_assert(test_property<__is_nothrow_swappable,
-		std::queue<int>>(true), "");
+    void (ClassType::*)()>(true), "");
   static_assert(test_property<__is_nothrow_swappable,
-		std::priority_queue<int>>(true), "");
+    int (ClassType::*)() const volatile>(true), "");
   static_assert(test_property<__is_nothrow_swappable,
-		std::stack<int>>(true), "");
+    ns1::SwapThrow[3]>(true), "");
+  static_assert(!noexcept(std::swap(std::declval<ns1::SwapThrow(&)[3]>(),
+                                    std::declval<ns1::SwapThrow(&)[3]>())),
+                                    "");
+  static_assert(test_property<__is_nothrow_swappable,
+        ns3::SwapNoThrow>(true), "");
+  static_assert(!noexcept(std::swap(std::declval<ns3::SwapNoThrow&>(),
+                                    std::declval<ns3::SwapNoThrow&>())), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        ns3::SwapNoThrow[1]>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        ns3::SwapNoThrow[3]>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        ns3::SwapNoThrow[2][3][4]>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        ns4::SwapNoThrow>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        ns4::SwapNoThrow[1]>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        ns4::SwapNoThrow[3]>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        ns4::SwapNoThrow[2][3][4]>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        std::pair<int, int>>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        std::pair<int, int>[1]>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        std::pair<int, int>[1][2]>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        std::tuple<int>>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        std::tuple<int>[1]>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        std::tuple<int>[1][2]>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        std::tuple<>>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        std::tuple<>[1]>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        std::tuple<>[1][2]>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        std::array<int, 1>>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        std::queue<int>>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        std::priority_queue<int>>(true), "");
+  static_assert(test_property<__is_nothrow_swappable,
+        std::stack<int>>(true), "");
   // Negative tests.
-  static_assert(test_property<__is_swappable, construct::DelCopy>(false), "");
-  static_assert(test_property<__is_swappable, funny::F>(false), "");
-  static_assert(test_property<__is_swappable, funny::F[1]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable, void>(false), "");
+  static_assert(test_property<__is_nothrow_swappable, const void>(false), "");
+  static_assert(test_property<__is_nothrow_swappable, void()>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    void() const>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    void() volatile>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    void() const volatile>(false), "");
+  static_assert(test_property<__is_nothrow_swappable, const int>(false), "");
+  static_assert(test_property<__is_nothrow_swappable, const bool>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    const int[1]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    const int[1][2]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    const int[1][2][3]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable, int[]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable, const int[]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable, int[][1]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    const funny::F[5]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    construct::Abstract>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    construct::DelCopy>(false), "");
+  static_assert(test_property<__is_nothrow_swappable, funny::F>(false), "");
+  static_assert(test_property<__is_nothrow_swappable, funny::F[1]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    funny::F[1][2]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    funny::F[1][2][3]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable, funny::F[6]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable, funny::A>(false), "");
+  static_assert(noexcept(std::swap(std::declval<funny::A&>(),
+                                   std::declval<funny::A&>())), "");
+  static_assert(test_property<__is_nothrow_swappable, funny::A[3]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    ns1::SwapThrow>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    ns1::SwapThrow[1]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    ns1::SwapThrow[3][2]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    ns1::SwapThrow[2][3][4]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    ns2::SwapThrow>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    ns2::SwapThrow[1]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    ns2::SwapThrow[2][3][4]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    ns5::SwapThrow>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    ns5::SwapThrow[1]>(false), "");
+  static_assert(test_property<__is_nothrow_swappable,
+    ns5::SwapThrow[2][3][4]>(false), "");
   static_assert(test_property<__is_nothrow_swappable,
 		ThrowCopyConsClass>(false), "");
   static_assert(test_property<__is_nothrow_swappable,

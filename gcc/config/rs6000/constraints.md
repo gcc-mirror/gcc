@@ -1,5 +1,5 @@
 ;; Constraint definitions for RS6000
-;; Copyright (C) 2006-2015 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2016 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -56,7 +56,8 @@
 (define_register_constraint "wa" "rs6000_constraints[RS6000_CONSTRAINT_wa]"
   "Any VSX register if the -mvsx option was used or NO_REGS.")
 
-;; wb is not currently used
+(define_register_constraint "wb" "rs6000_constraints[RS6000_CONSTRAINT_wb]"
+  "Altivec register if the -mpower9-dform option was used or NO_REGS.")
 
 ;; NOTE: For compatibility, "wc" is reserved to represent individual CR bits.
 ;; It is currently used for that purpose in LLVM.
@@ -98,7 +99,8 @@
 ;; There is a mode_attr that resolves to wm for SDmode and wn for SFmode
 (define_register_constraint "wn" "NO_REGS" "No register (NO_REGS).")
 
-;; wo is not currently used
+(define_register_constraint "wo" "rs6000_constraints[RS6000_CONSTRAINT_wo]"
+  "VSX register if the -mpower9-vector option was used or NO_REGS.")
 
 (define_register_constraint "wp" "rs6000_constraints[RS6000_CONSTRAINT_wp]"
   "VSX register to use for IEEE 128-bit fp TFmode, or NO_REGS.")

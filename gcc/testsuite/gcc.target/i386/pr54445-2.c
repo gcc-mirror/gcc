@@ -1,4 +1,4 @@
-/* { dg-do compile { target { *-*-linux* && { ! { ia32 } } } } } */
+/* { dg-do compile { target { *-*-linux* && { ! ia32 } } } } */
 /* { dg-options "-O2 -fno-pic" } */
 
 __thread unsigned char tls_array[64];

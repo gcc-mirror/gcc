@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989-2015 Free Software Foundation, Inc.
+   Copyright (C) 1989-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -272,12 +272,19 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
   rtx rounded_stack_size_rtx = GEN_INT (rounded_stack_size);
   rtx call, funmem, pat;
   int already_popped = 0;
-  HOST_WIDE_INT n_popped
-    = targetm.calls.return_pops_args (fndecl, funtype, stack_size);
+  HOST_WIDE_INT n_popped = 0;
+
+  /* Sibling call patterns never pop arguments (no sibcall(_value)_pop
+     patterns exist).  Any popping that the callee does on return will
+     be from our caller's frame rather than ours.  */
+  if (!(ecf_flags & ECF_SIBCALL))
+    {
+      n_popped += targetm.calls.return_pops_args (fndecl, funtype, stack_size);
 
 #ifdef CALL_POPS_ARGS
-  n_popped += CALL_POPS_ARGS (*get_cumulative_args (args_so_far));
+      n_popped += CALL_POPS_ARGS (*get_cumulative_args (args_so_far));
 #endif
+    }
 
   /* Ensure address is valid.  SYMBOL_REF is already valid, so no need,
      and we don't want to load it into a register as an optimization,
@@ -502,12 +509,9 @@ special_function_p (const_tree fndecl, int flags)
       /* We assume that alloca will always be called by name.  It
 	 makes no sense to pass it as a pointer-to-function to
 	 anything that does not understand its behavior.  */
-      if (((IDENTIFIER_LENGTH (name_decl) == 6
-	    && name[0] == 'a'
-	    && ! strcmp (name, "alloca"))
-	   || (IDENTIFIER_LENGTH (name_decl) == 16
-	       && name[0] == '_'
-	       && ! strcmp (name, "__builtin_alloca"))))
+      if (IDENTIFIER_LENGTH (name_decl) == 6
+	  && name[0] == 'a'
+	  && ! strcmp (name, "alloca"))
 	flags |= ECF_MAY_BE_ALLOCA;
 
       /* Disregard prefix _, __, __x or __builtin_.  */
@@ -552,6 +556,17 @@ special_function_p (const_tree fndecl, int flags)
 	       && ! strcmp (tname, "longjmp"))
 	flags |= ECF_NORETURN;
     }
+
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    switch (DECL_FUNCTION_CODE (fndecl))
+      {
+      case BUILT_IN_ALLOCA:
+      case BUILT_IN_ALLOCA_WITH_ALIGN:
+	flags |= ECF_MAY_BE_ALLOCA;
+	break;
+      default:
+	break;
+      }
 
   return flags;
 }
@@ -4938,6 +4953,13 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	    {
 	      if (XEXP (x, 0) != crtl->args.internal_arg_pointer)
 		i = INTVAL (XEXP (XEXP (x, 0), 1));
+
+	      /* arg.locate doesn't contain the pretend_args_size offset,
+		 it's part of argblock.  Ensure we don't count it in I.  */
+	      if (STACK_GROWS_DOWNWARD)
+		i -= crtl->args.pretend_args_size;
+	      else
+		i += crtl->args.pretend_args_size;
 
 	      /* expand_call should ensure this.  */
 	      gcc_assert (!arg->locate.offset.var

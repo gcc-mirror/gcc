@@ -1,5 +1,5 @@
 /* Tree-based target query functions relating to optabs
-   Copyright (C) 1987-2015 Free Software Foundation, Inc.
+   Copyright (C) 1987-2016 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -243,26 +243,6 @@ optab_for_tree_code (enum tree_code code, const_tree type,
 
     default:
       return unknown_optab;
-    }
-}
-
-/* Given optab UNOPTAB that reduces a vector to a scalar, find instead the old
-   optab that produces a vector with the reduction result in one element,
-   for a tree with type TYPE.  */
-
-optab
-scalar_reduc_to_vector (optab unoptab, const_tree type)
-{
-  switch (unoptab)
-    {
-    case reduc_plus_scal_optab:
-      return TYPE_UNSIGNED (type) ? reduc_uplus_optab : reduc_splus_optab;
-
-    case reduc_smin_scal_optab: return reduc_smin_optab;
-    case reduc_umin_scal_optab: return reduc_umin_optab;
-    case reduc_smax_scal_optab: return reduc_smax_optab;
-    case reduc_umax_scal_optab: return reduc_umax_optab;
-    default: return unknown_optab;
     }
 }
 

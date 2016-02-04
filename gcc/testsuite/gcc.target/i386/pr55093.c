@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -mx32 -maddress-mode=long" } */
 /* { dg-skip-if "different ABI" { x86_64-*-mingw* } } */
 

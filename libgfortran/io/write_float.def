@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2015 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2016 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Write float code factoring to this file by Jerry DeLisle   
    F2003 I/O support contributed by Jerry DeLisle
@@ -514,11 +514,20 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	  w = w == 1 ? 2 : w;
 	}
     }
-  
+
   /* Work out how much padding is needed.  */
   nblanks = w - (nbefore + nzero + nafter + edigits + 1);
   if (sign != S_NONE)
     nblanks--;
+
+  /* See if we have space for a zero before the decimal point.  */
+  if (nbefore == 0 && nblanks > 0)
+    {
+      leadzero = 1;
+      nblanks--;
+    }
+  else
+    leadzero = 0;
 
   if (dtp->u.p.g0_no_blanks)
     {
@@ -543,15 +552,6 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
       star_fill (out, w);
       return false;
     }
-
-  /* See if we have space for a zero before the decimal point.  */
-  if (nbefore == 0 && nblanks > 0)
-    {
-      leadzero = 1;
-      nblanks--;
-    }
-  else
-    leadzero = 0;
 
   /* For internal character(kind=4) units, we duplicate the code used for
      regular output slightly modified.  This needs to be maintained
@@ -938,7 +938,7 @@ snprintf (buffer, size, "%+-#.*Le", (prec), (val))
 
 #if defined(GFC_REAL_16_IS_FLOAT128)
 #define DTOA2Q(prec,val)							\
-__qmath_(quadmath_snprintf) (buffer, size, "%+-#.*Qe", (prec), (val))
+quadmath_snprintf (buffer, size, "%+-#.*Qe", (prec), (val))
 #endif
 
 #define FDTOA(suff,prec,val) TOKENPASTE(FDTOA2,suff)(prec,val)
@@ -953,7 +953,7 @@ snprintf (buffer, size, "%+-#.*Lf", (prec), (val))
 
 #if defined(GFC_REAL_16_IS_FLOAT128)
 #define FDTOA2Q(prec,val)			       \
-__qmath_(quadmath_snprintf) (buffer, size, "%+-#.*Qf", \
+quadmath_snprintf (buffer, size, "%+-#.*Qf", \
 			     (prec), (val))
 #endif
 

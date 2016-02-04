@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003-2015 Free Software Foundation, Inc.
+   Copyright (C) 2003-2016 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -1509,13 +1509,14 @@ initialize_data_dependence_relation (struct data_reference *a,
   /* The case where the references are exactly the same.  */
   if (operand_equal_p (DR_REF (a), DR_REF (b), 0))
     {
-     if (loop_nest.exists ()
-        && !object_address_invariant_in_loop_p (loop_nest[0],
-       					        DR_BASE_OBJECT (a)))
-      {
-        DDR_ARE_DEPENDENT (res) = chrec_dont_know;
-        return res;
-      }
+      if ((loop_nest.exists ()
+	   && !object_address_invariant_in_loop_p (loop_nest[0],
+						   DR_BASE_OBJECT (a)))
+	  || DR_NUM_DIMENSIONS (a) == 0)
+	{
+	  DDR_ARE_DEPENDENT (res) = chrec_dont_know;
+	  return res;
+	}
       DDR_AFFINE_P (res) = true;
       DDR_ARE_DEPENDENT (res) = NULL_TREE;
       DDR_SUBSCRIPTS (res).create (DR_NUM_DIMENSIONS (a));
@@ -1547,9 +1548,9 @@ initialize_data_dependence_relation (struct data_reference *a,
   /* If the base of the object is not invariant in the loop nest, we cannot
      analyze it.  TODO -- in fact, it would suffice to record that there may
      be arbitrary dependences in the loops where the base object varies.  */
-  if (loop_nest.exists ()
-      && !object_address_invariant_in_loop_p (loop_nest[0],
-     					      DR_BASE_OBJECT (a)))
+  if ((loop_nest.exists ()
+       && !object_address_invariant_in_loop_p (loop_nest[0], DR_BASE_OBJECT (a)))
+      || DR_NUM_DIMENSIONS (a) == 0)
     {
       DDR_ARE_DEPENDENT (res) = chrec_dont_know;
       return res;
@@ -3872,6 +3873,8 @@ get_references_in_stmt (gimple *stmt, vec<data_ref_loc, va_heap> *references)
   else if (stmt_code == GIMPLE_CALL)
     {
       unsigned i, n;
+      tree ptr, type;
+      unsigned int align;
 
       ref.is_read = false;
       if (gimple_call_internal_p (stmt))
@@ -3882,12 +3885,16 @@ get_references_in_stmt (gimple *stmt, vec<data_ref_loc, va_heap> *references)
 	      break;
 	    ref.is_read = true;
 	  case IFN_MASK_STORE:
-	    ref.ref = fold_build2 (MEM_REF,
-				   ref.is_read
-				   ? TREE_TYPE (gimple_call_lhs (stmt))
-				   : TREE_TYPE (gimple_call_arg (stmt, 3)),
-				   gimple_call_arg (stmt, 0),
-				   gimple_call_arg (stmt, 1));
+	    ptr = build_int_cst (TREE_TYPE (gimple_call_arg (stmt, 1)), 0);
+	    align = tree_to_shwi (gimple_call_arg (stmt, 1));
+	    if (ref.is_read)
+	      type = TREE_TYPE (gimple_call_lhs (stmt));
+	    else
+	      type = TREE_TYPE (gimple_call_arg (stmt, 3));
+	    if (TYPE_ALIGN (type) != align)
+	      type = build_aligned_type (type, align);
+	    ref.ref = fold_build2 (MEM_REF, type, gimple_call_arg (stmt, 0),
+				   ptr);
 	    references->safe_push (ref);
 	    return false;
 	  default:

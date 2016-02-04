@@ -2147,6 +2147,101 @@ AC_DEFUN([GLIBCXX_CHECK_STDIO_PROTO], [
 ])
 
 dnl
+dnl Check whether required C++11 overloads are present in <math.h>.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=c++11"
+
+  case "$host" in
+    *-*-solaris2.*)
+      # Solaris 12 introduced the C++11 <math.h> overloads.  A backport to
+      # a Solaris 11.3 SRU is likely, maybe even a Solaris 10 patch.
+      AC_MSG_CHECKING([for C++11 <math.h> overloads])
+      AC_CACHE_VAL(glibcxx_cv_math11_overload, [
+	AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+	  [#include <math.h>
+	   #undef isfinite
+	   namespace std {
+	     inline bool isfinite(float __x)
+	     { return __builtin_isfinite(__x); }
+	   }
+	])],
+	[glibcxx_cv_math11_overload=no],
+	[glibcxx_cv_math11_overload=yes]
+      )])
+
+      # autoheader cannot handle indented templates.
+      AH_VERBATIM([__CORRECT_ISO_CPP11_MATH_H_PROTO],
+        [/* Define if all C++11 overloads are available in <math.h>.  */
+#if __cplusplus >= 201103L
+#undef __CORRECT_ISO_CPP11_MATH_H_PROTO
+#endif])
+
+      if test $glibcxx_cv_math11_overload = yes; then
+        AC_DEFINE(__CORRECT_ISO_CPP11_MATH_H_PROTO)
+      fi
+      AC_MSG_RESULT([$glibcxx_cv_math11_overload])
+      ;;
+    *-*-*gnu* | *-*-aix* | *-*-hpux*)
+      # If <math.h> defines the obsolete isinf(double) and isnan(double)
+      # functions (instead of or as well as the C99 generic macros) then we
+      # can't define std::isinf(double) and std::isnan(double) in <cmath>
+      # and must use the ones from <math.h> instead.
+      AC_MSG_CHECKING([for obsolete isinf function in <math.h>])
+        AC_CACHE_VAL(glibcxx_cv_obsolete_isinf, [
+          AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+            [#include <math.h>
+             #undef isinf
+             namespace std {
+               using ::isinf;
+               bool isinf(float);
+               bool isinf(long double);
+             }
+             using std::isinf;
+             bool b = isinf(0.0);
+          ])],
+          [glibcxx_cv_obsolete_isinf=yes],
+          [glibcxx_cv_obsolete_isinf=no]
+        )])
+      AC_MSG_RESULT([$glibcxx_cv_obsolete_isinf])
+      if test $glibcxx_cv_obsolete_isinf = yes; then
+        AC_DEFINE(HAVE_OBSOLETE_ISINF, 1,
+                  [Define if <math.h> defines obsolete isinf function.])
+      fi
+
+      AC_MSG_CHECKING([for obsolete isnan function in <math.h>])
+        AC_CACHE_VAL(glibcxx_cv_obsolete_isnan, [
+          AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+            [#include <math.h>
+             #undef isnan
+             namespace std {
+               using ::isnan;
+               bool isnan(float);
+               bool isnan(long double);
+             }
+             using std::isnan;
+             bool b = isnan(0.0);
+          ])],
+          [glibcxx_cv_obsolete_isnan=yes],
+          [glibcxx_cv_obsolete_isnan=no]
+        )])
+      AC_MSG_RESULT([$glibcxx_cv_obsolete_isnan])
+      if test $glibcxx_cv_obsolete_isnan = yes; then
+        AC_DEFINE(HAVE_OBSOLETE_ISNAN, 1,
+                  [Define if <math.h> defines obsolete isnan function.])
+      fi
+      ;;
+  esac
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
+])
+
+dnl
 dnl Check whether macros, etc are present for <system_error>
 dnl
 AC_DEFUN([GLIBCXX_CHECK_SYSTEM_ERROR], [
@@ -2514,6 +2609,8 @@ AC_DEFUN([GLIBCXX_ENABLE_ALLOCATOR], [
       ;;
   esac
 
+  GLIBCXX_CONDITIONAL(ENABLE_ALLOCATOR_NEW,
+		      test $enable_libstdcxx_allocator_flag = new)
   AC_SUBST(ALLOCATOR_H)
   AC_SUBST(ALLOCATOR_NAME)
 ])
@@ -2581,6 +2678,10 @@ AC_DEFUN([GLIBCXX_ENABLE_VTABLE_VERIFY], [
       darwin*)
         VTV_CXXFLAGS="-fvtable-verify=std -Wl,-u,_vtable_map_vars_start -Wl,-u,_vtable_map_vars_end"
         VTV_CXXLINKFLAGS="-L${toplevel_builddir}/libvtv/.libs -Wl,-rpath,${toplevel_builddir}/libvtv/.libs"
+        ;;
+      solaris2*)
+        VTV_CXXFLAGS="-fvtable-verify=std -Wl,-u_vtable_map_vars_start,-u_vtable_map_vars_end"
+        VTV_CXXLINKFLAGS="-L${toplevel_builddir}/libvtv/.libs -Wl,-R -Wl,${toplevel_builddir}/libvtv/.libs"
         ;;
       *)
         VTV_CXXFLAGS="-fvtable-verify=std -Wl,-u_vtable_map_vars_start,-u_vtable_map_vars_end"
@@ -3359,9 +3460,9 @@ EOF
   AC_LANG_RESTORE
 
   # Set atomicity_dir to builtins if all but the long long test above passes.
-  if test $glibcxx_cv_atomic_bool = yes \
-     && test $glibcxx_cv_atomic_short = yes \
-     && test $glibcxx_cv_atomic_int = yes; then
+  if test "$glibcxx_cv_atomic_bool" = yes \
+     && test "$glibcxx_cv_atomic_short" = yes \
+     && test "$glibcxx_cv_atomic_int" = yes; then
     AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS, 1,
     [Define if the compiler supports C++11 atomics.])
     atomicity_dir=cpu/generic/atomicity_builtins
@@ -4258,6 +4359,34 @@ dnl
 dnl
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
+])
+
+dnl
+dnl Check how size_t is mangled.  Copied from libitm.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_SIZE_T_MANGLING], [
+  AC_CACHE_CHECK([how size_t is mangled],
+                 glibcxx_cv_size_t_mangling, [
+    AC_TRY_COMPILE([], [extern __SIZE_TYPE__ x; extern unsigned long x;],
+                   [glibcxx_cv_size_t_mangling=m], [
+      AC_TRY_COMPILE([], [extern __SIZE_TYPE__ x; extern unsigned int x;],
+                     [glibcxx_cv_size_t_mangling=j], [
+        AC_TRY_COMPILE([],
+                       [extern __SIZE_TYPE__ x; extern unsigned long long x;],
+                       [glibcxx_cv_size_t_mangling=y], [
+          AC_TRY_COMPILE([],
+                         [extern __SIZE_TYPE__ x; extern unsigned short x;],
+                         [glibcxx_cv_size_t_mangling=t],
+                         [glibcxx_cv_size_t_mangling=x])
+        ])
+      ])
+    ])
+  ])
+  if test $glibcxx_cv_size_t_mangling = x; then
+    AC_MSG_ERROR([Unknown underlying type for size_t])
+  fi
+  AC_DEFINE_UNQUOTED(_GLIBCXX_MANGLE_SIZE_T, [$glibcxx_cv_size_t_mangling],
+    [Define to the letter to which size_t is mangled.])
 ])
 
 # Macros from the top-level gcc directory.

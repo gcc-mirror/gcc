@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- internal _Meta class.
 
-// Copyright (C) 1997-2015 Free Software Foundation, Inc.
+// Copyright (C) 1997-2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -331,14 +331,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return pow(__x, __y); }
   };
 
+  template<typename _Tp, bool _IsValidValarrayValue = !__is_abstract(_Tp)>
+    struct __fun_with_valarray
+    {
+      typedef _Tp result_type;
+    };
+
+  template<typename _Tp>
+    struct __fun_with_valarray<_Tp, false>
+    {
+      // No result type defined for invalid value types.
+    };
 
   // We need these bits in order to recover the return type of
   // some functions/operators now that we're no longer using
   // function templates.
   template<typename, typename _Tp>
-    struct __fun
+    struct __fun : __fun_with_valarray<_Tp>
     {
-      typedef _Tp result_type;
     };
 
   // several specializations for relational operators.

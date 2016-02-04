@@ -1,4 +1,4 @@
-/* { dg-do compile  { target { ! { ia32 } } } } */
+/* { dg-do compile  { target { ! ia32 } } } */
 /* { dg-options "-O2" } */
 
 volatile int a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p;

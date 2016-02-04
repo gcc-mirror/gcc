@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2015 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2016 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -1179,26 +1179,6 @@ format_error (st_parameter_dt *dtp, const fnode *f, const char *message)
 
   *p++ = '^';
   *p = '\0';
-
-  /* Cleanup any left over memory allocations before calling generate
-     error.  */
-  if (is_internal_unit (dtp))
-    {
-      if (dtp->format != NULL)
-	{
-	  free (dtp->format);
-	  dtp->format = NULL;
-	}
-
-      /* Leave these alone if IOSTAT was given because execution will
-	 return from generate error in those cases.  */
-      if (!(dtp->common.flags & IOPARM_HAS_IOSTAT))
-	{
-	  free (dtp->u.p.fmt);
-	  free_format_hash_table (dtp->u.p.current_unit);
-	  free_internal_unit (dtp);
-	}
-    }
 
   generate_error (&dtp->common, LIBERROR_FORMAT, buffer);
 }
