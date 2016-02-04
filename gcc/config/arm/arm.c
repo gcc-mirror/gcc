@@ -29769,6 +29769,7 @@ save_restore_target_globals (tree new_tree)
 }
 
 /* Invalidate arm_previous_fndecl.  */
+
 void
 arm_reset_previous_fndecl (void)
 {
@@ -29778,6 +29779,7 @@ arm_reset_previous_fndecl (void)
 /* Establish appropriate back-end context for processing the function
    FNDECL.  The argument might be NULL to indicate processing at top
    level, outside of any function scope.  */
+
 static void
 arm_set_current_function (tree fndecl)
 {
@@ -29791,7 +29793,7 @@ arm_set_current_function (tree fndecl)
   tree new_tree = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
 
   /* If current function has no attributes but previous one did,
-     use the default node."  */
+     use the default node.  */
   if (! new_tree && old_tree)
     new_tree = target_option_default_node;
 

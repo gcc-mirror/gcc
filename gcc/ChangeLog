@@ -1,3 +1,8 @@
+2016-02-04  Christian Bruel  <christian.bruel@st.com>
+
+	* config/arm/arm-c.c (arm_reset_previous_fndecl): Style fix and typo.
+	* config/arm/arm.c (arm_set_current_function): Likewise.
+
 2016-02-04  Jakub Jelinek  <jakub@redhat.com>
 	    Ilya Enkovich  <enkovich.gnu@gmail.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
@@ -11,7 +16,7 @@
 
 2016-02-04  Victoria Stepanyan  <victoria.stepanyan@amd.com>
 
-	* gcc/config/i386/x86-tune.def: Disable default prefetching 
+	* gcc/config/i386/x86-tune.def: Disable default prefetching
 	for -march=znver1.
 
 2016-02-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
