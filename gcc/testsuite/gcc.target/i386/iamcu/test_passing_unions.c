@@ -94,6 +94,7 @@ check_union_passing5(union un5 u ATTRIBUTE_UNUSED)
 #define check_union_passing4 WRAP_CALL(check_union_passing4)
 #define check_union_passing5 WRAP_CALL(check_union_passing5)
 
+#ifdef CHECK_FLOAT128
 union un6
 {
   __float128 f128;
@@ -111,6 +112,7 @@ check_union_passing6(union un6 u ATTRIBUTE_UNUSED)
 }
 
 #define check_union_passing6 WRAP_CALL(check_union_passing6)
+#endif
 
 int
 main (void)
@@ -123,9 +125,11 @@ main (void)
   struct long_struct ls;
 #endif /* CHECK_LARGER_UNION_PASSING */
   union un4 u4[8];
-  union un5 u5 = { 48.394 };
+  union un5 u5;
   int i;
+#ifdef CHECK_FLOAT128
   union un6 u6;
+#endif
 
   /* Check a union with char, int.  */
   clear_struct_registers;
@@ -208,14 +212,17 @@ main (void)
 		       u4[4], u4[5], u4[6], u4[7]);
 
   clear_struct_registers;
+  u5.d = 48.394;
   iregs.I0 = u5.ll & 0xffffffff;
   iregs.I1 = (u5.ll >> 32) & 0xffffffff;
   num_iregs = 2;
   clear_int_hardware_registers;
   check_union_passing5(u5);
 
+#ifdef CHECK_FLOAT128
   u6.i = 2;
   check_union_passing6(u6);
+#endif
 
   return 0;
 }
