@@ -89,7 +89,6 @@ extern void neon_expand_vector_init (rtx, rtx);
 extern void neon_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT, const_tree);
 extern void neon_const_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT neon_element_bits (machine_mode);
-extern void neon_reinterpret (rtx, rtx);
 extern void neon_emit_pair_result_insn (machine_mode,
 					rtx (*) (rtx, rtx, rtx, rtx),
 					rtx, rtx, rtx);
