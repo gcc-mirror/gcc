@@ -1,3 +1,9 @@
+2016-02-04  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/69454
+	* gcc.target/i386/pr69454-1.c: New test.
+	* gcc.target/i386/pr69454-2.c: New test.
+
 2016-02-03  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/69251
