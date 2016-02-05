@@ -380,6 +380,8 @@ struct GTY (()) s390_frame_layout
      be saved to.
       0 - does not need to be saved at all
      -1 - stack slot  */
+#define SAVE_SLOT_NONE   0
+#define SAVE_SLOT_STACK -1
   signed char gpr_save_slots[16];
 
   /* Number of first and last gpr to be saved, restored.  */
@@ -9198,7 +9200,7 @@ s390_register_info_gprtofpr ()
 
   for (i = 15; i >= 6; i--)
     {
-      if (cfun_gpr_save_slot (i) == 0)
+      if (cfun_gpr_save_slot (i) == SAVE_SLOT_NONE)
 	continue;
 
       /* Advance to the next FP register which can be used as a
@@ -9215,7 +9217,7 @@ s390_register_info_gprtofpr ()
 	     case we ran out of FPR save slots.  */
 	  for (j = 6; j <= 15; j++)
 	    if (FP_REGNO_P (cfun_gpr_save_slot (j)))
-	      cfun_gpr_save_slot (j) = -1;
+	      cfun_gpr_save_slot (j) = SAVE_SLOT_STACK;
 	  break;
 	}
       cfun_gpr_save_slot (i) = save_reg_slot++;
@@ -9242,12 +9244,16 @@ s390_register_info_stdarg_fpr ()
     return;
 
   min_fpr = crtl->args.info.fprs;
-  max_fpr = min_fpr + cfun->va_list_fpr_size;
-  if (max_fpr > FP_ARG_NUM_REG)
-    max_fpr = FP_ARG_NUM_REG;
+  max_fpr = min_fpr + cfun->va_list_fpr_size - 1;
+  if (max_fpr >= FP_ARG_NUM_REG)
+    max_fpr = FP_ARG_NUM_REG - 1;
 
-  for (i = min_fpr; i < max_fpr; i++)
-    cfun_set_fpr_save (i + FPR0_REGNUM);
+  /* FPR argument regs start at f0.  */
+  min_fpr += FPR0_REGNUM;
+  max_fpr += FPR0_REGNUM;
+
+  for (i = min_fpr; i <= max_fpr; i++)
+    cfun_set_fpr_save (i);
 }
 
 /* Reserve the GPR save slots for GPRs which need to be saved due to
@@ -9267,12 +9273,65 @@ s390_register_info_stdarg_gpr ()
     return;
 
   min_gpr = crtl->args.info.gprs;
-  max_gpr = min_gpr + cfun->va_list_gpr_size;
-  if (max_gpr > GP_ARG_NUM_REG)
-    max_gpr = GP_ARG_NUM_REG;
+  max_gpr = min_gpr + cfun->va_list_gpr_size - 1;
+  if (max_gpr >= GP_ARG_NUM_REG)
+    max_gpr = GP_ARG_NUM_REG - 1;
 
-  for (i = min_gpr; i < max_gpr; i++)
-    cfun_gpr_save_slot (2 + i) = -1;
+  /* GPR argument regs start at r2.  */
+  min_gpr += GPR2_REGNUM;
+  max_gpr += GPR2_REGNUM;
+
+  /* If r6 was supposed to be saved into an FPR and now needs to go to
+     the stack for vararg we have to adjust the restore range to make
+     sure that the restore is done from stack as well.  */
+  if (FP_REGNO_P (cfun_gpr_save_slot (GPR6_REGNUM))
+      && min_gpr <= GPR6_REGNUM
+      && max_gpr >= GPR6_REGNUM)
+    {
+      if (cfun_frame_layout.first_restore_gpr == -1
+	  || cfun_frame_layout.first_restore_gpr > GPR6_REGNUM)
+	cfun_frame_layout.first_restore_gpr = GPR6_REGNUM;
+      if (cfun_frame_layout.last_restore_gpr == -1
+	  || cfun_frame_layout.last_restore_gpr < GPR6_REGNUM)
+	cfun_frame_layout.last_restore_gpr = GPR6_REGNUM;
+    }
+
+  if (cfun_frame_layout.first_save_gpr == -1
+      || cfun_frame_layout.first_save_gpr > min_gpr)
+    cfun_frame_layout.first_save_gpr = min_gpr;
+
+  if (cfun_frame_layout.last_save_gpr == -1
+      || cfun_frame_layout.last_save_gpr < max_gpr)
+    cfun_frame_layout.last_save_gpr = max_gpr;
+
+  for (i = min_gpr; i <= max_gpr; i++)
+    cfun_gpr_save_slot (i) = SAVE_SLOT_STACK;
+}
+
+/* Calculate the save and restore ranges for stm(g) and lm(g) in the
+   prologue and epilogue.  */
+
+static void
+s390_register_info_set_ranges ()
+{
+  int i, j;
+
+  /* Find the first and the last save slot supposed to use the stack
+     to set the restore range.
+     Vararg regs might be marked as save to stack but only the
+     call-saved regs really need restoring (i.e. r6).  This code
+     assumes that the vararg regs have not yet been recorded in
+     cfun_gpr_save_slot.  */
+  for (i = 0; i < 16 && cfun_gpr_save_slot (i) != SAVE_SLOT_STACK; i++);
+  for (j = 15; j > i && cfun_gpr_save_slot (j) != SAVE_SLOT_STACK; j--);
+  cfun_frame_layout.first_restore_gpr = (i == 16) ? -1 : i;
+  cfun_frame_layout.last_restore_gpr = (i == 16) ? -1 : j;
+
+  /* Now the range of GPRs which need saving.  */
+  for (i = 0; i < 16 && cfun_gpr_save_slot (i) != SAVE_SLOT_STACK; i++);
+  for (j = 15; j > i && cfun_gpr_save_slot (j) != SAVE_SLOT_STACK; j--);
+  cfun_frame_layout.first_save_gpr = (i == 16) ? -1 : i;
+  cfun_frame_layout.last_save_gpr = (i == 16) ? -1 : j;
 }
 
 /* The GPR and FPR save slots in cfun->machine->frame_layout are set
@@ -9283,7 +9342,7 @@ s390_register_info_stdarg_gpr ()
 static void
 s390_register_info ()
 {
-  int i, j;
+  int i;
   char clobbered_regs[32];
 
   gcc_assert (!epilogue_completed);
@@ -9347,33 +9406,20 @@ s390_register_info ()
 	|| (reload_completed && cfun_frame_layout.frame_size > 0)
 	|| cfun->calls_alloca);
 
-  memset (cfun_frame_layout.gpr_save_slots, 0, 16);
+  memset (cfun_frame_layout.gpr_save_slots, SAVE_SLOT_NONE, 16);
 
   for (i = 6; i < 16; i++)
     if (clobbered_regs[i])
-      cfun_gpr_save_slot (i) = -1;
+      cfun_gpr_save_slot (i) = SAVE_SLOT_STACK;
 
   s390_register_info_stdarg_fpr ();
   s390_register_info_gprtofpr ();
-
-  /* First find the range of GPRs to be restored.  Vararg regs don't
-     need to be restored so we do it before assigning slots to the
-     vararg GPRs.  */
-  for (i = 0; i < 16 && cfun_gpr_save_slot (i) != -1; i++);
-  for (j = 15; j > i && cfun_gpr_save_slot (j) != -1; j--);
-  cfun_frame_layout.first_restore_gpr = (i == 16) ? -1 : i;
-  cfun_frame_layout.last_restore_gpr = (i == 16) ? -1 : j;
-
+  s390_register_info_set_ranges ();
   /* stdarg functions might need to save GPRs 2 to 6.  This might
-     override the GPR->FPR save decision made above for r6 since
-     vararg regs must go to the stack.  */
+     override the GPR->FPR save decision made by
+     s390_register_info_gprtofpr for r6 since vararg regs must go to
+     the stack.  */
   s390_register_info_stdarg_gpr ();
-
-  /* Now the range of GPRs which need saving.  */
-  for (i = 0; i < 16 && cfun_gpr_save_slot (i) != -1; i++);
-  for (j = 15; j > i && cfun_gpr_save_slot (j) != -1; j--);
-  cfun_frame_layout.first_save_gpr = (i == 16) ? -1 : i;
-  cfun_frame_layout.last_save_gpr = (i == 16) ? -1 : j;
 }
 
 /* This function is called by s390_optimize_prologue in order to get
@@ -9384,7 +9430,7 @@ static void
 s390_optimize_register_info ()
 {
   char clobbered_regs[32];
-  int i, j;
+  int i;
 
   gcc_assert (epilogue_completed);
   gcc_assert (!cfun->machine->split_branches_pending_p);
@@ -9407,23 +9453,14 @@ s390_optimize_register_info ()
 	|| cfun_frame_layout.save_return_addr_p
 	|| crtl->calls_eh_return);
 
-  memset (cfun_frame_layout.gpr_save_slots, 0, 6);
+  memset (cfun_frame_layout.gpr_save_slots, SAVE_SLOT_NONE, 6);
 
   for (i = 6; i < 16; i++)
     if (!clobbered_regs[i])
-      cfun_gpr_save_slot (i) = 0;
+      cfun_gpr_save_slot (i) = SAVE_SLOT_NONE;
 
-  for (i = 0; i < 16 && cfun_gpr_save_slot (i) != -1; i++);
-  for (j = 15; j > i && cfun_gpr_save_slot (j) != -1; j--);
-  cfun_frame_layout.first_restore_gpr = (i == 16) ? -1 : i;
-  cfun_frame_layout.last_restore_gpr = (i == 16) ? -1 : j;
-
+  s390_register_info_set_ranges ();
   s390_register_info_stdarg_gpr ();
-
-  for (i = 0; i < 16 && cfun_gpr_save_slot (i) != -1; i++);
-  for (j = 15; j > i && cfun_gpr_save_slot (j) != -1; j--);
-  cfun_frame_layout.first_save_gpr = (i == 16) ? -1 : i;
-  cfun_frame_layout.last_save_gpr = (i == 16) ? -1 : j;
 }
 
 /* Fill cfun->machine with info about frame of current function.  */
@@ -9844,7 +9881,7 @@ s390_hard_regno_rename_ok (unsigned int old_reg, unsigned int new_reg)
      regrename manually about it.  */
   if (GENERAL_REGNO_P (new_reg)
       && !call_really_used_regs[new_reg]
-      && cfun_gpr_save_slot (new_reg) == 0)
+      && cfun_gpr_save_slot (new_reg) == SAVE_SLOT_NONE)
     return false;
 
   return true;
@@ -9859,7 +9896,7 @@ s390_hard_regno_scratch_ok (unsigned int regno)
   /* See s390_hard_regno_rename_ok.  */
   if (GENERAL_REGNO_P (regno)
       && !call_really_used_regs[regno]
-      && cfun_gpr_save_slot (regno) == 0)
+      && cfun_gpr_save_slot (regno) == SAVE_SLOT_NONE)
     return false;
 
   return true;
@@ -10875,7 +10912,7 @@ s390_emit_epilogue (bool sibcall)
 	     be in between two GPRs which need saving.)  Otherwise it
 	     would be difficult to take that decision back in
 	     s390_optimize_prologue.  */
-	  if (cfun_gpr_save_slot (RETURN_REGNUM) == -1)
+	  if (cfun_gpr_save_slot (RETURN_REGNUM) == SAVE_SLOT_STACK)
 	    {
 	      int return_regnum = find_unused_clobbered_reg();
 	      if (!return_regnum)
@@ -10969,7 +11006,7 @@ s390_can_use_return_insn (void)
     return false;
 
   for (i = 0; i < 16; i++)
-    if (cfun_gpr_save_slot (i))
+    if (cfun_gpr_save_slot (i) != SAVE_SLOT_NONE)
       return false;
 
   /* For 31 bit this is not covered by the frame_size check below
@@ -12677,9 +12714,9 @@ s390_optimize_prologue (void)
 
 	  /* It must not happen that what we once saved in an FPR now
 	     needs a stack slot.  */
-	  gcc_assert (cfun_gpr_save_slot (gpr_regno) != -1);
+	  gcc_assert (cfun_gpr_save_slot (gpr_regno) != SAVE_SLOT_STACK);
 
-	  if (cfun_gpr_save_slot (gpr_regno) == 0)
+	  if (cfun_gpr_save_slot (gpr_regno) == SAVE_SLOT_NONE)
 	    {
 	      remove_insn (insn);
 	      continue;

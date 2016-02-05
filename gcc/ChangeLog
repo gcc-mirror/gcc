@@ -1,3 +1,24 @@
+2016-02-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/69625
+	* config/s390/s390.c (SAVE_SLOT_NONE, SAVE_SLOT_STACK): New
+	defines.
+	(s390_register_info_gprtofpr): Use new macros above.
+	(s390_register_info_stdarg_fpr): Adjust max_fpr to better match
+	its name.
+	(s390_register_info_stdarg_gpr): Adjust max_gpr to better match
+	its name.  Adjust restore and save gpr ranges.
+	(s390_register_info_set_ranges): New function.
+	(s390_register_info): Use new macros above.  Call
+	s390_register_info_set_ranges.
+	(s390_optimize_register_info): Likewise.
+	(s390_hard_regno_rename_ok): Use new macros.
+	(s390_hard_regno_scratch_ok): Likewise.
+	(s390_emit_epilogue): Likewise.
+	(s390_can_use_return_insn): Likewise.
+	(s390_optimize_prologue): Likewise.
+	* config/s390/s390.md (GPR2_REGNUM, GPR6_REGNUM): New constants.
+
 2016-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/69677
