@@ -1,5 +1,10 @@
 2016-02-05  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.dg/sancov/asan.c: Move to ...
+	* gcc.dg/asan/sancov-1.c: ... here.
+
+2016-02-05  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.target/i386/pr69577.c: Require avx_runtime target.
 
 2016-02-05  H.J. Lu  <hongjiu.lu@intel.com>
