@@ -1,3 +1,8 @@
+2016-02-05  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/68948
+	* g++.dg/template/pr68948.C: New test.
+
 2016-02-05  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Remove -march=z13 for s390
