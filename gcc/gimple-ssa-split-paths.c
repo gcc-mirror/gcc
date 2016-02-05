@@ -25,11 +25,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple.h"
 #include "tree-pass.h"
+#include "tree-cfg.h"
 #include "cfganal.h"
 #include "cfgloop.h"
 #include "gimple-iterator.h"
 #include "tracer.h"
 #include "predict.h"
+#include "params.h"
 
 /* Given LATCH, the latch block in a loop, see if the shape of the
    path reaching LATCH is suitable for being split by duplication.
@@ -79,6 +81,11 @@ find_block_to_duplicate_for_splitting_paths (basic_block latch)
 	      || !find_edge (bb_idom, EDGE_PRED (bb, 1)->src))
 	    return NULL;
 
+	  /* And that the predecessors of BB each have a single successor.  */
+	  if (!single_succ_p (EDGE_PRED (bb, 0)->src)
+	      || !single_succ_p (EDGE_PRED (bb, 1)->src))
+	    return NULL;
+
 	  /* So at this point we have a simple diamond for an IF-THEN-ELSE
 	     construct starting at BB_IDOM, with a join point at BB.  BB
 	     pass control outside the loop or to the loop latch.
@@ -91,29 +98,111 @@ find_block_to_duplicate_for_splitting_paths (basic_block latch)
   return NULL;
 }
 
-/* Return TRUE if BB is a reasonable block to duplicate by examining
-   its size, false otherwise.  BB will always be a loop latch block.
-
-   Should this use the same tests as we do for jump threading?  */
-
-static bool
-is_feasible_trace (basic_block bb)
+/* Return the number of non-debug statements in a block.  */
+static unsigned int
+count_stmts_in_block (basic_block bb)
 {
-  int num_stmt = 0;
   gimple_stmt_iterator gsi;
+  unsigned int num_stmts = 0;
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple *stmt = gsi_stmt (gsi);
       if (!is_gimple_debug (stmt))
-	num_stmt++;
+	num_stmts++;
+    }
+  return num_stmts;
+}
+
+/* Return TRUE if CODE represents a tree code that is not likely to
+   be easily if-convertable because it likely expands into multiple
+   insns, FALSE otherwise.  */
+static bool
+poor_ifcvt_candidate_code (enum tree_code code)
+{
+  return (code == MIN_EXPR
+	  || code == MAX_EXPR
+	  || code == ABS_EXPR
+	  || code == COND_EXPR
+	  || code == CALL_EXPR);
+}
+
+/* Return TRUE if BB is a reasonable block to duplicate by examining
+   its size, false otherwise.  BB will always be a loop latch block.
+
+   Things to consider:
+
+     We do not want to spoil if-conversion if at all possible.
+
+     Most of the benefit seems to be from eliminating the unconditional
+     jump rather than CSE/DCE opportunities.  So favor duplicating
+     small latches.  A latch with just a conditional branch is ideal.
+
+     CSE/DCE opportunties crop up when statements from the predecessors
+     feed statements in the latch and allow statements in the latch to
+     simplify.  */
+
+static bool
+is_feasible_trace (basic_block bb)
+{
+  basic_block pred1 = EDGE_PRED (bb, 0)->src;
+  basic_block pred2 = EDGE_PRED (bb, 1)->src;
+  int num_stmts_in_join = count_stmts_in_block (bb);
+  int num_stmts_in_pred1 = count_stmts_in_block (pred1);
+  int num_stmts_in_pred2 = count_stmts_in_block (pred2);
+
+  /* This is meant to catch cases that are likely opportunities for
+     if-conversion.  Essentially we look for the case where
+     BB's predecessors are both single statement blocks where
+     the output of that statement feed the same PHI in BB.  */
+  if (num_stmts_in_pred1 == 1 && num_stmts_in_pred2 == 1)
+    {
+      gimple *stmt1 = last_and_only_stmt (pred1);
+      gimple *stmt2 = last_and_only_stmt (pred2);
+
+      if (stmt1 && stmt2
+	  && gimple_code (stmt1) == GIMPLE_ASSIGN
+	  && gimple_code (stmt2) == GIMPLE_ASSIGN)
+	{
+	  enum tree_code code1 = gimple_assign_rhs_code (stmt1);
+	  enum tree_code code2 = gimple_assign_rhs_code (stmt2);
+
+	  if (!poor_ifcvt_candidate_code (code1)
+	      && !poor_ifcvt_candidate_code (code2))
+	    {
+	      tree lhs1 = gimple_assign_lhs (stmt1);
+	      tree lhs2 = gimple_assign_lhs (stmt2);
+	      gimple_stmt_iterator gsi;
+	      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+		{
+		  gimple *phi = gsi_stmt (gsi);
+		  if ((gimple_phi_arg_def (phi, 0) == lhs1
+		       && gimple_phi_arg_def (phi, 1) == lhs2)
+		      || (gimple_phi_arg_def (phi, 1) == lhs1
+			  && gimple_phi_arg_def (phi, 0) == lhs2))
+		    {
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			fprintf (dump_file,
+				 "Block %d appears to be a join point for "
+				 "if-convertable diamond.\n",
+				 bb->index);
+		      return false;
+		    }
+		}
+	    }
+	}
     }
 
-  /* We may want to limit how many statements we copy.  */
-  if (num_stmt > 1)
-    return true;
+  /* We may want something here which looks at dataflow and tries
+     to guess if duplication of BB is likely to result in simplification
+     of instructions in BB in either the original or the duplicate.  */
 
-  return false;
+  /* Upper Hard limit on the number statements to copy.  */
+  if (num_stmts_in_join
+      >= PARAM_VALUE (PARAM_MAX_JUMP_THREAD_DUPLICATION_STMTS))
+    return false;
+
+  return true;
 }
 
 /* If the immediate dominator of the latch of the loop is

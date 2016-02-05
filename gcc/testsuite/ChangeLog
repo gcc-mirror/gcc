@@ -1,3 +1,13 @@
+2016-02-05  Jeff Law  <law@redhat.com>
+
+        PR tree-optimization/68541
+	* gcc.dg/tree-ssa/split-path-2.c: New test.
+	* gcc.dg/tree-ssa/split-path-3.c: New test.
+	* gcc.dg/tree-ssa/split-path-4.c: New test.
+	* gcc.dg/tree-ssa/split-path-5.c: New test.
+	* gcc.dg/tree-ssa/split-path-6.c: New test.
+	* gcc.dg/tree-ssa/split-path-7.c: New test.
+
 2016-02-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/69662
