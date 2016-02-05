@@ -1,3 +1,10 @@
+2016-02-05  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/crypto.md (crypto_vpermxor_<mode>): Correct insn type.
+	* config/rs6000/rs6000.md (mov<mode>_hardfloat): Likewise.
+	(*ieee128_mfvsrd_64bit): Likewise.
+	(*ieee128_mfvsrd_32bit): Likewise.
+
 2016-02-05  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/69369
