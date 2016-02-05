@@ -1,3 +1,8 @@
+2016-02-05  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Remove -march=z13 for s390
+	(only necessary on s390x).
+
 2016-02-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pr69454-2.c: Compile with -msse2
