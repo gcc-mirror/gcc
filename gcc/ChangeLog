@@ -1,3 +1,8 @@
+2016-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/69691
+	* lra-eliminations.c (move_plus_up): Don't add the addend twice.
+
 2016-02-05  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/crypto.md (crypto_vpermxor_<mode>): Correct insn type.
