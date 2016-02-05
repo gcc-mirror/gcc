@@ -16710,7 +16710,7 @@ Generates the @code{wait} machine instruction.
 @subsection S/390 System z Built-in Functions
 @deftypefn {Built-in Function} int __builtin_tbegin (void*)
 Generates the @code{tbegin} machine instruction starting a
-non-constraint hardware transaction.  If the parameter is non-NULL the
+non-constrained hardware transaction.  If the parameter is non-NULL the
 memory area is used to store the transaction diagnostic buffer and
 will be passed as first operand to @code{tbegin}.  This buffer can be
 defined using the @code{struct __htm_tdb} C struct defined in
@@ -16723,7 +16723,7 @@ instruction by definition overwrites the content of all FPRs.  The
 compiler will generate code which saves and restores the FPRs.  For
 soft-float code it is recommended to used the @code{*_nofloat}
 variant.  In order to prevent a TDB from being written it is required
-to pass an constant zero value as parameter.  Passing the zero value
+to pass a constant zero value as parameter.  Passing a zero value
 through a variable is not sufficient.  Although modifications of
 access registers inside the transaction will not trigger an
 transaction abort it is not supported to actually modify them.  Access
@@ -16784,7 +16784,7 @@ handler code.
 @end deftypefn
 
 @deftypefn {Built-in Function} void __builtin_tbeginc (void)
-Generates the @code{tbeginc} machine instruction starting a constraint
+Generates the @code{tbeginc} machine instruction starting a constrained
 hardware transaction.  The second operand is set to @code{0xff08}.
 @end deftypefn
 
