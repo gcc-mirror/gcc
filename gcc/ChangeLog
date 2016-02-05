@@ -1,3 +1,12 @@
+2016-02-05  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/69369
+	Revert r232560:
+	2016-01-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraphunit.c (cgraph_node::reset): Clear thunk info and
+	instrumented_version.
+
 2016-01-05  Jeremy Bennett  <jeremy.bennett@embecosm.com>
 
 	* doc/invoke.texi (Optimize Options): In table of --param options
