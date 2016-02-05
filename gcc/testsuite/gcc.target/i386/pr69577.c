@@ -1,5 +1,4 @@
-/* { dg-do run } */
-/* { dg-require-effective-target avx } */
+/* { dg-do run { target avx_runtime } } */
 /* { dg-require-effective-target int128 } */
 /* { dg-options "-O -fno-forward-propagate -fno-split-wide-types -mavx" } */
 

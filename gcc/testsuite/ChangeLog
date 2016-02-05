@@ -1,3 +1,7 @@
+2016-02-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr69577.c: Require avx_runtime target.
+
 2016-02-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/69677
