@@ -1,3 +1,8 @@
+2016-02-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr69454-2.c: Compile with -msse2
+	-mno-accumulate-outgoing-args.
+
 2016-02-04  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* g++.dg/cpp0x/constexpr-ptrmem5.C: New test.
