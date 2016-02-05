@@ -9326,10 +9326,6 @@ s390_register_info_set_ranges ()
   for (j = 15; j > i && cfun_gpr_save_slot (j) != SAVE_SLOT_STACK; j--);
   cfun_frame_layout.first_restore_gpr = (i == 16) ? -1 : i;
   cfun_frame_layout.last_restore_gpr = (i == 16) ? -1 : j;
-
-  /* Now the range of GPRs which need saving.  */
-  for (i = 0; i < 16 && cfun_gpr_save_slot (i) != SAVE_SLOT_STACK; i++);
-  for (j = 15; j > i && cfun_gpr_save_slot (j) != SAVE_SLOT_STACK; j--);
   cfun_frame_layout.first_save_gpr = (i == 16) ? -1 : i;
   cfun_frame_layout.last_save_gpr = (i == 16) ? -1 : j;
 }

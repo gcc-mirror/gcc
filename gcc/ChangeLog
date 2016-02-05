@@ -1,3 +1,8 @@
+2016-02-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_register_info_set_ranges): Remove
+	superfluous loops.
+
 2016-02-05  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* doc/extend.texi: S/390: Correct some typos.
