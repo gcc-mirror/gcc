@@ -12507,7 +12507,7 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
          replace the symbol itself with the PLT stub.  */
       if (flag_pic && !SYMBOL_REF_LOCAL_P (addr_location))
         {
-	  if (retaddr_reg != NULL_RTX)
+	  if (TARGET_64BIT || retaddr_reg != NULL_RTX)
 	    {
 	      addr_location = gen_rtx_UNSPEC (Pmode,
 					      gen_rtvec (1, addr_location),
