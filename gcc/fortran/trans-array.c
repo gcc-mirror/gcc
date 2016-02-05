@@ -2464,10 +2464,12 @@ gfc_scalar_elemental_arg_saved_as_reference (gfc_ss_info * ss_info)
     return true;
 
   /* If the expression is a data reference of aggregate type,
+     and the data reference is not used on the left hand side,
      avoid a copy by saving a reference to the content.  */
-  if (ss_info->expr->expr_type == EXPR_VARIABLE
+  if (!ss_info->data.scalar.needs_temporary
       && (ss_info->expr->ts.type == BT_DERIVED
-	  || ss_info->expr->ts.type == BT_CLASS))
+	  || ss_info->expr->ts.type == BT_CLASS)
+      && gfc_expr_is_variable (ss_info->expr))
     return true;
 
   /* Otherwise the expression is evaluated to a temporary variable before the
@@ -4461,6 +4463,7 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
   gfc_ss *ss;
   gfc_ref *lref;
   gfc_ref *rref;
+  gfc_ss_info *ss_info;
   gfc_expr *dest_expr;
   gfc_expr *ss_expr;
   int nDepend = 0;
@@ -4471,15 +4474,16 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
 
   for (ss = rss; ss != gfc_ss_terminator; ss = ss->next)
     {
-      ss_expr = ss->info->expr;
+      ss_info = ss->info;
+      ss_expr = ss_info->expr;
 
-      if (ss->info->array_outer_dependency)
+      if (ss_info->array_outer_dependency)
 	{
 	  nDepend = 1;
 	  break;
 	}
 
-      if (ss->info->type != GFC_SS_SECTION)
+      if (ss_info->type != GFC_SS_SECTION)
 	{
 	  if (flag_realloc_lhs
 	      && dest_expr != ss_expr
@@ -4493,6 +4497,10 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
 	      && ss_expr->expr_type == EXPR_VARIABLE)
 
 	    nDepend = gfc_check_dependency (dest_expr, ss_expr, false);
+
+	  if (ss_info->type == GFC_SS_REFERENCE
+	      && gfc_check_dependency (dest_expr, ss_expr, false))
+	    ss_info->data.scalar.needs_temporary = 1;
 
 	  continue;
 	}

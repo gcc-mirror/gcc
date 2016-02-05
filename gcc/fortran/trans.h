@@ -210,6 +210,10 @@ typedef struct gfc_ss_info
 	 this is the symbol of the corresponding dummy argument.  */
       gfc_symbol *dummy_arg;
       tree value;
+      /* Tells that the scalar is a reference to a variable that might
+	 be present on the lhs, so that we should evaluate the value
+	 itself before the loop, not just the reference.  */
+      unsigned needs_temporary:1;
     }
     scalar;
 
@@ -464,6 +468,7 @@ bool gfc_conv_ieee_arithmetic_function (gfc_se *, gfc_expr *);
 tree gfc_save_fp_state (stmtblock_t *);
 void gfc_restore_fp_state (stmtblock_t *, tree);
 
+bool gfc_expr_is_variable (gfc_expr *);
 
 /* Does an intrinsic map directly to an external library call
    This is true for array-returning intrinsics, unless
