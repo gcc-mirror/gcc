@@ -673,6 +673,9 @@ finish_expr_stmt (tree expr)
 
   if (expr != NULL_TREE)
     {
+      /* If we ran into a problem, make sure we complained.  */
+      gcc_assert (expr != error_mark_node || seen_error ());
+
       if (!processing_template_decl)
 	{
 	  if (warn_sequence_point)
