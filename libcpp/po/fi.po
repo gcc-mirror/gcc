@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 5.2.0\n"
+"Project-Id-Version: cpplib 6.1-b20160131\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-01-31 15:50+0000\n"
-"PO-Revision-Date: 2016-01-30 23:09+0200\n"
+"PO-Revision-Date: 2016-02-05 11:21+0200\n"
 "Last-Translator: Lauri Nurmi <lanurmi@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
 "Language: fi\n"
@@ -760,10 +760,8 @@ msgid "missing terminating %c character"
 msgstr "päättävä merkki %c puuttuu"
 
 #: lex.c:1932
-#, fuzzy
-#| msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
 msgid "C++11 requires a space between string literal and macro"
-msgstr "literaalissa virheellinen loppuliite; C++11 vaatii välilyönnin literaalin ja merkkijonomakron väliin"
+msgstr "C++11 vaatii välilyönnin literaalin ja merkkijonomakron väliin"
 
 #: lex.c:2474 lex.c:2508
 msgid "C++ style comments are not allowed in ISO C90"
