@@ -1,3 +1,11 @@
+2016-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/69677
+	* config/i386/i386.c (convert_scalars_to_vector): Readd stack
+	alignment fixes.
+	(ix86_option_override_internal): Disable TARGET_STV even for
+	-m{incoming,preferred}-stack-boundary=3.
+
 2016-02-03  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* config.gcc: Mark deprecated rtems targets as obsolete.
