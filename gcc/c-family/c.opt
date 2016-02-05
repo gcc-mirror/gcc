@@ -777,7 +777,11 @@ ObjC ObjC++ Var(warn_protocol) Init(1) Warning
 Warn if inherited methods are unimplemented.
 
 Wplacement-new
-C++ Var(warn_placement_new) Init(1) Warning
+C++ Warning Alias(Wplacement-new=, 1, 0)
+Warn for placement new expressions with undefined behavior.
+
+Wplacement-new=
+C++ Joined RejectNegative UInteger Var(warn_placement_new) Init(-1) Warning
 Warn for placement new expressions with undefined behavior.
 
 Wredundant-decls

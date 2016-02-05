@@ -281,7 +281,8 @@ Objective-C and Objective-C++ Dialects}.
 -Woverride-init-side-effects -Woverlength-strings @gol
 -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses -Wno-pedantic-ms-format @gol
--Wplacement-new -Wpointer-arith  -Wno-pointer-to-int-cast @gol
+-Wplacement-new -Wplacement-new=@var{n} @gol
+-Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wno-pragmas -Wredundant-decls  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
 -Wshift-overflow -Wshift-overflow=@var{n} @gol
@@ -4894,6 +4895,7 @@ width specifiers @code{I32}, @code{I64}, and @code{I} used on Windows targets,
 which depend on the MS runtime.
 
 @item -Wplacement-new
+@itemx -Wplacement-new=@var{n}
 @opindex Wplacement-new
 @opindex Wno-placement-new
 Warn about placement new expressions with undefined behavior, such as
@@ -4906,7 +4908,36 @@ char buf [64];
 new (buf) int[64];
 @end smallexample
 This warning is enabled by default.
-  
+
+@table @gcctabopt
+@item -Wplacement-new=1
+This is the default warning level of @option{-Wplacement-new}.  At this
+level the warning is not issued for some strictly undefined constructs that
+GCC allows as extensions for compatibility with legacy code.  For example,
+the following @code{new} expression is not diagnosed at this level even
+though it has undefined behavior according to the C++ standard because
+it writes past the end of the one-element array.
+@smallexample
+struct S @{ int n, a[1]; @};
+S *s = (S *)malloc (sizeof *s + 31 * sizeof s->a[0]);
+new (s->a)int [32]();
+@end smallexample
+
+@item -Wplacement-new=2
+At this level, in addition to diagnosing all the same constructs as at level
+1, a diagnostic is also issued for placement new expressions that construct
+an object in the last member of structure whose type is an array of a single
+element and whose size is less than the size of the object being constructed.
+While the previous example would be diagnosed, the following construct makes
+use of the flexible member array extension to avoid the warning at level 2.
+@smallexample
+struct S @{ int n, a[]; @};
+S *s = (S *)malloc (sizeof *s + 32 * sizeof s->a[0]);
+new (s->a)int [32]();
+@end smallexample
+
+@end table
+
 @item -Wpointer-arith
 @opindex Wpointer-arith
 @opindex Wno-pointer-arith
