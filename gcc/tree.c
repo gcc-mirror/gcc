@@ -12219,6 +12219,23 @@ block_ultimate_origin (const_tree block)
 bool
 tree_nop_conversion_p (const_tree outer_type, const_tree inner_type)
 {
+  /* Do not strip casts into or out of differing address spaces.  */
+  if (POINTER_TYPE_P (outer_type)
+      && TYPE_ADDR_SPACE (TREE_TYPE (outer_type)) != ADDR_SPACE_GENERIC)
+    {
+      if (!POINTER_TYPE_P (inner_type)
+	  || (TYPE_ADDR_SPACE (TREE_TYPE (outer_type))
+	      != TYPE_ADDR_SPACE (TREE_TYPE (inner_type))))
+	return false;
+    }
+  else if (POINTER_TYPE_P (inner_type)
+	   && TYPE_ADDR_SPACE (TREE_TYPE (inner_type)) != ADDR_SPACE_GENERIC)
+    {
+      /* We already know that outer_type is not a pointer with
+	 a non-generic address space.  */
+      return false;
+    }
+
   /* Use precision rather then machine mode when we can, which gives
      the correct answer even for submode (bit-field) types.  */
   if ((INTEGRAL_TYPE_P (outer_type)

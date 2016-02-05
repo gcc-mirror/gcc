@@ -1,3 +1,9 @@
+2016-02-06  Richard Henderson  <rth@redhat.com>
+
+	PR c/69643
+	* tree.c (tree_nop_conversion_p): Do not strip casts into or
+	out of non-standard address spaces.
+
 2016-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/69691

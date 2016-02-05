@@ -1,3 +1,9 @@
+2016-02-06  Richard HEnderson  <rth@redhat.com>
+
+	PR c/69643
+	* gcc.target/i386/addr-space-4.c: New.
+	* gcc.target/i386/addr-space-5.c: New.
+
 2016-02-05  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/66089
