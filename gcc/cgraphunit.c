@@ -366,14 +366,12 @@ cgraph_node::reset (void)
   memset (&local, 0, sizeof (local));
   memset (&global, 0, sizeof (global));
   memset (&rtl, 0, sizeof (rtl));
-  memset (&thunk, 0, sizeof (cgraph_thunk_info));
   analyzed = false;
   definition = false;
   alias = false;
   transparent_alias = false;
   weakref = false;
   cpp_implicit_alias = false;
-  instrumented_version = NULL;
 
   remove_callees ();
   remove_all_references ();
