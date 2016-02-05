@@ -1,3 +1,9 @@
+2016-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68948
+	* semantics.c (finish_expr_stmt): If expr is error_mark_node,
+	make sure we've seen_error().
+
 2016-02-05  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/68948
