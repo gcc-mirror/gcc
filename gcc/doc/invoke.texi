@@ -8987,16 +8987,18 @@ growth.
 Stop reverse growth when the reverse probability of best edge is less than this
 threshold (in percent).
 
-@item tracer-min-branch-ratio
-@itemx tracer-min-branch-ratio-feedback
+@item tracer-min-branch-probability
+@itemx tracer-min-branch-probability-feedback
 
 Stop forward growth if the best edge has probability lower than this
 threshold.
 
-Similarly to @option{tracer-dynamic-coverage} two values are present, one for
-compilation for profile feedback and one for compilation without.  The value
-for compilation with profile feedback needs to be more conservative (higher) in
-order to make tracer effective.
+Similarly to @option{tracer-dynamic-coverage} two parameters are
+provided.  @option{tracer-min-branch-probability-feedback} is used for
+compilation with profile feedback and @option{tracer-min-branch-probability}
+compilation without.  The value for compilation with profile feedback
+needs to be more conservative (higher) in order to make tracer
+effective.
 
 @item max-cse-path-length
 
@@ -9052,20 +9054,6 @@ The maximum number of memory locations cselib should take into account.
 Increasing values mean more aggressive optimization, making the compilation time
 increase with probably slightly better performance.  The default value is 500.
 
-@item reorder-blocks-duplicate
-@itemx reorder-blocks-duplicate-feedback
-
-Used by the basic block reordering pass to decide whether to use unconditional
-branch or duplicate the code on its destination.  Code is duplicated when its
-estimated size is smaller than this value multiplied by the estimated size of
-unconditional jump in the hot spots of the program.
-
-The @option{reorder-block-duplicate-feedback} parameter
-is used only when profile
-feedback is available.  It may be set to higher values than
-@option{reorder-block-duplicate} since information about the hot spots is more
-accurate.
-
 @item max-sched-ready-insns
 The maximum number of instructions ready to be issued the scheduler should
 consider at any given time during the first scheduling pass.  Increasing
@@ -9105,7 +9093,7 @@ The minimal probability of speculation success (in percents), so that
 speculative insns are scheduled.
 The default value is 40.
 
-@item sched-spec-state-edge-prob-cutoff
+@item sched-state-edge-prob-cutoff
 The minimum probability an edge must have for the scheduler to save its
 state across it.
 The default value is 10.
@@ -9124,7 +9112,7 @@ The maximum number of times that an instruction is scheduled during
 selective scheduling.  This is the limit on the number of iterations
 through which the instruction may be pipelined.  The default value is 2.
 
-@item selsched-max-insns-to-rename
+@item selsched-insns-to-rename
 The maximum number of best instructions in the ready list that are considered
 for renaming in the selective scheduler.  The default value is 2.
 
@@ -9394,7 +9382,7 @@ Specify desired number of partitions produced during WHOPR compilation.
 The number of partitions should exceed the number of CPUs used for compilation.
 The default value is 32.
 
-@item lto-minpartition
+@item lto-min-partition
 Size of minimal partition for WHOPR (in estimated instructions).
 This prevents expenses of splitting very small programs into too many
 partitions.

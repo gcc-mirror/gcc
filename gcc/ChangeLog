@@ -1,3 +1,16 @@
+2016-01-05  Jeremy Bennett  <jeremy.bennett@embecosm.com>
+
+	* doc/invoke.texi (Optimize Options): In table of --param options
+	rename second occurrence of tracer-min-branch-ratio to
+	tracer-min-branch-probability, rename
+	tracer-min-branch-ratio-feedback to
+	tracer-min-branch-probability-feedback and clarify description,
+	rename sched-spec-state-edge-prob-cutoff to
+	sched-state-edge-prob-cutoff, rename selsched-max-insns-to-rename
+	to selsched-insns-to-rename, rename lto-minpartition to
+	lto-min-partition, delete reorder-blocks-duplicate and
+	reorder-blocks-duplicate-feedback.
+
 2016-02-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_register_info_set_ranges): Remove
