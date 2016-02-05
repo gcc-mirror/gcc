@@ -1,3 +1,9 @@
+2016-02-05  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/69662
+	* doc/invoke.texi: Update -Wplacement-new to take an optional
+	argument.
+
 2016-02-06  Richard Henderson  <rth@redhat.com>
 
 	PR c/69643

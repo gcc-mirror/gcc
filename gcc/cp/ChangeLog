@@ -1,3 +1,10 @@
+2016-02-05  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/69662
+	* init.c (find_field_init): New function.
+	(warn_placement_new_too_small): Call it.  Handle one-element arrays
+	at ends of structures special.
+
 2016-02-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68948

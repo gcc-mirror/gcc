@@ -2285,6 +2285,33 @@ throw_bad_array_new_length (void)
   return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
 }
 
+/* Attempt to find the initializer for field T in the initializer INIT,
+   when non-null.  Returns the initializer when successful and NULL
+   otherwise.  */
+static tree
+find_field_init (tree t, tree init)
+{
+  if (!init)
+    return NULL_TREE;
+
+  unsigned HOST_WIDE_INT idx;
+  tree field, elt;
+
+  /* Iterate over all top-level initializer elements.  */
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), idx, field, elt)
+    {
+      /* If the member T is found, return it.  */
+      if (field == t)
+	return elt;
+
+      /* Otherwise continue and/or recurse into nested initializers.  */
+      if (TREE_CODE (elt) == CONSTRUCTOR
+	  && (init = find_field_init (t, elt)))
+	return init;
+    }
+  return NULL_TREE;
+}
+
 /* Attempt to verify that the argument, OPER, of a placement new expression
    refers to an object sufficiently large for an object of TYPE or an array
    of NELTS of such objects when NELTS is non-null, and issue a warning when
@@ -2375,10 +2402,25 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
       oper = TREE_OPERAND (oper, 0);
     }
 
+  /* Refers to the declared object that constains the subobject referenced
+     by OPER.  When the object is initialized, makes it possible to determine
+     the actual size of a flexible array member used as the buffer passed
+     as OPER to placement new.  */
+  tree var_decl = NULL_TREE;
+  /* True when operand is a COMPONENT_REF, to distinguish flexible array
+     members from arrays of unspecified size.  */
+  bool compref = TREE_CODE (oper) == COMPONENT_REF;
+
   /* Descend into a struct or union to find the member whose address
      is being used as the agument.  */
   while (TREE_CODE (oper) == COMPONENT_REF)
-    oper = TREE_OPERAND (oper, 1);
+    {
+      tree op0 = oper;
+      while (TREE_CODE (op0 = TREE_OPERAND (op0, 0)) == COMPONENT_REF);
+      if (TREE_CODE (op0) == VAR_DECL)
+	var_decl = op0;
+      oper = TREE_OPERAND (oper, 1);
+    }
 
   if ((addr_expr || !POINTER_TYPE_P (TREE_TYPE (oper)))
       && (TREE_CODE (oper) == VAR_DECL
@@ -2387,7 +2429,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
     {
       /* A possibly optimistic estimate of the number of bytes available
 	 in the destination buffer.  */
-      unsigned HOST_WIDE_INT bytes_avail;
+      unsigned HOST_WIDE_INT bytes_avail = 0;
       /* True when the estimate above is in fact the exact size
 	 of the destination buffer rather than an estimate.  */
       bool exact_size = true;
@@ -2410,20 +2452,45 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 	     as the optimistic estimate of the available space in it.  */
 	  bytes_avail = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (oper)));
 	}
+      else if (var_decl)
+	{
+	  /* Constructing into a buffer provided by the flexible array
+	     member of a declared object (which is permitted as a G++
+	     extension).  If the array member has been initialized,
+	     determine its size from the initializer.  Otherwise,
+	     the array size is zero.  */
+	  bytes_avail = 0;
+
+	  if (tree init = find_field_init (oper, DECL_INITIAL (var_decl)))
+	    bytes_avail = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (init)));
+	}
       else
 	{
 	  /* Bail if neither the size of the object nor its type is known.  */
 	  return;
 	}
 
-      /* Avoid diagnosing flexible array members (accepted as an extension
-	 and diagnosed with -Wpedantic).
-	 Constructing objects that appear to overflow the C99 equivalent of
-	 flexible array members (i.e., array members of size zero or one)
-	 are diagnosed in C++ since their declaration cannot be diagnosed.  */
-      if (bytes_avail == 0 && TREE_CODE (TREE_TYPE (oper)) == ARRAY_TYPE)
-	return;
+      tree_code oper_code = TREE_CODE (TREE_TYPE (oper));
 
+      if (compref && oper_code == ARRAY_TYPE)
+	{
+	  /* Avoid diagnosing flexible array members (which are accepted
+	     as an extension and diagnosed with -Wpedantic) and zero-length
+	     arrays (also an extension).
+	     Overflowing construction in one-element arrays is diagnosed
+	     only at level 2.  */
+	  if (bytes_avail == 0 && !var_decl)
+	    return;
+
+	  tree nelts = array_type_nelts_top (TREE_TYPE (oper));
+	  tree nelts_cst = maybe_constant_value (nelts);
+	  if (TREE_CODE (nelts_cst) == INTEGER_CST
+	      && integer_onep (nelts_cst)
+	      && !var_decl
+	      && warn_placement_new < 2)
+	    return;
+	}
+	  
       /* The size of the buffer can only be adjusted down but not up.  */
       gcc_checking_assert (0 <= adjust);
 
@@ -2452,7 +2519,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 	{
 	  if (nelts)
 	    if (CONSTANT_CLASS_P (nelts))
-	      warning_at (loc, OPT_Wplacement_new,
+	      warning_at (loc, OPT_Wplacement_new_,
 			  exact_size ?
 			  "placement new constructing an object of type "
 			  "%<%T [%wu]%> and size %qwu in a region of type %qT "
@@ -2464,7 +2531,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 			  TREE_TYPE (oper),
 			  bytes_avail);
 	    else
-	      warning_at (loc, OPT_Wplacement_new,
+	      warning_at (loc, OPT_Wplacement_new_,
 			  exact_size ?
 			  "placement new constructing an array of objects "
 			  "of type %qT and size %qwu in a region of type %qT "
@@ -2475,7 +2542,7 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 			  type, bytes_need, TREE_TYPE (oper),
 			  bytes_avail);
 	  else
-	    warning_at (loc, OPT_Wplacement_new,
+	    warning_at (loc, OPT_Wplacement_new_,
 			exact_size ?
 			"placement new constructing an object of type %qT "
 			"and size %qwu in a region of type %qT and size %qwi"
