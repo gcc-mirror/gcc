@@ -1,3 +1,8 @@
+2016-02-05  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/abi/post/s390x-linux-gnu/32/baseline_symbols.txt (FUNC):
+	New file.  Copied over from s390-linux-gnu.
+
 2016-02-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/69626
