@@ -240,6 +240,9 @@ case ${target} in
  | *-knetbsd-*				\
  | *-openbsd2*				\
  | *-openbsd3*				\
+ | avr-*rtems*				\
+ | h8300-*rtems*			\
+ | m32r-*rtems*			\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
