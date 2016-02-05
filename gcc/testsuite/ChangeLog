@@ -1,3 +1,8 @@
+2016-02-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/66089
+	* gfortran.dg/elemental_dependency_6.f90: New.
+
 2016-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/69691

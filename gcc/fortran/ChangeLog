@@ -1,3 +1,16 @@
+2016-02-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/66089
+	* trans-expr.c (expr_is_variable, gfc_expr_is_variable): Rename
+	the former to the latter and make it non-static.  Update callers.
+	* gfortran.h (gfc_expr_is_variable): New declaration.
+	(struct gfc_ss_info): Add field needs_temporary.
+	* trans-array.c (gfc_scalar_elemental_arg_saved_as_argument):
+	Tighten the condition on aggregate expressions with a check
+	that the expression is a variable and doesn't need a temporary.
+	(gfc_conv_resolve_dependency): Add intermediary reference variable.
+	Set the needs_temporary field.
+
 2016-02-03  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/67451

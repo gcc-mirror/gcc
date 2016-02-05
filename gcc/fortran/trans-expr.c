@@ -8834,8 +8834,8 @@ gfc_trans_array_constructor_copy (gfc_expr * expr1, gfc_expr * expr2)
 
 /* Tells whether the expression is to be treated as a variable reference.  */
 
-static bool
-expr_is_variable (gfc_expr *expr)
+bool
+gfc_expr_is_variable (gfc_expr *expr)
 {
   gfc_expr *arg;
   gfc_component *comp;
@@ -8848,7 +8848,7 @@ expr_is_variable (gfc_expr *expr)
   if (arg)
     {
       gcc_assert (expr->value.function.isym->id == GFC_ISYM_TRANSPOSE);
-      return expr_is_variable (arg);
+      return gfc_expr_is_variable (arg);
     }
 
   /* A data-pointer-returning function should be considered as a variable
@@ -9329,7 +9329,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
      must have its components deallocated afterwards.  */
   scalar_to_array = (expr2->ts.type == BT_DERIVED
 		       && expr2->ts.u.derived->attr.alloc_comp
-		       && !expr_is_variable (expr2)
+		       && !gfc_expr_is_variable (expr2)
 		       && expr1->rank && !expr2->rank);
   scalar_to_array |= (expr1->ts.type == BT_DERIVED
 				    && expr1->rank
@@ -9373,7 +9373,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
     }
 
   tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
-				 expr_is_variable (expr2) || scalar_to_array
+				 gfc_expr_is_variable (expr2) || scalar_to_array
 				 || expr2->expr_type == EXPR_ARRAY,
 				 !(l_is_temp || init_flag) && dealloc);
   gfc_add_expr_to_block (&body, tmp);
