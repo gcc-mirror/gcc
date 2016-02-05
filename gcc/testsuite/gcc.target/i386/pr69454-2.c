@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ia32 } } } */
-/* { dg-options "-O2 -mpreferred-stack-boundary=2" } */
+/* { dg-options "-O2 -msse2 -mno-accumulate-outgoing-args -mpreferred-stack-boundary=2" } */
 
 extern void fn2 ();
 long long a, b;
