@@ -1,3 +1,8 @@
+2016-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69628
+	* g++.dg/parse/pr69628.C: New test.
+
 2016-02-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/sancov/asan.c: Move to ...

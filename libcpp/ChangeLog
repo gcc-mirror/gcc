@@ -1,3 +1,9 @@
+2016-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69628
+	* charset.c (cpp_interpret_charconst): Clear *PCHARS_SEEN
+	and *UNSIGNEDP if bailing out early due to errors.
+
 2016-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR pch/68176

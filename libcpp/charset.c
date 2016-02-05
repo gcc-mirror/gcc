@@ -1620,10 +1620,17 @@ cpp_interpret_charconst (cpp_reader *pfile, const cpp_token *token,
   if (token->val.str.len == (size_t) (2 + wide + u8))
     {
       cpp_error (pfile, CPP_DL_ERROR, "empty character constant");
+      *pchars_seen = 0;
+      *unsignedp = 0;
       return 0;
     }
-  else if (!cpp_interpret_string (pfile, &token->val.str, 1, &str, token->type))
-    return 0;
+  else if (!cpp_interpret_string (pfile, &token->val.str, 1, &str,
+				  token->type))
+    {
+      *pchars_seen = 0;
+      *unsignedp = 0;
+      return 0;
+    }
 
   if (wide)
     result = wide_str_to_charconst (pfile, str, pchars_seen, unsignedp,
