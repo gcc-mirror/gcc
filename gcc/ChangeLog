@@ -1,3 +1,14 @@
+2016-02-05  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/68541
+	* gimple-ssa-split-paths.c: Include tree-cfg.h and params.h.
+	(count_stmts_in_block): New function.
+	(poor_ifcvt_candidate_code): Likewise.
+	(is_feasible_trace): Add some heuristics to determine when path
+	splitting is profitable.
+	(find_block_to_duplicate_for_splitting_paths): Make sure the graph
+	is a diamond with a single exit.
+
 2016-02-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/69662
