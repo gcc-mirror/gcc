@@ -1,3 +1,7 @@
+2016-02-05  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* doc/extend.texi: S/390: Correct some typos.
+
 2016-02-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_emit_call): Add missing 64 bit check.
