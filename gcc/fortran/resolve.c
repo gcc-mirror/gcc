@@ -14226,6 +14226,21 @@ resolve_symbol (gfc_symbol *sym)
       break;
 
     case FL_PROCEDURE:
+      if (sym->formal && !sym->formal_ns)
+	{
+	  /* Check that none of the arguments are a namelist.  */
+	  gfc_formal_arglist *formal = sym->formal;
+
+	  for (; formal; formal = formal->next)
+	    if (formal->sym && formal->sym->attr.flavor == FL_NAMELIST)
+	      {
+		gfc_error ("Namelist '%s' can not be an argument to "
+			   "subroutine or function at %L",
+			   formal->sym->name, &sym->declared_at);
+		return;
+	      }
+	}
+
       if (!resolve_fl_procedure (sym, mp_flag))
 	return;
       break;

@@ -1,3 +1,12 @@
+2016-02-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/50555
+	* primary.c (match_actual_arg): If symbol has attribute flavor of
+	namelist, generate an error. (gfc_match_rvalue): Likewise return
+	MATCH_ERROR.
+	* resolve.c (resolve_symbol): Scan arument list of procedures and
+	generate an error if a namelist is found.
+
 2016-02-05  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/66089
