@@ -1552,6 +1552,12 @@ match_actual_arg (gfc_expr **result)
 
 	  sym = symtree->n.sym;
 	  gfc_set_sym_referenced (sym);
+	  if (sym->attr.flavor == FL_NAMELIST)
+	    {
+	      gfc_error ("Namelist '%s' can not be an argument at %L",
+	      sym->name, &where);
+	      break;
+	    }
 	  if (sym->attr.flavor != FL_PROCEDURE
 	      && sym->attr.flavor != FL_UNKNOWN)
 	    break;
@@ -3217,6 +3223,10 @@ gfc_match_rvalue (gfc_expr **result)
 	}
 
       m = gfc_match_actual_arglist (0, &e->value.function.actual);
+      break;
+
+    case FL_NAMELIST:
+      m = MATCH_ERROR;
       break;
 
     default:
