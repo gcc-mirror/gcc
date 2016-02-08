@@ -1,3 +1,8 @@
+2016-02-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/69688
+	* g++.dg/init/const12.C: New test.
+
 2016-02-08  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR target/60410

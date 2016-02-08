@@ -6922,7 +6922,7 @@ extern bool var_in_constexpr_fn                 (tree);
 extern void explain_invalid_constexpr_fn        (tree);
 extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
-extern void clear_cv_cache			(void);
+extern void clear_cv_and_fold_caches		(void);
 
 /* In c-family/cilk.c */
 extern bool cilk_valid_spawn                    (tree);
