@@ -1,3 +1,9 @@
+2016-02-08  Richard Biener  <rguenther@suse.de>
+	Jeff Law  <law@redhat.com>
+
+	PR target/68273
+	* gcc.target/mips/pr68273.c: New testcase.
+
 2016-02-08   Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/69274

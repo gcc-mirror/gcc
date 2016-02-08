@@ -1,3 +1,10 @@
+2016-02-08  Richard Biener  <rguenther@suse.de>
+	Jeff Law  <law@redhat.com>
+
+	PR target/68273
+	* tree-ssanames.c (make_ssa_name_fn): Always use unqualified
+	types for anonymous SSA names.
+
 2016-02-08   Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/69274
