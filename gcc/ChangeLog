@@ -1,3 +1,10 @@
+2016-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69209
+	* ipa-split.c (split_function): If split part is not
+	returning retval, retval has gimple type but is not
+	gimple value, force it into a SSA_NAME first.
+
 2016-02-08  Nicklas Bo Jensen  <nbjensen@gmail.com>
 
 	* doc/tree-ssa.texi (Preserving the virtual SSA form): Remove
