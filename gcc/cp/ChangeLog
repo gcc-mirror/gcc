@@ -1,3 +1,9 @@
+2016-02-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69657
+	* name-lookup.c (do_nonmember_using_decl): Leave anticipated
+	built-ins alone.
+
 2016-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/59627
