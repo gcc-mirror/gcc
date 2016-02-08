@@ -432,7 +432,7 @@ dominator optimizations currently do this.
 
 When lazy updating is being used, the immediate use information is out of date
 and cannot be used reliably.  Lazy updating is achieved by simply marking
-statements modified via calls to @code{mark_stmt_modified} instead of
+statements modified via calls to @code{gimple_set_modified} instead of
 @code{update_stmt}.  When lazy updating is no longer required, all the
 modified statements must have @code{update_stmt} called in order to bring them
 up to date.  This must be done before the optimization is finished, or
@@ -653,40 +653,6 @@ NOTE: If this flag is used, any OLD->NEW mappings for real names
 are explicitly destroyed and only the symbols marked for
 renaming are processed@.
 @end itemize
-
-@subsection Preserving the virtual SSA form
-@cindex preserving virtual SSA form
-
-The virtual SSA form is harder to preserve than the non-virtual SSA form
-mainly because the set of virtual operands for a statement may change at
-what some would consider unexpected times.  In general, statement
-modifications should be bracketed between calls to
-@code{push_stmt_changes} and @code{pop_stmt_changes}.  For example,
-
-@smallexample
-    munge_stmt (tree stmt)
-    @{
-       push_stmt_changes (&stmt);
-       @dots{} rewrite STMT @dots{}
-       pop_stmt_changes (&stmt);
-    @}
-@end smallexample
-
-The call to @code{push_stmt_changes} saves the current state of the
-statement operands and the call to @code{pop_stmt_changes} compares
-the saved state with the current one and does the appropriate symbol
-marking for the SSA renamer.
-
-It is possible to modify several statements at a time, provided that
-@code{push_stmt_changes} and @code{pop_stmt_changes} are called in
-LIFO order, as when processing a stack of statements.
-
-Additionally, if the pass discovers that it did not need to make
-changes to the statement after calling @code{push_stmt_changes}, it
-can simply discard the topmost change buffer by calling
-@code{discard_stmt_changes}.  This will avoid the expensive operand
-re-scan operation and the buffer comparison that determines if symbols
-need to be marked for renaming.
 
 @subsection Examining @code{SSA_NAME} nodes
 @cindex examining SSA_NAMEs
