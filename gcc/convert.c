@@ -105,12 +105,12 @@ convert_to_pointer (tree type, tree expr)
 }
 
 /* A wrapper around convert_to_pointer_1 that only folds the
-   expression if it is CONSTANT_CLASS_P.  */
+   expression if DOFOLD, or if it is CONSTANT_CLASS_P.  */
 
 tree
-convert_to_pointer_nofold (tree type, tree expr)
+convert_to_pointer_maybe_fold (tree type, tree expr, bool dofold)
 {
-  return convert_to_pointer_1 (type, expr, CONSTANT_CLASS_P (expr));
+  return convert_to_pointer_1 (type, expr, dofold || CONSTANT_CLASS_P (expr));
 }
 
 /* Convert EXPR to some floating-point type TYPE.
@@ -403,12 +403,12 @@ convert_to_real (tree type, tree expr)
 }
 
 /* A wrapper around convert_to_real_1 that only folds the
-   expression if it is CONSTANT_CLASS_P.  */
+   expression if DOFOLD, or if it is CONSTANT_CLASS_P.  */
 
 tree
-convert_to_real_nofold (tree type, tree expr)
+convert_to_real_maybe_fold (tree type, tree expr, bool dofold)
 {
-  return convert_to_real_1 (type, expr, CONSTANT_CLASS_P (expr));
+  return convert_to_real_1 (type, expr, dofold || CONSTANT_CLASS_P (expr));
 }
 
 /* Convert EXPR to some integer (or enum) type TYPE.
@@ -669,6 +669,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	 two narrow values can be combined in their narrow type even to
 	 make a wider result--are handled by "shorten" in build_binary_op.  */
 
+      if (dofold)
       switch (ex_form)
 	{
 	case RSHIFT_EXPR:
@@ -857,9 +858,6 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	  /* This is not correct for ABS_EXPR,
 	     since we must test the sign before truncation.  */
 	  {
-	    if (!dofold)
-	      break;
-
 	    /* Do the arithmetic in type TYPEX,
 	       then convert result to TYPE.  */
 	    tree typex = type;
@@ -895,7 +893,6 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	     the conditional and never loses.  A COND_EXPR may have a throw
 	     as one operand, which then has void type.  Just leave void
 	     operands as they are.  */
-	  if (dofold)
 	    return
 	      fold_build3 (COND_EXPR, type, TREE_OPERAND (expr, 0),
 			   VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 1)))
@@ -968,19 +965,13 @@ convert_to_integer (tree type, tree expr)
   return convert_to_integer_1 (type, expr, true);
 }
 
-/* Convert EXPR to some integer (or enum) type TYPE.
-
-   EXPR must be pointer, integer, discrete (enum, char, or bool), float,
-   fixed-point or vector; in other cases error is called.
-
-   The result of this is always supposed to be a newly created tree node
-   not in use in any existing structure.  The tree node isn't folded,
-   beside EXPR is of constant class.  */
+/* A wrapper around convert_to_complex_1 that only folds the
+   expression if DOFOLD, or if it is CONSTANT_CLASS_P.  */
 
 tree
-convert_to_integer_nofold (tree type, tree expr)
+convert_to_integer_maybe_fold (tree type, tree expr, bool dofold)
 {
-  return convert_to_integer_1 (type, expr, CONSTANT_CLASS_P (expr));
+  return convert_to_integer_1 (type, expr, dofold || CONSTANT_CLASS_P (expr));
 }
 
 /* Convert EXPR to the complex type TYPE in the usual ways.  If FOLD_P is
@@ -1059,12 +1050,12 @@ convert_to_complex (tree type, tree expr)
 }
 
 /* A wrapper around convert_to_complex_1 that only folds the
-   expression if it is CONSTANT_CLASS_P.  */
+   expression if DOFOLD, or if it is CONSTANT_CLASS_P.  */
 
 tree
-convert_to_complex_nofold (tree type, tree expr)
+convert_to_complex_maybe_fold (tree type, tree expr, bool dofold)
 {
-  return convert_to_complex_1 (type, expr, CONSTANT_CLASS_P (expr));
+  return convert_to_complex_1 (type, expr, dofold || CONSTANT_CLASS_P (expr));
 }
 
 /* Convert EXPR to the vector type TYPE in the usual ways.  */

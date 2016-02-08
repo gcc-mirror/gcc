@@ -5019,10 +5019,12 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 #define CONV_PRIVATE	 16
 /* #define CONV_NONCONVERTING 32 */
 #define CONV_FORCE_TEMP  64
+#define CONV_FOLD	 128
 #define CONV_OLD_CONVERT (CONV_IMPLICIT | CONV_STATIC | CONV_CONST \
 			  | CONV_REINTERPRET)
 #define CONV_C_CAST      (CONV_IMPLICIT | CONV_STATIC | CONV_CONST \
 			  | CONV_REINTERPRET | CONV_PRIVATE | CONV_FORCE_TEMP)
+#define CONV_BACKEND_CONVERT (CONV_OLD_CONVERT | CONV_FOLD)
 
 /* Used by build_expr_type_conversion to indicate which types are
    acceptable as arguments to the expression under consideration.  */

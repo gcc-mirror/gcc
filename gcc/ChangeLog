@@ -1,3 +1,14 @@
+2016-02-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69631
+	* convert.c (convert_to_integer_1): Check dofold on truncation
+	distribution.
+	(convert_to_pointer_maybe_fold, convert_to_real_maybe_fold)
+	(convert_to_integer_maybe_fold, convert_to_complex_maybe_fold):
+	Rename from *_nofold.
+	* convert.h (convert_to_pointer_nofold, convert_to_integer_nofold)
+	(convert_to_real_nofold, convert_to_complex_nofold): New inlines.
+
 2016-02-08  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/68730

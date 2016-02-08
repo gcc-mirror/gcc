@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "convert.h"
 
-static tree cp_convert_to_pointer (tree, tree, tsubst_flags_t);
 static tree convert_to_pointer_force (tree, tree, tsubst_flags_t);
 static tree build_type_conversion (tree, tree);
 static tree build_up_reference (tree, tree, int, tree, tsubst_flags_t);
@@ -50,7 +49,7 @@ static void diagnose_ref_binding (location_t, tree, tree, tree);
 
    Here is a list of all the functions that assume that widening and
    narrowing is always done with a NOP_EXPR:
-     In convert.c, convert_to_integer[_nofold].
+     In convert.c, convert_to_integer[_maybe_fold].
      In c-typeck.c, build_binary_op_nodefault (boolean ops),
 	and c_common_truthvalue_conversion.
      In expr.c: expand_expr, for operands of a MULT_EXPR.
@@ -70,7 +69,8 @@ static void diagnose_ref_binding (location_t, tree, tree, tree);
    else try C-style pointer conversion.  */
 
 static tree
-cp_convert_to_pointer (tree type, tree expr, tsubst_flags_t complain)
+cp_convert_to_pointer (tree type, tree expr, bool dofold,
+		       tsubst_flags_t complain)
 {
   tree intype = TREE_TYPE (expr);
   enum tree_code form;
@@ -185,7 +185,7 @@ cp_convert_to_pointer (tree type, tree expr, tsubst_flags_t complain)
 	{
 	  if (TREE_CODE (expr) == PTRMEM_CST)
 	    return cp_convert_to_pointer (type, PTRMEM_CST_MEMBER (expr),
-					  complain);
+					  dofold, complain);
 	  else if (TREE_CODE (expr) == OFFSET_REF)
 	    {
 	      tree object = TREE_OPERAND (expr, 0);
@@ -237,7 +237,7 @@ cp_convert_to_pointer (tree type, tree expr, tsubst_flags_t complain)
       gcc_assert (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (expr)))
 		  == GET_MODE_SIZE (TYPE_MODE (type)));
 
-      return convert_to_pointer_nofold (type, expr);
+      return convert_to_pointer_maybe_fold (type, expr, dofold);
     }
 
   if (type_unknown_p (expr))
@@ -296,7 +296,7 @@ convert_to_pointer_force (tree type, tree expr, tsubst_flags_t complain)
 	}
     }
 
-  return cp_convert_to_pointer (type, expr, complain);
+  return cp_convert_to_pointer (type, expr, /*fold*/false, complain);
 }
 
 /* We are passing something to a function which requires a reference.
@@ -670,6 +670,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
   const char *invalid_conv_diag;
   tree e1;
   location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
+  bool dofold = (convtype & CONV_FOLD);
 
   if (error_operand_p (e) || type == error_mark_node)
     return error_mark_node;
@@ -706,7 +707,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
       /* For complex data types, we need to perform componentwise
 	 conversion.  */
       else if (TREE_CODE (type) == COMPLEX_TYPE)
-	return convert_to_complex_nofold (type, e);
+	return convert_to_complex_maybe_fold (type, e, dofold);
       else if (VECTOR_TYPE_P (type))
 	return convert_to_vector (type, e);
       else if (TREE_CODE (e) == TARGET_EXPR)
@@ -799,7 +800,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	  return cp_truthvalue_conversion (e);
 	}
 
-      converted = convert_to_integer_nofold (type, e);
+      converted = convert_to_integer_maybe_fold (type, e, dofold);
 
       /* Ignore any integer overflow caused by the conversion.  */
       return ignore_overflows (converted, e);
@@ -811,7 +812,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
       return nullptr_node;
     }
   if (POINTER_TYPE_P (type) || TYPE_PTRMEM_P (type))
-    return cp_convert_to_pointer (type, e, complain);
+    return cp_convert_to_pointer (type, e, dofold, complain);
   if (code == VECTOR_TYPE)
     {
       tree in_vtype = TREE_TYPE (e);
@@ -842,9 +843,9 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 		      TREE_TYPE (e));
 	}
       if (code == REAL_TYPE)
-	return convert_to_real_nofold (type, e);
+	return convert_to_real_maybe_fold (type, e, dofold);
       else if (code == COMPLEX_TYPE)
-	return convert_to_complex_nofold (type, e);
+	return convert_to_complex_maybe_fold (type, e, dofold);
     }
 
   /* New C++ semantics:  since assignment is now based on
@@ -1460,7 +1461,7 @@ convert (tree type, tree expr)
   if (POINTER_TYPE_P (type) && POINTER_TYPE_P (intype))
     return build_nop (type, expr);
 
-  return ocp_convert (type, expr, CONV_OLD_CONVERT,
+  return ocp_convert (type, expr, CONV_BACKEND_CONVERT,
 		      LOOKUP_NORMAL|LOOKUP_NO_CONVERSION,
 		      tf_warning_or_error);
 }

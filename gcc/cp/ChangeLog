@@ -1,3 +1,11 @@
+2016-02-08  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (CONV_FOLD, CONV_BACKEND_CONVERT): New.
+	* cvt.c (convert): Pass CONV_BACKEND_CONVERT.
+	(ocp_convert): Use *_maybe_fold.
+	(cp_convert_to_pointer): Add dofold parameter.
+	* cp-gimplify.c (cp_fold) [CONVERT_EXPR]: Call convert.
+
 2016-02-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/69662
