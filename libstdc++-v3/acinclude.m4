@@ -2215,7 +2215,7 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
       fi
       AC_MSG_RESULT([$glibcxx_cv_math11_overload])
       ;;
-    *-*-*gnu* | *-*-aix* | *-*-hpux*)
+    *)
       # If <math.h> defines the obsolete isinf(double) and isnan(double)
       # functions (instead of or as well as the C99 generic macros) then we
       # can't define std::isinf(double) and std::isnan(double) in <cmath>
@@ -2223,12 +2223,13 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
       AC_MSG_CHECKING([for obsolete isinf function in <math.h>])
         AC_CACHE_VAL(glibcxx_cv_obsolete_isinf, [
           AC_COMPILE_IFELSE([AC_LANG_SOURCE(
-            [#include <math.h>
+            [#define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
+             #include <math.h>
              #undef isinf
              namespace std {
                using ::isinf;
-               bool isinf(float);
-               bool isinf(long double);
+               constexpr bool isinf(float);
+               constexpr bool isinf(long double);
              }
              using std::isinf;
              bool b = isinf(0.0);
