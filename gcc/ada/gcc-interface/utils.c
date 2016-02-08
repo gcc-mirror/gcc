@@ -2484,6 +2484,24 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
   DECL_ARTIFICIAL (var_decl) = artificial_p;
   DECL_EXTERNAL (var_decl) = extern_flag;
 
+  TREE_CONSTANT (var_decl) = constant_p;
+  TREE_READONLY (var_decl) = const_flag;
+
+  /* The object is public if it is external or if it is declared public
+     and has static storage duration.  */
+  TREE_PUBLIC (var_decl) = extern_flag || (public_flag && static_storage);
+
+  /* We need to allocate static storage for an object with static storage
+     duration if it isn't external.  */
+  TREE_STATIC (var_decl) = !extern_flag && static_storage;
+
+  TREE_SIDE_EFFECTS (var_decl)
+    = TREE_THIS_VOLATILE (var_decl)
+    = TYPE_VOLATILE (type) | volatile_flag;
+
+  if (TREE_SIDE_EFFECTS (var_decl))
+    TREE_ADDRESSABLE (var_decl) = 1;
+
   /* Ada doesn't feature Fortran-like COMMON variables so we shouldn't
      try to fiddle with DECL_COMMON.  However, on platforms that don't
      support global BSS sections, uninitialized global variables would
@@ -2507,24 +2525,6 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
 	  && initializer_constant_valid_p (init, TREE_TYPE (init))
 	     != null_pointer_node))
     DECL_IGNORED_P (var_decl) = 1;
-
-  TREE_CONSTANT (var_decl) = constant_p;
-  TREE_READONLY (var_decl) = const_flag;
-
-  /* The object is public if it is external or if it is declared public
-     and has static storage duration.  */
-  TREE_PUBLIC (var_decl) = extern_flag || (public_flag && static_storage);
-
-  /* We need to allocate static storage for an object with static storage
-     duration if it isn't external.  */
-  TREE_STATIC (var_decl) = !extern_flag && static_storage;
-
-  TREE_SIDE_EFFECTS (var_decl)
-    = TREE_THIS_VOLATILE (var_decl)
-    = TYPE_VOLATILE (type) | volatile_flag;
-
-  if (TREE_SIDE_EFFECTS (var_decl))
-    TREE_ADDRESSABLE (var_decl) = 1;
 
   /* ??? Some attributes cannot be applied to CONST_DECLs.  */
   if (TREE_CODE (var_decl) == VAR_DECL)
