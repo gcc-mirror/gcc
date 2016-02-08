@@ -2583,15 +2583,6 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
       decls.value = NULL_TREE;
     }
 
-  /* It is impossible to overload a built-in function; any explicit
-     declaration eliminates the built-in declaration.  So, if OLDVAL
-     is a built-in, then we can just pretend it isn't there.  */
-  if (oldval
-      && TREE_CODE (oldval) == FUNCTION_DECL
-      && DECL_ANTICIPATED (oldval)
-      && !DECL_HIDDEN_FRIEND_P (oldval))
-    oldval = NULL_TREE;
-
   if (decls.value)
     {
       /* Check for using functions.  */
@@ -2610,6 +2601,10 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	    {
 	      tree new_fn = OVL_CURRENT (tmp);
 
+	      /* Don't import functions that haven't been declared.  */
+	      if (DECL_ANTICIPATED (new_fn))
+		continue;
+
 	      /* [namespace.udecl]
 
 		 If a function declaration in namespace scope or block
@@ -2627,13 +2622,13 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 		    continue; /* this is a using decl */
 		  else if (compparms_for_decl_and_using_decl (new_fn, old_fn))
 		    {
-		      gcc_assert (!DECL_ANTICIPATED (old_fn)
-				  || DECL_HIDDEN_FRIEND_P (old_fn));
-
 		      /* There was already a non-using declaration in
 			 this scope with the same parameter types. If both
 			 are the same extern "C" functions, that's ok.  */
-		      if (decls_match (new_fn, old_fn))
+		      if (DECL_ANTICIPATED (old_fn)
+			  && !DECL_HIDDEN_FRIEND_P (old_fn))
+			/* Ignore anticipated built-ins.  */;
+		      else if (decls_match (new_fn, old_fn))
 			break;
 		      else
 			{
@@ -2669,6 +2664,14 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	}
       else
 	{
+	  /* If we're declaring a non-function and OLDVAL is an anticipated
+	     built-in, just pretend it isn't there.  */
+	  if (oldval
+	      && TREE_CODE (oldval) == FUNCTION_DECL
+	      && DECL_ANTICIPATED (oldval)
+	      && !DECL_HIDDEN_FRIEND_P (oldval))
+	    oldval = NULL_TREE;
+
 	  *newval = decls.value;
 	  if (oldval && !decls_match (*newval, oldval))
 	    error ("%qD is already declared in this scope", name);
