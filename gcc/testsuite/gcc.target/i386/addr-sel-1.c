@@ -14,4 +14,4 @@ int f(int i)
 }
 
 /* { dg-final { scan-assembler "a\\+1" } } */
-/* { dg-final { scan-assembler "b\\+1" } } */
+/* { dg-final { scan-assembler "b\\+1" { xfail *-*-* } } } */
