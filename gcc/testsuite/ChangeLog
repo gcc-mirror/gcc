@@ -1,3 +1,9 @@
+2016-02-08  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/68541
+	* gcc.dg/tree-ssa/split-path-1.c: Increase limit for number
+	of statements allowed in join block for path splitting.
+
 2016-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/59627
