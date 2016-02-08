@@ -1,3 +1,8 @@
+2016-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/69239
+	* g++.dg/ipa/pr69239.C: New test.
+
 2016-02-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/69664
