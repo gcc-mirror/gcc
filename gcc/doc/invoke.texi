@@ -489,8 +489,7 @@ Objective-C and Objective-C++ Dialects}.
 -fpcc-struct-return  -fpic  -fPIC -fpie -fPIE -fno-plt @gol
 -fno-jump-tables @gol
 -frecord-gcc-switches @gol
--freg-struct-return  -fshort-enums @gol
--fshort-double  -fshort-wchar @gol
+-freg-struct-return  -fshort-enums  -fshort-wchar @gol
 -fverbose-asm  -fpack-struct[=@var{n}]  @gol
 -fleading-underscore  -ftls-model=@var{model} @gol
 -fstack-reuse=@var{reuse_level} @gol
@@ -11106,14 +11105,6 @@ declared range of possible values.  Specifically, the @code{enum} type
 is equivalent to the smallest integer type that has enough room.
 
 @strong{Warning:} the @option{-fshort-enums} switch causes GCC to generate
-code that is not binary compatible with code generated without that switch.
-Use it to conform to a non-default application binary interface.
-
-@item -fshort-double
-@opindex fshort-double
-Use the same size for @code{double} as for @code{float}.
-
-@strong{Warning:} the @option{-fshort-double} switch causes GCC to generate
 code that is not binary compatible with code generated without that switch.
 Use it to conform to a non-default application binary interface.
 

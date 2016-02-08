@@ -11,6 +11,16 @@
 
 2016-02-08  Bernd Schmidt  <bschmidt@redhat.com>
 
+	PR target/60410
+	* tree.c (build_common_tree_nodes): Remove short_double argument.
+	All callers changed.
+	* tree.h (build_common_tree_nodes): Adjust declaration.
+	* doc/invoke.texi (-fshort-double): Remove documentation.
+	* config/mips/t-img-elf (MULTILIB_OPTIONS, MULTILIB_DIRNAMES,
+	MULTILIB_EXCEPTIONS): Remove -fshort-double variant.
+	* lto-wrapper.c (merge_and_complain, append_compiler_options)
+	(append_linker_options): Don't handle OPT_fshort_double.
+
 	PR rtl-optimization/68730
 	* lra-remat.c (insn_to_cand_activation): New static variable.
 	(lra_remat): Allocate and free it.
