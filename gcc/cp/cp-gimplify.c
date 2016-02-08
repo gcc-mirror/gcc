@@ -1953,7 +1953,13 @@ cp_fold (tree x)
       loc = EXPR_LOCATION (x);
       op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
 
-      if (op0 != TREE_OPERAND (x, 0))
+      if (code == CONVERT_EXPR
+	  && SCALAR_TYPE_P (TREE_TYPE (x))
+	  && op0 != void_node)
+	/* During parsing we used convert_to_*_nofold; re-convert now using the
+	   folding variants, since fold() doesn't do those transformations.  */
+	x = fold (convert (TREE_TYPE (x), op0));
+      else if (op0 != TREE_OPERAND (x, 0))
 	{
 	  if (op0 == error_mark_node)
 	    x = error_mark_node;
