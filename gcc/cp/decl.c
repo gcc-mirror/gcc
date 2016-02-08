@@ -13414,8 +13414,7 @@ finish_enum_value_list (tree enumtype)
 
   /* Each enumerator now has the type of its enumeration.  Clear the cache
      so that this change in types doesn't confuse us later on.  */
-  clear_cv_cache ();
-  clear_fold_cache ();
+  clear_cv_and_fold_caches ();
 }
 
 /* Finishes the enum type. This is called only the first time an

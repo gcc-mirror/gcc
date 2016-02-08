@@ -4098,12 +4098,13 @@ maybe_constant_value (tree t, tree decl)
   return ret;
 }
 
-/* Dispose of the whole CV_CACHE.  */
+/* Dispose of the whole CV_CACHE and FOLD_CACHE.  */
 
 void
-clear_cv_cache (void)
+clear_cv_and_fold_caches (void)
 {
   gt_cleare_cache (cv_cache);
+  clear_fold_cache ();
 }
 
 /* Like maybe_constant_value but first fully instantiate the argument.
