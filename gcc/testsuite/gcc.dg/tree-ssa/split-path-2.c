@@ -2,7 +2,7 @@
 /* { dg-options "-O2 -fsplit-paths -fdump-tree-split-paths-details " } */
 
 int
-foo(char *p, int n)
+foo(signed char *p, int n)
 {
   int s = 0;
   int i;

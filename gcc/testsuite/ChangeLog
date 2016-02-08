@@ -1,5 +1,8 @@
 2016-02-08  Jeff Law  <law@redhat.com>
 
+	PR tree-optimization/68541
+	* gcc.dg/tree-ssa/split-path-2.c: Make char array explicitly signed.
+
         PR tree-optimization/65917
 	* gcc.dg/tree-ssa/20030922-2.c: No longer xfailed.
 
