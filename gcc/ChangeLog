@@ -1,3 +1,8 @@
+2016-02-08  Nicklas Bo Jensen  <nbjensen@gmail.com>
+
+	* doc/tree-ssa.texi (Preserving the virtual SSA form): Remove
+	outdated section.
+
 2016-02-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/69631
