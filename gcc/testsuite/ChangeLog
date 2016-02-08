@@ -1,5 +1,8 @@
 2016-02-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/59627
+	* g++.dg/gomp/pr59627.C: New test.
+
 	PR ipa/69239
 	* g++.dg/ipa/pr69239.C: New test.
 

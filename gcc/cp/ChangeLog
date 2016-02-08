@@ -1,3 +1,9 @@
+2016-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59627
+	* parser.c (cp_parser_omp_declare_reduction): Set assembler name
+	of the DECL_OMP_DECLARE_REDUCTION_P decls.
+
 2016-02-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/69688
