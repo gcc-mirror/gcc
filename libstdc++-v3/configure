@@ -18284,8 +18284,8 @@ else
              #undef isinf
              namespace std {
                using ::isinf;
-               constexpr bool isinf(float);
-               constexpr bool isinf(long double);
+               bool isinf(float);
+               bool isinf(long double);
              }
              using std::isinf;
              bool b = isinf(0.0);
