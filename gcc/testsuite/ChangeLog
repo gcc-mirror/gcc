@@ -1,3 +1,8 @@
+2016-02-08   Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/69274
+	* gcc.target/i386/addr-sel-1.c: XFAIL.
+
 2016-02-08  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/68541

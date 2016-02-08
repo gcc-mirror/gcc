@@ -1889,10 +1889,11 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 	}
       if (commutative < 0)
 	break;
-      if (curr_swapped)
-	break;
+      /* Swap forth and back to avoid changing recog_data.  */
       std::swap (recog_data.operand[commutative],
 		 recog_data.operand[commutative + 1]);
+      if (curr_swapped)
+	break;
     }
 }
 

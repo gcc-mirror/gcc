@@ -1,3 +1,9 @@
+2016-02-08   Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/69274
+	* ira.c (ira_setup_alts): Do not change recog_data.operand
+	order.
+
 2016-02-08  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/65917
