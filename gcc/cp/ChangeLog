@@ -1,5 +1,12 @@
 2016-02-08  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	PR c++/69139
+	* parser.c (cp_parser_simple_type_specifier): Make the check
+	for disambiguating between an 'auto' placeholder and an implicit
+	template parameter more robust.
+
+2016-02-08  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	PR c++/69283
 	PR c++/67835
 	* decl2.c (mark_used): When given a TEMPLATE_DECL, return after

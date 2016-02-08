@@ -1,5 +1,11 @@
 2016-02-08  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	PR c++/69139
+	* g++.dg/cpp0x/trailing12.C: New test.
+	* g++.dg/cpp0x/trailing13.C: New test.
+
+2016-02-08  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	PR c++/69283
 	PR c++/67835
 	* g++.dg/cpp1y/auto-fn29.C: New test.
