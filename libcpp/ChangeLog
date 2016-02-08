@@ -1,3 +1,12 @@
+2016-02-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/69664
+	* errors.c (cpp_diagnostic_with_line): Only call
+	rich_location::override_column if the column is non-zero.
+	* line-map.c (rich_location::override_column): Update columns
+	within m_ranges[0].  Add assertions to verify that doing so is
+	sane.
+
 2016-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69628

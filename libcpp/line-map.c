@@ -2036,13 +2036,22 @@ rich_location::lazily_expand_location ()
   return m_expanded_location;
 }
 
-/* Set the column of the primary location.  */
+/* Set the column of the primary location.  This can only be called for
+   rich_location instances for which the primary location has
+   caret==start==finish.  */
 
 void
 rich_location::override_column (int column)
 {
   lazily_expand_location ();
+  gcc_assert (m_ranges[0].m_show_caret_p);
+  gcc_assert (m_ranges[0].m_caret.column == m_expanded_location.column);
+  gcc_assert (m_ranges[0].m_start.column == m_expanded_location.column);
+  gcc_assert (m_ranges[0].m_finish.column == m_expanded_location.column);
   m_expanded_location.column = column;
+  m_ranges[0].m_caret.column = column;
+  m_ranges[0].m_start.column = column;
+  m_ranges[0].m_finish.column = column;
 }
 
 /* Add the given range.  */
