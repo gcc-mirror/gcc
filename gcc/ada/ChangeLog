@@ -1,3 +1,8 @@
+2016-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (create_var_decl): Set again DECL_COMMON and
+	DECL_IGNORED_P last.
+
 2016-01-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (enum attr_type): Rename into...
