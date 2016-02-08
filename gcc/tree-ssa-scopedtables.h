@@ -161,11 +161,18 @@ class const_and_copies
      was pushed.  */
   void pop_to_marker (void);
 
-  /* Record a single const/copy pair that can be unwound.  */
+  /* Record a single const/copy pair that can be unwound.  This version
+     may follow the value chain for the RHS.  */
   void record_const_or_copy (tree, tree);
 
+  /* Record a single const/copy pair that can be unwound.  This version
+     does not follow the value chain for the RHS.  */
+  void record_const_or_copy_raw (tree, tree, tree);
+
   /* Special entry point when we want to provide an explicit previous
-     value for the first argument.  Try to get rid of this in the future.  */
+     value for the first argument.  Try to get rid of this in the future. 
+
+     This version may also follow the value chain for the RHS.  */
   void record_const_or_copy (tree, tree, tree);
 
  private:

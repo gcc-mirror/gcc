@@ -700,26 +700,13 @@ const_and_copies::pop_to_marker (void)
     }
 }
 
-/* Record that X has the value Y.  */
+/* Record that X has the value Y and that X's previous value is PREV_X. 
+
+   This variant does not follow the value chain for Y.  */
 
 void
-const_and_copies::record_const_or_copy (tree x, tree y)
+const_and_copies::record_const_or_copy_raw (tree x, tree y, tree prev_x)
 {
-  record_const_or_copy (x, y, SSA_NAME_VALUE (x));
-}
-
-/* Record that X has the value Y and that X's previous value is PREV_X.  */
-
-void
-const_and_copies::record_const_or_copy (tree x, tree y, tree prev_x)
-{
-  /* Y may be NULL if we are invalidating entries in the table.  */
-  if (y && TREE_CODE (y) == SSA_NAME)
-    {
-      tree tmp = SSA_NAME_VALUE (y);
-      y = tmp ? tmp : y;
-    }
-
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "0>>> COPY ");
@@ -733,6 +720,31 @@ const_and_copies::record_const_or_copy (tree x, tree y, tree prev_x)
   m_stack.reserve (2);
   m_stack.quick_push (prev_x);
   m_stack.quick_push (x);
+}
+
+/* Record that X has the value Y.  */
+
+void
+const_and_copies::record_const_or_copy (tree x, tree y)
+{
+  record_const_or_copy (x, y, SSA_NAME_VALUE (x));
+}
+
+/* Record that X has the value Y and that X's previous value is PREV_X. 
+
+   This variant follow's Y value chain.  */
+
+void
+const_and_copies::record_const_or_copy (tree x, tree y, tree prev_x)
+{
+  /* Y may be NULL if we are invalidating entries in the table.  */
+  if (y && TREE_CODE (y) == SSA_NAME)
+    {
+      tree tmp = SSA_NAME_VALUE (y);
+      y = tmp ? tmp : y;
+    }
+
+  record_const_or_copy_raw (x, y, prev_x);
 }
 
 bool

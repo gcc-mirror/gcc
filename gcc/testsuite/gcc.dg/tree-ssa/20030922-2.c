@@ -20,8 +20,4 @@ rgn_rank (rtx insn1, rtx insn2)
 }
 
 /* There should be two IF conditionals.  */
-/* This now fails as it requires a very specific decision of DOM which
-   SSA name to record as a copy of the other when DOM derives copies
-   from temporary equivalences.  The heuristics there no longer do
-   the correct thing.  VRP still optimizes this testcase.  */
-/* { dg-final { scan-tree-dump-times "if " 2 "dom2" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "if " 2 "dom2" } } */
