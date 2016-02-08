@@ -112,6 +112,10 @@ static vec<cand_t> all_cands;
 /* Map: insn -> candidate representing it.  It is null if the insn can
    not be used for rematerialization.  */
 static cand_t *insn_to_cand;
+/* A secondary map, for candidates that involve two insns, where the
+   second one makes the equivalence.  The candidate must not be used
+   before seeing this activation insn.  */
+static cand_t *insn_to_cand_activation;
 
 /* Map regno -> candidates can be used for the regno
    rematerialization.  */
@@ -461,7 +465,7 @@ operand_to_remat (rtx_insn *insn)
    REGNO.  Insert the candidate into the table and set up the
    corresponding INSN_TO_CAND element.  */
 static void
-create_cand (rtx_insn *insn, int nop, int regno)
+create_cand (rtx_insn *insn, int nop, int regno, rtx_insn *activation = NULL)
 {
   lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
   rtx reg = *id->operand_loc[nop];
@@ -486,6 +490,8 @@ create_cand (rtx_insn *insn, int nop, int regno)
       cand->next_regno_cand = regno_cands[cand->regno];
       regno_cands[cand->regno] = cand;
     }
+  if (activation)
+    insn_to_cand_activation[INSN_UID (activation)] = cand_in_table;
 }
 
 /* Create rematerialization candidates (inserting them into the
@@ -504,43 +510,55 @@ create_cands (void)
   /* Create candidates.  */
   regno_potential_cand = XCNEWVEC (struct potential_cand, max_reg_num ());
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (INSN_P (insn))
+    if (NONDEBUG_INSN_P (insn))
       {
-	rtx set;
-	int src_regno, dst_regno;
-	rtx_insn *insn2;
 	lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
-	int nop = operand_to_remat (insn);
-	int regno = -1;
+	int keep_regno = -1;
+	rtx set = single_set (insn);
+	int nop;
 
-	if ((set = single_set (insn)) != NULL
-	    && REG_P (SET_SRC (set)) && REG_P (SET_DEST (set))
-	    && ((src_regno = REGNO (SET_SRC (set)))
-		>= lra_constraint_new_regno_start)
-	    && (dst_regno = REGNO (SET_DEST (set))) >= FIRST_PSEUDO_REGISTER
-	    && reg_renumber[dst_regno] < 0
-	    && (insn2 = regno_potential_cand[src_regno].insn) != NULL
-	    && BLOCK_FOR_INSN (insn2) == BLOCK_FOR_INSN (insn))
-	  /* It is an output reload insn after insn can be
-	     rematerialized (potential candidate).  */
-	  create_cand (insn2, regno_potential_cand[src_regno].nop, dst_regno);
-	if (nop < 0)
-	  goto fail;
-	gcc_assert (REG_P (*id->operand_loc[nop]));
- 	regno = REGNO (*id->operand_loc[nop]);
-	gcc_assert (regno >= FIRST_PSEUDO_REGISTER);
-	if (reg_renumber[regno] < 0)
-	  create_cand (insn, nop, regno);
-	else
+	/* See if this is an output reload for a previous insn.  */
+	if (set != NULL
+	    && REG_P (SET_SRC (set)) && REG_P (SET_DEST (set)))
 	  {
-	    regno_potential_cand[regno].insn = insn;
-	    regno_potential_cand[regno].nop = nop;
-	    goto fail;
+	    rtx dstreg = SET_DEST (set);
+	    int src_regno = REGNO (SET_SRC (set));
+	    int dst_regno = REGNO (dstreg);
+	    rtx_insn *insn2 = regno_potential_cand[src_regno].insn;
+
+	    if (insn2 != NULL 
+		&& dst_regno >= FIRST_PSEUDO_REGISTER
+		&& reg_renumber[dst_regno] < 0
+		&& BLOCK_FOR_INSN (insn2) == BLOCK_FOR_INSN (insn))
+	      {
+		create_cand (insn2, regno_potential_cand[src_regno].nop,
+			     dst_regno, insn);
+		goto done;
+	      }
 	  }
-	regno = -1;
-      fail:
+
+	nop = operand_to_remat (insn);
+	if (nop >= 0)
+	  {
+	    gcc_assert (REG_P (*id->operand_loc[nop]));
+	    int regno = REGNO (*id->operand_loc[nop]);
+	    gcc_assert (regno >= FIRST_PSEUDO_REGISTER);
+	    /* If we're setting an unrenumbered pseudo, make a candidate immediately.
+	       If it's an output reload register, save it for later; the code above
+	       looks for output reload insns later on.  */
+	    if (reg_renumber[regno] < 0)
+	      create_cand (insn, nop, regno);
+	    else if (regno >= lra_constraint_new_regno_start)
+	      {
+		regno_potential_cand[regno].insn = insn;
+		regno_potential_cand[regno].nop = nop;
+		keep_regno = regno;
+	      }
+	  }
+
+      done:
 	for (struct lra_insn_reg *reg = id->regs; reg != NULL; reg = reg->next)
-	  if (reg->type != OP_IN && reg->regno != regno
+	  if (reg->type != OP_IN && reg->regno != keep_regno
 	      && reg->regno >= FIRST_PSEUDO_REGISTER)
 	    regno_potential_cand[reg->regno].insn = NULL;
       }
@@ -1072,16 +1090,21 @@ do_remat (void)
   rtx_insn *insn;
   basic_block bb;
   bitmap_head avail_cands;
+  bitmap_head active_cands;
   bool changed_p = false;
   /* Living hard regs and hard registers of living pseudos.  */
   HARD_REG_SET live_hard_regs;
 
   bitmap_initialize (&avail_cands, &reg_obstack);
+  bitmap_initialize (&active_cands, &reg_obstack);
   FOR_EACH_BB_FN (bb, cfun)
     {
       REG_SET_TO_HARD_REG_SET (live_hard_regs, df_get_live_out (bb));
       bitmap_and (&avail_cands, &get_remat_bb_data (bb)->avin_cands,
 		  &get_remat_bb_data (bb)->livein_cands);
+      /* Activating insns are always in the same block as their corresponding
+	 remat insn, so at the start of a block the two bitsets are equal.  */
+      bitmap_copy (&active_cands, &avail_cands);
       FOR_BB_INSNS (bb, insn)
 	{
 	  if (!NONDEBUG_INSN_P (insn))
@@ -1115,7 +1138,8 @@ do_remat (void)
 	      for (cand = regno_cands[src_regno];
 		   cand != NULL;
 		   cand = cand->next_regno_cand)
-		if (bitmap_bit_p (&avail_cands, cand->index))
+		if (bitmap_bit_p (&avail_cands, cand->index)
+		    && bitmap_bit_p (&active_cands, cand->index))
 		  break;
 	    }
 	  int i, hard_regno, nregs;
@@ -1209,9 +1233,23 @@ do_remat (void)
 	      }
 
 	  bitmap_and_compl_into (&avail_cands, &temp_bitmap);
-	  if ((cand = insn_to_cand[INSN_UID (insn)]) != NULL)
-	    bitmap_set_bit (&avail_cands, cand->index);
-	    
+
+	  /* Now see whether a candidate is made active or available
+	     by this insn.  */
+	  cand = insn_to_cand_activation[INSN_UID (insn)];
+	  if (cand)
+	    bitmap_set_bit (&active_cands, cand->index);
+
+	  cand = insn_to_cand[INSN_UID (insn)];
+	  if (cand != NULL)
+	    {
+	      bitmap_set_bit (&avail_cands, cand->index);
+	      if (cand->reload_regno == -1)
+		bitmap_set_bit (&active_cands, cand->index);
+	      else
+		bitmap_clear_bit (&active_cands, cand->index);
+	    }
+
 	  if (remat_insn != NULL)
 	    {
 	      HOST_WIDE_INT sp_offset_change = cand_sp_offset - id->sp_offset;
@@ -1258,6 +1296,7 @@ do_remat (void)
 	}
     }
   bitmap_clear (&avail_cands);
+  bitmap_clear (&active_cands);
   return changed_p;
 }
 
@@ -1286,6 +1325,7 @@ lra_remat (void)
 	     lra_rematerialization_iter);
   timevar_push (TV_LRA_REMAT);
   insn_to_cand = XCNEWVEC (cand_t, get_max_uid ());
+  insn_to_cand_activation = XCNEWVEC (cand_t, get_max_uid ());
   regno_cands = XCNEWVEC (cand_t, max_regno);
   all_cands.create (8000);
   call_used_regs_arr_len = 0;
@@ -1314,6 +1354,7 @@ lra_remat (void)
   bitmap_clear (&all_blocks);
   free (regno_cands);
   free (insn_to_cand);
+  free (insn_to_cand_activation);
   timevar_pop (TV_LRA_REMAT);
   return result;
 }

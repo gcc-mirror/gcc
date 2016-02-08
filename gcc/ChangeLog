@@ -1,3 +1,15 @@
+2016-02-08  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/68730
+	* lra-remat.c (insn_to_cand_activation): New static variable.
+	(lra_remat): Allocate and free it.
+	(create_cand): New arg activation. Initialize a field in
+	insn_to_cand_activation if it is nonnull.
+	(create_cands): Pass the activation insn to create_cand when making
+	a candidate involving an output reload.  Reorganize code a little.
+	(do_remat): Keep track of active status of candidates in a separate
+	bitmap.
+
 2016-02-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69719
@@ -30,7 +42,6 @@
 	* tree-ssa-scopedtables.c
 	(const_and_copies::record_const_or_copy_raw): New, factored out of
 	(const_and_copies::record_const_or_copy): Call new member function.
-	
 
 2016-02-05  Jeff Law  <law@redhat.com>
 
