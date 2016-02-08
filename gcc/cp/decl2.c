@@ -5068,6 +5068,10 @@ mark_used (tree decl, tsubst_flags_t complain)
 
   /* Set TREE_USED for the benefit of -Wunused.  */
   TREE_USED (decl) = 1;
+
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    return true;
+
   if (DECL_CLONED_FUNCTION_P (decl))
     TREE_USED (DECL_CLONED_FUNCTION (decl)) = 1;
 
