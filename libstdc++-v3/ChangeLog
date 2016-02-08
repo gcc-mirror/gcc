@@ -1,3 +1,11 @@
+2016-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/48891
+	* acinclude.m4 (GLIBCXX_CHECK_MATH11_PROTO): Enable isinf and isnan
+	checks for all targets except *-*-solaris2.* and ensure we find the
+	libc math.h header not our own.
+	* configure: Regenerate.
+
 2016-02-05  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/abi/post/s390x-linux-gnu/32/baseline_symbols.txt (FUNC):
