@@ -1628,8 +1628,22 @@ split_function (basic_block return_bb, struct split_point *split_point,
 	        gimple_call_set_lhs (call, build_simple_mem_ref (retval));
 	      else
 	        gimple_call_set_lhs (call, retval);
+	      gsi_insert_after (&gsi, call, GSI_NEW_STMT);
 	    }
-          gsi_insert_after (&gsi, call, GSI_NEW_STMT);
+	  else
+	    {
+	      gsi_insert_after (&gsi, call, GSI_NEW_STMT);
+	      if (retval
+		  && is_gimple_reg_type (TREE_TYPE (retval))
+		  && !is_gimple_val (retval))
+		{
+		  gassign *g
+		    = gimple_build_assign (make_ssa_name (TREE_TYPE (retval)),
+					   retval);
+		  retval = gimple_assign_lhs (g);
+		  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+		}
+	    }
 	  /* Build bndret call to obtain returned bounds.  */
 	  if (retbnd)
 	    chkp_insert_retbnd_call (retbnd, retval, &gsi);
