@@ -670,229 +670,230 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	 make a wider result--are handled by "shorten" in build_binary_op.  */
 
       if (dofold)
-      switch (ex_form)
-	{
-	case RSHIFT_EXPR:
-	  /* We can pass truncation down through right shifting
-	     when the shift count is a nonpositive constant.  */
-	  if (TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST
-	      && tree_int_cst_sgn (TREE_OPERAND (expr, 1)) <= 0)
-	    goto trunc1;
-	  break;
-
-	case LSHIFT_EXPR:
-	  /* We can pass truncation down through left shifting
-	     when the shift count is a nonnegative constant and
-	     the target type is unsigned.  */
-	  if (TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST
-	      && tree_int_cst_sgn (TREE_OPERAND (expr, 1)) >= 0
-	      && TYPE_UNSIGNED (type)
-	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
-	    {
-	      /* If shift count is less than the width of the truncated type,
-		 really shift.  */
-	      if (tree_int_cst_lt (TREE_OPERAND (expr, 1), TYPE_SIZE (type)))
-		/* In this case, shifting is like multiplication.  */
-		goto trunc1;
-	      else
-		{
-		  /* If it is >= that width, result is zero.
-		     Handling this with trunc1 would give the wrong result:
-		     (int) ((long long) a << 32) is well defined (as 0)
-		     but (int) a << 32 is undefined and would get a
-		     warning.  */
-
-		  tree t = build_int_cst (type, 0);
-
-		  /* If the original expression had side-effects, we must
-		     preserve it.  */
-		  if (TREE_SIDE_EFFECTS (expr))
-		    return build2 (COMPOUND_EXPR, type, expr, t);
-		  else
-		    return t;
-		}
-	    }
-	  break;
-
-	case TRUNC_DIV_EXPR:
+	switch (ex_form)
 	  {
-	    tree arg0 = get_unwidened (TREE_OPERAND (expr, 0), type);
-	    tree arg1 = get_unwidened (TREE_OPERAND (expr, 1), type);
-
-	    /* Don't distribute unless the output precision is at least as big
-	       as the actual inputs and it has the same signedness.  */
-	    if (outprec >= TYPE_PRECISION (TREE_TYPE (arg0))
-		&& outprec >= TYPE_PRECISION (TREE_TYPE (arg1))
-		/* If signedness of arg0 and arg1 don't match,
-		   we can't necessarily find a type to compare them in.  */
-		&& (TYPE_UNSIGNED (TREE_TYPE (arg0))
-		    == TYPE_UNSIGNED (TREE_TYPE (arg1)))
-		/* Do not change the sign of the division.  */
-		&& (TYPE_UNSIGNED (TREE_TYPE (expr))
-		    == TYPE_UNSIGNED (TREE_TYPE (arg0)))
-		/* Either require unsigned division or a division by
-		   a constant that is not -1.  */
-		&& (TYPE_UNSIGNED (TREE_TYPE (arg0))
-		    || (TREE_CODE (arg1) == INTEGER_CST
-			&& !integer_all_onesp (arg1))))
+	  case RSHIFT_EXPR:
+	    /* We can pass truncation down through right shifting
+	       when the shift count is a nonpositive constant.  */
+	    if (TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST
+		&& tree_int_cst_sgn (TREE_OPERAND (expr, 1)) <= 0)
 	      goto trunc1;
 	    break;
-	  }
 
-	case MAX_EXPR:
-	case MIN_EXPR:
-	case MULT_EXPR:
-	  {
-	    tree arg0 = get_unwidened (TREE_OPERAND (expr, 0), type);
-	    tree arg1 = get_unwidened (TREE_OPERAND (expr, 1), type);
-
-	    /* Don't distribute unless the output precision is at least as big
-	       as the actual inputs.  Otherwise, the comparison of the
-	       truncated values will be wrong.  */
-	    if (outprec >= TYPE_PRECISION (TREE_TYPE (arg0))
-		&& outprec >= TYPE_PRECISION (TREE_TYPE (arg1))
-		/* If signedness of arg0 and arg1 don't match,
-		   we can't necessarily find a type to compare them in.  */
-		&& (TYPE_UNSIGNED (TREE_TYPE (arg0))
-		    == TYPE_UNSIGNED (TREE_TYPE (arg1))))
-	      goto trunc1;
-	    break;
-	  }
-
-	case PLUS_EXPR:
-	case MINUS_EXPR:
-	case BIT_AND_EXPR:
-	case BIT_IOR_EXPR:
-	case BIT_XOR_EXPR:
-	trunc1:
-	  {
-	    tree arg0 = get_unwidened (TREE_OPERAND (expr, 0), type);
-	    tree arg1 = get_unwidened (TREE_OPERAND (expr, 1), type);
-
-	    /* Do not try to narrow operands of pointer subtraction;
-	       that will interfere with other folding.  */
-	    if (ex_form == MINUS_EXPR
-		&& CONVERT_EXPR_P (arg0)
-		&& CONVERT_EXPR_P (arg1)
-		&& POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (arg0, 0)))
-		&& POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (arg1, 0))))
-	      break;
-
-	    if (outprec >= BITS_PER_WORD
-		|| TRULY_NOOP_TRUNCATION (outprec, inprec)
-		|| inprec > TYPE_PRECISION (TREE_TYPE (arg0))
-		|| inprec > TYPE_PRECISION (TREE_TYPE (arg1)))
+	  case LSHIFT_EXPR:
+	    /* We can pass truncation down through left shifting
+	       when the shift count is a nonnegative constant and
+	       the target type is unsigned.  */
+	    if (TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST
+		&& tree_int_cst_sgn (TREE_OPERAND (expr, 1)) >= 0
+		&& TYPE_UNSIGNED (type)
+		&& TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
 	      {
-		/* Do the arithmetic in type TYPEX,
-		   then convert result to TYPE.  */
-		tree typex = type;
-
-		/* Can't do arithmetic in enumeral types
-		   so use an integer type that will hold the values.  */
-		if (TREE_CODE (typex) == ENUMERAL_TYPE)
-		  typex
-		    = lang_hooks.types.type_for_size (TYPE_PRECISION (typex),
-						      TYPE_UNSIGNED (typex));
-
-		/* But now perhaps TYPEX is as wide as INPREC.
-		   In that case, do nothing special here.
-		   (Otherwise would recurse infinitely in convert.  */
-		if (TYPE_PRECISION (typex) != inprec)
+		/* If shift count is less than the width of the truncated type,
+		   really shift.  */
+		if (tree_int_cst_lt (TREE_OPERAND (expr, 1), TYPE_SIZE (type)))
+		  /* In this case, shifting is like multiplication.  */
+		  goto trunc1;
+		else
 		  {
-		    /* Don't do unsigned arithmetic where signed was wanted,
-		       or vice versa.
-		       Exception: if both of the original operands were
-		       unsigned then we can safely do the work as unsigned.
-		       Exception: shift operations take their type solely
-		       from the first argument.
-		       Exception: the LSHIFT_EXPR case above requires that
-		       we perform this operation unsigned lest we produce
-		       signed-overflow undefinedness.
-		       And we may need to do it as unsigned
-		       if we truncate to the original size.  */
-		    if (TYPE_UNSIGNED (TREE_TYPE (expr))
-			|| (TYPE_UNSIGNED (TREE_TYPE (arg0))
-			    && (TYPE_UNSIGNED (TREE_TYPE (arg1))
-				|| ex_form == LSHIFT_EXPR
-				|| ex_form == RSHIFT_EXPR
-				|| ex_form == LROTATE_EXPR
-				|| ex_form == RROTATE_EXPR))
-			|| ex_form == LSHIFT_EXPR
-			/* If we have !flag_wrapv, and either ARG0 or
-			   ARG1 is of a signed type, we have to do
-			   PLUS_EXPR, MINUS_EXPR or MULT_EXPR in an unsigned
-			   type in case the operation in outprec precision
-			   could overflow.  Otherwise, we would introduce
-			   signed-overflow undefinedness.  */
-			|| ((!TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0))
-			     || !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1)))
-			    && ((TYPE_PRECISION (TREE_TYPE (arg0)) * 2u
-				 > outprec)
-				|| (TYPE_PRECISION (TREE_TYPE (arg1)) * 2u
-				    > outprec))
-			    && (ex_form == PLUS_EXPR
-				|| ex_form == MINUS_EXPR
-				|| ex_form == MULT_EXPR)))
-		      {
-			if (!TYPE_UNSIGNED (typex))
-			  typex = unsigned_type_for (typex);
-		      }
+		    /* If it is >= that width, result is zero.
+		       Handling this with trunc1 would give the wrong result:
+		       (int) ((long long) a << 32) is well defined (as 0)
+		       but (int) a << 32 is undefined and would get a
+		       warning.  */
+
+		    tree t = build_int_cst (type, 0);
+
+		    /* If the original expression had side-effects, we must
+		       preserve it.  */
+		    if (TREE_SIDE_EFFECTS (expr))
+		      return build2 (COMPOUND_EXPR, type, expr, t);
 		    else
-		      {
-			if (TYPE_UNSIGNED (typex))
-			  typex = signed_type_for (typex);
-		      }
-		    /* We should do away with all this once we have a proper
-		       type promotion/demotion pass, see PR45397.  */
-		    expr = maybe_fold_build2_loc (dofold, loc, ex_form, typex,
-						  convert (typex, arg0),
-						  convert (typex, arg1));
-		    return convert (type, expr);
+		      return t;
 		  }
 	      }
-	  }
-	  break;
-
-	case NEGATE_EXPR:
-	case BIT_NOT_EXPR:
-	  /* This is not correct for ABS_EXPR,
-	     since we must test the sign before truncation.  */
-	  {
-	    /* Do the arithmetic in type TYPEX,
-	       then convert result to TYPE.  */
-	    tree typex = type;
-
-	    /* Can't do arithmetic in enumeral types
-	       so use an integer type that will hold the values.  */
-	    if (TREE_CODE (typex) == ENUMERAL_TYPE)
-	      typex
-		= lang_hooks.types.type_for_size (TYPE_PRECISION (typex),
-						  TYPE_UNSIGNED (typex));
-
-	    if (!TYPE_UNSIGNED (typex))
-	      typex = unsigned_type_for (typex);
-	    return convert (type,
-			    fold_build1 (ex_form, typex,
-					 convert (typex,
-						  TREE_OPERAND (expr, 0))));
-	  }
-
-	CASE_CONVERT:
-	  /* Don't introduce a
-	     "can't convert between vector values of different size" error.  */
-	  if (TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == VECTOR_TYPE
-	      && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_OPERAND (expr, 0))))
-		  != GET_MODE_SIZE (TYPE_MODE (type))))
 	    break;
-	  /* If truncating after truncating, might as well do all at once.
-	     If truncating after extending, we may get rid of wasted work.  */
-	  return convert (type, get_unwidened (TREE_OPERAND (expr, 0), type));
 
-	case COND_EXPR:
-	  /* It is sometimes worthwhile to push the narrowing down through
-	     the conditional and never loses.  A COND_EXPR may have a throw
-	     as one operand, which then has void type.  Just leave void
-	     operands as they are.  */
+	  case TRUNC_DIV_EXPR:
+	    {
+	      tree arg0 = get_unwidened (TREE_OPERAND (expr, 0), type);
+	      tree arg1 = get_unwidened (TREE_OPERAND (expr, 1), type);
+
+	      /* Don't distribute unless the output precision is at least as
+		 big as the actual inputs and it has the same signedness.  */
+	      if (outprec >= TYPE_PRECISION (TREE_TYPE (arg0))
+		  && outprec >= TYPE_PRECISION (TREE_TYPE (arg1))
+		  /* If signedness of arg0 and arg1 don't match,
+		     we can't necessarily find a type to compare them in.  */
+		  && (TYPE_UNSIGNED (TREE_TYPE (arg0))
+		      == TYPE_UNSIGNED (TREE_TYPE (arg1)))
+		  /* Do not change the sign of the division.  */
+		  && (TYPE_UNSIGNED (TREE_TYPE (expr))
+		      == TYPE_UNSIGNED (TREE_TYPE (arg0)))
+		  /* Either require unsigned division or a division by
+		     a constant that is not -1.  */
+		  && (TYPE_UNSIGNED (TREE_TYPE (arg0))
+		      || (TREE_CODE (arg1) == INTEGER_CST
+			  && !integer_all_onesp (arg1))))
+		goto trunc1;
+	      break;
+	    }
+
+	  case MAX_EXPR:
+	  case MIN_EXPR:
+	  case MULT_EXPR:
+	    {
+	      tree arg0 = get_unwidened (TREE_OPERAND (expr, 0), type);
+	      tree arg1 = get_unwidened (TREE_OPERAND (expr, 1), type);
+
+	      /* Don't distribute unless the output precision is at least as
+		 big as the actual inputs.  Otherwise, the comparison of the
+		 truncated values will be wrong.  */
+	      if (outprec >= TYPE_PRECISION (TREE_TYPE (arg0))
+		  && outprec >= TYPE_PRECISION (TREE_TYPE (arg1))
+		  /* If signedness of arg0 and arg1 don't match,
+		     we can't necessarily find a type to compare them in.  */
+		  && (TYPE_UNSIGNED (TREE_TYPE (arg0))
+		      == TYPE_UNSIGNED (TREE_TYPE (arg1))))
+		goto trunc1;
+	      break;
+	    }
+
+	  case PLUS_EXPR:
+	  case MINUS_EXPR:
+	  case BIT_AND_EXPR:
+	  case BIT_IOR_EXPR:
+	  case BIT_XOR_EXPR:
+	  trunc1:
+	    {
+	      tree arg0 = get_unwidened (TREE_OPERAND (expr, 0), type);
+	      tree arg1 = get_unwidened (TREE_OPERAND (expr, 1), type);
+
+	      /* Do not try to narrow operands of pointer subtraction;
+		 that will interfere with other folding.  */
+	      if (ex_form == MINUS_EXPR
+		  && CONVERT_EXPR_P (arg0)
+		  && CONVERT_EXPR_P (arg1)
+		  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (arg0, 0)))
+		  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (arg1, 0))))
+		break;
+
+	      if (outprec >= BITS_PER_WORD
+		  || TRULY_NOOP_TRUNCATION (outprec, inprec)
+		  || inprec > TYPE_PRECISION (TREE_TYPE (arg0))
+		  || inprec > TYPE_PRECISION (TREE_TYPE (arg1)))
+		{
+		  /* Do the arithmetic in type TYPEX,
+		     then convert result to TYPE.  */
+		  tree typex = type;
+
+		  /* Can't do arithmetic in enumeral types
+		     so use an integer type that will hold the values.  */
+		  if (TREE_CODE (typex) == ENUMERAL_TYPE)
+		    typex
+		      = lang_hooks.types.type_for_size (TYPE_PRECISION (typex),
+							TYPE_UNSIGNED (typex));
+
+		  /* But now perhaps TYPEX is as wide as INPREC.
+		     In that case, do nothing special here.
+		     (Otherwise would recurse infinitely in convert.  */
+		  if (TYPE_PRECISION (typex) != inprec)
+		    {
+		      /* Don't do unsigned arithmetic where signed was wanted,
+			 or vice versa.
+			 Exception: if both of the original operands were
+			 unsigned then we can safely do the work as unsigned.
+			 Exception: shift operations take their type solely
+			 from the first argument.
+			 Exception: the LSHIFT_EXPR case above requires that
+			 we perform this operation unsigned lest we produce
+			 signed-overflow undefinedness.
+			 And we may need to do it as unsigned
+			 if we truncate to the original size.  */
+		      if (TYPE_UNSIGNED (TREE_TYPE (expr))
+			  || (TYPE_UNSIGNED (TREE_TYPE (arg0))
+			      && (TYPE_UNSIGNED (TREE_TYPE (arg1))
+				  || ex_form == LSHIFT_EXPR
+				  || ex_form == RSHIFT_EXPR
+				  || ex_form == LROTATE_EXPR
+				  || ex_form == RROTATE_EXPR))
+			  || ex_form == LSHIFT_EXPR
+			  /* If we have !flag_wrapv, and either ARG0 or
+			     ARG1 is of a signed type, we have to do
+			     PLUS_EXPR, MINUS_EXPR or MULT_EXPR in an unsigned
+			     type in case the operation in outprec precision
+			     could overflow.  Otherwise, we would introduce
+			     signed-overflow undefinedness.  */
+			  || ((!TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0))
+			       || !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1)))
+			      && ((TYPE_PRECISION (TREE_TYPE (arg0)) * 2u
+				   > outprec)
+				  || (TYPE_PRECISION (TREE_TYPE (arg1)) * 2u
+				      > outprec))
+			      && (ex_form == PLUS_EXPR
+				  || ex_form == MINUS_EXPR
+				  || ex_form == MULT_EXPR)))
+			{
+			  if (!TYPE_UNSIGNED (typex))
+			    typex = unsigned_type_for (typex);
+			}
+		      else
+			{
+			  if (TYPE_UNSIGNED (typex))
+			    typex = signed_type_for (typex);
+			}
+		      /* We should do away with all this once we have a proper
+			 type promotion/demotion pass, see PR45397.  */
+		      expr = maybe_fold_build2_loc (dofold, loc, ex_form, typex,
+						    convert (typex, arg0),
+						    convert (typex, arg1));
+		      return convert (type, expr);
+		    }
+		}
+	    }
+	    break;
+
+	  case NEGATE_EXPR:
+	  case BIT_NOT_EXPR:
+	    /* This is not correct for ABS_EXPR,
+	       since we must test the sign before truncation.  */
+	    {
+	      /* Do the arithmetic in type TYPEX,
+		 then convert result to TYPE.  */
+	      tree typex = type;
+
+	      /* Can't do arithmetic in enumeral types
+		 so use an integer type that will hold the values.  */
+	      if (TREE_CODE (typex) == ENUMERAL_TYPE)
+		typex
+		  = lang_hooks.types.type_for_size (TYPE_PRECISION (typex),
+						    TYPE_UNSIGNED (typex));
+
+	      if (!TYPE_UNSIGNED (typex))
+		typex = unsigned_type_for (typex);
+	      return convert (type,
+			      fold_build1 (ex_form, typex,
+					   convert (typex,
+						    TREE_OPERAND (expr, 0))));
+	    }
+
+	  CASE_CONVERT:
+	    /* Don't introduce a "can't convert between vector values of
+	       different size" error.  */
+	    if (TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == VECTOR_TYPE
+		&& (GET_MODE_SIZE (TYPE_MODE
+				   (TREE_TYPE (TREE_OPERAND (expr, 0))))
+		    != GET_MODE_SIZE (TYPE_MODE (type))))
+	      break;
+	    /* If truncating after truncating, might as well do all at once.
+	       If truncating after extending, we may get rid of wasted work.  */
+	    return convert (type, get_unwidened (TREE_OPERAND (expr, 0), type));
+
+	  case COND_EXPR:
+	    /* It is sometimes worthwhile to push the narrowing down through
+	       the conditional and never loses.  A COND_EXPR may have a throw
+	       as one operand, which then has void type.  Just leave void
+	       operands as they are.  */
 	    return
 	      fold_build3 (COND_EXPR, type, TREE_OPERAND (expr, 0),
 			   VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 1)))
@@ -902,9 +903,9 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 			   ? TREE_OPERAND (expr, 2)
 			   : convert (type, TREE_OPERAND (expr, 2)));
 
-	default:
-	  break;
-	}
+	  default:
+	    break;
+	  }
 
       /* When parsing long initializers, we might end up with a lot of casts.
 	 Shortcut this.  */
