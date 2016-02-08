@@ -1,3 +1,17 @@
+2016-02-08  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/65917
+	* tree-ssa-dom.c (record_temporary_equivalences): Record both
+	equivalences from if (x == y) style conditionals.
+	(loop_depth_of_name): Remove.
+	(record_equality): Remove loop depth check.
+	* tree-ssa-scopedtables.h (const_and_copies): Refine comments.
+	(const_and_copies::record_const_or_copy_raw): New member function.
+	* tree-ssa-scopedtables.c
+	(const_and_copies::record_const_or_copy_raw): New, factored out of
+	(const_and_copies::record_const_or_copy): Call new member function.
+	
+
 2016-02-05  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/68541
