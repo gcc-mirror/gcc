@@ -1,3 +1,10 @@
+2016-02-08  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/69283
+	PR c++/67835
+	* g++.dg/cpp1y/auto-fn29.C: New test.
+	* g++.dg/cpp1y/auto-fn30.C: New test.
+
 2016-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69209
