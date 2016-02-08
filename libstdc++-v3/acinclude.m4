@@ -2228,8 +2228,8 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
              #undef isinf
              namespace std {
                using ::isinf;
-               constexpr bool isinf(float);
-               constexpr bool isinf(long double);
+               bool isinf(float);
+               bool isinf(long double);
              }
              using std::isinf;
              bool b = isinf(0.0);

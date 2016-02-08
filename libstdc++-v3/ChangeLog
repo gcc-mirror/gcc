@@ -1,5 +1,9 @@
 2016-02-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	* acinclude.m4 (GLIBCXX_CHECK_MATH11_PROTO): Remove accidentally
+	added 'constexpr' in previous commit.
+	* configure: Regenerate.
+
 	PR libstdc++/48891
 	* acinclude.m4 (GLIBCXX_CHECK_MATH11_PROTO): Enable isinf and isnan
 	checks for all targets except *-*-solaris2.* and ensure we find the
