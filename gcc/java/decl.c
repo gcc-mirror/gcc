@@ -565,7 +565,7 @@ java_init_decl_processing (void)
   global_binding_level = current_binding_level;
 
   /* Build common tree nodes, Java has an unsigned char.  */
-  build_common_tree_nodes (false, false);
+  build_common_tree_nodes (false);
 
   /* ???  Now we continue and override some of the built types again
      with Java specific types.  As the above generated types are

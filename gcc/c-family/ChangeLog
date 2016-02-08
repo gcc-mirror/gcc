@@ -1,3 +1,8 @@
+2016-02-08  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR target/60410
+	* c.opt (fshort-double): Remove.
+
 2016-02-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/69662

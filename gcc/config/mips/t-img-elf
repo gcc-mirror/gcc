@@ -20,19 +20,14 @@
 # A multilib for mips32r6+LE
 # A multilib for mips64r6
 # A multilib for mips64r6+LE
-# A multilib for mips32r6+LE+singlefloat+shortdouble
 
-MULTILIB_OPTIONS = mips64r6 mabi=64 EL msoft-float/msingle-float fshort-double
-MULTILIB_DIRNAMES = mips64r6 64 el sof sgl short
+MULTILIB_OPTIONS = mips64r6 mabi=64 EL msoft-float/msingle-float
+MULTILIB_DIRNAMES = mips64r6 64 el sof sgl
 MULTILIB_MATCHES = EL=mel EB=meb
 
 # Don't build 64r6 with single-float
 MULTILIB_EXCEPTIONS += mips64r6/*msingle-float*
-MULTILIB_EXCEPTIONS += mips64r6/*fshort-double*
 
 MULTILIB_EXCEPTIONS += mabi=64*
 MULTILIB_EXCEPTIONS += msingle-float*
 MULTILIB_EXCEPTIONS += *msingle-float
-MULTILIB_EXCEPTIONS += fshort-double
-MULTILIB_EXCEPTIONS += EL/fshort-double
-MULTILIB_EXCEPTIONS += *msoft-float/fshort-double

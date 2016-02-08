@@ -1,3 +1,8 @@
+2016-02-08  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR target/60410
+	* gcc.dg/lto/pr55113_0.c: Remove test.
+
 2016-02-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69719
