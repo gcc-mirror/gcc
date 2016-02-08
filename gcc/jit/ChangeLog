@@ -1,3 +1,9 @@
+2016-02-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* dummy-frontend.c (jit_langhook_init): Remove
+	second argument to build_common_tree_nodes to
+	track r233218.
+
 2016-01-23  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* jit-playback.c: Include pthread.h.
