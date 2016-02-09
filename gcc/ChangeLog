@@ -1,6 +1,22 @@
 2016-02-09  Charles Baylis  <charles.baylis@linaro.org>
 
 	PR target/68532
+	* config/arm/arm.c (arm_evpc_neon_vzip): Allow for big endian lane
+	order.
+	* config/arm/arm_neon.h (vzipq_s8): Adjust shuffle patterns for big
+	endian.
+	(vzipq_s16): Likewise.
+	(vzipq_s32): Likewise.
+	(vzipq_f32): Likewise.
+	(vzipq_u8): Likewise.
+	(vzipq_u16): Likewise.
+	(vzipq_u32): Likewise.
+	(vzipq_p8): Likewise.
+	(vzipq_p16): Likewise.
+
+2016-02-09  Charles Baylis  <charles.baylis@linaro.org>
+
+	PR target/68532
 	* config/arm/arm.c (neon_endian_lane_map): New function.
 	(neon_vector_pair_endian_lane_map): New function.
 	(arm_evpc_neon_vuzp): Allow for big endian lane order.
