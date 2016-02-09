@@ -1,3 +1,8 @@
+2016-02-11  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR target/69634
+	* gcc.dg/pr69634.c: New.
+
 2016-02-09  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/vect-mask-store-move-1.c: Add missing space.
