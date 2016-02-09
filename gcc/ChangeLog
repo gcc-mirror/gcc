@@ -1,3 +1,8 @@
+2016-02-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-ssa-backprop.c (optimize_phi): Do not replace an argument
+	corresponding to an abnormal edge.
+
 2016-02-09  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/69599

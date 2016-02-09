@@ -831,15 +831,21 @@ backprop::optimize_assign (gassign *assign, tree lhs, const usage_info *info)
 void
 backprop::optimize_phi (gphi *phi, tree var, const usage_info *info)
 {
-  /* If the sign of the result doesn't matter, strip sign operations
-     from all arguments.  */
+  /* If the sign of the result doesn't matter, try to strip sign operations
+     from arguments.  */
   if (info->flags.ignore_sign)
     {
+      basic_block bb = gimple_bb (phi);
       use_operand_p use;
       ssa_op_iter oi;
       bool replaced = false;
       FOR_EACH_PHI_ARG (use, phi, oi, SSA_OP_USE)
 	{
+	  /* Propagating along abnormal edges is delicate, punt for now.  */
+	  const int index = PHI_ARG_INDEX_FROM_USE (use);
+	  if (EDGE_PRED (bb, index)->flags & EDGE_ABNORMAL)
+	    continue;
+
 	  tree new_arg = strip_sign_op (USE_FROM_PTR (use));
 	  if (new_arg)
 	    {
