@@ -56,6 +56,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    to the console using  "CONOUT$"   */
 #if defined (_WIN32) && !defined (__CYGWIN__)
 #include <windows.h>
+#include <wincrypt.h>
 # define _PATH_TTY "CONOUT$"
 #else
 # define _PATH_TTY "/dev/tty"
