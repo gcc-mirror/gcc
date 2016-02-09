@@ -8741,9 +8741,9 @@ vuzpq_s8 (int8x16_t __a, int8x16_t __b)
   int8x16x2_t __rv;
 #ifdef __ARM_BIG_ENDIAN
   __rv.val[0] = __builtin_shuffle (__a, __b, (uint8x16_t)
-      { 17, 19, 21, 23, 25, 27, 29, 31, 1, 3, 5, 7, 9, 11, 13, 15 });
+      { 9, 11, 13, 15, 1, 3, 5, 7, 25, 27, 29, 31, 17, 19, 21, 23 });
   __rv.val[1] = __builtin_shuffle (__a, __b, (uint8x16_t)
-      { 16, 18, 20, 22, 24, 26, 28, 30, 0, 2, 4, 6, 8, 10, 12, 14 });
+      { 8, 10, 12, 14, 0, 2, 4, 6, 24, 26, 28, 30, 16, 18, 20, 22 });
 #else
   __rv.val[0] = __builtin_shuffle (__a, __b, (uint8x16_t)
       { 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30 });
@@ -8759,9 +8759,9 @@ vuzpq_s16 (int16x8_t __a, int16x8_t __b)
   int16x8x2_t __rv;
 #ifdef __ARM_BIG_ENDIAN
   __rv.val[0] = __builtin_shuffle (__a, __b, (uint16x8_t)
-      { 9, 11, 13, 15, 1, 3, 5, 7 });
+      { 5, 7, 1, 3, 13, 15, 9, 11 });
   __rv.val[1] = __builtin_shuffle (__a, __b, (uint16x8_t)
-      { 8, 10, 12, 14, 0, 2, 4, 6 });
+      { 4, 6, 0, 2, 12, 14, 8, 10 });
 #else
   __rv.val[0] = __builtin_shuffle (__a, __b, (uint16x8_t)
       { 0, 2, 4, 6, 8, 10, 12, 14 });
@@ -8776,8 +8776,8 @@ vuzpq_s32 (int32x4_t __a, int32x4_t __b)
 {
   int32x4x2_t __rv;
 #ifdef __ARM_BIG_ENDIAN
-  __rv.val[0] = __builtin_shuffle (__a, __b, (uint32x4_t) { 5, 7, 1, 3 });
-  __rv.val[1] = __builtin_shuffle (__a, __b, (uint32x4_t) { 4, 6, 0, 2 });
+  __rv.val[0] = __builtin_shuffle (__a, __b, (uint32x4_t) { 3, 1, 7, 5 });
+  __rv.val[1] = __builtin_shuffle (__a, __b, (uint32x4_t) { 2, 0, 6, 4 });
 #else
   __rv.val[0] = __builtin_shuffle (__a, __b, (uint32x4_t) { 0, 2, 4, 6 });
   __rv.val[1] = __builtin_shuffle (__a, __b, (uint32x4_t) { 1, 3, 5, 7 });
@@ -8790,8 +8790,8 @@ vuzpq_f32 (float32x4_t __a, float32x4_t __b)
 {
   float32x4x2_t __rv;
 #ifdef __ARM_BIG_ENDIAN
-  __rv.val[0] = __builtin_shuffle (__a, __b, (uint32x4_t) { 5, 7, 1, 3 });
-  __rv.val[1] = __builtin_shuffle (__a, __b, (uint32x4_t) { 4, 6, 0, 2 });
+  __rv.val[0] = __builtin_shuffle (__a, __b, (uint32x4_t) { 3, 1, 7, 5 });
+  __rv.val[1] = __builtin_shuffle (__a, __b, (uint32x4_t) { 2, 0, 6, 4 });
 #else
   __rv.val[0] = __builtin_shuffle (__a, __b, (uint32x4_t) { 0, 2, 4, 6 });
   __rv.val[1] = __builtin_shuffle (__a, __b, (uint32x4_t) { 1, 3, 5, 7 });
@@ -8805,9 +8805,9 @@ vuzpq_u8 (uint8x16_t __a, uint8x16_t __b)
   uint8x16x2_t __rv;
 #ifdef __ARM_BIG_ENDIAN
   __rv.val[0] = __builtin_shuffle (__a, __b, (uint8x16_t)
-      { 17, 19, 21, 23, 25, 27, 29, 31, 1, 3, 5, 7, 9, 11, 13, 15 });
+      { 9, 11, 13, 15, 1, 3, 5, 7, 25, 27, 29, 31, 17, 19, 21, 23 });
   __rv.val[1] = __builtin_shuffle (__a, __b, (uint8x16_t)
-      { 16, 18, 20, 22, 24, 26, 28, 30, 0, 2, 4, 6, 8, 10, 12, 14 });
+      { 8, 10, 12, 14, 0, 2, 4, 6, 24, 26, 28, 30, 16, 18, 20, 22 });
 #else
   __rv.val[0] = __builtin_shuffle (__a, __b, (uint8x16_t)
       { 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30 });
@@ -8823,9 +8823,9 @@ vuzpq_u16 (uint16x8_t __a, uint16x8_t __b)
   uint16x8x2_t __rv;
 #ifdef __ARM_BIG_ENDIAN
   __rv.val[0] = __builtin_shuffle (__a, __b, (uint16x8_t)
-      { 9, 11, 13, 15, 1, 3, 5, 7 });
+      { 5, 7, 1, 3, 13, 15, 9, 11 });
   __rv.val[1] = __builtin_shuffle (__a, __b, (uint16x8_t)
-      { 8, 10, 12, 14, 0, 2, 4, 6 });
+      { 4, 6, 0, 2, 12, 14, 8, 10 });
 #else
   __rv.val[0] = __builtin_shuffle (__a, __b, (uint16x8_t)
       { 0, 2, 4, 6, 8, 10, 12, 14 });
@@ -8840,8 +8840,8 @@ vuzpq_u32 (uint32x4_t __a, uint32x4_t __b)
 {
   uint32x4x2_t __rv;
 #ifdef __ARM_BIG_ENDIAN
-  __rv.val[0] = __builtin_shuffle (__a, __b, (uint32x4_t) { 5, 7, 1, 3 });
-  __rv.val[1] = __builtin_shuffle (__a, __b, (uint32x4_t) { 4, 6, 0, 2 });
+  __rv.val[0] = __builtin_shuffle (__a, __b, (uint32x4_t) { 3, 1, 7, 5 });
+  __rv.val[1] = __builtin_shuffle (__a, __b, (uint32x4_t) { 2, 0, 6, 4 });
 #else
   __rv.val[0] = __builtin_shuffle (__a, __b, (uint32x4_t) { 0, 2, 4, 6 });
   __rv.val[1] = __builtin_shuffle (__a, __b, (uint32x4_t) { 1, 3, 5, 7 });
@@ -8855,9 +8855,9 @@ vuzpq_p8 (poly8x16_t __a, poly8x16_t __b)
   poly8x16x2_t __rv;
 #ifdef __ARM_BIG_ENDIAN
   __rv.val[0] = __builtin_shuffle (__a, __b, (uint8x16_t)
-      { 17, 19, 21, 23, 25, 27, 29, 31, 1, 3, 5, 7, 9, 11, 13, 15 });
+      { 9, 11, 13, 15, 1, 3, 5, 7, 25, 27, 29, 31, 17, 19, 21, 23 });
   __rv.val[1] = __builtin_shuffle (__a, __b, (uint8x16_t)
-      { 16, 18, 20, 22, 24, 26, 28, 30, 0, 2, 4, 6, 8, 10, 12, 14 });
+      { 8, 10, 12, 14, 0, 2, 4, 6, 24, 26, 28, 30, 16, 18, 20, 22 });
 #else
   __rv.val[0] = __builtin_shuffle (__a, __b, (uint8x16_t)
       { 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30 });
@@ -8873,9 +8873,9 @@ vuzpq_p16 (poly16x8_t __a, poly16x8_t __b)
   poly16x8x2_t __rv;
 #ifdef __ARM_BIG_ENDIAN
   __rv.val[0] = __builtin_shuffle (__a, __b, (uint16x8_t)
-      { 9, 11, 13, 15, 1, 3, 5, 7 });
+      { 5, 7, 1, 3, 13, 15, 9, 11 });
   __rv.val[1] = __builtin_shuffle (__a, __b, (uint16x8_t)
-      { 8, 10, 12, 14, 0, 2, 4, 6 });
+      { 4, 6, 0, 2, 12, 14, 8, 10 });
 #else
   __rv.val[0] = __builtin_shuffle (__a, __b, (uint16x8_t)
       { 0, 2, 4, 6, 8, 10, 12, 14 });
