@@ -1,3 +1,8 @@
+2016-02-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (insv<mode>_1): Use gen_int_mode to
+	truncate const_int operand 1 to QImode.
+
 2016-02-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-ssa-backprop.c (optimize_phi): Do not replace an argument
@@ -83,7 +88,7 @@
 	compare or adjust the segment length.
 
 2016-02-08  Richard Biener  <rguenther@suse.de>
-	Jeff Law  <law@redhat.com>
+	    Jeff Law  <law@redhat.com>
 
 	PR target/68273
 	* tree-ssanames.c (make_ssa_name_fn): Always use unqualified
@@ -92,8 +97,7 @@
 2016-02-08   Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/69274
-	* ira.c (ira_setup_alts): Do not change recog_data.operand
-	order.
+	* ira.c (ira_setup_alts): Do not change recog_data.operand order.
 
 2016-02-08  Jeff Law  <law@redhat.com>
 
@@ -181,8 +185,7 @@
 2016-02-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/69625
-	* config/s390/s390.c (SAVE_SLOT_NONE, SAVE_SLOT_STACK): New
-	defines.
+	* config/s390/s390.c (SAVE_SLOT_NONE, SAVE_SLOT_STACK): New defines.
 	(s390_register_info_gprtofpr): Use new macros above.
 	(s390_register_info_stdarg_fpr): Adjust max_fpr to better match
 	its name.
