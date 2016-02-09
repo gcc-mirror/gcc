@@ -1,3 +1,10 @@
+2016-02-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/68404
+	* config/rs6000/predicates.md (fusion_gpr_addis): Prevent fusing
+	an ADDIS that adds a pointer to a large constant that sets the
+	upper16 bits with a load operation.
+
 2016-02-09  Charles Baylis  <charles.baylis@linaro.org>
 
 	PR target/68532

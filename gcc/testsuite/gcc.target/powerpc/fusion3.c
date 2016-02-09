@@ -4,15 +4,24 @@
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
 /* { dg-options "-mcpu=power7 -mtune=power9 -O3" } */
 
-#define LARGE 0x12345
+#define SIZE 4
+struct foo {
+  float f;
+  double d;
+};
 
-int fusion_float_read (float *p){ return p[LARGE]; }
-int fusion_double_read (double *p){ return p[LARGE]; }
+static struct foo st[SIZE];
+struct foo *ptr_st = &st[0];
 
-void fusion_float_write (float *p, float f){ p[LARGE] = f; }
-void fusion_double_write (double *p, double d){ p[LARGE] = d; }
+float fusion_float_read (void){ return st[SIZE].f; }
+double fusion_float_extend (void){ return (double)st[SIZE].f; }
+double fusion_double_read (void){ return st[SIZE].d; }
 
-/* { dg-final { scan-assembler "load fusion, type SF"  } } */
-/* { dg-final { scan-assembler "load fusion, type DF"  } } */
-/* { dg-final { scan-assembler "store fusion, type SF" } } */
-/* { dg-final { scan-assembler "store fusion, type DF" } } */
+void fusion_float_write (float f){ st[SIZE].f = f; }
+void fusion_float_truncate (double d){ st[SIZE].f = (float)d; }
+void fusion_double_write (double d){ st[SIZE].d = d; }
+
+/* { dg-final { scan-assembler-times "load fusion, type SF"  2 } } */
+/* { dg-final { scan-assembler-times "load fusion, type DF"  1 } } */
+/* { dg-final { scan-assembler-times "store fusion, type SF" 2 } } */
+/* { dg-final { scan-assembler-times "store fusion, type DF" 1 } } */
