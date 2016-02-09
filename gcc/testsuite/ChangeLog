@@ -1,3 +1,7 @@
+2016-02-09  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* gcc.dg/vect/vect-mask-store-move-1.c: Fix test failures.
+
 2016-02-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69715

@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-options "-O3" } */
 /* { dg-additional-options "-mavx2" { target { i?86-*-* x86_64-*-* } } } */
 
 #define N 256
@@ -16,4 +15,4 @@ void foo (int n)
       }
 }
 
-/* { dg-final { scan-tree-dump-times "Move stmt to created bb" 6 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Move stmt to created bb" 6 "vect"{ target { i?86-*-* x86_64-*-* } } } } */
