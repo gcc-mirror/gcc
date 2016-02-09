@@ -1,3 +1,6 @@
+2016-02-09  Alexander Fomin  <alexander.fomin@intel.com>
+	* gcc.target/i386/avx512f-klogic-2.c: Adjust expectation.
+
 2016-02-09  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* gcc.dg/vect/vect-mask-store-move-1.c: Fix test failures.
