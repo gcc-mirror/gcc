@@ -4162,6 +4162,18 @@ find_func_aliases_for_call_arg (varinfo_t fi, unsigned index, tree arg)
     process_constraint (new_constraint (lhs, *rhsp));
 }
 
+/* Return true if FNDECL may be part of another lto partition.  */
+
+static bool
+fndecl_maybe_in_other_partition (tree fndecl)
+{
+  cgraph_node *fn_node = cgraph_node::get (fndecl);
+  if (fn_node == NULL)
+    return true;
+
+  return fn_node->in_other_partition;
+}
+
 /* Create constraints for the builtin call T.  Return true if the call
    was handled, otherwise false.  */
 
@@ -4537,6 +4549,10 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
 	      tree fnarg = gimple_call_arg (t, fnpos);
 	      gcc_assert (TREE_CODE (fnarg) == ADDR_EXPR);
 	      tree fndecl = TREE_OPERAND (fnarg, 0);
+	      if (fndecl_maybe_in_other_partition (fndecl))
+		/* Fallthru to general call handling.  */
+		break;
+
 	      tree arg = gimple_call_arg (t, argpos);
 
 	      varinfo_t fi = get_vi_for_tree (fndecl);
@@ -5113,6 +5129,10 @@ find_func_clobbers (struct function *fn, gimple *origt)
 	      tree fnarg = gimple_call_arg (t, fnpos);
 	      gcc_assert (TREE_CODE (fnarg) == ADDR_EXPR);
 	      tree fndecl = TREE_OPERAND (fnarg, 0);
+	      if (fndecl_maybe_in_other_partition (fndecl))
+		/* Fallthru to general call handling.  */
+		break;
+
 	      varinfo_t cfi = get_vi_for_tree (fndecl);
 
 	      tree arg = gimple_call_arg (t, argpos);
@@ -7505,9 +7525,13 @@ ipa_pta_execute (void)
 	 address_taken bit for function foo._0, which would make it non-local.
 	 But for the purpose of ipa-pta, we can regard the run_on_threads call
 	 as a local call foo._0 (data),  so we ignore address_taken on nodes
-	 with parallelized_function set.  */
-      bool node_address_taken = (node->address_taken
-				 && !node->parallelized_function);
+	 with parallelized_function set.
+	 Note: this is only safe, if foo and foo._0 are in the same lto
+	 partition.  */
+      bool node_address_taken = ((node->parallelized_function
+				  && !node->used_from_other_partition)
+				 ? false
+				 : node->address_taken);
 
       /* For externally visible or attribute used annotated functions use
 	 local constraints for their arguments.
@@ -7676,12 +7700,19 @@ ipa_pta_execute (void)
 		continue;
 
 	      /* Handle direct calls to functions with body.  */
-	      if (gimple_call_builtin_p (stmt, BUILT_IN_GOMP_PARALLEL))
-		decl = TREE_OPERAND (gimple_call_arg (stmt, 0), 0);
-	      else if (gimple_call_builtin_p (stmt, BUILT_IN_GOACC_PARALLEL))
-		decl = TREE_OPERAND (gimple_call_arg (stmt, 1), 0);
-	      else
-		decl = gimple_call_fndecl (stmt);
+	      decl = gimple_call_fndecl (stmt);
+
+	      {
+		tree called_decl = NULL_TREE;
+		if (gimple_call_builtin_p (stmt, BUILT_IN_GOMP_PARALLEL))
+		  called_decl = TREE_OPERAND (gimple_call_arg (stmt, 0), 0);
+		else if (gimple_call_builtin_p (stmt, BUILT_IN_GOACC_PARALLEL))
+		  called_decl = TREE_OPERAND (gimple_call_arg (stmt, 1), 0);
+
+		if (called_decl != NULL_TREE
+		    && !fndecl_maybe_in_other_partition (called_decl))
+		  decl = called_decl;
+	      }
 
 	      if (decl
 		  && (fi = lookup_vi_for_tree (decl))
