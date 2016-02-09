@@ -15,4 +15,4 @@ void foo (int n)
       }
 }
 
-/* { dg-final { scan-tree-dump-times "Move stmt to created bb" 6 "vect"{ target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "Move stmt to created bb" 6 "vect" { target { i?86-*-* x86_64-*-* } } } } */
