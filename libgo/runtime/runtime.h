@@ -863,3 +863,4 @@ extern void _cgo_notify_runtime_init_done (void);
 extern _Bool runtime_iscgo;
 extern _Bool runtime_cgoHasExtraM;
 extern Hchan *runtime_main_init_done;
+extern uintptr __go_end __attribute__ ((weak));
