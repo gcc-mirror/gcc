@@ -1,3 +1,9 @@
+2016-02-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR lto/69707
+	* lto-wrapper.c (append_diag_options): New function.
+	(compile_offload_image): Call append_diag_options.
+
 2016-02-08  Sandra Loosemore <sandra@codesourcery.com>
 
 	PR other/69722
