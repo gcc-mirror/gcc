@@ -1,3 +1,12 @@
+2016-02-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69599
+	* tree-ssa-structalias.c (fndecl_maybe_in_other_partition): New
+	function.
+	(find_func_aliases_for_builtin_call, find_func_clobbers)
+	(ipa_pta_execute):  Handle case that foo and foo._0 are not in same lto
+	partition.
+
 2016-02-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69715
