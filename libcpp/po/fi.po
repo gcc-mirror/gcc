@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: cpplib 6.1-b20160131\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-01-31 15:50+0000\n"
-"PO-Revision-Date: 2016-02-05 11:21+0200\n"
+"PO-Revision-Date: 2016-02-09 22:14+0200\n"
 "Last-Translator: Lauri Nurmi <lanurmi@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
 "Language: fi\n"
@@ -103,11 +103,11 @@ msgstr "’\\%x’:lla on eri merkitys perinteisessä C:ssä"
 
 #: charset.c:1203
 msgid "\\x used with no following hex digits"
-msgstr "\\x:ää käytetty ilman seuraavia heksenumeroita"
+msgstr "\\x:ää käytetty ilman seuraavia heksanumeroita"
 
 #: charset.c:1210
 msgid "hex escape sequence out of range"
-msgstr "heksadesimaalinen ohjaussaraj sallitun välin ulkopuolella"
+msgstr "heksadesimaalinen ohjaussarja sallitun välin ulkopuolella"
 
 #: charset.c:1248
 msgid "octal escape sequence out of range"
@@ -175,7 +175,7 @@ msgstr "ehdotetaan #elif:in käytön välttämistä perinteisessä C:ssä"
 #: directives.c:396
 #, c-format
 msgid "traditional C ignores #%s with the # indented"
-msgstr "#%s ohitetaan perinteisessä C:ssä, kun # on sisennetty"
+msgstr "#%s ohitetaan perinteisessä C:ssä kun # on sisennetty"
 
 #: directives.c:400
 #, c-format
@@ -481,7 +481,7 @@ msgstr "imaginäärivakiot ovat GCC-laajennos"
 
 #: expr.c:704
 msgid "binary constants are a C++14 feature or GCC extension"
-msgstr "binäärivakiot ovat C++14-ominaisuus tai GCC-laajennos"
+msgstr "binäärivakiot ovat C++14:n ominaisuus tai GCC-laajennos"
 
 #: expr.c:706
 msgid "binary constants are a GCC extension"
@@ -604,7 +604,7 @@ msgstr "yksi tai useampia PCH-tiedostoja löytyi, mutta ne olivat virheellisiä"
 
 #: files.c:567
 msgid "use -Winvalid-pch for more information"
-msgstr "käytä -Winvalid-pch saadaksesi lisätietoja"
+msgstr "käytä valitsinta -Winvalid-pch lisätietojen saamiseksi"
 
 #: files.c:671
 #, c-format
@@ -662,7 +662,7 @@ msgstr "CPP-puolikokonaisluku on kapeampi kuin CPP-merkki"
 #: init.c:580
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
-msgstr "CPP tällä koneella ei pysty käsittelemään yli %lu-bittisiä leveämerkkivakioita, mutta kohde vaatii %lu bittiä"
+msgstr "tämän koneen CPP ei pysty käsittelemään yli %lu-bittisiä leveämerkkivakioita, mutta kohde vaatii %lu bittiä"
 
 #: lex.c:1029
 msgid "backslash and newline separated by space"
@@ -706,7 +706,7 @@ msgstr "”%.*s” ei ole NFKC-muodossa"
 #: lex.c:1214
 #, c-format
 msgid "`%.*s' is not in NFC"
-msgstr "”%.*s” ei ole  NFC-muodossa"
+msgstr "”%.*s” ei ole NFC-muodossa"
 
 #  poison tarkoittaa, että makroa tai direktiiviä ei koskaan määritellä tai käytetä
 #: lex.c:1284 lex.c:1373
@@ -717,12 +717,12 @@ msgstr "myrkytetyn makron ”%s” käyttöyritys"
 #  Variadic-makro on sellainen makro, jonka argumenttien lukumäärä voi vaihdella.
 #: lex.c:1294 lex.c:1383
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
-msgstr "__VA_ARGS__ voi vain esiintyä C++11:n variadisen makron lavennoksessa"
+msgstr "__VA_ARGS__ voi esiintyä vain C++11:n variadisen makron lavennoksessa"
 
 #  Variadic-makro on sellainen makro, jonka argumenttien lukumäärä voi vaihdella.
 #: lex.c:1298 lex.c:1387
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
-msgstr "__VA_ARGS__ voi vain esiintyä C99:n variadisen makron lavennoksessa"
+msgstr "__VA_ARGS__ voi esiintyä vain C99:n variadisen makron lavennoksessa"
 
 #: lex.c:1305 lex.c:1394
 #, c-format
@@ -748,7 +748,7 @@ msgstr "päättämätön raaka merkkijono"
 
 #: lex.c:1784 lex.c:1914
 msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
-msgstr "literaalissa virheellinen loppuliite; C++11 vaatii välilyönnin literaalin ja merkkijonomakron väliin"
+msgstr "literaalissa virheellinen jälkiliite; C++11 vaatii välilyönnin literaalin ja merkkijonomakron väliin"
 
 #: lex.c:1896
 msgid "null character(s) preserved in literal"
@@ -843,7 +843,7 @@ msgstr "makrolle ”%s” annettu %u argumenttia, mutta se ottaa vain %u"
 #: macro.c:979 traditional.c:819
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
-msgstr "päättämätön argumenttiluettelo kutsuttaessa ”%s”-makroa"
+msgstr "päättämätön argumenttiluettelo ”%s”-makron kutsussa"
 
 #: macro.c:1130
 #, c-format
@@ -853,12 +853,12 @@ msgstr "funktion kaltaista makroa ”%s” on käytettävä argumenttien kanssa 
 #: macro.c:1813
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
-msgstr "kutsutaan makron %s argumenttia %d: tyhjät makroargumentit ovat määrittelemättömiä ISO C++98:ssa"
+msgstr "%s-makron argumentin %d kutsu: tyhjät makroargumentit ovat määrittelemättömiä ISO C++98:ssa"
 
 #: macro.c:1821 macro.c:1830
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
-msgstr "kutsutaan makron %s argumenttia %d: tyhjät makroargumentit ovat määrittelemättömiä ISO C90:ssä"
+msgstr "%s-makron argumentin %d kutsu: tyhjät makroargumentit ovat määrittelemättömiä ISO C90:ssä"
 
 #: macro.c:2794
 #, c-format
@@ -882,7 +882,6 @@ msgstr "parametrin nimi puuttuu"
 msgid "anonymous variadic macros were introduced in C++11"
 msgstr "anonyymit variadiset makrot esiteltiin C++11:ssä"
 
-#  Variadic-makro on sellainen makro, jonka argumenttien lukumäärä voi vaihdella.
 #: macro.c:2894 macro.c:2899
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "anonyymit variadiset makrot esiteltiin C99:ssä"
@@ -901,7 +900,7 @@ msgstr "’)’ puuttuu makron parametriluettelosta"
 
 #: macro.c:2970
 msgid "'##' cannot appear at either end of a macro expansion"
-msgstr "’##’ ei voi esiintyä makrolavennuksen kummassakaan päässä"
+msgstr "”##” ei voi esiintyä makrolavennuksen kummassakaan päässä"
 
 #: macro.c:3007
 msgid "ISO C++11 requires whitespace after the macro name"
@@ -917,7 +916,7 @@ msgstr "tyhjemerkki puuttuu makron nimen jäljestä"
 
 #: macro.c:3069
 msgid "'#' is not followed by a macro parameter"
-msgstr "’#’ ilman sitä seuraavaa makroparametria"
+msgstr "”#” ilman sitä seuraavaa makroparametria"
 
 #: macro.c:3230
 #, c-format
@@ -940,7 +939,7 @@ msgstr "virheellinen hash-tyyppi %d funktiossa cpp_macro_definition"
 
 #: pch.c:87 pch.c:345 pch.c:359 pch.c:377 pch.c:383 pch.c:392 pch.c:399
 msgid "while writing precompiled header"
-msgstr "kirjoitettaessa esikäännettyä otsaketiedostoa"
+msgstr "kirjoitettaessa esikäännettyä otsaketta"
 
 #: pch.c:619
 #, c-format
@@ -969,7 +968,7 @@ msgstr "%s: ei käytetä, koska ”__COUNTER__” on virheellinen"
 
 #: pch.c:723 pch.c:900
 msgid "while reading precompiled header"
-msgstr "luettaessa esikäännettyä otsaketiedostoa"
+msgstr "luettaessa esikäännettyä otsaketta"
 
 #: traditional.c:889
 #, c-format
