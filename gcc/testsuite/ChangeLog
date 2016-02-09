@@ -1,3 +1,8 @@
+2016-02-09  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR middle-end/65702
+	* c-c++-common/pr67639.c: New test.
+
 2016-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
