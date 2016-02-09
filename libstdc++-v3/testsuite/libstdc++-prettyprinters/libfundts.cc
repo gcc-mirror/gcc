@@ -26,6 +26,7 @@
 #include <experimental/string_view>
 #include <string>
 #include <map>
+#include <iostream>
 
 using std::experimental::any;
 using std::experimental::optional;
@@ -66,6 +67,7 @@ main()
   any am = *om;
 // { dg-final { note-test am {std::experimental::any containing std::map with 3 elements = {[1] = 2, [3] = 4, [5] = 6}} } }
 
+  std::cout << "\n";
   return 0;			// Mark SPOT
 }
 
