@@ -8047,7 +8047,7 @@ in a register, you can enable it to choose the best location
 for @code{d} by specifying both constraints.
 
 @anchor{FlagOutputOperands}
-@subsection Flag Output Operands
+@subsubsection Flag Output Operands
 @cindex @code{asm} flag output operands
 
 Some targets have a special register that holds the ``flags'' for the
@@ -8058,8 +8058,8 @@ clobber the contents.
 On some targets, a special form of output operand exists by which
 conditions in the flags register may be outputs of the asm.  The set of
 conditions supported are target specific, but the general rule is that
-the output variable must be a scalar integer, and the value will be boolean.
-When supported, the target will define the preprocessor symbol
+the output variable must be a scalar integer, and the value is boolean.
+When supported, the target defines the preprocessor symbol
 @code{__GCC_ASM_FLAG_OUTPUTS__}.
 
 Because of the special nature of the flag output operands, the constraint
