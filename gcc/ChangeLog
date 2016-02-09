@@ -1,3 +1,9 @@
+2016-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69715
+	* tree-ssa.c (execute_update_addresses_taken): Mark non-decl
+	LHS on calls as non-rewritable.
+
 2016-02-09  Tom de Vries  <tom@codesourcery.com>
 
 	PR lto/69707
