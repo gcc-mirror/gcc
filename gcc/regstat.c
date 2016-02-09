@@ -444,7 +444,7 @@ regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)
       struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
       unsigned int regno;
 
-      if (!INSN_P (insn))
+      if (!NONDEBUG_INSN_P (insn))
 	continue;
 
       /* Process the defs.  */

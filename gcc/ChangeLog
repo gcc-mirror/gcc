@@ -1,3 +1,9 @@
+2016-02-11  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR target/69634
+	* regstat.c (regstat_bb_compute_calls_crossed): Disregard
+	debug insns.
+
 2016-02-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (insv<mode>_1): Use gen_int_mode to
