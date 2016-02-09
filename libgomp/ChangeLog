@@ -1,3 +1,8 @@
+2016-02-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR lto/69707
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims-2.c: New test.
+
 2016-02-02  Alexander Monakov  <amonakov@ispras.ru>
 
 	* testsuite/libgomp.c/target-31.c: Fix testcase.

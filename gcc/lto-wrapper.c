@@ -540,6 +540,36 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
     }
 }
 
+/* Append diag options in OPTS with length COUNT to ARGV_OBSTACK.  */
+
+static void
+append_diag_options (obstack *argv_obstack, struct cl_decoded_option *opts,
+		     unsigned int count)
+{
+  /* Append compiler driver arguments as far as they were merged.  */
+  for (unsigned int j = 1; j < count; ++j)
+    {
+      struct cl_decoded_option *option = &opts[j];
+
+      switch (option->opt_index)
+	{
+	case OPT_fdiagnostics_color_:
+	case OPT_fdiagnostics_show_caret:
+	case OPT_fdiagnostics_show_option:
+	case OPT_fdiagnostics_show_location_:
+	case OPT_fshow_column:
+	  break;
+	default:
+	  continue;
+	}
+
+      /* Pass the option on.  */
+      for (unsigned int i = 0; i < option->canonical_option_num_elements; ++i)
+	obstack_ptr_grow (argv_obstack, option->canonical_option[i]);
+    }
+}
+
+
 /* Append linker options OPTS to ARGV_OBSTACK.  */
 
 static void
@@ -721,6 +751,7 @@ compile_offload_image (const char *target, const char *compiler_path,
       /* Append options from offload_lto sections.  */
       append_compiler_options (&argv_obstack, compiler_opts,
 			       compiler_opt_count);
+      append_diag_options (&argv_obstack, linker_opts, linker_opt_count);
 
       /* Append options specified by -foffload last.  In case of conflicting
 	 options we expect offload compiler to choose the latest.  */
