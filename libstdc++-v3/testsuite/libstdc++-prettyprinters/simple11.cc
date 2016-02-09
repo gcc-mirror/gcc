@@ -93,6 +93,7 @@ main()
   __gnu_cxx::slist<int>::iterator slliter = sll.begin();
 // { dg-final { note-test slliter {47} } }
 
+  std::cout << "\n";
   return 0;			// Mark SPOT
 }
 
