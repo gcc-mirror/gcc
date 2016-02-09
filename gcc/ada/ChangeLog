@@ -1,3 +1,8 @@
+2016-02-08  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* gcc-interface/misc.c (gnat_init): Remove second argument in call to
+	build_common_tree_nodes.
+
 2016-02-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (create_var_decl): Set again DECL_COMMON and
