@@ -1,6 +1,14 @@
 2016-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-01-21  Stefan Sørensen  <stefan.sorensen@spectralink.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69187
+	PR target/65624
+	* config/arm/arm-builtins.c (arm_expand_neon_builtin): Increase
+	args array size by one to avoid buffer overflow.
+
 	2016-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/67653

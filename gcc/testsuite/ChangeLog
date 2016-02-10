@@ -3,6 +3,10 @@
 	Backported from mainline
 	2016-01-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/69187
+	PR target/65624
+	* gcc.target/arm/pr69187.c: New test.
+
 	PR middle-end/67653
 	* c-c++-common/pr67653.c: New test.
 	* gcc.dg/torture/pr29119.c: Add dg-warning.
