@@ -200,7 +200,7 @@ struct	G
 	void*	exception;	// current exception being thrown
 	bool	is_foreign;	// whether current exception from other language
 	void	*gcstack;	// if status==Gsyscall, gcstack = stackbase to use during gc
-	uintptr	gcstack_size;
+	size_t	gcstack_size;
 	void*	gcnext_segment;
 	void*	gcnext_sp;
 	void*	gcinitial_sp;
