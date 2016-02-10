@@ -1,3 +1,9 @@
+2016-02-10  Ian Lance Taylor  <iant@google.com>
+
+	PR go/68562
+	* config/i386/morestack.S (__stack_split_initialize): Align
+	stack.
+
 2016-02-03  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	PR bootstrap/69611
