@@ -1,3 +1,8 @@
+2016-02-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tree-ssa/sra-17.c: Add -mcpu=ev4 for target alpha*-*-*.
+	* gcc.dg/tree-ssa/sra-18.c: Ditto.
+
 2016-02-10  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/68021
