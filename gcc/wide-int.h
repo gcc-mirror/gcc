@@ -2892,7 +2892,9 @@ wi::lrshift (const T1 &x, const T2 &y)
 	 For variable-precision integers like wide_int, handle HWI
 	 and sub-HWI integers inline.  */
       if (STATIC_CONSTANT_P (xi.precision > HOST_BITS_PER_WIDE_INT)
-	  ? xi.len == 1 && xi.val[0] >= 0
+	  ? (shift < HOST_BITS_PER_WIDE_INT
+	     && xi.len == 1
+	     && xi.val[0] >= 0)
 	  : xi.precision <= HOST_BITS_PER_WIDE_INT)
 	{
 	  val[0] = xi.to_uhwi () >> shift;

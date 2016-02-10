@@ -1,6 +1,11 @@
 2016-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69399
+	* gcc.dg/torture/pr69399.c: New test.
+
 	2016-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69432
