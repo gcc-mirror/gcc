@@ -331,14 +331,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return pow(__x, __y); }
   };
 
+  template<typename _Tp, bool _IsValidValarrayValue = !__is_abstract(_Tp)>
+    struct __fun_with_valarray
+    {
+      typedef _Tp result_type;
+    };
+
+  template<typename _Tp>
+    struct __fun_with_valarray<_Tp, false>
+    {
+      // No result type defined for invalid value types.
+    };
 
   // We need these bits in order to recover the return type of
   // some functions/operators now that we're no longer using
   // function templates.
   template<typename, typename _Tp>
-    struct __fun
+    struct __fun : __fun_with_valarray<_Tp>
     {
-      typedef _Tp result_type;
     };
 
   // several specializations for relational operators.
