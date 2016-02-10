@@ -213,7 +213,6 @@ static struct z_candidate *add_function_candidate
 	 tree, int, tsubst_flags_t);
 static conversion *implicit_conversion (tree, tree, tree, bool, int,
 					tsubst_flags_t);
-static conversion *standard_conversion (tree, tree, tree, bool, int);
 static conversion *reference_binding (tree, tree, tree, bool, int,
 				      tsubst_flags_t);
 static conversion *build_conv (conversion_kind, tree, conversion *);
@@ -1106,7 +1105,7 @@ strip_top_quals (tree t)
 
 static conversion *
 standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
-		     int flags)
+		     int flags, tsubst_flags_t complain)
 {
   enum tree_code fcode, tcode;
   conversion *conv;
@@ -1136,7 +1135,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
       else if (TREE_CODE (to) == BOOLEAN_TYPE)
 	{
 	  /* Necessary for eg, TEMPLATE_ID_EXPRs (c++/50961).  */
-	  expr = resolve_nondeduced_context (expr);
+	  expr = resolve_nondeduced_context (expr, complain);
 	  from = TREE_TYPE (expr);
 	}
     }
@@ -1175,7 +1174,8 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	 the standard conversion sequence to perform componentwise
 	 conversion.  */
       conversion *part_conv = standard_conversion
-	(TREE_TYPE (to), TREE_TYPE (from), NULL_TREE, c_cast_p, flags);
+	(TREE_TYPE (to), TREE_TYPE (from), NULL_TREE, c_cast_p, flags,
+	 complain);
 
       if (part_conv)
 	{
@@ -1814,7 +1814,7 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
   if (TREE_CODE (to) == REFERENCE_TYPE)
     conv = reference_binding (to, from, expr, c_cast_p, flags, complain);
   else
-    conv = standard_conversion (to, from, expr, c_cast_p, flags);
+    conv = standard_conversion (to, from, expr, c_cast_p, flags, complain);
 
   if (conv)
     return conv;
