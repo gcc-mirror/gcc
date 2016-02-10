@@ -287,3 +287,11 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       break;
     }
 }
+
+/* Print the node NODE on standard error, for debugging.  */
+
+DEBUG_FUNCTION void
+debug_tree (cp_expr node)
+{
+  debug_tree (node.get_value());
+}
