@@ -8731,20 +8731,6 @@ pointer_may_wrap_p (tree base, tree offset, HOST_WIDE_INT bitpos)
   return total.to_uhwi () > (unsigned HOST_WIDE_INT) size;
 }
 
-/* Return the HOST_WIDE_INT least significant bits of T, a sizetype
-   kind INTEGER_CST.  This makes sure to properly sign-extend the
-   constant.  */
-
-static HOST_WIDE_INT
-size_low_cst (const_tree t)
-{
-  HOST_WIDE_INT w = TREE_INT_CST_ELT (t, 0);
-  int prec = TYPE_PRECISION (TREE_TYPE (t));
-  if (prec < HOST_BITS_PER_WIDE_INT)
-    return sext_hwi (w, prec);
-  return w;
-}
-
 /* Subroutine of fold_binary.  This routine performs all of the
    transformations that are common to the equality/inequality
    operators (EQ_EXPR and NE_EXPR) and the ordering operators
@@ -8889,18 +8875,29 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	  STRIP_SIGN_NOPS (base0);
 	  if (TREE_CODE (base0) == ADDR_EXPR)
 	    {
-	      base0 = TREE_OPERAND (base0, 0);
-	      indirect_base0 = true;
+	      base0
+		= get_inner_reference (TREE_OPERAND (base0, 0),
+				       &bitsize, &bitpos0, &offset0, &mode,
+				       &unsignedp, &volatilep, false);
+	      if (TREE_CODE (base0) == INDIRECT_REF)
+		base0 = TREE_OPERAND (base0, 0);
+	      else
+		indirect_base0 = true;
 	    }
-	  offset0 = TREE_OPERAND (arg0, 1);
-	  if (tree_fits_shwi_p (offset0))
+	  if (offset0 == NULL_TREE || integer_zerop (offset0))
+	    offset0 = TREE_OPERAND (arg0, 1);
+	  else
+	    offset0 = size_binop (PLUS_EXPR, offset0,
+				  TREE_OPERAND (arg0, 1));
+	  if (TREE_CODE (offset0) == INTEGER_CST)
 	    {
-	      HOST_WIDE_INT off = size_low_cst (offset0);
-	      if ((HOST_WIDE_INT) (((unsigned HOST_WIDE_INT) off)
-				   * BITS_PER_UNIT)
-		  / BITS_PER_UNIT == (HOST_WIDE_INT) off)
+	      offset_int tem = wi::sext (wi::to_offset (offset0),
+					 TYPE_PRECISION (sizetype));
+	      tem = wi::lshift (tem, LOG2_BITS_PER_UNIT);
+	      tem += bitpos0;
+	      if (wi::fits_shwi_p (tem))
 		{
-		  bitpos0 = off * BITS_PER_UNIT;
+		  bitpos0 = tem.to_shwi ();
 		  offset0 = NULL_TREE;
 		}
 	    }
@@ -8923,18 +8920,29 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	  STRIP_SIGN_NOPS (base1);
 	  if (TREE_CODE (base1) == ADDR_EXPR)
 	    {
-	      base1 = TREE_OPERAND (base1, 0);
-	      indirect_base1 = true;
+	      base1
+		= get_inner_reference (TREE_OPERAND (base1, 0),
+				       &bitsize, &bitpos1, &offset1, &mode,
+				       &unsignedp, &volatilep, false);
+	      if (TREE_CODE (base1) == INDIRECT_REF)
+		base1 = TREE_OPERAND (base1, 0);
+	      else
+		indirect_base1 = true;
 	    }
-	  offset1 = TREE_OPERAND (arg1, 1);
-	  if (tree_fits_shwi_p (offset1))
+	  if (offset1 == NULL_TREE || integer_zerop (offset1))
+	    offset1 = TREE_OPERAND (arg1, 1);
+	  else
+	    offset1 = size_binop (PLUS_EXPR, offset1,
+				  TREE_OPERAND (arg1, 1));
+	  if (TREE_CODE (offset1) == INTEGER_CST)
 	    {
-	      HOST_WIDE_INT off = size_low_cst (offset1);
-	      if ((HOST_WIDE_INT) (((unsigned HOST_WIDE_INT) off)
-				   * BITS_PER_UNIT)
-		  / BITS_PER_UNIT == (HOST_WIDE_INT) off)
+	      offset_int tem = wi::sext (wi::to_offset (offset1),
+					 TYPE_PRECISION (sizetype));
+	      tem = wi::lshift (tem, LOG2_BITS_PER_UNIT);
+	      tem += bitpos1;
+	      if (wi::fits_shwi_p (tem))
 		{
-		  bitpos1 = off * BITS_PER_UNIT;
+		  bitpos1 = tem.to_shwi ();
 		  offset1 = NULL_TREE;
 		}
 	    }
@@ -12375,12 +12383,27 @@ fold_binary_loc (location_t loc,
 	      || POINTER_TYPE_P (TREE_TYPE (arg0))))
 	{
 	  tree val = TREE_OPERAND (arg0, 1);
-	  return omit_two_operands_loc (loc, type,
-				    fold_build2_loc (loc, code, type,
-						 val,
-						 build_int_cst (TREE_TYPE (val),
-								0)),
-				    TREE_OPERAND (arg0, 0), arg1);
+	  val = fold_build2_loc (loc, code, type, val,
+				 build_int_cst (TREE_TYPE (val), 0));
+	  return omit_two_operands_loc (loc, type, val,
+					TREE_OPERAND (arg0, 0), arg1);
+	}
+
+      /* Transform comparisons of the form X CMP X +- Y to Y CMP 0.  */
+      if ((TREE_CODE (arg1) == PLUS_EXPR
+	   || TREE_CODE (arg1) == POINTER_PLUS_EXPR
+	   || TREE_CODE (arg1) == MINUS_EXPR)
+	  && operand_equal_p (tree_strip_nop_conversions (TREE_OPERAND (arg1,
+									0)),
+			      arg0, 0)
+	  && (INTEGRAL_TYPE_P (TREE_TYPE (arg1))
+	      || POINTER_TYPE_P (TREE_TYPE (arg1))))
+	{
+	  tree val = TREE_OPERAND (arg1, 1);
+	  val = fold_build2_loc (loc, code, type, val,
+				 build_int_cst (TREE_TYPE (val), 0));
+	  return omit_two_operands_loc (loc, type, val,
+					TREE_OPERAND (arg1, 0), arg0);
 	}
 
       /* Transform comparisons of the form C - X CMP X if C % 2 == 1.  */
@@ -12390,12 +12413,22 @@ fold_binary_loc (location_t loc,
 									1)),
 			      arg1, 0)
 	  && wi::extract_uhwi (TREE_OPERAND (arg0, 0), 0, 1) == 1)
-	{
-	  return omit_two_operands_loc (loc, type,
-				    code == NE_EXPR
-				    ? boolean_true_node : boolean_false_node,
-				    TREE_OPERAND (arg0, 1), arg1);
-	}
+	return omit_two_operands_loc (loc, type,
+				      code == NE_EXPR
+				      ? boolean_true_node : boolean_false_node,
+				      TREE_OPERAND (arg0, 1), arg1);
+
+      /* Transform comparisons of the form X CMP C - X if C % 2 == 1.  */
+      if (TREE_CODE (arg1) == MINUS_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg1, 0)) == INTEGER_CST
+	  && operand_equal_p (tree_strip_nop_conversions (TREE_OPERAND (arg1,
+									1)),
+			      arg0, 0)
+	  && wi::extract_uhwi (TREE_OPERAND (arg1, 0), 0, 1) == 1)
+	return omit_two_operands_loc (loc, type,
+				      code == NE_EXPR
+				      ? boolean_true_node : boolean_false_node,
+				      TREE_OPERAND (arg1, 1), arg0);
 
       /* Convert ABS_EXPR<x> == 0 or ABS_EXPR<x> != 0 to x == 0 or x != 0.  */
       if (TREE_CODE (arg0) == ABS_EXPR
