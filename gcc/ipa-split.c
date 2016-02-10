@@ -1254,7 +1254,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
       else
 	main_part_return_p = true;
     }
-  /* The main part also returns if we we split on a fallthru edge
+  /* The main part also returns if we split on a fallthru edge
      and the split part returns.  */
   if (split_part_return_p)
     FOR_EACH_EDGE (e, ei, split_point->entry_bb->preds)
@@ -1364,8 +1364,9 @@ split_function (basic_block return_bb, struct split_point *split_point,
   /* Now create the actual clone.  */
   cgraph_edge::rebuild_edges ();
   node = cur_node->create_version_clone_with_body
-    (vNULL, NULL, args_to_skip, !split_part_return_p, split_point->split_bbs,
-     split_point->entry_bb, "part");
+    (vNULL, NULL, args_to_skip,
+     !split_part_return_p || !split_point->split_part_set_retval,
+     split_point->split_bbs, split_point->entry_bb, "part");
 
   node->split_part = true;
 

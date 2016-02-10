@@ -1,3 +1,13 @@
+2016-02-10  Jakub Jelinek  <jakub@redhat.com>
+	    Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR ipa/69241
+	PR c++/69649
+	* g++.dg/ipa/pr69241-1.C: New test.
+	* g++.dg/ipa/pr69241-2.C: New test.
+	* g++.dg/ipa/pr69241-3.C: New test.
+	* g++.dg/ipa/pr69649.C: New test.
+
 2016-02-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tree-ssa/sra-17.c: Add -mcpu=ev4 for target alpha*-*-*.
