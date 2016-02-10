@@ -1,5 +1,12 @@
 2016-02-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/10200
+	* parser.c (cp_parser_lookup_name): When looking for a template
+	after . or ->, only consider class templates.
+	(cp_parser_postfix_dot_deref_expression): Handle the current
+	instantiation.  Remember a dependent object expression.
+	* typeck2.c (build_x_arrow): Handle the current instantiation.
+
 	* ptree.c (debug_tree): Implement for cp_expr.
 
 2016-02-08  Patrick Palka  <ppalka@gcc.gnu.org>
