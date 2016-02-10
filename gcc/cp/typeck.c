@@ -1896,7 +1896,7 @@ decay_conversion (tree exp, tsubst_flags_t complain)
 
   exp = mark_rvalue_use (exp);
 
-  exp = resolve_nondeduced_context (exp);
+  exp = resolve_nondeduced_context (exp, complain);
   if (type_unknown_p (exp))
     {
       if (complain & tf_error)

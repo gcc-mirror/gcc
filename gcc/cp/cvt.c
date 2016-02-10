@@ -1253,7 +1253,7 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 
     default:;
     }
-  expr = resolve_nondeduced_context (expr);
+  expr = resolve_nondeduced_context (expr, complain);
   {
     tree probe = expr;
 
