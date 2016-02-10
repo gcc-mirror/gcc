@@ -1,3 +1,9 @@
+2016-02-10  Ian Lance Taylor  <iant@google.com>
+
+	PR go/68562
+	* config/i386/morestack.S (__stack_split_initialize): Align
+	stack.
+
 2015-12-09  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/fptr.c (__canonicalize_funcptr_for_compare): Remove code
