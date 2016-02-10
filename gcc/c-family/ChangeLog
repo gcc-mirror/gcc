@@ -1,3 +1,21 @@
+2016-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/57580
+	* c-ppoutput.c (print): Change printed field to bool.
+	Move src_file last for smaller padding.
+	(init_pp_output): Set print.printed to false instead of 0.
+	(scan_translation_unit): Fix up formatting.  Set print.printed
+	to true after printing something other than newline.
+	(scan_translation_unit_trad): Set print.printed to true instead of 1.
+	(maybe_print_line_1): Set print.printed to false instead of 0.
+	(print_line_1): Likewise.
+	(do_line_change): Set print.printed to true instead of 1.
+	(cb_define, dump_queued_macros, cb_include, cb_def_pragma,
+	dump_macro): Set print.printed to false after printing newline.
+
 2015-12-16  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/68162

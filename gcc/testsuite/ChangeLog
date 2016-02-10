@@ -1,3 +1,12 @@
+2016-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/57580
+	* c-c++-common/cpp/pr57580.c: New test.
+	* c-c++-common/gomp/pr57580.c: New test.
+
 2016-02-09  Alexander Fomin  <alexander.fomin@intel.com>
 
 	Backport from mainline
