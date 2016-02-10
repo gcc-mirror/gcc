@@ -1,6 +1,12 @@
 2016-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/68269
+	* combine.c (expand_field_assignment): Punt if compute_mode is
+	unsupported scalar mode.
+
 	2016-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69214
