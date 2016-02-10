@@ -4255,7 +4255,7 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
 
       /* By default, every gfc_code is a single unit of work.  */
       ompws_flags |= OMPWS_CURR_SINGLEUNIT;
-      ompws_flags &= ~OMPWS_SCALARIZER_WS;
+      ompws_flags &= ~(OMPWS_SCALARIZER_WS | OMPWS_SCALARIZER_BODY);
 
       switch (code->op)
 	{
