@@ -1,3 +1,11 @@
+2016-02-10  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/69652
+	* tree-vect-loop.c (optimize_mask_stores): Move declaration of STMT1
+	to nested loop, did source re-formatting, skip debug statements,
+	add check on statement with volatile operand, remove dead scalar
+	statements.
+
 2016-02-10  Jakub Jelinek  <jakub@redhat.com>
 	    Patrick Palka  <ppalka@gcc.gnu.org>
 
