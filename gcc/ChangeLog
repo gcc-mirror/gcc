@@ -1,3 +1,9 @@
+2016-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69719
+	* tree-vect-data-refs.c (vect_prune_runtime_alias_test_list):
+	Adjust previous fix by ensuring that dr_a1 is left of dr_a2.
+
 2016-02-09  Andrew Pinski  <apinski@cavium.com>
 
 	PR tree-opt/69282

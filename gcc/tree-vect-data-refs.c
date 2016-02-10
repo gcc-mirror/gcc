@@ -3081,9 +3081,12 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 	      || !tree_fits_shwi_p (dr_a2->offset))
 	    continue;
 
+	  /* Make sure dr_a1 starts left of dr_a2.  */
+	  if (tree_int_cst_lt (dr_a2->offset, dr_a1->offset))
+	    std::swap (*dr_a1, *dr_a2);
+
 	  unsigned HOST_WIDE_INT diff
-	    = absu_hwi (tree_to_shwi (dr_a2->offset)
-			- tree_to_shwi (dr_a1->offset));
+	    = tree_to_shwi (dr_a2->offset) - tree_to_shwi (dr_a1->offset);
 
 
 	  /* Now we check if the following condition is satisfied:
