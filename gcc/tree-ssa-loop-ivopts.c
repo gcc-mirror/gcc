@@ -3741,7 +3741,19 @@ get_computation_aff (struct loop *loop,
       var = fold_convert (uutype, var);
     }
 
-  if (!constant_multiple_of (ustep, cstep, &rat))
+  /* Ratio is 1 when computing the value of biv cand by itself.
+     We can't rely on constant_multiple_of in this case because the
+     use is created after the original biv is selected.  The call
+     could fail because of inconsistent fold behavior.  See PR68021
+     for more information.  */
+  if (cand->pos == IP_ORIGINAL && cand->incremented_at == use->stmt)
+    {
+      gcc_assert (is_gimple_assign (use->stmt));
+      gcc_assert (use->iv->ssa_name == cand->var_after);
+      gcc_assert (gimple_assign_lhs (use->stmt) == cand->var_after);
+      rat = 1;
+    }
+  else if (!constant_multiple_of (ustep, cstep, &rat))
     return false;
 
   /* In case both UBASE and CBASE are shortened to UUTYPE from some common

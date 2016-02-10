@@ -1,3 +1,8 @@
+2016-02-10  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/68021
+	* gcc.dg/tree-ssa/pr68021.c: New test.
+
 2016-02-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69726

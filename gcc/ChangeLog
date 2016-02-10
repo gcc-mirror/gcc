@@ -1,3 +1,9 @@
+2016-02-10  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/68021
+	* tree-ssa-loop-ivopts.c (get_computation_aff): Set ratio to 1 if
+	when computing the value of biv cand by itself.
+
 2016-02-10  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (cortexa53_tunings): Enable AES fusion.
