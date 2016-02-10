@@ -732,6 +732,7 @@ __stack_split_initialize:
 
 	leal	-16000(%esp),%eax	# We should have at least 16K.
 	movl	%eax,%gs:0x30
+	subl	$4,%esp			# Align stack.
 	pushl	$16000
 	pushl	%esp
 #ifdef __PIC__
@@ -739,13 +740,14 @@ __stack_split_initialize:
 #else
 	call	__generic_morestack_set_initial_sp
 #endif
-	addl	$8,%esp
+	addl	$12,%esp
 	ret
 
 #else /* defined(__x86_64__) */
 
 	leaq	-16000(%rsp),%rax	# We should have at least 16K.
 	X86_64_SAVE_NEW_STACK_BOUNDARY (ax)
+	subq	$8,%rsp			# Align stack.
 	movq	%rsp,%rdi
 	movq	$16000,%rsi
 #ifdef __PIC__
@@ -753,6 +755,7 @@ __stack_split_initialize:
 #else
 	call	__generic_morestack_set_initial_sp
 #endif
+	addq	$8,%rsp
 	ret
 
 #endif /* defined(__x86_64__) */
