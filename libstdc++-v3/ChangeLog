@@ -1,3 +1,10 @@
+2016-02-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69116
+	* include/bits/valarray_before.h (__fun, __fun_with_valarray): Only
+	define result_type for types which can be safely used with valarrays.
+	* testsuite/26_numerics/valarray/69116.cc: New.
+
 2016-01-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/60637
