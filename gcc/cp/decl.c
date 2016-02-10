@@ -6575,7 +6575,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       if (TREE_CODE (d_init) == TREE_LIST)
 	d_init = build_x_compound_expr_from_list (d_init, ELK_INIT,
 						  tf_warning_or_error);
-      d_init = resolve_nondeduced_context (d_init);
+      d_init = resolve_nondeduced_context (d_init, tf_warning_or_error);
       type = TREE_TYPE (decl) = do_auto_deduction (type, d_init,
 						   auto_node,
                                                    tf_warning_or_error,

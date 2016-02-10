@@ -8699,7 +8699,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 
   /* The type denoted by decltype(e) is defined as follows:  */
 
-  expr = resolve_nondeduced_context (expr);
+  expr = resolve_nondeduced_context (expr, complain);
 
   if (invalid_nonstatic_memfn_p (input_location, expr, complain))
     return error_mark_node;

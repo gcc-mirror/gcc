@@ -3364,7 +3364,7 @@ build_new (vec<tree, va_gc> **placement, tree type, tree nelts,
       if (auto_node)
 	{
 	  tree d_init = (**init)[0];
-	  d_init = resolve_nondeduced_context (d_init);
+	  d_init = resolve_nondeduced_context (d_init, complain);
 	  type = do_auto_deduction (type, d_init, auto_node);
 	}
     }
