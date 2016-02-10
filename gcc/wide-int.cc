@@ -1808,15 +1808,32 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
     {
       unsigned HOST_WIDE_INT o0 = dividend.to_uhwi ();
       unsigned HOST_WIDE_INT o1 = divisor.to_uhwi ();
+      unsigned int quotient_len = 1;
 
       if (quotient)
-	quotient[0] = o0 / o1;
+	{
+	  quotient[0] = o0 / o1;
+	  if (o1 == 1
+	      && (HOST_WIDE_INT) o0 < 0
+	      && dividend_prec > HOST_BITS_PER_WIDE_INT)
+	    {
+	      quotient[1] = 0;
+	      quotient_len = 2;
+	    }
+	}
       if (remainder)
 	{
 	  remainder[0] = o0 % o1;
-	  *remainder_len = 1;
+	  if ((HOST_WIDE_INT) remainder[0] < 0
+	      && dividend_prec > HOST_BITS_PER_WIDE_INT)
+	    {
+	      remainder[1] = 0;
+	      *remainder_len = 2;
+	    }
+	  else
+	    *remainder_len = 1;
 	}
-      return 1;
+      return quotient_len;
     }
 
   /* Make the divisor and dividend positive and remember what we
