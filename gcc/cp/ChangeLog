@@ -1,5 +1,10 @@
 2016-02-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/69657
+	* name-lookup.c (ambiguous_decl): Call remove_hidden_names.
+	(lookup_name_real_1): Likewise.
+	(remove_hidden_names): Handle non-functions too.
+
 	PR c++/10200
 	* parser.c (cp_parser_lookup_name): When looking for a template
 	after . or ->, only consider class templates.

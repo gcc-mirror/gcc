@@ -4221,9 +4221,9 @@ ambiguous_decl (struct scope_binding *old, cxx_binding *new_binding, int flags)
   val = new_binding->value;
   if (val)
     {
-      if (hidden_name_p (val) && !(flags & LOOKUP_HIDDEN))
-	val = NULL_TREE;
-      else
+      if (!(flags & LOOKUP_HIDDEN))
+	val = remove_hidden_names (val);
+      if (val)
 	switch (TREE_CODE (val))
 	  {
 	  case TEMPLATE_DECL:
@@ -4353,7 +4353,7 @@ hidden_name_p (tree val)
   return false;
 }
 
-/* Remove any hidden friend functions from a possibly overloaded set
+/* Remove any hidden declarations from a possibly overloaded set
    of functions.  */
 
 tree
@@ -4362,7 +4362,7 @@ remove_hidden_names (tree fns)
   if (!fns)
     return fns;
 
-  if (TREE_CODE (fns) == FUNCTION_DECL && hidden_name_p (fns))
+  if (DECL_P (fns) && hidden_name_p (fns))
     fns = NULL_TREE;
   else if (TREE_CODE (fns) == OVERLOAD)
     {
@@ -4930,6 +4930,10 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
   /* Now lookup in namespace scopes.  */
   if (!val)
     val = unqualified_namespace_lookup (name, flags);
+
+  /* Anticipated built-ins and friends aren't found by normal lookup.  */
+  if (val && !(flags & LOOKUP_HIDDEN))
+    val = remove_hidden_names (val);
 
   /* If we have a single function from a using decl, pull it out.  */
   if (val && TREE_CODE (val) == OVERLOAD && !really_overloaded_fn (val))
