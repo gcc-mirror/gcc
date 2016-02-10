@@ -1,6 +1,11 @@
 2016-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69214
+	* gcc.c-torture/compile/pr69214.c: New test.
+
 	2016-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/69128

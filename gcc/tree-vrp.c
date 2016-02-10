@@ -9534,7 +9534,8 @@ simplify_cond_using_ranges (gcond *stmt)
       innerop = gimple_assign_rhs1 (def_stmt);
 
       if (TREE_CODE (innerop) == SSA_NAME
-	  && !POINTER_TYPE_P (TREE_TYPE (innerop)))
+	  && !POINTER_TYPE_P (TREE_TYPE (innerop))
+	  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (innerop))
 	{
 	  value_range_t *vr = get_value_range (innerop);
 
@@ -9565,8 +9566,8 @@ simplify_cond_using_ranges (gcond *stmt)
 		  else
 		    location = gimple_location (stmt);
 		  warning_at (location, OPT_Wstrict_overflow,
-		      "assuming signed overflow does not occur when "
-		      "simplifying conditional");
+			      "assuming signed overflow does not occur when "
+			      "simplifying conditional");
 		}
 
 	      tree newconst = fold_convert (TREE_TYPE (innerop), op1);
