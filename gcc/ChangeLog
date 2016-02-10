@@ -1,3 +1,18 @@
+2016-02-10  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (cortexa53_tunings): Enable AES fusion.
+	(cortexa57_tunings): Likewise.
+	(cortexa72_tunings): Likewise.
+	(arch_macro_fusion_pair_p): Add support for AES fusion.
+	* config/aarch64/aarch64-fusion-pairs.def: Add AES_AESMC entry.
+	* config/arm/aarch-common.c (aarch_crypto_can_dual_issue):
+	Allow virtual registers before reload so early scheduling works.
+	* config/arm/cortex-a57.md (cortex_a57_crypto_simple): Use
+	correct latency and pipeline.
+	(cortex_a57_crypto_complex): Likewise.
+	(cortex_a57_crypto_xor): Likewise.
+	(define_bypass): Add AES bypass.
+
 2016-02-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69726
