@@ -1,3 +1,8 @@
+2016-02-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/69468
+	* gcc.target/s390/pr69148.c: New.
+
 2016-02-10  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/69652

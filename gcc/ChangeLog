@@ -1,3 +1,9 @@
+2016-02-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/69148
+	* lra-constraints.c (curr_insn_transform): Find in/out operands
+	for secondary memory moves.  Update dups.
+
 2016-02-10  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/69652
