@@ -1,6 +1,12 @@
 2016-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/68955
+	PR rtl-optimization/64557
+	* gcc.dg/torture/pr68955.c: New test.
+
 	2016-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69214
