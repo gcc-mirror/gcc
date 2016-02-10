@@ -1611,6 +1611,7 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr, tree arg)
     fn = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
+      initialize_sanitizer_builtins ();
       /* Create the __ubsan_handle_float_cast_overflow fn call.  */
       tree data = ubsan_create_data ("__ubsan_float_cast_overflow_data", 0,
 				     NULL, ubsan_type_descriptor (expr_type),
