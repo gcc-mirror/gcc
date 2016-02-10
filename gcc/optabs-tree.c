@@ -322,9 +322,11 @@ expand_vec_cond_expr_p (tree value_type, tree cmp_op_type)
 {
   machine_mode value_mode = TYPE_MODE (value_type);
   machine_mode cmp_op_mode = TYPE_MODE (cmp_op_type);
-  if (VECTOR_BOOLEAN_TYPE_P (cmp_op_type))
-    return get_vcond_mask_icode (TYPE_MODE (value_type),
-				 TYPE_MODE (cmp_op_type)) != CODE_FOR_nothing;
+  if (VECTOR_BOOLEAN_TYPE_P (cmp_op_type)
+      && get_vcond_mask_icode (TYPE_MODE (value_type),
+			       TYPE_MODE (cmp_op_type)) != CODE_FOR_nothing)
+    return true;
+
   if (GET_MODE_SIZE (value_mode) != GET_MODE_SIZE (cmp_op_mode)
       || GET_MODE_NUNITS (value_mode) != GET_MODE_NUNITS (cmp_op_mode)
       || get_vcond_icode (TYPE_MODE (value_type), TYPE_MODE (cmp_op_type),

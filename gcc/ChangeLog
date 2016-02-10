@@ -1,3 +1,9 @@
+2016-02-09  Andrew Pinski  <apinski@cavium.com>
+
+	PR tree-opt/69282
+	* optabs-tree.c (expand_vec_cond_expr_p): Don't early return if
+	get_vcond_mask_icode returns false.
+
 2016-02-09  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/68404
