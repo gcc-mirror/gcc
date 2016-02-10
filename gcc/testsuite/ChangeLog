@@ -1,3 +1,8 @@
+2016-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69726
+	* gcc.dg/uninit-22.c: New testcase.
+
 2016-02-09  Andrew Pinski  <apinski@cavium.com>
 
 	PR tree-opt/69282
