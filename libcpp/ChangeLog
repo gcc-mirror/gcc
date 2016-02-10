@@ -1,3 +1,12 @@
+2016-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2016-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/68176
+	* files.c (_cpp_find_file): Set file->implicit_preinclude even if
+	included from file->implicit_preinclude header.
+
 2015-12-04  Release Manager
 
 	* GCC 5.3.0 released.
