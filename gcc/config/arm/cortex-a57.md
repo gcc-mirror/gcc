@@ -747,20 +747,20 @@
 			 neon_fp_sqrt_s_q, neon_fp_sqrt_d_q"))
   "ca57_cx2_block*3")
 
-(define_insn_reservation "cortex_a57_crypto_simple" 4
+(define_insn_reservation "cortex_a57_crypto_simple" 3
   (and (eq_attr "tune" "cortexa57")
        (eq_attr "type" "crypto_aese,crypto_aesmc,crypto_sha1_fast,crypto_sha256_fast"))
-  "ca57_cx2")
+  "ca57_cx1")
 
-(define_insn_reservation "cortex_a57_crypto_complex" 7
+(define_insn_reservation "cortex_a57_crypto_complex" 6
   (and (eq_attr "tune" "cortexa57")
        (eq_attr "type" "crypto_sha1_slow,crypto_sha256_slow"))
-  "ca57_cx2+(ca57_cx2_issue,ca57_cx2)")
+  "ca57_cx1*2")
 
-(define_insn_reservation "cortex_a57_crypto_xor" 7
+(define_insn_reservation "cortex_a57_crypto_xor" 6
   (and (eq_attr "tune" "cortexa57")
        (eq_attr "type" "crypto_sha1_xor"))
-  "(ca57_cx1+ca57_cx2)")
+  "(ca57_cx1*2)|(ca57_cx2*2)")
 
 ;; We lie with calls.  They take up all issue slots, but are otherwise
 ;; not harmful.
@@ -796,4 +796,9 @@
 ;; help.
 (define_bypass 1 "cortex_a57_*"
 		 "cortex_a57_call,cortex_a57_branch")
+
+;; AESE+AESMC and AESD+AESIMC pairs forward with zero latency
+(define_bypass 0 "cortex_a57_crypto_simple"
+		 "cortex_a57_crypto_simple"
+		 "aarch_crypto_can_dual_issue")
 
