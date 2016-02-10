@@ -300,8 +300,9 @@ struct tune_params
   enum fuse_ops
   {
     FUSE_NOTHING   = 0,
-    FUSE_MOVW_MOVT = 1 << 0
-  } fusible_ops: 1;
+    FUSE_MOVW_MOVT = 1 << 0,
+    FUSE_AES_AESMC = 1 << 1
+  } fusible_ops: 2;
   /* Depth of scheduling queue to check for L2 autoprefetcher.  */
   enum {SCHED_AUTOPREF_OFF, SCHED_AUTOPREF_RANK, SCHED_AUTOPREF_FULL}
     sched_autopref: 2;

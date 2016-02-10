@@ -1,3 +1,10 @@
+2016-02-10  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/arm.c (arm_cortex_a53_tune): Enable AES fusion.
+	(arm_cortex_a57_tune): Likewise.
+	(aarch_macro_fusion_pair_p): Add support for AES fusion.
+	* config/arm/arm-protos.h (fuse_ops): Add FUSE_AES_AESMC.
+
 2016-02-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* timevar.def (TV_PHASE_DBGINFO): Delete.
