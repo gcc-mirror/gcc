@@ -322,15 +322,11 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_fold_builtins);
       NEXT_PASS (pass_optimize_widening_mul);
       NEXT_PASS (pass_tail_calls);
-      /* FIXME: If DCE is not run before checking for uninitialized uses,
+      /* If DCE is not run before checking for uninitialized uses,
 	 we may get false warnings (e.g., testsuite/gcc.dg/uninit-5.c).
 	 However, this also causes us to misdiagnose cases that should be
-	 real warnings (e.g., testsuite/gcc.dg/pr18501.c).
-
-	 To fix the false positives in uninit-5.c, we would have to
-	 account for the predicates protecting the set and the use of each
-	 variable.  Using a representation like Gated Single Assignment
-	 may help.  */
+	 real warnings (e.g., testsuite/gcc.dg/pr18501.c).  */
+      NEXT_PASS (pass_dce);
       /* Split critical edges before late uninit warning to reduce the
          number of false positives from it.  */
       NEXT_PASS (pass_split_crit_edges);

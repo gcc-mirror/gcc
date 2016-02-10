@@ -1,3 +1,10 @@
+2016-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69726
+	* passes.def: Add DCE pass before late uninit.
+	* match.pd: Add A ? B : (!A ? C : X) -> A ? B : C patterns to
+	really fixup if-conversions job.
+
 2016-02-10  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/arm.c (arm_cortex_a53_tune): Enable AES fusion.

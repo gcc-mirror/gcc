@@ -1717,6 +1717,29 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cnd @0 @1 (cnd @0 @2 @3))
   (cnd @0 @1 @3))
+ /* A ? B : (!A ? C : X) -> A ? B : C.  */
+ /* ???  This matches embedded conditions open-coded because genmatch
+    would generate matching code for conditions in separate stmts only.
+    The following is still important to merge then and else arm cases
+    from if-conversion.  */
+ (simplify
+  (cnd @0 @1 (cnd @2 @3 @4))
+  (if (COMPARISON_CLASS_P (@0)
+       && COMPARISON_CLASS_P (@2)
+       && invert_tree_comparison
+           (TREE_CODE (@0), HONOR_NANS (TREE_OPERAND (@0, 0))) == TREE_CODE (@2)
+       && operand_equal_p (TREE_OPERAND (@0, 0), TREE_OPERAND (@2, 0), 0)
+       && operand_equal_p (TREE_OPERAND (@0, 1), TREE_OPERAND (@2, 1), 0))
+   (cnd @0 @1 @3)))
+ (simplify
+  (cnd @0 (cnd @1 @2 @3) @4)
+  (if (COMPARISON_CLASS_P (@0)
+       && COMPARISON_CLASS_P (@1)
+       && invert_tree_comparison
+           (TREE_CODE (@0), HONOR_NANS (TREE_OPERAND (@0, 0))) == TREE_CODE (@1)
+       && operand_equal_p (TREE_OPERAND (@0, 0), TREE_OPERAND (@1, 0), 0)
+       && operand_equal_p (TREE_OPERAND (@0, 1), TREE_OPERAND (@1, 1), 0))
+   (cnd @0 @3 @4)))
 
  /* A ? B : B -> B.  */
  (simplify
