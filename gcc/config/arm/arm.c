@@ -1982,7 +1982,7 @@ const struct tune_params arm_cortex_a53_tune =
   tune_params::DISPARAGE_FLAGS_NEITHER,
   tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_TRUE,
-  FUSE_OPS (tune_params::FUSE_MOVW_MOVT),
+  FUSE_OPS (tune_params::FUSE_MOVW_MOVT | tune_params::FUSE_AES_AESMC),
   tune_params::SCHED_AUTOPREF_OFF
 };
 
@@ -2005,7 +2005,7 @@ const struct tune_params arm_cortex_a57_tune =
   tune_params::DISPARAGE_FLAGS_ALL,
   tune_params::PREF_NEON_64_FALSE,
   tune_params::PREF_NEON_STRINGOPS_TRUE,
-  FUSE_OPS (tune_params::FUSE_MOVW_MOVT),
+  FUSE_OPS (tune_params::FUSE_MOVW_MOVT | tune_params::FUSE_AES_AESMC),
   tune_params::SCHED_AUTOPREF_FULL
 };
 
@@ -29682,6 +29682,10 @@ aarch_macro_fusion_pair_p (rtx_insn* prev, rtx_insn* curr)
 
   if (!arm_macro_fusion_p ())
     return false;
+
+  if (current_tune->fusible_ops & tune_params::FUSE_AES_AESMC
+      && aarch_crypto_can_dual_issue (prev, curr))
+    return true;
 
   if (current_tune->fusible_ops & tune_params::FUSE_MOVW_MOVT)
     {
