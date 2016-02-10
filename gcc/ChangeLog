@@ -1,3 +1,15 @@
+2016-02-10  Jakub Jelinek  <jakub@redhat.com>
+	    Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR ipa/69241
+	PR c++/69649
+	* gimplify.c (gimplify_modify_expr): Set lhs even for noreturn
+	calls if the return type is TREE_ADDRESSABLE.
+	* cgraphunit.c (cgraph_node::expand_thunk): Likewise.
+	* ipa-split.c (split_function): Fix doubled "we" in comment.
+	Use void return type for the split part even if
+	!split_point->split_part_set_retval.
+
 2016-02-10  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/68021
