@@ -1,3 +1,9 @@
+2016-02-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* timevar.def (TV_PHASE_DBGINFO): Delete.
+	(TV_PHASE_CHECK_DBGINFO): Likewise.
+	* varpool.c (varpool_node::assemble_decl): Do not change timevar.
+
 2016-02-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69719
