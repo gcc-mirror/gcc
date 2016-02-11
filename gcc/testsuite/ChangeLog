@@ -1,6 +1,11 @@
 2016-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69015
+	* gcc.dg/pr69015.c: New test.
+
 	2015-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/68376
