@@ -13901,7 +13901,6 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 	    tem_insn = from_insn;
 	  else
 	    {
-	      tem_insn = i3;
 	      if (from_insn
 		  && CALL_P (from_insn)
 		  && find_reg_fusage (from_insn, USE, XEXP (note, 0)))
@@ -13910,20 +13909,19 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		place = i3;
 	      else if (i2 != 0 && next_nonnote_nondebug_insn (i2) == i3
 		       && reg_referenced_p (XEXP (note, 0), PATTERN (i2)))
-		{
-		  place = i2;
-		  /* If the new I2 sets the same register that is marked dead
-		     in the note, the note now should not be put on I2, as the
-		     note refers to a previous incarnation of the reg.  */
-		  if (reg_set_p (XEXP (note, 0), PATTERN (i2)))
-		    tem_insn = i2;
-		}
+		place = i2;
 	      else if ((rtx_equal_p (XEXP (note, 0), elim_i2)
 			&& !(i2mod
 			     && reg_overlap_mentioned_p (XEXP (note, 0),
 							 i2mod_old_rhs)))
 		       || rtx_equal_p (XEXP (note, 0), elim_i1)
 		       || rtx_equal_p (XEXP (note, 0), elim_i0))
+		break;
+	      tem_insn = i3;
+	      /* If the new I2 sets the same register that is marked dead
+		 in the note, we do not know where to put the note.
+		 Give up.  */
+	      if (i2 != 0 && reg_set_p (XEXP (note, 0), PATTERN (i2)))
 		break;
 	    }
 

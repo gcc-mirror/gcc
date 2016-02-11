@@ -1,3 +1,11 @@
+2016-02-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/64682
+	PR rtl-optimization/69567
+	PR rtl-optimization/69737
+	* combine.c (distribute_notes) <REG_DEAD>: If the register is set
+	in I2 as well, just lose it.
+
 2016-02-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_last_printed_arch_string):
