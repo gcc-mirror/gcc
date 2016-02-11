@@ -49,6 +49,5 @@ bool f(I a, I b, I c, I d) {
 // a different initial CFG and thus the final outcome is different
 
 // { dg-final { scan-tree-dump-times "free" 10 "fre3" { target x86_64-*-* i?86-*-* } } }
-// { dg-final { scan-tree-dump-times "free" 3 "optimized" { target x86_64-*-* i?86-*-* } } }
 // { dg-final { scan-tree-dump-times "free" 14 "fre3" { target aarch64-*-* ia64-*-* arm-*-* hppa*-*-* sparc*-*-* powerpc*-*-* alpha*-*-* } } }
-// { dg-final { scan-tree-dump-times "free" 4 "optimized" { target aarch64-*-* ia64-*-* arm-*-* hppa*-*-* sparc*-*-* powerpc*-*-* alpha*-*-* } } }
+// { dg-final { scan-tree-dump-times "free" 0 "optimized" } }

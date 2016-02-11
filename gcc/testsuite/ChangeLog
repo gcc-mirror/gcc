@@ -1,3 +1,7 @@
+2016-02-11  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/tree-ssa/pr61034.C: Adjust.
+
 2016-02-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/69148
