@@ -1,6 +1,11 @@
 2016-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2015-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/68680
+	* gcc.target/i386/pr68680.c: New test.
+
 	2015-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/57580
