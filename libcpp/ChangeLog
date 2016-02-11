@@ -1,6 +1,15 @@
 2016-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/68176
+	* files.c (_cpp_find_file): Set file->implicit_preinclude even if
+	included from file->implicit_preinclude header.
+
+2016-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
 	2015-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/60736
