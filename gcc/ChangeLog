@@ -1,3 +1,8 @@
+2016-02-11  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/69713
+	* config/sh/sh.md (casesi_worker_0): Add T_REG use.
+
 2016-02-11  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/69291

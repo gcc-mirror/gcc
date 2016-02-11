@@ -11707,12 +11707,16 @@ label:
 ;; ??? reload might clobber r0 if we use it explicitly in the RTL before
 ;; reload; using a R0_REGS pseudo reg is likely to give poor code.
 ;; So we keep the use of r0 hidden in a R0_REGS clobber until after reload.
+;;
+;; The use on the T_REG in the casesi_worker* patterns links the bounds
+;; checking insns and the table memory access.  See also PR 69713.
 (define_insn "casesi_worker_0"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(unspec:SI [(match_operand:SI 1 "register_operand" "0,r")
 		 (label_ref (match_operand 2 "" ""))] UNSPEC_CASESI))
    (clobber (match_scratch:SI 3 "=X,1"))
-   (clobber (match_scratch:SI 4 "=&z,z"))]
+   (clobber (match_scratch:SI 4 "=&z,z"))
+   (use (reg:SI T_REG))]
   "TARGET_SH1"
   "#")
 
@@ -11721,7 +11725,8 @@ label:
 	(unspec:SI [(match_operand:SI 1 "register_operand" "")
 		    (label_ref (match_operand 2 "" ""))] UNSPEC_CASESI))
    (clobber (match_scratch:SI 3 ""))
-   (clobber (match_scratch:SI 4 ""))]
+   (clobber (match_scratch:SI 4))
+   (use (reg:SI T_REG))]
   "TARGET_SH1 && ! TARGET_SH2 && reload_completed"
   [(set (reg:SI R0_REG) (unspec:SI [(label_ref (match_dup 2))] UNSPEC_MOVA))
    (parallel [(set (match_dup 0)
@@ -11739,7 +11744,8 @@ label:
 	(unspec:SI [(match_operand:SI 1 "register_operand" "")
 		    (label_ref (match_operand 2 "" ""))] UNSPEC_CASESI))
    (clobber (match_scratch:SI 3 ""))
-   (clobber (match_scratch:SI 4 ""))]
+   (clobber (match_scratch:SI 4))
+   (use (reg:SI T_REG))]
   "TARGET_SH2 && reload_completed"
   [(set (reg:SI R0_REG) (unspec:SI [(label_ref (match_dup 2))] UNSPEC_MOVA))
    (parallel [(set (match_dup 0)
