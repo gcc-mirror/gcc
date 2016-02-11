@@ -8547,6 +8547,8 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 		    arglist, complain, NULL_TREE);
 	  --processing_template_decl;
 	  TREE_VEC_LENGTH (arglist)++;
+	  if (partial_inst_args == error_mark_node)
+	    return error_mark_node;
 	  use_partial_inst_tmpl =
 	    /*...and we must not be looking at the partial instantiation
 	     itself. */
