@@ -1,3 +1,8 @@
+2016-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69768
+	* c-c++-common/Waddress-1.c: New test.
+
 2016-02-11  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/69296

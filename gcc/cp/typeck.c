@@ -4487,9 +4487,12 @@ cp_build_binary_op (location_t location,
 	warning (OPT_Wfloat_equal,
 		 "comparing floating point with == or != is unsafe");
       if ((complain & tf_warning)
-	  && ((TREE_CODE (orig_op0) == STRING_CST && !integer_zerop (op1))
-	      || (TREE_CODE (orig_op1) == STRING_CST && !integer_zerop (op0))))
-	warning (OPT_Waddress, "comparison with string literal results in unspecified behaviour");
+	  && ((TREE_CODE (orig_op0) == STRING_CST
+	       && !integer_zerop (cp_fully_fold (op1)))
+	      || (TREE_CODE (orig_op1) == STRING_CST
+		  && !integer_zerop (cp_fully_fold (op0)))))
+	warning (OPT_Waddress, "comparison with string literal results "
+			       "in unspecified behaviour");
 
       build_type = boolean_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
