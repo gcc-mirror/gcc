@@ -3597,8 +3597,10 @@ parser_build_binary_op (location_t location, enum tree_code code,
      of testing for equality or inequality of a string literal with NULL.  */
   if (code == EQ_EXPR || code == NE_EXPR)
     {
-      if ((code1 == STRING_CST && !integer_zerop (arg2.value))
-	  || (code2 == STRING_CST && !integer_zerop (arg1.value)))
+      if ((code1 == STRING_CST
+	   && !integer_zerop (tree_strip_nop_conversions (arg2.value)))
+	  || (code2 == STRING_CST
+	      && !integer_zerop (tree_strip_nop_conversions (arg1.value))))
 	warning_at (location, OPT_Waddress,
 		    "comparison with string literal results in unspecified behavior");
     }

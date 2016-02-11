@@ -1,3 +1,9 @@
+2016-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69768
+	* c-typeck.c (parser_build_binary_op): Strip nops from integer_zerop
+	arguments for -Waddress warning.
+
 2016-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/69669

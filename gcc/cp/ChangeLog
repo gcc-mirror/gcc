@@ -1,3 +1,9 @@
+2016-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69768
+	* typeck.c (cp_build_binary_op): cp_fully_fold integer_zerop
+	arguments for -Waddress warning.  Fix up formatting.
+
 2016-02-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/68726
