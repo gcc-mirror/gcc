@@ -1,3 +1,8 @@
+2016-02-11  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* lib/mpx-dg.exp: Fix warning in check_effective_target_mpx
+	test.
+
 2016-02-11  Richard Biener  <rguenther@suse.de>
 
 	* g++.dg/tree-ssa/pr61034.C: Adjust.
