@@ -2344,6 +2344,9 @@ typedef struct gfc_association_list
      for memory handling.  */
   unsigned dangling:1;
 
+  /* True when the rank of the target expression is guessed during parsing.  */
+  unsigned rankguessed:1;
+
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_symtree *st; /* Symtree corresponding to name.  */
   locus where;

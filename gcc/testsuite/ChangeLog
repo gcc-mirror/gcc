@@ -1,3 +1,9 @@
+2016-02-11  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/69296
+	* gfortran.dg/associate_19.f03: New test.
+	* gfortran.dg/associate_20.f03: New test.
+
 2016-02-11  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* gcc.target/sh/pr54089-8.c: Adjust optimization level.
