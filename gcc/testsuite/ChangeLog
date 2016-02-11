@@ -1,6 +1,11 @@
 2016-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/69128
+	* gfortran.dg/gomp/pr69128.f90: New test.
+
 	2016-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69015
