@@ -3568,20 +3568,18 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
   if (SLP_TREE_TWO_OPERATORS (node))
     {
       enum tree_code code0 = gimple_assign_rhs_code (stmt);
-      enum tree_code ocode;
+      enum tree_code ocode = ERROR_MARK;
       gimple *ostmt;
       unsigned char *mask = XALLOCAVEC (unsigned char, group_size);
-      bool allsame = true;
       FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, ostmt)
 	if (gimple_assign_rhs_code (ostmt) != code0)
 	  {
 	    mask[i] = 1;
-	    allsame = false;
 	    ocode = gimple_assign_rhs_code (ostmt);
 	  }
 	else
 	  mask[i] = 0;
-      if (!allsame)
+      if (ocode != ERROR_MARK)
 	{
 	  vec<gimple *> v0;
 	  vec<gimple *> v1;

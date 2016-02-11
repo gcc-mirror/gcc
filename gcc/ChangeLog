@@ -1,3 +1,9 @@
+2016-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65313
+	* tree-vect-slp.c (vect_schedule_slp_instance): Avoid
+	-Wmaybe-uninitialized warning.
+
 2016-02-11  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/69713
