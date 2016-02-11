@@ -881,7 +881,7 @@ Lex::gather_identifier()
 	      && (cc < '0' || cc > '9'))
 	    {
 	      // Check for an invalid character here, as we get better
-	      // error behaviour if we swallow them as part of the
+	      // error behavior if we swallow them as part of the
 	      // identifier we are building.
 	      if ((cc >= ' ' && cc < 0x7f)
 		  || cc == '\t'
@@ -922,7 +922,7 @@ Lex::gather_identifier()
 	    {
 	      // There is no valid place for a non-ASCII character
 	      // other than an identifier, so we get better error
-	      // handling behaviour if we swallow this character after
+	      // handling behavior if we swallow this character after
 	      // giving an error.
 	      if (!issued_error)
 		error_at(this->location(),

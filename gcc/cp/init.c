@@ -4390,12 +4390,12 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 		    warning (OPT_Wdelete_non_virtual_dtor,
 			     "deleting object of abstract class type %qT"
 			     " which has non-virtual destructor"
-			     " will cause undefined behaviour", type);
+			     " will cause undefined behavior", type);
 		  else
 		    warning (OPT_Wdelete_non_virtual_dtor,
 			     "deleting object of polymorphic class type %qT"
 			     " which has non-virtual destructor"
-			     " might cause undefined behaviour", type);
+			     " might cause undefined behavior", type);
 		}
 	    }
 	}

@@ -406,7 +406,7 @@ void exec_vldX (void)
   /* We need to use a temporary result buffer (result_bis), because
      the one used for other tests is not large enough. A subset of the
      result data is moved from result_bis to result, and it is this
-     subset which is used to check the actual behaviour. The next
+     subset which is used to check the actual behavior. The next
      macro enables to move another chunk of data from result_bis to
      result.  */
 #define TEST_VLDX(Q, T1, T2, W, N, X)					\

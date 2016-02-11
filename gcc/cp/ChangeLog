@@ -1,3 +1,12 @@
+2016-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* error.c: Spelling fixes - behaviour -> behavior and
+	neighbour -> neighbor.
+	* decl.c: Likewise.
+	* typeck.c (cp_build_binary_op): Fix up behavior spelling in
+	diagnostics.
+	* init.c (build_delete): Likewise.
+
 2016-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/69768

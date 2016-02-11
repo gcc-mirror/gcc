@@ -26,7 +26,7 @@
        && ! defined (__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__))
 /* MacOS versions before 10.3 don't have many C99 functions.  
    But, if you're including this file, you probably want to test the
-   newer behaviour, so: */
+   newer behavior, so: */
 #error forgot to set -mmacosx-version-min.
 #elif (defined(__APPLE__) && defined(__ppc__) \
        && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1030)
@@ -47,7 +47,7 @@
 #if defined(_NEWLIB_VERSION) || defined(__UCLIBC__)
 #elif defined(__sun) && __STDC_VERSION__ - 0 < 199901L
 /* If you're including this file, you probably want to test the newer
-   behaviour, so ensure the right flags were used for each test: */
+   behavior, so ensure the right flags were used for each test: */
 #error forgot to set -std=c99.
 #elif defined(__sun) && ! defined (_STDC_C99)
 /* Solaris up to 9 doesn't have the entire C99 runtime.

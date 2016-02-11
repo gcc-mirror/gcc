@@ -1,3 +1,9 @@
+2016-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gofrontend/lex.cc: Spelling fixes - behaviour -> behavior and
+	neighbour -> neighbor.
+	* gccgo.texi: Likewise.
+
 2016-01-27  Ian Lance Taylor  <iant@google.com>
 
 	* go-lang.c (go_langhook_init_options_struct): Default to

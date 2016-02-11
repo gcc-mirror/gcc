@@ -21,7 +21,7 @@
 ; TARGET_MUL_BUG: Whether or not to work around multiplication
 ; instruction hardware bug when generating code for models where
 ; it may be present.  From the trouble report for Etrax 100 LX:
-; "A multiply operation may cause incorrect cache behaviour
+; "A multiply operation may cause incorrect cache behavior
 ; under some specific circumstances. The problem can occur if
 ; the instruction following the multiply instruction causes a
 ; cache miss, and multiply operand 1 (source operand) bits

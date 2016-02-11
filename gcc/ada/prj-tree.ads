@@ -260,7 +260,7 @@ package Prj.Tree is
    --  For each function the condition of validity is specified. If an access
    --  function is called with invalid arguments, then exception
    --  Assertion_Error is raised if assertions are enabled, otherwise the
-   --  behaviour is not defined and may result in a crash.
+   --  behavior is not defined and may result in a crash.
 
    function Name_Of
      (Node    : Project_Node_Id;
@@ -733,7 +733,7 @@ package Prj.Tree is
    --  Foe each Set_* procedure the condition of validity is specified. If an
    --  access function is called with invalid arguments, then exception
    --  Assertion_Error is raised if assertions are enabled, otherwise the
-   --  behaviour is not defined and may result in a crash.
+   --  behavior is not defined and may result in a crash.
 
    --  These are very low-level, and manipulate the tree itself directly. You
    --  should look at the Create_* procedure instead if you want to use higher

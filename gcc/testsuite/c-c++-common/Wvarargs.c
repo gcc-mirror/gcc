@@ -49,6 +49,6 @@ foo3 (int a, register int b, ...)
 {
     va_list vp;
     /* 'b' is declared with register storage, so warn.  */
-    va_start (vp, b); /* { dg-warning "undefined behaviour" } */
+    va_start (vp, b); /* { dg-warning "undefined behavior" } */
     va_end (vp);
 }

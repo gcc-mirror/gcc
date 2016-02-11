@@ -4336,7 +4336,7 @@ interrupt controller (EIC) mode is in use, this can be explicitly set using
 Priority Level (IPL) is copied to the current IPL which has the effect of only
 enabling higher priority interrupts.  To use vectored interrupt mode use
 the argument @code{vector=[sw0|sw1|hw0|hw1|hw2|hw3|hw4|hw5]}, this will change
-the behaviour of the non-masked interrupt support and GCC will arrange to mask
+the behavior of the non-masked interrupt support and GCC will arrange to mask
 all interrupts from sw0 up to and including the specified interrupt vector.
 
 You can use the following attributes to modify the behavior

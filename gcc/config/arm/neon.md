@@ -1836,7 +1836,7 @@
 ; particular, denormal values are flushed to zero.  This means that GCC cannot
 ; use those instructions for autovectorization, etc. unless
 ; -funsafe-math-optimizations is in effect (in which case flush-to-zero
-; behaviour is permissible).  Intrinsic operations (provided by the arm_neon.h
+; behavior is permissible).  Intrinsic operations (provided by the arm_neon.h
 ; header) must work in either case: if -funsafe-math-optimizations is given,
 ; intrinsics expand to "canonical" RTL where possible, otherwise intrinsics
 ; expand to unspecs (which may potentially limit the extent to which they might

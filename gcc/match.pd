@@ -2969,7 +2969,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* If we have a narrowing conversion of an arithmetic operation where
    both operands are widening conversions from the same type as the outer
    narrowing conversion.  Then convert the innermost operands to a suitable
-   unsigned type (to avoid introducing undefined behaviour), perform the
+   unsigned type (to avoid introducing undefined behavior), perform the
    operation and convert the result to the desired type.  */
 (for op (plus minus)
   (simplify
@@ -2999,7 +2999,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* This is another case of narrowing, specifically when there's an outer
    BIT_AND_EXPR which masks off bits outside the type of the innermost
    operands.   Like the previous case we have to convert the operands
-   to unsigned types to avoid introducing undefined behaviour for the
+   to unsigned types to avoid introducing undefined behavior for the
    arithmetic operation.  */
 (for op (minus plus)
  (simplify

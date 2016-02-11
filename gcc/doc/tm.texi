@@ -4422,7 +4422,7 @@ saving and restoring an arbitrary return value.
 Normally, when a function returns a structure by memory, the address
 is passed as an invisible pointer argument, but the compiler also
 arranges to return the address from the function like it would a normal
-pointer return value.  Define this to true if that behaviour is
+pointer return value.  Define this to true if that behavior is
 undesirable on your target.
 @end deftypevr
 

@@ -40,7 +40,7 @@
 ;; Direct instructions can be issued to any of the four decoders.
 (define_reservation "znver1-direct" "znver1-decode0|znver1-decode1|znver1-decode2|znver1-decode3")
 
-;; Fix me: Need to revisit this later to simulate fast path double behaviour.
+;; Fix me: Need to revisit this later to simulate fast path double behavior.
 (define_reservation "znver1-double" "znver1-direct")
 
 

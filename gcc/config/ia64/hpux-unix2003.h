@@ -1,6 +1,6 @@
 
 /* For HP-UX 11.31 and greater, use unix2003.o instead of unix98.o to
-   get correct C99 snprintf behaviour with buffer overflow.  */
+   get correct C99 snprintf behavior with buffer overflow.  */
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared:%{static:crt0%O%s} \

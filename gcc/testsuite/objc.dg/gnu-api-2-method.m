@@ -90,14 +90,14 @@ int main(int argc, void **args)
     /* Swap the methods.  */
     method_exchangeImplementations (method_a, method_b);
 
-    /* Check that behaviour has changed.  */
+    /* Check that behavior has changed.  */
     if ([object variable] != nil  ||  [object constant] != object)
       abort ();
 
     /* Swap the methods again.  */
     method_exchangeImplementations (method_a, method_b);
     
-    /* Check that behaviour is back to normal.  */
+    /* Check that behavior is back to normal.  */
     if ([object variable] != object  ||  [object constant] != nil)
       abort ();
   }
@@ -213,7 +213,7 @@ int main(int argc, void **args)
     if (method_setImplementation (method_a, original_imp_b) != original_imp_a)
       abort ();
 
-    /* Check that behaviour has changed.  */
+    /* Check that behavior has changed.  */
     if ([object variable] != nil  ||  [object constant] != nil)
       abort ();
 
@@ -221,7 +221,7 @@ int main(int argc, void **args)
     if (method_setImplementation (method_a, original_imp_a) != original_imp_b)
       abort ();
     
-    /* Check that behaviour is back to normal.  */
+    /* Check that behavior is back to normal.  */
     if ([object variable] != object  ||  [object constant] != nil)
       abort ();
   }

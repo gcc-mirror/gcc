@@ -4721,7 +4721,7 @@
  ;; Comment in final.c (insn_current_reference_address) says
  ;; forward branch addresses are calculated from the next insn after branch
  ;; and for backward branches, it is calculated from the branch insn start.
- ;; The shortening logic here is tuned to accomodate this behaviour
+ ;; The shortening logic here is tuned to accomodate this behavior
 ;; ??? This should be grokked by the ccfsm machinery.
 (define_insn "cbranchsi4_scratch"
   [(set (pc)

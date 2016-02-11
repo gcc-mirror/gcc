@@ -2668,7 +2668,7 @@ package body Exp_Disp is
             --    F := not Cancelled (Bnn);
 
             --  where F is the success flag. The status of Cancelled is negated
-            --  in order to match the behaviour of the version for task types.
+            --  in order to match the behavior of the version for task types.
 
             Append_To (Stmts,
               Make_Assignment_Statement (Loc,

@@ -12,7 +12,7 @@ void h (void)
     // a macro that expands to the built-in __INT_MAX__.  Furthermore,
     // INT_MAX is defined inside a system header.
     //
-    // The behaviour we want is that the diagnostic should point to
+    // The behavior we want is that the diagnostic should point to
     // the locus that inside the source code here, at the relevant
     // line below, even with -ftrack-macro-expansion.  We don't want
     // it to point to the any locus that is inside the system header.

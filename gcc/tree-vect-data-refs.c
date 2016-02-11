@@ -3030,7 +3030,7 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   comp_alias_ddrs.qsort (comp_dr_with_seg_len_pair);
 
   /* Third, we scan the sorted dr pairs and check if we can combine
-     alias checks of two neighbouring dr pairs.  */
+     alias checks of two neighboring dr pairs.  */
   for (size_t i = 1; i < comp_alias_ddrs.length (); ++i)
     {
       /* Deal with two ddrs (dr_a1, dr_b1) and (dr_a2, dr_b2).  */

@@ -1,6 +1,6 @@
 ! { dg-do run }
 !
-! Test the behaviour of lbound, ubound of shape with assumed rank arguments
+! Test the behavior of lbound, ubound of shape with assumed rank arguments
 ! in an array context (without DIM argument).
 !
 

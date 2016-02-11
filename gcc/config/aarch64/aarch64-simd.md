@@ -1785,7 +1785,7 @@
 ;; the lower architectural lanes of the vector, for these patterns we want
 ;; to always treat "hi" as referring to the higher architectural lanes.
 ;; Consequently, while the patterns below look inconsistent with our
-;; other big-endian patterns their behaviour is as required.
+;; other big-endian patterns their behavior is as required.
 
 (define_expand "vec_unpacks_lo_<mode>"
   [(match_operand:<VWIDE> 0 "register_operand" "")

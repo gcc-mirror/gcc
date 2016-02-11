@@ -2844,7 +2844,7 @@ decl_as_dwarf_string (tree decl, int flags)
 {
   const char *name;
   /* Curiously, reinit_cxx_pp doesn't reset the flags field, so setting the flag
-     here will be adequate to get the desired behaviour.  */
+     here will be adequate to get the desired behavior.  */
   cxx_pp->flags |= pp_c_flag_gnu_v3;
   name = decl_as_string (decl, flags);
   /* Subsequent calls to the pretty printer shouldn't use this style.  */
@@ -2876,7 +2876,7 @@ lang_decl_dwarf_name (tree decl, int v, bool translate)
 {
   const char *name;
   /* Curiously, reinit_cxx_pp doesn't reset the flags field, so setting the flag
-     here will be adequate to get the desired behaviour.  */
+     here will be adequate to get the desired behavior.  */
   cxx_pp->flags |= pp_c_flag_gnu_v3;
   name = lang_decl_name (decl, v, translate);
   /* Subsequent calls to the pretty printer shouldn't use this style.  */

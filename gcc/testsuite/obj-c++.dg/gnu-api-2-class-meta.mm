@@ -11,9 +11,9 @@
   Functions that manipulate instances, instance variables, properties
   and protocols at the moment must take a normal class as argument;
   calling them with a meta class as argument is of no particular use
-  and generally produces a behaviour that is undocumented and/or
+  and generally produces a behavior that is undocumented and/or
   undefined (and this is true with all runtimes).  As in the future
-  this behaviour may be defined or documented (for example, if class
+  this behavior may be defined or documented (for example, if class
   variables are implemented as instance variables of meta classes) we
   avoid testing it for compatibility with future runtimes.  */
 

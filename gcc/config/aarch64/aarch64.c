@@ -8632,14 +8632,14 @@ enum aarch64_attr_opt_type
 
 /* All the information needed to handle a target attribute.
    NAME is the name of the attribute.
-   ATTR_TYPE specifies the type of behaviour of the attribute as described
+   ATTR_TYPE specifies the type of behavior of the attribute as described
    in the definition of enum aarch64_attr_opt_type.
    ALLOW_NEG is true if the attribute supports a "no-" form.
    HANDLER is the function that takes the attribute string and whether
    it is a pragma or attribute and handles the option.  It is needed only
    when the ATTR_TYPE is aarch64_attr_custom.
    OPT_NUM is the enum specifying the option that the attribute modifies.
-   This is needed for attributes that mirror the behaviour of a command-line
+   This is needed for attributes that mirror the behavior of a command-line
    option, that is it has ATTR_TYPE aarch64_attr_mask, aarch64_attr_bool or
    aarch64_attr_enum.  */
 

@@ -464,7 +464,7 @@ add_deps_for_risky_insns (rtx_insn *head, rtx_insn *tail)
 /* Schedule a single extended basic block, defined by the boundaries
    HEAD and TAIL.
 
-   We change our expectations about scheduler behaviour depending on
+   We change our expectations about scheduler behavior depending on
    whether MODULO_SCHEDULING is true.  If it is, we expect that the
    caller has already called set_modulo_params and created delay pairs
    as appropriate.  If the modulo schedule failed, we return

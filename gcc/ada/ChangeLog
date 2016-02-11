@@ -1,3 +1,19 @@
+2016-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* prj-tree.ads: Spelling fixes - behaviour -> behavior and
+	neighbour -> neighbor.
+	* prep.adb: Likewise.
+	* prj.ads: Likewise.
+	* prepcomp.adb: Likewise.
+	* g-socket.ads: Likewise.
+	* s-imgrea.adb: Likewise.
+	* a-calend.adb: Likewise.
+	* exp_disp.adb: Likewise.
+	* doc/gnat_ugn/gnat_utility_programs.rst: Likewise.
+	* g-socket.adb: Likewise.
+	* sem_ch12.adb: Likewise.
+	* terminals.c: Likewise.
+
 2016-02-08  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* gcc-interface/misc.c (gnat_init): Remove second argument in call to

@@ -11,16 +11,16 @@ module m
 TYPE, ABSTRACT :: top
 CONTAINS
    PROCEDURE(xxx), DEFERRED :: proc_a ! { dg-error "must be explicit" }
-   ! some useful default behaviour
+   ! some useful default behavior
    PROCEDURE :: proc_c => top_c ! { dg-error "must be a module procedure" }
 END TYPE top
 
-! Concrete middle class with useful behaviour
+! Concrete middle class with useful behavior
 TYPE, EXTENDS(top) :: middle
 CONTAINS
    ! do nothing, empty proc just to make middle concrete
    PROCEDURE :: proc_a => dummy_middle_a ! { dg-error "must be a module procedure" }
-   ! some useful default behaviour
+   ! some useful default behavior
    PROCEDURE :: proc_b => middle_b ! { dg-error "must be a module procedure" }
 END TYPE middle
 
@@ -32,9 +32,9 @@ CONTAINS
    ! useful proc to satisfy deferred procedure in top. Because we've
    ! extended middle we wouldn't get told off if we forgot this.
    PROCEDURE :: proc_a => bottom_a  ! { dg-error "must be a module procedure" }
-   ! calls middle%proc_b and then provides extra behaviour
+   ! calls middle%proc_b and then provides extra behavior
    PROCEDURE :: proc_b => bottom_b
-   ! calls top_c and then provides extra behaviour
+   ! calls top_c and then provides extra behavior
    PROCEDURE :: proc_c => bottom_c
 END TYPE bottom
 contains

@@ -63,7 +63,7 @@ package body Ada.Calendar is
    --        procedure Split (9 or 10 parameters) -+
    --     end Ada.Calendar.Formatting
 
-   --  The behaviour of the interfacing routines is controlled via various
+   --  The behavior of the interfacing routines is controlled via various
    --  flags. All new Ada 2005 types from children of Ada.Calendar are
    --  emulated by a similar type. For instance, type Day_Number is replaced
    --  by Integer in various routines. One ramification of this model is that

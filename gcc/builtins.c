@@ -8908,7 +8908,7 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
 	{
 	  warning_at (current_location,
 		      OPT_Wvarargs,
-		      "undefined behaviour when second parameter of "
+		      "undefined behavior when second parameter of "
 		      "%<va_start%> is declared with %<register%> storage");
 	}
 

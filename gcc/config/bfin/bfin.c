@@ -4092,7 +4092,7 @@ reorder_var_tracking_notes (void)
 }
 
 /* On some silicon revisions, functions shorter than a certain number of cycles
-   can cause unpredictable behaviour.  Work around this by adding NOPs as
+   can cause unpredictable behavior.  Work around this by adding NOPs as
    needed.  */
 static void
 workaround_rts_anomaly (void)
