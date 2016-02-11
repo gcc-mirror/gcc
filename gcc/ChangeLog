@@ -1,6 +1,14 @@
 2016-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/67653
+	* gimplify.c (gimplify_asm_expr): Warn if it is too late to
+	attempt to mark memory input operand addressable and
+	call prepare_gimple_addressable in that case.  Don't adjust
+	input_location for diagnostics, use error_at instead.
+
 	2016-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/68955
