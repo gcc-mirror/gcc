@@ -1545,14 +1545,9 @@ record_store (rtx body, bb_info_t bb_info)
 	mem_addr = base->val_rtx;
       else
 	{
-	  group_info_t group
-	    = rtx_group_vec[group_id];
+	  group_info_t group = rtx_group_vec[group_id];
 	  mem_addr = group->canon_base_addr;
 	}
-      /* get_addr can only handle VALUE but cannot handle expr like:
-	 VALUE + OFFSET, so call get_addr to get original addr for
-	 mem_addr before plus_constant.  */
-      mem_addr = get_addr (mem_addr);
       if (offset)
 	mem_addr = plus_constant (get_address_mode (mem), mem_addr, offset);
     }
@@ -2166,14 +2161,9 @@ check_mem_read_rtx (rtx *loc, void *data)
 	mem_addr = base->val_rtx;
       else
 	{
-	  group_info_t group
-	    = rtx_group_vec[group_id];
+	  group_info_t group = rtx_group_vec[group_id];
 	  mem_addr = group->canon_base_addr;
 	}
-      /* get_addr can only handle VALUE but cannot handle expr like:
-	 VALUE + OFFSET, so call get_addr to get original addr for
-	 mem_addr before plus_constant.  */
-      mem_addr = get_addr (mem_addr);
       if (offset)
 	mem_addr = plus_constant (get_address_mode (mem), mem_addr, offset);
     }
