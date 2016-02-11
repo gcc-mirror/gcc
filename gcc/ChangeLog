@@ -1,3 +1,8 @@
+2016-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR plugins/69758
+	* Makefile.in (PLUGIN_HEADERS): Add params.list.
+
 2016-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/65313

@@ -3320,7 +3320,8 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   tree-ssa-loop-niter.h tree-ssa-ter.h tree-ssa-threadedge.h \
   tree-ssa-threadupdate.h inchash.h wide-int.h signop.h hash-map.h \
   hash-set.h dominance.h cfg.h cfgrtl.h cfganal.h cfgbuild.h cfgcleanup.h \
-  lcm.h cfgloopmanip.h builtins.def chkp-builtins.def pass-instances.def
+  lcm.h cfgloopmanip.h builtins.def chkp-builtins.def pass-instances.def \
+  params.list
 
 # generate the 'build fragment' b-header-vars
 s-header-vars: Makefile
