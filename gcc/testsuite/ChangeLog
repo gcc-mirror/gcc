@@ -1,3 +1,7 @@
+2016-02-11  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc.target/sh/pr54089-8.c: Adjust optimization level.
+
 2016-02-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/target_attr_15.c: Scan assembly for
