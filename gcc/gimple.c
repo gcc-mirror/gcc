@@ -1953,6 +1953,11 @@ gimple_could_trap_p_1 (gimple s, bool include_mem, bool include_stores)
 				       && TYPE_OVERFLOW_TRAPS (t)),
 				      div));
 
+    case GIMPLE_COND:
+      t = TREE_TYPE (gimple_cond_lhs (s));
+      return operation_could_trap_p (gimple_cond_code (s),
+				     FLOAT_TYPE_P (t), false, NULL_TREE);
+
     default:
       break;
     }
