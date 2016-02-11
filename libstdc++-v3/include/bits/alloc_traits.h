@@ -409,7 +409,7 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
        *  Calls @c __a.destroy(__p) if that expression is well-formed,
        *  otherwise calls @c __p->~_Tp()
       */
-      template <class _Tp>
+      template<typename _Tp>
 	static void destroy(_Alloc& __a, _Tp* __p)
 	{ _S_destroy(__a, __p); }
 
@@ -436,6 +436,130 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
       select_on_container_copy_construction(const _Alloc& __rhs)
       { return _S_select(__rhs, 0); }
     };
+
+  /// Partial specialization for std::allocator.
+  template<typename _Tp>
+    struct allocator_traits<allocator<_Tp>>
+    {
+      /// The allocator type
+      using allocator_type = allocator<_Tp>;
+      /// The allocated type
+      using value_type = _Tp;
+
+      /// The allocator's pointer type.
+      using pointer = _Tp*;
+
+      /// The allocator's const pointer type.
+      using const_pointer = const _Tp*;
+
+      /// The allocator's void pointer type.
+      using void_pointer = void*;
+
+      /// The allocator's const void pointer type.
+      using const_void_pointer = const void*;
+
+      /// The allocator's difference type
+      using difference_type = std::ptrdiff_t;
+
+      /// The allocator's size type
+      using size_type = std::size_t;
+
+      /// How the allocator is propagated on copy assignment
+      using propagate_on_container_copy_assignment = false_type;
+
+      /// How the allocator is propagated on move assignment
+      using propagate_on_container_move_assignment = true_type;
+
+      /// How the allocator is propagated on swap
+      using propagate_on_container_swap = false_type;
+
+      template<typename _Up>
+	using rebind_alloc = allocator<_Up>;
+
+      template<typename _Up>
+	using rebind_traits = allocator_traits<allocator<_Up>>;
+
+      /**
+       *  @brief  Allocate memory.
+       *  @param  __a  An allocator.
+       *  @param  __n  The number of objects to allocate space for.
+       *
+       *  Calls @c a.allocate(n)
+      */
+      static pointer
+      allocate(allocator_type& __a, size_type __n)
+      { return __a.allocate(__n); }
+
+      /**
+       *  @brief  Allocate memory.
+       *  @param  __a  An allocator.
+       *  @param  __n  The number of objects to allocate space for.
+       *  @param  __hint Aid to locality.
+       *  @return Memory of suitable size and alignment for @a n objects
+       *          of type @c value_type
+       *
+       *  Returns <tt> a.allocate(n, hint) </tt>
+      */
+      static pointer
+      allocate(allocator_type& __a, size_type __n, const_void_pointer __hint)
+      { return __a.allocate(__n, __hint); }
+
+      /**
+       *  @brief  Deallocate memory.
+       *  @param  __a  An allocator.
+       *  @param  __p  Pointer to the memory to deallocate.
+       *  @param  __n  The number of objects space was allocated for.
+       *
+       *  Calls <tt> a.deallocate(p, n) </tt>
+      */
+      static void
+      deallocate(allocator_type& __a, pointer __p, size_type __n)
+      { __a.deallocate(__p, __n); }
+
+      /**
+       *  @brief  Construct an object of type @a _Up
+       *  @param  __a  An allocator.
+       *  @param  __p  Pointer to memory of suitable size and alignment for Tp
+       *  @param  __args Constructor arguments.
+       *
+       *  Calls <tt> __a.construct(__p, std::forward<Args>(__args)...) </tt>
+      */
+      template<typename _Up, typename... _Args>
+	static void
+	construct(allocator_type& __a, _Up* __p, _Args&&... __args)
+	{ __a.construct(__p, std::forward<_Args>(__args)...); }
+
+      /**
+       *  @brief  Destroy an object of type @a _Up
+       *  @param  __a  An allocator.
+       *  @param  __p  Pointer to the object to destroy
+       *
+       *  Calls @c __a.destroy(__p).
+      */
+      template<typename _Up>
+	static void
+	destroy(allocator_type& __a, _Up* __p)
+	{ __a.destroy(__p); }
+
+      /**
+       *  @brief  The maximum supported allocation size
+       *  @param  __a  An allocator.
+       *  @return @c __a.max_size()
+      */
+      static size_type
+      max_size(const allocator_type& __a) noexcept
+      { return __a.max_size(); }
+
+      /**
+       *  @brief  Obtain an allocator to use when copying a container.
+       *  @param  __rhs  An allocator.
+       *  @return @c __rhs
+      */
+      static allocator_type
+      select_on_container_copy_construction(const allocator_type& __rhs)
+      { return __rhs; }
+    };
+
 
   template<typename _Alloc>
     inline void
