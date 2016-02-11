@@ -1,3 +1,8 @@
+2016-02-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/68726
+	* g++.dg/cpp0x/pr68726.C: New.
+
 2016-02-11  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* lib/mpx-dg.exp: Fix warning in check_effective_target_mpx
