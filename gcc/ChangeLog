@@ -1,3 +1,14 @@
+2016-02-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_last_printed_arch_string):
+	New variable.
+	(aarch64_last_printed_tune_string): Likewise.
+	(aarch64_declare_function_name): Only output .arch assembler
+	directive if it will be different from the previously output
+	directive.  Same for .tune comment but only if -dA is set.
+	(aarch64_start_file): New function.
+	(TARGET_ASM_FILE_START): Define.
+
 2016-02-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR plugins/69758

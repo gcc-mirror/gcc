@@ -1,3 +1,10 @@
+2016-02-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/target_attr_15.c: Scan assembly for
+	.arch armv8-a\n.  Add -dA to dg-options.
+	* gcc.target/aarch64/assembler_arch_1.c: New test.
+	* gcc.target/aarch64/target_attr_7.c: Add -dA to dg-options.
+
 2016-02-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/68726
