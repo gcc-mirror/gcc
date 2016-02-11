@@ -1,3 +1,16 @@
+2016-02-11  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/69296
+	* gfortran.h: Added flag to gfc_association_list indicating that
+	the rank of an associate variable has been guessed only.
+	* parse.c (parse_associate): Set the guess flag mentioned above
+	when guessing the rank of an expression.
+	* resolve.c (resolve_assoc_var): When the rank has been guessed,
+	make sure, that the guess was correct else overwrite with the actual
+	rank.
+	* trans-stmt.c (trans_associate_var): For subref_array_pointers in
+	class objects, take the span from the _data component.
+
 2016-02-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/50555

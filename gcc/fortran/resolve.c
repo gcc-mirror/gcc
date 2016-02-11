@@ -4777,7 +4777,7 @@ fail:
 /* Given a variable expression node, compute the rank of the expression by
    examining the base symbol and any reference structures it may have.  */
 
-static void
+void
 expression_rank (gfc_expr *e)
 {
   gfc_ref *ref;
@@ -8153,16 +8153,19 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   if (target->rank != 0)
     {
       gfc_array_spec *as;
-      if (sym->ts.type != BT_CLASS && !sym->as)
+      /* The rank may be incorrectly guessed at parsing, therefore make sure
+	 it is corrected now.  */
+      if (sym->ts.type != BT_CLASS && (!sym->as || sym->assoc->rankguessed))
 	{
-	  as = gfc_get_array_spec ();
+	  if (!sym->as)
+	    sym->as = gfc_get_array_spec ();
+	  as = sym->as;
 	  as->rank = target->rank;
 	  as->type = AS_DEFERRED;
 	  as->corank = gfc_get_corank (target);
 	  sym->attr.dimension = 1;
 	  if (as->corank != 0)
 	    sym->attr.codimension = 1;
-	  sym->as = as;
 	}
     }
   else
