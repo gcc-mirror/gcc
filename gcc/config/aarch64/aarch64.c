@@ -11181,6 +11181,10 @@ aarch64_asm_preferred_eh_data_format (int code ATTRIBUTE_UNUSED, int global)
    return (global ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | type;
 }
 
+/* The last .arch and .tune assembly strings that we printed.  */
+static std::string aarch64_last_printed_arch_string;
+static std::string aarch64_last_printed_tune_string;
+
 /* Implement ASM_DECLARE_FUNCTION_NAME.  Output the ISA features used
    by the function fndecl.  */
 
@@ -11203,21 +11207,53 @@ aarch64_declare_function_name (FILE *stream, const char* name,
   unsigned long isa_flags = targ_options->x_aarch64_isa_flags;
   std::string extension
     = aarch64_get_extension_string_for_isa_flags (isa_flags);
-  asm_fprintf (asm_out_file, "\t.arch %s%s\n",
-	       this_arch->name, extension.c_str ());
+  /* Only update the assembler .arch string if it is distinct from the last
+     such string we printed.  */
+  std::string to_print = this_arch->name + extension;
+  if (to_print != aarch64_last_printed_arch_string)
+    {
+      asm_fprintf (asm_out_file, "\t.arch %s\n", to_print.c_str ());
+      aarch64_last_printed_arch_string = to_print;
+    }
 
   /* Print the cpu name we're tuning for in the comments, might be
-     useful to readers of the generated asm.  */
-
+     useful to readers of the generated asm.  Do it only when it changes
+     from function to function and verbose assembly is requested.  */
   const struct processor *this_tune
     = aarch64_get_tune_cpu (targ_options->x_explicit_tune_core);
 
-  asm_fprintf (asm_out_file, "\t" ASM_COMMENT_START ".tune %s\n",
-	       this_tune->name);
+  if (flag_debug_asm && aarch64_last_printed_tune_string != this_tune->name)
+    {
+      asm_fprintf (asm_out_file, "\t" ASM_COMMENT_START ".tune %s\n",
+		   this_tune->name);
+      aarch64_last_printed_tune_string = this_tune->name;
+    }
 
   /* Don't forget the type directive for ELF.  */
   ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "function");
   ASM_OUTPUT_LABEL (stream, name);
+}
+
+/* Implements TARGET_ASM_FILE_START.  Output the assembly header.  */
+
+static void
+aarch64_start_file (void)
+{
+  struct cl_target_option *default_options
+    = TREE_TARGET_OPTION (target_option_default_node);
+
+  const struct processor *default_arch
+    = aarch64_get_arch (default_options->x_explicit_arch);
+  unsigned long default_isa_flags = default_options->x_aarch64_isa_flags;
+  std::string extension
+    = aarch64_get_extension_string_for_isa_flags (default_isa_flags);
+
+   aarch64_last_printed_arch_string = default_arch->name + extension;
+   aarch64_last_printed_tune_string = "";
+   asm_fprintf (asm_out_file, "\t.arch %s\n",
+		aarch64_last_printed_arch_string.c_str ());
+
+   default_file_start ();
 }
 
 /* Emit load exclusive.  */
@@ -13956,6 +13992,9 @@ aarch64_optab_supported_p (int op, machine_mode, machine_mode,
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK \
   hook_bool_const_tree_hwi_hwi_const_tree_true
+
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START aarch64_start_file
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK aarch64_output_mi_thunk
