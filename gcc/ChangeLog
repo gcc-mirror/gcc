@@ -1,3 +1,9 @@
+2016-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/69291
+	* ifcvt.c (noce_try_store_flag_constants): Do not allow
+	subexpressions affected by changing the result.
+
 2016-02-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/69148
