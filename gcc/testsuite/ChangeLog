@@ -1,6 +1,11 @@
 2016-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2015-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/66432
+	* gcc.dg/debug/pr66432.c: New test.
+
 	2015-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/67770
