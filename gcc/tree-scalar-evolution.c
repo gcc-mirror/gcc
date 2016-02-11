@@ -935,27 +935,25 @@ follow_ssa_edge_binary (struct loop *loop, gimple at_stmt,
 	      limit++;
 
 	      evol = *evolution_of_loop;
-	      res = follow_ssa_edge
-		(loop, SSA_NAME_DEF_STMT (rhs0), halting_phi, &evol, limit);
-
-	      if (res == t_true)
-		*evolution_of_loop = add_to_evolution
+	      evol = add_to_evolution
 		  (loop->num,
 		   chrec_convert (type, evol, at_stmt),
 		   code, rhs1, at_stmt);
-
+	      res = follow_ssa_edge
+		(loop, SSA_NAME_DEF_STMT (rhs0), halting_phi, &evol, limit);
+	      if (res == t_true)
+		*evolution_of_loop = evol;
 	      else if (res == t_false)
 		{
-		  res = follow_ssa_edge
-		    (loop, SSA_NAME_DEF_STMT (rhs1), halting_phi,
-		     evolution_of_loop, limit);
-
-		  if (res == t_true)
-		    *evolution_of_loop = add_to_evolution
+		  *evolution_of_loop = add_to_evolution
 		      (loop->num,
 		       chrec_convert (type, *evolution_of_loop, at_stmt),
 		       code, rhs0, at_stmt);
-
+		  res = follow_ssa_edge
+		    (loop, SSA_NAME_DEF_STMT (rhs1), halting_phi,
+		     evolution_of_loop, limit);
+		  if (res == t_true)
+		    ;
 		  else if (res == t_dont_know)
 		    *evolution_of_loop = chrec_dont_know;
 		}
@@ -968,15 +966,15 @@ follow_ssa_edge_binary (struct loop *loop, gimple at_stmt,
 	    {
 	      /* Match an assignment under the form:
 		 "a = b + ...".  */
+	      *evolution_of_loop = add_to_evolution
+		  (loop->num, chrec_convert (type, *evolution_of_loop,
+					     at_stmt),
+		   code, rhs1, at_stmt);
 	      res = follow_ssa_edge
 		(loop, SSA_NAME_DEF_STMT (rhs0), halting_phi,
 		 evolution_of_loop, limit);
 	      if (res == t_true)
-		*evolution_of_loop = add_to_evolution
-		  (loop->num, chrec_convert (type, *evolution_of_loop,
-					     at_stmt),
-		   code, rhs1, at_stmt);
-
+		;	
 	      else if (res == t_dont_know)
 		*evolution_of_loop = chrec_dont_know;
 	    }
@@ -986,15 +984,15 @@ follow_ssa_edge_binary (struct loop *loop, gimple at_stmt,
 	{
 	  /* Match an assignment under the form:
 	     "a = ... + c".  */
+	  *evolution_of_loop = add_to_evolution
+	      (loop->num, chrec_convert (type, *evolution_of_loop,
+					 at_stmt),
+	       code, rhs0, at_stmt);
 	  res = follow_ssa_edge
 	    (loop, SSA_NAME_DEF_STMT (rhs1), halting_phi,
 	     evolution_of_loop, limit);
 	  if (res == t_true)
-	    *evolution_of_loop = add_to_evolution
-	      (loop->num, chrec_convert (type, *evolution_of_loop,
-					 at_stmt),
-	       code, rhs0, at_stmt);
-
+	    ;
 	  else if (res == t_dont_know)
 	    *evolution_of_loop = chrec_dont_know;
 	}
@@ -1019,13 +1017,13 @@ follow_ssa_edge_binary (struct loop *loop, gimple at_stmt,
 	  if (TREE_CODE (rhs1) == SSA_NAME)
 	    limit++;
 
+	  *evolution_of_loop = add_to_evolution
+	      (loop->num, chrec_convert (type, *evolution_of_loop, at_stmt),
+	       MINUS_EXPR, rhs1, at_stmt);
 	  res = follow_ssa_edge (loop, SSA_NAME_DEF_STMT (rhs0), halting_phi,
 				 evolution_of_loop, limit);
 	  if (res == t_true)
-	    *evolution_of_loop = add_to_evolution
-	      (loop->num, chrec_convert (type, *evolution_of_loop, at_stmt),
-	       MINUS_EXPR, rhs1, at_stmt);
-
+	    ;
 	  else if (res == t_dont_know)
 	    *evolution_of_loop = chrec_dont_know;
 	}
