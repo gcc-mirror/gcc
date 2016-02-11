@@ -114,9 +114,9 @@ insert_trap (gimple_stmt_iterator *si_p, tree op)
   *si_p = gsi_for_stmt (stmt);
 }
 
-/* BB when reached via incoming edge E will exhibit undefined behaviour
+/* BB when reached via incoming edge E will exhibit undefined behavior
    at STMT.  Isolate and optimize the path which exhibits undefined
-   behaviour.
+   behavior.
 
    Isolation is simple.  Duplicate BB and redirect E to BB'.
 
@@ -156,14 +156,14 @@ isolate_path (basic_block bb, basic_block duplicate,
 
 
   /* There may be more than one statement in DUPLICATE which exhibits
-     undefined behaviour.  Ultimately we want the first such statement in
+     undefined behavior.  Ultimately we want the first such statement in
      DUPLCIATE so that we're able to delete as much code as possible.
 
-     So each time we discover undefined behaviour in DUPLICATE, search for
-     the statement which triggers undefined behaviour.  If found, then
+     So each time we discover undefined behavior in DUPLICATE, search for
+     the statement which triggers undefined behavior.  If found, then
      transform the statement into a trap and delete everything after the
      statement.  If not found, then this particular instance was subsumed by
-     an earlier instance of undefined behaviour and there's nothing to do.
+     an earlier instance of undefined behavior and there's nothing to do.
 
      This is made more complicated by the fact that we have STMT, which is in
      BB rather than in DUPLICATE.  So we set up two iterators, one for each
@@ -215,7 +215,7 @@ isolate_path (basic_block bb, basic_block duplicate,
    When found isolate and optimize the path associated with the PHI
    argument feeding the erroneous statement.  */
 static void
-find_implicit_erroneous_behaviour (void)
+find_implicit_erroneous_behavior (void)
 {
   basic_block bb;
 
@@ -353,12 +353,12 @@ find_implicit_erroneous_behaviour (void)
     }
 }
 
-/* Look for statements which exhibit erroneous behaviour.  For example
+/* Look for statements which exhibit erroneous behavior.  For example
    a NULL pointer dereference.
 
-   When found, optimize the block containing the erroneous behaviour.  */
+   When found, optimize the block containing the erroneous behavior.  */
 static void
-find_explicit_erroneous_behaviour (void)
+find_explicit_erroneous_behavior (void)
 {
   basic_block bb;
 
@@ -485,11 +485,11 @@ gimple_ssa_isolate_erroneous_paths (void)
   initialize_original_copy_tables ();
 
   /* Search all the blocks for edges which, if traversed, will
-     result in undefined behaviour.  */
+     result in undefined behavior.  */
   cfg_altered = false;
 
   /* First handle cases where traversal of a particular edge
-     triggers undefined behaviour.  These cases require creating
+     triggers undefined behavior.  These cases require creating
      duplicate blocks and thus new SSA_NAMEs.
 
      We want that process complete prior to the phase where we start
@@ -501,8 +501,8 @@ gimple_ssa_isolate_erroneous_paths (void)
      back to the manager but we could still have dangling references
      to the released SSA_NAME in unreachable blocks.
      that any released names not have dangling references in the IL.  */
-  find_implicit_erroneous_behaviour ();
-  find_explicit_erroneous_behaviour ();
+  find_implicit_erroneous_behavior ();
+  find_explicit_erroneous_behavior ();
 
   free_original_copy_tables ();
 

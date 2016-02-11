@@ -2140,7 +2140,7 @@ process_alt_operands (int only_alternative)
 			  reject++;
 			}
 		    }
-		  /* We simulate the behaviour of old reload here.
+		  /* We simulate the behavior of old reload here.
 		     Although scratches need hard registers and it
 		     might result in spilling other pseudos, no reload
 		     insns are generated for the scratches.  So it
@@ -3027,7 +3027,7 @@ process_address_1 (int nop, bool check_only_p,
 	      if (insn != NULL_RTX)
 		{
 		  /* Do nothing if we cannot generate right insns.
-		     This is analogous to reload pass behaviour.  */
+		     This is analogous to reload pass behavior.  */
 		  delete_insns_since (last);
 		  end_sequence ();
 		  return false;

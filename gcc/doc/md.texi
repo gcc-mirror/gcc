@@ -9426,7 +9426,7 @@ nondeterministic treatment means trying all alternatives, some of them
 may be rejected by reservations in the subsequent insns.
 
 @item
-@dfn{collapse-ndfa} modifies the behaviour of the generator when
+@dfn{collapse-ndfa} modifies the behavior of the generator when
 producing an automaton.  An additional state transition to collapse a
 nondeterministic @acronym{NDFA} state to a deterministic @acronym{DFA}
 state is generated.  It can be triggered by passing @code{const0_rtx} to

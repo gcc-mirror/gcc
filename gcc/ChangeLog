@@ -1,3 +1,56 @@
+2016-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* cgraph.c: Spelling fixes - behaviour -> behavior and
+	neighbour -> neighbor.
+	* target.def: Likewise.
+	* sel-sched.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/arc/arc.md: Likewise.
+	* config/arm/cortex-a57.md: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/arm/neon.md: Likewise.
+	* config/arm/arm-c.c: Likewise.
+	* config/vms/vms-c.c: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/i386/znver1.md: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/ia64/hpux-unix2003.h: Likewise.
+	* config/msp430/msp430.md: Likewise.
+	* config/rx/rx.c: Likewise.
+	* config/rx/rx.md: Likewise.
+	* config/aarch64/aarch64-simd.md: Likewise.
+	* config/aarch64/aarch64.c: Likewise.
+	* config/nvptx/nvptx.c: Likewise.
+	* config/bfin/bfin.c: Likewise.
+	* config/cris/cris.opt: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* target.h: Likewise.
+	* spellcheck.c: Likewise.
+	* ira-build.c: Likewise.
+	* tree-inline.c: Likewise.
+	* builtins.c: Likewise.
+	* lra-constraints.c: Likewise.
+	* explow.c: Likewise.
+	* hwint.h: Likewise.
+	* targhooks.c: Likewise.
+	* tree-vect-data-refs.c: Likewise.
+	* expr.c: Likewise.
+	* doc/tm.texi: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/install.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* tree-ssa-tail-merge.c: Likewise.
+	* sched-int.h: Likewise.
+	* match.pd: Likewise.
+	* sched-ebb.c: Likewise.
+	* target.def (omit_struct_return_reg): Likewise.
+	* gimple-ssa-isolate-paths.c: Likewise.
+	(find_implicit_erroneous_behaviour): Renamed to...
+	(find_implicit_erroneous_behavior): ... this.
+	(find_explicit_erroneous_behaviour): Renamed to...
+	(find_explicit_erroneous_behavior): ... this.
+	(gimple_ssa_isolate_erroneous_paths): Adjust caller.
+
 2016-02-11  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/64682

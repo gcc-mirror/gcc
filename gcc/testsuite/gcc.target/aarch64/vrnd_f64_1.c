@@ -87,7 +87,7 @@ main (int argc, char **argv)
   };
 
   /* Set floating point control register
-     to have predictable vrndx and vrndi behaviour.  */
+     to have predictable vrndx and vrndi behavior.  */
   set_rounding_mode (FPROUNDING_ZERO);
 
   run_round_tests (tests, expectations);

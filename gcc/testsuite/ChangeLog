@@ -1,3 +1,58 @@
+2016-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* objc.dg/gnu-api-2-method.m: Spelling fixes - behaviour -> behavior
+	and neighbour -> neighbor.
+	* objc.dg/attributes/method-nonnull-1.m: Likewise.
+	* objc.dg/gnu-api-2-class-meta.m: Likewise.
+	* c-c++-common/Wvarargs.c: Likewise.
+	* c-c++-common/goacc/host_data-5.c: Likewise.
+	* obj-c++.dg/gnu-api-2-class-meta.mm: Likewise.
+	* obj-c++.dg/attributes/method-nonnull-1.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-method.mm: Likewise.
+	* gcc.target/aarch64/pr60697.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vldX_lane.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqshl.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vshuffle.inc: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vrshl.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vldX_dup.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vstX_lane.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqrshl.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vldX.c: Likewise.
+	* gcc.target/aarch64/aapcs64/ice_2.c: Likewise.
+	* gcc.target/aarch64/aapcs64/test_23.c: Likewise.
+	* gcc.target/aarch64/vrnd_f64_1.c: Likewise.
+	* g++.dg/warn/Wconversion-real-integer-3.C: Likewise.
+	* g++.dg/lookup/koenig5.C: Likewise.
+	* g++.dg/ext/no-asm-2.C: Likewise.
+	* gfortran.dg/bounds_check_array_ctor_3.f90: Likewise.
+	* gfortran.dg/bounds_check_array_ctor_7.f90: Likewise.
+	* gfortran.dg/used_types_16.f90: Likewise.
+	* gfortran.dg/assumed_rank_bounds_1.f90: Likewise.
+	* gfortran.dg/bounds_check_array_ctor_1.f90: Likewise.
+	* gfortran.dg/assumed_rank_bounds_2.f90: Likewise.
+	* gfortran.dg/bounds_check_array_ctor_4.f90: Likewise.
+	* gfortran.dg/abstract_type_6.f03: Likewise.
+	* gfortran.dg/bounds_check_array_ctor_5.f90: Likewise.
+	* gfortran.dg/used_types_15.f90: Likewise.
+	* gfortran.dg/bounds_check_array_ctor_8.f90: Likewise.
+	* gfortran.dg/exit_3.f08: Likewise.
+	* gfortran.dg/open_status_2.f90: Likewise.
+	* gfortran.dg/derived_pointer_recursion_2.f90: Likewise.
+	* gfortran.dg/intrinsic_std_1.f90: Likewise.
+	* gfortran.dg/associate_1.f03: Likewise.
+	* gfortran.dg/bounds_check_array_ctor_2.f90: Likewise.
+	* gfortran.dg/intrinsic_std_6.f90: Likewise.
+	* gfortran.dg/bounds_check_array_ctor_6.f90: Likewise.
+	* gcc.dg/builtin-object-size-1.c: Likewise.
+	* gcc.dg/noreturn-6.c: Likewise.
+	* gcc.dg/builtin-stringop-chk-1.c: Likewise.
+	* gcc.dg/globalalias.c: Likewise.
+	* gcc.dg/builtins-config.h: Likewise.
+	* gcc.dg/pr30457.c: Likewise.
+	* gcc.c-torture/compile/volatile-1.c: Likewise.
+	* gcc.c-torture/execute/20101011-1.c: Likewise.
+	* c-c++-common/Waddress-1.c: Likewise.
+
 2016-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/69768

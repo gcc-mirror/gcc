@@ -314,7 +314,7 @@ void exec_vrshl (void)
 
   /* Choose init value arbitrarily, will be used as shift amount.  */
   /* Use values equal to one-less-than the type width to check
-     behaviour on limits.  */
+     behavior on limits.  */
   VDUP(vector_shift, , int, s, 8, 8, 7);
   VDUP(vector_shift, , int, s, 16, 4, 15);
   VDUP(vector_shift, , int, s, 32, 2, 31);

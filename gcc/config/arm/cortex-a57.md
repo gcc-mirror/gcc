@@ -324,7 +324,7 @@
    "ca57_mx")
 
 ;; All multiplies
-;; TODO: AArch32 and AArch64 have different behaviour
+;; TODO: AArch32 and AArch64 have different behavior
 (define_insn_reservation "cortex_a57_mult32" 3
   (and (eq_attr "tune" "cortexa57")
        (ior (eq_attr "mul32" "yes")

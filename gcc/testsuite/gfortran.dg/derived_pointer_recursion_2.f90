@@ -12,7 +12,7 @@ TYPE :: atom_list
 END TYPE
 
 TYPE :: atom_private
-  TYPE(atom_list) :: neighbours
+  TYPE(atom_list) :: neighbors
   LOGICAL         :: initialized = .true.
 END TYPE
 

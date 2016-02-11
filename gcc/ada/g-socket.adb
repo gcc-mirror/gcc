@@ -481,7 +481,7 @@ package body GNAT.Sockets is
          return;
 
       --  On other platforms, fd_set is an FD_SETSIZE bitmap: check
-      --  that Fd is within range (otherwise behaviour is undefined).
+      --  that Fd is within range (otherwise behavior is undefined).
 
       elsif Fd < 0 or else Fd >= SOSC.FD_SETSIZE then
          raise Constraint_Error

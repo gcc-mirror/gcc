@@ -429,7 +429,7 @@ FNNAME (INSN)
 
   /* Choose init value arbitrarily, will be used as shift amount */
   /* Use values equal or one-less-than the type width to check
-     behaviour on limits.  */
+     behavior on limits.  */
 
   /* 64-bits vectors first.  */
   /* Shift 8-bits lanes by 7...  */

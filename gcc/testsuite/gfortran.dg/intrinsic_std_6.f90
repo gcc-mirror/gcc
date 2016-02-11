@@ -6,7 +6,7 @@
 !
 
 ! PR fortran/33141
-! Check for the expected behaviour when an intrinsic function/subroutine is
+! Check for the expected behavior when an intrinsic function/subroutine is
 ! called that is not available in the defined standard or that is a GNU
 ! extension:
 ! There should be a warning emitted on the call, and the reference should be

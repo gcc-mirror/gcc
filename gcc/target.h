@@ -101,7 +101,7 @@ extern int elf_record_gcc_switches (print_switch_type type, const char *);
 extern bool target_default_pointer_address_modes_p (void);
 
 /* For hooks which use the MOVE_RATIO macro, this gives the legacy default
-   behaviour.  */
+   behavior.  */
 extern unsigned int get_move_ratio (bool);
 
 struct stdarg_info;

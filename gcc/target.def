@@ -4100,7 +4100,7 @@ DEFHOOKPOD
  "Normally, when a function returns a structure by memory, the address\n\
 is passed as an invisible pointer argument, but the compiler also\n\
 arranges to return the address from the function like it would a normal\n\
-pointer return value.  Define this to true if that behaviour is\n\
+pointer return value.  Define this to true if that behavior is\n\
 undesirable on your target.",
  bool, false)
 

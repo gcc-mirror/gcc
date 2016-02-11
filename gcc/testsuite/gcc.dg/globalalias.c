@@ -1,7 +1,7 @@
 /* This test checks that local aliases behave sanely.  This is necessary for code correctness
    of aliases introduced by ipa-visibility pass.
 
-   This test expose weird behaviour of AIX's .set pseudo-op where the global symbol is created,
+   This test expose weird behavior of AIX's .set pseudo-op where the global symbol is created,
    but all uses of the alias are syntactically replaced by uses of the target.  This means that
    both counters are increased to 2.  */
 

@@ -618,7 +618,7 @@ static int ns5_core(FILE *log,t_commrec *cr,t_forcerec *fr,int cg_index[],
     }
   }
 }
-int search_neighbours(FILE *log,t_forcerec *fr,
+int search_neighbors(FILE *log,t_forcerec *fr,
         rvec x[],matrix box,
         t_topology *top,t_groups *grps,
         t_commrec *cr,t_nsborder *nsb,

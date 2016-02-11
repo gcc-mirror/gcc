@@ -80,7 +80,7 @@ levenshtein_distance (const char *s, int len_s,
 	 by inserting i characters.  */
       v1[0] = i + 1;
 
-      /* Build the rest of the row by considering neighbours to
+      /* Build the rest of the row by considering neighbors to
 	 the north, west and northwest.  */
       for (int j = 0; j < len_s; j++)
 	{

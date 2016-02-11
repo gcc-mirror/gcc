@@ -661,7 +661,7 @@ package body Prepcomp is
             Scn.Scanner.Initialize_Scanner (Deffile);
             Prep.Parse_Def_File;
 
-            --  Reset the behaviour of the scanner to the default
+            --  Reset the behavior of the scanner to the default
 
             Scn.Scanner.Set_End_Of_Line_As_Token (False);
 

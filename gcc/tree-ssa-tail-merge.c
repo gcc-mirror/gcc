@@ -1407,7 +1407,7 @@ find_clusters_1 (same_succ *same_succ)
 	  if (BB_CLUSTER (bb1) != NULL && BB_CLUSTER (bb1) == BB_CLUSTER (bb2))
 	    continue;
 
-	  /* Limit quadratic behaviour.  */
+	  /* Limit quadratic behavior.  */
 	  nr_comparisons++;
 	  if (nr_comparisons > max_comparisons)
 	    break;

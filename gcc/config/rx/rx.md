@@ -408,7 +408,7 @@
 ;; Note - the following set of patterns do not use the "memory_operand"
 ;; predicate or an "m" constraint because we do not allow symbol_refs
 ;; or label_refs as legitimate memory addresses.  This matches the
-;; behaviour of most of the RX instructions.  Only the call/branch
+;; behavior of most of the RX instructions.  Only the call/branch
 ;; instructions are allowed to refer to symbols/labels directly.
 ;; The call operands are in QImode because that is the value of
 ;; FUNCTION_MODE

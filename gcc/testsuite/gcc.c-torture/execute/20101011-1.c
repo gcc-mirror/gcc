@@ -45,7 +45,7 @@
 # define DO_TEST 0
 #elif defined (__epiphany__)
   /* Epiphany does not have hardware division, and the software implementation
-     has truly undefined behaviour for division by 0.  */
+     has truly undefined behavior for division by 0.  */
 # define DO_TEST 0
 #elif defined (__m68k__) && !defined(__linux__)
   /* Attempting to trap division-by-zero in this way isn't likely to work on 
@@ -68,9 +68,9 @@
 #  define DO_TEST 0
 # else
 #  include <signal.h>
-  /* ARM division-by-zero behaviour is to call a helper function, which
+  /* ARM division-by-zero behavior is to call a helper function, which
      can do several different things, depending on requirements.  Emulate
-     the behaviour of other targets here by raising SIGFPE.  */
+     the behavior of other targets here by raising SIGFPE.  */
 int __attribute__((used))
 __aeabi_idiv0 (int return_value)
 {

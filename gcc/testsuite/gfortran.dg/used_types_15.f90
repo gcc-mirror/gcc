@@ -10,7 +10,7 @@ TYPE :: dummy_atom_list
 END TYPE
 
 TYPE :: dummy_atom
-  TYPE(dummy_atom_list) :: neighbours
+  TYPE(dummy_atom_list) :: neighbors
 END TYPE
 
 TYPE :: dummy_atom_model
