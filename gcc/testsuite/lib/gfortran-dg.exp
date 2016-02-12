@@ -26,7 +26,15 @@ proc gfortran-dg-test { prog do_what extra_tool_flags } {
     set comp_output [lindex $result 0]
     set output_file [lindex $result 1]
 
-    # gfortran error messages look like this:
+    # gcc's default is to print the caret and source code, but
+    # most test cases implicitly use the flag -fno-diagnostics-show-caret
+    # to disable caret (and source code) printing.
+    #
+    # However, a few test cases override this back to the default by
+    # explicily supplying "-fdiagnostics-show-caret", so that we can have
+    # test coverage for caret/source code printing.
+    #
+    # gfortran error messages with caret-printing look like this:
     #     [name]:[locus]:
     #
     #        some code
@@ -49,7 +57,14 @@ proc gfortran-dg-test { prog do_what extra_tool_flags } {
     #              1       2
     #     Error: Some error at (1) and (2)
     #
-    # or
+    # If this is such a test case, skip the rest of this function, so
+    # that the test case can explicitly verify the output that it expects.
+    if {[string first "-fdiagnostics-show-caret" $extra_tool_flags] >= 0} {
+	return [list $comp_output $output_file]
+    }
+
+    # Otherwise, caret-printing is disabled.
+    # gfortran errors with caret-printing disabled look like this:
     #     [name]:[locus]: Error: Some error
     # or
     #     [name]:[locus]: Error: (1)

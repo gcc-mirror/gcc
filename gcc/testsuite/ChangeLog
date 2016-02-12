@@ -1,5 +1,17 @@
 2016-02-12  David Malcolm  <dmalcolm@redhat.com>
 
+	PR other/69554
+	* gcc.dg/pr69554-1.c: New test.
+	* gfortran.dg/pr69554-1.F90: New test.
+	* gfortran.dg/pr69554-2.F90: New test.
+	* lib/gcc-dg.exp (proc dg-locus): New function.
+	* lib/gfortran-dg.exp (proc gfortran-dg-test): Update comment to
+	distinguish between the caret-printing and non-caret-printing
+	cases.  If caret-printing has been explicitly enabled, bail out
+	without attempting to fix up the output.
+
+2016-02-12  David Malcolm  <dmalcolm@redhat.com>
+
 	PR driver/69265
 	PR driver/69453
 	* gcc.dg/spellcheck-options-3.c: New test case.
