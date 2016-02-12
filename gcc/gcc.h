@@ -45,7 +45,9 @@ class driver
   void putenv_COLLECT_GCC (const char *argv0) const;
   void maybe_putenv_COLLECT_LTO_WRAPPER () const;
   void maybe_putenv_OFFLOAD_TARGETS () const;
-  void handle_unrecognized_options () const;
+  void build_option_suggestions (void);
+  const char *suggest_option (const char *bad_opt);
+  void handle_unrecognized_options ();
   int maybe_print_and_exit () const;
   bool prepare_infiles ();
   void do_spec_on_infiles () const;
@@ -57,6 +59,7 @@ class driver
   char *explicit_link_files;
   struct cl_decoded_option *decoded_options;
   unsigned int decoded_options_count;
+  auto_vec <char *> *m_option_suggestions;
 };
 
 /* The mapping of a spec function name to the C function that
