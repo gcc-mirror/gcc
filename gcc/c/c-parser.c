@@ -1293,7 +1293,8 @@ static tree c_parser_simple_asm_expr (c_parser *);
 static tree c_parser_attributes (c_parser *);
 static struct c_type_name *c_parser_type_name (c_parser *);
 static struct c_expr c_parser_initializer (c_parser *);
-static struct c_expr c_parser_braced_init (c_parser *, tree, bool);
+static struct c_expr c_parser_braced_init (c_parser *, tree, bool,
+					   struct obstack *);
 static void c_parser_initelt (c_parser *, struct obstack *);
 static void c_parser_initval (c_parser *, struct c_expr *,
 			      struct obstack *);
@@ -4307,7 +4308,7 @@ static struct c_expr
 c_parser_initializer (c_parser *parser)
 {
   if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
-    return c_parser_braced_init (parser, NULL_TREE, false);
+    return c_parser_braced_init (parser, NULL_TREE, false, NULL);
   else
     {
       struct c_expr ret;
@@ -4327,7 +4328,8 @@ c_parser_initializer (c_parser *parser)
    top-level initializer in a declaration.  */
 
 static struct c_expr
-c_parser_braced_init (c_parser *parser, tree type, bool nested_p)
+c_parser_braced_init (c_parser *parser, tree type, bool nested_p,
+		      struct obstack *outer_obstack)
 {
   struct c_expr ret;
   struct obstack braced_init_obstack;
@@ -4336,7 +4338,10 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p)
   gcc_assert (c_parser_next_token_is (parser, CPP_OPEN_BRACE));
   c_parser_consume_token (parser);
   if (nested_p)
-    push_init_level (brace_loc, 0, &braced_init_obstack);
+    {
+      finish_implicit_inits (brace_loc, outer_obstack);
+      push_init_level (brace_loc, 0, &braced_init_obstack);
+    }
   else
     really_start_incremental_init (type);
   if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
@@ -4594,7 +4599,8 @@ c_parser_initval (c_parser *parser, struct c_expr *after,
   location_t loc = c_parser_peek_token (parser)->location;
 
   if (c_parser_next_token_is (parser, CPP_OPEN_BRACE) && !after)
-    init = c_parser_braced_init (parser, NULL_TREE, true);
+    init = c_parser_braced_init (parser, NULL_TREE, true,
+				 braced_init_obstack);
   else
     {
       init = c_parser_expr_no_commas (parser, after);
@@ -8083,7 +8089,7 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
       error_at (type_loc, "compound literal has variable size");
       type = error_mark_node;
     }
-  init = c_parser_braced_init (parser, type, false);
+  init = c_parser_braced_init (parser, type, false, NULL);
   finish_init ();
   maybe_warn_string_init (type_loc, type, init);
 

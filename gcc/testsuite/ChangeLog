@@ -1,3 +1,8 @@
+2016-02-12  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR c/69522
+	gcc.dg/pr69522.c: New test.
+
 2016-02-12  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/69098
