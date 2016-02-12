@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "" } */
 struct str {};
 struct {
   struct str b;
