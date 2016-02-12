@@ -1,3 +1,15 @@
+2016-02-12  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR c/69522
+	* c-parser.c (c_parser_braced_init): New arg outer_obstack.  All
+	callers changed.  If nested_p is true, use it to call
+	finish_implicit_inits.
+	* c-tree.h (finish_implicit_inits): Declare.
+	* c-typeck.c (finish_implicit_inits): New function.  Move code
+	from ...
+	(push_init_level): ... here.
+	(set_designator, process_init_element): Call finish_implicit_inits.
+
 2016-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/69768

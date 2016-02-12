@@ -7548,6 +7548,30 @@ really_start_incremental_init (tree type)
     }
 }
 
+/* Called when we see an open brace for a nested initializer.  Finish
+   off any pending levels with implicit braces.  */
+void
+finish_implicit_inits (location_t loc, struct obstack *braced_init_obstack)
+{
+  while (constructor_stack->implicit)
+    {
+      if (RECORD_OR_UNION_TYPE_P (constructor_type)
+	  && constructor_fields == 0)
+	process_init_element (input_location,
+			      pop_init_level (loc, 1, braced_init_obstack),
+			      true, braced_init_obstack);
+      else if (TREE_CODE (constructor_type) == ARRAY_TYPE
+	       && constructor_max_index
+	       && tree_int_cst_lt (constructor_max_index,
+				   constructor_index))
+	process_init_element (input_location,
+			      pop_init_level (loc, 1, braced_init_obstack),
+			      true, braced_init_obstack);
+      else
+	break;
+    }
+}
+
 /* Push down into a subobject, for initialization.
    If this is for an explicit set of braces, IMPLICIT is 0.
    If it is because the next element belongs at a lower level,
@@ -7559,33 +7583,6 @@ push_init_level (location_t loc, int implicit,
 {
   struct constructor_stack *p;
   tree value = NULL_TREE;
-
-  /* If we've exhausted any levels that didn't have braces,
-     pop them now.  If implicit == 1, this will have been done in
-     process_init_element; do not repeat it here because in the case
-     of excess initializers for an empty aggregate this leads to an
-     infinite cycle of popping a level and immediately recreating
-     it.  */
-  if (implicit != 1)
-    {
-      while (constructor_stack->implicit)
-	{
-	  if (RECORD_OR_UNION_TYPE_P (constructor_type)
-	      && constructor_fields == 0)
-	    process_init_element (input_location,
-				  pop_init_level (loc, 1, braced_init_obstack),
-				  true, braced_init_obstack);
-	  else if (TREE_CODE (constructor_type) == ARRAY_TYPE
-		   && constructor_max_index
-		   && tree_int_cst_lt (constructor_max_index,
-				       constructor_index))
-	    process_init_element (input_location,
-				  pop_init_level (loc, 1, braced_init_obstack),
-				  true, braced_init_obstack);
-	  else
-	    break;
-	}
-    }
 
   /* Unless this is an explicit brace, we need to preserve previous
      content if any.  */
@@ -8013,6 +8010,7 @@ set_designator (location_t loc, int array,
     }
 
   constructor_designated = 1;
+  finish_implicit_inits (loc, braced_init_obstack);
   push_init_level (loc, 2, braced_init_obstack);
   return 0;
 }
@@ -9396,6 +9394,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      p = p->next;
 	      if (!p)
 		break;
+	      finish_implicit_inits (loc, braced_init_obstack);
 	      push_init_level (loc, 2, braced_init_obstack);
 	      p->stack = constructor_stack;
 	      if (p->range_end && tree_int_cst_equal (p->index, p->range_end))
