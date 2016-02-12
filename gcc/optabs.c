@@ -993,6 +993,7 @@ expand_binop_directly (machine_mode mode, optab binoptab,
   bool commutative_p;
   rtx_insn *pat;
   rtx xop0 = op0, xop1 = op1;
+  bool canonicalize_op1 = false;
 
   /* If it is a commutative operator and the modes would match
      if we would swap the operands, we can save the conversions.  */
@@ -1006,6 +1007,11 @@ expand_binop_directly (machine_mode mode, optab binoptab,
   xop0 = avoid_expensive_constant (xmode0, binoptab, 0, xop0, unsignedp);
   if (!shift_optab_p (binoptab))
     xop1 = avoid_expensive_constant (xmode1, binoptab, 1, xop1, unsignedp);
+  else
+    /* Shifts and rotates often use a different mode for op1 from op0;
+       for VOIDmode constants we don't know the mode, so force it
+       to be canonicalized using convert_modes.  */
+    canonicalize_op1 = true;
 
   /* In case the insn wants input operands in modes different from
      those of the actual operands, convert the operands.  It would
@@ -1020,7 +1026,8 @@ expand_binop_directly (machine_mode mode, optab binoptab,
       mode0 = xmode0;
     }
 
-  mode1 = GET_MODE (xop1) != VOIDmode ? GET_MODE (xop1) : mode;
+  mode1 = ((GET_MODE (xop1) != VOIDmode || canonicalize_op1)
+	   ? GET_MODE (xop1) : mode);
   if (xmode1 != VOIDmode && xmode1 != mode1)
     {
       xop1 = convert_modes (xmode1, mode1, xop1, unsignedp);

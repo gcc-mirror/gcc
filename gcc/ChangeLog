@@ -1,3 +1,10 @@
+2016-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/69764
+	PR rtl-optimization/69771
+	* optabs.c (expand_binop_directly): For shift_optab_p, force
+	convert_modes with VOIDmode if xop1 has VOIDmode.
+
 2016-02-12  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/69729
