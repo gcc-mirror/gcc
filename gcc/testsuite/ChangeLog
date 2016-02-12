@@ -1,3 +1,10 @@
+2016-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/69764
+	PR rtl-optimization/69771
+	* c-c++-common/pr69764.c: New test.
+	* gcc.dg/torture/pr69771.c: New test.
+
 2016-02-12  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/torture/init-list1.C: New.
