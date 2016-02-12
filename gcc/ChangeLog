@@ -1,3 +1,13 @@
+2016-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/68672
+	* ipa-split.c (split_function): Don't compute/use main_part_return_p.
+	Compute retval and retbnd early in all cases if split_part_return_p
+	and return_bb is not EXIT.  Remove all clobber stmts and reset
+	all debug stmts that refer to SSA_NAMEs defined in split part,
+	except if it is retval, in that case replace the old retval with the
+	lhs of the call to the split part.
+
 2016-02-12  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	revert:
