@@ -1244,28 +1244,13 @@ split_function (basic_block return_bb, struct split_point *split_point,
 	args_to_pass.safe_push (arg);
       }
 
-  /* See if the split function or the main part will return.  */
-  bool main_part_return_p = false;
+  /* See if the split function will return.  */
   bool split_part_return_p = false;
   FOR_EACH_EDGE (e, ei, return_bb->preds)
     {
       if (bitmap_bit_p (split_point->split_bbs, e->src->index))
 	split_part_return_p = true;
-      else
-	main_part_return_p = true;
     }
-  /* The main part also returns if we split on a fallthru edge
-     and the split part returns.  */
-  if (split_part_return_p)
-    FOR_EACH_EDGE (e, ei, split_point->entry_bb->preds)
-      {
-	if (! bitmap_bit_p (split_point->split_bbs, e->src->index)
-	    && single_succ_p (e->src))
-	  {
-	    main_part_return_p = true;
-	    break;
-	  }
-      }
 
   /* Add return block to what will become the split function.
      We do not return; no return block is needed.  */
@@ -1279,8 +1264,8 @@ split_function (basic_block return_bb, struct split_point *split_point,
      FIXME: Once we are able to change return type, we should change function
      to return void instead of just outputting function with undefined return
      value.  For structures this affects quality of codegen.  */
-  else if (!split_point->split_part_set_retval
-           && (retval = find_retval (return_bb)))
+  else if ((retval = find_retval (return_bb))
+	   && !split_point->split_part_set_retval)
     {
       bool redirected = true;
       basic_block new_return_bb = create_basic_block (NULL, 0, return_bb);
@@ -1308,12 +1293,10 @@ split_function (basic_block return_bb, struct split_point *split_point,
     }
   /* When we pass around the value, use existing return block.  */
   else
-    bitmap_set_bit (split_point->split_bbs, return_bb->index);
-
-  /* If the main part doesn't return pretend the return block wasn't
-     found for all of the following.  */
-  if (! main_part_return_p)
-    return_bb = EXIT_BLOCK_PTR_FOR_FN (cfun);
+    {
+      bitmap_set_bit (split_point->split_bbs, return_bb->index);
+      retbnd = find_retbnd (return_bb);
+    }
 
   /* If RETURN_BB has virtual operand PHIs, they must be removed and the
      virtual operand marked for renaming as we change the CFG in a way that
@@ -1380,6 +1363,44 @@ split_function (basic_block return_bb, struct split_point *split_point,
     {
       DECL_BUILT_IN_CLASS (node->decl) = NOT_BUILT_IN;
       DECL_FUNCTION_CODE (node->decl) = (enum built_in_function) 0;
+    }
+
+  /* If return_bb contains any clobbers that refer to SSA_NAMEs
+     set in the split part, remove them.  Also reset debug stmts that
+     refer to SSA_NAMEs set in the split part.  */
+  if (return_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
+    {
+      gimple_stmt_iterator gsi = gsi_start_bb (return_bb);
+      while (!gsi_end_p (gsi))
+	{
+	  tree op;
+	  ssa_op_iter iter;
+	  gimple *stmt = gsi_stmt (gsi);
+	  bool remove = false;
+	  if (gimple_clobber_p (stmt) || is_gimple_debug (stmt))
+	    FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
+	      {
+		basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (op));
+		if (op != retval
+		    && bb
+		    && bb != return_bb
+		    && bitmap_bit_p (split_point->split_bbs, bb->index))
+		  {
+		    if (is_gimple_debug (stmt))
+		      {
+			gimple_debug_bind_reset_value (stmt);
+			update_stmt (stmt);
+		      }
+		    else
+		      remove = true;
+		    break;
+		  }
+	      }
+	  if (remove)
+	    gsi_remove (&gsi, true);
+	  else
+	    gsi_next (&gsi);
+	}
     }
 
   /* If the original function is instrumented then it's
@@ -1499,9 +1520,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
          return value into and put call just before it.  */
       if (return_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	{
-	  real_retval = retval = find_retval (return_bb);
-	  retbnd = find_retbnd (return_bb);
-
+	  real_retval = retval;
 	  if (real_retval && split_point->split_part_set_retval)
 	    {
 	      gphi_iterator psi;
@@ -1545,6 +1564,28 @@ split_function (basic_block return_bb, struct split_point *split_point,
 			    break;
 			  }
 		      update_stmt (gsi_stmt (bsi));
+		      /* Also adjust clobbers and debug stmts in return_bb.  */
+		      for (bsi = gsi_start_bb (return_bb); !gsi_end_p (bsi);
+			   gsi_next (&bsi))
+			{
+			  gimple *stmt = gsi_stmt (bsi);
+			  if (gimple_clobber_p (stmt)
+			      || is_gimple_debug (stmt))
+			    {
+			      ssa_op_iter iter;
+			      use_operand_p use_p;
+			      bool update = false;
+			      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter,
+							SSA_OP_USE)
+				if (USE_FROM_PTR (use_p) == real_retval)
+				  {
+				    SET_USE (use_p, retval);
+				    update = true;
+				  }
+			      if (update)
+				update_stmt (stmt);
+			    }
+			}
 		    }
 
 		  /* Replace retbnd with new one.  */
