@@ -1,5 +1,16 @@
 2016-02-12  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
+	revert:
+	2016-02-12  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/66726
+	* tree-ssa-reassoc.c (optimize_range_tests): Handle tcc_compare stmt
+	whose result is used in PHI.
+	(maybe_optimize_range_tests): Likewise.
+	(final_range_test_p): Likweise.
+
+2016-02-12  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
 	PR middle-end/66726
 	* tree-ssa-reassoc.c (optimize_range_tests): Handle tcc_compare stmt
 	whose result is used in PHI.
