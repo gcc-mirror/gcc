@@ -1,5 +1,9 @@
 2016-02-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/69241
+	* ipa-split.c (split_function): If split part returns TREE_ADDRESSABLE
+	type by reference, force lhs on the call.
+
 	PR ipa/68672
 	* ipa-split.c (split_function): Don't compute/use main_part_return_p.
 	Compute retval and retbnd early in all cases if split_part_return_p

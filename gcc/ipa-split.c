@@ -629,7 +629,18 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
        4) For non-SSA we need to look where the var is computed. */
   retval = find_retval (return_bb);
   if (!retval)
-    current->split_part_set_retval = true;
+    {
+      /* If there is a return_bb with no return value in function returning
+	 value by reference, also make the split part return void, otherwise
+	 we expansion would try to create a non-POD temporary, which is
+	 invalid.  */
+      if (return_bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
+	  && DECL_RESULT (current_function_decl)
+	  && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
+	current->split_part_set_retval = false;
+      else
+	current->split_part_set_retval = true;
+    }
   else if (is_gimple_min_invariant (retval))
     current->split_part_set_retval = false;
   /* Special case is value returned by reference we record as if it was non-ssa

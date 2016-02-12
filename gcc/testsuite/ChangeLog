@@ -1,5 +1,8 @@
 2016-02-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/69241
+	* g++.dg/ipa/pr69241-4.C: New test.
+
 	PR ipa/68672
 	* g++.dg/ipa/pr68672-1.C: New test.
 	* g++.dg/ipa/pr68672-2.C: New test.
