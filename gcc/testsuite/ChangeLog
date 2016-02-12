@@ -1,6 +1,11 @@
 2016-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/69668
+	* gfortran.dg/namelist_88.f90: New test.
+
+2016-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/69668
 	* gfortran.dg/namelist_38.f90: Update test.
 	* gfortran.dg/namelist_84.f90: Update test.
 
