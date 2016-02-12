@@ -1131,21 +1131,6 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
     default:
       if (dtp->u.p.namelist_mode)
 	{
-	  if (dtp->u.p.current_unit->delim_status == DELIM_NONE)
-	    {
-	      /* No delimiters so finish reading the string now.  */
-	      int i;
-	      push_char (dtp, c);
-	      for (i = dtp->u.p.ionml->string_length; i > 1; i--)
-		{
-		  if ((c = next_char (dtp)) == EOF)
-		    goto done_eof;
-		  push_char (dtp, c);
-		}
-	      dtp->u.p.saved_type = BT_CHARACTER;
-	      free_line (dtp);
-	      return;
-	    }
 	  unget_char (dtp, c);
 	  return;
 	}
