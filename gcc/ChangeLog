@@ -1,3 +1,14 @@
+2016-02-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from mainline
+	2016-02-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/64682
+	PR rtl-optimization/69567
+	PR rtl-optimization/69737
+	* combine.c (distribute_notes) <REG_DEAD>: If the register is set
+	in I2 as well, just lose it.
+
 2016-02-11  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
