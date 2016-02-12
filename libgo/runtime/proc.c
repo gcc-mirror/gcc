@@ -1093,7 +1093,7 @@ runtime_mstart(void* mp)
 			runtime_newextram();
 			runtime_needextram = 0;
 		}
-		runtime_initsig();
+		runtime_initsig(false);
 	}
 	
 	if(m->mstartfn)

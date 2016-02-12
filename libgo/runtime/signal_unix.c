@@ -13,10 +13,15 @@
 extern SigTab runtime_sigtab[];
 
 void
-runtime_initsig(void)
+runtime_initsig(bool preinit)
 {
 	int32 i;
 	SigTab *t;
+
+	// For c-archive/c-shared this is called by go-libmain.c with
+	// preinit == true.
+	if(runtime_isarchive && !preinit)
+		return;
 
 	// First call: basic setup.
 	for(i = 0; runtime_sigtab[i].sig != -1; i++) {
@@ -36,6 +41,9 @@ runtime_initsig(void)
 				continue;
 			}
 		}
+
+		if(runtime_isarchive && (t->flags&SigPanic) == 0)
+			continue;
 
 		t->flags |= SigHandling;
 		runtime_setsig(i, runtime_sighandler, true);
