@@ -1,14 +1,14 @@
 # Translation of cpplib to Esperanto
-# Copyright (C) 2013, 2014, 2015 Free Software Foundation, Inc.
+# Copyright (C) 2013, 2014, 2015, 2016 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Felipe Castro <fefcas@gmail.com>, 2013, 2014, 2015.
+# Felipe Castro <fefcas@gmail.com>, 2013, 2014, 2015, 2016.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 5.1-b20150208\n"
+"Project-Id-Version: cpplib 6.1-b20160131\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-01-31 15:50+0000\n"
-"PO-Revision-Date: 2015-02-10 14:27-0300\n"
+"PO-Revision-Date: 2016-02-12 13:14-0300\n"
 "Last-Translator: Felipe Castro <fefcas@gmail.com>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
 "Language: eo\n"
@@ -749,14 +749,12 @@ msgid "missing terminating %c character"
 msgstr "mankas finigantan signon %c"
 
 #: lex.c:1932
-#, fuzzy
-#| msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
 msgid "C++11 requires a space between string literal and macro"
-msgstr "malvalida sufikso en literaĵo; C++11 postulas spacon inter literaĵo kaj ĉena makroo"
+msgstr "C++11 postulas spacon inter ĉena literaĵo kaj makroo"
 
 #: lex.c:2474 lex.c:2508
 msgid "C++ style comments are not allowed in ISO C90"
-msgstr "Komentoj laŭ la estilo de C++ ne estas permesataj en ISO C90"
+msgstr "Komentoj laŭ estilo de C++ ne estas permesataj en ISO C90"
 
 #: lex.c:2476 lex.c:2487 lex.c:2510
 msgid "(this will be reported only once per input file)"
