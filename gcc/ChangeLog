@@ -1,5 +1,10 @@
 2016-02-12  David Malcolm  <dmalcolm@redhat.com>
 
+	PR driver/69779
+	* gcc.c (driver::finalize): Fix cleanup of "specs".
+
+2016-02-12  David Malcolm  <dmalcolm@redhat.com>
+
 	PR driver/69265
 	PR driver/69453
 	* gcc.c (driver::driver): Initialize m_option_suggestions.

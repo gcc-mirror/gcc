@@ -9954,8 +9954,20 @@ driver::finalize ()
   multilib_os_dir = 0;
   multiarch_dir = 0;
 
-  XDELETEVEC (specs);
-  specs = 0;
+  /* Free any specs dynamically-allocated by set_spec.
+     These will be at the head of the list, before the
+     statically-allocated ones.  */
+  if (specs)
+    {
+      while (specs != static_specs)
+	{
+	  spec_list *next = specs->next;
+	  free (const_cast <char *> (specs->name));
+	  XDELETE (specs);
+	  specs = next;
+	}
+      specs = 0;
+    }
   for (unsigned i = 0; i < ARRAY_SIZE (static_specs); i++)
     {
       spec_list *sl = &static_specs[i];
