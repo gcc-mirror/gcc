@@ -59,6 +59,10 @@ initfn (int argc, char **argv, char** env __attribute__ ((unused)))
   struct args *a;
   pthread_t tid;
 
+  runtime_isarchive = true;
+
+  runtime_initsig(true);
+
   a = (struct args *) malloc (sizeof *a);
   if (a == NULL)
     die ("malloc", errno);
@@ -87,8 +91,6 @@ static void *
 gostart (void *arg)
 {
   struct args *a = (struct args *) arg;
-
-  runtime_isarchive = true;
 
   if (runtime_isstarted)
     return NULL;

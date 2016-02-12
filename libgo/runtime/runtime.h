@@ -550,7 +550,7 @@ void*	runtime_mal(uintptr);
 String	runtime_gostring(const byte*);
 String	runtime_gostringnocopy(const byte*);
 void	runtime_schedinit(void);
-void	runtime_initsig(void);
+void	runtime_initsig(bool);
 void	runtime_sigenable(uint32 sig);
 void	runtime_sigdisable(uint32 sig);
 void	runtime_sigignore(uint32 sig);
