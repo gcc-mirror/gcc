@@ -1,3 +1,8 @@
+2016-02-12  Walter Lee  <walt@tilera.com>
+
+	* config.host (tilegx*-*-linux*): remove ti from
+	softfp_int_modes for 32-bit configs.
+
 2016-02-10  Ian Lance Taylor  <iant@google.com>
 
 	PR go/68562

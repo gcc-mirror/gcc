@@ -1277,7 +1277,10 @@ tic6x-*-elf)
 	unwind_header=config/c6x/unwind-c6x.h
 	;;
 tilegx*-*-linux*)
-	tmake_file="${tmake_file} tilegx/t-crtstuff t-softfp-sfdf tilegx/t-softfp t-softfp tilegx/t-tilegx"
+	if test "${host_address}" = 64; then
+		tmake_file="${tmake_file} tilegx/t-softfp"
+	fi
+	tmake_file="${tmake_file} tilegx/t-crtstuff t-softfp-sfdf t-softfp tilegx/t-tilegx"
 	md_unwind_header=tilepro/linux-unwind.h
         ;;
 tilepro*-*-linux*)
