@@ -404,4 +404,15 @@ extern void set_struct_debug_option (struct gcc_options *opts,
 				     const char *value);
 extern bool opt_enum_arg_to_value (size_t opt_index, const char *arg,
 				   int *value, unsigned int lang_mask);
+
+extern const struct sanitizer_opts_s
+{
+  const char *const name;
+  unsigned int flag;
+  size_t len;
+} sanitizer_opts[];
+
+extern void add_misspelling_candidates (auto_vec<char *> *candidates,
+					const char *base_option);
+
 #endif

@@ -1434,12 +1434,7 @@ enable_fdo_optimizations (struct gcc_options *opts,
 }
 
 /* -f{,no-}sanitize{,-recover}= suboptions.  */
-static const struct sanitizer_opts_s
-{
-  const char *const name;
-  unsigned int flag;
-  size_t len;
-} sanitizer_opts[] =
+const struct sanitizer_opts_s sanitizer_opts[] =
 {
 #define SANITIZER_OPT(name, flags) { #name, flags, sizeof #name - 1 }
   SANITIZER_OPT (address, SANITIZE_ADDRESS | SANITIZE_USER_ADDRESS),

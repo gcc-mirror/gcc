@@ -119,3 +119,49 @@ levenshtein_distance (const char *s, const char *t)
 {
   return levenshtein_distance (s, strlen (s), t, strlen (t));
 }
+
+/* Given TARGET, a non-NULL string, and CANDIDATES, a non-NULL ptr to
+   an autovec of non-NULL strings, determine which element within
+   CANDIDATES has the lowest edit distance to TARGET.  If there are
+   multiple elements with the same minimal distance, the first in the
+   vector wins.
+
+   If more than half of the letters were misspelled, the suggestion is
+   likely to be meaningless, so return NULL for this case.  */
+
+const char *
+find_closest_string (const char *target,
+		     const auto_vec<const char *> *candidates)
+{
+  gcc_assert (target);
+  gcc_assert (candidates);
+
+  int i;
+  const char *candidate;
+  const char *best_candidate = NULL;
+  edit_distance_t best_distance = MAX_EDIT_DISTANCE;
+  size_t len_target = strlen (target);
+  FOR_EACH_VEC_ELT (*candidates, i, candidate)
+    {
+      gcc_assert (candidate);
+      edit_distance_t dist
+	= levenshtein_distance (target, len_target,
+				candidate, strlen (candidate));
+      if (dist < best_distance)
+	{
+	  best_distance = dist;
+	  best_candidate = candidate;
+	}
+    }
+
+  /* If more than half of the letters were misspelled, the suggestion is
+     likely to be meaningless.  */
+  if (best_candidate)
+    {
+      unsigned int cutoff = MAX (len_target, strlen (best_candidate)) / 2;
+      if (best_distance > cutoff)
+	return NULL;
+    }
+
+  return best_candidate;
+}

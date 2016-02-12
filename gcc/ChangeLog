@@ -1,3 +1,30 @@
+2016-02-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR driver/69265
+	PR driver/69453
+	* gcc.c (driver::driver): Initialize m_option_suggestions.
+	(driver::~driver): Clean up m_option_suggestions.
+	(suggest_option): Convert to...
+	(driver::suggest_option): ...this, and split out into
+	driver::build_option_suggestions and find_closest_string.
+	(driver::build_option_suggestions): New function, from
+	first half of suggest_option.  Special-case
+	OPT_fsanitize_ and OPT_fsanitize_recover_, making use of
+	the sanitizer_opts array.  For options of enum types, add the
+	various enum values to the candidate strings.
+	(driver::handle_unrecognized_options): Remove "const".
+	* gcc.h (driver::handle_unrecognized_options): Likewise.
+	(driver::build_option_suggestions): New decl.
+	(driver::suggest_option): New decl.
+	(driver::m_option_suggestions): New field.
+	* opts-common.c (add_misspelling_candidates): New function.
+	* opts.c (sanitizer_opts): Remove decl of struct sanitizer_opts_s
+	and make non-static.
+	* opts.h (sanitizer_opts): New array decl.
+	(add_misspelling_candidates): New function decl.
+	* spellcheck.c (find_closest_string): New function.
+	* spellcheck.h (find_closest_string): New function decl.
+
 2016-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/69764

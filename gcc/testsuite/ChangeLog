@@ -1,3 +1,16 @@
+2016-02-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR driver/69265
+	PR driver/69453
+	* gcc.dg/spellcheck-options-3.c: New test case.
+	* gcc.dg/spellcheck-options-4.c: New test case.
+	* gcc.dg/spellcheck-options-5.c: New test case.
+	* gcc.dg/spellcheck-options-6.c: New test case.
+	* gcc.dg/spellcheck-options-7.c: New test case.
+	* gcc.dg/spellcheck-options-8.c: New test case.
+	* gcc.dg/spellcheck-options-9.c: New test case.
+	* gcc.dg/spellcheck-options-10.c: New test case.
+
 2016-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/69764
