@@ -5,8 +5,8 @@ tilepro-c.o: $(srcdir)/config/tilepro/tilepro-c.c \
 
 $(srcdir)/config/tilepro/mul-tables.c: \
     $(srcdir)/config/tilepro/gen-mul-tables.cc
-	$(CC_FOR_BUILD) $(BUILD_CPPFLAGS) -O2 -DTILEPRO \
-	  -o gen-mul-tables -lstdc++ $<;
+	$(CXX_FOR_BUILD) $(BUILD_CPPFLAGS) -O2 -DTILEPRO \
+	  -o gen-mul-tables $<;
 	./gen-mul-tables > $@
 
 mul-tables.o: $(srcdir)/config/tilepro/mul-tables.c \

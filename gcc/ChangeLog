@@ -1,3 +1,9 @@
+2016-02-12  Walter Lee  <walt@tilera.com>
+
+        * config/tilepro/t-tilepro: Replace CC_FOR_BUILD with
+          CXX_FOR_BUILD.
+        * config/tilegx/t-tilegx: Likewise.
+
 2016-02-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/69554
