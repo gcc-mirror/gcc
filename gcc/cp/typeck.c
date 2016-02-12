@@ -2601,7 +2601,15 @@ check_template_keyword (tree decl)
   if (TREE_CODE (decl) != TEMPLATE_DECL
       && TREE_CODE (decl) != TEMPLATE_ID_EXPR)
     {
-      if (!is_overloaded_fn (decl))
+      if (VAR_P (decl))
+	{
+	  if (DECL_USE_TEMPLATE (decl)
+	      && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (decl)))
+	    ;
+	  else
+	    permerror (input_location, "%qD is not a template", decl);
+	}
+      else if (!is_overloaded_fn (decl))
 	permerror (input_location, "%qD is not a template", decl);
       else
 	{

@@ -1,3 +1,14 @@
+2016-02-12  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/69098
+	* pt.c (lookup_and_finish_template_variable): New function,
+	extracted from ...
+	(tsubst_copy_and_build) [TEMPLATE_ID_EXPR]: ... here.  Use it.
+	(tsubst_qualified_id): Consider that EXPR might be a variable
+	template.
+	* typeck.c (check_template_keyword): Don't emit an error
+	if DECL is a variable template.
+
 2016-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* error.c: Spelling fixes - behaviour -> behavior and

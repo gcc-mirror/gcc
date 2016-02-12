@@ -1,3 +1,9 @@
+2016-02-12  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/69098
+	* g++.dg/cpp1y/69098.C: New test.
+	* g++.dg/cpp1y/69098-2.C: New test.
+
 2016-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* objc.dg/gnu-api-2-method.m: Spelling fixes - behaviour -> behavior
