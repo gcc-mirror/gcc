@@ -70,6 +70,7 @@ bool gfc_check_dprod (gfc_expr *, gfc_expr *);
 bool gfc_check_dshift (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_eoshift (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_dtime_etime (gfc_expr *);
+bool gfc_check_event_query (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_fgetputc (gfc_expr *, gfc_expr *);
 bool gfc_check_fgetput (gfc_expr *);
 bool gfc_check_float (gfc_expr *);
@@ -462,6 +463,7 @@ void gfc_resolve_dtime_sub (gfc_code *);
 void gfc_resolve_eoshift (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
 			  gfc_expr *);
 void gfc_resolve_etime_sub (gfc_code *);
+void gfc_resolve_event_query (gfc_code *);
 void gfc_resolve_exp (gfc_expr *, gfc_expr *);
 void gfc_resolve_exponent (gfc_expr *, gfc_expr *);
 void gfc_resolve_extends_type_of (gfc_expr *, gfc_expr *, gfc_expr *);

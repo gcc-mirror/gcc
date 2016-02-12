@@ -3306,7 +3306,9 @@ typedef enum caf_register_t {
   CAF_REGTYPE_COARRAY_ALLOC,
   CAF_REGTYPE_LOCK_STATIC,
   CAF_REGTYPE_LOCK_ALLOC,
-  CAF_REGTYPE_CRITICAL
+  CAF_REGTYPE_CRITICAL,
+  CAF_REGTYPE_EVENT_STATIC,
+  CAF_REGTYPE_EVENT_ALLOC
 }
 caf_register_t;
 @end verbatim
@@ -3327,6 +3329,9 @@ caf_register_t;
 * _gfortran_caf_sendget:: Sending data between remote images
 * _gfortran_caf_lock:: Locking a lock variable
 * _gfortran_caf_unlock:: Unlocking a lock variable
+* _gfortran_caf_event_post:: Post an event
+* _gfortran_caf_event_wait:: Wait that an event occurred
+* _gfortran_caf_event_query:: Query event count
 * _gfortran_caf_sync_all:: All-image barrier
 * _gfortran_caf_sync_images:: Barrier for selected images
 * _gfortran_caf_sync_memory:: Wait for completion of segment-memory operations
@@ -3480,7 +3485,7 @@ int *stat, char *errmsg, int errmsg_len)}
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{size} @tab For normal coarrays, the byte size of the coarray to be
-allocated; for lock types, the number of elements.
+allocated; for lock types and event types, the number of elements.
 @item @var{type} @tab one of the caf_register_t types.
 @item @var{token} @tab intent(out) An opaque pointer identifying the coarray.
 @item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
@@ -3505,7 +3510,10 @@ image. For lock types, the value shall only used for checking the allocation
 status. Note that for critical blocks, the locking is only required on one
 image; in the locking statement, the processor shall always pass always an
 image index of one for critical-block lock variables
-(@code{CAF_REGTYPE_CRITICAL}).
+(@code{CAF_REGTYPE_CRITICAL}). For lock types and critical-block variables,
+the initial value shall be unlocked (or, respecitively, not in critical
+section) such as the value false; for event types, the initial state should
+be no event, e.g. zero.
 @end table
 
 
@@ -3525,8 +3533,7 @@ int errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
-may be NULL
+@item @var{stat} @tab intent(out) Stores the STAT=; may be NULL
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set
 to an error message; may be NULL
 @item @var{errmsg_len} @tab the buffer size of errmsg.
@@ -3733,8 +3740,7 @@ always 0.
 number.
 @item @var{aquired_lock} @tab intent(out) If not NULL, it returns whether lock
 could be obtained
-@item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
-may be NULL
+@item @var{stat} @tab intent(out) Stores the STAT=; may be NULL
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
 an error message; may be NULL
 @item @var{errmsg_len} @tab the buffer size of errmsg.
@@ -3745,7 +3751,6 @@ This function is also called for critical blocks; for those, the array index
 is always zero and the image index is one.  Libraries are permitted to use other
 images for critical-block locking variables.
 @end table
-
 
 @node _gfortran_caf_unlock
 @subsection @code{_gfortran_caf_lock} --- Unlocking a lock variable
@@ -3781,6 +3786,115 @@ is always zero and the image index is one.  Libraries are permitted to use other
 images for critical-block locking variables.
 @end table
 
+@node _gfortran_caf_event_post
+@subsection @code{_gfortran_caf_event_post} --- Post an event
+@cindex Coarray, _gfortran_caf_event_post
+
+@table @asis
+@item @emph{Description}:
+Increment the event count of the specified event variable.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_event_post (caf_token_t token, size_t index,
+int image_index, int *stat, char *errmsg, int errmsg_len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
+@item @var{index} @tab Array index; first array index is 0. For scalars, it is
+always 0.
+@item @var{image_index} @tab The ID of the remote image; must be a positive
+number; zero indicates the current image when accessed noncoindexed.
+@item @var{stat} @tab intent(out) Stores the STAT=; may be NULL
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+an error message; may be NULL
+@item @var{errmsg_len} @tab the buffer size of errmsg.
+@end multitable
+
+@item @emph{NOTES}
+This acts like an atomic add of one to the remote image's event variable.
+The statement is an image-control statement but does not imply sync memory.
+Still, all preceeding push communications of this image to the specified
+remote image has to be completed before @code{event_wait} on the remote
+image returns.
+@end table
+
+
+
+@node _gfortran_caf_event_wait
+@subsection @code{_gfortran_caf_event_wait} --- Wait that an event occurred
+@cindex Coarray, _gfortran_caf_event_wait
+
+@table @asis
+@item @emph{Description}:
+Wait until the event count has reached at least the specified
+@var{until_count}; if so, atomically decrement the event variable by this
+amount and return.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_event_wait (caf_token_t token, size_t index,
+int until_count, int *stat, char *errmsg, int errmsg_len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
+@item @var{index} @tab Array index; first array index is 0. For scalars, it is
+always 0.
+@item @var{until_count} @tab The number of events which have to be available
+before the function returns.
+@item @var{stat} @tab intent(out) Stores the STAT=; may be NULL
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+an error message; may be NULL
+@item @var{errmsg_len} @tab the buffer size of errmsg.
+@end multitable
+
+@item @emph{NOTES}
+This function only operates on a local coarray. It acts like a loop checking
+atomically the value of the event variable, breaking if the value is greater
+or equal the requested number of counts. Before the function returns, the
+event variable has to be decremented by the requested @var{until_count} value.
+A possible implementation would be a busy loop for a certain number of spins
+(possibly depending on the number of threads relative to the number of available
+cores) followed by other waiting strategy such as a sleeping wait (possibly with
+an increasing number of sleep time) or, if possible, a futex wait.
+
+The statement is an image-control statement but does not imply sync memory.
+Still, all preceeding push communications to this image of images having
+issued a @code{event_push} have to be completed before this function returns.
+@end table
+
+
+
+@node _gfortran_caf_event_query
+@subsection @code{_gfortran_caf_event_query} --- Query event count
+@cindex Coarray, _gfortran_caf_event_query
+
+@table @asis
+@item @emph{Description}:
+Return the event count of the specified event count.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_event_query (caf_token_t token, size_t index,
+int image_index, int *count, int *stat)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
+@item @var{index} @tab Array index; first array index is 0. For scalars, it is
+always 0.
+@item @var{image_index} @tab The ID of the remote image; must be a positive
+number; zero indicates the current image when accessed noncoindexed.
+@item @var{count} @tab intent(out) The number of events currently posted to
+the event variable
+@item @var{stat} @tab intent(out) Stores the STAT=; may be NULL
+@end multitable
+
+@item @emph{NOTES}
+The typical use is to check the local even variable to only call
+@code{event_wait} when the data is available. However, a coindexed variable
+is permitted; there is no ordering or synchronization implied.  It acts like
+an atomic fetch of the value of the event variable.
+@end table
 
 @node _gfortran_caf_sync_all
 @subsection @code{_gfortran_caf_sync_all} --- All-image barrier
@@ -3926,7 +4040,7 @@ int image_index, void *value, int *stat, int type, int kind)}
 @item @var{offset} @tab By which amount of bytes the actual data is shifted
 compared to the base address of the coarray.
 @item @var{image_index} @tab The ID of the remote image; must be a positive
-number.
+number; zero indicates the current image when used noncoindexed.
 @item @var{value} @tab intent(in) the value to be assigned, passed by reference.
 @item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
 @item @var{type} @tab the data type, i.e. @code{BT_INTEGER} (1) or
@@ -3956,7 +4070,7 @@ int image_index, void *value, int *stat, int type, int kind)}
 @item @var{offset} @tab By which amount of bytes the actual data is shifted
 compared to the base address of the coarray.
 @item @var{image_index} @tab The ID of the remote image; must be a positive
-number.
+number; zero indicates the current image when used noncoindexed.
 @item @var{value} @tab intent(out) The variable assigned the atomically
 referenced variable.
 @item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
@@ -3989,7 +4103,7 @@ int type, int kind)}
 @item @var{offset} @tab By which amount of bytes the actual data is shifted
 compared to the base address of the coarray.
 @item @var{image_index} @tab The ID of the remote image; must be a positive
-number.
+number; zero indicates the current image when used noncoindexed.
 @item @var{old} @tab intent(out) the value which the atomic variable had
 just before the cas operation.
 @item @var{compare} @tab intent(in) The value used for comparision.
@@ -4031,7 +4145,7 @@ int image_index, void *value, void *old, int *stat, int type, int kind)}
 @item @var{offset} @tab By which amount of bytes the actual data is shifted
 compared to the base address of the coarray.
 @item @var{image_index} @tab The ID of the remote image; must be a positive
-number.
+number; zero indicates the current image when used noncoindexed.
 @item @var{old} @tab intent(out) the value which the atomic variable had
 just before the atomic operation.
 @item @var{val} @tab intent(in) The new value for the atomic variable,

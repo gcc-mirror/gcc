@@ -1474,6 +1474,8 @@ gfc_match_if (gfc_statement *if_type)
   match ("deallocate", gfc_match_deallocate, ST_DEALLOCATE)
   match ("end file", gfc_match_endfile, ST_END_FILE)
   match ("error stop", gfc_match_error_stop, ST_ERROR_STOP)
+  match ("event post", gfc_match_event_post, ST_EVENT_POST)
+  match ("event wait", gfc_match_event_wait, ST_EVENT_WAIT)
   match ("exit", gfc_match_exit, ST_EXIT)
   match ("flush", gfc_match_flush, ST_FLUSH)
   match ("forall", match_simple_forall, ST_FORALL)
@@ -2756,6 +2758,202 @@ gfc_match_error_stop (void)
     return MATCH_ERROR;
 
   return gfc_match_stopcode (ST_ERROR_STOP);
+}
+
+/* Match EVENT POST/WAIT statement. Syntax:
+     EVENT POST ( event-variable [, sync-stat-list] )
+     EVENT WAIT ( event-variable [, wait-spec-list] )
+   with
+      wait-spec-list  is  sync-stat-list  or until-spec
+      until-spec  is  UNTIL_COUNT = scalar-int-expr
+      sync-stat  is  STAT= or ERRMSG=.  */
+
+static match
+event_statement (gfc_statement st)
+{
+  match m;
+  gfc_expr *tmp, *eventvar, *until_count, *stat, *errmsg;
+  bool saw_until_count, saw_stat, saw_errmsg;
+
+  tmp = eventvar = until_count = stat = errmsg = NULL;
+  saw_until_count = saw_stat = saw_errmsg = false;
+
+  if (gfc_pure (NULL))
+    {
+      gfc_error ("Image control statement EVENT %s at %C in PURE procedure",
+		 st == ST_EVENT_POST ? "POST" : "WAIT");
+      return MATCH_ERROR;
+    }
+
+  gfc_unset_implicit_pure (NULL);
+
+  if (flag_coarray == GFC_FCOARRAY_NONE)
+    {
+       gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+       return MATCH_ERROR;
+    }
+
+  if (gfc_find_state (COMP_CRITICAL))
+    {
+      gfc_error ("Image control statement EVENT %s at %C in CRITICAL block",
+		 st == ST_EVENT_POST ? "POST" : "WAIT");
+      return MATCH_ERROR;
+    }
+
+  if (gfc_find_state (COMP_DO_CONCURRENT))
+    {
+      gfc_error ("Image control statement EVENT %s at %C in DO CONCURRENT "
+		 "block", st == ST_EVENT_POST ? "POST" : "WAIT");
+      return MATCH_ERROR;
+    }
+
+  if (gfc_match_char ('(') != MATCH_YES)
+    goto syntax;
+
+  if (gfc_match ("%e", &eventvar) != MATCH_YES)
+    goto syntax;
+  m = gfc_match_char (',');
+  if (m == MATCH_ERROR)
+    goto syntax;
+  if (m == MATCH_NO)
+    {
+      m = gfc_match_char (')');
+      if (m == MATCH_YES)
+	goto done;
+      goto syntax;
+    }
+
+  for (;;)
+    {
+      m = gfc_match (" stat = %v", &tmp);
+      if (m == MATCH_ERROR)
+	goto syntax;
+      if (m == MATCH_YES)
+	{
+	  if (saw_stat)
+	    {
+	      gfc_error ("Redundant STAT tag found at %L ", &tmp->where);
+	      goto cleanup;
+	    }
+	  stat = tmp;
+	  saw_stat = true;
+
+	  m = gfc_match_char (',');
+	  if (m == MATCH_YES)
+	    continue;
+
+	  tmp = NULL;
+	  break;
+	}
+
+      m = gfc_match (" errmsg = %v", &tmp);
+      if (m == MATCH_ERROR)
+	goto syntax;
+      if (m == MATCH_YES)
+	{
+	  if (saw_errmsg)
+	    {
+	      gfc_error ("Redundant ERRMSG tag found at %L ", &tmp->where);
+	      goto cleanup;
+	    }
+	  errmsg = tmp;
+	  saw_errmsg = true;
+
+	  m = gfc_match_char (',');
+	  if (m == MATCH_YES)
+	    continue;
+
+	  tmp = NULL;
+	  break;
+	}
+
+      m = gfc_match (" until_count = %e", &tmp);
+      if (m == MATCH_ERROR || st == ST_EVENT_POST)
+	goto syntax;
+      if (m == MATCH_YES)
+	{
+	  if (saw_until_count)
+	    {
+	      gfc_error ("Redundant UNTIL_COUNT tag found at %L ",
+			 &tmp->where);
+	      goto cleanup;
+	    }
+	  until_count = tmp;
+	  saw_until_count = true;
+
+	  m = gfc_match_char (',');
+	  if (m == MATCH_YES)
+	    continue;
+
+	  tmp = NULL;
+	  break;
+	}
+
+      break;
+    }
+
+  if (m == MATCH_ERROR)
+    goto syntax;
+
+  if (gfc_match (" )%t") != MATCH_YES)
+    goto syntax;
+
+done:
+  switch (st)
+    {
+    case ST_EVENT_POST:
+      new_st.op = EXEC_EVENT_POST;
+      break;
+    case ST_EVENT_WAIT:
+      new_st.op = EXEC_EVENT_WAIT;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  new_st.expr1 = eventvar;
+  new_st.expr2 = stat;
+  new_st.expr3 = errmsg;
+  new_st.expr4 = until_count;
+
+  return MATCH_YES;
+
+syntax:
+  gfc_syntax_error (st);
+
+cleanup:
+  if (until_count != tmp)
+    gfc_free_expr (until_count);
+  if (errmsg != tmp)
+    gfc_free_expr (errmsg);
+  if (stat != tmp)
+    gfc_free_expr (stat);
+
+  gfc_free_expr (tmp);
+  gfc_free_expr (eventvar);
+
+  return MATCH_ERROR;
+
+}
+
+
+match
+gfc_match_event_post (void)
+{
+  if (!gfc_notify_std (GFC_STD_F2008_TS, "EVENT POST statement at %C"))
+    return MATCH_ERROR;
+
+  return event_statement (ST_EVENT_POST);
+}
+
+
+match
+gfc_match_event_wait (void)
+{
+  if (!gfc_notify_std (GFC_STD_F2008_TS, "EVENT WAIT statement at %C"))
+    return MATCH_ERROR;
+
+  return event_statement (ST_EVENT_WAIT);
 }
 
 

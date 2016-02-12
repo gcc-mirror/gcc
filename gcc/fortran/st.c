@@ -118,6 +118,8 @@ gfc_free_statement (gfc_code *p)
     case EXEC_SYNC_MEMORY:
     case EXEC_LOCK:
     case EXEC_UNLOCK:
+    case EXEC_EVENT_POST:
+    case EXEC_EVENT_WAIT:
       break;
 
     case EXEC_BLOCK:

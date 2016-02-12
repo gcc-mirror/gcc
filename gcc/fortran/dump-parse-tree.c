@@ -1659,6 +1659,33 @@ show_code_node (int level, gfc_code *c)
 	}
       break;
 
+    case EXEC_EVENT_POST:
+    case EXEC_EVENT_WAIT:
+      if (c->op == EXEC_EVENT_POST)
+	fputs ("EVENT POST ", dumpfile);
+      else
+	fputs ("EVENT WAIT ", dumpfile);
+
+      fputs ("event-variable=", dumpfile);
+      if (c->expr1 != NULL)
+	show_expr (c->expr1);
+      if (c->expr4 != NULL)
+	{
+	  fputs (" until_count=", dumpfile);
+	  show_expr (c->expr4);
+	}
+      if (c->expr2 != NULL)
+	{
+	  fputs (" stat=", dumpfile);
+	  show_expr (c->expr2);
+	}
+      if (c->expr3 != NULL)
+	{
+	  fputs (" errmsg=", dumpfile);
+	  show_expr (c->expr3);
+	}
+      break;
+
     case EXEC_LOCK:
     case EXEC_UNLOCK:
       if (c->op == EXEC_LOCK)

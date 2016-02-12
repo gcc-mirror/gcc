@@ -457,6 +457,8 @@ decode_statement (void)
       match ("entry% ", gfc_match_entry, ST_ENTRY);
       match ("equivalence", gfc_match_equivalence, ST_EQUIVALENCE);
       match ("external", gfc_match_external, ST_ATTR_DECL);
+      match ("event post", gfc_match_event_post, ST_EVENT_POST);
+      match ("event wait", gfc_match_event_wait, ST_EVENT_WAIT);
       break;
 
     case 'f':
@@ -1323,6 +1325,7 @@ next_statement (void)
   case ST_OMP_CANCEL: case ST_OMP_CANCELLATION_POINT: \
   case ST_OMP_TARGET_UPDATE: case ST_ERROR_STOP: case ST_SYNC_ALL: \
   case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: case ST_LOCK: case ST_UNLOCK: \
+  case ST_EVENT_POST: case ST_EVENT_WAIT: \
   case ST_OACC_UPDATE: case ST_OACC_WAIT: case ST_OACC_CACHE: \
   case ST_OACC_ENTER_DATA: case ST_OACC_EXIT_DATA
 
@@ -1627,6 +1630,12 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_ELSEWHERE:
       p = "ELSEWHERE";
+      break;
+    case ST_EVENT_POST:
+      p = "EVENT POST";
+      break;
+    case ST_EVENT_WAIT:
+      p = "EVENT WAIT";
       break;
     case ST_END_ASSOCIATE:
       p = "END ASSOCIATE";
@@ -2608,7 +2617,7 @@ parse_derived (void)
   gfc_statement st;
   gfc_state_data s;
   gfc_symbol *sym;
-  gfc_component *c, *lock_comp = NULL;
+  gfc_component *c, *lock_comp = NULL, *event_comp = NULL;
 
   accept_statement (ST_DERIVED_DECL);
   push_state (&s, COMP_DERIVED, gfc_new_block);
@@ -2716,8 +2725,8 @@ endType:
   sym = gfc_current_block ();
   for (c = sym->components; c; c = c->next)
     {
-      bool coarray, lock_type, allocatable, pointer;
-      coarray = lock_type = allocatable = pointer = false;
+      bool coarray, lock_type, event_type, allocatable, pointer;
+      coarray = lock_type = event_type = allocatable = pointer = false;
 
       /* Look for allocatable components.  */
       if (c->attr.allocatable
@@ -2779,6 +2788,23 @@ endType:
 	  sym->attr.lock_comp = 1;
 	}
 
+      /* Looking for event_type components.  */
+      if ((c->ts.type == BT_DERIVED
+	      && c->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+	      && c->ts.u.derived->intmod_sym_id == ISOFORTRAN_EVENT_TYPE)
+	  || (c->ts.type == BT_CLASS && c->attr.class_ok
+	      && CLASS_DATA (c)->ts.u.derived->from_intmod
+		 == INTMOD_ISO_FORTRAN_ENV
+	      && CLASS_DATA (c)->ts.u.derived->intmod_sym_id
+		 == ISOFORTRAN_EVENT_TYPE)
+	  || (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.event_comp
+	      && !allocatable && !pointer))
+	{
+	  event_type = 1;
+	  event_comp = c;
+	  sym->attr.event_comp = 1;
+	}
+
       /* Check for F2008, C1302 - and recall that pointers may not be coarrays
 	 (5.3.14) and that subobjects of coarray are coarray themselves (2.4.7),
 	 unless there are nondirect [allocatable or pointer] components
@@ -2817,6 +2843,43 @@ endType:
 		   "be a subcomponent of a coarray. (Variables of type %s may "
 		   "not have a codimension as %s at %L has a codimension or a "
 		   "coarray subcomponent)", lock_comp->name, &lock_comp->loc,
+		   sym->name, c->name, &c->loc);
+
+      /* Similarly for EVENT TYPE.  */
+
+      if (pointer && !coarray && event_type)
+	gfc_error ("Component %s at %L of type EVENT_TYPE must have a "
+		   "codimension or be a subcomponent of a coarray, "
+		   "which is not possible as the component has the "
+		   "pointer attribute", c->name, &c->loc);
+      else if (pointer && !coarray && c->ts.type == BT_DERIVED
+	       && c->ts.u.derived->attr.event_comp)
+	gfc_error ("Pointer component %s at %L has a noncoarray subcomponent "
+		   "of type EVENT_TYPE, which must have a codimension or be a "
+		   "subcomponent of a coarray", c->name, &c->loc);
+
+      if (event_type && allocatable && !coarray)
+	gfc_error ("Allocatable component %s at %L of type EVENT_TYPE must have "
+		   "a codimension", c->name, &c->loc);
+      else if (event_type && allocatable && c->ts.type == BT_DERIVED
+	       && c->ts.u.derived->attr.event_comp)
+	gfc_error ("Allocatable component %s at %L must have a codimension as "
+		   "it has a noncoarray subcomponent of type EVENT_TYPE",
+		   c->name, &c->loc);
+
+      if (sym->attr.coarray_comp && !coarray && event_type)
+	gfc_error ("Noncoarray component %s at %L of type EVENT_TYPE or with "
+		   "subcomponent of type EVENT_TYPE must have a codimension or "
+		   "be a subcomponent of a coarray. (Variables of type %s may "
+		   "not have a codimension as already a coarray "
+		   "subcomponent exists)", c->name, &c->loc, sym->name);
+
+      if (sym->attr.event_comp && coarray && !event_type)
+	gfc_error ("Noncoarray component %s at %L of type EVENT_TYPE or with "
+		   "subcomponent of type EVENT_TYPE must have a codimension or "
+		   "be a subcomponent of a coarray. (Variables of type %s may "
+		   "not have a codimension as %s at %L has a codimension or a "
+		   "coarray subcomponent)", event_comp->name, &event_comp->loc,
 		   sym->name, c->name, &c->loc);
 
       /* Look for private components.  */

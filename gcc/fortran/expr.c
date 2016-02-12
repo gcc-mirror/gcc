@@ -4864,6 +4864,19 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
       return false;
     }
 
+  /* TS18508, C702/C203.  */
+  if (!alloc_obj
+      && (attr.lock_comp
+	  || (e->ts.type == BT_DERIVED
+	      && e->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+	      && e->ts.u.derived->intmod_sym_id == ISOFORTRAN_EVENT_TYPE)))
+    {
+      if (context)
+	gfc_error ("LOCK_EVENT in variable definition context (%s) at %L",
+		   context, &e->where);
+      return false;
+    }
+
   /* INTENT(IN) dummy argument.  Check this, unless the object itself is the
      component of sub-component of a pointer; we need to distinguish
      assignment to a pointer component from pointer-assignment to a pointer
