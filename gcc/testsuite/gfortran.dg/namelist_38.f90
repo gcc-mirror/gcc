@@ -5,6 +5,7 @@
 program main
   implicit none
   character(len=3) :: a
+  character(25) :: b
   namelist /foo/ a
 
   open(10, status="scratch", delim="quote")
@@ -28,9 +29,12 @@ program main
   open(10, status="scratch", delim="none")
   a = "a'a"
   write(10,foo) 
-  rewind 10
-  a = ""
-  read (10,foo)
-  if (a.ne."a'a") call abort
-  close (10)
+  rewind (10)
+  read(10,"(a)") b
+  if (b .ne. "&FOO") call abort
+  read(10,"(a)") b
+  if (b .ne. " A=a'a") call abort
+  read(10,"(a)") b
+  if (b .ne. " /") call abort
+  close(10)
 end program main
