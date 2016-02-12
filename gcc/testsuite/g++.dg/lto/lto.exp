@@ -31,6 +31,7 @@ if $tracelevel then {
 load_lib standard.exp
 load_lib g++.exp
 load_lib target-libpath.exp
+load_lib mpx-dg.exp
 
 # Load the language-independent compabibility support procedures.
 load_lib lto.exp
@@ -42,6 +43,7 @@ if { ![check_effective_target_lto] } {
 
 g++_init
 lto_init no-mathlib
+mpx_init
 
 # Define an identifier for use with this suite to avoid name conflicts
 # with other lto tests running at the same time.
@@ -57,4 +59,5 @@ foreach src [lsort [find $srcdir/$subdir *_0.\[cC\]]] {
     lto-execute $src $sid
 }
 
+mpx_finish
 lto_finish

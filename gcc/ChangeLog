@@ -1,3 +1,9 @@
+2016-02-12  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/69729
+	* lto-streamer-out.c (lto_output): Use thunk.add_pointer_bounds_args
+	to correctly determine instrumentation thunks.
+
 2016-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/69241
