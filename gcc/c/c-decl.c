@@ -9460,38 +9460,12 @@ struct c_declspecs *
 build_null_declspecs (void)
 {
   struct c_declspecs *ret = XOBNEW (&parser_obstack, struct c_declspecs);
-  memset (&ret->locations, 0, cdw_number_of_elements);
-  ret->type = 0;
-  ret->expr = 0;
-  ret->decl_attr = 0;
-  ret->attrs = 0;
+  memset (ret, 0, sizeof *ret);
   ret->align_log = -1;
   ret->typespec_word = cts_none;
   ret->storage_class = csc_none;
   ret->expr_const_operands = true;
-  ret->declspecs_seen_p = false;
   ret->typespec_kind = ctsk_none;
-  ret->non_sc_seen_p = false;
-  ret->typedef_p = false;
-  ret->explicit_signed_p = false;
-  ret->deprecated_p = false;
-  ret->default_int_p = false;
-  ret->long_p = false;
-  ret->long_long_p = false;
-  ret->short_p = false;
-  ret->signed_p = false;
-  ret->unsigned_p = false;
-  ret->complex_p = false;
-  ret->inline_p = false;
-  ret->noreturn_p = false;
-  ret->thread_p = false;
-  ret->thread_gnu_p = false;
-  ret->const_p = false;
-  ret->volatile_p = false;
-  ret->atomic_p = false;
-  ret->restrict_p = false;
-  ret->saturating_p = false;
-  ret->alignas_p = false;
   ret->address_space = ADDR_SPACE_GENERIC;
   return ret;
 }

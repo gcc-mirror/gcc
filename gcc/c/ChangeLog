@@ -1,5 +1,7 @@
 2016-02-12  Bernd Schmidt  <bschmidt@redhat.com>
 
+	* c-decl.c (build_null_declspecs): Zero the entire struct.
+
 	PR c/69522
 	* c-parser.c (c_parser_braced_init): New arg outer_obstack.  All
 	callers changed.  If nested_p is true, use it to call
