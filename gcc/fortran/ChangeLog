@@ -1,3 +1,9 @@
+2016-02-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/69554
+	* error.c (gfc_diagnostic_start_span): New function.
+	(gfc_diagnostics_init): Initialize global_dc's start_span.
+
 2016-02-11  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/69296

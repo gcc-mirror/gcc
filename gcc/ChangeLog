@@ -1,5 +1,38 @@
 2016-02-12  David Malcolm  <dmalcolm@redhat.com>
 
+	PR other/69554
+	* diagnostic-show-locus.c (struct line_span): New struct.
+	(layout::get_first_line): Delete.
+	(layout::get_last_line): Delete.
+	(layout::get_num_line_spans): New member function.
+	(layout::get_line_span): Likewise.
+	(layout::print_heading_for_line_span_index_p): Likewise.
+	(layout::get_expanded_location): Likewise.
+	(layout::calculate_line_spans): Likewise.
+	(layout::m_first_line): Delete.
+	(layout::m_last_line): Delete.
+	(layout::m_line_spans): New field.
+	(layout::layout): Update comment.  Replace m_first_line and
+	m_last_line with m_line_spans, replacing their initialization
+	with a call to calculate_line_spans.
+	(diagnostic_show_locus): When printing source lines and
+	annotations, rather than looping over a single span
+	of lines, instead loop over each line_span within
+	the layout, with an inner loop over the lines within them.
+	Call the context's start_span callback when changing line spans.
+	* diagnostic.c (diagnostic_initialize): Initialize start_span.
+	(diagnostic_build_prefix): Break out the building of the location
+	part of the string into...
+	(diagnostic_get_location_text): ...this new function, rewriting
+	it from nested ternary expressions to a sequence of "if"
+	statements.
+	(default_diagnostic_start_span_fn): New function.
+	* diagnostic.h (diagnostic_start_span_fn): New typedef.
+	(diagnostic_context::start_span): New field.
+	(default_diagnostic_start_span_fn): New prototype.
+
+2016-02-12  David Malcolm  <dmalcolm@redhat.com>
+
 	PR driver/69779
 	* gcc.c (driver::finalize): Fix cleanup of "specs".
 

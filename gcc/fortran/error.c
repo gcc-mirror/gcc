@@ -1103,6 +1103,20 @@ gfc_diagnostic_starter (diagnostic_context *context,
 }
 
 static void
+gfc_diagnostic_start_span (diagnostic_context *context,
+			   expanded_location exploc)
+{
+  char *locus_prefix;
+  locus_prefix = gfc_diagnostic_build_locus_prefix (context, exploc);
+  pp_verbatim (context->printer, locus_prefix);
+  free (locus_prefix);
+  pp_newline (context->printer);
+  /* Fortran uses an empty line between locus and caret line.  */
+  pp_newline (context->printer);
+}
+
+
+static void
 gfc_diagnostic_finalizer (diagnostic_context *context,
 			  diagnostic_info *diagnostic ATTRIBUTE_UNUSED)
 {
@@ -1426,6 +1440,7 @@ void
 gfc_diagnostics_init (void)
 {
   diagnostic_starter (global_dc) = gfc_diagnostic_starter;
+  global_dc->start_span = gfc_diagnostic_start_span;
   diagnostic_finalizer (global_dc) = gfc_diagnostic_finalizer;
   diagnostic_format_decoder (global_dc) = gfc_format_decoder;
   global_dc->caret_chars[0] = '1';

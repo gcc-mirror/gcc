@@ -56,6 +56,10 @@ struct diagnostic_classification_change_t
 /*  Forward declarations.  */
 typedef void (*diagnostic_starter_fn) (diagnostic_context *,
 				       diagnostic_info *);
+
+typedef void (*diagnostic_start_span_fn) (diagnostic_context *,
+					  expanded_location);
+
 typedef diagnostic_starter_fn diagnostic_finalizer_fn;
 
 /* This data structure bundles altogether any information relevant to
@@ -147,6 +151,11 @@ struct diagnostic_context
                       ...
   */
   diagnostic_starter_fn begin_diagnostic;
+
+  /* This function is called by diagnostic_show_locus in between
+     disjoint spans of source code, so that the context can print
+     something to indicate that a new span of source code has begun.  */
+  diagnostic_start_span_fn start_span;
 
   /* This function is called after the diagnostic message is printed.  */
   diagnostic_finalizer_fn end_diagnostic;
@@ -296,6 +305,8 @@ extern void diagnostic_append_note (diagnostic_context *, location_t,
 #endif
 extern char *diagnostic_build_prefix (diagnostic_context *, const diagnostic_info *);
 void default_diagnostic_starter (diagnostic_context *, diagnostic_info *);
+void default_diagnostic_start_span_fn (diagnostic_context *,
+				       expanded_location);
 void default_diagnostic_finalizer (diagnostic_context *, diagnostic_info *);
 void diagnostic_set_caret_max_width (diagnostic_context *context, int value);
 void diagnostic_action_after_output (diagnostic_context *, diagnostic_t);
