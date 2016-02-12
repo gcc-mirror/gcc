@@ -2321,7 +2321,7 @@ lto_output (void)
 	{
 	  if (lto_symtab_encoder_encode_body_p (encoder, node)
 	      && !node->alias
-	      && (!node->thunk.thunk_p || !node->instrumented_version))
+	      && (!node->thunk.thunk_p || !node->thunk.add_pointer_bounds_args))
 	    {
 	      if (flag_checking)
 		{
