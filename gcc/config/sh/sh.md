@@ -10241,12 +10241,16 @@ label:
 		      (const_string "single") (const_string "double")))
    (set_attr "type" "jump_ind")])
 
+;; sibcall_value_pcrel used to have a =&k clobber for the scratch register
+;; that it needs for the branch address.  This causes troubles when there
+;; is a big overlap of argument and return value registers.  Hence, use a
+;; fixed call clobbered register for the address.  See also PR 67260.
 (define_insn_and_split "sibcall_value_pcrel"
   [(set (match_operand 0 "" "=rf")
 	(call (mem:SI (match_operand:SI 1 "symbol_ref_operand" ""))
 	      (match_operand 2 "" "")))
    (use (reg:SI FPSCR_MODES_REG))
-   (clobber (match_scratch:SI 3 "=&k"))
+   (clobber (reg:SI R1_REG))
    (return)]
   "TARGET_SH2"
   "#"
@@ -10255,6 +10259,8 @@ label:
 {
   rtx lab = PATTERN (gen_call_site ());
   rtx call_insn;
+
+  operands[3] =  gen_rtx_REG (SImode, R1_REG);
 
   emit_insn (gen_sym_label2reg (operands[3], operands[1], lab));
   call_insn = emit_call_insn (gen_sibcall_valuei_pcrel (operands[0],
