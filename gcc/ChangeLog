@@ -1,5 +1,12 @@
 2016-02-13  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/67260
+	* config/sh/sh.md (sibcall_value_pcrel): Replace =&k scratch reg with
+	fixed R1_REG scratch reg.
+	(sibcall_value_pcrel_fdpic): Likewise.
+
+2016-02-13  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/67636
 	PR target/64345
 	* config/sh/sh.md (*zero_extract_3): New insn_and_split pattern.
