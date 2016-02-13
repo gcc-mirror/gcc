@@ -1,8 +1,13 @@
+2016-02-13  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/67636
+	PR target/64345
+	* config/sh/sh.md (*zero_extract_3): New insn_and_split pattern.
+
 2016-02-12  Walter Lee  <walt@tilera.com>
 
-        * config/tilepro/t-tilepro: Replace CC_FOR_BUILD with
-          CXX_FOR_BUILD.
-        * config/tilegx/t-tilegx: Likewise.
+	* config/tilepro/t-tilepro: Replace CC_FOR_BUILD with CXX_FOR_BUILD.
+	* config/tilegx/t-tilegx: Likewise.
 
 2016-02-12  David Malcolm  <dmalcolm@redhat.com>
 

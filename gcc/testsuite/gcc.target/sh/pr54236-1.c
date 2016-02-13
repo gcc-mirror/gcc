@@ -2,7 +2,7 @@
    special cases.  If everything works as expected we won't see any
    movt instructions in these cases.  */
 /* { dg-do compile }  */
-/* { dg-options "-O1" } */
+/* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } } */
 /* { dg-final { scan-assembler-times "addc" 6 } } */
 /* { dg-final { scan-assembler-times "subc" 4 } } */
