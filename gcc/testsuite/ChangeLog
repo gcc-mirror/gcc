@@ -1,3 +1,7 @@
+2016-02-12  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/pr67964.c: Add dg-require-alias.
+
 2016-02-13  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/67636
