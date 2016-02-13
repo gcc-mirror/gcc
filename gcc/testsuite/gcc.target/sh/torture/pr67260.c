@@ -1,4 +1,4 @@
-/* { dg-additional-options "-std=gnu99" }  */
+/* { dg-additional-options "-std=gnu99 -fPIC" }  */
 /* { dg-do compile }  */
 
 #pragma GCC visibility push(hidden)
