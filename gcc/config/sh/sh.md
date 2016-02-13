@@ -14616,6 +14616,31 @@ label:
   [(set (reg:SI T_REG)
 	(zero_extract:SI (match_dup 0) (const_int 1) (match_dup 1)))])
 
+(define_insn_and_split "*zero_extract_3"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+  	(and:SI (lshiftrt:SI (match_operand:SI 1 "arith_reg_operand")
+  			     (match_operand 2 "const_int_operand"))
+  		(match_operand 3 "const_int_operand")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1 && can_create_pseudo_p ()
+   && exact_log2 (INTVAL (operands[3])) >= 0"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  int rshift = INTVAL (operands[2]);
+  int lshift = exact_log2 (INTVAL (operands[3]));
+
+  rtx tmp = gen_reg_rtx (SImode);
+  emit_insn (gen_rtx_PARALLEL (VOIDmode,
+    gen_rtvec (2,
+      gen_rtx_SET (tmp,
+		   gen_rtx_ZERO_EXTRACT (SImode, operands[1], const1_rtx,
+					 GEN_INT (rshift + lshift))),
+      gen_rtx_CLOBBER (VOIDmode, get_t_reg_rtx ()))));
+  emit_insn (gen_ashlsi3 (operands[0], tmp, GEN_INT (lshift)));
+})
+
 ;; -------------------------------------------------------------------------
 ;; SH2A instructions for bitwise operations.
 ;; FIXME: Convert multiple instruction insns to insn_and_split.
