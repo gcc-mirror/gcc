@@ -1,6 +1,11 @@
 2016-02-13  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/67260
+	* gcc.target/sh/torture/pr67260.c: Adjust additional options.
+
+2016-02-13  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/67260
 	* gcc.target/sh/torture/pr67260.c: New.
 
 2016-02-12  John David Anglin  <danglin@gcc.gnu.org>
