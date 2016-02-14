@@ -1,3 +1,10 @@
+2016-02-14  Alan Modra  <amodra@gmail.com>
+
+	PR target/68973
+	* reloads.c (find_reloads_address_1): For pre/post-inc/dec
+	with an invalid hard reg, reload just the reg not the entire
+	pre/post-inc/dec address expression.
+
 2016-02-13  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/67260
