@@ -1,3 +1,17 @@
+2016-02-14  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	*  config/i386/znver1.md
+	(znver1_pop, znver1_pop_mem,
+	znver1_load_imov_double_store,
+	znver1_load_imov_direct_store,
+	znver1_load_imov_direct_load,
+	znver1_load_imov_double_load): Add new.
+	(znver1_insn, znver1_insn_load): Add icmov type.
+	(znver1_sseavx_fma,
+	znver1_sseavx_fma_load,
+	znver1_avx256_fma,
+	znver1_avx256_fma_load): Fix pipe usage.
+
 2016-02-14  Alan Modra  <amodra@gmail.com>
 
 	PR target/68973
