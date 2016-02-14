@@ -1,6 +1,12 @@
 2016-02-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/60526
+	PR bootstrap/69816
+	* gfortran.dg/type_decl_4.f90:  Removed.
+
+2016-02-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/60526
 	* gfortran.dg/type_decl_4.f90:  New test.
 
 2016-02-14  Alan Modra  <amodra@gmail.com>
