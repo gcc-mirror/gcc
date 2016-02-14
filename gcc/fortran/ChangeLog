@@ -1,6 +1,12 @@
 2016-02-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/60526
+	PR bootstrap/69816
+	* decl.c (build_sym):  Reverted previous patch.
+
+2016-02-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/60526
 	* decl.c (build_sym):  If the name has already been defined as a
 	type, issue error and return false.
 
