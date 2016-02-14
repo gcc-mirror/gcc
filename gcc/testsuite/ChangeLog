@@ -1,5 +1,6 @@
 2016-02-14  Alan Modra  <amodra@gmail.com>
 
+	PR testsuite/68886
 	* gcc.c-torture/execute/stkalign.c: Revise test.
 
 2016-02-13  Oleg Endo  <olegendo@gcc.gnu.org>
