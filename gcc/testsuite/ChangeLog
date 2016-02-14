@@ -1,3 +1,8 @@
+2016-02-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/60526
+	* gfortran.dg/type_decl_4.f90:  Reinstated.
+
 2016-02-14  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR fortran/68746
