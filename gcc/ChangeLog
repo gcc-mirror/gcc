@@ -1,3 +1,7 @@
+2016-02-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (absqi2, absghi2, bswaphi2, bswapsi2, bswapdi2): New.
+
 2016-02-14  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	*  config/i386/znver1.md
