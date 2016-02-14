@@ -1215,9 +1215,29 @@ build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
 {
   symbol_attribute attr;
   gfc_symbol *sym;
+  int nlen;
+  char u_name[GFC_MAX_SYMBOL_LEN + 1];
+  gfc_symtree *st;
 
   if (gfc_get_symbol (name, NULL, &sym))
     return false;
+
+  /* Check if the name has already been defined as a type.  The
+     first letter of the symtree will be in upper case then.  */
+
+  nlen = strlen(name);
+  gcc_assert (nlen <= GFC_MAX_SYMBOL_LEN);
+  strncpy (u_name, name, nlen + 1);
+  u_name[0] = TOUPPER(u_name[0]);
+
+  st = gfc_find_symtree (gfc_current_ns->sym_root, u_name);
+
+  if (st != 0)
+    {
+      gfc_error ("Symbol %qs at %C also declared as a type at %L", name,
+		 &st->n.sym->declared_at);
+      return false;
+    }
 
   /* Start updating the symbol table.  Add basic type attribute if present.  */
   if (current_ts.type != BT_UNKNOWN
