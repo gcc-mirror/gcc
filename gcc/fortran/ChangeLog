@@ -1,3 +1,9 @@
+2016-02-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/60526
+	* decl.c (build_sym):  If the name has already been defined as a
+	type, issue error and return false.
+
 2016-02-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/69554
