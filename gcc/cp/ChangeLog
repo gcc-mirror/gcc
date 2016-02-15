@@ -1,3 +1,8 @@
+2016-02-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68890
+	* constexpr.c (verify_ctor_sanity): Remove CONSTRUCTOR_NELTS check.
+
 2016-02-12  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/69098
