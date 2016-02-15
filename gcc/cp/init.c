@@ -1636,16 +1636,17 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
       gcc_checking_assert ((flags & LOOKUP_ONLYCONVERTING) == 0
 			   && TREE_CHAIN (init) == NULL_TREE);
       init = TREE_VALUE (init);
+      /* Only call reshape_init if it has not been called earlier
+	 by the callers.  */
+      if (BRACE_ENCLOSED_INITIALIZER_P (init) && CP_AGGREGATE_TYPE_P (type))
+	init = reshape_init (type, init, complain);
     }
 
   if (init && BRACE_ENCLOSED_INITIALIZER_P (init)
       && CP_AGGREGATE_TYPE_P (type))
     /* A brace-enclosed initializer for an aggregate.  In C++0x this can
        happen for direct-initialization, too.  */
-    {
-      init = reshape_init (type, init, complain);
-      init = digest_init (type, init, complain);
-    }
+    init = digest_init (type, init, complain);
 
   /* A CONSTRUCTOR of the target's type is a previously digested
      initializer, whether that happened just above or in
