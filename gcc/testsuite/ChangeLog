@@ -1,5 +1,8 @@
 2016-02-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/69658
+	* g++.dg/init/pr69658.C: New test.
+
 	PR c++/69797
 	* c-c++-common/pr69797.c: New test.
 

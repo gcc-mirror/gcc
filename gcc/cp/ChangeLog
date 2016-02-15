@@ -1,3 +1,9 @@
+2016-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69658
+	* init.c (expand_default_init): Only call reshape_init
+	in the direct-initialization from an initializer list case.
+
 2016-02-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/69753
