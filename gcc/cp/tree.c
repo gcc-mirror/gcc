@@ -2071,23 +2071,6 @@ ovl_scope (tree ovl)
     ovl = OVL_CHAIN (ovl);
   return CP_DECL_CONTEXT (OVL_CURRENT (ovl));
 }
-
-/* Return TRUE if FN is a non-static member function, FALSE otherwise.
-   This function looks into BASELINK and OVERLOAD nodes.  */
-
-bool
-non_static_member_function_p (tree fn)
-{
-  if (fn == NULL_TREE)
-    return false;
-
-  if (is_overloaded_fn (fn))
-    fn = get_first_fn (fn);
-
-  return (DECL_P (fn)
-	  && DECL_NONSTATIC_MEMBER_FUNCTION_P (fn));
-}
-
 
 #define PRINT_RING_SIZE 4
 
