@@ -1,3 +1,8 @@
+2016-02-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* lib/target-supports.exp (check_effective_target_section_anchors): Add
+	check for aarch64*-*-*.
+
 2016-02-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69783
