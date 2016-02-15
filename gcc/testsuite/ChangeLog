@@ -1,3 +1,9 @@
+2016-02-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/69651
+	* gfortran.dg/read_bang.f90: New test.
+	* gfortran.dg/read_bang4.f90: New test.
+
 2016-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69658

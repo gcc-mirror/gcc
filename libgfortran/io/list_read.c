@@ -52,13 +52,14 @@ typedef unsigned char uchar;
 #define CASE_DIGITS   case '0': case '1': case '2': case '3': case '4': \
                       case '5': case '6': case '7': case '8': case '9'
 
-#define CASE_SEPARATORS  case ' ': case ',': case '/': case '\n': case '\t': \
-                         case '\r': case ';': case '!'
+#define CASE_SEPARATORS case ' ': case ',': case '/': case '\n': \
+			case '\t': case '\r': case ';'
 
 /* This macro assumes that we're operating on a variable.  */
 
 #define is_separator(c) (c == '/' ||  c == ',' || c == '\n' || c == ' ' \
-                         || c == '\t' || c == '\r' || c == ';' || c == '!')
+                         || c == '\t' || c == '\r' || c == ';' || \
+			 (dtp->u.p.namelist_mode && c == '!'))
 
 /* Maximum repeat count.  Less than ten times the maximum signed int32.  */
 
@@ -75,7 +76,7 @@ typedef unsigned char uchar;
 
 /* Worker function to save a default KIND=1 character to a string
    buffer, enlarging it as necessary.  */
-   
+
 static void
 push_char_default (st_parameter_dt *dtp, int c)
 {
@@ -92,13 +93,8 @@ push_char_default (st_parameter_dt *dtp, int c)
   if (dtp->u.p.saved_used >= dtp->u.p.saved_length)
     {
       dtp->u.p.saved_length = 2 * dtp->u.p.saved_length;
-      dtp->u.p.saved_string = 
+      dtp->u.p.saved_string =
 	xrealloc (dtp->u.p.saved_string, dtp->u.p.saved_length);
-      
-      // Also this should not be necessary.
-      memset (dtp->u.p.saved_string + dtp->u.p.saved_used, 0, 
-	      dtp->u.p.saved_length - dtp->u.p.saved_used);
-
     }
 
   dtp->u.p.saved_string[dtp->u.p.saved_used++] = (char) c;
@@ -107,11 +103,10 @@ push_char_default (st_parameter_dt *dtp, int c)
 
 /* Worker function to save a KIND=4 character to a string buffer,
    enlarging the buffer as necessary.  */
-   
 static void
 push_char4 (st_parameter_dt *dtp, int c)
 {
-  gfc_char4_t *new, *p = (gfc_char4_t *) dtp->u.p.saved_string;
+  gfc_char4_t *p = (gfc_char4_t *) dtp->u.p.saved_string;
 
   if (p == NULL)
     {
@@ -125,9 +120,6 @@ push_char4 (st_parameter_dt *dtp, int c)
     {
       dtp->u.p.saved_length = 2 * dtp->u.p.saved_length;
       p = xrealloc (p, dtp->u.p.saved_length * sizeof (gfc_char4_t));
-      
-      memset4 (new + dtp->u.p.saved_used, 0, 
-	      dtp->u.p.saved_length - dtp->u.p.saved_used);
     }
 
   p[dtp->u.p.saved_used++] = c;
@@ -168,7 +160,7 @@ free_line (st_parameter_dt *dtp)
 /* Unget saves the last character so when reading the next character,
    we need to check to see if there is a character waiting.  Similar,
    if the line buffer is being used to read_logical, check it too.  */
-   
+
 static int
 check_buffers (st_parameter_dt *dtp)
 {
@@ -200,7 +192,7 @@ check_buffers (st_parameter_dt *dtp)
       dtp->u.p.line_buffer_pos = 0;
       dtp->u.p.line_buffer_enabled = 0;
     }
-    
+
 done:
   dtp->u.p.at_eol = (c == '\n' || c == EOF);
   return c;
@@ -254,7 +246,7 @@ next_char_internal (st_parameter_dt *dtp)
 	  record = next_array_record (dtp, dtp->u.p.current_unit->ls,
 				      &finished);
 
-	  /* Check for "end-of-file" condition.  */      
+	  /* Check for "end-of-file" condition.  */
 	  if (finished)
 	    {
 	      dtp->u.p.at_eof = 1;
@@ -289,17 +281,17 @@ next_char_internal (st_parameter_dt *dtp)
 
   if (is_array_io (dtp))
     {
-      /* Check whether we hit EOF.  */ 
+      /* Check whether we hit EOF.  */
       if (unlikely (length == 0))
 	{
 	  generate_error (&dtp->common, LIBERROR_INTERNAL_UNIT, NULL);
 	  return '\0';
-	} 
+	}
       dtp->u.p.current_unit->bytes_left--;
     }
   else
     {
-      if (dtp->u.p.at_eof) 
+      if (dtp->u.p.at_eof)
 	return EOF;
       if (length == 0)
 	{
@@ -316,7 +308,7 @@ done:
 
 /* Worker function for UTF encoded files.  */
 static int
-next_char_utf8 (st_parameter_dt *dtp) 
+next_char_utf8 (st_parameter_dt *dtp)
 {
   static const uchar masks[6] = { 0x7F, 0x1F, 0x0F, 0x07, 0x02, 0x01 };
   static const uchar patns[6] = { 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
@@ -336,7 +328,7 @@ next_char_utf8 (st_parameter_dt *dtp)
     if ((c & ~masks[nb-1]) == patns[nb-1])
       goto found;
   goto invalid;
-	
+
  found:
   c = (c & masks[nb-1]);
 
@@ -363,7 +355,7 @@ next_char_utf8 (st_parameter_dt *dtp)
 utf_done:
   dtp->u.p.at_eol = (c == '\n' || c == (gfc_char4_t) EOF);
   return (int) c;
-      
+
  invalid:
   generate_error (&dtp->common, LIBERROR_READ_VALUE, "Invalid UTF-8 encoding");
   return (gfc_char4_t) '?';
@@ -457,7 +449,7 @@ eat_line (st_parameter_dt *dtp)
    separator, we stop reading.  If there are more input items, we
    continue reading the separator with finish_separator() which takes
    care of the fact that we may or may not have seen a comma as part
-   of the separator. 
+   of the separator.
 
    Returns 0 for success, and non-zero error code otherwise.  */
 
@@ -521,11 +513,9 @@ eat_separator (st_parameter_dt *dtp)
       break;
 
     case '!':
+      /* Eat a namelist comment.  */
       if (dtp->u.p.namelist_mode)
-	{			/* Eat a namelist comment.  */
-	  notify_std (&dtp->common, GFC_STD_GNU,
-		      "'!' in namelist is not a valid separator,"
-		      " try inserting a space");
+	{
 	  err = eat_line (dtp);
 	  if (err)
 	    return err;
@@ -789,7 +779,7 @@ parse_repeat (st_parameter_dt *dtp)
 
 
 /* To read a logical we have to look ahead in the input stream to make sure
-    there is not an equal sign indicating a variable name.  To do this we use 
+    there is not an equal sign indicating a variable name.  To do this we use
     line_buffer to point to a temporary buffer, pushing characters there for
     possible later reading. */
 
@@ -855,6 +845,10 @@ read_logical (st_parameter_dt *dtp, int length)
 
       break;
 
+    case '!':
+      if (!dtp->u.p.namelist_mode)
+        goto bad_logical;
+
     CASE_SEPARATORS:
     case EOF:
       unget_char (dtp, c);
@@ -903,7 +897,7 @@ read_logical (st_parameter_dt *dtp, int length)
 	      goto logical_done;
 	    }
 	}
- 
+
       l_push_char (dtp, c);
       if (c == '=')
 	{
@@ -912,7 +906,7 @@ read_logical (st_parameter_dt *dtp, int length)
 	  dtp->u.p.line_buffer_pos = 0;
 	  return;
 	}
-      
+
     }
 
  bad_logical:
@@ -974,6 +968,10 @@ read_integer (st_parameter_dt *dtp, int length)
 	goto bad_integer;
       goto get_integer;
 
+    case '!':
+      if (!dtp->u.p.namelist_mode)
+        goto bad_integer;
+
     CASE_SEPARATORS:		/* Single null.  */
       unget_char (dtp, c);
       eat_separator (dtp);
@@ -1002,6 +1000,10 @@ read_integer (st_parameter_dt *dtp, int length)
 	  push_char (dtp, '\0');
 	  goto repeat;
 
+	case '!':
+	  if (!dtp->u.p.namelist_mode)
+	    goto bad_integer;
+
 	CASE_SEPARATORS:	/* Not a repeat count.  */
 	case EOF:
 	  goto done;
@@ -1023,6 +1025,10 @@ read_integer (st_parameter_dt *dtp, int length)
     {
     CASE_DIGITS:
       break;
+
+    case '!':
+      if (!dtp->u.p.namelist_mode)
+        goto bad_integer;
 
     CASE_SEPARATORS:
       unget_char (dtp, c);
@@ -1052,6 +1058,10 @@ read_integer (st_parameter_dt *dtp, int length)
 	  push_char (dtp, c);
 	  break;
 
+	case '!':
+	  if (!dtp->u.p.namelist_mode)
+	    goto bad_integer;
+
 	CASE_SEPARATORS:
 	case EOF:
 	  goto done;
@@ -1066,7 +1076,7 @@ read_integer (st_parameter_dt *dtp, int length)
   if (nml_bad_return (dtp, c))
     return;
 
-  free_saved (dtp);  
+  free_saved (dtp);
   if (c == EOF)
     {
       free_line (dtp);
@@ -1204,10 +1214,10 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
 	      push_char (dtp, c);
 	      break;
 	    }
-  
+
 	  /* See if we have a doubled quote character or the end of
 	     the string.  */
-  
+
 	  if ((c = next_char (dtp)) == EOF)
 	    goto done_eof;
 	  if (c == quote)
@@ -1215,21 +1225,21 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
 	      push_char (dtp, quote);
 	      break;
 	    }
-  
+
 	  unget_char (dtp, c);
 	  goto done;
-  
+
 	CASE_SEPARATORS:
 	  if (quote == ' ')
 	    {
 	      unget_char (dtp, c);
 	      goto done;
 	    }
-  
+
 	  if (c != '\n' && c != '\r')
 	    push_char (dtp, c);
 	  break;
-  
+
 	default:
 	  push_char (dtp, c);
 	  break;
@@ -1241,13 +1251,13 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
  done:
   c = next_char (dtp);
  done_eof:
-  if (is_separator (c) || c == '!' || c == EOF)
+  if (is_separator (c) || c == EOF)
     {
       unget_char (dtp, c);
       eat_separator (dtp);
       dtp->u.p.saved_type = BT_CHARACTER;
     }
-  else 
+  else
     {
       free_saved (dtp);
       snprintf (message, MSGLEN, "Invalid string input in item %d",
@@ -1275,7 +1285,7 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
 
   if ((c = next_char (dtp)) == EOF)
     goto bad;
-    
+
   if (c == '-' || c == '+')
     {
       push_char (dtp, c);
@@ -1285,7 +1295,7 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
 
   if (c == ',' && dtp->u.p.current_unit->decimal_status == DECIMAL_COMMA)
     c = '.';
-  
+
   if (!isdigit (c) && c != '.')
     {
       if (c == 'i' || c == 'I' || c == 'n' || c == 'N')
@@ -1335,6 +1345,10 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
 	    goto bad;
 	  goto exp2;
 
+	case '!':
+	  if (!dtp->u.p.namelist_mode)
+	    goto bad;
+
 	CASE_SEPARATORS:
 	case EOF:
 	  goto done;
@@ -1370,6 +1384,10 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
 	CASE_DIGITS:
 	  push_char (dtp, c);
 	  break;
+
+	case '!':
+	  if (!dtp->u.p.namelist_mode)
+	    goto bad;
 
 	CASE_SEPARATORS:
 	case EOF:
@@ -1431,7 +1449,7 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
       push_char (dtp, 'n');
       push_char (dtp, 'a');
       push_char (dtp, 'n');
-      
+
       /* Match "NAN(alphanum)".  */
       if (c == '(')
 	{
@@ -1488,6 +1506,10 @@ read_complex (st_parameter_dt *dtp, void * dest, int kind, size_t size)
     case '(':
       break;
 
+    case '!':
+      if (!dtp->u.p.namelist_mode)
+	goto bad_complex;
+
     CASE_SEPARATORS:
     case EOF:
       unget_char (dtp, c);
@@ -1531,7 +1553,7 @@ eol_3:
 
   if (parse_real (dtp, dest + size / 2, kind))
     return;
-    
+
 eol_4:
   eat_spaces (dtp);
   c = next_char (dtp);
@@ -1566,7 +1588,7 @@ eol_4:
       hit_eof (dtp);
       return;
     }
-  else if (c != '\n')   
+  else if (c != '\n')
     eat_line (dtp);
 
   snprintf (message, MSGLEN, "Bad complex value in item %d of list input",
@@ -1605,6 +1627,10 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
     case '+':
     case '-':
       goto got_sign;
+
+    case '!':
+      if (!dtp->u.p.namelist_mode)
+	goto bad_real;
 
     CASE_SEPARATORS:
       unget_char (dtp, c);		/* Single null.  */
@@ -1660,6 +1686,10 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
 	case '*':
 	  push_char (dtp, '\0');
 	  goto got_repeat;
+
+	case '!':
+	  if (!dtp->u.p.namelist_mode)
+	    goto bad_real;
 
 	CASE_SEPARATORS:
 	case EOF:
@@ -1730,6 +1760,10 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
 	  push_char (dtp, c);
 	  break;
 
+	case '!':
+	  if (!dtp->u.p.namelist_mode)
+	    goto bad_real;
+
 	CASE_SEPARATORS:
 	case EOF:
 	  goto done;
@@ -1789,6 +1823,10 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
 	CASE_DIGITS:
 	  push_char (dtp, c);
 	  break;
+
+	case '!':
+	  if (!dtp->u.p.namelist_mode)
+	    goto bad_real;
 
 	CASE_SEPARATORS:
 	case EOF:
@@ -1887,7 +1925,7 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
     goto unwind;
 
   if (dtp->u.p.namelist_mode)
-    {	
+    {
       if (c == ' ' || c =='\n' || c == '\r')
 	{
 	  do
@@ -2046,7 +2084,7 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
       dtp->u.p.input_complete = 0;
       dtp->u.p.repeat_count = 1;
       dtp->u.p.at_eol = 0;
-      
+
       if ((c = eat_spaces (dtp)) == EOF)
 	{
 	  err = LIBERROR_END;
@@ -2080,7 +2118,7 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 	    return err;
 	  goto set_value;
 	}
-	
+
       if (dtp->u.p.input_complete)
 	goto cleanup;
 
@@ -2219,7 +2257,7 @@ list_formatted_read (st_parameter_dt *dtp, bt type, void *p, int kind,
   for (elem = 0; elem < nelems; elem++)
     {
       dtp->u.p.item_count++;
-      err = list_formatted_read_scalar (dtp, type, tmp + stride*elem, 
+      err = list_formatted_read_scalar (dtp, type, tmp + stride*elem,
 					kind, size);
       if (err)
 	break;
@@ -2362,10 +2400,10 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		      || (c==')' && dim < rank -1))
 		    {
 		      if (is_char)
-		        snprintf (parse_err_msg, parse_err_msg_size, 
+		        snprintf (parse_err_msg, parse_err_msg_size,
 				  "Bad substring qualifier");
 		      else
-			snprintf (parse_err_msg, parse_err_msg_size, 
+			snprintf (parse_err_msg, parse_err_msg_size,
 				 "Bad number of index fields");
 		      goto err_ret;
 		    }
@@ -2384,7 +2422,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		    snprintf (parse_err_msg, parse_err_msg_size,
 			     "Bad character in substring qualifier");
 		  else
-		    snprintf (parse_err_msg, parse_err_msg_size, 
+		    snprintf (parse_err_msg, parse_err_msg_size,
 			      "Bad character in index");
 		  goto err_ret;
 		}
@@ -2393,10 +2431,10 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		  && dtp->u.p.saved_string == 0)
 		{
 		  if (is_char)
-		    snprintf (parse_err_msg, parse_err_msg_size, 
+		    snprintf (parse_err_msg, parse_err_msg_size,
 			      "Null substring qualifier");
 		  else
-		    snprintf (parse_err_msg, parse_err_msg_size, 
+		    snprintf (parse_err_msg, parse_err_msg_size,
 			      "Null index field");
 		  goto err_ret;
 		}
@@ -2405,7 +2443,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		  || (indx == 2 && dtp->u.p.saved_string == 0))
 		{
 		  if (is_char)
-		    snprintf (parse_err_msg, parse_err_msg_size, 
+		    snprintf (parse_err_msg, parse_err_msg_size,
 			      "Bad substring qualifier");
 		  else
 		    snprintf (parse_err_msg, parse_err_msg_size,
@@ -2494,10 +2532,10 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	   || (ls[dim].end < GFC_DIMENSION_LBOUND(ad[dim])))
 	{
 	  if (is_char)
-	    snprintf (parse_err_msg, parse_err_msg_size, 
+	    snprintf (parse_err_msg, parse_err_msg_size,
 		      "Substring out of range");
 	  else
-	    snprintf (parse_err_msg, parse_err_msg_size, 
+	    snprintf (parse_err_msg, parse_err_msg_size,
 		      "Index %d out of range", dim + 1);
 	  goto err_ret;
 	}
@@ -2505,7 +2543,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
       if (((ls[dim].end - ls[dim].start ) * ls[dim].step < 0)
 	  || (ls[dim].step == 0))
 	{
-	  snprintf (parse_err_msg, parse_err_msg_size, 
+	  snprintf (parse_err_msg, parse_err_msg_size,
 		   "Bad range in index %d", dim + 1);
 	  goto err_ret;
 	}
@@ -2548,7 +2586,7 @@ static bool
 strcmp_extended_type (char *p, char *q)
 {
   char *r, *s;
-  
+
   for (r = p, s = q; *r && *s; r++, s++)
     {
       if (*r != *s)
@@ -3056,7 +3094,7 @@ nml_get_obj_data (st_parameter_dt *dtp, namelist_info **pprev_nl,
 	goto nml_err_ret;
       if (c != '?')
 	{
-	  snprintf (nml_err_msg, nml_err_msg_size, 
+	  snprintf (nml_err_msg, nml_err_msg_size,
 		    "namelist read: misplaced = sign");
 	  goto nml_err_ret;
 	}
@@ -3072,7 +3110,7 @@ nml_get_obj_data (st_parameter_dt *dtp, namelist_info **pprev_nl,
       nml_match_name (dtp, "end", 3);
       if (dtp->u.p.nml_read_error)
 	{
-	  snprintf (nml_err_msg, nml_err_msg_size, 
+	  snprintf (nml_err_msg, nml_err_msg_size,
 		    "namelist not terminated with / or &end");
 	  goto nml_err_ret;
 	}
@@ -3367,7 +3405,7 @@ namelist_read (st_parameter_dt *dtp)
   dtp->u.p.namelist_mode = 1;
   dtp->u.p.input_complete = 0;
   dtp->u.p.expanded_read = 0;
-  
+
   /* Set the next_char and push_char worker functions.  */
   set_workers (dtp);
 
@@ -3413,7 +3451,7 @@ find_nml_name:
   if (dtp->u.p.nml_read_error)
     goto find_nml_name;
 
-  /* A trailing space is required, we give a little latitude here, 10.9.1.  */ 
+  /* A trailing space is required, we give a little latitude here, 10.9.1.  */
   c = next_char (dtp);
   if (!is_separator(c) && c != '!')
     {
