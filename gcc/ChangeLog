@@ -1,3 +1,9 @@
+2016-02-15  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/69752
+	* ira.c (update_equiv_regs): When looking for more than a single SET,
+	also take other side effects into account.
+
 2016-02-15  Marcin Kościelnicki  <koriakin@0x04.net>
 
 	* config/s390/s390.c (s390_function_profiler): Add a new sequence
