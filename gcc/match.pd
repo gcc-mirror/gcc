@@ -2119,8 +2119,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Simple range test simplifications.  */
 /* A < B || A >= B -> true.  */
-(for test1 (lt le ne)
-     test2 (ge gt eq)
+(for test1 (lt le le le ne ge)
+     test2 (ge gt ge ne eq ne)
  (simplify
   (bit_ior:c (test1 @0 @1) (test2 @0 @1))
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
