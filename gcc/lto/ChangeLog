@@ -1,3 +1,9 @@
+2016-02-15  Tom de Vries  <tom@codesourcery.com>
+
+	PR lto/69655
+	* lto.c (read_cgraph_and_symbols): Call input_offload_tables with
+	argument.
+
 2016-01-27  Martin Liska  <mliska@suse.cz>
 
 	* lto-partition.c (add_symbol_to_partition_1): Remove usage

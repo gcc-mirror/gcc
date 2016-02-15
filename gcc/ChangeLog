@@ -1,3 +1,10 @@
+2016-02-15  Tom de Vries  <tom@codesourcery.com>
+
+	PR lto/69655
+	* lto-cgraph.c (input_offload_tables): Add and handle bool parameter
+	do_force_output.
+	* lto-streamer.h (input_offload_tables): Add and handle bool parameter.
+
 2016-02-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69776
