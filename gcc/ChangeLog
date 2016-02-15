@@ -1,3 +1,8 @@
+2016-02-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	Backport from mainline
+	* config/pa/pa.md (absqi2, absghi2, bswaphi2, bswapsi2, bswapdi2): New.
+
 2016-02-13  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
