@@ -1,0 +1,2 @@
+# Makefile fragment to support -fsplit-stack for s390.
+LIB2ADD_ST += $(srcdir)/config/s390/morestack.S

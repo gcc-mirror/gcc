@@ -1,3 +1,10 @@
+2016-02-15  Marcin Kościelnicki  <koriakin@0x04.net>
+
+	* config.host: Use t-stack and t-stack-s390 for s390*-*-linux.
+	* config/s390/morestack.S: New file.
+	* config/s390/t-stack-s390: New file.
+	* generic-morestack.c (__splitstack_find): Add s390-specific code.
+
 2016-02-12  Walter Lee  <walt@tilera.com>
 
 	* config.host (tilegx*-*-linux*): remove ti from
