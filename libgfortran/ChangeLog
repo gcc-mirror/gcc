@@ -1,3 +1,18 @@
+2016-02-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/69651
+	* io/list_read.c: Entire file trailing spaces removed.
+	(CASE_SEPARATORS): Remove '!'.
+	(is_separator): Add namelist mode as condition with '!'.
+	(push_char): Remove un-needed memset. (push_char4): Likewise and remove
+	'new' pointer. (eat_separator): Remove un-needed use of notify_std.
+	(read_logical): If '!' bang encountered when not in namelist mode got
+	bad_logical to give an error. (read_integer): Likewise reject '!'.
+	(read_character): Remove condition testing c = '!' which is now inside
+	the is_separator macro. (parse_real): Reject '!' unless in namelist mode.
+	(read_complex): Reject '!' unless in namelist mode. (read_real): Likewise
+	reject '!'. 
+
 2016-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/69668
