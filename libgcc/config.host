@@ -1114,11 +1114,11 @@ rx-*-elf)
 	tm_file="$tm_file rx/rx-abi.h rx/rx-lib.h"
 	;;
 s390-*-linux*)
-	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux s390/32/t-floattodi"
+	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux s390/32/t-floattodi t-stack s390/t-stack-s390"
 	md_unwind_header=s390/linux-unwind.h
 	;;
 s390x-*-linux*)
-	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux"
+	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux t-stack s390/t-stack-s390"
 	if test "${host_address}" = 32; then
 	   tmake_file="${tmake_file} s390/32/t-floattodi"
 	fi

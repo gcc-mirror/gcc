@@ -1,3 +1,33 @@
+2016-02-15  Marcin Kościelnicki  <koriakin@0x04.net>
+
+	* common/config/s390/s390-common.c (s390_supports_split_stack):
+	New function.
+	(TARGET_SUPPORTS_SPLIT_STACK): New macro.
+	* config/s390/s390-protos.h: Add s390_expand_split_stack_prologue.
+	* config/s390/s390.c (struct machine_function): New field
+	split_stack_varargs_pointer.
+	(s390_register_info): Mark r12 as clobbered if it'll be used as temp
+	in s390_emit_prologue.
+	(s390_emit_prologue): Use r12 as temp if r1 is taken by split-stack
+	vararg pointer.
+	(morestack_ref): New global.
+	(SPLIT_STACK_AVAILABLE): New macro.
+	(s390_expand_split_stack_prologue): New function.
+	(s390_live_on_entry): New function.
+	(s390_va_start): Use split-stack vararg pointer if appropriate.
+	(s390_asm_file_end): Emit the split-stack note sections.
+	(TARGET_EXTRA_LIVE_ON_ENTRY): New macro.
+	* config/s390/s390.md (UNSPEC_STACK_CHECK): New unspec.
+	(UNSPECV_SPLIT_STACK_CALL): New unspec.
+	(UNSPECV_SPLIT_STACK_DATA): New unspec.
+	(split_stack_prologue): New expand.
+	(split_stack_space_check): New expand.
+	(split_stack_data): New insn.
+	(split_stack_call): New expand.
+	(split_stack_call_*): New insn.
+	(split_stack_cond_call): New expand.
+	(split_stack_cond_call_*): New insn.
+
 2016-02-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69783

@@ -428,6 +428,13 @@ struct GTY(()) machine_function
   /* True if the current function may contain a tbegin clobbering
      FPRs.  */
   bool tbegin_p;
+
+  /* For -fsplit-stack support: A stack local which holds a pointer to
+     the stack arguments for a function with a variable number of
+     arguments.  This is set at the start of the function and is used
+     to initialize the overflow_arg_area field of the va_list
+     structure.  */
+  rtx split_stack_varargs_pointer;
 };
 
 /* Few accessor macros for struct cfun->machine->s390_frame_layout.  */
@@ -9371,9 +9378,13 @@ s390_register_info ()
 	  cfun_frame_layout.high_fprs++;
       }
 
-  if (flag_pic)
-    clobbered_regs[PIC_OFFSET_TABLE_REGNUM]
-      |= !!df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM);
+  /* Register 12 is used for GOT address, but also as temp in prologue
+     for split-stack stdarg functions (unless r14 is available).  */
+  clobbered_regs[12]
+    |= ((flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM))
+	|| (flag_split_stack && cfun->stdarg
+	    && (crtl->is_leaf || TARGET_TPF_PROFILING
+		|| has_hard_reg_initial_val (Pmode, RETURN_REGNUM))));
 
   clobbered_regs[BASE_REGNUM]
     |= (cfun->machine->base_reg
@@ -10473,12 +10484,15 @@ s390_emit_prologue (void)
   int next_fpr = 0;
 
   /* Choose best register to use for temp use within prologue.
-     See below for why TPF must use the register 1.  */
+     TPF with profiling must avoid the register 14 - the tracing function
+     needs the original contents of r14 to be preserved.  */
 
   if (!has_hard_reg_initial_val (Pmode, RETURN_REGNUM)
       && !crtl->is_leaf
       && !TARGET_TPF_PROFILING)
     temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
+  else if (flag_split_stack && cfun->stdarg)
+    temp_reg = gen_rtx_REG (Pmode, 12);
   else
     temp_reg = gen_rtx_REG (Pmode, 1);
 
@@ -10970,6 +10984,166 @@ s300_set_up_by_prologue (hard_reg_set_container *regs)
   if (cfun->machine->base_reg
       && !call_really_used_regs[REGNO (cfun->machine->base_reg)])
     SET_HARD_REG_BIT (regs->set, REGNO (cfun->machine->base_reg));
+}
+
+/* -fsplit-stack support.  */
+
+/* A SYMBOL_REF for __morestack.  */
+static GTY(()) rtx morestack_ref;
+
+/* When using -fsplit-stack, the allocation routines set a field in
+   the TCB to the bottom of the stack plus this much space, measured
+   in bytes.  */
+
+#define SPLIT_STACK_AVAILABLE 1024
+
+/* Emit -fsplit-stack prologue, which goes before the regular function
+   prologue.  */
+
+void
+s390_expand_split_stack_prologue (void)
+{
+  rtx r1, guard, cc = NULL;
+  rtx_insn *insn;
+  /* Offset from thread pointer to __private_ss.  */
+  int psso = TARGET_64BIT ? 0x38 : 0x20;
+  /* Pointer size in bytes.  */
+  /* Frame size and argument size - the two parameters to __morestack.  */
+  HOST_WIDE_INT frame_size = cfun_frame_layout.frame_size;
+  /* Align argument size to 8 bytes - simplifies __morestack code.  */
+  HOST_WIDE_INT args_size = crtl->args.size >= 0
+			    ? ((crtl->args.size + 7) & ~7)
+			    : 0;
+  /* Label to be called by __morestack.  */
+  rtx_code_label *call_done = NULL;
+  rtx_code_label *parm_base = NULL;
+  rtx tmp;
+
+  gcc_assert (flag_split_stack && reload_completed);
+  if (!TARGET_CPU_ZARCH)
+    {
+      sorry ("CPUs older than z900 are not supported for -fsplit-stack");
+      return;
+    }
+
+  r1 = gen_rtx_REG (Pmode, 1);
+
+  /* If no stack frame will be allocated, don't do anything.  */
+  if (!frame_size)
+    {
+      if (cfun->machine->split_stack_varargs_pointer != NULL_RTX)
+	{
+	  /* If va_start is used, just use r15.  */
+	  emit_move_insn (r1,
+			 gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+				       GEN_INT (STACK_POINTER_OFFSET)));
+
+	}
+      return;
+    }
+
+  if (morestack_ref == NULL_RTX)
+    {
+      morestack_ref = gen_rtx_SYMBOL_REF (Pmode, "__morestack");
+      SYMBOL_REF_FLAGS (morestack_ref) |= (SYMBOL_FLAG_LOCAL
+					   | SYMBOL_FLAG_FUNCTION);
+    }
+
+  if (CONST_OK_FOR_K (frame_size) || CONST_OK_FOR_Op (frame_size))
+    {
+      /* If frame_size will fit in an add instruction, do a stack space
+	 check, and only call __morestack if there's not enough space.  */
+
+      /* Get thread pointer.  r1 is the only register we can always destroy - r0
+	 could contain a static chain (and cannot be used to address memory
+	 anyway), r2-r6 can contain parameters, and r6-r15 are callee-saved.  */
+      emit_move_insn (r1, gen_rtx_REG (Pmode, TP_REGNUM));
+      /* Aim at __private_ss.  */
+      guard = gen_rtx_MEM (Pmode, plus_constant (Pmode, r1, psso));
+
+      /* If less that 1kiB used, skip addition and compare directly with
+	 __private_ss.  */
+      if (frame_size > SPLIT_STACK_AVAILABLE)
+	{
+	  emit_move_insn (r1, guard);
+	  if (TARGET_64BIT)
+	    emit_insn (gen_adddi3 (r1, r1, GEN_INT (frame_size)));
+	  else
+	    emit_insn (gen_addsi3 (r1, r1, GEN_INT (frame_size)));
+	  guard = r1;
+	}
+
+      /* Compare the (maybe adjusted) guard with the stack pointer.  */
+      cc = s390_emit_compare (LT, stack_pointer_rtx, guard);
+    }
+
+  call_done = gen_label_rtx ();
+  parm_base = gen_label_rtx ();
+
+  /* Emit the parameter block.  */
+  tmp = gen_split_stack_data (parm_base, call_done,
+			      GEN_INT (frame_size),
+			      GEN_INT (args_size));
+  insn = emit_insn (tmp);
+  add_reg_note (insn, REG_LABEL_OPERAND, call_done);
+  LABEL_NUSES (call_done)++;
+  add_reg_note (insn, REG_LABEL_OPERAND, parm_base);
+  LABEL_NUSES (parm_base)++;
+
+  /* %r1 = litbase.  */
+  insn = emit_move_insn (r1, gen_rtx_LABEL_REF (VOIDmode, parm_base));
+  add_reg_note (insn, REG_LABEL_OPERAND, parm_base);
+  LABEL_NUSES (parm_base)++;
+
+  /* Now, we need to call __morestack.  It has very special calling
+     conventions: it preserves param/return/static chain registers for
+     calling main function body, and looks for its own parameters at %r1. */
+
+  if (cc != NULL)
+    {
+      tmp = gen_split_stack_cond_call (morestack_ref, cc, call_done);
+
+      insn = emit_jump_insn (tmp);
+      JUMP_LABEL (insn) = call_done;
+      LABEL_NUSES (call_done)++;
+
+      /* Mark the jump as very unlikely to be taken.  */
+      add_int_reg_note (insn, REG_BR_PROB, REG_BR_PROB_BASE / 100);
+
+      if (cfun->machine->split_stack_varargs_pointer != NULL_RTX)
+	{
+	  /* If va_start is used, and __morestack was not called, just use
+	     r15.  */
+	  emit_move_insn (r1,
+			 gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+				       GEN_INT (STACK_POINTER_OFFSET)));
+	}
+    }
+  else
+    {
+      tmp = gen_split_stack_call (morestack_ref, call_done);
+      insn = emit_jump_insn (tmp);
+      JUMP_LABEL (insn) = call_done;
+      LABEL_NUSES (call_done)++;
+      emit_barrier ();
+    }
+
+  /* __morestack will call us here.  */
+
+  emit_label (call_done);
+}
+
+/* We may have to tell the dataflow pass that the split stack prologue
+   is initializing a register.  */
+
+static void
+s390_live_on_entry (bitmap regs)
+{
+  if (cfun->machine->split_stack_varargs_pointer != NULL_RTX)
+    {
+      gcc_assert (flag_split_stack);
+      bitmap_set_bit (regs, 1);
+    }
 }
 
 /* Return true if the function can use simple_return to return outside
@@ -11574,6 +11748,27 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
 
+  if (flag_split_stack
+     && (lookup_attribute ("no_split_stack", DECL_ATTRIBUTES (cfun->decl))
+         == NULL)
+     && cfun->machine->split_stack_varargs_pointer == NULL_RTX)
+    {
+      rtx reg;
+      rtx_insn *seq;
+
+      reg = gen_reg_rtx (Pmode);
+      cfun->machine->split_stack_varargs_pointer = reg;
+
+      start_sequence ();
+      emit_move_insn (reg, gen_rtx_REG (Pmode, 1));
+      seq = get_insns ();
+      end_sequence ();
+
+      push_topmost_sequence ();
+      emit_insn_after (seq, entry_of_function ());
+      pop_topmost_sequence ();
+    }
+
   /* Find the overflow area.
      FIXME: This currently is too pessimistic when the vector ABI is
      enabled.  In that case we *always* set up the overflow area
@@ -11582,7 +11777,10 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
       || n_fpr + cfun->va_list_fpr_size > FP_ARG_NUM_REG
       || TARGET_VX_ABI)
     {
-      t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
+      if (cfun->machine->split_stack_varargs_pointer == NULL_RTX)
+        t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
+      else
+        t = make_tree (TREE_TYPE (ovf), cfun->machine->split_stack_varargs_pointer);
 
       off = INTVAL (crtl->args.arg_offset_rtx);
       off = off < 0 ? 0 : off;
@@ -14502,6 +14700,9 @@ s390_asm_file_end (void)
 	     s390_vector_abi);
 #endif
   file_end_indicate_exec_stack ();
+
+  if (flag_split_stack)
+    file_end_indicate_split_stack ();
 }
 
 /* Return true if TYPE is a vector bool type.  */
@@ -14756,6 +14957,9 @@ s390_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1, const_tree ty
 
 #undef TARGET_SET_UP_BY_PROLOGUE
 #define TARGET_SET_UP_BY_PROLOGUE s300_set_up_by_prologue
+
+#undef TARGET_EXTRA_LIVE_ON_ENTRY
+#define TARGET_EXTRA_LIVE_ON_ENTRY s390_live_on_entry
 
 #undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
 #define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
