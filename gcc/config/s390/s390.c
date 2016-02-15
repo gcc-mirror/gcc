@@ -12205,6 +12205,13 @@ s390_function_profiler (FILE *file, int labelno)
       output_asm_insn ("brasl\t%0,%4", op);
       output_asm_insn ("lg\t%0,%1", op);
     }
+  else if (TARGET_CPU_ZARCH)
+    {
+      output_asm_insn ("st\t%0,%1", op);
+      output_asm_insn ("larl\t%2,%3", op);
+      output_asm_insn ("brasl\t%0,%4", op);
+      output_asm_insn ("l\t%0,%1", op);
+    }
   else if (!flag_pic)
     {
       op[6] = gen_label_rtx ();

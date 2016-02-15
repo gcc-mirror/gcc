@@ -1,5 +1,10 @@
 2016-02-15  Marcin Kościelnicki  <koriakin@0x04.net>
 
+	* config/s390/s390.c (s390_function_profiler): Add a new sequence
+	for z900+ CPUs in 31-bit mode.
+
+2016-02-15  Marcin Kościelnicki  <koriakin@0x04.net>
+
 	* common/config/s390/s390-common.c (s390_supports_split_stack):
 	New function.
 	(TARGET_SUPPORTS_SPLIT_STACK): New macro.
