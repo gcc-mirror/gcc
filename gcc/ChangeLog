@@ -1,5 +1,9 @@
 2016-02-15  Bernd Schmidt  <bschmidt@redhat.com>
 
+	PR rtl-optimization/69648
+	* lra-constraints.c (update_ebb_live_info): Don't remove sets of
+	pic_offset_table_rtx.
+
 	PR rtl-optimization/69752
 	* ira.c (update_equiv_regs): When looking for more than a single SET,
 	also take other side effects into account.

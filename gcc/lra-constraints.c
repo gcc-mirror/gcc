@@ -5178,8 +5178,10 @@ update_ebb_live_info (rtx_insn *head, rtx_insn *tail)
       curr_id = lra_get_insn_recog_data (curr_insn);
       curr_static_id = curr_id->insn_static_data;
       remove_p = false;
-      if ((set = single_set (curr_insn)) != NULL_RTX && REG_P (SET_DEST (set))
+      if ((set = single_set (curr_insn)) != NULL_RTX
+	  && REG_P (SET_DEST (set))
 	  && (regno = REGNO (SET_DEST (set))) >= FIRST_PSEUDO_REGISTER
+	  && SET_DEST (set) != pic_offset_table_rtx
 	  && bitmap_bit_p (&check_only_regs, regno)
 	  && ! bitmap_bit_p (&live_regs, regno))
 	remove_p = true;
