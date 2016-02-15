@@ -1,3 +1,9 @@
+2016-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69797
+	* c-common.c (sync_resolve_size): Diagnose too few arguments
+	even when params is non-NULL empty vector.
+
 2016-02-08  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR target/60410

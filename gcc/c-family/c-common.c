@@ -10675,7 +10675,7 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch)
   tree type;
   int size;
 
-  if (!params)
+  if (vec_safe_is_empty (params))
     {
       error ("too few arguments to function %qE", function);
       return 0;
