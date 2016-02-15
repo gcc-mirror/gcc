@@ -716,7 +716,7 @@
 
 (define_insn_reservation "cortex_a57_fp_cmp" 7
   (and (eq_attr "tune" "cortexa57")
-       (eq_attr "type" "fcmps,fcmpd"))
+       (eq_attr "type" "fcmps,fcmpd,fccmps,fccmpd"))
   "ca57_cx2")
 
 (define_insn_reservation "cortex_a57_fp_arith" 4
