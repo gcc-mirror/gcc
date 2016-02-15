@@ -1,5 +1,22 @@
+2016-02-16  Alan Modra  <amodra@gmail.com>
+
+	PR target/68973
+	* config/rs6000/rs6000.md (reload_vsx_from_gprsf): Rewrite splitter.
+	(p8_mtvsrd_df, p8_mtvsrd_sf): New.
+	(p8_mtvsrd_1, p8_mtvsrd_2): Delete.
+	(p8_mtvsrwz): New.
+	(p8_mtvsrwz_1, p8_mtvsrwz_2): Delete.
+	(p8_xxpermdi_<mode>): Take two DF inputs rather than one TF.
+	(p8_fmrgow_<mode>): Likewise.
+	(reload_vsx_from_gpr<mode>): Make clobber IF.  Adjust for above
+	changes.
+	(reload_fpr_from_gpr<mode>): Similarly. Use "d" for op0 constraint.
+	(reload_vsx_from_gprsf): Use p8_mtvsrd_sf rather than attempting
+	to use movdi_internal64.  Remove op0_di.
+	* config/rs6000/vsx.md (vsx_xscvspdpn_directmove): Make op1 SFmode.
+
 2016-02-15  Evandro Menezes  <e.menezes@samsung.com>
-    
+
 	Add support for the FCCMP insn types
 
 	* config/aarch64/aarch64.md (fccmp): Change insn type.
