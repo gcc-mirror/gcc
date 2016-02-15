@@ -1,3 +1,9 @@
+2016-02-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69783
+	* tree-vect-data-refs.c (vect_prune_runtime_alias_test_list):
+	Add trivially correct cases.
+
 2016-02-15  Tom de Vries  <tom@codesourcery.com>
 
 	PR lto/69655
