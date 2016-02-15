@@ -8160,7 +8160,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 
       if (permerror (input_location,
 		     "cannot call constructor %<%T::%D%> directly",
-		     basetype, name))
+		     BINFO_TYPE (access_binfo), name))
 	inform (input_location, "for a function-style cast, remove the "
 		"redundant %<::%D%>", name);
       call = build_functional_cast (basetype, build_tree_list_vec (user_args),
@@ -8377,6 +8377,9 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 		     we know we really need it.  */
 		  cand->first_arg = instance;
 		}
+	      else if (any_dependent_bases_p ())
+		/* We can't tell until instantiation time whether we can use
+		   *this as the implicit object argument.  */;
 	      else
 		{
 		  if (complain & tf_error)

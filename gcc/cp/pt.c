@@ -22904,9 +22904,16 @@ type_dependent_expression_p (tree expression)
       && DECL_TEMPLATE_INFO (expression))
     return any_dependent_template_arguments_p (DECL_TI_ARGS (expression));
 
-  if (TREE_CODE (expression) == TEMPLATE_DECL
-      && !DECL_TEMPLATE_TEMPLATE_PARM_P (expression))
-    return false;
+  if (TREE_CODE (expression) == TEMPLATE_DECL)
+    {
+      if (DECL_CLASS_SCOPE_P (expression)
+	  && dependent_type_p (DECL_CONTEXT (expression)))
+	/* A template's own parameters don't make it dependent, since those can
+	   be deduced, but the enclosing class does.  */
+	return true;
+      if (!DECL_TEMPLATE_TEMPLATE_PARM_P (expression))
+	return false;
+    }
 
   if (TREE_CODE (expression) == STMT_EXPR)
     expression = stmt_expr_value_expr (expression);

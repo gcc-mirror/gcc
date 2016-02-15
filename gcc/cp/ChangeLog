@@ -1,5 +1,17 @@
 2016-02-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/69753
+	* semantics.c (finish_call_expr): Implicit 'this' does not make
+	the call dependent.
+	* search.c (any_dependent_bases_p): Split out...
+	* name-lookup.c (do_class_using_decl): ...from here.
+	* call.c (build_new_method_call_1): Don't complain about missing object
+	if there are dependent bases.  Tweak error.
+	* tree.c (non_static_member_function_p): Remove.
+	* pt.c (type_dependent_expression_p): A member template of a
+	dependent type is dependent.
+	* cp-tree.h: Adjust.
+
 	PR c++/68890
 	* constexpr.c (verify_ctor_sanity): Remove CONSTRUCTOR_NELTS check.
 

@@ -3333,8 +3333,6 @@ do_class_using_decl (tree scope, tree name)
   /* True if any of the bases of CURRENT_CLASS_TYPE are dependent.  */
   bool bases_dependent_p;
   tree binfo;
-  tree base_binfo;
-  int i;
 
   if (name == error_mark_node)
     return NULL_TREE;
@@ -3371,16 +3369,7 @@ do_class_using_decl (tree scope, tree name)
 		      || (IDENTIFIER_TYPENAME_P (name)
 			  && dependent_type_p (TREE_TYPE (name))));
 
-  bases_dependent_p = false;
-  if (processing_template_decl)
-    for (binfo = TYPE_BINFO (current_class_type), i = 0;
-	 BINFO_BASE_ITERATE (binfo, i, base_binfo);
-	 i++)
-      if (dependent_type_p (TREE_TYPE (base_binfo)))
-	{
-	  bases_dependent_p = true;
-	  break;
-	}
+  bases_dependent_p = any_dependent_bases_p (current_class_type);
 
   decl = NULL_TREE;
 
