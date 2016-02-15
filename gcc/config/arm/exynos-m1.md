@@ -823,6 +823,11 @@
        (eq_attr "type" "fcmps, fcmpd"))
   "em1_nmisc")
 
+(define_insn_reservation "exynos_m1_fp_ccmp" 7
+  (and (eq_attr "tune" "exynosm1")
+       (eq_attr "type" "fccmps, fccmpd"))
+  "(em1_st, em1_nmisc)")
+
 (define_insn_reservation "exynos_m1_fp_sel" 4
   (and (eq_attr "tune" "exynosm1")
        (eq_attr "type" "fcsel"))

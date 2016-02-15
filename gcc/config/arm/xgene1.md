@@ -154,7 +154,7 @@
 
 (define_insn_reservation "xgene1_fcmp" 10
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "fcmpd,fcmps"))
+       (eq_attr "type" "fcmpd,fcmps,fccmpd,fccmps"))
   "xgene1_decode1op,xgene1_fsu+xgene1_fcmp*3")
 
 (define_insn_reservation "xgene1_fcsel" 3

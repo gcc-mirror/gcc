@@ -1,3 +1,17 @@
+2016-02-15  Evandro Menezes  <e.menezes@samsung.com>
+    
+	Add support for the FCCMP insn types
+
+	* config/aarch64/aarch64.md (fccmp): Change insn type.
+	(fccmpe): Likewise.
+	* config/aarch64/thunderx.md (thunderx_fcmp): Add "fccmp{s,d}" types.
+	* config/arm/cortex-a53.md (cortex_a53_fpalu): Likewise.
+	* config/arm/cortex-a57.md (cortex_a57_fp_cmp): Likewise.
+	* config/arm/xgene1.md (xgene1_fcmp): Likewise.
+	* config/arm/exynos-m1.md (exynos_m1_fp_ccmp): New insn reservation.
+	* config/arm/types.md (fccmps): Add new insn type.
+	(fccmpd): Likewise.
+
 2016-02-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* alias.c (get_alias_set): Fix a typo in comment.

@@ -302,7 +302,7 @@
 	  (unspec:CCFP [(match_operand 5 "immediate_operand")] UNSPEC_NZCV)))]
   "TARGET_FLOAT"
   "fccmp\\t%<s>2, %<s>3, %k5, %m4"
-  [(set_attr "type" "fcmp<s>")]
+  [(set_attr "type" "fccmp<s>")]
 )
 
 (define_insn "fccmpe<mode>"
@@ -317,7 +317,7 @@
 	  (unspec:CCFPE [(match_operand 5 "immediate_operand")] UNSPEC_NZCV)))]
   "TARGET_FLOAT"
   "fccmpe\\t%<s>2, %<s>3, %k5, %m4"
-  [(set_attr "type" "fcmp<s>")]
+  [(set_attr "type" "fccmp<s>")]
 )
 
 ;; Expansion of signed mod by a power of 2 using CSNEG.
