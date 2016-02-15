@@ -3745,7 +3745,7 @@ compute_avail (void)
 		      vn_reference_t ref;
 		      vn_reference_lookup (gimple_assign_rhs1 (stmt),
 					   gimple_vuse (stmt),
-					   VN_WALK, &ref);
+					   VN_WALK, &ref, true);
 		      if (!ref)
 			continue;
 
@@ -4208,7 +4208,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
           tree val;
 	  tree rhs = gimple_assign_rhs1 (stmt);
           val = vn_reference_lookup (gimple_assign_lhs (stmt),
-                                     gimple_vuse (stmt), VN_WALK, NULL);
+                                     gimple_vuse (stmt), VN_WALK, NULL, false);
           if (TREE_CODE (rhs) == SSA_NAME)
             rhs = VN_INFO (rhs)->valnum;
           if (val

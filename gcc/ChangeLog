@@ -1,3 +1,16 @@
+2016-02-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69776
+	* tree-ssa-sccvn.h (vn_reference_lookup): Adjust prototype.
+	* tree-ssa-sccvn.c (vn_reference_lookup): Add parameter to
+	indicate whether we can use TBAA to disambiguate against stores.
+	Use alias-set zero if not.
+	(visit_reference_op_store): Do not use TBAA when looking up
+	redundant stores.
+	* tree-ssa-pre.c (compute_avail): Use TBAA here.
+	(eliminate_dom_walker::before_dom_children): But not when looking
+	up redundant stores.
+
 2016-02-14  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md (absqi2, absghi2, bswaphi2, bswapsi2, bswapdi2): New.
