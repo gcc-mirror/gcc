@@ -1,8 +1,15 @@
 2016-02-16  Bernd Schmidt  <bernds@codesourcery.com>
 
-	2016-02-08  Bernd Schmidt  <bschmidt@redhat.com>
+	Backport from mainline
+	2016-02-15  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/69752
+	* ira.c (update_equiv_regs): When looking for more than a single SET,
+	also take other side effects into account.
 
 	Backport from mainline
+	2016-02-08  Bernd Schmidt  <bschmidt@redhat.com>
+
 	PR rtl-optimization/68730
 	* lra-remat.c (insn_to_cand_activation): New static variable.
 	(lra_remat): Allocate and free it.
