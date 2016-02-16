@@ -1625,8 +1625,11 @@ finish_character_type (tree char_type)
   if (TYPE_UNSIGNED (char_type))
     return;
 
-  /* Make a copy of the unsigned version since we'll modify it below.  */
-  tree unsigned_char_type = copy_type (gnat_unsigned_type_for (char_type));
+  /* Make a copy of a generic unsigned version since we'll modify it.  */
+  tree unsigned_char_type
+    = (char_type == char_type_node
+       ? unsigned_char_type_node
+       : copy_type (gnat_unsigned_type_for (char_type)));
 
   TYPE_NAME (unsigned_char_type) = TYPE_NAME (char_type);
   TYPE_STRING_FLAG (unsigned_char_type) = TYPE_STRING_FLAG (char_type);
