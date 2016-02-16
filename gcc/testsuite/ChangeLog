@@ -1,3 +1,8 @@
+2016-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69802
+	* gcc.dg/pr69802.c: New test.
+
 2016-02-16  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/69801
