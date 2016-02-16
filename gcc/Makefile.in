@@ -1278,6 +1278,7 @@ OBJS = \
 	gimple-pretty-print.o \
 	gimple-ssa-backprop.o \
 	gimple-ssa-isolate-paths.o \
+	gimple-ssa-nonnull-compare.o \
 	gimple-ssa-split-paths.o \
 	gimple-ssa-strength-reduction.o \
 	gimple-streamer-in.o \

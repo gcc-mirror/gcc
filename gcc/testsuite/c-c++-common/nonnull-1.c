@@ -1,7 +1,7 @@
 /* Test for the bad usage of "nonnull" function attribute parms.  */
 /*  */
 /* { dg-do compile } */
-/* { dg-options "-Wnonnull" } */
+/* { dg-options "-Wnonnull-compare" } */
 
 #include <stddef.h>
 #include <stdlib.h>

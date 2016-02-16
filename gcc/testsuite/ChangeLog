@@ -1,3 +1,10 @@
+2016-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69835
+	* c-c++-common/nonnull-1.c: Use -Wnonnull-compare instead of
+	-Wnonnull in dg-options.
+	* c-c++-common/nonnull-2.c: New test.
+
 2016-02-16  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
