@@ -1,4 +1,13 @@
 2016-02-16  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69820
+	* tree-vect-patterns.c (type_conversion_p): Return false if
+	*orig_type is unsigned single precision or boolean.
+	(vect_recog_dot_prod_pattern, vect_recog_widen_mult_pattern):
+	Formatting fix.
+
+2016-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/69764
 	PR rtl-optimization/69771
