@@ -11194,7 +11194,6 @@ simd_clone_create (struct cgraph_node *old_node)
 	= cgraph_copy_node_for_versioning (old_node, new_decl, vNULL, NULL);
       if (old_node->in_other_partition)
 	new_node->in_other_partition = 1;
-      cgraph_call_function_insertion_hooks (new_node);
     }
   if (new_node == NULL)
     return new_node;
