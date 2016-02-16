@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_dsp } */
-/* { dg-options "-O1 -fexpensive-optimizations" } */
+/* { dg-options "-O1 -fexpensive-optimizations -mtune=cortex-a9" } */
 
 void vec_mpy(int y[], const short x[], short scaler)
 {
@@ -10,4 +10,4 @@ void vec_mpy(int y[], const short x[], short scaler)
    y[i] += ((scaler * x[i]) >> 31);
 }
 
-/* { dg-final { scan-assembler-times "smulbb" 1 } } */
+/* { dg-final { scan-assembler-times "smulbb" 1 { xfail *-*-* } } } */

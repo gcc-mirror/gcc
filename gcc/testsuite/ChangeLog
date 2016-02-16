@@ -1,3 +1,11 @@
+2016-02-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/65932
+	* gcc.target/arm/wmul-1.c: Add -mtune=cortex-a9 to dg-options.
+	xfail the scan-assembler test.
+	* gcc.target/arm/wmul-2.c: Likewise.
+	* gcc.target/arm/wmul-3.c: Simplify test to generate a single smulbb.
+
 2016-02-16  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
