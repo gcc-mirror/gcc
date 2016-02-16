@@ -1277,7 +1277,8 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
       /* Allow expressions that are not using the result or plain
          registers where we handle overlap below.  */
       && (REG_P (XEXP (a, 0))
-	  || ! reg_overlap_mentioned_p (if_info->x, XEXP (a, 0)))
+	  || (noce_operand_ok (XEXP (a, 0))
+	      && ! reg_overlap_mentioned_p (if_info->x, XEXP (a, 0))))
       && if_info->branch_cost >= 2)
     {
       common = XEXP (a, 0);
