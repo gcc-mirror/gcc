@@ -1,3 +1,13 @@
+2016-02-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from trunk:
+	2016-02-04  Jim Wilson  <jim.wilson@linaro.org>
+
+	PR target/65932
+	PR target/67714
+	* config/arm/arm.h (PROMOTE_MODE): Don't set UNSIGNEDP for QImode and
+	HImode.
+
 2016-02-16  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
