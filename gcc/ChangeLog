@@ -1,3 +1,9 @@
+2016-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/69291
+	* ifcvt.c (noce_try_store_flag_constants): Re-instantiate
+	noce_operand_ok check.
+
 2016-02-16  Tom de Vries  <tom@codesourcery.com>
 
 	PR lto/67709
