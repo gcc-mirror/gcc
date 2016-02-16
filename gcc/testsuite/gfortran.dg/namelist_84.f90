@@ -17,12 +17,11 @@ program namelist_delim_none
    write(10, mylist)
    rewind(10)
    mystring = "xxxxx"
-   read(10,mylist)
-   if (any(mystring /= (/ 'mon', 'tue', 'wed', 'thu', 'fri' /))) call abort
    rewind(10)
    do i=1,5
      read(10,'(a)') internal_unit
-     if (scan(internal_unit,"""'").ne.0) call abort
+     if (i.eq.2 .and. internal_unit .ne. " MYSTRING=mon  tue  wed  thu  fri  ,") call abort
+     if (scan(internal_unit,"""'").ne.0) print *, internal_unit
    end do
    close(10)
 end program
