@@ -568,6 +568,15 @@ gnat_descriptive_type (const_tree type)
     return NULL_TREE;
 }
 
+/* Return the underlying base type of an enumeration type.  */
+
+static tree
+gnat_enum_underlying_base_type (const_tree)
+{
+  /* Enumeration types are base types in Ada.  */
+  return void_type_node;
+}
+
 /* Return true if types T1 and T2 are identical for type hashing purposes.
    Called only after doing all language independent checks.  At present,
    this function is only called when both types are FUNCTION_TYPE.  */
@@ -1001,6 +1010,8 @@ gnat_init_ts (void)
 #undef  LANG_HOOKS_DESCRIPTIVE_TYPE
 #define LANG_HOOKS_DESCRIPTIVE_TYPE	gnat_descriptive_type
 #undef  LANG_HOOKS_ATTRIBUTE_TABLE
+#undef  LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE
+#define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE gnat_enum_underlying_base_type
 #define LANG_HOOKS_ATTRIBUTE_TABLE	gnat_internal_attribute_table
 #undef  LANG_HOOKS_BUILTIN_FUNCTION
 #define LANG_HOOKS_BUILTIN_FUNCTION	gnat_builtin_function
