@@ -1,3 +1,8 @@
+2016-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/69801
+	* gcc.dg/pr69801.c: New testcase.
+
 2016-02-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/69651

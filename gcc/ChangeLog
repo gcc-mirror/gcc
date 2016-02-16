@@ -1,3 +1,9 @@
+2016-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/69801
+	* fold-const.c (operand_equal_p): For COND_EXPR zero operand
+	mask OEP_ADDRESS_OF.
+
 2016-02-16  Alan Modra  <amodra@gmail.com>
 
 	PR target/68973
