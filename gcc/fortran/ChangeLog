@@ -1,3 +1,9 @@
+2015-02-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/69742
+	* frontend-passes.c (cfe-expr_0):  Don't register functions
+	from within an ASSOCIATE statement.
+
 2016-02-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/60526
