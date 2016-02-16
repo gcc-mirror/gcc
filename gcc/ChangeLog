@@ -1,3 +1,10 @@
+2016-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/69764
+	PR rtl-optimization/69771
+	* optabs.c (expand_binop): Ensure for shift optabs invalid CONST_INT
+	op1 is valid for GET_MODE_INNER (mode) and force it into a reg.
+
 2016-02-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69776
