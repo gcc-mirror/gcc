@@ -2249,7 +2249,7 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
   vr1.operands = operands
     = valueize_shared_reference_ops_from_ref (op, &valuezied_anything);
   vr1.type = TREE_TYPE (op);
-  vr1.set = get_alias_set (op);
+  vr1.set = tbaa_p ? get_alias_set (op) : 0;
   vr1.hashcode = vn_reference_compute_hash (&vr1);
   if ((cst = fully_constant_vn_reference_p (&vr1)))
     return cst;

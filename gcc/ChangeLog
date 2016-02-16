@@ -1,3 +1,15 @@
+2016-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69776
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Get alias
+	sets from caller.
+	(indirect_refs_may_alias_p): Likewise.
+	(refs_may_alias_p_1): Pass alias sets as from ao_ref.
+	* tree-ssa-sccvn.c (vn_reference_lookup): Also adjust vr alias-set
+	according to tbaa_p.
+	* tree-ssa-dom.c (lookup_avail_expr): Add tbaa_p flag.
+	(optimize_stmt): For redundant store discovery do not allow tbaa.
+
 2016-02-16  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR tree-optimization/69714
