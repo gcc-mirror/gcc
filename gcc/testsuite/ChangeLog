@@ -1,3 +1,13 @@
+2016-02-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline
+	PR libgfortran/69651
+	PR libgfortran/69668
+	* gfortran.dg/read_bang.f90: New test.
+	* gfortran.dg/read_bang4.f90: New test.
+	* gfortran.dg/namelist_87.f90: New test.
+	* gfortran.dg/namelist_88.f90: New test.
+
 2016-02-13  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
