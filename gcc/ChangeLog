@@ -1,5 +1,10 @@
 2016-02-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64.c (cortexa57_tunings): Remove
+	AARCH64_EXTRA_TUNE_RECIP_SQRT.
+
+2016-02-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64.c (use_rsqrt_p): Always use software
 	reciprocal sqrt for -mlow-precision-recip-sqrt.
 
