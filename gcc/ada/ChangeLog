@@ -1,5 +1,14 @@
 2016-02-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (maybe_debug_type): New inline function.
+	* gcc-interface/misc.c (gnat_get_array_descr_info): Use it.
+	Call maybe_character_value on the array bounds.  Get to the base type
+	of the index type and call maybe_debug_type on it.
+	* gcc-interface/utils.c (finish_character_type): Add special treatment
+	for char_type_node.
+
+2016-02-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/misc.c (gnat_enum_underlying_base_type): New function.
 	(LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE): Define to above.
 
