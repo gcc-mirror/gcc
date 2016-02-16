@@ -1125,6 +1125,16 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       op1 = negate_rtx (mode, op1);
       binoptab = add_optab;
     }
+  /* For shifts, constant invalid op1 might be expanded from different
+     mode than MODE.  As those are invalid, force them to a register
+     to avoid further problems during expansion.  */
+  else if (CONST_INT_P (op1)
+	   && shift_optab_p (binoptab)
+	   && UINTVAL (op1) >= GET_MODE_BITSIZE (GET_MODE_INNER (mode)))
+    {
+      op1 = gen_int_mode (INTVAL (op1), GET_MODE_INNER (mode));
+      op1 = force_reg (GET_MODE_INNER (mode), op1);
+    }
 
   /* Record where to delete back to if we backtrack.  */
   last = get_last_insn ();
