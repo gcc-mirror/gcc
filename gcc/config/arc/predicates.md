@@ -504,6 +504,11 @@
       return (code == EQ || code == NE || code == UNEQ || code == LTGT
 	      || code == ORDERED || code == UNORDERED);
 
+    case CC_FPUmode:
+      return 1;
+    case CC_FPU_UNEQmode:
+      return 1;
+
     case CCmode:
     case SImode: /* Used for BRcc.  */
       return 1;
@@ -797,3 +802,7 @@
    return (REG_P (op) && ((REGNO (op) >= FIRST_PSEUDO_REGISTER)
 			  || ((REGNO (op) & 1) == 0)));
   })
+
+(define_predicate "double_register_operand"
+  (ior (match_test "even_register_operand (op, mode)")
+       (match_test "arc_double_register_operand (op, mode)")))

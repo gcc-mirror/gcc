@@ -255,7 +255,8 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_MIXED_CODE (TARGET_MIXED_CODE_SET)
 
 #define TARGET_SPFP (TARGET_SPFP_FAST_SET || TARGET_SPFP_COMPACT_SET)
-#define TARGET_DPFP (TARGET_DPFP_FAST_SET || TARGET_DPFP_COMPACT_SET)
+#define TARGET_DPFP (TARGET_DPFP_FAST_SET || TARGET_DPFP_COMPACT_SET	\
+		     || TARGET_FP_DP_AX)
 
 #define SUBTARGET_SWITCHES
 
@@ -266,11 +267,12 @@ along with GCC; see the file COPYING3.  If not see
    default for A7, and only for pre A7 cores when -mnorm is given.  */
 #define TARGET_NORM (TARGET_ARC700 || TARGET_NORM_SET || TARGET_HS)
 /* Indicate if an optimized floating point emulation library is available.  */
-#define TARGET_OPTFPE \
- (TARGET_ARC700 \
-  /* We need a barrel shifter and NORM.  */ \
-  || (TARGET_ARC600 && TARGET_NORM_SET) \
-  || TARGET_HS)
+#define TARGET_OPTFPE				\
+   (TARGET_ARC700				\
+    /* We need a barrel shifter and NORM.  */	\
+    || (TARGET_ARC600 && TARGET_NORM_SET)	\
+    || TARGET_HS				\
+    || (TARGET_EM && TARGET_NORM_SET && TARGET_BARREL_SHIFTER))
 
 /* Non-zero means the cpu supports swap instruction.  This flag is set by
    default for A7, and only for pre A7 cores when -mswap is given.  */
@@ -713,6 +715,12 @@ enum reg_class
 #define ARC_FIRST_SIMD_DMA_CONFIG_OUT_REG  136
 #define ARC_LAST_SIMD_DMA_CONFIG_REG       143
 
+/* ARCv2 double-register accumulator.  */
+#define ACC_REG_FIRST 58
+#define ACC_REG_LAST  59
+#define ACCL_REGNO    (TARGET_BIG_ENDIAN ? ACC_REG_FIRST + 1 : ACC_REG_FIRST)
+#define ACCH_REGNO    (TARGET_BIG_ENDIAN ? ACC_REG_FIRST : ACC_REG_FIRST + 1)
+
 /* The same information, inverted:
    Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
@@ -864,7 +872,7 @@ arc_return_addr_rtx(COUNT,FRAME)
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT,N_NAMED_ARGS) \
-((CUM) = 0)
+  ((CUM) = 0)
 
 /* The number of registers used for parameter passing.  Local to this file.  */
 #define MAX_ARC_PARM_REGS 8
@@ -1656,12 +1664,13 @@ extern enum arc_function_type arc_compute_function_type (struct function *);
    && GET_CODE (PATTERN (X)) != CLOBBER \
    && get_attr_is_##NAME (X) == IS_##NAME##_YES) \
 
-#define REVERSE_CONDITION(CODE,MODE) \
-	(((MODE) == CC_FP_GTmode || (MODE) == CC_FP_GEmode \
-	  || (MODE) == CC_FP_UNEQmode || (MODE) == CC_FP_ORDmode \
-	  || (MODE) == CC_FPXmode) \
-	 ? reverse_condition_maybe_unordered ((CODE)) \
-	 : reverse_condition ((CODE)))
+#define REVERSE_CONDITION(CODE,MODE)				 \
+  (((MODE) == CC_FP_GTmode || (MODE) == CC_FP_GEmode		 \
+    || (MODE) == CC_FP_UNEQmode || (MODE) == CC_FP_ORDmode	 \
+    || (MODE) == CC_FPXmode || (MODE) == CC_FPU_UNEQmode	 \
+    || (MODE) == CC_FPUmode)					 \
+   ? reverse_condition_maybe_unordered ((CODE))			 \
+   : reverse_condition ((CODE)))
 
 #define ADJUST_INSN_LENGTH(X, LENGTH) \
   ((LENGTH) \
@@ -1723,5 +1732,27 @@ enum
 /* Loop count register can be read in very next instruction after has
    been written to by an ordinary instruction.  */
 #define TARGET_LP_WR_INTERLOCK (!TARGET_ARC600_FAMILY)
+
+/* FPU defines.  */
+/* Any FPU support.  */
+#define TARGET_HARD_FLOAT (arc_fpu_build != 0)
+/* Single precision floating point support.  */
+#define TARGET_FP_SP_BASE   ((arc_fpu_build & FPU_SP) != 0)
+/* Double precision floating point support.  */
+#define TARGET_FP_DP_BASE   ((arc_fpu_build & FPU_DP) != 0)
+/* Single precision floating point support with fused operation.  */
+#define TARGET_FP_SP_FUSED  ((arc_fpu_build & FPU_SF) != 0)
+/* Double precision floating point support with fused operation.  */
+#define TARGET_FP_DP_FUSED  ((arc_fpu_build & FPU_DF) != 0)
+/* Single precision floating point conversion instruction support.  */
+#define TARGET_FP_SP_CONV   ((arc_fpu_build & FPU_SC) != 0)
+/* Double precision floating point conversion instruction support.  */
+#define TARGET_FP_DP_CONV   ((arc_fpu_build & FPU_DC) != 0)
+/* Single precision floating point SQRT/DIV instruction support.  */
+#define TARGET_FP_SP_SQRT   ((arc_fpu_build & FPU_SD) != 0)
+/* Double precision floating point SQRT/DIV instruction support.  */
+#define TARGET_FP_DP_SQRT   ((arc_fpu_build & FPU_DD) != 0)
+/* Double precision floating point assist instruction support.  */
+#define TARGET_FP_DP_AX     ((arc_fpu_build & FPX_DP) != 0)
 
 #endif /* GCC_ARC_H */
