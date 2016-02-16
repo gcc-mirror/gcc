@@ -1,3 +1,10 @@
+2016-02-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69657
+	* name-lookup.c (lookup_qualified_name): Add find_hidden parm.
+	(set_decl_namespace): Pass it.  Complain about finding a hidden friend.
+	* name-lookup.h: Adjust.
+
 2016-02-16  James Norris  <jnorris@codesourcery.com>
 
 	* parser.c (cp_parser_oacc_data_clause_deviceptr): Remove checking.

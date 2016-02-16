@@ -3502,7 +3502,8 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
     }
 
   /* See whether this has been declared in the namespace.  */
-  old = lookup_qualified_name (scope, DECL_NAME (decl), false, true);
+  old = lookup_qualified_name (scope, DECL_NAME (decl), /*type*/false,
+			       /*complain*/true, /*hidden*/true);
   if (old == error_mark_node)
     /* No old declaration at all.  */
     goto complain;
@@ -3565,6 +3566,12 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 	{
 	  if (!is_associated_namespace (scope, CP_DECL_CONTEXT (found)))
 	    goto complain;
+	  if (DECL_HIDDEN_FRIEND_P (found))
+	    {
+	      pedwarn (DECL_SOURCE_LOCATION (decl), 0,
+		       "%qD has not been declared within %D", decl, scope);
+	      inform (DECL_SOURCE_LOCATION (found), "only here as a friend");
+	    }
 	  DECL_CONTEXT (decl) = DECL_CONTEXT (found);
 	  return;
 	}
@@ -4509,10 +4516,14 @@ unqualified_namespace_lookup (tree name, int flags)
    neither a class-type nor a namespace a diagnostic is issued.  */
 
 tree
-lookup_qualified_name (tree scope, tree name, bool is_type_p, bool complain)
+lookup_qualified_name (tree scope, tree name, bool is_type_p, bool complain,
+		       bool find_hidden)
 {
   int flags = 0;
   tree t = NULL_TREE;
+
+  if (find_hidden)
+    flags |= LOOKUP_HIDDEN;
 
   if (TREE_CODE (scope) == NAMESPACE_DECL)
     {
