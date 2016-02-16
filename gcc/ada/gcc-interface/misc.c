@@ -575,6 +575,15 @@ gnat_descriptive_type (const_tree type)
     return NULL_TREE;
 }
 
+/* Return the underlying base type of an enumeration type.  */
+
+static tree
+gnat_enum_underlying_base_type (const_tree)
+{
+  /* Enumeration types are base types in Ada.  */
+  return void_type_node;
+}
+
 /* Return the type to be used for debugging information instead of TYPE or
    NULL_TREE if TYPE is fine.  */
 
@@ -1390,6 +1399,8 @@ get_lang_specific (tree node)
 #define LANG_HOOKS_GET_TYPE_BIAS	gnat_get_type_bias
 #undef  LANG_HOOKS_DESCRIPTIVE_TYPE
 #define LANG_HOOKS_DESCRIPTIVE_TYPE	gnat_descriptive_type
+#undef  LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE
+#define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE gnat_enum_underlying_base_type
 #undef  LANG_HOOKS_GET_DEBUG_TYPE
 #define LANG_HOOKS_GET_DEBUG_TYPE	gnat_get_debug_type
 #undef  LANG_HOOKS_GET_FIXED_POINT_TYPE_INFO
