@@ -1,4 +1,9 @@
 2016-02-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.c (use_rsqrt_p): Always use software
+	reciprocal sqrt for -mlow-precision-recip-sqrt.
+
+2016-02-16  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_expand_vector_init): Refactor,

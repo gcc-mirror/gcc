@@ -7468,8 +7468,9 @@ use_rsqrt_p (void)
 {
   return (!flag_trapping_math
 	  && flag_unsafe_math_optimizations
-	  && (aarch64_tune_params.extra_tuning_flags
-	      & AARCH64_EXTRA_TUNE_RECIP_SQRT));
+	  && ((aarch64_tune_params.extra_tuning_flags
+	       & AARCH64_EXTRA_TUNE_RECIP_SQRT)
+	      || flag_mrecip_low_precision_sqrt));
 }
 
 /* Function to decide when to use
