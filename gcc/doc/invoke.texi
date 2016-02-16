@@ -599,7 +599,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmixed-code -mq-class -mRcq -mRcw -msize-level=@var{level} @gol
 -mtune=@var{cpu} -mmultcost=@var{num} @gol
 -munalign-prob-threshold=@var{probability} -mmpy-option=@var{multo} @gol
--mdiv-rem -mcode-density -mll64}
+-mdiv-rem -mcode-density -mll64 -mfpu=@var{fpu}}
 
 @emph{ARM Options}
 @gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
@@ -13324,6 +13324,88 @@ MPYU, MPYM, MPYMU, and MPY_S.
 @end table
 
 This option is only available for ARCv2 cores@.
+
+@item -mfpu=@var{fpu}
+@opindex mfpu
+Enables specific floating-point hardware extension for ARCv2
+core.  Supported values for @var{fpu} are:
+
+@table @samp
+
+@item fpus
+@opindex fpus
+Enables support for single precision floating point hardware
+extensions@.
+
+@item fpud
+@opindex fpud
+Enables support for double precision floating point hardware
+extensions.  The single precision floating point extension is also
+enabled.  Not available for ARC EM@.
+
+@item fpuda
+@opindex fpuda
+Enables support for double precision floating point hardware
+extensions using double precision assist instructions.  The single
+precision floating point extension is also enabled.  This option is
+only available for ARC EM@.
+
+@item fpuda_div
+@opindex fpuda_div
+Enables support for double precision floating point hardware
+extensions using double precision assist instructions, and simple
+precision square-root and divide hardware extensions.  The single
+precision floating point extension is also enabled.  This option is
+only available for ARC EM@.
+
+@item fpuda_fma
+@opindex fpuda_fma
+Enables support for double precision floating point hardware
+extensions using double precision assist instructions, and simple
+precision fused multiple and add hardware extension.  The single
+precision floating point extension is also enabled.  This option is
+only available for ARC EM@.
+
+@item fpuda_all
+@opindex fpuda_all
+Enables support for double precision floating point hardware
+extensions using double precision assist instructions, and all simple
+precision hardware extensions.  The single precision floating point
+extension is also enabled.  This option is only available for ARC EM@.
+
+@item fpus_div
+@opindex fpus_div
+Enables support for single precision floating point, and single
+precision square-root and divide hardware extensions@.
+
+@item fpud_div
+@opindex fpud_div
+Enables support for double precision floating point, and double
+precision square-root and divide hardware extensions.  This option
+includes option @samp{fpus_div}. Not available for ARC EM@.
+
+@item fpus_fma
+@opindex fpus_fma
+Enables support for single precision floating point, and single
+precision fused multiple and add hardware extensions@.
+
+@item fpud_fma
+@opindex fpud_fma
+Enables support for double precision floating point, and double
+precision fused multiple and add hardware extensions.  This option
+includes option @samp{fpus_fma}.  Not available for ARC EM@.
+
+@item fpus_all
+@opindex fpus_all
+Enables support for all single precision floating point hardware
+extensions@.
+
+@item fpud_all
+@opindex fpud_all
+Enables support for all single and double precision floating point
+hardware extensions.  Not available for ARC EM@.
+
+@end table
 
 @end table
 

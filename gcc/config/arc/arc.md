@@ -175,6 +175,7 @@
    (ILINK2_REGNUM 30)
    (RETURN_ADDR_REGNUM 31)
    (MUL64_OUT_REG 58)
+   (ARCV2_ACC 58)
 
    (LP_COUNT 60)
    (CC_REG 61)
@@ -201,7 +202,8 @@
    simd_varith_with_acc, simd_vlogic, simd_vlogic_with_acc,
    simd_vcompare, simd_vpermute, simd_vpack, simd_vpack_with_acc,
    simd_valign, simd_valign_with_acc, simd_vcontrol,
-   simd_vspecial_3cycle, simd_vspecial_4cycle, simd_dma, mul16_em, div_rem"
+   simd_vspecial_3cycle, simd_vspecial_4cycle, simd_dma, mul16_em, div_rem,
+   fpu"
   (cond [(eq_attr "is_sfunc" "yes")
 	 (cond [(match_test "!TARGET_LONG_CALLS_SET && (!TARGET_MEDIUM_CALLS || GET_CODE (PATTERN (insn)) != COND_EXEC)") (const_string "call")
 		(match_test "flag_pic") (const_string "sfunc")]
@@ -3364,7 +3366,8 @@
 
 })
 
-(define_mode_iterator SDF [SF DF])
+(define_mode_iterator SDF [(SF "TARGET_FP_SP_BASE || TARGET_OPTFPE")
+			   (DF "TARGET_OPTFPE")])
 
 (define_expand "cstore<mode>4"
   [(set (reg:CC CC_REG)
@@ -3374,7 +3377,7 @@
 	(match_operator:SI 1 "comparison_operator" [(reg CC_REG)
 						    (const_int 0)]))]
 
-  "TARGET_OPTFPE"
+  "TARGET_FP_SP_BASE || TARGET_OPTFPE"
 {
   gcc_assert (XEXP (operands[1], 0) == operands[2]);
   gcc_assert (XEXP (operands[1], 1) == operands[3]);
@@ -5167,12 +5170,12 @@
 		    (match_operand:SDF 2 "register_operand" "")))
    (set (pc)
 	(if_then_else
-	      (match_operator 0 "comparison_operator" [(reg CC_REG)
-						       (const_int 0)])
-	      (label_ref (match_operand 3 "" ""))
-	      (pc)))]
+	 (match_operator 0 "comparison_operator" [(reg CC_REG)
+						      (const_int 0)])
+	 (label_ref (match_operand 3 "" ""))
+	 (pc)))]
 
-  "TARGET_OPTFPE"
+  "TARGET_FP_SP_BASE || TARGET_OPTFPE"
 {
   gcc_assert (XEXP (operands[0], 0) == operands[1]);
   gcc_assert (XEXP (operands[0], 1) == operands[2]);
@@ -5624,8 +5627,154 @@
   [(set_attr "length" "4")
    (set_attr "type" "misc")])
 
+
+;; FPU/FPX expands
+
+;;add
+(define_expand "addsf3"
+  [(set (match_operand:SF 0 "register_operand"           "")
+	(plus:SF (match_operand:SF 1 "nonmemory_operand" "")
+		 (match_operand:SF 2 "nonmemory_operand" "")))]
+  "TARGET_FP_SP_BASE || TARGET_SPFP"
+  "
+  if (!register_operand (operands[1], SFmode)
+      && !register_operand (operands[2], SFmode))
+    operands[1] = force_reg (SFmode, operands[1]);
+  ")
+
+;;sub
+(define_expand "subsf3"
+  [(set (match_operand:SF 0 "register_operand"            "")
+	(minus:SF (match_operand:SF 1 "nonmemory_operand" "")
+		  (match_operand:SF 2 "nonmemory_operand" "")))]
+  "TARGET_FP_SP_BASE || TARGET_SPFP"
+  "
+  if (!register_operand (operands[1], SFmode)
+      && !register_operand (operands[2], SFmode))
+    operands[1] = force_reg (SFmode, operands[1]);
+  ")
+
+;;mul
+(define_expand "mulsf3"
+  [(set (match_operand:SF 0 "register_operand"           "")
+	(mult:SF (match_operand:SF 1 "nonmemory_operand" "")
+		 (match_operand:SF 2 "nonmemory_operand" "")))]
+  "TARGET_FP_SP_BASE || TARGET_SPFP"
+  "
+  if (!register_operand (operands[1], SFmode)
+      && !register_operand (operands[2], SFmode))
+    operands[1] = force_reg (SFmode, operands[1]);
+  ")
+
+;;add
+(define_expand "adddf3"
+  [(set (match_operand:DF 0 "double_register_operand"           "")
+	(plus:DF (match_operand:DF 1 "double_register_operand"  "")
+		 (match_operand:DF 2 "nonmemory_operand" "")))]
+ "TARGET_FP_DP_BASE || TARGET_DPFP"
+ "
+  if (TARGET_DPFP)
+   {
+    if (GET_CODE (operands[2]) == CONST_DOUBLE)
+     {
+        rtx high, low, tmp;
+        split_double (operands[2], &low, &high);
+        tmp = force_reg (SImode, high);
+        emit_insn (gen_adddf3_insn (operands[0], operands[1],
+                                    operands[2], tmp, const0_rtx));
+     }
+    else
+     emit_insn (gen_adddf3_insn (operands[0], operands[1],
+                                 operands[2], const1_rtx, const1_rtx));
+   DONE;
+  }
+ else if (TARGET_FP_DP_BASE)
+  {
+   if (!even_register_operand (operands[2], DFmode))
+      operands[2] = force_reg (DFmode, operands[2]);
+
+   if (!even_register_operand (operands[1], DFmode))
+      operands[1] = force_reg (DFmode, operands[1]);
+  }
+ else
+  gcc_unreachable ();
+ ")
+
+;;sub
+(define_expand "subdf3"
+  [(set (match_operand:DF 0 "double_register_operand"            "")
+	(minus:DF (match_operand:DF 1 "nonmemory_operand" "")
+		  (match_operand:DF 2 "nonmemory_operand" "")))]
+  "TARGET_FP_DP_BASE || TARGET_DPFP"
+  "
+   if (TARGET_DPFP)
+    {
+     if ((GET_CODE (operands[1]) == CONST_DOUBLE)
+          || GET_CODE (operands[2]) == CONST_DOUBLE)
+      {
+        rtx high, low, tmp;
+        int const_index = ((GET_CODE (operands[1]) == CONST_DOUBLE) ? 1 : 2);
+        split_double (operands[const_index], &low, &high);
+        tmp = force_reg (SImode, high);
+        emit_insn (gen_subdf3_insn (operands[0], operands[1],
+                                    operands[2], tmp, const0_rtx));
+      }
+    else
+     emit_insn (gen_subdf3_insn (operands[0], operands[1],
+                                 operands[2], const1_rtx, const1_rtx));
+    DONE;
+   }
+  else if (TARGET_FP_DP_BASE)
+   {
+    if (!even_register_operand (operands[2], DFmode))
+       operands[2] = force_reg (DFmode, operands[2]);
+
+    if (!even_register_operand (operands[1], DFmode))
+       operands[1] = force_reg (DFmode, operands[1]);
+   }
+  else
+   gcc_unreachable ();
+  ")
+
+;;mul
+(define_expand "muldf3"
+  [(set (match_operand:DF 0 "double_register_operand"           "")
+	(mult:DF (match_operand:DF 1 "double_register_operand"  "")
+		 (match_operand:DF 2 "nonmemory_operand" "")))]
+  "TARGET_FP_DP_BASE || TARGET_DPFP"
+  "
+   if (TARGET_DPFP)
+    {
+     if (GET_CODE (operands[2]) == CONST_DOUBLE)
+      {
+        rtx high, low, tmp;
+        split_double (operands[2], &low, &high);
+        tmp = force_reg (SImode, high);
+        emit_insn (gen_muldf3_insn (operands[0], operands[1],
+                                    operands[2], tmp, const0_rtx));
+      }
+     else
+      emit_insn (gen_muldf3_insn (operands[0], operands[1],
+                                  operands[2], const1_rtx, const1_rtx));
+    DONE;
+   }
+  else if (TARGET_FP_DP_BASE)
+   {
+    if (!even_register_operand (operands[2], DFmode))
+       operands[2] = force_reg (DFmode, operands[2]);
+
+    if (!even_register_operand (operands[1], DFmode))
+       operands[1] = force_reg (DFmode, operands[1]);
+   }
+  else
+   gcc_unreachable ();
+ ")
+
 ;; include the arc-FPX instructions
 (include "fpx.md")
+
+;; include the arc-FPU instructions
+(include "fpu.md")
 
 (include "simdext.md")
 

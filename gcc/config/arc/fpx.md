@@ -50,7 +50,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_insn "addsf3"
+(define_insn "*addsf3_fpx"
   [(set (match_operand:SF 0 "register_operand"          "=r,r,r,r,r ")
 	(plus:SF (match_operand:SF 1 "nonmemory_operand" "0,r,GCal,r,0")
 		 (match_operand:SF 2 "nonmemory_operand" "I,rL,r,GCal,LrCal")))]
@@ -65,7 +65,7 @@
   [(set_attr "type" "spfp")
   (set_attr "length" "4,4,8,8,8")])
 
-(define_insn "subsf3"
+(define_insn "*subsf3_fpx"
   [(set (match_operand:SF 0 "register_operand"          "=r,r,r,r,r ")
 	(minus:SF (match_operand:SF 1 "nonmemory_operand" "r,0,GCal,r,0")
 		 (match_operand:SF 2 "nonmemory_operand" "rL,I,r,GCal,LrCal")))]
@@ -80,7 +80,7 @@
   [(set_attr "type" "spfp")
   (set_attr "length" "4,4,8,8,8")])
 
-(define_insn "mulsf3"
+(define_insn "*mulsf3_fpx"
   [(set (match_operand:SF 0 "register_operand"          "=r,r,r,r,r ")
 	(mult:SF (match_operand:SF 1 "nonmemory_operand" "r,0,GCal,r,0")
 		 (match_operand:SF 2 "nonmemory_operand" "rL,I,r,GCal,LrCal")))]
@@ -226,25 +226,6 @@
 ;; daddh{0}{1} 0, {reg_pair}2.hi, {reg_pair}2.lo
 ;; OR
 ;; daddh{0}{1} 0, reg3, limm2.lo
-(define_expand "adddf3"
-  [(set (match_operand:DF 0 "arc_double_register_operand"          "")
-	(plus:DF (match_operand:DF 1 "arc_double_register_operand" "")
-		 (match_operand:DF 2 "nonmemory_operand" "")))
-     ]
- "TARGET_DPFP"
- " if (GET_CODE (operands[2]) == CONST_DOUBLE)
-     {
-        rtx high, low, tmp;
-        split_double (operands[2], &low, &high);
-        tmp = force_reg (SImode, high);
-        emit_insn(gen_adddf3_insn(operands[0], operands[1], operands[2],tmp,const0_rtx));
-     }
-   else
-     emit_insn(gen_adddf3_insn(operands[0], operands[1], operands[2],const1_rtx,const1_rtx));
-     DONE;
- "
-)
-
 ;; daddh{0}{1} 0, {reg_pair}2.hi, {reg_pair}2.lo  /* operand 4 = 1*/
 ;; OR
 ;; daddh{0}{1} 0, reg3, limm2.lo /* operand 4 = 0 */
@@ -270,25 +251,6 @@
 ;; dmulh{0}{1} 0, {reg_pair}2.hi, {reg_pair}2.lo
 ;; OR
 ;; dmulh{0}{1} 0, reg3, limm2.lo
-(define_expand "muldf3"
-  [(set (match_operand:DF 0 "arc_double_register_operand"          "")
-	(mult:DF (match_operand:DF 1 "arc_double_register_operand" "")
-		 (match_operand:DF 2 "nonmemory_operand" "")))]
-"TARGET_DPFP"
-"  if (GET_CODE (operands[2]) == CONST_DOUBLE)
-     {
-        rtx high, low, tmp;
-        split_double (operands[2], &low, &high);
-        tmp = force_reg (SImode, high);
-        emit_insn(gen_muldf3_insn(operands[0], operands[1], operands[2],tmp,const0_rtx));
-     }
-   else
-     emit_insn(gen_muldf3_insn(operands[0], operands[1], operands[2],const1_rtx,const1_rtx));
-
-  DONE;
- ")
-
-
 ;; dmulh{0}{1} 0, {reg_pair}2.hi, {reg_pair}2.lo /* operand 4 = 1*/
 ;; OR
 ;; dmulh{0}{1} 0, reg3, limm2.lo /* operand 4 = 0*/
@@ -317,26 +279,6 @@
 ;; drsubh{0}{2} 0, {reg_pair}1.hi, {reg_pair}1.lo
 ;; OR
 ;; drsubh{0}{2} 0, reg3, limm1.lo
-(define_expand "subdf3"
-  [(set (match_operand:DF 0 "arc_double_register_operand"          "")
-		    (minus:DF (match_operand:DF 1 "nonmemory_operand" "")
-				  (match_operand:DF 2 "nonmemory_operand" "")))]
-"TARGET_DPFP"
-"   if (GET_CODE (operands[1]) == CONST_DOUBLE || GET_CODE (operands[2]) == CONST_DOUBLE)
-     {
-        rtx high, low, tmp;
-        int const_index = ((GET_CODE (operands[1]) == CONST_DOUBLE) ? 1: 2);
-        split_double (operands[const_index], &low, &high);
-        tmp = force_reg (SImode, high);
-        emit_insn(gen_subdf3_insn(operands[0], operands[1], operands[2],tmp,const0_rtx));
-     }
-   else
-     emit_insn(gen_subdf3_insn(operands[0], operands[1], operands[2],const1_rtx,const1_rtx));
-
-   DONE;
-  "
-)
-
 ;; dsubh{0}{1} 0, {reg_pair}2.hi, {reg_pair}2.lo /* operand 4 = 1 */
 ;; OR
 ;; dsubh{0}{1} 0, reg3, limm2.lo /* operand 4 = 0*/
