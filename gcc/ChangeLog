@@ -1,3 +1,13 @@
+2016-02-16  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR Target/48344
+	* opts-global.c (handle_common_deferred_options): Introduce and
+	initialize two global variables to remember command-line options
+	specifying a stack-limiting register.
+	* opts.h: Add extern declarations of the two new global variables. 
+	* emit-rtl.c (init_emit_once): Initialize the stack_limit_rtx
+	variable based on the values of the two new global variables.
+
 2016-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/69835

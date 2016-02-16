@@ -310,6 +310,10 @@ decode_options (struct gcc_options *opts, struct gcc_options *opts_set,
   finish_options (opts, opts_set, loc);
 }
 
+/* Hold command-line options associated with stack limitation.  */
+const char *opt_fstack_limit_symbol_arg = NULL;
+int opt_fstack_limit_register_no = -1;
+
 /* Process common options that have been deferred until after the
    handlers have been called for all options.  */
 
@@ -417,12 +421,18 @@ handle_common_deferred_options (void)
 	    if (reg < 0)
 	      error ("unrecognized register name %qs", opt->arg);
 	    else
-	      stack_limit_rtx = gen_rtx_REG (Pmode, reg);
+	      {
+		/* Deactivate previous OPT_fstack_limit_symbol_ options.  */
+		opt_fstack_limit_symbol_arg = NULL;
+		opt_fstack_limit_register_no = reg;
+	      }
 	  }
 	  break;
 
 	case OPT_fstack_limit_symbol_:
-	  stack_limit_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (opt->arg));
+	  /* Deactivate previous OPT_fstack_limit_register_ options.  */
+	  opt_fstack_limit_register_no = -1;
+	  opt_fstack_limit_symbol_arg = opt->arg;
 	  break;
 
 	case OPT_fasan_shadow_offset_:
