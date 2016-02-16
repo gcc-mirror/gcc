@@ -1,5 +1,18 @@
 2016-02-16  Bernd Schmidt  <bernds@codesourcery.com>
 
+	2016-02-08  Bernd Schmidt  <bschmidt@redhat.com>
+
+	Backport from mainline
+	PR rtl-optimization/68730
+	* lra-remat.c (insn_to_cand_activation): New static variable.
+	(lra_remat): Allocate and free it.
+	(create_cand): New arg activation. Initialize a field in
+	insn_to_cand_activation if it is nonnull.
+	(create_cands): Pass the activation insn to create_cand when making
+	a candidate involving an output reload.  Reorganize code a little.
+	(do_remat): Keep track of active status of candidates in a separate
+	bitmap.
+
 	Backport from mainline
 	2016-02-16  Bernd Schmidt  <bschmidt@redhat.com>
 
