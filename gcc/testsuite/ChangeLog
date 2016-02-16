@@ -1,3 +1,8 @@
+2016-02-16  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* gcc.target/aarch64/vector_initialization_nostack.c: New.
+
 2016-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/69801

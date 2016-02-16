@@ -1,4 +1,10 @@
 2016-02-16  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_vector_init): Refactor,
+	always use lane loads to construct non-constant vectors.
+
+2016-02-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.md
 	(arch64_sqrdml<SQRDMLH_AS:rdma_as>h_lane<mode>): Fix register
