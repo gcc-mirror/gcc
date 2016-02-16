@@ -1,3 +1,8 @@
+2016-02-16  James Norris  <jnorris@codesourcery.com>
+
+	* c-c++-common/goacc/deviceptr-1.c: Add tests.
+	* g++.dg/goacc/deviceptr-1.c: New file.
+
 2016-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69820
