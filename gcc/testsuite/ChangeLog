@@ -1,3 +1,11 @@
+2016-02-16  Bernd Schmidt  <bernds@codesourcery.com>
+
+	Backport from mainline
+	2016-02-16  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR tree-optimization/69714
+	* gcc.dg/torture/pr69714.c: New test.
+
 2016-02-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/65932
@@ -19,7 +27,7 @@
 	PR libgfortran/69668
 	* gfortran.dg/namelist_38.f90: Update test.
 	* gfortran.dg/namelist_84.f90: Update test.
-	
+
 2016-02-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from mainline

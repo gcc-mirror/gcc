@@ -1,3 +1,12 @@
+2016-02-16  Bernd Schmidt  <bernds@codesourcery.com>
+
+	Backport from mainline
+	2016-02-16  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR tree-optimization/69714
+	* tree-ssa-math-opts.c (find_bswap_or_nop): Revert previous change.
+	Return NULL if we have irrelevant high bytes on BIG_ENDIAN.
+
 2016-02-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from trunk:
