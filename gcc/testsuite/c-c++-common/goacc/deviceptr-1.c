@@ -84,3 +84,17 @@ fun4 (void)
 #pragma acc parallel deviceptr(s2_p)
   s2_p = 0;
 }
+
+void
+func5 (float *fp)
+{
+#pragma acc data deviceptr (fp)
+  ;
+}
+
+void
+func6 (float fp)
+{
+#pragma acc data deviceptr (fp)	/* { dg-error "is not a pointer variable" } */
+  ;
+}

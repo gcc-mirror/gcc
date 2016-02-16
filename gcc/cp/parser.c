@@ -30105,20 +30105,6 @@ cp_parser_oacc_data_clause_deviceptr (cp_parser *parser, tree list)
   for (t = vars; t; t = TREE_CHAIN (t))
     {
       tree v = TREE_PURPOSE (t);
-
-      /* FIXME diagnostics: Ideally we should keep individual
-	 locations for all the variables in the var list to make the
-	 following errors more precise.  Perhaps
-	 c_parser_omp_var_list_parens should construct a list of
-	 locations to go along with the var list.  */
-
-      if (!VAR_P (v))
-	error_at (loc, "%qD is not a variable", v);
-      else if (TREE_TYPE (v) == error_mark_node)
-	;
-      else if (!POINTER_TYPE_P (TREE_TYPE (v)))
-	error_at (loc, "%qD is not a pointer variable", v);
-
       tree u = build_omp_clause (loc, OMP_CLAUSE_MAP);
       OMP_CLAUSE_SET_MAP_KIND (u, GOMP_MAP_FORCE_DEVICEPTR);
       OMP_CLAUSE_DECL (u) = v;

@@ -1,3 +1,8 @@
+2016-02-16  James Norris  <jnorris@codesourcery.com>
+
+	PR c/64748
+	* c-parser.c (c_parser_oacc_data_clause_deviceptr): Allow parms.
+
 2016-02-12  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* c-decl.c (build_null_declspecs): Zero the entire struct.
