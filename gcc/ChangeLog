@@ -1,3 +1,15 @@
+2016-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69835
+	* common.opt (Wnonnull-compare): New warning.
+	* doc/invoke.texi (-Wnonnull): Remove text about comparison
+	of arguments against NULL.
+	(-Wnonnull-compare): Document.
+	* Makefile.in (OBJS): Add gimple-ssa-nonnull-compare.o.
+	* tree-pass.h (make_pass_warn_nonnull_compare): Declare.
+	* passes.def (pass_warn_nonnull_compare): Add.
+	* gimple-ssa-nonnull-compare.c: New file.
+
 2016-02-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.c (cortexa57_tunings): Remove

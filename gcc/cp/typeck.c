@@ -4514,11 +4514,6 @@ cp_build_binary_op (location_t location,
 	       || (code0 == POINTER_TYPE
 		   && TYPE_PTR_P (type1) && integer_zerop (op1)))
 	{
-	  if (warn_nonnull
-	      && TREE_CODE (op0) == PARM_DECL && nonnull_arg_p (op0))
-	    warning_at (location, OPT_Wnonnull,
-			"nonnull argument %qD compared to NULL", op0);
-
 	  if (TYPE_PTR_P (type1))
 	    result_type = composite_pointer_type (type0, type1, op0, op1,
 						  CPO_COMPARISON, complain);
@@ -4558,11 +4553,6 @@ cp_build_binary_op (location_t location,
 	       || (code1 == POINTER_TYPE
 		   && TYPE_PTR_P (type0) && integer_zerop (op0)))
 	{
-	  if (warn_nonnull
-	      && TREE_CODE (op1) == PARM_DECL && nonnull_arg_p (op1))
-	    warning_at (location, OPT_Wnonnull,
-			"nonnull argument %qD compared to NULL", op1);
-
 	  if (TYPE_PTR_P (type0))
 	    result_type = composite_pointer_type (type0, type1, op0, op1,
 						  CPO_COMPARISON, complain);

@@ -677,6 +677,10 @@ Wnonnull
 C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
 ;
 
+Wnonnull-compare
+C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
+;
+
 Wnormalized
 C ObjC C++ ObjC++ Warning Alias(Wnormalized=,nfc,none)
 ;

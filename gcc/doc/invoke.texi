@@ -276,7 +276,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wmain -Wmaybe-uninitialized -Wmemset-transposed-args @gol
 -Wmisleading-indentation -Wmissing-braces @gol
 -Wmissing-field-initializers -Wmissing-include-dirs @gol
--Wno-multichar  -Wnonnull  -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
+-Wno-multichar -Wnonnull -Wnonnull-compare @gol
+-Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
 -Wnull-dereference -Wodr  -Wno-overflow  -Wopenmp-simd  @gol
 -Woverride-init-side-effects -Woverlength-strings @gol
 -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
@@ -3537,6 +3538,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wmissing-braces @r{(only for C/ObjC)} @gol
 -Wnarrowing @r{(only for C++)}  @gol
 -Wnonnull  @gol
+-Wnonnull-compare  @gol
 -Wopenmp-simd @gol
 -Wparentheses  @gol
 -Wpointer-sign  @gol
@@ -3795,11 +3797,17 @@ formats that may yield only a two-digit year.
 Warn about passing a null pointer for arguments marked as
 requiring a non-null value by the @code{nonnull} function attribute.
 
-Also warns when comparing an argument marked with the @code{nonnull}
-function attribute against null inside the function.
-
 @option{-Wnonnull} is included in @option{-Wall} and @option{-Wformat}.  It
 can be disabled with the @option{-Wno-nonnull} option.
+
+@item -Wnonnull-compare
+@opindex Wnonnull-compare
+@opindex Wno-nonnull-compare
+Warn when comparing an argument marked with the @code{nonnull}
+function attribute against null inside the function.
+
+@option{-Wnonnull-compare} is included in @option{-Wall}.  It
+can be disabled with the @option{-Wno-nonnull-compare} option.
 
 @item -Wnull-dereference
 @opindex Wnull-dereference

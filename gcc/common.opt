@@ -616,6 +616,10 @@ Wlarger-than=
 Common RejectNegative Joined UInteger Warning
 -Wlarger-than=<number>	Warn if an object is larger than <number> bytes.
 
+Wnonnull-compare
+Var(warn_nonnull_compare) Warning
+Warn if comparing pointer parameter with nonnull attribute with NULL.
+
 Wnull-dereference
 Common Var(warn_null_dereference) Warning
 Warn if dereferencing a NULL pointer may lead to erroneous or undefined behavior.
