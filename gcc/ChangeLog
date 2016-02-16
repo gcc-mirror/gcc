@@ -1,3 +1,13 @@
+2016-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/69802
+	* tree-ssa-reassoc.c (update_range_test): If op is
+	SSA_NAME_IS_DEFAULT_DEF, give up unless tem is a positive
+	op == 1 test of precision 1 integral op, otherwise handle
+	that case as op itself.  Fix up formatting.
+	(optimize_range_tests_to_bit_test, optimize_range_tests): Fix
+	up formatting.
+
 2016-02-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69586
