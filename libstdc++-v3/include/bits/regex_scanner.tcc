@@ -97,9 +97,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_scan_normal()
     {
       auto __c = *_M_current++;
-      const char* __pos;
 
-      if (std::strchr(_M_spec_char, _M_ctype.narrow(__c, '\0')) == nullptr)
+      if (std::strchr(_M_spec_char, _M_ctype.narrow(__c, ' ')) == nullptr)
 	{
 	  _M_token = _S_token_ord_char;
 	  _M_value.assign(1, __c);
@@ -177,12 +176,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_state = _S_state_in_brace;
 	  _M_token = _S_token_interval_begin;
 	}
-      else if (((__pos = std::strchr(_M_spec_char, _M_ctype.narrow(__c, '\0')))
-		  != nullptr
-		&& *__pos != '\0'
-		&& __c != ']'
-		&& __c != '}')
-	       || (_M_is_grep() && __c == '\n'))
+      else if (__c != ']' && __c != '}')
 	{
 	  auto __it = _M_token_tbl;
 	  auto __narrowc = _M_ctype.narrow(__c, '\0');

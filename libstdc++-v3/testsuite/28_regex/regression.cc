@@ -33,10 +33,26 @@ test01()
   regex re("((.)", regex_constants::basic);
 }
 
+void
+test02()
+{
+  bool test __attribute__((unused)) = true;
+
+  std::string re_str
+    {
+      "/abcd" "\n"
+      "/aecf" "\n"
+      "/ghci"
+    };
+  auto rx = std::regex(re_str, std::regex_constants::grep | std::regex_constants::icase);
+  VERIFY(std::regex_search("/abcd", rx));
+}
+
 int
 main()
 {
   test01();
+  test02();
   return 0;
 }
 
