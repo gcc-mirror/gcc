@@ -119,7 +119,10 @@ push_char4 (st_parameter_dt *dtp, int c)
   if (dtp->u.p.saved_used >= dtp->u.p.saved_length)
     {
       dtp->u.p.saved_length = 2 * dtp->u.p.saved_length;
-      p = xrealloc (p, dtp->u.p.saved_length * sizeof (gfc_char4_t));
+      dtp->u.p.saved_string =
+	xrealloc (dtp->u.p.saved_string,
+		  dtp->u.p.saved_length * sizeof (gfc_char4_t));
+      p = (gfc_char4_t *) dtp->u.p.saved_string;
     }
 
   p[dtp->u.p.saved_used++] = c;
