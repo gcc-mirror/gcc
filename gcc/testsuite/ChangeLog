@@ -1,3 +1,7 @@
+2012-02-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/vec-cg.c: New test.
+
 2016-02-17  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/69586
