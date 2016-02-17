@@ -90,10 +90,10 @@ msp430_init_machine_status (void)
 #define TARGET_OPTION_OVERRIDE		msp430_option_override
 
 /* This is a copy of the same data structure found in gas/config/tc-msp430.c
-   Also another (sort-of) copy can be found in gcc/config/msp430/devices-msp430.c
+   Also another (sort-of) copy can be found in gcc/config/msp430/t-msp430
    Keep these three structures in sync.
    The data in this structure has been extracted from the devices.csv file
-   released by TI, updated as of 8 October 2015.  */
+   released by TI, updated as of March 2016.  */
 
 struct msp430_mcu_data
 {
@@ -519,7 +519,13 @@ msp430_mcu_data [] =
   { "msp430fg6626",2,8 },
   { "msp430fr2032",2,0 },
   { "msp430fr2033",2,0 },
+  { "msp430fr2310",2,0 },
+  { "msp430fr2311",2,0 },
   { "msp430fr2433",2,8 },
+  { "msp430fr2532",2,8 },
+  { "msp430fr2533",2,8 },
+  { "msp430fr2632",2,8 },
+  { "msp430fr2633",2,8 },
   { "msp430fr2xx_4xxgeneric",2,8 },
   { "msp430fr4131",2,0 },
   { "msp430fr4132",2,0 },
@@ -553,6 +559,8 @@ msp430_mcu_data [] =
   { "msp430fr5858",2,8 },
   { "msp430fr5859",2,8 },
   { "msp430fr5867",2,8 },
+  { "msp430fr5862",2,8 },
+  { "msp430fr5864",2,8 },
   { "msp430fr58671",2,8 },
   { "msp430fr5868",2,8 },
   { "msp430fr5869",2,8 },
@@ -563,6 +571,8 @@ msp430_mcu_data [] =
   { "msp430fr5888",2,8 },
   { "msp430fr5889",2,8 },
   { "msp430fr58891",2,8 },
+  { "msp430fr5892",2,8 },
+  { "msp430fr5894",2,8 },
   { "msp430fr5922",2,8 },
   { "msp430fr59221",2,8 },
   { "msp430fr5947",2,8 },
@@ -572,6 +582,8 @@ msp430_mcu_data [] =
   { "msp430fr5957",2,8 },
   { "msp430fr5958",2,8 },
   { "msp430fr5959",2,8 },
+  { "msp430fr5962",2,8 },
+  { "msp430fr5964",2,8 },
   { "msp430fr5967",2,8 },
   { "msp430fr5968",2,8 },
   { "msp430fr5969",2,8 },
@@ -584,6 +596,8 @@ msp430_mcu_data [] =
   { "msp430fr5988",2,8 },
   { "msp430fr5989",2,8 },
   { "msp430fr59891",2,8 },
+  { "msp430fr5992",2,8 },
+  { "msp430fr5994",2,8 },
   { "msp430fr5xx_6xxgeneric",2,8 },
   { "msp430fr6820",2,8 },
   { "msp430fr6822",2,8 },
