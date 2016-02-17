@@ -1,3 +1,10 @@
+2016-02-17  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/ieee754-df.S (__muldf3_aux, __divdf3_aux): Add
+	.literal_position before the function.
+	* config/xtensa/ieee754-sf.S (__mulsf3_aux, __divsf3_aux):
+	Likewise.
+
 2016-02-15  Marcin Kościelnicki  <koriakin@0x04.net>
 
 	* config.host: Use t-stack and t-stack-s390 for s390*-*-linux.
