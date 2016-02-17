@@ -1,3 +1,11 @@
+2016-02-16  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/69794
+	* include/bits/regex_scanner.h: Add different special character
+	sets for grep and egrep regex.
+	* include/bits/regex_scanner.tcc: Use _M_spec_char more uniformly.
+	* testsuite/28_regex/regression.cc: Add new testcase.
+
 2016-02-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_MATH11_PROTO): Remove accidentally
