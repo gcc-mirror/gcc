@@ -1,3 +1,10 @@
+2016-02-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69842
+	* method.c (forward_parm): Split out from...
+	(add_one_base_init): ...here.
+	* lambda.c (maybe_add_lambda_conv_op): Use it.
+
 2016-02-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/10200
