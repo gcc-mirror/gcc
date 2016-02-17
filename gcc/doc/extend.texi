@@ -20313,7 +20313,7 @@ types.
 
 This attribute is appropriate for types which just represent a value,
 such as @code{std::string}; it is not appropriate for types which
-control a resource, such as @code{std::mutex}.
+control a resource, such as @code{std::lock_guard}.
 
 This attribute is also accepted in C, but it is unnecessary because C
 does not have constructors or destructors.
