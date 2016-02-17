@@ -1,3 +1,11 @@
+2016-02-17  Bernd Schmidt  <bschmidt@redhat.com>
+
+	Backport from mainline
+	2016-02-12  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR c/69522
+	* gcc.dg/pr69522.c: New test.
+
 2016-02-16  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
