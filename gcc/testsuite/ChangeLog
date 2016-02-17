@@ -1,5 +1,9 @@
 2016-02-17  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.dg/ifcvt-4.c: Skip on Visium.
+
+2016-02-17  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/atomic8.adb: New test.
 
 2016-02-17  Eric Botcazou  <ebotcazou@adacore.com>
