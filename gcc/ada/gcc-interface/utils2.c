@@ -2559,12 +2559,11 @@ gnat_protect_expr (tree exp)
     return build3 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)),
 		   TREE_OPERAND (exp, 1), TREE_OPERAND (exp, 2));
 
-  /* If this is a fat pointer or something that can be placed in a register,
-     just make a SAVE_EXPR.  Likewise for a CALL_EXPR as large objects are
-     returned via invisible reference in most ABIs so the temporary will
-     directly be filled by the callee.  */
+  /* If this is a fat pointer or a scalar, just make a SAVE_EXPR.  Likewise
+     for a CALL_EXPR as large objects are returned via invisible reference
+     in most ABIs so the temporary will directly be filled by the callee.  */
   if (TYPE_IS_FAT_POINTER_P (type)
-      || TYPE_MODE (type) != BLKmode
+      || !AGGREGATE_TYPE_P (type)
       || code == CALL_EXPR)
     return save_expr (exp);
 

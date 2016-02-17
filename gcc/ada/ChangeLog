@@ -1,3 +1,8 @@
+2016-02-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.c (gnat_protect_expr): Make a SAVE_EXPR only
+	for fat pointer or scalar types.
+
 2016-02-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (maybe_debug_type): New inline function.
