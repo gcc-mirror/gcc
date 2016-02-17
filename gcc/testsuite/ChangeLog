@@ -1,3 +1,9 @@
+2016-02-17  David Sherwood  <david.sherwood@arm.com>
+
+	PR target/69532
+	* gcc.target/arm/fmaxmin.c: Change effective target to arm_v8_neon_hw.
+	* gcc.target/arm/vect-fmaxmin.c: Likewise.
+
 2016-02-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/ifcvt-4.c: Skip on Visium.
