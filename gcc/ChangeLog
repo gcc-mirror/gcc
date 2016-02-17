@@ -1,3 +1,8 @@
+2016-02-17  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_internal_mov_immediate):
+	Add missing return.
+
 2016-02-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/visium/visium.c (machine_libfunc_index): New enum.
