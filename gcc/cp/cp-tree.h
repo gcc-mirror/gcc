@@ -6252,7 +6252,6 @@ extern tree adjust_result_of_qualified_name_lookup
 extern tree copied_binfo			(tree, tree);
 extern tree original_binfo			(tree, tree);
 extern int shared_member_p			(tree);
-extern bool any_dependent_bases_p (tree = current_nonlambda_class_type ());
 
 /* The representation of a deferred access check.  */
 
@@ -6543,6 +6542,7 @@ extern tree get_first_fn			(tree);
 extern tree ovl_cons				(tree, tree);
 extern tree build_overload			(tree, tree);
 extern tree ovl_scope				(tree);
+extern bool non_static_member_function_p        (tree);
 extern const char *cxx_printable_name		(tree, int);
 extern const char *cxx_printable_name_translate	(tree, int);
 extern tree build_exception_variant		(tree, tree);

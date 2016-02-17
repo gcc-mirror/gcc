@@ -2264,7 +2264,17 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	 with no type; type_dependent_expression_p recognizes
 	 expressions with no type as being dependent.  */
       if (type_dependent_expression_p (fn)
-	  || any_type_dependent_arguments_p (*args))
+	  || any_type_dependent_arguments_p (*args)
+	  /* For a non-static member function that doesn't have an
+	     explicit object argument, we need to specifically
+	     test the type dependency of the "this" pointer because it
+	     is not included in *ARGS even though it is considered to
+	     be part of the list of arguments.  Note that this is
+	     related to CWG issues 515 and 1005.  */
+	  || (TREE_CODE (fn) != COMPONENT_REF
+	      && non_static_member_function_p (fn)
+	      && current_class_ref
+	      && type_dependent_expression_p (current_class_ref)))
 	{
 	  result = build_nt_call_vec (fn, *args);
 	  SET_EXPR_LOCATION (result, EXPR_LOC_OR_LOC (fn, input_location));
@@ -2343,6 +2353,17 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 
       object = maybe_dummy_object (BINFO_TYPE (BASELINK_ACCESS_BINFO (fn)),
 				   NULL);
+
+      if (processing_template_decl)
+	{
+	  if (type_dependent_expression_p (object))
+	    {
+	      tree ret = build_nt_call_vec (orig_fn, orig_args);
+	      release_tree_vector (orig_args);
+	      return ret;
+	    }
+	  object = build_non_dependent_expr (object);
+	}
 
       result = build_new_method_call (object, fn, args, NULL_TREE,
 				      (disallow_virtual

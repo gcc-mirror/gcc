@@ -1,3 +1,12 @@
+2016-02-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/10200
+	PR c++/69753
+	* call.c, cp-tree.h, name-lookup.c, pt.c, search.c, semantics.c,
+	tree.c, typeck2.c: Revert earlier changes.
+	* parser.c (cp_parser_lookup_name): Ignore namespace-scope
+	non-type templates after -> or .
+
 2016-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/69835

@@ -7184,16 +7184,8 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
   if (token_type == CPP_DEREF)
     postfix_expression = build_x_arrow (location, postfix_expression,
 					tf_warning_or_error);
-  /* According to the standard, no expression should ever have
-     reference type.  Unfortunately, we do not currently match
-     the standard in this respect in that our internal representation
-     of an expression may have reference type even when the standard
-     says it does not.  Therefore, we have to manually obtain the
-     underlying type here.  */
-  scope = non_reference (TREE_TYPE (postfix_expression));
-  /* Check to see whether or not the expression is type-dependent and
-     not the current instantiation.  */
-  dependent_p = !scope || dependent_scope_p (scope);
+  /* Check to see whether or not the expression is type-dependent.  */
+  dependent_p = type_dependent_expression_p (postfix_expression);
   /* The identifier following the `->' or `.' is not qualified.  */
   parser->scope = NULL_TREE;
   parser->qualifying_scope = NULL_TREE;
@@ -7202,8 +7194,16 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 
   /* Enter the scope corresponding to the type of the object
      given by the POSTFIX_EXPRESSION.  */
-  if (!dependent_p)
+  if (!dependent_p && TREE_TYPE (postfix_expression) != NULL_TREE)
     {
+      scope = TREE_TYPE (postfix_expression);
+      /* According to the standard, no expression should ever have
+	 reference type.  Unfortunately, we do not currently match
+	 the standard in this respect in that our internal representation
+	 of an expression may have reference type even when the standard
+	 says it does not.  Therefore, we have to manually obtain the
+	 underlying type here.  */
+      scope = non_reference (scope);
       /* The type of the POSTFIX_EXPRESSION must be complete.  */
       if (scope == unknown_type_node)
 	{
@@ -7215,10 +7215,7 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	 required to be of complete type for purposes of class member
 	 access (5.2.5) outside the member function body.  */
       else if (postfix_expression != current_class_ref
-	       && !(processing_template_decl
-		    && current_class_type
-		    && (same_type_ignoring_top_level_qualifiers_p
-			(scope, current_class_type))))
+	       && !(processing_template_decl && scope == current_class_type))
 	scope = complete_type_or_else (scope, NULL_TREE);
       /* Let the name lookup machinery know that we are processing a
 	 class member access expression.  */
@@ -24727,11 +24724,24 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	decl = NULL_TREE;
 
       if (!decl)
-	/* Look it up in the enclosing context.  DR 141: When looking for a
-	   template-name after -> or ., only consider class templates.  */
-	decl = lookup_name_real (name, tag_type != none_type || is_template,
-				 /*nonclass=*/0,
-				 /*block_p=*/true, is_namespace, 0);
+	{
+	  /* Look it up in the enclosing context.  */
+	  decl = lookup_name_real (name, tag_type != none_type,
+				   /*nonclass=*/0,
+				   /*block_p=*/true, is_namespace, 0);
+	  /* DR 141 says when looking for a template-name after -> or ., only
+	     consider class templates.  We need to fix our handling of
+	     dependent expressions to implement that properly, but for now
+	     let's ignore namespace-scope function templates.  */
+	  if (decl && is_template && !DECL_TYPE_TEMPLATE_P (decl))
+	    {
+	      tree d = decl;
+	      if (is_overloaded_fn (d))
+		d = get_first_fn (d);
+	      if (DECL_P (d) && !DECL_CLASS_SCOPE_P (d))
+		decl = NULL_TREE;
+	    }
+	}
       if (object_type == unknown_type_node)
 	/* The object is type-dependent, so we can't look anything up; we used
 	   this to get the DR 141 behavior.  */
