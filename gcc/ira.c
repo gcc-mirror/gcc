@@ -3510,7 +3510,8 @@ update_equiv_regs (void)
 
 	  /* If this insn contains more (or less) than a single SET,
 	     only mark all destinations as having no known equivalence.  */
-	  if (set == 0)
+	  if (set == 0
+	      || side_effects_p (SET_SRC (set)))
 	    {
 	      note_stores (PATTERN (insn), no_equiv, NULL);
 	      continue;
