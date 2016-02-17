@@ -1632,6 +1632,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 	      emit_insn (gen_insv_immdi (dest, GEN_INT (i),
 					 GEN_INT ((val >> i) & 0xffff)));
 	    }
+	  return 2;
 	}
     }
 
