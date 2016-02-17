@@ -4525,6 +4525,10 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 					    complain));
 	  if (ifexp == error_mark_node)
 	    return error_mark_node;
+	  /* This is a compiler generated comparison, don't emit
+	     e.g. -Wnonnull-compare warning for it.  */
+	  else if (TREE_CODE (ifexp) == NE_EXPR)
+	    TREE_NO_WARNING (ifexp) = 1;
 	}
 
       if (ifexp != integer_one_node)

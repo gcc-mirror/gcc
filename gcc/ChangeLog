@@ -1,3 +1,11 @@
+2016-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69850
+	* gimplify.c (gimplify_cond_expr): Call gimple_set_no_warning
+	on the cond_stmt from TREE_NO_WARNING on COND_EXPR_COND.
+	* gimple-ssa-nonnull-compare.c (do_warn_nonnull_compare): Don't
+	warn on gimple_no_warning_p statements.
+
 2016-02-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/extend.texi (C++ Attributes): Correct description of
