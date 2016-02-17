@@ -1,3 +1,18 @@
+2016-02-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/visium.c (machine_libfunc_index): New enum.
+	(machine_libfuncs): New structure.
+	(visium_libfuncs): New static variable.
+	(TARGET_INIT_LIBFUNCS): Define to...
+	(visium_init_libfuncs): ...this.  New function.
+	(expand_block_move_4): Use the appropriate libfunc.
+	(expand_block_move_2): Likewise.
+	(expand_block_move_1): Likewise.
+	(expand_block_set_4): Likewise.
+	(expand_block_set_2): Likewise.
+	(expand_block_set_1): Likewise.
+	(visium_trampoline_init): Likewise.
+
 2016-02-17  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.c (msp430_mcu_data): Sync with data from
