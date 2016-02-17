@@ -1,5 +1,9 @@
 2016-02-17  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/atomic8.adb: New test.
+
+2016-02-17  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/discr46.ad[sb]: New test.
 
 2016-02-16  Kelvin Nilsen  <kelvin@gcc.gnu.org>
