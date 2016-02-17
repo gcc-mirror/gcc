@@ -1,3 +1,18 @@
+2016-02-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/69161
+	* config/arm/predicates.md (arm_comparison_operator_mode):
+	New predicate.
+	* config/arm/arm.md (*mov_scc): Use arm_comparison_operator_mode
+	instead of arm_comparison_operator.
+	(*mov_negscc): Likewise.
+	(*mov_notscc): Likewise.
+	* config/arm/thumb2.md (*thumb2_mov_scc): Likewise.
+	(*thumb2_mov_negscc): Likewise.
+	(*thumb2_mov_negscc_strict_it): Likewise.
+	(*thumb2_mov_notscc): Likewise.
+	(*thumb2_mov_notscc_strict_it): Likewise.
+
 2016-02-17  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_internal_mov_immediate):
