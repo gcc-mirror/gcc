@@ -333,6 +333,13 @@
   (and (match_operand 0 "expandable_comparison_operator")
        (match_test "maybe_get_arm_condition_code (op) != ARM_NV")))
 
+;; Likewise, but don't ignore the mode.
+;; RTL SET operations require their operands source and destination have
+;; the same modes, so we can't ignore the modes there.  See PR target/69161.
+(define_predicate "arm_comparison_operator_mode"
+  (and (match_operand 0 "expandable_comparison_operator")
+       (match_test "maybe_get_arm_condition_code (op) != ARM_NV")))
+
 (define_special_predicate "lt_ge_comparison_operator"
   (match_code "lt,ge"))
 
