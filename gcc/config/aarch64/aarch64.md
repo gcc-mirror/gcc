@@ -3039,7 +3039,7 @@
 
 (define_expand "cstorecc4"
   [(set (match_operand:SI 0 "register_operand")
-       (match_operator 1 "aarch64_comparison_operator"
+       (match_operator 1 "aarch64_comparison_operator_mode"
 	[(match_operand 2 "cc_register")
          (match_operand 3 "const0_operand")]))]
   ""
@@ -3051,7 +3051,7 @@
 
 (define_expand "cstore<mode>4"
   [(set (match_operand:SI 0 "register_operand" "")
-	(match_operator:SI 1 "aarch64_comparison_operator"
+	(match_operator:SI 1 "aarch64_comparison_operator_mode"
 	 [(match_operand:GPF 2 "register_operand" "")
 	  (match_operand:GPF 3 "aarch64_fp_compare_operand" "")]))]
   ""
@@ -3064,7 +3064,7 @@
 
 (define_insn "aarch64_cstore<mode>"
   [(set (match_operand:ALLI 0 "register_operand" "=r")
-	(match_operator:ALLI 1 "aarch64_comparison_operator"
+	(match_operator:ALLI 1 "aarch64_comparison_operator_mode"
 	 [(match_operand 2 "cc_register" "") (const_int 0)]))]
   ""
   "cset\\t%<w>0, %m1"
@@ -3109,7 +3109,7 @@
 (define_insn "*cstoresi_insn_uxtw"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI
-	 (match_operator:SI 1 "aarch64_comparison_operator"
+	 (match_operator:SI 1 "aarch64_comparison_operator_mode"
 	  [(match_operand 2 "cc_register" "") (const_int 0)])))]
   ""
   "cset\\t%w0, %m1"
@@ -3118,7 +3118,7 @@
 
 (define_insn "cstore<mode>_neg"
   [(set (match_operand:ALLI 0 "register_operand" "=r")
-	(neg:ALLI (match_operator:ALLI 1 "aarch64_comparison_operator"
+	(neg:ALLI (match_operator:ALLI 1 "aarch64_comparison_operator_mode"
 		  [(match_operand 2 "cc_register" "") (const_int 0)])))]
   ""
   "csetm\\t%<w>0, %m1"
@@ -3129,7 +3129,7 @@
 (define_insn "*cstoresi_neg_uxtw"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI
-	 (neg:SI (match_operator:SI 1 "aarch64_comparison_operator"
+	 (neg:SI (match_operator:SI 1 "aarch64_comparison_operator_mode"
 		  [(match_operand 2 "cc_register" "") (const_int 0)]))))]
   ""
   "csetm\\t%w0, %m1"
