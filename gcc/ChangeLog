@@ -1,6 +1,22 @@
 2016-02-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/69161
+	* config/aarch64/predicates.md (aarch64_comparison_operator_mode):
+	New predicate.
+	(aarch64_comparison_operator): Break overly long line into two.
+	(aarch64_comparison_operation): Likewise.
+	* config/aarch64/aarch64.md (cstorecc4): Use
+	aarch64_comparison_operator_mode instead of
+	aarch64_comparison_operator.
+	(cstore<mode>4): Likewise.
+	(aarch64_cstore<mode>): Likewise.
+	(*cstoresi_insn_uxtw): Likewise.
+	(cstore<mode>_neg): Likewise.
+	(*cstoresi_neg_uxtw): Likewise.
+
+2016-02-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/69161
 	* config/arm/predicates.md (arm_comparison_operator_mode):
 	New predicate.
 	* config/arm/arm.md (*mov_scc): Use arm_comparison_operator_mode
