@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6269,6 +6269,9 @@ package body Exp_Ch4 is
            and then not Atomic_Synchronization_Disabled (Atp))
         or else (Is_Atomic (Typ)
                   and then not Atomic_Synchronization_Disabled (Typ))
+        or else (Is_Entity_Name (P)
+                  and then Has_Atomic_Components (Entity (P))
+                  and then not Atomic_Synchronization_Disabled (Entity (P)))
       then
          Activate_Atomic_Synchronization (N);
       end if;
