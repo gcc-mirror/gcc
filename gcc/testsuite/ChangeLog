@@ -1,8 +1,16 @@
+2016-02-17  Bernd Schmidt  <bschmidt@redhat.com>
+
+	Backport from mainline
+	2016-02-12  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR c/69522
+	* gcc.dg/pr69522.c: New test.
+
 2016-02-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/atomic8.adb: New test.
 
-2016-02-16  Bernd Schmidt  <bernds@codesourcery.com>
+2016-02-16  Bernd Schmidt  <bschmidt@redhat.com>
 
 	Backport from mainline
 	2016-02-16  Bernd Schmidt  <bschmidt@redhat.com>
@@ -166,7 +174,7 @@
 
 	* gcc.target/i386/avx512f-klogic-2.c: Adjust expectation.
 
-2016-02-09  Bernd Schmidt  <bernds@codesourcery.com>
+2016-02-09  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR middle-end/65702
 	* c-c++-common/pr67639.c: New test.
