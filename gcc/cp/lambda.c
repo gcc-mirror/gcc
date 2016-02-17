@@ -962,7 +962,9 @@ maybe_add_lambda_conv_op (tree type)
 	      }
 	    else
 	      {
-		tree a = convert_from_reference (tgt);
+		++processing_template_decl;
+		tree a = forward_parm (tgt);
+		--processing_template_decl;
 		CALL_EXPR_ARG (call, ix) = a;
 		if (decltype_call)
 		  CALL_EXPR_ARG (decltype_call, ix) = copy_node (a);

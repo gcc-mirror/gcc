@@ -474,6 +474,19 @@ trivial_fn_p (tree fn)
   return type_has_trivial_fn (DECL_CONTEXT (fn), special_function_p (fn));
 }
 
+/* PARM is a PARM_DECL for a function which we want to forward to another
+   function without changing its value category, a la std::forward.  */
+
+tree
+forward_parm (tree parm)
+{
+  tree exp = convert_from_reference (parm);
+  if (TREE_CODE (TREE_TYPE (parm)) != REFERENCE_TYPE
+      || TYPE_REF_IS_RVALUE (TREE_TYPE (parm)))
+    exp = move (exp);
+  return exp;
+}
+
 /* Subroutine of do_build_copy_constructor: Add a mem-initializer for BINFO
    given the parameter or parameters PARM, possibly inherited constructor
    base INH, or move flag MOVE_P.  */
@@ -494,10 +507,7 @@ add_one_base_init (tree binfo, tree parm, bool move_p, tree inh,
       init = NULL_TREE;
       for (; parm; parm = DECL_CHAIN (parm))
 	{
-	  tree exp = convert_from_reference (parm);
-	  if (TREE_CODE (TREE_TYPE (parm)) != REFERENCE_TYPE
-	      || TYPE_REF_IS_RVALUE (TREE_TYPE (parm)))
-	    exp = move (exp);
+	  tree exp = forward_parm (parm);
 	  *p = build_tree_list (NULL_TREE, exp);
 	  p = &TREE_CHAIN (*p);
 	}
