@@ -1,3 +1,9 @@
+2016-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/69854
+	* match.pd: Don't use fold_binary or fold_unary for folding
+	constants.
+
 2016-02-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69850

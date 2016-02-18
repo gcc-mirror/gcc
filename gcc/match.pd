@@ -1063,7 +1063,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      /* If the constant operation overflows we cannot do the transform
 	as we would introduce undefined overflow, for example
 	with (a - 1) + INT_MIN.  */
-     (with { tree cst = fold_binary (outer_op == inner_op
+     (with { tree cst = const_binop (outer_op == inner_op
 				     ? PLUS_EXPR : MINUS_EXPR, type, @1, @2); }
       (if (cst && !TREE_OVERFLOW (cst))
        (inner_op @0 { cst; } ))))))
@@ -1072,7 +1072,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (for outer_op (plus minus)
    (simplify
     (outer_op (minus CONSTANT_CLASS_P@1 @0) CONSTANT_CLASS_P@2)
-    (with { tree cst = fold_binary (outer_op, type, @1, @2); }
+    (with { tree cst = const_binop (outer_op, type, @1, @2); }
      (if (cst && !TREE_OVERFLOW (cst))
       (minus { cst; } @0)))))
 
@@ -1270,7 +1270,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    RROTATE_EXPR by a new constant.  */
 (simplify
  (lrotate @0 INTEGER_CST@1)
- (rrotate @0 { fold_binary (MINUS_EXPR, TREE_TYPE (@1),
+ (rrotate @0 { const_binop (MINUS_EXPR, TREE_TYPE (@1),
 			    build_int_cst (TREE_TYPE (@1),
 					   element_precision (type)), @1); }))
 
@@ -1596,7 +1596,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (plus @0 REAL_CST@1)
  (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1)))
-  (with { tree tem = fold_unary (NEGATE_EXPR, type, @1); }
+  (with { tree tem = const_unop (NEGATE_EXPR, type, @1); }
    (if (!TREE_OVERFLOW (tem) || !flag_trapping_math)
     (minus @0 { tem; })))))
 
@@ -2149,7 +2149,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (FLOAT_TYPE_P (TREE_TYPE (@0))
        || (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
 	   && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))))
-   (with { tree tem = fold_unary (NEGATE_EXPR, TREE_TYPE (@0), @1); }
+   (with { tree tem = const_unop (NEGATE_EXPR, TREE_TYPE (@0), @1); }
     (if (tem && !TREE_OVERFLOW (tem))
      (scmp @0 { tem; }))))))
 
