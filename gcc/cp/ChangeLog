@@ -1,5 +1,8 @@
 2016-02-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/68585
+	* constexpr.c (cxx_eval_bare_aggregate): Fix 'changed' detection.
+
 	PR c++/68679
 	* decl2.c (reset_type_linkage_2): Look through member templates.
 
