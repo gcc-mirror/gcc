@@ -1,3 +1,10 @@
+2016-02-18  Marek Polacek  <polacek@redhat.com>
+
+	2016-02-12  Marek Polacek  <polacek@redhat.com>
+	Backport from mainline
+
+	* gcc.dg/pr69522.c: Add empty dg-options.
+
 2016-02-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
