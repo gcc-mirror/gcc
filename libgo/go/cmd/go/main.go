@@ -454,7 +454,9 @@ func envForDir(dir string, base []string) []string {
 
 // mergeEnvLists merges the two environment lists such that
 // variables with the same name in "in" replace those in "out".
+// This always returns a newly allocated slice.
 func mergeEnvLists(in, out []string) []string {
+	out = append([]string(nil), out...)
 NextVar:
 	for _, inkv := range in {
 		k := strings.SplitAfterN(inkv, "=", 2)[0]
@@ -522,6 +524,15 @@ func hasFilePathPrefix(s, prefix string) bool {
 		}
 		return s[len(prefix)] == filepath.Separator && s[:len(prefix)] == prefix
 	}
+}
+
+// expandPath returns the symlink-expanded form of path.
+func expandPath(p string) string {
+	x, err := filepath.EvalSymlinks(p)
+	if err == nil {
+		return x
+	}
+	return p
 }
 
 // treeCanMatchPattern(pattern)(name) reports whether

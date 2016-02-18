@@ -2208,9 +2208,8 @@ func TestTransportTLSHandshakeTimeout(t *testing.T) {
 // Trying to repro golang.org/issue/3514
 func TestTLSServerClosesConnection(t *testing.T) {
 	defer afterTest(t)
-	if runtime.GOOS == "windows" {
-		t.Skip("skipping flaky test on Windows; golang.org/issue/7634")
-	}
+	setFlaky(t, 7634)
+
 	closedc := make(chan bool, 1)
 	ts := httptest.NewTLSServer(HandlerFunc(func(w ResponseWriter, r *Request) {
 		if strings.Contains(r.URL.Path, "/keep-alive-then-die") {
@@ -2886,23 +2885,34 @@ func TestTransportPrefersResponseOverWriteError(t *testing.T) {
 }
 
 func TestTransportAutomaticHTTP2(t *testing.T) {
-	tr := &Transport{}
+	testTransportAutoHTTP(t, &Transport{}, true)
+}
+
+func TestTransportAutomaticHTTP2_TLSNextProto(t *testing.T) {
+	testTransportAutoHTTP(t, &Transport{
+		TLSNextProto: make(map[string]func(string, *tls.Conn) RoundTripper),
+	}, false)
+}
+
+func TestTransportAutomaticHTTP2_TLSConfig(t *testing.T) {
+	testTransportAutoHTTP(t, &Transport{
+		TLSClientConfig: new(tls.Config),
+	}, false)
+}
+
+func TestTransportAutomaticHTTP2_ExpectContinueTimeout(t *testing.T) {
+	testTransportAutoHTTP(t, &Transport{
+		ExpectContinueTimeout: 1 * time.Second,
+	}, false)
+}
+
+func testTransportAutoHTTP(t *testing.T, tr *Transport, wantH2 bool) {
 	_, err := tr.RoundTrip(new(Request))
 	if err == nil {
 		t.Error("expected error from RoundTrip")
 	}
-	if tr.TLSNextProto["h2"] == nil {
-		t.Errorf("HTTP/2 not registered.")
-	}
-
-	// Now with TLSNextProto set:
-	tr = &Transport{TLSNextProto: make(map[string]func(string, *tls.Conn) RoundTripper)}
-	_, err = tr.RoundTrip(new(Request))
-	if err == nil {
-		t.Error("expected error from RoundTrip")
-	}
-	if tr.TLSNextProto["h2"] != nil {
-		t.Errorf("HTTP/2 registered, despite non-nil TLSNextProto field")
+	if reg := tr.TLSNextProto["h2"] != nil; reg != wantH2 {
+		t.Errorf("HTTP/2 registered = %v; want %v", reg, wantH2)
 	}
 }
 
