@@ -1,3 +1,8 @@
+2016-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/69553
+	* g++.dg/torture/pr69553.C: New testcase.
+
 2016-02-18  Nick Clifton  <nickc@redhat.com>
 
         PR target/62254

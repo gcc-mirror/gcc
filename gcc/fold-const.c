@@ -3008,8 +3008,15 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  flags &= ~OEP_ADDRESS_OF;
 	  return OP_SAME (0);
 
-	case REALPART_EXPR:
 	case IMAGPART_EXPR:
+	  /* Require the same offset.  */
+	  if (!operand_equal_p (TYPE_SIZE (TREE_TYPE (arg0)),
+				TYPE_SIZE (TREE_TYPE (arg1)),
+				flags & ~OEP_ADDRESS_OF))
+	    return 0;
+
+	/* Fallthru.  */
+	case REALPART_EXPR:
 	case VIEW_CONVERT_EXPR:
 	  return OP_SAME (0);
 
@@ -3049,17 +3056,29 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
-	  /* Operands 2 and 3 may be null.
-	     Compare the array index by value if it is constant first as we
-	     may have different types but same value here.  */
 	  if (!OP_SAME (0))
 	    return 0;
 	  flags &= ~OEP_ADDRESS_OF;
+	  /* Compare the array index by value if it is constant first as we
+	     may have different types but same value here.  */
 	  return ((tree_int_cst_equal (TREE_OPERAND (arg0, 1),
 				       TREE_OPERAND (arg1, 1))
 		   || OP_SAME (1))
 		  && OP_SAME_WITH_NULL (2)
-		  && OP_SAME_WITH_NULL (3));
+		  && OP_SAME_WITH_NULL (3)
+		  /* Compare low bound and element size as with OEP_ADDRESS_OF
+		     we have to account for the offset of the ref.  */
+		  && (TREE_TYPE (TREE_OPERAND (arg0, 0))
+		      == TREE_TYPE (TREE_OPERAND (arg1, 0))
+		      || (operand_equal_p (array_ref_low_bound
+					     (CONST_CAST_TREE (arg0)),
+					   array_ref_low_bound
+					     (CONST_CAST_TREE (arg1)), flags)
+			  && operand_equal_p (array_ref_element_size
+					        (CONST_CAST_TREE (arg0)),
+					      array_ref_element_size
+					        (CONST_CAST_TREE (arg1)),
+					      flags))));
 
 	case COMPONENT_REF:
 	  /* Handle operand 2 the same as for ARRAY_REF.  Operand 0
