@@ -1,3 +1,13 @@
+2016-02-18  Jakub Jelinek  <jakub@redhat.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/69863
+	* cfgexpand.c (asan_sanitize_stack_p): New function.
+	(partition_stack_vars): Use the function.
+	(expand_stack_vars): Likewise.
+	(defer_stack_allocation): Likewise.
+	(expand_used_vars): Likewise.
+
 2016-02-18  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/69553
