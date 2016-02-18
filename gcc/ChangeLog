@@ -1,3 +1,14 @@
+2016-02-18  Nick Clifton  <nickc@redhat.com>
+
+        PR target/62554
+        PR target/69610
+        * config/arm/arm.c (arm_option_override_internal): Disable
+        interworking if the target does not support thumb instructions.
+        (arm_reload_in_hi): Handle the case where a register to register
+        move needs reloading because there is no simple pattern to handle
+        it.
+        (arm_reload_out_hi): Likewise.
+
 2016-02-18  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/69854
