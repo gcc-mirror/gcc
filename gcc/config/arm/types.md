@@ -70,6 +70,7 @@
 ; f_rint[d,s]        double/single floating point rount to integral.
 ; f_store[d,s]       double/single store to memory.  Used for VFP unit.
 ; fadd[d,s]          double/single floating-point scalar addition.
+; fccmp[d,s]         From ARMv8-A: floating-point conditional compare.
 ; fcmp[d,s]          double/single floating-point compare.
 ; fconst[d,s]        double/single load immediate.
 ; fcsel              From ARMv8-A: Floating-point conditional select.
@@ -582,6 +583,8 @@
   f_stores,\
   faddd,\
   fadds,\
+  fccmpd,\
+  fccmps,\
   fcmpd,\
   fcmps,\
   fconstd,\

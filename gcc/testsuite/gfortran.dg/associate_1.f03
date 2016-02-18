@@ -51,7 +51,7 @@ PROGRAM main
     END ASSOCIATE
   END ASSOCIATE myname ! Matching end-label.
 
-  ! Correct behaviour when shadowing already existing names.
+  ! Correct behavior when shadowing already existing names.
   ASSOCIATE (a => 1 * b, b => 1 * a, x => 1, y => 2)
     IF (ABS (a - 3.0) > 1.0e-3 .OR. ABS (b + 2.0) > 1.0e-3) CALL abort ()
     ASSOCIATE (x => 1 * y, y => 1 * x)

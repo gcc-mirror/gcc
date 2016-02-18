@@ -1672,7 +1672,7 @@ finish_cost_vectors (void)
    minimizes the number of chain elements per allocno live range.  If the
    blocks would be visited in a different order, we would still compute a
    correct post-ordering but it would be less likely that two nodes
-   connected by an edge in the CFG are neighbours in the topsort.  */
+   connected by an edge in the CFG are neighbors in the topsort.  */
 
 static vec<ira_loop_tree_node_t>
 ira_loop_tree_body_rev_postorder (ira_loop_tree_node_t loop_node ATTRIBUTE_UNUSED,

@@ -2,7 +2,7 @@
 ! { dg-options "-std=f2008 -fall-intrinsics" }
 
 ! PR fortran/44602
-! Check for correct behaviour of EXIT / CYCLE combined with non-loop
+! Check for correct behavior of EXIT / CYCLE combined with non-loop
 ! constructs at run-time.
 
 ! Contributed by Daniel Kraft, d@domob.eu.

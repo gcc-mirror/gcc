@@ -5453,6 +5453,13 @@ ix86_option_override_internal (bool main_args_p,
     opts->x_target_flags |= MASK_VZEROUPPER;
   if (!(opts_set->x_target_flags & MASK_STV))
     opts->x_target_flags |= MASK_STV;
+  /* Disable STV if -mpreferred-stack-boundary={2,3} or
+     -mincoming-stack-boundary={2,3} - the needed
+     stack realignment will be extra cost the pass doesn't take into
+     account and the pass can't realign the stack.  */
+  if (ix86_preferred_stack_boundary < 128
+      || ix86_incoming_stack_boundary < 128)
+    opts->x_target_flags &= ~MASK_STV;
   if (!ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL]
       && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
     opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_LOAD;
@@ -19698,7 +19705,7 @@ distance_non_agu_define_in_bb (unsigned int regno1, unsigned int regno2,
 /* Search backward for non-agu definition of register number REGNO1
    or register number REGNO2 in INSN's basic block until
    1. Pass LEA_SEARCH_THRESHOLD instructions, or
-   2. Reach neighbour BBs boundary, or
+   2. Reach neighbor BBs boundary, or
    3. Reach agu definition.
    Returns the distance between the non-agu definition point and INSN.
    If no definition point, returns -1.  */
@@ -29323,7 +29330,10 @@ ix86_minimum_alignment (tree exp, machine_mode mode,
   if ((mode == DImode || (type && TYPE_MODE (type) == DImode))
       && (!type || !TYPE_USER_ALIGN (type))
       && (!decl || !DECL_USER_ALIGN (decl)))
-    return 32;
+    {
+      gcc_checking_assert (!TARGET_STV);
+      return 32;
+    }
 
   return align;
 }
@@ -43283,24 +43293,11 @@ ix86_cannot_change_mode_class (machine_mode from, machine_mode to,
 
   if (MAYBE_SSE_CLASS_P (regclass) || MAYBE_MMX_CLASS_P (regclass))
     {
-      int from_size = GET_MODE_SIZE (from);
-      int to_size = GET_MODE_SIZE (to);
-
       /* Vector registers do not support QI or HImode loads.  If we don't
 	 disallow a change to these modes, reload will assume it's ok to
 	 drop the subreg from (subreg:SI (reg:HI 100) 0).  This affects
 	 the vec_dupv4hi pattern.  */
-      if (from_size < 4)
-	return true;
-
-      /* Further, we cannot allow word_mode subregs of full vector modes.
-         Otherwise the middle-end will assume it's ok to store to
-         (subreg:DI (reg:TI 100) 0) in order to modify only the low 64 bits
-         of the 128-bit register.  However, after reload the subreg will
-         be dropped leaving a plain DImode store.  This is indistinguishable
-         from a "normal" DImode move, and so we're justified to use movsd,
-         which modifies the entire 128-bit register.  */
-      if (to_size == UNITS_PER_WORD && from_size > UNITS_PER_WORD)
+      if (GET_MODE_SIZE (from) < 4)
 	return true;
     }
 

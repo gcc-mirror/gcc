@@ -677,6 +677,10 @@ Wnonnull
 C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
 ;
 
+Wnonnull-compare
+C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
+;
+
 Wnormalized
 C ObjC C++ ObjC++ Warning Alias(Wnormalized=,nfc,none)
 ;
@@ -777,7 +781,11 @@ ObjC ObjC++ Var(warn_protocol) Init(1) Warning
 Warn if inherited methods are unimplemented.
 
 Wplacement-new
-C++ Var(warn_placement_new) Init(1) Warning
+C++ Warning Alias(Wplacement-new=, 1, 0)
+Warn for placement new expressions with undefined behavior.
+
+Wplacement-new=
+C++ Joined RejectNegative UInteger Var(warn_placement_new) Init(-1) Warning
 Warn for placement new expressions with undefined behavior.
 
 Wredundant-decls
@@ -1434,10 +1442,6 @@ Enable automatic template instantiation.
 frtti
 C++ ObjC++ Optimization Var(flag_rtti) Init(1)
 Generate run time type descriptor information.
-
-fshort-double
-C ObjC C++ ObjC++ LTO Optimization Var(flag_short_double)
-Use the same size for double as for float.
 
 fshort-enums
 C ObjC C++ ObjC++ LTO Optimization Var(flag_short_enums)

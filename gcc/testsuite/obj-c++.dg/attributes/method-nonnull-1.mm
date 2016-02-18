@@ -18,7 +18,7 @@
 + (void) insertObject: (id)object  atIndex: (size_t)index  andObject: (id)anotherObject  atIndex: (size_t)anotherIndex __attribute__ ((nonnull (1, 3)));
 - (void) insertObject: (id)object  atIndex: (size_t)index  andObject: (id)anotherObject  atIndex: (size_t)anotherIndex __attribute__ ((nonnull (1, 3)));
 
-/* Test the behaviour with invalid code.  */
+/* Test the behavior with invalid code.  */
 + (void) removeObject: (id)object __attribute__ ((nonnull (0))); /* { dg-error "out-of-range" } */
 - (void) removeObject: (id)object __attribute__ ((nonnull (0))); /* { dg-error "out-of-range" } */
 

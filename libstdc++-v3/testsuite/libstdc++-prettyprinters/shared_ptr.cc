@@ -77,6 +77,7 @@ main()
   use(wp1);
   use(wp2);
 
+  std::cout << "\n";
   return 0;
 }
 

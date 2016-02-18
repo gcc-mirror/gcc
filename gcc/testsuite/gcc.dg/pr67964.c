@@ -1,5 +1,6 @@
 /* PR c/67964 */
 /* { dg-do compile } */
+/* { dg-require-alias "" } */
 
 extern int fn0 (void) __attribute__ ((const const)); /* { dg-error "expected" } */
 extern int fn1 (void) __attribute__ ((const, const));

@@ -4336,7 +4336,7 @@ interrupt controller (EIC) mode is in use, this can be explicitly set using
 Priority Level (IPL) is copied to the current IPL which has the effect of only
 enabling higher priority interrupts.  To use vectored interrupt mode use
 the argument @code{vector=[sw0|sw1|hw0|hw1|hw2|hw3|hw4|hw5]}, this will change
-the behaviour of the non-masked interrupt support and GCC will arrange to mask
+the behavior of the non-masked interrupt support and GCC will arrange to mask
 all interrupts from sw0 up to and including the specified interrupt vector.
 
 You can use the following attributes to modify the behavior
@@ -8047,7 +8047,7 @@ in a register, you can enable it to choose the best location
 for @code{d} by specifying both constraints.
 
 @anchor{FlagOutputOperands}
-@subsection Flag Output Operands
+@subsubsection Flag Output Operands
 @cindex @code{asm} flag output operands
 
 Some targets have a special register that holds the ``flags'' for the
@@ -8058,8 +8058,8 @@ clobber the contents.
 On some targets, a special form of output operand exists by which
 conditions in the flags register may be outputs of the asm.  The set of
 conditions supported are target specific, but the general rule is that
-the output variable must be a scalar integer, and the value will be boolean.
-When supported, the target will define the preprocessor symbol
+the output variable must be a scalar integer, and the value is boolean.
+When supported, the target defines the preprocessor symbol
 @code{__GCC_ASM_FLAG_OUTPUTS__}.
 
 Because of the special nature of the flag output operands, the constraint
@@ -16710,7 +16710,7 @@ Generates the @code{wait} machine instruction.
 @subsection S/390 System z Built-in Functions
 @deftypefn {Built-in Function} int __builtin_tbegin (void*)
 Generates the @code{tbegin} machine instruction starting a
-non-constraint hardware transaction.  If the parameter is non-NULL the
+non-constrained hardware transaction.  If the parameter is non-NULL the
 memory area is used to store the transaction diagnostic buffer and
 will be passed as first operand to @code{tbegin}.  This buffer can be
 defined using the @code{struct __htm_tdb} C struct defined in
@@ -16723,7 +16723,7 @@ instruction by definition overwrites the content of all FPRs.  The
 compiler will generate code which saves and restores the FPRs.  For
 soft-float code it is recommended to used the @code{*_nofloat}
 variant.  In order to prevent a TDB from being written it is required
-to pass an constant zero value as parameter.  Passing the zero value
+to pass a constant zero value as parameter.  Passing a zero value
 through a variable is not sufficient.  Although modifications of
 access registers inside the transaction will not trigger an
 transaction abort it is not supported to actually modify them.  Access
@@ -16784,7 +16784,7 @@ handler code.
 @end deftypefn
 
 @deftypefn {Built-in Function} void __builtin_tbeginc (void)
-Generates the @code{tbeginc} machine instruction starting a constraint
+Generates the @code{tbeginc} machine instruction starting a constrained
 hardware transaction.  The second operand is set to @code{0xff08}.
 @end deftypefn
 
@@ -20313,7 +20313,7 @@ types.
 
 This attribute is appropriate for types which just represent a value,
 such as @code{std::string}; it is not appropriate for types which
-control a resource, such as @code{std::mutex}.
+control a resource, such as @code{std::lock_guard}.
 
 This attribute is also accepted in C, but it is unnecessary because C
 does not have constructors or destructors.

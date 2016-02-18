@@ -7969,7 +7969,7 @@ package body Sem_Ch12 is
       end if;
 
       --  At this point either both nodes came from source or we approximated
-      --  their source locations through neighbouring source statements.
+      --  their source locations through neighboring source statements.
 
       T1 := Top_Level_Location (Sloc (P1));
       T2 := Top_Level_Location (Sloc (P2));

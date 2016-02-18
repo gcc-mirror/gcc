@@ -508,8 +508,8 @@
 (define_insn_reservation "cortex_a53_fpalu" 5
   (and (eq_attr "tune" "cortexa53")
 	(eq_attr "type" "ffariths, fadds, ffarithd, faddd, fmov,
-			f_cvt, fcmps, fcmpd, fcsel, f_rints, f_rintd,
-			f_minmaxs, f_minmaxd"))
+			f_cvt, fcmps, fcmpd, fccmps, fccmpd, fcsel,
+			f_rints, f_rintd, f_minmaxs, f_minmaxd"))
   "cortex_a53_slot_any,cortex_a53_fp_alu")
 
 (define_insn_reservation "cortex_a53_fconst" 3

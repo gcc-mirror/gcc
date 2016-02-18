@@ -242,7 +242,7 @@ get_tinfo_decl_dynamic (tree exp, tsubst_flags_t complain)
   if (error_operand_p (exp))
     return error_mark_node;
 
-  exp = resolve_nondeduced_context (exp);
+  exp = resolve_nondeduced_context (exp, complain);
 
   /* peel back references, so they match.  */
   type = non_reference (TREE_TYPE (exp));

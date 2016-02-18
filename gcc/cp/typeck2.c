@@ -837,6 +837,9 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
     /* Handle aggregate NSDMI in non-constant initializers, too.  */
     value = replace_placeholders (value, decl);
 
+  /* DECL may change value; purge caches.  */
+  clear_cv_and_fold_caches ();
+
   /* If the initializer is not a constant, fill in DECL_INITIAL with
      the bits that are constant, and then return an expression that
      will perform the dynamic initialization.  */
@@ -1015,14 +1018,13 @@ digest_init_r (tree type, tree init, bool nested, int flags,
      them if they were present.  */
   if (code == ARRAY_TYPE)
     {
-      if (nested
-	  && (!TYPE_DOMAIN (type) || !TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
+      if (nested && !TYPE_DOMAIN (type))
 	{
-	  /* Flexible array members do not have an upper bound.  */
+	  /* C++ flexible array members have a null domain.  */
 	  pedwarn (EXPR_LOC_OR_LOC (init, input_location), OPT_Wpedantic,
 		   "initialization of a flexible array member");
 	}
-      
+
       tree typ1 = TYPE_MAIN_VARIANT (TREE_TYPE (type));
       if (char_type_p (typ1)
 	  /*&& init */
@@ -1061,9 +1063,7 @@ digest_init_r (tree type, tree init, bool nested, int flags,
 	      init = copy_node (init);
 	      TREE_TYPE (init) = type;
 	    }
-	  if (TYPE_DOMAIN (type)
-	      && TYPE_MAX_VALUE (TYPE_DOMAIN (type))
-	      && TREE_CONSTANT (TYPE_SIZE (type)))
+	  if (TYPE_DOMAIN (type) && TREE_CONSTANT (TYPE_SIZE (type)))
 	    {
 	      /* Not a flexible array member.  */
 	      int size = TREE_INT_CST_LOW (TYPE_SIZE (type));
@@ -1252,12 +1252,11 @@ process_init_constructor_array (tree type, tree init,
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
+      /* C++ flexible array members have a null domain.  */
       tree domain = TYPE_DOMAIN (type);
-      /* Flexible array members have no upper bound.  */
-      tree maxval = domain ? TYPE_MAX_VALUE (domain) : NULL_TREE;
-      if (domain && maxval && TREE_CONSTANT (maxval))
-	len = wi::ext (wi::to_offset (maxval)
-		       - wi::to_offset (TYPE_MIN_VALUE (domain)) + 1,
+      if (domain && TREE_CONSTANT (TYPE_MAX_VALUE (domain)))
+	len = wi::ext (wi::to_offset (TYPE_MAX_VALUE (domain))
+                       - wi::to_offset (TYPE_MIN_VALUE (domain)) + 1,
 		       TYPE_PRECISION (TREE_TYPE (domain)),
 		       TYPE_SIGN (TREE_TYPE (domain))).to_uhwi ();
       else
@@ -1451,9 +1450,7 @@ process_init_constructor_record (tree type, tree init,
 	  /* Warn when some struct elements are implicitly initialized
 	     to zero.  However, avoid issuing the warning for flexible
 	     array members since they need not have any elements.  */
-	  if ((TREE_CODE (fldtype) != ARRAY_TYPE
-	       || (TYPE_DOMAIN (fldtype)
-		   && TYPE_MAX_VALUE (TYPE_DOMAIN (fldtype))))
+	  if ((TREE_CODE (fldtype) != ARRAY_TYPE || TYPE_DOMAIN (fldtype))
 	      && (complain & tf_warning)
 	      && !EMPTY_CONSTRUCTOR_P (init))
 	    warning (OPT_Wmissing_field_initializers,

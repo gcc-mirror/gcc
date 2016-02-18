@@ -31,6 +31,10 @@ levenshtein_distance (const char *s, int len_s,
 extern edit_distance_t
 levenshtein_distance (const char *s, const char *t);
 
+extern const char *
+find_closest_string (const char *target,
+		     const auto_vec<const char *> *candidates);
+
 /* spellcheck-tree.c  */
 
 extern edit_distance_t

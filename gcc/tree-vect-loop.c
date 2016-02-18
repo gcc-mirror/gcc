@@ -6970,7 +6970,7 @@ optimize_mask_stores (struct loop *loop)
   unsigned i;
   basic_block bb;
   gimple_stmt_iterator gsi;
-  gimple *stmt, *stmt1 = NULL;
+  gimple *stmt;
   auto_vec<gimple *> worklist;
 
   vect_location = find_loop_location (loop);
@@ -7049,6 +7049,8 @@ optimize_mask_stores (struct loop *loop)
       while (true)
 	{
 	  gimple_stmt_iterator gsi_from;
+	  gimple *stmt1 = NULL;
+
 	  /* Move masked store to STORE_BB.  */
 	  last_store = last;
 	  gsi = gsi_for_stmt (last);
@@ -7065,67 +7067,81 @@ optimize_mask_stores (struct loop *loop)
 			       "Move stmt to created bb\n");
 	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, last, 0);
 	    }
-	    /* Move all stored value producers if possible.  */
-	    while (!gsi_end_p (gsi))
-	      {
-		tree lhs;
-		imm_use_iterator imm_iter;
-		use_operand_p use_p;
-		bool res;
-		stmt1 = gsi_stmt (gsi);
-		/* Do not consider statements writing to memory.  */
-		if (gimple_vdef (stmt1))
-		  break;
-		gsi_from = gsi;
-		gsi_prev (&gsi);
-		lhs = gimple_get_lhs (stmt1);
-		if (!lhs)
-		  break;
+	  /* Move all stored value producers if possible.  */
+	  while (!gsi_end_p (gsi))
+	    {
+	      tree lhs;
+	      imm_use_iterator imm_iter;
+	      use_operand_p use_p;
+	      bool res;
 
-		/* LHS of vectorized stmt must be SSA_NAME.  */
-		if (TREE_CODE (lhs) != SSA_NAME)
-		  break;
+	      /* Skip debug statements.  */
+	      if (is_gimple_debug (gsi_stmt (gsi)))
+		continue;
+	      stmt1 = gsi_stmt (gsi);
+	      /* Do not consider statements writing to memory or having
+		 volatile operand.  */
+	      if (gimple_vdef (stmt1)
+		  || gimple_has_volatile_ops (stmt1))
+		break;
+	      gsi_from = gsi;
+	      gsi_prev (&gsi);
+	      lhs = gimple_get_lhs (stmt1);
+	      if (!lhs)
+		break;
 
-		/* Skip scalar statements.  */
-		if (!VECTOR_TYPE_P (TREE_TYPE (lhs)))
-		  continue;
+	      /* LHS of vectorized stmt must be SSA_NAME.  */
+	      if (TREE_CODE (lhs) != SSA_NAME)
+		break;
 
-		/* Check that LHS does not have uses outside of STORE_BB.  */
-		res = true;
-		FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
-		  {
-		    gimple *use_stmt;
-		    use_stmt = USE_STMT (use_p);
-		    if (gimple_bb (use_stmt) != store_bb)
-		      {
-			res = false;
-			break;
-		      }
-		  }
-		if (!res)
-		  break;
+	      if (!VECTOR_TYPE_P (TREE_TYPE (lhs)))
+		{
+		  /* Remove dead scalar statement.  */
+		  if (has_zero_uses (lhs))
+		    {
+		      gsi_remove (&gsi_from, true);
+		      continue;
+		    }
+		}
 
-		if (gimple_vuse (stmt1)
-		    && gimple_vuse (stmt1) != gimple_vuse (last_store))
-		  break;
+	      /* Check that LHS does not have uses outside of STORE_BB.  */
+	      res = true;
+	      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
+		{
+		  gimple *use_stmt;
+		  use_stmt = USE_STMT (use_p);
+		  if (is_gimple_debug (use_stmt))
+		    continue;
+		  if (gimple_bb (use_stmt) != store_bb)
+		    {
+		      res = false;
+		      break;
+		    }
+		}
+	      if (!res)
+		break;
 
-		/* Can move STMT1 to STORE_BB.  */
-		if (dump_enabled_p ())
-		  {
-		    dump_printf_loc (MSG_NOTE, vect_location,
-				     "Move stmt to created bb\n");
-		    dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt1, 0);
-		  }
-		gsi_move_before (&gsi_from, &gsi_to);
-		/* Shift GSI_TO for further insertion.  */
-		gsi_prev (&gsi_to);
-	      }
-	    /* Put other masked stores with the same mask to STORE_BB.  */
-	    if (worklist.is_empty ()
-		|| gimple_call_arg (worklist.last (), 2) != mask
-		|| worklist.last () != stmt1)
-	      break;
-	    last = worklist.pop ();
+	      if (gimple_vuse (stmt1)
+		  && gimple_vuse (stmt1) != gimple_vuse (last_store))
+		break;
+
+	      /* Can move STMT1 to STORE_BB.  */
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_NOTE, vect_location,
+				   "Move stmt to created bb\n");
+		  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt1, 0);
+		}
+	      gsi_move_before (&gsi_from, &gsi_to);
+	      /* Shift GSI_TO for further insertion.  */
+	      gsi_prev (&gsi_to);
+	    }
+	  /* Put other masked stores with the same mask to STORE_BB.  */
+	  if (worklist.is_empty ()
+	      || gimple_call_arg (worklist.last (), 2) != mask
+	      || worklist.last () != stmt1)
+	    break;
+	  last = worklist.pop ();
 	}
       add_phi_arg (phi, gimple_vuse (last_store), e, UNKNOWN_LOCATION);
     }

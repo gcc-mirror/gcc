@@ -287,6 +287,7 @@ main()
   placeholder(&unord2_ptr);
   placeholder(&unord2_holder);
 
+  std::cout << "\n";
   return 0;
 }
 

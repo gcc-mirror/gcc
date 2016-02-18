@@ -2511,7 +2511,7 @@
 	  (match_operand:VM2 1 "memory_operand" "Z"))
      (unspec [(const_int 0)] UNSPEC_SET_VSCR)])]
   "TARGET_ALTIVEC"
-  "lvx %0,%y1"
+  "lvxl %0,%y1"
   [(set_attr "type" "vecload")])
 
 (define_expand "altivec_lvx_<mode>"

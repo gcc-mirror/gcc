@@ -87,7 +87,7 @@
 			UNSPEC_VPERMXOR))]
   "TARGET_P8_VECTOR"
   "vpermxor %0,%1,%2,%3"
-  [(set_attr "type" "crypto")])
+  [(set_attr "type" "vecperm")])
 
 ;; 1 operand crypto instruction
 (define_insn "crypto_vsbox"

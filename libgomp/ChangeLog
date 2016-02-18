@@ -1,3 +1,21 @@
+2016-02-16  Tom de Vries  <tom@codesourcery.com>
+
+	PR lto/67709
+	* testsuite/libgomp.fortran/declare-simd-4.f90: New test.
+
+2016-02-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/69599
+	* testsuite/libgomp.c/omp-nested-3.c: New test.
+	* testsuite/libgomp.c/pr46032-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-2.c: New test.
+
+2016-02-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR lto/69707
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims-2.c: New test.
+
 2016-02-02  Alexander Monakov  <amonakov@ispras.ru>
 
 	* testsuite/libgomp.c/target-31.c: Fix testcase.

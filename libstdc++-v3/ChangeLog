@@ -1,3 +1,43 @@
+2016-02-16  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/69794
+	* include/bits/regex_scanner.h: Add different special character
+	sets for grep and egrep regex.
+	* include/bits/regex_scanner.tcc: Use _M_spec_char more uniformly.
+	* testsuite/28_regex/regression.cc: Add new testcase.
+
+2016-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_MATH11_PROTO): Remove accidentally
+	added 'constexpr' in previous commit.
+	* configure: Regenerate.
+
+	PR libstdc++/48891
+	* acinclude.m4 (GLIBCXX_CHECK_MATH11_PROTO): Enable isinf and isnan
+	checks for all targets except *-*-solaris2.* and ensure we find the
+	libc math.h header not our own.
+	* configure: Regenerate.
+
+2016-02-05  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/abi/post/s390x-linux-gnu/32/baseline_symbols.txt (FUNC):
+	New file.  Copied over from s390-linux-gnu.
+
+2016-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69626
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Check C99 stdlib.h functions
+	with -std=c++98 and define _GLIBCXX98_USE_C99_STDLIB.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* testsuite/21_strings/c_strings/char/69626.cc: New.
+
+	* doc/html/index.html: Regenerate.
+
+	* doc/xml/manual/containers.xml: Add cross-reference to Dual ABI.
+	* doc/xml/manual/spine.xml: Update copyright years and author blurb.
+	* doc/html/*: Regenerate.
+
 2016-02-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR libstdc++/69581

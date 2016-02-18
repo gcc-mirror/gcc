@@ -229,10 +229,19 @@
 
 ;; True for integer comparisons and for FP comparisons other than LTGT or UNEQ.
 (define_special_predicate "aarch64_comparison_operator"
-  (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,unordered,ordered,unlt,unle,unge,ungt"))
+  (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,unordered,
+	       ordered,unlt,unle,unge,ungt"))
+
+;; Same as aarch64_comparison_operator but don't ignore the mode.
+;; RTL SET operations require their operands source and destination have
+;; the same modes, so we can't ignore the modes there.  See PR target/69161.
+(define_predicate "aarch64_comparison_operator_mode"
+  (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,unordered,
+	       ordered,unlt,unle,unge,ungt"))
 
 (define_special_predicate "aarch64_comparison_operation"
-  (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,unordered,ordered,unlt,unle,unge,ungt")
+  (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,unordered,
+	       ordered,unlt,unle,unge,ungt")
 {
   if (XEXP (op, 1) != const0_rtx)
     return false;

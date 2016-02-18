@@ -16970,6 +16970,95 @@ $as_echo "#define _GLIBCXX98_USE_C99_STDIO 1" >>confdefs.h
 
     fi
 
+    # Check for the existence in <stdlib.h> of lldiv_t, et. al.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <stdlib.h> for C++98" >&5
+$as_echo_n "checking for ISO C99 support in <stdlib.h> for C++98... " >&6; }
+    if test "${glibcxx_cv_c99_stdlib_cxx98+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+      if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+         volatile float f;
+         volatile long double ld;
+         volatile unsigned long long ll;
+         lldiv_t mydivt;
+int
+main ()
+{
+char* tmp;
+         f = strtof("gnu", &tmp);
+         ld = strtold("gnu", &tmp);
+         ll = strtoll("gnu", &tmp, 10);
+         ll = strtoull("gnu", &tmp, 10);
+         ll = llabs(10);
+         mydivt = lldiv(10,1);
+         ll = mydivt.quot;
+         ll = mydivt.rem;
+         ll = atoll("10");
+         _Exit(0);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_c99_stdlib_cxx98=yes
+else
+  glibcxx_cv_c99_stdlib_cxx98=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+         volatile float f;
+         volatile long double ld;
+         volatile unsigned long long ll;
+         lldiv_t mydivt;
+int
+main ()
+{
+char* tmp;
+         f = strtof("gnu", &tmp);
+         ld = strtold("gnu", &tmp);
+         ll = strtoll("gnu", &tmp, 10);
+         ll = strtoull("gnu", &tmp, 10);
+         ll = llabs(10);
+         mydivt = lldiv(10,1);
+         ll = mydivt.quot;
+         ll = mydivt.rem;
+         ll = atoll("10");
+         _Exit(0);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_c99_stdlib_cxx98=yes
+else
+  glibcxx_cv_c99_stdlib_cxx98=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_stdlib_cxx98" >&5
+$as_echo "$glibcxx_cv_c99_stdlib_cxx98" >&6; }
+    if test x"$glibcxx_cv_c99_stdlib_cxx98" = x"yes"; then
+
+$as_echo "#define _GLIBCXX98_USE_C99_STDLIB 1" >>confdefs.h
+
+    fi
+
     # Check for the existence in <wchar.h> of wcstold, etc.
     if test x"$ac_has_wchar_h" = xyes &&
        test x"$ac_has_wctype_h" = xyes; then
@@ -18177,7 +18266,7 @@ fi
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_math11_overload" >&5
 $as_echo "$glibcxx_cv_math11_overload" >&6; }
       ;;
-    *-*-*gnu* | *-*-aix* | *-*-hpux*)
+    *)
       # If <math.h> defines the obsolete isinf(double) and isnan(double)
       # functions (instead of or as well as the C99 generic macros) then we
       # can't define std::isinf(double) and std::isnan(double) in <cmath>
@@ -18190,7 +18279,8 @@ else
 
           cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <math.h>
+#define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
+             #include <math.h>
              #undef isinf
              namespace std {
                using ::isinf;

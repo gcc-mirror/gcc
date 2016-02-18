@@ -23,6 +23,6 @@ __go_string_to_byte_array (String str)
     __builtin_memset (data + str.len, 0, cap - (uintptr) str.len);
   ret.__values = (void *) data;
   ret.__count = str.len;
-  ret.__capacity = (intgo) cap;
+  ret.__capacity = str.len;
   return ret;
 }

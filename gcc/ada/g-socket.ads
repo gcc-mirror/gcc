@@ -1066,10 +1066,10 @@ package GNAT.Sockets is
    --  blocks until an event occurs. On some platforms, the select(2) system
    --  can block the full process (not just the calling thread).
    --
-   --  Check_Selector provides the very same behaviour. The only difference is
+   --  Check_Selector provides the very same behavior. The only difference is
    --  that it does not watch for exception events. Note that on some platforms
    --  it is kept process blocking on purpose. The timeout parameter allows the
-   --  user to have the behaviour he wants. Abort_Selector allows the safe
+   --  user to have the behavior he wants. Abort_Selector allows the safe
    --  abort of a blocked Check_Selector call. A special socket is opened by
    --  Create_Selector and included in each call to Check_Selector.
    --

@@ -4028,6 +4028,9 @@ node_is_atomic (Node_Id gnat_node)
     case N_Indexed_Component:
       if (Has_Atomic_Components (Etype (Prefix (gnat_node))))
 	return true;
+      if (Is_Entity_Name (Prefix (gnat_node))
+	  && Has_Atomic_Components (Entity (Prefix (gnat_node))))
+	return true;
 
       /* ... fall through ... */
 

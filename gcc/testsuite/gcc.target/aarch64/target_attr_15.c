@@ -10,6 +10,4 @@ foo (int a)
   return a + 1;
 }
 
-/* { dg-final { scan-assembler-not "\\+fp" } } */
-/* { dg-final { scan-assembler-not "\\+crypto" } } */
-/* { dg-final { scan-assembler-not "\\+simd" } } */
+/* { dg-final { scan-assembler-times "\\.arch armv8-a\n" 1 } } */

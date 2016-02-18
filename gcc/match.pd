@@ -1717,6 +1717,29 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cnd @0 @1 (cnd @0 @2 @3))
   (cnd @0 @1 @3))
+ /* A ? B : (!A ? C : X) -> A ? B : C.  */
+ /* ???  This matches embedded conditions open-coded because genmatch
+    would generate matching code for conditions in separate stmts only.
+    The following is still important to merge then and else arm cases
+    from if-conversion.  */
+ (simplify
+  (cnd @0 @1 (cnd @2 @3 @4))
+  (if (COMPARISON_CLASS_P (@0)
+       && COMPARISON_CLASS_P (@2)
+       && invert_tree_comparison
+           (TREE_CODE (@0), HONOR_NANS (TREE_OPERAND (@0, 0))) == TREE_CODE (@2)
+       && operand_equal_p (TREE_OPERAND (@0, 0), TREE_OPERAND (@2, 0), 0)
+       && operand_equal_p (TREE_OPERAND (@0, 1), TREE_OPERAND (@2, 1), 0))
+   (cnd @0 @1 @3)))
+ (simplify
+  (cnd @0 (cnd @1 @2 @3) @4)
+  (if (COMPARISON_CLASS_P (@0)
+       && COMPARISON_CLASS_P (@1)
+       && invert_tree_comparison
+           (TREE_CODE (@0), HONOR_NANS (TREE_OPERAND (@0, 0))) == TREE_CODE (@1)
+       && operand_equal_p (TREE_OPERAND (@0, 0), TREE_OPERAND (@1, 0), 0)
+       && operand_equal_p (TREE_OPERAND (@0, 1), TREE_OPERAND (@1, 1), 0))
+   (cnd @0 @3 @4)))
 
  /* A ? B : B -> B.  */
  (simplify
@@ -2096,8 +2119,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Simple range test simplifications.  */
 /* A < B || A >= B -> true.  */
-(for test1 (lt le ne)
-     test2 (ge gt eq)
+(for test1 (lt le le le ne ge)
+     test2 (ge gt ge ne eq ne)
  (simplify
   (bit_ior:c (test1 @0 @1) (test2 @0 @1))
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
@@ -2946,7 +2969,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* If we have a narrowing conversion of an arithmetic operation where
    both operands are widening conversions from the same type as the outer
    narrowing conversion.  Then convert the innermost operands to a suitable
-   unsigned type (to avoid introducing undefined behaviour), perform the
+   unsigned type (to avoid introducing undefined behavior), perform the
    operation and convert the result to the desired type.  */
 (for op (plus minus)
   (simplify
@@ -2976,7 +2999,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* This is another case of narrowing, specifically when there's an outer
    BIT_AND_EXPR which masks off bits outside the type of the innermost
    operands.   Like the previous case we have to convert the operands
-   to unsigned types to avoid introducing undefined behaviour for the
+   to unsigned types to avoid introducing undefined behavior for the
    arithmetic operation.  */
 (for op (minus plus)
  (simplify

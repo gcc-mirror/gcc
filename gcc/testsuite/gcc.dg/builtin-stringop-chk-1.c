@@ -70,7 +70,7 @@ test (int arg, ...)
   memset (p, 'd', 0);
   q = strcpy (p, ""); /* { dg-warning "will always overflow" "strcpy" } */
 
-  /* This invokes undefined behaviour, since we are past the end of buf1.  */
+  /* This invokes undefined behavior, since we are past the end of buf1.  */
   p = p + 10;
   memset (p, 'd', 1); /* { dg-warning "will always overflow" "memset" } */
 

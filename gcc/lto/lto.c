@@ -2855,7 +2855,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   /* Read the symtab.  */
   input_symtab ();
 
-  input_offload_tables ();
+  input_offload_tables (!flag_ltrans);
 
   /* Store resolutions into the symbol table.  */
 

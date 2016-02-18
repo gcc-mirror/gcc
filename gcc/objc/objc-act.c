@@ -5168,7 +5168,7 @@ receiver_is_class_object (tree receiver, int self, int super)
      (due to the code below) and so will know that +alloc is called on
      the 'NSObject' class, and can perform the corresponding checks.
 
-     Programmers can disable this behaviour by casting the results of
+     Programmers can disable this behavior by casting the results of
      objc_getClass() to 'Class' (this may seem weird because
      objc_getClass() is already declared to return 'Class', but the
      compiler treats it as a special function).  This may be useful if
@@ -5880,7 +5880,7 @@ lookup_method (tree mchain, tree method)
    OBJC_LOOKUP_NO_SUPER is clear, and no suitable class method could
    be found in INTERFACE or any of its superclasses, look for an
    _instance_ method of the same name in the root class as a last
-   resort.  This behaviour can be turned off by using
+   resort.  This behavior can be turned off by using
    OBJC_LOOKUP_NO_INSTANCE_METHODS_OF_ROOT_CLASS.
 
    If a suitable method cannot be found, return NULL_TREE.  */

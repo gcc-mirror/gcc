@@ -1,6 +1,6 @@
 /* The problem here was that the statements that
    loaded from exception.reason where not being
-   marked as having volatile behaviour which
+   marked as having volatile behavior which
    caused load PRE on the tree level to go
    into an infinite loop. */
 

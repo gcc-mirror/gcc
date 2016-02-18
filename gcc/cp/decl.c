@@ -6575,7 +6575,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       if (TREE_CODE (d_init) == TREE_LIST)
 	d_init = build_x_compound_expr_from_list (d_init, ELK_INIT,
 						  tf_warning_or_error);
-      d_init = resolve_nondeduced_context (d_init);
+      d_init = resolve_nondeduced_context (d_init, tf_warning_or_error);
       type = TREE_TYPE (decl) = do_auto_deduction (type, d_init,
 						   auto_node,
                                                    tf_warning_or_error,
@@ -8645,19 +8645,15 @@ fold_sizeof_expr (tree t)
   return r;
 }
 
-/* Given the SIZE (i.e., number of elements) in an array, compute an
-   appropriate index type for the array.  When SIZE is null, the array
-   is a flexible array member.  If non-NULL, NAME is the name of
-   the entity being declared.  */
+/* Given the SIZE (i.e., number of elements) in an array, compute
+   an appropriate index type for the array.  If non-NULL, NAME is
+   the name of the entity being declared.  */
 
 tree
 compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 {
   tree itype;
   tree osize = size;
-
-  if (size == NULL_TREE)
-    return build_index_type (NULL_TREE);
 
   if (error_operand_p (size))
     return error_mark_node;
@@ -10967,11 +10963,10 @@ grokdeclarator (const cp_declarator *declarator,
 		error ("flexible array member in union");
 		type = error_mark_node;
 	      }
-	    else
+	    else 
 	      {
-		tree itype = compute_array_index_type (dname, NULL_TREE,
-						       tf_warning_or_error);
-		type = build_cplus_array_type (TREE_TYPE (type), itype);
+		/* Flexible array member has a null domain.  */
+		type = build_cplus_array_type (TREE_TYPE (type), NULL_TREE);
 	      }
 	  }
 
@@ -13419,8 +13414,7 @@ finish_enum_value_list (tree enumtype)
 
   /* Each enumerator now has the type of its enumeration.  Clear the cache
      so that this change in types doesn't confuse us later on.  */
-  clear_cv_cache ();
-  clear_fold_cache ();
+  clear_cv_and_fold_caches ();
 }
 
 /* Finishes the enum type. This is called only the first time an
@@ -15042,7 +15036,7 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
   /* build_delete sets the location of the destructor call to the
      current location, even though the destructor is going to be
      called later, at the end of the current scope.  This can lead to
-     a "jumpy" behaviour for users of debuggers when they step around
+     a "jumpy" behavior for users of debuggers when they step around
      the end of the block.  So let's unset the location of the
      destructor call instead.  */
   protected_set_expr_location (cleanup, UNKNOWN_LOCATION);

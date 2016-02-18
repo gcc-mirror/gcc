@@ -1,3 +1,8 @@
+2015-04-25  Daniel Starke  <daniel.f.starke@freenet.de>
+
+	PR target/65867
+	* ssp.c: Added wincrypt.h include for Windows targets.
+
 2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* Makefile.in: Regenerated with automake-1.11.6.

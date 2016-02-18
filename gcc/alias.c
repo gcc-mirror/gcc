@@ -827,7 +827,7 @@ get_alias_set (tree t)
 
   /* We can not give up with -fno-strict-aliasing because we need to build
      proper type representation for possible functions which are build with
-     -fstirct-aliasing.  */
+     -fstrict-aliasing.  */
 
   /* return 0 if this or its type is an error.  */
   if (t == error_mark_node

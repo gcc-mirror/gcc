@@ -120,9 +120,9 @@ package body Prep is
    String_False : String_Id;
    --  "false", as a string_id
 
-   ---------------
-   -- Behaviour --
-   ---------------
+   --------------
+   -- Behavior --
+   --------------
 
    --  Accesses to procedure specified by procedure Initialize
 

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target arm_v8_neon_ok } */
+/* { dg-require-effective-target arm_v8_neon_hw } */
 /* { dg-options "-O2 -ftree-vectorize -fno-inline -march=armv8-a -save-temps" } */
 /* { dg-add-options arm_v8_neon } */
 

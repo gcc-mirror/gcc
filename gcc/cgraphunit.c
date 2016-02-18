@@ -366,14 +366,12 @@ cgraph_node::reset (void)
   memset (&local, 0, sizeof (local));
   memset (&global, 0, sizeof (global));
   memset (&rtl, 0, sizeof (rtl));
-  memset (&thunk, 0, sizeof (cgraph_thunk_info));
   analyzed = false;
   definition = false;
   alias = false;
   transparent_alias = false;
   weakref = false;
   cpp_implicit_alias = false;
-  instrumented_version = NULL;
 
   remove_callees ();
   remove_all_references ();
@@ -1703,7 +1701,8 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       bsi = gsi_start_bb (bb);
 
       /* Build call to the function being thunked.  */
-      if (!VOID_TYPE_P (restype) && !alias_is_noreturn)
+      if (!VOID_TYPE_P (restype)
+	  && (!alias_is_noreturn || TREE_ADDRESSABLE (restype)))
 	{
 	  if (DECL_BY_REFERENCE (resdecl))
 	    {
@@ -1770,7 +1769,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	      || DECL_BY_REFERENCE (resdecl)))
         gimple_call_set_return_slot_opt (call, true);
 
-      if (restmp && !alias_is_noreturn)
+      if (restmp)
 	{
           gimple_call_set_lhs (call, restmp);
 	  gcc_assert (useless_type_conversion_p (TREE_TYPE (restmp),

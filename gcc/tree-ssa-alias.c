@@ -1067,12 +1067,8 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   ptrtype1 = TREE_TYPE (TREE_OPERAND (base1, 1));
 
   /* If the alias set for a pointer access is zero all bets are off.  */
-  if (base1_alias_set == -1)
-    base1_alias_set = get_deref_alias_set (ptrtype1);
   if (base1_alias_set == 0)
     return true;
-  if (base2_alias_set == -1)
-    base2_alias_set = get_alias_set (base2);
 
   /* When we are trying to disambiguate an access with a pointer dereference
      as base versus one with a decl as base we can use both the size
@@ -1239,13 +1235,8 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   ptrtype2 = TREE_TYPE (TREE_OPERAND (base2, 1));
 
   /* If the alias set for a pointer access is zero all bets are off.  */
-  if (base1_alias_set == -1)
-    base1_alias_set = get_deref_alias_set (ptrtype1);
-  if (base1_alias_set == 0)
-    return true;
-  if (base2_alias_set == -1)
-    base2_alias_set = get_deref_alias_set (ptrtype2);
-  if (base2_alias_set == 0)
+  if (base1_alias_set == 0
+      || base2_alias_set == 0)
     return true;
 
   /* If both references are through the same type, they do not alias
@@ -1417,7 +1408,8 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   if (var1_p && ind2_p)
     return indirect_ref_may_alias_decl_p (ref2->ref, base2,
 					  offset2, max_size2,
-					  ao_ref_alias_set (ref2), -1,
+					  ao_ref_alias_set (ref2),
+					  ao_ref_base_alias_set (ref2),
 					  ref1->ref, base1,
 					  offset1, max_size1,
 					  ao_ref_alias_set (ref1),
@@ -1426,10 +1418,12 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   else if (ind1_p && ind2_p)
     return indirect_refs_may_alias_p (ref1->ref, base1,
 				      offset1, max_size1,
-				      ao_ref_alias_set (ref1), -1,
+				      ao_ref_alias_set (ref1),
+				      ao_ref_base_alias_set (ref1),
 				      ref2->ref, base2,
 				      offset2, max_size2,
-				      ao_ref_alias_set (ref2), -1,
+				      ao_ref_alias_set (ref2),
+				      ao_ref_base_alias_set (ref2),
 				      tbaa_p);
 
   gcc_unreachable ();

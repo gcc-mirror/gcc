@@ -1,6 +1,6 @@
 // Koenig lookup is not defined as intended in the std.  DR 218 gives
 // an indication of what is meant.  This test case encapsulates the
-// current conservative behaviour
+// current conservative behavior
 
 // Copyright (C) 2006 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 27 Aug 2006 <nathan@codesourcery.com>

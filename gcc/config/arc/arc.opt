@@ -413,3 +413,46 @@ Enable atomic instructions.
 mll64
 Target Report Mask(LL64)
 Enable double load/store instructions for ARC HS.
+
+mfpu=
+Target RejectNegative Joined Enum(arc_fpu) Var(arc_fpu_build) Init(0)
+Specify the name of the target floating point configuration.
+
+Enum
+Name(arc_fpu) Type(int)
+
+EnumValue
+Enum(arc_fpu) String(fpus) Value(FPU_SP | FPU_SC)
+
+EnumValue
+Enum(arc_fpu) String(fpud) Value(FPU_SP | FPU_SC | FPU_DP | FPU_DC)
+
+EnumValue
+Enum(arc_fpu) String(fpuda) Value(FPU_SP | FPU_SC | FPX_DP)
+
+EnumValue
+Enum(arc_fpu) String(fpuda_div) Value(FPU_SP | FPU_SC | FPU_SD | FPX_DP)
+
+EnumValue
+Enum(arc_fpu) String(fpuda_fma) Value(FPU_SP | FPU_SC | FPU_SF | FPX_DP)
+
+EnumValue
+Enum(arc_fpu) String(fpuda_all) Value(FPU_SP | FPU_SC | FPU_SF | FPU_SD | FPX_DP)
+
+EnumValue
+Enum(arc_fpu) String(fpus_div) Value(FPU_SP | FPU_SC | FPU_SD)
+
+EnumValue
+Enum(arc_fpu) String(fpud_div) Value(FPU_SP | FPU_SC | FPU_SD | FPU_DP | FPU_DC | FPU_DD)
+
+EnumValue
+Enum(arc_fpu) String(fpus_fma) Value(FPU_SP | FPU_SC | FPU_SF)
+
+EnumValue
+Enum(arc_fpu) String(fpud_fma) Value(FPU_SP | FPU_SC | FPU_SF | FPU_DP | FPU_DC | FPU_DF)
+
+EnumValue
+Enum(arc_fpu) String(fpus_all) Value(FPU_SP | FPU_SC | FPU_SF | FPU_SD)
+
+EnumValue
+Enum(arc_fpu) String(fpud_all) Value(FPU_SP | FPU_SC | FPU_SF | FPU_SD | FPU_DP | FPU_DC | FPU_DF | FPU_DD)

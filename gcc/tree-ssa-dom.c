@@ -103,7 +103,8 @@ static struct opt_stats_d opt_stats;
 static edge optimize_stmt (basic_block, gimple_stmt_iterator,
 			   class const_and_copies *,
 			   class avail_exprs_stack *);
-static tree lookup_avail_expr (gimple *, bool, class avail_exprs_stack *);
+static tree lookup_avail_expr (gimple *, bool, class avail_exprs_stack *,
+			       bool = true);
 static void record_cond (cond_equivalence *, class avail_exprs_stack *);
 static void record_equality (tree, tree, class const_and_copies *);
 static void record_equivalences_from_phis (basic_block);
@@ -917,6 +918,15 @@ record_temporary_equivalences (edge e,
       tree rhs = edge_info->rhs;
       record_equality (lhs, rhs, const_and_copies);
 
+      /* We already recorded that LHS = RHS, with canonicalization,
+	 value chain following, etc.
+
+	 We also want to return RHS = LHS, but without any canonicalization
+	 or value chain following.  */
+      if (TREE_CODE (rhs) == SSA_NAME)
+	const_and_copies->record_const_or_copy_raw (rhs, lhs,
+						    SSA_NAME_VALUE (rhs));
+
       /* If LHS is an SSA_NAME and RHS is a constant integer and LHS was
 	 set via a widening type conversion, then we may be able to record
 	 additional equivalences.  */
@@ -1161,33 +1171,6 @@ record_cond (cond_equivalence *p,
     delete element;
 }
 
-/* Return the loop depth of the basic block of the defining statement of X.
-   This number should not be treated as absolutely correct because the loop
-   information may not be completely up-to-date when dom runs.  However, it
-   will be relatively correct, and as more passes are taught to keep loop info
-   up to date, the result will become more and more accurate.  */
-
-static int
-loop_depth_of_name (tree x)
-{
-  gimple *defstmt;
-  basic_block defbb;
-
-  /* If it's not an SSA_NAME, we have no clue where the definition is.  */
-  if (TREE_CODE (x) != SSA_NAME)
-    return 0;
-
-  /* Otherwise return the loop depth of the defining statement's bb.
-     Note that there may not actually be a bb for this statement, if the
-     ssa_name is live on entry.  */
-  defstmt = SSA_NAME_DEF_STMT (x);
-  defbb = gimple_bb (defstmt);
-  if (!defbb)
-    return 0;
-
-  return bb_loop_depth (defbb);
-}
-
 /* Similarly, but assume that X and Y are the two operands of an EQ_EXPR.
    This constrains the cases in which we may treat this as assignment.  */
 
@@ -1224,10 +1207,7 @@ record_equality (tree x, tree y, class const_and_copies *const_and_copies)
      long as we canonicalize on one value.  */
   if (is_gimple_min_invariant (y))
     ;
-  else if (is_gimple_min_invariant (x)
-	   /* ???  When threading over backedges the following is important
-	      for correctness.  See PR61757.  */
-	   || (loop_depth_of_name (x) < loop_depth_of_name (y)))
+  else if (is_gimple_min_invariant (x))
     prev_x = x, x = y, y = prev_x, prev_x = prev_y;
   else if (prev_x && is_gimple_min_invariant (prev_x))
     x = y, y = prev_x, prev_x = prev_y;
@@ -1914,7 +1894,8 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 	  else
 	    new_stmt = gimple_build_assign (rhs, lhs);
 	  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-	  cached_lhs = lookup_avail_expr (new_stmt, false, avail_exprs_stack);
+	  cached_lhs = lookup_avail_expr (new_stmt, false, avail_exprs_stack,
+					  false);
 	  if (cached_lhs
 	      && rhs == cached_lhs)
 	    {
@@ -2018,7 +1999,7 @@ vuse_eq (ao_ref *, tree vuse1, unsigned int cnt, void *data)
 
 static tree
 lookup_avail_expr (gimple *stmt, bool insert,
-		   class avail_exprs_stack *avail_exprs_stack)
+		   class avail_exprs_stack *avail_exprs_stack, bool tbaa_p)
 {
   expr_hash_elt **slot;
   tree lhs;
@@ -2075,7 +2056,8 @@ lookup_avail_expr (gimple *stmt, bool insert,
       if (!(vuse1 && vuse2
 	    && gimple_assign_single_p (stmt)
 	    && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
-	    && (ao_ref_init (&ref, gimple_assign_rhs1 (stmt)), true)
+	    && (ao_ref_init (&ref, gimple_assign_rhs1 (stmt)),
+		ref.base_alias_set = ref.ref_alias_set = tbaa_p ? -1 : 0, true)
 	    && walk_non_aliased_vuses (&ref, vuse2,
 				       vuse_eq, NULL, NULL, vuse1) != NULL))
 	{

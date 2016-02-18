@@ -171,6 +171,13 @@ type_conversion_p (tree name, gimple *use_stmt, bool check_sign,
   if (!*def_stmt)
     return false;
 
+  if (dt == vect_internal_def)
+    {
+      stmt_vec_info def_vinfo = vinfo_for_stmt (*def_stmt);
+      if (STMT_VINFO_IN_PATTERN_P (def_vinfo))
+	return false;
+    }
+
   if (!is_gimple_assign (*def_stmt))
     return false;
 
@@ -334,8 +341,8 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
       stmt = last_stmt;
 
       if (type_conversion_p (oprnd0, stmt, true, &half_type, &def_stmt,
-                               &promotion)
-         && promotion)
+			     &promotion)
+	  && promotion)
         {
           stmt = def_stmt;
           oprnd0 = gimple_assign_rhs1 (stmt);
@@ -395,13 +402,13 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
           || !types_compatible_p (TREE_TYPE (oprnd1), prod_type))
         return NULL;
       if (!type_conversion_p (oprnd0, stmt, true, &half_type0, &def_stmt,
-                                &promotion)
-          || !promotion)
+			      &promotion)
+	  || !promotion)
         return NULL;
       oprnd00 = gimple_assign_rhs1 (def_stmt);
       if (!type_conversion_p (oprnd1, stmt, true, &half_type1, &def_stmt,
-                                &promotion)
-          || !promotion)
+			      &promotion)
+	  || !promotion)
         return NULL;
       oprnd01 = gimple_assign_rhs1 (def_stmt);
       if (!types_compatible_p (half_type0, half_type1))
@@ -891,10 +898,10 @@ vect_recog_widen_mult_pattern (vec<gimple *> *stmts,
 	  oprnd = &oprnd1;
 	}
 
-        tree old_oprnd = gimple_assign_rhs1 (def_stmt);
-	tree new_oprnd = make_ssa_name (half_type0);
-	new_stmt = gimple_build_assign (new_oprnd, NOP_EXPR, old_oprnd);
-        *oprnd = new_oprnd;
+      tree old_oprnd = gimple_assign_rhs1 (def_stmt);
+      tree new_oprnd = make_ssa_name (half_type0);
+      new_stmt = gimple_build_assign (new_oprnd, NOP_EXPR, old_oprnd);
+      *oprnd = new_oprnd;
     }
 
   /* Handle unsigned case.  Look for

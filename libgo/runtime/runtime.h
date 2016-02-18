@@ -200,7 +200,7 @@ struct	G
 	void*	exception;	// current exception being thrown
 	bool	is_foreign;	// whether current exception from other language
 	void	*gcstack;	// if status==Gsyscall, gcstack = stackbase to use during gc
-	uintptr	gcstack_size;
+	size_t	gcstack_size;
 	void*	gcnext_segment;
 	void*	gcnext_sp;
 	void*	gcinitial_sp;
@@ -550,7 +550,7 @@ void*	runtime_mal(uintptr);
 String	runtime_gostring(const byte*);
 String	runtime_gostringnocopy(const byte*);
 void	runtime_schedinit(void);
-void	runtime_initsig(void);
+void	runtime_initsig(bool);
 void	runtime_sigenable(uint32 sig);
 void	runtime_sigdisable(uint32 sig);
 void	runtime_sigignore(uint32 sig);
@@ -863,3 +863,4 @@ extern void _cgo_notify_runtime_init_done (void);
 extern _Bool runtime_iscgo;
 extern _Bool runtime_cgoHasExtraM;
 extern Hchan *runtime_main_init_done;
+extern uintptr __go_end __attribute__ ((weak));

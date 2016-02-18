@@ -22,7 +22,7 @@ proc check_effective_target_mpx {} {
 	int *foo (int *arg) { return arg; }
 	int main (void)
 	{
-	    int *p = __builtin_malloc (sizeof (int));
+	    int *p = (int *)__builtin_malloc (sizeof (int));
 	    int res = foo (p) == 0;
 	    __builtin_free (p);
 	    return res;

@@ -1785,7 +1785,7 @@
 ;; the lower architectural lanes of the vector, for these patterns we want
 ;; to always treat "hi" as referring to the higher architectural lanes.
 ;; Consequently, while the patterns below look inconsistent with our
-;; other big-endian patterns their behaviour is as required.
+;; other big-endian patterns their behavior is as required.
 
 (define_expand "vec_unpacks_lo_<mode>"
   [(match_operand:<VWIDE> 0 "register_operand" "")
@@ -3240,7 +3240,7 @@
 	  [(match_operand:VDQHS 1 "register_operand" "0")
 	   (match_operand:VDQHS 2 "register_operand" "w")
 	   (vec_select:<VEL>
-	     (match_operand:<VCOND> 3 "register_operand" "w")
+	     (match_operand:<VCOND> 3 "register_operand" "<vwx>")
 	     (parallel [(match_operand:SI 4 "immediate_operand" "i")]))]
 	  SQRDMLH_AS))]
    "TARGET_SIMD_RDMA"
@@ -3258,7 +3258,7 @@
 	  [(match_operand:SD_HSI 1 "register_operand" "0")
 	   (match_operand:SD_HSI 2 "register_operand" "w")
 	   (vec_select:<VEL>
-	     (match_operand:<VCOND> 3 "register_operand" "w")
+	     (match_operand:<VCOND> 3 "register_operand" "<vwx>")
 	     (parallel [(match_operand:SI 4 "immediate_operand" "i")]))]
 	  SQRDMLH_AS))]
    "TARGET_SIMD_RDMA"
@@ -3278,7 +3278,7 @@
 	  [(match_operand:VDQHS 1 "register_operand" "0")
 	   (match_operand:VDQHS 2 "register_operand" "w")
 	   (vec_select:<VEL>
-	     (match_operand:<VCONQ> 3 "register_operand" "w")
+	     (match_operand:<VCONQ> 3 "register_operand" "<vwx>")
 	     (parallel [(match_operand:SI 4 "immediate_operand" "i")]))]
 	  SQRDMLH_AS))]
    "TARGET_SIMD_RDMA"
@@ -3296,7 +3296,7 @@
 	  [(match_operand:SD_HSI 1 "register_operand" "0")
 	   (match_operand:SD_HSI 2 "register_operand" "w")
 	   (vec_select:<VEL>
-	     (match_operand:<VCONQ> 3 "register_operand" "w")
+	     (match_operand:<VCONQ> 3 "register_operand" "<vwx>")
 	     (parallel [(match_operand:SI 4 "immediate_operand" "i")]))]
 	  SQRDMLH_AS))]
    "TARGET_SIMD_RDMA"

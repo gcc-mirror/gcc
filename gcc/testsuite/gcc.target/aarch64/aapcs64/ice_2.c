@@ -1,6 +1,6 @@
 /* Test AAPCS layout
 
-   Larger than machine-supported vector size.  The behaviour is unspecified by
+   Larger than machine-supported vector size.  The behavior is unspecified by
    the AAPCS64 document; the implementation opts for pass by reference.  */
 
 /* { dg-do compile { target aarch64*-*-* } } */

@@ -482,7 +482,7 @@ package body System.Img_Real is
          --  an invalid bit pattern resulting from erroneous execution
          --  (caused by using uninitialized variables for example).
 
-         --  No matter what, we'll at least get reasonable behaviour,
+         --  No matter what, we'll at least get reasonable behavior,
          --  converting to infinity or some other value, or causing an
          --  exception to be raised is fine.
 

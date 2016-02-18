@@ -361,7 +361,7 @@ test5 (size_t x)
   /* My understanding of ISO C99 6.5.6 is that a conforming
      program will not end up with p equal to &buf[0]
      through &buf[7], i.e. calling this function with say
-     UINTPTR_MAX / 4 results in undefined behaviour.
+     UINTPTR_MAX / 4 results in undefined behavior.
      If that's true, then the maximum number of remaining
      bytes from p until end of the object is 56, otherwise
      it would be 64 (or conservative (size_t) -1 == unknown).  */

@@ -5449,7 +5449,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
       cst2 = NULL_TREE;
       if (rhs_code == BIT_AND_EXPR
 	  || (CONVERT_EXPR_CODE_P (rhs_code)
-	      && TREE_CODE (TREE_TYPE (val)) == INTEGER_TYPE
+	      && INTEGRAL_TYPE_P (TREE_TYPE (val))
 	      && TYPE_UNSIGNED (TREE_TYPE (val))
 	      && TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (def_stmt)))
 		 > prec))

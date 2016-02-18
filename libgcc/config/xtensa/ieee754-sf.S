@@ -487,6 +487,7 @@ __subsf3:
 #define XCHAL_NO_MUL 1
 #endif
 
+	.literal_position
 __mulsf3_aux:
 
 	/* Handle unusual cases (zeros, subnormals, NaNs and Infinities).
@@ -884,6 +885,7 @@ __mulsf3:
 
 #ifdef L_divsf3
 
+	.literal_position
 	/* Division */
 __divsf3_aux:
 

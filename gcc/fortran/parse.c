@@ -4098,6 +4098,7 @@ parse_associate (void)
 	  int dim, rank = 0;
 	  if (array_ref)
 	    {
+	      a->rankguessed = 1;
 	      /* Count the dimension, that have a non-scalar extend.  */
 	      for (dim = 0; dim < array_ref->dimen; ++dim)
 		if (array_ref->dimen_type[dim] != DIMEN_ELEMENT

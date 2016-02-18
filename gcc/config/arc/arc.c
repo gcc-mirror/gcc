@@ -719,8 +719,15 @@ arc_init (void)
 
   /* FPX-3. No FPX extensions on pre-ARC600 cores.  */
   if ((TARGET_DPFP || TARGET_SPFP)
-      && !TARGET_ARCOMPACT_FAMILY)
+      && (!TARGET_ARCOMPACT_FAMILY && !TARGET_EM))
     error ("FPX extensions not available on pre-ARC600 cores");
+
+  /* FPX-4.  No FPX extensions mixed with FPU extensions for ARC HS
+     cpus.  */
+  if ((TARGET_DPFP || TARGET_SPFP)
+      && TARGET_HARD_FLOAT
+      && TARGET_HS)
+    error ("No FPX/FPU mixing allowed");
 
   /* Only selected multiplier configurations are available for HS.  */
   if (TARGET_HS && ((arc_mpy_option > 2 && arc_mpy_option < 7)
@@ -742,6 +749,19 @@ arc_init (void)
   /* ll64 ops only available for HS.  */
   if (TARGET_LL64 && !TARGET_HS)
     error ("-mll64 is only supported for ARC HS cores");
+
+  /* FPU support only for V2.  */
+  if (TARGET_HARD_FLOAT)
+    {
+      if (TARGET_EM
+	  && (arc_fpu_build & ~(FPU_SP | FPU_SF | FPU_SC | FPU_SD | FPX_DP)))
+	error ("FPU double precision options are available for ARC HS only");
+      if (TARGET_HS && (arc_fpu_build & FPX_DP))
+	error ("FPU double precision assist "
+	       "options are not available for ARC HS");
+      if (!TARGET_HS && !TARGET_EM)
+	error ("FPU options are available for ARCv2 architecture only");
+    }
 
   arc_init_reg_tables ();
 
@@ -926,6 +946,33 @@ get_arc_condition_code (rtx comparison)
 	case UNEQ      : return ARC_CC_LS;
 	default : gcc_unreachable ();
 	}
+    case CC_FPUmode:
+      switch (GET_CODE (comparison))
+	{
+	case EQ	       : return ARC_CC_EQ;
+	case NE	       : return ARC_CC_NE;
+	case GT	       : return ARC_CC_GT;
+	case GE	       : return ARC_CC_GE;
+	case LT	       : return ARC_CC_C;
+	case LE	       : return ARC_CC_LS;
+	case UNORDERED : return ARC_CC_V;
+	case ORDERED   : return ARC_CC_NV;
+	case UNGT      : return ARC_CC_HI;
+	case UNGE      : return ARC_CC_HS;
+	case UNLT      : return ARC_CC_LT;
+	case UNLE      : return ARC_CC_LE;
+	  /* UNEQ and LTGT do not have representation.  */
+	case LTGT      : /* Fall through.  */
+	case UNEQ      : /* Fall through.  */
+	default : gcc_unreachable ();
+	}
+    case CC_FPU_UNEQmode:
+      switch (GET_CODE (comparison))
+	{
+	case LTGT : return ARC_CC_NE;
+	case UNEQ : return ARC_CC_EQ;
+	default : gcc_unreachable ();
+	}
     default : gcc_unreachable ();
     }
   /*NOTREACHED*/
@@ -1009,19 +1056,46 @@ arc_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	return CC_FP_GEmode;
       default: gcc_unreachable ();
       }
-  else if (GET_MODE_CLASS (mode) == MODE_FLOAT && TARGET_OPTFPE)
+  else if (TARGET_HARD_FLOAT
+	   && ((mode == SFmode && TARGET_FP_SP_BASE)
+	       || (mode == DFmode && TARGET_FP_DP_BASE)))
     switch (op)
       {
-      case EQ: case NE: return CC_Zmode;
-      case LT: case UNGE:
-      case GT: case UNLE: return CC_FP_GTmode;
-      case LE: case UNGT:
-      case GE: case UNLT: return CC_FP_GEmode;
-      case UNEQ: case LTGT: return CC_FP_UNEQmode;
-      case ORDERED: case UNORDERED: return CC_FP_ORDmode;
-      default: gcc_unreachable ();
-      }
+      case EQ:
+      case NE:
+      case UNORDERED:
+      case ORDERED:
+      case UNLT:
+      case UNLE:
+      case UNGT:
+      case UNGE:
+      case LT:
+      case LE:
+      case GT:
+      case GE:
+	return CC_FPUmode;
 
+      case LTGT:
+      case UNEQ:
+	return CC_FPU_UNEQmode;
+
+      default:
+	gcc_unreachable ();
+      }
+  else if (GET_MODE_CLASS (mode) == MODE_FLOAT && TARGET_OPTFPE)
+    {
+      switch (op)
+	{
+	case EQ: case NE: return CC_Zmode;
+	case LT: case UNGE:
+	case GT: case UNLE: return CC_FP_GTmode;
+	case LE: case UNGT:
+	case GE: case UNLT: return CC_FP_GEmode;
+	case UNEQ: case LTGT: return CC_FP_UNEQmode;
+	case ORDERED: case UNORDERED: return CC_FP_ORDmode;
+	default: gcc_unreachable ();
+	}
+    }
   return CCmode;
 }
 
@@ -1148,7 +1222,8 @@ arc_init_reg_tables (void)
 	     we must explicitly check for them here.  */
 	  if (i == (int) CCmode || i == (int) CC_ZNmode || i == (int) CC_Zmode
 	      || i == (int) CC_Cmode
-	      || i == CC_FP_GTmode || i == CC_FP_GEmode || i == CC_FP_ORDmode)
+	      || i == CC_FP_GTmode || i == CC_FP_GEmode || i == CC_FP_ORDmode
+	      || i == CC_FPUmode || i == CC_FPU_UNEQmode)
 	    arc_mode_class[i] = 1 << (int) C_MODE;
 	  else
 	    arc_mode_class[i] = 0;
@@ -1282,6 +1357,16 @@ arc_conditional_register_usage (void)
 	arc_hard_regno_mode_ok[60] = 1 << (int) S_MODE;
     }
 
+  /* ARCHS has 64-bit data-path which makes use of the even-odd paired
+     registers.  */
+  if (TARGET_HS)
+    {
+      for (regno = 1; regno < 32; regno +=2)
+	{
+	  arc_hard_regno_mode_ok[regno] = S_MODES;
+	}
+    }
+
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       if (i < 29)
@@ -1376,6 +1461,19 @@ arc_conditional_register_usage (void)
 
   /* pc : r63 */
   arc_regno_reg_class[PROGRAM_COUNTER_REGNO] = GENERAL_REGS;
+
+  /*ARCV2 Accumulator.  */
+  if (TARGET_V2
+      && (TARGET_FP_DP_FUSED || TARGET_FP_SP_FUSED))
+  {
+    arc_regno_reg_class[ACCL_REGNO] = WRITABLE_CORE_REGS;
+    arc_regno_reg_class[ACCH_REGNO] = WRITABLE_CORE_REGS;
+    SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], ACCL_REGNO);
+    SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], ACCH_REGNO);
+    SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], ACCL_REGNO);
+    SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], ACCH_REGNO);
+    arc_hard_regno_mode_ok[ACC_REG_FIRST] = D_MODES;
+  }
 }
 
 /* Handle an "interrupt" attribute; arguments as in
@@ -1545,6 +1643,10 @@ gen_compare_reg (rtx comparison, machine_mode omode)
 						 gen_rtx_REG (CC_FPXmode, 61),
 						 const0_rtx)));
     }
+  else if (TARGET_HARD_FLOAT
+	   && ((cmode == SFmode && TARGET_FP_SP_BASE)
+	       || (cmode == DFmode && TARGET_FP_DP_BASE)))
+    emit_insn (gen_rtx_SET (cc_reg, gen_rtx_COMPARE (mode, x, y)));
   else if (GET_MODE_CLASS (cmode) == MODE_FLOAT && TARGET_OPTFPE)
     {
       rtx op0 = gen_rtx_REG (cmode, 0);
@@ -1638,10 +1740,11 @@ arc_setup_incoming_varargs (cumulative_args_t args_so_far,
   /* We must treat `__builtin_va_alist' as an anonymous arg.  */
 
   next_cum = *get_cumulative_args (args_so_far);
-  arc_function_arg_advance (pack_cumulative_args (&next_cum), mode, type, 1);
+  arc_function_arg_advance (pack_cumulative_args (&next_cum),
+			    mode, type, true);
   first_anon_arg = next_cum;
 
-  if (first_anon_arg < MAX_ARC_PARM_REGS)
+  if (FUNCTION_ARG_REGNO_P (first_anon_arg))
     {
       /* First anonymous (unnamed) argument is in a reg.  */
 
@@ -4856,8 +4959,6 @@ arc_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
   return ret;
 }
 
-
-
 /* This function is used to control a function argument is passed in a
    register, and which register.
 
@@ -4895,8 +4996,10 @@ arc_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
    and the rest are pushed.  */
 
 static rtx
-arc_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		  const_tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
+arc_function_arg (cumulative_args_t cum_v,
+		  machine_mode mode,
+		  const_tree type ATTRIBUTE_UNUSED,
+		  bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int arg_num = *cum;
@@ -4942,8 +5045,10 @@ arc_function_arg (cumulative_args_t cum_v, machine_mode mode,
    course function_arg_partial_nregs will come into play.  */
 
 static void
-arc_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			  const_tree type, bool named ATTRIBUTE_UNUSED)
+arc_function_arg_advance (cumulative_args_t cum_v,
+			  machine_mode mode,
+			  const_tree type,
+			  bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int bytes = (mode == BLKmode
@@ -6398,6 +6503,11 @@ arc_reorg (void)
 
 	  pc_target = SET_SRC (pattern);
 
+	  /* Avoid FPU instructions.  */
+	  if ((GET_MODE (XEXP (XEXP (pc_target, 0), 0)) == CC_FPUmode)
+	      || (GET_MODE (XEXP (XEXP (pc_target, 0), 0)) == CC_FPU_UNEQmode))
+	    continue;
+
 	  /* Now go back and search for the set cc insn.  */
 
 	  label = XEXP (pc_target, 1);
@@ -6420,7 +6530,7 @@ arc_reorg (void)
 		      break;
 		    }
 		}
-	      if (! link_insn)
+	      if (!link_insn)
 		continue;
 	      else
 		/* Check if this is a data dependency.  */

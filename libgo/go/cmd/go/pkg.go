@@ -419,11 +419,18 @@ func vendoredImportPath(parent *Package, path string) (found string) {
 	if parent == nil || parent.Root == "" || !go15VendorExperiment {
 		return path
 	}
+
 	dir := filepath.Clean(parent.Dir)
 	root := filepath.Join(parent.Root, "src")
+	if !hasFilePathPrefix(dir, root) {
+		// Look for symlinks before reporting error.
+		dir = expandPath(dir)
+		root = expandPath(root)
+	}
 	if !hasFilePathPrefix(dir, root) || len(dir) <= len(root) || dir[len(root)] != filepath.Separator {
 		fatalf("invalid vendoredImportPath: dir=%q root=%q separator=%q", dir, root, string(filepath.Separator))
 	}
+
 	vpath := "vendor/" + path
 	for i := len(dir); i >= len(root); i-- {
 		if i < len(dir) && dir[i] != filepath.Separator {
@@ -537,6 +544,13 @@ func disallowInternal(srcDir string, p *Package, stk *importStack) *Package {
 		return p
 	}
 
+	// Look for symlinks before reporting error.
+	srcDir = expandPath(srcDir)
+	parent = expandPath(parent)
+	if hasFilePathPrefix(filepath.Clean(srcDir), filepath.Clean(parent)) {
+		return p
+	}
+
 	// Internal is present, and srcDir is outside parent's tree. Not allowed.
 	perr := *p
 	perr.Error = &PackageError{
@@ -630,6 +644,13 @@ func disallowVendorVisibility(srcDir string, p *Package, stk *importStack) *Pack
 		return p
 	}
 	parent := p.Dir[:truncateTo]
+	if hasFilePathPrefix(filepath.Clean(srcDir), filepath.Clean(parent)) {
+		return p
+	}
+
+	// Look for symlinks before reporting error.
+	srcDir = expandPath(srcDir)
+	parent = expandPath(parent)
 	if hasFilePathPrefix(filepath.Clean(srcDir), filepath.Clean(parent)) {
 		return p
 	}
@@ -957,7 +978,7 @@ func (p *Package) load(stk *importStack, bp *build.Package, err error) *Package 
 				}
 			}
 		}
-		if p.Standard && !p1.Standard && p.Error == nil {
+		if p.Standard && p.Error == nil && !p1.Standard && p1.Error == nil {
 			p.Error = &PackageError{
 				ImportStack: stk.copy(),
 				Err:         fmt.Sprintf("non-standard import %q in standard package %q", path, p.ImportPath),
@@ -1532,11 +1553,14 @@ func computeBuildID(p *Package) {
 		fmt.Fprintf(h, "file %s\n", file)
 	}
 
-	// Include the content of runtime/zversion.go in the hash
+	// Include the content of runtime/internal/sys/zversion.go in the hash
 	// for package runtime. This will give package runtime a
 	// different build ID in each Go release.
-	if p.Standard && p.ImportPath == "runtime" {
-		data, _ := ioutil.ReadFile(filepath.Join(p.Dir, "zversion.go"))
+	if p.Standard && p.ImportPath == "runtime/internal/sys" {
+		data, err := ioutil.ReadFile(filepath.Join(p.Dir, "zversion.go"))
+		if err != nil {
+			fatalf("go: %s", err)
+		}
 		fmt.Fprintf(h, "zversion %q\n", string(data))
 	}
 

@@ -1,3 +1,34 @@
+2016-02-17  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/ieee754-df.S (__muldf3_aux, __divdf3_aux): Add
+	.literal_position before the function.
+	* config/xtensa/ieee754-sf.S (__mulsf3_aux, __divsf3_aux):
+	Likewise.
+
+2016-02-15  Marcin Kościelnicki  <koriakin@0x04.net>
+
+	* config.host: Use t-stack and t-stack-s390 for s390*-*-linux.
+	* config/s390/morestack.S: New file.
+	* config/s390/t-stack-s390: New file.
+	* generic-morestack.c (__splitstack_find): Add s390-specific code.
+
+2016-02-12  Walter Lee  <walt@tilera.com>
+
+	* config.host (tilegx*-*-linux*): remove ti from
+	softfp_int_modes for 32-bit configs.
+
+2016-02-10  Ian Lance Taylor  <iant@google.com>
+
+	PR go/68562
+	* config/i386/morestack.S (__stack_split_initialize): Align
+	stack.
+
+2016-02-03  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	PR bootstrap/69611
+	* config/rs6000/sfp-machine.h: Guard __sfp_exceptions with
+	__FLOAT128__ to compile only for __float128 capable targets.
+
 2016-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69444

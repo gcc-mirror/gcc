@@ -988,6 +988,33 @@ proc dg-message { args } {
     process-message saved-dg-warning "" $args
 }
 
+# Look for a location marker of the form
+#   file:line:column:
+# with no extra text (e.g. a line-span separator).
+
+proc dg-locus { args } {
+    upvar dg-messages dg-messages
+
+    # Process the dg- directive, including adding the regular expression
+    # to the new message entry in dg-messages.
+    set msgcnt [llength ${dg-messages}]
+    eval saved-dg-warning $args
+
+    # If the target expression wasn't satisfied there is no new message.
+    if { [llength ${dg-messages}] == $msgcnt } {
+	return;
+    }
+
+    # Get the entry for the new message.  Prepend the message prefix to
+    # the regular expression and make it match a single line.
+    set newentry [lindex ${dg-messages} end]
+    set expmsg [lindex $newentry 2]
+
+    set newentry [lreplace $newentry 2 2 $expmsg]
+    set dg-messages [lreplace ${dg-messages} end end $newentry]
+    verbose "process-message:\n${dg-messages}" 2
+}
+
 # Check the existence of a gdb in the path, and return true if there
 # is one.
 #

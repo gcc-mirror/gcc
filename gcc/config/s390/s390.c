@@ -380,6 +380,8 @@ struct GTY (()) s390_frame_layout
      be saved to.
       0 - does not need to be saved at all
      -1 - stack slot  */
+#define SAVE_SLOT_NONE   0
+#define SAVE_SLOT_STACK -1
   signed char gpr_save_slots[16];
 
   /* Number of first and last gpr to be saved, restored.  */
@@ -426,6 +428,13 @@ struct GTY(()) machine_function
   /* True if the current function may contain a tbegin clobbering
      FPRs.  */
   bool tbegin_p;
+
+  /* For -fsplit-stack support: A stack local which holds a pointer to
+     the stack arguments for a function with a variable number of
+     arguments.  This is set at the start of the function and is used
+     to initialize the overflow_arg_area field of the va_list
+     structure.  */
+  rtx split_stack_varargs_pointer;
 };
 
 /* Few accessor macros for struct cfun->machine->s390_frame_layout.  */
@@ -9198,7 +9207,7 @@ s390_register_info_gprtofpr ()
 
   for (i = 15; i >= 6; i--)
     {
-      if (cfun_gpr_save_slot (i) == 0)
+      if (cfun_gpr_save_slot (i) == SAVE_SLOT_NONE)
 	continue;
 
       /* Advance to the next FP register which can be used as a
@@ -9215,7 +9224,7 @@ s390_register_info_gprtofpr ()
 	     case we ran out of FPR save slots.  */
 	  for (j = 6; j <= 15; j++)
 	    if (FP_REGNO_P (cfun_gpr_save_slot (j)))
-	      cfun_gpr_save_slot (j) = -1;
+	      cfun_gpr_save_slot (j) = SAVE_SLOT_STACK;
 	  break;
 	}
       cfun_gpr_save_slot (i) = save_reg_slot++;
@@ -9242,12 +9251,16 @@ s390_register_info_stdarg_fpr ()
     return;
 
   min_fpr = crtl->args.info.fprs;
-  max_fpr = min_fpr + cfun->va_list_fpr_size;
-  if (max_fpr > FP_ARG_NUM_REG)
-    max_fpr = FP_ARG_NUM_REG;
+  max_fpr = min_fpr + cfun->va_list_fpr_size - 1;
+  if (max_fpr >= FP_ARG_NUM_REG)
+    max_fpr = FP_ARG_NUM_REG - 1;
 
-  for (i = min_fpr; i < max_fpr; i++)
-    cfun_set_fpr_save (i + FPR0_REGNUM);
+  /* FPR argument regs start at f0.  */
+  min_fpr += FPR0_REGNUM;
+  max_fpr += FPR0_REGNUM;
+
+  for (i = min_fpr; i <= max_fpr; i++)
+    cfun_set_fpr_save (i);
 }
 
 /* Reserve the GPR save slots for GPRs which need to be saved due to
@@ -9267,12 +9280,61 @@ s390_register_info_stdarg_gpr ()
     return;
 
   min_gpr = crtl->args.info.gprs;
-  max_gpr = min_gpr + cfun->va_list_gpr_size;
-  if (max_gpr > GP_ARG_NUM_REG)
-    max_gpr = GP_ARG_NUM_REG;
+  max_gpr = min_gpr + cfun->va_list_gpr_size - 1;
+  if (max_gpr >= GP_ARG_NUM_REG)
+    max_gpr = GP_ARG_NUM_REG - 1;
 
-  for (i = min_gpr; i < max_gpr; i++)
-    cfun_gpr_save_slot (2 + i) = -1;
+  /* GPR argument regs start at r2.  */
+  min_gpr += GPR2_REGNUM;
+  max_gpr += GPR2_REGNUM;
+
+  /* If r6 was supposed to be saved into an FPR and now needs to go to
+     the stack for vararg we have to adjust the restore range to make
+     sure that the restore is done from stack as well.  */
+  if (FP_REGNO_P (cfun_gpr_save_slot (GPR6_REGNUM))
+      && min_gpr <= GPR6_REGNUM
+      && max_gpr >= GPR6_REGNUM)
+    {
+      if (cfun_frame_layout.first_restore_gpr == -1
+	  || cfun_frame_layout.first_restore_gpr > GPR6_REGNUM)
+	cfun_frame_layout.first_restore_gpr = GPR6_REGNUM;
+      if (cfun_frame_layout.last_restore_gpr == -1
+	  || cfun_frame_layout.last_restore_gpr < GPR6_REGNUM)
+	cfun_frame_layout.last_restore_gpr = GPR6_REGNUM;
+    }
+
+  if (cfun_frame_layout.first_save_gpr == -1
+      || cfun_frame_layout.first_save_gpr > min_gpr)
+    cfun_frame_layout.first_save_gpr = min_gpr;
+
+  if (cfun_frame_layout.last_save_gpr == -1
+      || cfun_frame_layout.last_save_gpr < max_gpr)
+    cfun_frame_layout.last_save_gpr = max_gpr;
+
+  for (i = min_gpr; i <= max_gpr; i++)
+    cfun_gpr_save_slot (i) = SAVE_SLOT_STACK;
+}
+
+/* Calculate the save and restore ranges for stm(g) and lm(g) in the
+   prologue and epilogue.  */
+
+static void
+s390_register_info_set_ranges ()
+{
+  int i, j;
+
+  /* Find the first and the last save slot supposed to use the stack
+     to set the restore range.
+     Vararg regs might be marked as save to stack but only the
+     call-saved regs really need restoring (i.e. r6).  This code
+     assumes that the vararg regs have not yet been recorded in
+     cfun_gpr_save_slot.  */
+  for (i = 0; i < 16 && cfun_gpr_save_slot (i) != SAVE_SLOT_STACK; i++);
+  for (j = 15; j > i && cfun_gpr_save_slot (j) != SAVE_SLOT_STACK; j--);
+  cfun_frame_layout.first_restore_gpr = (i == 16) ? -1 : i;
+  cfun_frame_layout.last_restore_gpr = (i == 16) ? -1 : j;
+  cfun_frame_layout.first_save_gpr = (i == 16) ? -1 : i;
+  cfun_frame_layout.last_save_gpr = (i == 16) ? -1 : j;
 }
 
 /* The GPR and FPR save slots in cfun->machine->frame_layout are set
@@ -9283,7 +9345,7 @@ s390_register_info_stdarg_gpr ()
 static void
 s390_register_info ()
 {
-  int i, j;
+  int i;
   char clobbered_regs[32];
 
   gcc_assert (!epilogue_completed);
@@ -9316,9 +9378,13 @@ s390_register_info ()
 	  cfun_frame_layout.high_fprs++;
       }
 
-  if (flag_pic)
-    clobbered_regs[PIC_OFFSET_TABLE_REGNUM]
-      |= !!df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM);
+  /* Register 12 is used for GOT address, but also as temp in prologue
+     for split-stack stdarg functions (unless r14 is available).  */
+  clobbered_regs[12]
+    |= ((flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM))
+	|| (flag_split_stack && cfun->stdarg
+	    && (crtl->is_leaf || TARGET_TPF_PROFILING
+		|| has_hard_reg_initial_val (Pmode, RETURN_REGNUM))));
 
   clobbered_regs[BASE_REGNUM]
     |= (cfun->machine->base_reg
@@ -9347,33 +9413,20 @@ s390_register_info ()
 	|| (reload_completed && cfun_frame_layout.frame_size > 0)
 	|| cfun->calls_alloca);
 
-  memset (cfun_frame_layout.gpr_save_slots, 0, 16);
+  memset (cfun_frame_layout.gpr_save_slots, SAVE_SLOT_NONE, 16);
 
   for (i = 6; i < 16; i++)
     if (clobbered_regs[i])
-      cfun_gpr_save_slot (i) = -1;
+      cfun_gpr_save_slot (i) = SAVE_SLOT_STACK;
 
   s390_register_info_stdarg_fpr ();
   s390_register_info_gprtofpr ();
-
-  /* First find the range of GPRs to be restored.  Vararg regs don't
-     need to be restored so we do it before assigning slots to the
-     vararg GPRs.  */
-  for (i = 0; i < 16 && cfun_gpr_save_slot (i) != -1; i++);
-  for (j = 15; j > i && cfun_gpr_save_slot (j) != -1; j--);
-  cfun_frame_layout.first_restore_gpr = (i == 16) ? -1 : i;
-  cfun_frame_layout.last_restore_gpr = (i == 16) ? -1 : j;
-
+  s390_register_info_set_ranges ();
   /* stdarg functions might need to save GPRs 2 to 6.  This might
-     override the GPR->FPR save decision made above for r6 since
-     vararg regs must go to the stack.  */
+     override the GPR->FPR save decision made by
+     s390_register_info_gprtofpr for r6 since vararg regs must go to
+     the stack.  */
   s390_register_info_stdarg_gpr ();
-
-  /* Now the range of GPRs which need saving.  */
-  for (i = 0; i < 16 && cfun_gpr_save_slot (i) != -1; i++);
-  for (j = 15; j > i && cfun_gpr_save_slot (j) != -1; j--);
-  cfun_frame_layout.first_save_gpr = (i == 16) ? -1 : i;
-  cfun_frame_layout.last_save_gpr = (i == 16) ? -1 : j;
 }
 
 /* This function is called by s390_optimize_prologue in order to get
@@ -9384,7 +9437,7 @@ static void
 s390_optimize_register_info ()
 {
   char clobbered_regs[32];
-  int i, j;
+  int i;
 
   gcc_assert (epilogue_completed);
   gcc_assert (!cfun->machine->split_branches_pending_p);
@@ -9407,23 +9460,14 @@ s390_optimize_register_info ()
 	|| cfun_frame_layout.save_return_addr_p
 	|| crtl->calls_eh_return);
 
-  memset (cfun_frame_layout.gpr_save_slots, 0, 6);
+  memset (cfun_frame_layout.gpr_save_slots, SAVE_SLOT_NONE, 6);
 
   for (i = 6; i < 16; i++)
     if (!clobbered_regs[i])
-      cfun_gpr_save_slot (i) = 0;
+      cfun_gpr_save_slot (i) = SAVE_SLOT_NONE;
 
-  for (i = 0; i < 16 && cfun_gpr_save_slot (i) != -1; i++);
-  for (j = 15; j > i && cfun_gpr_save_slot (j) != -1; j--);
-  cfun_frame_layout.first_restore_gpr = (i == 16) ? -1 : i;
-  cfun_frame_layout.last_restore_gpr = (i == 16) ? -1 : j;
-
+  s390_register_info_set_ranges ();
   s390_register_info_stdarg_gpr ();
-
-  for (i = 0; i < 16 && cfun_gpr_save_slot (i) != -1; i++);
-  for (j = 15; j > i && cfun_gpr_save_slot (j) != -1; j--);
-  cfun_frame_layout.first_save_gpr = (i == 16) ? -1 : i;
-  cfun_frame_layout.last_save_gpr = (i == 16) ? -1 : j;
 }
 
 /* Fill cfun->machine with info about frame of current function.  */
@@ -9844,7 +9888,7 @@ s390_hard_regno_rename_ok (unsigned int old_reg, unsigned int new_reg)
      regrename manually about it.  */
   if (GENERAL_REGNO_P (new_reg)
       && !call_really_used_regs[new_reg]
-      && cfun_gpr_save_slot (new_reg) == 0)
+      && cfun_gpr_save_slot (new_reg) == SAVE_SLOT_NONE)
     return false;
 
   return true;
@@ -9859,7 +9903,7 @@ s390_hard_regno_scratch_ok (unsigned int regno)
   /* See s390_hard_regno_rename_ok.  */
   if (GENERAL_REGNO_P (regno)
       && !call_really_used_regs[regno]
-      && cfun_gpr_save_slot (regno) == 0)
+      && cfun_gpr_save_slot (regno) == SAVE_SLOT_NONE)
     return false;
 
   return true;
@@ -10440,12 +10484,15 @@ s390_emit_prologue (void)
   int next_fpr = 0;
 
   /* Choose best register to use for temp use within prologue.
-     See below for why TPF must use the register 1.  */
+     TPF with profiling must avoid the register 14 - the tracing function
+     needs the original contents of r14 to be preserved.  */
 
   if (!has_hard_reg_initial_val (Pmode, RETURN_REGNUM)
       && !crtl->is_leaf
       && !TARGET_TPF_PROFILING)
     temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
+  else if (flag_split_stack && cfun->stdarg)
+    temp_reg = gen_rtx_REG (Pmode, 12);
   else
     temp_reg = gen_rtx_REG (Pmode, 1);
 
@@ -10875,7 +10922,7 @@ s390_emit_epilogue (bool sibcall)
 	     be in between two GPRs which need saving.)  Otherwise it
 	     would be difficult to take that decision back in
 	     s390_optimize_prologue.  */
-	  if (cfun_gpr_save_slot (RETURN_REGNUM) == -1)
+	  if (cfun_gpr_save_slot (RETURN_REGNUM) == SAVE_SLOT_STACK)
 	    {
 	      int return_regnum = find_unused_clobbered_reg();
 	      if (!return_regnum)
@@ -10939,6 +10986,166 @@ s300_set_up_by_prologue (hard_reg_set_container *regs)
     SET_HARD_REG_BIT (regs->set, REGNO (cfun->machine->base_reg));
 }
 
+/* -fsplit-stack support.  */
+
+/* A SYMBOL_REF for __morestack.  */
+static GTY(()) rtx morestack_ref;
+
+/* When using -fsplit-stack, the allocation routines set a field in
+   the TCB to the bottom of the stack plus this much space, measured
+   in bytes.  */
+
+#define SPLIT_STACK_AVAILABLE 1024
+
+/* Emit -fsplit-stack prologue, which goes before the regular function
+   prologue.  */
+
+void
+s390_expand_split_stack_prologue (void)
+{
+  rtx r1, guard, cc = NULL;
+  rtx_insn *insn;
+  /* Offset from thread pointer to __private_ss.  */
+  int psso = TARGET_64BIT ? 0x38 : 0x20;
+  /* Pointer size in bytes.  */
+  /* Frame size and argument size - the two parameters to __morestack.  */
+  HOST_WIDE_INT frame_size = cfun_frame_layout.frame_size;
+  /* Align argument size to 8 bytes - simplifies __morestack code.  */
+  HOST_WIDE_INT args_size = crtl->args.size >= 0
+			    ? ((crtl->args.size + 7) & ~7)
+			    : 0;
+  /* Label to be called by __morestack.  */
+  rtx_code_label *call_done = NULL;
+  rtx_code_label *parm_base = NULL;
+  rtx tmp;
+
+  gcc_assert (flag_split_stack && reload_completed);
+  if (!TARGET_CPU_ZARCH)
+    {
+      sorry ("CPUs older than z900 are not supported for -fsplit-stack");
+      return;
+    }
+
+  r1 = gen_rtx_REG (Pmode, 1);
+
+  /* If no stack frame will be allocated, don't do anything.  */
+  if (!frame_size)
+    {
+      if (cfun->machine->split_stack_varargs_pointer != NULL_RTX)
+	{
+	  /* If va_start is used, just use r15.  */
+	  emit_move_insn (r1,
+			 gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+				       GEN_INT (STACK_POINTER_OFFSET)));
+
+	}
+      return;
+    }
+
+  if (morestack_ref == NULL_RTX)
+    {
+      morestack_ref = gen_rtx_SYMBOL_REF (Pmode, "__morestack");
+      SYMBOL_REF_FLAGS (morestack_ref) |= (SYMBOL_FLAG_LOCAL
+					   | SYMBOL_FLAG_FUNCTION);
+    }
+
+  if (CONST_OK_FOR_K (frame_size) || CONST_OK_FOR_Op (frame_size))
+    {
+      /* If frame_size will fit in an add instruction, do a stack space
+	 check, and only call __morestack if there's not enough space.  */
+
+      /* Get thread pointer.  r1 is the only register we can always destroy - r0
+	 could contain a static chain (and cannot be used to address memory
+	 anyway), r2-r6 can contain parameters, and r6-r15 are callee-saved.  */
+      emit_move_insn (r1, gen_rtx_REG (Pmode, TP_REGNUM));
+      /* Aim at __private_ss.  */
+      guard = gen_rtx_MEM (Pmode, plus_constant (Pmode, r1, psso));
+
+      /* If less that 1kiB used, skip addition and compare directly with
+	 __private_ss.  */
+      if (frame_size > SPLIT_STACK_AVAILABLE)
+	{
+	  emit_move_insn (r1, guard);
+	  if (TARGET_64BIT)
+	    emit_insn (gen_adddi3 (r1, r1, GEN_INT (frame_size)));
+	  else
+	    emit_insn (gen_addsi3 (r1, r1, GEN_INT (frame_size)));
+	  guard = r1;
+	}
+
+      /* Compare the (maybe adjusted) guard with the stack pointer.  */
+      cc = s390_emit_compare (LT, stack_pointer_rtx, guard);
+    }
+
+  call_done = gen_label_rtx ();
+  parm_base = gen_label_rtx ();
+
+  /* Emit the parameter block.  */
+  tmp = gen_split_stack_data (parm_base, call_done,
+			      GEN_INT (frame_size),
+			      GEN_INT (args_size));
+  insn = emit_insn (tmp);
+  add_reg_note (insn, REG_LABEL_OPERAND, call_done);
+  LABEL_NUSES (call_done)++;
+  add_reg_note (insn, REG_LABEL_OPERAND, parm_base);
+  LABEL_NUSES (parm_base)++;
+
+  /* %r1 = litbase.  */
+  insn = emit_move_insn (r1, gen_rtx_LABEL_REF (VOIDmode, parm_base));
+  add_reg_note (insn, REG_LABEL_OPERAND, parm_base);
+  LABEL_NUSES (parm_base)++;
+
+  /* Now, we need to call __morestack.  It has very special calling
+     conventions: it preserves param/return/static chain registers for
+     calling main function body, and looks for its own parameters at %r1. */
+
+  if (cc != NULL)
+    {
+      tmp = gen_split_stack_cond_call (morestack_ref, cc, call_done);
+
+      insn = emit_jump_insn (tmp);
+      JUMP_LABEL (insn) = call_done;
+      LABEL_NUSES (call_done)++;
+
+      /* Mark the jump as very unlikely to be taken.  */
+      add_int_reg_note (insn, REG_BR_PROB, REG_BR_PROB_BASE / 100);
+
+      if (cfun->machine->split_stack_varargs_pointer != NULL_RTX)
+	{
+	  /* If va_start is used, and __morestack was not called, just use
+	     r15.  */
+	  emit_move_insn (r1,
+			 gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+				       GEN_INT (STACK_POINTER_OFFSET)));
+	}
+    }
+  else
+    {
+      tmp = gen_split_stack_call (morestack_ref, call_done);
+      insn = emit_jump_insn (tmp);
+      JUMP_LABEL (insn) = call_done;
+      LABEL_NUSES (call_done)++;
+      emit_barrier ();
+    }
+
+  /* __morestack will call us here.  */
+
+  emit_label (call_done);
+}
+
+/* We may have to tell the dataflow pass that the split stack prologue
+   is initializing a register.  */
+
+static void
+s390_live_on_entry (bitmap regs)
+{
+  if (cfun->machine->split_stack_varargs_pointer != NULL_RTX)
+    {
+      gcc_assert (flag_split_stack);
+      bitmap_set_bit (regs, 1);
+    }
+}
+
 /* Return true if the function can use simple_return to return outside
    of a shrink-wrapped region.  At present shrink-wrapping is supported
    in all cases.  */
@@ -10969,7 +11176,7 @@ s390_can_use_return_insn (void)
     return false;
 
   for (i = 0; i < 16; i++)
-    if (cfun_gpr_save_slot (i))
+    if (cfun_gpr_save_slot (i) != SAVE_SLOT_NONE)
       return false;
 
   /* For 31 bit this is not covered by the frame_size check below
@@ -11541,6 +11748,27 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
 
+  if (flag_split_stack
+     && (lookup_attribute ("no_split_stack", DECL_ATTRIBUTES (cfun->decl))
+         == NULL)
+     && cfun->machine->split_stack_varargs_pointer == NULL_RTX)
+    {
+      rtx reg;
+      rtx_insn *seq;
+
+      reg = gen_reg_rtx (Pmode);
+      cfun->machine->split_stack_varargs_pointer = reg;
+
+      start_sequence ();
+      emit_move_insn (reg, gen_rtx_REG (Pmode, 1));
+      seq = get_insns ();
+      end_sequence ();
+
+      push_topmost_sequence ();
+      emit_insn_after (seq, entry_of_function ());
+      pop_topmost_sequence ();
+    }
+
   /* Find the overflow area.
      FIXME: This currently is too pessimistic when the vector ABI is
      enabled.  In that case we *always* set up the overflow area
@@ -11549,7 +11777,10 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
       || n_fpr + cfun->va_list_fpr_size > FP_ARG_NUM_REG
       || TARGET_VX_ABI)
     {
-      t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
+      if (cfun->machine->split_stack_varargs_pointer == NULL_RTX)
+        t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
+      else
+        t = make_tree (TREE_TYPE (ovf), cfun->machine->split_stack_varargs_pointer);
 
       off = INTVAL (crtl->args.arg_offset_rtx);
       off = off < 0 ? 0 : off;
@@ -11973,6 +12204,13 @@ s390_function_profiler (FILE *file, int labelno)
       output_asm_insn ("larl\t%2,%3", op);
       output_asm_insn ("brasl\t%0,%4", op);
       output_asm_insn ("lg\t%0,%1", op);
+    }
+  else if (TARGET_CPU_ZARCH)
+    {
+      output_asm_insn ("st\t%0,%1", op);
+      output_asm_insn ("larl\t%2,%3", op);
+      output_asm_insn ("brasl\t%0,%4", op);
+      output_asm_insn ("l\t%0,%1", op);
     }
   else if (!flag_pic)
     {
@@ -12470,7 +12708,7 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
          replace the symbol itself with the PLT stub.  */
       if (flag_pic && !SYMBOL_REF_LOCAL_P (addr_location))
         {
-	  if (retaddr_reg != NULL_RTX)
+	  if (TARGET_64BIT || retaddr_reg != NULL_RTX)
 	    {
 	      addr_location = gen_rtx_UNSPEC (Pmode,
 					      gen_rtvec (1, addr_location),
@@ -12677,9 +12915,9 @@ s390_optimize_prologue (void)
 
 	  /* It must not happen that what we once saved in an FPR now
 	     needs a stack slot.  */
-	  gcc_assert (cfun_gpr_save_slot (gpr_regno) != -1);
+	  gcc_assert (cfun_gpr_save_slot (gpr_regno) != SAVE_SLOT_STACK);
 
-	  if (cfun_gpr_save_slot (gpr_regno) == 0)
+	  if (cfun_gpr_save_slot (gpr_regno) == SAVE_SLOT_NONE)
 	    {
 	      remove_insn (insn);
 	      continue;
@@ -13570,7 +13808,7 @@ s390_sched_init (FILE *file ATTRIBUTE_UNUSED,
    The loop is analyzed for memory accesses by calling check_dpu for
    each rtx of the loop. Depending on the loop_depth and the amount of
    memory accesses a new number <=nunroll is returned to improve the
-   behaviour of the hardware prefetch unit.  */
+   behavior of the hardware prefetch unit.  */
 static unsigned
 s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 {
@@ -14469,6 +14707,9 @@ s390_asm_file_end (void)
 	     s390_vector_abi);
 #endif
   file_end_indicate_exec_stack ();
+
+  if (flag_split_stack)
+    file_end_indicate_split_stack ();
 }
 
 /* Return true if TYPE is a vector bool type.  */
@@ -14723,6 +14964,9 @@ s390_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1, const_tree ty
 
 #undef TARGET_SET_UP_BY_PROLOGUE
 #define TARGET_SET_UP_BY_PROLOGUE s300_set_up_by_prologue
+
+#undef TARGET_EXTRA_LIVE_ON_ENTRY
+#define TARGET_EXTRA_LIVE_ON_ENTRY s390_live_on_entry
 
 #undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
 #define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \

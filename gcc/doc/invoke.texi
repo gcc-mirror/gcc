@@ -276,12 +276,14 @@ Objective-C and Objective-C++ Dialects}.
 -Wmain -Wmaybe-uninitialized -Wmemset-transposed-args @gol
 -Wmisleading-indentation -Wmissing-braces @gol
 -Wmissing-field-initializers -Wmissing-include-dirs @gol
--Wno-multichar  -Wnonnull  -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
+-Wno-multichar -Wnonnull -Wnonnull-compare @gol
+-Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
 -Wnull-dereference -Wodr  -Wno-overflow  -Wopenmp-simd  @gol
 -Woverride-init-side-effects -Woverlength-strings @gol
 -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses -Wno-pedantic-ms-format @gol
--Wplacement-new -Wpointer-arith  -Wno-pointer-to-int-cast @gol
+-Wplacement-new -Wplacement-new=@var{n} @gol
+-Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wno-pragmas -Wredundant-decls  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
 -Wshift-overflow -Wshift-overflow=@var{n} @gol
@@ -488,8 +490,7 @@ Objective-C and Objective-C++ Dialects}.
 -fpcc-struct-return  -fpic  -fPIC -fpie -fPIE -fno-plt @gol
 -fno-jump-tables @gol
 -frecord-gcc-switches @gol
--freg-struct-return  -fshort-enums @gol
--fshort-double  -fshort-wchar @gol
+-freg-struct-return  -fshort-enums  -fshort-wchar @gol
 -fverbose-asm  -fpack-struct[=@var{n}]  @gol
 -fleading-underscore  -ftls-model=@var{model} @gol
 -fstack-reuse=@var{reuse_level} @gol
@@ -599,7 +600,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmixed-code -mq-class -mRcq -mRcw -msize-level=@var{level} @gol
 -mtune=@var{cpu} -mmultcost=@var{num} @gol
 -munalign-prob-threshold=@var{probability} -mmpy-option=@var{multo} @gol
--mdiv-rem -mcode-density -mll64}
+-mdiv-rem -mcode-density -mll64 -mfpu=@var{fpu}}
 
 @emph{ARM Options}
 @gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
@@ -3537,6 +3538,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wmissing-braces @r{(only for C/ObjC)} @gol
 -Wnarrowing @r{(only for C++)}  @gol
 -Wnonnull  @gol
+-Wnonnull-compare  @gol
 -Wopenmp-simd @gol
 -Wparentheses  @gol
 -Wpointer-sign  @gol
@@ -3795,11 +3797,17 @@ formats that may yield only a two-digit year.
 Warn about passing a null pointer for arguments marked as
 requiring a non-null value by the @code{nonnull} function attribute.
 
-Also warns when comparing an argument marked with the @code{nonnull}
-function attribute against null inside the function.
-
 @option{-Wnonnull} is included in @option{-Wall} and @option{-Wformat}.  It
 can be disabled with the @option{-Wno-nonnull} option.
+
+@item -Wnonnull-compare
+@opindex Wnonnull-compare
+@opindex Wno-nonnull-compare
+Warn when comparing an argument marked with the @code{nonnull}
+function attribute against null inside the function.
+
+@option{-Wnonnull-compare} is included in @option{-Wall}.  It
+can be disabled with the @option{-Wno-nonnull-compare} option.
 
 @item -Wnull-dereference
 @opindex Wnull-dereference
@@ -4894,6 +4902,7 @@ width specifiers @code{I32}, @code{I64}, and @code{I} used on Windows targets,
 which depend on the MS runtime.
 
 @item -Wplacement-new
+@itemx -Wplacement-new=@var{n}
 @opindex Wplacement-new
 @opindex Wno-placement-new
 Warn about placement new expressions with undefined behavior, such as
@@ -4906,7 +4915,36 @@ char buf [64];
 new (buf) int[64];
 @end smallexample
 This warning is enabled by default.
-  
+
+@table @gcctabopt
+@item -Wplacement-new=1
+This is the default warning level of @option{-Wplacement-new}.  At this
+level the warning is not issued for some strictly undefined constructs that
+GCC allows as extensions for compatibility with legacy code.  For example,
+the following @code{new} expression is not diagnosed at this level even
+though it has undefined behavior according to the C++ standard because
+it writes past the end of the one-element array.
+@smallexample
+struct S @{ int n, a[1]; @};
+S *s = (S *)malloc (sizeof *s + 31 * sizeof s->a[0]);
+new (s->a)int [32]();
+@end smallexample
+
+@item -Wplacement-new=2
+At this level, in addition to diagnosing all the same constructs as at level
+1, a diagnostic is also issued for placement new expressions that construct
+an object in the last member of structure whose type is an array of a single
+element and whose size is less than the size of the object being constructed.
+While the previous example would be diagnosed, the following construct makes
+use of the flexible member array extension to avoid the warning at level 2.
+@smallexample
+struct S @{ int n, a[]; @};
+S *s = (S *)malloc (sizeof *s + 32 * sizeof s->a[0]);
+new (s->a)int [32]();
+@end smallexample
+
+@end table
+
 @item -Wpointer-arith
 @opindex Wpointer-arith
 @opindex Wno-pointer-arith
@@ -8987,16 +9025,18 @@ growth.
 Stop reverse growth when the reverse probability of best edge is less than this
 threshold (in percent).
 
-@item tracer-min-branch-ratio
-@itemx tracer-min-branch-ratio-feedback
+@item tracer-min-branch-probability
+@itemx tracer-min-branch-probability-feedback
 
 Stop forward growth if the best edge has probability lower than this
 threshold.
 
-Similarly to @option{tracer-dynamic-coverage} two values are present, one for
-compilation for profile feedback and one for compilation without.  The value
-for compilation with profile feedback needs to be more conservative (higher) in
-order to make tracer effective.
+Similarly to @option{tracer-dynamic-coverage} two parameters are
+provided.  @option{tracer-min-branch-probability-feedback} is used for
+compilation with profile feedback and @option{tracer-min-branch-probability}
+compilation without.  The value for compilation with profile feedback
+needs to be more conservative (higher) in order to make tracer
+effective.
 
 @item max-cse-path-length
 
@@ -9052,20 +9092,6 @@ The maximum number of memory locations cselib should take into account.
 Increasing values mean more aggressive optimization, making the compilation time
 increase with probably slightly better performance.  The default value is 500.
 
-@item reorder-blocks-duplicate
-@itemx reorder-blocks-duplicate-feedback
-
-Used by the basic block reordering pass to decide whether to use unconditional
-branch or duplicate the code on its destination.  Code is duplicated when its
-estimated size is smaller than this value multiplied by the estimated size of
-unconditional jump in the hot spots of the program.
-
-The @option{reorder-block-duplicate-feedback} parameter
-is used only when profile
-feedback is available.  It may be set to higher values than
-@option{reorder-block-duplicate} since information about the hot spots is more
-accurate.
-
 @item max-sched-ready-insns
 The maximum number of instructions ready to be issued the scheduler should
 consider at any given time during the first scheduling pass.  Increasing
@@ -9105,7 +9131,7 @@ The minimal probability of speculation success (in percents), so that
 speculative insns are scheduled.
 The default value is 40.
 
-@item sched-spec-state-edge-prob-cutoff
+@item sched-state-edge-prob-cutoff
 The minimum probability an edge must have for the scheduler to save its
 state across it.
 The default value is 10.
@@ -9124,7 +9150,7 @@ The maximum number of times that an instruction is scheduled during
 selective scheduling.  This is the limit on the number of iterations
 through which the instruction may be pipelined.  The default value is 2.
 
-@item selsched-max-insns-to-rename
+@item selsched-insns-to-rename
 The maximum number of best instructions in the ready list that are considered
 for renaming in the selective scheduler.  The default value is 2.
 
@@ -9394,7 +9420,7 @@ Specify desired number of partitions produced during WHOPR compilation.
 The number of partitions should exceed the number of CPUs used for compilation.
 The default value is 32.
 
-@item lto-minpartition
+@item lto-min-partition
 Size of minimal partition for WHOPR (in estimated instructions).
 This prevents expenses of splitting very small programs into too many
 partitions.
@@ -11087,14 +11113,6 @@ declared range of possible values.  Specifically, the @code{enum} type
 is equivalent to the smallest integer type that has enough room.
 
 @strong{Warning:} the @option{-fshort-enums} switch causes GCC to generate
-code that is not binary compatible with code generated without that switch.
-Use it to conform to a non-default application binary interface.
-
-@item -fshort-double
-@opindex fshort-double
-Use the same size for @code{double} as for @code{float}.
-
-@strong{Warning:} the @option{-fshort-double} switch causes GCC to generate
 code that is not binary compatible with code generated without that switch.
 Use it to conform to a non-default application binary interface.
 
@@ -13314,6 +13332,88 @@ MPYU, MPYM, MPYMU, and MPY_S.
 @end table
 
 This option is only available for ARCv2 cores@.
+
+@item -mfpu=@var{fpu}
+@opindex mfpu
+Enables specific floating-point hardware extension for ARCv2
+core.  Supported values for @var{fpu} are:
+
+@table @samp
+
+@item fpus
+@opindex fpus
+Enables support for single precision floating point hardware
+extensions@.
+
+@item fpud
+@opindex fpud
+Enables support for double precision floating point hardware
+extensions.  The single precision floating point extension is also
+enabled.  Not available for ARC EM@.
+
+@item fpuda
+@opindex fpuda
+Enables support for double precision floating point hardware
+extensions using double precision assist instructions.  The single
+precision floating point extension is also enabled.  This option is
+only available for ARC EM@.
+
+@item fpuda_div
+@opindex fpuda_div
+Enables support for double precision floating point hardware
+extensions using double precision assist instructions, and simple
+precision square-root and divide hardware extensions.  The single
+precision floating point extension is also enabled.  This option is
+only available for ARC EM@.
+
+@item fpuda_fma
+@opindex fpuda_fma
+Enables support for double precision floating point hardware
+extensions using double precision assist instructions, and simple
+precision fused multiple and add hardware extension.  The single
+precision floating point extension is also enabled.  This option is
+only available for ARC EM@.
+
+@item fpuda_all
+@opindex fpuda_all
+Enables support for double precision floating point hardware
+extensions using double precision assist instructions, and all simple
+precision hardware extensions.  The single precision floating point
+extension is also enabled.  This option is only available for ARC EM@.
+
+@item fpus_div
+@opindex fpus_div
+Enables support for single precision floating point, and single
+precision square-root and divide hardware extensions@.
+
+@item fpud_div
+@opindex fpud_div
+Enables support for double precision floating point, and double
+precision square-root and divide hardware extensions.  This option
+includes option @samp{fpus_div}. Not available for ARC EM@.
+
+@item fpus_fma
+@opindex fpus_fma
+Enables support for single precision floating point, and single
+precision fused multiple and add hardware extensions@.
+
+@item fpud_fma
+@opindex fpud_fma
+Enables support for double precision floating point, and double
+precision fused multiple and add hardware extensions.  This option
+includes option @samp{fpus_fma}.  Not available for ARC EM@.
+
+@item fpus_all
+@opindex fpus_all
+Enables support for all single precision floating point hardware
+extensions@.
+
+@item fpud_all
+@opindex fpud_all
+Enables support for all single and double precision floating point
+hardware extensions.  Not available for ARC EM@.
+
+@end table
 
 @end table
 
@@ -23461,9 +23561,6 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @itemx -mfma4
 @opindex mfma4
-@need 200
-@itemx -mno-fma4
-@opindex mno-fma4
 @need 200
 @itemx -mprefetchwt1
 @opindex mprefetchwt1

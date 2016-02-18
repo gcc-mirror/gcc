@@ -3,7 +3,7 @@
 ! { dg-shouldfail "foo" }
 !
 ! PR 36112
-! Check correct bounds-checking behaviour for character-array-constructors.
+! Check correct bounds-checking behavior for character-array-constructors.
 
   call test ("short")
 contains

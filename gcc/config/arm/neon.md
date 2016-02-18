@@ -1836,7 +1836,7 @@
 ; particular, denormal values are flushed to zero.  This means that GCC cannot
 ; use those instructions for autovectorization, etc. unless
 ; -funsafe-math-optimizations is in effect (in which case flush-to-zero
-; behaviour is permissible).  Intrinsic operations (provided by the arm_neon.h
+; behavior is permissible).  Intrinsic operations (provided by the arm_neon.h
 ; header) must work in either case: if -funsafe-math-optimizations is given,
 ; intrinsics expand to "canonical" RTL where possible, otherwise intrinsics
 ; expand to unspecs (which may potentially limit the extent to which they might
@@ -4239,106 +4239,6 @@ if (BYTES_BIG_ENDIAN)
   "vuzp.<V_sz_elem>\t%<V_reg>0, %<V_reg>2"
   [(set_attr "type" "neon_zip<q>")]
 )
-
-(define_expand "neon_vreinterpretv8qi<mode>"
-  [(match_operand:V8QI 0 "s_register_operand" "")
-   (match_operand:VD_RE 1 "s_register_operand" "")]
-  "TARGET_NEON"
-{
-  neon_reinterpret (operands[0], operands[1]);
-  DONE;
-})
-
-(define_expand "neon_vreinterpretv4hi<mode>"
-  [(match_operand:V4HI 0 "s_register_operand" "")
-   (match_operand:VD_RE 1 "s_register_operand" "")]
-  "TARGET_NEON"
-{
-  neon_reinterpret (operands[0], operands[1]);
-  DONE;
-})
-
-(define_expand "neon_vreinterpretv2si<mode>"
-  [(match_operand:V2SI 0 "s_register_operand" "")
-   (match_operand:VD_RE 1 "s_register_operand" "")]
-  "TARGET_NEON"
-{
-  neon_reinterpret (operands[0], operands[1]);
-  DONE;
-})
-
-(define_expand "neon_vreinterpretv2sf<mode>"
-  [(match_operand:V2SF 0 "s_register_operand" "")
-   (match_operand:VD_RE 1 "s_register_operand" "")]
-  "TARGET_NEON"
-{
-  neon_reinterpret (operands[0], operands[1]);
-  DONE;
-})
-
-(define_expand "neon_vreinterpretdi<mode>"
-  [(match_operand:DI 0 "s_register_operand" "")
-   (match_operand:VD_RE 1 "s_register_operand" "")]
-  "TARGET_NEON"
-{
-  neon_reinterpret (operands[0], operands[1]);
-  DONE;
-})
-
-(define_expand "neon_vreinterpretti<mode>"
-  [(match_operand:TI 0 "s_register_operand" "")
-   (match_operand:VQXMOV 1 "s_register_operand" "")]
-  "TARGET_NEON"
-{
-  neon_reinterpret (operands[0], operands[1]);
-  DONE;
-})
-
-
-(define_expand "neon_vreinterpretv16qi<mode>"
-  [(match_operand:V16QI 0 "s_register_operand" "")
-   (match_operand:VQXMOV 1 "s_register_operand" "")]
-  "TARGET_NEON"
-{
-  neon_reinterpret (operands[0], operands[1]);
-  DONE;
-})
-
-(define_expand "neon_vreinterpretv8hi<mode>"
-  [(match_operand:V8HI 0 "s_register_operand" "")
-   (match_operand:VQXMOV 1 "s_register_operand" "")]
-  "TARGET_NEON"
-{
-  neon_reinterpret (operands[0], operands[1]);
-  DONE;
-})
-
-(define_expand "neon_vreinterpretv4si<mode>"
-  [(match_operand:V4SI 0 "s_register_operand" "")
-   (match_operand:VQXMOV 1 "s_register_operand" "")]
-  "TARGET_NEON"
-{
-  neon_reinterpret (operands[0], operands[1]);
-  DONE;
-})
-
-(define_expand "neon_vreinterpretv4sf<mode>"
-  [(match_operand:V4SF 0 "s_register_operand" "")
-   (match_operand:VQXMOV 1 "s_register_operand" "")]
-  "TARGET_NEON"
-{
-  neon_reinterpret (operands[0], operands[1]);
-  DONE;
-})
-
-(define_expand "neon_vreinterpretv2di<mode>"
-  [(match_operand:V2DI 0 "s_register_operand" "")
-   (match_operand:VQXMOV 1 "s_register_operand" "")]
-  "TARGET_NEON"
-{
-  neon_reinterpret (operands[0], operands[1]);
-  DONE;
-})
 
 (define_expand "vec_load_lanes<mode><mode>"
   [(set (match_operand:VDQX 0 "s_register_operand")

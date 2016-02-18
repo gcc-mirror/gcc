@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mcpu=thunderx -save-temps" } */
+/* { dg-options "-O2 -mcpu=thunderx -dA" } */
 
 /* Make sure that #pragma overrides command line option and
    target attribute overrides the pragma.  */

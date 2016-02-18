@@ -8238,7 +8238,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
         else
           {
 	    /* For disjoint address spaces, converting anything but a null
-	       pointer invokes undefined behaviour.  We truncate or extend the
+	       pointer invokes undefined behavior.  We truncate or extend the
 	       value as if we'd converted via integers, which handles 0 as
 	       required, and all others as the programmer likely expects.  */
 #ifndef POINTERS_EXTEND_UNSIGNED

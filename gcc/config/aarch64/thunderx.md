@@ -156,7 +156,7 @@
 
 (define_insn_reservation "thunderx_fcmp" 3
   (and (eq_attr "tune" "thunderx")
-       (eq_attr "type" "fcmps,fcmpd"))
+       (eq_attr "type" "fcmps,fcmpd,fccmps,fccmpd"))
   "thunderx_pipe1")
 
 (define_insn_reservation "thunderx_fmul" 6

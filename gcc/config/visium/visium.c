@@ -57,6 +57,41 @@
 /* This file should be included last.  */
 #include "target-def.h"
 
+/* Enumeration of indexes into machine_libfunc_table.  */
+enum machine_libfunc_index
+{
+  MLTI_long_int_memcpy,
+  MLTI_wrd_memcpy,
+  MLTI_byt_memcpy,
+
+  MLTI_long_int_memset,
+  MLTI_wrd_memset,
+  MLTI_byt_memset,
+
+  MLTI_set_trampoline_parity,
+
+  MLTI_MAX
+};
+
+struct GTY(()) machine_libfuncs
+{
+  rtx table[MLTI_MAX];
+};
+
+/* The table of Visium-specific libfuncs.  */
+static GTY(()) struct machine_libfuncs visium_libfuncs;
+
+#define vlt visium_libfuncs.table
+
+/* Accessor macros for visium_libfuncs.  */
+#define long_int_memcpy_libfunc		(vlt[MLTI_long_int_memcpy])
+#define wrd_memcpy_libfunc		(vlt[MLTI_wrd_memcpy])
+#define byt_memcpy_libfunc		(vlt[MLTI_byt_memcpy])
+#define long_int_memset_libfunc		(vlt[MLTI_long_int_memset])
+#define wrd_memset_libfunc		(vlt[MLTI_wrd_memset])
+#define byt_memset_libfunc		(vlt[MLTI_byt_memset])
+#define set_trampoline_parity_libfunc	(vlt[MLTI_set_trampoline_parity])
+
 /* Machine specific function data. */
 struct GTY (()) machine_function
 {
@@ -187,6 +222,8 @@ static bool visium_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 
 static void visium_option_override (void);
 
+static void visium_init_libfuncs (void);
+
 static unsigned int visium_reorg (void);
 
 /* Setup the global target hooks structure.  */
@@ -281,6 +318,9 @@ static unsigned int visium_reorg (void);
 
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE visium_option_override
+
+#undef  TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS visium_init_libfuncs
 
 #undef  TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE visium_conditional_register_usage
@@ -420,6 +460,23 @@ visium_option_override (void)
       PASS_POS_INSERT_AFTER		/* po_op */
     };
   register_pass (&insert_pass_visium_reorg);
+}
+
+/* Register the Visium-specific libfuncs with the middle-end.  */
+
+static void
+visium_init_libfuncs (void)
+{
+  if (!TARGET_BMI)
+    long_int_memcpy_libfunc = init_one_libfunc ("__long_int_memcpy");
+  wrd_memcpy_libfunc = init_one_libfunc ("__wrd_memcpy");
+  byt_memcpy_libfunc = init_one_libfunc ("__byt_memcpy");
+
+  long_int_memset_libfunc = init_one_libfunc ("__long_int_memset");
+  wrd_memset_libfunc = init_one_libfunc ("__wrd_memset");
+  byt_memset_libfunc = init_one_libfunc ("__byt_memset");
+
+  set_trampoline_parity_libfunc = init_one_libfunc ("__set_trampoline_parity");
 }
 
 /* Return the number of instructions that can issue on the same cycle.  */
@@ -2226,7 +2283,6 @@ visium_split_cstore (enum rtx_code op_code, rtx op0, rtx op1,
 static void
 expand_block_move_4 (rtx dst, rtx dst_reg, rtx src, rtx src_reg, rtx bytes_rtx)
 {
-  const rtx sym = gen_rtx_SYMBOL_REF (Pmode, "__long_int_memcpy");
   unsigned HOST_WIDE_INT bytes = UINTVAL (bytes_rtx);
   unsigned int rem = bytes % 4;
 
@@ -2250,8 +2306,9 @@ expand_block_move_4 (rtx dst, rtx dst_reg, rtx src, rtx src_reg, rtx bytes_rtx)
       emit_insn (insn);
     }
   else
-    emit_library_call (sym, LCT_NORMAL, VOIDmode, 3, dst_reg, Pmode, src_reg,
-		       Pmode,
+    emit_library_call (long_int_memcpy_libfunc, LCT_NORMAL, VOIDmode, 3,
+		       dst_reg, Pmode,
+		       src_reg, Pmode,
 		       convert_to_mode (TYPE_MODE (sizetype),
 					GEN_INT (bytes >> 2),
 				        TYPE_UNSIGNED (sizetype)),
@@ -2282,12 +2339,12 @@ expand_block_move_4 (rtx dst, rtx dst_reg, rtx src, rtx src_reg, rtx bytes_rtx)
 static void
 expand_block_move_2 (rtx dst, rtx dst_reg, rtx src, rtx src_reg, rtx bytes_rtx)
 {
-  const rtx sym = gen_rtx_SYMBOL_REF (Pmode, "__wrd_memcpy");
   unsigned HOST_WIDE_INT bytes = UINTVAL (bytes_rtx);
   unsigned int rem = bytes % 2;
 
-  emit_library_call (sym, LCT_NORMAL, VOIDmode, 3, dst_reg, Pmode, src_reg,
-		     Pmode,
+  emit_library_call (wrd_memcpy_libfunc, LCT_NORMAL, VOIDmode, 3,
+		     dst_reg, Pmode,
+		     src_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype),
 				      GEN_INT (bytes >> 1),
 				      TYPE_UNSIGNED (sizetype)),
@@ -2309,9 +2366,8 @@ expand_block_move_2 (rtx dst, rtx dst_reg, rtx src, rtx src_reg, rtx bytes_rtx)
 static void
 expand_block_move_1 (rtx dst_reg, rtx src_reg, rtx bytes_rtx)
 {
-  const rtx sym = gen_rtx_SYMBOL_REF (Pmode, "__byt_memcpy");
-
-  emit_library_call (sym, LCT_NORMAL, VOIDmode, 3, dst_reg, Pmode,
+  emit_library_call (byt_memcpy_libfunc, LCT_NORMAL, VOIDmode, 3,
+		     dst_reg, Pmode,
 		     src_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype),
 				      bytes_rtx,
@@ -2325,12 +2381,12 @@ expand_block_move_1 (rtx dst_reg, rtx src_reg, rtx bytes_rtx)
 static void
 expand_block_set_4 (rtx dst, rtx dst_reg, rtx value_rtx, rtx bytes_rtx)
 {
-  const rtx sym = gen_rtx_SYMBOL_REF (Pmode, "__long_int_memset");
   unsigned HOST_WIDE_INT bytes = UINTVAL (bytes_rtx);
   unsigned int rem = bytes % 4;
 
   value_rtx = convert_to_mode (Pmode, value_rtx, 1);
-  emit_library_call (sym, LCT_NORMAL, VOIDmode, 3, dst_reg, Pmode,
+  emit_library_call (long_int_memset_libfunc, LCT_NORMAL, VOIDmode, 3,
+		     dst_reg, Pmode,
 		     value_rtx, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype),
 				      GEN_INT (bytes >> 2),
@@ -2371,12 +2427,12 @@ expand_block_set_4 (rtx dst, rtx dst_reg, rtx value_rtx, rtx bytes_rtx)
 static void
 expand_block_set_2 (rtx dst, rtx dst_reg, rtx value_rtx, rtx bytes_rtx)
 {
-  const rtx sym = gen_rtx_SYMBOL_REF (Pmode, "__wrd_memset");
   unsigned HOST_WIDE_INT bytes = UINTVAL (bytes_rtx);
   unsigned int rem = bytes % 2;
 
   value_rtx = convert_to_mode (Pmode, value_rtx, 1);
-  emit_library_call (sym, LCT_NORMAL, VOIDmode, 3, dst_reg, Pmode,
+  emit_library_call (wrd_memset_libfunc, LCT_NORMAL, VOIDmode, 3,
+		     dst_reg, Pmode,
 		     value_rtx, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype),
 				      GEN_INT (bytes >> 1),
@@ -2398,10 +2454,9 @@ expand_block_set_2 (rtx dst, rtx dst_reg, rtx value_rtx, rtx bytes_rtx)
 static void
 expand_block_set_1 (rtx dst_reg, rtx value_rtx, rtx bytes_rtx)
 {
-  const rtx sym = gen_rtx_SYMBOL_REF (Pmode, "__byt_memset");
-
   value_rtx = convert_to_mode (Pmode, value_rtx, 1);
-  emit_library_call (sym, LCT_NORMAL, VOIDmode, 3, dst_reg, Pmode,
+  emit_library_call (byt_memset_libfunc, LCT_NORMAL, VOIDmode, 3,
+		     dst_reg, Pmode,
 		     value_rtx, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype),
 				      bytes_rtx,
@@ -2552,8 +2607,8 @@ visium_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
 					     GEN_INT (0xffff), NULL_RTX),
 				 0x04940000));
 
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__set_trampoline_parity"),
-		     LCT_NORMAL, VOIDmode, 1, addr, SImode);
+  emit_library_call (set_trampoline_parity_libfunc, LCT_NORMAL, VOIDmode, 1,
+		     addr, SImode);
 }
 
 /* Return true if the current function must have and use a frame pointer.  */

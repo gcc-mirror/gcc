@@ -283,7 +283,7 @@ objc_map_iterator_move_to_next (objc_map_t map, objc_map_iterator_t *i)
 /* Return the current key.  You can only call it after you have called
    objc_map_iterator_move_to_next() at least once (to move to the
    first element), and only if the last call returned
-   OBJC_MAP_SUCCESS.  The behaviour is otherwise undefined, probably a
+   OBJC_MAP_SUCCESS.  The behavior is otherwise undefined, probably a
    segmentation fault.  */
 static inline
 tree
@@ -296,7 +296,7 @@ objc_map_iterator_current_key (objc_map_t map, objc_map_iterator_t i)
 /* Return the current value.  You can only call it after you have
    called objc_map_iterator_move_to_next() at least once (to move to
    the first element), and only if the last call returned
-   OBJC_MAP_SUCCESS.  The behaviour is otherwise undefined, probably a
+   OBJC_MAP_SUCCESS.  The behavior is otherwise undefined, probably a
    segmentation fault.  */
 static inline
 tree

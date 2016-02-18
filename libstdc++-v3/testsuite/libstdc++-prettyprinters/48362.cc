@@ -20,6 +20,7 @@
 
 #include <tuple>
 #include <string>
+#include <iostream>
 
 int
 main()
@@ -30,6 +31,7 @@ main()
   std::tuple<std::string, int, std::tuple<>> t2{ "Johnny", 5, {} };
 // { dg-final { regexp-test t2 {std::(__7::)?tuple containing = {\[1\] = "Johnny", \[2\] = 5, \[3\] = {<std::(__7::)?tuple<>> = empty std::(__7::)?tuple, <No data fields>}}} } }
 
+  std::cout << "\n";
   return 0; // Mark SPOT
 }
 

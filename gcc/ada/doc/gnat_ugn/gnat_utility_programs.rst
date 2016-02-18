@@ -4527,7 +4527,7 @@ Alternatively, you may run the script using the following command line:
        ``--additional-tests`` switch.
 
   * ``Skeletons_Default``
-       is used to specify the default behaviour of test skeletons, otherwise
+       is used to specify the default behavior of test skeletons, otherwise
        specified by ``--skeleton-default`` option. The value of this attribute
        should be either ``pass`` or ``fail``.
 

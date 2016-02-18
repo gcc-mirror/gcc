@@ -3280,8 +3280,10 @@ write_template_template_arg (const tree decl)
 		  ::= A <expression> _ </element/ type>
 
      "Array types encode the dimension (number of elements) and the
-     element type. For variable length arrays, the dimension (but not
-     the '_' separator) is omitted."  */
+     element type.  For variable length arrays, the dimension (but not
+     the '_' separator) is omitted."
+     Note that for flexible array members, like for other arrays of
+     unspecified size, the dimension is also omitted.  */
 
 static void
 write_array_type (const tree type)
@@ -3290,29 +3292,31 @@ write_array_type (const tree type)
   if (TYPE_DOMAIN (type))
     {
       tree index_type;
-      tree max;
 
       index_type = TYPE_DOMAIN (type);
-      /* The INDEX_TYPE gives the upper and lower bounds of the
-	 array.  */
-      max = TYPE_MAX_VALUE (index_type);
-      if (TREE_CODE (max) == INTEGER_CST)
+      /* The INDEX_TYPE gives the upper and lower bounds of the array.
+	 It's null for flexible array members which have no upper bound
+	 (this is a change from GCC 5 and prior where such members were
+	 incorrectly mangled as zero-length arrays).  */
+      if (tree max = TYPE_MAX_VALUE (index_type))
 	{
-	  /* The ABI specifies that we should mangle the number of
-	     elements in the array, not the largest allowed index.  */
-	  offset_int wmax = wi::to_offset (max) + 1;
-	  /* Truncate the result - this will mangle [0, SIZE_INT_MAX]
-	     number of elements as zero.  */
-	  wmax = wi::zext (wmax, TYPE_PRECISION (TREE_TYPE (max)));
-	  gcc_assert (wi::fits_uhwi_p (wmax));
-	  write_unsigned_number (wmax.to_uhwi ());
+	  if (TREE_CODE (max) == INTEGER_CST)
+	    {
+	      /* The ABI specifies that we should mangle the number of
+		 elements in the array, not the largest allowed index.  */
+	      offset_int wmax = wi::to_offset (max) + 1;
+	      /* Truncate the result - this will mangle [0, SIZE_INT_MAX]
+		 number of elements as zero.  */
+	      wmax = wi::zext (wmax, TYPE_PRECISION (TREE_TYPE (max)));
+	      gcc_assert (wi::fits_uhwi_p (wmax));
+	      write_unsigned_number (wmax.to_uhwi ());
+	    }
+	  else
+	    {
+	      max = TREE_OPERAND (max, 0);
+	      write_expression (max);
+	    }
 	}
-      else
-	{
-	  max = TREE_OPERAND (max, 0);
-	  write_expression (max);
-	}
-
     }
   write_char ('_');
   write_type (TREE_TYPE (type));

@@ -2583,15 +2583,6 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
       decls.value = NULL_TREE;
     }
 
-  /* It is impossible to overload a built-in function; any explicit
-     declaration eliminates the built-in declaration.  So, if OLDVAL
-     is a built-in, then we can just pretend it isn't there.  */
-  if (oldval
-      && TREE_CODE (oldval) == FUNCTION_DECL
-      && DECL_ANTICIPATED (oldval)
-      && !DECL_HIDDEN_FRIEND_P (oldval))
-    oldval = NULL_TREE;
-
   if (decls.value)
     {
       /* Check for using functions.  */
@@ -2610,6 +2601,10 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	    {
 	      tree new_fn = OVL_CURRENT (tmp);
 
+	      /* Don't import functions that haven't been declared.  */
+	      if (DECL_ANTICIPATED (new_fn))
+		continue;
+
 	      /* [namespace.udecl]
 
 		 If a function declaration in namespace scope or block
@@ -2627,13 +2622,13 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 		    continue; /* this is a using decl */
 		  else if (compparms_for_decl_and_using_decl (new_fn, old_fn))
 		    {
-		      gcc_assert (!DECL_ANTICIPATED (old_fn)
-				  || DECL_HIDDEN_FRIEND_P (old_fn));
-
 		      /* There was already a non-using declaration in
 			 this scope with the same parameter types. If both
 			 are the same extern "C" functions, that's ok.  */
-		      if (decls_match (new_fn, old_fn))
+		      if (DECL_ANTICIPATED (old_fn)
+			  && !DECL_HIDDEN_FRIEND_P (old_fn))
+			/* Ignore anticipated built-ins.  */;
+		      else if (decls_match (new_fn, old_fn))
 			break;
 		      else
 			{
@@ -2669,6 +2664,14 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	}
       else
 	{
+	  /* If we're declaring a non-function and OLDVAL is an anticipated
+	     built-in, just pretend it isn't there.  */
+	  if (oldval
+	      && TREE_CODE (oldval) == FUNCTION_DECL
+	      && DECL_ANTICIPATED (oldval)
+	      && !DECL_HIDDEN_FRIEND_P (oldval))
+	    oldval = NULL_TREE;
+
 	  *newval = decls.value;
 	  if (oldval && !decls_match (*newval, oldval))
 	    error ("%qD is already declared in this scope", name);
@@ -3510,7 +3513,8 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
     }
 
   /* See whether this has been declared in the namespace.  */
-  old = lookup_qualified_name (scope, DECL_NAME (decl), false, true);
+  old = lookup_qualified_name (scope, DECL_NAME (decl), /*type*/false,
+			       /*complain*/true, /*hidden*/true);
   if (old == error_mark_node)
     /* No old declaration at all.  */
     goto complain;
@@ -3573,6 +3577,12 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 	{
 	  if (!is_associated_namespace (scope, CP_DECL_CONTEXT (found)))
 	    goto complain;
+	  if (DECL_HIDDEN_FRIEND_P (found))
+	    {
+	      pedwarn (DECL_SOURCE_LOCATION (decl), 0,
+		       "%qD has not been declared within %D", decl, scope);
+	      inform (DECL_SOURCE_LOCATION (found), "only here as a friend");
+	    }
 	  DECL_CONTEXT (decl) = DECL_CONTEXT (found);
 	  return;
 	}
@@ -4218,9 +4228,9 @@ ambiguous_decl (struct scope_binding *old, cxx_binding *new_binding, int flags)
   val = new_binding->value;
   if (val)
     {
-      if (hidden_name_p (val) && !(flags & LOOKUP_HIDDEN))
-	val = NULL_TREE;
-      else
+      if (!(flags & LOOKUP_HIDDEN))
+	val = remove_hidden_names (val);
+      if (val)
 	switch (TREE_CODE (val))
 	  {
 	  case TEMPLATE_DECL:
@@ -4350,7 +4360,7 @@ hidden_name_p (tree val)
   return false;
 }
 
-/* Remove any hidden friend functions from a possibly overloaded set
+/* Remove any hidden declarations from a possibly overloaded set
    of functions.  */
 
 tree
@@ -4359,7 +4369,7 @@ remove_hidden_names (tree fns)
   if (!fns)
     return fns;
 
-  if (TREE_CODE (fns) == FUNCTION_DECL && hidden_name_p (fns))
+  if (DECL_P (fns) && hidden_name_p (fns))
     fns = NULL_TREE;
   else if (TREE_CODE (fns) == OVERLOAD)
     {
@@ -4517,10 +4527,14 @@ unqualified_namespace_lookup (tree name, int flags)
    neither a class-type nor a namespace a diagnostic is issued.  */
 
 tree
-lookup_qualified_name (tree scope, tree name, bool is_type_p, bool complain)
+lookup_qualified_name (tree scope, tree name, bool is_type_p, bool complain,
+		       bool find_hidden)
 {
   int flags = 0;
   tree t = NULL_TREE;
+
+  if (find_hidden)
+    flags |= LOOKUP_HIDDEN;
 
   if (TREE_CODE (scope) == NAMESPACE_DECL)
     {
@@ -4927,6 +4941,10 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
   /* Now lookup in namespace scopes.  */
   if (!val)
     val = unqualified_namespace_lookup (name, flags);
+
+  /* Anticipated built-ins and friends aren't found by normal lookup.  */
+  if (val && !(flags & LOOKUP_HIDDEN))
+    val = remove_hidden_names (val);
 
   /* If we have a single function from a using decl, pull it out.  */
   if (val && TREE_CODE (val) == OVERLOAD && !really_overloaded_fn (val))

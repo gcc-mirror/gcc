@@ -365,6 +365,47 @@ static const struct option_map option_map[] =
     { "--no-", NULL, "-f", false, true }
   };
 
+/* Helper function for gcc.c's driver::suggest_option, for populating the
+   vec of suggestions for misspelled options.
+
+   option_map above provides various prefixes for spelling command-line
+   options, which decode_cmdline_option uses to map spellings of options
+   to specific options.  We want to do the reverse: to find all the ways
+   that a user could validly spell an option.
+
+   Given valid OPT_TEXT (with a leading dash), add it and all of its valid
+   variant spellings to CANDIDATES, each without a leading dash.
+
+   For example, given "-Wabi-tag", the following are added to CANDIDATES:
+     "Wabi-tag"
+     "Wno-abi-tag"
+     "-warn-abi-tag"
+     "-warn-no-abi-tag".
+
+   The added strings must be freed using free.  */
+
+void
+add_misspelling_candidates (auto_vec<char *> *candidates,
+			    const char *opt_text)
+{
+  gcc_assert (candidates);
+  gcc_assert (opt_text);
+  candidates->safe_push (xstrdup (opt_text + 1));
+  for (unsigned i = 0; i < ARRAY_SIZE (option_map); i++)
+    {
+      const char *opt0 = option_map[i].opt0;
+      const char *new_prefix = option_map[i].new_prefix;
+      size_t new_prefix_len = strlen (new_prefix);
+
+      if (strncmp (opt_text, new_prefix, new_prefix_len) == 0)
+	{
+	  char *alternative = concat (opt0 + 1, opt_text + new_prefix_len,
+				      NULL);
+	  candidates->safe_push (alternative);
+	}
+    }
+}
+
 /* Decode the switch beginning at ARGV for the language indicated by
    LANG_MASK (including CL_COMMON and CL_TARGET if applicable), into
    the structure *DECODED.  Returns the number of switches

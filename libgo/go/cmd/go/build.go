@@ -72,7 +72,8 @@ and test commands:
 		Supported only on linux/amd64, freebsd/amd64, darwin/amd64 and windows/amd64.
 	-msan
 		enable interoperation with memory sanitizer.
-		Supported only on linux/amd64.
+		Supported only on linux/amd64,
+		and only with Clang/LLVM as the host C compiler.
 	-v
 		print the names of packages as they are compiled.
 	-work
@@ -674,6 +675,7 @@ var (
 	goarch    string
 	goos      string
 	exeSuffix string
+	gopath    []string
 )
 
 func init() {
@@ -682,6 +684,7 @@ func init() {
 	if goos == "windows" {
 		exeSuffix = ".exe"
 	}
+	gopath = filepath.SplitList(buildContext.GOPATH)
 }
 
 // A builder holds global state about a build.
@@ -1445,6 +1448,9 @@ func (b *builder) build(a *action) (err error) {
 		if err != nil {
 			return err
 		}
+		if _, ok := buildToolchain.(gccgoToolchain); ok {
+			cgoObjects = append(cgoObjects, filepath.Join(a.objdir, "_cgo_flags"))
+		}
 		cgoObjects = append(cgoObjects, outObj...)
 		gofiles = append(gofiles, outGo...)
 	}
@@ -1691,6 +1697,22 @@ func (b *builder) includeArgs(flag string, all []*action) []string {
 	inc = append(inc, flag, b.work)
 
 	// Finally, look in the installed package directories for each action.
+	// First add the package dirs corresponding to GOPATH entries
+	// in the original GOPATH order.
+	need := map[string]*build.Package{}
+	for _, a1 := range all {
+		if a1.p != nil && a1.pkgdir == a1.p.build.PkgRoot {
+			need[a1.p.build.Root] = a1.p.build
+		}
+	}
+	for _, root := range gopath {
+		if p := need[root]; p != nil && !incMap[p.PkgRoot] {
+			incMap[p.PkgRoot] = true
+			inc = append(inc, flag, p.PkgTargetRoot)
+		}
+	}
+
+	// Then add anything that's left.
 	for _, a1 := range all {
 		if a1.p == nil {
 			continue
@@ -2620,12 +2642,64 @@ func (tools gccgoToolchain) ld(b *builder, root *action, out string, allactions 
 	cxx := len(root.p.CXXFiles) > 0 || len(root.p.SwigCXXFiles) > 0
 	objc := len(root.p.MFiles) > 0
 
+	readCgoFlags := func(flagsFile string) error {
+		flags, err := ioutil.ReadFile(flagsFile)
+		if err != nil {
+			return err
+		}
+		for _, line := range strings.Split(string(flags), "\n") {
+			if strings.HasPrefix(line, "_CGO_LDFLAGS=") {
+				cgoldflags = append(cgoldflags, strings.Fields(line[13:])...)
+			}
+		}
+		return nil
+	}
+
+	readAndRemoveCgoFlags := func(archive string) (string, error) {
+		newa, err := ioutil.TempFile(b.work, filepath.Base(archive))
+		if err != nil {
+			return "", err
+		}
+		olda, err := os.Open(archive)
+		if err != nil {
+			return "", err
+		}
+		_, err = io.Copy(newa, olda)
+		if err != nil {
+			return "", err
+		}
+		err = olda.Close()
+		if err != nil {
+			return "", err
+		}
+		err = newa.Close()
+		if err != nil {
+			return "", err
+		}
+
+		newarchive := newa.Name()
+		err = b.run(b.work, root.p.ImportPath, nil, "ar", "x", newarchive, "_cgo_flags")
+		if err != nil {
+			return "", err
+		}
+		err = b.run(".", root.p.ImportPath, nil, "ar", "d", newarchive, "_cgo_flags")
+		if err != nil {
+			return "", err
+		}
+		err = readCgoFlags(filepath.Join(b.work, "_cgo_flags"))
+		if err != nil {
+			return "", err
+		}
+		return newarchive, nil
+	}
+
 	actionsSeen := make(map[*action]bool)
 	// Make a pre-order depth-first traversal of the action graph, taking note of
 	// whether a shared library action has been seen on the way to an action (the
 	// construction of the graph means that if any path to a node passes through
 	// a shared library action, they all do).
 	var walk func(a *action, seenShlib bool)
+	var err error
 	walk = func(a *action, seenShlib bool) {
 		if actionsSeen[a] {
 			return
@@ -2644,16 +2718,23 @@ func (tools gccgoToolchain) ld(b *builder, root *action, out string, allactions 
 			// doesn't work.
 			if !apackagesSeen[a.p] {
 				apackagesSeen[a.p] = true
+				target := a.target
+				if len(a.p.CgoFiles) > 0 {
+					target, err = readAndRemoveCgoFlags(target)
+					if err != nil {
+						return
+					}
+				}
 				if a.p.fake && a.p.external {
 					// external _tests, if present must come before
 					// internal _tests. Store these on a separate list
 					// and place them at the head after this loop.
-					xfiles = append(xfiles, a.target)
+					xfiles = append(xfiles, target)
 				} else if a.p.fake {
 					// move _test files to the top of the link order
-					afiles = append([]string{a.target}, afiles...)
+					afiles = append([]string{target}, afiles...)
 				} else {
-					afiles = append(afiles, a.target)
+					afiles = append(afiles, target)
 				}
 			}
 		}
@@ -2663,10 +2744,16 @@ func (tools gccgoToolchain) ld(b *builder, root *action, out string, allactions 
 		}
 		for _, a1 := range a.deps {
 			walk(a1, seenShlib)
+			if err != nil {
+				return
+			}
 		}
 	}
 	for _, a1 := range root.deps {
 		walk(a1, false)
+		if err != nil {
+			return err
+		}
 	}
 	afiles = append(xfiles, afiles...)
 
@@ -2692,6 +2779,14 @@ func (tools gccgoToolchain) ld(b *builder, root *action, out string, allactions 
 		}
 		if len(a.p.MFiles) > 0 {
 			objc = true
+		}
+	}
+
+	for i, o := range ofiles {
+		if filepath.Base(o) == "_cgo_flags" {
+			readCgoFlags(o)
+			ofiles = append(ofiles[:i], ofiles[i+1:]...)
+			break
 		}
 	}
 

@@ -1093,7 +1093,7 @@ runtime_mstart(void* mp)
 			runtime_newextram();
 			runtime_needextram = 0;
 		}
-		runtime_initsig();
+		runtime_initsig(false);
 	}
 	
 	if(m->mstartfn)
@@ -2267,7 +2267,7 @@ runtime_malg(int32 stacksize, byte** ret_stack, size_t* ret_stacksize)
 		}
 		*ret_stacksize = stacksize;
 		newg->gcinitial_sp = *ret_stack;
-		newg->gcstack_size = stacksize;
+		newg->gcstack_size = (size_t)stacksize;
 #endif
 	}
 	return newg;

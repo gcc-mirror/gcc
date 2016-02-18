@@ -2140,7 +2140,7 @@ process_alt_operands (int only_alternative)
 			  reject++;
 			}
 		    }
-		  /* We simulate the behaviour of old reload here.
+		  /* We simulate the behavior of old reload here.
 		     Although scratches need hard registers and it
 		     might result in spilling other pseudos, no reload
 		     insns are generated for the scratches.  So it
@@ -3027,7 +3027,7 @@ process_address_1 (int nop, bool check_only_p,
 	      if (insn != NULL_RTX)
 		{
 		  /* Do nothing if we cannot generate right insns.
-		     This is analogous to reload pass behaviour.  */
+		     This is analogous to reload pass behavior.  */
 		  delete_insns_since (last);
 		  end_sequence ();
 		  return false;
@@ -3559,14 +3559,26 @@ curr_insn_transform (bool check_only_p)
 
   if (use_sec_mem_p)
     {
+      int in = -1, out = -1;
       rtx new_reg, src, dest, rld;
       machine_mode sec_mode, rld_mode;
 
-      lra_assert (sec_mem_p);
-      lra_assert (curr_static_id->operand[0].type == OP_OUT
-		  && curr_static_id->operand[1].type == OP_IN);
-      dest = *curr_id->operand_loc[0];
-      src = *curr_id->operand_loc[1];
+      lra_assert (curr_insn_set != NULL_RTX && sec_mem_p);
+      dest = SET_DEST (curr_insn_set);
+      src = SET_SRC (curr_insn_set);
+      for (i = 0; i < n_operands; i++)
+	if (*curr_id->operand_loc[i] == dest)
+	  out = i;
+	else if (*curr_id->operand_loc[i] == src)
+	  in = i;
+      for (i = 0; i < curr_static_id->n_dups; i++)
+	if (out < 0 && *curr_id->dup_loc[i] == dest)
+	  out = curr_static_id->dup_num[i];
+	else if (in < 0 && *curr_id->dup_loc[i] == src)
+	  in = curr_static_id->dup_num[i];
+      lra_assert (out >= 0 && in >= 0
+		  && curr_static_id->operand[out].type == OP_OUT
+		  && curr_static_id->operand[in].type == OP_IN);
       rld = (GET_MODE_SIZE (GET_MODE (dest)) <= GET_MODE_SIZE (GET_MODE (src))
 	     ? dest : src);
       rld_mode = GET_MODE (rld);
@@ -3599,14 +3611,16 @@ curr_insn_transform (bool check_only_p)
 	}
       else if (dest == rld)
         {
-	  *curr_id->operand_loc[0] = new_reg;
+	  *curr_id->operand_loc[out] = new_reg;
+	  lra_update_dup (curr_id, out);
 	  after = emit_spill_move (false, new_reg, dest);
 	  lra_process_new_insns (curr_insn, NULL, after,
 				 "Inserting the sec. move");
 	}
       else
 	{
-	  *curr_id->operand_loc[1] = new_reg;
+	  *curr_id->operand_loc[in] = new_reg;
+	  lra_update_dup (curr_id, in);
 	  /* See comments above.  */
 	  push_to_sequence (before);
 	  before = emit_spill_move (true, new_reg, src);
@@ -5164,8 +5178,10 @@ update_ebb_live_info (rtx_insn *head, rtx_insn *tail)
       curr_id = lra_get_insn_recog_data (curr_insn);
       curr_static_id = curr_id->insn_static_data;
       remove_p = false;
-      if ((set = single_set (curr_insn)) != NULL_RTX && REG_P (SET_DEST (set))
+      if ((set = single_set (curr_insn)) != NULL_RTX
+	  && REG_P (SET_DEST (set))
 	  && (regno = REGNO (SET_DEST (set))) >= FIRST_PSEUDO_REGISTER
+	  && SET_DEST (set) != pic_offset_table_rtx
 	  && bitmap_bit_p (&check_only_regs, regno)
 	  && ! bitmap_bit_p (&live_regs, regno))
 	remove_p = true;

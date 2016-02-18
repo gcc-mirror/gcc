@@ -286,7 +286,7 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt)
 
   if (TYPE_P (var))
     {
-      TREE_TYPE (t) = var;
+      TREE_TYPE (t) = TYPE_MAIN_VARIANT (var);
       SET_SSA_NAME_VAR_OR_IDENTIFIER (t, NULL_TREE);
     }
   else

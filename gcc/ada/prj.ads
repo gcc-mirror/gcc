@@ -1828,7 +1828,7 @@ package Prj is
    --  Severity of some situations, such as: no Ada sources in a project where
    --  Ada is one of the language.
    --
-   --  When the situation occurs, the behaviour depends on the setting:
+   --  When the situation occurs, the behavior depends on the setting:
    --
    --    - Silent:  no action
    --    - Warning: issue a warning, does not cause the tool to fail

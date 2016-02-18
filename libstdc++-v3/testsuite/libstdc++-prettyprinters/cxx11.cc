@@ -144,6 +144,7 @@ main()
   use(uoms);
   use(uptr->s);
 
+  std::cout << "\n";
   return 0;
 }
 
