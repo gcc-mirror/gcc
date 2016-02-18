@@ -1,3 +1,8 @@
+2016-02-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68679
+	* decl2.c (reset_type_linkage_2): Look through member templates.
+
 2016-02-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69850
