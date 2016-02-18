@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"go/build"
 	"go/format"
+	"internal/race"
 	"internal/testenv"
 	"io"
 	"io/ioutil"
@@ -69,7 +70,11 @@ func TestMain(m *testing.M) {
 	flag.Parse()
 
 	if canRun {
-		out, err := exec.Command("go", "build", "-tags", "testgo", "-o", "testgo"+exeSuffix).CombinedOutput()
+		args := []string{"build", "-tags", "testgo", "-o", "testgo" + exeSuffix}
+		if race.Enabled {
+			args = append(args, "-race")
+		}
+		out, err := exec.Command("go", args...).CombinedOutput()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "building testgo failed: %v\n%s", err, out)
 			os.Exit(2)
@@ -657,6 +662,9 @@ func TestGoBuildDashAInDevBranch(t *testing.T) {
 	tg.setenv("TESTGO_IS_GO_RELEASE", "0")
 	tg.run("build", "-v", "-a", "math")
 	tg.grepStderr("runtime", "testgo build -a math in dev branch DID NOT build runtime, but should have")
+
+	// Everything is out of date. Rebuild to leave things in a better state.
+	tg.run("install", "std")
 }
 
 func TestGoBuildDashAInReleaseBranch(t *testing.T) {
@@ -672,11 +680,80 @@ func TestGoBuildDashAInReleaseBranch(t *testing.T) {
 	tg.grepStderr("runtime", "testgo build -a math in release branch DID NOT build runtime, but should have")
 
 	// Now runtime.a is updated (newer mtime), so everything would look stale if not for being a release.
-	//
 	tg.run("build", "-v", "net/http")
 	tg.grepStderrNot("strconv", "testgo build -v net/http in release branch with newer runtime.a DID build strconv but should not have")
 	tg.grepStderrNot("golang.org/x/net/http2/hpack", "testgo build -v net/http in release branch with newer runtime.a DID build .../golang.org/x/net/http2/hpack but should not have")
 	tg.grepStderrNot("net/http", "testgo build -v net/http in release branch with newer runtime.a DID build net/http but should not have")
+
+	// Everything is out of date. Rebuild to leave things in a better state.
+	tg.run("install", "std")
+}
+
+func TestNewReleaseRebuildsStalePackagesInGOPATH(t *testing.T) {
+	if testing.Short() {
+		t.Skip("don't rebuild the standard library in short mode")
+	}
+
+	tg := testgo(t)
+	defer tg.cleanup()
+
+	addNL := func(name string) (restore func()) {
+		data, err := ioutil.ReadFile(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		old := data
+		data = append(data, '\n')
+		if err := ioutil.WriteFile(name, append(data, '\n'), 0666); err != nil {
+			t.Fatal(err)
+		}
+		tg.sleep()
+		return func() {
+			if err := ioutil.WriteFile(name, old, 0666); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+
+	tg.setenv("TESTGO_IS_GO_RELEASE", "1")
+
+	tg.tempFile("d1/src/p1/p1.go", `package p1`)
+	tg.setenv("GOPATH", tg.path("d1"))
+	tg.run("install", "-a", "p1")
+	tg.wantNotStale("p1", "./testgo list claims p1 is stale, incorrectly")
+	tg.sleep()
+
+	// Changing mtime and content of runtime/internal/sys/sys.go
+	// should have no effect: we're in a release, which doesn't rebuild
+	// for general mtime or content changes.
+	sys := runtime.GOROOT() + "/src/runtime/internal/sys/sys.go"
+	restore := addNL(sys)
+	defer restore()
+	tg.wantNotStale("p1", "./testgo list claims p1 is stale, incorrectly, after updating runtime/internal/sys/sys.go")
+	restore()
+	tg.wantNotStale("p1", "./testgo list claims p1 is stale, incorrectly, after restoring runtime/internal/sys/sys.go")
+
+	// But changing runtime/internal/sys/zversion.go should have an effect:
+	// that's how we tell when we flip from one release to another.
+	zversion := runtime.GOROOT() + "/src/runtime/internal/sys/zversion.go"
+	restore = addNL(zversion)
+	defer restore()
+	tg.wantStale("p1", "./testgo list claims p1 is NOT stale, incorrectly, after changing to new release")
+	restore()
+	tg.wantNotStale("p1", "./testgo list claims p1 is stale, incorrectly, after changing back to old release")
+	addNL(zversion)
+	tg.wantStale("p1", "./testgo list claims p1 is NOT stale, incorrectly, after changing again to new release")
+	tg.run("install", "p1")
+	tg.wantNotStale("p1", "./testgo list claims p1 is stale after building with new release")
+
+	// Restore to "old" release.
+	restore()
+	tg.wantStale("p1", "./testgo list claims p1 is NOT stale, incorrectly, after changing to old release after new build")
+	tg.run("install", "p1")
+	tg.wantNotStale("p1", "./testgo list claims p1 is stale after building with old release")
+
+	// Everything is out of date. Rebuild to leave things in a better state.
+	tg.run("install", "std")
 }
 
 func TestGoListStandard(t *testing.T) {
@@ -756,8 +833,8 @@ func TestGoInstallRebuildsStalePackagesInOtherGOPATH(t *testing.T) {
 	sep := string(filepath.ListSeparator)
 	tg.setenv("GOPATH", tg.path("d1")+sep+tg.path("d2"))
 	tg.run("install", "p1")
-	tg.wantNotStale("p1", "./testgo list mypkg claims p1 is stale, incorrectly")
-	tg.wantNotStale("p2", "./testgo list mypkg claims p2 is stale, incorrectly")
+	tg.wantNotStale("p1", "./testgo list claims p1 is stale, incorrectly")
+	tg.wantNotStale("p2", "./testgo list claims p2 is stale, incorrectly")
 	tg.sleep()
 	if f, err := os.OpenFile(tg.path("d2/src/p2/p2.go"), os.O_WRONLY|os.O_APPEND, 0); err != nil {
 		t.Fatal(err)
@@ -766,12 +843,12 @@ func TestGoInstallRebuildsStalePackagesInOtherGOPATH(t *testing.T) {
 	} else {
 		tg.must(f.Close())
 	}
-	tg.wantStale("p2", "./testgo list mypkg claims p2 is NOT stale, incorrectly")
-	tg.wantStale("p1", "./testgo list mypkg claims p1 is NOT stale, incorrectly")
+	tg.wantStale("p2", "./testgo list claims p2 is NOT stale, incorrectly")
+	tg.wantStale("p1", "./testgo list claims p1 is NOT stale, incorrectly")
 
 	tg.run("install", "p1")
-	tg.wantNotStale("p2", "./testgo list mypkg claims p2 is stale after reinstall, incorrectly")
-	tg.wantNotStale("p1", "./testgo list mypkg claims p1 is stale after reinstall, incorrectly")
+	tg.wantNotStale("p2", "./testgo list claims p2 is stale after reinstall, incorrectly")
+	tg.wantNotStale("p1", "./testgo list claims p1 is stale after reinstall, incorrectly")
 }
 
 func TestGoInstallDetectsRemovedFiles(t *testing.T) {
@@ -1621,7 +1698,7 @@ func TestGoTestDashOWritesBinary(t *testing.T) {
 }
 
 // Issue 4568.
-func TestSymlinksDoNotConfuseGoList(t *testing.T) {
+func TestSymlinksList(t *testing.T) {
 	switch runtime.GOOS {
 	case "plan9", "windows":
 		t.Skipf("skipping symlink test on %s", runtime.GOOS)
@@ -1638,6 +1715,58 @@ func TestSymlinksDoNotConfuseGoList(t *testing.T) {
 	if strings.TrimSpace(tg.getStdout()) != tg.path(".") {
 		t.Error("confused by symlinks")
 	}
+}
+
+// Issue 14054.
+func TestSymlinksVendor(t *testing.T) {
+	switch runtime.GOOS {
+	case "plan9", "windows":
+		t.Skipf("skipping symlink test on %s", runtime.GOOS)
+	}
+
+	tg := testgo(t)
+	defer tg.cleanup()
+	tg.setenv("GO15VENDOREXPERIMENT", "1")
+	tg.tempDir("gopath/src/dir1/vendor/v")
+	tg.tempFile("gopath/src/dir1/p.go", "package main\nimport _ `v`\nfunc main(){}")
+	tg.tempFile("gopath/src/dir1/vendor/v/v.go", "package v")
+	tg.must(os.Symlink(tg.path("gopath/src/dir1"), tg.path("symdir1")))
+	tg.setenv("GOPATH", tg.path("gopath"))
+	tg.cd(tg.path("symdir1"))
+	tg.run("list", "-f", "{{.Root}}", ".")
+	if strings.TrimSpace(tg.getStdout()) != tg.path("gopath") {
+		t.Error("list confused by symlinks")
+	}
+
+	// All of these should succeed, not die in vendor-handling code.
+	tg.run("run", "p.go")
+	tg.run("build")
+	tg.run("install")
+}
+
+func TestSymlinksInternal(t *testing.T) {
+	switch runtime.GOOS {
+	case "plan9", "windows":
+		t.Skipf("skipping symlink test on %s", runtime.GOOS)
+	}
+
+	tg := testgo(t)
+	defer tg.cleanup()
+	tg.tempDir("gopath/src/dir1/internal/v")
+	tg.tempFile("gopath/src/dir1/p.go", "package main\nimport _ `dir1/internal/v`\nfunc main(){}")
+	tg.tempFile("gopath/src/dir1/internal/v/v.go", "package v")
+	tg.must(os.Symlink(tg.path("gopath/src/dir1"), tg.path("symdir1")))
+	tg.setenv("GOPATH", tg.path("gopath"))
+	tg.cd(tg.path("symdir1"))
+	tg.run("list", "-f", "{{.Root}}", ".")
+	if strings.TrimSpace(tg.getStdout()) != tg.path("gopath") {
+		t.Error("list confused by symlinks")
+	}
+
+	// All of these should succeed, not die in internal-handling code.
+	tg.run("run", "p.go")
+	tg.run("build")
+	tg.run("install")
 }
 
 // Issue 4515.
@@ -2441,6 +2570,59 @@ func TestGoInstallShadowedGOPATH(t *testing.T) {
 	tg.grepStderr("no install location for.*gopath2.src.test: hidden by .*gopath1.src.test", "missing error")
 }
 
+func TestGoBuildGOPATHOrder(t *testing.T) {
+	// golang.org/issue/14176#issuecomment-179895769
+	// golang.org/issue/14192
+	// -I arguments to compiler could end up not in GOPATH order,
+	// leading to unexpected import resolution in the compiler.
+	// This is still not a complete fix (see golang.org/issue/14271 and next test)
+	// but it is clearly OK and enough to fix both of the two reported
+	// instances of the underlying problem. It will have to do for now.
+
+	tg := testgo(t)
+	defer tg.cleanup()
+	tg.makeTempdir()
+	tg.setenv("GOPATH", tg.path("p1")+string(filepath.ListSeparator)+tg.path("p2"))
+
+	tg.tempFile("p1/src/foo/foo.go", "package foo\n")
+	tg.tempFile("p2/src/baz/baz.go", "package baz\n")
+	tg.tempFile("p2/pkg/"+runtime.GOOS+"_"+runtime.GOARCH+"/foo.a", "bad\n")
+	tg.tempFile("p1/src/bar/bar.go", `
+		package bar
+		import _ "baz"
+		import _ "foo"
+	`)
+
+	tg.run("install", "-x", "bar")
+}
+
+func TestGoBuildGOPATHOrderBroken(t *testing.T) {
+	// This test is known not to work.
+	// See golang.org/issue/14271.
+	t.Skip("golang.org/issue/14271")
+
+	tg := testgo(t)
+	defer tg.cleanup()
+	tg.makeTempdir()
+
+	tg.tempFile("p1/src/foo/foo.go", "package foo\n")
+	tg.tempFile("p2/src/baz/baz.go", "package baz\n")
+	tg.tempFile("p1/pkg/"+runtime.GOOS+"_"+runtime.GOARCH+"/baz.a", "bad\n")
+	tg.tempFile("p2/pkg/"+runtime.GOOS+"_"+runtime.GOARCH+"/foo.a", "bad\n")
+	tg.tempFile("p1/src/bar/bar.go", `
+		package bar
+		import _ "baz"
+		import _ "foo"
+	`)
+
+	colon := string(filepath.ListSeparator)
+	tg.setenv("GOPATH", tg.path("p1")+colon+tg.path("p2"))
+	tg.run("install", "-x", "bar")
+
+	tg.setenv("GOPATH", tg.path("p2")+colon+tg.path("p1"))
+	tg.run("install", "-x", "bar")
+}
+
 func TestIssue11709(t *testing.T) {
 	tg := testgo(t)
 	defer tg.cleanup()
@@ -2557,4 +2739,23 @@ func TestIssue13655(t *testing.T) {
 		tg.run("list", "-f", "{{.Deps}}", pkg)
 		tg.grepStdout("runtime/internal/sys", "did not find required dependency of "+pkg+" on runtime/internal/sys")
 	}
+}
+
+// For issue 14337.
+func TestParallelTest(t *testing.T) {
+	tg := testgo(t)
+	defer tg.cleanup()
+	tg.makeTempdir()
+	const testSrc = `package package_test
+		import (
+			"testing"
+		)
+		func TestTest(t *testing.T) {
+		}`
+	tg.tempFile("src/p1/p1_test.go", strings.Replace(testSrc, "package_test", "p1_test", 1))
+	tg.tempFile("src/p2/p2_test.go", strings.Replace(testSrc, "package_test", "p2_test", 1))
+	tg.tempFile("src/p3/p3_test.go", strings.Replace(testSrc, "package_test", "p3_test", 1))
+	tg.tempFile("src/p4/p4_test.go", strings.Replace(testSrc, "package_test", "p4_test", 1))
+	tg.setenv("GOPATH", tg.path("."))
+	tg.run("test", "-p=4", "p1", "p2", "p3", "p4")
 }

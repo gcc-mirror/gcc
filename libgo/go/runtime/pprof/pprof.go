@@ -351,7 +351,7 @@ func printStackRecord(w io.Writer, stk []uintptr, allFrames bool) {
 			name := f.Name()
 			// Hide runtime.goexit and any runtime functions at the beginning.
 			// This is useful mainly for allocation traces.
-			wasPanic = name == "runtime.panic"
+			wasPanic = name == "runtime.gopanic"
 			if name == "runtime.goexit" || !show && (strings.HasPrefix(name, "runtime.") || strings.HasPrefix(name, "runtime_")) {
 				continue
 			}
