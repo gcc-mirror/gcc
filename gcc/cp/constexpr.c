@@ -2234,6 +2234,7 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
   bool side_effects_p = false;
   FOR_EACH_CONSTRUCTOR_ELT (v, i, index, value)
     {
+      tree orig_value = value;
       constexpr_ctx new_ctx;
       init_subob_ctx (ctx, new_ctx, index, value);
       if (new_ctx.ctor != ctx->ctor)
@@ -2246,7 +2247,7 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
       /* Don't VERIFY_CONSTANT here.  */
       if (ctx->quiet && *non_constant_p)
 	break;
-      if (elt != value)
+      if (elt != orig_value)
 	changed = true;
 
       if (!TREE_CONSTANT (elt))
