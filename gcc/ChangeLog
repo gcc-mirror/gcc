@@ -1,3 +1,12 @@
+2016-02-18  Bernd Schmidt  <bschmidt@redhat.com>
+
+	Backport from mainline
+	2016-02-15  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/69648
+	* lra-constraints.c (update_ebb_live_info): Don't remove sets of
+	pic_offset_table_rtx.
+
 2016-02-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
@@ -6,7 +15,7 @@
 	* config/rs6000/altivec.md (*altivec_lvxl_<mode>_internal): Output
 	correct instruction.
 
-2016-02-16  Bernd Schmidt  <bernds@codesourcery.com>
+2016-02-16  Bernd Schmidt  <bschmidt@redhat.com>
 
 	Backport from mainline
 	2016-02-15  Bernd Schmidt  <bschmidt@redhat.com>
@@ -230,7 +239,7 @@
 	fixes for X +- Y CMP X and C - X CMP X folding.  Add X CMP X +- Y
 	and X CMP C - X folding.
 
-2016-02-09  Bernd Schmidt  <bernds@codesourcery.com>
+2016-02-09  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR middle-end/65702
 	* varasm.c (make_decl_rtl): Mark invalid register vars as
