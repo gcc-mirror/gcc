@@ -1,3 +1,9 @@
+2016-02-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from gcc-5-branch.
+	PR libgfortran/69668
+	* io/list_read.c (read_character): Remove code related to DELIM_NONE.
+
 2015-08-28  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backport from gcc-5-branch.

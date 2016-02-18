@@ -1,3 +1,10 @@
+2016-02-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from gcc-5-branch.
+	PR libgfortran/69668
+	* gfortran.dg/namelist_38.f90: Update test.
+	* gfortran.dg/namelist_84.f90: Update test.
+
 2016-02-18  Marek Polacek  <polacek@redhat.com>
 
 	2016-02-12  Marek Polacek  <polacek@redhat.com>
