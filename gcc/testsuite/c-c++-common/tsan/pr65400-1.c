@@ -7,9 +7,9 @@
 #include "tsan_barrier.h"
 
 static pthread_barrier_t barrier;
-int v;
-int q;
-int o;
+int v __attribute__((aligned(8)));
+int q __attribute__((aligned(8)));
+int o __attribute__((aligned(8)));
 extern void baz4 (int *);
 
 __attribute__((noinline, noclone)) int
