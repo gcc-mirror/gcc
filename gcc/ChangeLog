@@ -1,3 +1,14 @@
+2016-02-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/68404
+	* config/rs6000/predicates.md (fusion_gpr_addis): Revert
+	2016-02-09 change.
+
+	* config/rs6000/rs6000.md (fusion_gpr_load_<mode>): Remove
+	earlyclobber from target.  Use wF constraint for fused memory
+	address.
+	(fusion_gpr_<P:mode>_<GPR_FUSION:mode>_load): Likewise.
+
 2016-02-18  Jakub Jelinek  <jakub@redhat.com>
 	    Martin Liska  <mliska@suse.cz>
 

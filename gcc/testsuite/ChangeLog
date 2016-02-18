@@ -1,3 +1,9 @@
+2016-02-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/68404
+	* gcc.target/powerpc/fusion.c: Revert the 2016-02-09 change.
+	* gcc.target/powerpc/fusion3.c: Likewise.
+
 2016-02-18  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/69553
