@@ -528,21 +528,32 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
 {
   vec<constructor_elt, va_gc> *vec = NULL;
   bool ok = true;
-  if (TREE_CODE (body) == MUST_NOT_THROW_EXPR
-      || TREE_CODE (body) == EH_SPEC_BLOCK)
-    body = TREE_OPERAND (body, 0);
-  if (TREE_CODE (body) == STATEMENT_LIST)
-    {
-      for (tree_stmt_iterator i = tsi_start (body);
-	   !tsi_end_p (i); tsi_next (&i))
-	{
-	  body = tsi_stmt (i);
-	  if (TREE_CODE (body) == BIND_EXPR)
-	    break;
-	}
+  while (true)
+    switch (TREE_CODE (body))
+      {
+      case MUST_NOT_THROW_EXPR:
+      case EH_SPEC_BLOCK:
+	body = TREE_OPERAND (body, 0);
+	break;
+
+      case STATEMENT_LIST:
+	for (tree_stmt_iterator i = tsi_start (body);
+	     !tsi_end_p (i); tsi_next (&i))
+	  {
+	    body = tsi_stmt (i);
+	    if (TREE_CODE (body) == BIND_EXPR)
+	      break;
+	  }
+	break;
+
+      case BIND_EXPR:
+	body = BIND_EXPR_BODY (body);
+	goto found;
+
+      default:
+	gcc_unreachable ();
     }
-  if (TREE_CODE (body) == BIND_EXPR)
-    body = BIND_EXPR_BODY (body);
+ found:
   if (TREE_CODE (body) == CLEANUP_POINT_EXPR)
     {
       body = TREE_OPERAND (body, 0);
