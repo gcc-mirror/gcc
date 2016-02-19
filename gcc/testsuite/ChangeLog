@@ -1,3 +1,8 @@
+2016-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69820
+	* gcc.target/i386/pr69820.c: New test.
+
 2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/vector/int128-1.c: New test.

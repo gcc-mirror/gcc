@@ -522,7 +522,10 @@
 (define_mode_iterator VI_256 [V32QI V16HI V8SI V4DI])
 
 ;; All 512bit vector integer modes
-(define_mode_iterator VI_512 [V64QI V32HI V16SI V8DI])
+(define_mode_iterator VI_512
+  [(V64QI "TARGET_AVX512BW")
+   (V32HI "TARGET_AVX512BW")
+   V16SI V8DI])
 
 ;; Various 128bit vector integer mode combinations
 (define_mode_iterator VI12_128 [V16QI V8HI])
