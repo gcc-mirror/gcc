@@ -3678,12 +3678,15 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
     body = integer_zero_node;
 
   /* Outermost wrapper: If pointer is null, punt.  */
+  tree cond
+    = fold_build2_loc (input_location, NE_EXPR, boolean_type_node, base,
+		       fold_convert (TREE_TYPE (base), nullptr_node));
+  /* This is a compiler generated comparison, don't emit
+     e.g. -Wnonnull-compare warning for it.  */
+  if (TREE_CODE (cond) == NE_EXPR)
+    TREE_NO_WARNING (cond) = 1;
   body = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-		      fold_build2_loc (input_location,
-				   NE_EXPR, boolean_type_node, base,
-				   fold_convert (TREE_TYPE (base),
-						 nullptr_node)),
-		      body, integer_zero_node);
+			  cond, body, integer_zero_node);
   body = build1 (NOP_EXPR, void_type_node, body);
 
   if (controller)

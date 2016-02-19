@@ -2068,6 +2068,9 @@ cp_fold (tree x)
       else
 	x = fold (x);
 
+      if (TREE_NO_WARNING (org_x)
+	  && TREE_CODE (x) == TREE_CODE (org_x))
+	TREE_NO_WARNING (x) = 1;
       break;
 
     case VEC_COND_EXPR:
