@@ -1,5 +1,11 @@
 2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/vector.md ("<ti*>add<mode>3", "<ti*>sub<mode>3"):
+	Change the predicate of op2 from nonimmediate to general and let
+	reload fix it if necessary.
+
+2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/vecintrin.h (vec_sub_u128): Define missing macro.
 
 2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
