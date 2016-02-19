@@ -9,7 +9,7 @@ void test(char *dest, const char *src)
   __builtin_stpcpy (dest, src);
 }
 
-/* { dg-final { scan-assembler-times {{[*]movstr}} 1 } } */
+/* { dg-final { scan-assembler-times {{[*]movstr}|{vec_vfenesv16qi}} 1 } } */
 
 #define LEN 200
 char buf[LEN];

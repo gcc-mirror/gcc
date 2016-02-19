@@ -1,5 +1,11 @@
 2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.target/s390/md/movstr-1.c: Allow also the z13 strings
+	instruction pattern name to prevent the testcase from failing with
+	-march=z13.
+
+2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.target/s390/md/movstr-2.c: New test.
 
 2016-02-19  Marcin Kościelnicki  <koriakin@0x04.net>
