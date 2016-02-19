@@ -1,3 +1,8 @@
+2016-02-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (C++ Dialect Options): Clarify interaction of
+	-Wnarrowing with -std.
+
 2016-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69851
