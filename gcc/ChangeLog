@@ -1,5 +1,10 @@
 2016-02-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/69838
+	* lra.c (lra_process_new_insns): If non-call exceptions are enabled,
+	call copy_reg_eh_region_note_forward on before and/or after sequences
+	and remove note from insn if it no longer can throw.
+
 	PR target/69820
 	* config/i386/sse.md (VI_512): Only include V64QImode and V32HImode
 	if TARGET_AVX512BW.
