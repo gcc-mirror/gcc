@@ -5622,6 +5622,124 @@ s390_expand_vec_strlen (rtx target, rtx string, rtx alignment)
     emit_move_insn (target, temp);
 }
 
+void
+s390_expand_vec_movstr (rtx result, rtx dst, rtx src)
+{
+  int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
+  rtx temp = gen_reg_rtx (Pmode);
+  rtx src_addr = XEXP (src, 0);
+  rtx dst_addr = XEXP (dst, 0);
+  rtx src_addr_reg = gen_reg_rtx (Pmode);
+  rtx dst_addr_reg = gen_reg_rtx (Pmode);
+  rtx offset = gen_reg_rtx (Pmode);
+  rtx vsrc = gen_reg_rtx (V16QImode);
+  rtx vpos = gen_reg_rtx (V16QImode);
+  rtx loadlen = gen_reg_rtx (SImode);
+  rtx gpos_qi = gen_reg_rtx(QImode);
+  rtx gpos = gen_reg_rtx (SImode);
+  rtx done_label = gen_label_rtx ();
+  rtx loop_label = gen_label_rtx ();
+  rtx exit_label = gen_label_rtx ();
+  rtx full_label = gen_label_rtx ();
+
+  /* Perform a quick check for string ending on the first up to 16
+     bytes and exit early if successful.  */
+
+  emit_insn (gen_vlbb (vsrc, src, GEN_INT (6)));
+  emit_insn (gen_lcbb (loadlen, src_addr, GEN_INT (6)));
+  emit_insn (gen_vfenezv16qi (vpos, vsrc, vsrc));
+  emit_insn (gen_vec_extractv16qi (gpos_qi, vpos, GEN_INT (7)));
+  emit_move_insn (gpos, gen_rtx_SUBREG (SImode, gpos_qi, 0));
+  /* gpos is the byte index if a zero was found and 16 otherwise.
+     So if it is lower than the loaded bytes we have a hit.  */
+  emit_cmp_and_jump_insns (gpos, loadlen, GE, NULL_RTX, SImode, 1,
+			   full_label);
+  emit_insn (gen_vstlv16qi (vsrc, gpos, dst));
+
+  force_expand_binop (Pmode, add_optab, dst_addr, gpos, result,
+		      1, OPTAB_DIRECT);
+  emit_jump (exit_label);
+  emit_barrier ();
+
+  emit_label (full_label);
+  LABEL_NUSES (full_label) = 1;
+
+  /* Calculate `offset' so that src + offset points to the last byte
+     before 16 byte alignment.  */
+
+  /* temp = src_addr & 0xf */
+  force_expand_binop (Pmode, and_optab, src_addr, GEN_INT (15), temp,
+		      1, OPTAB_DIRECT);
+
+  /* offset = 0xf - temp */
+  emit_move_insn (offset, GEN_INT (15));
+  force_expand_binop (Pmode, sub_optab, offset, temp, offset,
+		      1, OPTAB_DIRECT);
+
+  /* Store `offset' bytes in the dstination string.  The quick check
+     has loaded at least `offset' bytes into vsrc.  */
+
+  emit_insn (gen_vstlv16qi (vsrc, gen_lowpart (SImode, offset), dst));
+
+  /* Advance to the next byte to be loaded.  */
+  force_expand_binop (Pmode, add_optab, offset, const1_rtx, offset,
+		      1, OPTAB_DIRECT);
+
+  /* Make sure the addresses are single regs which can be used as a
+     base.  */
+  emit_move_insn (src_addr_reg, src_addr);
+  emit_move_insn (dst_addr_reg, dst_addr);
+
+  /* MAIN LOOP */
+
+  emit_label (loop_label);
+  LABEL_NUSES (loop_label) = 1;
+
+  emit_move_insn (vsrc,
+		  gen_rtx_MEM (V16QImode,
+			       gen_rtx_PLUS (Pmode, src_addr_reg, offset)));
+
+  emit_insn (gen_vec_vfenesv16qi (vpos, vsrc, vsrc,
+				  GEN_INT (VSTRING_FLAG_ZS | VSTRING_FLAG_CS)));
+  add_int_reg_note (s390_emit_ccraw_jump (8, EQ, done_label),
+		    REG_BR_PROB, very_unlikely);
+
+  emit_move_insn (gen_rtx_MEM (V16QImode,
+			       gen_rtx_PLUS (Pmode, dst_addr_reg, offset)),
+		  vsrc);
+  /* offset += 16 */
+  force_expand_binop (Pmode, add_optab, offset, GEN_INT (16),
+		      offset,  1, OPTAB_DIRECT);
+
+  emit_jump (loop_label);
+  emit_barrier ();
+
+  /* REGULAR EXIT */
+
+  /* We are done.  Add the offset of the zero character to the dst_addr
+     pointer to get the result.  */
+
+  emit_label (done_label);
+  LABEL_NUSES (done_label) = 1;
+
+  force_expand_binop (Pmode, add_optab, dst_addr_reg, offset, dst_addr_reg,
+		      1, OPTAB_DIRECT);
+
+  emit_insn (gen_vec_extractv16qi (gpos_qi, vpos, GEN_INT (7)));
+  emit_move_insn (gpos, gen_rtx_SUBREG (SImode, gpos_qi, 0));
+
+  emit_insn (gen_vstlv16qi (vsrc, gpos, gen_rtx_MEM (BLKmode, dst_addr_reg)));
+
+  force_expand_binop (Pmode, add_optab, dst_addr_reg, gpos, result,
+		      1, OPTAB_DIRECT);
+
+  /* EARLY EXIT */
+
+  emit_label (exit_label);
+  LABEL_NUSES (exit_label) = 1;
+}
+
+
 /* Expand conditional increment or decrement using alc/slb instructions.
    Should generate code setting DST to either SRC or SRC + INCREMENT,
    depending on the result of the comparison CMP_OP0 CMP_CODE CMP_OP1.
