@@ -1,3 +1,7 @@
+2016-02-19  Marcin Kościelnicki  <koriakin@0x04.net>
+
+	* gcc.target/s390/morestack.c: New test.
+
 2016-02-19  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR target/69625
