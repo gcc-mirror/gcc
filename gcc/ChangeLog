@@ -1,3 +1,9 @@
+2016-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69820
+	* config/i386/sse.md (VI_512): Only include V64QImode and V32HImode
+	if TARGET_AVX512BW.
+
 2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/vector.md: Add missing commutative operand markers
