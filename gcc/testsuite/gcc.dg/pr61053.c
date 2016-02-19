@@ -67,9 +67,19 @@ _Alignas (long double) double dld;
 
 _Alignas (char) long double ldc; /* { dg-error "cannot reduce alignment" } */
 _Alignas (short int) long double lds; /* { dg-error "cannot reduce alignment" } */
-_Alignas (int) long double ldi; /* { dg-error "cannot reduce alignment" "" { target { ! { ia32 } } } } */
-_Alignas (long int) long double ldl; /* { dg-error "cannot reduce alignment" "" { target { ! { ia32 } } } } */
-_Alignas (long long int) long double ldll; /* { dg-error "cannot reduce alignment" "" { target { ! { ia32 } } } } */
-_Alignas (float) long double ldf; /* { dg-error "cannot reduce alignment" "" { target { ! { ia32 } } } } */
-_Alignas (double) long double ldd; /* { dg-error "cannot reduce alignment" "" { target { ! { ia32 } } } } */
+
+#if __SIZEOF_LONG_DOUBLE__ == 12
+/* Get around PR testsuite/69573 - FAIL: gcc.dg/pr61053.c (test for excess
+   errors) on targets such as x86_64-apple-darwin15.3.0 where long double
+   is 16 bytes wide even in LP32.  */
+#  define X(T)   short
+#else
+#  define X(T)   T
+#endif
+
+_Alignas (X (int)) long double ldi; /* { dg-error "cannot reduce alignment" } */
+_Alignas (X (long int)) long double ldl; /* { dg-error "cannot reduce alignment" } */
+_Alignas (X (long long int)) long double ldll; /* { dg-error "cannot reduce alignment" } */
+_Alignas (X (float)) long double ldf; /* { dg-error "cannot reduce alignment" } */
+_Alignas (X (double)) long double ldd; /* { dg-error "cannot reduce alignment" } */
 _Alignas (long double) long double ldld;
