@@ -1,3 +1,11 @@
+2016-02-18  Jason Merrill  <jason@redhat.com>
+
+	* mangle.c (maybe_check_abi_tags): Add for_decl parm.  Call
+	mangle_decl.
+	(mangle_decl): Call maybe_check_abi_tags for function scope.
+	(mangle_guard_variable): Call maybe_check_abi_tags here.
+	(write_guarded_var_name): Not here.
+
 2016-02-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65985

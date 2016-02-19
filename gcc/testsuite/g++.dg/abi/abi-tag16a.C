@@ -1,4 +1,4 @@
-// { dg-options "-fabi-version=9 -Wabi" }
+// { dg-options "-fabi-version=9" }
 // { dg-final { scan-assembler "_ZGVZN1N1FEvE4Name" } }
 namespace std {
   __extension__ inline namespace __cxx11 __attribute__((abi_tag("cxx11"))) {
@@ -10,7 +10,7 @@ namespace std {
 namespace N {
   inline void F() {
     {
-      static std::String Name;	// { dg-warning "mangled name" }
+      static std::String Name;
     }
   }
   void F2() {

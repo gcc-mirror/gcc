@@ -223,6 +223,7 @@ static void write_local_name (tree, const tree, const tree);
 static void dump_substitution_candidates (void);
 static tree mangle_decl_string (const tree);
 static int local_class_index (tree);
+static void maybe_check_abi_tags (tree, tree = NULL_TREE);
 
 /* Control functions.  */
 
@@ -3599,6 +3600,9 @@ mangle_decl (const tree decl)
     {
       gcc_assert (TREE_CODE (decl) != TYPE_DECL
 		  || !no_linkage_check (TREE_TYPE (decl), true));
+      if (abi_version_at_least (10))
+	if (tree fn = decl_function_context (decl))
+	  maybe_check_abi_tags (fn, decl);
       id = get_mangled_id (decl);
     }
   SET_DECL_ASSEMBLER_NAME (decl, id);
@@ -3937,26 +3941,39 @@ mangle_conv_op_name_for_type (const tree type)
 
 /* Handle ABI backwards compatibility for past bugs where we didn't call
    check_abi_tags in places where it's needed: call check_abi_tags and warn if
-   it makes a difference.  */
+   it makes a difference.  If FOR_DECL is non-null, it's the declaration
+   that we're actually trying to mangle; if it's null, we're mangling the
+   guard variable for T.  */
 
 static void
-maybe_check_abi_tags (tree t)
+maybe_check_abi_tags (tree t, tree for_decl)
 {
+  if (DECL_ASSEMBLER_NAME_SET_P (t))
+    return;
+
   tree attr = lookup_attribute ("abi_tag", DECL_ATTRIBUTES (t));
   tree oldtags = NULL_TREE;
   if (attr)
     oldtags = TREE_VALUE (attr);
 
-  check_abi_tags (t);
+  mangle_decl (t);
 
   if (!attr)
     attr = lookup_attribute ("abi_tag", DECL_ATTRIBUTES (t));
   if (attr && TREE_VALUE (attr) != oldtags
       && abi_version_crosses (10))
-    warning_at (DECL_SOURCE_LOCATION (t), OPT_Wabi,
-		"the mangled name of the initialization guard variable for"
-		"%qD changes between -fabi-version=%d and -fabi-version=%d",
-		t, flag_abi_version, warn_abi_version);
+    {
+      if (for_decl)
+	warning_at (DECL_SOURCE_LOCATION (for_decl), OPT_Wabi,
+		    "the mangled name of %qD changes between "
+		    "-fabi-version=%d and -fabi-version=%d",
+		    for_decl, flag_abi_version, warn_abi_version);
+      else
+	warning_at (DECL_SOURCE_LOCATION (t), OPT_Wabi,
+		    "the mangled name of the initialization guard variable for"
+		    "%qD changes between -fabi-version=%d and -fabi-version=%d",
+		    t, flag_abi_version, warn_abi_version);
+    }
 }
 
 /* Write out the appropriate string for this variable when generating
@@ -3971,15 +3988,7 @@ write_guarded_var_name (const tree variable)
        to the reference, not the temporary.  */
     write_string (IDENTIFIER_POINTER (DECL_NAME (variable)) + 4);
   else
-    {
-      /* Before ABI v10 we were failing to call check_abi_tags here.  So if
-	 we're in pre-10 mode, wait until after write_name to call it.  */
-      if (abi_version_at_least (10))
-	maybe_check_abi_tags (variable);
-      write_name (variable, /*ignore_local_scope=*/0);
-      if (!abi_version_at_least (10))
-	maybe_check_abi_tags (variable);
-    }
+    write_name (variable, /*ignore_local_scope=*/0);
 }
 
 /* Return an identifier for the name of an initialization guard
@@ -3988,6 +3997,8 @@ write_guarded_var_name (const tree variable)
 tree
 mangle_guard_variable (const tree variable)
 {
+  if (abi_version_at_least (10))
+    maybe_check_abi_tags (variable);
   start_mangling (variable);
   write_string ("_ZGV");
   write_guarded_var_name (variable);
