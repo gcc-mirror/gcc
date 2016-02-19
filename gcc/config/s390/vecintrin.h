@@ -80,6 +80,7 @@ __lcbb(const void *ptr, int bndry)
 #define vec_checksum __builtin_s390_vcksm
 #define vec_gfmsum_128 __builtin_s390_vgfmg
 #define vec_gfmsum_accum_128 __builtin_s390_vgfmag
+#define vec_sub_u128 __builtin_s390_vsq
 #define vec_subc_u128 __builtin_s390_vscbiq
 #define vec_sube_u128 __builtin_s390_vsbiq
 #define vec_subec_u128 __builtin_s390_vsbcbiq
