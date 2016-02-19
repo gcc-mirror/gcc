@@ -1,3 +1,11 @@
+2016-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/69805
+	* gcc.c (LINK_COMMAND_SPEC, GOMP_SELF_SPECS): Use
+	:%* in %:gt() argument.
+	(greater_than_spec_func): Adjust for expecting only numbers,
+	if there are more than two numbers, compare the last two.
+
 2016-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/invoke.texi (C++ Dialect Options): Clarify interaction of
