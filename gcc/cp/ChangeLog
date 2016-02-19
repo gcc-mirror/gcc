@@ -1,3 +1,12 @@
+2016-02-19  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/68948
+	* pt.c (tsubst_baselink): Don't diagnose an invalid constructor
+	call here.
+	* semantics.c (finish_call_expr): Don't assume a constructor
+	call is dependent if only the "this" pointer is dependent.  When
+	building a constructor call, always use a dummy object.
+
 2016-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69850
