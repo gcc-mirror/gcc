@@ -1,5 +1,9 @@
 2016-02-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/69826
+	* c-c++-common/cilk-plus/CK/pr69826-1.c: New test.
+	* c-c++-common/cilk-plus/CK/pr69826-2.c: New test.
+
 	PR c++/69850
 	* g++.dg/warn/Wnonnull-compare-4.C: New test.
 
