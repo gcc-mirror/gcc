@@ -6719,6 +6719,23 @@ proc check_effective_target_aarch64_tiny { } {
     }
 }
 
+# Create functions to check that the AArch64 assembler supports the
+# various architecture extensions via the .arch_extension pseudo-op.
+
+foreach { aarch64_ext } { "fp" "simd" "crypto" "crc" "lse"} {
+    eval [string map [list FUNC $aarch64_ext] {
+	proc check_effective_target_aarch64_asm_FUNC_ok { } {
+	  if { [istarget aarch64*-*-*] } {
+		return [check_no_compiler_messages aarch64_FUNC_assembler object {
+			__asm__ (".arch_extension FUNC");
+		} "-march=armv8-a+FUNC"]
+	  } else {
+		return 0
+	  }
+	}
+    }]
+}
+
 proc check_effective_target_aarch64_small { } {
     if { [istarget aarch64*-*-*] } {
 	return [check_no_compiler_messages aarch64_small object {

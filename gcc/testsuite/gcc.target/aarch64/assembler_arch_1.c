@@ -1,4 +1,5 @@
 /* { dg-do assemble } */
+/* { dg-require-effective-target aarch64_asm_lse_ok } */
 /* { dg-options "-march=armv8-a" } */
 
 /* Make sure that the function header in assembly doesn't override

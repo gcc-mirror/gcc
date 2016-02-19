@@ -1606,6 +1606,9 @@ ARM target prefers @code{LDRD} and @code{STRD} instructions over
 @subsubsection AArch64-specific attributes
 
 @table @code
+@item aarch64_asm_<ext>_ok
+AArch64 assembler supports the architecture extension @code{ext} via the
+@code{.arch_extension} pseudo-op.
 @item aarch64_tiny
 AArch64 target which generates instruction sequences for tiny memory model.
 @item aarch64_small
