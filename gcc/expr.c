@@ -6649,7 +6649,9 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	     includes some extra padding.  store_expr / expand_expr will in
 	     that case call get_inner_reference that will have the bitsize
 	     we check here and thus the block move will not clobber the
-	     padding that shouldn't be clobbered.  */
+	     padding that shouldn't be clobbered.  In the future we could
+	     replace the TREE_ADDRESSABLE check with a check that
+	     get_base_address needs to live in memory.  */
 	  && (!TREE_ADDRESSABLE (TREE_TYPE (exp))
 	      || TREE_CODE (exp) != COMPONENT_REF
 	      || TREE_CODE (DECL_SIZE (TREE_OPERAND (exp, 1))) != INTEGER_CST
