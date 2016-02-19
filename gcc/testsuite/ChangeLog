@@ -1,3 +1,8 @@
+2016-02-19  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/69573
+	* gcc.dg/pr61053.c: Tweaked test to avoid bogus failures.
+
 2016-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69850
