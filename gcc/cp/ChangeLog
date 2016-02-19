@@ -1,3 +1,9 @@
+2016-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69850
+	* rtti.c (ifnonnull): Set TREE_NO_WARNING on the condition, use
+	NE_EXPR instead of EQ_EXPR and swap last two arguments on COND_EXPR.
+
 2016-02-19  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/68948
