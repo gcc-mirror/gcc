@@ -340,6 +340,19 @@ extern int reload_completed;
 
 /* Kept up to date using the SCHED_VARIABLE_ISSUE hook.  */
 static rtx_insn *last_scheduled_insn;
+#define MAX_SCHED_UNITS 3
+static int last_scheduled_unit_distance[MAX_SCHED_UNITS];
+
+/* The maximum score added for an instruction whose unit hasn't been
+   in use for MAX_SCHED_MIX_DISTANCE steps.  Increase this value to
+   give instruction mix scheduling more priority over instruction
+   grouping.  */
+#define MAX_SCHED_MIX_SCORE      8
+
+/* The maximum distance up to which individual scores will be
+   calculated.  Everything beyond this gives MAX_SCHED_MIX_SCORE.
+   Increase this with the OOO windows size of the machine.  */
+#define MAX_SCHED_MIX_DISTANCE 100
 
 /* Structure used to hold the components of a S/390 memory
    address.  A legitimate address on S/390 is of the general
@@ -13560,27 +13573,66 @@ s390_z10_prevent_earlyload_conflicts (rtx_insn **ready, int *nready_p)
 
 static int s390_sched_state;
 
-#define S390_OOO_SCHED_STATE_NORMAL  3
-#define S390_OOO_SCHED_STATE_CRACKED 4
+#define S390_SCHED_STATE_NORMAL  3
+#define S390_SCHED_STATE_CRACKED 4
 
-#define S390_OOO_SCHED_ATTR_MASK_CRACKED    0x1
-#define S390_OOO_SCHED_ATTR_MASK_EXPANDED   0x2
-#define S390_OOO_SCHED_ATTR_MASK_ENDGROUP   0x4
-#define S390_OOO_SCHED_ATTR_MASK_GROUPALONE 0x8
+#define S390_SCHED_ATTR_MASK_CRACKED    0x1
+#define S390_SCHED_ATTR_MASK_EXPANDED   0x2
+#define S390_SCHED_ATTR_MASK_ENDGROUP   0x4
+#define S390_SCHED_ATTR_MASK_GROUPALONE 0x8
 
 static unsigned int
 s390_get_sched_attrmask (rtx_insn *insn)
 {
   unsigned int mask = 0;
 
-  if (get_attr_ooo_cracked (insn))
-    mask |= S390_OOO_SCHED_ATTR_MASK_CRACKED;
-  if (get_attr_ooo_expanded (insn))
-    mask |= S390_OOO_SCHED_ATTR_MASK_EXPANDED;
-  if (get_attr_ooo_endgroup (insn))
-    mask |= S390_OOO_SCHED_ATTR_MASK_ENDGROUP;
-  if (get_attr_ooo_groupalone (insn))
-    mask |= S390_OOO_SCHED_ATTR_MASK_GROUPALONE;
+  switch (s390_tune)
+    {
+    case PROCESSOR_2827_ZEC12:
+      if (get_attr_zEC12_cracked (insn))
+	mask |= S390_SCHED_ATTR_MASK_CRACKED;
+      if (get_attr_zEC12_expanded (insn))
+	mask |= S390_SCHED_ATTR_MASK_EXPANDED;
+      if (get_attr_zEC12_endgroup (insn))
+	mask |= S390_SCHED_ATTR_MASK_ENDGROUP;
+      if (get_attr_zEC12_groupalone (insn))
+	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
+      break;
+    case PROCESSOR_2964_Z13:
+      if (get_attr_z13_cracked (insn))
+	mask |= S390_SCHED_ATTR_MASK_CRACKED;
+      if (get_attr_z13_expanded (insn))
+	mask |= S390_SCHED_ATTR_MASK_EXPANDED;
+      if (get_attr_z13_endgroup (insn))
+	mask |= S390_SCHED_ATTR_MASK_ENDGROUP;
+      if (get_attr_z13_groupalone (insn))
+	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  return mask;
+}
+
+static unsigned int
+s390_get_unit_mask (rtx_insn *insn, int *units)
+{
+  unsigned int mask = 0;
+
+  switch (s390_tune)
+    {
+    case PROCESSOR_2964_Z13:
+      *units = 3;
+      if (get_attr_z13_unit_lsu (insn))
+	mask |= 1 << 0;
+      if (get_attr_z13_unit_fxu (insn))
+	mask |= 1 << 1;
+      if (get_attr_z13_unit_vfu (insn))
+	mask |= 1 << 2;
+      break;
+    default:
+      gcc_unreachable ();
+    }
   return mask;
 }
 
@@ -13598,47 +13650,65 @@ s390_sched_score (rtx_insn *insn)
     case 0:
       /* Try to put insns into the first slot which would otherwise
 	 break a group.  */
-      if ((mask & S390_OOO_SCHED_ATTR_MASK_CRACKED) != 0
-	  || (mask & S390_OOO_SCHED_ATTR_MASK_EXPANDED) != 0)
+      if ((mask & S390_SCHED_ATTR_MASK_CRACKED) != 0
+	  || (mask & S390_SCHED_ATTR_MASK_EXPANDED) != 0)
 	score += 5;
-      if ((mask & S390_OOO_SCHED_ATTR_MASK_GROUPALONE) != 0)
+      if ((mask & S390_SCHED_ATTR_MASK_GROUPALONE) != 0)
 	score += 10;
     case 1:
       /* Prefer not cracked insns while trying to put together a
 	 group.  */
-      if ((mask & S390_OOO_SCHED_ATTR_MASK_CRACKED) == 0
-	  && (mask & S390_OOO_SCHED_ATTR_MASK_EXPANDED) == 0
-	  && (mask & S390_OOO_SCHED_ATTR_MASK_GROUPALONE) == 0)
+      if ((mask & S390_SCHED_ATTR_MASK_CRACKED) == 0
+	  && (mask & S390_SCHED_ATTR_MASK_EXPANDED) == 0
+	  && (mask & S390_SCHED_ATTR_MASK_GROUPALONE) == 0)
 	score += 10;
-      if ((mask & S390_OOO_SCHED_ATTR_MASK_ENDGROUP) == 0)
+      if ((mask & S390_SCHED_ATTR_MASK_ENDGROUP) == 0)
 	score += 5;
       break;
     case 2:
       /* Prefer not cracked insns while trying to put together a
 	 group.  */
-      if ((mask & S390_OOO_SCHED_ATTR_MASK_CRACKED) == 0
-	  && (mask & S390_OOO_SCHED_ATTR_MASK_EXPANDED) == 0
-	  && (mask & S390_OOO_SCHED_ATTR_MASK_GROUPALONE) == 0)
+      if ((mask & S390_SCHED_ATTR_MASK_CRACKED) == 0
+	  && (mask & S390_SCHED_ATTR_MASK_EXPANDED) == 0
+	  && (mask & S390_SCHED_ATTR_MASK_GROUPALONE) == 0)
 	score += 10;
       /* Prefer endgroup insns in the last slot.  */
-      if ((mask & S390_OOO_SCHED_ATTR_MASK_ENDGROUP) != 0)
+      if ((mask & S390_SCHED_ATTR_MASK_ENDGROUP) != 0)
 	score += 10;
       break;
-    case S390_OOO_SCHED_STATE_NORMAL:
+    case S390_SCHED_STATE_NORMAL:
       /* Prefer not cracked insns if the last was not cracked.  */
-      if ((mask & S390_OOO_SCHED_ATTR_MASK_CRACKED) == 0
-	  && (mask & S390_OOO_SCHED_ATTR_MASK_EXPANDED) == 0)
+      if ((mask & S390_SCHED_ATTR_MASK_CRACKED) == 0
+	  && (mask & S390_SCHED_ATTR_MASK_EXPANDED) == 0)
 	score += 5;
-      if ((mask & S390_OOO_SCHED_ATTR_MASK_GROUPALONE) != 0)
+      if ((mask & S390_SCHED_ATTR_MASK_GROUPALONE) != 0)
 	score += 10;
       break;
-    case S390_OOO_SCHED_STATE_CRACKED:
+    case S390_SCHED_STATE_CRACKED:
       /* Try to keep cracked insns together to prevent them from
 	 interrupting groups.  */
-      if ((mask & S390_OOO_SCHED_ATTR_MASK_CRACKED) != 0
-	  || (mask & S390_OOO_SCHED_ATTR_MASK_EXPANDED) != 0)
+      if ((mask & S390_SCHED_ATTR_MASK_CRACKED) != 0
+	  || (mask & S390_SCHED_ATTR_MASK_EXPANDED) != 0)
 	score += 5;
       break;
+    }
+
+  if (s390_tune == PROCESSOR_2964_Z13)
+    {
+      int units, i;
+      unsigned unit_mask, m = 1;
+
+      unit_mask = s390_get_unit_mask (insn, &units);
+      gcc_assert (units <= MAX_SCHED_UNITS);
+
+      /* Add a score in range 0..MAX_SCHED_MIX_SCORE depending on how long
+	 ago the last insn of this unit type got scheduled.  This is
+	 supposed to help providing a proper instruction mix to the
+	 CPU.  */
+      for (i = 0; i < units; i++, m <<= 1)
+	if (m & unit_mask)
+	  score += (last_scheduled_unit_distance[i] * MAX_SCHED_MIX_SCORE /
+		    MAX_SCHED_MIX_DISTANCE);
     }
   return score;
 }
@@ -13695,12 +13765,12 @@ s390_sched_reorder (FILE *file, int verbose,
 
 	      if (verbose > 5)
 		fprintf (file,
-			 "move insn %d to the top of list\n",
+			 ";;\t\tBACKEND: move insn %d to the top of list\n",
 			 INSN_UID (ready[last_index]));
 	    }
 	  else if (verbose > 5)
 	    fprintf (file,
-		     "best insn %d already on top\n",
+		     ";;\t\tBACKEND: best insn %d already on top\n",
 		     INSN_UID (ready[last_index]));
 	}
 
@@ -13711,16 +13781,35 @@ s390_sched_reorder (FILE *file, int verbose,
 
 	  for (i = last_index; i >= 0; i--)
 	    {
-	      if (recog_memoized (ready[i]) < 0)
+	      unsigned int sched_mask;
+	      rtx_insn *insn = ready[i];
+
+	      if (recog_memoized (insn) < 0)
 		continue;
-	      fprintf (file, "insn %d score: %d: ", INSN_UID (ready[i]),
-		       s390_sched_score (ready[i]));
-#define PRINT_OOO_ATTR(ATTR) fprintf (file, "%s ", get_attr_##ATTR (ready[i]) ? #ATTR : "!" #ATTR);
-	      PRINT_OOO_ATTR (ooo_cracked);
-	      PRINT_OOO_ATTR (ooo_expanded);
-	      PRINT_OOO_ATTR (ooo_endgroup);
-	      PRINT_OOO_ATTR (ooo_groupalone);
-#undef PRINT_OOO_ATTR
+
+	      sched_mask = s390_get_sched_attrmask (insn);
+	      fprintf (file, ";;\t\tBACKEND: insn %d score: %d: ",
+		       INSN_UID (insn),
+		       s390_sched_score (insn));
+#define PRINT_SCHED_ATTR(M, ATTR) fprintf (file, "%s ",\
+					   ((M) & sched_mask) ? #ATTR : "");
+	      PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_CRACKED, cracked);
+	      PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_EXPANDED, expanded);
+	      PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_ENDGROUP, endgroup);
+	      PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_GROUPALONE, groupalone);
+#undef PRINT_SCHED_ATTR
+	      if (s390_tune == PROCESSOR_2964_Z13)
+		{
+		  unsigned int unit_mask, m = 1;
+		  int units, j;
+
+		  unit_mask  = s390_get_unit_mask (insn, &units);
+		  fprintf (file, "(units:");
+		  for (j = 0; j < units; j++, m <<= 1)
+		    if (m & unit_mask)
+		      fprintf (file, " u%d", j);
+		  fprintf (file, ")");
+		}
 	      fprintf (file, "\n");
 	    }
 	}
@@ -13745,12 +13834,12 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
     {
       unsigned int mask = s390_get_sched_attrmask (insn);
 
-      if ((mask & S390_OOO_SCHED_ATTR_MASK_CRACKED) != 0
-	  || (mask & S390_OOO_SCHED_ATTR_MASK_EXPANDED) != 0)
-	s390_sched_state = S390_OOO_SCHED_STATE_CRACKED;
-      else if ((mask & S390_OOO_SCHED_ATTR_MASK_ENDGROUP) != 0
-	       || (mask & S390_OOO_SCHED_ATTR_MASK_GROUPALONE) != 0)
-	s390_sched_state = S390_OOO_SCHED_STATE_NORMAL;
+      if ((mask & S390_SCHED_ATTR_MASK_CRACKED) != 0
+	  || (mask & S390_SCHED_ATTR_MASK_EXPANDED) != 0)
+	s390_sched_state = S390_SCHED_STATE_CRACKED;
+      else if ((mask & S390_SCHED_ATTR_MASK_ENDGROUP) != 0
+	       || (mask & S390_SCHED_ATTR_MASK_GROUPALONE) != 0)
+	s390_sched_state = S390_SCHED_STATE_NORMAL;
       else
 	{
 	  /* Only normal insns are left (mask == 0).  */
@@ -13759,30 +13848,73 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 	    case 0:
 	    case 1:
 	    case 2:
-	    case S390_OOO_SCHED_STATE_NORMAL:
-	      if (s390_sched_state == S390_OOO_SCHED_STATE_NORMAL)
+	    case S390_SCHED_STATE_NORMAL:
+	      if (s390_sched_state == S390_SCHED_STATE_NORMAL)
 		s390_sched_state = 1;
 	      else
 		s390_sched_state++;
 
 	      break;
-	    case S390_OOO_SCHED_STATE_CRACKED:
-	      s390_sched_state = S390_OOO_SCHED_STATE_NORMAL;
+	    case S390_SCHED_STATE_CRACKED:
+	      s390_sched_state = S390_SCHED_STATE_NORMAL;
 	      break;
 	    }
 	}
+
+      if (s390_tune == PROCESSOR_2964_Z13)
+	{
+	  int units, i;
+	  unsigned unit_mask, m = 1;
+
+	  unit_mask = s390_get_unit_mask (insn, &units);
+	  gcc_assert (units <= MAX_SCHED_UNITS);
+
+	  for (i = 0; i < units; i++, m <<= 1)
+	    if (m & unit_mask)
+	      last_scheduled_unit_distance[i] = 0;
+	    else if (last_scheduled_unit_distance[i] < MAX_SCHED_MIX_DISTANCE)
+	      last_scheduled_unit_distance[i]++;
+	}
+
       if (verbose > 5)
 	{
-	  fprintf (file, "insn %d: ", INSN_UID (insn));
-#define PRINT_OOO_ATTR(ATTR)						\
-	  fprintf (file, "%s ", get_attr_##ATTR (insn) ? #ATTR : "");
-	  PRINT_OOO_ATTR (ooo_cracked);
-	  PRINT_OOO_ATTR (ooo_expanded);
-	  PRINT_OOO_ATTR (ooo_endgroup);
-	  PRINT_OOO_ATTR (ooo_groupalone);
-#undef PRINT_OOO_ATTR
-	  fprintf (file, "\n");
-	  fprintf (file, "sched state: %d\n", s390_sched_state);
+	  unsigned int sched_mask;
+
+	  sched_mask = s390_get_sched_attrmask (insn);
+
+	  fprintf (file, ";;\t\tBACKEND: insn %d: ", INSN_UID (insn));
+#define PRINT_SCHED_ATTR(M, ATTR) fprintf (file, "%s ", ((M) & sched_mask) ? #ATTR : "");
+	  PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_CRACKED, cracked);
+	  PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_EXPANDED, expanded);
+	  PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_ENDGROUP, endgroup);
+	  PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_GROUPALONE, groupalone);
+#undef PRINT_SCHED_ATTR
+
+	  if (s390_tune == PROCESSOR_2964_Z13)
+	    {
+	      unsigned int unit_mask, m = 1;
+	      int units, j;
+
+	      unit_mask  = s390_get_unit_mask (insn, &units);
+	      fprintf (file, "(units:");
+	      for (j = 0; j < units; j++, m <<= 1)
+		if (m & unit_mask)
+		  fprintf (file, " %d", j);
+	      fprintf (file, ")");
+	    }
+	  fprintf (file, " sched state: %d\n", s390_sched_state);
+
+	  if (s390_tune == PROCESSOR_2964_Z13)
+	    {
+	      int units, j;
+
+	      s390_get_unit_mask (insn, &units);
+
+	      fprintf (file, ";;\t\tBACKEND: units unused for: ");
+	      for (j = 0; j < units; j++)
+		fprintf (file, "%d:%d ", j, last_scheduled_unit_distance[j]);
+	      fprintf (file, "\n");
+	    }
 	}
     }
 
@@ -13799,6 +13931,7 @@ s390_sched_init (FILE *file ATTRIBUTE_UNUSED,
 		 int max_ready ATTRIBUTE_UNUSED)
 {
   last_scheduled_insn = NULL;
+  memset (last_scheduled_unit_distance, 0, MAX_SCHED_UNITS * sizeof (int));
   s390_sched_state = 0;
 }
 
