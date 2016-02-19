@@ -1019,7 +1019,7 @@ proper position among the other output files.  */
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}} \
     %{static:} %{L*} %(mfwrap) %(link_libgcc) " \
     VTABLE_VERIFICATION_SPEC " " SANITIZER_EARLY_SPEC " %o " CHKP_SPEC " \
-    %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*} 1):\
+    %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
 	%:include(libgomp.spec)%(link_gomp)}\
     %{fcilkplus:%:include(libcilkrts.spec)%(link_cilkrts)}\
     %{fgnu-tm:%:include(libitm.spec)%(link_itm)}\
@@ -1183,7 +1183,7 @@ static const char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
    for targets that use different start files and suchlike.  */
 #ifndef GOMP_SELF_SPECS
 #define GOMP_SELF_SPECS \
-  "%{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*} 1): " \
+  "%{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1): " \
   "-pthread}"
 #endif
 
@@ -9764,7 +9764,7 @@ replace_extension_spec_func (int argc, const char **argv)
   return result;
 }
 
-/* Returns "" if the n in ARGV[1] == -opt=<n> is greater than ARGV[2].
+/* Returns "" if ARGV[ARGC - 2] is greater than ARGV[ARGC-1].
    Otherwise, return NULL.  */
 
 static const char *
@@ -9775,29 +9775,13 @@ greater_than_spec_func (int argc, const char **argv)
   if (argc == 1)
     return NULL;
 
-  gcc_assert (argc == 3);
-  gcc_assert (argv[0][0] == '-');
-  gcc_assert (argv[0][1] == '\0');
+  gcc_assert (argc >= 2);
 
-  /* Point p to <n> in in -opt=<n>.  */
-  const char *p = argv[1];
-  while (true)
-    {
-      char c = *p;
-      if (c == '\0')
-	gcc_unreachable ();
+  long arg = strtol (argv[argc - 2], &converted, 10);
+  gcc_assert (converted != argv[argc - 2]);
 
-      ++p;
-
-      if (c == '=')
-	break;
-    }
-
-  long arg = strtol (p, &converted, 10);
-  gcc_assert (converted != p);
-
-  long lim = strtol (argv[2], &converted, 10);
-  gcc_assert (converted != argv[2]);
+  long lim = strtol (argv[argc - 1], &converted, 10);
+  gcc_assert (converted != argv[argc - 1]);
 
   if (arg > lim)
     return "";

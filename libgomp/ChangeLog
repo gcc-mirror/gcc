@@ -1,3 +1,8 @@
+2016-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/69805
+	* testsuite/libgomp.c/pr69805.c: New test.
+
 2016-02-16  Tom de Vries  <tom@codesourcery.com>
 
 	PR lto/67709
