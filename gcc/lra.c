@@ -1742,20 +1742,29 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
     }
   if (before != NULL_RTX)
     {
+      if (cfun->can_throw_non_call_exceptions)
+	copy_reg_eh_region_note_forward (insn, before, NULL);
       emit_insn_before (before, insn);
       push_insns (PREV_INSN (insn), PREV_INSN (before));
       setup_sp_offset (before, PREV_INSN (insn));
     }
   if (after != NULL_RTX)
     {
+      if (cfun->can_throw_non_call_exceptions)
+	copy_reg_eh_region_note_forward (insn, after, NULL);
       for (last = after; NEXT_INSN (last) != NULL_RTX; last = NEXT_INSN (last))
 	;
       emit_insn_after (after, insn);
       push_insns (last, insn);
       setup_sp_offset (after, last);
     }
+  if (cfun->can_throw_non_call_exceptions)
+    {
+      rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+      if (note && !insn_could_throw_p (insn))
+	remove_note (insn, note);
+    }
 }
-
 
 
 /* Replace all references to register OLD_REGNO in *LOC with pseudo
