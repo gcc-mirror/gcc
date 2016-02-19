@@ -1,7 +1,7 @@
 /* PR c/65179 */
 /* { dg-do compile } */
 /* { dg-options "-O -Wextra" } */
-/* { dg-additional-options "-std=c++03" { target c++ } } */
+/* { dg-additional-options "-std=c++11 -std=c++03" { target c++ } } */
 /* { dg-additional-options "-std=c90" { target c } } */
 
 enum E {

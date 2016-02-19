@@ -1,3 +1,11 @@
+2016-02-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/69865
+	* c-opts.c (c_common_post_options): Move call to set_std_cxx14 from
+	here...
+	(c_common_init_options): ...to here.
+	(set_std_cxx98): Initialize flag_isoc94 and flag_isoc99.
+
 2016-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69826
