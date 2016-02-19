@@ -1,3 +1,5 @@
+%language=C++
+%define class-name libc_name
 %{
 /* Copyright (C) 2000-2016 Free Software Foundation, Inc.
 
@@ -16,14 +18,6 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
-#ifdef __GNUC__
-__inline
-#endif
-static unsigned int hash (const char *, unsigned int);
-#ifdef __GNUC__
-__inline
-#endif
-const char * libc_name_p (const char *, unsigned int);
 %}
 %%
 # The standard C library functions, for feeding to gperf; the result is used

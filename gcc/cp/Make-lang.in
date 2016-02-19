@@ -112,7 +112,7 @@ else
 # deleting the $(srcdir)/cp/cfns.h file.
 $(srcdir)/cp/cfns.h:
 endif
-	gperf -o -C -E -k '1-6,$$' -j1 -D -N 'libc_name_p' -L ANSI-C \
+	gperf -o -C -E -k '1-6,$$' -j1 -D -N 'libc_name_p' -L C++ \
 		$(srcdir)/cp/cfns.gperf --output-file $(srcdir)/cp/cfns.h
 
 #
