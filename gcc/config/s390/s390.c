@@ -6329,10 +6329,10 @@ s390_expand_vcond (rtx target, rtx then, rtx els,
      can be handled by the optimization above but not by the
      following code.  Hence, force them into registers here.  */
   if (!REG_P (cmp_op1))
-    cmp_op1 = force_reg (target_mode, cmp_op1);
+    cmp_op1 = force_reg (GET_MODE (cmp_op1), cmp_op1);
 
   if (!REG_P (cmp_op2))
-    cmp_op2 = force_reg (target_mode, cmp_op2);
+    cmp_op2 = force_reg (GET_MODE (cmp_op2), cmp_op2);
 
   s390_expand_vec_compare (result_target, cond,
 			   cmp_op1, cmp_op2);

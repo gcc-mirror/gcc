@@ -1,5 +1,9 @@
 2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.target/s390/vector/vec-vcond-1.c: New test.
+
+2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.target/s390/md/movstr-1.c: Allow also the z13 strings
 	instruction pattern name to prevent the testcase from failing with
 	-march=z13.

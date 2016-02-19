@@ -1,5 +1,10 @@
 2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_expand_vcond): Use the compare operand
+	mode.
+
+2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390-protos.h: Add s390_expand_vec_movstr prototype.
 	* config/s390/s390.c (s390_expand_vec_movstr): New function.
 	* config/s390/s390.md ("movstr<P:mode>"): Call
