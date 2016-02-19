@@ -454,7 +454,7 @@
 (define_insn "<ti*>add<mode>3"
   [(set (match_operand:VIT           0 "nonimmediate_operand" "=v")
 	(plus:VIT (match_operand:VIT 1 "nonimmediate_operand"  "v")
-		  (match_operand:VIT 2 "nonimmediate_operand"  "v")))]
+		  (match_operand:VIT 2 "general_operand"  "v")))]
   "TARGET_VX"
   "va<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
@@ -463,7 +463,7 @@
 (define_insn "<ti*>sub<mode>3"
   [(set (match_operand:VIT            0 "nonimmediate_operand" "=v")
 	(minus:VIT (match_operand:VIT 1 "nonimmediate_operand"  "v")
-		   (match_operand:VIT 2 "nonimmediate_operand"  "v")))]
+		   (match_operand:VIT 2 "general_operand"  "v")))]
   "TARGET_VX"
   "vs<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
