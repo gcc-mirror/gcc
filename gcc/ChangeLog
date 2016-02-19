@@ -1,5 +1,12 @@
 2016-02-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/69851
+	* expr.c (store_field): Don't use bit-field path if exp is
+	COMPONENT_REF with TREE_ADDRESSABLE type, where TYPE_SIZE is
+	different from bitsize, but DECL_SIZE of FIELD_DECL is bitsize
+	and the assignment can be performed by bitwise copy.  Formatting
+	fix.
+
 	PR middle-end/69838
 	* lra.c (lra_process_new_insns): If non-call exceptions are enabled,
 	call copy_reg_eh_region_note_forward on before and/or after sequences
