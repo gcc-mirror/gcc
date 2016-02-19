@@ -1,3 +1,12 @@
+2016-02-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/target-supports.exp: Define aarch64_asm_FUNC_ok checks
+	for fp, simd, crypto, crc, lse.
+	* doc/sourcebuild.texi (AArch64-specific attributes): Document the
+	above.
+	* gcc.target/aarch64/assembler_arch_1.c: Add aarch64_asm_lse_ok
+	effective target check.
+
 2016-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69820
