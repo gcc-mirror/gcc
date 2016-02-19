@@ -453,8 +453,8 @@
 ; operation into two DImode ADDs.
 (define_insn "<ti*>add<mode>3"
   [(set (match_operand:VIT           0 "nonimmediate_operand" "=v")
-	(plus:VIT (match_operand:VIT 1 "nonimmediate_operand"  "v")
-		  (match_operand:VIT 2 "general_operand"  "v")))]
+	(plus:VIT (match_operand:VIT 1 "nonimmediate_operand" "%v")
+		  (match_operand:VIT 2 "general_operand"       "v")))]
   "TARGET_VX"
   "va<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
@@ -471,7 +471,7 @@
 ; vmlb, vmlhw, vmlf
 (define_insn "mul<mode>3"
   [(set (match_operand:VI_QHS              0 "register_operand" "=v")
-	(mult:VI_QHS (match_operand:VI_QHS 1 "register_operand"  "v")
+	(mult:VI_QHS (match_operand:VI_QHS 1 "register_operand" "%v")
 		     (match_operand:VI_QHS 2 "register_operand"  "v")))]
   "TARGET_VX"
   "vml<bhfgq><w>\t%v0,%v1,%v2"
@@ -526,7 +526,7 @@
 
 (define_insn "and<mode>3"
   [(set (match_operand:VT         0 "register_operand" "=v")
-	(and:VT (match_operand:VT 1 "register_operand"  "v")
+	(and:VT (match_operand:VT 1 "register_operand" "%v")
 		(match_operand:VT 2 "register_operand"  "v")))]
   "TARGET_VX"
   "vn\t%v0,%v1,%v2"
@@ -537,7 +537,7 @@
 
 (define_insn "ior<mode>3"
   [(set (match_operand:VT         0 "register_operand" "=v")
-	(ior:VT (match_operand:VT 1 "register_operand"  "v")
+	(ior:VT (match_operand:VT 1 "register_operand" "%v")
 		(match_operand:VT 2 "register_operand"  "v")))]
   "TARGET_VX"
   "vo\t%v0,%v1,%v2"
@@ -548,7 +548,7 @@
 
 (define_insn "xor<mode>3"
   [(set (match_operand:VT         0 "register_operand" "=v")
-	(xor:VT (match_operand:VT 1 "register_operand"  "v")
+	(xor:VT (match_operand:VT 1 "register_operand" "%v")
 		(match_operand:VT 2 "register_operand"  "v")))]
   "TARGET_VX"
   "vx\t%v0,%v1,%v2"
@@ -765,7 +765,7 @@
 ; vmnb, vmnh, vmnf, vmng
 (define_insn "smin<mode>3"
   [(set (match_operand:VI          0 "register_operand" "=v")
-	(smin:VI (match_operand:VI 1 "register_operand"  "v")
+	(smin:VI (match_operand:VI 1 "register_operand" "%v")
 		 (match_operand:VI 2 "register_operand"  "v")))]
   "TARGET_VX"
   "vmn<bhfgq>\t%v0,%v1,%v2"
@@ -774,7 +774,7 @@
 ; vmxb, vmxh, vmxf, vmxg
 (define_insn "smax<mode>3"
   [(set (match_operand:VI          0 "register_operand" "=v")
-	(smax:VI (match_operand:VI 1 "register_operand"  "v")
+	(smax:VI (match_operand:VI 1 "register_operand" "%v")
 		 (match_operand:VI 2 "register_operand"  "v")))]
   "TARGET_VX"
   "vmx<bhfgq>\t%v0,%v1,%v2"
@@ -783,7 +783,7 @@
 ; vmnlb, vmnlh, vmnlf, vmnlg
 (define_insn "umin<mode>3"
   [(set (match_operand:VI          0 "register_operand" "=v")
-	(umin:VI (match_operand:VI 1 "register_operand"  "v")
+	(umin:VI (match_operand:VI 1 "register_operand" "%v")
 		 (match_operand:VI 2 "register_operand"  "v")))]
   "TARGET_VX"
   "vmnl<bhfgq>\t%v0,%v1,%v2"
@@ -792,7 +792,7 @@
 ; vmxlb, vmxlh, vmxlf, vmxlg
 (define_insn "umax<mode>3"
   [(set (match_operand:VI          0 "register_operand" "=v")
-	(umax:VI (match_operand:VI 1 "register_operand"  "v")
+	(umax:VI (match_operand:VI 1 "register_operand" "%v")
 		 (match_operand:VI 2 "register_operand"  "v")))]
   "TARGET_VX"
   "vmxl<bhfgq>\t%v0,%v1,%v2"
@@ -800,8 +800,8 @@
 
 ; vmeb, vmeh, vmef
 (define_insn "vec_widen_smult_even_<mode>"
-  [(set (match_operand:<vec_double>                    0 "register_operand" "=v")
-	(unspec:<vec_double> [(match_operand:VI_QHS 1 "register_operand"  "v")
+  [(set (match_operand:<vec_double>                 0 "register_operand" "=v")
+	(unspec:<vec_double> [(match_operand:VI_QHS 1 "register_operand" "%v")
 			      (match_operand:VI_QHS 2 "register_operand"  "v")]
 			     UNSPEC_VEC_SMULT_EVEN))]
   "TARGET_VX"
@@ -811,7 +811,7 @@
 ; vmleb, vmleh, vmlef
 (define_insn "vec_widen_umult_even_<mode>"
   [(set (match_operand:<vec_double>                 0 "register_operand" "=v")
-	(unspec:<vec_double> [(match_operand:VI_QHS 1 "register_operand"  "v")
+	(unspec:<vec_double> [(match_operand:VI_QHS 1 "register_operand" "%v")
 			      (match_operand:VI_QHS 2 "register_operand"  "v")]
 			     UNSPEC_VEC_UMULT_EVEN))]
   "TARGET_VX"
@@ -821,7 +821,7 @@
 ; vmob, vmoh, vmof
 (define_insn "vec_widen_smult_odd_<mode>"
   [(set (match_operand:<vec_double>                 0 "register_operand" "=v")
-	(unspec:<vec_double> [(match_operand:VI_QHS 1 "register_operand"  "v")
+	(unspec:<vec_double> [(match_operand:VI_QHS 1 "register_operand" "%v")
 			      (match_operand:VI_QHS 2 "register_operand"  "v")]
 			     UNSPEC_VEC_SMULT_ODD))]
   "TARGET_VX"
@@ -831,7 +831,7 @@
 ; vmlob, vmloh, vmlof
 (define_insn "vec_widen_umult_odd_<mode>"
   [(set (match_operand:<vec_double>                 0 "register_operand" "=v")
-	(unspec:<vec_double> [(match_operand:VI_QHS 1 "register_operand"  "v")
+	(unspec:<vec_double> [(match_operand:VI_QHS 1 "register_operand" "%v")
 			      (match_operand:VI_QHS 2 "register_operand"  "v")]
 			     UNSPEC_VEC_UMULT_ODD))]
   "TARGET_VX"
@@ -854,7 +854,7 @@
 
 (define_insn "addv2df3"
   [(set (match_operand:V2DF            0 "register_operand" "=v")
-	(plus:V2DF (match_operand:V2DF 1 "register_operand"  "v")
+	(plus:V2DF (match_operand:V2DF 1 "register_operand" "%v")
 		   (match_operand:V2DF 2 "register_operand"  "v")))]
   "TARGET_VX"
   "vfadb\t%v0,%v1,%v2"
@@ -862,7 +862,7 @@
 
 (define_insn "subv2df3"
   [(set (match_operand:V2DF             0 "register_operand" "=v")
-	(minus:V2DF (match_operand:V2DF 1 "register_operand"  "v")
+	(minus:V2DF (match_operand:V2DF 1 "register_operand" "%v")
 		    (match_operand:V2DF 2 "register_operand"  "v")))]
   "TARGET_VX"
   "vfsdb\t%v0,%v1,%v2"
@@ -870,7 +870,7 @@
 
 (define_insn "mulv2df3"
   [(set (match_operand:V2DF            0 "register_operand" "=v")
-	(mult:V2DF (match_operand:V2DF 1 "register_operand"  "v")
+	(mult:V2DF (match_operand:V2DF 1 "register_operand" "%v")
 		   (match_operand:V2DF 2 "register_operand"  "v")))]
   "TARGET_VX"
   "vfmdb\t%v0,%v1,%v2"
@@ -893,7 +893,7 @@
 
 (define_insn "fmav2df4"
   [(set (match_operand:V2DF           0 "register_operand" "=v")
-	(fma:V2DF (match_operand:V2DF 1 "register_operand"  "v")
+	(fma:V2DF (match_operand:V2DF 1 "register_operand" "%v")
 		  (match_operand:V2DF 2 "register_operand"  "v")
 		  (match_operand:V2DF 3 "register_operand"  "v")))]
   "TARGET_VX"
@@ -902,7 +902,7 @@
 
 (define_insn "fmsv2df4"
   [(set (match_operand:V2DF                     0 "register_operand" "=v")
-	(fma:V2DF (match_operand:V2DF           1 "register_operand"  "v")
+	(fma:V2DF (match_operand:V2DF           1 "register_operand" "%v")
 		  (match_operand:V2DF           2 "register_operand"  "v")
 		  (neg:V2DF (match_operand:V2DF 3 "register_operand"  "v"))))]
   "TARGET_VX"
@@ -933,7 +933,7 @@
 ; Emulate with compare + select
 (define_insn_and_split "smaxv2df3"
   [(set (match_operand:V2DF            0 "register_operand" "=v")
-	(smax:V2DF (match_operand:V2DF 1 "register_operand"  "v")
+	(smax:V2DF (match_operand:V2DF 1 "register_operand" "%v")
 		   (match_operand:V2DF 2 "register_operand"  "v")))]
   "TARGET_VX"
   "#"
@@ -953,7 +953,7 @@
 ; Emulate with compare + select
 (define_insn_and_split "sminv2df3"
   [(set (match_operand:V2DF            0 "register_operand" "=v")
-	(smin:V2DF (match_operand:V2DF 1 "register_operand"  "v")
+	(smin:V2DF (match_operand:V2DF 1 "register_operand" "%v")
 		   (match_operand:V2DF 2 "register_operand"  "v")))]
   "TARGET_VX"
   "#"
