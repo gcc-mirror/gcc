@@ -1336,6 +1336,13 @@ c_pp_lookup_pragma (unsigned int id, const char **space, const char **name)
       return;
     }
 
+  if (id == PRAGMA_CILK_GRAINSIZE)
+    {
+      *space = "cilk";
+      *name = "grainsize";
+      return;
+    }
+
   if (id >= PRAGMA_FIRST_EXTERNAL
       && (id < PRAGMA_FIRST_EXTERNAL + registered_pp_pragmas.length ()))
     {
@@ -1523,7 +1530,7 @@ init_pragma (void)
     cpp_register_deferred_pragma (parse_in, "GCC", "ivdep", PRAGMA_IVDEP, false,
 				  false);
 
-  if (flag_cilkplus && !flag_preprocess_only)
+  if (flag_cilkplus)
     cpp_register_deferred_pragma (parse_in, "cilk", "grainsize",
 				  PRAGMA_CILK_GRAINSIZE, true, false);
 
