@@ -1,5 +1,11 @@
 2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/vector.md: Add missing commutative operand markers
+	to the patterns which qualify for one.
+	* config/s390/vx-builtins.md: Likewise.
+
+2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/vector.md (VI, VI_QHS): Add single element vector
 	types to mode iterators.
 	(vec_double): ... and mode attribute.
