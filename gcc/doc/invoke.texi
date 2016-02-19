@@ -2756,7 +2756,8 @@ Requires @option{-flto} to be enabled.  Enabled by default.
 @item -Wnarrowing @r{(C++ and Objective-C++ only)}
 @opindex Wnarrowing
 @opindex Wno-narrowing
-Warn when a narrowing conversion prohibited by C++11 occurs within
+With @option{-std=gnu++98} or @option{-std=c++98}, warn when a narrowing
+conversion prohibited by C++11 occurs within
 @samp{@{ @}}, e.g.
 
 @smallexample
@@ -2765,10 +2766,13 @@ int i = @{ 2.2 @}; // error: narrowing from double to int
 
 This flag is included in @option{-Wall} and @option{-Wc++11-compat}.
 
-With @option{-std=c++11}, @option{-Wno-narrowing} suppresses the diagnostic
-required by the standard.  Note that this does not affect the meaning
-of well-formed code; narrowing conversions are still considered
-ill-formed in SFINAE context.
+When a later standard is in effect, e.g. when using @option{-std=c++11},
+narrowing conversions are diagnosed by default, as required by the standard.
+A narrowing conversion from a constant produces an error,
+and a narrowing conversion from a non-constant produces a warning,
+but @option{-Wno-narrowing} suppresses the diagnostic.
+Note that this does not affect the meaning of well-formed code;
+narrowing conversions are still considered ill-formed in SFINAE contexts.
 
 @item -Wnoexcept @r{(C++ and Objective-C++ only)}
 @opindex Wnoexcept
