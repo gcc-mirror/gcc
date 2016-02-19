@@ -1,3 +1,9 @@
+2016-02-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/69865
+	* c-c++-common/Wshift-negative-value-6.c: Add -std=c++11 before
+	-std=c++03.
+
 2016-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69826
