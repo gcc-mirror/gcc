@@ -1,5 +1,10 @@
 2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.md: Add missing output modifier for operand 1
+	to print it as address properly.
+
+2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/2827.md: Rename ooo_* insn attributes to zEC12_*.
 	* config/s390/2964.md: New file.
 	* config/s390/s390.c (s390_get_sched_attrmask): Use the right set
