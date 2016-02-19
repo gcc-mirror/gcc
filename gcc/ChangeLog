@@ -1,3 +1,12 @@
+2016-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69671
+	* config/i386/sse.md (*<floatsuffix>floatv2div2sf2_mask_1,
+	*avx512vl_<code>v2div2qi2_mask_1, *avx512vl_<code><mode>v4qi2_mask_1,
+	*avx512vl_<code><mode>v8qi2_mask_1, *avx512vl_<code><mode>v4hi2_mask_1,
+	*avx512vl_<code>v2div2hi2_mask_1, *avx512vl_<code>v2div2si2_mask_1,
+	*avx512f_<code>v8div16qi2_mask_1): New insns.
+
 2016-02-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/68404
