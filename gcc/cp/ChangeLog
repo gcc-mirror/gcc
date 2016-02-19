@@ -1,4 +1,13 @@
 2016-02-19  Jakub Jelinek  <jakub@redhat.com>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* Make-lang.in: Invoke gperf with -L C++.
+	* cfns.gperf: Remove prototypes for hash and libc_name_p
+	inlines.
+	* cfns.h: Regenerated.
+	* except.c (nothrow_libfn_p): Adjust.
+
+2016-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69850
 	* rtti.c (ifnonnull): Set TREE_NO_WARNING on the condition, use
