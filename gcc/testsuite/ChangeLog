@@ -1,5 +1,9 @@
 2016-02-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/69850
+	* g++.dg/warn/Wnonnull-compare-2.C: New test.
+	* g++.dg/warn/Wnonnull-compare-3.C: New test.
+
 	PR c++/67767
 	* g++.dg/cpp0x/pr67767.C: New test.
 

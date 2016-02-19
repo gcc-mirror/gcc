@@ -1,5 +1,12 @@
 2016-02-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/69850
+	* init.c (build_vec_delete_1): Set TREE_NO_WARNING on the NE_EXPR
+	condition.
+	* cp-gimplify.c (cp_fold): Propagate TREE_NO_WARNING from binary
+	operators if folding preserved the binop, just with different
+	arguments.
+
 	PR c++/67767
 	* parser.c (cp_parser_std_attribute_spec_seq): Don't assume
 	attr_spec is always single element chain, chain all the attributes
