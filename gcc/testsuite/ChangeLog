@@ -1,3 +1,13 @@
+2016-02-20  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/57365
+	gfortran.dg/allocate_with_source_18.f03: New test.
+
+2016-02-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/52531
+	gfortran.dg/gomp/pr52531.f90: New test.
+
 2016-02-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/69865
