@@ -173,7 +173,7 @@
 
 2015-09-20  Kai Tietz  <ktietz70@googlemail.com>
 
-        * MAINTAINERS: Update email.
+	* MAINTAINERS: Update email.
 
 2015-09-14  Bernd Schmidt  <bschmidt@redhat.com>
 
@@ -243,7 +243,7 @@
 
 	* MAINTAINERS (Write After Approval): Add myself.
 
-2015-07-28  Ben Elliston  <bje@gnu.org>  
+2015-07-28  Ben Elliston  <bje@gnu.org>
 
 	* config.sub, config.guess: Import from upstream.
 
@@ -995,7 +995,7 @@
 
 	* MAINTAINERS (Write After Approval): Add myself.
 
-2014-08-15  Ilya Tocar  <tocarip@gmail.com> 
+2014-08-15  Ilya Tocar  <tocarip@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
 
@@ -1149,7 +1149,7 @@
 2014-04-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/60620
-	* Makefile.def (dependencies): Make gnattools depend on libstdc++-v3. 
+	* Makefile.def (dependencies): Make gnattools depend on libstdc++-v3.
 	* Makefile.in: Regenerate.
 
 2014-03-28  Yaakov Selkowitz  <yselkowitz@users.sourceforge.net>
@@ -1285,7 +1285,7 @@
 
 2013-10-29  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
-	* Makefile.def: Add libcilkrts to target_modules.  Make libcilkrts 
+	* Makefile.def: Add libcilkrts to target_modules.  Make libcilkrts
 	depend on libstdc++ and libgcc.
 	* configure: Regenerate.
 	* configure.ac: Added libcilkrts to target binaries.  Also, restrict
@@ -10897,7 +10897,6 @@ Fri Jun  8 11:14:02 2001  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* configure.in (c4x, c5x, tic54x): Move after ARM targets.
 
-
 2000-08-20  Doug Evans  <dje@casey.transmeta.com>
 
 	* Makefile.in (ALL_MODULES): Add all-cgen.
@@ -18308,7 +18307,6 @@ Tue Jan 19 08:26:07 1993  Ian Lance Taylor  (ian@cygnus.com)
 	* Makefile.in (gcc-no-fixedincludes): Made to work with current
 	gcc Makefile.
 
-
 Fri Jan 15 10:27:02 1993  Ian Lance Taylor  (ian@cygnus.com)
 
 	* Makefile.in (GCC_FLAGS_TO_PASS): New variable.
@@ -18334,7 +18332,6 @@ Wed Jan  6 11:02:10 1993  Fred Fish  (fnf@cygnus.com)
 	* Makefile.in (GCC_FOR_TARGET):  Supply a default that matches
 	the one used in gcc/Makefile.in, so that a null expansion doesn't
 	override the one needed to build gcc with a native cc.
-
 
 Tue Jan  5 07:55:12 1993  Ken Raeburn  (raeburn@cambridge.cygnus.com)
 
