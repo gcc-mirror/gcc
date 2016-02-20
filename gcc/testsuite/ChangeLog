@@ -1,3 +1,11 @@
+2016-02-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Backport from mainline
+	2016-02-18  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR testsuite/68580
+	* c-c++-common/tsan/pr65400-1.c (v, q, o): Make 8-byte aligned.
+
 2016-02-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
