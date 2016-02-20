@@ -1254,7 +1254,7 @@
 	* oacc-init.c (goacc_runtime_initialize): Call goacc_host_init() at end.
 
 2015-09-08  Aditya Kumar  <hiraditya@msn.com>
-            Sebastian Pop  <s.pop@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
 
 	* testsuite/libgomp.graphite/bounds.c (int foo): Modifed test case to
 	match o/p.
@@ -4759,7 +4759,6 @@
 
 	PR fortran/41102
 	omp_lib.h.in: Fix -std=f95 errors.
-
 
 2009-08-14  David Edelsohn  <edelsohn@gnu.org>
 
