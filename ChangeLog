@@ -1,3 +1,7 @@
+2016-02-20  Tom de Vries  <tom@codesourcery.com>
+
+	* MAINTAINERS: Fix whitespace.
+
 2016-02-02  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
