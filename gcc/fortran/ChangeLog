@@ -1,3 +1,17 @@
+2016-02-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69423
+	* trans-decl.c (create_function_arglist): Deferred character
+	length functions, with and without declared results, address
+	the passed reference type as '.result' and the local string
+	length as '..result'.
+	(gfc_null_and_pass_deferred_len): Helper function to null and
+	return deferred string lengths, as needed.
+	(gfc_trans_deferred_vars): Call it, thereby reducing repeated
+	code, add call for deferred arrays and reroute pointer function
+	results. Avoid using 'tmp' for anything other that a temporary
+	tree by introducing 'type_of_array' for the arrayspec type.
+
 2015-02-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/69742
