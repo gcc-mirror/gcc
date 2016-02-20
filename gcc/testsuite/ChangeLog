@@ -580,7 +580,7 @@
 	PR tree-optimization/68541
 	* gcc.dg/tree-ssa/split-path-2.c: Make char array explicitly signed.
 
-        PR tree-optimization/65917
+	PR tree-optimization/65917
 	* gcc.dg/tree-ssa/20030922-2.c: No longer xfailed.
 
 2016-02-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
@@ -590,7 +590,7 @@
 
 2016-02-05  Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/68541
+	PR tree-optimization/68541
 	* gcc.dg/tree-ssa/split-path-2.c: New test.
 	* gcc.dg/tree-ssa/split-path-3.c: New test.
 	* gcc.dg/tree-ssa/split-path-4.c: New test.
