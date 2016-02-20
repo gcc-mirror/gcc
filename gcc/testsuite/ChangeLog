@@ -1,3 +1,8 @@
+2016-02-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69423
+	* gfortran.dg/deferred_character_15.f90 : New test.
+
 2016-02-20  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/57365
