@@ -11611,9 +11611,6 @@
 
 	* fold-const.c (fold_binary_loc) : Move (-A) * (-B) -> A * B
 	to match.pd.
-* doc/implement-c.texi (Integers Implementation): Make GCC's promises
-about signed left shift stronger and clarify the cases when they're
-broken.
 	Move (a * (1 << b)) is (a << b) to match.pd.
 	Move convert (C1/X)*C2 into (C1*C2)/X to match.pd.
 	Move ~X & X, (X == 0) & X, and !X & X are zero to match.pd.
