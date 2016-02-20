@@ -1,3 +1,10 @@
+2016-02-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69743
+	* call.c (remaining_arguments): No longer static.
+	* cp-tree.h: Declare it.
+	* pt.c (more_specialized_fn): Use it.
+
 2016-02-19  Jakub Jelinek  <jakub@redhat.com>
 	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
