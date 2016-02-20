@@ -1905,7 +1905,7 @@ add_candidate (struct z_candidate **candidates,
 /* Return the number of remaining arguments in the parameter list
    beginning with ARG.  */
 
-static int
+int
 remaining_arguments (tree arg)
 {
   int n;
