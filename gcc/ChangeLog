@@ -1,3 +1,8 @@
+2016-02-21  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	* tree-chkp.c (chkp_mark_invalid_bounds_walker): Initialize
+	variable.
+
 2016-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR driver/69805
