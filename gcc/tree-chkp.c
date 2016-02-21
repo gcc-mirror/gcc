@@ -895,7 +895,7 @@ chkp_mark_invalid_bounds_walker (tree const &bounds,
 static void
 chkp_finish_incomplete_bounds (void)
 {
-  bool found_valid;
+  bool found_valid = true;
 
   while (found_valid)
     {
