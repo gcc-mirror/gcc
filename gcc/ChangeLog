@@ -1,3 +1,12 @@
+2016-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69894
+	PR target/69895
+	* config/m68k/t-opts (OPTIONS_H_EXTRA): Add m68k-microarchs.def
+	and m68k-devices.def.
+	* config/c6x/t-c6x (OPTIONS_H_EXTRA): Add c6x-isas.def.
+	* config/aarch64/t-aarch64 (OPTIONS_H_EXTRA): Add aarch64-arches.def.
+
 2016-02-22  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* config/nvptx/nvptx.c (nvptx_gen_shuffle): Add support for QImode
