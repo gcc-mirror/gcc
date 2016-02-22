@@ -1,3 +1,8 @@
+2016-02-22  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Dump
+	min_profitable_estimate, rather than min_profitable_iters.
+
 2016-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69885
