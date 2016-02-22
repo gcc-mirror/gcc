@@ -1,5 +1,9 @@
 2016-02-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/69885
+	* doc/md.texi (ashl@var{m}3): Document that mode of operand 2 must
+	be specified.
+
 	PR target/69894
 	PR target/69895
 	* config/m68k/t-opts (OPTIONS_H_EXTRA): Add m68k-microarchs.def
