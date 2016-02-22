@@ -5011,7 +5011,10 @@ label:
     }
   if (TARGET_DYNSHIFT
       && CONST_INT_P (operands[2]) && sh_dynamicalize_shift_p (operands[2]))
-      operands[2] = force_reg (SImode, operands[2]);
+    {
+      /* Don't force the constant into a reg yet.  Some other optimizations
+	 might not see through the reg that holds the shift count.  */
+    }
 
   /*  If the ashlsi3_* insn is going to clobber the T_REG it must be
       expanded here.  */
@@ -5567,9 +5570,12 @@ label:
   if (TARGET_DYNSHIFT
       && CONST_INT_P (operands[2]) && sh_dynamicalize_shift_p (operands[2]))
     {
-      rtx neg_count = force_reg (SImode,
-			         gen_int_mode (- INTVAL (operands[2]), SImode));
-      emit_insn (gen_lshrsi3_d (operands[0], operands[1], neg_count));
+      /* Don't force the constant into a reg yet.  Some other optimizations
+	 might not see through the reg that holds the shift count.  */
+      if (sh_lshrsi_clobbers_t_reg_p (operands[2]))
+        emit_insn (gen_lshrsi3_n_clobbers_t (operands[0], operands[1], operands[2]));
+      else
+        emit_insn (gen_lshrsi3_n (operands[0], operands[1], operands[2]));
       DONE;
     }
 
@@ -5621,6 +5627,10 @@ label:
    && ! sh_lshrsi_clobbers_t_reg_p (operands[2])"
   [(const_int 0)]
 {
+  /* The shift count const_int is a negative value for all dynamic
+     right shift insns.  */
+  operands[2] = GEN_INT (- INTVAL (operands[2]));
+
   if (satisfies_constraint_P27 (operands[2]))
     {
       /* This will not be done for a shift amount of 1, because it would
@@ -5679,8 +5689,7 @@ label:
     {
       /* If this pattern was picked and dynamic shifts are supported, switch
 	 to dynamic shift pattern before reload.  */
-      operands[2] = force_reg (SImode,
-			       gen_int_mode (- INTVAL (operands[2]), SImode));
+      operands[2] = GEN_INT (- INTVAL (operands[2]));
       emit_insn (gen_lshrsi3_d (operands[0], operands[1], operands[2]));
     }
   else
@@ -5711,8 +5720,7 @@ label:
     {
       /* If this pattern was picked and dynamic shifts are supported, switch
 	 to dynamic shift pattern before reload.  */
-      operands[2] = force_reg (SImode,
-			       gen_int_mode (- INTVAL (operands[2]), SImode));
+      operands[2] = GEN_INT (- INTVAL (operands[2]));
       emit_insn (gen_lshrsi3_d (operands[0], operands[1], operands[2]));
     }
   else

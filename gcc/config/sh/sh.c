@@ -3259,7 +3259,8 @@ sh_lshrsi_clobbers_t_reg_p (rtx shift_amount)
 {
   gcc_assert (CONST_INT_P (shift_amount));
 
-  const int shift_amount_i = INTVAL (shift_amount) & 31;
+  /* For right shifts the constant might be negative.  */
+  const int shift_amount_i = std::abs (INTVAL (shift_amount)) & 31;
  
   /* Special case for shift count of 31: use shll-movt sequence.  */
   if (shift_amount_i == 31)
@@ -3278,7 +3279,8 @@ sh_dynamicalize_shift_p (rtx count)
 {
   gcc_assert (CONST_INT_P (count));
 
-  const int shift_amount_i = INTVAL (count) & 31;
+  /* For right shifts the constant might be negative.  */
+  const int shift_amount_i = std::abs (INTVAL (count)) & 31;
   int insn_count;
 
   /* For left and right shifts, there are shorter 2 insn sequences for
