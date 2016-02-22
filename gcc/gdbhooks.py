@@ -680,4 +680,74 @@ class DumpFn(gdb.Command):
 
 DumpFn()
 
+class DotFn(gdb.Command):
+    """
+    A custom command to show a gimple/rtl function control flow graph.
+    By default, it show the current function, but the function can also be
+    specified.
+
+    Examples of use:
+      (gdb) dot-fn
+      (gdb) dot-fn cfun
+      (gdb) dot-fn cfun 0
+      (gdb) dot-fn cfun dump_flags
+    """
+    def __init__(self):
+        gdb.Command.__init__(self, 'dot-fn', gdb.COMMAND_USER)
+
+    def invoke(self, arg, from_tty):
+        # Parse args, check number of args
+        args = gdb.string_to_argv(arg)
+        if len(args) > 2:
+            print("Too many arguments")
+            return
+
+        # Set func
+        if len(args) >= 1:
+            funcname = args[0]
+            printfuncname = "function %s" % funcname
+        else:
+            funcname = "cfun"
+            printfuncname = "current function"
+        func = gdb.parse_and_eval(funcname)
+        if func == 0:
+            print("Could not find %s" % printfuncname)
+            return
+        func = "(struct function *)%s" % func
+
+        # Set flags
+        if len(args) >= 2:
+            flags = gdb.parse_and_eval(args[1])
+        else:
+            flags = 0
+
+        # Get temp file
+        f = tempfile.NamedTemporaryFile(delete=False)
+        filename = f.name
+
+        # Close and reopen temp file to get C FILE*
+        f.close()
+        fp = gdb.parse_and_eval("fopen (\"%s\", \"w\")" % filename)
+        if fp == 0:
+            print("Cannot open temp file")
+            return
+        fp = "(FILE *)%u" % fp
+
+        # Write graph to temp file
+        _ = gdb.parse_and_eval("start_graph_dump (%s, \"<debug>\")" % fp)
+        _ = gdb.parse_and_eval("print_graph_cfg (%s, %s, %u)"
+                               % (fp, func, flags))
+        _ = gdb.parse_and_eval("end_graph_dump (%s)" % fp)
+
+        # Close temp file
+        ret = gdb.parse_and_eval("fclose (%s)" % fp)
+        if ret != 0:
+            print("Could not close temp file: %s" % filename)
+            return
+
+        # Show graph in temp file
+        os.system("( dot -Tx11 \"%s\"; rm \"%s\" ) &" % (filename, filename))
+
+DotFn()
+
 print('Successfully loaded GDB hooks for GCC')

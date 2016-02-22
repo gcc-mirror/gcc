@@ -1,3 +1,10 @@
+2016-02-22  Richard Biener  <rguenther@suse.de>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* graph.c: Include dumpfile.h.
+	(print_graph_cfg): Split into three overloads.
+	* gdbhooks.py (class DotFn): Add and instantiate, adding command dot-fn.
+
 2016-02-22  Tom de Vries  <tom@codesourcery.com>
 
 	* gdbhooks.py (class DumpFn): Add and instantiate, adding command
