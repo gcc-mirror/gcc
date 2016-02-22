@@ -1,3 +1,12 @@
+2016-02-20  Mark Wielaard  <mjw@redhat.com>
+
+	PR c/28901
+	* cgraphunit.c (check_global_declaration): Check level of
+	warn_unused_const_variable and main_input_filename.
+	* doc/invoke.texi (Warning Options): Add -Wunused-const-variable=.
+	(-Wunused-variable): For C implies -Wunused-const-variable=1.
+	(-Wunused-const-variable): Explain levels 1 and 2.
+
 2016-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69888

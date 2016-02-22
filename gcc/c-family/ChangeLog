@@ -1,3 +1,9 @@
+2016-02-20  Mark Wielaard  <mjw@redhat.com>
+
+	PR c/28901
+	* c.opt (Wunused-const-variable): Turn into Alias for...
+	(Wunused-const-variable=): New option.
+
 2016-02-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c++/69865

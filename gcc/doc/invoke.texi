@@ -303,7 +303,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wunsuffixed-float-constants  -Wunused  -Wunused-function @gol
 -Wunused-label  -Wunused-local-typedefs -Wunused-parameter @gol
 -Wno-unused-result -Wunused-value @gol -Wunused-variable @gol
--Wunused-const-variable @gol
+-Wunused-const-variable -Wunused-const-variable=@var{n} @gol
 -Wunused-but-set-parameter -Wunused-but-set-variable @gol
 -Wuseless-cast -Wvariadic-macros -Wvector-operation-performance @gol
 -Wvla -Wvolatile-register-var  -Wwrite-strings @gol
@@ -4231,22 +4231,38 @@ its return value. The default is @option{-Wunused-result}.
 @opindex Wunused-variable
 @opindex Wno-unused-variable
 Warn whenever a local or static variable is unused aside from its
-declaration. This option implies @option{-Wunused-const-variable} for C,
+declaration. This option implies @option{-Wunused-const-variable=1} for C,
 but not for C++. This warning is enabled by @option{-Wall}.
 
 To suppress this warning use the @code{unused} attribute
 (@pxref{Variable Attributes}).
 
 @item -Wunused-const-variable
+@itemx -Wunused-const-variable=@var{n}
 @opindex Wunused-const-variable
 @opindex Wno-unused-const-variable
 Warn whenever a constant static variable is unused aside from its declaration.
-This warning is enabled by @option{-Wunused-variable} for C, but not for C++.
-In C++ this is normally not an error since const variables take the place of
-@code{#define}s in C++.
+@option{-Wunused-const-variable=1} is enabled by @option{-Wunused-variable}
+for C, but not for C++. In C this declares variable storage, but in C++ this
+is not an error since const variables take the place of @code{#define}s.
 
 To suppress this warning use the @code{unused} attribute
 (@pxref{Variable Attributes}).
+
+@table @gcctabopt
+@item -Wunused-const-variable=1
+This is the warning level that is enabled by @option{-Wunused-variable} for
+C.  It warns only about unused static const variables defined in the main
+compilation unit, but not about static const variables declared in any
+header included.
+
+@item -Wunused-const-variable=2
+This warning level also warns for unused constant static variables in
+headers (excluding system headers).  This is the warning level of
+@option{-Wunused-const-variable} and must be explicitly requested since
+in C++ this isn't an error and in C it might be harder to clean up all
+headers included.
+@end table
 
 @item -Wunused-value
 @opindex Wunused-value
