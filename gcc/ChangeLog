@@ -1,3 +1,14 @@
+2016-02-22  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/69806
+	PR target/54089
+	* config/sh/sh.c (sh_lshrsi_clobbers_t_reg_p, sh_dynamicalize_shift_p):
+	Handle negative shift counts.
+	* config/sh/sh.md (ashlsi3, lshrsi3_n, lshrsi3_n_clobbers_t): Don't use
+	force_reg on the shift constant.
+	(lshrsi3): Likewise.  Expand into lshrsi3_n* instead of lshrsi3_d.
+	(lshrsi3_d): Handle negative shift counts.
+
 2016-02-22  Richard Biener  <rguenther@suse.de>
 	    Tom de Vries  <tom@codesourcery.com>
 
