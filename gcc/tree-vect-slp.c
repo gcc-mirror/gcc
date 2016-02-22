@@ -1332,8 +1332,19 @@ vect_attempt_slp_rearrange_stmts (slp_instance slp_instn)
 			    node->load_permutation);
 
   /* We are done, no actual permutations need to be generated.  */
+  unsigned int unrolling_factor = SLP_INSTANCE_UNROLLING_FACTOR (slp_instn);
   FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (slp_instn), i, node)
-    SLP_TREE_LOAD_PERMUTATION (node).release ();
+    {
+      gimple *first_stmt = SLP_TREE_SCALAR_STMTS (node)[0];
+      first_stmt = GROUP_FIRST_ELEMENT (vinfo_for_stmt (first_stmt));
+      /* But we have to keep those permutations that are required because
+         of handling of gaps.  */
+      if (unrolling_factor == 1
+	  || (group_size == GROUP_SIZE (vinfo_for_stmt (first_stmt))
+	      && GROUP_GAP (vinfo_for_stmt (first_stmt)) == 0))
+	SLP_TREE_LOAD_PERMUTATION (node).release ();
+    }
+
   return true;
 }
 
@@ -1381,12 +1392,7 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
      In reduction chain the order of the loads is not important.  */
   if (!STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt))
       && !GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
-    {
-      if (vect_attempt_slp_rearrange_stmts (slp_instn))
-	return true;
-
-      /* Fallthru to general load permutation handling.  */
-    }
+    vect_attempt_slp_rearrange_stmts (slp_instn);
 
   /* In basic block vectorization we allow any subchain of an interleaving
      chain.
