@@ -301,9 +301,11 @@ inline_call (struct cgraph_edge *e, bool update_original,
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
   bool new_edges_found = false;
 
+  int estimated_growth = 0;
+  if (! update_overall_summary)
+    estimated_growth = estimate_edge_growth (e);
   /* This is used only for assert bellow.  */
 #if 0
-  int estimated_growth = estimate_edge_growth (e);
   bool predicated = inline_edge_summary (e)->predicate != NULL;
 #endif
 
@@ -373,7 +375,13 @@ inline_call (struct cgraph_edge *e, bool update_original,
     new_edges_found = ipa_propagate_indirect_call_infos (curr, new_edges);
   check_speculations (e->callee);
   if (update_overall_summary)
-   inline_update_overall_summary (to);
+    inline_update_overall_summary (to);
+  else
+    /* Update self size by the estimate so overall function growth limits
+       work for further inlining into this function.  Before inlining
+       the function we inlined to again we expect the caller to update
+       the overall summary.  */
+    inline_summaries->get (to)->size += estimated_growth;
   new_size = inline_summaries->get (to)->size;
 
   if (callee->calls_comdat_local)

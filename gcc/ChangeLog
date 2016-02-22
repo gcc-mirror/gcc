@@ -1,3 +1,15 @@
+2016-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/37448
+	* ipa-inline-transform.c (inline_call): When not updating
+	overall summaries adjust self size by the growth estimate.
+	* ipa-inline.c (inline_to_all_callers_1): Add to the callers
+	hash-set, do not update overall summaries here.  Renamed from ...
+	(inline_to_all_callers): ... this which is now wrapping the
+	above and performing delayed overall summary update.
+	(early_inline_small_functions): Delay updating of the overall
+	summary.
+
 2016-02-21  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* tree-chkp.c (chkp_mark_invalid_bounds_walker): Initialize

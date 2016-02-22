@@ -2163,7 +2163,8 @@ flatten_function (struct cgraph_node *node, bool early)
    recursion.  */
 
 static bool
-inline_to_all_callers (struct cgraph_node *node, void *data)
+inline_to_all_callers_1 (struct cgraph_node *node, void *data,
+			 hash_set<cgraph_node *> *callers)
 {
   int *num_calls = (int *)data;
   bool callee_removed = false;
@@ -2193,7 +2194,10 @@ inline_to_all_callers (struct cgraph_node *node, void *data)
 		   inline_summaries->get (node->callers->caller)->size);
 	}
 
-      inline_call (node->callers, true, NULL, NULL, true, &callee_removed);
+      /* Remember which callers we inlined to, delaying updating the
+	 overall summary.  */
+      callers->add (node->callers->caller);
+      inline_call (node->callers, true, NULL, NULL, false, &callee_removed);
       if (dump_file)
 	fprintf (dump_file,
 		 " Inlined into %s which now has %i size\n",
@@ -2209,6 +2213,23 @@ inline_to_all_callers (struct cgraph_node *node, void *data)
 	return true;
     }
   return false;
+}
+
+/* Wrapper around inline_to_all_callers_1 doing delayed overall summary
+   update.  */
+
+static bool
+inline_to_all_callers (struct cgraph_node *node, void *data)
+{
+  hash_set<cgraph_node *> callers;
+  bool res = inline_to_all_callers_1 (node, data, &callers);
+  /* Perform the delayed update of the overall summary of all callers
+     processed.  This avoids quadratic behavior in the cases where
+     we have a lot of calls to the same function.  */
+  for (hash_set<cgraph_node *>::iterator i = callers.begin ();
+       i != callers.end (); ++i)
+    inline_update_overall_summary (*i);
+  return res;
 }
 
 /* Output overall time estimate.  */
@@ -2590,9 +2611,12 @@ early_inline_small_functions (struct cgraph_node *node)
 	fprintf (dump_file, " Inlining %s into %s.\n",
 		 xstrdup_for_dump (callee->name ()),
 		 xstrdup_for_dump (e->caller->name ()));
-      inline_call (e, true, NULL, NULL, true);
+      inline_call (e, true, NULL, NULL, false);
       inlined = true;
     }
+
+  if (inlined)
+    inline_update_overall_summary (node);
 
   return inlined;
 }
