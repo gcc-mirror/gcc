@@ -26153,7 +26153,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
 	  || !alg_usable_p (algs->unknown_size, memset, have_as)))
     {
       enum stringop_alg alg;
-      HOST_WIDE_INT new_expected_size = max > 0 ? max / 2 : 2048;
+      HOST_WIDE_INT new_expected_size = (max > 0 ? max : 4096) / 2;
 
       /* If there aren't any usable algorithms or if recursing with the
 	 same arguments as before, then recursing on smaller sizes or
