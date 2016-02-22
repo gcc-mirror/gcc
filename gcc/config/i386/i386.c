@@ -26032,11 +26032,12 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
 	    bool memset, bool zero_memset, bool have_as,
 	    int *dynamic_check, bool *noalign)
 {
-  const struct stringop_algs * algs;
+  const struct stringop_algs *algs;
   bool optimize_for_speed;
   int max = 0;
   const struct processor_costs *cost;
   int i;
+  HOST_WIDE_INT orig_expected_size = expected_size;
   bool any_alg_usable_p = false;
 
   *noalign = false;
@@ -26066,7 +26067,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
       any_alg_usable_p |= usable;
 
       if (candidate != libcall && candidate && usable)
-	  max = algs->size[i].max;
+	max = algs->size[i].max;
     }
 
   /* If expected size is not known but max size is small enough
@@ -26076,7 +26077,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
       && expected_size == -1)
     expected_size = min_size / 2 + max_size / 2;
 
-  /* If user specified the algorithm, honnor it if possible.  */
+  /* If user specified the algorithm, honor it if possible.  */
   if (ix86_stringop_alg != no_stringop
       && alg_usable_p (ix86_stringop_alg, memset, have_as))
     return ix86_stringop_alg;
@@ -26152,20 +26153,20 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
 	  || !alg_usable_p (algs->unknown_size, memset, have_as)))
     {
       enum stringop_alg alg;
+      HOST_WIDE_INT new_expected_size = max > 0 ? max / 2 : 2048;
 
-      /* If there aren't any usable algorithms, then recursing on
-         smaller sizes isn't going to find anything.  Just return the
-         simple byte-at-a-time copy loop.  */
-      if (!any_alg_usable_p)
+      /* If there aren't any usable algorithms or if recursing with the
+	 same arguments as before, then recursing on smaller sizes or
+	 same size isn't going to find anything.  Just return the simple
+	 byte-at-a-time copy loop.  */
+      if (!any_alg_usable_p || orig_expected_size == new_expected_size)
         {
           /* Pick something reasonable.  */
           if (TARGET_INLINE_STRINGOPS_DYNAMICALLY)
             *dynamic_check = 128;
           return loop_1_byte;
         }
-      if (max <= 0)
-	max = 4096;
-      alg = decide_alg (count, max / 2, min_size, max_size, memset,
+      alg = decide_alg (count, new_expected_size, min_size, max_size, memset,
 			zero_memset, have_as, dynamic_check, noalign);
       gcc_assert (*dynamic_check == -1);
       if (TARGET_INLINE_STRINGOPS_DYNAMICALLY)

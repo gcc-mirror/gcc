@@ -1,3 +1,8 @@
+2016-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69888
+	* gcc.target/i386/pr69888.c: New test.
+
 2016-02-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69882
