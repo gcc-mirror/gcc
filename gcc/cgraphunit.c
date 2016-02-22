@@ -942,7 +942,10 @@ check_global_declaration (symtab_node *snode)
   /* Warn about static fns or vars defined but not used.  */
   if (((warn_unused_function && TREE_CODE (decl) == FUNCTION_DECL)
        || (((warn_unused_variable && ! TREE_READONLY (decl))
-	    || (warn_unused_const_variable && TREE_READONLY (decl)))
+	    || (warn_unused_const_variable > 0 && TREE_READONLY (decl)
+		&& (warn_unused_const_variable == 2
+		    || filename_cmp (main_input_filename,
+				     DECL_SOURCE_FILE (decl)) == 0)))
 	   && TREE_CODE (decl) == VAR_DECL))
       && ! DECL_IN_SYSTEM_HEADER (decl)
       && ! snode->referred_to_p (/*include_self=*/false)
@@ -971,7 +974,7 @@ check_global_declaration (symtab_node *snode)
 		(TREE_CODE (decl) == FUNCTION_DECL)
 		? OPT_Wunused_function
 		: (TREE_READONLY (decl)
-		   ? OPT_Wunused_const_variable
+		   ? OPT_Wunused_const_variable_
 		   : OPT_Wunused_variable),
 		"%qD defined but not used", decl);
 }
