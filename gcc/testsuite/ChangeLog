@@ -1,3 +1,8 @@
+2016-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69885
+	* gcc.dg/pr69885.c: New test.
+
 2016-02-22  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/69806

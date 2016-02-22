@@ -1,3 +1,9 @@
+2016-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69885
+	* config/m68k/m68k.md (ashldi3, ashrdi3, lshrdi3): Use
+	SImode for last match_operand.
+
 2016-02-22  Martin Liska  <mliska@suse.cz>
 
 	* hsa-gen.c (gen_hsa_clrsb): In case of zero value,
