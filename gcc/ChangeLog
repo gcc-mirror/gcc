@@ -1,3 +1,8 @@
+2016-02-22  Martin Liska  <mliska@suse.cz>
+
+	* hsa-gen.c (gen_hsa_clrsb): In case of zero value,
+	return bitsize - 1 as the return value.
+
 2016-02-22  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/69806

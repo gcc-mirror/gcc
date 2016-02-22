@@ -4055,7 +4055,9 @@ gen_hsa_clrsb (gcall *call, hsa_bb *hbb)
   hsa_op_with_type *arg = hsa_reg_or_immed_for_gimple_op (rhs1, hbb);
   BrigType16_t bittype = hsa_bittype_for_type (arg->m_type);
   unsigned bitsize = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (rhs1)));
-  gcc_checking_assert (bitsize >= 32);
+
+  /* FIRSTBIT instruction is defined just for 32 and 64-bits wide integers.  */
+  gcc_checking_assert (bitsize == 32 || bitsize == 64);
 
   /* Set true to MOST_SIG if the most significant bit is set to one.  */
   hsa_op_immed *c = new hsa_op_immed (1ul << (bitsize - 1),
@@ -4098,9 +4100,10 @@ gen_hsa_clrsb (gcall *call, hsa_bb *hbb)
 			  new hsa_op_immed (0, arg->m_type));
   hbb->append_insn (cmp);
 
-  /* Return the number of leading bits, or 31 if the input value is zero.  */
+  /* Return the number of leading bits,
+     or (bitsize - 1) if the input value is zero.  */
   cmov = new hsa_insn_basic (4, BRIG_OPCODE_CMOV, BRIG_TYPE_B32, NULL, is_zero,
-			     new hsa_op_immed (31, BRIG_TYPE_U32),
+			     new hsa_op_immed (bitsize - 1, BRIG_TYPE_U32),
 			     leading_bits->get_in_type (BRIG_TYPE_B32, hbb));
   hbb->append_insn (cmov);
   cmov->set_output_in_type (dest, 0, hbb);
