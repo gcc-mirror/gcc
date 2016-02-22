@@ -61,5 +61,6 @@ int main (void)
   Set_Elem2 (&A2, 0xCD0034);
   if (Get_Elem2 (A2) != 0xCD0034) abort ();
 
+  new_line ();
   return 0;
 }

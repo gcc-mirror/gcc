@@ -46,5 +46,6 @@ int main (void)
 
   if (A2.I != 0x12345678) abort ();
 
+  new_line ();
   return 0;
 }

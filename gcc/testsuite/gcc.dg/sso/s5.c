@@ -87,5 +87,6 @@ int main (void)
   new_line ();
   /* { dg-output "A2 : 12 34 56 78 00 ab 00 12 00 cd 00 34 00 ef 00 56.*\n" } */
 
+  new_line ();
   return 0;
 }
