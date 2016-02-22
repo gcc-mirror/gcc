@@ -1,3 +1,11 @@
+2016-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69882
+	* tree-vect-slp.c (vect_attempt_slp_rearrange_stmts): Properly
+	preserve permutations present because of gaps.
+	(vect_supported_load_permutation_p): Always continue checking
+	permutations after vect_attempt_slp_rearrange_stmts.
+
 2016-02-22  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Dump
