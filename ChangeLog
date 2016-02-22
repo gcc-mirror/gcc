@@ -1,3 +1,8 @@
+2016-02-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* MAINTAINERS (libcpp): Add myself.
+	(diagnostic messages): Likewise.
+
 2016-02-20  Tom de Vries  <tom@codesourcery.com>
 
 	* MAINTAINERS: Fix whitespace.

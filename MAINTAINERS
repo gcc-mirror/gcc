@@ -164,6 +164,7 @@ objective-c/c++		Iain Sandoe		<iain@codesourcery.com>
 libbacktrace		Ian Lance Taylor	<ian@airs.com>
 libcpp			Per Bothner		<per@bothner.com>
 libcpp			All C and C++ front end maintainers
+libcpp			David Malcolm		<dmalcolm@redhat.com>
 fp-bit			Ian Lance Taylor	<ian@airs.com>
 libdecnumber		Ben Elliston		<bje@gnu.org>
 libgcc			Ian Lance Taylor	<ian@airs.com>
@@ -217,6 +218,7 @@ basic block reordering	Jason Eckhardt		<jle@rice.edu>
 i18n			Philipp Thomas		<pth@suse.de>
 i18n			Joseph Myers		<joseph@codesourcery.com>
 diagnostic messages	Dodji Seketeli		<dodji@redhat.com>
+diagnostic messages	David Malcolm		<dmalcolm@redhat.com>
 build machinery (*.in)	Paolo Bonzini		<bonzini@gnu.org>
 build machinery (*.in)	DJ Delorie		<dj@redhat.com>
 build machinery (*.in)	Nathanael Nerode	<neroden@gcc.gnu.org>
