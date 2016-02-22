@@ -42,5 +42,6 @@ int main (void)
 
   if (A2.I != B2.I || A2.N.C1 != B2.N.C1) abort ();
 
+  new_line ();
   return 0;
 }

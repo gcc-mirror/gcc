@@ -48,5 +48,6 @@ int main (void)
   printf ("C2 : %d\n", C2);
   /* { dg-output "C2 : 15663190.*\n" } */
 
+  new_line ();
   return 0;
 }
