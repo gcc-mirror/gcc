@@ -3430,8 +3430,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   min_profitable_estimate = MAX (min_profitable_estimate, min_profitable_iters);
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-                     "  Static estimate profitability threshold = %d\n",
-                      min_profitable_iters);
+		     "  Static estimate profitability threshold = %d\n",
+		     min_profitable_estimate);
 
   *ret_min_profitable_estimate = min_profitable_estimate;
 }
