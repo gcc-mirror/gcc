@@ -1,3 +1,7 @@
+2016-02-22  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/vprop.c: New test.
+
 2016-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR driver/69805

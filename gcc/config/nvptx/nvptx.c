@@ -1306,6 +1306,20 @@ nvptx_gen_shuffle (rtx dst, rtx src, rtx idx, nvptx_shuffle_kind kind)
 	end_sequence ();
       }
       break;
+    case QImode:
+    case HImode:
+      {
+	rtx tmp = gen_reg_rtx (SImode);
+
+	start_sequence ();
+	emit_insn (gen_rtx_SET (tmp, gen_rtx_fmt_e (ZERO_EXTEND, SImode, src)));
+	emit_insn (nvptx_gen_shuffle (tmp, tmp, idx, kind));
+	emit_insn (gen_rtx_SET (dst, gen_rtx_fmt_e (TRUNCATE, GET_MODE (dst),
+						    tmp)));
+	res = get_insns ();
+	end_sequence ();
+      }
+      break;
       
     default:
       gcc_unreachable ();

@@ -1,3 +1,8 @@
+2016-02-22  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* config/nvptx/nvptx.c (nvptx_gen_shuffle): Add support for QImode
+	and HImode registers.
+
 2016-02-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69882
