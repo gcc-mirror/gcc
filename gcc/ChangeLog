@@ -1,3 +1,8 @@
+2016-02-22  Tom de Vries  <tom@codesourcery.com>
+
+	* gdbhooks.py (class DumpFn): Add and instantiate, adding command
+	dump-fn.
+
 2016-02-22  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/37448

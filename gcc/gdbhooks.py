@@ -133,6 +133,7 @@ Instead (for now) you must access m_vecdata:
 import os.path
 import re
 import sys
+import tempfile
 
 import gdb
 import gdb.printing
@@ -588,5 +589,95 @@ class BreakOnPass(gdb.Command):
         breakpoint = gdb.Breakpoint(sym)
 
 BreakOnPass()
+
+class DumpFn(gdb.Command):
+    """
+    A custom command to dump a gimple/rtl function to file.  By default, it
+    dumps the current function using 0 as dump_flags, but the function and flags
+    can also be specified. If /f <file> are passed as the first two arguments,
+    the dump is written to that file.  Otherwise, a temporary file is created
+    and opened in the text editor specified in the EDITOR environment variable.
+
+    Examples of use:
+      (gdb) dump-fn
+      (gdb) dump-fn /f foo.1.txt
+      (gdb) dump-fn cfun->decl
+      (gdb) dump-fn /f foo.1.txt cfun->decl
+      (gdb) dump-fn cfun->decl 0
+      (gdb) dump-fn cfun->decl dump_flags
+    """
+
+    def __init__(self):
+        gdb.Command.__init__(self, 'dump-fn', gdb.COMMAND_USER)
+
+    def invoke(self, arg, from_tty):
+        # Parse args, check number of args
+        args = gdb.string_to_argv(arg)
+        if len(args) >= 1 and args[0] == "/f":
+            if len(args) == 1:
+                print ("Missing file argument")
+                return
+            filename = args[1]
+            editor_mode = False
+            base_arg = 2
+        else:
+            editor = os.getenv("EDITOR", "")
+            if editor == "":
+                print ("EDITOR environment variable not defined")
+                return
+            editor_mode = True
+            base_arg = 0
+        if len(args) - base_arg > 2:
+            print ("Too many arguments")
+            return
+
+        # Set func
+        if len(args) - base_arg >= 1:
+            funcname = args[base_arg]
+            printfuncname = "function %s" % funcname
+        else:
+            funcname = "cfun ? cfun->decl : current_function_decl"
+            printfuncname = "current function"
+        func = gdb.parse_and_eval(funcname)
+        if func == 0:
+            print ("Could not find %s" % printfuncname)
+            return
+        func = "(tree)%u" % func
+
+        # Set flags
+        if len(args) - base_arg >= 2:
+            flags = gdb.parse_and_eval(args[base_arg + 1])
+        else:
+            flags = 0
+
+        # Get tempory file, if necessary
+        if editor_mode:
+            f = tempfile.NamedTemporaryFile(delete=False, suffix=".txt")
+            filename = f.name
+            f.close()
+
+        # Open file
+        fp = gdb.parse_and_eval("fopen (\"%s\", \"w\")" % filename)
+        if fp == 0:
+            print ("Could not open file: %s" % filename)
+            return
+        fp = "(FILE *)%u" % fp
+
+        # Dump function to file
+        _ = gdb.parse_and_eval("dump_function_to_file (%s, %s, %u)" %
+                               (func, fp, flags))
+
+        # Close file
+        ret = gdb.parse_and_eval("fclose (%s)" % fp)
+        if ret != 0:
+            print ("Could not close file: %s" % filename)
+            return
+
+        # Open file in editor, if necessary
+        if editor_mode:
+            os.system("( %s \"%s\"; rm \"%s\" ) &" %
+                      (editor, filename, filename))
+
+DumpFn()
 
 print('Successfully loaded GDB hooks for GCC')
