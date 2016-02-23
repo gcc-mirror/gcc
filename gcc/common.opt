@@ -728,7 +728,7 @@ Common Var(warn_maybe_uninitialized) Warning EnabledBy(Wuninitialized)
 Warn about maybe uninitialized automatic variables.
 
 Wunreachable-code
-Common Ignore
+Common Ignore Warning
 Does nothing. Preserved for backward compatibility.
 
 Wunused
