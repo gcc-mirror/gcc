@@ -1,3 +1,9 @@
+2016-02-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR libstdc++/69881
+	* include/c_global/cstdarg: Undefine __need___va_list.
+	* include/c_global/cstddef: Undefine all kinds of __need_*.
+
 2016-02-16  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/69794
