@@ -3589,8 +3589,11 @@ fold_truth_not_expr (location_t loc, tree arg)
       if (code == ERROR_MARK)
 	return NULL_TREE;
 
-      return build2_loc (loc, code, type, TREE_OPERAND (arg, 0),
-			 TREE_OPERAND (arg, 1));
+      tree ret = build2_loc (loc, code, type, TREE_OPERAND (arg, 0),
+			     TREE_OPERAND (arg, 1));
+      if (TREE_NO_WARNING (arg))
+	TREE_NO_WARNING (ret) = 1;
+      return ret;
     }
 
   switch (code)
