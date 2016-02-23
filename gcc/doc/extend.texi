@@ -10127,6 +10127,8 @@ in the Cilk Plus language manual which can be found at
 @node Other Builtins
 @section Other Built-in Functions Provided by GCC
 @cindex built-in functions
+@findex __builtin_alloca
+@findex __builtin_alloca_with_align
 @findex __builtin_call_with_static_chain
 @findex __builtin_fpclassify
 @findex __builtin_isfinite
@@ -10672,6 +10674,92 @@ In the same fashion, GCC provides @code{fpclassify}, @code{isfinite},
 @code{isinf_sign}, @code{isnormal} and @code{signbit} built-ins used with
 @code{__builtin_} prefixed.  The @code{isinf} and @code{isnan}
 built-in functions appear both with and without the @code{__builtin_} prefix.
+
+@deftypefn {Built-in Function} void *__builtin_alloca (size_t size)
+The @code{__builtin_alloca} function must be called at block scope.
+The function allocates an object @var{size} bytes large on the stack
+of the calling function.  The object is aligned on the default stack
+alignment boundary for the target determined by the
+@code{__BIGGEST_ALIGNMENT__} macro.  The @code{__builtin_alloca}
+function returns a pointer to the first byte of the allocated object.
+The lifetime of the allocated object ends just before the calling
+function returns to its caller.   This is so even when
+@code{__builtin_alloca} is called within a nested block.
+
+For example, the following function allocates eight objects of @code{n}
+bytes each on the stack, storing a pointer to each in consecutive elements
+of the array @code{a}.  It then passes the array to function @code{g}
+which can safely use the storage pointed to by each of the array elements.
+
+@smallexample
+void f (unsigned n)
+@{
+  void *a [8];
+  for (int i = 0; i != 8; ++i)
+    a [i] = __builtin_alloca (n);
+
+  g (a, n);   // @r{safe}
+@}
+@end smallexample
+
+Since the @code{__builtin_alloca} function doesn't validate its argument
+it is the responsibility of its caller to make sure the argument doesn't
+cause it to exceed the stack size limit.
+The @code{__builtin_alloca} function is provided to make it possible to
+allocate on the stack arrays of bytes with an upper bound that may be
+computed at run time.  Since C99 @xref{Variable Length} Arrays offer
+similar functionality under a portable, more convenient, and safer
+interface they are recommended instead, in both C99 and C++ programs
+where GCC provides them as an extension.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} void *__builtin_alloca_with_align (size_t size, size_t alignment)
+The @code{__builtin_alloca_with_align} function must be called at block
+scope.  The function allocates an object @var{size} bytes large on
+the stack of the calling function.  The allocated object is aligned on
+the boundary specified by the argument @var{alignment} whose unit is given
+in bits (not bytes).  The @var{size} argument must be positive and not
+exceed the stack size limit.  The @var{alignment} argument must be a constant
+integer expression that evaluates to a power of 2 greater than or equal to
+@code{CHAR_BIT} and less than some unspecified maximum.  Invocations
+with other values are rejected with an error indicating the valid bounds.
+The function returns a pointer to the first byte of the allocated object.
+The lifetime of the allocated object ends at the end of the block in which
+the function was called.  The allocated storage is released no later than
+just before the calling function returns to its caller, but may be released
+at the end of the block in which the function was called.
+
+For example, in the following function the call to @code{g} is unsafe
+because when @code{overalign} is non-zero, the space allocated by
+@code{__builtin_alloca_with_align} may have been released at the end
+of the @code{if} statement in which it was called.
+
+@smallexample
+void f (unsigned n, bool overalign)
+@{
+  void *p;
+  if (overalign)
+    p = __builtin_alloca_with_align (n, 64 /* bits */);
+  else
+    p = __builtin_alloc (n);
+
+  g (p, n);   // @r{unsafe}
+@}
+@end smallexample
+
+Since the @code{__builtin_alloca_with_align} function doesn't validate its
+@var{size} argument it is the responsibility of its caller to make sure
+the argument doesn't cause it to exceed the stack size limit.
+The @code{__builtin_alloca_with_align} function is provided to make
+it possible to allocate on the stack overaligned arrays of bytes with
+an upper bound that may be computed at run time.  Since C99
+@xref{Variable Length} Arrays offer the same functionality under
+a portable, more convenient, and safer interface they are recommended
+instead, in both C99 and C++ programs where GCC provides them as
+an extension.
+
+@end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_types_compatible_p (@var{type1}, @var{type2})
 
