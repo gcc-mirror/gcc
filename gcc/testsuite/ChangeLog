@@ -2,6 +2,14 @@
 
 	PR preprocessor/69126
 	PR preprocessor/69543
+	* c-c++-common/pr69126-2-long.c: New test.
+	* c-c++-common/pr69126-2-short.c: New test.
+	* c-c++-common/pr69543-1.c: Remove xfail.
+
+2016-02-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/69126
+	PR preprocessor/69543
 	PR preprocessor/69558
 	* c-c++-common/pr69126.c (MACRO_1, test_1): New.
 	(f): Rename to...

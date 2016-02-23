@@ -1,3 +1,13 @@
+2016-02-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/69126
+	PR preprocessor/69543
+	* line-map.c (linemap_compare_locations): At the function top,
+	replace inlined bodies of get_location_from_adhoc_loc with calls
+	to get_location_from_adhoc_loc.  Add a pair of calls to
+	get_location_from_adhoc_loc at the bottom of the function, to
+	avoid meaningless comparisons of ad-hoc and non-ad-hoc locations.
+
 2016-02-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/69664

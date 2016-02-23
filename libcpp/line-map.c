@@ -1328,9 +1328,9 @@ linemap_compare_locations (struct line_maps *set,
   source_location l0 = pre, l1 = post;
 
   if (IS_ADHOC_LOC (l0))
-    l0 = set->location_adhoc_data_map.data[l0 & MAX_SOURCE_LOCATION].locus;
+    l0 = get_location_from_adhoc_loc (set, l0);
   if (IS_ADHOC_LOC (l1))
-    l1 = set->location_adhoc_data_map.data[l1 & MAX_SOURCE_LOCATION].locus;
+    l1 = get_location_from_adhoc_loc (set, l1);
 
   if (l0 == l1)
     return 0;
@@ -1364,6 +1364,11 @@ linemap_compare_locations (struct line_maps *set,
       i1 = l1 - MAP_START_LOCATION (map);
       return i1 - i0;
     }
+
+  if (IS_ADHOC_LOC (l0))
+    l0 = get_location_from_adhoc_loc (set, l0);
+  if (IS_ADHOC_LOC (l1))
+    l1 = get_location_from_adhoc_loc (set, l1);
 
   return l1 - l0;
 }
