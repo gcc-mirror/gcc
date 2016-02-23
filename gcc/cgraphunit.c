@@ -917,6 +917,7 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 static void
 check_global_declaration (symtab_node *snode)
 {
+  const char *decl_file;
   tree decl = snode->decl;
 
   /* Warn about any function declared static but not defined.  We don't
@@ -944,8 +945,10 @@ check_global_declaration (symtab_node *snode)
        || (((warn_unused_variable && ! TREE_READONLY (decl))
 	    || (warn_unused_const_variable > 0 && TREE_READONLY (decl)
 		&& (warn_unused_const_variable == 2
-		    || filename_cmp (main_input_filename,
-				     DECL_SOURCE_FILE (decl)) == 0)))
+		    || (main_input_filename != NULL
+			&& (decl_file = DECL_SOURCE_FILE (decl)) != NULL
+			&& filename_cmp (main_input_filename,
+					 decl_file) == 0))))
 	   && TREE_CODE (decl) == VAR_DECL))
       && ! DECL_IN_SYSTEM_HEADER (decl)
       && ! snode->referred_to_p (/*include_self=*/false)
