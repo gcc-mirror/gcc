@@ -1,3 +1,8 @@
+2016-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69900
+	* common.opt (Wunreachable-code): Add Warning flag.
+
 2016-02-23  Mark Wielaard  <mjw@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
