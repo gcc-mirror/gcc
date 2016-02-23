@@ -1,5 +1,10 @@
 2016-02-23  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.target/s390/vcond-shift.c: Move to ...
+	* gcc.target/s390/vector/vcond-shift.c: ... here.
+
+2016-02-23  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.target/s390/md/movstr-2.c: Move and rename to ...
 	* gcc.target/s390/vector/stpcpy-1.c: ... this one.
 
