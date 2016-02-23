@@ -1,3 +1,7 @@
+2016-02-23  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/md/movstr-1.c: Turn into compile test.
+
 2016-02-20  Mark Wielaard  <mjw@redhat.com>
 
 	PR c/28901
