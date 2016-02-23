@@ -538,7 +538,7 @@ static const struct tune_params exynosm1_tunings =
   48,	/* max_case_values.  */
   64,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_OFF, /* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE) /* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_RECIP_SQRT) /* tune_flags.  */
 };
 
 static const struct tune_params thunderx_tunings =
