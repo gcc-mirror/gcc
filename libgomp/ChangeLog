@@ -1,3 +1,35 @@
+2016-02-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-parallel.c (GOACC_parallel_keyed): Initialize dims.
+	* plugin/plugin-nvptx.c (nvptx_exec): Provide default values for
+	dims.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-2.c: Adjust to
+	-ftree-parallelize-loops/-fopenacc changes.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq-6.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-and-seq.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-collapse.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-g.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-mod-not-zero.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-n.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-nest.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-reduction.c:
+	Likewise.
+
 2016-02-22  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/vprop.c: New test.

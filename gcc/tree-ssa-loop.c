@@ -148,7 +148,7 @@ make_pass_tree_loop (gcc::context *ctxt)
 static bool
 gate_oacc_kernels (function *fn)
 {
-  if (flag_tree_parallelize_loops <= 1)
+  if (!flag_openacc)
     return false;
 
   tree oacc_function_attr = get_oacc_fn_attrib (fn->decl);
@@ -230,10 +230,9 @@ public:
   virtual bool gate (function *)
   {
     return (optimize
-	    /* Don't bother doing anything if the program has errors.  */
-	    && !seen_error ()
 	    && flag_openacc
-	    && flag_tree_parallelize_loops > 1);
+	    /* Don't bother doing anything if the program has errors.  */
+	    && !seen_error ());
   }
 
 }; // class pass_ipa_oacc

@@ -1,5 +1,4 @@
 /* { dg-additional-options "-O2" } */
-/* { dg-additional-options "-ftree-parallelize-loops=32" } */
 /* { dg-additional-options "-fdump-tree-parloops1-all" } */
 /* { dg-additional-options "-fdump-tree-optimized" } */
 
@@ -67,4 +66,4 @@ main (void)
 /* { dg-final { scan-tree-dump-times "(?n);; Function .*main._omp_fn.1" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "(?n);; Function .*main._omp_fn.2" 1 "optimized" } } */
 
-/* { dg-final { scan-tree-dump-times "(?n)oacc function \\(32," 3 "parloops1" } } */
+/* { dg-final { scan-tree-dump-times "(?n)oacc function \\(0," 3 "parloops1" } } */
