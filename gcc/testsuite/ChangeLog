@@ -1,3 +1,30 @@
+2016-02-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/69126
+	PR preprocessor/69543
+	PR preprocessor/69558
+	* c-c++-common/pr69126.c (MACRO_1, test_1): New.
+	(f): Rename to...
+	(test_2): ...this, and add leading comment.
+	(MACRO_3, test_3): New.
+	(MACRO_4A, MACRO_4B, test_4): New.
+	(MACRO): Rename to...
+	(MACRO_5): ...this.
+	(g): Rename to...
+	(test_5): ...this, updating for renaming of MACRO, and
+	add leading comment.
+	* c-c++-common/pr69543-1.c: New.
+	* c-c++-common/pr69543-2.c: New.
+	* c-c++-common/pr69543-3.c: New.
+	* c-c++-common/pr69543-4.c: New.
+	* c-c++-common/pr69558-1.c: New.
+	* c-c++-common/pr69558-2.c: New.
+	* c-c++-common/pr69558-3.c: New.
+	* c-c++-common/pr69558-4.c: New.
+	* gcc.dg/pr69558.c: Move to...
+	* c-c++-common/pr69558.c: ...here.  Add dg-bogus directives, with
+	xfail for c++.
+
 2016-02-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-c++-common/goacc/kernels-counter-vars-function-scope.c: Adjust
