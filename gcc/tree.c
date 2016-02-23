@@ -1114,7 +1114,7 @@ free_node (tree node)
     {
       tree_code_counts[(int) TREE_CODE (node)]--;
       tree_node_counts[(int) t_kind]--;
-      tree_node_sizes[(int) t_kind] -= tree_code_size (TREE_CODE (node));
+      tree_node_sizes[(int) t_kind] -= tree_size (node);
     }
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     vec_free (CONSTRUCTOR_ELTS (node));

@@ -35,7 +35,7 @@ bitmap_register (bitmap b MEM_STAT_DECL)
 
 /* Account the overhead.  */
 static void
-register_overhead (bitmap b, int amount)
+register_overhead (bitmap b, size_t amount)
 {
   if (bitmap_mem_desc.contains_descriptor_for_instance (b))
     bitmap_mem_desc.register_instance_overhead (amount, b);
@@ -466,6 +466,27 @@ bitmap_copy (bitmap to, const_bitmap from)
 	}
 
       to_ptr = to_elt;
+    }
+}
+
+/* Move a bitmap to another bitmap.  */
+
+void
+bitmap_move (bitmap to, bitmap from)
+{
+  gcc_assert (to->obstack == from->obstack);
+
+  bitmap_clear (to);
+
+  *to = *from;
+
+  if (GATHER_STATISTICS)
+    {
+      size_t sz = 0;
+      for (bitmap_element *e = to->first; e; e = e->next)
+	sz += sizeof (bitmap_element);
+      register_overhead (to, sz);
+      register_overhead (from, -sz);
     }
 }
 

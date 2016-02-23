@@ -517,10 +517,7 @@ df_rd_transfer_function (int bb_index)
       bitmap_ior_into (&tmp, gen);
       changed = !bitmap_equal_p (&tmp, out);
       if (changed)
-	{
-	  bitmap_clear (out);
-	  bb_info->out = tmp;
-	}
+	bitmap_move (out, &tmp);
       else
 	bitmap_clear (&tmp);
     }
