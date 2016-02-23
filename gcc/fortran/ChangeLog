@@ -1,3 +1,9 @@
+2016-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/61156
+	* scanner.c (add_path_to_list): If include path is not a directory,
+	issue a fatal error.
+
 2016-02-23  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/67451

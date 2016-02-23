@@ -1,3 +1,8 @@
+2016-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/61156
+	* gfortran.dg/include_6.f90: Update test.
+
 2016-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR objc/69844
