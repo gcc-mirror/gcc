@@ -3339,6 +3339,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
     }
   else if (racc
 	   && !racc->grp_unscalarized_data
+	   && !racc->grp_unscalarizable_region
 	   && TREE_CODE (lhs) == SSA_NAME
 	   && !access_has_replacements_p (racc))
     {

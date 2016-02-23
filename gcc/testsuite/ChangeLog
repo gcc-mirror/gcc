@@ -1,3 +1,8 @@
+2016-02-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/69666
+	* gcc.dg/tree-ssa/pr69666.c: New test.
+
 2016-02-23  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/67451
