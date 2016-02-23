@@ -1,5 +1,8 @@
 2016-02-23  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/using.xml: Document __STDCPP_WANT_MATH_SPEC_FUNCS__.
+	* doc/html/*: Regenerate.
+
 	PR libstdc++/69893
 	* include/tr1/cmath (acosh, asinh, atanh, cbrt, copysign, erf, erfc,
 	exp2, expm1, fdim, fma, fmax, fmin, hypot, ilogb, lgamma, llrint,
