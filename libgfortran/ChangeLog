@@ -1,3 +1,12 @@
+2016-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/69456
+	* io/list_read.c (read_real): If digit is missing from exponent issue
+	an error. (parse_real): Likewise and adjusted error message to clarify
+	it is part of a complex number.
+	(nml_read_obj): Bump item count and add comment that this is used to
+	identify which item in a namelist read has a problem.
+
 2016-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/69651
