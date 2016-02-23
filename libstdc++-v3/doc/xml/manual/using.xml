@@ -955,6 +955,13 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 	mode</link>.
       </para>
     </listitem></varlistentry>
+
+    <varlistentry><term><code>__STDCPP_WANT_MATH_SPEC_FUNCS__</code></term>
+    <listitem>
+      <para>Undefined by default. When defined to a non-zero integer constant,
+	enables support for ISO/IEC 29124 Special Math Functions.
+      </para>
+    </listitem></varlistentry>
     </variablelist>
 
   </section>
