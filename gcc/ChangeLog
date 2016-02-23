@@ -1,3 +1,10 @@
+2016-02-23  Mark Wielaard  <mjw@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69911
+	* cgraphunit.c (check_global_declaration): Check main_input_filename
+	and DECL_SOURCE_FILE are not NULL.
+
 2016-02-23  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/69666
