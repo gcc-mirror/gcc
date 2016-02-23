@@ -1,3 +1,10 @@
+2016-02-23  Richard Biener  <rguenther@suse.de>
+
+	* alloc-pool.h (struct allocation_object): Make id member
+	conditional on CHECKING_P again.
+	(get_instance): Adjust.
+	(base_pool_allocator): Likewise.
+
 2016-02-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* tree-parloops.c (create_parallel_loop, gen_parallel_loop)
