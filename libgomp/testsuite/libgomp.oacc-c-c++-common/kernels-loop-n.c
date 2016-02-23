@@ -1,6 +1,3 @@
-/* { dg-do run } */
-/* { dg-additional-options "-ftree-parallelize-loops=32" } */
-
 #include <stdlib.h>
 
 #define N ((1024 * 512) + 1)

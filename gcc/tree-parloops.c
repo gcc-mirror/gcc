@@ -2016,7 +2016,8 @@ transform_to_exit_first_loop (struct loop *loop,
 /* Create the parallel constructs for LOOP as described in gen_parallel_loop.
    LOOP_FN and DATA are the arguments of GIMPLE_OMP_PARALLEL.
    NEW_DATA is the variable that should be initialized from the argument
-   of LOOP_FN.  N_THREADS is the requested number of threads.  */
+   of LOOP_FN.  N_THREADS is the requested number of threads, which can be 0 if
+   that number is to be determined later.  */
 
 static void
 create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
@@ -2049,6 +2050,7 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
       basic_block paral_bb = single_pred (bb);
       gsi = gsi_last_bb (paral_bb);
 
+      gcc_checking_assert (n_threads != 0);
       t = build_omp_clause (loc, OMP_CLAUSE_NUM_THREADS);
       OMP_CLAUSE_NUM_THREADS_EXPR (t)
 	= build_int_cst (integer_type_node, n_threads);
@@ -2221,7 +2223,8 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
 }
 
 /* Generates code to execute the iterations of LOOP in N_THREADS
-   threads in parallel.
+   threads in parallel, which can be 0 if that number is to be determined
+   later.
 
    NITER describes number of iterations of LOOP.
    REDUCTION_LIST describes the reductions existent in the LOOP.  */
@@ -2318,6 +2321,7 @@ gen_parallel_loop (struct loop *loop,
       else
 	m_p_thread=MIN_PER_THREAD;
 
+      gcc_checking_assert (n_threads != 0);
       many_iterations_cond =
 	fold_build2 (GE_EXPR, boolean_type_node,
 		     nit, build_int_cst (type, m_p_thread * n_threads));
@@ -3177,7 +3181,7 @@ oacc_entry_exit_ok (struct loop *loop,
 static bool
 parallelize_loops (bool oacc_kernels_p)
 {
-  unsigned n_threads = flag_tree_parallelize_loops;
+  unsigned n_threads;
   bool changed = false;
   struct loop *loop;
   struct loop *skip_loop = NULL;
@@ -3198,6 +3202,13 @@ parallelize_loops (bool oacc_kernels_p)
 
   if (cfun->has_nonlocal_label)
     return false;
+
+  /* For OpenACC kernels, n_threads will be determined later; otherwise, it's
+     the argument to -ftree-parallelize-loops.  */
+  if (oacc_kernels_p)
+    n_threads = 0;
+  else
+    n_threads = flag_tree_parallelize_loops;
 
   gcc_obstack_init (&parloop_obstack);
   reduction_info_table_type reduction_list (10);
@@ -3361,7 +3372,13 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_parallelize_loops > 1; }
+  virtual bool gate (function *)
+  {
+    if (oacc_kernels_p)
+      return flag_openacc;
+    else
+      return flag_tree_parallelize_loops > 1;
+  }
   virtual unsigned int execute (function *);
   opt_pass * clone () { return new pass_parallelize_loops (m_ctxt); }
   void set_pass_param (unsigned int n, bool param)

@@ -1,3 +1,12 @@
+2016-02-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree-parloops.c (create_parallel_loop, gen_parallel_loop)
+	(parallelize_loops): In OpenACC kernels mode, set n_threads to
+	zero.
+	(pass_parallelize_loops::gate): In OpenACC kernels mode, gate on
+	flag_openacc.
+	* tree-ssa-loop.c (gate_oacc_kernels): Likewise.
+
 2016-02-23  Richard Biener  <rguenther@suse.de>
 
 	* mem-stats.h (struct mem_usage): Use PRIu64 for printing size_t.

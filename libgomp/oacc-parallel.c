@@ -103,6 +103,10 @@ GOACC_parallel_keyed (int device, void (*fn) (void *),
       return;
     }
 
+  /* Default: let the runtime choose.  */
+  for (i = 0; i != GOMP_DIM_MAX; i++)
+    dims[i] = 0;
+
   va_start (ap, kinds);
   /* TODO: This will need amending when device_type is implemented.  */
   while ((tag = va_arg (ap, unsigned)) != 0)

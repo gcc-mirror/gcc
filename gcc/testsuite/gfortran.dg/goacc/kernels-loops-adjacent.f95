@@ -1,5 +1,4 @@
 ! { dg-additional-options "-O2" }
-! { dg-additional-options "-ftree-parallelize-loops=10" }
 
 program main
    implicit none
