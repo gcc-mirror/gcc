@@ -17395,8 +17395,6 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
     {
       const char *string;
 
-      if (as == ADDR_SPACE_SEG_TLS)
-	as = DEFAULT_TLS_SEG_REG;
       if (as == ADDR_SPACE_SEG_FS)
 	string = (ASSEMBLER_DIALECT == ASM_ATT ? "%fs:" : "fs:");
       else if (as == ADDR_SPACE_SEG_GS)
@@ -54256,54 +54254,8 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
         without resorting to a system call, we cannot convert a
         non-default address space to a default address space.
         Therefore we do not claim %fs or %gs are subsets of generic.
-    (e) However, __seg_tls uses UNSPEC_TP as the base (which itself is
-	stored at __seg_tls:0) so we can map between tls and generic.  */
 
-static bool
-ix86_addr_space_subset_p (addr_space_t subset, addr_space_t superset)
-{
-    return (subset == superset
-	    || (superset == ADDR_SPACE_GENERIC
-		&& subset == ADDR_SPACE_SEG_TLS));
-}
-#undef TARGET_ADDR_SPACE_SUBSET_P
-#define TARGET_ADDR_SPACE_SUBSET_P ix86_addr_space_subset_p
-
-static rtx
-ix86_addr_space_convert (rtx op, tree from_type, tree to_type)
-{
-  addr_space_t from_as = TYPE_ADDR_SPACE (TREE_TYPE (from_type));
-  addr_space_t to_as = TYPE_ADDR_SPACE (TREE_TYPE (to_type));
-
-  /* Conversion between SEG_TLS and GENERIC is handled by adding or
-     subtracting the thread pointer.  */
-  if ((from_as == ADDR_SPACE_GENERIC && to_as == ADDR_SPACE_SEG_TLS)
-      || (from_as == ADDR_SPACE_SEG_TLS && to_as == ADDR_SPACE_GENERIC))
-    {
-      machine_mode mode = GET_MODE (op);
-      if (mode == VOIDmode)
-	mode = ptr_mode;
-      rtx tp = get_thread_pointer (mode, optimize || mode != ptr_mode);
-      return expand_binop (mode, (to_as == ADDR_SPACE_GENERIC
-				  ? add_optab : sub_optab),
-			   op, tp, NULL, 1, OPTAB_WIDEN);
-    }
-
-  return op;
-}
-#undef TARGET_ADDR_SPACE_CONVERT
-#define TARGET_ADDR_SPACE_CONVERT ix86_addr_space_convert
-
-static int
-ix86_addr_space_debug (addr_space_t as)
-{
-  /* Fold __seg_tls to __seg_fs or __seg_gs for debugging.  */
-  if (as == ADDR_SPACE_SEG_TLS)
-    as = DEFAULT_TLS_SEG_REG;
-  return as;
-}
-#undef TARGET_ADDR_SPACE_DEBUG
-#define TARGET_ADDR_SPACE_DEBUG ix86_addr_space_debug
+   Therefore we can (mostly) use the default hooks.  */
 
 /* All use of segmentation is assumed to make address 0 valid.  */
 

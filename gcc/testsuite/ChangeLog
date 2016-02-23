@@ -1,3 +1,7 @@
+2016-02-23  Richard Henderson  <rth@redhat.com>
+
+	* gcc.target/i386/addr-space-3.c: Remove test.
+
 2016-02-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/69126

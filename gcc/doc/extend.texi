@@ -1473,23 +1473,6 @@ that it installed previously.
 
 The preprocessor symbols @code{__SEG_FS} and @code{__SEG_GS} are
 defined when these address spaces are supported.
-
-@item __seg_tls
-@cindex @code{__seg_tls} x86 named address space
-Some operating systems define either the @code{%fs} or @code{%gs}
-segment as the thread-local storage base for each thread.  Objects
-within this address space are accessed with the appropriate
-segment override prefix.
-
-The pointer located at address 0 within the segment contains the
-offset of the segment within the generic address space.  Thus this
-address space is considered a subspace of the generic address space,
-and the known segment offset is applied when converting addresses
-to and from the generic address space.
-
-The preprocessor symbol @code{__SEG_TLS} is defined when this
-address space is supported.
-
 @end table
 
 @node Zero Length
