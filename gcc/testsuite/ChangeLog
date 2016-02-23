@@ -1,3 +1,9 @@
+2016-02-23  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/69780
+	* g++.dg/ext/builtin_alloca.C: New test.
+	* gcc.dg/builtins-68.c: New test.
+
 2016-02-23  Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/i386/addr-space-3.c: Remove test.

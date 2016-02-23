@@ -9818,6 +9818,33 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
+    case BUILT_IN_ALLOCA_WITH_ALIGN:
+      {
+	/* Get the requested alignment (in bits) if it's a constant
+	   integer expression.  */
+	unsigned HOST_WIDE_INT align
+	  = tree_fits_uhwi_p (args[1]) ? tree_to_uhwi (args[1]) : 0;
+
+	/* Determine if the requested alignment is a power of 2.  */
+	if ((align & (align - 1)))
+	  align = 0;
+
+	/* The maximum alignment in bits corresponding to the same
+	   maximum in bytes enforced in check_user_alignment().  */
+	unsigned maxalign = (UINT_MAX >> 1) + 1;
+  
+	/* Reject invalid alignments.  */
+	if (align < BITS_PER_UNIT || maxalign < align)
+	  {
+	    error_at (EXPR_LOC_OR_LOC (args[1], input_location),
+		      "second argument to function %qE must be a constant "
+		      "integer power of 2 between %qi and %qu bits",
+		      fndecl, BITS_PER_UNIT, maxalign);
+	    return false;
+	  }
+      return true;
+      }
+
     case BUILT_IN_CONSTANT_P:
       return builtin_function_validate_nargs (fndecl, nargs, 1);
 

@@ -1,3 +1,9 @@
+2016-02-22  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/69780
+	* c-common.c (check_builtin_function_arguments): Validate and
+	reject invalid arguments to __builtin_alloca_with_align.
+
 2016-02-20  Mark Wielaard  <mjw@redhat.com>
 
 	PR c/28901

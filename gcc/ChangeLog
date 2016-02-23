@@ -1,3 +1,9 @@
+2016-02-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c/69759
+	* doc/extend.texi (Other Builtins): Document __builtin_alloca and
+	__builtin_alloca_with_align.
+
 2016-02-23  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386-c.c (ix86_target_macros): Remove __SEG_TLS.
