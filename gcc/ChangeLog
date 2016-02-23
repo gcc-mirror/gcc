@@ -1,3 +1,14 @@
+2016-02-23  Richard Biener  <rguenther@suse.de>
+
+	* mem-stats.h (struct mem_usage): Use PRIu64 for printing size_t.
+	* bitmap.h (struct bitmap_usage): Likewise.
+	(bitmap_move): Declare.
+	* bitmap.c (register_overhead): Take size_t argument.
+	(bitmap_move): New function.
+	* df-problems.c (df_rd_transfer_function): Use bitmap_move
+	to properly account overhead.
+	* tree.c (free_node): Use tree_size.
+
 2016-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69902

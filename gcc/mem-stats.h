@@ -190,10 +190,11 @@ struct mem_usage
   {
     char *location_string = loc->to_string ();
 
-    fprintf (stderr, "%-48s %10li:%5.1f%%%10li%10li:%5.1f%%%10s\n",
-	     location_string,
-	     (long)m_allocated, get_percent (m_allocated, total.m_allocated),
-	     (long)m_peak, (long)m_times,
+    fprintf (stderr, "%-48s %10" PRIu64 ":%5.1f%%"
+	     "%10" PRIu64 "%10" PRIu64 ":%5.1f%%%10s\n",
+	     location_string, (uint64_t)m_allocated,
+	     get_percent (m_allocated, total.m_allocated),
+	     (uint64_t)m_peak, (uint64_t)m_times,
 	     get_percent (m_times, total.m_times), loc->m_ggc ? "ggc" : "heap");
 
     free (location_string);
@@ -204,8 +205,8 @@ struct mem_usage
   dump_footer () const
   {
     print_dash_line ();
-    fprintf (stderr, "%s%54li%27li\n", "Total", (long)m_allocated,
-	     (long)m_times);
+    fprintf (stderr, "%s%54" PRIu64 "%27" PRIu64 "\n", "Total",
+	     (uint64_t)m_allocated, (uint64_t)m_times);
     print_dash_line ();
   }
 
