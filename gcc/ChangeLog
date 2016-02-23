@@ -1,3 +1,9 @@
+2016-02-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/69666
+	* tree-sra.c (sra_modify_assign): Do not attempt to create
+	default_def replacements for unscalarizable regions.
+
 2016-02-20  Mark Wielaard  <mjw@redhat.com>
 
 	PR c/28901
