@@ -1,5 +1,10 @@
 2016-02-23  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.target/s390/md/movstr-2.c: Move and rename to ...
+	* gcc.target/s390/vector/stpcpy-1.c: ... this one.
+
+2016-02-23  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.target/s390/md/movstr-1.c: Turn into compile test.
 
 2016-02-20  Mark Wielaard  <mjw@redhat.com>
