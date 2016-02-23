@@ -1,3 +1,9 @@
+2016-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc/69844
+	* c-parser.c (c_parser_for_statement): Properly handle ObjC classes
+	in id_kind reclassification.
+
 2016-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/69835

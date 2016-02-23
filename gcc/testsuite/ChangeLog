@@ -1,3 +1,8 @@
+2016-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc/69844
+	* objc.dg/pr69844.m: New test.
+
 2016-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/69456
