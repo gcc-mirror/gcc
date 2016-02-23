@@ -1,5 +1,9 @@
 2016-02-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/69902
+	* fold-const.c (fold_truth_not_expr): Propagate TREE_NO_WARNING
+	when inverting comparison.
+
 	PR c/69900
 	* common.opt (Wunreachable-code): Add Warning flag.
 
