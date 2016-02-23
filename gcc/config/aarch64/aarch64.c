@@ -526,7 +526,7 @@ static const struct tune_params exynosm1_tunings =
   &generic_branch_cost,
   4,	/* memmov_cost  */
   3,	/* issue_rate  */
-  (AARCH64_FUSE_NOTHING), /* fusible_ops  */
+  (AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
   4,	/* function_align.  */
   4,	/* jump_align.  */
   4,	/* loop_align.  */

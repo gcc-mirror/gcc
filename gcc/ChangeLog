@@ -1,5 +1,12 @@
 2016-02-23  Evandro Menezes  <e.menezes@samsung.com>
 
+	* config/arm/exynos-m1.md: Change cost of STP, fix bypass for stores
+	and add bypass for AES{D,E} and AESMC pairs.
+	* config/aarch64/aarch64.c (exynosm1_tunings): Enable fusion of AES{D,E}
+	and AESMC pairs.
+
+2016-02-23  Evandro Menezes  <e.menezes@samsung.com>
+
         * config/aarch64/aarch64.c (exynosm1_tunings): Enable the Newton
         series for reciprocal square root in Exynos M1.
 
