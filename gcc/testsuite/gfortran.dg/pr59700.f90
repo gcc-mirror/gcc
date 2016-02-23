@@ -35,6 +35,6 @@ program foo
    rewind(fd)
    msg = 'ok'
    read(fd, *, err=40, iomsg=msg) c1, c2
-40 if (msg /= 'Bad floating point number for item 2') call abort
+40 if (msg /= 'Bad complex floating point number for item 2') call abort
    close(fd)
 end program foo
