@@ -1,3 +1,12 @@
+2016-02-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/69810
+	* config/rs6000/rs6000.md (zero_extendqi<mode>2_dot): Convert from
+	define_insn_and_split to define_insn.
+	(zero_extendqi<mode>2_dot2): Same.
+	(extendqi<mode>2_dot): Same.
+	(extendqi<mode>2_dot2): Same.
+
 2016-02-23  Evandro Menezes  <e.menezes@samsung.com>
 
 	* config/arm/exynos-m1.md: Change cost of STP, fix bypass for stores
