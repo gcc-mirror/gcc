@@ -1,3 +1,9 @@
+2016-02-23  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/67451
+	* trans-array.c (gfc_array_allocate): Take the attributes from the
+	expression to allocate and not from the source=-expression.
+
 2016-02-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/69423

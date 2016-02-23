@@ -1,3 +1,8 @@
+2016-02-23  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/67451
+	* gfortran.dg/coarray_allocate_5.f08: New test.
+
 2016-02-23  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/vcond-shift.c: Move to ...
