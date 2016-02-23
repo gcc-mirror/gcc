@@ -1,3 +1,18 @@
+2016-02-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69893
+	* include/tr1/cmath (acosh, asinh, atanh, cbrt, copysign, erf, erfc,
+	exp2, expm1, fdim, fma, fmax, fmin, hypot, ilogb, lgamma, llrint,
+	llround, log1p, log2, logb, lrint, lround, nan, nearbyint, nextafter,
+	nexttoward, remainder, remquo, rint, round, scalbln, scalbn, tgamma,
+	trunc) [__cplusplus >= 201103L]: Import from namespace std.
+	(fabs) [__cplusplus < 201103L]: Import from namespace std.
+	* include/tr1/complex (acosh, asinh, atanh) [__cplusplus >= 201103L]:
+	Likewise.
+	* testsuite/tr1/headers/c++200x/complex.cc: Add std::fabs to global
+	namespace before including TR1 headers.
+	* testsuite/tr1/headers/c++200x/math.cc: New test.
+
 2016-02-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR libstdc++/69881
