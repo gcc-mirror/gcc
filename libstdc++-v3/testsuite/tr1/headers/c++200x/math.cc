@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++11" }
 
-// Copyright (C) 2011-2016 Free Software Foundation, Inc.
+// Copyright (C) 2016 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,11 +18,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// check for duplicates of complex overloads of acos, asin, atan and fabs
+// PR libstdc++/69893
+// check for duplicate overloads of acosh, asinh, etc.
 
-#include <complex>
-using std::fabs;
+#include <math.h>
 #include <tr1/cmath>
-#include <tr1/complex>
-
-auto c = std::tr1::fabs(std::complex<double>{});

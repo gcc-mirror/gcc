@@ -151,6 +151,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if _GLIBCXX_USE_C99_MATH_TR1
 
+  // Using declarations to bring names from libc's <math.h> into std::tr1.
+
   // types
   using ::double_t;
   using ::float_t;
@@ -416,8 +418,77 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if _GLIBCXX_USE_C99_MATH_TR1
 
-  /// Additional overloads [8.16.4].
+  /** Additional overloads [8.16.4].
+   *  @{
+   */
+
+  // For functions defined in C++03 the additional overloads are already
+  // declared in <cmath> so we can just re-declare them in std::tr1.
+
   using std::acos;
+  using std::asin;
+  using std::atan;
+  using std::atan2;
+  using std::ceil;
+  using std::cos;
+  using std::cosh;
+  using std::exp;
+  using std::floor;
+  using std::fmod;
+  using std::frexp;
+  using std::ldexp;
+  using std::log;
+  using std::log10;
+  using std::sin;
+  using std::sinh;
+  using std::sqrt;
+  using std::tan;
+  using std::tanh;
+
+#if __cplusplus >= 201103L
+
+  // Since C++11, <cmath> defines additional overloads for these functions
+  // in namespace std.
+
+  using std::acosh;
+  using std::asinh;
+  using std::atanh;
+  using std::cbrt;
+  using std::copysign;
+  using std::erf;
+  using std::erfc;
+  using std::exp2;
+  using std::expm1;
+  using std::fdim;
+  using std::fma;
+  using std::fmax;
+  using std::fmin;
+  using std::hypot;
+  using std::ilogb;
+  using std::lgamma;
+  using std::llrint;
+  using std::llround;
+  using std::log1p;
+  using std::log2;
+  using std::logb;
+  using std::lrint;
+  using std::lround;
+  using std::nan;
+  using std::nearbyint;
+  using std::nextafter;
+  using std::nexttoward;
+  using std::remainder;
+  using std::remquo;
+  using std::rint;
+  using std::round;
+  using std::scalbln;
+  using std::scalbn;
+  using std::tgamma;
+  using std::trunc;
+
+#else // __cplusplus < 201103L
+
+  // In C++03 we need to provide the additional overloads.
 
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   inline float
@@ -435,8 +506,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     acosh(_Tp __x)
     { return __builtin_acosh(__x); }
 
-  using std::asin;
-
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   inline float
   asinh(float __x)
@@ -452,9 +521,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					   double>::__type
     asinh(_Tp __x)
     { return __builtin_asinh(__x); }
-
-  using std::atan;
-  using std::atan2;
 
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   inline float
@@ -488,8 +554,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     cbrt(_Tp __x)
     { return __builtin_cbrt(__x); }
 
-  using std::ceil;
-
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   inline float
   copysign(float __x, float __y)
@@ -507,9 +571,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
       return copysign(__type(__x), __type(__y));
     }
-
-  using std::cos;
-  using std::cosh;  
 
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   inline float
@@ -543,8 +604,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     erfc(_Tp __x)
     { return __builtin_erfc(__x); }
 
-  using std::exp;
-
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   inline float
   exp2(float __x)
@@ -577,32 +636,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     expm1(_Tp __x)
     { return __builtin_expm1(__x); }
 
-  // Note: we deal with fabs in a special way, because an using std::fabs
-  // would bring in also the overloads for complex types, which in C++0x
-  // mode have a different return type.
-  // With __CORRECT_ISO_CPP_MATH_H_PROTO, math.h imports std::fabs in the
-  // global namespace after the declarations of the float / double / long
-  // double overloads but before the std::complex overloads.
-  using ::fabs;
-
-#ifndef __CORRECT_ISO_CPP_MATH_H_PROTO
-#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
-  inline float
-  fabs(float __x)
-  { return __builtin_fabsf(__x); }
-
-  inline long double
-  fabs(long double __x)
-  { return __builtin_fabsl(__x); }
-#endif
-
-  template<typename _Tp>
-    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
-					   double>::__type
-    fabs(_Tp __x)
-    { return __builtin_fabs(__x); }
-#endif
-
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   inline float
   fdim(float __x, float __y)
@@ -620,8 +653,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
       return fdim(__type(__x), __type(__y));
     }
-
-  using std::floor;
 
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   inline float
@@ -677,9 +708,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return fmin(__type(__x), __type(__y));
     }
 
-  using std::fmod;
-  using std::frexp;
-
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   inline float
   hypot(float __x, float __y)
@@ -713,8 +741,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					   int>::__type
     ilogb(_Tp __x)
     { return __builtin_ilogb(__x); }
-
-  using std::ldexp;
 
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   inline float
@@ -763,9 +789,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					   long long>::__type
     llround(_Tp __x)
     { return __builtin_llround(__x); }
-
-  using std::log;
-  using std::log10;
 
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   inline float
@@ -1000,12 +1023,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     scalbn(_Tp __x, int __ex)
     { return __builtin_scalbn(__x, __ex); }
 
-  using std::sin;
-  using std::sinh;
-  using std::sqrt;
-  using std::tan;
-  using std::tanh;
-
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
   inline float
   tgamma(float __x)
@@ -1038,6 +1055,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     trunc(_Tp __x)
     { return __builtin_trunc(__x); }
 
+#endif // __cplusplus < 201103L
+
+  // @}
+
 #endif
 _GLIBCXX_END_NAMESPACE_VERSION
 }
@@ -1050,17 +1071,16 @@ namespace tr1
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // DR 550. What should the return type of pow(float,int) be?
-  // NB: C++0x and TR1 != C++03.
+  // NB: C++11 and TR1 != C++03.
 
-  // The std::tr1::pow(double, double) overload cannot be provided
-  // here, because it would clash with ::pow(double,double) declared
-  // in <math.h>, if <tr1/math.h> is included at the same time (raised
-  // by the fix of PR c++/54537). It is not possible either to use the
-  // using-declaration 'using ::pow;' here, because if the user code
-  // has a 'using std::pow;', it would bring the pow(*,int) averloads
-  // in the tr1 namespace, which is undesirable. Consequently, the
-  // solution is to forward std::tr1::pow(double,double) to
-  // std::pow(double,double) via the templatized version below. See
+  // We cannot do "using std::pow;" because that would bring in unwanted
+  // pow(*, int) overloads in C++03, with the wrong return type. Instead we
+  // define all the necessary overloads, but the std::tr1::pow(double, double)
+  // overload cannot be provided here, because <tr1/math.h> would add it to
+  // the global namespace where it would clash with ::pow(double,double) from
+  // libc (revealed by the fix of PR c++/54537).
+  // The solution is to forward std::tr1::pow(double,double) to
+  // std::pow(double,double) via the function template below. See
   // the discussion about this issue here:
   // http://gcc.gnu.org/ml/gcc-patches/2012-09/msg01278.html
 
@@ -1081,6 +1101,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
       return std::pow(__type(__x), __type(__y));
     }
+
+#if __cplusplus >= 201103L
+  // We also deal with fabs in a special way, because "using std::fabs;"
+  // could bring in C++11's std::fabs<T>(const std::complex<T>&) with a
+  // different return type from std::tr1::fabs<T>(const std::complex<T>&).
+  // We define the necessary overloads, except std::tr1::fabs(double) which
+  // could clash with ::fabs(double) from libc.
+  // The function template handles double as well as integers, forwarding
+  // to std::fabs.
+
+#ifndef __CORRECT_ISO_CPP_MATH_H_PROTO
+#ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO
+  inline float
+  fabs(float __x)
+  { return __builtin_fabsf(__x); }
+
+  inline long double
+  fabs(long double __x)
+  { return __builtin_fabsl(__x); }
+#endif
+#endif
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__promote<_Tp>::__type
+    fabs(_Tp __x)
+    { return std::fabs(__x); }
+
+#else  // ! C++11
+
+  // For C++03 just use std::fabs as there is no overload for std::complex<>.
+  using std::fabs;
+
+#endif // C++11
+
+
 
 _GLIBCXX_END_NAMESPACE_VERSION
 }
