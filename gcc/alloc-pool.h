@@ -156,8 +156,10 @@ private:
 
   struct allocation_object
   {
+#if CHECKING_P
     /* The ID of alloc pool which the object was allocated from.  */
     ALLOC_POOL_ID_TYPE id;
+#endif
 
     union
       {
@@ -172,6 +174,7 @@ private:
 	int64_t align_i;
       } u;
 
+#if CHECKING_P
     static inline allocation_object*
     get_instance (void *data_ptr)
     {
@@ -179,6 +182,7 @@ private:
 				      - offsetof (allocation_object,
 						  u.data));
     }
+#endif
 
     static inline void*
     get_data (void *instance_ptr)
@@ -388,7 +392,9 @@ base_pool_allocator <TBlockAllocator>::allocate ()
       header->next = NULL;
 
       /* Mark the element to be free.  */
+#if CHECKING_P
       ((allocation_object*) block)->id = 0;
+#endif
       VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS (header,size));
       m_returned_free_list = header;
       m_virgin_free_list += m_elt_size;
@@ -403,7 +409,9 @@ base_pool_allocator <TBlockAllocator>::allocate ()
   m_elts_free--;
 
   /* Set the ID for element.  */
+#if CHECKING_P
   allocation_object::get_instance (header)->id = m_id;
+#endif
   VALGRIND_DISCARD (VALGRIND_MAKE_MEM_UNDEFINED (header, size));
 
   return (void *)(header);
@@ -420,16 +428,20 @@ base_pool_allocator <TBlockAllocator>::remove (void *object)
     {
       gcc_assert (m_initialized);
       gcc_assert (object
-	      /* Check if we free more than we allocated, which is Bad (TM).  */
-	      && m_elts_free < m_elts_allocated
-	      /* Check whether the PTR was allocated from POOL.  */
-	      && m_id == allocation_object::get_instance (object)->id);
+		  /* Check if we free more than we allocated.  */
+		  && m_elts_free < m_elts_allocated);
+#if CHECKING_P
+      /* Check whether the PTR was allocated from POOL.  */
+      gcc_assert (m_id == allocation_object::get_instance (object)->id);
+#endif
 
       memset (object, 0xaf, size);
     }
 
+#if CHECKING_P 
   /* Mark the element to be free.  */
   allocation_object::get_instance (object)->id = 0;
+#endif
 
   allocation_pool_list *header = new (object) allocation_pool_list;
   header->next = m_returned_free_list;
