@@ -1,3 +1,8 @@
+2016-02-23  Evandro Menezes  <e.menezes@samsung.com>
+
+        * config/aarch64/aarch64.c (exynosm1_tunings): Enable the Newton
+        series for reciprocal square root in Exynos M1.
+
 2016-02-23  Martin Sebor  <msebor@redhat.com>
 
 	PR c/69759
