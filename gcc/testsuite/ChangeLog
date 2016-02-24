@@ -28,7 +28,7 @@
 	* g++.dg/pr61033.C: Add a regression testcase for PR debug/61033.
 
 2016-02-24  Richard Biener  <rguenther@suse.de>
-	Jakub Jelinek  <jakub@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/69760
 	* gcc.dg/torture/pr69760.c: New testcase.
