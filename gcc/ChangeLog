@@ -1,3 +1,11 @@
+2016-02-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/68963
+	* tree-ssa-loop-niter.c (derive_constant_upper_bound_ops): Fix
+	bogus check.
+	(record_nonwrapping_iv): Do not fall back to the low/high bound
+	for non-constant IV bases if the stmt is not always executed.
+
 2016-02-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm-cores.def (cortex-a32): New entry.

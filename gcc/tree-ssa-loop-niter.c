@@ -2757,7 +2757,7 @@ derive_constant_upper_bound_ops (tree type, tree op0,
 				 enum tree_code code, tree op1)
 {
   tree subtype, maxt;
-  widest_int bnd, max, mmax, cst;
+  widest_int bnd, max, cst;
   gimple *stmt;
 
   if (INTEGRAL_TYPE_P (type))
@@ -2823,8 +2823,8 @@ derive_constant_upper_bound_ops (tree type, tree op0,
 	  /* OP0 + CST.  We need to check that
 	     BND <= MAX (type) - CST.  */
 
-	  mmax -= cst;
-	  if (wi::ltu_p (bnd, max))
+	  widest_int mmax = max - cst;
+	  if (wi::leu_p (bnd, mmax))
 	    return max;
 
 	  return bnd + cst;
@@ -3065,7 +3065,9 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple *stmt,
 	  && get_range_info (orig_base, &min, &max) == VR_RANGE
 	  && wi::gts_p (high, max))
 	base = wide_int_to_tree (unsigned_type, max);
-      else if (TREE_CODE (base) != INTEGER_CST)
+      else if (TREE_CODE (base) != INTEGER_CST
+	       && dominated_by_p (CDI_DOMINATORS,
+				  loop->latch, gimple_bb (stmt)))
 	base = fold_convert (unsigned_type, high);
       delta = fold_build2 (MINUS_EXPR, unsigned_type, base, extreme);
       step = fold_build1 (NEGATE_EXPR, unsigned_type, step);
@@ -3080,7 +3082,9 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple *stmt,
 	  && get_range_info (orig_base, &min, &max) == VR_RANGE
 	  && wi::gts_p (min, low))
 	base = wide_int_to_tree (unsigned_type, min);
-      else if (TREE_CODE (base) != INTEGER_CST)
+      else if (TREE_CODE (base) != INTEGER_CST
+	       && dominated_by_p (CDI_DOMINATORS,
+				  loop->latch, gimple_bb (stmt)))
 	base = fold_convert (unsigned_type, low);
       delta = fold_build2 (MINUS_EXPR, unsigned_type, extreme, base);
     }

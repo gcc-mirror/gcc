@@ -1,3 +1,8 @@
+2016-02-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/68963
+	* gcc.dg/torture/pr68963.c: New testcase.
+
 2016-02-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/69875
