@@ -1,3 +1,9 @@
+2016-02-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/69819
+	* c-decl.c (finish_decl): Don't update the copy of the type of a
+	different decl type.
+
 2016-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR objc/69844
