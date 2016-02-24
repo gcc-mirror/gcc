@@ -1,4 +1,10 @@
 2016-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69918
+	* params.def (PARAM_MAX_SSA_NAME_QUERY_DEPTH): Bump default from
+	2 to 3.
+
+2016-02-24  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Biener  <rguenth@suse.de>
 
 	PR middle-end/69909
