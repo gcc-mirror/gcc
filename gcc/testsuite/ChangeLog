@@ -1,3 +1,10 @@
+2016-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69922
+	* g++.dg/warn/Wnonnull-compare-6.C: New test.
+	* g++.dg/warn/Wnonnull-compare-7.C: New test.
+	* g++.dg/ubsan/pr69922.C: New test.
+
 2016-02-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c/69819

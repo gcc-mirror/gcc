@@ -2069,8 +2069,24 @@ cp_fold (tree x)
 	x = fold (x);
 
       if (TREE_NO_WARNING (org_x)
-	  && TREE_CODE (x) == TREE_CODE (org_x))
-	TREE_NO_WARNING (x) = 1;
+	  && warn_nonnull_compare
+	  && COMPARISON_CLASS_P (org_x))
+	{
+	  if (x == error_mark_node || TREE_CODE (x) == INTEGER_CST)
+	    ;
+	  else if (COMPARISON_CLASS_P (x))
+	    TREE_NO_WARNING (x) = 1;
+	  /* Otherwise give up on optimizing these, let GIMPLE folders
+	     optimize those later on.  */
+	  else if (op0 != TREE_OPERAND (org_x, 0)
+		   || op1 != TREE_OPERAND (org_x, 1))
+	    {
+	      x = build2_loc (loc, code, TREE_TYPE (org_x), op0, op1);
+	      TREE_NO_WARNING (x) = 1;
+	    }
+	  else
+	    x = org_x;
+	}
       break;
 
     case VEC_COND_EXPR:

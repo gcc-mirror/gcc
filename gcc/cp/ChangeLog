@@ -1,3 +1,17 @@
+2016-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69922
+	* class.c (build_base_path): Set TREE_NO_WARNING on the null_test.
+	Avoid folding it.
+	* init.c (build_vec_delete_1, build_delete): Don't fold the non-NULL
+	tests.
+	* cp-gimplify.c (cp_fold): For TREE_NO_WARNING comparisons with NULL,
+	unless they are folded into INTEGER_CST, error_mark_node or some
+	comparison with NULL, avoid folding them and use either the original
+	comparison or non-folded comparison of folded arguments.
+	* cp-ubsan.c (cp_ubsan_instrument_vptr): Set TREE_NO_WARNING on the
+	comparison, don't fold the comparison right away.
+
 2016-02-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/69323
