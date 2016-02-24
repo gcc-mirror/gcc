@@ -810,7 +810,7 @@ want_to_gcse_p (rtx x, machine_mode mode, int *max_distance_ptr)
 	    *max_distance_ptr = max_distance;
 	}
 
-      return can_assign_to_reg_without_clobbers_p (x);
+      return can_assign_to_reg_without_clobbers_p (x, mode);
     }
 }
 
@@ -818,9 +818,9 @@ want_to_gcse_p (rtx x, machine_mode mode, int *max_distance_ptr)
 
 static GTY(()) rtx_insn *test_insn;
 
-/* Return true if we can assign X to a pseudo register such that the
-   resulting insn does not result in clobbering a hard register as a
-   side-effect.
+/* Return true if we can assign X to a pseudo register of mode MODE
+   such that the resulting insn does not result in clobbering a hard
+   register as a side-effect.
 
    Additionally, if the target requires it, check that the resulting insn
    can be copied.  If it cannot, this means that X is special and probably
@@ -831,14 +831,14 @@ static GTY(()) rtx_insn *test_insn;
    maybe live hard regs.  */
 
 bool
-can_assign_to_reg_without_clobbers_p (rtx x)
+can_assign_to_reg_without_clobbers_p (rtx x, machine_mode mode)
 {
   int num_clobbers = 0;
   int icode;
   bool can_assign = false;
 
   /* If this is a valid operand, we are OK.  If it's VOIDmode, we aren't.  */
-  if (general_operand (x, GET_MODE (x)))
+  if (general_operand (x, mode))
     return 1;
   else if (GET_MODE (x) == VOIDmode)
     return 0;
@@ -857,7 +857,7 @@ can_assign_to_reg_without_clobbers_p (rtx x)
 
   /* Now make an insn like the one we would make when GCSE'ing and see if
      valid.  */
-  PUT_MODE (SET_DEST (PATTERN (test_insn)), GET_MODE (x));
+  PUT_MODE (SET_DEST (PATTERN (test_insn)), mode);
   SET_SRC (PATTERN (test_insn)) = x;
 
   icode = recog (PATTERN (test_insn), test_insn, &num_clobbers);
@@ -3830,12 +3830,13 @@ compute_ld_motion_mems (void)
 		  if (MEM_P (dest) && simple_mem (dest))
 		    {
 		      ptr = ldst_entry (dest);
-
+		      machine_mode src_mode = GET_MODE (src);
 		      if (! MEM_P (src)
 			  && GET_CODE (src) != ASM_OPERANDS
 			  /* Check for REG manually since want_to_gcse_p
 			     returns 0 for all REGs.  */
-			  && can_assign_to_reg_without_clobbers_p (src))
+			  && can_assign_to_reg_without_clobbers_p (src,
+								    src_mode))
 			ptr->stores = alloc_INSN_LIST (insn, ptr->stores);
 		      else
 			ptr->invalid = 1;

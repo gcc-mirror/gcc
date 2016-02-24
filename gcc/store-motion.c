@@ -557,7 +557,8 @@ find_moveable_store (rtx_insn *insn, int *regs_set_before, int *regs_set_after)
      assumes that we can do this.  But sometimes the target machine has
      oddities like MEM read-modify-write instruction.  See for example
      PR24257.  */
-  if (!can_assign_to_reg_without_clobbers_p (SET_SRC (set)))
+  if (!can_assign_to_reg_without_clobbers_p (SET_SRC (set),
+					      GET_MODE (SET_SRC (set))))
     return;
 
   ptr = st_expr_entry (dest);
