@@ -1,3 +1,8 @@
+2016-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/69909
+	* gcc.dg/torture/pr69909.c: New test.
+
 2016-02-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69907

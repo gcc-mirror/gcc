@@ -10521,7 +10521,11 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	if (op0 == orig_op0)
 	  op0 = copy_rtx (op0);
 
-	set_mem_attributes (op0, exp, 0);
+	/* Don't set memory attributes if the base expression is
+	   SSA_NAME that got expanded as a MEM.  In that case, we should
+	   just honor its original memory attributes.  */
+	if (TREE_CODE (tem) != SSA_NAME || !MEM_P (orig_op0))
+	  set_mem_attributes (op0, exp, 0);
 
 	if (REG_P (XEXP (op0, 0)))
 	  mark_reg_pointer (XEXP (op0, 0), MEM_ALIGN (op0));
