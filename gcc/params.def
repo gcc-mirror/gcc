@@ -1191,7 +1191,7 @@ DEFPARAM (PARAM_MAX_SSA_NAME_QUERY_DEPTH,
 	  "max-ssa-name-query-depth",
 	  "Maximum recursion depth allowed when querying a property of an"
 	  " SSA name.",
-	  2, 1, 0)
+	  3, 1, 0)
 
 DEFPARAM (PARAM_MAX_RTL_IF_CONVERSION_INSNS,
 	  "max-rtl-if-conversion-insns",
