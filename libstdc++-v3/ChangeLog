@@ -1,3 +1,8 @@
+2016-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69939
+	* include/experimental/tuple (__apply_impl): Qualify get and forward.
+
 2016-02-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/using.xml: Document __STDCPP_WANT_MATH_SPEC_FUNCS__.

@@ -58,7 +58,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       using _Wrap = _Maybe_wrap_member_pointer<decay_t<_Fn>>;
       return _Wrap::__do_wrap(std::forward<_Fn>(f))(
-	  get<_Idx>(forward<_Tuple>(t))...);
+	  std::get<_Idx>(std::forward<_Tuple>(t))...);
     }
 
   template <typename _Fn, typename _Tuple>
