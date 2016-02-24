@@ -1,3 +1,10 @@
+2016-02-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69907
+	* gcc.dg/vect/bb-slp-pr69907.c: New testcase.
+	* gcc.dg/vect/bb-slp-34.c: XFAIL.
+	* gcc.dg/vect/bb-slp-pr68892.c: Likewise.
+
 2016-02-24  Christian Bruel  <christian.bruel@st.com>
 
 	* gcc.target/arm/pragma_cpp_fma.c: New test.

@@ -6395,6 +6395,19 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	slp_perm = true;
 
       group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
+
+      /* ???  The following is overly pessimistic (as well as the loop
+         case above) in the case we can statically determine the excess
+	 elements loaded are within the bounds of a decl that is accessed.
+	 Likewise for BB vectorizations using masked loads is a possibility.  */
+      if (bb_vinfo && slp_perm && group_size % nunits != 0)
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "BB vectorization with gaps at the end of a load "
+			   "is not supported\n");
+	  return false;
+	}
+
       if (!slp
 	  && !PURE_SLP_STMT (stmt_info)
 	  && !STMT_VINFO_STRIDED_P (stmt_info))

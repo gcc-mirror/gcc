@@ -1,3 +1,9 @@
+2016-02-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69907
+	* tree-vect-stmts.c (vectorizable_load): Check for gaps at the
+	end of permutations for BB vectorization.
+
 2016-02-24  Christian Bruel  <christian.bruel@st.com>
 
 	* config/arm/arm-c.c (arm_option_override): Initialize
