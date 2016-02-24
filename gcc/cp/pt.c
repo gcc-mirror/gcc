@@ -10180,11 +10180,11 @@ instantiate_class_template_1 (tree type)
 		       template <class U> friend class T::C;
 
 		     otherwise.  */
+		  /* Bump processing_template_decl in case this is something like
+		     template <class T> friend struct A<T>::B.  */
+		  ++processing_template_decl;
 		  friend_type = tsubst (friend_type, args,
 					tf_warning_or_error, NULL_TREE);
-		  /* Bump processing_template_decl for correct
-		     dependent_type_p calculation.  */
-		  ++processing_template_decl;
 		  if (dependent_type_p (friend_type))
 		    adjust_processing_template_decl = true;
 		  --processing_template_decl;
