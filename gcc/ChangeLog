@@ -1,3 +1,12 @@
+2016-02-24  Christian Bruel  <christian.bruel@st.com>
+
+	* config/arm/arm-c.c (arm_option_override): Initialize
+	target_option_current_node.
+	* config/arm/arm.c (arm_pragma_target_parse): Replace
+	build_target_option_node call by target_option_current_node.
+	Set target_option_current_node.
+	Fix comments.
+
 2016-02-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/69810

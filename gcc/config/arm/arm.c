@@ -3453,8 +3453,9 @@ arm_option_override (void)
   arm_add_gc_roots ();
 
   /* Save the initial options in case the user does function specific
-     options.  */
-  target_option_default_node = build_target_option_node (&global_options);
+     options or #pragma target.  */
+  target_option_default_node = target_option_current_node
+    = build_target_option_node (&global_options);
 
   /* Init initial mode for testing.  */
   thumb_flipper = TARGET_THUMB;
