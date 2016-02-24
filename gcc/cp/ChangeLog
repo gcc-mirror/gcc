@@ -1,3 +1,7 @@
+2016-02-24  Jason Merrill  <jason@redhat.com>
+
+	* cp-gimplify.c (cp_fold): Don't fold constexpr calls if -fno-inline.
+
 2016-02-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/69743
