@@ -32,4 +32,5 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "basic block vectorized" "slp2" { target vect_perm } } } */
+/* ??? XFAILed because we access "excess" elements with the permutation.  */
+/* { dg-final { scan-tree-dump "basic block vectorized" "slp2" { target vect_perm xfail *-*-* } } } */
