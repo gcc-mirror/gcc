@@ -1,3 +1,9 @@
+2016-02-24  Martin Sebor  <msebor@redhat.com>
+
+	* gcc/testsuite/gcc.dg/builtins-68.c: Avoid making unportable
+	assumptions about the relationship between SIZE_MAX and UINT_MAX.
+	* gcc/testsuite/g++.dg/ext/builtin_alloca.C: Same.
+
 2016-02-24  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 	    Charles Baylis  <charles.baylis@linaro.org>
 
