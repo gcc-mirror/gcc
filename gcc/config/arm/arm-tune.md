@@ -32,7 +32,8 @@
 	cortexr4f,cortexr5,cortexr7,
 	cortexm7,cortexm4,cortexm3,
 	marvell_pj4,cortexa15cortexa7,cortexa17cortexa7,
-	cortexa35,cortexa53,cortexa57,
-	cortexa72,exynosm1,qdf24xx,
-	xgene1,cortexa57cortexa53,cortexa72cortexa53"
+	cortexa32,cortexa35,cortexa53,
+	cortexa57,cortexa72,exynosm1,
+	qdf24xx,xgene1,cortexa57cortexa53,
+	cortexa72cortexa53"
 	(const (symbol_ref "((enum attr_tune) arm_tune)")))
