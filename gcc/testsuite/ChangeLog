@@ -1,3 +1,10 @@
+2016-02-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/cond_sub_restrict_it.c: New test.
+	* gcc.target/arm/condarith_restrict_it.c: Likewise.
+	* gcc.target/arm/movcond_restrict_it.c: Likewise.
+	* gcc.target/arm/negscc_restrict_it.c: Likewise.
+
 2016-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/69915
