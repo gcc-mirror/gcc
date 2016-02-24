@@ -1,3 +1,11 @@
+2016-02-24  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenth@suse.de>
+
+	PR middle-end/69909
+	* expr.c (expand_expr_real_1) <normal_inner_ref>: Avoid
+	set_mem_attributes if tem is SSA_NAME which got expanded
+	as a MEM.
+
 2016-02-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69907
