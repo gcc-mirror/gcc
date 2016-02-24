@@ -6812,7 +6812,9 @@ storage persisting beyond the lifetime of the object, you can use this
 flag to disable this optimization.  To preserve stores before the
 constructor starts (e.g. because your operator new clears the object
 storage) but still treat the object as dead after the destructor you,
-can use -flifetime-dse=1.
+can use @option{-flifetime-dse=1}.  The default behavior can be
+explicitly selected with @option{-flifetime-dse=2}.
+@option{-flifetime-dse=0} is equivalent to @option{-fno-lifetime-dse}.
 
 @item -flive-range-shrinkage
 @opindex flive-range-shrinkage
