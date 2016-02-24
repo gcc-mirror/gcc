@@ -139,6 +139,7 @@
   VUNSPEC_ATOMIC_XCHG	; Represent an atomic exchange.
   VUNSPEC_ATOMIC_OP	; Represent an atomic operation.
   VUNSPEC_LL		; Represent a load-register-exclusive.
+  VUNSPEC_LDRD_ATOMIC	; Represent an LDRD used as an atomic DImode load.
   VUNSPEC_SC		; Represent a store-register-exclusive.
   VUNSPEC_LAX		; Represent a load-register-acquire-exclusive.
   VUNSPEC_SLX		; Represent a store-register-release-exclusive.

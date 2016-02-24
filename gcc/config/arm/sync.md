@@ -96,31 +96,61 @@
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")])
 
-;; Note that ldrd and vldr are *not* guaranteed to be single-copy atomic,
-;; even for a 64-bit aligned address.  Instead we use a ldrexd unparied
-;; with a store.
+;; An LDRD instruction usable by the atomic_loaddi expander on LPAE targets
+
+(define_insn "arm_atomic_loaddi2_ldrd"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec_volatile:DI
+	  [(match_operand:DI 1 "arm_sync_memory_operand" "Q")]
+	    VUNSPEC_LDRD_ATOMIC))]
+  "ARM_DOUBLEWORD_ALIGN && TARGET_HAVE_LPAE"
+  "ldrd%?\t%0, %H0, %C1"
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
+
+;; There are three ways to expand this depending on the architecture
+;; features available.  As for the barriers, a load needs a barrier
+;; after it on all non-relaxed memory models except when the load
+;; has acquire semantics (for ARMv8-A).
+
 (define_expand "atomic_loaddi"
   [(match_operand:DI 0 "s_register_operand")		;; val out
    (match_operand:DI 1 "mem_noofs_operand")		;; memory
    (match_operand:SI 2 "const_int_operand")]		;; model
-  "TARGET_HAVE_LDREXD && ARM_DOUBLEWORD_ALIGN"
+  "(TARGET_HAVE_LDREXD || TARGET_HAVE_LPAE || TARGET_HAVE_LDACQ)
+   && ARM_DOUBLEWORD_ALIGN"
 {
-  enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
-  expand_mem_thread_fence (model);
-  emit_insn (gen_atomic_loaddi_1 (operands[0], operands[1]));
-  if (is_mm_seq_cst (model))
+  memmodel model = memmodel_from_int (INTVAL (operands[2]));
+
+  /* For ARMv8-A we can use an LDAEXD to atomically load two 32-bit registers
+     when acquire or stronger semantics are needed.  When the relaxed model is
+     used this can be relaxed to a normal LDRD.  */
+  if (TARGET_HAVE_LDACQ)
+    {
+      if (is_mm_relaxed (model))
+	emit_insn (gen_arm_atomic_loaddi2_ldrd (operands[0], operands[1]));
+      else
+	emit_insn (gen_arm_load_acquire_exclusivedi (operands[0], operands[1]));
+
+      DONE;
+    }
+
+  /* On LPAE targets LDRD and STRD accesses to 64-bit aligned
+     locations are 64-bit single-copy atomic.  We still need barriers in the
+     appropriate places to implement the ordering constraints.  */
+  if (TARGET_HAVE_LPAE)
+    emit_insn (gen_arm_atomic_loaddi2_ldrd (operands[0], operands[1]));
+  else
+    emit_insn (gen_arm_load_exclusivedi (operands[0], operands[1]));
+
+
+  /* All non-relaxed models need a barrier after the load when load-acquire
+     instructions are not available.  */
+  if (!is_mm_relaxed (model))
     expand_mem_thread_fence (model);
+
   DONE;
 })
-
-(define_insn "atomic_loaddi_1"
-  [(set (match_operand:DI 0 "s_register_operand" "=r")
-	(unspec:DI [(match_operand:DI 1 "mem_noofs_operand" "Ua")]
-		   UNSPEC_LL))]
-  "TARGET_HAVE_LDREXD && ARM_DOUBLEWORD_ALIGN"
-  "ldrexd%?\t%0, %H0, %C1"
-  [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "s_register_operand" "")		;; bool out
