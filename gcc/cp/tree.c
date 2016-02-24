@@ -2592,8 +2592,10 @@ build_ctor_subob_ref (tree index, tree type, tree obj)
 	{
 	  /* When the destination object refers to a flexible array member
 	     verify that it matches the type of the source object except
-	     for its domain.  */
-	  gcc_assert (comptypes (type, objtype, COMPARE_REDECLARATION));
+	     for its domain and qualifiers.  */
+	  gcc_assert (comptypes (TYPE_MAIN_VARIANT (type),
+	  			 TYPE_MAIN_VARIANT (objtype),
+	  			 COMPARE_REDECLARATION));
 	}
       else
 	gcc_assert (same_type_ignoring_top_level_qualifiers_p (type, objtype));

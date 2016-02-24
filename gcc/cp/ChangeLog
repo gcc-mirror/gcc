@@ -1,3 +1,9 @@
+016-02-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/69912
+	* tree.c (build_ctor_subob_ref): Compare types' main variants
+	instead of the types as they are.
+
 2016-02-24  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (start_preparsed_function): Condition ctor clobber on
