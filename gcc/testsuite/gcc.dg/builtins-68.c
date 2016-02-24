@@ -5,10 +5,23 @@
 /* { dg-options "-Wno-long-long" } */
 
 #define CHAR_BIT  __CHAR_BIT__
-#define INT_MAX   __INT_MAX__
-#define INT_MIN   (-INT_MAX - 1)
-#define LONG_MAX  __LONG_MAX__
-#define LLONG_MAX __LONG_LONG_MAX__
+#define SIZE_MAX  __SIZE_MAX__
+#define UINT_MAX  (__INT_MAX__ + 1U)
+
+/* The largest valid alignment is undocumented and subject to change
+   but for the purposes of white box testing we rely on knowing that
+   it happens to be defined to (UINT_MAX >> 1) + 1.  */
+#define ALIGN_MAX ((UINT_MAX >> 1) + 1)
+
+#if UINT_MAX < SIZE_MAX
+/* Define a constant to exercise an alignment that is valid a power
+   of 2 in excess of the maximum.  */
+#  define MAX_X_2   (ALIGN_MAX << 1)
+#else
+/* For targets where UINT_MAX is the same as SIZE_MAX, use an invalid
+   alignment that's less than the maximum to elicit the same errors.  */
+#  define MAX_X_2   (ALIGN_MAX + 1)
+#endif
 
 static void* p;
 
@@ -76,10 +89,6 @@ void test_arg2_non_const (int n, int a1)
    of CHAR_BIT less than (1LLU << 32) must be rejected.  */
 void test_arg2_non_pow2 (int n)
 {
-  p =  __builtin_alloca_with_align (n, INT_MIN);     /* { dg-error "must be a constant integer" } */
-  p =  __builtin_alloca_with_align (n, -1);          /* { dg-error "must be a constant integer" } */
-  p =  __builtin_alloca_with_align (n, !1);          /* { dg-error "must be a constant integer" } */
-  p =  __builtin_alloca_with_align (n, !0);          /* { dg-error "must be a constant integer" } */
   p =  __builtin_alloca_with_align (n,  0);          /* { dg-error "must be a constant integer" } */
   p =  __builtin_alloca_with_align (n,  1);          /* { dg-error "must be a constant integer" } */
   p =  __builtin_alloca_with_align (n,  2);          /* { dg-error "must be a constant integer" } */
@@ -100,11 +109,6 @@ void test_arg2_non_pow2 (int n)
   p =  __builtin_alloca_with_align (n, 33);          /* { dg-error "must be a constant integer" } */
   p =  __builtin_alloca_with_align (n, 63);          /* { dg-error "must be a constant integer" } */
   p =  __builtin_alloca_with_align (n, 65);          /* { dg-error "must be a constant integer" } */
-  p =  __builtin_alloca_with_align (n, INT_MAX);     /* { dg-error "must be a constant integer" } */
-  p =  __builtin_alloca_with_align (n, ~0U);         /* { dg-error "must be a constant integer" } */
-  p =  __builtin_alloca_with_align (n, LONG_MAX);    /* { dg-error "must be a constant integer" } */
-  p =  __builtin_alloca_with_align (n, ~0LU);        /* { dg-error "must be a constant integer" } */
-  p =  __builtin_alloca_with_align (n, 1LLU << 34);  /* { dg-error "must be a constant integer" } */
-  p =  __builtin_alloca_with_align (n, LLONG_MAX);   /* { dg-error "must be a constant integer" } */
-  p =  __builtin_alloca_with_align (n, ~0LLU);       /* { dg-error "must be a constant integer" } */
+  p =  __builtin_alloca_with_align (n, SIZE_MAX);    /* { dg-error "must be a constant integer" } */
+  p =  __builtin_alloca_with_align (n, MAX_X_2);     /* { dg-error "must be a constant integer" } */
 }
