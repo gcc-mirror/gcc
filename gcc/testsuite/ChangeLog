@@ -1,3 +1,9 @@
+2016-02-24  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+	    Charles Baylis  <charles.baylis@linaro.org>
+
+	PR debug/61033
+	* g++.dg/pr61033.C: Add a regression testcase for PR debug/61033.
+
 2016-02-24  Richard Biener  <rguenther@suse.de>
 	Jakub Jelinek  <jakub@redhat.com>
 
