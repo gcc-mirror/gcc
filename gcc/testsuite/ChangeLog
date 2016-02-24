@@ -1,3 +1,8 @@
+2016-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/debug/dwarf2/prod-options.c: Use different DW_AT_producer
+	pattern on Solaris with as.
+
 2016-02-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/cond_sub_restrict_it.c: New test.
