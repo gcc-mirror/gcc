@@ -1703,7 +1703,7 @@ static tree
 interpret_rhs_expr (struct loop *loop, gimple *at_stmt,
 		    tree type, tree rhs1, enum tree_code code, tree rhs2)
 {
-  tree res, chrec1, chrec2;
+  tree res, chrec1, chrec2, ctype;
   gimple *def;
 
   if (get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS)
@@ -1798,30 +1798,63 @@ interpret_rhs_expr (struct loop *loop, gimple *at_stmt,
     case PLUS_EXPR:
       chrec1 = analyze_scalar_evolution (loop, rhs1);
       chrec2 = analyze_scalar_evolution (loop, rhs2);
-      chrec1 = chrec_convert (type, chrec1, at_stmt);
-      chrec2 = chrec_convert (type, chrec2, at_stmt);
+      ctype = type;
+      /* When the stmt is conditionally executed re-write the CHREC
+         into a form that has well-defined behavior on overflow.  */
+      if (at_stmt
+	  && INTEGRAL_TYPE_P (type)
+	  && ! TYPE_OVERFLOW_WRAPS (type)
+	  && ! dominated_by_p (CDI_DOMINATORS, loop->latch,
+			       gimple_bb (at_stmt)))
+	ctype = unsigned_type_for (type);
+      chrec1 = chrec_convert (ctype, chrec1, at_stmt);
+      chrec2 = chrec_convert (ctype, chrec2, at_stmt);
       chrec1 = instantiate_parameters (loop, chrec1);
       chrec2 = instantiate_parameters (loop, chrec2);
-      res = chrec_fold_plus (type, chrec1, chrec2);
+      res = chrec_fold_plus (ctype, chrec1, chrec2);
+      if (type != ctype)
+	res = chrec_convert (type, res, at_stmt);
       break;
 
     case MINUS_EXPR:
       chrec1 = analyze_scalar_evolution (loop, rhs1);
       chrec2 = analyze_scalar_evolution (loop, rhs2);
-      chrec1 = chrec_convert (type, chrec1, at_stmt);
-      chrec2 = chrec_convert (type, chrec2, at_stmt);
+      ctype = type;
+      /* When the stmt is conditionally executed re-write the CHREC
+         into a form that has well-defined behavior on overflow.  */
+      if (at_stmt
+	  && INTEGRAL_TYPE_P (type)
+	  && ! TYPE_OVERFLOW_WRAPS (type)
+	  && ! dominated_by_p (CDI_DOMINATORS,
+			       loop->latch, gimple_bb (at_stmt)))
+	ctype = unsigned_type_for (type);
+      chrec1 = chrec_convert (ctype, chrec1, at_stmt);
+      chrec2 = chrec_convert (ctype, chrec2, at_stmt);
       chrec1 = instantiate_parameters (loop, chrec1);
       chrec2 = instantiate_parameters (loop, chrec2);
-      res = chrec_fold_minus (type, chrec1, chrec2);
+      res = chrec_fold_minus (ctype, chrec1, chrec2);
+      if (type != ctype)
+	res = chrec_convert (type, res, at_stmt);
       break;
 
     case NEGATE_EXPR:
       chrec1 = analyze_scalar_evolution (loop, rhs1);
-      chrec1 = chrec_convert (type, chrec1, at_stmt);
+      ctype = type;
+      /* When the stmt is conditionally executed re-write the CHREC
+         into a form that has well-defined behavior on overflow.  */
+      if (at_stmt
+	  && INTEGRAL_TYPE_P (type)
+	  && ! TYPE_OVERFLOW_WRAPS (type)
+	  && ! dominated_by_p (CDI_DOMINATORS,
+			       loop->latch, gimple_bb (at_stmt)))
+	ctype = unsigned_type_for (type);
+      chrec1 = chrec_convert (ctype, chrec1, at_stmt);
       /* TYPE may be integer, real or complex, so use fold_convert.  */
       chrec1 = instantiate_parameters (loop, chrec1);
-      res = chrec_fold_multiply (type, chrec1,
-				 fold_convert (type, integer_minus_one_node));
+      res = chrec_fold_multiply (ctype, chrec1,
+				 fold_convert (ctype, integer_minus_one_node));
+      if (type != ctype)
+	res = chrec_convert (type, res, at_stmt);
       break;
 
     case BIT_NOT_EXPR:
@@ -1837,11 +1870,22 @@ interpret_rhs_expr (struct loop *loop, gimple *at_stmt,
     case MULT_EXPR:
       chrec1 = analyze_scalar_evolution (loop, rhs1);
       chrec2 = analyze_scalar_evolution (loop, rhs2);
-      chrec1 = chrec_convert (type, chrec1, at_stmt);
-      chrec2 = chrec_convert (type, chrec2, at_stmt);
+      ctype = type;
+      /* When the stmt is conditionally executed re-write the CHREC
+         into a form that has well-defined behavior on overflow.  */
+      if (at_stmt
+	  && INTEGRAL_TYPE_P (type)
+	  && ! TYPE_OVERFLOW_WRAPS (type)
+	  && ! dominated_by_p (CDI_DOMINATORS,
+			       loop->latch, gimple_bb (at_stmt)))
+	ctype = unsigned_type_for (type);
+      chrec1 = chrec_convert (ctype, chrec1, at_stmt);
+      chrec2 = chrec_convert (ctype, chrec2, at_stmt);
       chrec1 = instantiate_parameters (loop, chrec1);
       chrec2 = instantiate_parameters (loop, chrec2);
-      res = chrec_fold_multiply (type, chrec1, chrec2);
+      res = chrec_fold_multiply (ctype, chrec1, chrec2);
+      if (type != ctype)
+	res = chrec_convert (type, res, at_stmt);
       break;
 
     case LSHIFT_EXPR:
