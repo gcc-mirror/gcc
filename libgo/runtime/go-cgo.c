@@ -41,6 +41,8 @@ syscall_cgocall ()
   if (runtime_needextram && runtime_cas (&runtime_needextram, 1, 0))
     runtime_newextram ();
 
+  runtime_lockOSThread();
+
   m = runtime_m ();
   ++m->ncgocall;
   g = runtime_g ();
@@ -70,6 +72,8 @@ syscall_cgocalldone ()
      _cgo_panic will already have exited syscall mode.  */
   if (g->status == Gsyscall)
     runtime_exitsyscall ();
+
+  runtime_unlockOSThread();
 }
 
 /* Call back from C/C++ code to Go code.  */
