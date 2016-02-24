@@ -1,3 +1,9 @@
+2016-02-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69323
+	* pt.c (instantiate_class_template_1): Set
+	processing_template_decl before substituting friend_type.
+
 016-02-24  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/69912
