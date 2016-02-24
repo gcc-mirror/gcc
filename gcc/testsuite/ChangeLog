@@ -1,3 +1,9 @@
+2016-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from mainline
+	PR fortran/65996
+	* gfortran.dg/pr65996.f90: New test.
+
 2016-02-23  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/69666

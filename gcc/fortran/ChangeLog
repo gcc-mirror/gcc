@@ -1,3 +1,11 @@
+2016-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from mainline
+	PR fortran/65996
+	* error.c (gfc_error): Save the state of abort_on_error and set
+	it to false for buffered errors to allow normal processing.
+	Restore the state before leaving.
+
 2016-02-12  Tobias Burnus  <burnus@net-b.de>
 	    Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 
