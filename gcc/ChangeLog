@@ -1,3 +1,10 @@
+2016-02-24  Richard Biener  <rguenther@suse.de>
+	Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/69760
+	* tree-scalar-evolution.c (interpret_rhs_expr): Re-write
+	conditionally executed ops to well-defined overflow behavior.
+
 2016-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/69915

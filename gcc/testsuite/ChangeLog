@@ -1,3 +1,9 @@
+2016-02-24  Richard Biener  <rguenther@suse.de>
+	Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/69760
+	* gcc.dg/torture/pr69760.c: New testcase.
+
 2016-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/debug/dwarf2/prod-options.c: Use different DW_AT_producer
