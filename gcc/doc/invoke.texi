@@ -6809,7 +6809,10 @@ value, and any changes during the lifetime of the object are dead when
 the object is destroyed.  Normally dead store elimination will take
 advantage of this; if your code relies on the value of the object
 storage persisting beyond the lifetime of the object, you can use this
-flag to disable this optimization.
+flag to disable this optimization.  To preserve stores before the
+constructor starts (e.g. because your operator new clears the object
+storage) but still treat the object as dead after the destructor you,
+can use -flifetime-dse=1.
 
 @item -flive-range-shrinkage
 @opindex flive-range-shrinkage

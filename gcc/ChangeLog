@@ -1,3 +1,7 @@
+2016-02-24  Jason Merrill  <jason@redhat.com>
+
+	* common.opt (flifetime-dse): Add -flifetime-dse=1.
+
 2016-02-24  Richard Biener  <rguenther@suse.de>
 	Jakub Jelinek  <jakub@redhat.com>
 
