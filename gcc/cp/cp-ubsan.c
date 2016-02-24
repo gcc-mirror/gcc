@@ -70,10 +70,15 @@ cp_ubsan_instrument_vptr (location_t loc, tree op, tree type, bool is_addr,
   vptr = fold_convert_loc (loc, pointer_sized_int_node, vptr);
   vptr = fold_convert_loc (loc, uint64_type_node, vptr);
   if (ckind == UBSAN_DOWNCAST_POINTER)
-    vptr = fold_build3 (COND_EXPR, uint64_type_node,
-			fold_build2 (NE_EXPR, boolean_type_node, op,
-				     build_zero_cst (TREE_TYPE (op))),
-			vptr, build_int_cst (uint64_type_node, 0));
+    {
+      tree cond = build2_loc (loc, NE_EXPR, boolean_type_node, op,
+			      build_zero_cst (TREE_TYPE (op)));
+      /* This is a compiler generated comparison, don't emit
+	 e.g. -Wnonnull-compare warning for it.  */
+      TREE_NO_WARNING (cond) = 1;
+      vptr = build3_loc (loc, COND_EXPR, uint64_type_node, cond,
+			 vptr, build_int_cst (uint64_type_node, 0));
+    }
   tree ti_decl = get_tinfo_decl (type);
   mark_used (ti_decl);
   tree ptype = build_pointer_type (type);
