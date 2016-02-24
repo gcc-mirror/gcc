@@ -1,3 +1,8 @@
+2016-02-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/69886
+	* gcc.dg/torture/pr69886.c: New test.
+
 2016-02-24  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/68963

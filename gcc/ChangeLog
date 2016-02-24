@@ -1,3 +1,15 @@
+2016-02-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/69886
+	* gcse.c (can_assign_to_reg_without_clobbers_p): Accept mode
+	argument.  Use it when checking validity of set instructions.
+	(want_to_gcse_p): Pass mode to can_assign_to_reg_without_clobbers_p.
+	(compute_ld_motion_mems): Update can_assign_to_reg_without_clobbers_p
+	callsite.
+	* rtl.h (can_assign_to_reg_without_clobbers_p): Update prototype.
+	* store-motion.c (find_moveable_store): Update
+	can_assign_to_reg_without_clobbers_p callsite.
+
 2016-02-24  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/68963
