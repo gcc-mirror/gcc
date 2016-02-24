@@ -1,5 +1,15 @@
 2016-02-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm-cores.def (cortex-a32): New entry.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Add mcpu=cortex-a32.
+	* config/arm/t-aprofile: Handle mcpu=cortex-a32.
+	* doc/invoke.texi (ARM Options): Document cortex-a32 as value
+	for -mcpu and -mtune.
+
+2016-02-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	PR target/69875
 	* config/arm/arm.h (TARGET_HAVE_LPAE): Define.
 	* config/arm/unspecs.md (VUNSPEC_LDRD_ATOMIC): New value.
