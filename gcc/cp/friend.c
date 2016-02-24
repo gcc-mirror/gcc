@@ -255,6 +255,18 @@ make_friend_class (tree type, tree friend_type, bool complain)
 		 friend_type);
 	  return;
 	}
+      if (TYPE_TEMPLATE_INFO (friend_type)
+	  && !PRIMARY_TEMPLATE_P (TYPE_TI_TEMPLATE (friend_type)))
+	{
+	  error ("%qT is not a template", friend_type);
+	  inform (location_of (friend_type), "previous declaration here");
+	  if (TYPE_CLASS_SCOPE_P (friend_type)
+	      && CLASSTYPE_TEMPLATE_INFO (TYPE_CONTEXT (friend_type))
+	      && currently_open_class (TYPE_CONTEXT (friend_type)))
+	    inform (input_location, "perhaps you need explicit template "
+		    "arguments in your nested-name-specifier");
+	  return;
+	}
     }
   else if (same_type_p (type, friend_type))
     {

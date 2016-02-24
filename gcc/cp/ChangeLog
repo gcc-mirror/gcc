@@ -1,6 +1,12 @@
 2016-02-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/69323
+	* friend.c (make_friend_class): Likewise.
+	* decl.c (lookup_and_check_tag): Diagnose invalid dependent friend.
+
+2016-02-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69323
 	* pt.c (instantiate_class_template_1): Set
 	processing_template_decl before substituting friend_type.
 
