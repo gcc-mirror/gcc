@@ -54,7 +54,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Fn, typename _Tuple, std::size_t... _Idx>
     constexpr decltype(auto)
     __apply_impl(_Fn&& f, _Tuple&& t, std::index_sequence<_Idx...>)
-    { return std::forward<_Fn>(f)(get<_Idx>(forward<_Tuple>(t))...); }
+    {
+      return std::forward<_Fn>(f)(std::get<_Idx>(std::forward<_Tuple>(t))...);
+    }
 
   template <typename _Fn, typename _Tuple>
     constexpr decltype(auto)
