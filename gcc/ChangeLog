@@ -1,3 +1,9 @@
+2016-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/69915
+	* tree.c (build_vector_from_ctor): Fix handling of VECTOR_CST
+	elements.
+
 2016-02-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/69886

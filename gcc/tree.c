@@ -1749,7 +1749,7 @@ build_vector_from_ctor (tree type, vec<constructor_elt, va_gc> *v)
       else
 	vec[pos++] = value;
     }
-  for (; idx < TYPE_VECTOR_SUBPARTS (type); ++idx)
+  while (pos < TYPE_VECTOR_SUBPARTS (type))
     vec[pos++] = build_zero_cst (TREE_TYPE (type));
 
   return build_vector (type, vec);
