@@ -3,6 +3,13 @@
 	Backport from mainline
 	2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.target/s390/vector/vec-vcond-1.c: New test.
+
+2016-02-25  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2016-02-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.target/s390/md/movstr-2.c: New test.
 
 2016-02-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>

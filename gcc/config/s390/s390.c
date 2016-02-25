@@ -6234,10 +6234,10 @@ s390_expand_vcond (rtx target, rtx then, rtx els,
      predicates.  But it appears to be better for scheduling etc. to
      have that in early.  */
   if (!REG_P (cmp_op1))
-    cmp_op1 = force_reg (GET_MODE (target), cmp_op1);
+    cmp_op1 = force_reg (GET_MODE (cmp_op1), cmp_op1);
 
   if (!REG_P (cmp_op2))
-    cmp_op2 = force_reg (GET_MODE (target), cmp_op2);
+    cmp_op2 = force_reg (GET_MODE (cmp_op2), cmp_op2);
 
   s390_expand_vec_compare (result_target, cond,
 			   cmp_op1, cmp_op2);
