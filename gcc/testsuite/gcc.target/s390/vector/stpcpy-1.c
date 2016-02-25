@@ -4,6 +4,8 @@
    strings.  */
 
 /* { dg-do run } */
+/* { dg-require-effective-target vector } */
+/* { dg-options "-O3 -mzarch -march=z13" } */
 
 #include <stdio.h>
 #include <sys/mman.h>
