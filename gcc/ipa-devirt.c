@@ -3181,6 +3181,7 @@ possible_polymorphic_call_targets (tree otr_type,
 		{
 		  if (complete
 		      && nodes.length () == 1
+		      && TREE_CODE (TREE_TYPE (nodes[0]->decl)) == METHOD_TYPE
 		      && warn_suggest_final_types
 		      && !outer_type->derived_types.length ())
 		    {
