@@ -1,3 +1,9 @@
+2016-02-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/69630
+	* ipa-devirt.c (possible_polymorphic_call_targets): Do not ICE
+	on builtin_unreachable.
+
 2016-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/69896
