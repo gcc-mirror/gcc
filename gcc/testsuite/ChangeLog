@@ -1,3 +1,7 @@
+2016-02-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/ext/attr-constructor1.C: Require init_priority support.
+
 2016-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/69896
