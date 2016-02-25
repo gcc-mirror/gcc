@@ -1,3 +1,8 @@
+2016-02-25  Ilya Verbin  <ilya.verbin@intel.com>
+
+	PR driver/68463
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims-2.c: Remove.
+
 2016-02-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* oacc-parallel.c (GOACC_parallel_keyed): Initialize dims.

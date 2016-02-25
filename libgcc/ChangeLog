@@ -1,3 +1,13 @@
+2016-02-25  Ilya Verbin  <ilya.verbin@intel.com>
+
+	PR driver/68463
+	* Makefile.in (crtoffloadtable$(objext)): New rule.
+	* configure.ac (extra_parts): Add crtoffloadtable$(objext) if
+	enable_offload_targets is not empty.
+	* configure: Regenerate.
+	* offloadstuff.c: Move __OFFLOAD_TABLE__ from crtoffloadend to
+	crtoffloadtable.
+
 2016-02-17  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/ieee754-df.S (__muldf3_aux, __divdf3_aux): Add

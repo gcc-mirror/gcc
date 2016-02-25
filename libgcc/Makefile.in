@@ -995,12 +995,16 @@ crtbeginT$(objext): $(srcdir)/crtstuff.c
 	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_BEGIN -DCRTSTUFFT_O
 
 # crtoffloadbegin and crtoffloadend contain symbols, that mark the begin and
-# the end of tables with addresses, required for offloading.
+# the end of tables with addresses, required for offloading.  crtoffloadtable
+# contains the array with addresses of those symbols.
 crtoffloadbegin$(objext): $(srcdir)/offloadstuff.c
 	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_BEGIN
 
 crtoffloadend$(objext): $(srcdir)/offloadstuff.c
 	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_END
+
+crtoffloadtable$(objext): $(srcdir)/offloadstuff.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_TABLE
 endif
 
 ifeq ($(enable_vtable_verify),yes)
