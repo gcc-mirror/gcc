@@ -1,3 +1,8 @@
+2016-02-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/48795
+	* gcc.dg/Warray-bounds-18.c: New testcase.
+
 2016-02-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/ext/attr-constructor1.C: Require init_priority support.
