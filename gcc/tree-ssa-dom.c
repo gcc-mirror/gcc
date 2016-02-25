@@ -263,7 +263,7 @@ static struct opt_stats_d opt_stats;
 
 /* Local functions.  */
 static void optimize_stmt (basic_block, gimple_stmt_iterator);
-static tree lookup_avail_expr (gimple, bool);
+static tree lookup_avail_expr (gimple, bool, bool = true);
 static hashval_t avail_expr_hash (const void *);
 static void htab_statistics (FILE *,
 			     const hash_table<expr_elt_hasher> &);
@@ -2496,7 +2496,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 	  else
 	    new_stmt = gimple_build_assign (rhs, lhs);
 	  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-	  cached_lhs = lookup_avail_expr (new_stmt, false);
+	  cached_lhs = lookup_avail_expr (new_stmt, false, false);
 	  if (cached_lhs
 	      && rhs == cached_lhs)
 	    {
@@ -2603,7 +2603,7 @@ vuse_eq (ao_ref *, tree vuse1, unsigned int cnt, void *data)
    we finish processing this block and its children.  */
 
 static tree
-lookup_avail_expr (gimple stmt, bool insert)
+lookup_avail_expr (gimple stmt, bool insert, bool tbaa_p)
 {
   expr_hash_elt **slot;
   tree lhs;
@@ -2671,7 +2671,8 @@ lookup_avail_expr (gimple stmt, bool insert)
       if (!(vuse1 && vuse2
 	    && gimple_assign_single_p (stmt)
 	    && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
-	    && (ao_ref_init (&ref, gimple_assign_rhs1 (stmt)), true)
+	    && (ao_ref_init (&ref, gimple_assign_rhs1 (stmt)),
+		ref.base_alias_set = ref.ref_alias_set = tbaa_p ? -1 : 0, true)
 	    && walk_non_aliased_vuses (&ref, vuse2,
 				       vuse_eq, NULL, NULL, vuse1) != NULL))
 	{

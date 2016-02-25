@@ -1,3 +1,29 @@
+2016-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-02-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69776
+	* gcc.dg/torture/pr69776.c: New testcase.
+
+	2016-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69776
+	* gcc.dg/torture/pr69776-2.c: New testcase.
+
+2016-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2016-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69719
+	* gcc.dg/torture/pr69719.c: New testcase.
+
+	2016-02-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69783
+	* gcc.dg/vect/pr69783.c: New testcase.
+
 2016-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from mainline
