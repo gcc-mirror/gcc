@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 
 ALLOC_POOL_ID_TYPE last_id;
 mem_alloc_description<pool_usage> pool_allocator_usage;
+bool after_memory_report = false;
 
 /* Output per-alloc_pool memory usage statistics.  */
 void

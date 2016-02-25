@@ -1,3 +1,11 @@
+2016-02-25  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/69919
+	* alloc-pool.c (after_memory_report): New variable.
+	* alloc-pool.h (base_pool_allocator ::release): Do not use
+	the infrastructure if after_memory_report.
+	* toplev.c (toplev::main): Mark after memory report.
+
 2016-02-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/48795
