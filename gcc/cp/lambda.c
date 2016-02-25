@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-iterator.h"
 #include "toplev.h"
+#include "gimplify.h"
 
 /* Constructor for a lambda expression.  */
 
@@ -952,23 +953,18 @@ maybe_add_lambda_conv_op (tree type)
 
 	if (generic_lambda_p)
 	  {
-	    if (DECL_PACK_P (tgt))
-	      {
-		tree a = make_pack_expansion (tgt);
-		if (decltype_call)
-		  CALL_EXPR_ARG (decltype_call, ix) = copy_node (a);
-		PACK_EXPANSION_LOCAL_P (a) = true;
-		CALL_EXPR_ARG (call, ix) = a;
-	      }
-	    else
-	      {
-		++processing_template_decl;
-		tree a = forward_parm (tgt);
-		--processing_template_decl;
-		CALL_EXPR_ARG (call, ix) = a;
-		if (decltype_call)
-		  CALL_EXPR_ARG (decltype_call, ix) = copy_node (a);
-	      }
+	    ++processing_template_decl;
+	    tree a = forward_parm (tgt);
+	    --processing_template_decl;
+
+	    CALL_EXPR_ARG (call, ix) = a;
+	    if (decltype_call)
+	      CALL_EXPR_ARG (decltype_call, ix) = unshare_expr (a);
+
+	    if (PACK_EXPANSION_P (a))
+	      /* Set this after unsharing so it's not in decltype_call.  */
+	      PACK_EXPANSION_LOCAL_P (a) = true;
+
 	    ++ix;
 	  }
 	else
