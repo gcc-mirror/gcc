@@ -25,6 +25,9 @@ along with GCC; see the file COPYING3.  If not see
 
 extern void dump_alloc_pool_statistics (void);
 
+/* Flag indicates whether memory statistics are gathered any longer.  */
+extern bool after_memory_report;
+
 typedef unsigned long ALLOC_POOL_ID_TYPE;
 
 /* Last used ID.  */
@@ -306,7 +309,7 @@ base_pool_allocator <TBlockAllocator>::release ()
       TBlockAllocator::release (block);
     }
 
-  if (GATHER_STATISTICS)
+  if (GATHER_STATISTICS && !after_memory_report)
     {
       pool_allocator_usage.release_instance_overhead
 	(this, (m_elts_allocated - m_elts_free) * m_elt_size);

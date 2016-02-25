@@ -2107,6 +2107,9 @@ toplev::main (int argc, char **argv)
 
   finalize_plugins ();
   location_adhoc_data_fini (line_table);
+
+  after_memory_report = true;
+
   if (seen_error () || werrorcount)
     return (FATAL_EXIT_CODE);
 
