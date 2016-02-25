@@ -1,3 +1,23 @@
+2016-02-25  Ilya Verbin  <ilya.verbin@intel.com>
+
+	PR driver/68463
+	* config/gnu-user.h (CRTOFFLOADBEGIN): Define.  Add crtoffloadbegin.o if
+	offloading is enabled and -fopenacc or -fopenmp is specified.
+	(CRTOFFLOADEND): Likewise.
+	(GNU_USER_TARGET_STARTFILE_SPEC): Add CRTOFFLOADBEGIN.
+	(GNU_USER_TARGET_ENDFILE_SPEC): Add CRTOFFLOADEND.
+	* lto-wrapper.c (offloadbegin, offloadend): Remove static vars.
+	(offload_objects_file_name): New static var.
+	(tool_cleanup): Remove offload_objects_file_name file.
+	(find_offloadbeginend): Replace with ...
+	(find_crtoffloadtable): ... this.
+	(run_gcc): Remove offload_argc and offload_argv.
+	Get offload_objects_file_name from -foffload-objects=... option.
+	Read names of object files with offload from this file, pass them to
+	compile_images_for_offload_targets.  Don't call find_offloadbeginend and
+	don't pass offloadbegin and offloadend to the linker.  Don't pass
+	offload non-LTO files to the linker, because now they're not claimed.
+
 2016-02-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/69630

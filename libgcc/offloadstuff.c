@@ -40,23 +40,22 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "tm.h"
 #include "libgcc_tm.h"
 
+#if defined(HAVE_GAS_HIDDEN) && ENABLE_OFFLOADING == 1
+
 #define OFFLOAD_FUNC_TABLE_SECTION_NAME ".gnu.offload_funcs"
 #define OFFLOAD_VAR_TABLE_SECTION_NAME ".gnu.offload_vars"
 
 #ifdef CRT_BEGIN
 
-#if defined(HAVE_GAS_HIDDEN) && defined(ENABLE_OFFLOADING)
 const void *const __offload_func_table[0]
   __attribute__ ((__used__, visibility ("hidden"),
 		  section (OFFLOAD_FUNC_TABLE_SECTION_NAME))) = { };
 const void *const __offload_var_table[0]
   __attribute__ ((__used__, visibility ("hidden"),
 		  section (OFFLOAD_VAR_TABLE_SECTION_NAME))) = { };
-#endif
 
 #elif defined CRT_END
 
-#if defined(HAVE_GAS_HIDDEN) && defined(ENABLE_OFFLOADING)
 const void *const __offload_funcs_end[0]
   __attribute__ ((__used__, visibility ("hidden"),
 		  section (OFFLOAD_FUNC_TABLE_SECTION_NAME))) = { };
@@ -64,8 +63,12 @@ const void *const __offload_vars_end[0]
   __attribute__ ((__used__, visibility ("hidden"),
 		  section (OFFLOAD_VAR_TABLE_SECTION_NAME))) = { };
 
+#elif defined CRT_TABLE
+
 extern const void *const __offload_func_table[];
 extern const void *const __offload_var_table[];
+extern const void *const __offload_funcs_end[];
+extern const void *const __offload_vars_end[];
 
 const void *const __OFFLOAD_TABLE__[]
   __attribute__ ((__visibility__ ("hidden"))) =
@@ -73,8 +76,9 @@ const void *const __OFFLOAD_TABLE__[]
   &__offload_func_table, &__offload_funcs_end,
   &__offload_var_table, &__offload_vars_end
 };
+
+#else /* ! CRT_BEGIN && ! CRT_END && ! CRT_TABLE  */
+#error "One of CRT_BEGIN, CRT_END or CRT_TABLE must be defined."
 #endif
 
-#else /* ! CRT_BEGIN && ! CRT_END */
-#error "One of CRT_BEGIN or CRT_END must be defined."
 #endif
