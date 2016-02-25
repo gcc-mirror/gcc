@@ -6111,7 +6111,7 @@ s390_expand_vcond (rtx target, rtx then, rtx els,
 
   /* If the results are supposed to be either -1 or 0 we are done
      since this is what our compare instructions generate anyway.  */
-  if (constm1_operand (then, GET_MODE (then))
+  if (all_ones_operand (then, GET_MODE (then))
       && const0_operand (els, GET_MODE (els)))
     {
       emit_move_insn (target, gen_rtx_SUBREG (GET_MODE (target),

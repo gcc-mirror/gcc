@@ -1,3 +1,13 @@
+2016-02-25  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2015-12-18  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+	* config/s390/predicates.md: Change and rename
+	constm1_operand to all_ones_operand
+	* config/s390/s390.c (s390_expand_vcond): Use all_ones_operand
+	* config/s390/vector.md: Likewise
+
 2016-02-25  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
