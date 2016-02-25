@@ -1,3 +1,15 @@
+2016-02-25  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/69736
+	* cp-tree.h (REF_PARENTHESIZED_P): Adjust documentation.
+	(maybe_undo_parenthesized_ref): Declare.
+	* semantics.c (maybe_undo_parenthesized_ref): Split out from
+	check_return_expr.
+	(finish_call_expr): Use it.
+	* typeck.c (check_return_expr): Use it.
+	* pt.c (tsubst_copy_and_build) [INDIRECT_REF]: Retain the
+	REF_PARENTHESIZED_P flag.
+
 2016-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69922
