@@ -43,8 +43,8 @@
 
 ; All integer vector modes supported in a vector register + TImode
 (define_mode_iterator VIT [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI V2DI V1TI TI])
-(define_mode_iterator VI  [V2QI V4QI V8QI V16QI V2HI V4HI V8HI V2SI V4SI V2DI])
-(define_mode_iterator VI_QHS [V4QI V8QI V16QI V4HI V8HI V4SI])
+(define_mode_iterator VI  [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI V2DI])
+(define_mode_iterator VI_QHS [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI])
 
 (define_mode_iterator V_8   [V1QI])
 (define_mode_iterator V_16  [V2QI  V1HI])
@@ -100,11 +100,11 @@
 			    (V1TF "V1TI")])
 
 ; Vector with doubled element size.
-(define_mode_attr vec_double [(V2QI "V1HI") (V4QI "V2HI") (V8QI "V4HI") (V16QI "V8HI")
-			      (V2HI "V1SI") (V4HI "V2SI") (V8HI "V4SI")
-			      (V2SI "V1DI") (V4SI "V2DI")
-			      (V2DI "V1TI")
-			      (V2SF "V1DF") (V4SF "V2DF")])
+(define_mode_attr vec_double [(V1QI "V1HI") (V2QI "V1HI") (V4QI "V2HI") (V8QI "V4HI") (V16QI "V8HI")
+			      (V1HI "V1SI") (V2HI "V1SI") (V4HI "V2SI") (V8HI "V4SI")
+			      (V1SI "V1DI") (V2SI "V1DI") (V4SI "V2DI")
+			      (V1DI "V1TI") (V2DI "V1TI")
+			      (V1SF "V1DF") (V2SF "V1DF") (V4SF "V2DF")])
 
 ; Vector with half the element size.
 (define_mode_attr vec_half [(V1HI "V2QI") (V2HI "V4QI") (V4HI "V8QI") (V8HI "V16QI")
