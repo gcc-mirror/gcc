@@ -1,3 +1,8 @@
+2016-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/69896
+	* gcc.dg/pr69896.c: New test.
+
 2016-02-25  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/69736
