@@ -1,5 +1,9 @@
 2016-02-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/67364
+	* constexpr.c (cxx_eval_component_reference): Don't complain about
+	unevaluated empty classes.
+
 	PR c++/68049
 	* tree.c (strip_typedefs): Use DECL_ORIGINAL_TYPE.
 
