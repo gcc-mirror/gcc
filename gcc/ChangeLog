@@ -1,3 +1,11 @@
+2016-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/69896
+	* regcprop.c: Include cfgrtl.h.
+	(copyprop_hardreg_forward_1): If noop_p insn uses narrower
+	than remembered mode, either delete it (if noop_move_p), or
+	treat like copy_p but not noop_p instruction.
+
 2016-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/69705

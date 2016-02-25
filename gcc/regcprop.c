@@ -32,6 +32,7 @@
 #include "addresses.h"
 #include "tree-pass.h"
 #include "rtl-iter.h"
+#include "cfgrtl.h"
 
 /* The following code does forward propagation of hard register copies.
    The object is to eliminate as many dependencies as possible, so that
@@ -739,9 +740,9 @@ static bool
 copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 {
   bool anything_changed = false;
-  rtx_insn *insn;
+  rtx_insn *insn, *next;
 
-  for (insn = BB_HEAD (bb); ; insn = NEXT_INSN (insn))
+  for (insn = BB_HEAD (bb); ; insn = next)
     {
       int n_ops, i, predicated;
       bool is_asm, any_replacements;
@@ -751,6 +752,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       bool changed = false;
       struct kill_set_value_data ksvd;
 
+      next = NEXT_INSN (insn);
       if (!NONDEBUG_INSN_P (insn))
 	{
 	  if (DEBUG_INSN_P (insn))
@@ -1041,6 +1043,23 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		     && REG_P (SET_SRC (set)));
       bool noop_p = (copy_p
 		     && rtx_equal_p (SET_DEST (set), SET_SRC (set)));
+
+      /* If a noop move is using narrower mode than we have recorded,
+	 we need to either remove the noop move, or kill_set_value.  */
+      if (noop_p
+	  && (GET_MODE_BITSIZE (GET_MODE (SET_DEST (set)))
+	      < GET_MODE_BITSIZE (vd->e[REGNO (SET_DEST (set))].mode)))
+	{
+	  if (noop_move_p (insn))
+	    {
+	      bool last = insn == BB_END (bb);
+	      delete_insn (insn);
+	      if (last)
+		break;
+	    }
+	  else
+	    noop_p = false;
+	}
 
       if (!noop_p)
 	{
