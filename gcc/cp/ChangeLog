@@ -1,5 +1,9 @@
 2016-02-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/69842
+	* method.c (forward_parm): Handle parameter packs.
+	* lambda.c (maybe_add_lambda_conv_op): Use it for them.
+
 	PR c++/67364
 	* constexpr.c (cxx_eval_component_reference): Don't complain about
 	unevaluated empty classes.

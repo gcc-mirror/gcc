@@ -481,9 +481,12 @@ tree
 forward_parm (tree parm)
 {
   tree exp = convert_from_reference (parm);
-  if (TREE_CODE (TREE_TYPE (parm)) != REFERENCE_TYPE
-      || TYPE_REF_IS_RVALUE (TREE_TYPE (parm)))
-    exp = move (exp);
+  tree type = TREE_TYPE (parm);
+  if (DECL_PACK_P (parm))
+    type = PACK_EXPANSION_PATTERN (type);
+  exp = build_static_cast (type, exp, tf_warning_or_error);
+  if (DECL_PACK_P (parm))
+    exp = make_pack_expansion (exp);
   return exp;
 }
 
