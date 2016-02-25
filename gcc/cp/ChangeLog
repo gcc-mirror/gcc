@@ -1,3 +1,8 @@
+2016-02-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68049
+	* tree.c (strip_typedefs): Use DECL_ORIGINAL_TYPE.
+
 2016-02-25  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/69736
