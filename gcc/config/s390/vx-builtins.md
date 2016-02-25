@@ -575,7 +575,7 @@
 
 (define_insn "vec_addc<mode>"
   [(set (match_operand:VI_HW                0 "register_operand" "=v")
-	(unspec:VI_HW [(match_operand:VI_HW 1 "register_operand"  "v")
+	(unspec:VI_HW [(match_operand:VI_HW 1 "register_operand" "%v")
 		       (match_operand:VI_HW 2 "register_operand"  "v")]
 		      UNSPEC_VEC_ADDC))]
   "TARGET_VX"
@@ -584,7 +584,7 @@
 
 (define_insn "vec_addc_u128"
   [(set (match_operand:V16QI                0 "register_operand" "=v")
-	(unspec:V16QI [(match_operand:V16QI 1 "register_operand"  "v")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "%v")
 		       (match_operand:V16QI 2 "register_operand"  "v")]
 		      UNSPEC_VEC_ADDC_U128))]
   "TARGET_VX"
@@ -596,7 +596,7 @@
 
 (define_insn "vec_adde_u128"
   [(set (match_operand:V16QI                0 "register_operand" "=v")
-	(unspec:V16QI [(match_operand:V16QI 1 "register_operand"  "v")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "%v")
 		       (match_operand:V16QI 2 "register_operand"  "v")
 		       (match_operand:V16QI 3 "register_operand"  "v")]
 		      UNSPEC_VEC_ADDE_U128))]
@@ -609,7 +609,7 @@
 
 (define_insn "vec_addec_u128"
   [(set (match_operand:V16QI                0 "register_operand" "=v")
-	(unspec:V16QI [(match_operand:V16QI 1 "register_operand"  "v")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "%v")
 		       (match_operand:V16QI 2 "register_operand"  "v")
 		       (match_operand:V16QI 3 "register_operand"  "v")]
 		      UNSPEC_VEC_ADDEC_U128))]
@@ -672,7 +672,7 @@
 
 (define_insn "vec_avg<mode>"
   [(set (match_operand:VI_HW                0 "register_operand" "=v")
-	(unspec:VI_HW [(match_operand:VI_HW 1 "register_operand"  "v")
+	(unspec:VI_HW [(match_operand:VI_HW 1 "register_operand" "%v")
 		       (match_operand:VI_HW 2 "register_operand"  "v")]
 		      UNSPEC_VEC_AVG))]
   "TARGET_VX"
@@ -683,7 +683,7 @@
 
 (define_insn "vec_avgu<mode>"
   [(set (match_operand:VI_HW                0 "register_operand" "=v")
-	(unspec:VI_HW [(match_operand:VI_HW 1 "register_operand"  "v")
+	(unspec:VI_HW [(match_operand:VI_HW 1 "register_operand" "%v")
 		       (match_operand:VI_HW 2 "register_operand"  "v")]
 		      UNSPEC_VEC_AVGU))]
   "TARGET_VX"
@@ -871,9 +871,9 @@
 ; vmalb, vmalh, vmalf, vmalg
 (define_insn "vec_vmal<mode>"
   [(set (match_operand:VI_HW_QHS 0 "register_operand" "=v")
-	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "v")
-			   (match_operand:VI_HW_QHS 2 "register_operand" "v")
-			   (match_operand:VI_HW_QHS 3 "register_operand" "v")]
+	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "%v")
+			   (match_operand:VI_HW_QHS 2 "register_operand"  "v")
+			   (match_operand:VI_HW_QHS 3 "register_operand"  "v")]
 			  UNSPEC_VEC_VMAL))]
   "TARGET_VX"
   "vmal<bhfgq><w>\t%v0,%v1,%v2,%v3"
@@ -884,9 +884,9 @@
 ; vmahb; vmahh, vmahf, vmahg
 (define_insn "vec_vmah<mode>"
   [(set (match_operand:VI_HW_QHS 0 "register_operand" "=v")
-	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "v")
-			   (match_operand:VI_HW_QHS 2 "register_operand" "v")
-			   (match_operand:VI_HW_QHS 3 "register_operand" "v")]
+	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "%v")
+			   (match_operand:VI_HW_QHS 2 "register_operand"  "v")
+			   (match_operand:VI_HW_QHS 3 "register_operand"  "v")]
 			  UNSPEC_VEC_VMAH))]
   "TARGET_VX"
   "vmah<bhfgq>\t%v0,%v1,%v2,%v3"
@@ -895,9 +895,9 @@
 ; vmalhb; vmalhh, vmalhf, vmalhg
 (define_insn "vec_vmalh<mode>"
   [(set (match_operand:VI_HW_QHS 0 "register_operand" "=v")
-	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "v")
-			   (match_operand:VI_HW_QHS 2 "register_operand" "v")
-			   (match_operand:VI_HW_QHS 3 "register_operand" "v")]
+	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "%v")
+			   (match_operand:VI_HW_QHS 2 "register_operand"  "v")
+			   (match_operand:VI_HW_QHS 3 "register_operand"  "v")]
 			  UNSPEC_VEC_VMALH))]
   "TARGET_VX"
   "vmalh<bhfgq>\t%v0,%v1,%v2,%v3"
@@ -908,8 +908,8 @@
 ; vmaeb; vmaeh, vmaef, vmaeg
 (define_insn "vec_vmae<mode>"
   [(set (match_operand:<vec_double> 0 "register_operand" "=v")
-	(unspec:<vec_double> [(match_operand:VI_HW_QHS 1 "register_operand" "v")
-			      (match_operand:VI_HW_QHS 2 "register_operand" "v")
+	(unspec:<vec_double> [(match_operand:VI_HW_QHS 1 "register_operand"   "%v")
+			      (match_operand:VI_HW_QHS 2 "register_operand"    "v")
 			      (match_operand:<vec_double> 3 "register_operand" "v")]
 			     UNSPEC_VEC_VMAE))]
   "TARGET_VX"
@@ -919,7 +919,7 @@
 ; vmaleb; vmaleh, vmalef, vmaleg
 (define_insn "vec_vmale<mode>"
   [(set (match_operand:<vec_double> 0 "register_operand" "=v")
-	(unspec:<vec_double> [(match_operand:VI_HW_QHS 1 "register_operand" "v")
+	(unspec:<vec_double> [(match_operand:VI_HW_QHS 1 "register_operand" "%v")
 			      (match_operand:VI_HW_QHS 2 "register_operand" "v")
 			      (match_operand:<vec_double> 3 "register_operand" "v")]
 			     UNSPEC_VEC_VMALE))]
@@ -932,7 +932,7 @@
 ; vmaob; vmaoh, vmaof, vmaog
 (define_insn "vec_vmao<mode>"
   [(set (match_operand:<vec_double> 0 "register_operand" "=v")
-	(unspec:<vec_double> [(match_operand:VI_HW_QHS 1 "register_operand" "v")
+	(unspec:<vec_double> [(match_operand:VI_HW_QHS 1 "register_operand" "%v")
 			      (match_operand:VI_HW_QHS 2 "register_operand" "v")
 			      (match_operand:<vec_double> 3 "register_operand" "v")]
 			     UNSPEC_VEC_VMAO))]
@@ -959,7 +959,7 @@
 ; vmhb, vmhh, vmhf
 (define_insn "vec_smulh<mode>"
   [(set (match_operand:VI_HW_QHS 0 "register_operand" "=v")
-	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "v")
+	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "%v")
 			   (match_operand:VI_HW_QHS 2 "register_operand" "v")]
 			  UNSPEC_VEC_SMULT_HI))]
   "TARGET_VX"
@@ -969,7 +969,7 @@
 ; vmlhb, vmlhh, vmlhf
 (define_insn "vec_umulh<mode>"
   [(set (match_operand:VI_HW_QHS 0 "register_operand" "=v")
-	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "v")
+	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "%v")
 			   (match_operand:VI_HW_QHS 2 "register_operand" "v")]
 			  UNSPEC_VEC_UMULT_HI))]
   "TARGET_VX"
@@ -987,7 +987,7 @@
 
 (define_insn "vec_nor<mode>3"
   [(set (match_operand:VT_HW 0 "register_operand" "=v")
-	(not:VT_HW (ior:VT_HW (match_operand:VT_HW 1 "register_operand" "v")
+	(not:VT_HW (ior:VT_HW (match_operand:VT_HW 1 "register_operand" "%v")
 			      (match_operand:VT_HW 2 "register_operand" "v"))))]
   "TARGET_VX"
   "vno\t%v0,%v1,%v2"
