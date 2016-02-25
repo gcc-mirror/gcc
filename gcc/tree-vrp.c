@@ -6450,7 +6450,6 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
   value_range *vr = NULL;
   tree low_sub, up_sub;
   tree low_bound, up_bound, up_bound_p1;
-  tree base;
 
   if (TREE_NO_WARNING (ref))
     return;
@@ -6465,27 +6464,9 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
 
   /* Accesses to trailing arrays via pointers may access storage
      beyond the types array bounds.  */
-  base = get_base_address (ref);
-  if ((warn_array_bounds < 2)
-      && base && TREE_CODE (base) == MEM_REF)
-    {
-      tree cref, next = NULL_TREE;
-
-      if (TREE_CODE (TREE_OPERAND (ref, 0)) != COMPONENT_REF)
-	return;
-
-      cref = TREE_OPERAND (ref, 0);
-      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (cref, 0))) == RECORD_TYPE)
-	for (next = DECL_CHAIN (TREE_OPERAND (cref, 1));
-	     next && TREE_CODE (next) != FIELD_DECL;
-	     next = DECL_CHAIN (next))
-	  ;
-
-      /* If this is the last field in a struct type or a field in a
-	 union type do not warn.  */
-      if (!next)
-	return;
-    }
+  if (warn_array_bounds < 2
+      && array_at_struct_end_p (ref))
+    return;
 
   low_bound = array_ref_low_bound (ref);
   up_bound_p1 = int_const_binop (PLUS_EXPR, up_bound,
