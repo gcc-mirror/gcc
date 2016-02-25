@@ -1,3 +1,11 @@
+2016-02-25  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2016-02-19  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR target/69625
+	* gcc.target/s390/pr69625.c: Add test case.
+
 2016-02-25  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
