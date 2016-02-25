@@ -1673,6 +1673,30 @@ force_paren_expr (tree expr)
   return expr;
 }
 
+/* If T is an id-expression obfuscated by force_paren_expr, undo the
+   obfuscation and return the underlying id-expression.  Otherwise
+   return T.  */
+
+tree
+maybe_undo_parenthesized_ref (tree t)
+{
+  if (cxx_dialect >= cxx14
+      && INDIRECT_REF_P (t)
+      && REF_PARENTHESIZED_P (t))
+    {
+      t = TREE_OPERAND (t, 0);
+      while (TREE_CODE (t) == NON_LVALUE_EXPR
+	     || TREE_CODE (t) == NOP_EXPR)
+	t = TREE_OPERAND (t, 0);
+
+      gcc_assert (TREE_CODE (t) == ADDR_EXPR
+		  || TREE_CODE (t) == STATIC_CAST_EXPR);
+      t = TREE_OPERAND (t, 0);
+    }
+
+  return t;
+}
+
 /* Finish a parenthesized expression EXPR.  */
 
 cp_expr
@@ -2255,6 +2279,10 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
     return error_mark_node;
 
   gcc_assert (!TYPE_P (fn));
+
+  /* If FN may be a FUNCTION_DECL obfuscated by force_paren_expr, undo
+     it so that we can tell this is a call to a known function.  */
+  fn = maybe_undo_parenthesized_ref (fn);
 
   orig_fn = fn;
 
