@@ -1,3 +1,10 @@
+2016-02-26  Martin Jambor  <mjambor@suse.cz>
+
+	* omp-low.c (grid_find_ungridifiable_statement): Store problematic
+	statements to wi->info.  Also disallow omp simd constructs.
+	(grid_target_follows_gridifiable_pattern): Use wi.info to dump reason
+	for not gridifying.  Dump special string for omp_for.
+
 2016-02-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/69245
