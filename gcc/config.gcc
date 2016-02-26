@@ -906,11 +906,18 @@ case ${target} in
 esac
 
 case ${target} in
-aarch64*-*-elf)
+aarch64*-*-elf | aarch64*-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h"
 	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-elf-raw.h"
 	tmake_file="${tmake_file} aarch64/t-aarch64"
-	use_gcc_stdint=wrap
+	case $target in
+	aarch64-*-elf*)
+		use_gcc_stdint=wrap
+		;;
+	aarch64-*-rtems*)
+	  	tm_file="${tm_file} rtems.h aarch64/rtems.h"
+		;;
+	esac
 	case $target in
 	aarch64_be-*)
 		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
