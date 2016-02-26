@@ -1021,10 +1021,16 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       && omp_var_to_track (stmt))
     omp_cxx_notice_variable (wtd->omp_ctx, stmt);
 
-  if (is_invisiref_parm (stmt)
-      /* Don't dereference parms in a thunk, pass the references through. */
-      && !(DECL_THUNK_P (current_function_decl)
-	   && TREE_CODE (stmt) == PARM_DECL))
+  /* Don't dereference parms in a thunk, pass the references through. */
+  if ((TREE_CODE (stmt) == CALL_EXPR && CALL_FROM_THUNK_P (stmt))
+      || (TREE_CODE (stmt) == AGGR_INIT_EXPR && AGGR_INIT_FROM_THUNK_P (stmt)))
+    {
+      *walk_subtrees = 0;
+      return NULL;
+    }
+
+  /* Otherwise, do dereference invisible reference parms.  */
+  if (is_invisiref_parm (stmt))
     {
       *stmt_p = convert_from_reference (stmt);
       *walk_subtrees = 0;
