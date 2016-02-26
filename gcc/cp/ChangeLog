@@ -1,3 +1,10 @@
+2016-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69958
+	* pt.c (make_argument_pack): New.
+	(tsubst_copy) [SIZEOF_EXPR]: Handle partial expansion.
+	(tsubst_copy_and_build): Likewise.
+
 2016-02-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/69889
