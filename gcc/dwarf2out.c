@@ -1325,7 +1325,7 @@ new_loc_descr (enum dwarf_location_atom op, unsigned HOST_WIDE_INT oprnd1,
   dw_loc_descr_ref descr = ggc_cleared_alloc<dw_loc_descr_node> ();
 
   descr->dw_loc_opc = op;
-#if ENABLE_CHECKING
+#if CHECKING_P
   descr->dw_loc_frame_offset = -1;
 #endif
   descr->dw_loc_oprnd1.val_class = dw_val_class_unsigned_const;
@@ -15369,14 +15369,14 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
       /* If we already met this node, there is nothing to compute anymore.  */
       if (visited.add (l))
 	{
-#if ENABLE_CHECKING
+#if CHECKING_P
 	  /* Make sure that the stack size is consistent wherever the execution
 	     flow comes from.  */
 	  gcc_assert ((unsigned) l->dw_loc_frame_offset == frame_offset_);
 #endif
 	  break;
 	}
-#if ENABLE_CHECKING
+#if CHECKING_P
       l->dw_loc_frame_offset = frame_offset_;
 #endif
 
