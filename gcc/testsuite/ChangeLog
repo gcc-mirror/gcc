@@ -1,5 +1,10 @@
 2016-02-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	PR target/69245
+	* gcc.target/aarch64/pr69245_1.c: New test.
+
+2016-02-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	PR target/69613
 	* gcc.dg/torture/pr69613.c: New test.
 

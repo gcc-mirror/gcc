@@ -1,5 +1,12 @@
 2016-02-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	PR target/69245
+	* config/aarch64/aarch64.c (aarch64_set_current_function):
+	Save/restore target globals when switching to
+	target_option_default_node.
+
+2016-02-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	PR target/69613
 	* config/aarch64/aarch64.c (aarch64_shift_truncation_mask):
 	Return 0 if !SHIFT_COUNT_TRUNCATED.
