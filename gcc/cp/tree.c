@@ -464,14 +464,22 @@ build_aggr_init_expr (tree type, tree init)
     {
       slot = build_local_temp (type);
 
-      if (TREE_CODE(init) == CALL_EXPR)
-	rval = build_aggr_init_array (void_type_node, fn, slot,
-				      call_expr_nargs (init),
-				      CALL_EXPR_ARGP (init));
+      if (TREE_CODE (init) == CALL_EXPR)
+	{
+	  rval = build_aggr_init_array (void_type_node, fn, slot,
+					call_expr_nargs (init),
+					CALL_EXPR_ARGP (init));
+	  AGGR_INIT_FROM_THUNK_P (rval)
+	    = CALL_FROM_THUNK_P (init);
+	}
       else
-	rval = build_aggr_init_array (void_type_node, fn, slot,
-				      aggr_init_expr_nargs (init),
-				      AGGR_INIT_EXPR_ARGP (init));
+	{
+	  rval = build_aggr_init_array (void_type_node, fn, slot,
+					aggr_init_expr_nargs (init),
+					AGGR_INIT_EXPR_ARGP (init));
+	  AGGR_INIT_FROM_THUNK_P (rval)
+	    = AGGR_INIT_FROM_THUNK_P (init);
+	}
       TREE_SIDE_EFFECTS (rval) = 1;
       AGGR_INIT_VIA_CTOR_P (rval) = is_ctor;
       TREE_NOTHROW (rval) = TREE_NOTHROW (init);

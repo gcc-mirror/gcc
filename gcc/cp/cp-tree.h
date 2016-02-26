@@ -3409,6 +3409,11 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define AGGR_INIT_ZERO_FIRST(NODE) \
   TREE_LANG_FLAG_2 (AGGR_INIT_EXPR_CHECK (NODE))
 
+/* Nonzero means that the call is the jump from a thunk to the
+   thunked-to function.  */
+#define AGGR_INIT_FROM_THUNK_P(NODE) \
+  (AGGR_INIT_EXPR_CHECK (NODE)->base.protected_flag)
+
 /* AGGR_INIT_EXPR accessors.  These are equivalent to the CALL_EXPR
    accessors, except for AGGR_INIT_EXPR_SLOT (which takes the place of
    CALL_EXPR_STATIC_CHAIN).  */

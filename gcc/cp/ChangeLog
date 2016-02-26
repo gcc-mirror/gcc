@@ -1,5 +1,12 @@
 2016-02-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/69889
+	* cp-tree.h (AGGR_INIT_FROM_THUNK_P): New.
+	* tree.c (build_aggr_init_expr): Set it.
+	* semantics.c (simplify_aggr_init_expr): Check it.
+	* cp-gimplify.c (cp_genericize_r): Don't walk into
+	a call/aggr_init from a thunk.
+
 	PR c++/69842
 	* method.c (forward_parm): Handle parameter packs.
 	* lambda.c (maybe_add_lambda_conv_op): Use it for them.
