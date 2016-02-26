@@ -1,3 +1,8 @@
+2016-02-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/69709
+	* gcc.target/s390/pr69709.c: New test.
+
 2016-02-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/69245
