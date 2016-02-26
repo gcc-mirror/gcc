@@ -1,3 +1,9 @@
+2016-02-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/69920
+	* gcc.dg/torture/pr69932.c: New test.
+	* gcc.dg/torture/pr69936.c: Likewise.
+
 2016-02-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/69709
