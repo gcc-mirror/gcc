@@ -1,6 +1,7 @@
 2016-02-26  Michael Meissner <meissner@linux.vnet.ibm.com>
 	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	PR target/61397
 	* gcc.target/powerpc/p8vector-ldst.c: Adjust to test desired
 	functionality for both 32-bit and 64-bit.
 
