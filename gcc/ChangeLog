@@ -1,5 +1,12 @@
 2016-02-26  Martin Liska  <mliska@suse.cz>
 
+	* dwarf2out.c (new_loc_descr): Replace ENABLE_CHECKING with
+	CHECKING_P.
+	(resolve_args_picking_1): Likewise.
+	* dwarf2out.h (struct GTY): Likewise.
+
+2016-02-26  Martin Liska  <mliska@suse.cz>
+
 	* hsa-gen.c (generate_hsa): Replace ENABLE_CHECKING macro
 	with flag_checking.
 	* hsa-regalloc.c (linear_scan_regalloc): Likewise.
