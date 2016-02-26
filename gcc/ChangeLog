@@ -1,3 +1,9 @@
+2016-02-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/69946
+	* config/rs6000/rs6000.c (rs6000_insn_for_shift_mask): Print rlwinm
+	shift amount using %h.  Add comment.
+
 2016-02-26  Richard Biener  <rguenther@suse.de>
 	    Jeff Law  <law@redhat.com>
 

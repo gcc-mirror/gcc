@@ -1,3 +1,8 @@
+2016-02-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/69946
+	* gcc.target/powerpc/pr69946.c: New file.
+
 2016-02-26  Richard Biener  <rguenther@suse.de>
             Jeff Law  <law@redhat.com>
 
