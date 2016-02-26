@@ -3022,7 +3022,7 @@ gen_hsa_binary_operation (int opcode, hsa_op_reg *dest,
       && is_a <hsa_op_immed *> (op2))
     {
       hsa_op_immed *i = dyn_cast <hsa_op_immed *> (op2);
-      i->set_type (hsa_uint_for_bitsize (hsa_type_bit_size (i->m_type)));
+      i->set_type (hsa_unsigned_type_for_type (i->m_type));
     }
 
   hsa_insn_basic *insn = new hsa_insn_basic (3, opcode, dest->m_type, dest,
@@ -3233,27 +3233,21 @@ gen_hsa_insns_for_operation_assignment (gimple *assign, hsa_bb *hbb)
 	    ctrl = r;
 	  }
 
-	hsa_op_with_type *rhs2_reg = hsa_reg_or_immed_for_gimple_op (rhs2, hbb);
-	hsa_op_with_type *rhs3_reg = hsa_reg_or_immed_for_gimple_op (rhs3, hbb);
+	hsa_op_with_type *op2 = hsa_reg_or_immed_for_gimple_op (rhs2, hbb);
+	hsa_op_with_type *op3 = hsa_reg_or_immed_for_gimple_op (rhs3, hbb);
 
-	BrigType16_t btype = hsa_bittype_for_type (dest->m_type);
-	hsa_op_reg *tmp = new hsa_op_reg (btype);
-
-	rhs2_reg->m_type = btype;
-	rhs3_reg->m_type = btype;
+	BrigType16_t utype = hsa_unsigned_type_for_type (dest->m_type);
+	if (is_a <hsa_op_immed *> (op2))
+	  op2->m_type = utype;
+	if (is_a <hsa_op_immed *> (op3))
+	  op3->m_type = utype;
 
 	hsa_insn_basic *insn
-	  = new hsa_insn_basic (4, BRIG_OPCODE_CMOV, tmp->m_type, tmp, ctrl,
-				rhs2_reg, rhs3_reg);
+	  = new hsa_insn_basic (4, BRIG_OPCODE_CMOV,
+				hsa_bittype_for_type (dest->m_type),
+				dest, ctrl, op2, op3);
 
 	hbb->append_insn (insn);
-
-	/* As operands of a CMOV insn must be Bx types, we have to emit
-	   a conversion insn.  */
-	hsa_insn_basic *mov = new hsa_insn_basic (2, BRIG_OPCODE_MOV,
-						  dest->m_type, dest, tmp);
-	hbb->append_insn (mov);
-
 	return;
       }
     case COMPLEX_EXPR:
