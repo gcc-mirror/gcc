@@ -1,5 +1,15 @@
 2016-02-26  Martin Jambor  <mjambor@suse.cz>
 
+	* hsa.h (is_a_helper): New overload for hsa_op_immed for
+	hsa_op_with_type operands.
+	(hsa_unsigned_type_for_type): Declare.
+	* hsa.c (hsa_unsigned_type_for_type): New function.
+	* hsa-gen.c (gen_hsa_binary_operation): Use hsa_unsigned_type_for_type.
+	(gen_hsa_insns_for_operation_assignment): Satisfy constrains of
+	the finalizer.  Do not emit extra move.
+
+2016-02-26  Martin Jambor  <mjambor@suse.cz>
+
 	* hsa-gen.c (gen_hsa_ternary_atomic_for_builtin): Fail in presence of
 	atomic operations in private segment.
 

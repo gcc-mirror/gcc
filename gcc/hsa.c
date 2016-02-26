@@ -472,6 +472,14 @@ hsa_bittype_for_type (BrigType16_t t)
   return hsa_bittype_for_bitsize (hsa_type_bit_size (t));
 }
 
+/* Return HSA unsigned integer type with the same size as the type T.  */
+
+BrigType16_t
+hsa_unsigned_type_for_type (BrigType16_t t)
+{
+  return hsa_uint_for_bitsize (hsa_type_bit_size (t));
+}
+
 /* Return true if and only if TYPE is a floating point number type.  */
 
 bool
