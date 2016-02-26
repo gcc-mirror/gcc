@@ -2943,6 +2943,14 @@ get_constraint_for_ssa_var (tree t, vec<ce_s> *results, bool address_p)
       if (node && node->alias && node->analyzed)
 	{
 	  node = node->ultimate_alias_target ();
+	  /* Canonicalize the PT uid of all aliases to the ultimate target.
+	     ???  Hopefully the set of aliases can't change in a way that
+	     changes the ultimate alias target.  */
+	  gcc_assert ((! DECL_PT_UID_SET_P (node->decl)
+		       || DECL_PT_UID (node->decl) == DECL_UID (node->decl))
+		      && (! DECL_PT_UID_SET_P (t)
+			  || DECL_PT_UID (t) == DECL_UID (node->decl)));
+	  DECL_PT_UID (t) = DECL_UID (node->decl);
 	  t = node->decl;
 	}
     }
