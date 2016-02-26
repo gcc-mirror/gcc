@@ -1,12 +1,17 @@
+2016-02-26  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/15766
+	* g++.old-deja/g++.other/decl5.C: Add a test case.
+
 2016-02-26  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/69946
 	* gcc.target/powerpc/pr69946.c: New file.
 
 2016-02-26  Richard Biener  <rguenther@suse.de>
-            Jeff Law  <law@redhat.com>
+	    Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/69740
+	PR tree-optimization/69740
 	* gcc.c-torture/compile/pr69740-1.c: New test.
 	* gcc.c-torture/compile/pr69740-2.c: New test.
 
