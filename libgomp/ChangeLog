@@ -1,3 +1,10 @@
+2016-02-26  Keith McDaniel <k.allen.mcdaniel@gmail.com>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_device_shared_as): New proc.
+	* testsuite/libgomp.c++/declare_target-1.C: New test.
+
 2016-02-25  Ilya Verbin  <ilya.verbin@intel.com>
 
 	PR driver/68463
