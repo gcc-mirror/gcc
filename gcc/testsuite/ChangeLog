@@ -1,3 +1,8 @@
+2016-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69969
+	* gcc.target/powerpc/pr69969.c: New test.
+
 2016-02-26  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/15766

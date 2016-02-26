@@ -4207,7 +4207,8 @@ rs6000_option_override_internal (bool global_init_p)
 
   else if (TARGET_ALLOW_MOVMISALIGN && !TARGET_VSX)
     {
-      if (TARGET_ALLOW_MOVMISALIGN > 0)
+      if (TARGET_ALLOW_MOVMISALIGN > 0
+	  && global_options_set.x_TARGET_ALLOW_MOVMISALIGN)
 	error ("-mallow-movmisalign requires -mvsx");
 
       TARGET_ALLOW_MOVMISALIGN = 0;
