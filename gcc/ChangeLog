@@ -1,3 +1,10 @@
+2016-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69551
+	* tree-ssa-structalias.c (get_constraint_for_ssa_var): When
+	looking through aliases adjust DECL_PT_UID to refer to the
+	ultimate alias target.
+
 2016-02-25  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/69919
