@@ -327,7 +327,7 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 esac
 
 case ${host} in
-aarch64*-*-elf)
+aarch64*-*-elf | aarch64*-*-rtems*)
 	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o"
 	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
