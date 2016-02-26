@@ -870,6 +870,14 @@ if ! grep 'type ICMPv6Filter ' ${OUT} > /dev/null 2>&1; then
   echo 'type ICMPv6Filter struct { Data [8]uint32 }' >> ${OUT}
 fi
 
+# The ip6_mtuinfo struct.
+grep '^type _ip6_mtuinfo ' gen-sysinfo.go | \
+    sed -e 's/_ip6_mtuinfo/IPv6MTUInfo/' \
+      -e 's/ip6m_addr/Addr/' \
+      -e 's/_sockaddr_in6/RawSockaddrInet6/' \
+      -e 's/ip6m_mtu/Mtu/' \
+    >> ${OUT}
+
 # Try to guess the type to use for fd_set.
 fd_set=`grep '^type _fd_set ' gen-sysinfo.go || true`
 fds_bits_type="_C_long"
@@ -1464,7 +1472,7 @@ set cmsghdr Cmsghdr ip_mreq IPMreq ip_mreqn IPMreqn ipv6_mreq IPv6Mreq \
     msghdr Msghdr nlattr NlAttr nlmsgerr NlMsgerr nlmsghdr NlMsghdr \
     rtattr RtAttr rtgenmsg RtGenmsg rtmsg RtMsg rtnexthop RtNexthop \
     sock_filter SockFilter sock_fprog SockFprog ucred Ucred \
-    icmp6_filter ICMPv6Filter
+    icmp6_filter ICMPv6Filter ip6_mtuinfo IPv6MTUInfo
 while test $# != 0; do
     nc=$1
     ngo=$2

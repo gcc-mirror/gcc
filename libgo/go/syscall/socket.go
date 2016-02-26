@@ -251,6 +251,13 @@ func GetsockoptIPv6Mreq(fd, level, opt int) (*IPv6Mreq, error) {
 	return &value, err
 }
 
+func GetsockoptICMPv6Filter(fd, level, opt int) (*ICMPv6Filter, error) {
+	var value ICMPv6Filter
+	vallen := Socklen_t(SizeofICMPv6Filter)
+	err := getsockopt(fd, level, opt, unsafe.Pointer(&value), &vallen)
+	return &value, err
+}
+
 //sys	setsockopt(s int, level int, name int, val unsafe.Pointer, vallen Socklen_t) (err error)
 //setsockopt(s _C_int, level _C_int, optname _C_int, val *byte, vallen Socklen_t) _C_int
 
