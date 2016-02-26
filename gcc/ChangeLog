@@ -1,5 +1,10 @@
 2016-02-26  Martin Jambor  <mjambor@suse.cz>
 
+	* hsa-gen.c (gen_hsa_ternary_atomic_for_builtin): Fail in presence of
+	atomic operations in private segment.
+
+2016-02-26  Martin Jambor  <mjambor@suse.cz>
+
 	* omp-low.c (grid_find_ungridifiable_statement): Store problematic
 	statements to wi->info.  Also disallow omp simd constructs.
 	(grid_target_follows_gridifiable_pattern): Use wi.info to dump reason
