@@ -6091,21 +6091,22 @@ generate_hsa (bool kernel)
 				 s->m_gridified_kernel_p);
     }
 
-#ifdef ENABLE_CHECKING
-  for (unsigned i = 0; i < hsa_cfun->m_ssa_map.length (); i++)
-    if (hsa_cfun->m_ssa_map[i])
-      hsa_cfun->m_ssa_map[i]->verify_ssa ();
-
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, cfun)
+  if (flag_checking)
     {
-      hsa_bb *hbb = hsa_bb_for_bb (bb);
+      for (unsigned i = 0; i < hsa_cfun->m_ssa_map.length (); i++)
+	if (hsa_cfun->m_ssa_map[i])
+	  hsa_cfun->m_ssa_map[i]->verify_ssa ();
 
-      for (hsa_insn_basic *insn = hbb->m_first_insn; insn; insn = insn->m_next)
-	insn->verify ();
+      basic_block bb;
+      FOR_EACH_BB_FN (bb, cfun)
+	{
+	  hsa_bb *hbb = hsa_bb_for_bb (bb);
+
+	  for (hsa_insn_basic *insn = hbb->m_first_insn; insn;
+	       insn = insn->m_next)
+	    insn->verify ();
+	}
     }
-
-#endif
 
   hsa_regalloc ();
   hsa_brig_emit_function ();

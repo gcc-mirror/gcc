@@ -1,3 +1,9 @@
+2016-02-26  Martin Liska  <mliska@suse.cz>
+
+	* hsa-gen.c (generate_hsa): Replace ENABLE_CHECKING macro
+	with flag_checking.
+	* hsa-regalloc.c (linear_scan_regalloc): Likewise.
+
 2016-02-26  Markus Trippelsdorf  <markus@trippelsdorf.de>
 	    Martin Liska  <mliska@suse.cz>
 

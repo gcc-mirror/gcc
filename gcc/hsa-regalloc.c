@@ -580,10 +580,9 @@ linear_scan_regalloc (struct m_reg_class_desc *classes)
   /* Sort all intervals by increasing start point.  */
   gcc_assert (ind2reg.length () == (size_t) hsa_cfun->m_reg_count);
 
-#ifdef ENABLE_CHECKING
-  for (unsigned i = 0; i < ind2reg.length (); i++)
-    gcc_assert (ind2reg[i]);
-#endif
+  if (flag_checking)
+    for (unsigned i = 0; i < ind2reg.length (); i++)
+      gcc_assert (ind2reg[i]);
 
   ind2reg.qsort (cmp_begin);
   for (i = 0; i < 4; i++)
