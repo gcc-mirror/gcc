@@ -8576,7 +8576,7 @@ aarch64_set_current_function (tree fndecl)
       if (old_tree == new_tree)
 	;
 
-      else if (new_tree && new_tree != target_option_default_node)
+      else if (new_tree)
 	{
 	  cl_target_option_restore (&global_options,
 				    TREE_TARGET_OPTION (new_tree));
