@@ -1,3 +1,8 @@
+2016-02-26  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/15826
+	* gcc.dg/tree-ssa/pr15826.c: New test.
+
 2016-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69969
