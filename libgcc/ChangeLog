@@ -1,5 +1,9 @@
 2016-02-26  Joel Sherrill <joel@rtems.org>
 
+	* config.host: Add x86_64-*-rtems*.
+
+2016-02-26  Joel Sherrill <joel@rtems.org>
+
 	* libgcc/config.host: Add aarch64-*-rtems*.
 
 2016-02-26  Paul E. Murphy  <murphyp@linux.vnet.ibm.com>
