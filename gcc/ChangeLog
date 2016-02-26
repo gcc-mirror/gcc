@@ -1,5 +1,15 @@
 2016-02-26  Martin Jambor  <mjambor@suse.cz>
 
+	PR hsa/69568
+	* hsa.h (hsa_type_packed_p): Declare.
+	* hsa.c (hsa_type_packed_p): New function.
+	* hsa-gen.c (mem_type_for_type): Use unsigned type for packed
+	loads.
+	(gen_hsa_insns_for_store): Use hsa_type_packed_p.
+	* hsa-brig.c (emit_basic_insn): Likewise.
+
+2016-02-26  Martin Jambor  <mjambor@suse.cz>
+
 	pr hsa/69674
 	* hsa-gen.c (gen_hsa_phi_from_gimple_phi): Use proper hsa type for
 	pointers.

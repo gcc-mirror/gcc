@@ -1338,6 +1338,7 @@ BrigType16_t hsa_uint_for_bitsize (unsigned bitsize);
 BrigType16_t hsa_float_for_bitsize (unsigned bitsize);
 BrigType16_t hsa_bittype_for_type (BrigType16_t t);
 BrigType16_t hsa_unsigned_type_for_type (BrigType16_t t);
+bool hsa_type_packed_p (BrigType16_t type);
 bool hsa_type_float_p (BrigType16_t type);
 bool hsa_type_integer_p (BrigType16_t type);
 bool hsa_btype_p (BrigType16_t type);
