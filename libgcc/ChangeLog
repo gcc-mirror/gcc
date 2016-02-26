@@ -1,3 +1,13 @@
+2016-02-26  Paul E. Murphy  <murphyp@linux.vnet.ibm.com>
+	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/sfp-machine.h (_FP_DECL_EX): Declare _fpsr as a
+	union of u64 and double.
+	(FP_TRAPPING_EXCEPTIONS): Return a bitmask of trapping exceptions.
+	(FP_INIT_ROUNDMODE): Read the fpscr instead of writing a mystery
+	value.
+	(FP_ROUNDMODE): Update the usage of _fpscr.
+
 2016-02-25  Ilya Verbin  <ilya.verbin@intel.com>
 
 	PR driver/68463

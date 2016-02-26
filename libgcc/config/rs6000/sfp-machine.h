@@ -130,10 +130,14 @@ void __sfp_handle_exceptions (int);
     if (__builtin_expect (_fex, 0))		\
       __sfp_handle_exceptions (_fex);		\
   } while (0);
-/* A set bit indicates an exception is masked and a clear bit indicates it is
-   trapping.  */
-# define FP_TRAPPING_EXCEPTIONS (~_fpscr & (FP_EX_ALL >> 22))
 
+/* The FP_EX_* bits track whether the exception has occurred.  This macro
+   must set the FP_EX_* bits of those exceptions which are configured to
+   trap.  The FPSCR bit which indicates this is 22 ISA bits above the
+   respective FP_EX_* bit.  Note, the ISA labels bits from msb to lsb,
+   so 22 ISA bits above is 22 bits below when counted from the lsb.  */
+# define FP_TRAPPING_EXCEPTIONS ((_fpscr.i << 22) & FP_EX_ALL)
+  
 # define FP_RND_NEAREST	0x0
 # define FP_RND_ZERO	0x1
 # define FP_RND_PINF	0x2
@@ -141,16 +145,16 @@ void __sfp_handle_exceptions (int);
 # define FP_RND_MASK	0x3
 
 # define _FP_DECL_EX \
-  unsigned long long _fpscr __attribute__ ((unused)) = FP_RND_NEAREST
-
+  union { unsigned long long i; double d; } _fpscr __attribute__ ((unused)) = \
+        { .i = FP_RND_NEAREST }
+  
 #define FP_INIT_ROUNDMODE			\
   do {						\
-    __asm__ __volatile__ ("mtfsf 255, %0"	\
-			  :			\
-			  : "f" (_fpscr));	\
+    __asm__ __volatile__ ("mffs %0"		\
+			  : "=f" (_fpscr.d));	\
   } while (0)
 
-# define FP_ROUNDMODE	(_fpscr & FP_RND_MASK)
+# define FP_ROUNDMODE	(_fpscr.i & FP_RND_MASK)
 #endif	/* !__FLOAT128__ */
 
 /* Define ALIASNAME as a strong alias for NAME.  */
