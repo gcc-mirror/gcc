@@ -1,5 +1,10 @@
 2016-02-26  Joel Sherrill <joel@rtems.org>
 
+	* config.gcc: Add x86_64-*-rtems*.
+	* gcc/config/i386/rtems-64.h: New file.
+
+2016-02-26  Joel Sherrill <joel@rtems.org>
+
 	* config.gcc: Add aarch64-*-rtems*.
 	* gcc/config/aarch64/rtems.h: New file.
 
