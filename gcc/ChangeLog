@@ -1,3 +1,10 @@
+2016-02-26  Jakub Jelinek  <jakub@redhat.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/69891
+	* dse.c (scan_insn): If we can't figure out memset arguments
+	or they are non-constant, call clear_rhs_from_active_local_stores.
+
 2016-02-26  Martin Liska  <mliska@suse.cz>
 
 	* doc/extend.texi: Mention clog10, clog10f an clog10l

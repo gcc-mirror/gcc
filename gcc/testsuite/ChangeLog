@@ -1,3 +1,8 @@
+2016-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/69891
+	* gcc.target/i386/pr69891.c: New test.
+
 2016-02-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
