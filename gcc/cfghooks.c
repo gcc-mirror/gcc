@@ -408,7 +408,20 @@ void
 remove_edge (edge e)
 {
   if (current_loops != NULL)
-    rescan_loop_exit (e, false, true);
+    {
+      rescan_loop_exit (e, false, true);
+
+      /* Removal of an edge inside an irreducible region or which leads
+	 to an irreducible region can turn the region into a natural loop.
+	 In that case, ask for the loop structure fixups.
+
+	 FIXME: Note that LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS is not always
+	 set, so always ask for fixups when removing an edge in that case.  */
+      if (!loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
+	  || (e->flags & EDGE_IRREDUCIBLE_LOOP)
+	  || (e->dest->flags & BB_IRREDUCIBLE_LOOP))
+	loops_state_set (LOOPS_NEED_FIXUP);
+    }
 
   /* This is probably not needed, but it doesn't hurt.  */
   /* FIXME: This should be called via a remove_edge hook.  */

@@ -1,3 +1,11 @@
+2016-02-26  Richard Biener  <rguenther@suse.de>
+	    Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/69740
+	* cfghooks.c (remove_edge): Request loop fixups if we delete
+	an edge that might turn an irreducible loop into a natural
+	loop.
+
 2016-02-26  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/69920
