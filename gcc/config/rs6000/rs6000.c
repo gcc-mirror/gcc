@@ -17438,9 +17438,12 @@ rs6000_insn_for_shift_mask (machine_mode mode, rtx *operands, bool dot)
 	operands[2] = GEN_INT (32 - INTVAL (operands[2]));
       operands[3] = GEN_INT (31 - nb);
       operands[4] = GEN_INT (31 - ne);
+      /* This insn can also be a 64-bit rotate with mask that really makes
+	 it just a shift right (with mask); the %h below are to adjust for
+	 that situation (shift count is >= 32 in that case).  */
       if (dot)
-	return "rlw%I2nm. %0,%1,%2,%3,%4";
-      return "rlw%I2nm %0,%1,%2,%3,%4";
+	return "rlw%I2nm. %0,%1,%h2,%3,%4";
+      return "rlw%I2nm %0,%1,%h2,%3,%4";
     }
 
   gcc_unreachable ();
