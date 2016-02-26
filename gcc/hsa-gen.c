@@ -754,11 +754,13 @@ mem_type_for_type (BrigType16_t type)
      unsigned type?).  */
   if ((type & BRIG_TYPE_PACK_MASK) == BRIG_TYPE_PACK_128)
     return BRIG_TYPE_B128;
-  else if (hsa_btype_p (type))
+  else if (hsa_btype_p (type) || hsa_type_packed_p (type))
     {
       unsigned bitsize = hsa_type_bit_size (type);
       if (bitsize < 128)
 	return hsa_uint_for_bitsize (bitsize);
+      else
+	return hsa_bittype_for_bitsize (bitsize);
     }
   return type;
 }
@@ -2648,7 +2650,7 @@ gen_hsa_insns_for_store (tree lhs, hsa_op_base *src, hsa_bb *hbb)
      we can modify the above in place.  */
   if (hsa_op_immed *imm = dyn_cast <hsa_op_immed *> (src))
     {
-      if ((imm->m_type & BRIG_TYPE_PACK_MASK) == BRIG_TYPE_PACK_NONE)
+      if (!hsa_type_packed_p (imm->m_type))
 	imm->m_type = mem->m_type;
       else
 	{

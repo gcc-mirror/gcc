@@ -480,6 +480,14 @@ hsa_unsigned_type_for_type (BrigType16_t t)
   return hsa_uint_for_bitsize (hsa_type_bit_size (t));
 }
 
+/* Return true if TYPE is a packed HSA type.  */
+
+bool
+hsa_type_packed_p (BrigType16_t type)
+{
+  return (type & BRIG_TYPE_PACK_MASK) != BRIG_TYPE_PACK_NONE;
+}
+
 /* Return true if and only if TYPE is a floating point number type.  */
 
 bool

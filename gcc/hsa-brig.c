@@ -1803,7 +1803,7 @@ emit_basic_insn (hsa_insn_basic *insn)
   repr.base.type = lendian16 (type);
   repr.base.operands = lendian32 (emit_insn_operands (insn));
 
-  if ((type & BRIG_TYPE_PACK_MASK) != BRIG_TYPE_PACK_NONE)
+  if (hsa_type_packed_p (type))
     {
       if (hsa_type_float_p (type)
 	  && !hsa_opcode_floating_bit_insn_p (insn->m_opcode))
