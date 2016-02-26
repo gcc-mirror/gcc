@@ -1758,6 +1758,10 @@ When this option is specified more detailed information on memory
 allocation is gathered.  This information is printed when using
 @option{-fmem-report}.
 
+@item --enable-valgrind-annotations
+Mark selected memory related operations in the compiler when run under
+valgrind to suppress false positives.
+
 @item --enable-nls
 @itemx --disable-nls
 The @option{--enable-nls} option enables Native Language Support (NLS),
