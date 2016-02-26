@@ -11,7 +11,7 @@ TEST=all-gcc
 # nohup nice make -j25 -l36 -f ../gcc/contrib/config-list.mk > make.out 2>&1 &
 #
 # v850e1-elf is rejected by config.sub
-LIST = aarch64-elf aarch64-linux-gnu \
+LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
   alpha64-dec-vms alpha-dec-vms am33_2.0-linux \
   arc-elf32OPT-with-cpu=arc600 arc-elf32OPT-with-cpu=arc700 \
@@ -76,7 +76,8 @@ LIST = aarch64-elf aarch64-linux-gnu \
   x86_64-pc-linux-gnuOPT-with-fpmath=avx \
   x86_64-elfOPT-with-fpmath=sse x86_64-freebsd6 x86_64-netbsd \
   x86_64-knetbsd-gnuOPT-enable-obsolete x86_64-w64-mingw32 \
-  x86_64-mingw32OPT-enable-sjlj-exceptions=yes xstormy16-elf xtensa-elf \
+  x86_64-mingw32OPT-enable-sjlj-exceptions=yes x86_64-rtems \
+  xstormy16-elf xtensa-elf \
   xtensa-linux \
   i686-interix3OPT-enable-obsolete
 
