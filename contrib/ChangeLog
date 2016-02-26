@@ -1,3 +1,7 @@
+2016-02-26  Joel Sherrill <joel@rtems.org>
+
+	* config-list.mk: Add aarch64-rtems and x86_64-rtems
+
 2016-01-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* uninclude: Fix third argument to gensub.
