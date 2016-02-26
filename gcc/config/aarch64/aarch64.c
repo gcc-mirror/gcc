@@ -538,7 +538,7 @@ static const struct tune_params exynosm1_tunings =
   48,	/* max_case_values.  */
   64,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_OFF, /* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_RECIP_SQRT) /* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_APPROX_RSQRT) /* tune_flags.  */
 };
 
 static const struct tune_params thunderx_tunings =
@@ -586,7 +586,7 @@ static const struct tune_params xgene1_tunings =
   0,	/* max_case_values.  */
   0,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_RECIP_SQRT)	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_APPROX_RSQRT)	/* tune_flags.  */
 };
 
 /* Support for fine-grained override of the tuning structures.  */
@@ -7460,8 +7460,8 @@ aarch64_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
   return aarch64_tune_params.memmov_cost;
 }
 
-/* Return true if it is safe and beneficial to use the rsqrt optabs to
-   optimize 1.0/sqrt.  */
+/* Return true if it is safe and beneficial to use the approximate rsqrt optabs
+   to optimize 1.0/sqrt.  */
 
 static bool
 use_rsqrt_p (void)
@@ -7469,12 +7469,12 @@ use_rsqrt_p (void)
   return (!flag_trapping_math
 	  && flag_unsafe_math_optimizations
 	  && ((aarch64_tune_params.extra_tuning_flags
-	       & AARCH64_EXTRA_TUNE_RECIP_SQRT)
+	       & AARCH64_EXTRA_TUNE_APPROX_RSQRT)
 	      || flag_mrecip_low_precision_sqrt));
 }
 
-/* Function to decide when to use
-   reciprocal square root builtins.  */
+/* Function to decide when to use the approximate reciprocal square root
+   builtin.  */
 
 static tree
 aarch64_builtin_reciprocal (tree fndecl)
@@ -7522,12 +7522,12 @@ get_rsqrts_type (machine_mode mode)
   }
 }
 
-/* Emit instruction sequence to compute
-   reciprocal square root.  Use two Newton-Raphson steps
-   for single precision and three for double precision.  */
+/* Emit instruction sequence to compute the reciprocal square root using the
+   Newton-Raphson series.  Iterate over the series twice for SF
+   and thrice for DF.  */
 
 void
-aarch64_emit_swrsqrt (rtx dst, rtx src)
+aarch64_emit_approx_rsqrt (rtx dst, rtx src)
 {
   machine_mode mode = GET_MODE (src);
   gcc_assert (
@@ -7544,6 +7544,7 @@ aarch64_emit_swrsqrt (rtx dst, rtx src)
 
   int iterations = double_mode ? 3 : 2;
 
+  /* Optionally iterate over the series one less time than otherwise.  */
   if (flag_mrecip_low_precision_sqrt)
     iterations--;
 

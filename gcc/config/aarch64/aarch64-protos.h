@@ -360,8 +360,7 @@ void aarch64_emit_call_insn (rtx);
 void aarch64_register_pragmas (void);
 void aarch64_relayout_simd_types (void);
 void aarch64_reset_previous_fndecl (void);
-
-void aarch64_emit_swrsqrt (rtx, rtx);
+void aarch64_emit_approx_rsqrt (rtx, rtx);
 
 /* Initialize builtins for SIMD intrinsics.  */
 void init_aarch64_simd_builtins (void);
@@ -413,9 +412,7 @@ rtx aarch64_expand_builtin (tree exp,
 			    machine_mode mode ATTRIBUTE_UNUSED,
 			    int ignore ATTRIBUTE_UNUSED);
 tree aarch64_builtin_decl (unsigned, bool ATTRIBUTE_UNUSED);
-
 tree aarch64_builtin_rsqrt (unsigned int);
-
 tree aarch64_builtin_vectorized_function (unsigned int, tree, tree);
 
 extern void aarch64_split_combinev16qi (rtx operands[3]);

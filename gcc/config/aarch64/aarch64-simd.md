@@ -405,7 +405,7 @@
 		     UNSPEC_RSQRT))]
   "TARGET_SIMD"
 {
-  aarch64_emit_swrsqrt (operands[0], operands[1]);
+  aarch64_emit_approx_rsqrt (operands[0], operands[1]);
   DONE;
 })
 

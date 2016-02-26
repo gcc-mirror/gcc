@@ -12884,12 +12884,10 @@ corresponding flag to the linker.
 @item -mno-low-precision-recip-sqrt
 @opindex -mlow-precision-recip-sqrt
 @opindex -mno-low-precision-recip-sqrt
-The square root estimate uses two steps instead of three for double-precision,
-and one step instead of two for single-precision.
-Thus reducing latency and precision.
-This is only relevant if @option{-ffast-math} activates
-reciprocal square root estimate instructions.
-Which in turn depends on the target processor.
+When calculating the reciprocal square root approximation,
+uses one less step than otherwise, thus reducing latency and precision.
+This is only relevant if @option{-ffast-math} enables the reciprocal square root
+approximation, which in turn depends on the target processor.
 
 @item -march=@var{name}
 @opindex march

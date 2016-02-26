@@ -1,3 +1,23 @@
+2016-02-26  Evandro Menezes  <e.menezes@samsung.com>
+
+	Rename the AArch64 tuning option and related functions to enable the
+	Newton series for the reciprocal square root to reflect its
+	approximative characteristic.
+
+	gcc/
+	* config/aarch64/aarch64-protos.h (aarch64_emit_swrsqrt): Rename
+	function to "aarch64_emit_approx_rsqrt".
+	* config/aarch64/aarch64-tuning-flags.def: Rename tuning flag to
+	AARCH64_EXTRA_TUNE_APPROX_RSQRT.
+	* config/aarch64/aarch64.c (exynosm1_tunigs): Use new flag name.
+	(xgene1_tunings): Likewise.
+	(use_rsqrt_p): Likewise.
+	(aarch64_emit_swrsqrt): Use new function name.
+	* config/aarch64/aarch64-simd.md (aarch64_rsqrts_*): Likewise.
+	* config/aarch64/aarch64.opt (mlow-precision-recip-sqrt): Reword the
+	text explaining this option.
+	* doc/invoke.texi (-mlow-precision-recip-sqrt): Likewise.
+
 2016-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69969
