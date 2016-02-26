@@ -2105,9 +2105,17 @@ gen_hsa_addr (tree ref, hsa_bb *hbb, HOST_WIDE_INT *output_bitsize = NULL,
 	}
       if (TMR_INDEX2 (ref))
 	{
-	  hsa_op_base *disp2 = hsa_cfun->reg_for_gimple_ssa
-	    (TMR_INDEX2 (ref))->get_in_type (addrtype, hbb);
-	  reg = add_addr_regs_if_needed (reg, as_a <hsa_op_reg *> (disp2), hbb);
+	  if (TREE_CODE (TMR_INDEX2 (ref)) == SSA_NAME)
+	    {
+	      hsa_op_base *disp2 = hsa_cfun->reg_for_gimple_ssa
+		(TMR_INDEX2 (ref))->get_in_type (addrtype, hbb);
+	      reg = add_addr_regs_if_needed (reg, as_a <hsa_op_reg *> (disp2),
+					     hbb);
+	    }
+	  else if (TREE_CODE (TMR_INDEX2 (ref)) == INTEGER_CST)
+	    offset += wi::to_offset (TMR_INDEX2 (ref));
+	  else
+	    gcc_unreachable ();
 	}
       offset += wi::to_offset (TMR_OFFSET (ref));
       break;
@@ -5329,7 +5337,8 @@ gen_hsa_phi_from_gimple_phi (gimple *phi_stmt, hsa_bb *hbb)
 	      hsa_op_address *addr = gen_hsa_addr (TREE_OPERAND (op, 0),
 						   hbb_src);
 
-	      hsa_op_reg *dest = new hsa_op_reg (BRIG_TYPE_U64);
+	      hsa_op_reg *dest
+		= new hsa_op_reg (hsa_get_segment_addr_type (BRIG_SEGMENT_FLAT));
 	      hsa_insn_basic *insn
 		= new hsa_insn_basic (2, BRIG_OPCODE_LDA, BRIG_TYPE_U64,
 				      dest, addr);
