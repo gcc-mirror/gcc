@@ -77,3 +77,9 @@ void NMS::fn()
 {
   i = 3;
 }
+
+// From PR c++/15766 - bad parse error recovery (2 bugs)
+void confusion1(const UndefinedType& a)  // { dg-error "does not name a type" }
+{
+}
+
