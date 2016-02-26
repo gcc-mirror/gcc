@@ -11154,7 +11154,8 @@ static unsigned HOST_WIDE_INT
 aarch64_shift_truncation_mask (machine_mode mode)
 {
   return
-    (aarch64_vector_mode_supported_p (mode)
+    (!SHIFT_COUNT_TRUNCATED
+     || aarch64_vector_mode_supported_p (mode)
      || aarch64_vect_struct_mode_p (mode)) ? 0 : (GET_MODE_BITSIZE (mode) - 1);
 }
 
