@@ -1,3 +1,8 @@
+2016-02-26  Joel Sherrill <joel@rtems.org>
+
+	* config.gcc: Add aarch64-*-rtems*.
+	* gcc/config/aarch64/rtems.h: New file.
+
 2016-02-26  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/69946
