@@ -343,6 +343,19 @@ proc check_effective_target_offload_device_nonshared_as { } {
 	}
     } ]
 }
+  
+# Return 1 if offload device is available and it has shared address space.
+proc check_effective_target_offload_device_shared_as { } {
+    return [check_runtime_nocache offload_device_shared_as {
+      int main ()
+	{
+	  int x = 10;
+	  #pragma omp target map(to: x)
+	    x++;
+	  return x == 10;
+	}
+    } ]
+}
 
 # Return 1 if at least one nvidia board is present.
 
