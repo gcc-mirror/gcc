@@ -2556,6 +2556,8 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn)
 		      active_local_stores = insn_info;
 		    }
 		}
+	      else
+		clear_rhs_from_active_local_stores ();
 	    }
 	}
       else if (SIBLING_CALL_P (insn) && reload_completed)
