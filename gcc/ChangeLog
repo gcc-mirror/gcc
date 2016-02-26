@@ -1,5 +1,10 @@
 2016-02-26  Martin Liska  <mliska@suse.cz>
 
+	* doc/extend.texi: Mention clog10, clog10f an clog10l
+	in Builtins section.
+
+2016-02-26  Martin Liska  <mliska@suse.cz>
+
 	* dwarf2out.c (new_loc_descr): Replace ENABLE_CHECKING with
 	CHECKING_P.
 	(resolve_args_picking_1): Likewise.

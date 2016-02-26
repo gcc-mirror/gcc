@@ -10217,6 +10217,9 @@ in the Cilk Plus language manual which can be found at
 @findex clog
 @findex clogf
 @findex clogl
+@findex clog10
+@findex clog10f
+@findex clog10l
 @findex conj
 @findex conjf
 @findex conjl
@@ -10632,6 +10635,10 @@ There are also built-in versions of the ISO C99 functions
 that are recognized in any mode since ISO C90 reserves these names for
 the purpose to which ISO C99 puts them.  All these functions have
 corresponding versions prefixed with @code{__builtin_}.
+
+There are also GNU extension functions @code{clog10}, @code{clog10f} and
+@code{clog10l} which names are reserved by ISO C99 for future use.
+All these functions have versions prefixed with @code{__builtin_}.
 
 The ISO C94 functions
 @code{iswalnum}, @code{iswalpha}, @code{iswcntrl}, @code{iswdigit},
