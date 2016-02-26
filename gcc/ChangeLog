@@ -1,5 +1,12 @@
 2016-02-26  Martin Jambor  <mjambor@suse.cz>
 
+	pr hsa/69674
+	* hsa-gen.c (gen_hsa_phi_from_gimple_phi): Use proper hsa type for
+	pointers.
+	(gen_hsa_addr): Allow integer constants in TMR_INDEX2.
+
+2016-02-26  Martin Jambor  <mjambor@suse.cz>
+
 	* hsa.h (is_a_helper): New overload for hsa_op_immed for
 	hsa_op_with_type operands.
 	(hsa_unsigned_type_for_type): Declare.
