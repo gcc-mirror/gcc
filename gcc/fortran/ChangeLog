@@ -1,3 +1,10 @@
+2016-02-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/69110
+	* io.c (gfc_match_open): Check that open status is an expression
+	constant before comparing string to 'scratch' with NEWUNIT.
+
 2016-02-27  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 
 	* trans.c (gfc_allocate_allocatable): size conversion
