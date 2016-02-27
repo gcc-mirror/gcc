@@ -1,3 +1,11 @@
+2016-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69613
+	PR rtl-optimization/69886
+	* gcc.dg/torture/pr69886.c: Add -w -Wno-psabi to dg-options.
+	* gcc.dg/torture/pr69613.c: Likewise.  Guard -mavx with avx_runtime
+	target.
+
 2016-02-26  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/15826
