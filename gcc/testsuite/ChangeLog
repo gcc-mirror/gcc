@@ -1,6 +1,6 @@
 2016-02-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR fortran/69110
+	PR fortran/69910
 	* gfortran.dg/newunit_4.f90: New test.
 
 2016-02-27  Jakub Jelinek  <jakub@redhat.com>
