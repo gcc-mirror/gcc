@@ -1,7 +1,7 @@
 2016-02-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
-	PR fortran/69110
+	PR fortran/69910
 	* io.c (gfc_match_open): Check that open status is an expression
 	constant before comparing string to 'scratch' with NEWUNIT.
 
