@@ -1,10 +1,15 @@
+2016-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/69896
+	* tree-vect-generic.c (get_compute_type): Avoid single element
+	vector types.
+
 2016-02-26  Evandro Menezes  <e.menezes@samsung.com>
 
 	Rename the AArch64 tuning option and related functions to enable the
 	Newton series for the reciprocal square root to reflect its
 	approximative characteristic.
 
-	gcc/
 	* config/aarch64/aarch64-protos.h (aarch64_emit_swrsqrt): Rename
 	function to "aarch64_emit_approx_rsqrt".
 	* config/aarch64/aarch64-tuning-flags.def: Rename tuning flag to

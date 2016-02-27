@@ -1405,6 +1405,7 @@ get_compute_type (enum tree_code code, optab op, tree type)
       if (vector_compute_type != NULL_TREE
 	  && (TYPE_VECTOR_SUBPARTS (vector_compute_type)
 	      < TYPE_VECTOR_SUBPARTS (compute_type))
+	  && TYPE_VECTOR_SUBPARTS (vector_compute_type) > 1
 	  && (optab_handler (op, TYPE_MODE (vector_compute_type))
 	      != CODE_FOR_nothing))
 	compute_type = vector_compute_type;
