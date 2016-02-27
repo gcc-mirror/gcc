@@ -1,3 +1,10 @@
+2016-02-27  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+
+	* trans.c (gfc_allocate_allocatable): size conversion
+	from byte to number of elements for event variables.
+	* trans-types.c (gfc_get_derived_type): event variables
+	represented as a pointer (like lock variable).
+
 2016-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/61156

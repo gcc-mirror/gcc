@@ -820,7 +820,7 @@ gfc_allocate_allocatable (stmtblock_t * block, tree mem, tree size, tree token,
 	 the FE only passes the pointer around and leaves the actual
 	 representation to the library. Hence, we have to convert back to the
 	 number of elements.  */
-      if (lock_var)
+      if (lock_var || event_var)
 	size = fold_build2_loc (input_location, TRUNC_DIV_EXPR, size_type_node,
 				size, TYPE_SIZE_UNIT (ptr_type_node));
 
