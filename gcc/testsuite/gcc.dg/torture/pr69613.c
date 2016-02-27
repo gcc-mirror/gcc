@@ -1,6 +1,7 @@
 /* PR target/69613.  */
 /* { dg-do run { target int128 } } */
-/* { dg-additional-options "-mavx" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-options "-w -Wno-psabi" } */
+/* { dg-additional-options "-mavx" { target avx_runtime } } */
 
 typedef unsigned short u16;
 typedef unsigned short v32u16 __attribute__ ((vector_size (32)));

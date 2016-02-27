@@ -1,6 +1,6 @@
 /* PR rtl-optimization/69886.  */
 /* { dg-do compile } */
-/* { dg-options "--param=gcse-unrestricted-cost=0" } */
+/* { dg-options "--param=gcse-unrestricted-cost=0 -w -Wno-psabi" } */
 /* { dg-additional-options "-mavx" { target { i?86-*-* x86_64-*-* } } } */
 
 typedef unsigned v32su __attribute__ ((vector_size (32)));
