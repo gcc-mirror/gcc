@@ -1,3 +1,8 @@
+2016-02-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/60126
+	* gfortran.dg/pr60126.f90: New test.
+
 2016-02-27  Jeff Law  <law@redhat.com>
 
 	Revert
