@@ -1,5 +1,12 @@
 2016-02-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/68147
+	PR fortran/47674
+	* frontend-passes.c (realloc_string_callback): Don't set
+	walk_subtrees.
+
+2016-02-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	* dump-parse-tree.c (show_code_node):  Print association
 	list of a block if present.  Handle EXEC_END_BLOCK.
 
