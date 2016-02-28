@@ -1,3 +1,10 @@
+2016-02-28  Harald Anlauf <anlauf@gmx.de>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/56007
+	* match.c (gfc_match_iterator): Add diagnostic for array variable
+	as do loop index.
+
 2016-02-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
