@@ -1773,6 +1773,7 @@ show_code_node (int level, gfc_code *c)
       {
 	const char* blocktype;
 	gfc_namespace *saved_ns;
+	gfc_association_list *alist;
 
 	if (c->ext.block.assoc)
 	  blocktype = "ASSOCIATE";
@@ -1780,6 +1781,12 @@ show_code_node (int level, gfc_code *c)
 	  blocktype = "BLOCK";
 	show_indent ();
 	fprintf (dumpfile, "%s ", blocktype);
+	for (alist = c->ext.block.assoc; alist; alist = alist->next)
+	  {
+	    fprintf (dumpfile, " %s = ", alist->name);
+	    show_expr (alist->target);
+	  }
+
 	++show_level;
 	ns = c->ext.block.ns;
 	saved_ns = gfc_current_ns;
@@ -1792,6 +1799,11 @@ show_code_node (int level, gfc_code *c)
 	fprintf (dumpfile, "END %s ", blocktype);
 	break;
       }
+
+    case EXEC_END_BLOCK:
+      /* Only come here when there is a label on an
+	 END ASSOCIATE construct.  */
+      break;
 
     case EXEC_SELECT:
       d = c->block;
