@@ -146,7 +146,7 @@ end module mmm4
 subroutine tfgh()
   integer :: i(2)
   DATA i/(i, i=1,2)/ ! { dg-error "Expected PARAMETER symbol" }
-  do i = 1, 5 ! { dg-error "cannot be a sub-component" }
+  do i = 1, 5 ! { dg-error "cannot be an array" }
   end do ! { dg-error "Expecting END SUBROUTINE" }
 end subroutine tfgh
 
