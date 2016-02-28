@@ -1,3 +1,9 @@
+2016-02-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/68147
+	PR fortran/47674
+	* gfortran.dg/realloc_on_assign_26.f90:  New test case.
+
 2016-02-28  Harald Anlauf <anlauf@gmx.de>
 	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 

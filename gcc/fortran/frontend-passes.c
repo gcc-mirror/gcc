@@ -153,14 +153,13 @@ gfc_run_passes (gfc_namespace *ns)
  */
 
 static int
-realloc_string_callback (gfc_code **c, int *walk_subtrees,
+realloc_string_callback (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 			 void *data ATTRIBUTE_UNUSED)
 {
   gfc_expr *expr1, *expr2;
   gfc_code *co = *c;
   gfc_expr *n;
 
-  *walk_subtrees = 0;
   if (co->op != EXEC_ASSIGN)
     return 0;
 
