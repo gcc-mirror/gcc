@@ -1,3 +1,9 @@
+2016-02-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/61156
+	* gfortran.dg/include_6.f90: Update test.
+
 2016-02-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from gcc-5-branch.

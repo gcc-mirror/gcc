@@ -336,7 +336,7 @@ add_path_to_list (gfc_directorylist **list, const char *path,
     }
   else if (!S_ISDIR (st.st_mode))
     {
-      gfc_warning_now ("\"%s\" is not a directory", path);
+      gfc_fatal_error ("\"%s\" is not a directory", path);
       return;
     }
 
