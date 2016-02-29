@@ -1,3 +1,8 @@
+2016-02-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69720
+	* gcc.dg/vect/vect-outer-pr69720.c: New testcase.
+
 2016-02-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/68147
