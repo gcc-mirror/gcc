@@ -1014,6 +1014,10 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #undef rindex
  #pragma GCC poison bcopy bzero bcmp rindex
 
+/* Poison ENABLE_CHECKING macro that should be replaced with
+   'if (flag_checking)', or with CHECKING_P macro.  */
+#pragma GCC poison ENABLE_CHECKING
+
 #endif /* GCC >= 3.0 */
 
 /* This macro allows casting away const-ness to pass -Wcast-qual

@@ -10,6 +10,10 @@
 
 2016-02-29  Martin Liska  <mliska@suse.cz>
 
+	* system.h: Poison ENABLE_CHECKING macro.
+
+2016-02-29  Martin Liska  <mliska@suse.cz>
+
 	* hsa-gen.c (gen_body_from_gimple): Dump only if TDF_DETAILS
 	is presented in dump flags.
 	* hsa-regalloc.c (linear_scan_regalloc): Likewise.
