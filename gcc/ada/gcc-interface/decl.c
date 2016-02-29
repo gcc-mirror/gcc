@@ -3855,8 +3855,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* The type actually used to represent the designated type, either
 	   gnat_desig_full or gnat_desig_equiv.  */
 	Entity_Id gnat_desig_rep;
-	/* True if this is a pointer to an unconstrained array.  */
-	bool is_unconstrained_array;
 	/* We want to know if we'll be seeing the freeze node for any
 	   incomplete type we may be pointing to.  */
 	bool in_main_unit
@@ -3890,62 +3888,26 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    && Ekind (Etype (gnat_desig_full)) == E_Record_Type)))
 	  gnat_desig_full = Etype (gnat_desig_full);
 
-	/* Set the type that's actually the representation of the designated
-	   type and also flag whether we have a unconstrained array.  */
+	/* Set the type that's the representation of the designated type.  */
 	gnat_desig_rep
 	  = Present (gnat_desig_full) ? gnat_desig_full : gnat_desig_equiv;
-	is_unconstrained_array
-	  = Is_Array_Type (gnat_desig_rep) && !Is_Constrained (gnat_desig_rep);
-
-	/* If we are pointing to an incomplete type whose completion is an
-	   unconstrained array, make dummy fat and thin pointer types to it.
-	   Likewise if the type itself is dummy or an unconstrained array.  */
-	if (is_unconstrained_array
-	    && (Present (gnat_desig_full)
-		|| (present_gnu_tree (gnat_desig_equiv)
-		    && TYPE_IS_DUMMY_P
-		       (TREE_TYPE (get_gnu_tree (gnat_desig_equiv))))
-		|| (!in_main_unit
-		    && defer_incomplete_level != 0
-		    && !present_gnu_tree (gnat_desig_equiv))
-		|| (in_main_unit
-		    && is_from_limited_with
-		    && Present (Freeze_Node (gnat_desig_equiv)))))
-	  {
-	    if (present_gnu_tree (gnat_desig_rep))
-	      gnu_desig_type = TREE_TYPE (get_gnu_tree (gnat_desig_rep));
-	    else
-	      {
-		gnu_desig_type = make_dummy_type (gnat_desig_rep);
-		made_dummy = true;
-	      }
-
-	    /* If the call above got something that has a pointer, the pointer
-	       is our type.  This could have happened either because the type
-	       was elaborated or because somebody else executed the code.  */
-	    if (!TYPE_POINTER_TO (gnu_desig_type))
-	      build_dummy_unc_pointer_types (gnat_desig_equiv, gnu_desig_type);
-	    gnu_type = TYPE_POINTER_TO (gnu_desig_type);
-	  }
 
 	/* If we already know what the full type is, use it.  */
-	else if (Present (gnat_desig_full)
-		 && present_gnu_tree (gnat_desig_full))
+	if (Present (gnat_desig_full) && present_gnu_tree (gnat_desig_full))
 	  gnu_desig_type = TREE_TYPE (get_gnu_tree (gnat_desig_full));
 
 	/* Get the type of the thing we are to point to and build a pointer to
 	   it.  If it is a reference to an incomplete or private type with a
-	   full view that is a record, make a dummy type node and get the
-	   actual type later when we have verified it is safe.  */
+	   full view that is a record or an array, make a dummy type node and
+	   get the actual type later when we have verified it is safe.  */
 	else if ((!in_main_unit
 		  && !present_gnu_tree (gnat_desig_equiv)
 		  && Present (gnat_desig_full)
-		  && !present_gnu_tree (gnat_desig_full)
-		  && Is_Record_Type (gnat_desig_full))
+		  && (Is_Record_Type (gnat_desig_full)
+		      || Is_Array_Type (gnat_desig_full)))
 		 /* Likewise if we are pointing to a record or array and we are
 		    to defer elaborating incomplete types.  We do this as this
-		    access type may be the full view of a private type.  Note
-		    that the unconstrained array case is handled above.  */
+		    access type may be the full view of a private type.  */
 		 || ((!in_main_unit || imported_p)
 		     && defer_incomplete_level != 0
 		     && !present_gnu_tree (gnat_desig_equiv)
@@ -3958,11 +3920,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    in which case we make the dummy type and it will be reused
 		    when the declaration is finally processed.  In both cases,
 		    the pointer eventually created below will be automatically
-		    adjusted when the freeze node is processed.  Note that the
-		    unconstrained array case is handled above.  */
-		 ||  (in_main_unit
-		      && is_from_limited_with
-		      && Present (Freeze_Node (gnat_desig_rep))))
+		    adjusted when the freeze node is processed.  */
+		 || (in_main_unit
+		     && is_from_limited_with
+		     && Present (Freeze_Node (gnat_desig_rep))))
 	  {
 	    gnu_desig_type = make_dummy_type (gnat_desig_equiv);
 	    made_dummy = true;
@@ -3995,8 +3956,19 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    break;
 	  }
 
+	/* For an unconstrained array, make dummy fat & thin pointer types.  */
+	if (Is_Array_Type (gnat_desig_rep) && !Is_Constrained (gnat_desig_rep))
+	  {
+	    /* If the processing above got something that has a pointer, then
+	       we are done.  This could have happened either because the type
+	       was elaborated or because somebody else executed the code.  */
+	    if (!TYPE_POINTER_TO (gnu_desig_type))
+	      build_dummy_unc_pointer_types (gnat_desig_equiv, gnu_desig_type);
+	    gnu_type = TYPE_POINTER_TO (gnu_desig_type);
+	  }
+
 	/* If we haven't done it yet, build the pointer type the usual way.  */
-	if (!gnu_type)
+	else if (!gnu_type)
 	  {
 	    /* Modify the designated type if we are pointing only to constant
 	       objects, but don't do it for unconstrained arrays.  */
