@@ -5498,7 +5498,7 @@ gen_body_from_gimple ()
 	  gen_hsa_phi_from_gimple_phi (gsi_stmt (gsi), hbb);
     }
 
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "------- Generated SSA form -------\n");
       dump_hsa_cfun (dump_file);
