@@ -4110,6 +4110,15 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
       return vect_create_destination_var (init_val, vectype);
     }
 
+  /* In case of a nested reduction do not use an adjustment def as
+     that case is not supported by the epilogue generation correctly
+     if ncopies is not one.  */
+  if (adjustment_def && nested_in_vect_loop)
+    {
+      *adjustment_def = NULL;
+      return vect_get_vec_def_for_operand (init_val, stmt);
+    }
+
   switch (code)
     {
       case WIDEN_SUM_EXPR:
@@ -4124,12 +4133,7 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
         /* ADJUSMENT_DEF is NULL when called from
            vect_create_epilog_for_reduction to vectorize double reduction.  */
         if (adjustment_def)
-          {
-            if (nested_in_vect_loop)
-              *adjustment_def = vect_get_vec_def_for_operand (init_val, stmt);
-            else
-              *adjustment_def = init_val;
-          }
+	  *adjustment_def = init_val;
 
         if (code == MULT_EXPR)
           {
@@ -4341,6 +4345,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
      (in case of SLP, do it for all the phis). */
 
   /* Get the loop-entry arguments.  */
+  enum vect_def_type initial_def_dt = vect_unknown_def_type;
   if (slp_node)
     vect_get_vec_defs (reduction_op, NULL_TREE, stmt, &vec_initial_defs,
                        NULL, slp_node, reduc_index);
@@ -4351,9 +4356,10 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       gimple *def_stmt = SSA_NAME_DEF_STMT (reduction_op);
       initial_def = PHI_ARG_DEF_FROM_EDGE (def_stmt,
 					   loop_preheader_edge (loop));
-      vec_initial_defs.create (1);
+      vect_is_simple_use (initial_def, loop_vinfo, &def_stmt, &initial_def_dt);
       vec_initial_def = get_initial_def_for_reduction (stmt, initial_def,
 						       &adjustment_def);
+      vec_initial_defs.create (1);
       vec_initial_defs.quick_push (vec_initial_def);
     }
 
@@ -4368,6 +4374,15 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       def = vect_defs[i];
       for (j = 0; j < ncopies; j++)
         {
+	  if (j != 0)
+	    {
+	      phi = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (phi));
+	      if (nested_in_vect_loop)
+		vec_init_def
+		  = vect_get_vec_def_for_stmt_copy (initial_def_dt,
+						    vec_init_def);
+	    }
+
 	  /* Set the loop-entry arg of the reduction-phi.  */
 
 	  if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
@@ -4404,8 +4419,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
               dump_gimple_stmt (MSG_NOTE, TDF_SLIM, SSA_NAME_DEF_STMT (def), 0);
               dump_printf (MSG_NOTE, "\n");
             }
-
-          phi = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (phi));
         }
     }
 
