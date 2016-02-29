@@ -3330,32 +3330,14 @@ finalize_nrv_r (tree *tp, int *walk_subtrees, void *data)
   else if (TREE_CODE (t) == RETURN_EXPR
 	   && TREE_CODE (TREE_OPERAND (t, 0)) == INIT_EXPR)
     {
-      tree ret_val = TREE_OPERAND (TREE_OPERAND (t, 0), 1), init_expr;
-
-      /* If this is the temporary created for a return value with variable
-	 size in Call_to_gnu, we replace the RHS with the init expression.  */
-      if (TREE_CODE (ret_val) == COMPOUND_EXPR
-	  && TREE_CODE (TREE_OPERAND (ret_val, 0)) == INIT_EXPR
-	  && TREE_OPERAND (TREE_OPERAND (ret_val, 0), 0)
-	     == TREE_OPERAND (ret_val, 1))
-	{
-	  init_expr = TREE_OPERAND (TREE_OPERAND (ret_val, 0), 1);
-	  ret_val = TREE_OPERAND (ret_val, 1);
-	}
-      else
-	init_expr = NULL_TREE;
+      tree ret_val = TREE_OPERAND (TREE_OPERAND (t, 0), 1);
 
       /* Strip useless conversions around the return value.  */
       if (gnat_useless_type_conversion (ret_val))
 	ret_val = TREE_OPERAND (ret_val, 0);
 
       if (is_nrv_p (dp->nrv, ret_val))
-	{
-	  if (init_expr)
-	    TREE_OPERAND (TREE_OPERAND (t, 0), 1) = init_expr;
-	  else
-	    TREE_OPERAND (t, 0) = dp->result;
-	}
+	TREE_OPERAND (t, 0) = dp->result;
     }
 
   /* Replace the DECL_EXPR of NRVs with an initialization of the RESULT_DECL,
@@ -3659,14 +3641,6 @@ build_return_expr (tree ret_obj, tree ret_val)
 	  && TYPE_MODE (operation_type) == BLKmode
 	  && aggregate_value_p (operation_type, current_function_decl))
 	{
-	  /* Recognize the temporary created for a return value with variable
-	     size in Call_to_gnu.  We want to eliminate it if possible.  */
-	  if (TREE_CODE (ret_val) == COMPOUND_EXPR
-	      && TREE_CODE (TREE_OPERAND (ret_val, 0)) == INIT_EXPR
-	      && TREE_OPERAND (TREE_OPERAND (ret_val, 0), 0)
-		 == TREE_OPERAND (ret_val, 1))
-	    ret_val = TREE_OPERAND (ret_val, 1);
-
 	  /* Strip useless conversions around the return value.  */
 	  if (gnat_useless_type_conversion (ret_val))
 	    ret_val = TREE_OPERAND (ret_val, 0);
@@ -4314,13 +4288,21 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  because we need to preserve the return value before copying back the
 	  parameters.
 
-       2. There is no target and this is neither an object nor a renaming
-	  declaration, and the return type has variable size, because in
-	  these cases the gimplifier cannot create the temporary.
+       2. There is no target and the call is made for neither an object nor a
+	  renaming declaration, nor a return statement, and the return type has
+	  variable size, because in this case the gimplifier cannot create the
+	  temporary, or more generally is simply an aggregate type, because the
+	  gimplifier would create the temporary in the outermost scope instead
+	  of locally.
 
        3. There is a target and it is a slice or an array with fixed size,
 	  and the return type has variable size, because the gimplifier
 	  doesn't handle these cases.
+
+       4. There is no target and we have misaligned In Out or Out parameters
+	  passed by reference, because we need to preserve the return value
+	  before copying back the parameters.  However, in this case, we'll
+	  defer creating the temporary, see below.
 
      This must be done before we push a binding level around the call, since
      we will pop it before copying the return value.  */
@@ -4329,7 +4311,9 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  || (!gnu_target
 	      && Nkind (Parent (gnat_node)) != N_Object_Declaration
 	      && Nkind (Parent (gnat_node)) != N_Object_Renaming_Declaration
-	      && TREE_CODE (TYPE_SIZE (gnu_result_type)) != INTEGER_CST)
+	      && Nkind (Parent (gnat_node)) != N_Simple_Return_Statement
+	      && AGGREGATE_TYPE_P (gnu_result_type)
+	      && !TYPE_IS_FAT_POINTER_P (gnu_result_type))
 	  || (gnu_target
 	      && (TREE_CODE (gnu_target) == ARRAY_RANGE_REF
 		  || (TREE_CODE (TREE_TYPE (gnu_target)) == ARRAY_TYPE
@@ -4339,6 +4323,16 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
     {
       gnu_retval = create_temporary ("R", gnu_result_type);
       DECL_RETURN_VALUE_P (gnu_retval) = 1;
+    }
+
+  /* If we don't need a value or have already created it, push a binding level
+     around the call.  This will narrow the lifetime of the temporaries we may
+     need to make when translating the parameters as much as possible.  */
+  if (!returning_value || gnu_retval)
+    {
+      start_stmt_group ();
+      gnat_pushlevel ();
+      pushed_binding_level = true;
     }
 
   /* Create the list of the actual parameters as GCC expects it, namely a
@@ -4469,12 +4463,10 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	      DECL_RETURN_VALUE_P (gnu_retval) = 1;
 	    }
 
-	  /* If we haven't pushed a binding level, push a new one.  This will
-	     narrow the lifetime of the temporary we are about to make as much
-	     as possible.  The drawback is that we'd need to create a temporary
-	     for the return value, if any (see comment before the loop).  So do
-	     it only when this temporary was already created just above.  */
-	  if (!pushed_binding_level && !(in_param && returning_value))
+	  /* If we haven't pushed a binding level, push it now.  This will
+	     narrow the lifetime of the temporary we are about to make as
+	     much as possible.  */
+	  if (!pushed_binding_level && (!returning_value || gnu_retval))
 	    {
 	      start_stmt_group ();
 	      gnat_pushlevel ();
@@ -4705,15 +4697,6 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  if (!gnu_retval)
 	    {
 	      tree gnu_stmt;
-	      /* If we haven't pushed a binding level, push a new one.  This
-		 will narrow the lifetime of the temporary we are about to
-		 make as much as possible.  */
-	      if (!pushed_binding_level)
-		{
-		  start_stmt_group ();
-		  gnat_pushlevel ();
-		  pushed_binding_level = true;
-	        }
 	      gnu_call
 		= create_init_temporary ("P", gnu_call, &gnu_stmt, gnat_node);
 	      append_to_statement_list (gnu_stmt, &gnu_stmt_list);

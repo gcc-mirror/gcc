@@ -1,5 +1,10 @@
 2016-02-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/stack_usage3.adb: New test.
+	* gnat.dg/stack_usage3_pkg.ads: New helper.
+
+2016-02-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/renaming8.adb: New test.
 	* gnat.dg/renaming8_pkg1.ads: New helper.
 	* gnat.dg/renaming8_pkg2.ad[sb]: Likewise.
