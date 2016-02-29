@@ -1,5 +1,9 @@
 2016-02-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.target/sparc/20160229-1.c: New test.
+
+2016-02-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/stack_usage3.adb: New test.
 	* gnat.dg/stack_usage3_pkg.ads: New helper.
 

@@ -1,3 +1,38 @@
+2016-02-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/69706
+	* config/sparc/sparc.c (ROUND_ADVANCE): Rename to...
+	(NWORDS_UP): ...this
+	(init_cumulative_args): Minor tweaks.
+	(sparc_promote_function_mode): Likewise.
+	(scan_record_type): Delete.
+	(traverse_record_type): New function template.
+	(classify_data_t): New structure type.
+	(classify_registers): New inline function.
+	(function_arg_slotno): In 64-bit mode, bail out early if FP slots are
+	exhausted.  Instantiate traverse_record_type on classify_registers and
+	deal with the case of a structure passed in slot #15 with no FP field
+	in the first word.
+	(assign_data_t): New structure type.
+	(compute_int_layout): New static function.
+	(compute_fp_layout): Likewise.
+	(count_registers): New inline function.
+	(assign_int_registers): New static function.
+	(assign_fp_registers): Likewise.
+	(assign_registers): New inline function.
+	(function_arg_record_value_1): Delete.
+	(function_arg_record_value_2): Likewise.
+	(function_arg_record_value_3): Likewise.
+	(function_arg_record_value): Adjust to above changes.  Instantiate
+	traverse_record_type on count_registers to first count the number of
+	registers to be used and then on assign_registers to assign them.
+	(function_arg_union_value): Adjust to above renaming.
+	(sparc_function_arg_1); Minor tweaks.  Remove commented out code.
+	(sparc_arg_partial_bytes): Adjust to above renaming.  Deal with the
+	case of a structure passed in slot #15
+	(sparc_function_arg_advance): Likewise.
+	(function_arg_padding): Minor tweak.
+
 2016-02-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69720
