@@ -1343,6 +1343,9 @@ vect_attempt_slp_rearrange_stmts (slp_instance slp_instn)
 	  || (group_size == GROUP_SIZE (vinfo_for_stmt (first_stmt))
 	      && GROUP_GAP (vinfo_for_stmt (first_stmt)) == 0))
 	SLP_TREE_LOAD_PERMUTATION (node).release ();
+      else
+	for (j = 0; j < SLP_TREE_LOAD_PERMUTATION (node).length (); ++j)
+	  SLP_TREE_LOAD_PERMUTATION (node)[j] = j;
     }
 
   return true;
