@@ -1,3 +1,8 @@
+2016-02-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69980
+	* gfortran.dg/vect/pr69980.f90: New testcase.
+
 2016-02-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/20160229-1.c: New test.

@@ -1,3 +1,9 @@
+2016-02-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69980
+	* tree-vect-slp.c (vect_attempt_slp_rearrange_stmts): Update
+	permutation of those we need to keep.
+
 2016-02-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/69706
