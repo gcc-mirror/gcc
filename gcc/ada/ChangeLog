@@ -1,3 +1,8 @@
+2016-02-29  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/utils.c (set_reverse_storage_order_on_pad_type):
+	Replace ENABLE_CHECKING macro with flag_checking.
+
 2016-02-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Access_Type>: Retrofit
