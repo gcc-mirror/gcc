@@ -2464,6 +2464,22 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
 		   && !AGGREGATE_TYPE_P (type)) ? CONST_DECL : VAR_DECL,
 		  name, type);
 
+  /* Detect constants created by the front-end to hold 'reference to function
+     calls for stabilization purposes.  This is needed for renaming.  */
+  if (const_flag && init && POINTER_TYPE_P (type))
+    {
+      tree inner = init;
+      if (TREE_CODE (inner) == COMPOUND_EXPR)
+	inner = TREE_OPERAND (inner, 1);
+      inner = remove_conversions (inner, true);
+      if (TREE_CODE (inner) == ADDR_EXPR
+	  && ((TREE_CODE (TREE_OPERAND (inner, 0)) == CALL_EXPR
+	       && !call_is_atomic_load (TREE_OPERAND (inner, 0)))
+	      || (TREE_CODE (TREE_OPERAND (inner, 0)) == VAR_DECL
+		  && DECL_RETURN_VALUE_P (TREE_OPERAND (inner, 0)))))
+	DECL_RETURN_VALUE_P (var_decl) = 1;
+    }
+
   /* If this is external, throw away any initializations (they will be done
      elsewhere) unless this is a constant for which we would like to remain
      able to get the initializer.  If we are defining a global here, leave a

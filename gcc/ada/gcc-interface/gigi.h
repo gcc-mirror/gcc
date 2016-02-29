@@ -246,7 +246,7 @@ extern "C" {
    structures and then generates code.  */
 extern void gigi (Node_Id gnat_root,
 	          int max_gnat_node,
-                  int number_name ATTRIBUTE_UNUSED,
+                  int number_name,
 		  struct Node *nodes_ptr,
 		  struct Flags *Flags_Ptr,
 		  Node_Id *next_node_ptr,
@@ -270,17 +270,19 @@ extern void gigi (Node_Id gnat_root,
 #endif
 
 /* GNAT_NODE is the root of some GNAT tree.  Return the root of the
-   GCC tree corresponding to that GNAT tree.  Normally, no code is generated;
-   we just return an equivalent tree which is used elsewhere to generate
-   code.  */
+   GCC tree corresponding to that GNAT tree.  */
 extern tree gnat_to_gnu (Node_Id gnat_node);
+
+/* Similar to gnat_to_gnu, but discard any object that might be created in
+   the course of the translation of GNAT_NODE, which must be an "external"
+   expression in the sense that it will be elaborated elsewhere.  */
+extern tree gnat_to_gnu_external (Node_Id gnat_node);
 
 /* GNU_STMT is a statement.  We generate code for that statement.  */
 extern void gnat_expand_stmt (tree gnu_stmt);
 
 /* Generate GIMPLE in place for the expression at *EXPR_P.  */
-extern int gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
-                               gimple_seq *post_p ATTRIBUTE_UNUSED);
+extern int gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *);
 
 /* Do the processing for the declaration of a GNAT_ENTITY, a type.  If
    a separate Freeze node exists, delay the bulk of the processing.  Otherwise

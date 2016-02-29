@@ -1,3 +1,25 @@
+2016-02-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (DECL_RETURN_VALUE_P): New macro.
+	* gcc-interface/gigi.h (gigi): Remove useless attribute.
+	(gnat_gimplify_expr): Likewise.
+	(gnat_to_gnu_external): Declare.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Constant>: Factor out
+	code dealing with the expression of external constants into...
+	Invoke gnat_to_gnu_external instead.
+	<E_Variable>: Invoke gnat_to_gnu_external to translate renamed objects
+	when not for a definition.  Deal with COMPOUND_EXPR and variables with
+	DECL_RETURN_VALUE_P set for renamings and with the case of a dangling
+	'reference to a function call in a renaming.  Remove obsolete test and
+	adjust associated comment.
+	* gcc-interface/trans.c (Call_to_gnu): Set DECL_RETURN_VALUE_P on the
+	temporaries created to hold the return value, if any.
+	(gnat_to_gnu_external): ...this.  New function.
+	* gcc-interface/utils.c (create_var_decl): Detect a constant created
+	to hold 'reference to function call.
+	* gcc-interface/utils2.c (build_unary_op) <ADDR_EXPR>: Add folding
+	for COMPOUND_EXPR in the DECL_RETURN_VALUE_P case.
+
 2016-02-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Indexed_Component): Active synchronization if

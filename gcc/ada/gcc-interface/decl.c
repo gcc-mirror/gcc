@@ -552,31 +552,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  && Present (Expression (Declaration_Node (gnat_entity)))
 	  && Nkind (Expression (Declaration_Node (gnat_entity)))
 	     != N_Allocator)
-	{
-	  bool went_into_elab_proc = false;
-	  int save_force_global = force_global;
-
 	  /* The expression may contain N_Expression_With_Actions nodes and
-	     thus object declarations from other units.  In this case, even
-	     though the expression will eventually be discarded since not a
-	     constant, the declarations would be stuck either in the global
-	     varpool or in the current scope.  Therefore we force the local
-	     context and create a fake scope that we'll zap at the end.  */
-	  if (!current_function_decl)
-	    {
-	      current_function_decl = get_elaboration_procedure ();
-	      went_into_elab_proc = true;
-	    }
-	  force_global = 0;
-	  gnat_pushlevel ();
-
-	  gnu_expr = gnat_to_gnu (Expression (Declaration_Node (gnat_entity)));
-
-	  gnat_zaplevel ();
-	  force_global = save_force_global;
-	  if (went_into_elab_proc)
-	    current_function_decl = NULL_TREE;
-	}
+	     thus object declarations from other units.  Discard them.  */
+	gnu_expr
+	  = gnat_to_gnu_external (Expression (Declaration_Node (gnat_entity)));
 
       /* ... fall through ... */
 
@@ -611,13 +590,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	tree renamed_obj = NULL_TREE;
 	tree gnu_object_size;
 
+	/* We need to translate the renamed object even though we are only
+	   referencing the renaming.  But it may contain a call for which
+	   we'll generate a temporary to hold the return value and which
+	   is part of the definition of the renaming, so discard it.  */
 	if (Present (Renamed_Object (gnat_entity)) && !definition)
 	  {
 	    if (kind == E_Exception)
 	      gnu_expr = gnat_to_gnu_entity (Renamed_Entity (gnat_entity),
 					     NULL_TREE, 0);
 	    else
-	      gnu_expr = gnat_to_gnu (Renamed_Object (gnat_entity));
+	      gnu_expr = gnat_to_gnu_external (Renamed_Object (gnat_entity));
 	  }
 
 	/* Get the type after elaborating the renamed object.  */
@@ -976,14 +959,39 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      inner = TREE_OPERAND (inner, 0);
 	    /* Expand_Dispatching_Call can prepend a comparison of the tags
 	       before the call to "=".  */
-	    if (TREE_CODE (inner) == TRUTH_ANDIF_EXPR)
+	    if (TREE_CODE (inner) == TRUTH_ANDIF_EXPR
+		|| TREE_CODE (inner) == COMPOUND_EXPR)
 	      inner = TREE_OPERAND (inner, 1);
 	    if ((TREE_CODE (inner) == CALL_EXPR
 		 && !call_is_atomic_load (inner))
 		|| TREE_CODE (inner) == ADDR_EXPR
 		|| TREE_CODE (inner) == NULL_EXPR
 		|| TREE_CODE (inner) == CONSTRUCTOR
-		|| CONSTANT_CLASS_P (inner))
+		|| CONSTANT_CLASS_P (inner)
+		/* We need to detect the case where a temporary is created to
+		   hold the return value, since we cannot safely rename it at
+		   top level as it lives only in the elaboration routine.  */
+		|| (TREE_CODE (inner) == VAR_DECL
+		    && DECL_RETURN_VALUE_P (inner))
+		/* We also need to detect the case where the front-end creates
+		   a dangling 'reference to a function call at top level and
+		   substitutes it in the renaming, for example:
+
+		     q__b : boolean renames r__f.e (1);
+
+	           can be rewritten into:
+
+		     q__R1s : constant q__A2s := r__f'reference;
+		     [...]
+		     q__b : boolean renames q__R1s.all.e (1);
+
+		   We cannot safely rename the rewritten expression since the
+		   underlying object lives only in the elaboration routine.  */
+		|| (TREE_CODE (inner) == INDIRECT_REF
+		    && (inner
+			  = remove_conversions (TREE_OPERAND (inner, 0), true))
+		    && TREE_CODE (inner) == VAR_DECL
+		    && DECL_RETURN_VALUE_P (inner)))
 	      ;
 
 	    /* Case 2: if the renaming entity need not be materialized, use
@@ -991,8 +999,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       means that the caller is responsible for evaluating the address
 	       of the renaming in the correct place for the definition case to
 	       instantiate the SAVE_EXPRs.  */
-	    else if (TREE_CODE (inner) != COMPOUND_EXPR
-		     && !Materialize_Entity (gnat_entity))
+	    else if (!Materialize_Entity (gnat_entity))
 	      {
 		tree init = NULL_TREE;
 
@@ -1001,7 +1008,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 					 &init);
 
 		/* We cannot evaluate the first arm of a COMPOUND_EXPR in the
-		   correct place for this case, hence the above test.  */
+		   correct place for this case.  */
 		gcc_assert (!init);
 
 		/* No DECL_EXPR will be created so the expression needs to be
