@@ -1,5 +1,14 @@
 2016-02-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (finalize_nrv_r): Remove obsolete code.
+	(build_return_expr): Likewise.
+	(Call_to_gnu): If this is a function call and there is no target,
+	create a temporary for the return value for all aggregate types,
+	but never create it for a return statement.  Push a binding level
+	around the call in more cases.  Remove obsolete code.
+
+2016-02-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (DECL_RETURN_VALUE_P): New macro.
 	* gcc-interface/gigi.h (gigi): Remove useless attribute.
 	(gnat_gimplify_expr): Likewise.
