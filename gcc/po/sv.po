@@ -17,7 +17,7 @@ msgstr ""
 "Project-Id-Version: gcc 6.1-b20160131\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-01-31 15:50+0000\n"
-"PO-Revision-Date: 2016-02-21 21:15+0100\n"
+"PO-Revision-Date: 2016-02-28 19:08+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -1713,35 +1713,30 @@ msgid "The maximum ratio of insertions to deletions of expressions in GCSE."
 msgstr "Det maximala förhållandet mellan insättningar och raderingar av uttryck i GCSE."
 
 #: params.def:238
-#, fuzzy, no-c-format
-#| msgid "The threshold ratio for performing partial redundancy elimination after reload"
+#, no-c-format
 msgid "The threshold ratio for performing partial redundancy elimination after reload."
-msgstr "Tröskelförhållandet för att utföra partiell redundanselimination efter omläsning"
+msgstr "Tröskelförhållandet för att utföra partiell redundanselimination efter omläsning."
 
 # Undrar om jag fattat syftningen i "critical edges execution count" rätt!
 #: params.def:245
-#, fuzzy, no-c-format
-#| msgid "The threshold ratio of critical edges execution count that permit performing redundancy elimination after reload"
+#, no-c-format
 msgid "The threshold ratio of critical edges execution count that permit performing redundancy elimination after reload."
-msgstr "Tröskelförhållandet av antal beräkningar av kritiska bågar som tillåter att göra redundanseliminering efter omläsning"
+msgstr "Tröskelförhållandet av antal beräkningar av kritiska bågar som tillåter att göra redundanseliminering efter omläsning."
 
 #: params.def:253
-#, fuzzy, no-c-format
-#| msgid "Scaling factor in calculation of maximum distance an expression can be moved by GCSE optimizations"
+#, no-c-format
 msgid "Scaling factor in calculation of maximum distance an expression can be moved by GCSE optimizations."
-msgstr "Skalfaktor vid beräkning av maximala distansen ett uttryck kan flyttas genom GCSE-optimeringar"
+msgstr "Skalfaktor vid beräkning av maximala distansen ett uttryck kan flyttas genom GCSE-optimeringar."
 
 #: params.def:259
-#, fuzzy, no-c-format
-#| msgid "Cost at which GCSE optimizations will not constraint the distance an expression can travel"
+#, no-c-format
 msgid "Cost at which GCSE optimizations will not constraint the distance an expression can travel."
-msgstr "Kostnaden vid vilken GCSE-optimeringar inte kommer begränsa avståndet ett uttryck kan flytta"
+msgstr "Kostnaden vid vilken GCSE-optimeringar inte kommer begränsa avståndet ett uttryck kan flytta."
 
 #: params.def:267
-#, fuzzy, no-c-format
-#| msgid "Maximum depth of search in the dominator tree for expressions to hoist"
+#, no-c-format
 msgid "Maximum depth of search in the dominator tree for expressions to hoist."
-msgstr "Maximalt djup på sökningen i dominansträd för uttryck att hissa upp"
+msgstr "Maximalt djup på sökningen i dominansträd för uttryck att hissa upp."
 
 #: params.def:275
 #, no-c-format
@@ -1749,95 +1744,80 @@ msgid "Maximum depth of sqrt chains to use when synthesizing exponentiation by a
 msgstr "Maximalt djup av sqrt-kedjor att använda vid syntetisering av exponentiering av en reell konstant."
 
 #: params.def:287
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to unroll in a loop"
+#, no-c-format
 msgid "The maximum number of instructions to consider to unroll in a loop."
-msgstr "Det maximala antalet instruktioner för att överväga att rulla ut i en slinga"
+msgstr "Det maximala antalet instruktioner för att överväga att rulla ut i en slinga."
 
 #: params.def:293
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to unroll in a loop on average"
+#, no-c-format
 msgid "The maximum number of instructions to consider to unroll in a loop on average."
-msgstr "Det maximala antalet instruktioner för att överväga att rulle ut i en slinga i genomsnitt"
+msgstr "Det maximala antalet instruktioner för att överväga att rulle ut i en slinga i genomsnitt."
 
 #: params.def:298
-#, fuzzy, no-c-format
-#| msgid "The maximum number of unrollings of a single loop"
+#, no-c-format
 msgid "The maximum number of unrollings of a single loop."
-msgstr "Det maximala antalet utrullningar av en enskild slinga"
+msgstr "Det maximala antalet utrullningar av en enskild slinga."
 
 #: params.def:303
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of a peeled loop"
+#, no-c-format
 msgid "The maximum number of insns of a peeled loop."
-msgstr "Det maximala antalet instruktioner i en avskalad slinga"
+msgstr "Det maximala antalet instruktioner i en avskalad slinga."
 
 #: params.def:308
-#, fuzzy, no-c-format
-#| msgid "The maximum number of peelings of a single loop"
+#, no-c-format
 msgid "The maximum number of peelings of a single loop."
-msgstr "Det maximala antalet avskalningar av en enskild slinga"
+msgstr "Det maximala antalet avskalningar av en enskild slinga."
 
 #: params.def:313
-#, fuzzy, no-c-format
-#| msgid "The maximum number of branches on the path through the peeled sequence"
+#, no-c-format
 msgid "The maximum number of branches on the path through the peeled sequence."
-msgstr "Det maximala antalet grenar på vägen genom den skalade sekvensen"
+msgstr "Det maximala antalet grenar på vägen genom den skalade sekvensen."
 
 #: params.def:318
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of a completely peeled loop"
+#, no-c-format
 msgid "The maximum number of insns of a completely peeled loop."
-msgstr "Det maximala antalet instruktioner i en helt avskalad slinga"
+msgstr "Det maximala antalet instruktioner i en helt avskalad slinga."
 
 #: params.def:323
-#, fuzzy, no-c-format
-#| msgid "The maximum number of peelings of a single loop that is peeled completely"
+#, no-c-format
 msgid "The maximum number of peelings of a single loop that is peeled completely."
-msgstr "Det maximala antalet avskalningar av en enskild slinga som är helt avskalad"
+msgstr "Det maximala antalet avskalningar av en enskild slinga som är helt avskalad."
 
 #: params.def:328
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of a peeled loop that rolls only once"
+#, no-c-format
 msgid "The maximum number of insns of a peeled loop that rolls only once."
-msgstr "Det maximala antalet instruktioner i en avskalad slinga som bara snurrar en gång"
+msgstr "Det maximala antalet instruktioner i en avskalad slinga som bara snurrar en gång."
 
 #: params.def:333
-#, fuzzy, no-c-format
-#| msgid "The maximum depth of a loop nest we completely peel"
+#, no-c-format
 msgid "The maximum depth of a loop nest we completely peel."
-msgstr "Det maximala djupet av nästade slingor som vi skalar helt"
+msgstr "Det maximala djupet av nästade slingor som vi skalar helt."
 
 #: params.def:339
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of an unswitched loop"
+#, no-c-format
 msgid "The maximum number of insns of an unswitched loop."
-msgstr "Det maximala antalet instruktioner i en oväxlad slinga"
+msgstr "Det maximala antalet instruktioner i en oväxlad slinga."
 
 #: params.def:344
-#, fuzzy, no-c-format
-#| msgid "The maximum number of unswitchings in a single loop"
+#, no-c-format
 msgid "The maximum number of unswitchings in a single loop."
-msgstr "Det maximala antalet omväxlingar i en enskild slinga"
+msgstr "Det maximala antalet omväxlingar i en enskild slinga."
 
 # Är syftningarna rätt här?
 #: params.def:351
-#, fuzzy, no-c-format
-#| msgid "Bound on the number of iterations the brute force # of iterations analysis algorithm evaluates"
+#, no-c-format
 msgid "Bound on the number of iterations the brute force # of iterations analysis algorithm evaluates."
-msgstr "Begränsning på antalet iterationer som utvärderas av råstyrkealgoritmen för att analysera antalet iterationer"
+msgstr "Begränsning på antalet iterationer som utvärderas av råstyrkealgoritmen för att analysera antalet iterationer."
 
 #: params.def:357
-#, fuzzy, no-c-format
-#| msgid "Bound on the cost of an expression to compute the number of iterations"
+#, no-c-format
 msgid "Bound on the cost of an expression to compute the number of iterations."
-msgstr "Begränsningen av kostnaden för ett uttryck för att beräkna antalet iterationer"
+msgstr "Begränsningen av kostnaden för ett uttryck för att beräkna antalet iterationer."
 
 #: params.def:363
-#, fuzzy, no-c-format
-#| msgid "A factor for tuning the upper bound that swing modulo scheduler uses for scheduling a loop"
+#, no-c-format
 msgid "A factor for tuning the upper bound that swing modulo scheduler uses for scheduling a loop."
-msgstr "En faktor för att trimma den övre gränsen som pendlingsmoduloschemaläggaren använder för att schemalägga en slinga"
+msgstr "En faktor för att trimma den övre gränsen som pendlingsmoduloschemaläggaren använder för att schemalägga en slinga."
 
 #: params.def:368
 #, no-c-format
@@ -1845,52 +1825,44 @@ msgid "The minimum value of stage count that swing modulo scheduler will generat
 msgstr "Minimivärdet på steglängden som pendlingsschemaläggaren kommer generera."
 
 #: params.def:372
-#, fuzzy, no-c-format
-#| msgid "The number of cycles the swing modulo scheduler considers when checking conflicts using DFA"
+#, no-c-format
 msgid "The number of cycles the swing modulo scheduler considers when checking conflicts using DFA."
-msgstr "Antalet cykler som pendlingsschemaläggaren beaktar när den söker efter konflikter med DFA"
+msgstr "Antalet cykler som pendlingsschemaläggaren beaktar när den söker efter konflikter med DFA."
 
 #: params.def:376
-#, fuzzy, no-c-format
-#| msgid "A threshold on the average loop count considered by the swing modulo scheduler"
+#, no-c-format
 msgid "A threshold on the average loop count considered by the swing modulo scheduler."
-msgstr "Ett tröskelvärde på det genomsnittliga antalet varv som beaktas av pendlingsmoduloschemaläggaren"
+msgstr "Ett tröskelvärde på det genomsnittliga antalet varv som beaktas av pendlingsmoduloschemaläggaren."
 
 #: params.def:381
-#, fuzzy, no-c-format
-#| msgid "A basic block profile count is considered hot if it contributes to the given permillage of the entire profiled execution"
+#, no-c-format
 msgid "A basic block profile count is considered hot if it contributes to the given permillage of the entire profiled execution."
-msgstr "Ett grundblocks profilräknare anses het om den bidrar till den givna promillesatsen för hela den profilerade körningen"
+msgstr "Ett grundblocks profilräknare anses het om den bidrar till den givna promillesatsen för hela den profilerade körningen."
 
 #: params.def:386
-#, fuzzy, no-c-format
-#| msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot"
+#, no-c-format
 msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot."
-msgstr "Välj andel av den maximala exekveringsfrekvensen av grundblock i funktion givet grundblock måste ha för att anses hett"
+msgstr "Välj andel av den maximala exekveringsfrekvensen av grundblock i funktion givet grundblock måste ha för att anses hett."
 
 #: params.def:391
-#, fuzzy, no-c-format
-#| msgid "The minimum fraction of profile runs a given basic block execution count must be not to be considered unlikely"
+#, no-c-format
 msgid "The minimum fraction of profile runs a given basic block execution count must be not to be considered unlikely."
-msgstr "Minsta andelen av profileringskörningar ett givet grundblocks exekveringsräknare måste ha för att inte anses osannolik"
+msgstr "Minsta andelen av profileringskörningar ett givet grundblocks exekveringsräknare måste ha för att inte anses osannolik."
 
 #: params.def:396
-#, fuzzy, no-c-format
-#| msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block get alignment"
+#, no-c-format
 msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block get alignment."
-msgstr "Välj andel av den maximala exekveringsfrekvensen av grundblock i funktion givet grundblock måste ha för att få justering"
+msgstr "Välj andel av den maximala exekveringsfrekvensen av grundblock i funktion givet grundblock måste ha för att få justering."
 
 #: params.def:401
-#, fuzzy, no-c-format
-#| msgid "Loops iterating at least selected number of iterations will get loop alignement."
+#, no-c-format
 msgid "Loops iterating at least selected number of iterations will get loop alignement.."
 msgstr "Slingor som itererar åtminstone det valda antalet gånger kommer att få slingjustering."
 
 #: params.def:417
-#, fuzzy, no-c-format
-#| msgid "The maximum number of loop iterations we predict statically"
+#, no-c-format
 msgid "The maximum number of loop iterations we predict statically."
-msgstr "Det maximala antalet slingiterationer vi förutsäger statiskt"
+msgstr "Det maximala antalet slingiterationer vi förutsäger statiskt."
 
 # Ett extra "p" efter procenttecknet p.g.a.
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=60149
@@ -1900,190 +1872,159 @@ msgid "Set the estimated probability in percentage for builtin expect. The defau
 msgstr "Ange den uppskattade sannolikheten i procent för den inbyggda expect.  Standardvärdet är 90 %p sannolikhet."
 
 #: params.def:434
-#, fuzzy, no-c-format
-#| msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is available"
+#, no-c-format
 msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is available."
-msgstr "Andelen av funktion i procent, viktad efter exekveringsfrekvens, som måste täckas av spårinformation.  Används när profileringsdata är tillgängligt"
+msgstr "Andelen av funktion i procent, viktad efter exekveringsfrekvens, som måste täckas av spårinformation.  Används när profileringsdata är tillgängligt."
 
 #: params.def:438
-#, fuzzy, no-c-format
-#| msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is not available"
+#, no-c-format
 msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is not available."
-msgstr "Andelen av funktion i procent, viktad efter exekveringsfrekvens, som måste täckas av spårinformation.  Används när profileringsdata inte är tillgängligt"
+msgstr "Andelen av funktion i procent, viktad efter exekveringsfrekvens, som måste täckas av spårinformation.  Används när profileringsdata inte är tillgängligt."
 
 #: params.def:442
-#, fuzzy, no-c-format
-#| msgid "Maximal code growth caused by tail duplication (in percent)"
+#, no-c-format
 msgid "Maximal code growth caused by tail duplication (in percent)."
-msgstr "Maximal kodtillväxt orsakad av svansduplicering (i procent)"
+msgstr "Maximal kodtillväxt orsakad av svansduplicering (i procent)."
 
 #: params.def:446
-#, fuzzy, no-c-format
-#| msgid "Stop reverse growth if the reverse probability of best edge is less than this threshold (in percent)"
+#, no-c-format
 msgid "Stop reverse growth if the reverse probability of best edge is less than this threshold (in percent)."
-msgstr "Stoppa omvänd tillväxt om den omvända sannolikheten av bästa båge är mindre än detta tröskelvärde (i procent)"
+msgstr "Stoppa omvänd tillväxt om den omvända sannolikheten av bästa båge är mindre än detta tröskelvärde (i procent)."
 
 #: params.def:450
-#, fuzzy, no-c-format
-#| msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is available"
+#, no-c-format
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is available."
-msgstr "Stoppa framåttillväxt om sannolikheten av bästa båge är mindre än detta tröskelvärde (i procent).  Används när profileringsdata är tillgänglig"
+msgstr "Stoppa framåttillväxt om sannolikheten av bästa båge är mindre än detta tröskelvärde (i procent).  Används när profileringsdata är tillgänglig."
 
 #: params.def:454
-#, fuzzy, no-c-format
-#| msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is not available"
+#, no-c-format
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is not available."
-msgstr "Stoppa framåttillväxt om sannolikheten av bästa båge är mindre än detta tröskelvärde (i procent).  Används när profileringsdata inte är tillgänglig"
+msgstr "Stoppa framåttillväxt om sannolikheten av bästa båge är mindre än detta tröskelvärde (i procent).  Används när profileringsdata inte är tillgänglig."
 
 #: params.def:460
-#, fuzzy, no-c-format
-#| msgid "The maximum number of incoming edges to consider for crossjumping"
+#, no-c-format
 msgid "The maximum number of incoming edges to consider for crossjumping."
-msgstr "Det maximala antalet ingående bågar att överväga för korshopp"
+msgstr "Det maximala antalet ingående bågar att överväga för korshopp."
 
 #: params.def:466
-#, fuzzy, no-c-format
-#| msgid "The minimum number of matching instructions to consider for crossjumping"
+#, no-c-format
 msgid "The minimum number of matching instructions to consider for crossjumping."
-msgstr "Det minsta antal av matchande instruktioner att överväga för korshopp"
+msgstr "Det minsta antal av matchande instruktioner att överväga för korshopp."
 
 #: params.def:472
-#, fuzzy, no-c-format
-#| msgid "The maximum expansion factor when copying basic blocks"
+#, no-c-format
 msgid "The maximum expansion factor when copying basic blocks."
-msgstr "Den maximala expansionsfaktorn vid kopiering av grundblock"
+msgstr "Den maximala expansionsfaktorn vid kopiering av grundblock."
 
 #: params.def:478
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns to duplicate when unfactoring computed gotos"
+#, no-c-format
 msgid "The maximum number of insns to duplicate when unfactoring computed gotos."
-msgstr "Det maximala antalet instruktioner att duplicera vid avfaktorering av beräknade goto"
+msgstr "Det maximala antalet instruktioner att duplicera vid avfaktorering av beräknade goto."
 
 #: params.def:484
-#, fuzzy, no-c-format
-#| msgid "The maximum length of path considered in cse"
+#, no-c-format
 msgid "The maximum length of path considered in cse."
-msgstr "Den maximala längden på sökvägar som övervägs i cse"
+msgstr "Den maximala längden på sökvägar som övervägs i cse."
 
 #: params.def:488
-#, fuzzy, no-c-format
-#| msgid "The maximum instructions CSE process before flushing"
+#, no-c-format
 msgid "The maximum instructions CSE process before flushing."
-msgstr "Det maximala antalet instruktioner CSE bearbetar före tömning"
+msgstr "Det maximala antalet instruktioner CSE bearbetar före tömning."
 
 #: params.def:495
-#, fuzzy, no-c-format
-#| msgid "The minimum cost of an expensive expression in the loop invariant motion"
+#, no-c-format
 msgid "The minimum cost of an expensive expression in the loop invariant motion."
-msgstr "Den minsta kostnaden av ett dyrt uttryck vid flyttning av slinginvariant"
+msgstr "Den minsta kostnaden av ett dyrt uttryck vid flyttning av slinginvariant."
 
 #: params.def:504
-#, fuzzy, no-c-format
-#| msgid "Bound on number of candidates below that all candidates are considered in iv optimizations"
+#, no-c-format
 msgid "Bound on number of candidates below that all candidates are considered in iv optimizations."
-msgstr "Gräns för antalet kandidater under vilken alla kandidater övervägs i iv-optimeringar"
+msgstr "Gräns för antalet kandidater under vilken alla kandidater övervägs i iv-optimeringar."
 
 #: params.def:512
-#, fuzzy, no-c-format
-#| msgid "Bound on number of iv uses in loop optimized in iv optimizations"
+#, no-c-format
 msgid "Bound on number of iv uses in loop optimized in iv optimizations."
-msgstr "Gräns för antal iv-användningar i en slinga optimerad i iv-optimeringar"
+msgstr "Gräns för antal iv-användningar i en slinga optimerad i iv-optimeringar."
 
 #: params.def:520
-#, fuzzy, no-c-format
-#| msgid "If number of candidates in the set is smaller, we always try to remove unused ivs during its optimization"
+#, no-c-format
 msgid "If number of candidates in the set is smaller, we always try to remove unused ivs during its optimization."
-msgstr "Om antalet kandidater i mängden är mindre, försöker vi alltid ta bort oanvända iv under deras optimering"
+msgstr "Om antalet kandidater i mängden är mindre, försöker vi alltid ta bort oanvända iv under deras optimering."
 
 #: params.def:525
-#, fuzzy, no-c-format
-#| msgid "Bound on size of expressions used in the scalar evolutions analyzer"
+#, no-c-format
 msgid "Bound on size of expressions used in the scalar evolutions analyzer."
-msgstr "Gräns för storleken av uttryck som används i analyseraren av skalära uttryck"
+msgstr "Gräns för storleken av uttryck som används i analyseraren av skalära uttryck."
 
 #: params.def:530
-#, fuzzy, no-c-format
-#| msgid "Bound on the complexity of the expressions in the scalar evolutions analyzer"
+#, no-c-format
 msgid "Bound on the complexity of the expressions in the scalar evolutions analyzer."
-msgstr "Gräns på komplexiteten av uttryck som används i analyseraren av skalära uttryck"
+msgstr "Gräns på komplexiteten av uttryck som används i analyseraren av skalära uttryck."
 
 #: params.def:535
-#, fuzzy, no-c-format
-#| msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alignment check"
+#, no-c-format
 msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alignment check."
-msgstr "Gräns för antalet körtidskontroller som läggs in av vektoriserarens slingversionering för justeringskontroller"
+msgstr "Gräns för antalet körtidskontroller som läggs in av vektoriserarens slingversionering för justeringskontroller."
 
 #: params.def:540
-#, fuzzy, no-c-format
-#| msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alias check"
+#, no-c-format
 msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alias check."
-msgstr "Gräns för antalet körtidskontroller som läggs in av vektoriserarens slingversionering för aliaskontroller"
+msgstr "Gräns för antalet körtidskontroller som läggs in av vektoriserarens slingversionering för aliaskontroller."
 
 #: params.def:545
-#, fuzzy, no-c-format
-#| msgid "Max number of loop peels to enhancement alignment of data references in a loop"
+#, no-c-format
 msgid "Max number of loop peels to enhancement alignment of data references in a loop."
-msgstr "Maximala antalet slingavskalningar för att förbättra justering av datareferenser i en slinga"
+msgstr "Maximala antalet slingavskalningar för att förbättra justering av datareferenser i en slinga."
 
 #: params.def:550
-#, fuzzy, no-c-format
-#| msgid "The maximum memory locations recorded by cselib"
+#, no-c-format
 msgid "The maximum memory locations recorded by cselib."
-msgstr "Det maximala antalet minnesplatser noterade av cselib"
+msgstr "Det maximala antalet minnesplatser noterade av cselib."
 
 #: params.def:563
-#, fuzzy, no-c-format
-#| msgid "Minimum heap expansion to trigger garbage collection, as a percentage of the total size of the heap"
+#, no-c-format
 msgid "Minimum heap expansion to trigger garbage collection, as a percentage of the total size of the heap."
-msgstr "Minsta heap-expansion för att utlösa skräpsamling, som en procent av den totala storleken på heap:en"
+msgstr "Minsta heap-expansion för att utlösa skräpsamling, som en procent av den totala storleken på heap:en."
 
 #: params.def:568
-#, fuzzy, no-c-format
-#| msgid "Minimum heap size before we start collecting garbage, in kilobytes"
+#, no-c-format
 msgid "Minimum heap size before we start collecting garbage, in kilobytes."
-msgstr "Minsta heap-storlek före vi börjar samla skräp, i kilobyte"
+msgstr "Minsta heap-storlek före vi börjar samla skräp, i kilobyte."
 
 #: params.def:576
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to search backward when looking for equivalent reload"
+#, no-c-format
 msgid "The maximum number of instructions to search backward when looking for equivalent reload."
-msgstr "Det största antalet instruktioner att söka bakåt för att leta efter ekvivalent omläsning"
+msgstr "Det största antalet instruktioner att söka bakåt för att leta efter ekvivalent omläsning."
 
 #: params.def:581
-#, fuzzy, no-c-format
-#| msgid "Target block's relative execution frequency (as a percentage) required to sink a statement"
+#, no-c-format
 msgid "Target block's relative execution frequency (as a percentage) required to sink a statement."
-msgstr "Målet för blocks relativa exekveringsfrekvens (som en procentsats) som behövs för att sänka en sats"
+msgstr "Målet för blocks relativa exekveringsfrekvens (som en procentsats) som behövs för att sänka en sats."
 
 #: params.def:586 params.def:596
-#, fuzzy, no-c-format
-#| msgid "The maximum number of blocks in a region to be considered for interblock scheduling"
+#, no-c-format
 msgid "The maximum number of blocks in a region to be considered for interblock scheduling."
-msgstr "Det maximala antalet block i en region som övervägs för interblockschemaläggning"
+msgstr "Det maximala antalet block i en region som övervägs för interblockschemaläggning."
 
 #: params.def:591 params.def:601
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns in a region to be considered for interblock scheduling"
+#, no-c-format
 msgid "The maximum number of insns in a region to be considered for interblock scheduling."
-msgstr "Det maximala antalet instruktioner i en region för att övervägas för interblockschemaläggning"
+msgstr "Det maximala antalet instruktioner i en region för att övervägas för interblockschemaläggning."
 
 #: params.def:606
-#, fuzzy, no-c-format
-#| msgid "The minimum probability of reaching a source block for interblock speculative scheduling"
+#, no-c-format
 msgid "The minimum probability of reaching a source block for interblock speculative scheduling."
-msgstr "Den minsta sannolikheten för att nå ett källkodsblock för spekulativ schemaläggning mellan block"
+msgstr "Den minsta sannolikheten för att nå ett källkodsblock för spekulativ schemaläggning mellan block."
 
 #: params.def:611
-#, fuzzy, no-c-format
-#| msgid "The maximum number of iterations through CFG to extend regions"
+#, no-c-format
 msgid "The maximum number of iterations through CFG to extend regions."
-msgstr "Det maximala antal iterationer genom CFG för utökade regioner"
+msgstr "Det maximala antal iterationer genom CFG för utökade regioner."
 
 #: params.def:616
-#, fuzzy, no-c-format
-#| msgid "The maximum conflict delay for an insn to be considered for speculative motion"
+#, no-c-format
 msgid "The maximum conflict delay for an insn to be considered for speculative motion."
-msgstr "Den maximala konfliktfördröjningen för att en instruktion skall övervägas för spekulativ förflyttning"
+msgstr "Den maximala konfliktfördröjningen för att en instruktion skall övervägas för spekulativ förflyttning."
 
 #: params.def:621
 #, no-c-format
@@ -2096,28 +2037,24 @@ msgid "The minimum probability an edge must have for the scheduler to save its s
 msgstr "Den minsta sannolikhet en båge måste ha för att schemaläggaren skall spara sitt tillstånd över den."
 
 #: params.def:631
-#, fuzzy, no-c-format
-#| msgid "The maximum size of the lookahead window of selective scheduling"
+#, no-c-format
 msgid "The maximum size of the lookahead window of selective scheduling."
-msgstr "Den maximala storleken på fönstret för framåtblickar vid selektiv schemaläggning"
+msgstr "Den maximala storleken på fönstret för framåtblickar vid selektiv schemaläggning."
 
 #: params.def:636
-#, fuzzy, no-c-format
-#| msgid "Maximum number of times that an insn could be scheduled"
+#, no-c-format
 msgid "Maximum number of times that an insn could be scheduled."
-msgstr "Maximalt antal gånger som en instruktion kan schemaläggas"
+msgstr "Maximalt antal gånger som en instruktion kan schemaläggas."
 
 #: params.def:641
-#, fuzzy, no-c-format
-#| msgid "Maximum number of instructions in the ready list that are considered eligible for renaming"
+#, no-c-format
 msgid "Maximum number of instructions in the ready list that are considered eligible for renaming."
-msgstr "Det maximala antalet instruktioner i redolistan som betraktas som valbara för namnändring"
+msgstr "Det maximala antalet instruktioner i redolistan som betraktas som valbara för namnändring."
 
 #: params.def:646
-#, fuzzy, no-c-format
-#| msgid "Minimal distance between possibly conflicting store and load"
+#, no-c-format
 msgid "Minimal distance between possibly conflicting store and load."
-msgstr "Minimala avståndet mellan lagring och läsning som kan vara i konflikt"
+msgstr "Minimala avståndet mellan lagring och läsning som kan vara i konflikt."
 
 #: params.def:651
 #, no-c-format
@@ -2125,448 +2062,374 @@ msgid "Hardware autoprefetcher scheduler model control flag.  Number of lookahea
 msgstr "Styrflagga för schemaläggningsmodell av automatisk förhandshämtning i hårdvara.  Antalet cykler av framförhållning modellen tittar in i; vid ”0” aktiveras endast heuristik för instruktionssortering.  Avaktiverat som standard."
 
 #: params.def:656
-#, fuzzy, no-c-format
-#| msgid "The maximum number of RTL nodes that can be recorded as combiner's last value"
+#, no-c-format
 msgid "The maximum number of RTL nodes that can be recorded as combiner's last value."
-msgstr "Det maximala antalet RTL-noder som kan noteras som kombinerarens sista värde"
+msgstr "Det maximala antalet RTL-noder som kan noteras som kombinerarens sista värde."
 
 #: params.def:661
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns combine tries to combine"
+#, no-c-format
 msgid "The maximum number of insns combine tries to combine."
-msgstr "Det maximala antalet instruktionskombinationsförsök att kombinera"
+msgstr "Det maximala antalet instruktionskombinationsförsök att kombinera."
 
 #: params.def:670
-#, fuzzy, no-c-format
-#| msgid "The upper bound for sharing integer constants"
+#, no-c-format
 msgid "The upper bound for sharing integer constants."
-msgstr "Övre gränsen för att dela heltalskonstanter"
+msgstr "Övre gränsen för att dela heltalskonstanter."
 
 #: params.def:675
-#, fuzzy, no-c-format
-#| msgid "The lower bound for a buffer to be considered for stack smashing protection"
+#, no-c-format
 msgid "The lower bound for a buffer to be considered for stack smashing protection."
-msgstr "Den undre gränsen för att en buffer skall övervägas för skydd mot stacksprängning"
+msgstr "Den undre gränsen för att en buffer skall övervägas för skydd mot stacksprängning."
 
 #: params.def:680
-#, fuzzy, no-c-format
-#| msgid "The minimum size of variables taking part in stack slot sharing when not optimizing"
+#, no-c-format
 msgid "The minimum size of variables taking part in stack slot sharing when not optimizing."
-msgstr "Minsta storleken på variabler som är med i stackutrymmesdelning utan optimering"
+msgstr "Minsta storleken på variabler som är med i stackutrymmesdelning utan optimering."
 
 #: params.def:699
-#, fuzzy, no-c-format
-#| msgid "Maximum number of statements allowed in a block that needs to be duplicated when threading jumps"
+#, no-c-format
 msgid "Maximum number of statements allowed in a block that needs to be duplicated when threading jumps."
-msgstr "Maximalt antal satser som tillåts i ett block som behöver dubbleras när hopp trådas"
+msgstr "Maximalt antal satser som tillåts i ett block som behöver dubbleras när hopp trådas."
 
 #: params.def:708
-#, fuzzy, no-c-format
-#| msgid "Maximum number of fields in a structure before pointer analysis treats the structure as a single variable"
+#, no-c-format
 msgid "Maximum number of fields in a structure before pointer analysis treats the structure as a single variable."
-msgstr "Maximalt antal fält i en post före pekaranalys behandlar posten som en enda variabel"
+msgstr "Maximalt antal fält i en post före pekaranalys behandlar posten som en enda variabel."
 
 #: params.def:713
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions ready to be issued to be considered by the scheduler during the first scheduling pass"
+#, no-c-format
 msgid "The maximum number of instructions ready to be issued to be considered by the scheduler during the first scheduling pass."
-msgstr "Det maximala antalet instruktioner redo att matas ut för att övervägas under det första schemaläggningspasset"
+msgstr "Det maximala antalet instruktioner redo att matas ut för att övervägas under det första schemaläggningspasset."
 
 #: params.def:719
-#, fuzzy, no-c-format
-#| msgid "Maximum number of active local stores in RTL dead store elimination"
+#, no-c-format
 msgid "Maximum number of active local stores in RTL dead store elimination."
-msgstr "Maximalt antal aktiva lokala lagringar i RTL vid eliminering av döda lagringar"
+msgstr "Maximalt antal aktiva lokala lagringar i RTL vid eliminering av döda lagringar."
 
 #: params.def:729
-#, fuzzy, no-c-format
-#| msgid "The number of insns executed before prefetch is completed"
+#, no-c-format
 msgid "The number of insns executed before prefetch is completed."
-msgstr "Antalet instruktioner som körs före förhandshämtning (prefetch) är klar"
+msgstr "Antalet instruktioner som körs före förhandshämtning (prefetch) är klar."
 
 #: params.def:736
-#, fuzzy, no-c-format
-#| msgid "The number of prefetches that can run at the same time"
+#, no-c-format
 msgid "The number of prefetches that can run at the same time."
-msgstr "Antalet förhandshämtningar (prefetch) som kan vara igång samtidigt"
+msgstr "Antalet förhandshämtningar (prefetch) som kan vara igång samtidigt."
 
 #: params.def:743
-#, fuzzy, no-c-format
-#| msgid "The size of L1 cache"
+#, no-c-format
 msgid "The size of L1 cache."
-msgstr "Storleken på L1-cachen"
+msgstr "Storleken på L1-cachen."
 
 #: params.def:750
-#, fuzzy, no-c-format
-#| msgid "The size of L1 cache line"
+#, no-c-format
 msgid "The size of L1 cache line."
-msgstr "Storleken på cache-raderna i L1"
+msgstr "Storleken på cache-raderna i L1."
 
 #: params.def:757
-#, fuzzy, no-c-format
-#| msgid "The size of L2 cache"
+#, no-c-format
 msgid "The size of L2 cache."
-msgstr "Storleken på L2-cachen"
+msgstr "Storleken på L2-cachen."
 
 #: params.def:768
-#, fuzzy, no-c-format
-#| msgid "Whether to use canonical types"
+#, no-c-format
 msgid "Whether to use canonical types."
-msgstr "Om kanoniska typer skall användas"
+msgstr "Om kanoniska typer skall användas."
 
 #: params.def:773
-#, fuzzy, no-c-format
-#| msgid "Maximum length of partial antic set when performing tree pre optimization"
+#, no-c-format
 msgid "Maximum length of partial antic set when performing tree pre optimization."
-msgstr "Maximal längd på partial förväntansmängd när föroptimeringar på träd görs"
+msgstr "Maximal längd på partial förväntansmängd när föroptimeringar på träd görs."
 
 #: params.def:783
-#, fuzzy, no-c-format
-#| msgid "Maximum size of a SCC before SCCVN stops processing a function"
+#, no-c-format
 msgid "Maximum size of a SCC before SCCVN stops processing a function."
-msgstr "Maximal storlek på en SCC före SCCVN slutar bearbeta en funktion"
+msgstr "Maximal storlek på en SCC före SCCVN slutar bearbeta en funktion."
 
 #: params.def:794
-#, fuzzy, no-c-format
-#| msgid "Maximum number of disambiguations to perform per memory access"
+#, no-c-format
 msgid "Maximum number of disambiguations to perform per memory access."
-msgstr "Maximalt antal upplösningar av tvetydigheter att utföra per minnesåtkomst"
+msgstr "Maximalt antal upplösningar av tvetydigheter att utföra per minnesåtkomst."
 
 #: params.def:799
-#, fuzzy, no-c-format
-#| msgid "Max loops number for regional RA"
+#, no-c-format
 msgid "Max loops number for regional RA."
-msgstr "Maximalt slingantal för regional RA"
+msgstr "Maximalt slingantal för regional RA."
 
 #: params.def:804
-#, fuzzy, no-c-format
-#| msgid "Max size of conflict table in MB"
+#, no-c-format
 msgid "Max size of conflict table in MB."
-msgstr "Maximal storlek på konflikttabell i MB"
+msgstr "Maximal storlek på konflikttabell i MB."
 
 #: params.def:809
-#, fuzzy, no-c-format
-#| msgid "The number of registers in each class kept unused by loop invariant motion"
+#, no-c-format
 msgid "The number of registers in each class kept unused by loop invariant motion."
-msgstr "Antalet register i varje klass som behålls oanvänt vid flyttning av slinginvariant"
+msgstr "Antalet register i varje klass som behålls oanvänt vid flyttning av slinginvariant."
 
 #: params.def:814
-#, fuzzy, no-c-format
-#| msgid "The max number of reload pseudos which are considered during spilling a non-reload pseudo"
+#, no-c-format
 msgid "The max number of reload pseudos which are considered during spilling a non-reload pseudo."
-msgstr "Maximalt antal omläsningar av pseudoregister som övervägs när ett icke-omläst pseudoregister spills"
+msgstr "Maximalt antal omläsningar av pseudoregister som övervägs när ett icke-omläst pseudoregister spills."
 
 #: params.def:819
-#, fuzzy, no-c-format
-#| msgid "Minimal fall-through edge probability in percentage used to add BB to inheritance EBB in LRA"
+#, no-c-format
 msgid "Minimal fall-through edge probability in percentage used to add BB to inheritance EBB in LRA."
-msgstr "Minimal sannolikhet för bågar att falla igenom i procent som används för att lägga till GB till arvs-EBB i LRA"
+msgstr "Minimal sannolikhet för bågar att falla igenom i procent som används för att lägga till GB till arvs-EBB i LRA."
 
 #: params.def:827
-#, fuzzy, no-c-format
-#| msgid "The maximum ratio between array size and switch branches for a switch conversion to take place"
+#, no-c-format
 msgid "The maximum ratio between array size and switch branches for a switch conversion to take place."
-msgstr "Det maximala förhållandet mellan vektorstorlek och switch-grenar för att en switch-konvertering skall ske"
+msgstr "Det maximala förhållandet mellan vektorstorlek och switch-grenar för att en switch-konvertering skall ske."
 
 #: params.def:835
-#, fuzzy, no-c-format
-#| msgid "size of tiles for loop blocking"
+#, no-c-format
 msgid "size of tiles for loop blocking."
-msgstr "storlek på bitar för slingblockning"
+msgstr "storlek på bitar för slingblockning."
 
 #: params.def:842
-#, fuzzy, no-c-format
-#| msgid "maximum number of parameters in a SCoP"
+#, no-c-format
 msgid "maximum number of parameters in a SCoP."
-msgstr "maximalt antal parameter i en SCoP"
+msgstr "maximalt antal parameter i en SCoP."
 
 #: params.def:849
-#, fuzzy, no-c-format
-#| msgid "maximum number of basic blocks per function to be analyzed by Graphite"
+#, no-c-format
 msgid "maximum number of basic blocks per function to be analyzed by Graphite."
-msgstr "maximalt antal grundblock per funktion att analyseras av Graphite"
+msgstr "maximalt antal grundblock per funktion att analyseras av Graphite."
 
 #: params.def:856
-#, fuzzy, no-c-format
-#| msgid "maximum number of parameters in a SCoP"
+#, no-c-format
 msgid "maximum number of arrays per scop."
-msgstr "maximalt antal parameter i en SCoP"
+msgstr "maximalt antal vektorer per scop."
 
 #: params.def:863
-#, fuzzy, no-c-format
-#| msgid "maximum number of basic blocks per function to be analyzed by Graphite"
+#, no-c-format
 msgid "minimal number of loops per function to be analyzed by Graphite."
-msgstr "maximalt antal grundblock per funktion att analyseras av Graphite"
+msgstr "maximalt antal slingor per funktion att analyseras av Graphite."
 
 #: params.def:868
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of an unswitched loop"
+#, no-c-format
 msgid "maximum number of isl operations, 0 means unlimited"
-msgstr "Det maximala antalet instruktioner i en oväxlad slinga"
+msgstr "maximala antalet isl-operationer, 0 betyder obegränsat"
 
 #: params.def:874
-#, fuzzy, no-c-format
-#| msgid "Maximum number of datarefs in loop for building loop data dependencies"
+#, no-c-format
 msgid "Maximum number of datarefs in loop for building loop data dependencies."
-msgstr "Maximalt antal datareferenser i en slinga för att bygga slingdataberoenden"
+msgstr "Maximalt antal datareferenser i en slinga för att bygga slingdataberoenden."
 
 #: params.def:881
-#, fuzzy, no-c-format
-#| msgid "Max basic blocks number in loop for loop invariant motion"
+#, no-c-format
 msgid "Max basic blocks number in loop for loop invariant motion."
-msgstr "Maximalt antal grundblock i slinga-för-slinga-invarianta förflyttningar"
+msgstr "Maximalt antal grundblock i slinga-för-slinga-invarianta förflyttningar."
 
 #: params.def:889
-#, fuzzy, no-c-format
-#| msgid "use internal function id in profile lookup"
+#, no-c-format
 msgid "use internal function id in profile lookup."
-msgstr "använd internt funktions-id i profileringsuppslagningar"
+msgstr "använd internt funktions-id i profileringsuppslagningar."
 
 #: params.def:897
-#, fuzzy, no-c-format
-#| msgid "track topn target addresses in indirect-call profile"
+#, no-c-format
 msgid "track topn target addresses in indirect-call profile."
-msgstr "spåra topn måladresser i indirekt-anropsprofil"
+msgstr "spåra topn måladresser i indirekt-anropsprofil."
 
 #: params.def:903
-#, fuzzy, no-c-format
-#| msgid "Maximum number of instructions in basic block to be considered for SLP vectorization"
+#, no-c-format
 msgid "Maximum number of instructions in basic block to be considered for SLP vectorization."
-msgstr "Det maximala antalet instruktioner i grundblock för beaktas för SLP-vektorisering"
+msgstr "Det maximala antalet instruktioner i grundblock för beaktas för SLP-vektorisering."
 
 #: params.def:908
-#, fuzzy, no-c-format
-#| msgid "Min. ratio of insns to prefetches to enable prefetching for a loop with an unknown trip count"
+#, no-c-format
 msgid "Min. ratio of insns to prefetches to enable prefetching for a loop with an unknown trip count."
-msgstr "Minsta förhållande av instruktioner till minnesoperationer för att aktivera förhandshämtning (prefetching) för en slinga med okänt antal turer"
+msgstr "Minsta förhållande av instruktioner till minnesoperationer för att aktivera förhandshämtning (prefetching) för en slinga med okänt antal turer."
 
 #: params.def:914
-#, fuzzy, no-c-format
-#| msgid "Min. ratio of insns to mem ops to enable prefetching in a loop"
+#, no-c-format
 msgid "Min. ratio of insns to mem ops to enable prefetching in a loop."
-msgstr "Minsta förhållande av instruktioner till minnesoperationer för att aktivera förhandshämtning (prefetching) i en slinga"
+msgstr "Minsta förhållande av instruktioner till minnesoperationer för att aktivera förhandshämtning (prefetching) i en slinga."
 
 #: params.def:921
-#, fuzzy, no-c-format
-#| msgid "Max. size of var tracking hash tables"
+#, no-c-format
 msgid "Max. size of var tracking hash tables."
-msgstr "Max storlek på hashtabell för variabelspårning"
+msgstr "Max storlek på hashtabell för variabelspårning."
 
 #: params.def:929
-#, fuzzy, no-c-format
-#| msgid "Max. recursion depth for expanding var tracking expressions"
+#, no-c-format
 msgid "Max. recursion depth for expanding var tracking expressions."
-msgstr "Maximalt rekursionsdjup för att expandera variabelspårningsuttryck"
+msgstr "Maximalt rekursionsdjup för att expandera variabelspårningsuttryck."
 
 #: params.def:937
-#, fuzzy, no-c-format
-#| msgid "Max. size of loc list for which reverse ops should be added"
+#, no-c-format
 msgid "Max. size of loc list for which reverse ops should be added."
-msgstr "Maximal storlek på loc-listan för vilken omvända operationer skall läggas till"
+msgstr "Maximal storlek på loc-listan för vilken omvända operationer skall läggas till."
 
 #: params.def:944
-#, fuzzy, no-c-format
-#| msgid "The minimum UID to be used for a nondebug insn"
+#, no-c-format
 msgid "The minimum UID to be used for a nondebug insn."
-msgstr "Minsta UID som får användas för en icke-felsökningsinstruktion"
+msgstr "Minsta UID som får användas för en icke-felsökningsinstruktion."
 
 #: params.def:949
-#, fuzzy, no-c-format
-#| msgid "Maximum allowed growth of size of new parameters ipa-sra replaces a pointer to an aggregate with"
+#, no-c-format
 msgid "Maximum allowed growth of size of new parameters ipa-sra replaces a pointer to an aggregate with."
-msgstr "Största tillåtna storleksökning för nya parametrar som ipa-sra ersätter en pekare till ett aggregat med"
+msgstr "Största tillåtna storleksökning för nya parametrar som ipa-sra ersätter en pekare till ett aggregat med."
 
 #: params.def:955
-#, fuzzy, no-c-format
-#| msgid "Size in bytes after which thread-local aggregates should be instrumented with the logging functions instead of save/restore pairs"
+#, no-c-format
 msgid "Size in bytes after which thread-local aggregates should be instrumented with the logging functions instead of save/restore pairs."
-msgstr "Storlek i byte efter vilken trådlokala aggregat skall instrumenteras med loggningsfunktioner istället för spara/återställ-par"
+msgstr "Storlek i byte efter vilken trådlokala aggregat skall instrumenteras med loggningsfunktioner istället för spara/återställ-par."
 
 #: params.def:962
-#, fuzzy, no-c-format
-#| msgid "Maximum size, in storage units, of an aggregate which should be considered for scalarization when compiling for speed"
+#, no-c-format
 msgid "Maximum size, in storage units, of an aggregate which should be considered for scalarization when compiling for speed."
-msgstr "Maximal storlek, i lagringsenheter, av ett aggregat som skall övervägas för skalärisering vid kompilering för hastighet"
+msgstr "Maximal storlek, i lagringsenheter, av ett aggregat som skall övervägas för skalärisering vid kompilering för hastighet."
 
 #: params.def:968
-#, fuzzy, no-c-format
-#| msgid "Maximum size, in storage units, of an aggregate which should be considered for scalarization when compiling for size"
+#, no-c-format
 msgid "Maximum size, in storage units, of an aggregate which should be considered for scalarization when compiling for size."
-msgstr "Maximal storlek, i lagringsenheter, av ett aggregat som skall övervägas för skalärisering vid kompilering för storlek"
+msgstr "Maximal storlek, i lagringsenheter, av ett aggregat som skall övervägas för skalärisering vid kompilering för storlek."
 
 #: params.def:974
-#, fuzzy, no-c-format
-#| msgid "Maximum size of a list of values associated with each parameter for interprocedural constant propagation"
+#, no-c-format
 msgid "Maximum size of a list of values associated with each parameter for interprocedural constant propagation."
-msgstr "Maximal storlek för en lista på värden associerad med varje parameter för konstantpropagering mellan procedurer"
+msgstr "Maximal storlek för en lista på värden associerad med varje parameter för konstantpropagering mellan procedurer."
 
 #: params.def:980
-#, fuzzy, no-c-format
-#| msgid "Threshold ipa-cp opportunity evaluation that is still considered beneficial to clone."
+#, no-c-format
 msgid "Threshold ipa-cp opportunity evaluation that is still considered beneficial to clone.."
 msgstr "Tröskelvärde för ipa-cp-tillfällesberäkning som fortfarande betraktas som fördelaktig att klona."
 
 #: params.def:986
-#, fuzzy, no-c-format
-#| msgid "Percentage penalty the recursive functions will receive when they are evaluated for cloning."
+#, no-c-format
 msgid "Percentage penalty the recursive functions will receive when they are evaluated for cloning.."
 msgstr "Procentuellt straff de rekursiva funktionerna kommer få när de utvärderas för kloning."
 
 #: params.def:992
-#, fuzzy, no-c-format
-#| msgid "Percentage penalty functions containg a single call to another function will receive when they are evaluated for cloning."
+#, no-c-format
 msgid "Percentage penalty functions containg a single call to another function will receive when they are evaluated for cloning.."
 msgstr "Procentuellt straff funktioner som innehåller ett ensamt anrop av en annan funktion kommer få när de utvärderas för kloning."
 
 #: params.def:998
-#, fuzzy, no-c-format
-#| msgid "Maximum number of aggregate content items for a parameter in jump functions and lattices"
+#, no-c-format
 msgid "Maximum number of aggregate content items for a parameter in jump functions and lattices."
-msgstr "Maximalt antal av sammansatta innehållsposter för en parameter i hoppfunktioner och gitter"
+msgstr "Maximalt antal av sammansatta innehållsposter för en parameter i hoppfunktioner och gitter."
 
 #: params.def:1004
-#, fuzzy, no-c-format
-#| msgid "Compile-time bonus IPA-CP assigns to candidates which make loop bounds or strides known."
+#, no-c-format
 msgid "Compile-time bonus IPA-CP assigns to candidates which make loop bounds or strides known.."
 msgstr "Bonus IPA-CP tilldelar vid kompileringstillfället till kandidater vilka gör slingbegränsningar eller -steg kända."
 
 #: params.def:1010
-#, fuzzy, no-c-format
-#| msgid "Compile-time bonus IPA-CP assigns to candidates which make an array index known."
+#, no-c-format
 msgid "Compile-time bonus IPA-CP assigns to candidates which make an array index known.."
 msgstr "Bonus IPA-CP tilldelar vid kompileringstillfället till kandidater som gör ett vektorindex känt."
 
 #: params.def:1016
-#, fuzzy, no-c-format
-#| msgid "Maximum number of statements that will be visited by IPA formal parameter analysis based on alias analysis in any given function"
+#, no-c-format
 msgid "Maximum number of statements that will be visited by IPA formal parameter analysis based on alias analysis in any given function."
-msgstr "Maximalt antal satser som kommer besökas av IPA-formatparameteranalysen baserat på aliasanalys i varje given funktion"
+msgstr "Maximalt antal satser som kommer besökas av IPA-formatparameteranalysen baserat på aliasanalys i varje given funktion."
 
 #: params.def:1024
-#, fuzzy, no-c-format
-#| msgid "Number of partitions the program should be split to"
+#, no-c-format
 msgid "Number of partitions the program should be split to."
-msgstr "Antal partitioner programmet skall delas upp i"
+msgstr "Antal partitioner programmet skall delas upp i."
 
 #: params.def:1029
-#, fuzzy, no-c-format
-#| msgid "Minimal size of a partition for LTO (in estimated instructions)"
+#, no-c-format
 msgid "Minimal size of a partition for LTO (in estimated instructions)."
-msgstr "Minimal storlek på en partition för LTO (i uppskattade instruktioner)"
+msgstr "Minimal storlek på en partition för LTO (i uppskattade instruktioner)."
 
 #: params.def:1036
-#, fuzzy, no-c-format
-#| msgid "Maximum number of namespaces to search for alternatives when name lookup fails"
+#, no-c-format
 msgid "Maximum number of namespaces to search for alternatives when name lookup fails."
-msgstr "Det maximala antalet namnrymder att söka i för alternativ när namnuppslagning misslyckas"
+msgstr "Det maximala antalet namnrymder att söka i för alternativ när namnuppslagning misslyckas."
 
 #: params.def:1043
-#, fuzzy, no-c-format
-#| msgid "Maximum number of conditional store pairs that can be sunk"
+#, no-c-format
 msgid "Maximum number of conditional store pairs that can be sunk."
-msgstr "Maximalt antal villkorliga lagringspar som kan sänkas"
+msgstr "Maximalt antal villkorliga lagringspar som kan sänkas."
 
 #: params.def:1051
-#, fuzzy, no-c-format
-#| msgid "The smallest number of different values for which it is best to use a jump-table instead of a tree of conditional branches, if 0, use the default for the machine"
+#, no-c-format
 msgid "The smallest number of different values for which it is best to use a jump-table instead of a tree of conditional branches, if 0, use the default for the machine."
-msgstr "Det minsta antalet olika värden för vilka det är bäst att använda hopptabeller istället för ett träd med villkorliga grenar, om 0, använd standardvärdet för maskinen"
+msgstr "Det minsta antalet olika värden för vilka det är bäst att använda hopptabeller istället för ett träd med villkorliga grenar, om 0, använd standardvärdet för maskinen."
 
 #: params.def:1059
-#, fuzzy, no-c-format
-#| msgid "Allow new data races on stores to be introduced"
+#, no-c-format
 msgid "Allow new data races on stores to be introduced."
-msgstr "Tillåt att nya datakapplöpningar vid lagringar introduceras"
+msgstr "Tillåt att nya datakapplöpningar vid lagringar introduceras."
 
 #: params.def:1065
-#, fuzzy, no-c-format
-#| msgid "Set the maximum number of instructions executed in parallel in reassociated tree. If 0, use the target dependent heuristic."
+#, no-c-format
 msgid "Set the maximum number of instructions executed in parallel in reassociated tree. If 0, use the target dependent heuristic.."
 msgstr "Sätt maximala antalet instruktioner som exekveras parallellt i ett reassociativt träd.  Om 0, använd den målberoende heuristiken."
 
 #: params.def:1071
-#, fuzzy, no-c-format
-#| msgid "Maximum amount of similar bbs to compare a bb with"
+#, no-c-format
 msgid "Maximum amount of similar bbs to compare a bb with."
-msgstr "Maximalt antal liknande gb att jämföra ett gb med"
+msgstr "Maximalt antal liknande gb att jämföra ett gb med."
 
 #: params.def:1076
-#, fuzzy, no-c-format
-#| msgid "Maximum amount of iterations of the pass over a function"
+#, no-c-format
 msgid "Maximum amount of iterations of the pass over a function."
-msgstr "Maximalt antal iterationer för passet över en funktion"
+msgstr "Maximalt antal iterationer för passet över en funktion."
 
 #: params.def:1083
-#, fuzzy, no-c-format
-#| msgid "Maximum number of strings for which strlen optimization pass will track string lengths"
+#, no-c-format
 msgid "Maximum number of strings for which strlen optimization pass will track string lengths."
-msgstr "Maximalt antal strängar för vilket strlen-optimeringspasset kommer följa stränglängder"
+msgstr "Maximalt antal strängar för vilket strlen-optimeringspasset kommer följa stränglängder."
 
 #: params.def:1090
-#, fuzzy, no-c-format
-#| msgid "Which -fsched-pressure algorithm to apply"
+#, no-c-format
 msgid "Which -fsched-pressure algorithm to apply."
-msgstr "Vilken -fsched-pressure-algoritm som skall användas"
+msgstr "Vilken -fsched-pressure-algoritm som skall användas."
 
 #: params.def:1096
-#, fuzzy, no-c-format
-#| msgid "Maximum length of candidate scans for straight-line strength reduction"
+#, no-c-format
 msgid "Maximum length of candidate scans for straight-line strength reduction."
-msgstr "Maximal längd på kandidatskanningar efter rätlinjiga styrkereduktioner"
+msgstr "Maximal längd på kandidatskanningar efter rätlinjiga styrkereduktioner."
 
 #: params.def:1102
-#, fuzzy, no-c-format
-#| msgid "Enable asan stack protection"
+#, no-c-format
 msgid "Enable asan stack protection."
-msgstr "Aktivera asan-skydd av stack"
+msgstr "Aktivera asan-skydd av stack."
 
 #: params.def:1107
-#, fuzzy, no-c-format
-#| msgid "Enable asan globals protection"
+#, no-c-format
 msgid "Enable asan globals protection."
-msgstr "Aktivera globalt asan-skydd"
+msgstr "Aktivera globalt asan-skydd."
 
 #: params.def:1112
-#, fuzzy, no-c-format
-#| msgid "Enable asan store operations protection"
+#, no-c-format
 msgid "Enable asan store operations protection."
-msgstr "Aktivera asan-skydd av lagringsoperationer"
+msgstr "Aktivera asan-skydd av lagringsoperationer."
 
 #: params.def:1117
-#, fuzzy, no-c-format
-#| msgid "Enable asan load operations protection"
+#, no-c-format
 msgid "Enable asan load operations protection."
-msgstr "Aktivera asan-skydd av laddningsoperationer"
+msgstr "Aktivera asan-skydd av laddningsoperationer."
 
 #: params.def:1122
-#, fuzzy, no-c-format
-#| msgid "Enable asan builtin functions protection"
+#, no-c-format
 msgid "Enable asan builtin functions protection."
-msgstr "Aktivera asan-skydd av inbyggda funktioner"
+msgstr "Aktivera asan-skydd av inbyggda funktioner."
 
 #: params.def:1127
-#, fuzzy, no-c-format
-#| msgid "Enable asan detection of use-after-return bugs"
+#, no-c-format
 msgid "Enable asan detection of use-after-return bugs."
-msgstr "Aktivera asan-detektering av använd-efter-retur-fel"
+msgstr "Aktivera asan-detektering av använd-efter-retur-fel."
 
 #: params.def:1132
-#, fuzzy, no-c-format
-#| msgid "Use callbacks instead of inline code if number of accesses in function becomes greater or equal to this number"
+#, no-c-format
 msgid "Use callbacks instead of inline code if number of accesses in function becomes greater or equal to this number."
-msgstr "Använd återanrop istället för inline:ad kod om antalet åtkomster i funktioner blir större eller lika med detta tal"
+msgstr "Använd återanrop istället för inline:ad kod om antalet åtkomster i funktioner blir större eller lika med detta tal."
 
 #: params.def:1138
-#, fuzzy, no-c-format
-#| msgid "Maximum number of nested calls to search for control dependencies during uninitialized variable analysis"
+#, no-c-format
 msgid "Maximum number of nested calls to search for control dependencies during uninitialized variable analysis."
-msgstr "Det maximala antalet nästade anrop att söka i efter styrberoenden under analys av oinitierade variabler"
+msgstr "Det maximala antalet nästade anrop att söka i efter styrberoenden under analys av oinitierade variabler."
 
 #: params.def:1144
-#, fuzzy, no-c-format
-#| msgid "Maximum number of statements to be included into a single static constructor generated by Pointer Bounds Checker"
+#, no-c-format
 msgid "Maximum number of statements to be included into a single static constructor generated by Pointer Bounds Checker."
-msgstr "Maximalt antal satser som skall inkluderas i en enskild statisk konstruerare genererad av pekargränskontrolleraren"
+msgstr "Maximalt antal satser som skall inkluderas i en enskild statisk konstruerare genererad av pekargränskontrolleraren."
 
 #: params.def:1150
 #, no-c-format
@@ -2579,22 +2442,19 @@ msgid "Scale factor to apply to the number of blocks in a threading path when co
 msgstr "Skalfaktor att använda på antalet block i en trådningsväg vid jämförelse med antalet av (skalade) satser."
 
 #: params.def:1160
-#, fuzzy, no-c-format
-#| msgid "Maximum number of instructions to copy when duplicating blocks on a finite state automaton jump thread path"
+#, no-c-format
 msgid "Maximum number of instructions to copy when duplicating blocks on a finite state automaton jump thread path."
-msgstr "Maximalt antal instruktioner att kopiera vid duplicering av block på hopptrådvägen för en ändlig tillståndsmaskin"
+msgstr "Maximalt antal instruktioner att kopiera vid duplicering av block på hopptrådvägen för en ändlig tillståndsmaskin."
 
 #: params.def:1165
-#, fuzzy, no-c-format
-#| msgid "Maximum number of basic blocks on a finite state automaton jump thread path"
+#, no-c-format
 msgid "Maximum number of basic blocks on a finite state automaton jump thread path."
-msgstr "Maximalt antal grundblock i en ändlig tillståndsmaskins hopptrådsvägar"
+msgstr "Maximalt antal grundblock i en ändlig tillståndsmaskins hopptrådsvägar."
 
 #: params.def:1170
-#, fuzzy, no-c-format
-#| msgid "Maximum number of new jump thread paths to create for a finite state automaton"
+#, no-c-format
 msgid "Maximum number of new jump thread paths to create for a finite state automaton."
-msgstr "Det maximala antalet nya hopptrådvägar att skapa för en ändlig tillståndsmaskin"
+msgstr "Det maximala antalet nya hopptrådvägar att skapa för en ändlig tillståndsmaskin."
 
 #: params.def:1175
 #, no-c-format
@@ -2612,10 +2472,9 @@ msgid "Maximum recursion depth allowed when querying a property of an SSA name."
 msgstr "Maximalt tillåtet rekursionsdjup när en egenskap efterfrågas från ett SSA-namn."
 
 #: params.def:1193
-#, fuzzy, no-c-format
-#| msgid "Maximum number of instructions in basic block to be considered for SLP vectorization"
+#, no-c-format
 msgid "Maximum number of insns in a basic block to consider for RTL if-conversion."
-msgstr "Det maximala antalet instruktioner i grundblock för beaktas för SLP-vektorisering"
+msgstr "Det maximala antalet instruktioner i grundblock att beaktas för RTL if-konvertering."
 
 #: params.def:1199
 #, no-c-format
@@ -3508,10 +3367,9 @@ msgid "unknown insn mode"
 msgstr "okänt instruktionsläge"
 
 #: config/i386/djgpp.h:146
-#, fuzzy, c-format
-#| msgid "-f%s not supported: ignored"
+#, c-format
 msgid "-f%s ignored (not supported for DJGPP)\n"
-msgstr "-f%s stödjs inte: ignoreras"
+msgstr "-f%s ignoreras (stödjs inte för DJGPP)\n"
 
 #: config/i386/i386-interix.h:77
 msgid "Use native (MS) bitfield layout"
@@ -3775,10 +3633,8 @@ msgid "-mquad-memory is not available in little endian mode"
 msgstr "-mquad-memory är inte tillgängligt i läget med omvänd byteordning"
 
 #: config/rs6000/rs6000.c:4154
-#, fuzzy
-#| msgid "-mquad-memory requires 64-bit mode"
 msgid "-mtoc-fusion requires 64-bit"
-msgstr "--mquad-memory kräver 64-bitarsläge"
+msgstr "--mtoc-fusion kräver 64-bitar"
 
 #: config/rs6000/rs6000.c:4161
 msgid "-mtoc-fusion requires medium/large code model"
@@ -3872,10 +3728,8 @@ msgid "__float128 and __ibm128 cannot be used in the same expression"
 msgstr "__float128 och __ibm128 kan inte användas i samma uttryck"
 
 #: config/rs6000/rs6000.c:20899
-#, fuzzy
-#| msgid "Cilk array notation cannot be used for a throw expression"
 msgid "__ibm128 and long double cannot be used in the same expression"
-msgstr "Cilk-vektornotation kan inte användas till ett throw-uttryck"
+msgstr "__ibm128 och long double inte användas i samma uttryck"
 
 #: config/rs6000/rs6000.c:20905
 msgid "__float128 and long double cannot be used in the same expression"
@@ -3890,10 +3744,8 @@ msgid "Could not generate addis value for fusion"
 msgstr "Kunde inte generera addis-värde för sammanslagning"
 
 #: config/rs6000/rs6000.c:36058
-#, fuzzy
-#| msgid "Unable to generate load offset for fusion"
 msgid "Unable to generate load/store offset for fusion"
-msgstr "Kan inte generera laddningsavstånd för sammanslagning"
+msgstr "Kan inte generera load/store-avstånd för sammanslagning"
 
 #: config/rs6000/rs6000.c:36162
 msgid "Bad GPR fusion"
@@ -3984,10 +3836,9 @@ msgid "invalid constant - try using an output modifier"
 msgstr "ogiltig konstant - försök med att använda en utmatningsmodifierare"
 
 #: config/s390/s390.c:7343
-#, fuzzy, c-format
-#| msgid "invalid constant for output modifier '%c'"
+#, c-format
 msgid "invalid constant vector for output modifier '%c'"
-msgstr "ogiltig konstant för utmatningsmodifieraren ”%c”"
+msgstr "ogiltig konstant vektor för utmatningsmodifieraren ”%c”"
 
 #: config/s390/s390.c:7350
 #, c-format
@@ -4000,26 +3851,20 @@ msgid "invalid expression for output modifier '%c'"
 msgstr "ogiltigt uttryck för utmatningsmodifieraren ”%c”"
 
 #: config/s390/s390.c:11001
-#, fuzzy
-#| msgid "AltiVec argument passed to unprototyped function"
 msgid "Vector argument passed to unprototyped function"
-msgstr "AltiVec-argument skickat till funktion utan prototyp"
+msgstr "Vektorargument skickat till funktion utan prototyp"
 
 #: config/s390/s390.c:14505
-#, fuzzy
-#| msgid "pointer targets in return differ in signedness"
 msgid "types differ in signess"
-msgstr "pekarmål i retur skiljer i teckenhet"
+msgstr "typer skiljer i teckenhet"
 
 #: config/s390/s390.c:14515
 msgid "binary operator does not support two vector bool operands"
 msgstr "binäroperator stödjer inte två vektorbooleanoperander"
 
 #: config/s390/s390.c:14518
-#, fuzzy
-#| msgid "Your target platform does not support -fcheck-pointer-bounds"
 msgid "binary operator does not support vector bool operand"
-msgstr "Din målplattform stödjer inte -fcheck-pointer-bounds"
+msgstr "den binära operatorn stödjer inte vektor-bool-operand"
 
 #: config/s390/s390.c:14526
 msgid "binary operator does not support mixing vector bool with floating point vector operands"
@@ -4084,8 +3929,7 @@ msgid "invalid %%s operand"
 msgstr "ogiltig %%s-operand"
 
 #: config/sparc/sparc.c:8934
-#, fuzzy, c-format
-#| msgid "floating point constant not a valid immediate operand"
+#, c-format
 msgid "floating-point constant not a valid immediate operand"
 msgstr "flyttalskonstant inte en giltig omedelbar operand"
 
@@ -4643,16 +4487,12 @@ msgid "required from %q#D\n"
 msgstr "begärs från %q#D\n"
 
 #: cp/error.c:3368
-#, fuzzy
-#| msgid "recursively required from here"
 msgid "recursively required from here\n"
-msgstr "rekursivt begärd härifrån"
+msgstr "rekursivt begärd härifrån\n"
 
 #: cp/error.c:3369
-#, fuzzy
-#| msgid "required from here"
 msgid "required from here\n"
-msgstr "begärd härifrån"
+msgstr "begärd härifrån\n"
 
 #: cp/error.c:3421
 msgid "%r%s:%d:%d:%R   [ skipping %d instantiation contexts, use -ftemplate-backtrace-limit=0 to disable ]\n"
@@ -4869,10 +4709,8 @@ msgid "Nonnegative width required"
 msgstr "Ickenegativ bredd krävs"
 
 #: fortran/io.c:552
-#, fuzzy
-#| msgid "Unexpected element %<%c%> in format string at %L"
 msgid "Unexpected element %qc in format string at %L"
-msgstr "Oväntat element %<%c%> i formatsträng vid %L"
+msgstr "Oväntat element %qc i formatsträng vid %L"
 
 #: fortran/io.c:554
 msgid "Unexpected end of format string"
@@ -5140,16 +4978,14 @@ msgid "Invalid context for NULL() pointer at %%L"
 msgstr "Ogiltigt sammanhang för NULL()-pekare vid %%L"
 
 #: fortran/resolve.c:3568
-#, fuzzy, c-format
-#| msgid "Operand of unary numeric operator '%s' at %%L is %s"
+#, c-format
 msgid "Operand of unary numeric operator %%<%s%%> at %%L is %s"
-msgstr "Operand till unär numerisk operator ”%s” vid %%L är %s"
+msgstr "Operand till unär numerisk operator %%<%s%%> vid %%L är %s"
 
 #: fortran/resolve.c:3584
-#, fuzzy, c-format
-#| msgid "Operands of binary numeric operator '%s' at %%L are %s/%s"
+#, c-format
 msgid "Operands of binary numeric operator %%<%s%%> at %%L are %s/%s"
-msgstr "Operander till binär numerisk operator ”%s” vid %%L är %s/%s"
+msgstr "Operander till binär numerisk operator %%<%s%%> vid %%L är %s/%s"
 
 #: fortran/resolve.c:3599
 #, c-format
@@ -5157,10 +4993,9 @@ msgid "Operands of string concatenation operator at %%L are %s/%s"
 msgstr "Operanderna till strängkonkateneringsoperatorn vid %%L är %s/%s"
 
 #: fortran/resolve.c:3618
-#, fuzzy, c-format
-#| msgid "Operands of logical operator '%s' at %%L are %s/%s"
+#, c-format
 msgid "Operands of logical operator %%<%s%%> at %%L are %s/%s"
-msgstr "Operanderna till logiska operatorn ”%s” vid %%L är %s/%s"
+msgstr "Operanderna till logiska operatorn %%<%s%%> vid %%L är %s/%s"
 
 #: fortran/resolve.c:3632
 #, c-format
@@ -5177,28 +5012,24 @@ msgid "Logicals at %%L must be compared with %s instead of %s"
 msgstr "Logiska vid %%L måste jämföras med %s istället för %s"
 
 #: fortran/resolve.c:3703
-#, fuzzy, c-format
-#| msgid "Operands of comparison operator '%s' at %%L are %s/%s"
+#, c-format
 msgid "Operands of comparison operator %%<%s%%> at %%L are %s/%s"
-msgstr "Operanderna till jämförelseoperatorn ”%s” vid %%L är %s/%s"
+msgstr "Operanderna till jämförelseoperatorn %%<%s%%> vid %%L är %s/%s"
 
 #: fortran/resolve.c:3711
-#, fuzzy, c-format
-#| msgid "Unknown operator '%s' at %%L"
+#, c-format
 msgid "Unknown operator %%<%s%%> at %%L"
-msgstr "Okänd operator ”%s” vid %%L"
+msgstr "Okänd operator %%<%s%%> vid %%L"
 
 #: fortran/resolve.c:3714
-#, fuzzy, c-format
-#| msgid "Operand of user operator '%s' at %%L is %s"
+#, c-format
 msgid "Operand of user operator %%<%s%%> at %%L is %s"
-msgstr "Operanderna till användaroperatorn ”%s” vid %%L är %s"
+msgstr "Operanderna till användaroperatorn %%<%s%%> vid %%L är %s"
 
 #: fortran/resolve.c:3718
-#, fuzzy, c-format
-#| msgid "Operands of user operator '%s' at %%L are %s/%s"
+#, c-format
 msgid "Operands of user operator %%<%s%%> at %%L are %s/%s"
-msgstr "Operanderna till användaroperatorn ”%s” vid %%L är %s/%s"
+msgstr "Operanderna till användaroperatorn %%<%s%%> vid %%L är %s/%s"
 
 #: fortran/resolve.c:3806
 #, c-format
@@ -5611,20 +5442,16 @@ msgid "-c required for gnat2scil"
 msgstr "-c krävs för gnat2scil"
 
 #: config/sol2.h:181
-#, fuzzy
-#| msgid "weakref is not supported in this configuration"
 msgid "-fvtable-verify is not supported in this configuration"
-msgstr "weakref stödjs inte i denna konfiguration"
+msgstr "-fvtable-verify stödjs inte i denna konfiguration"
 
 #: config/sol2.h:268 config/sol2.h:273
 msgid "does not support multilib"
 msgstr "stödjer inte multilib"
 
 #: config/sol2.h:365
-#, fuzzy
-#| msgid "-gz is not supported in this configuration"
 msgid "-pie is not supported in this configuration"
-msgstr "-gz stödjs inte i denna konfiguration"
+msgstr "-pie stödjs inte i denna konfiguration"
 
 #: config/darwin.h:251
 msgid "-current_version only allowed with -dynamiclib"
@@ -5812,218 +5639,148 @@ msgid "-femit-class-file should used along with -fsyntax-only"
 msgstr "-femit-class-file skall användas tillsammans med -fsyntax-only"
 
 #: fortran/lang.opt:146
-#, fuzzy
-#| msgid "-J<directory>\tPut MODULE files in 'directory'"
 msgid "-J<directory>\tPut MODULE files in 'directory'."
-msgstr "-J<katalog>\tLägg MODULE-filer i ”katalog”"
+msgstr "-J<katalog>\tLägg MODULE-filer i ”katalog”."
 
 #: fortran/lang.opt:198
-#, fuzzy
-#| msgid "Warn about possible aliasing of dummy arguments"
 msgid "Warn about possible aliasing of dummy arguments."
-msgstr "Varna för eventuella attrappargumentalias"
+msgstr "Varna för eventuella attrappargumentalias."
 
 #: fortran/lang.opt:202
-#, fuzzy
-#| msgid "Warn about alignment of COMMON blocks"
 msgid "Warn about alignment of COMMON blocks."
-msgstr "Varna för justering av COMMON-block"
+msgstr "Varna för justering av COMMON-block."
 
 #: fortran/lang.opt:206
-#, fuzzy
-#| msgid "Warn about missing ampersand in continued character constants"
 msgid "Warn about missing ampersand in continued character constants."
-msgstr "Varna för saknade et-tecken i fortsatta teckenkonstanter"
+msgstr "Varna för saknade et-tecken i fortsatta teckenkonstanter."
 
 #: fortran/lang.opt:210
-#, fuzzy
-#| msgid "Warn about creation of array temporaries"
 msgid "Warn about creation of array temporaries."
-msgstr "Varna om vektortemporärer skapas"
+msgstr "Varna om vektortemporärer skapas."
 
 #: fortran/lang.opt:214
-#, fuzzy
-#| msgid "Warn if the type of a variable might be not interoperable with C"
 msgid "Warn if the type of a variable might be not interoperable with C."
-msgstr "Varna om typen på en variabel kanske inte är interoperabel med C"
+msgstr "Varna om typen på en variabel kanske inte är interoperabel med C."
 
 #: fortran/lang.opt:222
-#, fuzzy
-#| msgid "Warn about truncated character expressions"
 msgid "Warn about truncated character expressions."
-msgstr "Varna för avhuggna teckenuttryck"
+msgstr "Varna för avhuggna teckenuttryck."
 
 #: fortran/lang.opt:226
-#, fuzzy
-#| msgid "Warn about equality comparisons involving REAL or COMPLEX expressions"
 msgid "Warn about equality comparisons involving REAL or COMPLEX expressions."
-msgstr "Varna för likhetsjämförelser som involverar REAL- eller COMPLEX-uttryck"
+msgstr "Varna för likhetsjämförelser som involverar REAL- eller COMPLEX-uttryck."
 
 #: fortran/lang.opt:234
-#, fuzzy
-#| msgid "Warn about most implicit conversions"
 msgid "Warn about most implicit conversions."
-msgstr "Varna för de flesta implicita konverteringar"
+msgstr "Varna för de flesta implicita konverteringar."
 
 #: fortran/lang.opt:242
-#, fuzzy
-#| msgid "Warn about function call elimination"
 msgid "Warn about function call elimination."
-msgstr "Varna för eliminering av funktionsanrop"
+msgstr "Varna för eliminering av funktionsanrop."
 
 #: fortran/lang.opt:246
-#, fuzzy
-#| msgid "Warn about calls with implicit interface"
 msgid "Warn about calls with implicit interface."
-msgstr "Varna för anrop med implicit gränssnitt"
+msgstr "Varna för anrop med implicit gränssnitt."
 
 #: fortran/lang.opt:250
-#, fuzzy
-#| msgid "Warn about called procedures not explicitly declared"
 msgid "Warn about called procedures not explicitly declared."
-msgstr "Varna för anrop av procedurer som inte explicit deklarerats"
+msgstr "Varna för anrop av procedurer som inte explicit deklarerats."
 
 #: fortran/lang.opt:254
-#, fuzzy
-#| msgid "Warn about compile-time integer division by zero"
 msgid "Warn about constant integer divisions with truncated results."
-msgstr "Varna för heltalsdivision med noll vid kompileringstillfället"
+msgstr "Varna för konstant heltalsdivision med avhuggna resultat."
 
 #: fortran/lang.opt:258
-#, fuzzy
-#| msgid "Warn about truncated source lines"
 msgid "Warn about truncated source lines."
-msgstr "Varna för avhuggna källkodsrader"
+msgstr "Varna för avhuggna källkodsrader."
 
 #: fortran/lang.opt:262
-#, fuzzy
-#| msgid "Warn on intrinsics not part of the selected standard"
 msgid "Warn on intrinsics not part of the selected standard."
-msgstr "Inbyggd för inbyggda om inte är med i den valda standarden"
+msgstr "Inbyggd för inbyggda om inte är med i den valda standarden."
 
 #: fortran/lang.opt:274
-#, fuzzy
-#| msgid "Warn about USE statements that have no ONLY qualifier"
 msgid "Warn about USE statements that have no ONLY qualifier."
-msgstr "Varna för USE-satser som inte har någon ONLY-kvalificerare"
+msgstr "Varna för USE-satser som inte har någon ONLY-kvalificerare."
 
 #: fortran/lang.opt:286
-#, fuzzy
-#| msgid "Warn about real-literal-constants with 'q' exponent-letter"
 msgid "Warn about real-literal-constants with 'q' exponent-letter."
-msgstr "Varna för reella literala konstanter med exponentbokstav ”q”"
+msgstr "Varna för reella literala konstanter med exponentbokstav ”q”."
 
 #: fortran/lang.opt:290
-#, fuzzy
-#| msgid "Warn when a left-hand-side array variable is reallocated"
 msgid "Warn when a left-hand-side array variable is reallocated."
-msgstr "Varna när en vektorvariabel på vänsterhandssidan allokeras om"
+msgstr "Varna när en vektorvariabel på vänsterhandssidan allokeras om."
 
 #: fortran/lang.opt:294
-#, fuzzy
-#| msgid "Warn when a left-hand-side variable is reallocated"
 msgid "Warn when a left-hand-side variable is reallocated."
-msgstr "Varna när en variabel på vänsterhandssidan allokeras om"
+msgstr "Varna när en variabel på vänsterhandssidan allokeras om."
 
 #: fortran/lang.opt:298
-#, fuzzy
-#| msgid "Warn if the pointer in a pointer assignment might outlive its target"
 msgid "Warn if the pointer in a pointer assignment might outlive its target."
-msgstr "Varna om pekaren i en pekartilldelning kan överleva sitt mål"
+msgstr "Varna om pekaren i en pekartilldelning kan överleva sitt mål."
 
 #: fortran/lang.opt:306
-#, fuzzy
-#| msgid "Warn about \"suspicious\" constructs"
 msgid "Warn about \"suspicious\" constructs."
-msgstr "Varna för ”misstänkta” konstruktioner"
+msgstr "Varna för ”misstänkta” konstruktioner."
 
 #: fortran/lang.opt:310
-#, fuzzy
-#| msgid "Permit nonconforming uses of the tab character"
 msgid "Permit nonconforming uses of the tab character."
-msgstr "Tillåt ej konforma användningar av tabulatortecken"
+msgstr "Tillåt ej konforma användningar av tabulatortecken."
 
 #: fortran/lang.opt:314
-#, fuzzy
-#| msgid "Warn about underflow of numerical constant expressions"
 msgid "Warn about underflow of numerical constant expressions."
-msgstr "Varna för underspill i numeriska konstantuttryck"
+msgstr "Varna för underspill i numeriska konstantuttryck."
 
 #: fortran/lang.opt:322
-#, fuzzy
-#| msgid "Warn if a user-procedure has the same name as an intrinsic"
 msgid "Warn if a user-procedure has the same name as an intrinsic."
-msgstr "Varna om en användarprocedur har samma namn som en inbyggd"
+msgstr "Varna om en användarprocedur har samma namn som en inbyggd."
 
 #: fortran/lang.opt:330
 msgid "Warn about unused dummy arguments."
 msgstr "Varna för oanvända attrappargument."
 
 #: fortran/lang.opt:334
-#, fuzzy
-#| msgid "Warn about zero-trip DO loops"
 msgid "Warn about zero-trip DO loops."
-msgstr "Varna för DO-slingor med noll-trippar"
+msgstr "Varna för DO-slingor med noll-trippar."
 
 #: fortran/lang.opt:338
-#, fuzzy
-#| msgid "Enable preprocessing"
 msgid "Enable preprocessing."
-msgstr "Aktivera preprocessning"
+msgstr "Aktivera preprocessning."
 
 #: fortran/lang.opt:346
-#, fuzzy
-#| msgid "Disable preprocessing"
 msgid "Disable preprocessing."
-msgstr "Avaktivera preprocessning"
+msgstr "Avaktivera preprocessning."
 
 #: fortran/lang.opt:354
-#, fuzzy
-#| msgid "Eliminate multiple function invokations also for impure functions"
 msgid "Eliminate multiple function invokations also for impure functions."
-msgstr "Eliminera multipla funktionsanrop även för orena funktioner"
+msgstr "Eliminera multipla funktionsanrop även för orena funktioner."
 
 #: fortran/lang.opt:358
-#, fuzzy
-#| msgid "Enable alignment of COMMON blocks"
 msgid "Enable alignment of COMMON blocks."
-msgstr "Aktivera justering av COMMON-block"
+msgstr "Aktivera justering av COMMON-block."
 
 #: fortran/lang.opt:362
-#, fuzzy
-#| msgid "All intrinsics procedures are available regardless of selected standard"
 msgid "All intrinsics procedures are available regardless of selected standard."
-msgstr "Alla inbyggda procedurer är tillgängliga oavsett av vald standard"
+msgstr "Alla inbyggda procedurer är tillgängliga oavsett av vald standard."
 
 #: fortran/lang.opt:370
-#, fuzzy
-#| msgid "Do not treat local variables and COMMON blocks as if they were named in SAVE statements"
 msgid "Do not treat local variables and COMMON blocks as if they were named in SAVE statements."
-msgstr "Behandla inte lokala variabler och COMMON-block som om de vore namngivna i SAVE-satser"
+msgstr "Behandla inte lokala variabler och COMMON-block som om de vore namngivna i SAVE-satser."
 
 #: fortran/lang.opt:374
-#, fuzzy
-#| msgid "Specify that backslash in string introduces an escape character"
 msgid "Specify that backslash in string introduces an escape character."
-msgstr "Ange att omvänt snedstreck i strängar inleder ett specialtecken"
+msgstr "Ange att omvänt snedstreck i strängar inleder ett specialtecken."
 
 #: fortran/lang.opt:378
-#, fuzzy
-#| msgid "Produce a backtrace when a runtime error is encountered"
 msgid "Produce a backtrace when a runtime error is encountered."
-msgstr "Skapa en stackspårning när ett fel inträffar under körning"
+msgstr "Skapa en stackspårning när ett fel inträffar under körning."
 
 #: fortran/lang.opt:382
-#, fuzzy
-#| msgid "-fblas-matmul-limit=<n>\tSize of the smallest matrix for which matmul will use BLAS"
 msgid "-fblas-matmul-limit=<n>\tSize of the smallest matrix for which matmul will use BLAS."
-msgstr "-fblas-matmul-limit=<n>\tStorlek på den minsta matris för vilken matmul kommer använda BLAS"
+msgstr "-fblas-matmul-limit=<n>\tStorlek på den minsta matris för vilken matmul kommer använda BLAS."
 
 #: fortran/lang.opt:386
-#, fuzzy
-#| msgid "Produce a warning at runtime if a array temporary has been created for a procedure argument"
 msgid "Produce a warning at runtime if a array temporary has been created for a procedure argument."
-msgstr "Producera en varning vid körning om en vektortemporär har skapats för ett procedurargument"
+msgstr "Producera en varning vid körning om en vektortemporär har skapats för ett procedurargument."
 
 #: fortran/lang.opt:390
 msgid "-fconvert=<big-endian|little-endian|native|swap> The endianness used for unformatted files."
@@ -6035,46 +5792,32 @@ msgid "Unrecognized option to endianess value: %qs"
 msgstr "Okänd flagga till byteordervärde: %qs"
 
 #: fortran/lang.opt:409
-#, fuzzy
-#| msgid "Use the Cray Pointer extension"
 msgid "Use the Cray Pointer extension."
-msgstr "Använd Cray-pekarutökningen"
+msgstr "Använd Cray-pekarutökningen."
 
 #: fortran/lang.opt:413
-#, fuzzy
-#| msgid "Ignore 'D' in column one in fixed form"
 msgid "Ignore 'D' in column one in fixed form."
-msgstr "Ignorera ”D” i kolumn ett i fix form"
+msgstr "Ignorera ”D” i kolumn ett i fix form."
 
 #: fortran/lang.opt:417
-#, fuzzy
-#| msgid "Treat lines with 'D' in column one as comments"
 msgid "Treat lines with 'D' in column one as comments."
-msgstr "Tolka rader med ”D” i kolumn ett som kommentarer"
+msgstr "Tolka rader med ”D” i kolumn ett som kommentarer."
 
 #: fortran/lang.opt:421
-#, fuzzy
-#| msgid "Set the default double precision kind to an 8 byte wide type"
 msgid "Set the default double precision kind to an 8 byte wide type."
-msgstr "Ange standard för sorten dubbel precision till en 8 byte bred typ"
+msgstr "Ange standard för sorten dubbel precision till en 8 byte bred typ."
 
 #: fortran/lang.opt:425
-#, fuzzy
-#| msgid "Set the default integer kind to an 8 byte wide type"
 msgid "Set the default integer kind to an 8 byte wide type."
-msgstr "Ange standard för sorten heltal till en 8 byte bred typ"
+msgstr "Ange standard för sorten heltal till en 8 byte bred typ."
 
 #: fortran/lang.opt:429
-#, fuzzy
-#| msgid "Set the default real kind to an 8 byte wide type"
 msgid "Set the default real kind to an 8 byte wide type."
-msgstr "Ange standard för sorten reell till en 8 byte bred typ"
+msgstr "Ange standard för sorten reell till en 8 byte bred typ."
 
 #: fortran/lang.opt:433
-#, fuzzy
-#| msgid "Allow dollar signs in entity names"
 msgid "Allow dollar signs in entity names."
-msgstr "Tillåt dollartecken i entitetsnamn"
+msgstr "Tillåt dollartecken i entitetsnamn."
 
 #: fortran/lang.opt:437 config/alpha/alpha.opt:31 common.opt:728
 #: common.opt:916 common.opt:920 common.opt:924 common.opt:928 common.opt:1417
@@ -6084,136 +5827,92 @@ msgid "Does nothing. Preserved for backward compatibility."
 msgstr "Gör ingenting.  Bevarad för bakåtkompatibilitet."
 
 #: fortran/lang.opt:441
-#, fuzzy
-#| msgid "Display the code tree after parsing"
 msgid "Display the code tree after parsing."
-msgstr "Visa kodträdet efter tolkning"
+msgstr "Visa kodträdet efter tolkning."
 
 #: fortran/lang.opt:445
-#, fuzzy
-#| msgid "Display the code tree after front end optimization"
 msgid "Display the code tree after front end optimization."
-msgstr "Visa kodträdet efter framändesoptimering"
+msgstr "Visa kodträdet efter framändesoptimering."
 
 #: fortran/lang.opt:449
-#, fuzzy
-#| msgid "Display the code tree after parsing; deprecated option"
 msgid "Display the code tree after parsing; deprecated option."
-msgstr "Visa kodträdet efter tolkning, flaggan bör undvikas"
+msgstr "Visa kodträdet efter tolkning, flaggan bör undvikas."
 
 #: fortran/lang.opt:453
-#, fuzzy
-#| msgid "Specify that an external BLAS library should be used for matmul calls on large-size arrays"
 msgid "Specify that an external BLAS library should be used for matmul calls on large-size arrays."
-msgstr "Ange att ett externt BLAS-bibliotek skall användas för matmul-anrop på större vektorer"
+msgstr "Ange att ett externt BLAS-bibliotek skall användas för matmul-anrop på större vektorer."
 
 #: fortran/lang.opt:457
-#, fuzzy
-#| msgid "Use f2c calling convention"
 msgid "Use f2c calling convention."
-msgstr "Använd f2c:s anropskonvention"
+msgstr "Använd f2c:s anropskonvention."
 
 #: fortran/lang.opt:461
-#, fuzzy
-#| msgid "Assume that the source file is fixed form"
 msgid "Assume that the source file is fixed form."
-msgstr "Anta att källkodsfilen är i fix form"
+msgstr "Anta att källkodsfilen är i fix form."
 
 #: fortran/lang.opt:465
-#, fuzzy
-#| msgid "Interpret any INTEGER(4) as an INTEGER(8)"
 msgid "Interpret any INTEGER(4) as an INTEGER(8)."
-msgstr "Tolka en INTEGER(4) som en INTEGER(8)"
+msgstr "Tolka en INTEGER(4) som en INTEGER(8)."
 
 #: fortran/lang.opt:469 fortran/lang.opt:473
-#, fuzzy
-#| msgid "Specify where to find the compiled intrinsic modules"
 msgid "Specify where to find the compiled intrinsic modules."
-msgstr "Ange var de kompilerade inbyggda modulerna finns"
+msgstr "Ange var de kompilerade inbyggda modulerna finns."
 
 #: fortran/lang.opt:477
-#, fuzzy
-#| msgid "Allow arbitrary character line width in fixed mode"
 msgid "Allow arbitrary character line width in fixed mode."
-msgstr "Tillåt radlängd med godtyckligt antal tecken i fast läge"
+msgstr "Tillåt radlängd med godtyckligt antal tecken i fast läge."
 
 #: fortran/lang.opt:481
-#, fuzzy
-#| msgid "-ffixed-line-length-<n>\tUse n as character line width in fixed mode"
 msgid "-ffixed-line-length-<n>\tUse n as character line width in fixed mode."
-msgstr "-ffixed-line-length-<n>\tAnvänd radlängd med n tecken i fast läge"
+msgstr "-ffixed-line-length-<n>\tAnvänd radlängd med n tecken i fast läge."
 
 #: fortran/lang.opt:485
-#, fuzzy
-#| msgid "-ffpe-trap=[...]\tStop on following floating point exceptions"
 msgid "-ffpe-trap=[...]\tStop on following floating point exceptions."
-msgstr "-ffpe-trap=[...]\tStanna vid följande flyttalsundantag"
+msgstr "-ffpe-trap=[…]\tStanna vid följande flyttalsundantag."
 
 #: fortran/lang.opt:489
-#, fuzzy
-#| msgid "-ffpe-summary=[...]\tPrint summary of floating point exceptions"
 msgid "-ffpe-summary=[...]\tPrint summary of floating point exceptions."
-msgstr "-ffpe-summary=[…]\tSkriv ut en sammanfattning av flyttalsundantag"
+msgstr "-ffpe-summary=[…]\tSkriv ut en sammanfattning av flyttalsundantag."
 
 #: fortran/lang.opt:493
-#, fuzzy
-#| msgid "Assume that the source file is free form"
 msgid "Assume that the source file is free form."
-msgstr "Anta att källkodsfilen är i fritt format"
+msgstr "Anta att källkodsfilen är i fritt format."
 
 #: fortran/lang.opt:497
-#, fuzzy
-#| msgid "Allow arbitrary character line width in free mode"
 msgid "Allow arbitrary character line width in free mode."
-msgstr "Tillåt radlängd med godtyckligt antal tecken i fri form"
+msgstr "Tillåt radlängd med godtyckligt antal tecken i fri form."
 
 #: fortran/lang.opt:501
-#, fuzzy
-#| msgid "-ffree-line-length-<n>\tUse n as character line width in free mode"
 msgid "-ffree-line-length-<n>\tUse n as character line width in free mode."
-msgstr "-ffree-line-length-<n>\tAnvänd radlängd med n tecken i fri form"
+msgstr "-ffree-line-length-<n>\tAnvänd radlängd med n tecken i fri form."
 
 #: fortran/lang.opt:505
-#, fuzzy
-#| msgid "Enable front end optimization"
 msgid "Enable front end optimization."
-msgstr "Aktivera framändesoptimeringar"
+msgstr "Aktivera framändesoptimeringar."
 
 #: fortran/lang.opt:509
-#, fuzzy
-#| msgid "Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements"
 msgid "Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements."
-msgstr "Ange att ingen implicit typning är tillåten, om inte åsidosatt med uttryckliga IMPLICIT-satser"
+msgstr "Ange att ingen implicit typning är tillåten, om inte åsidosatt med uttryckliga IMPLICIT-satser."
 
 #: fortran/lang.opt:513
-#, fuzzy
-#| msgid "-finit-character=<n>\tInitialize local character variables to ASCII value n"
 msgid "-finit-character=<n>\tInitialize local character variables to ASCII value n."
-msgstr "-finit-character=<n>\tInitiera lokala teckenvariabler med ASCII-värde n"
+msgstr "-finit-character=<n>\tInitiera lokala teckenvariabler med ASCII-värde n."
 
 #: fortran/lang.opt:517
-#, fuzzy
-#| msgid "-finit-integer=<n>\tInitialize local integer variables to n"
 msgid "-finit-integer=<n>\tInitialize local integer variables to n."
-msgstr "-finit-integer=<n>\tInitiera lokala heltalsvariabler med n"
+msgstr "-finit-integer=<n>\tInitiera lokala heltalsvariabler med n."
 
 #: fortran/lang.opt:521
-#, fuzzy
-#| msgid "Initialize local variables to zero (from g77)"
 msgid "Initialize local variables to zero (from g77)."
-msgstr "Initiera lokala variabler med noll (från g77)"
+msgstr "Initiera lokala variabler med noll (från g77)."
 
 #: fortran/lang.opt:525
-#, fuzzy
-#| msgid "-finit-logical=<true|false>\tInitialize local logical variables"
 msgid "-finit-logical=<true|false>\tInitialize local logical variables."
-msgstr "-finit-logical=<true|false>\tInitiera lokala logiska variabler"
+msgstr "-finit-logical=<true|false>\tInitiera lokala logiska variabler."
 
 #: fortran/lang.opt:529
-#, fuzzy
-#| msgid "-finit-real=<zero|snan|nan|inf|-inf>\tInitialize local real variables"
 msgid "-finit-real=<zero|snan|nan|inf|-inf>\tInitialize local real variables."
-msgstr "-finit-real=<zero|snan|nan|inf|-inf>\tInitiera lokala reella variabler"
+msgstr "-finit-real=<zero|snan|nan|inf|-inf>\tInitiera lokala reella variabler."
 
 #: fortran/lang.opt:532
 #, c-format
@@ -6221,34 +5920,24 @@ msgid "Unrecognized option to floating-point init value: %qs"
 msgstr "Okänt argument till -floating-point initieringsvärde: %qs"
 
 #: fortran/lang.opt:551
-#, fuzzy
-#| msgid "-fblas-matmul-limit=<n>\tSize of the smallest matrix for which matmul will use BLAS"
 msgid "-finline-matmul-limit=<n>\tSpecify the size of the largest matrix for which matmul will be inlined."
-msgstr "-fblas-matmul-limit=<n>\tStorlek på den minsta matris för vilken matmul kommer använda BLAS"
+msgstr "-fblas-matmul-limit=<n>\tSpecificera storleken på den största matris för vilken matmul kommer inline:as."
 
 #: fortran/lang.opt:555
-#, fuzzy
-#| msgid "-fmax-array-constructor=<n>\tMaximum number of objects in an array constructor"
 msgid "-fmax-array-constructor=<n>\tMaximum number of objects in an array constructor."
-msgstr "-fmax-array-constructor=<n>\tMaximalt antal objekt i en vektorkonstruerare"
+msgstr "-fmax-array-constructor=<n>\tMaximalt antal objekt i en vektorkonstruerare."
 
 #: fortran/lang.opt:559
-#, fuzzy
-#| msgid "-fmax-identifier-length=<n>\tMaximum identifier length"
 msgid "-fmax-identifier-length=<n>\tMaximum identifier length."
-msgstr "-fmax-identifier-length=<n>\tMaximal identifierarlängd"
+msgstr "-fmax-identifier-length=<n>\tMaximal identifierarlängd."
 
 #: fortran/lang.opt:563
-#, fuzzy
-#| msgid "-fmax-subrecord-length=<n>\tMaximum length for subrecords"
 msgid "-fmax-subrecord-length=<n>\tMaximum length for subrecords."
-msgstr "-fmax-subrecord-length=<n>\tMaximal längd för underposter"
+msgstr "-fmax-subrecord-length=<n>\tMaximal längd för underposter."
 
 #: fortran/lang.opt:567
-#, fuzzy
-#| msgid "-fmax-stack-var-size=<n>\tSize in bytes of the largest array that will be put on the stack"
 msgid "-fmax-stack-var-size=<n>\tSize in bytes of the largest array that will be put on the stack."
-msgstr "-fmax-stack-var-size=<n>\tStorlek i byte på den största vektorn som läggs på stacken"
+msgstr "-fmax-stack-var-size=<n>\tStorlek i byte på den största vektorn som läggs på stacken."
 
 #: fortran/lang.opt:571
 msgid "Put all local arrays on stack."
@@ -6259,94 +5948,64 @@ msgid "Set default accessibility of module entities to PRIVATE."
 msgstr "Sätt modulentiteternas standardtillgänglighet till PRIVATE."
 
 #: fortran/lang.opt:591
-#, fuzzy
-#| msgid "Try to lay out derived types as compactly as possible"
 msgid "Try to lay out derived types as compactly as possible."
-msgstr "Försök placera ut härledda typer så kompakt som möjligt"
+msgstr "Försök placera ut härledda typer så kompakt som möjligt."
 
 #: fortran/lang.opt:599
-#, fuzzy
-#| msgid "Protect parentheses in expressions"
 msgid "Protect parentheses in expressions."
-msgstr "Skydda parenteser i uttryck"
+msgstr "Skydda parenteser i uttryck."
 
 #: fortran/lang.opt:603
-#, fuzzy
-#| msgid "Enable range checking during compilation"
 msgid "Enable range checking during compilation."
-msgstr "Aktivera intervallkontroller under kompilering"
+msgstr "Aktivera intervallkontroller under kompilering."
 
 #: fortran/lang.opt:607
-#, fuzzy
-#| msgid "Interpret any REAL(4) as a REAL(8)"
 msgid "Interpret any REAL(4) as a REAL(8)."
-msgstr "Tolka en REAL(4) som en REAL(8)"
+msgstr "Tolka en REAL(4) som en REAL(8)."
 
 #: fortran/lang.opt:611
-#, fuzzy
-#| msgid "Interpret any REAL(4) as a REAL(10)"
 msgid "Interpret any REAL(4) as a REAL(10)."
-msgstr "Tolka en REAL(4) som en REAL(10)"
+msgstr "Tolka en REAL(4) som en REAL(10)."
 
 #: fortran/lang.opt:615
-#, fuzzy
-#| msgid "Interpret any REAL(4) as a REAL(16)"
 msgid "Interpret any REAL(4) as a REAL(16)."
-msgstr "Tolka en REAL(4) som en REAL(16)"
+msgstr "Tolka en REAL(4) som en REAL(16)."
 
 #: fortran/lang.opt:619
-#, fuzzy
-#| msgid "Interpret any REAL(8) as a REAL(4)"
 msgid "Interpret any REAL(8) as a REAL(4)."
-msgstr "Tolka en REAL(8) som en REAL(4)"
+msgstr "Tolka en REAL(8) som en REAL(4)."
 
 #: fortran/lang.opt:623
-#, fuzzy
-#| msgid "Interpret any REAL(8) as a REAL(10)"
 msgid "Interpret any REAL(8) as a REAL(10)."
-msgstr "Tolka en REAL(8) som en REAL(10)"
+msgstr "Tolka en REAL(8) som en REAL(10)."
 
 #: fortran/lang.opt:627
-#, fuzzy
-#| msgid "Interpret any REAL(8) as a REAL(16)"
 msgid "Interpret any REAL(8) as a REAL(16)."
-msgstr "Tolka en REAL(8) som en REAL(16)"
+msgstr "Tolka en REAL(8) som en REAL(16)."
 
 #: fortran/lang.opt:631
-#, fuzzy
-#| msgid "Reallocate the LHS in assignments"
 msgid "Reallocate the LHS in assignments."
-msgstr "Omallokera vänsterhandssidan i tilldelningar"
+msgstr "Omallokera vänsterhandssidan i tilldelningar."
 
 #: fortran/lang.opt:635
-#, fuzzy
-#| msgid "Use a 4-byte record marker for unformatted files"
 msgid "Use a 4-byte record marker for unformatted files."
-msgstr "Använd 4-bytes postmarkeringar för oformaterade filer"
+msgstr "Använd 4-bytes postmarkeringar för oformaterade filer."
 
 #: fortran/lang.opt:639
-#, fuzzy
-#| msgid "Use an 8-byte record marker for unformatted files"
 msgid "Use an 8-byte record marker for unformatted files."
-msgstr "Använd 8-bytes postmarkeringar för oformaterade filer"
+msgstr "Använd 8-bytes postmarkeringar för oformaterade filer."
 
 #: fortran/lang.opt:643
-#, fuzzy
-#| msgid "Allocate local variables on the stack to allow indirect recursion"
 msgid "Allocate local variables on the stack to allow indirect recursion."
-msgstr "Allokera lokala variabler på stacken för att möjliggöra indirekt rekursion"
+msgstr "Allokera lokala variabler på stacken för att möjliggöra indirekt rekursion."
 
 #: fortran/lang.opt:647
-#, fuzzy
-#| msgid "Copy array sections into a contiguous block on procedure entry"
 msgid "Copy array sections into a contiguous block on procedure entry."
-msgstr "Kopiera vektorsektioner till sammanhängande block vid procedurstart"
+msgstr "Kopiera vektorsektioner till sammanhängande block vid procedurstart."
 
 #: fortran/lang.opt:651
-#, fuzzy
-#| msgid "-fcoarray=<none|single|lib>\tSpecify which coarray parallelization should be used"
 msgid "-fcoarray=<none|single|lib>\tSpecify which coarray parallelization should be used."
-msgstr "-fcoarray=<none|single|lib>\tAnge vilken co-vektorsparallellisering som skall användas"
+msgstr "-fcoarray=<none|single|lib>\tAnge vilken co-vektorsparallellisering som skall användas."
 
 #: fortran/lang.opt:654
 #, c-format
@@ -6354,28 +6013,20 @@ msgid "Unrecognized option: %qs"
 msgstr "Okänd flagga: %qs"
 
 #: fortran/lang.opt:667
-#, fuzzy
-#| msgid "-fcheck=[...]\tSpecify which runtime checks are to be performed"
 msgid "-fcheck=[...]\tSpecify which runtime checks are to be performed."
-msgstr "-fcheck=[...]\tAnge vilka körtidskontroller som skall utföras"
+msgstr "-fcheck=[...]\tAnge vilka körtidskontroller som skall utföras."
 
 #: fortran/lang.opt:671
-#, fuzzy
-#| msgid "Append a second underscore if the name already contains an underscore"
 msgid "Append a second underscore if the name already contains an underscore."
-msgstr "Lägg till ett andra understrykningstecken om namnet redan innehåller ett understrykningstecken"
+msgstr "Lägg till ett andra understrykningstecken om namnet redan innehåller ett understrykningstecken."
 
 #: fortran/lang.opt:679
-#, fuzzy
-#| msgid "Apply negative sign to zero values"
 msgid "Apply negative sign to zero values."
-msgstr "Använd negativt tecken på nollvärden"
+msgstr "Använd negativt tecken på nollvärden."
 
 #: fortran/lang.opt:683
-#, fuzzy
-#| msgid "Append underscores to externally visible names"
 msgid "Append underscores to externally visible names."
-msgstr "Lägg till understrykningstecken till externt synliga namn"
+msgstr "Lägg till understrykningstecken till externt synliga namn."
 
 #: fortran/lang.opt:687 c-family/c.opt:1139 c-family/c.opt:1163
 #: c-family/c.opt:1389 config/pa/pa.opt:42 config/pa/pa.opt:66
@@ -6387,46 +6038,32 @@ msgid "Does nothing.  Preserved for backward compatibility."
 msgstr "Gör ingenting.  Bevarad för bakåtkompatibilitet."
 
 #: fortran/lang.opt:727
-#, fuzzy
-#| msgid "Statically link the GNU Fortran helper library (libgfortran)"
 msgid "Statically link the GNU Fortran helper library (libgfortran)."
-msgstr "Länka statiskt till GNU:s Fortran-hjälpbibliotek (libgfortran)"
+msgstr "Länka statiskt till GNU:s Fortran-hjälpbibliotek (libgfortran)."
 
 #: fortran/lang.opt:731
-#, fuzzy
-#| msgid "Conform to the ISO Fortran 2003 standard"
 msgid "Conform to the ISO Fortran 2003 standard."
-msgstr "Följ standarden ISO Fortran 2003"
+msgstr "Följ standarden ISO Fortran 2003."
 
 #: fortran/lang.opt:735
-#, fuzzy
-#| msgid "Conform to the ISO Fortran 2008 standard"
 msgid "Conform to the ISO Fortran 2008 standard."
-msgstr "Följ standarden ISO Fortran 2008"
+msgstr "Följ standarden ISO Fortran 2008."
 
 #: fortran/lang.opt:739
-#, fuzzy
-#| msgid "Conform to the ISO Fortran 2008 standard including TS 29113"
 msgid "Conform to the ISO Fortran 2008 standard including TS 29113."
-msgstr "Följ standarden ISO Fortran 2008 inklusive TS 29113"
+msgstr "Följ standarden ISO Fortran 2008 inklusive TS 29113."
 
 #: fortran/lang.opt:743
-#, fuzzy
-#| msgid "Conform to the ISO Fortran 95 standard"
 msgid "Conform to the ISO Fortran 95 standard."
-msgstr "Följ standarden ISO Fortran 95"
+msgstr "Följ standarden ISO Fortran 95."
 
 #: fortran/lang.opt:747
-#, fuzzy
-#| msgid "Conform to nothing in particular"
 msgid "Conform to nothing in particular."
-msgstr "Följ inget särskilt"
+msgstr "Följ inget särskilt."
 
 #: fortran/lang.opt:751
-#, fuzzy
-#| msgid "Accept extensions to support legacy code"
 msgid "Accept extensions to support legacy code."
-msgstr "Acceptera utökningar för att stödja gammal kod"
+msgstr "Acceptera utökningar för att stödja gammal kod."
 
 #: c-family/c.opt:43 c-family/c.opt:46 c-family/c.opt:181
 #, c-format
@@ -6455,88 +6092,60 @@ msgid "missing path after %qs"
 msgstr "sökväg saknas efter %qs"
 
 #: c-family/c.opt:182
-#, fuzzy
-#| msgid "-A<question>=<answer>\tAssert the <answer> to <question>.  Putting '-' before <question> disables the <answer> to <question>"
 msgid "-A<question>=<answer>\tAssert the <answer> to <question>.  Putting '-' before <question> disables the <answer> to <question>."
-msgstr "-A<fråga>=<svar>\tIntyga <svar> på <fråga>.  Om ”-” sätts före <fråga> avaktiveras <svar>:et till <fråga>:n"
+msgstr "-A<fråga>=<svar>\tIntyga <svar> på <fråga>.  Om ”-” sätts före <fråga> avaktiveras <svar>:et till <fråga>:n."
 
 #: c-family/c.opt:186
-#, fuzzy
-#| msgid "Do not discard comments"
 msgid "Do not discard comments."
-msgstr "Kasta inte kommentarer"
+msgstr "Kasta inte kommentarer."
 
 #: c-family/c.opt:190
-#, fuzzy
-#| msgid "Do not discard comments in macro expansions"
 msgid "Do not discard comments in macro expansions."
-msgstr "Släng inte kommentarer vid makroexpansioner"
+msgstr "Släng inte kommentarer vid makroexpansioner."
 
 #: c-family/c.opt:194
-#, fuzzy
-#| msgid "-D<macro>[=<val>]\tDefine a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1"
 msgid "-D<macro>[=<val>]\tDefine a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1."
-msgstr "-D<makro>[=<värde>]\tDefiniera ett <makro> med <värde> som sitt värde.  Om bara <makro> anges sätts <värde> till 1"
+msgstr "-D<makro>[=<värde>]\tDefiniera ett <makro> med <värde> som sitt värde.  Om bara <makro> anges sätts <värde> till 1."
 
 #: c-family/c.opt:201
-#, fuzzy
-#| msgid "-F <dir>\tAdd <dir> to the end of the main framework include path"
 msgid "-F <dir>\tAdd <dir> to the end of the main framework include path."
-msgstr "-F <kat>\tLägg till <kat> till slutet av huvudramverkets inkluderingssökväg"
+msgstr "-F <kat>\tLägg till <kat> till slutet av huvudramverkets inkluderingssökväg."
 
 #: c-family/c.opt:205
-#, fuzzy
-#| msgid "Print the name of header files as they are used"
 msgid "Print the name of header files as they are used."
-msgstr "Skriv ut namnet på huvudfiler allteftersom de används"
+msgstr "Skriv ut namnet på huvudfiler allteftersom de används."
 
 #: c-family/c.opt:209
-#, fuzzy
-#| msgid "-I <dir>\tAdd <dir> to the end of the main include path"
 msgid "-I <dir>\tAdd <dir> to the end of the main include path."
-msgstr "-I <kat>\tLägg till <kat> till slutet av huvudsökvägen"
+msgstr "-I <kat>\tLägg till <kat> till slutet av huvudsökvägen."
 
 #: c-family/c.opt:213
-#, fuzzy
-#| msgid "Generate make dependencies"
 msgid "Generate make dependencies."
-msgstr "Generera make-beroenden"
+msgstr "Generera make-beroenden."
 
 #: c-family/c.opt:217
-#, fuzzy
-#| msgid "Generate make dependencies and compile"
 msgid "Generate make dependencies and compile."
-msgstr "Generera make-beroenden och kompilera"
+msgstr "Generera make-beroenden och kompilera."
 
 #: c-family/c.opt:221
-#, fuzzy
-#| msgid "-MF <file>\tWrite dependency output to the given file"
 msgid "-MF <file>\tWrite dependency output to the given file."
-msgstr "-MF <fil>\tSkriv beroendeutdata till den angivna filen"
+msgstr "-MF <fil>\tSkriv beroendeutdata till den angivna filen."
 
 #: c-family/c.opt:225
-#, fuzzy
-#| msgid "Treat missing header files as generated files"
 msgid "Treat missing header files as generated files."
-msgstr "Behandla saknade huvudfiler som genererade filer"
+msgstr "Behandla saknade huvudfiler som genererade filer."
 
 #: c-family/c.opt:229
-#, fuzzy
-#| msgid "Like -M but ignore system header files"
 msgid "Like -M but ignore system header files."
-msgstr "Som -M men ignorera systemhuvudfiler"
+msgstr "Som -M men ignorera systemhuvudfiler."
 
 #: c-family/c.opt:233
-#, fuzzy
-#| msgid "Like -MD but ignore system header files"
 msgid "Like -MD but ignore system header files."
-msgstr "Som -MD men ignorera systemhuvudfiler"
+msgstr "Som -MD men ignorera systemhuvudfiler."
 
 #: c-family/c.opt:237
-#, fuzzy
-#| msgid "Generate phony targets for all headers"
 msgid "Generate phony targets for all headers."
-msgstr "Generera låtsasmål för alla huvuden"
+msgstr "Generera låtsasmål för alla huvuden."
 
 #: c-family/c.opt:240 c-family/c.opt:244
 #, c-format
@@ -6544,306 +6153,208 @@ msgid "missing makefile target after %qs"
 msgstr "makefile-mål saknas efter %qs"
 
 #: c-family/c.opt:241
-#, fuzzy
-#| msgid "-MQ <target>\tAdd a MAKE-quoted target"
 msgid "-MQ <target>\tAdd a MAKE-quoted target."
-msgstr "-MQ <mål>\tLägg till ett MAKE-citerat mål"
+msgstr "-MQ <mål>\tLägg till ett MAKE-citerat mål."
 
 #: c-family/c.opt:245
-#, fuzzy
-#| msgid "-MT <target>\tAdd an unquoted target"
 msgid "-MT <target>\tAdd an unquoted target."
-msgstr "-MT <mål>\tLägg till ett ociterat mål"
+msgstr "-MT <mål>\tLägg till ett ociterat mål."
 
 #: c-family/c.opt:249
-#, fuzzy
-#| msgid "Do not generate #line directives"
 msgid "Do not generate #line directives."
-msgstr "Generera inte #line-direktiv"
+msgstr "Generera inte #line-direktiv."
 
 #: c-family/c.opt:253
-#, fuzzy
-#| msgid "-U<macro>\tUndefine <macro>"
 msgid "-U<macro>\tUndefine <macro>."
-msgstr "-U<makro>\tAvdefiniera <makro>"
+msgstr "-U<makro>\tAvdefiniera <makro>."
 
 #: c-family/c.opt:257
-#, fuzzy
-#| msgid "Warn about things that will change when compiling with an ABI-compliant compiler"
 msgid "Warn about things that will change when compiling with an ABI-compliant compiler."
-msgstr "Varna för saker som skulle ändras vid kompilering med en kompilator som följer ABI"
+msgstr "Varna för saker som skulle ändras vid kompilering med en kompilator som följer ABI."
 
 #: c-family/c.opt:261
-#, fuzzy
-#| msgid "Warn about things that change between the current -fabi-version and the specified version"
 msgid "Warn about things that change between the current -fabi-version and the specified version."
-msgstr "Varna för saker som ändras mellan den nuvarande -fabi-version och den angivna versionen"
+msgstr "Varna för saker som ändras mellan den nuvarande -fabi-version och den angivna versionen."
 
 #: c-family/c.opt:265
-#, fuzzy
-#| msgid "Warn if a subobject has an abi_tag attribute that the complete object type does not have"
 msgid "Warn if a subobject has an abi_tag attribute that the complete object type does not have."
-msgstr "Varna om ett underobjekt har ett abi_tag-attribut som det fullständiga objektets typ inte har"
+msgstr "Varna om ett underobjekt har ett abi_tag-attribut som det fullständiga objektets typ inte har."
 
 #: c-family/c.opt:272
-#, fuzzy
-#| msgid "Warn about suspicious uses of memory addresses"
 msgid "Warn about suspicious uses of memory addresses."
-msgstr "Varna för misstänkt användning av minnesadresser"
+msgstr "Varna för misstänkt användning av minnesadresser."
 
 #: c-family/c.opt:276 ada/gcc-interface/lang.opt:57
-#, fuzzy
-#| msgid "Enable most warning messages"
 msgid "Enable most warning messages."
-msgstr "Aktivera de flesta varningsmeddelanden"
+msgstr "Aktivera de flesta varningsmeddelanden."
 
 #: c-family/c.opt:288
-#, fuzzy
-#| msgid "Warn whenever an Objective-C assignment is being intercepted by the garbage collector"
 msgid "Warn whenever an Objective-C assignment is being intercepted by the garbage collector."
-msgstr "Varna när en Objective-C-tilldelning fångas upp av skräpsamlaren"
+msgstr "Varna när en Objective-C-tilldelning fångas upp av skräpsamlaren."
 
 #: c-family/c.opt:292
-#, fuzzy
-#| msgid "Warn about casting functions to incompatible types"
 msgid "Warn about casting functions to incompatible types."
-msgstr "Varna för typkonvertering av funktioner till inkompatibla typer"
+msgstr "Varna för typkonvertering av funktioner till inkompatibla typer."
 
 #: c-family/c.opt:296
-#, fuzzy
-#| msgid "Warn about boolean expression compared with an integer value different from true/false"
 msgid "Warn about boolean expression compared with an integer value different from true/false."
-msgstr "Varna för booleska uttryck som jämförs med ett heltalsvärde annat skilt från sant/falskt"
+msgstr "Varna för booleska uttryck som jämförs med ett heltalsvärde annat skilt från sant/falskt."
 
 #: c-family/c.opt:300
 msgid "Warn when __builtin_frame_address or __builtin_return_address is used unsafely."
 msgstr "Varna när __builtin_frame_address eller __builtin_return_address används osäkert."
 
 #: c-family/c.opt:304
-#, fuzzy
-#| msgid "Warn when a built-in preprocessor macro is undefined or redefined"
 msgid "Warn when a built-in preprocessor macro is undefined or redefined."
-msgstr "Varna när ett inbyggt preprocessormakro avdefinieras eller omdefinieras"
+msgstr "Varna när ett inbyggt preprocessormakro avdefinieras eller omdefinieras."
 
 #: c-family/c.opt:308
-#, fuzzy
-#| msgid "Warn about features not present in ISO C90, but present in ISO C99"
 msgid "Warn about features not present in ISO C90, but present in ISO C99."
-msgstr "Varna för funktioner som inte finns i ISO C90, men finns i ISO C99"
+msgstr "Varna för funktioner som inte finns i ISO C90, men finns i ISO C99."
 
 #: c-family/c.opt:312
-#, fuzzy
-#| msgid "Warn about features not present in ISO C99, but present in ISO C11"
 msgid "Warn about features not present in ISO C99, but present in ISO C11."
-msgstr "Varna för funktioner som inte finns i ISO C99, men finns i ISO C11"
+msgstr "Varna för funktioner som inte finns i ISO C99, men finns i ISO C11."
 
 #: c-family/c.opt:316
-#, fuzzy
-#| msgid "Warn about C constructs that are not in the common subset of C and C++"
 msgid "Warn about C constructs that are not in the common subset of C and C++."
-msgstr "Varna för C-konstruktioner som inte är i den gemensamma delmängden av C och C++"
+msgstr "Varna för C-konstruktioner som inte är i den gemensamma delmängden av C och C++."
 
 #: c-family/c.opt:323
-#, fuzzy
-#| msgid "Warn about C++ constructs whose meaning differs between ISO C++ 1998 and ISO C++ 2011"
 msgid "Warn about C++ constructs whose meaning differs between ISO C++ 1998 and ISO C++ 2011."
-msgstr "Varna för C++-konstruktioner vars betydelse skiljer mellan ISO C++ 1998 och ISO C++ 2011"
+msgstr "Varna för C++-konstruktioner vars betydelse skiljer mellan ISO C++ 1998 och ISO C++ 2011."
 
 #: c-family/c.opt:327
-#, fuzzy
-#| msgid "Warn about C++ constructs whose meaning differs between ISO C++ 2011 and ISO C++ 2014"
 msgid "Warn about C++ constructs whose meaning differs between ISO C++ 2011 and ISO C++ 2014."
-msgstr "Varna för C++-konstruktioner vars betydelse skiljer mellan ISO C++ 2011 och ISO C++ 2014"
+msgstr "Varna för C++-konstruktioner vars betydelse skiljer mellan ISO C++ 2011 och ISO C++ 2014."
 
 #: c-family/c.opt:331
-#, fuzzy
-#| msgid "Warn about casts which discard qualifiers"
 msgid "Warn about casts which discard qualifiers."
-msgstr "Varna för typkonvertering som slänger kvalificerare"
+msgstr "Varna för typkonvertering som slänger kvalificerare."
 
 #: c-family/c.opt:335
-#, fuzzy
-#| msgid "Warn about subscripts whose type is \"char\""
 msgid "Warn about subscripts whose type is \"char\"."
-msgstr "Varna för index vars typ är ”char”"
+msgstr "Varna för index vars typ är ”char”."
 
 #: c-family/c.opt:339
-#, fuzzy
-#| msgid "Warn about memory access errors found by Pointer Bounds Checker"
 msgid "Warn about memory access errors found by Pointer Bounds Checker."
-msgstr "Farna för minnesåtkomstfel som hittas av pekargränskontrollen"
+msgstr "Farna för minnesåtkomstfel som hittas av pekargränskontrollen."
 
 #: c-family/c.opt:343
-#, fuzzy
-#| msgid "Warn about variables that might be changed by \"longjmp\" or \"vfork\""
 msgid "Warn about variables that might be changed by \"longjmp\" or \"vfork\"."
-msgstr "Varna för variabler som kan ändras av ”longjmp” eller ”vfork”"
+msgstr "Varna för variabler som kan ändras av ”longjmp” eller ”vfork”."
 
 #: c-family/c.opt:347
-#, fuzzy
-#| msgid "Warn about possibly nested block comments, and C++ comments spanning more than one physical line"
 msgid "Warn about possibly nested block comments, and C++ comments spanning more than one physical line."
-msgstr "Varna för möjliga nästade blockkommentarer, och C++-kommentarer som spänner över mer än en fysisk rad"
+msgstr "Varna för möjliga nästade blockkommentarer, och C++-kommentarer som spänner över mer än en fysisk rad."
 
 #: c-family/c.opt:351
-#, fuzzy
-#| msgid "Synonym for -Wcomment"
 msgid "Synonym for -Wcomment."
-msgstr "Synonym för -Wcomment"
+msgstr "Synonym för -Wcomment."
 
 #: c-family/c.opt:355
-#, fuzzy
-#| msgid "Warn for conditionally-supported constructs"
 msgid "Warn for conditionally-supported constructs."
-msgstr "Varna för konstruktioner med villkorligt stöd"
+msgstr "Varna för konstruktioner med villkorligt stöd."
 
 #: c-family/c.opt:359
-#, fuzzy
-#| msgid "Warn for implicit type conversions that may change a value"
 msgid "Warn for implicit type conversions that may change a value."
-msgstr "Varna för implicita typkonverteringar som kan ändra ett värde"
+msgstr "Varna för implicita typkonverteringar som kan ändra ett värde."
 
 #: c-family/c.opt:363
-#, fuzzy
-#| msgid "Warn for converting NULL from/to a non-pointer type"
 msgid "Warn for converting NULL from/to a non-pointer type."
-msgstr "Varna för konvertering av NULL till icke-pekartyp"
+msgstr "Varna för konvertering av NULL till icke-pekartyp."
 
 #: c-family/c.opt:371
-#, fuzzy
-#| msgid "Warn when all constructors and destructors are private"
 msgid "Warn when all constructors and destructors are private."
-msgstr "Varna när ett alla konstruerare och destruerare är privata"
+msgstr "Varna när ett alla konstruerare och destruerare är privata."
 
 #: c-family/c.opt:375
-#, fuzzy
-#| msgid "Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage"
 msgid "Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage."
-msgstr "Varna för användning av __TIME__, __DATE__ och __TIMESTAMP__"
+msgstr "Varna för användning av __TIME__, __DATE__ och __TIMESTAMP__."
 
 #: c-family/c.opt:379
-#, fuzzy
-#| msgid "Warn when a declaration is found after a statement"
 msgid "Warn when a declaration is found after a statement."
-msgstr "Varna när en deklaration hittas efter en sats"
+msgstr "Varna när en deklaration hittas efter en sats."
 
 #: c-family/c.opt:383
-#, fuzzy
-#| msgid "Warn when deleting a pointer to incomplete type"
 msgid "Warn when deleting a pointer to incomplete type."
-msgstr "Varna när en pekare till en ofullständig typ raderas"
+msgstr "Varna när en pekare till en ofullständig typ raderas."
 
 #: c-family/c.opt:387
-#, fuzzy
-#| msgid "Warn about deleting polymorphic objects with non-virtual destructors"
 msgid "Warn about deleting polymorphic objects with non-virtual destructors."
-msgstr "Varna för radering av polymorfa objekt med ickevirtuella destruerare"
+msgstr "Varna för radering av polymorfa objekt med ickevirtuella destruerare."
 
 #: c-family/c.opt:391
-#, fuzzy
-#| msgid "Warn if a deprecated compiler feature, class, method, or field is used"
 msgid "Warn if a deprecated compiler feature, class, method, or field is used."
-msgstr "Varna för en kompilatorfunktion, klass, metod eller fält som bör undvikas används"
+msgstr "Varna för en kompilatorfunktion, klass, metod eller fält som bör undvikas används."
 
 #: c-family/c.opt:395
-#, fuzzy
-#| msgid "Warn about positional initialization of structs requiring designated initializers"
 msgid "Warn about positional initialization of structs requiring designated initializers."
-msgstr "Varna för positionsinitiering av poster som kräver designerade initierare"
+msgstr "Varna för positionsinitiering av poster som kräver designerade initierare."
 
 #: c-family/c.opt:399
-#, fuzzy
-#| msgid "Warn if qualifiers on arrays which are pointer targets are discarded"
 msgid "Warn if qualifiers on arrays which are pointer targets are discarded."
-msgstr "Varna om kvalificerare på vektorer som är pekarmål kastas bort"
+msgstr "Varna om kvalificerare på vektorer som är pekarmål kastas bort."
 
 #: c-family/c.opt:403
-#, fuzzy
-#| msgid "Warn if type qualifiers on pointers are discarded"
 msgid "Warn if type qualifiers on pointers are discarded."
-msgstr "Varna om typkvalificerare på pekare kastas bort"
+msgstr "Varna om typkvalificerare på pekare kastas bort."
 
 #: c-family/c.opt:407
-#, fuzzy
-#| msgid "Warn about compile-time integer division by zero"
 msgid "Warn about compile-time integer division by zero."
-msgstr "Varna för heltalsdivision med noll vid kompileringstillfället"
+msgstr "Varna för heltalsdivision med noll vid kompileringstillfället."
 
 #: c-family/c.opt:411
 msgid "Warn about duplicated conditions in an if-else-if chain."
 msgstr "Varna för dubblerade villkor i en if-else-if-kedja."
 
 #: c-family/c.opt:415
-#, fuzzy
-#| msgid "Warn about violations of Effective C++ style rules"
 msgid "Warn about violations of Effective C++ style rules."
-msgstr "Varna för brott mot stilreglerna i Effective C++"
+msgstr "Varna för brott mot stilreglerna i Effective C++."
 
 #: c-family/c.opt:419
-#, fuzzy
-#| msgid "Warn about an empty body in an if or else statement"
 msgid "Warn about an empty body in an if or else statement."
-msgstr "Varna för en tom kropp i en if- eller else-sats"
+msgstr "Varna för en tom kropp i en if- eller else-sats."
 
 #: c-family/c.opt:423
-#, fuzzy
-#| msgid "Warn about stray tokens after #elif and #endif"
 msgid "Warn about stray tokens after #elif and #endif."
-msgstr "Varna för vilsekomna symboler efter #elif och #endif"
+msgstr "Varna för vilsekomna symboler efter #elif och #endif."
 
 #: c-family/c.opt:427
-#, fuzzy
-#| msgid "Warn about comparison of different enum types"
 msgid "Warn about comparison of different enum types."
-msgstr "Varna för jämförelser av skilda uppräkningstyper"
+msgstr "Varna för jämförelser av skilda uppräkningstyper."
 
 #: c-family/c.opt:435
-#, fuzzy
-#| msgid "This switch is deprecated; use -Werror=implicit-function-declaration instead"
 msgid "This switch is deprecated; use -Werror=implicit-function-declaration instead."
-msgstr "Denna flagga bör undvikas, använd -Werror=implicit-function-declaration istället"
+msgstr "Denna flagga bör undvikas, använd -Werror=implicit-function-declaration istället."
 
 #: c-family/c.opt:439
-#, fuzzy
-#| msgid "Warn for implicit type conversions that cause loss of floating point precision"
 msgid "Warn for implicit type conversions that cause loss of floating point precision."
-msgstr "Varna för implicita typkonverteringar som orsakar förlust av flyttalsprecision"
+msgstr "Varna för implicita typkonverteringar som orsakar förlust av flyttalsprecision."
 
 #: c-family/c.opt:443
-#, fuzzy
-#| msgid "Warn if testing floating point numbers for equality"
 msgid "Warn if testing floating point numbers for equality."
-msgstr "Varna vid test av flyttal på likhet"
+msgstr "Varna vid test av flyttal på likhet."
 
 #: c-family/c.opt:447 c-family/c.opt:479
-#, fuzzy
-#| msgid "Warn about printf/scanf/strftime/strfmon format string anomalies"
 msgid "Warn about printf/scanf/strftime/strfmon format string anomalies."
-msgstr "Varna för anomalier i formatsträngar till printf/scanf/strftime/strfmon"
+msgstr "Varna för anomalier i formatsträngar till printf/scanf/strftime/strfmon."
 
 #: c-family/c.opt:451
-#, fuzzy
-#| msgid "Warn about format strings that contain NUL bytes"
 msgid "Warn about format strings that contain NUL bytes."
-msgstr "Varna för formatsträngar som innehåller NUL-byte:ar"
+msgstr "Varna för formatsträngar som innehåller NUL-byte:ar."
 
 #: c-family/c.opt:455
-#, fuzzy
-#| msgid "Warn if passing too many arguments to a function for its format string"
 msgid "Warn if passing too many arguments to a function for its format string."
-msgstr "Varna för för många argument argument till en funktion för dess formatsträng"
+msgstr "Varna för för många argument argument till en funktion för dess formatsträng."
 
 #: c-family/c.opt:459
-#, fuzzy
-#| msgid "Warn about format strings that are not literals"
 msgid "Warn about format strings that are not literals."
-msgstr "Varna för formatsträngar som inte är literaler"
+msgstr "Varna för formatsträngar som inte är literaler."
 
 #: c-family/c.opt:463
-#, fuzzy
-#| msgid "Warn about possible security problems with format functions"
 msgid "Warn about possible security problems with format functions."
-msgstr "Varna för möjliga säkerhetsproblem med formatfunktioner"
+msgstr "Varna för möjliga säkerhetsproblem med formatfunktioner."
 
 #: c-family/c.opt:467
 #, fuzzy
