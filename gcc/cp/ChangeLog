@@ -1,5 +1,8 @@
 2016-02-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/69995
+	* constexpr.c (cxx_eval_store_expression): Unshare init.
+
 	PR c++/65985
 	* constexpr.c (build_constexpr_constructor_member_initializers):
 	Handle an additional STATEMENT_LIST.
