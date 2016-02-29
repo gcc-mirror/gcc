@@ -457,6 +457,10 @@ do {						   \
    a discriminant of a discriminated type without default expression.  */
 #define DECL_INVARIANT_P(NODE) DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE))
 
+/* Nonzero in a VAR_DECL if it is a temporary created to hold the return
+   value of a function call or 'reference to a function call.  */
+#define DECL_RETURN_VALUE_P(NODE) DECL_LANG_FLAG_5 (VAR_DECL_CHECK (NODE))
+
 /* In a FIELD_DECL corresponding to a discriminant, contains the
    discriminant number.  */
 #define DECL_DISCRIMINANT_NUMBER(NODE) DECL_INITIAL (FIELD_DECL_CHECK (NODE))

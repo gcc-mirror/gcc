@@ -4336,7 +4336,10 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 		      && TREE_CODE (TYPE_SIZE (TREE_TYPE (gnu_target)))
 			 == INTEGER_CST))
 	      && TREE_CODE (TYPE_SIZE (gnu_result_type)) != INTEGER_CST)))
-    gnu_retval = create_temporary ("R", gnu_result_type);
+    {
+      gnu_retval = create_temporary ("R", gnu_result_type);
+      DECL_RETURN_VALUE_P (gnu_retval) = 1;
+    }
 
   /* Create the list of the actual parameters as GCC expects it, namely a
      chain of TREE_LIST nodes in which the TREE_VALUE field of each node
@@ -4461,7 +4464,10 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	     we need to create a temporary for the return value because we must
 	     preserve it before copying back at the very end.  */
 	  if (!in_param && returning_value && !gnu_retval)
-	    gnu_retval = create_temporary ("R", gnu_result_type);
+	    {
+	      gnu_retval = create_temporary ("R", gnu_result_type);
+	      DECL_RETURN_VALUE_P (gnu_retval) = 1;
+	    }
 
 	  /* If we haven't pushed a binding level, push a new one.  This will
 	     narrow the lifetime of the temporary we are about to make as much
@@ -7805,6 +7811,37 @@ gnat_to_gnu (Node_Id gnat_node)
 	  || TREE_CODE (gnu_result) == NON_LVALUE_EXPR)
 	 && TREE_TYPE (TREE_OPERAND (gnu_result, 0)) == TREE_TYPE (gnu_result))
     gnu_result = TREE_OPERAND (gnu_result, 0);
+
+  return gnu_result;
+}
+
+/* Similar to gnat_to_gnu, but discard any object that might be created in
+   the course of the translation of GNAT_NODE, which must be an "external"
+   expression in the sense that it will be elaborated elsewhere.  */
+
+tree
+gnat_to_gnu_external (Node_Id gnat_node)
+{
+  const int save_force_global = force_global;
+  bool went_into_elab_proc = false;
+
+  /* Force the local context and create a fake scope that we zap
+     at the end so declarations will not be stuck either in the
+     global varpool or in the current scope.  */
+  if (!current_function_decl)
+    {
+      current_function_decl = get_elaboration_procedure ();
+      went_into_elab_proc = true;
+    }
+  force_global = 0;
+  gnat_pushlevel ();
+
+  tree gnu_result = gnat_to_gnu (gnat_node);
+
+  gnat_zaplevel ();
+  force_global = save_force_global;
+  if (went_into_elab_proc)
+    current_function_decl = NULL_TREE;
 
   return gnu_result;
 }
