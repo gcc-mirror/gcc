@@ -4926,7 +4926,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  gnu_field_list = gnu_field;
 		}
 
-	      TYPE_FIELDS (gnu_type) = nreverse (gnu_field_list);
+	      finish_record_type (gnu_type, nreverse (gnu_field_list), 0,
+				  false);
 	    }
 	  else
 	    gnu_type = void_type_node;
