@@ -1,3 +1,9 @@
+2016-02-29  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/69652
+	* gcc.dg/torture/pr69652.c: Delete test.
+	* gcc.dg/vect/pr69652.c: New test.
+
 2016-02-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69980

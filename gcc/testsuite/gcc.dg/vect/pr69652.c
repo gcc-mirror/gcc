@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ffast-math -ftree-vectorize " } */
+/* { dg-additional-options "-ffast-math" } */
 /* { dg-additional-options "-mavx" { target { i?86-*-* x86_64-*-* } } } */
 
 void fn1(double **matrix, int column, int row, int n)
