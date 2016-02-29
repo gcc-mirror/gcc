@@ -1,3 +1,13 @@
+2016-02-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69994
+	* tree-ssa-reassoc.c (gimple_nop_conversion_p): New function.
+	(get_unary_op): Look through nop conversions.
+	(ops_equal_values_p): New function, look for equality diregarding
+	nop conversions.
+	(eliminate_plus_minus_pair): Use ops_equal_values_p
+	(repropagate_negates): Do not use get_unary_op here.
+
 2016-02-29  Martin Liska  <mliska@suse.cz>
 
 	* hsa-gen.c (gen_body_from_gimple): Dump only if TDF_DETAILS

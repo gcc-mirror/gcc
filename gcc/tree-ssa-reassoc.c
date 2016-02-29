@@ -605,6 +605,21 @@ is_reassociable_op (gimple *stmt, enum tree_code code, struct loop *loop)
 }
 
 
+/* Return true if STMT is a nop-conversion.  */
+
+static bool
+gimple_nop_conversion_p (gimple *stmt)
+{
+  if (gassign *ass = dyn_cast <gassign *> (stmt))
+    {
+      if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (ass))
+	  && tree_nop_conversion_p (TREE_TYPE (gimple_assign_lhs (ass)),
+				    TREE_TYPE (gimple_assign_rhs1 (ass))))
+	return true;
+    }
+  return false;
+}
+
 /* Given NAME, if NAME is defined by a unary operation OPCODE, return the
    operand of the negate operation.  Otherwise, return NULL.  */
 
@@ -613,6 +628,11 @@ get_unary_op (tree name, enum tree_code opcode)
 {
   gimple *stmt = SSA_NAME_DEF_STMT (name);
 
+  /* Look through nop conversions (sign changes).  */
+  if (gimple_nop_conversion_p (stmt)
+      && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
+    stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
+
   if (!is_gimple_assign (stmt))
     return NULL_TREE;
 
@@ -620,6 +640,40 @@ get_unary_op (tree name, enum tree_code opcode)
     return gimple_assign_rhs1 (stmt);
   return NULL_TREE;
 }
+
+/* Return true if OP1 and OP2 have the same value if casted to either type.  */
+
+static bool
+ops_equal_values_p (tree op1, tree op2)
+{
+  if (op1 == op2)
+    return true;
+
+  if (TREE_CODE (op1) == SSA_NAME)
+    {
+      gimple *stmt = SSA_NAME_DEF_STMT (op1);
+      if (gimple_nop_conversion_p (stmt))
+	{
+	  op1 = gimple_assign_rhs1 (stmt);
+	  if (op1 == op2)
+	    return true;
+	}
+    }
+
+  if (TREE_CODE (op2) == SSA_NAME)
+    {
+      gimple *stmt = SSA_NAME_DEF_STMT (op2);
+      if (gimple_nop_conversion_p (stmt))
+	{
+	  op2 = gimple_assign_rhs1 (stmt);
+	  if (op1 == op2)
+	    return true;
+	}
+    }
+
+  return false;
+}
+
 
 /* If CURR and LAST are a pair of ops that OPCODE allows us to
    eliminate through equivalences, do so, remove them from OPS, and
@@ -731,9 +785,9 @@ eliminate_plus_minus_pair (enum tree_code opcode,
        && oe->rank >= curr->rank - 1 ;
        i++)
     {
-      if (oe->op == negateop)
+      if (negateop
+	  && ops_equal_values_p (oe->op, negateop))
 	{
-
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "Equivalence: ");
@@ -750,7 +804,8 @@ eliminate_plus_minus_pair (enum tree_code opcode,
 
 	  return true;
 	}
-      else if (oe->op == notop)
+      else if (notop
+	       && ops_equal_values_p (oe->op, notop))
 	{
 	  tree op_type = TREE_TYPE (oe->op);
 
@@ -772,9 +827,10 @@ eliminate_plus_minus_pair (enum tree_code opcode,
 	}
     }
 
-  /* CURR->OP is a negate expr in a plus expr: save it for later
-     inspection in repropagate_negates().  */
-  if (negateop != NULL_TREE)
+  /* If CURR->OP is a negate expr without nop conversion in a plus expr: 
+     save it for later inspection in repropagate_negates().  */
+  if (negateop != NULL_TREE
+      && gimple_assign_rhs_code (SSA_NAME_DEF_STMT (curr->op)) == NEGATE_EXPR)
     plus_negates.safe_push (curr->op);
 
   return false;
@@ -4211,7 +4267,7 @@ repropagate_negates (void)
 	  if (gimple_assign_rhs2 (user) == negate)
 	    {
 	      tree rhs1 = gimple_assign_rhs1 (user);
-	      tree rhs2 = get_unary_op (negate, NEGATE_EXPR);
+	      tree rhs2 = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (negate));
 	      gimple_stmt_iterator gsi = gsi_for_stmt (user);
 	      gimple_assign_set_rhs_with_ops (&gsi, MINUS_EXPR, rhs1, rhs2);
 	      update_stmt (user);
