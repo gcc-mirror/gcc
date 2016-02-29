@@ -2925,6 +2925,8 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 
   init = cxx_eval_constant_expression (&new_ctx, init, false,
 				       non_constant_p, overflow_p);
+  /* Don't share a CONSTRUCTOR that might be changed later.  */
+  init = unshare_expr (init);
   if (target == object)
     {
       /* The hash table might have moved since the get earlier.  */
