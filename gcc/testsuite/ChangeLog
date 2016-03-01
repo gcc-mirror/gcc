@@ -1,3 +1,7 @@
+2016-03-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/stack_usage3.adb: Robustify and enable for all targets.
+
 2016-02-29  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69987
