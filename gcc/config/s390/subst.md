@@ -20,19 +20,20 @@
 ;; <http://www.gnu.org/licenses/>.
 
 (define_code_iterator SUBST [rotate ashift lshiftrt ashiftrt])
+(define_mode_iterator DSI_VI [SI DI V2QI V4QI V8QI V16QI V2HI V4HI V8HI V2SI V4SI V2DI])
 
 ; This expands an register/immediate operand to a register+immediate
 ; operand to draw advantage of the address style operand format
 ; providing a addition for free.
 (define_subst "addr_style_op_subst"
-  [(set (match_operand:DSI 0 "" "")
-        (SUBST:DSI (match_operand:DSI 1 "" "")
-		   (match_operand:SI 2 "" "")))]
+  [(set (match_operand:DSI_VI 0 "" "")
+        (SUBST:DSI_VI (match_operand:DSI_VI 1 "" "")
+		      (match_operand:SI 2 "" "")))]
   ""
   [(set (match_dup 0)
-        (SUBST:DSI (match_dup 1)
-		   (plus:SI (match_operand:SI 2 "register_operand" "a")
-			    (match_operand 3 "const_int_operand"   "n"))))])
+        (SUBST:DSI_VI (match_dup 1)
+		      (plus:SI (match_operand:SI 2 "register_operand" "a")
+			       (match_operand 3 "const_int_operand"   "n"))))])
 
 ; Use this in the insn name.
 (define_subst_attr "addr_style_op"     "addr_style_op_subst" "" "_plus")

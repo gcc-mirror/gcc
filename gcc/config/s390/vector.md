@@ -307,46 +307,79 @@
 
 ; vec_store_lanes?
 
+; vec_set is supposed to *modify* an existing vector so operand 0 is
+; duplicated as input operand.
+(define_expand "vec_set<mode>"
+  [(set (match_operand:V                    0 "register_operand"  "")
+	(unspec:V [(match_operand:<non_vec> 1 "general_operand"   "")
+		   (match_operand:SI        2 "nonmemory_operand" "")
+		   (match_dup 0)]
+		   UNSPEC_VEC_SET))]
+  "TARGET_VX")
+
 ; FIXME: Support also vector mode operands for 1
 ; FIXME: A target memory operand seems to be useful otherwise we end
 ; up with vl vlvgg vst.  Shouldn't the middle-end be able to handle
 ; that itself?
 (define_insn "*vec_set<mode>"
-  [(set (match_operand:V                    0 "register_operand"             "=v, v,v")
-	(unspec:V [(match_operand:<non_vec> 1 "general_operand"               "d,QR,K")
-		   (match_operand:SI        2 "shift_count_or_setmem_operand" "Y, I,I")
-		   (match_operand:V         3 "register_operand"              "0, 0,0")]
+  [(set (match_operand:V                    0 "register_operand"  "=v, v,v")
+	(unspec:V [(match_operand:<non_vec> 1 "general_operand"    "d,QR,K")
+		   (match_operand:SI        2 "nonmemory_operand" "an, I,I")
+		   (match_operand:V         3 "register_operand"   "0, 0,0")]
 		  UNSPEC_VEC_SET))]
-  "TARGET_VX"
+  "TARGET_VX
+   && (!CONST_INT_P (operands[2])
+       || UINTVAL (operands[2]) < GET_MODE_NUNITS (<V:MODE>mode))"
   "@
    vlvg<bhfgq>\t%v0,%1,%Y2
    vle<bhfgq>\t%v0,%1,%2
    vlei<bhfgq>\t%v0,%1,%2"
   [(set_attr "op_type" "VRS,VRX,VRI")])
 
-; vec_set is supposed to *modify* an existing vector so operand 0 is
-; duplicated as input operand.
-(define_expand "vec_set<mode>"
-  [(set (match_operand:V                    0 "register_operand"              "")
-	(unspec:V [(match_operand:<non_vec> 1 "general_operand"               "")
-		   (match_operand:SI        2 "shift_count_or_setmem_operand" "")
-		   (match_dup 0)]
-		   UNSPEC_VEC_SET))]
-  "TARGET_VX")
+(define_insn "*vec_set<mode>_plus"
+  [(set (match_operand:V                      0 "register_operand" "=v")
+	(unspec:V [(match_operand:<non_vec>   1 "general_operand"   "d")
+		   (plus:SI (match_operand:SI 2 "register_operand"  "a")
+			    (match_operand:SI 4 "const_int_operand" "n"))
+		   (match_operand:V           3 "register_operand"  "0")]
+		  UNSPEC_VEC_SET))]
+  "TARGET_VX"
+  "vlvg<bhfgq>\t%v0,%1,%Y4(%2)"
+  [(set_attr "op_type" "VRS")])
+
 
 ; FIXME: Support also vector mode operands for 0
 ; FIXME: This should be (vec_select ..) or something but it does only allow constant selectors :(
 ; This is used via RTL standard name as well as for expanding the builtin
-(define_insn "vec_extract<mode>"
-  [(set (match_operand:<non_vec> 0 "nonimmediate_operand"                        "=d,QR")
-	(unspec:<non_vec> [(match_operand:V  1 "register_operand"                " v, v")
-			   (match_operand:SI 2 "shift_count_or_setmem_operand"   " Y, I")]
+(define_expand "vec_extract<mode>"
+  [(set (match_operand:<non_vec> 0 "nonimmediate_operand" "")
+	(unspec:<non_vec> [(match_operand:V  1 "register_operand" "")
+			   (match_operand:SI 2 "nonmemory_operand" "")]
 			  UNSPEC_VEC_EXTRACT))]
-  "TARGET_VX"
+  "TARGET_VX")
+
+(define_insn "*vec_extract<mode>"
+  [(set (match_operand:<non_vec> 0 "nonimmediate_operand"          "=d,QR")
+	(unspec:<non_vec> [(match_operand:V  1 "register_operand"   "v, v")
+			   (match_operand:SI 2 "nonmemory_operand" "an, I")]
+			  UNSPEC_VEC_EXTRACT))]
+  "TARGET_VX
+   && (!CONST_INT_P (operands[2])
+       || UINTVAL (operands[2]) < GET_MODE_NUNITS (<V:MODE>mode))"
   "@
    vlgv<bhfgq>\t%0,%v1,%Y2
    vste<bhfgq>\t%v1,%0,%2"
   [(set_attr "op_type" "VRS,VRX")])
+
+(define_insn "*vec_extract<mode>_plus"
+  [(set (match_operand:<non_vec>                      0 "nonimmediate_operand" "=d")
+	(unspec:<non_vec> [(match_operand:V           1 "register_operand"      "v")
+			   (plus:SI (match_operand:SI 2 "nonmemory_operand"     "a")
+				    (match_operand:SI 3 "const_int_operand"     "n"))]
+			   UNSPEC_VEC_EXTRACT))]
+  "TARGET_VX"
+  "vlgv<bhfgq>\t%0,%v1,%Y3(%2)"
+  [(set_attr "op_type" "VRS")])
 
 (define_expand "vec_init<V_HW:mode>"
   [(match_operand:V_HW 0 "register_operand" "")
@@ -667,17 +700,6 @@
   [(set_attr "op_type" "VRR")])
 
 
-; Vector rotate instructions
-
-; Each vector element rotated by a scalar
-; verllb, verllh, verllf, verllg
-(define_insn "rotl<mode>3"
-  [(set (match_operand:VI            0 "register_operand"             "=v")
-	(rotate:VI (match_operand:VI 1 "register_operand"              "v")
-		   (match_operand:SI 2 "shift_count_or_setmem_operand" "Y")))]
-  "TARGET_VX"
-  "verll<bhfgq>\t%v0,%v1,%Y2"
-  [(set_attr "op_type" "VRS")])
 
 ; Each vector element rotated by the corresponding vector element
 ; verllvb, verllvh, verllvf, verllvg
@@ -690,35 +712,32 @@
   [(set_attr "op_type" "VRR")])
 
 
-; Shift each element by scalar value
+; Vector rotate and shift by scalar instructions
 
-; veslb, veslh, veslf, veslg
-(define_insn "ashl<mode>3"
-  [(set (match_operand:VI            0 "register_operand"             "=v")
-	(ashift:VI (match_operand:VI 1 "register_operand"              "v")
-		   (match_operand:SI 2 "shift_count_or_setmem_operand" "Y")))]
-  "TARGET_VX"
-  "vesl<bhfgq>\t%v0,%v1,%Y2"
-  [(set_attr "op_type" "VRS")])
+(define_code_iterator VEC_SHIFTS [ashift ashiftrt lshiftrt rotate])
+(define_code_attr vec_shifts_name [(ashift "ashl")    (ashiftrt "ashr")
+				   (lshiftrt "lshr")  (rotate "rotl")])
+(define_code_attr vec_shifts_mnem [(ashift "vesl")    (ashiftrt "vesra")
+				   (lshiftrt "vesrl") (rotate "verll")])
 
+; Each vector element rotated by a scalar
+(define_expand "<vec_shifts_name><mode>3"
+  [(set (match_operand:VI 0 "register_operand" "")
+	(VEC_SHIFTS:VI (match_operand:VI 1 "register_operand" "")
+		       (match_operand:SI 2 "nonmemory_operand" "")))]
+  "TARGET_VX")
+
+; verllb, verllh, verllf, verllg
+; veslb,  veslh,  veslf,  veslg
 ; vesrab, vesrah, vesraf, vesrag
-(define_insn "ashr<mode>3"
-  [(set (match_operand:VI              0 "register_operand"             "=v")
-	(ashiftrt:VI (match_operand:VI 1 "register_operand"              "v")
-		     (match_operand:SI 2 "shift_count_or_setmem_operand" "Y")))]
-  "TARGET_VX"
-  "vesra<bhfgq>\t%v0,%v1,%Y2"
-  [(set_attr "op_type" "VRS")])
-
 ; vesrlb, vesrlh, vesrlf, vesrlg
-(define_insn "lshr<mode>3"
-  [(set (match_operand:VI              0 "register_operand"             "=v")
-	(lshiftrt:VI (match_operand:VI 1 "register_operand"              "v")
-		     (match_operand:SI 2 "shift_count_or_setmem_operand" "Y")))]
+(define_insn "*<vec_shifts_name><mode>3<addr_style_op>"
+  [(set (match_operand:VI                0 "register_operand"  "=v")
+	(VEC_SHIFTS:VI (match_operand:VI 1 "register_operand"   "v")
+		       (match_operand:SI 2 "nonmemory_operand" "an")))]
   "TARGET_VX"
-  "vesrl<bhfgq>\t%v0,%v1,%Y2"
+  "<vec_shifts_mnem><bhfgq>\t%v0,%v1,%Y2"
   [(set_attr "op_type" "VRS")])
-
 
 ; Shift each element by corresponding vector element
 
