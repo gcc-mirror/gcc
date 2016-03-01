@@ -1,3 +1,10 @@
+2016-03-01  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/68948
+	PR c++/69961
+	* pt.c (tsubst_baselink): Reinstate the check for an invalid
+	constructor call.
+
 2016-02-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/69995
