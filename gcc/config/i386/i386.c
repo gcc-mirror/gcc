@@ -27293,14 +27293,17 @@ ix86_output_call_insn (rtx_insn *insn, rtx call_op)
 
   if (SIBLING_CALL_P (insn))
     {
-      if (direct_p && ix86_nopic_noplt_attribute_p (call_op))
-	xasm = "%!jmp\t*%p0@GOTPCREL(%%rip)";
-      else if (direct_p)
-	xasm = "%!jmp\t%P0";
+      if (direct_p)
+	{
+	  if (ix86_nopic_noplt_attribute_p (call_op))
+	    xasm = "%!jmp\t{*%p0@GOTPCREL(%%rip)|[QWORD PTR %p0@GOTPCREL[rip]]}";
+	  else
+	    xasm = "%!jmp\t%P0";
+	}
       /* SEH epilogue detection requires the indirect branch case
 	 to include REX.W.  */
       else if (TARGET_SEH)
-	xasm = "%!rex.W jmp %A0";
+	xasm = "%!rex.W jmp\t%A0";
       else
 	xasm = "%!jmp\t%A0";
 
@@ -27338,10 +27341,13 @@ ix86_output_call_insn (rtx_insn *insn, rtx call_op)
 	seh_nop_p = true;
     }
 
-  if (direct_p && ix86_nopic_noplt_attribute_p (call_op))
-    xasm = "%!call\t*%p0@GOTPCREL(%%rip)";
-  else if (direct_p)
-    xasm = "%!call\t%P0";
+  if (direct_p)
+    {
+      if (ix86_nopic_noplt_attribute_p (call_op))
+	xasm = "%!call\t{*%p0@GOTPCREL(%%rip)|[QWORD PTR %p0@GOTPCREL[rip]]}";
+      else
+	xasm = "%!call\t%P0";
+    }
   else
     xasm = "%!call\t%A0";
 
