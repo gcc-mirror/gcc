@@ -1,3 +1,8 @@
+2016-02-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/69985
+	* gcc.dg/cpp/pr69985.c: New test case.
+
 2016-02-29  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/70005
