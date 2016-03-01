@@ -1,3 +1,11 @@
+2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gensupport.c (process_substs_on_one_elem): Split loop to
+	complete mark_operands_used_in_match_dup on all expressions in the
+	vector first.
+	(adjust_operands_numbers): Inline into process_substs_on_one_elem
+	and remove function.
+
 2016-02-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/69706
