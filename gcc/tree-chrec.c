@@ -1468,11 +1468,11 @@ eq_evolutions_p (const_tree chrec0, const_tree chrec1)
   if (chrec0 == chrec1)
     return true;
 
+  if (! types_compatible_p (TREE_TYPE (chrec0), TREE_TYPE (chrec1)))
+    return false;
+
   switch (TREE_CODE (chrec0))
     {
-    case INTEGER_CST:
-      return operand_equal_p (chrec0, chrec1, 0);
-
     case POLYNOMIAL_CHREC:
       return (CHREC_VARIABLE (chrec0) == CHREC_VARIABLE (chrec1)
 	      && eq_evolutions_p (CHREC_LEFT (chrec0), CHREC_LEFT (chrec1))
@@ -1487,8 +1487,12 @@ eq_evolutions_p (const_tree chrec0, const_tree chrec1)
 	  && eq_evolutions_p (TREE_OPERAND (chrec0, 1),
 			      TREE_OPERAND (chrec1, 1));
 
+    CASE_CONVERT:
+      return eq_evolutions_p (TREE_OPERAND (chrec0, 0),
+			      TREE_OPERAND (chrec1, 0));
+
     default:
-      return false;
+      return operand_equal_p (chrec0, chrec1, 0);
     }
 }
 
