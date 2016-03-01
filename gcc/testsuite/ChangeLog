@@ -1,3 +1,7 @@
+2016-02-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr70017.c: New test.
+
 2016-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/69796

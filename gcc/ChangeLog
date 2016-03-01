@@ -1,3 +1,9 @@
+2016-03-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/70017
+	* ira.c (do_reload): Issue warning for generic stack checking here...
+	* reload1.c (reload): ...instead of here and streamline it.
+
 2016-03-01  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc (cr16-*-elf): Add newlib-stdint.h to tm_file.
