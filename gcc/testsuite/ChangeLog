@@ -1,3 +1,7 @@
+2016-03-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/i386/pr70007.c: New test.
+
 2016-03-01  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69196
