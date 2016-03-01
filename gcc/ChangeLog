@@ -1,5 +1,23 @@
 2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.md ("*ashrdi3_cc_31")
+	("*ashrdi3_cconly_31""*ashrdi3_cc_31_and")
+	("*ashrdi3_cconly_31_and", "*ashrdi3_31_and", "*ashrdi3_31"):
+	Merge insn definitions into ...
+	("*ashrdi3_31<addr_style_op_cc><masked_op_cc><setcc><cconly>"):
+	New pattern definition.
+	("*ashr<mode>3_cc", "*ashr<mode>3_cconly", "ashr<mode>3", )
+	("*ashr<mode>3_cc_and", "*ashr<mode>3_cconly_and")
+	("*ashr<mode>3_and"): Merge insn definitions into ...
+	("*ashr<mode>3<addr_style_op_cc><masked_op_cc><setcc><cconly>"):
+	New pattern definition.
+	* config/s390/subst.md ("addr_style_op_cc_subst")
+	("masked_op_cc_subst", "setcc_subst", "cconly_subst"): New
+	substitutions patterns plus attributes.
+	Add ashiftrt to SUBST iterator.
+
+2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.md ("<shift><mode>3"): Change predicate of
 	op2 to nonmemory_operand.
 	("*<shift>di3_31", "*<shift>di3_31_and"):
