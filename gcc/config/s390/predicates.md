@@ -115,6 +115,10 @@
   return true;
 })
 
+; An integer operand with the lowest order 6 bits all ones.
+(define_predicate "const_int_6bitset_operand"
+ (and (match_code "const_int")
+      (match_test "(INTVAL (op) & 63) == 63")))
 (define_predicate "nonzero_shift_count_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 1, GET_MODE_BITSIZE (mode) - 1)")))

@@ -1,5 +1,16 @@
 2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/predicates.md (const_int_6bitset_operand): New
+        predicates.
+	* config/s390/s390.md: Include subst.md.
+	("rotl<mode>3"): New expander.
+	("rotl<mode>3", "*rotl<mode>3_and"): Merge insn definitions into
+	...
+	("*rotl<mode>3<addr_style_op><masked_op>"): New insn definition.
+	* config/s390/subst.md: New file.
+
+2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.md ("op_type", "atype", "length" attributes):
 	Remove RRR type.  It doesn't really exist.
 	("RRer", "f0", "v0", "vf", "vd", "op1", "Rf"): Remove mode
