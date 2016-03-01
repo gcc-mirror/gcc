@@ -649,6 +649,7 @@ ops_equal_values_p (tree op1, tree op2)
   if (op1 == op2)
     return true;
 
+  tree orig_op1 = op1;
   if (TREE_CODE (op1) == SSA_NAME)
     {
       gimple *stmt = SSA_NAME_DEF_STMT (op1);
@@ -666,7 +667,8 @@ ops_equal_values_p (tree op1, tree op2)
       if (gimple_nop_conversion_p (stmt))
 	{
 	  op2 = gimple_assign_rhs1 (stmt);
-	  if (op1 == op2)
+	  if (op1 == op2
+	      || orig_op1 == op2)
 	    return true;
 	}
     }
