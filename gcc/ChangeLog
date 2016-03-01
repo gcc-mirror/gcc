@@ -1,3 +1,9 @@
+2016-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69983
+	* tree-chrec.c (eq_evolutions_p): Handle conversions, compare
+	types and fall back to operand_equal_p.
+
 2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	Revert
