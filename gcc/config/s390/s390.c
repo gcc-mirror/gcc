@@ -2817,9 +2817,7 @@ s390_decompose_address (rtx addr, struct s390_address *out)
 	    return false;
 	  }
 
-      if (!REG_P (base)
-	  || (GET_MODE (base) != SImode
-	      && GET_MODE (base) != Pmode))
+      if (!REG_P (base) || GET_MODE (base) != Pmode)
 	return false;
 
       if (REGNO (base) == STACK_POINTER_REGNUM
@@ -2865,9 +2863,7 @@ s390_decompose_address (rtx addr, struct s390_address *out)
 	    return false;
 	  }
 
-      if (!REG_P (indx)
-	  || (GET_MODE (indx) != SImode
-	      && GET_MODE (indx) != Pmode))
+      if (!REG_P (indx) || GET_MODE (indx) != Pmode)
 	return false;
 
       if (REGNO (indx) == STACK_POINTER_REGNUM

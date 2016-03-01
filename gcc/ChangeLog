@@ -1,5 +1,10 @@
 2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_decompose_address): Don't accept SImode
+	anymore.
+
+2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/constraints.md ("jm8"): New constraint.
 	* config/s390/predicates.md ("const_int_8bitset_operand"): New predicate.
 	* config/s390/s390.md ("*setmem_long", "*setmem_long_and"): Merge
