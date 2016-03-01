@@ -1,3 +1,9 @@
+2016-03-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/70007
+	* gcse.c (compute_ld_motion_mems): Tidy up and also invalidate memory
+	references present in REG_EQUAL notes attached to non-SET patterns.
+
 2016-03-01  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69196

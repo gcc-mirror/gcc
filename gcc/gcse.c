@@ -3796,10 +3796,8 @@ compute_ld_motion_mems (void)
 		{
 		  rtx src = SET_SRC (PATTERN (insn));
 		  rtx dest = SET_DEST (PATTERN (insn));
-		  rtx note = find_reg_equal_equiv_note (insn);
-		  rtx src_eq;
 
-		  /* Check for a simple LOAD...  */
+		  /* Check for a simple load.  */
 		  if (MEM_P (src) && simple_mem (src))
 		    {
 		      ptr = ldst_entry (src);
@@ -3814,12 +3812,11 @@ compute_ld_motion_mems (void)
 		      invalidate_any_buried_refs (src);
 		    }
 
-		  if (note != 0 && REG_NOTE_KIND (note) == REG_EQUAL)
-		    src_eq = XEXP (note, 0);
-		  else
-		    src_eq = NULL_RTX;
-
-		  if (src_eq != NULL_RTX
+		  /* Check for a simple load through a REG_EQUAL note.  */
+		  rtx note = find_reg_equal_equiv_note (insn), src_eq;
+		  if (note
+		      && REG_NOTE_KIND (note) == REG_EQUAL
+		      && (src_eq = XEXP (note, 0))
 		      && !(MEM_P (src_eq) && simple_mem (src_eq)))
 		    invalidate_any_buried_refs (src_eq);
 
@@ -3843,7 +3840,17 @@ compute_ld_motion_mems (void)
 		    }
 		}
 	      else
-		invalidate_any_buried_refs (PATTERN (insn));
+		{
+		  /* Invalidate all MEMs in the pattern and...  */
+		  invalidate_any_buried_refs (PATTERN (insn));
+
+		  /* ...in REG_EQUAL notes for PARALLELs with single SET.  */
+		  rtx note = find_reg_equal_equiv_note (insn), src_eq;
+		  if (note
+		      && REG_NOTE_KIND (note) == REG_EQUAL
+		      && (src_eq = XEXP (note, 0)))
+		    invalidate_any_buried_refs (src_eq);
+		}
 	    }
 	}
     }
