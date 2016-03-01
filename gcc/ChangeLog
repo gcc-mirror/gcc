@@ -1,5 +1,26 @@
 2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/subst.md (DSI_VI): New mode iterator.
+	("addr_style_op_subst"): Use DSI_VI instead of DSI.
+	* config/s390/vector.md ("vec_set<mode>"): Move expander before
+	the insn definition.
+	("*vec_set<mode>"): Change predicate and add alternative to
+	support only either register or const_int operands as element
+	selector.
+	("*vec_set<mode>_plus"): New pattern to support reg + const_int
+	operands.
+	("vec_extract<mode>"): New expander.
+	("*vec_extract<mode>"): New insn definition supporting reg and
+	const_int element selectors.
+	("*vec_extract<mode>_plus"): New insn definition supporting
+	reg+const_int element selectors.
+	("rotl<mode>3", "ashl<mode>3", "ashr<mode>3"): Merge into the
+	following expander+insn definition.
+	("<vec_shifts_name><mode>3"): New expander.
+	("*<vec_shifts_name><mode>3<addr_style_op>"): New insn definition.
+
+2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.md ("*tabort_1"): Change predicate to
 	nonmemory_operand.  Add a second alternative to cover
 	register as well as const int operands.
