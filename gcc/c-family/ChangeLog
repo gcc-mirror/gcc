@@ -1,3 +1,9 @@
+2016-03-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/69795
+	* c-common.c (reject_gcc_builtin): Check for FUNCTION_DECL rather than
+	any DECL.
+
 2016-02-22  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/69780

@@ -1,3 +1,8 @@
+2016-03-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/69795
+	* g++.dg/parse/invalid1.C: New test.
+
 2016-03-01  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70022
