@@ -1168,7 +1168,7 @@ bfin*-*)
 	use_gcc_stdint=wrap
 	;;
 cr16-*-elf)
-        tm_file="elfos.h ${tm_file}"
+        tm_file="elfos.h ${tm_file} newlib-stdint.h"
         tmake_file="${tmake_file} cr16/t-cr16 "
         use_collect2=no
         ;;
