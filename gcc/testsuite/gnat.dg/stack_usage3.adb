@@ -5,9 +5,7 @@ with Ada.Text_IO; use Ada.Text_IO;
 with Stack_Usage3_Pkg; use Stack_Usage3_Pkg;
 
 procedure Stack_Usage3 is
-
 begin
-   Put_Line (Diag ("Diag line 0"));
    Put_Line (Diag ("Diag line 1"));
    Put_Line (Diag ("Diag line 2"));
    Put_Line (Diag ("Diag line 3"));
@@ -22,7 +20,13 @@ begin
    Put_Line (Diag ("Diag line 12"));
    Put_Line (Diag ("Diag line 13"));
    Put_Line (Diag ("Diag line 14"));
+   Put_Line (Diag ("Diag line 15"));
+   Put_Line (Diag ("Diag line 16"));
+   Put_Line (Diag ("Diag line 17"));
+   Put_Line (Diag ("Diag line 18"));
+   Put_Line (Diag ("Diag line 19"));
+   Put_Line (Diag ("Diag line 20"));
 end;
 
--- { dg-final { scan-stack-usage "\t\[0-9\]\[0-9\]\t" { target i?86-*-* x86_64-*-* } } }
+-- { dg-final { scan-stack-usage-not "\t\[0-9\]\[0-9\]\[0-9\]\[0-9\]\t" } }
 -- { dg-final { cleanup-stack-usage } }
