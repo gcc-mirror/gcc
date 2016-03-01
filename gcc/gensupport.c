@@ -126,10 +126,7 @@ static const char * duplicate_each_alternative (const char * str, int n_dup);
 
 typedef const char * (*constraints_handler_t) (const char *, int);
 static rtx alter_constraints (rtx, int, constraints_handler_t);
-
-static void mark_operands_used_in_match_dup (rtx);
-static void renumerate_operands_in_pattern (rtx);
-
+static rtx adjust_operands_numbers (rtx);
 static rtx replace_duplicating_operands_in_pattern (rtx);
 
 /* Make a version of gen_rtx_CONST_INT so that GEN_INT can be used in
@@ -1847,18 +1844,7 @@ process_substs_on_one_elem (struct queue_elem *elem,
 	  subst_pattern = alter_constraints (subst_pattern, alternatives,
 					     duplicate_each_alternative);
 
-	  mark_operands_used_in_match_dup (subst_pattern);
-	  RTVEC_ELT (subst_pattern_vec, j) = subst_pattern;
-	}
-
-      for (j = 0; j < XVECLEN (subst_elem->data, 3); j++)
-	{
-	  subst_pattern = RTVEC_ELT (subst_pattern_vec, j);
-
-	  /* The number of MATCH_OPERANDs in the output pattern might
-	     change.  This routine assigns new numbers to the
-	     MATCH_OPERAND expressions to avoid collisions.  */
-	  renumerate_operands_in_pattern (subst_pattern);
+	  subst_pattern = adjust_operands_numbers (subst_pattern);
 
 	  /* Substitute match_dup and match_op_dup in the new pattern and
 	     duplicate constraints.  */
@@ -1871,6 +1857,7 @@ process_substs_on_one_elem (struct queue_elem *elem,
 	  if (GET_CODE (elem->data) == DEFINE_EXPAND)
 	    remove_constraints (subst_pattern);
 
+	  RTVEC_ELT (subst_pattern_vec, j) = subst_pattern;
 	}
       XVEC (elem->data, 1) = subst_pattern_vec;
 
@@ -1940,7 +1927,7 @@ mark_operands_from_match_dup (rtx pattern)
     }
 }
 
-/* This is a subroutine of process_substs_on_one_elem.
+/* This is a subroutine of adjust_operands_numbers.
    It goes through all expressions in PATTERN and when MATCH_DUP is
    met, all MATCH_OPERANDs inside it is marked as occupied.  The
    process of marking is done by routin mark_operands_from_match_dup.  */
@@ -1986,9 +1973,10 @@ find_first_unused_number_of_operand ()
   return MAX_OPERANDS;
 }
 
-/* This is a subroutine of process_substs_on_one_elem.  It visits all
-   expressions in PATTERN and assigns not-occupied operand indexes to
-   MATCH_OPERANDs and MATCH_OPERATORs of this PATTERN.  */
+/* This is subroutine of adjust_operands_numbers.
+   It visits all expressions in PATTERN and assigns not-occupied
+   operand indexes to MATCH_OPERANDs and MATCH_OPERATORs of this
+   PATTERN.  */
 static void
 renumerate_operands_in_pattern (rtx pattern)
 {
@@ -2023,6 +2011,23 @@ renumerate_operands_in_pattern (rtx pattern)
     }
 }
 
+/* If output pattern of define_subst contains MATCH_DUP, then this
+   expression would be replaced with the pattern, matched with
+   MATCH_OPERAND from input pattern.  This pattern could contain any
+   number of MATCH_OPERANDs, MATCH_OPERATORs etc., so it's possible
+   that a MATCH_OPERAND from output_pattern (if any) would have the
+   same number, as MATCH_OPERAND from copied pattern.  To avoid such
+   indexes overlapping, we assign new indexes to MATCH_OPERANDs,
+   laying in the output pattern outside of MATCH_DUPs.  */
+static rtx
+adjust_operands_numbers (rtx pattern)
+{
+  mark_operands_used_in_match_dup (pattern);
+
+  renumerate_operands_in_pattern (pattern);
+
+  return pattern;
+}
 
 /* Generate RTL expression
    (match_dup OPNO)
