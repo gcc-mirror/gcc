@@ -19,7 +19,7 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(define_code_iterator SUBST [rotate ashift lshiftrt])
+(define_code_iterator SUBST [rotate ashift lshiftrt ashiftrt])
 
 ; This expands an register/immediate operand to a register+immediate
 ; operand to draw advantage of the address style operand format
@@ -59,3 +59,63 @@
 ; Use this in the insn name.
 (define_subst_attr "masked_op" "masked_op_subst" "" "_and")
 
+
+
+; This is like the addr_style_op substitution above but with a CC clobber.
+(define_subst "addr_style_op_cc_subst"
+  [(set (match_operand:DSI 0 ""           "")
+        (ashiftrt:DSI (match_operand:DSI 1 "" "")
+		      (match_operand:SI 2 "" "")))
+   (clobber (reg:CC CC_REGNUM))]
+  "REG_P (operands[2])"
+  [(set (match_dup 0)
+        (ashiftrt:DSI (match_dup 1)
+		      (plus:SI (match_dup 2)
+			       (match_operand 3 "const_int_operand" "n"))))
+   (clobber (reg:CC CC_REGNUM))])
+
+(define_subst_attr "addr_style_op_cc"     "addr_style_op_cc_subst" "" "_plus")
+(define_subst_attr "addr_style_op_cc_ops" "addr_style_op_cc_subst" "%Y2" "%Y3(%2)")
+
+
+; This is like the masked_op substitution but with a CC clobber.
+(define_subst "masked_op_cc_subst"
+  [(set (match_operand:DSI 0 ""           "")
+        (ashiftrt:DSI (match_operand:DSI 1 "" "")
+		      (match_operand:SI  2 "" "")))
+   (clobber (reg:CC CC_REGNUM))]
+  ""
+  [(set (match_dup 0)
+        (ashiftrt:DSI (match_dup 1)
+		      (and:SI (match_dup 2)
+			      (match_operand:SI 3 "const_int_6bitset_operand" ""))))
+   (clobber (reg:CC CC_REGNUM))])
+(define_subst_attr "masked_op_cc" "masked_op_cc_subst" "" "_and")
+
+
+; This adds an explicit CC reg set to an operation while keeping the
+; set for the operation result as well.
+(define_subst "setcc_subst"
+  [(set (match_operand:DSI 0 ""           "")
+        (match_operand:DSI 1 "" ""))
+   (clobber (reg:CC CC_REGNUM))]
+  "s390_match_ccmode(insn, CCSmode)"
+  [(set (reg CC_REGNUM)
+	(compare (match_dup 1) (const_int 0)))
+   (set (match_dup 0) (match_dup 1))])
+
+; Use this in the insn name.
+(define_subst_attr "setcc" "setcc_subst" "" "_cc")
+
+; This adds an explicit CC reg set to an operation while dropping the
+; result of the operation.
+(define_subst "cconly_subst"
+  [(set (match_operand:DSI 0 ""           "")
+        (match_operand:DSI 1 "" ""))
+   (clobber (reg:CC CC_REGNUM))]
+  "s390_match_ccmode(insn, CCSmode)"
+  [(set (reg CC_REGNUM)
+	(compare (match_dup 1) (const_int 0)))
+   (clobber (match_scratch:DSI 0 "=d,d"))])
+
+(define_subst_attr "cconly" "cconly_subst" "" "_cconly")
