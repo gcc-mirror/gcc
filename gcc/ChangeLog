@@ -1,3 +1,9 @@
+2016-03-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70027
+	* config/i386/i386.c (ix86_output_call_insn): Add -masm=intel
+	asm dialect alternatives to explicit GOTPCREL calls.
+
 2016-03-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/70017
@@ -20,7 +26,8 @@
 	2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/constraints.md ("jm8"): New constraint.
-	* config/s390/predicates.md ("const_int_8bitset_operand"): New predicate.
+	* config/s390/predicates.md ("const_int_8bitset_operand"): New
+	predicate.
 	* config/s390/s390.md ("*setmem_long", "*setmem_long_and"): Merge
 	into ...
 	("*setmem_long<setmem_and>"): New pattern.
@@ -127,7 +134,7 @@
 2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/predicates.md (const_int_6bitset_operand): New
-        predicates.
+	predicate.
 	* config/s390/s390.md: Include subst.md.
 	("rotl<mode>3"): New expander.
 	("rotl<mode>3", "*rotl<mode>3_and"): Merge insn definitions into
@@ -578,8 +585,8 @@
 
 2016-02-23  Evandro Menezes  <e.menezes@samsung.com>
 
-        * config/aarch64/aarch64.c (exynosm1_tunings): Enable the Newton
-        series for reciprocal square root in Exynos M1.
+	* config/aarch64/aarch64.c (exynosm1_tunings): Enable the Newton
+	series for reciprocal square root in Exynos M1.
 
 2016-02-23  Martin Sebor  <msebor@redhat.com>
 

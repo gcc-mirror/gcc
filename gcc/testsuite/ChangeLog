@@ -1,3 +1,8 @@
+2016-03-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70027
+	* gcc.target/i386/pr70027.c: New test.
+
 2016-03-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pr70017.c: New test.
