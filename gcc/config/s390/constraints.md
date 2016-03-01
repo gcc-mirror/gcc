@@ -36,6 +36,7 @@
 ;;         jyy: constant consisting of byte chunks being either 0 or 0xff
 ;;         jKK: constant vector with all elements having the same value and
 ;;              matching K constraint
+;;         jm6: An integer operand with the lowest order 6 bits all ones.
 ;;    t -- Access registers 36 and 37.
 ;;    v -- Vector registers v0-v31.
 ;;    C -- A signed 8-bit constant (-128..127)
@@ -415,6 +416,9 @@
 	    (match_test "const_vec_duplicate_p (op)"))
        (match_test "satisfies_constraint_K (XVECEXP (op, 0, 0))")))
 
+(define_constraint "jm6"
+  "@internal An integer operand with the lowest order 6 bits all ones."
+  (match_operand 0 "const_int_6bitset_operand"))
 
 ;;
 ;; Memory constraints follow.
