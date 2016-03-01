@@ -120,3 +120,28 @@
    (clobber (match_scratch:DSI 0 "=d,d"))])
 
 (define_subst_attr "cconly" "cconly_subst" "" "_cconly")
+
+
+;; setmem substitution patterns
+
+; Add an AND operation on the padding byte operand.  Only the lowest 8
+; bit are used and the rest is ignored.
+(define_subst "setmem_and_subst"
+  [(clobber (match_operand:TDI                  0 "register_operand" ""))
+   (set (mem:BLK (subreg:DSI (match_operand:TDI 1 "register_operand" "") 0))
+        (unspec:BLK [(match_operand:DSI         2 "shift_count_or_setmem_operand" "")
+		     (match_operand:DSI         3 "register_operand" "")]
+		     UNSPEC_REPLICATE_BYTE))
+   (use (match_operand:TDI                      4 "register_operand" ""))
+   (clobber (reg:CC CC_REGNUM))]
+""
+  [(clobber (match_dup 0))
+   (set (mem:BLK (subreg:DSI (match_dup 1) 0))
+	(unspec:BLK [(and:DSI (match_dup 2)
+			      (match_operand:DSI 5 "const_int_8bitset_operand" "jm8"))
+		     (match_dup 3)]
+		    UNSPEC_REPLICATE_BYTE))
+   (use (match_dup 4))
+   (clobber (reg:CC CC_REGNUM))])
+
+(define_subst_attr "setmem_and"      "setmem_and_subst" "" "_and")

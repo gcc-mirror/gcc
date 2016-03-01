@@ -37,6 +37,7 @@
 ;;         jKK: constant vector with all elements having the same value and
 ;;              matching K constraint
 ;;         jm6: An integer operand with the lowest order 6 bits all ones.
+;;         jm8: An integer operand with the lowest order 8 bits all ones.
 ;;    t -- Access registers 36 and 37.
 ;;    v -- Vector registers v0-v31.
 ;;    C -- A signed 8-bit constant (-128..127)
@@ -419,6 +420,10 @@
 (define_constraint "jm6"
   "@internal An integer operand with the lowest order 6 bits all ones."
   (match_operand 0 "const_int_6bitset_operand"))
+
+(define_constraint "jm8"
+  "@internal An integer operand with the lowest order 8 bits all ones."
+  (match_operand 0 "const_int_8bitset_operand"))
 
 ;;
 ;; Memory constraints follow.
