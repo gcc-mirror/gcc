@@ -1,5 +1,18 @@
 2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.md ("<shift><mode>3"): Change predicate of
+	op2 to nonmemory_operand.
+	("*<shift>di3_31", "*<shift>di3_31_and"):
+	Merge into single pattern definition ...
+	("*<shift>di3_31<addr_style_op><masked_op>"): New pattern.
+	("*<shift><mode>3", "*<shift><mode>3_and"): Merge into single
+	pattern definition ...
+	("*<shift><mode>3<addr_style_op><masked_op>"): New pattern.
+	* config/s390/subst.md: Add ashift and lshiftrt to SUBST
+	iterator.
+
+2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/predicates.md (const_int_6bitset_operand): New
         predicates.
 	* config/s390/s390.md: Include subst.md.
