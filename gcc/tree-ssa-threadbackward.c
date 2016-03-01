@@ -286,6 +286,37 @@ fsm_find_control_statement_thread_paths (tree name,
 		      break;
 		    }
 
+		  /* PHIs in the path will create degenerate PHIS in the
+		     copied path which will then get propagated away, so
+		     looking at just the duplicate path the PHIs would
+		     seem unimportant.
+
+		     But those PHIs, because they're assignments to objects
+		     typically with lives that exist outside the thread path,
+		     will tend to generate PHIs (or at least new PHI arguments)
+		     at points where we leave the thread path and rejoin
+		     the original blocks.  So we do want to account for them.
+
+		     We ignore virtual PHIs.  We also ignore cases where BB
+		     has a single incoming edge.  That's the most common
+		     degenerate PHI we'll see here.  Finally we ignore PHIs
+		     that are associated with the value we're tracking as
+		     that object likely dies.  */
+		  if (EDGE_COUNT (bb->succs) > 1 && EDGE_COUNT (bb->preds) > 1)
+		    {
+		      for (gphi_iterator gsip = gsi_start_phis (bb);
+			   !gsi_end_p (gsip);
+			   gsi_next (&gsip))
+			{
+			  gphi *phi = gsip.phi ();
+			  tree dst = gimple_phi_result (phi);
+
+			  if (SSA_NAME_VAR (dst) != SSA_NAME_VAR (name)
+			      && !virtual_operand_p (dst))
+			    ++n_insns;
+			}
+		    }
+
 		  for (gsi = gsi_after_labels (bb);
 		       !gsi_end_p (gsi);
 		       gsi_next_nondebug (&gsi))
@@ -324,6 +355,11 @@ fsm_find_control_statement_thread_paths (tree name,
 		threaded_through_latch = true;
 	    }
 
+	  /* We are going to remove the control statement at the end of the
+	     last block in the threading path.  So don't count it against our
+	     statement count.  */
+	  n_insns--;
+
 	  gimple *stmt = get_gimple_control_stmt ((*path)[0]);
 	  gcc_assert (stmt);
 	  /* We have found a constant value for ARG.  For GIMPLE_SWITCH
@@ -351,24 +387,6 @@ fsm_find_control_statement_thread_paths (tree name,
 	      && (determine_bb_domination_status (loop, taken_edge->dest)
 		  == DOMST_NONDOMINATING))
 	    creates_irreducible_loop = true;
-
-	  /* PHIs in the final target and only the final target will need
-	     to be duplicated.  So only count those against the number
-	     of statements.  */
-	  gphi_iterator gsip;
-	  for (gsip = gsi_start_phis (taken_edge->dest);
-	       !gsi_end_p (gsip);
-	       gsi_next (&gsip))
-	    {
-	      gphi *phi = gsip.phi ();
-	      tree dst = gimple_phi_result (phi);
-
-	      /* We consider any non-virtual PHI as a statement since it
-		 count result in a constant assignment or copy
-		 operation.  */
-	      if (!virtual_operand_p (dst))
-		++n_insns;
-	    }
 
 	  if (path_crosses_loops)
 	    {

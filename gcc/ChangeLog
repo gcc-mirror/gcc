@@ -1,3 +1,11 @@
+2016-03-01  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/69196
+	* tree-ssa-threadbackward.c (fsm_find_control_statement_thread_paths):
+	Do count some PHIs in the thread path against the insn count.  Decrease
+	final statement count by one as the control statement in the last
+	block will get removed.  Remove special cased code for handling PHIs		in the last block.
+
 2016-03-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/70027

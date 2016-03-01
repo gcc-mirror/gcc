@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1" } */
+/* { dg-options "-O2 -fdump-tree-vrp1 --param fsm-scale-path-blocks=1" } */
 
 int func_81 (int);
 int func_98 (int);
