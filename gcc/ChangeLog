@@ -1,5 +1,12 @@
 2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.md ("*tabort_1"): Change predicate to
+	nonmemory_operand.  Add a second alternative to cover
+	register as well as const int operands.
+	("*tabort_1_plus"): New pattern definition.
+
+2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.md ("*ashrdi3_cc_31")
 	("*ashrdi3_cconly_31""*ashrdi3_cc_31_and")
 	("*ashrdi3_cconly_31_and", "*ashrdi3_31_and", "*ashrdi3_31"):
