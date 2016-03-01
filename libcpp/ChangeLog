@@ -1,3 +1,12 @@
+2016-02-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/69985
+	(linemap_position_for_loc_and_offset): Rename param from "offset"
+	to "column_offset".  Right-shift the column_offset by m_range_bits
+	of the pertinent ordinary map whenever offsetting a
+	source_location.  For clarity, offset the column by the column
+	offset, rather than the other way around.
+
 2016-02-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/69126
