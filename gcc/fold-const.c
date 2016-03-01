@@ -14218,17 +14218,20 @@ fold_indirect_ref_1 (location_t loc, tree type, tree op0)
 	  if (TREE_CODE (op00type) == VECTOR_TYPE
 	      && type == TREE_TYPE (op00type))
 	    {
-	      HOST_WIDE_INT offset = tree_to_shwi (op01);
 	      tree part_width = TYPE_SIZE (type);
-	      unsigned HOST_WIDE_INT part_widthi = tree_to_shwi (part_width)/BITS_PER_UNIT;
-	      unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
-	      tree index = bitsize_int (indexi);
-
-	      if (offset / part_widthi < TYPE_VECTOR_SUBPARTS (op00type))
-		return fold_build3_loc (loc,
-					BIT_FIELD_REF, type, op00,
-					part_width, index);
-
+	      unsigned HOST_WIDE_INT max_offset
+		= (tree_to_uhwi (part_width) / BITS_PER_UNIT
+		   * TYPE_VECTOR_SUBPARTS (op00type));
+	      if (tree_int_cst_sign_bit (op01) == 0
+		  && compare_tree_int (op01, max_offset) == -1)
+		{
+		  unsigned HOST_WIDE_INT offset = tree_to_uhwi (op01);
+		  unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
+		  tree index = bitsize_int (indexi);
+		  return fold_build3_loc (loc,
+					  BIT_FIELD_REF, type, op00,
+					  part_width, index);
+		}
 	    }
 	  /* ((foo*)&complexfoo)[1] => __imag__ complexfoo */
 	  else if (TREE_CODE (op00type) == COMPLEX_TYPE
