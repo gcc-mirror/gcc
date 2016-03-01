@@ -13622,7 +13622,15 @@ tsubst_baselink (tree baselink, tree object_type,
       name = mangle_conv_op_name_for_type (optype);
     baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1);
     if (!baselink)
-      return error_mark_node;
+      {
+	if (constructor_name_p (name, qualifying_scope))
+	  {
+	    if (complain & tf_error)
+	      error ("cannot call constructor %<%T::%D%> directly",
+		     qualifying_scope, name);
+	  }
+	return error_mark_node;
+      }
 
     /* If lookup found a single function, mark it as used at this
        point.  (If it lookup found multiple functions the one selected
