@@ -1,3 +1,9 @@
+2016-02-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/70011
+	* gcc.dg/vect/costmodel/ppc/costmodel-fast-math-vect-pr299925.c:
+	XFAIL when hardware supports efficient unaligned storage access.
+
 2016-03-01  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/69961
