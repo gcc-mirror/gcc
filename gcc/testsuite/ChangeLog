@@ -1,3 +1,8 @@
+2016-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70022
+	* gcc.dg/pr70022.c: New testcase.
+
 2016-03-01  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR tree-optimization/69956

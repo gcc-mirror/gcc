@@ -1,5 +1,11 @@
 2016-03-01  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/70022
+	* fold-const.c (fold_indirect_ref_1): Fix range checking for
+	vector BIT_FIELD_REF extract.
+
+2016-03-01  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/69994
 	* tree-ssa-reassoc.c (ops_equal_values_p): Handle missing case.
 
