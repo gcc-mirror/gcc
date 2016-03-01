@@ -9000,9 +9000,19 @@ supportable_widening_operation (enum tree_code code, gimple *stmt,
   for (i = 0; i < MAX_INTERM_CVT_STEPS; i++)
     {
       intermediate_mode = insn_data[icode1].operand[0].mode;
-      intermediate_type
-	= lang_hooks.types.type_for_mode (intermediate_mode,
-					  TYPE_UNSIGNED (prev_type));
+      if (VECTOR_BOOLEAN_TYPE_P (prev_type))
+	{
+	  intermediate_type
+	    = build_truth_vector_type (TYPE_VECTOR_SUBPARTS (prev_type) / 2,
+				       current_vector_size);
+	  if (intermediate_mode != TYPE_MODE (intermediate_type))
+	    return false;
+	}
+      else
+	intermediate_type
+	  = lang_hooks.types.type_for_mode (intermediate_mode,
+					    TYPE_UNSIGNED (prev_type));
+
       optab3 = optab_for_tree_code (c1, intermediate_type, optab_default);
       optab4 = optab_for_tree_code (c2, intermediate_type, optab_default);
 
@@ -9065,7 +9075,7 @@ supportable_narrowing_operation (enum tree_code code,
   tree vectype = vectype_in;
   tree narrow_vectype = vectype_out;
   enum tree_code c1;
-  tree intermediate_type;
+  tree intermediate_type, prev_type;
   machine_mode intermediate_mode, prev_mode;
   int i;
   bool uns;
@@ -9111,6 +9121,7 @@ supportable_narrowing_operation (enum tree_code code,
   /* Check if it's a multi-step conversion that can be done using intermediate
      types.  */
   prev_mode = vec_mode;
+  prev_type = vectype;
   if (code == FIX_TRUNC_EXPR)
     uns = TYPE_UNSIGNED (vectype_out);
   else
@@ -9145,8 +9156,17 @@ supportable_narrowing_operation (enum tree_code code,
   for (i = 0; i < MAX_INTERM_CVT_STEPS; i++)
     {
       intermediate_mode = insn_data[icode1].operand[0].mode;
-      intermediate_type
-	= lang_hooks.types.type_for_mode (intermediate_mode, uns);
+      if (VECTOR_BOOLEAN_TYPE_P (prev_type))
+	{
+	  intermediate_type
+	    = build_truth_vector_type (TYPE_VECTOR_SUBPARTS (prev_type) * 2,
+				       current_vector_size);
+	  if (intermediate_mode != TYPE_MODE (intermediate_type))
+	      return false;
+	}
+      else
+	intermediate_type
+	  = lang_hooks.types.type_for_mode (intermediate_mode, uns);
       interm_optab
 	= optab_for_tree_code (VEC_PACK_TRUNC_EXPR, intermediate_type,
 			       optab_default);
@@ -9164,6 +9184,7 @@ supportable_narrowing_operation (enum tree_code code,
 	return true;
 
       prev_mode = intermediate_mode;
+      prev_type = intermediate_type;
       optab1 = interm_optab;
     }
 

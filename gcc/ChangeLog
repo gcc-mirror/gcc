@@ -1,3 +1,10 @@
+2016-03-01  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR tree-optimization/69956
+	* tree-vect-stmts.c (supportable_widening_operation): Support
+	multi-step conversion of boolean vectors.
+	(supportable_narrowing_operation): Likewise.
+
 2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_decompose_address): Don't accept SImode
