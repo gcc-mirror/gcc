@@ -8,6 +8,11 @@
 
 	PR tree-optimization/69196
 	* tree-ssa-threadbackward.c (fsm_find_control_statement_thread_paths):
+	Appropriately clamp the number of statements to copy when the
+	thread path does not traverse a loop backedge.
+
+	PR tree-optimization/69196
+	* tree-ssa-threadbackward.c (fsm_find_control_statement_thread_paths):
 	Do count some PHIs in the thread path against the insn count.  Decrease
 	final statement count by one as the control statement in the last
 	block will get removed.  Remove special cased code for handling PHIs		in the last block.

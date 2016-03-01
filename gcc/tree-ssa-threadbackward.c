@@ -429,6 +429,26 @@ fsm_find_control_statement_thread_paths (tree name,
 	      continue;
 	    }
 
+
+	  /* If this path does not thread through the loop latch, then we are
+	     using the FSM threader to find old style jump threads.  This
+	     is good, except the FSM threader does not re-use an existing
+	     threading path to reduce code duplication.
+
+	     So for that case, drastically reduce the number of statements
+	     we are allowed to copy.  */
+	  if (!threaded_through_latch
+	      && (n_insns * PARAM_VALUE (PARAM_FSM_SCALE_PATH_STMTS)
+		  >= PARAM_VALUE (PARAM_MAX_JUMP_THREAD_DUPLICATION_STMTS)))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "FSM did not thread around loop and would copy too "
+			 "many statements.\n");
+	      path->pop ();
+	      continue;
+	    }
+
 	  /* When there is a multi-way branch on the path, then threading can
 	     explode the CFG due to duplicating the edges for that multi-way
 	     branch.  So like above, only allow a multi-way branch on the path
