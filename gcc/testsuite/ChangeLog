@@ -1,3 +1,10 @@
+2016-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69796
+	PR c/69974
+	* gcc.dg/pr69796.c: New test.
+	* gcc.dg/pr69974.c: New test.
+
 2016-03-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/stack_usage3.adb: Robustify and enable for all targets.
