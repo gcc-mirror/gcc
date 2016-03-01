@@ -1,4 +1,14 @@
-2016-02-28  Jeff Law  <law@redhat.com>
+2016-02-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/69706
+	* config/sparc/sparc.c (NWORDS_UP): Rename to...
+	(CEIL_NWORDS): ...this.  Use CEIL macro.
+	(compute_fp_layout): Adjust to above renaming.
+	(function_arg_union_value): Likewise.
+	(sparc_arg_partial_bytes): Likewise.
+	(sparc_function_arg_advance): Likewise.
+
+2016-02-29  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/70005
 	* tree-ssa-uncprop.c (associate_equivalences_with_edges): Handle case

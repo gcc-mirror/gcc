@@ -6086,7 +6086,7 @@ conventions.  */
 /* Maximum number of fp regs for args.  */
 #define SPARC_FP_ARG_MAX 16
 /* Number of words (partially) occupied for a given size in units.  */
-#define NWORDS_UP(SIZE) (((SIZE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+#define CEIL_NWORDS(SIZE) CEIL((SIZE), UNITS_PER_WORD)
 
 /* Handle the INIT_CUMULATIVE_ARGS macro.
    Initialize a variable CUM of type CUMULATIVE_ARGS
@@ -6429,7 +6429,7 @@ compute_fp_layout (const_tree field, HOST_WIDE_INT bitpos,
   else
     nregs = 1;
 
-  nslots = NWORDS_UP (nregs * GET_MODE_SIZE (mode));
+  nslots = CEIL_NWORDS (nregs * GET_MODE_SIZE (mode));
 
   if (nslots > SPARC_FP_ARG_MAX - this_slotno)
     {
@@ -6661,7 +6661,7 @@ static rtx
 function_arg_union_value (int size, machine_mode mode, int slotno,
 			  int regno)
 {
-  int nwords = NWORDS_UP (size), i;
+  int nwords = CEIL_NWORDS (size), i;
   rtx regs;
 
   /* See comment in previous function for empty structures.  */
@@ -6893,8 +6893,8 @@ sparc_arg_partial_bytes (cumulative_args_t cum, machine_mode mode,
   if (TARGET_ARCH32)
     {
       if ((slotno + (mode == BLKmode
-		     ? NWORDS_UP (int_size_in_bytes (type))
-		     : NWORDS_UP (GET_MODE_SIZE (mode))))
+		     ? CEIL_NWORDS (int_size_in_bytes (type))
+		     : CEIL_NWORDS (GET_MODE_SIZE (mode))))
 	  > SPARC_INT_ARG_MAX)
 	return (SPARC_INT_ARG_MAX - slotno) * UNITS_PER_WORD;
     }
@@ -7004,8 +7004,8 @@ sparc_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 
   if (TARGET_ARCH32)
     cum->words += (mode == BLKmode
-		   ? NWORDS_UP (int_size_in_bytes (type))
-		   : NWORDS_UP (GET_MODE_SIZE (mode)));
+		   ? CEIL_NWORDS (int_size_in_bytes (type))
+		   : CEIL_NWORDS (GET_MODE_SIZE (mode)));
   else
     {
       if (type && AGGREGATE_TYPE_P (type))
@@ -7021,8 +7021,8 @@ sparc_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 	}
       else
 	cum->words += (mode == BLKmode
-		       ? NWORDS_UP (int_size_in_bytes (type))
-		       : NWORDS_UP (GET_MODE_SIZE (mode)));
+		       ? CEIL_NWORDS (int_size_in_bytes (type))
+		       : CEIL_NWORDS (GET_MODE_SIZE (mode)));
     }
 }
 
