@@ -95,7 +95,8 @@ associate_equivalences_with_edges (void)
 	      if (TREE_CODE (op0) == SSA_NAME
 		  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0)
 		  && ssa_name_has_boolean_range (op0)
-		  && is_gimple_min_invariant (op1))
+		  && is_gimple_min_invariant (op1)
+		  && (integer_zerop (op1) || integer_onep (op1)))
 		{
 		  tree true_val = constant_boolean_node (true, TREE_TYPE (op0));
 		  tree false_val = constant_boolean_node (false,
