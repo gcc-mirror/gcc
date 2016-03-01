@@ -1,3 +1,10 @@
+2016-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69796
+	PR c/69974
+	* c-parser.c (c_parser_translation_unit): Don't change TREE_TYPE
+	of incomplete decls to error_mark_node.
+
 2016-02-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c/69819

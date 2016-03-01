@@ -1436,10 +1436,7 @@ c_parser_translation_unit (c_parser *parser)
   tree decl;
   FOR_EACH_VEC_ELT (incomplete_record_decls, i, decl)
     if (DECL_SIZE (decl) == NULL_TREE && TREE_TYPE (decl) != error_mark_node)
-      {
-	error ("storage size of %q+D isn%'t known", decl);
-	TREE_TYPE (decl) = error_mark_node;
-      }
+      error ("storage size of %q+D isn%'t known", decl);
 }
 
 /* Parse an external declaration (C90 6.7, C99 6.9).
