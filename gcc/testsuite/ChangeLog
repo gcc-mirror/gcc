@@ -1,3 +1,8 @@
+2016-03-01  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR tree-optimization/69956
+	* gcc.dg/pr69956.c: New test.
+
 2016-02-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/70011
