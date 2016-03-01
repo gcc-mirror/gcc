@@ -5404,9 +5404,8 @@ do_reload (void)
     {
       df_set_flags (DF_NO_INSN_RESCAN);
       build_insn_chain ();
-      
-      need_dce = reload (get_insns (), ira_conflicts_p);
 
+      need_dce = reload (get_insns (), ira_conflicts_p);
     }
 
   timevar_pop (TV_RELOAD);
@@ -5482,6 +5481,20 @@ do_reload (void)
       error_at (DECL_SOURCE_LOCATION (current_function_decl),
                 "frame pointer required, but reserved");
       inform (DECL_SOURCE_LOCATION (decl), "for %qD", decl);
+    }
+
+  /* If we are doing generic stack checking, give a warning if this
+     function's frame size is larger than we expect.  */
+  if (flag_stack_check == GENERIC_STACK_CHECK)
+    {
+      HOST_WIDE_INT size = get_frame_size () + STACK_CHECK_FIXED_FRAME_SIZE;
+
+      for (int i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (df_regs_ever_live_p (i) && !fixed_regs[i] && call_used_regs[i])
+	  size += UNITS_PER_WORD;
+
+      if (size > STACK_CHECK_MAX_FRAME_SIZE)
+	warning (0, "frame size too large for reliable stack checking");
     }
 
   if (pic_offset_table_regno != INVALID_REGNUM)
