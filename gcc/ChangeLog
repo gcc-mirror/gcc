@@ -1,3 +1,7 @@
+2016-03-01  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc (cr16-*-elf): Add newlib-stdint.h to tm_file.
+
 2016-03-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69983
