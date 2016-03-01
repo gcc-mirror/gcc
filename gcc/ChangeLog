@@ -1,5 +1,19 @@
 2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.md ("op_type", "atype", "length" attributes):
+	Remove RRR type.  It doesn't really exist.
+	("RRer", "f0", "v0", "vf", "vd", "op1", "Rf"): Remove mode
+	attributes.
+	("BFP", "DFP", "nDSF", "nDFDI"): Add mode attributes.
+	("*cmp<mode>_ccs", "floatdi<mode>2", "add<mode>3")
+	("*add<mode>3_cc", "*add<mode>3_cconly", "sub<mode>3")
+	("*sub<mode>3_cc", "*sub<mode>3_cconly", "mul<mode>3")
+	("fma<mode>4", "fms<mode>4", "div<mode>3", "*neg<mode>2")
+	("*abs<mode>2", "*negabs<mode>2", "sqrt<mode>2"): Override
+	`enabled' attribute.
+
+2016-03-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gensupport.c (process_substs_on_one_elem): Split loop to
 	complete mark_operands_used_in_match_dup on all expressions in the
 	vector first.
