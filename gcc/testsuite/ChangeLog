@@ -1,5 +1,8 @@
 2016-02-29  Jeff Law  <law@redhat.com>
 
+	PR tree-optimization/70005
+	* gcc.c-torture/execute/pr70005.c New test.
+
 	PR tree-optimization/69999
 	* gcc.c-torture/compile/pr69999.c: New test.
 

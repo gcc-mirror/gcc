@@ -1,5 +1,10 @@
 2016-02-28  Jeff Law  <law@redhat.com>
 
+	PR tree-optimization/70005
+	* tree-ssa-uncprop.c (associate_equivalences_with_edges): Handle case
+	where an object with a boolean range is compared against a value
+	outside [0..1].
+
 	PR tree-optimization/69999
 	* gimple-ssa-split-paths.c (split_paths): When duplicating a block
 	with an outgoing edge marked with EDGE_IRREDUCIBLE_LOOP, schedule
