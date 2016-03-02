@@ -1,4 +1,10 @@
 2016-03-02  Richard Biener  <rguenther@suse.de>
+	Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/67278
+	* gcc.dg/simd-8.c: New testcase.
+
+2016-03-02  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/67278
 	* gcc.dg/simd-7.c: New testcase.
