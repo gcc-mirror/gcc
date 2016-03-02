@@ -24206,6 +24206,8 @@ cp_parser_requires_clause (cp_parser *parser)
   ++processing_template_decl;
   tree expr = cp_parser_binary_expression (parser, false, false,
 					   PREC_NOT_OPERATOR, NULL);
+  if (check_for_bare_parameter_packs (expr))
+    expr = error_mark_node;
   --processing_template_decl;
   return expr;
 }

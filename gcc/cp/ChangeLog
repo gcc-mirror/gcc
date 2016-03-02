@@ -1,5 +1,9 @@
 2016-03-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70036
+	* parser.c (cp_parser_requires_clause): Call
+	check_for_bare_parameter_packs.
+
 	PR c++/51489
 	* constexpr.c (cxx_eval_binary_expression): Don't VERIFY_CONSTANT
 	the operands.
