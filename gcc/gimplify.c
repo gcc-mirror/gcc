@@ -11573,24 +11573,28 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p,
     {
       static bool gave_help;
       bool warned;
+      /* Use the expansion point to handle cases such as passing bool (defined
+	 in a system header) through `...'.  */
+      source_location xloc
+	= expansion_point_location_if_in_system_header (loc);
 
       /* Unfortunately, this is merely undefined, rather than a constraint
 	 violation, so we cannot make this an error.  If this call is never
 	 executed, the program is still strictly conforming.  */
-      warned = warning_at (loc, 0,
-	  		   "%qT is promoted to %qT when passed through %<...%>",
+      warned = warning_at (xloc, 0,
+			   "%qT is promoted to %qT when passed through %<...%>",
 			   type, promoted_type);
       if (!gave_help && warned)
 	{
 	  gave_help = true;
-	  inform (loc, "(so you should pass %qT not %qT to %<va_arg%>)",
+	  inform (xloc, "(so you should pass %qT not %qT to %<va_arg%>)",
 		  promoted_type, type);
 	}
 
       /* We can, however, treat "undefined" any way we please.
 	 Call abort to encourage the user to fix the program.  */
       if (warned)
-	inform (loc, "if this code is reached, the program will abort");
+	inform (xloc, "if this code is reached, the program will abort");
       /* Before the abort, allow the evaluation of the va_list
 	 expression to exit or longjmp.  */
       gimplify_and_add (valist, pre_p);

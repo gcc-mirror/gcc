@@ -1,3 +1,8 @@
+2016-03-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67854
+	* gcc.dg/pr67854.c: New test.
+
 2016-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/70025
