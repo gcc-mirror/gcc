@@ -1,3 +1,8 @@
+2016-03-02  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	PR tree-optimization/68621
+	* gcc.dg/tree-ssa/ifc-8.c: Adjust test.
+
 2016-03-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/i386/pr70007.c: New test.

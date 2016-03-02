@@ -1,9 +1,10 @@
 
 /* { dg-do compile } */
-/* { dg-options "-Ofast -fdump-tree-ifcvt-details -fno-common -ftree-loop-if-convert-stores" } */
+/* { dg-options "-Ofast -fdump-tree-ifcvt-details -ftree-loop-if-convert-stores" } */
+/* { dg-require-visibility "" } */
 
 #define LEN 4096
- __attribute__((aligned (32))) float array[LEN];
+ __attribute__((visibility("hidden"), aligned (32))) float array[LEN] = {};
 
 void test ()
 {
