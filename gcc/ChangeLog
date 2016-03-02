@@ -1,3 +1,9 @@
+2016-03-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c/67854
+	* gimplify.c (gimplify_va_arg_expr): Use expanded location for the
+	"is promoted to" warning.
+
 2016-03-01  DJ Delorie  <dj@redhat.com>
 
 	* config.gcc: Deprecate mep-*.
