@@ -1,5 +1,9 @@
 2016-03-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51489
+	* constexpr.c (cxx_eval_binary_expression): Don't VERIFY_CONSTANT
+	the operands.
+
 	PR c++/69995
 	* constexpr.c (cxx_eval_call_expression): Unshare arg.
 	(cxx_eval_constant_expression) [DECL_EXPR]: Unshare init.
