@@ -1,3 +1,7 @@
+2016-03-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/i386/pr70007.c: Tweak.
+
 2016-03-02  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gfortran.dg/bessel_6.f90: Reduce accuracy for S/390.
