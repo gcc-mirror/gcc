@@ -1,3 +1,10 @@
+2016-03-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69995
+	* constexpr.c (cxx_eval_call_expression): Unshare arg.
+	(cxx_eval_constant_expression) [DECL_EXPR]: Unshare init.
+	[TARGET_EXPR]: Unshare init.
+
 2016-03-01  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/68948
