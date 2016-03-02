@@ -1,3 +1,7 @@
+2016-03-02  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
+
+	* target.def(lra_p): Specify that new ports should use LRA.
+
 2016-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/69555
