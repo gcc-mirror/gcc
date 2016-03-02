@@ -1,3 +1,9 @@
+2016-03-02  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/69987
+	* gfortran.dg/pr69987.f90: Use "-w" to avoid failures when the
+	target does not support -fprefetch-loop-arrays.
+
 2016-03-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/bmi2-bzhi-2.c: Change to runtime test.
