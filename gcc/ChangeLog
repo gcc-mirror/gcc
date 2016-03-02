@@ -1,3 +1,10 @@
+2016-03-02  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/68659
+	* graphite-isl-ast-to-gimple.c (collect_all_ssa_names): Handle
+	new_expr == NULL_TREE.
+	(get_new_name): Handle ADDR_EXPR.
+
 2016-03-02  Bin Cheng  <bin.cheng@arm.com>
 
 	PR rtl-optimization/69052
