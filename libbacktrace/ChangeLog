@@ -1,3 +1,10 @@
+2016-03-02  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* elf.c (backtrace_initialize): Properly initialize elf_fileline_fn to
+	avoid possible crash.
+	(elf_add): Don't set *fileline_fn to elf_nodebug value in case of
+	missing debug info anymore.
+
 2016-02-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	* mmap.c (MAP_FAILED): Define if not defined.
