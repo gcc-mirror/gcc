@@ -1974,7 +1974,7 @@ mcore-*-elf)
 	inhibit_libc=true
 	;;
 mep-*-*)
-	tm_file="dbxelf.h elfos.h ${tm_file}"
+	tm_file="dbxelf.h elfos.h ${tm_file} newlib-stdint.h"
 	tmake_file=mep/t-mep
 	c_target_objs="mep-pragma.o"
 	cxx_target_objs="mep-pragma.o"
