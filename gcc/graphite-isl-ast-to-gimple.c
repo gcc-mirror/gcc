@@ -1403,6 +1403,8 @@ gsi_insert_earliest (gimple_seq seq)
 void translate_isl_ast_to_gimple::
 collect_all_ssa_names (tree new_expr, vec<tree> *vec_ssa)
 {
+  if (new_expr == NULL_TREE)
+    return;
 
   /* Rename all uses in new_expr.  */
   if (TREE_CODE (new_expr) == SSA_NAME)
@@ -1801,7 +1803,7 @@ get_new_name (basic_block new_bb, tree op,
 	      basic_block old_bb, phi_node_kind phi_kind) const
 {
   /* For constants the names are the same.  */
-  if (is_constant (op))
+  if (TREE_CODE (op) != SSA_NAME)
     return op;
 
   return get_rename (new_bb, op, old_bb, phi_kind);
