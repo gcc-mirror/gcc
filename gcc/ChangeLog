@@ -1,3 +1,7 @@
+2016-03-02  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc (mep-*-elf): Add newlib-stdint.h to tm_file.
+
 2016-03-02  Richard Biener  <rguenther@suse.de>
 	Uros Bizjak  <ubizjak@gmail.com>
 
