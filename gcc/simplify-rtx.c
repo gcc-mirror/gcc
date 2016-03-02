@@ -4421,9 +4421,26 @@ simplify_plus_minus (enum rtx_code code, machine_mode mode, rtx op0,
       n_ops = i;
     }
 
-  /* If nothing changed, fail.  */
+  /* If nothing changed, check that rematerialization of rtl instructions
+     is still required.  */
   if (!canonicalized)
-    return NULL_RTX;
+    {
+      /* Perform rematerialization if only all operands are registers and
+	 all operations are PLUS.  */
+      /* ??? Also disallow (non-global, non-frame) fixed registers to work
+	 around rs6000 and how it uses the CA register.  See PR67145.  */
+      for (i = 0; i < n_ops; i++)
+	if (ops[i].neg
+	    || !REG_P (ops[i].op)
+	    || (REGNO (ops[i].op) < FIRST_PSEUDO_REGISTER
+		&& fixed_regs[REGNO (ops[i].op)]
+		&& !global_regs[REGNO (ops[i].op)]
+		&& ops[i].op != frame_pointer_rtx
+		&& ops[i].op != arg_pointer_rtx
+		&& ops[i].op != stack_pointer_rtx))
+	  return NULL_RTX;
+      goto gen_result;
+    }
 
   /* Create (minus -C X) instead of (neg (const (plus X C))).  */
   if (n_ops == 2
@@ -4465,6 +4482,7 @@ simplify_plus_minus (enum rtx_code code, machine_mode mode, rtx op0,
     }
 
   /* Now make the result by performing the requested operations.  */
+ gen_result:
   result = ops[0].op;
   for (i = 1; i < n_ops; i++)
     result = gen_rtx_fmt_ee (ops[i].neg ? MINUS : PLUS,
