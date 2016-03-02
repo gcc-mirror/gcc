@@ -79,7 +79,7 @@
 2016-03-01  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69196
-	* gcc.dg/tree-ssa/pr69196.c: New test.
+	* gcc.dg/tree-ssa/pr69196-1.c: New test.
 
 	PR tree-optimization/69196
 	* gcc.dg/tree-ssa/vrp46.c: Twiddle threading params to keep it from
