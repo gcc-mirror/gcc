@@ -1,6 +1,6 @@
-2016-03-02  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
+2016-03-02  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
-	* target.def(lra_p): Specify that new ports should use LRA.
+	* target.def (lra_p): Specify that new ports should use LRA.
 
 2016-03-02  Jakub Jelinek  <jakub@redhat.com>
 
@@ -402,12 +402,12 @@
 	complain about -mallow-movmisalign without -mvsx if
 	TARGET_ALLOW_MOVMISALIGN was not set explicitly.
 
-2016-02-26  Joel Sherrill <joel@rtems.org>
+2016-02-26  Joel Sherrill  <joel@rtems.org>
 
 	* config.gcc: Add x86_64-*-rtems*.
 	* gcc/config/i386/rtems-64.h: New file.
 
-2016-02-26  Joel Sherrill <joel@rtems.org>
+2016-02-26  Joel Sherrill  <joel@rtems.org>
 
 	* config.gcc: Add aarch64-*-rtems*.
 	* gcc/config/aarch64/rtems.h: New file.
@@ -1743,7 +1743,7 @@
 	* lto-wrapper.c (append_diag_options): New function.
 	(compile_offload_image): Call append_diag_options.
 
-2016-02-08  Sandra Loosemore <sandra@codesourcery.com>
+2016-02-08  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/69722
 	* doc/extend.texi (Flag Output Operands): Correct sectioning.
@@ -3529,12 +3529,12 @@
 	(pdr_add_memory_accesses): Same.
 	(pdr_add_data_dimensions): Same.
 
-2016-01-20  Sandra Loosemore <sandra@codesourcery.com>
+2016-01-20  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Instrumentation Options): Clarify -mmpx linking
 	requirements.
 
-2016-01-20  Sandra Loosemore <sandra@codesourcery.com>
+2016-01-20  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* common.opt (feliminate-dwarf2-dups): Replace references to
 	"DWARF 2" with just "DWARF".
@@ -3679,7 +3679,7 @@
 	(gen_typedef_die): Likewise.
 	(force_type_die): Adjust call to modified_type_die.
 
-2016-01-19  Sandra Loosemore <sandra@codesourcery.com>
+2016-01-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/standards.texi: Copy-editing for grammar, markup, and sentence
 	flow throughout the file.  Fix broken link to Objective-C 2.0
@@ -3843,7 +3843,7 @@
 
 2016-01-19  Martin Jambor  <mjambor@suse.cz>
 	    Martin Liska  <mliska@suse.cz>
-	    Michael Matz <matz@suse.de>
+	    Michael Matz  <matz@suse.de>
 
 	* Makefile.in (OBJS): Add new source files.
 	(GTFILES): Add hsa.c.
@@ -3984,7 +3984,7 @@
 	* tree-ssanames.c (ssa_name_has_boolean_range): Remove unnecessary
 	test.
 
-2016-01-18  Sandra Loosemore <sandra@codesourcery.com>
+2016-01-18  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Invoking GCC): Add new section to menu.
 	(Option Summary): Update to reflect new section and moved options.
@@ -4520,14 +4520,14 @@
 	use block_ultimate_origin
 	(noncall-stmt_may_be_vtbl_ptr_store): Likewise.
 
-2016-01-13  Sandra Loosemore <sandra@codesourcery.com>
+2016-01-13  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Submodel Options): Rename section to
 	"Machine-Dependent Options" to better reflect its content.
 	Rewrite introductory text to remove archaic CPU names.
 	Update references.
 
-2016-01-13  Sandra Loosemore <sandra@codesourcery.com>
+2016-01-13  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Code Gen Options): Move section up in file,
 	before target-specific options.  Update menu and option summary
