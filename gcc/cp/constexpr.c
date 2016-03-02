@@ -1397,6 +1397,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		  tree oparm = TREE_PURPOSE (bound);
 		  tree arg = TREE_VALUE (bound);
 		  gcc_assert (DECL_NAME (remapped) == DECL_NAME (oparm));
+		  /* Don't share a CONSTRUCTOR that might be changed.  */
+		  arg = unshare_expr (arg);
 		  ctx->values->put (remapped, arg);
 		  bound = TREE_CHAIN (bound);
 		  remapped = DECL_CHAIN (remapped);
@@ -3190,6 +3192,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    init = cxx_eval_constant_expression (ctx, init,
 						 false,
 						 non_constant_p, overflow_p);
+	    /* Don't share a CONSTRUCTOR that might be changed.  */
+	    init = unshare_expr (init);
 	    ctx->values->put (r, init);
 	  }
 	else if (ctx == &new_ctx)
@@ -3234,6 +3238,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       if (lval)
 	{
 	  tree slot = TARGET_EXPR_SLOT (t);
+	  r = unshare_expr (r);
 	  ctx->values->put (slot, r);
 	  return slot;
 	}
