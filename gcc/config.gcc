@@ -243,6 +243,7 @@ case ${target} in
  | avr-*rtems*				\
  | h8300-*rtems*			\
  | m32r-*rtems*			\
+ | mep-*				\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2

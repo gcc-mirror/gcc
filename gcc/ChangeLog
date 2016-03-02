@@ -1,3 +1,7 @@
+2016-03-01  DJ Delorie  <dj@redhat.com>
+
+	* config.gcc: Deprecate mep-*.
+
 2016-03-01  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/70025
