@@ -1,3 +1,8 @@
+2016-03-02  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* system-linux-s390.adsx: Enable Stack_Check_Probes.
+	* system-linux-s390.ads: Likewise.
+
 2016-02-29  Martin Liska  <mliska@suse.cz>
 
 	* gcc-interface/utils.c (set_reverse_storage_order_on_pad_type):
