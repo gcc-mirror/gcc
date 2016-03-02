@@ -1,3 +1,10 @@
+2016-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70028
+	* config/i386/i386.md (kmovw): Move m constraint to 2nd alternative.
+	(*movhi_internal): Put mask moves from and to memory separately
+	from moves from/to GPRs.
+
 2016-03-02  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (dt_node::gen_kids): Fix match code-gen for embedded
