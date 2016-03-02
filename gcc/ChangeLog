@@ -1,3 +1,10 @@
+2016-03-02  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/69052
+	* loop-invariant.c (canonicalize_address): New function.
+	(inv_can_prop_to_addr_use): Check validity of address expression
+	which is canonicalized by above function.
+
 2016-03-02  Alan Modra  <amodra@gmail.com>
 
 	PR ipa/69990
