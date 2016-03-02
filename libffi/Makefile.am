@@ -188,7 +188,6 @@ EXTRA_libffi_la_SOURCES = \
 
 TARGET_OBJ = @TARGET_OBJ@
 libffi_la_LIBADD = $(TARGET_OBJ)
-libffi_la_DEPENDENCIES = $(TARGET_OBJ)
 
 libffi_convenience_la_SOURCES = $(libffi_la_SOURCES)
 EXTRA_libffi_convenience_la_SOURCES = $(EXTRA_libffi_la_SOURCES)
@@ -205,7 +204,32 @@ if FFI_DEBUG
 AM_CFLAGS += -DFFI_DEBUG
 endif
 
-libffi_la_LDFLAGS = -no-undefined -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LTLDFLAGS) $(AM_LTLDFLAGS)
+if LIBAT_BUILD_VERSIONED_SHLIB
+if LIBAT_BUILD_VERSIONED_SHLIB_GNU
+libffi_version_script = -Wl,--version-script,$(top_srcdir)/libffi.map
+libffi_version_dep = $(top_srcdir)/libffi.map
+endif
+if LIBAT_BUILD_VERSIONED_SHLIB_SUN
+libffi_version_script = -Wl,-M,libffi.map-sun
+libffi_version_dep = libffi.map-sun
+libffi.map-sun : $(top_srcdir)/libffi.map \
+                $(top_srcdir)/../contrib/make_sunver.pl \
+                $(libffi_la_OBJECTS) $(libffi_la_LIBADD)
+        perl $(top_srcdir)/../contrib/make_sunver.pl \
+          $(top_srcdir)/libffi.map \
+          $(libffi_la_OBJECTS:%.lo=.libs/%.o) \
+         `echo $(libffi_la_LIBADD) | \
+            sed 's,\([^/        ]*\)\.l\([ao]\),.libs/\1.\2,g'` \
+         > $@ || (rm -f $@ ; exit 1)
+endif
+else
+libffi_version_script =
+libffi_version_dep =
+endif
+libffi_version_info = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+
+libffi_la_LDFLAGS = -no-undefined $(libffi_version_info) $(libffi_version_script) $(LTLDFLAGS) $(AM_LTLDFLAGS)
+libffi_la_DEPENDENCIES = $(libffi_la_LIBADD) $(libffi_version_dep)
 
 AM_CPPFLAGS = -I. -I$(top_srcdir)/include -Iinclude -I$(top_srcdir)/src
 AM_CCASFLAGS = $(AM_CPPFLAGS)

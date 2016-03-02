@@ -248,6 +248,7 @@ NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
+OPT_LDFLAGS = @OPT_LDFLAGS@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -259,6 +260,7 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
+SECTION_LDFLAGS = @SECTION_LDFLAGS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -478,7 +480,6 @@ EXTRA_libffi_la_SOURCES = \
 	src/xtensa/ffi.c src/xtensa/sysv.S
 
 libffi_la_LIBADD = $(TARGET_OBJ)
-libffi_la_DEPENDENCIES = $(TARGET_OBJ)
 libffi_convenience_la_SOURCES = $(libffi_la_SOURCES)
 EXTRA_libffi_convenience_la_SOURCES = $(EXTRA_libffi_la_SOURCES)
 libffi_convenience_la_LIBADD = $(libffi_la_LIBADD)
@@ -486,7 +487,15 @@ libffi_convenience_la_DEPENDENCIES = $(libffi_la_DEPENDENCIES)
 nodist_libffi_convenience_la_SOURCES = $(nodist_libffi_la_SOURCES)
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 AM_CFLAGS = -Wall -g -fexceptions $(am__append_2)
-libffi_la_LDFLAGS = -no-undefined -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LTLDFLAGS) $(AM_LTLDFLAGS)
+@LIBAT_BUILD_VERSIONED_SHLIB_FALSE@libffi_version_script = 
+@LIBAT_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libffi_version_script = -Wl,--version-script,$(top_srcdir)/libffi.map
+@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libffi_version_script = -Wl,-M,libffi.map-sun
+@LIBAT_BUILD_VERSIONED_SHLIB_FALSE@libffi_version_dep = 
+@LIBAT_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libffi_version_dep = $(top_srcdir)/libffi.map
+@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libffi_version_dep = libffi.map-sun
+libffi_version_info = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+libffi_la_LDFLAGS = -no-undefined $(libffi_version_info) $(libffi_version_script) $(LTLDFLAGS) $(AM_LTLDFLAGS)
+libffi_la_DEPENDENCIES = $(libffi_la_LIBADD) $(libffi_version_dep)
 AM_CPPFLAGS = -I. -I$(top_srcdir)/include -Iinclude -I$(top_srcdir)/src
 AM_CCASFLAGS = $(AM_CPPFLAGS)
 all: fficonfig.h
@@ -1892,6 +1901,15 @@ doc/libffi.info: $(STAMP_BUILD_INFO)
 stamp-build-info: doc/libffi.texi $(srcdir)/doc/version.texi doc/$(am__dirstamp)
 	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)/doc -o doc/libffi.info $(srcdir)/doc/libffi.texi
 	@touch $@
+@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libffi.map-sun : $(top_srcdir)/libffi.map \
+@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@                $(top_srcdir)/../contrib/make_sunver.pl \
+@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@                $(libffi_la_OBJECTS) $(libffi_la_LIBADD)
+@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@        perl $(top_srcdir)/../contrib/make_sunver.pl \
+@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@          $(top_srcdir)/libffi.map \
+@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@          $(libffi_la_OBJECTS:%.lo=.libs/%.o) \
+@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@         `echo $(libffi_la_LIBADD) | \
+@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@            sed 's,\([^/        ]*\)\.l\([ao]\),.libs/\1.\2,g'` \
+@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@         > $@ || (rm -f $@ ; exit 1)
 
 # Multilib support.  Automake should provide these on its own.
 all-recursive: all-multi
