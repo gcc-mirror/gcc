@@ -5980,7 +5980,8 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	  argarray[0] = addr;
 	  for (i = 1; i < nargs; i++)
 	    argarray[i] = CALL_EXPR_ARG (placement, i);
-	  mark_used (fn);
+	  if (!mark_used (fn, complain) && !(complain & tf_error))
+	    return error_mark_node;
 	  return build_cxx_call (fn, nargs, argarray, complain);
 	}
       else
@@ -7438,7 +7439,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	 the implementation elided its use.  */
       if (!trivial || DECL_DELETED_FN (fn))
 	{
-	  mark_used (fn);
+	  if (!mark_used (fn, complain) && !(complain & tf_error))
+	    return error_mark_node;
 	  already_used = true;
 	}
 

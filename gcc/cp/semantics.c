@@ -3119,7 +3119,8 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
   tree initializer = convert_from_reference (decl);
 
   /* Mark it as used now even if the use is ill-formed.  */
-  mark_used (decl);
+  if (!mark_used (decl, complain) && !(complain & tf_error))
+    return error_mark_node;
 
   /* Core issue 696: "[At the July 2009 meeting] the CWG expressed
      support for an approach in which a reference to a local

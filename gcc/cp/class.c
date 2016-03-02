@@ -7784,8 +7784,8 @@ resolve_address_of_overloaded_function (tree target_type,
       /* Make =delete work with SFINAE.  */
       if (DECL_DELETED_FN (fn) && !(flags & tf_error))
 	return error_mark_node;
-      
-      mark_used (fn);
+      if (!mark_used (fn, flags) && !(flags & tf_error))
+	return error_mark_node;
     }
 
   /* We could not check access to member functions when this
