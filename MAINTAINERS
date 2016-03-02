@@ -75,7 +75,6 @@ m68k port (?)		Jeff Law		<law@redhat.com>
 m68k port		Andreas Schwab		<schwab@linux-m68k.org>
 m68k-motorola-sysv port	Philippe De Muyter	<phdm@macqel.be>
 mcore port		Nick Clifton		<nickc@redhat.com>
-mep port		DJ Delorie		<dj@redhat.com>
 microblaze		Michael Eager		<eager@eagercon.com>
 mips port		Catherine Moore		<clm@codesourcery.com>
 mips port		Eric Christopher	<echristo@gmail.com>
