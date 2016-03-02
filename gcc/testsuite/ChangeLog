@@ -1,3 +1,7 @@
+2016-03-02  Alan Modra  <amodra@gmail.com>
+
+	* gcc.dg/pr69990.c: New.
+
 2016-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/68062

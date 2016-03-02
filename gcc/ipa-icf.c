@@ -2209,6 +2209,16 @@ sem_variable::merge (sem_item *alias_item)
 		 "adress of original and alias may be compared.\n\n");
       return false;
     }
+
+  if (DECL_ALIGN (original->decl) < DECL_ALIGN (alias->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not unifying; "
+		 "original and alias have incompatible alignments\n\n");
+
+      return false;
+    }
+
   if (DECL_COMDAT_GROUP (original->decl) != DECL_COMDAT_GROUP (alias->decl))
     {
       if (dump_file)

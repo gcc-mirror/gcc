@@ -1,3 +1,9 @@
+2016-03-02  Alan Modra  <amodra@gmail.com>
+
+	PR ipa/69990
+	* ipa-icf.c (sem_variable::merge): Do not merge an alias with
+	larger alignment.
+
 2016-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70028
