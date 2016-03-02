@@ -1,3 +1,10 @@
+2016-03-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2015-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/constexpr-array13.C: Fix.
+
 2016-03-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/i386/pr70007.c: Tweak.
