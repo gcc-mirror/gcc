@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "expr.h"
 #include "params.h"
+#include "rtl-iter.h"
 #include "dumpfile.h"
 
 /* The data stored for the loop.  */
@@ -754,6 +755,130 @@ create_new_invariant (struct def *def, rtx_insn *insn, bitmap depends_on,
   return inv;
 }
 
+/* Return a canonical version of X for the address, from the point of view,
+   that all multiplications are represented as MULT instead of the multiply
+   by a power of 2 being represented as ASHIFT.
+
+   Callers should prepare a copy of X because this function may modify it
+   in place.  */
+
+static void
+canonicalize_address_mult (rtx x)
+{
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, x, NONCONST)
+    {
+      rtx sub = *iter;
+
+      if (GET_CODE (sub) == ASHIFT
+	  && CONST_INT_P (XEXP (sub, 1))
+	  && INTVAL (XEXP (sub, 1)) < GET_MODE_BITSIZE (GET_MODE (sub))
+	  && INTVAL (XEXP (sub, 1)) >= 0)
+	{
+	  HOST_WIDE_INT shift = INTVAL (XEXP (sub, 1));
+	  PUT_CODE (sub, MULT);
+	  XEXP (sub, 1) = gen_int_mode ((HOST_WIDE_INT) 1 << shift,
+					GET_MODE (sub));
+	  iter.skip_subrtxes ();
+	}
+    }
+}
+
+/* Maximum number of sub expressions in address.  We set it to
+   a small integer since it's unlikely to have a complicated
+   address expression.  */
+
+#define MAX_CANON_ADDR_PARTS (5)
+
+/* Collect sub expressions in address X with PLUS as the seperator.
+   Sub expressions are stored in vector ADDR_PARTS.  */
+
+static void
+collect_address_parts (rtx x, vec<rtx> *addr_parts)
+{
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, x, NONCONST)
+    {
+      rtx sub = *iter;
+
+      if (GET_CODE (sub) != PLUS)
+	{
+	  addr_parts->safe_push (sub);
+	  iter.skip_subrtxes ();
+	}
+    }
+}
+
+/* Compare function for sorting sub expressions X and Y based on
+   precedence defined for communitive operations.  */
+
+static int
+compare_address_parts (const void *x, const void *y)
+{
+  const rtx *rx = (const rtx *)x;
+  const rtx *ry = (const rtx *)y;
+  int px = commutative_operand_precedence (*rx);
+  int py = commutative_operand_precedence (*ry);
+
+  return (py - px);
+}
+
+/* Return a canonical version address for X by following steps:
+     1) Rewrite ASHIFT into MULT recursively.
+     2) Divide address into sub expressions with PLUS as the
+	separator.
+     3) Sort sub expressions according to precedence defined
+	for communative operations.
+     4) Simplify CONST_INT_P sub expressions.
+     5) Create new canonicalized address and return.
+   Callers should prepare a copy of X because this function may
+   modify it in place.  */
+
+static rtx
+canonicalize_address (rtx x)
+{
+  rtx res;
+  unsigned int i, j;
+  machine_mode mode = GET_MODE (x);
+  auto_vec<rtx, MAX_CANON_ADDR_PARTS> addr_parts;
+
+  /* Rewrite ASHIFT into MULT.  */
+  canonicalize_address_mult (x);
+  /* Divide address into sub expressions.  */
+  collect_address_parts (x, &addr_parts);
+  /* Unlikely to have very complicated address.  */
+  if (addr_parts.length () < 2
+      || addr_parts.length () > MAX_CANON_ADDR_PARTS)
+    return x;
+
+  /* Sort sub expressions according to canonicalization precedence.  */
+  addr_parts.qsort (compare_address_parts);
+
+  /* Simplify all constant int summary if possible.  */
+  for (i = 0; i < addr_parts.length (); i++)
+    if (CONST_INT_P (addr_parts[i]))
+      break;
+
+  for (j = i + 1; j < addr_parts.length (); j++)
+    {
+      gcc_assert (CONST_INT_P (addr_parts[j]));
+      addr_parts[i] = simplify_gen_binary (PLUS, mode,
+					   addr_parts[i],
+					   addr_parts[j]);
+    }
+
+  /* Chain PLUS operators to the left for !CONST_INT_P sub expressions.  */
+  res = addr_parts[0];
+  for (j = 1; j < i; j++)
+    res = simplify_gen_binary (PLUS, mode, res, addr_parts[j]);
+
+  /* Pickup the last CONST_INT_P sub expression.  */
+  if (i < addr_parts.length ())
+    res = simplify_gen_binary (PLUS, mode, res, addr_parts[i]);
+
+  return res;
+}
+
 /* Given invariant DEF and its address USE, check if the corresponding
    invariant expr can be propagated into the use or not.  */
 
@@ -761,7 +886,7 @@ static bool
 inv_can_prop_to_addr_use (struct def *def, df_ref use)
 {
   struct invariant *inv;
-  rtx *pos = DF_REF_REAL_LOC (use), def_set;
+  rtx *pos = DF_REF_REAL_LOC (use), def_set, use_set;
   rtx_insn *use_insn = DF_REF_INSN (use);
   rtx_insn *def_insn;
   bool ok;
@@ -778,6 +903,29 @@ inv_can_prop_to_addr_use (struct def *def, df_ref use)
 
   validate_unshare_change (use_insn, pos, SET_SRC (def_set), true);
   ok = verify_changes (0);
+  /* Try harder with canonicalization in address expression.  */
+  if (!ok && (use_set = single_set (use_insn)) != NULL_RTX)
+    {
+      rtx src, dest, mem = NULL_RTX;
+
+      src = SET_SRC (use_set);
+      dest = SET_DEST (use_set);
+      if (MEM_P (src))
+	mem = src;
+      else if (MEM_P (dest))
+	mem = dest;
+
+      if (mem != NULL_RTX
+	  && !memory_address_addr_space_p (GET_MODE (mem),
+					   XEXP (mem, 0),
+					   MEM_ADDR_SPACE (mem)))
+	{
+	  rtx addr = canonicalize_address (copy_rtx (XEXP (mem, 0)));
+	  if (memory_address_addr_space_p (GET_MODE (mem),
+					   addr, MEM_ADDR_SPACE (mem)))
+	    ok = true;
+	}
+    }
   cancel_changes (0);
   return ok;
 }

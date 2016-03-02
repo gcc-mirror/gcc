@@ -1,3 +1,8 @@
+2016-03-02  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/69052
+	* gcc.target/i386/pr69052.c: New test.
+
 2016-03-02  Alan Modra  <amodra@gmail.com>
 
 	* gcc.dg/pr69990.c: New.
