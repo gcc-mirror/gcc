@@ -2861,7 +2861,7 @@ A target hook which can change allocno class for given pseudo from
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_LRA_P (void)
-A target hook which returns true if we use LRA instead of reload pass.  It means that LRA was ported to the target.    The default version of this target hook returns always false.
+A target hook which returns true if we use LRA instead of reload pass.    The default version of this target hook returns always false, but new  ports should use LRA.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_REGISTER_PRIORITY (int)
