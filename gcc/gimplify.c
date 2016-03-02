@@ -1436,14 +1436,22 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
   if ((TREE_CODE (decl) == TYPE_DECL
        || TREE_CODE (decl) == VAR_DECL)
       && !TYPE_SIZES_GIMPLIFIED (TREE_TYPE (decl)))
-    gimplify_type_sizes (TREE_TYPE (decl), seq_p);
+    {
+      gimplify_type_sizes (TREE_TYPE (decl), seq_p);
+      if (TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE)
+	gimplify_type_sizes (TREE_TYPE (TREE_TYPE (decl)), seq_p);
+    }
 
   /* ??? DECL_ORIGINAL_TYPE is streamed for LTO so it needs to be gimplified
      in case its size expressions contain problematic nodes like CALL_EXPR.  */
   if (TREE_CODE (decl) == TYPE_DECL
       && DECL_ORIGINAL_TYPE (decl)
       && !TYPE_SIZES_GIMPLIFIED (DECL_ORIGINAL_TYPE (decl)))
-    gimplify_type_sizes (DECL_ORIGINAL_TYPE (decl), seq_p);
+    {
+      gimplify_type_sizes (DECL_ORIGINAL_TYPE (decl), seq_p);
+      if (TREE_CODE (DECL_ORIGINAL_TYPE (decl)) == REFERENCE_TYPE)
+	gimplify_type_sizes (TREE_TYPE (DECL_ORIGINAL_TYPE (decl)), seq_p);
+    }
 
   if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
     {
@@ -6264,16 +6272,30 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 
   if ((n->value & (GOVD_SEEN | GOVD_LOCAL)) == 0
       && (flags & (GOVD_SEEN | GOVD_LOCAL)) == GOVD_SEEN
-      && DECL_SIZE (decl)
-      && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
+      && DECL_SIZE (decl))
     {
-      splay_tree_node n2;
-      tree t = DECL_VALUE_EXPR (decl);
-      gcc_assert (TREE_CODE (t) == INDIRECT_REF);
-      t = TREE_OPERAND (t, 0);
-      gcc_assert (DECL_P (t));
-      n2 = splay_tree_lookup (ctx->variables, (splay_tree_key) t);
-      n2->value |= GOVD_SEEN;
+      if (TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
+	{
+	  splay_tree_node n2;
+	  tree t = DECL_VALUE_EXPR (decl);
+	  gcc_assert (TREE_CODE (t) == INDIRECT_REF);
+	  t = TREE_OPERAND (t, 0);
+	  gcc_assert (DECL_P (t));
+	  n2 = splay_tree_lookup (ctx->variables, (splay_tree_key) t);
+	  n2->value |= GOVD_SEEN;
+	}
+      else if (lang_hooks.decls.omp_privatize_by_reference (decl)
+	       && TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl)))
+	       && (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl))))
+		   != INTEGER_CST))
+	{
+	  splay_tree_node n2;
+	  tree t = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl)));
+	  gcc_assert (DECL_P (t));
+	  n2 = splay_tree_lookup (ctx->variables, (splay_tree_key) t);
+	  if (n2)
+	    n2->value |= GOVD_SEEN;
+	}
     }
 
   shared = ((flags | n->value) & GOVD_SHARED) != 0;
