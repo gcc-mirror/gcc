@@ -1,3 +1,12 @@
+2016-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/69555
+	* gimplify.c (gimplify_decl_expr): For decls with REFERENCE_TYPE, also
+	gimplify_type_sizes the type they refer to.
+	(omp_notice_variable): Handle reference vars to VLAs.
+	* omp-low.c (lower_omp_target): Emit setup of OMP_CLAUSE_PRIVATE reference
+	to VLA decls in the second pass instead of first pass.
+
 2016-03-02  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/68659
