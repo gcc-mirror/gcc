@@ -1,5 +1,11 @@
 2016-03-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/68062
+	* c-c++-common/vector-compare-4.c: Add -Wno-psabi to dg-options.
+
+	PR middle-end/70022
+	* gcc.dg/pr70022.c: Add -w -Wno-psabi to dg-options.
+
 	PR target/70028
 	* gcc.target/i386/pr70028.c: New test.
 
