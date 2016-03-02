@@ -24,7 +24,7 @@ int main() {
   pthread_create(&t[1], NULL, Thread2, NULL);
   pthread_join(t[0], NULL);
   pthread_join(t[1], NULL);
-  printf("OK\n");
+  fprintf(stderr, "OK\n");
 }
 
 /* { dg-prune-output "WARNING: ThreadSanitizer: data race.*(\n|\r\n|\r)" } */

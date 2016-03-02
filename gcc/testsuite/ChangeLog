@@ -1,3 +1,13 @@
+2016-03-02  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* c-c++-common/asan/swapcontext-test-1.c,
+	* c-c++-common/tsan/thread_leak.c,
+	* g++.dg/tsan/aligned_vs_unaligned_race.C,
+	* g++.dg/tsan/benign_race.C,
+	* g++.dg/tsan/fd_close_norace.C,
+	* g++.dg/tsan/fd_close_norace2.C: Print markers to stderr to avoid
+	races with sanitizer output
+
 2016-03-02  Richard Biener  <rguenther@suse.de>
 	Uros Bizjak  <ubizjak@gmail.com>
 
