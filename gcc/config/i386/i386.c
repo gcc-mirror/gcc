@@ -7795,7 +7795,7 @@ type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum,
 	  machine_mode innermode = TYPE_MODE (TREE_TYPE (type));
 
 	  /* There are no XFmode vector modes.  */
-	  if (innermode = XFmode)
+	  if (innermode == XFmode)
 	    return mode;
 
 	  if (TREE_CODE (TREE_TYPE (type)) == REAL_TYPE)
