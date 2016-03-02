@@ -2959,10 +2959,10 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	    }
 	  else if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
 		   && TYPE_MODE (TREE_TYPE (t)) != BLKmode
-		   && (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (t)))
+		   && (GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (t)))
 		       != tree_to_uhwi (t1)))
 	    {
-	      error ("mode precision of non-integral result does not "
+	      error ("mode size of non-integral result does not "
 		     "match field size of BIT_FIELD_REF");
 	      return t;
 	    }

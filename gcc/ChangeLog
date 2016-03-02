@@ -1,3 +1,8 @@
+2016-03-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67278
+	* tree-cfg.c (verify_expr): Adjust BIT_FIELD_REF case.
+
 2016-03-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c/67854

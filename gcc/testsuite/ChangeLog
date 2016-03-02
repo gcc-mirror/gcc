@@ -1,3 +1,8 @@
+2016-03-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/67278
+	* gcc.dg/simd-7.c: New testcase.
+
 2016-03-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/i386/pr70007.c: Tweak.
