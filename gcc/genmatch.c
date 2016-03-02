@@ -2615,7 +2615,7 @@ dt_node::gen_kids (FILE *f, int indent, bool gimple)
 		preds.safe_push (op);
 	      else
 		{
-		  if (gimple)
+		  if (gimple && !e->is_generic)
 		    gimple_exprs.safe_push (op);
 		  else
 		    generic_exprs.safe_push (op);

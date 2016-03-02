@@ -1,5 +1,10 @@
 2016-03-02  Richard Biener  <rguenther@suse.de>
 
+	* genmatch.c (dt_node::gen_kids): Fix match code-gen for embedded
+	GENERIC expressions in GIMPLE.
+
+2016-03-02  Richard Biener  <rguenther@suse.de>
+
 	* config/i386/i386.c (type_natural_mode): Fix typo.
 
 2016-03-02  Nick Clifton  <nickc@redhat.com>
