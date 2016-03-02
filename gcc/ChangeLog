@@ -1,3 +1,7 @@
+2016-03-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/tm.texi: Regenerated.
+
 2016-03-02  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/67145
