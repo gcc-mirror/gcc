@@ -1,3 +1,8 @@
+2016-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/70025
+	* gcc.dg/torture/pr70025.c: New test.
+
 2016-03-02  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	PR tree-optimization/68621
