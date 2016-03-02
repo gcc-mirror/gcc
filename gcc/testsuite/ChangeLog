@@ -1,4 +1,8 @@
-2015-11-25  Markus Trippelsdorf  <markus@trippelsdorf.de>
+2016-03-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/i386/pr70007.c: Tweak.
+
+2016-03-02  Markus Trippelsdorf  <markus@trippelsdorf.de>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/68087
