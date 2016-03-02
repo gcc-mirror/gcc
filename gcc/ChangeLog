@@ -1,3 +1,9 @@
+2016-03-02  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/67145
+	* simplify-rtx.c (simplify_plus_minus): Allow reassoc without
+	simplification when all args are positive non-fixed registers.
+
 2016-03-02  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* target.def (lra_p): Specify that new ports should use LRA.
