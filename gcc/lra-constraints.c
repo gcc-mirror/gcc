@@ -840,6 +840,36 @@ narrow_reload_pseudo_class (rtx reg, enum reg_class cl)
     lra_change_class (REGNO (reg), rclass, "      Change to", true);
 }
 
+/* Searches X for any reference to a reg with the same value as REGNO,
+   returning the rtx of the reference found if any.  Otherwise,
+   returns NULL_RTX.  */
+static rtx
+regno_val_use_in (unsigned int regno, rtx x)
+{
+  const char *fmt;
+  int i, j;
+  rtx tem;
+
+  if (REG_P (x) && lra_reg_info[REGNO (x)].val == lra_reg_info[regno].val)
+    return x;
+
+  fmt = GET_RTX_FORMAT (GET_CODE (x));
+  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  if ((tem = regno_val_use_in (regno, XEXP (x, i))))
+	    return tem;
+	}
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  if ((tem = regno_val_use_in (regno , XVECEXP (x, i, j))))
+	    return tem;
+    }
+
+  return NULL_RTX;
+}
+
 /* Generate reloads for matching OUT and INS (array of input operand
    numbers with end marker -1) with reg class GOAL_CLASS.  Add input
    and output reloads correspondingly to the lists *BEFORE and *AFTER.
@@ -942,7 +972,8 @@ match_reload (signed char out, signed char *ins, enum reg_class goal_class,
 	= (! early_clobber_p && ins[1] < 0 && REG_P (in_rtx)
 	   && (int) REGNO (in_rtx) < lra_new_regno_start
 	   && find_regno_note (curr_insn, REG_DEAD, REGNO (in_rtx))
-	   && (out < 0 || regno_use_in (REGNO (in_rtx), out_rtx) == NULL_RTX)
+	   && (out < 0
+	       || regno_val_use_in (REGNO (in_rtx), out_rtx) == NULL_RTX)
 	   ? lra_create_new_reg (inmode, in_rtx, goal_class, "")
 	   : lra_create_new_reg_with_unique_value (outmode, out_rtx,
 						   goal_class, ""));
