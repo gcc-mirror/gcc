@@ -1,3 +1,7 @@
+2016-03-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/bmi2-bzhi-2.c: Change to runtime test.
+
 2016-03-02  Bin Cheng  <bin.cheng@arm.com>
 
 	PR rtl-optimization/69052
@@ -29,7 +33,7 @@
 	races with sanitizer output
 
 2016-03-02  Richard Biener  <rguenther@suse.de>
-	Uros Bizjak  <ubizjak@gmail.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/67278
 	* gcc.dg/simd-8.c: New testcase.
