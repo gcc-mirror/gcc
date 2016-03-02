@@ -200,7 +200,7 @@
 	PR fortran/47674
 	* gfortran.dg/realloc_on_assign_26.f90:  New test case.
 
-2016-02-28  Harald Anlauf <anlauf@gmx.de>
+2016-02-28  Harald Anlauf  <anlauf@gmx.de>
 	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/56007
@@ -2422,7 +2422,7 @@
 	PR tree-optimization/69170
 	* gcc.dg/torture/pr69170.c: New testcase.
 
-2016-01-17 John David Anglin  <danglin@gcc.gnu.org>
+2016-01-17  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/torture/builtin-integral-1.c: Require c99_runtime.
 
@@ -2555,11 +2555,11 @@
 
 	* gcc.target/i386/pr65105-5.c: New test.
 
-2016-01-15  Jan Hubicka <hubicka@ucw.cz>
+2016-01-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.c-torture/execute/alias-4.c: New testcase.
 
-2016-01-15  Jan Hubicka <hubicka@ucw.cz>
+2016-01-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/68148
 	* g++.dg/ipa/devirt-49.C: New testcase.

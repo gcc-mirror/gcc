@@ -324,7 +324,7 @@
 	* tree-ssa-dom.c: Include dbgcnt.h
 	(dom_opt_dom_walker::before_dom_children): Handle the new counter.
 
-2015-12-21  Andrew Pinski <apinski@cavium.com>
+2015-12-21  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64-option-extensions.def (LSE): Change
 	FEAT_STRING to "atomics".
@@ -574,7 +574,7 @@
 	* config/aarch64/aarch64-protos.h (aarch64_mask_from_zextract_ops):
 	New prototype.
 
-2015-12-18 Robin Dapp <rdapp@linux.vnet.ibm.com>
+2015-12-18  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
 	* config/s390/predicates.md: Change and rename
 	constm1_operand to all_ones_operand
@@ -601,7 +601,7 @@
 	* config/s390/s390.h: Default to z900 in the driver.
 	* doc/invoke.texi: Document the deprecation of g5 and g6.
 
-2015-12-18  Andris Pavenis <andris.pavenis@iki.fi>
+2015-12-18  Andris Pavenis  <andris.pavenis@iki.fi>
 
 	* config/i386/djgpp-stdint.h: update typedefs for integer types
 
@@ -1414,7 +1414,7 @@
 	PR rtl-optimization/68730
 	* cfgrtl.c (cfg_layout_finalize): Free dominators.
 
-2015-12-13  Alexandre Oliva <aoliva@redhat.com>
+2015-12-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/67355
 	* var-tracking.c (reverse_op): Don't add dummy zero to reverse
@@ -3754,7 +3754,7 @@
 	* tree-vect-slp.c (vect_get_mask_element): Remove.
 	(vect_transform_slp_perm_load): Implement in a simpler way.
 
-2015-11-26  Alexandre Oliva <aoliva@redhat.com>
+2015-11-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/67753
 	PR rtl-optimization/64164
@@ -3919,7 +3919,7 @@
 	TREE_READONLY, don't call use_pointer_for_field with non-NULL
 	second argument until we are sure we are keeping OMP_CLAUSE_SHARED.
 
-2015-11-26  Paolo Bonzini <bonzini@gnu.org>
+2015-11-26  Paolo Bonzini  <bonzini@gnu.org>
 
 	* doc/implement-c.texi (Integers Implementation): Make GCC's promises
 	about signed left shift stronger and clarify the cases when they're
@@ -4373,7 +4373,7 @@
 	(gimple_fold_builtin_memory_op): Don't fold call if we
 	are going to instrument it and it may copy pointers.
 
-2015-11-24  Bernd Schmidt <bschmidt@redhat.com>
+2015-11-24  Bernd Schmidt  <bschmidt@redhat.com>
 	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/68194
@@ -4697,7 +4697,7 @@
 	* config/nvptx/nvptx.c (nvptx_use_anchors_for_symbol_p): New.
 	(TARGET_USE_ANCHORS_FOR_SYMBOL_P): Override.
 
-2015-11-20  Alan Hayward <alan.hayward@arm.com>
+2015-11-20  Alan Hayward  <alan.hayward@arm.com>
 
 	PR tree-optimization/68413
 	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Cache
@@ -5575,7 +5575,7 @@
 	(if_convertible_loop_p_1):  Initialize hash maps and predicates
 	before hashing data references and delete hashmaps at the end.
 
-2015-11-16  Thomas Preud'homme <thomas.preudhomme@arm.com>
+2015-11-16  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR 56036
 	* doc/invoke.texi (Optimize Options): Move @end table to the right
@@ -5599,7 +5599,7 @@
 	in the user documentation.
 	(define_peephole2, define_split): Similarly.
 
-2015-11-16 Andris Pavenis <andris.pavenis@iki.fi>
+2015-11-16  Andris Pavenis  <andris.pavenis@iki.fi>
 
 	* lto-streamer-out.c (write_global_references): Adjust integer type.
 	(lto_output_decl_state_refs): Likewise.
@@ -5881,7 +5881,7 @@
 	argument is 1, replace it with GOMP_ordered_* call instead of removing
 	it.
 
-2015-11-13  Rich Felker <dalias@libc.org>
+2015-11-13  Rich Felker  <dalias@libc.org>
 
 	* config/sh/sh.md (symGOT_load): Suppress __stack_chk_guard
 	address loading hack for FDPIC targets.
@@ -6183,7 +6183,7 @@
 	* tree-vect-stmts.c (vectorizable_comparison): Provide vectype
 	for loop invariants.
 
-2015-11-13  Alan Hayward <alan.hayward@arm.com>
+2015-11-13  Alan Hayward  <alan.hayward@arm.com>
 
 	PR tree-optimization/66558
 	* tree-vect-loop.c (is_integer_induction):Add.
@@ -8067,7 +8067,7 @@
 	the dominance info; free it if we can't.
 	(pass_call_cdce::execute): Don't free the dominance info here.
 
-2015-11-06  Jeff Law <law@redhat.com>
+2015-11-06  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadedge.c (dummy_simplify): Remove.
 	(thread_around_empty_blocks): Remove backedge_seen_p argument.
@@ -8100,7 +8100,7 @@
 	(build_scop_scattering): Call build_pbb_minimal_scattering_polyhedrons.
 	(build_poly_scop): Call build_scop_minimal_scattering.
 
-2015-11-06  Jeff Law <law@redhat.com>
+2015-11-06  Jeff Law  <law@redhat.com>
 
 	* cfg-flags.def (IGNORE): New edge flag.
 	* tree-vrp.c (identify_jump_threads): Mark and clear edges
@@ -8426,7 +8426,7 @@
 	* config/i386/i386.c: Include gimple-iterator.h.
 	* config/aarch64/aarch64.c: Likewise.
 
-2015-11-06  Alexandre Oliva <aoliva@redhat.com>
+2015-11-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/67753
 	PR rtl-optimization/64164
@@ -8840,7 +8840,7 @@
 	* config/aarch64/aarch64.md (*movhf_aarch64): Use
 	aarch64_reg_or_fp_zero for second operand.
 
-2015-11-03  Alexandre Oliva <aoliva@redhat.com>
+2015-11-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gimple-expr.c: Include hash-set.h and rtl.h.
 	(mark_addressable_queue): New var.
@@ -8852,7 +8852,7 @@
 	* cfgexpand.c: Include gimple-expr.h.
 	(pass_expand::execute): Flush mark_addressable queue.
 
-2015-11-02  Alexandre Oliva <aoliva@redhat.com>
+2015-11-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tree-ssa-ifcombine.c (tree_ssa_ifcombine_bb_1): Factor out
 	bb_no_side_effects_p tests...
@@ -8864,7 +8864,7 @@
 	* tree-ssa.c (gimple_uses_undefined_value_p): New.
 	* tree-ssa.h (gimple_uses_undefined_value_p): Declare.
 
-2015-11-02  Jeff Law <law@redhat.com>
+2015-11-02  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c (valid_jump_thread_path): Also detect
 	cases where the loop latch edge is in the middle of an FSM path.
@@ -8928,7 +8928,7 @@
 	PR middle-end/68166
 	* fold-const.c: Include "md5.h".
 
-2015-11-01  Jeff Law <law@redhat.com>
+2015-11-01  Jeff Law  <law@redhat.com>
 
 	* vmsdbgout.c: Revert unused header file reduction patch.
 
@@ -8977,7 +8977,7 @@
 
 	* tree-ssa-structalias.c (ipa_pta_execute): Use make_copy_constraint.
 
-2015-10-30  Jeff Law <law@redhat.com>
+2015-10-30  Jeff Law  <law@redhat.com>
 	    Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.h (HARD_REGNO_NREGS): Avoid warning on unused
@@ -10523,7 +10523,7 @@
 	    Joseph Myers  <joseph@codesourcery.com>
 	    Mark Shinwell  <shinwell@codesourcery.com>
 	    Andrew Stubbs  <ams@codesourcery.com>
-	    Rich Felker <dalias@libc.org>
+	    Rich Felker  <dalias@libc.org>
 
 	* config.gcc: Handle --enable-fdpic.
 	* config/sh/constraints.md (Ccl): New constraint.
@@ -10848,7 +10848,7 @@
 	* match.pd ((A & ~B) - (A & B) -> (A ^ B) - B): Add missing :c.
 	( (X & ~Y) | (~X & Y) -> X ^ Y): Remove redundant :c.
 
-2015-10-26  Alan Hayward <alan.hayward@arm.com>
+2015-10-26  Alan Hayward  <alan.hayward@arm.com>
 
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Fix
 	VEC_COND_EXPR types.
@@ -11043,7 +11043,7 @@
 	* tree.c (build_truth_vector_type): Support BLK mode
 	returned for boolean vector.
 
-2015-10-23  Alan Hayward <alan.hayward@arm.com>
+2015-10-23  Alan Hayward  <alan.hayward@arm.com>
 
 	PR tree-optimization/65947
 	* tree-vect-loop.c
@@ -12082,7 +12082,7 @@
 	empty constructors.
 
 2015-10-16  Michael Collison  <michael.collison@linaro.org>
-	    Andrew Pinski <andrew.pinski@caviumnetworks.com>
+	    Andrew Pinski  <andrew.pinski@caviumnetworks.com>
 
 	* match.pd ((x < y) && (x < z) -> x < min (y,z),
 	(x > y) and (x > z) -> x > max (y,z))
@@ -12641,7 +12641,7 @@
 	(ix86_set_reg_reg_cost): Ditto.
 	* config/i386/i386.h (HARD_REGNO_NREGS): Ditto.
 
-2015-10-13  Alexandre Oliva <aoliva@redhat.com>
+2015-10-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR middle-end/67912
 	* expmed.c (store_bit_field_1): Adjust mode of BLKmode inputs.
@@ -13037,7 +13037,7 @@
 	* config/rs6000/rs6000.c (rs6000_offload_options): New.
 	(TARGET_OFFLOAD_OPTIONS): New.
 
-2015-10-09  Alexandre Oliva <aoliva@redhat.com>
+2015-10-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR middle-end/67891
 	* cfgexpand.c (set_parm_rtl): Drop is_gimple_reg test.
@@ -13927,8 +13927,8 @@
 	(fold_builtin_hypot, fold_builtin_pow): Likewise.
 	* match.pd: Likewise.
 
-2015-10-05 James Greenhalgh <james.greenhalgh@arm.com>
-	   Jiong Wang  <jiong.wang@arm.com>
+2015-10-05  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Jiong Wang  <jiong.wang@arm.com>
 
 	* config/aarch64/aarch64.md (tlsie_tiny_sidi): Replace "<w>" with "w".
 
@@ -15087,7 +15087,7 @@
 	arith_reg_operand for operands[1].  Allow it only when LRA is enabled.
 	(addsi3_scr, *addsi3): New insn_and_split patterns.
 
-2015-09-27  Alexandre Oliva <aoliva@redhat.com>
+2015-09-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/64164
 	PR tree-optimization/67312
@@ -15563,7 +15563,7 @@
 	'reg + reloc' cases, allow first operand to be non-REG, and use
 	force_reg() to enforce address pattern.
 
-2015-09-22  Alexander Fomin <alexander.fomin@intel.com>
+2015-09-22  Alexander Fomin  <alexander.fomin@intel.com>
 
 	PR target/67480
 	* config/i386/sse.md (define_mode_iterator VI48_AVX_AVX512F): New.
@@ -17063,7 +17063,7 @@
 	* config/arc/arc.opt, config/arc/constraints.md: Likewise.
 	* config/arc/t-arc-newlib: Likewise.
 
-2015-09-10  Claudiu Zissulescu <claziss@synopsys.com>
+2015-09-10  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.md (length): Fix attribute length for conditional
 	executed instructions with long immediate.
@@ -17750,7 +17750,7 @@
 
 	* genmodes.c: Add CONST_MODE_UNIT_SIZE modifier.
 
-2015-09-01  Kyrylo Tkachov <kyrylo.tkachov@arm.com>
+2015-09-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* ifcvt.c (struct noce_if_info): Add then_simple, else_simple,
 	then_cost, else_cost fields.  Change branch_cost field to unsigned int.
@@ -17886,7 +17886,7 @@
 	adjust_concat.
 	(dump_swap_insn_table): Handle SH_XXPERMDI and SH_CONCAT.
 
-2015-08-30  Rich Felker <dalias@libc.org>
+2015-08-30  Rich Felker  <dalias@libc.org>
 
 	* config.gcc (supported_defaults): Handle sh[123456ble]*-*-*
 	case instead of sh[123456ble]-*-*.
@@ -18736,7 +18736,7 @@
 	* config/aarch64/aarch64.c: Remove the last argument to
 	AARCH64_FUSION_PAIR.
 
-2015-08-22  Mikhail Maltsev <maltsevm@gmail.com>
+2015-08-22  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* dominance.c (new_zero_array): Define.
 	(dom_info): Redefine as class with proper encapsulation.
@@ -20353,7 +20353,7 @@
 	* toplev.h (toplev::toplev): Replace "use_TV_TOTAL" bool param
 	with "external_timer" timer *.
 
-2015-08-03  Alexander Basov <coohpt@gmail.com>
+2015-08-03  Alexander Basov  <coohpt@gmail.com>
 
 	PR middle-end/64744
 	PR middle-end/48470
@@ -23087,19 +23087,19 @@
 	iterator to use_stmt.
 
 2015-07-15  Aditya Kumar  <aditya.k7@samsung.com>
-	    Sebastian Pop <s.pop@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
 
 	* graphite-scop-detection.c (build_scops_1): Discard scops for
 	which entry==exit.
 
 2015-07-15  Aditya Kumar  <aditya.k7@samsung.com>
-	    Sebastian Pop <s.pop@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
 
 	* graphite-scop-detection.c (stmt_simple_for_scop_p): Bail out in
 	case of a return statement in scop.
 
 2015-07-15  Aditya Kumar  <aditya.k7@samsung.com>
-	    Sebastian Pop <s.pop@samsung.com>
+	    Sebastian Pop  <s.pop@samsung.com>
 
 	* graphite-sese-to-poly.c (parameter_index_in_region): Only handle
 	INTEGER_TYPE parameters.
@@ -25255,7 +25255,7 @@
 	* match.pd: Add missing condition to ~X ^ C -> X ^ ~C.
 
 2015-07-05  Chung-Lin Tang  <cltang@codesourcery.com>
-	    Sandra Loosemore <sandra@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2-protos.h (nios2_symbol_ref_in_small_data_p):
 	Delete extern declaration.
@@ -25633,13 +25633,13 @@
 	(X & Y) ^ Y -> ~X & Y transforms to ...
 	* match.pd: ... here.
 
-2015-07-01  Richard Biener <rguenther@suse.de>
+2015-07-01  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (expr::gen_transform): Shortcut re-simplifying
 	of converts to avoid uninteresting noise from the conversion
 	simplifying patterns.
 
-2015-06-30  Sandra Loosemore <sandra@codesourcery.com>
+2015-06-30  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/c6x/c6x.c (try_rename_operands): Do not depend on
 	gcc_assert evaluating its argument for side-effect.
@@ -25982,8 +25982,8 @@
 	division, compute max and min when value ranges for dividend and
 	divisor are available.
 
-2015-06-28  Chung-Lin Tang <cltang@codesourcery.com>
-	    Sandra Loosemore <sandra@codesourcery.com>
+2015-06-28  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
 
 	* regrename.h (regrename_do_replace): Change to return bool.
 	* regrename.c (rename_chains): Check return value of
@@ -26937,7 +26937,7 @@
 
 	* tree-vect-slp.c (vect_build_slp_tree_1): Init vectype.
 
-2015-06-24  Renlin Li <renlin.li@arm.com>
+2015-06-24  Renlin Li  <renlin.li@arm.com>
 
 	* config/aarch64/aarch64.h(TARGET_CPU_CPP_BUILTINS): Add
 	__ARM_ALIGN_MAX_PWR, __ARM_ALIGN_MAX_STACK_PWR.
@@ -33263,7 +33263,7 @@
 	"break".
 
 2015-05-12  Chung-Lin Tang  <cltang@codesourcery.com>
-	    Sandra Loosemore <sandra@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.h (enum reg_class): Add IJMP_REGS enum
 	value.
@@ -34934,7 +34934,7 @@
 	* configure: Regenerate.
 	* config.in: Regenerate.
 
-2015-04-27  Yoshinori Sato <ysato@users.sourceforge.jp>
+2015-04-27  Yoshinori Sato  <ysato@users.sourceforge.jp>
 
 	* config.gcc: Add h8300-*-linux.
 	* config/h8300/linux.h: New.
@@ -35223,7 +35223,7 @@
 	(<mask_codefor>avx512f_unpckhpd512<mask_name>): Ditto.
 
 2015-04-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
-	    Steven Bosscher <steven@gcc.gnu.org>
+	    Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR rtl-optimization/34503
 	* cprop.c (cprop_reg_p): New.
@@ -36073,7 +36073,7 @@
 	Release symbol_compare_collection.
 	* ipa-reference.c: Add TODO that a vector should be released.
 
-2015-04-17  Sivanupandi Pitchumani <Pitchumani.Sivanupandi@atmel.com>
+2015-04-17  Sivanupandi Pitchumani  <Pitchumani.Sivanupandi@atmel.com>
 
 	PR target/65296
 	* config/avr/gen-avr-mmcu-specs.c (*avrlibc_startfile): Adjust
@@ -39425,7 +39425,7 @@
 	* omp-low.c (create_omp_child_function): Tag entrypoint
 	functions with a special attribute.
 
-2015-02-24  Michael Haubenwallner <michael.haubenwallner@ssi-schaefer.com>
+2015-02-24  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	PR target/65058
 	* config/rs6000/xcoff.h (ASM_OUTPUT_EXTERNAL): Drop unused variable.
@@ -40614,7 +40614,7 @@
 	* config/rs6000/rs6000.c (chain_already_loaded): New function.
 	(rs6000_call_aix): Use it.
 
-2015-02-05  Jan Hubicka <hubicka@ucw.cz>
+2015-02-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-cp.c (ipa_value_from_jfunc, ipa_context_from_jfunc): Add bounds
 	check.
@@ -40763,7 +40763,7 @@
 	of manual swapping implementation.
 	(aarch64_expand_vec_perm_const_1): Likewise.
 
-2015-02-04  James Greenhalgh <james.greenhalgh@arm.com>
+2015-02-04  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.c (NAMED_PARAM): Delete it.
 	(generic_addrcost_table): Remove NAMED_PARAM.
@@ -41933,7 +41933,7 @@
 	decl attribute.
 
 2015-01-21  David Sherwood  <david.sherwood@arm.com>
-	    Tejas Belagod <Tejas.Belagod@arm.com>
+	    Tejas Belagod  <Tejas.Belagod@arm.com>
 
 	* config/aarch64/aarch64.h (CANNOT_CHANGE_MODE_CLASS): Removed.
 	* config/aarch64/aarch64.c (aarch64_cannot_change_mode_class): Removed.
@@ -41941,7 +41941,7 @@
 	Removed.
 
 2015-01-21  David Sherwood  <david.sherwood@arm.com>
-	    Tejas Belagod <Tejas.Belagod@arm.com>
+	    Tejas Belagod  <Tejas.Belagod@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_simd_attr_length_rglist)
 	(aarch64_reverse_mask): New decls.
@@ -42592,7 +42592,7 @@
 	introduced in revision 219724.
 
 2015-01-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
-	    Ramana Radhakrishnan <ramana.radhakrishnan@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/64263
 	* config/aarch64/aarch64.md (*movsi_aarch64): Don't split if the
@@ -43555,7 +43555,7 @@
 	for MEM_REF access functions with the same base can never partially
 	overlap.
 
-2015-01-14  Marcos Diaz <marcos.diaz@tallertechnologies.com>
+2015-01-14  Marcos Diaz  <marcos.diaz@tallertechnologies.com>
 
 	* common.opt: New option -fstack-protector-explicit.
 	* cfgexpand.c (SPCT_FLAG_EXPLICIT): New enum.
@@ -43741,7 +43741,7 @@
 	Do not save lr in case of tail call.
 	* config/arm/thumb2.md (*thumb2_pop_single): New pattern.
 
-2015-01-14  Martin Uecker <uecker@eecs.berkeley.edu>
+2015-01-14  Martin Uecker  <uecker@eecs.berkeley.edu>
 
 	* tree-vrp.c (check_array_ref): Emit more warnings
 	for warn_array_bounds >= 2.
