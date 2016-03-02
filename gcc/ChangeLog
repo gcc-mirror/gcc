@@ -1,3 +1,9 @@
+2016-03-01  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/70025
+	* lra-constraints.c (regno_val_use_in): New.
+	(match_reload): Use it instead of regno_use_in.
+
 2016-03-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/70007
