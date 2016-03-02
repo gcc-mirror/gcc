@@ -1,3 +1,21 @@
+2016-03-02  Richard Henderson  <rth@redhat.com>
+
+	PR libffi/70024
+	* Makefile.am (libffi_version_script): New.
+	(libffi_version_dep): New.
+	(libffi_version_info): New.
+	(libffi_la_LDFLAGS): Include libffi_version_info, libffi_version_script.
+	(libffi_la_DEPENDENCIES): Include libffi_version_dep.
+	* acinclude.m4 (LIBAT_ENABLE, LIBAT_CHECK_LINKER_FEATURES): New.
+	(LIBAT_ENABLE_SYMVERS, LIBAT_BUILD_VERSIONED_SHLIB): New.
+	(LIBAT_BUILD_VERSIONED_SHLIB_GNU): New.
+	(LIBAT_BUILD_VERSIONED_SHLIB_SUN): New.
+	* configure.ac: Invoke LIBAT_ENABLE_SYMVERS.
+	* libffi.map: New file.
+	* libtool-version: Increase to 5.0.0.
+	* Makefile.in, configure: Rebuild.
+	* man/Makefile.in, testsuite/Makefile.in: Rebuild.
+
 2015-10-26  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR libffi/65441
