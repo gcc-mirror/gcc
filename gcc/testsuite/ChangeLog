@@ -1,3 +1,7 @@
+2016-03-02  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gfortran.dg/bessel_6.f90: Reduce accuracy for S/390.
+
 2016-03-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c/67854
