@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O3 -fprefetch-loop-arrays" }
+! { dg-options "-O3 -fprefetch-loop-arrays -w" }
 
 MODULE cp_lbfgs
   INTEGER, PARAMETER :: dp=8
