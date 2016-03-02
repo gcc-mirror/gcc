@@ -1,5 +1,5 @@
 /* PR target/65368 */
-/* { dg-do assemble { target bmi2 } } */
+/* { dg-do run { target bmi2 } } */
 /* { dg-options "-O2 -mbmi2" } */
 
 #include <x86intrin.h>
