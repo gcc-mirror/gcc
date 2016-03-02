@@ -791,7 +791,6 @@ elf_add (struct backtrace_state *state, int descriptor, uintptr_t base_address,
     {
       if (!backtrace_close (descriptor, error_callback, data))
 	goto fail;
-      *fileline_fn = elf_nodebug;
       return 1;
     }
 
@@ -925,7 +924,7 @@ backtrace_initialize (struct backtrace_state *state, int descriptor,
   int ret;
   int found_sym;
   int found_dwarf;
-  fileline elf_fileline_fn;
+  fileline elf_fileline_fn = elf_nodebug;
   struct phdr_data pd;
 
   ret = elf_add (state, descriptor, 0, error_callback, data, &elf_fileline_fn,
