@@ -1988,11 +1988,12 @@ cxx_eval_component_reference (const constexpr_ctx *ctx, tree t,
     }
 
   if (CONSTRUCTOR_NO_IMPLICIT_ZERO (whole)
-      && !is_empty_class (TREE_TYPE (part)))
+      && !is_really_empty_class (TREE_TYPE (t)))
     {
       /* 'whole' is part of the aggregate initializer we're currently
 	 building; if there's no initializer for this member yet, that's an
-	 error. */
+	 error.  But expand_aggr_init_1 doesn't bother to initialize really
+	 empty classes, so ignore them here, too.  */
       if (!ctx->quiet)
 	error ("accessing uninitialized member %qD", part);
       *non_constant_p = true;
