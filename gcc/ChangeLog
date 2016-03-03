@@ -1,3 +1,9 @@
+2016-03-03  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/70043
+	* tree-vect-loop.c (optimize_mask_stores): Move iterator to
+	previous statement if we see a debug statement.
+
 2016-03-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/55936

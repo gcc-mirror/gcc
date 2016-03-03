@@ -1,3 +1,8 @@
+2016-03-03  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR tree-optimization/70043
+	* gfortran.dg/vect/pr70043.f90: New test.
+
 2016-03-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/task1.ads: New test.
