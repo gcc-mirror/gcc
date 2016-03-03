@@ -13263,7 +13263,11 @@ tls_mentioned_p (rtx x)
     }
 }
 
-/* Must not copy any rtx that uses a pc-relative address.  */
+/* Must not copy any rtx that uses a pc-relative address.
+   Also, disallow copying of load-exclusive instructions that
+   may appear after splitting of compare-and-swap-style operations
+   so as to prevent those loops from being transformed away from their
+   canonical forms (see PR 69904).  */
 
 static bool
 arm_cannot_copy_insn_p (rtx_insn *insn)
@@ -13280,6 +13284,20 @@ arm_cannot_copy_insn_p (rtx_insn *insn)
       if (GET_CODE (x) == UNSPEC
 	  && (XINT (x, 1) == UNSPEC_PIC_BASE
 	      || XINT (x, 1) == UNSPEC_PIC_UNIFIED))
+	return true;
+    }
+
+  rtx set = single_set (insn);
+  if (set)
+    {
+      rtx src = SET_SRC (set);
+      if (GET_CODE (src) == ZERO_EXTEND)
+	src = XEXP (src, 0);
+
+      /* Catch the load-exclusive and load-acquire operations.  */
+      if (GET_CODE (src) == UNSPEC_VOLATILE
+	  && (XINT (src, 1) == VUNSPEC_LL
+	      || XINT (src, 1) == VUNSPEC_LAX))
 	return true;
     }
   return false;
