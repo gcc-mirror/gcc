@@ -1,5 +1,11 @@
 2016-03-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* Makefile.am (libffi.map-sun): Properly convert
+	$(libffi_la_OBJECTS) to object names.
+	* Makefile.in: Regenerate.
+
+2016-03-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* Makefile.am (libffi.map-sun): Tabify:
 	* Makefile.in: Regenerate.
 
