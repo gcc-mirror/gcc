@@ -49,8 +49,8 @@ proc simulate-thread { args } {
 
     set message "thread simulation test"
 
-    send_log "Spawning: $gdb_name -nx -nw -quiet -x $cmd_file ./$exec_file\n"
-    set res [remote_spawn target "$gdb_name -nx -nw  -x $cmd_file ./$exec_file"]
+    send_log "Spawning: $gdb_name -nx -nw -batch -x $cmd_file ./$exec_file\n"
+    set res [remote_spawn target "$gdb_name -nx -nw -batch -x $cmd_file ./$exec_file"]
     if { $res < 0 || $res == "" } {
 	unsupported "$testcase $message"
 	return
