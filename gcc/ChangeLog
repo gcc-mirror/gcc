@@ -1,3 +1,10 @@
+2016-03-03  Michael Collison  <michael.collison@linaro.org>
+
+	PR target/70014
+	* config/arm/arm.md (*subsi3_carryin_const): Change predicate
+	for operand 1 to s_register_operand. Change predicate for operand
+	2 to arm_not_immediate_operand.
+
 2016-03-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/tm.texi: Regenerated.
