@@ -1,3 +1,10 @@
+2016-03-03  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline
+	2015-10-14  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.dg/pragma-pop_options-1.c: New test.
+
 2016-03-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/gcc-gdb-test.exp (gdb-test): Make log message match command.

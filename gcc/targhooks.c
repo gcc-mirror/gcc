@@ -1312,8 +1312,12 @@ bool
 default_target_option_pragma_parse (tree ARG_UNUSED (args),
 				    tree ARG_UNUSED (pop_target))
 {
-  warning (OPT_Wpragmas,
-	   "#pragma GCC target is not supported for this machine");
+  /* If args is NULL the caller is handle_pragma_pop_options ().  In that case,
+     emit no warning because "#pragma GCC pop_target" is valid on targets that
+     do not have the "target" pragma.  */
+  if (args)
+    warning (OPT_Wpragmas,
+	     "#pragma GCC target is not supported for this machine");
 
   return false;
 }
