@@ -16,6 +16,12 @@
 	* Makefile.in, configure: Rebuild.
 	* man/Makefile.in, testsuite/Makefile.in: Rebuild.
 
+	* Makefile.am (libffi_version_script): Look in cwd for libffi.map.
+	(libffi_version_dep, libffi.map-sun): Likewise.
+	(libffi.map): New target.
+	* libffi.map.in: Rename from libffi.map.  Add required defines,
+	includes, and conditionals.
+
 2015-10-26  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR libffi/65441

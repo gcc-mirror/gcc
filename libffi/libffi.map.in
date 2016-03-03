@@ -1,3 +1,8 @@
+#define LIBFFI_ASM
+#define LIBFFI_H
+#include <fficonfig.h>
+#include <ffitarget.h>
+
 LIBFFI_BASE_5 {
   global:
 	/* Exported data variables.  */
@@ -40,7 +45,7 @@ LIBFFI_BASE_5 {
 	*;
 };
 
-/* This section is optional based on FFI_TARGET_HAS_COMPLEX_TYPE.  */
+#ifdef FFI_TARGET_HAS_COMPLEX_TYPE
 LIBFFI_COMPLEX_5 {
   global:
 	/* Exported data variables.  */
@@ -48,8 +53,9 @@ LIBFFI_COMPLEX_5 {
 	ffi_type_complex_double;
 	ffi_type_complex_longdouble;
 } LIBFFI_BASE_5;
+#endif
 
-/* This section is optional based on FFI_CLOSURES.  */
+#if FFI_CLOSURES
 LIBFFI_CLOSURE_5 {
   global:
 	ffi_closure_alloc;
@@ -61,10 +67,12 @@ LIBFFI_CLOSURE_5 {
 	ffi_prep_java_raw_closure;
 	ffi_prep_java_raw_closure_loc;
 } LIBFFI_BASE_5;
+#endif
 
-/* This section is optional based on FFI_GO_CLOSURES.  */
+#if FFI_GO_CLOSURES
 LIBFFI_GO_CLOSURE_5 {
   global:
 	ffi_call_go;
 	ffi_prep_go_closure;
 } LIBFFI_CLOSURE_5;
+#endif

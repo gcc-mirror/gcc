@@ -206,17 +206,15 @@ endif
 
 if LIBAT_BUILD_VERSIONED_SHLIB
 if LIBAT_BUILD_VERSIONED_SHLIB_GNU
-libffi_version_script = -Wl,--version-script,$(top_srcdir)/libffi.map
-libffi_version_dep = $(top_srcdir)/libffi.map
+libffi_version_script = -Wl,--version-script,libffi.map
+libffi_version_dep = libffi.map
 endif
 if LIBAT_BUILD_VERSIONED_SHLIB_SUN
 libffi_version_script = -Wl,-M,libffi.map-sun
 libffi_version_dep = libffi.map-sun
-libffi.map-sun : $(top_srcdir)/libffi.map \
-                $(top_srcdir)/../contrib/make_sunver.pl \
+libffi.map-sun : libffi.map $(top_srcdir)/../contrib/make_sunver.pl \
                 $(libffi_la_OBJECTS) $(libffi_la_LIBADD)
-        perl $(top_srcdir)/../contrib/make_sunver.pl \
-          $(top_srcdir)/libffi.map \
+        perl $(top_srcdir)/../contrib/make_sunver.pl libffi.map \
           $(libffi_la_OBJECTS:%.lo=.libs/%.o) \
          `echo $(libffi_la_LIBADD) | \
             sed 's,\([^/        ]*\)\.l\([ao]\),.libs/\1.\2,g'` \
@@ -227,6 +225,9 @@ libffi_version_script =
 libffi_version_dep =
 endif
 libffi_version_info = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+
+libffi.map: $(top_srcdir)/libffi.map.in
+	$(COMPILE) -D$(TARGET) -E -x assembler-with-cpp -o $@ $<
 
 libffi_la_LDFLAGS = -no-undefined $(libffi_version_info) $(libffi_version_script) $(LTLDFLAGS) $(AM_LTLDFLAGS)
 libffi_la_DEPENDENCIES = $(libffi_la_LIBADD) $(libffi_version_dep)
