@@ -488,10 +488,10 @@ nodist_libffi_convenience_la_SOURCES = $(nodist_libffi_la_SOURCES)
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 AM_CFLAGS = -Wall -g -fexceptions $(am__append_2)
 @LIBAT_BUILD_VERSIONED_SHLIB_FALSE@libffi_version_script = 
-@LIBAT_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libffi_version_script = -Wl,--version-script,$(top_srcdir)/libffi.map
+@LIBAT_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libffi_version_script = -Wl,--version-script,libffi.map
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libffi_version_script = -Wl,-M,libffi.map-sun
 @LIBAT_BUILD_VERSIONED_SHLIB_FALSE@libffi_version_dep = 
-@LIBAT_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libffi_version_dep = $(top_srcdir)/libffi.map
+@LIBAT_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libffi_version_dep = libffi.map
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libffi_version_dep = libffi.map-sun
 libffi_version_info = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libffi_la_LDFLAGS = -no-undefined $(libffi_version_info) $(libffi_version_script) $(LTLDFLAGS) $(AM_LTLDFLAGS)
@@ -1901,15 +1901,16 @@ doc/libffi.info: $(STAMP_BUILD_INFO)
 stamp-build-info: doc/libffi.texi $(srcdir)/doc/version.texi doc/$(am__dirstamp)
 	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)/doc -o doc/libffi.info $(srcdir)/doc/libffi.texi
 	@touch $@
-@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libffi.map-sun : $(top_srcdir)/libffi.map \
-@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@                $(top_srcdir)/../contrib/make_sunver.pl \
+@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libffi.map-sun : libffi.map $(top_srcdir)/../contrib/make_sunver.pl \
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@                $(libffi_la_OBJECTS) $(libffi_la_LIBADD)
-@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@        perl $(top_srcdir)/../contrib/make_sunver.pl \
-@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@          $(top_srcdir)/libffi.map \
+@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@        perl $(top_srcdir)/../contrib/make_sunver.pl libffi.map \
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@          $(libffi_la_OBJECTS:%.lo=.libs/%.o) \
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@         `echo $(libffi_la_LIBADD) | \
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@            sed 's,\([^/        ]*\)\.l\([ao]\),.libs/\1.\2,g'` \
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@         > $@ || (rm -f $@ ; exit 1)
+
+libffi.map: $(top_srcdir)/libffi.map.in
+	$(COMPILE) -D$(TARGET) -E -x assembler-with-cpp -o $@ $<
 
 # Multilib support.  Automake should provide these on its own.
 all-recursive: all-multi
