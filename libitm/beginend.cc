@@ -149,6 +149,12 @@ choose_code_path(uint32_t prop, abi_dispatch *disp)
     return a_runInstrumentedCode;
 }
 
+#ifdef TARGET_BEGIN_TRANSACTION_ATTRIBUTE
+/* This macro can be used to define target specific attributes for this
+   function.  For example, S/390 requires floating point to be disabled in
+   begin_transaction.  */
+TARGET_BEGIN_TRANSACTION_ATTRIBUTE
+#endif
 uint32_t
 GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
 {

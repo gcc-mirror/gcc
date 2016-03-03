@@ -69,6 +69,9 @@ cpu_relax (void)
 /* Number of retries for transient failures.  */
 #define _HTM_ITM_RETRIES 10
 #define USE_HTM_FASTPATH
+#define TARGET_BEGIN_TRANSACTION_ATTRIBUTE \
+  __attribute__ ((target("soft-float")))
+
 
 static inline bool
 htm_available ()
