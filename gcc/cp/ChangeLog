@@ -1,3 +1,9 @@
+2016-03-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67364
+	* constexpr.c (cxx_eval_component_reference): Just return an empty
+	CONSTRUCTOR for an empty class.
+
 2016-03-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* call.c (build_op_delete_call, build_over_call): Check mark_used
