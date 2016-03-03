@@ -1,5 +1,9 @@
 2016-03-02  Jeff Law  <law@redhat.com>
 
+	PR rtl-optimization/69942
+	* gcc.dg/ifcvt-5.c: Use "word_mode" rather than "int" to limit the
+	effects of argument promotions.
+
 	PR tree-optimization/69987
 	* gfortran.dg/pr69987.f90: Use "-w" to avoid failures when the
 	target does not support -fprefetch-loop-arrays.
