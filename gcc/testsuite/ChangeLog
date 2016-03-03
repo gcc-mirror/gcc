@@ -1,3 +1,8 @@
+2016-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55936
+	* gcc.dg/tree-ssa/vrp06.c: Remove XFAIL.
+
 2016-03-02  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/69942

@@ -1,3 +1,12 @@
+2016-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55936
+	* tree-vrp.c (compare_name_with_value): Add use_equiv_p
+	parameter and guard unsafe equivalence use.
+	(vrp_evaluate_conditional_warnv_with_ops): Always use
+	safe equivalences but not via the quadratic compare_names
+	helper.
+
 2016-03-03  Michael Collison  <michael.collison@linaro.org>
 
 	PR target/70014
