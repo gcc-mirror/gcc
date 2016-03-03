@@ -13,4 +13,8 @@ void foo(void)
 {
   HUNDRED(a)
   HUNDRED(b)
+#undef ONE
+#define ONE(s) a##s[0] = 0;
+  HUNDRED(a)
+  HUNDRED(b)
 } /* { dg-warning "frame size too large for reliable stack checking" } */
