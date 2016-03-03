@@ -1,5 +1,8 @@
 2016-03-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/51406
+	* typeck.c (build_static_cast_1): Avoid folding back to lvalue.
+
 	PR c++/67364
 	* constexpr.c (cxx_eval_component_reference): Just return an empty
 	CONSTRUCTOR for an empty class.
