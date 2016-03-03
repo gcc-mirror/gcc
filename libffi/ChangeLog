@@ -1,3 +1,8 @@
+2016-03-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am (libffi.map-sun): Tabify:
+	* Makefile.in: Regenerate.
+
 2016-03-02  Richard Henderson  <rth@redhat.com>
 
 	PR libffi/70024
