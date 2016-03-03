@@ -293,7 +293,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* X % -Y is the same as X % Y.  */
 (simplify
  (trunc_mod @0 (convert? (negate @1)))
- (if (!TYPE_UNSIGNED (type)
+ (if (INTEGRAL_TYPE_P (type)
+      && !TYPE_UNSIGNED (type)
       && !TYPE_OVERFLOW_TRAPS (type)
       && tree_nop_conversion_p (type, TREE_TYPE (@1))
       /* Avoid this transformation if X might be INT_MIN or

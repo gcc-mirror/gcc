@@ -1,3 +1,8 @@
+2016-03-03  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/70050
+	* match.pd (X % -Y): Add INTEGRAL_TYPE_P check.
+
 2016-03-03  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/70043
