@@ -1,3 +1,9 @@
+2016-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70021
+	* gcc.dg/vect/pr70021.c: New test.
+	* gcc.target/i386/pr70021.c: New test.
+
 2016-03-03  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/70050

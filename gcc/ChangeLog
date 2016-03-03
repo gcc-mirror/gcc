@@ -1,3 +1,14 @@
+2016-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70021
+	* tree-vect-stmts.c (vect_mark_relevant): Remove USED_IN_PATTERN
+	argument, if STMT_VINFO_IN_PATTERN_P (stmt_info), always mark
+	the pattern no matter if it is used just by non-pattern, pattern
+	or mix thereof.
+	(process_use, vect_mark_stmts_to_be_vectorized): Adjust callers.
+	* tree-vect-patterns.c (vect_recog_vector_vector_shift_pattern): If
+	oprnd1 def_stmt is in pattern, don't look through it.
+
 2016-03-03  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/70050
