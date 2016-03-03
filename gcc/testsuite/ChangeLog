@@ -1,3 +1,8 @@
+2016-03-03  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/70050
+	* gcc.dg/pr70050.c: New test.
+
 2016-03-03  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.dg/vect/bb-slp-34.c: Don't XFAIL for ARM/AArch64.
