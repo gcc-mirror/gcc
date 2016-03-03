@@ -1,3 +1,7 @@
+2016-03-03  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/vect/bb-slp-34.c: Don't XFAIL for ARM/AArch64.
+
 2016-03-03  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR tree-optimization/70043
