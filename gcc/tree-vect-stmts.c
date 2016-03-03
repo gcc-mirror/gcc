@@ -181,8 +181,7 @@ create_array_ref (tree type, tree ptr, struct data_reference *first_dr)
 
 static void
 vect_mark_relevant (vec<gimple *> *worklist, gimple *stmt,
-		    enum vect_relevant relevant, bool live_p,
-		    bool used_in_pattern)
+		    enum vect_relevant relevant, bool live_p)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   enum vect_relevant save_relevant = STMT_VINFO_RELEVANT (stmt_info);
@@ -202,62 +201,22 @@ vect_mark_relevant (vec<gimple *> *worklist, gimple *stmt,
      stmt itself should be marked.  */
   if (STMT_VINFO_IN_PATTERN_P (stmt_info))
     {
-      bool found = false;
-      if (!used_in_pattern)
-        {
-          imm_use_iterator imm_iter;
-          use_operand_p use_p;
-          gimple *use_stmt;
-          tree lhs;
-	  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-	  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+      /* This is the last stmt in a sequence that was detected as a
+	 pattern that can potentially be vectorized.  Don't mark the stmt
+	 as relevant/live because it's not going to be vectorized.
+	 Instead mark the pattern-stmt that replaces it.  */
 
-          if (is_gimple_assign (stmt))
-            lhs = gimple_assign_lhs (stmt);
-          else
-            lhs = gimple_call_lhs (stmt);
+      pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
 
-          /* This use is out of pattern use, if LHS has other uses that are
-             pattern uses, we should mark the stmt itself, and not the pattern
-             stmt.  */
-	  if (lhs && TREE_CODE (lhs) == SSA_NAME)
-	    FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
-	      {
-		if (is_gimple_debug (USE_STMT (use_p)))
-		  continue;
-		use_stmt = USE_STMT (use_p);
-
-		if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
-		  continue;
-
-		if (vinfo_for_stmt (use_stmt)
-		    && STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (use_stmt)))
-		  {
-		    found = true;
-		    break;
-		  }
-	      }
-        }
-
-      if (!found)
-        {
-          /* This is the last stmt in a sequence that was detected as a
-             pattern that can potentially be vectorized.  Don't mark the stmt
-             as relevant/live because it's not going to be vectorized.
-             Instead mark the pattern-stmt that replaces it.  */
-
-          pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
-
-          if (dump_enabled_p ())
-            dump_printf_loc (MSG_NOTE, vect_location,
-                             "last stmt in pattern. don't mark"
-                             " relevant/live.\n");
-          stmt_info = vinfo_for_stmt (pattern_stmt);
-          gcc_assert (STMT_VINFO_RELATED_STMT (stmt_info) == stmt);
-          save_relevant = STMT_VINFO_RELEVANT (stmt_info);
-          save_live_p = STMT_VINFO_LIVE_P (stmt_info);
-          stmt = pattern_stmt;
-        }
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "last stmt in pattern. don't mark"
+			 " relevant/live.\n");
+      stmt_info = vinfo_for_stmt (pattern_stmt);
+      gcc_assert (STMT_VINFO_RELATED_STMT (stmt_info) == stmt);
+      save_relevant = STMT_VINFO_RELEVANT (stmt_info);
+      save_live_p = STMT_VINFO_LIVE_P (stmt_info);
+      stmt = pattern_stmt;
     }
 
   STMT_VINFO_LIVE_P (stmt_info) |= live_p;
@@ -572,8 +531,7 @@ process_use (gimple *stmt, tree use, loop_vec_info loop_vinfo, bool live_p,
         }
     }
 
-  vect_mark_relevant (worklist, def_stmt, relevant, live_p,
-                      is_pattern_stmt_p (stmt_vinfo));
+  vect_mark_relevant (worklist, def_stmt, relevant, live_p);
   return true;
 }
 
@@ -630,7 +588,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	    }
 
 	  if (vect_stmt_relevant_p (phi, loop_vinfo, &relevant, &live_p))
-	    vect_mark_relevant (&worklist, phi, relevant, live_p, false);
+	    vect_mark_relevant (&worklist, phi, relevant, live_p);
 	}
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{
@@ -642,7 +600,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	    }
 
 	  if (vect_stmt_relevant_p (stmt, loop_vinfo, &relevant, &live_p))
-            vect_mark_relevant (&worklist, stmt, relevant, live_p, false);
+	    vect_mark_relevant (&worklist, stmt, relevant, live_p);
 	}
     }
 

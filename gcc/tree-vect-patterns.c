@@ -2090,7 +2090,8 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts,
     return NULL;
 
   tree def = NULL_TREE;
-  if (gimple_assign_cast_p (def_stmt))
+  stmt_vec_info def_vinfo = vinfo_for_stmt (def_stmt);
+  if (!STMT_VINFO_IN_PATTERN_P (def_vinfo) && gimple_assign_cast_p (def_stmt))
     {
       tree rhs1 = gimple_assign_rhs1 (def_stmt);
       if (TYPE_MODE (TREE_TYPE (rhs1)) == TYPE_MODE (TREE_TYPE (oprnd0))
