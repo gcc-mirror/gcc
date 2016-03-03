@@ -1,3 +1,8 @@
+2016-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ada/70017
+	* gcc.dg/pr70017.c (foo): Store 0 to first element of each array.
+
 2016-03-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/69904
