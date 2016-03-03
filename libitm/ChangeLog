@@ -1,3 +1,11 @@
+2016-03-03  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/target.h (TARGET_BEGIN_TRANSACTION_ATTRIBUTE): Define
+	function attribute to disable floating point in begin_transaction() on
+	S/390.
+	* beginend.cc (begin_transaction): Use
+	TARGET_BEGIN_TRANSACTION_ATTRIBUTE.
+
 2016-01-22  Torvald Riegel  <triegel@redhat.com>
 
 	* beginend.cc (GTM::gtm_thread::serial_lock): Put on cacheline
