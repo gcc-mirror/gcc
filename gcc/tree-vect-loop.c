@@ -7090,7 +7090,10 @@ optimize_mask_stores (struct loop *loop)
 
 	      /* Skip debug statements.  */
 	      if (is_gimple_debug (gsi_stmt (gsi)))
-		continue;
+		{
+		  gsi_prev (&gsi);
+		  continue;
+		}
 	      stmt1 = gsi_stmt (gsi);
 	      /* Do not consider statements writing to memory or having
 		 volatile operand.  */
