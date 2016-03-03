@@ -6537,7 +6537,7 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 	  result = cp_fold_convert (type, result);
 	  /* Make sure we don't fold back down to a named rvalue reference,
 	     because that would be an lvalue.  */
-	  if (DECL_P (result))
+	  if (real_lvalue_p (result))
 	    result = build1 (NON_LVALUE_EXPR, type, result);
 	  return convert_from_reference (result);
 	}
