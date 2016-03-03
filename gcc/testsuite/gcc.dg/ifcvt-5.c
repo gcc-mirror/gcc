@@ -2,11 +2,14 @@
    parameter would not allow it.  */
 
 /* { dg-options "-fdump-rtl-ce1 -O2 --param max-rtl-if-conversion-insns=1" } */
-int
-foo (int x, int y, int a)
+
+typedef int word __attribute__((mode(word)));
+
+word
+foo (word x, word y, word a)
 {
-  int i = x;
-  int j = y;
+  word i = x;
+  word j = y;
   if (x > y)
     {
       i = a;
