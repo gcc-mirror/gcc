@@ -1904,8 +1904,7 @@ stamp-build-info: doc/libffi.texi $(srcdir)/doc/version.texi doc/$(am__dirstamp)
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libffi.map-sun : libffi.map $(top_srcdir)/../contrib/make_sunver.pl \
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@                $(libffi_la_OBJECTS) $(libffi_la_LIBADD)
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@	perl $(top_srcdir)/../contrib/make_sunver.pl libffi.map \
-@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@	  $(libffi_la_OBJECTS:%.lo=.libs/%.o) \
-@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@	 `echo $(libffi_la_LIBADD) | \
+@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@	 `echo $(libffi_la_OBJECTS) $(libffi_la_LIBADD) | \
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@	    sed 's,\([^/        ]*\)\.l\([ao]\),.libs/\1.\2,g'` \
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 
