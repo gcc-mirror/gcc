@@ -1,3 +1,7 @@
+2016-03-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/task1.ads: New test.
+
 2016-03-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/gcc-gdb-test.exp (gdb-test): Make log message match command.
