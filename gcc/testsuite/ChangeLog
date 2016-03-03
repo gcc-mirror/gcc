@@ -1,3 +1,9 @@
+2016-03-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/gcc-gdb-test.exp (gdb-test): Make log message match command.
+	Invoke gdb with -batch.
+	* lib/gcc-simulate-thread.exp (simulate-thread): Likewise.
+
 2016-03-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/55936
