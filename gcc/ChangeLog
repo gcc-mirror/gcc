@@ -1,3 +1,10 @@
+2016-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/69947
+	* dwarf2out.c (prune_unused_types_walk_loc_descr): Handle
+	all other ops that have dw_val_class_die_ref operands,
+	and DW_OP_GNU_entry_value.
+
 2016-03-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/69904
