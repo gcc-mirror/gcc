@@ -1,3 +1,7 @@
+2016-03-04  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* gcc.dg/pr70026.c: New test.
+
 2016-03-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c/69798

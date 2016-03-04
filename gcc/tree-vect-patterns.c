@@ -3220,6 +3220,15 @@ search_type_for_mask (tree var, vec_info *vinfo)
 	{
 	  tree comp_vectype, mask_type;
 
+	  if (TREE_CODE (TREE_TYPE (rhs1)) == BOOLEAN_TYPE)
+	    {
+	      res = search_type_for_mask (rhs1, vinfo);
+	      res2 = search_type_for_mask (gimple_assign_rhs2 (def_stmt), vinfo);
+	      if (!res || (res2 && TYPE_PRECISION (res) > TYPE_PRECISION (res2)))
+		res = res2;
+	      break;
+	    }
+
 	  comp_vectype = get_vectype_for_scalar_type (TREE_TYPE (rhs1));
 	  if (comp_vectype == NULL_TREE)
 	    return NULL_TREE;
