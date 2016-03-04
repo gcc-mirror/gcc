@@ -10714,10 +10714,11 @@ it is the responsibility of its caller to make sure the argument doesn't
 cause it to exceed the stack size limit.
 The @code{__builtin_alloca} function is provided to make it possible to
 allocate on the stack arrays of bytes with an upper bound that may be
-computed at run time.  Since C99 @xref{Variable Length} Arrays offer
+computed at run time.  Since C99 Variable Length Arrays offer
 similar functionality under a portable, more convenient, and safer
 interface they are recommended instead, in both C99 and C++ programs
 where GCC provides them as an extension.
+@xref{Variable Length}, for details.
 
 @end deftypefn
 
@@ -10761,10 +10762,10 @@ the argument doesn't cause it to exceed the stack size limit.
 The @code{__builtin_alloca_with_align} function is provided to make
 it possible to allocate on the stack overaligned arrays of bytes with
 an upper bound that may be computed at run time.  Since C99
-@xref{Variable Length} Arrays offer the same functionality under
+Variable Length Arrays offer the same functionality under
 a portable, more convenient, and safer interface they are recommended
 instead, in both C99 and C++ programs where GCC provides them as
-an extension.
+an extension.  @xref{Variable Length}, for details.
 
 @end deftypefn
 
