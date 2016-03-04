@@ -181,34 +181,6 @@ test_ashift_right_int_si (Int32x1 b, Int32x1 c)
 /* { dg-final { scan-assembler "asr\tw\[0-9\]+,\ w\[0-9\]+,\ 4" } } */
 /* { dg-final { scan-assembler "asr\tw\[0-9\]+,\ w\[0-9\]+,\ w\[0-9\]+" } } */
 
-Int64x1
-test_corners_sisd_di (Int64x1 b)
-{
-  force_simd_di (b);
-  b = b >> 63;
-  force_simd_di (b);
-  b = b >> 0;
-  b += b >> 65; /* { dg-warning "right shift count >= width of type" } */
-
-  return b;
-}
-/* { dg-final { scan-assembler "sshr\td\[0-9\]+,\ d\[0-9\]+,\ 63" } } */
-
-Int32x1
-test_corners_sisd_si (Int32x1 b)
-{
-  force_simd_si (b);
-  b = b >> 31;
-  force_simd_si (b);
-  b = b >> 0;
-  b += b >> 33; /* { dg-warning "right shift count >= width of type" } */
-
-  return b;
-}
-/* { dg-final { scan-assembler "sshr\tv\[0-9\]+\.2s,\ v\[0-9\]+\.2s,\ 31" } } */
-
-
-
 #define CHECK(var,val) \
 do                     \
   {                    \
@@ -236,8 +208,6 @@ main ()
   CHECK (x, 0xffffffff21524110ull);
   x = test_ashift_right_sisd_di (x, 8);
   CHECK (x, 0xffffffffffff2152ull);
-  x = test_corners_sisd_di (x);
-  CHECK (x, 0xfffffffffffffffeull);
 
   y = test_lshift_left_sisd_si (y, 4);
   CHECK (y, 0xadbeef00);
@@ -252,8 +222,6 @@ main ()
   CHECK (y, 0xffff5241);
   y = test_ashift_right_sisd_si (y, 4);
   CHECK (y, 0xffffff52);
-  y = test_corners_sisd_si (y);
-  CHECK (y, 0xfffffffe);
 
   return 0;
 }
