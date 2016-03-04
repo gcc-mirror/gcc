@@ -1,5 +1,8 @@
 2016-03-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* decl.c (start_preparsed_function): Don't emit start clobber at the
+	start of constructor clones.
+
 	PR c++/70035
 	* cp-tree.h (cp_ubsan_maybe_initialize_vtbl_ptrs): New prototype.
 	* decl.c (start_preparsed_function): Call
