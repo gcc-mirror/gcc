@@ -1,8 +1,13 @@
+2016-03-04  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/57676
+	* lra-assigns.c (lra_assign): Guard test for maximum iterations
+	with flag_checking.
+
 2016-03-04  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* tree-vect-patterns.c (search_type_for_mask): Handle
 	comparison of booleans.
-
 
 2016-03-04  Jakub Jelinek  <jakub@redhat.com>
 
