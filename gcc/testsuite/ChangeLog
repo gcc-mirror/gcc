@@ -1,3 +1,7 @@
+2016-03-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/Wno-frame-address.c: Skip on IA-64.
+
 2016-03-04  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.dg/torture/pr69951.c: Accept argc==0.
