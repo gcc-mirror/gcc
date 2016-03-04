@@ -248,11 +248,12 @@ proc go-set-goarch { } {
 		}
 	    }
 	}
-	"s390-*-*" {
-	    set goarch "s390"
-	}
-	"s390x-*-*" {
-	    set goarch "s390x"
+	"s390*-*-*" {
+	    if [check_effective_target_ilp32] {
+		set goarch "s390"
+	    } else {
+		set goarch "s390x"
+	    }
 	}
 	"sparc*-*-*" {
 	    if [check_effective_target_ilp32] {

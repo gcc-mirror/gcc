@@ -1,3 +1,9 @@
+2016-03-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR testsuite/69766
+	* go.test/go-test.exp: S/390: Set GOARCH to the current target when
+	testing multiarch.
+
 2016-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/69947
