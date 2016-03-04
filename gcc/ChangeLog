@@ -1,3 +1,9 @@
+2016-03-04  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* tree-vect-patterns.c (search_type_for_mask): Handle
+	comparison of booleans.
+
+
 2016-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/extend.texi (__builtin_alloca, __builtin_alloca_with_align):
