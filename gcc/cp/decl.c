@@ -14136,6 +14136,13 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       finish_expr_stmt (exprstmt);
     }
 
+  if (!processing_template_decl
+      && DECL_CONSTRUCTOR_P (decl1)
+      && (flag_sanitize & SANITIZE_VPTR)
+      && !DECL_CLONED_FUNCTION_P (decl1)
+      && !implicit_default_ctor_p (decl1))
+    cp_ubsan_maybe_initialize_vtbl_ptrs (current_class_ptr);
+
   return true;
 }
 

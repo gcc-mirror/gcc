@@ -1,5 +1,8 @@
 2016-03-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/70035
+	* g++.dg/ubsan/pr70035.C: New test.
+
 	PR target/70062
 	* gcc.target/i386/pr70062.c: New test.
 

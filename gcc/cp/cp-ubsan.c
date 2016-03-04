@@ -272,3 +272,55 @@ cp_ubsan_maybe_instrument_cast_to_vbase (location_t loc, tree type, tree op)
   return cp_ubsan_maybe_instrument_vptr (loc, op, type, true,
 					 UBSAN_CAST_TO_VBASE);
 }
+
+/* Called from initialize_vtbl_ptrs via dfs_walk.  BINFO is the base
+   which we want to initialize the vtable pointer for, DATA is
+   TREE_LIST whose TREE_VALUE is the this ptr expression.  */
+
+static tree
+cp_ubsan_dfs_initialize_vtbl_ptrs (tree binfo, void *data)
+{
+  if (!TYPE_CONTAINS_VPTR_P (BINFO_TYPE (binfo)))
+    return dfs_skip_bases;
+
+  if (!BINFO_PRIMARY_P (binfo) || BINFO_VIRTUAL_P (binfo))
+    {
+      tree base_ptr = TREE_VALUE ((tree) data);
+
+      base_ptr = build_base_path (PLUS_EXPR, base_ptr, binfo, /*nonnull=*/1,
+				  tf_warning_or_error);
+
+      /* Compute the location of the vtpr.  */
+      tree vtbl_ptr
+	= build_vfield_ref (cp_build_indirect_ref (base_ptr, RO_NULL,
+						   tf_warning_or_error),
+			    TREE_TYPE (binfo));
+      gcc_assert (vtbl_ptr != error_mark_node);
+
+      /* Assign NULL to the vptr.  */
+      tree vtbl = build_zero_cst (TREE_TYPE (vtbl_ptr));
+      finish_expr_stmt (cp_build_modify_expr (vtbl_ptr, NOP_EXPR, vtbl,
+					      tf_warning_or_error));
+    }
+
+  return NULL_TREE;
+}
+
+/* Initialize all the vtable pointers in the object pointed to by
+   ADDR to NULL, so that we catch invalid calls to methods before
+   mem-initializers are completed.  */
+
+void
+cp_ubsan_maybe_initialize_vtbl_ptrs (tree addr)
+{
+  if (!cp_ubsan_instrument_vptr_p (NULL_TREE))
+    return;
+
+  tree type = TREE_TYPE (TREE_TYPE (addr));
+  tree list = build_tree_list (type, addr);
+
+  /* Walk through the hierarchy, initializing the vptr in each base
+     class to NULL.  */
+  dfs_walk_once (TYPE_BINFO (type), cp_ubsan_dfs_initialize_vtbl_ptrs,
+		 NULL, list);
+}
