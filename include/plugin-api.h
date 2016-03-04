@@ -1,6 +1,6 @@
 /* plugin-api.h -- External linker plugin API.  */
 
-/* Copyright (C) 2009-2015 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2016 Free Software Foundation, Inc.
    Written by Cary Coutant <ccoutant@google.com>.
 
    This file is part of binutils.
@@ -345,6 +345,26 @@ enum ld_plugin_status
     const struct ld_plugin_section * section_list,
     unsigned int num_sections);
 
+/* The linker's interface for retrieving the section alignment requirement
+   of a specific section in an object.  This interface should only be invoked in the
+   claim_file handler.  This function sets *ADDRALIGN to the ELF sh_addralign
+   value of the input section.  */
+
+typedef
+enum ld_plugin_status
+(*ld_plugin_get_input_section_alignment) (const struct ld_plugin_section section,
+                                          unsigned int *addralign);
+
+/* The linker's interface for retrieving the section size of a specific section
+   in an object.  This interface should only be invoked in the claim_file handler.
+   This function sets *SECSIZE to the ELF sh_size
+   value of the input section.  */
+
+typedef
+enum ld_plugin_status
+(*ld_plugin_get_input_section_size) (const struct ld_plugin_section section,
+                                     uint64_t *secsize);
+
 enum ld_plugin_level
 {
   LDPL_INFO,
@@ -384,7 +404,10 @@ enum ld_plugin_tag
   LDPT_ALLOW_SECTION_ORDERING = 24,
   LDPT_GET_SYMBOLS_V2 = 25,
   LDPT_ALLOW_UNIQUE_SEGMENT_FOR_SECTIONS = 26,
-  LDPT_UNIQUE_SEGMENT_FOR_SECTIONS = 27
+  LDPT_UNIQUE_SEGMENT_FOR_SECTIONS = 27,
+  LDPT_GET_SYMBOLS_V3 = 28,
+  LDPT_GET_INPUT_SECTION_ALIGNMENT = 29,
+  LDPT_GET_INPUT_SECTION_SIZE = 30
 };
 
 /* The plugin transfer vector.  */
@@ -416,6 +439,8 @@ struct ld_plugin_tv
     ld_plugin_allow_section_ordering tv_allow_section_ordering;
     ld_plugin_allow_unique_segment_for_sections tv_allow_unique_segment_for_sections; 
     ld_plugin_unique_segment_for_sections tv_unique_segment_for_sections;
+    ld_plugin_get_input_section_alignment tv_get_input_section_alignment;
+    ld_plugin_get_input_section_size tv_get_input_section_size;
   } tv_u;
 };
 
