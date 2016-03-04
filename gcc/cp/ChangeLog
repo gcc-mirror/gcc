@@ -1,5 +1,7 @@
 2016-03-03  Jason Merrill  <jason@redhat.com>
 
+	* method.c (synthesized_method_walk): operator= can also be constexpr.
+
 	* pt.c (tsubst_copy_and_build) [LAMBDA_EXPR]: Get
 	LAMBDA_EXPR_RETURN_TYPE from the instantiated closure.
 

@@ -1379,9 +1379,18 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 
   /* If that user-written default constructor would satisfy the
      requirements of a constexpr constructor (7.1.5), the
-     implicitly-defined default constructor is constexpr.  */
+     implicitly-defined default constructor is constexpr.
+
+     The implicitly-defined copy/move assignment operator is constexpr if
+      - X is a literal type, and
+      - the assignment operator selected to copy/move each direct base class
+	subobject is a constexpr function, and
+      - for each non-static data member of X that is of class type (or array
+	thereof), the assignment operator selected to copy/move that member is a
+	constexpr function.  */
   if (constexpr_p)
-    *constexpr_p = ctor_p;
+    *constexpr_p = ctor_p
+      || (assign_p && cxx_dialect >= cxx14);
 
   move_p = false;
   switch (sfk)
