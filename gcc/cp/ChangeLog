@@ -1,3 +1,12 @@
+2016-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70035
+	* cp-tree.h (cp_ubsan_maybe_initialize_vtbl_ptrs): New prototype.
+	* decl.c (start_preparsed_function): Call
+	cp_ubsan_maybe_initialize_vtbl_ptrs if needed.
+	* cp-ubsan.c (cp_ubsan_dfs_initialize_vtbl_ptrs,
+	cp_ubsan_maybe_initialize_vtbl_ptrs): New functions.
+
 2016-03-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67364
