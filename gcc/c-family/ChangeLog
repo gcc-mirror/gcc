@@ -1,6 +1,20 @@
 2016-03-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/68187
+	* c-indentation.c (get_visual_column): Move code to determine next
+	tab stop to...
+	(next_tab_stop): ...this new function.
+	(line_contains_hash_if): Delete function.
+	(detect_preprocessor_logic): Delete function.
+	(get_first_nws_vis_column): New function.
+	(detect_intervening_unindent): New function.
+	(should_warn_for_misleading_indentation): Replace call to
+	detect_preprocessor_logic with a call to
+	detect_intervening_unindent.
+
+2016-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68187
 	* c-indentation.c (should_warn_for_misleading_indentation): When
 	suppressing warnings about cases where the guard and body are on
 	the same column, only use the first non-whitespace column in place
