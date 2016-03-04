@@ -1,3 +1,12 @@
+2016-03-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/70004
+	* gcc.target/aarch64/scalar_shift_1.c: (test_corners_sisd_di):
+	Delete.
+	(test_corners_sisd_si): Likewise.
+	(main): Remove checks of the above.
+	* gcc.target/aarch64/shift_wide_invalid_1.c: New test.
+
 2016-03-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/Wno-frame-address.c: Skip on IA-64.
