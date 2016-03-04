@@ -9725,13 +9725,13 @@
 {
   int mask = INTVAL (operands[3]);
   if (mask == 0)
-    emit_insn (gen_vec_set_lo_<mode>_mask
-      (operands[0], operands[1], operands[2],
-       operands[4], operands[5]));
+    emit_insn (gen_vec_set_lo_<mode>_mask (operands[0], operands[1],
+					   operands[2], operands[4],
+					   operands[5]));
   else
-    emit_insn (gen_vec_set_hi_<mode>_mask
-      (operands[0], operands[1], operands[2],
-       operands[4], operands[5]));
+    emit_insn (gen_vec_set_hi_<mode>_mask (operands[0], operands[1],
+					   operands[2], operands[4],
+					   operands[5]));
   DONE;
 })
 
@@ -9742,7 +9742,7 @@
 	  (vec_select:<ssehalfvecmode>
 	    (match_operand:V8FI 1 "register_operand" "v")
 	    (parallel [(const_int 4) (const_int 5)
-              (const_int 6) (const_int 7)]))))]
+		       (const_int 6) (const_int 7)]))))]
   "TARGET_AVX512F"
   "vinsert<shuffletype>64x4\t{$0x0, %2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2, $0x0}"
   [(set_attr "type" "sselog")
@@ -9753,11 +9753,11 @@
 (define_insn "vec_set_hi_<mode><mask_name>"
   [(set (match_operand:V8FI 0 "register_operand" "=v")
 	(vec_concat:V8FI
-	  (match_operand:<ssehalfvecmode> 2 "nonimmediate_operand" "vm")
 	  (vec_select:<ssehalfvecmode>
 	    (match_operand:V8FI 1 "register_operand" "v")
 	    (parallel [(const_int 0) (const_int 1)
-              (const_int 2) (const_int 3)]))))]
+		       (const_int 2) (const_int 3)]))
+	  (match_operand:<ssehalfvecmode> 2 "nonimmediate_operand" "vm")))]
   "TARGET_AVX512F"
   "vinsert<shuffletype>64x4\t{$0x1, %2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2, $0x1}"
   [(set_attr "type" "sselog")
