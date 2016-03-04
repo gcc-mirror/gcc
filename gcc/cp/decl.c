@@ -14120,6 +14120,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   if (!processing_template_decl
       && (flag_lifetime_dse > 1)
       && DECL_CONSTRUCTOR_P (decl1)
+      && !DECL_CLONED_FUNCTION_P (decl1)
       /* We can't clobber safely for an implicitly-defined default constructor
 	 because part of the initialization might happen before we enter the
 	 constructor, via AGGR_INIT_ZERO_FIRST (c++/68006).  */
