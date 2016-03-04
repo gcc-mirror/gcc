@@ -1,5 +1,9 @@
 2016-03-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/67164
+	* pt.c (copy_template_args): New.
+	(tsubst_pack_expansion): Use it.
+
 	* call.c (build_aggr_conv): Use get_nsdmi.
 
 	PR c++/51406
