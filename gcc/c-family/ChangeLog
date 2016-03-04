@@ -1,3 +1,9 @@
+2016-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR c++/70054
+	* c-common.c (strict_aliasing_warning): Use alias_set_subset_of
+	instead of alias_sets_conflict_p.
+
 2016-03-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/69795

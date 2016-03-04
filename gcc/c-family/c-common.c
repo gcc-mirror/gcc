@@ -1568,7 +1568,7 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
           alias_set_type set2 = get_alias_set (TREE_TYPE (type));
 
           if (set1 != set2 && set2 != 0
-	      && (set1 == 0 || !alias_sets_conflict_p (set1, set2)))
+	      && (set1 == 0 || !alias_set_subset_of (set2, set1)))
 	    {
 	      warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
 		       "pointer will break strict-aliasing rules");
