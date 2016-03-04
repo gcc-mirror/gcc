@@ -1,5 +1,8 @@
 2016-03-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/67364
+	* constexpr.c (cxx_eval_component_reference): Further tweak.
+
 	* constexpr.c (struct constexpr_ctx): Add save_exprs field.
 	(cxx_eval_loop_expr): Discard SAVE_EXPR values before looping.
 	(cxx_eval_constant_expression) [SAVE_EXPR]: Add it to the set.
