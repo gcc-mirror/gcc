@@ -1,5 +1,9 @@
 2016-03-04  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* g++.dg/template/typename21.C: Remove c++98_only.
+
+2016-03-04  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* g++.dg/template/typename21.C: Replace c++98 with c++98_only.
 
 2016-03-04  David Malcolm  <dmalcolm@redhat.com>
