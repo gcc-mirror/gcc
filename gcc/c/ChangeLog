@@ -1,3 +1,9 @@
+2016-03-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/69798
+	* c-parser.c (c_parser_postfix_expression): Call
+	c_parser_cast_expression rather than c_parser_postfix_expression.
+
 2016-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/69796
