@@ -1,5 +1,8 @@
 2016-03-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/67364
+	* constexpr.c (cxx_eval_component_reference): Further tweak.
+
 	PR c++/70067
 	* tree.c (strip_typedefs): Handle TYPENAME_TYPE lookup finding the
 	same type.
