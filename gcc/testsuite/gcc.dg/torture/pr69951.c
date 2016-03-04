@@ -9,7 +9,7 @@ extern int d __attribute__((alias("c")));
 int main(int argc)
 {
   int *p, *q;
-  if (argc)
+  if (argc >= 0)
     p = &c, q = &d;
   else
     p = &b, q = &d;
