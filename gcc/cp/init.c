@@ -3685,6 +3685,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
   TREE_NO_WARNING (cond) = 1;
   body = build3_loc (input_location, COND_EXPR, void_type_node,
 		     cond, body, integer_zero_node);
+  COND_EXPR_IS_VEC_DELETE (body) = true;
   body = build1 (NOP_EXPR, void_type_node, body);
 
   if (controller)

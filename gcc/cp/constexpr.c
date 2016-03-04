@@ -4885,8 +4885,16 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	return false;
      return true;
 
-    case IF_STMT:
     case COND_EXPR:
+      if (COND_EXPR_IS_VEC_DELETE (t))
+	{
+	  if (flags & tf_error)
+	    error_at (location_of (t),
+		      "%<delete[]%> is not a constant-expression");
+	  return false;
+	}
+      /* Fall through.  */
+    case IF_STMT:
     case VEC_COND_EXPR:
       /* If the condition is a known constant, we know which of the legs we
 	 care about; otherwise we only require that the condition and

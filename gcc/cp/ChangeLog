@@ -1,3 +1,10 @@
+2016-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69203
+	* cp-tree.h (COND_EXPR_IS_VEC_DELETE): New.
+	* init.c (build_vec_delete_1): Set it.
+	* constexpr.c (potential_constant_expression_1) [COND_EXPR]: Check it.
+
 2016-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (start_preparsed_function): Don't emit start clobber at the

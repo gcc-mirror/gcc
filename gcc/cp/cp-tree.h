@@ -107,6 +107,7 @@ operator == (const cp_expr &lhs, tree rhs)
 /* Usage of TREE_LANG_FLAG_?:
    0: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       NEW_EXPR_USE_GLOBAL (in NEW_EXPR).
+      COND_EXPR_IS_VEC_DELETE (in COND_EXPR).
       DELETE_EXPR_USE_GLOBAL (in DELETE_EXPR).
       COMPOUND_EXPR_OVERLOADED (in COMPOUND_EXPR).
       CLEANUP_P (in TRY_BLOCK)
@@ -403,6 +404,9 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 /* Nonzero if this statement-expression does not have an associated scope.  */
 #define STMT_EXPR_NO_SCOPE(NODE) \
    TREE_LANG_FLAG_0 (STMT_EXPR_CHECK (NODE))
+
+#define COND_EXPR_IS_VEC_DELETE(NODE) \
+  TREE_LANG_FLAG_0 (COND_EXPR_CHECK (NODE))
 
 /* Returns nonzero iff TYPE1 and TYPE2 are the same type, in the usual
    sense of `same'.  */
