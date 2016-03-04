@@ -1,3 +1,12 @@
+2016-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68187
+	* c-c++-common/Wmisleading-indentation.c (fn_40_a): New test
+	function.
+	(fn_40_b): Likewise.
+	(fn_41_a): Likewise.
+	(fn_41_b): Likewise.
+
 2016-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70059

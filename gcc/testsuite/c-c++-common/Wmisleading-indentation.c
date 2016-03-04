@@ -903,3 +903,82 @@ void pr69122 (void)
   emit foo (1);
 }
 #undef emit
+
+/* In the following, the 'if' within the 'for' statement is not indented,
+   but arguably should be.
+   The for loop:
+     "for (cnt = 0; cnt < thousands_len; ++cnt)"
+   does not guard this conditional:
+     "cnt < thousands_len;".
+   and the poor indentation is not misleading.  Verify that we do
+   not erroneously emit a warning about this.
+   Based on an example seen in glibc (PR c/68187).  */
+
+void
+fn_40_a (const char *end, const char *thousands, int thousands_len)
+{
+  int cnt;
+
+  while (flagA)
+    if (flagA
+        && ({ for (cnt = 0; cnt < thousands_len; ++cnt)
+              if (thousands[cnt] != end[cnt])
+                break;
+              cnt < thousands_len; })
+        && flagB)
+      break;
+}
+
+/* As above, but with the indentation within the "for" loop fixed.
+   We should not emit a warning for this, either.  */
+
+void
+fn_40_b (const char *end, const char *thousands, int thousands_len)
+{
+  int cnt;
+
+  while (flagA)
+    if (flagA
+        && ({ for (cnt = 0; cnt < thousands_len; ++cnt)
+                if (thousands[cnt] != end[cnt])
+                  break;
+              cnt < thousands_len; })
+        && flagB)
+      break;
+}
+
+/* We should not warn for the following
+   (based on libstdc++-v3/src/c++11/random.cc:random_device::_M_init).  */
+
+void
+fn_41_a (void)
+{
+  if (flagA)
+    {
+    }
+  else if (flagB)
+  fail:
+    foo (0);
+
+  foo (1);
+  if (!flagC)
+    goto fail;
+}
+
+/* Tweaked version of the above (with the label indented), which we should
+   also not warn for.  */
+
+void
+fn_41_b (void)
+{
+  if (flagA)
+    {
+    }
+  else if (flagB)
+   fail:
+    foo (0);
+
+  foo (1);
+  if (!flagC)
+    goto fail;
+}
