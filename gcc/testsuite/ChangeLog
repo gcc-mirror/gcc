@@ -1,3 +1,7 @@
+2016-03-04  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.dg/torture/pr69951.c: Accept argc==0.
+
 2016-03-04  Richard Biener  <rguenther@suse.de>
 
 	PR c++/70054
