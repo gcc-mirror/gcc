@@ -1,3 +1,9 @@
+2016-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR c++/70054
+	* g++.dg/warn/Wstrict-aliasing-bogus-union-2.C: New testcase.
+	* gcc.dg/Wstrict-aliasing-struct-member.c: New testcase.
+
 2016-03-04  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR testsuite/69766
