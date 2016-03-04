@@ -17103,8 +17103,6 @@ tsubst_copy_and_build (tree t,
 	else
 	  gcc_unreachable ();
 	LAMBDA_EXPR_EXTRA_SCOPE (r) = scope;
-	LAMBDA_EXPR_RETURN_TYPE (r)
-	  = tsubst (LAMBDA_EXPR_RETURN_TYPE (t), args, complain, in_decl);
 
 	gcc_assert (LAMBDA_EXPR_THIS_CAPTURE (t) == NULL_TREE
 		    && LAMBDA_EXPR_PENDING_PROXIES (t) == NULL);
@@ -17114,6 +17112,9 @@ tsubst_copy_and_build (tree t,
 	/* Now that we know visibility, instantiate the type so we have a
 	   declaration of the op() for later calls to lambda_function.  */
 	complete_type (type);
+
+	if (tree fn = lambda_function (type))
+	  LAMBDA_EXPR_RETURN_TYPE (r) = TREE_TYPE (TREE_TYPE (fn));
 
 	LAMBDA_EXPR_THIS_CAPTURE (r) = NULL_TREE;
 

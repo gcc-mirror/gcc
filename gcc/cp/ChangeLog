@@ -1,5 +1,8 @@
 2016-03-03  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (tsubst_copy_and_build) [LAMBDA_EXPR]: Get
+	LAMBDA_EXPR_RETURN_TYPE from the instantiated closure.
+
 	PR c++/67164
 	* pt.c (copy_template_args): New.
 	(tsubst_pack_expansion): Use it.
