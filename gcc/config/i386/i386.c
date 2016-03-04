@@ -26032,14 +26032,13 @@ static enum stringop_alg
 decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
 	    unsigned HOST_WIDE_INT min_size, unsigned HOST_WIDE_INT max_size,
 	    bool memset, bool zero_memset, bool have_as,
-	    int *dynamic_check, bool *noalign)
+	    int *dynamic_check, bool *noalign, bool recur)
 {
   const struct stringop_algs *algs;
   bool optimize_for_speed;
   int max = 0;
   const struct processor_costs *cost;
   int i;
-  HOST_WIDE_INT orig_expected_size = expected_size;
   bool any_alg_usable_p = false;
 
   *noalign = false;
@@ -26157,19 +26156,18 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
       enum stringop_alg alg;
       HOST_WIDE_INT new_expected_size = (max > 0 ? max : 4096) / 2;
 
-      /* If there aren't any usable algorithms or if recursing with the
-	 same arguments as before, then recursing on smaller sizes or
-	 same size isn't going to find anything.  Just return the simple
-	 byte-at-a-time copy loop.  */
-      if (!any_alg_usable_p || orig_expected_size == new_expected_size)
-        {
-          /* Pick something reasonable.  */
-          if (TARGET_INLINE_STRINGOPS_DYNAMICALLY)
-            *dynamic_check = 128;
-          return loop_1_byte;
-        }
+      /* If there aren't any usable algorithms or if recursing already,
+	 then recursing on smaller sizes or same size isn't going to
+	 find anything.  Just return the simple byte-at-a-time copy loop.  */
+      if (!any_alg_usable_p || recur)
+	{
+	  /* Pick something reasonable.  */
+	  if (TARGET_INLINE_STRINGOPS_DYNAMICALLY && !recur)
+	    *dynamic_check = 128;
+	  return loop_1_byte;
+	}
       alg = decide_alg (count, new_expected_size, min_size, max_size, memset,
-			zero_memset, have_as, dynamic_check, noalign);
+			zero_memset, have_as, dynamic_check, noalign, true);
       gcc_assert (*dynamic_check == -1);
       if (TARGET_INLINE_STRINGOPS_DYNAMICALLY)
 	*dynamic_check = max;
@@ -26430,7 +26428,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   alg = decide_alg (count, expected_size, min_size, probable_max_size,
 		    issetmem,
 		    issetmem && val_exp == const0_rtx, have_as,
-		    &dynamic_check, &noalign);
+		    &dynamic_check, &noalign, false);
   if (alg == libcall)
     return false;
   gcc_assert (alg != no_stringop);
