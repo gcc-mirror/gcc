@@ -1,5 +1,12 @@
 2016-03-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/70062
+	* config/i386/i386.c (decide_alg): Add RECUR argument.  Revert
+	2016-02-22 changes, instead don't recurse if RECUR is already true.
+	Don't change *dynamic_check if RECUR.  Adjust recursive caller
+	to pass true to the new argument.
+	(ix86_expand_set_or_movmem): Adjust decide_alg caller.
+
 	PR target/70059
 	* config/i386/sse.md (vec_set_lo_<mode><mask_name>,
 	<extract_type_2>_vinsert<shuffletype><extract_suf_2>_mask): Formatting

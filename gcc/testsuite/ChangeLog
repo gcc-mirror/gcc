@@ -1,3 +1,8 @@
+2016-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70062
+	* gcc.target/i386/pr70062.c: New test.
+
 2016-03-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* g++.dg/template/typename21.C: Remove c++98_only.
