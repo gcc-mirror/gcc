@@ -1,5 +1,10 @@
 2016-03-04  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (struct constexpr_ctx): Add save_exprs field.
+	(cxx_eval_loop_expr): Discard SAVE_EXPR values before looping.
+	(cxx_eval_constant_expression) [SAVE_EXPR]: Add it to the set.
+	(cxx_eval_outermost_constant_expr, is_sub_constant_expr): Initialize.
+
 	PR c++/70067
 	* tree.c (strip_typedefs): Handle TYPENAME_TYPE lookup finding the
 	same type.
