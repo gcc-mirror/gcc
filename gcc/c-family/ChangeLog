@@ -1,3 +1,14 @@
+2016-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68187
+	* c-indentation.c (should_warn_for_misleading_indentation): When
+	suppressing warnings about cases where the guard and body are on
+	the same column, only use the first non-whitespace column in place
+	of the guard token column when dealing with "else" clauses.
+	When rejecting aligned BODY and NEXT, loosen the requirement
+	from equality with the first non-whitespace of guard to simply
+	that they not be indented relative to it.
+
 2016-03-04  Richard Biener  <rguenther@suse.de>
 
 	PR c++/70054
