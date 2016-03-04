@@ -25641,10 +25641,28 @@ prune_unused_types_walk_loc_descr (dw_loc_descr_ref loc)
   for (; loc != NULL; loc = loc->dw_loc_next)
     switch (loc->dw_loc_opc)
       {
+      case DW_OP_GNU_implicit_pointer:
+      case DW_OP_GNU_convert:
+      case DW_OP_GNU_reinterpret:
+	if (loc->dw_loc_oprnd1.val_class == dw_val_class_die_ref)
+	  prune_unused_types_mark (loc->dw_loc_oprnd1.v.val_die_ref.die, 1);
+	break;
       case DW_OP_call2:
       case DW_OP_call4:
       case DW_OP_call_ref:
+      case DW_OP_GNU_const_type:
+      case DW_OP_GNU_parameter_ref:
+	gcc_assert (loc->dw_loc_oprnd1.val_class == dw_val_class_die_ref);
 	prune_unused_types_mark (loc->dw_loc_oprnd1.v.val_die_ref.die, 1);
+	break;
+      case DW_OP_GNU_regval_type:
+      case DW_OP_GNU_deref_type:
+	gcc_assert (loc->dw_loc_oprnd2.val_class == dw_val_class_die_ref);
+	prune_unused_types_mark (loc->dw_loc_oprnd2.v.val_die_ref.die, 1);
+	break;
+      case DW_OP_GNU_entry_value:
+	gcc_assert (loc->dw_loc_oprnd1.val_class == dw_val_class_loc);
+	prune_unused_types_walk_loc_descr (loc->dw_loc_oprnd1.v.val_loc);
 	break;
       default:
 	break;
