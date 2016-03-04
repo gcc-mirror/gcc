@@ -1437,6 +1437,9 @@ strip_typedefs (tree t, bool *remove_attributes)
 	result = make_typename_type (strip_typedefs (TYPE_CONTEXT (t),
 						     remove_attributes),
 				     fullname, typename_type, tf_none);
+	/* Handle 'typedef typename A::N N;'  */
+	if (typedef_variant_p (result))
+	  result = TYPE_MAIN_VARIANT (DECL_ORIGINAL_TYPE (TYPE_NAME (result)));
       }
       break;
     case DECLTYPE_TYPE:

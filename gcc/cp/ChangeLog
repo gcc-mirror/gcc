@@ -1,3 +1,9 @@
+2016-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70067
+	* tree.c (strip_typedefs): Handle TYPENAME_TYPE lookup finding the
+	same type.
+
 2016-03-03  Jason Merrill  <jason@redhat.com>
 
 	* method.c (synthesized_method_walk): operator= can also be constexpr.
