@@ -982,3 +982,75 @@ fn_41_b (void)
   if (!flagC)
     goto fail;
 }
+
+/* In the following, the
+     "if (i > 0)"
+   is poorly indented, and ought to be on the same column as
+      "engine_ref_debug(e, 0, -1)"
+   However, it is not misleadingly indented, due to the presence
+   of that macro.  Verify that we do not emit a warning about it
+   not being guarded by the "else" clause above.
+
+   Based on an example seen in OpenSSL 1.0.1, which was filed as
+   PR c/68187 in comment #1, though it's arguably a separate bug to
+   the one in comment #0.  */
+
+int
+fn_42_a (int locked)
+{
+#define engine_ref_debug(X, Y, Z)
+
+    int i;
+
+    if (locked)
+        i = foo (0);
+    else
+        i = foo (1);
+    engine_ref_debug(e, 0, -1)
+        if (i > 0)
+        return 1;
+    return 0;
+#undef engine_ref_debug
+}
+
+/* As above, but the empty macro is at the same indentation level.
+   This *is* misleading; verify that we do emit a warning about it.  */
+
+int
+fn_42_b (int locked)
+{
+#define engine_ref_debug(X, Y, Z)
+
+    int i;
+
+    if (locked)
+        i = foo (0);
+    else /* { dg-message "...this .else. clause" } */
+        i = foo (1);
+        engine_ref_debug(e, 0, -1)
+        if (i > 0) /* { dg-warning "statement is indented" } */
+        return 1;
+    return 0;
+#undef engine_ref_debug
+}
+
+/* As above, but where the body is a semicolon "hidden" by a preceding
+   comment, where the semicolon is not in the same column as the successor
+   "if" statement, but the empty macro expansion is at the same indentation
+   level as the guard.
+   This is poor indentation, but not misleading; verify that we don't emit a
+   warning about it.  */
+
+int
+fn_42_c (int locked, int i)
+{
+#define engine_ref_debug(X, Y, Z)
+
+    if (locked)
+        /* blah */;
+    engine_ref_debug(e, 0, -1)
+        if (i > 0)
+        return 1;
+    return 0;
+#undef engine_ref_debug
+}
