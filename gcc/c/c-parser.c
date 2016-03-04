@@ -8024,8 +8024,8 @@ c_parser_postfix_expression (c_parser *parser)
 	    {
 	      error_at (loc, "-fcilkplus must be enabled to use "
 			"%<_Cilk_spawn%>");
-	      expr = c_parser_postfix_expression (parser);
-	      expr.value = error_mark_node;	      
+	      expr = c_parser_cast_expression (parser, NULL);
+	      expr.value = error_mark_node;
 	    }
 	  else if (c_parser_peek_token (parser)->keyword == RID_CILK_SPAWN)
 	    {
@@ -8034,14 +8034,14 @@ c_parser_postfix_expression (c_parser *parser)
 	      /* Now flush out all the _Cilk_spawns.  */
 	      while (c_parser_peek_token (parser)->keyword == RID_CILK_SPAWN)
 		c_parser_consume_token (parser);
-	      expr = c_parser_postfix_expression (parser);
+	      expr = c_parser_cast_expression (parser, NULL);
 	    }
 	  else
 	    {
-	      expr = c_parser_postfix_expression (parser);
+	      expr = c_parser_cast_expression (parser, NULL);
 	      expr.value = build_cilk_spawn (loc, expr.value);
 	    }
-	  break; 
+	  break;
 	default:
 	  c_parser_error (parser, "expected expression");
 	  expr.value = error_mark_node;
