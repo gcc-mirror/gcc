@@ -1,5 +1,8 @@
 2016-03-04  Bernd Schmidt  <bschmidt@redhat.com>
 
+	PR rtl-optimization/69941
+	* gcc.dg/torture/pr69941.c: New test.
+
 	PR c/69824
 	* gcc.dg/pr69824.c: New test.
 

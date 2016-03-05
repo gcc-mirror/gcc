@@ -1,3 +1,9 @@
+2016-03-04  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/69941
+	* postreload.c (reload_combine_recognize_pattern): Ensure all uses of
+	the reg share its mode.
+
 2016-03-04  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69196
