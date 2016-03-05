@@ -439,3 +439,11 @@ f_acc_loop (void)
 #pragma omp target update to(i) /* { dg-error "non-OpenACC construct inside of OpenACC region" } */
     }
 }
+
+#pragma acc routine
+void
+f_acc_routine (void)
+{
+#pragma omp target /* { dg-error "non-OpenACC construct inside of OpenACC routine" } */
+  ;
+}

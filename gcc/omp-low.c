@@ -3236,19 +3236,26 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
   /* No nesting of non-OpenACC STMT (that is, an OpenMP one, or a GOMP builtin)
      inside an OpenACC CTX.  */
   if (!(is_gimple_omp (stmt)
-	&& is_gimple_omp_oacc (stmt)))
+	&& is_gimple_omp_oacc (stmt))
+      /* Except for atomic codes that we share with OpenMP.  */
+      && !(gimple_code (stmt) == GIMPLE_OMP_ATOMIC_LOAD
+	   || gimple_code (stmt) == GIMPLE_OMP_ATOMIC_STORE))
     {
-      for (omp_context *octx = ctx; octx != NULL; octx = octx->outer)
-	if (is_gimple_omp (octx->stmt)
-	    && is_gimple_omp_oacc (octx->stmt)
-	    /* Except for atomic codes that we share with OpenMP.  */
-	    && ! (gimple_code (stmt) == GIMPLE_OMP_ATOMIC_LOAD
-		  || gimple_code (stmt) == GIMPLE_OMP_ATOMIC_STORE))
-	  {
-	    error_at (gimple_location (stmt),
-		      "non-OpenACC construct inside of OpenACC region");
-	    return false;
-	  }
+      if (get_oacc_fn_attrib (cfun->decl) != NULL)
+	{
+	  error_at (gimple_location (stmt),
+		    "non-OpenACC construct inside of OpenACC routine");
+	  return false;
+	}
+      else
+	for (omp_context *octx = ctx; octx != NULL; octx = octx->outer)
+	  if (is_gimple_omp (octx->stmt)
+	      && is_gimple_omp_oacc (octx->stmt))
+	    {
+	      error_at (gimple_location (stmt),
+			"non-OpenACC construct inside of OpenACC region");
+	      return false;
+	    }
     }
 
   if (ctx != NULL)
@@ -3715,6 +3722,14 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		      kind == OMP_CLAUSE_DEPEND_SOURCE ? "source" : "sink");
 	    return false;
 	  }
+      if (is_gimple_omp_offloaded (stmt)
+	  && get_oacc_fn_attrib (cfun->decl) != NULL)
+	{
+	  error_at (gimple_location (stmt),
+		    "OpenACC region inside of OpenACC routine, nested "
+		    "parallelism not supported yet");
+	  return false;
+	}
       for (; ctx != NULL; ctx = ctx->outer)
 	{
 	  if (gimple_code (ctx->stmt) != GIMPLE_OMP_TARGET)
