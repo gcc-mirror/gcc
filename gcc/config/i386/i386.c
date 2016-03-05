@@ -1350,11 +1350,11 @@ struct processor_costs znver1_cost = {
   COSTS_N_INSNS (1),			/* cost of a lea instruction.  */
   COSTS_N_INSNS (1),			/* variable shift costs.  */
   COSTS_N_INSNS (1),			/* constant shift costs.  */
-  {COSTS_N_INSNS (4),			/* cost of starting multiply for QI.  */
-   COSTS_N_INSNS (4),			/*				 HI.  */
-   COSTS_N_INSNS (4),			/*				 SI.  */
-   COSTS_N_INSNS (6),			/*				 DI.  */
-   COSTS_N_INSNS (6)},			/*			      other.  */
+  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI.  */
+   COSTS_N_INSNS (3),			/*				 HI.  */
+   COSTS_N_INSNS (3),			/*				 SI.  */
+   COSTS_N_INSNS (4),			/*				 DI.  */
+   COSTS_N_INSNS (4)},			/*			      other.  */
   0,					/* cost of multiply per each bit
 					    set.  */
   {COSTS_N_INSNS (19),			/* cost of a divide/mod for QI.  */
