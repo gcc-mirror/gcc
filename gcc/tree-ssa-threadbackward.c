@@ -311,7 +311,11 @@ fsm_find_control_statement_thread_paths (tree name,
 			  gphi *phi = gsip.phi ();
 			  tree dst = gimple_phi_result (phi);
 
-			  if (SSA_NAME_VAR (dst) != SSA_NAME_VAR (name)
+			  /* Note that if both NAME and DST are anonymous
+			     SSA_NAMEs, then we do not have enough information
+			     to consider them associated.  */
+			  if ((SSA_NAME_VAR (dst) != SSA_NAME_VAR (name)
+			       || !SSA_NAME_VAR (dst))
 			      && !virtual_operand_p (dst))
 			    ++n_insns;
 			}

@@ -1,3 +1,10 @@
+2016-03-04  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/69196
+	* tree-ssa-threadbackward.c (fsm_find_control_statement_thread_paths):
+	If the both SSA_NAMEs are anonymous, then consider them unassociated
+	and include the PHI in the statement count.
+
 2016-03-05  Tom de Vries  <tom@codesourcery.com>
 
 	* omp-low.c (check_omp_nesting_restrictions): Check for non-oacc
