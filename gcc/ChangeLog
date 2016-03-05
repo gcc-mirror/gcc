@@ -1,5 +1,8 @@
 2016-03-04  Bernd Schmidt  <bschmidt@redhat.com>
 
+	PR c/69973
+	* targhooks.c (default_vector_alignment): Limit to MAX_OFILE_ALIGNMENT.
+
 	PR rtl-optimization/69941
 	* postreload.c (reload_combine_recognize_pattern): Ensure all uses of
 	the reg share its mode.

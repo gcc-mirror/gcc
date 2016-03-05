@@ -1031,7 +1031,10 @@ tree default_mangle_decl_assembler_name (tree decl ATTRIBUTE_UNUSED,
 HOST_WIDE_INT
 default_vector_alignment (const_tree type)
 {
-  return tree_to_shwi (TYPE_SIZE (type));
+  HOST_WIDE_INT align = tree_to_shwi (TYPE_SIZE (type));
+  if (align > MAX_OFILE_ALIGNMENT)
+    align = MAX_OFILE_ALIGNMENT;
+  return align;
 }
 
 bool
