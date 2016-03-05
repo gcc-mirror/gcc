@@ -1,3 +1,9 @@
+2016-03-05  Tom de Vries  <tom@codesourcery.com>
+
+	* c-c++-common/goacc/nesting-fail-1.c (f_acc_routine): New function.
+	* c-c++-common/goacc-gomp/nesting-fail-1.c (f_acc_routine): New
+	function.
+
 2016-03-05  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/66786

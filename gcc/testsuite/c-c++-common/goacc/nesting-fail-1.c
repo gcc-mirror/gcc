@@ -37,3 +37,11 @@ f_acc_kernels (void)
 #pragma acc exit data delete(i) /* { dg-error ".enter/exit data. construct inside of .kernels. region" } */
   }
 }
+
+#pragma acc routine
+void
+f_acc_routine (void)
+{
+#pragma acc parallel /* { dg-error "OpenACC region inside of OpenACC routine, nested parallelism not supported yet" } */
+  ;
+}
