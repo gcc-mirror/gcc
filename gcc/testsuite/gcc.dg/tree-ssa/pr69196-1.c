@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target sparc*-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -fdump-tree-vrp1-details" } */
 
 /* { dg-final { scan-tree-dump "FSM did not thread around loop and would copy too many statements" "vrp1" } } */

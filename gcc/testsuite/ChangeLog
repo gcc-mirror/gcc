@@ -1,3 +1,9 @@
+2016-03-04  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/69196
+	* gcc.dg/tree-ssa/pr69196-1.c: Limit this to sparc*-*-* and
+	x86_64-*-*.
+
 2016-03-04  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR c/69973
