@@ -1,3 +1,9 @@
+2016-03-05  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/66786
+	* g++.dg/cpp1y/var-templ48.C: New test.
+	* g++.dg/cpp1y/var-templ49.C: New test.
+
 2016-03-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/Wno-frame-address.C: Skip on IA-64.

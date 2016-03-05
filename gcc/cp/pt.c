@@ -370,16 +370,20 @@ template_class_depth (tree type)
 {
   int depth;
 
-  for (depth = 0;
-       type && TREE_CODE (type) != NAMESPACE_DECL;
-       type = (TREE_CODE (type) == FUNCTION_DECL)
-	 ? CP_DECL_CONTEXT (type) : CP_TYPE_CONTEXT (type))
+  for (depth = 0; type && TREE_CODE (type) != NAMESPACE_DECL; )
     {
       tree tinfo = get_template_info (type);
 
       if (tinfo && PRIMARY_TEMPLATE_P (TI_TEMPLATE (tinfo))
 	  && uses_template_parms (INNERMOST_TEMPLATE_ARGS (TI_ARGS (tinfo))))
 	++depth;
+
+      if (VAR_OR_FUNCTION_DECL_P (type))
+	type = CP_DECL_CONTEXT (type);
+      else if (LAMBDA_TYPE_P (type))
+	type = LAMBDA_TYPE_EXTRA_SCOPE (type);
+      else
+	type = CP_TYPE_CONTEXT (type);
     }
 
   return depth;

@@ -1,3 +1,11 @@
+2016-03-05  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/66786
+	* pt.c (template_class_depth): Given a lambda type, iterate
+	into its LAMBDA_TYPE_EXTRA_SCOPE field instead of its
+	TYPE_CONTEXT.  Given a VAR_DECL, iterate into its
+	CP_DECL_CONTEXT.
+
 2016-03-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/69203
