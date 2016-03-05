@@ -1,3 +1,9 @@
+2016-03-04  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR c/69824
+	* c-decl.c (get_parm_info): Don't queue implicit function declarations
+	for later.
+
 2016-03-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c/69798
