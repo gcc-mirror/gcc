@@ -1,3 +1,10 @@
+2016-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70084
+	* tree-inline.c (copy_tree_body_r): When cancelling ADDR_EXPR
+	of INDIRECT_REF and ADDR_EXPR changed type, fold_convert it
+	to the right type.
+
 2016-03-04  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR c/69973

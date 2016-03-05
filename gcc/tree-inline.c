@@ -1266,7 +1266,12 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	  /* Handle the case where we substituted an INDIRECT_REF
 	     into the operand of the ADDR_EXPR.  */
 	  if (TREE_CODE (TREE_OPERAND (*tp, 0)) == INDIRECT_REF)
-	    *tp = TREE_OPERAND (TREE_OPERAND (*tp, 0), 0);
+	    {
+	      tree t = TREE_OPERAND (TREE_OPERAND (*tp, 0), 0);
+	      if (TREE_TYPE (t) != TREE_TYPE (*tp))
+		t = fold_convert (remap_type (TREE_TYPE (*tp), id), t);
+	      *tp = t;
+	    }
 	  else
 	    recompute_tree_invariant_for_addr_expr (*tp);
 

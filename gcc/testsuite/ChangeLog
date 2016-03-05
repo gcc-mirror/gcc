@@ -1,3 +1,8 @@
+2016-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70084
+	* g++.dg/expr/stdarg3.C: New test.
+
 2016-03-04  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69196
