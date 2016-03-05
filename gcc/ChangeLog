@@ -1,3 +1,12 @@
+2016-03-05  Venkataramanan Kumar  <Venkataramanan.kumar@amd.com>
+
+	Fix sseimul type attribute.
+	* config/i386/znver1.md 
+	(znver1_sseimul, znver1_sseimul_avx256, znver1_sseimul_load,
+	znver1_sseimul_avx256_load) : Fix the type attribute.
+	(znver1_sseimul_di,
+	znver1_sseimul_load_di): Fix type attribute, pipe usage and latency. 
+
 2016-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70084
