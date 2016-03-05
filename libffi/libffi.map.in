@@ -3,7 +3,7 @@
 #include <fficonfig.h>
 #include <ffitarget.h>
 
-LIBFFI_BASE_5 {
+LIBFFI_BASE_7.0 {
   global:
 	/* Exported data variables.  */
 	ffi_type_void;
@@ -46,17 +46,17 @@ LIBFFI_BASE_5 {
 };
 
 #ifdef FFI_TARGET_HAS_COMPLEX_TYPE
-LIBFFI_COMPLEX_5 {
+LIBFFI_COMPLEX_7.0 {
   global:
 	/* Exported data variables.  */
 	ffi_type_complex_float;
 	ffi_type_complex_double;
 	ffi_type_complex_longdouble;
-} LIBFFI_BASE_5;
+} LIBFFI_BASE_7.0;
 #endif
 
 #if FFI_CLOSURES
-LIBFFI_CLOSURE_5 {
+LIBFFI_CLOSURE_7.0 {
   global:
 	ffi_closure_alloc;
 	ffi_closure_free;
@@ -66,13 +66,13 @@ LIBFFI_CLOSURE_5 {
 	ffi_prep_raw_closure_loc;
 	ffi_prep_java_raw_closure;
 	ffi_prep_java_raw_closure_loc;
-} LIBFFI_BASE_5;
+} LIBFFI_BASE_7.0;
 #endif
 
 #if FFI_GO_CLOSURES
-LIBFFI_GO_CLOSURE_5 {
+LIBFFI_GO_CLOSURE_7.0 {
   global:
 	ffi_call_go;
 	ffi_prep_go_closure;
-} LIBFFI_CLOSURE_5;
+} LIBFFI_CLOSURE_7.0;
 #endif
