@@ -7050,25 +7050,28 @@ get_parm_info (bool ellipsis, tree expr)
 	  vec_safe_push (tags, tag);
 	  break;
 
+	case FUNCTION_DECL:
+	  /*  FUNCTION_DECLs appear when there is an implicit function
+	      declaration in the parameter list.  */
+	  gcc_assert (b->nested);
+	  goto set_shadowed;
+
 	case CONST_DECL:
 	case TYPE_DECL:
-	case FUNCTION_DECL:
 	  /* CONST_DECLs appear here when we have an embedded enum,
 	     and TYPE_DECLs appear here when we have an embedded struct
 	     or union.  No warnings for this - we already warned about the
-	     type itself.  FUNCTION_DECLs appear when there is an implicit
-	     function declaration in the parameter list.  */
+	     type itself.  */
 
 	  /* When we reinsert this decl in the function body, we need
 	     to reconstruct whether it was marked as nested.  */
-	  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
-		      ? b->nested
-		      : !b->nested);
+	  gcc_assert (!b->nested);
 	  DECL_CHAIN (decl) = others;
 	  others = decl;
 	  /* fall through */
 
 	case ERROR_MARK:
+	set_shadowed:
 	  /* error_mark_node appears here when we have an undeclared
 	     variable.  Just throw it away.  */
 	  if (b->id)

@@ -1,3 +1,8 @@
+2016-03-04  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR c/69824
+	* gcc.dg/pr69824.c: New test.
+
 2016-03-05  Tom de Vries  <tom@codesourcery.com>
 
 	* c-c++-common/goacc/nesting-fail-1.c (f_acc_routine): New function.
