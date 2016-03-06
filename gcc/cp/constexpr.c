@@ -2939,39 +2939,34 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   /* Don't share a CONSTRUCTOR that might be changed later.  */
   init = unshare_expr (init);
   if (target == object)
+    /* The hash table might have moved since the get earlier.  */
+    valp = ctx->values->get (object);
+
+  if (TREE_CODE (init) == CONSTRUCTOR)
     {
-      /* The hash table might have moved since the get earlier.  */
-      valp = ctx->values->get (object);
-      if (TREE_CODE (init) == CONSTRUCTOR)
-	{
-	  /* An outer ctx->ctor might be pointing to *valp, so replace
-	     its contents.  */
-	  CONSTRUCTOR_ELTS (*valp) = CONSTRUCTOR_ELTS (init);
-	  TREE_CONSTANT (*valp) = TREE_CONSTANT (init);
-	  TREE_SIDE_EFFECTS (*valp) = TREE_SIDE_EFFECTS (init);
-	}
-      else
-	*valp = init;
+      /* An outer ctx->ctor might be pointing to *valp, so replace
+	 its contents.  */
+      CONSTRUCTOR_ELTS (*valp) = CONSTRUCTOR_ELTS (init);
+      TREE_CONSTANT (*valp) = TREE_CONSTANT (init);
+      TREE_SIDE_EFFECTS (*valp) = TREE_SIDE_EFFECTS (init);
     }
   else
-    {
-      *valp = init;
+    *valp = init;
 
-      /* Update TREE_CONSTANT and TREE_SIDE_EFFECTS on enclosing
-	 CONSTRUCTORs.  */
-      tree elt;
-      unsigned i;
-      bool c = TREE_CONSTANT (init);
-      bool s = TREE_SIDE_EFFECTS (init);
-      if (!c || s)
-	FOR_EACH_VEC_SAFE_ELT (ctors, i, elt)
-	  {
-	    if (!c)
-	      TREE_CONSTANT (elt) = false;
-	    if (s)
-	      TREE_SIDE_EFFECTS (elt) = true;
-	  }
-    }
+  /* Update TREE_CONSTANT and TREE_SIDE_EFFECTS on enclosing
+     CONSTRUCTORs, if any.  */
+  tree elt;
+  unsigned i;
+  bool c = TREE_CONSTANT (init);
+  bool s = TREE_SIDE_EFFECTS (init);
+  if (!c || s)
+    FOR_EACH_VEC_SAFE_ELT (ctors, i, elt)
+      {
+	if (!c)
+	  TREE_CONSTANT (elt) = false;
+	if (s)
+	  TREE_SIDE_EFFECTS (elt) = true;
+      }
   release_tree_vector (ctors);
 
   if (*non_constant_p)

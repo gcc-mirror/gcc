@@ -1,3 +1,9 @@
+2016-03-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67364
+	* constexpr.c (cxx_eval_store_expression): Replace
+	CONSTRUCTOR_ELTS in nested CONSTRUCTORs, too.
+
 2016-03-05  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/66786
