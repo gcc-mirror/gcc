@@ -104,7 +104,7 @@ sub get_clname ($) {
 	my $dirname = $_[0];
 	while ($dirname) {
 		my $clname = "$dirname/ChangeLog";
-		if (-f "$gcc_root/$clname") {
+		if (-f "$gcc_root/$clname" || -f "$clname") {
 			my $relname = substr ($_[0], length ($dirname) + 1);
 			return ($clname, $relname);
 		} else {
