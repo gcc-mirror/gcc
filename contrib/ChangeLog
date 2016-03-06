@@ -1,3 +1,7 @@
+2016-03-06  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* mklog: Look for the ChangeLog file in $cwd.
+
 2016-02-26  Joel Sherrill <joel@rtems.org>
 
 	* config-list.mk: Add aarch64-rtems and x86_64-rtems
