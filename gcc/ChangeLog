@@ -1,3 +1,9 @@
+2016-03-07  Bin Cheng  <bin.cheng@arm.com>
+
+	PR rtl-optimization/69052
+	* rtlanal.c (commutative_operand_precedence): Set higher precedence
+	to CONST_WIDE_INT.
+
 2016-03-07  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/70116
