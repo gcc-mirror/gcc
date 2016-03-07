@@ -1,3 +1,12 @@
+2016-03-07  Martin Sebor  <msebor@redhat.com>
+
+	* check_GNU_style.sh (color): New global variable.
+	Add checks for trailing operators and spaces before left brackets.
+	Tightened up a check for a trailing left curly brace.
+	(g, ag, vg): Use color.
+	(col): Don't complain about excessively long lines with DejaGnu
+	directives.
+
 2016-03-06  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* mklog: Look for the ChangeLog file in $cwd.
