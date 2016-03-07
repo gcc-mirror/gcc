@@ -5715,6 +5715,28 @@ unchecked_conversion_nop (Node_Id gnat_node)
   return false;
 }
 
+/* Return true if GNAT_NODE represents a statement.  */
+
+static bool
+statement_node_p (Node_Id gnat_node)
+{
+  const Node_Kind kind = Nkind (gnat_node);
+
+  if (kind == N_Label)
+    return true;
+
+  if (IN (kind, N_Statement_Other_Than_Procedure_Call))
+    return true;
+
+  if (kind == N_Procedure_Call_Statement)
+    return true;
+
+  if (IN (kind, N_Raise_xxx_Error) && Ekind (Etype (gnat_node)) == E_Void)
+    return true;
+
+  return false;
+}
+
 /* This function is the driver of the GNAT to GCC tree transformation process.
    It is the entry point of the tree transformer.  GNAT_NODE is the root of
    some GNAT tree.  Return the root of the corresponding GCC tree.  If this
@@ -5738,15 +5760,23 @@ gnat_to_gnu (Node_Id gnat_node)
   error_gnat_node = gnat_node;
   Sloc_to_locus (Sloc (gnat_node), &input_location);
 
-  /* If this node is a statement and we are only annotating types, return an
-     empty statement list.  */
-  if (type_annotate_only && IN (kind, N_Statement_Other_Than_Procedure_Call))
+  /* If we are only annotating types and this node is a statement, return
+     an empty statement list.  */
+  if (type_annotate_only && statement_node_p (gnat_node))
     return alloc_stmt_list ();
 
-  /* If this node is a non-static subexpression and we are only annotating
-     types, make this into a NULL_EXPR.  */
+  /* If we are only annotating types and this node is a subexpression, return
+     a NULL_EXPR, but filter out nodes appearing in the expressions attached
+     to packed array implementation types.  */
   if (type_annotate_only
       && IN (kind, N_Subexpr)
+      && !(((IN (kind, N_Op) && kind != N_Op_Expon)
+	    || kind == N_Type_Conversion)
+	   && Is_Integer_Type (Etype (gnat_node)))
+      && !(kind == N_Attribute_Reference
+	   && Get_Attribute_Id (Attribute_Name (gnat_node)) == Attr_Length
+	   && Ekind (Etype (Prefix (gnat_node))) == E_Array_Subtype
+	   && !Is_Constr_Subt_For_U_Nominal (Etype (Prefix (gnat_node))))
       && kind != N_Expanded_Name
       && kind != N_Identifier
       && !Compile_Time_Known_Value (gnat_node))
@@ -5754,13 +5784,9 @@ gnat_to_gnu (Node_Id gnat_node)
 		   build_call_raise (CE_Range_Check_Failed, gnat_node,
 				     N_Raise_Constraint_Error));
 
-  if ((IN (kind, N_Statement_Other_Than_Procedure_Call)
-       && kind != N_Null_Statement)
-      || kind == N_Procedure_Call_Statement
-      || kind == N_Label
-      || kind == N_Implicit_Label_Declaration
+  if ((statement_node_p (gnat_node) && kind != N_Null_Statement)
       || kind == N_Handled_Sequence_Of_Statements
-      || (IN (kind, N_Raise_xxx_Error) && Ekind (Etype (gnat_node)) == E_Void))
+      || kind == N_Implicit_Label_Declaration)
     {
       tree current_elab_proc = get_elaboration_procedure ();
 
@@ -5780,7 +5806,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	 spurious errors on dummy (empty) sequences created by the front-end
 	 for package bodies in some cases.  */
       if (current_function_decl == current_elab_proc
-	  && kind != N_Handled_Sequence_Of_Statements)
+	  && kind != N_Handled_Sequence_Of_Statements
+	  && kind != N_Implicit_Label_Declaration)
 	Check_Elaboration_Code_Allowed (gnat_node);
     }
 
