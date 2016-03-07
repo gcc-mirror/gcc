@@ -1,3 +1,9 @@
+2016-03-07  Martin Jambor  <mjambor@suse.cz>
+
+	* lib/target-supports.exp (check_effective_target_offload_hsa): New.
+	* c-c++-common/gomp/gridify-1.c: New test.
+	* gfortran.dg/gomp/gridify-1.f90: Likewise.
+
 2016-03-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/arm/pr45701-1.c: Change assembler scan to not
