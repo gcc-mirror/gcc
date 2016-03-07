@@ -286,6 +286,9 @@ EnumValue
 Enum(processor_type) String(cortex-r7) Value(cortexr7)
 
 EnumValue
+Enum(processor_type) String(cortex-r8) Value(cortexr8)
+
+EnumValue
 Enum(processor_type) String(cortex-m7) Value(cortexm7)
 
 EnumValue

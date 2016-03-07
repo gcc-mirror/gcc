@@ -155,6 +155,7 @@ ARM_CORE("cortex-r4",		cortexr4, cortexr4,		7R,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED |
 ARM_CORE("cortex-r4f",		cortexr4f, cortexr4f,		7R,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_FOR_ARCH7R), cortex)
 ARM_CORE("cortex-r5",		cortexr5, cortexr5,		7R,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_ARM_DIV | FL_FOR_ARCH7R), cortex)
 ARM_CORE("cortex-r7",		cortexr7, cortexr7,		7R,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_ARM_DIV | FL_FOR_ARCH7R), cortex)
+ARM_CORE("cortex-r8",		cortexr8, cortexr7,		7R,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_ARM_DIV | FL_FOR_ARCH7R), cortex)
 ARM_CORE("cortex-m7",		cortexm7, cortexm7,		7EM,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_NO_VOLATILE_CE | FL_FOR_ARCH7EM), cortex_m7)
 ARM_CORE("cortex-m4",		cortexm4, cortexm4,		7EM,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_FOR_ARCH7EM), v7m)
 ARM_CORE("cortex-m3",		cortexm3, cortexm3,		7M,	ARM_FSET_MAKE_CPU1 (FL_LDSCHED | FL_FOR_ARCH7M), v7m)
