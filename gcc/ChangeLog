@@ -1,3 +1,13 @@
+2016-02-26  Richard Biener  <rguenther@suse.de>
+            Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/69740
+	* cfghooks.c (remove_edge): Request loop fixups if we delete
+	an edge that might turn an irreducible loop into a natural
+	loop.
+	* cfgloop.h (check_verify_loop_structure): Clear LOOPS_NEED_FIXUP.
+	Move after definition of loops_state_clear.
+
 2016-03-07  Bin Cheng  <bin.cheng@arm.com>
 
 	PR rtl-optimization/69052
