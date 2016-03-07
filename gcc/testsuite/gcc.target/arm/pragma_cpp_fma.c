@@ -4,6 +4,9 @@
 /* { dg-require-effective-target arm_fp_ok } */
 /* { dg-add-options arm_fp } */
 
+/* Reset fpu to a value compatible with the next pragmas.  */
+#pragma GCC target ("fpu=vfp")
+
 #pragma GCC push_options
 #pragma GCC target ("fpu=crypto-neon-fp-armv8")
 
