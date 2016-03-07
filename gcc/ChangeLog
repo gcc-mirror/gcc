@@ -1,3 +1,7 @@
+2016-03-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm_neon.h: Show error if using with soft-float ABI.
+
 2016-03-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/62281
