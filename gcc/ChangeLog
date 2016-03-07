@@ -1,3 +1,8 @@
+2016-03-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/62281
+	* config/i386/sol2.h (STACK_REALIGN_DEFAULT): Define.
+
 2016-03-05  Venkataramanan Kumar  <Venkataramanan.kumar@amd.com>
 
 	* config/i386/i386.c (znver1_cost): Fix Multiply cost.

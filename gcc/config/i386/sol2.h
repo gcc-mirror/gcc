@@ -21,6 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #define SUBTARGET_OPTIMIZATION_OPTIONS				\
   { OPT_LEVELS_1_PLUS, OPT_momit_leaf_frame_pointer, NULL, 1 }
 
+/* 32-bit Solaris/x86 only guarantees 4-byte stack alignment as required by
+   the i386 psABI, so realign it as necessary for SSE instructions.  */
+#undef STACK_REALIGN_DEFAULT
+#define STACK_REALIGN_DEFAULT (TARGET_64BIT ? 0 : 1)
+
 /* Old versions of the Solaris assembler can not handle the difference of
    labels in different sections, so force DW_EH_PE_datarel if so.  */
 #ifndef HAVE_AS_IX86_DIFF_SECT_DELTA
