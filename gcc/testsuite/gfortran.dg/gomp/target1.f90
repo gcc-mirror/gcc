@@ -1,5 +1,4 @@
 ! { dg-do compile }
-! { dg-options "-fopenmp" }
 
 module target1
   interface

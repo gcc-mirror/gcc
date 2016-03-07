@@ -30,7 +30,7 @@ dg-init
 
 # Main loop.
 gfortran-dg-runtest [lsort \
-       [find $srcdir/$subdir *.\[fF\]{,90,95,03,08} ] ] "" "-fopenmp"
+       [find $srcdir/$subdir *.\[fF\]{,90,95,03,08} ] ] "" "-fopenmp -Wno-hsa"
 
 # All done.
 dg-finish

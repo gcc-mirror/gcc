@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-options "-fopenmp" } */
 /* { dg-additional-options "-std=c99" { target c } } */
 
 int t;

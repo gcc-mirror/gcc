@@ -1,6 +1,5 @@
 /* PR middle-end/61486 */
 /* { dg-do compile } */
-/* { dg-options "-fopenmp" } */
 /* { dg-require-effective-target alloca } */
 
 #pragma omp declare target

@@ -1,5 +1,23 @@
 2016-03-07  Martin Jambor  <mjambor@suse.cz>
 
+	* c-c++-common/gomp/clauses-1.c: Remove dg-options.
+	* c-c++-common/gomp/if-1.c: Likewise.
+	* c-c++-common/gomp/pr61486-2.c: Likewise.
+	* c-c++-common/gomp/target-teams-1.c: Moved dg-options except -fopenmp
+	to dg-additional-options.
+	* g++.dg/gomp/gomp.exp: Pass -Wno-hsa to all tests.
+	* g++/gomp/target-teams-1.c: Likewise.
+	* gcc.dg/gomp/gomp.exp: Likewise.
+	* gcc.dg/gomp/pr68128-2.c: Moved dg-options except -fopenmp to
+	dg-additional-options.
+	* gfortran.dg/gomp/gomp.exp: Likewise.
+	* gfortran.dg/gomp/target1.f90: Remove dg-options.
+	* gfortran.dg/gomp/target2.f90: Moved dg-options except -fopenmp to
+	dg-additional-options.
+	* gfortran.dg/gomp/target3.f90: Remove dg-options.
+
+2016-03-07  Martin Jambor  <mjambor@suse.cz>
+
 	* lib/target-supports.exp (check_effective_target_offload_hsa): New.
 	* c-c++-common/gomp/gridify-1.c: New test.
 	* gfortran.dg/gomp/gridify-1.f90: Likewise.

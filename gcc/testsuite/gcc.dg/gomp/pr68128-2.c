@@ -1,6 +1,6 @@
 /* PR tree-optimization/68128 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fopenmp -fdump-tree-omplower" } */
+/* { dg-additional-options "-O2 -fdump-tree-omplower" } */
 
 extern int omp_get_thread_num (void);
 extern int omp_get_ancestor_thread_num (int);
