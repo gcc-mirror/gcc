@@ -1,3 +1,9 @@
+2016-03-07  Martin Sebor  <msebor@redhat.com>
+
+	PR rtl-optimization/19705
+	* doc/invoke.texi (Options That Control Optimization): Clarify
+	-fno-branch-count-reg.
+
 2016-02-26  Richard Biener  <rguenther@suse.de>
             Jeff Law  <law@redhat.com>
 

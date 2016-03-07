@@ -6541,11 +6541,14 @@ life-range analysis.  This option is effective only with
 
 @item -fno-branch-count-reg
 @opindex fno-branch-count-reg
-Do not use ``decrement and branch'' instructions on a count register,
-but instead generate a sequence of instructions that decrement a
-register, compare it against zero, then branch based upon the result.
-This option is only meaningful on architectures that support such
-instructions, which include x86, PowerPC, IA-64 and S/390.
+Avoid running a pass scanning for opportunities to use ``decrement and
+branch'' instructions on a count register instead of generating sequences
+of instructions that decrement a register, compare it against zero, and
+then branch based upon the result.  This option is only meaningful on
+architectures that support such instructions, which include x86, PowerPC,
+IA-64 and S/390.  Note that the @option{-fno-branch-count-reg} option
+doesn't remove the decrement and branch instructions from the generated
+instruction stream introduced by other optimization passes.
 
 Enabled by default at @option{-O1} and higher.
 
