@@ -712,6 +712,31 @@ hsa_add_kernel_dependency (tree caller, const char *called_function)
   s->safe_push (called_function);
 }
 
+/* Expansion to HSA needs a few gc roots to hold types, constructors etc.  In
+   order to minimize the number of GTY roots, we'll root them all in the
+   following array.  The individual elements should only be accessed by the
+   very simple getters (of a pointer-to-tree) below.  */
+
+static GTY(()) tree hsa_tree_gt_roots[3];
+
+tree *
+hsa_get_ctor_statements (void)
+{
+  return &hsa_tree_gt_roots[0];
+}
+
+tree *
+hsa_get_dtor_statements (void)
+{
+  return &hsa_tree_gt_roots[1];
+}
+
+tree *
+hsa_get_kernel_dispatch_type (void)
+{
+  return &hsa_tree_gt_roots[2];
+}
+
 /* Modify the name P in-place so that it is a valid HSA identifier.  */
 
 void

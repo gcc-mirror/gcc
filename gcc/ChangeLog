@@ -1,3 +1,17 @@
+2016-03-07  Martin Jambor  <mjambor@suse.cz>
+
+	* hsa.h (hsa_get_ctor_statements): Declare.
+	(hsa_get_dtor_statements): Likewise.
+	(hsa_get_kernel_dispatch_type): Likewise.
+	* hsa.c (hsa_get_ctor_statements): New function.
+	(hsa_get_dtor_statements): Likewise.
+	(hsa_get_kernel_dispatch_type): Likewise.
+	* hsa-brig.c (hsa_cdtor_statements): Removed.
+	(hsa_output_libgomp_mapping): Use hsa_get_ctor_statements and
+	hsa_get_dtor_statements.
+	* hsa-gen.c (hsa_kernel_dispatch_type): Removed.
+	(get_hsa_kernel_dispatch_offset): Use hsa_get_kernel_dispatch_type.
+
 2016-03-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* config/arm/arm-cores.def (cortex-r8): New.

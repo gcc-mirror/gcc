@@ -3772,20 +3772,19 @@ gen_set_num_threads (tree value, hsa_bb *hbb)
   hbb->append_insn (basic);
 }
 
-static GTY (()) tree hsa_kernel_dispatch_type = NULL;
-
 /* Return byte offset of a FIELD_NAME in GOMP_hsa_kernel_dispatch which
    is defined in plugin-hsa.c.  */
 
 static HOST_WIDE_INT
 get_hsa_kernel_dispatch_offset (const char *field_name)
 {
-  if (hsa_kernel_dispatch_type == NULL)
+  tree *hsa_kernel_dispatch_type = hsa_get_kernel_dispatch_type ();
+  if (*hsa_kernel_dispatch_type == NULL)
     {
       /* Collection of information needed for a dispatch of a kernel from a
 	 kernel.  Keep in sync with libgomp's plugin-hsa.c.  */
 
-      hsa_kernel_dispatch_type = make_node (RECORD_TYPE);
+      *hsa_kernel_dispatch_type = make_node (RECORD_TYPE);
       tree id_f1 = build_decl (BUILTINS_LOCATION, FIELD_DECL,
 			       get_identifier ("queue"), ptr_type_node);
       DECL_CHAIN (id_f1) = NULL_TREE;
@@ -3835,12 +3834,12 @@ get_hsa_kernel_dispatch_offset (const char *field_name)
       DECL_CHAIN (id_f12) = id_f11;
 
 
-      finish_builtin_struct (hsa_kernel_dispatch_type, "__hsa_kernel_dispatch",
+      finish_builtin_struct (*hsa_kernel_dispatch_type, "__hsa_kernel_dispatch",
 			     id_f12, NULL_TREE);
-      TYPE_ARTIFICIAL (hsa_kernel_dispatch_type) = 1;
+      TYPE_ARTIFICIAL (*hsa_kernel_dispatch_type) = 1;
     }
 
-  for (tree chain = TYPE_FIELDS (hsa_kernel_dispatch_type);
+  for (tree chain = TYPE_FIELDS (*hsa_kernel_dispatch_type);
        chain != NULL_TREE; chain = TREE_CHAIN (chain))
     if (strcmp (field_name, IDENTIFIER_POINTER (DECL_NAME (chain))) == 0)
       return int_byte_position (chain);
