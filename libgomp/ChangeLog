@@ -1,3 +1,8 @@
+2016-03-07  Martin Jambor  <mjambor@suse.cz>
+
+	* testsuite/lib/libgomp.exp (libgomp_init): Append -Wno-hsa to
+	ALWAYS_CFLAGS.
+
 2016-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/69555
