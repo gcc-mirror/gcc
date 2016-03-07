@@ -314,16 +314,6 @@ extern void delete_loop (struct loop *);
 
 extern void verify_loop_structure (void);
 
-/* Check loop structure invariants, if internal consistency checks are
-   enabled.  */
-
-static inline void
-checking_verify_loop_structure (void)
-{
-  if (flag_checking)
-    verify_loop_structure ();
-}
-
 /* Loop analysis.  */
 extern bool just_once_each_iteration_p (const struct loop *, const_basic_block);
 gcov_type expected_loop_iterations_unbounded (const struct loop *);
@@ -544,6 +534,28 @@ loops_state_clear (unsigned flags)
   if (!current_loops)
     return;
   loops_state_clear (cfun, flags);
+}
+
+/* Check loop structure invariants, if internal consistency checks are
+   enabled.  */
+
+static inline void
+checking_verify_loop_structure (void)
+{
+  /* VERIFY_LOOP_STRUCTURE essentially asserts that no loops need fixups.
+
+     The loop optimizers should never make changes to the CFG which
+     require loop fixups.  But the low level CFG manipulation code may
+     set the flag conservatively.
+
+     Go ahead and clear the flag here.  That avoids the assert inside
+     VERIFY_LOOP_STRUCTURE, and if there is an inconsistency in the loop
+     structures VERIFY_LOOP_STRUCTURE will detect it.
+
+     This also avoid the compile time cost of excessive fixups.  */
+  loops_state_clear (LOOPS_NEED_FIXUP);
+  if (flag_checking)
+    verify_loop_structure ();
 }
 
 /* Loop iterators.  */

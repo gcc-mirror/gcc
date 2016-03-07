@@ -1,3 +1,10 @@
+2016-02-26  Richard Biener  <rguenther@suse.de>
+            Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/69740
+	* gcc.c-torture/compile/pr69740-1.c: New test.
+	* gcc.c-torture/compile/pr69740-2.c: New test.
+
 2016-03-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* lib/target-supports.exp
