@@ -1,5 +1,28 @@
 2016-03-07  Martin Jambor  <mjambor@suse.cz>
 
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_hsa_offloading_selected_nocache): New.
+	(check_effective_target_hsa_offloading_selected): Likewise.
+	* testsuite/libgomp.hsa.c/c.exp: Likewise.
+	* testsuite/libgomp.hsa.c/alloca-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/bitfield-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/builtins-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/complex-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/formal-actual-args-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/function-call-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/get-level-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/gridify-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/gridify-2.c: Likewise.
+	* testsuite/libgomp.hsa.c/gridify-3.c: Likewise.
+	* testsuite/libgomp.hsa.c/gridify-4.c: Likewise.
+	* testsuite/libgomp.hsa.c/memory-operations-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/pr69568.c: Likewise.
+	* testsuite/libgomp.hsa.c/rotate-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/switch-1.c: Likewise.
+	* testsuite/libgomp.hsa.c/switch-branch-1.c: Likewise.
+
+2016-03-07  Martin Jambor  <mjambor@suse.cz>
+
 	* testsuite/libgomp.c/examples-4/async_target-2.c: Only run on
 	non-shared memory accelerators.
 	* testsuite/libgomp.c/examples-4/device-1.c: Likewise.

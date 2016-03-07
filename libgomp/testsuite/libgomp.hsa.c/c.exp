@@ -1,0 +1,42 @@
+if [info exists lang_library_path] then {
+    unset lang_library_path
+    unset lang_link_flags
+}
+if [info exists lang_test_file] then {
+    unset lang_test_file
+}
+if [info exists lang_include_flags] then {
+    unset lang_include_flags
+}
+
+load_lib libgomp-dg.exp
+load_gcc_lib gcc-dg.exp
+
+# Initialize dg.
+dg-init
+
+# Turn on OpenMP.
+lappend ALWAYS_CFLAGS "additional_flags=-fopenmp"
+
+set ld_library_path $always_ld_library_path
+append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+set_ld_library_path_env_vars
+
+global DEFAULT_CFLAGS
+if [info exists DEFAULT_CFLAGS] then {
+    set CFLAGS_list [list "-O0" $DEFAULT_CFLAGS]
+} else {
+    set CFLAGS_list [list "-O0" "-O2"]
+}
+
+if [check_effective_target_hsa_offloading_selected] {
+    foreach USE_CFLAGS $CFLAGS_list {
+	# Gather a list of all tests.
+	set tests [lsort [find $srcdir/$subdir *.c]]
+	# Main loop.
+	dg-runtest $tests "" [concat $USE_CFLAGS "-Whsa"]
+    }
+}
+
+# All done.
+dg-finish
