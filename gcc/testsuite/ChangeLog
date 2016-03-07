@@ -1,3 +1,8 @@
+2016-03-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_whole_vector_shift): Enable for PPC64.
+
 2016-03-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70115
