@@ -1,3 +1,7 @@
+2016-03-07  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/compile/pr70061.c: New test.
+
 2016-03-07  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/70109

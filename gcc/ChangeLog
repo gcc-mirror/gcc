@@ -1,3 +1,9 @@
+2016-03-07  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/70061
+	* tree-outofssa.c (emit_partition_copy): Flush pending stack adjust.
+	(insert_value_copy_on_edge): Likewise.
+
 2016-03-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm_neon.h: Show error if using with soft-float ABI.
