@@ -330,7 +330,8 @@ get_template_info (const_tree t)
   if (!t || t == error_mark_node)
     return NULL;
 
-  if (TREE_CODE (t) == NAMESPACE_DECL)
+  if (TREE_CODE (t) == NAMESPACE_DECL
+      || TREE_CODE (t) == PARM_DECL)
     return NULL;
 
   if (DECL_P (t) && DECL_LANG_SPECIFIC (t))
@@ -378,7 +379,7 @@ template_class_depth (tree type)
 	  && uses_template_parms (INNERMOST_TEMPLATE_ARGS (TI_ARGS (tinfo))))
 	++depth;
 
-      if (VAR_OR_FUNCTION_DECL_P (type))
+      if (DECL_P (type))
 	type = CP_DECL_CONTEXT (type);
       else if (LAMBDA_TYPE_P (type))
 	type = LAMBDA_TYPE_EXTRA_SCOPE (type);

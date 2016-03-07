@@ -1,3 +1,10 @@
+2016-03-07  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/66786
+	* pt.c (get_template_info): Handle PARM_DECL.
+	(template_class_depth): Check DECL_P instead of
+	VAR_OR_FUNCTION_DECL_P.
+
 2016-03-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67364
