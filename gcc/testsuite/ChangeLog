@@ -1,3 +1,10 @@
+2016-03-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/69666
+	PR middle-end/69920
+	* gcc.dg/torture/pr69932.c: New test.
+	* gcc.dg/torture/pr69936.c: Likewise.
+
 2016-03-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

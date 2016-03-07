@@ -1,3 +1,11 @@
+2016-03-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/69666
+	PR middle-end/69920
+	* tree-sra.c (sra_modify_assign): Do not attempt to create
+	default_def replacements for unscalarizable regions.  Do not
+	remove loads of uninitialized aggregates to SSA_NAMEs.
+
 2016-03-07  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backport from mainline
