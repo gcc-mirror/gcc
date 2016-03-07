@@ -1,3 +1,13 @@
+2016-03-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backport from mainline
+	2016-02-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/65932
+	PR target/67714
+	* config/arm/arm.c (arm_new_rtx_costs, MULT case): Properly extract
+	the operands of the SIGN_EXTENDs from a SMUL[TB][TB] rtx.
+
 2016-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70059

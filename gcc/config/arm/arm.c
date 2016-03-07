@@ -10306,8 +10306,10 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	      /* SMUL[TB][TB].  */
 	      if (speed_p)
 		*cost += extra_cost->mult[0].extend;
-	      *cost += (rtx_cost (XEXP (x, 0), SIGN_EXTEND, 0, speed_p)
-			+ rtx_cost (XEXP (x, 1), SIGN_EXTEND, 0, speed_p));
+	      *cost += rtx_cost (XEXP (XEXP (x, 0), 0),
+				 SIGN_EXTEND, 0, speed_p);
+	      *cost += rtx_cost (XEXP (XEXP (x, 1), 0),
+				 SIGN_EXTEND, 1, speed_p);
 	      return true;
 	    }
 	  if (speed_p)
