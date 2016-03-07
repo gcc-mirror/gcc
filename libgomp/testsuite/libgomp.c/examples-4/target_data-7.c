@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target offload_device } */
+/* { dg-require-effective-target offload_device_nonshared_as } */
 
 #include <stdlib.h>
 #include <omp.h>
