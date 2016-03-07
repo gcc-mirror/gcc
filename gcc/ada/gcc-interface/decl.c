@@ -1058,12 +1058,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  = elaborate_reference (gnu_expr, gnat_entity, definition,
 					 &init);
 
-		/* If we are not defining the entity, the expression will not
-		   be attached through DECL_INITIAL so it needs to be marked
-		   manually because it will likely be shared.  Likewise for a
-		   dereference as it will be folded by the ADDR_EXPR below.  */
-		if ((!definition || TREE_CODE (renamed_obj) == INDIRECT_REF)
-		    && global_bindings_p ())
+		/* The expression needs to be marked manually because it will
+		   likely be shared, even for a definition since the ADDR_EXPR
+		   built below can cause the first few nodes to be folded.  */
+		if (global_bindings_p ())
 		  MARK_VISITED (renamed_obj);
 
 		if (type_annotate_only

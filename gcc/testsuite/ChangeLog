@@ -1,3 +1,7 @@
+2016-03-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/renaming9.ad[sb]: New testcase.
+
 2016-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70084
