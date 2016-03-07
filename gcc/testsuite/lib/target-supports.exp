@@ -4006,6 +4006,7 @@ proc check_effective_target_whole_vector_shift { } {
     if { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	 || [istarget ia64-*-*]
 	 || [istarget aarch64*-*-*]
+	 || [istarget powerpc64*-*-*]
 	 || ([check_effective_target_arm32]
 	     && [check_effective_target_arm_little_endian])
 	 || ([istarget mips*-*-*]
