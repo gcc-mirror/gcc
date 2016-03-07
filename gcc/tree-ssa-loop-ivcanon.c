@@ -1164,38 +1164,6 @@ canonicalize_induction_variables (void)
   return 0;
 }
 
-/* Propagate VAL into all uses of SSA_NAME.  */
-
-static void
-propagate_into_all_uses (tree ssa_name, tree val)
-{
-  imm_use_iterator iter;
-  gimple *use_stmt;
-
-  FOR_EACH_IMM_USE_STMT (use_stmt, iter, ssa_name)
-    {
-      gimple_stmt_iterator use_stmt_gsi = gsi_for_stmt (use_stmt);
-      use_operand_p use;
-
-      FOR_EACH_IMM_USE_ON_STMT (use, iter)
-	SET_USE (use, val);
-
-      if (is_gimple_assign (use_stmt)
-	  && get_gimple_rhs_class (gimple_assign_rhs_code (use_stmt))
-	     == GIMPLE_SINGLE_RHS)
-	{
-	  tree rhs = gimple_assign_rhs1 (use_stmt);
-
-	  if (TREE_CODE (rhs) == ADDR_EXPR)
-	    recompute_tree_invariant_for_addr_expr (rhs);
-	}
-
-      fold_stmt_inplace (&use_stmt_gsi);
-      update_stmt (use_stmt);
-      maybe_clean_or_replace_eh_stmt (use_stmt, use_stmt);
-    }
-}
-
 /* Propagate constant SSA_NAMEs defined in basic block BB.  */
 
 static void
@@ -1212,7 +1180,7 @@ propagate_constants_for_unrolling (basic_block bb)
 	  && gimple_phi_num_args (phi) == 1
 	  && TREE_CODE (arg) == INTEGER_CST)
 	{
-	  propagate_into_all_uses (result, arg);
+	  replace_uses_by (result, arg);
 	  gsi_remove (&gsi, true);
 	  release_ssa_name (result);
 	}
@@ -1231,7 +1199,7 @@ propagate_constants_for_unrolling (basic_block bb)
 	  && (lhs = gimple_assign_lhs (stmt), TREE_CODE (lhs) == SSA_NAME)
 	  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
 	{
-	  propagate_into_all_uses (lhs, gimple_assign_rhs1 (stmt));
+	  replace_uses_by (lhs, gimple_assign_rhs1 (stmt));
 	  gsi_remove (&gsi, true);
 	  release_ssa_name (lhs);
 	}
