@@ -3358,7 +3358,7 @@ commutative_operand_precedence (rtx op)
   if (code == CONST_INT)
     return -8;
   if (code == CONST_WIDE_INT)
-    return -8;
+    return -7;
   if (code == CONST_DOUBLE)
     return -7;
   if (code == CONST_FIXED)
