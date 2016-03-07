@@ -27,6 +27,10 @@
 #ifndef _GCC_ARM_NEON_H
 #define _GCC_ARM_NEON_H 1
 
+#ifndef __ARM_FP
+#error "NEON intrinsics not available with the soft-float ABI.  Please use -mfloat-abi=softp or -mfloat-abi=hard"
+#else
+
 #pragma GCC push_options
 #pragma GCC target ("fpu=neon")
 
@@ -14832,4 +14836,5 @@ vmull_high_p64 (poly64x2_t __a, poly64x2_t __b)
 
 #pragma GCC pop_options
 
+#endif
 #endif
