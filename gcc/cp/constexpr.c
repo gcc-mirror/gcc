@@ -2901,15 +2901,14 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   /* Don't share a CONSTRUCTOR that might be changed later.  */
   init = unshare_expr (init);
   if (target == object)
+    /* The hash table might have moved since the get earlier.  */
+    valp = ctx->values->get (object);
+
+  if (TREE_CODE (init) == CONSTRUCTOR)
     {
-      /* The hash table might have moved since the get earlier.  */
-      valp = ctx->values->get (object);
-      if (TREE_CODE (init) == CONSTRUCTOR)
-	/* An outer ctx->ctor might be pointing to *valp, so just replace
-	   its contents.  */
-	CONSTRUCTOR_ELTS (*valp) = CONSTRUCTOR_ELTS (init);
-      else
-	*valp = init;
+      /* An outer ctx->ctor might be pointing to *valp, so just replace
+	 its contents.  */
+      CONSTRUCTOR_ELTS (*valp) = CONSTRUCTOR_ELTS (init);
     }
   else
     *valp = init;
