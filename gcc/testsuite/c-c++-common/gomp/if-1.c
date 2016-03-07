@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-options "-fopenmp" } */
 
 void
 foo (int a, int b, int *p, int *q)
