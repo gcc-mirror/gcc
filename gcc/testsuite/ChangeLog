@@ -1,3 +1,9 @@
+2016-03-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/pr45701-1.c: Change assembler scan to not
+	trigger for cortex-r8, when scanning for register r8.
+	* gcc.target/arm/pr45701-2.c: Likewise.
+
 2016-02-26  Richard Biener  <rguenther@suse.de>
             Jeff Law  <law@redhat.com>
 
