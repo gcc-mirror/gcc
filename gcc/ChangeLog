@@ -1,3 +1,10 @@
+2016-03-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/70116
+	* tree-ssa-tail-merge.c	(merge_stmts_p): New function, handling
+	is_tm_ending stmts and ubsan/asan internal functions.
+	(find_duplicate): Use it.  Don't test is_tm_ending here.
+
 2016-03-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70115
