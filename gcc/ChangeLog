@@ -1,3 +1,13 @@
+2016-03-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR middle-end/69916
+	* omp-low.c (struct oacc_loop): Add ifns.
+	(new_oacc_loop_raw): Initialize it.
+	(finish_oacc_loop): Clear mask & flags if no ifns.
+	(oacc_loop_discover_walk): Count IFN_GOACC_LOOP calls.
+	(oacc_loop_xform_loop): Add ifns arg & adjust.
+	(oacc_loop_process): Adjust oacc_loop_xform_loop call.
+
 2016-03-07  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/70061

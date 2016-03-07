@@ -1,3 +1,8 @@
+2016-03-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR middle-end/69916
+	* c-c-++-common/goacc/pr69916.c: New.
+
 2016-03-07  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/compile/pr70061.c: New test.
@@ -711,7 +716,6 @@
 	PR c/69900
 	* gcc.dg/pr69900.c: New test.
 
->>>>>>> .r233653
 2016-02-23  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/69666
