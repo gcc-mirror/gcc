@@ -2494,6 +2494,10 @@ struct GTY(()) machine_function {
      expander to determine the style used.  */
   BOOL_BITFIELD use_fast_prologue_epilogue : 1;
 
+  /* Nonzero if the current function calls pc thunk and
+     must not use the red zone.  */
+  BOOL_BITFIELD pc_thunk_call_expanded : 1;
+
   /* If true, the current function needs the default PIC register, not
      an alternate register (on x86) and must not use the red zone (on
      x86_64), even if it's a leaf function.  We don't want the
@@ -2533,6 +2537,7 @@ struct GTY(()) machine_function {
 #define ix86_varargs_fpr_size (cfun->machine->varargs_fpr_size)
 #define ix86_optimize_mode_switching (cfun->machine->optimize_mode_switching)
 #define ix86_current_function_needs_cld (cfun->machine->needs_cld)
+#define ix86_pc_thunk_call_expanded (cfun->machine->pc_thunk_call_expanded)
 #define ix86_tls_descriptor_calls_expanded_in_cfun \
   (cfun->machine->tls_descriptor_call_expanded_p)
 /* Since tls_descriptor_call_expanded is not cleared, even if all TLS

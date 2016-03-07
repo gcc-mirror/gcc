@@ -11103,18 +11103,7 @@ output_set_got (rtx dest, rtx label)
 
   xops[1] = gen_rtx_SYMBOL_REF (Pmode, GOT_SYMBOL_NAME);
 
-  if (!flag_pic)
-    {
-      if (TARGET_MACHO)
-	/* We don't need a pic base, we're not producing pic.  */
-	gcc_unreachable ();
-
-      xops[2] = gen_rtx_LABEL_REF (Pmode, label ? label : gen_label_rtx ());
-      output_asm_insn ("mov%z0\t{%2, %0|%0, %2}", xops);
-      targetm.asm_out.internal_label (asm_out_file, "L",
-				      CODE_LABEL_NUMBER (XEXP (xops[2], 0)));
-    }
-  else
+  if (flag_pic)
     {
       char name[32];
       get_pc_thunk_name (name, REGNO (dest));
@@ -11138,6 +11127,17 @@ output_set_got (rtx dest, rtx label)
         targetm.asm_out.internal_label (asm_out_file, "L",
 					   CODE_LABEL_NUMBER (label));
 #endif
+    }
+  else
+    {
+      if (TARGET_MACHO)
+	/* We don't need a pic base, we're not producing pic.  */
+	gcc_unreachable ();
+
+      xops[2] = gen_rtx_LABEL_REF (Pmode, label ? label : gen_label_rtx ());
+      output_asm_insn ("mov%z0\t{%2, %0|%0, %2}", xops);
+      targetm.asm_out.internal_label (asm_out_file, "L",
+				      CODE_LABEL_NUMBER (XEXP (xops[2], 0)));
     }
 
   if (!TARGET_MACHO)
@@ -11524,6 +11524,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   if (ix86_using_red_zone ()
       && crtl->sp_is_unchanging
       && crtl->is_leaf
+      && !ix86_pc_thunk_call_expanded
       && !ix86_current_function_calls_tls_descriptor)
     {
       frame->red_zone_size = to_allocate;
