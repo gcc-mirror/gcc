@@ -1,3 +1,8 @@
+2016-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/70109
+	* gcc.dg/vect/O3-pr36098.c: New testcase.
+
 2016-03-07  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/pragma_cpp_fma.c: Reset default FPU.
