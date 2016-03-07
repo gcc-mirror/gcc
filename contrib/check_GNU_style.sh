@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Checks some of the GNU style formatting rules in a set of patches.
-# Copyright (C) 2010, 2012  Free Software Foundation, Inc.
+# Copyright (C) 2010, 2012, 2016  Free Software Foundation, Inc.
 # Contributed by Sebastian Pop <sebastian.pop@amd.com>
 
 # This program is free software; you can redistribute it and/or modify
@@ -15,8 +15,11 @@
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+# along with this program; if not, see the file COPYING3.  If not,
+# see <http://www.gnu.org/licenses/>.
+
+# Set to empty in the environment to override.
+: ${color:---color=always}
 
 usage() {
     cat <<EOF
@@ -100,7 +103,7 @@ g (){
 
     local found=false
     cat $inp \
-	| egrep --color=always -- "$arg" \
+	| egrep $color -- "$arg" \
 	> "$tmp" && found=true
 
     if $found; then
@@ -117,8 +120,8 @@ ag (){
 
     local found=false
     cat $inp \
-	| egrep --color=always -- "$arg1" \
-	| egrep --color=always -- "$arg2" \
+	| egrep $color -- "$arg1" \
+	| egrep $color -- "$arg2" \
 	> "$tmp" && found=true
 
     if $found; then
@@ -136,7 +139,7 @@ vg (){
     local found=false
     cat $inp \
 	| egrep -v -- "$varg" \
-	| egrep --color=always -- "$arg" \
+	| egrep $color -- "$arg" \
 	> "$tmp" && found=true
 
     if $found; then
@@ -171,10 +174,11 @@ col (){
 	# Expand tabs to spaces according to tab positions.
 	# Keep long lines, make short lines empty.  Print the part past 80 chars
 	# in red.
+        # Don't complain about dg-xxx directives in tests.
 	cat "$tmp" \
 	    | sed 's/^[0-9]*:+//' \
 	    | expand \
-	    | awk '{ \
+	    | awk '$0 !~ /{[[:space:]]*dg-(error|warning|message)[[:space:]]/ { \
 		     if (length($0) > 80) \
 		       printf "%s\033[1;31m%s\033[0m\n", \
 			      substr($0,1,80), \
@@ -201,6 +205,7 @@ col (){
     done
 }
 
+
 col 'Lines should not exceed 80 characters.'
 
 g 'Blocks of 8 spaces should be replaced with tabs.' \
@@ -221,13 +226,20 @@ g 'Dot, space, space, end of comment.' \
 g 'Sentences should end with a dot.  Dot, space, space, end of the comment.' \
     '[[:alnum:]][[:blank:]]*\*/'
 
-vg 'There should be exactly one space between function name and parentheses.' \
+vg 'There should be exactly one space between function name and parenthesis.' \
     '\#define' \
     '[[:alnum:]]([[:blank:]]{2,})?\('
 
-g 'There should be no space before closing parentheses.' \
+g 'There should be no space before a left square bracket.' \
+   '[[:alnum:]][[:blank:]]+\['
+
+g 'There should be no space before closing parenthesis.' \
     '[[:graph:]][[:blank:]]+\)'
 
-ag 'Braces should be on a separate line.' \
-    '\{' \
-    'if[[:blank:]]\(|while[[:blank:]]\(|switch[[:blank:]]\('
+# This will give false positives for C99 compound literals.
+g 'Braces should be on a separate line.' \
+    '(\)|else)[[:blank:]]*{'
+
+# Does this apply to definition of aggregate objects?
+g 'Trailing operator.' \
+  '(([^a-zA-Z_]\*)|([-%<=&|^?])|([^*]/)|([^:][+]))$'
