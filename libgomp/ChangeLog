@@ -1,5 +1,19 @@
 2016-03-07  Martin Jambor  <mjambor@suse.cz>
 
+	* testsuite/libgomp.c/examples-4/async_target-2.c: Only run on
+	non-shared memory accelerators.
+	* testsuite/libgomp.c/examples-4/device-1.c: Likewise.
+	* testsuite/libgomp.c/examples-4/target-5.c: Likewise.
+	* testsuite/libgomp.c/examples-4/target_data-6.c: Likewise.
+	* testsuite/libgomp.c/examples-4/target_data-7.c: Likewise.
+	* testsuite/libgomp.fortran/examples-4/async_target-2.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/device-1.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target-5.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target_data-6.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/target_data-7.f90: Likewise.
+
+2016-03-07  Martin Jambor  <mjambor@suse.cz>
+
 	* testsuite/lib/libgomp.exp (libgomp_init): Append -Wno-hsa to
 	ALWAYS_CFLAGS.
 

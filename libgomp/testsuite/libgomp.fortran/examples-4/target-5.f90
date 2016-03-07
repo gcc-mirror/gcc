@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-require-effective-target offload_device }
+! { dg-require-effective-target offload_device_nonshared_as }
 
 module e_50_5_mod
 integer, parameter :: THRESHOLD1 = 500, THRESHOLD2 = 100

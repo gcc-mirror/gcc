@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-require-effective-target offload_device }
+! { dg-require-effective-target offload_device_nonshared_as }
 
 subroutine init (v1, v2, N)
   !$omp declare target
