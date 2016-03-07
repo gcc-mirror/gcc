@@ -1,3 +1,15 @@
+2016-03-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70064
+	* config/i386/i386.h (machine_function): Add
+	pc_thunk_call_expanded flag.
+	(ix86_pc_thunk_call_expanded): New define.
+	* config/i386/i386.md (set_got, set_got_labelled): New expanders.
+	(*set_got): Rename insn pattern from set_got.
+	(*set_got_labelled): Rename inst pattern from set_got_labelled.
+	* config/i386/i386.c (ix86_compute_frame_layout): Use
+	ix86_pc_thunk_call_expanded to prevent red-zone.
+
 2016-03-07  Martin Jambor  <mjambor@suse.cz>
 
 	* hsa.h (hsa_get_ctor_statements): Declare.
@@ -26,7 +38,7 @@
 	-fno-branch-count-reg.
 
 2016-02-26  Richard Biener  <rguenther@suse.de>
-            Jeff Law  <law@redhat.com>
+	    Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69740
 	* cfghooks.c (remove_edge): Request loop fixups if we delete
@@ -86,11 +98,11 @@
 2016-03-05  Venkataramanan Kumar  <Venkataramanan.kumar@amd.com>
 
 	Fix sseimul type attribute.
-	* config/i386/znver1.md 
+	* config/i386/znver1.md
 	(znver1_sseimul, znver1_sseimul_avx256, znver1_sseimul_load,
 	znver1_sseimul_avx256_load) : Fix the type attribute.
-	(znver1_sseimul_di,
-	znver1_sseimul_load_di): Fix type attribute, pipe usage and latency. 
+	(znver1_sseimul_di, znver1_sseimul_load_di): Fix type attribute,
+	pipe usage and latency.
 
 2016-03-05  Jakub Jelinek  <jakub@redhat.com>
 
@@ -220,8 +232,8 @@
 	* gimplify.c (gimplify_decl_expr): For decls with REFERENCE_TYPE, also
 	gimplify_type_sizes the type they refer to.
 	(omp_notice_variable): Handle reference vars to VLAs.
-	* omp-low.c (lower_omp_target): Emit setup of OMP_CLAUSE_PRIVATE reference
-	to VLA decls in the second pass instead of first pass.
+	* omp-low.c (lower_omp_target): Emit setup of OMP_CLAUSE_PRIVATE
+	reference to VLA decls in the second pass instead of first pass.
 
 2016-03-02  Tom de Vries  <tom@codesourcery.com>
 
@@ -264,7 +276,7 @@
 	* config.gcc (mep-*-elf): Add newlib-stdint.h to tm_file.
 
 2016-03-02  Richard Biener  <rguenther@suse.de>
-	Uros Bizjak  <ubizjak@gmail.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/67278
 	* config/i386/i386.c (type_natural_mode): Handle XFmode vectors.
@@ -307,7 +319,8 @@
 	* tree-ssa-threadbackward.c (fsm_find_control_statement_thread_paths):
 	Do count some PHIs in the thread path against the insn count.  Decrease
 	final statement count by one as the control statement in the last
-	block will get removed.  Remove special cased code for handling PHIs		in the last block.
+	block will get removed.  Remove special cased code for handling PHIs
+	in the last block.
 
 2016-03-01  Uros Bizjak  <ubizjak@gmail.com>
 
