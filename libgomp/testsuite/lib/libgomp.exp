@@ -237,6 +237,9 @@ proc libgomp_init { args } {
     # Disable caret
     lappend ALWAYS_CFLAGS "additional_flags=-fno-diagnostics-show-caret"
 
+    # Disable HSA warnings by default.
+    lappend ALWAYS_CFLAGS "additional_flags=-Wno-hsa"
+
     # Disable color diagnostics
     lappend ALWAYS_CFLAGS "additional_flags=-fdiagnostics-color=never"
 
