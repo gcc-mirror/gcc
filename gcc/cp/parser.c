@@ -3172,6 +3172,8 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	       && !strcmp (IDENTIFIER_POINTER (id), "thread_local"))
 	inform (location, "C++11 %<thread_local%> only available with "
 		"-std=c++11 or -std=gnu++11");
+      else if (!flag_concepts && id == ridpointers[(int)RID_CONCEPT])
+	inform (location, "%<concept%> only available with -fconcepts");
       else if (processing_template_decl && current_class_type
 	       && TYPE_BINFO (current_class_type))
 	{
@@ -14668,13 +14670,10 @@ cp_parser_type_parameter (cp_parser* parser, bool *is_parameter_pack)
 	cp_parser_require (parser, CPP_GREATER, RT_GREATER);
 
         // If template requirements are present, parse them.
-	if (flag_concepts)
-          {
-            tree reqs = get_shorthand_constraints (current_template_parms);
-            if (tree r = cp_parser_requires_clause_opt (parser))
-              reqs = conjoin_constraints (reqs, make_predicate_constraint (r));
-            TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = reqs;
-          }
+	tree reqs = get_shorthand_constraints (current_template_parms);
+	if (tree r = cp_parser_requires_clause_opt (parser))
+	  reqs = conjoin_constraints (reqs, make_predicate_constraint (r));
+	TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = reqs;
 
 	/* Look for the `class' or 'typename' keywords.  */
 	cp_parser_type_parameter_key (parser);
@@ -19745,6 +19744,8 @@ cp_parser_late_return_type_opt (cp_parser* parser, cp_declarator *declarator,
   /* A late-specified return type is indicated by an initial '->'. */
   if (token->type != CPP_DEREF
       && token->keyword != RID_REQUIRES
+      && !(token->type == CPP_NAME
+	   && token->u.value == ridpointers[RID_REQUIRES])
       && !(declare_simd_p || cilk_simd_fn_vector_p || oacc_routine_p))
     return NULL_TREE;
 
@@ -24216,8 +24217,20 @@ cp_parser_requires_clause (cp_parser *parser)
 static tree
 cp_parser_requires_clause_opt (cp_parser *parser)
 {
-  if (!cp_lexer_next_token_is_keyword (parser->lexer, RID_REQUIRES))
-    return NULL_TREE;
+  cp_token *tok = cp_lexer_peek_token (parser->lexer);
+  if (tok->keyword != RID_REQUIRES)
+    {
+      if (!flag_concepts && tok->type == CPP_NAME
+	  && tok->u.value == ridpointers[RID_REQUIRES])
+	{
+	  error_at (cp_lexer_peek_token (parser->lexer)->location,
+		    "%<requires%> only available with -fconcepts");
+	  /* Parse and discard the requires-clause.  */
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_parser_requires_clause (parser);
+	}
+      return NULL_TREE;
+    }
   cp_lexer_consume_token (parser->lexer);
   return cp_parser_requires_clause (parser);
 }
@@ -25608,13 +25621,10 @@ cp_parser_explicit_template_declaration (cp_parser* parser, bool member_p)
   cp_parser_skip_to_end_of_template_parameter_list (parser);
 
   /* Manage template requirements */
-  if (flag_concepts)
-  {
-    tree reqs = get_shorthand_constraints (current_template_parms);
-    if (tree r = cp_parser_requires_clause_opt (parser))
-      reqs = conjoin_constraints (reqs, make_predicate_constraint (r));
-    TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = reqs;
-  }
+  tree reqs = get_shorthand_constraints (current_template_parms);
+  if (tree r = cp_parser_requires_clause_opt (parser))
+    reqs = conjoin_constraints (reqs, make_predicate_constraint (r));
+  TEMPLATE_PARMS_CONSTRAINTS (current_template_parms) = reqs;
 
   cp_parser_template_declaration_after_parameters (parser, parameter_list,
 						   member_p);

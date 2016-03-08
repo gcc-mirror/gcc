@@ -1,5 +1,5 @@
 // PR c++/66758
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++1z -fconcepts" }
 
 template <class T, class U>
 concept bool C = requires (T t, U u) { t + u; };

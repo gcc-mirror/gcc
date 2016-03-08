@@ -1566,8 +1566,6 @@ set_std_cxx1z (int iso)
   /* C++11 includes the C99 standard library.  */
   flag_isoc94 = 1;
   flag_isoc99 = 1;
-  /* Enable concepts by default. */
-  flag_concepts = 1;
   flag_isoc11 = 1;
   cxx_dialect = cxx1z;
   lang_hooks.name = "GNU C++14"; /* Pretend C++14 till standarization.  */

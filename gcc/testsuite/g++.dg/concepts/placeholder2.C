@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++1z -fconcepts" }
 
 // Check argument deduction constraints.
 // TODO: We shoul have more of these...

@@ -56,6 +56,8 @@ proc g++-dg-runtest { testcases flags default-extra-flags } {
 	    }
 	    set option_list { }
 	    foreach x $std_list {
+		# Handle "concepts" as C++1z plus Concepts TS.
+		if { $x eq "concepts" } then { set x "1z -fconcepts" }
 		lappend option_list "${std_prefix}$x"
 	    }
 	} else {

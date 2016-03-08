@@ -1,5 +1,5 @@
 // Conceptized version of template/ttp23.C
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++1z -fconcepts" }
 
 template <class T> concept bool Foo = true;
 

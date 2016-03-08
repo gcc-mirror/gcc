@@ -116,8 +116,8 @@ template <auto V = 4> struct G {};		// { dg-error "auto" }
 template <typename T> struct H { H (); ~H (); };
 H<auto> h;					// { dg-error "invalid|initializer" }
 
-void qq (auto);		       // { dg-error "auto" "" { target { ! c++1z } } }
-void qr (auto*);	       // { dg-error "auto" "" { target { ! c++1z } } }
+void qq (auto);		       // { dg-error "auto" "" { target { ! concepts } } }
+void qr (auto*);	       // { dg-error "auto" "" { target { ! concepts } } }
 
 // PR c++/46145
 typedef auto autot;		// { dg-error "auto" }

@@ -1,5 +1,5 @@
 // PR c++/67240
-// { dg-options -std=c++1z }
+// { dg-options "-std=c++1z -fconcepts" }
 
 int foo(int x)
 {

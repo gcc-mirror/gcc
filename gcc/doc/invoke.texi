@@ -2238,6 +2238,16 @@ return value even without this option.  In all other cases, when
 exhaustion is signalled by throwing @code{std::bad_alloc}.  See also
 @samp{new (nothrow)}.
 
+@item -fconcepts
+@opindex fconcepts
+Enable support for the C++ Extensions for Concepts Technical
+Specification, ISO 19217 (2015), which allows code like
+
+@smallexample
+template <class T> concept bool Addable = requires (T t) @{ t + t; @};
+template <Addable T> T add (T a, T b) @{ return a + b; @}
+@end smallexample
+
 @item -fconstexpr-depth=@var{n}
 @opindex fconstexpr-depth
 Set the maximum nested evaluation depth for C++11 constexpr functions
