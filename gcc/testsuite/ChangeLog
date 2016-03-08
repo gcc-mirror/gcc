@@ -1,5 +1,9 @@
 2016-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/70135
+	* g++.dg/cpp1y/constexpr-loop4.C: New test.
+	* g++.dg/ubsan/pr70135.C: New test.
+
 	PR target/70110
 	* gcc.dg/pr70110.c: New test.
 
