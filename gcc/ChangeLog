@@ -1,3 +1,14 @@
+2016-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-polymorphic-call.c (walk_ssa_copies): Fix spelling
+	- becuase -> because.
+	* ipa-reference.c (ignore_module_statics): Likewise.
+	* cgraph.c (cgraph_node::get_body): Likewise.
+	* ipa-inline.c (early_inliner): Likewise.
+	* ipa-devirt.c (types_same_for_odr): Likewise.
+	* tree-streamer-out.c (pack_ts_type_common_value_fields): Likewise.
+	* config/i386/i386.h (ACCUMULATE_OUTGOING_ARGS): Likewise.
+
 2016-03-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* tree-ssa-math-opts.c: Fix typo in comment.
