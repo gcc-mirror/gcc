@@ -393,7 +393,7 @@ odr_vtable_hasher::hash (const odr_type_d *odr_type)
 
    When STRICT is true, we compare types by their names for purposes of
    ODR violation warnings.  When strict is false, we consider variants
-   equivalent, becuase it is all that matters for devirtualization machinery.
+   equivalent, because it is all that matters for devirtualization machinery.
 */
 
 bool

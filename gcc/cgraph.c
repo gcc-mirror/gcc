@@ -3356,7 +3356,7 @@ cgraph_node::get_body (void)
   updated = get_untransformed_body ();
 
   /* Getting transformed body makes no sense for inline clones;
-     we should never use this on real clones becuase they are materialized
+     we should never use this on real clones because they are materialized
      early.
      TODO: Materializing clones here will likely lead to smaller LTRANS
      footprint. */

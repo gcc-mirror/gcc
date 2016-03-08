@@ -812,7 +812,7 @@ walk_ssa_copies (tree op, hash_set<tree> **global_visited = NULL)
 	   ptr = ptr.foo;
 	 This pattern is implicitly produced for casts to non-primary
 	 bases.  When doing context analysis, we do not really care
-	 about the case pointer is NULL, becuase the call will be
+	 about the case pointer is NULL, because the call will be
 	 undefined anyway.  */
       if (gimple_code (SSA_NAME_DEF_STMT (op)) == GIMPLE_PHI)
 	{

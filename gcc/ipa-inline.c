@@ -2688,7 +2688,7 @@ early_inliner (function *fun)
       /* If some always_inline functions was inlined, apply the changes.
 	 This way we will not account always inline into growth limits and
 	 moreover we will inline calls from always inlines that we skipped
-	 previously becuase of conditional above.  */
+	 previously because of conditional above.  */
       if (inlined)
 	{
 	  timevar_push (TV_INTEGRATION);

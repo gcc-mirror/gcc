@@ -1,3 +1,8 @@
+2016-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto-symtab.h (lto_symtab_prevail_decl): Fix spelling
+	- becuase -> because.
+
 2016-02-15  Tom de Vries  <tom@codesourcery.com>
 
 	PR lto/69655

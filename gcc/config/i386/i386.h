@@ -1621,7 +1621,7 @@ enum reg_class
    function prologue should increase the stack frame size by this amount.  
 
    In 32bit mode enabling argument accumulation results in about 5% code size
-   growth becuase move instructions are less compact than push.  In 64bit
+   growth because move instructions are less compact than push.  In 64bit
    mode the difference is less drastic but visible.  
 
    FIXME: Unlike earlier implementations, the size of unwind info seems to
