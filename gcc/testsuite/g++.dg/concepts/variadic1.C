@@ -1,5 +1,5 @@
 // PR c++/66712
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++1z -fconcepts" }
 
 template <class T, class...Args>
 concept bool _Constructible_ =

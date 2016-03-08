@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++1z -fconcepts" }
 
 template <class T> concept bool Copyable = requires (T t) { T(t); };
 template <class T> concept bool Constructable = requires { T(); };

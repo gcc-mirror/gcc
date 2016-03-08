@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++1z -fconcepts" }
 
 struct fool {
   constexpr fool operator&&(fool) const { return {}; }

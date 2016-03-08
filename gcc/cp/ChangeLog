@@ -1,5 +1,12 @@
 2016-03-08  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_diagnose_invalid_type_name): Give helpful
+	diagnostic for use of "concept".
+	(cp_parser_requires_clause_opt): And "requires".
+	(cp_parser_type_parameter, cp_parser_late_return_type_opt)
+	(cp_parser_explicit_template_declaration): Adjust.
+	* Make-lang.in (check-c++-all): Add "concepts" to std list.
+
 	P0036R0: Unary Folds and Empty Parameter Packs
 	* pt.c (expand_empty_fold): Remove special cases for *,+,&,|.
 

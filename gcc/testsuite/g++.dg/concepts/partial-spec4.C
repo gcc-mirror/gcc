@@ -1,4 +1,4 @@
-// { dg-options -std=c++1z }
+// { dg-options "-std=c++1z -fconcepts" }
 
 template <class T> concept bool is_int = __is_same_as(T,int);
 

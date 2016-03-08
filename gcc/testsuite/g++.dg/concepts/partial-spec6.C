@@ -1,5 +1,5 @@
 // PR c++/67152
-// { dg-options -std=c++1z }
+// { dg-options "-std=c++1z -fconcepts" }
 
 template <class T>
 concept bool HasType = requires { typename T::type; };
