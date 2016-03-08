@@ -1,3 +1,8 @@
+2016-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70110
+	* gcc.dg/pr70110.c: New test.
+
 2016-03-07  Martin Jambor  <mjambor@suse.cz>
 
 	* c-c++-common/gomp/clauses-1.c: Remove dg-options.

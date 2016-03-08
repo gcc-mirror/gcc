@@ -1,3 +1,11 @@
+2016-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70110
+	* config/i386/i386.c (scalar_chain::make_vector_copies,
+	scalar_chain::convert_reg): Call end_sequence in between
+	get_insns and emit_conversion_insns rather than after both
+	calls.
+
 2016-03-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/70064
