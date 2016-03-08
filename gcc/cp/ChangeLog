@@ -1,5 +1,9 @@
 2016-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/70135
+	* constexpr.c (cxx_eval_loop_expr): Forget saved values of SAVE_EXPRs
+	even after the last iteration of the loop.
+
 	* decl.c (duplicate_decls): Fix spelling - becuase -> because.
 
 2016-03-07  Patrick Palka  <ppalka@gcc.gnu.org>
