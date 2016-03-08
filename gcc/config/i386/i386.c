@@ -3272,8 +3272,9 @@ scalar_chain::make_vector_copies (unsigned regno)
 			    gen_rtx_SUBREG (SImode, reg, 4));
 	    emit_move_insn (vreg, tmp);
 	  }
-	emit_conversion_insns (get_insns (), insn);
+	rtx_insn *seq = get_insns ();
 	end_sequence ();
+	emit_conversion_insns (seq, insn);
 
 	if (dump_file)
 	  fprintf (dump_file,
@@ -3348,8 +3349,9 @@ scalar_chain::convert_reg (unsigned regno)
 	      emit_move_insn (gen_rtx_SUBREG (SImode, scopy, 4),
 			      adjust_address (tmp, SImode, 4));
 	    }
-	  emit_conversion_insns (get_insns (), insn);
+	  rtx_insn *seq = get_insns ();
 	  end_sequence ();
+	  emit_conversion_insns (seq, insn);
 
 	  if (dump_file)
 	    fprintf (dump_file,
