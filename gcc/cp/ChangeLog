@@ -1,3 +1,8 @@
+2016-03-08  Jason Merrill  <jason@redhat.com>
+
+	P0036R0: Unary Folds and Empty Parameter Packs
+	* pt.c (expand_empty_fold): Remove special cases for *,+,&,|.
+
 2016-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70135
