@@ -22,11 +22,11 @@ MAKE_FNS (add, +);
 MAKE_FNS (sub, -);
 
 int main() {
-  assert(unary_left_add() == 0);
+  // assert(unary_left_add() == 0);
   assert(unary_left_add(1) == 1);
   assert(unary_left_add(1, 2, 3) == 6);
 
-  assert(unary_right_add() == 0);
+  // assert(unary_right_add() == 0);
   assert(unary_right_add(1) == 1);
   assert(unary_right_add(1, 2, 3) == 6);
 

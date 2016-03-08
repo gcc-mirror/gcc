@@ -47,16 +47,16 @@ MAKE_FN (dot_star, .*);
 MAKE_FN (arrow_star, ->*);
 
 int main() {
-  static_assert(add() == int(), "");
-  static_assert(mul() == 1, "");
-  static_assert(bor() == int(), "");
-  static_assert(band() == -1, "");
   static_assert(land() == true, "");
   static_assert(lor() == false, "");
   comma(); // No value to theck
 
   // These are all errors, but the error is emitted at the point
   // of instantiation (line 10).
+  add();			// { dg-message "required from here" }
+  mul();			// { dg-message "required from here" }
+  bor();			// { dg-message "required from here" }
+  band();			// { dg-message "required from here" }
   sub();			// { dg-message "required from here" }
   div();			// { dg-message "required from here" }
   mod();			// { dg-message "required from here" }

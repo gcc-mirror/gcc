@@ -10629,10 +10629,6 @@ gen_elem_of_pack_expansion_instantiation (tree pattern,
    sequence, the value of the expression is as follows; the program is
    ill-formed if the operator is not listed in this table.
 
-   *	1
-   +	0
-   &	-1
-   |	0
    &&	true
    ||	false
    ,	void()  */
@@ -10644,14 +10640,6 @@ expand_empty_fold (tree t, tsubst_flags_t complain)
   if (!FOLD_EXPR_MODIFY_P (t))
     switch (code)
       {
-      case MULT_EXPR:
-	return integer_one_node;
-      case PLUS_EXPR:
-	return integer_zero_node;
-      case BIT_AND_EXPR:
-	return integer_minus_one_node;
-      case BIT_IOR_EXPR:
-	return integer_zero_node;
       case TRUTH_ANDIF_EXPR:
 	return boolean_true_node;
       case TRUTH_ORIF_EXPR:
