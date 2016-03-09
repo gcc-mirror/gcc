@@ -1,4 +1,9 @@
-2016-03-08  Jakub Jelinek  <jakub@redhat.com>
+2016-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70086
+	* gcc.target/i386/pr70086-1.c: New test.
+	* gcc.target/i386/pr70086-2.c: New test.
+	* gcc.target/i386/pr70086-3.c: New test.
 
 	PR tree-optimization/70127
 	* gcc.c-torture/execute/pr70127.c: New test.
