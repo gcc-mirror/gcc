@@ -1,3 +1,8 @@
+2016-03-09  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	* config/i386/i386.c (processor_target_table): Fix cost table
+	intialization order for znver1.
+
 2016-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* ipa-polymorphic-call.c (walk_ssa_copies): Fix spelling
