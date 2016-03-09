@@ -1,5 +1,8 @@
 2016-03-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/67278
+	* gcc.dg/simd-7.c: Add -w -Wno-psabi to dg-options.
+
 	PR target/67278
 	* gcc.dg/simd-8.c: Add -w -Wno-psabi to dg-options.
 
