@@ -1,3 +1,14 @@
+2016-03-09  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/kernels-loop-2.f95: New test.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data-2.f95: Same.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data-enter-exit-2.f95:
+	Same.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data-enter-exit.f95: Same.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data-update.f95: Same.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data.f95: Same.
+	* testsuite/libgomp.oacc-fortran/kernels-loop.f95: Same.
+
 2016-03-07  Martin Jambor  <mjambor@suse.cz>
 
 	* testsuite/lib/libgomp.exp
