@@ -1,3 +1,7 @@
+2016-03-09  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-c++-common/goacc/combined-directives-2.c: New test.
+
 2016-03-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/68473

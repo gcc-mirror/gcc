@@ -1,3 +1,8 @@
+2016-03-09  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-parser.c (c_parser_oacc_loop): Update cclauses and clauses
+	when calling c_finish_omp_clauses.
+
 2016-03-04  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR c/69824
