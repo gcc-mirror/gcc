@@ -1,5 +1,8 @@
 2016-03-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/70152
+	* gcc.dg/pr70152.c: New test.
+
 	PR target/70086
 	* gcc.target/i386/pr70086-1.c: New test.
 	* gcc.target/i386/pr70086-2.c: New test.

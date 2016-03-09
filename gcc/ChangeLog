@@ -1,5 +1,9 @@
 2016-03-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/70152
+	* tree-sra.c (replace_removed_params_ssa_names): Copy over
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI from old_name to new_name.
+
 	PR target/70086
 	* config/i386/i386.md (truncdfsf2 splitter): Use gen_vec_concatv2df
 	instead of gen_sse2_loadlpd.
