@@ -1,3 +1,8 @@
+2016-03-08  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/62096
+	* g++.dg/warn/overflow-warn-7.C: New test.
+
 2016-03-08  Jason Merrill  <jason@redhat.com>
 
 	* lib/g++-dg.exp (g++-dg-runtest): Handle "concepts" in std list.
