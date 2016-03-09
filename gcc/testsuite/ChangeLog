@@ -1,3 +1,8 @@
+2016-03-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/vect/bb-slp-34.c: Really don't xfail on aarch64-*-*,
+	arm-*-*.
+
 2016-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/67278
