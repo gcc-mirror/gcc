@@ -164,11 +164,6 @@ nvptx_option_override (void)
     /* The stabs testcases want to know stabs isn't supported.  */
     sorry ("stabs debug format not supported");
 
-  /* Actually we don't have any debug format, but don't be
-     unneccesarily noisy.  */
-  write_symbols = NO_DEBUG;
-  debug_info_level = DINFO_LEVEL_NONE;
-
   if (nvptx_optimize < 0)
     nvptx_optimize = optimize > 0;
 
