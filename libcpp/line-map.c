@@ -54,8 +54,6 @@ static const line_map_macro* linemap_macro_map_lookup (struct line_maps *,
 						       source_location);
 static source_location linemap_macro_map_loc_to_def_point
 (const line_map_macro *, source_location);
-static source_location linemap_macro_map_loc_unwind_toward_spelling
-(line_maps *set, const line_map_macro *, source_location);
 static source_location linemap_macro_map_loc_to_exp_point
 (const line_map_macro *, source_location);
 static source_location linemap_macro_loc_to_spelling_point

@@ -2,6 +2,14 @@
 
 	PR c/68473
 	PR c++/70105
+	* g++.dg/diagnostic/pr70105.C: New test.
+	* gcc.dg/plugin/diagnostic-test-expressions-1.c (foo): New decl.
+	(test_multiple_ordinary_maps): New test function.
+
+2016-03-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68473
+	PR c++/70105
 	* gcc.dg/plugin/diagnostic_plugin_show_trees.c (show_tree):
 	Drop range information from call to inform_at_rich_loc.
 	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c (add_range):
