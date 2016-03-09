@@ -1,3 +1,12 @@
+2016-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/67278
+	* gcc.dg/simd-8.c: Add -w -Wno-psabi to dg-options.
+
+	PR middle-end/70050
+	* gcc.dg/pr70050.c: Add -w to dg-options.  Fix up PR number
+	in testcase comment.
+
 2016-03-09  Tom de Vries  <tom@codesourcery.com>
 
 	* gfortran.dg/goacc/kernels-loop-2.f95: New test.
