@@ -1,3 +1,62 @@
+2016-03-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/69423
+	* trans-decl.c (create_function_arglist): Deferred character
+	length functions, with and without declared results, address
+	the passed reference type as '.result' and the local string
+	length as '..result'.
+	(gfc_null_and_pass_deferred_len): Helper function to null and
+	return deferred string lengths, as needed.
+	(gfc_trans_deferred_vars): Call it, thereby reducing repeated
+	code, add call for deferred arrays and reroute pointer function
+	results. Avoid using 'tmp' for anything other that a temporary
+	tree by introducing 'type_of_array' for the arrayspec type.
+
+2016-03-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/64324
+	* resolve.c (check_uop_procedure): Prevent deferred length
+	characters from being trapped by assumed length error.
+
+	Backport from trunk.
+	PR fortran/49630
+	PR fortran/54070
+	PR fortran/60593
+	PR fortran/60795
+	PR fortran/61147
+	PR fortran/64324
+	* trans-array.c (gfc_conv_scalarized_array_ref): Pass decl for
+	function as well as variable expressions.
+	(gfc_array_init_size): Add 'expr' as an argument. Use this to
+	correctly set the descriptor dtype for deferred characters.
+	(gfc_array_allocate): Add 'expr' to the call to
+	'gfc_array_init_size'.
+	* trans.c (gfc_build_array_ref): Expand logic for setting span
+	to include indirect references to character lengths.
+	* trans-decl.c (gfc_get_symbol_decl): Ensure that deferred
+	result char lengths that are PARM_DECLs are indirectly
+	referenced both for directly passed and by reference.
+	(create_function_arglist): If the length type is a pointer type
+	then store the length as the 'passed_length' and make the char
+	length an indirect reference to it.
+	(gfc_trans_deferred_vars): If a character length has escaped
+	being set as an indirect reference, return it via the 'passed
+	length'.
+	* trans-expr.c (gfc_conv_procedure_call): The length of
+	deferred character length results is set TREE_STATIC and set to
+	zero.
+	(gfc_trans_assignment_1): Do not fix the rse string_length if
+	it is a variable, a parameter or an indirect reference. Add the
+	code to trap assignment of scalars to unallocated arrays.
+	* trans-stmt.c (gfc_trans_allocate): Remove 'def_str_len' and
+	all references to it. Instead, replicate the code to obtain a
+	explicitly defined string length and provide a value before
+	array allocation so that the dtype is correctly set.
+	trans-types.c (gfc_get_character_type): If the character length
+	is a pointer, use the indirect reference.
+
 2016-02-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from mainline

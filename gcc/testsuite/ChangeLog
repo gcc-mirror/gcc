@@ -1,3 +1,37 @@
+2016-03-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/69423
+	* gfortran.dg/deferred_character_15.f90 : New test.
+
+2016-03-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/49630
+	* gfortran.dg/deferred_character_13.f90: New test for the fix
+	of comment 3 of the PR.
+
+	Backport from trunk.
+	PR fortran/54070
+	* gfortran.dg/deferred_character_8.f90: New test
+	* gfortran.dg/allocate_error_5.f90: New test
+
+	Backport from trunk.
+	PR fortran/60593
+	* gfortran.dg/deferred_character_10.f90: New test
+
+	Backport from trunk.
+	PR fortran/60795
+	* gfortran.dg/deferred_character_14.f90: New test
+
+	Backport from trunk.
+	PR fortran/61147
+	* gfortran.dg/deferred_character_11.f90: New test
+
+	Backport from trunk.
+	PR fortran/64324
+	* gfortran.dg/deferred_character_9.f90: New test
+
 2016-03-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/69666
