@@ -1,3 +1,8 @@
+2016-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70049
+	* gcc.target/i386/pr70049.c: New test.
+
 2016-03-09  Richard Biener  <rguenther@suse.de>
 
 	PR c/70143

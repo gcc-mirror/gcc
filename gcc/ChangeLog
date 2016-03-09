@@ -1,3 +1,9 @@
+2016-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70049
+	* config/i386/sse.md (*vec_extract<mode>): Use %0 instead of %k0
+	if the operand is "m".
+
 2016-03-09  Nathan Sidwell  <nathan@acm.org>
 
 	* config/nvptx/nvptx.c (nvptx_option_override): Don't kill debug level.
