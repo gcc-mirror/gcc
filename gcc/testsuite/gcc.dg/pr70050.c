@@ -1,6 +1,6 @@
-/* PR middle-end/70025 */
+/* PR middle-end/70050 */
 /* { dg-do compile } */
-/* { dg-options "-Wno-psabi" } */
+/* { dg-options "-w -Wno-psabi" } */
 
 typedef int v8si __attribute__ ((vector_size (32)));
 
