@@ -1,4 +1,10 @@
-2016-03-08  Jakub Jelinek  <jakub@redhat.com>
+2016-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70086
+	* config/i386/i386.md (truncdfsf2 splitter): Use gen_vec_concatv2df
+	instead of gen_sse2_loadlpd.
+	* config/i386/sse.md (*vec_concatv2df): Rename to...
+	(vec_concatv2df): ... this.
 
 	PR tree-optimization/70127
 	* fold-const.c (operand_equal_p): Revert the 2015-10-28 change.

@@ -8951,7 +8951,7 @@
    (set_attr "prefix" "orig,maybe_vex,evex")
    (set_attr "mode" "V2DF,DF,DF")])
 
-(define_insn "*vec_concatv2df"
+(define_insn "vec_concatv2df"
   [(set (match_operand:V2DF 0 "register_operand"     "=x,x,v,x,v,x,x,v,x,x")
 	(vec_concat:V2DF
 	  (match_operand:DF 1 "nonimmediate_operand" " 0,x,v,m,m,0,x,m,0,0")
