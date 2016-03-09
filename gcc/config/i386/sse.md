@@ -13307,7 +13307,9 @@
 	  (parallel
 	    [(match_operand:SI 2 "const_0_to_<ssescalarnummask>_operand")])))]
   "TARGET_SSE2"
-  "%vpextr<ssemodesuffix>\t{%2, %1, %k0|%k0, %1, %2}"
+  "@
+   %vpextr<ssemodesuffix>\t{%2, %1, %k0|%k0, %1, %2}
+   %vpextr<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "*,sse4")
    (set_attr "type" "sselog1")
    (set_attr "prefix_data16" "1")
