@@ -273,20 +273,6 @@ struct GTY(()) source_range
   source_location m_start;
   source_location m_finish;
 
-  /* Display this source_range instance, with MSG as a descriptive
-     comment.  This issues a "note" diagnostic at the range, using
-     gcc's diagnostic machinery.
-
-     This is declared here, but is implemented within gcc/diagnostic.c,
-     since it makes use of gcc's diagnostic-printing machinery.  This
-     is a slight layering violation, but this is sufficiently useful
-     for debugging that it's worth it.
-
-     This declaration would have a DEBUG_FUNCTION annotation, but that
-     is implemented in gcc/system.h and thus is not available here in
-     libcpp.  */
-  void debug (const char *msg) const;
-
   /* We avoid using constructors, since various structs that
      don't yet have constructors will embed instances of
      source_range.  */
@@ -1249,13 +1235,12 @@ typedef struct
 
    i.e. "3:1:" in GCC corresponds to "(3, 0)" in Emacs.  */
 
-/* Ranges are closed
-   m_start is the first location within the range, and
-   m_finish is the last location within the range.  */
+/* A location within a rich_location: a caret&range, with
+   the caret potentially flagged for display.  */
+
 struct location_range
 {
-  expanded_location m_start;
-  expanded_location m_finish;
+  source_location m_loc;
 
   /* Should a caret be drawn for this range?  Typically this is
      true for the 0th range, and false for subsequent ranges,
@@ -1267,7 +1252,6 @@ struct location_range
 
      where "1" and "2" are notionally carets.  */
   bool m_show_caret_p;
-  expanded_location m_caret;
 };
 
 class fixit_hint;
@@ -1276,9 +1260,10 @@ class fixit_hint;
   class fixit_replace;
 
 /* A "rich" source code location, for use when printing diagnostics.
-   A rich_location has one or more ranges, each optionally with
-   a caret.   Typically the zeroth range has a caret; other ranges
-   sometimes have carets.
+   A rich_location has one or more carets&ranges, where the carets
+   are optional.  These are referred to as "ranges" from here.
+   Typically the zeroth range has a caret; other ranges sometimes
+   have carets.
 
    The "primary" location of a rich_location is the caret of range 0,
    used for determining the line/column when printing diagnostic
@@ -1361,19 +1346,11 @@ class rich_location
   ~rich_location ();
 
   /* Accessors.  */
-  source_location get_loc () const { return m_loc; }
-
-  source_location *get_loc_addr () { return &m_loc; }
-
-  void
-  add_range (source_location start, source_location finish,
-	     bool show_caret_p);
+  source_location get_loc () const { return get_loc (0); }
+  source_location get_loc (unsigned int idx) const;
 
   void
-  add_range (source_range src_range, bool show_caret_p);
-
-  void
-  add_range (location_range *src_range);
+  add_range (source_location loc,  bool show_caret_p);
 
   void
   set_range (line_maps *set, unsigned int idx, source_location loc,
@@ -1387,7 +1364,7 @@ class rich_location
     return &m_ranges[idx];
   }
 
-  expanded_location lazily_expand_location ();
+  expanded_location get_expanded_location (unsigned int idx);
 
   void
   override_column (int column);
@@ -1412,10 +1389,10 @@ public:
   static const int MAX_FIXIT_HINTS = 2;
 
 protected:
-  source_location m_loc;
-
   unsigned int m_num_ranges;
   location_range m_ranges[MAX_RANGES];
+
+  int m_column_override;
 
   bool m_have_expanded_location;
   expanded_location m_expanded_location;

@@ -1,3 +1,37 @@
+2016-03-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68473
+	PR c++/70105
+	* include/line-map.h (source_range::debug): Delete.
+	(struct location_range): Update comment.  Replace
+	expanded_location fields "m_start", "m_finish", and "m_caret" with
+	a source_location field: "m_loc".
+	(class rich_location): Reword comment.
+	(rich_location::get_loc): Reimplement in terms of a new overloaded
+	variant which takes an unsigned int.
+	(rich_location::get_loc_addr): Delete.
+	(rich_location::add_range): Drop params "start" and "finish" in
+	favor of param "loc".  Drop overloaded variants taking a
+	source_range or location_range *.
+	(rich_location::lazily_expand_location): Delete in favor of...
+	(rich_location::get_expanded_location): New decl.
+	(rich_location::m_loc): Delete field.
+	(rich_location::m_column_override): New field.
+	* line-map.c (rich_location::rich_location):  Drop name of
+	line_maps * param.  Update initializations for deletion of field
+	"m_loc" and addition of field "m_column_override".  Reimplement
+	body as a call to add_range.  Delete overloaded variant taking a
+	source_range.
+	(rich_location::get_loc): New function.
+	(rich_location::lazily_expand_location): Delete in favor of...
+	(rich_location::get_expanded_location): New function.
+	(rich_location::override_column): Reimplement.
+	(rich_location::add_range): Drop params "start" and "finish" in
+	favor of param "loc".  Eliminate location expansion in favor of
+	simply storing loc.  Drop overloaded variants taking a
+	source_range or location_range *.
+	(rich_location::set_range): Eliminate location expansion.
+
 2016-02-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/69985

@@ -52,13 +52,7 @@ show_tree (tree node)
   enum tree_code code = TREE_CODE (node);
 
   location_range *range = richloc.get_range (1);
-  inform_at_rich_loc (&richloc,
-		      "%s at range %i:%i-%i:%i",
-		      get_tree_code_name (code),
-		      range->m_start.line,
-		      range->m_start.column,
-		      range->m_finish.line,
-		      range->m_finish.column);
+  inform_at_rich_loc (&richloc, "%s", get_tree_code_name (code));
 
   /* Recurse.  */
   int min_idx = 0;

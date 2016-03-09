@@ -1,3 +1,17 @@
+2016-03-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68473
+	PR c++/70105
+	* gcc.dg/plugin/diagnostic_plugin_show_trees.c (show_tree):
+	Drop range information from call to inform_at_rich_loc.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c (add_range):
+	New.
+	(test_show_locus): Replace calls to rich_location::add_range with
+	calls to add_range.  Rewrite the tests that used the now-defunct
+	rich_location ctor taking a source_range.  Simplify other tests
+	by replacing calls to COMBINE_LOCATION_DATA with calls to
+	make_location.
+
 2016-03-09  Richard Biener  <rguenther@suse.de>
 	Jakub Jelinek  <jakub@redhat.com>
 

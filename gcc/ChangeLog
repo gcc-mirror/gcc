@@ -1,3 +1,22 @@
+2016-03-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68473
+	PR c++/70105
+	* diagnostic-show-locus.c (layout_range::layout_range): Replace
+	location_range param with three const expanded_locations * and a
+	bool.
+	(layout::layout): Replace call to
+	rich_location::lazily_expand_location with get_expanded_location.
+	Extract the range and perform location expansion here, passing
+	the results to the layout_range ctor.
+	* diagnostic.c (source_range::debug): Delete.
+	* diagnostic.h (diagnostic_expand_location): Reimplement in terms
+	of rich_location::get_expanded_location.
+	* gcc-rich-location.c (get_range_for_expr): Delete.
+	(gcc_rich_location::add_expr): Reimplement to avoid the
+	rich_location::add_range overload that took a location_range,
+	passing a location_t instead.
+
 2016-03-09  Richard Biener  <rguenther@suse.de>
 	Jakub Jelinek  <jakub@redhat.com>
 

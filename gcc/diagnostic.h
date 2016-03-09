@@ -339,7 +339,7 @@ diagnostic_num_locations (const diagnostic_info * diagnostic)
 static inline expanded_location
 diagnostic_expand_location (const diagnostic_info * diagnostic, int which = 0)
 {
-  return diagnostic->richloc->get_range (which)->m_caret;
+  return diagnostic->richloc->get_expanded_location (which);
 }
 
 /* This is somehow the right-side margin of a caret line, that is, we
