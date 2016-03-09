@@ -1,3 +1,14 @@
+2016-03-09  Tom de Vries  <tom@codesourcery.com>
+
+	* gfortran.dg/goacc/kernels-loop-2.f95: New test.
+	* gfortran.dg/goacc/kernels-loop-data-2.f95: New test.
+	* gfortran.dg/goacc/kernels-loop-data-enter-exit-2.f95: New test.
+	* gfortran.dg/goacc/kernels-loop-data-enter-exit.f95: New test.
+	* gfortran.dg/goacc/kernels-loop-data-update.f95: New test.
+	* gfortran.dg/goacc/kernels-loop-data.f95: New test.
+	* gfortran.dg/goacc/kernels-loop-n.f95: New test.
+	* gfortran.dg/goacc/kernels-loop.f95: New test.
+
 2016-03-08  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/62096
