@@ -1066,6 +1066,14 @@ int linemap_location_in_system_header_p (struct line_maps *,
 bool linemap_location_from_macro_expansion_p (const struct line_maps *,
 					      source_location);
 
+/* With the precondition that LOCATION is the locus of a token that is
+   an argument of a function-like macro MACRO_MAP and appears in the
+   expansion of MACRO_MAP, return the locus of that argument in the
+   context of the caller of MACRO_MAP.  */
+
+extern source_location linemap_macro_map_loc_unwind_toward_spelling
+  (line_maps *set, const line_map_macro *macro_map, source_location location);
+
 /* source_location values from 0 to RESERVED_LOCATION_COUNT-1 will
    be reserved for libcpp user as special values, no token from libcpp
    will contain any of those locations.  */

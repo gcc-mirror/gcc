@@ -463,6 +463,76 @@ get_line_width_without_trailing_whitespace (const char *line, int line_width)
   return result;
 }
 
+/* Helper function for layout's ctor, for sanitizing locations relative
+   to the primary location within a diagnostic.
+
+   Compare LOC_A and LOC_B to see if it makes sense to print underlines
+   connecting their expanded locations.  Doing so is only guaranteed to
+   make sense if the locations share the same macro expansion "history"
+   i.e. they can be traced through the same macro expansions, eventually
+   reaching an ordinary map.
+
+   This may be too strong a condition, but it effectively sanitizes
+   PR c++/70105, which has an example of printing an expression where the
+   final location of the expression is in a different macro, which
+   erroneously was leading to hundreds of lines of irrelevant source
+   being printed.  */
+
+static bool
+compatible_locations_p (location_t loc_a, location_t loc_b)
+{
+  if (IS_ADHOC_LOC (loc_a))
+    loc_a = get_location_from_adhoc_loc (line_table, loc_a);
+  if (IS_ADHOC_LOC (loc_b))
+    loc_b = get_location_from_adhoc_loc (line_table, loc_b);
+
+  const line_map *map_a = linemap_lookup (line_table, loc_a);
+  linemap_assert (map_a);
+
+  const line_map *map_b = linemap_lookup (line_table, loc_b);
+  linemap_assert (map_b);
+
+  /* Are they within the same map?  */
+  if (map_a == map_b)
+    {
+      /* Are both within the same macro expansion?  */
+      if (linemap_macro_expansion_map_p (map_a))
+	{
+	  /* Expand each location towards the spelling location, and
+	     recurse.  */
+	  const line_map_macro *macro_map = linemap_check_macro (map_a);
+	  source_location loc_a_toward_spelling
+	    = linemap_macro_map_loc_unwind_toward_spelling (line_table,
+							    macro_map,
+							    loc_a);
+	  source_location loc_b_toward_spelling
+	    = linemap_macro_map_loc_unwind_toward_spelling (line_table,
+							    macro_map,
+							    loc_b);
+	  return compatible_locations_p (loc_a_toward_spelling,
+					 loc_b_toward_spelling);
+	}
+
+      /* Otherwise they are within the same ordinary map.  */
+      return true;
+    }
+  else
+    {
+      /* Within different maps.  */
+
+      /* If either is within a macro expansion, they are incompatible.  */
+      if (linemap_macro_expansion_map_p (map_a)
+	  || linemap_macro_expansion_map_p (map_b))
+	return false;
+
+      /* Within two different ordinary maps; they are compatible iff they
+	 are in the same file.  */
+      const line_map_ordinary *ord_map_a = linemap_check_ordinary (map_a);
+      const line_map_ordinary *ord_map_b = linemap_check_ordinary (map_b);
+      return ord_map_a->to_file == ord_map_b->to_file;
+    }
+}
+
 /* Implementation of class layout.  */
 
 /* Constructor for class layout.
@@ -487,6 +557,8 @@ layout::layout (diagnostic_context * context,
   m_x_offset (0)
 {
   rich_location *richloc = diagnostic->richloc;
+  source_location primary_loc = richloc->get_range (0)->m_loc;
+
   for (unsigned int idx = 0; idx < richloc->get_num_locations (); idx++)
     {
       /* This diagnostic printer can only cope with "sufficiently sane" ranges.
@@ -514,6 +586,14 @@ layout::layout (diagnostic_context * context,
 	if (caret.file != m_exploc.file)
 	  continue;
 
+      /* Sanitize the caret location for non-primary ranges.  */
+      if (m_layout_ranges.length () > 0)
+	if (loc_range->m_show_caret_p)
+	  if (!compatible_locations_p (loc_range->m_loc, primary_loc))
+	    /* Discard any non-primary ranges that can't be printed
+	       sanely relative to the primary location.  */
+	    continue;
+
       /* Everything is now known to be in the correct source file,
 	 but it may require further sanitization.  */
       layout_range ri (&start, &finish, loc_range->m_show_caret_p, &caret);
@@ -521,8 +601,13 @@ layout::layout (diagnostic_context * context,
       /* If we have a range that finishes before it starts (perhaps
 	 from something built via macro expansion), printing the
 	 range is likely to be nonsensical.  Also, attempting to do so
-	 breaks assumptions within the printing code  (PR c/68473).  */
-      if (start.line > finish.line)
+	 breaks assumptions within the printing code  (PR c/68473).
+	 Similarly, don't attempt to print ranges if one or both ends
+	 of the range aren't sane to print relative to the
+	 primary location (PR c++/70105).  */
+      if (start.line > finish.line
+	  || !compatible_locations_p (src_range.m_start, primary_loc)
+	  || !compatible_locations_p (src_range.m_finish, primary_loc))
 	{
 	  /* Is this the primary location?  */
 	  if (m_layout_ranges.length () == 0)

@@ -2,6 +2,13 @@
 
 	PR c/68473
 	PR c++/70105
+	* diagnostic-show-locus.c (compatible_locations_p): New function.
+	(layout::layout): Sanitize ranges using compatible_locations_p.
+
+2016-03-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68473
+	PR c++/70105
 	* diagnostic-show-locus.c (layout_range::layout_range): Replace
 	location_range param with three const expanded_locations * and a
 	bool.

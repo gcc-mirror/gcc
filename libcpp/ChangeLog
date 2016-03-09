@@ -2,6 +2,16 @@
 
 	PR c/68473
 	PR c++/70105
+	* line-map.c (linemap_macro_map_loc_unwind_toward_spelling): Move
+	decl...
+	* include/line-map.h
+	(linemap_macro_map_loc_unwind_toward_spelling): ...here,
+	converting from static to extern.
+
+2016-03-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68473
+	PR c++/70105
 	* include/line-map.h (source_range::debug): Delete.
 	(struct location_range): Update comment.  Replace
 	expanded_location fields "m_start", "m_finish", and "m_caret" with
