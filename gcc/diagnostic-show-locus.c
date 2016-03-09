@@ -117,7 +117,10 @@ class layout_point
 class layout_range
 {
  public:
-  layout_range (const location_range *loc_range);
+  layout_range (const expanded_location *start_exploc,
+		const expanded_location *finish_exploc,
+		bool show_caret_p,
+		const expanded_location *caret_exploc);
 
   bool contains_point (int row, int column) const;
 
@@ -328,11 +331,14 @@ colorizer::finish_state (int state)
    Initialize various layout_point fields from expanded_location
    equivalents; we've already filtered on file.  */
 
-layout_range::layout_range (const location_range *loc_range)
-: m_start (loc_range->m_start),
-  m_finish (loc_range->m_finish),
-  m_show_caret_p (loc_range->m_show_caret_p),
-  m_caret (loc_range->m_caret)
+layout_range::layout_range (const expanded_location *start_exploc,
+			    const expanded_location *finish_exploc,
+			    bool show_caret_p,
+			    const expanded_location *caret_exploc)
+: m_start (*start_exploc),
+  m_finish (*finish_exploc),
+  m_show_caret_p (show_caret_p),
+  m_caret (*caret_exploc)
 {
 }
 
@@ -473,7 +479,7 @@ layout::layout (diagnostic_context * context,
 : m_context (context),
   m_pp (context->printer),
   m_diagnostic_kind (diagnostic->kind),
-  m_exploc (diagnostic->richloc->lazily_expand_location ()),
+  m_exploc (diagnostic->richloc->get_expanded_location (0)),
   m_colorizer (context, diagnostic),
   m_colorize_source_p (context->colorize_source_p),
   m_layout_ranges (rich_location::MAX_RANGES),
@@ -487,25 +493,36 @@ layout::layout (diagnostic_context * context,
 	 Ignore any ranges that are awkward to handle.  */
       const location_range *loc_range = richloc->get_range (idx);
 
+      /* Split the "range" into caret and range information.  */
+      source_range src_range = get_range_from_loc (line_table, loc_range->m_loc);
+
+      /* Expand the various locations.  */
+      expanded_location start
+	= linemap_client_expand_location_to_spelling_point (src_range.m_start);
+      expanded_location finish
+	= linemap_client_expand_location_to_spelling_point (src_range.m_finish);
+      expanded_location caret
+	= linemap_client_expand_location_to_spelling_point (loc_range->m_loc);
+
       /* If any part of the range isn't in the same file as the primary
 	 location of this diagnostic, ignore the range.  */
-      if (loc_range->m_start.file != m_exploc.file)
+      if (start.file != m_exploc.file)
 	continue;
-      if (loc_range->m_finish.file != m_exploc.file)
+      if (finish.file != m_exploc.file)
 	continue;
       if (loc_range->m_show_caret_p)
-	if (loc_range->m_caret.file != m_exploc.file)
+	if (caret.file != m_exploc.file)
 	  continue;
 
       /* Everything is now known to be in the correct source file,
 	 but it may require further sanitization.  */
-      layout_range ri (loc_range);
+      layout_range ri (&start, &finish, loc_range->m_show_caret_p, &caret);
 
       /* If we have a range that finishes before it starts (perhaps
 	 from something built via macro expansion), printing the
 	 range is likely to be nonsensical.  Also, attempting to do so
 	 breaks assumptions within the printing code  (PR c/68473).  */
-      if (loc_range->m_start.line > loc_range->m_finish.line)
+      if (start.line > finish.line)
 	{
 	  /* Is this the primary location?  */
 	  if (m_layout_ranges.length () == 0)

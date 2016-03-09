@@ -1338,17 +1338,3 @@ real_abort (void)
 {
   abort ();
 }
-
-/* Display the given source_range instance, with MSG as a descriptive
-   comment.  This issues a "note" diagnostic at the range.
-
-   This is declared within libcpp, but implemented here, since it
-   makes use of the diagnostic-printing machinery.  */
-
-DEBUG_FUNCTION void
-source_range::debug (const char *msg) const
-{
-  rich_location richloc (line_table, m_start);
-  richloc.add_range (m_start, m_finish, false);
-  inform_at_rich_loc (&richloc, "%s", msg);
-}
