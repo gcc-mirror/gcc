@@ -1,3 +1,10 @@
+2016-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR c/70143
+	* gcc.dg/Wstrict-aliasing-bogus-upcast.c: New testcase.
+	* gcc.dg/Wstrict-aliasing-struct-with-char-member.c: Likewise.
+	* gcc.dg/Wstrict-aliasing-struct-member.c: Remove again.
+
 2016-03-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/vect/bb-slp-34.c: Really don't xfail on aarch64-*-*,

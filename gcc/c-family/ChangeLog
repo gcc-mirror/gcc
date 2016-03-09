@@ -1,3 +1,9 @@
+2016-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR c/70143
+	* c-common.c (strict_aliasing_warning): Add back
+	alias_sets_conflict_p check.
+
 2016-03-08  Jason Merrill  <jason@redhat.com>
 
 	* c-opts.c (set_std_cxx1z): Don't enable concepts.
