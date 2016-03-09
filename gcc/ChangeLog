@@ -1,3 +1,8 @@
+2016-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/70127
+	* fold-const.c (operand_equal_p): Revert the 2015-10-28 change.
+
 2016-03-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/68473

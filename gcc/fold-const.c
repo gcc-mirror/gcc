@@ -3032,6 +3032,9 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 					   TYPE_SIZE (TREE_TYPE (arg1)),
 					   flags)))
 		return 0;
+	      /* Verify that access happens in similar types.  */
+	      if (!types_compatible_p (TREE_TYPE (arg0), TREE_TYPE (arg1)))
+		return 0;
 	      /* Verify that accesses are TBAA compatible.  */
 	      if (!alias_ptr_types_compatible_p
 		    (TREE_TYPE (TREE_OPERAND (arg0, 1)),
