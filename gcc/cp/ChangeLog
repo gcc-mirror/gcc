@@ -1,3 +1,12 @@
+2016-03-10  Patrick Palka  <ppalka@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70001
+	* constexpr.c (cxx_eval_vec_init_1): For pre_init case, reuse
+	return value from cxx_eval_constant_expression from earlier
+	elements if it is valid constant initializer requiring no
+	relocations.
+
 2016-03-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/70153
