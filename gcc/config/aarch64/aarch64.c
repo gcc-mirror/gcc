@@ -8110,10 +8110,25 @@ aarch64_parse_override_string (const char* input_string,
 static void
 aarch64_override_options_after_change_1 (struct gcc_options *opts)
 {
+  /* The logic here is that if we are disabling all frame pointer generation
+     then we do not need to disable leaf frame pointer generation as a
+     separate operation.  But if we are *only* disabling leaf frame pointer
+     generation then we set flag_omit_frame_pointer to true, but in
+     aarch64_frame_pointer_required we return false only for leaf functions.
+
+     PR 70044: We have to be careful about being called multiple times for the
+     same function.  Once we have decided to set flag_omit_frame_pointer just
+     so that we can omit leaf frame pointers, we must then not interpret a
+     second call as meaning that all frame pointer generation should be
+     omitted.  We do this by setting flag_omit_frame_pointer to a special,
+     non-zero value.  */
+  if (opts->x_flag_omit_frame_pointer == 2)
+    opts->x_flag_omit_frame_pointer = 0;
+
   if (opts->x_flag_omit_frame_pointer)
     opts->x_flag_omit_leaf_frame_pointer = false;
   else if (opts->x_flag_omit_leaf_frame_pointer)
-    opts->x_flag_omit_frame_pointer = true;
+    opts->x_flag_omit_frame_pointer = 2;
 
   /* If not optimizing for size, set the default
      alignment to what the target wants.  */
