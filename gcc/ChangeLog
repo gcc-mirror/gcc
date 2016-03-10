@@ -1,3 +1,9 @@
+2016-03-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* common/config/aarch64/aarch64-common.c (aarch64_handle_option):
+	Set x_flag_omit_leaf_frame_pointer when handling
+	-momit-leaf-frame-pointer.
+
 2016-03-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/69589
