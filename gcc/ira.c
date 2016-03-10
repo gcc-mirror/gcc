@@ -3319,9 +3319,6 @@ adjust_cleared_regs (rtx loc, const_rtx old_rtx ATTRIBUTE_UNUSED, void *data)
   return NULL_RTX;
 }
 
-/* Nonzero if we recorded an equivalence for a LABEL_REF.  */
-static int recorded_label_ref;
-
 /* Find registers that are equivalent to a single value throughout the
    compilation (either because they can be referenced in memory or are
    set once from a single constant).  Lower their priority for a
@@ -3331,10 +3328,8 @@ static int recorded_label_ref;
    value into the using insn.  If it succeeds, we can eliminate the
    register completely.
 
-   Initialize init_insns in ira_reg_equiv array.
-
-   Return non-zero if jump label rebuilding should be done.  */
-static int
+   Initialize init_insns in ira_reg_equiv array.  */
+static void
 update_equiv_regs (void)
 {
   rtx_insn *insn;
@@ -3342,10 +3337,6 @@ update_equiv_regs (void)
   int loop_depth;
   bitmap cleared_regs;
   bool *pdx_subregs;
-
-  /* We need to keep track of whether or not we recorded a LABEL_REF so
-     that we know if the jump optimizer needs to be rerun.  */
-  recorded_label_ref = 0;
 
   /* Use pdx_subregs to show whether a reg is used in a paradoxical
      subreg.  */
@@ -3578,17 +3569,6 @@ update_equiv_regs (void)
 		  = gen_rtx_INSN_LIST (VOIDmode, insn,
 				       ira_reg_equiv[regno].init_insns);
 
-	      /* Record whether or not we created a REG_EQUIV note for a LABEL_REF.
-		 We might end up substituting the LABEL_REF for uses of the
-		 pseudo here or later.  That kind of transformation may turn an
-		 indirect jump into a direct jump, in which case we must rerun the
-		 jump optimizer to ensure that the JUMP_LABEL fields are valid.  */
-	      if (GET_CODE (x) == LABEL_REF
-		  || (GET_CODE (x) == CONST
-		      && GET_CODE (XEXP (x, 0)) == PLUS
-		      && (GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF)))
-		recorded_label_ref = 1;
-
 	      reg_equiv[regno].replacement = x;
 	      reg_equiv[regno].src_p = &SET_SRC (set);
 	      reg_equiv[regno].loop_depth = (short) loop_depth;
@@ -3706,9 +3686,9 @@ update_equiv_regs (void)
 	  if (! INSN_P (insn))
 	    continue;
 
-	  /* Don't substitute into a non-local goto, this confuses CFG.  */
-	  if (JUMP_P (insn)
-	      && find_reg_note (insn, REG_NON_LOCAL_GOTO, NULL_RTX))
+	  /* Don't substitute into jumps.  indirect_jump_optimize does
+	     this for anything we are prepared to handle.  */
+	  if (JUMP_P (insn))
 	    continue;
 
 	  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
@@ -3860,11 +3840,50 @@ update_equiv_regs (void)
   end_alias_analysis ();
   free (reg_equiv);
   free (pdx_subregs);
-  return recorded_label_ref;
 }
 
-
+/* A pass over indirect jumps, converting simple cases to direct jumps.  */
+static void
+indirect_jump_optimize (void)
+{
+  basic_block bb;
+  bool rebuild_p = false;
 
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
+    {
+      rtx_insn *insn = BB_END (bb);
+      if (!JUMP_P (insn))
+	continue;
+
+      rtx x = pc_set (insn);
+      if (!x || !REG_P (SET_SRC (x)))
+	continue;
+
+      int regno = REGNO (SET_SRC (x));
+      if (DF_REG_DEF_COUNT (regno) == 1)
+	{
+	  rtx_insn *def_insn = DF_REF_INSN (DF_REG_DEF_CHAIN (regno));
+	  rtx note = find_reg_note (def_insn, REG_LABEL_OPERAND, NULL_RTX);
+
+	  if (note)
+	    {
+	      rtx lab = gen_rtx_LABEL_REF (Pmode, XEXP (note, 0));
+	      if (validate_replace_rtx (SET_SRC (x), lab, insn))
+		rebuild_p = true;
+	    }
+	}
+    }
+
+  if (rebuild_p)
+    {
+      timevar_push (TV_JUMP);
+      rebuild_jump_labels (get_insns ());
+      if (purge_all_dead_edges ())
+	delete_unreachable_blocks ();
+      timevar_pop (TV_JUMP);
+    }
+}
+
 /* Set up fields memory, constant, and invariant from init_insns in
    the structures of array ira_reg_equiv.  */
 static void
@@ -5090,7 +5109,6 @@ ira (FILE *f)
 {
   bool loops_p;
   int ira_max_point_before_emit;
-  int rebuild_p;
   bool saved_flag_caller_saves = flag_caller_saves;
   enum ira_region saved_flag_ira_region = flag_ira_region;
 
@@ -5167,6 +5185,10 @@ ira (FILE *f)
 
   df_clear_flags (DF_NO_INSN_RESCAN);
 
+  indirect_jump_optimize ();
+  if (delete_trivially_dead_insns (get_insns (), max_reg_num ()))
+    df_analyze ();
+
   regstat_init_n_sets_and_refs ();
   regstat_compute_ri ();
 
@@ -5184,31 +5206,11 @@ ira (FILE *f)
   if (resize_reg_info () && flag_ira_loop_pressure)
     ira_set_pseudo_classes (true, ira_dump_file);
 
-  rebuild_p = update_equiv_regs ();
+  update_equiv_regs ();
   setup_reg_equiv ();
   setup_reg_equiv_init ();
 
-  bool update_regstat = false;
-
-  if (optimize && rebuild_p)
-    {
-      timevar_push (TV_JUMP);
-      rebuild_jump_labels (get_insns ());
-      if (purge_all_dead_edges ())
-	{
-	  delete_unreachable_blocks ();
-	  update_regstat = true;
-	}
-      timevar_pop (TV_JUMP);
-    }
-
   allocated_reg_info_size = max_reg_num ();
-
-  if (delete_trivially_dead_insns (get_insns (), max_reg_num ()))
-    {
-      df_analyze ();
-      update_regstat = true;
-    }
 
   /* It is not worth to do such improvement when we use a simple
      allocation because of -O0 usage or because the function is too
@@ -5319,7 +5321,7 @@ ira (FILE *f)
     check_allocation ();
 #endif
 
-  if (update_regstat || max_regno != max_regno_before_ira)
+  if (max_regno != max_regno_before_ira)
     {
       regstat_free_n_sets_and_refs ();
       regstat_free_ri ();
