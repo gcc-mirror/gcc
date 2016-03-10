@@ -12952,8 +12952,10 @@ array_at_struct_end_p (tree ref)
     }
 
   /* If the reference is based on a declared entity, the size of the array
-     is constrained by its given domain.  */
-  if (DECL_P (ref))
+     is constrained by its given domain.  (Do not trust commons PR/69368).  */
+  if (DECL_P (ref)
+      && !(flag_unconstrained_commons
+	   && TREE_CODE (ref) == VAR_DECL && DECL_COMMON (ref)))
     return false;
 
   return true;

@@ -1,3 +1,13 @@
+2016-03-10  Alan Lawrence  <alan.lawrence@arm.com>
+	Jakub Jelinek <jakub@redhat.com>
+
+	* common.opt (funconstrained-commons, flag_unconstrained_commons): New.
+	* tree.c (array_at_struct_end_p): Do not limit to size of decl for
+	DECL_COMMONS if flag_unconstrained_commons is set.
+	* tree-dfa.c (get_ref_base_and_extent): Likewise.
+	* doc/invoke.texi (Optimize Options): Add -funconstrained-commons.
+	(funconstrained-commons): Document.
+
 2016-03-10  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/aarch64/t-aarch64 (OPTIONS_H_EXTRA): Add
