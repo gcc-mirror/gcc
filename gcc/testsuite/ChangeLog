@@ -1,3 +1,8 @@
+2016-03-10  Nick Clifton  <nickc@redhat.com>
+
+	PR target/70044
+	* gcc.target/aarch64/pr70044.c: New test.
+
 2016-03-10  Patrick Palka  <ppalka@gcc.gnu.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -1,3 +1,12 @@
+2016-03-10  Nick Clifton  <nickc@redhat.com>
+
+	PR target/7044
+	* config/aarch64/aarch64.c
+	(aarch64_override_options_after_change_1): When forcing
+	flag_omit_frame_pointer to be true, use a special value that can
+	be detected if this function is called again, thus preventing
+	flag_omit_leaf_frame_pointer from being forced to be false.
+
 2016-03-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* common/config/aarch64/aarch64-common.c (aarch64_handle_option):
