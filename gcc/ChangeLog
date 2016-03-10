@@ -1,3 +1,9 @@
+2016-03-10  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR target/70168
+	* config/rs6000/rs6000.c (rs6000_expand_atomic_compare_and_swap):
+	Handle overlapping retval and newval.
+
 2016-03-10  Nick Clifton  <nickc@redhat.com>
 
 	PR target/7044
