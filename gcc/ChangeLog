@@ -1,3 +1,8 @@
+2016-03-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/aarch64/t-aarch64 (OPTIONS_H_EXTRA): Add
+	aarch64-fusion-pairs.def and aarch64-tuning-flags.def
+
 2016-03-10  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* tree-vect-stmts.c (vectorizable_mask_load_store): Check mask
