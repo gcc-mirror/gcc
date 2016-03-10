@@ -1996,7 +1996,6 @@ cp_fold (tree x)
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
     case FIXED_CONVERT_EXPR:
-    case UNARY_PLUS_EXPR:
     case INDIRECT_REF:
 
       loc = EXPR_LOCATION (x);
@@ -2014,6 +2013,14 @@ cp_fold (tree x)
 
       gcc_assert (TREE_CODE (x) != COND_EXPR
 		  || !VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (x, 0))));
+      break;
+
+    case UNARY_PLUS_EXPR:
+      op0 = cp_fold_rvalue (TREE_OPERAND (x, 0));
+      if (op0 == error_mark_node)
+	x = error_mark_node;
+      else
+	x = fold_convert (TREE_TYPE (x), op0);
       break;
 
     case POSTDECREMENT_EXPR:

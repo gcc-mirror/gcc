@@ -1,4 +1,9 @@
-2016-03-10 Andre Vieira <andre.simoesdiasvieira@arm.com>
+2016-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70153
+	* g++.dg/delayedfold/unary-plus1.C: New test.
+
+2016-03-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/arm/pr45701-1.c: Escape brackets.
 	* gcc.target/arm/pr45701-2.c: Likewise.
