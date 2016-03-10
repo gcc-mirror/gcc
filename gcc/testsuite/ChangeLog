@@ -1,3 +1,8 @@
+2016-03-10  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/68915
+	* gcc.dg/vect/pr46032.c: Xfail scan if alignment requirements not met.
+
 2016-03-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70128
