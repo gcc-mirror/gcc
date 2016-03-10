@@ -1,3 +1,8 @@
+2016-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70153
+	* cp-gimplify.c (cp_fold): Handle UNARY_PLUS_EXPR.
+
 2016-03-09  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* parser.c (cp_parser_oacc_loop): Update cclauses and clauses
