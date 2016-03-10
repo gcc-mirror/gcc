@@ -32,5 +32,5 @@ main ()
 {
   S <true, false, false, true, true, true, false, true> s;
   constexpr auto c = s.bar ();
-  static_assert (s.bar () == 4 * 64 + 5);
+  static_assert (s.bar () == 4 * 64 + 5, "");
 }
