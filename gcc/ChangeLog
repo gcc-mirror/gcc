@@ -1,3 +1,9 @@
+2016-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70128
+	* tree-ssa-structalias.c (set_uids_in_ptset): Set
+	vars_contains_nonlocal for any FUNCTION_DECL or LABEL_DECL.
+
 2016-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/70152

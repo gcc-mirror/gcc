@@ -1,3 +1,9 @@
+2016-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70128
+	* gcc.dg/tree-ssa/alias-34.c: New testcase.
+	* gcc.dg/tree-ssa/alias-35.c: Likewise.
+
 2016-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/70152
