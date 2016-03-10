@@ -1,3 +1,8 @@
+2016-03-10 Andre Vieira <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/pr45701-1.c: Escape brackets.
+	* gcc.target/arm/pr45701-2.c: Likewise.
+
 2016-03-10  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gfortran.dg/unconstrained_commons.f: New.
