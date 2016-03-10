@@ -2061,6 +2061,10 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " icf_merged");
   if (merged_comdat)
     fprintf (f, " merged_comdat");
+  if (split_part)
+    fprintf (f, " split_part");
+  if (indirect_call_target)
+    fprintf (f, " indirect_call_target");
   if (nonfreeing_fn)
     fprintf (f, " nonfreeing_fn");
   if (DECL_STATIC_CONSTRUCTOR (decl))

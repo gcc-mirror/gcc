@@ -1,3 +1,9 @@
+2016-03-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/69589
+	* g++.dg/lto/pr69589_0.C: New testcase
+	* g++.dg/lto/pr69589_1.C: New testcase
+
 2016-03-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/70153
