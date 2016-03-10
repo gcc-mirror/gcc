@@ -22283,6 +22283,9 @@ rs6000_expand_atomic_compare_and_swap (rtx operands[])
   if (mode != TImode && !reg_or_short_operand (oldval, mode))
     oldval = copy_to_mode_reg (mode, oldval);
 
+  if (reg_overlap_mentioned_p (retval, newval))
+    newval = copy_to_reg (newval);
+
   mem = rs6000_pre_atomic_barrier (mem, mod_s);
 
   label1 = NULL_RTX;
