@@ -179,6 +179,20 @@ extern unsigned aarch64_architecture_version;
   ((aarch64_fix_a53_err835769 == 2)	\
   ? TARGET_FIX_ERR_A53_835769_DEFAULT : aarch64_fix_a53_err835769)
 
+/* Make sure this is always defined so we don't have to check for ifdefs
+   but rather use normal ifs.  */
+#ifndef TARGET_FIX_ERR_A53_843419_DEFAULT
+#define TARGET_FIX_ERR_A53_843419_DEFAULT 0
+#else
+#undef TARGET_FIX_ERR_A53_843419_DEFAULT
+#define TARGET_FIX_ERR_A53_843419_DEFAULT 1
+#endif
+
+/* Apply the workaround for Cortex-A53 erratum 843419.  */
+#define TARGET_FIX_ERR_A53_843419	\
+  ((aarch64_fix_a53_err843419 == 2)	\
+  ? TARGET_FIX_ERR_A53_843419_DEFAULT : aarch64_fix_a53_err843419)
+
 /* ARMv8.1 Adv.SIMD support.  */
 #define TARGET_SIMD_RDMA (TARGET_SIMD && AARCH64_ISA_RDMA)
 
