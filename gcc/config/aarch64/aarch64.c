@@ -8132,9 +8132,18 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
   if (opts->x_nopcrelative_literal_loads == 1)
     aarch64_nopcrelative_literal_loads = false;
 
-  /* If it is not set on the command line, we default to no
-     pc relative literal loads.  */
-  if (opts->x_nopcrelative_literal_loads == 2)
+  /* If it is not set on the command line, we default to no pc
+     relative literal loads, unless the workaround for Cortex-A53
+     erratum 843419 is in effect.  */
+  /* This is PR70113. When building the Linux kernel with
+     CONFIG_ARM64_ERRATUM_843419, support for relocations
+     R_AARCH64_ADR_PREL_PG_HI21 and R_AARCH64_ADR_PREL_PG_HI21_NC is
+     removed from the kernel to avoid loading objects with possibly
+     offending sequences. With nopcrelative_literal_loads, we would
+     generate such relocations, preventing the kernel build from
+     succeeding.  */
+  if (opts->x_nopcrelative_literal_loads == 2
+      && !TARGET_FIX_ERR_A53_843419)
     aarch64_nopcrelative_literal_loads = true;
 
   /* In the tiny memory model it makes no sense
@@ -8818,6 +8827,8 @@ static const struct aarch64_attribute_info aarch64_attributes[] =
      OPT_mgeneral_regs_only },
   { "fix-cortex-a53-835769", aarch64_attr_bool, true, NULL,
      OPT_mfix_cortex_a53_835769 },
+  { "fix-cortex-a53-843419", aarch64_attr_bool, true, NULL,
+     OPT_mfix_cortex_a53_843419 },
   { "cmodel", aarch64_attr_enum, false, NULL, OPT_mcmodel_ },
   { "strict-align", aarch64_attr_mask, false, NULL, OPT_mstrict_align },
   { "omit-leaf-frame-pointer", aarch64_attr_bool, true, NULL,
@@ -9230,6 +9241,12 @@ aarch64_can_inline_p (tree caller, tree callee)
 	  caller_opts->x_aarch64_fix_a53_err835769,
 	  callee_opts->x_aarch64_fix_a53_err835769,
 	  2, TARGET_FIX_ERR_A53_835769_DEFAULT))
+    return false;
+
+  if (!aarch64_tribools_ok_for_inlining_p (
+	  caller_opts->x_aarch64_fix_a53_err843419,
+	  callee_opts->x_aarch64_fix_a53_err843419,
+	  2, TARGET_FIX_ERR_A53_843419))
     return false;
 
   /* If the user explicitly specified -momit-leaf-frame-pointer for the

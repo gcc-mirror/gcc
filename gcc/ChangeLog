@@ -1,3 +1,20 @@
+2016-03-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/70113.
+	* config/aarch64/aarch64.h (TARGET_FIX_ERR_A53_843419_DEFAULT):
+	Always define to 0 or 1.
+	(TARGET_FIX_ERR_A53_843419): New macro.
+	* config/aarch64/aarch64-elf-raw.h
+	(TARGET_FIX_ERR_A53_843419_DEFAULT): Update for above changes.
+	* config/aarch64/aarch64-linux.h: Likewise.
+	* config/aarch64/aarch64.c
+	(aarch64_override_options_after_change_1): Do not default
+	aarch64_nopcrelative_literal_loads to true if Cortex-A53 erratum
+	843419 is on.
+	(aarch64_attributes): Handle fix-cortex-a53-843419.
+	(aarch64_can_inline_p): Likewise.
+	* config/aarch64/aarch64.opt (aarch64_fix_a53_err843419): Save.
+
 2016-03-10  Alan Lawrence  <alan.lawrence@arm.com>
 	Jakub Jelinek <jakub@redhat.com>
 
