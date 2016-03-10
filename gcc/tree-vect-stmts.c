@@ -1742,7 +1742,8 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!mask_vectype)
     mask_vectype = get_mask_type_for_scalar_type (TREE_TYPE (vectype));
 
-  if (!mask_vectype || !VECTOR_BOOLEAN_TYPE_P (mask_vectype))
+  if (!mask_vectype || !VECTOR_BOOLEAN_TYPE_P (mask_vectype)
+      || TYPE_VECTOR_SUBPARTS (mask_vectype) != TYPE_VECTOR_SUBPARTS (vectype))
     return false;
 
   if (is_store)
