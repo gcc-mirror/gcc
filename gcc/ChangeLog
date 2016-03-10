@@ -1,3 +1,14 @@
+2016-03-10  Alan Modra  <amodra@gmail.com>
+
+	PR rtl-optimization/69195
+	PR rtl-optimization/47992
+	* ira.c (recorded_label_ref): Delete.
+	(update_equiv_regs): Return void.
+	(indirect_jump_optimize): New function.
+	(ira): Call indirect_jump_optimize and delete_trivially_dead_insns
+	before regstat_compute_ri.  Don't rebuild_jump_labels here.
+	Delete update_regstat.
+
 2016-03-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70128

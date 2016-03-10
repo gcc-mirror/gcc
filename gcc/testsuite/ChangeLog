@@ -1,3 +1,8 @@
+2016-03-10  Alan Modra  <amodra@gmail.com>
+
+	* gcc.dg/pr69195.c: New.
+	* gcc.dg/pr69238.c: New.
+
 2016-03-10  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/68915
