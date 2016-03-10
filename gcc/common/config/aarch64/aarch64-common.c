@@ -98,7 +98,7 @@ aarch64_handle_option (struct gcc_options *opts,
       return true;
 
     case OPT_momit_leaf_frame_pointer:
-      opts->x_flag_omit_frame_pointer = val;
+      opts->x_flag_omit_leaf_frame_pointer = val;
       return true;
 
     default:
