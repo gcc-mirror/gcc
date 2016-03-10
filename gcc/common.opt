@@ -2458,6 +2458,11 @@ fsplit-paths
 Common Report Var(flag_split_paths) Init(0) Optimization
 Split paths leading to loop backedges.
 
+funconstrained-commons
+Common Var(flag_unconstrained_commons) Optimization
+Assume common declarations may be overridden with ones with a larger
+trailing array.
+
 funit-at-a-time
 Common Report Var(flag_unit_at_a_time) Init(1)
 Compile whole compilation unit at a time.

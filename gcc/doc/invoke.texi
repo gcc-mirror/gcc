@@ -408,7 +408,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-parallelize-loops=@var{n} -ftree-pre -ftree-partial-pre -ftree-pta @gol
 -ftree-reassoc -ftree-sink -ftree-slsr -ftree-sra @gol
 -ftree-switch-conversion -ftree-tail-merge -ftree-ter @gol
--ftree-vectorize -ftree-vrp @gol
+-ftree-vectorize -ftree-vrp -funconstrained-commons @gol
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
 -funsafe-loop-optimizations -funsafe-math-optimizations -funswitch-loops @gol
 -fipa-ra -fvariable-expansion-in-unroller -fvect-cost-model -fvpt @gol
@@ -6698,6 +6698,12 @@ infinite.  This enables a wider range of loop optimizations even if
 the loop optimizer itself cannot prove that these assumptions are valid.
 If you use @option{-Wunsafe-loop-optimizations}, the compiler warns you
 if it finds this kind of loop.
+
+@item -funconstrained-commons
+@opindex funconstrained-commons
+This option tells the compiler that variables declared in common blocks
+(e.g. Fortran) may later be overridden with longer trailing arrays. This
+prevents certain optimizations that depend on knowing the array bounds.
 
 @item -fcrossjumping
 @opindex fcrossjumping
