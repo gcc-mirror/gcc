@@ -1,3 +1,8 @@
+2016-03-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/69589
+	* tree.c (need_assembler_name_p): Only record main variant type names.
+
 2016-03-10  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR target/70113.
