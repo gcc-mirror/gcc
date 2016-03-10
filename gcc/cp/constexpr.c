@@ -2340,6 +2340,7 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
   vec<constructor_elt, va_gc> **p = &CONSTRUCTOR_ELTS (ctx->ctor);
   vec_alloc (*p, max + 1);
   bool pre_init = false;
+  tree pre_init_elt = NULL_TREE;
   unsigned HOST_WIDE_INT i;
 
   /* For the default constructor, build up a call to the default
@@ -2389,9 +2390,18 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	{
 	  /* Initializing an element using value or default initialization
 	     we just pre-built above.  */
-	  eltinit = (cxx_eval_constant_expression
-		     (&new_ctx, init,
-		      lval, non_constant_p, overflow_p));
+	  if (pre_init_elt == NULL_TREE)
+	    pre_init_elt
+	      = cxx_eval_constant_expression (&new_ctx, init, lval,
+					      non_constant_p, overflow_p);
+	  eltinit = pre_init_elt;
+	  /* Don't reuse the result of cxx_eval_constant_expression
+	     call if it isn't a constant initializer or if it requires
+	     relocations.  */
+	  if (initializer_constant_valid_p (pre_init_elt,
+					    TREE_TYPE (pre_init_elt))
+	      != null_pointer_node)
+	    pre_init_elt = NULL_TREE;
 	}
       else
 	{

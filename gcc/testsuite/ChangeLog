@@ -1,3 +1,11 @@
+2016-03-10  Patrick Palka  <ppalka@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70001
+	* g++.dg/cpp0x/constexpr-70001-1.C: New test.
+	* g++.dg/cpp0x/constexpr-70001-2.C: New test.
+	* g++.dg/cpp0x/constexpr-70001-3.C: New test.
+
 2016-03-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/69589
