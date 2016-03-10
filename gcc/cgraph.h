@@ -1366,6 +1366,8 @@ public:
   unsigned parallelized_function : 1;
   /* True if function is part split out by ipa-split.  */
   unsigned split_part : 1;
+  /* True if the function appears as possible target of indirect call.  */
+  unsigned indirect_call_target : 1;
 
 private:
   /* Worker for call_for_symbol_and_aliases.  */

@@ -1,5 +1,16 @@
 2016-03-10  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR lto/69589
+	* cgraph.c (cgraph_node::dump): Dump split_part and indirect_call_target.
+	* cgraph.h (cgraph_node): Add indirect_call_target flag.
+	* ipa.c (has_addr_references_p): Cleanup.
+	(is_indirect_call_target_p): New.
+	(walk_polymorphic_call_targets): Do not mark virtuals that may be
+	called indirectly as local.
+	(symbol_table::remove_unreachable_nodes): Compute indirect_call_target.
+
+2016-03-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/69630
 	* ipa-devirt.c (possible_polymorphic_call_targets): Do not ICE
 	on cxa_pure_virtual.
