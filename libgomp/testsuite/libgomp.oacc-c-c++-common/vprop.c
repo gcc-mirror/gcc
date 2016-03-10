@@ -4,8 +4,8 @@
 void						\
 test_##type ()					\
 {						\
-  type b[100];					\
-  type i, j, x = -1, y = -1;			\
+  signed type b[100];				\
+  signed type i, j, x = -1, y = -1;		\
 						\
   _Pragma("acc parallel loop copyout (b)")	\
   for (j = 0; j > -5; j--)			\

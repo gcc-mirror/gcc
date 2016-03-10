@@ -1,3 +1,8 @@
+2016-03-10  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR testsuite/70009
+	* testsuite/libgomp.oacc-c-c++-common/vprop.c: Make test data signed.
+
 2016-03-09  Tom de Vries  <tom@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/kernels-loop-2.f95: New test.
