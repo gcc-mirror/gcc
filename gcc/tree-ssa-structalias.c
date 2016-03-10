@@ -6280,6 +6280,16 @@ set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt,
 		  && ! auto_var_in_fn_p (vi->decl, fndecl)))
 	    pt->vars_contains_nonlocal = true;
 	}
+
+      else if (TREE_CODE (vi->decl) == FUNCTION_DECL
+	       || TREE_CODE (vi->decl) == LABEL_DECL)
+	{
+	  /* Nothing should read/write from/to code so we can
+	     save bits by not including them in the points-to bitmaps.
+	     Still mark the points-to set as containing global memory
+	     to make code-patching possible - see PR70128.  */
+	  pt->vars_contains_nonlocal = true;
+	}
     }
 }
 
