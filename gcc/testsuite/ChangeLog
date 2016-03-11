@@ -1,5 +1,22 @@
 2016-03-11  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c/68187
+	* c-c++-common/Wmisleading-indentation.c (test43_a): New test
+	case.
+	(test43_b): Likewise.
+	(test43_c): Likewise.
+	(test43_d): Likewise.
+	(test43_e): Likewise.
+	(test43_f): Likewise.
+	(test43_g): Likewise.
+	(test44_a): Likewise.
+	(test44_b): Likewise.
+	(test44_c): Likewise.
+	(test44_d): Likewise.
+	(test44_e): Likewise.
+
+2016-03-11  David Malcolm  <dmalcolm@redhat.com>
+
 	PR c/70085
 	* c-c++-common/Wmisleading-indentation.c (pr70085): New test case.
 
