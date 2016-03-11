@@ -1,5 +1,10 @@
 2016-03-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gcc.target/aarch64/vect-reduc-or_1.c: Add -fno-vect-cost-model to
+	dg-options.
+
+2016-03-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	PR target/70002
 	PR target/69245
 	* gcc.target/aarch64/pr69245_2.c: New test.
