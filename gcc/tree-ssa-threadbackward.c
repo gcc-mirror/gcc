@@ -385,6 +385,16 @@ fsm_find_control_statement_thread_paths (tree name,
 
 	     We have to know the outgoing edge to figure this out.  */
 	  edge taken_edge = find_taken_edge ((*path)[0], arg);
+
+	  /* There are cases where we may not be able to extract the
+	     taken edge.  For example, a computed goto to an absolute
+	     address.  Handle those cases gracefully.  */
+	  if (taken_edge == NULL)
+	    {
+	      path->pop ();
+	      continue;
+	    }
+
 	  bool creates_irreducible_loop = false;
 	  if (threaded_through_latch
 	      && loop == taken_edge->dest->loop_father

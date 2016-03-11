@@ -1,5 +1,10 @@
 2016-03-11  Jeff Law  <law@redhat.com>
 
+	PR tree-optimization/70190
+	* tree-ssa-threadbackward.c (fsm_find_control_statement_thread_paths):
+	Handle cases where we can not extract the taken edge, even though we
+	found a constant value.
+
 	PR tree-optimization/64058
 	* tree-ssa-coalesce.c (struct coalesce_pair): Add new field INDEX.
 	(num_coalesce_pairs): Move up earlier in file.
