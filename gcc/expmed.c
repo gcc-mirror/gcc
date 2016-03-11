@@ -658,24 +658,28 @@ store_bit_field_using_insv (const extraction_insn *insv, rtx op0,
     {
       if (GET_MODE_BITSIZE (GET_MODE (value)) >= bitsize)
 	{
+	  rtx tmp;
 	  /* Optimization: Don't bother really extending VALUE
 	     if it has all the bits we will actually use.  However,
 	     if we must narrow it, be sure we do it correctly.  */
 
 	  if (GET_MODE_SIZE (GET_MODE (value)) < GET_MODE_SIZE (op_mode))
 	    {
-	      rtx tmp;
-
 	      tmp = simplify_subreg (op_mode, value1, GET_MODE (value), 0);
 	      if (! tmp)
 		tmp = simplify_gen_subreg (op_mode,
 					   force_reg (GET_MODE (value),
 						      value1),
 					   GET_MODE (value), 0);
-	      value1 = tmp;
 	    }
 	  else
-	    value1 = gen_lowpart (op_mode, value1);
+	    {
+	      tmp = gen_lowpart_if_possible (op_mode, value1);
+	      if (! tmp)
+		tmp = gen_lowpart (op_mode, force_reg (GET_MODE (value),
+						       value1));
+	    }
+	  value1 = tmp;
 	}
       else if (CONST_INT_P (value))
 	value1 = gen_int_mode (INTVAL (value), op_mode);

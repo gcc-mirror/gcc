@@ -1,5 +1,9 @@
 2016-03-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/70174
+	* expmed.c (store_bit_field_using_insv): Use gen_lowpart_if_possible
+	followed by gen_lowpart on force_reg instead of just gen_lowpart.
+
 	PR tree-optimization/70169
 	* tree-ssa-loop.c (gen_lsm_tmp_name): Handle FUNCTION_DECL and
 	LABEL_DECL like VAR_DECL.  Emit nothing instead of gcc_unreachable
