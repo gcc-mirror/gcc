@@ -1,3 +1,13 @@
+2016-03-11  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/64058
+	* tree-ssa-coalesce.c (struct coalesce_pair): Add new field INDEX.
+	(num_coalesce_pairs): Move up earlier in file.
+	(find_coalesce_pair): Initialize the INDEX field for each pair
+	discovered.
+	(compare_pairs): No longer sort on the elements in each pair.
+	Instead break ties with the index of the coalesce pair.
+
 2016-03-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/70002
