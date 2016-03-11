@@ -1,3 +1,8 @@
+2016-03-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/70085
+	* c-c++-common/Wmisleading-indentation.c (pr70085): New test case.
+
 2016-03-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/vect-reduc-or_1.c: Add -fno-vect-cost-model to
