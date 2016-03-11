@@ -1,3 +1,8 @@
+2016-03-11  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/70160
+	* gcc.target/i386/pr70160.c: New test.
+
 2016-03-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/dfp-1.c: New test.
