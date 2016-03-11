@@ -1070,3 +1070,171 @@ int pr70085 (int x, int y)
   return -1;
 }
 #undef ENABLE_FEATURE
+
+/* Additional test coverage for PR c/68187, with various locations for a
+   pair of aligned statements ("foo (2);" and "foo (3);") that may or may
+   not be misleadingly indented.  */
+
+/* Before the "}".
+
+   The two statements aren't visually "within" the above line, so we
+   shouldn't warn.  */
+
+void
+test43_a (void)
+{
+  if (flagA) {
+    foo (1);
+  } else if (flagB)
+ foo (2);
+ foo (3);
+}
+
+/* Aligned with the "}".
+
+   Again, the two statements aren't visually "within" the above line, so we
+   shouldn't warn.  */
+
+void
+test43_b (void)
+{
+  if (flagA) {
+    foo (1);
+  } else if (flagB)
+  foo (2);
+  foo (3);
+}
+
+/* Indented between the "}" and the "else".
+
+   The two statements are indented "within" the line above, so appear that
+   they would be guarded together.  We should warn about this.  */
+
+void
+test43_c (void)
+{
+  if (flagA) {
+    foo (1);
+  } else if (flagB) /* { dg-message "...this .if. clause" } */
+   foo (2);
+   foo (3); /* { dg-warning "statement is indented" } */
+}
+
+/* Aligned with the "else".  Likewise, we should warn.  */
+
+void
+test43_d (void)
+{
+  if (flagA) {
+    foo (1);
+  } else if (flagB) /* { dg-message "...this .if. clause" } */
+    foo (2);
+    foo (3); /* { dg-warning "statement is indented" } */
+}
+
+/* Indented between the "else" and the "if".  Likewise, we should warn.  */
+
+void
+test43_e (void)
+{
+  if (flagA) {
+    foo (1);
+  } else if (flagB) /* { dg-message "...this .if. clause" } */
+      foo (2);
+      foo (3); /* { dg-warning "statement is indented" } */
+}
+
+/* Aligned with the "if".  Likewise, we should warn.  */
+
+void
+test43_f (void)
+{
+  if (flagA) {
+    foo (1);
+  } else if (flagB) /* { dg-message "...this .else. clause" } */
+         foo (2);
+         foo (3); /* { dg-warning "statement is indented" } */
+}
+
+/* Indented more than the "if".  Likewise, we should warn.  */
+
+void
+test43_g (void)
+{
+  if (flagA) {
+    foo (1);
+  } else if (flagB) /* { dg-message "...this .if. clause" } */
+            foo (2);
+            foo (3); /* { dg-warning "statement is indented" } */
+}
+
+/* Again, but without the 2nd "if".  */
+
+/* Before the "}".
+
+   As before, the two statements aren't visually "within" the above line,
+   so we shouldn't warn.  */
+
+void
+test44_a (void)
+{
+  if (flagA) {
+    foo (1);
+  } else
+ foo (2);
+ foo (3);
+}
+
+/* Aligned with the "}".
+
+   As before, the two statements aren't visually "within" the above line,
+   so we shouldn't warn.  */
+
+void
+test44_b (void)
+{
+  if (flagA) {
+    foo (1);
+  } else
+  foo (2);
+  foo (3);
+}
+
+/* Indented between the "}" and the "else".
+
+   The two statements are indented "within" the line above, so appear that
+   they would be guarded together.  We should warn about this.  */
+
+void
+test44_c (void)
+{
+  if (flagA) {
+    foo (1);
+  } else  /* { dg-message "...this .else. clause" } */
+   foo (2);
+   foo (3);  /* { dg-warning "statement is indented" } */
+}
+
+/* Aligned with the "else".  Likewise, we should warn.  */
+
+void
+test44_d (void)
+{
+  if (flagA) {
+    foo (1);
+  } else  /* { dg-message "...this .else. clause" } */
+    foo (2);
+    foo (3);  /* { dg-warning "statement is indented" } */
+}
+
+/* Indented more than the "else".  Likewise, we should warn.  */
+
+void
+test44_e (void)
+{
+  if (flagA) {
+    foo (1);
+  } else  /* { dg-message "...this .else. clause" } */
+        foo (2);
+        foo (3);  /* { dg-warning "statement is indented" } */
+}
