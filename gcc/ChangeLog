@@ -1,3 +1,14 @@
+2016-03-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/70002
+	* config/aarch64/aarch64-protos.h
+	(aarch64_save_restore_target_globals): New prototype.
+	* config/aarch64/aarch64-c.c (aarch64_pragma_target_parse):
+	Call the above when popping pragma.
+	* config/aarch64/aarch64.c (aarch64_save_restore_target_globals):
+	New function.
+	(aarch64_set_current_function): Rewrite using the above.
+
 2016-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/70177
