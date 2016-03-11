@@ -2427,7 +2427,8 @@ analyze_access_subtree (struct access *root, struct access *parent,
 
   if (!hole || root->grp_total_scalarization)
     root->grp_covered = 1;
-  else if (root->grp_write || TREE_CODE (root->base) == PARM_DECL)
+  else if (root->grp_write || TREE_CODE (root->base) == PARM_DECL
+	   || constant_decl_p (root->base))
     root->grp_unscalarized_data = 1; /* not covered and written to */
   return sth_created;
 }
