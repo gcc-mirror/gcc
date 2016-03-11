@@ -1,5 +1,13 @@
 2016-03-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.md ("trunctddd2"): Turn former define_insn into
+	define_expand.
+	("*trunctddd2"): New pattern definition.
+	("trunctdsd2"): Set prep_for_short_prec rounding mode for the
+	TD->DD truncation.
+
+2016-03-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.md (BFP_RND_*, DFP_RND_*): Add new constant
 	definitions for BFP and DFP rounding modes.
 	("fixuns_truncdddi2", "fixuns_trunctddi2")
