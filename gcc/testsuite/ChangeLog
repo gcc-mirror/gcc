@@ -1,5 +1,8 @@
 2016-03-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/70174
+	* gcc.dg/pr70174.c: New test.
+
 	PR tree-optimization/70169
 	* gcc.dg/pr70169.c: New test.
 
