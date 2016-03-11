@@ -2742,9 +2742,9 @@ static widest_int
 derive_constant_upper_bound (tree val)
 {
   enum tree_code code;
-  tree op0, op1;
+  tree op0, op1, op2;
 
-  extract_ops_from_tree (val, &code, &op0, &op1);
+  extract_ops_from_tree (val, &code, &op0, &op1, &op2);
   return derive_constant_upper_bound_ops (TREE_TYPE (val), op0, code, op1);
 }
 

@@ -1,3 +1,8 @@
+2016-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/70177
+	* gcc.dg/pr70177.c: New test.
+
 2016-03-11  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gfortran.dg/unconstrained_commons.f: Widen regexp to match j_<N>.

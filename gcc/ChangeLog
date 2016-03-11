@@ -1,3 +1,17 @@
+2016-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/70177
+	* gimple-expr.h (extract_ops_from_tree_1): Renamed to ...
+	(extract_ops_from_tree): ... this.  In the 2 argument
+	overload remove _1 suffix.
+	* gimple-expr.c (extract_ops_from_tree_1): Renamed to ...
+	(extract_ops_from_tree): ... this.
+	* gimple.c (gimple_build_assign, gimple_assign_set_rhs_from_tree):
+	Adjust callers.
+	* tree-ssa-loop-niter.c (derive_constant_upper_bound): Likewise.
+	* tree-ssa-forwprop.c (defcodefor_name): Call 3 operand
+	extract_ops_from_tree instead of 2 operand one.
+
 2016-03-11  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR tree-optimization/70013
