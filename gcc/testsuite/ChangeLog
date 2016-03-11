@@ -1,3 +1,8 @@
+2016-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/70169
+	* gcc.dg/pr70169.c: New test.
+
 2016-03-11  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/70160
