@@ -1054,3 +1054,19 @@ fn_42_c (int locked, int i)
     return 0;
 #undef engine_ref_debug
 }
+
+/* We shouldn't complain about the following function.  */
+#define ENABLE_FEATURE
+int pr70085 (int x, int y)
+{
+  if (x > y)
+    return x - y;
+
+  #ifdef ENABLE_FEATURE
+    if (x == y)
+      return 0;
+  #endif
+
+  return -1;
+}
+#undef ENABLE_FEATURE
