@@ -1,3 +1,9 @@
+2016-03-11  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR tree-optimization/70013
+	* tree-sra.c (analyze_access_subtree): Also set grp_unscalarized_data
+	for constant-pool entries.
+
 2016-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70174
