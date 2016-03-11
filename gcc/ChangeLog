@@ -1,3 +1,12 @@
+2016-03-11  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR target/70123
+	* lra-remat.c (operand_to_remat): Disallow hard regs in the value t
+	be rematerialized.
+	(reg_overlap_for_remat_p): Renamed from input_regno_present_p.
+	Arguments swapped.  All callers changed.  Take reg_renumber into
+	account, and Calculate and compare register ranges for hard regs.
+
 2016-03-11  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/70190

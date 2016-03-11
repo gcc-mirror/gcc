@@ -1,3 +1,8 @@
+2016-03-11  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR target/70123
+	* gcc.dg/torture/pr70123.c: New test.
+
 2016-03-11  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/70190
