@@ -3372,8 +3372,11 @@ scalar_chain::convert_reg (unsigned regno)
 	    bitmap_clear_bit (conv, DF_REF_INSN_UID (ref));
 	  }
       }
-    else if (NONDEBUG_INSN_P (DF_REF_INSN (ref)))
+    /* Skip debug insns and uninitialized uses.  */
+    else if (DF_REF_CHAIN (ref)
+	     && NONDEBUG_INSN_P (DF_REF_INSN (ref)))
       {
+	gcc_assert (scopy);
 	replace_rtx (DF_REF_INSN (ref), reg, scopy);
 	df_insn_rescan (DF_REF_INSN (ref));
       }
