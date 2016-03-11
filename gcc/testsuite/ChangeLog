@@ -1,3 +1,9 @@
+2016-03-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/70002
+	PR target/69245
+	* gcc.target/aarch64/pr69245_2.c: New test.
+
 2016-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/70177
