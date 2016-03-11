@@ -150,7 +150,7 @@
 (define_expand "vec_insert<mode>"
   [(set (match_operand:V_HW                    0 "register_operand" "")
 	(unspec:V_HW [(match_operand:<non_vec> 2 "register_operand" "")
-		      (match_operand:SI        3 "shift_count_or_setmem_operand" "")
+		      (match_operand:SI        3 "nonmemory_operand" "")
 		      (match_operand:V_HW      1 "register_operand" "")]
 		     UNSPEC_VEC_SET))]
   "TARGET_VX"
@@ -160,7 +160,7 @@
 (define_expand "vec_promote<mode>"
   [(set (match_operand:V_HW                    0 "register_operand" "")
 	(unspec:V_HW [(match_operand:<non_vec> 1 "register_operand" "")
-		      (match_operand:SI        2 "shift_count_or_setmem_operand" "")
+		      (match_operand:SI        2 "nonmemory_operand" "")
 		      (match_dup 0)]
 		     UNSPEC_VEC_SET))]
   "TARGET_VX"

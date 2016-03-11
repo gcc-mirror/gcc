@@ -2982,13 +2982,16 @@ s390_decompose_address (rtx addr, struct s390_address *out)
   return true;
 }
 
-/* Decompose a RTL expression OP for a shift count into its components,
-   and return the base register in BASE and the offset in OFFSET.
+/* Decompose a RTL expression OP for an address style operand into its
+   components, and return the base register in BASE and the offset in
+   OFFSET.  While OP looks like an address it is never supposed to be
+   used as such.
 
-   Return true if OP is a valid shift count, false if not.  */
+   Return true if OP is a valid address operand, false if not.  */
 
 bool
-s390_decompose_shift_count (rtx op, rtx *base, HOST_WIDE_INT *offset)
+s390_decompose_addrstyle_without_index (rtx op, rtx *base,
+					HOST_WIDE_INT *offset)
 {
   rtx off = NULL_RTX;
 
@@ -3203,7 +3206,7 @@ s390_mem_constraint (const char *str, rtx op)
     case 'Y':
       /* Simply check for the basic form of a shift count.  Reload will
 	 take care of making sure we have a proper base register.  */
-      if (!s390_decompose_shift_count (op, NULL, NULL))
+      if (!s390_decompose_addrstyle_without_index (op, NULL, NULL))
 	return 0;
       break;
     case 'Z':
@@ -6878,13 +6881,13 @@ s390_delegitimize_address (rtx orig_x)
    instead the rightmost bits are interpreted as the value.  */
 
 static void
-print_shift_count_operand (FILE *file, rtx op)
+print_addrstyle_operand (FILE *file, rtx op)
 {
   HOST_WIDE_INT offset;
   rtx base;
 
   /* Extract base register and offset.  */
-  if (!s390_decompose_shift_count (op, &base, &offset))
+  if (!s390_decompose_addrstyle_without_index (op, &base, &offset))
     gcc_unreachable ();
 
   /* Sanity check.  */
@@ -7180,7 +7183,8 @@ print_operand_address (FILE *file, rtx addr)
     'O': print only the displacement of a memory reference or address.
     'R': print only the base register of a memory reference or address.
     'S': print S-type memory reference (base+displacement).
-    'Y': print shift count operand.
+    'Y': print address style operand without index (e.g. shift count or setmem
+	 operand).
 
     'b': print integer X as if it's an unsigned byte.
     'c': print integer X as if it's an signed byte.
@@ -7348,7 +7352,7 @@ print_operand (FILE *file, rtx x, int code)
       break;
 
     case 'Y':
-      print_shift_count_operand (file, x);
+      print_addrstyle_operand (file, x);
       return;
     }
 

@@ -1,3 +1,27 @@
+2016-03-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/constraints.md: Adjust comment.
+	("Y"): Adjust comment.  Rename s390_decompose_shift_count to
+	s390_decompose_addrstyle_without_index.
+	* config/s390/predicates.md (shift_count_or_setmem_operand):
+	Rename to setmem_operand.
+	* config/s390/s390-protos.h
+	(s390_decompose_shift_count): Rename to
+	s390_decompose_addrstyle_without_index.
+	* config/s390/s390.c (s390_decompose_shift_count)
+	(s390_mem_constraint, print_shift_count_operand)
+	(print_operand_address, print_operand): Rename
+	s390_decompose_shift_count to
+	s390_decompose_addrstyle_without_index and rename
+	print_shift_count_operand to print_addrstyle_operand troughout the
+	file.
+	* config/s390/s390.md ("setmem_long_<P:mode>", "*setmem_long")
+	("*setmem_long_and", "*setmem_long_31z", "*setmem_long_and_31z"):
+	Rename shift_count_or_setmem_operand to setmem_operand.
+	* config/s390/vx-builtins.md ("vec_insert<mode>")
+	("vec_promote<mode>"): Replace shift_count_or_setmem_operand with
+	nonmemory_operand.
+
 2016-03-10  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR target/70168
