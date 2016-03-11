@@ -413,6 +413,10 @@ operand_to_remat (rtx_insn *insn)
       if (reg->regno >= FIRST_PSEUDO_REGISTER
 	  && bitmap_bit_p (&subreg_regs, reg->regno))
 	return -1;
+
+      /* Don't allow hard registers to be rematerialized.  */
+      if (reg->regno < FIRST_PSEUDO_REGISTER)
+	return -1;
     }
   if (found_reg == NULL)
     return -1;
@@ -718,21 +722,46 @@ calculate_local_reg_remat_bb_data (void)
 
 
 
-/* Return true if REGNO is an input operand of INSN.  */
+/* Return true if REG overlaps an input operand of INSN.  */
 static bool
-input_regno_present_p (rtx_insn *insn, int regno)
+reg_overlap_for_remat_p (lra_insn_reg *reg, rtx_insn *insn)
 {
   int iter;
   lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
   struct lra_static_insn_data *static_id = id->insn_static_data;
-  struct lra_insn_reg *reg;
-  
+  unsigned regno = reg->regno;
+  int nregs;
+
+  if (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] >= 0)
+    regno = reg_renumber[regno];
+  if (regno >= FIRST_PSEUDO_REGISTER)
+    nregs = 1;
+  else
+    nregs = hard_regno_nregs[regno][reg->biggest_mode];
+
+  struct lra_insn_reg *reg2;
+
   for (iter = 0; iter < 2; iter++)
-    for (reg = (iter == 0 ? id->regs : static_id->hard_regs);
-	 reg != NULL;
-	 reg = reg->next)
-      if (reg->type == OP_IN && reg->regno == regno)
-	return true;
+    for (reg2 = (iter == 0 ? id->regs : static_id->hard_regs);
+	 reg2 != NULL;
+	 reg2 = reg2->next)
+      {
+	if (reg2->type != OP_IN)
+	  continue;
+	unsigned regno2 = reg2->regno;
+	int nregs2;
+
+	if (regno2 >= FIRST_PSEUDO_REGISTER && reg_renumber[regno2] >= 0)
+	  regno2 = reg_renumber[regno2];
+	if (regno >= FIRST_PSEUDO_REGISTER)
+	  nregs2 = 1;
+	else
+	  nregs2 = hard_regno_nregs[regno2][reg->biggest_mode];
+
+	if ((regno2 + nregs2 - 1 >= regno && regno2 < regno + nregs)
+	    || (regno + nregs - 1 >= regno2 && regno < regno2 + nregs2))
+	  return true;
+      }
   return false;
 }
 
@@ -833,7 +862,7 @@ calculate_gen_cands (void)
 			  && dst_regno == cand->regno)
 			continue;
 		      if (cand->regno == reg->regno
-			  || input_regno_present_p (insn2, reg->regno))
+			  || reg_overlap_for_remat_p (reg, insn2))
 			{
 			  bitmap_clear_bit (gen_cands, cand->index);
 			  bitmap_set_bit (&temp_bitmap, uid);
@@ -1219,7 +1248,7 @@ do_remat (void)
 			&& dst_regno == cand->regno)
 		      continue;
 		    if (cand->regno == reg->regno
-			|| input_regno_present_p (cand->insn, reg->regno))
+			|| reg_overlap_for_remat_p (reg, cand->insn))
 		      bitmap_set_bit (&temp_bitmap, cand->index);
 		  }
 
