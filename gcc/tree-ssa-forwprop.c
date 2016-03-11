@@ -1477,7 +1477,7 @@ defcodefor_name (tree name, enum tree_code *code, tree *arg1, tree *arg2)
 	   || GIMPLE_BINARY_RHS
 	   || GIMPLE_UNARY_RHS
 	   || GIMPLE_SINGLE_RHS)
-    extract_ops_from_tree_1 (name, &code1, &arg11, &arg21, &arg31);
+    extract_ops_from_tree (name, &code1, &arg11, &arg21, &arg31);
 
   *code = code1;
   *arg1 = arg11;
