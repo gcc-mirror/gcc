@@ -1,5 +1,15 @@
 2016-03-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.md (BFP_RND_*, DFP_RND_*): Add new constant
+	definitions for BFP and DFP rounding modes.
+	("fixuns_truncdddi2", "fixuns_trunctddi2")
+	("fixuns_trunc<BFP:mode><GPR:mode>2", "fixuns_trunc<mode>si2")
+	("fix_trunc<DSF:mode><GPR:mode>2", "fix_trunc<mode>di2")
+	("fix_trunctf<mode>2"): Use the new constants instead of magic
+	numbers.
+
+2016-03-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/constraints.md: Adjust comment.
 	("Y"): Adjust comment.  Rename s390_decompose_shift_count to
 	s390_decompose_addrstyle_without_index.
