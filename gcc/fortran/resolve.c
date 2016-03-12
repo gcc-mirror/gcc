@@ -11905,7 +11905,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 		     "in %qs at %L", sym->name, &sym->declared_at);
 	  return false;
 	}
-      if (sym->attr.external && sym->attr.function
+      if (sym->attr.external && sym->attr.function && !sym->attr.module_procedure
 	  && ((sym->attr.if_source == IFSRC_DECL && !sym->attr.procedure)
 	      || sym->attr.contained))
 	{
