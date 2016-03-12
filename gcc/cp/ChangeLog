@@ -1,3 +1,9 @@
+2016-03-12  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/70106
+	* semantics.c (force_paren_expr): Just build a PAREN_EXPR when
+	processing_template_decl and EXPR is a SCOPE_REF.
+
 2016-03-10  Patrick Palka  <ppalka@gcc.gnu.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 
