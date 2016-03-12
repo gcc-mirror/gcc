@@ -1,3 +1,9 @@
+2016-03-12  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/69307
+	* sel-sched.c (choose_best_pseudo_reg): Properly check for hard
+	registers in modes that span more than one register.
+
 2016-03-12  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/69614
