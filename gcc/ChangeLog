@@ -1,3 +1,9 @@
+2016-03-12  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/69614
+	* lra-constraints.c (delete_move_and_clobber): New.
+	(remove_inheritance_pseudos): Use it.
+
 2016-03-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/70017
