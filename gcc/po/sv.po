@@ -10,14 +10,17 @@
 # assumed type		antagen typ
 # cast			typkonvertering
 # kind			sort
+# load			ladda
 # offset		avstånd
+# overload		överlagra
 # rank			ordning
+# store			lagra
 msgid ""
 msgstr ""
 "Project-Id-Version: gcc 6.1-b20160131\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-01-31 15:50+0000\n"
-"PO-Revision-Date: 2016-03-06 10:36+0100\n"
+"PO-Revision-Date: 2016-03-09 22:57+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -2052,7 +2055,7 @@ msgstr "Det maximala antalet instruktioner i redolistan som betraktas som valbar
 #: params.def:646
 #, no-c-format
 msgid "Minimal distance between possibly conflicting store and load."
-msgstr "Minimala avståndet mellan lagring och läsning som kan vara i konflikt."
+msgstr "Minimala avståndet mellan lagring och laddning som kan vara i konflikt."
 
 #: params.def:651
 #, no-c-format
@@ -3418,7 +3421,7 @@ msgstr "ogiltig användning av %%d, %%x eller %%x"
 #: config/lm32/lm32.c:507
 #, c-format
 msgid "only 0.0 can be loaded as an immediate"
-msgstr "endast 0.0 kan läsas in som en omedelbar"
+msgstr "endast 0.0 kan laddas som en omedelbar"
 
 #: config/lm32/lm32.c:577
 msgid "bad operand"
@@ -3743,7 +3746,7 @@ msgstr "Kunde inte generera addis-värde för sammanslagning"
 
 #: config/rs6000/rs6000.c:36058
 msgid "Unable to generate load/store offset for fusion"
-msgstr "Kan inte generera load/store-avstånd för sammanslagning"
+msgstr "Kan inte generera ladda/lagra-avstånd för sammanslagning"
 
 #: config/rs6000/rs6000.c:36162
 msgid "Bad GPR fusion"
@@ -7702,7 +7705,7 @@ msgstr "Gå runt en hårdvaruanomali genom att lägga till ett antal NOP:ar för
 
 #: config/bfin/bfin.opt:61
 msgid "Avoid speculative loads to work around a hardware anomaly."
-msgstr "Undvik spekulativa lastningar för att gå runt en hårdvaruanomali."
+msgstr "Undvik spekulativa laddningar för att gå runt en hårdvaruanomali."
 
 #: config/bfin/bfin.opt:65
 msgid "Enabled ID based shared library."
@@ -8083,7 +8086,7 @@ msgstr "Kända AArch64-ABI:er (att användas med flaggan -mabi=):"
 
 #: config/aarch64/aarch64.opt:150
 msgid "PC relative literal loads."
-msgstr "PC-relativa literala läsningar."
+msgstr "PC-relativa literala laddningar."
 
 #: config/aarch64/aarch64.opt:154
 msgid "When calculating a sqrt approximation, run fewer steps."
@@ -8283,7 +8286,7 @@ msgstr "Ange kostnaden för grenar (normalt 20)."
 
 #: config/spu/spu.opt:32
 msgid "Make sure loads and stores are not moved past DMA instructions."
-msgstr "Säkerställ att inläsningar och lagringar inte flyttas förbi DMA-instruktioner."
+msgstr "Säkerställ att laddningar och lagringar inte flyttas förbi DMA-instruktioner."
 
 #: config/spu/spu.opt:36
 msgid "volatile must be specified on any memory that is effected by DMA."
@@ -8549,7 +8552,7 @@ msgstr "Använd assemblersyntax för UNIX."
 
 #: config/xtensa/xtensa.opt:23
 msgid "Use CONST16 instruction to load constants."
-msgstr "Använd CONST16-instruktioner för att läsa konstanter."
+msgstr "Använd CONST16-instruktioner för att ladda konstanter."
 
 #: config/xtensa/xtensa.opt:27
 msgid "Disable position-independent code (PIC) for use in OS kernel code."
@@ -9183,16 +9186,12 @@ msgid "Support MWAITX and MONITORX built-in functions and code generation."
 msgstr "Stöd inbyggda MWAITX- och MONITORX-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:877
-#, fuzzy
-#| msgid "Support AES built-in functions and code generation"
 msgid "Support CLZERO built-in functions and code generation."
-msgstr "Stöd inbyggda AES-funktioner och -kodgenerering"
+msgstr "Stöd inbyggda CLZERO-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:881
-#, fuzzy
-#| msgid "Support PCLMUL built-in functions and code generation"
 msgid "Support PKU built-in functions and code generation."
-msgstr "Stöd inbyggda PCLMUL-funktioner och -kodgenerering"
+msgstr "Stöd inbyggda PKU-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:885
 msgid "Use given stack-protector guard."
@@ -9277,7 +9276,7 @@ msgstr "Generera alltid långa anrop."
 
 #: config/pa/pa.opt:79
 msgid "Emit long load/store sequences."
-msgstr "Mata ut långa load-/store-sekvenser."
+msgstr "Mata ut långa ladda/lagra-sekvenser."
 
 #: config/pa/pa.opt:87
 msgid "Disable space regs."
@@ -9333,7 +9332,7 @@ msgstr "Ange den maximala storleken på data som är lämpliga för SDA-arean."
 
 #: config/v850/v850.opt:67
 msgid "Enable the use of the short load instructions."
-msgstr "Möjliggör användning av de korta load-instruktionerna."
+msgstr "Möjliggör användning av de korta laddinstruktionerna."
 
 #: config/v850/v850.opt:71
 msgid "Same as: -mep -mprolog-function."
@@ -9661,10 +9660,8 @@ msgid "Use hardware transactional execution instructions."
 msgstr "Använd transaktionskörningsinstruktioner i hårdvara."
 
 #: config/s390/s390.opt:138
-#, fuzzy
-#| msgid "hardware decimal floating point instructions not available on %s"
 msgid "Use hardware vector facility instructions and enable the vector ABI."
-msgstr "hårdvaruinstruktioner för decimala flyttal är inte tillgängliga på %s"
+msgstr "Använd instruktioner för vektorfunktioner i hårdvara och aktivera vektor-ABI:et."
 
 #: config/s390/s390.opt:142
 msgid "Use packed stack layout."
@@ -9695,10 +9692,8 @@ msgid "Switches off the -mstack-size= option."
 msgstr "Slår av flaggan -mstack-size=."
 
 #: config/s390/s390.opt:174
-#, fuzzy
-#| msgid "Generate string instructions for block moves"
 msgid "Use the mvcle instruction for block moves."
-msgstr "Generera stränginstruktioner för blockförflyttningar"
+msgstr "Använd mvcle-instruktioner för blockförflyttningar."
 
 #: config/s390/s390.opt:178
 msgid "Enable the z vector language extension providing the context-sensitive"
@@ -9741,22 +9736,16 @@ msgid "Selects the type of RL78 core being targeted (g10/g13/g14).  The default 
 msgstr "Väljer typen av RL78-kärna att ha som mål (g10/g13/g14).  Standard är G14.  Om satt väljer det även stödet av hårdvarumultiplikation att använda."
 
 #: config/rl78/rl78.opt:77
-#, fuzzy
-#| msgid "Alias for --help=target"
 msgid "Alias for -mcpu=g10."
-msgstr "Alias för --help=target"
+msgstr "Alias för -mcpu=g10."
 
 #: config/rl78/rl78.opt:81
-#, fuzzy
-#| msgid "Alias for --help=target"
 msgid "Alias for -mcpu=g13."
-msgstr "Alias för --help=target"
+msgstr "Alias för -mcpu=g13."
 
 #: config/rl78/rl78.opt:85 config/rl78/rl78.opt:89
-#, fuzzy
-#| msgid "Alias for --help=target"
 msgid "Alias for -mcpu=g14."
-msgstr "Alias för --help=target"
+msgstr "Alias för -mcpu=g14."
 
 #: config/rl78/rl78.opt:93
 msgid "Assume ES is zero throughout program execution, use ES: for read-only data."
@@ -9827,10 +9816,8 @@ msgid "Known floating-point ABIs (for use with the -mfloat-abi= option):"
 msgstr "Kända flyttals-ABI:er (att användas med flaggan -mfloat-abi=):"
 
 #: config/arm/arm.opt:127
-#, fuzzy
-#| msgid "Switch on/off MIPS16 ASE on alternating functions for compiler testing"
 msgid "Switch ARM/Thumb modes on alternating functions for compiler testing."
-msgstr "Växla av/på MIPS16 ASE mellan alternerande funktioner för kompilatortestning"
+msgstr "Växla ARM-/Thumb-lägen mellan alternerande funktioner för kompilatortestning."
 
 #: config/arm/arm.opt:131
 msgid "Specify the __fp16 floating-point format."
@@ -9949,16 +9936,13 @@ msgid "Assume loading data from flash is slower than fetching instructions."
 msgstr "Anta att ladda data från flash är långsammare än att hämta instruktioner."
 
 #: config/arm/arm.opt:283
-#, fuzzy
-#| msgid "Assume unified syntax for Thumb inline assembly code."
 msgid "Assume unified syntax for inline assembly code."
-msgstr "Anta unifierad syntax för Thumb-inline assemblerkod."
+msgstr "Anta unifierad syntax för inline:ad assemblerkod."
 
-# fixme: fp = flyttal, men hur skall man skriva det. Förkortat eller FPU?
 #: config/sparc/sparc.opt:30 config/sparc/sparc.opt:34
 #: config/visium/visium.opt:37
 msgid "Use hardware FP."
-msgstr "Använd hårdvaru-fp."
+msgstr "Använd hårdvaruflyttal."
 
 #: config/sparc/sparc.opt:38 config/visium/visium.opt:41
 msgid "Do not use hardware FP."
@@ -10041,10 +10025,8 @@ msgid "Optimize tail call instructions in assembler and linker."
 msgstr "Optimera svansanropsinstruktioner i assembler och länkare."
 
 #: config/sparc/sparc.opt:118
-#, fuzzy
-#| msgid "Do not generate code that can only run in supervisor mode"
 msgid "Do not generate code that can only run in supervisor mode (default)."
-msgstr "Generera inte kod som endast kan köra i övervakarläge"
+msgstr "Generera inte kod som endast kan köra i övervakarläge (standard)."
 
 #: config/sparc/sparc.opt:122 config/visium/visium.opt:45
 msgid "Use features of and schedule code for given CPU."
@@ -10168,7 +10150,7 @@ msgstr "Använd 4xx:s strängsöknings dlmzb-instruktion."
 
 #: config/rs6000/rs6000.opt:165
 msgid "Generate load/store multiple instructions."
-msgstr "Generera load/store multiple-instruktioner."
+msgstr "Generera ladda/lagra-multipla-instruktioner."
 
 #: config/rs6000/rs6000.opt:169
 msgid "Generate string instructions for block moves."
@@ -10188,15 +10170,15 @@ msgstr "Använd vektor-/skalärinstruktioner (VSX)."
 
 #: config/rs6000/rs6000.opt:240
 msgid "Do not generate load/store with update instructions."
-msgstr "Generera inte load/store-instruktioner med uppdatering."
+msgstr "Generera inte ladda/lagra-instruktioner med uppdatering."
 
 #: config/rs6000/rs6000.opt:244
 msgid "Generate load/store with update instructions."
-msgstr "Generera load/store-instruktioner med uppdatering."
+msgstr "Generera ladda/lagra-instruktioner med uppdatering."
 
 #: config/rs6000/rs6000.opt:252
 msgid "Avoid generation of indexed load/store instructions when possible."
-msgstr "Undvik att generera indexerade load/store-instruktioner så långt möjligt."
+msgstr "Undvik att generera indexerade ladda/lagra-instruktioner så långt möjligt."
 
 #: config/rs6000/rs6000.opt:256
 msgid "Mark __tls_get_addr calls with argument info."
@@ -10483,42 +10465,32 @@ msgid "Analyze and remove doubleword swaps from VSX computations."
 msgstr "Analysera och ta bort dubbelordsbyten från VSX-beräkningar."
 
 #: config/rs6000/rs6000.opt:606
-#, fuzzy
-#| msgid "Fuse certain integer operations together for better performance on power8"
 msgid "Fuse certain operations together for better performance on power9."
-msgstr "Smält samman vissa heltalsoperationer för bättre prestanda på power8"
+msgstr "Smält samman vissa operationer för bättre prestanda på power9."
 
 #: config/rs6000/rs6000.opt:610 config/rs6000/rs6000.opt:614
-#, fuzzy
-#| msgid "Use/do not use vector and scalar instructions added in ISA 2.07."
 msgid "Use/do not use vector and scalar instructions added in ISA 3.0."
-msgstr "Använd/använd inte vektor och skalära instruktioner som lades till i ISA 2.07."
+msgstr "Använd/använd inte vektor- och skalära instruktioner som lades till i ISA 3.0."
 
 #: config/rs6000/rs6000.opt:618
-#, fuzzy
-#| msgid "Use/do not use vector and scalar instructions added in ISA 2.07."
 msgid "Use/do not use the new min/max instructions defined in ISA 3.0."
-msgstr "Använd/använd inte vektor och skalära instruktioner som lades till i ISA 2.07."
+msgstr "Använd/använd inte de nya min-/maxinstruktionerna som definierades i ISA 3.0."
 
 #: config/rs6000/rs6000.opt:622
 msgid "Fuse medium/large code model toc references with the memory instruction."
 msgstr "Slå samman medium/stor modellers toc-referenser med minnesinstruktionen."
 
 #: config/rs6000/rs6000.opt:626
-#, fuzzy
-#| msgid "Generate isel instructions"
 msgid "Generate the integer modulo instructions."
-msgstr "Generera isel-instruktioner"
+msgstr "Generera heltalsmoduloinstruktioner."
 
 #: config/rs6000/rs6000.opt:630
 msgid "Enable/disable IEEE 128-bit floating point via the __float128 keyword."
 msgstr "Aktivera/avaktivera IEEE 128-bitars flyttal via nyckelordet __float128."
 
 #: config/rs6000/rs6000.opt:634
-#, fuzzy
-#| msgid "Use decimal floating point instructions"
 msgid "Enable/disable using IEEE 128-bit floating point instructions."
-msgstr "Använd decimala flyttalsinstruktioner"
+msgstr "Aktivera/avaktivera användning av IEEE 128-bitars flyttalsinstruktioner."
 
 #: config/rs6000/rs6000.opt:638
 msgid "Enable/disable default conversions between __float128 & long double."
@@ -11265,16 +11237,12 @@ msgid "Valid Nios II ISA levels (for -march):"
 msgstr "Giltiga Nios II ISA-nivåer (för -march):"
 
 #: config/nios2/nios2.opt:584
-#, fuzzy
-#| msgid "Enable saturation instructions"
 msgid "Enable generation of R2 BMX instructions."
-msgstr "Använd mättnads-instruktioner"
+msgstr "Aktivera generering av R2 BMX-instruktioner."
 
 #: config/nios2/nios2.opt:588
-#, fuzzy
-#| msgid "Enable saturation instructions"
 msgid "Enable generation of R2 CDX instructions."
-msgstr "Använd mättnads-instruktioner"
+msgstr "Använd generering av R2 CDX-instruktioner."
 
 #: config/rx/rx.opt:29
 msgid "Store doubles in 64 bits."
@@ -11353,10 +11321,8 @@ msgid "Enables or disables the use of the SMOVF, SMOVB, SMOVU, SUNTIL, SWHILE an
 msgstr "Aktiverar eller avaktiverar användningen av instruktionerna SMOVF, SMOVB, SMOVU, SUNTIL, SWHILE och RMPA.  Normalt aktiverat."
 
 #: config/rx/rx.opt:157
-#, fuzzy
-#| msgid "Always generate long calls"
 msgid "Always use JSR, never BSR, for calls."
-msgstr "Generera alltid långa anrop"
+msgstr "Använd alltid JSR, aldrig BSR, för anrop."
 
 #: config/visium/visium.opt:25
 msgid "Link with libc.a and libdebug.a."
@@ -11366,10 +11332,9 @@ msgstr "Länka med libc.a och libdebug.a."
 msgid "Link with libc.a and libsim.a."
 msgstr "Länka med libc.a och libsim.a."
 
-# fixme: fp = flyttal, men hur skall man skriva det. Förkortat eller FPU?
 #: config/visium/visium.opt:33
 msgid "Use hardware FP (default)."
-msgstr "Använd hårdvaru-fp (standard)."
+msgstr "Använd hårdvaruflyttal (standard)."
 
 #: config/visium/visium.opt:65
 msgid "Generate code for the supervisor mode (default)."
@@ -11425,7 +11390,7 @@ msgstr "Använd programvaruemulering av multiplikation (standard)."
 
 #: config/microblaze/microblaze.opt:72
 msgid "Use reorder instructions (swap and byte reversed load/store) (default)."
-msgstr "Använd ordningsändringinstruktioner (växlad och byte-omvänd lastning/lagring) (standard)."
+msgstr "Använd ordningsändringinstruktioner (växlad och byte-omvänd laddning/lagring) (standard)."
 
 #: config/microblaze/microblaze.opt:76
 msgid "Use the software emulation for divides (default)."
@@ -11498,10 +11463,8 @@ msgid "Description for mxl-mode-novectors."
 msgstr "Beskrivning för mxl-mode-novectors."
 
 #: config/microblaze/microblaze.opt:128
-#, fuzzy
-#| msgid "Use hardware quad FP instructions"
 msgid "Use hardware prefetch instruction"
-msgstr "Använd hårdvaruinstruktioner för quad fp"
+msgstr "Använd instruktioner för förhandshämtning (prefetch) i hårdvara"
 
 #: config/vax/vax.opt:23 config/vax/vax.opt:27
 msgid "Target DFLOAT double precision code."
@@ -12101,10 +12064,8 @@ msgid "Specify name for 32 bit signed division function."
 msgstr "Ange namnet på funktion för 32-bitars division med tecken."
 
 #: config/sh/sh.opt:265
-#, fuzzy
-#| msgid "Generate LP64 code"
 msgid "Generate ELF FDPIC code."
-msgstr "Generera LP64-kod"
+msgstr "Generera ELF FDPIC-kod."
 
 #: config/sh/sh.opt:269
 msgid "Enable the use of 64-bit floating point registers in fmov instructions.  See -mdalign if 64-bit alignment is required."
@@ -12604,7 +12565,7 @@ msgstr "Förhindra användningen av alla flyttalsinstruktioner i hårdvara."
 
 #: config/mips/mips.opt:373
 msgid "Optimize lui/addiu address loads."
-msgstr "Optimera adressinläsningar lui/addiu."
+msgstr "Optimera adressladdning lui/addiu."
 
 #: config/mips/mips.opt:377
 msgid "Assume all symbols have 32-bit values."
@@ -12639,16 +12600,12 @@ msgid "Enable use of odd-numbered single-precision registers."
 msgstr "Aktivera användningen av udda enkelprecisionsregister."
 
 #: config/mips/mips.opt:417
-#, fuzzy
-#| msgid "Optimize for space rather than speed"
 msgid "Optimize frame header."
-msgstr "Optimera för storlek istället för hastighet"
+msgstr "Optimera ramhuvud."
 
 #: config/mips/mips.opt:424
-#, fuzzy
-#| msgid "Enable dead store elimination"
 msgid "Enable load/store bonding."
-msgstr "Aktivera eliminering av död lagring"
+msgstr "Aktivera bindning av laddning/lagring."
 
 #: config/mips/mips.opt:428
 msgid "Specify the compact branch usage policy."
@@ -12719,16 +12676,12 @@ msgid "-mmpy-option={0,1,2,3,4,5,6,7,8,9} Compile ARCv2 code with a multiplier d
 msgstr "-mmpy-option={0,1,2,3,4,5,6,7,8,9} Kompilera ARCv2-kod med en multiplicerardesignflagga.  Flaggan 2 är normalt på."
 
 #: config/arc/arc.opt:62
-#, fuzzy
-#| msgid "Enable MUL instructions"
 msgid "Enable DIV-REM instructions for ARCv2."
-msgstr "Använd MUL-instruktioner"
+msgstr "Använd DIV-REM-instruktioner för ARCv2."
 
 #: config/arc/arc.opt:66
-#, fuzzy
-#| msgid "Enable barrel shift instructions"
 msgid "Enable code density instructions for ARCv2."
-msgstr "Använd barrel-shift-instruktioner"
+msgstr "Använd koddensitetsinstruktioner för ARCv2."
 
 #: config/arc/arc.opt:70
 msgid "Tweak register allocation to help 16-bit instruction generation."
@@ -12971,16 +12924,12 @@ msgid "instrument with mcount calls as in the ucb code."
 msgstr "instrumentera med mcount-anrop som i ucb-koden."
 
 #: config/arc/arc.opt:411
-#, fuzzy
-#| msgid "Enable clip instructions"
 msgid "Enable atomic instructions."
-msgstr "Använd clip-instruktioner"
+msgstr "Använd atomära instruktioner."
 
 #: config/arc/arc.opt:415
-#, fuzzy
-#| msgid "Enable leading zero instructions"
 msgid "Enable double load/store instructions for ARC HS."
-msgstr "Använd instruktioner för inledande nollor"
+msgstr "Använd dubbla ladda/lagra-instruktioner för ARC HS."
 
 #: java/lang.opt:122
 msgid "Warn if deprecated empty statements are found."
@@ -13091,10 +13040,9 @@ msgid "Set the target VM version."
 msgstr "Ange typen av mål-VM-version."
 
 #: lto/lang.opt:28
-#, fuzzy, c-format
-#| msgid "unknown pointer size model %qs"
+#, c-format
 msgid "unknown linker output %qs"
-msgstr "okänd pekarstorlekmodell %qs"
+msgstr "okänd länkarutmatning %qs"
 
 #: lto/lang.opt:47
 msgid "Set linker output type (used internally during LTO optimization)"
@@ -13121,10 +13069,8 @@ msgid "The resolution file."
 msgstr "Upplösningsfilen."
 
 #: common.opt:235
-#, fuzzy
-#| msgid "Enable user-defined instructions"
 msgid "Enable coverage-guided fuzzing code instrumentation."
-msgstr "Använd användardefinierade instruktioner"
+msgstr "Använd täckningsguidad utsuddande kodinstrumentering."
 
 #: common.opt:302
 msgid "Display this information."
@@ -13219,10 +13165,8 @@ msgid "Warn when attempting to free a non-heap object."
 msgstr "Varna vid försök att frigöra ett icke-heap-objekt."
 
 #: common.opt:602
-#, fuzzy
-#| msgid "Warn when an inlined function cannot be inlined"
 msgid "Warn when a function cannot be expanded to HSAIL."
-msgstr "Varna när en inline:ad funktion inte kan inline:as"
+msgstr "Varna när en funktion inte kan expanderas till HSAIL."
 
 #: common.opt:606
 msgid "Warn when an inlined function cannot be inlined."
@@ -13466,15 +13410,15 @@ msgstr "Använd profileringsinformation för grensannolikheter."
 
 #: common.opt:991
 msgid "Perform branch target load optimization before prologue / epilogue threading."
-msgstr "Utför optimering av grenmålsinläsning före prolog-/epilogtrådning."
+msgstr "Utför optimering av grenmålsladdning före prolog-/epilogtrådning."
 
 #: common.opt:995
 msgid "Perform branch target load optimization after prologue / epilogue threading."
-msgstr "Utför optimering av grenmålsinläsning efter prolog-/epilogtrådning."
+msgstr "Utför optimering av grenmålsladdning efter prolog-/epilogtrådning."
 
 #: common.opt:999
 msgid "Restrict target load migration not to re-use registers in any basic block."
-msgstr "Begränsa migration av målinläsning till att inte återanvända register i något grundblock."
+msgstr "Begränsa migration av målladdning till att inte återanvända register i något grundblock."
 
 #: common.opt:1003
 msgid "-fcall-saved-<register>\tMark <register> as being preserved across functions."
@@ -13489,20 +13433,16 @@ msgid "Save registers around function calls."
 msgstr "Spara register runt funktionsanrop."
 
 #: common.opt:1018
-#, fuzzy
-#| msgid "This switch is deprecated; use -Wextra instead"
 msgid "This switch is deprecated; do not use."
-msgstr "Denna flagga bör undvikas, använd -Wextra istället"
+msgstr "Denna flagga bör undvikas, använd den inte."
 
 #: common.opt:1022
 msgid "Check the return value of new in C++."
 msgstr "Kontrollera returvärdet av new i C++."
 
 #: common.opt:1026
-#, fuzzy
-#| msgid "internal consistency failure"
 msgid "Perform internal consistency checkings."
-msgstr "internt konsistensfel"
+msgstr "Utför interna konsistenskontroller."
 
 #: common.opt:1030
 msgid "Looks for opportunities to reduce stack adjustments and stack references."
@@ -13557,10 +13497,8 @@ msgid "List all available debugging counters with their limits and counts."
 msgstr "Lista alla tillgängliga felsökningsräknare med deras gränser och värden."
 
 #: common.opt:1090
-#, fuzzy
-#| msgid "-fdbg-cnt=<counter>:<limit>[,<counter>:<limit>,...]\tSet the debug counter limit.   "
 msgid "-fdbg-cnt=<counter>:<limit>[,<counter>:<limit>,...]\tSet the debug counter limit."
-msgstr "-fdbg-cnt=<räknare>:<gräns>[,<räknare>:<gräns>,...]\tSätt gränsen för felsökningsräknare.   "
+msgstr "-fdbg-cnt=<räknare>:<gräns>[,<räknare>:<gräns>,...]\tSätt gränsen för felsökningsräknare."
 
 #: common.opt:1094
 msgid "Map one directory name to another in debug information."
@@ -13667,10 +13605,8 @@ msgid "Perform early inlining."
 msgstr "Utför tidig inline:ing."
 
 #: common.opt:1237
-#, fuzzy
-#| msgid "Perform DWARF2 duplicate elimination"
 msgid "Perform DWARF duplicate elimination."
-msgstr "Utför dubbletteliminering i DWARF2"
+msgstr "Utför dubbletteliminering i DWARF."
 
 #: common.opt:1241
 msgid "Perform interprocedural reduction of aggregates."
@@ -13748,7 +13684,7 @@ msgstr "Utför global eliminering av gemensamma deluttryck."
 
 #: common.opt:1337
 msgid "Perform enhanced load motion during global common subexpression elimination."
-msgstr "Utför förbättrad förflyttning av inläsning under global eliminering av gemensamma deluttryck."
+msgstr "Utför förbättrad förflyttning av laddning under global eliminering av gemensamma deluttryck."
 
 #: common.opt:1341
 msgid "Perform store motion after global common subexpression elimination."
@@ -13756,11 +13692,9 @@ msgstr "Utför förflyttning av lagring efter global eliminering av gemensamma d
 
 #: common.opt:1345
 msgid "Perform redundant load after store elimination in global common subexpression"
-msgstr "Utför eliminering av överflödig inläsning efter lagring i globala gemensamma deluttryck"
+msgstr "Utför eliminering av överflödig laddning efter lagring i globala gemensamma deluttryck"
 
 #: common.opt:1350
-#, fuzzy
-#| msgid "Perform global common subexpression elimination after register allocation"
 msgid "Perform global common subexpression elimination after register allocation has"
 msgstr "Utför global eliminering av gemensamma deluttryck efter registertilldelning"
 
@@ -13778,7 +13712,7 @@ msgstr "Aktivera Graphite-identitetstransformation."
 
 #: common.opt:1380
 msgid "Enable hoisting adjacent loads to encourage generating conditional move"
-msgstr "Aktivera närliggande lyftningslast för att uppmuntra generering av villkorliga förflyttningar."
+msgstr "Aktivera närliggande lyftningsladdning för att uppmuntra generering av villkorliga förflyttningar."
 
 #: common.opt:1389
 msgid "Mark all loops as parallel."
@@ -13786,10 +13720,8 @@ msgstr "Markera alla slingor som parallella."
 
 #: common.opt:1393 common.opt:1397 common.opt:1401 common.opt:1405
 #: common.opt:2388
-#, fuzzy
-#| msgid "Enable loop interchange transforms.  Same as -floop-interchange"
 msgid "Enable loop nest transforms.  Same as -floop-nest-optimize."
-msgstr "Aktivera transformationen utbyte (interchange) i slingor.  Samma som -floop-interchange"
+msgstr "Aktivera transformationer av slingutbyten.  Samma som -floop-nest-interchange."
 
 #: common.opt:1409
 msgid "Enable support for GNU transactional memory."
@@ -13800,10 +13732,8 @@ msgid "Use STB_GNU_UNIQUE if supported by the assembler."
 msgstr "Använd STB_GNU_UNIQUE om det stödjs av assemblern."
 
 #: common.opt:1421
-#, fuzzy
-#| msgid "Enable the ISL based loop nest optimizer"
 msgid "Enable the loop nest optimizer."
-msgstr "Aktevera den ISL-baserade optimeraren av slingnästning"
+msgstr "Aktivera optimeraren av slingnästning."
 
 #: common.opt:1425
 msgid "Force bitfield accesses to match their type width."
@@ -13973,10 +13903,8 @@ msgid "Generate code for functions even if they are fully inlined."
 msgstr "Generera kod för funktioner även om de är fullständigt inline:ade."
 
 #: common.opt:1637
-#, fuzzy
-#| msgid "Generate code for functions even if they are fully inlined"
 msgid "Generate code for static functions even if they are never called."
-msgstr "Generera kod för funktioner även om de är fullständigt inline:ade"
+msgstr "Generera kod för statiska funktioner även om de aldrig anropas."
 
 #: common.opt:1641
 msgid "Emit static const variables even if they are not used."
@@ -14230,10 +14158,8 @@ msgid "Enable function reordering that improves code placement."
 msgstr "Aktivera omflyttning av funktioner för att förbättra kodplacering."
 
 #: common.opt:1924
-#, fuzzy
-#| msgid "-frandom-seed=<number>\tMake compile reproducible using <number>"
 msgid "-frandom-seed=<string>\tMake compile reproducible using <string>."
-msgstr "-frandom-seed=<tal>\tGör kompileringen reproducerbar med <tal>"
+msgstr "-frandom-seed=<sträng>\tGör kompileringen reproducerbar med <sträng>."
 
 #: common.opt:1934
 msgid "Record gcc command line switches in the object file."
@@ -14268,10 +14194,9 @@ msgid "-freorder-blocks-algorithm=[simple|stc] Set the used basic block reorderi
 msgstr "-freorder-blocks-algorithm=[simple|stc] Sätt algoritmen att användas för ordningsändring av grundblock."
 
 #: common.opt:1970
-#, fuzzy, c-format
-#| msgid "unknown IRA algorithm %qs"
+#, c-format
 msgid "unknown basic block reordering algorithm %qs"
-msgstr "okänd IRA-algoritm %qs"
+msgstr "okänd algoritm for omordning av grundblock %qs"
 
 #: common.opt:1980
 msgid "Reorder basic blocks and partition into hot and cold sections."
@@ -14299,15 +14224,15 @@ msgstr "Aktivera registertryckskänslig instruktionsschemaläggning."
 
 #: common.opt:2008
 msgid "Allow speculative motion of non-loads."
-msgstr "Tillåt spekulativ förflyttning av icke-inläsningar."
+msgstr "Tillåt spekulativ förflyttning av icke-laddningar."
 
 #: common.opt:2012
 msgid "Allow speculative motion of some loads."
-msgstr "Tillåt spekulativ förflyttning av några inläsningar."
+msgstr "Tillåt spekulativ förflyttning av några laddningar."
 
 #: common.opt:2016
 msgid "Allow speculative motion of more loads."
-msgstr "Tillåt spekulativ förflyttning av fler inläsningar."
+msgstr "Tillåt spekulativ förflyttning av fler laddningar."
 
 #: common.opt:2020
 msgid "-fsched-verbose=<number>\tSet the verbosity level of the scheduler."
@@ -14430,10 +14355,8 @@ msgid "Split wide types into independent registers."
 msgstr "Dela upp breda typer i oberoende register."
 
 #: common.opt:2162
-#, fuzzy
-#| msgid "Enable forward propagation on trees"
 msgid "Enable backward propagation of use properties at the SSA level."
-msgstr "Aktivera framåtpropagering på träd"
+msgstr "Aktivera bakåtpropagering av användningsegenskaper på SSA-nivån."
 
 #: common.opt:2166
 msgid "Optimize conditional patterns using SSA PHI nodes."
@@ -14628,7 +14551,7 @@ msgstr "Aktivera automatisk parallellisering av slingor."
 
 #: common.opt:2404
 msgid "Enable hoisting loads from conditional pointers."
-msgstr "Aktivera lyftningslast från villkorliga pekare."
+msgstr "Aktivera lyftningsladdning från villkorliga pekare."
 
 #: common.opt:2408
 msgid "Enable SSA-PRE optimization on trees."
@@ -15486,7 +15409,7 @@ msgstr "Det går inte arbetsmängden från %s."
 #: bt-load.c:1566
 #, gcc-internal-format
 msgid "branch target register load optimization is not intended to be run twice"
-msgstr "optimeringen av lastning av grenmålsregister är inte avsedd att köras två gånger"
+msgstr "optimeringen av laddning av grenmålsregister är inte avsedd att köras två gånger"
 
 #: builtins.c:604
 #, gcc-internal-format
