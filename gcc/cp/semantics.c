@@ -1649,7 +1649,15 @@ force_paren_expr (tree expr)
 
   if (TREE_CODE (expr) == COMPONENT_REF)
     REF_PARENTHESIZED_P (expr) = true;
-  else if (type_dependent_expression_p (expr))
+  else if (type_dependent_expression_p (expr)
+	   /* When processing_template_decl, a SCOPE_REF may actually be
+	      referring to a non-static data member of the current class, in
+	      which case its TREE_TYPE may not be properly cv-qualified (the
+	      cv-qualifiers of the implicit *this object haven't yet been taken
+	      into account) so we have to delay building a static_cast until
+	      instantiation.  */
+	   || (processing_template_decl
+	       && TREE_CODE (expr) == SCOPE_REF))
     expr = build1 (PAREN_EXPR, TREE_TYPE (expr), expr);
   else if (VAR_P (expr) && DECL_HARD_REGISTER (expr))
     /* We can't bind a hard register variable to a reference.  */;
