@@ -1566,7 +1566,7 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 					         stack_pointer_rtx,
 					         plus_constant (Pmode,
 								size, first)));
-      emit_library_call (stack_check_libfunc, LCT_NORMAL, VOIDmode, 1, addr,
+      emit_library_call (stack_check_libfunc, LCT_THROW, VOIDmode, 1, addr,
 			 Pmode);
     }
 

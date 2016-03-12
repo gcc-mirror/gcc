@@ -1,3 +1,11 @@
+2016-03-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/70017
+	* calls.c (emit_library_call_value_1): Clear the ECF_NOTHROW flag if
+	the libcall is LCT_THROW.
+	* explow.c (probe_stack_range): Pass LCT_THROW to emit_library_call
+	for the checking routine.
+
 2016-03-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/70131
