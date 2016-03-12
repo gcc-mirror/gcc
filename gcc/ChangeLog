@@ -1,3 +1,10 @@
+2016-03-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/70131
+	* config/rs6000/rs6000.md (round32<mode>2_fprs): Do not do the
+	optimization if we have direct move.
+	(roundu32<mode>2_fprs): Likewise.
+
 2016-03-11  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR target/70123

@@ -1,3 +1,8 @@
+2016-03-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/70131
+	* gcc.target/powerpc/ppc-round2.c: New test.
+
 2016-03-11  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR target/70123
