@@ -3852,7 +3852,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   reg_parm_stack_space = REG_PARM_STACK_SPACE ((tree) 0);
 #endif
 
-  /* By default, library functions can not throw.  */
+  /* By default, library functions cannot throw.  */
   flags = ECF_NOTHROW;
 
   switch (fn_type)
@@ -3869,7 +3869,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       flags |= ECF_NORETURN;
       break;
     case LCT_THROW:
-      flags = ECF_NORETURN;
+      flags &= ~ECF_NOTHROW;
       break;
     case LCT_RETURNS_TWICE:
       flags = ECF_RETURNS_TWICE;
