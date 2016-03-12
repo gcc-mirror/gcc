@@ -764,7 +764,7 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
       gfc_reduce_init_expr (e);
 
       if ((e->ref && e->ref->type == REF_ARRAY
-	   && e->ref->u.ar.type != AR_ELEMENT) 
+	   && e->ref->u.ar.type != AR_ELEMENT)
 	  || (!e->ref && e->expr_type == EXPR_ARRAY))
 	{
 	  gfc_free_expr (e);
@@ -1183,8 +1183,8 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	  else if (sym->attr.optional == 1
 		   && !gfc_notify_std (GFC_STD_F2008_TS, "Variable %qs "
 				       "at %L with OPTIONAL attribute in "
-				       "procedure %qs which is BIND(C)", 
-				       sym->name, &(sym->declared_at), 
+				       "procedure %qs which is BIND(C)",
+				       sym->name, &(sym->declared_at),
 				       sym->ns->proc_name->name))
 	    retval = false;
 
@@ -1195,8 +1195,8 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	      && !gfc_notify_std (GFC_STD_F2008_TS, "Assumed-shape array %qs "
 				  "at %L as dummy argument to the BIND(C) "
 				  "procedure %qs at %L", sym->name,
-				  &(sym->declared_at), 
-				  sym->ns->proc_name->name, 
+				  &(sym->declared_at),
+				  sym->ns->proc_name->name,
 				  &(sym->ns->proc_name->declared_at)))
 	    retval = false;
 	}
@@ -1286,7 +1286,7 @@ build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
         {
 	  /* Set the binding label and verify that if a NAME= was specified
 	     then only one identifier was in the entity-decl-list.  */
-	  if (!set_binding_label (&sym->binding_label, sym->name, 
+	  if (!set_binding_label (&sym->binding_label, sym->name,
 				  num_idents_on_line))
             return false;
         }
@@ -1505,7 +1505,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 		      else if (init->value.constructor)
 			{
 			  gfc_constructor *c;
-	                  c = gfc_constructor_first (init->value.constructor); 	 
+	                  c = gfc_constructor_first (init->value.constructor);
 	                  clen = c->expr->value.character.length;
 			}
 		      else
@@ -1570,7 +1570,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 
 	      lower = sym->as->lower[dim];
 
-	      /* If the lower bound is an array element from another 
+	      /* If the lower bound is an array element from another
 		 parameterized array, then it is marked with EXPR_VARIABLE and
 		 is an initialization expression.  Try to reduce it.  */
 	      if (lower->expr_type == EXPR_VARIABLE)
@@ -1998,7 +1998,7 @@ variable_decl (int elem)
 	as->type = AS_IMPLIED_SHAPE;
 
       if (as->type == AS_IMPLIED_SHAPE
-	  && !gfc_notify_std (GFC_STD_F2008, "Implied-shape array at %L", 
+	  && !gfc_notify_std (GFC_STD_F2008, "Implied-shape array at %L",
 			      &var_locus))
 	{
 	  m = MATCH_ERROR;
@@ -2314,8 +2314,8 @@ gfc_match_old_kind_spec (gfc_typespec *ts)
       return MATCH_ERROR;
     }
 
-  if (!gfc_notify_std (GFC_STD_GNU, 
-		       "Nonstandard type declaration %s*%d at %C", 
+  if (!gfc_notify_std (GFC_STD_GNU,
+		       "Nonstandard type declaration %s*%d at %C",
 		       gfc_basic_typename(ts->type), original_kind))
     return MATCH_ERROR;
 
@@ -2918,7 +2918,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	      /* This is essential to force the construction of
 		 unlimited polymorphic component class containers.  */
 	      upe->attr.zero_comp = 1;
-	      if (!gfc_add_flavor (&upe->attr, FL_DERIVED, NULL, 
+	      if (!gfc_add_flavor (&upe->attr, FL_DERIVED, NULL,
 				   &gfc_current_locus))
 	  return MATCH_ERROR;
 	}
@@ -3938,7 +3938,7 @@ match_attr_spec (void)
 	      && gfc_state_stack->previous->state == COMP_MODULE)
 	    {
 	      if (!gfc_notify_std (GFC_STD_F2003, "Attribute %s "
-				   "at %L in a TYPE definition", attr, 
+				   "at %L in a TYPE definition", attr,
 				   &seen_at[d]))
 		{
 		  m = MATCH_ERROR;
@@ -4345,7 +4345,7 @@ set_verify_bind_c_com_block (gfc_common_head *com_block, int num_idents)
   bool retval = true;
 
   /* destLabel, common name, typespec (which may have binding label).  */
-  if (!set_binding_label (&com_block->binding_label, com_block->name, 
+  if (!set_binding_label (&com_block->binding_label, com_block->name,
 			  num_idents))
     return false;
 
@@ -4606,6 +4606,19 @@ gfc_match_prefix (gfc_typespec *ts)
     {
       found_prefix = false;
 
+      /* MODULE is a prefix like PURE, ELEMENTAL, etc., having a
+	 corresponding attribute seems natural and distinguishes these
+	 procedures from procedure types of PROC_MODULE, which these are
+	 as well.  */
+      if (gfc_match ("module% ") == MATCH_YES)
+	{
+	  if (!gfc_notify_std (GFC_STD_F2008, "MODULE prefix at %C"))
+	    goto error;
+
+	  current_attr.module_procedure = 1;
+	  found_prefix = true;
+	}
+
       if (!seen_type && ts != NULL
 	  && gfc_match_decl_type_spec (ts, 0) == MATCH_YES
 	  && gfc_match_space () == MATCH_YES)
@@ -4669,21 +4682,6 @@ gfc_match_prefix (gfc_typespec *ts)
 
   /* At this point, the next item is not a prefix.  */
   gcc_assert (gfc_matching_prefix);
-
-  /* MODULE should be the last prefix before FUNCTION or SUBROUTINE.
-     Since this is a prefix like PURE, ELEMENTAL, etc., having a
-     corresponding attribute seems natural and distinguishes these
-     procedures from procedure types of PROC_MODULE, which these are
-     as well.  */
-  if ((gfc_current_state () == COMP_INTERFACE
-       || gfc_current_state () == COMP_CONTAINS)
-      && gfc_match ("module% ") == MATCH_YES)
-    {
-      if (!gfc_notify_std (GFC_STD_F2008, "MODULE prefix at %C"))
-	goto error;
-      else
-	current_attr.module_procedure = 1;
-    }
 
   gfc_matching_prefix = false;
   return MATCH_YES;
@@ -5142,7 +5140,7 @@ match_procedure_interface (gfc_symbol **proc_if)
 
       if ((*proc_if)->attr.flavor == FL_UNKNOWN
 	  && (*proc_if)->ts.type == BT_UNKNOWN
-	  && !gfc_add_flavor (&(*proc_if)->attr, FL_PROCEDURE, 
+	  && !gfc_add_flavor (&(*proc_if)->attr, FL_PROCEDURE,
 			      (*proc_if)->name, NULL))
 	return MATCH_ERROR;
     }
@@ -5639,9 +5637,16 @@ gfc_match_function_decl (void)
       if (!gfc_add_function (&sym->attr, sym->name, NULL))
 	goto cleanup;
 
-      if (!gfc_missing_attr (&sym->attr, NULL)
-	  || !copy_prefix (&sym->attr, &sym->declared_at))
+      if (!gfc_missing_attr (&sym->attr, NULL))
 	goto cleanup;
+
+      if (!copy_prefix (&sym->attr, &sym->declared_at))
+	{
+	  if(!sym->attr.module_procedure)
+	goto cleanup;
+	  else
+	    gfc_error_check ();
+	}
 
       /* Delay matching the function characteristics until after the
 	 specification block by signalling kind=-1.  */
@@ -5665,6 +5670,7 @@ gfc_match_function_decl (void)
 	    goto cleanup;
 	  sym->result = result;
 	}
+
 
       /* Warn if this procedure has the same name as an intrinsic.  */
       do_warn_intrinsic_shadow (sym, true);
@@ -5890,7 +5896,7 @@ gfc_match_entry (void)
 	      gfc_error ("Missing required parentheses before BIND(C) at %C");
 	      return MATCH_ERROR;
 	    }
-	    if (!gfc_add_is_bind_c (&(entry->attr), entry->name, 
+	    if (!gfc_add_is_bind_c (&(entry->attr), entry->name,
 				    &(entry->declared_at), 1))
 	      return MATCH_ERROR;
 	}
@@ -6096,7 +6102,7 @@ gfc_match_subroutine (void)
           gfc_error ("Missing required parentheses before BIND(C) at %C");
           return MATCH_ERROR;
         }
-      if (!gfc_add_is_bind_c (&(sym->attr), sym->name, 
+      if (!gfc_add_is_bind_c (&(sym->attr), sym->name,
 			      &(sym->declared_at), 1))
         return MATCH_ERROR;
     }
@@ -6108,7 +6114,12 @@ gfc_match_subroutine (void)
     }
 
   if (!copy_prefix (&sym->attr, &sym->declared_at))
-    return MATCH_ERROR;
+    {
+      if(!sym->attr.module_procedure)
+	return MATCH_ERROR;
+      else
+	gfc_error_check ();
+    }
 
   /* Warn if it has the same name as an intrinsic.  */
   do_warn_intrinsic_shadow (sym, false);
@@ -6516,7 +6527,7 @@ gfc_match_end (gfc_statement *st)
       if (!eos_ok && (*st == ST_END_SUBROUTINE || *st == ST_END_FUNCTION))
 	{
 	  if (!gfc_notify_std (GFC_STD_F2008, "END statement "
-			       "instead of %s statement at %L", 
+			       "instead of %s statement at %L",
 			       abreviated_modproc_decl ? "END PROCEDURE"
 			       : gfc_ascii_statement(*st), &old_loc))
 	    goto cleanup;
@@ -7148,16 +7159,16 @@ access_attr_decl (gfc_statement st)
 	  if (gfc_get_symbol (name, NULL, &sym))
 	    goto done;
 
-	  if (!gfc_add_access (&sym->attr, 
-			       (st == ST_PUBLIC) 
-			       ? ACCESS_PUBLIC : ACCESS_PRIVATE, 
+	  if (!gfc_add_access (&sym->attr,
+			       (st == ST_PUBLIC)
+			       ? ACCESS_PUBLIC : ACCESS_PRIVATE,
 			       sym->name, NULL))
 	    return MATCH_ERROR;
 
 	  if (sym->attr.generic && (dt_sym = gfc_find_dt_in_generic (sym))
-	      && !gfc_add_access (&dt_sym->attr, 
-				  (st == ST_PUBLIC) 
-				  ? ACCESS_PUBLIC : ACCESS_PRIVATE, 
+	      && !gfc_add_access (&dt_sym->attr,
+				  (st == ST_PUBLIC)
+				  ? ACCESS_PUBLIC : ACCESS_PRIVATE,
 				  sym->name, NULL))
 	    return MATCH_ERROR;
 
@@ -7481,7 +7492,7 @@ gfc_match_save (void)
       switch (m)
 	{
 	case MATCH_YES:
-	  if (!gfc_add_save (&sym->attr, SAVE_EXPLICIT, sym->name, 
+	  if (!gfc_add_save (&sym->attr, SAVE_EXPLICIT, sym->name,
 			     &gfc_current_locus))
 	    return MATCH_ERROR;
 	  goto next_item;
@@ -7697,7 +7708,8 @@ gfc_match_submod_proc (void)
 
   if (gfc_current_state () != COMP_CONTAINS
       || !(gfc_state_stack->previous
-	   && gfc_state_stack->previous->state == COMP_SUBMODULE))
+	   && (gfc_state_stack->previous->state == COMP_SUBMODULE
+	       || gfc_state_stack->previous->state == COMP_MODULE)))
     return MATCH_NO;
 
   m = gfc_match (" module% procedure% %n", name);
@@ -8127,7 +8139,7 @@ gfc_match_derived_decl (void)
     return MATCH_ERROR;
   else if (sym->attr.access == ACCESS_UNKNOWN
 	   && gensym->attr.access != ACCESS_UNKNOWN
-	   && !gfc_add_access (&sym->attr, gensym->attr.access, 
+	   && !gfc_add_access (&sym->attr, gensym->attr.access,
 			       sym->name, NULL))
     return MATCH_ERROR;
 

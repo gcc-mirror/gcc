@@ -1,3 +1,11 @@
+2016-03-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/70031
+	* gfortran.dg/submodule_14.f08: New test
+
+	PR fortran/69524
+	* gfortran.dg/submodule_15.f08: New test
+
 2016-03-12  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/70106

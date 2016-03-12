@@ -2062,7 +2062,12 @@ build_function_decl (gfc_symbol * sym, bool global)
   tree result_decl;
   gfc_formal_arglist *f;
 
-  gcc_assert (!sym->attr.external);
+  bool module_procedure = sym->attr.module_procedure
+			  && sym->ns
+			  && sym->ns->proc_name
+			  && sym->ns->proc_name->attr.flavor == FL_MODULE;
+
+  gcc_assert (!sym->attr.external || module_procedure);
 
   if (sym->backend_decl)
     return;

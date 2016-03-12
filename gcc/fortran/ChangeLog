@@ -1,3 +1,21 @@
+2016-03-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/70031
+	* decl.c (gfc_match_prefix): Treat the 'module' prefix in the
+	same way as the others, rather than fixing it to come last.
+	(gfc_match_function_decl, gfc_match_subroutine): After errors
+	in 'copy_prefix', emit them immediately in the case of module
+	procedures to prevent a later ICE.
+
+	PR fortran/69524
+	* decl.c (gfc_match_submod_proc): Permit 'module procedure'
+	declarations within the contains section of modules as well as
+	submodules.
+	* resolve.c (resolve_fl_procedure): Likewise.
+	*trans-decl.c (build_function_decl): Change the gcc_assert to
+	allow all forms of module procedure declarations within module
+	contains sections.
+
 2016-02-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/68147
