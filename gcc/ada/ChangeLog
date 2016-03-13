@@ -1,3 +1,16 @@
+2016-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system-vxworks-m68k.ads (Stack_Check_Probes): Set to True.
+	(Stack_Check_Limits): Set to False.
+	* system-vxworks-mips.ads (Stack_Check_Probes): Set to True.
+	(Stack_Check_Limits): Set to False.
+	* system-vxworks-ppc.ads (Stack_Check_Probes): Set to True.
+	(Stack_Check_Limits): Set to False.
+	* system-vxworks-sparcv9.ads (Stack_Check_Probes): Set to True.
+	(Stack_Check_Limits): Set to False.
+	* system-vxworks-x86.ads (Stack_Check_Probes): Set to True.
+	(Stack_Check_Limits): Set to False.
+
 2016-03-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (statement_node_p): New predicate.
@@ -12,7 +25,7 @@
 
 2016-03-02  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
-	* system-linux-s390.adsx: Enable Stack_Check_Probes.
+	* system-linux-s390.ads: Enable Stack_Check_Probes.
 	* system-linux-s390.ads: Likewise.
 
 2016-02-29  Martin Liska  <mliska@suse.cz>

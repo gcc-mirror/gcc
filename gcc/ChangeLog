@@ -1,3 +1,15 @@
+2016-03-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/arm/vxworks.h (STACK_CHECK_STATIC_BUILTIN): Define.
+	(STACK_CHECK_PROTECT): Likewise.
+	* config/i386/vxworks.h (STACK_CHECK_STATIC_BUILTIN): Likewise
+	(STACK_CHECK_PROTECT): Likewise.
+	* config/rs6000/vxworks.h (STACK_CHECK_STATIC_BUILTIN): Likewise
+	(STACK_CHECK_PROTECT): Likewise.
+	* config/rs6000/vxworksae.h (STACK_CHECK_PROTECT): Likewise.
+	* config/sparc/vxworks.h (STACK_CHECK_STATIC_BUILTIN): Likewise.
+	(STACK_CHECK_PROTECT): Likewise.
+
 2016-03-12  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/69307

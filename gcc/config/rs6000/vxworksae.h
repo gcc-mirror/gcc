@@ -21,3 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 /* VxWorksAE for E500V2 expects a specific CPU value to designate 8548.  */
 #undef VXCPU_FOR_8548
 #define VXCPU_FOR_8548 "PPCE500V2"
+
+/* This platform supports the probing method of stack checking and
+   requires 4K of space for executing a possible last chance handler.  */
+#undef STACK_CHECK_PROTECT
+#define STACK_CHECK_PROTECT 4096
