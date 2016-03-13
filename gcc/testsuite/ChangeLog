@@ -1,3 +1,9 @@
+2016-03-13  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/45076
+	gfortran.dg/prof/prof.exp: New script.
+	gfortran.dg/prof/dynamic_dispatch_6.f03: New test.
+
 2016-03-12  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/69307
