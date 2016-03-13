@@ -1,3 +1,8 @@
+2016-03-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/69043
+	* gfortran.dg/include_9.f90: New test.
+
 2016-03-13  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/45076
