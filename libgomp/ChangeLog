@@ -1,3 +1,8 @@
+2016-03-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp (libgomp_init): Potentially append to
+	always_ld_library_path the path to libgcc_s.
+
 2016-03-10  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR testsuite/70009

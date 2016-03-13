@@ -142,6 +142,8 @@ proc libgomp_init { args } {
 	append always_ld_library_path ":${blddir}/../liboffloadmic/plugin/.libs"
 	# libstdc++ is required by liboffloadmic
 	append always_ld_library_path ":${blddir}/../libstdc++-v3/src/.libs"
+	# libgcc_s is required by libstdc++
+	append always_ld_library_path ":${blddir}/../libgcc"
     }
 
     global offload_additional_lib_paths
