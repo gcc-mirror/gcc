@@ -1,3 +1,9 @@
+2016-03-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Jim MacArthur  <jim.macarthur@codethink.co.uk>
+
+	PR fortran/69043
+	* scanner.c (load_file): Check that included file is regular.
+
 2016-03-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Harold Anlauf  <anlauf@gmx.de>
 

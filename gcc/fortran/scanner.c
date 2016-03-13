@@ -2200,6 +2200,8 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
   FILE *input;
   int len, line_len;
   bool first_line;
+  struct stat st;
+  int stat_result;
   const char *filename;
   /* If realfilename and displayedname are different and non-null then
      surely realfilename is the preprocessed form of
@@ -2227,6 +2229,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 	}
       else
 	input = gfc_open_file (realfilename);
+
       if (input == NULL)
 	{
 	  gfc_error_now ("Can't open file %qs", filename);
@@ -2240,6 +2243,15 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 	{
 	  fprintf (stderr, "%s:%d: Error: Can't open included file '%s'\n",
 		   current_file->filename, current_file->line, filename);
+	  return false;
+	}
+      stat_result = stat (realfilename, &st);
+      if (stat_result == 0 && !(st.st_mode & S_IFREG))
+	{
+	  fprintf (stderr, "%s:%d: Error: Included path '%s'"
+		   " is not a regular file\n",
+		   current_file->filename, current_file->line, filename);
+	  fclose (input);
 	  return false;
 	}
     }
