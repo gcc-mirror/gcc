@@ -1398,7 +1398,8 @@ library needs to be linked.
 @cindex checking array temporaries
 
 Enable the generation of run-time checks; the argument shall be
-a comma-delimited list of the following keywords.
+a comma-delimited list of the following keywords.  Prefixing a check with
+@option{no-} disables it if it was activated by a previous specification.
 
 @table @asis
 @item @samp{all}
@@ -1443,6 +1444,13 @@ functions which are not marked as recursive. See also @option{-frecursive}.
 Note: This check does not work for OpenMP programs and is disabled if used
 together with @option{-frecursive} and @option{-fopenmp}.
 @end table
+
+Example: Assuming you have a file @file{foo.f90}, the command
+@smallexample
+  gfortran -fcheck=all,no-array-temps foo.f90
+@end smallexample
+will compile the file with all checks enabled as specified above except
+warnings for generated array temporaries.
 
 
 @item -fbounds-check

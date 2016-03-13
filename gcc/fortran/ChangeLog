@@ -1,3 +1,13 @@
+2016-03-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Harold Anlauf  <anlauf@gmx.de>
+
+	PR fortran/69520
+	* invoke.texi: Explain use of the 'no-' construct within the
+	-fcheck= option.
+	* options.c (gfc_handle_runtime_check_option): Enable use of
+	'no-' prefix for the various options with -fcheck= to allow
+	negating previously enabled check options.
+
 2016-03-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/70031
