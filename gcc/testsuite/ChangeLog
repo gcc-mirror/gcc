@@ -1,3 +1,11 @@
+2016-03-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/70098
+	* lib/target-supports.exp (check_effective_target_powerpc64_no_dm):
+	New function.
+	* g++.dg/pr70098.C: New testcase.
+
+
 2016-03-14  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/70045
