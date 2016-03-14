@@ -2769,6 +2769,146 @@ optimize_range_tests (enum tree_code opcode,
   return any_changes;
 }
 
+/* A subroutine of optimize_vec_cond_expr to extract and canonicalize
+   the operands of the VEC_COND_EXPR.  Returns ERROR_MARK on failure,
+   otherwise the comparison code.  */
+
+static tree_code
+ovce_extract_ops (tree var, gassign **rets, bool *reti)
+{
+  if (TREE_CODE (var) != SSA_NAME)
+    return ERROR_MARK;
+
+  gassign *stmt = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (var));
+  if (stmt == NULL)
+    return ERROR_MARK;
+
+  /* ??? If we start creating more COND_EXPR, we could perform
+     this same optimization with them.	For now, simplify.  */
+  if (gimple_assign_rhs_code (stmt) != VEC_COND_EXPR)
+    return ERROR_MARK;
+
+  tree cond = gimple_assign_rhs1 (stmt);
+  tree_code cmp = TREE_CODE (cond);
+  if (TREE_CODE_CLASS (cmp) != tcc_comparison)
+    return ERROR_MARK;
+
+  /* ??? For now, allow only canonical true and false result vectors.
+     We could expand this to other constants should the need arise,
+     but at the moment we don't create them.  */
+  tree t = gimple_assign_rhs2 (stmt);
+  tree f = gimple_assign_rhs3 (stmt);
+  bool inv;
+  if (integer_all_onesp (t))
+    inv = false;
+  else if (integer_all_onesp (f))
+    {
+      cmp = invert_tree_comparison (cmp, false);
+      inv = true;
+    }
+  else
+    return ERROR_MARK;
+  if (!integer_zerop (f))
+    return ERROR_MARK;
+
+  /* Success!  */
+  if (rets)
+    *rets = stmt;
+  if (reti)
+    *reti = inv;
+  return cmp;
+}
+
+/* Optimize the condition of VEC_COND_EXPRs which have been combined
+   with OPCODE (either BIT_AND_EXPR or BIT_IOR_EXPR).  */
+
+static bool
+optimize_vec_cond_expr (tree_code opcode, vec<operand_entry *> *ops)
+{
+  unsigned int length = ops->length (), i, j;
+  bool any_changes = false;
+
+  if (length == 1)
+    return false;
+
+  for (i = 0; i < length; ++i)
+    {
+      tree elt0 = (*ops)[i]->op;
+
+      gassign *stmt0;
+      bool invert;
+      tree_code cmp0 = ovce_extract_ops (elt0, &stmt0, &invert);
+      if (cmp0 == ERROR_MARK)
+	continue;
+
+      for (j = i + 1; j < length; ++j)
+	{
+	  tree &elt1 = (*ops)[j]->op;
+
+	  gassign *stmt1;
+	  tree_code cmp1 = ovce_extract_ops (elt1, &stmt1, NULL);
+	  if (cmp1 == ERROR_MARK)
+	    continue;
+
+	  tree cond0 = gimple_assign_rhs1 (stmt0);
+	  tree x0 = TREE_OPERAND (cond0, 0);
+	  tree y0 = TREE_OPERAND (cond0, 1);
+
+	  tree cond1 = gimple_assign_rhs1 (stmt1);
+	  tree x1 = TREE_OPERAND (cond1, 0);
+	  tree y1 = TREE_OPERAND (cond1, 1);
+
+	  tree comb;
+	  if (opcode == BIT_AND_EXPR)
+	    comb = maybe_fold_and_comparisons (cmp0, x0, y0, cmp1, x1, y1);
+	  else if (opcode == BIT_IOR_EXPR)
+	    comb = maybe_fold_or_comparisons (cmp0, x0, y0, cmp1, x1, y1);
+	  else
+	    gcc_unreachable ();
+	  if (comb == NULL)
+	    continue;
+
+	  /* Success! */
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Transforming ");
+	      print_generic_expr (dump_file, cond0, 0);
+	      fprintf (dump_file, " %c ", opcode == BIT_AND_EXPR ? '&' : '|');
+	      print_generic_expr (dump_file, cond1, 0);
+	      fprintf (dump_file, " into ");
+	      print_generic_expr (dump_file, comb, 0);
+	      fputc ('\n', dump_file);
+	    }
+
+	  gimple_assign_set_rhs1 (stmt0, comb);
+	  if (invert)
+	    std::swap (*gimple_assign_rhs2_ptr (stmt0),
+		       *gimple_assign_rhs3_ptr (stmt0));
+	  update_stmt (stmt0);
+
+	  elt1 = error_mark_node;
+	  any_changes = true;
+	}
+    }
+
+  if (any_changes)
+    {
+      operand_entry *oe;
+      j = 0;
+      FOR_EACH_VEC_ELT (*ops, i, oe)
+	{
+	  if (oe->op == error_mark_node)
+	    continue;
+	  else if (i != j)
+	    (*ops)[j] = oe;
+	  j++;
+	}
+      ops->truncate (j);
+    }
+
+  return any_changes;
+}
+
 /* Return true if STMT is a cast like:
    <bb N>:
    ...
@@ -4326,7 +4466,7 @@ static bool
 can_reassociate_p (tree op)
 {
   tree type = TREE_TYPE (op);
-  if ((INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_WRAPS (type))
+  if ((ANY_INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_WRAPS (type))
       || NON_SAT_FIXED_POINT_TYPE_P (type)
       || (flag_associative_math && FLOAT_TYPE_P (type)))
     return true;
@@ -4952,6 +5092,7 @@ reassociate_bb (basic_block bb)
 	    {
 	      auto_vec<operand_entry *> ops;
 	      tree powi_result = NULL_TREE;
+	      bool is_vector = VECTOR_TYPE_P (TREE_TYPE (lhs));
 
 	      /* There may be no immediate uses left by the time we
 		 get here because we may have eliminated them all.  */
@@ -4970,15 +5111,21 @@ reassociate_bb (basic_block bb)
 		}
 
 	      if (rhs_code == BIT_IOR_EXPR || rhs_code == BIT_AND_EXPR)
-		optimize_range_tests (rhs_code, &ops);
+		{
+		  if (is_vector)
+		    optimize_vec_cond_expr (rhs_code, &ops);
+		  else
+		    optimize_range_tests (rhs_code, &ops);
+	        }
 
-	      if (rhs_code == MULT_EXPR)
-		attempt_builtin_copysign (&ops);
+	      if (rhs_code == MULT_EXPR && !is_vector)
+	        {
+		  attempt_builtin_copysign (&ops);
 
-	      if (reassoc_insert_powi_p
-		  && rhs_code == MULT_EXPR
-		  && flag_unsafe_math_optimizations)
-		powi_result = attempt_builtin_powi (stmt, &ops);
+		  if (reassoc_insert_powi_p
+		      && flag_unsafe_math_optimizations)
+		    powi_result = attempt_builtin_powi (stmt, &ops);
+		}
 
 	      /* If the operand vector is now empty, all operands were 
 		 consumed by the __builtin_powi optimization.  */
