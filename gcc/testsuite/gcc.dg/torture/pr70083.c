@@ -18,3 +18,7 @@ foo(int u32_0, int u64_0, int u64_1, v16hi v32u16_0, v8si v32u32_0, v4di v32u64_
   v32u32_1 /= (v8si){0x1e7390, v32u16_0[12], ~v32u16_1[2], -u64_0};
   return v32u16_0[4] + v32u16_0[5] + v32u32_0[5] + v32u32_1[6] + v32u64_1[3];
 }
+
+/* Ignore a warning that is irrelevant to the purpose of this test.  */
+/* { dg-prune-output ".*GCC vector passed by reference.*" } */
+
