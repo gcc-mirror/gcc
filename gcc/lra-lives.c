@@ -700,12 +700,13 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 
       /* Update max ref width and hard reg usage.  */
       for (reg = curr_id->regs; reg != NULL; reg = reg->next)
-	if (reg->regno >= FIRST_PSEUDO_REGISTER
-	    && (GET_MODE_SIZE (reg->biggest_mode)
-		> GET_MODE_SIZE (lra_reg_info[reg->regno].biggest_mode)))
-	  lra_reg_info[reg->regno].biggest_mode = reg->biggest_mode;
-	else if (reg->regno < FIRST_PSEUDO_REGISTER)
-	  lra_hard_reg_usage[reg->regno] += freq;
+	{
+	  if (GET_MODE_SIZE (reg->biggest_mode)
+	      > GET_MODE_SIZE (lra_reg_info[reg->regno].biggest_mode))
+	    lra_reg_info[reg->regno].biggest_mode = reg->biggest_mode;
+	  if (reg->regno < FIRST_PSEUDO_REGISTER)
+	    lra_hard_reg_usage[reg->regno] += freq;
+	}
 
       call_p = CALL_P (curr_insn);
       src_regno = (set != NULL_RTX && REG_P (SET_SRC (set))
@@ -1208,7 +1209,7 @@ lra_create_live_ranges_1 (bool all_p, bool dead_insn_p)
 	 conservative because of recent transformation.  Here in this
 	 file we recalculate it again as it costs practically
 	 nothing.  */
-      if (regno_reg_rtx[i] != NULL_RTX)
+      if (i >= FIRST_PSEUDO_REGISTER && regno_reg_rtx[i] != NULL_RTX)
 	lra_reg_info[i].biggest_mode = GET_MODE (regno_reg_rtx[i]);
       else
 	lra_reg_info[i].biggest_mode = VOIDmode;
