@@ -1,3 +1,9 @@
+2016-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/70219
+	* lra-constraints.c (delete_move_and_clobber): Change assertion
+	to also allow dregno == 0.
+
 2016-03-14  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/68714

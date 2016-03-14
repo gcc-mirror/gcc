@@ -5868,7 +5868,7 @@ delete_move_and_clobber (rtx_insn *insn, int dregno)
   rtx_insn *prev_insn = PREV_INSN (insn);
 
   lra_set_insn_deleted (insn);
-  lra_assert (dregno > 0);
+  lra_assert (dregno >= 0);
   if (prev_insn != NULL && NONDEBUG_INSN_P (prev_insn)
       && GET_CODE (PATTERN (prev_insn)) == CLOBBER
       && dregno == get_regno (XEXP (PATTERN (prev_insn), 0)))
