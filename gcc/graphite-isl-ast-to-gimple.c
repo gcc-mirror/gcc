@@ -821,7 +821,8 @@ graphite_create_new_loop_guard (edge entry_edge,
   if (integer_onep (cond_expr))
     exit_edge = entry_edge;
   else
-    exit_edge = create_empty_if_region_on_edge (entry_edge, cond_expr);
+    exit_edge = create_empty_if_region_on_edge (entry_edge,
+						unshare_expr (cond_expr));
 
   return exit_edge;
 }
