@@ -1,3 +1,8 @@
+2016-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/70219
+	* gcc.dg/pr70219.c: New test.
+
 2016-03-14  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR target/70083
