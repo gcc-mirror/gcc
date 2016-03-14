@@ -1,3 +1,13 @@
+2016-03-14  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR target/70083
+	* lra-lives.c (process_bb_lives): Also update biggest mode for hard
+	regs.
+	(lra_create_live_ranges_1): initialize hard register biggest_mode to
+	VOIDmode.
+	* lra-constraints.c (split_reg): For hard regs, try to find the
+	biggest single-register mode used in the function.
+
 2016-03-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56365

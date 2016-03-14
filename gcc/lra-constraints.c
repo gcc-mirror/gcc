@@ -4972,6 +4972,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
   rtx_insn *restore, *save;
   bool after_p;
   bool call_save_p;
+  machine_mode mode;
 
   if (original_regno < FIRST_PSEUDO_REGISTER)
     {
@@ -4979,24 +4980,32 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
       hard_regno = original_regno;
       call_save_p = false;
       nregs = 1;
+      mode = lra_reg_info[hard_regno].biggest_mode;
+      machine_mode reg_rtx_mode = GET_MODE (regno_reg_rtx[hard_regno]);
+      if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (reg_rtx_mode))
+	{
+	  original_reg = regno_reg_rtx[hard_regno];
+	  mode = reg_rtx_mode;
+	}
+      else
+	original_reg = gen_rtx_REG (mode, hard_regno);
     }
   else
     {
+      mode = PSEUDO_REGNO_MODE (original_regno);
       hard_regno = reg_renumber[original_regno];
-      nregs = hard_regno_nregs[hard_regno][PSEUDO_REGNO_MODE (original_regno)];
+      nregs = hard_regno_nregs[hard_regno][mode];
       rclass = lra_get_allocno_class (original_regno);
       original_reg = regno_reg_rtx[original_regno];
       call_save_p = need_for_call_save_p (original_regno);
     }
-  original_reg = regno_reg_rtx[original_regno];
   lra_assert (hard_regno >= 0);
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file,
 	     "	  ((((((((((((((((((((((((((((((((((((((((((((((((\n");
+	  
   if (call_save_p)
     {
-      machine_mode mode = GET_MODE (original_reg);
-
       mode = HARD_REGNO_CALLER_SAVE_MODE (hard_regno,
 					  hard_regno_nregs[hard_regno][mode],
 					  mode);
@@ -5004,8 +5013,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
     }
   else
     {
-      rclass = choose_split_class (rclass, hard_regno,
-				   GET_MODE (original_reg));
+      rclass = choose_split_class (rclass, hard_regno, mode);
       if (rclass == NO_REGS)
 	{
 	  if (lra_dump_file != NULL)
@@ -5023,8 +5031,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
 	    }
 	  return false;
 	}
-      new_reg = lra_create_new_reg (GET_MODE (original_reg), original_reg,
-				    rclass, "split");
+      new_reg = lra_create_new_reg (mode, original_reg, rclass, "split");
       reg_renumber[REGNO (new_reg)] = hard_regno;
     }
   save = emit_spill_move (true, new_reg, original_reg);
