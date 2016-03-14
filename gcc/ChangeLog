@@ -1,3 +1,12 @@
+2016-03-14  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/68714
+	* tree-ssa-reassoc.c (ovce_extract_ops, optimize_vec_cond_expr): New.
+	(can_reassociate_p): Allow ANY_INTEGRAL_TYPE_P.
+	(reassociate_bb): Use optimize_vec_cond_expr; avoid
+	optimize_range_tests, attempt_builtin_copysign and attempt_builtin_powi
+	on vectors.
+
 2016-03-14  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR target/70083
