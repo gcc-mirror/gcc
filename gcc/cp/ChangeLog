@@ -1,3 +1,11 @@
+2016-03-14  Casey Carter  <casey@carter.net>
+	    Jason Merrill  <jason@redhat.com>
+
+	P08184R0: Generalizing the Range-Based For Loop
+	* parser.c (cp_convert_range_for): Set the type of __end separately.
+	(cp_parser_perform_range_for_lookup): Allow different begin/end
+	types if they are comparable.
+
 2016-03-12  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/70106
