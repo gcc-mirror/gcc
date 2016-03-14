@@ -1,3 +1,8 @@
+2016-03-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56365
+	* gcc.dg/tree-ssa/phi-opt-14.c: New testcase.
+
 2016-03-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/70098

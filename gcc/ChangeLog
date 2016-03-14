@@ -1,3 +1,9 @@
+2016-03-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56365
+	* tree-ssa-phiopt.c (minmax_replacement): Handle alternate
+	constants to compare against.
+
 2016-03-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/70098
