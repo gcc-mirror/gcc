@@ -1,3 +1,11 @@
+2016-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline
+	2016-03-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/62281
+	* config/i386/sol2.h (STACK_REALIGN_DEFAULT): Define.
+
 2016-03-10  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR target/70168
