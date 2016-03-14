@@ -1,3 +1,11 @@
+2016-03-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2016-03-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/70131
+	* gcc.target/powerpc/ppc-round2.c: New test.
+
 2016-03-14  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/45076
