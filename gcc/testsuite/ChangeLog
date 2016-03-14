@@ -1,3 +1,8 @@
+2016-03-14  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/70045
+	* gcc.dg/graphite/pr70045.c: New test.
+
 2016-03-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/69043
