@@ -1,3 +1,7 @@
+2016-03-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/torture/pr70083.c: Prune non-standard ABI.
+
 2016-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/70219
