@@ -25,6 +25,11 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_SUBTARGET_DEFAULT \
 	(MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_VECT8_RETURNS)
 
+/* 32-bit Solaris/x86 only guarantees 4-byte stack alignment as required by
+   the i386 psABI, so realign it as necessary for SSE instructions.  */
+#undef STACK_REALIGN_DEFAULT
+#define STACK_REALIGN_DEFAULT (TARGET_64BIT ? 0 : 1)
+
 /* Old versions of the Solaris assembler can not handle the difference of
    labels in different sections, so force DW_EH_PE_datarel.  */
 #undef ASM_PREFERRED_EH_DATA_FORMAT

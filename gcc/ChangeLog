@@ -1,3 +1,19 @@
+2016-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2016-03-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/62281
+	* config/i386/sol2.h (STACK_REALIGN_DEFAULT): Define.
+
+	Revert:
+	2014-02-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libgomp/60107
+	* config/i386/sol2-9.h: New file.
+	* config.gcc (i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*,
+	*-*-solaris2.9*): Use it.
+
 2016-03-10  Alan Modra  <amodra@gmail.com>
 
 	PR rtl-optimization/69195
