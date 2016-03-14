@@ -1629,6 +1629,19 @@ proc check_effective_target_avx_runtime { } {
     return 0
 }
 
+# Return 1 if we are compiling for 64-bit PowerPC but we do not use direct
+# move instructions for moves from GPR to FPR.
+
+proc check_effective_target_powerpc64_no_dm { } {
+    # The "mulld" checks if we are generating PowerPC64 code.  The "lfd"
+    # checks if we do not use direct moves, but use the old-fashioned
+    # slower move-via-the-stack.
+    return [check_no_messages_and_pattern powerpc64_no_dm \
+	{\mmulld\M.*\mlfd} assembly {
+	    double f(long long x) { return x*x; }
+	} {-O2}]
+}
+
 # Return 1 if the target supports executing power8 vector instructions, 0
 # otherwise.  Cache the result.
 

@@ -1,3 +1,11 @@
+2016-03-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/70098
+	* config/rs6000/rs6000.md (*ctr<mode>_internal1, *ctr<mode>_internal2,
+	*ctr<mode>_internal5, *ctr<mode>_internal6): Also allow "d" as output.
+	(define_split for the GPR case): Use int_reg_operand instead of
+	gpc_reg_operand for the output.
+
 2016-03-14  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/70045
