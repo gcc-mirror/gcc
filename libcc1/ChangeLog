@@ -1,3 +1,9 @@
+2016-03-14  Andreas Schwab  <schwab@suse.de>
+
+	* configure.ac (CONFIG_STATUS_DEPENDENCIES): Substitute.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2015-06-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* plugin.cc (decl_addr_hasher): Inherit from free_ptr_hash
