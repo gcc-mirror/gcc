@@ -27281,12 +27281,15 @@ optimize_location_lists (dw_die_ref die)
 static void
 flush_limbo_die_list (void)
 {
-  limbo_die_node *node, *next_node;
+  limbo_die_node *node;
 
-  for (node = limbo_die_list; node; node = next_node)
+  /* get_context_die calls force_decl_die, which can put new DIEs on the
+     limbo list in LTO mode when nested functions are put in a different
+     partition than that of their parent function.  */
+  while ((node = limbo_die_list))
     {
       dw_die_ref die = node->die;
-      next_node = node->next;
+      limbo_die_list = node->next;
 
       if (die->die_parent == NULL)
 	{
@@ -27324,8 +27327,6 @@ flush_limbo_die_list (void)
 	    }
 	}
     }
-
-  limbo_die_list = NULL;
 }
 
 /* Output stuff that dwarf requires at the end of every file,
