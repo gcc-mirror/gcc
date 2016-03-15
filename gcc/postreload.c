@@ -1094,7 +1094,6 @@ static bool
 reload_combine_recognize_pattern (rtx insn)
 {
   rtx set, reg, src;
-  unsigned int regno;
 
   set = single_set (insn);
   if (set == NULL_RTX)
@@ -1106,7 +1105,20 @@ reload_combine_recognize_pattern (rtx insn)
       || hard_regno_nregs[REGNO (reg)][GET_MODE (reg)] != 1)
     return false;
 
-  regno = REGNO (reg);
+  unsigned int regno = REGNO (reg);
+  machine_mode mode = GET_MODE (reg);
+
+  if (reg_state[regno].use_index < 0
+      || reg_state[regno].use_index >= RELOAD_COMBINE_MAX_USES)
+    return false;
+
+  for (int i = reg_state[regno].use_index;
+       i < RELOAD_COMBINE_MAX_USES; i++)
+    {
+      struct reg_use *use = reg_state[regno].reg_use + i;
+      if (GET_MODE (*use->usep) != mode)
+	return false;
+    }
 
   /* Look for (set (REGX) (CONST_INT))
      (set (REGX) (PLUS (REGX) (REGY)))
@@ -1128,8 +1140,6 @@ reload_combine_recognize_pattern (rtx insn)
       && REG_P (XEXP (src, 1))
       && rtx_equal_p (XEXP (src, 0), reg)
       && !rtx_equal_p (XEXP (src, 1), reg)
-      && reg_state[regno].use_index >= 0
-      && reg_state[regno].use_index < RELOAD_COMBINE_MAX_USES
       && last_label_ruid < reg_state[regno].use_ruid)
     {
       rtx base = XEXP (src, 1);

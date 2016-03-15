@@ -1,3 +1,11 @@
+2016-03-15  Bernd Schmidt  <bschmidt@redhat.com>
+
+	Backport from mainline
+	2016-03-04  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/69941
+	* gcc.dg/torture/pr69941.c: New test.
+
 2016-03-14  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/45076
