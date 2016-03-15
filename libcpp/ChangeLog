@@ -1,3 +1,8 @@
+2016-03-14  Jason Merrill  <jason@redhat.com>
+
+	* expr.c (cpp_classify_number): Hex floats are new in C++1z.
+	* init.c (lang_defaults): Likewise.
+
 2016-03-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/68473

@@ -337,3 +337,9 @@
 #elif __cpp_nontype_template_args != 201411
 #  error "__cpp_nontype_template_args != 201411"
 #endif
+
+#ifndef __cpp_hex_float
+#  error "__cpp_hex_float"
+#elif __cpp_hex_float != 201603
+#  error "__cpp_hex_float != 201603"
+#endif
