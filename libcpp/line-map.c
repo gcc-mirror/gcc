@@ -376,7 +376,7 @@ new_linemap (struct line_maps *set,
   if (LINEMAPS_USED (set, macro_map_p) == LINEMAPS_ALLOCATED (set, macro_map_p))
     {
       /* We ran out of allocated line maps. Let's allocate more.  */
-      unsigned alloc_size;
+      size_t alloc_size;
 
       /* Cast away extern "C" from the type of xrealloc.  */
       line_map_realloc reallocator = (set->reallocator
