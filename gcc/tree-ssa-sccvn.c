@@ -407,7 +407,7 @@ VN_INFO_GET (tree name)
   newinfo = XOBNEW (&vn_ssa_aux_obstack, struct vn_ssa_aux);
   memset (newinfo, 0, sizeof (struct vn_ssa_aux));
   if (SSA_NAME_VERSION (name) >= vn_ssa_aux_table.length ())
-    vn_ssa_aux_table.safe_grow (SSA_NAME_VERSION (name) + 1);
+    vn_ssa_aux_table.safe_grow_cleared (SSA_NAME_VERSION (name) + 1);
   vn_ssa_aux_table[SSA_NAME_VERSION (name)] = newinfo;
   return newinfo;
 }
