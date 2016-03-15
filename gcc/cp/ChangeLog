@@ -1,3 +1,9 @@
+2016-03-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70209
+	* tree.c (strip_typedefs): Call strip_typedefs again on the
+	DECL_ORIGINAL_TYPE result.
+
 2016-03-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70095
