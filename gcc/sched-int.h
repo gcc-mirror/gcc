@@ -1351,6 +1351,7 @@ extern void finish_deps_global (void);
 extern void deps_analyze_insn (struct deps_desc *, rtx_insn *);
 extern void remove_from_deps (struct deps_desc *, rtx_insn *);
 extern void init_insn_reg_pressure_info (rtx_insn *);
+extern void get_implicit_reg_pending_clobbers (HARD_REG_SET *, rtx_insn *);
 
 extern dw_t get_dep_weak (ds_t, ds_t);
 extern ds_t set_dep_weak (ds_t, ds_t, dw_t);

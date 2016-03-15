@@ -2650,6 +2650,23 @@ maybe_downgrade_id_to_use (idata_t id, insn_t insn)
     IDATA_TYPE (id) = USE;
 }
 
+/* Setup implicit register clobbers calculated by sched-deps for INSN
+   before reload and save them in ID.  */
+static void
+setup_id_implicit_regs (idata_t id, insn_t insn)
+{
+  if (reload_completed)
+    return;
+
+  HARD_REG_SET temp;
+  unsigned regno;
+  hard_reg_set_iterator hrsi;
+
+  get_implicit_reg_pending_clobbers (&temp, insn);
+  EXECUTE_IF_SET_IN_HARD_REG_SET (temp, 0, regno, hrsi)
+    SET_REGNO_REG_SET (IDATA_REG_SETS (id), regno);
+}
+
 /* Setup register sets describing INSN in ID.  */
 static void
 setup_id_reg_sets (idata_t id, insn_t insn)
@@ -2704,6 +2721,9 @@ setup_id_reg_sets (idata_t id, insn_t insn)
 	}
     }
 
+  /* Also get implicit reg clobbers from sched-deps.  */
+  setup_id_implicit_regs (id, insn);
+
   return_regset_to_pool (tmp);
 }
 
@@ -2735,20 +2755,18 @@ deps_init_id (idata_t id, insn_t insn, bool force_unique_p)
   deps_init_id_data.force_use_p = false;
 
   init_deps (dc, false);
-
   memcpy (&deps_init_id_sched_deps_info,
 	  &const_deps_init_id_sched_deps_info,
 	  sizeof (deps_init_id_sched_deps_info));
-
   if (spec_info != NULL)
     deps_init_id_sched_deps_info.generate_spec_deps = 1;
-
   sched_deps_info = &deps_init_id_sched_deps_info;
 
   deps_analyze_insn (dc, insn);
+  /* Implicit reg clobbers received from sched-deps separately.  */
+  setup_id_implicit_regs (id, insn);
 
   free_deps (dc);
-
   deps_init_id_data.id = NULL;
 }
 
