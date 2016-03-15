@@ -1,3 +1,8 @@
+2016-03-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70209
+	* g++.dg/ext/attribute-may-alias-4.C: New test.
+
 2016-03-15  Alexander Monakov  <amonakov@ispras.ru>
 
 	* g++.dg/pr63384.C: Add -w to dg-options.  Remove '-toggle' in
