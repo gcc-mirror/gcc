@@ -818,6 +818,10 @@ c_cpp_builtins (cpp_reader *pfile)
       if (!pedantic || cxx_dialect > cxx11)
 	cpp_define (pfile, "__cpp_binary_literals=201304");
 
+      /* Similarly for hexadecimal floating point literals and C++17.  */
+      if (!pedantic || cpp_get_options (parse_in)->extended_numbers)
+	cpp_define (pfile, "__cpp_hex_float=201603");
+
       /* Arrays of runtime bound were removed from C++14, but we still
 	 support GNU VLAs.  Let's define this macro to a low number
 	 (corresponding to the initial test release of GNU C++) if we won't
