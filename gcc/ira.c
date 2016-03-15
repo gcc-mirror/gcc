@@ -3842,7 +3842,8 @@ update_equiv_regs (void)
   free (pdx_subregs);
 }
 
-/* A pass over indirect jumps, converting simple cases to direct jumps.  */
+/* A pass over indirect jumps, converting simple cases to direct jumps.
+   Combine does this optimization too, but only within a basic block.  */
 static void
 indirect_jump_optimize (void)
 {
@@ -3862,14 +3863,23 @@ indirect_jump_optimize (void)
       int regno = REGNO (SET_SRC (x));
       if (DF_REG_DEF_COUNT (regno) == 1)
 	{
-	  rtx_insn *def_insn = DF_REF_INSN (DF_REG_DEF_CHAIN (regno));
-	  rtx note = find_reg_note (def_insn, REG_LABEL_OPERAND, NULL_RTX);
-
-	  if (note)
+	  df_ref def = DF_REG_DEF_CHAIN (regno);
+	  if (!DF_REF_IS_ARTIFICIAL (def))
 	    {
-	      rtx lab = gen_rtx_LABEL_REF (Pmode, XEXP (note, 0));
-	      if (validate_replace_rtx (SET_SRC (x), lab, insn))
-		rebuild_p = true;
+	      rtx_insn *def_insn = DF_REF_INSN (def);
+	      rtx note = find_reg_note (def_insn, REG_LABEL_OPERAND, NULL_RTX);
+
+	      if (note)
+		{
+		  /* Substitute a LABEL_REF to the label given by the
+		     note rather than using SET_SRC of DEF_INSN.
+		     DEF_INSN might be loading the label constant from
+		     a constant pool, which isn't what we want in a
+		     direct branch.  */
+		  rtx lab = gen_rtx_LABEL_REF (Pmode, XEXP (note, 0));
+		  if (validate_replace_rtx (SET_SRC (x), lab, insn))
+		    rebuild_p = true;
+		}
 	    }
 	}
     }

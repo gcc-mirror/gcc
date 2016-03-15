@@ -1,3 +1,10 @@
+2016-03-16  Alan Modra  <amodra@gmail.com>
+
+	PR rtl-optimization/69195
+	PR rtl-optimization/47992
+	* ira.c (indirect_jump_optimize): Ignore artificial defs.
+	Add comments.
+
 2016-03-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/69513
