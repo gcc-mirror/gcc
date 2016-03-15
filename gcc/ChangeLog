@@ -1,3 +1,8 @@
+2016-03-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* genrecog.c (match_pattern_2): If pred is NULL don't call
+	safe_predicate_mode on it.
+
 2016-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/70219
