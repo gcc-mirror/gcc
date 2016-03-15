@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fcoarray=lib -lcaf_single -fdump-tree-original" }
+! { dg-additional-options "-latomic" { target libatomic_available } }
 !
 ! Contributed by Ian Harvey  <ian_harvey@bigpond.com>
 ! Extended by Andre Vehreschild  <vehre@gcc.gnu.org>
