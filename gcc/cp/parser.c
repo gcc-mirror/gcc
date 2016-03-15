@@ -11497,7 +11497,7 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
 					 *end, ERROR_MARK,
 					 NULL, tf_none)
 		      != error_mark_node))
-		/* P08184R0 allows __begin and __end to have different types,
+		/* P0184R0 allows __begin and __end to have different types,
 		   but make sure they are comparable so we can give a better
 		   diagnostic.  */;
 	      else
