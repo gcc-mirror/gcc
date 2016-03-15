@@ -1,5 +1,10 @@
 2016-03-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/70222
+	* combine.c (simplify_shift_const_1): For A >> B >> C LSHIFTRT
+	optimization if mode is different from result_mode, queue up masking
+	of the result in outer_op.  Formatting fix.
+
 	PR middle-end/70239
 	* tree-ssa-sccvn.c (VN_INFO_GET): Use safe_grow_cleared instead
 	of safe_grow.
