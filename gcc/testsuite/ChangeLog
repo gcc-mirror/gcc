@@ -1,3 +1,8 @@
+2016-03-15  Tom de Vries  <tom@codesourcery.com>
+
+	* gfortran.dg/goacc/kernels-alias-2.f95: New test.
+	* gfortran.dg/goacc/kernels-alias.f95: New test.
+
 2016-03-14  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/53792
