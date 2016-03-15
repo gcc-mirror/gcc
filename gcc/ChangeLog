@@ -1,3 +1,8 @@
+2016-03-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/69513
+	* dwarf2out.c (flush_limbo_die_list): Really flush the limbo list.
+
 2016-03-15  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* config/avr/avr.md (rotl<mode>3): Set mode for operand 2.
