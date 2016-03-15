@@ -1,3 +1,8 @@
+2016-03-15  Alexander Monakov  <amonakov@ispras.ru>
+
+	* g++.dg/pr63384.C: Add -w to dg-options.  Remove '-toggle' in
+	-fvar-tracking-assignments-toggle flag.
+
 2016-03-15  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* gcc.dg/ifcvt-4.c: Add -misel for powerpc*.
