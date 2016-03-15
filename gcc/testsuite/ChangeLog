@@ -1,3 +1,9 @@
+2016-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/70222
+	* gcc.c-torture/execute/pr70222-1.c: New test.
+	* gcc.c-torture/execute/pr70222-2.c: New test.
+
 2016-03-15  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/tree-ssa/pr68714.c: Test during reassoc1 pass.

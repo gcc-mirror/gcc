@@ -10524,9 +10524,19 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 		   && CONST_INT_P (XEXP (varop, 0))
 		   && !CONST_INT_P (XEXP (varop, 1)))
 	    {
+	      /* For ((unsigned) (cstULL >> count)) >> cst2 we have to make
+		 sure the result will be masked.  See PR70222.  */
+	      if (code == LSHIFTRT
+		  && mode != result_mode
+		  && !merge_outer_ops (&outer_op, &outer_const, AND,
+				       GET_MODE_MASK (result_mode)
+				       >> orig_count, result_mode,
+				       &complement_p))
+		break;
+
 	      rtx new_rtx = simplify_const_binary_operation (code, mode,
-							 XEXP (varop, 0),
-							 GEN_INT (count));
+							     XEXP (varop, 0),
+							     GEN_INT (count));
 	      varop = gen_rtx_fmt_ee (code, mode, new_rtx, XEXP (varop, 1));
 	      count = 0;
 	      continue;
