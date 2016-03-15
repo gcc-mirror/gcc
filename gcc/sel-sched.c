@@ -4262,8 +4262,9 @@ invoke_aftermath_hooks (fence_t fence, rtx_insn *best_insn, int issue_more)
                                       issue_more);
       memcpy (FENCE_STATE (fence), curr_state, dfa_state_size);
     }
-  else if (GET_CODE (PATTERN (best_insn)) != USE
-           && GET_CODE (PATTERN (best_insn)) != CLOBBER)
+  else if (!DEBUG_INSN_P (best_insn)
+	   && GET_CODE (PATTERN (best_insn)) != USE
+	   && GET_CODE (PATTERN (best_insn)) != CLOBBER)
     issue_more--;
 
   return issue_more;

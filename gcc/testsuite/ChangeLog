@@ -1,5 +1,10 @@
 2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
 
+	PR rtl-optimization/63384
+	* g++.dg/pr63384.C: New test. 
+
+2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
+
 	PR target/64411
 	* gcc.target/i386/pr64411.C: New test.
 
