@@ -1,3 +1,13 @@
+2016-03-15  Tom de Vries  <tom@codesourcery.com>
+
+	PR ipa/70161
+	* cgraph.c (cgraph_node::get_body): Save, reset and restore
+	dump_file_name.
+	* passes.c (execute_one_ipa_transform_pass): Add missing argument to
+	execute_function_dump.
+	(execute_one_pass): Don't dump function if it will be dumped after ipa
+	transform.
+
 2016-03-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* genrecog.c (match_pattern_2): If pred is NULL don't call

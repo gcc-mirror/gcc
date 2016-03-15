@@ -2214,7 +2214,7 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
     check_profile_consistency (pass->static_pass_number, 1, true);
 
   if (dump_file)
-    do_per_function (execute_function_dump, NULL);
+    do_per_function (execute_function_dump, pass);
   pass_fini_dump_file (pass);
 
   current_pass = NULL;
@@ -2351,15 +2351,15 @@ execute_one_pass (opt_pass *pass)
     check_profile_consistency (pass->static_pass_number, 1, true);
 
   verify_interpass_invariants ();
-  if (dump_file)
-    do_per_function (execute_function_dump, pass);
-  if (pass->type == IPA_PASS)
+  if (pass->type == IPA_PASS
+      && ((ipa_opt_pass_d *)pass)->function_transform)
     {
       struct cgraph_node *node;
-      if (((ipa_opt_pass_d *)pass)->function_transform)
-	FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
-	  node->ipa_transforms_to_apply.safe_push ((ipa_opt_pass_d *)pass);
+      FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+	node->ipa_transforms_to_apply.safe_push ((ipa_opt_pass_d *)pass);
     }
+  else if (dump_file)
+    do_per_function (execute_function_dump, pass);
 
   if (!current_function_decl)
     symtab->process_new_functions ();
