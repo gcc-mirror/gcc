@@ -1,5 +1,11 @@
 2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
 
+	PR rtl-optimization/63384
+	* sel-sched.c (invoke_aftermath_hooks): Do not decrease issue_more on
+	DEBUG_INSN_P insns. 
+
+2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
+
 	PR target/64411
 	* sched-deps.c (get_implicit_reg_pending_clobbers): New function,
 	factored out from ...
