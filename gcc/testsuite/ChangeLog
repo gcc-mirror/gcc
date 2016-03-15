@@ -1,5 +1,10 @@
 2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
 
+	PR rtl-optimization/69032
+	* gcc.dg/pr69032.c: New test.
+
+2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
+
 	PR rtl-optimization/63384
 	* g++.dg/pr63384.C: New test. 
 

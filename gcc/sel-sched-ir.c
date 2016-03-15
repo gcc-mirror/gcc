@@ -4106,11 +4106,14 @@ get_seqno_by_preds (rtx_insn *insn)
   insn_t *preds;
   int n, i, seqno;
 
-  while (tmp != head)
+  /* Loop backwards from INSN to HEAD including both.  */
+  while (1)
     {
-      tmp = PREV_INSN (tmp);
       if (INSN_P (tmp))
-        return INSN_SEQNO (tmp);
+	return INSN_SEQNO (tmp);
+      if (tmp == head)
+	break;
+      tmp = PREV_INSN (tmp);
     }
 
   cfg_preds (bb, &preds, &n);
