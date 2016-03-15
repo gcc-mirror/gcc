@@ -1,3 +1,7 @@
+2016-03-15  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/tree-ssa/pr68714.c: Test during reassoc1 pass.
+
 2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/69032
