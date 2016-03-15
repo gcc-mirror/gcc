@@ -1,3 +1,9 @@
+2016-03-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libfortran/69799
+	* gfortran.dg/coarray_allocate_5.f08: Add "-latomic" option if
+	libatomic_available.
+
 2016-03-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/70209
