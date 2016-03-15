@@ -1,5 +1,6 @@
 /* { dg-options "-fdump-rtl-ce1 -O2 --param max-rtl-if-conversion-insns=3" } */
-/* { dg-skip-if "Multiple set if-conversion not guaranteed on all subtargets" { "arm*-*-* powerpc64le*-*-* visium-*-*" } {"*"} { "" } }  */
+/* { dg-additional-options "-misel" { target { powerpc*-*-* } } } */
+/* { dg-skip-if "Multiple set if-conversion not guaranteed on all subtargets" { "arm*-*-* visium-*-*" } {"*"} { "" } }  */
 
 int
 foo (int x, int y, int a)
