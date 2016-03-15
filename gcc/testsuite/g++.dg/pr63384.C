@@ -1,5 +1,5 @@
 /* { dg-do compile { target powerpc*-*-* ia64-*-* i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O2 -fselective-scheduling2 -fsel-sched-pipelining  -fsel-sched-pipelining-outer-loops -fsel-sched-reschedule-pipelined -fvar-tracking-assignments-toggle -ftree-vectorize" } */
+/* { dg-options "-O2 -fselective-scheduling2 -fsel-sched-pipelining  -fsel-sched-pipelining-outer-loops -fsel-sched-reschedule-pipelined -fvar-tracking-assignments -ftree-vectorize -w" } */
 
 template <class T> T **make_test_matrix() {
  T **data = new T *;
