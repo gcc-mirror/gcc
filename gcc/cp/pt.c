@@ -21935,7 +21935,7 @@ instantiate_decl (tree d, int defer_ok,
       if (enter_context)
         pop_nested_class ();
 
-      if (variable_template_p (td))
+      if (variable_template_p (gen_tmpl))
 	note_variable_template_instantiation (d);
     }
   else if (TREE_CODE (d) == FUNCTION_DECL && DECL_DEFAULTED_FN (code_pattern))
