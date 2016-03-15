@@ -1,3 +1,9 @@
+2016-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/70239
+	* tree-ssa-sccvn.c (VN_INFO_GET): Use safe_grow_cleared instead
+	of safe_grow.
+
 2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/69032
