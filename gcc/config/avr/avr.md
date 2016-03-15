@@ -3351,7 +3351,7 @@
 (define_expand "rotl<mode>3"
   [(parallel [(set (match_operand:HISI 0 "register_operand" "")
                    (rotate:HISI (match_operand:HISI 1 "register_operand" "")
-                                (match_operand:VOID 2 "const_int_operand" "")))
+                                (match_operand:HISI 2 "const_int_operand" "")))
               (clobber (match_dup 3))])]
   ""
   {

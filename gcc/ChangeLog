@@ -1,3 +1,7 @@
+2016-03-15  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* config/avr/avr.md (rotl<mode>3): Set mode for operand 2.
+
 2016-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70222
