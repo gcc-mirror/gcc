@@ -1,3 +1,8 @@
+2016-03-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70141
+	* pt.c (for_each_template_parm_r): Always walk into TYPENAME_TYPE.
+
 2016-03-14  Casey Carter  <casey@carter.net>
 	    Jason Merrill  <jason@redhat.com>
 
