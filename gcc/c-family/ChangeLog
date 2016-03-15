@@ -1,3 +1,7 @@
+2016-03-14  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Bump __cpp_range_based_for.
+
 2016-03-09  Richard Biener  <rguenther@suse.de>
 
 	PR c/70143
