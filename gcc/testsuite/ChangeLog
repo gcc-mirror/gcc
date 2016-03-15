@@ -1,3 +1,9 @@
+2016-03-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/53792
+	* g++.dg/cpp0x/constexpr-inline.C: New test.
+	* g++.dg/cpp0x/constexpr-inline-1.C: Same.
+
 2016-03-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/torture/pr70083.c: Prune non-standard ABI.
