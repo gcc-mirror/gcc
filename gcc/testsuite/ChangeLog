@@ -1,5 +1,7 @@
 2016-03-15  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.dg/ifcvt-4.c: Add hppa*64*-*-* to skip list.
+
 	PR libfortran/69799
 	* gfortran.dg/coarray_allocate_5.f08: Add "-latomic" option if
 	libatomic_available.
