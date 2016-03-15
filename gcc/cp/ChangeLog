@@ -1,5 +1,8 @@
 2016-03-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70095
+	* pt.c (instantiate_decl): Fix call to variable_template_p.
+
 	PR c++/70141
 	* pt.c (for_each_template_parm_r): Always walk into TYPENAME_TYPE.
 
