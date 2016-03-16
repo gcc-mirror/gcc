@@ -1,3 +1,8 @@
+2016-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/68714
+	* gcc.dg/tree-ssa/pr68714.c: Add -w -Wno-psabi to dg-options.
+
 2016-03-16  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/68715
