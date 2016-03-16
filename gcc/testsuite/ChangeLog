@@ -1,3 +1,9 @@
+2016-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70147
+	* g++.dg/ubsan/pr70147-1.C: New test.
+	* g++.dg/ubsan/pr70147-2.C: New test.
+
 2016-03-15  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/58281
