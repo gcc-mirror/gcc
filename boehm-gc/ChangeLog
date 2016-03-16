@@ -1,3 +1,8 @@
+2016-03-16  Andreas Schwab  <schwab@suse.de>
+
+	* include/private/gcconfig.h [AARCH64] (ALIGNMENT, CPP_WORDSZ):
+	Define for __ILP32__.
+
 2015-10-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* testsuite/lib/boehm-gc.exp: Load multiline.exp before
