@@ -836,7 +836,9 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
     {
       /* Find the first empty succ (with single exit) of combined.exit.  */
       basic_block imm_succ = combined.exit->dest;
-      if (single_succ_p (imm_succ) && trivially_empty_bb_p (imm_succ))
+      if (single_succ_p (imm_succ)
+	  && single_pred_p (imm_succ)
+	  && trivially_empty_bb_p (imm_succ))
 	combined.exit = single_succ_edge (imm_succ);
       else
 	{
