@@ -1,3 +1,8 @@
+2016-03-16  Svante Signell  <svante.signell@gmail.com>
+
+	* gcc-interface/Makefile.in: Add support for x86 GNU/Hurd.
+	* s-osinte-gnu.ads: New file.
+
 2016-03-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* system-vxworks-m68k.ads (Stack_Check_Probes): Set to True.
