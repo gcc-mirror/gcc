@@ -1,5 +1,4 @@
 ! { dg-do run }
-! { dg-options "-ftree-parallelize-loops=32" }
 
 program main
   implicit none
