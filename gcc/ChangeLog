@@ -7,6 +7,20 @@
 	* gimplify.c (gimplify_expr) [VEC_COND_EXPR]: Gimplify the
 	first operand as is_gimple_condexpr.
 
+	PR middle-end/70240
+	PR middle-end/68215
+	Revert r231575
+	2015-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+	* tree-vect-generic.c (tree_vec_extract): Remove GSI parameter.
+	Do not gimplify the result.
+	(do_unop): Adjust call to tree_vec_extract.
+	(do_binop): Likewise.
+	(do_compare): Likewise.
+	(do_plus_minus): Likewise.
+	(do_negate): Likewise.
+	(expand_vector_condition): Likewise.
+	(do_cond): Likewise.
+
 2016-03-16  Richard Henderson  <rth@redhat.com>
 
 	PR target/70048
