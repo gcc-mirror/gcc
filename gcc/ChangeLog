@@ -1,3 +1,8 @@
+2016-03-16  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-vect-loop.c (vect_analyze_loop_2): Fix wrong dump info by
+	reporting malformed loop nest.
+
 2016-03-16  Tom de Vries  <tom@codesourcery.com>
 
 	PR lto/70187
