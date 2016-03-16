@@ -1,3 +1,11 @@
+2016-03-16  Richard Henderson  <rth@redhat.com>
+
+	PR target/70048
+	* config/aarch64/aarch64.c (virt_or_elim_regno_p): New.
+	(aarch64_classify_address): Use it.
+	(aarch64_legitimize_address): Force all subexpressions of PLUS
+	into registers.  Simplify as (sfp+const)+reg or (reg+reg)+const.
+
 2016-03-16  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Biener  <rguenth@suse.de>
 
