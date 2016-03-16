@@ -1,6 +1,10 @@
 2016-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70147
+	* cp-ubsan.c (cp_ubsan_dfs_initialize_vtbl_ptrs): Conditionalize
+	BINFO_VIRTUAL_P vtable clearing on current_in_charge_parm.
+
+	PR c++/70147
 	* cp-ubsan.c (cp_ubsan_maybe_initialize_vtbl_ptrs): Temporarily
 	set in_base_initializer.
 

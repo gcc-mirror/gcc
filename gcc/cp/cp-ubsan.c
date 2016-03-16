@@ -299,8 +299,14 @@ cp_ubsan_dfs_initialize_vtbl_ptrs (tree binfo, void *data)
 
       /* Assign NULL to the vptr.  */
       tree vtbl = build_zero_cst (TREE_TYPE (vtbl_ptr));
-      finish_expr_stmt (cp_build_modify_expr (vtbl_ptr, NOP_EXPR, vtbl,
-					      tf_warning_or_error));
+      tree stmt = cp_build_modify_expr (vtbl_ptr, NOP_EXPR, vtbl,
+					tf_warning_or_error);
+      if (BINFO_VIRTUAL_P (binfo))
+	stmt = build3 (COND_EXPR, void_type_node,
+		       build2 (NE_EXPR, boolean_type_node,
+			       current_in_charge_parm, integer_zero_node),
+		       stmt, void_node);
+      finish_expr_stmt (stmt);
     }
 
   return NULL_TREE;
