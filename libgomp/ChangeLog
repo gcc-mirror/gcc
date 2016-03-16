@@ -1,3 +1,18 @@
+2016-03-16  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/kernels-loop-2.f95: Adjust to
+	-ftree-parallelize-loops/-fopenacc changes.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data-2.f95:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data-enter-exit-2.f95:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data-enter-exit.f95:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data-update.f95:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-data.f95: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop.f95: Likewise.
+
 2016-03-13  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/lib/libgomp.exp (libgomp_init): Potentially append to
