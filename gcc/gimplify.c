@@ -4838,7 +4838,8 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	}
       notice_special_calls (call_stmt);
       if (!gimple_call_noreturn_p (call_stmt)
-	  || TREE_ADDRESSABLE (TREE_TYPE (*to_p)))
+	  || TREE_ADDRESSABLE (TREE_TYPE (*to_p))
+	  || TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (*to_p))) != INTEGER_CST)
 	gimple_call_set_lhs (call_stmt, *to_p);
       assign = call_stmt;
     }

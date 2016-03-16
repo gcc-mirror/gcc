@@ -1,3 +1,9 @@
+2016-03-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70093
+	* c-typeck.c (build_function_call_vec): Create a TARGET_EXPR for
+	nested functions returning VM types.
+
 2016-03-09  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* c-parser.c (c_parser_oacc_loop): Update cclauses and clauses

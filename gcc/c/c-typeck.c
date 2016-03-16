@@ -3068,6 +3068,16 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
     result = build_call_array_loc (loc, TREE_TYPE (fntype),
 				   function, nargs, argarray);
 
+  /* In this improbable scenario, a nested function returns a VM type.
+     Create a TARGET_EXPR so that the call always has a LHS, much as
+     what the C++ FE does for functions returning non-PODs.  */
+  if (variably_modified_type_p (TREE_TYPE (fntype), NULL_TREE))
+    {
+      tree tmp = create_tmp_var_raw (TREE_TYPE (fntype));
+      result = build4 (TARGET_EXPR, TREE_TYPE (fntype), tmp, result,
+		       NULL_TREE, NULL_TREE);
+    }
+
   if (VOID_TYPE_P (TREE_TYPE (result)))
     {
       if (TYPE_QUALS (TREE_TYPE (result)) != TYPE_UNQUALIFIED)

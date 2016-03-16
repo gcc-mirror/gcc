@@ -1,3 +1,9 @@
+2016-03-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70093
+	* gcc.dg/nested-func-10.c: New test.
+	* gcc.dg/nested-func-9.c: New test.
+
 2016-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/68714
