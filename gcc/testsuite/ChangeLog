@@ -1,3 +1,7 @@
+2016-03-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/uninit-19.c: Run dos2unix.
+
 2016-03-16  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70093
