@@ -1,3 +1,11 @@
+2016-03-16  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenth@suse.de>
+
+	PR target/70245
+	* rtlanal.c (replace_rtx): For REG, if from is a REG,
+	return to even if only REGNO is equal, and assert
+	mode is the same.
+
 2016-03-11  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/70224
