@@ -1008,6 +1008,7 @@ input_struct_function_base (struct function *fn, struct data_in *data_in,
   fn->after_inlining = bp_unpack_value (&bp, 1);
   fn->stdarg = bp_unpack_value (&bp, 1);
   fn->has_nonlocal_label = bp_unpack_value (&bp, 1);
+  fn->has_forced_label_in_static = bp_unpack_value (&bp, 1);
   fn->calls_alloca = bp_unpack_value (&bp, 1);
   fn->calls_setjmp = bp_unpack_value (&bp, 1);
   fn->has_force_vectorize_loops = bp_unpack_value (&bp, 1);

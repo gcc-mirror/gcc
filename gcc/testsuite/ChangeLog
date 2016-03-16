@@ -1,3 +1,8 @@
+2016-03-16  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/70199
+	* gcc.c-torture/compile/pr70199.c: New.
+
 2016-03-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/uninit-19.c: Run dos2unix.
