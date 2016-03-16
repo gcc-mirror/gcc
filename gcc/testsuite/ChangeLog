@@ -1,5 +1,12 @@
 2016-03-16  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/68715
+	* gcc.dg/graphite/pr68715-2.c: New test.
+	* gcc.dg/graphite/pr68715.c: New test.
+	* gfortran.dg/graphite/pr68715.f90: New test.
+
+2016-03-16  Tom de Vries  <tom@codesourcery.com>
+
 	PR tree-optimization/68809
 	* gcc.dg/graphite/pr68809-2.c: New test.
 	* gcc.dg/graphite/pr68809.c: New test.

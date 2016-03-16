@@ -1,5 +1,11 @@
 2016-03-16  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/68715
+	* graphite-scop-detection.c (scop_detection::merge_sese): Add missing
+	single_pred_p test.
+
+2016-03-16  Tom de Vries  <tom@codesourcery.com>
+
 	PR tree-optimization/68809
 	* graphite-scop-detection.c (same_close_phi_node): Test if result types
 	are the same.
