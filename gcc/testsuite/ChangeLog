@@ -1,3 +1,8 @@
+2016-03-16  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/70240
+	* gcc.c-torture/compile/pr70240.c: New.
+
 2016-03-16  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.c-torture/compile/20151204.c: Skip for avr.
