@@ -3504,33 +3504,13 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
   return use;
 }
 
-/* Callback through walk_tree.  Determine if a DECL_INITIAL makes reference
-   to a local label.  */
-
-static tree
-has_label_address_in_static_1 (tree *nodep, int *walk_subtrees, void *fnp)
-{
-  tree node = *nodep;
-  tree fn = (tree) fnp;
-
-  if (TREE_CODE (node) == LABEL_DECL && DECL_CONTEXT (node) == fn)
-    return node;
-
-  if (TYPE_P (node))
-    *walk_subtrees = 0;
-
-  return NULL_TREE;
-}
-
 /* Determine if the function can be copied.  If so return NULL.  If
    not return a string describng the reason for failure.  */
 
 const char *
-copy_forbidden (struct function *fun, tree fndecl)
+copy_forbidden (struct function *fun)
 {
   const char *reason = fun->cannot_be_copied_reason;
-  tree decl;
-  unsigned ix;
 
   /* Only examine the function once.  */
   if (fun->cannot_be_copied_set)
@@ -3549,19 +3529,12 @@ copy_forbidden (struct function *fun, tree fndecl)
       goto fail;
     }
 
-  FOR_EACH_LOCAL_DECL (fun, ix, decl)
-    if (TREE_CODE (decl) == VAR_DECL
-	&& TREE_STATIC (decl)
-	&& !DECL_EXTERNAL (decl)
-	&& DECL_INITIAL (decl)
-	&& walk_tree_without_duplicates (&DECL_INITIAL (decl),
-					 has_label_address_in_static_1,
-					 fndecl))
-      {
-	reason = G_("function %q+F can never be copied because it saves "
-		    "address of local label in a static variable");
-	goto fail;
-      }
+  if (fun->has_forced_label_in_static)
+    {
+      reason = G_("function %q+F can never be copied because it saves "
+		  "address of local label in a static variable");
+      goto fail;
+    }
 
  fail:
   fun->cannot_be_copied_reason = reason;
@@ -3705,7 +3678,7 @@ inline_forbidden_p (tree fndecl)
   bool forbidden_p = false;
 
   /* First check for shared reasons not to copy the code.  */
-  inline_forbidden_reason = copy_forbidden (fun, fndecl);
+  inline_forbidden_reason = copy_forbidden (fun);
   if (inline_forbidden_reason != NULL)
     return true;
 
@@ -5552,7 +5525,7 @@ bool
 tree_versionable_function_p (tree fndecl)
 {
   return (!lookup_attribute ("noclone", DECL_ATTRIBUTES (fndecl))
-	  && copy_forbidden (DECL_STRUCT_FUNCTION (fndecl), fndecl) == NULL);
+	  && copy_forbidden (DECL_STRUCT_FUNCTION (fndecl)) == NULL);
 }
 
 /* Delete all unreachable basic blocks and update callgraph.

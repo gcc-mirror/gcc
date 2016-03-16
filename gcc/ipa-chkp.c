@@ -470,7 +470,7 @@ chkp_instrumentable_p (tree fndecl)
   return (!lookup_attribute ("bnd_legacy", DECL_ATTRIBUTES (fndecl))
 	  && (!flag_chkp_instrument_marked_only
 	      || lookup_attribute ("bnd_instrument", DECL_ATTRIBUTES (fndecl)))
-	  && (!fn || !copy_forbidden (fn, fndecl)));
+	  && (!fn || !copy_forbidden (fn)));
 }
 
 /* Return clone created for instrumentation of NODE or NULL.  */
@@ -644,22 +644,22 @@ chkp_versioning (void)
 
   FOR_EACH_DEFINED_FUNCTION (node)
     {
+      tree decl = node->decl;
       if (!node->instrumentation_clone
 	  && !node->instrumented_version
 	  && !node->alias
 	  && !node->thunk.thunk_p
-	  && (!DECL_BUILT_IN (node->decl)
-	      || (DECL_BUILT_IN_CLASS (node->decl) == BUILT_IN_NORMAL
-		  && DECL_FUNCTION_CODE (node->decl) < BEGIN_CHKP_BUILTINS)))
+	  && (!DECL_BUILT_IN (decl)
+	      || (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
+		  && DECL_FUNCTION_CODE (decl) < BEGIN_CHKP_BUILTINS)))
 	{
-	  if (chkp_instrumentable_p (node->decl))
-	    chkp_maybe_create_clone (node->decl);
-	  else if ((reason = copy_forbidden (DECL_STRUCT_FUNCTION (node->decl),
-					     node->decl)))
+	  if (chkp_instrumentable_p (decl))
+	    chkp_maybe_create_clone (decl);
+	  else if ((reason = copy_forbidden (DECL_STRUCT_FUNCTION (decl))))
 	    {
-	      if (warning_at (DECL_SOURCE_LOCATION (node->decl), OPT_Wchkp,
+	      if (warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wchkp,
 			      "function cannot be instrumented"))
-		inform (DECL_SOURCE_LOCATION (node->decl), reason, node->decl);
+		inform (DECL_SOURCE_LOCATION (decl), reason, decl);
 	    }
 	}
     }

@@ -328,6 +328,10 @@ struct GTY(()) function {
      from nested functions.  */
   unsigned int has_nonlocal_label : 1;
 
+  /* Nonzero if function being compiled has a forced label
+     placed into static storage.  */
+  unsigned int has_forced_label_in_static : 1;
+
   /* Nonzero if we've set cannot_be_copied_reason.  I.e. if
      (cannot_be_copied_set && !cannot_be_copied_reason), the function
      can in fact be copied.  */

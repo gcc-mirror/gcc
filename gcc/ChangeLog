@@ -1,3 +1,19 @@
+2016-03-16  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/70199
+	* function.h (struct function): Add has_forced_label_in_static.
+	* gimplify.c (force_labels_r): Set it.
+	* lto-streamer-in.c (input_struct_function_base): Read it.
+	* lto-streamer-out.c (output_struct_function_base): Write it.
+	* tree-inline.c (has_label_address_in_static_1): Remove.
+	(copy_forbidden): Remove fndecl parameter; test
+	has_forced_label_in_static.
+	(inline_forbidden_p): Update call to copy_forbidden.
+	(tree_versionable_function_p): Likewise.
+	* ipa-chkp.c (chkp_instrumentable_p): Likewise.
+	(chkp_versioning): Likewise.
+	* tree-inline.h (copy_forbidden): Update decl.
+
 2016-03-16  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70093

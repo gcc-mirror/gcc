@@ -1414,7 +1414,10 @@ force_labels_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
   if (TYPE_P (*tp))
     *walk_subtrees = 0;
   if (TREE_CODE (*tp) == LABEL_DECL)
-    FORCED_LABEL (*tp) = 1;
+    {
+      FORCED_LABEL (*tp) = 1;
+      cfun->has_forced_label_in_static = 1;
+    }
 
   return NULL_TREE;
 }
