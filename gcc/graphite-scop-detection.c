@@ -273,8 +273,10 @@ trivially_empty_bb_p (basic_block bb)
 static inline bool
 same_close_phi_node (gphi *p1, gphi *p2)
 {
-  return operand_equal_p (gimple_phi_arg_def (p1, 0),
-			  gimple_phi_arg_def (p2, 0), 0);
+  return (types_compatible_p (TREE_TYPE (gimple_phi_result (p1)),
+			      TREE_TYPE (gimple_phi_result (p2)))
+	  && operand_equal_p (gimple_phi_arg_def (p1, 0),
+			      gimple_phi_arg_def (p2, 0), 0));
 }
 
 static void make_close_phi_nodes_unique (basic_block bb);
