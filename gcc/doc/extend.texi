@@ -2772,29 +2772,40 @@ refer to the following subsections for details.
 
 @item leaf
 @cindex @code{leaf} function attribute
-Calls to external functions with this attribute must return to the current
-compilation unit only by return or by exception handling.  In particular, leaf
-functions are not allowed to call callback function passed to it from the current
-compilation unit or directly call functions exported by the unit or longjmp
-into the unit.  Leaf function might still call functions from other compilation
-units and thus they are not necessarily leaf in the sense that they contain no
-function calls at all.
+Calls to external functions with this attribute must return to the
+current compilation unit only by return or by exception handling.  In
+particular, a leaf function is not allowed to invoke callback functions
+passed to it from the current compilation unit, directly call functions
+exported by the unit, or @code{longjmp} into the unit.  Leaf functions
+might still call functions from other compilation units and thus they
+are not necessarily leaf in the sense that they contain no function
+calls at all.
 
-The attribute is intended for library functions to improve dataflow analysis.
-The compiler takes the hint that any data not escaping the current compilation unit can
-not be used or modified by the leaf function.  For example, the @code{sin} function
-is a leaf function, but @code{qsort} is not.
+The attribute is intended for library functions to improve dataflow
+analysis.  The compiler takes the hint that any data not escaping the
+current compilation unit cannot be used or modified by the leaf
+function.  For example, the @code{sin} function is a leaf function, but
+@code{qsort} is not.
 
-Note that leaf functions might invoke signals and signal handlers might be
-defined in the current compilation unit and use static variables.  The only
-compliant way to write such a signal handler is to declare such variables
-@code{volatile}.
+Note that leaf functions might indirectly run a signal handler defined
+in the current compilation unit that uses static variables.  Similarly,
+when lazy symbol resolution is in effect, leaf functions might invoke
+indirect functions whose resolver function or implementation function is
+defined in the current compilation unit and uses static variables.  There
+is no standard-compliant way to write such a signal handler, resolver
+function, or implementation function, and the best that you can do is to
+remove the @code{leaf} attribute or mark all such static variables
+@code{volatile}.  Lastly, for ELF-based systems that support symbol
+interposition, care should be taken that functions defined in the
+current compilation unit do not unexpectedly interpose other symbols
+based on the defined standards mode and defined feature test macros;
+otherwise an inadvertent callback would be added.
 
-The attribute has no effect on functions defined within the current compilation
-unit.  This is to allow easy merging of multiple compilation units into one,
-for example, by using the link-time optimization.  For this reason the
-attribute is not allowed on types to annotate indirect calls.
-
+The attribute has no effect on functions defined within the current
+compilation unit.  This is to allow easy merging of multiple compilation
+units into one, for example, by using the link-time optimization.  For
+this reason the attribute is not allowed on types to annotate indirect
+calls.
 
 @item malloc
 @cindex @code{malloc} function attribute

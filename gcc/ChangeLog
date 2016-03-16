@@ -1,3 +1,9 @@
+2016-03-16  Carlos O'Donell  <carlos@redhat.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (Common Function Attributes): Describe ifunc impact
+	on leaf attribute. Mention ELF interposition problems.
+
 2016-03-16  Alan Modra  <amodra@gmail.com>
 
 	PR rtl-optimization/69195
