@@ -1,5 +1,8 @@
 2016-03-15  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.c-torture/execute/pr68532.c: Add -fno-common option on
+	hppa*-*-hpux*.
+
 	* gcc.dg/ifcvt-4.c: Add hppa*64*-*-* to skip list.
 
 	PR libfortran/69799
