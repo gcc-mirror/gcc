@@ -1854,9 +1854,14 @@
 # endif
 
 # ifdef AARCH64
-#   define CPP_WORDSZ 64
+#   ifdef __ILP32__
+#     define ALIGNMENT 4
+#     define CPP_WORDSZ 32
+#   else
+#     define ALIGNMENT 8
+#     define CPP_WORDSZ 64
+#   endif
 #   define MACH_TYPE "AARCH64"
-#   define ALIGNMENT 8
 #   ifndef HBLKSIZE
 #     define HBLKSIZE 4096
 #   endif
