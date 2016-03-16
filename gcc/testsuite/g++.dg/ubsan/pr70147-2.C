@@ -46,7 +46,7 @@ struct B : virtual A, public E, public F
 };
 struct C : B, virtual A
 {
-  C () {}
+  C () : A (i ()) {}
 };
 
 int
@@ -55,6 +55,11 @@ main ()
   C c;
 }
 
+// { dg-output "\[^\n\r]*pr70147-2.C:49:\[0-9]*: runtime error: member call on address 0x\[0-9a-fA-F]* which does not point to an object of type 'A'(\n|\r\n|\r)" }
+// { dg-output "0x\[0-9a-fA-F]*: note: object has invalid vptr(\n|\r\n|\r)" }
+// { dg-output "  ?.. .. .. ..  ?.. .. .. ..  ?.. .. .. .. \[^\n\r]*(\n|\r\n|\r)" }
+// { dg-output "              ?\\^~~~~~~~~~~\[^\n\r]*(\n|\r\n|\r)" }
+// { dg-output "              ?invalid vptr\[^\n\r]*(\n|\r\n|\r)" }
 // { dg-output "\[^\n\r]*pr70147-2.C:33:\[0-9]*: runtime error: member call on address 0x\[0-9a-fA-F]* which does not point to an object of type 'E'(\n|\r\n|\r)" }
 // { dg-output "0x\[0-9a-fA-F]*: note: object has invalid vptr(\n|\r\n|\r)" }
 // { dg-output "  ?.. .. .. ..  ?.. .. .. ..  ?.. .. .. .. \[^\n\r]*(\n|\r\n|\r)" }
@@ -65,18 +70,7 @@ main ()
 // { dg-output "  ?.. .. .. ..  ?.. .. .. ..  ?.. .. .. .. \[^\n\r]*(\n|\r\n|\r)" }
 // { dg-output "              ?\\^~~~~~~~~~~\[^\n\r]*(\n|\r\n|\r)" }
 // { dg-output "              ?invalid vptr\[^\n\r]*(\n|\r\n|\r)" }
-// { dg-output "\[^\n\r]*pr70147-2.C:35:\[0-9]*: runtime error: member call on address 0x\[0-9a-fA-F]* which does not point to an object of type 'A'(\n|\r\n|\r)" }
-// { dg-output "0x\[0-9a-fA-F]*: note: object has invalid vptr(\n|\r\n|\r)" }
-// { dg-output "  ?.. .. .. ..  ?.. .. .. ..  ?.. .. .. .. \[^\n\r]*(\n|\r\n|\r)" }
-// { dg-output "              ?\\^~~~~~~~~~~\[^\n\r]*(\n|\r\n|\r)" }
-// { dg-output "              ?invalid vptr\[^\n\r]*(\n|\r\n|\r)" }
-// Note we don't catch the UB of calling g () on line 36.
 // { dg-output "\[^\n\r]*pr70147-2.C:38:\[0-9]*: runtime error: member call on address 0x\[0-9a-fA-F]* which does not point to an object of type 'F'(\n|\r\n|\r)" }
-// { dg-output "0x\[0-9a-fA-F]*: note: object has invalid vptr(\n|\r\n|\r)" }
-// { dg-output "  ?.. .. .. ..  ?.. .. .. ..  ?.. .. .. .. \[^\n\r]*(\n|\r\n|\r)" }
-// { dg-output "              ?\\^~~~~~~~~~~\[^\n\r]*(\n|\r\n|\r)" }
-// { dg-output "              ?invalid vptr\[^\n\r]*(\n|\r\n|\r)" }
-// { dg-output "\[^\n\r]*pr70147-2.C:39:\[0-9]*: runtime error: member call on address 0x\[0-9a-fA-F]* which does not point to an object of type 'A'(\n|\r\n|\r)" }
 // { dg-output "0x\[0-9a-fA-F]*: note: object has invalid vptr(\n|\r\n|\r)" }
 // { dg-output "  ?.. .. .. ..  ?.. .. .. ..  ?.. .. .. .. \[^\n\r]*(\n|\r\n|\r)" }
 // { dg-output "              ?\\^~~~~~~~~~~\[^\n\r]*(\n|\r\n|\r)" }

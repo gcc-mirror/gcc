@@ -1,6 +1,10 @@
 2016-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70147
+	* g++.dg/ubsan/pr70147-2.C (C::C): Initialize A base with invalid
+	method call to i () as argument.  Adjust expected output.
+
+	PR c++/70147
 	* g++.dg/ubsan/pr70147-1.C: New test.
 	* g++.dg/ubsan/pr70147-2.C: New test.
 
