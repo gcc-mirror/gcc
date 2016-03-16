@@ -1708,7 +1708,9 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 
       /* Build call to the function being thunked.  */
       if (!VOID_TYPE_P (restype)
-	  && (!alias_is_noreturn || TREE_ADDRESSABLE (restype)))
+	  && (!alias_is_noreturn
+	      || TREE_ADDRESSABLE (restype)
+	      || TREE_CODE (TYPE_SIZE_UNIT (restype)) != INTEGER_CST))
 	{
 	  if (DECL_BY_REFERENCE (resdecl))
 	    {

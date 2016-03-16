@@ -1,3 +1,11 @@
+2016-03-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70093
+	* cgraphunit.c (cgraph_node::expand_thunk): Also build call to the
+	function being thunked if the result type doesn't have fixed size.
+	* gimplify.c (gimplify_modify_expr): Also set LHS if the result type
+	doesn't have fixed size.
+
 2016-03-16  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-vect-loop.c (vect_analyze_loop_2): Fix wrong dump info by
