@@ -1772,8 +1772,9 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: loop contains function calls"
-			 " or data references that cannot be analyzed\n");
+			 "not vectorized: loop nest containing two "
+			 "or more consecutive inner loops cannot be "
+			 "vectorized\n");
       return false;
     }
 
