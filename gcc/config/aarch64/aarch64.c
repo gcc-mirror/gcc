@@ -3847,6 +3847,18 @@ aarch64_mode_valid_for_sched_fusion_p (machine_mode mode)
 	     && GET_MODE_SIZE (mode) == 8);
 }
 
+/* Return true if REGNO is a virtual pointer register, or an eliminable
+   "soft" frame register.  Like REGNO_PTR_FRAME_P except that we don't
+   include stack_pointer or hard_frame_pointer.  */
+static bool
+virt_or_elim_regno_p (unsigned regno)
+{
+  return ((regno >= FIRST_VIRTUAL_REGISTER
+	   && regno <= LAST_VIRTUAL_POINTER_REGISTER)
+	  || regno == FRAME_POINTER_REGNUM
+	  || regno == ARG_POINTER_REGNUM);
+}
+
 /* Return true if X is a valid address for machine mode MODE.  If it is,
    fill in INFO appropriately.  STRICT_P is true if REG_OK_STRICT is in
    effect.  OUTER_CODE is PARALLEL for a load/store pair.  */
@@ -3890,9 +3902,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 
       if (! strict_p
 	  && REG_P (op0)
-	  && (op0 == virtual_stack_vars_rtx
-	      || op0 == frame_pointer_rtx
-	      || op0 == arg_pointer_rtx)
+	  && virt_or_elim_regno_p (REGNO (op0))
 	  && CONST_INT_P (op1))
 	{
 	  info->type = ADDRESS_REG_IMM;
@@ -4953,74 +4963,43 @@ aarch64_legitimize_address (rtx x, rtx /* orig_x  */, machine_mode mode)
 
   if (GET_CODE (x) == PLUS && CONST_INT_P (XEXP (x, 1)))
     {
-      HOST_WIDE_INT offset = INTVAL (XEXP (x, 1));
-      HOST_WIDE_INT base_offset;
+      rtx base = XEXP (x, 0);
+      rtx offset_rtx XEXP (x, 1);
+      HOST_WIDE_INT offset = INTVAL (offset_rtx);
 
-      if (GET_CODE (XEXP (x, 0)) == PLUS)
+      if (GET_CODE (base) == PLUS)
 	{
-	  rtx op0 = XEXP (XEXP (x, 0), 0);
-	  rtx op1 = XEXP (XEXP (x, 0), 1);
+	  rtx op0 = XEXP (base, 0);
+	  rtx op1 = XEXP (base, 1);
 
-	  /* Address expressions of the form Ra + Rb + CONST.
+	  /* Force any scaling into a temp for CSE.  */
+	  op0 = force_reg (Pmode, op0);
+	  op1 = force_reg (Pmode, op1);
 
-	     If CONST is within the range supported by the addressing
-	     mode "reg+offset", do not split CONST and use the
-	     sequence
-	       Rt = Ra + Rb;
-	       addr = Rt + CONST.  */
-	  if (REG_P (op0) && REG_P (op1))
+	  /* Let the pointer register be in op0.  */
+	  if (REG_POINTER (op1))
+	    std::swap (op0, op1);
+
+	  /* If the pointer is virtual or frame related, then we know that
+	     virtual register instantiation or register elimination is going
+	     to apply a second constant.  We want the two constants folded
+	     together easily.  Therefore, emit as (OP0 + CONST) + OP1.  */
+	  if (virt_or_elim_regno_p (REGNO (op0)))
 	    {
-	      machine_mode addr_mode = GET_MODE (x);
-	      rtx base = gen_reg_rtx (addr_mode);
-	      rtx addr = plus_constant (addr_mode, base, offset);
-
-	      if (aarch64_legitimate_address_hook_p (mode, addr, false))
-		{
-		  emit_insn (gen_adddi3 (base, op0, op1));
-		  return addr;
-		}
+	      base = expand_binop (Pmode, add_optab, op0, offset_rtx,
+				   NULL_RTX, true, OPTAB_DIRECT);
+	      return gen_rtx_PLUS (Pmode, base, op1);
 	    }
-	  /* Address expressions of the form Ra + Rb<<SCALE + CONST.
 
-	     If Reg + Rb<<SCALE is a valid address expression, do not
-	     split CONST and use the sequence
-	       Rc = CONST;
-	       Rt = Ra + Rc;
-	       addr = Rt + Rb<<SCALE.
-
-	     TODO: We really should split CONST out of memory referece
-	     because:
-	       a) We depend on GIMPLE optimizers to pick up common sub
-		  expression involving the scaling operation.
-	       b) The index Rb is likely a loop iv, it's better to split
-		  the CONST so that computation of new base Rt is a loop
-		  invariant and can be moved out of loop.  This is more
-		  important when the original base Ra is sfp related.
-
-	     Unfortunately, GIMPLE optimizers (e.g., SLSR) can not handle
-	     this kind of CSE opportunity at the time of this change, we
-	     have to force register scaling expr out of memory ref now.  */
-	  else if (REG_P (op0) || REG_P (op1))
-	    {
-	      machine_mode addr_mode = GET_MODE (x);
-	      rtx base = gen_reg_rtx (addr_mode);
-
-	      /* Switch to make sure that register is in op0.  */
-	      if (REG_P (op1))
-		std::swap (op0, op1);
-
-	      rtx addr = plus_constant (addr_mode, base, offset);
-
-	      if (aarch64_legitimate_address_hook_p (mode, addr, false))
-		{
-		  base = force_operand (gen_rtx_PLUS (addr_mode, op1, op0),
-					NULL_RTX);
-		  return plus_constant (addr_mode, base, offset);
-		}
-	    }
+	  /* Otherwise, in order to encourage CSE (and thence loop strength
+	     reduce) scaled addresses, emit as (OP0 + OP1) + CONST.  */
+	  base = expand_binop (Pmode, add_optab, op0, op1,
+			       NULL_RTX, true, OPTAB_DIRECT);
+	  x = gen_rtx_PLUS (Pmode, base, offset_rtx);
 	}
 
       /* Does it look like we'll need a load/store-pair operation?  */
+      HOST_WIDE_INT base_offset;
       if (GET_MODE_SIZE (mode) > 16
 	  || mode == TImode)
 	base_offset = ((offset + 64 * GET_MODE_SIZE (mode))
@@ -5032,15 +5011,12 @@ aarch64_legitimize_address (rtx x, rtx /* orig_x  */, machine_mode mode)
       else
 	base_offset = offset & ~0xfff;
 
-      if (base_offset == 0)
-	return x;
-
-      offset -= base_offset;
-      rtx base_reg = gen_reg_rtx (Pmode);
-      rtx val = force_operand (plus_constant (Pmode, XEXP (x, 0), base_offset),
-			   NULL_RTX);
-      emit_move_insn (base_reg, val);
-      x = plus_constant (Pmode, base_reg, offset);
+      if (base_offset != 0)
+	{
+	  base = plus_constant (Pmode, base, base_offset);
+	  base = force_operand (base, NULL_RTX);
+	  return plus_constant (Pmode, base, offset - base_offset);
+	}
     }
 
   return x;
