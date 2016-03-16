@@ -1,5 +1,11 @@
 2016-03-16  Tom de Vries  <tom@codesourcery.com>
 
+	PR lto/70187
+	* ipa-devirt.c (possible_polymorphic_call_targets): Move
+	nodes.length () == 1 test to before first nodes[0] access.
+
+2016-03-16  Tom de Vries  <tom@codesourcery.com>
+
 	PR tree-optimization/68715
 	* graphite-scop-detection.c (scop_detection::merge_sese): Add missing
 	single_pred_p test.

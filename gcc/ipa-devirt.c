@@ -3178,10 +3178,10 @@ possible_polymorphic_call_targets (tree otr_type,
 	  if (!outer_type->all_derivations_known)
 	    {
 	      if (!speculative && final_warning_records
+		  && nodes.length () == 1
 		  && TREE_CODE (TREE_TYPE (nodes[0]->decl)) == METHOD_TYPE)
 		{
 		  if (complete
-		      && nodes.length () == 1
 		      && warn_suggest_final_types
 		      && !outer_type->derived_types.length ())
 		    {
@@ -3197,7 +3197,6 @@ possible_polymorphic_call_targets (tree otr_type,
 		    }
 		  if (complete
 		      && warn_suggest_final_methods
-		      && nodes.length () == 1
 		      && types_same_for_odr (DECL_CONTEXT (nodes[0]->decl),
 					     outer_type->type))
 		    {
