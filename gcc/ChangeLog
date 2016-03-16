@@ -1,6 +1,6 @@
 2016-03-11  Jeff Law  <law@redhat.com>
 
-	PR rtl-optimization/70024
+	PR rtl-optimization/70224
 	* reorg.c (relax_delay_slots): Pass right argument to CROSSING_JUMP_P.
 
 2016-03-16  Richard Henderson  <rth@redhat.com>
