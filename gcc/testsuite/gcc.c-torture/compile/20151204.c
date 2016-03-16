@@ -1,3 +1,5 @@
+/* { dg-skip-if "Array too big" { "avr-*-*" } } */
+
 typedef __SIZE_TYPE__ size_t;
 
 int strcmp (const char*, const char*);
