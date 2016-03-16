@@ -1,3 +1,9 @@
+2016-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70147
+	* cp-ubsan.c (cp_ubsan_maybe_initialize_vtbl_ptrs): Temporarily
+	set in_base_initializer.
+
 2016-03-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/70209
