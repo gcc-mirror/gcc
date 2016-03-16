@@ -2961,7 +2961,16 @@ replace_rtx (rtx x, rtx from, rtx to)
   if (x == 0)
     return 0;
 
-  if (GET_CODE (x) == SUBREG)
+  if (GET_CODE (x) == REG)
+    {
+      if (GET_CODE (from) == REG
+	  && REGNO (x) == REGNO (from))
+	{
+	  gcc_assert (GET_MODE (x) == GET_MODE (from));
+	  return to;
+	}
+    }
+  else if (GET_CODE (x) == SUBREG)
     {
       rtx new_rtx = replace_rtx (SUBREG_REG (x), from, to);
 

@@ -1,3 +1,10 @@
+2016-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70245
+	* g++.dg/opt/pr70245.C: New test.
+	* g++.dg/opt/pr70245.h: New file.
+	* g++.dg/opt/pr70245-aux.cc: New file.
+
 2016-03-16  Martin Sebor  <msebor@redhat.com>
 
 	* g++.dg/cpp1y/constexpr-instantiate.C: Correct DejaGnu directives.
