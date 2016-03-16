@@ -3307,7 +3307,7 @@ relax_delay_slots (rtx_insn *first)
 	  reorg_redirect_jump (delay_jump_insn, trial);
 	  target_label = trial;
 	  if (crossing)
-	    CROSSING_JUMP_P (insn) = 1;
+	    CROSSING_JUMP_P (delay_jump_insn) = 1;
 	}
 
       /* If the first insn at TARGET_LABEL is redundant with a previous
