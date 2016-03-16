@@ -1,3 +1,7 @@
+2016-03-16  Martin Sebor  <msebor@redhat.com>
+
+	* g++.dg/cpp1y/constexpr-instantiate.C: Correct DejaGnu directives.
+
 2016-03-16  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/70199
