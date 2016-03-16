@@ -1,4 +1,13 @@
 2016-03-16  Richard Henderson  <rth@redhat.com>
+	    Richard Biener  <rguenth@suse.de>
+
+	PR middle-end/70240
+	PR middle-end/68215
+	PR tree-opt/68714
+	* gimplify.c (gimplify_expr) [VEC_COND_EXPR]: Gimplify the
+	first operand as is_gimple_condexpr.
+
+2016-03-16  Richard Henderson  <rth@redhat.com>
 
 	PR target/70048
 	* config/aarch64/aarch64.c (virt_or_elim_regno_p): New.
