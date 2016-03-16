@@ -1,3 +1,8 @@
+2016-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70259
+	* decl.c (start_preparsed_function): Don't clobber an empty base.
+
 2016-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70147
