@@ -1,3 +1,10 @@
+2016-03-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/38239
+	* config/sol2/gmon.c [__i386__] (_mcount): Save and restore
+	call-clobbered registers.
+	(internal_mcount): Remove __i386__ handling.
+
 2016-02-26  Joel Sherrill <joel@rtems.org>
 
 	* config.host: Add x86_64-*-rtems*.
