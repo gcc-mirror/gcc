@@ -14121,6 +14121,8 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       && (flag_lifetime_dse > 1)
       && DECL_CONSTRUCTOR_P (decl1)
       && !DECL_CLONED_FUNCTION_P (decl1)
+      /* Clobbering an empty base is harmful if it overlays real data.  */
+      && !is_empty_class (current_class_type)
       /* We can't clobber safely for an implicitly-defined default constructor
 	 because part of the initialization might happen before we enter the
 	 constructor, via AGGR_INIT_ZERO_FIRST (c++/68006).  */
