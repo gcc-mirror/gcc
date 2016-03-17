@@ -1,3 +1,9 @@
+2016-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70272
+	* decl.c (begin_destructor_body): Don't insert clobber if
+	is_empty_class (current_class_type).
+
 2016-03-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/70194

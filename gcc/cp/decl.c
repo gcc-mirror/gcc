@@ -14354,7 +14354,9 @@ begin_destructor_body (void)
       initialize_vtbl_ptrs (current_class_ptr);
       finish_compound_stmt (compound_stmt);
 
-      if (flag_lifetime_dse)
+      if (flag_lifetime_dse
+	  /* Clobbering an empty base is harmful if it overlays real data.  */
+	  && !is_empty_class (current_class_type))
 	{
 	  /* Insert a cleanup to let the back end know that the object is dead
 	     when we exit the destructor, either normally or via exception.  */
