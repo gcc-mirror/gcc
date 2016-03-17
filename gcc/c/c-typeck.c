@@ -518,15 +518,17 @@ composite_type (tree t1, tree t2)
 	/* If both args specify argument types, we must merge the two
 	   lists, argument by argument.  */
 
-	len = list_length (p1);
-	newargs = 0;
+	for (len = 0, newargs = p1;
+	     newargs && newargs != void_list_node;
+	     len++, newargs = TREE_CHAIN (newargs))
+	  ;
 
 	for (i = 0; i < len; i++)
 	  newargs = tree_cons (NULL_TREE, NULL_TREE, newargs);
 
 	n = newargs;
 
-	for (; p1;
+	for (; p1 && p1 != void_list_node;
 	     p1 = TREE_CHAIN (p1), p2 = TREE_CHAIN (p2), n = TREE_CHAIN (n))
 	  {
 	    /* A null type means arg type is not specified.
