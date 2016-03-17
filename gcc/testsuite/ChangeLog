@@ -1,3 +1,8 @@
+2016-03-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/70264
+	* c-c++-common/pr70264.c: New test case.
+
 2016-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70144
