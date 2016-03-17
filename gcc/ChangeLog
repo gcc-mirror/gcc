@@ -1,3 +1,9 @@
+2016-03-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/70264
+	* diagnostic-show-locus.c (compatible_locations_p): Handle the case
+	where one or both locations aren't within a line_map.
+
 2016-03-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/70192

@@ -486,6 +486,12 @@ compatible_locations_p (location_t loc_a, location_t loc_b)
   if (IS_ADHOC_LOC (loc_b))
     loc_b = get_location_from_adhoc_loc (line_table, loc_b);
 
+  /* If either location is one of the special locations outside of a
+     linemap, they are only compatible if they are equal.  */
+  if (loc_a < RESERVED_LOCATION_COUNT
+      || loc_b < RESERVED_LOCATION_COUNT)
+    return loc_a == loc_b;
+
   const line_map *map_a = linemap_lookup (line_table, loc_a);
   linemap_assert (map_a);
 
