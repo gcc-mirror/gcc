@@ -1,3 +1,9 @@
+2016-03-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70194
+	* typeck.c (warn_for_null_address): New function.
+	(cp_build_binary_op): Call it.
+
 2016-03-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70259

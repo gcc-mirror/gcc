@@ -3974,6 +3974,38 @@ build_vec_cmp (tree_code code, tree type,
   return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
 }
 
+/* Possibly warn about an address never being NULL.  */
+
+static void
+warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
+{
+  if (!warn_address
+      || (complain & tf_warning) == 0
+      || c_inhibit_evaluation_warnings != 0
+      || TREE_NO_WARNING (op))
+    return;
+
+  tree cop = fold_non_dependent_expr (op);
+
+  if (TREE_CODE (cop) == ADDR_EXPR
+      && decl_with_nonnull_addr_p (TREE_OPERAND (cop, 0))
+      && !TREE_NO_WARNING (cop))
+    warning_at (location, OPT_Waddress, "the address of %qD will never "
+		"be NULL", TREE_OPERAND (cop, 0));
+
+  if (CONVERT_EXPR_P (op)
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (op, 0))) == REFERENCE_TYPE)
+    {
+      tree inner_op = op;
+      STRIP_NOPS (inner_op);
+
+      if (DECL_P (inner_op))
+	warning_at (location, OPT_Waddress,
+		    "the compiler can assume that the address of "
+		    "%qD will never be NULL", inner_op);
+    }
+}
+
 /* Build a binary-operation expression without default conversions.
    CODE is the kind of expression to build.
    LOCATION is the location_t of the operator in the source code.
@@ -4520,32 +4552,7 @@ cp_build_binary_op (location_t location,
 	  else
 	    result_type = type0;
 
-	  if (TREE_CODE (op0) == ADDR_EXPR
-	      && decl_with_nonnull_addr_p (TREE_OPERAND (op0, 0)))
-	    {
-	      if ((complain & tf_warning)
-		  && c_inhibit_evaluation_warnings == 0
-		  && !TREE_NO_WARNING (op0))
-		warning (OPT_Waddress, "the address of %qD will never be NULL",
-			 TREE_OPERAND (op0, 0));
-	    }
-
-	  if (CONVERT_EXPR_P (op0)
-	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (op0, 0)))
-		 == REFERENCE_TYPE)
-	    {
-	      tree inner_op0 = op0;
-	      STRIP_NOPS (inner_op0);
-
-	      if ((complain & tf_warning)
-		  && c_inhibit_evaluation_warnings == 0
-		  && !TREE_NO_WARNING (op0)
-		  && DECL_P (inner_op0))
-		warning_at (location, OPT_Waddress,
-			    "the compiler can assume that the address of "
-			    "%qD will never be NULL",
-			    inner_op0);
-	    }
+	  warn_for_null_address (location, op0, complain);
 	}
       else if (((code1 == POINTER_TYPE || TYPE_PTRDATAMEM_P (type1))
 		&& null_ptr_cst_p (op0))
@@ -4559,32 +4566,7 @@ cp_build_binary_op (location_t location,
 	  else
 	    result_type = type1;
 
-	  if (TREE_CODE (op1) == ADDR_EXPR 
-	      && decl_with_nonnull_addr_p (TREE_OPERAND (op1, 0)))
-	    {
-	      if ((complain & tf_warning)
-		  && c_inhibit_evaluation_warnings == 0
-		  && !TREE_NO_WARNING (op1))
-		warning (OPT_Waddress, "the address of %qD will never be NULL",
-			 TREE_OPERAND (op1, 0));
-	    }
-
-	  if (CONVERT_EXPR_P (op1)
-	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (op1, 0)))
-		 == REFERENCE_TYPE)
-	    {
-	      tree inner_op1 = op1;
-	      STRIP_NOPS (inner_op1);
-
-	      if ((complain & tf_warning)
-		  && c_inhibit_evaluation_warnings == 0
-		  && !TREE_NO_WARNING (op1)
-		  && DECL_P (inner_op1))
-		warning_at (location, OPT_Waddress,
-			    "the compiler can assume that the address of "
-			    "%qD will never be NULL",
-			    inner_op1);
-	    }
+	  warn_for_null_address (location, op1, complain);
 	}
       else if ((code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	       || (TYPE_PTRDATAMEM_P (type0) && TYPE_PTRDATAMEM_P (type1)))
