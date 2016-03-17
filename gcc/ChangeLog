@@ -1,3 +1,9 @@
+2016-03-17  Richard Biener  <rguenther@suse.de>
+
+	PR debug/70271
+	* dwarf2out.c (dwarf2out_early_finish): Process deferred_asm_name
+	last.
+
 2016-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70245

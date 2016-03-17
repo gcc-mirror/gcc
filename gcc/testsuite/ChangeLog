@@ -1,3 +1,8 @@
+2016-03-17  Richard Biener  <rguenther@suse.de>
+
+	PR debug/70271
+	* g++.dg/debug/pr70271.C: New testcase.
+
 2016-03-17  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* gcc.target/i386/pr70251.c: New test.

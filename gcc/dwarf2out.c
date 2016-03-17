@@ -27686,10 +27686,15 @@ dwarf2out_finish (const char *filename)
 static void
 dwarf2out_early_finish (void)
 {
-  limbo_die_node *node;
+  /* The point here is to flush out the limbo list so that it is empty
+     and we don't need to stream it for LTO.  */
+  flush_limbo_die_list ();
+
+  gen_scheduled_generic_parms_dies ();
+  gen_remaining_tmpl_value_param_die_attribute ();
 
   /* Add DW_AT_linkage_name for all deferred DIEs.  */
-  for (node = deferred_asm_name; node; node = node->next)
+  for (limbo_die_node *node = deferred_asm_name; node; node = node->next)
     {
       tree decl = node->created_for;
       if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl)
@@ -27703,13 +27708,6 @@ dwarf2out_early_finish (void)
 	}
     }
   deferred_asm_name = NULL;
-
-  /* The point here is to flush out the limbo list so that it is empty
-     and we don't need to stream it for LTO.  */
-  flush_limbo_die_list ();
-
-  gen_scheduled_generic_parms_dies ();
-  gen_remaining_tmpl_value_param_die_attribute ();
 }
 
 /* Reset all state within dwarf2out.c so that we can rerun the compiler
