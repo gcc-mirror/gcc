@@ -1,5 +1,9 @@
 2016-03-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/70144
+	* c-c++-common/pr70144-1.c: New test.
+	* c-c++-common/pr70144-2.c: New test.
+
 	PR c++/70272
 	* g++.dg/opt/flifetime-dse5.C (main): Remove extra semicolon.
 	* g++.dg/opt/flifetime-dse6.C: New test.

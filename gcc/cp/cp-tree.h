@@ -5563,7 +5563,7 @@ public:
 
 /* in call.c */
 extern bool check_dtor_name			(tree, tree);
-bool magic_varargs_p                            (tree);
+int magic_varargs_p				(tree);
 
 extern tree build_conditional_expr		(location_t, tree, tree, tree, 
                                                  tsubst_flags_t);
