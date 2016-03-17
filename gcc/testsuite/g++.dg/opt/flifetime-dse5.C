@@ -10,4 +10,4 @@ int main() {
   C c;
   if ( c.a == false )
     __builtin_abort();
-};
+}
