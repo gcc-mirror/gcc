@@ -1,3 +1,11 @@
+2016-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/70280
+	* c-typeck.c (composite_type): Don't count void_list_node
+	into len, if the list is terminated by void_list_node, start
+	with void_list_node instead of NULL for newargs.  Stop
+	at void_list_node.
+
 2016-03-16  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70093
