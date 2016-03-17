@@ -1,3 +1,8 @@
+2016-03-17  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/i386/i386.md (*movv4qicc_insn+1..36): Pass
+	true as ALL_REGS argument to replace_rtx.
+
 2016-03-17  Richard Biener  <rguenther@suse.de>
 
 	PR debug/70271
