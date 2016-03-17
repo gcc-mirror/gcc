@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the gcc package.
 # Michel Robitaille <robitail@IRO.UMontreal.CA>, traducteur depuis/since 1996.
 # François-Xavier Coudert <fxcoudert@gcc.gnu.org>, 2008.
-# Stéphane Aulery <lkppo@free.fr>, 2015.
+# Stéphane Aulery <lkppo@free.fr>, 2015, 2016.
 #
 # Vocabulaire utilisé
 # 	lvalue	 	= membre gauche
@@ -119,10 +119,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU cpplib 5.1-b20150208\n"
+"Project-Id-Version: GNU cpplib 6.1-b20160131\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-01-31 15:50+0000\n"
-"PO-Revision-Date: 2015-04-11 00:44+0200\n"
+"PO-Revision-Date: 2016-03-16 23:56+0100\n"
 "Last-Translator: Stéphane Aulery <lkppo@free.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -877,10 +877,8 @@ msgid "missing terminating %c character"
 msgstr "caractère %c de terminaison manquant"
 
 #: lex.c:1932
-#, fuzzy
-#| msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
 msgid "C++11 requires a space between string literal and macro"
-msgstr "suffixe de chaîne invalide ; C++11 requière un espace entre une chaîne et une macro de chaîne"
+msgstr "C++11 requière un espace entre une chaîne et une macro"
 
 #: lex.c:2474 lex.c:2508
 msgid "C++ style comments are not allowed in ISO C90"
