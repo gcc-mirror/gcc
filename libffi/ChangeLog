@@ -1,3 +1,8 @@
+2016-03-17  Andreas Schwab  <schwab@suse.de>
+
+	* src/aarch64/ffitarget.h (FFI_SIZEOF_JAVA_RAW) [__ILP32__]:
+	Define.
+
 2016-03-02  Richard Henderson  <rth@redhat.com>
 
 	* libtool-version: Increase to 7:0:0.
