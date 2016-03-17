@@ -29,6 +29,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef LIBFFI_ASM
 #ifdef __ILP32__
 #define FFI_SIZEOF_ARG 8
+#define FFI_SIZEOF_JAVA_RAW  4
 typedef unsigned long long ffi_arg;
 typedef signed long long ffi_sarg;
 #else
