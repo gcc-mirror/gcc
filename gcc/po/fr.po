@@ -5,7 +5,7 @@
 #
 # Michel Robitaille <robitail@IRO.UMontreal.CA>, traducteur depuis/since 1996.
 # François-Xavier Coudert <fxcoudert@gmail.com>, 2008.
-# Stéphane Aulery <lkppo@free.fr>, 2015.
+# Stéphane Aulery <lkppo@free.fr>, 2015, 2016.
 #
 # Vocabulaire utilisé
 # 	lvalue	 	      = membre gauche
@@ -122,10 +122,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 5.2.0\n"
+"Project-Id-Version: gcc 6.1-b20160131\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-01-31 15:50+0000\n"
-"PO-Revision-Date: 2015-12-30 14:31+0100\n"
+"PO-Revision-Date: 2016-03-17 00:28+0100\n"
 "Last-Translator: Stéphane Aulery <lkppo@free.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -391,185 +391,125 @@ msgid "Options:\n"
 msgstr "Options :\n"
 
 #: gcc.c:3384
-#, fuzzy
-#| msgid "  -pass-exit-codes         Exit with highest error code from a phase\n"
 msgid "  -pass-exit-codes         Exit with highest error code from a phase.\n"
-msgstr "  -pass-exit-codes         Quitter avec le plus grand code d’erreur d’une phase\n"
+msgstr "  -pass-exit-codes         Quitter avec le plus grand code d’erreur d’une phase.\n"
 
 #: gcc.c:3385
-#, fuzzy
-#| msgid "  --help                   Display this information\n"
 msgid "  --help                   Display this information.\n"
-msgstr "  --help                   Afficher cette aide\n"
+msgstr "  --help                   Afficher cette aide.\n"
 
 #: gcc.c:3386
-#, fuzzy
-#| msgid "  --target-help            Display target specific command line options\n"
 msgid "  --target-help            Display target specific command line options.\n"
-msgstr "  --target-help            Afficher les options de ligne de commande spécifiques à la cible\n"
+msgstr "  --target-help            Afficher les options de ligne de commande spécifiques à la cible.\n"
 
 #: gcc.c:3387
-#, fuzzy
-#| msgid "  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...]\n"
 msgid "  --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,...].\n"
-msgstr " --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,…]\n"
+msgstr " --help={common|optimizers|params|target|warnings|[^]{joined|separate|undocumented}}[,…].\n"
 
 #: gcc.c:3388
-#, fuzzy
-#| msgid "                           Display specific types of command line options\n"
 msgid "                           Display specific types of command line options.\n"
-msgstr "                           Afficher les types spécifiques des options de la ligne de commande\n"
+msgstr "                           Afficher les types spécifiques des options de la ligne de commande.\n"
 
 #: gcc.c:3390
-#, fuzzy
-#| msgid "  (Use '-v --help' to display command line options of sub-processes)\n"
 msgid "  (Use '-v --help' to display command line options of sub-processes).\n"
-msgstr "  (Utiliser « -v --help » pour afficher les options de la ligne de commande des sous-processus)\n"
+msgstr "  (Utiliser « -v --help » pour afficher les options de la ligne de commande des sous-processus).\n"
 
 #: gcc.c:3391
-#, fuzzy
-#| msgid "  --version                Display compiler version information\n"
 msgid "  --version                Display compiler version information.\n"
-msgstr "  --help                   Afficher des informations sur la version du compilateur\n"
+msgstr "  --help                   Afficher des informations sur la version du compilateur.\n"
 
 #: gcc.c:3392
-#, fuzzy
-#| msgid "  -dumpspecs               Display all of the built in spec strings\n"
 msgid "  -dumpspecs               Display all of the built in spec strings.\n"
-msgstr "  -dumpspecs               Afficher tous les chaînes de specs internes\n"
+msgstr "  -dumpspecs               Afficher tous les chaînes de specs internes.\n"
 
 #: gcc.c:3393
-#, fuzzy
-#| msgid "  -dumpversion             Display the version of the compiler\n"
 msgid "  -dumpversion             Display the version of the compiler.\n"
-msgstr "  -dumpversion             Afficher la version du compilateur\n"
+msgstr "  -dumpversion             Afficher la version du compilateur.\n"
 
 #: gcc.c:3394
-#, fuzzy
-#| msgid "  -dumpmachine             Display the compiler's target processor\n"
 msgid "  -dumpmachine             Display the compiler's target processor.\n"
-msgstr "  -dumpmachine             Afficher le processeur ciblé par le compilateur\n"
+msgstr "  -dumpmachine             Afficher le processeur ciblé par le compilateur.\n"
 
 #: gcc.c:3395
-#, fuzzy
-#| msgid "  -print-search-dirs       Display the directories in the compiler's search path\n"
 msgid "  -print-search-dirs       Display the directories in the compiler's search path.\n"
-msgstr "  -print-search-dirs       Afficher les répertoires du chemin de recherche du compilateur\n"
+msgstr "  -print-search-dirs       Afficher les répertoires du chemin de recherche du compilateur.\n"
 
 #: gcc.c:3396
-#, fuzzy
-#| msgid "  -print-libgcc-file-name  Display the name of the compiler's companion library\n"
 msgid "  -print-libgcc-file-name  Display the name of the compiler's companion library.\n"
-msgstr "  -print-libgcc-file-name  Afficher le nom de la bibliothèque accompagnant le compilateur\n"
+msgstr "  -print-libgcc-file-name  Afficher le nom de la bibliothèque accompagnant le compilateur.\n"
 
 #: gcc.c:3397
-#, fuzzy
-#| msgid "  -print-file-name=<lib>   Display the full path to library <lib>\n"
 msgid "  -print-file-name=<lib>   Display the full path to library <lib>.\n"
-msgstr "  -print-file-name=<lib>   Afficher le chemin d’accès complet vers la bibliothèque <lib>\n"
+msgstr "  -print-file-name=<lib>   Afficher le chemin d’accès complet vers la bibliothèque <lib>.\n"
 
 #: gcc.c:3398
-#, fuzzy
-#| msgid "  -print-prog-name=<prog>  Display the full path to compiler component <prog>\n"
 msgid "  -print-prog-name=<prog>  Display the full path to compiler component <prog>.\n"
-msgstr "  -print-prog-name=<prog>  Afficher le chemin d’accès complet vers le composant du compilateur <prog>\n"
+msgstr "  -print-prog-name=<prog>  Afficher le chemin d’accès complet vers le composant du compilateur <prog>.\n"
 
 #: gcc.c:3399
-#, fuzzy
-#| msgid ""
-#| "  -print-multiarch         Display the target's normalized GNU triplet, used as\n"
-#| "                           a component in the library path\n"
 msgid ""
 "  -print-multiarch         Display the target's normalized GNU triplet, used as\n"
 "                           a component in the library path.\n"
 msgstr ""
 "  -print-multiarch         Afficher le triplet GNU normalisé de la cible, utilisé comme\n"
-"                           un composant dans le chemin d’accès de la bibliothèque\n"
+"                           un composant dans le chemin d’accès de la bibliothèque.\n"
 
 #: gcc.c:3402
-#, fuzzy
-#| msgid "  -print-multi-directory   Display the root directory for versions of libgcc\n"
 msgid "  -print-multi-directory   Display the root directory for versions of libgcc.\n"
-msgstr "  -print-multi-directory   Afficher la racine du répertoire des versions de libgcc\n"
+msgstr "  -print-multi-directory   Afficher la racine du répertoire des versions de libgcc.\n"
 
 #: gcc.c:3403
-#, fuzzy
-#| msgid ""
-#| "  -print-multi-lib         Display the mapping between command line options and\n"
-#| "                           multiple library search directories\n"
 msgid ""
 "  -print-multi-lib         Display the mapping between command line options and\n"
 "                           multiple library search directories.\n"
 msgstr ""
 "  -print-multi-lib         Afficher la table de correspondance entre les options de\n"
 "                           la ligne de commande et les multiples répertoires de\n"
-"                           recherche des bibliothèques\n"
+"                           recherche des bibliothèques.\n"
 
 #: gcc.c:3406
-#, fuzzy
-#| msgid "  -print-multi-os-directory Display the relative path to OS libraries\n"
 msgid "  -print-multi-os-directory Display the relative path to OS libraries.\n"
-msgstr "  -print-multi-os-directory Afficher le chemin relatif du répertoire vers les bibliothèques de l’OS\n"
+msgstr "  -print-multi-os-directory Afficher le chemin relatif du répertoire vers les bibliothèques de l’OS.\n"
 
 #: gcc.c:3407
-#, fuzzy
-#| msgid "  -print-sysroot           Display the target libraries directory\n"
 msgid "  -print-sysroot           Display the target libraries directory.\n"
-msgstr "  -print-sysroot           Afficher le répertoire des bibliothèques de la cible\n"
+msgstr "  -print-sysroot           Afficher le répertoire des bibliothèques de la cible.\n"
 
 #: gcc.c:3408
-#, fuzzy
-#| msgid "  -print-sysroot-headers-suffix Display the sysroot suffix used to find headers\n"
 msgid "  -print-sysroot-headers-suffix Display the sysroot suffix used to find headers.\n"
-msgstr "  -print-sysroot-headers-suffix Afficher le suffixe de la racine système utilisé pour trouver les en-têtes\n"
+msgstr "  -print-sysroot-headers-suffix Afficher le suffixe de la racine système utilisé pour trouver les en-têtes.\n"
 
 #: gcc.c:3409
-#, fuzzy
-#| msgid "  -Wa,<options>            Pass comma-separated <options> on to the assembler\n"
 msgid "  -Wa,<options>            Pass comma-separated <options> on to the assembler.\n"
-msgstr "  -Wa,<options>            Passer les <options> séparées par des virgules à l’assembleur\n"
+msgstr "  -Wa,<options>            Passer les <options> séparées par des virgules à l’assembleur.\n"
 
 #: gcc.c:3410
-#, fuzzy
-#| msgid "  -Wp,<options>            Pass comma-separated <options> on to the preprocessor\n"
 msgid "  -Wp,<options>            Pass comma-separated <options> on to the preprocessor.\n"
-msgstr "  -Wp,<options>            Passer les <options> séparées par des virgules au préprocesseur\n"
+msgstr "  -Wp,<options>            Passer les <options> séparées par des virgules au préprocesseur.\n"
 
 #: gcc.c:3411
-#, fuzzy
-#| msgid "  -Wl,<options>            Pass comma-separated <options> on to the linker\n"
 msgid "  -Wl,<options>            Pass comma-separated <options> on to the linker.\n"
-msgstr "  -Wl,<options>            Passer les <options> séparées par des virgules à l'éditeur de liens\n"
+msgstr "  -Wl,<options>            Passer les <options> séparées par des virgules à l'éditeur de liens.\n"
 
 #: gcc.c:3412
-#, fuzzy
-#| msgid "  -Xassembler <arg>        Pass <arg> on to the assembler\n"
 msgid "  -Xassembler <arg>        Pass <arg> on to the assembler.\n"
-msgstr "  -Xassembler <argument>   Passer l’<argument> à l’assembleur\n"
+msgstr "  -Xassembler <argument>   Passer l’<argument> à l’assembleur.\n"
 
 #: gcc.c:3413
-#, fuzzy
-#| msgid "  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor\n"
 msgid "  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor.\n"
-msgstr "  -Xpreprocessor <argument>  Passer l’<argument> au préprocesseur\n"
+msgstr "  -Xpreprocessor <argument>  Passer l’<argument> au préprocesseur.\n"
 
 #: gcc.c:3414
-#, fuzzy
-#| msgid "  -Xlinker <arg>           Pass <arg> on to the linker\n"
 msgid "  -Xlinker <arg>           Pass <arg> on to the linker.\n"
-msgstr "  -Xlinker <argument>       Passer l’<argument> à l’éditeur de liens\n"
+msgstr "  -Xlinker <argument>       Passer l’<argument> à l’éditeur de liens.\n"
 
 #: gcc.c:3415
-#, fuzzy
-#| msgid "  -save-temps              Do not delete intermediate files\n"
 msgid "  -save-temps              Do not delete intermediate files.\n"
-msgstr "  -save-temps              ne pas détruire les fichiers intermédiaires\n"
+msgstr "  -save-temps              Ne pas détruire les fichiers intermédiaires.\n"
 
 #: gcc.c:3416
-#, fuzzy
-#| msgid "  -save-temps=<arg>        Do not delete intermediate files\n"
 msgid "  -save-temps=<arg>        Do not delete intermediate files.\n"
-msgstr "  -save-temps=<arg>        ne pas détruire les fichiers intermédiaires\n"
+msgstr "  -save-temps=<arg>        Ne pas détruire les fichiers intermédiaires.\n"
 
 #: gcc.c:3417
 msgid ""
@@ -578,28 +518,20 @@ msgid ""
 msgstr ""
 
 #: gcc.c:3420
-#, fuzzy
-#| msgid "  -pipe                    Use pipes rather than intermediate files\n"
 msgid "  -pipe                    Use pipes rather than intermediate files.\n"
-msgstr "  -pipe                    utiliser des pipes au lieu de fichiers intermédiaires\n"
+msgstr "  -pipe                    Utiliser des pipes au lieu de fichiers intermédiaires.\n"
 
 #: gcc.c:3421
-#, fuzzy
-#| msgid "  -time                    Time the execution of each subprocess\n"
 msgid "  -time                    Time the execution of each subprocess.\n"
-msgstr "  -time                    mesurer le temps d'exécution de chaque sous-processus\n"
+msgstr "  -time                    Mesurer le temps d'exécution de chaque sous-processus.\n"
 
 #: gcc.c:3422
-#, fuzzy
-#| msgid "  -specs=<file>            Override built-in specs with the contents of <file>\n"
 msgid "  -specs=<file>            Override built-in specs with the contents of <file>.\n"
-msgstr "  -specs=<fichier>         écraser les specs internes à l'aide du contenu du <fichier>\n"
+msgstr "  -specs=<fichier>         Écraser les specs internes à l'aide du contenu du <fichier>.\n"
 
 #: gcc.c:3423
-#, fuzzy
-#| msgid "  -std=<standard>          Assume that the input sources are for <standard>\n"
 msgid "  -std=<standard>          Assume that the input sources are for <standard>.\n"
-msgstr "  -std=<standard>          Présumer que les fichiers sources respectent le <standard>\n"
+msgstr "  -std=<standard>          Présumer que les fichiers sources respectent le <standard>.\n"
 
 #: gcc.c:3424
 msgid ""
@@ -608,76 +540,52 @@ msgid ""
 msgstr ""
 
 #: gcc.c:3427
-#, fuzzy
-#| msgid "  -B <directory>           Add <directory> to the compiler's search paths\n"
 msgid "  -B <directory>           Add <directory> to the compiler's search paths.\n"
-msgstr "  -B <répertoire>          ajouter le <répertoire> aux chemins de recherche du compilateur\n"
+msgstr "  -B <répertoire>          Ajouter le <répertoire> aux chemins de recherche du compilateur.\n"
 
 #: gcc.c:3428
-#, fuzzy
-#| msgid "  -v                       Display the programs invoked by the compiler\n"
 msgid "  -v                       Display the programs invoked by the compiler.\n"
-msgstr "  -v                       afficher les programmes invoqués par le compilateur\n"
+msgstr "  -v                       Afficher les programmes invoqués par le compilateur.\n"
 
 #: gcc.c:3429
-#, fuzzy
-#| msgid "  -###                     Like -v but options quoted and commands not executed\n"
 msgid "  -###                     Like -v but options quoted and commands not executed.\n"
-msgstr "  -###                     identique à -v mais les options et les commandes entre guillemets ne sont pas exécutées\n"
+msgstr "  -###                     Identique à -v mais les options et les commandes entre guillemets ne sont pas exécutées.\n"
 
 #: gcc.c:3430
-#, fuzzy
-#| msgid "  -E                       Preprocess only; do not compile, assemble or link\n"
 msgid "  -E                       Preprocess only; do not compile, assemble or link.\n"
-msgstr "  -E                       pré-traiter seulement ; ne pas compiler, assembler ou éditer les liens\n"
+msgstr "  -E                       Pré-traiter seulement ; ne pas compiler, assembler ou éditer les liens.\n"
 
 #: gcc.c:3431
-#, fuzzy
-#| msgid "  -S                       Compile only; do not assemble or link\n"
 msgid "  -S                       Compile only; do not assemble or link.\n"
-msgstr "  -S                       compiler seulement ; ne pas assembler ou éditer les liens\n"
+msgstr "  -S                       Compiler seulement ; ne pas assembler ou éditer les liens.\n"
 
 #: gcc.c:3432
-#, fuzzy
-#| msgid "  -c                       Compile and assemble, but do not link\n"
 msgid "  -c                       Compile and assemble, but do not link.\n"
-msgstr "  -S                       compiler et assembler, mais ne pas éditer les liens\n"
+msgstr "  -S                       Compiler et assembler, mais ne pas éditer les liens.\n"
 
 #: gcc.c:3433
-#, fuzzy
-#| msgid "  -o <file>                Place the output into <file>\n"
 msgid "  -o <file>                Place the output into <file>.\n"
-msgstr "  -o <fichier>             placer la sortie dans le <fichier>\n"
+msgstr "  -o <fichier>             Placer la sortie dans le <fichier>.\n"
 
 #: gcc.c:3434
-#, fuzzy
-#| msgid "  -pie                     Create a position independent executable\n"
 msgid "  -pie                     Create a position independent executable.\n"
-msgstr "  -pipe                    créer un exécutable à chargement aléatoire en mémoire (PIE)\n"
+msgstr "  -pipe                    Créer un exécutable à chargement aléatoire en mémoire (PIE).\n"
 
 #: gcc.c:3435
-#, fuzzy
-#| msgid "  -shared                  Create a shared library\n"
 msgid "  -shared                  Create a shared library.\n"
-msgstr "  -shared                créer une bibliothèque partagée\n"
+msgstr "  -shared                Créer une bibliothèque partagée.\n"
 
 #: gcc.c:3436
-#, fuzzy
-#| msgid ""
-#| "  -x <language>            Specify the language of the following input files\n"
-#| "                           Permissible languages include: c c++ assembler none\n"
-#| "                           'none' means revert to the default behavior of\n"
-#| "                           guessing the language based on the file's extension\n"
 msgid ""
 "  -x <language>            Specify the language of the following input files.\n"
 "                           Permissible languages include: c c++ assembler none\n"
 "                           'none' means revert to the default behavior of\n"
 "                           guessing the language based on the file's extension.\n"
 msgstr ""
-"  -x <langage>             spécifier le langage des fichiers suivants d'entrée\n"
+"  -x <langage>             Spécifier le langage des fichiers suivants d'entrée.\n"
 "                           Les langages permis sont: c c++ assembler none\n"
 "                           « none » signifiant d'utiliser le comportement par défaut\n"
-"                           en tentant d'identifier le langage par l'extension du fichier\n"
+"                           en tentant d'identifier le langage par l'extension du fichier.\n"
 
 #: gcc.c:3443
 #, c-format
@@ -944,10 +852,9 @@ msgstr ""
 "%s.\n"
 
 #: gcov-tool.c:526
-#, fuzzy, c-format
-#| msgid "Copyright %s 2014-2015 Free Software Foundation, Inc.\n"
+#, c-format
 msgid "Copyright %s 2014-2016 Free Software Foundation, Inc.\n"
-msgstr "Copyright %s 2014-2015 Free Software Foundation, Inc.\n"
+msgstr "Copyright %s 2014-2016 Free Software Foundation, Inc.\n"
 
 #: gcov-tool.c:529 gcov.c:506
 #, c-format
@@ -1405,10 +1312,8 @@ msgstr "incapable de générer des recharges pour:"
 
 #. What to print when a switch has no documentation.
 #: opts.c:184
-#, fuzzy
-#| msgid "This switch lacks documentation"
 msgid "This option lacks documentation."
-msgstr "Cette option manque de documentation"
+msgstr "Cette option manque de documentation."
 
 #: opts.c:185
 msgid "Uses of this option are diagnosed."
@@ -1457,70 +1362,48 @@ msgid " All options with the desired characteristics have already been displayed
 msgstr ""
 
 #: opts.c:1332
-#, fuzzy
-#| msgid "The following options are language-independent:\n"
 msgid "The following options are target specific"
-msgstr "Les options suivantes sont indépendantes du langage:\n"
+msgstr "Les options suivantes sont spécifiques à la cible"
 
 #: opts.c:1335
-#, fuzzy
-#| msgid "The following options are language-independent:\n"
 msgid "The following options control compiler warning messages"
-msgstr "Les options suivantes sont indépendantes du langage:\n"
+msgstr "Les options suivantes contrôlent les messages d’avertissement du compilateur"
 
 #: opts.c:1338
-#, fuzzy
-#| msgid "Perform loop optimizations"
 msgid "The following options control optimizations"
-msgstr "Exécuter l'optimisation des boucles"
+msgstr "Les options suivantes contrôlent les optimisations"
 
 #: opts.c:1341 opts.c:1380
-#, fuzzy
-#| msgid "The following options are language-independent:\n"
 msgid "The following options are language-independent"
-msgstr "Les options suivantes sont indépendantes du langage:\n"
+msgstr "Les options suivantes sont indépendantes du langage"
 
 #: opts.c:1344
-#, fuzzy
-#| msgid "The --param option recognizes the following as parameters:\n"
 msgid "The --param option recognizes the following as parameters"
-msgstr "L'option --param reconnaît les paramètres suivant:\n"
+msgstr "L'option --param reconnaît les paramètres suivant"
 
 #: opts.c:1350
-#, fuzzy
-#| msgid "The following options are language-independent:\n"
 msgid "The following options are specific to just the language "
-msgstr "Les options suivantes sont indépendantes du langage:\n"
+msgstr "Les options suivantes sont spécifiques au langage "
 
 #: opts.c:1352
-#, fuzzy
-#| msgid "The following options are language-independent:\n"
 msgid "The following options are supported by the language "
-msgstr "Les options suivantes sont indépendantes du langage:\n"
+msgstr "Les options suivantes sont prises en charge pour le langage "
 
 #: opts.c:1363
-#, fuzzy
-#| msgid "The following options are language-independent:\n"
 msgid "The following options are not documented"
-msgstr "Les options suivantes sont indépendantes du langage:\n"
+msgstr "Les options suivantes sont non documentées"
 
 #: opts.c:1365
-#, fuzzy
-#| msgid "The following options are language-independent:\n"
 msgid "The following options take separate arguments"
-msgstr "Les options suivantes sont indépendantes du langage:\n"
+msgstr "Les options suivantes prennent des arguments séparées"
 
 #: opts.c:1367
-#, fuzzy
-#| msgid "The following options are language-independent:\n"
 msgid "The following options take joined arguments"
-msgstr "Les options suivantes sont indépendantes du langage:\n"
+msgstr "Les options suivantes prennent des arguments communs"
 
 #: opts.c:1378
-#, fuzzy
-#| msgid "The following options are language-independent:\n"
 msgid "The following options are language-related"
-msgstr "Les options suivantes sont indépendantes du langage:\n"
+msgstr "Les options suivantes concernent les langages"
 
 #: plugin.c:796
 msgid "Event"
@@ -1610,10 +1493,9 @@ msgid "%s%s%s %sversion %s (%s) compiled by CC, "
 msgstr "%s%s%s %sversion %s (%s) compilé par CC, "
 
 #: toplev.c:646
-#, fuzzy, c-format
-#| msgid "GMP version %s, MPFR version %s, MPC version %s\n"
+#, c-format
 msgid "GMP version %s, MPFR version %s, MPC version %s, isl version %s\n"
-msgstr "GMP version %s, MPFR version %s, MPC version %s\n"
+msgstr "GMP version %s, MPFR version %s, MPC version %s, isl version %s\n"
 
 #: toplev.c:648
 #, c-format
@@ -1676,20 +1558,16 @@ msgid "--param large-function-growth limit reached"
 msgstr "--param large-function-growth limite atteinte"
 
 #: cif-code.def:70
-#, fuzzy
-#| msgid "--param large-function-growth limit reached"
 msgid "--param large-stack-frame-growth limit reached"
-msgstr "--param large-function-growth limite atteinte"
+msgstr "--param large-stack-frame-growth limite atteinte"
 
 #: cif-code.def:72
 msgid "--param max-inline-insns-single limit reached"
 msgstr "--param max-inline-insns-single limite atteinte"
 
 #: cif-code.def:74
-#, fuzzy
-#| msgid "--param max-inline-insns-single limit reached"
 msgid "--param max-inline-insns-auto limit reached"
-msgstr "--param max-inline-insns-single limite atteinte"
+msgstr "--param max-inline-insns-auto limite atteinte"
 
 #: cif-code.def:76
 msgid "--param inline-unit-growth limit reached"
@@ -1708,10 +1586,8 @@ msgid "function not declared inline and code size would grow"
 msgstr ""
 
 #: cif-code.def:92
-#, fuzzy
-#| msgid "mismatched braces in specs"
 msgid "mismatched arguments"
-msgstr "accolades non concordantes dans les specs"
+msgstr "arguments non concordantes"
 
 #: cif-code.def:96
 #, fuzzy
@@ -1763,7 +1639,7 @@ msgstr "votre fonction sera mal compilée"
 
 #: cif-code.def:133
 msgid "unreachable"
-msgstr ""
+msgstr "introuvable"
 
 #. The remainder are real diagnostic types.
 #: diagnostic.def:33
@@ -1805,10 +1681,8 @@ msgstr "débogage : "
 #. These two would be re-classified as DK_WARNING or DK_ERROR, so the
 #. prefix does not matter.
 #: diagnostic.def:43
-#, fuzzy
-#| msgid "warning: "
 msgid "pedwarn: "
-msgstr "attention : "
+msgstr "pédant : "
 
 #: diagnostic.def:44
 msgid "permerror: "
@@ -1825,16 +1699,14 @@ msgid "The minimal estimated speedup allowing inliner to ignore inline-insns-sin
 msgstr ""
 
 #: params.def:71
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions in a single function eligible for inlining"
+#, no-c-format
 msgid "The maximum number of instructions in a single function eligible for inlining."
-msgstr "Le nombre maximum d'instructions dans une fonction simple éligible au type enligne"
+msgstr "Le nombre maximum d'instructions dans une fonction simple éligible au type enligne."
 
 #: params.def:83
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions when automatically inlining"
+#, no-c-format
 msgid "The maximum number of instructions when automatically inlining."
-msgstr "Le nombre maximum d'instructions lorsqu'automatiquement de type enligne"
+msgstr "Le nombre maximum d'instructions lorsqu'automatiquement de type enligne."
 
 #: params.def:88
 #, fuzzy, no-c-format
@@ -1891,22 +1763,19 @@ msgid "If -ftree-vectorize is used, the minimal loop bound of a loop to be consi
 msgstr ""
 
 #: params.def:152
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to fill a delay slot"
+#, no-c-format
 msgid "The maximum number of instructions to consider to fill a delay slot."
-msgstr "Le nombre maximum d'instructions à considérer pour remplir une slot délai"
+msgstr "Le nombre maximum d'instructions à considérer pour remplir une slot délai."
 
 #: params.def:163
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to find accurate live register information"
+#, no-c-format
 msgid "The maximum number of instructions to consider to find accurate live register information."
-msgstr "Le nombre maximum d'instructions à considérer pour repérer un registre d'information actif et précis"
+msgstr "Le nombre maximum d'instructions à considérer pour repérer un registre d'information actif et précis."
 
 #: params.def:173
-#, fuzzy, no-c-format
-#| msgid "The maximum length of scheduling's pending operations list"
+#, no-c-format
 msgid "The maximum length of scheduling's pending operations list."
-msgstr "La longueur maximale de la liste des opération en attente d'ordonnancement"
+msgstr "La longueur maximale de la liste des opération en attente d'ordonnancement."
 
 #: params.def:180
 #, fuzzy, no-c-format
@@ -1915,16 +1784,14 @@ msgid "The maximum number of backtrack attempts the scheduler should make when m
 msgstr "Le nombre maximum d'instructions à considérer à inclure dans une boucle"
 
 #: params.def:185
-#, fuzzy, no-c-format
-#| msgid "The size of function body to be considered large"
+#, no-c-format
 msgid "The size of function body to be considered large."
-msgstr "La taille du corps de la fonction est considéré comme étant grande"
+msgstr "La taille du corps de la fonction est considéré comme étant grande."
 
 #: params.def:189
-#, fuzzy, no-c-format
-#| msgid "Maximal growth due to inlining of large function (in percent)"
+#, no-c-format
 msgid "Maximal growth due to inlining of large function (in percent)."
-msgstr "Croissance maximal en raison de l'enlignage d'une grande fonction (en pourcentage)"
+msgstr "Croissance maximal en raison de l'enlignage d'une grande fonction (en pourcentage)."
 
 #: params.def:193
 #, fuzzy, no-c-format
@@ -1933,16 +1800,15 @@ msgid "The size of translation unit to be considered large."
 msgstr "La taille du corps de la fonction est considéré comme étant grande"
 
 #: params.def:197
-#, fuzzy, no-c-format
-#| msgid "how much can given compilation unit grow because of the inlining (in percent)"
+#, no-c-format
 msgid "How much can given compilation unit grow because of the inlining (in percent)."
-msgstr "quelle croissance d'une unité de compilation peut être tolérée en raison de l'enlignage (en pourcentage)"
+msgstr "Quelle croissance d'une unité de compilation peut être tolérée en raison de l'enlignage (en pourcentage)."
 
 #: params.def:201
 #, fuzzy, no-c-format
 #| msgid "how much can given compilation unit grow because of the inlining (in percent)"
 msgid "How much can given compilation unit grow because of the interprocedural constant propagation (in percent)."
-msgstr "quelle croissance d'une unité de compilation peut être tolérée en raison de l'enlignage (en pourcentage)"
+msgstr "Quelle croissance d'une unité de compilation peut être tolérée en raison de l'enlignage (en pourcentage)"
 
 #: params.def:205
 #, no-c-format
@@ -1962,10 +1828,9 @@ msgid "Maximal stack frame growth due to inlining (in percent)."
 msgstr "Croissance maximal en raison de l'enlignage d'une grande fonction (en pourcentage)"
 
 #: params.def:220
-#, fuzzy, no-c-format
-#| msgid "The maximum amount of memory to be allocated by GCSE"
+#, no-c-format
 msgid "The maximum amount of memory to be allocated by GCSE."
-msgstr "La taille maximale de mémoire à être alloué par GCSE"
+msgstr "La taille maximale de mémoire à être alloué par GCSE."
 
 #: params.def:227
 #, fuzzy, no-c-format
@@ -2004,34 +1869,29 @@ msgid "Maximum depth of sqrt chains to use when synthesizing exponentiation by a
 msgstr ""
 
 #: params.def:287
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to unroll in a loop"
+#, no-c-format
 msgid "The maximum number of instructions to consider to unroll in a loop."
-msgstr "Le nombre maximum d'instructions à considérer à inclure dans une boucle"
+msgstr "Le nombre maximum d'instructions à considérer à inclure dans une boucle."
 
 #: params.def:293
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to unroll in a loop on average"
+#, no-c-format
 msgid "The maximum number of instructions to consider to unroll in a loop on average."
-msgstr "Le nombre maximum d'instructions à considérer à inclure dans une boucle en moyenne"
+msgstr "Le nombre maximum d'instructions à considérer à inclure dans une boucle en moyenne."
 
 #: params.def:298
-#, fuzzy, no-c-format
-#| msgid "The maximum number of unrollings of a single loop"
+#, no-c-format
 msgid "The maximum number of unrollings of a single loop."
-msgstr "Le nombre maximum d'instructions à inclure dans une boucle simple"
+msgstr "Le nombre maximum d'instructions à inclure dans une boucle simple."
 
 #: params.def:303
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of a peeled loop"
+#, no-c-format
 msgid "The maximum number of insns of a peeled loop."
-msgstr "Le nombre maximum d'insns de boucle réduite"
+msgstr "Le nombre maximum d'insns de boucle réduite."
 
 #: params.def:308
-#, fuzzy, no-c-format
-#| msgid "The maximum number of peelings of a single loop"
+#, no-c-format
 msgid "The maximum number of peelings of a single loop."
-msgstr "Le nombre maximum de passes de réduction d'une boucle simple"
+msgstr "Le nombre maximum de passes de réduction d'une boucle simple."
 
 #: params.def:313
 #, fuzzy, no-c-format
@@ -2040,22 +1900,19 @@ msgid "The maximum number of branches on the path through the peeled sequence."
 msgstr "Le nombre maximum d'insns d'une boucle complètement réduite"
 
 #: params.def:318
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of a completely peeled loop"
+#, no-c-format
 msgid "The maximum number of insns of a completely peeled loop."
-msgstr "Le nombre maximum d'insns d'une boucle complètement réduite"
+msgstr "Le nombre maximum d'insns d'une boucle complètement réduite."
 
 #: params.def:323
-#, fuzzy, no-c-format
-#| msgid "The maximum number of peelings of a single loop that is peeled completely"
+#, no-c-format
 msgid "The maximum number of peelings of a single loop that is peeled completely."
-msgstr "Le nombre maximum de réductions d'une boucle simple qui a été complètement réduite"
+msgstr "Le nombre maximum de réductions d'une boucle simple qui a été complètement réduite."
 
 #: params.def:328
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of a peeled loop that rolls only once"
+#, no-c-format
 msgid "The maximum number of insns of a peeled loop that rolls only once."
-msgstr "Le nombre maximum d'insns d'une boucle réduite qui tourne une seule fois"
+msgstr "Le nombre maximum d'insns d'une boucle réduite qui tourne une seule fois."
 
 #: params.def:333
 #, fuzzy, no-c-format
@@ -2064,16 +1921,14 @@ msgid "The maximum depth of a loop nest we completely peel."
 msgstr "Le nombre maximum d'insns d'une boucle complètement réduite"
 
 #: params.def:339
-#, fuzzy, no-c-format
-#| msgid "The maximum number of insns of an unswitched loop"
+#, no-c-format
 msgid "The maximum number of insns of an unswitched loop."
-msgstr "Le nombre maximum d'insns d'une boucle sans branchement"
+msgstr "Le nombre maximum d'insns d'une boucle sans branchement."
 
 #: params.def:344
-#, fuzzy, no-c-format
-#| msgid "The maximum number of unswitchings in a single loop"
+#, no-c-format
 msgid "The maximum number of unswitchings in a single loop."
-msgstr "Le nombre maximum de non branchement dans une boucle simple"
+msgstr "Le nombre maximum de non branchement dans une boucle simple."
 
 #: params.def:351
 #, no-c-format
@@ -2111,10 +1966,9 @@ msgid "A basic block profile count is considered hot if it contributes to the gi
 msgstr ""
 
 #: params.def:386
-#, fuzzy, no-c-format
-#| msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot"
+#, no-c-format
 msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot."
-msgstr "Sélectionner la fraction de la fréquence maximale d'exécutions du bloc de base dans la fonction selon le bloc de base donné doit être considéré comme chaud « hot »"
+msgstr "Sélectionner la fraction de la fréquence maximale d'exécutions du bloc de base dans la fonction selon le bloc de base donné doit être considéré comme chaud « hot »."
 
 #: params.def:391
 #, no-c-format
@@ -2144,46 +1998,39 @@ msgid "Set the estimated probability in percentage for builtin expect. The defau
 msgstr ""
 
 #: params.def:434
-#, fuzzy, no-c-format
-#| msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is available"
+#, no-c-format
 msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is available."
-msgstr "Le pourcentage de fonction, pondéré par la fréquence d'exécutions, qui doit être couvert la formation de la trace. Utilisé lorsque le feedback par profile est disponible"
+msgstr "Le pourcentage de fonction, pondéré par la fréquence d'exécutions, qui doit être couvert la formation de la trace. Utilisé lorsque le feedback par profile est disponible."
 
 #: params.def:438
-#, fuzzy, no-c-format
-#| msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is not available"
+#, no-c-format
 msgid "The percentage of function, weighted by execution frequency, that must be covered by trace formation. Used when profile feedback is not available."
-msgstr "Le pourcentage de fonction, pondéré par la fréquence d'exécutions, qui doit être couvert la formation de la trace. Utilisé lorsque le feedback par profilage n'est disponible"
+msgstr "Le pourcentage de fonction, pondéré par la fréquence d'exécutions, qui doit être couvert la formation de la trace. Utilisé lorsque le feedback par profilage n'est disponible."
 
 #: params.def:442
-#, fuzzy, no-c-format
-#| msgid "Maximal code growth caused by tail duplication (in percent)"
+#, no-c-format
 msgid "Maximal code growth caused by tail duplication (in percent)."
-msgstr "Croissance maximal du code en raison de duplication de queue (en pourcentage)"
+msgstr "Croissance maximal du code en raison de duplication de queue (en pourcentage)."
 
 #: params.def:446
-#, fuzzy, no-c-format
-#| msgid "Stop reverse growth if the reverse probability of best edge is less than this threshold (in percent)"
+#, no-c-format
 msgid "Stop reverse growth if the reverse probability of best edge is less than this threshold (in percent)."
-msgstr "Stopper la croissance renversée si la probabilité inverse des meilleures bordures est inférieure à ce seuil (en pourcentage)"
+msgstr "Stopper la croissance renversée si la probabilité inverse des meilleures bordures est inférieure à ce seuil (en pourcentage)."
 
 #: params.def:450
-#, fuzzy, no-c-format
-#| msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is available"
+#, no-c-format
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is available."
-msgstr "Stopper la croissance anticipée si la probabilité des meilleures bordures est inférieure à ce seuil (en pourcentage). Utilisé lorsque le feedback par profilage est disponible"
+msgstr "Stopper la croissance anticipée si la probabilité des meilleures bordures est inférieure à ce seuil (en pourcentage). Utilisé lorsque le feedback par profilage est disponible."
 
 #: params.def:454
-#, fuzzy, no-c-format
-#| msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is not available"
+#, no-c-format
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is not available."
-msgstr "Stopper la croissance anticipée si la probabilité des meilleures bordures est inférieure à ce seuil (en pourcentage). Utilisé lorsque le feedback par profilage n'est pas disponible"
+msgstr "Stopper la croissance anticipée si la probabilité des meilleures bordures est inférieure à ce seuil (en pourcentage). Utilisé lorsque le feedback par profilage n'est pas disponible."
 
 #: params.def:460
-#, fuzzy, no-c-format
-#| msgid "The maximum number of incoming edges to consider for crossjumping"
+#, no-c-format
 msgid "The maximum number of incoming edges to consider for crossjumping."
-msgstr "Le nombre maximum de bordures à considérer pour les sauts croisés"
+msgstr "Le nombre maximum de bordures à considérer pour les sauts croisés."
 
 #: params.def:466
 #, fuzzy, no-c-format
@@ -2203,10 +2050,9 @@ msgid "The maximum number of insns to duplicate when unfactoring computed gotos.
 msgstr "Le nombre maximum d'insns d'une boucle sans branchement"
 
 #: params.def:484
-#, fuzzy, no-c-format
-#| msgid "The maximum length of path considered in cse"
+#, no-c-format
 msgid "The maximum length of path considered in cse."
-msgstr "La longueur maximale des chemins considérés dans cse"
+msgstr "La longueur maximale des chemins considérés dans cse."
 
 #: params.def:488
 #, fuzzy, no-c-format
@@ -2262,28 +2108,24 @@ msgid "Max number of loop peels to enhancement alignment of data references in a
 msgstr ""
 
 #: params.def:550
-#, fuzzy, no-c-format
-#| msgid "The maximum memory locations recorded by cselib"
+#, no-c-format
 msgid "The maximum memory locations recorded by cselib."
-msgstr "Le nombre maximum de localisations mémoire enregistrées par cselib"
+msgstr "Le nombre maximum de localisations mémoire enregistrées par cselib."
 
 #: params.def:563
-#, fuzzy, no-c-format
-#| msgid "Minimum heap expansion to trigger garbage collection, as a percentage of the total size of the heap"
+#, no-c-format
 msgid "Minimum heap expansion to trigger garbage collection, as a percentage of the total size of the heap."
 msgstr "L'expansion minimale des tas pour lancer la collecte des rebuts, en pourcentage de la taille totale du tas."
 
 #: params.def:568
-#, fuzzy, no-c-format
-#| msgid "Minimum heap size before we start collecting garbage, in kilobytes"
+#, no-c-format
 msgid "Minimum heap size before we start collecting garbage, in kilobytes."
 msgstr "La taille minimale du tas avant de lancer la collecte des rebuts, en ko."
 
 #: params.def:576
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to search backward when looking for equivalent reload"
+#, no-c-format
 msgid "The maximum number of instructions to search backward when looking for equivalent reload."
-msgstr "Le nombre maximum d'instructions à rechercher antérieurement lors d'une recherche d'une recharge équivalente"
+msgstr "Le nombre maximum d'instructions à rechercher antérieurement lors d'une recherche d'une recharge équivalente."
 
 #: params.def:581
 #, no-c-format
@@ -2417,22 +2259,19 @@ msgid "The number of prefetches that can run at the same time."
 msgstr ""
 
 #: params.def:743
-#, fuzzy, no-c-format
-#| msgid "The size of L1 cache"
+#, no-c-format
 msgid "The size of L1 cache."
-msgstr "La taille du cache L1"
+msgstr "La taille du cache L1."
 
 #: params.def:750
-#, fuzzy, no-c-format
-#| msgid "The size of L1 cache"
+#, no-c-format
 msgid "The size of L1 cache line."
-msgstr "La taille du cache L1"
+msgstr "La taille du cache L1."
 
 #: params.def:757
-#, fuzzy, no-c-format
-#| msgid "The size of L2 cache"
+#, no-c-format
 msgid "The size of L2 cache."
-msgstr "La taille du cache L2"
+msgstr "La taille du cache L2."
 
 #: params.def:768
 #, no-c-format
@@ -2803,16 +2642,12 @@ msgid "format"
 msgstr "format"
 
 #: c-family/c-format.c:418
-#, fuzzy
-#| msgid "field width"
 msgid "field width specifier"
-msgstr "largeur de champ"
+msgstr "spécificateur de largeur de champ"
 
 #: c-family/c-format.c:419
-#, fuzzy
-#| msgid "field precision"
 msgid "field precision specifier"
-msgstr "champ de précision"
+msgstr "spécificateur de champ de précision"
 
 #: c-family/c-format.c:536 c-family/c-format.c:560 config/i386/msformat-c.c:42
 msgid "' ' flag"
@@ -2915,10 +2750,8 @@ msgid "'q' flag"
 msgstr "fanion « q »"
 
 #: c-family/c-format.c:593
-#, fuzzy
-#| msgid "the `'' printf flag"
 msgid "the 'q' diagnostic flag"
-msgstr "le fanion « ' » de printf"
+msgstr "le fanion « d » de diagnostique"
 
 #: c-family/c-format.c:606 config/i386/msformat-c.c:63
 msgid "assignment suppression"
