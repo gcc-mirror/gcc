@@ -1,3 +1,8 @@
+2016-03-17  Tom de Vries  <tom@codesourcery.com>
+
+	* gfortran.dg/goacc/kernels-alias-3.f95: New test.
+	* gfortran.dg/goacc/kernels-alias-4.f95: New test.
+
 2016-03-17  Richard Biener  <rguenther@suse.de>
 
 	PR debug/70271
