@@ -1,3 +1,9 @@
+2016-03-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/70188
+	* config/pa/constraints.md: Revert 2015-02-13 change.  Use
+	define_constraint for "Q" and "T" constraints.
+
 2016-03-16  Alan Modra  <amodra@gmail.com>
 
 	PR rtl-optimization/69195
