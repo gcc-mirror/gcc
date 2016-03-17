@@ -1,3 +1,8 @@
+2016-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70261
+	* rtlanal.c (replace_rtx): Revert 2016-03-16 change.
+
 2016-03-16  Richard Henderson  <rth@redhat.com>
 	    Richard Biener  <rguenth@suse.de>
 
