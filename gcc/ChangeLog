@@ -1,3 +1,9 @@
+2016-03-17  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* match.pd (A + (B vcmp C ? 1 : 0) -> A - (B vcmp C)): Apply
+	for boolean vector with vector mode only.
+	(A - (B vcmp C ? 1 : 0) -> A + (B vcmp C)): Likewise.
+
 2016-03-17  Nick Clifton  <nickc@redhat.com>
 
 	PR target/70162
