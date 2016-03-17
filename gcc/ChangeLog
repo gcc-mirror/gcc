@@ -1,3 +1,13 @@
+2016-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70245
+	* rtl.h (replace_rtx): Add ALL_REGS argument.
+	* rtlanal.c (replace_rtx): Likewise.  If true, use REGNO
+	equality and assert mode is the same, instead of just rtx pointer
+	equality.
+	* config/i386/i386.md (mov + arithmetics with load peephole): Pass
+	true as ALL_REGS argument to replace_rtx.
+
 2016-03-17  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* match.pd (A + (B vcmp C ? 1 : 0) -> A - (B vcmp C)): Apply
