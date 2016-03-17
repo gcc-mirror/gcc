@@ -1,3 +1,8 @@
+2016-03-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70194
+	* g++.dg/warn/constexpr-70194.C: New test.
+
 2016-03-16  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/70240
