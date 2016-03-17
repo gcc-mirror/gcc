@@ -1,3 +1,8 @@
+2016-03-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gomp-constants.h (enum gomp_map_kind): Rename
+	GOMP_MAP_FORCE_DEALLOC to GOMP_MAP_DELETE.  Adjust all users.
+
 2016-03-03  Than McIntosh <thanm@google.com>
 
 	* plugin-api.h: Add new hooks to the plugin transfer vector to

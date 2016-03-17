@@ -1,3 +1,8 @@
+2016-03-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.h (enum gfc_omp_map_op): Rename OMP_MAP_FORCE_DEALLOC
+	to OMP_MAP_DELETE.  Adjust all users.
+
 2016-03-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Jim MacArthur  <jim.macarthur@codethink.co.uk>
 
