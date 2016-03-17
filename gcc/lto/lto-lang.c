@@ -836,7 +836,7 @@ lto_post_options (const char **pfilename ATTRIBUTE_UNUSED)
       /* If -fPIC or -fPIE was used at compile time, be sure that
          flag_pie is 2.  */
       flag_pie = MAX (flag_pie, flag_pic);
-      flag_pic = 0;
+      flag_pic = flag_pie;
       break;
 
     case LTO_LINKER_OUTPUT_EXEC: /* Normal executable */
