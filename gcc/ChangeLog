@@ -1,3 +1,10 @@
+2016-03-17  Evandro Menezes  <e.menezes@samsung.com>
+	
+	Tweak the pipeline model for Exynos M1
+
+	* config/aarch64/aarch64.c (exynosm1_tunings): 	Enable weak prefetching
+	model.
+
 2016-03-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/70264
