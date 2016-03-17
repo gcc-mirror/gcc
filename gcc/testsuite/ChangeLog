@@ -1,3 +1,17 @@
+2016-03-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/70192
+	* gcc.dg/pic-1.c: New test.
+	* gcc.dg/pic-2.c: Likewise.
+	* gcc.dg/pic-3.c: Likewise.
+	* gcc.dg/pic-4.c: Likewise.
+	* gcc.dg/pie-1.c: Likewise.
+	* gcc.dg/pie-2.c: Likewise.
+	* gcc.dg/pie-3.c: Likewise.
+	* gcc.dg/pie-4.c: Likewise.
+	* gcc.dg/pie-5.c: Likewise.
+	* gcc.dg/pie-6.c: Likewise.
+
 2016-03-17  Tom de Vries  <tom@codesourcery.com>
 
 	* gfortran.dg/goacc/kernels-alias-3.f95: New test.
