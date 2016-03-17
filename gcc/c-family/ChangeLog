@@ -1,3 +1,9 @@
+2016-03-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/69407
+	* c-common.c (resolve_overloaded_builtin): Set TREE_USED for the fetch
+	operations.
+
 2016-03-14  Jason Merrill  <jason@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Set __cpp_hex_float.

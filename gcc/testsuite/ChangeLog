@@ -1,3 +1,8 @@
+2016-03-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/69407
+	* gcc.dg/atomic-op-6.c: New test.
+
 2016-03-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/70264
