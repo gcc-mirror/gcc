@@ -1840,7 +1840,7 @@ Common Report Var(flag_peephole2) Optimization
 Enable an RTL peephole pass before sched2.
 
 fPIC
-Common Report Var(flag_pic,2) Negative(fPIE)
+Common Report Var(flag_pic,2) Negative(fPIE) Init(-1)
 Generate position-independent code if possible (large mode).
 
 fPIE
@@ -1848,7 +1848,7 @@ Common Report Var(flag_pie,2) Negative(fpic) Init(-1)
 Generate position-independent code for executables if possible (large mode).
 
 fpic
-Common Report Var(flag_pic,1) Negative(fpie)
+Common Report Var(flag_pic,1) Negative(fpie) Init(-1)
 Generate position-independent code if possible (small mode).
 
 fpie

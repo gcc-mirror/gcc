@@ -1,3 +1,10 @@
+2016-03-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/70192
+	* opts.c (finish_options): Don't set flag_pie to the default if
+	-fpic, -fPIC, -fno-pic or -fno-PIC is used.  Set flag_pic to 0
+	if it is -1.
+
 2016-03-17  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/i386/i386.md (*movv4qicc_insn+1..36): Pass
