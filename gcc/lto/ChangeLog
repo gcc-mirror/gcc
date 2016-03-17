@@ -1,3 +1,9 @@
+2016-03-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR lto/70258
+	* lto-lang.c (lto_post_options): Set flag_pic to flag_pie for
+	PIE.
+
 2016-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* lto-symtab.h (lto_symtab_prevail_decl): Fix spelling
