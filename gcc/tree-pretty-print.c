@@ -621,7 +621,7 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, int flags)
 	case GOMP_MAP_FORCE_PRESENT:
 	  pp_string (pp, "force_present");
 	  break;
-	case GOMP_MAP_FORCE_DEALLOC:
+	case GOMP_MAP_DELETE:
 	  pp_string (pp, "delete");
 	  break;
 	case GOMP_MAP_FORCE_DEVICEPTR:

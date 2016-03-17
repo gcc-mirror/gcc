@@ -764,7 +764,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, uint64_t mask,
       if ((mask & OMP_CLAUSE_DELETE)
 	  && gfc_match ("delete ( ") == MATCH_YES
 	  && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-				       OMP_MAP_FORCE_DEALLOC))
+				       OMP_MAP_DELETE))
 	continue;
       if ((mask & OMP_CLAUSE_PRESENT)
 	  && gfc_match ("present ( ") == MATCH_YES

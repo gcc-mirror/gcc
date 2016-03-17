@@ -15746,7 +15746,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_TOFROM:
 	  case GOMP_MAP_POINTER:
 	  case GOMP_MAP_TO_PSET:
-	  case GOMP_MAP_FORCE_DEALLOC:
+	  case GOMP_MAP_DELETE:
 	  case GOMP_MAP_RELEASE:
 	  case GOMP_MAP_ALWAYS_TO:
 	  case GOMP_MAP_ALWAYS_FROM:
