@@ -11445,6 +11445,10 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	    && orig_code != BUILT_IN_ATOMIC_STORE_N)
 	  result = sync_resolve_return (first_param, result, orig_format);
 
+	if (fetch_op)
+	  /* Prevent -Wunused-value warning.  */
+	  TREE_USED (result) = true;
+
 	/* If new_return is set, assign function to that expr and cast the
 	   result to void since the generic interface returned void.  */
 	if (new_return)
