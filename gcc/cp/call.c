@@ -7040,15 +7040,17 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
   return val;
 }
 
-/* Returns true iff FN is a function with magic varargs, i.e. ones for
-   which no conversions at all should be done.  This is true for some
-   builtins which don't act like normal functions.  */
+/* Returns non-zero iff FN is a function with magic varargs, i.e. ones for
+   which just decay_conversion or no conversions at all should be done.
+   This is true for some builtins which don't act like normal functions.
+   Return 2 if no conversions at all should be done, 1 if just
+   decay_conversion.  */
 
-bool
+int
 magic_varargs_p (tree fn)
 {
   if (flag_cilkplus && is_cilkplus_reduce_builtin (fn) != BUILT_IN_NONE)
-    return true;
+    return 2;
 
   if (DECL_BUILT_IN (fn))
     switch (DECL_FUNCTION_CODE (fn))
@@ -7057,14 +7059,14 @@ magic_varargs_p (tree fn)
       case BUILT_IN_CONSTANT_P:
       case BUILT_IN_NEXT_ARG:
       case BUILT_IN_VA_START:
-	return true;
+	return 1;
 
       default:;
 	return lookup_attribute ("type generic",
 				 TYPE_ATTRIBUTES (TREE_TYPE (fn))) != 0;
       }
 
-  return false;
+  return 0;
 }
 
 /* Returns the decl of the dispatcher function if FN is a function version.  */
@@ -7515,9 +7517,17 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   for (; arg_index < vec_safe_length (args); ++arg_index)
     {
       tree a = (*args)[arg_index];
-      if (magic_varargs_p (fn))
-	/* Do no conversions for magic varargs.  */
-	a = mark_type_use (a);
+      int magic = magic_varargs_p (fn);
+      if (magic == 2)
+	{
+	  /* Do no conversions for certain magic varargs.  */
+	  a = mark_type_use (a);
+	  if (TREE_CODE (a) == FUNCTION_DECL && reject_gcc_builtin (a))
+	    return error_mark_node;
+	}
+      else if (magic == 1)
+	/* For other magic varargs only do decay_conversion.  */
+	a = decay_conversion (a, complain);
       else if (DECL_CONSTRUCTOR_P (fn)
 	       && same_type_ignoring_top_level_qualifiers_p (DECL_CONTEXT (fn),
 							     TREE_TYPE (a)))
@@ -7530,6 +7540,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
       else
 	a = convert_arg_to_ellipsis (a, complain);
+      if (a == error_mark_node)
+	return error_mark_node;
       argarray[j++] = a;
     }
 

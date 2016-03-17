@@ -1,5 +1,15 @@
 2016-03-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/70144
+	* cp-tree.h (magic_varargs_p): Return int instead of bool.
+	* call.c (magic_varargs_p): Return int instead of bool, return 2 for
+	Cilk+ reductions, otherwise 1 for magic varargs and 0 for normal
+	varargs.
+	(build_over_call): If magic_varargs_p == 2, call reject_gcc_builtin,
+	if magic_varargs_p == 1, call decay_conversion
+	instead of mark_type_use.  Don't store error_mark_node arguments to
+	argarray, instead return error_mark_node.
+
 	PR c++/70272
 	* decl.c (begin_destructor_body): Don't insert clobber if
 	is_empty_class (current_class_type).
