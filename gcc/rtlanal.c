@@ -2946,10 +2946,13 @@ inequality_comparisons_p (const_rtx x)
    not enter into CONST_DOUBLE for the replace.
 
    Note that copying is not done so X must not be shared unless all copies
-   are to be modified.  */
+   are to be modified.
+
+   ALL_REGS is true if we want to replace all REGs equal to FROM, not just
+   those pointer-equal ones.  */
 
 rtx
-replace_rtx (rtx x, rtx from, rtx to)
+replace_rtx (rtx x, rtx from, rtx to, bool all_regs)
 {
   int i, j;
   const char *fmt;
@@ -2961,9 +2964,17 @@ replace_rtx (rtx x, rtx from, rtx to)
   if (x == 0)
     return 0;
 
-  if (GET_CODE (x) == SUBREG)
+  if (all_regs
+      && REG_P (x)
+      && REG_P (from)
+      && REGNO (x) == REGNO (from))
     {
-      rtx new_rtx = replace_rtx (SUBREG_REG (x), from, to);
+      gcc_assert (GET_MODE (x) == GET_MODE (from));
+      return to;
+    }
+  else if (GET_CODE (x) == SUBREG)
+    {
+      rtx new_rtx = replace_rtx (SUBREG_REG (x), from, to, all_regs);
 
       if (CONST_INT_P (new_rtx))
 	{
@@ -2979,7 +2990,7 @@ replace_rtx (rtx x, rtx from, rtx to)
     }
   else if (GET_CODE (x) == ZERO_EXTEND)
     {
-      rtx new_rtx = replace_rtx (XEXP (x, 0), from, to);
+      rtx new_rtx = replace_rtx (XEXP (x, 0), from, to, all_regs);
 
       if (CONST_INT_P (new_rtx))
 	{
@@ -2997,10 +3008,11 @@ replace_rtx (rtx x, rtx from, rtx to)
   for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	XEXP (x, i) = replace_rtx (XEXP (x, i), from, to);
+	XEXP (x, i) = replace_rtx (XEXP (x, i), from, to, all_regs);
       else if (fmt[i] == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  XVECEXP (x, i, j) = replace_rtx (XVECEXP (x, i, j), from, to);
+	  XVECEXP (x, i, j) = replace_rtx (XVECEXP (x, i, j),
+					   from, to, all_regs);
     }
 
   return x;
