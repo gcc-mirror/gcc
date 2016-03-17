@@ -106,7 +106,7 @@
   (and (match_code "mem")
        (match_test "IS_LO_SUM_DLT_ADDR_P (XEXP (op, 0))")))
 
-(define_memory_constraint "Q"
+(define_constraint "Q"
   "A memory operand that can be used as the destination operand of an
    integer store, or the source operand of an integer load.  That is
    any memory operand that isn't a symbolic, indexed or lo_sum memory
@@ -122,7 +122,7 @@
   (and (match_code "mem")
        (match_test "IS_INDEX_ADDR_P (XEXP (op, 0))")))
 
-(define_memory_constraint "T"
+(define_constraint "T"
   "A memory operand for floating-point loads and stores."
   (match_test "floating_point_store_memory_operand (op, mode)"))
 
