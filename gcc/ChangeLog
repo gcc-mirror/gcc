@@ -1,3 +1,9 @@
+2016-03-17  Nick Clifton  <nickc@redhat.com>
+
+	PR target/70162
+	* config/rx/rx.c (rx_print_integer): Print negative constants in
+	decimal.
+
 2016-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70261
