@@ -7782,9 +7782,10 @@ c_parser_postfix_expression (c_parser *parser)
 	      expr.value = error_mark_node;
 	      break;
 	    }
-	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
-				     "expected %<)%>");
 	  {
+	    location_t close_paren_loc = c_parser_peek_token (parser)->location;
+	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+				       "expected %<)%>");
 	    tree e1, e2;
 	    e1 = groktypename (t1, NULL, NULL);
 	    e2 = groktypename (t2, NULL, NULL);
@@ -7799,6 +7800,7 @@ c_parser_postfix_expression (c_parser *parser)
 
 	    expr.value
 	      = comptypes (e1, e2) ? integer_one_node : integer_zero_node;
+	    set_c_expr_source_range (&expr, loc, close_paren_loc);
 	  }
 	  break;
 	case RID_BUILTIN_CALL_WITH_STATIC_CHAIN:

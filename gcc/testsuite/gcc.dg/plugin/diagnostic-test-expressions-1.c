@@ -534,6 +534,24 @@ void test_builtin_choose_expr (int i)
 }
 
 extern int f (int);
+
+void test_builtin_types_compatible_p (unsigned long i)
+{
+  __emit_expression_range (0,
+			   f (i) + __builtin_types_compatible_p (long, int)); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+       f (i) + __builtin_types_compatible_p (long, int));
+       ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   { dg-end-multiline-output "" } */
+
+  __emit_expression_range (0,
+			   __builtin_types_compatible_p (long, int) + f (i)); /* { dg-warning "range" } */
+/* { dg-begin-multiline-output "" }
+       __builtin_types_compatible_p (long, int) + f (i));
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~
+   { dg-end-multiline-output "" } */
+}
+
 void test_builtin_call_with_static_chain (int i, void *ptr)
 {
   __emit_expression_range (0, __builtin_call_with_static_chain (f (i), ptr));  /* { dg-warning "range" } */
