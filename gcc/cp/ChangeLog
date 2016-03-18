@@ -1,5 +1,12 @@
 2016-03-18  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	PR c++/70205
+	* search.c (adjust_result_of_qualified_name_lookup): Don't
+	update the BASELINK_BINFO of DECL if the second call
+	to lookup_base fails.
+
+2016-03-18  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	PR c++/70218
 	* parser.c (cp_parser_lambda_expression): Move call to
 	pop_deferring_access_checks ahead of the call to
