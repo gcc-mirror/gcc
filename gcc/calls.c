@@ -2083,9 +2083,9 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	      /* Check for overlap with already clobbered argument area,
 	         providing that this has non-zero size.  */
 	      if (is_sibcall
-		  && (size == 0
-		      || mem_overlaps_already_clobbered_arg_p 
-					   (XEXP (args[i].value, 0), size)))
+		  && size != 0
+		  && (mem_overlaps_already_clobbered_arg_p
+		      (XEXP (args[i].value, 0), size)))
 		*sibcall_failure = 1;
 
 	      if (size % UNITS_PER_WORD == 0
