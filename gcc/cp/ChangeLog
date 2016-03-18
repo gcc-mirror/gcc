@@ -1,3 +1,8 @@
+2016-03-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70139
+	* constexpr.c (cxx_eval_call_expression): Don't shortcut trivial copy.
+
 2016-03-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/67364
