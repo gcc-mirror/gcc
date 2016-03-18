@@ -1,13 +1,3 @@
-2016-03-18  Uros Bizjak  <ubizjak@gmail.com>
-
-	Revert:
-	2015-07-02  Uros Bizjak  <ubizjak@gmail.com>
-
-	* libsupc++/guard.cc (__test_and_acquire): Use __p after __atomic_load
-	to avoid unused variable warning.
-	(__set_and_release): Use __p after __atomic_store to avoid unused
-	variable warning.
-
 2016-02-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/69939
