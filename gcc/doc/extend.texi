@@ -7452,10 +7452,10 @@ note that some assembler dialects use semicolons to start a comment.
 @end table
 
 @subsubheading Remarks
-Using extended @code{asm} typically produces smaller, safer, and more
-efficient code, and in most cases it is a better solution than basic
-@code{asm}.  However, there are two situations where only basic @code{asm}
-can be used:
+Using extended @code{asm} (@pxref{Extended Asm}) typically produces
+smaller, safer, and more efficient code, and in most cases it is a
+better solution than basic @code{asm}.  However, there are two
+situations where only basic @code{asm} can be used:
 
 @itemize @bullet
 @item
@@ -7492,9 +7492,24 @@ assembly code when optimizing. This can lead to unexpected duplicate
 symbol errors during compilation if your assembly code defines symbols or 
 labels.
 
-Since GCC does not parse the @var{AssemblerInstructions}, it has no 
-visibility of any symbols it references. This may result in GCC discarding 
-those symbols as unreferenced.
+@strong{Warning:} The C standards do not specify semantics for @code{asm},
+making it a potential source of incompatibilities between compilers.  These
+incompatibilities may not produce compiler warnings/errors.
+
+GCC does not parse basic @code{asm}'s @var{AssemblerInstructions}, which
+means there is no way to communicate to the compiler what is happening
+inside them.  GCC has no visibility of symbols in the @code{asm} and may
+discard them as unreferenced.  It also does not know about side effects of
+the assembler code, such as modifications to memory or registers.  Unlike
+some compilers, GCC assumes that no changes to either memory or registers
+occur.  This assumption may change in a future release.
+
+To avoid complications from future changes to the semantics and the
+compatibility issues between compilers, consider replacing basic @code{asm}
+with extended @code{asm}.  See
+@uref{https://gcc.gnu.org/wiki/ConvertBasicAsmToExtended, How to convert
+from basic asm to extended asm} for information about how to perform this
+conversion.
 
 The compiler copies the assembler instructions in a basic @code{asm} 
 verbatim to the assembly language output file, without 
