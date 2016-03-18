@@ -1,3 +1,10 @@
+2016-03-18  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/70218
+	* parser.c (cp_parser_lambda_expression): Move call to
+	pop_deferring_access_checks ahead of the call to
+	cp_parser_end_tentative_firewall.
+
 2016-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70144
