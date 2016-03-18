@@ -1,5 +1,10 @@
 2016-03-18  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	PR c++/70205
+	* g++.dg/lookup/pr70205.C: New test.
+
+2016-03-18  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	PR c++/70218
 	* g++.dg/cpp0x/lambda/lambda-70218.C: New test.
 
