@@ -1,3 +1,9 @@
+2016-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70267
+	* init.c (build_new_1): Complain and return error_mark_node
+	if alloc_fn is not _Jv_AllocObject function returning pointer.
+
 2016-03-18  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/70205

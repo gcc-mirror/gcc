@@ -1,3 +1,8 @@
+2016-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70267
+	* g++.dg/ext/java-3.C: New test.
+
 2016-03-18  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/70205
