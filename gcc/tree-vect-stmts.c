@@ -8940,7 +8940,12 @@ supportable_widening_operation (enum tree_code code, gimple *stmt,
 
   if (insn_data[icode1].operand[0].mode == TYPE_MODE (wide_vectype)
       && insn_data[icode2].operand[0].mode == TYPE_MODE (wide_vectype))
-    return true;
+      /* For scalar masks we may have different boolean
+	 vector types having the same QImode.  Thus we
+	 add additional check for elements number.  */
+    return (!VECTOR_BOOLEAN_TYPE_P (vectype)
+	    || (TYPE_VECTOR_SUBPARTS (vectype) / 2
+		== TYPE_VECTOR_SUBPARTS (wide_vectype)));
 
   /* Check if it's a multi-step conversion that can be done using intermediate
      types.  */
@@ -8991,7 +8996,9 @@ supportable_widening_operation (enum tree_code code, gimple *stmt,
 
       if (insn_data[icode1].operand[0].mode == TYPE_MODE (wide_vectype)
 	  && insn_data[icode2].operand[0].mode == TYPE_MODE (wide_vectype))
-	return true;
+	return (!VECTOR_BOOLEAN_TYPE_P (vectype)
+		|| (TYPE_VECTOR_SUBPARTS (intermediate_type) / 2
+		    == TYPE_VECTOR_SUBPARTS (wide_vectype)));
 
       prev_type = intermediate_type;
       prev_mode = intermediate_mode;
@@ -9075,7 +9082,12 @@ supportable_narrowing_operation (enum tree_code code,
   *code1 = c1;
 
   if (insn_data[icode1].operand[0].mode == TYPE_MODE (narrow_vectype))
-    return true;
+    /* For scalar masks we may have different boolean
+       vector types having the same QImode.  Thus we
+       add additional check for elements number.  */
+    return (!VECTOR_BOOLEAN_TYPE_P (vectype)
+	    || (TYPE_VECTOR_SUBPARTS (vectype) * 2
+		== TYPE_VECTOR_SUBPARTS (narrow_vectype)));
 
   /* Check if it's a multi-step conversion that can be done using intermediate
      types.  */
@@ -9140,7 +9152,9 @@ supportable_narrowing_operation (enum tree_code code,
       (*multi_step_cvt)++;
 
       if (insn_data[icode1].operand[0].mode == TYPE_MODE (narrow_vectype))
-	return true;
+	return (!VECTOR_BOOLEAN_TYPE_P (vectype)
+		|| (TYPE_VECTOR_SUBPARTS (intermediate_type) * 2
+		    == TYPE_VECTOR_SUBPARTS (narrow_vectype)));
 
       prev_mode = intermediate_mode;
       prev_type = intermediate_type;
