@@ -1,3 +1,9 @@
+2016-03-18  Jason Merrill  <jason@redhat.com>
+
+	* class.c (build_if_in_charge): Split out from build_base_path.
+	* init.c (expand_virtual_init, expand_default_init): Use it.
+	* call.c (build_special_member_call): Use it.
+
 2016-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70267

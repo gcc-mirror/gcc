@@ -5638,6 +5638,7 @@ extern tree get_function_version_dispatcher	(tree);
 
 /* in class.c */
 extern tree build_vfield_ref			(tree, tree);
+extern tree build_if_in_charge			(tree true_stmt, tree false_stmt = void_node);
 extern tree build_base_path			(enum tree_code, tree,
 						 tree, int, tsubst_flags_t);
 extern tree convert_to_base			(tree, tree, bool, bool,
