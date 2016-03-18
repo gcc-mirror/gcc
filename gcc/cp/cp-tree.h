@@ -1988,7 +1988,7 @@ struct GTY(()) lang_type {
 #define CLASSTYPE_VBASECLASSES(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->vbases)
 
 /* The type corresponding to NODE when NODE is used as a base class,
-   i.e., NODE without virtual base classes.  */
+   i.e., NODE without virtual base classes or tail padding.  */
 
 #define CLASSTYPE_AS_BASE(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->as_base)
 
