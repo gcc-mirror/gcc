@@ -1,3 +1,8 @@
+2016-03-18  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+        * config/i386/sse.md: Use vpbroadcastq for broadcasting DF
+        values to 128b regs.
+
 2016-03-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR tree-optimization/70252
