@@ -9781,8 +9781,6 @@ cp_parser_lambda_expression (cp_parser* parser)
 	= auto_is_implicit_function_template_parm_p;
   }
 
-  pop_deferring_access_checks ();
-
   /* This field is only used during parsing of the lambda.  */
   LAMBDA_EXPR_THIS_CAPTURE (lambda_expr) = NULL_TREE;
 
@@ -9797,6 +9795,8 @@ cp_parser_lambda_expression (cp_parser* parser)
     lambda_expr = error_mark_node;
 
   cp_parser_end_tentative_firewall (parser, start, lambda_expr);
+
+  pop_deferring_access_checks ();
 
   return lambda_expr;
 }
