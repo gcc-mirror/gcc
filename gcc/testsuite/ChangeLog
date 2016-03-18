@@ -1,3 +1,10 @@
+2016-03-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline
+	2015-07-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/no-volatile-in-it.c: Skip if -mcpu is overriden.
+
 2016-03-17  Andre Vieira  <Andre.SimoesDiasVieira@arm.com>
 
 	Backport from mainline.

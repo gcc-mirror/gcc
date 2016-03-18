@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_thumb2_ok } */
+/* { dg-skip-if "do not override -mcpu" { *-*-* } { "-march=*" "-mcpu=*" } { "-mcpu=cortex-m7" } } */
 /* { dg-options "-Os -mthumb -mcpu=cortex-m7" } */
 
 int
