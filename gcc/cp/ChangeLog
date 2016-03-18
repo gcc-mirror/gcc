@@ -1,5 +1,8 @@
 2016-03-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70139
+	* constexpr.c (cxx_eval_call_expression): Fix trivial copy.
+
 	PR c++/70147
 	* class.c (vptr_via_virtual_p): New.
 	(most_primary_binfo): Factor out of build_rtti_vtbl_entries.

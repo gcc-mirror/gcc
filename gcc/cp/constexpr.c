@@ -1239,19 +1239,39 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       return t;
     }
 
+  constexpr_ctx new_ctx = *ctx;
+  if (DECL_CONSTRUCTOR_P (fun) && !ctx->object
+      && TREE_CODE (t) == AGGR_INIT_EXPR)
+    {
+      /* We want to have an initialization target for an AGGR_INIT_EXPR.
+	 If we don't already have one in CTX, use the AGGR_INIT_EXPR_SLOT.  */
+      new_ctx.object = AGGR_INIT_EXPR_SLOT (t);
+      tree ctor = new_ctx.ctor = build_constructor (DECL_CONTEXT (fun), NULL);
+      CONSTRUCTOR_NO_IMPLICIT_ZERO (ctor) = true;
+      ctx->values->put (new_ctx.object, ctor);
+      ctx = &new_ctx;
+    }
+
   /* Shortcut trivial constructor/op=.  */
   if (trivial_fn_p (fun))
     {
+      tree init = NULL_TREE;
       if (call_expr_nargs (t) == 2)
-	{
-	  tree arg = convert_from_reference (get_nth_callarg (t, 1));
-	  return cxx_eval_constant_expression (ctx, arg,
-					       lval, non_constant_p,
-					       overflow_p);
-	}
+	init = convert_from_reference (get_nth_callarg (t, 1));
       else if (TREE_CODE (t) == AGGR_INIT_EXPR
 	       && AGGR_INIT_ZERO_FIRST (t))
-	return build_zero_init (DECL_CONTEXT (fun), NULL_TREE, false);
+	init = build_zero_init (DECL_CONTEXT (fun), NULL_TREE, false);
+      if (init)
+	{
+	  tree op = get_nth_callarg (t, 0);
+	  if (is_dummy_object (op))
+	    op = ctx->object;
+	  else
+	    op = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (op)), op);
+	  tree set = build2 (MODIFY_EXPR, TREE_TYPE (op), op, init);
+	  return cxx_eval_constant_expression (ctx, set, lval,
+					       non_constant_p, overflow_p);
+	}
     }
 
   /* We can't defer instantiating the function any longer.  */
@@ -1285,19 +1305,6 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  *non_constant_p = true;
           return t;
         }
-    }
-
-  constexpr_ctx new_ctx = *ctx;
-  if (DECL_CONSTRUCTOR_P (fun) && !ctx->object
-      && TREE_CODE (t) == AGGR_INIT_EXPR)
-    {
-      /* We want to have an initialization target for an AGGR_INIT_EXPR.
-	 If we don't already have one in CTX, use the AGGR_INIT_EXPR_SLOT.  */
-      new_ctx.object = AGGR_INIT_EXPR_SLOT (t);
-      tree ctor = new_ctx.ctor = build_constructor (DECL_CONTEXT (fun), NULL);
-      CONSTRUCTOR_NO_IMPLICIT_ZERO (ctor) = true;
-      ctx->values->put (new_ctx.object, ctor);
-      ctx = &new_ctx;
     }
 
   bool non_constant_args = false;
