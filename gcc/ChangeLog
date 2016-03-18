@@ -1,3 +1,9 @@
+2016-03-18  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR rtl-optimization/70278
+	* lra-constraints.c (split_reg): Handle the case where biggest_mode is
+	VOIDmode.
+
 2016-03-18  Jason Merrill  <jason@redhat.com>
 
 	* calls.c (load_register_parameters): Fix zero size sibcall logic.
