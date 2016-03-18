@@ -3225,13 +3225,18 @@ memref_referenced_p (rtx memref, rtx x)
 }
 
 /* TRUE if some insn in the range (START, END] references a memory location
-   that would be affected by a store to MEMREF.  */
+   that would be affected by a store to MEMREF.
+
+   Callers should not call this routine if START is after END in the
+   RTL chain.  */
+
 static int
 memref_used_between_p (rtx memref, rtx_insn *start, rtx_insn *end)
 {
   rtx_insn *insn;
 
-  for (insn = NEXT_INSN (start); insn != NEXT_INSN (end);
+  for (insn = NEXT_INSN (start);
+       insn && insn != NEXT_INSN (end);
        insn = NEXT_INSN (insn))
     {
       if (!NONDEBUG_INSN_P (insn))
@@ -3245,6 +3250,7 @@ memref_used_between_p (rtx memref, rtx_insn *start, rtx_insn *end)
 	return 1;
     }
 
+  gcc_assert (insn == NEXT_INSN (end));
   return 0;
 }
 
@@ -3337,6 +3343,7 @@ update_equiv_regs (void)
   int loop_depth;
   bitmap cleared_regs;
   bool *pdx_subregs;
+  bitmap_head seen_insns;
 
   /* Use pdx_subregs to show whether a reg is used in a paradoxical
      subreg.  */
@@ -3606,10 +3613,13 @@ update_equiv_regs (void)
   /* A second pass, to gather additional equivalences with memory.  This needs
      to be done after we know which registers we are going to replace.  */
 
+  bitmap_initialize (&seen_insns, NULL);
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       rtx set, src, dest;
       unsigned regno;
+
+      bitmap_set_bit (&seen_insns, INSN_UID (insn));
 
       if (! INSN_P (insn))
 	continue;
@@ -3651,6 +3661,7 @@ update_equiv_regs (void)
 	  rtx_insn *init_insn =
 	    as_a <rtx_insn *> (XEXP (reg_equiv[regno].init_insns, 0));
 	  if (validate_equiv_mem (init_insn, src, dest)
+	      && bitmap_bit_p (&seen_insns, INSN_UID (init_insn))
 	      && ! memref_used_between_p (dest, init_insn, insn)
 	      /* Attaching a REG_EQUIV note will fail if INIT_INSN has
 		 multiple sets.  */
@@ -3661,9 +3672,15 @@ update_equiv_regs (void)
 	      ira_reg_equiv[regno].init_insns
 		= gen_rtx_INSN_LIST (VOIDmode, insn, NULL_RTX);
 	      df_notes_rescan (init_insn);
+	      if (dump_file)
+		fprintf (dump_file,
+			 "Adding REG_EQUIV to insn %d for source of insn %d\n",
+			 INSN_UID (init_insn),
+			 INSN_UID (insn));
 	    }
 	}
     }
+  bitmap_clear (&seen_insns);
 
   cleared_regs = BITMAP_ALLOC (NULL);
   /* Now scan all regs killed in an insn to see if any of them are

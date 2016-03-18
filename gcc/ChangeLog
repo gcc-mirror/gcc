@@ -1,3 +1,12 @@
+2016-03-18  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/70263
+	* ira.c (memref_used_between_p): Assert we found END in the insn chain.
+	(update_equiv_regs): When trying to move a store to after the insn
+	that sets the source of the store, make sure the store occurs after
+	the insn that sets the source of the store.  When successful note
+	the REG_EQUIV note created in the dump file.
+
 2016-03-16  David Wohlferd  <dw@LimeGreenSocks.com>
             Bernd Schmidt  <bschmidt@redhat.com>
 
