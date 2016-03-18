@@ -8004,11 +8004,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
       vtt = decay_conversion (vtt, complain);
       if (vtt == error_mark_node)
 	return error_mark_node;
-      vtt = build3 (COND_EXPR, TREE_TYPE (vtt),
-		    build2 (EQ_EXPR, boolean_type_node,
-			    current_in_charge_parm, integer_zero_node),
-		    current_vtt_parm,
-		    vtt);
+      vtt = build_if_in_charge (vtt, current_vtt_parm);
       if (BINFO_SUBVTT_INDEX (binfo))
 	sub_vtt = fold_build_pointer_plus (vtt, BINFO_SUBVTT_INDEX (binfo));
       else

@@ -225,6 +225,24 @@ int n_convert_harshness = 0;
 int n_compute_conversion_costs = 0;
 int n_inner_fields_searched = 0;
 
+/* Return a COND_EXPR that executes TRUE_STMT if this execution of the
+   'structor is in charge of 'structing virtual bases, or FALSE_STMT
+   otherwise.  */
+
+tree
+build_if_in_charge (tree true_stmt, tree false_stmt)
+{
+  gcc_assert (DECL_HAS_IN_CHARGE_PARM_P (current_function_decl));
+  tree cmp = build2 (NE_EXPR, boolean_type_node,
+		     current_in_charge_parm, integer_zero_node);
+  tree type = unlowered_expr_type (true_stmt);
+  if (VOID_TYPE_P (type))
+    type = unlowered_expr_type (false_stmt);
+  tree cond = build3 (COND_EXPR, type,
+		      cmp, true_stmt, false_stmt);
+  return cond;
+}
+
 /* Convert to or from a base subobject.  EXPR is an expression of type
    `A' or `A*', an expression of type `B' or `B*' is returned.  To
    convert A to a base B, CODE is PLUS_EXPR and BINFO is the binfo for
@@ -470,12 +488,9 @@ build_base_path (enum tree_code code,
 	/* Negative fixed_type_p means this is a constructor or destructor;
 	   virtual base layout is fixed in in-charge [cd]tors, but not in
 	   base [cd]tors.  */
-	offset = build3 (COND_EXPR, ptrdiff_type_node,
-			 build2 (EQ_EXPR, boolean_type_node,
-				 current_in_charge_parm, integer_zero_node),
-			 v_offset,
-			 convert_to_integer (ptrdiff_type_node,
-					     BINFO_OFFSET (binfo)));
+	offset = build_if_in_charge
+	  (convert_to_integer (ptrdiff_type_node, BINFO_OFFSET (binfo)),
+	   v_offset);
       else
 	offset = v_offset;
     }

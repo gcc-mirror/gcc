@@ -1243,12 +1243,7 @@ expand_virtual_init (tree binfo, tree decl)
       /* The actual initializer is the VTT value only in the subobject
 	 constructor.  In maybe_clone_body we'll substitute NULL for
 	 the vtt_parm in the case of the non-subobject constructor.  */
-      vtbl = build3 (COND_EXPR,
-		     TREE_TYPE (vtbl),
-		     build2 (EQ_EXPR, boolean_type_node,
-			     current_in_charge_parm, integer_zero_node),
-		     vtbl2,
-		     vtbl);
+      vtbl = build_if_in_charge (vtbl, vtbl2);
     }
 
   /* Compute the location of the vtpr.  */
@@ -1741,11 +1736,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 					&parms, binfo, flags,
 					complain);
       base = fold_build_cleanup_point_expr (void_type_node, base);
-      rval = build3 (COND_EXPR, void_type_node,
-		     build2 (EQ_EXPR, boolean_type_node,
-			     current_in_charge_parm, integer_zero_node),
-		     base,
-		     complete);
+      rval = build_if_in_charge (complete, base);
     }
    else
     {
