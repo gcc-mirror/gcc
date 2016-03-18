@@ -1,5 +1,10 @@
 2016-03-18  Tom de Vries  <tom@codesourcery.com>
 
+	* gcc.dg/pr70161-2.c: New test.
+	* gcc.dg/pr70161.c: New test.
+
+2016-03-18  Tom de Vries  <tom@codesourcery.com>
+
 	PR ipa/70269
 	* gcc.dg/pr70269.c: New test.
 
