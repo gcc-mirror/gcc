@@ -1,3 +1,10 @@
+2016-03-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR tree-optimization/70252
+	* tree-vect-stmts.c (supportable_widening_operation): Check resulting
+	boolean vector has a proper number of elements.
+	(supportable_narrowing_operation): Likewise.
+
 2016-03-18  Tom de Vries  <tom@codesourcery.com>
 
 	PR ipa/70269
