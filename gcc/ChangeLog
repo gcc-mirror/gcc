@@ -1,3 +1,8 @@
+2016-03-16  David Wohlferd  <dw@LimeGreenSocks.com>
+            Bernd Schmidt  <bschmidt@redhat.com>
+
+	* doc/extend.texi: Document more potential problems with basic asms.
+
 2016-03-18  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR rtl-optimization/70278
@@ -42,7 +47,7 @@
 	define_constraint for "Q" and "T" constraints.
 
 2016-03-17  Evandro Menezes  <e.menezes@samsung.com>
-	
+
 	Tweak the pipeline model for Exynos M1
 
 	* config/aarch64/aarch64.c (exynosm1_tunings): 	Enable weak prefetching
@@ -227,19 +232,19 @@
 
 	PR rtl-optimization/69032
 	* sel-sched-ir.c (get_seqno_by_preds): Include both insn and head when
-	looping backwards over basic block insns. 
+	looping backwards over basic block insns.
 
 2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR target/66660
 	* sel-sched-ir.c (merge_expr): Avoid changing the speculative pattern
-	to non-speculative when propagating trap bits. 
+	to non-speculative when propagating trap bits.
 
 2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/63384
 	* sel-sched.c (invoke_aftermath_hooks): Do not decrease issue_more on
-	DEBUG_INSN_P insns. 
+	DEBUG_INSN_P insns.
 
 2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
 
