@@ -283,7 +283,7 @@ cp_ubsan_dfs_initialize_vtbl_ptrs (tree binfo, void *data)
   if (!TYPE_CONTAINS_VPTR_P (BINFO_TYPE (binfo)))
     return dfs_skip_bases;
 
-  if (!BINFO_PRIMARY_P (binfo) || BINFO_VIRTUAL_P (binfo))
+  if (!BINFO_PRIMARY_P (binfo))
     {
       tree base_ptr = TREE_VALUE ((tree) data);
 
@@ -301,11 +301,10 @@ cp_ubsan_dfs_initialize_vtbl_ptrs (tree binfo, void *data)
       tree vtbl = build_zero_cst (TREE_TYPE (vtbl_ptr));
       tree stmt = cp_build_modify_expr (vtbl_ptr, NOP_EXPR, vtbl,
 					tf_warning_or_error);
-      if (BINFO_VIRTUAL_P (binfo))
-	stmt = build3 (COND_EXPR, void_type_node,
-		       build2 (NE_EXPR, boolean_type_node,
-			       current_in_charge_parm, integer_zero_node),
-		       stmt, void_node);
+      if (vptr_via_virtual_p (binfo))
+	/* If this vptr comes from a virtual base of the complete object, only
+	   clear it if we're in charge of virtual bases.  */
+	stmt = build_if_in_charge (stmt);
       finish_expr_stmt (stmt);
     }
 

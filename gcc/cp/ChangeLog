@@ -1,5 +1,11 @@
 2016-03-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70147
+	* class.c (vptr_via_virtual_p): New.
+	(most_primary_binfo): Factor out of build_rtti_vtbl_entries.
+	* cp-ubsan.c (cp_ubsan_dfs_initialize_vtbl_ptrs): Don't clear
+	a vptr from any virtual base in a not-in-charge 'structor.
+
 	* decl.c (build_clobber_this): Factor out of
 	start_preparsed_function and begin_destructor_body.  Handle
 	virtual bases better.

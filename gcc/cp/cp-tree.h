@@ -5677,6 +5677,7 @@ extern void invalidate_class_lookup_cache	(void);
 extern void maybe_note_name_used_in_class	(tree, tree);
 extern void note_name_declared_in_class		(tree, tree);
 extern tree get_vtbl_decl_for_binfo		(tree);
+extern bool vptr_via_virtual_p			(tree);
 extern void debug_class				(tree);
 extern void debug_thunks			(tree);
 extern void set_linkage_according_to_type	(tree, tree);
