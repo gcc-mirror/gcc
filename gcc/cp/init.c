@@ -2872,6 +2872,14 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	  return error_mark_node;
 	}
       alloc_fn = OVL_CURRENT (alloc_fn);
+      if (TREE_CODE (alloc_fn) != FUNCTION_DECL
+	  || TREE_CODE (TREE_TYPE (alloc_fn)) != FUNCTION_TYPE
+	  || !POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (alloc_fn))))
+	{
+	  if (complain & tf_error)
+	    error ("%qD is not a function returning a pointer", alloc_fn);
+	  return error_mark_node;
+	}
       class_addr = build1 (ADDR_EXPR, jclass_node, class_decl);
       alloc_call = cp_build_function_call_nary (alloc_fn, complain,
 						class_addr, NULL_TREE);
