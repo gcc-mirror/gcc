@@ -1,6 +1,14 @@
 2016-03-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backport from mainline
+	2015-06-09  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* g++.dg/ext/pr57735.C: Do not override -mfloat-abi directives
+	passed by the testsuite driver.
+
+2016-03-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backport from mainline
 	2015-07-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/no-volatile-in-it.c: Skip if -mcpu is overriden.
