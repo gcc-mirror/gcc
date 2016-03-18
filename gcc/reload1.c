@@ -7395,7 +7395,9 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 	      /* Adjust any debug insns between temp and insn.  */
 	      while ((temp = NEXT_INSN (temp)) != insn)
 		if (DEBUG_INSN_P (temp))
-		  replace_rtx (PATTERN (temp), old, reloadreg);
+		  INSN_VAR_LOCATION_LOC (temp)
+		    = simplify_replace_rtx (INSN_VAR_LOCATION_LOC (temp),
+					    old, reloadreg);
 		else
 		  gcc_assert (NOTE_P (temp));
 	    }
