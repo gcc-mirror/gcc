@@ -1,3 +1,8 @@
+2016-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* reload1.c (emit_input_reload_insns): Use simplify_replace_rtx
+	instead of replace_rtx for DEBUG_INSNs.
+
 2016-03-18  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	* config/i386/znver1.md : Fix latencies of FP/SSE/AVX
