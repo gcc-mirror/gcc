@@ -1,3 +1,8 @@
+2016-03-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/69043
+	* scanner.c (load_file): Update to use S_ISREG macro.
+
 2016-03-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gfortran.h (enum gfc_omp_map_op): Rename OMP_MAP_FORCE_DEALLOC

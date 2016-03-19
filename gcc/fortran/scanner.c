@@ -2246,7 +2246,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 	  return false;
 	}
       stat_result = stat (realfilename, &st);
-      if (stat_result == 0 && !(st.st_mode & S_IFREG))
+      if (stat_result == 0 && !S_ISREG(st.st_mode))
 	{
 	  fprintf (stderr, "%s:%d: Error: Included path '%s'"
 		   " is not a regular file\n",
