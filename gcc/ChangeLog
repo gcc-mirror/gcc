@@ -1,3 +1,11 @@
+2016-03-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70327
+	* config/i386/i386.md (movxi): Use ix86_expand_vector_move instead
+	of ix86_expand_move.
+	(movoi): Ditto.
+	(movti): Use general_operand for operand 1 predicate.
+
 2016-03-21  Martin Liska  <mliska@suse.cz>
 
 	* hsa-dump.c (dump_hsa_insn_1): dump default branch of SBR
@@ -32,7 +40,7 @@
 2016-03-21  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70293
-        * config/i386/sse.md: (define_insn "*vec_dup<mode>"/AVX2):
+	* config/i386/sse.md: (define_insn "*vec_dup<mode>"/AVX2):
 	Block third alternative for AVX-512VL target,
 
 2016-03-21  Martin Liska  <mliska@suse.cz>
@@ -55,7 +63,7 @@
 
 	PR rtl-optimization/69102
 	* sched-deps.c (sched_analyze_insn): Do not set last_args_size field
-	when we have a readonly dependency context. 
+	when we have a readonly dependency context.
 
 2016-03-18  Jeff Law  <law@redhat.com>
 
@@ -67,7 +75,7 @@
 	the REG_EQUIV note created in the dump file.
 
 2016-03-16  David Wohlferd  <dw@LimeGreenSocks.com>
-            Bernd Schmidt  <bschmidt@redhat.com>
+	    Bernd Schmidt  <bschmidt@redhat.com>
 
 	* doc/extend.texi: Document more potential problems with basic asms.
 
@@ -83,8 +91,8 @@
 
 2016-03-18  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-        * config/i386/sse.md: Use vpbroadcastq for broadcasting DF
-        values to 128b regs.
+	* config/i386/sse.md: Use vpbroadcastq for broadcasting DF
+	values to 128b regs.
 
 2016-03-18  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
@@ -564,7 +572,8 @@
 2016-03-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/69589
-	* cgraph.c (cgraph_node::dump): Dump split_part and indirect_call_target.
+	* cgraph.c (cgraph_node::dump): Dump split_part and
+	indirect_call_target.
 	* cgraph.h (cgraph_node): Add indirect_call_target flag.
 	* ipa.c (has_addr_references_p): Cleanup.
 	(is_indirect_call_target_p): New.
