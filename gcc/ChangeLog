@@ -1,3 +1,11 @@
+2016-03-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70327
+	* config/i386/i386.md (movxi): Use ix86_expand_vector_move instead
+	of ix86_expand_move.
+	(movoi): Ditto.
+	(movti): Use general_operand for operand 1 predicate.
+
 2016-03-21  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
