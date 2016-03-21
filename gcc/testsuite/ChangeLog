@@ -1,3 +1,10 @@
+2016-03-21  Andre Vieira  <andre.simoesdiasvieira@arm>
+
+	* gcc.target/arm/attr-align1.c: Skip if M-profile.
+	* gcc.target/arm/attr-align3.c: Likewise.
+	* gcc.target/arm/attr_arm.c: Likewise.
+	* gcc.target/arm/flip-thumb.c: Likewise.
+
 2016-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70296
