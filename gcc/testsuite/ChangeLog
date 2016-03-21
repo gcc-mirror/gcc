@@ -1,8 +1,13 @@
+2016-03-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70327
+	* gcc.target/i386/pr70327.c: New test.
+
 2016-03-21  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/ipa/pr70306.c: New test.
 
-2016-03-21  Andre Vieira  <andre.simoesdiasvieira@arm>
+2016-03-21  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* gcc.target/arm/attr-align1.c: Skip if M-profile.
 	* gcc.target/arm/attr-align3.c: Likewise.
@@ -34,7 +39,7 @@
 
 	PR rtl-optimization/69307
 	* gcc.target/arm/pr69307.c: New test.
-	
+
 2016-03-21  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/69102
@@ -259,7 +264,7 @@
 2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/63384
-	* g++.dg/pr63384.C: New test. 
+	* g++.dg/pr63384.C: New test.
 
 2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
 
@@ -607,7 +612,7 @@
 	* gcc.target/arm/pr45701-2.c: Likewise.
 
 2016-02-26  Richard Biener  <rguenther@suse.de>
-            Jeff Law  <law@redhat.com>
+	    Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/69740
 	* gcc.c-torture/compile/pr69740-1.c: New test.
