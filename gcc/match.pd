@@ -1866,7 +1866,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cmp @0 @0)
   (if (! FLOAT_TYPE_P (TREE_TYPE (@0))
-       || ! HONOR_NANS (TYPE_MODE (TREE_TYPE (@0))))
+       || ! HONOR_NANS (@0))
    { constant_boolean_node (true, type); }
    (if (cmp != EQ_EXPR)
     (eq @0 @0)))))
@@ -1875,7 +1875,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp @0 @0)
   (if (cmp != NE_EXPR
        || ! FLOAT_TYPE_P (TREE_TYPE (@0))
-       || ! HONOR_NANS (TYPE_MODE (TREE_TYPE (@0))))
+       || ! HONOR_NANS (@0))
    { constant_boolean_node (false, type); })))
 (for cmp (unle unge uneq)
  (simplify

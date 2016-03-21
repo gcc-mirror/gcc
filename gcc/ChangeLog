@@ -1,3 +1,10 @@
+2016-03-21  Marc Glisse  <marc.glisse@inria.fr>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/70317
+	* match.pd (cmp @0 @0): Pass @0 instead of TYPE_MODE (TREE_TYPE (@0))
+	to HONOR_NANS.
+
 2016-03-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/70327
