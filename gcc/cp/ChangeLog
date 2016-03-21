@@ -1,3 +1,8 @@
+2016-03-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70285
+	* cp-gimplify.c (cp_fold) [COND_EXPR]: Handle bit-fields.
+
 2016-03-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70139

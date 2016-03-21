@@ -2130,6 +2130,12 @@ cp_fold (tree x)
       else
 	x = fold (x);
 
+      /* A COND_EXPR might have incompatible types in branches if one or both
+	 arms are bitfields.  If folding exposed such a branch, fix it up.  */
+      if (TREE_CODE (x) != code)
+	if (tree type = is_bitfield_expr_with_lowered_type (x))
+	  x = fold_convert (type, x);
+
       break;
 
     case CALL_EXPR:
