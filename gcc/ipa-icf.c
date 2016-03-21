@@ -1697,6 +1697,11 @@ sem_function::parse (cgraph_node *node, bitmap_obstack *stack)
   if (lookup_attribute_by_prefix ("omp ", DECL_ATTRIBUTES (node->decl)) != NULL)
     return NULL;
 
+  /* PR ipa/70306.  */
+  if (DECL_STATIC_CONSTRUCTOR (node->decl)
+      || DECL_STATIC_DESTRUCTOR (node->decl))
+    return NULL;
+
   sem_function *f = new sem_function (node, 0, stack);
 
   f->init ();
