@@ -1,3 +1,9 @@
+2016-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70310
+	* tree-vect-generic.c (expand_vector_condition): Fold the built
+	condition.
+
 2016-03-21  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70293

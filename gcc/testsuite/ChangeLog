@@ -1,3 +1,8 @@
+2016-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70310
+	* gcc.dg/torture/pr70310.c: New testcase.
+
 2016-03-21  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70293

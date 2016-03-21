@@ -897,7 +897,7 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
 	{
 	  tree aa1 = tree_vec_extract (gsi, comp_inner_type, a1, width, index);
 	  tree aa2 = tree_vec_extract (gsi, comp_inner_type, a2, width, index);
-	  aa = build2 (TREE_CODE (a), cond_type, aa1, aa2);
+	  aa = fold_build2 (TREE_CODE (a), cond_type, aa1, aa2);
 	}
       else
 	aa = tree_vec_extract (gsi, cond_type, a, width, index);
