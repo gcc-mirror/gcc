@@ -3495,7 +3495,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
     {
       if (deps->last_args_size)
 	add_dependence (insn, deps->last_args_size, REG_DEP_OUTPUT);
-      deps->last_args_size = insn;
+      if (!deps->readonly)
+	deps->last_args_size = insn;
     }
 }
 
