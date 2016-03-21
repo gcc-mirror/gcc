@@ -1,3 +1,8 @@
+2016-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/70326
+	* gcc.dg/pr70326.c: New test.
+
 2016-03-21  Marc Glisse  <marc.glisse@inria.fr>
 	    Jakub Jelinek  <jakub@redhat.com>
 
