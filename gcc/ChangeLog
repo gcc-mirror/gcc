@@ -1,3 +1,9 @@
+2016-03-21  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/70293
+        * config/i386/sse.md: (define_insn "*vec_dup<mode>"/AVX2):
+	Block third alternative for AVX-512VL target,
+
 2016-03-21  Martin Liska  <mliska@suse.cz>
 
 	PR hsa/70234
