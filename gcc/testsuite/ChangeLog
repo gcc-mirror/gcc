@@ -1,5 +1,10 @@
 2016-03-21  Andrey Belevantsev  <abel@ispras.ru>
 
+	PR rtl-optimization/69307
+	* gcc.target/arm/pr69307.c: New test.
+	
+2016-03-21  Andrey Belevantsev  <abel@ispras.ru>
+
 	PR rtl-optimization/69102
 	* gcc.c-torture/compile/pr69102.c: New test.
 
