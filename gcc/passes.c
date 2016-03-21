@@ -2079,7 +2079,7 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
     check_profile_consistency (pass->static_pass_number, 1, true);
 
   if (dump_file)
-    do_per_function (execute_function_dump, NULL);
+    do_per_function (execute_function_dump, pass);
   pass_fini_dump_file (pass);
 
   current_pass = NULL;
