@@ -3301,6 +3301,15 @@ check_trad_stringification (cpp_reader *pfile, const cpp_macro *macro,
     }
 }
 
+/* Returns true of NODE is a function-like macro.  */
+bool
+cpp_fun_like_macro_p (cpp_hashnode *node)
+{
+  return (node->type == NT_MACRO
+	  && (node->flags & (NODE_BUILTIN | NODE_MACRO_ARG)) == 0
+	  && node->value.macro->fun_like);
+}
+
 /* Returns the name, arguments and expansion of a macro, in a format
    suitable to be read back in again, and therefore also for DWARF 2
    debugging info.  e.g. "PASTE(X, Y) X ## Y", or "MACNAME EXPANSION".

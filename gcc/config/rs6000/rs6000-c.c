@@ -216,7 +216,21 @@ rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
       else if (ident && (ident != C_CPP_HASHNODE (__vector_keyword)))
 	{
 	  enum rid rid_code = (enum rid)(ident->rid_code);
-	  if (ident->type == NT_MACRO)
+	  enum node_type itype = ident->type;
+	  /* If there is a function-like macro, check if it is going to be
+	     invoked with or without arguments.  Without following ( treat
+	     it like non-macro, otherwise the following cpp_get_token eats
+	     what should be preserved.  */
+	  if (itype == NT_MACRO && cpp_fun_like_macro_p (ident))
+	    {
+	      int idx2 = idx;
+	      do
+		tok = cpp_peek_token (pfile, idx2++);
+	      while (tok->type == CPP_PADDING);
+	      if (tok->type != CPP_OPEN_PAREN)
+		itype = NT_VOID;
+	    }
+	  if (itype == NT_MACRO)
 	    {
 	      do
 		(void) cpp_get_token (pfile);
