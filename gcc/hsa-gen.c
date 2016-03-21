@@ -162,7 +162,7 @@ hsa_symbol::hsa_symbol ()
     m_directive_offset (0), m_type (BRIG_TYPE_NONE),
     m_segment (BRIG_SEGMENT_NONE), m_linkage (BRIG_LINKAGE_NONE), m_dim (0),
     m_cst_value (NULL), m_global_scope_p (false), m_seen_error (false),
-    m_allocation (BRIG_ALLOCATION_AUTOMATIC)
+    m_allocation (BRIG_ALLOCATION_AUTOMATIC), m_emitted_to_brig (false)
 {
 }
 
@@ -174,7 +174,7 @@ hsa_symbol::hsa_symbol (BrigType16_t type, BrigSegment8_t segment,
     m_directive_offset (0), m_type (type), m_segment (segment),
     m_linkage (linkage), m_dim (0), m_cst_value (NULL),
     m_global_scope_p (global_scope_p), m_seen_error (false),
-    m_allocation (allocation)
+    m_allocation (allocation), m_emitted_to_brig (false)
 {
 }
 
@@ -880,10 +880,27 @@ get_symbol_for_decl (tree decl)
   gcc_checking_assert (slot);
   if (*slot)
     {
+      hsa_symbol *sym = (*slot);
+
       /* If the symbol is problematic, mark current function also as
 	 problematic.  */
-      if ((*slot)->m_seen_error)
+      if (sym->m_seen_error)
 	hsa_fail_cfun ();
+
+      /* PR hsa/70234: If a global variable was marked to be emitted,
+	 but HSAIL generation of a function using the variable fails,
+	 we should retry to emit the variable in context of a different
+	 function.
+
+	 Iterate elements whether a symbol is already in m_global_symbols
+	 of not.  */
+        if (is_in_global_vars && !sym->m_emitted_to_brig)
+	  {
+	    for (unsigned i = 0; i < hsa_cfun->m_global_symbols.length (); i++)
+	      if (hsa_cfun->m_global_symbols[i] == sym)
+		return *slot;
+	    hsa_cfun->m_global_symbols.safe_push (sym);
+	  }
 
       return *slot;
     }

@@ -643,6 +643,8 @@ emit_function_directives (hsa_function_representation *f, bool is_declaration)
   if (!f->m_declaration_p)
     for (int i = 0; f->m_global_symbols.iterate (i, &sym); i++)
       {
+	gcc_assert (!sym->m_emitted_to_brig);
+	sym->m_emitted_to_brig = true;
 	emit_directive_variable (sym);
 	brig_insn_count++;
       }

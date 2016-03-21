@@ -110,6 +110,9 @@ struct hsa_symbol
   /* Symbol allocation.  */
   BrigAllocation m_allocation;
 
+  /* Flag used for global variables if a variable is already emitted or not.  */
+  bool m_emitted_to_brig;
+
 private:
   /* Default constructor.  */
   hsa_symbol ();
