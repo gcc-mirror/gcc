@@ -1,3 +1,12 @@
+2016-03-21  Martin Liska  <mliska@suse.cz>
+
+	PR hsa/70234
+	* hsa-brig.c (emit_function_directives): Mark unemitted
+	global variables for emission.
+	* hsa-gen.c (hsa_symbol::hsa_symbol): Initialize a new flag.
+	(get_symbol_for_decl): Likewise.
+	* hsa.h (struct hsa_symbol): New flag.
+
 2016-03-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70288
