@@ -6499,6 +6499,19 @@ is_concept_var (tree decl)
           && DECL_DECLARED_CONCEPT_P (decl));
 }
 
+/* A helper function to be called via walk_tree.  If any label exists
+   under *TP, it is (going to be) forced.  Set has_forced_label_in_static.  */
+
+static tree
+notice_forced_label_r (tree *tp, int *walk_subtrees, void *)
+{
+  if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+  if (TREE_CODE (*tp) == LABEL_DECL)
+    cfun->has_forced_label_in_static = 1;
+  return NULL_TREE;
+}
+
 /* Finish processing of a declaration;
    install its line number and initial value.
    If the length of an array type is not known before,
@@ -6744,13 +6757,17 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  && !DECL_ARTIFICIAL (decl))
 	{
 	  push_local_name (decl);
-	  if (DECL_CONSTRUCTOR_P (current_function_decl)
-	      || DECL_DESTRUCTOR_P (current_function_decl))
-	    /* Normally local_decls is populated during GIMPLE lowering,
-	       but [cd]tors are never actually compiled directly.  We need
-	       to put statics on the list so we can deal with the label
-	       address extension.  FIXME.  */
-	    add_local_decl (cfun, decl);
+	  /* Normally has_forced_label_in_static is set during GIMPLE
+	     lowering, but [cd]tors are never actually compiled directly.
+	     We need to set this early so we can deal with the label
+	     address extension.  */
+	  if ((DECL_CONSTRUCTOR_P (current_function_decl)
+	       || DECL_DESTRUCTOR_P (current_function_decl))
+	      && init)
+	    {
+	      walk_tree (&init, notice_forced_label_r, NULL, NULL);
+	      add_local_decl (cfun, decl);
+	    }
 	  /* And make sure it's in the symbol table for
 	     c_parse_final_cleanups to find.  */
 	  varpool_node::get_create (decl);

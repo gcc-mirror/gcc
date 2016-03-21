@@ -1,3 +1,9 @@
+2016-03-21  Richard Henderson  <rth@redhat.com>
+
+	PR c++/70273
+        * decl.c (notice_forced_label_r): New.
+        (cp_finish_decl): Use it.
+
 2016-03-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70285
