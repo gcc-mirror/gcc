@@ -1,5 +1,11 @@
 2016-03-21  Martin Liska  <mliska@suse.cz>
 
+	* hsa-dump.c (dump_hsa_insn_1): dump default branch of SBR
+	insns.
+	(dump_hsa_symbol): Dump BRIG offset of hsa_symbols.
+
+2016-03-21  Martin Liska  <mliska@suse.cz>
+
 	* ipa-icf.c (sem_function::parse): Skip static
 	constructors and destructors.
 
