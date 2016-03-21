@@ -43,11 +43,7 @@
 
 extern void monstartup (char *, char *);
 extern void _mcleanup (void);
-#ifdef __i386__
-static void internal_mcount (void) __attribute__ ((used));
-#else
 static void internal_mcount (char *, unsigned short *) __attribute__ ((used));
-#endif
 static void moncontrol (int);
 
 struct phdr {
@@ -222,8 +218,19 @@ _mcleanup (void)
 /* Solaris 2 libraries use _mcount.  */
 #if defined __i386__
 asm(".globl _mcount\n"
+    "	.type	_mcount, @function\n"
     "_mcount:\n"
-    "	jmp	internal_mcount\n");
+    /* Save and restore the call-clobbered registers.  */
+    "	pushl	%eax\n"
+    "	pushl	%ecx\n"
+    "	pushl	%edx\n"
+    "	movl	12(%esp), %edx\n"
+    "	movl	4(%ebp), %eax\n"
+    "	call	internal_mcount\n"
+    "	popl	%edx\n"
+    "	popl	%ecx\n"
+    "	popl	%eax\n"
+    "	ret\n");
 #elif defined __x86_64__
 /* See GLIBC for additional information about this technique.  */
 asm(".globl _mcount\n" 
@@ -298,31 +305,12 @@ asm(".global _mcount\n"
 #endif
 
 static void
-#ifdef __i386__
-internal_mcount (void)
-#else
 internal_mcount (char *selfpc, unsigned short *frompcindex)
-#endif
 {
   struct tostruct *top;
   struct tostruct *prevtop;
   long toindex;
   static char already_setup;
-
-#ifdef __i386__
-  char *selfpc;
-  unsigned short *frompcindex;
-
-  /* Find the return address for mcount and the return address for mcount's
-     caller.  */
-
-  /* selfpc = pc pushed by mcount call.
-     This identifies the function that was just entered.  */
-  selfpc = (void *) __builtin_return_address (0);
-  /* frompcindex = pc in preceding frame.
-     This identifies the caller of the function just entered.  */
-  frompcindex = (void *) __builtin_return_address (1);
-#endif
 
   if(!already_setup) {
     extern char etext[];
