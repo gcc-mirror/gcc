@@ -721,6 +721,9 @@ dump_hsa_symbol (FILE *f, hsa_symbol *symbol)
 
   if (symbol->m_type & BRIG_TYPE_ARRAY_MASK)
     fprintf (f, "[%lu]", (unsigned long) symbol->m_dim);
+
+  if (symbol->m_directive_offset)
+    fprintf (f, "             /* BRIG offset: %u */", symbol->m_directive_offset);
 }
 
 /* Dump textual representation of HSA IL operand OP to file F.  */
@@ -929,7 +932,8 @@ dump_hsa_insn_1 (FILE *f, hsa_insn_basic *insn, int *indent)
 	    fprintf (f, ", ");
 	}
 
-      fprintf (f, "]");
+      fprintf (f, "] /* default: BB %i */",
+	       hsa_bb_for_bb (sbr->m_default_bb)->m_index);
     }
   else if (is_a <hsa_insn_arg_block *> (insn))
     {
