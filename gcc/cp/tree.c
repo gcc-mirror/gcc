@@ -1368,9 +1368,12 @@ strip_typedefs (tree t)
   if (!result)
     {
       if (typedef_variant_p (t))
-	/* Explicitly get the underlying type, as TYPE_MAIN_VARIANT doesn't
-	   strip typedefs with attributes.  */
-	result = TYPE_MAIN_VARIANT (DECL_ORIGINAL_TYPE (TYPE_NAME (t)));
+	{
+	  /* Explicitly get the underlying type, as TYPE_MAIN_VARIANT doesn't
+	     strip typedefs with attributes.  */
+	  result = TYPE_MAIN_VARIANT (DECL_ORIGINAL_TYPE (TYPE_NAME (t)));
+	  result = strip_typedefs (result);
+	}
       else
 	result = TYPE_MAIN_VARIANT (t);
     }

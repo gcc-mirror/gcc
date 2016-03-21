@@ -1,3 +1,11 @@
+2016-03-21  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2016-03-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70209
+	* g++.dg/ext/attribute-may-alias-4.C: New test.
+
 2016-03-21  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70293
