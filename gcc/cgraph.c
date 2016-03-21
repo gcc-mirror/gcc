@@ -3313,7 +3313,9 @@ cgraph_node::get_body (void)
     {
       opt_pass *saved_current_pass = current_pass;
       FILE *saved_dump_file = dump_file;
+      const char *saved_dump_file_name = dump_file_name;
       int saved_dump_flags = dump_flags;
+      dump_file_name = NULL;
 
       push_cfun (DECL_STRUCT_FUNCTION (decl));
       execute_all_ipa_transforms ();
@@ -3325,6 +3327,7 @@ cgraph_node::get_body (void)
 
       current_pass = saved_current_pass;
       dump_file = saved_dump_file;
+      dump_file_name = saved_dump_file_name;
       dump_flags = saved_dump_flags;
     }
   return updated;
