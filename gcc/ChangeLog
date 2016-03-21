@@ -1,6 +1,14 @@
 2016-03-21  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
+	PR ipa/70269
+	2016-03-18  Tom de Vries  <tom@codesourcery.com>
+
+	* cgraph.c (cgraph_node::get_body): Set dump_file to NULL after save.
+
+2016-03-21  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
 	2016-03-18  Tom de Vries  <tom@codesourcery.com>
 
 	PR ipa/70161
