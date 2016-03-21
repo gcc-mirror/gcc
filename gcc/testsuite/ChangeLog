@@ -1,3 +1,8 @@
+2016-03-21  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/70293
+	* gcc.target/i386/pr70293.c: New test.
+
 2016-03-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backport from mainline
