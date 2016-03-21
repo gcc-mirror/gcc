@@ -2,6 +2,7 @@
    Verify alignment when both attribute optimize and target are used.  */
 /* { dg-do compile } */
 /* { dg-skip-if "" { ! { arm_thumb1_ok || arm_thumb2_ok } } } */
+/* { dg-skip-if "" arm_cortex_m } */
 
 void
 __attribute__ ((target ("arm")))
