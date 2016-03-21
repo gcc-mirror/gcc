@@ -1967,6 +1967,10 @@ restore_scratches (void)
 
   for (i = 0; scratches.iterate (i, &loc); i++)
     {
+      /* Ignore already deleted insns.  */
+      if (NOTE_P (loc->insn)
+	  && NOTE_KIND (loc->insn) == NOTE_INSN_DELETED)
+	continue;
       if (last != loc->insn)
 	{
 	  last = loc->insn;
