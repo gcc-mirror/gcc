@@ -1,3 +1,8 @@
+2016-03-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70327
+	* gcc.target/i386/pr70327.c: New test.
+
 2016-03-21  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
