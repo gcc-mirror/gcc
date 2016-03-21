@@ -1,3 +1,11 @@
+2016-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70296
+	* config/rs6000/rs6000-c.c (rs6000_macro_to_expand): If IDENT is
+	function-like macro, peek following token(s) if it is followed
+	by CPP_OPEN_PAREN token with optional padding in between, and
+	if not, don't treat it like a macro.
+
 2016-03-21  Thomas Schwinge  <thomas@codesourcery.com>
 	    Alexander Monakov  <amonakov@ispras.ru>
 

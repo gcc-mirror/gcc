@@ -1,3 +1,9 @@
+2016-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70296
+	* include/cpplib.h (cpp_fun_like_macro_p): New prototype.
+	* macro.c (cpp_fun_like_macro_p): New function.
+
 2016-03-15  Richard Henderson  <rth@redhat.com>
 
 	* line-map.c (new_linemap): Make alloc_size a size_t.
