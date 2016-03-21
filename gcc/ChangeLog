@@ -1,3 +1,10 @@
+2016-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70288
+	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Make sure
+	we do not estimate unsimplified all-constant conditionals or
+	switches as optimized away.
+
 2016-03-21  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/69102

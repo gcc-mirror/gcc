@@ -1,3 +1,9 @@
+2016-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70288
+	* gcc.dg/torture/pr70288-1.c: New testcase.
+	* gcc.dg/torture/pr70288-2.c: Likewise.
+
 2016-03-21  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/69307

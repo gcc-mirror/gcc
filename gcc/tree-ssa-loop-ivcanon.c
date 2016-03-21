@@ -298,11 +298,17 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 	  /* Conditionals.  */
 	  else if ((gimple_code (stmt) == GIMPLE_COND
 		    && constant_after_peeling (gimple_cond_lhs (stmt), stmt, loop)
-		    && constant_after_peeling (gimple_cond_rhs (stmt), stmt, loop))
+		    && constant_after_peeling (gimple_cond_rhs (stmt), stmt, loop)
+		    /* We don't simplify all constant compares so make sure
+		       they are not both constant already.  See PR70288.  */
+		    && (! is_gimple_min_invariant (gimple_cond_lhs (stmt))
+			|| ! is_gimple_min_invariant (gimple_cond_rhs (stmt))))
 		   || (gimple_code (stmt) == GIMPLE_SWITCH
 		       && constant_after_peeling (gimple_switch_index (
 						    as_a <gswitch *> (stmt)),
-						  stmt, loop)))
+						  stmt, loop)
+		       && ! is_gimple_min_invariant (gimple_switch_index (
+						       as_a <gswitch *> (stmt)))))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 	        fprintf (dump_file, "   Constant conditional.\n");
