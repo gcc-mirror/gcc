@@ -6376,18 +6376,17 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	  bool overflow_p = false;
 	  bool overflow_mul_p;
 	  signop sign = TYPE_SIGN (ctype);
-	  wide_int mul = wi::mul (op1, c, sign, &overflow_mul_p);
+	  unsigned prec = TYPE_PRECISION (ctype);
+	  wide_int mul = wi::mul (wide_int::from (op1, prec, sign),
+				  wide_int::from (c, prec, sign),
+				  sign, &overflow_mul_p);
 	  overflow_p = TREE_OVERFLOW (c) | TREE_OVERFLOW (op1);
 	  if (overflow_mul_p
 	      && ((sign == UNSIGNED && tcode != MULT_EXPR) || sign == SIGNED))
 	    overflow_p = true;
 	  if (!overflow_p)
-	    {
-	      mul = wide_int::from (mul, TYPE_PRECISION (ctype),
-				    TYPE_SIGN (TREE_TYPE (op1)));
-	      return fold_build2 (tcode, ctype, fold_convert (ctype, op0),
-				  wide_int_to_tree (ctype, mul));
-	    }
+	    return fold_build2 (tcode, ctype, fold_convert (ctype, op0),
+				wide_int_to_tree (ctype, mul));
 	}
 
       /* If these operations "cancel" each other, we have the main
