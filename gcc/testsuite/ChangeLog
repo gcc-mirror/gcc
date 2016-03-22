@@ -1,3 +1,8 @@
+2016-03-22  Jeff Law  <law@redhat.com>
+
+	PR target/70232
+	* gcc.dg/tree-ssa/pr70232.c: New test.
+
 2016-03-22  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/70302

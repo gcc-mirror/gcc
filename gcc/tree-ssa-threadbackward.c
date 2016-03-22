@@ -451,7 +451,7 @@ fsm_find_control_statement_thread_paths (tree name,
 
 	     So for that case, drastically reduce the number of statements
 	     we are allowed to copy.  */
-	  if (!threaded_through_latch
+	  if (!(threaded_through_latch && threaded_multiway_branch)
 	      && (n_insns * PARAM_VALUE (PARAM_FSM_SCALE_PATH_STMTS)
 		  >= PARAM_VALUE (PARAM_MAX_JUMP_THREAD_DUPLICATION_STMTS)))
 	    {

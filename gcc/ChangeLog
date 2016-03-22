@@ -1,3 +1,10 @@
+2016-03-22  Jeff Law  <law@redhat.com>
+
+	PR target/70232
+	tree-ssa-threadbackward.c
+	(fsm_find_control_statement_thread_paths): Correctly distinguish
+	between old style jump threads vs FSM jump threads.
+
 2016-03-22  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/70302
