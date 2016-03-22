@@ -4634,6 +4634,8 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 
   if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (arg1)))
     {
+      tree arg1_type = TREE_TYPE (arg1);
+
       /* If arg1 is another cond_expr choosing between -1 and 0,
 	 then we can use its comparison.  It may help to avoid
 	 additional comparison, produce more accurate diagnostics
@@ -4653,7 +4655,6 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	  || error_operand_p (arg3))
 	return error_mark_node;
 
-      tree arg1_type = TREE_TYPE (arg1);
       arg2_type = TREE_TYPE (arg2);
       arg3_type = TREE_TYPE (arg3);
 

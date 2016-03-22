@@ -1,3 +1,7 @@
+2016-03-22  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* g++.dg/ext/pr70290.C: New test.
+
 2016-03-22  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70325
