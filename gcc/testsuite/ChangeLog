@@ -1,5 +1,9 @@
 2016-03-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/70329
+	* gcc.target/i386/avx512bw-pr70329-1.c: New test.
+	* gcc.target/i386/avx512bw-pr70329-2.c: New test.
+
 	PR target/70300
 	* gcc.target/i386/pr70300.c: New test.
 

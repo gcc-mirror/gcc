@@ -1,5 +1,10 @@
 2016-03-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/70329
+	* config/i386/i386.c (ix86_expand_vecop_qihi): Don't bother computing
+	d.perm[i] for i >= d.nelt.  If not full_interleave, compute d.perm[i]
+	in a way that works also for AVX512BW.
+
 	PR target/70300
 	* config/i386/i386.md (cvtsd2ss splitter): Unpack in destination
 	instead of source if operands[1] is xmm16 and above and
