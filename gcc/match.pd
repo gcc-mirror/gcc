@@ -1752,28 +1752,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cnd (logical_inverted_value truth_valued_p@0) @1 @2)
   (cnd @0 @2 @1)))
 
-/* A + (B vcmp C ? 1 : 0) -> A - (B vcmp C), since vector comparisons
-   return all-1 or all-0 results.  */
+/* A + (B vcmp C ? 1 : 0) -> A - (B vcmp C ? -1 : 0), since vector comparisons
+   return all -1 or all 0 results.  */
 /* ??? We could instead convert all instances of the vec_cond to negate,
    but that isn't necessarily a win on its own.  */
 (simplify
- (plus:c @3 (view_convert? (vec_cond @0 integer_each_onep@1 integer_zerop@2)))
+ (plus:c @3 (view_convert? (vec_cond:s @0 integer_each_onep@1 integer_zerop@2)))
  (if (VECTOR_TYPE_P (type)
-      && VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (@0)))
       && TYPE_VECTOR_SUBPARTS (type) == TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0))
       && (TYPE_MODE (TREE_TYPE (type))
           == TYPE_MODE (TREE_TYPE (TREE_TYPE (@0)))))
-  (minus @3 (view_convert @0))))
+  (minus @3 (view_convert (vec_cond @0 (negate @1) @2)))))
 
-/* ... likewise A - (B vcmp C ? 1 : 0) -> A + (B vcmp C).  */
+/* ... likewise A - (B vcmp C ? 1 : 0) -> A + (B vcmp C ? -1 : 0).  */
 (simplify
- (minus @3 (view_convert? (vec_cond @0 integer_each_onep@1 integer_zerop@2)))
+ (minus @3 (view_convert? (vec_cond:s @0 integer_each_onep@1 integer_zerop@2)))
  (if (VECTOR_TYPE_P (type)
-      && VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (@0)))
       && TYPE_VECTOR_SUBPARTS (type) == TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0))
       && (TYPE_MODE (TREE_TYPE (type))
           == TYPE_MODE (TREE_TYPE (TREE_TYPE (@0)))))
-  (plus @3 (view_convert @0))))
+  (plus @3 (view_convert (vec_cond @0 (negate @1) @2)))))
 
 
 /* Simplifications of comparisons.  */

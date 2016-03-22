@@ -1,3 +1,17 @@
+2016-03-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70251
+	* genmatch.c (gen_transform): Adjust last parameter to a three-state
+	int...
+	(capture::gen_transform): ... to change behavior when substituting
+	a condition into cond or not-cond expr context.
+	(dt_simplify::gen_1): Adjust.
+	* gimple-match-head.c: Include gimplify.h for unshare_expr.
+	* match.pd (A + (B vcmp C ? 1 : 0) -> A - (B vcmp C)): Revert
+	last change and instead change to
+	A + (B vcmp C ? 1 : 0) -> A - (B vcmp C ? -1 : 0).
+	(A - (B vcmp C ? 1 : 0) -> A + (B vcmp C)): Likewise.
+
 2016-03-22  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/moxiebox.h (CC1_SPEC): Define.  Fix endianness

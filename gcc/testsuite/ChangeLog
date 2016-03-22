@@ -1,3 +1,8 @@
+2016-03-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70251
+	* g++.dg/torture/pr70251.C: New testcase.
+
 2016-03-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/69993
