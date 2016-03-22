@@ -1,3 +1,12 @@
+2016-03-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/69993
+	* c-c++-common/Wmisleading-indentation-3.c: New test, based on
+	Wmisleading-indentation.c.
+	* c-c++-common/Wmisleading-indentation.c: Update thoughout to
+	reflect change to diagnostic text and order of messages.
+	* gcc.dg/plugin/location-overflow-test-2.c: Likewise.
+
 2016-03-22  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/ext/java-3.C: Don't compile on AIX.
