@@ -1,3 +1,10 @@
+2016-03-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/69993
+	* c-indentation.c (warn_for_misleading_indentation): Rewrite the
+	diagnostic text, reversing the order of the warning and note so
+	that they appear in source order.
+
 2016-03-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c/69407
