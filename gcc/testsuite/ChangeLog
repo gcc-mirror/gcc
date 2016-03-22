@@ -1,3 +1,8 @@
+2016-03-22  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/70306
+	* gcc.dg/ipa/pr70306.c: New test.
+
 2016-03-22  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70325

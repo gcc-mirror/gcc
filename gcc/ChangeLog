@@ -1,3 +1,13 @@
+2016-03-22  Martin Liska  <mliska@suse.cz>
+
+	backport from trunk:
+	
+	2016-03-21  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/70306
+	* ipa-icf.c (sem_function::parse): Skip static
+	constructors and destructors.
+
 2016-03-22  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70325
