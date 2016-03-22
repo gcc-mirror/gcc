@@ -1,3 +1,10 @@
+2016-03-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR libgcc/70363
+	* config/rs6000/extendkftf2-sw.c (__extendkftf2_sw): If libgcc was
+	built with an assembler that does not support ISA 3.0
+	instructions, rename __extendkftf2_sw to __extendkftf2.
+
 2016-03-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/38239

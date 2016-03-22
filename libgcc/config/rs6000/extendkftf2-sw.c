@@ -39,6 +39,10 @@
 #include "soft-fp.h"
 #include "quad-float128.h"
 
+#ifndef FLOAT128_HW_INSNS
+#define __extendkftf2_sw __extendkftf2
+#endif
+
 IBM128_TYPE
 __extendkftf2_sw (__float128 value)
 {
