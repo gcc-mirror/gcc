@@ -51910,16 +51910,24 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
     {
       /* For SSE2, we used an full interleave, so the desired
 	 results are in the even elements.  */
-      for (i = 0; i < 64; ++i)
+      for (i = 0; i < d.nelt; ++i)
 	d.perm[i] = i * 2;
     }
   else
     {
       /* For AVX, the interleave used above was not cross-lane.  So the
 	 extraction is evens but with the second and third quarter swapped.
-	 Happily, that is even one insn shorter than even extraction.  */
-      for (i = 0; i < 64; ++i)
-	d.perm[i] = i * 2 + ((i & 24) == 8 ? 16 : (i & 24) == 16 ? -16 : 0);
+	 Happily, that is even one insn shorter than even extraction.
+	 For AVX512BW we have 4 lanes.  We extract evens from within a lane,
+	 always first from the first and then from the second source operand,
+	 the index bits above the low 4 bits remains the same.
+	 Thus, for d.nelt == 32 we want permutation
+	 0,2,4,..14, 32,34,36,..46, 16,18,20,..30, 48,50,52,..62
+	 and for d.nelt == 64 we want permutation
+	 0,2,4,..14, 64,66,68,..78, 16,18,20,..30, 80,82,84,..94,
+	 32,34,36,..46, 96,98,100,..110, 48,50,52,..62, 112,114,116,..126.  */
+      for (i = 0; i < d.nelt; ++i)
+	d.perm[i] = ((i * 2) & 14) + ((i & 8) ? d.nelt : 0) + (i & ~15);
     }
 
   ok = ix86_expand_vec_perm_const_1 (&d);
