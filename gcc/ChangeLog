@@ -1,3 +1,9 @@
+2016-03-22  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/70302
+	* config/i386/i386.c (scalar_chain::convert_op): Support
+	uninitialized register usage case.
+
 2016-03-22  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70251
