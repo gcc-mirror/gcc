@@ -1,5 +1,9 @@
 2016-03-22  Kirill Yukhin  <kirill.yukhin@intel.com>
 
+	* config/i386/i386.c (def_builtin): Remove duplicated functionality.
+
+2016-03-22  Kirill Yukhin  <kirill.yukhin@intel.com>
+
 	PR target/70325
 	* config/i386/i386.c (def_builtin): Handle
 	OPTION_MASK_ISA_AVX512VL to be and-ed with other

@@ -32429,9 +32429,6 @@ def_builtin (HOST_WIDE_INT mask, const char *name,
     {
       ix86_builtins_isa[(int) code].isa = mask;
 
-      if (mask & ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
-	  mask &= ~OPTION_MASK_ISA_AVX512VL;
-
       /* OPTION_MASK_ISA_AVX512VL has special meaning. Despite of generic case,
 	 where any bit set means that built-in is enable, this bit must be *and-ed*
 	 with another one. E.g.: OPTION_MASK_ISA_AVX512DQ | OPTION_MASK_ISA_AVX512VL
