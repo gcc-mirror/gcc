@@ -548,7 +548,7 @@ struct operand {
   virtual void gen_transform (FILE *, int, const char *, bool, int,
 			      const char *, capture_info *,
 			      dt_operand ** = 0,
-			      bool = true)
+			      int = 0)
     { gcc_unreachable  (); }
 };
 
@@ -590,7 +590,7 @@ struct expr : public operand
   bool force_single_use;
   virtual void gen_transform (FILE *f, int, const char *, bool, int,
 			      const char *, capture_info *,
-			      dt_operand ** = 0, bool = true);
+			      dt_operand ** = 0, int = 0);
 };
 
 /* An operator that is represented by native C code.  This is always
@@ -622,7 +622,7 @@ struct c_expr : public operand
   vec<id_tab> ids;
   virtual void gen_transform (FILE *f, int, const char *, bool, int,
 			      const char *, capture_info *,
-			      dt_operand ** = 0, bool = true);
+			      dt_operand ** = 0, int = 0);
 };
 
 /* A wrapper around another operand that captures its value.  */
@@ -637,7 +637,7 @@ struct capture : public operand
   operand *what;
   virtual void gen_transform (FILE *f, int, const char *, bool, int,
 			      const char *, capture_info *,
-			      dt_operand ** = 0, bool = true);
+			      dt_operand ** = 0, int = 0);
 };
 
 /* if expression.  */
@@ -2149,7 +2149,7 @@ get_operand_type (id_base *op, const char *in_type,
 void
 expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 		     int depth, const char *in_type, capture_info *cinfo,
-		     dt_operand **indexes, bool)
+		     dt_operand **indexes, int)
 {
   id_base *opr = operation;
   /* When we delay operator substituting during lowering of fors we
@@ -2213,9 +2213,8 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 			    i == 0 ? NULL : op0type);
       ops[i]->gen_transform (f, indent, dest, gimple, depth + 1, optype,
 			     cinfo, indexes,
-			     ((!(*opr == COND_EXPR)
-			       && !(*opr == VEC_COND_EXPR))
-			      || i != 0));
+			     (*opr == COND_EXPR
+			      || *opr == VEC_COND_EXPR) && i == 0 ? 1 : 2);
     }
 
   const char *opr_name;
@@ -2306,7 +2305,7 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 void
 c_expr::gen_transform (FILE *f, int indent, const char *dest,
 		       bool, int, const char *, capture_info *,
-		       dt_operand **, bool)
+		       dt_operand **, int)
 {
   if (dest && nr_stmts == 1)
     fprintf_indent (f, indent, "%s = ", dest);
@@ -2378,7 +2377,7 @@ c_expr::gen_transform (FILE *f, int indent, const char *dest,
 void
 capture::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 			int depth, const char *in_type, capture_info *cinfo,
-			dt_operand **indexes, bool expand_compares)
+			dt_operand **indexes, int cond_handling)
 {
   if (what && is_a<expr *> (what))
     {
@@ -2394,20 +2393,29 @@ capture::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
   fprintf_indent (f, indent, "%s = captures[%u];\n", dest, where);
 
   /* ???  Stupid tcc_comparison GENERIC trees in COND_EXPRs.  Deal
-     with substituting a capture of that.
-     ???  Returning false here will also not allow any other patterns
-     to match.  */
-  if (gimple && expand_compares
+     with substituting a capture of that.  */
+  if (gimple
+      && cond_handling != 0
       && cinfo->info[where].cond_expr_cond_p)
     {
-      fprintf_indent (f, indent, "if (COMPARISON_CLASS_P (%s))\n", dest);
-      fprintf_indent (f, indent, "  {\n");
-      fprintf_indent (f, indent, "    if (!seq) return false;\n");
-      fprintf_indent (f, indent, "    %s = gimple_build (seq, TREE_CODE (%s),"
-		                 " TREE_TYPE (%s), TREE_OPERAND (%s, 0),"
-				 " TREE_OPERAND (%s, 1));\n",
-				 dest, dest, dest, dest, dest);
-      fprintf_indent (f, indent, "  }\n");
+      /* If substituting into a cond_expr condition, unshare.  */
+      if (cond_handling == 1)
+	fprintf_indent (f, indent, "%s = unshare_expr (%s);\n", dest, dest);
+      /* If substituting elsewhere we might need to decompose it.  */
+      else if (cond_handling == 2)
+	{
+	  /* ???  Returning false here will also not allow any other patterns
+	     to match unless this generator was split out.  */
+	  fprintf_indent (f, indent, "if (COMPARISON_CLASS_P (%s))\n", dest);
+	  fprintf_indent (f, indent, "  {\n");
+	  fprintf_indent (f, indent, "    if (!seq) return false;\n");
+	  fprintf_indent (f, indent, "    %s = gimple_build (seq,"
+			  " TREE_CODE (%s),"
+			  " TREE_TYPE (%s), TREE_OPERAND (%s, 0),"
+			  " TREE_OPERAND (%s, 1));\n",
+			  dest, dest, dest, dest, dest);
+	  fprintf_indent (f, indent, "  }\n");
+	}
     }
 }
 
@@ -3043,18 +3051,14 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 				    "type", e->expr_type,
 				    j == 0 ? NULL : "TREE_TYPE (res_ops[0])");
 	      /* We need to expand GENERIC conditions we captured from
-	         COND_EXPRs.  */
-	      bool expand_generic_cond_exprs_p
-	        = (!is_predicate
-		   /* But avoid doing that if the GENERIC condition is
-		      valid - which it is in the first operand of COND_EXPRs
-		      and VEC_COND_EXRPs.  */
-		   && ((!(*opr == COND_EXPR)
-			&& !(*opr == VEC_COND_EXPR))
-		       || j != 0));
+	         COND_EXPRs and we need to unshare them when substituting
+		 into COND_EXPRs.  */
+	      int cond_handling = 0;
+	      if (!is_predicate)
+		cond_handling = ((*opr == COND_EXPR
+				  || *opr == VEC_COND_EXPR) && j == 0) ? 1 : 2;
 	      e->ops[j]->gen_transform (f, indent, dest, true, 1, optype,
-					&cinfo,
-					indexes, expand_generic_cond_exprs_p);
+					&cinfo, indexes, cond_handling);
 	    }
 
 	  /* Re-fold the toplevel result.  It's basically an embedded
@@ -3068,7 +3072,7 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	       || result->type == operand::OP_C_EXPR)
 	{
 	  result->gen_transform (f, indent, "res_ops[0]", true, 1, "type",
-				 &cinfo, indexes, false);
+				 &cinfo, indexes);
 	  fprintf_indent (f, indent, "*res_code = TREE_CODE (res_ops[0]);\n");
 	  if (is_a <capture *> (result)
 	      && cinfo.info[as_a <capture *> (result)->where].cond_expr_cond_p)
