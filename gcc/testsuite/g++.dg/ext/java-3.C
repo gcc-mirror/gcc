@@ -1,5 +1,5 @@
 // PR c++/70267
-// { dg-do compile }
+// { dg-do compile { target { ! { powerpc-ibm-aix* } } } }
 // { dg-options "-O2" }
 
 extern "Java"

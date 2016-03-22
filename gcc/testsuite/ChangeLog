@@ -1,3 +1,7 @@
+2016-03-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/ext/java-3.C: Don't compile on AIX.
+
 2016-03-22  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70333
