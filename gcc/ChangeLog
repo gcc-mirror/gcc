@@ -1,3 +1,9 @@
+2016-03-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70333
+	* fold-const.c (extract_muldiv_1): Properly perform multiplication
+	in the wide type.
+
 2016-03-22  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/i386.c (def_builtin): Remove duplicated functionality.

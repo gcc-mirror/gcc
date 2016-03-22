@@ -1,3 +1,8 @@
+2016-03-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70333
+	* gcc.dg/torture/pr70333.c: New testcase.
+
 2016-03-22  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* g++.dg/ext/pr70290.C: New test.
