@@ -46,6 +46,7 @@
 
 2016-03-21  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/70306
 	* gcc.dg/ipa/pr70306.c: New test.
 
 2016-03-21  Andre Vieira  <andre.simoesdiasvieira@arm.com>
