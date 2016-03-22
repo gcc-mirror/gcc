@@ -1,3 +1,8 @@
+2016-03-22  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/70325
+	* gcc.target/i386/pr70325.c: New test.
+
 2016-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70329

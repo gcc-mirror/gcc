@@ -1,3 +1,12 @@
+2016-03-22  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/70325
+	* config/i386/i386.c (def_builtin): Handle
+	OPTION_MASK_ISA_AVX512VL to be and-ed with other
+	bits.
+	(const struct builtin_description bdesc_special_args[]):
+	Remove duplicate ISA bits.
+
 2016-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70329
