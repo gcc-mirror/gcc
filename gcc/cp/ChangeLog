@@ -1,5 +1,10 @@
 2016-03-22  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	PR c++/70096
+	* pt.c (tsubst_decl): Clear the DECL_MODE of the new decl.
+
+2016-03-22  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	PR c++/70204
 	* constexpr.c (non_const_var_error): Check
 	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.

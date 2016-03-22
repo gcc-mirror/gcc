@@ -12374,6 +12374,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	/* The initializer must not be expanded until it is required;
 	   see [temp.inst].  */
 	DECL_INITIAL (r) = NULL_TREE;
+	if (VAR_P (r))
+	  DECL_MODE (r) = VOIDmode;
 	if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WRTL))
 	  SET_DECL_RTL (r, NULL);
 	DECL_SIZE (r) = DECL_SIZE_UNIT (r) = 0;
