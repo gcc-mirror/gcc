@@ -1,3 +1,8 @@
+2016-03-22  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* call.c (build_conditional_expr_1): Always use original
+	condition type for vector type checks and build.
+
 2016-03-22  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/70096
