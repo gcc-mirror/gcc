@@ -3409,6 +3409,20 @@ scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 	fprintf (dump_file, "  Preloading operand for insn %d into r%d\n",
 		 INSN_UID (insn), REGNO (tmp));
     }
+  else if (REG_P (*op))
+    {
+      /* We may have not converted register usage in case
+	 this register has no definition.  Otherwise it
+	 should be converted in convert_reg.  */
+      df_ref ref;
+      FOR_EACH_INSN_USE (ref, insn)
+	if (DF_REF_REGNO (ref) == REGNO (*op))
+	  {
+	    gcc_assert (!DF_REF_CHAIN (ref));
+	    break;
+	  }
+      *op = gen_rtx_SUBREG (V2DImode, *op, 0);
+    }
   else
     {
       gcc_assert (SUBREG_P (*op));
