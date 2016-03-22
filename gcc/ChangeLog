@@ -53,6 +53,7 @@
 
 2016-03-21  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/70306
 	* ipa-icf.c (sem_function::parse): Skip static
 	constructors and destructors.
 
