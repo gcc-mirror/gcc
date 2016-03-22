@@ -1,5 +1,11 @@
 2016-03-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/70300
+	* config/i386/i386.md (cvtsd2ss splitter): Unpack in destination
+	instead of source if operands[1] is xmm16 and above and
+	!TARGET_AVX512VL.  Use avx512f_vec_dupv16sf_1 instead of
+	vec_interleave_lowv4sf if we need to unpack xmm16 and above.
+
 	PR c++/70295
 	* gimplify.c (gimplify_modify_expr): Call gimple_set_no_warning
 	on assign if (*from_p) is a comparison, set it to
