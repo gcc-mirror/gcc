@@ -1,3 +1,9 @@
+2016-03-22  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/70204
+	* g++.dg/cpp0x/constexpr-70204a.C: New test.
+	* g++.dg/cpp0x/constexpr-70204b.C: New test.
+
 2016-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/70326
