@@ -1,3 +1,10 @@
+2016-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70295
+	* gimplify.c (gimplify_modify_expr): Call gimple_set_no_warning
+	on assign if (*from_p) is a comparison, set it to
+	TREE_NO_WARNING (*from_p).
+
 2016-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/70326
