@@ -1,5 +1,8 @@
 2016-03-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/70300
+	* gcc.target/i386/pr70300.c: New test.
+
 	PR c++/70295
 	* c-c++-common/nonnull-1.c (func): Remove parens around cp4 != 0.
 	(func2): New function for cond with parens, xfail warning for c++.
