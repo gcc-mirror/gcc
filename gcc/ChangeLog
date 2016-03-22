@@ -1,3 +1,9 @@
+2016-03-22  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxiebox.h (CC1_SPEC): Define.  Fix endianness
+	issue for moxiebox targets.
+	(CC1PLUS_SPEC): Ditto.
+
 2016-03-22  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70333

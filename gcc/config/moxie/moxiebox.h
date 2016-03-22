@@ -39,6 +39,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef  ASM_SPEC
 #define ASM_SPEC "-EL"
 
+#undef CC1_SPEC
+#define CC1_SPEC "-mel %{meb:%ethis target is little-endian}"
+
+#undef CC1PLUS_SPEC
+#define CC1PLUS_SPEC CC1_SPEC
+
 #undef MULTILIB_DEFAULTS
 
 #undef SIZE_TYPE
