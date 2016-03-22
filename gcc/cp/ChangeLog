@@ -1,3 +1,9 @@
+2016-03-22  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/70204
+	* constexpr.c (non_const_var_error): Check
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
+
 2016-03-21  Richard Henderson  <rth@redhat.com>
 
 	PR c++/70273
