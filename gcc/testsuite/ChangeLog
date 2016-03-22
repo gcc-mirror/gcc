@@ -1,5 +1,10 @@
 2016-03-22  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	PR c++/70096
+	* g++.dg/template/ptrmem30.C: New test.
+
+2016-03-22  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	PR c++/70204
 	* g++.dg/cpp0x/constexpr-70204a.C: New test.
 	* g++.dg/cpp0x/constexpr-70204b.C: New test.
