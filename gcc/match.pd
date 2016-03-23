@@ -1759,18 +1759,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (plus:c @3 (view_convert? (vec_cond:s @0 integer_each_onep@1 integer_zerop@2)))
  (if (VECTOR_TYPE_P (type)
-      && TYPE_VECTOR_SUBPARTS (type) == TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0))
+      && TYPE_VECTOR_SUBPARTS (type) == TYPE_VECTOR_SUBPARTS (TREE_TYPE (@1))
       && (TYPE_MODE (TREE_TYPE (type))
-          == TYPE_MODE (TREE_TYPE (TREE_TYPE (@0)))))
+          == TYPE_MODE (TREE_TYPE (TREE_TYPE (@1)))))
   (minus @3 (view_convert (vec_cond @0 (negate @1) @2)))))
 
 /* ... likewise A - (B vcmp C ? 1 : 0) -> A + (B vcmp C ? -1 : 0).  */
 (simplify
  (minus @3 (view_convert? (vec_cond:s @0 integer_each_onep@1 integer_zerop@2)))
  (if (VECTOR_TYPE_P (type)
-      && TYPE_VECTOR_SUBPARTS (type) == TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0))
+      && TYPE_VECTOR_SUBPARTS (type) == TYPE_VECTOR_SUBPARTS (TREE_TYPE (@1))
       && (TYPE_MODE (TREE_TYPE (type))
-          == TYPE_MODE (TREE_TYPE (TREE_TYPE (@0)))))
+          == TYPE_MODE (TREE_TYPE (TREE_TYPE (@1)))))
   (plus @3 (view_convert (vec_cond @0 (negate @1) @2)))))
 
 
