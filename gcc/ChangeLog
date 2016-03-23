@@ -1,3 +1,8 @@
+2016-03-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/69884
+	* doc/invoke.texi: Document -Wignored-attributes.
+
 2016-03-23  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/69042

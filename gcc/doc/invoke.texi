@@ -267,7 +267,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-format-contains-nul -Wno-format-extra-args -Wformat-nonliteral @gol
 -Wformat-security  -Wformat-signedness  -Wformat-y2k -Wframe-address @gol
 -Wframe-larger-than=@var{len} -Wno-free-nonheap-object -Wjump-misses-init @gol
--Wignored-qualifiers  -Wincompatible-pointer-types @gol
+-Wignored-qualifiers  -Wignored-attributes  -Wincompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
 -Winit-self  -Winline  -Wno-int-conversion @gol
 -Wno-int-to-pointer-cast -Winvalid-memory-model -Wno-invalid-offsetof @gol
@@ -3885,6 +3885,14 @@ definitions, so such return types always receive a warning
 even without this option.
 
 This warning is also enabled by @option{-Wextra}.
+
+@item -Wignored-attributes @r{(C and C++ only)}
+@opindex Wignored-attributes
+@opindex Wno-ignored-attributes
+Warn when an attribute is ignored.  This is different from the
+@option{-Wattributes} option in that it warns whenever the compiler decides
+to drop an attribute, not that the attribute is either unknown, used in a
+wrong place, etc.  This warning is enabled by default.
 
 @item -Wmain
 @opindex Wmain
