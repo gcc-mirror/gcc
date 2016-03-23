@@ -1,6 +1,12 @@
 2016-03-23  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/69042
+	* params.def (PARAM_IV_CONSIDER_ALL_CANDIDATES_BOUND): Increase the
+	parameter from 30 to 40.
+
+2016-03-23  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/69042
 	* tree-ssa-loop-ivopts.c (add_iv_candidate_for_use): Add IV cand
 	for use with constant offset stripped in base.
 
