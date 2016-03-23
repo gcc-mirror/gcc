@@ -1,5 +1,11 @@
 2016-03-23  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	PR c++/70347
+	* typeck.c (process_init_constructor_union): If the initializer
+	is empty, use the union's NSDMI if it has one.
+
+2016-03-23  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	PR c++/70332
 	* pt.c (tsubst_copy) [PARM_DECL]: Handle the use of 'this' in an
 	NSDMI that's part of an aggregrate initialization.
