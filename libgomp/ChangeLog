@@ -1,3 +1,9 @@
+2016-03-23  Martin Liska  <mliska@suse.cz>
+
+	PR hsa/70337
+	* plugin/plugin-hsa.c (GOMP_OFFLOAD_run): Copy shadow
+	argument just in case a dispatched kernel uses that argument.
+
 2016-03-16  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/kernels-loop-2.f95: Adjust to
