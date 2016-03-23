@@ -1,3 +1,10 @@
+2016-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70251
+	* match.pd (A + (B vcmp C ? 1 : 0) -> A - (B vcmp C)): Adjust
+	mode compatibility check.
+	(A - (B vcmp C ? 1 : 0) -> A + (B vcmp C)): Likewise.
+
 2016-03-23  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/64058
