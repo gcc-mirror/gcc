@@ -5846,8 +5846,6 @@ extern tree fndecl_declared_return_type		(tree);
 extern bool undeduced_auto_decl			(tree);
 extern void require_deduced_type		(tree);
 
-extern bool defer_mark_used_calls;
-extern GTY(()) vec<tree, va_gc> *deferred_mark_used_calls;
 extern tree finish_case_label			(location_t, tree, tree);
 extern tree cxx_maybe_build_cleanup		(tree, tsubst_flags_t);
 
