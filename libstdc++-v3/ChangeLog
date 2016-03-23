@@ -1,3 +1,14 @@
+2016-03-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* include/Makefile.am (install-freestanding-headers): Add
+	concept_check.h and move.h to the installed headers.
+	* include/Makefile.in: Regenerated.
+	* include/bits/concept_check.h: Ignore _GLIBCXX_CONCEPT_CHECKS for
+	freestanding implementations.
+	* doc/xml/manual/using.xml (_GLIBCXX_CONCEPT_CHECKS): Mention
+	that this macro has no effect for freestanding implementations.
+	* doc/html/manual/using_macros.html: Likewise.
+
 2016-02-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/69939

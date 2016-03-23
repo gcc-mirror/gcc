@@ -908,7 +908,8 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 	<code>--enable-concept-checks</code>.  When defined, performs
 	compile-time checking on certain template instantiations to
 	detect violations of the requirements of the standard.  This
-	is described in more detail in
+	macro has no effect for freestanding implementations.
+	This is described in more detail in
 	<link linkend="manual.ext.compile_checks">Compile Time Checks</link>.
       </para>
     </listitem></varlistentry>
