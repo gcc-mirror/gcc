@@ -1,3 +1,23 @@
+2016-03-23  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/64058
+	* tree-ssa-coalesce.c (struct coalesce_pair): Add new field
+	CONFLICT_COUNT.
+	(struct ssa_conflicts): Move up earlier in the file.
+	(conflicts_, var_map_): New static variables.
+	(initialize_conflict_count): New function to initialize the
+	CONFLICT_COUNT field for each conflict pair.
+	(compare_pairs): Lazily initialize the conflict count and use it
+	as the first tie-breaker.
+	(sort_coalesce_list): Add new arguments conflicts, map.  Initialize
+	and wipe conflicts_ and map_ around the call to qsort.  Remove
+	special case for 2 coalesce pairs.
+	* bitmap.c (bitmap_count_unique_bits): New function.
+	(bitmap_count_bits_in_word): New function, extracted from
+	bitmap_count_bits.
+	(bitmap_count_bits): Use bitmap_count_bits_in_word.
+	* bitmap.h (bitmap_count_unique_bits): Declare it.
+
 2016-03-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/69917

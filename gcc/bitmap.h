@@ -280,6 +280,9 @@ extern bool bitmap_single_bit_set_p (const_bitmap);
 /* Count the number of bits set in the bitmap.  */
 extern unsigned long bitmap_count_bits (const_bitmap);
 
+/* Count the number of unique bits set across the two bitmaps.  */
+extern unsigned long bitmap_count_unique_bits (const_bitmap, const_bitmap);
+
 /* Boolean operations on bitmaps.  The _into variants are two operand
    versions that modify the first source operand.  The other variants
    are three operand versions that to not destroy the source bitmaps.
