@@ -137,8 +137,9 @@ along with GCC; see the file COPYING3.  If not see
 /* The Solaris assembler wants a .local for non-exported aliases.  */
 #define ASM_OUTPUT_DEF_FROM_DECLS(FILE, DECL, TARGET)	\
   do {							\
-    const char *declname =				\
-      IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
+    tree id = DECL_ASSEMBLER_NAME (DECL);		\
+    ultimate_transparent_alias_target (&id);		\
+    const char *declname = IDENTIFIER_POINTER (id);	\
     ASM_OUTPUT_DEF ((FILE), declname,			\
 		    IDENTIFIER_POINTER (TARGET));	\
     if (! TREE_PUBLIC (DECL))				\
