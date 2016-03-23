@@ -1,3 +1,9 @@
+2016-03-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/69884
+	* g++.dg/warn/Wignored-attributes-1.C: New test.
+	* g++.dg/warn/Wignored-attributes-2.C: New test.
+
 2016-03-23  Tom de Vries  <tom@codesourcery.com>
 
 	* c-c++-common/goacc/kernels-default.c (foo): Add missing

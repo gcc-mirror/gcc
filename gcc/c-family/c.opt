@@ -482,6 +482,10 @@ Wignored-qualifiers
 C C++ Var(warn_ignored_qualifiers) Warning EnabledBy(Wextra)
 Warn whenever type qualifiers are ignored.
 
+Wignored-attributes
+C C++ Var(warn_ignored_attributes) Init(1) Warning
+Warn whenever attributes are ignored.
+
 Wincompatible-pointer-types
 C ObjC Var(warn_incompatible_pointer_types) Init(1) Warning
 Warn when there is a conversion between pointers that have incompatible types.

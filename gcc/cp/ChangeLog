@@ -1,3 +1,8 @@
+2016-03-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/69884
+	* pt.c (canonicalize_type_argument): Use OPT_Wignored_attributes.
+
 2016-03-22  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* call.c (build_conditional_expr_1): Always use original
