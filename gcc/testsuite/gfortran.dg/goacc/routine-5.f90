@@ -5,6 +5,7 @@ module param
 end module param
 
 subroutine gang (a)
+  use param
   !$acc routine gang
   integer, intent (inout) :: a(N)
   integer :: i
@@ -31,6 +32,7 @@ subroutine gang (a)
 end subroutine gang
 
 subroutine worker (a)
+  use param
   !$acc routine worker
   integer, intent (inout) :: a(N)
   integer :: i
@@ -57,6 +59,7 @@ subroutine worker (a)
 end subroutine worker
 
 subroutine vector (a)
+  use param
   !$acc routine vector
   integer, intent (inout) :: a(N)
   integer :: i
@@ -83,6 +86,7 @@ subroutine vector (a)
 end subroutine vector
 
 subroutine seq (a)
+  use param
   !$acc routine seq
   integer, intent (inout) :: a(N)
   integer :: i

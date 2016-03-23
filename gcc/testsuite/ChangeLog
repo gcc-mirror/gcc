@@ -1,3 +1,11 @@
+2016-03-23  Tom de Vries  <tom@codesourcery.com>
+
+	* c-c++-common/goacc/kernels-default.c (foo): Add missing
+	initialization.
+	* gfortran.dg/goacc/private-3.f95 (test): Same.
+	* gfortran.dg/goacc/routine-5.f90 (gang, worker, vector, seq): Add
+	missing use param.
+
 2016-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* lib/target-supports.exp: Remove v7ve entry from loop

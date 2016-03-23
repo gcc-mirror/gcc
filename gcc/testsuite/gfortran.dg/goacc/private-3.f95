@@ -14,6 +14,7 @@ program test
 !  !$acc end parallel
 
   !$acc parallel private (k)
+  k = 0
   !$acc loop reduction (+:k)
   do i = 1, n
      k = k + 1
