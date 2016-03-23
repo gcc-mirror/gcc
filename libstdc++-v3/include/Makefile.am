@@ -1331,7 +1331,7 @@ endif
 # libsupc++, so only the others and the sub-includes are copied here.
 install-freestanding-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/bits
-	for file in c++0x_warning.h atomic_base.h; do \
+	for file in c++0x_warning.h atomic_base.h concept_check.h move.h; do \
 	  $(INSTALL_DATA) ${glibcxx_srcdir}/include/bits/$${file} $(DESTDIR)${gxx_include_dir}/bits; done
 	$(mkinstalldirs) $(DESTDIR)${host_installdir}
 	for file in ${host_srcdir}/os_defines.h ${host_builddir}/c++config.h \
