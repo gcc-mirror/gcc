@@ -1,3 +1,10 @@
+2016-03-23  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/69917
+	* config/i386/sol2.h (ASM_OUTPUT_DEF_FROM_DECLS): Follow
+	transparent alias chain for decl assembler name.
+	* config/sol2.c (solaris_assemble_visibility): Likewise.
+
 2016-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm1020e.md (1020call_op): Reduce reservation
