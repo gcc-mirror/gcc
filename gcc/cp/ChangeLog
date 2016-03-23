@@ -1,3 +1,11 @@
+2016-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70376
+	* cp-gimplify.c (genericize_omp_for_stmt): Don't walk OMP_FOR_CLAUSES
+	for OMP_TASKLOOP here.
+	(cp_genericize_r): Handle OMP_TASKLOOP like OMP_TASK, except do call
+	genericize_omp_for_stmt instead of cp_walk_tree on OMP_BODY.
+
 2016-03-23  Alexandre Oliva  <aoliva@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
