@@ -1255,8 +1255,16 @@ GOMP_OFFLOAD_run (int n, void *fn_ptr, void *vars, void **args)
   hsa_signal_store_relaxed (s, 1);
   memcpy (shadow->kernarg_address, &vars, sizeof (vars));
 
-  memcpy (shadow->kernarg_address + sizeof (vars), &shadow,
-	  sizeof (struct hsa_kernel_runtime *));
+  /* PR hsa/70337.  */
+  size_t vars_size = sizeof (vars);
+  if (kernel->kernarg_segment_size > vars_size)
+    {
+      if (kernel->kernarg_segment_size != vars_size
+	  + sizeof (struct hsa_kernel_runtime *))
+	GOMP_PLUGIN_fatal ("Kernel segment size has an unexpected value");
+      memcpy (packet->kernarg_address + vars_size, &shadow,
+	      sizeof (struct hsa_kernel_runtime *));
+    }
 
   HSA_DEBUG ("Copying kernel runtime pointer to kernarg_address\n");
 
