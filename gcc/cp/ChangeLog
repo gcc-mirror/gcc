@@ -1,5 +1,10 @@
 2016-03-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/70001
+	* constexpr.c (cxx_eval_vec_init_1): Reuse CONSTRUCTOR initializers
+	for 1..max even for multi-dimensional arrays.  Call unshare_expr
+	on it.
+
 	PR c++/70323
 	* constexpr.c (cxx_eval_constant_expression): Diagnose overflow
 	on TREE_OVERFLOW constants.

@@ -1,5 +1,9 @@
 2016-03-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/70001
+	* g++.dg/cpp0x/constexpr-70001-4.C: New test.
+	* g++.dg/cpp1y/pr70001.C: New test.
+
 	PR c++/70323
 	* g++.dg/cpp0x/constexpr-70323.C: New test.
 

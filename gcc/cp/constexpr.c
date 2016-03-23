@@ -2362,7 +2362,6 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
   vec<constructor_elt, va_gc> **p = &CONSTRUCTOR_ELTS (ctx->ctor);
   vec_alloc (*p, max + 1);
   bool pre_init = false;
-  tree pre_init_elt = NULL_TREE;
   unsigned HOST_WIDE_INT i;
 
   /* For the default constructor, build up a call to the default
@@ -2392,6 +2391,7 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
     {
       tree idx = build_int_cst (size_type_node, i);
       tree eltinit;
+      bool reuse = false;
       constexpr_ctx new_ctx;
       init_subob_ctx (ctx, new_ctx, idx, pre_init ? init : elttype);
       if (new_ctx.ctor != ctx->ctor)
@@ -2400,7 +2400,10 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	{
 	  /* A multidimensional array; recurse.  */
 	  if (value_init || init == NULL_TREE)
-	    eltinit = NULL_TREE;
+	    {
+	      eltinit = NULL_TREE;
+	      reuse = i == 0;
+	    }
 	  else
 	    eltinit = cp_build_array_ref (input_location, init, idx,
 					  tf_warning_or_error);
@@ -2412,18 +2415,9 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	{
 	  /* Initializing an element using value or default initialization
 	     we just pre-built above.  */
-	  if (pre_init_elt == NULL_TREE)
-	    pre_init_elt
-	      = cxx_eval_constant_expression (&new_ctx, init, lval,
-					      non_constant_p, overflow_p);
-	  eltinit = pre_init_elt;
-	  /* Don't reuse the result of cxx_eval_constant_expression
-	     call if it isn't a constant initializer or if it requires
-	     relocations.  */
-	  if (initializer_constant_valid_p (pre_init_elt,
-					    TREE_TYPE (pre_init_elt))
-	      != null_pointer_node)
-	    pre_init_elt = NULL_TREE;
+	  eltinit = cxx_eval_constant_expression (&new_ctx, init, lval,
+						  non_constant_p, overflow_p);
+	  reuse = i == 0;
 	}
       else
 	{
@@ -2449,6 +2443,23 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	}
       else
 	CONSTRUCTOR_APPEND_ELT (*p, idx, eltinit);
+      /* Reuse the result of cxx_eval_constant_expression call
+	  from the first iteration to all others if it is a constant
+	  initializer that doesn't require relocations.  */
+      if (reuse
+	  && max > 1
+	  && (initializer_constant_valid_p (eltinit, TREE_TYPE (eltinit))
+	      == null_pointer_node))
+	{
+	  if (new_ctx.ctor != ctx->ctor)
+	    eltinit = new_ctx.ctor;
+	  for (i = 1; i < max; ++i)
+	    {
+	      idx = build_int_cst (size_type_node, i);
+	      CONSTRUCTOR_APPEND_ELT (*p, idx, unshare_expr (eltinit));
+	    }
+	  break;
+	}
     }
 
   if (!*non_constant_p)
