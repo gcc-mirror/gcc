@@ -3321,8 +3321,13 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     }
   if (CONSTANT_CLASS_P (t))
     {
-      if (TREE_OVERFLOW (t) && (!flag_permissive || ctx->quiet))
-	*overflow_p = true;
+      if (TREE_OVERFLOW (t))
+	{
+	  if (!ctx->quiet)
+	    permerror (input_location, "overflow in constant expression");
+	  if (!flag_permissive || ctx->quiet)
+	    *overflow_p = true;
+	}
       return t;
     }
 

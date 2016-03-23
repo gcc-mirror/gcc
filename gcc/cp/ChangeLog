@@ -1,5 +1,9 @@
 2016-03-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/70323
+	* constexpr.c (cxx_eval_constant_expression): Diagnose overflow
+	on TREE_OVERFLOW constants.
+
 	PR c++/70376
 	* cp-gimplify.c (genericize_omp_for_stmt): Don't walk OMP_FOR_CLAUSES
 	for OMP_TASKLOOP here.
