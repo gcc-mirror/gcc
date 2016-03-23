@@ -3171,7 +3171,9 @@ proc check_effective_target_arm_fp16_ok { } {
 # Creates a series of routines that return 1 if the given architecture
 # can be selected and a routine to give the flags to select that architecture
 # Note: Extra flags may be added to disable options from newer compilers
-# (Thumb in particular - but others may be added in the future)
+# (Thumb in particular - but others may be added in the future).
+# -march=armv7ve is special and is handled explicitly after this loop because
+# it needs more than one predefine check to identify.
 # Usage: /* { dg-require-effective-target arm_arch_v5_ok } */
 #        /* { dg-add-options arm_arch_v5 } */
 #	 /* { dg-require-effective-target arm_arch_v5_multilib } */
@@ -3186,7 +3188,6 @@ foreach { armfunc armflag armdef } { v4 "-march=armv4 -marm" __ARM_ARCH_4__
 				     v6z "-march=armv6z" __ARM_ARCH_6Z__
 				     v6m "-march=armv6-m -mthumb" __ARM_ARCH_6M__
 				     v7a "-march=armv7-a" __ARM_ARCH_7A__
-				     v7ve "-march=armv7ve" __ARM_ARCH_7A__
 				     v7r "-march=armv7-r" __ARM_ARCH_7R__
 				     v7m "-march=armv7-m -mthumb" __ARM_ARCH_7M__
 				     v7em "-march=armv7e-m -mthumb" __ARM_ARCH_7EM__
@@ -3219,6 +3220,26 @@ foreach { armfunc armflag armdef } { v4 "-march=armv4 -marm" __ARM_ARCH_4__
 	    } [add_options_for_arm_arch_FUNC ""]]
         }
     }]
+}
+
+# Same functions as above but for -march=armv7ve.  To uniquely identify
+# -march=armv7ve we need to check for __ARM_ARCH_7A__ as well as
+# __ARM_FEATURE_IDIV otherwise it aliases with armv7-a.
+
+proc check_effective_target_arm_arch_v7ve_ok { } {
+  if { [ string match "*-marm*" "-march=armv7ve" ] &&
+	![check_effective_target_arm_arm_ok] } {
+		return 0
+    }
+  return [check_no_compiler_messages arm_arch_v7ve_ok assembly {
+  #if !defined (__ARM_ARCH_7A__) || !defined (__ARM_FEATURE_IDIV)
+  #error !armv7ve
+  #endif
+  } "-march=armv7ve" ]
+}
+
+proc add_options_for_arm_arch_v7ve { flags } {
+    return "$flags -march=armv7ve"
 }
 
 # Return 1 if this is an ARM target where -marm causes ARM to be
