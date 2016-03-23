@@ -4,7 +4,7 @@
 void
 foo (void)
 {
-  unsigned int i;
+  unsigned int i = 0;
 #pragma acc kernels
   {
     i++;

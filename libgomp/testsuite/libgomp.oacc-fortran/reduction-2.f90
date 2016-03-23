@@ -92,8 +92,8 @@ program reduction_2
 
   if (result.ne.vresult) call abort
 
-  result = 1
-  vresult = 1
+  lresult = .true.
+  lvresult = .true.
 
   ! '.and.' reductions
 
