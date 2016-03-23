@@ -386,7 +386,8 @@ genericize_omp_for_stmt (tree *stmt_p, int *walk_subtrees, void *data)
   tree clab = begin_bc_block (bc_continue, locus);
 
   cp_walk_tree (&OMP_FOR_BODY (stmt), cp_genericize_r, data, NULL);
-  cp_walk_tree (&OMP_FOR_CLAUSES (stmt), cp_genericize_r, data, NULL);
+  if (TREE_CODE (stmt) != OMP_TASKLOOP)
+    cp_walk_tree (&OMP_FOR_CLAUSES (stmt), cp_genericize_r, data, NULL);
   cp_walk_tree (&OMP_FOR_INIT (stmt), cp_genericize_r, data, NULL);
   cp_walk_tree (&OMP_FOR_COND (stmt), cp_genericize_r, data, NULL);
   cp_walk_tree (&OMP_FOR_INCR (stmt), cp_genericize_r, data, NULL);
@@ -1272,7 +1273,9 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       if (TREE_CODE (d) == VAR_DECL)
 	gcc_assert (CP_DECL_THREAD_LOCAL_P (d) == DECL_THREAD_LOCAL_P (d));
     }
-  else if (TREE_CODE (stmt) == OMP_PARALLEL || TREE_CODE (stmt) == OMP_TASK)
+  else if (TREE_CODE (stmt) == OMP_PARALLEL
+	   || TREE_CODE (stmt) == OMP_TASK
+	   || TREE_CODE (stmt) == OMP_TASKLOOP)
     {
       struct cp_genericize_omp_taskreg omp_ctx;
       tree c, decl;
@@ -1312,7 +1315,10 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  default:
 	    break;
 	  }
-      cp_walk_tree (&OMP_BODY (stmt), cp_genericize_r, data, NULL);
+      if (TREE_CODE (stmt) == OMP_TASKLOOP)
+	genericize_omp_for_stmt (stmt_p, walk_subtrees, data);
+      else
+	cp_walk_tree (&OMP_BODY (stmt), cp_genericize_r, data, NULL);
       wtd->omp_ctx = omp_ctx.outer;
       splay_tree_delete (omp_ctx.variables);
     }
@@ -1380,8 +1386,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     genericize_break_stmt (stmt_p);
   else if (TREE_CODE (stmt) == OMP_FOR
 	   || TREE_CODE (stmt) == OMP_SIMD
-	   || TREE_CODE (stmt) == OMP_DISTRIBUTE
-	   || TREE_CODE (stmt) == OMP_TASKLOOP)
+	   || TREE_CODE (stmt) == OMP_DISTRIBUTE)
     genericize_omp_for_stmt (stmt_p, walk_subtrees, data);
   else if ((flag_sanitize
 	    & (SANITIZE_NULL | SANITIZE_ALIGNMENT | SANITIZE_VPTR))
