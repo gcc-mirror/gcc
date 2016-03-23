@@ -1,3 +1,11 @@
+2016-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/70354
+	* gcc.dg/vect/pr70354-1.c: New test.
+	* gcc.dg/vect/pr70354-2.c: New test.
+	* gcc.target/i386/avx2-pr70354-1.c: New test.
+	* gcc.target/i386/avx2-pr70354-2.c: New test.
+
 2016-03-22  Jeff Law  <law@redhat.com>
 
 	PR target/70232

@@ -2097,7 +2097,20 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts,
       if (TYPE_MODE (TREE_TYPE (rhs1)) == TYPE_MODE (TREE_TYPE (oprnd0))
 	  && TYPE_PRECISION (TREE_TYPE (rhs1))
 	     == TYPE_PRECISION (TREE_TYPE (oprnd0)))
-	def = rhs1;
+	{
+	  if (TYPE_PRECISION (TREE_TYPE (oprnd1))
+	      >= TYPE_PRECISION (TREE_TYPE (rhs1)))
+	    def = rhs1;
+	  else
+	    {
+	      tree mask
+		= build_low_bits_mask (TREE_TYPE (rhs1),
+				       TYPE_PRECISION (TREE_TYPE (oprnd1)));
+	      def = vect_recog_temp_ssa_var (TREE_TYPE (rhs1), NULL);
+	      def_stmt = gimple_build_assign (def, BIT_AND_EXPR, rhs1, mask);
+	      new_pattern_def_seq (stmt_vinfo, def_stmt);
+	    }
+	}
     }
 
   if (def == NULL_TREE)

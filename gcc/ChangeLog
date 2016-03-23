@@ -1,5 +1,10 @@
 2016-03-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/70354
+	* tree-vect-patterns.c (vect_recog_vector_vector_shift_pattern): If
+	oprnd0 is wider than oprnd1 and there is a cast from the wider
+	type to oprnd1, mask it with the mask of the narrower type.
+
 	PR target/70321
 	* config/i386/i386.md (*anddi3_doubleword, *<code>di3_doubleword):
 	Optimize TARGET_STV splitters, if high or low word of last argument
