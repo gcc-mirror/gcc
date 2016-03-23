@@ -502,7 +502,7 @@ DEFPARAM(PARAM_LIM_EXPENSIVE,
 DEFPARAM(PARAM_IV_CONSIDER_ALL_CANDIDATES_BOUND,
 	 "iv-consider-all-candidates-bound",
 	 "Bound on number of candidates below that all candidates are considered in iv optimizations.",
-	 30, 0, 0)
+	 40, 0, 0)
 
 /* The induction variable optimizations give up on loops that contain more
    induction variable uses.  */
