@@ -227,11 +227,6 @@ struct GTY((for_user)) named_label_entry {
    function, two inside the body of a function in a local class, etc.)  */
 int function_depth;
 
-/* To avoid unwanted recursion, finish_function defers all mark_used calls
-   encountered during its execution until it finishes.  */
-bool defer_mark_used_calls;
-vec<tree, va_gc> *deferred_mark_used_calls;
-
 /* States indicating how grokdeclarator() should handle declspecs marked
    with __attribute__((deprecated)).  An object declared as
    __attribute__((deprecated)) suppresses warnings of uses of other
@@ -14594,9 +14589,6 @@ finish_function (int flags)
   if (c_dialect_objc ())
     objc_finish_function ();
 
-  gcc_assert (!defer_mark_used_calls);
-  defer_mark_used_calls = true;
-
   record_key_method_defined (fndecl);
 
   fntype = TREE_TYPE (fndecl);
@@ -14845,17 +14837,6 @@ finish_function (int flags)
 
   /* Clean up.  */
   current_function_decl = NULL_TREE;
-
-  defer_mark_used_calls = false;
-  if (deferred_mark_used_calls)
-    {
-      unsigned int i;
-      tree decl;
-
-      FOR_EACH_VEC_SAFE_ELT (deferred_mark_used_calls, i, decl)
-	mark_used (decl);
-      vec_free (deferred_mark_used_calls);
-    }
 
   invoke_plugin_callbacks (PLUGIN_FINISH_PARSE_FUNCTION, fndecl);
   return fndecl;

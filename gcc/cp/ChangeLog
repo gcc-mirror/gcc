@@ -1,3 +1,13 @@
+2016-03-23  Alexandre Oliva  <aoliva@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69315
+	* cp-tree.h (defer_mark_used_calls, deferred_mark_used_calls): Remove.
+	* decl.c (defer_mark_used_calls, deferred_mark_used_calls): Remove.
+	(finish_function): Don't set or test them.
+	* decl2.c (mark_used): Don't handle defer_mark_used_calls.
+
 2016-03-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70344

@@ -1,3 +1,11 @@
+2016-03-23  Alexandre Oliva  <aoliva@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69315
+	* g++.dg/cpp0x/constexpr-69315.C: New test.
+	* g++.dg/cpp0x/variadic122.C: Change one dg-warning into dg-bogus.
+
 2016-03-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/69884
