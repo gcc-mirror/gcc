@@ -3232,11 +3232,13 @@ add_iv_candidate_for_use (struct ivopts_data *data, struct iv_use *use)
     basetype = sizetype;
   record_common_cand (data, build_int_cst (basetype, 0), iv->step, use);
 
-  /* Record common candidate with constant offset stripped in base.  */
+  /* Record common candidate with constant offset stripped in base.
+     Like the use itself, we also add candidate directly for it.  */
+  base = strip_offset (iv->base, &offset);
+  if (offset || base != iv->base)
     {
-      base = strip_offset (iv->base, &offset);
-      if (offset || base != iv->base)
-	record_common_cand (data, base, iv->step, use);
+      record_common_cand (data, base, iv->step, use);
+      add_candidate (data, base, iv->step, false, use);
     }
 
   /* Record common candidate with base_object removed in base.  */
