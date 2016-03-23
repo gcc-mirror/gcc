@@ -51,11 +51,39 @@ struct coalesce_pair
   int second_element;
   int cost;
 
+  /* A count of the number of unique partitions this pair would conflict
+     with if coalescing was successful.  This is the secondary sort key,
+     given two pairs with equal costs, we will prefer the pair with a smaller
+     conflict set.
+
+     This is lazily initialized when we discover two coalescing pairs have
+     the same primary cost.
+
+     Note this is not updated and propagated as pairs are coalesced.  */
+  int conflict_count;
+
   /* The order in which coalescing pairs are discovered is recorded in this
      field, which is used as the final tie breaker when sorting coalesce
      pairs.  */
   int index;
 };
+
+/* This represents a conflict graph.  Implemented as an array of bitmaps.
+   A full matrix is used for conflicts rather than just upper triangular form.
+   this make sit much simpler and faster to perform conflict merges.  */
+
+struct ssa_conflicts
+{
+  bitmap_obstack obstack;	/* A place to allocate our bitmaps.  */
+  vec<bitmap> conflicts;
+};
+
+/* The narrow API of the qsort comparison function doesn't allow easy
+   access to additional arguments.  So we have two globals (ick) to hold
+   the data we need.  They're initialized before the call to qsort and
+   wiped immediately after.  */
+static ssa_conflicts *conflicts_;
+static var_map map_;
 
 /* Coalesce pair hashtable helpers.  */
 
@@ -303,6 +331,7 @@ find_coalesce_pair (coalesce_list *cl, int p1, int p2, bool create)
       pair->second_element = p.second_element;
       pair->cost = 0;
       pair->index = num_coalesce_pairs (cl);
+      pair->conflict_count = 0;
       *slot = pair;
     }
 
@@ -345,21 +374,66 @@ add_coalesce (coalesce_list *cl, int p1, int p2, int value)
     }
 }
 
+/* Compute and record how many unique conflicts would exist for the
+   representative partition for each coalesce pair in CL.
+
+   CONFLICTS is the conflict graph and MAP is the current partition view.  */
+
+static void
+initialize_conflict_count (coalesce_pair *p,
+			   ssa_conflicts *conflicts,
+			   var_map map)
+{
+  int p1 = var_to_partition (map, ssa_name (p->first_element));
+  int p2 = var_to_partition (map, ssa_name (p->second_element));
+
+  /* 4 cases.  If both P1 and P2 have conflicts, then build their
+     union and count the members.  Else handle the degenerate cases
+     in the obvious ways.  */
+  if (conflicts->conflicts[p1] && conflicts->conflicts[p2])
+    p->conflict_count = bitmap_count_unique_bits (conflicts->conflicts[p1],
+						  conflicts->conflicts[p2]);
+  else if (conflicts->conflicts[p1])
+    p->conflict_count = bitmap_count_bits (conflicts->conflicts[p1]);
+  else if (conflicts->conflicts[p2])
+    p->conflict_count = bitmap_count_bits (conflicts->conflicts[p2]);
+  else
+    p->conflict_count = 0;
+}
+
 
 /* Comparison function to allow qsort to sort P1 and P2 in Ascending order.  */
 
 static int
 compare_pairs (const void *p1, const void *p2)
 {
-  const coalesce_pair *const *const pp1 = (const coalesce_pair *const *) p1;
-  const coalesce_pair *const *const pp2 = (const coalesce_pair *const *) p2;
+  coalesce_pair *const *const pp1 = (coalesce_pair *const *) p1;
+  coalesce_pair *const *const pp2 = (coalesce_pair *const *) p2;
   int result;
 
   result = (* pp1)->cost - (* pp2)->cost;
-  /* And if everything else is equal, then sort based on which
-     coalesce pair was found first.  */
+  /* We use the size of the resulting conflict set as the secondary sort key.
+     Given two equal costing coalesce pairs, we want to prefer the pair that
+     has the smaller conflict set.  */
   if (result == 0)
-    result = (*pp2)->index - (*pp1)->index;
+    {
+      if (flag_expensive_optimizations)
+	{
+	  /* Lazily initialize the conflict counts as it's fairly expensive
+	     to compute.  */
+	  if ((*pp2)->conflict_count == 0)
+	    initialize_conflict_count (*pp2, conflicts_, map_);
+	  if ((*pp1)->conflict_count == 0)
+	    initialize_conflict_count (*pp1, conflicts_, map_);
+
+	  result = (*pp2)->conflict_count - (*pp1)->conflict_count;
+	}
+
+      /* And if everything else is equal, then sort based on which
+	 coalesce pair was found first.  */
+      if (result == 0)
+	result = (*pp2)->index - (*pp1)->index;
+    }
 
   return result;
 }
@@ -374,7 +448,7 @@ compare_pairs (const void *p1, const void *p2)
    in order from most important coalesce to least important.  */
 
 static void
-sort_coalesce_list (coalesce_list *cl)
+sort_coalesce_list (coalesce_list *cl, ssa_conflicts *conflicts, var_map map)
 {
   unsigned x, num;
   coalesce_pair *p;
@@ -400,19 +474,14 @@ sort_coalesce_list (coalesce_list *cl)
   if (num == 1)
     return;
 
-  /* If there are only 2, just pick swap them if the order isn't correct.  */
-  if (num == 2)
-    {
-      if (cl->sorted[0]->cost > cl->sorted[1]->cost)
-	std::swap (cl->sorted[0], cl->sorted[1]);
-      return;
-    }
-
-  /* Only call qsort if there are more than 2 items.
-     ??? Maybe std::sort will do better, provided that compare_pairs
-     can be inlined.  */
-  if (num > 2)
-      qsort (cl->sorted, num, sizeof (coalesce_pair *), compare_pairs);
+  /* We don't want to depend on qsort_r, so we have to stuff away
+     additional data into globals so it can be referenced in
+     compare_pairs.  */
+  conflicts_ = conflicts;
+  map_ = map;
+  qsort (cl->sorted, num, sizeof (coalesce_pair *), compare_pairs);
+  conflicts_ = NULL;
+  map_ = NULL;
 }
 
 
@@ -437,7 +506,7 @@ dump_coalesce_list (FILE *f, coalesce_list *cl)
 	  print_generic_expr (f, var1, TDF_SLIM);
 	  fprintf (f, " <-> ");
 	  print_generic_expr (f, var2, TDF_SLIM);
-	  fprintf (f, "  (%1d), ", node->cost);
+	  fprintf (f, "  (%1d, %1d), ", node->cost, node->conflict_count);
 	  fprintf (f, "\n");
 	}
     }
@@ -447,7 +516,7 @@ dump_coalesce_list (FILE *f, coalesce_list *cl)
       for (x = cl->num_sorted - 1 ; x >=0; x--)
         {
 	  node = cl->sorted[x];
-	  fprintf (f, "(%d) ", node->cost);
+	  fprintf (f, "(%d, %d) ", node->cost, node->conflict_count);
 	  var = ssa_name (node->first_element);
 	  print_generic_expr (f, var, TDF_SLIM);
 	  fprintf (f, " <-> ");
@@ -458,16 +527,6 @@ dump_coalesce_list (FILE *f, coalesce_list *cl)
     }
 }
 
-
-/* This represents a conflict graph.  Implemented as an array of bitmaps.
-   A full matrix is used for conflicts rather than just upper triangular form.
-   this make sit much simpler and faster to perform conflict merges.  */
-
-struct ssa_conflicts
-{
-  bitmap_obstack obstack;	/* A place to allocate our bitmaps.  */
-  vec<bitmap> conflicts;
-};
 
 /* Return an empty new conflict graph for SIZE elements.  */
 
@@ -1800,7 +1859,7 @@ coalesce_ssa_name (void)
   if (dump_file && (dump_flags & TDF_DETAILS))
     ssa_conflicts_dump (dump_file, graph);
 
-  sort_coalesce_list (cl);
+  sort_coalesce_list (cl, graph, map);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
