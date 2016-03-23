@@ -1,3 +1,9 @@
+2016-03-23  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/70332
+	* pt.c (tsubst_copy) [PARM_DECL]: Handle the use of 'this' in an
+	NSDMI that's part of an aggregrate initialization.
+
 2016-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70001
