@@ -1,3 +1,10 @@
+2016-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70321
+	* config/i386/i386.md (*anddi3_doubleword, *<code>di3_doubleword):
+	Optimize TARGET_STV splitters, if high or low word of last argument
+	is 0 or -1.
+
 2016-03-22  Jeff Law  <law@redhat.com>
 
 	PR target/70232
