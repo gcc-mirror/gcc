@@ -128,12 +128,11 @@ host_detect_local_cpu (int argc, const char **argv)
 	}
     }
 
-  fclose (f);
-
-  if (val == NULL)
-    goto not_found;
-
-  return concat ("-m", argv[0], "=", val, NULL);
+  if (val)
+    {
+      fclose (f);
+      return concat ("-m", argv[0], "=", val, NULL);
+     }
 
 not_found:
   {

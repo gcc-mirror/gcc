@@ -1,3 +1,9 @@
+2016-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR driver/70132
+	* config/arm/driver-arm.c (host_detect_local_cpu): Reorder exit logic
+	to not call fclose twice on file.
+
 2016-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/70354
