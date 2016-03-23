@@ -1,5 +1,10 @@
 2016-03-23  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	PR c++/70347
+	* g++.dg/cpp1y/nsdmi-union1.C: New test.
+
+2016-03-23  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	PR c++/70332
 	* g++.dg/cpp1y/nsdmi-aggr5.C: New test.
 
