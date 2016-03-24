@@ -1448,7 +1448,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 
       if (result == error_mark_node)
 	*non_constant_p = true;
-      if (*non_constant_p)
+      if (*non_constant_p || *overflow_p)
 	result = error_mark_node;
       else if (!result)
 	result = void_node;
