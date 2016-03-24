@@ -2148,6 +2148,8 @@ CXXABI_1.3.10 {
     _ZGTtNKSt13bad_exceptionD1Ev;
     _ZGTtNKSt13bad_exception4whatEv;
 
+    _ZN9__gnu_cxx9__freeresEv;
+
 } CXXABI_1.3.9;
 
 # Symbols in the support library (libsupc++) supporting transactional memory.

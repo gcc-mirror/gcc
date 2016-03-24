@@ -1,3 +1,10 @@
+2016-03-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69945
+	* config/abi/pre/gnu.ver: Add new symbol.
+	* libsupc++/eh_alloc.cc (__gnu_cxx::__freeres): Define.
+	* testsuite/18_support/free_eh_pool.cc: New test.
+
 2016-03-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* include/Makefile.am (install-freestanding-headers): Add
