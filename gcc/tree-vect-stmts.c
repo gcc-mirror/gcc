@@ -7790,8 +7790,8 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
   /* Invariant comparison.  */
   if (!vectype)
     {
-      vectype = build_vector_type (TREE_TYPE (rhs1), nunits);
-      if (tree_to_shwi (TYPE_SIZE_UNIT (vectype)) != current_vector_size)
+      vectype = get_vectype_for_scalar_type (TREE_TYPE (rhs1));
+      if (TYPE_VECTOR_SUBPARTS (vectype) != nunits)
 	return false;
     }
   else if (nunits != TYPE_VECTOR_SUBPARTS (vectype))
