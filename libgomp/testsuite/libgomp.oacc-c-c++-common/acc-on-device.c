@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-O2" } */
+/* We don't expect this to work with optimizations disabled.
+   { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 
 #include <openacc.h>
 

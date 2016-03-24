@@ -2,6 +2,7 @@
 
 load_lib libgomp-dg.exp
 load_gcc_lib gcc-dg.exp
+load_gcc_lib torture-options.exp
 
 global shlib_ext
 
@@ -13,13 +14,9 @@ if [info exists lang_include_flags] then {
     unset lang_include_flags
 }
 
-# If a testcase doesn't have special options, use these.
-if ![info exists DEFAULT_CFLAGS] then {
-    set DEFAULT_CFLAGS "-O2"
-}
-
 # Initialize dg.
 dg-init
+torture-init
 
 # Turn on OpenACC.
 lappend ALWAYS_CFLAGS "additional_flags=-fopenacc"
@@ -104,7 +101,26 @@ if { $lang_test_file_found } {
 
 	setenv ACC_DEVICE_TYPE $offload_target_openacc
 
-	dg-runtest $tests "$tagopt" "$libstdcxx_includes $DEFAULT_CFLAGS"
+	# To get better test coverage for device-specific code that is only
+	# ever used in offloading configurations, we'd like more thorough
+	# testing for test cases that deal with offloading, which most of all
+	# OpenACC test cases are.  We enable torture testing, but limit it to
+	# -O0 and -O2 only, to avoid testing times exploding too much, under
+	# the assumption that between -O0 and -O[something] there is the
+	# biggest difference in the overall structure of the generated code.
+	switch $offload_target_openacc {
+	    host {
+		set-torture-options [list \
+					 { -O2 } ]
+	    }
+	    default {
+		set-torture-options [list \
+					 { -O0 } \
+					 { -O2 } ]
+	    }
+	}
+
+	gcc-dg-runtest $tests "$tagopt" "$libstdcxx_includes"
     }
 }
 
@@ -112,4 +128,5 @@ if { $lang_test_file_found } {
 set GCC_UNDER_TEST "$SAVE_GCC_UNDER_TEST"
 
 # All done.
+torture-finish
 dg-finish

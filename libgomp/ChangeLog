@@ -1,3 +1,39 @@
+2016-03-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/c++.exp: Set up torture testing, use
+	gcc-dg-runtest.
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc-on-device-2.c: Specify
+	-fno-builtin-acc_on_device instead of -O0.
+	* testsuite/libgomp.oacc-c-c++-common/acc-on-device.c: Skip for
+	-O0.
+	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-g-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-g-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-alias-ipa-pta-2.c:
+	Don't specify -O2.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-alias-ipa-pta-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-alias-ipa-pta.c:
+	Likewise.
+
 2016-03-24  Martin Liska  <mliska@suse.cz>
 
 	* plugin/plugin-hsa.c (packet_store_release): New function
