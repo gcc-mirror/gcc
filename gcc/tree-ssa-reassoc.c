@@ -821,7 +821,7 @@ eliminate_plus_minus_pair (enum tree_code opcode,
 	    }
 
 	  ops->ordered_remove (i);
-	  add_to_ops_vec (ops, build_int_cst_type (op_type, -1));
+	  add_to_ops_vec (ops, build_all_ones_cst (op_type));
 	  ops->ordered_remove (currindex);
 	  reassociate_stats.ops_eliminated ++;
 
