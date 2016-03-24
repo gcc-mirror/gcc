@@ -6116,11 +6116,9 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	{
 	  tree tem = const_binop (code, fold_convert (ctype, t),
 				  fold_convert (ctype, c));
-	  /* If the multiplication overflowed to INT_MIN then we lost sign
-	     information on it and a subsequent multiplication might
-	     spuriously overflow.  See PR68142.  */
-	  if (TREE_OVERFLOW (tem)
-	      && wi::eq_p (tem, wi::min_value (TYPE_PRECISION (ctype), SIGNED)))
+	  /* If the multiplication overflowed, we lost information on it.
+	     See PR68142 and PR69845.  */
+	  if (TREE_OVERFLOW (tem))
 	    return NULL_TREE;
 	  return tem;
 	}
