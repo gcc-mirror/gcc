@@ -1,3 +1,9 @@
+2016-03-24  Martin Liska  <mliska@suse.cz>
+
+	* plugin/plugin-hsa.c (packet_store_release): New function
+	that is taken from the HSA runtime manual.
+	(GOMP_OFFLOAD_run): Use the function.
+
 2016-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70376
