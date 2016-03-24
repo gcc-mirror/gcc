@@ -1,3 +1,8 @@
+2016-03-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70372
+	* gcc.dg/tree-ssa/pr70372.c: New testcase.
+
 2016-03-23  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/70347
