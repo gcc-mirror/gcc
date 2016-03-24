@@ -1,3 +1,8 @@
+2016-03-24  Tom de Vries  <tom@codesourcery.com>
+
+	* c-c++-common/goacc/uninit-dim-clause.c: New test.
+	* gfortran.dg/goacc/uninit-dim-clause.f95: New test.
+
 2016-03-24  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/62212
