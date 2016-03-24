@@ -1,5 +1,8 @@
 2016-03-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70386
+	* constexpr.c (cxx_eval_bare_aggregate): Handle PMFs.
+
 	PR c++/70323
 	* constexpr.c (cxx_eval_call_expression): Don't cache result if
 	*overflow_p.
