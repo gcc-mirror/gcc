@@ -1,3 +1,8 @@
+2016-03-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70370
+	* gcc.dg/torture/pr70370.c: New testcase.
+
 2016-03-24  Tom de Vries  <tom@codesourcery.com>
 
 	* gfortran.dg/goacc/data-tree.f95: Add missing initialization.
