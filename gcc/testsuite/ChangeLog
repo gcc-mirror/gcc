@@ -1,5 +1,9 @@
 2016-03-24  Tom de Vries  <tom@codesourcery.com>
 
+	* gfortran.dg/goacc/host_data-tree.f95: Add missing initialization.
+
+2016-03-24  Tom de Vries  <tom@codesourcery.com>
+
 	* c-c++-common/goacc/uninit-use-device-clause.c: New test.
 	* gfortran.dg/goacc/uninit-use-device-clause.f95: New test.
 
