@@ -1,8 +1,7 @@
-/* { dg-additional-options "-O0" } */
+/* Test the acc_on_device library function. */
+/* { dg-additional-options "-fno-builtin-acc_on_device" } */
 
 #include <openacc.h>
-
-/* acc_on_device might not be folded at -O0, but it should work. */
 
 int main ()
 {

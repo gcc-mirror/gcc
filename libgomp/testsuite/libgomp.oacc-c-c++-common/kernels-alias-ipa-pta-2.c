@@ -1,4 +1,4 @@
-/* { dg-additional-options "-O2 -fipa-pta" } */
+/* { dg-additional-options "-fipa-pta" } */
 
 #include <stdlib.h>
 
