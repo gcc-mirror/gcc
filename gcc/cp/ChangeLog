@@ -1,3 +1,9 @@
+2016-03-24  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/62212
+	* tree.c (build_cplus_array_type): Determine type-dependentess
+	with uses_template_parms instead of with dependent_type_p.
+
 2016-03-23  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/70347
