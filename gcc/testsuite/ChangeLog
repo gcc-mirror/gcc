@@ -1,5 +1,11 @@
 2016-03-24  Tom de Vries  <tom@codesourcery.com>
 
+	* gfortran.dg/goacc/data-tree.f95: Add missing initialization.
+	* gfortran.dg/goacc/kernels-tree.f95: Same.
+	* gfortran.dg/goacc/parallel-tree.f95: Same.
+
+2016-03-24  Tom de Vries  <tom@codesourcery.com>
+
 	* c-c++-common/goacc/uninit-if-clause.c: New test.
 	* gfortran.dg/goacc/uninit-if-clause.f95: New test.
 
