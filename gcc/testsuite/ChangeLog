@@ -1,3 +1,7 @@
+2016-03-25  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/ext/pr70290.C: Prune non-standard ABI.
+
 2016-03-25  Alan Modra  <amodra@gmail.com>
 
 	* gcc.dg/dfp/pr70052.c: New test.
