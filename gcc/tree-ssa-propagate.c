@@ -55,6 +55,8 @@
 
       	SSA_PROP_NOT_INTERESTING: Statement S produces nothing of
 	    interest and does not affect any of the work lists.
+	    The statement may be simulated again if any of its input
+	    operands change in future iterations of the simulator.
 
 	SSA_PROP_VARYING: The value produced by S cannot be determined
 	    at compile time.  Further simulation of S is not required.
