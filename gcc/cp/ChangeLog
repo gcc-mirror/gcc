@@ -1,3 +1,18 @@
+2016-03-25  Jason Merrill  <jason@redhat.com>
+	    Martin Liška  <mliska@suse.cz>
+
+	PR c++/64266
+	PR c++/70353
+	Core issue 1962
+	* decl.c (cp_fname_init): Decay the initializer to pointer.
+	(cp_make_fname_decl): Set DECL_DECLARED_CONSTEXPR_P,
+	DECL_VALUE_EXPR, DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
+	Don't call cp_finish_decl.
+	* pt.c (tsubst_expr) [DECL_EXPR]: Set DECL_VALUE_EXPR,
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.  Don't call cp_finish_decl.
+	* constexpr.c (cxx_eval_constant_expression) [VAR_DECL]:
+	Handle DECL_VALUE_EXPR.
+
 2016-03-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70386
