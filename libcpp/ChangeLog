@@ -1,3 +1,10 @@
+2016-03-25  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR lto/69650
+	* directives.c (do_linemarker): Test for file left but not entered
+	here.
+	* line-map.c (linemap_add): Not here.
+
 2016-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70296
