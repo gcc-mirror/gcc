@@ -1229,9 +1229,10 @@
 
 (define_insn "bswapdi2"
   [(set (match_operand:DI 0 "register_operand" "=&r")
-	(bswap:DI (match_operand:DI 1 "register_operand" "+r")))]
+	(bswap:DI (match_operand:DI 1 "register_operand" "r")))
+   (clobber (match_scratch:DI 2 "=r"))]
   "TARGET_64BIT"
-  "permh,3210 %1,%1\;hshl %1,8,%0\;hshr,u %1,8,%1\;or %0,%1,%0"
+  "permh,3210 %1,%2\;hshl %2,8,%0\;hshr,u %2,8,%2\;or %0,%2,%0"
   [(set_attr "type" "multi")
    (set_attr "length" "16")])
 
