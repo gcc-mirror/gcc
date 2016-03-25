@@ -1,5 +1,5 @@
 // PR c++/62212
-// { dg-do assemble }
+// { dg-do compile }
 
 typedef int my_int;
 

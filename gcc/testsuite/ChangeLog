@@ -1,3 +1,9 @@
+2016-03-25  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/62212
+	* g++.dg/template/mangle2.C: The dg-do directive should be
+	"compile" not "assemble".
+
 2016-03-25  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR lto/69650
