@@ -272,4 +272,4 @@ usually better to use @samp{m} or @samp{es} in @code{asm} statements)"
 
 (define_constraint "j"
   "Zero vector constant"
-  (match_test "op == const0_rtx || op == CONST0_RTX (GET_MODE (op))"))
+  (match_test "op == const0_rtx || op == CONST0_RTX (mode)"))

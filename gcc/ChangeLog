@@ -1,3 +1,15 @@
+2016-03-25  Alan Modra  <amodra@gmail.com>
+
+	PR target/70052
+	* config/rs6000/constraints.md (j): Simplify.
+	* config/rs6000/predicates.md (easy_fp_constant): Exclude
+	decimal float 0.D.
+	* config/rs6000/rs6000.md (zero_fp): New mode_attr.
+	(mov<mode>_hardfloat, mov<mode>_hardfloat32, mov<mode>_hardfloat64,
+	 mov<mode>_64bit_dm, mov<mode>_32bit): Use zero_fp in place of j
+	in all constraint alternatives.
+	(movtd_64bit_nodm): Delete "j" constraint alternative.
+
 2016-03-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-ssa-propagate.c: Enhance docs for
