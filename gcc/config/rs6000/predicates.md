@@ -527,12 +527,13 @@
       && mode != DImode)
     return 1;
 
+  /* 0.0D is not all zero bits.  */
+  if (DECIMAL_FLOAT_MODE_P (mode))
+    return 0;
+
   /* The constant 0.0 is easy under VSX.  */
   if (TARGET_VSX && SCALAR_FLOAT_MODE_P (mode) && op == CONST0_RTX (mode))
     return 1;
-
-  if (DECIMAL_FLOAT_MODE_P (mode))
-    return 0;
 
   /* If we are using V.4 style PIC, consider all constants to be hard.  */
   if (flag_pic && DEFAULT_ABI == ABI_V4)

@@ -1,3 +1,7 @@
+2016-03-25  Alan Modra  <amodra@gmail.com>
+
+	* gcc.dg/dfp/pr70052.c: New test.
+
 2016-03-24  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/69845
