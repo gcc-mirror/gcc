@@ -4185,12 +4185,14 @@ cp_fname_init (const char* name, tree *type_p)
   type = cp_build_qualified_type (char_type_node, TYPE_QUAL_CONST);
   type = build_cplus_array_type (type, domain);
 
-  *type_p = type;
+  *type_p = type_decays_to (type);
 
   if (init)
     TREE_TYPE (init) = type;
   else
     init = error_mark_node;
+
+  init = decay_conversion (init, tf_warning_or_error);
 
   return init;
 }
@@ -4217,11 +4219,19 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
   /* As we're using pushdecl_with_scope, we must set the context.  */
   DECL_CONTEXT (decl) = current_function_decl;
 
-  TREE_STATIC (decl) = 1;
   TREE_READONLY (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
+  DECL_DECLARED_CONSTEXPR_P (decl) = 1;
 
   TREE_USED (decl) = 1;
+
+  if (init)
+    {
+      SET_DECL_VALUE_EXPR (decl, init);
+      DECL_HAS_VALUE_EXPR_P (decl) = 1;
+      /* For decl_constant_var_p.  */
+      DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = 1;
+    }
 
   if (current_function_decl)
     {
@@ -4231,13 +4241,12 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
       while (b->level_chain->kind != sk_function_parms)
 	b = b->level_chain;
       pushdecl_with_scope (decl, b, /*is_friend=*/false);
-      cp_finish_decl (decl, init, /*init_const_expr_p=*/false, NULL_TREE,
-		      LOOKUP_ONLYCONVERTING);
+      add_decl_expr (decl);
     }
   else
     {
       DECL_THIS_STATIC (decl) = true;
-      pushdecl_top_level_and_finish (decl, init);
+      pushdecl_top_level_and_finish (decl, NULL_TREE);
     }
 
   return decl;

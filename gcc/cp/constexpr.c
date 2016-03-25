@@ -3363,6 +3363,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       return (*ctx->values->get (t));
 
     case VAR_DECL:
+      if (DECL_HAS_VALUE_EXPR_P (t))
+	return cxx_eval_constant_expression (ctx, DECL_VALUE_EXPR (t), lval,
+					     non_constant_p, overflow_p);
+      /* Fall through.  */
     case CONST_DECL:
       /* We used to not check lval for CONST_DECL, but darwin.c uses
 	 CONST_DECL for aggregate constants.  */
