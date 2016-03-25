@@ -1,3 +1,8 @@
+2016-03-25  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR lto/69650
+	* gcc.dg/pr69650.c: New test.
+
 2016-03-25  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/ext/pr70290.C: Prune non-standard ABI.

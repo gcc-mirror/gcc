@@ -512,43 +512,23 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
 	 "included", this variable points the map in use right before the
 	 #include "included", inside the same "includer" file.  */
       line_map_ordinary *from;
-      bool error;
 
-      if (MAIN_FILE_P (map - 1))
-	{
-	  /* So this _should_ mean we are leaving the main file --
-	     effectively ending the compilation unit. But to_file not
-	     being NULL means the caller thinks we are leaving to
-	     another file. This is an erroneous behaviour but we'll
-	     try to recover from it. Let's pretend we are not leaving
-	     the main file.  */
-	  error = true;
-          reason = LC_RENAME;
-          from = map - 1;
-	}
-      else
-	{
-	  /* (MAP - 1) points to the map we are leaving. The
-	     map from which (MAP - 1) got included should be the map
-	     that comes right before MAP in the same file.  */
-	  from = INCLUDED_FROM (set, map - 1);
-	  error = to_file && filename_cmp (ORDINARY_MAP_FILE_NAME (from),
-					   to_file);
-	}
-
-      /* Depending upon whether we are handling preprocessed input or
-	 not, this can be a user error or an ICE.  */
-      if (error)
-	fprintf (stderr, "line-map.c: file \"%s\" left but not entered\n",
-		 to_file);
+      linemap_assert (!MAIN_FILE_P (map - 1));
+      /* (MAP - 1) points to the map we are leaving. The
+	 map from which (MAP - 1) got included should be the map
+	 that comes right before MAP in the same file.  */
+      from = INCLUDED_FROM (set, map - 1);
 
       /* A TO_FILE of NULL is special - we use the natural values.  */
-      if (error || to_file == NULL)
+      if (to_file == NULL)
 	{
 	  to_file = ORDINARY_MAP_FILE_NAME (from);
 	  to_line = SOURCE_LINE (from, from[1].start_location);
 	  sysp = ORDINARY_MAP_IN_SYSTEM_HEADER_P (from);
 	}
+      else
+	linemap_assert (filename_cmp (ORDINARY_MAP_FILE_NAME (from),
+				      to_file) == 0);
     }
 
   map->sysp = sysp;
