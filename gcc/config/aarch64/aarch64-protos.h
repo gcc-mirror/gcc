@@ -429,4 +429,8 @@ bool extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset);
 bool aarch64_operands_ok_for_ldpstp (rtx *, bool, enum machine_mode);
 bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, enum machine_mode);
 extern bool aarch64_nopcrelative_literal_loads;
+
+extern void aarch64_asm_output_pool_epilogue (FILE *, const char *,
+					      tree, HOST_WIDE_INT);
+
 #endif /* GCC_AARCH64_PROTOS_H */

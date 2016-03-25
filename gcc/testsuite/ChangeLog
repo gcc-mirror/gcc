@@ -1,3 +1,10 @@
+2016-03-25  Richard Henderson  <rth@redhat.com>
+
+	PR target/70120
+	* gcc.target/aarch64/pr70120-1.c: New.
+	* gcc.target/aarch64/pr70120-2.c: New.
+	* gcc.target/aarch64/pr70120-3.c: New.
+
 2016-03-25  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/62212
