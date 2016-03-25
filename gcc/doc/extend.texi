@@ -3045,7 +3045,7 @@ int square (int) __attribute__ ((pure));
 says that the hypothetical function @code{square} is safe to call
 fewer times than the program says.
 
-Some of common examples of pure functions are @code{strlen} or @code{memcmp}.
+Some common examples of pure functions are @code{strlen} or @code{memcmp}.
 Interesting non-pure functions are functions with infinite loops or those
 depending on volatile memory or other system resource, that may change between
 two consecutive calls (such as @code{feof} in a multithreading environment).
