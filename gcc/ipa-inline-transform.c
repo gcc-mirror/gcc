@@ -329,8 +329,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
     {
       struct gcc_options opts = global_options;
 
-      cl_optimization_restore (&opts,
-	 TREE_OPTIMIZATION (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (to->decl)));
+      cl_optimization_restore (&opts, opts_for_fn (to->decl));
       opts.x_flag_strict_aliasing = false;
       if (dump_file)
 	fprintf (dump_file, "Dropping flag_strict_aliasing on %s:%i\n",
