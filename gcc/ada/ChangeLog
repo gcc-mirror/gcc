@@ -87,7 +87,7 @@
 
 2016-02-17  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* exp_ch4.adb (Expand_N_Indexed_Component): Active synchronization if
+	* exp_ch4.adb (Expand_N_Indexed_Component): Activate synchronization if
 	the prefix denotes an entity which Has_Atomic_Components.
 	* gcc-interface/trans.c (node_is_atomic): Return true if the prefix
 	denotes an entity which Has_Atomic_Components.
