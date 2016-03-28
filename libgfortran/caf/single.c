@@ -204,6 +204,23 @@ _gfortran_caf_sync_images (int count __attribute__ ((unused)),
     *stat = 0;
 }
 
+void
+_gfortran_caf_stop_numeric(int32_t stop_code)
+{
+  fprintf (stderr, "STOP %d\n", stop_code);
+  exit (0);
+}
+
+void
+_gfortran_caf_stop_str(const char *string, int32_t len)
+{
+  fputs ("STOP ", stderr);
+  while (len--)
+    fputc (*(string++), stderr);
+  fputs ("\n", stderr);
+
+  exit (0);
+}
 
 void
 _gfortran_caf_error_stop_str (const char *string, int32_t len)
