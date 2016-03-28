@@ -1,3 +1,8 @@
+2016-03-28  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/70406
+	 * gcc.target/i386/pr70406.c: New test.
+
 2016-03-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/double_record_extension3.ads: New test.

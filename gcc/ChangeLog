@@ -1,3 +1,8 @@
+2016-03-28  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	 PR target/70406
+	 * config/i386/i386.md (define_split, andn): Fix modes.
+
 2016-03-26  Richard Biener  <rguenther@suse.de>
             Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
