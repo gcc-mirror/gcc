@@ -1,3 +1,9 @@
+2016-03-28  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+
+	* caf/libcaf.h: caf_stop_numeric and caf_stop_str prototype.
+	* caf/single.c: _gfortran_caf_stop_numeric and
+	_gfortran_caf_stop_str implementation.
+
 2016-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/69456

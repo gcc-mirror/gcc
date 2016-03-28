@@ -1,3 +1,11 @@
+2016-03-28  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+
+	* trans-decl.c (gfc_build_builtin_function_decls):
+	caf_stop_numeric and caf_stop_str definition.
+	* trans-stmt.c (gfc_trans_stop): invoke external functions
+	for stop and stop_str when coarrays are used.
+	* trans.h: extern for new functions.
+
 2016-03-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/69043

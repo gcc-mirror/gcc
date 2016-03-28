@@ -762,6 +762,8 @@ extern GTY(()) tree gfor_fndecl_caf_sendget;
 extern GTY(()) tree gfor_fndecl_caf_sync_all;
 extern GTY(()) tree gfor_fndecl_caf_sync_memory;
 extern GTY(()) tree gfor_fndecl_caf_sync_images;
+extern GTY(()) tree gfor_fndecl_caf_stop_numeric;
+extern GTY(()) tree gfor_fndecl_caf_stop_str;
 extern GTY(()) tree gfor_fndecl_caf_error_stop;
 extern GTY(()) tree gfor_fndecl_caf_error_stop_str;
 extern GTY(()) tree gfor_fndecl_caf_atomic_def;
