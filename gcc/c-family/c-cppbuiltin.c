@@ -841,7 +841,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_lambdas=200907");
 	  if (cxx_dialect == cxx11)
 	    cpp_define (pfile, "__cpp_constexpr=200704");
-	  cpp_define (pfile, "__cpp_range_based_for=200907");
+	  cpp_define (pfile, "__cpp_range_based_for=201603");
 	  if (cxx_dialect <= cxx14)
 	    cpp_define (pfile, "__cpp_static_assert=200410");
 	  cpp_define (pfile, "__cpp_decltype=200707");
