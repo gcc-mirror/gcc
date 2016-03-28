@@ -1,3 +1,7 @@
+2016-03-28  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	g++.dg/ext/fnname5.C: Update the test for Darwin.
+
 2016-03-28  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70406

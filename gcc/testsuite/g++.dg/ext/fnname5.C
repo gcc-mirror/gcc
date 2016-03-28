@@ -29,5 +29,5 @@ main ()
 /* { dg-final { scan-assembler-not "_ZZN1A3fooEvE12__FUNCTION__" } } */
 /* { dg-final { scan-assembler-not "_ZZN1A3fooEiE12__FUNCTION__" } } */
 /* { dg-final { scan-assembler-not "_ZZN1A3fooEiE19__PRETTY_FUNCTION__" } } */
-/* { dg-final { scan-assembler ".string	\"void A::foo\\(int\\)\"" } } */
-/* { dg-final { scan-assembler ".string	\"foo\"" } } */
+/* { dg-final { scan-assembler ".(string|ascii) \"void A::foo\\(int\\)(.0)?\"" } } */
+/* { dg-final { scan-assembler ".(string|ascii) \"foo(.0)?\"" } } */
