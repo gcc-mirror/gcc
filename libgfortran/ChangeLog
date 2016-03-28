@@ -1,3 +1,10 @@
+2016-03-28  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+
+	Backport from trunk.
+	* caf/libcaf.h: caf_stop_numeric and caf_stop_str prototype.
+	* caf/single.c: _gfortran_caf_stop_numeric and
+	_gfortran_caf_stop_str implementation.
+
 2016-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/69651
@@ -18,7 +25,7 @@
 	(read_character): Remove condition testing c = '!' which is now inside
 	the is_separator macro. Remove code related to DELIM_NONE.
 	(parse_real): Reject '!' unless in namelist mode. (read_complex): Reject
-	'!' unless in namelist mode. (read_real): Likewise reject '!'. 
+	'!' unless in namelist mode. (read_real): Likewise reject '!'.
 
 2015-12-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
