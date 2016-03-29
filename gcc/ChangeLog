@@ -1,3 +1,9 @@
+2016-03-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/gnu.h (CPP_SPEC, LIB_SPEC): Don't override.
+	* config/i386/gnu.h (STARTFILE_SPEC): Use gcrt1.o instead of
+	gcrt0.o if linking dynamically.
+
 2016-03-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/70283
