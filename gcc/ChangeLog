@@ -1,3 +1,14 @@
+2016-03-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/70283
+	* ipa-devirt.c (methods_equal_p): New function.
+	(compare_virtual_tables): Use it.
+	* cgraph.h (symbol_table::symbol_suffix_separator): Declare.
+	* cgraphclones.c (clone_function_name_1): Use
+	symbol_table::symbol_suffix_separator.
+	* coverage.c (build_var): Likewise.
+	* symtab.c (symbol_table::symbol_suffix_separator): New.
+
 2016-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70429

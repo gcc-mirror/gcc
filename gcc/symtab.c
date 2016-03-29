@@ -2137,3 +2137,17 @@ symtab_node::definition_alignment ()
   call_for_symbol_and_aliases (get_alignment_1, &align, true);
   return align;
 }
+
+/* Return symbol used to separate symbol name from suffix.  */
+
+char 
+symbol_table::symbol_suffix_separator ()
+{
+#ifndef NO_DOT_IN_LABEL
+  return '.';
+#elif !defined NO_DOLLAR_IN_LABEL
+  return '$';
+#else
+  return '_';
+#endif
+}
