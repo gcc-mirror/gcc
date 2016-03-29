@@ -10533,6 +10533,11 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 				       >> orig_count, result_mode,
 				       &complement_p))
 		break;
+	      /* For ((int) (cstLL >> count)) >> cst2 just give up.  Queuing
+		 up outer sign extension (often left and right shift) is
+		 hardly more efficient than the original.  See PR70429.  */
+	      if (code == ASHIFTRT && mode != result_mode)
+		break;
 
 	      rtx new_rtx = simplify_const_binary_operation (code, mode,
 							     XEXP (varop, 0),
