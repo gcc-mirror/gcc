@@ -1,3 +1,8 @@
+2016-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/70405
+	* ssa-iterators.h (num_imm_uses): Add missing braces.
+
 2016-03-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/68695
