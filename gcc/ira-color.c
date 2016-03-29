@@ -2728,6 +2728,37 @@ allocno_cost_compare_func (const void *v1p, const void *v2p)
   return ALLOCNO_NUM (p1) - ALLOCNO_NUM (p2);
 }
 
+/* Return savings on removed copies when ALLOCNO is assigned to
+   HARD_REGNO.  */
+static int
+allocno_copy_cost_saving (ira_allocno_t allocno, int hard_regno)
+{
+  int cost = 0;
+  enum reg_class rclass;
+  ira_copy_t cp, next_cp;
+
+  rclass = REGNO_REG_CLASS (hard_regno);
+  for (cp = ALLOCNO_COPIES (allocno); cp != NULL; cp = next_cp)
+    {
+      if (cp->first == allocno)
+	{
+	  next_cp = cp->next_first_allocno_copy;
+	  if (ALLOCNO_HARD_REGNO (cp->second) != hard_regno)
+	    continue;
+	}
+      else if (cp->second == allocno)
+	{
+	  next_cp = cp->next_second_allocno_copy;
+	  if (ALLOCNO_HARD_REGNO (cp->first) != hard_regno)
+	    continue;
+	}
+      else
+	gcc_unreachable ();
+      cost += cp->freq * ira_register_move_cost[ALLOCNO_MODE (allocno)][rclass][rclass];
+    }
+  return cost;
+}
+
 /* We used Chaitin-Briggs coloring to assign as many pseudos as
    possible to hard registers.  Let us try to improve allocation with
    cost point of view.  This function improves the allocation by
@@ -2768,9 +2799,7 @@ improve_allocation (void)
 	continue;
       check++;
       aclass = ALLOCNO_CLASS (a);
-      allocno_costs = ALLOCNO_UPDATED_HARD_REG_COSTS (a);
-      if (allocno_costs == NULL)
-	allocno_costs = ALLOCNO_HARD_REG_COSTS (a);
+      allocno_costs = ALLOCNO_HARD_REG_COSTS (a);
       if ((hregno = ALLOCNO_HARD_REGNO (a)) < 0)
 	base_cost = ALLOCNO_UPDATED_MEMORY_COST (a);
       else if (allocno_costs == NULL)
@@ -2779,7 +2808,8 @@ improve_allocation (void)
 	   case).  */
 	continue;
       else
-	base_cost = allocno_costs[ira_class_hard_reg_index[aclass][hregno]];
+	base_cost = (allocno_costs[ira_class_hard_reg_index[aclass][hregno]]
+		     - allocno_copy_cost_saving (a, hregno));
       try_p = false;
       get_conflict_and_start_profitable_regs (a, false,
 					      conflicting_regs,
@@ -2797,6 +2827,7 @@ improve_allocation (void)
 	  k = allocno_costs == NULL ? 0 : j;
 	  costs[hregno] = (allocno_costs == NULL
 			   ? ALLOCNO_UPDATED_CLASS_COST (a) : allocno_costs[k]);
+	  costs[hregno] -= allocno_copy_cost_saving (a, hregno);
 	  costs[hregno] -= base_cost;
 	  if (costs[hregno] < 0)
 	    try_p = true;
@@ -2835,14 +2866,13 @@ improve_allocation (void)
 	      k = (ira_class_hard_reg_index
 		   [ALLOCNO_CLASS (conflict_a)][conflict_hregno]);
 	      ira_assert (k >= 0);
-	      if ((allocno_costs = ALLOCNO_UPDATED_HARD_REG_COSTS (conflict_a))
+	      if ((allocno_costs = ALLOCNO_HARD_REG_COSTS (conflict_a))
 		  != NULL)
-		spill_cost -= allocno_costs[k];
-	      else if ((allocno_costs = ALLOCNO_HARD_REG_COSTS (conflict_a))
-		       != NULL)
 		spill_cost -= allocno_costs[k];
 	      else
 		spill_cost -= ALLOCNO_UPDATED_CLASS_COST (conflict_a);
+	      spill_cost
+		+= allocno_copy_cost_saving (conflict_a, conflict_hregno);
 	      conflict_nregs
 		= hard_regno_nregs[conflict_hregno][ALLOCNO_MODE (conflict_a)];
 	      for (r = conflict_hregno;

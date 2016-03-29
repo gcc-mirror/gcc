@@ -1,3 +1,9 @@
+2016-03-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/68695
+	* ira-color.c (allocno_copy_cost_saving): New.
+	(improve_allocation): Use it.
+
 2016-03-29  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/70355
