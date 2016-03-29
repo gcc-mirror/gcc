@@ -1,5 +1,9 @@
 2016-03-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/70353
+	* tree-inline.c (remap_decls): Don't add_local_decl if
+	cfun is null.
+
 	PR tree-optimization/70405
 	* ssa-iterators.h (num_imm_uses): Add missing braces.
 

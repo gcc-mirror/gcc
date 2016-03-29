@@ -1,3 +1,9 @@
+2016-03-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70353
+	* decl.c (make_rtl_for_nonlocal_decl): Don't defer local statics
+	in constexpr functions.
+
 2016-03-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70422
