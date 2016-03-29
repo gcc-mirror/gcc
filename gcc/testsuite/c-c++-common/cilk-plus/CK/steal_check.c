@@ -2,8 +2,16 @@
 /* { dg-options "-fcilkplus" } */
 /* { dg-additional-options "-lcilkrts" { target { i?86-*-* x86_64-*-* } } } */
 
-// #include <cilk/cilk_api.h>
-extern void __cilkrts_set_param (char *, char *);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern int __cilkrts_set_param (const char *, const char *);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 void foo(volatile int *);
 
@@ -11,7 +19,10 @@ void main2(void);
 
 int main(void)
 {
- //  __cilkrts_set_param ((char *)"nworkers", (char *)"2");
+  /* Ensure more than one worker.  */
+  if (__cilkrts_set_param("nworkers", "2") != 0)
+    __builtin_abort();
+
   main2();
   return 0;
 }
