@@ -935,7 +935,7 @@ try_peel_loop (struct loop *loop,
 	       edge exit, tree niter,
 	       HOST_WIDE_INT maxiter)
 {
-  int npeel;
+  HOST_WIDE_INT npeel;
   struct loop_size size;
   int peeled_size;
   sbitmap wont_exit;
@@ -990,7 +990,7 @@ try_peel_loop (struct loop *loop,
     {
       if (dump_file)
         fprintf (dump_file, "Not peeling: rolls too much "
-		 "(%i + 1 > --param max-peel-times)\n", npeel);
+		 "(%i + 1 > --param max-peel-times)\n", (int) npeel);
       return false;
     }
   npeel++;
@@ -998,7 +998,7 @@ try_peel_loop (struct loop *loop,
   /* Check peeled loops size.  */
   tree_estimate_loop_size (loop, exit, NULL, &size,
 			   PARAM_VALUE (PARAM_MAX_PEELED_INSNS));
-  if ((peeled_size = estimated_peeled_sequence_size (&size, npeel))
+  if ((peeled_size = estimated_peeled_sequence_size (&size, (int) npeel))
       > PARAM_VALUE (PARAM_MAX_PEELED_INSNS))
     {
       if (dump_file)
@@ -1032,7 +1032,7 @@ try_peel_loop (struct loop *loop,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Peeled loop %d, %i times.\n",
-	       loop->num, npeel);
+	       loop->num, (int) npeel);
     }
   if (loop->any_upper_bound)
     loop->nb_iterations_upper_bound -= npeel;

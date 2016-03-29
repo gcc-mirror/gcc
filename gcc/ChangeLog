@@ -1,3 +1,8 @@
+2016-03-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-loop-ivcanon.c (try_peel_loop): Change type of peel
+	to HOST_WIDE_INT.
+
 2016-03-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/gnu.h (CPP_SPEC, LIB_SPEC): Don't override.
