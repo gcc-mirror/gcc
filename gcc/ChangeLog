@@ -1,3 +1,8 @@
+2016-03-29  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-coalesce.c (struct ssa_conflicts): Fix typo in
+	comment.
+
 2016-03-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-loop-ivcanon.c (try_peel_loop): Change type of peel

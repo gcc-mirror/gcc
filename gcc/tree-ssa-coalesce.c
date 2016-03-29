@@ -70,7 +70,7 @@ struct coalesce_pair
 
 /* This represents a conflict graph.  Implemented as an array of bitmaps.
    A full matrix is used for conflicts rather than just upper triangular form.
-   this make sit much simpler and faster to perform conflict merges.  */
+   this makes it much simpler and faster to perform conflict merges.  */
 
 struct ssa_conflicts
 {
