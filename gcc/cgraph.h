@@ -2173,6 +2173,9 @@ public:
 
   FILE* GTY ((skip)) dump_file;
 
+  /* Return symbol used to separate symbol name from suffix.  */
+  static char symbol_suffix_separator ();
+
 private:
   /* Allocate new callgraph node.  */
   inline cgraph_node * allocate_cgraph_symbol (void);
