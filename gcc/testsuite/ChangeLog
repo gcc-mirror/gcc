@@ -1,3 +1,9 @@
+2016-03-29  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/70397
+	* gfortran.dg/unlimited_polymorphic_25.f90: New test.
+	* gfortran.dg/unlimited_polymorphic_26.f90: New test.
+
 2016-03-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR testsuite/64177

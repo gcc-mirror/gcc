@@ -173,6 +173,29 @@ gfc_class_len_get (tree decl)
 }
 
 
+/* Try to get the _len component of a class.  When the class is not unlimited
+   poly, i.e. no _len field exists, then return a zero node.  */
+
+tree
+gfc_class_len_or_zero_get (tree decl)
+{
+  tree len;
+  /* For class arrays decl may be a temporary descriptor handle, the vptr is
+     then available through the saved descriptor.  */
+  if (TREE_CODE (decl) == VAR_DECL && DECL_LANG_SPECIFIC (decl)
+      && GFC_DECL_SAVED_DESCRIPTOR (decl))
+    decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
+  if (POINTER_TYPE_P (TREE_TYPE (decl)))
+    decl = build_fold_indirect_ref_loc (input_location, decl);
+  len = gfc_advance_chain (TYPE_FIELDS (TREE_TYPE (decl)),
+			   CLASS_LEN_FIELD);
+  return len != NULL_TREE ? fold_build3_loc (input_location, COMPONENT_REF,
+					     TREE_TYPE (len), decl, len,
+					     NULL_TREE)
+			  : integer_zero_node;
+}
+
+
 /* Get the specified FIELD from the VPTR.  */
 
 static tree
@@ -250,6 +273,7 @@ gfc_vptr_size_get (tree vptr)
 
 #undef CLASS_DATA_FIELD
 #undef CLASS_VPTR_FIELD
+#undef CLASS_LEN_FIELD
 #undef VTABLE_HASH_FIELD
 #undef VTABLE_SIZE_FIELD
 #undef VTABLE_EXTENDS_FIELD
@@ -1120,7 +1144,7 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
   if (unlimited)
     {
       if (from != NULL_TREE && unlimited)
-	from_len = gfc_class_len_get (from);
+	from_len = gfc_class_len_or_zero_get (from);
       else
 	from_len = integer_zero_node;
     }
