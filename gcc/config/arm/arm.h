@@ -363,6 +363,11 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 /* Nonzero if this chip supports ldrex and strex */
 #define TARGET_HAVE_LDREX	((arm_arch6 && TARGET_ARM) || arm_arch7)
 
+/* Nonzero if this chip supports LPAE.  Such systems also support the
+   hardware divide instructions.  */
+#define TARGET_HAVE_LPAE						\
+  (arm_arch7 && arm_arch_arm_hwdiv && arm_arch_thumb_hwdiv)
+
 /* Nonzero if this chip supports ldrex{bh} and strex{bh}.  */
 #define TARGET_HAVE_LDREXBH	((arm_arch6k && TARGET_ARM) || arm_arch7)
 
