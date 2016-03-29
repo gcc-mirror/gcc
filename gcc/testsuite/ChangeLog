@@ -1,3 +1,13 @@
+2016-03-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2016-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/target-supports.exp: Remove v7ve entry from loop
+	creating effective target checks.
+	(check_effective_target_arm_arch_v7ve_ok): New procedure.
+	(add_options_for_arm_arch_v7ve): Likewise.
+
 2016-03-28  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/70397
