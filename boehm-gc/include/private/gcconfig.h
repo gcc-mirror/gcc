@@ -2137,7 +2137,7 @@
 #   endif
 # endif
 
-#if defined(LINUX) && defined(USE_MMAP)
+#if (defined(LINUX) || defined(HURD)) && defined(USE_MMAP)
     /* The kernel may do a somewhat better job merging mappings etc.	*/
     /* with anonymous mappings.						*/
 #   define USE_MMAP_ANON

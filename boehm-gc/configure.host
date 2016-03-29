@@ -41,7 +41,7 @@ else
 fi
 
 case "${host}" in
-  *-linux*)
+  *-linux*|*-kfreebsd-gnu*|*-gnu*)
     gc_use_mmap=yes
     ;;
 esac

@@ -1,3 +1,9 @@
+2016-03-29  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure.host: Set gc_use_mmap on *-kfreebsd-gnu* and *-gnu*.
+	* include/private/gcconfig.h [HURD && USE_MMAP]: Define
+	USE_MMAP_ANON.
+
 2016-03-16  Andreas Schwab  <schwab@suse.de>
 
 	* include/private/gcconfig.h [AARCH64] (ALIGNMENT, CPP_WORDSZ):
