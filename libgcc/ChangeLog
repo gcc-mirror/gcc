@@ -1,3 +1,7 @@
+2016-03-28  James Bowman  <james.bowman@ftdichip.com>
+
+        * libgcc/config/ft32/lib1funcs.S (*divsi3, *modsi3): New.
+
 2016-03-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR libgcc/70363

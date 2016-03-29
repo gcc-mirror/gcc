@@ -1,3 +1,10 @@
+2016-03-28  James Bowman  <james.bowman@ftdichip.com>
+
+	* config/ft32/ft32.opt (mnodiv): New.
+	* config/ft32/ft32.md (*divsi3, *modsi3): Qualify with
+	TARGET_NODIV.
+	* doc/invoke.texi (FT32 Options -mnodiv): New.
+
 2016-03-28  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	 PR target/70406
