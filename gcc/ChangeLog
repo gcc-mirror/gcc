@@ -1,5 +1,10 @@
 2016-03-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/70429
+	* combine.c (simplify_shift_const_1): For ASHIFTRT don't optimize
+	(cst1 >> count) >> cst2 into (cst1 >> cst2) >> count if
+	mode != result_mode.
+
 	PR c++/70353
 	* tree-inline.c (remap_decls): Don't add_local_decl if
 	cfun is null.
