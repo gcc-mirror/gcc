@@ -1,3 +1,12 @@
+2016-03-29  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/70397
+	* trans-expr.c (gfc_class_len_or_zero_get): Add function to return a
+	constant zero tree, when the class to get the _len component from is
+	not unlimited polymorphic.
+	(gfc_copy_class_to_class): Use the new function.
+	* trans.h: Added interface of new function gfc_class_len_or_zero_get.
+
 2016-03-28  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 
 	* trans-decl.c (gfc_build_builtin_function_decls):
