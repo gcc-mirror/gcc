@@ -1,3 +1,8 @@
+2016-03-29  Zachary T Welch <zwelch@codesourcery.com>
+
+	* lib/prune.exp (escape_regex_chars): New.
+	(prune_file_path): Update to quote metcharacters for regexp.
+
 2016-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70429
