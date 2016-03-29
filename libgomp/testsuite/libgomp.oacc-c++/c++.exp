@@ -122,6 +122,10 @@ if { $lang_test_file_found } {
 
 	gcc-dg-runtest $tests "$tagopt" "$libstdcxx_includes"
     }
+} else {
+    # Call this once, which placates the subsequent torture-finish.
+    set-torture-options [list \
+			     { INVALID } ]
 }
 
 # See above.
