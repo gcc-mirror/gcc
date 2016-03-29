@@ -25,3 +25,7 @@ target the software simulator.
 mlra
 Target Report Var(ft32_lra_flag) Init(0) Save
 Use LRA instead of reload.
+
+mnodiv
+Target Report Mask(NODIV)
+Avoid use of the DIV and MOD instructions

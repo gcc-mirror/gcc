@@ -712,7 +712,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-msmall-model -mno-lsim}
 
 @emph{FT32 Options}
-@gccoptlist{-msim -mlra}
+@gccoptlist{-msim -mlra -mnodiv}
 
 @emph{FRV Options}
 @gccoptlist{-mgpr-32  -mgpr-64  -mfpr-32  -mfpr-64 @gol
@@ -15826,6 +15826,10 @@ I/O functions are needed.
 @opindex mlra
 Enable Local Register Allocation.  This is still experimental for FT32,
 so by default the compiler uses standard reload.
+
+@item -mnodiv
+@opindex mnodiv
+Do not use div and mod instructions.
 
 @end table
 
