@@ -1,3 +1,11 @@
+2016-03-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/64177
+	* c-c++-common/cilk-plus/CK/spawning_arg.c (main): Call
+	__cilkrts_set_param to set two workers.
+	* c-c++-common/cilk-plus/CK/steal_check.c (main): Likewise.
+	* g++.dg/cilk-plus/CK/catch_exc.cc (main): Likewise.
+
 2016-03-28  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	g++.dg/ext/fnname5.C: Update the test for Darwin.
