@@ -1,3 +1,12 @@
+2016-03-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70424
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Always
+	use alignment returned by get_pointer_alignment_1 if it is
+	bigger than BITS_PER_UNIT.
+	* builtins.c (get_pointer_alignment_1): Do not return true
+	for alignment extracted from SSA info.
+
 2016-03-28  James Bowman  <james.bowman@ftdichip.com>
 
 	* config/ft32/ft32.opt (mnodiv): New.

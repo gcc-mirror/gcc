@@ -463,7 +463,7 @@ get_pointer_alignment_1 (tree exp, unsigned int *alignp,
 	  if (*alignp == 0)
 	    *alignp = 1u << (HOST_BITS_PER_INT - 1);
 	  /* We cannot really tell whether this result is an approximation.  */
-	  return true;
+	  return false;
 	}
       else
 	{
