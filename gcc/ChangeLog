@@ -1,3 +1,9 @@
+2016-03-29  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/70355
+	* lower-subreg.c (simplify_subreg_concatn): Reject paradoxical
+	subregs.
+
 2016-03-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70424
