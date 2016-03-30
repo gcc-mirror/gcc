@@ -1419,6 +1419,7 @@ expand_binop_directly (machine_mode mode, optab binoptab,
   rtx pat;
   rtx xop0 = op0, xop1 = op1;
   rtx swap;
+  bool canonicalize_op1 = false;
 
   /* If it is a commutative operator and the modes would match
      if we would swap the operands, we can save the conversions.  */
@@ -1436,6 +1437,11 @@ expand_binop_directly (machine_mode mode, optab binoptab,
   xop0 = avoid_expensive_constant (xmode0, binoptab, 0, xop0, unsignedp);
   if (!shift_optab_p (binoptab))
     xop1 = avoid_expensive_constant (xmode1, binoptab, 1, xop1, unsignedp);
+  else if (xmode1 != VOIDmode)
+    /* Shifts and rotates often use a different mode for op1 from op0;
+       for VOIDmode constants we don't know the mode, so force it
+       to be canonicalized using convert_modes.  */
+    canonicalize_op1 = true;
 
   /* In case the insn wants input operands in modes different from
      those of the actual operands, convert the operands.  It would
@@ -1450,7 +1456,8 @@ expand_binop_directly (machine_mode mode, optab binoptab,
       mode0 = xmode0;
     }
 
-  mode1 = GET_MODE (xop1) != VOIDmode ? GET_MODE (xop1) : mode;
+  mode1 = ((GET_MODE (xop1) != VOIDmode || canonicalize_op1)
+	   ? GET_MODE (xop1) : mode);
   if (xmode1 != VOIDmode && xmode1 != mode1)
     {
       xop1 = convert_modes (xmode1, mode1, xop1, unsignedp);
@@ -1535,7 +1542,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
     = (methods == OPTAB_LIB || methods == OPTAB_LIB_WIDEN
        ? OPTAB_WIDEN : methods);
   enum mode_class mclass;
-  machine_mode wider_mode;
+  machine_mode wider_mode, inner_mode;
   rtx libfunc;
   rtx temp;
   rtx_insn *entry_last = get_last_insn ();
@@ -1550,6 +1557,18 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
     {
       op1 = negate_rtx (mode, op1);
       binoptab = add_optab;
+    }
+  /* For shifts, constant invalid op1 might be expanded from different
+     mode than MODE.  As those are invalid, force them to a register
+     to avoid further problems during expansion.  */
+  else if (CONST_INT_P (op1)
+	   && shift_optab_p (binoptab)
+	   && (inner_mode = (GET_MODE_INNER (mode) == VOIDmode
+			     ? mode : GET_MODE_INNER (mode))) != VOIDmode
+	   && UINTVAL (op1) >= GET_MODE_BITSIZE (inner_mode))
+    {
+      op1 = gen_int_mode (INTVAL (op1), inner_mode);
+      op1 = force_reg (inner_mode, op1);
     }
 
   /* Record where to delete back to if we backtrack.  */
