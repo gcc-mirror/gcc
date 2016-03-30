@@ -1,3 +1,9 @@
+2016-03-30  Mike Stump  <mrs@gcc.gnu.org>
+
+	PR target/63890
+	* config/i386/i386.h (ACCUMULATE_OUTGOING_ARGS): Use when profiling
+	and TARGET_MACHO.
+
 2016-03-30  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR tree-optimization/59124
