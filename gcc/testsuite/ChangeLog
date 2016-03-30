@@ -3,6 +3,9 @@
 	Backported from mainline
 	2016-02-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/69969
+	* gcc.target/powerpc/pr69969.c: New test.
+
 	PR rtl-optimization/69891
 	* gcc.target/i386/pr69891.c: New test.
 

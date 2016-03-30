@@ -2,6 +2,13 @@
 
 	Backported from mainline
 	2016-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/69969
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Don't
+	complain about -mallow-movmisalign without -mvsx if
+	TARGET_ALLOW_MOVMISALIGN was not set explicitly.
+
+	2016-02-26  Jakub Jelinek  <jakub@redhat.com>
 		    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/69891
