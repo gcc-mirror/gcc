@@ -24671,9 +24671,10 @@ alg_usable_p (enum stringop_alg alg, bool memset)
 static enum stringop_alg
 decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
 	    unsigned HOST_WIDE_INT min_size, unsigned HOST_WIDE_INT max_size,
-	    bool memset, bool zero_memset, int *dynamic_check, bool *noalign)
+	    bool memset, bool zero_memset, int *dynamic_check, bool *noalign,
+	    bool recur)
 {
-  const struct stringop_algs * algs;
+  const struct stringop_algs *algs;
   bool optimize_for_speed;
   int max = 0;
   const struct processor_costs *cost;
@@ -24707,7 +24708,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
       any_alg_usable_p |= usable;
 
       if (candidate != libcall && candidate && usable)
-	  max = algs->size[i].max;
+	max = algs->size[i].max;
     }
 
   /* If expected size is not known but max size is small enough
@@ -24717,7 +24718,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
       && expected_size == -1)
     expected_size = min_size / 2 + max_size / 2;
 
-  /* If user specified the algorithm, honnor it if possible.  */
+  /* If user specified the algorithm, honor it if possible.  */
   if (ix86_stringop_alg != no_stringop
       && alg_usable_p (ix86_stringop_alg, memset))
     return ix86_stringop_alg;
@@ -24792,21 +24793,20 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
 	  || !alg_usable_p (algs->unknown_size, memset)))
     {
       enum stringop_alg alg;
+      HOST_WIDE_INT new_expected_size = (max > 0 ? max : 4096) / 2;
 
-      /* If there aren't any usable algorithms, then recursing on
-         smaller sizes isn't going to find anything.  Just return the
-         simple byte-at-a-time copy loop.  */
-      if (!any_alg_usable_p)
-        {
-          /* Pick something reasonable.  */
-          if (TARGET_INLINE_STRINGOPS_DYNAMICALLY)
-            *dynamic_check = 128;
-          return loop_1_byte;
-        }
-      if (max <= 0)
-	max = 4096;
-      alg = decide_alg (count, max / 2, min_size, max_size, memset,
-			zero_memset, dynamic_check, noalign);
+      /* If there aren't any usable algorithms or if recursing already,
+	 then recursing on smaller sizes or same size isn't going to
+	 find anything.  Just return the simple byte-at-a-time copy loop.  */
+      if (!any_alg_usable_p || recur)
+	{
+	  /* Pick something reasonable.  */
+	  if (TARGET_INLINE_STRINGOPS_DYNAMICALLY && !recur)
+	    *dynamic_check = 128;
+	  return loop_1_byte;
+	}
+      alg = decide_alg (count, new_expected_size, min_size, max_size, memset,
+			zero_memset, dynamic_check, noalign, true);
       gcc_assert (*dynamic_check == -1);
       if (TARGET_INLINE_STRINGOPS_DYNAMICALLY)
 	*dynamic_check = max;
@@ -25062,7 +25062,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   alg = decide_alg (count, expected_size, min_size, probable_max_size,
 		    issetmem,
 		    issetmem && val_exp == const0_rtx,
-		    &dynamic_check, &noalign);
+		    &dynamic_check, &noalign, false);
   if (alg == libcall)
     return false;
   gcc_assert (alg != no_stringop);
