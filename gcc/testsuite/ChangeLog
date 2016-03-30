@@ -1,5 +1,9 @@
 2016-03-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/70421
+	* gcc.dg/torture/pr70421.c: New test.
+	* gcc.target/i386/avx512f-pr70421.c: New test.
+
 	Backported from mainline
 	2016-03-29  Jakub Jelinek  <jakub@redhat.com>
 
