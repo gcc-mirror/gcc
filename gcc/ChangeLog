@@ -1,6 +1,13 @@
 2016-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-02-26  Jakub Jelinek  <jakub@redhat.com>
+		    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/69891
+	* dse.c (scan_insn): If we can't figure out memset arguments
+	or they are non-constant, call clear_rhs_from_active_local_stores.
+
 	2016-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/69705
