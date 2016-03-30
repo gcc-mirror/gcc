@@ -1,5 +1,3 @@
-! { dg-do compile } 
-! { dg-additional-options "-fmax-errors=100" } 
 module test
   implicit none
 contains
@@ -29,14 +27,18 @@ subroutine test1
        i = i + 1
   end do
   !$acc loop
-  do 300 d = 1, 30, 6 ! { dg-error "integer" }
+  do 300 d = 1, 30, 6
       i = d
   300 a(i) = 1
+  ! { dg-warning "Deleted feature: Loop variable at .1. must be integer" "" { target *-*-* } 30 }
+  ! { dg-error "ACC LOOP iteration variable must be of type integer" "" { target *-*-* } 30 }
   !$acc loop
-  do d = 1, 30, 5 ! { dg-error "integer" }
+  do d = 1, 30, 5
        i = d
       a(i) = 2
   end do
+  ! { dg-warning "Deleted feature: Loop variable at .1. must be integer" "" { target *-*-* } 36 }
+  ! { dg-error "ACC LOOP iteration variable must be of type integer" "" { target *-*-* } 36 }
   !$acc loop
   do i = 1, 30
       if (i .eq. 16) exit ! { dg-error "EXIT statement" }
@@ -144,8 +146,10 @@ subroutine test1
     end do
     !$acc parallel loop collapse(2)
     do i = 1, 3
-        do r = 4, 6    ! { dg-error "integer" }
+        do r = 4, 6
         end do
+        ! { dg-warning "Deleted feature: Loop variable at .1. must be integer" "" { target *-*-* } 149 }
+        ! { dg-error "ACC LOOP iteration variable must be of type integer" "" { target *-*-* } 149 }
     end do
 
     ! Both seq and independent are not allowed
@@ -167,4 +171,3 @@ subroutine test1
 
 end subroutine test1
 end module test
-! { dg-prune-output "Deleted" }

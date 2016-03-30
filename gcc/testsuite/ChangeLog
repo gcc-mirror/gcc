@@ -1,3 +1,52 @@
+2016-03-30  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-c++-common/goacc/combined-directives.c: Clean up dg-*
+	directives.
+	* c-c++-common/goacc/loop-clauses.c: Likewise.
+	* g++.dg/goacc/template.C: Likewise.
+	* gfortran.dg/goacc/combined-directives.f90: Likewise.
+	* gfortran.dg/goacc/loop-1.f95: Likewise.
+	* gfortran.dg/goacc/loop-5.f95: Likewise.
+	* gfortran.dg/goacc/loop-6.f95: Likewise.
+	* gfortran.dg/goacc/loop-tree-1.f90: Likewise.
+	* c-c++-common/goacc-gomp/nesting-1.c: Update.
+	* c-c++-common/goacc-gomp/nesting-fail-1.c: Likewise.
+	* c-c++-common/goacc/clauses-fail.c: Likewise.
+	* c-c++-common/goacc/parallel-1.c: Likewise.
+	* c-c++-common/goacc/reduction-1.c: Likewise.
+	* c-c++-common/goacc/reduction-2.c: Likewise.
+	* c-c++-common/goacc/reduction-3.c: Likewise.
+	* c-c++-common/goacc/reduction-4.c: Likewise.
+	* c-c++-common/goacc/routine-3.c: Likewise.
+	* c-c++-common/goacc/routine-4.c: Likewise.
+	* c-c++-common/goacc/routine-5.c: Likewise.
+	* c-c++-common/goacc/tile.c: Likewise.
+	* g++.dg/goacc/template.C: Likewise.
+	* gfortran.dg/goacc/combined-directives.f90: Likewise.
+	* c-c++-common/goacc/nesting-1.c: Move dg-error test cases into...
+	* c-c++-common/goacc/nesting-fail-1.c: ... this file.  Update.
+	* c-c++-common/goacc/kernels-1.c: Update.  Incorporate...
+	* c-c++-common/goacc/kernels-empty.c: ... this file, and...
+	* c-c++-common/goacc/kernels-eternal.c: ... this file, and...
+	* c-c++-common/goacc/kernels-noreturn.c: ... this file.
+	* c-c++-common/goacc/host_data-1.c: New file.  Incorporate...
+	* c-c++-common/goacc/use_device-1.c: ... this file.
+	* c-c++-common/goacc/host_data-2.c: New file.  Incorporate...
+	* c-c++-common/goacc/host_data-5.c: ... this file, and...
+	* c-c++-common/goacc/host_data-6.c: ... this file.
+	* c-c++-common/goacc/loop-2-kernels.c: New file.
+	* c-c++-common/goacc/loop-2-parallel.c: Likewise.
+	* c-c++-common/goacc/loop-3.c: Likewise.
+	* g++.dg/goacc/reference.C: Likewise.
+	* g++.dg/goacc/routine-1.C: Likewise.
+	* g++.dg/goacc/routine-2.C: Likewise.
+
 2016-03-30  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70450

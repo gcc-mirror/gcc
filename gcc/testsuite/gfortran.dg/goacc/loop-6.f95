@@ -1,11 +1,3 @@
-! { dg-do compile }
-! { dg-additional-options "-fmax-errors=100" }
-
-! This error is temporary.  Remove when support is added for these clauses
-! in the middle end.
-! { dg-prune-output "sorry, unimplemented" }
-! { dg-prune-output "Error: work-sharing region" }
-
 program test
   implicit none
   integer :: i, j

@@ -586,6 +586,32 @@ main (int argc, char **argv)
 
     for (i = 0; i < N; i++)
     {
+        a[i] = 6.0;
+        b[i] = 0.0;
+    }
+
+#pragma acc parallel pcopy (a[0:N], b[0:N])
+    {
+        int ii;
+
+        for (ii = 0; ii < N; ii++)
+            b[ii] = a[ii];
+    }
+
+    for (i = 0; i < N; i++)
+    {
+        if (b[i] != 6.0)
+            abort ();
+    }
+
+    if (acc_is_present (&a[0], (N * sizeof (float))))
+      abort ();
+
+    if (acc_is_present (&b[0], (N * sizeof (float))))
+      abort ();
+
+    for (i = 0; i < N; i++)
+    {
         a[i] = 5.0;
         b[i] = 7.0;
     }

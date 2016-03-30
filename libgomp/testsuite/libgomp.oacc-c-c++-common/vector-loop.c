@@ -20,7 +20,7 @@ main (void)
 
 #pragma acc parallel vector_length (32) copyin (a,b) copyout (c)
   {
-#pragma acc loop /* vector clause is missing, since it's not yet supported.  */
+#pragma acc loop vector
     for (unsigned int i = 0; i < n; i++)
       c[i] = a[i] + b[i];
   }

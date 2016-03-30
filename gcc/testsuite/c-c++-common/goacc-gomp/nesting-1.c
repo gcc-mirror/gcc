@@ -20,12 +20,12 @@ f_acc_kernels (void)
   }
 }
 
+#pragma acc routine vector
 void
 f_acc_loop (void)
 {
   int i;
 
-#pragma acc parallel
 #pragma acc loop
   for (i = 0; i < 2; ++i)
     {

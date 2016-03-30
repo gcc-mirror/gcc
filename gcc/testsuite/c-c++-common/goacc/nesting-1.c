@@ -58,10 +58,6 @@ f_acc_data (void)
 
 #pragma acc exit data delete(i)
 
-#pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
-    for (i = 0; i < 2; ++i)
-      ;
-
 #pragma acc data
     {
 #pragma acc parallel
@@ -92,10 +88,6 @@ f_acc_data (void)
 #pragma acc enter data copyin(i)
 
 #pragma acc exit data delete(i)
-
-#pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
-      for (i = 0; i < 2; ++i)
-	;
     }
   }
 }

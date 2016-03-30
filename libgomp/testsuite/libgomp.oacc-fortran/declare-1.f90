@@ -1,28 +1,21 @@
 ! { dg-do run  { target openacc_nvidia_accel_selected } }
 
+! Tests to exercise the declare directive along with
+! the clauses: copy
+!              copyin
+!              copyout
+!              create
+!              present
+!              present_or_copy
+!              present_or_copyin
+!              present_or_copyout
+!              present_or_create
+
 module vars
   implicit none
   integer z
   !$acc declare create (z)
 end module vars
-
-subroutine subr6 (a, d)
-  implicit none
-  integer, parameter :: N = 8
-  integer :: i
-  integer :: a(N)
-  !$acc declare deviceptr (a)
-  integer :: d(N)
-
-  i = 0
-
-  !$acc parallel copy (d)
-    do i = 1, N
-      d(i) = a(i) + a(i)
-    end do
-  !$acc end parallel
-
-end subroutine
 
 subroutine subr5 (a, b, c, d)
   implicit none
@@ -201,15 +194,6 @@ subroutine subr0 (a, b, c, d)
     if (d(i) .ne. 13) call abort
   end do
 
-  call subr6 (a, d)
-
-  call test (a, .true.)
-  call test (d, .false.)
-
-  do i = 1, N
-    if (d(i) .ne. 16) call abort
-  end do
-
 end subroutine
 
 program main
@@ -241,8 +225,7 @@ program main
     if (a(i) .ne. 8) call abort
     if (b(i) .ne. 8) call abort
     if (c(i) .ne. 8) call abort
-    if (d(i) .ne. 16) call abort
+    if (d(i) .ne. 13) call abort
   end do
-
 
 end program

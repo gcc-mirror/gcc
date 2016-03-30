@@ -1,3 +1,71 @@
+2016-03-30  Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/clauses-1.c: Update.
+	* testsuite/libgomp.oacc-c-c++-common/deviceptr-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/if-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-loop.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/declare-1.f90: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/asyncwait-1.c: Likewise.
+	XFAIL.
+	* testsuite/libgomp.oacc-c-c++-common/firstprivate-1.c: Update.
+	Incorporate...
+	* testsuite/libgomp.oacc-c-c++-common/firstprivate-2.c: ... this
+	file.
+	* testsuite/libgomp.oacc-c++/template-reduction.C: New file.
+	* testsuite/libgomp.oacc-c-c++-common/gang-static-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/gang-static-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-clauses.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/private-variables.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-7.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-2.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/clauses-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/default-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/firstprivate-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/gang-static-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/if-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/implicit-firstprivate-ref.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/pr68813.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/private-variables.f90: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-1.c: Merge this
+	file...
+	* testsuite/libgomp.oacc-c-c++-common/parallel-1.c: ..., and this
+	file into...
+	* testsuite/libgomp.oacc-c-c++-common/data-clauses.h: ... this new
+	file.  Update.
+	* testsuite/libgomp.oacc-c-c++-common/data-clauses-kernels.c: New
+	file.
+	* testsuite/libgomp.oacc-c-c++-common/data-clauses-parallel.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-2.c: Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/data-clauses-kernels-ipa-pta.c:
+	... this new file.  Update.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-2.c: Rename to...
+	* testsuite/libgomp.oacc-c-c++-common/data-clauses-parallel-ipa-pta.c:
+	... this new file.  Update.
+	* testsuite/libgomp.oacc-c-c++-common/mode-transitions.c: New
+	file.  Incorporate...
+	* testsuite/libgomp.oacc-c-c++-common/worker-single-1a.c: ... this
+	file, and...
+	* testsuite/libgomp.oacc-c-c++-common/worker-single-4.c: ... this
+	file, and...
+	* testsuite/libgomp.oacc-c-c++-common/worker-single-6.c: ... this
+	file.
+	* testsuite/libgomp.oacc-c-c++-common/update-1-2.c: Remove file.
+
 2016-03-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c++/c++.exp [!lang_test_file_found]: Call
