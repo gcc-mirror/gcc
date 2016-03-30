@@ -5310,6 +5310,27 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
       if (is_gimple_assign (def_stmt))
 	rhs_code = gimple_assign_rhs_code (def_stmt);
 
+      /* In the case of NAME != CST1 where NAME = A +- CST2 we can
+         assert that A != CST1 -+ CST2.  */
+      if ((comp_code == EQ_EXPR || comp_code == NE_EXPR)
+	  && (rhs_code == PLUS_EXPR || rhs_code == MINUS_EXPR))
+	{
+	  tree op0 = gimple_assign_rhs1 (def_stmt);
+	  tree op1 = gimple_assign_rhs2 (def_stmt);
+	  if (TREE_CODE (op0) == SSA_NAME
+	      && TREE_CODE (op1) == INTEGER_CST
+	      && live_on_edge (e, op0)
+	      && !has_single_use (op0))
+	    {
+	      enum tree_code reverse_op = (rhs_code == PLUS_EXPR
+					   ? MINUS_EXPR : PLUS_EXPR);
+	      op1 = int_const_binop (reverse_op, val, op1);
+	      if (TREE_OVERFLOW (op1))
+		op1 = drop_tree_overflow (op1);
+	      register_new_assert_for (op0, op0, comp_code, op1, NULL, e, bsi);
+	    }
+	}
+
       /* Add asserts for NAME cmp CST and NAME being defined
 	 as NAME = (int) NAME2.  */
       if (!TYPE_UNSIGNED (TREE_TYPE (val))
