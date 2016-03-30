@@ -1,3 +1,8 @@
+2016-03-30  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR tree-optimization/59124
+	* gcc.dg/Warray-bounds-19.c: New test.
+
 2016-03-29  Zachary T Welch <zwelch@codesourcery.com>
 
 	* lib/prune.exp (escape_regex_chars): New.
