@@ -1638,7 +1638,8 @@ enum reg_class
 
 #define ACCUMULATE_OUTGOING_ARGS \
   ((TARGET_ACCUMULATE_OUTGOING_ARGS && optimize_function_for_speed_p (cfun)) \
-   || TARGET_STACK_PROBE || TARGET_64BIT_MS_ABI)
+   || TARGET_STACK_PROBE || TARGET_64BIT_MS_ABI \
+   || (TARGET_MACHO && crtl->profile))
 
 /* If defined, a C expression whose value is nonzero when we want to use PUSH
    instructions to pass outgoing arguments.  */
