@@ -9601,6 +9601,11 @@ Enable emission of special debug stores within HSA kernels which are
 then read and reported by libgomp plugin.  Generation of these stores
 is disabled by default, use @option{--param hsa-gen-debug-stores=1} to
 enable it.
+
+@item max-speculative-devirt-maydefs
+The maximum number of may-defs we analyze when looking for a must-def
+specifying the dynamic type of an object that invokes a virtual call
+we may be able to devirtualize speculatively.
 @end table
 @end table
 

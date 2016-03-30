@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "gimple-pretty-print.h"
 #include "tree-into-ssa.h"
+#include "params.h"
 
 /* Return true when TYPE contains an polymorphic type and thus is interesting
    for devirtualization machinery.  */
@@ -1094,14 +1095,15 @@ struct type_change_info
   tree known_current_type;
   HOST_WIDE_INT known_current_offset;
 
+  /* Set to nonzero if we possibly missed some dynamic type changes and we
+     should consider the set to be speculative.  */
+  unsigned speculative;
+
   /* Set to true if dynamic type change has been detected.  */
   bool type_maybe_changed;
   /* Set to true if multiple types have been encountered.  known_current_type
      must be disregarded in that case.  */
   bool multiple_types_encountered;
-  /* Set to true if we possibly missed some dynamic type changes and we should
-     consider the set to be speculative.  */
-  bool speculative;
   bool seen_unanalyzed_store;
 };
 
@@ -1338,6 +1340,19 @@ record_known_type (struct type_change_info *tci, tree type, HOST_WIDE_INT offset
   tci->type_maybe_changed = true;
 }
 
+
+/* The maximum number of may-defs we visit when looking for a must-def
+   that changes the dynamic type in check_stmt_for_type_change.  Tuned
+   after the PR12392 testcase which unlimited spends 40% time within
+   these alias walks and 8% with the following limit.  */
+
+static inline bool
+csftc_abort_walking_p (unsigned speculative)
+{
+  unsigned max = PARAM_VALUE (PARAM_MAX_SPECULATIVE_DEVIRT_MAYDEFS);
+  return speculative > max ? true : false;
+}
+
 /* Callback of walk_aliased_vdefs and a helper function for
    detect_type_change to check whether a particular statement may modify
    the virtual table pointer, and if possible also determine the new type of
@@ -1384,15 +1399,15 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 					  &size, &max_size, &reverse);
 	    if (size != max_size || max_size == -1)
 	      {
-                tci->speculative = true;
-	        return false;
+                tci->speculative++;
+	        return csftc_abort_walking_p (tci->speculative);
 	      }
 	    if (op && TREE_CODE (op) == MEM_REF)
 	      {
 		if (!tree_fits_shwi_p (TREE_OPERAND (op, 1)))
 		  {
-                    tci->speculative = true;
-		    return false;
+                    tci->speculative++;
+		    return csftc_abort_walking_p (tci->speculative);
 		  }
 		offset += tree_to_shwi (TREE_OPERAND (op, 1))
 			  * BITS_PER_UNIT;
@@ -1402,8 +1417,8 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 	      ;
 	    else
 	      {
-                tci->speculative = true;
-	        return false;
+                tci->speculative++;
+	        return csftc_abort_walking_p (tci->speculative);
 	      }
 	    op = walk_ssa_copies (op);
 	  }
@@ -1438,8 +1453,8 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
           fprintf (dump_file, "  Function call may change dynamic type:");
 	  print_gimple_stmt (dump_file, stmt, 0, 0);
 	}
-     tci->speculative = true;
-     return false;
+     tci->speculative++;
+     return csftc_abort_walking_p (tci->speculative);
    }
   /* Check for inlined virtual table store.  */
   else if (noncall_stmt_may_be_vtbl_ptr_store (stmt))
@@ -1461,7 +1476,7 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 	  if (dump_file)
 	    fprintf (dump_file, "  Unanalyzed store may change type.\n");
 	  tci->seen_unanalyzed_store = true;
-	  tci->speculative = true;
+	  tci->speculative++;
 	}
       else
         record_known_type (tci, type, offset);
@@ -1646,7 +1661,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
   tci.otr_type = otr_type;
   tci.type_maybe_changed = false;
   tci.multiple_types_encountered = false;
-  tci.speculative = false;
+  tci.speculative = 0;
   tci.seen_unanalyzed_store = false;
 
   walk_aliased_vdefs (&ao, gimple_vuse (stmt), check_stmt_for_type_change,
