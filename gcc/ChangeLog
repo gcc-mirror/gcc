@@ -1,6 +1,12 @@
 2016-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/70152
+	* tree-sra.c (replace_removed_params_ssa_names): Copy over
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI from old_name to new_name.
+
 	2016-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70062

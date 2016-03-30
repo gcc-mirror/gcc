@@ -1,6 +1,11 @@
 2016-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/70152
+	* gcc.dg/pr70152.c: New test.
+
 	2016-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70062
