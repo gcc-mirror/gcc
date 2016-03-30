@@ -1,6 +1,11 @@
 2016-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70296
+	* gcc.target/powerpc/altivec-36.c: New test.
+
 	2016-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70272
