@@ -698,6 +698,8 @@ gen_lsm_tmp_name (tree ref)
     case SSA_NAME:
     case VAR_DECL:
     case PARM_DECL:
+    case FUNCTION_DECL:
+    case LABEL_DECL:
       name = get_name (ref);
       if (!name)
 	name = "D";
@@ -713,11 +715,9 @@ gen_lsm_tmp_name (tree ref)
       break;
 
     case INTEGER_CST:
+    default:
       /* Nothing.  */
       break;
-
-    default:
-      gcc_unreachable ();
     }
 }
 
