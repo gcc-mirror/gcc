@@ -1,6 +1,13 @@
 2016-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/69838
+	* lra.c (lra_process_new_insns): If non-call exceptions are enabled,
+	call copy_reg_eh_region_note_forward on before and/or after sequences
+	and remove note from insn if it no longer can throw.
+
 	2016-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/69802
