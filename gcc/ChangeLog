@@ -1,6 +1,13 @@
 2016-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70028
+	* config/i386/i386.md (kmovw): Move m constraint to 2nd alternative.
+	(*movhi_internal): Put mask moves from and to memory separately
+	from moves from/to GPRs.
+
 	2016-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69969

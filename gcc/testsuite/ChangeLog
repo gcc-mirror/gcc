@@ -1,6 +1,11 @@
 2016-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70028
+	* gcc.target/i386/pr70028.c: New test.
+
 	2016-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/69969
