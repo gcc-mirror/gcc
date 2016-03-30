@@ -13463,9 +13463,11 @@ ix86_expand_epilogue (int style)
 	  rtx sa = EH_RETURN_STACKADJ_RTX;
 	  rtx_insn *insn;
 
-	  /* Stack align doesn't work with eh_return.  */
-	  gcc_assert (!stack_realign_drap);
-	  /* Neither does regparm nested functions.  */
+	  /* %ecx can't be used for both DRAP register and eh_return.  */
+	  if (crtl->drap_reg)
+	    gcc_assert (REGNO (crtl->drap_reg) != CX_REG);
+
+	  /* regparm nested functions don't work with eh_return.  */
 	  gcc_assert (!ix86_static_chain_on_stack);
 
 	  if (frame_pointer_needed)
