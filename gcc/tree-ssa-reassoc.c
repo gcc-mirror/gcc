@@ -2134,10 +2134,32 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
 				in_p, low, high);
   enum warn_strict_overflow_code wc = WARN_STRICT_OVERFLOW_COMPARISON;
   gimple_stmt_iterator gsi;
-  unsigned int i;
+  unsigned int i, uid;
 
   if (tem == NULL_TREE)
     return false;
+
+  /* If op is default def SSA_NAME, there is no place to insert the
+     new comparison.  Give up, unless we can use OP itself as the
+     range test.  */
+  if (op && SSA_NAME_IS_DEFAULT_DEF (op))
+    {
+      if (op == range->exp
+	  && ((TYPE_PRECISION (optype) == 1 && TYPE_UNSIGNED (optype))
+	      || TREE_CODE (optype) == BOOLEAN_TYPE)
+	  && (op == tem
+	      || (TREE_CODE (tem) == EQ_EXPR
+		  && TREE_OPERAND (tem, 0) == op
+		  && integer_onep (TREE_OPERAND (tem, 1))))
+	  && opcode != BIT_IOR_EXPR
+	  && (opcode != ERROR_MARK || oe->rank != BIT_IOR_EXPR))
+	{
+	  stmt = NULL;
+	  tem = op;
+	}
+      else
+	return false;
+    }
 
   if (strict_overflow_p && issue_strict_overflow_warning (wc))
     warning_at (loc, OPT_Wstrict_overflow,
@@ -2176,12 +2198,22 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
     tem = invert_truthvalue_loc (loc, tem);
 
   tem = fold_convert_loc (loc, optype, tem);
-  gsi = gsi_for_stmt (stmt);
-  unsigned int uid = gimple_uid (stmt);
+  if (stmt)
+    {
+      gsi = gsi_for_stmt (stmt);
+      uid = gimple_uid (stmt);
+    }
+  else
+    {
+      gsi = gsi_none ();
+      uid = 0;
+    }
+  if (stmt == NULL)
+    gcc_checking_assert (tem == op);
   /* In rare cases range->exp can be equal to lhs of stmt.
      In that case we have to insert after the stmt rather then before
      it.  If stmt is a PHI, insert it at the start of the basic block.  */
-  if (op != range->exp)
+  else if (op != range->exp)
     {
       gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
       tem = force_gimple_operand_gsi (&gsi, tem, true, NULL_TREE, true,
