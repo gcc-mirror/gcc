@@ -1,6 +1,12 @@
 2016-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70272
+	* g++.dg/opt/flifetime-dse6.C: New test.
+	* g++.dg/tree-ssa/ehcleanup-1.C: Adjust unreachable count.
+
 	2016-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70222

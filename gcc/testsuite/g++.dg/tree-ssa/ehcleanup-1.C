@@ -26,6 +26,6 @@ t (void)
 // { dg-final { scan-tree-dump-times "Empty EH handler" 2 "ehcleanup1" } }
 //
 // And as a result also contained control flow.
-// { dg-final { scan-tree-dump-times "Removing unreachable" 6 "ehcleanup1" } }
+// { dg-final { scan-tree-dump-times "Removing unreachable" 4 "ehcleanup1" } }
 //
 // { dg-final { cleanup-tree-dump "ehcleanup1" } }
