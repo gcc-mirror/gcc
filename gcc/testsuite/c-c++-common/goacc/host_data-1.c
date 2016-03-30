@@ -1,4 +1,14 @@
-/* { dg-do compile } */
+/* Test valid use of host_data directive.  */
+
+int v1[3][3];
+
+void
+f (void)
+{
+#pragma acc host_data use_device(v1)
+  ;
+}
+
 
 void bar (float *, float *);
 

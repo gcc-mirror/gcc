@@ -46,6 +46,21 @@ using namespace g;
   
 #pragma acc routine (c) /* { dg-error "does not refer to" } */
 
+
+void Bar ();
+
+void Foo ()
+{
+  Bar ();
+}
+
+#pragma acc routine (Bar) // { dg-error "must be applied before use" }
+
+#pragma acc routine (Foo) gang // { dg-error "must be applied before definition" }
+
+#pragma acc routine (Baz) // { dg-error "not been declared" }
+
+
 int vb1;		/* { dg-error "directive for use" } */
 extern int vb2;		/* { dg-error "directive for use" } */
 static int vb3;		/* { dg-error "directive for use" } */

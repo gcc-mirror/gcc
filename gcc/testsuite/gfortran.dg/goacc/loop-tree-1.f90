@@ -1,12 +1,6 @@
-! { dg-do compile } 
 ! { dg-additional-options "-fdump-tree-original -std=f2008" } 
 
 ! test for tree-dump-original and spaces-commas
-
-! This error is temporary.  Remove when support is added for these clauses
-! in the middle end.
-! { dg-prune-output "sorry, unimplemented" }
-! { dg-prune-output "Error: work-sharing region" }
 
 program test
   implicit none
