@@ -1203,6 +1203,12 @@ DEFPARAM (PARAM_HSA_GEN_DEBUG_STORES,
 	  "hsa-gen-debug-stores",
 	  "Level of hsa debug stores verbosity",
 	  0, 0, 1)
+
+DEFPARAM (PARAM_MAX_SPECULATIVE_DEVIRT_MAYDEFS,
+	  "max-speculative-devirt-maydefs",
+	  "Maximum number of may-defs visited when devirtualizing "
+	  "speculatively", 50, 0, 0)
+
 /*
 
 Local variables:

@@ -1,3 +1,16 @@
+2016-03-30  Michael Matz  <matz@suse.de>
+	Richard Biener  <rguenther@suse.de>
+
+	PR ipa/12392
+	* ipa-polymorphic-call.c (struct type_change_info): Change
+	speculative to an unsigned allowing to limit the work we do.
+	(csftc_abort_walking_p): New inline function..
+	(check_stmt_for_type_change): Limit the number of may-defs
+	skipped for speculative devirtualization to
+	max-speculative-devirt-maydefs.
+	* params.def (max-speculative-devirt-maydefs): New param.
+	* doc/invoke.texi (--param max-speculative-devirt-maydefs): Document.
+
 2016-03-30  Mike Stump  <mrs@gcc.gnu.org>
 
 	PR target/63890
