@@ -1,3 +1,9 @@
+2016-03-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70450
+	* fold-const.c (extract_muldiv_1): Fix thinko in wide_int::from
+	usage.
+
 2016-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70421

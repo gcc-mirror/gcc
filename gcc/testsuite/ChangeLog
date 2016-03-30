@@ -1,3 +1,8 @@
+2016-03-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70450
+	* gcc.dg/torture/pr70450.c: New testcase.
+
 2016-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70421
