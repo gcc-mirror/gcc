@@ -1,3 +1,13 @@
+2016-03-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-loop-niter.c (idx_infer_loop_bounds): We can't get realistic
+	estimates here.
+	* tree-ssa-loop-unswitch.c (tree_unswitch_single_loop): Use also
+	max_loop_iterations_int.
+	(tree_unswitch_outer_loop): Likewise.
+	* tree-ssa-loop-ivopts.c (avg_loop_niter): Likewise.
+	* tree-vect-loop.c (vect_analyze_loop_2): Likewise.
+
 2016-03-30  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70450
