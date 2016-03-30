@@ -1,3 +1,9 @@
+2016-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70421
+	* config/i386/i386.c (ix86_expand_vector_set): Fix up argument order
+	in gen_blendm expander.
+
 2016-03-30  Nick Clifton  <nickc@redhat.com>
 
 	PR target/62254
@@ -5,7 +11,7 @@
 	case where we are already provided with an SImode SUBREG.
 
 2016-03-30  Michael Matz  <matz@suse.de>
-	Richard Biener  <rguenther@suse.de>
+	    Richard Biener  <rguenther@suse.de>
 
 	PR ipa/12392
 	* ipa-polymorphic-call.c (struct type_change_info): Change
