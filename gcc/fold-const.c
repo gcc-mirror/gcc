@@ -6375,8 +6375,10 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	  bool overflow_mul_p;
 	  signop sign = TYPE_SIGN (ctype);
 	  unsigned prec = TYPE_PRECISION (ctype);
-	  wide_int mul = wi::mul (wide_int::from (op1, prec, sign),
-				  wide_int::from (c, prec, sign),
+	  wide_int mul = wi::mul (wide_int::from (op1, prec,
+						  TYPE_SIGN (TREE_TYPE (op1))),
+				  wide_int::from (c, prec,
+						  TYPE_SIGN (TREE_TYPE (c))),
 				  sign, &overflow_mul_p);
 	  overflow_p = TREE_OVERFLOW (c) | TREE_OVERFLOW (op1);
 	  if (overflow_mul_p
