@@ -1,6 +1,13 @@
 2016-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2016-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69826
+	* c-pragma.c (c_pp_lookup_pragma): Handle PRAGMA_CILK_GRAINSIZE.
+	(init_pragma): Register PRAGMA_CILK_GRAINSIZE even for
+	flag_preprocess_only.
+
 	2016-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69797
