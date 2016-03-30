@@ -15596,14 +15596,27 @@ arm_reload_out_hi (rtx *operands)
 	/* The slot is out of range, or was dressed up in a SUBREG.  */
 	base = reg_equiv_address (REGNO (ref));
 
-      /* PR 62554: If there is no equivalent memory location then just move
+      /* PR 62254: If there is no equivalent memory location then just move
 	 the value as an SImode register move.  This happens when the target
 	 architecture variant does not have an HImode register move.  */
       if (base == NULL)
 	{
-	  gcc_assert (REG_P (outval));
-	  emit_insn (gen_movsi (gen_rtx_SUBREG (SImode, ref, 0),
-				gen_rtx_SUBREG (SImode, outval, 0)));
+	  gcc_assert (REG_P (outval) || SUBREG_P (outval));
+
+	  if (REG_P (outval))
+	    {
+	      emit_insn (gen_movsi (gen_rtx_SUBREG (SImode, ref, 0),
+				    gen_rtx_SUBREG (SImode, outval, 0)));
+	    }
+	  else /* SUBREG_P (outval)  */
+	    {
+	      if (GET_MODE (SUBREG_REG (outval)) == SImode)
+		emit_insn (gen_movsi (gen_rtx_SUBREG (SImode, ref, 0),
+				      SUBREG_REG (outval)));
+	      else
+		/* FIXME: Handle other cases ?  */
+		gcc_unreachable ();
+	    }
 	  return;
 	}
     }

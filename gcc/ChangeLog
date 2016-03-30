@@ -1,3 +1,9 @@
+2016-03-30  Nick Clifton  <nickc@redhat.com>
+
+	PR target/62254
+	* config/arm/arm.c (arm_reload_out_hi): Add code to handle the
+	case where we are already provided with an SImode SUBREG.
+
 2016-03-30  Michael Matz  <matz@suse.de>
 	Richard Biener  <rguenther@suse.de>
 
