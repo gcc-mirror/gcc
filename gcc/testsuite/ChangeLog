@@ -1,3 +1,16 @@
+2016-03-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Forward-port from 5 branch
+	2016-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/70356
+	* gcc.target/i386/avx-vextractf128-256-5.c: Move
+	dg-require-effective-target after dg-do.
+
+	2015-12-30  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/avx-vextractf128-256-5.c: New test.
+
 2016-03-30  Thomas Schwinge  <thomas@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
