@@ -1,3 +1,8 @@
+2016-03-30  Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/fmt_pf.f90: New test.
+
 2016-03-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Forward-port from 5 branch

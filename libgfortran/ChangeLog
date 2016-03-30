@@ -1,3 +1,10 @@
+2016-03-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR libgfortran/70235
+	* io/write_float.def: Fix PF format for negative values of the scale
+	factor.
+
 2016-03-28  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 
 	* caf/libcaf.h: caf_stop_numeric and caf_stop_str prototype.
