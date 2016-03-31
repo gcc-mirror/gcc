@@ -1,3 +1,8 @@
+2016-03-31  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/70442
+	* gcc.dg/pr70442.c: New test.
+
 2016-03-31  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/70393

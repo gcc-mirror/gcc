@@ -3384,9 +3384,10 @@ scalar_chain::convert_reg (unsigned regno)
   BITMAP_FREE (conv);
 }
 
-/* Convert operand OP in INSN.  All register uses
-   are converted during registers conversion.
-   Therefore we should just handle memory operands.  */
+/* Convert operand OP in INSN.  We should handle
+   memory operands and uninitialized registers.
+   All other register uses are converted during
+   registers conversion.  */
 
 void
 scalar_chain::convert_op (rtx *op, rtx_insn *insn)
@@ -3467,6 +3468,8 @@ scalar_chain::convert_insn (rtx_insn *insn)
       break;
 
     case REG:
+      if (!MEM_P (dst))
+	convert_op (&src, insn);
       break;
 
     case SUBREG:
