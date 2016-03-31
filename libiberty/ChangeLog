@@ -1,3 +1,10 @@
+2016-03-31  Mikhail Maltsev  <maltsevm@gmail.com>
+	    Marcel Bohme  boehme.marcel@gmail.com
+
+	* cplus-dem.c (squangle_mop_up): Zero bsize/ksize after freeing
+	btypevec/ktypevec.
+	* testsuite/demangle-expected: Add coverage tests.
+
 2016-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-demangle.c (dlang_call_convention): Handle extern Objective-C
