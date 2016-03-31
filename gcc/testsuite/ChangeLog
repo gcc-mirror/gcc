@@ -1,3 +1,8 @@
+2016-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/template/ptrmem30.C (read): Rename to data_read.
+	(Holder::foo): Reflect this.
+
 2016-03-31  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/70442
