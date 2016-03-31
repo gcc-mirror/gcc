@@ -700,6 +700,7 @@ regalloc (void)
 void
 hsa_regalloc (void)
 {
+  hsa_cfun->update_dominance ();
   naive_outof_ssa ();
 
   if (dump_file && (dump_flags & TDF_DETAILS))
