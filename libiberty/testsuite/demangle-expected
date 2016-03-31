@@ -4421,3 +4421,13 @@ void baz<int>(A<sizeof (foo((int)(), (floatcomplex )00000000_00000000))>*)
 --format=gnu-v3
 _Z3fooI1FEN1XIXszdtcl1PclcvT__EEE5arrayEE4TypeEv
 X<sizeof ((P(((F)())())).array)>::Type foo<F>()
+#
+# Tests a use-after-free problem
+
+_Q.__0
+::Q.(void)
+#
+# Tests a use-after-free problem
+
+_Q10-__9cafebabe.
+cafebabe.::-(void)

@@ -1237,11 +1237,13 @@ squangle_mop_up (struct work_stuff *work)
     {
       free ((char *) work -> btypevec);
       work->btypevec = NULL;
+      work->bsize = 0;
     }
   if (work -> ktypevec != NULL)
     {
       free ((char *) work -> ktypevec);
       work->ktypevec = NULL;
+      work->ksize = 0;
     }
 }
 
