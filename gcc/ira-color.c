@@ -2734,10 +2734,16 @@ static int
 allocno_copy_cost_saving (ira_allocno_t allocno, int hard_regno)
 {
   int cost = 0;
+  enum machine_mode allocno_mode = ALLOCNO_MODE (allocno);
   enum reg_class rclass;
   ira_copy_t cp, next_cp;
 
   rclass = REGNO_REG_CLASS (hard_regno);
+  if (ira_reg_class_max_nregs[rclass][allocno_mode]
+      > ira_class_hard_regs_num[rclass])
+    /* For the above condition the cost can be wrong.  Use the allocno
+       class in this case.  */
+    rclass = ALLOCNO_CLASS (allocno);
   for (cp = ALLOCNO_COPIES (allocno); cp != NULL; cp = next_cp)
     {
       if (cp->first == allocno)
@@ -2754,7 +2760,7 @@ allocno_copy_cost_saving (ira_allocno_t allocno, int hard_regno)
 	}
       else
 	gcc_unreachable ();
-      cost += cp->freq * ira_register_move_cost[ALLOCNO_MODE (allocno)][rclass][rclass];
+      cost += cp->freq * ira_register_move_cost[allocno_mode][rclass][rclass];
     }
   return cost;
 }

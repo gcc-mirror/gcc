@@ -1,3 +1,9 @@
+2016-03-31  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/70461
+	* ira-color.c (allocno_copy_cost_saving): Use allocno class if it
+	is necessary.
+
 2016-03-31  Martin Liska  <mliska@suse.cz>
 
 	PR hsa/70399
