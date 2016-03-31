@@ -1,3 +1,7 @@
+2016-03-31  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/linux-elf.h (ASM_OUTPUT_DEF): Delete.
+
 2016-03-31  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/70442
