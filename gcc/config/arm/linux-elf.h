@@ -85,17 +85,6 @@
     }						\
   while (0)
 
-/* This is how we tell the assembler that two symbols have the same value.  */
-#define ASM_OUTPUT_DEF(FILE, NAME1, NAME2) \
-  do					   \
-    {					   \
-      assemble_name (FILE, NAME1); 	   \
-      fputs (" = ", FILE);		   \
-      assemble_name (FILE, NAME2);	   \
-      fputc ('\n', FILE);		   \
-    }					   \
-  while (0)
-
 #undef  FPUTYPE_DEFAULT
 #define FPUTYPE_DEFAULT "vfp"
 
