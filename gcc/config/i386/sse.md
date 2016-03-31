@@ -493,7 +493,7 @@
   [(V16SF "f") (V16SI "i") (V8DF "f") (V8DI "i")
   (V8SF "f") (V8SI "i") (V4DF "f") (V4DI "i")
   (V4SF "f") (V4SI "i") (V2DF "f") (V2DI "i")
-  (V32QI "i") (V16HI "u") (V16QI "i") (V8HI "i")
+  (V32QI "i") (V16HI "i") (V16QI "i") (V8HI "i")
   (V64QI "i") (V1TI "i") (V2TI "i")])
 
 (define_mode_attr ssequartermode

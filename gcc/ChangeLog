@@ -1,3 +1,8 @@
+2016-03-31  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/70453
+	* config/i386/sse.md (define_mode_attr shuffletype): Fix typo.
+
 2016-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70460
