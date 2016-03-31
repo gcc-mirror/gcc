@@ -1,5 +1,10 @@
 2016-03-31  Nathan Sidwell  <nathan@acm.org>
 
+	* decl.c (start_preparsed_function): Remove unnecessary bracing.
+	(finish_destructor_body): Don't emit operator delete here.
+
+2016-03-31  Nathan Sidwell  <nathan@acm.org>
+
 	PR c++/70393
 	* constexpr.c (cxx_eval_store_expression): Keep CONSTRUCTOR
 	elements in field order.
