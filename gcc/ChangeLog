@@ -1,3 +1,8 @@
+2016-03-31  Martin Liska  <mliska@suse.cz>
+
+	* passes.c (execute_one_pass): Do not call
+	todo_after for a discarded function.
+
 2016-03-31  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (struct comp_cost): New scrach field.
