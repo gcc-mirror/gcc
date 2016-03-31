@@ -1,3 +1,9 @@
+2016-03-31  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/70393
+	* varasm.c (output_constructor_regular_field): Flush bitfield
+	earlier.  Assert we don't want to move backwards.
+
 2016-03-31  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70453
