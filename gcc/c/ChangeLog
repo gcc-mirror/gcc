@@ -1,3 +1,8 @@
+2016-03-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70297
+	* c-decl.c (merge_decls): Also set TYPE_ALIGN and TYPE_USER_ALIGN.
+
 2016-03-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/70281
