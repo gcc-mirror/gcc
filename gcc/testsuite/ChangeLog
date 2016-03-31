@@ -1,3 +1,8 @@
+2016-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR c++/70430
+	* g++.dg/ext/vector30.C: New testcase.
+
 2016-03-30  Dominique d'Humieres  <dominiq@lps.ens.fr>
 	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 

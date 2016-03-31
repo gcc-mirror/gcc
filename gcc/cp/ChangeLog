@@ -1,3 +1,9 @@
+2016-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR c++/70430
+	* typeck.c (cp_build_binary_op): Fix operand order of vector
+	conditional in truth op handling.
+
 2016-03-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70353
