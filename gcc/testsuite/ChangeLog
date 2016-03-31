@@ -1,3 +1,8 @@
+2016-03-31  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR target/70292
+	* gcc.c-torture/pr70292.c: New test.
+
 2016-03-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70297
