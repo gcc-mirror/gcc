@@ -3,6 +3,15 @@
 	Backport from mainline
 	2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
 
+	PR target/66660
+	* sel-sched-ir.c (merge_expr): Avoid changing the speculative pattern
+	to non-speculative when propagating trap bits.
+
+2016-03-31  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
+	2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
+
 	PR target/64411
 	* sched-deps.c (get_implicit_reg_pending_clobbers): New function,
 	factored out from ...
