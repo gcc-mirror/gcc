@@ -1,3 +1,8 @@
+2016-03-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/sync.md (arm_atomic_loaddi2_ldrd): Fix output template
+	for non-unified syntax.
+
 2016-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70460
