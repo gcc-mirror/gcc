@@ -1,11 +1,11 @@
 // PR c++/70096
 // { dg-do run }
 
-int read;
+int data_read;
 
 struct Holder
 {
-  void foo () { read = data; }
+  void foo () { data_read = data; }
   int data;
 };
 
