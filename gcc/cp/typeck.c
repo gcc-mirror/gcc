@@ -4364,7 +4364,7 @@ cp_build_binary_op (location_t location,
 	    {
 	      tree m1 = build_all_ones_cst (TREE_TYPE (op0));
 	      tree z = build_zero_cst (TREE_TYPE (op0));
-	      op1 = build_conditional_expr (location, op1, z, m1, complain);
+	      op1 = build_conditional_expr (location, op1, m1, z, complain);
 	    }
 	  else if (!COMPARISON_CLASS_P (op1))
 	    op1 = cp_build_binary_op (EXPR_LOCATION (op1), NE_EXPR, op1,
