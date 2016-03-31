@@ -1,3 +1,8 @@
+2016-03-31  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Initialize
+	scratch field for goto case.
+
 2016-03-31  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/linux-elf.h (ASM_OUTPUT_DEF): Delete.

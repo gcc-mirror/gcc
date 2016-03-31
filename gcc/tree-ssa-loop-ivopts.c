@@ -5030,7 +5030,9 @@ fallback:
     if (address_p)
       comp = build_simple_mem_ref (comp);
 
-    return new_cost (computation_cost (comp, speed), 0);
+    cost = new_cost (computation_cost (comp, speed), 0);
+    cost.scratch = 0;
+    return cost;
   }
 }
 
