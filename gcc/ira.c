@@ -3870,7 +3870,8 @@ indirect_jump_optimize (void)
   FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       rtx_insn *insn = BB_END (bb);
-      if (!JUMP_P (insn))
+      if (!JUMP_P (insn)
+	  || find_reg_note (insn, REG_NON_LOCAL_GOTO, NULL_RTX))
 	continue;
 
       rtx x = pc_set (insn);
@@ -3884,19 +3885,18 @@ indirect_jump_optimize (void)
 	  if (!DF_REF_IS_ARTIFICIAL (def))
 	    {
 	      rtx_insn *def_insn = DF_REF_INSN (def);
-	      rtx note = find_reg_note (def_insn, REG_LABEL_OPERAND, NULL_RTX);
-
-	      if (note)
+	      rtx lab = NULL_RTX;
+	      rtx set = single_set (def_insn);
+	      if (set && GET_CODE (SET_SRC (set)) == LABEL_REF)
+		lab = SET_SRC (set);
+	      else
 		{
-		  /* Substitute a LABEL_REF to the label given by the
-		     note rather than using SET_SRC of DEF_INSN.
-		     DEF_INSN might be loading the label constant from
-		     a constant pool, which isn't what we want in a
-		     direct branch.  */
-		  rtx lab = gen_rtx_LABEL_REF (Pmode, XEXP (note, 0));
-		  if (validate_replace_rtx (SET_SRC (x), lab, insn))
-		    rebuild_p = true;
+		  rtx eqnote = find_reg_note (def_insn, REG_EQUAL, NULL_RTX);
+		  if (eqnote && GET_CODE (XEXP (eqnote, 0)) == LABEL_REF)
+		    lab = XEXP (eqnote, 0);
 		}
+	      if (lab && validate_replace_rtx (SET_SRC (x), lab, insn))
+		rebuild_p = true;
 	    }
 	}
     }
