@@ -1,3 +1,11 @@
+2016-03-31  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (struct comp_cost): New scrach field.
+	(no_cost, infinite_cost): Initialize the new field.
+	(get_computation_cost_at): Record setup cost.
+	(determine_use_iv_cost_address): Skip cost computation for sub
+	uses if we can estimate it without losing accuracy.
+
 2016-03-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-loop-niter.c (idx_infer_loop_bounds): We can't get realistic
