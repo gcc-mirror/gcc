@@ -621,16 +621,6 @@ hsa_m_atomicop_name (enum BrigAtomicOperation op)
     }
 }
 
-/* Return byte alignment for given BrigAlignment8_t value.  */
-
-static unsigned
-hsa_byte_alignment (BrigAlignment8_t alignment)
-{
-  gcc_assert (alignment != BRIG_ALIGNMENT_NONE);
-
-  return 1 << (alignment - 1);
-}
-
 /* Dump textual representation of HSA IL register REG to file F.  */
 
 static void
@@ -716,7 +706,8 @@ dump_hsa_symbol (FILE *f, hsa_symbol *symbol)
       name = buf;
     }
 
-  fprintf (f, "%s_%s %s", hsa_seg_name (symbol->m_segment),
+  fprintf (f, "align(%u) %s_%s %s", hsa_byte_alignment (symbol->m_align),
+	   hsa_seg_name (symbol->m_segment),
 	   hsa_type_name (symbol->m_type & ~BRIG_TYPE_ARRAY_MASK), name);
 
   if (symbol->m_type & BRIG_TYPE_ARRAY_MASK)

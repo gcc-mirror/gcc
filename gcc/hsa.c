@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hsa.h"
 #include "internal-fn.h"
 #include "ctype.h"
+#include "builtins.h"
 
 /* Structure containing intermediate HSA representation of the generated
    function.  */
@@ -568,6 +569,25 @@ hsa_alignment_encoding (unsigned n)
     default:
       gcc_unreachable ();
     }
+}
+
+/* Return HSA alignment encoding alignment of T got
+   by get_object_alignment.  */
+
+BrigAlignment8_t
+hsa_object_alignment (tree t)
+{
+  return hsa_alignment_encoding (get_object_alignment (t));
+}
+
+/* Return byte alignment for given BrigAlignment8_t value.  */
+
+unsigned
+hsa_byte_alignment (BrigAlignment8_t alignment)
+{
+  gcc_assert (alignment != BRIG_ALIGNMENT_NONE);
+
+  return 1 << (alignment - 1);
 }
 
 /* Return natural alignment of HSA TYPE.  */

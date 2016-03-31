@@ -169,12 +169,12 @@ hsa_symbol::hsa_symbol ()
 
 hsa_symbol::hsa_symbol (BrigType16_t type, BrigSegment8_t segment,
 			BrigLinkage8_t linkage, bool global_scope_p,
-			BrigAllocation allocation)
+			BrigAllocation allocation, BrigAlignment8_t align)
   : m_decl (NULL_TREE), m_name (NULL), m_name_number (0),
     m_directive_offset (0), m_type (type), m_segment (segment),
     m_linkage (linkage), m_dim (0), m_cst_value (NULL),
     m_global_scope_p (global_scope_p), m_seen_error (false),
-    m_allocation (allocation), m_emitted_to_brig (false)
+    m_allocation (allocation), m_emitted_to_brig (false), m_align (align)
 {
 }
 
@@ -908,21 +908,29 @@ get_symbol_for_decl (tree decl)
     {
       hsa_symbol *sym;
       gcc_assert (TREE_CODE (decl) == VAR_DECL);
+      BrigAlignment8_t align = hsa_object_alignment (decl);
 
       if (is_in_global_vars)
 	{
 	  sym = new hsa_symbol (BRIG_TYPE_NONE, BRIG_SEGMENT_GLOBAL,
 				BRIG_LINKAGE_PROGRAM, true,
-				BRIG_ALLOCATION_PROGRAM);
+				BRIG_ALLOCATION_PROGRAM, align);
 	  hsa_cfun->m_global_symbols.safe_push (sym);
 	}
       else
 	{
+	  /* As generation of efficient memory copy instructions relies
+	     on alignment greater or equal to 8 bytes,
+	     we need to increase alignment of all aggregate types.. */
+	  if (AGGREGATE_TYPE_P (TREE_TYPE (decl)))
+	    align = MAX ((BrigAlignment8_t) BRIG_ALIGNMENT_8, align);
+
 	  /* PARM_DECL and RESULT_DECL should be already in m_local_symbols.  */
 	  gcc_assert (TREE_CODE (decl) == VAR_DECL);
 
 	  sym = new hsa_symbol (BRIG_TYPE_NONE, BRIG_SEGMENT_PRIVATE,
 				BRIG_LINKAGE_FUNCTION);
+	  sym->m_align = align;
 	  hsa_cfun->m_private_variables.safe_push (sym);
 	}
 
@@ -2192,6 +2200,30 @@ out:
   return new hsa_op_address (symbol, reg, hwi_offset);
 }
 
+/* Generate HSA address operand for a given tree memory reference REF.  If
+   instructions need to be created to calculate the address, they will be added
+   to the end of HBB.  OUTPUT_ALIGN is alignment of the created address.  */
+
+static hsa_op_address *
+gen_hsa_addr_with_align (tree ref, hsa_bb *hbb, BrigAlignment8_t *output_align)
+{
+  hsa_op_address *addr = gen_hsa_addr (ref, hbb);
+  if (addr->m_reg || !addr->m_symbol)
+    *output_align = hsa_object_alignment (ref);
+  else
+    {
+      /* If the address consists only of a symbol and an offset, we
+         compute the alignment ourselves to take into account any alignment
+         promotions we might have done for the HSA symbol representation.  */
+      unsigned align = hsa_byte_alignment (addr->m_symbol->m_align);
+      unsigned misalign = addr->m_imm_offset & (align - 1);
+      if (misalign)
+        align = (misalign & -misalign);
+      *output_align = hsa_alignment_encoding (BITS_PER_UNIT * align);
+    }
+  return addr;
+}
+
 /* Generate HSA address for a function call argument of given TYPE.
    INDEX is used to generate corresponding name of the arguments.
    Special value -1 represents fact that result value is created.  */
@@ -2398,7 +2430,7 @@ hsa_bitmemref_alignment (tree ref)
 
   unsigned HOST_WIDE_INT bits = bit_offset % BITS_PER_UNIT;
   unsigned HOST_WIDE_INT byte_bits = bit_offset - bits;
-  BrigAlignment8_t base = hsa_alignment_encoding (get_object_alignment (ref));
+  BrigAlignment8_t base = hsa_object_alignment (ref);
   if (byte_bits == 0)
     return base;
   return MIN (base, hsa_alignment_encoding (byte_bits & -byte_bits));
@@ -2537,7 +2569,7 @@ gen_hsa_insns_for_load (hsa_op_reg *dest, tree rhs, tree type, hsa_bb *hbb)
 								    false));
 	  hsa_insn_mem *mem = new hsa_insn_mem (BRIG_OPCODE_LD, mtype, dest,
 						addr);
-	  mem->set_align (hsa_alignment_encoding (get_object_alignment (rhs)));
+	  mem->set_align (hsa_object_alignment (rhs));
 	  hbb->append_insn (mem);
 	}
     }
@@ -2656,7 +2688,7 @@ gen_hsa_insns_for_store (tree lhs, hsa_op_base *src, hsa_bb *hbb)
       mtype = mem_type;
     }
   else
-    req_align = hsa_alignment_encoding (get_object_alignment (lhs));
+    req_align = hsa_object_alignment (lhs);
 
   hsa_insn_mem *mem = new hsa_insn_mem (BRIG_OPCODE_ST, mtype, src, addr);
   mem->set_align (req_align);
@@ -2697,16 +2729,18 @@ gen_hsa_insns_for_store (tree lhs, hsa_op_base *src, hsa_bb *hbb)
 
 /* Generate memory copy instructions that are going to be used
    for copying a HSA symbol SRC_SYMBOL (or SRC_REG) to TARGET memory,
-   represented by pointer in a register.  */
+   represented by pointer in a register.  MIN_ALIGN is minimal alignment
+   of provided HSA addresses. */
 
 static void
 gen_hsa_memory_copy (hsa_bb *hbb, hsa_op_address *target, hsa_op_address *src,
-		     unsigned size)
+		     unsigned size, BrigAlignment8_t min_align)
 {
   hsa_op_address *addr;
   hsa_insn_mem *mem;
 
   unsigned offset = 0;
+  unsigned min_byte_align = hsa_byte_alignment (min_align);
 
   while (size)
     {
@@ -2719,6 +2753,9 @@ gen_hsa_memory_copy (hsa_bb *hbb, hsa_op_address *target, hsa_op_address *src,
 	s = 2;
       else
 	s = 1;
+
+      if (s > min_byte_align)
+	s = min_byte_align;
 
       BrigType16_t t = get_integer_type_by_bytes (s, false);
 
@@ -2837,16 +2874,21 @@ gen_hsa_insns_for_single_assignment (tree lhs, tree rhs, hsa_bb *hbb)
     }
   else
     {
-      hsa_op_address *addr_lhs = gen_hsa_addr (lhs, hbb);
+      BrigAlignment8_t lhs_align;
+      hsa_op_address *addr_lhs = gen_hsa_addr_with_align (lhs, hbb,
+							  &lhs_align);
 
       if (TREE_CODE (rhs) == CONSTRUCTOR)
 	gen_hsa_ctor_assignment (addr_lhs, rhs, hbb);
       else
 	{
-	  hsa_op_address *addr_rhs = gen_hsa_addr (rhs, hbb);
+	  BrigAlignment8_t rhs_align;
+	  hsa_op_address *addr_rhs = gen_hsa_addr_with_align (rhs, hbb,
+							      &rhs_align);
 
 	  unsigned size = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (rhs)));
-	  gen_hsa_memory_copy (hbb, addr_lhs, addr_rhs, size);
+	  gen_hsa_memory_copy (hbb, addr_lhs, addr_rhs, size,
+			       MIN (lhs_align, rhs_align));
 	}
     }
 }
@@ -3513,9 +3555,10 @@ gen_hsa_insns_for_direct_call (gimple *stmt, hsa_bb *hbb)
       if (AGGREGATE_TYPE_P (TREE_TYPE (parm)))
 	{
 	  addr = gen_hsa_addr_for_arg (TREE_TYPE (parm), i);
-	  hsa_op_address *src = gen_hsa_addr (parm, hbb);
+	  BrigAlignment8_t align;
+	  hsa_op_address *src = gen_hsa_addr_with_align (parm, hbb, &align);
 	  gen_hsa_memory_copy (hbb, addr, src,
-			       addr->m_symbol->total_byte_size ());
+			       addr->m_symbol->total_byte_size (), align);
 	}
       else
 	{
@@ -3574,9 +3617,11 @@ gen_hsa_insns_for_direct_call (gimple *stmt, hsa_bb *hbb)
 
 	  if (AGGREGATE_TYPE_P (lhs_type))
 	    {
-	      hsa_op_address *result_addr = gen_hsa_addr (result, hbb);
+	      BrigAlignment8_t align;
+	      hsa_op_address *result_addr
+		= gen_hsa_addr_with_align (result, hbb, &align);
 	      gen_hsa_memory_copy (hbb, result_addr, addr,
-				   addr->m_symbol->total_byte_size ());
+				   addr->m_symbol->total_byte_size (), align);
 	    }
 	  else
 	    {
@@ -3685,9 +3730,12 @@ gen_hsa_insns_for_return (greturn *stmt, hsa_bb *hbb)
 
       if (AGGREGATE_TYPE_P (TREE_TYPE (retval)))
 	{
-	  hsa_op_address *retval_addr = gen_hsa_addr (retval, hbb);
+	  BrigAlignment8_t align;
+	  hsa_op_address *retval_addr = gen_hsa_addr_with_align (retval, hbb,
+								 &align);
 	  gen_hsa_memory_copy (hbb, addr, retval_addr,
-			       hsa_cfun->m_output_arg->total_byte_size ());
+			       hsa_cfun->m_output_arg->total_byte_size (),
+			       align);
 	}
       else
 	{
@@ -5143,7 +5191,7 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
 	hsa_op_address *dst_addr = get_address_from_value (dst, hbb);
 	hsa_op_address *src_addr = get_address_from_value (src, hbb);
 
-	gen_hsa_memory_copy (hbb, dst_addr, src_addr, n);
+	gen_hsa_memory_copy (hbb, dst_addr, src_addr, n, BRIG_ALIGNMENT_1);
 
 	tree lhs = gimple_call_lhs (stmt);
 	if (lhs)
@@ -5597,9 +5645,11 @@ gen_function_def_parameters ()
 	  private_arg = hsa_cfun->create_hsa_temporary (arg->m_type);
 	  private_arg->fillup_for_decl (parm);
 
+	  BrigAlignment8_t align = MIN (arg->m_align, private_arg->m_align);
+
 	  hsa_op_address *private_arg_addr = new hsa_op_address (private_arg);
 	  gen_hsa_memory_copy (prologue, private_arg_addr, parm_addr,
-			       arg->total_byte_size ());
+			       arg->total_byte_size (), align);
 	}
       else
 	private_arg = arg;

@@ -1,3 +1,29 @@
+2016-03-31  Martin Liska  <mliska@suse.cz>
+
+	PR hsa/70391
+	* hsa-brig.c (emit_directive_variable): Emit alignment
+	according to hsa_symbol::m_align.
+	* hsa-dump.c (hsa_byte_alignment): Move the function to
+	another file.
+	(dump_hsa_symbol): Dump alignment of HSA symbols.
+	* hsa-gen.c (get_symbol_for_decl): Set-up alignment
+	of a symbol.
+	(gen_hsa_addr_with_align): New function.
+	(hsa_bitmemref_alignment): Use newly added function.
+	(gen_hsa_insns_for_load): Likewise.
+	(gen_hsa_insns_for_store): Likewise.
+	(gen_hsa_memory_copy): New argument added.
+	(gen_hsa_insns_for_single_assignment): Respect
+	alignment for assignments processed via
+	gen_hsa_memory_copy.
+	(gen_hsa_insns_for_direct_call): Likewise.
+	(gen_hsa_insns_for_return): Likewise.
+	(gen_function_def_parameters): Set default
+	alignment.
+	* hsa.c (hsa_object_alignment): New function.
+	(hsa_byte_alignment): Pasted function.
+	* hsa.h (hsa_symbol::m_align): New field.
+
 2016-03-31  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Initialize
