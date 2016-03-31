@@ -647,8 +647,6 @@ dump_hsa_immed (FILE *f, hsa_op_immed *imm)
     print_generic_expr (f, imm->m_tree_value, 0);
   else
     {
-      gcc_checking_assert (imm->m_brig_repr_size <= 8);
-
       if (unsigned_int_type)
 	fprintf (f, HOST_WIDE_INT_PRINT_DEC, imm->m_int_value);
       else

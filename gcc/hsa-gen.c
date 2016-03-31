@@ -1075,8 +1075,7 @@ hsa_op_with_type::get_in_type (BrigType16_t dtype, hsa_bb *hbb)
 hsa_op_immed::hsa_op_immed (tree tree_val, bool min32int)
   : hsa_op_with_type (BRIG_KIND_OPERAND_CONSTANT_BYTES,
 		      hsa_type_for_tree_type (TREE_TYPE (tree_val), NULL,
-					      min32int)),
-  m_brig_repr (NULL)
+					      min32int))
 {
   if (hsa_seen_error ())
     return;
@@ -1086,30 +1085,20 @@ hsa_op_immed::hsa_op_immed (tree tree_val, bool min32int)
 			   || TREE_CODE (tree_val) == INTEGER_CST))
 		       || TREE_CODE (tree_val) == CONSTRUCTOR);
   m_tree_value = tree_val;
-  m_brig_repr_size = hsa_get_imm_brig_type_len (m_type);
 
-  if (TREE_CODE (m_tree_value) == STRING_CST)
-    m_brig_repr_size = TREE_STRING_LENGTH (m_tree_value);
-  else if (TREE_CODE (m_tree_value) == CONSTRUCTOR)
-    {
-      m_brig_repr_size
-	= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (m_tree_value)));
-
-      /* Verify that all elements of a constructor are constants.  */
-      for (unsigned i = 0;
-	   i < vec_safe_length (CONSTRUCTOR_ELTS (m_tree_value)); i++)
-	{
-	  tree v = CONSTRUCTOR_ELT (m_tree_value, i)->value;
-	  if (!CONSTANT_CLASS_P (v))
-	    {
-	      HSA_SORRY_AT (EXPR_LOCATION (tree_val),
-			    "HSA ctor should have only constants");
-	      return;
-	    }
-	}
-    }
-
-  emit_to_buffer (m_tree_value);
+  /* Verify that all elements of a constructor are constants.  */
+  if (TREE_CODE (m_tree_value) == CONSTRUCTOR)
+    for (unsigned i = 0;
+	 i < vec_safe_length (CONSTRUCTOR_ELTS (m_tree_value)); i++)
+      {
+	tree v = CONSTRUCTOR_ELT (m_tree_value, i)->value;
+	if (!CONSTANT_CLASS_P (v))
+	  {
+	    HSA_SORRY_AT (EXPR_LOCATION (tree_val),
+			  "HSA ctor should have only constants");
+	    return;
+	  }
+      }
 }
 
 /* Constructor of class representing HSA immediate values.  INTEGER_VALUE is the
@@ -1117,38 +1106,14 @@ hsa_op_immed::hsa_op_immed (tree tree_val, bool min32int)
 
 hsa_op_immed::hsa_op_immed (HOST_WIDE_INT integer_value, BrigType16_t type)
   : hsa_op_with_type (BRIG_KIND_OPERAND_CONSTANT_BYTES, type),
-    m_tree_value (NULL), m_brig_repr (NULL)
+    m_tree_value (NULL)
 {
   gcc_assert (hsa_type_integer_p (type));
   m_int_value = integer_value;
-  m_brig_repr_size = hsa_type_bit_size (type) / BITS_PER_UNIT;
-
-  hsa_bytes bytes;
-
-  switch (m_brig_repr_size)
-    {
-    case 1:
-      bytes.b8 = (uint8_t) m_int_value;
-      break;
-    case 2:
-      bytes.b16 = (uint16_t) m_int_value;
-      break;
-    case 4:
-      bytes.b32 = (uint32_t) m_int_value;
-      break;
-    case 8:
-      bytes.b64 = (uint64_t) m_int_value;
-      break;
-    default:
-      gcc_unreachable ();
-    }
-
-  m_brig_repr = XNEWVEC (char, m_brig_repr_size);
-  memcpy (m_brig_repr, &bytes, m_brig_repr_size);
 }
 
 hsa_op_immed::hsa_op_immed ()
-  : hsa_op_with_type (BRIG_KIND_NONE, BRIG_TYPE_NONE), m_brig_repr (NULL)
+  : hsa_op_with_type (BRIG_KIND_NONE, BRIG_TYPE_NONE)
 {
 }
 
@@ -1164,7 +1129,6 @@ hsa_op_immed::operator new (size_t)
 
 hsa_op_immed::~hsa_op_immed ()
 {
-  free (m_brig_repr);
 }
 
 /* Change type of the immediate value to T.  */

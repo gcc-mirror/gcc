@@ -1,5 +1,19 @@
 2016-03-31  Martin Liska  <mliska@suse.cz>
 
+	PR hsa/70399
+	* hsa-brig.c (hsa_op_immed::emit_to_buffer): Emit either
+	a tree value or an immediate integer value to a buffer
+	that is eventually copied to a BRIG section.
+	(emit_immediate_operand): Call the function here.
+	* hsa-dump.c (dump_hsa_immed): Remove checking assert.
+	* hsa-gen.c (hsa_op_immed::hsa_op_immed): Remove initialization
+	of class' fields that are removed.
+	(hsa_op_immed::~hsa_op_immed): Remove deinitialization.
+	* hsa.h (class hsa_op_immed): Remove m_brig_repr and
+	m_brig_repr_size fields.
+
+2016-03-31  Martin Liska  <mliska@suse.cz>
+
 	PR hsa/70391
 	* hsa-gen.c (hsa_function_representation::update_dominance): New
 	function.

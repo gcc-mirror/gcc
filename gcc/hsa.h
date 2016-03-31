@@ -175,17 +175,16 @@ public:
   ~hsa_op_immed ();
   void set_type (BrigKind16_t t);
 
+  /* Function returns pointer to a buffer that contains binary representation
+     of the immeadiate value.  The buffer has length of BRIG_SIZE and
+     a caller is responsible for deallocation of the buffer.  */
+  char *emit_to_buffer (unsigned *brig_size);
+
   /* Value as represented by middle end.  */
   tree m_tree_value;
 
   /* Integer value representation.  */
   HOST_WIDE_INT m_int_value;
-
-  /* Brig data representation.  */
-  char *m_brig_repr;
-
-  /* Brig data representation size in bytes.  */
-  unsigned m_brig_repr_size;
 
 private:
   /* Make the default constructor inaccessible.  */
@@ -193,7 +192,6 @@ private:
   /* All objects are deallocated by destroying their pool, so make delete
      inaccessible too.  */
   void operator delete (void *) {}
-  void emit_to_buffer (tree value);
 };
 
 /* Report whether or not P is a an immediate operand.  */
