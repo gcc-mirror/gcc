@@ -1,6 +1,15 @@
 2016-03-31  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline
+	2016-03-21  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/69102
+	* sched-deps.c (sched_analyze_insn): Do not set last_args_size field
+	when we have a readonly dependency context.
+
+2016-03-31  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
 	2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/69032
