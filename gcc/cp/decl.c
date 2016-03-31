@@ -2028,7 +2028,16 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	 at newdecl, which will be ggc_freed.  */
       if (TREE_CODE (newdecl) == TYPE_DECL)
 	{
+	  /* But NEWTYPE might have an attribute, honor that.  */
+	  tree tem = TREE_TYPE (newdecl);
 	  newtype = oldtype;
+
+	  if (TYPE_USER_ALIGN (tem))
+	    {
+	      if (TYPE_ALIGN (tem) > TYPE_ALIGN (newtype))
+		TYPE_ALIGN (newtype) = TYPE_ALIGN (tem);
+	      TYPE_USER_ALIGN (newtype) = true;
+	    }
 
 	  /* And remove the new type from the variants list.  */
 	  if (TYPE_NAME (TREE_TYPE (newdecl)) == newdecl)

@@ -1,3 +1,10 @@
+2016-03-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70297
+	* c-c++-common/pr70297.c: New test.
+	* g++.dg/cpp0x/typedef-redecl.C: New test.
+	* gcc.dg/typedef-redecl2.c: New test.
+
 2016-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70460
