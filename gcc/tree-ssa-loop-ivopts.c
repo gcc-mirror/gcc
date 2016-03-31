@@ -172,10 +172,11 @@ struct comp_cost
 			   the computation (in no concrete units --
 			   complexity field should be larger for more
 			   complex expressions and addressing modes).  */
+  int scratch;		/* Scratch used during cost computation.  */
 };
 
-static const comp_cost no_cost = {0, 0};
-static const comp_cost infinite_cost = {INFTY, INFTY};
+static const comp_cost no_cost = {0, 0, 0};
+static const comp_cost infinite_cost = {INFTY, INFTY, INFTY};
 
 /* The candidate - cost pair.  */
 struct cost_pair
@@ -4953,6 +4954,8 @@ get_computation_cost_at (struct ivopts_data *data,
       cost.cost += add_cost (data->speed, TYPE_MODE (ctype));
     }
 
+  /* Record setup cost in scrach field.  */
+  cost.scratch = cost.cost;
   /* Set of invariants depended on by sub use has already been computed
      for the first use in the group.  */
   if (use->sub_id)
@@ -5088,12 +5091,12 @@ determine_use_iv_cost_address (struct ivopts_data *data,
 			       struct iv_use *use, struct iv_cand *cand)
 {
   bitmap depends_on;
-  bool can_autoinc;
+  bool can_autoinc, first;
   int inv_expr_id = -1;
   struct iv_use *sub_use;
-  comp_cost sub_cost;
   comp_cost cost = get_computation_cost (data, use, cand, true, &depends_on,
 					 &can_autoinc, &inv_expr_id);
+  comp_cost sub_cost = cost;
 
   if (cand->ainc_use == use)
     {
@@ -5105,13 +5108,47 @@ determine_use_iv_cost_address (struct ivopts_data *data,
       else if (cand->pos == IP_AFTER_USE || cand->pos == IP_BEFORE_USE)
 	cost = infinite_cost;
     }
-  for (sub_use = use->next;
-       sub_use && !infinite_cost_p (cost);
-       sub_use = sub_use->next)
+
+  if (!infinite_cost_p (cost) && use->next)
     {
-      sub_cost = get_computation_cost (data, sub_use, cand, true, NULL,
-				       &can_autoinc, NULL);
-      cost = add_costs (cost, sub_cost);
+      first = true;
+      sub_use = use->next;
+      /* We don't want to add setup cost for sub-uses.  */
+      sub_cost.cost -= sub_cost.scratch;
+      /* Add cost for sub uses in group.  */
+      do
+	{
+	  /* Compute cost for the first sub use with different offset to
+	     the main use and add it afterwards.  Costs for these uses
+	     could be quite different.  Given below uses in a group:
+	       use 0  : {base + A + offset_0, step}
+	       use 0.1: {base + A + offset_0, step}
+	       use 0.2: {base + A + offset_1, step}
+	       use 0.3: {base + A + offset_2, step}
+	     when we need to compute costs with candidate:
+	       cand 1 : {base + B + offset_0, step}
+
+	     The first sub use with different offset is use 0.2, its cost
+	     is larger than cost of use 0/0.1 because we need to compute:
+	       A - B + offset_1 - offset_0
+	     rather than:
+	       A - B.  */
+	  if (first && use->addr_offset != sub_use->addr_offset)
+	    {
+	      first = false;
+	      sub_cost = get_computation_cost (data, sub_use, cand, true,
+					       NULL, &can_autoinc, NULL);
+	      if (infinite_cost_p (sub_cost))
+		{
+		  cost = infinite_cost;
+		  break;
+		}
+	    }
+
+	  cost = add_costs (cost, sub_cost);
+	  sub_use = sub_use->next;
+	}
+      while (sub_use);
     }
 
   set_use_iv_cost (data, use, cand, cost, depends_on, NULL_TREE, ERROR_MARK,
