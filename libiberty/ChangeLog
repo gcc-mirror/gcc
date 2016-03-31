@@ -1,6 +1,8 @@
 2016-03-31  Mikhail Maltsev  <maltsevm@gmail.com>
 	    Marcel Bohme  boehme.marcel@gmail.com
 
+	PR c++/67394
+	PR c++/70481
 	* cplus-dem.c (squangle_mop_up): Zero bsize/ksize after freeing
 	btypevec/ktypevec.
 	* testsuite/demangle-expected: Add coverage tests.
