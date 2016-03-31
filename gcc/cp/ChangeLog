@@ -1,3 +1,9 @@
+2016-03-31  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/70393
+	* constexpr.c (cxx_eval_store_expression): Keep CONSTRUCTOR
+	elements in field order.
+
 2016-03-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70297

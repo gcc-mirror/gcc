@@ -4929,6 +4929,14 @@ output_constructor_regular_field (oc_local_state *local)
 
   unsigned int align2;
 
+  /* Output any buffered-up bit-fields preceding this element.  */
+  if (local->byte_buffer_in_use)
+    {
+      assemble_integer (GEN_INT (local->byte), 1, BITS_PER_UNIT, 1);
+      local->total_bytes++;
+      local->byte_buffer_in_use = false;
+    }
+
   if (local->index != NULL_TREE)
     {
       /* Perform the index calculation in modulo arithmetic but
@@ -4945,22 +4953,19 @@ output_constructor_regular_field (oc_local_state *local)
   else
     fieldpos = 0;
 
-  /* Output any buffered-up bit-fields preceding this element.  */
-  if (local->byte_buffer_in_use)
-    {
-      assemble_integer (GEN_INT (local->byte), 1, BITS_PER_UNIT, 1);
-      local->total_bytes++;
-      local->byte_buffer_in_use = false;
-    }
-
   /* Advance to offset of this element.
      Note no alignment needed in an array, since that is guaranteed
      if each element has the proper size.  */
-  if ((local->field != NULL_TREE || local->index != NULL_TREE)
-      && fieldpos > local->total_bytes)
+  if (local->field != NULL_TREE || local->index != NULL_TREE)
     {
-      assemble_zeros (fieldpos - local->total_bytes);
-      local->total_bytes = fieldpos;
+      if (fieldpos > local->total_bytes)
+	{
+	  assemble_zeros (fieldpos - local->total_bytes);
+	  local->total_bytes = fieldpos;
+	}
+      else
+	/* Must not go backwards.  */
+	gcc_assert (fieldpos == local->total_bytes);
     }
 
   /* Find the alignment of this element.  */

@@ -2959,16 +2959,39 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       else
 	{
 	  gcc_assert (TREE_CODE (index) == FIELD_DECL);
-	  for (unsigned HOST_WIDE_INT idx = 0;
+
+	  /* We must keep the CONSTRUCTOR's ELTS in FIELD order.
+	     Usually we meet initializers in that order, but it is
+	     possible for base types to be placed not in program
+	     order.  */
+	  tree fields = TYPE_FIELDS (DECL_CONTEXT (index));
+	  unsigned HOST_WIDE_INT idx;
+
+	  for (idx = 0;
 	       vec_safe_iterate (CONSTRUCTOR_ELTS (*valp), idx, &cep);
-	       idx++)
-	    if (index == cep->index)
-	      break;
-	  if (!cep)
+	       idx++, fields = DECL_CHAIN (fields))
 	    {
-	      constructor_elt ce = { index, NULL_TREE };
-	      cep = vec_safe_push (CONSTRUCTOR_ELTS (*valp), ce);
+	      if (index == cep->index)
+		goto found;
+
+	      /* The field we're initializing must be on the field
+		 list.  Look to see if it is present before the
+		 field the current ELT initializes.  */
+	      for (; fields != cep->index; fields = DECL_CHAIN (fields))
+		if (index == fields)
+		  goto insert;
 	    }
+
+	  /* We fell off the end of the CONSTRUCTOR, so insert a new
+	     entry at the end.  */
+	insert:
+	  {
+	    constructor_elt ce = { index, NULL_TREE };
+
+	    vec_safe_insert (CONSTRUCTOR_ELTS (*valp), idx, ce);
+	    cep = CONSTRUCTOR_ELT (*valp, idx);
+	  }
+	found:;
 	}
       valp = &cep->value;
     }
