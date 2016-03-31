@@ -1,6 +1,31 @@
 2016-03-31  Martin Liska  <mliska@suse.cz>
 
 	PR hsa/70391
+	* hsa-gen.c (hsa_function_representation::update_dominance): New
+	function.
+	(convert_addr_to_flat_segment): Likewise.
+	(gen_hsa_memory_set): New alignment argument.
+	(gen_hsa_ctor_assignment): Likewise.
+	(gen_hsa_insns_for_single_assignment): Provide alignment
+	to gen_hsa_ctor_assignment.
+	(gen_hsa_insns_for_direct_call): Add new argument.
+	(expand_lhs_of_string_op): New function.
+	(expand_string_operation_builtin): Likewise.
+	(expand_memory_copy): New function.
+	(expand_memory_set): New function.
+	(gen_hsa_insns_for_call): Use HOST_WIDE_INT.
+	(convert_switch_statements): Change signature.
+	(generate_hsa): Use a return value of the function.
+	(pass_gen_hsail::execute): Do not call
+	convert_switch_statements here.
+	* hsa-regalloc.c (hsa_regalloc): Call update_dominance.
+	* hsa.h (hsa_function_representation::m_modified_cfg):
+	New flag.
+	(hsa_function_representation::update_dominance): New function.
+
+2016-03-31  Martin Liska  <mliska@suse.cz>
+
+	PR hsa/70391
 	* hsa-brig.c (emit_directive_variable): Emit alignment
 	according to hsa_symbol::m_align.
 	* hsa-dump.c (hsa_byte_alignment): Move the function to
