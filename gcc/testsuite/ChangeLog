@@ -3,6 +3,14 @@
 	Backport from mainline
 	2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
 
+	PR rtl-optimization/69032
+	* gcc.dg/pr69032.c: New test.
+
+2016-03-31  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
+	2016-03-15  Andrey Belevantsev  <abel@ispras.ru>
+
 	PR target/64411
 	* gcc.target/i386/pr64411.C: New test.
 
