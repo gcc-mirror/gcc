@@ -60,7 +60,8 @@ struct hsa_symbol
   /* Constructor.  */
   hsa_symbol (BrigType16_t type, BrigSegment8_t segment,
 	      BrigLinkage8_t linkage, bool global_scope_p = false,
-	      BrigAllocation allocation = BRIG_ALLOCATION_AUTOMATIC);
+	      BrigAllocation allocation = BRIG_ALLOCATION_AUTOMATIC,
+	      BrigAlignment8_t align = BRIG_ALIGNMENT_8);
 
   /* Return total size of the symbol.  */
   unsigned HOST_WIDE_INT total_byte_size ();
@@ -112,6 +113,9 @@ struct hsa_symbol
 
   /* Flag used for global variables if a variable is already emitted or not.  */
   bool m_emitted_to_brig;
+
+  /* Alignment of the symbol.  */
+  BrigAlignment8_t m_align;
 
 private:
   /* Default constructor.  */
@@ -1347,6 +1351,8 @@ bool hsa_type_integer_p (BrigType16_t type);
 bool hsa_btype_p (BrigType16_t type);
 BrigAlignment8_t hsa_alignment_encoding (unsigned n);
 BrigAlignment8_t hsa_natural_alignment (BrigType16_t type);
+BrigAlignment8_t hsa_object_alignment (tree t);
+unsigned hsa_byte_alignment (BrigAlignment8_t alignment);
 void hsa_destroy_operand (hsa_op_base *op);
 void hsa_destroy_insn (hsa_insn_basic *insn);
 void hsa_add_kern_decl_mapping (tree decl, char *name, unsigned, bool);
