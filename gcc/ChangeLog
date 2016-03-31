@@ -1,3 +1,11 @@
+2016-03-31  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR target/70442
+	* config/i386/i386.c (scalar_chain::convert_op): Fix
+	description.
+	(scalar_chain::convert_insn): Call convert_op for reg
+	moves to handle undefined registers.
+
 2016-03-31  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/70393
