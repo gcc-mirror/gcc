@@ -107,7 +107,7 @@
 	  [(match_operand:DI 1 "arm_sync_memory_operand" "Q")]
 	    VUNSPEC_LDRD_ATOMIC))]
   "ARM_DOUBLEWORD_ALIGN && TARGET_HAVE_LPAE"
-  "ldrd%?\t%0, %H0, %C1"
+  "ldr%(d%)\t%0, %H0, %C1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")])
 
