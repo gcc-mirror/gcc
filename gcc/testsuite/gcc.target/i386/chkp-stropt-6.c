@@ -3,7 +3,7 @@
 /* { dg-final { scan-tree-dump "memset_nobnd" "chkpopt" } } */
 /* { dg-final { cleanup-tree-dump "chkpopt" } } */
 
-#include "string.h"
+#include "../../gcc.dg/strlenopt.h"
 
 void test (int *buf1, int c, size_t len)
 {

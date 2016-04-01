@@ -4,7 +4,8 @@
 /* { dg-final { scan-tree-dump-not "mempcpy_nobnd" "chkpopt" } } */
 /* { dg-final { cleanup-tree-dump "chkpopt" } } */
 
-#include "string.h"
+#define USE_GNU
+#include "../../gcc.dg/strlenopt.h"
 
 void test (void *buf1, void *buf2, size_t len)
 {

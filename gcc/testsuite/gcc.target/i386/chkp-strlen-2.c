@@ -4,7 +4,8 @@
 /* { dg-final { scan-tree-dump-not "strlen" "strlen" } } */
 /* { dg-final { cleanup-tree-dump "strlen" } } */
 
-#include "string.h"
+#define USE_GNU
+#include "../../gcc.dg/strlenopt.h"
 
 char *test (char *str1, char *str2)
 {
