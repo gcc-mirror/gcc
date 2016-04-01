@@ -1,3 +1,10 @@
+2016-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/70467
+	* config/i386/i386.md (*add<dwi>3_doubleword, *sub<dwi>3_doubleword):
+	If low word of the last operand is 0, just emit addition/subtraction
+	for the high word.
+
 2016-04-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/70404

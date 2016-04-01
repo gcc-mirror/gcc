@@ -1,4 +1,9 @@
 2016-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/70467
+	* gcc.target/i386/pr70467-2.c: New test.
+
+2016-04-01  Jakub Jelinek  <jakub@redhat.com>
 	    Marek Polacek  <polacek@redhat.com>
 
 	PR c++/70488
