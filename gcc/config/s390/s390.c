@@ -6063,7 +6063,7 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
     {
       machine_mode mode_s = GET_MODE (src);
 
-      if (mode_s == VOIDmode)
+      if (CONSTANT_P (src))
 	{
 	  /* For constant zero values the representation with AND
 	     appears to be folded in more situations than the (set
