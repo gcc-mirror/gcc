@@ -1,3 +1,10 @@
+2016-04-01  Jakub Jelinek  <jakub@redhat.com>
+	    Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70488
+	* init.c (warn_placement_new_too_small): Test whether
+	DECL_SIZE_UNIT or TYPE_SIZE_UNIT are integers that fit into uhwi.
+
 2016-04-01  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/68475
