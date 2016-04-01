@@ -1,3 +1,9 @@
+2016-04-01  Jakub Jelinek  <jakub@redhat.com>
+	    Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70488
+	* g++.dg/init/new47.C: New test.
+
 2016-04-01  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/70496

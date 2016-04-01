@@ -2430,7 +2430,8 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 	 though the size of a member of a union may be viewed as extending
 	 to the end of the union itself (it is by __builtin_object_size).  */
       if ((TREE_CODE (oper) == VAR_DECL || use_obj_size)
-	  && DECL_SIZE_UNIT (oper))
+	  && DECL_SIZE_UNIT (oper)
+	  && tree_fits_uhwi_p (DECL_SIZE_UNIT (oper)))
 	{
 	  /* Use the size of the entire array object when the expression
 	     refers to a variable or its size depends on an expression
@@ -2438,7 +2439,8 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 	  bytes_avail = tree_to_uhwi (DECL_SIZE_UNIT (oper));
 	  exact_size = !use_obj_size;
 	}
-      else if (TYPE_SIZE_UNIT (TREE_TYPE (oper)))
+      else if (TYPE_SIZE_UNIT (TREE_TYPE (oper))
+	       && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (oper))))
 	{
 	  /* Use the size of the type of the destination buffer object
 	     as the optimistic estimate of the available space in it.  */
