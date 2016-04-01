@@ -1,3 +1,11 @@
+2016-03-31  Evandro Menezes  <e.menezes@samsung.com>
+
+	Fix the predicate "aarch64_simd_reg_or_zero" to correctly validate
+	the "Y" constraint (scalar FP 0.0 immediate).
+
+	* gcc/config/aarch64/predicates.md (aarch64_simd_reg_or_zero):
+	Add the "const_double" to the list of operand constraints.
+
 2016-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70467
