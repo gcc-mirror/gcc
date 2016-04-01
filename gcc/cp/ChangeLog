@@ -1,3 +1,11 @@
+2016-04-01  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/68475
+	* decl.c (check_redeclaration_exception_specification): Check
+	regardless of -fno-exceptions.
+	* typeck2.c (merge_exception_specifiers): Relax assert by checking
+	flag_exceptions too.
+
 2016-03-31  Nathan Sidwell  <nathan@acm.org>
 
 	* decl.c (start_preparsed_function): Remove unnecessary bracing.
