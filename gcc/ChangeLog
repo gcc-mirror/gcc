@@ -1,3 +1,7 @@
+2016-04-01  Nathan Sidwell  <nathan@acm.org>
+
+	* tree.def (TRY_CATCH_EXPR): Correct documentation.
+
 2016-03-31  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/70461
