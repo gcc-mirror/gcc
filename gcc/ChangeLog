@@ -1,3 +1,9 @@
+2016-04-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/70404
+	* config/s390/s390.c (s390_expand_insv): Check for everything
+	constant instead of just VOIDmode stuff.
+
 2016-04-01  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/70496
