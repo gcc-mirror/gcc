@@ -5691,7 +5691,10 @@ autopref_multipass_dfa_lookahead_guard (rtx_insn *insn1, int ready_index)
 {
   int r = 0;
 
-  if (PARAM_VALUE (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH) <= 0)
+  /* Exit early if the param forbids this or if we're not entering here through
+     normal haifa scheduling.  This can happen if selective scheduling is
+     explicitly enabled.  */
+  if (!insn_queue || PARAM_VALUE (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH) <= 0)
     return 0;
 
   if (sched_verbose >= 2 && ready_index == 0)
@@ -7369,6 +7372,7 @@ haifa_sched_finish (void)
   sched_deps_finish ();
   sched_finish_luids ();
   current_sched_info = NULL;
+  insn_queue = NULL;
   sched_finish ();
 }
 
