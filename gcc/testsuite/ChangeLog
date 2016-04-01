@@ -1,5 +1,8 @@
 2016-04-01  Nathan Sidwell  <nathan@acm.org>
 
+	PR c++/68475
+	* g++.dg/g++.dg/cpp0x/noexcept29.C: New.
+
 2016-04-01  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/69890
