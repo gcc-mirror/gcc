@@ -3,7 +3,7 @@
 /* { dg-final { scan-tree-dump-times "strlen" 2 "strlen" } } */
 /* { dg-final { scan-tree-dump "memcpy" "strlen" } } */
 
-#include "string.h"
+#include "../../gcc.dg/strlenopt.h"
 
 size_t test (char *str1, char *str2)
 {

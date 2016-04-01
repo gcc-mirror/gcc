@@ -2,7 +2,7 @@
 /* { dg-options "-fcheck-pointer-bounds -mmpx -O2 -fdump-tree-strlen" } */
 /* { dg-final { scan-tree-dump "memcpy.chkp" "strlen" } } */
 
-#include "string.h"
+#include "../../gcc.dg/strlenopt.h"
 
 char *test (char *str1, char *str2)
 {
