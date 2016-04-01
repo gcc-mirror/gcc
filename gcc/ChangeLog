@@ -1,3 +1,9 @@
+2016-04-01  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/70496
+	* config/arm/arm.h (ASM_APP_OFF): Handle TARGET_ARM
+	and TARGET_THUMB.
+
 2016-04-01  Nathan Sidwell  <nathan@acm.org>
 
 	* tree.def (TRY_CATCH_EXPR): Correct documentation.

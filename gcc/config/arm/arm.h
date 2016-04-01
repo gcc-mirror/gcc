@@ -2037,7 +2037,8 @@ extern int making_const_table;
 		    "\t.syntax divided\n")
 
 #undef  ASM_APP_OFF
-#define ASM_APP_OFF "\t.syntax unified\n"
+#define ASM_APP_OFF (TARGET_ARM ? "\t.arm\n\t.syntax unified\n" : \
+		     "\t.thumb\n\t.syntax unified\n")
 
 /* Output a push or a pop instruction (only used when profiling).
    We can't push STATIC_CHAIN_REGNUM (r12) directly with Thumb-1.  We know
