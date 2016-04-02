@@ -166,6 +166,15 @@
 	* gcc.dg/torture/pr70421.c: New test.
 	* gcc.target/i386/avx512f-pr70421.c: New test.
 
+2016-03-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/70364
+	* gcc.target/i386/cleanup-1.c: Include <stddef.h>.
+	(check): New function.
+	(bar): Call check.
+	(foo): Align stack to 16 bytes when calling bar.
+	* gcc.target/i386/cleanup-2.c: Likewise.
+
 2016-03-30  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR tree-optimization/59124
