@@ -7606,13 +7606,15 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
   if (p_gnu_rep_list && gnu_rep_list)
     *p_gnu_rep_list = chainon (*p_gnu_rep_list, gnu_rep_list);
 
-  /* If only one field has a rep clause and it starts at 0, put back the field
-     at the head of the regular field list.  This will avoid creating a useless
-     REP part below and deal with the annoying case of an extension of a record
-     with variable size and rep clause, for which the _Parent field is forced
-     at offset 0 and has variable size, which we do not support below.  */
+  /* Deal with the annoying case of an extension of a record with variable size
+     and partial rep clause, for which the _Parent field is forced at offset 0
+     and has variable size, which we do not support below.  Note that we cannot
+     do it if the field has fixed size because we rely on the presence of the
+     REP part built below to trigger the reordering of the fields in a derived
+     record type when all the fields have a fixed position.  */
   else if (gnu_rep_list
 	   && !DECL_CHAIN (gnu_rep_list)
+	   && TREE_CODE (DECL_SIZE (gnu_rep_list)) != INTEGER_CST
 	   && !variants_have_rep
 	   && first_free_pos
 	   && integer_zerop (first_free_pos)
