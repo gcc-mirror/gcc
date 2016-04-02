@@ -1239,21 +1239,6 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       return t;
     }
 
-  if (fun == current_function_decl)
-    {
-      /* A call to the current function, i.e.
-	 constexpr int f (int i) {
-	   constexpr int j = f(i-1);
-	   return j;
-	 }
-	 This would be OK without the constexpr on the declaration of j.  */
-      if (!ctx->quiet)
-	error_at (loc, "%qD called in a constant expression before its "
-		  "definition is complete", fun);
-      *non_constant_p = true;
-      return t;
-    }
-
   constexpr_ctx new_ctx = *ctx;
   if (DECL_CONSTRUCTOR_P (fun) && !ctx->object
       && TREE_CODE (t) == AGGR_INIT_EXPR)
@@ -1308,7 +1293,10 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
         {
 	  if (!ctx->quiet)
 	    {
-	      if (DECL_INITIAL (fun))
+	      if (DECL_INITIAL (fun) == error_mark_node)
+		error_at (loc, "%qD called in a constant expression before its "
+			  "definition is complete", fun);
+	      else if (DECL_INITIAL (fun))
 		{
 		  /* The definition of fun was somehow unsuitable.  */
 		  error_at (loc, "%qD called in a constant expression", fun);
