@@ -1,6 +1,11 @@
+2016-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (components_to_record): Restrict the previous
+	change to fields with variable size.
+
 2016-03-27  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* gcc-interface/decl.c (components_to_record): Add special case for     
+	* gcc-interface/decl.c (components_to_record): Add special case for
 	single field with representation clause at offset 0.
 
 2016-03-16  Svante Signell  <svante.signell@gmail.com>
