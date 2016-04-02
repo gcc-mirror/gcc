@@ -21741,7 +21741,8 @@ instantiate_decl (tree d, int defer_ok,
   if (TREE_CODE (d) == FUNCTION_DECL)
     {
       deleted_p = DECL_DELETED_FN (code_pattern);
-      pattern_defined = (DECL_SAVED_TREE (code_pattern) != NULL_TREE
+      pattern_defined = ((DECL_SAVED_TREE (code_pattern) != NULL_TREE
+			  && DECL_INITIAL (code_pattern) != error_mark_node)
 			 || DECL_DEFAULTED_OUTSIDE_CLASS_P (code_pattern)
 			 || deleted_p);
     }
