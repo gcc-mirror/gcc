@@ -1,3 +1,11 @@
+2016-04-02  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/67376
+	* fold-const.c (maybe_nonzero_address): New function.
+	(fold_comparison): Call it.  Fold equality and relational
+	expressions involving null pointers.
+	(tree_single_nonzero_warnv_p): Call maybe_nonzero_address.
+
 2016-03-31  Evandro Menezes  <e.menezes@samsung.com>
 
 	Fix the predicate "aarch64_simd_reg_or_zero" to correctly validate

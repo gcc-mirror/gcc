@@ -1825,6 +1825,30 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert = false)
   return -1;
 }
 
+/* Under the control of CTX, issue a detailed diagnostic for
+   an out-of-bounds subscript INDEX into the expression ARRAY.  */
+
+static void
+diag_array_subscript (const constexpr_ctx *ctx, tree array, tree index)
+{
+  if (!ctx->quiet)
+    {
+      tree arraytype = TREE_TYPE (array);
+
+      /* Convert the unsigned array subscript to a signed integer to avoid
+	 printing huge numbers for small negative values.  */
+      tree sidx = fold_convert (ssizetype, index);
+      if (DECL_P (array))
+	{
+	  error ("array subscript value %qE is outside the bounds "
+		 "of array %qD of type %qT", sidx, array, arraytype);
+	  inform (DECL_SOURCE_LOCATION (array), "declared here");
+	}
+      else
+	error ("array subscript value %qE is outside the bounds "
+	       "of array type %qT", sidx, arraytype);
+    }
+}
 
 /* Subroutine of cxx_eval_constant_expression.
    Attempt to reduce a reference to an array slot.  */
@@ -1873,8 +1897,7 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
   if (!tree_fits_shwi_p (index)
       || (i = tree_to_shwi (index)) < 0)
     {
-      if (!ctx->quiet)
-	error ("negative array subscript");
+      diag_array_subscript (ctx, ary, index);
       *non_constant_p = true;
       return t;
     }
@@ -1886,8 +1909,7 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
   VERIFY_CONSTANT (nelts);
   if (!tree_int_cst_lt (index, nelts))
     {
-      if (!ctx->quiet)
-	error ("array subscript out of bound");
+      diag_array_subscript (ctx, ary, index);
       *non_constant_p = true;
       return t;
     }

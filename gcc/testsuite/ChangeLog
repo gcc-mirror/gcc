@@ -1,3 +1,21 @@
+2016-04-02  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/67376
+	PR c++/70170
+	PR c++/70172
+	PR c++/70228
+	* g++.dg/cpp0x/constexpr-array-ptr10.C: New test.
+	* g++.dg/cpp0x/constexpr-array-ptr9.C: New test.
+	* g++.dg/cpp0x/constexpr-nullptr-1.C: New test.
+	* g++.dg/cpp0x/constexpr-array5.C: Adjust text of expected diagnostic.
+	* g++.dg/cpp0x/constexpr-string.C: Same.
+	* g++.dg/cpp0x/constexpr-wstring2.C: Same.
+	* g++.dg/cpp0x/pr65398.C: Same.
+	* g++.dg/ext/constexpr-vla1.C: Same.
+	* g++.dg/ext/constexpr-vla2.C: Same.
+	* g++.dg/ext/constexpr-vla3.C: Same.
+	* g++.dg/ubsan/pr63956.C: Same.
+
 2016-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70467

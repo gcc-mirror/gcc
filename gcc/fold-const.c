@@ -8338,6 +8338,20 @@ pointer_may_wrap_p (tree base, tree offset, HOST_WIDE_INT bitpos)
   return total.to_uhwi () > (unsigned HOST_WIDE_INT) size;
 }
 
+/* Return a positive integer when the symbol DECL is known to have
+   a nonzero address, zero when it's known not to (e.g., it's a weak
+   symbol), and a negative integer when the symbol is not yet in the
+   symbol table and so whether or not its address is zero is unknown.  */
+static int
+maybe_nonzero_address (tree decl)
+{
+  if (DECL_P (decl) && decl_in_symtab_p (decl))
+    if (struct symtab_node *symbol = symtab_node::get_create (decl))
+      return symbol->nonzero_address ();
+
+  return -1;
+}
+
 /* Subroutine of fold_binary.  This routine performs all of the
    transformations that are common to the equality/inequality
    operators (EQ_EXPR and NE_EXPR) and the ordering operators
@@ -8637,6 +8651,39 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	  if (indirect_base1)
 	    base1 = build_fold_addr_expr_loc (loc, base1);
 	  return fold_build2_loc (loc, code, type, base0, base1);
+	}
+      /* Comparison between an ordinary (non-weak) symbol and a null
+	 pointer can be eliminated since such symbols must have a non
+	 null address.  In C, relational expressions between pointers
+	 to objects and null pointers are undefined.  The results
+	 below follow the C++ rules with the additional property that
+	 every object pointer compares greater than a null pointer.
+      */
+      else if (DECL_P (base0)
+	       && maybe_nonzero_address (base0) > 0
+	       /* Avoid folding references to struct members at offset 0 to
+		  prevent tests like '&ptr->firstmember == 0' from getting
+		  eliminated.  When ptr is null, although the -> expression
+		  is strictly speaking invalid, GCC retains it as a matter
+		  of QoI.  See PR c/44555. */
+	       && (offset0 == NULL_TREE && bitpos0 != 0)
+	       /* The caller guarantees that when one of the arguments is
+		  constant (i.e., null in this case) it is second.  */
+	       && integer_zerop (arg1))
+	{
+	  switch (code)
+	    {
+	    case EQ_EXPR:
+	    case LE_EXPR:
+	    case LT_EXPR:
+	      return boolean_false_node;
+	    case GE_EXPR:
+	    case GT_EXPR:
+	    case NE_EXPR:
+	      return boolean_true_node;
+	    default:
+	      gcc_unreachable ();
+	    }
 	}
     }
 
@@ -13508,16 +13555,9 @@ tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 	/* For objects in symbol table check if we know they are non-zero.
 	   Don't do anything for variables and functions before symtab is built;
 	   it is quite possible that they will be declared weak later.  */
-	if (DECL_P (base) && decl_in_symtab_p (base))
-	  {
-	    struct symtab_node *symbol;
-
-	    symbol = symtab_node::get_create (base);
-	    if (symbol)
-	      return symbol->nonzero_address ();
-	    else
-	      return false;
-	  }
+	int nonzero_addr = maybe_nonzero_address (base);
+	if (nonzero_addr >= 0)
+	  return nonzero_addr;
 
 	/* Function local objects are never NULL.  */
 	if (DECL_P (base)
