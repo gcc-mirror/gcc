@@ -1,3 +1,12 @@
+2016-04-02  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/67376
+	PR c++/70170
+	PR c++/70172
+	PR c++/70228
+	* constexpr.c (diag_array_subscript): New function.
+	(cxx_eval_array_reference): Detect out of bounds array indices.
+
 2016-04-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70449

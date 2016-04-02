@@ -18,4 +18,4 @@ fn_ok (int n)
 }
 
 constexpr int i1 = fn_ok (3);
-constexpr int i2 = fn_bad (3); // { dg-error "array subscript out of bound" }
+constexpr int i2 = fn_bad (3); // { dg-error "array subscript" }

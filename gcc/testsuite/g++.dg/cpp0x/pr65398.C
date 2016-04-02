@@ -12,12 +12,12 @@ constexpr char c5 = *(&s[2] + 0);
 constexpr char c6 = *(&s[0] + 2);
 constexpr char c7 = *(&s[2] + 1);
 
-constexpr char d1 = *(&s[4] - 0); // { dg-error "array subscript out of bound" }
+constexpr char d1 = *(&s[4] - 0); // { dg-error "array subscript" }
 constexpr char d2 = *(&s[4] - 1);
 constexpr char d3 = *(&s[4] - 2);
 constexpr char d4 = *(&s[4] - 3);
 constexpr char d5 = *(&s[4] - 4);
-constexpr char d6 = *(&s[4] - 5);  // { dg-error "negative array subscript" }
+constexpr char d6 = *(&s[4] - 5);  // { dg-error "array subscript" }
 
 /* Don't accept invalid stuff.  */
 constexpr char e1 = *(&s[5] - 1); // { dg-error "is not a constant expression" }
@@ -45,12 +45,12 @@ constexpr int i5 = *(&l[2] + 0);
 constexpr int i6 = *(&l[0] + 2);
 constexpr int i7 = *(&l[2] + 1);
 
-constexpr char j1 = *(&l[4] - 0); // { dg-error "array subscript out of bound" }
+constexpr char j1 = *(&l[4] - 0); // { dg-error "array subscript" }
 constexpr char j2 = *(&l[4] - 1);
 constexpr char j3 = *(&l[4] - 2);
 constexpr char j4 = *(&l[4] - 3);
 constexpr char j5 = *(&l[4] - 4);
-constexpr char j6 = *(&l[4] - 5);  // { dg-error "negative array subscript" }
+constexpr char j6 = *(&l[4] - 5);  // { dg-error "array subscript" }
 
 /* Don't accept invalid stuff.  */
 constexpr char k1 = *(&l[5] - 1); // { dg-error "is not a constant expression" }
