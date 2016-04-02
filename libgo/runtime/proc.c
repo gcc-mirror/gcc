@@ -2042,7 +2042,7 @@ doentersyscall()
 	m->mcache = nil;
 	m->p->m = nil;
 	runtime_atomicstore(&m->p->status, Psyscall);
-	if(runtime_sched.gcwaiting) {
+	if(runtime_atomicload(&runtime_sched.gcwaiting)) {
 		runtime_lock(&runtime_sched);
 		if (runtime_sched.stopwait > 0 && runtime_cas(&m->p->status, Psyscall, Pgcstop)) {
 			if(--runtime_sched.stopwait == 0)
