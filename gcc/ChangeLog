@@ -177,6 +177,12 @@
 	* config/arm/arm.c (arm_reload_out_hi): Add code to handle the
 	case where we are already provided with an SImode SUBREG.
 
+2016-03-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/70439
+	* config/i386/i386.c (ix86_expand_epilogue): Properly check
+	conflict between DRAP register and __builtin_eh_return.
+
 2016-03-30  Michael Matz  <matz@suse.de>
 	    Richard Biener  <rguenther@suse.de>
 
