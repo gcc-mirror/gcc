@@ -1,3 +1,9 @@
+2016-04-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/70416
+	PR target/67391
+	* gcc.target/sh/torture/pr70416.c: New.
+
 2016-04-02  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/67376
