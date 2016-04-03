@@ -2242,14 +2242,23 @@
   [(set_attr "type" "arith")])
 
 ;; Old reload might generate add insns directly (not through the expander) for
-;; the memory address of complex insns like atomic insns when reloading.
+;; address register calculations when reloading, in which case it won't try
+;; the addsi_scr pattern.  Because reload will sometimes try to validate
+;; the generated insns and their constraints, this pattern must be
+;; recognizable during and after reload.  However, when reload generates
+;; address register calculations for the stack pointer, we don't allow this
+;; pattern.  This will make reload prefer using indexed @(reg + reg) address
+;; modes when the displacement of a @(disp + reg) doesn't fit.
 (define_insn_and_split "*addsi3"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(plus:SI (match_operand:SI 1 "arith_reg_operand" "r")
 		 (match_operand:SI 2 "arith_or_int_operand" "rn")))]
   "TARGET_SH1 && !sh_lra_p ()
-   && reload_completed
-   && !reg_overlap_mentioned_p (operands[0], operands[1])"
+   && (reload_completed || reload_in_progress)
+   && !reg_overlap_mentioned_p (operands[0], operands[1])
+   && (!reload_in_progress
+       || ((!REG_P (operands[1]) || REGNO (operands[1]) != SP_REG)
+	   && (!REG_P (operands[2]) || REGNO (operands[2]) != SP_REG)))"
   "#"
   "&& 1"
   [(set (match_dup 0) (plus:SI (match_dup 0) (match_dup 2)))]
