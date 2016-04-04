@@ -1,3 +1,8 @@
+2016-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/70484
+	* gcc.dg/torture/pr70484.c: New testcase.
+
 2016-04-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70307

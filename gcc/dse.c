@@ -1609,10 +1609,9 @@ record_store (rtx body, bb_info_t bb_info)
 	   the value of store_info.  If it is, set the rhs to NULL to
 	   keep it from being used to remove a load.  */
 	{
-	  if (canon_true_dependence (s_info->mem,
-				     GET_MODE (s_info->mem),
-				     s_info->mem_addr,
-				     mem, mem_addr))
+	  if (canon_output_dependence (s_info->mem, true,
+				       mem, GET_MODE (mem),
+				       mem_addr))
 	    {
 	      s_info->rhs = NULL;
 	      s_info->const_rhs = NULL;

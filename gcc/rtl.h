@@ -3652,6 +3652,8 @@ extern int anti_dependence (const_rtx, const_rtx);
 extern int canon_anti_dependence (const_rtx, bool,
 				  const_rtx, machine_mode, rtx);
 extern int output_dependence (const_rtx, const_rtx);
+extern int canon_output_dependence (const_rtx, bool,
+				    const_rtx, machine_mode, rtx);
 extern int may_alias_p (const_rtx, const_rtx);
 extern void init_alias_target (void);
 extern void init_alias_analysis (void);
