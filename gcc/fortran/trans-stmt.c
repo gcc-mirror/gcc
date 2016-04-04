@@ -5536,13 +5536,22 @@ gfc_trans_allocate (gfc_code * code)
 	  if (expr3_len == NULL_TREE
 	      && code->expr3->ts.type == BT_CHARACTER)
 	    {
+	      gfc_init_se (&se, NULL);
 	      if (code->expr3->ts.u.cl
 		  && code->expr3->ts.u.cl->length)
 		{
-		  gfc_init_se (&se, NULL);
 		  gfc_conv_expr (&se, code->expr3->ts.u.cl->length);
 		  gfc_add_block_to_block (&block, &se.pre);
 		  expr3_len = gfc_evaluate_now (se.expr, &block);
+		}
+	      else
+		{
+		  /* The string_length is not set in the symbol, which prevents
+		     it being set in the ts.  Deduce it by converting expr3.  */
+		  gfc_conv_expr (&se, code->expr3);
+		  gfc_add_block_to_block (&block, &se.pre);
+		  gcc_assert (se.string_length);
+		  expr3_len = gfc_evaluate_now (se.string_length, &block);
 		}
 	      gcc_assert (expr3_len);
 	    }

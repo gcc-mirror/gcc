@@ -1,3 +1,10 @@
+2016-04-04  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/66911
+	* trans-stmt.c (gfc_trans_allocate): Get the deferred length of an
+	expression by converting the expression when the length is not set
+	in the symbol's ts.
+
 2016-04-04  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/65795
