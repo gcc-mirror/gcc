@@ -1,3 +1,14 @@
+2016-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	    Jakub Jelinek <jakub@redhat.com>
+
+	PR middle-end/70457
+	* tree-inline.c (estimate_num_insn): Use gimple_call_builtin_p
+	to ensure a call statement is compatible with a built-in's
+	prototype.
+	* tree-ssa-math-opts.c (execute_cse_sincos_1): Likewise.
+	(pass_cse_sincos::execute): Likewise.
+	(pass_optimize_widening_mul::execute):	Likewise.
+
 2016-01-04  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backport from mainline
