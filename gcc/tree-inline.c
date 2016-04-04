@@ -4065,7 +4065,7 @@ estimate_num_insns (gimple *stmt, eni_weights *weights)
 	      return 0;
 	    else if (is_inexpensive_builtin (decl))
 	      return weights->target_builtin_call_cost;
-	    else if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+	    else if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
 	      {
 		/* We canonicalize x * x to pow (x, 2.0) with -ffast-math, so
 		   specialize the cheap expansion we do here.
