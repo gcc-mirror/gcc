@@ -746,7 +746,7 @@ execute_cse_sincos_1 (tree name)
       if (gimple_code (use_stmt) != GIMPLE_CALL
 	  || !gimple_call_lhs (use_stmt)
 	  || !(fndecl = gimple_call_fndecl (use_stmt))
-	  || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+	  || !gimple_call_builtin_p (use_stmt, BUILT_IN_NORMAL))
 	continue;
 
       switch (DECL_FUNCTION_CODE (fndecl))
@@ -1437,7 +1437,7 @@ execute_cse_sincos (void)
 	  if (is_gimple_call (stmt)
 	      && gimple_call_lhs (stmt)
 	      && (fndecl = gimple_call_fndecl (stmt))
-	      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+	      && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
 	    {
 	      tree arg, arg0, arg1, result;
 	      HOST_WIDE_INT n;
@@ -2860,7 +2860,7 @@ execute_optimize_widening_mul (void)
 	    {
 	      tree fndecl = gimple_call_fndecl (stmt);
 	      if (fndecl
-		  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+		  && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
 		{
 		  switch (DECL_FUNCTION_CODE (fndecl))
 		    {
