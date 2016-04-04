@@ -1,3 +1,8 @@
+2016-04-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR bootstrap/70173
+	* Makefile.in (distclean): Also delete config.cache .
+
 2015-12-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/50048
