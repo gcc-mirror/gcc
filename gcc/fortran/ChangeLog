@@ -1,3 +1,11 @@
+2016-04-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/65795
+	* trans-array.c (gfc_array_allocate): When the array is a coarray,
+	do not nullyfing its allocatable components in array_allocate, because
+	the nullify missed the array ref and nullifies the wrong component.
+	Cosmetics.
+
 2016-03-29  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/70397
