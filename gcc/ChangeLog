@@ -1,3 +1,11 @@
+2016-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/70484
+	* rtl.h (canon_output_dependence): Declare.
+	* alias.c (canon_output_dependence): New function.
+	* dse.c (record_store): Use canon_output_dependence rather
+	than canon_true_dependence.
+
 2016-03-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/68881
