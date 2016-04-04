@@ -564,9 +564,6 @@ public:
   /* Jump table.  */
   vec <basic_block> m_jump_table;
 
-  /* Default label basic block.  */
-  basic_block m_default_bb;
-
   /* Code list for label references.  */
   hsa_op_code_list *m_label_code_list;
 
