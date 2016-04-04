@@ -1287,6 +1287,61 @@ symtab_node::make_decl_local (void)
   SYMBOL_REF_WEAK (symbol) = DECL_WEAK (decl);
 }
 
+/* Copy visibility from N.
+   This is useful when THIS becomes a transparent alias of N.  */
+
+void
+symtab_node::copy_visibility_from (symtab_node *n)
+{
+  gcc_checking_assert (n->weakref == weakref);
+
+  ipa_ref *ref;
+  for (unsigned i = 0; iterate_direct_aliases (i, ref); i++)
+    {
+      struct symtab_node *alias = ref->referring;
+      if (alias->transparent_alias)
+	alias->copy_visibility_from (n);
+    }
+
+  if (TREE_CODE (decl) == VAR_DECL)
+    {
+      DECL_COMMON (decl) = DECL_COMMON (n->decl);
+      /* ADDRESSABLE flag is not defined for public symbols.  */
+      if (TREE_PUBLIC (decl) && !TREE_PUBLIC (n->decl))
+        TREE_ADDRESSABLE (decl) = 1;
+      TREE_STATIC (decl) = TREE_STATIC (n->decl);
+    }
+  else gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+
+  DECL_COMDAT (decl) = DECL_COMDAT (n->decl);
+  DECL_WEAK (decl) = DECL_WEAK (n->decl);
+  DECL_EXTERNAL (decl) = DECL_EXTERNAL (n->decl);
+  DECL_VISIBILITY_SPECIFIED (decl) = DECL_VISIBILITY_SPECIFIED (n->decl);
+  DECL_VISIBILITY (decl) = DECL_VISIBILITY (n->decl);
+  TREE_PUBLIC (decl) = TREE_PUBLIC (n->decl);
+  DECL_DLLIMPORT_P (decl) = DECL_DLLIMPORT_P (n->decl);
+  resolution = n->resolution;
+  set_comdat_group (n->get_comdat_group ());
+  call_for_symbol_and_aliases (symtab_node::set_section,
+			     const_cast<char *>(n->get_section ()), true);
+  externally_visible = n->externally_visible;
+  if (!DECL_RTL_SET_P (decl))
+    return;
+
+  /* Update rtl flags.  */
+  make_decl_rtl (decl);
+
+  rtx rtl = DECL_RTL (decl);
+  if (!MEM_P (rtl))
+    return;
+
+  rtx symbol = XEXP (rtl, 0);
+  if (GET_CODE (symbol) != SYMBOL_REF)
+    return;
+
+  SYMBOL_REF_WEAK (symbol) = DECL_WEAK (decl);
+}
+
 /* Walk the alias chain to return the symbol NODE is alias of.
    If NODE is not an alias, return NODE.
    Assumes NODE is known to be alias.  */

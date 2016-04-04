@@ -293,6 +293,9 @@ public:
   /* Make DECL local.  */
   void make_decl_local (void);
 
+  /* Copy visibility from N.  */
+  void copy_visibility_from (symtab_node *n);
+
   /* Return desired alignment of the definition.  This is NOT alignment useful
      to access THIS, because THIS may be interposable and DECL_ALIGN should
      be used instead.  It however must be guaranteed when output definition

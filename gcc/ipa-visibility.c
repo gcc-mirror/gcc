@@ -452,6 +452,84 @@ update_visibility_by_resolution_info (symtab_node * node)
     }
 }
 
+/* Try to get rid of weakref.  */
+
+static void
+optimize_weakref (symtab_node *node)
+{
+#ifdef ASM_OUTPUT_DEF
+  bool aliases_supported = true;
+#else
+  bool aliases_supported = false;
+#endif
+  bool strip_weakref = false;
+  bool static_alias = false;
+
+  gcc_assert (node->weakref);
+
+  /* Weakrefs with no target defined can not be optimized.  */
+  if (!node->analyzed)
+    return;
+  symtab_node *target = node->get_alias_target ();
+
+  /* Weakrefs to weakrefs can be optimized only if target can be.  */
+  if (target->weakref)
+    optimize_weakref (target);
+  if (target->weakref)
+    return;
+
+  /* If we have definition of weakref's target and we know it binds locally,
+     we can turn weakref to static alias.  */
+  if (target->definition && decl_binds_to_current_def_p (target->decl)
+      && aliases_supported)
+    strip_weakref = static_alias = true;
+  /* Otherwise we can turn weakref into transparent alias.  This transformation
+     may break asm statements which directly refers to symbol name and expect
+     GNU as to translate it via .weakref directive. So do not optimize when
+     DECL_PRESERVED is set and .weakref is supported.  */
+  else if ((!DECL_PRESERVE_P (target->decl)
+	    || IDENTIFIER_TRANSPARENT_ALIAS (DECL_ASSEMBLER_NAME (node->decl)))
+	   && !DECL_WEAK (target->decl)
+	   && !DECL_EXTERNAL (target->decl)
+	   && ((target->definition && !target->can_be_discarded_p ())
+	       || target->resolution != LDPR_UNDEF))
+    strip_weakref = true;
+  if (!strip_weakref)
+    return;
+  node->weakref = false;
+  IDENTIFIER_TRANSPARENT_ALIAS (DECL_ASSEMBLER_NAME (node->decl)) = 0;
+  TREE_CHAIN (DECL_ASSEMBLER_NAME (node->decl)) = NULL_TREE;
+  DECL_ATTRIBUTES (node->decl) = remove_attribute ("weakref",
+					           DECL_ATTRIBUTES
+							 (node->decl));
+
+  if (dump_file)
+    fprintf (dump_file, "Optimizing weakref %s %s\n",
+	     node->name(),
+	     static_alias ? "as static alias" : "as transparent alias");
+
+  if (static_alias)
+    {
+      /* make_decl_local will shortcircuit if it doesn't see TREE_PUBLIC.
+	 be sure it really clears the WEAK flag.  */
+      TREE_PUBLIC (node->decl) = true;
+      node->make_decl_local ();
+      node->forced_by_abi = false;
+      node->resolution = LDPR_PREVAILING_DEF_IRONLY;
+      node->externally_visible = false;
+      gcc_assert (!DECL_WEAK (node->decl));
+      node->transparent_alias = false;
+    }
+  else
+    {
+      symtab->change_decl_assembler_name
+        (node->decl, DECL_ASSEMBLER_NAME (node->get_alias_target ()->decl));
+      node->transparent_alias = true;
+      node->copy_visibility_from (target);
+    }
+  gcc_assert (node->alias);
+}
+
 /* Decide on visibility of all symbols.  */
 
 static unsigned int
@@ -594,6 +672,8 @@ function_and_variable_visibility (bool whole_program)
 	}
 
       update_visibility_by_resolution_info (node);
+      if (node->weakref)
+	optimize_weakref (node);
     }
   FOR_EACH_DEFINED_FUNCTION (node)
     {
@@ -660,6 +740,8 @@ function_and_variable_visibility (bool whole_program)
 	      || ! (ADDR_SPACE_GENERIC_P
 		    (TYPE_ADDR_SPACE (TREE_TYPE (vnode->decl))))))
 	DECL_COMMON (vnode->decl) = 0;
+      if (vnode->weakref)
+	optimize_weakref (vnode);
     }
   FOR_EACH_DEFINED_VARIABLE (vnode)
     {
