@@ -1,5 +1,10 @@
 2016-04-04  Andre Vehreschild  <vehre@gcc.gnu.org>
 
+	PR fortran/67538
+	* gfortran.dg/allocate_with_source_19.f08: New test.
+
+2016-04-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
 	PR fortran/65795
 	* gfortran.dg/coarray_allocate_6.f08: New test.
 

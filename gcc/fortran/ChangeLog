@@ -1,5 +1,12 @@
 2016-04-04  Andre Vehreschild  <vehre@gcc.gnu.org>
 
+	PR fortran/67538
+	* resolve.c (resolve_allocate_expr): Emit error message when no
+	array spec and no array valued source= expression is given in an
+	F2008 allocate() for an array to allocate.
+
+2016-04-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
 	PR fortran/65795
 	* trans-array.c (gfc_array_allocate): When the array is a coarray,
 	do not nullyfing its allocatable components in array_allocate, because
