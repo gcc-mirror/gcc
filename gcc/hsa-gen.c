@@ -1515,7 +1515,7 @@ hsa_insn_br::operator new (size_t)
 
 hsa_insn_sbr::hsa_insn_sbr (hsa_op_reg *index, unsigned jump_count)
   : hsa_insn_basic (1, BRIG_OPCODE_SBR, BRIG_TYPE_B1, index),
-    m_width (BRIG_WIDTH_1), m_jump_table (vNULL), m_default_bb (NULL),
+    m_width (BRIG_WIDTH_1), m_jump_table (vNULL),
     m_label_code_list (new hsa_op_code_list (jump_count))
 {
 }
@@ -3436,11 +3436,48 @@ get_switch_size (gswitch *s)
 static void
 gen_hsa_insns_for_switch_stmt (gswitch *s, hsa_bb *hbb)
 {
+  gimple_stmt_iterator it = gsi_for_stmt (s);
+  gsi_prev (&it);
+
+  /* Create preambule that verifies that index - lowest_label >= 0.  */
+  edge e = split_block (hbb->m_bb, gsi_stmt (it));
+  e->flags &= ~EDGE_FALLTHRU;
+  e->flags |= EDGE_TRUE_VALUE;
+
   function *func = DECL_STRUCT_FUNCTION (current_function_decl);
   tree index_tree = gimple_switch_index (s);
   tree lowest = get_switch_low (s);
+  tree highest = get_switch_high (s);
 
   hsa_op_reg *index = hsa_cfun->reg_for_gimple_ssa (index_tree);
+
+  hsa_op_reg *cmp1_reg = new hsa_op_reg (BRIG_TYPE_B1);
+  hsa_op_immed *cmp1_immed = new hsa_op_immed (lowest);
+  hbb->append_insn (new hsa_insn_cmp (BRIG_COMPARE_GE, cmp1_reg->m_type,
+				      cmp1_reg, index, cmp1_immed));
+
+  hsa_op_reg *cmp2_reg = new hsa_op_reg (BRIG_TYPE_B1);
+  hsa_op_immed *cmp2_immed = new hsa_op_immed (highest);
+  hbb->append_insn (new hsa_insn_cmp (BRIG_COMPARE_LE, cmp2_reg->m_type,
+				      cmp2_reg, index, cmp2_immed));
+
+  hsa_op_reg *cmp_reg = new hsa_op_reg (BRIG_TYPE_B1);
+  hbb->append_insn (new hsa_insn_basic (3, BRIG_OPCODE_AND, cmp_reg->m_type,
+					cmp_reg, cmp1_reg, cmp2_reg));
+
+  hbb->append_insn (new hsa_insn_br (cmp_reg));
+
+  tree default_label = gimple_switch_default_label (s);
+  basic_block default_label_bb = label_to_block_fn (func,
+						    CASE_LABEL (default_label));
+
+  make_edge (e->src, default_label_bb, EDGE_FALSE_VALUE);
+
+  hsa_cfun->m_modified_cfg = true;
+
+  /* Basic block with the SBR instruction.  */
+  hbb = hsa_init_new_bb (e->dest);
+
   hsa_op_reg *sub_index = new hsa_op_reg (index->m_type);
   hbb->append_insn (new hsa_insn_basic (3, BRIG_OPCODE_SUB, sub_index->m_type,
 					sub_index, index,
@@ -3452,11 +3489,6 @@ gen_hsa_insns_for_switch_stmt (gswitch *s, hsa_bb *hbb)
   unsigned HOST_WIDE_INT size = tree_to_uhwi (get_switch_size (s));
 
   hsa_insn_sbr *sbr = new hsa_insn_sbr (sub_index, size + 1);
-  tree default_label = gimple_switch_default_label (s);
-  basic_block default_label_bb = label_to_block_fn (func,
-						    CASE_LABEL (default_label));
-
-  sbr->m_default_bb = default_label_bb;
 
   /* Prepare array with default label destination.  */
   for (unsigned HOST_WIDE_INT i = 0; i <= size; i++)

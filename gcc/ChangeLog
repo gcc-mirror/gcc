@@ -1,3 +1,13 @@
+2016-04-04  Martin Liska  <mliska@suse.cz>
+
+	PR hsa/70402
+	* hsa-gen.c (gen_hsa_insns_for_switch_stmt): Guard index
+	value that is really in range handled by SBR instruction.
+	* hsa-brig.c (emit_switch_insn): Do not emit unconditional
+	jump.
+	* hsa-dump.c (dump_hsa_insn_1): Do not dump default BB.
+	* hsa.h (hsa_insn_sbr::m_default_bb): Remove field.
+
 2016-04-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/70416

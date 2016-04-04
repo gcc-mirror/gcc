@@ -1577,10 +1577,6 @@ emit_switch_insn (hsa_insn_sbr *sbr)
 
   brig_code.add (&repr, sizeof (repr));
   brig_insn_count++;
-
-  /* Emit jump to default label.  */
-  hsa_bb *hbb = hsa_bb_for_bb (sbr->m_default_bb);
-  emit_unconditional_jump (&hbb->m_label_ref);
 }
 
 /* Emit a HSA convert instruction and all necessary directives, schedule
