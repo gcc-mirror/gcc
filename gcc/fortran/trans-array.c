@@ -5550,8 +5550,8 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
   else
       gfc_add_expr_to_block (&se->pre, set_descriptor);
 
-  if ((expr->ts.type == BT_DERIVED)
-	&& expr->ts.u.derived->attr.alloc_comp)
+  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived->attr.alloc_comp
+      && !coarray)
     {
       tmp = gfc_nullify_alloc_comp (expr->ts.u.derived, se->expr,
 				    ref->u.ar.as->rank);
