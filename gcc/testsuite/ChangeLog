@@ -1,3 +1,9 @@
+2016-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	    Jakub Jelinek <jakub@redhat.com>
+
+	PR middle-end/70457
+	* gcc.dg/torture/pr70457.c: New.
+
 2016-04-04  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/67538

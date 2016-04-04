@@ -3827,7 +3827,7 @@ pass_optimize_widening_mul::execute (function *fun)
 	    {
 	      tree fndecl = gimple_call_fndecl (stmt);
 	      if (fndecl
-		  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+		  && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
 		{
 		  switch (DECL_FUNCTION_CODE (fndecl))
 		    {
