@@ -1,3 +1,9 @@
+2016-04-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/67172
+	* libgcc2.c (L__main): Undefine __LIBGCC_EH_FRAME_SECTION_NAME__ if
+	__MINGW32__ is defined.
+
 2016-03-28  James Bowman  <james.bowman@ftdichip.com>
 
         * libgcc/config/ft32/lib1funcs.S (*divsi3, *modsi3): New.
