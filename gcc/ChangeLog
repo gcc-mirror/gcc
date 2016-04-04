@@ -1,3 +1,11 @@
+2016-03-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/68881
+	* cgraph.h (symtab_node::copy_visibility_from): New function.
+	* symtab.c (symtab_node::copy_visibility_from): New function.
+	* ipa-visibility.c (optimize_weakref): New function.
+	(function_and_variable_visibility): Use it.
+
 2016-04-04  Martin Liska  <mliska@suse.cz>
 
 	PR hsa/70402
