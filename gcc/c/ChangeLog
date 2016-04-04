@@ -1,3 +1,8 @@
+2016-04-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70307
+	* c-fold.c (c_fully_fold_internal): Handle VEC_COND_EXPR.
+
 2016-03-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70297
