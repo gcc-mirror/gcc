@@ -1,5 +1,6 @@
 /* PR c/70307 */
 /* { dg-do compile } */
+/* { dg-options "-Wno-psabi" } */
 
 typedef int v4si __attribute__ ((vector_size (16)));
 
@@ -60,3 +61,7 @@ fn8 (int i)
   struct S s = { .v = (v4si){(1, i++)} == (v4si){(0, 0)} };
   return s.v;
 }
+
+/* Ignore a warning that is irrelevant to the purpose of this test.  */
+/* { dg-prune-output "\[^\n\r\]*GCC vector passed by reference\[^\n\r\]*" } */
+/* { dg-prune-output "\[^\n\r\]*GCC vector returned by reference\[^\n\r\]*" } */
