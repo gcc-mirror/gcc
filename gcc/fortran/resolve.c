@@ -7217,7 +7217,15 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 	  if (!gfc_notify_std (GFC_STD_F2008, "Array specification required "
 			       "in ALLOCATE statement at %L", &e->where))
 	    goto failure;
-	  *array_alloc_wo_spec = true;
+	  if (code->expr3->rank != 0)
+	    *array_alloc_wo_spec = true;
+	  else
+	    {
+	      gfc_error ("Array specification or array-valued SOURCE= "
+			 "expression required in ALLOCATE statement at %L",
+			 &e->where);
+	      goto failure;
+	    }
 	}
       else
 	{
