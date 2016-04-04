@@ -1,3 +1,8 @@
+2016-04-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/66223
+	* g++.dg/ipa/devirt-51.C: New testcase.
+
 2016-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    Jakub Jelinek <jakub@redhat.com>
 

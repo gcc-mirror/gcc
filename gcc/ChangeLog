@@ -1,3 +1,10 @@
+2016-04-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/66223
+	* ipa-devirt.c (maybe_record_node): Do not optimize cxa_pure_virtual
+	calls when sanitizing.
+	(possible_polymorphic_call_target_p)" FIx formating.
+
 2016-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    Jakub Jelinek <jakub@redhat.com>
 

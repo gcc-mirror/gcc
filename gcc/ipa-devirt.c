@@ -2438,10 +2438,14 @@ maybe_record_node (vec <cgraph_node *> &nodes,
     {
       gcc_assert (!target_node->global.inlined_to);
       gcc_assert (target_node->real_symbol_p ());
+      /* When sanitizing, do not asume that cxa_pure_virutal is not called
+	 by valid program.  */
+      if (flag_sanitize & SANITIZE_UNDEFINED)
+	;
       /* Only add pure virtual if it is the only possible target.  This way
 	 we will preserve the diagnostics about pure virtual called in many
 	 cases without disabling optimization in other.  */
-      if (pure_virtual)
+      else if (pure_virtual)
 	{
 	  if (nodes.length ())
 	    return;
@@ -3374,8 +3378,7 @@ possible_polymorphic_call_target_p (tree otr_type,
   bool final;
 
   if (TREE_CODE (TREE_TYPE (n->decl)) == FUNCTION_TYPE
-      && ((fcode = DECL_FUNCTION_CODE (n->decl))
-	  == BUILT_IN_UNREACHABLE
+      && ((fcode = DECL_FUNCTION_CODE (n->decl)) == BUILT_IN_UNREACHABLE
           || fcode == BUILT_IN_TRAP))
     return true;
 
