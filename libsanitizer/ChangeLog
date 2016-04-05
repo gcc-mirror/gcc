@@ -1,3 +1,11 @@
+2016-04-05  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/70474
+	* asan/asan_mac.cc (GetMacosVersionInternal): Cherry pick
+	upstream r241487, 221379 and r224315.
+	(void MaybeReexec): Cherry pick upstream r241487.
+	* asan/asan_mac.h (enum MacosVersion): Cherry pick upstream r224315.
+
 2015-06-26  Release Manager
 
 	* GCC 4.9.3 released.

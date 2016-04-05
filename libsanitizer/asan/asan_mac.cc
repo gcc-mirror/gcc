@@ -70,7 +70,12 @@ MacosVersion GetMacosVersionInternal() {
         case '1': return MACOS_VERSION_LION;
         case '2': return MACOS_VERSION_MOUNTAIN_LION;
         case '3': return MACOS_VERSION_MAVERICKS;
-        default: return MACOS_VERSION_UNKNOWN;
+        case '4': return MACOS_VERSION_YOSEMITE;
+        default:
+          if (IsDigit(version[1]))
+            return MACOS_VERSION_UNKNOWN_NEWER;
+          else
+            return MACOS_VERSION_UNKNOWN;
       }
     }
     default: return MACOS_VERSION_UNKNOWN;
@@ -136,6 +141,23 @@ void LeakyResetEnv(const char *name, const char *name_value) {
   }
 }
 
+bool DyldNeedsEnvVariable() {
+// If running on OS X 10.11+ or iOS 9.0+, dyld will interpose even if
+// DYLD_INSERT_LIBRARIES is not set.
+
+#if SANITIZER_IOSSIM
+  // GetMacosVersion will not work for the simulator, whose kernel version
+  // is tied to the host. Use a weak linking hack for the simulator.
+  // This API was introduced in the same version of the OS as the dyld
+  // optimization.
+
+  // Check for presence of a symbol that is available on OS X 10.11+, iOS 9.0+.
+  return (dlsym(RTLD_NEXT, "mach_memory_info") == nullptr);
+#else
+  return (GetMacosVersion() <= MACOS_VERSION_YOSEMITE);
+#endif
+}
+
 void MaybeReexec() {
   if (!flags()->allow_reexec) return;
   // Make sure the dynamic ASan runtime library is preloaded so that the
@@ -148,8 +170,9 @@ void MaybeReexec() {
   uptr old_env_len = dyld_insert_libraries ?
       internal_strlen(dyld_insert_libraries) : 0;
   uptr fname_len = internal_strlen(info.dli_fname);
-  if (!dyld_insert_libraries ||
-      !REAL(strstr)(dyld_insert_libraries, info.dli_fname)) {
+  bool lib_is_in_env =
+      dyld_insert_libraries && REAL(strstr)(dyld_insert_libraries, info.dli_fname);
+  if (DyldNeedsEnvVariable() && !lib_is_in_env) {
     // DYLD_INSERT_LIBRARIES is not set or does not contain the runtime
     // library.
     char program_name[1024];
@@ -180,6 +203,10 @@ void MaybeReexec() {
     }
     execv(program_name, *_NSGetArgv());
   } else {
+
+    if (!lib_is_in_env)
+      return;
+
     // DYLD_INSERT_LIBRARIES is set and contains the runtime library.
     if (old_env_len == fname_len) {
       // It's just the runtime library name - fine to unset the variable.
