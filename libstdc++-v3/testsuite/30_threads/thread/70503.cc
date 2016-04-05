@@ -19,6 +19,7 @@
 // { dg-options " -std=gnu++11 -static" { target *-*-*gnu* } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
+// { dg-require-effective-target static }
 
 extern "C" {
   void execute_native_thread_routine(void);
