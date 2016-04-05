@@ -1,3 +1,9 @@
+2016-04-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/predicates.md (integer_store_memory_operand): Accept
+	REG+D operands with a large offset when reload_in_progress is true.
+	(floating_point_store_memory_operand): Likewise.
+
 2016-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70336
