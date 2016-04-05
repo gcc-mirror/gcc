@@ -11377,45 +11377,46 @@
     case MODE_XI:
       gcc_assert (TARGET_AVX512F);
     case MODE_OI:
-      gcc_assert (TARGET_AVX2 || TARGET_AVX512VL);
+      gcc_assert (TARGET_AVX2);
     case MODE_TI:
-      gcc_assert (TARGET_SSE2 || TARGET_AVX512VL);
+      gcc_assert (TARGET_SSE2);
       switch (<MODE>mode)
-      {
-        case V16SImode:
-        case V8DImode:
-          if (TARGET_AVX512F)
-          {
-            tmp = "pandn<ssemodesuffix>";
-            break;
-          }
-        case V8SImode:
-        case V4DImode:
-        case V4SImode:
-        case V2DImode:
-          if (TARGET_AVX512VL)
-          {
-            tmp = "pandn<ssemodesuffix>";
-            break;
-          }
-        default:
-          tmp = TARGET_AVX512VL ? "pandnq" : "pandn";
-      }
+	{
+	case V64QImode:
+	case V32HImode:
+	  /* There is no vpandnb or vpandnw instruction, nor vpandn for
+	     512-bit vectors. Use vpandnq instead.  */
+	  tmp = "pandnq";
+	  break;
+	case V16SImode:
+	case V8DImode:
+	  tmp = "pandn<ssemodesuffix>";
+	  break;
+	case V8SImode:
+	case V4DImode:
+	case V4SImode:
+	case V2DImode:
+	  tmp = TARGET_AVX512VL ? "pandn<ssemodesuffix>" : "pandn";
+	  break;
+	default:
+	  tmp = TARGET_AVX512VL ? "pandnq" : "pandn";
+	  break;
+	}
       break;
 
-   case MODE_V16SF:
+    case MODE_V16SF:
       gcc_assert (TARGET_AVX512F);
-   case MODE_V8SF:
+    case MODE_V8SF:
       gcc_assert (TARGET_AVX);
-   case MODE_V4SF:
+    case MODE_V4SF:
       gcc_assert (TARGET_SSE);
 
       tmp = "andnps";
       break;
 
-   default:
+    default:
       gcc_unreachable ();
-   }
+    }
 
   switch (which_alternative)
     {
@@ -11423,7 +11424,7 @@
       ops = "%s\t{%%2, %%0|%%0, %%2}";
       break;
     case 1:
-      ops = "v%s\t{%%2, %%1, %%0<mask_operand3_1>|%%0<mask_operand3_1>, %%1, %%2}";
+      ops = "v%s\t{%%2, %%1, %%0|%%0, %%1, %%2}";
       break;
     default:
       gcc_unreachable ();
@@ -11468,21 +11469,6 @@
 	  (match_operand:VI48_AVX512VL 3 "vector_move_operand" "0C")
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
   "TARGET_AVX512F"
-  "vpandn<ssemodesuffix>\t{%2, %1, %0%{%4%}%N3|%0%{%4%}%N3, %1, %2}";
-  [(set_attr "type" "sselog")
-   (set_attr "prefix" "evex")
-   (set_attr "mode" "<sseinsnmode>")])
-
-(define_insn "*andnot<mode>3_mask"
-  [(set (match_operand:VI12_AVX512VL 0 "register_operand" "=v")
-	(vec_merge:VI12_AVX512VL
-	  (and:VI12_AVX512VL
-	    (not:VI12_AVX512VL
-	      (match_operand:VI12_AVX512VL 1 "register_operand" "v"))
-	    (match_operand:VI12_AVX512VL 2 "nonimmediate_operand" "vm"))
-	  (match_operand:VI12_AVX512VL 3 "vector_move_operand" "0C")
-	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
-  "TARGET_AVX512BW"
   "vpandn<ssemodesuffix>\t{%2, %1, %0%{%4%}%N3|%0%{%4%}%N3, %1, %2}";
   [(set_attr "type" "sselog")
    (set_attr "prefix" "evex")

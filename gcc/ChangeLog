@@ -1,3 +1,11 @@
+2016-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70525
+	* config/i386/sse.md (*andnot<mode>3): Simplify assertions.
+	Use vpandn<ssemodesuffix> for V16SI/V8DImode, vpandnq for
+	V32HI/V64QImode, don't use <mask_operand3_1>, fix up formatting.
+	(*andnot<mode>3_mask): Remove insn with VI12_AVX512VL iterator.
+
 2016-04-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70499
@@ -9,7 +17,7 @@
 	PR ipa/66223
 	* ipa-devirt.c (maybe_record_node): Do not optimize cxa_pure_virtual
 	calls when sanitizing.
-	(possible_polymorphic_call_target_p)" FIx formating.
+	(possible_polymorphic_call_target_p): Fix formating.
 
 2016-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    Jakub Jelinek <jakub@redhat.com>
