@@ -1,3 +1,9 @@
+2016-04-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/66223
+	* ipa-devirt.c (maybe_record_node): Fix comment; use
+	SANITIZE_UNREACHABLE instead of SANITIZE_UNDEFINED.
+
 2016-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70542
