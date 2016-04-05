@@ -5525,42 +5525,6 @@ extern cp_parameter_declarator *no_parameters;
 /* True if we saw "#pragma GCC java_exceptions".  */
 extern bool pragma_java_exceptions;
 
-/* Data structure for a mapping from tree to tree that's only used as a cache;
-   we don't GC-mark trees in the map, and we clear the map when collecting
-   garbage.  Global variables of this type must be marked
-   GTY((cache,deletable)) so that the gt_cleare_cache function is called by
-   ggc_collect but we don't try to load the map pointer from a PCH.
-
-   FIXME improve to use keep_cache_entry.  */
-class cache_map
-{
-  /* Use a lazily initialized pointer rather than a map member since a
-     hash_map can't be constructed in a static initializer.  */
-  hash_map<tree, tree> *map;
-
-public:
-  tree get (tree key)
-  {
-    if (map)
-      if (tree *slot = map->get (key))
-	return *slot;
-    return NULL_TREE;
-  }
-
-  bool put (tree key, tree val)
-  {
-    if (!map)
-      map = new hash_map<tree, tree>;
-    return map->put (key, val);
-  }
-
-  friend inline void gt_cleare_cache (cache_map &cm)
-  {
-    if (cm.map)
-      cm.map->empty();
-  }
-};
-
 /* in call.c */
 extern bool check_dtor_name			(tree, tree);
 int magic_varargs_p				(tree);

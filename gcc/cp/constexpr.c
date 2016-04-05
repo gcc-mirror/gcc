@@ -4215,7 +4215,7 @@ maybe_constant_value_1 (tree t, tree decl)
   return r;
 }
 
-static GTY((cache, deletable)) cache_map cv_cache;
+static GTY((deletable)) hash_map<tree, tree> *cv_cache;
 
 /* If T is a constant expression, returns its reduced value.
    Otherwise, if T does not have TREE_CONSTANT set, returns T.
@@ -4224,13 +4224,24 @@ static GTY((cache, deletable)) cache_map cv_cache;
 tree
 maybe_constant_value (tree t, tree decl)
 {
-  tree ret = cv_cache.get (t);
-  if (!ret)
-    {
-      ret = maybe_constant_value_1 (t, decl);
-      cv_cache.put (t, ret);
-    }
+  if (cv_cache == NULL)
+    cv_cache = hash_map<tree, tree>::create_ggc (101);
+
+  if (tree *cached = cv_cache->get (t))
+    return *cached;
+
+  tree ret = maybe_constant_value_1 (t, decl);
+  cv_cache->put (t, ret);
   return ret;
+}
+
+/* Dispose of the whole CV_CACHE.  */
+
+static void
+clear_cv_cache (void)
+{
+  if (cv_cache != NULL)
+    cv_cache->empty ();
 }
 
 /* Dispose of the whole CV_CACHE and FOLD_CACHE.  */
@@ -4238,7 +4249,7 @@ maybe_constant_value (tree t, tree decl)
 void
 clear_cv_and_fold_caches (void)
 {
-  gt_cleare_cache (cv_cache);
+  clear_cv_cache ();
   clear_fold_cache ();
 }
 

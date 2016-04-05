@@ -1,3 +1,17 @@
+2016-04-05  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/70452
+	* cp-tree.h (class cache_map): Remove.
+	* constexpr.c (cv_cache): Change type to
+	GTY((deletable)) hash_map<tree, tree> *.
+	(maybe_constant_value): Adjust following the change to cv_cache.
+	(clear_cv_cache): New static function.
+	(clear_cv_and_fold_caches): Use it.
+	* cp-gimplify.c (fold_cache): Change type to
+	GTY((deletable)) hash_map<tree, tree> *.
+	(clear_fold_cache): Adjust following the change to fold_cache.
+	(cp_fold): Likewise.
+
 2016-04-02  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/67376
