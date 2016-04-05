@@ -1,3 +1,8 @@
+2016-04-05  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/20030814-6.c: Fix testcase, disable FRE,
+	remove XFAIL.
+
 2016-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/70307
