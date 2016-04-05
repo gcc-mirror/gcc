@@ -1,5 +1,10 @@
 2016-04-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/70554
+	* acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): Don't test
+	__atomic_fetch_add for bool.
+	* configure: Regenerate.
+
 	* testsuite/30_threads/thread/70503.cc: Require -static to work.
 
 	PR libstdc++/70503

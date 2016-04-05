@@ -3290,7 +3290,7 @@ AC_DEFUN([GLIBCXX_ENABLE_ATOMIC_BUILTINS], [
        atomic_type c1;
        atomic_type c2;
        atomic_type c3(0);
-       __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+       // N.B. __atomic_fetch_add is not supported for bool.
        __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
 				   __ATOMIC_RELAXED);
        __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
@@ -3375,7 +3375,7 @@ int main()
   atomic_type c1;
   atomic_type c2;
   atomic_type c3(0);
-  __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
+  // N.B. __atomic_fetch_add is not supported for bool.
   __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
 			      __ATOMIC_RELAXED);
   __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
