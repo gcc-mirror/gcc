@@ -1,3 +1,8 @@
+2016-04-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70510
+	* gcc.target/i386/pr70510.c: New test.
+
 2016-04-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70526
@@ -195,8 +200,7 @@
 	    Tom de Vries  <tom@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 
-	* c-c++-common/goacc/combined-directives.c: Clean up dg-*
-	directives.
+	* c-c++-common/goacc/combined-directives.c: Clean up dg-* directives.
 	* c-c++-common/goacc/loop-clauses.c: Likewise.
 	* g++.dg/goacc/template.C: Likewise.
 	* gfortran.dg/goacc/combined-directives.f90: Likewise.
@@ -290,12 +294,12 @@
 
 2016-03-28  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
-	g++.dg/ext/fnname5.C: Update the test for Darwin.
+	* g++.dg/ext/fnname5.C: Update the test for Darwin.
 
 2016-03-28  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70406
-	 * gcc.target/i386/pr70406.c: New test.
+	* gcc.target/i386/pr70406.c: New test.
 
 2016-03-27  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -376,7 +380,8 @@
 2016-03-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70290
-	* g++.dg/ext/pr70290.C: Add -Wno-psabi -w to dg-options.  Formatting.
+	* g++.dg/ext/pr70290.C: Add -Wno-psabi -w to dg-options.
+	Fix formatting.
 
 2016-03-24  Richard Biener  <rguenther@suse.de>
 

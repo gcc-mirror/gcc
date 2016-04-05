@@ -1,3 +1,8 @@
+2016-04-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70510
+	* config/i386/sse.md (iptr): Add V64QI, V32HI, V16SI and V8DI modes.
+
 2016-04-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70526
@@ -82,8 +87,7 @@
 	PR hsa/70402
 	* hsa-gen.c (gen_hsa_insns_for_switch_stmt): Guard index
 	value that is really in range handled by SBR instruction.
-	* hsa-brig.c (emit_switch_insn): Do not emit unconditional
-	jump.
+	* hsa-brig.c (emit_switch_insn): Do not emit unconditional jump.
 	* hsa-dump.c (dump_hsa_insn_1): Do not dump default BB.
 	* hsa.h (hsa_insn_sbr::m_default_bb): Remove field.
 
@@ -126,8 +130,7 @@
 2016-04-01  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/70496
-	* config/arm/arm.h (ASM_APP_OFF): Handle TARGET_ARM
-	and TARGET_THUMB.
+	* config/arm/arm.h (ASM_APP_OFF): Handle TARGET_ARM and TARGET_THUMB.
 
 2016-04-01  Nathan Sidwell  <nathan@acm.org>
 
@@ -174,8 +177,7 @@
 	(pass_gen_hsail::execute): Do not call
 	convert_switch_statements here.
 	* hsa-regalloc.c (hsa_regalloc): Call update_dominance.
-	* hsa.h (hsa_function_representation::m_modified_cfg):
-	New flag.
+	* hsa.h (hsa_function_representation::m_modified_cfg): New flag.
 	(hsa_function_representation::update_dominance): New function.
 
 2016-03-31  Martin Liska  <mliska@suse.cz>
@@ -183,23 +185,19 @@
 	PR hsa/70391
 	* hsa-brig.c (emit_directive_variable): Emit alignment
 	according to hsa_symbol::m_align.
-	* hsa-dump.c (hsa_byte_alignment): Move the function to
-	another file.
+	* hsa-dump.c (hsa_byte_alignment): Move the function to	another file.
 	(dump_hsa_symbol): Dump alignment of HSA symbols.
-	* hsa-gen.c (get_symbol_for_decl): Set-up alignment
-	of a symbol.
+	* hsa-gen.c (get_symbol_for_decl): Set-up alignment of a symbol.
 	(gen_hsa_addr_with_align): New function.
 	(hsa_bitmemref_alignment): Use newly added function.
 	(gen_hsa_insns_for_load): Likewise.
 	(gen_hsa_insns_for_store): Likewise.
 	(gen_hsa_memory_copy): New argument added.
 	(gen_hsa_insns_for_single_assignment): Respect
-	alignment for assignments processed via
-	gen_hsa_memory_copy.
+	alignment for assignments processed via gen_hsa_memory_copy.
 	(gen_hsa_insns_for_direct_call): Likewise.
 	(gen_hsa_insns_for_return): Likewise.
-	(gen_function_def_parameters): Set default
-	alignment.
+	(gen_function_def_parameters): Set default alignment.
 	* hsa.c (hsa_object_alignment): New function.
 	(hsa_byte_alignment): Pasted function.
 	* hsa.h (hsa_symbol::m_align): New field.
@@ -216,16 +214,15 @@
 2016-03-31  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR target/70442
-	* config/i386/i386.c (scalar_chain::convert_op): Fix
-	description.
+	* config/i386/i386.c (scalar_chain::convert_op): Fix description.
 	(scalar_chain::convert_insn): Call convert_op for reg
 	moves to handle undefined registers.
 
 2016-03-31  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/70393
-	* varasm.c (output_constructor_regular_field): Flush bitfield
-	earlier.  Assert we don't want to move backwards.
+	* varasm.c (output_constructor_regular_field): Flush bitfield earlier.
+	Assert we don't want to move backwards.
 
 2016-03-31  Kirill Yukhin  <kirill.yukhin@intel.com>
 
@@ -266,8 +263,7 @@
 2016-03-30  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70450
-	* fold-const.c (extract_muldiv_1): Fix thinko in wide_int::from
-	usage.
+	* fold-const.c (extract_muldiv_1): Fix thinko in wide_int::from usage.
 
 2016-03-30  Jakub Jelinek  <jakub@redhat.com>
 
@@ -314,8 +310,7 @@
 
 2016-03-29  Jeff Law  <law@redhat.com>
 
-	* tree-ssa-coalesce.c (struct ssa_conflicts): Fix typo in
-	comment.
+	* tree-ssa-coalesce.c (struct ssa_conflicts): Fix typo in comment.
 
 2016-03-10  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -347,8 +342,7 @@
 	mode != result_mode.
 
 	PR c++/70353
-	* tree-inline.c (remap_decls): Don't add_local_decl if
-	cfun is null.
+	* tree-inline.c (remap_decls): Don't add_local_decl if cfun is null.
 
 	PR tree-optimization/70405
 	* ssa-iterators.h (num_imm_uses): Add missing braces.
@@ -362,8 +356,7 @@
 2016-03-29  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/70355
-	* lower-subreg.c (simplify_subreg_concatn): Reject paradoxical
-	subregs.
+	* lower-subreg.c (simplify_subreg_concatn): Reject paradoxical subregs.
 
 2016-03-29  Richard Biener  <rguenther@suse.de>
 
@@ -377,17 +370,16 @@
 2016-03-28  James Bowman  <james.bowman@ftdichip.com>
 
 	* config/ft32/ft32.opt (mnodiv): New.
-	* config/ft32/ft32.md (*divsi3, *modsi3): Qualify with
-	TARGET_NODIV.
+	* config/ft32/ft32.md (*divsi3, *modsi3): Qualify with TARGET_NODIV.
 	* doc/invoke.texi (FT32 Options -mnodiv): New.
 
 2016-03-28  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-	 PR target/70406
-	 * config/i386/i386.md (define_split, andn): Fix modes.
+	PR target/70406
+	* config/i386/i386.md (define_split, andn): Fix modes.
 
 2016-03-26  Richard Biener  <rguenther@suse.de>
-            Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR ipa/70366
 	* ipa-inline-transform.c (inline_call): Pass opts_for_fn (to->decl)
@@ -430,7 +422,7 @@
 
 2016-03-24  Richard Henderson  <rth@redhat.com>
 
-        PR middle-end/69845
+	PR middle-end/69845
 	* fold-const.c (extract_muldiv_1): Correct test for multiplication
 	overflow.
 
