@@ -1,3 +1,9 @@
+2016-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/70542
+	* gcc.dg/torture/pr70542.c: New test.
+	* gcc.target/i386/avx2-pr70542.c: New test.
+
 2016-04-05  Zdenek Sojka  <zsojka@seznam.cz>
 
 	PR tree-optimization/70509
