@@ -184,9 +184,6 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	      memmove (digits + nbefore, digits + nbefore + 1, p);
 	      digits[nbefore + p] = '.';
 	      nbefore += p;
-	      nafter = d - p;
-	      if (nafter < 0)
-		nafter = 0;
 	      nafter = d;
 	      nzero = 0;
 	    }
@@ -204,12 +201,27 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 		{
 		  nzero = -(nbefore + p);
 		  memmove (digits + 1, digits, nbefore);
-		  digits++;
-		  nafter = d + nbefore;
+		  nafter = d - nzero;
+		  if (nafter == 0 && d > 0)
+		    {
+		      /* This is needed to get the correct rounding. */
+		      memmove (digits + 1, digits, ndigits - 1);
+		      digits[1] = '0';
+		      nafter = 1;
+		      nzero = d - 1;
+		    }
+		  else if (nafter < 0)
+		    {
+		      /* Reset digits to 0 in order to get correct rounding
+			 towards infinity. */
+		      for (i = 0; i < ndigits; i++)
+			digits[i] = '0';
+		      digits[ndigits - 1] = '1';
+		      nafter = d;
+		      nzero = 0;
+		    }
 		  nbefore = 0;
 		}
-	      if (nzero > d)
-		nzero = d;
 	    }
 	}
       else
