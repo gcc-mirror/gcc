@@ -301,6 +301,9 @@
 
   if (reg_plus_base_memory_operand (op, mode))
     {
+      if (reload_in_progress)
+	return true;
+
       /* Extract CONST_INT operand.  */
       if (GET_CODE (op) == SUBREG)
 	op = SUBREG_REG (op);
@@ -335,6 +338,9 @@
 
   if (reg_plus_base_memory_operand (op, mode))
     {
+      if (reload_in_progress)
+	return true;
+
       /* Extract CONST_INT operand.  */
       if (GET_CODE (op) == SUBREG)
 	op = SUBREG_REG (op);
