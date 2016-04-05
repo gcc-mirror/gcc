@@ -1,3 +1,8 @@
+2016-04-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/70512
+	* g++.dg/ext/attribute-may-alias-5.C: New.
+
 2016-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70336

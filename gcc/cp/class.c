@@ -1978,6 +1978,21 @@ fixup_type_variants (tree t)
     }
 }
 
+/* KLASS is a class that we're applying may_alias to after the body is
+   parsed.  Fixup any POINTER_TO and REFERENCE_TO types.  The
+   canonical type(s) will be implicitly updated.  */
+
+static void
+fixup_may_alias (tree klass)
+{
+  tree t;
+
+  for (t = TYPE_POINTER_TO (klass); t; t = TYPE_NEXT_PTR_TO (t))
+    TYPE_REF_CAN_ALIAS_ALL (t) = true;
+  for (t = TYPE_REFERENCE_TO (klass); t; t = TYPE_NEXT_REF_TO (t))
+    TYPE_REF_CAN_ALIAS_ALL (t) = true;
+}
+
 /* Early variant fixups: we apply attributes at the beginning of the class
    definition, and we need to fix up any variants that have already been
    made via elaborated-type-specifier so that check_qualified_type works.  */
@@ -1993,6 +2008,10 @@ fixup_attribute_variants (tree t)
   tree attrs = TYPE_ATTRIBUTES (t);
   unsigned align = TYPE_ALIGN (t);
   bool user_align = TYPE_USER_ALIGN (t);
+  bool may_alias = lookup_attribute ("may_alias", attrs);
+
+  if (may_alias)
+    fixup_may_alias (t);
 
   for (variants = TYPE_NEXT_VARIANT (t);
        variants;
@@ -2007,6 +2026,8 @@ fixup_attribute_variants (tree t)
       else
 	TYPE_USER_ALIGN (variants) = user_align;
       TYPE_ALIGN (variants) = valign;
+      if (may_alias)
+	fixup_may_alias (variants);
     }
 }
 
