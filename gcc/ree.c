@@ -1025,11 +1025,11 @@ add_removable_extension (const_rtx expr, rtx_insn *insn,
 	    return;
 	  }
 	/* For vector mode extensions, ensure that all uses of the
-	   XEXP (src, 0) register are the same extension (both code
-	   and to which mode), as unlike integral extensions lowpart
-	   subreg of the sign/zero extended register are not equal
-	   to the original register, so we have to change all uses or
-	   none.  */
+	   XEXP (src, 0) register are in insn or debug insns, as unlike
+	   integral extensions lowpart subreg of the sign/zero extended
+	   register are not equal to the original register, so we have
+	   to change all uses or none and the current code isn't able
+	   to change them all at once in one transaction.  */
 	else if (VECTOR_MODE_P (GET_MODE (XEXP (src, 0))))
 	  {
 	    if (idx == 0)
@@ -1046,15 +1046,7 @@ add_removable_extension (const_rtx expr, rtx_insn *insn,
 			break;
 		      }
 		    rtx_insn *use_insn = DF_REF_INSN (ref_link->ref);
-		    const_rtx use_set;
-		    if (use_insn == insn || DEBUG_INSN_P (use_insn))
-		      continue;
-		    if (!(use_set = single_set (use_insn))
-			|| !REG_P (SET_DEST (use_set))
-			|| GET_MODE (SET_DEST (use_set)) != GET_MODE (dest)
-			|| GET_CODE (SET_SRC (use_set)) != code
-			|| !rtx_equal_p (XEXP (SET_SRC (use_set), 0),
-					 XEXP (src, 0)))
+		    if (use_insn != insn && !DEBUG_INSN_P (use_insn))
 		      {
 			idx = -1U;
 			break;

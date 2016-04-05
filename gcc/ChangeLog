@@ -1,3 +1,9 @@
+2016-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/70542
+	* ree.c (add_removable_extension): For VECTOR_MODE_P punt
+	if there are any uses other than insn or debug insns.
+
 2016-04-05  Marc Glisse  <marc.glisse@inria.fr>
 	    Jakub Jelinek  <jakub@redhat.com>
 
