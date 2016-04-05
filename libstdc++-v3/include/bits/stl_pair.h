@@ -87,32 +87,51 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Concept utility functions, reused in conditionally-explicit
   // constructors.
+  // See PR 70437, don't look at is_constructible or
+  // is_convertible if the decayed types are the same to
+  // avoid querying those properties for incomplete types.
   template <typename _T1, typename _T2, typename _U1, typename _U2>
   constexpr bool _ConstructiblePair()
   {
-    return __and_<is_constructible<_T1, const _U1&>,
-		  is_constructible<_T2, const _U2&>>::value;
+    return __and_<__or_<is_same<typename decay<_T1>::type,
+				typename decay<_U1>::type>,
+			is_constructible<_T1, const _U1&>>,
+		  __or_<is_same<typename decay<_T2>::type,
+				typename decay<_U2>::type>,
+			is_constructible<_T2, const _U2&>>>::value;
   }
 
   template <typename _T1, typename _T2, typename _U1, typename _U2>
   constexpr bool _ImplicitlyConvertiblePair()
   {
-    return __and_<is_convertible<const _U1&, _T1>,
-		  is_convertible<const _U2&, _T2>>::value;
+    return __and_<__or_<is_same<typename decay<_T1>::type,
+				typename decay<_U1>::type>,
+			is_convertible<const _U1&, _T1>>,
+		  __or_<is_same<typename decay<_T2>::type,
+				typename decay<_U2>::type>,
+		       is_convertible<const _U2&, _T2>>>::value;
   }
 
   template <typename _T1, typename _T2, typename _U1, typename _U2>
   constexpr bool _MoveConstructiblePair()
   {
-    return __and_<is_constructible<_T1, _U1&&>,
-		  is_constructible<_T2, _U2&&>>::value;
+    return __and_<__or_<is_same<typename decay<_T1>::type,
+				typename decay<_U1>::type>,
+			is_constructible<_T1, _U1&&>>,
+		  __or_<is_same<typename decay<_T2>::type,
+				typename decay<_U2>::type>,
+			is_constructible<_T2, _U2&&>>>::value;
   }
 
   template <typename _T1, typename _T2, typename _U1, typename _U2>
   constexpr bool _ImplicitlyMoveConvertiblePair()
   {
-    return __and_<is_convertible<_U1&&, _T1>,
-		  is_convertible<_U2&&, _T2>>::value;
+    return __and_<__or_<is_same<typename decay<_T1>::type,
+				typename decay<_U1>::type>,
+			is_convertible<_U1&&, _T1>>,
+		  __or_<is_same<typename decay<_T2>::type,
+				typename decay<_U2>::type>,
+		       is_convertible<_U2&&, _T2>>>::value;
   }
 
 
