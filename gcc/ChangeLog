@@ -1,3 +1,8 @@
+2016-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70336
+	* match.pd (nested int casts): Limit to GIMPLE.
+
 2016-04-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/66223

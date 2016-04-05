@@ -1,3 +1,10 @@
+2016-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70336
+	* c-c++-common/pr70336.c: New test.
+	* gcc.dg/torture/builtin-isinf_sign-1.c (foo): Guard tests
+	no longer optimized away at -O0 with #ifndef __OPTIMIZE__.
+
 2016-04-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/66223
