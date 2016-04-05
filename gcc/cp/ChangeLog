@@ -1,6 +1,19 @@
 2016-04-05  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/70452
+	* constexpr.c (struct fundef_copy): New struct.
+	(struct fundef_copies_table_t): New struct.
+	(fundef_copies_table): New static variable.
+	(maybe_initialize_fundef_copies_table): New static function.
+	(get_fundef_copy): New static function.
+	(save_fundef_copy): New static function.
+	(cxx_eval_call_expression): Use get_fundef_copy, and
+	save_fundef_copy.
+	(constexpr_call_table): Add "deletable" GTY marker.
+
+2016-04-05  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/70452
 	* cp-tree.h (class cache_map): Remove.
 	* constexpr.c (cv_cache): Change type to
 	GTY((deletable)) hash_map<tree, tree> *.
