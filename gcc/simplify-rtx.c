@@ -3665,7 +3665,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	      for (int i = 0; i < XVECLEN (trueop1, 0); i++)
 		{
 		  rtx j = XVECEXP (trueop1, 0, i);
-		  if (sel & (1 << UINTVAL (j)))
+		  if (sel & (HOST_WIDE_INT_1U << UINTVAL (j)))
 		    all_operand1 = false;
 		  else
 		    all_operand0 = false;
