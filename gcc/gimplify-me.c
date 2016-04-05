@@ -299,7 +299,8 @@ gimple_regimplify_operands (gimple *stmt, gimple_stmt_iterator *gsi_p)
 	  if (need_temp)
 	    {
 	      tree temp = create_tmp_reg (TREE_TYPE (lhs));
-	      if (gimple_in_ssa_p (cfun))
+	      if (gimple_in_ssa_p (cfun)
+		  && is_gimple_reg_type (TREE_TYPE (lhs)))
 		temp = make_ssa_name (temp);
 	      gimple_set_lhs (stmt, temp);
 	      post_stmt = gimple_build_assign (lhs, temp);
