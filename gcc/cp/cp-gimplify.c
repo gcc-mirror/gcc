@@ -1905,14 +1905,15 @@ c_fully_fold (tree x, bool /*in_init*/, bool */*maybe_const*/)
   return cp_fold_rvalue (x);
 }
 
-static GTY((cache, deletable)) cache_map fold_cache;
+static GTY((deletable)) hash_map<tree, tree> *fold_cache;
 
 /* Dispose of the whole FOLD_CACHE.  */
 
 void
 clear_fold_cache (void)
 {
-  gt_cleare_cache (fold_cache);
+  if (fold_cache != NULL)
+    fold_cache->empty ();
 }
 
 /*  This function tries to fold an expression X.
@@ -1942,8 +1943,11 @@ cp_fold (tree x)
   if (DECL_P (x) || CONSTANT_CLASS_P (x))
     return x;
 
-  if (tree cached = fold_cache.get (x))
-    return cached;
+  if (fold_cache == NULL)
+    fold_cache = hash_map<tree, tree>::create_ggc (101);
+
+  if (tree *cached = fold_cache->get (x))
+    return *cached;
 
   code = TREE_CODE (x);
   switch (code)
@@ -2298,10 +2302,10 @@ cp_fold (tree x)
       return org_x;
     }
 
-  fold_cache.put (org_x, x);
+  fold_cache->put (org_x, x);
   /* Prevent that we try to fold an already folded result again.  */
   if (x != org_x)
-    fold_cache.put (x, x);
+    fold_cache->put (x, x);
 
   return x;
 }
