@@ -2,7 +2,7 @@
    variant.  Either keeping virtual call or optimizing to cxa_pure_virtual
    is fine.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fsanitize=undefined -fdump-tree-optimized"  } */
+/* { dg-options "-O2 -fsanitize=unreachable -fdump-tree-optimized"  } */
 namespace {
   struct B {
         B* self;

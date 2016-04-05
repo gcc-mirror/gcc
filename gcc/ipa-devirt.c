@@ -2438,9 +2438,9 @@ maybe_record_node (vec <cgraph_node *> &nodes,
     {
       gcc_assert (!target_node->global.inlined_to);
       gcc_assert (target_node->real_symbol_p ());
-      /* When sanitizing, do not asume that cxa_pure_virutal is not called
+      /* When sanitizing, do not assume that __cxa_pure_virtual is not called
 	 by valid program.  */
-      if (flag_sanitize & SANITIZE_UNDEFINED)
+      if (flag_sanitize & SANITIZE_UNREACHABLE)
 	;
       /* Only add pure virtual if it is the only possible target.  This way
 	 we will preserve the diagnostics about pure virtual called in many
