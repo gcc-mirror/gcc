@@ -1,3 +1,8 @@
+2016-04-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70510
+	* config/i386/sse.md (iptr): Add V16SI and V8DI modes.
+
 2016-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    Jakub Jelinek <jakub@redhat.com>
 
