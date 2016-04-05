@@ -1,3 +1,9 @@
+2016-04-05  Zdenek Sojka  <zsojka@seznam.cz>
+
+	PR tree-optimization/70509
+	* tree-ssa-forwprop.c (simplify_bitfield_ref): Use bitsize_int instead
+	of the vector base type for index.
+
 2016-04-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/70510

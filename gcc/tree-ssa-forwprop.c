@@ -1773,7 +1773,7 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
 
   if (code == VEC_PERM_EXPR)
     {
-      tree p, m, index, tem;
+      tree p, m, tem;
       unsigned nelts;
       m = gimple_assign_rhs3 (def_stmt);
       if (TREE_CODE (m) != VECTOR_CST)
@@ -1790,9 +1790,8 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
 	  p = gimple_assign_rhs2 (def_stmt);
 	  idx -= nelts;
 	}
-      index = build_int_cst (TREE_TYPE (TREE_TYPE (m)), idx * size);
       tem = build3 (BIT_FIELD_REF, TREE_TYPE (op),
-		    unshare_expr (p), op1, index);
+		    unshare_expr (p), op1, bitsize_int (idx * size));
       gimple_assign_set_rhs1 (stmt, tem);
       fold_stmt (gsi);
       update_stmt (gsi_stmt (*gsi));
