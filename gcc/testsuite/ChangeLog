@@ -1,5 +1,10 @@
 2016-04-05  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/70499
+	* g++.dg/torture/pr70499.C: New testcase.
+
+2016-04-05  Richard Biener  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/20030814-6.c: Fix testcase, disable FRE,
 	remove XFAIL.
 

@@ -1,3 +1,9 @@
+2016-04-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70499
+	* gimplify-me.c (gimple_regimplify_operands): Do not rewrite
+	non-register type temporaries into SSA.
+
 2016-04-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/66223
