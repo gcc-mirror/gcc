@@ -1,3 +1,8 @@
+2016-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70525
+	* gcc.target/i386/pr70525.c: New test.
+
 2016-04-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70499
