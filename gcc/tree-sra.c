@@ -1673,7 +1673,7 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
     }
   else
     {
-      off = build_int_cst (reference_alias_ptr_type (base),
+      off = build_int_cst (reference_alias_ptr_type (prev_base),
 			   base_offset + offset / BITS_PER_UNIT);
       base = build_fold_addr_expr (unshare_expr (base));
     }
