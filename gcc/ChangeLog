@@ -1,3 +1,8 @@
+2016-04-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/70510
+	* config/i386/sse.md (iptr): Add V64QI, V32HI, V16SI and V8DI modes.
+
 2016-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70525
@@ -301,8 +306,8 @@
 
 2016-03-28  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-	 PR target/70406
-	 * config/i386/i386.md (define_split, andn): Fix modes.
+	PR target/70406
+	* config/i386/i386.md (define_split, andn): Fix modes.
 
 2016-03-24  John David Anglin  <danglin@gcc.gnu.org>
 
@@ -312,7 +317,7 @@
 2016-03-22  Martin Liska  <mliska@suse.cz>
 
 	backport from trunk:
-	
+
 	2016-03-21  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/70306
@@ -323,8 +328,7 @@
 
 	PR target/70325
 	* config/i386/i386.c (def_builtin): Handle
-	OPTION_MASK_ISA_AVX512VL to be and-ed with other
-	bits.
+	OPTION_MASK_ISA_AVX512VL to be and-ed with other bits.
 	(const struct builtin_description bdesc_special_args[]):
 	Remove duplicate ISA bits.
 
