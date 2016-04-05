@@ -242,9 +242,6 @@ struct store_info
   /* Canonized MEM address for use by canon_true_dependence.  */
   rtx mem_addr;
 
-  /* If this is non-zero, it is the alias set of a spill location.  */
-  alias_set_type alias_set;
-
   /* The offset of the first and byte before the last byte associated
      with the operation.  */
   HOST_WIDE_INT begin, end;
@@ -305,9 +302,6 @@ struct read_info_type
 {
   /* The id of the mem group of the base address.  */
   int group_id;
-
-  /* If this is non-zero, it is the alias set of a spill location.  */
-  alias_set_type alias_set;
 
   /* The offset of the first and byte after the last byte associated
      with the operation.  If begin == end == 0, the read did not have
@@ -576,19 +570,6 @@ static object_allocator<deferred_change> deferred_change_pool
 
 static deferred_change *deferred_change_list = NULL;
 
-/* The group that holds all of the clear_alias_sets.  */
-static group_info *clear_alias_group;
-
-/* The modes of the clear_alias_sets.  */
-static htab_t clear_alias_mode_table;
-
-/* Hash table element to look up the mode for an alias set.  */
-struct clear_alias_mode_holder
-{
-  alias_set_type alias_set;
-  machine_mode mode;
-};
-
 /* This is true except if cfun->stdarg -- i.e. we cannot do
    this for vararg functions because they play games with the frame.  */
 static bool stores_off_frame_dead_at_return;
@@ -596,7 +577,6 @@ static bool stores_off_frame_dead_at_return;
 /* Counter for stats.  */
 static int globally_deleted;
 static int locally_deleted;
-static int spill_deleted;
 
 static bitmap all_blocks;
 
@@ -611,22 +591,6 @@ static unsigned int current_position;
 
    Initialization.
 ----------------------------------------------------------------------------*/
-
-
-/* Find the entry associated with ALIAS_SET.  */
-
-static struct clear_alias_mode_holder *
-clear_alias_set_lookup (alias_set_type alias_set)
-{
-  struct clear_alias_mode_holder tmp_holder;
-  void **slot;
-
-  tmp_holder.alias_set = alias_set;
-  slot = htab_find_slot (clear_alias_mode_table, &tmp_holder, NO_INSERT);
-  gcc_assert (*slot);
-
-  return (struct clear_alias_mode_holder *) *slot;
-}
 
 
 /* Hashtable callbacks for maintaining the "bases" field of
@@ -665,37 +629,13 @@ get_group_info (rtx base)
   group_info *gi;
   group_info **slot;
 
-  if (base)
-    {
-      /* Find the store_base_info structure for BASE, creating a new one
-	 if necessary.  */
-      tmp_gi.rtx_base = base;
-      slot = rtx_group_table->find_slot (&tmp_gi, INSERT);
-      gi = *slot;
-    }
-  else
-    {
-      if (!clear_alias_group)
-	{
-	  clear_alias_group = gi = group_info_pool.allocate ();
-	  memset (gi, 0, sizeof (struct group_info));
-	  gi->id = rtx_group_next_id++;
-	  gi->store1_n = BITMAP_ALLOC (&dse_bitmap_obstack);
-	  gi->store1_p = BITMAP_ALLOC (&dse_bitmap_obstack);
-	  gi->store2_n = BITMAP_ALLOC (&dse_bitmap_obstack);
-	  gi->store2_p = BITMAP_ALLOC (&dse_bitmap_obstack);
-	  gi->escaped_p = BITMAP_ALLOC (&dse_bitmap_obstack);
-	  gi->escaped_n = BITMAP_ALLOC (&dse_bitmap_obstack);
-	  gi->group_kill = BITMAP_ALLOC (&dse_bitmap_obstack);
-	  gi->process_globally = false;
-	  gi->offset_map_size_n = 0;
-	  gi->offset_map_size_p = 0;
-	  gi->offset_map_n = NULL;
-	  gi->offset_map_p = NULL;
-	  rtx_group_vec.safe_push (gi);
-	}
-      return clear_alias_group;
-    }
+  gcc_assert (base != NULL_RTX);
+
+  /* Find the store_base_info structure for BASE, creating a new one
+     if necessary.  */
+  tmp_gi.rtx_base = base;
+  slot = rtx_group_table->find_slot (&tmp_gi, INSERT);
+  gi = *slot;
 
   if (gi == NULL)
     {
@@ -732,7 +672,6 @@ dse_step0 (void)
 {
   locally_deleted = 0;
   globally_deleted = 0;
-  spill_deleted = 0;
 
   bitmap_obstack_initialize (&dse_bitmap_obstack);
   gcc_obstack_init (&dse_obstack);
@@ -749,8 +688,6 @@ dse_step0 (void)
   stores_off_frame_dead_at_return = !cfun->stdarg;
 
   init_alias_analysis ();
-
-  clear_alias_group = NULL;
 }
 
 
@@ -919,15 +856,8 @@ delete_dead_store_insn (insn_info_t insn_info)
   if (!check_for_inc_dec_1 (insn_info))
     return;
   if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "Locally deleting insn %d ",
-	       INSN_UID (insn_info->insn));
-      if (insn_info->store_rec->alias_set)
-	fprintf (dump_file, "alias set %d\n",
-		 (int) insn_info->store_rec->alias_set);
-      else
-	fprintf (dump_file, "\n");
-    }
+    fprintf (dump_file, "Locally deleting insn %d\n",
+	     INSN_UID (insn_info->insn));
 
   free_store_info (insn_info);
   read_info = insn_info->read_rec;
@@ -1057,13 +987,8 @@ free_read_records (bb_info_t bb_info)
   while (*ptr)
     {
       read_info_t next = (*ptr)->next;
-      if ((*ptr)->alias_set == 0)
-        {
-	  read_info_type_pool.remove (*ptr);
-          *ptr = next;
-        }
-      else
-        ptr = &(*ptr)->next;
+      read_info_type_pool.remove (*ptr);
+      *ptr = next;
     }
 }
 
@@ -1137,7 +1062,6 @@ const_or_frame_p (rtx x)
 
 static bool
 canon_address (rtx mem,
-	       alias_set_type *alias_set_out,
 	       int *group_id,
 	       HOST_WIDE_INT *offset,
 	       cselib_val **base)
@@ -1146,8 +1070,6 @@ canon_address (rtx mem,
   rtx mem_address = XEXP (mem, 0);
   rtx expanded_address, address;
   int expanded;
-
-  *alias_set_out = 0;
 
   cselib_lookup (mem_address, address_mode, 1, GET_MODE (mem));
 
@@ -1347,7 +1269,6 @@ record_store (rtx body, bb_info_t bb_info)
   rtx mem, rhs, const_rhs, mem_addr;
   HOST_WIDE_INT offset = 0;
   HOST_WIDE_INT width = 0;
-  alias_set_type spill_alias_set;
   insn_info_t insn_info = bb_info->last_insn;
   store_info *store_info = NULL;
   int group_id;
@@ -1410,7 +1331,7 @@ record_store (rtx body, bb_info_t bb_info)
   if (MEM_VOLATILE_P (mem))
     insn_info->cannot_delete = true;
 
-  if (!canon_address (mem, &spill_alias_set, &group_id, &offset, &base))
+  if (!canon_address (mem, &group_id, &offset, &base))
     {
       clear_rhs_from_active_local_stores ();
       return 0;
@@ -1421,26 +1342,7 @@ record_store (rtx body, bb_info_t bb_info)
   else
     width = GET_MODE_SIZE (GET_MODE (mem));
 
-  if (spill_alias_set)
-    {
-      bitmap store1 = clear_alias_group->store1_p;
-      bitmap store2 = clear_alias_group->store2_p;
-
-      gcc_assert (GET_MODE (mem) != BLKmode);
-
-      if (!bitmap_set_bit (store1, spill_alias_set))
-	bitmap_set_bit (store2, spill_alias_set);
-
-      if (clear_alias_group->offset_map_size_p < spill_alias_set)
-	clear_alias_group->offset_map_size_p = spill_alias_set;
-
-      store_info = rtx_store_info_pool.allocate ();
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, " processing spill store %d(%s)\n",
-		 (int) spill_alias_set, GET_MODE_NAME (GET_MODE (mem)));
-    }
-  else if (group_id >= 0)
+  if (group_id >= 0)
     {
       /* In the restrictive case where the base is a constant or the
 	 frame pointer we can do global analysis.  */
@@ -1506,21 +1408,16 @@ record_store (rtx body, bb_info_t bb_info)
   last = NULL;
   redundant_reason = NULL;
   mem = canon_rtx (mem);
-  /* For alias_set != 0 canon_true_dependence should be never called.  */
-  if (spill_alias_set)
-    mem_addr = NULL_RTX;
+
+  if (group_id < 0)
+    mem_addr = base->val_rtx;
   else
     {
-      if (group_id < 0)
-	mem_addr = base->val_rtx;
-      else
-	{
-	  group_info *group = rtx_group_vec[group_id];
-	  mem_addr = group->canon_base_addr;
-	}
-      if (offset)
-	mem_addr = plus_constant (get_address_mode (mem), mem_addr, offset);
+      group_info *group = rtx_group_vec[group_id];
+      mem_addr = group->canon_base_addr;
     }
+  if (offset)
+    mem_addr = plus_constant (get_address_mode (mem), mem_addr, offset);
 
   while (ptr)
     {
@@ -1534,29 +1431,7 @@ record_store (rtx body, bb_info_t bb_info)
       while (!s_info->is_set)
 	s_info = s_info->next;
 
-      if (s_info->alias_set != spill_alias_set)
-	del = false;
-      else if (s_info->alias_set)
-	{
-	  struct clear_alias_mode_holder *entry
-	    = clear_alias_set_lookup (s_info->alias_set);
-	  /* Generally, spills cannot be processed if and of the
-	     references to the slot have a different mode.  But if
-	     we are in the same block and mode is exactly the same
-	     between this store and one before in the same block,
-	     we can still delete it.  */
-	  if ((GET_MODE (mem) == GET_MODE (s_info->mem))
-	      && (GET_MODE (mem) == entry->mode))
-	    {
-	      del = true;
-	      set_all_positions_unneeded (s_info);
-	    }
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "    trying spill store in insn=%d alias_set=%d\n",
-		     INSN_UID (ptr->insn), (int) s_info->alias_set);
-	}
-      else if ((s_info->group_id == group_id)
-	       && (s_info->cse_base == base))
+      if (s_info->group_id == group_id && s_info->cse_base == base)
 	{
 	  HOST_WIDE_INT i;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1646,7 +1521,6 @@ record_store (rtx body, bb_info_t bb_info)
   store_info->next = insn_info->store_rec;
   insn_info->store_rec = store_info;
   store_info->mem = mem;
-  store_info->alias_set = spill_alias_set;
   store_info->mem_addr = mem_addr;
   store_info->cse_base = base;
   if (width > HOST_BITS_PER_WIDE_INT)
@@ -2070,7 +1944,6 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
   insn_info_t insn_info;
   HOST_WIDE_INT offset = 0;
   HOST_WIDE_INT width = 0;
-  alias_set_type spill_alias_set = 0;
   cselib_val *base = NULL;
   int group_id;
   read_info_t read_info;
@@ -2092,7 +1965,7 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
   if (MEM_READONLY_P (mem))
     return;
 
-  if (!canon_address (mem, &spill_alias_set, &group_id, &offset, &base))
+  if (!canon_address (mem, &group_id, &offset, &base))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, " adding wild read, canon_address failure.\n");
@@ -2108,64 +1981,21 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
   read_info = read_info_type_pool.allocate ();
   read_info->group_id = group_id;
   read_info->mem = mem;
-  read_info->alias_set = spill_alias_set;
   read_info->begin = offset;
   read_info->end = offset + width;
   read_info->next = insn_info->read_rec;
   insn_info->read_rec = read_info;
-  /* For alias_set != 0 canon_true_dependence should be never called.  */
-  if (spill_alias_set)
-    mem_addr = NULL_RTX;
+  if (group_id < 0)
+    mem_addr = base->val_rtx;
   else
     {
-      if (group_id < 0)
-	mem_addr = base->val_rtx;
-      else
-	{
-	  group_info *group = rtx_group_vec[group_id];
-	  mem_addr = group->canon_base_addr;
-	}
-      if (offset)
-	mem_addr = plus_constant (get_address_mode (mem), mem_addr, offset);
+      group_info *group = rtx_group_vec[group_id];
+      mem_addr = group->canon_base_addr;
     }
+  if (offset)
+    mem_addr = plus_constant (get_address_mode (mem), mem_addr, offset);
 
-  /* We ignore the clobbers in store_info.  The is mildly aggressive,
-     but there really should not be a clobber followed by a read.  */
-
-  if (spill_alias_set)
-    {
-      insn_info_t i_ptr = active_local_stores;
-      insn_info_t last = NULL;
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, " processing spill load %d\n",
-		 (int) spill_alias_set);
-
-      while (i_ptr)
-	{
-	  store_info *store_info = i_ptr->store_rec;
-
-	  /* Skip the clobbers.  */
-	  while (!store_info->is_set)
-	    store_info = store_info->next;
-
-	  if (store_info->alias_set == spill_alias_set)
-	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		dump_insn_info ("removing from active", i_ptr);
-
-	      active_local_stores_len--;
-	      if (last)
-		last->next_local_store = i_ptr->next_local_store;
-	      else
-		active_local_stores = i_ptr->next_local_store;
-	    }
-	  else
-	    last = i_ptr;
-	  i_ptr = i_ptr->next_local_store;
-	}
-    }
-  else if (group_id >= 0)
+  if (group_id >= 0)
     {
       /* This is the restricted case where the base is a constant or
 	 the frame pointer and offset is a constant.  */
@@ -2293,11 +2123,10 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
 			       bb_info->regs_live))
 	    return;
 
-	  if (!store_info->alias_set)
-	    remove = canon_true_dependence (store_info->mem,
-					    GET_MODE (store_info->mem),
-					    store_info->mem_addr,
-					    mem, mem_addr);
+	  remove = canon_true_dependence (store_info->mem,
+					  GET_MODE (store_info->mem),
+					  store_info->mem_addr,
+					  mem, mem_addr);
 
 	  if (remove)
 	    {
@@ -2730,16 +2559,12 @@ dse_step1 (void)
 		  /* Skip the clobbers.  */
 		  while (!store_info->is_set)
 		    store_info = store_info->next;
-		  if (store_info->alias_set && !i_ptr->cannot_delete)
-		    delete_dead_store_insn (i_ptr);
-		  else
-		    if (store_info->group_id >= 0)
-		      {
-			group_info *group
-			  = rtx_group_vec[store_info->group_id];
-			if (group->frame_related && !i_ptr->cannot_delete)
-			  delete_dead_store_insn (i_ptr);
-		      }
+		  if (store_info->group_id >= 0)
+		    {
+		      group_info *group = rtx_group_vec[store_info->group_id];
+		      if (group->frame_related && !i_ptr->cannot_delete)
+			delete_dead_store_insn (i_ptr);
+		    }
 
 		  i_ptr = i_ptr->next_local_store;
 		}
@@ -2868,10 +2693,10 @@ dse_step2_init (void)
 }
 
 
-/* Init the offset tables for the normal case.  */
+/* Init the offset tables.  */
 
 static bool
-dse_step2_nospill (void)
+dse_step2 (void)
 {
   unsigned int i;
   group_info *group;
@@ -2882,9 +2707,6 @@ dse_step2_nospill (void)
     {
       bitmap_iterator bi;
       unsigned int j;
-
-      if (group == clear_alias_group)
-	continue;
 
       memset (group->offset_map_n, 0, sizeof (int) * group->offset_map_size_n);
       memset (group->offset_map_p, 0, sizeof (int) * group->offset_map_size_p);
@@ -2945,7 +2767,7 @@ get_bitmap_index (group_info *group_info, HOST_WIDE_INT offset)
    may be NULL. */
 
 static void
-scan_stores_nospill (store_info *store_info, bitmap gen, bitmap kill)
+scan_stores (store_info *store_info, bitmap gen, bitmap kill)
 {
   while (store_info)
     {
@@ -2968,35 +2790,11 @@ scan_stores_nospill (store_info *store_info, bitmap gen, bitmap kill)
 }
 
 
-/* Process the STORE_INFOs into the bitmaps into GEN and KILL.  KILL
-   may be NULL. */
-
-static void
-scan_stores_spill (store_info *store_info, bitmap gen, bitmap kill)
-{
-  while (store_info)
-    {
-      if (store_info->alias_set)
-	{
-	  int index = get_bitmap_index (clear_alias_group,
-					store_info->alias_set);
-	  if (index != 0)
-	    {
-	      bitmap_set_bit (gen, index);
-	      if (kill)
-		bitmap_clear_bit (kill, index);
-	    }
-	}
-      store_info = store_info->next;
-    }
-}
-
-
 /* Process the READ_INFOs into the bitmaps into GEN and KILL.  KILL
    may be NULL.  */
 
 static void
-scan_reads_nospill (insn_info_t insn_info, bitmap gen, bitmap kill)
+scan_reads (insn_info_t insn_info, bitmap gen, bitmap kill)
 {
   read_info_t read_info = insn_info->read_rec;
   int i;
@@ -3086,30 +2884,6 @@ scan_reads_nospill (insn_info_t insn_info, bitmap gen, bitmap kill)
     }
 }
 
-/* Process the READ_INFOs into the bitmaps into GEN and KILL.  KILL
-   may be NULL.  */
-
-static void
-scan_reads_spill (read_info_t read_info, bitmap gen, bitmap kill)
-{
-  while (read_info)
-    {
-      if (read_info->alias_set)
-	{
-	  int index = get_bitmap_index (clear_alias_group,
-					read_info->alias_set);
-	  if (index != 0)
-	    {
-	      if (kill)
-		bitmap_set_bit (kill, index);
-	      bitmap_clear_bit (gen, index);
-	    }
-	}
-
-      read_info = read_info->next;
-    }
-}
-
 
 /* Return the insn in BB_INFO before the first wild read or if there
    are no wild reads in the block, return the last insn.  */
@@ -3148,16 +2922,12 @@ find_insn_before_first_wild_read (bb_info_t bb_info)
    anything that happens is hidden by the wild read.  */
 
 static void
-dse_step3_scan (bool for_spills, basic_block bb)
+dse_step3_scan (basic_block bb)
 {
   bb_info_t bb_info = bb_table[bb->index];
   insn_info_t insn_info;
 
-  if (for_spills)
-    /* There are no wild reads in the spill case.  */
-    insn_info = bb_info->last_insn;
-  else
-    insn_info = find_insn_before_first_wild_read (bb_info);
+  insn_info = find_insn_before_first_wild_read (bb_info);
 
   /* In the spill case or in the no_spill case if there is no wild
      read in the block, we will need a kill set.  */
@@ -3178,17 +2948,8 @@ dse_step3_scan (bool for_spills, basic_block bb)
 	 this phase.  */
       if (insn_info->insn && INSN_P (insn_info->insn))
 	{
-	  /* Process the read(s) last.  */
-	  if (for_spills)
-	    {
-	      scan_stores_spill (insn_info->store_rec, bb_info->gen, bb_info->kill);
-	      scan_reads_spill (insn_info->read_rec, bb_info->gen, bb_info->kill);
-	    }
-	  else
-	    {
-	      scan_stores_nospill (insn_info->store_rec, bb_info->gen, bb_info->kill);
-	      scan_reads_nospill (insn_info, bb_info->gen, bb_info->kill);
-	    }
+	  scan_stores (insn_info->store_rec, bb_info->gen, bb_info->kill);
+	  scan_reads (insn_info, bb_info->gen, bb_info->kill);
 	}
 
       insn_info = insn_info->prev_insn;
@@ -3243,7 +3004,7 @@ mark_reachable_blocks (sbitmap unreachable_blocks, basic_block bb)
 /* Build the transfer functions for the function.  */
 
 static void
-dse_step3 (bool for_spills)
+dse_step3 ()
 {
   basic_block bb;
   sbitmap unreachable_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
@@ -3266,7 +3027,7 @@ dse_step3 (bool for_spills)
       else if (bb->index == EXIT_BLOCK)
 	dse_step3_exit_block_scan (bb_info);
       else
-	dse_step3_scan (for_spills, bb);
+	dse_step3_scan (bb);
       if (EDGE_COUNT (bb->succs) == 0)
 	mark_reachable_blocks (unreachable_blocks, bb);
 
@@ -3467,7 +3228,7 @@ dse_step4 (void)
 
 
 static void
-dse_step5_nospill (void)
+dse_step5 (void)
 {
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)
@@ -3502,27 +3263,21 @@ dse_step5_nospill (void)
 	      while (!store_info->is_set)
 		store_info = store_info->next;
 
-	      if (store_info->alias_set)
-		deleted = false;
-	      else
+	      HOST_WIDE_INT i;
+	      group_info *group_info = rtx_group_vec[store_info->group_id];
+
+	      for (i = store_info->begin; i < store_info->end; i++)
 		{
-		  HOST_WIDE_INT i;
-		  group_info *group_info
-		    = rtx_group_vec[store_info->group_id];
+		  int index = get_bitmap_index (group_info, i);
 
-		  for (i = store_info->begin; i < store_info->end; i++)
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file, "i = %d, index = %d\n", (int)i, index);
+		  if (index == 0 || !bitmap_bit_p (v, index))
 		    {
-		      int index = get_bitmap_index (group_info, i);
-
 		      if (dump_file && (dump_flags & TDF_DETAILS))
-			fprintf (dump_file, "i = %d, index = %d\n", (int)i, index);
-		      if (index == 0 || !bitmap_bit_p (v, index))
-			{
-			  if (dump_file && (dump_flags & TDF_DETAILS))
-			    fprintf (dump_file, "failing at i = %d\n", (int)i);
-			  deleted = false;
-			  break;
-			}
+			fprintf (dump_file, "failing at i = %d\n", (int)i);
+		      deleted = false;
+		      break;
 		    }
 		}
 	      if (deleted)
@@ -3543,7 +3298,7 @@ dse_step5_nospill (void)
 	      && INSN_P (insn_info->insn)
 	      && (!deleted))
 	    {
-	      scan_stores_nospill (insn_info->store_rec, v, NULL);
+	      scan_stores (insn_info->store_rec, v, NULL);
 	      if (insn_info->wild_read)
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3557,7 +3312,7 @@ dse_step5_nospill (void)
 		    fprintf (dump_file, "regular read\n");
                   else if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "non-frame wild read\n");
-		  scan_reads_nospill (insn_info, v, NULL);
+		  scan_reads (insn_info, v, NULL);
 		}
 	    }
 
@@ -3666,23 +3421,23 @@ rest_of_handle_dse (void)
   dse_step0 ();
   dse_step1 ();
   dse_step2_init ();
-  if (dse_step2_nospill ())
+  if (dse_step2 ())
     {
       df_set_flags (DF_LR_RUN_DCE);
       df_analyze ();
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "doing global processing\n");
-      dse_step3 (false);
+      dse_step3 ();
       dse_step4 ();
-      dse_step5_nospill ();
+      dse_step5 ();
     }
 
   dse_step6 ();
   dse_step7 ();
 
   if (dump_file)
-    fprintf (dump_file, "dse: local deletions = %d, global deletions = %d, spill deletions = %d\n",
-	     locally_deleted, globally_deleted, spill_deleted);
+    fprintf (dump_file, "dse: local deletions = %d, global deletions = %d\n",
+	     locally_deleted, globally_deleted);
 
   /* DSE can eliminate potentially-trapping MEMs.
      Remove any EH edges associated with them.  */

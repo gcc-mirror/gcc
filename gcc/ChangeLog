@@ -1,3 +1,29 @@
+2016-04-05  Richard Biener  <rguenther@suse.de>
+
+	* dse.c (struct store_info): Remove alias_set member.
+	(struct read_info_type): Likewise.
+	(clear_alias_group, clear_alias_mode_table, clear_alias_mode_holder,
+	spill_deleted, clear_alias_set_lookup): Remove.
+	(get_group_info): Remove dead base == NULL_RTX case.
+	(dse_step0): Remove initialization of removed variables.
+	(delete_dead_store_insn): Reomve alias set dumping.
+	(free_read_records): Remove alias_set handling.
+	(canon_address): Remove alias_set_out parameter.
+	(record_store): Remove spill_alias_set, it's always zero.
+	(check_mem_read_rtx): Likewise.
+	(dse_step2): Rename from ...
+	(dse_step2_nospill): ... this.  Adjust.
+	(scan_stores): Rename from ...
+	(scan_stores_nospill): ... this.
+	(scan_reads): Rename from ...
+	(scan_reads_nospill): ... this.
+	(scan_stores_spill, scan_reads_spill): Remove.
+	(dse_step3_scan): Remove for_spills argument which is always false.
+	(dse_step3): Likewise.
+	(dse_step5): Rename from ...
+	(dse_step5_nospill): ... this.  Remove alias_set handling.
+	(rest_of_handle_dse): Adjust.
+
 2016-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/70525
