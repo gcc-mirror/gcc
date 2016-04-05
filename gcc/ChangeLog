@@ -1,5 +1,11 @@
 2016-04-05  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/70526
+	* tree-sra.c (build_ref_for_offset): Use prev_base to
+	extract the alias pointer type.
+
+2016-04-05  Richard Biener  <rguenther@suse.de>
+
 	* dse.c (struct store_info): Remove alias_set member.
 	(struct read_info_type): Likewise.
 	(clear_alias_group, clear_alias_mode_table, clear_alias_mode_holder,
