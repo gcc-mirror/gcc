@@ -915,7 +915,7 @@ struct constexpr_ctx {
 /* A table of all constexpr calls that have been evaluated by the
    compiler in this translation unit.  */
 
-static GTY (()) hash_table<constexpr_call_hasher> *constexpr_call_table;
+static GTY ((deletable)) hash_table<constexpr_call_hasher> *constexpr_call_table;
 
 static tree cxx_eval_constant_expression (const constexpr_ctx *, tree,
 					  bool, bool *, bool *, tree * = NULL);
@@ -963,6 +963,78 @@ maybe_initialize_constexpr_call_table (void)
 {
   if (constexpr_call_table == NULL)
     constexpr_call_table = hash_table<constexpr_call_hasher>::create_ggc (101);
+}
+
+/* The representation of a single node in the per-function freelist maintained
+   by FUNDEF_COPIES_TABLE.  */
+
+struct fundef_copy
+{
+  tree body;
+  tree parms;
+  tree res;
+  fundef_copy *prev;
+};
+
+/* During constexpr CALL_EXPR evaluation, to avoid issues with sharing when
+   a function happens to get called recursively, we unshare the callee
+   function's body and evaluate this unshared copy instead of evaluating the
+   original body.
+
+   FUNDEF_COPIES_TABLE is a per-function freelist of these unshared function
+   copies.  The underlying data structure of FUNDEF_COPIES_TABLE is a hash_map
+   that's keyed off of the original FUNCTION_DECL and whose value is the chain
+   of this function's unused copies awaiting reuse.  */
+
+struct fundef_copies_table_t
+{
+  hash_map<tree, fundef_copy *> *map;
+};
+
+static GTY((deletable)) fundef_copies_table_t fundef_copies_table;
+
+/* Initialize FUNDEF_COPIES_TABLE if it's not initialized.  */
+
+static void
+maybe_initialize_fundef_copies_table ()
+{
+  if (fundef_copies_table.map == NULL)
+    fundef_copies_table.map = hash_map<tree, fundef_copy *>::create_ggc (101);
+}
+
+/* Reuse a copy or create a new unshared copy of the function FUN.
+   Return this copy.  */
+
+static fundef_copy *
+get_fundef_copy (tree fun)
+{
+  maybe_initialize_fundef_copies_table ();
+
+  fundef_copy *copy;
+  fundef_copy **slot = &fundef_copies_table.map->get_or_insert (fun, NULL);
+  if (*slot == NULL)
+    {
+      copy = ggc_alloc<fundef_copy> ();
+      copy->body = copy_fn (fun, copy->parms, copy->res);
+      copy->prev = NULL;
+    }
+  else
+    {
+      copy = *slot;
+      *slot = (*slot)->prev;
+    }
+
+  return copy;
+}
+
+/* Save the copy COPY of function FUN for later reuse by get_fundef_copy().  */
+
+static void
+save_fundef_copy (tree fun, fundef_copy *copy)
+{
+  fundef_copy **slot = &fundef_copies_table.map->get_or_insert (fun, NULL);
+  copy->prev = *slot;
+  *slot = copy;
 }
 
 /* We have an expression tree T that represents a call, either CALL_EXPR
@@ -1365,10 +1437,13 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       if (!result || result == error_mark_node)
 	{
 	  gcc_assert (DECL_SAVED_TREE (fun));
-	  tree parms, res;
+	  tree body, parms, res;
 
-	  /* Unshare the whole function body.  */
-	  tree body = copy_fn (fun, parms, res);
+	  /* Reuse or create a new unshared copy of this function's body.  */
+	  fundef_copy *copy = get_fundef_copy (fun);
+	  body = copy->body;
+	  parms = copy->parms;
+	  res = copy->res;
 
 	  /* Associate the bindings with the remapped parms.  */
 	  tree bound = new_call.bindings;
@@ -1397,8 +1472,14 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  else
 	    ctx->values->put (res, NULL_TREE);
 
+	  /* Track the callee's evaluated SAVE_EXPRs so that we can forget
+	     their values after the call.  */
+	  constexpr_ctx ctx_with_save_exprs = *ctx;
+	  hash_set<tree> save_exprs;
+	  ctx_with_save_exprs.save_exprs = &save_exprs;
+
 	  tree jump_target = NULL_TREE;
-	  cxx_eval_constant_expression (ctx, body,
+	  cxx_eval_constant_expression (&ctx_with_save_exprs, body,
 					lval, non_constant_p, overflow_p,
 					&jump_target);
 
@@ -1423,6 +1504,11 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		}
 	    }
 
+	  /* Forget the saved values of the callee's SAVE_EXPRs.  */
+	  for (hash_set<tree>::iterator iter = save_exprs.begin();
+	       iter != save_exprs.end(); ++iter)
+	    ctx_with_save_exprs.values->remove (*iter);
+
 	  /* Remove the parms/result from the values map.  Is it worth
 	     bothering to do this when the map itself is only live for
 	     one constexpr evaluation?  If so, maybe also clear out
@@ -1432,6 +1518,9 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	    ctx->values->remove (slot);
 	  for (tree parm = parms; parm; parm = TREE_CHAIN (parm))
 	    ctx->values->remove (parm);
+
+	  /* Make the unshared function copy we used available for re-use.  */
+	  save_fundef_copy (fun, copy);
 	}
 
       if (result == error_mark_node)
