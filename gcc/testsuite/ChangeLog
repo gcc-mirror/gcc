@@ -1,3 +1,10 @@
+2016-04-06  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/pr61817-1.c: New test.
+	* gcc.dg/pr61817-2.c: New test.
+	* gcc.dg/pr69391-1.c: New test.
+	* gcc.dg/pr69391-2.c: New test.
+
 2016-04-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/70398

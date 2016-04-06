@@ -1,3 +1,13 @@
+2016-04-06  Richard Henderson  <rth@redhat.com>
+
+	PR preprocessor/61817
+	PR preprocessor/69391
+	* internal.h (_cpp_builtin_macro_text): Update decl.
+	* macro.c (_cpp_builtin_macro_text): Accept location for __LINE__.
+	(builtin_macro): Accept a second location for __LINE__.
+	(enter_macro_context): Compute both virtual and real expansion
+	locations for the macro.
+
 2016-03-25  Bernd Schmidt  <bschmidt@redhat.com>
 
 	PR lto/69650
