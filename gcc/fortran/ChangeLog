@@ -1,3 +1,9 @@
+2016-04-06  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c/70436
+	* openmp.c (gfc_find_omp_udr): Add explicit braces to resolve a
+	future -Wparentheses warning.
+
 2016-04-04  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/67538

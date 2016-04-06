@@ -767,14 +767,16 @@ eliminate_local_variables (edge entry, edge exit)
 
   FOR_EACH_VEC_ELT (body, i, bb)
     if (bb != entry_bb && bb != exit_bb)
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	if (is_gimple_debug (gsi_stmt (gsi)))
-	  {
-	    if (gimple_debug_bind_p (gsi_stmt (gsi)))
-	      has_debug_stmt = true;
-	  }
-	else
-	  eliminate_local_variables_stmt (entry, &gsi, &decl_address);
+      {
+        for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  if (is_gimple_debug (gsi_stmt (gsi)))
+	    {
+	      if (gimple_debug_bind_p (gsi_stmt (gsi)))
+	        has_debug_stmt = true;
+	    }
+	  else
+	    eliminate_local_variables_stmt (entry, &gsi, &decl_address);
+      }
 
   if (has_debug_stmt)
     FOR_EACH_VEC_ELT (body, i, bb)

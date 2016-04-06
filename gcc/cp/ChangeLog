@@ -1,3 +1,10 @@
+2016-04-06  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c/70436
+	* cp-tree.h (FOR_EACH_CLONE): Restructure macro to avoid
+	potentially generating a future -Wparentheses warning in its
+	callers.
+
 2016-04-06  Jason Merrill  <jason@redhat.com>
 
 	* class.c (check_abi_tags): Fix function template handling.
