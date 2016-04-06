@@ -1,3 +1,7 @@
+2016-04-06  Jason Merrill  <jason@redhat.com>
+
+	* class.c (check_abi_tags): Fix function template handling.
+
 2016-04-05  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/70512
