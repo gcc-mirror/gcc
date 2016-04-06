@@ -228,7 +228,7 @@ libstdc++-symbols.ver:  ${glibcxx_srcdir}/$(SYMVER_FILE) \
 	chmod +w $@.tmp
 	if test "x$(port_specific_symbol_files)" != x; then \
 	  if grep '^# Appended to version file.' \
-	       $(port_specific_symbol_files) /dev/null > /dev/null 2>&1; then \
+	       $(port_specific_symbol_files) > /dev/null 2>&1; then \
 	    cat $(port_specific_symbol_files) >> $@.tmp; \
 	  else \
 	    sed -n '1,/DO NOT DELETE/p' $@.tmp > tmp.top; \
