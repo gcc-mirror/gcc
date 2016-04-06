@@ -1,5 +1,14 @@
 2016-04-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* lib/target-supports.exp (check_effective_target_vect_simd_clones):
+	Check for avx512f effective targets instead of avx2.
+	* gcc.dg/gomp/declare-simd-1.c: Add scan-assembler-times directives
+	for AVX512F clones.
+	* gcc.dg/gomp/declare-simd-3.c: Likewise.
+	* g++.dg/gomp/declare-simd-1.C: Likewise.
+	* g++.dg/gomp/declare-simd-3.C: Likewise.
+	* g++.dg/gomp/declare-simd-4.C: Likewise.
+
 	PR middle-end/70550
 	* c-c++-common/gomp/pr70550-1.c: New test.
 	* c-c++-common/gomp/pr70550-2.c: New test.

@@ -19,6 +19,8 @@ int f1 (int a, int b, int c, int &d, int &e, int &f)
 // { dg-final { scan-assembler-times "_ZGVcN4vulLUR4__Z2f1iiiRiS_S_:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVdM8vulLUR4__Z2f1iiiRiS_S_:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVdN8vulLUR4__Z2f1iiiRiS_S_:" 1 { target { i?86-*-* x86_64-*-* } } } }
+// { dg-final { scan-assembler-times "_ZGVeM16vulLUR4__Z2f1iiiRiS_S_:" 1 { target { i?86-*-* x86_64-*-* } } } }
+// { dg-final { scan-assembler-times "_ZGVeN16vulLUR4__Z2f1iiiRiS_S_:" 1 { target { i?86-*-* x86_64-*-* } } } }
 
 #pragma omp declare simd uniform(b) linear(c, d) linear(uval(e)) linear(ref(f))
 int f2 (int a, int b, int c, int &d, int &e, int &f)
@@ -44,6 +46,8 @@ int f2 (int a, int b, int c, int &d, int &e, int &f)
 // { dg-final { scan-assembler-times "_ZGVcN4vulLUR4__Z2f2iiiRiS_S_:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVdM8vulLUR4__Z2f2iiiRiS_S_:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVdN8vulLUR4__Z2f2iiiRiS_S_:" 1 { target { i?86-*-* x86_64-*-* } } } }
+// { dg-final { scan-assembler-times "_ZGVeM16vulLUR4__Z2f2iiiRiS_S_:" 1 { target { i?86-*-* x86_64-*-* } } } }
+// { dg-final { scan-assembler-times "_ZGVeN16vulLUR4__Z2f2iiiRiS_S_:" 1 { target { i?86-*-* x86_64-*-* } } } }
 
 #pragma omp declare simd uniform(b) linear(c, d) linear(uval(e)) linear(ref(f))
 int f3 (const int a, const int b, const int c, const int &d, const int &e, const int &f)
@@ -57,6 +61,8 @@ int f3 (const int a, const int b, const int c, const int &d, const int &e, const
 // { dg-final { scan-assembler-times "_ZGVcN4vulLUR4__Z2f3iiiRKiS0_S0_:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVdM8vulLUR4__Z2f3iiiRKiS0_S0_:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVdN8vulLUR4__Z2f3iiiRKiS0_S0_:" 1 { target { i?86-*-* x86_64-*-* } } } }
+// { dg-final { scan-assembler-times "_ZGVeM16vulLUR4__Z2f3iiiRKiS0_S0_:" 1 { target { i?86-*-* x86_64-*-* } } } }
+// { dg-final { scan-assembler-times "_ZGVeN16vulLUR4__Z2f3iiiRKiS0_S0_:" 1 { target { i?86-*-* x86_64-*-* } } } }
 
 #pragma omp declare simd uniform(b) linear(c, d) linear(uval(e)) linear(ref(f))
 int f4 (const int a, const int b, const int c, const int &d, const int &e, const int &f)
@@ -76,3 +82,5 @@ int f4 (const int a, const int b, const int c, const int &d, const int &e, const
 // { dg-final { scan-assembler-times "_ZGVcN4vulLUR4__Z2f4iiiRKiS0_S0_:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVdM8vulLUR4__Z2f4iiiRKiS0_S0_:" 1 { target { i?86-*-* x86_64-*-* } } } }
 // { dg-final { scan-assembler-times "_ZGVdN8vulLUR4__Z2f4iiiRKiS0_S0_:" 1 { target { i?86-*-* x86_64-*-* } } } }
+// { dg-final { scan-assembler-times "_ZGVeM16vulLUR4__Z2f4iiiRKiS0_S0_:" 1 { target { i?86-*-* x86_64-*-* } } } }
+// { dg-final { scan-assembler-times "_ZGVeN16vulLUR4__Z2f4iiiRKiS0_S0_:" 1 { target { i?86-*-* x86_64-*-* } } } }

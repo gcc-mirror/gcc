@@ -2603,7 +2603,7 @@ proc check_effective_target_vect_simd_clones { } {
 	    # avx2 clone.  Only the right clone for the specified arch will be
 	    # chosen, but still we need to at least be able to assemble
 	    # avx2.
-	    if { [check_effective_target_avx2] } {
+	    if { [check_effective_target_avx512f] } {
 		set et_vect_simd_clones_saved 1
 	    }
 	}
