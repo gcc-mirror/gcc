@@ -1,6 +1,30 @@
 2016-04-06  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2016-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70022
+	* fold-const.c (fold_indirect_ref_1): Fix range checking for
+	vector BIT_FIELD_REF extract.
+
+	2016-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70115
+	* tree-ssa-loop-ivcanon.c (propagate_into_all_uses): Remove.
+	(propagate_constants_for_unrolling): Use replace_uses_by.
+
+	2016-03-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70424
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Always
+	use alignment returned by get_pointer_alignment_1 if it is
+	bigger than BITS_PER_UNIT.
+	* builtins.c (get_pointer_alignment_1): Do not return true
+	for alignment extracted from SSA info.
+
+2016-04-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2016-03-30  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70450

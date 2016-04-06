@@ -1,6 +1,19 @@
 2016-04-06  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2016-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70022
+	* gcc.dg/pr70022.c: New testcase.
+
+	2016-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70115
+	* gcc.dg/torture/pr70115.c: New testcase.
+
+2016-04-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2016-03-30  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70450
