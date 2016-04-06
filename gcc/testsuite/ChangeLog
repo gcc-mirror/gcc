@@ -1,3 +1,7 @@
+2016-04-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20101011-1.c (__VISIUM__): Set DO_TEST to 0.
+
 2016-04-06  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
