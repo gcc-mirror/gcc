@@ -1,3 +1,9 @@
+2016-04-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/70398
+	* lra-constraints.c (process_address_1): Check zero scale and code
+	for reloading with zero scale.
+
 2016-04-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (shuffletype): Add V32HI and V4TI modes.

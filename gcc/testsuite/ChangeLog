@@ -1,3 +1,8 @@
+2016-04-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/70398
+	* testsuite/gcc.target/aarch64/pr70398.c: New.
+
 2016-04-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20101011-1.c (__VISIUM__): Set DO_TEST to 0.
