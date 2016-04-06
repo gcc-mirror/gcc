@@ -2914,6 +2914,7 @@ process_address_1 (int nop, bool check_only_p,
 {
   struct address_info ad;
   rtx new_reg;
+  HOST_WIDE_INT scale;
   rtx op = *curr_id->operand_loc[nop];
   const char *constraint = curr_static_id->operand[nop].constraint;
   enum constraint_num cn = lookup_constraint (constraint);
@@ -3161,14 +3162,14 @@ process_address_1 (int nop, bool check_only_p,
       *ad.inner = simplify_gen_binary (PLUS, GET_MODE (new_reg),
 				       new_reg, *ad.index);
     }
-  else if (get_index_scale (&ad) == 1)
+  else if ((scale = get_index_scale (&ad)) == 1)
     {
       /* The last transformation to one reg will be made in
 	 curr_insn_transform function.  */
       end_sequence ();
       return false;
     }
-  else
+  else if (scale != 0)
     {
       /* base + scale * index => base + new_reg,
 	 case (1) above.
@@ -3179,6 +3180,17 @@ process_address_1 (int nop, bool check_only_p,
       new_reg = index_part_to_reg (&ad);
       *ad.inner = simplify_gen_binary (PLUS, GET_MODE (new_reg),
 				       *ad.base_term, new_reg);
+    }
+  else
+    {
+      enum reg_class cl = base_reg_class (ad.mode, ad.as,
+					  SCRATCH, SCRATCH);
+      rtx addr = *ad.inner;
+      
+      new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, "addr");
+      /* addr => new_base.  */
+      lra_emit_move (new_reg, addr);
+      *ad.inner = new_reg;
     }
   *before = get_insns ();
   end_sequence ();
