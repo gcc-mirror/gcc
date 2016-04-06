@@ -1430,6 +1430,10 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_PRIVATE_TASKLOOP_IV(NODE) \
   TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_PRIVATE))
 
+/* True on a FIRSTPRIVATE clause if it has been added implicitly.  */
+#define OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_FIRSTPRIVATE)->base.public_flag)
+
 /* True on a LASTPRIVATE clause if a FIRSTPRIVATE clause for the same
    decl is present in the chain.  */
 #define OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE(NODE) \

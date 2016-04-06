@@ -1,3 +1,15 @@
+2016-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/70550
+	* tree.h (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT): Define.
+	* gimplify.c (gimplify_adjust_omp_clauses_1): Set it for implicit
+	firstprivate clauses.
+	* omp-low.c (lower_send_clauses): Set TREE_NO_WARNING for
+	OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT !by_ref vars in task contexts.
+	(lower_omp_target): Set TREE_NO_WARNING for
+	non-addressable possibly uninitialized vars which are copied into
+	addressable temporaries or copied for GOMP_MAP_FIRSTPRIVATE_INT.
+
 2016-04-05  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/predicates.md (integer_store_memory_operand): Accept
