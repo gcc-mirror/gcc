@@ -1,3 +1,8 @@
+2016-04-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (shuffletype): Add V32HI and V4TI modes.
+	(ssescalarsize): Add V8SF, V4SF, V4DF and V2DF modes.
+
 2016-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_simd_clone_compute_vecsize_and_simdlen):
@@ -108,7 +113,7 @@
 	PR ipa/66223
 	* ipa-devirt.c (maybe_record_node): Do not optimize cxa_pure_virtual
 	calls when sanitizing.
-	(possible_polymorphic_call_target_p): Fix formating.
+	(possible_polymorphic_call_target_p): Fix formatting.
 
 2016-04-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    Jakub Jelinek <jakub@redhat.com>
