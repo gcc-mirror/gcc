@@ -6107,8 +6107,15 @@ lower_send_clauses (tree clauses, gimple_seq *ilist, gimple_seq *olist,
 
       switch (OMP_CLAUSE_CODE (c))
 	{
-	case OMP_CLAUSE_PRIVATE:
 	case OMP_CLAUSE_FIRSTPRIVATE:
+	  if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c)
+	      && !by_ref
+	      && is_task_ctx (ctx))
+	    TREE_NO_WARNING (var) = 1;
+	  do_in = true;
+	  break;
+
+	case OMP_CLAUSE_PRIVATE:
 	case OMP_CLAUSE_COPYIN:
 	case OMP_CLAUSE__LOOPTEMP_:
 	  do_in = true;
@@ -16083,7 +16090,16 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			|| map_kind == GOMP_MAP_POINTER
 			|| map_kind == GOMP_MAP_TO_PSET
 			|| map_kind == GOMP_MAP_FORCE_DEVICEPTR)
-		      gimplify_assign (avar, var, &ilist);
+		      {
+			/* If we need to initialize a temporary
+			   with VAR because it is not addressable, and
+			   the variable hasn't been initialized yet, then
+			   we'll get a warning for the store to avar.
+			   Don't warn in that case, the mapping might
+			   be implicit.  */
+			TREE_NO_WARNING (var) = 1;
+			gimplify_assign (avar, var, &ilist);
+		      }
 		    avar = build_fold_addr_expr (avar);
 		    gimplify_assign (x, avar, &ilist);
 		    if ((GOMP_MAP_COPY_FROM_P (map_kind)
@@ -16252,6 +16268,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		tree t = var;
 		if (is_reference (var))
 		  t = build_simple_mem_ref (var);
+		else if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c))
+		  TREE_NO_WARNING (var) = 1;
 		if (TREE_CODE (type) != POINTER_TYPE)
 		  t = fold_convert (pointer_sized_int_node, t);
 		t = fold_convert (TREE_TYPE (x), t);
@@ -16263,6 +16281,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      {
 		tree avar = create_tmp_var (TREE_TYPE (var));
 		mark_addressable (avar);
+		if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c))
+		  TREE_NO_WARNING (var) = 1;
 		gimplify_assign (avar, var, &ilist);
 		avar = build_fold_addr_expr (avar);
 		gimplify_assign (x, avar, &ilist);
