@@ -1,6 +1,11 @@
 2016-04-06  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c/70436
+	* g++.dg/warn/Wparentheses-29.C: New test.
+
+2016-04-06  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c/70436
 	* g++.dg/plugin/pragma_plugin.c (handle_pragma_sayhello): Add
 	explicit braces to resolve a future -Wparentheses warning.
 
