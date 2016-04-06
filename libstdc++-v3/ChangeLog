@@ -1,3 +1,8 @@
+2016-04-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* src/Makefile.am (libstdc++-symbols.ver): Remove useless /dev/null.
+	* src/Makefile.in: Regenerate.
+
 2016-04-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/70554
