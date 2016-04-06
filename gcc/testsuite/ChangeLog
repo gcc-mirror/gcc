@@ -1,6 +1,14 @@
 2016-04-06  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2016-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/70177
+	* gcc.dg/pr70177.c: New test.
+
+2016-04-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2016-02-24  Richard Biener  <rguenther@suse.de>
 		Jakub Jelinek  <jakub@redhat.com>
 
