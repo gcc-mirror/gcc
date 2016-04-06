@@ -252,6 +252,10 @@ main (int argc, char *argv[])
       if (!guality_gdb_input
 	  || fprintf (guality_gdb_input, "\
 set height 0\n\
+handle SIGINT pass nostop\n\
+handle SIGTERM pass nostop\n\
+handle SIGSEGV pass nostop\n\
+handle SIGBUS pass nostop\n\
 attach %i\n\
 set guality_attached = 1\n\
 b %i\n\

@@ -1,3 +1,8 @@
+2016-04-06  Yvan Roux  <yvan.roux@linaro.org>
+	    Pedro Alves  <palves@redhat.com>
+
+	* gcc.dg/guality/guality.h (main): Avoid GDB being blocked on signals.
+
 2016-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_simd_clones):
