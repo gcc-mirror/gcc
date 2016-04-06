@@ -2379,19 +2379,21 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
   gcc_checking_assert (!scan_array_reductions
 		       || !is_gimple_omp_oacc (ctx->stmt));
   if (scan_array_reductions)
-    for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
-      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
-	  && OMP_CLAUSE_REDUCTION_PLACEHOLDER (c))
-	{
-	  scan_omp (&OMP_CLAUSE_REDUCTION_GIMPLE_INIT (c), ctx);
-	  scan_omp (&OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (c), ctx);
-	}
-      else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
-	       && OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (c))
-	scan_omp (&OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (c), ctx);
-      else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINEAR
-	       && OMP_CLAUSE_LINEAR_GIMPLE_SEQ (c))
-	scan_omp (&OMP_CLAUSE_LINEAR_GIMPLE_SEQ (c), ctx);
+    {
+      for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+	    && OMP_CLAUSE_REDUCTION_PLACEHOLDER (c))
+	  {
+	    scan_omp (&OMP_CLAUSE_REDUCTION_GIMPLE_INIT (c), ctx);
+	    scan_omp (&OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (c), ctx);
+	  }
+	else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
+		 && OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (c))
+	  scan_omp (&OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ (c), ctx);
+	else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINEAR
+		 && OMP_CLAUSE_LINEAR_GIMPLE_SEQ (c))
+	  scan_omp (&OMP_CLAUSE_LINEAR_GIMPLE_SEQ (c), ctx);
+    }
 }
 
 /* Create a new name for omp child function.  Returns an identifier.  If

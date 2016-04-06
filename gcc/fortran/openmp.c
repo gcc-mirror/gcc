@@ -175,24 +175,26 @@ gfc_find_omp_udr (gfc_namespace *ns, const char *name, gfc_typespec *ts)
 
       st = gfc_find_symtree (ns->omp_udr_root, name);
       if (st != NULL)
-	for (omp_udr = st->n.omp_udr; omp_udr; omp_udr = omp_udr->next)
-	  if (ts == NULL)
-	    return omp_udr;
-	  else if (gfc_compare_types (&omp_udr->ts, ts))
-	    {
-	      if (ts->type == BT_CHARACTER)
-		{
-		  if (omp_udr->ts.u.cl->length == NULL)
-		    return omp_udr;
-		  if (ts->u.cl->length == NULL)
-		    continue;
-		  if (gfc_compare_expr (omp_udr->ts.u.cl->length,
-					ts->u.cl->length,
-					INTRINSIC_EQ) != 0)
-		    continue;
-		}
+	{
+	  for (omp_udr = st->n.omp_udr; omp_udr; omp_udr = omp_udr->next)
+	    if (ts == NULL)
 	      return omp_udr;
-	    }
+	    else if (gfc_compare_types (&omp_udr->ts, ts))
+	      {
+		if (ts->type == BT_CHARACTER)
+		  {
+		    if (omp_udr->ts.u.cl->length == NULL)
+		      return omp_udr;
+		    if (ts->u.cl->length == NULL)
+		      continue;
+		    if (gfc_compare_expr (omp_udr->ts.u.cl->length,
+					  ts->u.cl->length,
+					  INTRINSIC_EQ) != 0)
+		      continue;
+		  }
+		return omp_udr;
+	      }
+	}
 
       /* Don't escape an interface block.  */
       if (ns && !ns->has_import_set
