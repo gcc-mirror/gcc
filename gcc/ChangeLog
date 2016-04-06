@@ -1,5 +1,11 @@
 2016-04-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (ix86_simd_clone_compute_vecsize_and_simdlen):
+	Add support for AVX512F clones, include them by default for
+	exported OpenMP declare simd functions.  For AVX2 allow simdlen 32
+	and use it if charasteric type is 8-bit, for AVX512F allow simdlen
+	up to 128.
+
 	PR middle-end/70550
 	* tree.h (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT): Define.
 	* gimplify.c (gimplify_adjust_omp_clauses_1): Set it for implicit
