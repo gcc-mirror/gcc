@@ -2104,7 +2104,7 @@ static tree cp_parser_selection_statement
 static tree cp_parser_condition
   (cp_parser *);
 static tree cp_parser_iteration_statement
-  (cp_parser *, bool);
+  (cp_parser *, bool *, bool);
 static bool cp_parser_for_init_statement
   (cp_parser *, tree *decl);
 static tree cp_parser_for
@@ -2127,7 +2127,7 @@ static void cp_parser_declaration_statement
 static tree cp_parser_implicitly_scoped_statement
   (cp_parser *, bool *, const token_indent_info &, vec<tree> * = NULL);
 static void cp_parser_already_scoped_statement
-  (cp_parser *, const token_indent_info &);
+  (cp_parser *, bool *, const token_indent_info &);
 
 /* Declarations [gram.dcl.dcl] */
 
@@ -10392,7 +10392,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	case RID_WHILE:
 	case RID_DO:
 	case RID_FOR:
-	  statement = cp_parser_iteration_statement (parser, false);
+	  statement = cp_parser_iteration_statement (parser, if_p, false);
 	  break;
 
 	case RID_CILK_FOR:
@@ -10947,7 +10947,7 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 	    else
 	      {
 		/* This if statement does not have an else clause.  If
-		   NESTED_IF is true, then the then-clause is an if
+		   NESTED_IF is true, then the then-clause has an if
 		   statement which does have an else clause.  We warn
 		   about the potential ambiguity.  */
 		if (nested_if)
@@ -11544,7 +11544,7 @@ cp_parser_range_for_member_function (tree range, tree identifier)
    Returns the new WHILE_STMT, DO_STMT, FOR_STMT or RANGE_FOR_STMT.  */
 
 static tree
-cp_parser_iteration_statement (cp_parser* parser, bool ivdep)
+cp_parser_iteration_statement (cp_parser* parser, bool *if_p, bool ivdep)
 {
   cp_token *token;
   enum rid keyword;
@@ -11582,7 +11582,7 @@ cp_parser_iteration_statement (cp_parser* parser, bool ivdep)
 	cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
 	/* Parse the dependent statement.  */
 	parser->in_statement = IN_ITERATION_STMT;
-	cp_parser_already_scoped_statement (parser, guard_tinfo);
+	cp_parser_already_scoped_statement (parser, if_p, guard_tinfo);
 	parser->in_statement = in_statement;
 	/* We're done with the while-statement.  */
 	finish_while_stmt (statement);
@@ -11627,7 +11627,7 @@ cp_parser_iteration_statement (cp_parser* parser, bool ivdep)
 
 	/* Parse the body of the for-statement.  */
 	parser->in_statement = IN_ITERATION_STMT;
-	cp_parser_already_scoped_statement (parser, guard_tinfo);
+	cp_parser_already_scoped_statement (parser, if_p, guard_tinfo);
 	parser->in_statement = in_statement;
 
 	/* We're done with the for-statement.  */
@@ -11937,7 +11937,7 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser, bool *if_p,
    scope.  */
 
 static void
-cp_parser_already_scoped_statement (cp_parser* parser,
+cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
 				    const token_indent_info &guard_tinfo)
 {
   /* If the token is a `{', then we must take special action.  */
@@ -11946,7 +11946,7 @@ cp_parser_already_scoped_statement (cp_parser* parser,
       token_indent_info body_tinfo
 	= get_token_indent_info (cp_lexer_peek_token (parser->lexer));
 
-      cp_parser_statement (parser, NULL_TREE, false, NULL);
+      cp_parser_statement (parser, NULL_TREE, false, if_p);
       token_indent_info next_tinfo
 	= get_token_indent_info (cp_lexer_peek_token (parser->lexer));
       warn_for_misleading_indentation (guard_tinfo, body_tinfo, next_tinfo);
@@ -37310,7 +37310,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context)
 	    cp_parser_error (parser, "for, while or do statement expected");
 	    return false;
 	  }
-	cp_parser_iteration_statement (parser, true);
+	cp_parser_iteration_statement (parser, NULL, true);
 	return true;
       }
 
