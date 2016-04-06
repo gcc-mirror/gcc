@@ -1604,6 +1604,15 @@ check_abi_tags (tree t, tree subob)
 void
 check_abi_tags (tree decl)
 {
+  tree t;
+  if (abi_version_at_least (10)
+      && DECL_LANG_SPECIFIC (decl)
+      && DECL_USE_TEMPLATE (decl)
+      && (t = DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (decl)),
+	  t != decl))
+    /* Make sure that our template has the appropriate tags, since
+       write_unqualified_name looks for them there.  */
+    check_abi_tags (t);
   if (VAR_P (decl))
     check_abi_tags (decl, TREE_TYPE (decl));
   else if (TREE_CODE (decl) == FUNCTION_DECL
