@@ -1,3 +1,8 @@
+2016-04-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR testsuite/70553
+	* gcc.target/arm/pr70496.c: Also require arm_arm_ok effective target.
+
 2016-04-07  Thomas Schwinge  <thomas@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>
 
