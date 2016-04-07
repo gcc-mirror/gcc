@@ -34,3 +34,5 @@ end program main
 
 ! Check that the loop has been split off into a function.
 ! { dg-final { scan-tree-dump-times "(?n);; Function MAIN__._omp_fn.0 " 1 "optimized" } }
+
+! { dg-final { scan-tree-dump-times "(?n)oacc function \\(0," 1 "parloops1" } }

@@ -47,3 +47,4 @@ end program main
 ! { dg-final { scan-tree-dump-times "(?n);; Function MAIN__._omp_fn.1 " 1 "optimized" } }
 ! { dg-final { scan-tree-dump-times "(?n);; Function MAIN__._omp_fn.2 " 1 "optimized" } }
 
+! { dg-final { scan-tree-dump-times "(?n)oacc function \\(0," 3 "parloops1" } }

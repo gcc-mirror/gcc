@@ -1,3 +1,15 @@
+2016-04-07  Thomas Schwinge  <thomas@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	* gfortran.dg/goacc/kernels-loop-2.f95: Scan for parallelization.
+	* gfortran.dg/goacc/kernels-loop-data-2.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data-enter-exit-2.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data-enter-exit.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data-update.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-data.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop.f95: Likewise.
+	* gfortran.dg/goacc/kernels-loop-n.f95: Likewise, XFAILed.
+
 2016-04-06  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c/70436
