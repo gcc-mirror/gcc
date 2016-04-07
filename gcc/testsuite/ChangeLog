@@ -1,5 +1,8 @@
 2016-04-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/70581
+	* gcc.dg/lto/simd-function_0.c: New test.
+
 	* c-c++-common/attr-simd.c: Add scan-assembler* directives for AVX512F
 	clones.
 	* c-c++-common/attr-simd-2.c: Likewise.
