@@ -1151,6 +1151,30 @@ adjust_temp_type (tree type, tree temp)
   return cp_fold_convert (type, temp);
 }
 
+/* Callback for walk_tree used by unshare_constructor.  */
+
+static tree
+find_constructor (tree *tp, int *walk_subtrees, void *)
+{
+  if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+  if (TREE_CODE (*tp) == CONSTRUCTOR)
+    return *tp;
+  return NULL_TREE;
+}
+
+/* If T is a CONSTRUCTOR or an expression that has a CONSTRUCTOR node as a
+   subexpression, return an unshared copy of T.  Otherwise return T.  */
+
+static tree
+unshare_constructor (tree t)
+{
+  tree ctor = walk_tree (&t, find_constructor, NULL, NULL);
+  if (ctor != NULL_TREE)
+    return unshare_expr (t);
+  return t;
+}
+
 /* Subroutine of cxx_eval_call_expression.
    We are processing a call expression (either CALL_EXPR or
    AGGR_INIT_EXPR) in the context of CTX.  Evaluate
@@ -1454,7 +1478,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      tree arg = TREE_VALUE (bound);
 	      gcc_assert (DECL_NAME (remapped) == DECL_NAME (oparm));
 	      /* Don't share a CONSTRUCTOR that might be changed.  */
-	      arg = unshare_expr (arg);
+	      arg = unshare_constructor (arg);
 	      ctx->values->put (remapped, arg);
 	      bound = TREE_CHAIN (bound);
 	      remapped = DECL_CHAIN (remapped);
@@ -1534,7 +1558,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     }
 
   pop_cx_call_context ();
-  return unshare_expr (result);
+  return unshare_constructor (result);
 }
 
 /* FIXME speed this up, it's taking 16% of compile time on sieve testcase.  */
@@ -1880,7 +1904,7 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert = false)
 		  /* Append the element we want to insert.  */
 		  ++middle;
 		  e.index = dindex;
-		  e.value = unshare_expr (elt.value);
+		  e.value = unshare_constructor (elt.value);
 		  vec_safe_insert (CONSTRUCTOR_ELTS (ary), middle, e);
 		}
 	      else
@@ -1896,7 +1920,7 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert = false)
 		    e.index = hi;
 		  else
 		    e.index = build2 (RANGE_EXPR, sizetype, new_lo, hi);
-		  e.value = unshare_expr (elt.value);
+		  e.value = unshare_constructor (elt.value);
 		  vec_safe_insert (CONSTRUCTOR_ELTS (ary), middle+1, e);
 		}
 	    }
@@ -2565,7 +2589,7 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	  for (i = 1; i < max; ++i)
 	    {
 	      idx = build_int_cst (size_type_node, i);
-	      CONSTRUCTOR_APPEND_ELT (*p, idx, unshare_expr (eltinit));
+	      CONSTRUCTOR_APPEND_ELT (*p, idx, unshare_constructor (eltinit));
 	    }
 	  break;
 	}
@@ -3113,7 +3137,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   init = cxx_eval_constant_expression (&new_ctx, init, false,
 				       non_constant_p, overflow_p);
   /* Don't share a CONSTRUCTOR that might be changed later.  */
-  init = unshare_expr (init);
+  init = unshare_constructor (init);
   if (target == object)
     /* The hash table might have moved since the get earlier.  */
     valp = ctx->values->get (object);
@@ -3565,7 +3589,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 						 false,
 						 non_constant_p, overflow_p);
 	    /* Don't share a CONSTRUCTOR that might be changed.  */
-	    init = unshare_expr (init);
+	    init = unshare_constructor (init);
 	    ctx->values->put (r, init);
 	  }
 	else if (ctx == &new_ctx)
@@ -3610,7 +3634,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       if (lval)
 	{
 	  tree slot = TARGET_EXPR_SLOT (t);
-	  r = unshare_expr (r);
+	  r = unshare_constructor (r);
 	  ctx->values->put (slot, r);
 	  return slot;
 	}
