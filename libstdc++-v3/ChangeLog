@@ -1,3 +1,7 @@
+2016-04-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/thread/70503.cc: Adjust from xfail to pass.
+
 2016-04-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* src/Makefile.am (libstdc++-symbols.ver): Remove useless /dev/null.

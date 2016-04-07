@@ -16,19 +16,23 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do link }
-// { dg-options " -std=gnu++11 -static" { target *-*-*gnu* } }
+// { dg-options "-std=gnu++11 -static" { target *-*-*gnu* } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-effective-target static }
 
+#include <thread>
+
 extern "C" {
-  void execute_native_thread_routine(void);
-  void execute_native_thread_routine_compat(void);
+  // Should not get multiple definition errors from libstdc++.a(thread.o)
+  void execute_native_thread_routine(void) { }
+  void execute_native_thread_routine_compat(void) { }
 }
 
 int main()
 {
-  execute_native_thread_routine(); // { dg-error "undefined reference" }
-  execute_native_thread_routine_compat(); // { dg-error "undefined reference" }
+  execute_native_thread_routine();
+  execute_native_thread_routine_compat();
+
+  std::thread{}.detach();  // ensure libstdc++.a(thread.o) is linked in
 }
-// { dg-prune-output "collect2: error: ld returned" }
