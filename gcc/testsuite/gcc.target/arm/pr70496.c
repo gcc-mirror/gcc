@@ -1,5 +1,6 @@
 /* { dg-do assemble } */
 /* { dg-options "-mthumb -O2" } */
+/* { dg-require-effective-target arm_arm_ok } */
 /* { dg-require-effective-target arm_thumb2_ok } */
 
 int i;
