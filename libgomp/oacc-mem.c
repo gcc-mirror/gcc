@@ -447,7 +447,8 @@ delete_copyout (unsigned f, void *h, size_t s)
   if (!n)
     gomp_fatal ("[%p,%d] is not mapped", (void *)h, (int)s);
 
-  d = (void *) (n->tgt->tgt_start + n->tgt_offset);
+  d = (void *) (n->tgt->tgt_start + n->tgt_offset
+		+ (uintptr_t) h - n->host_start);
 
   host_size = n->host_end - n->host_start;
 
@@ -490,7 +491,8 @@ update_dev_host (int is_dev, void *h, size_t s)
   if (!n)
     gomp_fatal ("[%p,%d] is not mapped", h, (int)s);
 
-  d = (void *) (n->tgt->tgt_start + n->tgt_offset);
+  d = (void *) (n->tgt->tgt_start + n->tgt_offset
+		+ (uintptr_t) h - n->host_start);
 
   if (is_dev)
     acc_dev->host2dev_func (acc_dev->target_id, d, h, s);

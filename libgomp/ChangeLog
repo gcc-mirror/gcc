@@ -1,3 +1,16 @@
+2016-04-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backport trunk r234428:
+
+	2016-03-23  James Norris  <jnorris@codesourcery.com>
+		    Daichi Fukuoka <dc-fukuoka@sgi.com>
+
+	PR libgomp/69414
+	* oacc-mem.c (delete_copyout, update_dev_host): Fix device address.
+	* testsuite/libgomp.oacc-c-c++-common/update-1.c: Additional tests.
+	* testsuite/libgomp.oacc-c-c++-common/update-1-2.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/update-1.f90: New file.
+
 2016-02-16  Tom de Vries  <tom@codesourcery.com>
 
 	backport from trunk:
