@@ -1,3 +1,15 @@
+2016-04-07  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/70452
+	* constexpr.c (find_constructor): New function.
+	(unshare_constructor): New function.
+	(cxx_eval_call_expression): Use unshare_constructor instead of
+	unshare_expr.
+	(find_array_ctor_elt): Likewise.
+	(cxx_eval_vec_init_1): Likewise.
+	(cxx_eval_store_expression): Likewise.
+	(cxx_eval_constant_expression): Likewise.
+
 2016-04-06  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c/70436
