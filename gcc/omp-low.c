@@ -18918,7 +18918,9 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
   adjustments.create (args.length ());
   unsigned i, j, veclen;
   struct ipa_parm_adjustment adj;
-  for (i = 0; i < node->simdclone->nargs; ++i)
+  struct cgraph_simd_clone *sc = node->simdclone;
+
+  for (i = 0; i < sc->nargs; ++i)
     {
       memset (&adj, 0, sizeof (adj));
       tree parm = args[i];
@@ -18926,10 +18928,10 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
       adj.base_index = i;
       adj.base = parm;
 
-      node->simdclone->args[i].orig_arg = node->definition ? parm : NULL_TREE;
-      node->simdclone->args[i].orig_type = parm_type;
+      sc->args[i].orig_arg = node->definition ? parm : NULL_TREE;
+      sc->args[i].orig_type = parm_type;
 
-      switch (node->simdclone->args[i].arg_type)
+      switch (sc->args[i].arg_type)
 	{
 	default:
 	  /* No adjustment necessary for scalar arguments.  */
@@ -18938,29 +18940,29 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	case SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_CONSTANT_STEP:
 	case SIMD_CLONE_ARG_TYPE_LINEAR_UVAL_VARIABLE_STEP:
 	  if (node->definition)
-	    node->simdclone->args[i].simd_array
+	    sc->args[i].simd_array
 	      = create_tmp_simd_array (IDENTIFIER_POINTER (DECL_NAME (parm)),
 				       TREE_TYPE (parm_type),
-				       node->simdclone->simdlen);
+				       sc->simdlen);
 	  adj.op = IPA_PARM_OP_COPY;
 	  break;
 	case SIMD_CLONE_ARG_TYPE_LINEAR_VAL_CONSTANT_STEP:
 	case SIMD_CLONE_ARG_TYPE_LINEAR_VAL_VARIABLE_STEP:
 	case SIMD_CLONE_ARG_TYPE_VECTOR:
 	  if (INTEGRAL_TYPE_P (parm_type) || POINTER_TYPE_P (parm_type))
-	    veclen = node->simdclone->vecsize_int;
+	    veclen = sc->vecsize_int;
 	  else
-	    veclen = node->simdclone->vecsize_float;
+	    veclen = sc->vecsize_float;
 	  veclen /= GET_MODE_BITSIZE (TYPE_MODE (parm_type));
-	  if (veclen > node->simdclone->simdlen)
-	    veclen = node->simdclone->simdlen;
+	  if (veclen > sc->simdlen)
+	    veclen = sc->simdlen;
 	  adj.arg_prefix = "simd";
 	  if (POINTER_TYPE_P (parm_type))
 	    adj.type = build_vector_type (pointer_sized_int_node, veclen);
 	  else
 	    adj.type = build_vector_type (parm_type, veclen);
-	  node->simdclone->args[i].vector_type = adj.type;
-	  for (j = veclen; j < node->simdclone->simdlen; j += veclen)
+	  sc->args[i].vector_type = adj.type;
+	  for (j = veclen; j < sc->simdlen; j += veclen)
 	    {
 	      adjustments.safe_push (adj);
 	      if (j == veclen)
@@ -18969,23 +18971,21 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 		  adj.op = IPA_PARM_OP_NEW;
 		  adj.arg_prefix = "simd";
 		  adj.base_index = i;
-		  adj.type = node->simdclone->args[i].vector_type;
+		  adj.type = sc->args[i].vector_type;
 		}
 	    }
 
 	  if (node->definition)
-	    node->simdclone->args[i].simd_array
+	    sc->args[i].simd_array
 	      = create_tmp_simd_array (IDENTIFIER_POINTER (DECL_NAME (parm)),
-				       parm_type, node->simdclone->simdlen);
+				       parm_type, sc->simdlen);
 	}
       adjustments.safe_push (adj);
     }
 
-  if (node->simdclone->inbranch)
+  if (sc->inbranch)
     {
-      tree base_type
-	= simd_clone_compute_base_data_type (node->simdclone->origin,
-					     node->simdclone);
+      tree base_type = simd_clone_compute_base_data_type (sc->origin, sc);
 
       memset (&adj, 0, sizeof (adj));
       adj.op = IPA_PARM_OP_NEW;
@@ -18993,31 +18993,41 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 
       adj.base_index = i;
       if (INTEGRAL_TYPE_P (base_type) || POINTER_TYPE_P (base_type))
-	veclen = node->simdclone->vecsize_int;
+	veclen = sc->vecsize_int;
       else
-	veclen = node->simdclone->vecsize_float;
+	veclen = sc->vecsize_float;
       veclen /= GET_MODE_BITSIZE (TYPE_MODE (base_type));
-      if (veclen > node->simdclone->simdlen)
-	veclen = node->simdclone->simdlen;
-      if (POINTER_TYPE_P (base_type))
+      if (veclen > sc->simdlen)
+	veclen = sc->simdlen;
+      if (sc->mask_mode != VOIDmode)
+	adj.type
+	  = lang_hooks.types.type_for_mode (sc->mask_mode, 1);
+      else if (POINTER_TYPE_P (base_type))
 	adj.type = build_vector_type (pointer_sized_int_node, veclen);
       else
 	adj.type = build_vector_type (base_type, veclen);
       adjustments.safe_push (adj);
 
-      for (j = veclen; j < node->simdclone->simdlen; j += veclen)
+      for (j = veclen; j < sc->simdlen; j += veclen)
 	adjustments.safe_push (adj);
 
       /* We have previously allocated one extra entry for the mask.  Use
 	 it and fill it.  */
-      struct cgraph_simd_clone *sc = node->simdclone;
       sc->nargs++;
+      if (sc->mask_mode != VOIDmode)
+	base_type = boolean_type_node;
       if (node->definition)
 	{
 	  sc->args[i].orig_arg
 	    = build_decl (UNKNOWN_LOCATION, PARM_DECL, NULL, base_type);
-	  sc->args[i].simd_array
-	    = create_tmp_simd_array ("mask", base_type, sc->simdlen);
+	  if (sc->mask_mode == VOIDmode)
+	    sc->args[i].simd_array
+	      = create_tmp_simd_array ("mask", base_type, sc->simdlen);
+	  else if (veclen < sc->simdlen)
+	    sc->args[i].simd_array
+	      = create_tmp_simd_array ("mask", adj.type, sc->simdlen / veclen);
+	  else
+	    sc->args[i].simd_array = NULL_TREE;
 	}
       sc->args[i].orig_type = base_type;
       sc->args[i].arg_type = SIMD_CLONE_ARG_TYPE_MASK;
@@ -19085,6 +19095,27 @@ simd_clone_init_simd_arrays (struct cgraph_node *node,
       node->simdclone->args[i].vector_arg = arg;
 
       tree array = node->simdclone->args[i].simd_array;
+      if (node->simdclone->mask_mode != VOIDmode
+	  && node->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_MASK)
+	{
+	  if (array == NULL_TREE)
+	    continue;
+	  unsigned int l
+	    = tree_to_uhwi (TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (array))));
+	  for (k = 0; k <= l; k++)
+	    {
+	      if (k)
+		{
+		  arg = DECL_CHAIN (arg);
+		  j++;
+		}
+	      tree t = build4 (ARRAY_REF, TREE_TYPE (TREE_TYPE (array)),
+			       array, size_int (k), NULL, NULL);
+	      t = build2 (MODIFY_EXPR, TREE_TYPE (t), t, arg);
+	      gimplify_and_add (t, &seq);
+	    }
+	  continue;
+	}
       if (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg)) == node->simdclone->simdlen)
 	{
 	  tree ptype = build_pointer_type (TREE_TYPE (TREE_TYPE (array)));
@@ -19455,7 +19486,7 @@ simd_clone_adjust (struct cgraph_node *node)
   e->probability = REG_BR_PROB_BASE;
   gsi = gsi_last_bb (incr_bb);
   gimple *g = gimple_build_assign (iter2, PLUS_EXPR, iter1,
-				  build_int_cst (unsigned_type_node, 1));
+				   build_int_cst (unsigned_type_node, 1));
   gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
 
   /* Mostly annotate the loop for the vectorizer (the rest is done below).  */
@@ -19471,21 +19502,68 @@ simd_clone_adjust (struct cgraph_node *node)
       gimple_stmt_iterator gsi = gsi_last_bb (loop->header);
       tree mask_array
 	= node->simdclone->args[node->simdclone->nargs - 1].simd_array;
-      tree mask = make_ssa_name (TREE_TYPE (TREE_TYPE (mask_array)));
-      tree aref = build4 (ARRAY_REF,
-			  TREE_TYPE (TREE_TYPE (mask_array)),
-			  mask_array, iter1,
-			  NULL, NULL);
-      g = gimple_build_assign (mask, aref);
-      gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
-      int bitsize = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (aref)));
-      if (!INTEGRAL_TYPE_P (TREE_TYPE (aref)))
+      tree mask;
+      if (node->simdclone->mask_mode != VOIDmode)
 	{
-	  aref = build1 (VIEW_CONVERT_EXPR,
-			 build_nonstandard_integer_type (bitsize, 0), mask);
-	  mask = make_ssa_name (TREE_TYPE (aref));
+	  tree shift_cnt;
+	  if (mask_array == NULL_TREE)
+	    {
+	      tree arg = node->simdclone->args[node->simdclone->nargs
+					       - 1].vector_arg;
+	      mask = get_or_create_ssa_default_def (cfun, arg);
+	      shift_cnt = iter1;
+	    }
+	  else
+	    {
+	      tree maskt = TREE_TYPE (mask_array);
+	      int c = tree_to_uhwi (TYPE_MAX_VALUE (TYPE_DOMAIN (maskt)));
+	      c = node->simdclone->simdlen / (c + 1);
+	      int s = exact_log2 (c);
+	      gcc_assert (s > 0);
+	      c--;
+	      tree idx = make_ssa_name (TREE_TYPE (iter1));
+	      g = gimple_build_assign (idx, RSHIFT_EXPR, iter1,
+				       build_int_cst (NULL_TREE, s));
+	      gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
+	      mask = make_ssa_name (TREE_TYPE (TREE_TYPE (mask_array)));
+	      tree aref = build4 (ARRAY_REF,
+				  TREE_TYPE (TREE_TYPE (mask_array)),
+				  mask_array, idx, NULL, NULL);
+	      g = gimple_build_assign (mask, aref);
+	      gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
+	      shift_cnt = make_ssa_name (TREE_TYPE (iter1));
+	      g = gimple_build_assign (shift_cnt, BIT_AND_EXPR, iter1,
+				       build_int_cst (TREE_TYPE (iter1), c));
+	      gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
+	    }
+	  g = gimple_build_assign (make_ssa_name (TREE_TYPE (mask)),
+				   RSHIFT_EXPR, mask, shift_cnt);
+	  gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
+	  mask = gimple_assign_lhs (g);
+	  g = gimple_build_assign (make_ssa_name (TREE_TYPE (mask)),
+				   BIT_AND_EXPR, mask,
+				   build_int_cst (TREE_TYPE (mask), 1));
+	  gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
+	  mask = gimple_assign_lhs (g);
+	}
+      else
+	{
+	  mask = make_ssa_name (TREE_TYPE (TREE_TYPE (mask_array)));
+	  tree aref = build4 (ARRAY_REF,
+			      TREE_TYPE (TREE_TYPE (mask_array)),
+			      mask_array, iter1, NULL, NULL);
 	  g = gimple_build_assign (mask, aref);
 	  gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
+	  int bitsize = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (aref)));
+	  if (!INTEGRAL_TYPE_P (TREE_TYPE (aref)))
+	    {
+	      aref = build1 (VIEW_CONVERT_EXPR,
+			     build_nonstandard_integer_type (bitsize, 0),
+							     mask);
+	      mask = make_ssa_name (TREE_TYPE (aref));
+	      g = gimple_build_assign (mask, aref);
+	      gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
+	    }
 	}
 
       g = gimple_build_cond (EQ_EXPR, mask, build_zero_cst (TREE_TYPE (mask)),

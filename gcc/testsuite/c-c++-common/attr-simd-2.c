@@ -19,3 +19,5 @@ int simd_attr (void)
 /* { dg-final { scan-assembler-times "_ZGVcM4_simd_attr:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdN8_simd_attr:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdM8_simd_attr:" 1 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeN16_simd_attr:" 1 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeM16_simd_attr:" 1 { target { i?86-*-* x86_64-*-* } } } } */
