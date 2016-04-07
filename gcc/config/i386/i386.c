@@ -53747,7 +53747,7 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
   return val;
 }
 
-/* Set CLONEI->vecsize_mangle, CLONEI->vecsize_int,
+/* Set CLONEI->vecsize_mangle, CLONEI->mask_mode, CLONEI->vecsize_int,
    CLONEI->vecsize_float and if CLONEI->simdlen is 0, also
    CLONEI->simdlen.  Return 0 if SIMD clones shouldn't be emitted,
    or number of vecsize_mangle variants that should be emitted.  */
@@ -53834,6 +53834,7 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
       clonei->vecsize_mangle = "bcde"[num];
       ret = 4;
     }
+  clonei->mask_mode = VOIDmode;
   switch (clonei->vecsize_mangle)
     {
     case 'b':
@@ -53851,6 +53852,10 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
     case 'e':
       clonei->vecsize_int = 512;
       clonei->vecsize_float = 512;
+      if (TYPE_MODE (base_type) == QImode)
+	clonei->mask_mode = DImode;
+      else
+	clonei->mask_mode = SImode;
       break;
     }
   if (clonei->simdlen == 0)

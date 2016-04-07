@@ -1,3 +1,13 @@
+2016-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* cgraph.h (struct cgraph_simd_clone): Add mask_mode field.
+	* omp-low.c (simd_clone_init_simd_arrays, simd_clone_adjust): Handle
+	node->simdclone->mask_mode != VOIDmode masks.
+	(simd_clone_adjust_argument_types): Likewise.  Move sc var definition
+	earlier, use it instead of node->simdclone.
+	* config/i386/i386.c (ix86_simd_clone_compute_vecsize_and_simdlen):
+	Set clonei->mask_mode.
+
 2016-04-06  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c/70436

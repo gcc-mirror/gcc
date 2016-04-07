@@ -1,3 +1,12 @@
+2016-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/attr-simd.c: Add scan-assembler* directives for AVX512F
+	clones.
+	* c-c++-common/attr-simd-2.c: Likewise.
+	* c-c++-common/attr-simd-4.c: Likewise.
+	* gcc.dg/gomp/simd-clones-2.c: Likewise.
+	* gcc.dg/gomp/simd-clones-3.c: Likewise.
+
 2016-04-07  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR testsuite/70553

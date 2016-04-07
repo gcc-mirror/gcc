@@ -766,6 +766,11 @@ struct GTY(()) cgraph_simd_clone {
   /* Max hardware vector size in bits for floating point vectors.  */
   unsigned int vecsize_float;
 
+  /* Machine mode of the mask argument(s), if they are to be passed
+     as bitmasks in integer argument(s).  VOIDmode if masks are passed
+     as vectors of characteristic type.  */
+  machine_mode mask_mode;
+
   /* The mangling character for a given vector size.  This is used
      to determine the ISA mangling bit as specified in the Intel
      Vector ABI.  */
