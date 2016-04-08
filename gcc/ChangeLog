@@ -1,3 +1,8 @@
+2016-04-08  Tom de Vries  <tom@codesourcery.com>
+
+	* omp-low.c (lower_omp_target): Set TREE_NO_WARNING for oacc
+	implicit firstprivate clause.
+
 2016-04-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/70566
