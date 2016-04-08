@@ -1,3 +1,12 @@
+2016-04-08  Alan Modra  <amodra@gmail.com>
+
+	PR target/70117
+	* builtins.c (fold_builtin_classify): For IBM extended precision,
+	look at just the high-order double to test for NaN.
+	(fold_builtin_interclass_mathfn): Similarly for Inf.  For isnormal
+	test just the high double for Inf but both doubles for subnormal
+	limit.
+
 2016-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* cgraph.h (struct cgraph_simd_clone): Add mask_mode field.

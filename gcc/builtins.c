@@ -7529,6 +7529,8 @@ fold_builtin_interclass_mathfn (location_t loc, tree fndecl, tree arg)
 
   mode = TYPE_MODE (TREE_TYPE (arg));
 
+  bool is_ibm_extended = MODE_COMPOSITE_P (mode);
+
   /* If there is no optab, try generic code.  */
   switch (DECL_FUNCTION_CODE (fndecl))
     {
@@ -7538,10 +7540,18 @@ fold_builtin_interclass_mathfn (location_t loc, tree fndecl, tree arg)
       {
 	/* isinf(x) -> isgreater(fabs(x),DBL_MAX).  */
 	tree const isgr_fn = builtin_decl_explicit (BUILT_IN_ISGREATER);
-	tree const type = TREE_TYPE (arg);
+	tree type = TREE_TYPE (arg);
 	REAL_VALUE_TYPE r;
 	char buf[128];
 
+	if (is_ibm_extended)
+	  {
+	    /* NaN and Inf are encoded in the high-order double value
+	       only.  The low-order value is not significant.  */
+	    type = double_type_node;
+	    mode = DFmode;
+	    arg = fold_build1_loc (loc, NOP_EXPR, type, arg);
+	  }
 	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf));
 	real_from_string (&r, buf);
 	result = build_call_expr (isgr_fn, 2,
@@ -7554,10 +7564,18 @@ fold_builtin_interclass_mathfn (location_t loc, tree fndecl, tree arg)
       {
 	/* isfinite(x) -> islessequal(fabs(x),DBL_MAX).  */
 	tree const isle_fn = builtin_decl_explicit (BUILT_IN_ISLESSEQUAL);
-	tree const type = TREE_TYPE (arg);
+	tree type = TREE_TYPE (arg);
 	REAL_VALUE_TYPE r;
 	char buf[128];
 
+	if (is_ibm_extended)
+	  {
+	    /* NaN and Inf are encoded in the high-order double value
+	       only.  The low-order value is not significant.  */
+	    type = double_type_node;
+	    mode = DFmode;
+	    arg = fold_build1_loc (loc, NOP_EXPR, type, arg);
+	  }
 	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf));
 	real_from_string (&r, buf);
 	result = build_call_expr (isle_fn, 2,
@@ -7577,21 +7595,72 @@ fold_builtin_interclass_mathfn (location_t loc, tree fndecl, tree arg)
 	/* isnormal(x) -> isgreaterequal(fabs(x),DBL_MIN) &
 	   islessequal(fabs(x),DBL_MAX).  */
 	tree const isle_fn = builtin_decl_explicit (BUILT_IN_ISLESSEQUAL);
-	tree const isge_fn = builtin_decl_explicit (BUILT_IN_ISGREATEREQUAL);
-	tree const type = TREE_TYPE (arg);
+	tree type = TREE_TYPE (arg);
+	tree orig_arg, max_exp, min_exp;
+	machine_mode orig_mode = mode;
 	REAL_VALUE_TYPE rmax, rmin;
 	char buf[128];
 
+	orig_arg = arg = builtin_save_expr (arg);
+	if (is_ibm_extended)
+	  {
+	    /* Use double to test the normal range of IBM extended
+	       precision.  Emin for IBM extended precision is
+	       different to emin for IEEE double, being 53 higher
+	       since the low double exponent is at least 53 lower
+	       than the high double exponent.  */
+	    type = double_type_node;
+	    mode = DFmode;
+	    arg = fold_build1_loc (loc, NOP_EXPR, type, arg);
+	  }
+	arg = fold_build1_loc (loc, ABS_EXPR, type, arg);
+
 	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf));
 	real_from_string (&rmax, buf);
-	sprintf (buf, "0x1p%d", REAL_MODE_FORMAT (mode)->emin - 1);
+	sprintf (buf, "0x1p%d", REAL_MODE_FORMAT (orig_mode)->emin - 1);
 	real_from_string (&rmin, buf);
-	arg = builtin_save_expr (fold_build1_loc (loc, ABS_EXPR, type, arg));
-	result = build_call_expr (isle_fn, 2, arg,
-				  build_real (type, rmax));
-	result = fold_build2 (BIT_AND_EXPR, integer_type_node, result,
-			      build_call_expr (isge_fn, 2, arg,
-					       build_real (type, rmin)));
+	max_exp = build_real (type, rmax);
+	min_exp = build_real (type, rmin);
+
+	max_exp = build_call_expr (isle_fn, 2, arg, max_exp);
+	if (is_ibm_extended)
+	  {
+	    /* Testing the high end of the range is done just using
+	       the high double, using the same test as isfinite().
+	       For the subnormal end of the range we first test the
+	       high double, then if its magnitude is equal to the
+	       limit of 0x1p-969, we test whether the low double is
+	       non-zero and opposite sign to the high double.  */
+	    tree const islt_fn = builtin_decl_explicit (BUILT_IN_ISLESS);
+	    tree const isgt_fn = builtin_decl_explicit (BUILT_IN_ISGREATER);
+	    tree gt_min = build_call_expr (isgt_fn, 2, arg, min_exp);
+	    tree eq_min = fold_build2 (EQ_EXPR, integer_type_node,
+				       arg, min_exp);
+	    tree as_complex = build1 (VIEW_CONVERT_EXPR,
+				      complex_double_type_node, orig_arg);
+	    tree hi_dbl = build1 (REALPART_EXPR, type, as_complex);
+	    tree lo_dbl = build1 (IMAGPART_EXPR, type, as_complex);
+	    tree zero = build_real (type, dconst0);
+	    tree hilt = build_call_expr (islt_fn, 2, hi_dbl, zero);
+	    tree lolt = build_call_expr (islt_fn, 2, lo_dbl, zero);
+	    tree logt = build_call_expr (isgt_fn, 2, lo_dbl, zero);
+	    tree ok_lo = fold_build1 (TRUTH_NOT_EXPR, integer_type_node,
+				      fold_build3 (COND_EXPR,
+						   integer_type_node,
+						   hilt, logt, lolt));
+	    eq_min = fold_build2 (TRUTH_ANDIF_EXPR, integer_type_node,
+				  eq_min, ok_lo);
+	    min_exp = fold_build2 (TRUTH_ORIF_EXPR, integer_type_node,
+				   gt_min, eq_min);
+	  }
+	else
+	  {
+	    tree const isge_fn
+	      = builtin_decl_explicit (BUILT_IN_ISGREATEREQUAL);
+	    min_exp = build_call_expr (isge_fn, 2, arg, min_exp);
+	  }
+	result = fold_build2 (BIT_AND_EXPR, integer_type_node,
+			      max_exp, min_exp);
 	return result;
       }
     default:
@@ -7664,6 +7733,15 @@ fold_builtin_classify (location_t loc, tree fndecl, tree arg, int builtin_index)
       if (!HONOR_NANS (arg))
 	return omit_one_operand_loc (loc, type, integer_zero_node, arg);
 
+      {
+	bool is_ibm_extended = MODE_COMPOSITE_P (TYPE_MODE (TREE_TYPE (arg)));
+	if (is_ibm_extended)
+	  {
+	    /* NaN and Inf are encoded in the high-order double value
+	       only.  The low-order value is not significant.  */
+	    arg = fold_build1_loc (loc, NOP_EXPR, double_type_node, arg);
+	  }
+      }
       arg = builtin_save_expr (arg);
       return fold_build2_loc (loc, UNORDERED_EXPR, type, arg, arg);
 
