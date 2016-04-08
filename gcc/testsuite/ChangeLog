@@ -1,3 +1,8 @@
+2016-04-08  Tom de Vries  <tom@codesourcery.com>
+
+	* c-c++-common/goacc/uninit-firstprivate-clause.c: New test.
+	* gfortran.dg/goacc/uninit-firstprivate-clause.f95: New test.
+
 2016-04-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/70566

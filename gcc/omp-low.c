@@ -16077,7 +16077,12 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		  {
 		    gcc_assert (is_gimple_omp_oacc (ctx->stmt));
 		    if (!is_reference (var))
-		      var = build_fold_addr_expr (var);
+		      {
+			if (is_gimple_reg (var)
+			    && OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c))
+			  TREE_NO_WARNING (var) = 1;
+			var = build_fold_addr_expr (var);
+		      }
 		    else
 		      talign = TYPE_ALIGN_UNIT (TREE_TYPE (TREE_TYPE (ovar)));
 		    gimplify_assign (x, var, &ilist);
