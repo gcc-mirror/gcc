@@ -1,5 +1,10 @@
 2016-04-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/70593
+	* tree-ssa-coalesce.c (build_ssa_conflict_graph): For stmt
+	with multiple SSA_NAME defs, force the outputs other than first
+	to be live before calling live_track_process_def on each output.
+
 	PR rtl-optimization/70574
 	* fwprop.c (forward_propagate_and_simplify): Don't add
 	REG_EQUAL note if DF_REF_REG (use) is a paradoxical subreg.
