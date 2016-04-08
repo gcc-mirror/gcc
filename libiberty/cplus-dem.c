@@ -56,6 +56,13 @@ void * malloc ();
 void * realloc ();
 #endif
 
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
+#ifndef INT_MAX
+# define INT_MAX       (int)(((unsigned int) ~0) >> 1)          /* 0x7FFFFFFF */ 
+#endif
+
 #include <demangle.h>
 #undef CURRENT_DEMANGLING_STYLE
 #define CURRENT_DEMANGLING_STYLE work->options
@@ -4261,6 +4268,8 @@ remember_type (struct work_stuff *work, const char *start, int len)
 	}
       else
 	{
+          if (work -> typevec_size > INT_MAX / 2)
+	    xmalloc_failed (INT_MAX);
 	  work -> typevec_size *= 2;
 	  work -> typevec
 	    = XRESIZEVEC (char *, work->typevec, work->typevec_size);
@@ -4288,6 +4297,8 @@ remember_Ktype (struct work_stuff *work, const char *start, int len)
 	}
       else
 	{
+          if (work -> ksize > INT_MAX / 2)
+	    xmalloc_failed (INT_MAX);
 	  work -> ksize *= 2;
 	  work -> ktypevec
 	    = XRESIZEVEC (char *, work->ktypevec, work->ksize);
@@ -4317,6 +4328,8 @@ register_Btype (struct work_stuff *work)
 	}
       else
 	{
+          if (work -> bsize > INT_MAX / 2)
+	    xmalloc_failed (INT_MAX);
 	  work -> bsize *= 2;
 	  work -> btypevec
 	    = XRESIZEVEC (char *, work->btypevec, work->bsize);
@@ -4771,6 +4784,8 @@ string_need (string *s, int n)
   else if (s->e - s->p < n)
     {
       tem = s->p - s->b;
+      if (n > INT_MAX / 2 - tem)
+        xmalloc_failed (INT_MAX); 
       n += tem;
       n *= 2;
       s->b = XRESIZEVEC (char, s->b, n);
