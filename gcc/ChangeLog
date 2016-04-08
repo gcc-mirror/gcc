@@ -1,3 +1,13 @@
+2016-04-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/arc/arc.h (LINK_COMMAND_SPEC): Use gt to ignore
+	-ftree-parallelize-loops={0,1}.
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Likewise.
+	* config/i386/mingw32.h (GOMP_SELF_SPECS): Likewise.
+	* config/ia64/hpux.h (LIB_SPEC): Likewise.
+	* config/pa/pa-hpux11.h (LIB_SPEC): Likewise.
+	* config/pa/pa64-hpux.h (LIB_SPEC): Likewise.
+
 2016-04-08  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR sanitizer/70541

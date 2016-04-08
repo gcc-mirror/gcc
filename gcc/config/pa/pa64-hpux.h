@@ -58,21 +58,21 @@ along with GCC; see the file COPYING3.  If not see
 #if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_GNU_LD)
 #define LIB_SPEC \
   "%{!shared:\
-     %{!p:%{!pg:%{fopenacc|fopenmp|ftree-parallelize-loops=*:\
+     %{!p:%{!pg:%{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
                   %{static:-a shared} -lrt %{static:-a archive}}\
 	    %{mt|pthread:-lpthread} -lc\
 	    %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
 		%{!mt:%{!pthread:-a shared -lc -a archive}}}}}\
      %{p:%{!pg:%{static:%{!mhp-ld:-a shared}%{mhp-ld:-a archive_shared}}\
 	   -lprof %{static:-a archive}\
-	   %{fopenacc|fopenmp|ftree-parallelize-loops=*:\
+	   %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
              %{static:-a shared} -lrt %{static:-a archive}}\
 	   %{mt|pthread:-lpthread} -lc\
 	   %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
 		%{!mt:%{!pthread:-a shared -lc -a archive}}}}}\
      %{pg:%{static:%{!mhp-ld:-a shared}%{mhp-ld:-a archive_shared}}\
        -lgprof %{static:-a archive}\
-       %{fopenacc|fopenmp|ftree-parallelize-loops=*:\
+       %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
          %{static:-a shared} -lrt %{static:-a archive}}\
        %{mt|pthread:-lpthread} -lc\
        %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
@@ -81,21 +81,21 @@ along with GCC; see the file COPYING3.  If not see
 #else
 #define LIB_SPEC \
   "%{!shared:\
-     %{!p:%{!pg:%{fopenacc|fopenmp|ftree-parallelize-loops=*:\
+     %{!p:%{!pg:%{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
                   %{static:-a shared} -lrt %{static:-a archive}}\
 	    %{mt|pthread:-lpthread} -lc\
 	    %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
 		%{!mt:%{!pthread:-a shared -lc -a archive}}}}}\
      %{p:%{!pg:%{static:%{mgnu-ld:-a shared}%{!mgnu-ld:-a archive_shared}}\
 	   -lprof %{static:-a archive}\
-	   %{fopenacc|fopenmp|ftree-parallelize-loops=*:\
+	   %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
              %{static:-a shared} -lrt %{static:-a archive}}\
 	   %{mt|pthread:-lpthread} -lc\
 	   %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
 		%{!mt:%{!pthread:-a shared -lc -a archive}}}}}\
      %{pg:%{static:%{mgnu-ld:-a shared}%{!mgnu-ld:-a archive_shared}}\
        -lgprof %{static:-a archive}\
-       %{fopenacc|fopenmp|ftree-parallelize-loops=*:\
+       %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
          %{static:-a shared} -lrt %{static:-a archive}}\
        %{mt|pthread:-lpthread} -lc\
        %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\

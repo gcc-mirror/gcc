@@ -92,7 +92,7 @@ do {							\
 #undef  LIB_SPEC
 #define LIB_SPEC \
   "%{!shared: \
-     %{mt|pthread:%{fopenacc|fopenmp|ftree-parallelize-loops=*:-lrt} -lpthread} \
+     %{mt|pthread:%{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):-lrt} -lpthread} \
      %{p:%{!mlp64:-L/usr/lib/hpux32/libp} \
 	 %{mlp64:-L/usr/lib/hpux64/libp} -lprof} \
      %{pg:%{!mlp64:-L/usr/lib/hpux32/libp} \
