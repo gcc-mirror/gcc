@@ -906,6 +906,23 @@ build_ssa_conflict_graph (tree_live_info_p liveinfo)
 	  else if (is_gimple_debug (stmt))
 	    continue;
 
+	  /* For stmts with more than one SSA_NAME definition pretend all the
+	     SSA_NAME outputs but the first one are live at this point, so
+	     that conflicts are added in between all those even when they are
+	     actually not really live after the asm, because expansion might
+	     copy those into pseudos after the asm and if multiple outputs
+	     share the same partition, it might overwrite those that should
+	     be live.  E.g.
+	     asm volatile (".." : "=r" (a) : "=r" (b) : "0" (a), "1" (a));
+	     return a;
+	     See PR70593.  */
+	  bool first = true;
+	  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_DEF)
+	    if (first)
+	      first = false;
+	    else
+	      live_track_process_use (live, var);
+
 	  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_DEF)
 	    live_track_process_def (live, var, graph);
 
