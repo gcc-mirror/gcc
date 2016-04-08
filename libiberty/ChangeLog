@@ -7,7 +7,7 @@
 	Abort if we detect cases where we the size of the allocation would
 	overflow.
 
-	PR c++/70498
+	PR c++/70492
 	* cplus-dem.c (gnu_special): Handle case where consume_count returns
 	-1.
 
