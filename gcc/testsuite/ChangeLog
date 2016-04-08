@@ -1,3 +1,8 @@
+2016-04-08  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/70541
+	* c-c++-common/asan/pr70541.c: New test.
+
 2016-04-08  Tom de Vries  <tom@codesourcery.com>
 
 	* c-c++-common/goacc/uninit-firstprivate-clause.c: New test.
