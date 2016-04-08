@@ -1,3 +1,11 @@
+2016-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/70574
+	* fwprop.c (forward_propagate_and_simplify): Don't add
+	REG_EQUAL note if DF_REF_REG (use) is a paradoxical subreg.
+	(try_fwprop_subst): Don't add REG_EQUAL note if there are any
+	paradoxical subregs within *loc.
+
 2016-04-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/arc/arc.h (LINK_COMMAND_SPEC): Use gt to ignore

@@ -1,3 +1,8 @@
+2016-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/70574
+	* gcc.target/i386/avx2-pr70574.c: New test.
+
 2016-04-08  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
 	PR sanitizer/70541
