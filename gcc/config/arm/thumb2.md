@@ -1550,7 +1550,8 @@
 		      (match_operand 5 "" "")
 		      (match_operand 6 "" "")))]
   "TARGET_THUMB2
-   && (INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) < 32)"
+   && (INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) < 32)
+   && peep2_reg_dead_p (2, operands[0])"
   [(parallel [(set (match_dup 0)
 		   (compare:CC_NOOV (ashift:SI (match_dup 1) (match_dup 2))
 				    (const_int 0)))
@@ -1578,7 +1579,8 @@
 		      (match_operand 5 "" "")
 		      (match_operand 6 "" "")))]
   "TARGET_THUMB2
-   && (INTVAL (operands[2]) > 0 && INTVAL (operands[2]) < 32)"
+   && (INTVAL (operands[2]) > 0 && INTVAL (operands[2]) < 32)
+   && peep2_reg_dead_p (2, operands[0])"
   [(parallel [(set (match_dup 0)
 		   (compare:CC_NOOV (ashift:SI (match_dup 1) (match_dup 2))
 				    (const_int 0)))
