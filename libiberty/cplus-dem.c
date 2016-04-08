@@ -3001,6 +3001,11 @@ gnu_special (struct work_stuff *work, const char **mangled, string *declp)
 		      success = 1;
 		      break;
 		    }
+		  else if (n == -1)
+		    {
+		      success = 0;
+		      break;
+		    }
 		}
 	      else
 		{
