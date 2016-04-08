@@ -1,3 +1,8 @@
+2016-04-08  Tom de Vries  <tom@codesourcery.com>
+
+	* c-c++-common/goacc/uninit-copy-clause.c: New test.
+	* gfortran.dg/goacc/uninit-copy-clause.f95: New test.
+
 2016-04-08  Alan Modra  <amodra@gmail.com>
 
 	* gcc.target/powerpc/pr70117.c: New.
