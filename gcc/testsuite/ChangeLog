@@ -1,3 +1,10 @@
+2016-04-08  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/70590
+	PR c++/70452
+	* g++.dg/pr70590.C: New test.
+	* g++.dg/pr70590-2.C: New test.
+
 2016-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/70593

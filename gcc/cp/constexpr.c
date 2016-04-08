@@ -4164,6 +4164,12 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   if (!non_constant_p && overflow_p)
     non_constant_p = true;
 
+  /* Unshare the result unless it's a CONSTRUCTOR in which case it's already
+     unshared.  */
+  bool should_unshare = true;
+  if (r == t || TREE_CODE (r) == CONSTRUCTOR)
+    should_unshare = false;
+
   if (non_constant_p && !allow_non_constant)
     return error_mark_node;
   else if (non_constant_p && TREE_CONSTANT (r))
@@ -4179,6 +4185,9 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
     }
   else if (non_constant_p || r == t)
     return t;
+
+  if (should_unshare)
+    r = unshare_expr (r);
 
   if (TREE_CODE (r) == CONSTRUCTOR && CLASS_TYPE_P (TREE_TYPE (r)))
     {
