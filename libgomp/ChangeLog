@@ -1,3 +1,65 @@
+2016-04-08  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR lto/70289
+	PR ipa/70348
+	PR tree-optimization/70373
+	PR middle-end/70533
+	PR middle-end/70534
+	PR middle-end/70535
+	* testsuite/libgomp.oacc-c-c++-common/loop-reduction-gang-np-1.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/loop-reduction-gw-np-1.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/loop-reduction-gwv-np-1.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/loop-reduction-gwv-np-2.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/loop-reduction-gwv-np-3.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/loop-reduction-gwv-np-4.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/loop-reduction-vector-p-1.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/loop-reduction-vector-p-2.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/loop-reduction-worker-p-1.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/loop-reduction-wv-p-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/loop-reduction-wv-p-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/loop-reduction-wv-p-3.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-1.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-2.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-3.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-4.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/par-reduction-1.c: Add test
+	coverage.
+	* testsuite/libgomp.oacc-c-c++-common/par-reduction-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-reduction.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/pr70289.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/pr70373.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-1.c: Add test
+	coverage.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-6.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/reduction.h: New test.
+	* testsuite/libgomp.oacc-fortran/parallel-reduction.f90: New test.
+	* testsuite/libgomp.oacc-fortran/pr70289.f90: New test.
+	* testsuite/libgomp.oacc-fortran/reduction-1.f90: Add test coverage.
+	* testsuite/libgomp.oacc-fortran/reduction-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-4.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-6.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-7.f90: New test.
+
 2016-03-30  Thomas Schwinge  <thomas@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>

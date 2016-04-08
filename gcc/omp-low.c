@@ -2122,7 +2122,8 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 		  else
 		    install_var_field (decl, true, 3, ctx,
 				       base_pointers_restrict);
-		  if (is_gimple_omp_offloaded (ctx->stmt))
+		  if (is_gimple_omp_offloaded (ctx->stmt)
+		      && !OMP_CLAUSE_MAP_IN_REDUCTION (c))
 		    install_var_local (decl, ctx);
 		}
 	    }
@@ -4839,7 +4840,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  gimplify_assign (ptr, x, ilist);
 		}
 	    }
-	  else if (is_reference (var) && !is_oacc_parallel (ctx))
+	  else if (is_reference (var))
 	    {
 	      /* For references that are being privatized for Fortran,
 		 allocate new backing storage for the new pointer
@@ -5575,7 +5576,8 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 	tree orig = OMP_CLAUSE_DECL (c);
 	tree var = maybe_lookup_decl (orig, ctx);
 	tree ref_to_res = NULL_TREE;
-	tree incoming, outgoing;
+	tree incoming, outgoing, v1, v2, v3;
+	bool is_private = false;
 
 	enum tree_code rcode = OMP_CLAUSE_REDUCTION_CODE (c);
 	if (rcode == MINUS_EXPR)
@@ -5588,7 +5590,6 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 
 	if (!var)
 	  var = orig;
-	gcc_assert (!is_reference (var));
 
 	incoming = outgoing = var;
 	
@@ -5624,22 +5625,38 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 		for (; cls;  cls = OMP_CLAUSE_CHAIN (cls))
 		  if (OMP_CLAUSE_CODE (cls) == OMP_CLAUSE_REDUCTION
 		      && orig == OMP_CLAUSE_DECL (cls))
-		    goto has_outer_reduction;
+		    {
+		      incoming = outgoing = lookup_decl (orig, probe);
+		      goto has_outer_reduction;
+		    }
+		  else if ((OMP_CLAUSE_CODE (cls) == OMP_CLAUSE_FIRSTPRIVATE
+			    || OMP_CLAUSE_CODE (cls) == OMP_CLAUSE_PRIVATE)
+			   && orig == OMP_CLAUSE_DECL (cls))
+		    {
+		      is_private = true;
+		      goto do_lookup;
+		    }
 	      }
 
 	  do_lookup:
 	    /* This is the outermost construct with this reduction,
 	       see if there's a mapping for it.  */
 	    if (gimple_code (outer->stmt) == GIMPLE_OMP_TARGET
-		&& maybe_lookup_field (orig, outer))
+		&& maybe_lookup_field (orig, outer) && !is_private)
 	      {
 		ref_to_res = build_receiver_ref (orig, false, outer);
 		if (is_reference (orig))
 		  ref_to_res = build_simple_mem_ref (ref_to_res);
 
+		tree type = TREE_TYPE (var);
+		if (POINTER_TYPE_P (type))
+		  type = TREE_TYPE (type);
+
 		outgoing = var;
-		incoming = omp_reduction_init_op (loc, rcode, TREE_TYPE (var));
+		incoming = omp_reduction_init_op (loc, rcode, type);
 	      }
+	    else if (ctx->outer)
+	      incoming = outgoing = lookup_decl (orig, ctx->outer);
 	    else
 	      incoming = outgoing = orig;
 	      
@@ -5648,6 +5665,37 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 
 	if (!ref_to_res)
 	  ref_to_res = integer_zero_node;
+
+        if (is_reference (orig))
+	  {
+	    tree type = TREE_TYPE (var);
+	    const char *id = IDENTIFIER_POINTER (DECL_NAME (var));
+
+	    if (!inner)
+	      {
+		tree x = create_tmp_var (TREE_TYPE (type), id);
+		gimplify_assign (var, build_fold_addr_expr (x), fork_seq);
+	      }
+
+	    v1 = create_tmp_var (type, id);
+	    v2 = create_tmp_var (type, id);
+	    v3 = create_tmp_var (type, id);
+
+	    gimplify_assign (v1, var, fork_seq);
+	    gimplify_assign (v2, var, fork_seq);
+	    gimplify_assign (v3, var, fork_seq);
+
+	    var = build_simple_mem_ref (var);
+	    v1 = build_simple_mem_ref (v1);
+	    v2 = build_simple_mem_ref (v2);
+	    v3 = build_simple_mem_ref (v3);
+	    outgoing = build_simple_mem_ref (outgoing);
+
+	    if (TREE_CODE (incoming) != INTEGER_CST)
+	      incoming = build_simple_mem_ref (incoming);
+	  }
+	else
+	  v1 = v2 = v3 = var;
 
 	/* Determine position in reduction buffer, which may be used
 	   by target.  */
@@ -5678,20 +5726,20 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 	  = build_call_expr_internal_loc (loc, IFN_GOACC_REDUCTION,
 					  TREE_TYPE (var), 6, init_code,
 					  unshare_expr (ref_to_res),
-					  var, level, op, off);
+					  v1, level, op, off);
 	tree fini_call
 	  = build_call_expr_internal_loc (loc, IFN_GOACC_REDUCTION,
 					  TREE_TYPE (var), 6, fini_code,
 					  unshare_expr (ref_to_res),
-					  var, level, op, off);
+					  v2, level, op, off);
 	tree teardown_call
 	  = build_call_expr_internal_loc (loc, IFN_GOACC_REDUCTION,
 					  TREE_TYPE (var), 6, teardown_code,
-					  ref_to_res, var, level, op, off);
+					  ref_to_res, v3, level, op, off);
 
-	gimplify_assign (var, setup_call, &before_fork);
-	gimplify_assign (var, init_call, &after_fork);
-	gimplify_assign (var, fini_call, &before_join);
+	gimplify_assign (v1, setup_call, &before_fork);
+	gimplify_assign (v2, init_call, &after_fork);
+	gimplify_assign (v3, fini_call, &before_join);
 	gimplify_assign (outgoing, teardown_call, &after_join);
       }
 
@@ -5932,9 +5980,6 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp, omp_context *ctx)
 	  gimplify_assign (ref, x, &sub_seq);
 	}
     }
-
-  if (is_gimple_omp_oacc (ctx->stmt))
-    return;
 
   stmt = gimple_build_call (builtin_decl_explicit (BUILT_IN_GOMP_ATOMIC_START),
 			    0);
@@ -15829,7 +15874,10 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	if (!maybe_lookup_field (var, ctx))
 	  continue;
 
-	if (offloaded)
+	/* Don't remap oacc parallel reduction variables, because the
+	   intermediate result must be local to each gang.  */
+	if (offloaded && !(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+			   && OMP_CLAUSE_MAP_IN_REDUCTION (c)))
 	  {
 	    x = build_receiver_ref (var, true, ctx);
 	    tree new_var = lookup_decl (var, ctx);

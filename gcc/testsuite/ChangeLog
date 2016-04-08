@@ -1,3 +1,16 @@
+2016-04-08  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR lto/70289
+	PR ipa/70348
+	PR tree-optimization/70373
+	PR middle-end/70533
+	PR middle-end/70534
+	PR middle-end/70535
+	* c-c++-common/goacc/reduction-5.c: New test.
+	* c-c++-common/goacc/reduction-promotions.c: New test.
+	* gfortran.dg/goacc/reduction-3.f95: New test.
+	* gfortran.dg/goacc/reduction-promotions.f90: New test.
+
 2016-04-08  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/70590
