@@ -1,3 +1,10 @@
+2016-04-08  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR sanitizer/70541
+	* asan.c (instrument_derefs): If we get unknown location, extract it
+	with EXPR_LOCATION.
+	(maybe_instrument_call): Instrument gimple_call's arguments if needed.
+
 2016-04-08  Tom de Vries  <tom@codesourcery.com>
 
 	* omp-low.c (lower_omp_target): Set TREE_NO_WARNING for oacc
