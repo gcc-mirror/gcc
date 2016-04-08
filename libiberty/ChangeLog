@@ -1,5 +1,12 @@
 2016-04-08  Marcel Böhme  <boehme.marcel@gmail.com>
 
+	PR c++/69687
+	* cplus-dem.c: Include <limits.h> if available.
+	(INT_MAX): Define if necessary.
+	(remember_type, remember_Ktype, register_Btype, string_need):
+	Abort if we detect cases where we the size of the allocation would
+	overflow.
+
 	PR c++/70498
 	* cplus-dem.c (gnu_special): Handle case where consume_count returns
 	-1.
