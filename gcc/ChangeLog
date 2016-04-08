@@ -1,3 +1,23 @@
+2016-04-08  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR lto/70289
+	PR ipa/70348
+	PR tree-optimization/70373
+	PR middle-end/70533
+	PR middle-end/70534
+	PR middle-end/70535
+	* gimplify.c (gimplify_adjust_omp_clauses): Add or adjust data
+	clauses for acc parallel reductions as necessary.  Error on those
+	that are private.
+	* omp-low.c (scan_sharing_clauses): Don't install variables which
+	are used in acc parallel reductions.
+	(lower_rec_input_clauses): Remove dead code.
+	(lower_oacc_reductions): Add support for reference reductions.
+	(lower_reduction_clauses): Remove dead code.
+	(lower_omp_target): Don't remap variables appearing in acc parallel
+	reductions.
+	* tree.h (OMP_CLAUSE_MAP_IN_REDUCTION): New macro.
+
 2016-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/70593

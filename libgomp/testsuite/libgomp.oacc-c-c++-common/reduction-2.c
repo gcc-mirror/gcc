@@ -1,124 +1,83 @@
 /* { dg-do run } */
 
+/* Ignore vector_length warnings for offloaded (nvptx) targets.  */
+/* { dg-additional-options "-foffload=-w" } */
+
 /* float reductions.  */
 
 #include <stdlib.h>
-#include <stdbool.h>
-#include <math.h>
+#include "reduction.h"
 
-#define vl 32
+const int ng = 8;
+const int nw = 4;
+const int vl = 32;
 
-int
-main(void)
+static void
+test_reductions (void)
+{
+  const int n = 100;
+  int i;
+  float array[n];
+
+  for (i = 0; i < n; i++)
+    array[i] = i+1;
+
+  /* Gang reductions.  */
+  check_reduction_op (float, +, 0, array[i], num_gangs (ng), gang);
+  check_reduction_op (float, *, 1, array[i], num_gangs (ng), gang);
+
+  /* Worker reductions.  */
+  check_reduction_op (float, +, 0, array[i], num_workers (nw), worker);
+  check_reduction_op (float, *, 1, array[i], num_workers (nw), worker);
+
+  /* Vector reductions.  */
+  check_reduction_op (float, +, 0, array[i], vector_length (vl), vector);
+  check_reduction_op (float, *, 1, array[i], vector_length (vl), vector);
+
+  /* Combined reductions.  */
+  check_reduction_op (float, +, 0, array[i], num_gangs (ng) num_workers (nw)
+		      vector_length (vl), gang worker vector);
+  check_reduction_op (float, *, 1, array[i], num_gangs (ng) num_workers (nw)
+		      vector_length (vl), gang worker vector);
+}
+
+static void
+test_reductions_minmax (void)
 {
   const int n = 1000;
   int i;
-  float vresult, result, array[n];
-  bool lvresult, lresult;
+  float array[n];
 
   for (i = 0; i < n; i++)
     array[i] = i;
 
-  result = 0;
-  vresult = 0;
+  /* Gang reductions.  */
+  check_reduction_macro (float, min, n + 1, array[i], num_gangs (ng), gang);
+  check_reduction_macro (float, max, -1, array[i], num_gangs (ng), gang);
 
-  /* '+' reductions.  */
-#pragma acc parallel vector_length (vl) copy(result)
-#pragma acc loop reduction (+:result)
-  for (i = 0; i < n; i++)
-    result += array[i];
+  /* Worker reductions.  */
+  check_reduction_macro (float, min, n + 1, array[i], num_workers (nw),
+			 worker);
+  check_reduction_macro (float, max, -1, array[i], num_workers (nw), worker);
 
-  /* Verify the reduction.  */
-  for (i = 0; i < n; i++)
-    vresult += array[i];
+  /* Vector reductions.  */
+  check_reduction_macro (float, min, n + 1, array[i], vector_length (vl),
+			 vector);
+  check_reduction_macro (float, max, -1, array[i], vector_length (vl), vector);
 
-  if (result != vresult)
-    abort ();
+  /* Combined reductions.  */
+  check_reduction_macro (float, min, n + 1, array[i], num_gangs (ng)
+			 num_workers (nw) vector_length (vl), gang worker
+			 vector);
+  check_reduction_macro (float, max, -1, array[i], num_gangs (ng)
+			 num_workers (nw)vector_length (vl), gang worker
+			 vector);
+}
 
-  result = 0;
-  vresult = 0;
-
-  /* '*' reductions.  */
-#pragma acc parallel vector_length (vl) copy(result)
-#pragma acc loop reduction (*:result)
-  for (i = 0; i < n; i++)
-    result *= array[i];
-
-  /* Verify the reduction.  */
-  for (i = 0; i < n; i++)
-    vresult *= array[i];
-
-  if (fabs(result - vresult) > .0001)
-    abort ();
-  result = 0;
-  vresult = 0;
-
-  /* 'max' reductions.  */
-#pragma acc parallel vector_length (vl) copy(result)
-#pragma acc loop reduction (max:result)
-  for (i = 0; i < n; i++)
-    result = result > array[i] ? result : array[i];
-
-  /* Verify the reduction.  */
-  for (i = 0; i < n; i++)
-    vresult = vresult > array[i] ? vresult : array[i];
-
-  if (result != vresult)
-    abort ();
-
-  result = 0;
-  vresult = 0;
-
-  /* 'min' reductions.  */
-#pragma acc parallel vector_length (vl) copy(result)
-#pragma acc loop reduction (min:result)
-  for (i = 0; i < n; i++)
-    result = result < array[i] ? result : array[i];
-
-  /* Verify the reduction.  */
-  for (i = 0; i < n; i++)
-    vresult = vresult < array[i] ? vresult : array[i];
-
-  if (result != vresult)
-    abort ();
-
-  result = 5;
-  vresult = 5;
-
-  lresult = false;
-  lvresult = false;
-
-  /* '&&' reductions.  */
-#pragma acc parallel vector_length (vl) copy(lresult)
-#pragma acc loop reduction (&&:lresult)
-  for (i = 0; i < n; i++)
-    lresult = lresult && (result > array[i]);
-
-  /* Verify the reduction.  */
-  for (i = 0; i < n; i++)
-    lvresult = lresult && (result > array[i]);
-
-  if (lresult != lvresult)
-    abort ();
-
-  result = 5;
-  vresult = 5;
-
-  lresult = false;
-  lvresult = false;
-
-  /* '||' reductions.  */
-#pragma acc parallel vector_length (vl) copy(lresult)
-#pragma acc loop reduction (||:lresult)
-  for (i = 0; i < n; i++)
-    lresult = lresult || (result > array[i]);
-
-  /* Verify the reduction.  */
-  for (i = 0; i < n; i++)
-    lvresult = lresult || (result > array[i]);
-
-  if (lresult != lvresult)
-    abort ();
-
+int
+main (void)
+{
+  test_reductions ();
+  test_reductions_minmax ();
   return 0;
 }

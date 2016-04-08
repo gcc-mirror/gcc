@@ -1,30 +1,94 @@
 ! { dg-do run }
+! { dg-additional-options "-cpp -w" }
 
 program reduction
   implicit none
 
-  integer, parameter    :: n = 100
-  integer               :: i, s1, s2, vs1, vs2
+  integer, parameter    :: n = 100, n2 = 1000, chunksize = 10
+  integer               :: i, gs1, gs2, ws1, ws2, vs1, vs2, cs1, cs2, hs1, hs2
+  integer               :: j, red, vred
 
-  s1 = 0
-  s2 = 0
+  gs1 = 0
+  gs2 = 0
+  ws1 = 0
+  ws2 = 0
   vs1 = 0
   vs2 = 0
+  cs1 = 0
+  cs2 = 0
+  hs1 = 0
+  hs2 = 0
 
-  !$acc parallel vector_length (32) copy(s1, s2)
-  !$acc loop reduction(+:s1, s2)
+  !$acc parallel num_gangs (1000) copy(gs1, gs2)
+  !$acc loop reduction(+:gs1, gs2) gang
   do i = 1, n
-     s1 = s1 + 1
-     s2 = s2 + 2
+     gs1 = gs1 + 1
+     gs2 = gs2 + 2
   end do
   !$acc end parallel
 
-  ! Verify the results
+  !$acc parallel num_workers (4) vector_length (32) copy(ws1, ws2)
+  !$acc loop reduction(+:ws1, ws2) worker
+  do i = 1, n
+     ws1 = ws1 + 1
+     ws2 = ws2 + 2
+  end do
+  !$acc end parallel
+
+  !$acc parallel vector_length (32) copy(vs1, vs2)
+  !$acc loop reduction(+:vs1, vs2) vector
   do i = 1, n
      vs1 = vs1 + 1
      vs2 = vs2 + 2
   end do
+  !$acc end parallel
 
-  if (s1.ne.vs1) call abort ()
-  if (s2.ne.vs2) call abort ()
+  !$acc parallel num_gangs(8) num_workers(4) vector_length(32) copy(cs1, cs2)
+  !$acc loop reduction(+:cs1, cs2) gang worker vector
+  do i = 1, n
+     cs1 = cs1 + 1
+     cs2 = cs2 + 2
+  end do
+  !$acc end parallel
+
+  ! Verify the results on the host
+  do i = 1, n
+     hs1 = hs1 + 1
+     hs2 = hs2 + 2
+  end do
+
+  if (gs1 .ne. hs1) call abort ()
+  if (gs2 .ne. hs2) call abort ()
+
+  if (ws1 .ne. hs1) call abort ()
+  if (ws2 .ne. hs2) call abort ()
+
+  if (vs1 .ne. hs1) call abort ()
+  if (vs2 .ne. hs2) call abort ()
+
+  if (cs1 .ne. hs1) call abort ()
+  if (cs2 .ne. hs2) call abort ()
+
+  ! Nested reductions.
+
+  red = 0
+  vred = 0
+
+  !$acc parallel num_gangs(10) vector_length(32) copy(red)
+  !$acc loop reduction(+:red) gang
+  do i = 1, n/chunksize
+     !$acc loop reduction(+:red) vector
+     do j = 1, chunksize
+        red = red + chunksize
+     end do
+  end do
+  !$acc end parallel
+
+  do i = 1, n/chunksize
+     do j = 1, chunksize
+        vred = vred + chunksize
+     end do
+  end do
+
+  if (red .ne. vred) call abort ()
 end program reduction

@@ -1536,6 +1536,9 @@ extern void protected_set_expr_location (tree, location_t);
    treatment if OMP_CLAUSE_SIZE is zero.  */
 #define OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION(NODE) \
   TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
+/* Nonzero if this map clause is for an ACC parallel reduction variable.  */
+#define OMP_CLAUSE_MAP_IN_REDUCTION(NODE) \
+  TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
 
 #define OMP_CLAUSE_PROC_BIND_KIND(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_PROC_BIND)->omp_clause.subcode.proc_bind_kind)
