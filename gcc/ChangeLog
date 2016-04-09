@@ -1,3 +1,13 @@
+2016-04-09  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2016-04-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/70416
+	PR target/67391
+	* config/sh/sh.md (*addsi3): Allow pattern when reload_in_progress is
+	set, but not for SP_REG operands.
+
 2016-04-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (shuffletype): Add V32HI and V4TI modes.

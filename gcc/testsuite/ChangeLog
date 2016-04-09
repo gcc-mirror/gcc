@@ -1,3 +1,12 @@
+2016-04-09  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2016-04-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/70416
+	PR target/67391
+	* gcc.target/sh/torture/pr70416.c: New.
+
 2016-04-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20101011-1.c (__VISIUM__): Set DO_TEST to 0.
