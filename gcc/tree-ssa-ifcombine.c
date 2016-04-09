@@ -125,7 +125,14 @@ bb_no_side_effects_p (basic_block bb)
       if (gimple_has_side_effects (stmt)
 	  || gimple_uses_undefined_value_p (stmt)
 	  || gimple_could_trap_p (stmt)
-	  || gimple_vuse (stmt))
+	  || gimple_vuse (stmt)
+	  /* const calls don't match any of the above, yet they could
+	     still have some side-effects - they could contain
+	     gimple_could_trap_p statements, like floating point
+	     exceptions or integer division by zero.  See PR70586.
+	     FIXME: perhaps gimple_has_side_effects or gimple_could_trap_p
+	     should handle this.  */
+	  || is_gimple_call (stmt))
 	return false;
     }
 
