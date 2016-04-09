@@ -1,3 +1,8 @@
+2016-04-09  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/70592
+	* gfortran.dg/deferred_character_16.f90: New test.
+
 2016-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/70586
