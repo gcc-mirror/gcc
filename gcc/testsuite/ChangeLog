@@ -1,5 +1,7 @@
 2016-04-09  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.dg/pr70317.c: Add -fno-common on hppa*-*-hpux*.
+
 	PR rtl-optimization/66669
 	* gcc.dg/loop-8.c: Skip on hppa*-*-*.
 
