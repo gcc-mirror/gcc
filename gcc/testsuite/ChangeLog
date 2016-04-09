@@ -1,3 +1,8 @@
+2016-04-09  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR rtl-optimization/64886
+	* gcc.dg/pr64434.c: Skip on hppa*-*-hpux*.
+
 2016-04-09  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/68953
