@@ -1,5 +1,7 @@
 2016-04-09  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.dg/debug/dwarf2/prod-options.c: Adjust scan for hppa*64*-*-*.
+
 	* gcc.dg/pic-1.c: Skip on hppa*-*-*.
 	* gcc.dg/pie-1.c: Likewise.
 	* gcc.dg/pic-3.c: Skip on hppa*64*-*-*.
