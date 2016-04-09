@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-ivopts" } */
+/* { dg-skip-if "PR68644" { hppa*-*-* } { "*" } { "" } } */
 
 void
 f1 (int *p, unsigned int i)
