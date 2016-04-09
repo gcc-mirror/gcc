@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "No NaN support" { spu*-*-* vax*-*-* pdp11*-*-* } } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
 
 typedef double V __attribute__((vector_size (256)));
 typedef __typeof ((V) {} < (V) {}) T;
