@@ -9,7 +9,7 @@ volatile int ten = 10;
 
 int main() {
   char x[10];
-  memset(x, 0, ten + 1);
+  __builtin_memset(x, 0, ten + 1);
   asm volatile ("" : : : "memory");
   volatile int res = x[ten];
   x[ten] = res + 3;

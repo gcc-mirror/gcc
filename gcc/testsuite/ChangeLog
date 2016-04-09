@@ -1,3 +1,10 @@
+2016-04-09  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR sanitizer/70573
+	* c-c++-common/asan/halt_on_error-1.c: Replace memset
+	with __builtin_memset
+	* c-c++-common/asan/halt_on_error-2.c: Likewise.
+
 2016-04-08  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR lto/70289
