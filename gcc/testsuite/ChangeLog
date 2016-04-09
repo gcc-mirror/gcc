@@ -1,3 +1,11 @@
+2016-04-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/68566
+	* gfortran.dg/pr36192.f90: Update test.
+	* gfortran.dg/pr36192_1.f90: Update test.
+	* gfortran.dg/real_dimension_1.f: Update test.
+	* gfortran.dg/parameter_array_init_7.f90: New test.
+
 2016-04-09  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR testsuite/64039

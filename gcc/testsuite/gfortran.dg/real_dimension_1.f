@@ -1,7 +1,7 @@
 ! { dg-do compile }
-! PR 34305 - make sure there's an error message for specifying a
+! PR 34305 - Test for specifying a real as dimension
       program test
-      parameter (datasize = 1000) 
-      dimension idata (datasize)  ! { dg-error "must be of INTEGER type|must have constant shape" }
-      idata (1) = -1
+      real , parameter :: dsize = 1000
+      dimension idata (dsize) ! { dg-error "scalar INTEGER expression" }
+      idata (1) = -1    ! { dg-error "must have the pointer attribute" }
       end

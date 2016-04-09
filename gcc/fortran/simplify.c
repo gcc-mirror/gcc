@@ -5163,6 +5163,9 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
       || !is_constant_array_expr (order_exp))
     return NULL;
 
+  if (source->shape == NULL)
+    return NULL;
+
   /* Proceed with simplification, unpacking the array.  */
 
   mpz_init (index);

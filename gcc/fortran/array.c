@@ -421,10 +421,15 @@ match_array_element_spec (gfc_array_spec *as)
   if (!gfc_expr_check_typed (*upper, gfc_current_ns, false))
     return AS_UNKNOWN;
 
-  if ((*upper)->expr_type == EXPR_FUNCTION && (*upper)->ts.type == BT_UNKNOWN
-      && (*upper)->symtree && strcmp ((*upper)->symtree->name, "null") == 0)
+  if (((*upper)->expr_type == EXPR_CONSTANT
+	&& (*upper)->ts.type != BT_INTEGER) ||
+      ((*upper)->expr_type == EXPR_FUNCTION
+	&& (*upper)->ts.type == BT_UNKNOWN
+	&& (*upper)->symtree
+	&& strcmp ((*upper)->symtree->name, "null") == 0))
     {
-      gfc_error ("Expecting a scalar INTEGER expression at %C");
+      gfc_error ("Expecting a scalar INTEGER expression at %C, found %s",
+		 gfc_basic_typename ((*upper)->ts.type));
       return AS_UNKNOWN;
     }
 
@@ -448,10 +453,15 @@ match_array_element_spec (gfc_array_spec *as)
   if (!gfc_expr_check_typed (*upper, gfc_current_ns, false))
     return AS_UNKNOWN;
 
-  if ((*upper)->expr_type == EXPR_FUNCTION && (*upper)->ts.type == BT_UNKNOWN
-      && (*upper)->symtree && strcmp ((*upper)->symtree->name, "null") == 0)
+  if (((*upper)->expr_type == EXPR_CONSTANT
+	&& (*upper)->ts.type != BT_INTEGER) ||
+      ((*upper)->expr_type == EXPR_FUNCTION
+	&& (*upper)->ts.type == BT_UNKNOWN
+	&& (*upper)->symtree
+	&& strcmp ((*upper)->symtree->name, "null") == 0))
     {
-      gfc_error ("Expecting a scalar INTEGER expression at %C");
+      gfc_error ("Expecting a scalar INTEGER expression at %C, found %s",
+		 gfc_basic_typename ((*upper)->ts.type));
       return AS_UNKNOWN;
     }
 
