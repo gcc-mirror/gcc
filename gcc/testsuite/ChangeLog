@@ -1,5 +1,8 @@
 2016-04-09  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR rtl-optimization/66669
+	* gcc.dg/loop-8.c: Skip on hppa*-*-*.
+
 	* gcc.dg/debug/dwarf2/prod-options.c: Adjust scan for hppa*64*-*-*.
 
 	* gcc.dg/pic-1.c: Skip on hppa*-*-*.
