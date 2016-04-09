@@ -1,5 +1,8 @@
 2016-04-09  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR testsuite/64039
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: xfail scan-tree-dump on hppa*64*-*-*.
+
 	* gcc.dg/pr70317.c: Add -fno-common on hppa*-*-hpux*.
 
 	PR rtl-optimization/66669
