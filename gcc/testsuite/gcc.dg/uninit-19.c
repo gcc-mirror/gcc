@@ -22,5 +22,5 @@ fn2 ()
   fn1 (l, &d, &e, &g, &i, &h, &k, n);  /* 22.  */
 }
 
-/* { dg-warning "may be used uninitialized" "" { target nonpic } 13 } */
-/* { dg-warning "may be used uninitialized" "" { target { ! nonpic } } 22 } */
+/* { dg-warning "may be used uninitialized" "" { target { { nonpic } || { hppa*64*-*-* } } } 13 } */
+/* { dg-warning "may be used uninitialized" "" { target { ! { { nonpic } || { hppa*64*-*-* } } } } 22 } */

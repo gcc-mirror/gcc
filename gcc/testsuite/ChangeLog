@@ -1,5 +1,7 @@
 2016-04-09  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.dg/uninit-19.c: Fix warning line for hppa*64*-*-*.
+
 	PR tree-optimization/68644
 	* gcc.dg/tree-ssa/ivopts-lt-2.c: Skip on hppa*-*-*.
 
