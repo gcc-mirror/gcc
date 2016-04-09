@@ -1,5 +1,8 @@
 2016-04-09  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR tree-optimization/68644
+	* gcc.dg/tree-ssa/ivopts-lt-2.c: Skip on hppa*-*-*.
+
 	PR rtl-optimization/64886
 	* gcc.dg/pr64434.c: Skip on hppa*-*-hpux*.
 
