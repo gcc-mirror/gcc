@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! *-*-darwin* } } } */
+/* { dg-do compile { target { ! { *-*-darwin* hppa*-*-* } } } } */
 /* { dg-options "-fpic" } */
 
 #if __PIC__ != 1
