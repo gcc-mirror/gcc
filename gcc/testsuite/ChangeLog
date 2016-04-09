@@ -1,3 +1,8 @@
+2016-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/70586
+	* gcc.c-torture/execute/pr70586.c: New test.
+
 2016-04-09  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR sanitizer/70573
