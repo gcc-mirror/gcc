@@ -1,3 +1,9 @@
+2016-04-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/68953
+	* graphite-sese-to-poly.c (pdr_add_memory_accesses): Order accesses from
+	first to last subscript.
+
 2016-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/70586

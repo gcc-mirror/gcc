@@ -672,7 +672,7 @@ pdr_add_memory_accesses (isl_map *acc, dr_info &dri)
 
       aff = extract_affine (scop, afn,
 			    isl_space_domain (isl_map_get_space (acc)));
-      acc = set_index (acc, i + 1, aff);
+      acc = set_index (acc, nb_subscripts - i , aff);
     }
 
   return isl_map_coalesce (acc);

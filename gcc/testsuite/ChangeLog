@@ -1,3 +1,8 @@
+2016-04-09  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/68953
+	* gcc.dg/graphite/pr68953.c: New test.
+
 2016-04-09  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/70592
