@@ -1,3 +1,9 @@
+2016-04-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/68566
+	* array.c (match_array_element_spec): Add check for non-integer.
+	* simplify.c (gfc_simplify_reshape): If source shape is NULL return.
+
 2016-04-06  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c/70436
