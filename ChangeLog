@@ -1,3 +1,7 @@
+2016-04-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* MAINTAINERS (Fortran maintainer): Remove myself.
+
 2016-04-04  Bill Seurer  <seurer@linux.vnet.ibm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
