@@ -1,3 +1,8 @@
+2016-04-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/69066
+	* g++.dg/cpp1y/pr69066.C: New.
+
 2016-04-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/68566
