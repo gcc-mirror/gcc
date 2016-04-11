@@ -145,7 +145,7 @@ extern unsigned aarch64_architecture_version;
 /* Architecture flags that effect instruction selection.  */
 #define AARCH64_FL_FOR_ARCH8       (AARCH64_FL_FPSIMD)
 #define AARCH64_FL_FOR_ARCH8_1			       \
-  (AARCH64_FL_FOR_ARCH8 | AARCH64_FL_LSE | AARCH64_FL_V8_1)
+  (AARCH64_FL_FOR_ARCH8 | AARCH64_FL_LSE | AARCH64_FL_CRC | AARCH64_FL_V8_1)
 
 /* Macros to test ISA flags.  */
 

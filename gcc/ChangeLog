@@ -1,3 +1,8 @@
+2016-04-11  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_FL_FOR_ARCH8_1): Also add
+	AARCH64_FL_CRC.
+
 2016-04-09  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/68953
