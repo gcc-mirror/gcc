@@ -296,6 +296,7 @@ cc1libdir = $(libdir)/$(libsuffix)
 @ENABLE_PLUGIN_TRUE@plugin_LTLIBRARIES = libcc1plugin.la
 @ENABLE_PLUGIN_TRUE@cc1lib_LTLIBRARIES = libcc1.la
 BUILT_SOURCES = compiler-name.h
+MOSTLYCLEANFILES = compiler-name.h
 shared_source = callbacks.cc callbacks.hh connection.cc connection.hh \
     marshall.cc marshall.hh rpc.hh status.hh
 
@@ -563,6 +564,7 @@ install-strip:
 	    "INSTALL_PROGRAM_ENV=STRIPPROG='$(STRIP)'" install; \
 	fi
 mostlyclean-generic:
+	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 clean-generic:
 
@@ -672,7 +674,7 @@ override LDFLAGS := $(filter-out -fsanitize=address,$(LDFLAGS))
 # Put this in a header so we don't run sed for each compilation.  This
 # is also simpler to debug as one can easily see the constant.
 compiler-name.h: Makefile
-	echo "#define COMPILER_NAME \"`echo gcc | sed '$(transform)'`\"" > compiler-name.h
+	echo "#define COMPILER_NAME \"`echo gcc | sed '$(transform)'`\"" > $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

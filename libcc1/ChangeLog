@@ -1,3 +1,10 @@
+2016-04-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR bootstrap/70173
+	* Makefile.am (MOSTLYCLEANFILES): New, add compiler-name.h .
+	(compiler-name.h): Shorten recipe so that it fits the line.
+	* Makefile.in: Regenerate.
+
 2016-03-14  Andreas Schwab  <schwab@suse.de>
 
 	* configure.ac (CONFIG_STATUS_DEPENDENCIES): Substitute.
