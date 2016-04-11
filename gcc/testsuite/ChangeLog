@@ -1,3 +1,9 @@
+2016-04-11  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR target/70133
+	* gcc.target/aarch64/mgeneral-regs_4.c: Fix expected output.
+	* gcc.target/aarch64/target_attr_15.c: Likewise.
+
 2016-04-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/69066

@@ -3620,22 +3620,28 @@ case "${target}" in
 				    ${srcdir}/config/aarch64/aarch64-option-extensions.def \
 				    > /dev/null; then
 
-				  ext_on=`grep "^AARCH64_OPT_EXTENSION(\"$base_ext\"," \
+				  ext_canon=`grep "^AARCH64_OPT_EXTENSION(\"$base_ext\"," \
 					${srcdir}/config/aarch64/aarch64-option-extensions.def | \
 					sed -e 's/^[^,]*,[ 	]*//' | \
 					sed -e 's/,.*$//'`
-				  ext_off=`grep "^AARCH64_OPT_EXTENSION(\"$base_ext\"," \
+				  ext_on=`grep "^AARCH64_OPT_EXTENSION(\"$base_ext\"," \
 					${srcdir}/config/aarch64/aarch64-option-extensions.def | \
 					sed -e 's/^[^,]*,[ 	]*[^,]*,[ 	]*//' | \
 					sed -e 's/,.*$//' | \
 					sed -e 's/).*$//'`
+				  ext_off=`grep "^AARCH64_OPT_EXTENSION(\"$base_ext\"," \
+					${srcdir}/config/aarch64/aarch64-option-extensions.def | \
+					sed -e 's/^[^,]*,[ 	]*[^,]*,[ 	]*[^,]*,[ 	]*//' | \
+					sed -e 's/,.*$//' | \
+					sed -e 's/).*$//'`
+
 
 				  if [ $ext = $base_ext ]; then
 					# Adding extension
-					ext_mask="("$ext_mask") | ("$ext_on")"
+					ext_mask="("$ext_mask") | ("$ext_on" | "$ext_canon")"
 				  else
 					# Removing extension
-					ext_mask="("$ext_mask") & ~("$ext_off")"
+					ext_mask="("$ext_mask") & ~("$ext_off" | "$ext_canon")"
 				  fi
 
 				  true

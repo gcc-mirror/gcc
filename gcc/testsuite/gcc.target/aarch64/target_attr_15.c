@@ -10,4 +10,4 @@ foo (int a)
   return a + 1;
 }
 
-/* { dg-final { scan-assembler-times "\\.arch armv8-a\n" 1 } } */
+/* { dg-final { scan-assembler-times "\\.arch armv8-a\\+nofp\\+nosimd\n" 1 } } */

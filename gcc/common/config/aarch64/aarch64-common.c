@@ -112,6 +112,7 @@ struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;
 struct aarch64_option_extension
 {
   const char *const name;
+  const unsigned long flag_canonical;
   const unsigned long flags_on;
   const unsigned long flags_off;
 };
@@ -119,11 +120,11 @@ struct aarch64_option_extension
 /* ISA extensions in AArch64.  */
 static const struct aarch64_option_extension all_extensions[] =
 {
-#define AARCH64_OPT_EXTENSION(NAME, FLAGS_ON, FLAGS_OFF, FEATURE_STRING) \
-  {NAME, FLAGS_ON, FLAGS_OFF},
+#define AARCH64_OPT_EXTENSION(NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, Z) \
+  {NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF},
 #include "config/aarch64/aarch64-option-extensions.def"
 #undef AARCH64_OPT_EXTENSION
-  {NULL, 0, 0}
+  {NULL, 0, 0, 0}
 };
 
 struct processor_name_to_arch
@@ -137,6 +138,7 @@ struct arch_to_arch_name
 {
   const enum aarch64_arch arch;
   const std::string arch_name;
+  const unsigned long flags;
 };
 
 /* Map processor names to the architecture revision they implement and
@@ -155,26 +157,111 @@ static const struct processor_name_to_arch all_cores[] =
 static const struct arch_to_arch_name all_architectures[] =
 {
 #define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH, FLAGS) \
-  {AARCH64_ARCH_##ARCH_IDENT, NAME},
+  {AARCH64_ARCH_##ARCH_IDENT, NAME, FLAGS},
 #include "config/aarch64/aarch64-arches.def"
 #undef AARCH64_ARCH
-  {aarch64_no_arch, ""}
+  {aarch64_no_arch, "", 0}
 };
 
-/* Return a string representation of ISA_FLAGS.  */
+/* Parse the architecture extension string STR and update ISA_FLAGS
+   with the architecture features turned on or off.  Return a
+   aarch64_parse_opt_result describing the result.  */
+
+enum aarch64_parse_opt_result
+aarch64_parse_extension (const char *str, unsigned long *isa_flags)
+{
+  /* The extension string is parsed left to right.  */
+  const struct aarch64_option_extension *opt = NULL;
+
+  /* Flag to say whether we are adding or removing an extension.  */
+  int adding_ext = -1;
+
+  while (str != NULL && *str != 0)
+    {
+      const char *ext;
+      size_t len;
+
+      str++;
+      ext = strchr (str, '+');
+
+      if (ext != NULL)
+	len = ext - str;
+      else
+	len = strlen (str);
+
+      if (len >= 2 && strncmp (str, "no", 2) == 0)
+	{
+	  adding_ext = 0;
+	  len -= 2;
+	  str += 2;
+	}
+      else if (len > 0)
+	adding_ext = 1;
+
+      if (len == 0)
+	return AARCH64_PARSE_MISSING_ARG;
+
+
+      /* Scan over the extensions table trying to find an exact match.  */
+      for (opt = all_extensions; opt->name != NULL; opt++)
+	{
+	  if (strlen (opt->name) == len && strncmp (opt->name, str, len) == 0)
+	    {
+	      /* Add or remove the extension.  */
+	      if (adding_ext)
+		*isa_flags |= (opt->flags_on | opt->flag_canonical);
+	      else
+		*isa_flags &= ~(opt->flags_off | opt->flag_canonical);
+	      break;
+	    }
+	}
+
+      if (opt->name == NULL)
+	{
+	  /* Extension not found in list.  */
+	  return AARCH64_PARSE_INVALID_FEATURE;
+	}
+
+      str = ext;
+    };
+
+  return AARCH64_PARSE_OK;
+}
+
+/* Return a string representation of ISA_FLAGS.  DEFAULT_ARCH_FLAGS
+   gives the default set of flags which are implied by whatever -march
+   we'd put out.  Our job is to figure out the minimal set of "+" and
+   "+no" feature flags to put out, and to put them out grouped such
+   that all the "+" flags come before the "+no" flags.  */
 
 std::string
-aarch64_get_extension_string_for_isa_flags (unsigned long isa_flags)
+aarch64_get_extension_string_for_isa_flags (unsigned long isa_flags,
+					    unsigned long default_arch_flags)
 {
   const struct aarch64_option_extension *opt = NULL;
   std::string outstr = "";
 
+  /* Pass one: Find all the things we need to turn on.  As a special case,
+     we always want to put out +crc if it is enabled.  */
   for (opt = all_extensions; opt->name != NULL; opt++)
-    if ((isa_flags & opt->flags_on) == opt->flags_on)
+    if ((isa_flags & opt->flag_canonical
+	 && !(default_arch_flags & opt->flag_canonical))
+	|| (default_arch_flags & opt->flag_canonical
+            && opt->flag_canonical == AARCH64_ISA_CRC))
       {
 	outstr += "+";
 	outstr += opt->name;
       }
+
+  /* Pass two: Find all the things we need to turn off.  */
+  for (opt = all_extensions; opt->name != NULL; opt++)
+    if ((~isa_flags) & opt->flag_canonical
+	&& !((~default_arch_flags) & opt->flag_canonical))
+      {
+	outstr += "+no";
+	outstr += opt->name;
+      }
+
   return outstr;
 }
 
@@ -186,7 +273,7 @@ const char *
 aarch64_rewrite_selected_cpu (const char *name)
 {
   std::string original_string (name);
-  std::string extensions;
+  std::string extension_str;
   std::string processor;
   size_t extension_pos = original_string.find_first_of ('+');
 
@@ -194,8 +281,8 @@ aarch64_rewrite_selected_cpu (const char *name)
   if (extension_pos != std::string::npos)
     {
       processor = original_string.substr (0, extension_pos);
-      extensions = original_string.substr (extension_pos,
-					std::string::npos);
+      extension_str = original_string.substr (extension_pos,
+					      std::string::npos);
     }
   else
     {
@@ -227,9 +314,12 @@ aarch64_rewrite_selected_cpu (const char *name)
       || a_to_an->arch == aarch64_no_arch)
     fatal_error (input_location, "unknown value %qs for -mcpu", name);
 
+  unsigned long extensions = p_to_a->flags;
+  aarch64_parse_extension (extension_str.c_str (), &extensions);
+
   std::string outstr = a_to_an->arch_name
-	+ aarch64_get_extension_string_for_isa_flags (p_to_a->flags)
-	+ extensions;
+	+ aarch64_get_extension_string_for_isa_flags (extensions,
+						      a_to_an->flags);
 
   /* We are going to memory leak here, nobody elsewhere
      in the callchain is going to clean up after us.  The alternative is
