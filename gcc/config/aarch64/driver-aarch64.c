@@ -18,9 +18,16 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_STRING
 #include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 
-struct arch_extension
+/* Defined in common/config/aarch64/aarch64-common.c.  */
+std::string aarch64_get_extension_string_for_isa_flags (unsigned long,
+							unsigned long);
+
+struct aarch64_arch_extension
 {
   const char *ext;
   unsigned int flag;
@@ -29,7 +36,7 @@ struct arch_extension
 
 #define AARCH64_OPT_EXTENSION(EXT_NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, FEATURE_STRING) \
   { EXT_NAME, FLAG_CANONICAL, FEATURE_STRING },
-static struct arch_extension ext_to_feat_string[] =
+static struct aarch64_arch_extension aarch64_extensions[] =
 {
 #include "aarch64-option-extensions.def"
 };
@@ -42,15 +49,16 @@ struct aarch64_core_data
   const char* arch;
   const char* implementer_id;
   const char* part_no;
+  const unsigned long flags;
 };
 
 #define AARCH64_CORE(CORE_NAME, CORE_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART) \
-  { CORE_NAME, #ARCH, IMP, PART },
+  { CORE_NAME, #ARCH, IMP, PART, FLAGS },
 
-static struct aarch64_core_data cpu_data [] =
+static struct aarch64_core_data aarch64_cpu_data[] =
 {
 #include "aarch64-cores.def"
-  { NULL, NULL, NULL, NULL }
+  { NULL, NULL, NULL, NULL, 0 }
 };
 
 #undef AARCH64_CORE
@@ -59,36 +67,36 @@ struct aarch64_arch_driver_info
 {
   const char* id;
   const char* name;
+  const unsigned long flags;
 };
 
 #define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH_REV, FLAGS) \
-  { #ARCH_IDENT, NAME  },
+  { #ARCH_IDENT, NAME, FLAGS },
 
-static struct aarch64_arch_driver_info aarch64_arches [] =
+static struct aarch64_arch_driver_info aarch64_arches[] =
 {
 #include "aarch64-arches.def"
-  {NULL, NULL}
+  {NULL, NULL, 0}
 };
 
 #undef AARCH64_ARCH
 
-/* Return the full architecture name string corresponding to the
-   identifier ID.  */
+/* Return an aarch64_arch_driver_info for the architecture described
+   by ID, or NULL if ID describes something we don't know about.  */
 
-static const char*
-get_arch_name_from_id (const char* id)
+static struct aarch64_arch_driver_info*
+get_arch_from_id (const char* id)
 {
   unsigned int i = 0;
 
   for (i = 0; aarch64_arches[i].id != NULL; i++)
     {
       if (strcmp (id, aarch64_arches[i].id) == 0)
-        return aarch64_arches[i].name;
+	return &aarch64_arches[i];
     }
 
   return NULL;
 }
-
 
 /* Check wether the string CORE contains the same CPU part numbers
    as BL_STRING.  For example CORE="{0xd03, 0xd07}" and BL_STRING="0xd07.0xd03"
@@ -98,7 +106,7 @@ static bool
 valid_bL_string_p (const char** core, const char* bL_string)
 {
   return strstr (bL_string, core[0]) != NULL
-         && strstr (bL_string, core[1]) != NULL;
+    && strstr (bL_string, core[1]) != NULL;
 }
 
 /*  Return true iff ARR contains STR in one of its two elements.  */
@@ -142,7 +150,7 @@ host_detect_local_cpu (int argc, const char **argv)
 {
   const char *arch_id = NULL;
   const char *res = NULL;
-  static const int num_exts = ARRAY_SIZE (ext_to_feat_string);
+  static const int num_exts = ARRAY_SIZE (aarch64_extensions);
   char buf[128];
   FILE *f = NULL;
   bool arch = false;
@@ -156,6 +164,8 @@ host_detect_local_cpu (int argc, const char **argv)
   unsigned int n_imps = 0;
   bool processed_exts = false;
   const char *ext_string = "";
+  unsigned long extension_flags = 0;
+  unsigned long default_flags = 0;
 
   gcc_assert (argc);
 
@@ -184,60 +194,71 @@ host_detect_local_cpu (int argc, const char **argv)
     {
       if (strstr (buf, "implementer") != NULL)
 	{
-	  for (i = 0; cpu_data[i].name != NULL; i++)
-	    if (strstr (buf, cpu_data[i].implementer_id) != NULL
-                && !contains_string_p (imps, cpu_data[i].implementer_id))
+	  for (i = 0; aarch64_cpu_data[i].name != NULL; i++)
+	    if (strstr (buf, aarch64_cpu_data[i].implementer_id) != NULL
+		&& !contains_string_p (imps,
+				       aarch64_cpu_data[i].implementer_id))
 	      {
-                if (n_imps == 2)
-                  goto not_found;
+		if (n_imps == 2)
+		  goto not_found;
 
-                imps[n_imps++] = cpu_data[i].implementer_id;
+		imps[n_imps++] = aarch64_cpu_data[i].implementer_id;
 
-                break;
+		break;
 	      }
-          continue;
+	  continue;
 	}
 
       if (strstr (buf, "part") != NULL)
 	{
-	  for (i = 0; cpu_data[i].name != NULL; i++)
-	    if (strstr (buf, cpu_data[i].part_no) != NULL
-                && !contains_string_p (cores, cpu_data[i].part_no))
+	  for (i = 0; aarch64_cpu_data[i].name != NULL; i++)
+	    if (strstr (buf, aarch64_cpu_data[i].part_no) != NULL
+		&& !contains_string_p (cores, aarch64_cpu_data[i].part_no))
 	      {
-                if (n_cores == 2)
-                  goto not_found;
+		if (n_cores == 2)
+		  goto not_found;
 
-                cores[n_cores++] = cpu_data[i].part_no;
-	        core_idx = i;
-	        arch_id = cpu_data[i].arch;
-	        break;
+		cores[n_cores++] = aarch64_cpu_data[i].part_no;
+		core_idx = i;
+		arch_id = aarch64_cpu_data[i].arch;
+		break;
 	      }
-          continue;
-        }
+	  continue;
+	}
       if (!tune && !processed_exts && strstr (buf, "Features") != NULL)
-        {
-          for (i = 0; i < num_exts; i++)
-            {
-              bool enabled = true;
-              char *p = NULL;
-              char *feat_string = concat (ext_to_feat_string[i].feat_string, NULL);
+	{
+	  for (i = 0; i < num_exts; i++)
+	    {
+	      char *p = NULL;
+	      char *feat_string
+		= concat (aarch64_extensions[i].feat_string, NULL);
+	      bool enabled = true;
 
-              p = strtok (feat_string, " ");
+	      /* This may be a multi-token feature string.  We need
+		 to match all parts, which could be in any order.
+		 If this isn't a multi-token feature string, strtok is
+		 just going to return a pointer to feat_string.  */
+	      p = strtok (feat_string, " ");
+	      while (p != NULL)
+		{
+		  if (strstr (buf, p) == NULL)
+		    {
+		      /* Failed to match this token.  Turn off the
+			 features we'd otherwise enable.  */
+		      enabled = false;
+		      break;
+		    }
+		  p = strtok (NULL, " ");
+		}
 
-              while (p != NULL)
-                {
-                  if (strstr (buf, p) == NULL)
-                    {
-                      enabled = false;
-                      break;
-                    }
-                  p = strtok (NULL, " ");
-                }
-              ext_string = concat (ext_string, "+", enabled ? "" : "no",
-                                   ext_to_feat_string[i].ext, NULL);
-            }
-          processed_exts = true;
-        }
+	      if (enabled)
+		extension_flags |= aarch64_extensions[i].flag;
+	      else
+		extension_flags &= ~(aarch64_extensions[i].flag);
+	    }
+
+	  processed_exts = true;
+	}
     }
 
   fclose (f);
@@ -252,43 +273,55 @@ host_detect_local_cpu (int argc, const char **argv)
 
   if (arch)
     {
-      const char* arch_name = get_arch_name_from_id (arch_id);
+      struct aarch64_arch_driver_info* arch_info = get_arch_from_id (arch_id);
 
       /* We got some arch indentifier that's not in aarch64-arches.def?  */
-      if (!arch_name)
-        goto not_found;
+      if (!arch_info)
+	goto not_found;
 
-      res = concat ("-march=", arch_name, NULL);
+      res = concat ("-march=", arch_info->name, NULL);
+      default_flags = arch_info->flags;
     }
   /* We have big.LITTLE.  */
   else if (n_cores == 2)
     {
-      for (i = 0; cpu_data[i].name != NULL; i++)
-        {
-          if (strchr (cpu_data[i].part_no, '.') != NULL
-              && strncmp (cpu_data[i].implementer_id, imps[0], strlen (imps[0]) - 1) == 0
-              && valid_bL_string_p (cores, cpu_data[i].part_no))
-            {
-              res = concat ("-m", cpu ? "cpu" : "tune", "=", cpu_data[i].name, NULL);
-              break;
-            }
-        }
+      for (i = 0; aarch64_cpu_data[i].name != NULL; i++)
+	{
+	  if (strchr (aarch64_cpu_data[i].part_no, '.') != NULL
+	      && strncmp (aarch64_cpu_data[i].implementer_id,
+			  imps[0],
+			  strlen (imps[0]) - 1) == 0
+	      && valid_bL_string_p (cores, aarch64_cpu_data[i].part_no))
+	    {
+	      res = concat ("-m",
+			    cpu ? "cpu" : "tune", "=",
+			    aarch64_cpu_data[i].name,
+			    NULL);
+	      default_flags = aarch64_cpu_data[i].flags;
+	      break;
+	    }
+	}
       if (!res)
-        goto not_found;
+	goto not_found;
     }
   /* The simple, non-big.LITTLE case.  */
   else
     {
-      if (strncmp (cpu_data[core_idx].implementer_id, imps[0],
-                   strlen (imps[0]) - 1) != 0)
-        goto not_found;
+      if (strncmp (aarch64_cpu_data[core_idx].implementer_id, imps[0],
+		   strlen (imps[0]) - 1) != 0)
+	goto not_found;
 
       res = concat ("-m", cpu ? "cpu" : "tune", "=",
-                      cpu_data[core_idx].name, NULL);
+		    aarch64_cpu_data[core_idx].name, NULL);
+      default_flags = aarch64_cpu_data[core_idx].flags;
     }
 
   if (tune)
     return res;
+
+  ext_string
+    = aarch64_get_extension_string_for_isa_flags (extension_flags,
+						  default_flags).c_str ();
 
   res = concat (res, ext_string, NULL);
 
