@@ -1,6 +1,25 @@
 2016-04-11  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR target/70133
+	* config/aarch64/driver-aarch64.c
+	(aarch64_get_extension_string_for_isa_flags): New.
+	(arch_extension): Rename to...
+	(aarch64_arch_extension): ...This.
+	(ext_to_feat_string): Rename to...
+	(aarch64_extensions): ...This.
+	(aarch64_core_data): Keep track of architecture extension flags.
+	(cpu_data): Rename to...
+	(aarch64_cpu_data): ...This.
+	(aarch64_arch_driver_info): Keep track of architecture extension
+	flags.
+	(get_arch_name_from_id): Rename to...
+	(get_arch_from_id): ...This, change return type.
+	(host_detect_local_cpu): Update and reformat for renames, handle
+	extensions through common infrastructure.
+
+2016-04-11  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR target/70133
 	* config/aarch64/aarch64-common.c (aarch64_option_extension): Keep
 	track of a canonical flag name.
 	(all_extensions): Likewise.
