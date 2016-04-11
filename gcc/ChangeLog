@@ -1,5 +1,35 @@
 2016-04-11  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	PR target/70133
+	* config/aarch64/aarch64-common.c (aarch64_option_extension): Keep
+	track of a canonical flag name.
+	(all_extensions): Likewise.
+	(arch_to_arch_name): Also track extension flags enabled by the arch.
+	(all_architectures): Likewise.
+	(aarch64_parse_extension): Move to here.
+	(aarch64_get_extension_string_for_isa_flags): Take a new argument,
+	rework.
+	(aarch64_rewrite_selected_cpu): Update for above change.
+	* config/aarch64/aarch64-option-extensions.def: Rework the way flags
+	are handled, such that the single explicit value enabled by an
+	extension is kept seperate from the implicit values it also enables.
+	* config/aarch64/aarch64-protos.h (aarch64_parse_opt_result): Move
+	to here.
+	(aarch64_parse_extension): New.
+	* config/aarch64/aarch64.c (aarch64_parse_opt_result): Move from
+	here to config/aarch64/aarch64-protos.h.
+	(aarch64_parse_extension): Move from here to
+	common/config/aarch64/aarch64-common.c.
+	(aarch64_option_print): Update.
+	(aarch64_declare_function_name): Likewise.
+	(aarch64_start_file): Likewise.
+	* config/aarch64/driver-aarch64.c (arch_extension): Keep track of
+	the canonical flag for extensions.
+	* config.gcc (aarch64*-*-*): Extend regex for capturing extension
+	flags.
+
+2016-04-11  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64.h (AARCH64_FL_FOR_ARCH8_1): Also add
 	AARCH64_FL_CRC.
 

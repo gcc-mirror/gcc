@@ -23,11 +23,12 @@
 struct arch_extension
 {
   const char *ext;
+  unsigned int flag;
   const char *feat_string;
 };
 
-#define AARCH64_OPT_EXTENSION(EXT_NAME, FLAGS_ON, FLAGS_OFF, FEATURE_STRING) \
-  { EXT_NAME, FEATURE_STRING },
+#define AARCH64_OPT_EXTENSION(EXT_NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, FEATURE_STRING) \
+  { EXT_NAME, FLAG_CANONICAL, FEATURE_STRING },
 static struct arch_extension ext_to_feat_string[] =
 {
 #include "aarch64-option-extensions.def"

@@ -6,4 +6,4 @@ test (void)
   return 1;
 }
 
-/* { dg-final { scan-assembler "\.arch.*fp.*simd" } } */
+/* { dg-final { scan-assembler-times "\\.arch armv8-a\n" 1 } } */

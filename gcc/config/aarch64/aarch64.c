@@ -666,7 +666,7 @@ struct aarch64_option_extension
 /* ISA extensions in AArch64.  */
 static const struct aarch64_option_extension all_extensions[] =
 {
-#define AARCH64_OPT_EXTENSION(NAME, FLAGS_ON, FLAGS_OFF, FEATURE_STRING) \
+#define AARCH64_OPT_EXTENSION(NAME, X, FLAGS_ON, FLAGS_OFF, FEATURE_STRING) \
   {NAME, FLAGS_ON, FLAGS_OFF},
 #include "aarch64-option-extensions.def"
 #undef AARCH64_OPT_EXTENSION
@@ -7673,83 +7673,6 @@ aarch64_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 
 static void initialize_aarch64_code_model (struct gcc_options *);
 
-/* Enum describing the various ways that the
-   aarch64_parse_{arch,tune,cpu,extension} functions can fail.
-   This way their callers can choose what kind of error to give.  */
-
-enum aarch64_parse_opt_result
-{
-  AARCH64_PARSE_OK,			/* Parsing was successful.  */
-  AARCH64_PARSE_MISSING_ARG,		/* Missing argument.  */
-  AARCH64_PARSE_INVALID_FEATURE,	/* Invalid feature modifier.  */
-  AARCH64_PARSE_INVALID_ARG		/* Invalid arch, tune, cpu arg.  */
-};
-
-/* Parse the architecture extension string STR and update ISA_FLAGS
-   with the architecture features turned on or off.  Return a
-   aarch64_parse_opt_result describing the result.  */
-
-static enum aarch64_parse_opt_result
-aarch64_parse_extension (char *str, unsigned long *isa_flags)
-{
-  /* The extension string is parsed left to right.  */
-  const struct aarch64_option_extension *opt = NULL;
-
-  /* Flag to say whether we are adding or removing an extension.  */
-  int adding_ext = -1;
-
-  while (str != NULL && *str != 0)
-    {
-      char *ext;
-      size_t len;
-
-      str++;
-      ext = strchr (str, '+');
-
-      if (ext != NULL)
-	len = ext - str;
-      else
-	len = strlen (str);
-
-      if (len >= 2 && strncmp (str, "no", 2) == 0)
-	{
-	  adding_ext = 0;
-	  len -= 2;
-	  str += 2;
-	}
-      else if (len > 0)
-	adding_ext = 1;
-
-      if (len == 0)
-	return AARCH64_PARSE_MISSING_ARG;
-
-
-      /* Scan over the extensions table trying to find an exact match.  */
-      for (opt = all_extensions; opt->name != NULL; opt++)
-	{
-	  if (strlen (opt->name) == len && strncmp (opt->name, str, len) == 0)
-	    {
-	      /* Add or remove the extension.  */
-	      if (adding_ext)
-		*isa_flags |= opt->flags_on;
-	      else
-		*isa_flags &= ~(opt->flags_off);
-	      break;
-	    }
-	}
-
-      if (opt->name == NULL)
-	{
-	  /* Extension not found in list.  */
-	  return AARCH64_PARSE_INVALID_FEATURE;
-	}
-
-      str = ext;
-    };
-
-  return AARCH64_PARSE_OK;
-}
-
 /* Parse the TO_PARSE string and put the architecture struct that it
    selects into RES and the architectural features into ISA_FLAGS.
    Return an aarch64_parse_opt_result describing the parse result.
@@ -8550,7 +8473,7 @@ aarch64_option_print (FILE *file, int indent, struct cl_target_option *ptr)
   unsigned long isa_flags = ptr->x_aarch64_isa_flags;
   const struct processor *arch = aarch64_get_arch (ptr->x_explicit_arch);
   std::string extension
-    = aarch64_get_extension_string_for_isa_flags (isa_flags);
+    = aarch64_get_extension_string_for_isa_flags (isa_flags, arch->flags);
 
   fprintf (file, "%*sselected tune = %s\n", indent, "", cpu->name);
   fprintf (file, "%*sselected arch = %s%s\n", indent, "",
@@ -11213,7 +11136,8 @@ aarch64_declare_function_name (FILE *stream, const char* name,
 
   unsigned long isa_flags = targ_options->x_aarch64_isa_flags;
   std::string extension
-    = aarch64_get_extension_string_for_isa_flags (isa_flags);
+    = aarch64_get_extension_string_for_isa_flags (isa_flags,
+						  this_arch->flags);
   /* Only update the assembler .arch string if it is distinct from the last
      such string we printed.  */
   std::string to_print = this_arch->name + extension;
@@ -11253,7 +11177,8 @@ aarch64_start_file (void)
     = aarch64_get_arch (default_options->x_explicit_arch);
   unsigned long default_isa_flags = default_options->x_aarch64_isa_flags;
   std::string extension
-    = aarch64_get_extension_string_for_isa_flags (default_isa_flags);
+    = aarch64_get_extension_string_for_isa_flags (default_isa_flags,
+						  default_arch->flags);
 
    aarch64_last_printed_arch_string = default_arch->name + extension;
    aarch64_last_printed_tune_string = "";
