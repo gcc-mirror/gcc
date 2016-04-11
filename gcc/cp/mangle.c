@@ -264,9 +264,9 @@ static void write_java_integer_type_codes (const tree);
 #define write_unsigned_number(NUMBER)					\
   write_number ((NUMBER), /*unsigned_p=*/1, 10)
 
-/* If DECL is a template instance, return nonzero and, if
-   TEMPLATE_INFO is non-NULL, set *TEMPLATE_INFO to its template info.
-   Otherwise return zero.  */
+/* If DECL is a template instance (including the uninstantiated template
+   itself), return nonzero and, if TEMPLATE_INFO is non-NULL, set
+   *TEMPLATE_INFO to its template info.  Otherwise return zero.  */
 
 static int
 decl_is_template_id (const tree decl, tree* const template_info)
@@ -290,7 +290,8 @@ decl_is_template_id (const tree decl, tree* const template_info)
     {
       /* Check if this is a primary template.  */
       if (DECL_LANG_SPECIFIC (decl) != NULL
-	  && DECL_USE_TEMPLATE (decl)
+	  && VAR_OR_FUNCTION_DECL_P (decl)
+	  && DECL_TEMPLATE_INFO (decl)
 	  && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (decl))
 	  && TREE_CODE (decl) != TEMPLATE_DECL)
 	{
