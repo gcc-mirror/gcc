@@ -1740,7 +1740,7 @@ proc check_ppc_float128_sw_available { } {
 		int main()
 		{
 		    __float128 z = x + y;
-		    return (z == 3.0q);
+		    return (z != 3.0q);
 		}
 	    } $options
 	}
@@ -1759,7 +1759,7 @@ proc check_ppc_float128_hw_available { } {
 	     || [istarget *-*-darwin*]} {
 	    expr 0
 	} else {
-	    set options "-mfloat128-hardware"
+	    set options "-mfloat128 -mvsx -mfloat128-hardware -mpower9-vector"
 	    check_runtime_nocache ppc_float128_hw_available {
 		volatile __float128 x = 1.0q;
 		volatile __float128 y = 2.0q;
@@ -1769,7 +1769,7 @@ proc check_ppc_float128_hw_available { } {
 		    __float128 w = -1.0q;
 
 		    __asm__ ("xsaddqp %0,%1,%2" : "+v" (w) : "v" (x), "v" (y));
-		    return ((z == 3.0q) && (z == w);
+		    return ((z != 3.0q) || (z != w);
 		}
 	    } $options
 	}

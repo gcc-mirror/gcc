@@ -374,26 +374,30 @@ esac
 esac
 
 case ${host} in
+# At present, we cannot turn -mfloat128 on via #pragma GCC target,
+# so just check if we have VSX (ISA 2.06) support to build the
+# software libraries, and whether the assembler can handle xsaddqp
+# for hardware support.
 powerpc*-*-linux*)
-  AC_CACHE_CHECK([whether the PowerPC compiler can do __float128],
+  AC_CACHE_CHECK([for PowerPC ISA 2.06 to build __float128 libraries],
 		 [libgcc_cv_powerpc_float128],
 		 [AC_COMPILE_IFELSE(
-    [#pragma GCC target ("vsx,float128")
-     __float128 add (__float128 *a) { return *a + *(a+1); }],
+    [#pragma GCC target ("vsx")
+     vector double dadd (vector double a, vector double b) { return a + b; }],
     [libgcc_cv_powerpc_float128=yes],
     [libgcc_cv_powerpc_float128=no])])
 
-  AC_CACHE_CHECK([whether the PowerPC compiler can do hardware __float128],
+  AC_CACHE_CHECK([for PowerPC ISA 3.0 to build hardware __float128 libraries],
 		 [libgcc_cv_powerpc_float128_hw],
 		 [AC_COMPILE_IFELSE(
-    [#pragma GCC target ("cpu=power9,float128,float128-hardware")
+    [#pragma GCC target ("vsx,power9-vector")
      #include <sys/auxv.h>
      #ifndef AT_PLATFORM
      #error "AT_PLATFORM is not defined"
      #endif
-     __float128 add (__float128 a, __float128 b)
+     vector unsigned char (vector unsigned char a, vector unsigned char b)
      {
-       __float128 ret;
+       vector unsigned char ret;
        __asm__ ("xsaddqp %0,%1,%2" : "=v" (ret) : "v" (a), "v" (b));
        return ret;
      }
