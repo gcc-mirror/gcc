@@ -1,3 +1,14 @@
+2016-04-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/70381
+	* gcc.target/powerpc/float128-1.c: New tests to make sure the
+	__float128 emulator is built and runs.
+	* gcc.target/powerpc/float128-1.c: Likewise.
+
+	* lib/target-supports.exp (check_ppc_float128_sw_available):
+	Rework tests for __float128 software and hardware
+	availability. Fix exit condition to return 0 on success.
+
 2016-04-11  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR target/70133
