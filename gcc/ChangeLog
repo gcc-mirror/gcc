@@ -1,3 +1,11 @@
+2016-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_simd_clone_compute_vecsize_and_simdlen):
+	Bump the upper SIMDLEN limits, so that if the return type or
+	characteristic type if the return type is void can be passed in
+	all available SSE2/AVX/AVX2/AVX512-F registers, the SIMDLEN is
+	allowed.
+
 2016-04-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/70680

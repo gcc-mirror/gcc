@@ -53761,7 +53761,7 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 
   if (clonei->simdlen
       && (clonei->simdlen < 2
-	  || clonei->simdlen > 128
+	  || clonei->simdlen > 1024
 	  || (clonei->simdlen & (clonei->simdlen - 1)) != 0))
     {
       warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
@@ -53867,21 +53867,28 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
       clonei->simdlen /= GET_MODE_BITSIZE (TYPE_MODE (base_type));
     }
   else if (clonei->simdlen > 16)
-    switch (clonei->vecsize_int)
-      {
-      case 512:
-	/* For AVX512-F, support VLEN up to 128.  */
-	break;
-      case 256:
-	/* For AVX2, support VLEN up to 32.  */
-	if (clonei->simdlen <= 32)
-	  break;
-	/* FALLTHRU */
-      default:
-	/* Otherwise, support VLEN up to 16.  */
-	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		    "unsupported simdlen %d", clonei->simdlen);
-	return 0;
+    {
+      /* For compatibility with ICC, use the same upper bounds
+	 for simdlen.  In particular, for CTYPE below, use the return type,
+	 unless the function returns void, in that case use the characteristic
+	 type.  If it is possible for given SIMDLEN to pass CTYPE value
+	 in registers (8 [XYZ]MM* regs for 32-bit code, 16 [XYZ]MM* regs
+	 for 64-bit code), accept that SIMDLEN, otherwise warn and don't
+	 emit corresponding clone.  */
+      tree ctype = ret_type;
+      if (TREE_CODE (ret_type) == VOID_TYPE)
+	ctype = base_type;
+      int cnt = GET_MODE_BITSIZE (TYPE_MODE (ctype)) * clonei->simdlen;
+      if (SCALAR_INT_MODE_P (TYPE_MODE (ctype)))
+	cnt /= clonei->vecsize_int;
+      else
+	cnt /= clonei->vecsize_float;
+      if (cnt > (TARGET_64BIT ? 16 : 8))
+	{
+	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		      "unsupported simdlen %d", clonei->simdlen);
+	  return 0;
+	}
       }
   return ret;
 }
