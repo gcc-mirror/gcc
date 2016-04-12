@@ -1,3 +1,8 @@
+2016-04-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-2.c:
+	Make failure observable.
+
 2016-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.h (struct gomp_target_task): Remove firstprivate_copies
