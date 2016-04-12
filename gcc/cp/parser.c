@@ -27472,8 +27472,7 @@ cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
 	case CPP_EOF:
 	case CPP_PRAGMA_EOL:
 	  error_at (token->location, "file ends in default argument");
-	  done = true;
-	  break;
+	  return error_mark_node;
 
 	case CPP_NAME:
 	case CPP_SCOPE:
