@@ -433,9 +433,11 @@ func (v Value) call(op string, in []Value) []Value {
 	ret := make([]Value, nout)
 	results := make([]unsafe.Pointer, nout)
 	for i := 0; i < nout; i++ {
-		v := New(t.Out(i))
-		results[i] = unsafe.Pointer(v.Pointer())
-		ret[i] = Indirect(v)
+		tv := t.Out(i)
+		v := New(tv)
+		results[i] = v.pointer()
+		fl := flagIndir | flag(tv.Kind())
+		ret[i] = Value{tv.common(), v.pointer(), fl}
 	}
 
 	var pp *unsafe.Pointer
