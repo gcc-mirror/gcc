@@ -2439,7 +2439,7 @@ copy_cond_phi_args (gphi *phi, gphi *new_phi, vec<tree> iv_map, bool postpone)
 		  fprintf (dump_file, "\n");
 		}
 	      gsi_insert_earliest (stmts);
-	      new_phi_args [i] = new_name;
+	      new_phi_args[i] = new_expr;
 	      continue;
 	    }
 

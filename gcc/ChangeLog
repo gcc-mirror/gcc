@@ -1,3 +1,9 @@
+2016-04-12  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/68756
+	* graphite-isl-ast-to-gimple.c (copy_cond_phi_args): Use new_expr
+	instead of new_name.
+
 2016-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/70602
