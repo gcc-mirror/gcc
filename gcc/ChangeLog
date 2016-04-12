@@ -1,3 +1,8 @@
+2016-04-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/70630
+	* config/sparc/sparc.c (sparc_compute_frame_size): Add parentheses.
+
 2016-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_simd_clone_compute_vecsize_and_simdlen):
