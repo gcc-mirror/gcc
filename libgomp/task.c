@@ -582,7 +582,6 @@ GOMP_PLUGIN_target_task_completion (void *data)
       return;
     }
   ttask->state = GOMP_TARGET_TASK_FINISHED;
-  free (ttask->firstprivate_copies);
   gomp_target_task_completion (team, task);
   gomp_mutex_unlock (&team->task_lock);
 }
@@ -683,7 +682,6 @@ gomp_create_target_task (struct gomp_device_descr *devicep,
   ttask->state = state;
   ttask->task = task;
   ttask->team = team;
-  ttask->firstprivate_copies = NULL;
   task->fn = NULL;
   task->fn_data = ttask;
   task->final_task = 0;

@@ -15730,7 +15730,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   location_t loc = gimple_location (stmt);
   bool offloaded, data_region;
   unsigned int map_cnt = 0;
-  bool has_depend = false;
 
   offloaded = is_gimple_omp_offloaded (stmt);
   switch (gimple_omp_target_kind (stmt))
@@ -15765,7 +15764,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       dep_bind = gimple_build_bind (NULL, NULL, make_node (BLOCK));
       lower_depend_clauses (gimple_omp_target_clauses_ptr (stmt),
 			    &dep_ilist, &dep_olist);
-      has_depend = true;
     }
 
   tgt_bind = NULL;
@@ -16280,44 +16278,9 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    type = TREE_TYPE (ovar);
 	    if (is_reference (ovar))
 	      type = TREE_TYPE (type);
-	    bool use_firstprivate_int, force_addr;
-	    use_firstprivate_int = false;
-	    force_addr = false;
 	    if ((INTEGRAL_TYPE_P (type)
 		 && TYPE_PRECISION (type) <= POINTER_SIZE)
 		|| TREE_CODE (type) == POINTER_TYPE)
-	      use_firstprivate_int = true;
-	    if (has_depend)
-	      {
-		if (is_reference (var))
-		  use_firstprivate_int = false;
-		else if (is_gimple_reg (var))
-		  {
-		    if (DECL_HAS_VALUE_EXPR_P (var))
-		      {
-			tree v = get_base_address (var);
-			if (DECL_P (v) && TREE_ADDRESSABLE (v))
-			  {
-			    use_firstprivate_int = false;
-			    force_addr = true;
-			  }
-			else
-			  switch (TREE_CODE (v))
-			    {
-			    case INDIRECT_REF:
-			    case MEM_REF:
-			      use_firstprivate_int = false;
-			      force_addr = true;
-			      break;
-			    default:
-			      break;
-			    }
-		      }
-		  }
-		else
-		  use_firstprivate_int = false;
-	      }
-	    if (use_firstprivate_int)
 	      {
 		tkind = GOMP_MAP_FIRSTPRIVATE_INT;
 		tree t = var;
@@ -16332,7 +16295,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      }
 	    else if (is_reference (var))
 	      gimplify_assign (x, var, &ilist);
-	    else if (!force_addr && is_gimple_reg (var))
+	    else if (is_gimple_reg (var))
 	      {
 		tree avar = create_tmp_var (TREE_TYPE (var));
 		mark_addressable (avar);
@@ -16470,40 +16433,9 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		type = TREE_TYPE (var);
 		if (is_reference (var))
 		  type = TREE_TYPE (type);
-		bool use_firstprivate_int;
-		use_firstprivate_int = false;
 		if ((INTEGRAL_TYPE_P (type)
 		     && TYPE_PRECISION (type) <= POINTER_SIZE)
 		    || TREE_CODE (type) == POINTER_TYPE)
-		  use_firstprivate_int = true;
-		if (has_depend)
-		  {
-		    tree v = lookup_decl_in_outer_ctx (var, ctx);
-		    if (is_reference (v))
-		      use_firstprivate_int = false;
-		    else if (is_gimple_reg (v))
-		      {
-			if (DECL_HAS_VALUE_EXPR_P (v))
-			  {
-			    v = get_base_address (v);
-			    if (DECL_P (v) && TREE_ADDRESSABLE (v))
-			      use_firstprivate_int = false;
-			    else
-			      switch (TREE_CODE (v))
-				{
-				case INDIRECT_REF:
-				case MEM_REF:
-				  use_firstprivate_int = false;
-				  break;
-				default:
-				  break;
-				}
-			  }
-		      }
-		    else
-		      use_firstprivate_int = false;
-		  }
-		if (use_firstprivate_int)
 		  {
 		    x = build_receiver_ref (var, false, ctx);
 		    if (TREE_CODE (type) != POINTER_TYPE)

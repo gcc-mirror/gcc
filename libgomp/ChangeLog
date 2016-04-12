@@ -1,3 +1,18 @@
+2016-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.h (struct gomp_target_task): Remove firstprivate_copies
+	field.
+	* target.c (gomp_target_fallback_firstprivate,
+	gomp_target_unshare_firstprivate): Removed.
+	(GOMP_target_ext): Copy firstprivate vars into gomp_allocaed memory
+	before waiting for dependencies.
+	(gomp_target_task_fn): Don't copy firstprivate vars here.
+	* task.c (GOMP_PLUGIN_target_task_completion): Don't free
+	firstprivate_copies here.
+	(gomp_create_target_task): Don't initialize firstprivate_copies field.
+	* testsuite/libgomp.c/target-25.c (main): Use map (to:) instead of
+	explicit/implicit firstprivate.
+
 2016-04-08  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR lto/70289
