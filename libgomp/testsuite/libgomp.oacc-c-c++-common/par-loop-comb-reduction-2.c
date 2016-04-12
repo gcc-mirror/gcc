@@ -19,7 +19,7 @@ main (int argc, char *argv[])
       {
 	#pragma acc loop worker vector reduction(^:res)
 	for (i = 0; i < 1024; i++)
-	  res ^= arr[j * 1024 + i];
+	  res ^= 3 * arr[j * 1024 + i];
 
 	#pragma acc loop worker vector reduction(^:res)
 	for (i = 0; i < 1024; i++)
@@ -30,7 +30,7 @@ main (int argc, char *argv[])
   for (j = 0; j < 32; j++)
     for (i = 0; i < 1024; i++)
       {
-        hres ^= arr[j * 1024 + i];
+	hres ^= 3 * arr[j * 1024 + i];
 	hres ^= arr[j * 1024 + (1023 - i)];
       }
 
