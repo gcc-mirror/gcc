@@ -1,3 +1,14 @@
+2016-04-13  Alan Modra  <amodra@gmail.com>
+
+	Backport from mainline
+	2016-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	* g++.dg/template/ptrmem30.C (read): Rename to data_read.
+	(Holder::foo): Reflect this.
+
+	2016-03-22  Patrick Palka  <ppalka@gcc.gnu.org>
+	PR c++/70096
+	* g++.dg/template/ptrmem30.C: New test.
+
 2016-04-11  Alan Modra  <amodra@gmail.com>
 
 	* gcc.target/powerpc/pr70117.c: New.
