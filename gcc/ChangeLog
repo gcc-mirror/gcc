@@ -1,3 +1,13 @@
+2016-04-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/70680
+	* config/rs6000/rs6000.md (ieee_128bit_vsx_neg<mode>2_internal):
+	Do not use "=" constraint on an input constraint.
+	(ieee_128bit_vsx_abs<mode>2_internal): Likewise.
+	(ieee_128bit_vsx_nabs<mode>2_internal): Likewise.
+	(ieee_128bit_vsx_nabs<mode>2): Correct splitter so that it
+	generates (neg (abs ...)) instead of (abs ...).
+
 2016-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70596
