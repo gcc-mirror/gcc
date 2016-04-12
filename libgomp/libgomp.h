@@ -496,8 +496,6 @@ struct gomp_target_task
   struct target_mem_desc *tgt;
   struct gomp_task *task;
   struct gomp_team *team;
-  /* Copies of firstprivate mapped data for shared memory accelerators.  */
-  void *firstprivate_copies;
   /* Device-specific target arguments.  */
   void **args;
   void *hostaddrs[];
