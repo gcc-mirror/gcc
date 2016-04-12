@@ -1,3 +1,8 @@
+2016-04-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/68722
+	* g++.dg/parse/pr68722.C: New.
+
 2016-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/70596

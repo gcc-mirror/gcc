@@ -1,3 +1,9 @@
+2016-04-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/68722
+	* parser.c (cp_parser_cache_defarg): When file ends in default
+	argument simply return error_mark_node.
+
 2016-04-12  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/70501
