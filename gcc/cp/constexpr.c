@@ -2394,10 +2394,10 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
   tree type = TREE_TYPE (t);
 
   constexpr_ctx new_ctx;
-  if (TYPE_PTRMEMFUNC_P (type))
+  if (TYPE_PTRMEMFUNC_P (type) || VECTOR_TYPE_P (type))
     {
-      /* We don't really need the ctx->ctor business for a PMF, but it's
-	 simpler to use the same code.  */
+      /* We don't really need the ctx->ctor business for a PMF or
+	 vector, but it's simpler to use the same code.  */
       new_ctx = *ctx;
       new_ctx.ctor = build_constructor (type, NULL);
       new_ctx.object = NULL_TREE;

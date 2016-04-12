@@ -1,3 +1,9 @@
+2016-04-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/70501
+	* constexpr.c (cxx_eval_bare_aggregate): Handle VECTOR_TYPE
+	similarly to PMF.
+
 2016-04-11  Jason Merrill  <jason@redhat.com>
 
 	* mangle.c (decl_is_template_id): The template itself counts as a
