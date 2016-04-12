@@ -1,3 +1,8 @@
+2016-04-12  Jason Merrill  <jason@redhat.com>
+
+	* class.c (is_really_empty_class): A zero-length array is empty.
+	An unnamed bit-field doesn't make a class non-empty.
+
 2016-04-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/68722
