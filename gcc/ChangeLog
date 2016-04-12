@@ -1,5 +1,9 @@
 2016-04-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/70602
+	* tree-sra.c (generate_subtree_copies): Don't write anything into
+	constant pool decls.
+
 	* omp-low.c (lower_omp_target): Use GOMP_MAP_FIRSTPRIVATE_INT
 	regardless whether there are depend clauses or not.
 

@@ -2743,6 +2743,9 @@ generate_subtree_copies (struct access *access, tree agg,
 			 gimple_stmt_iterator *gsi, bool write,
 			 bool insert_after, location_t loc)
 {
+  /* Never write anything into constant pool decls.  See PR70602.  */
+  if (!write && constant_decl_p (agg))
+    return;
   do
     {
       if (chunk_size && access->offset >= start_offset + chunk_size)
