@@ -1,3 +1,8 @@
+2016-04-12  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/68756
+	* gcc.dg/graphite/pr68756.c: New test.
+
 2016-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/70602
