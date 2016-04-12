@@ -1,5 +1,8 @@
 2016-04-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/cilk-plus/SE/ef_error2.c (func2): Use vectorlength
+	128 instead of 32.
+
 	PR c++/70571
 	* g++.dg/ext/pr70571.C: New test.
 
