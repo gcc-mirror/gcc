@@ -295,17 +295,20 @@ extern void GOMP_teams (unsigned int, unsigned int);
 
 /* oacc-parallel.c */
 
+extern void GOACC_parallel_keyed (int, void (*) (void *), size_t,
+				  void **, size_t *, unsigned short *, ...);
+extern void GOACC_parallel (int, void (*) (void *), size_t, void **, size_t *,
+			    unsigned short *, int, int, int, int, int, ...);
 extern void GOACC_data_start (int, size_t, void **, size_t *,
 			      unsigned short *);
 extern void GOACC_data_end (void);
 extern void GOACC_enter_exit_data (int, size_t, void **,
 				   size_t *, unsigned short *, int, int, ...);
-extern void GOACC_parallel_keyd (int, void (*) (void *), size_t,
-			          void **, size_t *, unsigned short *, ...);
 extern void GOACC_update (int, size_t, void **, size_t *,
 			  unsigned short *, int, int, ...);
 extern void GOACC_wait (int, int, ...);
 extern int GOACC_get_num_threads (void);
 extern int GOACC_get_thread_num (void);
+extern void GOACC_declare (int, size_t, void **, size_t *, unsigned short *);
 
 #endif /* LIBGOMP_G_H */

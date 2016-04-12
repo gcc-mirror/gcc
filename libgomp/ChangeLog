@@ -1,5 +1,9 @@
 2016-04-12  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* libgomp_g.h: Rename GOACC_parallel_keyd prototype to
+	GOACC_parallel_keyed, restore GOACC_parallel prototype, new
+	GOACC_declare prototype.
+
 	* testsuite/libgomp.oacc-c-c++-common/loop-reduction-gang-np-1.c:
 	Merge this file, and...
 	* testsuite/libgomp.oacc-c-c++-common/loop-reduction-gv-np-1.c:
