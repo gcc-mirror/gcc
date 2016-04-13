@@ -11747,16 +11747,16 @@
 
 (define_expand "vec_pack_trunc_qi"
   [(set (match_operand:HI 0 ("register_operand"))
-        (ior:HI (ashift:HI (zero_extend:HI (match_operand:QI 1 ("register_operand")))
+        (ior:HI (ashift:HI (zero_extend:HI (match_operand:QI 2 ("register_operand")))
                            (const_int 8))
-                (zero_extend:HI (match_operand:QI 2 ("register_operand")))))]
+                (zero_extend:HI (match_operand:QI 1 ("register_operand")))))]
   "TARGET_AVX512F")
 
 (define_expand "vec_pack_trunc_<mode>"
   [(set (match_operand:<DOUBLEMASKMODE> 0 ("register_operand"))
-        (ior:<DOUBLEMASKMODE> (ashift:<DOUBLEMASKMODE> (zero_extend:<DOUBLEMASKMODE> (match_operand:SWI24 1 ("register_operand")))
+        (ior:<DOUBLEMASKMODE> (ashift:<DOUBLEMASKMODE> (zero_extend:<DOUBLEMASKMODE> (match_operand:SWI24 2 ("register_operand")))
                            (match_dup 3))
-                (zero_extend:<DOUBLEMASKMODE> (match_operand:SWI24 2 ("register_operand")))))]
+                (zero_extend:<DOUBLEMASKMODE> (match_operand:SWI24 1 ("register_operand")))))]
   "TARGET_AVX512BW"
 {
   operands[3] = GEN_INT (GET_MODE_BITSIZE (<MODE>mode));
