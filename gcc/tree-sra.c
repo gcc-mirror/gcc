@@ -2132,6 +2132,7 @@ create_access_replacement (struct access *access)
       bool fail = false;
 
       DECL_NAME (repl) = get_identifier (pretty_name);
+      DECL_NAMELESS (repl) = 1;
       obstack_free (&name_obstack, pretty_name);
 
       /* Get rid of any SSA_NAMEs embedded in debug_expr,
@@ -4704,6 +4705,7 @@ get_replaced_param_substitute (struct ipa_parm_adjustment *adj)
 
       repl = create_tmp_reg (TREE_TYPE (adj->base), "ISR");
       DECL_NAME (repl) = get_identifier (pretty_name);
+      DECL_NAMELESS (repl) = 1;
       obstack_free (&name_obstack, pretty_name);
 
       adj->new_ssa_base = repl;
