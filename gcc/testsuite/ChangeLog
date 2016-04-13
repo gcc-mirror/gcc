@@ -1,3 +1,10 @@
+2016-04-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR rtl-optimization/68749
+	* gcc.dg/ifcvt-4.c: Use "word_mode" rather than "int" to limit the
+	effects of argument promotions.
+	Remove default args to dg-skip-if.
+
 2016-04-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70635
