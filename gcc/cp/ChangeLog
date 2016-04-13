@@ -1,5 +1,12 @@
 2016-04-13  Jason Merrill  <jason@redhat.com>
 
+	Warn about empty parameter ABI with -Wabi=9.
+	* call.c (empty_class_msg, mark_for_abi_warning)
+	(warn_empty_class_abi): New.
+	(build_call_a): Use them.
+	* decl.c (store_parm_decls): Use mark_for_abi_warning.
+	* error.c (pp_format_to_string): New.
+
 	Pass empty class parameters like C.
 	* call.c (pass_as_empty_struct, empty_class_arg): New.
 	(type_passed_as, build_x_va_arg): Use pass_as_empty_struct.

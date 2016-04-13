@@ -14332,16 +14332,34 @@ store_parm_decls (tree current_function_parms)
 	     they end in the correct forward order.  */
       specparms = nreverse (specparms);
 
+      /* Don't warn about the ABI of a function local to this TU.  */
+      bool warned = !TREE_PUBLIC (current_function_decl);
+      bool saw_nonempty = false;
       for (parm = specparms; parm; parm = next)
 	{
 	  next = DECL_CHAIN (parm);
 	  if (TREE_CODE (parm) == PARM_DECL)
 	    {
+	      tree type = TREE_TYPE (parm);
 	      if (DECL_NAME (parm) == NULL_TREE
-		  || !VOID_TYPE_P (parm))
+		  || !VOID_TYPE_P (type))
 		pushdecl (parm);
 	      else
 		error ("parameter %qD declared void", parm);
+	      /* If this isn't the last parameter, maybe warn about ABI change
+		 in passing empty classes.  */
+	      if (processing_template_decl)
+		continue;
+	      if (TREE_ADDRESSABLE (type)
+		  || !is_really_empty_class (type))
+		saw_nonempty = true;
+	      else if (!warned
+		       && (saw_nonempty
+			   || varargs_function_p (current_function_decl)))
+		{
+		  mark_for_abi_warning (current_function_decl, type);
+		  warned = true;
+		}
 	    }
 	  else
 	    {
