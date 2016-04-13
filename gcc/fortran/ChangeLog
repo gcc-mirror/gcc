@@ -1,3 +1,9 @@
+2016-04-13  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/58000
+	* gfortran.texi: Document OPEN( ... NAME=) as not implemented
+	in GNU Fortran
+
 2016-04-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/68566
