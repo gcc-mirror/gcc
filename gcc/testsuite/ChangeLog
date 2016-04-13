@@ -1,3 +1,11 @@
+2016-04-12  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/70610
+	* g++.dg/template/pr70610.C: New test.
+	* g++.dg/template/pr70610-2.C: New test.
+	* g++.dg/template/pr70610-3.C: New test.
+	* g++.dg/template/pr70610-4.C: New test.
+
 2016-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/cilk-plus/SE/ef_error2.c (func2): Use vectorlength
