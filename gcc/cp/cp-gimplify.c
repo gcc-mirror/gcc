@@ -576,11 +576,6 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
   switch (code)
     {
-    case PTRMEM_CST:
-      *expr_p = cplus_expand_constant (*expr_p);
-      ret = GS_OK;
-      break;
-
     case AGGR_INIT_EXPR:
       simplify_aggr_init_expr (expr_p);
       ret = GS_OK;
@@ -1388,6 +1383,13 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	   || TREE_CODE (stmt) == OMP_SIMD
 	   || TREE_CODE (stmt) == OMP_DISTRIBUTE)
     genericize_omp_for_stmt (stmt_p, walk_subtrees, data);
+  else if (TREE_CODE (stmt) == PTRMEM_CST)
+    {
+      /* By the time we get here we're handing off to the back end, so we don't
+	 need or want to preserve PTRMEM_CST anymore.  */
+      *stmt_p = cplus_expand_constant (stmt);
+      *walk_subtrees = 0;
+    }
   else if ((flag_sanitize
 	    & (SANITIZE_NULL | SANITIZE_ALIGNMENT | SANITIZE_VPTR))
 	   && !wtd->no_sanitize_p)
