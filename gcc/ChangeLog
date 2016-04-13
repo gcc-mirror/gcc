@@ -1,3 +1,12 @@
+2016-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70594
+	* tree-sra.c (create_access_replacement,
+	get_replaced_param_substitute): Set DECL_NAMELESS on repl if it
+	gets fancy name.
+	* tree-pretty-print.c (dump_fancy_name): New function.
+	(dump_decl_name, dump_generic_node): Use it.
+
 2016-04-13  Jason Merrill  <jason@redhat.com>
 
 	* cfgexpand.c (pass_expand::execute): Handle attribute "abi warning".

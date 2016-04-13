@@ -161,6 +161,85 @@ print_generic_expr (FILE *file, tree t, int flags)
   pp_flush (tree_pp);
 }
 
+/* Dump NAME, an IDENTIFIER_POINTER, sanitized so that D<num> sequences
+   in it are replaced with Dxxxx, as long as they are at the start or
+   preceded by $ and at the end or followed by $.  See make_fancy_name
+   in tree-sra.c.  */
+
+static void
+dump_fancy_name (pretty_printer *pp, tree name)
+{
+  int cnt = 0;
+  int length = IDENTIFIER_LENGTH (name);
+  const char *n = IDENTIFIER_POINTER (name);
+  do
+    {
+      n = strchr (n, 'D');
+      if (n == NULL)
+	break;
+      if (ISDIGIT (n[1])
+	  && (n == IDENTIFIER_POINTER (name) || n[-1] == '$'))
+	{
+	  int l = 2;
+	  while (ISDIGIT (n[l]))
+	    l++;
+	  if (n[l] == '\0' || n[l] == '$')
+	    {
+	      cnt++;
+	      length += 5 - l;
+	    }
+	  n += l;
+	}
+      else
+	n++;
+    }
+  while (1);
+  if (cnt == 0)
+    {
+      pp_tree_identifier (pp, name);
+      return;
+    }
+
+  char *str = XNEWVEC (char, length + 1);
+  char *p = str;
+  const char *q;
+  q = n = IDENTIFIER_POINTER (name);
+  do
+    {
+      q = strchr (q, 'D');
+      if (q == NULL)
+	break;
+      if (ISDIGIT (q[1])
+	  && (q == IDENTIFIER_POINTER (name) || q[-1] == '$'))
+	{
+	  int l = 2;
+	  while (ISDIGIT (q[l]))
+	    l++;
+	  if (q[l] == '\0' || q[l] == '$')
+	    {
+	      memcpy (p, n, q - n);
+	      memcpy (p + (q - n), "Dxxxx", 5);
+	      p += (q - n) + 5;
+	      n = q + l;
+	    }
+	  q += l;
+	}
+      else
+	q++;
+    }
+  while (1);
+  memcpy (p, n, IDENTIFIER_LENGTH (name) - (n - IDENTIFIER_POINTER (name)));
+  str[length] = '\0';
+  if (pp_translate_identifiers (pp))
+    {
+      const char *text = identifier_to_locale (str);
+      pp_append_text (pp, text, text + strlen (text));
+    }
+  else
+    pp_append_text (pp, str, str + length);
+  XDELETEVEC (str);
+}
+
 /* Dump the name of a _DECL node and its DECL_UID if TDF_UID is set
    in FLAGS.  */
 
@@ -171,6 +250,10 @@ dump_decl_name (pretty_printer *pp, tree node, int flags)
     {
       if ((flags & TDF_ASMNAME) && DECL_ASSEMBLER_NAME_SET_P (node))
 	pp_tree_identifier (pp, DECL_ASSEMBLER_NAME (node));
+      /* For DECL_NAMELESS names look for embedded uids in the
+	 names and sanitize them for TDF_NOUID.  */
+      else if ((flags & TDF_NOUID) && DECL_NAMELESS (node))
+	dump_fancy_name (pp, DECL_NAME (node));
       else
 	pp_tree_identifier (pp, DECL_NAME (node));
     }
@@ -2593,8 +2676,15 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, int flags,
 
     case SSA_NAME:
       if (SSA_NAME_IDENTIFIER (node))
-	dump_generic_node (pp, SSA_NAME_IDENTIFIER (node),
-			   spc, flags, false);
+	{
+	  if ((flags & TDF_NOUID)
+	      && SSA_NAME_VAR (node)
+	      && DECL_NAMELESS (SSA_NAME_VAR (node)))
+	    dump_fancy_name (pp, SSA_NAME_IDENTIFIER (node));
+	  else
+	    dump_generic_node (pp, SSA_NAME_IDENTIFIER (node),
+			       spc, flags, false);
+	}
       pp_underscore (pp);
       pp_decimal_int (pp, SSA_NAME_VERSION (node));
       if (SSA_NAME_IS_DEFAULT_DEF (node))
