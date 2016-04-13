@@ -1,3 +1,9 @@
+2016-04-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70436
+	* testsuite/gcc.dg/Wparentheses-12.c: New test.
+	* testsuite/gcc.dg/Wparentheses-13.c: New test.
+
 2016-04-13  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* gcc.target/i386/avx512bw-kunpckdq-2.c: New test.

@@ -1,3 +1,19 @@
+2016-04-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70436
+	* c-parser.c (c_parser_statement_after_labels): Add IF_P argument and
+	adjust callers.
+	(c_parser_statement): Likewise.
+	(c_parser_c99_block_statement): Likewise.
+	(c_parser_while_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+	(c_parser_if_body): Don't set IF_P here.
+	(c_parser_if_statement): Add IF_P argument.  Set IF_P here.  Warn
+	about dangling else here.
+	* c-tree.h (c_finish_if_stmt): Adjust declaration.
+	* c-typeck.c (c_finish_if_stmt): Remove NESTED_IF parameter.  Don't
+	warn about dangling else here.
+
 2016-04-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70307
