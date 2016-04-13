@@ -1150,6 +1150,8 @@ enum cp_tree_index
     CPTI_NULLPTR,
     CPTI_NULLPTR_TYPE,
 
+    CPTI_EMPTY_STRUCT,
+
     CPTI_MAX
 };
 
@@ -1185,6 +1187,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define current_aggr			cp_global_trees[CPTI_AGGR_TAG]
 #define nullptr_node			cp_global_trees[CPTI_NULLPTR]
 #define nullptr_type_node		cp_global_trees[CPTI_NULLPTR_TYPE]
+#define empty_struct_type		cp_global_trees[CPTI_EMPTY_STRUCT]
 
 /* We cache these tree nodes so as to call get_identifier less
    frequently.  */
