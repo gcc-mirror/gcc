@@ -1301,13 +1301,14 @@ static void c_parser_initval (c_parser *, struct c_expr *,
 static tree c_parser_compound_statement (c_parser *);
 static void c_parser_compound_statement_nostart (c_parser *);
 static void c_parser_label (c_parser *);
-static void c_parser_statement (c_parser *);
-static void c_parser_statement_after_labels (c_parser *, vec<tree> * = NULL);
-static void c_parser_if_statement (c_parser *, vec<tree> *);
+static void c_parser_statement (c_parser *, bool *);
+static void c_parser_statement_after_labels (c_parser *, bool *,
+					     vec<tree> * = NULL);
+static void c_parser_if_statement (c_parser *, bool *, vec<tree> *);
 static void c_parser_switch_statement (c_parser *);
-static void c_parser_while_statement (c_parser *, bool);
+static void c_parser_while_statement (c_parser *, bool, bool *);
 static void c_parser_do_statement (c_parser *, bool);
-static void c_parser_for_statement (c_parser *, bool);
+static void c_parser_for_statement (c_parser *, bool, bool *);
 static tree c_parser_asm_statement (c_parser *);
 static tree c_parser_asm_operands (c_parser *);
 static tree c_parser_asm_goto_operands (c_parser *);
@@ -4853,7 +4854,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	  last_label = false;
 	  last_stmt = true;
 	  mark_valid_location_for_stdc_pragma (false);
-	  c_parser_statement_after_labels (parser);
+	  c_parser_statement_after_labels (parser, NULL);
 	}
 
       parser->error = false;
@@ -5095,25 +5096,35 @@ c_parser_label (c_parser *parser)
    statement:
      transaction-statement
      transaction-cancel-statement
-*/
+
+   IF_P is used to track whether there's a (possibly labeled) if statement
+   which is not enclosed in braces and has an else clause.  This is used to
+   implement -Wparentheses.  */
 
 static void
-c_parser_statement (c_parser *parser)
+c_parser_statement (c_parser *parser, bool *if_p)
 {
   c_parser_all_labels (parser);
-  c_parser_statement_after_labels (parser);
+  c_parser_statement_after_labels (parser, if_p, NULL);
 }
 
 /* Parse a statement, other than a labeled statement.  CHAIN is a vector
-   of if-else-if conditions.  */
+   of if-else-if conditions.
+
+   IF_P is used to track whether there's a (possibly labeled) if statement
+   which is not enclosed in braces and has an else clause.  This is used to
+   implement -Wparentheses.  */
 
 static void
-c_parser_statement_after_labels (c_parser *parser, vec<tree> *chain)
+c_parser_statement_after_labels (c_parser *parser, bool *if_p,
+				 vec<tree> *chain)
 {
   location_t loc = c_parser_peek_token (parser)->location;
   tree stmt = NULL_TREE;
   bool in_if_block = parser->in_if_block;
   parser->in_if_block = false;
+  if (if_p != NULL)
+    *if_p = false;
   switch (c_parser_peek_token (parser)->type)
     {
     case CPP_OPEN_BRACE:
@@ -5123,19 +5134,19 @@ c_parser_statement_after_labels (c_parser *parser, vec<tree> *chain)
       switch (c_parser_peek_token (parser)->keyword)
 	{
 	case RID_IF:
-	  c_parser_if_statement (parser, chain);
+	  c_parser_if_statement (parser, if_p, chain);
 	  break;
 	case RID_SWITCH:
 	  c_parser_switch_statement (parser);
 	  break;
 	case RID_WHILE:
-	  c_parser_while_statement (parser, false);
+	  c_parser_while_statement (parser, false, if_p);
 	  break;
 	case RID_DO:
 	  c_parser_do_statement (parser, false);
 	  break;
 	case RID_FOR:
-	  c_parser_for_statement (parser, false);
+	  c_parser_for_statement (parser, false, if_p);
 	  break;
 	case RID_CILK_FOR:
 	  if (!flag_cilkplus)
@@ -5321,14 +5332,18 @@ c_parser_paren_condition (c_parser *parser)
   return cond;
 }
 
-/* Parse a statement which is a block in C99.  */
+/* Parse a statement which is a block in C99.
+
+   IF_P is used to track whether there's a (possibly labeled) if statement
+   which is not enclosed in braces and has an else clause.  This is used to
+   implement -Wparentheses.  */
 
 static tree
-c_parser_c99_block_statement (c_parser *parser)
+c_parser_c99_block_statement (c_parser *parser, bool *if_p)
 {
   tree block = c_begin_compound_stmt (flag_isoc99);
   location_t loc = c_parser_peek_token (parser)->location;
-  c_parser_statement (parser);
+  c_parser_statement (parser, if_p);
   return c_end_compound_stmt (loc, block, flag_isoc99);
 }
 
@@ -5338,7 +5353,11 @@ c_parser_c99_block_statement (c_parser *parser)
    we handle an empty body specially for the sake of -Wempty-body
    warnings, and (d) we call parser_compound_statement directly
    because c_parser_statement_after_labels resets
-   parser->in_if_block.  */
+   parser->in_if_block.
+
+   IF_P is used to track whether there's a (possibly labeled) if statement
+   which is not enclosed in braces and has an else clause.  This is used to
+   implement -Wparentheses.  */
 
 static tree
 c_parser_if_body (c_parser *parser, bool *if_p,
@@ -5350,7 +5369,6 @@ c_parser_if_body (c_parser *parser, bool *if_p,
     = get_token_indent_info (c_parser_peek_token (parser));
 
   c_parser_all_labels (parser);
-  *if_p = c_parser_next_token_is_keyword (parser, RID_IF);
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
     {
       location_t loc = c_parser_peek_token (parser)->location;
@@ -5363,7 +5381,7 @@ c_parser_if_body (c_parser *parser, bool *if_p,
   else if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
     add_stmt (c_parser_compound_statement (parser));
   else
-    c_parser_statement_after_labels (parser);
+    c_parser_statement_after_labels (parser, if_p);
 
   token_indent_info next_tinfo
     = get_token_indent_info (c_parser_peek_token (parser));
@@ -5397,7 +5415,7 @@ c_parser_else_body (c_parser *parser, const token_indent_info &else_tinfo,
       c_parser_consume_token (parser);
     }
   else
-    c_parser_statement_after_labels (parser, chain);
+    c_parser_statement_after_labels (parser, NULL, chain);
 
   token_indent_info next_tinfo
     = get_token_indent_info (c_parser_peek_token (parser));
@@ -5412,15 +5430,18 @@ c_parser_else_body (c_parser *parser, const token_indent_info &else_tinfo,
      if ( expression ) statement
      if ( expression ) statement else statement
 
-  CHAIN is a vector of if-else-if conditions.  */
+   CHAIN is a vector of if-else-if conditions.
+   IF_P is used to track whether there's a (possibly labeled) if statement
+   which is not enclosed in braces and has an else clause.  This is used to
+   implement -Wparentheses.  */
 
 static void
-c_parser_if_statement (c_parser *parser, vec<tree> *chain)
+c_parser_if_statement (c_parser *parser, bool *if_p, vec<tree> *chain)
 {
   tree block;
   location_t loc;
   tree cond;
-  bool first_if = false;
+  bool nested_if = false;
   tree first_body, second_body;
   bool in_if_block;
   tree if_stmt;
@@ -5439,7 +5460,7 @@ c_parser_if_statement (c_parser *parser, vec<tree> *chain)
     }
   in_if_block = parser->in_if_block;
   parser->in_if_block = true;
-  first_body = c_parser_if_body (parser, &first_if, if_tinfo);
+  first_body = c_parser_if_body (parser, &nested_if, if_tinfo);
   parser->in_if_block = in_if_block;
 
   if (warn_duplicated_cond)
@@ -5470,10 +5491,22 @@ c_parser_if_statement (c_parser *parser, vec<tree> *chain)
 	    }
 	}
       second_body = c_parser_else_body (parser, else_tinfo, chain);
+      /* Set IF_P to true to indicate that this if statement has an
+	 else clause.  This may trigger the Wparentheses warning
+	 below when we get back up to the parent if statement.  */
+      if (if_p != NULL)
+	*if_p = true;
     }
   else
     {
       second_body = NULL_TREE;
+
+      /* Diagnose an ambiguous else if if-then-else is nested inside
+	 if-then.  */
+      if (nested_if)
+	warning_at (loc, OPT_Wparentheses,
+		    "suggest explicit braces to avoid ambiguous %<else%>");
+
       if (warn_duplicated_cond)
 	{
 	  /* This if statement does not have an else clause.  We don't
@@ -5482,7 +5515,7 @@ c_parser_if_statement (c_parser *parser, vec<tree> *chain)
 	  chain = NULL;
 	}
     }
-  c_finish_if_stmt (loc, cond, first_body, second_body, first_if);
+  c_finish_if_stmt (loc, cond, first_body, second_body);
   if_stmt = c_end_compound_stmt (loc, block, flag_isoc99);
 
   /* If the if statement contains array notations, then we expand them.  */
@@ -5533,7 +5566,7 @@ c_parser_switch_statement (c_parser *parser)
   c_start_case (switch_loc, switch_cond_loc, expr, explicit_cast_p);
   save_break = c_break_label;
   c_break_label = NULL_TREE;
-  body = c_parser_c99_block_statement (parser);
+  body = c_parser_c99_block_statement (parser, NULL/*if??*/);
   c_finish_case (body, ce.original_type);
   if (c_break_label)
     {
@@ -5550,10 +5583,13 @@ c_parser_switch_statement (c_parser *parser)
 
    while-statement:
       while (expression) statement
-*/
+
+   IF_P is used to track whether there's a (possibly labeled) if statement
+   which is not enclosed in braces and has an else clause.  This is used to
+   implement -Wparentheses.  */
 
 static void
-c_parser_while_statement (c_parser *parser, bool ivdep)
+c_parser_while_statement (c_parser *parser, bool ivdep, bool *if_p)
 {
   tree block, cond, body, save_break, save_cont;
   location_t loc;
@@ -5580,7 +5616,7 @@ c_parser_while_statement (c_parser *parser, bool ivdep)
   token_indent_info body_tinfo
     = get_token_indent_info (c_parser_peek_token (parser));
 
-  body = c_parser_c99_block_statement (parser);
+  body = c_parser_c99_block_statement (parser, if_p);
   c_finish_loop (loc, cond, NULL, body, c_break_label, c_cont_label, true);
   add_stmt (c_end_compound_stmt (loc, block, flag_isoc99));
 
@@ -5615,7 +5651,7 @@ c_parser_do_statement (c_parser *parser, bool ivdep)
   c_break_label = NULL_TREE;
   save_cont = c_cont_label;
   c_cont_label = NULL_TREE;
-  body = c_parser_c99_block_statement (parser);
+  body = c_parser_c99_block_statement (parser, NULL);
   c_parser_require_keyword (parser, RID_WHILE, "expected %<while%>");
   new_break = c_break_label;
   c_break_label = save_break;
@@ -5690,10 +5726,13 @@ c_parser_do_statement (c_parser *parser, bool ivdep)
    like the beginning of the for-statement, and we can tell it is a
    foreach-statement only because the initial declaration or
    expression is terminated by 'in' instead of ';'.
-*/
+
+   IF_P is used to track whether there's a (possibly labeled) if statement
+   which is not enclosed in braces and has an else clause.  This is used to
+   implement -Wparentheses.  */
 
 static void
-c_parser_for_statement (c_parser *parser, bool ivdep)
+c_parser_for_statement (c_parser *parser, bool ivdep, bool *if_p)
 {
   tree block, cond, incr, save_break, save_cont, body;
   /* The following are only used when parsing an ObjC foreach statement.  */
@@ -5869,7 +5908,7 @@ c_parser_for_statement (c_parser *parser, bool ivdep)
   token_indent_info body_tinfo
     = get_token_indent_info (c_parser_peek_token (parser));
 
-  body = c_parser_c99_block_statement (parser);
+  body = c_parser_c99_block_statement (parser, if_p);
 
   if (is_foreach_statement)
     objc_finish_foreach_loop (loc, object_expression, collection_expression, body, c_break_label, c_cont_label);
@@ -10118,9 +10157,9 @@ c_parser_pragma (c_parser *parser, enum pragma_context context)
 	  return false;
 	}
       if (c_parser_next_token_is_keyword (parser, RID_FOR))
-	c_parser_for_statement (parser, true);
+	c_parser_for_statement (parser, true, NULL);
       else if (c_parser_next_token_is_keyword (parser, RID_WHILE))
-	c_parser_while_statement (parser, true);
+	c_parser_while_statement (parser, true, NULL);
       else
 	c_parser_do_statement (parser, true);
       return false;
@@ -13441,7 +13480,7 @@ static tree
 c_parser_omp_structured_block (c_parser *parser)
 {
   tree stmt = push_stmt_list ();
-  c_parser_statement (parser);
+  c_parser_statement (parser, NULL);
   return pop_stmt_list (stmt);
 }
 
@@ -14843,7 +14882,7 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
       add_stmt (c_end_compound_stmt (here, stmt, true));
     }
   else
-    add_stmt (c_parser_c99_block_statement (parser));
+    add_stmt (c_parser_c99_block_statement (parser, NULL));
   if (c_cont_label)
     {
       tree t = build1 (LABEL_EXPR, void_type_node, c_cont_label);
@@ -15397,7 +15436,7 @@ c_parser_omp_parallel (location_t loc, c_parser *parser,
     }
 
   block = c_begin_omp_parallel ();
-  c_parser_statement (parser);
+  c_parser_statement (parser, NULL);
   stmt = c_finish_omp_parallel (loc, clauses, block);
 
   return stmt;
@@ -15458,7 +15497,7 @@ c_parser_omp_task (location_t loc, c_parser *parser)
 				      "#pragma omp task");
 
   block = c_begin_omp_task ();
-  c_parser_statement (parser);
+  c_parser_statement (parser, NULL);
   return c_finish_omp_task (loc, clauses, block);
 }
 

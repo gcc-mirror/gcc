@@ -641,7 +641,7 @@ extern tree build_asm_stmt (tree, tree);
 extern int c_types_compatible_p (tree, tree);
 extern tree c_begin_compound_stmt (bool);
 extern tree c_end_compound_stmt (location_t, tree, bool);
-extern void c_finish_if_stmt (location_t, tree, tree, tree, bool);
+extern void c_finish_if_stmt (location_t, tree, tree, tree);
 extern void c_finish_loop (location_t, tree, tree, tree, tree, tree, bool);
 extern tree c_begin_stmt_expr (void);
 extern tree c_finish_stmt_expr (location_t, tree);
