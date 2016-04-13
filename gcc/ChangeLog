@@ -1,3 +1,15 @@
+2016-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/70628
+	* rtl.h (convert_memory_address_addr_space_1): New prototype.
+	* explow.c (convert_memory_address_addr_space_1): No longer static,
+	add NO_EMIT argument and don't call convert_modes if true, pass
+	it down recursively, remove break after return.
+	(convert_memory_address_addr_space): Adjust caller.
+	* simplify-rtx.c (simplify_unary_operation_1): Call
+	convert_memory_address_addr_space_1 instead of convert_memory_address,
+	if it returns NULL, don't simplify.
+
 2016-04-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/70630
