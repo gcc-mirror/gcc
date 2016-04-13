@@ -4164,7 +4164,7 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  }
 
 	/* Vector types use CONSTRUCTOR all the way through gimple
-	  compilation as a general initializer.  */
+	   compilation as a general initializer.  */
 	FOR_EACH_VEC_SAFE_ELT (elts, ix, ce)
 	  {
 	    enum gimplify_status tret;
@@ -4172,6 +4172,10 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 				  fb_rvalue);
 	    if (tret == GS_ERROR)
 	      ret = GS_ERROR;
+	    else if (TREE_STATIC (ctor)
+		     && !initializer_constant_valid_p (ce->value,
+						       TREE_TYPE (ce->value)))
+	      TREE_STATIC (ctor) = 0;
 	  }
 	if (!is_gimple_reg (TREE_OPERAND (*expr_p, 0)))
 	  TREE_OPERAND (*expr_p, 1) = get_formal_tmp_var (ctor, pre_p);

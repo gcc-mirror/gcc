@@ -1,5 +1,8 @@
 2016-04-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/70633
+	* gcc.c-torture/compile/pr70633.c: New test.
+
 	PR debug/70628
 	* gcc.dg/torture/pr70628.c: New test.
 

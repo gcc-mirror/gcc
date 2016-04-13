@@ -1,5 +1,9 @@
 2016-04-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/70633
+	* gimplify.c (gimplify_init_constructor): Clear TREE_STATIC if
+	gimplification turns some element into non-constant.
+
 	PR debug/70628
 	* rtl.h (convert_memory_address_addr_space_1): New prototype.
 	* explow.c (convert_memory_address_addr_space_1): No longer static,
