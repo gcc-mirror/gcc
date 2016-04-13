@@ -1,3 +1,10 @@
+2016-04-13  Bernd Schmidt  <bschmidt@redhat.com>
+
+	Patch from Roger Orr <rogero@howzatt.demon.co.uk>
+	PR preprocessor/69650
+	* directives.c (do_linemarker): Reread map after calling
+	cpp_get_token.
+
 2016-04-06  Richard Henderson  <rth@redhat.com>
 
 	PR preprocessor/61817
