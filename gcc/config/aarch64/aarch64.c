@@ -526,7 +526,7 @@ static const struct tune_params exynosm1_tunings =
   &generic_branch_cost,
   4,	/* memmov_cost  */
   3,	/* issue_rate  */
-  (AARCH64_FUSE_NOTHING), /* fusible_ops  */
+  (AARCH64_FUSE_AES_AESMC), /* fusible_ops  */
   4,	/* function_align.  */
   4,	/* jump_align.  */
   4,	/* loop_align.  */
@@ -537,8 +537,8 @@ static const struct tune_params exynosm1_tunings =
   2,	/* min_div_recip_mul_df.  */
   48,	/* max_case_values.  */
   64,	/* cache_line_size.  */
-  tune_params::AUTOPREFETCHER_OFF, /* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE) /* tune_flags.  */
+  tune_params::AUTOPREFETCHER_WEAK, /* autoprefetcher_model.  */
+  (AARCH64_EXTRA_TUNE_APPROX_RSQRT) /* tune_flags.  */
 };
 
 static const struct tune_params thunderx_tunings =
@@ -586,7 +586,7 @@ static const struct tune_params xgene1_tunings =
   0,	/* max_case_values.  */
   0,	/* cache_line_size.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_RECIP_SQRT)	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_APPROX_RSQRT)	/* tune_flags.  */
 };
 
 /* Support for fine-grained override of the tuning structures.  */
@@ -666,7 +666,7 @@ struct aarch64_option_extension
 /* ISA extensions in AArch64.  */
 static const struct aarch64_option_extension all_extensions[] =
 {
-#define AARCH64_OPT_EXTENSION(NAME, FLAGS_ON, FLAGS_OFF, FEATURE_STRING) \
+#define AARCH64_OPT_EXTENSION(NAME, X, FLAGS_ON, FLAGS_OFF, FEATURE_STRING) \
   {NAME, FLAGS_ON, FLAGS_OFF},
 #include "aarch64-option-extensions.def"
 #undef AARCH64_OPT_EXTENSION
@@ -3847,6 +3847,18 @@ aarch64_mode_valid_for_sched_fusion_p (machine_mode mode)
 	     && GET_MODE_SIZE (mode) == 8);
 }
 
+/* Return true if REGNO is a virtual pointer register, or an eliminable
+   "soft" frame register.  Like REGNO_PTR_FRAME_P except that we don't
+   include stack_pointer or hard_frame_pointer.  */
+static bool
+virt_or_elim_regno_p (unsigned regno)
+{
+  return ((regno >= FIRST_VIRTUAL_REGISTER
+	   && regno <= LAST_VIRTUAL_POINTER_REGISTER)
+	  || regno == FRAME_POINTER_REGNUM
+	  || regno == ARG_POINTER_REGNUM);
+}
+
 /* Return true if X is a valid address for machine mode MODE.  If it is,
    fill in INFO appropriately.  STRICT_P is true if REG_OK_STRICT is in
    effect.  OUTER_CODE is PARALLEL for a load/store pair.  */
@@ -3890,9 +3902,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 
       if (! strict_p
 	  && REG_P (op0)
-	  && (op0 == virtual_stack_vars_rtx
-	      || op0 == frame_pointer_rtx
-	      || op0 == arg_pointer_rtx)
+	  && virt_or_elim_regno_p (REGNO (op0))
 	  && CONST_INT_P (op1))
 	{
 	  info->type = ADDRESS_REG_IMM;
@@ -4953,74 +4963,43 @@ aarch64_legitimize_address (rtx x, rtx /* orig_x  */, machine_mode mode)
 
   if (GET_CODE (x) == PLUS && CONST_INT_P (XEXP (x, 1)))
     {
-      HOST_WIDE_INT offset = INTVAL (XEXP (x, 1));
-      HOST_WIDE_INT base_offset;
+      rtx base = XEXP (x, 0);
+      rtx offset_rtx XEXP (x, 1);
+      HOST_WIDE_INT offset = INTVAL (offset_rtx);
 
-      if (GET_CODE (XEXP (x, 0)) == PLUS)
+      if (GET_CODE (base) == PLUS)
 	{
-	  rtx op0 = XEXP (XEXP (x, 0), 0);
-	  rtx op1 = XEXP (XEXP (x, 0), 1);
+	  rtx op0 = XEXP (base, 0);
+	  rtx op1 = XEXP (base, 1);
 
-	  /* Address expressions of the form Ra + Rb + CONST.
+	  /* Force any scaling into a temp for CSE.  */
+	  op0 = force_reg (Pmode, op0);
+	  op1 = force_reg (Pmode, op1);
 
-	     If CONST is within the range supported by the addressing
-	     mode "reg+offset", do not split CONST and use the
-	     sequence
-	       Rt = Ra + Rb;
-	       addr = Rt + CONST.  */
-	  if (REG_P (op0) && REG_P (op1))
+	  /* Let the pointer register be in op0.  */
+	  if (REG_POINTER (op1))
+	    std::swap (op0, op1);
+
+	  /* If the pointer is virtual or frame related, then we know that
+	     virtual register instantiation or register elimination is going
+	     to apply a second constant.  We want the two constants folded
+	     together easily.  Therefore, emit as (OP0 + CONST) + OP1.  */
+	  if (virt_or_elim_regno_p (REGNO (op0)))
 	    {
-	      machine_mode addr_mode = GET_MODE (x);
-	      rtx base = gen_reg_rtx (addr_mode);
-	      rtx addr = plus_constant (addr_mode, base, offset);
-
-	      if (aarch64_legitimate_address_hook_p (mode, addr, false))
-		{
-		  emit_insn (gen_adddi3 (base, op0, op1));
-		  return addr;
-		}
+	      base = expand_binop (Pmode, add_optab, op0, offset_rtx,
+				   NULL_RTX, true, OPTAB_DIRECT);
+	      return gen_rtx_PLUS (Pmode, base, op1);
 	    }
-	  /* Address expressions of the form Ra + Rb<<SCALE + CONST.
 
-	     If Reg + Rb<<SCALE is a valid address expression, do not
-	     split CONST and use the sequence
-	       Rc = CONST;
-	       Rt = Ra + Rc;
-	       addr = Rt + Rb<<SCALE.
-
-	     TODO: We really should split CONST out of memory referece
-	     because:
-	       a) We depend on GIMPLE optimizers to pick up common sub
-		  expression involving the scaling operation.
-	       b) The index Rb is likely a loop iv, it's better to split
-		  the CONST so that computation of new base Rt is a loop
-		  invariant and can be moved out of loop.  This is more
-		  important when the original base Ra is sfp related.
-
-	     Unfortunately, GIMPLE optimizers (e.g., SLSR) can not handle
-	     this kind of CSE opportunity at the time of this change, we
-	     have to force register scaling expr out of memory ref now.  */
-	  else if (REG_P (op0) || REG_P (op1))
-	    {
-	      machine_mode addr_mode = GET_MODE (x);
-	      rtx base = gen_reg_rtx (addr_mode);
-
-	      /* Switch to make sure that register is in op0.  */
-	      if (REG_P (op1))
-		std::swap (op0, op1);
-
-	      rtx addr = plus_constant (addr_mode, base, offset);
-
-	      if (aarch64_legitimate_address_hook_p (mode, addr, false))
-		{
-		  base = force_operand (gen_rtx_PLUS (addr_mode, op1, op0),
-					NULL_RTX);
-		  return plus_constant (addr_mode, base, offset);
-		}
-	    }
+	  /* Otherwise, in order to encourage CSE (and thence loop strength
+	     reduce) scaled addresses, emit as (OP0 + OP1) + CONST.  */
+	  base = expand_binop (Pmode, add_optab, op0, op1,
+			       NULL_RTX, true, OPTAB_DIRECT);
+	  x = gen_rtx_PLUS (Pmode, base, offset_rtx);
 	}
 
       /* Does it look like we'll need a load/store-pair operation?  */
+      HOST_WIDE_INT base_offset;
       if (GET_MODE_SIZE (mode) > 16
 	  || mode == TImode)
 	base_offset = ((offset + 64 * GET_MODE_SIZE (mode))
@@ -5032,15 +5011,12 @@ aarch64_legitimize_address (rtx x, rtx /* orig_x  */, machine_mode mode)
       else
 	base_offset = offset & ~0xfff;
 
-      if (base_offset == 0)
-	return x;
-
-      offset -= base_offset;
-      rtx base_reg = gen_reg_rtx (Pmode);
-      rtx val = force_operand (plus_constant (Pmode, XEXP (x, 0), base_offset),
-			   NULL_RTX);
-      emit_move_insn (base_reg, val);
-      x = plus_constant (Pmode, base_reg, offset);
+      if (base_offset != 0)
+	{
+	  base = plus_constant (Pmode, base, base_offset);
+	  base = force_operand (base, NULL_RTX);
+	  return plus_constant (Pmode, base, offset - base_offset);
+	}
     }
 
   return x;
@@ -5577,6 +5553,18 @@ aarch64_select_rtx_section (machine_mode mode,
     return function_section (current_function_decl);
 
   return default_elf_select_rtx_section (mode, x, align);
+}
+
+/* Implement ASM_OUTPUT_POOL_EPILOGUE.  */
+void
+aarch64_asm_output_pool_epilogue (FILE *f, const char *, tree,
+				  HOST_WIDE_INT offset)
+{
+  /* When using per-function literal pools, we must ensure that any code
+     section is aligned to the minimal instruction length, lest we get
+     errors from the assembler re "unaligned instructions".  */
+  if ((offset & 3) && aarch64_can_use_per_function_literal_pools_p ())
+    ASM_OUTPUT_ALIGN (f, 2);
 }
 
 /* Costs.  */
@@ -7460,8 +7448,8 @@ aarch64_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
   return aarch64_tune_params.memmov_cost;
 }
 
-/* Return true if it is safe and beneficial to use the rsqrt optabs to
-   optimize 1.0/sqrt.  */
+/* Return true if it is safe and beneficial to use the approximate rsqrt optabs
+   to optimize 1.0/sqrt.  */
 
 static bool
 use_rsqrt_p (void)
@@ -7469,12 +7457,12 @@ use_rsqrt_p (void)
   return (!flag_trapping_math
 	  && flag_unsafe_math_optimizations
 	  && ((aarch64_tune_params.extra_tuning_flags
-	       & AARCH64_EXTRA_TUNE_RECIP_SQRT)
+	       & AARCH64_EXTRA_TUNE_APPROX_RSQRT)
 	      || flag_mrecip_low_precision_sqrt));
 }
 
-/* Function to decide when to use
-   reciprocal square root builtins.  */
+/* Function to decide when to use the approximate reciprocal square root
+   builtin.  */
 
 static tree
 aarch64_builtin_reciprocal (tree fndecl)
@@ -7522,12 +7510,12 @@ get_rsqrts_type (machine_mode mode)
   }
 }
 
-/* Emit instruction sequence to compute
-   reciprocal square root.  Use two Newton-Raphson steps
-   for single precision and three for double precision.  */
+/* Emit instruction sequence to compute the reciprocal square root using the
+   Newton-Raphson series.  Iterate over the series twice for SF
+   and thrice for DF.  */
 
 void
-aarch64_emit_swrsqrt (rtx dst, rtx src)
+aarch64_emit_approx_rsqrt (rtx dst, rtx src)
 {
   machine_mode mode = GET_MODE (src);
   gcc_assert (
@@ -7544,6 +7532,7 @@ aarch64_emit_swrsqrt (rtx dst, rtx src)
 
   int iterations = double_mode ? 3 : 2;
 
+  /* Optionally iterate over the series one less time than otherwise.  */
   if (flag_mrecip_low_precision_sqrt)
     iterations--;
 
@@ -7683,83 +7672,6 @@ aarch64_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 }
 
 static void initialize_aarch64_code_model (struct gcc_options *);
-
-/* Enum describing the various ways that the
-   aarch64_parse_{arch,tune,cpu,extension} functions can fail.
-   This way their callers can choose what kind of error to give.  */
-
-enum aarch64_parse_opt_result
-{
-  AARCH64_PARSE_OK,			/* Parsing was successful.  */
-  AARCH64_PARSE_MISSING_ARG,		/* Missing argument.  */
-  AARCH64_PARSE_INVALID_FEATURE,	/* Invalid feature modifier.  */
-  AARCH64_PARSE_INVALID_ARG		/* Invalid arch, tune, cpu arg.  */
-};
-
-/* Parse the architecture extension string STR and update ISA_FLAGS
-   with the architecture features turned on or off.  Return a
-   aarch64_parse_opt_result describing the result.  */
-
-static enum aarch64_parse_opt_result
-aarch64_parse_extension (char *str, unsigned long *isa_flags)
-{
-  /* The extension string is parsed left to right.  */
-  const struct aarch64_option_extension *opt = NULL;
-
-  /* Flag to say whether we are adding or removing an extension.  */
-  int adding_ext = -1;
-
-  while (str != NULL && *str != 0)
-    {
-      char *ext;
-      size_t len;
-
-      str++;
-      ext = strchr (str, '+');
-
-      if (ext != NULL)
-	len = ext - str;
-      else
-	len = strlen (str);
-
-      if (len >= 2 && strncmp (str, "no", 2) == 0)
-	{
-	  adding_ext = 0;
-	  len -= 2;
-	  str += 2;
-	}
-      else if (len > 0)
-	adding_ext = 1;
-
-      if (len == 0)
-	return AARCH64_PARSE_MISSING_ARG;
-
-
-      /* Scan over the extensions table trying to find an exact match.  */
-      for (opt = all_extensions; opt->name != NULL; opt++)
-	{
-	  if (strlen (opt->name) == len && strncmp (opt->name, str, len) == 0)
-	    {
-	      /* Add or remove the extension.  */
-	      if (adding_ext)
-		*isa_flags |= opt->flags_on;
-	      else
-		*isa_flags &= ~(opt->flags_off);
-	      break;
-	    }
-	}
-
-      if (opt->name == NULL)
-	{
-	  /* Extension not found in list.  */
-	  return AARCH64_PARSE_INVALID_FEATURE;
-	}
-
-      str = ext;
-    };
-
-  return AARCH64_PARSE_OK;
-}
 
 /* Parse the TO_PARSE string and put the architecture struct that it
    selects into RES and the architectural features into ISA_FLAGS.
@@ -8109,10 +8021,25 @@ aarch64_parse_override_string (const char* input_string,
 static void
 aarch64_override_options_after_change_1 (struct gcc_options *opts)
 {
+  /* The logic here is that if we are disabling all frame pointer generation
+     then we do not need to disable leaf frame pointer generation as a
+     separate operation.  But if we are *only* disabling leaf frame pointer
+     generation then we set flag_omit_frame_pointer to true, but in
+     aarch64_frame_pointer_required we return false only for leaf functions.
+
+     PR 70044: We have to be careful about being called multiple times for the
+     same function.  Once we have decided to set flag_omit_frame_pointer just
+     so that we can omit leaf frame pointers, we must then not interpret a
+     second call as meaning that all frame pointer generation should be
+     omitted.  We do this by setting flag_omit_frame_pointer to a special,
+     non-zero value.  */
+  if (opts->x_flag_omit_frame_pointer == 2)
+    opts->x_flag_omit_frame_pointer = 0;
+
   if (opts->x_flag_omit_frame_pointer)
     opts->x_flag_omit_leaf_frame_pointer = false;
   else if (opts->x_flag_omit_leaf_frame_pointer)
-    opts->x_flag_omit_frame_pointer = true;
+    opts->x_flag_omit_frame_pointer = 2;
 
   /* If not optimizing for size, set the default
      alignment to what the target wants.  */
@@ -8131,9 +8058,18 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
   if (opts->x_nopcrelative_literal_loads == 1)
     aarch64_nopcrelative_literal_loads = false;
 
-  /* If it is not set on the command line, we default to no
-     pc relative literal loads.  */
-  if (opts->x_nopcrelative_literal_loads == 2)
+  /* If it is not set on the command line, we default to no pc
+     relative literal loads, unless the workaround for Cortex-A53
+     erratum 843419 is in effect.  */
+  /* This is PR70113. When building the Linux kernel with
+     CONFIG_ARM64_ERRATUM_843419, support for relocations
+     R_AARCH64_ADR_PREL_PG_HI21 and R_AARCH64_ADR_PREL_PG_HI21_NC is
+     removed from the kernel to avoid loading objects with possibly
+     offending sequences. With nopcrelative_literal_loads, we would
+     generate such relocations, preventing the kernel build from
+     succeeding.  */
+  if (opts->x_nopcrelative_literal_loads == 2
+      && !TARGET_FIX_ERR_A53_843419)
     aarch64_nopcrelative_literal_loads = true;
 
   /* In the tiny memory model it makes no sense
@@ -8537,7 +8473,7 @@ aarch64_option_print (FILE *file, int indent, struct cl_target_option *ptr)
   unsigned long isa_flags = ptr->x_aarch64_isa_flags;
   const struct processor *arch = aarch64_get_arch (ptr->x_explicit_arch);
   std::string extension
-    = aarch64_get_extension_string_for_isa_flags (isa_flags);
+    = aarch64_get_extension_string_for_isa_flags (isa_flags, arch->flags);
 
   fprintf (file, "%*sselected tune = %s\n", indent, "", cpu->name);
   fprintf (file, "%*sselected arch = %s%s\n", indent, "",
@@ -8552,6 +8488,21 @@ aarch64_reset_previous_fndecl (void)
   aarch64_previous_fndecl = NULL;
 }
 
+/* Restore or save the TREE_TARGET_GLOBALS from or to NEW_TREE.
+   Used by aarch64_set_current_function and aarch64_pragma_target_parse to
+   make sure optab availability predicates are recomputed when necessary.  */
+
+void
+aarch64_save_restore_target_globals (tree new_tree)
+{
+  if (TREE_TARGET_GLOBALS (new_tree))
+    restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
+  else if (new_tree == target_option_default_node)
+    restore_target_globals (&default_target_globals);
+  else
+    TREE_TARGET_GLOBALS (new_tree) = save_target_globals_default_opts ();
+}
+
 /* Implement TARGET_SET_CURRENT_FUNCTION.  Unpack the codegen decisions
    like tuning and ISA features from the DECL_FUNCTION_SPECIFIC_TARGET
    of the function, if such exists.  This function may be called multiple
@@ -8561,63 +8512,32 @@ aarch64_reset_previous_fndecl (void)
 static void
 aarch64_set_current_function (tree fndecl)
 {
+  if (!fndecl || fndecl == aarch64_previous_fndecl)
+    return;
+
   tree old_tree = (aarch64_previous_fndecl
 		   ? DECL_FUNCTION_SPECIFIC_TARGET (aarch64_previous_fndecl)
 		   : NULL_TREE);
 
-  tree new_tree = (fndecl
-		   ? DECL_FUNCTION_SPECIFIC_TARGET (fndecl)
-		   : NULL_TREE);
+  tree new_tree = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
 
+  /* If current function has no attributes but the previous one did,
+     use the default node.  */
+  if (!new_tree && old_tree)
+    new_tree = target_option_default_node;
 
-  if (fndecl && fndecl != aarch64_previous_fndecl)
-    {
-      aarch64_previous_fndecl = fndecl;
-      if (old_tree == new_tree)
-	;
-
-      else if (new_tree && new_tree != target_option_default_node)
-	{
-	  cl_target_option_restore (&global_options,
-				    TREE_TARGET_OPTION (new_tree));
-	  if (TREE_TARGET_GLOBALS (new_tree))
-	    restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
-	  else
-	    TREE_TARGET_GLOBALS (new_tree)
-	      = save_target_globals_default_opts ();
-	}
-
-      else if (old_tree && old_tree != target_option_default_node)
-	{
-	  new_tree = target_option_current_node;
-	  cl_target_option_restore (&global_options,
-				    TREE_TARGET_OPTION (new_tree));
-	  if (TREE_TARGET_GLOBALS (new_tree))
-	    restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
-	  else if (new_tree == target_option_default_node)
-	    restore_target_globals (&default_target_globals);
-	  else
-	    TREE_TARGET_GLOBALS (new_tree)
-	      = save_target_globals_default_opts ();
-	}
-    }
-
-  if (!fndecl)
+  /* If nothing to do, return.  #pragma GCC reset or #pragma GCC pop to
+     the default have been handled by aarch64_save_restore_target_globals from
+     aarch64_pragma_target_parse.  */
+  if (old_tree == new_tree)
     return;
 
-  /* If we turned on SIMD make sure that any vector parameters are re-laid out
-     so that they use proper vector modes.  */
-  if (TARGET_SIMD)
-    {
-      tree parms = DECL_ARGUMENTS (fndecl);
-      for (; parms && parms != void_list_node; parms = TREE_CHAIN (parms))
-	{
-	  if (TREE_CODE (parms) == PARM_DECL
-	      && VECTOR_TYPE_P (TREE_TYPE (parms))
-	      && DECL_MODE (parms) != TYPE_MODE (TREE_TYPE (parms)))
-	    relayout_decl (parms);
-	}
-    }
+  aarch64_previous_fndecl = fndecl;
+
+  /* First set the target options.  */
+  cl_target_option_restore (&global_options, TREE_TARGET_OPTION (new_tree));
+
+  aarch64_save_restore_target_globals (new_tree);
 }
 
 /* Enum describing the various ways we can handle attributes.
@@ -8817,6 +8737,8 @@ static const struct aarch64_attribute_info aarch64_attributes[] =
      OPT_mgeneral_regs_only },
   { "fix-cortex-a53-835769", aarch64_attr_bool, true, NULL,
      OPT_mfix_cortex_a53_835769 },
+  { "fix-cortex-a53-843419", aarch64_attr_bool, true, NULL,
+     OPT_mfix_cortex_a53_843419 },
   { "cmodel", aarch64_attr_enum, false, NULL, OPT_mcmodel_ },
   { "strict-align", aarch64_attr_mask, false, NULL, OPT_mstrict_align },
   { "omit-leaf-frame-pointer", aarch64_attr_bool, true, NULL,
@@ -9229,6 +9151,12 @@ aarch64_can_inline_p (tree caller, tree callee)
 	  caller_opts->x_aarch64_fix_a53_err835769,
 	  callee_opts->x_aarch64_fix_a53_err835769,
 	  2, TARGET_FIX_ERR_A53_835769_DEFAULT))
+    return false;
+
+  if (!aarch64_tribools_ok_for_inlining_p (
+	  caller_opts->x_aarch64_fix_a53_err843419,
+	  callee_opts->x_aarch64_fix_a53_err843419,
+	  2, TARGET_FIX_ERR_A53_843419))
     return false;
 
   /* If the user explicitly specified -momit-leaf-frame-pointer for the
@@ -11154,7 +11082,8 @@ static unsigned HOST_WIDE_INT
 aarch64_shift_truncation_mask (machine_mode mode)
 {
   return
-    (aarch64_vector_mode_supported_p (mode)
+    (!SHIFT_COUNT_TRUNCATED
+     || aarch64_vector_mode_supported_p (mode)
      || aarch64_vect_struct_mode_p (mode)) ? 0 : (GET_MODE_BITSIZE (mode) - 1);
 }
 
@@ -11207,7 +11136,8 @@ aarch64_declare_function_name (FILE *stream, const char* name,
 
   unsigned long isa_flags = targ_options->x_aarch64_isa_flags;
   std::string extension
-    = aarch64_get_extension_string_for_isa_flags (isa_flags);
+    = aarch64_get_extension_string_for_isa_flags (isa_flags,
+						  this_arch->flags);
   /* Only update the assembler .arch string if it is distinct from the last
      such string we printed.  */
   std::string to_print = this_arch->name + extension;
@@ -11247,7 +11177,8 @@ aarch64_start_file (void)
     = aarch64_get_arch (default_options->x_explicit_arch);
   unsigned long default_isa_flags = default_options->x_aarch64_isa_flags;
   std::string extension
-    = aarch64_get_extension_string_for_isa_flags (default_isa_flags);
+    = aarch64_get_extension_string_for_isa_flags (default_isa_flags,
+						  default_arch->flags);
 
    aarch64_last_printed_arch_string = default_arch->name + extension;
    aarch64_last_printed_tune_string = "";

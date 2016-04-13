@@ -41,7 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool
 has_addr_references_p (struct cgraph_node *node,
-		       void *data ATTRIBUTE_UNUSED)
+		       void *)
 {
   int i;
   struct ipa_ref *ref = NULL;
@@ -50,6 +50,14 @@ has_addr_references_p (struct cgraph_node *node,
     if (ref->use == IPA_REF_ADDR)
       return true;
   return false;
+}
+
+/* Return true when NODE can be target of an indirect call.  */
+
+static bool
+is_indirect_call_target_p (struct cgraph_node *node, void *)
+{
+  return node->indirect_call_target;
 }
 
 /* Look for all functions inlined to NODE and update their inlined_to pointers
@@ -172,23 +180,24 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 		    (TYPE_METHOD_BASETYPE (TREE_TYPE (n->decl))))
 	    continue;
 
-	   symtab_node *body = n->function_symbol ();
+	  n->indirect_call_target = true;
+	  symtab_node *body = n->function_symbol ();
 
 	  /* Prior inlining, keep alive bodies of possible targets for
 	     devirtualization.  */
-	   if (n->definition
-	       && (before_inlining_p
-		   && opt_for_fn (body->decl, optimize)
-		   && opt_for_fn (body->decl, flag_devirtualize)))
-	      {
-		 /* Be sure that we will not optimize out alias target
-		    body.  */
-		 if (DECL_EXTERNAL (n->decl)
-		     && n->alias
-		     && before_inlining_p)
-		   reachable->add (body);
-		reachable->add (n);
-	      }
+	  if (n->definition
+	      && (before_inlining_p
+		  && opt_for_fn (body->decl, optimize)
+		  && opt_for_fn (body->decl, flag_devirtualize)))
+	     {
+		/* Be sure that we will not optimize out alias target
+		   body.  */
+		if (DECL_EXTERNAL (n->decl)
+		    && n->alias
+		    && before_inlining_p)
+		  reachable->add (body);
+	       reachable->add (n);
+	     }
 	  /* Even after inlining we want to keep the possible targets in the
 	     boundary, so late passes can still produce direct call even if
 	     the chance for inlining is lost.  */
@@ -323,6 +332,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
   FOR_EACH_FUNCTION (node)
     {
       node->used_as_abstract_origin = false;
+      node->indirect_call_target = false;
       if (node->definition
 	  && !node->global.inlined_to
 	  && !node->in_other_partition
@@ -659,7 +669,14 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	      fprintf (file, " %s", node->name ());
 	    node->address_taken = false;
 	    changed = true;
-	    if (node->local_p ())
+	    if (node->local_p ()
+		/* Virtual functions may be kept in cgraph just because
+		   of possible later devirtualization.  Do not mark them as
+		   local too early so we won't optimize them out before
+		   we are done with polymorphic call analysis.  */
+		&& (!before_inlining_p
+		    || !node->call_for_symbol_and_aliases
+		       (is_indirect_call_target_p, NULL, true)))
 	      {
 		node->local.local = true;
 		if (file)

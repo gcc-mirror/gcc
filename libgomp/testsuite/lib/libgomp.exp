@@ -142,6 +142,8 @@ proc libgomp_init { args } {
 	append always_ld_library_path ":${blddir}/../liboffloadmic/plugin/.libs"
 	# libstdc++ is required by liboffloadmic
 	append always_ld_library_path ":${blddir}/../libstdc++-v3/src/.libs"
+	# libgcc_s is required by libstdc++
+	append always_ld_library_path ":${blddir}/../libgcc"
     }
 
     global offload_additional_lib_paths
@@ -236,6 +238,9 @@ proc libgomp_init { args } {
 
     # Disable caret
     lappend ALWAYS_CFLAGS "additional_flags=-fno-diagnostics-show-caret"
+
+    # Disable HSA warnings by default.
+    lappend ALWAYS_CFLAGS "additional_flags=-Wno-hsa"
 
     # Disable color diagnostics
     lappend ALWAYS_CFLAGS "additional_flags=-fdiagnostics-color=never"
@@ -343,6 +348,19 @@ proc check_effective_target_offload_device_nonshared_as { } {
 	}
     } ]
 }
+  
+# Return 1 if offload device is available and it has shared address space.
+proc check_effective_target_offload_device_shared_as { } {
+    return [check_runtime_nocache offload_device_shared_as {
+      int main ()
+	{
+	  int x = 10;
+	  #pragma omp target map(to: x)
+	    x++;
+	  return x == 10;
+	}
+    } ]
+}
 
 # Return 1 if at least one nvidia board is present.
 
@@ -378,4 +396,57 @@ proc check_effective_target_openacc_host_selected { } {
         return 1;
     }
     return 0;
+}
+
+# Return 1 if the selected OMP device is actually a HSA device
+
+proc check_effective_target_hsa_offloading_selected_nocache {} {
+    global tool
+
+    set src {
+	int main () {
+	    int v = 1;
+	    #pragma omp target map(from:v)
+	    v = 0;
+	    return v;
+	}
+    }
+    
+    set result [eval [list check_compile hsa_offloading_src executable $src] ""]
+    set lines [lindex $result 0]
+    set output [lindex $result 1]
+
+    set ok 0
+    if { [string match "" $lines] } {
+	# No error messages, let us switch on HSA debugging output and run it
+	set prev_HSA_DEBUG [getenv HSA_DEBUG]
+	setenv HSA_DEBUG "1"
+	set result [remote_load target "./$output" "2>&1" ""]
+	if { [string match "" $prev_HSA_DEBUG] } {
+	    unsetenv HSA_DEBUG
+	} else {
+	    setenv HSA_DEBUG $prev_HSA_DEBUG
+	}
+	set status [lindex $result 0]
+	if { $status != "pass" } {
+	    verbose "HSA availability test failed"
+	    return 0
+	}
+	set output [lindex $result 1]
+	if { [string match "*HSA debug: Going to dispatch kernel*" $output] } {
+	    verbose "HSA availability detected"
+	    set ok 1
+	}
+    }
+    remote_file build delete $output
+    return $ok
+}
+
+# Return 1 if the selected OMP device is actually a HSA device and
+# cache the result
+
+proc check_effective_target_hsa_offloading_selected {} {
+    return [check_cached_effective_target hsa_offloading_selected {
+	check_effective_target_hsa_offloading_selected_nocache
+    }]
 }

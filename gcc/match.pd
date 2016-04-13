@@ -293,7 +293,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* X % -Y is the same as X % Y.  */
 (simplify
  (trunc_mod @0 (convert? (negate @1)))
- (if (!TYPE_UNSIGNED (type)
+ (if (INTEGRAL_TYPE_P (type)
+      && !TYPE_UNSIGNED (type)
       && !TYPE_OVERFLOW_TRAPS (type)
       && tree_nop_conversion_p (type, TREE_TYPE (@1))
       /* Avoid this transformation if X might be INT_MIN or
@@ -1063,7 +1064,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      /* If the constant operation overflows we cannot do the transform
 	as we would introduce undefined overflow, for example
 	with (a - 1) + INT_MIN.  */
-     (with { tree cst = fold_binary (outer_op == inner_op
+     (with { tree cst = const_binop (outer_op == inner_op
 				     ? PLUS_EXPR : MINUS_EXPR, type, @1, @2); }
       (if (cst && !TREE_OVERFLOW (cst))
        (inner_op @0 { cst; } ))))))
@@ -1072,7 +1073,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (for outer_op (plus minus)
    (simplify
     (outer_op (minus CONSTANT_CLASS_P@1 @0) CONSTANT_CLASS_P@2)
-    (with { tree cst = fold_binary (outer_op, type, @1, @2); }
+    (with { tree cst = const_binop (outer_op, type, @1, @2); }
      (if (cst && !TREE_OVERFLOW (cst))
       (minus { cst; } @0)))))
 
@@ -1270,7 +1271,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    RROTATE_EXPR by a new constant.  */
 (simplify
  (lrotate @0 INTEGER_CST@1)
- (rrotate @0 { fold_binary (MINUS_EXPR, TREE_TYPE (@1),
+ (rrotate @0 { const_binop (MINUS_EXPR, TREE_TYPE (@1),
 			    build_int_cst (TREE_TYPE (@1),
 					   element_precision (type)), @1); }))
 
@@ -1553,7 +1554,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
     /* A truncation to an unsigned type (a zero-extension) should be
        canonicalized as bitwise and of a mask.  */
-    (if (final_int && inter_int && inside_int
+    (if (GIMPLE /* PR70366: doing this in GENERIC breaks -Wconversion.  */
+	 && final_int && inter_int && inside_int
 	 && final_prec == inside_prec
 	 && final_prec > inter_prec
 	 && inter_unsignedp)
@@ -1596,7 +1598,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (plus @0 REAL_CST@1)
  (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1)))
-  (with { tree tem = fold_unary (NEGATE_EXPR, type, @1); }
+  (with { tree tem = const_unop (NEGATE_EXPR, type, @1); }
    (if (!TREE_OVERFLOW (tem) || !flag_trapping_math)
     (minus @0 { tem; })))))
 
@@ -1751,26 +1753,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cnd (logical_inverted_value truth_valued_p@0) @1 @2)
   (cnd @0 @2 @1)))
 
-/* A + (B vcmp C ? 1 : 0) -> A - (B vcmp C), since vector comparisons
-   return all-1 or all-0 results.  */
+/* A + (B vcmp C ? 1 : 0) -> A - (B vcmp C ? -1 : 0), since vector comparisons
+   return all -1 or all 0 results.  */
 /* ??? We could instead convert all instances of the vec_cond to negate,
    but that isn't necessarily a win on its own.  */
 (simplify
- (plus:c @3 (view_convert? (vec_cond @0 integer_each_onep@1 integer_zerop@2)))
+ (plus:c @3 (view_convert? (vec_cond:s @0 integer_each_onep@1 integer_zerop@2)))
  (if (VECTOR_TYPE_P (type)
-      && TYPE_VECTOR_SUBPARTS (type) == TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0))
+      && TYPE_VECTOR_SUBPARTS (type) == TYPE_VECTOR_SUBPARTS (TREE_TYPE (@1))
       && (TYPE_MODE (TREE_TYPE (type))
-          == TYPE_MODE (TREE_TYPE (TREE_TYPE (@0)))))
-  (minus @3 (view_convert @0))))
+          == TYPE_MODE (TREE_TYPE (TREE_TYPE (@1)))))
+  (minus @3 (view_convert (vec_cond @0 (negate @1) @2)))))
 
-/* ... likewise A - (B vcmp C ? 1 : 0) -> A + (B vcmp C).  */
+/* ... likewise A - (B vcmp C ? 1 : 0) -> A + (B vcmp C ? -1 : 0).  */
 (simplify
- (minus @3 (view_convert? (vec_cond @0 integer_each_onep@1 integer_zerop@2)))
+ (minus @3 (view_convert? (vec_cond:s @0 integer_each_onep@1 integer_zerop@2)))
  (if (VECTOR_TYPE_P (type)
-      && TYPE_VECTOR_SUBPARTS (type) == TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0))
+      && TYPE_VECTOR_SUBPARTS (type) == TYPE_VECTOR_SUBPARTS (TREE_TYPE (@1))
       && (TYPE_MODE (TREE_TYPE (type))
-          == TYPE_MODE (TREE_TYPE (TREE_TYPE (@0)))))
-  (plus @3 (view_convert @0))))
+          == TYPE_MODE (TREE_TYPE (TREE_TYPE (@1)))))
+  (plus @3 (view_convert (vec_cond @0 (negate @1) @2)))))
 
 
 /* Simplifications of comparisons.  */
@@ -1863,7 +1865,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cmp @0 @0)
   (if (! FLOAT_TYPE_P (TREE_TYPE (@0))
-       || ! HONOR_NANS (TYPE_MODE (TREE_TYPE (@0))))
+       || ! HONOR_NANS (@0))
    { constant_boolean_node (true, type); }
    (if (cmp != EQ_EXPR)
     (eq @0 @0)))))
@@ -1872,7 +1874,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp @0 @0)
   (if (cmp != NE_EXPR
        || ! FLOAT_TYPE_P (TREE_TYPE (@0))
-       || ! HONOR_NANS (TYPE_MODE (TREE_TYPE (@0))))
+       || ! HONOR_NANS (@0))
    { constant_boolean_node (false, type); })))
 (for cmp (unle unge uneq)
  (simplify
@@ -2149,7 +2151,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (FLOAT_TYPE_P (TREE_TYPE (@0))
        || (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
 	   && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))))
-   (with { tree tem = fold_unary (NEGATE_EXPR, TREE_TYPE (@0), @1); }
+   (with { tree tem = const_unop (NEGATE_EXPR, TREE_TYPE (@0), @1); }
     (if (tem && !TREE_OVERFLOW (tem))
      (scmp @0 { tem; }))))))
 

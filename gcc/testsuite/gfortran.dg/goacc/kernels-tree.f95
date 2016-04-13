@@ -4,7 +4,7 @@
 program test
   implicit none
   integer :: q, i, j, k, m, n, o, p, r, s, t, u, v, w
-  logical :: l
+  logical :: l = .true.
 
   !$acc kernels if(l) async copy(i), copyin(j), copyout(k), create(m) &
   !$acc present(o), pcopy(p), pcopyin(r), pcopyout(s), pcreate(t) &

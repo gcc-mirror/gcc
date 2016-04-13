@@ -2943,6 +2943,14 @@ get_constraint_for_ssa_var (tree t, vec<ce_s> *results, bool address_p)
       if (node && node->alias && node->analyzed)
 	{
 	  node = node->ultimate_alias_target ();
+	  /* Canonicalize the PT uid of all aliases to the ultimate target.
+	     ???  Hopefully the set of aliases can't change in a way that
+	     changes the ultimate alias target.  */
+	  gcc_assert ((! DECL_PT_UID_SET_P (node->decl)
+		       || DECL_PT_UID (node->decl) == DECL_UID (node->decl))
+		      && (! DECL_PT_UID_SET_P (t)
+			  || DECL_PT_UID (t) == DECL_UID (node->decl)));
+	  DECL_PT_UID (t) = DECL_UID (node->decl);
 	  t = node->decl;
 	}
     }
@@ -6271,6 +6279,16 @@ set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt,
 		  && fndecl
 		  && ! auto_var_in_fn_p (vi->decl, fndecl)))
 	    pt->vars_contains_nonlocal = true;
+	}
+
+      else if (TREE_CODE (vi->decl) == FUNCTION_DECL
+	       || TREE_CODE (vi->decl) == LABEL_DECL)
+	{
+	  /* Nothing should read/write from/to code so we can
+	     save bits by not including them in the points-to bitmaps.
+	     Still mark the points-to set as containing global memory
+	     to make code-patching possible - see PR70128.  */
+	  pt->vars_contains_nonlocal = true;
 	}
     }
 }

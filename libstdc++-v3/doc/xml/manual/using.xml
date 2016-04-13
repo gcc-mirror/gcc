@@ -908,7 +908,8 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 	<code>--enable-concept-checks</code>.  When defined, performs
 	compile-time checking on certain template instantiations to
 	detect violations of the requirements of the standard.  This
-	is described in more detail in
+	macro has no effect for freestanding implementations.
+	This is described in more detail in
 	<link linkend="manual.ext.compile_checks">Compile Time Checks</link>.
       </para>
     </listitem></varlistentry>
@@ -953,6 +954,13 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
       <para>Undefined by default. When defined, compiles user code
 	using the <link linkend="manual.ext.profile_mode">profile
 	mode</link>.
+      </para>
+    </listitem></varlistentry>
+
+    <varlistentry><term><code>__STDCPP_WANT_MATH_SPEC_FUNCS__</code></term>
+    <listitem>
+      <para>Undefined by default. When defined to a non-zero integer constant,
+	enables support for ISO/IEC 29124 Special Math Functions.
       </para>
     </listitem></varlistentry>
     </variablelist>

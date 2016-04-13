@@ -35,6 +35,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
+#if ENABLE_OFFLOADING == 1
+#define CRTOFFLOADBEGIN "%{fopenacc|fopenmp:crtoffloadbegin%O%s}"
+#define CRTOFFLOADEND "%{fopenacc|fopenmp:crtoffloadend%O%s}"
+#else
+#define CRTOFFLOADBEGIN ""
+#define CRTOFFLOADEND ""
+#endif
+
 /* Provide a STARTFILE_SPEC appropriate for GNU userspace.  Here we add
    the GNU userspace magical crtbegin.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static
@@ -49,14 +57,16 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	      %{" NO_PIE_SPEC ":crtbegin.o%s}} \
    %{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_start_preinit.o%s; \
-     fvtable-verify=std:vtv_start.o%s}"
+     fvtable-verify=std:vtv_start.o%s} \
+   " CRTOFFLOADBEGIN
 #else
 #define GNU_USER_TARGET_STARTFILE_SPEC \
   "%{!shared: %{pg|p|profile:gcrt1.o%s;:crt1.o%s}} \
    crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s} \
    %{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_start_preinit.o%s; \
-     fvtable-verify=std:vtv_start.o%s}"
+     fvtable-verify=std:vtv_start.o%s} \
+   " CRTOFFLOADBEGIN
 #endif
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC GNU_USER_TARGET_STARTFILE_SPEC
@@ -73,13 +83,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
      fvtable-verify=preinit:vtv_end_preinit.o%s; \
      fvtable-verify=std:vtv_end.o%s} \
    %{shared:crtendS.o%s;: %{" PIE_SPEC ":crtendS.o%s} \
-   %{" NO_PIE_SPEC ":crtend.o%s}} crtn.o%s"
+   %{" NO_PIE_SPEC ":crtend.o%s}} crtn.o%s \
+   " CRTOFFLOADEND
 #else
 #define GNU_USER_TARGET_ENDFILE_SPEC \
   "%{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_end_preinit.o%s; \
      fvtable-verify=std:vtv_end.o%s} \
-   %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
+   %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s \
+   " CRTOFFLOADEND
 #endif
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC GNU_USER_TARGET_ENDFILE_SPEC

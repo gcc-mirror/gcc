@@ -55,8 +55,8 @@
 
 #ifndef __cpp_range_based_for
 #  error "__cpp_range_based_for"
-#elif __cpp_range_based_for != 200907
-#  error "__cpp_range_based_for != 200907"
+#elif __cpp_range_based_for < 200907
+#  error "__cpp_range_based_for < 200907"
 #endif
 
 #ifndef __cpp_static_assert

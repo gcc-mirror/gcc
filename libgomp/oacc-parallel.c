@@ -103,6 +103,10 @@ GOACC_parallel_keyed (int device, void (*fn) (void *),
       return;
     }
 
+  /* Default: let the runtime choose.  */
+  for (i = 0; i != GOMP_DIM_MAX; i++)
+    dims[i] = 0;
+
   va_start (ap, kinds);
   /* TODO: This will need amending when device_type is implemented.  */
   while ((tag = va_arg (ap, unsigned)) != 0)
@@ -303,7 +307,7 @@ GOACC_enter_exit_data (int device, size_t mapnum,
 	  break;
 	}
 
-      if (kind == GOMP_MAP_FORCE_DEALLOC
+      if (kind == GOMP_MAP_DELETE
 	  || kind == GOMP_MAP_FORCE_FROM)
 	break;
 
@@ -370,7 +374,7 @@ GOACC_enter_exit_data (int device, size_t mapnum,
 					 == GOMP_MAP_FORCE_FROM,
 					 async, 1);
 		break;
-	      case GOMP_MAP_FORCE_DEALLOC:
+	      case GOMP_MAP_DELETE:
 		acc_delete (hostaddrs[i], sizes[i]);
 		break;
 	      case GOMP_MAP_FORCE_FROM:
@@ -518,10 +522,10 @@ GOACC_declare (int device, size_t mapnum,
       switch (kind)
 	{
 	  case GOMP_MAP_FORCE_ALLOC:
-	  case GOMP_MAP_FORCE_DEALLOC:
 	  case GOMP_MAP_FORCE_FROM:
 	  case GOMP_MAP_FORCE_TO:
 	  case GOMP_MAP_POINTER:
+	  case GOMP_MAP_DELETE:
 	    GOACC_enter_exit_data (device, 1, &hostaddrs[i], &sizes[i],
 				   &kinds[i], 0, 0);
 	    break;

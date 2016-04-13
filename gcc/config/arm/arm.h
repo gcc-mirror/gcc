@@ -253,6 +253,10 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 /* Nonzero if this chip supports ldrex and strex */
 #define TARGET_HAVE_LDREX        ((arm_arch6 && TARGET_ARM) || arm_arch7)
 
+/* Nonzero if this chip supports LPAE.  */
+#define TARGET_HAVE_LPAE						\
+  (arm_arch7 && ARM_FSET_HAS_CPU1 (insn_flags, FL_FOR_ARCH7VE))
+
 /* Nonzero if this chip supports ldrex{bh} and strex{bh}.  */
 #define TARGET_HAVE_LDREXBH ((arm_arch6k && TARGET_ARM) || arm_arch7)
 
@@ -2033,7 +2037,8 @@ extern int making_const_table;
 		    "\t.syntax divided\n")
 
 #undef  ASM_APP_OFF
-#define ASM_APP_OFF "\t.syntax unified\n"
+#define ASM_APP_OFF (TARGET_ARM ? "\t.arm\n\t.syntax unified\n" : \
+		     "\t.thumb\n\t.syntax unified\n")
 
 /* Output a push or a pop instruction (only used when profiling).
    We can't push STATIC_CHAIN_REGNUM (r12) directly with Thumb-1.  We know

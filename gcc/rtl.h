@@ -3011,7 +3011,7 @@ extern bool can_nonlocal_goto (const rtx_insn *);
 extern void copy_reg_eh_region_note_forward (rtx, rtx_insn *, rtx);
 extern void copy_reg_eh_region_note_backward (rtx, rtx_insn *, rtx);
 extern int inequality_comparisons_p (const_rtx);
-extern rtx replace_rtx (rtx, rtx, rtx);
+extern rtx replace_rtx (rtx, rtx, rtx, bool = false);
 extern void replace_label (rtx *, rtx, rtx, bool);
 extern void replace_label_in_insn (rtx_insn *, rtx, rtx, bool);
 extern bool rtx_referenced_p (const_rtx, const_rtx);
@@ -3592,7 +3592,7 @@ extern void init_lower_subreg (void);
 
 /* In gcse.c */
 extern bool can_copy_p (machine_mode);
-extern bool can_assign_to_reg_without_clobbers_p (rtx);
+extern bool can_assign_to_reg_without_clobbers_p (rtx, machine_mode);
 extern rtx fis_get_condition (rtx_insn *);
 
 /* In ira.c */
@@ -3652,6 +3652,8 @@ extern int anti_dependence (const_rtx, const_rtx);
 extern int canon_anti_dependence (const_rtx, bool,
 				  const_rtx, machine_mode, rtx);
 extern int output_dependence (const_rtx, const_rtx);
+extern int canon_output_dependence (const_rtx, bool,
+				    const_rtx, machine_mode, rtx);
 extern int may_alias_p (const_rtx, const_rtx);
 extern void init_alias_target (void);
 extern void init_alias_analysis (void);

@@ -1,5 +1,5 @@
 // PR c++/66985
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++1z -fconcepts" }
 
 template <template <class> class T>
 concept bool _Valid = requires { typename T<int>; };

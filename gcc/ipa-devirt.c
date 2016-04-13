@@ -393,7 +393,7 @@ odr_vtable_hasher::hash (const odr_type_d *odr_type)
 
    When STRICT is true, we compare types by their names for purposes of
    ODR violation warnings.  When strict is false, we consider variants
-   equivalent, becuase it is all that matters for devirtualization machinery.
+   equivalent, because it is all that matters for devirtualization machinery.
 */
 
 bool
@@ -705,6 +705,29 @@ odr_subtypes_equivalent_p (tree t1, tree t2,
   return odr_types_equivalent_p (t1, t2, false, NULL, visited, loc1, loc2);
 }
 
+/* Return true if DECL1 and DECL2 are identical methods.  Consider
+   name equivalent to name.localalias.xyz.  */
+
+static bool
+methods_equal_p (tree decl1, tree decl2)
+{
+  if (DECL_ASSEMBLER_NAME (decl1) == DECL_ASSEMBLER_NAME (decl2))
+    return true;
+  const char sep = symbol_table::symbol_suffix_separator ();
+
+  const char *name1 = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl1));
+  const char *ptr1 = strchr (name1, sep);
+  int len1 = ptr1 ? ptr1 - name1 : strlen (name1);
+
+  const char *name2 = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl2));
+  const char *ptr2 = strchr (name2, sep);
+  int len2 = ptr2 ? ptr2 - name2 : strlen (name2);
+
+  if (len1 != len2)
+    return false;
+  return !strncmp (name1, name2, len1);
+}
+
 /* Compare two virtual tables, PREVAILING and VTABLE and output ODR
    violation warnings.  */
 
@@ -758,8 +781,8 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 	 accept the other case.  */
       while (!end2
 	     && (end1
-	         || (DECL_ASSEMBLER_NAME (ref1->referred->decl)
-		     != DECL_ASSEMBLER_NAME (ref2->referred->decl)
+	         || (methods_equal_p (ref1->referred->decl,
+				      ref2->referred->decl)
 	             && TREE_CODE (ref1->referred->decl) == FUNCTION_DECL))
 	     && TREE_CODE (ref2->referred->decl) != FUNCTION_DECL)
 	{
@@ -785,8 +808,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 	}
       while (!end1
 	     && (end2
-	         || (DECL_ASSEMBLER_NAME (ref2->referred->decl)
-		     != DECL_ASSEMBLER_NAME (ref1->referred->decl)
+	         || (methods_equal_p (ref2->referred->decl, ref1->referred->decl)
 	             && TREE_CODE (ref2->referred->decl) == FUNCTION_DECL))
 	     && TREE_CODE (ref1->referred->decl) != FUNCTION_DECL)
 	{
@@ -823,8 +845,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 
       if (!end1 && !end2)
 	{
-	  if (DECL_ASSEMBLER_NAME (ref1->referred->decl)
-	      == DECL_ASSEMBLER_NAME (ref2->referred->decl))
+	  if (methods_equal_p (ref1->referred->decl, ref2->referred->decl))
 	    continue;
 
 	  class_type->odr_violated = true;
@@ -920,11 +941,14 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 		      "unit");
 	      gcc_assert (TREE_CODE (ref2->referred->decl)
 			  == FUNCTION_DECL);
-	      inform (DECL_SOURCE_LOCATION (ref1->referred->decl),
-		      "virtual method %qD", ref1->referred->decl);
-	      inform (DECL_SOURCE_LOCATION (ref2->referred->decl),
+	      inform (DECL_SOURCE_LOCATION
+			 (ref1->referred->ultimate_alias_target ()->decl),
+		      "virtual method %qD",
+		      ref1->referred->ultimate_alias_target ()->decl);
+	      inform (DECL_SOURCE_LOCATION
+			 (ref2->referred->ultimate_alias_target ()->decl),
 		      "ought to match virtual method %qD but does not",
-		      ref2->referred->decl);
+		      ref2->referred->ultimate_alias_target ()->decl);
 	    }
 	  else
 	    inform (DECL_SOURCE_LOCATION
@@ -2414,10 +2438,14 @@ maybe_record_node (vec <cgraph_node *> &nodes,
     {
       gcc_assert (!target_node->global.inlined_to);
       gcc_assert (target_node->real_symbol_p ());
+      /* When sanitizing, do not assume that __cxa_pure_virtual is not called
+	 by valid program.  */
+      if (flag_sanitize & SANITIZE_UNREACHABLE)
+	;
       /* Only add pure virtual if it is the only possible target.  This way
 	 we will preserve the diagnostics about pure virtual called in many
 	 cases without disabling optimization in other.  */
-      if (pure_virtual)
+      else if (pure_virtual)
 	{
 	  if (nodes.length ())
 	    return;
@@ -3177,10 +3205,11 @@ possible_polymorphic_call_targets (tree otr_type,
 
 	  if (!outer_type->all_derivations_known)
 	    {
-	      if (!speculative && final_warning_records)
+	      if (!speculative && final_warning_records
+		  && nodes.length () == 1
+		  && TREE_CODE (TREE_TYPE (nodes[0]->decl)) == METHOD_TYPE)
 		{
 		  if (complete
-		      && nodes.length () == 1
 		      && warn_suggest_final_types
 		      && !outer_type->derived_types.length ())
 		    {
@@ -3196,7 +3225,6 @@ possible_polymorphic_call_targets (tree otr_type,
 		    }
 		  if (complete
 		      && warn_suggest_final_methods
-		      && nodes.length () == 1
 		      && types_same_for_odr (DECL_CONTEXT (nodes[0]->decl),
 					     outer_type->type))
 		    {
@@ -3350,8 +3378,7 @@ possible_polymorphic_call_target_p (tree otr_type,
   bool final;
 
   if (TREE_CODE (TREE_TYPE (n->decl)) == FUNCTION_TYPE
-      && ((fcode = DECL_FUNCTION_CODE (n->decl))
-	  == BUILT_IN_UNREACHABLE
+      && ((fcode = DECL_FUNCTION_CODE (n->decl)) == BUILT_IN_UNREACHABLE
           || fcode == BUILT_IN_TRAP))
     return true;
 

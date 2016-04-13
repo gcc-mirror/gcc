@@ -19,6 +19,8 @@ int f2 (int a, int *b, int c)
 /* { dg-final { scan-assembler-times "_ZGVcN8uva32l4_f2:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdM8uva32l4_f2:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdN8uva32l4_f2:" 1 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeM8uva32l4_f2:" 1 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeN8uva32l4_f2:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 
 #pragma omp declare simd uniform (a) aligned (b : 8 * sizeof (long long)) linear (c : 4) simdlen (8)
 __extension__
@@ -53,6 +55,8 @@ f7 (int x)
 /* { dg-final { scan-assembler-times "_ZGVcN16v_f7:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdM16v_f7:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdN16v_f7:" 1 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeM16v_f7:" 1 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeN16v_f7:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 
 int
 f9 (int x)
@@ -82,6 +86,8 @@ f13 (int c; int *b; int a; int a, int *b, int c)
 /* { dg-final { scan-assembler-times "_ZGVcN8uva32l4_f13:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdM8uva32l4_f13:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdN8uva32l4_f13:" 1 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeM8uva32l4_f13:" 1 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeN8uva32l4_f13:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 
 #pragma omp declare simd uniform (a) aligned (b : 8 * sizeof (int)) linear (c : 4) simdlen (8)
 int
@@ -98,6 +104,8 @@ f14 (a, b, c)
 /* { dg-final { scan-assembler-times "_ZGVcN8uva32l4_f14:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdM8uva32l4_f14:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdN8uva32l4_f14:" 1 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeM8uva32l4_f14:" 1 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeN8uva32l4_f14:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 
 #pragma omp declare simd uniform (a) aligned (b : 8 * sizeof (int)) linear (c : 4) simdlen (8)
 int
@@ -112,6 +120,8 @@ f15 (int a, int *b, int c)
 /* { dg-final { scan-assembler-times "_ZGVcN8uva32l4_f15:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdM8uva32l4_f15:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdN8uva32l4_f15:" 1 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeM8uva32l4_f15:" 1 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeN8uva32l4_f15:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 
 #pragma omp declare simd uniform (d) aligned (e : 8 * sizeof (int)) linear (f : 4) simdlen (8)
 int f15 (int d, int *e, int f);
@@ -131,12 +141,16 @@ int f17 (int g, long *h)
 /* { dg-final { scan-assembler-times "_ZGVcN4l20va8_f17:" 1 { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdM4l20va8_f17:" 1 { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdN4l20va8_f17:" 1 { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeM4l20va8_f17:" 1 { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeN4l20va8_f17:" 1 { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
 /* { dg-final { scan-assembler-times "_ZGVbM4l12va4_f17:" 1 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } } */
 /* { dg-final { scan-assembler-times "_ZGVbN4l12va4_f17:" 1 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } } */
 /* { dg-final { scan-assembler-times "_ZGVcM4l12va4_f17:" 1 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } } */
 /* { dg-final { scan-assembler-times "_ZGVcN4l12va4_f17:" 1 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdM4l12va4_f17:" 1 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdN4l12va4_f17:" 1 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeM4l12va4_f17:" 1 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeN4l12va4_f17:" 1 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } } */
 
 #pragma omp declare simd aligned (i : sizeof (*i)) linear (j : 2 * sizeof (i[0]) + sizeof (j)) simdlen (4)
 int
@@ -153,9 +167,13 @@ f18 (j, i)
 /* { dg-final { scan-assembler-times "_ZGVcN4l20va8_f18:" 1 { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdM4l20va8_f18:" 1 { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdN4l20va8_f18:" 1 { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeM4l20va8_f18:" 1 { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeN4l20va8_f18:" 1 { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
 /* { dg-final { scan-assembler-times "_ZGVbM4l12va4_f18:" 1 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } } */
 /* { dg-final { scan-assembler-times "_ZGVbN4l12va4_f18:" 1 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } } */
 /* { dg-final { scan-assembler-times "_ZGVcM4l12va4_f18:" 1 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } } */
 /* { dg-final { scan-assembler-times "_ZGVcN4l12va4_f18:" 1 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdM4l12va4_f18:" 1 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdN4l12va4_f18:" 1 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeM4l12va4_f18:" 1 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeN4l12va4_f18:" 1 { target { { i?86-*-* x86_64-*-* } && ilp32 } } } } */

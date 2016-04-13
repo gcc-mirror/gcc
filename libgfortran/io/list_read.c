@@ -1374,7 +1374,7 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
 
  exp2:
   if (!isdigit (c))
-    goto bad;
+    goto bad_exponent;
 
   push_char (dtp, c);
 
@@ -1472,6 +1472,8 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
   if (nml_bad_return (dtp, c))
     return 0;
 
+ bad_exponent:
+
   free_saved (dtp);
   if (c == EOF)
     {
@@ -1482,8 +1484,8 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
   else if (c != '\n')
     eat_line (dtp);
 
-  snprintf (message, MSGLEN, "Bad floating point number for item %d",
-	      dtp->u.p.item_count);
+  snprintf (message, MSGLEN, "Bad complex floating point "
+	    "number for item %d", dtp->u.p.item_count);
   free_line (dtp);
   generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
 
@@ -1814,7 +1816,8 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
 
  exp2:
   if (!isdigit (c))
-    goto bad_real;
+    goto bad_exponent;
+
   push_char (dtp, c);
 
   for (;;)
@@ -1982,6 +1985,8 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
 
   if (nml_bad_return (dtp, c))
     return;
+
+ bad_exponent:
 
   free_saved (dtp);
   if (c == EOF)
@@ -2810,6 +2815,7 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
   if (dtp->u.p.nml_read_error || !nl->touched)
     return true;
 
+  dtp->u.p.item_count++;  /* Used in error messages.  */
   dtp->u.p.repeat_count = 0;
   eat_spaces (dtp);
 

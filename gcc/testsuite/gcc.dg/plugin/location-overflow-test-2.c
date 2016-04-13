@@ -20,7 +20,7 @@ int
 fn_1 (int flag)
 {
   int foo = 4, bar = 5;
-  if (flag) foo = 3; bar = 2; /* { dg-warning "indented" } */
+  if (flag) foo = 3; bar = 2; /* { dg-warning "this .if." } */
   return foo * bar;
 }
 

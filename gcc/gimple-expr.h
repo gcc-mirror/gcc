@@ -35,8 +35,8 @@ extern tree create_tmp_reg (tree, const char * = NULL);
 extern tree create_tmp_reg_fn (struct function *, tree, const char *);
 
 
-extern void extract_ops_from_tree_1 (tree, enum tree_code *, tree *, tree *,
-				     tree *);
+extern void extract_ops_from_tree (tree, enum tree_code *, tree *, tree *,
+				   tree *);
 extern void gimple_cond_get_ops_from_tree (tree, enum tree_code *, tree *,
 					   tree *);
 extern bool is_gimple_lvalue (tree);
@@ -146,15 +146,15 @@ is_gimple_constant (const_tree t)
     }
 }
 
-/* A wrapper around extract_ops_from_tree_1, for callers which expect
-   to see only a maximum of two operands.  */
+/* A wrapper around extract_ops_from_tree with 3 ops, for callers which
+   expect to see only a maximum of two operands.  */
 
 static inline void
 extract_ops_from_tree (tree expr, enum tree_code *code, tree *op0,
 		       tree *op1)
 {
   tree op2;
-  extract_ops_from_tree_1 (expr, code, op0, op1, &op2);
+  extract_ops_from_tree (expr, code, op0, op1, &op2);
   gcc_assert (op2 == NULL_TREE);
 }
 

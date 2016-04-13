@@ -5140,14 +5140,6 @@ mark_used (tree decl, tsubst_flags_t complain)
   if (DECL_ODR_USED (decl))
     return true;
 
-  /* If within finish_function, defer the rest until that function
-     finishes, otherwise it might recurse.  */
-  if (defer_mark_used_calls)
-    {
-      vec_safe_push (deferred_mark_used_calls, decl);
-      return true;
-    }
-
   /* Normally, we can wait until instantiation-time to synthesize DECL.
      However, if DECL is a static data member initialized with a constant
      or a constexpr function, we need it right now because a reference to

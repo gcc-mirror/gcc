@@ -55,3 +55,10 @@ along with GCC; see the file COPYING3.  If not see
 /* We cannot use PC-relative accesses for VxWorks PIC because there is no
    fixed gap between segments.  */
 #undef ASM_PREFERRED_EH_DATA_FORMAT
+
+/* Define this to be nonzero if static stack checking is supported.  */
+#define STACK_CHECK_STATIC_BUILTIN 1
+
+/* This platform supports the probing method of stack checking (RTP mode).
+   8K is reserved in the stack to propagate exceptions in case of overflow.  */
+#define STACK_CHECK_PROTECT 8192

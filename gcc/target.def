@@ -4884,9 +4884,9 @@ DEFHOOK
 DEFHOOK
 (lra_p,
  "A target hook which returns true if we use LRA instead of reload pass.\
-  It means that LRA was ported to the target.\
   \
-  The default version of this target hook returns always false.",
+  The default version of this target hook returns always false, but new\
+  ports should use LRA.",
  bool, (void),
  default_lra_p)
 

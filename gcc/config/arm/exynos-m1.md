@@ -248,10 +248,6 @@
 	  (eq_attr "type" "neon_load4_all_lanes, neon_load4_all_lanes_q")
 	    (const_string "neon_load4_all")
 
-	  (eq_attr "type" "f_stores, f_stored,\
-			   neon_stp, neon_stp_q")
-	    (const_string "neon_store")
-
 	  (eq_attr "type" "neon_store1_1reg, neon_store1_1reg_q")
 	    (const_string "neon_store1_1")
 
@@ -730,8 +726,14 @@
 (define_insn_reservation
   "exynos_m1_neon_store" 1
   (and (eq_attr "tune" "exynosm1")
-       (eq_attr "exynos_m1_neon_type" "neon_store"))
-  "(em1_fst, em1_st)")
+       (eq_attr "type" "f_stores, f_stored, neon_stp"))
+  "em1_sfst")
+
+(define_insn_reservation
+  "exynos_m1_neon_store_q" 3
+  (and (eq_attr "tune" "exynosm1")
+       (eq_attr "type" "neon_stp_q"))
+  "(em1_sfst * 2)")
 
 (define_insn_reservation
   "exynos_m1_neon_store1_1" 1
@@ -761,7 +763,7 @@
   "exynos_m1_neon_store1_one" 7
   (and (eq_attr "tune" "exynosm1")
        (eq_attr "exynos_m1_neon_type" "neon_store1_one"))
-  "(em1_fst, em1_st)")
+  "em1_sfst")
 
 (define_insn_reservation
   "exynos_m1_neon_store2" 7
@@ -892,7 +894,9 @@
 
 ;; Pre-decrement and post-increment addressing modes update the register quickly.
 ;; TODO: figure out how to tell the addressing mode register from the loaded one.
-(define_bypass 1 "exynos_m1_store*" "exynos_m1_store*")
+(define_bypass 1 "exynos_m1_store*, exynos_m1_neon_store*"
+		 "exynos_m1_store*, exynos_m1_neon_store*,
+		  exynos_m1_load*, exynos_m1_neon_load*")
 
 ;; MLAs can feed other MLAs quickly.
 (define_bypass 1 "exynos_m1_mla*" "exynos_m1_mla*")
@@ -908,7 +912,6 @@
 (define_bypass 5 "exynos_m1_neon_fp_mla, exynos_m1_neon_fp_step"
 		 "exynos_m1_neon_fp_add, exynos_m1_neon_fp_mul,\
 		  exynos_m1_neon_fp_mla, exynos_m1_neon_fp_step")
-
 (define_bypass 3 "exynos_m1_fp_add"
 		 "exynos_m1_fp_add, exynos_m1_fp_mul, exynos_m1_fp_mac")
 (define_bypass 3 "exynos_m1_neon_fp_add"
@@ -946,6 +949,11 @@
 (define_bypass 5 "exynos_m1_crypto_complex"
 		 "exynos_m1_crypto_simple, exynos_m1_crypto_complex,\
 		  exynos_m1_crypto_poly*")
+
+;; AES{D,E}/AESMC pairs can feed each other instantly.
+(define_bypass 0 "exynos_m1_crypto_simple"
+		 "exynos_m1_crypto_simple"
+		 "aarch_crypto_can_dual_issue")
 
 ;; Predicted branches take no time, but mispredicted ones take forever anyway.
 (define_bypass 1 "exynos_m1_*"

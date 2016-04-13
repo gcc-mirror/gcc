@@ -325,7 +325,7 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, TYPE_READONLY (expr), 1);
   /* We used to stream TYPE_ALIAS_SET == 0 information to let frontends mark
      types that are opaque for TBAA.  This however did not work as intended,
-     becuase TYPE_ALIAS_SET == 0 was regularly lost in type merging.  */
+     because TYPE_ALIAS_SET == 0 was regularly lost in type merging.  */
   if (RECORD_OR_UNION_TYPE_P (expr))
     {
       bp_pack_value (bp, TYPE_TRANSPARENT_AGGR (expr), 1);

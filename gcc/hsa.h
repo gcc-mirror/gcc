@@ -60,7 +60,8 @@ struct hsa_symbol
   /* Constructor.  */
   hsa_symbol (BrigType16_t type, BrigSegment8_t segment,
 	      BrigLinkage8_t linkage, bool global_scope_p = false,
-	      BrigAllocation allocation = BRIG_ALLOCATION_AUTOMATIC);
+	      BrigAllocation allocation = BRIG_ALLOCATION_AUTOMATIC,
+	      BrigAlignment8_t align = BRIG_ALIGNMENT_8);
 
   /* Return total size of the symbol.  */
   unsigned HOST_WIDE_INT total_byte_size ();
@@ -109,6 +110,12 @@ struct hsa_symbol
 
   /* Symbol allocation.  */
   BrigAllocation m_allocation;
+
+  /* Flag used for global variables if a variable is already emitted or not.  */
+  bool m_emitted_to_brig;
+
+  /* Alignment of the symbol.  */
+  BrigAlignment8_t m_align;
 
 private:
   /* Default constructor.  */
@@ -168,17 +175,16 @@ public:
   ~hsa_op_immed ();
   void set_type (BrigKind16_t t);
 
+  /* Function returns pointer to a buffer that contains binary representation
+     of the immeadiate value.  The buffer has length of BRIG_SIZE and
+     a caller is responsible for deallocation of the buffer.  */
+  char *emit_to_buffer (unsigned *brig_size);
+
   /* Value as represented by middle end.  */
   tree m_tree_value;
 
   /* Integer value representation.  */
   HOST_WIDE_INT m_int_value;
-
-  /* Brig data representation.  */
-  char *m_brig_repr;
-
-  /* Brig data representation size in bytes.  */
-  unsigned m_brig_repr_size;
 
 private:
   /* Make the default constructor inaccessible.  */
@@ -186,7 +192,6 @@ private:
   /* All objects are deallocated by destroying their pool, so make delete
      inaccessible too.  */
   void operator delete (void *) {}
-  void emit_to_buffer (tree value);
 };
 
 /* Report whether or not P is a an immediate operand.  */
@@ -198,6 +203,17 @@ is_a_helper <hsa_op_immed *>::test (hsa_op_base *p)
 {
   return p->m_kind == BRIG_KIND_OPERAND_CONSTANT_BYTES;
 }
+
+/* Likewise, but for a more specified base. */
+
+template <>
+template <>
+inline bool
+is_a_helper <hsa_op_immed *>::test (hsa_op_with_type *p)
+{
+  return p->m_kind == BRIG_KIND_OPERAND_CONSTANT_BYTES;
+}
+
 
 /* HSA register operand.  */
 
@@ -547,9 +563,6 @@ public:
 
   /* Jump table.  */
   vec <basic_block> m_jump_table;
-
-  /* Default label basic block.  */
-  basic_block m_default_bb;
 
   /* Code list for label references.  */
   hsa_op_code_list *m_label_code_list;
@@ -1105,7 +1118,8 @@ class hsa_function_representation
 {
 public:
   hsa_function_representation (tree fdecl, bool kernel_p,
-			       unsigned ssa_names_count);
+			       unsigned ssa_names_count,
+			       bool modified_cfg = false);
   hsa_function_representation (hsa_internal_fn *fn);
   ~hsa_function_representation ();
 
@@ -1120,6 +1134,9 @@ public:
      but the HSA generator might use them to put code into,
      so we need hsa_bb instances of them.  */
   void init_extra_bbs ();
+
+  /* Update CFG dominators if m_modified_cfg flag is set.  */
+  void update_dominance ();
 
   /* Return linkage of the representation.  */
   BrigLinkage8_t get_linkage ();
@@ -1201,6 +1218,9 @@ public:
 
   /* SSA names mapping.  */
   vec <hsa_op_reg_p> m_ssa_map;
+
+  /* Flag whether a function needs update of dominators before RA.  */
+  bool m_modified_cfg;
 };
 
 enum hsa_function_kind
@@ -1326,11 +1346,15 @@ BrigType16_t hsa_bittype_for_bitsize (unsigned bitsize);
 BrigType16_t hsa_uint_for_bitsize (unsigned bitsize);
 BrigType16_t hsa_float_for_bitsize (unsigned bitsize);
 BrigType16_t hsa_bittype_for_type (BrigType16_t t);
+BrigType16_t hsa_unsigned_type_for_type (BrigType16_t t);
+bool hsa_type_packed_p (BrigType16_t type);
 bool hsa_type_float_p (BrigType16_t type);
 bool hsa_type_integer_p (BrigType16_t type);
 bool hsa_btype_p (BrigType16_t type);
 BrigAlignment8_t hsa_alignment_encoding (unsigned n);
 BrigAlignment8_t hsa_natural_alignment (BrigType16_t type);
+BrigAlignment8_t hsa_object_alignment (tree t);
+unsigned hsa_byte_alignment (BrigAlignment8_t alignment);
 void hsa_destroy_operand (hsa_op_base *op);
 void hsa_destroy_insn (hsa_insn_basic *insn);
 void hsa_add_kern_decl_mapping (tree decl, char *name, unsigned, bool);
@@ -1340,6 +1364,9 @@ char *hsa_get_decl_kernel_mapping_name (unsigned i);
 unsigned hsa_get_decl_kernel_mapping_omp_size (unsigned i);
 bool hsa_get_decl_kernel_mapping_gridified (unsigned i);
 void hsa_free_decl_kernel_mapping (void);
+tree *hsa_get_ctor_statements (void);
+tree *hsa_get_dtor_statements (void);
+tree *hsa_get_kernel_dispatch_type (void);
 void hsa_add_kernel_dependency (tree caller, const char *called_function);
 void hsa_sanitize_name (char *p);
 char *hsa_brig_function_name (const char *p);

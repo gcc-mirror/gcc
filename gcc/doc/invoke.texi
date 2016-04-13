@@ -267,7 +267,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-format-contains-nul -Wno-format-extra-args -Wformat-nonliteral @gol
 -Wformat-security  -Wformat-signedness  -Wformat-y2k -Wframe-address @gol
 -Wframe-larger-than=@var{len} -Wno-free-nonheap-object -Wjump-misses-init @gol
--Wignored-qualifiers  -Wincompatible-pointer-types @gol
+-Wignored-qualifiers  -Wignored-attributes  -Wincompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
 -Winit-self  -Winline  -Wno-int-conversion @gol
 -Wno-int-to-pointer-cast -Winvalid-memory-model -Wno-invalid-offsetof @gol
@@ -303,7 +303,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wunsuffixed-float-constants  -Wunused  -Wunused-function @gol
 -Wunused-label  -Wunused-local-typedefs -Wunused-parameter @gol
 -Wno-unused-result -Wunused-value @gol -Wunused-variable @gol
--Wunused-const-variable @gol
+-Wunused-const-variable -Wunused-const-variable=@var{n} @gol
 -Wunused-but-set-parameter -Wunused-but-set-variable @gol
 -Wuseless-cast -Wvariadic-macros -Wvector-operation-performance @gol
 -Wvla -Wvolatile-register-var  -Wwrite-strings @gol
@@ -408,7 +408,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-parallelize-loops=@var{n} -ftree-pre -ftree-partial-pre -ftree-pta @gol
 -ftree-reassoc -ftree-sink -ftree-slsr -ftree-sra @gol
 -ftree-switch-conversion -ftree-tail-merge -ftree-ter @gol
--ftree-vectorize -ftree-vrp @gol
+-ftree-vectorize -ftree-vrp -funconstrained-commons @gol
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
 -funsafe-loop-optimizations -funsafe-math-optimizations -funswitch-loops @gol
 -fipa-ra -fvariable-expansion-in-unroller -fvect-cost-model -fvpt @gol
@@ -712,7 +712,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-msmall-model -mno-lsim}
 
 @emph{FT32 Options}
-@gccoptlist{-msim -mlra}
+@gccoptlist{-msim -mlra -mnodiv}
 
 @emph{FRV Options}
 @gccoptlist{-mgpr-32  -mgpr-64  -mfpr-32  -mfpr-64 @gol
@@ -2238,6 +2238,16 @@ return value even without this option.  In all other cases, when
 exhaustion is signalled by throwing @code{std::bad_alloc}.  See also
 @samp{new (nothrow)}.
 
+@item -fconcepts
+@opindex fconcepts
+Enable support for the C++ Extensions for Concepts Technical
+Specification, ISO 19217 (2015), which allows code like
+
+@smallexample
+template <class T> concept bool Addable = requires (T t) @{ t + t; @};
+template <Addable T> T add (T a, T b) @{ return a + b; @}
+@end smallexample
+
 @item -fconstexpr-depth=@var{n}
 @opindex fconstexpr-depth
 Set the maximum nested evaluation depth for C++11 constexpr functions
@@ -2756,7 +2766,8 @@ Requires @option{-flto} to be enabled.  Enabled by default.
 @item -Wnarrowing @r{(C++ and Objective-C++ only)}
 @opindex Wnarrowing
 @opindex Wno-narrowing
-Warn when a narrowing conversion prohibited by C++11 occurs within
+With @option{-std=gnu++98} or @option{-std=c++98}, warn when a narrowing
+conversion prohibited by C++11 occurs within
 @samp{@{ @}}, e.g.
 
 @smallexample
@@ -2765,10 +2776,13 @@ int i = @{ 2.2 @}; // error: narrowing from double to int
 
 This flag is included in @option{-Wall} and @option{-Wc++11-compat}.
 
-With @option{-std=c++11}, @option{-Wno-narrowing} suppresses the diagnostic
-required by the standard.  Note that this does not affect the meaning
-of well-formed code; narrowing conversions are still considered
-ill-formed in SFINAE context.
+When a later standard is in effect, e.g. when using @option{-std=c++11},
+narrowing conversions are diagnosed by default, as required by the standard.
+A narrowing conversion from a constant produces an error,
+and a narrowing conversion from a non-constant produces a warning,
+but @option{-Wno-narrowing} suppresses the diagnostic.
+Note that this does not affect the meaning of well-formed code;
+narrowing conversions are still considered ill-formed in SFINAE contexts.
 
 @item -Wnoexcept @r{(C++ and Objective-C++ only)}
 @opindex Wnoexcept
@@ -3872,6 +3886,14 @@ even without this option.
 
 This warning is also enabled by @option{-Wextra}.
 
+@item -Wignored-attributes @r{(C and C++ only)}
+@opindex Wignored-attributes
+@opindex Wno-ignored-attributes
+Warn when an attribute is ignored.  This is different from the
+@option{-Wattributes} option in that it warns whenever the compiler decides
+to drop an attribute, not that the attribute is either unknown, used in a
+wrong place, etc.  This warning is enabled by default.
+
 @item -Wmain
 @opindex Wmain
 @opindex Wno-main
@@ -4227,22 +4249,38 @@ its return value. The default is @option{-Wunused-result}.
 @opindex Wunused-variable
 @opindex Wno-unused-variable
 Warn whenever a local or static variable is unused aside from its
-declaration. This option implies @option{-Wunused-const-variable} for C,
+declaration. This option implies @option{-Wunused-const-variable=1} for C,
 but not for C++. This warning is enabled by @option{-Wall}.
 
 To suppress this warning use the @code{unused} attribute
 (@pxref{Variable Attributes}).
 
 @item -Wunused-const-variable
+@itemx -Wunused-const-variable=@var{n}
 @opindex Wunused-const-variable
 @opindex Wno-unused-const-variable
 Warn whenever a constant static variable is unused aside from its declaration.
-This warning is enabled by @option{-Wunused-variable} for C, but not for C++.
-In C++ this is normally not an error since const variables take the place of
-@code{#define}s in C++.
+@option{-Wunused-const-variable=1} is enabled by @option{-Wunused-variable}
+for C, but not for C++. In C this declares variable storage, but in C++ this
+is not an error since const variables take the place of @code{#define}s.
 
 To suppress this warning use the @code{unused} attribute
 (@pxref{Variable Attributes}).
+
+@table @gcctabopt
+@item -Wunused-const-variable=1
+This is the warning level that is enabled by @option{-Wunused-variable} for
+C.  It warns only about unused static const variables defined in the main
+compilation unit, but not about static const variables declared in any
+header included.
+
+@item -Wunused-const-variable=2
+This warning level also warns for unused constant static variables in
+headers (excluding system headers).  This is the warning level of
+@option{-Wunused-const-variable} and must be explicitly requested since
+in C++ this isn't an error and in C it might be harder to clean up all
+headers included.
+@end table
 
 @item -Wunused-value
 @opindex Wunused-value
@@ -6521,11 +6559,14 @@ life-range analysis.  This option is effective only with
 
 @item -fno-branch-count-reg
 @opindex fno-branch-count-reg
-Do not use ``decrement and branch'' instructions on a count register,
-but instead generate a sequence of instructions that decrement a
-register, compare it against zero, then branch based upon the result.
-This option is only meaningful on architectures that support such
-instructions, which include x86, PowerPC, IA-64 and S/390.
+Avoid running a pass scanning for opportunities to use ``decrement and
+branch'' instructions on a count register instead of generating sequences
+of instructions that decrement a register, compare it against zero, and
+then branch based upon the result.  This option is only meaningful on
+architectures that support such instructions, which include x86, PowerPC,
+IA-64 and S/390.  Note that the @option{-fno-branch-count-reg} option
+doesn't remove the decrement and branch instructions from the generated
+instruction stream introduced by other optimization passes.
 
 Enabled by default at @option{-O1} and higher.
 
@@ -6666,6 +6707,12 @@ the loop optimizer itself cannot prove that these assumptions are valid.
 If you use @option{-Wunsafe-loop-optimizations}, the compiler warns you
 if it finds this kind of loop.
 
+@item -funconstrained-commons
+@opindex funconstrained-commons
+This option tells the compiler that variables declared in common blocks
+(e.g. Fortran) may later be overridden with longer trailing arrays. This
+prevents certain optimizations that depend on knowing the array bounds.
+
 @item -fcrossjumping
 @opindex fcrossjumping
 Perform cross-jumping transformation.
@@ -6789,7 +6836,12 @@ value, and any changes during the lifetime of the object are dead when
 the object is destroyed.  Normally dead store elimination will take
 advantage of this; if your code relies on the value of the object
 storage persisting beyond the lifetime of the object, you can use this
-flag to disable this optimization.
+flag to disable this optimization.  To preserve stores before the
+constructor starts (e.g. because your operator new clears the object
+storage) but still treat the object as dead after the destructor you,
+can use @option{-flifetime-dse=1}.  The default behavior can be
+explicitly selected with @option{-flifetime-dse=2}.
+@option{-flifetime-dse=0} is equivalent to @option{-fno-lifetime-dse}.
 
 @item -flive-range-shrinkage
 @opindex flive-range-shrinkage
@@ -9549,6 +9601,11 @@ Enable emission of special debug stores within HSA kernels which are
 then read and reported by libgomp plugin.  Generation of these stores
 is disabled by default, use @option{--param hsa-gen-debug-stores=1} to
 enable it.
+
+@item max-speculative-devirt-maydefs
+The maximum number of may-defs we analyze when looking for a must-def
+specifying the dynamic type of an object that invokes a virtual call
+we may be able to devirtualize speculatively.
 @end table
 @end table
 
@@ -12859,12 +12916,10 @@ corresponding flag to the linker.
 @item -mno-low-precision-recip-sqrt
 @opindex -mlow-precision-recip-sqrt
 @opindex -mno-low-precision-recip-sqrt
-The square root estimate uses two steps instead of three for double-precision,
-and one step instead of two for single-precision.
-Thus reducing latency and precision.
-This is only relevant if @option{-ffast-math} activates
-reciprocal square root estimate instructions.
-Which in turn depends on the target processor.
+When calculating the reciprocal square root approximation,
+uses one less step than otherwise, thus reducing latency and precision.
+This is only relevant if @option{-ffast-math} enables the reciprocal square root
+approximation, which in turn depends on the target processor.
 
 @item -march=@var{name}
 @opindex march
@@ -13955,9 +14010,10 @@ Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{arm1156t2-s}, @samp{arm1156t2f-s}, @samp{arm1176jz-s}, @samp{arm1176jzf-s},
 @samp{generic-armv7-a}, @samp{cortex-a5}, @samp{cortex-a7}, @samp{cortex-a8},
 @samp{cortex-a9}, @samp{cortex-a12}, @samp{cortex-a15}, @samp{cortex-a17},
-@samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a57}, @samp{cortex-a72},
-@samp{cortex-r4},
-@samp{cortex-r4f}, @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-m7},
+@samp{cortex-a32}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a57},
+@samp{cortex-a72}, @samp{cortex-r4},
+@samp{cortex-r4f}, @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8},
+@samp{cortex-m7},
 @samp{cortex-m4},
 @samp{cortex-m3},
 @samp{cortex-m1},
@@ -15775,6 +15831,10 @@ I/O functions are needed.
 @opindex mlra
 Enable Local Register Allocation.  This is still experimental for FT32,
 so by default the compiler uses standard reload.
+
+@item -mnodiv
+@opindex mnodiv
+Do not use div and mod instructions.
 
 @end table
 

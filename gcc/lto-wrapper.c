@@ -68,7 +68,7 @@ static unsigned int nr;
 static char **input_names;
 static char **output_names;
 static char **offload_names;
-static const char *offloadbegin, *offloadend;
+static char *offload_objects_file_name;
 static char *makefile;
 
 const char tool_name[] = "lto-wrapper";
@@ -84,6 +84,8 @@ tool_cleanup (bool)
     maybe_unlink (ltrans_output_file);
   if (flto_out)
     maybe_unlink (flto_out);
+  if (offload_objects_file_name)
+    maybe_unlink (offload_objects_file_name);
   if (makefile)
     maybe_unlink (makefile);
   for (i = 0; i < nr; ++i)
@@ -840,40 +842,32 @@ copy_file (const char *dest, const char *src)
     }
 }
 
-/* Find the crtoffloadbegin.o and crtoffloadend.o files in LIBRARY_PATH, make
-   copies and store the names of the copies in offloadbegin and offloadend.  */
+/* Find the crtoffloadtable.o file in LIBRARY_PATH, make copy and pass name of
+   the copy to the linker.  */
 
 static void
-find_offloadbeginend (void)
+find_crtoffloadtable (void)
 {
   char **paths = NULL;
   const char *library_path = getenv ("LIBRARY_PATH");
   if (!library_path)
     return;
-  unsigned n_paths = parse_env_var (library_path, &paths, "/crtoffloadbegin.o");
+  unsigned n_paths = parse_env_var (library_path, &paths, "/crtoffloadtable.o");
 
   unsigned i;
   for (i = 0; i < n_paths; i++)
     if (access_check (paths[i], R_OK) == 0)
       {
-	size_t len = strlen (paths[i]);
-	char *tmp = xstrdup (paths[i]);
-	strcpy (paths[i] + len - strlen ("begin.o"), "end.o");
-	if (access_check (paths[i], R_OK) != 0)
-	  fatal_error (input_location,
-		       "installation error, can't find crtoffloadend.o");
-	/* The linker will delete the filenames we give it, so make
-	   copies.  */
-	offloadbegin = make_temp_file (".o");
-	offloadend = make_temp_file (".o");
-	copy_file (offloadbegin, tmp);
-	copy_file (offloadend, paths[i]);
-	free (tmp);
+	/* The linker will delete the filename we give it, so make a copy.  */
+	char *crtoffloadtable = make_temp_file (".crtoffloadtable.o");
+	copy_file (crtoffloadtable, paths[i]);
+	printf ("%s\n", crtoffloadtable);
+	XDELETEVEC (crtoffloadtable);
 	break;
       }
   if (i == n_paths)
     fatal_error (input_location,
-		 "installation error, can't find crtoffloadbegin.o");
+		 "installation error, can't find crtoffloadtable.o");
 
   free_array_of_ptrs ((void **) paths, n_paths);
 }
@@ -970,8 +964,8 @@ run_gcc (unsigned argc, char *argv[])
   int new_head_argc;
   bool have_lto = false;
   bool have_offload = false;
-  unsigned lto_argc = 0, offload_argc = 0;
-  char **lto_argv, **offload_argv;
+  unsigned lto_argc = 0;
+  char **lto_argv;
 
   /* Get the driver and options.  */
   collect_gcc = getenv ("COLLECT_GCC");
@@ -987,10 +981,9 @@ run_gcc (unsigned argc, char *argv[])
 					&decoded_options,
 					&decoded_options_count);
 
-  /* Allocate arrays for input object files with LTO or offload IL,
+  /* Allocate array for input object files with LTO IL,
      and for possible preceding arguments.  */
   lto_argv = XNEWVEC (char *, argc);
-  offload_argv = XNEWVEC (char *, argc);
 
   /* Look at saved options in the IL files.  */
   for (i = 1; i < argc; ++i)
@@ -1001,6 +994,15 @@ run_gcc (unsigned argc, char *argv[])
       long loffset;
       int consumed;
       char *filename = argv[i];
+
+      if (strncmp (argv[i], "-foffload-objects=",
+		   sizeof ("-foffload-objects=") - 1) == 0)
+	{
+	  have_offload = true;
+	  offload_objects_file_name
+	    = argv[i] + sizeof ("-foffload-objects=") - 1;
+	  continue;
+	}
 
       if ((p = strrchr (argv[i], '@'))
 	  && p != argv[i] 
@@ -1026,15 +1028,6 @@ run_gcc (unsigned argc, char *argv[])
 	  have_lto = true;
 	  lto_argv[lto_argc++] = argv[i];
 	}
-
-      if (find_and_merge_options (fd, file_offset, OFFLOAD_SECTION_NAME_PREFIX,
-				  &offload_fdecoded_options,
-				  &offload_fdecoded_options_count, collect_gcc))
-	{
-	  have_offload = true;
-	  offload_argv[offload_argc++] = argv[i];
-	}
-
       close (fd);
     }
 
@@ -1133,47 +1126,102 @@ run_gcc (unsigned argc, char *argv[])
 
   if (have_offload)
     {
-      compile_images_for_offload_targets (offload_argc, offload_argv,
+      unsigned i, num_offload_files;
+      char **offload_argv;
+      FILE *f;
+
+      f = fopen (offload_objects_file_name, "r");
+      if (f == NULL)
+	fatal_error (input_location, "cannot open %s: %m",
+		     offload_objects_file_name);
+      if (fscanf (f, "%u ", &num_offload_files) != 1)
+	fatal_error (input_location, "cannot read %s: %m",
+		     offload_objects_file_name);
+      offload_argv = XCNEWVEC (char *, num_offload_files);
+
+      /* Read names of object files with offload.  */
+      for (i = 0; i < num_offload_files; i++)
+	{
+	  const unsigned piece = 32;
+	  char *buf, *filename = XNEWVEC (char, piece);
+	  size_t len;
+
+	  buf = filename;
+cont1:
+	  if (!fgets (buf, piece, f))
+	    break;
+	  len = strlen (filename);
+	  if (filename[len - 1] != '\n')
+	    {
+	      filename = XRESIZEVEC (char, filename, len + piece);
+	      buf = filename + len;
+	      goto cont1;
+	    }
+	  filename[len - 1] = '\0';
+	  offload_argv[i] = filename;
+	}
+      fclose (f);
+      if (offload_argv[num_offload_files - 1] == NULL)
+	fatal_error (input_location, "invalid format of %s",
+		     offload_objects_file_name);
+      maybe_unlink (offload_objects_file_name);
+      offload_objects_file_name = NULL;
+
+      /* Look at saved offload options in files.  */
+      for (i = 0; i < num_offload_files; i++)
+	{
+	  char *p;
+	  long loffset;
+	  int fd, consumed;
+	  off_t file_offset = 0;
+	  char *filename = offload_argv[i];
+
+	  if ((p = strrchr (offload_argv[i], '@'))
+	      && p != offload_argv[i]
+	      && sscanf (p, "@%li%n", &loffset, &consumed) >= 1
+	      && strlen (p) == (unsigned int) consumed)
+	    {
+	      filename = XNEWVEC (char, p - offload_argv[i] + 1);
+	      memcpy (filename, offload_argv[i], p - offload_argv[i]);
+	      filename[p - offload_argv[i]] = '\0';
+	      file_offset = (off_t) loffset;
+	    }
+	  fd = open (filename, O_RDONLY | O_BINARY);
+	  if (fd == -1)
+	    fatal_error (input_location, "cannot open %s: %m", filename);
+	  if (!find_and_merge_options (fd, file_offset,
+				       OFFLOAD_SECTION_NAME_PREFIX,
+				       &offload_fdecoded_options,
+				       &offload_fdecoded_options_count,
+				       collect_gcc))
+	    fatal_error (input_location, "cannot read %s: %m", filename);
+	  close (fd);
+	  if (filename != offload_argv[i])
+	    XDELETEVEC (filename);
+	}
+
+      compile_images_for_offload_targets (num_offload_files, offload_argv,
 					  offload_fdecoded_options,
 					  offload_fdecoded_options_count,
 					  decoded_options,
 					  decoded_options_count);
+
+      free_array_of_ptrs ((void **) offload_argv, num_offload_files);
+
       if (offload_names)
 	{
-	  find_offloadbeginend ();
+	  find_crtoffloadtable ();
 	  for (i = 0; offload_names[i]; i++)
 	    printf ("%s\n", offload_names[i]);
 	  free_array_of_ptrs ((void **) offload_names, i);
 	}
     }
 
-  if (offloadbegin)
-    printf ("%s\n", offloadbegin);
-
   /* If object files contain offload sections, but do not contain LTO sections,
      then there is no need to perform a link-time recompilation, i.e.
      lto-wrapper is used only for a compilation of offload images.  */
   if (have_offload && !have_lto)
-    {
-      for (i = 1; i < argc; ++i)
-	if (strncmp (argv[i], "-fresolution=",
-		     sizeof ("-fresolution=") - 1) != 0
-	    && strncmp (argv[i], "-flinker-output=",
-			sizeof ("-flinker-output=") - 1) != 0)
-	  {
-	    char *out_file;
-	    /* Can be ".o" or ".so".  */
-	    char *ext = strrchr (argv[i], '.');
-	    if (ext == NULL)
-	      out_file = make_temp_file ("");
-	    else
-	      out_file = make_temp_file (ext);
-	    /* The linker will delete the files we give it, so make copies.  */
-	    copy_file (out_file, argv[i]);
-	    printf ("%s\n", out_file);
-	  }
-      goto finish;
-    }
+    goto finish;
 
   if (lto_mode == LTO_MODE_LTO)
     {
@@ -1402,11 +1450,7 @@ cont:
     }
 
  finish:
-  if (offloadend)
-    printf ("%s\n", offloadend);
-
   XDELETE (lto_argv);
-  XDELETE (offload_argv);
   obstack_free (&argv_obstack, NULL);
 }
 

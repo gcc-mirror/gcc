@@ -23,6 +23,8 @@ MD_INCLUDES= 	$(srcdir)/config/c6x/constraints.md \
 		$(srcdir)/config/c6x/c6x-mult.md \
 		$(srcdir)/config/c6x/c6x-sched.md
 
+OPTIONS_H_EXTRA += $(srcdir)/config/c6x/c6x-isas.def
+
 s-config s-conditions s-flags s-codes s-constants s-emit s-recog s-preds \
 	s-opinit s-extract s-peep s-attr s-attrtab s-output: $(MD_INCLUDES)
 

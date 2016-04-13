@@ -1,4 +1,5 @@
 /* { dg-options "-O2 -ftree-vectorize -fno-vect-cost-model" } */
+/* { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
 
 #define SIZE 128
 unsigned short _Alignas (16) in[SIZE];

@@ -528,11 +528,12 @@ spill_pseudos (void)
 	  if (removed_pseudo_p)
 	    {
 	      lra_assert (DEBUG_INSN_P (insn));
-	      lra_set_insn_deleted (insn);
+	      lra_invalidate_insn_data (insn);
+	      INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
 	      if (lra_dump_file != NULL)
 		fprintf (lra_dump_file,
-			 "Debug insn #%u is deleted as containing removed pseudo\n",
-			 INSN_UID (insn));
+			 "Debug insn #%u is reset because it referenced "
+			 "removed pseudo\n", INSN_UID (insn));
 	    }
 	  bitmap_and_compl_into (df_get_live_in (bb), &spilled_pseudos);
 	  bitmap_and_compl_into (df_get_live_out (bb), &spilled_pseudos);

@@ -1046,6 +1046,19 @@ do_linemarker (cpp_reader *pfile)
 
   skip_rest_of_line (pfile);
 
+  if (reason == LC_LEAVE)
+    {
+      const line_map_ordinary *from;      
+      if (MAIN_FILE_P (map)
+	  || (new_file
+	      && (from = INCLUDED_FROM (pfile->line_table, map)) != NULL
+	      && filename_cmp (ORDINARY_MAP_FILE_NAME (from), new_file) != 0))
+	{
+	  cpp_warning (pfile, CPP_W_NONE,
+		     "file \"%s\" linemarker ignored due to incorrect nesting", new_file);
+	  return;
+	}
+    }
   /* Compensate for the increment in linemap_add that occurs in
      _cpp_do_file_change.  We're currently at the start of the line
      *following* the #line directive.  A separate source_location for this

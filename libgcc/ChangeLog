@@ -1,3 +1,63 @@
+2016-04-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/70381
+	* configure.ac (powerpc*-*-linux*): Rework tests to build
+	__float128 emulation routines to not depend on using #pragma GCC
+	target to enable -mfloat128.
+	* configure: Regnerate.
+
+2016-04-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/67172
+	* libgcc2.c (L__main): Undefine __LIBGCC_EH_FRAME_SECTION_NAME__ if
+	__MINGW32__ is defined.
+
+2016-03-28  James Bowman  <james.bowman@ftdichip.com>
+
+        * libgcc/config/ft32/lib1funcs.S (*divsi3, *modsi3): New.
+
+2016-03-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR libgcc/70363
+	* config/rs6000/extendkftf2-sw.c (__extendkftf2_sw): If libgcc was
+	built with an assembler that does not support ISA 3.0
+	instructions, rename __extendkftf2_sw to __extendkftf2.
+
+2016-03-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/38239
+	* config/sol2/gmon.c [__i386__] (_mcount): Save and restore
+	call-clobbered registers.
+	(internal_mcount): Remove __i386__ handling.
+
+2016-02-26  Joel Sherrill <joel@rtems.org>
+
+	* config.host: Add x86_64-*-rtems*.
+
+2016-02-26  Joel Sherrill <joel@rtems.org>
+
+	* libgcc/config.host: Add aarch64-*-rtems*.
+
+2016-02-26  Paul E. Murphy  <murphyp@linux.vnet.ibm.com>
+	    Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/sfp-machine.h (_FP_DECL_EX): Declare _fpsr as a
+	union of u64 and double.
+	(FP_TRAPPING_EXCEPTIONS): Return a bitmask of trapping exceptions.
+	(FP_INIT_ROUNDMODE): Read the fpscr instead of writing a mystery
+	value.
+	(FP_ROUNDMODE): Update the usage of _fpscr.
+
+2016-02-25  Ilya Verbin  <ilya.verbin@intel.com>
+
+	PR driver/68463
+	* Makefile.in (crtoffloadtable$(objext)): New rule.
+	* configure.ac (extra_parts): Add crtoffloadtable$(objext) if
+	enable_offload_targets is not empty.
+	* configure: Regenerate.
+	* offloadstuff.c: Move __OFFLOAD_TABLE__ from crtoffloadend to
+	crtoffloadtable.
+
 2016-02-17  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/ieee754-df.S (__muldf3_aux, __divdf3_aux): Add

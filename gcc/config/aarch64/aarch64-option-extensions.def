@@ -21,23 +21,37 @@
 
    Before using #include to read this file, define a macro:
 
-      AARCH64_OPT_EXTENSION(EXT_NAME, FLAGS_ON, FLAGS_OFF, FEATURE_STRING)
+      AARCH64_OPT_EXTENSION(EXT_NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, FEATURE_STRING)
 
    EXT_NAME is the name of the extension, represented as a string constant.
-   FLAGS_ON are the bitwise-or of the features that the extension adds.
-   FLAGS_OFF are the bitwise-or of the features that the extension removes.
+   FLAGS_CANONICAL is the canonical internal name for this flag.
+   FLAGS_ON are the bitwise-or of the features that enabling the extension
+   adds, or zero if enabling this extension has no effect on other features.
+   FLAGS_OFF are the bitwise-or of the features that disabling the extension
+   removes, or zero if disabling this extension has no effect on other
+   features.
    FEAT_STRING is a string containing the entries in the 'Features' field of
    /proc/cpuinfo on a GNU/Linux system that correspond to this architecture
    extension being available.  Sometimes multiple entries are needed to enable
    the extension (for example, the 'crypto' extension depends on four
    entries: aes, pmull, sha1, sha2 being present).  In that case this field
-   should contain a whitespace-separated list of the strings in 'Features'
+   should contain a space (" ") separated list of the strings in 'Features'
    that are required.  Their order is not important.  */
 
-AARCH64_OPT_EXTENSION ("fp", AARCH64_FL_FP,
-		       AARCH64_FL_FPSIMD | AARCH64_FL_CRYPTO, "fp")
-AARCH64_OPT_EXTENSION ("simd", AARCH64_FL_FPSIMD,
-		       AARCH64_FL_SIMD | AARCH64_FL_CRYPTO, "asimd")
-AARCH64_OPT_EXTENSION("crypto",	AARCH64_FL_CRYPTO | AARCH64_FL_FPSIMD,  AARCH64_FL_CRYPTO,   "aes pmull sha1 sha2")
-AARCH64_OPT_EXTENSION("crc",	AARCH64_FL_CRC,                         AARCH64_FL_CRC,                        "crc32")
-AARCH64_OPT_EXTENSION("lse",	AARCH64_FL_LSE,                         AARCH64_FL_LSE,                        "atomics")
+/* Enabling "fp" just enables "fp".
+   Disabling "fp" also disables "simd", "crypto".  */
+AARCH64_OPT_EXTENSION("fp", AARCH64_FL_FP, 0, AARCH64_FL_SIMD | AARCH64_FL_CRYPTO, "fp")
+
+/* Enabling "simd" also enables "fp".
+   Disabling "simd" also disables "crypto".  */
+AARCH64_OPT_EXTENSION("simd", AARCH64_FL_SIMD, AARCH64_FL_FP, AARCH64_FL_CRYPTO, "asimd")
+
+/* Enabling "crypto" also enables "fp", "simd".
+   Disabling "crypto" just disables "crypto".  */
+AARCH64_OPT_EXTENSION("crypto", AARCH64_FL_CRYPTO, AARCH64_FL_FP | AARCH64_FL_SIMD, 0, "aes pmull sha1 sha2")
+
+/* Enabling or disabling "crc" only changes "crc".  */
+AARCH64_OPT_EXTENSION("crc", AARCH64_FL_CRC, 0, 0, "crc32")
+
+/* Enabling or disabling "lse" only changes "lse".  */
+AARCH64_OPT_EXTENSION("lse", AARCH64_FL_LSE, 0, 0, "atomics")

@@ -2242,14 +2242,23 @@
   [(set_attr "type" "arith")])
 
 ;; Old reload might generate add insns directly (not through the expander) for
-;; the memory address of complex insns like atomic insns when reloading.
+;; address register calculations when reloading, in which case it won't try
+;; the addsi_scr pattern.  Because reload will sometimes try to validate
+;; the generated insns and their constraints, this pattern must be
+;; recognizable during and after reload.  However, when reload generates
+;; address register calculations for the stack pointer, we don't allow this
+;; pattern.  This will make reload prefer using indexed @(reg + reg) address
+;; modes when the displacement of a @(disp + reg) doesn't fit.
 (define_insn_and_split "*addsi3"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(plus:SI (match_operand:SI 1 "arith_reg_operand" "r")
 		 (match_operand:SI 2 "arith_or_int_operand" "rn")))]
   "TARGET_SH1 && !sh_lra_p ()
-   && reload_completed
-   && !reg_overlap_mentioned_p (operands[0], operands[1])"
+   && (reload_completed || reload_in_progress)
+   && !reg_overlap_mentioned_p (operands[0], operands[1])
+   && (!reload_in_progress
+       || ((!REG_P (operands[1]) || REGNO (operands[1]) != SP_REG)
+	   && (!REG_P (operands[2]) || REGNO (operands[2]) != SP_REG)))"
   "#"
   "&& 1"
   [(set (match_dup 0) (plus:SI (match_dup 0) (match_dup 2)))]
@@ -5011,7 +5020,10 @@ label:
     }
   if (TARGET_DYNSHIFT
       && CONST_INT_P (operands[2]) && sh_dynamicalize_shift_p (operands[2]))
-      operands[2] = force_reg (SImode, operands[2]);
+    {
+      /* Don't force the constant into a reg yet.  Some other optimizations
+	 might not see through the reg that holds the shift count.  */
+    }
 
   /*  If the ashlsi3_* insn is going to clobber the T_REG it must be
       expanded here.  */
@@ -5567,9 +5579,12 @@ label:
   if (TARGET_DYNSHIFT
       && CONST_INT_P (operands[2]) && sh_dynamicalize_shift_p (operands[2]))
     {
-      rtx neg_count = force_reg (SImode,
-			         gen_int_mode (- INTVAL (operands[2]), SImode));
-      emit_insn (gen_lshrsi3_d (operands[0], operands[1], neg_count));
+      /* Don't force the constant into a reg yet.  Some other optimizations
+	 might not see through the reg that holds the shift count.  */
+      if (sh_lshrsi_clobbers_t_reg_p (operands[2]))
+        emit_insn (gen_lshrsi3_n_clobbers_t (operands[0], operands[1], operands[2]));
+      else
+        emit_insn (gen_lshrsi3_n (operands[0], operands[1], operands[2]));
       DONE;
     }
 
@@ -5621,6 +5636,10 @@ label:
    && ! sh_lshrsi_clobbers_t_reg_p (operands[2])"
   [(const_int 0)]
 {
+  /* The shift count const_int is a negative value for all dynamic
+     right shift insns.  */
+  operands[2] = GEN_INT (- INTVAL (operands[2]));
+
   if (satisfies_constraint_P27 (operands[2]))
     {
       /* This will not be done for a shift amount of 1, because it would
@@ -5679,8 +5698,7 @@ label:
     {
       /* If this pattern was picked and dynamic shifts are supported, switch
 	 to dynamic shift pattern before reload.  */
-      operands[2] = force_reg (SImode,
-			       gen_int_mode (- INTVAL (operands[2]), SImode));
+      operands[2] = GEN_INT (- INTVAL (operands[2]));
       emit_insn (gen_lshrsi3_d (operands[0], operands[1], operands[2]));
     }
   else
@@ -5711,8 +5729,7 @@ label:
     {
       /* If this pattern was picked and dynamic shifts are supported, switch
 	 to dynamic shift pattern before reload.  */
-      operands[2] = force_reg (SImode,
-			       gen_int_mode (- INTVAL (operands[2]), SImode));
+      operands[2] = GEN_INT (- INTVAL (operands[2]));
       emit_insn (gen_lshrsi3_d (operands[0], operands[1], operands[2]));
     }
   else

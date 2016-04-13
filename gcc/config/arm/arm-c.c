@@ -199,7 +199,7 @@ arm_cpu_cpp_builtins (struct cpp_reader * pfile)
 static bool
 arm_pragma_target_parse (tree args, tree pop_target)
 {
-  tree prev_tree = build_target_option_node (&global_options);
+  tree prev_tree = target_option_current_node;
   tree cur_tree;
   struct cl_target_option *prev_opt;
   struct cl_target_option *cur_opt;
@@ -220,11 +220,16 @@ arm_pragma_target_parse (tree args, tree pop_target)
 				    TREE_TARGET_OPTION (prev_tree));
 	  return false;
 	}
+
+      /* handle_pragma_pop_options and handle_pragma_reset_options will set
+       target_option_current_node, but not handle_pragma_target.  */
+      target_option_current_node = cur_tree;
     }
 
-  /* Figure out the previous mode.  */
-  prev_opt  = TREE_TARGET_OPTION (prev_tree);
-  cur_opt   = TREE_TARGET_OPTION (cur_tree);
+  /* Update macros if target_node changes. The global state will be restored
+     by arm_set_current_function.  */
+  prev_opt = TREE_TARGET_OPTION (prev_tree);
+  cur_opt  = TREE_TARGET_OPTION (cur_tree);
 
   gcc_assert (prev_opt);
   gcc_assert (cur_opt);

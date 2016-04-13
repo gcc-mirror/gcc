@@ -514,7 +514,7 @@
 	* g++.dg/lookup/pr21802.C: New test.
 	* g++.dg/lookup/two-stage4.C: Remove XFAIL.
 
-2015-12-14 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2015-12-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/quad_2.f90: Update test.
 
@@ -785,7 +785,7 @@
 	* gcc.c-torture/execute/alias-2.c: New testcase.
 
 2015-12-09  Tobias Burnus  <burnus@net-b.de>
-	    Alessandro Fanfarillo <fanfarillo.gcc@gmail.com>
+	    Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 
 	* gfortran.dg/coarray_40.f90: New.
 
@@ -1347,7 +1347,7 @@
 	* lib/g++-dg.exp (g++-dg-runtest): Use it.
 
 2015-12-02  Tobias Burnus  <burnus@net-b.de>
-	    Alessandro Fanfarillo <fanfarillo.gcc@gmail.com>
+	    Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 
 	* gfortran.dg/coarray/event_1.f90: New.
 	* gfortran.dg/coarray/event_2.f90: New.
@@ -2083,7 +2083,7 @@
 	PR c++/68087
 	* g++.dg/cpp0x/constexpr-array13.C: New.
 
-2015-11-25  Ilmir Usmanov <me@ilmir.us>
+2015-11-25  Ilmir Usmanov  <me@ilmir.us>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR fortran/63858
@@ -2596,7 +2596,7 @@
 	PR c++/68308
 	* g++.dg/init/new46.C: New test.
 
-2015-11-17  Dominique d'Humieres <dominiq@lps.ens.fr>
+2015-11-17  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/65751
 	* gfortran.dg/unlimited_polymorphic_2.f03: Update test.
@@ -2786,12 +2786,12 @@
 	* g++.dg/vect/simd-bool-comparison-1.cc: New test.
 	* g++.dg/vect/simd-bool-comparison-2.cc: New test.
 
-2015-11-13  Dominique d'Humieres <dominiq@lps.ens.fr>
+2015-11-13  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/47266
 	* gfortran.dg/module_private_2.f90: New test.
 
-2015-11-13  Dominique d'Humieres <dominiq@lps.ens.fr>
+2015-11-13  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/47266
 	* gfortran.dg/warn_unused_function_2.f90: New test.
@@ -7096,7 +7096,7 @@
 
 	* g++.dg/lto/pr68057_0.C: Fix testcase.
 
-2015-11-08  Joost VandeVondele <vondele@gcc.gnu.org>
+2015-11-08  Joost VandeVondele  <vondele@gcc.gnu.org>
 
 	* gfortran.dg/PR67518.f90: move from here...
 	* gfortran.dg/graphite/PR67518.f90: to here.
@@ -7179,7 +7179,7 @@
 
 	* gcc.target/arm/mincmp.c: New test.
 
-2015-11-06  Dominique d'Humieres <dominiq@lps.ens.fr>
+2015-11-06  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/54224
 	* gfortran.dg/warn_unused_function_2.f90: Add two new
@@ -7440,7 +7440,7 @@
 	PR c++-common/67882
 	* c-c++-common/builtin-offsetof-2.c: New test.
 
-2015-11-03  Dominique d'Humieres <dominiq@lps.ens.fr>
+2015-11-03  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/67982
 	* gfortran.dg/warn_unused_function_3.f90: New test.
@@ -7495,7 +7495,7 @@
 
 	* g++.dg/ext/mvc1.C: Require ifunc.
 
-2015-11-02  Alexandre Oliva <aoliva@redhat.com>
+2015-11-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR tree-optimization/68083
 	* gcc.dg/torture/pr68083.c: New.  From Zhendong Su.
@@ -7704,7 +7704,7 @@
 
 	* c-c++-common/goacc/loop-shape.c: New test.
 
-2015-10-27  Nathan Sidwell <nathan@codesourcery.com>
+2015-10-27  Nathan Sidwell  <nathan@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
 	* g++.dg/gomp/pr33372-1.C: Adjust diagnostic.
@@ -7953,7 +7953,7 @@
 	* gcc.dg/torture/pr67736.c: New test.
 	* gcc.dg/combine-subregs.c: New test.
 
-2015-10-23  Alan Hayward <alan.hayward@arm.com>
+2015-10-23  Alan Hayward  <alan.hayward@arm.com>
 
 	PR tree-optimization/65947
 	* lib/target-supports.exp
@@ -8306,7 +8306,7 @@
 	* g++.dg/cpp1z/fold-ice1.C: New.
 
 2015-10-16  Michael Collison  <michael.collison@linaro.org>
-	    Andrew Pinski <andrew.pinski@caviumnetworks.com>
+	    Andrew Pinski  <andrew.pinski@caviumnetworks.com>
 
 	* gcc.dg/tree-ssa/minmax-loopend.c: New test.
 
@@ -8521,7 +8521,7 @@
 	* gcc.dg/ipa/ipa-sra-10.c: New test.
 	* gcc.dg/torture/pr67794.c: Likewise.
 
-2015-10-09  Alexandre Oliva <aoliva@redhat.com>
+2015-10-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/67828
 	* gcc.dg/torture/pr67828.c: New.
@@ -8594,7 +8594,7 @@
 	* c-c++-common/Wtautological-compare-4.c: New test.
 
 2015-10-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
-	    Peter Bergner <bergner@vnet.ibm.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/67808
 	* gcc.target/powerpc/pr67808.c: New test.
@@ -9032,7 +9032,7 @@
 	* g++.dg/debug/dwarf2/pr44641.C: Revert line number change. Remove
 	skip on AIX.  XFAIL individual line tests.
 
-2015-09-27  Alexandre Oliva <aoliva@redhat.com>
+2015-09-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/64164
 	PR tree-optimization/67312
@@ -9146,7 +9146,7 @@
 	PR libgcc/67624
 	* gcc.target/arm/fp16-inf.c: New test.
 
-2015-09-24  Kirill Yukhin <kirill.yukhin@intel.com>
+2015-09-24  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/avx512vbmi-check.h (main): Fix register
 	name while checking for AVX-512VBMI presence.
@@ -9206,12 +9206,12 @@
 	PR tree-optimization/67671
 	* g++.dg/pr67671.C: New test.
 
-2015-09-22  Alexander Fomin <alexander.fomin@intel.com>
+2015-09-22  Alexander Fomin  <alexander.fomin@intel.com>
 
 	PR target/67480
 	* gcc.target/i386/pr67480.c: New test.
 
-2015-09-22  Kirill Yukhin <kirill.yukhin@intel.com>
+2015-09-22  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/funcspec-5.c: Test avx512vl, avx512bw,
 	avx512dq, avx512cd, avx512er, avx512pf and skylake-avx512.
@@ -9903,7 +9903,7 @@
 
 2015-09-04  Andrey Turetskiy  <andrey.turetskiy@intel.com>
 	    Petr Murzin  <petr.murzin@intel.com>
-	    Kirill Yukhin <kirill.yukhin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/avx512f-scatter-1.c: New.
 	* gcc.target/i386/avx512f-scatter-2.c: Ditto.
@@ -9977,7 +9977,7 @@
 	* lib/tsan-dg.exp: Likewise.
 	* lib/ubsan-dg.exp: Likewise.
 
-2015-09-01  Kenneth Zadeck <zadeck@naturalbridge.com>
+2015-09-01  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* gcc.c-torture/execute/ieee/20000320-1.c Fixed misplaced test case.
 
@@ -10034,7 +10034,7 @@
 
 	* gcc.dg/vect/no-scevccp-outer-11.c: Don't xfail scan-tree-dump-times.
 
-2015-09-01  Kyrylo Tkachov <kyrylo.tkachov@arm.com>
+2015-09-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.dg/ifcvt-1.c: New test.
 	* gcc.dg/ifcvt-2.c: Likewise.
@@ -10257,7 +10257,7 @@
 	PR target/67211
 	* g++.dg/pr67211.C: New test.
 
-2015-08-24  Louis Krupp <louis.krupp@zoho.com>
+2015-08-24  Louis Krupp  <louis.krupp@zoho.com>
 
 	PR fortran/62536
 	PR fortran/66175
@@ -11069,7 +11069,7 @@
 	* jit.dg/test-error-gcc_jit_timer_pop-mismatch.c: New test case.
 	* jit.dg/test-error-gcc_jit_timer_pop-too-many.c: New test case.
 
-2015-08-03  Alexander Basov <coohpt@gmail.com>
+2015-08-03  Alexander Basov  <coohpt@gmail.com>
 
 	PR middle-end/64744
 	PR middle-end/48470
@@ -12424,7 +12424,7 @@
 	* gcc.dg/vect/pr48052.c: Use dg-require-effective-target vect_int_mult.
 
 2015-07-05  Chung-Lin Tang  <cltang@codesourcery.com>
-	    Sandra Loosemore <sandra@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.target/nios2/gprel-offset.c: New test.
 
@@ -14580,7 +14580,7 @@
 	* lib/target-supports.exp (check_effective_target_pie): Add *-*-freebsd*
 	to the family of pie capable targets.
 
-2015-05-18  Alex Velenko <Alex.Velenko@arm.com>
+2015-05-18  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* gcc.target/arm/bics_1.c : New testcase.
 	* gcc.target/arm/bics_2.c : New testcase.
@@ -14765,7 +14765,7 @@
 	* c-c++-common/Wmisleading-indentation-2.c: New testcase.
 	* c-c++-common/Wmisleading-indentation-2.md: New file.
 
-2015-05-12 Sandra Loosemore <sandra@codesourcery.com>
+2015-05-12  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.target/nios2/nios2-trap-insn.c: Expect "trap" instead of
 	"break".
@@ -15332,7 +15332,7 @@
 	PR tree-optimization/65851
 	* g++.dg/torture/pr65851.C: New testcase.
 
-2015-04-27  Jeff Law <law@redhat.com>
+2015-04-27  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/65217
 	* gcc.target/i386/pr65217.c: Remove XFAIL.
@@ -15419,7 +15419,7 @@
 	* c-c++-common/pr61534-1.c: New test.
 
 2015-04-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
-	    Steven Bosscher <steven@gcc.gnu.org>
+	    Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR rtl-optimization/34503
 	* gcc.target/arm/pr64616.c: New file.
@@ -15583,7 +15583,7 @@
 	PR rtl-optimization/64818
 	* gcc.target/arm/pr64818.c: New test.
 
-2015-04-21 Jan Hubicka  <hubicka@ucw.cz>
+2015-04-21  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65076
 	* g++.dg/tree-ssa/pr61034.C: Update template.
@@ -15591,7 +15591,7 @@
 	* gcc.dg/Warray-bounds-11.c: Likewise.
 	* gcc.dg/Warray-bounds.c: Likewise.
 
-2015-04-21 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2015-04-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/65234
 	* gfortran.dg/fmt_unlimited.f90: New test.
@@ -15608,7 +15608,7 @@
 	* gcc.target/i386/avx512vbmi-vpermi2b-2.c: Likewise.
 	* gcc.target/i386/avx512vbmi-vpermt2b-2.c: Likewise.
 
-2015-04-21 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2015-04-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/56743
 	* gfortran.dg/namelist_87.f90: New test.
@@ -16241,7 +16241,7 @@
 	PR libgfortran/65563
 	* gfortran.dg/open_errors_2.f90:  New test.
 
-2015-03-28 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2015-03-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/65596
 	* gfortran.dg/namelist_86.f90: New test.
@@ -16670,7 +16670,7 @@
 	PR c++/65340
 	* g++.dg/cpp1y/pr65340.C: New.
 
-2015-03-17 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2015-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/64432
 	* gfortran.dg/system_clock_3.f08: Adjust test.
@@ -16681,7 +16681,7 @@
 	* gfortran.dg/proc_ptr_comp_44.f90: New test.
 	* gfortran.dg/proc_ptr_comp_45.f90: New test.
 
-2015-03-16 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2015-03-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/64432
 	* gfortran.dg/system_clock_3.f08: New test.
@@ -17450,7 +17450,7 @@
 	PR ipa/65236
 	* g++.dg/ipa/ipa-icf-6.C: New testcase.
 
-2015-02-27  Pat Haugen <pthaugen@us.ibm.com>
+2015-02-27  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* gcc.dg/vect/pr59354.c: Move vector producing code to
 	separate function.
@@ -19523,7 +19523,7 @@
 	* gcc.dg/tree-ssa/pr61743-1.c: Add -fno-tree-vectorize.
 	* gcc.dg/tree-ssa/pr61743-2.c: Likewise.
 
-2015-01-16  Zhenqiang Chen <zhenqiang.chen@arm.com>
+2015-01-16  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* gcc.dg/pr64015.c: New test.
 
@@ -19761,7 +19761,7 @@
 	* gcc.dg/tree-ssa/pr61743-1.c: New testcase.
 	* gcc.dg/tree-ssa/pr61743-2.c: Likewise.
 
-2015-01-15 Renlin Li <renlin.li@arm.com>
+2015-01-15  Renlin Li  <renlin.li@arm.com>
 
 	* gcc.target/aarch64/volatileloadpair-1.c: Correct dg-options.
 	* gcc.target/aarch64/volatileloadpair-2.c: Likewise.
@@ -19833,7 +19833,7 @@
 	PR middle-end/64365
 	* gcc.dg/torture/pr64365.c: New testcase.
 
-2015-01-14  Marcos Diaz <marcos.diaz@tallertechnologies.com>
+2015-01-14  Marcos Diaz  <marcos.diaz@tallertechnologies.com>
 
 	* gcc.dg/stackprotectexplicit1.c: New test.
 	* g++.dg/stackprotectexplicit2.c: New test.
@@ -19942,7 +19942,7 @@
 	* gcc.dg/vect/pr64493.c: New testcase.
 	* gcc.dg/vect/pr64495.c: Likewise.
 
-2015-01-13  Martin Uecker <uecker@eecs.berkeley.edu>
+2015-01-13  Martin Uecker  <uecker@eecs.berkeley.edu>
 
 	* gcc.dg/Warray-bounds-11.c: New test-case.
 
@@ -20417,7 +20417,7 @@
 	* gcc.dg/tree-ssa/loop-1.c: Likewise.
 	* gcc.dg/weak/typeof-2.c: Likewise.
 
-2015-01-05  Radovan Obradovic <radovan.obradovic@imgtec.com>
+2015-01-05  Radovan Obradovic  <radovan.obradovic@imgtec.com>
 
 	PR rtl-optimization/64287
 	* gcc.dg/aru-2.c: New test.

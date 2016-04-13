@@ -86,7 +86,7 @@ fn5 (const int *a, int b)
 
 constexpr int m1[4] = { 1, 2, 3, 4 };
 constexpr int m2 = fn5 (m1, 3);
-constexpr int m3 = fn5 (m1, 4); // { dg-error "array subscript out of bound" }
+constexpr int m3 = fn5 (m1, 4); // { dg-error "array subscript" }
 
 constexpr int
 fn6 (const int &a, int b)
@@ -116,7 +116,7 @@ fn8 (int i)
 }
 
 constexpr int o1 = fn8 (9);
-constexpr int o2 = fn8 (10); // { dg-error "array subscript out of bound" }
+constexpr int o2 = fn8 (10); // { dg-error "array subscript" }
 
 constexpr int
 fn9 (int a, int b)

@@ -24,5 +24,11 @@ func (char *cp1, char *cp2, char *cp3, char *cp4)
   if (NULL != cp3) /* { dg-warning "nonnull argument" "cp3 compared to NULL" } */
     return 3;
 
-  return (cp4 != 0) ? 0 : 1; /* { dg-warning "nonnull argument" "cp4 compared to NULL" } */
+  return cp4 != 0 ? 0 : 1; /* { dg-warning "nonnull argument" "cp4 compared to NULL" } */
+}
+
+__attribute__((nonnull (1))) int
+func2 (char *cp)
+{
+  return (cp != NULL) ? 1 : 0; /* { dg-warning "nonnull argument" "cp compared to NULL" { xfail c++ } } */
 }

@@ -2061,6 +2061,10 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " icf_merged");
   if (merged_comdat)
     fprintf (f, " merged_comdat");
+  if (split_part)
+    fprintf (f, " split_part");
+  if (indirect_call_target)
+    fprintf (f, " indirect_call_target");
   if (nonfreeing_fn)
     fprintf (f, " nonfreeing_fn");
   if (DECL_STATIC_CONSTRUCTOR (decl))
@@ -3356,7 +3360,7 @@ cgraph_node::get_body (void)
   updated = get_untransformed_body ();
 
   /* Getting transformed body makes no sense for inline clones;
-     we should never use this on real clones becuase they are materialized
+     we should never use this on real clones because they are materialized
      early.
      TODO: Materializing clones here will likely lead to smaller LTRANS
      footprint. */
@@ -3365,7 +3369,10 @@ cgraph_node::get_body (void)
     {
       opt_pass *saved_current_pass = current_pass;
       FILE *saved_dump_file = dump_file;
+      const char *saved_dump_file_name = dump_file_name;
       int saved_dump_flags = dump_flags;
+      dump_file_name = NULL;
+      dump_file = NULL;
 
       push_cfun (DECL_STRUCT_FUNCTION (decl));
       execute_all_ipa_transforms ();
@@ -3377,6 +3384,7 @@ cgraph_node::get_body (void)
 
       current_pass = saved_current_pass;
       dump_file = saved_dump_file;
+      dump_file_name = saved_dump_file_name;
       dump_flags = saved_dump_flags;
     }
   return updated;

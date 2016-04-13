@@ -52,5 +52,6 @@ int main (void)
   new_line ();
   /* { dg-output "Local_R2 : 40 10 90 fd aa 22 16 8c.*\n" } */
 
+  new_line ();
   return 0;
 }

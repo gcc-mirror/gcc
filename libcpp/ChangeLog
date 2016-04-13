@@ -1,3 +1,98 @@
+2016-04-06  Richard Henderson  <rth@redhat.com>
+
+	PR preprocessor/61817
+	PR preprocessor/69391
+	* internal.h (_cpp_builtin_macro_text): Update decl.
+	* macro.c (_cpp_builtin_macro_text): Accept location for __LINE__.
+	(builtin_macro): Accept a second location for __LINE__.
+	(enter_macro_context): Compute both virtual and real expansion
+	locations for the macro.
+
+2016-03-25  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR lto/69650
+	* directives.c (do_linemarker): Test for file left but not entered
+	here.
+	* line-map.c (linemap_add): Not here.
+
+2016-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/70296
+	* include/cpplib.h (cpp_fun_like_macro_p): New prototype.
+	* macro.c (cpp_fun_like_macro_p): New function.
+
+2016-03-15  Richard Henderson  <rth@redhat.com>
+
+	* line-map.c (new_linemap): Make alloc_size a size_t.
+
+2016-03-14  Jason Merrill  <jason@redhat.com>
+
+	* expr.c (cpp_classify_number): Hex floats are new in C++1z.
+	* init.c (lang_defaults): Likewise.
+
+2016-03-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68473
+	PR c++/70105
+	* line-map.c (linemap_macro_map_loc_unwind_toward_spelling): Move
+	decl...
+	* include/line-map.h
+	(linemap_macro_map_loc_unwind_toward_spelling): ...here,
+	converting from static to extern.
+
+2016-03-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68473
+	PR c++/70105
+	* include/line-map.h (source_range::debug): Delete.
+	(struct location_range): Update comment.  Replace
+	expanded_location fields "m_start", "m_finish", and "m_caret" with
+	a source_location field: "m_loc".
+	(class rich_location): Reword comment.
+	(rich_location::get_loc): Reimplement in terms of a new overloaded
+	variant which takes an unsigned int.
+	(rich_location::get_loc_addr): Delete.
+	(rich_location::add_range): Drop params "start" and "finish" in
+	favor of param "loc".  Drop overloaded variants taking a
+	source_range or location_range *.
+	(rich_location::lazily_expand_location): Delete in favor of...
+	(rich_location::get_expanded_location): New decl.
+	(rich_location::m_loc): Delete field.
+	(rich_location::m_column_override): New field.
+	* line-map.c (rich_location::rich_location):  Drop name of
+	line_maps * param.  Update initializations for deletion of field
+	"m_loc" and addition of field "m_column_override".  Reimplement
+	body as a call to add_range.  Delete overloaded variant taking a
+	source_range.
+	(rich_location::get_loc): New function.
+	(rich_location::lazily_expand_location): Delete in favor of...
+	(rich_location::get_expanded_location): New function.
+	(rich_location::override_column): Reimplement.
+	(rich_location::add_range): Drop params "start" and "finish" in
+	favor of param "loc".  Eliminate location expansion in favor of
+	simply storing loc.  Drop overloaded variants taking a
+	source_range or location_range *.
+	(rich_location::set_range): Eliminate location expansion.
+
+2016-02-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/69985
+	(linemap_position_for_loc_and_offset): Rename param from "offset"
+	to "column_offset".  Right-shift the column_offset by m_range_bits
+	of the pertinent ordinary map whenever offsetting a
+	source_location.  For clarity, offset the column by the column
+	offset, rather than the other way around.
+
+2016-02-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/69126
+	PR preprocessor/69543
+	* line-map.c (linemap_compare_locations): At the function top,
+	replace inlined bodies of get_location_from_adhoc_loc with calls
+	to get_location_from_adhoc_loc.  Add a pair of calls to
+	get_location_from_adhoc_loc at the bottom of the function, to
+	avoid meaningless comparisons of ad-hoc and non-ad-hoc locations.
+
 2016-02-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/69664

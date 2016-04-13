@@ -105,6 +105,10 @@ void _gfortran_caf_sync_all (int *, char *, int);
 void _gfortran_caf_sync_memory (int *, char *, int);
 void _gfortran_caf_sync_images (int, int[], int *, char *, int);
 
+void _gfortran_caf_stop_numeric (int32_t)
+     __attribute__ ((noreturn));
+void _gfortran_caf_stop_str (const char *, int32_t)
+     __attribute__ ((noreturn));
 void _gfortran_caf_error_stop_str (const char *, int32_t)
      __attribute__ ((noreturn));
 void _gfortran_caf_error_stop (int32_t) __attribute__ ((noreturn));

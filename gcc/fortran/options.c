@@ -515,6 +515,15 @@ gfc_handle_runtime_check_option (const char *arg)
 	      result = 1;
 	      break;
 	    }
+	  else if (optname[n] && pos > 3 && strncmp ("no-", arg, 3) == 0
+		   && strncmp (optname[n], arg+3, pos-3) == 0)
+	    {
+	      gfc_option.rtcheck &= ~optmask[n];
+	      arg += pos;
+	      pos = 0;
+	      result = 1;
+	      break;
+	    }
 	}
       if (!result)
 	gfc_fatal_error ("Argument to %<-fcheck%> is not valid: %s", arg);

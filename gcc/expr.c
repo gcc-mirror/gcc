@@ -6643,14 +6643,29 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	  /* Except for initialization of full bytes from a CONSTRUCTOR, which
 	     we will handle specially below.  */
 	  && !(TREE_CODE (exp) == CONSTRUCTOR
-	       && bitsize % BITS_PER_UNIT == 0))
+	       && bitsize % BITS_PER_UNIT == 0)
+	  /* And except for bitwise copying of TREE_ADDRESSABLE types,
+	     where the FIELD_DECL has the right bitsize, but TREE_TYPE (exp)
+	     includes some extra padding.  store_expr / expand_expr will in
+	     that case call get_inner_reference that will have the bitsize
+	     we check here and thus the block move will not clobber the
+	     padding that shouldn't be clobbered.  In the future we could
+	     replace the TREE_ADDRESSABLE check with a check that
+	     get_base_address needs to live in memory.  */
+	  && (!TREE_ADDRESSABLE (TREE_TYPE (exp))
+	      || TREE_CODE (exp) != COMPONENT_REF
+	      || TREE_CODE (DECL_SIZE (TREE_OPERAND (exp, 1))) != INTEGER_CST
+	      || (bitsize % BITS_PER_UNIT != 0)
+	      || (bitpos % BITS_PER_UNIT != 0)
+	      || (compare_tree_int (DECL_SIZE (TREE_OPERAND (exp, 1)), bitsize)
+		  != 0)))
       /* If we are expanding a MEM_REF of a non-BLKmode non-addressable
          decl we must use bitfield operations.  */
       || (bitsize >= 0
 	  && TREE_CODE (exp) == MEM_REF
 	  && TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
 	  && DECL_P (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
-	  && !TREE_ADDRESSABLE (TREE_OPERAND (TREE_OPERAND (exp, 0),0 ))
+	  && !TREE_ADDRESSABLE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
 	  && DECL_MODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)) != BLKmode))
     {
       rtx temp;
@@ -10506,7 +10521,11 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	if (op0 == orig_op0)
 	  op0 = copy_rtx (op0);
 
-	set_mem_attributes (op0, exp, 0);
+	/* Don't set memory attributes if the base expression is
+	   SSA_NAME that got expanded as a MEM.  In that case, we should
+	   just honor its original memory attributes.  */
+	if (TREE_CODE (tem) != SSA_NAME || !MEM_P (orig_op0))
+	  set_mem_attributes (op0, exp, 0);
 
 	if (REG_P (XEXP (op0, 0)))
 	  mark_reg_pointer (XEXP (op0, 0), MEM_ALIGN (op0));

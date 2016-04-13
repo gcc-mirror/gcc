@@ -1436,10 +1436,7 @@ c_parser_translation_unit (c_parser *parser)
   tree decl;
   FOR_EACH_VEC_ELT (incomplete_record_decls, i, decl)
     if (DECL_SIZE (decl) == NULL_TREE && TREE_TYPE (decl) != error_mark_node)
-      {
-	error ("storage size of %q+D isn%'t known", decl);
-	TREE_TYPE (decl) = error_mark_node;
-      }
+      error ("storage size of %q+D isn%'t known", decl);
 }
 
 /* Parse an external declaration (C90 6.7, C99 6.9).
@@ -5886,13 +5883,30 @@ c_parser_for_statement (c_parser *parser, bool ivdep)
   if (c_parser_next_token_is (parser, CPP_NAME))
     {
       c_token *token = c_parser_peek_token (parser);
-      tree decl = lookup_name (token->value);
-      if (decl == NULL_TREE || VAR_P (decl))
-	/* If DECL is null, we don't know what this token might be.  Treat
-	   it as an ID for better diagnostics; we'll error later on.  */
-	token->id_kind = C_ID_ID;
-      else if (TREE_CODE (decl) == TYPE_DECL)
-	token->id_kind = C_ID_TYPENAME;
+
+      if (token->id_kind != C_ID_CLASSNAME)
+	{
+	  tree decl = lookup_name (token->value);
+
+	  token->id_kind = C_ID_ID;
+	  if (decl)
+	    {
+	      if (TREE_CODE (decl) == TYPE_DECL)
+		token->id_kind = C_ID_TYPENAME;
+	    }
+	  else if (c_dialect_objc ())
+	    {
+	      tree objc_interface_decl = objc_is_class_name (token->value);
+	      /* Objective-C class names are in the same namespace as
+		 variables and typedefs, and hence are shadowed by local
+		 declarations.  */
+	      if (objc_interface_decl)
+		{
+		  token->value = objc_interface_decl;
+		  token->id_kind = C_ID_CLASSNAME;
+		}
+	    }
+	}
     }
 
   token_indent_info next_tinfo
@@ -7768,9 +7782,10 @@ c_parser_postfix_expression (c_parser *parser)
 	      expr.value = error_mark_node;
 	      break;
 	    }
-	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
-				     "expected %<)%>");
 	  {
+	    location_t close_paren_loc = c_parser_peek_token (parser)->location;
+	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+				       "expected %<)%>");
 	    tree e1, e2;
 	    e1 = groktypename (t1, NULL, NULL);
 	    e2 = groktypename (t2, NULL, NULL);
@@ -7785,6 +7800,7 @@ c_parser_postfix_expression (c_parser *parser)
 
 	    expr.value
 	      = comptypes (e1, e2) ? integer_one_node : integer_zero_node;
+	    set_c_expr_source_range (&expr, loc, close_paren_loc);
 	  }
 	  break;
 	case RID_BUILTIN_CALL_WITH_STATIC_CHAIN:
@@ -8010,8 +8026,8 @@ c_parser_postfix_expression (c_parser *parser)
 	    {
 	      error_at (loc, "-fcilkplus must be enabled to use "
 			"%<_Cilk_spawn%>");
-	      expr = c_parser_postfix_expression (parser);
-	      expr.value = error_mark_node;	      
+	      expr = c_parser_cast_expression (parser, NULL);
+	      expr.value = error_mark_node;
 	    }
 	  else if (c_parser_peek_token (parser)->keyword == RID_CILK_SPAWN)
 	    {
@@ -8020,14 +8036,14 @@ c_parser_postfix_expression (c_parser *parser)
 	      /* Now flush out all the _Cilk_spawns.  */
 	      while (c_parser_peek_token (parser)->keyword == RID_CILK_SPAWN)
 		c_parser_consume_token (parser);
-	      expr = c_parser_postfix_expression (parser);
+	      expr = c_parser_cast_expression (parser, NULL);
 	    }
 	  else
 	    {
-	      expr = c_parser_postfix_expression (parser);
+	      expr = c_parser_cast_expression (parser, NULL);
 	      expr.value = build_cilk_spawn (loc, expr.value);
 	    }
-	  break; 
+	  break;
 	default:
 	  c_parser_error (parser, "expected expression");
 	  expr.value = error_mark_node;
@@ -10701,7 +10717,7 @@ c_parser_oacc_data_clause (c_parser *parser, pragma_omp_clause c_kind,
       kind = GOMP_MAP_FORCE_ALLOC;
       break;
     case PRAGMA_OACC_CLAUSE_DELETE:
-      kind = GOMP_MAP_FORCE_DEALLOC;
+      kind = GOMP_MAP_DELETE;
       break;
     case PRAGMA_OACC_CLAUSE_DEVICE:
       kind = GOMP_MAP_FORCE_TO;
@@ -13775,9 +13791,9 @@ c_parser_oacc_loop (location_t loc, c_parser *parser, char *p_name,
     {
       clauses = c_oacc_split_loop_clauses (clauses, cclauses);
       if (*cclauses)
-	c_finish_omp_clauses (*cclauses, false);
+	*cclauses = c_finish_omp_clauses (*cclauses, false);
       if (clauses)
-	c_finish_omp_clauses (clauses, false);
+	clauses = c_finish_omp_clauses (clauses, false);
     }
 
   tree block = c_begin_compound_stmt (true);

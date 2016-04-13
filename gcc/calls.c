@@ -2083,9 +2083,9 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	      /* Check for overlap with already clobbered argument area,
 	         providing that this has non-zero size.  */
 	      if (is_sibcall
-		  && (size == 0
-		      || mem_overlaps_already_clobbered_arg_p 
-					   (XEXP (args[i].value, 0), size)))
+		  && size != 0
+		  && (mem_overlaps_already_clobbered_arg_p
+		      (XEXP (args[i].value, 0), size)))
 		*sibcall_failure = 1;
 
 	      if (size % UNITS_PER_WORD == 0
@@ -3852,7 +3852,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   reg_parm_stack_space = REG_PARM_STACK_SPACE ((tree) 0);
 #endif
 
-  /* By default, library functions can not throw.  */
+  /* By default, library functions cannot throw.  */
   flags = ECF_NOTHROW;
 
   switch (fn_type)
@@ -3869,7 +3869,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       flags |= ECF_NORETURN;
       break;
     case LCT_THROW:
-      flags = ECF_NORETURN;
+      flags &= ~ECF_NOTHROW;
       break;
     case LCT_RETURNS_TWICE:
       flags = ECF_RETURNS_TWICE;

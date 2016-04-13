@@ -840,6 +840,36 @@ narrow_reload_pseudo_class (rtx reg, enum reg_class cl)
     lra_change_class (REGNO (reg), rclass, "      Change to", true);
 }
 
+/* Searches X for any reference to a reg with the same value as REGNO,
+   returning the rtx of the reference found if any.  Otherwise,
+   returns NULL_RTX.  */
+static rtx
+regno_val_use_in (unsigned int regno, rtx x)
+{
+  const char *fmt;
+  int i, j;
+  rtx tem;
+
+  if (REG_P (x) && lra_reg_info[REGNO (x)].val == lra_reg_info[regno].val)
+    return x;
+
+  fmt = GET_RTX_FORMAT (GET_CODE (x));
+  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  if ((tem = regno_val_use_in (regno, XEXP (x, i))))
+	    return tem;
+	}
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  if ((tem = regno_val_use_in (regno , XVECEXP (x, i, j))))
+	    return tem;
+    }
+
+  return NULL_RTX;
+}
+
 /* Generate reloads for matching OUT and INS (array of input operand
    numbers with end marker -1) with reg class GOAL_CLASS.  Add input
    and output reloads correspondingly to the lists *BEFORE and *AFTER.
@@ -942,7 +972,8 @@ match_reload (signed char out, signed char *ins, enum reg_class goal_class,
 	= (! early_clobber_p && ins[1] < 0 && REG_P (in_rtx)
 	   && (int) REGNO (in_rtx) < lra_new_regno_start
 	   && find_regno_note (curr_insn, REG_DEAD, REGNO (in_rtx))
-	   && (out < 0 || regno_use_in (REGNO (in_rtx), out_rtx) == NULL_RTX)
+	   && (out < 0
+	       || regno_val_use_in (REGNO (in_rtx), out_rtx) == NULL_RTX)
 	   ? lra_create_new_reg (inmode, in_rtx, goal_class, "")
 	   : lra_create_new_reg_with_unique_value (outmode, out_rtx,
 						   goal_class, ""));
@@ -2883,6 +2914,7 @@ process_address_1 (int nop, bool check_only_p,
 {
   struct address_info ad;
   rtx new_reg;
+  HOST_WIDE_INT scale;
   rtx op = *curr_id->operand_loc[nop];
   const char *constraint = curr_static_id->operand[nop].constraint;
   enum constraint_num cn = lookup_constraint (constraint);
@@ -3130,14 +3162,14 @@ process_address_1 (int nop, bool check_only_p,
       *ad.inner = simplify_gen_binary (PLUS, GET_MODE (new_reg),
 				       new_reg, *ad.index);
     }
-  else if (get_index_scale (&ad) == 1)
+  else if ((scale = get_index_scale (&ad)) == 1)
     {
       /* The last transformation to one reg will be made in
 	 curr_insn_transform function.  */
       end_sequence ();
       return false;
     }
-  else
+  else if (scale != 0)
     {
       /* base + scale * index => base + new_reg,
 	 case (1) above.
@@ -3148,6 +3180,17 @@ process_address_1 (int nop, bool check_only_p,
       new_reg = index_part_to_reg (&ad);
       *ad.inner = simplify_gen_binary (PLUS, GET_MODE (new_reg),
 				       *ad.base_term, new_reg);
+    }
+  else
+    {
+      enum reg_class cl = base_reg_class (ad.mode, ad.as,
+					  SCRATCH, SCRATCH);
+      rtx addr = *ad.inner;
+      
+      new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, "addr");
+      /* addr => new_base.  */
+      lra_emit_move (new_reg, addr);
+      *ad.inner = new_reg;
     }
   *before = get_insns ();
   end_sequence ();
@@ -4941,6 +4984,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
   rtx_insn *restore, *save;
   bool after_p;
   bool call_save_p;
+  machine_mode mode;
 
   if (original_regno < FIRST_PSEUDO_REGISTER)
     {
@@ -4948,24 +4992,37 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
       hard_regno = original_regno;
       call_save_p = false;
       nregs = 1;
+      mode = lra_reg_info[hard_regno].biggest_mode;
+      machine_mode reg_rtx_mode = GET_MODE (regno_reg_rtx[hard_regno]);
+      /* A reg can have a biggest_mode of VOIDmode if it was only ever seen
+	 as part of a multi-word register.  In that case, or if the biggest
+	 mode was larger than a register, just use the reg_rtx.  Otherwise,
+	 limit the size to that of the biggest access in the function.  */
+      if (mode == VOIDmode
+	  || GET_MODE_SIZE (mode) > GET_MODE_SIZE (reg_rtx_mode))
+	{
+	  original_reg = regno_reg_rtx[hard_regno];
+	  mode = reg_rtx_mode;
+	}
+      else
+	original_reg = gen_rtx_REG (mode, hard_regno);
     }
   else
     {
+      mode = PSEUDO_REGNO_MODE (original_regno);
       hard_regno = reg_renumber[original_regno];
-      nregs = hard_regno_nregs[hard_regno][PSEUDO_REGNO_MODE (original_regno)];
+      nregs = hard_regno_nregs[hard_regno][mode];
       rclass = lra_get_allocno_class (original_regno);
       original_reg = regno_reg_rtx[original_regno];
       call_save_p = need_for_call_save_p (original_regno);
     }
-  original_reg = regno_reg_rtx[original_regno];
   lra_assert (hard_regno >= 0);
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file,
 	     "	  ((((((((((((((((((((((((((((((((((((((((((((((((\n");
+	  
   if (call_save_p)
     {
-      machine_mode mode = GET_MODE (original_reg);
-
       mode = HARD_REGNO_CALLER_SAVE_MODE (hard_regno,
 					  hard_regno_nregs[hard_regno][mode],
 					  mode);
@@ -4973,8 +5030,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
     }
   else
     {
-      rclass = choose_split_class (rclass, hard_regno,
-				   GET_MODE (original_reg));
+      rclass = choose_split_class (rclass, hard_regno, mode);
       if (rclass == NO_REGS)
 	{
 	  if (lra_dump_file != NULL)
@@ -4992,8 +5048,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
 	    }
 	  return false;
 	}
-      new_reg = lra_create_new_reg (GET_MODE (original_reg), original_reg,
-				    rclass, "split");
+      new_reg = lra_create_new_reg (mode, original_reg, rclass, "split");
       reg_renumber[REGNO (new_reg)] = hard_regno;
     }
   save = emit_spill_move (true, new_reg, original_reg);
@@ -5819,6 +5874,24 @@ get_regno (rtx reg)
   return -1;
 }
 
+/* Delete a move INSN with destination reg DREGNO and a previous
+   clobber insn with the same regno.  The inheritance/split code can
+   generate moves with preceding clobber and when we delete such moves
+   we should delete the clobber insn too to keep the correct life
+   info.  */
+static void
+delete_move_and_clobber (rtx_insn *insn, int dregno)
+{
+  rtx_insn *prev_insn = PREV_INSN (insn);
+
+  lra_set_insn_deleted (insn);
+  lra_assert (dregno >= 0);
+  if (prev_insn != NULL && NONDEBUG_INSN_P (prev_insn)
+      && GET_CODE (PATTERN (prev_insn)) == CLOBBER
+      && dregno == get_regno (XEXP (PATTERN (prev_insn), 0)))
+    lra_set_insn_deleted (prev_insn);
+}
+
 /* Remove inheritance/split pseudos which are in REMOVE_PSEUDOS and
    return true if we did any change.  The undo transformations for
    inheritance looks like
@@ -5891,7 +5964,7 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
 			       ? "split" : "inheritance");
 		      dump_insn_slim (lra_dump_file, curr_insn);
 		    }
-		  lra_set_insn_deleted (curr_insn);
+		  delete_move_and_clobber (curr_insn, dregno);
 		  done_p = true;
 		}
 	      else if (bitmap_bit_p (remove_pseudos, sregno)
@@ -6091,7 +6164,7 @@ undo_optional_reloads (void)
 			       INSN_UID (insn));
 		      dump_insn_slim (lra_dump_file, insn);
 		    }
-		  lra_set_insn_deleted (insn);
+		  delete_move_and_clobber (insn, REGNO (dest));
 		  continue;
 		}
 	      /* We should not worry about generation memory-memory

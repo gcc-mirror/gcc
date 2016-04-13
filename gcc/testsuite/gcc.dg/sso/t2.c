@@ -88,5 +88,6 @@ int main (void)
   new_line ();
   /* { dg-output "Local_R2 : 44 8d 15 9e 40 58 34 1e.*\n" } */
 
+  new_line ();
   return 0;
 }

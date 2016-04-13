@@ -604,6 +604,14 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+LIBAT_BUILD_VERSIONED_SHLIB_SUN_FALSE
+LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE
+LIBAT_BUILD_VERSIONED_SHLIB_GNU_FALSE
+LIBAT_BUILD_VERSIONED_SHLIB_GNU_TRUE
+LIBAT_BUILD_VERSIONED_SHLIB_FALSE
+LIBAT_BUILD_VERSIONED_SHLIB_TRUE
+OPT_LDFLAGS
+SECTION_LDFLAGS
 toolexeclibdir
 toolexecdir
 FFI_DEBUG_FALSE
@@ -768,6 +776,7 @@ enable_debug
 enable_structs
 enable_raw_api
 enable_purify_safety
+enable_symvers
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1416,6 +1425,8 @@ Optional Features:
   --disable-structs       omit code for struct support
   --disable-raw-api       make the raw api unavailable
   --enable-purify-safety  purify-safe mode
+  --enable-symvers=STYLE  enables symbol versioning of the shared library
+                          [default=yes]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -9347,7 +9358,7 @@ _LT_EOF
 	if $NM -V 2>&1 | $GREP 'GNU' > /dev/null; then
 	  export_symbols_cmds='$NM -Bpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "W")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
 	else
-	  export_symbols_cmds='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
+	  export_symbols_cmds='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "L")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
 	fi
 	aix_use_runtimelinking=no
 
@@ -11375,7 +11386,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11378 "configure"
+#line 11389 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11481,7 +11492,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11484 "configure"
+#line 11495 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13833,7 +13844,7 @@ $as_echo_n "checking whether the $compiler linker ($LD) supports shared librarie
     if $NM -V 2>&1 | $GREP 'GNU' > /dev/null; then
       export_symbols_cmds_CXX='$NM -Bpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "W")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
     else
-      export_symbols_cmds_CXX='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
+      export_symbols_cmds_CXX='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$ 2 == "T") || (\$ 2 == "D") || (\$ 2 == "B") || (\$ 2 == "L")) && (substr(\$ 3,1,1) != ".")) { print \$ 3 } }'\'' | sort -u > $export_symbols'
     fi
     ;;
   pw32*)
@@ -16009,6 +16020,419 @@ else
   multilib_arg=
 fi
 
+# Check linker support.
+
+
+# Check whether --with-gnu-ld was given.
+if test "${with_gnu_ld+set}" = set; then :
+  withval=$with_gnu_ld; test "$withval" = no || with_gnu_ld=yes
+else
+  with_gnu_ld=no
+fi
+
+ac_prog=ld
+if test "$GCC" = yes; then
+  # Check if gcc -print-prog-name=ld gives a path.
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld used by $CC" >&5
+$as_echo_n "checking for ld used by $CC... " >&6; }
+  case $host in
+  *-*-mingw*)
+    # gcc leaves a trailing carriage return which upsets mingw
+    ac_prog=`($CC -print-prog-name=ld) 2>&5 | tr -d '\015'` ;;
+  *)
+    ac_prog=`($CC -print-prog-name=ld) 2>&5` ;;
+  esac
+  case $ac_prog in
+    # Accept absolute paths.
+    [\\/]* | ?:[\\/]*)
+      re_direlt='/[^/][^/]*/\.\./'
+      # Canonicalize the pathname of ld
+      ac_prog=`$ECHO "$ac_prog"| $SED 's%\\\\%/%g'`
+      while $ECHO "$ac_prog" | $GREP "$re_direlt" > /dev/null 2>&1; do
+	ac_prog=`$ECHO $ac_prog| $SED "s%$re_direlt%/%"`
+      done
+      test -z "$LD" && LD="$ac_prog"
+      ;;
+  "")
+    # If it fails, then pretend we aren't using GCC.
+    ac_prog=ld
+    ;;
+  *)
+    # If it is relative, then search for the first ld in PATH.
+    with_gnu_ld=unknown
+    ;;
+  esac
+elif test "$with_gnu_ld" = yes; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GNU ld" >&5
+$as_echo_n "checking for GNU ld... " >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for non-GNU ld" >&5
+$as_echo_n "checking for non-GNU ld... " >&6; }
+fi
+if test "${lt_cv_path_LD+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -z "$LD"; then
+  lt_save_ifs="$IFS"; IFS=$PATH_SEPARATOR
+  for ac_dir in $PATH; do
+    IFS="$lt_save_ifs"
+    test -z "$ac_dir" && ac_dir=.
+    if test -f "$ac_dir/$ac_prog" || test -f "$ac_dir/$ac_prog$ac_exeext"; then
+      lt_cv_path_LD="$ac_dir/$ac_prog"
+      # Check to see if the program is GNU ld.  I'd rather use --version,
+      # but apparently some variants of GNU ld only accept -v.
+      # Break only if it was the GNU/non-GNU ld that we prefer.
+      case `"$lt_cv_path_LD" -v 2>&1 </dev/null` in
+      *GNU* | *'with BFD'*)
+	test "$with_gnu_ld" != no && break
+	;;
+      *)
+	test "$with_gnu_ld" != yes && break
+	;;
+      esac
+    fi
+  done
+  IFS="$lt_save_ifs"
+else
+  lt_cv_path_LD="$LD" # Let the user override the test with a path.
+fi
+fi
+
+LD="$lt_cv_path_LD"
+if test -n "$LD"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LD" >&5
+$as_echo "$LD" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+test -z "$LD" && as_fn_error "no acceptable ld found in \$PATH" "$LINENO" 5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if the linker ($LD) is GNU ld" >&5
+$as_echo_n "checking if the linker ($LD) is GNU ld... " >&6; }
+if test "${lt_cv_prog_gnu_ld+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  # I'd rather use --version here, but apparently some GNU lds only accept -v.
+case `$LD -v 2>&1 </dev/null` in
+*GNU* | *'with BFD'*)
+  lt_cv_prog_gnu_ld=yes
+  ;;
+*)
+  lt_cv_prog_gnu_ld=no
+  ;;
+esac
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $lt_cv_prog_gnu_ld" >&5
+$as_echo "$lt_cv_prog_gnu_ld" >&6; }
+with_gnu_ld=$lt_cv_prog_gnu_ld
+
+
+
+
+
+
+
+  # If we're not using GNU ld, then there's no point in even trying these
+  # tests.  Check for that first.  We should have already tested for gld
+  # by now (in libtool), but require it now just to be safe...
+  test -z "$SECTION_LDFLAGS" && SECTION_LDFLAGS=''
+  test -z "$OPT_LDFLAGS" && OPT_LDFLAGS=''
+
+
+
+  # The name set by libtool depends on the version of libtool.  Shame on us
+  # for depending on an impl detail, but c'est la vie.  Older versions used
+  # ac_cv_prog_gnu_ld, but now it's lt_cv_prog_gnu_ld, and is copied back on
+  # top of with_gnu_ld (which is also set by --with-gnu-ld, so that actually
+  # makes sense).  We'll test with_gnu_ld everywhere else, so if that isn't
+  # set (hence we're using an older libtool), then set it.
+  if test x${with_gnu_ld+set} != xset; then
+    if test x${ac_cv_prog_gnu_ld+set} != xset; then
+      # We got through "ac_require(ac_prog_ld)" and still not set?  Huh?
+      with_gnu_ld=no
+    else
+      with_gnu_ld=$ac_cv_prog_gnu_ld
+    fi
+  fi
+
+  # Start by getting the version number.  I think the libtool test already
+  # does some of this, but throws away the result.
+  libat_ld_is_gold=no
+  if $LD --version 2>/dev/null | grep 'GNU gold'> /dev/null 2>&1; then
+    libat_ld_is_gold=yes
+  fi
+
+  ldver=`$LD --version 2>/dev/null |
+         sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
+
+  libat_gnu_ld_version=`echo $ldver | \
+         $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+
+  # Set --gc-sections.
+  if test "$with_gnu_ld" = "notbroken"; then
+    # GNU ld it is!  Joy and bunny rabbits!
+
+    # All these tests are for C++; save the language and the compiler flags.
+    # Need to do this so that g++ won't try to link in libstdc++
+    ac_test_CFLAGS="${CFLAGS+set}"
+    ac_save_CFLAGS="$CFLAGS"
+    CFLAGS='-x c++  -Wl,--gc-sections'
+
+    # Check for -Wl,--gc-sections
+    # XXX This test is broken at the moment, as symbols required for linking
+    # are now in libsupc++ (not built yet).  In addition, this test has
+    # cored on solaris in the past.  In addition, --gc-sections doesn't
+    # really work at the moment (keeps on discarding used sections, first
+    # .eh_frame and now some of the glibc sections for iconv).
+    # Bzzzzt.  Thanks for playing, maybe next time.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld that supports -Wl,--gc-sections" >&5
+$as_echo_n "checking for ld that supports -Wl,--gc-sections... " >&6; }
+    if test "$cross_compiling" = yes; then :
+  ac_sectionLDflags=yes
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+     int main(void)
+     {
+       try { throw 1; }
+       catch (...) { };
+       return 0;
+     }
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  ac_sectionLDflags=yes
+else
+  ac_sectionLDflags=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+    if test "$ac_test_CFLAGS" = set; then
+      CFLAGS="$ac_save_CFLAGS"
+    else
+      # this is the suspicious part
+      CFLAGS=''
+    fi
+    if test "$ac_sectionLDflags" = "yes"; then
+      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_sectionLDflags" >&5
+$as_echo "$ac_sectionLDflags" >&6; }
+  fi
+
+  # Set linker optimization flags.
+  if test x"$with_gnu_ld" = x"yes"; then
+    OPT_LDFLAGS="-Wl,-O1 $OPT_LDFLAGS"
+  fi
+
+
+
+
+
+
+ # Check whether --enable-symvers was given.
+if test "${enable_symvers+set}" = set; then :
+  enableval=$enable_symvers;
+      case "$enableval" in
+       yes|no|gnu*|sun) ;;
+       *) as_fn_error "Unknown argument to enable/disable symvers" "$LINENO" 5 ;;
+                          esac
+
+else
+  enable_symvers=yes
+fi
+
+
+
+# If we never went through the LIBAT_CHECK_LINKER_FEATURES macro, then we
+# don't know enough about $LD to do tricks...
+
+
+# Turn a 'yes' into a suitable default.
+if test x$enable_symvers = xyes ; then
+  # FIXME  The following test is too strict, in theory.
+  if test $enable_shared = no || test "x$LD" = x; then
+    enable_symvers=no
+  else
+    if test $with_gnu_ld = yes ; then
+      enable_symvers=gnu
+    else
+      case ${target_os} in
+        # Sun symbol versioning exists since Solaris 2.5.
+        solaris2.[5-9]* | solaris2.1[0-9]*)
+          enable_symvers=sun ;;
+        *)
+          enable_symvers=no ;;
+      esac
+    fi
+  fi
+fi
+
+# Check if 'sun' was requested on non-Solaris 2 platforms.
+if test x$enable_symvers = xsun ; then
+  case ${target_os} in
+    solaris2*)
+      # All fine.
+      ;;
+    *)
+      # Unlikely to work.
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === You have requested Sun symbol versioning, but" >&5
+$as_echo "$as_me: WARNING: === You have requested Sun symbol versioning, but" >&2;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === you are not targetting Solaris 2." >&5
+$as_echo "$as_me: WARNING: === you are not targetting Solaris 2." >&2;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === Symbol versioning will be disabled." >&5
+$as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
+      enable_symvers=no
+      ;;
+  esac
+fi
+
+# Check to see if libgcc_s exists, indicating that shared libgcc is possible.
+if test $enable_symvers != no; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for shared libgcc" >&5
+$as_echo_n "checking for shared libgcc... " >&6; }
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS=' -lgcc_s'
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libat_shared_libgcc=yes
+else
+  libat_shared_libgcc=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  CFLAGS="$ac_save_CFLAGS"
+  if test $libat_shared_libgcc = no; then
+    cat > conftest.c <<EOF
+int main (void) { return 0; }
+EOF
+    libat_libgcc_s_suffix=`${CC-cc} $CFLAGS $CPPFLAGS $LDFLAGS \
+			     -shared -shared-libgcc -o conftest.so \
+			     conftest.c -v 2>&1 >/dev/null \
+			     | sed -n 's/^.* -lgcc_s\([^ ]*\) .*$/\1/p'`
+    rm -f conftest.c conftest.so
+    if test x${libat_libgcc_s_suffix+set} = xset; then
+      CFLAGS=" -lgcc_s$libat_libgcc_s_suffix"
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libat_shared_libgcc=yes
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+      CFLAGS="$ac_save_CFLAGS"
+    fi
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libat_shared_libgcc" >&5
+$as_echo "$libat_shared_libgcc" >&6; }
+fi
+
+# For GNU ld, we need at least this version.  The format is described in
+# LIBAT_CHECK_LINKER_FEATURES above.
+libat_min_gnu_ld_version=21400
+# XXXXXXXXXXX libat_gnu_ld_version=21390
+
+# Check to see if unspecified "yes" value can win, given results above.
+# Change "yes" into either "no" or a style name.
+if test $enable_symvers != no && test $libat_shared_libgcc = yes; then
+  if test $with_gnu_ld = yes; then
+    if test $libat_gnu_ld_version -ge $libat_min_gnu_ld_version ; then
+      enable_symvers=gnu
+    elif test $libat_ld_is_gold = yes ; then
+      enable_symvers=gnu
+    else
+      # The right tools, the right setup, but too old.  Fallbacks?
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === Linker version $libat_gnu_ld_version is too old for" >&5
+$as_echo "$as_me: WARNING: === Linker version $libat_gnu_ld_version is too old for" >&2;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === full symbol versioning support in this release of GCC." >&5
+$as_echo "$as_me: WARNING: === full symbol versioning support in this release of GCC." >&2;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === You would need to upgrade your binutils to version" >&5
+$as_echo "$as_me: WARNING: === You would need to upgrade your binutils to version" >&2;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === $libat_min_gnu_ld_version or later and rebuild GCC." >&5
+$as_echo "$as_me: WARNING: === $libat_min_gnu_ld_version or later and rebuild GCC." >&2;}
+      if test $libat_gnu_ld_version -ge 21200 ; then
+        # Globbing fix is present, proper block support is not.
+                        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === Symbol versioning will be disabled." >&5
+$as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
+        enable_symvers=no
+      else
+        # 2.11 or older.
+        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === Symbol versioning will be disabled." >&5
+$as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
+        enable_symvers=no
+      fi
+    fi
+  elif test $enable_symvers = sun; then
+    : All interesting versions of Sun ld support sun style symbol versioning.
+  else
+    # just fail for now
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === You have requested some kind of symbol versioning, but" >&5
+$as_echo "$as_me: WARNING: === You have requested some kind of symbol versioning, but" >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === either you are not using a supported linker, or you are" >&5
+$as_echo "$as_me: WARNING: === either you are not using a supported linker, or you are" >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === not building a shared libgcc_s (which is required)." >&5
+$as_echo "$as_me: WARNING: === not building a shared libgcc_s (which is required)." >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === Symbol versioning will be disabled." >&5
+$as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
+    enable_symvers=no
+  fi
+fi
+if test $enable_symvers = gnu; then
+
+$as_echo "#define LIBAT_GNU_SYMBOL_VERSIONING 1" >>confdefs.h
+
+fi
+
+ if test $enable_symvers != no; then
+  LIBAT_BUILD_VERSIONED_SHLIB_TRUE=
+  LIBAT_BUILD_VERSIONED_SHLIB_FALSE='#'
+else
+  LIBAT_BUILD_VERSIONED_SHLIB_TRUE='#'
+  LIBAT_BUILD_VERSIONED_SHLIB_FALSE=
+fi
+
+ if test $enable_symvers = gnu; then
+  LIBAT_BUILD_VERSIONED_SHLIB_GNU_TRUE=
+  LIBAT_BUILD_VERSIONED_SHLIB_GNU_FALSE='#'
+else
+  LIBAT_BUILD_VERSIONED_SHLIB_GNU_TRUE='#'
+  LIBAT_BUILD_VERSIONED_SHLIB_GNU_FALSE=
+fi
+
+ if test $enable_symvers = sun; then
+  LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE=
+  LIBAT_BUILD_VERSIONED_SHLIB_SUN_FALSE='#'
+else
+  LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE='#'
+  LIBAT_BUILD_VERSIONED_SHLIB_SUN_FALSE=
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: versioning on shared library symbols is $enable_symvers" >&5
+$as_echo "$as_me: versioning on shared library symbols is $enable_symvers" >&6;}
+
+
 ac_config_commands="$ac_config_commands include"
 
 ac_config_commands="$ac_config_commands src"
@@ -16168,6 +16592,18 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${FFI_DEBUG_TRUE}" && test -z "${FFI_DEBUG_FALSE}"; then
   as_fn_error "conditional \"FFI_DEBUG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBAT_BUILD_VERSIONED_SHLIB_TRUE}" && test -z "${LIBAT_BUILD_VERSIONED_SHLIB_FALSE}"; then
+  as_fn_error "conditional \"LIBAT_BUILD_VERSIONED_SHLIB\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBAT_BUILD_VERSIONED_SHLIB_GNU_TRUE}" && test -z "${LIBAT_BUILD_VERSIONED_SHLIB_GNU_FALSE}"; then
+  as_fn_error "conditional \"LIBAT_BUILD_VERSIONED_SHLIB_GNU\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE}" && test -z "${LIBAT_BUILD_VERSIONED_SHLIB_SUN_FALSE}"; then
+  as_fn_error "conditional \"LIBAT_BUILD_VERSIONED_SHLIB_SUN\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

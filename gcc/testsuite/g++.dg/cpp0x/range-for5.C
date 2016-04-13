@@ -31,7 +31,7 @@ struct Explicit
 void test1()
 {
   container c;
-  for (int x : c) // { dg-error "inconsistent|conversion" }
+  for (int x : c) // { dg-error "inconsistent|conversion|comparison" }
     ;
 
   int a[2] = {1,2};

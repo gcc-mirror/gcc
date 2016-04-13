@@ -46,5 +46,6 @@ int main (void)
 
   if (A2.F != Pi - Pi * I) abort ();
 
+  new_line ();
   return 0;
 }

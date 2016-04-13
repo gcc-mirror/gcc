@@ -868,6 +868,18 @@ union_stack_vars (size_t a, size_t b)
     }
 }
 
+/* Return true if the current function should have its stack frame
+   protected by address sanitizer.  */
+
+static inline bool
+asan_sanitize_stack_p (void)
+{
+  return ((flag_sanitize & SANITIZE_ADDRESS)
+	  && ASAN_STACK
+	  && !lookup_attribute ("no_sanitize_address",
+				DECL_ATTRIBUTES (current_function_decl)));
+}
+
 /* A subroutine of expand_used_vars.  Binpack the variables into
    partitions constrained by the interference graph.  The overall
    algorithm used is as follows:
@@ -929,7 +941,7 @@ partition_stack_vars (void)
 	     sizes, as the shorter vars wouldn't be adequately protected.
 	     Don't do that for "large" (unsupported) alignment objects,
 	     those aren't protected anyway.  */
-	  if ((flag_sanitize & SANITIZE_ADDRESS) && ASAN_STACK && isize != jsize
+	  if (asan_sanitize_stack_p () && isize != jsize
 	      && ialign * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
 	    break;
 
@@ -1120,7 +1132,7 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
       if (alignb * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
 	{
 	  base = virtual_stack_vars_rtx;
-	  if ((flag_sanitize & SANITIZE_ADDRESS) && ASAN_STACK && pred)
+	  if (asan_sanitize_stack_p () && pred)
 	    {
 	      HOST_WIDE_INT prev_offset
 		= align_base (frame_offset,
@@ -1491,7 +1503,7 @@ defer_stack_allocation (tree var, bool toplevel)
   /* If stack protection is enabled, *all* stack variables must be deferred,
      so that we can re-order the strings to the top of the frame.
      Similarly for Address Sanitizer.  */
-  if (flag_stack_protect || ((flag_sanitize & SANITIZE_ADDRESS) && ASAN_STACK))
+  if (flag_stack_protect || asan_sanitize_stack_p ())
     return true;
 
   unsigned int align = TREE_CODE (var) == SSA_NAME
@@ -2191,7 +2203,7 @@ expand_used_vars (void)
 	    expand_stack_vars (stack_protect_decl_phase_2, &data);
 	}
 
-      if ((flag_sanitize & SANITIZE_ADDRESS) && ASAN_STACK)
+      if (asan_sanitize_stack_p ())
 	/* Phase 3, any partitions that need asan protection
 	   in addition to phase 1 and 2.  */
 	expand_stack_vars (asan_decl_phase_3, &data);

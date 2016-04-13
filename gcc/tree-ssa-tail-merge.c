@@ -1207,6 +1207,42 @@ gsi_advance_bw_nondebug_nonlocal (gimple_stmt_iterator *gsi, tree *vuse,
     }
 }
 
+/* Return true if equal (in the sense of gimple_equal_p) statements STMT1 and
+   STMT2 are allowed to be merged.  */
+
+static bool
+merge_stmts_p (gimple *stmt1, gimple *stmt2)
+{
+  /* What could be better than this here is to blacklist the bb
+     containing the stmt, when encountering the stmt f.i. in
+     same_succ_hash.  */
+  if (is_tm_ending (stmt1))
+    return false;
+
+  if (is_gimple_call (stmt1)
+      && gimple_call_internal_p (stmt1))
+    switch (gimple_call_internal_fn (stmt1))
+      {
+      case IFN_UBSAN_NULL:
+      case IFN_UBSAN_BOUNDS:
+      case IFN_UBSAN_VPTR:
+      case IFN_UBSAN_CHECK_ADD:
+      case IFN_UBSAN_CHECK_SUB:
+      case IFN_UBSAN_CHECK_MUL:
+      case IFN_UBSAN_OBJECT_SIZE:
+      case IFN_ASAN_CHECK:
+	/* For these internal functions, gimple_location is an implicit
+	   parameter, which will be used explicitly after expansion.
+	   Merging these statements may cause confusing line numbers in
+	   sanitizer messages.  */
+	return gimple_location (stmt1) == gimple_location (stmt2);
+      default:
+	break;
+      }
+
+  return true;
+}
+
 /* Determines whether BB1 and BB2 (members of same_succ) are duplicates.  If so,
    clusters them.  */
 
@@ -1226,14 +1262,10 @@ find_duplicate (same_succ *same_succ, basic_block bb1, basic_block bb2)
       gimple *stmt1 = gsi_stmt (gsi1);
       gimple *stmt2 = gsi_stmt (gsi2);
 
-      /* What could be better than this here is to blacklist the bb
-	 containing the stmt, when encountering the stmt f.i. in
-	 same_succ_hash.  */
-      if (is_tm_ending (stmt1)
-	  || is_tm_ending (stmt2))
+      if (!gimple_equal_p (same_succ, stmt1, stmt2))
 	return;
 
-      if (!gimple_equal_p (same_succ, stmt1, stmt2))
+      if (!merge_stmts_p (stmt1, stmt2))
 	return;
 
       gsi_prev_nondebug (&gsi1);

@@ -5310,6 +5310,27 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
       if (is_gimple_assign (def_stmt))
 	rhs_code = gimple_assign_rhs_code (def_stmt);
 
+      /* In the case of NAME != CST1 where NAME = A +- CST2 we can
+         assert that A != CST1 -+ CST2.  */
+      if ((comp_code == EQ_EXPR || comp_code == NE_EXPR)
+	  && (rhs_code == PLUS_EXPR || rhs_code == MINUS_EXPR))
+	{
+	  tree op0 = gimple_assign_rhs1 (def_stmt);
+	  tree op1 = gimple_assign_rhs2 (def_stmt);
+	  if (TREE_CODE (op0) == SSA_NAME
+	      && TREE_CODE (op1) == INTEGER_CST
+	      && live_on_edge (e, op0)
+	      && !has_single_use (op0))
+	    {
+	      enum tree_code reverse_op = (rhs_code == PLUS_EXPR
+					   ? MINUS_EXPR : PLUS_EXPR);
+	      op1 = int_const_binop (reverse_op, val, op1);
+	      if (TREE_OVERFLOW (op1))
+		op1 = drop_tree_overflow (op1);
+	      register_new_assert_for (op0, op0, comp_code, op1, NULL, e, bsi);
+	    }
+	}
+
       /* Add asserts for NAME cmp CST and NAME being defined
 	 as NAME = (int) NAME2.  */
       if (!TYPE_UNSIGNED (TREE_TYPE (val))
@@ -6450,7 +6471,6 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
   value_range *vr = NULL;
   tree low_sub, up_sub;
   tree low_bound, up_bound, up_bound_p1;
-  tree base;
 
   if (TREE_NO_WARNING (ref))
     return;
@@ -6465,27 +6485,9 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
 
   /* Accesses to trailing arrays via pointers may access storage
      beyond the types array bounds.  */
-  base = get_base_address (ref);
-  if ((warn_array_bounds < 2)
-      && base && TREE_CODE (base) == MEM_REF)
-    {
-      tree cref, next = NULL_TREE;
-
-      if (TREE_CODE (TREE_OPERAND (ref, 0)) != COMPONENT_REF)
-	return;
-
-      cref = TREE_OPERAND (ref, 0);
-      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (cref, 0))) == RECORD_TYPE)
-	for (next = DECL_CHAIN (TREE_OPERAND (cref, 1));
-	     next && TREE_CODE (next) != FIELD_DECL;
-	     next = DECL_CHAIN (next))
-	  ;
-
-      /* If this is the last field in a struct type or a field in a
-	 union type do not warn.  */
-      if (!next)
-	return;
-    }
+  if (warn_array_bounds < 2
+      && array_at_struct_end_p (ref))
+    return;
 
   low_bound = array_ref_low_bound (ref);
   up_bound_p1 = int_const_binop (PLUS_EXPR, up_bound,
@@ -7180,7 +7182,7 @@ get_vr_for_comparison (int i)
 
 static tree
 compare_name_with_value (enum tree_code comp, tree var, tree val,
-			 bool *strict_overflow_p)
+			 bool *strict_overflow_p, bool use_equiv_p)
 {
   bitmap_iterator bi;
   unsigned i;
@@ -7215,6 +7217,11 @@ compare_name_with_value (enum tree_code comp, tree var, tree val,
 
   EXECUTE_IF_SET_IN_BITMAP (e, 0, i, bi)
     {
+      if (! use_equiv_p
+	  && ! SSA_NAME_IS_DEFAULT_DEF (ssa_name (i))
+	  && prop_simulate_again_p (SSA_NAME_DEF_STMT (ssa_name (i))))
+	continue;
+
       equiv_vr = get_vr_for_comparison (i);
       sop = false;
       t = compare_range_with_value (comp, &equiv_vr, val, &sop);
@@ -7400,24 +7407,21 @@ vrp_evaluate_conditional_warnv_with_ops (enum tree_code code, tree op0,
       && !POINTER_TYPE_P (TREE_TYPE (op0)))
     return NULL_TREE;
 
-  if (use_equiv_p)
-    {
-      if (only_ranges
-          && (ret = vrp_evaluate_conditional_warnv_with_ops_using_ranges
-	              (code, op0, op1, strict_overflow_p)))
-	return ret;
-      *only_ranges = false;
-      if (TREE_CODE (op0) == SSA_NAME && TREE_CODE (op1) == SSA_NAME)
-	return compare_names (code, op0, op1, strict_overflow_p);
-      else if (TREE_CODE (op0) == SSA_NAME)
-	return compare_name_with_value (code, op0, op1, strict_overflow_p);
-      else if (TREE_CODE (op1) == SSA_NAME)
-	return (compare_name_with_value
-		(swap_tree_comparison (code), op1, op0, strict_overflow_p));
-    }
-  else
-    return vrp_evaluate_conditional_warnv_with_ops_using_ranges (code, op0, op1,
-								 strict_overflow_p);
+  if ((ret = vrp_evaluate_conditional_warnv_with_ops_using_ranges
+	       (code, op0, op1, strict_overflow_p)))
+    return ret;
+  if (only_ranges)
+    *only_ranges = false;
+  /* Do not use compare_names during propagation, it's quadratic.  */
+  if (TREE_CODE (op0) == SSA_NAME && TREE_CODE (op1) == SSA_NAME
+      && use_equiv_p)
+    return compare_names (code, op0, op1, strict_overflow_p);
+  else if (TREE_CODE (op0) == SSA_NAME)
+    return compare_name_with_value (code, op0, op1,
+				    strict_overflow_p, use_equiv_p);
+  else if (TREE_CODE (op1) == SSA_NAME)
+    return compare_name_with_value (swap_tree_comparison (code), op1, op0,
+				    strict_overflow_p, use_equiv_p);
   return NULL_TREE;
 }
 

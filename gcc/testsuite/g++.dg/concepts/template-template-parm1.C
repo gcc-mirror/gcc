@@ -1,5 +1,5 @@
 // PR c++/66937
-// { dg-options -std=c++1z }
+// { dg-options "-std=c++1z -fconcepts" }
 
 #include <tuple>
 

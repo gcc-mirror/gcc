@@ -35,5 +35,5 @@ int main()
    return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorization not profitable" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorization not profitable" 1 "vect" { xfail { vect_hw_misalign } } } } */
 

@@ -41,8 +41,9 @@
 
 // Concept-checking code is off by default unless users turn it on via
 // configure options or editing c++config.h.
+// It is not supported for freestanding implementations.
 
-#ifndef _GLIBCXX_CONCEPT_CHECKS
+#if !defined(_GLIBCXX_CONCEPT_CHECKS) || !_GLIBCXX_HOSTED
 
 #define __glibcxx_function_requires(...)
 #define __glibcxx_class_requires(_a,_b)

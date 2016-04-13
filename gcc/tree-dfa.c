@@ -612,9 +612,22 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 
   if (DECL_P (exp))
     {
+      if (flag_unconstrained_commons
+	  && TREE_CODE (exp) == VAR_DECL && DECL_COMMON (exp))
+	{
+	  tree sz_tree = TYPE_SIZE (TREE_TYPE (exp));
+	  /* If size is unknown, or we have read to the end, assume there
+	     may be more to the structure than we are told.  */
+	  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
+	      || (seen_variable_array_ref
+		  && (sz_tree == NULL_TREE
+		      || TREE_CODE (sz_tree) != INTEGER_CST
+		      || (bit_offset + maxsize == wi::to_offset (sz_tree)))))
+	    maxsize = -1;
+	}
       /* If maxsize is unknown adjust it according to the size of the
          base decl.  */
-      if (maxsize == -1
+      else if (maxsize == -1
 	  && DECL_SIZE (exp)
 	  && TREE_CODE (DECL_SIZE (exp)) == INTEGER_CST)
 	maxsize = wi::to_offset (DECL_SIZE (exp)) - bit_offset;

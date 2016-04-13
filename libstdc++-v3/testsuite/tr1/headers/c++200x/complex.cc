@@ -21,6 +21,8 @@
 // check for duplicates of complex overloads of acos, asin, atan and fabs
 
 #include <complex>
+using std::fabs;
 #include <tr1/cmath>
 #include <tr1/complex>
 
+auto c = std::tr1::fabs(std::complex<double>{});

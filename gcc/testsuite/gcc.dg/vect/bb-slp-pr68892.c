@@ -13,5 +13,7 @@ void foo(void)
   b[3] = a[3][0];
 }
 
-/* { dg-final { scan-tree-dump "not profitable" "slp2" } } */
+/* ???  The profitability check is not reached because we give up on the
+   gaps we access earlier.  */
+/* { dg-final { scan-tree-dump "not profitable" "slp2" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times "Basic block will be vectorized" 0 "slp2" } } */

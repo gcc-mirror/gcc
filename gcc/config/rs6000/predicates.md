@@ -527,12 +527,13 @@
       && mode != DImode)
     return 1;
 
+  /* 0.0D is not all zero bits.  */
+  if (DECIMAL_FLOAT_MODE_P (mode))
+    return 0;
+
   /* The constant 0.0 is easy under VSX.  */
   if (TARGET_VSX && SCALAR_FLOAT_MODE_P (mode) && op == CONST0_RTX (mode))
     return 1;
-
-  if (DECIMAL_FLOAT_MODE_P (mode))
-    return 0;
 
   /* If we are using V.4 style PIC, consider all constants to be hard.  */
   if (flag_pic && DEFAULT_ABI == ABI_V4)
@@ -1708,14 +1709,23 @@
   (match_code "const_int,high,plus")
 {
   HOST_WIDE_INT value;
+  rtx int_const;
 
   if (GET_CODE (op) == HIGH)
     return 1;
 
-  if (!CONST_INT_P (op))
+  if (CONST_INT_P (op))
+    int_const = op;
+
+  else if (GET_CODE (op) == PLUS
+	   && base_reg_operand (XEXP (op, 0), Pmode)
+	   && CONST_INT_P (XEXP (op, 1)))
+    int_const = XEXP (op, 1);
+
+  else
     return 0;
 
-  value = INTVAL (op);
+  value = INTVAL (int_const);
   if ((value & (HOST_WIDE_INT)0xffff) != 0)
     return 0;
 

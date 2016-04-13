@@ -25,8 +25,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # for implementation details of all except division which is detailed below
 #
 
+#ifdef L_fp_tools
 // .global __cmpsf2_
-
 nan:            .long 0x7FFFFFFF    # also abs mask
 inf:            .long 0x7F800000
 sign_mask:      .long 0x80000000
@@ -36,6 +36,14 @@ edge_case:      .long 0x00FFFFFF
 smallest_norm:  .long 0x00800000    # implicit bit
 high_FF:        .long 0xFF000000
 high_uint:      .long 0xFFFFFFFF
+
+ntz_table:
+    .byte   32,0,1,12,2,6,0,13,3,0,7,0,0,0,0,14
+    .byte   10,4,0,0,8,0,0,25,0,0,0,0,0,21,27,15
+    .byte   31,11,5,0,0,0,0,0,9,0,0,24,0,0,20,26
+    .byte   30,0,0,0,0,23,0,19,29,0,22,18,28,17,16,0
+
+#endif
 
 # Supply a few 'missing' instructions
 
@@ -86,12 +94,6 @@ high_uint:      .long 0xFFFFFFFF
     add     \x, \x, \scr
     lpmi.b  \x, \x, 0
 .endm
-
-ntz_table:
-    .byte   32,0,1,12,2,6,0,13,3,0,7,0,0,0,0,14
-    .byte   10,4,0,0,8,0,0,25,0,0,0,0,0,21,27,15
-    .byte   31,11,5,0,0,0,0,0,9,0,0,24,0,0,20,26
-    .byte   30,0,0,0,0,23,0,19,29,0,22,18,28,17,16,0
 
 # calculate leading zero count
 .macro      nlz x, scr
@@ -503,6 +505,9 @@ mul_z0:
 ## for implementation details
 
 
+
+
+#ifdef  L_divsf3
 dc_1: .long             0xffffe7d7
 dc_2: .long             0xffffffe8
 dc_3: .long             0xffbad86f
@@ -517,9 +522,6 @@ dc_11: .long            0x0452b1bf
 dc_12: .long            0xFFFFFFC0
 spec_val_test:  .long   0x7F7FFFFF
 
-
-
-#ifdef  L_divsf3
 .global __divsf3
 __divsf3:
     push    $r13
@@ -869,6 +871,7 @@ float_not_zero2:
     return
 #endif
 
+#if 0
 ##########################################################################
 ##########################################################################
 ## float compare
@@ -913,7 +916,74 @@ cmp_is_gt:
 cmp_is_eq:
     ldk     $r0, 0
     return
+#endif
 
+#ifdef  L_udivsi3
+.global __udivsi3
+__udivsi3:
+	# $r0 is dividend
+	# $r1 is divisor
+	ldk	$r2,0
+	push	$r28
+	ldk	$r28,-32
+0:
+	lshr	$r3,$r0,31	# Shift $r2:$r0 left one
+	ashl	$r0,$r0,1
+	ashl	$r2,$r2,1
+	or	$r2,$r2,$r3
+	cmp	$r2,$r1
+	jmpc	b,1f
+2:
+	sub	$r2,$r2,$r1
+	add	$r0,$r0,1
+1:
+	add	$r28,$r28,1
+	jmpx	31,$r28,1,0b
+	pop	$r28
+	# $r0: quotient
+	# $r2: remainder
+	return
+#endif
 
+#ifdef	L_umodsi3
+.global	__umodsi3
+__umodsi3:
+	call	__udivsi3
+	move	$r0,$r2
+	return
+#endif
 
+#ifdef	L_divsi3
+.global	__divsi3
+__divsi3:
+	xor	$r5,$r0,$r1	# $r5 is sign of result
+	ashr	$r2,$r0,31	# $r0 = abs($r0)
+	xor	$r0,$r0,$r2
+	sub	$r0,$r0,$r2
+	ashr	$r2,$r1,31	# $r1 = abs($r1)
+	xor	$r1,$r1,$r2
+	sub	$r1,$r1,$r2
+	call	__udivsi3
+	ashr	$r5,$r5,31
+	xor	$r0,$r0,$r5
+	sub	$r0,$r0,$r5
+	return
+	
+#endif
 
+#ifdef	L_modsi3
+.global	__modsi3
+__modsi3:
+	move	$r5,$r0		# $r5 is sign of result
+	ashr	$r2,$r0,31	# $r0 = abs($r0)
+	xor	$r0,$r0,$r2
+	sub	$r0,$r0,$r2
+	ashr	$r2,$r1,31	# $r1 = abs($r1)
+	xor	$r1,$r1,$r2
+	sub	$r1,$r1,$r2
+	call	__umodsi3
+	ashr	$r5,$r5,31
+	xor	$r0,$r0,$r5
+	sub	$r0,$r0,$r5
+	return
+#endif

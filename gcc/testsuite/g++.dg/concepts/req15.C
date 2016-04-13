@@ -1,5 +1,5 @@
 // PR c++/66832
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++1z -fconcepts" }
 
 template <class T, class U, unsigned N>
   requires requires (T& t, U &u) { t.foo(); u.foo(); }

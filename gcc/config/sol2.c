@@ -142,8 +142,11 @@ solaris_assemble_visibility (tree decl, int vis ATTRIBUTE_UNUSED)
   };
 
   const char *name, *type;
+  tree id = DECL_ASSEMBLER_NAME (decl);
 
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  while (IDENTIFIER_TRANSPARENT_ALIAS (id))
+    id = TREE_CHAIN (id);
+  name = IDENTIFIER_POINTER (id);
   type = visibility_types[vis];
 
   fprintf (asm_out_file, "\t.%s\t", type);

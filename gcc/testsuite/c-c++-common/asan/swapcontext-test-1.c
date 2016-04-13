@@ -52,9 +52,9 @@ volatile int zero = 0;
 int main(int argc, char **argv) {
   int ret = 0;
   ret += Run(zero, 0);
-  printf("Test1 passed\n");
+  fprintf(stderr, "Test1 passed\n");
   ret += Run(zero, 1);
-  printf("Test2 passed\n");
+  fprintf(stderr, "Test2 passed\n");
   return ret;
 }
 

@@ -1,0 +1,56 @@
+# Copyright (C) 2001-2016 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Test the functionality of programs compiled with profile-directed block
+# ordering using -fprofile-generate followed by -fprofile-use.
+
+load_lib target-supports.exp
+
+# Some targets don't support tree profiling.
+if { ![check_profiling_available "-fprofile-generate"] } {
+    return
+}
+
+# The procedures in profopt.exp need these parameters.
+set tool gfortran
+set prof_ext "gcda"
+
+if $tracelevel then {
+    strace $tracelevel
+}
+
+# Load support procs.
+load_lib profopt.exp
+
+# Save and override the default list defined in profopt.exp.
+set treeprof_save_profopt_options $PROFOPT_OPTIONS
+set PROFOPT_OPTIONS [list {}]
+
+# These are globals used by profopt-execute.  The first is options
+# needed to generate profile data, the second is options to use the
+# profile data.
+set profile_option "-fprofile-generate -D_PROFILE_GENERATE"
+set feedback_option "-fprofile-use -D_PROFILE_USE"
+
+foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.f*]] {
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $src] then {
+        continue
+    }
+    profopt-execute $src
+}
+
+set PROFOPT_OPTIONS $treeprof_save_profopt_options

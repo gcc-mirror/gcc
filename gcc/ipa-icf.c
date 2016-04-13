@@ -1697,6 +1697,11 @@ sem_function::parse (cgraph_node *node, bitmap_obstack *stack)
   if (lookup_attribute_by_prefix ("omp ", DECL_ATTRIBUTES (node->decl)) != NULL)
     return NULL;
 
+  /* PR ipa/70306.  */
+  if (DECL_STATIC_CONSTRUCTOR (node->decl)
+      || DECL_STATIC_DESTRUCTOR (node->decl))
+    return NULL;
+
   sem_function *f = new sem_function (node, 0, stack);
 
   f->init ();
@@ -2209,6 +2214,16 @@ sem_variable::merge (sem_item *alias_item)
 		 "adress of original and alias may be compared.\n\n");
       return false;
     }
+
+  if (DECL_ALIGN (original->decl) < DECL_ALIGN (alias->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not unifying; "
+		 "original and alias have incompatible alignments\n\n");
+
+      return false;
+    }
+
   if (DECL_COMDAT_GROUP (original->decl) != DECL_COMDAT_GROUP (alias->decl))
     {
       if (dump_file)

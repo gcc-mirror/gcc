@@ -1477,7 +1477,7 @@ defcodefor_name (tree name, enum tree_code *code, tree *arg1, tree *arg2)
 	   || GIMPLE_BINARY_RHS
 	   || GIMPLE_UNARY_RHS
 	   || GIMPLE_SINGLE_RHS)
-    extract_ops_from_tree_1 (name, &code1, &arg11, &arg21, &arg31);
+    extract_ops_from_tree (name, &code1, &arg11, &arg21, &arg31);
 
   *code = code1;
   *arg1 = arg11;
@@ -1773,7 +1773,7 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
 
   if (code == VEC_PERM_EXPR)
     {
-      tree p, m, index, tem;
+      tree p, m, tem;
       unsigned nelts;
       m = gimple_assign_rhs3 (def_stmt);
       if (TREE_CODE (m) != VECTOR_CST)
@@ -1790,9 +1790,8 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
 	  p = gimple_assign_rhs2 (def_stmt);
 	  idx -= nelts;
 	}
-      index = build_int_cst (TREE_TYPE (TREE_TYPE (m)), idx * size);
       tem = build3 (BIT_FIELD_REF, TREE_TYPE (op),
-		    unshare_expr (p), op1, index);
+		    unshare_expr (p), op1, bitsize_int (idx * size));
       gimple_assign_set_rhs1 (stmt, tem);
       fold_stmt (gsi);
       update_stmt (gsi_stmt (*gsi));

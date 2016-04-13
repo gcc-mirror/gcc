@@ -309,7 +309,7 @@ mostlyclean:
 clean:
 
 distclean:
-	$(RM) Makefile config.status config.log
+	$(RM) Makefile config.status config.log config.cache
 
 maintainer-clean:
 

@@ -1751,9 +1751,11 @@ adjust_result_of_qualified_name_lookup (tree decl,
       if (base && base != error_mark_node)
 	{
 	  BASELINK_ACCESS_BINFO (decl) = base;
-	  BASELINK_BINFO (decl)
+	  tree decl_binfo
 	    = lookup_base (base, BINFO_TYPE (BASELINK_BINFO (decl)),
 			   ba_unique, NULL, tf_none);
+	  if (decl_binfo && decl_binfo != error_mark_node)
+	    BASELINK_BINFO (decl) = decl_binfo;
 	}
     }
 

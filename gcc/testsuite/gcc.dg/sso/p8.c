@@ -70,5 +70,6 @@ int main (void)
   new_line ();
   /* { dg-output "Local_R2 : 12 34 56 78 12 00 ab 00 34 00 cd 00 56 00 ef 00.*\n" } */
 
+  new_line ();
   return 0;
 }

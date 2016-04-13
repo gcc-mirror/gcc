@@ -4207,7 +4207,8 @@ rs6000_option_override_internal (bool global_init_p)
 
   else if (TARGET_ALLOW_MOVMISALIGN && !TARGET_VSX)
     {
-      if (TARGET_ALLOW_MOVMISALIGN > 0)
+      if (TARGET_ALLOW_MOVMISALIGN > 0
+	  && global_options_set.x_TARGET_ALLOW_MOVMISALIGN)
 	error ("-mallow-movmisalign requires -mvsx");
 
       TARGET_ALLOW_MOVMISALIGN = 0;
@@ -17438,9 +17439,12 @@ rs6000_insn_for_shift_mask (machine_mode mode, rtx *operands, bool dot)
 	operands[2] = GEN_INT (32 - INTVAL (operands[2]));
       operands[3] = GEN_INT (31 - nb);
       operands[4] = GEN_INT (31 - ne);
+      /* This insn can also be a 64-bit rotate with mask that really makes
+	 it just a shift right (with mask); the %h below are to adjust for
+	 that situation (shift count is >= 32 in that case).  */
       if (dot)
-	return "rlw%I2nm. %0,%1,%2,%3,%4";
-      return "rlw%I2nm %0,%1,%2,%3,%4";
+	return "rlw%I2nm. %0,%1,%h2,%3,%4";
+      return "rlw%I2nm %0,%1,%h2,%3,%4";
     }
 
   gcc_unreachable ();
@@ -22278,6 +22282,9 @@ rs6000_expand_atomic_compare_and_swap (rtx operands[])
 
   if (mode != TImode && !reg_or_short_operand (oldval, mode))
     oldval = copy_to_mode_reg (mode, oldval);
+
+  if (reg_overlap_mentioned_p (retval, newval))
+    newval = copy_to_reg (newval);
 
   mem = rs6000_pre_atomic_barrier (mem, mod_s);
 
@@ -34374,8 +34381,8 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "dlmzb",			OPTION_MASK_DLMZB,		false, true  },
   { "efficient-unaligned-vsx",	OPTION_MASK_EFFICIENT_UNALIGNED_VSX,
 								false, true  },
-  { "float128",			OPTION_MASK_FLOAT128,		false, true  },
-  { "float128-hardware",	OPTION_MASK_FLOAT128_HW,	false, true  },
+  { "float128",			OPTION_MASK_FLOAT128,		false, false },
+  { "float128-hardware",	OPTION_MASK_FLOAT128_HW,	false, false },
   { "fprnd",			OPTION_MASK_FPRND,		false, true  },
   { "hard-dfp",			OPTION_MASK_DFP,		false, true  },
   { "htm",			OPTION_MASK_HTM,		false, true  },

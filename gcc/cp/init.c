@@ -1243,12 +1243,7 @@ expand_virtual_init (tree binfo, tree decl)
       /* The actual initializer is the VTT value only in the subobject
 	 constructor.  In maybe_clone_body we'll substitute NULL for
 	 the vtt_parm in the case of the non-subobject constructor.  */
-      vtbl = build3 (COND_EXPR,
-		     TREE_TYPE (vtbl),
-		     build2 (EQ_EXPR, boolean_type_node,
-			     current_in_charge_parm, integer_zero_node),
-		     vtbl2,
-		     vtbl);
+      vtbl = build_if_in_charge (vtbl, vtbl2);
     }
 
   /* Compute the location of the vtpr.  */
@@ -1741,11 +1736,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 					&parms, binfo, flags,
 					complain);
       base = fold_build_cleanup_point_expr (void_type_node, base);
-      rval = build3 (COND_EXPR, void_type_node,
-		     build2 (EQ_EXPR, boolean_type_node,
-			     current_in_charge_parm, integer_zero_node),
-		     base,
-		     complete);
+      rval = build_if_in_charge (complete, base);
     }
    else
     {
@@ -2439,7 +2430,8 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 	 though the size of a member of a union may be viewed as extending
 	 to the end of the union itself (it is by __builtin_object_size).  */
       if ((TREE_CODE (oper) == VAR_DECL || use_obj_size)
-	  && DECL_SIZE_UNIT (oper))
+	  && DECL_SIZE_UNIT (oper)
+	  && tree_fits_uhwi_p (DECL_SIZE_UNIT (oper)))
 	{
 	  /* Use the size of the entire array object when the expression
 	     refers to a variable or its size depends on an expression
@@ -2447,7 +2439,8 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 	  bytes_avail = tree_to_uhwi (DECL_SIZE_UNIT (oper));
 	  exact_size = !use_obj_size;
 	}
-      else if (TYPE_SIZE_UNIT (TREE_TYPE (oper)))
+      else if (TYPE_SIZE_UNIT (TREE_TYPE (oper))
+	       && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (oper))))
 	{
 	  /* Use the size of the type of the destination buffer object
 	     as the optimistic estimate of the available space in it.  */
@@ -2872,6 +2865,14 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	  return error_mark_node;
 	}
       alloc_fn = OVL_CURRENT (alloc_fn);
+      if (TREE_CODE (alloc_fn) != FUNCTION_DECL
+	  || TREE_CODE (TREE_TYPE (alloc_fn)) != FUNCTION_TYPE
+	  || !POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (alloc_fn))))
+	{
+	  if (complain & tf_error)
+	    error ("%qD is not a function returning a pointer", alloc_fn);
+	  return error_mark_node;
+	}
       class_addr = build1 (ADDR_EXPR, jclass_node, class_decl);
       alloc_call = cp_build_function_call_nary (alloc_fn, complain,
 						class_addr, NULL_TREE);
@@ -3678,12 +3679,14 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
     body = integer_zero_node;
 
   /* Outermost wrapper: If pointer is null, punt.  */
-  body = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-		      fold_build2_loc (input_location,
-				   NE_EXPR, boolean_type_node, base,
-				   fold_convert (TREE_TYPE (base),
-						 nullptr_node)),
-		      body, integer_zero_node);
+  tree cond = build2_loc (input_location, NE_EXPR, boolean_type_node, base,
+			  fold_convert (TREE_TYPE (base), nullptr_node));
+  /* This is a compiler generated comparison, don't emit
+     e.g. -Wnonnull-compare warning for it.  */
+  TREE_NO_WARNING (cond) = 1;
+  body = build3_loc (input_location, COND_EXPR, void_type_node,
+		     cond, body, integer_zero_node);
+  COND_EXPR_IS_VEC_DELETE (body) = true;
   body = build1 (NOP_EXPR, void_type_node, body);
 
   if (controller)
@@ -4520,9 +4523,8 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 	{
 	  /* Handle deleting a null pointer.  */
 	  warning_sentinel s (warn_address);
-	  ifexp = fold (cp_build_binary_op (input_location,
-					    NE_EXPR, addr, nullptr_node,
-					    complain));
+	  ifexp = cp_build_binary_op (input_location, NE_EXPR, addr,
+				      nullptr_node, complain);
 	  if (ifexp == error_mark_node)
 	    return error_mark_node;
 	  /* This is a compiler generated comparison, don't emit

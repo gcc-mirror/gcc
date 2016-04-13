@@ -112,7 +112,7 @@ else
 # deleting the $(srcdir)/cp/cfns.h file.
 $(srcdir)/cp/cfns.h:
 endif
-	gperf -o -C -E -k '1-6,$$' -j1 -D -N 'libc_name_p' -L ANSI-C \
+	gperf -o -C -E -k '1-6,$$' -j1 -D -N 'libc_name_p' -L C++ \
 		$(srcdir)/cp/cfns.gperf --output-file $(srcdir)/cp/cfns.h
 
 #
@@ -152,7 +152,7 @@ check-c++1z:
 
 # Run the testsuite in all standard conformance levels.
 check-c++-all:
-	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --stds=98,11,14,1z" check-g++
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --stds=98,11,14,1z,concepts" check-g++
 
 # Run the testsuite with garbage collection at every opportunity.
 check-g++-strict-gc:

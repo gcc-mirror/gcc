@@ -728,7 +728,7 @@ Common Var(warn_maybe_uninitialized) Warning EnabledBy(Wuninitialized)
 Warn about maybe uninitialized automatic variables.
 
 Wunreachable-code
-Common Ignore
+Common Ignore Warning
 Does nothing. Preserved for backward compatibility.
 
 Wunused
@@ -1840,7 +1840,7 @@ Common Report Var(flag_peephole2) Optimization
 Enable an RTL peephole pass before sched2.
 
 fPIC
-Common Report Var(flag_pic,2) Negative(fPIE)
+Common Report Var(flag_pic,2) Negative(fPIE) Init(-1)
 Generate position-independent code if possible (large mode).
 
 fPIE
@@ -1848,7 +1848,7 @@ Common Report Var(flag_pie,2) Negative(fpic) Init(-1)
 Generate position-independent code for executables if possible (large mode).
 
 fpic
-Common Report Var(flag_pic,1) Negative(fpie)
+Common Report Var(flag_pic,1) Negative(fpie) Init(-1)
 Generate position-independent code if possible (small mode).
 
 fpie
@@ -1946,9 +1946,12 @@ Common Ignore
 Does nothing. Preserved for backward compatibility.
 
 flifetime-dse
-Common Report Var(flag_lifetime_dse) Init(1) Optimization
+Common Report Var(flag_lifetime_dse,2) Init(2) Optimization
 Tell DSE that the storage for a C++ object is dead when the constructor
 starts and when the destructor finishes.
+
+flifetime-dse=
+Common Joined RejectNegative UInteger Var(flag_lifetime_dse) Optimization
 
 flive-range-shrinkage
 Common Report Var(flag_live_range_shrinkage) Init(0) Optimization
@@ -2454,6 +2457,11 @@ Perform Value Range Propagation on trees.
 fsplit-paths
 Common Report Var(flag_split_paths) Init(0) Optimization
 Split paths leading to loop backedges.
+
+funconstrained-commons
+Common Var(flag_unconstrained_commons) Optimization
+Assume common declarations may be overridden with ones with a larger
+trailing array.
 
 funit-at-a-time
 Common Report Var(flag_unit_at_a_time) Init(1)

@@ -35,7 +35,7 @@ bitmap_register (bitmap b MEM_STAT_DECL)
 
 /* Account the overhead.  */
 static void
-register_overhead (bitmap b, int amount)
+register_overhead (bitmap b, size_t amount)
 {
   if (bitmap_mem_desc.contains_descriptor_for_instance (b))
     bitmap_mem_desc.register_instance_overhead (amount, b);
@@ -468,6 +468,27 @@ bitmap_copy (bitmap to, const_bitmap from)
       to_ptr = to_elt;
     }
 }
+
+/* Move a bitmap to another bitmap.  */
+
+void
+bitmap_move (bitmap to, bitmap from)
+{
+  gcc_assert (to->obstack == from->obstack);
+
+  bitmap_clear (to);
+
+  *to = *from;
+
+  if (GATHER_STATISTICS)
+    {
+      size_t sz = 0;
+      for (bitmap_element *e = to->first; e; e = e->next)
+	sz += sizeof (bitmap_element);
+      register_overhead (to, sz);
+      register_overhead (from, -sz);
+    }
+}
 
 /* Find a bitmap element that would hold a bitmap's bit.
    Update the `current' field even if we can't find an element that
@@ -641,6 +662,26 @@ bitmap_popcount (BITMAP_WORD a)
   return ret;
 }
 #endif
+
+/* Count and return the number of bits set in the bitmap word BITS.  */
+static unsigned long
+bitmap_count_bits_in_word (const BITMAP_WORD *bits)
+{
+  unsigned long count = 0;
+
+  for (unsigned ix = 0; ix != BITMAP_ELEMENT_WORDS; ix++)
+    {
+#if GCC_VERSION >= 3400
+      /* Note that popcountl matches BITMAP_WORD in type, so the actual size
+	 of BITMAP_WORD is not material.  */
+      count += __builtin_popcountl (bits[ix]);
+#else
+      count += bitmap_popcount (bits[ix]);
+#endif
+    }
+  return count;
+}
+
 /* Count the number of bits set in the bitmap, and return it.  */
 
 unsigned long
@@ -648,19 +689,44 @@ bitmap_count_bits (const_bitmap a)
 {
   unsigned long count = 0;
   const bitmap_element *elt;
-  unsigned ix;
 
   for (elt = a->first; elt; elt = elt->next)
+    count += bitmap_count_bits_in_word (elt->bits);
+
+  return count;
+}
+
+/* Count the number of unique bits set in A and B and return it.  */
+
+unsigned long
+bitmap_count_unique_bits (const_bitmap a, const_bitmap b)
+{
+  unsigned long count = 0;
+  const bitmap_element *elt_a, *elt_b;
+
+  for (elt_a = a->first, elt_b = b->first; elt_a && elt_b; )
     {
-      for (ix = 0; ix != BITMAP_ELEMENT_WORDS; ix++)
+      /* If we're at different indices, then count all the bits
+	 in the lower element.  If we're at the same index, then
+	 count the bits in the IOR of the two elements.  */
+      if (elt_a->indx < elt_b->indx)
 	{
-#if GCC_VERSION >= 3400
- 	  /* Note that popcountl matches BITMAP_WORD in type, so the actual size
-	 of BITMAP_WORD is not material.  */
-	  count += __builtin_popcountl (elt->bits[ix]);
-#else
-	  count += bitmap_popcount (elt->bits[ix]);
-#endif
+	  count += bitmap_count_bits_in_word (elt_a->bits);
+	  elt_a = elt_a->next;
+	}
+      else if (elt_b->indx < elt_a->indx)
+	{
+	  count += bitmap_count_bits_in_word (elt_b->bits);
+	  elt_b = elt_b->next;
+	}
+      else
+	{
+	  BITMAP_WORD bits[BITMAP_ELEMENT_WORDS];
+	  for (unsigned ix = 0; ix != BITMAP_ELEMENT_WORDS; ix++)
+	    bits[ix] = elt_a->bits[ix] | elt_b->bits[ix];
+	  count += bitmap_count_bits_in_word (bits);
+	  elt_a = elt_a->next;
+	  elt_b = elt_b->next;
 	}
     }
   return count;

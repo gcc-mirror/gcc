@@ -387,7 +387,7 @@ gimple_build_assign (tree lhs, tree rhs MEM_STAT_DECL)
   enum tree_code subcode;
   tree op1, op2, op3;
 
-  extract_ops_from_tree_1 (rhs, &subcode, &op1, &op2, &op3);
+  extract_ops_from_tree (rhs, &subcode, &op1, &op2, &op3);
   return gimple_build_assign (lhs, subcode, op1, op2, op3 PASS_MEM_STAT);
 }
 
@@ -1578,7 +1578,7 @@ gimple_assign_set_rhs_from_tree (gimple_stmt_iterator *gsi, tree expr)
   enum tree_code subcode;
   tree op1, op2, op3;
 
-  extract_ops_from_tree_1 (expr, &subcode, &op1, &op2, &op3);
+  extract_ops_from_tree (expr, &subcode, &op1, &op2, &op3);
   gimple_assign_set_rhs_with_ops (gsi, subcode, op1, op2, op3);
 }
 

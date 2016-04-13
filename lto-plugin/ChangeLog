@@ -1,3 +1,17 @@
+2016-02-25  Ilya Verbin  <ilya.verbin@intel.com>
+
+	PR driver/68463
+	* lto-plugin.c (struct plugin_offload_file): New.
+	(offload_files): Change type.
+	(offload_files_last, offload_files_last_obj): New.
+	(offload_files_last_lto): New.
+	(free_2): Adjust accordingly.
+	(all_symbols_read_handler): Don't add offload files to lto_arg_ptr.
+	Don't call free_1 for offload_files.  Write names of object files with
+	offloading to the temporary file.  Add new option to lto_arg_ptr.
+	(claim_file_handler): Don't claim file if it contains offload sections
+	without LTO sections.  If it contains offload sections, add to the list.
+
 2016-01-15  Martin Liska  <mliska@suse.cz>
 
 	* lto-plugin.c (all_symbols_read_handler): Assign default

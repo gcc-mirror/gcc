@@ -1,6 +1,6 @@
 /* PR c/68062 */
 /* { dg-do compile } */
-/* { dg-options "-Wsign-compare" } */
+/* { dg-options "-Wsign-compare -Wno-psabi" } */
 /* Ignore warning on some powerpc configurations. */
 /* { dg-prune-output "non-standard ABI extension" } */
 

@@ -1,3 +1,69 @@
+2016-04-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70307
+	* c-fold.c (c_fully_fold_internal): Handle VEC_COND_EXPR.
+
+2016-03-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70297
+	* c-decl.c (merge_decls): Also set TYPE_ALIGN and TYPE_USER_ALIGN.
+
+2016-03-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/70281
+	* c-parser.c (c_parser_postfix_expression): Set the source range
+	for uses of "__builtin_types_compatible_p".
+
+2016-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/70280
+	* c-typeck.c (composite_type): Don't count void_list_node
+	into len, if the list is terminated by void_list_node, start
+	with void_list_node instead of NULL for newargs.  Stop
+	at void_list_node.
+
+2016-03-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70093
+	* c-typeck.c (build_function_call_vec): Create a TARGET_EXPR for
+	nested functions returning VM types.
+
+2016-03-09  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-parser.c (c_parser_oacc_loop): Update cclauses and clauses
+	when calling c_finish_omp_clauses.
+
+2016-03-04  Bernd Schmidt  <bschmidt@redhat.com>
+
+	PR c/69824
+	* c-decl.c (get_parm_info): Don't queue implicit function declarations
+	for later.
+
+2016-03-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/69798
+	* c-parser.c (c_parser_postfix_expression): Call
+	c_parser_cast_expression rather than c_parser_postfix_expression.
+
+2016-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69796
+	PR c/69974
+	* c-parser.c (c_parser_translation_unit): Don't change TREE_TYPE
+	of incomplete decls to error_mark_node.
+
+2016-02-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/69819
+	* c-decl.c (finish_decl): Don't update the copy of the type of a
+	different decl type.
+
+2016-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc/69844
+	* c-parser.c (c_parser_for_statement): Properly handle ObjC classes
+	in id_kind reclassification.
+
 2016-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/69835

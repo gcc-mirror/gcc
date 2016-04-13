@@ -386,7 +386,8 @@ genericize_omp_for_stmt (tree *stmt_p, int *walk_subtrees, void *data)
   tree clab = begin_bc_block (bc_continue, locus);
 
   cp_walk_tree (&OMP_FOR_BODY (stmt), cp_genericize_r, data, NULL);
-  cp_walk_tree (&OMP_FOR_CLAUSES (stmt), cp_genericize_r, data, NULL);
+  if (TREE_CODE (stmt) != OMP_TASKLOOP)
+    cp_walk_tree (&OMP_FOR_CLAUSES (stmt), cp_genericize_r, data, NULL);
   cp_walk_tree (&OMP_FOR_INIT (stmt), cp_genericize_r, data, NULL);
   cp_walk_tree (&OMP_FOR_COND (stmt), cp_genericize_r, data, NULL);
   cp_walk_tree (&OMP_FOR_INCR (stmt), cp_genericize_r, data, NULL);
@@ -1021,10 +1022,16 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       && omp_var_to_track (stmt))
     omp_cxx_notice_variable (wtd->omp_ctx, stmt);
 
-  if (is_invisiref_parm (stmt)
-      /* Don't dereference parms in a thunk, pass the references through. */
-      && !(DECL_THUNK_P (current_function_decl)
-	   && TREE_CODE (stmt) == PARM_DECL))
+  /* Don't dereference parms in a thunk, pass the references through. */
+  if ((TREE_CODE (stmt) == CALL_EXPR && CALL_FROM_THUNK_P (stmt))
+      || (TREE_CODE (stmt) == AGGR_INIT_EXPR && AGGR_INIT_FROM_THUNK_P (stmt)))
+    {
+      *walk_subtrees = 0;
+      return NULL;
+    }
+
+  /* Otherwise, do dereference invisible reference parms.  */
+  if (is_invisiref_parm (stmt))
     {
       *stmt_p = convert_from_reference (stmt);
       *walk_subtrees = 0;
@@ -1266,7 +1273,9 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       if (TREE_CODE (d) == VAR_DECL)
 	gcc_assert (CP_DECL_THREAD_LOCAL_P (d) == DECL_THREAD_LOCAL_P (d));
     }
-  else if (TREE_CODE (stmt) == OMP_PARALLEL || TREE_CODE (stmt) == OMP_TASK)
+  else if (TREE_CODE (stmt) == OMP_PARALLEL
+	   || TREE_CODE (stmt) == OMP_TASK
+	   || TREE_CODE (stmt) == OMP_TASKLOOP)
     {
       struct cp_genericize_omp_taskreg omp_ctx;
       tree c, decl;
@@ -1306,7 +1315,10 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  default:
 	    break;
 	  }
-      cp_walk_tree (&OMP_BODY (stmt), cp_genericize_r, data, NULL);
+      if (TREE_CODE (stmt) == OMP_TASKLOOP)
+	genericize_omp_for_stmt (stmt_p, walk_subtrees, data);
+      else
+	cp_walk_tree (&OMP_BODY (stmt), cp_genericize_r, data, NULL);
       wtd->omp_ctx = omp_ctx.outer;
       splay_tree_delete (omp_ctx.variables);
     }
@@ -1374,8 +1386,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     genericize_break_stmt (stmt_p);
   else if (TREE_CODE (stmt) == OMP_FOR
 	   || TREE_CODE (stmt) == OMP_SIMD
-	   || TREE_CODE (stmt) == OMP_DISTRIBUTE
-	   || TREE_CODE (stmt) == OMP_TASKLOOP)
+	   || TREE_CODE (stmt) == OMP_DISTRIBUTE)
     genericize_omp_for_stmt (stmt_p, walk_subtrees, data);
   else if ((flag_sanitize
 	    & (SANITIZE_NULL | SANITIZE_ALIGNMENT | SANITIZE_VPTR))
@@ -1894,14 +1905,15 @@ c_fully_fold (tree x, bool /*in_init*/, bool */*maybe_const*/)
   return cp_fold_rvalue (x);
 }
 
-static GTY((cache, deletable)) cache_map fold_cache;
+static GTY((deletable)) hash_map<tree, tree> *fold_cache;
 
 /* Dispose of the whole FOLD_CACHE.  */
 
 void
 clear_fold_cache (void)
 {
-  gt_cleare_cache (fold_cache);
+  if (fold_cache != NULL)
+    fold_cache->empty ();
 }
 
 /*  This function tries to fold an expression X.
@@ -1931,8 +1943,11 @@ cp_fold (tree x)
   if (DECL_P (x) || CONSTANT_CLASS_P (x))
     return x;
 
-  if (tree cached = fold_cache.get (x))
-    return cached;
+  if (fold_cache == NULL)
+    fold_cache = hash_map<tree, tree>::create_ggc (101);
+
+  if (tree *cached = fold_cache->get (x))
+    return *cached;
 
   code = TREE_CODE (x);
   switch (code)
@@ -1990,7 +2005,6 @@ cp_fold (tree x)
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
     case FIXED_CONVERT_EXPR:
-    case UNARY_PLUS_EXPR:
     case INDIRECT_REF:
 
       loc = EXPR_LOCATION (x);
@@ -2008,6 +2022,14 @@ cp_fold (tree x)
 
       gcc_assert (TREE_CODE (x) != COND_EXPR
 		  || !VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (x, 0))));
+      break;
+
+    case UNARY_PLUS_EXPR:
+      op0 = cp_fold_rvalue (TREE_OPERAND (x, 0));
+      if (op0 == error_mark_node)
+	x = error_mark_node;
+      else
+	x = fold_convert (TREE_TYPE (x), op0);
       break;
 
     case POSTDECREMENT_EXPR:
@@ -2068,6 +2090,25 @@ cp_fold (tree x)
       else
 	x = fold (x);
 
+      if (TREE_NO_WARNING (org_x)
+	  && warn_nonnull_compare
+	  && COMPARISON_CLASS_P (org_x))
+	{
+	  if (x == error_mark_node || TREE_CODE (x) == INTEGER_CST)
+	    ;
+	  else if (COMPARISON_CLASS_P (x))
+	    TREE_NO_WARNING (x) = 1;
+	  /* Otherwise give up on optimizing these, let GIMPLE folders
+	     optimize those later on.  */
+	  else if (op0 != TREE_OPERAND (org_x, 0)
+		   || op1 != TREE_OPERAND (org_x, 1))
+	    {
+	      x = build2_loc (loc, code, TREE_TYPE (org_x), op0, op1);
+	      TREE_NO_WARNING (x) = 1;
+	    }
+	  else
+	    x = org_x;
+	}
       break;
 
     case VEC_COND_EXPR:
@@ -2097,6 +2138,12 @@ cp_fold (tree x)
 	}
       else
 	x = fold (x);
+
+      /* A COND_EXPR might have incompatible types in branches if one or both
+	 arms are bitfields.  If folding exposed such a branch, fix it up.  */
+      if (TREE_CODE (x) != code)
+	if (tree type = is_bitfield_expr_with_lowered_type (x))
+	  x = fold_convert (type, x);
 
       break;
 
@@ -2151,7 +2198,8 @@ cp_fold (tree x)
 	   TODO:
 	   Do constexpr expansion of expressions where the call itself is not
 	   constant, but the call followed by an INDIRECT_REF is.  */
-	if (callee && DECL_DECLARED_CONSTEXPR_P (callee))
+	if (callee && DECL_DECLARED_CONSTEXPR_P (callee)
+	    && !flag_no_inline)
           r = maybe_constant_value (x);
 	optimize = sv;
 
@@ -2254,10 +2302,10 @@ cp_fold (tree x)
       return org_x;
     }
 
-  fold_cache.put (org_x, x);
+  fold_cache->put (org_x, x);
   /* Prevent that we try to fold an already folded result again.  */
   if (x != org_x)
-    fold_cache.put (x, x);
+    fold_cache->put (x, x);
 
   return x;
 }

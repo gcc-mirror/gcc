@@ -766,13 +766,18 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	 default value.  */
       if (opts->x_flag_pie == -1)
 	{
-	  if (opts->x_flag_pic == 0)
+	  /* We initialize opts->x_flag_pic to -1 so that we can tell if
+	     -fpic, -fPIC, -fno-pic or -fno-PIC is used.  */
+	  if (opts->x_flag_pic == -1)
 	    opts->x_flag_pie = DEFAULT_FLAG_PIE;
 	  else
 	    opts->x_flag_pie = 0;
 	}
+      /* If -fPIE or -fpie is used, turn on PIC.  */
       if (opts->x_flag_pie)
 	opts->x_flag_pic = opts->x_flag_pie;
+      else if (opts->x_flag_pic == -1)
+	opts->x_flag_pic = 0;
       if (opts->x_flag_pic && !opts->x_flag_pie)
 	opts->x_flag_shlib = 1;
       opts->x_flag_opts_finished = true;

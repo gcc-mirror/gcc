@@ -1,13 +1,13 @@
 # Serbian translation of cpplib.
 # Copyright (C) 2014 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Мирослав Николић <miroslavnikolic@rocketmail.com>, 2012—2014, 2015.
+# Мирослав Николић <miroslavnikolic@rocketmail.com>, 2012—2016.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib-5.1-b20150208\n"
+"Project-Id-Version: cpplib-6.1-b20160131\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-01-31 15:50+0000\n"
-"PO-Revision-Date: 2015-04-12 10:37+0200\n"
+"PO-Revision-Date: 2016-03-05 08:37+0200\n"
 "Last-Translator: Мирослав Николић <miroslavnikolic@rocketmail.com>\n"
 "Language-Team: Serbian <(nothing)>\n"
 "Language: sr\n"
@@ -748,10 +748,8 @@ msgid "missing terminating %c character"
 msgstr "недостаје завршни знак %c"
 
 #: lex.c:1932
-#, fuzzy
-#| msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
 msgid "C++11 requires a space between string literal and macro"
-msgstr "неисправан суфикс у словности; Ц++11 захтева размак између словности и макроа ниске"
+msgstr "Ц++11 захтева размак између словности и макроа ниске"
 
 #: lex.c:2474 lex.c:2508
 msgid "C++ style comments are not allowed in ISO C90"

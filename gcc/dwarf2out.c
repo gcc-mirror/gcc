@@ -1325,7 +1325,7 @@ new_loc_descr (enum dwarf_location_atom op, unsigned HOST_WIDE_INT oprnd1,
   dw_loc_descr_ref descr = ggc_cleared_alloc<dw_loc_descr_node> ();
 
   descr->dw_loc_opc = op;
-#if ENABLE_CHECKING
+#if CHECKING_P
   descr->dw_loc_frame_offset = -1;
 #endif
   descr->dw_loc_oprnd1.val_class = dw_val_class_unsigned_const;
@@ -15369,14 +15369,14 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
       /* If we already met this node, there is nothing to compute anymore.  */
       if (visited.add (l))
 	{
-#if ENABLE_CHECKING
+#if CHECKING_P
 	  /* Make sure that the stack size is consistent wherever the execution
 	     flow comes from.  */
 	  gcc_assert ((unsigned) l->dw_loc_frame_offset == frame_offset_);
 #endif
 	  break;
 	}
-#if ENABLE_CHECKING
+#if CHECKING_P
       l->dw_loc_frame_offset = frame_offset_;
 #endif
 
@@ -21055,7 +21055,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 		 DW_TAG_common_block and DW_TAG_variable.  */
 	      loc = loc_list_from_tree (com_decl, 2, NULL);
 	    }
-          else if (DECL_EXTERNAL (decl))
+	  else if (DECL_EXTERNAL (decl_or_origin))
 	    add_AT_flag (com_die, DW_AT_declaration, 1);
 	  if (want_pubnames ())
 	    add_pubname_string (cnam, com_die); /* ??? needed? */
@@ -21070,8 +21070,9 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 	  remove_AT (com_die, DW_AT_declaration);
 	}
       var_die = new_die (DW_TAG_variable, com_die, decl);
-      add_name_and_src_coords_attributes (var_die, decl);
-      add_type_attribute (var_die, TREE_TYPE (decl), decl_quals (decl), false,
+      add_name_and_src_coords_attributes (var_die, decl_or_origin);
+      add_type_attribute (var_die, TREE_TYPE (decl_or_origin),
+			  decl_quals (decl_or_origin), false,
 			  context_die);
       add_AT_flag (var_die, DW_AT_external, 1);
       if (loc)
@@ -21093,9 +21094,10 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 	    }
 	  add_AT_location_description (var_die, DW_AT_location, loc);
 	}
-      else if (DECL_EXTERNAL (decl))
+      else if (DECL_EXTERNAL (decl_or_origin))
 	add_AT_flag (var_die, DW_AT_declaration, 1);
-      equate_decl_number_to_die (decl, var_die);
+      if (decl)
+	equate_decl_number_to_die (decl, var_die);
       return;
     }
 
@@ -25639,10 +25641,28 @@ prune_unused_types_walk_loc_descr (dw_loc_descr_ref loc)
   for (; loc != NULL; loc = loc->dw_loc_next)
     switch (loc->dw_loc_opc)
       {
+      case DW_OP_GNU_implicit_pointer:
+      case DW_OP_GNU_convert:
+      case DW_OP_GNU_reinterpret:
+	if (loc->dw_loc_oprnd1.val_class == dw_val_class_die_ref)
+	  prune_unused_types_mark (loc->dw_loc_oprnd1.v.val_die_ref.die, 1);
+	break;
       case DW_OP_call2:
       case DW_OP_call4:
       case DW_OP_call_ref:
+      case DW_OP_GNU_const_type:
+      case DW_OP_GNU_parameter_ref:
+	gcc_assert (loc->dw_loc_oprnd1.val_class == dw_val_class_die_ref);
 	prune_unused_types_mark (loc->dw_loc_oprnd1.v.val_die_ref.die, 1);
+	break;
+      case DW_OP_GNU_regval_type:
+      case DW_OP_GNU_deref_type:
+	gcc_assert (loc->dw_loc_oprnd2.val_class == dw_val_class_die_ref);
+	prune_unused_types_mark (loc->dw_loc_oprnd2.v.val_die_ref.die, 1);
+	break;
+      case DW_OP_GNU_entry_value:
+	gcc_assert (loc->dw_loc_oprnd1.val_class == dw_val_class_loc);
+	prune_unused_types_walk_loc_descr (loc->dw_loc_oprnd1.v.val_loc);
 	break;
       default:
 	break;
@@ -27261,12 +27281,15 @@ optimize_location_lists (dw_die_ref die)
 static void
 flush_limbo_die_list (void)
 {
-  limbo_die_node *node, *next_node;
+  limbo_die_node *node;
 
-  for (node = limbo_die_list; node; node = next_node)
+  /* get_context_die calls force_decl_die, which can put new DIEs on the
+     limbo list in LTO mode when nested functions are put in a different
+     partition than that of their parent function.  */
+  while ((node = limbo_die_list))
     {
       dw_die_ref die = node->die;
-      next_node = node->next;
+      limbo_die_list = node->next;
 
       if (die->die_parent == NULL)
 	{
@@ -27304,8 +27327,6 @@ flush_limbo_die_list (void)
 	    }
 	}
     }
-
-  limbo_die_list = NULL;
 }
 
 /* Output stuff that dwarf requires at the end of every file,
@@ -27665,10 +27686,15 @@ dwarf2out_finish (const char *filename)
 static void
 dwarf2out_early_finish (void)
 {
-  limbo_die_node *node;
+  /* The point here is to flush out the limbo list so that it is empty
+     and we don't need to stream it for LTO.  */
+  flush_limbo_die_list ();
+
+  gen_scheduled_generic_parms_dies ();
+  gen_remaining_tmpl_value_param_die_attribute ();
 
   /* Add DW_AT_linkage_name for all deferred DIEs.  */
-  for (node = deferred_asm_name; node; node = node->next)
+  for (limbo_die_node *node = deferred_asm_name; node; node = node->next)
     {
       tree decl = node->created_for;
       if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl)
@@ -27682,13 +27708,6 @@ dwarf2out_early_finish (void)
 	}
     }
   deferred_asm_name = NULL;
-
-  /* The point here is to flush out the limbo list so that it is empty
-     and we don't need to stream it for LTO.  */
-  flush_limbo_die_list ();
-
-  gen_scheduled_generic_parms_dies ();
-  gen_remaining_tmpl_value_param_die_attribute ();
 }
 
 /* Reset all state within dwarf2out.c so that we can rerun the compiler

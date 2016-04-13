@@ -1,52 +1,118 @@
+/* Test invalid calls to routines.  */
+
 #pragma acc routine gang
-void gang (void) /* { dg-message "declared here" 3 } */
+int
+gang () /* { dg-message "declared here" 3 } */
 {
+  #pragma acc loop gang worker vector
+  for (int i = 0; i < 10; i++)
+    {
+    }
+
+  return 1;
 }
 
 #pragma acc routine worker
-void worker (void) /* { dg-message "declared here" 2 } */
+int
+worker () /* { dg-message "declared here" 2 } */
 {
+  #pragma acc loop worker vector
+  for (int i = 0; i < 10; i++)
+    {
+    }
+
+  return 1;
 }
 
 #pragma acc routine vector
-void vector (void) /* { dg-message "declared here" 1 } */
+int
+vector () /* { dg-message "declared here" } */
 {
+  #pragma acc loop vector
+  for (int i = 0; i < 10; i++)
+    {
+    }
+
+  return 1;
 }
 
 #pragma acc routine seq
-void seq (void)
+int
+seq ()
 {
+  return 1;
 }
 
-int main ()
+int
+main ()
 {
-
-#pragma acc parallel num_gangs (32) num_workers (32) vector_length (32)
+  int red = 0;
+#pragma acc parallel copy (red)
   {
-    #pragma acc loop gang /* { dg-message "loop here" 1 } */
+    /* Independent/seq loop tests.  */
+#pragma acc loop reduction (+:red) // { dg-warning "insufficient partitioning" }
     for (int i = 0; i < 10; i++)
-      {
-	gang (); /*  { dg-error "routine call uses same" } */
-	worker ();
-	vector ();
-	seq ();
-      }
-    #pragma acc loop worker /* { dg-message "loop here" 2 } */
+      red += gang ();
+
+#pragma acc loop reduction (+:red)
     for (int i = 0; i < 10; i++)
-      {
-	gang (); /*  { dg-error "routine call uses same" } */
-	worker (); /*  { dg-error "routine call uses same" } */
-	vector ();
-	seq ();
-      }
-    #pragma acc loop vector /* { dg-message "loop here" 3 } */
+      red += worker ();
+
+#pragma acc loop reduction (+:red)
     for (int i = 0; i < 10; i++)
-      {
-	gang (); /*  { dg-error "routine call uses same" } */
-	worker (); /*  { dg-error "routine call uses same" } */
-	vector (); /*  { dg-error "routine call uses same" } */
-	seq ();
-      }
+      red += vector ();
+
+    /* Gang routine tests.  */
+#pragma acc loop gang reduction (+:red)  /* { dg-message "containing loop" } */
+    for (int i = 0; i < 10; i++)
+      red += gang (); // { dg-error "routine call uses same" }
+
+#pragma acc loop worker reduction (+:red)  /* { dg-message "containing loop" } */
+    for (int i = 0; i < 10; i++)
+      red += gang (); // { dg-error "routine call uses same" }
+
+#pragma acc loop vector reduction (+:red)  /* { dg-message "containing loop" } */
+    for (int i = 0; i < 10; i++)
+      red += gang (); // { dg-error "routine call uses same" }
+
+    /* Worker routine tests.  */
+#pragma acc loop gang reduction (+:red)
+    for (int i = 0; i < 10; i++)
+      red += worker ();
+
+#pragma acc loop worker reduction (+:red)  /* { dg-message "containing loop" } */
+    for (int i = 0; i < 10; i++)
+      red += worker (); // { dg-error "routine call uses same" }
+
+#pragma acc loop vector reduction (+:red)  /* { dg-message "containing loop" } */
+    for (int i = 0; i < 10; i++)
+      red += worker (); // { dg-error "routine call uses same" }
+
+    /* Vector routine tests.  */
+#pragma acc loop gang reduction (+:red)
+    for (int i = 0; i < 10; i++)
+      red += vector ();
+
+#pragma acc loop worker reduction (+:red)
+    for (int i = 0; i < 10; i++)
+      red += vector ();
+
+#pragma acc loop vector reduction (+:red)  /* { dg-message "containing loop" } */
+    for (int i = 0; i < 10; i++)
+      red += vector (); // { dg-error "routine call uses same" }
+
+    /* Seq routine tests.  */
+#pragma acc loop gang reduction (+:red)
+    for (int i = 0; i < 10; i++)
+      red += seq ();
+
+#pragma acc loop worker reduction (+:red)
+    for (int i = 0; i < 10; i++)
+      red += seq ();
+
+#pragma acc loop vector reduction (+:red)
+    for (int i = 0; i < 10; i++)
+      red += seq ();
   }
 
   return 0;

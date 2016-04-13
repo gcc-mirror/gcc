@@ -1,5 +1,4 @@
 ! { dg-do compile }
-! { dg-options "-fopenmp" }
 
 subroutine foo (r)
   integer :: i, r

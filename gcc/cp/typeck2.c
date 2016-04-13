@@ -1499,9 +1499,24 @@ process_init_constructor_union (tree type, tree init,
   constructor_elt *ce;
   int len;
 
-  /* If the initializer was empty, use default zero initialization.  */
+  /* If the initializer was empty, use the union's NSDMI if it has one.
+     Otherwise use default zero initialization.  */
   if (vec_safe_is_empty (CONSTRUCTOR_ELTS (init)))
-    return 0;
+    {
+      for (tree field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	{
+	  if (DECL_INITIAL (field))
+	    {
+	      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (init),
+				      field,
+				      get_nsdmi (field, /*in_ctor=*/false));
+	      break;
+	    }
+	}
+
+      if (vec_safe_is_empty (CONSTRUCTOR_ELTS (init)))
+	return 0;
+    }
 
   len = CONSTRUCTOR_ELTS (init)->length ();
   if (len > 1)
@@ -2128,7 +2143,7 @@ merge_exception_specifiers (tree list, tree add)
     return add;
   noex = TREE_PURPOSE (list);
   gcc_checking_assert (!TREE_PURPOSE (add)
-		       || errorcount
+		       || errorcount || !flag_exceptions
 		       || cp_tree_equal (noex, TREE_PURPOSE (add)));
 
   /* Combine the dynamic-exception-specifiers, if any.  */

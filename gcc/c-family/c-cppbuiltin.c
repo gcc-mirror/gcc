@@ -818,6 +818,10 @@ c_cpp_builtins (cpp_reader *pfile)
       if (!pedantic || cxx_dialect > cxx11)
 	cpp_define (pfile, "__cpp_binary_literals=201304");
 
+      /* Similarly for hexadecimal floating point literals and C++17.  */
+      if (!pedantic || cpp_get_options (parse_in)->extended_numbers)
+	cpp_define (pfile, "__cpp_hex_float=201603");
+
       /* Arrays of runtime bound were removed from C++14, but we still
 	 support GNU VLAs.  Let's define this macro to a low number
 	 (corresponding to the initial test release of GNU C++) if we won't
@@ -837,7 +841,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_lambdas=200907");
 	  if (cxx_dialect == cxx11)
 	    cpp_define (pfile, "__cpp_constexpr=200704");
-	  cpp_define (pfile, "__cpp_range_based_for=200907");
+	  cpp_define (pfile, "__cpp_range_based_for=201603");
 	  if (cxx_dialect <= cxx14)
 	    cpp_define (pfile, "__cpp_static_assert=200410");
 	  cpp_define (pfile, "__cpp_decltype=200707");
@@ -871,7 +875,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_namespace_attributes=201411");
 	  cpp_define (pfile, "__cpp_enumerator_attributes=201411");
 	  cpp_define (pfile, "__cpp_nested_namespace_definitions=201411");
-	  cpp_define (pfile, "__cpp_fold_expressions=201411");
+	  cpp_define (pfile, "__cpp_fold_expressions=201603");
 	  cpp_define (pfile, "__cpp_nontype_template_args=201411");
 	}
       if (flag_concepts)

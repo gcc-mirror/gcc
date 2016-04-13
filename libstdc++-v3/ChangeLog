@@ -1,3 +1,87 @@
+2016-04-12  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Document C++17/TR29124 C++ Special Math Functions.
+	* include/bits/specfun.h: Add Doxygen markup.
+
+2016-04-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/thread/70503.cc: Adjust from xfail to pass.
+
+2016-04-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* src/Makefile.am (libstdc++-symbols.ver): Remove useless /dev/null.
+	* src/Makefile.in: Regenerate.
+
+2016-04-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/70554
+	* acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): Don't test
+	__atomic_fetch_add for bool.
+	* configure: Regenerate.
+
+	* testsuite/30_threads/thread/70503.cc: Require -static to work.
+
+	PR libstdc++/70503
+	* src/c++11/thread.cc (execute_native_thread_routine,
+	execute_native_thread_routine_compat): Give internal linkage.
+	* testsuite/30_threads/thread/70503.cc: New test.
+
+2016-04-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/70437
+	* include/bits/stl_pair.h (_ConstructiblePair,
+	_ImplicitlyConvertiblePair, _MoveConstructiblePair,
+	_ImplicitlyMoveConvertiblePair): Add shortcut conditions
+	for same-type cases.
+	* testsuite/20_util/pair/70437.cc: New.
+
+2016-03-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69945
+	* config/abi/pre/gnu.ver: Add new symbol.
+	* libsupc++/eh_alloc.cc (__gnu_cxx::__freeres): Define.
+	* testsuite/18_support/free_eh_pool.cc: New test.
+
+2016-03-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* include/Makefile.am (install-freestanding-headers): Add
+	concept_check.h and move.h to the installed headers.
+	* include/Makefile.in: Regenerated.
+	* include/bits/concept_check.h: Ignore _GLIBCXX_CONCEPT_CHECKS for
+	freestanding implementations.
+	* doc/xml/manual/using.xml (_GLIBCXX_CONCEPT_CHECKS): Mention
+	that this macro has no effect for freestanding implementations.
+	* doc/html/manual/using_macros.html: Likewise.
+
+2016-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69939
+	* include/experimental/tuple (__apply_impl): Qualify get and forward.
+
+2016-02-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/using.xml: Document __STDCPP_WANT_MATH_SPEC_FUNCS__.
+	* doc/html/*: Regenerate.
+
+	PR libstdc++/69893
+	* include/tr1/cmath (acosh, asinh, atanh, cbrt, copysign, erf, erfc,
+	exp2, expm1, fdim, fma, fmax, fmin, hypot, ilogb, lgamma, llrint,
+	llround, log1p, log2, logb, lrint, lround, nan, nearbyint, nextafter,
+	nexttoward, remainder, remquo, rint, round, scalbln, scalbn, tgamma,
+	trunc) [__cplusplus >= 201103L]: Import from namespace std.
+	(fabs) [__cplusplus < 201103L]: Import from namespace std.
+	* include/tr1/complex (acosh, asinh, atanh) [__cplusplus >= 201103L]:
+	Likewise.
+	* testsuite/tr1/headers/c++200x/complex.cc: Add std::fabs to global
+	namespace before including TR1 headers.
+	* testsuite/tr1/headers/c++200x/math.cc: New test.
+
+2016-02-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR libstdc++/69881
+	* include/c_global/cstdarg: Undefine __need___va_list.
+	* include/c_global/cstddef: Undefine all kinds of __need_*.
+
 2016-02-16  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/69794

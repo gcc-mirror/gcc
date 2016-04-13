@@ -591,7 +591,6 @@ ix86_target_macros (void)
 
   cpp_define (parse_in, "__SEG_FS");
   cpp_define (parse_in, "__SEG_GS");
-  cpp_define (parse_in, "__SEG_TLS");
 }
 
 
@@ -608,7 +607,6 @@ ix86_register_pragmas (void)
 
   c_register_addr_space ("__seg_fs", ADDR_SPACE_SEG_FS);
   c_register_addr_space ("__seg_gs", ADDR_SPACE_SEG_GS);
-  c_register_addr_space ("__seg_tls", ADDR_SPACE_SEG_TLS);
 
 #ifdef REGISTER_SUBTARGET_PRAGMAS
   REGISTER_SUBTARGET_PRAGMAS ();

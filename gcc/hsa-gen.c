@@ -162,19 +162,19 @@ hsa_symbol::hsa_symbol ()
     m_directive_offset (0), m_type (BRIG_TYPE_NONE),
     m_segment (BRIG_SEGMENT_NONE), m_linkage (BRIG_LINKAGE_NONE), m_dim (0),
     m_cst_value (NULL), m_global_scope_p (false), m_seen_error (false),
-    m_allocation (BRIG_ALLOCATION_AUTOMATIC)
+    m_allocation (BRIG_ALLOCATION_AUTOMATIC), m_emitted_to_brig (false)
 {
 }
 
 
 hsa_symbol::hsa_symbol (BrigType16_t type, BrigSegment8_t segment,
 			BrigLinkage8_t linkage, bool global_scope_p,
-			BrigAllocation allocation)
+			BrigAllocation allocation, BrigAlignment8_t align)
   : m_decl (NULL_TREE), m_name (NULL), m_name_number (0),
     m_directive_offset (0), m_type (type), m_segment (segment),
     m_linkage (linkage), m_dim (0), m_cst_value (NULL),
     m_global_scope_p (global_scope_p), m_seen_error (false),
-    m_allocation (allocation)
+    m_allocation (allocation), m_emitted_to_brig (false), m_align (align)
 {
 }
 
@@ -211,10 +211,12 @@ hsa_symbol::fillup_for_decl (tree decl)
 /* Constructor of class representing global HSA function/kernel information and
    state.  FNDECL is function declaration, KERNEL_P is true if the function
    is going to become a HSA kernel.  If the function has body, SSA_NAMES_COUNT
-   should be set to number of SSA names used in the function.  */
+   should be set to number of SSA names used in the function.
+   MODIFIED_CFG is set to true in case we modified control-flow graph
+   of the function.  */
 
 hsa_function_representation::hsa_function_representation
-  (tree fdecl, bool kernel_p, unsigned ssa_names_count)
+  (tree fdecl, bool kernel_p, unsigned ssa_names_count, bool modified_cfg)
   : m_name (NULL),
     m_reg_count (0), m_input_args (vNULL),
     m_output_arg (NULL), m_spill_symbols (vNULL), m_global_symbols (vNULL),
@@ -223,7 +225,8 @@ hsa_function_representation::hsa_function_representation
     m_in_ssa (true), m_kern_p (kernel_p), m_declaration_p (false),
     m_decl (fdecl), m_internal_fn (NULL), m_shadow_reg (NULL),
     m_kernel_dispatch_count (0), m_maximum_omp_data_size (0),
-    m_seen_error (false), m_temp_symbol_count (0), m_ssa_map ()
+    m_seen_error (false), m_temp_symbol_count (0), m_ssa_map (),
+    m_modified_cfg (modified_cfg)
 {
   int sym_init_len = (vec_safe_length (cfun->local_decls) / 2) + 1;;
   m_local_symbols = new hash_table <hsa_noop_symbol_hasher> (sym_init_len);
@@ -317,6 +320,16 @@ hsa_function_representation::init_extra_bbs ()
 {
   hsa_init_new_bb (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   hsa_init_new_bb (EXIT_BLOCK_PTR_FOR_FN (cfun));
+}
+
+void
+hsa_function_representation::update_dominance ()
+{
+  if (m_modified_cfg)
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      calculate_dominance_info (CDI_DOMINATORS);
+    }
 }
 
 hsa_symbol *
@@ -754,11 +767,13 @@ mem_type_for_type (BrigType16_t type)
      unsigned type?).  */
   if ((type & BRIG_TYPE_PACK_MASK) == BRIG_TYPE_PACK_128)
     return BRIG_TYPE_B128;
-  else if (hsa_btype_p (type))
+  else if (hsa_btype_p (type) || hsa_type_packed_p (type))
     {
       unsigned bitsize = hsa_type_bit_size (type);
       if (bitsize < 128)
 	return hsa_uint_for_bitsize (bitsize);
+      else
+	return hsa_bittype_for_bitsize (bitsize);
     }
   return type;
 }
@@ -878,10 +893,27 @@ get_symbol_for_decl (tree decl)
   gcc_checking_assert (slot);
   if (*slot)
     {
+      hsa_symbol *sym = (*slot);
+
       /* If the symbol is problematic, mark current function also as
 	 problematic.  */
-      if ((*slot)->m_seen_error)
+      if (sym->m_seen_error)
 	hsa_fail_cfun ();
+
+      /* PR hsa/70234: If a global variable was marked to be emitted,
+	 but HSAIL generation of a function using the variable fails,
+	 we should retry to emit the variable in context of a different
+	 function.
+
+	 Iterate elements whether a symbol is already in m_global_symbols
+	 of not.  */
+        if (is_in_global_vars && !sym->m_emitted_to_brig)
+	  {
+	    for (unsigned i = 0; i < hsa_cfun->m_global_symbols.length (); i++)
+	      if (hsa_cfun->m_global_symbols[i] == sym)
+		return *slot;
+	    hsa_cfun->m_global_symbols.safe_push (sym);
+	  }
 
       return *slot;
     }
@@ -889,21 +921,29 @@ get_symbol_for_decl (tree decl)
     {
       hsa_symbol *sym;
       gcc_assert (TREE_CODE (decl) == VAR_DECL);
+      BrigAlignment8_t align = hsa_object_alignment (decl);
 
       if (is_in_global_vars)
 	{
 	  sym = new hsa_symbol (BRIG_TYPE_NONE, BRIG_SEGMENT_GLOBAL,
 				BRIG_LINKAGE_PROGRAM, true,
-				BRIG_ALLOCATION_PROGRAM);
+				BRIG_ALLOCATION_PROGRAM, align);
 	  hsa_cfun->m_global_symbols.safe_push (sym);
 	}
       else
 	{
+	  /* As generation of efficient memory copy instructions relies
+	     on alignment greater or equal to 8 bytes,
+	     we need to increase alignment of all aggregate types.. */
+	  if (AGGREGATE_TYPE_P (TREE_TYPE (decl)))
+	    align = MAX ((BrigAlignment8_t) BRIG_ALIGNMENT_8, align);
+
 	  /* PARM_DECL and RESULT_DECL should be already in m_local_symbols.  */
 	  gcc_assert (TREE_CODE (decl) == VAR_DECL);
 
 	  sym = new hsa_symbol (BRIG_TYPE_NONE, BRIG_SEGMENT_PRIVATE,
 				BRIG_LINKAGE_FUNCTION);
+	  sym->m_align = align;
 	  hsa_cfun->m_private_variables.safe_push (sym);
 	}
 
@@ -1035,8 +1075,7 @@ hsa_op_with_type::get_in_type (BrigType16_t dtype, hsa_bb *hbb)
 hsa_op_immed::hsa_op_immed (tree tree_val, bool min32int)
   : hsa_op_with_type (BRIG_KIND_OPERAND_CONSTANT_BYTES,
 		      hsa_type_for_tree_type (TREE_TYPE (tree_val), NULL,
-					      min32int)),
-  m_brig_repr (NULL)
+					      min32int))
 {
   if (hsa_seen_error ())
     return;
@@ -1046,30 +1085,20 @@ hsa_op_immed::hsa_op_immed (tree tree_val, bool min32int)
 			   || TREE_CODE (tree_val) == INTEGER_CST))
 		       || TREE_CODE (tree_val) == CONSTRUCTOR);
   m_tree_value = tree_val;
-  m_brig_repr_size = hsa_get_imm_brig_type_len (m_type);
 
-  if (TREE_CODE (m_tree_value) == STRING_CST)
-    m_brig_repr_size = TREE_STRING_LENGTH (m_tree_value);
-  else if (TREE_CODE (m_tree_value) == CONSTRUCTOR)
-    {
-      m_brig_repr_size
-	= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (m_tree_value)));
-
-      /* Verify that all elements of a constructor are constants.  */
-      for (unsigned i = 0;
-	   i < vec_safe_length (CONSTRUCTOR_ELTS (m_tree_value)); i++)
-	{
-	  tree v = CONSTRUCTOR_ELT (m_tree_value, i)->value;
-	  if (!CONSTANT_CLASS_P (v))
-	    {
-	      HSA_SORRY_AT (EXPR_LOCATION (tree_val),
-			    "HSA ctor should have only constants");
-	      return;
-	    }
-	}
-    }
-
-  emit_to_buffer (m_tree_value);
+  /* Verify that all elements of a constructor are constants.  */
+  if (TREE_CODE (m_tree_value) == CONSTRUCTOR)
+    for (unsigned i = 0;
+	 i < vec_safe_length (CONSTRUCTOR_ELTS (m_tree_value)); i++)
+      {
+	tree v = CONSTRUCTOR_ELT (m_tree_value, i)->value;
+	if (!CONSTANT_CLASS_P (v))
+	  {
+	    HSA_SORRY_AT (EXPR_LOCATION (tree_val),
+			  "HSA ctor should have only constants");
+	    return;
+	  }
+      }
 }
 
 /* Constructor of class representing HSA immediate values.  INTEGER_VALUE is the
@@ -1077,38 +1106,14 @@ hsa_op_immed::hsa_op_immed (tree tree_val, bool min32int)
 
 hsa_op_immed::hsa_op_immed (HOST_WIDE_INT integer_value, BrigType16_t type)
   : hsa_op_with_type (BRIG_KIND_OPERAND_CONSTANT_BYTES, type),
-    m_tree_value (NULL), m_brig_repr (NULL)
+    m_tree_value (NULL)
 {
   gcc_assert (hsa_type_integer_p (type));
   m_int_value = integer_value;
-  m_brig_repr_size = hsa_type_bit_size (type) / BITS_PER_UNIT;
-
-  hsa_bytes bytes;
-
-  switch (m_brig_repr_size)
-    {
-    case 1:
-      bytes.b8 = (uint8_t) m_int_value;
-      break;
-    case 2:
-      bytes.b16 = (uint16_t) m_int_value;
-      break;
-    case 4:
-      bytes.b32 = (uint32_t) m_int_value;
-      break;
-    case 8:
-      bytes.b64 = (uint64_t) m_int_value;
-      break;
-    default:
-      gcc_unreachable ();
-    }
-
-  m_brig_repr = XNEWVEC (char, m_brig_repr_size);
-  memcpy (m_brig_repr, &bytes, m_brig_repr_size);
 }
 
 hsa_op_immed::hsa_op_immed ()
-  : hsa_op_with_type (BRIG_KIND_NONE, BRIG_TYPE_NONE), m_brig_repr (NULL)
+  : hsa_op_with_type (BRIG_KIND_NONE, BRIG_TYPE_NONE)
 {
 }
 
@@ -1124,7 +1129,6 @@ hsa_op_immed::operator new (size_t)
 
 hsa_op_immed::~hsa_op_immed ()
 {
-  free (m_brig_repr);
 }
 
 /* Change type of the immediate value to T.  */
@@ -1511,7 +1515,7 @@ hsa_insn_br::operator new (size_t)
 
 hsa_insn_sbr::hsa_insn_sbr (hsa_op_reg *index, unsigned jump_count)
   : hsa_insn_basic (1, BRIG_OPCODE_SBR, BRIG_TYPE_B1, index),
-    m_width (BRIG_WIDTH_1), m_jump_table (vNULL), m_default_bb (NULL),
+    m_width (BRIG_WIDTH_1), m_jump_table (vNULL),
     m_label_code_list (new hsa_op_code_list (jump_count))
 {
 }
@@ -2105,9 +2109,17 @@ gen_hsa_addr (tree ref, hsa_bb *hbb, HOST_WIDE_INT *output_bitsize = NULL,
 	}
       if (TMR_INDEX2 (ref))
 	{
-	  hsa_op_base *disp2 = hsa_cfun->reg_for_gimple_ssa
-	    (TMR_INDEX2 (ref))->get_in_type (addrtype, hbb);
-	  reg = add_addr_regs_if_needed (reg, as_a <hsa_op_reg *> (disp2), hbb);
+	  if (TREE_CODE (TMR_INDEX2 (ref)) == SSA_NAME)
+	    {
+	      hsa_op_base *disp2 = hsa_cfun->reg_for_gimple_ssa
+		(TMR_INDEX2 (ref))->get_in_type (addrtype, hbb);
+	      reg = add_addr_regs_if_needed (reg, as_a <hsa_op_reg *> (disp2),
+					     hbb);
+	    }
+	  else if (TREE_CODE (TMR_INDEX2 (ref)) == INTEGER_CST)
+	    offset += wi::to_offset (TMR_INDEX2 (ref));
+	  else
+	    gcc_unreachable ();
 	}
       offset += wi::to_offset (TMR_OFFSET (ref));
       break;
@@ -2165,6 +2177,30 @@ out:
   return new hsa_op_address (symbol, reg, hwi_offset);
 }
 
+/* Generate HSA address operand for a given tree memory reference REF.  If
+   instructions need to be created to calculate the address, they will be added
+   to the end of HBB.  OUTPUT_ALIGN is alignment of the created address.  */
+
+static hsa_op_address *
+gen_hsa_addr_with_align (tree ref, hsa_bb *hbb, BrigAlignment8_t *output_align)
+{
+  hsa_op_address *addr = gen_hsa_addr (ref, hbb);
+  if (addr->m_reg || !addr->m_symbol)
+    *output_align = hsa_object_alignment (ref);
+  else
+    {
+      /* If the address consists only of a symbol and an offset, we
+         compute the alignment ourselves to take into account any alignment
+         promotions we might have done for the HSA symbol representation.  */
+      unsigned align = hsa_byte_alignment (addr->m_symbol->m_align);
+      unsigned misalign = addr->m_imm_offset & (align - 1);
+      if (misalign)
+        align = (misalign & -misalign);
+      *output_align = hsa_alignment_encoding (BITS_PER_UNIT * align);
+    }
+  return addr;
+}
+
 /* Generate HSA address for a function call argument of given TYPE.
    INDEX is used to generate corresponding name of the arguments.
    Special value -1 represents fact that result value is created.  */
@@ -2187,30 +2223,14 @@ gen_hsa_addr_for_arg (tree tree_type, int index)
   return new hsa_op_address (sym);
 }
 
-/* Generate HSA instructions that calculate address of VAL including all
-   necessary conversions to flat addressing and place the result into DEST.
+/* Generate HSA instructions that process all necessary conversions
+   of an ADDR to flat addressing and place the result into DEST.
    Instructions are appended to HBB.  */
 
 static void
-gen_hsa_addr_insns (tree val, hsa_op_reg *dest, hsa_bb *hbb)
+convert_addr_to_flat_segment (hsa_op_address *addr, hsa_op_reg *dest,
+			      hsa_bb *hbb)
 {
-  /* Handle cases like tmp = NULL, where we just emit a move instruction
-     to a register.  */
-  if (TREE_CODE (val) == INTEGER_CST)
-    {
-      hsa_op_immed *c = new hsa_op_immed (val);
-      hsa_insn_basic *insn = new hsa_insn_basic (2, BRIG_OPCODE_MOV,
-						 dest->m_type, dest, c);
-      hbb->append_insn (insn);
-      return;
-    }
-
-  hsa_op_address *addr;
-
-  gcc_assert (dest->m_type == hsa_get_segment_addr_type (BRIG_SEGMENT_FLAT));
-  if (TREE_CODE (val) == ADDR_EXPR)
-    val = TREE_OPERAND (val, 0);
-  addr = gen_hsa_addr (val, hbb);
   hsa_insn_basic *insn = new hsa_insn_basic (2, BRIG_OPCODE_LDA);
   insn->set_op (1, addr);
   if (addr->m_symbol && addr->m_symbol->m_segment != BRIG_SEGMENT_GLOBAL)
@@ -2237,6 +2257,34 @@ gen_hsa_addr_insns (tree val, hsa_op_reg *dest, hsa_bb *hbb)
       insn->m_type = hsa_get_segment_addr_type (BRIG_SEGMENT_FLAT);
       hbb->append_insn (insn);
     }
+}
+
+/* Generate HSA instructions that calculate address of VAL including all
+   necessary conversions to flat addressing and place the result into DEST.
+   Instructions are appended to HBB.  */
+
+static void
+gen_hsa_addr_insns (tree val, hsa_op_reg *dest, hsa_bb *hbb)
+{
+  /* Handle cases like tmp = NULL, where we just emit a move instruction
+     to a register.  */
+  if (TREE_CODE (val) == INTEGER_CST)
+    {
+      hsa_op_immed *c = new hsa_op_immed (val);
+      hsa_insn_basic *insn = new hsa_insn_basic (2, BRIG_OPCODE_MOV,
+						 dest->m_type, dest, c);
+      hbb->append_insn (insn);
+      return;
+    }
+
+  hsa_op_address *addr;
+
+  gcc_assert (dest->m_type == hsa_get_segment_addr_type (BRIG_SEGMENT_FLAT));
+  if (TREE_CODE (val) == ADDR_EXPR)
+    val = TREE_OPERAND (val, 0);
+  addr = gen_hsa_addr (val, hbb);
+
+  convert_addr_to_flat_segment (addr, dest, hbb);
 }
 
 /* Return an HSA register or HSA immediate value operand corresponding to
@@ -2371,7 +2419,7 @@ hsa_bitmemref_alignment (tree ref)
 
   unsigned HOST_WIDE_INT bits = bit_offset % BITS_PER_UNIT;
   unsigned HOST_WIDE_INT byte_bits = bit_offset - bits;
-  BrigAlignment8_t base = hsa_alignment_encoding (get_object_alignment (ref));
+  BrigAlignment8_t base = hsa_object_alignment (ref);
   if (byte_bits == 0)
     return base;
   return MIN (base, hsa_alignment_encoding (byte_bits & -byte_bits));
@@ -2510,7 +2558,7 @@ gen_hsa_insns_for_load (hsa_op_reg *dest, tree rhs, tree type, hsa_bb *hbb)
 								    false));
 	  hsa_insn_mem *mem = new hsa_insn_mem (BRIG_OPCODE_LD, mtype, dest,
 						addr);
-	  mem->set_align (hsa_alignment_encoding (get_object_alignment (rhs)));
+	  mem->set_align (hsa_object_alignment (rhs));
 	  hbb->append_insn (mem);
 	}
     }
@@ -2629,7 +2677,7 @@ gen_hsa_insns_for_store (tree lhs, hsa_op_base *src, hsa_bb *hbb)
       mtype = mem_type;
     }
   else
-    req_align = hsa_alignment_encoding (get_object_alignment (lhs));
+    req_align = hsa_object_alignment (lhs);
 
   hsa_insn_mem *mem = new hsa_insn_mem (BRIG_OPCODE_ST, mtype, src, addr);
   mem->set_align (req_align);
@@ -2640,7 +2688,7 @@ gen_hsa_insns_for_store (tree lhs, hsa_op_base *src, hsa_bb *hbb)
      we can modify the above in place.  */
   if (hsa_op_immed *imm = dyn_cast <hsa_op_immed *> (src))
     {
-      if ((imm->m_type & BRIG_TYPE_PACK_MASK) == BRIG_TYPE_PACK_NONE)
+      if (!hsa_type_packed_p (imm->m_type))
 	imm->m_type = mem->m_type;
       else
 	{
@@ -2669,17 +2717,19 @@ gen_hsa_insns_for_store (tree lhs, hsa_op_base *src, hsa_bb *hbb)
 }
 
 /* Generate memory copy instructions that are going to be used
-   for copying a HSA symbol SRC_SYMBOL (or SRC_REG) to TARGET memory,
-   represented by pointer in a register.  */
+   for copying a SRC memory to TARGET memory,
+   represented by pointer in a register.  MIN_ALIGN is minimal alignment
+   of provided HSA addresses.  */
 
 static void
 gen_hsa_memory_copy (hsa_bb *hbb, hsa_op_address *target, hsa_op_address *src,
-		     unsigned size)
+		     unsigned size, BrigAlignment8_t min_align)
 {
   hsa_op_address *addr;
   hsa_insn_mem *mem;
 
   unsigned offset = 0;
+  unsigned min_byte_align = hsa_byte_alignment (min_align);
 
   while (size)
     {
@@ -2692,6 +2742,9 @@ gen_hsa_memory_copy (hsa_bb *hbb, hsa_op_address *target, hsa_op_address *src,
 	s = 2;
       else
 	s = 1;
+
+      if (s > min_byte_align)
+	s = min_byte_align;
 
       BrigType16_t t = get_integer_type_by_bytes (s, false);
 
@@ -2728,17 +2781,19 @@ build_memset_value (unsigned HOST_WIDE_INT constant, unsigned byte_size)
 }
 
 /* Generate memory set instructions that are going to be used
-   for setting a CONSTANT byte value to TARGET memory of SIZE bytes.  */
+   for setting a CONSTANT byte value to TARGET memory of SIZE bytes.
+   MIN_ALIGN is minimal alignment of provided HSA addresses.  */
 
 static void
 gen_hsa_memory_set (hsa_bb *hbb, hsa_op_address *target,
 		    unsigned HOST_WIDE_INT constant,
-		    unsigned size)
+		    unsigned size, BrigAlignment8_t min_align)
 {
   hsa_op_address *addr;
   hsa_insn_mem *mem;
 
   unsigned offset = 0;
+  unsigned min_byte_align = hsa_byte_alignment (min_align);
 
   while (size)
     {
@@ -2751,6 +2806,9 @@ gen_hsa_memory_set (hsa_bb *hbb, hsa_op_address *target,
 	s = 2;
       else
 	s = 1;
+
+      if (s > min_byte_align)
+	s = min_byte_align;
 
       addr = new hsa_op_address (target->m_symbol, target->m_reg,
 				 target->m_imm_offset + offset);
@@ -2768,10 +2826,12 @@ gen_hsa_memory_set (hsa_bb *hbb, hsa_op_address *target,
 
 /* Generate HSAIL instructions for a single assignment
    of an empty constructor to an ADDR_LHS.  Constructor is passed as a
-   tree RHS and all instructions are appended to HBB.  */
+   tree RHS and all instructions are appended to HBB.  ALIGN is
+   alignment of the address.  */
 
 void
-gen_hsa_ctor_assignment (hsa_op_address *addr_lhs, tree rhs, hsa_bb *hbb)
+gen_hsa_ctor_assignment (hsa_op_address *addr_lhs, tree rhs, hsa_bb *hbb,
+			 BrigAlignment8_t align)
 {
   if (vec_safe_length (CONSTRUCTOR_ELTS (rhs)))
     {
@@ -2781,7 +2841,7 @@ gen_hsa_ctor_assignment (hsa_op_address *addr_lhs, tree rhs, hsa_bb *hbb)
     }
 
   unsigned size = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (rhs)));
-  gen_hsa_memory_set (hbb, addr_lhs, 0, size);
+  gen_hsa_memory_set (hbb, addr_lhs, 0, size, align);
 }
 
 /* Generate HSA instructions for a single assignment of RHS to LHS.
@@ -2810,16 +2870,21 @@ gen_hsa_insns_for_single_assignment (tree lhs, tree rhs, hsa_bb *hbb)
     }
   else
     {
-      hsa_op_address *addr_lhs = gen_hsa_addr (lhs, hbb);
+      BrigAlignment8_t lhs_align;
+      hsa_op_address *addr_lhs = gen_hsa_addr_with_align (lhs, hbb,
+							  &lhs_align);
 
       if (TREE_CODE (rhs) == CONSTRUCTOR)
-	gen_hsa_ctor_assignment (addr_lhs, rhs, hbb);
+	gen_hsa_ctor_assignment (addr_lhs, rhs, hbb, lhs_align);
       else
 	{
-	  hsa_op_address *addr_rhs = gen_hsa_addr (rhs, hbb);
+	  BrigAlignment8_t rhs_align;
+	  hsa_op_address *addr_rhs = gen_hsa_addr_with_align (rhs, hbb,
+							      &rhs_align);
 
 	  unsigned size = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (rhs)));
-	  gen_hsa_memory_copy (hbb, addr_lhs, addr_rhs, size);
+	  gen_hsa_memory_copy (hbb, addr_lhs, addr_rhs, size,
+			       MIN (lhs_align, rhs_align));
 	}
     }
 }
@@ -3022,7 +3087,7 @@ gen_hsa_binary_operation (int opcode, hsa_op_reg *dest,
       && is_a <hsa_op_immed *> (op2))
     {
       hsa_op_immed *i = dyn_cast <hsa_op_immed *> (op2);
-      i->set_type (hsa_uint_for_bitsize (hsa_type_bit_size (i->m_type)));
+      i->set_type (hsa_unsigned_type_for_type (i->m_type));
     }
 
   hsa_insn_basic *insn = new hsa_insn_basic (3, opcode, dest->m_type, dest,
@@ -3233,27 +3298,21 @@ gen_hsa_insns_for_operation_assignment (gimple *assign, hsa_bb *hbb)
 	    ctrl = r;
 	  }
 
-	hsa_op_with_type *rhs2_reg = hsa_reg_or_immed_for_gimple_op (rhs2, hbb);
-	hsa_op_with_type *rhs3_reg = hsa_reg_or_immed_for_gimple_op (rhs3, hbb);
+	hsa_op_with_type *op2 = hsa_reg_or_immed_for_gimple_op (rhs2, hbb);
+	hsa_op_with_type *op3 = hsa_reg_or_immed_for_gimple_op (rhs3, hbb);
 
-	BrigType16_t btype = hsa_bittype_for_type (dest->m_type);
-	hsa_op_reg *tmp = new hsa_op_reg (btype);
-
-	rhs2_reg->m_type = btype;
-	rhs3_reg->m_type = btype;
+	BrigType16_t utype = hsa_unsigned_type_for_type (dest->m_type);
+	if (is_a <hsa_op_immed *> (op2))
+	  op2->m_type = utype;
+	if (is_a <hsa_op_immed *> (op3))
+	  op3->m_type = utype;
 
 	hsa_insn_basic *insn
-	  = new hsa_insn_basic (4, BRIG_OPCODE_CMOV, tmp->m_type, tmp, ctrl,
-				rhs2_reg, rhs3_reg);
+	  = new hsa_insn_basic (4, BRIG_OPCODE_CMOV,
+				hsa_bittype_for_type (dest->m_type),
+				dest, ctrl, op2, op3);
 
 	hbb->append_insn (insn);
-
-	/* As operands of a CMOV insn must be Bx types, we have to emit
-	   a conversion insn.  */
-	hsa_insn_basic *mov = new hsa_insn_basic (2, BRIG_OPCODE_MOV,
-						  dest->m_type, dest, tmp);
-	hbb->append_insn (mov);
-
 	return;
       }
     case COMPLEX_EXPR:
@@ -3377,11 +3436,48 @@ get_switch_size (gswitch *s)
 static void
 gen_hsa_insns_for_switch_stmt (gswitch *s, hsa_bb *hbb)
 {
+  gimple_stmt_iterator it = gsi_for_stmt (s);
+  gsi_prev (&it);
+
+  /* Create preambule that verifies that index - lowest_label >= 0.  */
+  edge e = split_block (hbb->m_bb, gsi_stmt (it));
+  e->flags &= ~EDGE_FALLTHRU;
+  e->flags |= EDGE_TRUE_VALUE;
+
   function *func = DECL_STRUCT_FUNCTION (current_function_decl);
   tree index_tree = gimple_switch_index (s);
   tree lowest = get_switch_low (s);
+  tree highest = get_switch_high (s);
 
   hsa_op_reg *index = hsa_cfun->reg_for_gimple_ssa (index_tree);
+
+  hsa_op_reg *cmp1_reg = new hsa_op_reg (BRIG_TYPE_B1);
+  hsa_op_immed *cmp1_immed = new hsa_op_immed (lowest);
+  hbb->append_insn (new hsa_insn_cmp (BRIG_COMPARE_GE, cmp1_reg->m_type,
+				      cmp1_reg, index, cmp1_immed));
+
+  hsa_op_reg *cmp2_reg = new hsa_op_reg (BRIG_TYPE_B1);
+  hsa_op_immed *cmp2_immed = new hsa_op_immed (highest);
+  hbb->append_insn (new hsa_insn_cmp (BRIG_COMPARE_LE, cmp2_reg->m_type,
+				      cmp2_reg, index, cmp2_immed));
+
+  hsa_op_reg *cmp_reg = new hsa_op_reg (BRIG_TYPE_B1);
+  hbb->append_insn (new hsa_insn_basic (3, BRIG_OPCODE_AND, cmp_reg->m_type,
+					cmp_reg, cmp1_reg, cmp2_reg));
+
+  hbb->append_insn (new hsa_insn_br (cmp_reg));
+
+  tree default_label = gimple_switch_default_label (s);
+  basic_block default_label_bb = label_to_block_fn (func,
+						    CASE_LABEL (default_label));
+
+  make_edge (e->src, default_label_bb, EDGE_FALSE_VALUE);
+
+  hsa_cfun->m_modified_cfg = true;
+
+  /* Basic block with the SBR instruction.  */
+  hbb = hsa_init_new_bb (e->dest);
+
   hsa_op_reg *sub_index = new hsa_op_reg (index->m_type);
   hbb->append_insn (new hsa_insn_basic (3, BRIG_OPCODE_SUB, sub_index->m_type,
 					sub_index, index,
@@ -3393,11 +3489,6 @@ gen_hsa_insns_for_switch_stmt (gswitch *s, hsa_bb *hbb)
   unsigned HOST_WIDE_INT size = tree_to_uhwi (get_switch_size (s));
 
   hsa_insn_sbr *sbr = new hsa_insn_sbr (sub_index, size + 1);
-  tree default_label = gimple_switch_default_label (s);
-  basic_block default_label_bb = label_to_block_fn (func,
-						    CASE_LABEL (default_label));
-
-  sbr->m_default_bb = default_label_bb;
 
   /* Prepare array with default label destination.  */
   for (unsigned HOST_WIDE_INT i = 0; i <= size; i++)
@@ -3460,10 +3551,13 @@ get_format_argument_type (tree formal_arg_type, BrigType16_t actual_arg_type)
 
 /* Generate HSA instructions for a direct call instruction.
    Instructions will be appended to HBB, which also needs to be the
-   corresponding structure to the basic_block of STMT.  */
+   corresponding structure to the basic_block of STMT.
+   If ASSIGN_LHS is false, do not copy HSA function result argument into the
+   corresponding HSA representation of the gimple statement LHS.  */
 
 static void
-gen_hsa_insns_for_direct_call (gimple *stmt, hsa_bb *hbb)
+gen_hsa_insns_for_direct_call (gimple *stmt, hsa_bb *hbb,
+			       bool assign_lhs = true)
 {
   tree decl = gimple_call_fndecl (stmt);
   verify_function_arguments (decl);
@@ -3492,9 +3586,10 @@ gen_hsa_insns_for_direct_call (gimple *stmt, hsa_bb *hbb)
       if (AGGREGATE_TYPE_P (TREE_TYPE (parm)))
 	{
 	  addr = gen_hsa_addr_for_arg (TREE_TYPE (parm), i);
-	  hsa_op_address *src = gen_hsa_addr (parm, hbb);
+	  BrigAlignment8_t align;
+	  hsa_op_address *src = gen_hsa_addr_with_align (parm, hbb, &align);
 	  gen_hsa_memory_copy (hbb, addr, src,
-			       addr->m_symbol->total_byte_size ());
+			       addr->m_symbol->total_byte_size (), align);
 	}
       else
 	{
@@ -3544,7 +3639,7 @@ gen_hsa_insns_for_direct_call (gimple *stmt, hsa_bb *hbb)
 
       /* Even if result of a function call is unused, we have to emit
 	 declaration for the result.  */
-      if (result)
+      if (result && assign_lhs)
 	{
 	  tree lhs_type = TREE_TYPE (result);
 
@@ -3553,9 +3648,11 @@ gen_hsa_insns_for_direct_call (gimple *stmt, hsa_bb *hbb)
 
 	  if (AGGREGATE_TYPE_P (lhs_type))
 	    {
-	      hsa_op_address *result_addr = gen_hsa_addr (result, hbb);
+	      BrigAlignment8_t align;
+	      hsa_op_address *result_addr
+		= gen_hsa_addr_with_align (result, hbb, &align);
 	      gen_hsa_memory_copy (hbb, result_addr, addr,
-				   addr->m_symbol->total_byte_size ());
+				   addr->m_symbol->total_byte_size (), align);
 	    }
 	  else
 	    {
@@ -3664,9 +3761,12 @@ gen_hsa_insns_for_return (greturn *stmt, hsa_bb *hbb)
 
       if (AGGREGATE_TYPE_P (TREE_TYPE (retval)))
 	{
-	  hsa_op_address *retval_addr = gen_hsa_addr (retval, hbb);
+	  BrigAlignment8_t align;
+	  hsa_op_address *retval_addr = gen_hsa_addr_with_align (retval, hbb,
+								 &align);
 	  gen_hsa_memory_copy (hbb, addr, retval_addr,
-			       hsa_cfun->m_output_arg->total_byte_size ());
+			       hsa_cfun->m_output_arg->total_byte_size (),
+			       align);
 	}
       else
 	{
@@ -3768,20 +3868,19 @@ gen_set_num_threads (tree value, hsa_bb *hbb)
   hbb->append_insn (basic);
 }
 
-static GTY (()) tree hsa_kernel_dispatch_type = NULL;
-
 /* Return byte offset of a FIELD_NAME in GOMP_hsa_kernel_dispatch which
    is defined in plugin-hsa.c.  */
 
 static HOST_WIDE_INT
 get_hsa_kernel_dispatch_offset (const char *field_name)
 {
-  if (hsa_kernel_dispatch_type == NULL)
+  tree *hsa_kernel_dispatch_type = hsa_get_kernel_dispatch_type ();
+  if (*hsa_kernel_dispatch_type == NULL)
     {
       /* Collection of information needed for a dispatch of a kernel from a
 	 kernel.  Keep in sync with libgomp's plugin-hsa.c.  */
 
-      hsa_kernel_dispatch_type = make_node (RECORD_TYPE);
+      *hsa_kernel_dispatch_type = make_node (RECORD_TYPE);
       tree id_f1 = build_decl (BUILTINS_LOCATION, FIELD_DECL,
 			       get_identifier ("queue"), ptr_type_node);
       DECL_CHAIN (id_f1) = NULL_TREE;
@@ -3831,12 +3930,12 @@ get_hsa_kernel_dispatch_offset (const char *field_name)
       DECL_CHAIN (id_f12) = id_f11;
 
 
-      finish_builtin_struct (hsa_kernel_dispatch_type, "__hsa_kernel_dispatch",
+      finish_builtin_struct (*hsa_kernel_dispatch_type, "__hsa_kernel_dispatch",
 			     id_f12, NULL_TREE);
-      TYPE_ARTIFICIAL (hsa_kernel_dispatch_type) = 1;
+      TYPE_ARTIFICIAL (*hsa_kernel_dispatch_type) = 1;
     }
 
-  for (tree chain = TYPE_FIELDS (hsa_kernel_dispatch_type);
+  for (tree chain = TYPE_FIELDS (*hsa_kernel_dispatch_type);
        chain != NULL_TREE; chain = TREE_CHAIN (chain))
     if (strcmp (field_name, IDENTIFIER_POINTER (DECL_NAME (chain))) == 0)
       return int_byte_position (chain);
@@ -4055,7 +4154,9 @@ gen_hsa_clrsb (gcall *call, hsa_bb *hbb)
   hsa_op_with_type *arg = hsa_reg_or_immed_for_gimple_op (rhs1, hbb);
   BrigType16_t bittype = hsa_bittype_for_type (arg->m_type);
   unsigned bitsize = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (rhs1)));
-  gcc_checking_assert (bitsize >= 32);
+
+  /* FIRSTBIT instruction is defined just for 32 and 64-bits wide integers.  */
+  gcc_checking_assert (bitsize == 32 || bitsize == 64);
 
   /* Set true to MOST_SIG if the most significant bit is set to one.  */
   hsa_op_immed *c = new hsa_op_immed (1ul << (bitsize - 1),
@@ -4098,9 +4199,10 @@ gen_hsa_clrsb (gcall *call, hsa_bb *hbb)
 			  new hsa_op_immed (0, arg->m_type));
   hbb->append_insn (cmp);
 
-  /* Return the number of leading bits, or 31 if the input value is zero.  */
+  /* Return the number of leading bits,
+     or (bitsize - 1) if the input value is zero.  */
   cmov = new hsa_insn_basic (4, BRIG_OPCODE_CMOV, BRIG_TYPE_B32, NULL, is_zero,
-			     new hsa_op_immed (31, BRIG_TYPE_U32),
+			     new hsa_op_immed (bitsize - 1, BRIG_TYPE_U32),
 			     leading_bits->get_in_type (BRIG_TYPE_B32, hbb));
   hbb->append_insn (cmov);
   cmov->set_output_in_type (dest, 0, hbb);
@@ -4410,6 +4512,195 @@ get_address_from_value (tree val, hsa_bb *hbb)
     }
 }
 
+/* Expand assignment of a result of a string BUILTIN to DST.
+   Size of the operation is N bytes, where instructions
+   will be append to HBB.  */
+
+static void
+expand_lhs_of_string_op (gimple *stmt,
+			 unsigned HOST_WIDE_INT n, hsa_bb *hbb,
+			 enum built_in_function builtin)
+{
+  /* If LHS is expected, we need to emit a PHI instruction.  */
+  tree lhs = gimple_call_lhs (stmt);
+  if (!lhs)
+    return;
+
+  hsa_op_reg *lhs_reg = hsa_cfun->reg_for_gimple_ssa (lhs);
+
+  hsa_op_with_type *dst_reg
+    = hsa_reg_or_immed_for_gimple_op (gimple_call_arg (stmt, 0), hbb);
+  hsa_op_with_type *tmp;
+
+  switch (builtin)
+    {
+    case BUILT_IN_MEMPCPY:
+      {
+	tmp = new hsa_op_reg (dst_reg->m_type);
+	hsa_insn_basic *add
+	  = new hsa_insn_basic (3, BRIG_OPCODE_ADD, tmp->m_type,
+				tmp, dst_reg,
+				new hsa_op_immed (n, dst_reg->m_type));
+	hbb->append_insn (add);
+	break;
+      }
+    case BUILT_IN_MEMCPY:
+    case BUILT_IN_MEMSET:
+      tmp = dst_reg;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  hbb->append_insn (new hsa_insn_basic (2, BRIG_OPCODE_MOV, lhs_reg->m_type,
+					lhs_reg, tmp));
+}
+
+#define HSA_MEMORY_BUILTINS_LIMIT     128
+
+/* Expand a string builtin (from a gimple STMT) in a way that
+   according to MISALIGNED_FLAG we process either direct emission
+   (a bunch of memory load and store instructions), or we emit a function call
+   of a library function (for instance 'memcpy'). Actually, a basic block
+   for direct emission is just prepared, where caller is responsible
+   for emission of corresponding instructions.
+   All instruction are appended to HBB.  */
+
+hsa_bb *
+expand_string_operation_builtin (gimple *stmt, hsa_bb *hbb,
+				 hsa_op_reg *misaligned_flag)
+{
+  edge e = split_block (hbb->m_bb, stmt);
+  basic_block condition_bb = e->src;
+  hbb->append_insn (new hsa_insn_br (misaligned_flag));
+
+  /* Prepare the control flow.  */
+  edge condition_edge = EDGE_SUCC (condition_bb, 0);
+  basic_block call_bb = split_edge (condition_edge);
+
+  basic_block expanded_bb = split_edge (EDGE_SUCC (call_bb, 0));
+  basic_block cont_bb = EDGE_SUCC (expanded_bb, 0)->dest;
+  basic_block merge_bb = split_edge (EDGE_PRED (cont_bb, 0));
+
+  condition_edge->flags &= ~EDGE_FALLTHRU;
+  condition_edge->flags |= EDGE_TRUE_VALUE;
+  make_edge (condition_bb, expanded_bb, EDGE_FALSE_VALUE);
+
+  redirect_edge_succ (EDGE_SUCC (call_bb, 0), merge_bb);
+
+  hsa_cfun->m_modified_cfg = true;
+
+  hsa_init_new_bb (expanded_bb);
+
+  /* Slow path: function call.  */
+  gen_hsa_insns_for_direct_call (stmt, hsa_init_new_bb (call_bb), false);
+
+  return hsa_bb_for_bb (expanded_bb);
+}
+
+/* Expand a memory copy BUILTIN (BUILT_IN_MEMCPY, BUILT_IN_MEMPCPY) from
+   a gimple STMT and store all necessary instruction to HBB basic block.  */
+
+static void
+expand_memory_copy (gimple *stmt, hsa_bb *hbb, enum built_in_function builtin)
+{
+  tree byte_size = gimple_call_arg (stmt, 2);
+
+  if (!tree_fits_uhwi_p (byte_size))
+    {
+      gen_hsa_insns_for_direct_call (stmt, hbb);
+      return;
+    }
+
+  unsigned HOST_WIDE_INT n = tree_to_uhwi (byte_size);
+
+  if (n > HSA_MEMORY_BUILTINS_LIMIT)
+    {
+      gen_hsa_insns_for_direct_call (stmt, hbb);
+      return;
+    }
+
+  tree dst = gimple_call_arg (stmt, 0);
+  tree src = gimple_call_arg (stmt, 1);
+
+  hsa_op_address *dst_addr = get_address_from_value (dst, hbb);
+  hsa_op_address *src_addr = get_address_from_value (src, hbb);
+
+  /* As gen_hsa_memory_copy relies on memory alignment
+     greater or equal to 8 bytes, we need to verify the alignment.  */
+  BrigType16_t addrtype = hsa_get_segment_addr_type (BRIG_SEGMENT_FLAT);
+  hsa_op_reg *src_addr_reg = new hsa_op_reg (addrtype);
+  hsa_op_reg *dst_addr_reg = new hsa_op_reg (addrtype);
+
+  convert_addr_to_flat_segment (src_addr, src_addr_reg, hbb);
+  convert_addr_to_flat_segment (dst_addr, dst_addr_reg, hbb);
+
+  /* Process BIT OR for source and destination addresses.  */
+  hsa_op_reg *or_reg = new hsa_op_reg (addrtype);
+  gen_hsa_binary_operation (BRIG_OPCODE_OR, or_reg, src_addr_reg,
+			    dst_addr_reg, hbb);
+
+  /* Process BIT AND with 0x7 to identify the desired alignment
+     of 8 bytes.  */
+  hsa_op_reg *masked = new hsa_op_reg (addrtype);
+
+  gen_hsa_binary_operation (BRIG_OPCODE_AND, masked, or_reg,
+			    new hsa_op_immed (7, addrtype), hbb);
+
+  hsa_op_reg *misaligned = new hsa_op_reg (BRIG_TYPE_B1);
+  hbb->append_insn (new hsa_insn_cmp (BRIG_COMPARE_NE, misaligned->m_type,
+				      misaligned, masked,
+				      new hsa_op_immed (0, masked->m_type)));
+
+  hsa_bb *native_impl_bb
+    = expand_string_operation_builtin (stmt, hbb, misaligned);
+
+  gen_hsa_memory_copy (native_impl_bb, dst_addr, src_addr, n, BRIG_ALIGNMENT_8);
+  hsa_bb *merge_bb
+    = hsa_init_new_bb (EDGE_SUCC (native_impl_bb->m_bb, 0)->dest);
+  expand_lhs_of_string_op (stmt, n, merge_bb, builtin);
+}
+
+
+/* Expand a memory set BUILTIN (BUILT_IN_MEMSET, BUILT_IN_BZERO) from
+   a gimple STMT and store all necessary instruction to HBB basic block.
+   The operation set N bytes with a CONSTANT value.  */
+
+static void
+expand_memory_set (gimple *stmt, unsigned HOST_WIDE_INT n,
+		   unsigned HOST_WIDE_INT constant, hsa_bb *hbb,
+		   enum built_in_function builtin)
+{
+  tree dst = gimple_call_arg (stmt, 0);
+  hsa_op_address *dst_addr = get_address_from_value (dst, hbb);
+
+  /* As gen_hsa_memory_set relies on memory alignment
+     greater or equal to 8 bytes, we need to verify the alignment.  */
+  BrigType16_t addrtype = hsa_get_segment_addr_type (BRIG_SEGMENT_FLAT);
+  hsa_op_reg *dst_addr_reg = new hsa_op_reg (addrtype);
+  convert_addr_to_flat_segment (dst_addr, dst_addr_reg, hbb);
+
+  /* Process BIT AND with 0x7 to identify the desired alignment
+     of 8 bytes.  */
+  hsa_op_reg *masked = new hsa_op_reg (addrtype);
+
+  gen_hsa_binary_operation (BRIG_OPCODE_AND, masked, dst_addr_reg,
+			    new hsa_op_immed (7, addrtype), hbb);
+
+  hsa_op_reg *misaligned = new hsa_op_reg (BRIG_TYPE_B1);
+  hbb->append_insn (new hsa_insn_cmp (BRIG_COMPARE_NE, misaligned->m_type,
+				      misaligned, masked,
+				      new hsa_op_immed (0, masked->m_type)));
+
+  hsa_bb *native_impl_bb
+    = expand_string_operation_builtin (stmt, hbb, misaligned);
+
+  gen_hsa_memory_set (native_impl_bb, dst_addr, constant, n, BRIG_ALIGNMENT_8);
+  hsa_bb *merge_bb
+    = hsa_init_new_bb (EDGE_SUCC (native_impl_bb->m_bb, 0)->dest);
+  expand_lhs_of_string_op (stmt, n, merge_bb, builtin);
+}
+
 /* Return string for MEMMODEL.  */
 
 static const char *
@@ -4554,8 +4845,13 @@ gen_hsa_ternary_atomic_for_builtin (bool ret_orig,
 
   hsa_op_address *addr;
   addr = get_address_from_value (gimple_call_arg (stmt, 0), hbb);
-  /* TODO: Warn if addr has private segment, because the finalizer will not
-     accept that (and it does not make much sense).  */
+  if (addr->m_symbol && addr->m_symbol->m_segment == BRIG_SEGMENT_PRIVATE)
+    {
+      HSA_SORRY_AT (gimple_location (stmt),
+		    "HSA does not implement atomic operations in private "
+		    "segment");
+      return;
+    }
   hsa_op_base *op = hsa_reg_or_immed_for_gimple_op (gimple_call_arg (stmt, 1),
 						    hbb);
 
@@ -4734,8 +5030,6 @@ gen_hsa_insn_for_internal_fn_call (gcall *stmt, hsa_bb *hbb)
       break;
     }
 }
-
-#define HSA_MEMORY_BUILTINS_LIMIT     128
 
 /* Generate HSA instructions for the given call statement STMT.  Instructions
    will be appended to HBB.  */
@@ -5093,58 +5387,11 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
     case BUILT_IN_MEMCPY:
     case BUILT_IN_MEMPCPY:
       {
-	tree byte_size = gimple_call_arg (stmt, 2);
-
-	if (!tree_fits_uhwi_p (byte_size))
-	  {
-	    gen_hsa_insns_for_direct_call (stmt, hbb);
-	    return;
-	  }
-
-	unsigned n = tree_to_uhwi (byte_size);
-
-	if (n > HSA_MEMORY_BUILTINS_LIMIT)
-	  {
-	    gen_hsa_insns_for_direct_call (stmt, hbb);
-	    return;
-	  }
-
-	tree dst = gimple_call_arg (stmt, 0);
-	tree src = gimple_call_arg (stmt, 1);
-
-	hsa_op_address *dst_addr = get_address_from_value (dst, hbb);
-	hsa_op_address *src_addr = get_address_from_value (src, hbb);
-
-	gen_hsa_memory_copy (hbb, dst_addr, src_addr, n);
-
-	tree lhs = gimple_call_lhs (stmt);
-	if (lhs)
-	  {
-	    hsa_op_reg *lhs_reg = hsa_cfun->reg_for_gimple_ssa (lhs);
-	    hsa_op_with_type *dst_reg = hsa_reg_or_immed_for_gimple_op (dst,
-									hbb);
-	    hsa_op_with_type *tmp;
-
-	    if (builtin == BUILT_IN_MEMPCPY)
-	      {
-		tmp = new hsa_op_reg (dst_reg->m_type);
-		hsa_insn_basic *add
-		  = new hsa_insn_basic (3, BRIG_OPCODE_ADD, tmp->m_type,
-					tmp, dst_reg,
-					new hsa_op_immed (n, dst_reg->m_type));
-		hbb->append_insn (add);
-	      }
-	    else
-	      tmp = dst_reg;
-
-	    hsa_build_append_simple_mov (lhs_reg, tmp, hbb);
-	  }
-
+	expand_memory_copy (stmt, hbb, builtin);
 	break;
       }
     case BUILT_IN_MEMSET:
       {
-	tree dst = gimple_call_arg (stmt, 0);
 	tree c = gimple_call_arg (stmt, 1);
 
 	if (TREE_CODE (c) != INTEGER_CST)
@@ -5161,7 +5408,7 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
 	    return;
 	  }
 
-	unsigned n = tree_to_uhwi (byte_size);
+	unsigned HOST_WIDE_INT n = tree_to_uhwi (byte_size);
 
 	if (n > HSA_MEMORY_BUILTINS_LIMIT)
 	  {
@@ -5169,22 +5416,15 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
 	    return;
 	  }
 
-	hsa_op_address *dst_addr;
-	dst_addr = get_address_from_value (dst, hbb);
 	unsigned HOST_WIDE_INT constant
 	  = tree_to_uhwi (fold_convert (unsigned_char_type_node, c));
 
-	gen_hsa_memory_set (hbb, dst_addr, constant, n);
-
-	tree lhs = gimple_call_lhs (stmt);
-	if (lhs)
-	  gen_hsa_insns_for_single_assignment (lhs, dst, hbb);
+	expand_memory_set (stmt, n, constant, hbb, builtin);
 
 	break;
       }
     case BUILT_IN_BZERO:
       {
-	tree dst = gimple_call_arg (stmt, 0);
 	tree byte_size = gimple_call_arg (stmt, 1);
 
 	if (!tree_fits_uhwi_p (byte_size))
@@ -5193,7 +5433,7 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
 	    return;
 	  }
 
-	unsigned n = tree_to_uhwi (byte_size);
+	unsigned HOST_WIDE_INT n = tree_to_uhwi (byte_size);
 
 	if (n > HSA_MEMORY_BUILTINS_LIMIT)
 	  {
@@ -5201,10 +5441,7 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
 	    return;
 	  }
 
-	hsa_op_address *dst_addr;
-	dst_addr = get_address_from_value (dst, hbb);
-
-	gen_hsa_memory_set (hbb, dst_addr, 0, n);
+	expand_memory_set (stmt, n, 0, hbb, builtin);
 
 	break;
       }
@@ -5327,7 +5564,8 @@ gen_hsa_phi_from_gimple_phi (gimple *phi_stmt, hsa_bb *hbb)
 	      hsa_op_address *addr = gen_hsa_addr (TREE_OPERAND (op, 0),
 						   hbb_src);
 
-	      hsa_op_reg *dest = new hsa_op_reg (BRIG_TYPE_U64);
+	      hsa_op_reg *dest
+		= new hsa_op_reg (hsa_get_segment_addr_type (BRIG_SEGMENT_FLAT));
 	      hsa_insn_basic *insn
 		= new hsa_insn_basic (2, BRIG_OPCODE_LDA, BRIG_TYPE_U64,
 				      dest, addr);
@@ -5485,7 +5723,7 @@ gen_body_from_gimple ()
 	  gen_hsa_phi_from_gimple_phi (gsi_stmt (gsi), hbb);
     }
 
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "------- Generated SSA form -------\n");
       dump_hsa_cfun (dump_file);
@@ -5568,9 +5806,11 @@ gen_function_def_parameters ()
 	  private_arg = hsa_cfun->create_hsa_temporary (arg->m_type);
 	  private_arg->fillup_for_decl (parm);
 
+	  BrigAlignment8_t align = MIN (arg->m_align, private_arg->m_align);
+
 	  hsa_op_address *private_arg_addr = new hsa_op_address (private_arg);
 	  gen_hsa_memory_copy (prologue, private_arg_addr, parm_addr,
-			       arg->total_byte_size ());
+			       arg->total_byte_size (), align);
 	}
       else
 	private_arg = arg;
@@ -5753,13 +5993,13 @@ LD:    hard_work_3 ();
 
 */
 
-static void
-convert_switch_statements ()
+static bool
+convert_switch_statements (void)
 {
   function *func = DECL_STRUCT_FUNCTION (current_function_decl);
   basic_block bb;
 
-  bool need_update = false;
+  bool modified_cfg = false;
 
   FOR_EACH_BB_FN (bb, func)
   {
@@ -5777,7 +6017,7 @@ convert_switch_statements ()
 	if (transformable_switch_to_sbr_p (s))
 	  continue;
 
-	need_update = true;
+	modified_cfg = true;
 
 	unsigned labels = gimple_switch_num_labels (s);
 	tree index = gimple_switch_index (s);
@@ -5944,11 +6184,7 @@ convert_switch_statements ()
   if (dump_file)
     dump_function_to_file (current_function_decl, dump_file, TDF_DETAILS);
 
-  if (need_update)
-    {
-      free_dominance_info (CDI_DOMINATORS);
-      calculate_dominance_info (CDI_DOMINATORS);
-    }
+  return modified_cfg;
 }
 
 /* Expand builtins that can't be handled by HSA back-end.  */
@@ -6048,9 +6284,11 @@ generate_hsa (bool kernel)
   if (hsa_num_threads == NULL)
     emit_hsa_module_variables ();
 
+  bool modified_cfg = convert_switch_statements ();
   /* Initialize hsa_cfun.  */
   hsa_cfun = new hsa_function_representation (cfun->decl, kernel,
-					      SSANAMES (cfun)->length ());
+					      SSANAMES (cfun)->length (),
+					      modified_cfg);
   hsa_cfun->init_extra_bbs ();
 
   if (flag_tm)
@@ -6088,21 +6326,22 @@ generate_hsa (bool kernel)
 				 s->m_gridified_kernel_p);
     }
 
-#ifdef ENABLE_CHECKING
-  for (unsigned i = 0; i < hsa_cfun->m_ssa_map.length (); i++)
-    if (hsa_cfun->m_ssa_map[i])
-      hsa_cfun->m_ssa_map[i]->verify_ssa ();
-
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, cfun)
+  if (flag_checking)
     {
-      hsa_bb *hbb = hsa_bb_for_bb (bb);
+      for (unsigned i = 0; i < hsa_cfun->m_ssa_map.length (); i++)
+	if (hsa_cfun->m_ssa_map[i])
+	  hsa_cfun->m_ssa_map[i]->verify_ssa ();
 
-      for (hsa_insn_basic *insn = hbb->m_first_insn; insn; insn = insn->m_next)
-	insn->verify ();
+      basic_block bb;
+      FOR_EACH_BB_FN (bb, cfun)
+	{
+	  hsa_bb *hbb = hsa_bb_for_bb (bb);
+
+	  for (hsa_insn_basic *insn = hbb->m_first_insn; insn;
+	       insn = insn->m_next)
+	    insn->verify ();
+	}
     }
-
-#endif
 
   hsa_regalloc ();
   hsa_brig_emit_function ();
@@ -6154,7 +6393,6 @@ pass_gen_hsail::execute (function *)
   hsa_function_summary *s
     = hsa_summaries->get (cgraph_node::get_create (current_function_decl));
 
-  convert_switch_statements ();
   expand_builtins ();
   generate_hsa (s->m_kind == HSA_KERNEL);
   TREE_ASM_WRITTEN (current_function_decl) = 1;

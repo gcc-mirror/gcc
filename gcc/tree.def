@@ -870,10 +870,10 @@ DEFTREECODE (POSTINCREMENT_EXPR, "postincrement_expr", tcc_expression, 2)
 /* Used to implement `va_arg'.  */
 DEFTREECODE (VA_ARG_EXPR, "va_arg_expr", tcc_expression, 1)
 
-/* Evaluate operand 1.  If and only if an exception is thrown during
-   the evaluation of operand 1, evaluate operand 2.
+/* Evaluate operand 0.  If and only if an exception is thrown during
+   the evaluation of operand 0, evaluate operand 1.
 
-   This differs from TRY_FINALLY_EXPR in that operand 2 is not evaluated
+   This differs from TRY_FINALLY_EXPR in that operand 1 is not evaluated
    on a normal or jump exit, only on an exception.  */
 DEFTREECODE (TRY_CATCH_EXPR, "try_catch_expr", tcc_statement, 2)
 

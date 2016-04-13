@@ -1,8 +1,8 @@
 # Danish version of cpplib.
-# Copyright (C) 2015 Free Software Foundation, Inc.
+# Copyright (C) 2016 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Ole Laursen <olau@hardworking.dk>, 2001, 02, 03.
-# Joe Hansen <joedalton2@yahoo.dk>, 2015.
+# Joe Hansen <joedalton2@yahoo.dk>, 2015, 2016.
 #
 # Konventioner:
 #
@@ -128,10 +128,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 5.1-b20150208\n"
+"Project-Id-Version: cpplib 6.1-b20160131\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2016-01-31 15:50+0000\n"
-"PO-Revision-Date: 2015-04-06 18:00+0200\n"
+"PO-Revision-Date: 2016-03-27 18:00+0200\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
@@ -871,10 +871,8 @@ msgid "missing terminating %c character"
 msgstr "manglende afsluttende %c-tegn"
 
 #: lex.c:1932
-#, fuzzy
-#| msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
 msgid "C++11 requires a space between string literal and macro"
-msgstr "ugyldig suffiks på ordret; C++11 kræver et mellemrum mellem ordret og strengmakro"
+msgstr "C++11 kræver et mellemrum mellem ordret og strengmakro"
 
 #: lex.c:2474 lex.c:2508
 msgid "C++ style comments are not allowed in ISO C90"

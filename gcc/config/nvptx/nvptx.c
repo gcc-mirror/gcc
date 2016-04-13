@@ -160,15 +160,6 @@ nvptx_option_override (void)
   /* Assumes that it will see only hard registers.  */
   flag_var_tracking = 0;
 
-  if (write_symbols == DBX_DEBUG)
-    /* The stabs testcases want to know stabs isn't supported.  */
-    sorry ("stabs debug format not supported");
-
-  /* Actually we don't have any debug format, but don't be
-     unneccesarily noisy.  */
-  write_symbols = NO_DEBUG;
-  debug_info_level = DINFO_LEVEL_NONE;
-
   if (nvptx_optimize < 0)
     nvptx_optimize = optimize > 0;
 
@@ -1302,6 +1293,20 @@ nvptx_gen_shuffle (rtx dst, rtx src, rtx idx, nvptx_shuffle_kind kind)
 	emit_insn (gen_sel_truesi (tmp, src, GEN_INT (1), const0_rtx));
 	emit_insn (nvptx_gen_shuffle (tmp, tmp, idx, kind));
 	emit_insn (gen_rtx_SET (dst, gen_rtx_NE (BImode, tmp, const0_rtx)));
+	res = get_insns ();
+	end_sequence ();
+      }
+      break;
+    case QImode:
+    case HImode:
+      {
+	rtx tmp = gen_reg_rtx (SImode);
+
+	start_sequence ();
+	emit_insn (gen_rtx_SET (tmp, gen_rtx_fmt_e (ZERO_EXTEND, SImode, src)));
+	emit_insn (nvptx_gen_shuffle (tmp, tmp, idx, kind));
+	emit_insn (gen_rtx_SET (dst, gen_rtx_fmt_e (TRUNCATE, GET_MODE (dst),
+						    tmp)));
 	res = get_insns ();
 	end_sequence ();
       }

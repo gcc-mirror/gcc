@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++1z -fconcepts" }
 
 // Test that standard conversions are checked with
 // implicit conversion constraints.

@@ -11,6 +11,8 @@ f1 (int *p, int *q, short *s)
 /* { dg-final { scan-assembler-times "_ZGVcN4l4ln4ln6_f1:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdM8l4ln4ln6_f1:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdN8l4ln4ln6_f1:" 1 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeM16l4ln4ln6_f1:" 1 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeN16l4ln4ln6_f1:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 
 #pragma omp declare simd linear(p:s) linear(q:t) uniform (s) linear(r:s) notinbranch simdlen(8) uniform(t)
 int
@@ -22,3 +24,4 @@ f2 (int *p, short *q, int s, int r, int t)
 /* { dg-final { scan-assembler-times "_ZGVbN8ls2ls4uls2u_f2:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVcN8ls2ls4uls2u_f2:" 1 { target { i?86-*-* x86_64-*-* } } } } */
 /* { dg-final { scan-assembler-times "_ZGVdN8ls2ls4uls2u_f2:" 1 { target { i?86-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-assembler-times "_ZGVeN8ls2ls4uls2u_f2:" 1 { target { i?86-*-* x86_64-*-* } } } } */

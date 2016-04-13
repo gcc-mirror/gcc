@@ -894,9 +894,21 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
   /* Initialize the launch dimensions.  Typically this is constant,
      provided by the device compiler, but we must permit runtime
      values.  */
-  for (i = 0; i != 3; i++)
-    if (targ_fn->launch->dim[i])
-      dims[i] = targ_fn->launch->dim[i];
+  int seen_zero = 0;
+  for (i = 0; i != GOMP_DIM_MAX; i++)
+    {
+      if (targ_fn->launch->dim[i])
+       dims[i] = targ_fn->launch->dim[i];
+      if (!dims[i])
+       seen_zero = 1;
+    }
+
+  if (seen_zero)
+    {
+      for (i = 0; i != GOMP_DIM_MAX; i++)
+       if (!dims[i])
+         dims[i] = /* TODO */ 32;
+    }
 
   /* This reserves a chunk of a pre-allocated page of memory mapped on both
      the host and the device. HP is a host pointer to the new chunk, and DP is

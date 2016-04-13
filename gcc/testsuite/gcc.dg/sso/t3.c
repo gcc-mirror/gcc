@@ -88,5 +88,6 @@ int main (void)
   new_line ();
   /* { dg-output "Local_R2 : 05 e2 af 37 c0 04 10 30.*\n" } */
 
+  new_line ();
   return 0;
 }

@@ -3008,8 +3008,15 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  flags &= ~OEP_ADDRESS_OF;
 	  return OP_SAME (0);
 
-	case REALPART_EXPR:
 	case IMAGPART_EXPR:
+	  /* Require the same offset.  */
+	  if (!operand_equal_p (TYPE_SIZE (TREE_TYPE (arg0)),
+				TYPE_SIZE (TREE_TYPE (arg1)),
+				flags & ~OEP_ADDRESS_OF))
+	    return 0;
+
+	/* Fallthru.  */
+	case REALPART_EXPR:
 	case VIEW_CONVERT_EXPR:
 	  return OP_SAME (0);
 
@@ -3024,6 +3031,9 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 		      || !operand_equal_p (TYPE_SIZE (TREE_TYPE (arg0)),
 					   TYPE_SIZE (TREE_TYPE (arg1)),
 					   flags)))
+		return 0;
+	      /* Verify that access happens in similar types.  */
+	      if (!types_compatible_p (TREE_TYPE (arg0), TREE_TYPE (arg1)))
 		return 0;
 	      /* Verify that accesses are TBAA compatible.  */
 	      if (!alias_ptr_types_compatible_p
@@ -3049,17 +3059,29 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
-	  /* Operands 2 and 3 may be null.
-	     Compare the array index by value if it is constant first as we
-	     may have different types but same value here.  */
 	  if (!OP_SAME (0))
 	    return 0;
 	  flags &= ~OEP_ADDRESS_OF;
+	  /* Compare the array index by value if it is constant first as we
+	     may have different types but same value here.  */
 	  return ((tree_int_cst_equal (TREE_OPERAND (arg0, 1),
 				       TREE_OPERAND (arg1, 1))
 		   || OP_SAME (1))
 		  && OP_SAME_WITH_NULL (2)
-		  && OP_SAME_WITH_NULL (3));
+		  && OP_SAME_WITH_NULL (3)
+		  /* Compare low bound and element size as with OEP_ADDRESS_OF
+		     we have to account for the offset of the ref.  */
+		  && (TREE_TYPE (TREE_OPERAND (arg0, 0))
+		      == TREE_TYPE (TREE_OPERAND (arg1, 0))
+		      || (operand_equal_p (array_ref_low_bound
+					     (CONST_CAST_TREE (arg0)),
+					   array_ref_low_bound
+					     (CONST_CAST_TREE (arg1)), flags)
+			  && operand_equal_p (array_ref_element_size
+					        (CONST_CAST_TREE (arg0)),
+					      array_ref_element_size
+					        (CONST_CAST_TREE (arg1)),
+					      flags))));
 
 	case COMPONENT_REF:
 	  /* Handle operand 2 the same as for ARRAY_REF.  Operand 0
@@ -3570,8 +3592,11 @@ fold_truth_not_expr (location_t loc, tree arg)
       if (code == ERROR_MARK)
 	return NULL_TREE;
 
-      return build2_loc (loc, code, type, TREE_OPERAND (arg, 0),
-			 TREE_OPERAND (arg, 1));
+      tree ret = build2_loc (loc, code, type, TREE_OPERAND (arg, 0),
+			     TREE_OPERAND (arg, 1));
+      if (TREE_NO_WARNING (arg))
+	TREE_NO_WARNING (ret) = 1;
+      return ret;
     }
 
   switch (code)
@@ -6091,11 +6116,9 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	{
 	  tree tem = const_binop (code, fold_convert (ctype, t),
 				  fold_convert (ctype, c));
-	  /* If the multiplication overflowed to INT_MIN then we lost sign
-	     information on it and a subsequent multiplication might
-	     spuriously overflow.  See PR68142.  */
-	  if (TREE_OVERFLOW (tem)
-	      && wi::eq_p (tem, wi::min_value (TYPE_PRECISION (ctype), SIGNED)))
+	  /* If the multiplication overflowed, we lost information on it.
+	     See PR68142 and PR69845.  */
+	  if (TREE_OVERFLOW (tem))
 	    return NULL_TREE;
 	  return tem;
 	}
@@ -6351,18 +6374,19 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	  bool overflow_p = false;
 	  bool overflow_mul_p;
 	  signop sign = TYPE_SIGN (ctype);
-	  wide_int mul = wi::mul (op1, c, sign, &overflow_mul_p);
+	  unsigned prec = TYPE_PRECISION (ctype);
+	  wide_int mul = wi::mul (wide_int::from (op1, prec,
+						  TYPE_SIGN (TREE_TYPE (op1))),
+				  wide_int::from (c, prec,
+						  TYPE_SIGN (TREE_TYPE (c))),
+				  sign, &overflow_mul_p);
 	  overflow_p = TREE_OVERFLOW (c) | TREE_OVERFLOW (op1);
 	  if (overflow_mul_p
 	      && ((sign == UNSIGNED && tcode != MULT_EXPR) || sign == SIGNED))
 	    overflow_p = true;
 	  if (!overflow_p)
-	    {
-	      mul = wide_int::from (mul, TYPE_PRECISION (ctype),
-				    TYPE_SIGN (TREE_TYPE (op1)));
-	      return fold_build2 (tcode, ctype, fold_convert (ctype, op0),
-				  wide_int_to_tree (ctype, mul));
-	    }
+	    return fold_build2 (tcode, ctype, fold_convert (ctype, op0),
+				wide_int_to_tree (ctype, mul));
 	}
 
       /* If these operations "cancel" each other, we have the main
@@ -8314,6 +8338,20 @@ pointer_may_wrap_p (tree base, tree offset, HOST_WIDE_INT bitpos)
   return total.to_uhwi () > (unsigned HOST_WIDE_INT) size;
 }
 
+/* Return a positive integer when the symbol DECL is known to have
+   a nonzero address, zero when it's known not to (e.g., it's a weak
+   symbol), and a negative integer when the symbol is not yet in the
+   symbol table and so whether or not its address is zero is unknown.  */
+static int
+maybe_nonzero_address (tree decl)
+{
+  if (DECL_P (decl) && decl_in_symtab_p (decl))
+    if (struct symtab_node *symbol = symtab_node::get_create (decl))
+      return symbol->nonzero_address ();
+
+  return -1;
+}
+
 /* Subroutine of fold_binary.  This routine performs all of the
    transformations that are common to the equality/inequality
    operators (EQ_EXPR and NE_EXPR) and the ordering operators
@@ -8613,6 +8651,39 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	  if (indirect_base1)
 	    base1 = build_fold_addr_expr_loc (loc, base1);
 	  return fold_build2_loc (loc, code, type, base0, base1);
+	}
+      /* Comparison between an ordinary (non-weak) symbol and a null
+	 pointer can be eliminated since such symbols must have a non
+	 null address.  In C, relational expressions between pointers
+	 to objects and null pointers are undefined.  The results
+	 below follow the C++ rules with the additional property that
+	 every object pointer compares greater than a null pointer.
+      */
+      else if (DECL_P (base0)
+	       && maybe_nonzero_address (base0) > 0
+	       /* Avoid folding references to struct members at offset 0 to
+		  prevent tests like '&ptr->firstmember == 0' from getting
+		  eliminated.  When ptr is null, although the -> expression
+		  is strictly speaking invalid, GCC retains it as a matter
+		  of QoI.  See PR c/44555. */
+	       && (offset0 == NULL_TREE && bitpos0 != 0)
+	       /* The caller guarantees that when one of the arguments is
+		  constant (i.e., null in this case) it is second.  */
+	       && integer_zerop (arg1))
+	{
+	  switch (code)
+	    {
+	    case EQ_EXPR:
+	    case LE_EXPR:
+	    case LT_EXPR:
+	      return boolean_false_node;
+	    case GE_EXPR:
+	    case GT_EXPR:
+	    case NE_EXPR:
+	      return boolean_true_node;
+	    default:
+	      gcc_unreachable ();
+	    }
 	}
     }
 
@@ -13484,16 +13555,9 @@ tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 	/* For objects in symbol table check if we know they are non-zero.
 	   Don't do anything for variables and functions before symtab is built;
 	   it is quite possible that they will be declared weak later.  */
-	if (DECL_P (base) && decl_in_symtab_p (base))
-	  {
-	    struct symtab_node *symbol;
-
-	    symbol = symtab_node::get_create (base);
-	    if (symbol)
-	      return symbol->nonzero_address ();
-	    else
-	      return false;
-	  }
+	int nonzero_addr = maybe_nonzero_address (base);
+	if (nonzero_addr >= 0)
+	  return nonzero_addr;
 
 	/* Function local objects are never NULL.  */
 	if (DECL_P (base)
@@ -14196,17 +14260,20 @@ fold_indirect_ref_1 (location_t loc, tree type, tree op0)
 	  if (TREE_CODE (op00type) == VECTOR_TYPE
 	      && type == TREE_TYPE (op00type))
 	    {
-	      HOST_WIDE_INT offset = tree_to_shwi (op01);
 	      tree part_width = TYPE_SIZE (type);
-	      unsigned HOST_WIDE_INT part_widthi = tree_to_shwi (part_width)/BITS_PER_UNIT;
-	      unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
-	      tree index = bitsize_int (indexi);
-
-	      if (offset / part_widthi < TYPE_VECTOR_SUBPARTS (op00type))
-		return fold_build3_loc (loc,
-					BIT_FIELD_REF, type, op00,
-					part_width, index);
-
+	      unsigned HOST_WIDE_INT max_offset
+		= (tree_to_uhwi (part_width) / BITS_PER_UNIT
+		   * TYPE_VECTOR_SUBPARTS (op00type));
+	      if (tree_int_cst_sign_bit (op01) == 0
+		  && compare_tree_int (op01, max_offset) == -1)
+		{
+		  unsigned HOST_WIDE_INT offset = tree_to_uhwi (op01);
+		  unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
+		  tree index = bitsize_int (indexi);
+		  return fold_build3_loc (loc,
+					  BIT_FIELD_REF, type, op00,
+					  part_width, index);
+		}
 	    }
 	  /* ((foo*)&complexfoo)[1] => __imag__ complexfoo */
 	  else if (TREE_CODE (op00type) == COMPLEX_TYPE

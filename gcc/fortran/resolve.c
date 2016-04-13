@@ -7217,7 +7217,15 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 	  if (!gfc_notify_std (GFC_STD_F2008, "Array specification required "
 			       "in ALLOCATE statement at %L", &e->where))
 	    goto failure;
-	  *array_alloc_wo_spec = true;
+	  if (code->expr3->rank != 0)
+	    *array_alloc_wo_spec = true;
+	  else
+	    {
+	      gfc_error ("Array specification or array-valued SOURCE= "
+			 "expression required in ALLOCATE statement at %L",
+			 &e->where);
+	      goto failure;
+	    }
 	}
       else
 	{
@@ -11905,7 +11913,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 		     "in %qs at %L", sym->name, &sym->declared_at);
 	  return false;
 	}
-      if (sym->attr.external && sym->attr.function
+      if (sym->attr.external && sym->attr.function && !sym->attr.module_procedure
 	  && ((sym->attr.if_source == IFSRC_DECL && !sym->attr.procedure)
 	      || sym->attr.contained))
 	{

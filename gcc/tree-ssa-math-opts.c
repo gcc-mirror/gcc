@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 
    First of all, with some experiments it was found out that the
    transformation is not always useful if there are only two divisions
-   hy the same divisor.  This is probably because modern processors
+   by the same divisor.  This is probably because modern processors
    can pipeline the divisions; on older, in-order processors it should
    still be effective to optimize two divisions by the same number.
    We make this a param, and it shall be called N in the remainder of
@@ -3827,7 +3827,7 @@ pass_optimize_widening_mul::execute (function *fun)
 	    {
 	      tree fndecl = gimple_call_fndecl (stmt);
 	      if (fndecl
-		  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+		  && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
 		{
 		  switch (DECL_FUNCTION_CODE (fndecl))
 		    {

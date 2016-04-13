@@ -2214,7 +2214,7 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
     check_profile_consistency (pass->static_pass_number, 1, true);
 
   if (dump_file)
-    do_per_function (execute_function_dump, NULL);
+    do_per_function (execute_function_dump, pass);
   pass_fini_dump_file (pass);
 
   current_pass = NULL;
@@ -2334,6 +2334,33 @@ execute_one_pass (opt_pass *pass)
 
   /* Do it!  */
   todo_after = pass->execute (cfun);
+
+  if (todo_after & TODO_discard_function)
+    {
+      pass_fini_dump_file (pass);
+
+      gcc_assert (cfun);
+      /* As cgraph_node::release_body expects release dominators info,
+	 we have to release it.  */
+      if (dom_info_available_p (CDI_DOMINATORS))
+       free_dominance_info (CDI_DOMINATORS);
+
+      if (dom_info_available_p (CDI_POST_DOMINATORS))
+       free_dominance_info (CDI_POST_DOMINATORS);
+
+      tree fn = cfun->decl;
+      pop_cfun ();
+      gcc_assert (!cfun);
+      cgraph_node::get (fn)->release_body ();
+
+      current_pass = NULL;
+      redirect_edge_var_map_empty ();
+
+      ggc_collect ();
+
+      return true;
+    }
+
   do_per_function (clear_last_verified, NULL);
 
   /* Stop timevar.  */
@@ -2351,15 +2378,15 @@ execute_one_pass (opt_pass *pass)
     check_profile_consistency (pass->static_pass_number, 1, true);
 
   verify_interpass_invariants ();
-  if (dump_file)
-    do_per_function (execute_function_dump, pass);
-  if (pass->type == IPA_PASS)
+  if (pass->type == IPA_PASS
+      && ((ipa_opt_pass_d *)pass)->function_transform)
     {
       struct cgraph_node *node;
-      if (((ipa_opt_pass_d *)pass)->function_transform)
-	FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
-	  node->ipa_transforms_to_apply.safe_push ((ipa_opt_pass_d *)pass);
+      FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+	node->ipa_transforms_to_apply.safe_push ((ipa_opt_pass_d *)pass);
     }
+  else if (dump_file)
+    do_per_function (execute_function_dump, pass);
 
   if (!current_function_decl)
     symtab->process_new_functions ();
@@ -2372,23 +2399,6 @@ execute_one_pass (opt_pass *pass)
 
   current_pass = NULL;
   redirect_edge_var_map_empty ();
-
-  if (todo_after & TODO_discard_function)
-    {
-      gcc_assert (cfun);
-      /* As cgraph_node::release_body expects release dominators info,
-	 we have to release it.  */
-      if (dom_info_available_p (CDI_DOMINATORS))
-	free_dominance_info (CDI_DOMINATORS);
-
-      if (dom_info_available_p (CDI_POST_DOMINATORS))
-	free_dominance_info (CDI_POST_DOMINATORS);
-
-      tree fn = cfun->decl;
-      pop_cfun ();
-      gcc_assert (!cfun);
-      cgraph_node::get (fn)->release_body ();
-    }
 
   /* Signal this is a suitable GC collection point.  */
   if (!((todo_after | pass->todo_flags_finish) & TODO_do_not_ggc_collect))

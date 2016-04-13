@@ -512,13 +512,7 @@ clone_function_name_1 (const char *name, const char *suffix)
   prefix = XALLOCAVEC (char, len + strlen (suffix) + 2);
   memcpy (prefix, name, len);
   strcpy (prefix + len + 1, suffix);
-#ifndef NO_DOT_IN_LABEL
-  prefix[len] = '.';
-#elif !defined NO_DOLLAR_IN_LABEL
-  prefix[len] = '$';
-#else
-  prefix[len] = '_';
-#endif
+  prefix[len] = symbol_table::symbol_suffix_separator ();
   ASM_FORMAT_PRIVATE_NAME (tmp_name, prefix, clone_fn_id_num++);
   return get_identifier (tmp_name);
 }

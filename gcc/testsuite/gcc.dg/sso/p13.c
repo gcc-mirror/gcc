@@ -60,5 +60,6 @@ int main (void)
   new_line ();
   /* { dg-output "Local_R2 : 40 49 0f db c0 49 0f db.*\n" } */
 
+  new_line ();
   return 0;
 }

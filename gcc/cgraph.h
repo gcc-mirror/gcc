@@ -293,6 +293,9 @@ public:
   /* Make DECL local.  */
   void make_decl_local (void);
 
+  /* Copy visibility from N.  */
+  void copy_visibility_from (symtab_node *n);
+
   /* Return desired alignment of the definition.  This is NOT alignment useful
      to access THIS, because THIS may be interposable and DECL_ALIGN should
      be used instead.  It however must be guaranteed when output definition
@@ -762,6 +765,11 @@ struct GTY(()) cgraph_simd_clone {
 
   /* Max hardware vector size in bits for floating point vectors.  */
   unsigned int vecsize_float;
+
+  /* Machine mode of the mask argument(s), if they are to be passed
+     as bitmasks in integer argument(s).  VOIDmode if masks are passed
+     as vectors of characteristic type.  */
+  machine_mode mask_mode;
 
   /* The mangling character for a given vector size.  This is used
      to determine the ISA mangling bit as specified in the Intel
@@ -1366,6 +1374,8 @@ public:
   unsigned parallelized_function : 1;
   /* True if function is part split out by ipa-split.  */
   unsigned split_part : 1;
+  /* True if the function appears as possible target of indirect call.  */
+  unsigned indirect_call_target : 1;
 
 private:
   /* Worker for call_for_symbol_and_aliases.  */
@@ -2170,6 +2180,9 @@ public:
   hash_map<symtab_node *, symbol_priority_map> *init_priority_hash;
 
   FILE* GTY ((skip)) dump_file;
+
+  /* Return symbol used to separate symbol name from suffix.  */
+  static char symbol_suffix_separator ();
 
 private:
   /* Allocate new callgraph node.  */

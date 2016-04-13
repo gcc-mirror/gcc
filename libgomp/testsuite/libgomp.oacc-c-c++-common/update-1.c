@@ -11,6 +11,7 @@ int
 main (int argc, char **argv)
 {
     int N = 8;
+    int NDIV2 = N / 2;
     float *a, *b, *c;
     float *d_a, *d_b, *d_c;
     int i;
@@ -109,7 +110,7 @@ main (int argc, char **argv)
             b[ii] = a[ii];
     }
 
-#pragma acc update self (a[0:N], b[0:N])
+#pragma acc update host (a[0:N], b[0:N])
 
     for (i = 0; i < N; i++)
     {
@@ -240,7 +241,7 @@ main (int argc, char **argv)
         a[i] = 6.0;
     }
 
-#pragma acc update device (a[0:N >> 1])
+#pragma acc update device (a[0:NDIV2])
 
 #pragma acc parallel present (a[0:N], b[0:N])
     {
@@ -252,7 +253,7 @@ main (int argc, char **argv)
 
 #pragma acc update host (a[0:N], b[0:N])
 
-    for (i = 0; i < (N >> 1); i++)
+    for (i = 0; i < NDIV2; i++)
     {
         if (a[i] != 6.0)
             abort ();
@@ -261,7 +262,7 @@ main (int argc, char **argv)
             abort ();
     }
 
-    for (i = (N >> 1); i < N; i++)
+    for (i = NDIV2; i < N; i++)
     {
         if (a[i] != 5.0)
             abort ();
@@ -275,6 +276,84 @@ main (int argc, char **argv)
 
     if (!acc_is_present (&b[0], (N * sizeof (float))))
       abort ();
+
+    for (i = 0; i < N; i++)
+    {
+        a[i] = 0.0;
+    }
+
+#pragma acc update device (a[0:4])
+
+#pragma acc parallel present (a[0:N])
+    {
+        int ii;
+
+        for (ii = 0; ii < N; ii++)
+            a[ii] = a[ii] + 1.0;
+    }
+
+#pragma acc update host (a[4:4])
+
+    for (i = 0; i < NDIV2; i++)
+    {
+        if (a[i] != 0.0)
+            abort ();
+    }
+
+    for (i = NDIV2; i < N; i++)
+    {
+        if (a[i] != 6.0)
+            abort ();
+    }
+
+#pragma acc update host (a[0:4])
+
+    for (i = 0; i < NDIV2; i++)
+    {
+        if (a[i] != 1.0)
+            abort ();
+    }
+
+    for (i = NDIV2; i < N; i++)
+    {
+        if (a[i] != 6.0)
+            abort ();
+    }
+
+    a[2] = 9;
+    a[3] = 9;
+    a[4] = 9;
+    a[5] = 9;
+
+#pragma acc update device (a[2:4])
+
+#pragma acc parallel present (a[0:N])
+    {
+        int ii;
+
+        for (ii = 0; ii < N; ii++)
+            a[ii] = a[ii] + 1.0;
+    }
+
+#pragma acc update host (a[2:4])
+
+    for (i = 0; i < 2; i++)
+    {
+      if (a[i] != 1.0)
+	abort ();
+    }
+
+    for (i = 2; i < 6; i++)
+    {
+      if (a[i] != 10.0)
+	abort ();
+    }
+
+    for (i = 6; i < N; i++)
+    {
+        if (a[i] != 6.0)
+            abort ();
+    }
 
     return 0;
 }

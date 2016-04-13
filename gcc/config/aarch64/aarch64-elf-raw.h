@@ -35,7 +35,7 @@
   " %{mfix-cortex-a53-835769:--fix-cortex-a53-835769}"
 #endif
 
-#ifdef TARGET_FIX_ERR_A53_843419_DEFAULT
+#if TARGET_FIX_ERR_A53_843419_DEFAULT
 #define CA53_ERR_843419_SPEC \
   " %{!mno-fix-cortex-a53-843419:--fix-cortex-a53-843419}"
 #else

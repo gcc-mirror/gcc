@@ -745,11 +745,7 @@ build_var (tree fn_decl, tree type, int counter)
   else
     sprintf (buf, "__gcov%u_", counter);
   len = strlen (buf);
-#ifndef NO_DOT_IN_LABEL
-  buf[len - 1] = '.';
-#elif !defined NO_DOLLAR_IN_LABEL
-  buf[len - 1] = '$';
-#endif
+  buf[len - 1] = symbol_table::symbol_suffix_separator ();
   memcpy (buf + len, fn_name, fn_name_len + 1);
   DECL_NAME (var) = get_identifier (buf);
   TREE_STATIC (var) = 1;

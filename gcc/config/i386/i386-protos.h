@@ -332,4 +332,3 @@ struct ix86_first_cycle_multipass_data_
 
 const addr_space_t ADDR_SPACE_SEG_FS = 1;
 const addr_space_t ADDR_SPACE_SEG_GS = 2;
-const addr_space_t ADDR_SPACE_SEG_TLS = 3;

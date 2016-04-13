@@ -917,6 +917,7 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 static void
 check_global_declaration (symtab_node *snode)
 {
+  const char *decl_file;
   tree decl = snode->decl;
 
   /* Warn about any function declared static but not defined.  We don't
@@ -942,7 +943,12 @@ check_global_declaration (symtab_node *snode)
   /* Warn about static fns or vars defined but not used.  */
   if (((warn_unused_function && TREE_CODE (decl) == FUNCTION_DECL)
        || (((warn_unused_variable && ! TREE_READONLY (decl))
-	    || (warn_unused_const_variable && TREE_READONLY (decl)))
+	    || (warn_unused_const_variable > 0 && TREE_READONLY (decl)
+		&& (warn_unused_const_variable == 2
+		    || (main_input_filename != NULL
+			&& (decl_file = DECL_SOURCE_FILE (decl)) != NULL
+			&& filename_cmp (main_input_filename,
+					 decl_file) == 0))))
 	   && TREE_CODE (decl) == VAR_DECL))
       && ! DECL_IN_SYSTEM_HEADER (decl)
       && ! snode->referred_to_p (/*include_self=*/false)
@@ -971,7 +977,7 @@ check_global_declaration (symtab_node *snode)
 		(TREE_CODE (decl) == FUNCTION_DECL)
 		? OPT_Wunused_function
 		: (TREE_READONLY (decl)
-		   ? OPT_Wunused_const_variable
+		   ? OPT_Wunused_const_variable_
 		   : OPT_Wunused_variable),
 		"%qD defined but not used", decl);
 }
@@ -1702,7 +1708,9 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 
       /* Build call to the function being thunked.  */
       if (!VOID_TYPE_P (restype)
-	  && (!alias_is_noreturn || TREE_ADDRESSABLE (restype)))
+	  && (!alias_is_noreturn
+	      || TREE_ADDRESSABLE (restype)
+	      || TREE_CODE (TYPE_SIZE_UNIT (restype)) != INTEGER_CST))
 	{
 	  if (DECL_BY_REFERENCE (resdecl))
 	    {

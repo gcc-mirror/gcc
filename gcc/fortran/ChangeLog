@@ -1,3 +1,150 @@
+2016-04-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/68566
+	* array.c (match_array_element_spec): Add check for non-integer.
+	* simplify.c (gfc_simplify_reshape): If source shape is NULL return.
+
+2016-04-06  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c/70436
+	* openmp.c (gfc_find_omp_udr): Add explicit braces to resolve a
+	future -Wparentheses warning.
+
+2016-04-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/67538
+	* resolve.c (resolve_allocate_expr): Emit error message when no
+	array spec and no array valued source= expression is given in an
+	F2008 allocate() for an array to allocate.
+
+2016-04-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/65795
+	* trans-array.c (gfc_array_allocate): When the array is a coarray,
+	do not nullyfing its allocatable components in array_allocate, because
+	the nullify missed the array ref and nullifies the wrong component.
+	Cosmetics.
+
+2016-03-29  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/70397
+	* trans-expr.c (gfc_class_len_or_zero_get): Add function to return a
+	constant zero tree, when the class to get the _len component from is
+	not unlimited polymorphic.
+	(gfc_copy_class_to_class): Use the new function.
+	* trans.h: Added interface of new function gfc_class_len_or_zero_get.
+
+2016-03-28  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+
+	* trans-decl.c (gfc_build_builtin_function_decls):
+	caf_stop_numeric and caf_stop_str definition.
+	* trans-stmt.c (gfc_trans_stop): invoke external functions
+	for stop and stop_str when coarrays are used.
+	* trans.h: extern for new functions.
+
+2016-03-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/69043
+	* scanner.c (load_file): Update to use S_ISREG macro.
+
+2016-03-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.h (enum gfc_omp_map_op): Rename OMP_MAP_FORCE_DEALLOC
+	to OMP_MAP_DELETE.  Adjust all users.
+
+2016-03-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Jim MacArthur  <jim.macarthur@codethink.co.uk>
+
+	PR fortran/69043
+	* scanner.c (load_file): Check that included file is regular.
+
+2016-03-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Harold Anlauf  <anlauf@gmx.de>
+
+	PR fortran/69520
+	* invoke.texi: Explain use of the 'no-' construct within the
+	-fcheck= option.
+	* options.c (gfc_handle_runtime_check_option): Enable use of
+	'no-' prefix for the various options with -fcheck= to allow
+	negating previously enabled check options.
+
+2016-03-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/70031
+	* decl.c (gfc_match_prefix): Treat the 'module' prefix in the
+	same way as the others, rather than fixing it to come last.
+	(gfc_match_function_decl, gfc_match_subroutine): After errors
+	in 'copy_prefix', emit them immediately in the case of module
+	procedures to prevent a later ICE.
+
+	PR fortran/69524
+	* decl.c (gfc_match_submod_proc): Permit 'module procedure'
+	declarations within the contains section of modules as well as
+	submodules.
+	* resolve.c (resolve_fl_procedure): Likewise.
+	*trans-decl.c (build_function_decl): Change the gcc_assert to
+	allow all forms of module procedure declarations within module
+	contains sections.
+
+2016-02-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/68147
+	PR fortran/47674
+	* frontend-passes.c (realloc_string_callback): Don't set
+	walk_subtrees.
+
+2016-02-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.c (show_code_node):  Print association
+	list of a block if present.  Handle EXEC_END_BLOCK.
+
+2016-02-28  Harald Anlauf <anlauf@gmx.de>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/56007
+	* match.c (gfc_match_iterator): Add diagnostic for array variable
+	as do loop index.
+
+2016-02-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/69910
+	* io.c (gfc_match_open): Check that open status is an expression
+	constant before comparing string to 'scratch' with NEWUNIT.
+
+2016-02-27  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+
+	* trans.c (gfc_allocate_allocatable): size conversion
+	from byte to number of elements for event variables.
+	* trans-types.c (gfc_get_derived_type): event variables
+	represented as a pointer (like lock variable).
+
+2016-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/61156
+	* scanner.c (add_path_to_list): If include path is not a directory,
+	issue a fatal error.
+
+2016-02-23  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/67451
+	* trans-array.c (gfc_array_allocate): Take the attributes from the
+	expression to allocate and not from the source=-expression.
+
+2016-02-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/69423
+	* trans-decl.c (create_function_arglist): Deferred character
+	length functions, with and without declared results, address
+	the passed reference type as '.result' and the local string
+	length as '..result'.
+	(gfc_null_and_pass_deferred_len): Helper function to null and
+	return deferred string lengths, as needed.
+	(gfc_trans_deferred_vars): Call it, thereby reducing repeated
+	code, add call for deferred arrays and reroute pointer function
+	results. Avoid using 'tmp' for anything other that a temporary
+	tree by introducing 'type_of_array' for the arrayspec type.
+
 2015-02-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/69742

@@ -1,3 +1,7 @@
+LIB1ASMSRC = ft32/lib1funcs.S
+LIB1ASMFUNCS = \
+  _udivsi3 _divsi3 _umodsi3 _modsi3
+
 LIB2ADD = $(srcdir)/config/ft32/epilog.S $(srcdir)/config/ft32/prolog.S
 
 crti-hw.o: $(srcdir)/config/ft32/crti-hw.S

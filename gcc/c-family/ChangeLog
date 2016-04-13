@@ -1,3 +1,105 @@
+2016-03-28  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Update __cpp_range_based_for.
+
+2016-03-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/69884
+	* c.opt (Wignored-attributes): New option.
+
+2016-03-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/69993
+	* c-indentation.c (warn_for_misleading_indentation): Rewrite the
+	diagnostic text, reversing the order of the warning and note so
+	that they appear in source order.
+
+2016-03-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/69407
+	* c-common.c (resolve_overloaded_builtin): Set TREE_USED for the fetch
+	operations.
+
+2016-03-14  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Set __cpp_hex_float.
+
+	* c-cppbuiltin.c (c_cpp_builtins): Bump __cpp_range_based_for.
+
+2016-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR c/70143
+	* c-common.c (strict_aliasing_warning): Add back
+	alias_sets_conflict_p check.
+
+2016-03-08  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.c (set_std_cxx1z): Don't enable concepts.
+
+2016-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68187
+	* c-indentation.c (get_visual_column): Move code to determine next
+	tab stop to...
+	(next_tab_stop): ...this new function.
+	(line_contains_hash_if): Delete function.
+	(detect_preprocessor_logic): Delete function.
+	(get_first_nws_vis_column): New function.
+	(detect_intervening_unindent): New function.
+	(should_warn_for_misleading_indentation): Replace call to
+	detect_preprocessor_logic with a call to
+	detect_intervening_unindent.
+
+2016-03-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/68187
+	* c-indentation.c (should_warn_for_misleading_indentation): When
+	suppressing warnings about cases where the guard and body are on
+	the same column, only use the first non-whitespace column in place
+	of the guard token column when dealing with "else" clauses.
+	When rejecting aligned BODY and NEXT, loosen the requirement
+	from equality with the first non-whitespace of guard to simply
+	that they not be indented relative to it.
+
+2016-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR c++/70054
+	* c-common.c (strict_aliasing_warning): Use alias_set_subset_of
+	instead of alias_sets_conflict_p.
+
+2016-03-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/69795
+	* c-common.c (reject_gcc_builtin): Check for FUNCTION_DECL rather than
+	any DECL.
+
+2016-02-22  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/69780
+	* c-common.c (check_builtin_function_arguments): Validate and
+	reject invalid arguments to __builtin_alloca_with_align.
+
+2016-02-20  Mark Wielaard  <mjw@redhat.com>
+
+	PR c/28901
+	* c.opt (Wunused-const-variable): Turn into Alias for...
+	(Wunused-const-variable=): New option.
+
+2016-02-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/69865
+	* c-opts.c (c_common_post_options): Move call to set_std_cxx14 from
+	here...
+	(c_common_init_options): ...to here.
+	(set_std_cxx98): Initialize flag_isoc94 and flag_isoc99.
+
+2016-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/69826
+	* c-pragma.c (c_pp_lookup_pragma): Handle PRAGMA_CILK_GRAINSIZE.
+	(init_pragma): Register PRAGMA_CILK_GRAINSIZE even for
+	flag_preprocess_only.
+
 2016-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/69835

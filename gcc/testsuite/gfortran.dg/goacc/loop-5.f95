@@ -1,9 +1,3 @@
-! { dg-do compile }
-! { dg-additional-options "-fmax-errors=100" }
-
-! { dg-prune-output "sorry, unimplemented" }
-! { dg-prune-output "Error: work-sharing region" }
-
 program test
   implicit none
   integer :: i, j

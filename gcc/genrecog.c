@@ -4037,7 +4037,7 @@ match_pattern_2 (state *s, md_rtx_info *info, position *pos, rtx pattern)
 		/* Check the mode first, to distinguish things like SImode
 		   and DImode register_operands, as described above.  */
 		machine_mode mode = GET_MODE (e->pattern);
-		if (safe_predicate_mode (pred, mode))
+		if (pred && safe_predicate_mode (pred, mode))
 		  s = add_decision (s, rtx_test::mode (e->pos), mode, true);
 
 		/* Assign to operands[] first, so that the rtx usually doesn't

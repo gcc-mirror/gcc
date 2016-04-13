@@ -75,5 +75,6 @@ int main (void)
   new_line ();
   /* { dg-output "A2 : 09 e2 af 37 bd 24 d2 b4.*\n" } */
 
+  new_line ();
   return 0;
 }

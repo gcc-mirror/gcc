@@ -552,31 +552,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  && Present (Expression (Declaration_Node (gnat_entity)))
 	  && Nkind (Expression (Declaration_Node (gnat_entity)))
 	     != N_Allocator)
-	{
-	  bool went_into_elab_proc = false;
-	  int save_force_global = force_global;
-
 	  /* The expression may contain N_Expression_With_Actions nodes and
-	     thus object declarations from other units.  In this case, even
-	     though the expression will eventually be discarded since not a
-	     constant, the declarations would be stuck either in the global
-	     varpool or in the current scope.  Therefore we force the local
-	     context and create a fake scope that we'll zap at the end.  */
-	  if (!current_function_decl)
-	    {
-	      current_function_decl = get_elaboration_procedure ();
-	      went_into_elab_proc = true;
-	    }
-	  force_global = 0;
-	  gnat_pushlevel ();
-
-	  gnu_expr = gnat_to_gnu (Expression (Declaration_Node (gnat_entity)));
-
-	  gnat_zaplevel ();
-	  force_global = save_force_global;
-	  if (went_into_elab_proc)
-	    current_function_decl = NULL_TREE;
-	}
+	     thus object declarations from other units.  Discard them.  */
+	gnu_expr
+	  = gnat_to_gnu_external (Expression (Declaration_Node (gnat_entity)));
 
       /* ... fall through ... */
 
@@ -611,13 +590,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	tree renamed_obj = NULL_TREE;
 	tree gnu_object_size;
 
+	/* We need to translate the renamed object even though we are only
+	   referencing the renaming.  But it may contain a call for which
+	   we'll generate a temporary to hold the return value and which
+	   is part of the definition of the renaming, so discard it.  */
 	if (Present (Renamed_Object (gnat_entity)) && !definition)
 	  {
 	    if (kind == E_Exception)
 	      gnu_expr = gnat_to_gnu_entity (Renamed_Entity (gnat_entity),
 					     NULL_TREE, 0);
 	    else
-	      gnu_expr = gnat_to_gnu (Renamed_Object (gnat_entity));
+	      gnu_expr = gnat_to_gnu_external (Renamed_Object (gnat_entity));
 	  }
 
 	/* Get the type after elaborating the renamed object.  */
@@ -976,14 +959,39 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      inner = TREE_OPERAND (inner, 0);
 	    /* Expand_Dispatching_Call can prepend a comparison of the tags
 	       before the call to "=".  */
-	    if (TREE_CODE (inner) == TRUTH_ANDIF_EXPR)
+	    if (TREE_CODE (inner) == TRUTH_ANDIF_EXPR
+		|| TREE_CODE (inner) == COMPOUND_EXPR)
 	      inner = TREE_OPERAND (inner, 1);
 	    if ((TREE_CODE (inner) == CALL_EXPR
 		 && !call_is_atomic_load (inner))
 		|| TREE_CODE (inner) == ADDR_EXPR
 		|| TREE_CODE (inner) == NULL_EXPR
 		|| TREE_CODE (inner) == CONSTRUCTOR
-		|| CONSTANT_CLASS_P (inner))
+		|| CONSTANT_CLASS_P (inner)
+		/* We need to detect the case where a temporary is created to
+		   hold the return value, since we cannot safely rename it at
+		   top level as it lives only in the elaboration routine.  */
+		|| (TREE_CODE (inner) == VAR_DECL
+		    && DECL_RETURN_VALUE_P (inner))
+		/* We also need to detect the case where the front-end creates
+		   a dangling 'reference to a function call at top level and
+		   substitutes it in the renaming, for example:
+
+		     q__b : boolean renames r__f.e (1);
+
+	           can be rewritten into:
+
+		     q__R1s : constant q__A2s := r__f'reference;
+		     [...]
+		     q__b : boolean renames q__R1s.all.e (1);
+
+		   We cannot safely rename the rewritten expression since the
+		   underlying object lives only in the elaboration routine.  */
+		|| (TREE_CODE (inner) == INDIRECT_REF
+		    && (inner
+			  = remove_conversions (TREE_OPERAND (inner, 0), true))
+		    && TREE_CODE (inner) == VAR_DECL
+		    && DECL_RETURN_VALUE_P (inner)))
 	      ;
 
 	    /* Case 2: if the renaming entity need not be materialized, use
@@ -991,8 +999,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       means that the caller is responsible for evaluating the address
 	       of the renaming in the correct place for the definition case to
 	       instantiate the SAVE_EXPRs.  */
-	    else if (TREE_CODE (inner) != COMPOUND_EXPR
-		     && !Materialize_Entity (gnat_entity))
+	    else if (!Materialize_Entity (gnat_entity))
 	      {
 		tree init = NULL_TREE;
 
@@ -1001,7 +1008,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 					 &init);
 
 		/* We cannot evaluate the first arm of a COMPOUND_EXPR in the
-		   correct place for this case, hence the above test.  */
+		   correct place for this case.  */
 		gcc_assert (!init);
 
 		/* No DECL_EXPR will be created so the expression needs to be
@@ -1051,12 +1058,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  = elaborate_reference (gnu_expr, gnat_entity, definition,
 					 &init);
 
-		/* If we are not defining the entity, the expression will not
-		   be attached through DECL_INITIAL so it needs to be marked
-		   manually because it will likely be shared.  Likewise for a
-		   dereference as it will be folded by the ADDR_EXPR below.  */
-		if ((!definition || TREE_CODE (renamed_obj) == INDIRECT_REF)
-		    && global_bindings_p ())
+		/* The expression needs to be marked manually because it will
+		   likely be shared, even for a definition since the ADDR_EXPR
+		   built below can cause the first few nodes to be folded.  */
+		if (global_bindings_p ())
 		  MARK_VISITED (renamed_obj);
 
 		if (type_annotate_only
@@ -3848,8 +3853,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* The type actually used to represent the designated type, either
 	   gnat_desig_full or gnat_desig_equiv.  */
 	Entity_Id gnat_desig_rep;
-	/* True if this is a pointer to an unconstrained array.  */
-	bool is_unconstrained_array;
 	/* We want to know if we'll be seeing the freeze node for any
 	   incomplete type we may be pointing to.  */
 	bool in_main_unit
@@ -3883,62 +3886,26 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    && Ekind (Etype (gnat_desig_full)) == E_Record_Type)))
 	  gnat_desig_full = Etype (gnat_desig_full);
 
-	/* Set the type that's actually the representation of the designated
-	   type and also flag whether we have a unconstrained array.  */
+	/* Set the type that's the representation of the designated type.  */
 	gnat_desig_rep
 	  = Present (gnat_desig_full) ? gnat_desig_full : gnat_desig_equiv;
-	is_unconstrained_array
-	  = Is_Array_Type (gnat_desig_rep) && !Is_Constrained (gnat_desig_rep);
-
-	/* If we are pointing to an incomplete type whose completion is an
-	   unconstrained array, make dummy fat and thin pointer types to it.
-	   Likewise if the type itself is dummy or an unconstrained array.  */
-	if (is_unconstrained_array
-	    && (Present (gnat_desig_full)
-		|| (present_gnu_tree (gnat_desig_equiv)
-		    && TYPE_IS_DUMMY_P
-		       (TREE_TYPE (get_gnu_tree (gnat_desig_equiv))))
-		|| (!in_main_unit
-		    && defer_incomplete_level != 0
-		    && !present_gnu_tree (gnat_desig_equiv))
-		|| (in_main_unit
-		    && is_from_limited_with
-		    && Present (Freeze_Node (gnat_desig_equiv)))))
-	  {
-	    if (present_gnu_tree (gnat_desig_rep))
-	      gnu_desig_type = TREE_TYPE (get_gnu_tree (gnat_desig_rep));
-	    else
-	      {
-		gnu_desig_type = make_dummy_type (gnat_desig_rep);
-		made_dummy = true;
-	      }
-
-	    /* If the call above got something that has a pointer, the pointer
-	       is our type.  This could have happened either because the type
-	       was elaborated or because somebody else executed the code.  */
-	    if (!TYPE_POINTER_TO (gnu_desig_type))
-	      build_dummy_unc_pointer_types (gnat_desig_equiv, gnu_desig_type);
-	    gnu_type = TYPE_POINTER_TO (gnu_desig_type);
-	  }
 
 	/* If we already know what the full type is, use it.  */
-	else if (Present (gnat_desig_full)
-		 && present_gnu_tree (gnat_desig_full))
+	if (Present (gnat_desig_full) && present_gnu_tree (gnat_desig_full))
 	  gnu_desig_type = TREE_TYPE (get_gnu_tree (gnat_desig_full));
 
 	/* Get the type of the thing we are to point to and build a pointer to
 	   it.  If it is a reference to an incomplete or private type with a
-	   full view that is a record, make a dummy type node and get the
-	   actual type later when we have verified it is safe.  */
+	   full view that is a record or an array, make a dummy type node and
+	   get the actual type later when we have verified it is safe.  */
 	else if ((!in_main_unit
 		  && !present_gnu_tree (gnat_desig_equiv)
 		  && Present (gnat_desig_full)
-		  && !present_gnu_tree (gnat_desig_full)
-		  && Is_Record_Type (gnat_desig_full))
+		  && (Is_Record_Type (gnat_desig_full)
+		      || Is_Array_Type (gnat_desig_full)))
 		 /* Likewise if we are pointing to a record or array and we are
 		    to defer elaborating incomplete types.  We do this as this
-		    access type may be the full view of a private type.  Note
-		    that the unconstrained array case is handled above.  */
+		    access type may be the full view of a private type.  */
 		 || ((!in_main_unit || imported_p)
 		     && defer_incomplete_level != 0
 		     && !present_gnu_tree (gnat_desig_equiv)
@@ -3951,11 +3918,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    in which case we make the dummy type and it will be reused
 		    when the declaration is finally processed.  In both cases,
 		    the pointer eventually created below will be automatically
-		    adjusted when the freeze node is processed.  Note that the
-		    unconstrained array case is handled above.  */
-		 ||  (in_main_unit
-		      && is_from_limited_with
-		      && Present (Freeze_Node (gnat_desig_rep))))
+		    adjusted when the freeze node is processed.  */
+		 || (in_main_unit
+		     && is_from_limited_with
+		     && Present (Freeze_Node (gnat_desig_rep))))
 	  {
 	    gnu_desig_type = make_dummy_type (gnat_desig_equiv);
 	    made_dummy = true;
@@ -3988,8 +3954,19 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    break;
 	  }
 
+	/* For an unconstrained array, make dummy fat & thin pointer types.  */
+	if (Is_Array_Type (gnat_desig_rep) && !Is_Constrained (gnat_desig_rep))
+	  {
+	    /* If the processing above got something that has a pointer, then
+	       we are done.  This could have happened either because the type
+	       was elaborated or because somebody else executed the code.  */
+	    if (!TYPE_POINTER_TO (gnu_desig_type))
+	      build_dummy_unc_pointer_types (gnat_desig_equiv, gnu_desig_type);
+	    gnu_type = TYPE_POINTER_TO (gnu_desig_type);
+	  }
+
 	/* If we haven't done it yet, build the pointer type the usual way.  */
-	if (!gnu_type)
+	else if (!gnu_type)
 	  {
 	    /* Modify the designated type if we are pointing only to constant
 	       objects, but don't do it for unconstrained arrays.  */
@@ -4919,7 +4896,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  gnu_field_list = gnu_field;
 		}
 
-	      TYPE_FIELDS (gnu_type) = nreverse (gnu_field_list);
+	      finish_record_type (gnu_type, nreverse (gnu_field_list), 0,
+				  false);
 	    }
 	  else
 	    gnu_type = void_type_node;
@@ -7627,6 +7605,25 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
      order to do a correct layout, i.e. avoid having overlapping fields.  */
   if (p_gnu_rep_list && gnu_rep_list)
     *p_gnu_rep_list = chainon (*p_gnu_rep_list, gnu_rep_list);
+
+  /* Deal with the annoying case of an extension of a record with variable size
+     and partial rep clause, for which the _Parent field is forced at offset 0
+     and has variable size, which we do not support below.  Note that we cannot
+     do it if the field has fixed size because we rely on the presence of the
+     REP part built below to trigger the reordering of the fields in a derived
+     record type when all the fields have a fixed position.  */
+  else if (gnu_rep_list
+	   && !DECL_CHAIN (gnu_rep_list)
+	   && TREE_CODE (DECL_SIZE (gnu_rep_list)) != INTEGER_CST
+	   && !variants_have_rep
+	   && first_free_pos
+	   && integer_zerop (first_free_pos)
+	   && integer_zerop (bit_position (gnu_rep_list)))
+    {
+      DECL_CHAIN (gnu_rep_list) = gnu_field_list;
+      gnu_field_list = gnu_rep_list;
+      gnu_rep_list = NULL_TREE;
+    }
 
   /* Otherwise, sort the fields by bit position and put them into their own
      record, before the others, if we also have fields without rep clause.  */

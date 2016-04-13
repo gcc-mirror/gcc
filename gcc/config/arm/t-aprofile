@@ -86,6 +86,7 @@ MULTILIB_MATCHES       += march?armv7ve=mcpu?cortex-a12
 MULTILIB_MATCHES       += march?armv7ve=mcpu?cortex-a17
 MULTILIB_MATCHES       += march?armv7ve=mcpu?cortex-a15.cortex-a7
 MULTILIB_MATCHES       += march?armv7ve=mcpu?cortex-a17.cortex-a7
+MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a32
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a35
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a53
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a57

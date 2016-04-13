@@ -273,8 +273,10 @@ trivially_empty_bb_p (basic_block bb)
 static inline bool
 same_close_phi_node (gphi *p1, gphi *p2)
 {
-  return operand_equal_p (gimple_phi_arg_def (p1, 0),
-			  gimple_phi_arg_def (p2, 0), 0);
+  return (types_compatible_p (TREE_TYPE (gimple_phi_result (p1)),
+			      TREE_TYPE (gimple_phi_result (p2)))
+	  && operand_equal_p (gimple_phi_arg_def (p1, 0),
+			      gimple_phi_arg_def (p2, 0), 0));
 }
 
 static void make_close_phi_nodes_unique (basic_block bb);
@@ -834,7 +836,9 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
     {
       /* Find the first empty succ (with single exit) of combined.exit.  */
       basic_block imm_succ = combined.exit->dest;
-      if (single_succ_p (imm_succ) && trivially_empty_bb_p (imm_succ))
+      if (single_succ_p (imm_succ)
+	  && single_pred_p (imm_succ)
+	  && trivially_empty_bb_p (imm_succ))
 	combined.exit = single_succ_edge (imm_succ);
       else
 	{

@@ -73,7 +73,7 @@ Target Report Var(aarch64_fix_a53_err835769) Init(2) Save
 Workaround for ARM Cortex-A53 Erratum number 835769.
 
 mfix-cortex-a53-843419
-Target Report
+Target Report Var(aarch64_fix_a53_err843419) Init(2) Save
 Workaround for ARM Cortex-A53 Erratum number 843419.
 
 mlittle-endian
@@ -151,5 +151,5 @@ PC relative literal loads.
 
 mlow-precision-recip-sqrt
 Common Var(flag_mrecip_low_precision_sqrt) Optimization
-When calculating a sqrt approximation, run fewer steps.
-This reduces precision, but can result in faster computation.
+When calculating the reciprocal square root approximation,
+uses one less step than otherwise, thus reducing latency and precision.

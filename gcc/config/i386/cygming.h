@@ -39,6 +39,11 @@ along with GCC; see the file COPYING3.  If not see
 #undef MAX_STACK_ALIGNMENT
 #define MAX_STACK_ALIGNMENT  (TARGET_SEH ? 128 : MAX_OFILE_ALIGNMENT)
 
+/* 32-bit Windows aligns the stack on a 4-byte boundary but SSE instructions
+   may require 16-byte alignment.  */
+#undef STACK_REALIGN_DEFAULT
+#define STACK_REALIGN_DEFAULT TARGET_SSE
+
 /* Support hooks for SEH.  */
 #undef  TARGET_ASM_UNWIND_EMIT
 #define TARGET_ASM_UNWIND_EMIT  i386_pe_seh_unwind_emit

@@ -1568,7 +1568,9 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
           alias_set_type set2 = get_alias_set (TREE_TYPE (type));
 
           if (set1 != set2 && set2 != 0
-	      && (set1 == 0 || !alias_sets_conflict_p (set1, set2)))
+	      && (set1 == 0
+		  || (!alias_set_subset_of (set2, set1)
+		      && !alias_sets_conflict_p (set1, set2))))
 	    {
 	      warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
 		       "pointer will break strict-aliasing rules");
@@ -9818,6 +9820,33 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
+    case BUILT_IN_ALLOCA_WITH_ALIGN:
+      {
+	/* Get the requested alignment (in bits) if it's a constant
+	   integer expression.  */
+	unsigned HOST_WIDE_INT align
+	  = tree_fits_uhwi_p (args[1]) ? tree_to_uhwi (args[1]) : 0;
+
+	/* Determine if the requested alignment is a power of 2.  */
+	if ((align & (align - 1)))
+	  align = 0;
+
+	/* The maximum alignment in bits corresponding to the same
+	   maximum in bytes enforced in check_user_alignment().  */
+	unsigned maxalign = (UINT_MAX >> 1) + 1;
+  
+	/* Reject invalid alignments.  */
+	if (align < BITS_PER_UNIT || maxalign < align)
+	  {
+	    error_at (EXPR_LOC_OR_LOC (args[1], input_location),
+		      "second argument to function %qE must be a constant "
+		      "integer power of 2 between %qi and %qu bits",
+		      fndecl, BITS_PER_UNIT, maxalign);
+	    return false;
+	  }
+      return true;
+      }
+
     case BUILT_IN_CONSTANT_P:
       return builtin_function_validate_nargs (fndecl, nargs, 1);
 
@@ -11416,6 +11445,10 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	    && orig_code != BUILT_IN_ATOMIC_STORE_N)
 	  result = sync_resolve_return (first_param, result, orig_format);
 
+	if (fetch_op)
+	  /* Prevent -Wunused-value warning.  */
+	  TREE_USED (result) = true;
+
 	/* If new_return is set, assign function to that expr and cast the
 	   result to void since the generic interface returned void.  */
 	if (new_return)
@@ -12611,7 +12644,7 @@ reject_gcc_builtin (const_tree expr, location_t loc /* = UNKNOWN_LOCATION */)
 
   if (TREE_TYPE (expr)
       && TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE
-      && DECL_P (expr)
+      && TREE_CODE (expr) == FUNCTION_DECL
       /* The intersection of DECL_BUILT_IN and DECL_IS_BUILTIN avoids
 	 false positives for user-declared built-ins such as abs or
 	 strlen, and for C++ operators new and delete.

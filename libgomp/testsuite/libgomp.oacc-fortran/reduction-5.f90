@@ -1,12 +1,17 @@
 ! { dg-do run }
+! { dg-additional-options "-w" }
 
 ! subroutine reduction
 
 program reduction
   integer, parameter    :: n = 40, c = 10
-  integer               :: i, vsum, sum
+  integer               :: i, vsum, gs, ws, vs, cs, ns
 
-  call redsub (sum, n, c)
+  call redsub_gang (gs, n, c)
+  call redsub_worker (ws, n, c)
+  call redsub_vector (vs, n, c)
+  call redsub_combined (cs, n, c)
+  call redsub_nested (ns, n, c)
 
   vsum = 0
 
@@ -15,21 +20,80 @@ program reduction
      vsum = vsum + c
   end do
 
-  if (sum.ne.vsum) call abort ()
+  if (gs .ne. vsum) call abort ()
+  if (ws .ne. vsum) call abort ()
+  if (vs .ne. vsum) call abort ()
+  if (cs .ne. vsum) call abort ()
+  if (ns .ne. vsum) call abort ()
 end program reduction
 
-subroutine redsub(sum, n, c)
+subroutine redsub_gang(sum, n, c)
   integer :: sum, n, c
 
-  integer :: s
-  s = 0
+  sum = 0
 
-  !$acc parallel vector_length(32) copyin (n, c) copy (s) num_gangs(1)
-  !$acc loop reduction(+:s)
+  !$acc parallel copyin (n, c) num_gangs(n) copy(sum)
+  !$acc loop reduction(+:sum) gang
   do i = 1, n
-     s = s + c
+     sum = sum + c
   end do
   !$acc end parallel
+end subroutine redsub_gang
 
-  sum = s
-end subroutine redsub
+subroutine redsub_worker(sum, n, c)
+  integer :: sum, n, c
+
+  sum = 0
+
+  !$acc parallel copyin (n, c) num_workers(4) vector_length (32) copy(sum)
+  !$acc loop reduction(+:sum) worker
+  do i = 1, n
+     sum = sum + c
+  end do
+  !$acc end parallel
+end subroutine redsub_worker
+
+subroutine redsub_vector(sum, n, c)
+  integer :: sum, n, c
+
+  sum = 0
+
+  !$acc parallel copyin (n, c) vector_length(32) copy(sum)
+  !$acc loop reduction(+:sum) vector
+  do i = 1, n
+     sum = sum + c
+  end do
+  !$acc end parallel
+end subroutine redsub_vector
+
+subroutine redsub_combined(sum, n, c)
+  integer :: sum, n, c
+
+  sum = 0
+
+  !$acc parallel num_gangs (8) num_workers (4) vector_length(32) copy(sum)
+  !$acc loop reduction(+:sum) gang worker vector
+  do i = 1, n
+     sum = sum + c
+  end do
+  !$acc end parallel
+end subroutine redsub_combined
+
+subroutine redsub_nested(sum, n, c)
+  integer :: sum, n, c
+  integer :: ii, jj
+
+  ii = n / 10;
+  jj = 10;
+  sum = 0
+
+  !$acc parallel num_gangs (8) copy(sum)
+  !$acc loop reduction(+:sum) gang
+  do i = 1, ii
+     !$acc loop reduction(+:sum) vector
+     do j = 1, jj
+        sum = sum + c
+     end do
+  end do
+  !$acc end parallel
+end subroutine redsub_nested

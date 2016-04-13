@@ -1,17 +1,10 @@
 ! Exercise combined OpenACC directives.
 
-! { dg-do compile }
-! { dg-options "-fopenacc -fdump-tree-gimple" }
-
-! This error is temporary.  Remove when support is added for these clauses
-! in the middle end.
-! { dg-prune-output "sorry, unimplemented" }
-
-! Update the reduction tests.
+! { dg-additional-options "-fdump-tree-gimple" }
 
 subroutine test
   implicit none
-  integer a(100), i, j, z
+  integer a(100), i, j, y, z
 
   ! PARALLEL
   
@@ -73,10 +66,10 @@ subroutine test
   end do
   !$acc end parallel loop
 
-!  !$acc parallel loop reduction (+:z) copy (z)
-!  do i = 1, 100
-!  end do
-!  !$acc end parallel loop
+  !$acc parallel loop reduction (+:y) copy (y)
+  do i = 1, 100
+  end do
+  !$acc end parallel loop
 
   ! KERNELS
 
@@ -138,10 +131,10 @@ subroutine test
   end do
   !$acc end kernels loop
 
-!  !$acc kernels loop reduction (+:z) copy (z)
-!  do i = 1, 100
-!  end do
-!  !$acc end kernels loop
+  !$acc kernels loop reduction (+:y) copy (y)
+  do i = 1, 100
+  end do
+  !$acc end kernels loop
 end subroutine test
 
 ! { dg-final { scan-tree-dump-times "acc loop private.i. private.j. collapse.2." 2 "gimple" } }
@@ -153,3 +146,5 @@ end subroutine test
 ! { dg-final { scan-tree-dump-times "acc loop private.i. private.j. tile.2, 3" 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times "acc loop private.i. independent" 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times "private.z" 2 "gimple" } }
+! { dg-final { scan-tree-dump-times "omp target oacc_\[^ \]+ map.force_tofrom:y" 2 "gimple" } }
+! { dg-final { scan-tree-dump-times "acc loop private.i. reduction..:y." 2 "gimple" } }

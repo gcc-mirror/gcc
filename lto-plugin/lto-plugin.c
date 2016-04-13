@@ -129,6 +129,14 @@ struct plugin_file_info
   struct plugin_symtab conflicts;
 };
 
+/* List item with name of the file with offloading.  */
+
+struct plugin_offload_file
+{
+  char *name;
+  struct plugin_offload_file *next;
+};
+
 /* Until ASM_OUTPUT_LABELREF can be hookized and decoupled from
    stdio file streams, we do simple label translation here.  */
 
@@ -152,8 +160,16 @@ static ld_plugin_add_symbols add_symbols;
 static struct plugin_file_info *claimed_files = NULL;
 static unsigned int num_claimed_files = 0;
 
-static struct plugin_file_info *offload_files = NULL;
-static unsigned int num_offload_files = 0;
+/* List of files with offloading.  */
+static struct plugin_offload_file *offload_files;
+/* Last file in the list.  */
+static struct plugin_offload_file *offload_files_last;
+/* Last non-archive file in the list.  */
+static struct plugin_offload_file *offload_files_last_obj;
+/* Last LTO file in the list.  */
+static struct plugin_offload_file *offload_files_last_lto;
+/* Total number of files with offloading.  */
+static unsigned num_offload_files;
 
 static char **output_files = NULL;
 static unsigned int num_output_files = 0;
@@ -351,14 +367,6 @@ free_2 (void)
       free (info->name);
     }
 
-  for (i = 0; i < num_offload_files; i++)
-    {
-      struct plugin_file_info *info = &offload_files[i];
-      struct plugin_symtab *symtab = &info->symtab;
-      free (symtab->aux);
-      free (info->name);
-    }
-
   for (i = 0; i < num_output_files; i++)
     free (output_files[i]);
   free (output_files);
@@ -367,8 +375,12 @@ free_2 (void)
   claimed_files = NULL;
   num_claimed_files = 0;
 
-  free (offload_files);
-  offload_files = NULL;
+  while (offload_files)
+    {
+      struct plugin_offload_file *ofld = offload_files;
+      offload_files = offload_files->next;
+      free (ofld);
+    }
   num_offload_files = 0;
 
   free (arguments_file_name);
@@ -625,8 +637,7 @@ static enum ld_plugin_status
 all_symbols_read_handler (void)
 {
   unsigned i;
-  unsigned num_lto_args
-    = num_claimed_files + num_offload_files + lto_wrapper_num_args + 2;
+  unsigned num_lto_args = num_claimed_files + lto_wrapper_num_args + 3;
   char **lto_argv;
   const char *linker_output_str = NULL;
   const char **lto_arg_ptr;
@@ -646,7 +657,6 @@ all_symbols_read_handler (void)
   write_resolution ();
 
   free_1 (claimed_files, num_claimed_files);
-  free_1 (offload_files, num_offload_files);
 
   for (i = 0; i < lto_wrapper_num_args; i++)
     *lto_arg_ptr++ = lto_wrapper_argv[i];
@@ -671,16 +681,38 @@ all_symbols_read_handler (void)
       break;
     }
   *lto_arg_ptr++ = xstrdup (linker_output_str);
+
+  if (num_offload_files > 0)
+    {
+      FILE *f;
+      char *arg;
+      char *offload_objects_file_name;
+      struct plugin_offload_file *ofld;
+
+      offload_objects_file_name = make_temp_file (".ofldlist");
+      check (offload_objects_file_name, LDPL_FATAL,
+	     "Failed to generate a temporary file name");
+      f = fopen (offload_objects_file_name, "w");
+      check (f, LDPL_FATAL, "could not open file with offload objects");
+      fprintf (f, "%u\n", num_offload_files);
+
+      /* Skip the dummy item at the start of the list.  */
+      ofld = offload_files->next;
+      while (ofld)
+	{
+	  fprintf (f, "%s\n", ofld->name);
+	  ofld = ofld->next;
+	}
+      fclose (f);
+
+      arg = concat ("-foffload-objects=", offload_objects_file_name, NULL);
+      check (arg, LDPL_FATAL, "could not allocate");
+      *lto_arg_ptr++ = arg;
+    }
+
   for (i = 0; i < num_claimed_files; i++)
     {
       struct plugin_file_info *info = &claimed_files[i];
-
-      *lto_arg_ptr++ = info->name;
-    }
-
-  for (i = 0; i < num_offload_files; i++)
-    {
-      struct plugin_file_info *info = &offload_files[i];
 
       *lto_arg_ptr++ = info->name;
     }
@@ -1007,18 +1039,72 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
 	xrealloc (claimed_files,
 		  num_claimed_files * sizeof (struct plugin_file_info));
       claimed_files[num_claimed_files - 1] = lto_file;
+
+      *claimed = 1;
     }
 
-  if (obj.found == 0 && obj.offload == 1)
+  if (offload_files == NULL)
     {
-      num_offload_files++;
-      offload_files =
-	xrealloc (offload_files,
-		  num_offload_files * sizeof (struct plugin_file_info));
-      offload_files[num_offload_files - 1] = lto_file;
+      /* Add dummy item to the start of the list.  */
+      offload_files = xmalloc (sizeof (struct plugin_offload_file));
+      offload_files->name = NULL;
+      offload_files->next = NULL;
+      offload_files_last = offload_files;
     }
 
-  *claimed = 1;
+  /* If this is an LTO file without offload, and it is the first LTO file, save
+     the pointer to the last offload file in the list.  Further offload LTO
+     files will be inserted after it, if any.  */
+  if (*claimed && obj.offload == 0 && offload_files_last_lto == NULL)
+    offload_files_last_lto = offload_files_last;
+
+  if (obj.offload == 1)
+    {
+      /* Add file to the list.  The order must be exactly the same as the final
+	 order after recompilation and linking, otherwise host and target tables
+	 with addresses wouldn't match.  If a static library contains both LTO
+	 and non-LTO objects, ld and gold link them in a different order.  */
+      struct plugin_offload_file *ofld
+	= xmalloc (sizeof (struct plugin_offload_file));
+      ofld->name = lto_file.name;
+      ofld->next = NULL;
+
+      if (*claimed && offload_files_last_lto == NULL && file->offset != 0
+	  && gold_version == -1)
+	{
+	  /* ld only: insert first LTO file from the archive after the last real
+	     object file immediately preceding the archive, or at the begin of
+	     the list if there was no real objects before archives.  */
+	  if (offload_files_last_obj != NULL)
+	    {
+	      ofld->next = offload_files_last_obj->next;
+	      offload_files_last_obj->next = ofld;
+	    }
+	  else
+	    {
+	      ofld->next = offload_files->next;
+	      offload_files->next = ofld;
+	    }
+	}
+      else if (*claimed && offload_files_last_lto != NULL)
+	{
+	  /* Insert LTO file after the last LTO file in the list.  */
+	  ofld->next = offload_files_last_lto->next;
+	  offload_files_last_lto->next = ofld;
+	}
+      else
+	/* Add non-LTO file or first non-archive LTO file to the end of the
+	   list.  */
+	offload_files_last->next = ofld;
+
+      if (ofld->next == NULL)
+	offload_files_last = ofld;
+      if (file->offset == 0)
+	offload_files_last_obj = ofld;
+      if (*claimed)
+	offload_files_last_lto = ofld;
+      num_offload_files++;
+    }
 
   goto cleanup;
 

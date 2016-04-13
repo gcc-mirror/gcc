@@ -54,8 +54,6 @@ static const line_map_macro* linemap_macro_map_lookup (struct line_maps *,
 						       source_location);
 static source_location linemap_macro_map_loc_to_def_point
 (const line_map_macro *, source_location);
-static source_location linemap_macro_map_loc_unwind_toward_spelling
-(line_maps *set, const line_map_macro *, source_location);
 static source_location linemap_macro_map_loc_to_exp_point
 (const line_map_macro *, source_location);
 static source_location linemap_macro_loc_to_spelling_point
@@ -378,7 +376,7 @@ new_linemap (struct line_maps *set,
   if (LINEMAPS_USED (set, macro_map_p) == LINEMAPS_ALLOCATED (set, macro_map_p))
     {
       /* We ran out of allocated line maps. Let's allocate more.  */
-      unsigned alloc_size;
+      size_t alloc_size;
 
       /* Cast away extern "C" from the type of xrealloc.  */
       line_map_realloc reallocator = (set->reallocator
@@ -514,43 +512,23 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
 	 "included", this variable points the map in use right before the
 	 #include "included", inside the same "includer" file.  */
       line_map_ordinary *from;
-      bool error;
 
-      if (MAIN_FILE_P (map - 1))
-	{
-	  /* So this _should_ mean we are leaving the main file --
-	     effectively ending the compilation unit. But to_file not
-	     being NULL means the caller thinks we are leaving to
-	     another file. This is an erroneous behaviour but we'll
-	     try to recover from it. Let's pretend we are not leaving
-	     the main file.  */
-	  error = true;
-          reason = LC_RENAME;
-          from = map - 1;
-	}
-      else
-	{
-	  /* (MAP - 1) points to the map we are leaving. The
-	     map from which (MAP - 1) got included should be the map
-	     that comes right before MAP in the same file.  */
-	  from = INCLUDED_FROM (set, map - 1);
-	  error = to_file && filename_cmp (ORDINARY_MAP_FILE_NAME (from),
-					   to_file);
-	}
-
-      /* Depending upon whether we are handling preprocessed input or
-	 not, this can be a user error or an ICE.  */
-      if (error)
-	fprintf (stderr, "line-map.c: file \"%s\" left but not entered\n",
-		 to_file);
+      linemap_assert (!MAIN_FILE_P (map - 1));
+      /* (MAP - 1) points to the map we are leaving. The
+	 map from which (MAP - 1) got included should be the map
+	 that comes right before MAP in the same file.  */
+      from = INCLUDED_FROM (set, map - 1);
 
       /* A TO_FILE of NULL is special - we use the natural values.  */
-      if (error || to_file == NULL)
+      if (to_file == NULL)
 	{
 	  to_file = ORDINARY_MAP_FILE_NAME (from);
 	  to_line = SOURCE_LINE (from, from[1].start_location);
 	  sysp = ORDINARY_MAP_IN_SYSTEM_HEADER_P (from);
 	}
+      else
+	linemap_assert (filename_cmp (ORDINARY_MAP_FILE_NAME (from),
+				      to_file) == 0);
     }
 
   map->sysp = sysp;
@@ -864,13 +842,13 @@ linemap_position_for_line_and_column (line_maps *set,
 }
 
 /* Encode and return a source_location starting from location LOC and
-   shifting it by OFFSET columns.  This function does not support
+   shifting it by COLUMN_OFFSET columns.  This function does not support
    virtual locations.  */
 
 source_location
 linemap_position_for_loc_and_offset (struct line_maps *set,
 				     source_location loc,
-				     unsigned int offset)
+				     unsigned int column_offset)
 {
   const line_map_ordinary * map = NULL;
 
@@ -882,7 +860,7 @@ linemap_position_for_loc_and_offset (struct line_maps *set,
       (!linemap_location_from_macro_expansion_p (set, loc)))
     return loc;
 
-  if (offset == 0
+  if (column_offset == 0
       /* Adding an offset to a reserved location (like
 	 UNKNOWN_LOCATION for the C/C++ FEs) does not really make
 	 sense.  So let's leave the location intact in that case.  */
@@ -894,7 +872,7 @@ linemap_position_for_loc_and_offset (struct line_maps *set,
   /* The new location (loc + offset) should be higher than the first
      location encoded by MAP.  This can fail if the line information
      is messed up because of line directives (see PR66415).  */
-  if (MAP_START_LOCATION (map) >= loc + offset)
+  if (MAP_START_LOCATION (map) >= loc + (column_offset << map->m_range_bits))
     return loc;
 
   linenum_type line = SOURCE_LINE (map, loc);
@@ -905,7 +883,8 @@ linemap_position_for_loc_and_offset (struct line_maps *set,
      the next line map of the set.  Otherwise, we try to encode the
      location in the next map.  */
   while (map != LINEMAPS_LAST_ORDINARY_MAP (set)
-	 && loc + offset >= MAP_START_LOCATION (&map[1]))
+	 && (loc + (column_offset << map->m_range_bits)
+	     >= MAP_START_LOCATION (&map[1])))
     {
       map = &map[1];
       /* If the next map starts in a higher line, we cannot encode the
@@ -914,12 +893,12 @@ linemap_position_for_loc_and_offset (struct line_maps *set,
 	return loc;
     }
 
-  offset += column;
-  if (linemap_assert_fails (offset < (1u << map->m_column_and_range_bits)))
+  column += column_offset;
+  if (linemap_assert_fails (column < (1u << map->m_column_and_range_bits)))
     return loc;
 
   source_location r = 
-    linemap_position_for_line_and_column (set, map, line, offset);
+    linemap_position_for_line_and_column (set, map, line, column);
   if (linemap_assert_fails (r <= set->highest_location)
       || linemap_assert_fails (map == linemap_lookup (set, r)))
     return loc;
@@ -1328,9 +1307,9 @@ linemap_compare_locations (struct line_maps *set,
   source_location l0 = pre, l1 = post;
 
   if (IS_ADHOC_LOC (l0))
-    l0 = set->location_adhoc_data_map.data[l0 & MAX_SOURCE_LOCATION].locus;
+    l0 = get_location_from_adhoc_loc (set, l0);
   if (IS_ADHOC_LOC (l1))
-    l1 = set->location_adhoc_data_map.data[l1 & MAX_SOURCE_LOCATION].locus;
+    l1 = get_location_from_adhoc_loc (set, l1);
 
   if (l0 == l1)
     return 0;
@@ -1364,6 +1343,11 @@ linemap_compare_locations (struct line_maps *set,
       i1 = l1 - MAP_START_LOCATION (map);
       return i1 - i0;
     }
+
+  if (IS_ADHOC_LOC (l0))
+    l0 = get_location_from_adhoc_loc (set, l0);
+  if (IS_ADHOC_LOC (l1))
+    l1 = get_location_from_adhoc_loc (set, l1);
 
   return l1 - l0;
 }
@@ -1987,29 +1971,13 @@ source_range::intersects_line_p (const char *file, int line) const
 
 /* Construct a rich_location with location LOC as its initial range.  */
 
-rich_location::rich_location (line_maps *set, source_location loc) :
-  m_loc (loc),
+rich_location::rich_location (line_maps */*set*/, source_location loc) :
   m_num_ranges (0),
+  m_column_override (0),
   m_have_expanded_location (false),
   m_num_fixit_hints (0)
 {
-  /* Set up the 0th range, extracting any range from LOC.  */
-  source_range src_range = get_range_from_loc (set, loc);
-  add_range (src_range, true);
-  m_ranges[0].m_caret = lazily_expand_location ();
-}
-
-/* Construct a rich_location with source_range SRC_RANGE as its
-   initial range.  */
-
-rich_location::rich_location (source_range src_range)
-: m_loc (src_range.m_start),
-  m_num_ranges (0),
-  m_have_expanded_location (false),
-  m_num_fixit_hints (0)
-{
-  /* Set up the 0th range: */
-  add_range (src_range, true);
+  add_range (loc, true);
 }
 
 /* The destructor for class rich_location.  */
@@ -2020,71 +1988,60 @@ rich_location::~rich_location ()
     delete m_fixit_hints[i];
 }
 
+/* Get location IDX within this rich_location.  */
+
+source_location
+rich_location::get_loc (unsigned int idx) const
+{
+  linemap_assert (idx < m_num_ranges);
+  return m_ranges[idx].m_loc;
+}
+
+/* Expand location IDX within this rich_location.  */
 /* Get an expanded_location for this rich_location's primary
    location.  */
 
 expanded_location
-rich_location::lazily_expand_location ()
+rich_location::get_expanded_location (unsigned int idx)
 {
-  if (!m_have_expanded_location)
-    {
-      m_expanded_location
-	= linemap_client_expand_location_to_spelling_point (m_loc);
-      m_have_expanded_location = true;
-    }
+  if (idx == 0)
+   {
+     /* Cache the expansion of the primary location.  */
+     if (!m_have_expanded_location)
+       {
+	  m_expanded_location
+	    = linemap_client_expand_location_to_spelling_point (get_loc (0));
+	  if (m_column_override)
+	    m_expanded_location.column = m_column_override;
+	  m_have_expanded_location = true;
+       }
 
-  return m_expanded_location;
+     return m_expanded_location;
+   }
+  else
+    return linemap_client_expand_location_to_spelling_point (get_loc (idx));
 }
 
-/* Set the column of the primary location.  This can only be called for
-   rich_location instances for which the primary location has
-   caret==start==finish.  */
+/* Set the column of the primary location, with 0 meaning
+   "don't override it".  */
 
 void
 rich_location::override_column (int column)
 {
-  lazily_expand_location ();
-  gcc_assert (m_ranges[0].m_show_caret_p);
-  gcc_assert (m_ranges[0].m_caret.column == m_expanded_location.column);
-  gcc_assert (m_ranges[0].m_start.column == m_expanded_location.column);
-  gcc_assert (m_ranges[0].m_finish.column == m_expanded_location.column);
-  m_expanded_location.column = column;
-  m_ranges[0].m_caret.column = column;
-  m_ranges[0].m_start.column = column;
-  m_ranges[0].m_finish.column = column;
+  m_column_override = column;
+  m_have_expanded_location = false;
 }
 
 /* Add the given range.  */
 
 void
-rich_location::add_range (source_location start, source_location finish,
-			  bool show_caret_p)
+rich_location::add_range (source_location loc, bool show_caret_p)
 {
   linemap_assert (m_num_ranges < MAX_RANGES);
 
   location_range *range = &m_ranges[m_num_ranges++];
-  range->m_start = linemap_client_expand_location_to_spelling_point (start);
-  range->m_finish = linemap_client_expand_location_to_spelling_point (finish);
-  range->m_caret = range->m_start;
+  range->m_loc = loc;
   range->m_show_caret_p = show_caret_p;
-}
-
-/* Add the given range.  */
-
-void
-rich_location::add_range (source_range src_range, bool show_caret_p)
-{
-  linemap_assert (m_num_ranges < MAX_RANGES);
-
-  add_range (src_range.m_start, src_range.m_finish, show_caret_p);
-}
-
-void
-rich_location::add_range (location_range *src_range)
-{
-  linemap_assert (m_num_ranges < MAX_RANGES);
-
-  m_ranges[m_num_ranges++] = *src_range;
 }
 
 /* Add or overwrite the location given by IDX, setting its location to LOC,
@@ -2101,7 +2058,7 @@ rich_location::add_range (location_range *src_range)
    - the "%C" and "%L" format codes in the Fortran frontend.  */
 
 void
-rich_location::set_range (line_maps *set, unsigned int idx,
+rich_location::set_range (line_maps * /*set*/, unsigned int idx,
 			  source_location loc, bool show_caret_p)
 {
   linemap_assert (idx < MAX_RANGES);
@@ -2110,28 +2067,17 @@ rich_location::set_range (line_maps *set, unsigned int idx,
      on the end of the array.  */
   linemap_assert (idx <= m_num_ranges);
 
-  source_range src_range = get_range_from_loc (set, loc);
-
   location_range *locrange = &m_ranges[idx];
-  locrange->m_start
-    = linemap_client_expand_location_to_spelling_point (src_range.m_start);
-  locrange->m_finish
-    = linemap_client_expand_location_to_spelling_point (src_range.m_finish);
-
+  locrange->m_loc = loc;
   locrange->m_show_caret_p = show_caret_p;
-  locrange->m_caret
-    = linemap_client_expand_location_to_spelling_point (loc);
 
   /* Are we adding a range onto the end?  */
   if (idx == m_num_ranges)
     m_num_ranges = idx + 1;
 
   if (idx == 0)
-    {
-      m_loc = loc;
-      /* Mark any cached value here as dirty.  */
-      m_have_expanded_location = false;
-    }
+    /* Mark any cached value here as dirty.  */
+    m_have_expanded_location = false;
 }
 
 /* Add a fixit-hint, suggesting insertion of NEW_CONTENT

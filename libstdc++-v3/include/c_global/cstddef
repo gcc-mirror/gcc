@@ -41,6 +41,11 @@
 
 #pragma GCC system_header
 
+#undef __need_wchar_t
+#undef __need_ptrdiff_t
+#undef __need_size_t
+#undef __need_NULL
+#undef __need_wint_t
 #include <bits/c++config.h>
 #include <stddef.h>
 

@@ -507,12 +507,13 @@ get_typeid (tree type, tsubst_flags_t complain)
 static tree
 ifnonnull (tree test, tree result, tsubst_flags_t complain)
 {
-  return build3 (COND_EXPR, TREE_TYPE (result),
-		 build2 (EQ_EXPR, boolean_type_node, test,
-			 cp_convert (TREE_TYPE (test), nullptr_node,
-				     complain)),
-		 cp_convert (TREE_TYPE (result), nullptr_node, complain),
-		 result);
+  tree cond = build2 (NE_EXPR, boolean_type_node, test,
+		      cp_convert (TREE_TYPE (test), nullptr_node, complain));
+  /* This is a compiler generated comparison, don't emit
+     e.g. -Wnonnull-compare warning for it.  */
+  TREE_NO_WARNING (cond) = 1;
+  return build3 (COND_EXPR, TREE_TYPE (result), cond, result,
+		 cp_convert (TREE_TYPE (result), nullptr_node, complain));
 }
 
 /* Execute a dynamic cast, as described in section 5.2.6 of the 9/93 working

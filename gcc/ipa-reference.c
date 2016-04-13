@@ -104,7 +104,7 @@ static splay_tree reference_vars_to_consider;
    static we are considering.  This is added to the local info when asm
    code is found that clobbers all memory.  */
 static bitmap all_module_statics;
-/* Set of all statics that should be ignored becuase they are touched by
+/* Set of all statics that should be ignored because they are touched by
    -fno-ipa-reference code.  */
 static bitmap ignore_module_statics;
 

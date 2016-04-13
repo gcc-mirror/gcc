@@ -68,6 +68,7 @@
    |mcpu=cortex-a15.cortex-a7				\
    |mcpu=cortex-a17.cortex-a7				\
    |mcpu=marvell-pj4					\
+   |mcpu=cortex-a32					\
    |mcpu=cortex-a35					\
    |mcpu=cortex-a53					\
    |mcpu=cortex-a57					\

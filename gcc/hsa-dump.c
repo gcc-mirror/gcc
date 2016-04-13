@@ -621,16 +621,6 @@ hsa_m_atomicop_name (enum BrigAtomicOperation op)
     }
 }
 
-/* Return byte alignment for given BrigAlignment8_t value.  */
-
-static unsigned
-hsa_byte_alignment (BrigAlignment8_t alignment)
-{
-  gcc_assert (alignment != BRIG_ALIGNMENT_NONE);
-
-  return 1 << (alignment - 1);
-}
-
 /* Dump textual representation of HSA IL register REG to file F.  */
 
 static void
@@ -657,8 +647,6 @@ dump_hsa_immed (FILE *f, hsa_op_immed *imm)
     print_generic_expr (f, imm->m_tree_value, 0);
   else
     {
-      gcc_checking_assert (imm->m_brig_repr_size <= 8);
-
       if (unsigned_int_type)
 	fprintf (f, HOST_WIDE_INT_PRINT_DEC, imm->m_int_value);
       else
@@ -716,11 +704,15 @@ dump_hsa_symbol (FILE *f, hsa_symbol *symbol)
       name = buf;
     }
 
-  fprintf (f, "%s_%s %s", hsa_seg_name (symbol->m_segment),
+  fprintf (f, "align(%u) %s_%s %s", hsa_byte_alignment (symbol->m_align),
+	   hsa_seg_name (symbol->m_segment),
 	   hsa_type_name (symbol->m_type & ~BRIG_TYPE_ARRAY_MASK), name);
 
   if (symbol->m_type & BRIG_TYPE_ARRAY_MASK)
     fprintf (f, "[%lu]", (unsigned long) symbol->m_dim);
+
+  if (symbol->m_directive_offset)
+    fprintf (f, "             /* BRIG offset: %u */", symbol->m_directive_offset);
 }
 
 /* Dump textual representation of HSA IL operand OP to file F.  */
@@ -928,8 +920,6 @@ dump_hsa_insn_1 (FILE *f, hsa_insn_basic *insn, int *indent)
 	  if (i != sbr->m_jump_table.length () - 1)
 	    fprintf (f, ", ");
 	}
-
-      fprintf (f, "]");
     }
   else if (is_a <hsa_insn_arg_block *> (insn))
     {

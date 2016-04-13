@@ -4,6 +4,7 @@
 
 #include <unwind.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -47,6 +48,14 @@ handler (void *p __attribute__((unused)))
   _exit (0);
 }
 
+static void
+__attribute__((noinline))
+check (intptr_t p)
+{
+  if ((p & 15) != 0)
+    abort ();
+}
+
 static int __attribute__((noinline))
 fn5 (void)
 {
@@ -59,6 +68,8 @@ void
 bar (void)
 {
   char dummy __attribute__((cleanup (counter)));
+  unsigned long tmp[4] __attribute__((aligned(16)));
+  check ((intptr_t) tmp);
   fn5 ();
 }
 
@@ -133,9 +144,9 @@ foo (int x)
 	".type	_L_mutex_lock_%=, @function\n"
 "_L_mutex_lock_%=:\n"
 "1:\t"	"leaq	%1, %%rdi\n"
-"2:\t"	"subq	$128, %%rsp\n"
+"2:\t"	"subq	$136, %%rsp\n"
 "3:\t"	"call	bar\n"
-"4:\t"	"addq	$128, %%rsp\n"
+"4:\t"	"addq	$136, %%rsp\n"
 "5:\t"	"jmp	24f\n"
 "6:\t"	".size _L_mutex_lock_%=, .-_L_mutex_lock_%=\n\t"
 	".previous\n\t"
@@ -179,7 +190,7 @@ foo (int x)
 	".sleb128 4b-3b\n"
 "16:\t"	".byte	0x40 + (4b-3b-1) # DW_CFA_advance_loc\n\t"
 	".byte	0x0e	# DW_CFA_def_cfa_offset\n\t"
-	".uleb128 128\n\t"
+	".uleb128 136\n\t"
 	".byte	0x16	# DW_CFA_val_expression\n\t"
 	".uleb128 0x10\n\t"
 	".uleb128 20f-17f\n"

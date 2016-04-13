@@ -87,7 +87,7 @@
 
 ;; Return true if OP is a valid operand as scalar shift count or setmem.
 
-(define_predicate "shift_count_or_setmem_operand"
+(define_predicate "setmem_operand"
   (match_code "reg, subreg, plus, const_int")
 {
   HOST_WIDE_INT offset;
@@ -98,7 +98,7 @@
     return false;
 
   /* Extract base register and offset.  */
-  if (!s390_decompose_shift_count (op, &base, &offset))
+  if (!s390_decompose_addrstyle_without_index (op, &base, &offset))
     return false;
 
   /* Don't allow any non-base hard registers.  Doing so without
@@ -115,6 +115,10 @@
   return true;
 })
 
+; An integer operand with the lowest order 6 bits all ones.
+(define_predicate "const_int_6bitset_operand"
+ (and (match_code "const_int")
+      (match_test "(INTVAL (op) & 63) == 63")))
 (define_predicate "nonzero_shift_count_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 1, GET_MODE_BITSIZE (mode) - 1)")))

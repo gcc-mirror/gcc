@@ -1692,7 +1692,8 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
 
       /* Skip reduction phis.  */
       stmt_info = vinfo_for_stmt (phi);
-      if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def)
+      if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
+	  || STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
         {
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

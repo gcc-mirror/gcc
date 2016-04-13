@@ -528,6 +528,26 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	*maybe_const_itself &= op2_const_self;
       goto out;
 
+    case VEC_COND_EXPR:
+      orig_op0 = op0 = TREE_OPERAND (expr, 0);
+      orig_op1 = op1 = TREE_OPERAND (expr, 1);
+      orig_op2 = op2 = TREE_OPERAND (expr, 2);
+      op0 = c_fully_fold_internal (op0, in_init, maybe_const_operands,
+				   maybe_const_itself, for_int_const);
+      STRIP_TYPE_NOPS (op0);
+      op1 = c_fully_fold_internal (op1, in_init, maybe_const_operands,
+				   maybe_const_itself, for_int_const);
+      STRIP_TYPE_NOPS (op1);
+      op2 = c_fully_fold_internal (op2, in_init, maybe_const_operands,
+				   maybe_const_itself, for_int_const);
+      STRIP_TYPE_NOPS (op2);
+
+      if (op0 != orig_op0 || op1 != orig_op1 || op2 != orig_op2)
+	ret = fold_build3_loc (loc, code, TREE_TYPE (expr), op0, op1, op2);
+      else
+	ret = fold (expr);
+      goto out;
+
     case EXCESS_PRECISION_EXPR:
       /* Each case where an operand with excess precision may be
 	 encountered must remove the EXCESS_PRECISION_EXPR around

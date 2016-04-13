@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++1z -fconcepts" }
 
 void f1(int a) requires true;         // OK
 auto f2(int a) -> bool requires true; // OK

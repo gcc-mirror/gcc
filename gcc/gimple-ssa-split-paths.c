@@ -294,6 +294,24 @@ split_paths ()
 	  basic_block pred0 = EDGE_PRED (bb, 0)->src;
 	  transform_duplicate (pred0, bb);
 	  changed = true;
+
+	  /* If BB has an outgoing edge marked as IRREDUCIBLE, then
+	     duplicating BB may result in an irreducible region turning
+	     into a natural loop.
+
+	     Long term we might want to hook this into the block
+	     duplication code, but as we've seen with similar changes
+	     for edge removal, that can be somewhat risky.  */
+	  if (EDGE_SUCC (bb, 0)->flags & EDGE_IRREDUCIBLE_LOOP
+	      || EDGE_SUCC (bb, 1)->flags & EDGE_IRREDUCIBLE_LOOP)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		  fprintf (dump_file,
+			   "Join block %d has EDGE_IRREDUCIBLE_LOOP set.  "
+			   "Scheduling loop fixups.\n",
+			   bb->index);
+	      loops_state_set (LOOPS_NEED_FIXUP);
+	    }
 	}
     }
 

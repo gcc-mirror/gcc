@@ -2209,7 +2209,12 @@ TRANSFER_FROM_TRAMPOLINE
 #if !defined (HAS_INIT_SECTION) || !defined (OBJECT_FORMAT_ELF)
 
 /* Some ELF crosses use crtstuff.c to provide __CTOR_LIST__, but use this
-   code to run constructors.  In that case, we need to handle EH here, too.  */
+   code to run constructors.  In that case, we need to handle EH here, too.
+   But MINGW32 is special because it handles CRTSTUFF and EH on its own.  */
+
+#ifdef __MINGW32__
+#undef __LIBGCC_EH_FRAME_SECTION_NAME__
+#endif
 
 #ifdef __LIBGCC_EH_FRAME_SECTION_NAME__
 #include "unwind-dw2-fde.h"

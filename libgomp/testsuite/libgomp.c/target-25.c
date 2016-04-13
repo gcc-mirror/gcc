@@ -23,7 +23,7 @@ main ()
       usleep (7000);
       z = 3;
     }
-    #pragma omp target map(tofrom: x) map(from: err) firstprivate (y) depend(inout: x, z)
+    #pragma omp target map(tofrom: x) map(from: err) map (to: y, z) depend(inout: x, z)
     err = (x != 1 || y != 2 || z != 3);
     if (err)
       abort ();

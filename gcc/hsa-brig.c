@@ -605,10 +605,7 @@ emit_directive_variable (struct hsa_symbol *symbol)
   dirvar.init = 0;
   dirvar.type = lendian16 (symbol->m_type);
   dirvar.segment = symbol->m_segment;
-  /* TODO: Once we are able to access global variables, we must copy their
-     alignment.  */
-  dirvar.align = MAX (hsa_natural_alignment (dirvar.type),
-		      (BrigAlignment8_t) BRIG_ALIGNMENT_4);
+  dirvar.align = symbol->m_align;
   dirvar.linkage = symbol->m_linkage;
   dirvar.dim.lo = symbol->m_dim;
   dirvar.dim.hi = symbol->m_dim >> 32;
@@ -643,6 +640,8 @@ emit_function_directives (hsa_function_representation *f, bool is_declaration)
   if (!f->m_declaration_p)
     for (int i = 0; f->m_global_symbols.iterate (i, &sym); i++)
       {
+	gcc_assert (!sym->m_emitted_to_brig);
+	sym->m_emitted_to_brig = true;
 	emit_directive_variable (sym);
 	brig_insn_count++;
       }
@@ -930,62 +929,101 @@ emit_immediate_scalar_to_buffer (tree value, char *data, unsigned need_len)
   return len;
 }
 
-void
-hsa_op_immed::emit_to_buffer (tree value)
+char *
+hsa_op_immed::emit_to_buffer (unsigned *brig_repr_size)
 {
-  unsigned total_len = m_brig_repr_size;
+  char *brig_repr;
+  *brig_repr_size = hsa_get_imm_brig_type_len (m_type);
 
-  /* As we can have a constructor with fewer elements, fill the memory
-     with zeros.  */
-  m_brig_repr = XCNEWVEC (char, total_len);
-  char *p = m_brig_repr;
-
-  if (TREE_CODE (value) == VECTOR_CST)
+  if (m_tree_value != NULL_TREE)
     {
-      int i, num = VECTOR_CST_NELTS (value);
-      for (i = 0; i < num; i++)
+      /* Update brig_repr_size for special tree values.  */
+      if (TREE_CODE (m_tree_value) == STRING_CST)
+	*brig_repr_size = TREE_STRING_LENGTH (m_tree_value);
+      else if (TREE_CODE (m_tree_value) == CONSTRUCTOR)
+	*brig_repr_size
+	  = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (m_tree_value)));
+
+      unsigned total_len = *brig_repr_size;
+
+      /* As we can have a constructor with fewer elements, fill the memory
+	 with zeros.  */
+      brig_repr = XCNEWVEC (char, total_len);
+      char *p = brig_repr;
+
+      if (TREE_CODE (m_tree_value) == VECTOR_CST)
 	{
+	  int i, num = VECTOR_CST_NELTS (m_tree_value);
+	  for (i = 0; i < num; i++)
+	    {
+	      tree v = VECTOR_CST_ELT (m_tree_value, i);
+	      unsigned actual = emit_immediate_scalar_to_buffer (v, p, 0);
+	      total_len -= actual;
+	      p += actual;
+	    }
+	  /* Vectors should have the exact size.  */
+	  gcc_assert (total_len == 0);
+	}
+      else if (TREE_CODE (m_tree_value) == STRING_CST)
+	memcpy (brig_repr, TREE_STRING_POINTER (m_tree_value),
+		TREE_STRING_LENGTH (m_tree_value));
+      else if (TREE_CODE (m_tree_value) == COMPLEX_CST)
+	{
+	  gcc_assert (total_len % 2 == 0);
 	  unsigned actual;
 	  actual
-	    = emit_immediate_scalar_to_buffer (VECTOR_CST_ELT (value, i), p, 0);
-	  total_len -= actual;
+	    = emit_immediate_scalar_to_buffer (TREE_REALPART (m_tree_value), p,
+					       total_len / 2);
+
+	  gcc_assert (actual == total_len / 2);
 	  p += actual;
+
+	  actual
+	    = emit_immediate_scalar_to_buffer (TREE_IMAGPART (m_tree_value), p,
+					       total_len / 2);
+	  gcc_assert (actual == total_len / 2);
 	}
-      /* Vectors should have the exact size.  */
-      gcc_assert (total_len == 0);
-    }
-  else if (TREE_CODE (value) == STRING_CST)
-    memcpy (m_brig_repr, TREE_STRING_POINTER (value),
-	    TREE_STRING_LENGTH (value));
-  else if (TREE_CODE (value) == COMPLEX_CST)
-    {
-      gcc_assert (total_len % 2 == 0);
-      unsigned actual;
-      actual
-	= emit_immediate_scalar_to_buffer (TREE_REALPART (value), p,
-					   total_len / 2);
-
-      gcc_assert (actual == total_len / 2);
-      p += actual;
-
-      actual
-	= emit_immediate_scalar_to_buffer (TREE_IMAGPART (value), p,
-					   total_len / 2);
-      gcc_assert (actual == total_len / 2);
-    }
-  else if (TREE_CODE (value) == CONSTRUCTOR)
-    {
-      unsigned len = vec_safe_length (CONSTRUCTOR_ELTS (value));
-      for (unsigned i = 0; i < len; i++)
+      else if (TREE_CODE (m_tree_value) == CONSTRUCTOR)
 	{
-	  tree v = CONSTRUCTOR_ELT (value, i)->value;
-	  unsigned actual = emit_immediate_scalar_to_buffer (v, p, 0);
-	  total_len -= actual;
-	  p += actual;
+	  unsigned len = vec_safe_length (CONSTRUCTOR_ELTS (m_tree_value));
+	  for (unsigned i = 0; i < len; i++)
+	    {
+	      tree v = CONSTRUCTOR_ELT (m_tree_value, i)->value;
+	      unsigned actual = emit_immediate_scalar_to_buffer (v, p, 0);
+	      total_len -= actual;
+	      p += actual;
+	    }
 	}
+      else
+	emit_immediate_scalar_to_buffer (m_tree_value, p, total_len);
     }
   else
-    emit_immediate_scalar_to_buffer (value, p, total_len);
+    {
+      hsa_bytes bytes;
+
+      switch (*brig_repr_size)
+	{
+	case 1:
+	  bytes.b8 = (uint8_t) m_int_value;
+	  break;
+	case 2:
+	  bytes.b16 = (uint16_t) m_int_value;
+	  break;
+	case 4:
+	  bytes.b32 = (uint32_t) m_int_value;
+	  break;
+	case 8:
+	  bytes.b64 = (uint64_t) m_int_value;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      brig_repr = XNEWVEC (char, *brig_repr_size);
+      memcpy (brig_repr, &bytes, *brig_repr_size);
+    }
+
+  return brig_repr;
 }
 
 /* Emit an immediate BRIG operand IMM.  The BRIG type of the immediate might
@@ -997,17 +1035,21 @@ hsa_op_immed::emit_to_buffer (tree value)
 static void
 emit_immediate_operand (hsa_op_immed *imm)
 {
+  unsigned brig_repr_size;
+  char *brig_repr = imm->emit_to_buffer (&brig_repr_size);
   struct BrigOperandConstantBytes out;
 
   memset (&out, 0, sizeof (out));
   out.base.byteCount = lendian16 (sizeof (out));
   out.base.kind = lendian16 (BRIG_KIND_OPERAND_CONSTANT_BYTES);
-  uint32_t byteCount = lendian32 (imm->m_brig_repr_size);
+  uint32_t byteCount = lendian32 (brig_repr_size);
   out.type = lendian16 (imm->m_type);
   out.bytes = lendian32 (brig_data.add (&byteCount, sizeof (byteCount)));
   brig_operand.add (&out, sizeof (out));
-  brig_data.add (imm->m_brig_repr, imm->m_brig_repr_size);
+  brig_data.add (brig_repr, brig_repr_size);
   brig_data.round_size_up (4);
+
+  free (brig_repr);
 }
 
 /* Emit a register BRIG operand REG.  */
@@ -1535,10 +1577,6 @@ emit_switch_insn (hsa_insn_sbr *sbr)
 
   brig_code.add (&repr, sizeof (repr));
   brig_insn_count++;
-
-  /* Emit jump to default label.  */
-  hsa_bb *hbb = hsa_bb_for_bb (sbr->m_default_bb);
-  emit_unconditional_jump (&hbb->m_label_ref);
 }
 
 /* Emit a HSA convert instruction and all necessary directives, schedule
@@ -1803,7 +1841,7 @@ emit_basic_insn (hsa_insn_basic *insn)
   repr.base.type = lendian16 (type);
   repr.base.operands = lendian32 (emit_insn_operands (insn));
 
-  if ((type & BRIG_TYPE_PACK_MASK) != BRIG_TYPE_PACK_NONE)
+  if (hsa_type_packed_p (type))
     {
       if (hsa_type_float_p (type)
 	  && !hsa_opcode_floating_bit_insn_p (insn->m_opcode))
@@ -2005,8 +2043,6 @@ hsa_brig_emit_omp_symbols (void)
   brig_init ();
   emit_directive_variable (hsa_num_threads);
 }
-
-static GTY(()) tree hsa_cdtor_statements[2];
 
 /* Create and return __hsa_global_variables symbol that contains
    all informations consumed by libgomp to link global variables
@@ -2408,6 +2444,7 @@ hsa_output_libgomp_mapping (tree brig_decl)
     = builtin_decl_explicit (BUILT_IN_GOMP_OFFLOAD_REGISTER);
   gcc_checking_assert (offload_register);
 
+  tree *hsa_ctor_stmts = hsa_get_ctor_statements ();
   append_to_statement_list
     (build_call_expr (offload_register, 4,
 		      build_int_cstu (unsigned_type_node,
@@ -2416,15 +2453,15 @@ hsa_output_libgomp_mapping (tree brig_decl)
 		      build_fold_addr_expr (hsa_libgomp_host_table),
 		      build_int_cst (integer_type_node, GOMP_DEVICE_HSA),
 		      build_fold_addr_expr (hsa_img_descriptor)),
-     &hsa_cdtor_statements[0]);
+     hsa_ctor_stmts);
 
-  cgraph_build_static_cdtor ('I', hsa_cdtor_statements[0],
-			     DEFAULT_INIT_PRIORITY);
+  cgraph_build_static_cdtor ('I', *hsa_ctor_stmts, DEFAULT_INIT_PRIORITY);
 
   tree offload_unregister
     = builtin_decl_explicit (BUILT_IN_GOMP_OFFLOAD_UNREGISTER);
   gcc_checking_assert (offload_unregister);
 
+  tree *hsa_dtor_stmts = hsa_get_dtor_statements ();
   append_to_statement_list
     (build_call_expr (offload_unregister, 4,
 		      build_int_cstu (unsigned_type_node,
@@ -2433,9 +2470,8 @@ hsa_output_libgomp_mapping (tree brig_decl)
 		      build_fold_addr_expr (hsa_libgomp_host_table),
 		      build_int_cst (integer_type_node, GOMP_DEVICE_HSA),
 		      build_fold_addr_expr (hsa_img_descriptor)),
-     &hsa_cdtor_statements[1]);
-  cgraph_build_static_cdtor ('D', hsa_cdtor_statements[1],
-			     DEFAULT_INIT_PRIORITY);
+     hsa_dtor_stmts);
+  cgraph_build_static_cdtor ('D', *hsa_dtor_stmts, DEFAULT_INIT_PRIORITY);
 }
 
 /* Emit the brig module we have compiled to a section in the final assembly and

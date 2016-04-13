@@ -1621,7 +1621,7 @@ enum reg_class
    function prologue should increase the stack frame size by this amount.  
 
    In 32bit mode enabling argument accumulation results in about 5% code size
-   growth becuase move instructions are less compact than push.  In 64bit
+   growth because move instructions are less compact than push.  In 64bit
    mode the difference is less drastic but visible.  
 
    FIXME: Unlike earlier implementations, the size of unwind info seems to
@@ -1638,7 +1638,8 @@ enum reg_class
 
 #define ACCUMULATE_OUTGOING_ARGS \
   ((TARGET_ACCUMULATE_OUTGOING_ARGS && optimize_function_for_speed_p (cfun)) \
-   || TARGET_STACK_PROBE || TARGET_64BIT_MS_ABI)
+   || TARGET_STACK_PROBE || TARGET_64BIT_MS_ABI \
+   || (TARGET_MACHO && crtl->profile))
 
 /* If defined, a C expression whose value is nonzero when we want to use PUSH
    instructions to pass outgoing arguments.  */
@@ -2494,6 +2495,10 @@ struct GTY(()) machine_function {
      expander to determine the style used.  */
   BOOL_BITFIELD use_fast_prologue_epilogue : 1;
 
+  /* Nonzero if the current function calls pc thunk and
+     must not use the red zone.  */
+  BOOL_BITFIELD pc_thunk_call_expanded : 1;
+
   /* If true, the current function needs the default PIC register, not
      an alternate register (on x86) and must not use the red zone (on
      x86_64), even if it's a leaf function.  We don't want the
@@ -2533,6 +2538,7 @@ struct GTY(()) machine_function {
 #define ix86_varargs_fpr_size (cfun->machine->varargs_fpr_size)
 #define ix86_optimize_mode_switching (cfun->machine->optimize_mode_switching)
 #define ix86_current_function_needs_cld (cfun->machine->needs_cld)
+#define ix86_pc_thunk_call_expanded (cfun->machine->pc_thunk_call_expanded)
 #define ix86_tls_descriptor_calls_expanded_in_cfun \
   (cfun->machine->tls_descriptor_call_expanded_p)
 /* Since tls_descriptor_call_expanded is not cleared, even if all TLS

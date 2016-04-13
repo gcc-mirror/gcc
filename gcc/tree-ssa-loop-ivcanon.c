@@ -298,11 +298,17 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 	  /* Conditionals.  */
 	  else if ((gimple_code (stmt) == GIMPLE_COND
 		    && constant_after_peeling (gimple_cond_lhs (stmt), stmt, loop)
-		    && constant_after_peeling (gimple_cond_rhs (stmt), stmt, loop))
+		    && constant_after_peeling (gimple_cond_rhs (stmt), stmt, loop)
+		    /* We don't simplify all constant compares so make sure
+		       they are not both constant already.  See PR70288.  */
+		    && (! is_gimple_min_invariant (gimple_cond_lhs (stmt))
+			|| ! is_gimple_min_invariant (gimple_cond_rhs (stmt))))
 		   || (gimple_code (stmt) == GIMPLE_SWITCH
 		       && constant_after_peeling (gimple_switch_index (
 						    as_a <gswitch *> (stmt)),
-						  stmt, loop)))
+						  stmt, loop)
+		       && ! is_gimple_min_invariant (gimple_switch_index (
+						       as_a <gswitch *> (stmt)))))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 	        fprintf (dump_file, "   Constant conditional.\n");
@@ -929,7 +935,7 @@ try_peel_loop (struct loop *loop,
 	       edge exit, tree niter,
 	       HOST_WIDE_INT maxiter)
 {
-  int npeel;
+  HOST_WIDE_INT npeel;
   struct loop_size size;
   int peeled_size;
   sbitmap wont_exit;
@@ -984,7 +990,7 @@ try_peel_loop (struct loop *loop,
     {
       if (dump_file)
         fprintf (dump_file, "Not peeling: rolls too much "
-		 "(%i + 1 > --param max-peel-times)\n", npeel);
+		 "(%i + 1 > --param max-peel-times)\n", (int) npeel);
       return false;
     }
   npeel++;
@@ -992,7 +998,7 @@ try_peel_loop (struct loop *loop,
   /* Check peeled loops size.  */
   tree_estimate_loop_size (loop, exit, NULL, &size,
 			   PARAM_VALUE (PARAM_MAX_PEELED_INSNS));
-  if ((peeled_size = estimated_peeled_sequence_size (&size, npeel))
+  if ((peeled_size = estimated_peeled_sequence_size (&size, (int) npeel))
       > PARAM_VALUE (PARAM_MAX_PEELED_INSNS))
     {
       if (dump_file)
@@ -1026,7 +1032,7 @@ try_peel_loop (struct loop *loop,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Peeled loop %d, %i times.\n",
-	       loop->num, npeel);
+	       loop->num, (int) npeel);
     }
   if (loop->any_upper_bound)
     loop->nb_iterations_upper_bound -= npeel;
@@ -1164,38 +1170,6 @@ canonicalize_induction_variables (void)
   return 0;
 }
 
-/* Propagate VAL into all uses of SSA_NAME.  */
-
-static void
-propagate_into_all_uses (tree ssa_name, tree val)
-{
-  imm_use_iterator iter;
-  gimple *use_stmt;
-
-  FOR_EACH_IMM_USE_STMT (use_stmt, iter, ssa_name)
-    {
-      gimple_stmt_iterator use_stmt_gsi = gsi_for_stmt (use_stmt);
-      use_operand_p use;
-
-      FOR_EACH_IMM_USE_ON_STMT (use, iter)
-	SET_USE (use, val);
-
-      if (is_gimple_assign (use_stmt)
-	  && get_gimple_rhs_class (gimple_assign_rhs_code (use_stmt))
-	     == GIMPLE_SINGLE_RHS)
-	{
-	  tree rhs = gimple_assign_rhs1 (use_stmt);
-
-	  if (TREE_CODE (rhs) == ADDR_EXPR)
-	    recompute_tree_invariant_for_addr_expr (rhs);
-	}
-
-      fold_stmt_inplace (&use_stmt_gsi);
-      update_stmt (use_stmt);
-      maybe_clean_or_replace_eh_stmt (use_stmt, use_stmt);
-    }
-}
-
 /* Propagate constant SSA_NAMEs defined in basic block BB.  */
 
 static void
@@ -1212,7 +1186,7 @@ propagate_constants_for_unrolling (basic_block bb)
 	  && gimple_phi_num_args (phi) == 1
 	  && TREE_CODE (arg) == INTEGER_CST)
 	{
-	  propagate_into_all_uses (result, arg);
+	  replace_uses_by (result, arg);
 	  gsi_remove (&gsi, true);
 	  release_ssa_name (result);
 	}
@@ -1231,7 +1205,7 @@ propagate_constants_for_unrolling (basic_block bb)
 	  && (lhs = gimple_assign_lhs (stmt), TREE_CODE (lhs) == SSA_NAME)
 	  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
 	{
-	  propagate_into_all_uses (lhs, gimple_assign_rhs1 (stmt));
+	  replace_uses_by (lhs, gimple_assign_rhs1 (stmt));
 	  gsi_remove (&gsi, true);
 	  release_ssa_name (lhs);
 	}
