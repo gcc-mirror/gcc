@@ -1,5 +1,10 @@
 2016-04-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/70641
+	* ipa-pure-const.c (pass_nothrow::execute): Call maybe_clean_eh_stmt
+	on all recursive call stmts.  Return TODO_cleanup_cfg if any dead
+	eh edges have been purged.
+
 	PR c++/70594
 	* tree-sra.c (create_access_replacement,
 	get_replaced_param_substitute): Set DECL_NAMELESS on repl if it

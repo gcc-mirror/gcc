@@ -1,3 +1,8 @@
+2016-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70641
+	* g++.dg/opt/pr70641.C: New test.
+
 2016-04-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR rtl-optimization/68749
