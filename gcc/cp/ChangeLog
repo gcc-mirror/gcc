@@ -1,3 +1,9 @@
+2016-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70615
+	* cp-gimplify.c (cp_genericize_r): Expand PTRMEM_CST here.
+	(cp_gimplify_expr): Not here.
+
 2016-04-12  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/70610
