@@ -1,3 +1,9 @@
+2016-04-13  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR testsuite/68242
+	* testsuite/libgomp.oacc-c-c++-common/reduction-1.c: Adjust test.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-2.c: Likewise.
+
 2016-04-12  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* libgomp_g.h: Rename GOACC_parallel_keyd prototype to
