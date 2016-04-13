@@ -1,3 +1,12 @@
+2016-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70594
+	* decl.c (pop_labels_1): Removed.
+	(note_label, sort_labels): New functions.
+	(pop_labels): During named_labels traversal, just push the slot
+	pointers into a vector, then qsort it by DECL_UID and only then
+	call pop_label and chain it into BLOCK_VARS.
+
 2016-04-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70615
