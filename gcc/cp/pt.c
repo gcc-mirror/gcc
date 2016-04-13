@@ -23595,9 +23595,9 @@ resolve_typename_type (tree type, bool only_current_p)
     {
       /* Ill-formed programs can cause infinite recursion here, so we
 	 must catch that.  */
-      TYPENAME_IS_RESOLVING_P (type) = 1;
+      TYPENAME_IS_RESOLVING_P (result) = 1;
       result = resolve_typename_type (result, only_current_p);
-      TYPENAME_IS_RESOLVING_P (type) = 0;
+      TYPENAME_IS_RESOLVING_P (result) = 0;
     }
   
   /* Qualify the resulting type.  */
