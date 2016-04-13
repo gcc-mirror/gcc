@@ -2262,6 +2262,20 @@ diagnose_uninitialized_cst_or_ref_member (tree type, bool using_new, bool compla
   return diagnose_uninitialized_cst_or_ref_member_1 (type, type, using_new, complain);
 }
 
+/* Call __cxa_throw_bad_array_length to indicate that the size calculation
+   in the bounds of a variable length array overflowed.  */
+
+tree
+throw_bad_array_length (void)
+{
+  tree fn = get_identifier ("__cxa_throw_bad_array_length");
+  if (!get_global_value_if_present (fn, &fn))
+    fn = push_throw_library_fn (fn, build_function_type_list (void_type_node,
+                                                             NULL_TREE));
+
+  return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
+}
+
 /* Call __cxa_bad_array_new_length to indicate that the size calculation
    overflowed.  Pretend it returns sizetype so that it plays nicely in the
    COND_EXPR.  */
@@ -4708,4 +4722,305 @@ build_vec_delete (tree base, tree maxindex,
     rval = build2 (COMPOUND_EXPR, TREE_TYPE (rval), base_init, rval);
 
   return rval;
+}
+
+
+/* The implementation of build_vla_check() that recursively builds
+   an expression to determine whether the VLA TYPE is erroneous due
+   either to its bounds being invalid or to integer overflow in
+   the computation of its total size.
+   CHECK is the boolean expression being built, initialized to
+   boolean_false_node.
+   VLASIZE is used internally to pass the incrementally computed
+   size of the VLA object down to its recursive invocations.
+   MAX_VLASIZE is the maximum valid size of the VLA in bytes.
+   CST_SIZE is the product of the VLA's constant dimensions.  */
+
+static tree
+build_vla_size_check (tree check,
+		      tree type,
+		      tree vlasize,
+		      tree max_vlasize,
+		      offset_int *cst_size)
+{
+  tree vmul = builtin_decl_explicit (BUILT_IN_MUL_OVERFLOW);
+
+  tree vlasizeaddr = build_unary_op (input_location, ADDR_EXPR, vlasize, 0);
+
+  bool overflow = false;
+
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      /* Compute the upper bound of this array type.  */
+      tree inner_nelts = array_type_nelts_top (type);
+      tree inner_nelts_cst = maybe_constant_value (inner_nelts);
+
+      if (TREE_CODE (inner_nelts_cst) == INTEGER_CST)
+	{
+	  /* The upper bound is a constant expression.  Compute the product
+	     of the constant upper bounds seen so far so that overflow can
+	     be diagnosed.  */
+	  offset_int result = wi::mul (wi::to_offset (inner_nelts_cst),
+				       *cst_size, SIGNED, &overflow);
+	  *cst_size = overflow ? 0 : result;
+	}
+
+      /* Check for overflow in the VLAs (runtime) upper bounds.  */
+      tree vflowcheck = build_call_expr (vmul, 3, inner_nelts,
+					 vlasize, vlasizeaddr);
+
+      check = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+			   check, vflowcheck);
+
+      /* Recursively check for overflow in the remaining major bounds.  */
+      check = build_vla_size_check (check, TREE_TYPE (type),
+				    vlasize, max_vlasize,
+				    cst_size);
+    }
+  else
+    {
+      /* Get the size of the VLA element type in bytes.  */
+      tree typesize = TYPE_SIZE_UNIT (type);
+
+      /* See if the size, when multipled by the product of the VLA's
+	 constant dimensions, is within range of size_t.  If not,
+	 the VLA is definitely erroneous amd must be diagnosed at
+	 compile time.  */
+      offset_int result = wi::mul (wi::to_offset (typesize), *cst_size,
+				   SIGNED, &overflow);
+      *cst_size = overflow ? 0 : result;
+
+      /* Multiply the (non-constant) VLA size so far by the element size,
+	 checking for overflow, and replacing the value of vlasize with
+	 the product in the absence of overflow.  This size is the total
+	 runtime size of the VLA in bytes.  */
+      tree vflowcheck = build_call_expr (vmul, 3, typesize,
+					 vlasize, vlasizeaddr);
+
+      check = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+			   check, vflowcheck);
+
+      /* Check to see if the final VLA size exceeds the maximum.  */
+      tree sizecheck = fold_build2 (LT_EXPR, boolean_type_node,
+				    max_vlasize, vlasize);
+
+      check = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+			   check, sizecheck);
+
+      /* Also check to see if the final array size is zero (the size
+	 is unsigned so the earlier overflow check detects negative
+	 values as well.  */
+      tree zerocheck = fold_build2 (EQ_EXPR, boolean_type_node,
+				    vlasize, size_zero_node);
+
+      check = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+			   check, zerocheck);
+    }
+
+  /* Diagnose overflow determined at compile time.  */
+  if (overflow)
+    {
+      error ("integer overflow in variable array size");
+      /* Reset to suppress any further diagnostics.  */
+      *cst_size = 0;
+    }
+
+  return check;
+}
+
+/* The implementation of build_vla_check() that recursively builds
+   an expression to determine whether the VLA initializer-list for
+   TYPE is erroneous due to excess initializers.
+   CHECK is the boolean expression being built, initialized to
+   the result of build_vla_size_check().
+   INIT is the VLA initializer expression to check against TYPE.
+   On the first (non-recursive) call, INIT_ELTS is set either to 1,
+   or to the number of elements in the initializer-list for VLAs
+   of unspecified (major) bound.  On subsequent (recursive) calls.
+   it is set to NULL and computed from the number of elements in
+   the (nested) initializer-list.
+*/
+
+static tree
+build_vla_init_check (tree check, tree type, tree init, tree init_elts)
+{
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      /* Compute the upper bound of this array type unless it has
+	 already been computed by the caller for an array of unspecified
+	 bound, as in 'T a[];'  */
+      tree inner_nelts = init_elts ? init_elts : array_type_nelts_top (type);
+
+      size_t len;
+
+      if (TREE_CODE (init) == CONSTRUCTOR)
+	{
+	  /* The initializer of this array is itself an array.  Build
+	     an expression to check if the number of elements in the
+	     initializer array exceeds the upper bound of the type
+	     of the object being initialized.  */
+	  if (vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (init))
+	    {
+	      len = v->length ();
+	      tree initelts = build_int_cstu (size_type_node, len);
+	      tree initcheck = fold_build2 (LT_EXPR, boolean_type_node,
+					    inner_nelts, initelts);
+
+	      check = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+				   check, initcheck);
+
+	      constructor_elt *ce;
+	      HOST_WIDE_INT i;
+
+	      /* Iterate over all non-empty initializers in this array,
+		 recursively building expressions to see if the elements
+		 of each are in excess of the corresponding (runtime)
+		 bound of the array type.  */
+	      FOR_EACH_VEC_SAFE_ELT (v, i, ce)
+		check = build_vla_init_check (check, TREE_TYPE (type),
+					      ce->value, NULL_TREE);
+	    }
+	}
+      else if (TREE_CODE (init) == STRING_CST
+	       && (len = TREE_STRING_LENGTH (init)))
+	{
+	  /* The initializer of this array is a string.  */
+	  tree ctype = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (init)));
+	  len /= TYPE_PRECISION (ctype) / BITS_PER_UNIT;
+
+	  /* A C++ string literal initializer must have at most as many
+	     characters as there are elements in the array, including
+	     the terminating NUL.  */
+	  tree initelts = build_int_cstu (size_type_node, len);
+	  tree initcheck = fold_build2 (LT_EXPR, boolean_type_node,
+					inner_nelts, initelts);
+	  check = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+			       check, initcheck);
+	}
+      else if (TREE_CODE (init) == ERROR_MARK)
+	{
+	  // No checking is possible.
+	  check = boolean_false_node;
+	}
+      else
+	{
+	  /* What's this array initializer?  */
+	  gcc_unreachable ();
+	}
+    }
+
+  return check;
+}
+
+/* Build an expression to determine whether the VLA TYPE is erroneous.
+   INIT is the VLA initializer expression or NULL_TREE when the VLA is
+   not initialized.  */
+
+tree
+build_vla_check (tree type, tree init /* = NULL_TREE */)
+{
+  tree check = boolean_false_node;
+
+  /* The product of all constant dimensions of the VLA, initialized
+     to either 1 in the common case or to the number of elements in
+     the VLA's initializer-list for VLAs of unspecified (major)
+     bound.  */
+  offset_int cst_size = 1;
+
+  /* The initial size of the VLA to start the computation of the total
+     size with.  Like CST_SIZE above, initialized to 1 or the number
+     of elements in the VLA's initializer-list for VLAs of unspecified
+     bound.  */
+  tree initial_size = size_one_node;
+
+  /* For a VLA of unspecified (major) bound, the number of elements
+     it is initialized with determined from the initializer-list.  */
+  tree initial_elts = NULL_TREE;
+
+  if (init)
+    {
+      /* Determine the upper bound of the VLA of unspecified bound,
+	 as in 'T a[];' if this is such a VLA.  Such a VLA can be
+	 initialized with any number of elements but the number of
+	 elements so determined must be used to check the total size
+	 of the VLA.  */
+      gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+
+      if (tree dom = TYPE_DOMAIN (type))
+	if (tree max = TYPE_MAX_VALUE (dom))
+	  if (integer_zerop (max))
+	    {
+	      if (TREE_CODE (init) == CONSTRUCTOR)
+		{
+		  vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (init);
+
+		  /* Since the upper bound of every array must be positive
+		     a VLA with an unspecified major bound must be initized
+		     by a non-empty initializer list.  */
+		  gcc_assert (v != NULL);
+
+		  cst_size = v->length ();
+		}
+	      else if (TREE_CODE (init) == STRING_CST)
+		{
+		  /* The initializer is a (possibly empty) string consisting
+		     at a minumum of one character, the terminating NUL.
+		     This condition implies a definition like
+		       char s [][N] = "";
+		     which is an error but even though it has been diagnosed
+		     by this point the initializer still winds up here.  */
+		  size_t nchars = TREE_STRING_LENGTH (init);
+		  tree ctype = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (init)));
+		  nchars /= TYPE_PRECISION (ctype) / BITS_PER_UNIT;
+
+		  cst_size = nchars + 1;
+		}
+
+	      initial_elts = wide_int_to_tree (size_type_node, cst_size);
+	      initial_size = initial_elts;
+	    }
+    }
+
+  /* Build a variable storing the total runtime size of the VLA and
+     initialize it either to 1 (in the common case) or to the number
+     of topmost elements in the initializer-list when the VLA is
+     an array of unspecified (major) bound.  */
+  tree vlasize = build_decl (input_location,
+			     VAR_DECL, NULL_TREE, sizetype);
+  DECL_ARTIFICIAL (vlasize) = 1;
+  DECL_IGNORED_P (vlasize) = 1;
+  DECL_CONTEXT (vlasize) = current_function_decl;
+  DECL_INITIAL (vlasize) = initial_size;
+  vlasize = pushdecl (vlasize);
+  add_decl_expr (vlasize);
+
+  /* Impose a lenient limit on the size of the biggest VLA in bytes.
+     FIXME: Tighten up the limit to make it more useful and make it
+     configurable for users with unusual requirements.  */
+  tree max_vlasize
+    = fold_build2 (RSHIFT_EXPR, size_type_node,
+		   build_all_ones_cst (size_type_node),
+		   integer_one_node);
+
+  /* Build an expression that checks the runtime bounds of the VLA
+     for invalid values and the total size of the VLA for overflow.  */
+  check = build_vla_size_check (check, type, vlasize, max_vlasize, &cst_size);
+
+  if (wi::ltu_p (wi::to_offset (max_vlasize), cst_size))
+    {
+      /* Issue the warning only in the "topmost" (non-recursive) call
+	 to avoid duplicating diagnostics.  This is only a warning to
+	 allow programs to be portable to more permissive environments.  */
+      warning (OPT_Wvla, "size of variable length array exceeds maximum "
+	       "of %qE bytes",  max_vlasize);
+    }
+
+  if (init)
+    {
+      /* Build an expression that checks the VLA initializer expression
+	 against the type of the VLA for excess elements.  */
+      check = build_vla_init_check (check, type, init, initial_elts);
+    }
+
+  return check;
 }

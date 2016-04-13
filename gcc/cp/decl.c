@@ -5896,6 +5896,16 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	    }
 	}
 
+      if (variably_modified_type_p (type, NULL_TREE))
+	{
+	  /* Require VLAs to have their initializers fully braced
+	     to avoid initializing the wrong elements.  */
+	  if (complain & tf_error)
+	    error ("missing braces around initializer for a variable length "
+		   "array %qT", type);
+	  return error_mark_node;
+	}
+
       warning (OPT_Wmissing_braces, "missing braces around initializer for %qT",
 	       type);
     }
@@ -6048,6 +6058,10 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
     /* There is no way to make a variable-sized class type in GNU C++.  */
     gcc_assert (TREE_CONSTANT (TYPE_SIZE (type)));
 
+  /* Initializer exression used to check invalid VLA bounds and excess
+     initializer elements.  */
+  tree saved_init_for_vla_check = NULL_TREE;
+
   if (init && BRACE_ENCLOSED_INITIALIZER_P (init))
     {
       int init_len = vec_safe_length (CONSTRUCTOR_ELTS (init));
@@ -6199,7 +6213,9 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	      && PAREN_STRING_LITERAL_P (DECL_INITIAL (decl)))
 	    warning (0, "array %qD initialized by parenthesized string literal %qE",
 		     decl, DECL_INITIAL (decl));
-	  init = NULL;
+
+	  saved_init_for_vla_check = init;
+	  init = NULL_TREE;
 	}
     }
   else
@@ -6211,6 +6227,33 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 						  /*complain=*/true);
 
       check_for_uninitialized_const_var (decl);
+    }
+
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && variably_modified_type_p (type, NULL_TREE)
+      && !processing_template_decl)
+    {
+      /* Statically check for overflow in VLA bounds and build
+	 an expression that checks at runtime whether the VLA
+	 is erroneous due to invalid (runtime) bounds.
+	 Another expression to check for excess initializers
+	 is built in build_vec_init.  */
+      tree check = build_vla_check (TREE_TYPE (decl), saved_init_for_vla_check);
+
+      if (flag_exceptions && current_function_decl
+	  /* Avoid instrumenting constexpr functions for now.
+	     Those must be checked statically, and the (non-
+	     constexpr) dynamic instrumentation would cause
+	     them to be rejected.  See c++/70507.  */
+	  && !DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+	{
+	  /* Use the runtime check only when exceptions are enabled.
+	     Otherwise let bad things happen...  */
+	  check = build3 (COND_EXPR, void_type_node, check,
+			  throw_bad_array_length (), void_node);
+
+	  finish_expr_stmt (check);
+	}
     }
 
   if (init && init != error_mark_node)

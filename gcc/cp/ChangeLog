@@ -1,3 +1,19 @@
+2016-04-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/69517
+	PR c++/70019
+	PR c++/70588
+	* cp-tree.h (throw_bad_array_length, build_vla_check): Declare new
+	functions.
+	* decl.c (check_initializer, cp_finish_decl): Call them.
+	(reshape_init_r): Reject incompletely braced intializer-lists
+	for VLAs.
+	* init.c (throw_bad_array_length, build_vla_check)
+	(build_vla_size_check, build_vla_init_check): Define new functions.
+	* typeck2.c (split_nonconstant_init_1): Use variably_modified_type_p()
+	to detect a VLA.
+	(store_init_value): Same.
+
 2016-04-13  Jason Merrill  <jason@redhat.com>
 
 	Warn about empty parameter ABI with -Wabi=9.

@@ -87,18 +87,24 @@ fn12 (void)
 int
 main (void)
 {
-  fn1 ();
-  fn2 ();
-  fn3 ();
-  fn4 ();
-  fn5 ();
-  fn6 ();
-  fn7 ();
-  fn8 ();
-  fn9 ();
-  fn10 ();
-  fn11 ();
-  fn12 ();
+#if __cplusplus
+#  define TRY(stmt)   do { try { stmt; } catch (...) { } } while (0)
+#else
+#  define TRY(stmt)   stmt
+#endif
+
+  TRY (fn1 ());
+  TRY (fn2 ());
+  TRY (fn3 ());
+  TRY (fn4 ());
+  TRY (fn5 ());
+  TRY (fn6 ());
+  TRY (fn7 ());
+  TRY (fn8 ());
+  TRY (fn9 ());
+  TRY (fn10 ());
+  TRY (fn11 ());
+  TRY (fn12 ());
   return 0;
 }
 

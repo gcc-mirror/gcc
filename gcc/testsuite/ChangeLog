@@ -1,3 +1,17 @@
+2016-04-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/69517
+	PR c++/70019
+	PR c++/70588
+	* c-c++-common/ubsan/vla-1.c (main): Catch exceptions.
+	* g++.dg/cpp1y/vla11.C: New test.
+	* g++.dg/cpp1y/vla12.C: New test.
+	* g++.dg/cpp1y/vla13.C: New test.
+	* g++.dg/cpp1y/vla14.C: New test.
+	* g++.dg/cpp1y/vla3.C: Restore deleted test.
+	* gcc/testsuite/g++.dg/init/array24.C: Fully brace VLA initializer.
+	* g++.dg/ubsan/vla-1.C: Disable exceptions.
+
 2016-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70641
