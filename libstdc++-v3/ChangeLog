@@ -1,3 +1,9 @@
+2016-04-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/69517
+	* testsuite/25_algorithms/rotate/moveable2.cc: Make sure VLA
+	upper bound is positive.
+
 2016-04-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/c++config (_GLIBCXX_BEGIN_NAMESPACE_EMPTY_TYPES,

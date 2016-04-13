@@ -1,3 +1,10 @@
+2016-04-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/69517
+	PR c++/70019
+	PR c++/70588
+	* doc/extend.texi (Variable Length): Document C++ specifics.
+
 2016-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70641
