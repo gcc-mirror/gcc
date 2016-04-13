@@ -1,3 +1,10 @@
+2016-04-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR bootstrap/70173
+	* Makefile.tpl (local-distclean): Delete the libcc1, gnattools,
+	and gotools directories.  Delete the stage_final file.
+	* Makefile.in: Regenerate.
+
 2016-04-12  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
