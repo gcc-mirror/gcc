@@ -1,3 +1,11 @@
+2016-04-12  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/70610
+	* tree.c (lvalue_kind) [NON_DEPENDENT_EXPR]: Unconditionally
+	recurse into it.
+	* typeck.c (build_x_conditional_expr): Unconditionally remember
+	that the result is an lvalue or xvalue.
+
 2016-04-12  Jason Merrill  <jason@redhat.com>
 
 	* class.c (is_really_empty_class): A zero-length array is empty.
