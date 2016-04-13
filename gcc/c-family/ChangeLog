@@ -1,3 +1,9 @@
+2016-04-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70639
+	* c-indentation.c (should_warn_for_misleading_indentation): Bail out
+	for switch statements, too.
+
 2016-03-28  Jason Merrill  <jason@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Update __cpp_range_based_for.

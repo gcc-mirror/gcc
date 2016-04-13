@@ -1,5 +1,10 @@
 2016-04-13  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/70639
+	* c-c++-common/Wmisleading-indentation-4.c: New test.
+
+2016-04-13  Marek Polacek  <polacek@redhat.com>
+
 	PR c/70436
 	* testsuite/gcc.dg/Wparentheses-12.c: New test.
 	* testsuite/gcc.dg/Wparentheses-13.c: New test.
