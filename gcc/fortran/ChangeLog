@@ -1,5 +1,11 @@
 2016-04-13  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
+	PR fortran/67039
+	* intrinsic.texi: Correct the documentation of pseudorandom
+	number intrinsics.
+
+2016-04-13  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
 	PR fortran/58000
 	* gfortran.texi: Document OPEN( ... NAME=) as not implemented
 	in GNU Fortran
