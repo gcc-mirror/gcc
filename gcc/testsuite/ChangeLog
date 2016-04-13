@@ -1,3 +1,8 @@
+2016-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/70628
+	* gcc.dg/torture/pr70628.c: New test.
+
 2016-04-12  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/70610

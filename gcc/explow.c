@@ -259,12 +259,14 @@ break_out_memory_refs (rtx x)
    which way).  We take advantage of the fact that pointers are not allowed to
    overflow by commuting arithmetic operations over conversions so that address
    arithmetic insns can be used. IN_CONST is true if this conversion is inside
-   a CONST.  */
+   a CONST. NO_EMIT is true if no insns should be emitted, and instead
+   it should return NULL if it can't be simplified without emitting insns.  */
 
-static rtx
+rtx
 convert_memory_address_addr_space_1 (machine_mode to_mode ATTRIBUTE_UNUSED,
 				     rtx x, addr_space_t as ATTRIBUTE_UNUSED,
-				     bool in_const ATTRIBUTE_UNUSED)
+				     bool in_const ATTRIBUTE_UNUSED,
+				     bool no_emit ATTRIBUTE_UNUSED)
 {
 #ifndef POINTERS_EXTEND_UNSIGNED
   gcc_assert (GET_MODE (x) == to_mode || GET_MODE (x) == VOIDmode);
@@ -310,19 +312,16 @@ convert_memory_address_addr_space_1 (machine_mode to_mode ATTRIBUTE_UNUSED,
       temp = gen_rtx_LABEL_REF (to_mode, LABEL_REF_LABEL (x));
       LABEL_REF_NONLOCAL_P (temp) = LABEL_REF_NONLOCAL_P (x);
       return temp;
-      break;
 
     case SYMBOL_REF:
       temp = shallow_copy_rtx (x);
       PUT_MODE (temp, to_mode);
       return temp;
-      break;
 
     case CONST:
-      return gen_rtx_CONST (to_mode,
-			    convert_memory_address_addr_space_1
-			      (to_mode, XEXP (x, 0), as, true));
-      break;
+      temp = convert_memory_address_addr_space_1 (to_mode, XEXP (x, 0), as,
+						  true, no_emit);
+      return temp ? gen_rtx_CONST (to_mode, temp) : temp;
 
     case PLUS:
     case MULT:
@@ -338,17 +337,24 @@ convert_memory_address_addr_space_1 (machine_mode to_mode ATTRIBUTE_UNUSED,
 	      && CONST_INT_P (XEXP (x, 1))
 	      && ((in_const && POINTERS_EXTEND_UNSIGNED != 0)
 		  || XEXP (x, 1) == convert_memory_address_addr_space_1
-				     (to_mode, XEXP (x, 1), as, in_const)
+				     (to_mode, XEXP (x, 1), as, in_const,
+				      no_emit)
                   || POINTERS_EXTEND_UNSIGNED < 0)))
-	return gen_rtx_fmt_ee (GET_CODE (x), to_mode,
-			       convert_memory_address_addr_space_1
-				 (to_mode, XEXP (x, 0), as, in_const),
-			       XEXP (x, 1));
+	{
+	  temp = convert_memory_address_addr_space_1 (to_mode, XEXP (x, 0),
+						      as, in_const, no_emit);
+	  return temp ? gen_rtx_fmt_ee (GET_CODE (x), to_mode,
+					temp, XEXP (x, 1))
+		      : temp;
+	}
       break;
 
     default:
       break;
     }
+
+  if (no_emit)
+    return NULL_RTX;
 
   return convert_modes (to_mode, from_mode,
 			x, POINTERS_EXTEND_UNSIGNED);
@@ -364,7 +370,7 @@ convert_memory_address_addr_space_1 (machine_mode to_mode ATTRIBUTE_UNUSED,
 rtx
 convert_memory_address_addr_space (machine_mode to_mode, rtx x, addr_space_t as)
 {
-  return convert_memory_address_addr_space_1 (to_mode, x, as, false);
+  return convert_memory_address_addr_space_1 (to_mode, x, as, false, false);
 }
 
 
