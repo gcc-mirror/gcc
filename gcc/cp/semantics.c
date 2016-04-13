@@ -8740,7 +8740,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
   /* Depending on the resolution of DR 1172, we may later need to distinguish
      instantiation-dependent but not type-dependent expressions so that, say,
      A<decltype(sizeof(T))>::U doesn't require 'typename'.  */
-  if (instantiation_dependent_expression_p (expr))
+  if (instantiation_dependent_uneval_expression_p (expr))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
