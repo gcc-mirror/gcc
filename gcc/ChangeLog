@@ -1,3 +1,11 @@
+2016-04-13  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* config/i386/i386.md (kunpckhi): Swap operands.
+	(kunpcksi): Likewise.
+	(kunpckdi): Likewise.
+	* config/i386/sse.md (vec_pack_trunc_qi): Likewise.
+	(vec_pack_trunc_<mode>): Likewise.
+
 2016-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/70628
