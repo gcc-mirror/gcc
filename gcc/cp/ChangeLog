@@ -1,3 +1,14 @@
+2016-04-13  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (potential_nondependent_constant_expression): New.
+	(potential_nondependent_static_init_expression): New.
+	(maybe_constant_value_1, fold_non_dependent_expr)
+	(maybe_constant_init): Use them.
+	* pt.c (instantiate_non_dependent_expr_sfinae)
+	(instantiate_non_dependent_or_null, convert_nontype_argument): Use
+	them.
+	* cp-tree.h: Declare them.
+
 2016-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70594
