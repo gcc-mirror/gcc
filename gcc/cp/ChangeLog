@@ -1,5 +1,15 @@
 2016-04-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70634
+	* pt.c (instantiation_dependent_uneval_expression_p): Split out
+	from instantiation_dependent_expression_p.
+	(value_dependent_expression_p): Use it for unevaluated operands.
+	(instantiation_dependent_r): Don't check value-dependence.
+	(instantiation_dependent_expression_p): Check
+	value-dependence of the expression as a whole.
+	* cp-tree.h: Declare instantiation_dependent_uneval_expression_p.
+	* semantics.c (finish_decltype_type): Use it.
+
 	* constexpr.c (potential_nondependent_constant_expression): New.
 	(potential_nondependent_static_init_expression): New.
 	(maybe_constant_value_1, fold_non_dependent_expr)
