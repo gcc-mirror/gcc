@@ -2148,6 +2148,7 @@ code that uses them running with the GNU Fortran compiler.
 @c * Omitted arguments in procedure call::
 * Alternate complex function syntax::
 * Volatile COMMON blocks::
+* OPEN( ... NAME=)::
 @end menu
 
 
@@ -2355,6 +2356,19 @@ invalid standard Fortran syntax and is not supported by
 
 
 
+@node OPEN( ... NAME=)
+@subsection @code{OPEN( ... NAME=)}
+@cindex @code{NAM}
+
+Some Fortran compilers, including @command{g77}, let the user declare
+@code{OPEN( ... NAME=)}. This is
+invalid standard Fortran syntax and is not supported by
+@command{gfortran}.  @code{OPEN( ... NAME=)} should be replaced
+with @code{OPEN( ... FILE=)}.
+
+
+
+@c ---------------------------------------------------------------------
 @c ---------------------------------------------------------------------
 @c Mixed-Language Programming
 @c ---------------------------------------------------------------------
