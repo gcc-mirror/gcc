@@ -1,5 +1,14 @@
 2016-04-13  Jason Merrill  <jason@redhat.com>
 
+	Pass empty class parameters like C.
+	* call.c (pass_as_empty_struct, empty_class_arg): New.
+	(type_passed_as, build_x_va_arg): Use pass_as_empty_struct.
+	(build_call_a): Use empty_class_arg.
+	* cp-tree.h (CPTI_EMPTY_STRUCT, empty_struct_type): New.
+	* decl.c (cxx_init_decl_processing): Create empty_struct_type.
+
+2016-04-13  Jason Merrill  <jason@redhat.com>
+
 	PR c++/70627
 	* decl.c (start_enum): Don't change an existing ENUM_UNDERLYING_TYPE.
 
