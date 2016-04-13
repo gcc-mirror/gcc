@@ -42,10 +42,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __is_erased_or_convertible
       = __or_<is_same<_Tp, __erased_type>, is_convertible<_Alloc, _Tp>>;
 
+_GLIBCXX_BEGIN_NAMESPACE_EMPTY_TYPES
+
   /// [allocator.tag]
   struct allocator_arg_t { explicit allocator_arg_t() = default; };
 
   constexpr allocator_arg_t allocator_arg = allocator_arg_t();
+
+_GLIBCXX_END_NAMESPACE_EMPTY_TYPES
 
   template<typename _Tp, typename _Alloc, typename = __void_t<>>
     struct __uses_allocator_helper
@@ -65,10 +69,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   struct __uses_alloc_base { };
 
+_GLIBCXX_BEGIN_NAMESPACE_EMPTY_TYPES
+
   struct __uses_alloc0 : __uses_alloc_base
   {
     struct _Sink { void operator=(const void*) { } } _M_a;
   };
+
+_GLIBCXX_END_NAMESPACE_EMPTY_TYPES
 
   template<typename _Alloc>
     struct __uses_alloc1 : __uses_alloc_base { const _Alloc* _M_a; };

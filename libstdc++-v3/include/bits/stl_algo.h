@@ -4270,6 +4270,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  is true then the assignment @c *i = @p __new_value is performed.
   */
   template<typename _ForwardIterator, typename _Predicate, typename _Tp>
+    _GLIBCXX_ABI_TAG_EMPTY
     void
     replace_if(_ForwardIterator __first, _ForwardIterator __last,
 	       _Predicate __pred, const _Tp& __new_value)

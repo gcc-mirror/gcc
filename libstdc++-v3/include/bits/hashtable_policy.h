@@ -906,8 +906,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	insert(const_iterator __hint, _Pair&& __v)
 	{
 	  __hashtable& __h = this->_M_conjure_hashtable();
-	  return __h._M_emplace(__hint, __unique_keys(),
-				std::forward<_Pair>(__v));
+	  return __h._M_emplace_hint(__hint, __unique_keys(),
+				     std::forward<_Pair>(__v));
 	}
    };
 
