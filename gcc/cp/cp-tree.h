@@ -5540,6 +5540,8 @@ extern tree build_addr_func			(tree, tsubst_flags_t);
 extern void set_flags_from_callee		(tree);
 extern tree build_call_a			(tree, int, tree*);
 extern tree build_call_n			(tree, int, ...);
+extern void mark_for_abi_warning		(tree, tree);
+extern void warn_empty_class_abi		(tree, location_t);
 extern bool null_ptr_cst_p			(tree);
 extern bool null_member_pointer_value_p		(tree);
 extern bool sufficient_parms_p			(const_tree);
@@ -5894,6 +5896,7 @@ extern bool pedwarn_cxx98                       (location_t, int, const char *, 
 extern location_t location_of                   (tree);
 extern void qualified_name_lookup_error		(tree, tree, tree,
 						 location_t);
+extern tree pp_format_to_string			(const char *, ...);
 
 /* in except.c */
 extern void init_exception_processing		(void);

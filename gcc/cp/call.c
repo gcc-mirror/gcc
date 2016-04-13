@@ -381,6 +381,11 @@ build_call_a (tree function, int n, tree *argarray)
   /* Don't pass empty class objects by value.  This is useful
      for tags in STL, which are used to control overload resolution.
      We don't need to handle other cases of copying empty classes.  */
+  bool warned = false;
+  if (decl && !TREE_PUBLIC (decl))
+    /* Don't warn about the ABI of a function local to this TU.  */
+    warned = true;
+  tree empty_arg = NULL_TREE;
   if (! decl || ! DECL_BUILT_IN (decl))
     for (i = 0; i < n; i++)
       {
@@ -389,7 +394,18 @@ build_call_a (tree function, int n, tree *argarray)
 	if (is_really_empty_class (type)
 	    && ! TREE_ADDRESSABLE (type))
 	  {
+	    empty_arg = arg;
 	    CALL_EXPR_ARG (function, i) = empty_class_arg (arg);
+	  }
+	/* Warn about ABI changes for a non-final argument.  */
+	else if (!warned && empty_arg)
+	  {
+	    location_t loc = EXPR_LOC_OR_LOC (empty_arg, input_location);
+	    if (decl && !varargs_function_p (decl))
+	      mark_for_abi_warning (decl, empty_arg);
+	    else
+	      warn_empty_class_abi (empty_arg, loc);
+	    warned = true;
 	  }
       }
 
@@ -6878,6 +6894,7 @@ build_x_va_arg (source_location loc, tree expr, tree type)
       /* Do the reverse of empty_class_arg.  */
       tree etype = pass_as_empty_struct (type) ? empty_struct_type : type;
       expr = build_va_arg (loc, expr, etype);
+      warn_empty_class_abi (type, loc);
       tree ec = build0 (EMPTY_CLASS_EXPR, type);
       return build2 (COMPOUND_EXPR, type, expr, ec);
     }
@@ -7003,6 +7020,47 @@ empty_class_arg (tree val)
   tree etype = pass_as_empty_struct (type) ? empty_struct_type : type;
   tree empty = build0 (EMPTY_CLASS_EXPR, etype);
   return build2 (COMPOUND_EXPR, etype, val, empty);
+}
+
+/* Generate a message warning about the change in empty class parameter passing
+   ABI.  */
+
+static tree
+empty_class_msg (tree type)
+{
+  if (!TYPE_P (type))
+    type = TREE_TYPE (type);
+
+  return pp_format_to_string ("empty class %qT parameter passing ABI "
+			      "changes in -fabi-version=10 (GCC 6)", type);
+}
+
+/* Warn immediately about the change in empty class parameter ABI.  */
+
+void
+warn_empty_class_abi (tree arg, location_t loc)
+{
+  if (!warn_abi || !abi_version_crosses (10))
+    return;
+
+  warning_at (loc, OPT_Wabi, "%E", empty_class_msg (arg));
+}
+
+/* Tack a warning about the change in empty class parameter ABI onto FN, so
+   that we get a warning if a definition or call is emitted.  */
+
+void
+mark_for_abi_warning (tree fn, tree type)
+{
+  if (!warn_abi || !abi_version_crosses (10))
+    return;
+  if (lookup_attribute ("abi warning", DECL_ATTRIBUTES (fn)))
+    return;
+
+  tree msg = empty_class_msg (type);
+  msg = build_tree_list (NULL_TREE, msg);
+  DECL_ATTRIBUTES (fn) = tree_cons (get_identifier ("abi warning"), msg,
+				    DECL_ATTRIBUTES (fn));
 }
 
 /* Returns the type which will really be used for passing an argument of
