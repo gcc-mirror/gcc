@@ -1,3 +1,33 @@
+2016-04-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_BEGIN_NAMESPACE_EMPTY_TYPES,
+	_GLIBCXX_END_NAMESPACE_EMPTY_TYPES, _GLIBCXX_ABI_TAG_EMPTY): Define.
+	* include/bits/hashtable.h (_Hashtable::_M_emplace): Change signatures
+	of functions taking empty structs by value. Add a template parameter
+	to overloads without hints. Rename overloads with hints to
+	_M_emplace_hint.
+	(_Hashtable::_M_erase(true_type, const_iterator),
+	_Hashtable::_M_erase(false_type, const_iterator)): Change signatures
+	by reordering parameters.
+	* include/bits/hashtable_policy.h (_Insert::insert): Adjust to call
+	_M_emplace_hint instead of _M_emplace.
+	* include/bits/shared_ptr.h (shared_ptr(_Tp1*, _Deleter, _Alloc),
+	shared_ptr(nullptr_t, _Deleter, _Alloc)): Use _GLIBCXX_ABI_TAG_EMPTY.
+	* include/bits/shared_ptr_base.h (_Sp_counted_deleter, __shared_count,
+	__shared_ptr): Likewise.
+	* include/bits/stl_algo.h (replace_if): Likewise.
+	* include/bits/stl_pair.h (piecewise_construct_t,
+	piecewise_construct): Use _GLIBCXX_BEGIN_NAMESPACE_EMPTY_TYPES.
+	* include/bits/uses_allocator.h (allocator_arg_t, allocator_arg,
+	__uses_alloc0): Likewise.
+	* include/ext/pb_ds/assoc_container.hpp (basic_hash_table): Likewise.
+	* testsuite/20_util/scoped_allocator/69293_neg.cc: Adjust dg-error.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Likewise.
+	* testsuite/20_util/uses_allocator/69293_neg.cc: Likewise.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Likewise.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Likewise.
+
 2016-04-12  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Document C++17/TR29124 C++ Special Math Functions.
