@@ -343,9 +343,9 @@ convert_memory_address_addr_space_1 (machine_mode to_mode ATTRIBUTE_UNUSED,
 	{
 	  temp = convert_memory_address_addr_space_1 (to_mode, XEXP (x, 0),
 						      as, in_const, no_emit);
-	  return temp ? gen_rtx_fmt_ee (GET_CODE (x), to_mode,
-					temp, XEXP (x, 1))
-		      : temp;
+	  return (temp ? gen_rtx_fmt_ee (GET_CODE (x), to_mode,
+					 temp, XEXP (x, 1))
+		       : temp);
 	}
       break;
 
