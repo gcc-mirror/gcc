@@ -70,6 +70,7 @@ void dump_possible_polymorphic_call_targets (FILE *, tree, HOST_WIDE_INT,
 bool possible_polymorphic_call_target_p (tree, HOST_WIDE_INT,
 				         const ipa_polymorphic_call_context &,
 					 struct cgraph_node *);
+tree polymorphic_ctor_dtor_p (tree, bool);
 tree inlined_polymorphic_ctor_dtor_block_p (tree, bool);
 bool decl_maybe_in_construction_p (tree, tree, gimple *, tree);
 tree vtable_pointer_value_to_binfo (const_tree);

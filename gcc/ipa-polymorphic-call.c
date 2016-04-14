@@ -479,16 +479,12 @@ contains_type_p (tree outer_type, HOST_WIDE_INT offset,
 }
 
 
-/* Return a FUNCTION_DECL if BLOCK represents a constructor or destructor.
+/* Return a FUNCTION_DECL if FN represent a constructor or destructor.
    If CHECK_CLONES is true, also check for clones of ctor/dtors.  */
 
 tree
-inlined_polymorphic_ctor_dtor_block_p (tree block, bool check_clones)
+polymorphic_ctor_dtor_p (tree fn, bool check_clones)
 {
-  tree fn = block_ultimate_origin (block);
-  if (fn == NULL || TREE_CODE (fn) != FUNCTION_DECL)
-    return NULL_TREE;
-
   if (TREE_CODE (TREE_TYPE (fn)) != METHOD_TYPE
       || (!DECL_CXX_CONSTRUCTOR_P (fn) && !DECL_CXX_DESTRUCTOR_P (fn)))
     {
@@ -508,6 +504,19 @@ inlined_polymorphic_ctor_dtor_block_p (tree block, bool check_clones)
     return NULL_TREE;
 
   return fn;
+}
+
+/* Return a FUNCTION_DECL if BLOCK represents a constructor or destructor.
+   If CHECK_CLONES is true, also check for clones of ctor/dtors.  */
+
+tree
+inlined_polymorphic_ctor_dtor_block_p (tree block, bool check_clones)
+{
+  tree fn = block_ultimate_origin (block);
+  if (fn == NULL || TREE_CODE (fn) != FUNCTION_DECL)
+    return NULL_TREE;
+
+  return polymorphic_ctor_dtor_p (fn, check_clones);
 }
 
 
