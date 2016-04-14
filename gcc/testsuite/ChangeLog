@@ -1,3 +1,9 @@
+2016-04-14  Martin Sebor  <msebor@redhat.com>
+
+	* g++.dg/cpp1y/vla11.C: Avoid using attribute aligned to increase
+	type size to prevent failures on targets with very low maximum
+	alignment.
+
 2016-04-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70623

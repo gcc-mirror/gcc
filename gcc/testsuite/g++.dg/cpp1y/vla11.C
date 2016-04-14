@@ -86,9 +86,10 @@ sink (void *p, int line, bool expect, const char *expr)
 // that the checking code can deal with templates (i.e., completes
 // the element type of the VLA when necessary).
 template <unsigned TypeSize>
-struct alignas (TypeSize) TestType
+union TestType
 {
   char data;
+  char padding [TypeSize];
 };
 
 // Test function invoked with a pointer to each test case.  Must
