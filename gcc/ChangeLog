@@ -1,3 +1,10 @@
+2016-04-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/70669
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Add
+	direct move handlers for KFmode. Change TFmode handlers test from
+	FLOAT128_IEEE_P to FLOAT128_VECTOR_P.
+
 2016-04-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70594

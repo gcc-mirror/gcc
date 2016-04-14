@@ -3132,8 +3132,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	  reg_addr[V4SFmode].reload_load   = CODE_FOR_reload_v4sf_di_load;
 	  reg_addr[V2DFmode].reload_store  = CODE_FOR_reload_v2df_di_store;
 	  reg_addr[V2DFmode].reload_load   = CODE_FOR_reload_v2df_di_load;
-	  reg_addr[KFmode].reload_store    = CODE_FOR_reload_kf_di_store;
-	  reg_addr[KFmode].reload_load     = CODE_FOR_reload_kf_di_load;
 	  reg_addr[DFmode].reload_store    = CODE_FOR_reload_df_di_store;
 	  reg_addr[DFmode].reload_load     = CODE_FOR_reload_df_di_load;
 	  reg_addr[DDmode].reload_store    = CODE_FOR_reload_dd_di_store;
@@ -3141,7 +3139,13 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	  reg_addr[SFmode].reload_store    = CODE_FOR_reload_sf_di_store;
 	  reg_addr[SFmode].reload_load     = CODE_FOR_reload_sf_di_load;
 
-	  if (FLOAT128_IEEE_P (TFmode))
+	  if (FLOAT128_VECTOR_P (KFmode))
+	    {
+	      reg_addr[KFmode].reload_store = CODE_FOR_reload_kf_di_store;
+	      reg_addr[KFmode].reload_load  = CODE_FOR_reload_kf_di_load;
+	    }
+
+	  if (FLOAT128_VECTOR_P (TFmode))
 	    {
 	      reg_addr[TFmode].reload_store = CODE_FOR_reload_tf_di_store;
 	      reg_addr[TFmode].reload_load  = CODE_FOR_reload_tf_di_load;
@@ -3182,6 +3186,18 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	      reg_addr[V8HImode].reload_vsx_gpr  = CODE_FOR_reload_vsx_from_gprv8hi;
 	      reg_addr[V16QImode].reload_vsx_gpr = CODE_FOR_reload_vsx_from_gprv16qi;
 	      reg_addr[SFmode].reload_vsx_gpr    = CODE_FOR_reload_vsx_from_gprsf;
+
+	      if (FLOAT128_VECTOR_P (KFmode))
+		{
+		  reg_addr[KFmode].reload_gpr_vsx = CODE_FOR_reload_gpr_from_vsxkf;
+		  reg_addr[KFmode].reload_vsx_gpr = CODE_FOR_reload_vsx_from_gprkf;
+		}
+
+	      if (FLOAT128_VECTOR_P (TFmode))
+		{
+		  reg_addr[TFmode].reload_gpr_vsx = CODE_FOR_reload_gpr_from_vsxtf;
+		  reg_addr[TFmode].reload_vsx_gpr = CODE_FOR_reload_vsx_from_gprtf;
+		}
 	    }
 	}
       else
@@ -3200,14 +3216,18 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	  reg_addr[V4SFmode].reload_load   = CODE_FOR_reload_v4sf_si_load;
 	  reg_addr[V2DFmode].reload_store  = CODE_FOR_reload_v2df_si_store;
 	  reg_addr[V2DFmode].reload_load   = CODE_FOR_reload_v2df_si_load;
-	  reg_addr[KFmode].reload_store    = CODE_FOR_reload_kf_si_store;
-	  reg_addr[KFmode].reload_load     = CODE_FOR_reload_kf_si_load;
 	  reg_addr[DFmode].reload_store    = CODE_FOR_reload_df_si_store;
 	  reg_addr[DFmode].reload_load     = CODE_FOR_reload_df_si_load;
 	  reg_addr[DDmode].reload_store    = CODE_FOR_reload_dd_si_store;
 	  reg_addr[DDmode].reload_load     = CODE_FOR_reload_dd_si_load;
 	  reg_addr[SFmode].reload_store    = CODE_FOR_reload_sf_si_store;
 	  reg_addr[SFmode].reload_load     = CODE_FOR_reload_sf_si_load;
+
+	  if (FLOAT128_VECTOR_P (KFmode))
+	    {
+	      reg_addr[KFmode].reload_store = CODE_FOR_reload_kf_si_store;
+	      reg_addr[KFmode].reload_load  = CODE_FOR_reload_kf_si_load;
+	    }
 
 	  if (FLOAT128_IEEE_P (TFmode))
 	    {
