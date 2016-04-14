@@ -1,5 +1,10 @@
 2016-04-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70622
+	* parser.c (cp_parser_init_declarator): Add auto_result parm.
+	(cp_parser_simple_declaration): Pass it.
+	(strip_declarator_types): New.
+
 	PR c++/70543
 	* pt.c (value_dependent_expression_p) [VAR_DECL]: A type-dependent
 	initializer also makes the variable value-dependent.
