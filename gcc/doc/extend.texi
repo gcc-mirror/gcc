@@ -1638,48 +1638,14 @@ foo (int n)
 You can use the function @code{alloca} to get an effect much like
 variable-length arrays.  The function @code{alloca} is available in
 many other C implementations (but not in all).  On the other hand,
-variable-length arrays are available in GCC for all targets and
-provide type safety.
+variable-length arrays are more elegant.
 
 There are other differences between these two methods.  Space allocated
 with @code{alloca} exists until the containing @emph{function} returns.
 The space for a variable-length array is deallocated as soon as the array
 name's scope ends, unless you also use @code{alloca} in this scope.
 
-Unlike GCC, G++ instruments variable-length arrays (@xref{Variable Length})
-with checks for erroneous uses: when a variable-length array object is
-created its runtime bounds are checked to detect non-positive values,
-integer overflows, sizes in excess of SIZE_MAX / 2 bytes, and excess
-initializers.  When an erroneous variable-length array is detected
-the runtime arranges for an exception to be thrown that matches a handler
-of type @code{std::bad_array_length}.
-
-Also unlike GCC, G++ allows variable-length arrays to be initialized.
-However, unlike initializer lists for ordinary multidimensional arrays,
-those for multidimensional variable-length arrays must be enclosed in
-pairs of curly braces delimiting each sequence of values to use to
-initialize each subarray.  Initializer lists that aren't unambiguously
-enclosed in braces are rejected with an error.  For example, in the
-following function, the initializer list for the ordinary @code{array}
-is accepted even though it isn't fully enclosed in braces.  The same
-initializer list, however, wouldn't be accepted for a multidimensional
-variable-length array.  To initialize the variable-length array @code{vla},
-the elements of the subarray @code{vla[m]} must be enclosed in braces
-as shown.  As with ordinary arrays, elements that aren't initialized
-explicitly are default-initialized.
-
-@smallexample
-void
-foo (int m, int n)
-@{
-  int array[2][3] = @{ 1, 2, 4, 5, 6 @};
-  int vla[m][n] = @{ @{ 1, 2 @}, @{ 4, 5, 6 @} @};
-@}
-@end smallexample
-
-
-In C programs (but not in C++) variable-length arrays can also be declared
-as function arguments:
+You can also use variable-length arrays as arguments to functions:
 
 @smallexample
 struct entry

@@ -1,3 +1,17 @@
+2016-04-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/69517
+	PR c++/70019
+	PR c++/70588
+	* c-c++-common/ubsan/vla-1.c: Revert.
+	* g++.dg/cpp1y/vla11.C: Same.
+	* g++.dg/cpp1y/vla12.C: Same.
+	* g++.dg/cpp1y/vla13.C: Same.
+	* g++.dg/cpp1y/vla14.C: Same.
+	* g++.dg/cpp1y/vla3.C: Same.
+	* gcc/testsuite/g++.dg/init/array24.C: Same.
+	* g++.dg/ubsan/vla-1.C: Same.
+
 2016-04-14  Marek Polacek  <polacek@redhat.com>
 	    Jan Hubicka  <hubicka@ucw.cz>
 

@@ -1,3 +1,10 @@
+2016-04-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/69517
+	PR c++/70019
+	PR c++/70588
+	* cp-tree.h, decl.c, init.c, typeck2.c: Revert.
+
 2016-04-14  Jason Merrill  <jason@redhat.com>
 
 	* call.c, decl.c, error.c, cp-tree.h, decl.c: Revert empty

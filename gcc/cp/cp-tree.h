@@ -5944,7 +5944,6 @@ extern tree build_value_init_noctor		(tree, tsubst_flags_t);
 extern tree get_nsdmi				(tree, bool);
 extern tree build_offset_ref			(tree, tree, bool,
 						 tsubst_flags_t);
-extern tree throw_bad_array_length              (void);
 extern tree throw_bad_array_new_length		(void);
 extern tree build_new				(vec<tree, va_gc> **, tree, tree,
 						 vec<tree, va_gc> **, int,
@@ -5966,7 +5965,6 @@ extern tree scalar_constant_value		(tree);
 extern tree decl_really_constant_value		(tree);
 extern int diagnose_uninitialized_cst_or_ref_member (tree, bool, bool);
 extern tree build_vtbl_address                  (tree);
-extern tree build_vla_check                     (tree, tree = NULL_TREE);
 
 /* in lex.c */
 extern void cxx_dup_lang_specific_decl		(tree);
