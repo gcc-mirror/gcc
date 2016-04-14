@@ -1,3 +1,10 @@
+2016-04-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/70640
+	* gcc.target/powerpc/pr70640.c: Fix test so it correctly works on
+	a power7 system that does not have an assembler that supports
+	power8.
+
 2016-04-14  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/69517
