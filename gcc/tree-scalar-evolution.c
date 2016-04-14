@@ -1510,6 +1510,9 @@ analyze_evolution_in_loop (gphi *loop_phi_node,
       /* When there are multiple back edges of the loop (which in fact never
 	 happens currently, but nevertheless), merge their evolutions.  */
       evolution_function = chrec_merge (evolution_function, ev_fn);
+
+      if (evolution_function == chrec_dont_know)
+	break;
     }
 
   if (dump_file && (dump_flags & TDF_SCEV))
@@ -1687,6 +1690,8 @@ interpret_condition_phi (struct loop *loop, gphi *condition_phi)
 	(loop, PHI_ARG_DEF (condition_phi, i));
 
       res = chrec_merge (res, branch_chrec);
+      if (res == chrec_dont_know)
+	break;
     }
 
   return res;

@@ -1,5 +1,12 @@
 2016-04-14  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/70614
+	* tree-scalar-evolution.c (analyze_evolution_in_loop): Terminate
+	loop if the evolution dropped to chrec_dont_know.
+	(interpret_condition_phi): Likewise.
+
+2016-04-14  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/70623
 	* tree-ssa-pre.c (changed_blocks): Make global ...
 	(compute_antic): ... local here.  Move and fix worklist
