@@ -1,3 +1,8 @@
+2016-04-14  Jason Merrill  <jason@redhat.com>
+
+	* call.c, decl.c, error.c, cp-tree.h, decl.c: Revert empty
+	parameter ABI change.
+
 2016-04-13  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/69517

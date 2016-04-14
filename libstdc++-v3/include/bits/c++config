@@ -84,32 +84,13 @@
 # define _GLIBCXX_DEPRECATED
 #endif
 
-#if __cplusplus
-
 // Macros for ABI tag attributes.
 #ifndef _GLIBCXX_ABI_TAG_CXX11
 # define _GLIBCXX_ABI_TAG_CXX11 __attribute ((__abi_tag__ ("cxx11")))
 #endif
 
-#if __GXX_ABI_VERSION >= 1010
-namespace std
-{
-  inline namespace _V2 { }
-}
-# define _GLIBCXX_BEGIN_NAMESPACE_EMPTY_TYPES \
-  _GLIBCXX_END_NAMESPACE_VERSION \
-  namespace _V2 { \
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-# define _GLIBCXX_END_NAMESPACE_EMPTY_TYPES \
-  _GLIBCXX_END_NAMESPACE_VERSION \
-  } \
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-# define _GLIBCXX_ABI_TAG_EMPTY __attribute ((__abi_tag__ ("cxxempty")))
-#else
-# define _GLIBCXX_BEGIN_NAMESPACE_EMPTY_TYPES
-# define _GLIBCXX_END_NAMESPACE_EMPTY_TYPES
-# define _GLIBCXX_ABI_TAG_EMPTY
-#endif
+
+#if __cplusplus
 
 // Macro for constexpr, to support in mixed 03/0x mode.
 #ifndef _GLIBCXX_CONSTEXPR
