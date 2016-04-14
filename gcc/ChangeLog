@@ -1,3 +1,17 @@
+2016-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70594
+	* ipa-utils.h (polymorphic_ctor_dtor_p): New prototype.
+	* ipa-polymorphic-call.c (polymorphic_ctor_dtor_p): New function.
+	(inlined_polymorphic_ctor_dtor_block_p): Use it.
+	* tree-ssa-live.c (remove_unused_scope_block_p): When
+	in_ctor_dtor_block, avoid discarding not just BLOCKs with
+	BLOCK_ABSTRACT_ORIGIN being FUNCTION_DECL, but even when
+	block_ultimate_origin is FUNCTION_DECL.
+	(remove_unused_locals): If current_function_decl is
+	polymorphic_ctor_dtor_p, pass initial true to
+	remove_unused_scope_block_p' is_ctor_dtor_block.
+
 2016-04-14  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/69517
