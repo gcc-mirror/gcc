@@ -663,26 +663,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_insert_multi_node(__node_type* __hint,
 			   __hash_code __code, __node_type* __n);
 
-      template<bool _Uniq, typename... _Args>
-	typename enable_if<_Uniq, std::pair<iterator, bool>>::type
-	_M_emplace(__bool_constant<_Uniq>, _Args&&... __args);
+      template<typename... _Args>
+	std::pair<iterator, bool>
+	_M_emplace(std::true_type, _Args&&... __args);
 
-      template<bool _Uniq, typename... _Args>
-	typename enable_if<!_Uniq, iterator>::type
-	_M_emplace(__bool_constant<_Uniq> __uk, _Args&&... __args)
-	{
-	  return _M_emplace_hint(cend(), __uk, std::forward<_Args>(__args)...);
-	}
+      template<typename... _Args>
+	iterator
+	_M_emplace(std::false_type __uk, _Args&&... __args)
+	{ return _M_emplace(cend(), __uk, std::forward<_Args>(__args)...); }
 
       // Emplace with hint, useless when keys are unique.
       template<typename... _Args>
 	iterator
-	_M_emplace_hint(const_iterator, std::true_type __uk, _Args&&... __args)
+	_M_emplace(const_iterator, std::true_type __uk, _Args&&... __args)
 	{ return _M_emplace(__uk, std::forward<_Args>(__args)...).first; }
 
       template<typename... _Args>
 	iterator
-	_M_emplace_hint(const_iterator, std::false_type, _Args&&... __args);
+	_M_emplace(const_iterator, std::false_type, _Args&&... __args);
 
       template<typename _Arg, typename _NodeGenerator>
 	std::pair<iterator, bool>
@@ -714,10 +712,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  const _NodeGenerator&, std::false_type);
 
       size_type
-      _M_erase(const key_type&, std::true_type);
+      _M_erase(std::true_type, const key_type&);
 
       size_type
-      _M_erase(const key_type&, std::false_type);
+      _M_erase(std::false_type, const key_type&);
 
       iterator
       _M_erase(size_type __bkt, __node_base* __prev_n, __node_type* __n);
@@ -733,8 +731,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	iterator
 	emplace_hint(const_iterator __hint, _Args&&... __args)
 	{
-	  return _M_emplace_hint(__hint, __unique_keys(),
-				 std::forward<_Args>(__args)...);
+	  return _M_emplace(__hint, __unique_keys(),
+			    std::forward<_Args>(__args)...);
 	}
 
       // Insert member functions via inheritance.
@@ -750,7 +748,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       size_type
       erase(const key_type& __k)
-      { return _M_erase(__k, __unique_keys()); }
+      { return _M_erase(__unique_keys(), __k); }
 
       iterator
       erase(const_iterator, const_iterator);
@@ -1504,12 +1502,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _Alloc, typename _ExtractKey, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
 	   typename _Traits>
-    template<bool _Uniq, typename... _Args>
+    template<typename... _Args>
       auto
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-      _M_emplace(__bool_constant<_Uniq>, _Args&&... __args)
-      -> typename enable_if<_Uniq, pair<iterator, bool>>::type
+      _M_emplace(std::true_type, _Args&&... __args)
+      -> pair<iterator, bool>
       {
 	// First build the node to get access to the hash code
 	__node_type* __node = this->_M_allocate_node(std::forward<_Args>(__args)...);
@@ -1546,7 +1544,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-      _M_emplace_hint(const_iterator __hint, std::false_type, _Args&&... __args)
+      _M_emplace(const_iterator __hint, std::false_type, _Args&&... __args)
       -> iterator
       {
 	// First build the node to get its hash code.
@@ -1771,7 +1769,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     auto
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    _M_erase(const key_type& __k, std::true_type)
+    _M_erase(std::true_type, const key_type& __k)
     -> size_type
     {
       __hash_code __code = this->_M_hash_code(__k);
@@ -1795,7 +1793,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     auto
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    _M_erase(const key_type& __k, std::false_type)
+    _M_erase(std::false_type, const key_type& __k)
     -> size_type
     {
       __hash_code __code = this->_M_hash_code(__k);

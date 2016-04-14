@@ -72,16 +72,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
 #if __cplusplus >= 201103L
-
-_GLIBCXX_BEGIN_NAMESPACE_EMPTY_TYPES
-
   /// piecewise_construct_t
   struct piecewise_construct_t { explicit piecewise_construct_t() = default; };
 
   /// piecewise_construct
   constexpr piecewise_construct_t piecewise_construct = piecewise_construct_t();
-
-_GLIBCXX_END_NAMESPACE_EMPTY_TYPES
 
   // Forward declarations.
   template<typename...>

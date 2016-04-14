@@ -166,7 +166,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  __shared_ptr will release __p by calling __d(__p)
        */
       template<typename _Tp1, typename _Deleter, typename _Alloc>
-	_GLIBCXX_ABI_TAG_EMPTY
 	shared_ptr(_Tp1* __p, _Deleter __d, _Alloc __a)
 	: __shared_ptr<_Tp>(__p, __d, std::move(__a)) { }
 
@@ -186,7 +185,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  The last owner will call __d(__p)
        */
       template<typename _Deleter, typename _Alloc>
-	_GLIBCXX_ABI_TAG_EMPTY
 	shared_ptr(nullptr_t __p, _Deleter __d, _Alloc __a)
 	: __shared_ptr<_Tp>(__p, __d, std::move(__a)) { }
 

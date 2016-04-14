@@ -3718,25 +3718,3 @@ qualified_name_lookup_error (tree scope, tree name,
       suggest_alternatives_for (location, name);
     }
 }
-
-/* Like error et al, but return the formatted message as a STRING_CST.  */
-
-tree
-pp_format_to_string (const char *msg, ...)
-{
-  pretty_printer *pp = global_dc->printer;
-  text_info text;
-  va_list ap;
-
-  va_start (ap, msg);
-  text.err_no = errno;
-  text.args_ptr = &ap;
-  text.format_spec = msg;
-  pp_format (pp, &text);
-  pp_output_formatted_text (pp);
-  va_end (ap);
-  const char *fmt = pp_formatted_text (pp);
-  tree str = build_string (strlen (fmt) + 1, fmt);
-  pp_clear_output_area (pp);
-  return str;
-}

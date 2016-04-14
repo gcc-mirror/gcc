@@ -436,7 +436,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typedef _Sp_ebo_helper<1, _Alloc>	_Alloc_base;
 
       public:
-	_GLIBCXX_ABI_TAG_EMPTY
 	_Impl(_Ptr __p, _Deleter __d, const _Alloc& __a) noexcept
 	: _M_ptr(__p), _Del_base(__d), _Alloc_base(__a)
 	{ }
@@ -455,7 +454,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_impl(__p, __d, _Alloc()) { }
 
       // __d(__p) must not throw.
-      _GLIBCXX_ABI_TAG_EMPTY
       _Sp_counted_deleter(_Ptr __p, _Deleter __d, const _Alloc& __a) noexcept
       : _M_impl(__p, __d, __a) { }
 
@@ -586,7 +584,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       template<typename _Ptr, typename _Deleter, typename _Alloc>
-	_GLIBCXX_ABI_TAG_EMPTY
 	__shared_count(_Ptr __p, _Deleter __d, _Alloc __a) : _M_pi(0)
 	{
 	  typedef _Sp_counted_deleter<_Ptr, _Deleter, _Alloc, _Lp> _Sp_cd_type;
@@ -903,7 +900,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Tp1, typename _Deleter, typename _Alloc>
-	_GLIBCXX_ABI_TAG_EMPTY
 	__shared_ptr(_Tp1* __p, _Deleter __d, _Alloc __a)
 	: _M_ptr(__p), _M_refcount(__p, __d, std::move(__a))
 	{
@@ -918,7 +914,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       template<typename _Deleter, typename _Alloc>
-	_GLIBCXX_ABI_TAG_EMPTY
         __shared_ptr(nullptr_t __p, _Deleter __d, _Alloc __a)
 	: _M_ptr(0), _M_refcount(__p, __d, std::move(__a))
 	{ }
@@ -1044,7 +1039,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ __shared_ptr(__p, __d).swap(*this); }
 
       template<typename _Tp1, typename _Deleter, typename _Alloc>
-	_GLIBCXX_ABI_TAG_EMPTY
 	void
         reset(_Tp1* __p, _Deleter __d, _Alloc __a)
         { __shared_ptr(__p, __d, std::move(__a)).swap(*this); }

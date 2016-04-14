@@ -73,7 +73,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "tree-chkp.h"
 #include "rtl-chkp.h"
-#include "langhooks.h"
 
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
@@ -6221,15 +6220,6 @@ pass_expand::execute (function *fun)
 		 "all local arrays are less than %d bytes long",
 		 (int) PARAM_VALUE (PARAM_SSP_BUFFER_SIZE));
     }
-
-  if (warn_abi)
-    if (tree attr = lookup_attribute ("abi warning",
-				      DECL_ATTRIBUTES (current_function_decl)))
-      warning_at (DECL_SOURCE_LOCATION (current_function_decl),
-		  OPT_Wabi, "definition of %qs: %s",
-		  identifier_to_locale (lang_hooks.decl_printable_name
-					(current_function_decl, 1)),
-		  TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr))));
 
   /* Set up parameters and prepare for return, for the function.  */
   expand_function_start (current_function_decl);
