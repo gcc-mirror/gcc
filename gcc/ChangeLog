@@ -1,3 +1,10 @@
+2016-04-14  Marek Polacek  <polacek@redhat.com>
+	    Jan Hubicka  <hubicka@ucw.cz>
+
+	PR c++/70029
+	* tree.c (verify_type): Disable the canonical type of main variant
+	check.
+
 2016-04-14  Jason Merrill  <jason@redhat.com>
 
 	* cfgexpand.c, expr.c: Revert previous change.
