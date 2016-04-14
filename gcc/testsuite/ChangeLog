@@ -1,5 +1,8 @@
 2016-04-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
+	PR target/70669
+	* gcc.target/powerpc/pr70669.c: New test.
+
 	PR target/70640
 	* gcc.target/powerpc/pr70640.c: Fix test so it correctly works on
 	a power7 system that does not have an assembler that supports
