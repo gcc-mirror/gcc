@@ -1,5 +1,9 @@
 2016-04-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70543
+	* pt.c (value_dependent_expression_p) [VAR_DECL]: A type-dependent
+	initializer also makes the variable value-dependent.
+
 	PR c++/70648
 	* constexpr.c (cxx_eval_store_expression): Also copy
 	CONSTRUCTOR_NO_IMPLICIT_ZERO.
