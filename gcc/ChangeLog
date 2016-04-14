@@ -1,3 +1,9 @@
+2016-04-14  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/70643
+	* omp-low.c (lower_oacc_reductions): Check for TREE_CONSTANT
+	when building a mem ref for the incoming reduction variable.
+
 2016-04-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70614
