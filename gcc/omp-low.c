@@ -5691,7 +5691,7 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 	    v3 = build_simple_mem_ref (v3);
 	    outgoing = build_simple_mem_ref (outgoing);
 
-	    if (TREE_CODE (incoming) != INTEGER_CST)
+	    if (!TREE_CONSTANT (incoming))
 	      incoming = build_simple_mem_ref (incoming);
 	  }
 	else
