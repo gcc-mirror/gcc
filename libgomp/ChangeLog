@@ -1,5 +1,10 @@
 2016-04-14  Cesar Philippidis  <cesar@codesourcery.com>
 
+	* testsuite/libgomp.oacc-fortran/non-scalar-data.f90: Don't
+	pass parameter variables to subroutines.
+
+2016-04-14  Cesar Philippidis  <cesar@codesourcery.com>
+
 	PR middle-end/70643
 	* testsuite/libgomp.oacc-fortran/pr70643.f90: New test.
 
