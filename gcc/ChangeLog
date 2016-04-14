@@ -1,3 +1,10 @@
+2016-04-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/69517
+	PR c++/70019
+	PR c++/70588
+	* doc/extend.texi (Variable Length): Revert.
+
 2016-04-14  Marek Polacek  <polacek@redhat.com>
 	    Jan Hubicka  <hubicka@ucw.cz>
 

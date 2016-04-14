@@ -3,5 +3,5 @@
 
 void foo(int i)
 {
-  int x[][i] = { { 0 } };
+  int x[][i] = { 0 };
 }
