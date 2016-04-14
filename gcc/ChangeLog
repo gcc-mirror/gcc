@@ -1,3 +1,16 @@
+2016-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70623
+	* tree-ssa-pre.c (changed_blocks): Make global ...
+	(compute_antic): ... local here.  Move and fix worklist
+	handling here.  Do not clear EDGE_DFS_BACK or call mark_dfs_back_edges.
+	(compute_antic_aux): Add dumping for MAX assumed succs.  Remove
+	worklist handling, dump when ANTIC_IN changed.
+	(compute_partial_antic_aux): Remove worklist handling.
+	(init_pre): Do not compute post dominators.  Add a comment about
+	the CFG order chosen.
+	(fini_pre): Do not free post dominators.
+
 2016-04-13  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/69517
