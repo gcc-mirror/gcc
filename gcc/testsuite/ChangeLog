@@ -1,3 +1,8 @@
+2016-04-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70671
+	* gcc.dg/bitfld-22.c: New test.
+
 2016-04-15  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* gcc.target/i386/pr46470.c: Add -mno-red-zone to dg-options for

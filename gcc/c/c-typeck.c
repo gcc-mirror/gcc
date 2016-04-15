@@ -4436,8 +4436,8 @@ build_unary_op (location_t location,
 	case COMPONENT_REF:
 	  if (DECL_C_BIT_FIELD (TREE_OPERAND (arg, 1)))
 	    {
-	      error ("cannot take address of bit-field %qD",
-		     TREE_OPERAND (arg, 1));
+	      error_at (location, "cannot take address of bit-field %qD",
+			TREE_OPERAND (arg, 1));
 	      return error_mark_node;
 	    }
 
@@ -4449,15 +4449,16 @@ build_unary_op (location_t location,
 	      if (!AGGREGATE_TYPE_P (TREE_TYPE (arg))
 		  && !VECTOR_TYPE_P (TREE_TYPE (arg)))
 		{
-		  error ("cannot take address of scalar with reverse storage "
-			 "order");
+		  error_at (location, "cannot take address of scalar with "
+			    "reverse storage order");
 		  return error_mark_node;
 		}
 
 	      if (TREE_CODE (TREE_TYPE (arg)) == ARRAY_TYPE
 		  && TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (arg)))
-		warning (OPT_Wscalar_storage_order, "address of array with "
-			"reverse scalar storage order requested");
+		warning_at (location, OPT_Wscalar_storage_order,
+			    "address of array with reverse scalar storage "
+			    "order requested");
 	    }
 
 	default:
