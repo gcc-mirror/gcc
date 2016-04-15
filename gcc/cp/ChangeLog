@@ -1,3 +1,19 @@
+2016-04-15  Jason Merrill  <jason@redhat.com>
+	    Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/70594
+	* constexpr.c (constexpr_call_table): Preserve in GC.
+	(struct fundef_copy, struct fundef_copies_table_t):	Delete.
+	(fundef_copies_table): Preserve in GC. Change to pointer to
+	tree->tree hash.
+	(maybe_initialize_fundef_copies_table): Adjust.
+	(get_fundef_copy): Return a TREE_LIST.  Use non-inserting search.
+	(save_fundef_copy): Adjust for a TREE_LIST.
+	(cxx_eval_call_expression): Adjust for a fundef_copy TREE_LIST.
+	(fini_constexpr): New.
+	* cp-tree.h (fini_constexpr): Declare.
+	* decl2.c (c_parse_final_cleanups): Call fini_constexpr.
+
 2016-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/70436
