@@ -1,3 +1,10 @@
+2016-04-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/70681
+	* gcc.dg/ira-shrinkwrap-prep-2.c: XFAIL shrinkwrapping
+	dump scan on arm and powerpc.
+	* gcc.dg/pr10474.c: Likewise.
+
 2016-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/69517
