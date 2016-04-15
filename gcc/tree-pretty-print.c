@@ -40,19 +40,19 @@ static void pretty_print_string (pretty_printer *, const char*);
 static void newline_and_indent (pretty_printer *, int);
 static void maybe_init_pretty_print (FILE *);
 static void print_struct_decl (pretty_printer *, const_tree, int, int);
-static void do_niy (pretty_printer *, const_tree);
+static void do_niy (pretty_printer *, const_tree, int);
 
 #define INDENT(SPACE) do { \
   int i; for (i = 0; i<SPACE; i++) pp_space (pp); } while (0)
 
-#define NIY do_niy (pp, node)
+#define NIY do_niy (pp, node, flags)
 
 static pretty_printer *tree_pp;
 
 /* Try to print something for an unknown tree code.  */
 
 static void
-do_niy (pretty_printer *pp, const_tree node)
+do_niy (pretty_printer *pp, const_tree node, int flags)
 {
   int i, len;
 
@@ -65,7 +65,7 @@ do_niy (pretty_printer *pp, const_tree node)
       for (i = 0; i < len; ++i)
 	{
 	  newline_and_indent (pp, 2);
-	  dump_generic_node (pp, TREE_OPERAND (node, i), 2, 0, false);
+	  dump_generic_node (pp, TREE_OPERAND (node, i), 2, flags, false);
 	}
     }
 

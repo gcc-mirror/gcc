@@ -1,3 +1,10 @@
+2016-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70675
+	* tree-pretty-print.c (do_niy): Add FLAGS argument, pass it down
+	to dump_generic_node.
+	(NIY): Pass also flags to do_niy.
+
 2016-04-15  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* omp-low.c (simd_clone_struct_alloc, simd_clone_struct_copy)
