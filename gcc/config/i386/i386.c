@@ -3709,7 +3709,7 @@ make_pass_stv (gcc::context *ctxt)
 
 /* Return true if a red-zone is in use.  */
 
-static inline bool
+bool
 ix86_using_red_zone (void)
 {
   return TARGET_RED_ZONE && !TARGET_64BIT_MS_ABI;
