@@ -31,4 +31,4 @@ Link in code for a __main kernel.
 
 moptimize
 Target Report Var(nvptx_optimize) Init(-1)
-Optimize partition neutering
+Optimize partition neutering.
