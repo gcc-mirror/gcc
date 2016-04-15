@@ -1,3 +1,9 @@
+2016-04-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70651
+	* c-common.c (build_va_arg): Change two asserts into errors and return
+	error_mark_node.
+
 2016-04-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/70639

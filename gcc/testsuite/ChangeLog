@@ -1,3 +1,8 @@
+2016-04-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70651
+	* c-c++-common/pr70651.c: New test.
+
 2016-04-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/70681
