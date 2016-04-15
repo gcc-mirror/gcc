@@ -1,5 +1,9 @@
 2016-04-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70528
+	* class.c (type_has_constexpr_default_constructor): Return true
+	for an implicitly declared constructor.
+
 	PR c++/70622
 	* parser.c (cp_parser_init_declarator): Add auto_result parm.
 	(cp_parser_simple_declaration): Pass it.
