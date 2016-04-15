@@ -998,7 +998,7 @@ get_fundef_copy (tree fun)
 
   tree copy;
   tree *slot = fundef_copies_table->get (fun);
-  if (slot == NULL)
+  if (slot == NULL || *slot == NULL_TREE)
     {
       copy = build_tree_list (NULL, NULL);
       /* PURPOSE is body, VALUE is parms, TYPE is result.  */

@@ -1,5 +1,8 @@
 2016-04-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70685
+	* constexpr.c (get_fundef_copy): Handle null *slot.
+
 	PR c++/70505
 	* pt.c (tsubst_baselink): Give the new TEMPLATE_ID_EXPR
 	unknown_type_node, too.
