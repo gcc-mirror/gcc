@@ -1,3 +1,8 @@
+2016-04-15  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/70662
+	* gcc.target/i386/pr70662.c: New test.
+
 2016-04-15  Richard Biener  <rguenther@suse.de>
 	Alan Modra  <amodra@gmail.com>
 

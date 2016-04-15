@@ -1,3 +1,10 @@
+2016-04-15  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/70662
+	* config/i386/sse.md: Use proper memory operand
+	modifiers.
+
+
 2016-04-15  Richard Biener  <rguenther@suse.de>
 	Alan Modra  <amodra@gmail.com>
 
