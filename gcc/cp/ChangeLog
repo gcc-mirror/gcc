@@ -1,4 +1,9 @@
 2016-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70685
+	* constexpr.c (get_fundef_copy): Handle null *slot.
+
+2016-04-15  Jason Merrill  <jason@redhat.com>
 	    Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/70594
