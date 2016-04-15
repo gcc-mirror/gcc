@@ -1,3 +1,10 @@
+2016-04-15  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* config/i386/i386-protos.h (ix86_using_red_zone): Declare.
+	* config/i386/i386.c (ix86_using_red_zone): No longer static.
+	* config/i386/i386.md (stack decrement to push peepholes): Guard
+	with !x86_using_red_zone ().
+
 2016-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/70675
