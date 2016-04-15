@@ -6880,6 +6880,7 @@ bool cilkplus_an_triplet_types_ok_p             (location_t, tree, tree, tree,
 						 tree);
 
 /* In constexpr.c */
+extern void fini_constexpr			(void);
 extern bool literal_type_p                      (tree);
 extern tree register_constexpr_fundef           (tree, tree);
 extern bool check_constexpr_ctor_body           (tree, tree, bool);
