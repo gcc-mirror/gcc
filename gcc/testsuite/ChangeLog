@@ -1,3 +1,15 @@
+2016-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/70436
+	* c-c++-common/Wparentheses-1.c: New test.
+	* c-c++-common/gomp/Wparentheses-1.c: New test.
+	* c-c++-common/gomp/Wparentheses-2.c: New test.
+	* c-c++-common/gomp/Wparentheses-3.c: New test.
+	* c-c++-common/gomp/Wparentheses-4.c: New test.
+	* c-c++-common/cilk-plus/PS/Wparentheses-1.c: New test.
+	* c-c++-common/cilk-plus/CK/Wparentheses-1.c: New test.
+	* c-c++-common/goacc/Wparentheses-1.c: New test.
+
 2016-04-15  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70662

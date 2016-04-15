@@ -1,3 +1,27 @@
+2016-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/70436
+	* parser.c (cp_parser_pragma): Add IF_P argument, pass it down
+	where needed.
+	(cp_parser_declaration_seq_opt, cp_parser_member_specification_opt,
+	cp_parser_objc_interstitial_code, cp_parser_omp_declare_simd,
+	cp_parser_oacc_routine): Adjust cp_parser_pragma callers.
+	(cp_parser_statement): Likewise.  Adjust cp_parser_cilk_for caller.
+	(cp_parser_omp_structured_block): Add IF_P argument, pass it down to
+	cp_parser_statement.
+	(cp_parser_oacc_data, cp_parser_oacc_host_data, cp_parser_oacc_loop,
+	cp_parser_oacc_kernels_parallel, cp_parser_omp_critical,
+	cp_parser_omp_simd, cp_parser_omp_for, cp_parser_omp_master,
+	cp_parser_omp_ordered, cp_parser_omp_parallel, cp_parser_omp_single,
+	cp_parser_omp_task, cp_parser_omp_taskgroup, cp_parser_omp_distribute,
+	cp_parser_omp_teams, cp_parser_omp_target_data, cp_parser_omp_target,
+	cp_parser_omp_taskloop, cp_parser_omp_construct,
+	cp_parser_cilk_grainsize, cp_parser_cilk_simd, cp_parser_cilk_for):
+	Add IF_P argument, pass it down where needed.
+	(cp_parser_omp_for_loop): Likewise.  Clear IF_P if nbraces.
+	(cp_parser_omp_sections_scope): Adjust cp_parser_omp_structured_block
+	calls.
+
 2016-04-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70494
