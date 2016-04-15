@@ -3346,7 +3346,6 @@ add_implicitly_declared_members (tree t, tree* access_decls,
       CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
       if (cxx_dialect >= cxx11)
 	TYPE_HAS_CONSTEXPR_CTOR (t)
-	  /* This might force the declaration.  */
 	  = type_has_constexpr_default_constructor (t);
     }
 
@@ -5349,8 +5348,11 @@ type_has_constexpr_default_constructor (tree t)
     {
       if (!TYPE_HAS_COMPLEX_DFLT (t))
 	return trivial_default_constructor_is_constexpr (t);
-      /* Non-trivial, we need to check subobject constructors.  */
-      lazily_declare_fn (sfk_constructor, t);
+      /* Assume it's constexpr to avoid unnecessary instantiation; if the
+	 definition would have made the class non-literal, it will still be
+	 non-literal because of the base or member in question, and that
+	 gives a better diagnostic.  */
+      return true;
     }
   fns = locate_ctor (t);
   return (fns && DECL_DECLARED_CONSTEXPR_P (fns));

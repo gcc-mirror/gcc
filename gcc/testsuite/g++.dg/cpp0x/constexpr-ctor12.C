@@ -3,6 +3,7 @@
 
 template <typename Tp>
 struct C {
+  C() = default;
   constexpr C(const Tp& r) { }
 };
 
