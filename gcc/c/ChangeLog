@@ -1,3 +1,9 @@
+2016-04-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c/70671
+	* c-typeck.c (build_unary_op): Pass location down to error and
+	warning call.
+
 2016-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/70436
