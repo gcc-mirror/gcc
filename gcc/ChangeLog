@@ -1,3 +1,9 @@
+2016-04-15  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/70662
+	* config/i386/sse.md(define_insn "<avx512>_vec_dup<mode><mask_name>"):
+	Fix mode size check.
+
 2016-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 7.0.0.
