@@ -13974,6 +13974,8 @@ of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 @samp{armv7ve}, @samp{armv8-a}, @samp{armv8-a+crc}, @samp{armv8.1-a},
 @samp{armv8.1-a+crc}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}.
 
+Architecture revisions older than @option{armv4t} are deprecated.
+
 @option{-march=armv7ve} is the armv7-a architecture with virtualization
 extensions.
 
