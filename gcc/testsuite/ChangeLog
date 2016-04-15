@@ -1,5 +1,10 @@
 2016-04-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/69517
+	PR c++/70019
+	PR c++/70588
+	* g++.dg/cpp1y/vla11.C: Revert for real.
+
 	PR c/70436
 	* c-c++-common/Wparentheses-1.c: New test.
 	* c-c++-common/gomp/Wparentheses-1.c: New test.
@@ -16,7 +21,7 @@
 	* gcc.target/i386/pr70662.c: New test.
 
 2016-04-15  Richard Biener  <rguenther@suse.de>
-	Alan Modra  <amodra@gmail.com>
+	    Alan Modra  <amodra@gmail.com>
 
 	PR tree-optimization/70130
 	* gcc.dg/vect/O3-pr70130.c: New testcase.
