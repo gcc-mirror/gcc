@@ -688,14 +688,9 @@ split_nonconstant_init_1 (tree dest, tree init)
 		  code = build_stmt (input_location, EXPR_STMT, code);
 		  code = maybe_cleanup_point_expr_void (code);
 		  add_stmt (code);
-		  if (type_build_dtor_call (inner_type))
-		    {
-		      code = (build_special_member_call
-			      (sub, complete_dtor_identifier, NULL, inner_type,
-			       LOOKUP_NORMAL, tf_warning_or_error));
-		      if (!TYPE_HAS_TRIVIAL_DESTRUCTOR (inner_type))
-			finish_eh_cleanup (code);
-		    }
+		  if (tree cleanup
+		      = cxx_maybe_build_cleanup (sub, tf_warning_or_error))
+		    finish_eh_cleanup (cleanup);
 		}
 
 	      num_split_elts++;
