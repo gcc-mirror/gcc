@@ -1,3 +1,9 @@
+2016-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67164
+	* pt.c (copy_template_args): New.
+	(tsubst_pack_expansion): Use it.
+
 2016-04-13  Alan Modra  <amodra@gmail.com>
 
 	Backport from mainline
