@@ -1369,6 +1369,7 @@ OBJS = \
 	modulo-sched.o \
 	multiple_target.o \
 	omp-low.o \
+	omp-simd-clone.o \
 	optabs.o \
 	optabs-libfuncs.o \
 	optabs-query.o \
