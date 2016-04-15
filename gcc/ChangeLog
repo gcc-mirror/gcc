@@ -1,3 +1,8 @@
+2016-04-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* doc/invoke.texi (ARM Options): Add note on deprecation of pre-ARMv4T
+	architecture revisions.
+
 2016-04-15  Bernd Schmidt  <bschmidt@redhat.com>
 
 	* config/i386/i386-protos.h (ix86_using_red_zone): Declare.
