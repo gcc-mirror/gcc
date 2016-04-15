@@ -915,7 +915,7 @@ struct constexpr_ctx {
 /* A table of all constexpr calls that have been evaluated by the
    compiler in this translation unit.  */
 
-static GTY ((deletable)) hash_table<constexpr_call_hasher> *constexpr_call_table;
+static GTY (()) hash_table<constexpr_call_hasher> *constexpr_call_table;
 
 static tree cxx_eval_constant_expression (const constexpr_ctx *, tree,
 					  bool, bool *, bool *, tree * = NULL);
@@ -965,17 +965,6 @@ maybe_initialize_constexpr_call_table (void)
     constexpr_call_table = hash_table<constexpr_call_hasher>::create_ggc (101);
 }
 
-/* The representation of a single node in the per-function freelist maintained
-   by FUNDEF_COPIES_TABLE.  */
-
-struct fundef_copy
-{
-  tree body;
-  tree parms;
-  tree res;
-  fundef_copy *prev;
-};
-
 /* During constexpr CALL_EXPR evaluation, to avoid issues with sharing when
    a function happens to get called recursively, we unshare the callee
    function's body and evaluate this unshared copy instead of evaluating the
@@ -983,45 +972,42 @@ struct fundef_copy
 
    FUNDEF_COPIES_TABLE is a per-function freelist of these unshared function
    copies.  The underlying data structure of FUNDEF_COPIES_TABLE is a hash_map
-   that's keyed off of the original FUNCTION_DECL and whose value is the chain
-   of this function's unused copies awaiting reuse.  */
+   that's keyed off of the original FUNCTION_DECL and whose value is a
+   TREE_LIST of this function's unused copies awaiting reuse.
 
-struct fundef_copies_table_t
-{
-  hash_map<tree, fundef_copy *> *map;
-};
+   This is not GC-deletable to avoid GC affecting UID generation.  */
 
-static GTY((deletable)) fundef_copies_table_t fundef_copies_table;
+static GTY(()) hash_map<tree, tree> *fundef_copies_table;
 
 /* Initialize FUNDEF_COPIES_TABLE if it's not initialized.  */
 
 static void
 maybe_initialize_fundef_copies_table ()
 {
-  if (fundef_copies_table.map == NULL)
-    fundef_copies_table.map = hash_map<tree, fundef_copy *>::create_ggc (101);
+  if (fundef_copies_table == NULL)
+    fundef_copies_table = hash_map<tree,tree>::create_ggc (101);
 }
 
 /* Reuse a copy or create a new unshared copy of the function FUN.
    Return this copy.  */
 
-static fundef_copy *
+static tree
 get_fundef_copy (tree fun)
 {
   maybe_initialize_fundef_copies_table ();
 
-  fundef_copy *copy;
-  fundef_copy **slot = &fundef_copies_table.map->get_or_insert (fun, NULL);
-  if (*slot == NULL)
+  tree copy;
+  tree *slot = fundef_copies_table->get (fun);
+  if (slot == NULL)
     {
-      copy = ggc_alloc<fundef_copy> ();
-      copy->body = copy_fn (fun, copy->parms, copy->res);
-      copy->prev = NULL;
+      copy = build_tree_list (NULL, NULL);
+      /* PURPOSE is body, VALUE is parms, TYPE is result.  */
+      TREE_PURPOSE (copy) = copy_fn (fun, TREE_VALUE (copy), TREE_TYPE (copy));
     }
   else
     {
       copy = *slot;
-      *slot = (*slot)->prev;
+      *slot = TREE_CHAIN (copy);
     }
 
   return copy;
@@ -1030,10 +1016,10 @@ get_fundef_copy (tree fun)
 /* Save the copy COPY of function FUN for later reuse by get_fundef_copy().  */
 
 static void
-save_fundef_copy (tree fun, fundef_copy *copy)
+save_fundef_copy (tree fun, tree copy)
 {
-  fundef_copy **slot = &fundef_copies_table.map->get_or_insert (fun, NULL);
-  copy->prev = *slot;
+  tree *slot = &fundef_copies_table->get_or_insert (fun, NULL);
+  TREE_CHAIN (copy) = *slot;
   *slot = copy;
 }
 
@@ -1464,10 +1450,10 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  tree body, parms, res;
 
 	  /* Reuse or create a new unshared copy of this function's body.  */
-	  fundef_copy *copy = get_fundef_copy (fun);
-	  body = copy->body;
-	  parms = copy->parms;
-	  res = copy->res;
+	  tree copy = get_fundef_copy (fun);
+	  body = TREE_PURPOSE (copy);
+	  parms = TREE_VALUE (copy);
+	  res = TREE_TYPE (copy);
 
 	  /* Associate the bindings with the remapped parms.  */
 	  tree bound = new_call.bindings;
@@ -5221,6 +5207,16 @@ potential_nondependent_static_init_expression (tree t)
 	  && !BRACE_ENCLOSED_INITIALIZER_P (t)
 	  && potential_static_init_expression (t)
 	  && !instantiation_dependent_expression_p (t));
+}
+
+/* Finalize constexpr processing after parsing.  */
+
+void
+fini_constexpr (void)
+{
+  /* The contexpr call and fundef copies tables are no longer needed.  */
+  constexpr_call_table = NULL;
+  fundef_copies_table = NULL;
 }
 
 #include "gt-cp-constexpr.h"

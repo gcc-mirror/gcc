@@ -4904,6 +4904,8 @@ c_parse_final_cleanups (void)
 
   finish_repo ();
 
+  fini_constexpr ();
+
   /* The entire file is now complete.  If requested, dump everything
      to a file.  */
   dump_tu ();
