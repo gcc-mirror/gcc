@@ -1,3 +1,21 @@
+2016-04-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.c (simd_clone_struct_alloc, simd_clone_struct_copy)
+	(simd_clone_vector_of_formal_parm_types)
+	(simd_clone_clauses_extract, simd_clone_compute_base_data_type)
+	(simd_clone_mangle, simd_clone_create)
+	(simd_clone_adjust_return_type, create_tmp_simd_array)
+	(simd_clone_adjust_argument_types, simd_clone_init_simd_arrays)
+	(struct modify_stmt_info, ipa_simd_modify_stmt_ops)
+	(ipa_simd_modify_function_body, simd_clone_linear_addend)
+	(simd_clone_adjust, expand_simd_clones, ipa_omp_simd_clone)
+	(pass_data_omp_simd_clone, class pass_omp_simd_clone)
+	(pass_omp_simd_clone::gate, make_pass_omp_simd_clone): Move
+	into...
+	* omp-simd-clone.c: ... this new file.
+	(simd_clone_vector_of_formal_parm_types): Make it static.
+	* Makefile.in (OBJS): Add omp-simd-clone.o.
+
 2016-04-15  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70662
