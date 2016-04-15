@@ -13666,9 +13666,10 @@ tsubst_baselink (tree baselink, tree object_type,
     /* Add back the template arguments, if present.  */
     if (BASELINK_P (baselink) && template_id_p)
       BASELINK_FUNCTIONS (baselink)
-	= build_nt (TEMPLATE_ID_EXPR,
-		    BASELINK_FUNCTIONS (baselink),
-		    template_args);
+	= build2 (TEMPLATE_ID_EXPR,
+		  unknown_type_node,
+		  BASELINK_FUNCTIONS (baselink),
+		  template_args);
     /* Update the conversion operator type.  */
     BASELINK_OPTYPE (baselink) = optype;
 
