@@ -17262,9 +17262,12 @@
   /*  There is no DF broadcast (in AVX-512*) to 128b register.
       Mimic it with integer variant.  */
   if (<MODE>mode == V2DFmode)
-    return "vpbroadcastq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}";
+    return "vpbroadcastq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %q1}";
+
+  if (GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) == 32)
+    return "v<sseintprefix>broadcast<bcstscalarsuff>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %k1}";
   else
-    return "v<sseintprefix>broadcast<bcstscalarsuff>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}";
+    return "v<sseintprefix>broadcast<bcstscalarsuff>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %q1}";
 }
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
