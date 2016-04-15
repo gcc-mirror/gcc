@@ -1,3 +1,9 @@
+2016-04-15  Richard Biener  <rguenther@suse.de>
+	Alan Modra  <amodra@gmail.com>
+
+	PR tree-optimization/70130
+	* gcc.dg/vect/O3-pr70130.c: New testcase.
+
 2016-04-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/70669

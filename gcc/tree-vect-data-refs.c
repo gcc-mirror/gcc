@@ -5983,10 +5983,19 @@ vect_supportable_dr_alignment (struct data_reference *dr,
 	      || targetm.vectorize.builtin_mask_for_load ()))
 	{
 	  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-	  if ((nested_in_vect_loop
-	       && (TREE_INT_CST_LOW (DR_STEP (dr))
-	 	   != GET_MODE_SIZE (TYPE_MODE (vectype))))
-              || !loop_vinfo)
+
+	  /* If we are doing SLP then the accesses need not have the
+	     same alignment, instead it depends on the SLP group size.  */
+	  if (loop_vinfo
+	      && STMT_SLP_TYPE (stmt_info)
+	      && (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+		  * GROUP_SIZE (vinfo_for_stmt (GROUP_FIRST_ELEMENT (stmt_info)))
+		  % TYPE_VECTOR_SUBPARTS (vectype) != 0))
+	    ;
+	  else if (!loop_vinfo
+		   || (nested_in_vect_loop
+		       && (TREE_INT_CST_LOW (DR_STEP (dr))
+			   != GET_MODE_SIZE (TYPE_MODE (vectype)))))
 	    return dr_explicit_realign;
 	  else
 	    return dr_explicit_realign_optimized;
