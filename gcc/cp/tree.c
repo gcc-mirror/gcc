@@ -43,7 +43,6 @@ static tree verify_stmt_tree_r (tree *, int *, void *);
 static tree build_local_temp (tree);
 
 static tree handle_java_interface_attribute (tree *, tree, tree, int, bool *);
-static tree handle_com_interface_attribute (tree *, tree, tree, int, bool *);
 static tree handle_init_priority_attribute (tree *, tree, tree, int, bool *);
 static tree handle_abi_tag_attribute (tree *, tree, tree, int, bool *);
 
@@ -3542,8 +3541,6 @@ const struct attribute_spec cxx_attribute_table[] =
        affects_type_identity } */
   { "java_interface", 0, 0, false, false, false,
     handle_java_interface_attribute, false },
-  { "com_interface",  0, 0, false, false, false,
-    handle_com_interface_attribute, false },
   { "init_priority",  1, 1, true,  false, false,
     handle_init_priority_attribute, false },
   { "abi_tag", 1, -1, false, false, false,
@@ -3572,35 +3569,6 @@ handle_java_interface_attribute (tree* node,
   if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
     *node = build_variant_type_copy (*node);
   TYPE_JAVA_INTERFACE (*node) = 1;
-
-  return NULL_TREE;
-}
-
-/* Handle a "com_interface" attribute; arguments as in
-   struct attribute_spec.handler.  */
-static tree
-handle_com_interface_attribute (tree* node,
-				tree name,
-				tree /*args*/,
-				int /*flags*/,
-				bool* no_add_attrs)
-{
-  static int warned;
-
-  *no_add_attrs = true;
-
-  if (DECL_P (*node)
-      || !CLASS_TYPE_P (*node)
-      || *node != TYPE_MAIN_VARIANT (*node))
-    {
-      warning (OPT_Wattributes, "%qE attribute can only be applied "
-	       "to class definitions", name);
-      return NULL_TREE;
-    }
-
-  if (!warned++)
-    warning (0, "%qE is obsolete; g++ vtables are now COM-compatible by default",
-	     name);
 
   return NULL_TREE;
 }
