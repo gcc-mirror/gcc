@@ -1347,7 +1347,8 @@ symtab_node::copy_visibility_from (symtab_node *n)
    Assumes NODE is known to be alias.  */
 
 symtab_node *
-symtab_node::ultimate_alias_target_1 (enum availability *availability)
+symtab_node::ultimate_alias_target_1 (enum availability *availability,
+				      symtab_node *ref)
 {
   bool transparent_p = false;
 
@@ -1368,7 +1369,7 @@ symtab_node::ultimate_alias_target_1 (enum availability *availability)
     {
       transparent_p = transparent_alias;
       if (!transparent_p)
-	*availability = get_availability ();
+	*availability = get_availability (ref);
       else
 	*availability = AVAIL_NOT_AVAILABLE;
     }
@@ -1383,7 +1384,7 @@ symtab_node::ultimate_alias_target_1 (enum availability *availability)
 	  if (!availability || (!transparent_p && node->analyzed))
 	    ;
 	  else if (node->analyzed && !node->transparent_alias)
-	    *availability = node->get_availability ();
+	    *availability = node->get_availability (ref);
 	  else
 	    *availability = AVAIL_NOT_AVAILABLE;
 	  return node;
@@ -1391,7 +1392,7 @@ symtab_node::ultimate_alias_target_1 (enum availability *availability)
       if (node && availability && transparent_p
 	  && node->transparent_alias)
 	{
-	  *availability = node->get_availability ();
+	  *availability = node->get_availability (ref);
 	  transparent_p = false;
 	}
     }
@@ -2205,4 +2206,59 @@ symbol_table::symbol_suffix_separator ()
 #else
   return '_';
 #endif
+}
+
+/* Return true when references to this symbol from REF must bind to current
+   definition in final executable.  */
+
+bool
+symtab_node::binds_to_current_def_p (symtab_node *ref)
+{
+  if (!definition)
+    return false;
+  if (decl_binds_to_current_def_p (decl))
+    return true;
+
+  /* Inline clones always binds locally.  */
+  cgraph_node *cnode = dyn_cast <cgraph_node *> (this);
+  if (cnode && cnode->global.inlined_to)
+    return true;
+
+  if (DECL_EXTERNAL (decl))
+    return false;
+
+  if (!externally_visible)
+    debug ();
+  gcc_assert (externally_visible);
+
+  if (ref)
+    {
+      cgraph_node *cref = dyn_cast <cgraph_node *> (ref);
+      if (cref)
+	ref = cref->global.inlined_to;
+    }
+
+  /* If this is a reference from symbol itself and there are no aliases, we
+     may be sure that the symbol was not interposed by soemthing else because
+     the symbol itself would be unreachable otherwise.  This is important
+     to optimize recursive functions well.
+
+     This assumption may be broken by inlining: if symbol is interposable
+     but the body is available (i.e. declared inline), inliner may make
+     the body reachable even with interposition.  */
+  if (this == ref && !has_aliases_p ()
+      && (!cnode
+	  || symtab->state >= IPA_SSA_AFTER_INLINING
+	  || get_availability () >= AVAIL_INTERPOSABLE))
+    return true;
+
+
+  /* References within one comdat group are always bound in a group.  */
+  if (ref
+      && symtab->state >= IPA_SSA_AFTER_INLINING
+      && get_comdat_group ()
+      && get_comdat_group () == ref->get_comdat_group ())
+    return true;
+
+  return false;
 }

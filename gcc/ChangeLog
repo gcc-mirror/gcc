@@ -1,3 +1,23 @@
+2016-04-15  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/70018
+	* cgraph.c (cgraph_node::get_availability): Add REF parameter.
+	(cgraph_node::function_symbol): Likewise.
+	(cgraph_node::function_or_virtual_thunk_symbol): Likewise.
+	* cgraph.h (symtab_node::get_availabbility): Add REF parameter.
+	(symtab_node::ultimate_alias_target): Add REF parameter.
+	(symtab_node::binds_to_current_def_p): Declare.
+	(symtab_node;:ultimate_alias_target_1): Add REF parameter.
+	(cgraph_node::function_symbol): Likewise.
+	(cgraph_node::function_or_virtual_thunk_symbol): Likewise.
+	(cgraph_node::get_availability): Likewise.
+	(cgraph_edge::binds_to_current_def_p): New inline function.
+	(varpool_node::get_availability): Add REF parameter.
+	(varpool_node::ultimate_alias_target): Likewise.
+	* symtab.c (symtab_node::ultimate_alias_target_1): Likewise.
+	(symtab_node::binds_to_current_def_p): Likewise.
+	* varpool.c (varpool_node::get_availability): Likewise.
+
 2016-04-15  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70662
