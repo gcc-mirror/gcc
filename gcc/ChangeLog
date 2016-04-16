@@ -1,6 +1,20 @@
 2016-04-15  Jan Hubicka  <jh@suse.cz>
 
 	PR ipa/70018
+	* cgraph.c (cgraph_set_const_flag_1): Only set as pure if
+	function does not bind to current def.
+	* ipa-pure-const.c (worse_state): Add FROM and TO parameters;
+	handle conservatively calls to functions that does not need to bind
+	to current def.
+	(check_call): Update call of worse_state.
+	(ignore_edge_for_nothrow): Update.
+	(ignore_edge_for_pure_const): Likewise.
+	(propagate_pure_const): Update calls to worse_state.
+	(skip_function_for_local_pure_const): Reformat comments.
+
+2016-04-15  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/70018
 	* cgraph.c (cgraph_node::get_availability): Add REF parameter.
 	(cgraph_node::function_symbol): Likewise.
 	(cgraph_node::function_or_virtual_thunk_symbol): Likewise.

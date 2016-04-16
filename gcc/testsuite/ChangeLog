@@ -1,3 +1,10 @@
+2016-04-15  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/70018
+	* g++.dg/ipa/pure-const-1.C: New testcase.
+	* g++.dg/ipa/pure-const-2.C: New testcase.
+	* g++.dg/ipa/pure-const-3.C: New testcase.
+
 2016-04-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70671
