@@ -2393,7 +2393,35 @@ cgraph_set_const_flag_1 (cgraph_node *node, void *data)
       if (DECL_STATIC_DESTRUCTOR (node->decl))
 	DECL_STATIC_DESTRUCTOR (node->decl) = 0;
     }
-  TREE_READONLY (node->decl) = data != NULL;
+
+  /* Consider function:
+
+     bool a(int *p)
+     {
+       return *p==*p;
+     }
+
+     During early optimization we will turn this into:
+
+     bool a(int *p)
+     {
+       return true;
+     }
+
+     Now if this function will be detected as CONST however when interposed it
+     may end up being just pure.  We always must assume the worst scenario here.
+   */
+  if (TREE_READONLY (node->decl))
+    ;
+  else if (node->binds_to_current_def_p ())
+    TREE_READONLY (node->decl) = data != NULL;
+  else
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Dropping state to PURE because function does "
+		 "not bind to current def.\n");
+      DECL_PURE_P (node->decl) = data != NULL;
+    }
   DECL_LOOPING_CONST_OR_PURE_P (node->decl) = ((size_t)data & 2) != 0;
   return false;
 }
