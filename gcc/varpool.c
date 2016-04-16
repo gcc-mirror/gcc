@@ -482,7 +482,7 @@ varpool_node::add (tree decl)
 /* Return variable availability.  See cgraph.h for description of individual
    return values.  */
 enum availability
-varpool_node::get_availability (void)
+varpool_node::get_availability (symtab_node *ref)
 {
   if (!definition)
     return AVAIL_NOT_AVAILABLE;
@@ -495,9 +495,16 @@ varpool_node::get_availability (void)
     {
       enum availability avail;
 
-      ultimate_alias_target (&avail);
+      ultimate_alias_target (&avail, ref);
       return avail;
     }
+  /* If this is a reference from symbol itself and there are no aliases, we
+     may be sure that the symbol was not interposed by soemthing else because
+     the symbol itself would be unreachable otherwise.  */
+  if ((this == ref && !has_aliases_p ())
+      || (ref && get_comdat_group ()
+          && get_comdat_group () == ref->get_comdat_group ()))
+    return AVAIL_AVAILABLE;
   /* If the variable can be overwritten, return OVERWRITABLE.  Takes
      care of at least one notable extension - the COMDAT variables
      used to share template instantiations in C++.  */

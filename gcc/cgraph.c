@@ -2209,18 +2209,35 @@ cgraph_node::unnest (void)
 /* Return function availability.  See cgraph.h for description of individual
    return values.  */
 enum availability
-cgraph_node::get_availability (void)
+cgraph_node::get_availability (symtab_node *ref)
 {
+  if (ref)
+    {
+      cgraph_node *cref = dyn_cast <cgraph_node *> (ref);
+      if (cref)
+	ref = cref->global.inlined_to;
+    }
   enum availability avail;
   if (!analyzed)
     avail = AVAIL_NOT_AVAILABLE;
   else if (local.local)
     avail = AVAIL_LOCAL;
+  else if (global.inlined_to)
+    avail = AVAIL_AVAILABLE;
   else if (transparent_alias)
-    ultimate_alias_target (&avail);
+    ultimate_alias_target (&avail, ref);
   else if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (decl)))
     avail = AVAIL_INTERPOSABLE;
   else if (!externally_visible)
+    avail = AVAIL_AVAILABLE;
+  /* If this is a reference from symbol itself and there are no aliases, we
+     may be sure that the symbol was not interposed by soemthing else because
+     the symbol itself would be unreachable otherwise.
+
+     Also comdat groups are always resolved in groups.  */
+  else if ((this == ref && !has_aliases_p ())
+           || (ref && get_comdat_group ()
+               && get_comdat_group () == ref->get_comdat_group ()))
     avail = AVAIL_AVAILABLE;
   /* Inline functions are safe to be analyzed even if their symbol can
      be overwritten at runtime.  It is not meaningful to enforce any sane
@@ -2232,11 +2249,7 @@ cgraph_node::get_availability (void)
      care at least of two notable extensions - the COMDAT functions
      used to share template instantiations in C++ (this is symmetric
      to code cp_cannot_inline_tree_fn and probably shall be shared and
-     the inlinability hooks completely eliminated).
-
-     ??? Does the C++ one definition rule allow us to always return
-     AVAIL_AVAILABLE here?  That would be good reason to preserve this
-     bit.  */
+     the inlinability hooks completely eliminated).  */
 
   else if (decl_replaceable_p (decl) && !DECL_EXTERNAL (decl))
     avail = AVAIL_INTERPOSABLE;
@@ -3250,24 +3263,28 @@ cgraph_node::verify_cgraph_nodes (void)
 
 /* Walk the alias chain to return the function cgraph_node is alias of.
    Walk through thunks, too.
-   When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
+   When AVAILABILITY is non-NULL, get minimal availability in the chain.
+   When REF is non-NULL, assume that reference happens in symbol REF
+   when determining the availability.  */
 
 cgraph_node *
-cgraph_node::function_symbol (enum availability *availability)
+cgraph_node::function_symbol (enum availability *availability,
+			      struct symtab_node *ref)
 {
-  cgraph_node *node = ultimate_alias_target (availability);
+  cgraph_node *node = ultimate_alias_target (availability, ref);
 
   while (node->thunk.thunk_p)
     {
+      ref = node;
       node = node->callees->callee;
       if (availability)
 	{
 	  enum availability a;
-	  a = node->get_availability ();
+	  a = node->get_availability (ref);
 	  if (a < *availability)
 	    *availability = a;
 	}
-      node = node->ultimate_alias_target (availability);
+      node = node->ultimate_alias_target (availability, ref);
     }
   return node;
 }
@@ -3275,25 +3292,29 @@ cgraph_node::function_symbol (enum availability *availability)
 /* Walk the alias chain to return the function cgraph_node is alias of.
    Walk through non virtual thunks, too.  Thus we return either a function
    or a virtual thunk node.
-   When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
+   When AVAILABILITY is non-NULL, get minimal availability in the chain. 
+   When REF is non-NULL, assume that reference happens in symbol REF
+   when determining the availability.  */
 
 cgraph_node *
 cgraph_node::function_or_virtual_thunk_symbol
-				(enum availability *availability)
+				(enum availability *availability,
+				 struct symtab_node *ref)
 {
-  cgraph_node *node = ultimate_alias_target (availability);
+  cgraph_node *node = ultimate_alias_target (availability, ref);
 
   while (node->thunk.thunk_p && !node->thunk.virtual_offset_p)
     {
+      ref = node;
       node = node->callees->callee;
       if (availability)
 	{
 	  enum availability a;
-	  a = node->get_availability ();
+	  a = node->get_availability (ref);
 	  if (a < *availability)
 	    *availability = a;
 	}
-      node = node->ultimate_alias_target (availability);
+      node = node->ultimate_alias_target (availability, ref);
     }
   return node;
 }
