@@ -1,3 +1,10 @@
+2016-04-16  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR target/1078
+
+	* tree.c (cxx_attribute_table): Remove "com_interface" entry.
+	(handle_com_interface_attribute): Delete.
+
 2016-04-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70685
