@@ -1,3 +1,7 @@
+2016-04-17  Jan Hubicka  <jh@suse.cz>
+
+	* analyze_brprob: Update comment.
+
 2016-04-13  Martin Sebor  <msebor@redhat.com>
 
 	* check_GNU_style.sh: Avoid false posivies in trailing operator
