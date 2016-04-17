@@ -1,5 +1,10 @@
 2016-04-17  Tom de Vries  <tom@codesourcery.com>
 
+	PR other/70183
+	* passes.c (pass_manager::register_pass): Propagate pflags.
+
+2016-04-17  Tom de Vries  <tom@codesourcery.com>
+
 	PR other/68875
 	* pass_manager.h (TERMINATE_PASS_LIST): Add pass argument.
 	* passes.c (pass_manager::pass_manager): Declare and init p_start in
