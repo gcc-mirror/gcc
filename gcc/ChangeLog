@@ -1,5 +1,11 @@
 2016-04-17  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/70256
+	* tree-ssa-structalias.c (dump_varinfo, debug_varinfo, dump_varmap)
+	(debug_varmap): New function.
+
+2016-04-17  Tom de Vries  <tom@codesourcery.com>
+
 	PR other/70183
 	* passes.c (pass_manager::register_pass): Propagate pflags.
 

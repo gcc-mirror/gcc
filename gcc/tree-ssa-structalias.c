@@ -682,6 +682,8 @@ void debug_constraints (void);
 void debug_constraint_graph (void);
 void debug_solution_for_var (unsigned int);
 void debug_sa_points_to_info (void);
+void debug_varinfo (varinfo_t);
+void debug_varmap (void);
 
 /* Print out constraint C to stderr.  */
 
@@ -7494,6 +7496,112 @@ associate_varinfo_to_alias (struct cgraph_node *node, void *data)
       && node->analyzed)
     insert_vi_for_tree (node->decl, (varinfo_t)data);
   return false;
+}
+
+/* Dump varinfo VI to FILE.  */
+
+static void
+dump_varinfo (FILE *file, varinfo_t vi)
+{
+  if (vi == NULL)
+    return;
+
+  fprintf (file, "%u: %s\n", vi->id, vi->name);
+
+  const char *sep = " ";
+  if (vi->is_artificial_var)
+    fprintf (file, "%sartificial", sep);
+  if (vi->is_special_var)
+    fprintf (file, "%sspecial", sep);
+  if (vi->is_unknown_size_var)
+    fprintf (file, "%sunknown-size", sep);
+  if (vi->is_full_var)
+    fprintf (file, "%sfull", sep);
+  if (vi->is_heap_var)
+    fprintf (file, "%sheap", sep);
+  if (vi->may_have_pointers)
+    fprintf (file, "%smay-have-pointers", sep);
+  if (vi->only_restrict_pointers)
+    fprintf (file, "%sonly-restrict-pointers", sep);
+  if (vi->is_restrict_var)
+    fprintf (file, "%sis-restrict-var", sep);
+  if (vi->is_global_var)
+    fprintf (file, "%sglobal", sep);
+  if (vi->is_ipa_escape_point)
+    fprintf (file, "%sipa-escape-point", sep);
+  if (vi->is_fn_info)
+    fprintf (file, "%sfn-info", sep);
+  if (vi->ruid)
+    fprintf (file, "%srestrict-uid:%u", sep, vi->ruid);
+  if (vi->next)
+    fprintf (file, "%snext:%u", sep, vi->next);
+  if (vi->head != vi->id)
+    fprintf (file, "%shead:%u", sep, vi->head);
+  if (vi->offset)
+    fprintf (file, "%soffset:" HOST_WIDE_INT_PRINT_DEC, sep, vi->offset);
+  if (vi->size != ~(unsigned HOST_WIDE_INT)0)
+    fprintf (file, "%ssize:" HOST_WIDE_INT_PRINT_DEC, sep, vi->size);
+  if (vi->fullsize != ~(unsigned HOST_WIDE_INT)0
+      && vi->fullsize != vi->size)
+    fprintf (file, "%sfullsize:" HOST_WIDE_INT_PRINT_DEC, sep,
+	     vi->fullsize);
+  fprintf (file, "\n");
+
+  if (vi->solution && !bitmap_empty_p (vi->solution))
+    {
+      bitmap_iterator bi;
+      unsigned i;
+      fprintf (file, " solution: {");
+      EXECUTE_IF_SET_IN_BITMAP (vi->solution, 0, i, bi)
+	fprintf (file, " %u", i);
+      fprintf (file, " }\n");
+    }
+
+  if (vi->oldsolution && !bitmap_empty_p (vi->oldsolution)
+      && !bitmap_equal_p (vi->solution, vi->oldsolution))
+    {
+      bitmap_iterator bi;
+      unsigned i;
+      fprintf (file, " oldsolution: {");
+      EXECUTE_IF_SET_IN_BITMAP (vi->oldsolution, 0, i, bi)
+	fprintf (file, " %u", i);
+      fprintf (file, " }\n");
+    }
+}
+
+/* Dump varinfo VI to stderr.  */
+
+DEBUG_FUNCTION void
+debug_varinfo (varinfo_t vi)
+{
+  dump_varinfo (stderr, vi);
+}
+
+/* Dump varmap to FILE.  */
+
+static void
+dump_varmap (FILE *file)
+{
+  if (varmap.length () == 0)
+    return;
+
+  fprintf (file, "variables:\n");
+
+  for (unsigned int i = 0; i < varmap.length (); ++i)
+    {
+      varinfo_t vi = get_varinfo (i);
+      dump_varinfo (file, vi);
+    }
+
+  fprintf (file, "\n");
+}
+
+/* Dump varmap to stderr.  */
+
+DEBUG_FUNCTION void
+debug_varmap (void)
+{
+  dump_varmap (stderr);
 }
 
 /* Execute the driver for IPA PTA.  */
