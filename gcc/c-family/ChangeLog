@@ -1,3 +1,12 @@
+2016-04-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (get_underlying_decl): Return the typedef, if any.
+	(dump_generic_ada_node) <POINTER_TYPE>: Clean up handling of access
+	to incomplete types.
+	(dump_nested_type): Remove redundant tests and tidy up.
+	(print_ada_declaration): Also set TREE_VISITED on the declaration of
+	a type which is the typedef of an original type.
+
 2016-04-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70651

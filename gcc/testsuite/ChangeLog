@@ -1,3 +1,8 @@
+2016-04-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/dump-ada-spec-3.c: New test.
+	* c-c++-common/dump-ada-spec-4.c: Likewise.
+
 2016-04-17  Tom de Vries  <tom@codesourcery.com>
 
 	PR other/70183
