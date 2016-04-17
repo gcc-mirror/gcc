@@ -1,5 +1,16 @@
 2016-04-17  Tom de Vries  <tom@codesourcery.com>
 
+	PR other/70185
+	* tree-pass.h (class opt_pass): Remove graph_dump_initialized member.
+	* dumpfile.h (struct dump_file_info): Add graph_dump_initialized field.
+	* dumpfile.c (dump_files): Initialize graph_dump_initialized field.
+	* passes.c (finish_optimization_passes): Only call
+	finish_graph_dump_file if dfi->graph_dump_initialized.
+	(execute_function_dump, pass_init_dump_file): Use
+	dfi->graph_dump_initialized instead of pass->graph_dump_initialized.
+
+2016-04-17  Tom de Vries  <tom@codesourcery.com>
+
 	PR tree-optimization/70256
 	* tree-ssa-structalias.c (dump_varinfo, debug_varinfo, dump_varmap)
 	(debug_varmap): New function.

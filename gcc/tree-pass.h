@@ -108,11 +108,6 @@ public:
   /* Static pass number, used as a fragment of the dump file name.  */
   int static_pass_number;
 
-  /* When a given dump file is being initialized, this flag is set to
-     true if the corresponding TDF_graph dump file has also been
-     initialized.  */
-  bool graph_dump_initialized;
-
 protected:
   gcc::context *m_ctxt;
 };

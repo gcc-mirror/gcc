@@ -50,29 +50,29 @@ int dump_flags;
    TREE_DUMP_INDEX enumeration in dumpfile.h.  */
 static struct dump_file_info dump_files[TDI_end] =
 {
-  {NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, false},
+  {NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, false, false},
   {".cgraph", "ipa-cgraph", NULL, NULL, NULL, NULL, NULL, TDF_IPA,
-   0, 0, 0, 0, 0, false},
+   0, 0, 0, 0, 0, false, false},
   {".type-inheritance", "ipa-type-inheritance", NULL, NULL, NULL, NULL, NULL, TDF_IPA,
-   0, 0, 0, 0, 0, false},
+   0, 0, 0, 0, 0, false, false},
   {".tu", "translation-unit", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 0, 1, false},
+   0, 0, 0, 0, 1, false, false},
   {".class", "class-hierarchy", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 0, 2, false},
+   0, 0, 0, 0, 2, false, false},
   {".original", "tree-original", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 0, 3, false},
+   0, 0, 0, 0, 3, false, false},
   {".gimple", "tree-gimple", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 0, 4, false},
+   0, 0, 0, 0, 4, false, false},
   {".nested", "tree-nested", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 0, 5, false},
+   0, 0, 0, 0, 5, false, false},
 #define FIRST_AUTO_NUMBERED_DUMP 6
 
   {NULL, "tree-all", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 0, 0, false},
+   0, 0, 0, 0, 0, false, false},
   {NULL, "rtl-all", NULL, NULL, NULL, NULL, NULL, TDF_RTL,
-   0, 0, 0, 0, 0, false},
+   0, 0, 0, 0, 0, false, false},
   {NULL, "ipa-all", NULL, NULL, NULL, NULL, NULL, TDF_IPA,
-   0, 0, 0, 0, 0, false},
+   0, 0, 0, 0, 0, false, false},
 };
 
 /* Define a name->number mapping for a dump flag value.  */
