@@ -1,5 +1,10 @@
 2016-04-17  Tom de Vries  <tom@codesourcery.com>
 
+	* pretty-print.c (pp_write_text_as_dot_label_to_stream): Simplify loop
+	structure.
+
+2016-04-17  Tom de Vries  <tom@codesourcery.com>
+
 	PR other/70185
 	* tree-pass.h (class opt_pass): Remove graph_dump_initialized member.
 	* dumpfile.h (struct dump_file_info): Add graph_dump_initialized field.
