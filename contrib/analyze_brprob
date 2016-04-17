@@ -33,11 +33,12 @@
 #  Step 1: Compile and profile your program.  You need to use -fprofile-arcs
 #    flag to get the profiles
 #  Step 2: Generate log files.  The information about given heuristics are
-#    saved into *.bp dumps.  You need to pass the -db switch to the compiler as well
+#    saved into ipa-profile dumps.  You need to pass the -fdimp-ipa-profile switch
+#    to the compiler as well
 #    as -fbranch-probabilities to get the results of profiling noted in the dumps.
 #    Ensure that there are no "Arc profiling: some edge counts were bad." warnings.
-#  Step 3: Run this script to concatenate all *.life files:
-#    analyze_brprob `find . -name *.life`
+#  Step 3: Run this script to concatenate all *.profile files:
+#    analyze_brprob `find . -name *.profile`
 #    the information is collected and print once all files are parsed.  This
 #    may take a while.
 #    Note that the script does use bc to perform long arithmetic.
