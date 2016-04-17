@@ -1,3 +1,8 @@
+2016-04-17  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/70183
+	* gcc.target/i386/vzeroupper-dump-flags.c: New test.
+
 2016-04-15  Jan Hubicka  <jh@suse.cz>
 
 	PR ipa/70018
