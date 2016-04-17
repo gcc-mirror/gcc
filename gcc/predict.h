@@ -81,7 +81,7 @@ extern void remove_predictions_associated_with_edge (edge);
 extern void predict_edge_def (edge, enum br_predictor, enum prediction);
 extern void invert_br_probabilities (rtx);
 extern void guess_outgoing_edge_probabilities (basic_block);
-extern void tree_estimate_probability (void);
+extern void tree_estimate_probability (bool);
 extern void handle_missing_profiles (void);
 extern int counts_to_freqs (void);
 extern bool expensive_function_p (int);
