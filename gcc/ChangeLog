@@ -1,5 +1,11 @@
 2016-04-17  Tom de Vries  <tom@codesourcery.com>
 
+	PR other/70433
+	* pretty-print.c (pp_write_text_as_dot_label_to_stream): Escape
+	backslash in label.
+
+2016-04-17  Tom de Vries  <tom@codesourcery.com>
+
 	* pretty-print.c (pp_write_text_as_dot_label_to_stream): Classify chars
 	'{}<> ' as escape-for-record.
 
