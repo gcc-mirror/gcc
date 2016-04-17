@@ -1,5 +1,11 @@
 2016-04-17  Jan Hubicka  <jh@suse.cz>
 
+	PR bootstrap/70706
+	* graphite.c (graphite_finalize): Update call to
+	tree_estimate_probability.
+
+2016-04-17  Jan Hubicka  <jh@suse.cz>
+
 	* predict.c (combine_predictions_for_bb): Add dry_run parmaeter.
 	(tree_estimate_probability): Likewise.
 	(pass_profile::execute): Update.
