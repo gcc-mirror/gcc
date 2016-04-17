@@ -159,20 +159,20 @@ pp_write_text_as_dot_label_to_stream (pretty_printer *pp, bool for_record)
   const char *p = text;
   FILE *fp = pp_buffer (pp)->stream;
 
-  while (*p)
+  for (;*p; p++)
     {
+      bool escape_char;
       switch (*p)
 	{
 	/* Print newlines as a left-aligned newline.  */
 	case '\n':
-	  fputs ("\\l\\\n", fp);
+	  fputs ("\\l", fp);
+	  escape_char = true;
 	  break;
 
 	/* A pipe is only special for record-shape nodes.  */
 	case '|':
-	  if (for_record)
-	    fputc ('\\', fp);
-	  fputc (*p, fp);
+	  escape_char = for_record;
 	  break;
 
 	/* The following characters always have to be escaped
@@ -183,13 +183,18 @@ pp_write_text_as_dot_label_to_stream (pretty_printer *pp, bool for_record)
 	case '>':
 	case '"':
 	case ' ':
-	  fputc ('\\', fp);
-	  /* fall through */
+	  escape_char = true;
+	  break;
+
 	default:
-	  fputc (*p, fp);
+	  escape_char = false;
 	  break;
 	}
-      p++;
+
+      if (escape_char)
+	fputc ('\\', fp);
+
+      fputc (*p, fp);
     }
 
   pp_clear_output_area (pp);
