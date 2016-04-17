@@ -1,5 +1,14 @@
 2016-04-17  Jan Hubicka  <jh@suse.cz>
 
+	* predict.c (combine_predictions_for_bb): Add dry_run parmaeter.
+	(tree_estimate_probability): Likewise.
+	(pass_profile::execute): Update.
+	(report_predictor_hitrates): New function.
+	* profile.c (compute_branch_probabilities): Use it.
+	* predict.h (report_predictor_hitrates): Declare.
+
+2016-04-17  Jan Hubicka  <jh@suse.cz>
+
 	PR ipa/70018
 	* cgraph.h (cgraph_node::set_const_flag,
 	cgraph_node::set_pure_flag): Update prototype to return bool;

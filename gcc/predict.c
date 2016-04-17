@@ -842,10 +842,11 @@ combine_predictions_for_insn (rtx_insn *insn, basic_block bb)
 }
 
 /* Combine predictions into single probability and store them into CFG.
-   Remove now useless prediction entries.  */
+   Remove now useless prediction entries.
+   If DRY_RUN is set, only produce dumps and do not modify profile.  */
 
 static void
-combine_predictions_for_bb (basic_block bb)
+combine_predictions_for_bb (basic_block bb, bool dry_run)
 {
   int best_probability = PROB_EVEN;
   enum br_predictor best_predictor = END_PREDICTORS;
@@ -876,7 +877,7 @@ combine_predictions_for_bb (basic_block bb)
      this later.  */
   if (nedges != 2)
     {
-      if (!bb->count)
+      if (!bb->count && !dry_run)
 	set_even_probabilities (bb);
       clear_bb_predictions (bb);
       if (dump_file)
@@ -982,7 +983,7 @@ combine_predictions_for_bb (basic_block bb)
     }
   clear_bb_predictions (bb);
 
-  if (!bb->count)
+  if (!bb->count && !dry_run)
     {
       first->probability = combined_probability;
       second->probability = REG_BR_PROB_BASE - combined_probability;
@@ -2327,10 +2328,11 @@ tree_estimate_probability_bb (basic_block bb)
 
 /* Predict branch probabilities and estimate profile of the tree CFG.
    This function can be called from the loop optimizers to recompute
-   the profile information.  */
+   the profile information.
+   If DRY_RUN is set, do not modify CFG and only produce dump files.  */
 
 void
-tree_estimate_probability (void)
+tree_estimate_probability (bool dry_run)
 {
   basic_block bb;
 
@@ -2352,7 +2354,7 @@ tree_estimate_probability (void)
     tree_estimate_probability_bb (bb);
 
   FOR_EACH_BB_FN (bb, cfun)
-    combine_predictions_for_bb (bb);
+    combine_predictions_for_bb (bb, dry_run);
 
   if (flag_checking)
     bb_predictions->traverse<void *, assert_is_empty> (NULL);
@@ -2360,7 +2362,8 @@ tree_estimate_probability (void)
   delete bb_predictions;
   bb_predictions = NULL;
 
-  estimate_bb_frequencies (false);
+  if (!dry_run)
+    estimate_bb_frequencies (false);
   free_dominance_info (CDI_POST_DOMINATORS);
   remove_fake_exit_edges ();
 }
@@ -3040,7 +3043,7 @@ pass_profile::execute (function *fun)
   if (nb_loops > 1)
     scev_initialize ();
 
-  tree_estimate_probability ();
+  tree_estimate_probability (false);
 
   if (nb_loops > 1)
     scev_finalize ();
@@ -3191,3 +3194,30 @@ rebuild_frequencies (void)
     gcc_unreachable ();
   timevar_pop (TV_REBUILD_FREQUENCIES);
 }
+
+/* Perform a dry run of the branch prediction pass and report comparsion of
+   the predicted and real profile into the dump file.  */
+
+void
+report_predictor_hitrates (void)
+{
+  unsigned nb_loops;
+
+  loop_optimizer_init (LOOPS_NORMAL);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    flow_loops_dump (dump_file, NULL, 0);
+
+  mark_irreducible_loops ();
+
+  nb_loops = number_of_loops (cfun);
+  if (nb_loops > 1)
+    scev_initialize ();
+
+  tree_estimate_probability (true);
+
+  if (nb_loops > 1)
+    scev_finalize ();
+
+  loop_optimizer_finalize ();
+}
+
