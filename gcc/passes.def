@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
    PUSH_INSERT_PASSES_WITHIN (PASS)
    POP_INSERT_PASSES ()
    NEXT_PASS (PASS)
-   TERMINATE_PASS_LIST ()
+   TERMINATE_PASS_LIST (PASS)
  */
 
  /* All passes needed to lower the function into shape optimizers can
@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_expand_omp);
   NEXT_PASS (pass_build_cgraph_edges);
-  TERMINATE_PASS_LIST ()
+  TERMINATE_PASS_LIST (all_lowering_passes)
 
   /* Interprocedural optimization passes.  */
   INSERT_PASSES_AFTER (all_small_ipa_passes)
@@ -142,7 +142,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_increase_alignment);
   NEXT_PASS (pass_ipa_tm);
   NEXT_PASS (pass_ipa_lower_emutls);
-  TERMINATE_PASS_LIST ()
+  TERMINATE_PASS_LIST (all_small_ipa_passes)
 
   INSERT_PASSES_AFTER (all_regular_ipa_passes)
   NEXT_PASS (pass_ipa_whole_program_visibility);
@@ -162,7 +162,7 @@ along with GCC; see the file COPYING3.  If not see
      symbols are not allowed outside of the comdat group.  Privatizing early
      would result in missed optimizations due to this restriction.  */
   NEXT_PASS (pass_ipa_comdats);
-  TERMINATE_PASS_LIST ()
+  TERMINATE_PASS_LIST (all_regular_ipa_passes)
 
   /* Simple IPA passes executed after the regular passes.  In WHOPR mode the
      passes are executed after partitioning and thus see just parts of the
@@ -171,7 +171,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_pta);
   NEXT_PASS (pass_dispatcher_calls);
   NEXT_PASS (pass_omp_simd_clone);
-  TERMINATE_PASS_LIST ()
+  TERMINATE_PASS_LIST (all_late_ipa_passes)
 
   /* These passes are run after IPA passes on every function that is being
      output to the assembler file.  */
@@ -487,4 +487,4 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_df_finish);
   POP_INSERT_PASSES ()
   NEXT_PASS (pass_clean_state);
-  TERMINATE_PASS_LIST ()
+  TERMINATE_PASS_LIST (all_passes)
