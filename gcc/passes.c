@@ -1555,8 +1555,15 @@ pass_manager::pass_manager (context *ctxt)
 
   /* Build the tree of passes.  */
 
-#define INSERT_PASSES_AFTER(PASS) \
-  p = &(PASS);
+#define INSERT_PASSES_AFTER(PASS)		\
+  {						\
+    opt_pass **p_start;				\
+    p_start = p = &(PASS);
+
+#define TERMINATE_PASS_LIST(PASS)		\
+    gcc_assert (p_start == &PASS);		\
+    *p = NULL;					\
+  }
 
 #define PUSH_INSERT_PASSES_WITHIN(PASS) \
   { \
@@ -1583,9 +1590,6 @@ pass_manager::pass_manager (context *ctxt)
       NEXT_PASS (PASS, NUM);				\
       PASS ## _ ## NUM->set_pass_param (0, ARG);	\
     } while (0)
-
-#define TERMINATE_PASS_LIST() \
-  *p = NULL;
 
 #include "pass-instances.def"
 

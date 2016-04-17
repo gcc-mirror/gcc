@@ -1,3 +1,12 @@
+2016-04-17  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/68875
+	* pass_manager.h (TERMINATE_PASS_LIST): Add pass argument.
+	* passes.c (pass_manager::pass_manager): Declare and init p_start in
+	INSERT_PASSES_AFTER.  Add pass parameter to TERMINATE_PASS_LIST, and
+	check if it's equal to p_start.
+	* passes.def: Add arguments to TERMINATE_PASS_LISTs.
+
 2016-04-15  Jan Hubicka  <jh@suse.cz>
 
 	PR ipa/70018
