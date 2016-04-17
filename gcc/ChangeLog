@@ -1,5 +1,10 @@
 2016-04-17  Tom de Vries  <tom@codesourcery.com>
 
+	* pretty-print.c (pp_write_text_as_dot_label_to_stream): Classify chars
+	'{}<> ' as escape-for-record.
+
+2016-04-17  Tom de Vries  <tom@codesourcery.com>
+
 	* pretty-print.c (pp_write_text_as_dot_label_to_stream): Simplify loop
 	structure.
 

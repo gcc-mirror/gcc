@@ -170,19 +170,19 @@ pp_write_text_as_dot_label_to_stream (pretty_printer *pp, bool for_record)
 	  escape_char = true;
 	  break;
 
-	/* A pipe is only special for record-shape nodes.  */
+	/* The following characters are only special for record-shape nodes.  */
 	case '|':
+	case '{':
+	case '}':
+	case '<':
+	case '>':
+	case ' ':
 	  escape_char = for_record;
 	  break;
 
 	/* The following characters always have to be escaped
 	   for use in labels.  */
-	case '{':
-	case '}':
-	case '<':
-	case '>':
 	case '"':
-	case ' ':
 	  escape_char = true;
 	  break;
 
