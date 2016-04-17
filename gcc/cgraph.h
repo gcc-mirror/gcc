@@ -1113,13 +1113,24 @@ public:
      if any to NOTHROW.  */
   void set_nothrow_flag (bool nothrow);
 
-  /* Set TREE_READONLY on cgraph_node's decl and on aliases of the node
-     if any to READONLY.  */
-  void set_const_flag (bool readonly, bool looping);
+  /* If SET_CONST is true, mark function, aliases and thunks to be ECF_CONST.
+    If SET_CONST if false, clear the flag.
+
+    When setting the flag be careful about possible interposition and
+    do not set the flag for functions that can be interposet and set pure
+    flag for functions that can bind to other definition. 
+
+    Return true if any change was done. */
+
+  bool set_const_flag (bool set_const, bool looping);
 
   /* Set DECL_PURE_P on cgraph_node's decl and on aliases of the node
-     if any to PURE.  */
-  void set_pure_flag (bool pure, bool looping);
+     if any to PURE.
+
+     When setting the flag, be careful about possible interposition.
+     Return true if any change was done. */
+
+  bool set_pure_flag (bool pure, bool looping);
 
   /* Call callback on function and aliases associated to the function.
      When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are

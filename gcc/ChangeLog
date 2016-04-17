@@ -1,3 +1,26 @@
+2016-04-17  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/70018
+	* cgraph.h (cgraph_node::set_const_flag,
+	cgraph_node::set_pure_flag): Update prototype to return bool;
+	update comment.
+	* cgraph.c (cgraph_node::call_for_symbol_thunks_and_aliases): Thunks
+	of interposable symbol are interposable, too.
+	(cgraph_set_const_flag_1): Rename to ...
+	(set_const_flag_1): ... this one; change to self recursive function
+	instead of call_for_symbol_thunks_and_aliases. Handle correctly
+	clearnig the flag in all variants and also virtual thunks of const
+	functions are pure; track if any change was done.
+	(cgraph_node::set_const_flag): Update.
+	(struct set_pure_flag_info): New struct.
+	(cgraph_set_pure_flag_1): Rename to ...
+	(set_pure_flag_1): ... this one; take set_pure_flag_info parameter
+	rather than pointer encoded flags; track if any changes was done;
+	handle correctly clearning flag and setting flag of aliases already
+	declared const.
+	(cgraph_node::set_pure_flag): Update.
+	(cgraph_node::set_nothrow_flag): Handle correctly clearning the flag.
+
 2016-04-17  Tom de Vries  <tom@codesourcery.com>
 
 	PR other/70433
