@@ -3924,19 +3924,24 @@ with GCC 4.7, there is also a 64-bit @samp{amd64-*-solaris2.1[0-9]*} or
 @samp{x86_64-*-solaris2.1[0-9]*} configuration that corresponds to
 @samp{sparcv9-sun-solaris2*}.
 
-It is recommended that you configure GCC to use the GNU assembler, in
-@file{/usr/sfw/bin/gas}.  The versions included in Solaris 10, from GNU
-binutils 2.15, and Solaris 11, from GNU binutils 2.19, work fine,
-although the current version, from GNU binutils
-2.22, is known to work, too.  Recent versions of the Sun assembler in
-@file{/usr/ccs/bin/as} work almost as well, though.
+It is recommended that you configure GCC to use the GNU assembler.  The
+versions included in Solaris 10, from GNU binutils 2.15 (in
+@file{/usr/sfw/bin/gas}), and Solaris 11, from GNU binutils 2.19 or
+newer (also available as @file{/usr/bin/gas} and
+@file{/usr/gnu/bin/as}), work fine.  Please note that the current
+version, from GNU binutils 2.26, only works on Solaris 12 when using the
+Solaris linker.  On Solaris 10 and 11, you either have to wait for GNU
+binutils 2.26.1 or newer, or stay with GNU binutils 2.25.1.  Recent
+versions of the Solaris assembler in @file{/usr/ccs/bin/as} work almost
+as well, though.
 @c FIXME: as patch requirements?
 
-For linking, the Sun linker, is preferred.  If you want to use the GNU
-linker instead, which is available in @file{/usr/sfw/bin/gld}, note that
-due to a packaging bug the version in Solaris 10, from GNU binutils
-2.15, cannot be used, while the version in Solaris 11, from GNU binutils
-2.19, works, as does the latest version, from GNU binutils 2.22.
+For linking, the Solaris linker, is preferred.  If you want to use the GNU
+linker instead, note that due to a packaging bug the version in Solaris
+10, from GNU binutils 2.15 (in @file{/usr/sfw/bin/gld}), cannot be used,
+while the version in Solaris 11, from GNU binutils 2.19 or newer (also
+in @file{/usr/gnu/bin/ld} and @file{/usr/bin/gld}), works, as does the
+latest version, from GNU binutils 2.26.
 
 To use GNU @command{as}, configure with the options
 @option{--with-gnu-as --with-as=@//usr/@/sfw/@/bin/@/gas}.  It may be necessary
@@ -4505,7 +4510,8 @@ in GCC 4.6.
 Sun does not ship a C compiler with Solaris 2 before Solaris 10, though
 you can download the Sun Studio compilers for free.  In Solaris 10 and
 11, GCC 3.4.3 is available as @command{/usr/sfw/bin/gcc}.  Solaris 11
-also provides GCC 4.5.2 as @command{/usr/gcc/4.5/bin/gcc}.  Alternatively,
+also provides GCC 4.5.2, 4.7.3, and 4.8.2 as
+@command{/usr/gcc/4.5/bin/gcc} or similar.  Alternatively,
 you can install a pre-built GCC to bootstrap and install GCC.  See the
 @uref{binaries.html,,binaries page} for details.
 
@@ -4523,17 +4529,21 @@ and proceed as described in @uref{configure.html,,the configure instructions}.
 In addition we strongly recommend specifying an absolute path to invoke
 @command{@var{srcdir}/configure}.
 
-Solaris 2 comes with a number of optional OS packages.  Some of these
+Solaris 10 comes with a number of optional OS packages.  Some of these
 are needed to use GCC fully, namely @code{SUNWarc},
 @code{SUNWbtool}, @code{SUNWesu}, @code{SUNWhea}, @code{SUNWlibm},
 @code{SUNWsprot}, and @code{SUNWtoo}.  If you did not install all
-optional packages when installing Solaris 2, you will need to verify that
+optional packages when installing Solaris 10, you will need to verify that
 the packages that GCC needs are installed.
-
 To check whether an optional package is installed, use
 the @command{pkginfo} command.  To add an optional package, use the
-@command{pkgadd} command.  For further details, see the Solaris 2
+@command{pkgadd} command.  For further details, see the Solaris 10
 documentation.
+
+Starting with Solaris 11, the package management has changed, so you
+need to check for @code{system/header}, @code{system/linker}, and
+@code{developer/assembler} packages.  Checking for and installing
+packages is done with the @command{pkg} command now.
 
 Trying to use the linker and other tools in
 @file{/usr/ucb} to install GCC has been observed to cause trouble.
@@ -4544,34 +4554,32 @@ The build process works more smoothly with the legacy Sun tools so, if you
 have @file{/usr/xpg4/bin} in your @env{PATH}, we recommend that you place
 @file{/usr/bin} before @file{/usr/xpg4/bin} for the duration of the build.
 
-We recommend the use of the Sun assembler or the GNU assembler, in
-conjunction with the Sun linker.  The GNU @command{as}
-versions included in Solaris 10, from GNU binutils 2.15, and Solaris 11,
-from GNU binutils 2.19, are known to work.  They can be found in
-@file{/usr/sfw/bin/gas}.  Current versions of GNU binutils (2.22)
-are known to work as well.  Note that your mileage may vary
-if you use a combination of the GNU tools and the Sun tools: while the
+We recommend the use of the Solaris assembler or the GNU assembler, in
+conjunction with the Solaris linker.  The GNU @command{as}
+versions included in Solaris 10, from GNU binutils 2.15 (in
+@file{/usr/sfw/bin/gas}), and Solaris 11,
+from GNU binutils 2.19 or newer (also in @file{/usr/bin/gas} and
+@file{/usr/gnu/bin/as}), are known to work.
+Current versions of GNU binutils (2.26)
+are known to work as well, with the caveat mentioned in
+@uref{#ix86-x-solaris210,,i?86-*-solaris2.10} .  Note that your mileage may vary
+if you use a combination of the GNU tools and the Solaris tools: while the
 combination GNU @command{as} + Sun @command{ld} should reasonably work,
 the reverse combination Sun @command{as} + GNU @command{ld} may fail to
 build or cause memory corruption at runtime in some cases for C++ programs.
 @c FIXME: still?
 GNU @command{ld} usually works as well, although the version included in
 Solaris 10 cannot be used due to several bugs.  Again, the current
-version (2.22) is known to work, but generally lacks platform specific
-features, so better stay with Sun @command{ld}.  To use the LTO linker
+version (2.26) is known to work, but generally lacks platform specific
+features, so better stay with Solaris @command{ld}.  To use the LTO linker
 plugin (@option{-fuse-linker-plugin}) with GNU @command{ld}, GNU
 binutils @emph{must} be configured with @option{--enable-largefile}.
 
-To enable symbol versioning in @samp{libstdc++} with Sun @command{ld},
+To enable symbol versioning in @samp{libstdc++} with Solaris @command{ld},
 you need to have any version of GNU @command{c++filt}, which is part of
 GNU binutils.  @samp{libstdc++} symbol versioning will be disabled if no
-appropriate version is found.  Sun @command{c++filt} from the Sun Studio
+appropriate version is found.  Solaris @command{c++filt} from the Solaris Studio
 compilers does @emph{not} work.
-
-Sun bug 4296832 turns up when compiling X11 headers with GCC 2.95 or
-newer: @command{g++} will complain that types are missing.  These headers
-assume that omitting the type means @code{int}; this assumption worked for
-C90 but is wrong for C++, and is now wrong for C99 also.
 
 Sun bug 4927647 sometimes causes random spurious testsuite failures
 related to missing diagnostic output.  This bug doesn't affect GCC
@@ -4612,40 +4620,6 @@ However, if all you want is code tuned for the UltraSPARC CPU, you
 should try the @option{-mtune=ultrasparc} option instead, which produces
 code that, unlike full 64-bit code, can still run on non-UltraSPARC
 machines.
-
-When configuring on a Solaris 7 or later system that is running a kernel
-that supports only 32-bit binaries, one must configure with
-@option{--disable-multilib}, since we will not be able to build the
-64-bit target libraries.
-
-GCC 3.3 and GCC 3.4 trigger code generation bugs in earlier versions of
-the GNU compiler (especially GCC 3.0.x versions), which lead to the
-miscompilation of the stage1 compiler and the subsequent failure of the
-bootstrap process.  A workaround is to use GCC 3.2.3 as an intermediary
-stage, i.e.@: to bootstrap that compiler with the base compiler and then
-use it to bootstrap the final compiler.
-
-GCC 3.4 triggers a code generation bug in versions 5.4 (Sun ONE Studio 7)
-and 5.5 (Sun ONE Studio 8) of the Sun compiler, which causes a bootstrap
-failure in form of a miscompilation of the stage1 compiler by the Sun
-compiler.  This is Sun bug 4974440.  This is fixed with patch 112760-07.
-
-GCC 3.4 changed the default debugging format from Stabs to DWARF-2 for
-32-bit code on Solaris 7 and later.  If you use the Sun assembler, this
-change apparently runs afoul of Sun bug 4910101 (which is referenced as
-an x86-only problem by Sun, probably because they do not use DWARF-2).
-A symptom of the problem is that you cannot compile C++ programs like
-@command{groff} 1.19.1 without getting messages similar to the following:
-
-@smallexample
-ld: warning: relocation error: R_SPARC_UA32: @dots{}
-  external symbolic relocation against non-allocatable section
-  .debug_info cannot be processed at runtime: relocation ignored.
-@end smallexample
-
-@noindent
-To work around this problem, compile with @option{-gstabs+} instead of
-plain @option{-g}.
 
 When configuring the GNU Multiple Precision Library (GMP), the MPFR
 library or the MPC library on a Solaris 7 or later system, the canonical
@@ -4697,17 +4671,6 @@ on a Solaris 9 system:
 @smallexample
 % ./configure --build=sparc64-sun-solaris2.9 --prefix=xxx
 @end smallexample
-
-The following compiler flags must be specified in the configure
-step in order to bootstrap this target with the Sun compiler:
-
-@smallexample
-% CC="cc -xarch=v9 -xildoff" @var{srcdir}/configure [@var{options}] [@var{target}]
-@end smallexample
-
-@noindent
-@option{-xarch=v9} specifies the SPARC-V9 architecture to the Sun toolchain
-and @option{-xildoff} turns off the incremental linker.
 
 @html
 <hr />
@@ -4811,7 +4774,7 @@ processor (@samp{amd64-*-*} is an alias for @samp{x86_64-*-*}) on
 Solaris 10 or later.  Unlike other systems, without special options a
 bi-arch compiler is built which generates 32-bit code by default, but
 can generate 64-bit x86-64 code with the @option{-m64} switch.  Since
-GCC 4.7, there is also configuration that defaults to 64-bit code, but
+GCC 4.7, there is also a configuration that defaults to 64-bit code, but
 can generate 32-bit code with @option{-m32}.  To configure and build
 this way, you have to provide all support libraries like @file{libgmp}
 as 64-bit code, configure with @option{--target=x86_64-pc-solaris2.1x}
