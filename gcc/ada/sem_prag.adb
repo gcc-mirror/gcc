@@ -2869,7 +2869,7 @@ package body Sem_Prag is
                   then
                      --  The input cannot denote states or objects declared
                      --  within the related package (SPARK RM 7.1.5(4)). The
-                     --  only exception to this are generic formal parameters.
+                     --  only exceptions to this are generic formal parameters.
 
                      if not Ekind_In (Input_Id, E_Generic_In_Out_Parameter,
                                                 E_Generic_In_Parameter)

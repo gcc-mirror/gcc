@@ -3769,10 +3769,10 @@ package body Sem_Ch13 is
            (Subp   : Entity_Id;
             Report : Boolean := False) return Boolean
          is
-            F              : Entity_Id;
-            Is_Function    : constant Boolean := (TSS_Nam = TSS_Stream_Input);
             Expected_Ekind : constant array (Boolean) of Entity_Kind :=
                                (False => E_Procedure, True => E_Function);
+            Is_Function    : constant Boolean := (TSS_Nam = TSS_Stream_Input);
+            F              : Entity_Id;
             Typ            : Entity_Id;
 
          begin
@@ -3785,7 +3785,7 @@ package body Sem_Ch13 is
             if No (F)
               or else Ekind (Etype (F)) /= E_Anonymous_Access_Type
               or else Designated_Type (Etype (F)) /=
-                               Class_Wide_Type (RTE (RE_Root_Stream_Type))
+                        Class_Wide_Type (RTE (RE_Root_Stream_Type))
             then
                return False;
             end if;
@@ -3835,8 +3835,7 @@ package body Sem_Ch13 is
                return False;
             end if;
 
-            if Present ((Next_Formal (F)))
-            then
+            if Present (Next_Formal (F)) then
                return False;
 
             elsif not Is_Scalar_Type (Typ)
@@ -3932,8 +3931,8 @@ package body Sem_Ch13 is
                              (Unit_Declaration_Node (Ultimate_Alias (Subp)))))
             then
                Error_Msg_N
-                 ("stream subprogram for interface type "
-                  & "must be null procedure", Expr);
+                 ("stream subprogram for interface type must be null "
+                  & "procedure", Expr);
             end if;
 
             Set_Entity (Expr, Subp);
