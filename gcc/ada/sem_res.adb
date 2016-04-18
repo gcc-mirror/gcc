@@ -7654,6 +7654,18 @@ package body Sem_Res is
          Normalize_Actuals (N, Nam, False, Norm_OK);
          pragma Assert (Norm_OK);
          Set_Etype (N, Etype (Nam));
+
+         --  Reset the Is_Overloaded flag, since resolution is now completed
+
+         if Nkind (Entry_Name) = N_Selected_Component then
+            --  Simple entry call
+            Set_Is_Overloaded (Selector_Name (Entry_Name), False);
+
+         else pragma Assert (Nkind (Entry_Name) = N_Indexed_Component);
+            --  Call to member of entry family
+            Set_Is_Overloaded (Selector_Name (Prefix (Entry_Name)), False);
+
+         end if;
       end if;
 
       Resolve_Actuals (N, Nam);
