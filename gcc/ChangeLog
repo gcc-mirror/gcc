@@ -1,9 +1,22 @@
+2016-04-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (*vec_extractv2sf_0): Use gen_lowpart.
+	(*vec_extractv2si_0): Ditto.
+	* config/i386/sse.md (*vec_extractv4sf_0): Ditto.
+	(zero_extended_scalar_load_operand splitters): Ditto.
+	(vec_extract splitters): Ditto.
+	(*vec_extractv4si_0_zext): Ditto.
+	(avx_<castmode><avxsizesuffix>_<castmode>): Use gen_lowpart
+	and lowpart_subreg.
+	(avx512f_<castmode><avxsizesuffix>_<castmode>): Ditto.
+	(avx512f_<castmode><avxsizesuffix>_256<castmode>): Ditto.
+	(*sse4_1_extractps): Use lowpart_subreg.
+
 2016-04-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Specific, i?86-*-solaris2.10): Update gas and
 	gld requirements.
-	(Specific, *-*-solaris2*): Update Solaris 11 bundled gcc
-	versions.
+	(Specific, *-*-solaris2*): Update Solaris 11 bundled gcc versions.
 	Mention Solaris 11 packaging changes.
 	Update gas and gld requirements.
 	Remove reference to pre-Solaris 10 bug.
@@ -222,8 +235,7 @@
 	(ipa_simd_modify_function_body, simd_clone_linear_addend)
 	(simd_clone_adjust, expand_simd_clones, ipa_omp_simd_clone)
 	(pass_data_omp_simd_clone, class pass_omp_simd_clone)
-	(pass_omp_simd_clone::gate, make_pass_omp_simd_clone): Move
-	into...
+	(pass_omp_simd_clone::gate, make_pass_omp_simd_clone): Move into...
 	* omp-simd-clone.c: ... this new file.
 	(simd_clone_vector_of_formal_parm_types): Make it static.
 	* Makefile.in (OBJS): Add omp-simd-clone.o.
@@ -231,8 +243,7 @@
 2016-04-15  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70662
-	* config/i386/sse.md: Use proper memory operand
-	modifiers.
+	* config/i386/sse.md: Use proper memory operand modifiers.
 
 
 2016-04-15  Richard Biener  <rguenther@suse.de>

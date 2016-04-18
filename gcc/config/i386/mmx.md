@@ -590,12 +590,7 @@
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 1))]
-{
-  if (REG_P (operands[1]))
-    operands[1] = gen_rtx_REG (SFmode, REGNO (operands[1]));
-  else
-    operands[1] = adjust_address (operands[1], SFmode, 0);
-})
+  "operands[1] = gen_lowpart (SFmode, operands[1]);")
 
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.c
@@ -1283,12 +1278,7 @@
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 1))]
-{
-  if (REG_P (operands[1]))
-    operands[1] = gen_rtx_REG (SImode, REGNO (operands[1]));
-  else
-    operands[1] = adjust_address (operands[1], SImode, 0);
-})
+  "operands[1] = gen_lowpart (SImode, operands[1]);")
 
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.c
