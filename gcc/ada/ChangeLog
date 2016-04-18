@@ -1,3 +1,58 @@
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Call): Major rewriting to
+	handle some complex cases of tag indeterminate calls that are
+	actuals in other dispatching calls that are themselves tag
+	indeterminate.
+	(Check_Dispatching_Context): Add parameter to support recursive
+	check for an enclosing construct that may provide a tag for a
+	tag-indeterminate call.
+
+2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Depends_In_Decl_Part):
+	Add global variables Task_Input_Seen and Task_Output_Seen.
+	(Analyze_Global_Item): Detect an illegal use of the current
+	instance of a single protected/task type in a global annotation.
+	(Analyze_Input_Output): Inputs and output related to the current
+	instance of a task unit are now tracked.
+	(Check_Usage): Require
+	the presence of the current instance of a task unit only when
+	one input/output is available.	(Current_Task_Instance_Seen):
+	New routine.
+	(Is_CCT_Instance): New parameter profile. Update
+	the comment on usage. The routine now properly recognizes several
+	cases related to single protected/task types.
+
+2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Use New_Freeze_Node
+	to create a brand new freeze node. This handles a case where an
+	ignored Ghost context is freezing something which is not ignored
+	Ghost and whose freeze node should not be removed from the tree.
+	(New_Freeze_Node): New routine.
+
+2016-04-18  Jerome Lambourg  <lambourg@adacore.com>
+
+	* sigtramp.h (__gnat_set_is_vxsim) New function to
+	tell sigtramp-vxworks to handle vxsim signal contexts.	*
+	sigtramp-vxworks.c (__gnat_sigtramp) Take into account the
+	differences in the sigcontext structure between the expected
+	regular x86 or x86_64 ones and the ones received in case of
+	exexution on the vxworks simulator.
+	* init.c: also compute is_vxsim in case of x86_64-vx7 target. Provide
+	this information to sigtramp-vxworks.c. Remove the old mechanism for
+	vxsim.
+	* init-vxsim.c, sigtramp-vxworks-vxsim.c: remove, now obsolete.
+
+2016-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Inline_Init_Proc): New function returning
+	whether the initialization procedure of a type should be
+	inlined.  Return again True for controlled type themselves.
+	(Build_Array_Init_Proc): Call it to set Set_Is_Inlined on Init_Proc.
+	(Build_Record_Init_Proc): Likewise.
+
 2016-04-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnatvsn.ads (Library_Version): Bump to 7.

@@ -1705,9 +1705,11 @@ __gnat_install_handler (void)
 
 #include <signal.h>
 #include <taskLib.h>
-#if defined (__i386__) && !defined (VTHREADS)
+#if (defined (__i386__) || defined (__x86_64__)) && !defined (VTHREADS)
 #include <sysLib.h>
 #endif
+
+#include "sigtramp.h"
 
 #ifndef __RTP__
 #include <intLib.h>
@@ -1814,7 +1816,9 @@ __gnat_clear_exception_count (void)
 /* Handle different SIGnal to exception mappings in different VxWorks
    versions.  */
 void
-__gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED, void *sc)
+__gnat_map_signal (int sig,
+                   siginfo_t *si ATTRIBUTE_UNUSED,
+                   void *sc ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -1924,14 +1928,6 @@ __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED, void *sc)
   Raise_From_Signal_Handler (exception, msg);
 }
 
-#if defined (__i386__) && !defined (VTHREADS) && _WRS_VXWORKS_MAJOR < 7
-
-extern void
-__gnat_vxsim_error_handler (int sig, siginfo_t *si, void *sc);
-
-static int is_vxsim = 0;
-#endif
-
 #if defined (ARMEL) && (_WRS_VXWORKS_MAJOR >= 7)
 
 /* ARM-vx7 case with arm unwinding exceptions */
@@ -2015,19 +2011,8 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
   __gnat_adjust_context_for_raise (sig, sc);
 #endif
 
-#if defined (__i386__) && !defined (VTHREADS) && (__WRS_VXWORKS_MAJOR < 7)
-   /* On x86, the vxsim signal context is subtly different and is processeed
-      by a handler compiled especially for vxsim.
-      Vxsim is not supported anymore on our vxworks-7 port.  */
-
-  if (is_vxsim)
-    __gnat_vxsim_error_handler (sig, si, sc);
-#endif
-
-# include "sigtramp.h"
-
   __gnat_sigtramp (sig, (void *)si, (void *)sc,
-		   (__sigtramphandler_t *)&__gnat_map_signal);
+                   (__sigtramphandler_t *)&__gnat_map_signal);
 
 #else
   __gnat_map_signal (sig, si, sc);
@@ -2057,7 +2042,6 @@ void
 __gnat_install_handler (void)
 {
   struct sigaction act;
-  char *model ATTRIBUTE_UNUSED;
 
   /* Setup signal handler to map synchronous signals to appropriate
      exceptions.  Make sure that the handler isn't interrupted by another
@@ -2108,13 +2092,17 @@ __gnat_install_handler (void)
   trap_0_entry->inst_fourth = 0xa1480000;
 #endif
 
-#if defined (__i386__) && !defined (VTHREADS) && _WRS_VXWORKS_MAJOR != 7
+#ifdef __HANDLE_VXSIM_SC
   /*  By experiment, found that sysModel () returns the following string
       prefix for vxsim when running on Linux and Windows.  */
-  model = sysModel ();
-  if ((strncmp (model, "Linux", 5) == 0)
-      || (strncmp (model, "Windows", 7) == 0))
-    is_vxsim = 1;
+  {
+    char *model = sysModel ();
+    if ((strncmp (model, "Linux", 5) == 0)
+        || (strncmp (model, "Windows", 7) == 0)
+        || (strncmp (model, "SIMLINUX", 8) == 0) /* vx7 */
+        || (strncmp (model, "SIMWINDOWS", 10) == 0)) /* ditto */
+      __gnat_set_is_vxsim (TRUE);
+  }
 #endif
 
   __gnat_handler_installed = 1;

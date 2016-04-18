@@ -1997,6 +1997,9 @@ package body Freeze is
       --  call, but rather must go in the package holding the function, so that
       --  the backend can process it in the proper context.
 
+      function New_Freeze_Node return Node_Id;
+      --  Create a new freeze node for entity E
+
       procedure Wrap_Imported_Subprogram (E : Entity_Id);
       --  If E is an entity for an imported subprogram with pre/post-conditions
       --  then this procedure will create a wrapper to ensure that proper run-
@@ -4589,6 +4592,39 @@ package body Freeze is
          Append_List (Result, Decls);
       end Late_Freeze_Subprogram;
 
+      ---------------------
+      -- New_Freeze_Node --
+      ---------------------
+
+      function New_Freeze_Node return Node_Id is
+         Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
+         Result          : Node_Id;
+
+      begin
+         --  Handle the case where an ignored Ghost subprogram freezes the type
+         --  of one of its formals. The type can either be non-Ghost or checked
+         --  Ghost. Since the freeze node for the type is generated in the
+         --  context of the subprogram, the node will be incorrectly flagged as
+         --  ignored Ghost and erroneously removed from the tree.
+
+         --    type Typ is ...;
+         --    procedure Ignored_Ghost_Proc (Formal : Typ) with Ghost;
+
+         --  Reset the Ghost mode to "none". This preserves the freeze node.
+
+         if Ghost_Mode = Ignore
+           and then not Is_Ignored_Ghost_Entity (E)
+           and then not Is_Ignored_Ghost_Node (E)
+         then
+            Ghost_Mode := None;
+         end if;
+
+         Result := New_Node (N_Freeze_Entity, Loc);
+
+         Ghost_Mode := Save_Ghost_Mode;
+         return Result;
+      end New_Freeze_Node;
+
       ------------------------------
       -- Wrap_Imported_Subprogram --
       ------------------------------
@@ -6281,7 +6317,7 @@ package body Freeze is
             Set_Sloc (F_Node, Loc);
 
          else
-            F_Node := New_Node (N_Freeze_Entity, Loc);
+            F_Node := New_Freeze_Node;
             Set_Freeze_Node (E, F_Node);
             Set_Access_Types_To_Process (F_Node, No_Elist);
             Set_TSS_Elist (F_Node, No_Elist);
@@ -6299,9 +6335,7 @@ package body Freeze is
          --  subtypes can only be elaborated after the type itself, and they
          --  need an itype reference.
 
-         if Ekind (E) = E_Record_Type
-           and then Has_Discriminants (E)
-         then
+         if Ekind (E) = E_Record_Type and then Has_Discriminants (E) then
             declare
                Comp : Entity_Id;
                IR   : Node_Id;

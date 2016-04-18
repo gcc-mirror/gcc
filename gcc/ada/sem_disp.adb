@@ -409,7 +409,7 @@ package body Sem_Disp is
       --  fact direct. This routine detects the above case and modifies the
       --  call accordingly.
 
-      procedure Check_Dispatching_Context;
+      procedure Check_Dispatching_Context (Call : Node_Id);
       --  If the call is tag-indeterminate and the entity being called is
       --  abstract, verify that the context is a call that will eventually
       --  provide a tag for dispatching, or has provided one already.
@@ -508,10 +508,9 @@ package body Sem_Disp is
       -- Check_Dispatching_Context --
       -------------------------------
 
-      procedure Check_Dispatching_Context is
-         Subp : constant Entity_Id := Entity (Name (N));
+      procedure Check_Dispatching_Context (Call : Node_Id) is
+         Subp : constant Entity_Id := Entity (Name (Call));
          Typ  : constant Entity_Id := Etype (Subp);
-         Par  : Node_Id;
 
          procedure Abstract_Context_Error;
          --  Error for abstract call dispatching on result is not dispatching
@@ -536,11 +535,15 @@ package body Sem_Disp is
             end if;
          end Abstract_Context_Error;
 
+         --  Local variables
+
+         Par : Node_Id;
+
       --  Start of processing for Check_Dispatching_Context
 
       begin
          if Is_Abstract_Subprogram (Subp)
-           and then No (Controlling_Argument (N))
+           and then No (Controlling_Argument (Call))
          then
             if Present (Alias (Subp))
               and then not Is_Abstract_Subprogram (Alias (Subp))
@@ -565,7 +568,8 @@ package body Sem_Disp is
             --  but will be legal in overridings of the operation.
 
             elsif In_Spec_Expression
-              and then Is_Subprogram (Current_Scope)
+              and then (Is_Subprogram (Current_Scope)
+                 or else Chars (Current_Scope) = Name_Postcondition)
               and then
                 ((Nkind (Parent (Current_Scope)) = N_Procedure_Specification
                    and then Null_Present (Parent (Current_Scope)))
@@ -588,82 +592,110 @@ package body Sem_Disp is
 
                if not Is_Tagged_Type (Typ)
                  and then not
-                    (Ekind (Typ) = E_Anonymous_Access_Type
-                      and then Is_Tagged_Type (Designated_Type (Typ)))
+                   (Ekind (Typ) = E_Anonymous_Access_Type
+                     and then Is_Tagged_Type (Designated_Type (Typ)))
                then
                   Abstract_Context_Error;
                   return;
                end if;
 
-               Par := Parent (N);
+               Par := Parent (Call);
 
                if Nkind (Par) = N_Parameter_Association then
                   Par := Parent (Par);
                end if;
 
-               while Present (Par) loop
-                  if Nkind_In (Par, N_Function_Call,
-                                    N_Procedure_Call_Statement)
-                    and then Is_Entity_Name (Name (Par))
-                  then
-                     declare
-                        Enc_Subp : constant Entity_Id := Entity (Name (Par));
-                        A : Node_Id;
-                        F : Entity_Id;
+               if Nkind (Par) = N_Qualified_Expression
+                 or else Nkind (Par) = N_Unchecked_Type_Conversion
+               then
+                  Par := Parent (Par);
+               end if;
 
-                     begin
-                        --  Find formal for which call is the actual, and is
-                        --  a controlling argument.
+               if Nkind_In (Par, N_Function_Call, N_Procedure_Call_Statement)
+                 and then Is_Entity_Name (Name (Par))
+               then
+                  declare
+                     Enc_Subp : constant Entity_Id := Entity (Name (Par));
+                     A        : Node_Id;
+                     F        : Entity_Id;
+                     Control  : Entity_Id;
+                     Ret_Type : Entity_Id;
 
-                        F := First_Formal (Enc_Subp);
-                        A := First_Actual (Par);
+                  begin
+                     --  Find controlling formal that can provide tag for the
+                     --  tag-indeterminate actual. The corresponding actual
+                     --  must be the corresponding class-wide type.
 
-                        while Present (F) loop
-                           if Is_Controlling_Formal (F)
-                             and then (N = A or else Parent (N) = A)
-                           then
-                              return;
-                           end if;
+                     F := First_Formal (Enc_Subp);
+                     A := First_Actual (Par);
 
-                           Next_Formal (F);
-                           Next_Actual (A);
-                        end loop;
+                     --  Find controlling type of call. Dereference if function
+                     --  returns an access type.
 
-                        Error_Msg_N
-                          ("call to abstract function must be dispatching", N);
-                        return;
-                     end;
-
-                  --  For equalitiy operators, one of the operands must be
-                  --  statically or dynamically tagged.
-
-                  elsif Nkind_In (Par, N_Op_Eq, N_Op_Ne) then
-                     if N = Right_Opnd (Par)
-                       and then Is_Tag_Indeterminate (Left_Opnd (Par))
-                     then
-                        Abstract_Context_Error;
-
-                     elsif N = Left_Opnd (Par)
-                       and then Is_Tag_Indeterminate (Right_Opnd (Par))
-                     then
-                        Abstract_Context_Error;
+                     Ret_Type := Etype (Call);
+                     if Is_Access_Type (Etype (Call)) then
+                        Ret_Type := Designated_Type (Ret_Type);
                      end if;
 
-                     return;
+                     while Present (F) loop
+                        Control := Etype (A);
 
-                  elsif Nkind (Par) = N_Assignment_Statement then
-                     return;
+                        if Is_Access_Type (Control) then
+                           Control := Designated_Type (Control);
+                        end if;
 
-                  elsif Nkind (Par) = N_Qualified_Expression
-                    or else Nkind (Par) = N_Unchecked_Type_Conversion
+                        if Is_Controlling_Formal (F)
+                          and then not (Call = A or else Parent (Call) = A)
+                          and then Control = Class_Wide_Type (Ret_Type)
+                        then
+                           return;
+                        end if;
+
+                        Next_Formal (F);
+                        Next_Actual (A);
+                     end loop;
+
+                     if Nkind (Par) = N_Function_Call
+                       and then Is_Tag_Indeterminate (Par)
+                     then
+                        --  The parent may be an actual of an enclosing call
+
+                        Check_Dispatching_Context (Par);
+                        return;
+
+                     else
+                        Error_Msg_N
+                          ("call to abstract function must be dispatching",
+                           Call);
+                        return;
+                     end if;
+                  end;
+
+               --  For equality operators, one of the operands must be
+               --  statically or dynamically tagged.
+
+               elsif Nkind_In (Par, N_Op_Eq, N_Op_Ne) then
+                  if N = Right_Opnd (Par)
+                    and then Is_Tag_Indeterminate (Left_Opnd (Par))
                   then
-                     Par := Parent (Par);
-
-                  else
                      Abstract_Context_Error;
-                     return;
+
+                  elsif N = Left_Opnd (Par)
+                    and then Is_Tag_Indeterminate (Right_Opnd (Par))
+                  then
+                     Abstract_Context_Error;
                   end if;
-               end loop;
+
+                  return;
+
+               --  The left-hand side of an assignment provides the tag
+
+               elsif Nkind (Par) = N_Assignment_Statement then
+                  return;
+
+               else
+                  Abstract_Context_Error;
+               end if;
             end if;
          end if;
       end Check_Dispatching_Context;
@@ -813,11 +845,12 @@ package body Sem_Disp is
                Next_Formal (Formal);
             end loop;
 
-            Check_Dispatching_Context;
+            Check_Dispatching_Context (N);
 
-         else
+         elsif Nkind (N) /= N_Function_Call then
+
             --  The call is not dispatching, so check that there aren't any
-            --  tag-indeterminate abstract calls left.
+            --  tag-indeterminate abstract calls left among its actuals.
 
             Actual := First_Actual (N);
             while Present (Actual) loop
@@ -836,7 +869,7 @@ package body Sem_Disp is
                   then
                      Func := Empty;
 
-                  --  Ditto if it is an explicit dereference.
+                  --  Ditto if it is an explicit dereference
 
                   elsif Nkind (Original_Node (Actual)) = N_Explicit_Dereference
                   then
@@ -848,28 +881,41 @@ package body Sem_Disp is
                   else
                      Func :=
                        Entity (Name (Original_Node
-                                       (Expression (Original_Node (Actual)))));
+                         (Expression (Original_Node (Actual)))));
                   end if;
 
                   if Present (Func) and then Is_Abstract_Subprogram (Func) then
                      Error_Msg_N
-                       ("call to abstract function must be dispatching", N);
+                       ("call to abstract function must be dispatching",
+                        Actual);
                   end if;
                end if;
 
                Next_Actual (Actual);
             end loop;
 
-            Check_Dispatching_Context;
+            Check_Dispatching_Context (N);
+            return;
+
+         elsif Nkind (Parent (N)) in N_Subexpr then
+            Check_Dispatching_Context (N);
+
+         elsif Nkind (Parent (N)) = N_Assignment_Statement
+           and then Is_Class_Wide_Type (Etype (Name (Parent (N))))
+         then
+            return;
+
+         elsif Is_Abstract_Subprogram (Subp_Entity) then
+            Check_Dispatching_Context (N);
+            return;
          end if;
 
       else
-
          --  If dispatching on result, the enclosing call, if any, will
          --  determine the controlling argument. Otherwise this is the
          --  primitive operation of the root type.
 
-         Check_Dispatching_Context;
+         Check_Dispatching_Context (N);
       end if;
    end Check_Dispatching_Call;
 
