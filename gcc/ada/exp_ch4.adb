@@ -5290,9 +5290,8 @@ package body Exp_Ch4 is
 
                if Present (Actions) then
 
-                  --  If we want to minimize the use of
-                  --  Expression_With_Actions, just skip the optimization, it
-                  --  is not critical for correctness.
+                  --  To minimize the use of Expression_With_Actions, just skip
+                  --  the optimization as it is not critical for correctness.
 
                   if Minimize_Expression_With_Actions then
                      return False;
