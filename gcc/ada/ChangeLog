@@ -1,3 +1,11 @@
+2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* stringt.adb, exp_ch6.adb, sem_ch13.adb: Minor reformatting.
+
+2016-04-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* par-ch4.adb, sem_prag.adb: Minor reformatting.
+
 2016-04-18  Bob Duff  <duff@adacore.com>
 
 	* sinput.ads, sinput.adb (Build_Location_String): Take a

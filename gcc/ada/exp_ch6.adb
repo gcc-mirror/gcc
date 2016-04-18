@@ -3905,8 +3905,8 @@ package body Exp_Ch6 is
             --  perform the inlining.
 
             if In_Instance
-               and then Comes_From_Source (Subp)
-               and then Optimization_Level > 0
+              and then Comes_From_Source (Subp)
+              and then Optimization_Level > 0
             then
                declare
                   Inst : Entity_Id;

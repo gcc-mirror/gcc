@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -461,7 +461,7 @@ package body Ch4 is
 
                         loop
                            Discard_Junk_Node (P_Expression_If_OK);
-                           exit when not  Comma_Present;
+                           exit when not Comma_Present;
                         end loop;
 
                         T_Right_Paren;

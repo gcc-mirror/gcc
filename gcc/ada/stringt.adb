@@ -307,7 +307,8 @@ package body Stringt is
    -----------------------------
 
    function String_From_Name_Buffer
-     (Buf : Bounded_String := Global_Name_Buffer) return String_Id is
+     (Buf : Bounded_String := Global_Name_Buffer) return String_Id
+   is
    begin
       Start_String;
       Store_String_Chars (+Buf);
