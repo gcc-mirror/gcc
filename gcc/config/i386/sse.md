@@ -8804,14 +8804,14 @@
 	  "=x,x,x,x,x,x,x,x,m,m ,m")
 	(vec_concat:V2DF
 	  (match_operand:DF 2 "nonimmediate_operand"
-	  " m,m,m,x,x,0,0,x,x,*f,r")
+	  "xm,m,m,x,x,0,0,x,x,*f,r")
 	  (vec_select:DF
 	    (match_operand:V2DF 1 "vector_move_operand"
 	  " C,0,x,0,x,x,o,o,0,0 ,0")
 	    (parallel [(const_int 1)]))))]
   "TARGET_SSE2 && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
-   %vmovsd\t{%2, %0|%0, %2}
+   %vmovq\t{%2, %0|%0, %2}
    movlpd\t{%2, %0|%0, %2}
    vmovlpd\t{%2, %1, %0|%0, %1, %2}
    movsd\t{%2, %0|%0, %2}
@@ -8896,10 +8896,10 @@
    (set_attr "mode" "V2DF,DF,DF")])
 
 (define_insn "vec_concatv2df"
-  [(set (match_operand:V2DF 0 "register_operand"     "=x,x,v,x,v,x,x,v,x,x")
+  [(set (match_operand:V2DF 0 "register_operand"     "=x,x,v,x,v,x,x, v,x,x")
 	(vec_concat:V2DF
-	  (match_operand:DF 1 "nonimmediate_operand" " 0,x,v,m,m,0,x,m,0,0")
-	  (match_operand:DF 2 "vector_move_operand"  " x,x,v,1,1,m,m,C,x,m")))]
+	  (match_operand:DF 1 "nonimmediate_operand" " 0,x,v,m,m,0,x,xm,0,0")
+	  (match_operand:DF 2 "vector_move_operand"  " x,x,v,1,1,m,m, C,x,m")))]
   "TARGET_SSE
    && (!(MEM_P (operands[1]) && MEM_P (operands[2]))
        || (TARGET_SSE3 && rtx_equal_p (operands[1], operands[2])))"
@@ -8911,7 +8911,7 @@
    vmovddup\t{%1, %0|%0, %1}
    movhpd\t{%2, %0|%0, %2}
    vmovhpd\t{%2, %1, %0|%0, %1, %2}
-   %vmovsd\t{%1, %0|%0, %1}
+   %vmovq\t{%1, %0|%0, %1}
    movlhps\t{%2, %0|%0, %2}
    movhps\t{%2, %0|%0, %2}"
   [(set_attr "isa" "sse2_noavx,avx,avx512vl,sse3,avx512vl,sse2_noavx,avx,sse2,noavx,noavx")
