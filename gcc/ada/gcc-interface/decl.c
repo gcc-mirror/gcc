@@ -5857,7 +5857,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
   /* For GCC builtins, pass Address integer types as (void *)  */
   if (Convention (gnat_subprog) == Convention_Intrinsic
       && Present (Interface_Name (gnat_subprog))
-      && Is_Descendent_Of_Address (Etype (gnat_param)))
+      && Is_Descendant_Of_Address (Etype (gnat_param)))
     gnu_param_type = ptr_type_node;
 
   /* Arrays are passed as pointers to element type for foreign conventions.  */
@@ -8603,7 +8603,7 @@ intrin_return_compatible_p (intrin_binding_t * inb)
     return true;
 
   /* If return type is Address (integer type), map it to void *.  */
-  if (Is_Descendent_Of_Address (Etype (inb->gnat_entity)))
+  if (Is_Descendant_Of_Address (Etype (inb->gnat_entity)))
     ada_return_type = ptr_type_node;
 
   /* Check return types compatibility otherwise.  Note that this
