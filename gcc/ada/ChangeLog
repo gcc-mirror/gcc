@@ -1,3 +1,35 @@
+2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* contracts.adb (Analyze_Object_Contract): Update references to
+	SPARK RM.
+	* freeze.adb (Freeze_Entity): Update references to SPARK RM.
+	* ghost.adb Add with and use clauses for Sem_Disp.
+	(Check_Ghost_Derivation): Removed.
+	(Check_Ghost_Overriding):
+	Reimplemented.	(Check_Ghost_Policy): Update references to SPARK RM.
+	(Check_Ghost_Primitive): New routine.
+	(Check_Ghost_Refinement): New routine.	(Is_OK_Ghost_Context):
+	Update references to SPARK RM.	(Is_OK_Pragma): Update references
+	to SPARK RM. Predicates are now a valid context for references
+	to Ghost entities.
+	* ghost.ads (Check_Ghost_Derivation): Removed.
+	(Check_Ghost_Overriding): Update the comment on usage.
+	(Check_Ghost_Primitive): New routine.
+	(Check_Ghost_Refinement): New routine.
+	(Remove_Ignored_Ghost_Code): Update references to SPARK RM.
+	* sem_ch3.adb (Process_Full_View): Remove the now obsolete check
+	related to Ghost derivations
+	* sem_ch6.adb (Check_Conformance): Remove now obsolete check
+	related to the convention-like behavior of pragma Ghost.
+	(Check_For_Primitive_Subprogram): Verify that the Ghost policy
+	of a tagged type and its primitive agree.
+	* sem_prag.adb (Analyze_Pragma): Update references to SPARK
+	RM. Move the verification of pragma Assertion_Policy Ghost
+	to the proper place. Remove the now obsolete check related
+	to Ghost derivations.
+	(Collect_Constituent): Add a call to Check_Ghost_Refinement.
+	* sem_res.adb (Resolve_Actuals): Update references to SPARK RM.
+
 2016-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* layout.adb: Fix more minor typos in comments.

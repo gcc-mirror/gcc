@@ -11585,7 +11585,8 @@ package body Sem_Prag is
 
                   --  Check Kind and Policy have allowed forms
 
-                  Kind := Chars (Arg);
+                  Kind   := Chars (Arg);
+                  Policy := Get_Pragma_Arg (Arg);
 
                   if not Is_Valid_Assertion_Kind (Kind) then
                      Error_Pragma_Arg
@@ -11594,6 +11595,30 @@ package body Sem_Prag is
 
                   Check_Arg_Is_One_Of
                     (Arg, Name_Check, Name_Disable, Name_Ignore);
+
+                  if Kind = Name_Ghost then
+
+                     --  The Ghost policy must be either Check or Ignore
+                     --  (SPARK RM 6.9(6)).
+
+                     if not Nam_In (Chars (Policy), Name_Check,
+                                                    Name_Ignore)
+                     then
+                        Error_Pragma_Arg
+                          ("argument of pragma % Ghost must be Check or "
+                           & "Ignore", Policy);
+                     end if;
+
+                     --  Pragma Assertion_Policy specifying a Ghost policy
+                     --  cannot occur within a Ghost subprogram or package
+                     --  (SPARK RM 6.9(14)).
+
+                     if Ghost_Mode > None then
+                        Error_Pragma
+                          ("pragma % cannot appear within ghost subprogram or "
+                           & "package");
+                     end if;
+                  end if;
 
                   --  Rewrite the Assertion_Policy pragma as a series of
                   --  Check_Policy pragmas of the form:
@@ -11612,7 +11637,7 @@ package body Sem_Prag is
                          Make_Pragma_Argument_Association (LocP,
                            Expression => Make_Identifier (LocP, Kind)),
                          Make_Pragma_Argument_Association (LocP,
-                           Expression => Get_Pragma_Arg (Arg)))));
+                           Expression => Policy))));
 
                   Arg := Next (Arg);
                end loop;
@@ -12371,8 +12396,7 @@ package body Sem_Prag is
          --  new form syntax.
 
          when Pragma_Check_Policy => Check_Policy : declare
-            Ident : Node_Id;
-            Kind  : Node_Id;
+            Kind : Node_Id;
 
          begin
             GNAT_Pragma;
@@ -12416,29 +12440,6 @@ package body Sem_Prag is
                Check_Arg_Is_One_Of
                  (Arg2,
                   Name_On, Name_Off, Name_Check, Name_Disable, Name_Ignore);
-               Ident := Get_Pragma_Arg (Arg2);
-
-               if Chars (Kind) = Name_Ghost then
-
-                  --  Pragma Check_Policy specifying a Ghost policy cannot
-                  --  occur within a ghost subprogram or package.
-
-                  if Ghost_Mode > None then
-                     Error_Pragma
-                       ("pragma % cannot appear within ghost subprogram or "
-                        & "package");
-
-                  --  The policy identifier of pragma Ghost must be either
-                  --  Check or Ignore (SPARK RM 6.9(7)).
-
-                  elsif not Nam_In (Chars (Ident), Name_Check,
-                                                   Name_Ignore)
-                  then
-                     Error_Pragma_Arg
-                       ("argument of pragma % Ghost must be Check or Ignore",
-                        Arg2);
-                  end if;
-               end if;
 
                --  And chain pragma on the Check_Policy_List for search
 
@@ -15021,14 +15022,6 @@ package body Sem_Prag is
                return;
             end if;
 
-            --  A derived type or type extension cannot be subject to pragma
-            --  Ghost if either the parent type or one of the progenitor types
-            --  is not Ghost (SPARK RM 6.9(9)).
-
-            if Is_Derived_Type (Id) then
-               Check_Ghost_Derivation (Id);
-            end if;
-
             --  Handle completions of types and constants that are subject to
             --  pragma Ghost.
 
@@ -15040,7 +15033,7 @@ package body Sem_Prag is
 
                   --  The full declaration of a deferred constant cannot be
                   --  subject to pragma Ghost unless the deferred declaration
-                  --  is also Ghost (SPARK RM 6.9(10)).
+                  --  is also Ghost (SPARK RM 6.9(9)).
 
                   if Ekind (Prev_Id) = E_Constant then
                      Error_Msg_Name_1 := Pname;
@@ -15058,7 +15051,7 @@ package body Sem_Prag is
 
                   --  The full declaration of a type cannot be subject to
                   --  pragma Ghost unless the partial view is also Ghost
-                  --  (SPARK RM 6.9(10)).
+                  --  (SPARK RM 6.9(9)).
 
                   else
                      Error_Msg_NE (Fix_Error
@@ -15092,7 +15085,7 @@ package body Sem_Prag is
                if Is_OK_Static_Expression (Expr) then
 
                   --  "Ghostness" cannot be turned off once enabled within a
-                  --  region (SPARK RM 6.9(7)).
+                  --  region (SPARK RM 6.9(6)).
 
                   if Is_False (Expr_Value (Expr))
                     and then Ghost_Mode > None
@@ -25230,51 +25223,11 @@ package body Sem_Prag is
 
                procedure Collect_Constituent is
                begin
-                  if Is_Ghost_Entity (State_Id) then
-                     if Is_Ghost_Entity (Constit_Id) then
+                  --  The Ghost policy in effect at the point of abstract state
+                  --  declaration and constituent must match (SPARK RM 6.9(15))
 
-                        --  The Ghost policy in effect at the point of abstract
-                        --  state declaration and constituent must match
-                        --  (SPARK RM 6.9(16)).
-
-                        if Is_Checked_Ghost_Entity (State_Id)
-                          and then Is_Ignored_Ghost_Entity (Constit_Id)
-                        then
-                           Error_Msg_Sloc := Sloc (Constit);
-
-                           SPARK_Msg_N
-                             ("incompatible ghost policies in effect", State);
-                           SPARK_Msg_NE
-                             ("\abstract state & declared with ghost policy "
-                              & "Check", State, State_Id);
-                           SPARK_Msg_NE
-                             ("\constituent & declared # with ghost policy "
-                              & "Ignore", State, Constit_Id);
-
-                        elsif Is_Ignored_Ghost_Entity (State_Id)
-                          and then Is_Checked_Ghost_Entity (Constit_Id)
-                        then
-                           Error_Msg_Sloc := Sloc (Constit);
-
-                           SPARK_Msg_N
-                             ("incompatible ghost policies in effect", State);
-                           SPARK_Msg_NE
-                             ("\abstract state & declared with ghost policy "
-                              & "Ignore", State, State_Id);
-                           SPARK_Msg_NE
-                             ("\constituent & declared # with ghost policy "
-                              & "Check", State, Constit_Id);
-                        end if;
-
-                     --  A constituent of a Ghost abstract state must be a
-                     --  Ghost entity (SPARK RM 7.2.2(12)).
-
-                     else
-                        SPARK_Msg_NE
-                          ("constituent of ghost state & must be ghost",
-                           Constit, State_Id);
-                     end if;
-                  end if;
+                  Check_Ghost_Refinement
+                    (State, State_Id, Constit, Constit_Id);
 
                   --  A synchronized state must be refined by a synchronized
                   --  object or another synchronized state (SPARK RM 9.6).
