@@ -46,6 +46,7 @@ with Namet;    use Namet;
 with Nlists;
 with Opt;      use Opt;
 with Osint;    use Osint;
+with Osint.C;  use Osint.C;
 with Output;   use Output;
 with Par_SCO;
 with Prepcomp;
@@ -1076,6 +1077,13 @@ begin
 
       if CodePeer_Mode then
          Comperr.Delete_SCIL_Files;
+      end if;
+
+      --  Ditto for old C files before regenerating new ones
+
+      if Generate_C_Code then
+         Delete_C_File;
+         Delete_H_File;
       end if;
 
       --  Exit if compilation errors detected

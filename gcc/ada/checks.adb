@@ -2749,19 +2749,22 @@ package body Checks is
       --  Set to True if Expr should be regarded as a real value even though
       --  the type of Expr might be discrete.
 
-      procedure Bad_Value;
-      --  Procedure called if value is determined to be out of range
+      procedure Bad_Value (Warn : Boolean := False);
+      --  Procedure called if value is determined to be out of range. Warn is
+      --  True to force a warning instead of an error, even when SPARK_Mode is
+      --  On.
 
       ---------------
       -- Bad_Value --
       ---------------
 
-      procedure Bad_Value is
+      procedure Bad_Value (Warn : Boolean := False) is
       begin
          Apply_Compile_Time_Constraint_Error
            (Expr, "value not in range of}??", CE_Range_Check_Failed,
-            Ent => Target_Typ,
-            Typ => Target_Typ);
+            Ent  => Target_Typ,
+            Typ  => Target_Typ,
+            Warn => Warn);
       end Bad_Value;
 
    --  Start of processing for Apply_Scalar_Range_Check
@@ -2968,18 +2971,17 @@ package body Checks is
 
                   if Lov > Hiv then
 
-                     --  In GNATprove mode, do not issue a message in that case
-                     --  (which would be an error stopping analysis), as this
-                     --  likely corresponds to deactivated code based on a
-                     --  given configuration (say, dead code inside a loop over
-                     --  the empty range). Instead, we enable the range check
-                     --  so that GNATprove will issue a message if it cannot be
-                     --  proved.
+                     --  When SPARK_Mode is On, force a warning instead of
+                     --  an error in that case, as this likely corresponds
+                     --  to deactivated code.
+
+                     Bad_Value (Warn => SPARK_Mode = On);
+
+                     --  In GNATprove mode, we enable the range check so that
+                     --  GNATprove will issue a message if it cannot be proved.
 
                      if GNATprove_Mode then
                         Enable_Range_Check (Expr);
-                     else
-                        Bad_Value;
                      end if;
 
                      return;

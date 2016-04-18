@@ -5440,7 +5440,9 @@ package body Sem_Res is
                              and then Expr_Value_R (Rop) = Ureal_0))
             then
                --  Specialize the warning message according to the operation.
-               --  The following warnings are for the case
+               --  When SPARK_Mode is On, force a warning instead of an error
+               --  in that case, as this likely corresponds to deactivated
+               --  code. The following warnings are for the case
 
                case Nkind (N) is
                   when N_Op_Divide =>
@@ -5459,23 +5461,26 @@ package body Sem_Res is
                           ("float division by zero, may generate "
                            & "'+'/'- infinity??", Right_Opnd (N));
 
-                        --  For all other cases, we get a Constraint_Error
+                     --  For all other cases, we get a Constraint_Error
 
                      else
                         Apply_Compile_Time_Constraint_Error
                           (N, "division by zero??", CE_Divide_By_Zero,
-                           Loc => Sloc (Right_Opnd (N)));
+                           Loc  => Sloc (Right_Opnd (N)),
+                           Warn => SPARK_Mode = On);
                      end if;
 
                   when N_Op_Rem =>
                      Apply_Compile_Time_Constraint_Error
                        (N, "rem with zero divisor??", CE_Divide_By_Zero,
-                        Loc => Sloc (Right_Opnd (N)));
+                        Loc  => Sloc (Right_Opnd (N)),
+                        Warn => SPARK_Mode = On);
 
                   when N_Op_Mod =>
                      Apply_Compile_Time_Constraint_Error
                        (N, "mod with zero divisor??", CE_Divide_By_Zero,
-                        Loc => Sloc (Right_Opnd (N)));
+                        Loc  => Sloc (Right_Opnd (N)),
+                        Warn => SPARK_Mode = On);
 
                   --  Division by zero can only happen with division, rem,
                   --  and mod operations.
@@ -5483,6 +5488,13 @@ package body Sem_Res is
                   when others =>
                      raise Program_Error;
                end case;
+
+               --  In GNATprove mode, we enable the division check so that
+               --  GNATprove will issue a message if it cannot be proved.
+
+               if GNATprove_Mode then
+                  Activate_Division_Check (N);
+               end if;
 
             --  Otherwise just set the flag to check at run time
 
