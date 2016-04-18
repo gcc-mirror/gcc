@@ -107,7 +107,7 @@ package Ada.Containers.Hash_Tables.Generic_Operations is
 
    procedure Clear (HT : in out Hash_Table_Type);
    --  Deallocates each node in hash table HT. (Note that it only deallocates
-   --  the nodes, not the buckets array.)  Program_Error is raised if the hash
+   --  the nodes, not the buckets array.) Program_Error is raised if the hash
    --  table is busy.
 
    procedure Move (Target, Source : in out Hash_Table_Type);

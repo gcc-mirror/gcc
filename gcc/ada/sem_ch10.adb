@@ -879,7 +879,7 @@ package body Sem_Ch10 is
       end if;
 
       --  All components of the context: with-clauses, library unit, ancestors
-      --  if any, (and their context)  are analyzed and installed.
+      --  if any, (and their context) are analyzed and installed.
 
       --  Call special debug routine sm if this is the main unit
 

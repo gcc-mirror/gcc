@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                             (ASCII Version)                              --
 --                                                                          --
---          Copyright (C) 1993-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1993-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -439,8 +439,8 @@ package Interfaces.COBOL is
       function To_Decimal (Item : Binary)      return Num;
       function To_Decimal (Item : Long_Binary) return Num;
 
-      function To_Binary      (Item : Num)  return Binary;
-      function To_Long_Binary (Item : Num)  return Long_Binary;
+      function To_Binary      (Item : Num) return Binary;
+      function To_Long_Binary (Item : Num) return Long_Binary;
 
    private
       pragma Inline (Length);

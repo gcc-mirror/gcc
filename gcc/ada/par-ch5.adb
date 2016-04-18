@@ -42,7 +42,7 @@ package body Ch5 is
    function P_Label                              return Node_Id;
    function P_Null_Statement                     return Node_Id;
 
-   function P_Assignment_Statement (LHS : Node_Id)  return Node_Id;
+   function P_Assignment_Statement (LHS : Node_Id) return Node_Id;
    --  Parse assignment statement. On entry, the caller has scanned the left
    --  hand side (passed in as Lhs), and the colon-equal (or some symbol
    --  taken to be an error equivalent such as equal).

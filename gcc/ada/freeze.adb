@@ -8318,7 +8318,7 @@ package body Freeze is
          --  Add friendly warning if initialization comes from a packed array
          --  component.
 
-         if Is_Record_Type (Typ)  then
+         if Is_Record_Type (Typ) then
             declare
                Comp : Entity_Id;
 

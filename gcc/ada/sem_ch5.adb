@@ -803,7 +803,7 @@ package body Sem_Ch5 is
          Set_Referenced_Modified (Lhs, Out_Param => False);
       end if;
 
-      --  RM 7.3.2 (12/3)  An assignment to a view conversion (from a type
+      --  RM 7.3.2 (12/3): An assignment to a view conversion (from a type
       --  to one of its ancestors) requires an invariant check. Apply check
       --  only if expression comes from source, otherwise it will be applied
       --  when value is assigned to source entity.

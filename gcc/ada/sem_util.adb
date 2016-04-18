@@ -6301,7 +6301,7 @@ package body Sem_Util is
                      end loop;
                   end if;
 
-                  if Present (Prev_Vis)  then
+                  if Present (Prev_Vis) then
 
                      --  Skip E in the visibility chain
 
@@ -12240,7 +12240,7 @@ package body Sem_Util is
                   else
                      Indx_Typ := Etype (Indx);
 
-                     if Is_Private_Type (Indx_Typ)  then
+                     if Is_Private_Type (Indx_Typ) then
                         Indx_Typ := Full_View (Indx_Typ);
                      end if;
 

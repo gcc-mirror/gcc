@@ -3168,7 +3168,7 @@ package body Sem_Ch3 is
          end loop;
       end if;
 
-      if Is_Integer_Type (T)  then
+      if Is_Integer_Type (T) then
          Resolve (E, T);
          Set_Etype (Id, Universal_Integer);
          Set_Ekind (Id, E_Named_Integer);
@@ -14522,7 +14522,7 @@ package body Sem_Ch3 is
             --  of the derived type are not relevant, and thus we can use
             --  the base type for the formals. However, the return type may be
             --  used in a context that requires that the proper static bounds
-            --  be used (a case statement, for example)  and for those cases
+            --  be used (a case statement, for example) and for those cases
             --  we must use the derived type (first subtype), not its base.
 
             --  If the derived_type_definition has no constraints, we know that

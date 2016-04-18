@@ -3385,7 +3385,7 @@ package Einfo is
 
 --    Needs_No_Actuals (Flag22)
 --       Defined in callable entities (subprograms, entries, access to
---       subprograms)  which can be called without actuals because all of
+--       subprograms) which can be called without actuals because all of
 --       their formals (if any) have default values. This flag simplifies the
 --       resolution of the syntactic ambiguity involving a call to these
 --       entities when the return type is an array type, and a call can be
@@ -4471,7 +4471,7 @@ package Einfo is
 --  The flag Has_Delayed_Freeze indicates that an entity carries an explicit
 --  freeze node, which appears later in the expanded tree.
 
---  a)   The flag is used by the front-end to trigger expansion actions
+--  a) The flag is used by the front-end to trigger expansion actions
 --  which include the generation of that freeze node. Typically this happens at
 --  the end of the current compilation unit, or before the first subprogram
 --  body is encountered in the current unit. See files freeze and exp_ch13 for
@@ -4479,7 +4479,7 @@ package Einfo is
 --  construction of initialization procedures and dispatch tables.
 
 --  b) The flag is used by the backend to defer elaboration of the entity until
---  its freeze node is seen.  In the absence of an explicit freeze node, an
+--  its freeze node is seen. In the absence of an explicit freeze node, an
 --  entity is frozen (and elaborated) at the point of declaration.
 
 --  For object declarations, the flag is set when an address clause for the
