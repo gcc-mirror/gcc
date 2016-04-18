@@ -41,7 +41,6 @@ with Ada.Real_Time;
 package Ada.Execution_Time with
   SPARK_Mode
 is
-
    type CPU_Time is private;
 
    CPU_Time_First : constant CPU_Time;

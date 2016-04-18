@@ -4446,8 +4446,8 @@ package body Sem_Aggr is
 
                               Comp_Elmt := First_Elmt (Components);
                               while Present (Comp_Elmt) loop
-                                 if
-                                   Ekind (Node (Comp_Elmt)) /= E_Discriminant
+                                 if Ekind (Node (Comp_Elmt)) /=
+                                      E_Discriminant
                                  then
                                     Process_Component (Node (Comp_Elmt));
                                  end if;
@@ -4599,8 +4599,8 @@ package body Sem_Aggr is
 
                elsif Others_Box = 1 and then Warn_On_Redundant_Constructs then
                   Error_Msg_N ("others choice is redundant?", Box_Node);
-                  Error_Msg_N ("\previous choices cover all components?",
-                     Box_Node);
+                  Error_Msg_N
+                    ("\previous choices cover all components?", Box_Node);
                end if;
 
                exit Verification;
