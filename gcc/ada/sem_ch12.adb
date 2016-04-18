@@ -1027,6 +1027,31 @@ package body Sem_Ch12 is
       raise Instantiation_Error;
    end Abandon_Instantiation;
 
+   --------------------------------
+   --  Add_Pending_Instantiation --
+   --------------------------------
+
+   procedure Add_Pending_Instantiation (Inst : Node_Id; Act_Decl : Node_Id) is
+   begin
+
+      --  Add to the instantiation node and the corresponding unit declaration
+      --  the current values of global flags to be used when analyzing the
+      --  instance body.
+
+      Pending_Instantiations.Append
+        ((Inst_Node                => Inst,
+          Act_Decl                 => Act_Decl,
+          Expander_Status          => Expander_Active,
+          Current_Sem_Unit         => Current_Sem_Unit,
+          Scope_Suppress           => Scope_Suppress,
+          Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
+          Version                  => Ada_Version,
+          Version_Pragma           => Ada_Version_Pragma,
+          Warnings                 => Save_Warnings,
+          SPARK_Mode               => SPARK_Mode,
+          SPARK_Mode_Pragma        => SPARK_Mode_Pragma));
+   end Add_Pending_Instantiation;
+
    --------------------------
    -- Analyze_Associations --
    --------------------------
@@ -4138,18 +4163,7 @@ package body Sem_Ch12 is
 
                --  Make entry in table
 
-               Pending_Instantiations.Append
-                 ((Inst_Node                => N,
-                   Act_Decl                 => Act_Decl,
-                   Expander_Status          => Expander_Active,
-                   Current_Sem_Unit         => Current_Sem_Unit,
-                   Scope_Suppress           => Scope_Suppress,
-                   Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
-                   Version                  => Ada_Version,
-                   Version_Pragma           => Ada_Version_Pragma,
-                   Warnings                 => Save_Warnings,
-                   SPARK_Mode               => SPARK_Mode,
-                   SPARK_Mode_Pragma        => SPARK_Mode_Pragma));
+               Add_Pending_Instantiation (N, Act_Decl);
             end if;
          end if;
 
@@ -4745,18 +4759,7 @@ package body Sem_Ch12 is
 
         and then not Is_Eliminated (Subp)
       then
-         Pending_Instantiations.Append
-           ((Inst_Node                => N,
-             Act_Decl                 => Unit_Declaration_Node (Subp),
-             Expander_Status          => Expander_Active,
-             Current_Sem_Unit         => Current_Sem_Unit,
-             Scope_Suppress           => Scope_Suppress,
-             Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
-             Version                  => Ada_Version,
-             Version_Pragma           => Ada_Version_Pragma,
-             Warnings                 => Save_Warnings,
-             SPARK_Mode               => SPARK_Mode,
-             SPARK_Mode_Pragma        => SPARK_Mode_Pragma));
+         Add_Pending_Instantiation (N, Unit_Declaration_Node (Subp));
          return True;
 
       --  Here if not inlined, or we ignore the inlining

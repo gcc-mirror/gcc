@@ -2860,15 +2860,21 @@ package body Sem_Prag is
 
                   if Ekind_In (Input_Id, E_Abstract_State,
                                          E_Constant,
+                                         E_Generic_In_Out_Parameter,
+                                         E_Generic_In_Parameter,
                                          E_In_Parameter,
                                          E_In_Out_Parameter,
                                          E_Out_Parameter,
                                          E_Variable)
                   then
                      --  The input cannot denote states or objects declared
-                     --  within the related package (SPARK RM 7.1.5(4)).
+                     --  within the related package (SPARK RM 7.1.5(4)). The
+                     --  only exception to this are generic formal parameters.
 
-                     if Within_Scope (Input_Id, Current_Scope) then
+                     if not Ekind_In (Input_Id, E_Generic_In_Out_Parameter,
+                                                E_Generic_In_Parameter)
+                       and then Within_Scope (Input_Id, Current_Scope)
+                     then
                         Error_Msg_Name_1 := Chars (Pack_Id);
                         SPARK_Msg_NE
                           ("input item & cannot denote a visible object or "

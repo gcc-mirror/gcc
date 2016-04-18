@@ -3754,15 +3754,21 @@ package body Sem_Ch13 is
          Is_Read : constant Boolean := (TSS_Nam = TSS_Stream_Read);
          --  True for Read attribute, false for other attributes
 
-         function Has_Good_Profile (Subp : Entity_Id) return Boolean;
+         function Has_Good_Profile
+           (Subp   : Entity_Id;
+            Report : Boolean := False) return Boolean;
          --  Return true if the entity is a subprogram with an appropriate
-         --  profile for the attribute being defined.
+         --  profile for the attribute being defined. If result is false and
+         --  Report is True function emits appropriate error.
 
          ----------------------
          -- Has_Good_Profile --
          ----------------------
 
-         function Has_Good_Profile (Subp : Entity_Id) return Boolean is
+         function Has_Good_Profile
+           (Subp   : Entity_Id;
+            Report : Boolean := False) return Boolean
+         is
             F              : Entity_Id;
             Is_Function    : constant Boolean := (TSS_Nam = TSS_Stream_Input);
             Expected_Ekind : constant array (Boolean) of Entity_Kind :=
@@ -3837,6 +3843,11 @@ package body Sem_Ch13 is
               and then not Is_First_Subtype (Typ)
               and then not Is_Class_Wide_Type (Typ)
             then
+               if Report and not Is_First_Subtype (Typ) then
+                  Error_Msg_N
+                    ("formal of stream operation must be a first subtype", F);
+               end if;
+
                return False;
 
             else
@@ -3885,7 +3896,7 @@ package body Sem_Ch13 is
 
          if Is_Entity_Name (Expr) then
             if not Is_Overloaded (Expr) then
-               if Has_Good_Profile (Entity (Expr)) then
+               if Has_Good_Profile (Entity (Expr), Report => True) then
                   Subp := Entity (Expr);
                end if;
 
