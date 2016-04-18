@@ -19,7 +19,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <experimental/memory_resource>
-#include <bits/uses_allocator.h>
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 

@@ -20,7 +20,6 @@
 #include <memory>
 #include <experimental/memory_resource>
 #include <vector>
-#include <bits/uses_allocator.h>
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 
