@@ -1,3 +1,11 @@
+2016-04-18  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2015-11-11  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (duplicate_decls): When combining typedefs, remove the
+	new type from the variants list.
+
 2016-04-15  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst_copy_and_build) [LAMBDA_EXPR]: Get
