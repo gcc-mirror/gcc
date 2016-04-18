@@ -730,7 +730,7 @@ package body Rtsfind is
 
          declare
             U : RT_Unit_Table_Record
-                  renames  RT_Unit_Table (RE_Unit_Table (E));
+                  renames RT_Unit_Table (RE_Unit_Table (E));
          begin
             if No (U.Entity) then
                U.Entity := S;
