@@ -1795,7 +1795,15 @@ package body Sem_Ch5 is
          Ent : Entity_Id;
 
       begin
-         Ent := First_Entity (Scope (Typ));
+         --  If iterator type is derived, the cursor is declared in the scope
+         --  of the parent type.
+
+         if Is_Derived_Type (Typ) then
+            Ent := First_Entity (Scope (Etype (Typ)));
+         else
+            Ent := First_Entity (Scope (Typ));
+         end if;
+
          while Present (Ent) loop
             exit when Chars (Ent) = Name_Cursor;
             Next_Entity (Ent);
@@ -2747,8 +2755,9 @@ package body Sem_Ch5 is
 
          --  a)  a function call,
          --  b)  an identifier that is not a type,
-         --  c)  an attribute reference 'Old (within a postcondition)
-         --  d)  an unchecked conversion
+         --  c)  an attribute reference 'Old (within a postcondition),
+         --  d)  an unchecked conversion or a qualified expression with
+         --      the proper iterator type.
 
          --  then it is an iteration over a container. It was classified as
          --  a loop specification by the parser, and must be rewritten now
@@ -2758,13 +2767,19 @@ package body Sem_Ch5 is
          --  conversion is always an object.
 
          if Nkind (DS_Copy) = N_Function_Call
+
            or else (Is_Entity_Name (DS_Copy)
                      and then not Is_Type (Entity (DS_Copy)))
+
            or else (Nkind (DS_Copy) = N_Attribute_Reference
                      and then Nam_In (Attribute_Name (DS_Copy),
-                                      Name_Old, Name_Loop_Entry))
-           or else Nkind (DS_Copy) = N_Unchecked_Type_Conversion
+                                      Name_Loop_Entry, Name_Old))
+
            or else Has_Aspect (Etype (DS_Copy), Aspect_Iterable)
+
+           or else Nkind (DS_Copy) = N_Unchecked_Type_Conversion
+           or else (Nkind (DS_Copy) = N_Qualified_Expression
+                     and then Is_Iterator (Etype (DS_Copy)))
          then
             --  This is an iterator specification. Rewrite it as such and
             --  analyze it to capture function calls that may require
@@ -3138,11 +3153,13 @@ package body Sem_Ch5 is
                Set_Parent (DS_Copy, Parent (DS));
                Preanalyze_Range (DS_Copy);
 
-               --  Check for a call to Iterate ()
+               --  Check for a call to Iterate () or an expression with
+               --  an iterator type.
 
                return
-                 Nkind (DS_Copy) = N_Function_Call
-                   and then Needs_Finalization (Etype (DS_Copy));
+                 (Nkind (DS_Copy) = N_Function_Call
+                   and then Needs_Finalization (Etype (DS_Copy)))
+                 or else Is_Iterator (Etype (DS_Copy));
             end;
          end if;
       end Is_Container_Iterator;

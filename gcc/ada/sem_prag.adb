@@ -2826,6 +2826,7 @@ package body Sem_Prag is
 
          procedure Analyze_Input_Item (Input : Node_Id) is
             Input_Id : Entity_Id;
+            Input_OK : Boolean := True;
 
          begin
             --  Null input list
@@ -2868,27 +2869,47 @@ package body Sem_Prag is
                                          E_Variable)
                   then
                      --  The input cannot denote states or objects declared
-                     --  within the related package (SPARK RM 7.1.5(4)). The
-                     --  only exceptions to this are generic formal parameters.
+                     --  within the related package (SPARK RM 7.1.5(4)).
 
-                     if not Ekind_In (Input_Id, E_Generic_In_Out_Parameter,
-                                                E_Generic_In_Parameter)
-                       and then Within_Scope (Input_Id, Current_Scope)
-                     then
-                        Error_Msg_Name_1 := Chars (Pack_Id);
-                        SPARK_Msg_NE
-                          ("input item & cannot denote a visible object or "
-                           & "state of package %", Input, Input_Id);
+                     if Within_Scope (Input_Id, Current_Scope) then
+
+                        --  Do not consider generic formal parameters or their
+                        --  respective mappings to generic formals. Even though
+                        --  the formals appear within the scope of the package,
+                        --  it is allowed for an initialization item to depend
+                        --  on an input item.
+
+                        if Ekind_In (Input_Id, E_Generic_In_Out_Parameter,
+                                               E_Generic_In_Parameter)
+                        then
+                           null;
+
+                        elsif Ekind_In (Input_Id, E_Constant, E_Variable)
+                          and then Present (Corresponding_Generic_Association
+                                     (Declaration_Node (Input_Id)))
+                        then
+                           null;
+
+                        else
+                           Input_OK := False;
+                           Error_Msg_Name_1 := Chars (Pack_Id);
+                           SPARK_Msg_NE
+                             ("input item & cannot denote a visible object or "
+                              & "state of package %", Input, Input_Id);
+                        end if;
+                     end if;
 
                      --  Detect a duplicate use of the same input item
                      --  (SPARK RM 7.1.5(5)).
 
-                     elsif Contains (Inputs_Seen, Input_Id) then
+                     if Contains (Inputs_Seen, Input_Id) then
+                        Input_OK := False;
                         SPARK_Msg_N ("duplicate input item", Input);
+                     end if;
 
                      --  Input is legal, add it to the list of processed inputs
 
-                     else
+                     if Input_OK then
                         Append_New_Elmt (Input_Id, Inputs_Seen);
 
                         if Ekind (Input_Id) = E_Abstract_State then

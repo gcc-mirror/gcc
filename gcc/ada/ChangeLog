@@ -1,3 +1,23 @@
+2016-04-18  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Apply_Compile_Time_Constraint_Error): Do not generate
+	raise node in GNATprove mode.
+
+2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* s-fileio.adb: Minor reformatting.
+	* sem_prag.adb (Analyze_Input_Item): Add local
+	variable Input_OK. Do not consider mappings of generic formal
+	parameters to actuals.
+
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Get_Cursor_Type): If iterator type is a derived
+	type, the cursor is declared in the scope of the parent type.
+	(Analyze_Parameter_Specification): A qualified expression with an
+	iterator type indicates an iteration over a container (explicit
+	or implicit).
+
 2016-04-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* osint-c.ads, osint-c.adb (Delete_C_File, Delete_H_File): New.

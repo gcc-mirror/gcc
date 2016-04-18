@@ -1057,8 +1057,12 @@ package body System.File_IO is
 
          else
             Fopen_Mode
-              (Namestr, Mode, Text_Encoding in Text_Content_Encoding,
-               Creat, Amethod, Fopstr);
+              (Namestr => Namestr,
+               Mode    => Mode,
+               Text    => Text_Encoding in Text_Content_Encoding,
+               Creat   => Creat,
+               Amethod => Amethod,
+               Fopstr  => Fopstr);
 
             --  A special case, if we are opening (OPEN case) a file and the
             --  mode returned by Fopen_Mode is not "r" or "r+", then we first
@@ -1230,8 +1234,12 @@ package body System.File_IO is
 
       else
          Fopen_Mode
-           (File.Name.all, Mode, File.Text_Encoding in Text_Content_Encoding,
-            False, File.Access_Method, Fopstr);
+           (Namestr => File.Name.all,
+            Mode    => Mode,
+            Text    => File.Text_Encoding in Text_Content_Encoding,
+            Creat   => False,
+            Amethod => File.Access_Method,
+            Fopstr  => Fopstr);
 
          File.Stream := freopen
            (File.Name.all'Address, Fopstr'Address, File.Stream,

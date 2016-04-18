@@ -599,7 +599,13 @@ package body Sem_Util is
       Discard_Node
         (Compile_Time_Constraint_Error (N, Msg, Ent, Loc, Warn => Warn));
 
-      if not Rep then
+      --  In GNATprove mode, do not replace the node with an exception raised.
+      --  In such a case, either the call to Compile_Time_Constraint_Error
+      --  issues an error which stops analysis, or it issues a warning in
+      --  a few cases where a suitable check flag is set for GNATprove to
+      --  generate a check message.
+
+      if not Rep or GNATprove_Mode then
          return;
       end if;
 
