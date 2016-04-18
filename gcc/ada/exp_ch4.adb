@@ -12806,9 +12806,11 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  Nothing to do if special -gnatd.P debug flag set
+      --  Nothing to do if special -gnatd.P debug flag set or target is AAMP.
+      --  For AAMP the 64-bit arithmetic package would get dragged in, which
+      --  we want to avoid, plus this optimization has limited benefit on AAMP.
 
-      if Debug_Flag_Dot_PP then
+      if Debug_Flag_Dot_PP or else AAMP_On_Target then
          return;
       end if;
 
