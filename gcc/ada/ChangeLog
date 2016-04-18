@@ -1,5 +1,21 @@
 2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_res.adb (Is_Protected_Operation_Call):
+	Add guards to account for a non-decorated selected component.
+
+2016-04-18  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Improve
+	implementation of Body_Has_SPARK_Mode_On.
+	* sem_prag.adb, sem_prag.ads (Get_SPARK_Mode_From_Annotation):
+	New function replacing previous Get_SPARK_Mode_From_Pragma, that
+	deals also with aspects.
+	(Get_SPARK_Mode_Type): Make function internal again.
+	* inline.adb, sem_ch7.adb, sem_util.adb: Use new
+	Get_SPARK_Mode_From_Annotation.
+
+2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* contracts.adb (Analyze_Object_Contract): Update references to
 	SPARK RM.
 	* freeze.adb (Freeze_Entity): Update references to SPARK RM.

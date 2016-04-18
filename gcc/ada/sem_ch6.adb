@@ -2292,11 +2292,7 @@ package body Sem_Ch6 is
             Item := First (Aspect_Specifications (N));
             while Present (Item) loop
                if Get_Aspect_Id (Item) = Aspect_SPARK_Mode then
-                  return No (Expression (Item))
-                           or else
-                        (Nkind (Expression (Item)) = N_Identifier
-                           and then
-                         Get_SPARK_Mode_Type (Chars (Expression (Item))) = On);
+                  return Get_SPARK_Mode_From_Annotation (Item) = On;
                end if;
 
                Next (Item);
@@ -2308,18 +2304,28 @@ package body Sem_Ch6 is
          if Present (Decls) then
             Item := First (Decls);
             while Present (Item) loop
-               if Nkind (Item) = N_Pragma
-                 and then Get_Pragma_Id (Item) = Pragma_SPARK_Mode
-               then
-                  return Get_SPARK_Mode_From_Pragma (Item) = On;
+
+               --  Pragmas that apply to a subprogram body are usually grouped
+               --  together. Look for a potential pragma SPARK_Mode among them.
+
+               if Nkind (Item) = N_Pragma then
+                  if Get_Pragma_Id (Item) = Pragma_SPARK_Mode then
+                     return Get_SPARK_Mode_From_Annotation (Item) = On;
+                  end if;
+
+               --  Otherwise the first non-pragma declarative item terminates
+               --  the region where pragma SPARK_Mode may appear.
+
+               else
+                  exit;
                end if;
 
                Next (Item);
             end loop;
          end if;
 
-         --  Applicable SPARK_Mode is inherited from the enclosing subprogram
-         --  or package.
+         --  Otherwise, the applicable SPARK_Mode is inherited from the
+         --  enclosing subprogram or package.
 
          return SPARK_Mode = On;
       end Body_Has_SPARK_Mode_On;
@@ -3849,9 +3855,9 @@ package body Sem_Ch6 is
 
       if Present (Spec_Id) and then Present (SPARK_Pragma (Body_Id)) then
          if Present (SPARK_Pragma (Spec_Id)) then
-            if Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Spec_Id)) = Off
+            if Get_SPARK_Mode_From_Annotation (SPARK_Pragma (Spec_Id)) = Off
                  and then
-               Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Body_Id)) = On
+               Get_SPARK_Mode_From_Annotation (SPARK_Pragma (Body_Id)) = On
             then
                Error_Msg_Sloc := Sloc (SPARK_Pragma (Body_Id));
                Error_Msg_N ("incorrect application of SPARK_Mode#", N);

@@ -777,9 +777,10 @@ package body Sem_Ch7 is
 
       if Present (SPARK_Pragma (Body_Id)) then
          if Present (SPARK_Aux_Pragma (Spec_Id)) then
-            if Get_SPARK_Mode_From_Pragma (SPARK_Aux_Pragma (Spec_Id)) = Off
-                 and then
-               Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Body_Id)) = On
+            if Get_SPARK_Mode_From_Annotation (SPARK_Aux_Pragma (Spec_Id)) =
+                 Off
+              and then
+                Get_SPARK_Mode_From_Annotation (SPARK_Pragma (Body_Id)) = On
             then
                Error_Msg_Sloc := Sloc (SPARK_Pragma (Body_Id));
                Error_Msg_N ("incorrect application of SPARK_Mode#", N);

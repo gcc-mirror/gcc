@@ -6895,8 +6895,10 @@ package body Sem_Res is
 
                return
                  Pref = Obj_Ref
+                   and then Present (Etype (Pref))
                    and then Is_Protected_Type (Etype (Pref))
                    and then Is_Entity_Name (Subp)
+                   and then Present (Entity (Subp))
                    and then Ekind_In (Entity (Subp), E_Entry,
                                                      E_Entry_Family,
                                                      E_Function,
