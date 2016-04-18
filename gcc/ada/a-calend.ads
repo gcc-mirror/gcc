@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -33,7 +33,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package Ada.Calendar is
+package Ada.Calendar with
+  SPARK_Mode,
+  Abstract_State => (Clock_Time with Synchronous,
+                                     External => (Async_Readers,
+                                                  Async_Writers))
+is
 
    type Time is private;
 
@@ -49,7 +54,9 @@ package Ada.Calendar is
 
    subtype Day_Duration is Duration range 0.0 .. 86_400.0;
 
-   function Clock return Time;
+   function Clock return Time with
+     Volatile_Function,
+     Global => Clock_Time;
    --  The returned time value is the number of nanoseconds since the start
    --  of Ada time (1901-01-01 00:00:00.0 UTC). If leap seconds are enabled,
    --  the result will contain all elapsed leap seconds since the start of
@@ -108,6 +115,10 @@ package Ada.Calendar is
    Time_Error : exception;
 
 private
+   --  Mark private part as SPARK_Mode Off to avoid accounting for variable
+   --  Invalid_Time_Zone_Offset in abstract state.
+   pragma SPARK_Mode (Off);
+
    pragma Inline (Clock);
 
    pragma Inline (Year);

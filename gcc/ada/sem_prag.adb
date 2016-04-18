@@ -23141,151 +23141,6 @@ package body Sem_Prag is
      (N         : Node_Id;
       Freeze_Id : Entity_Id := Empty)
    is
-      procedure Process_Class_Wide_Condition
-        (Expr      : Node_Id;
-         Spec_Id   : Entity_Id;
-         Subp_Decl : Node_Id);
-      --  Replace the type of all references to the controlling formal of
-      --  subprogram Spec_Id found in expression Expr with the corresponding
-      --  class-wide type. Subp_Decl is the subprogram [body] declaration
-      --  where the pragma resides.
-
-      ----------------------------------
-      -- Process_Class_Wide_Condition --
-      ----------------------------------
-
-      procedure Process_Class_Wide_Condition
-        (Expr      : Node_Id;
-         Spec_Id   : Entity_Id;
-         Subp_Decl : Node_Id)
-      is
-         Disp_Typ : constant Entity_Id := Find_Dispatching_Type (Spec_Id);
-
-         ACW : Entity_Id := Empty;
-         --  Access to Disp_Typ'Class, created if there is a controlling formal
-         --  that is an access parameter.
-
-         function Access_Class_Wide_Type return Entity_Id;
-         --  If expression Expr contains a reference to a controlling access
-         --  parameter, create an access to Disp_Typ'Class for the necessary
-         --  conversions if one does not exist.
-
-         function Replace_Type (N : Node_Id) return Traverse_Result;
-         --  ARM 6.1.1: Within the expression for a Pre'Class or Post'Class
-         --  aspect for a primitive subprogram of a tagged type Disp_Typ, a
-         --  name that denotes a formal parameter of type Disp_Typ is treated
-         --  as having type Disp_Typ'Class. Similarly, a name that denotes a
-         --  formal access parameter of type access-to-Disp_Typ is interpreted
-         --  as with type access-to-Disp_Typ'Class. This ensures the expression
-         --  is well defined for a primitive subprogram of a type descended
-         --  from Disp_Typ.
-
-         ----------------------------
-         -- Access_Class_Wide_Type --
-         ----------------------------
-
-         function Access_Class_Wide_Type return Entity_Id is
-            Loc : constant Source_Ptr := Sloc (N);
-
-         begin
-            if No (ACW) then
-               ACW := Make_Temporary (Loc, 'T');
-
-               Insert_Before_And_Analyze (Subp_Decl,
-                 Make_Full_Type_Declaration (Loc,
-                   Defining_Identifier => ACW,
-                   Type_Definition     =>
-                      Make_Access_To_Object_Definition (Loc,
-                        Subtype_Indication =>
-                          New_Occurrence_Of (Class_Wide_Type (Disp_Typ), Loc),
-                        All_Present        => True)));
-
-               Freeze_Before (Subp_Decl, ACW);
-            end if;
-
-            return ACW;
-         end Access_Class_Wide_Type;
-
-         ------------------
-         -- Replace_Type --
-         ------------------
-
-         function Replace_Type (N : Node_Id) return Traverse_Result is
-            Context : constant Node_Id    := Parent (N);
-            Loc     : constant Source_Ptr := Sloc (N);
-            CW_Typ  : Entity_Id := Empty;
-            Ent     : Entity_Id;
-            Typ     : Entity_Id;
-
-         begin
-            if Is_Entity_Name (N)
-              and then Present (Entity (N))
-              and then Is_Formal (Entity (N))
-            then
-               Ent := Entity (N);
-               Typ := Etype (Ent);
-
-               --  Do not perform the type replacement for selector names in
-               --  parameter associations. These carry an entity for reference
-               --  purposes, but semantically they are just identifiers.
-
-               if Nkind (Context) = N_Type_Conversion then
-                  null;
-
-               elsif Nkind (Context) = N_Parameter_Association
-                 and then Selector_Name (Context) = N
-               then
-                  null;
-
-               elsif Typ = Disp_Typ then
-                  CW_Typ := Class_Wide_Type (Typ);
-
-               elsif Is_Access_Type (Typ)
-                 and then Designated_Type (Typ) = Disp_Typ
-               then
-                  CW_Typ := Access_Class_Wide_Type;
-               end if;
-
-               if Present (CW_Typ) then
-                  Rewrite (N,
-                    Make_Type_Conversion (Loc,
-                      Subtype_Mark => New_Occurrence_Of (CW_Typ, Loc),
-                      Expression   => New_Occurrence_Of (Ent, Loc)));
-                  Set_Etype (N, CW_Typ);
-               end if;
-            end if;
-
-            return OK;
-         end Replace_Type;
-
-         procedure Replace_Types is new Traverse_Proc (Replace_Type);
-
-      --  Start of processing for Process_Class_Wide_Condition
-
-      begin
-         --  The subprogram subject to Pre'Class/Post'Class does not have a
-         --  dispatching type, therefore the aspect/pragma is illegal.
-
-         if No (Disp_Typ) then
-            Error_Msg_Name_1 := Original_Aspect_Pragma_Name (N);
-
-            if From_Aspect_Specification (N) then
-               Error_Msg_N
-                 ("aspect % can only be specified for a primitive operation "
-                  & "of a tagged type", Corresponding_Aspect (N));
-
-            --  The pragma is a source construct
-
-            else
-               Error_Msg_N
-                 ("pragma % can only be specified for a primitive operation "
-                  & "of a tagged type", N);
-            end if;
-         end if;
-
-         Replace_Types (Expr);
-      end Process_Class_Wide_Condition;
-
       --  Local variables
 
       Subp_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
@@ -23295,6 +23150,7 @@ package body Sem_Prag is
       Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
       Errors        : Nat;
+      Disp_Typ      : Entity_Id;
       Restore_Scope : Boolean := False;
 
    --  Start of processing for Analyze_Pre_Post_Condition_In_Decl_Part
@@ -23340,13 +23196,29 @@ package body Sem_Prag is
          Contract_Freeze_Error (Spec_Id, Freeze_Id);
       end if;
 
-      --  For a class-wide condition, a reference to a controlling formal must
-      --  be interpreted as having the class-wide type (or an access to such)
-      --  so that the inherited condition can be properly applied to any
-      --  overriding operation (see ARM12 6.6.1 (7)).
-
       if Class_Present (N) then
-         Process_Class_Wide_Condition (Expr, Spec_Id, Subp_Decl);
+
+         --  Verify that a class-wide condition is legal, i.e. the operation
+         --  is a primitive of a tagged type.
+
+         Disp_Typ := Find_Dispatching_Type (Spec_Id);
+
+         if No (Disp_Typ) then
+            Error_Msg_Name_1 := Original_Aspect_Pragma_Name (N);
+
+            if From_Aspect_Specification (N) then
+               Error_Msg_N
+                 ("aspect % can only be specified for a primitive operation "
+                  & "of a tagged type", Corresponding_Aspect (N));
+
+            --  The pragma is a source construct
+
+            else
+               Error_Msg_N
+                 ("pragma % can only be specified for a primitive operation "
+                  & "of a tagged type", N);
+            end if;
+         end if;
       end if;
 
       if Restore_Scope then
@@ -26164,6 +26036,294 @@ package body Sem_Prag is
       return False;
    end Appears_In;
 
+   -----------------------------------
+   -- Build_Pragma_Check_Equivalent --
+   -----------------------------------
+
+   function Build_Pragma_Check_Equivalent
+     (Prag     : Node_Id;
+      Subp_Id  : Entity_Id := Empty;
+      Inher_Id : Entity_Id := Empty) return Node_Id
+   is
+      function Suppress_Reference (N : Node_Id) return Traverse_Result;
+      --  Detect whether node N references a formal parameter subject to
+      --  pragma Unreferenced. If this is the case, set Comes_From_Source
+      --  to False to suppress the generation of a reference when analyzing
+      --  N later on.
+
+      ------------------------
+      -- Suppress_Reference --
+      ------------------------
+
+      function Suppress_Reference (N : Node_Id) return Traverse_Result is
+         Formal : Entity_Id;
+
+      begin
+         if Is_Entity_Name (N) and then Present (Entity (N)) then
+            Formal := Entity (N);
+
+            --  The formal parameter is subject to pragma Unreferenced.
+            --  Prevent the generation of a reference by resetting the
+            --  Comes_From_Source flag.
+
+            if Is_Formal (Formal)
+              and then Has_Pragma_Unreferenced (Formal)
+            then
+               Set_Comes_From_Source (N, False);
+            end if;
+         end if;
+
+         return OK;
+      end Suppress_Reference;
+
+      procedure Suppress_References is
+        new Traverse_Proc (Suppress_Reference);
+
+      --  Local variables
+
+      Loc          : constant Source_Ptr := Sloc (Prag);
+      Prag_Nam     : constant Name_Id    := Pragma_Name (Prag);
+      Check_Prag   : Node_Id;
+      Formals_Map  : Elist_Id;
+      Inher_Formal : Entity_Id;
+      Msg_Arg      : Node_Id;
+      Nam          : Name_Id;
+      Subp_Formal  : Entity_Id;
+
+      function Replace_Entity (N : Node_Id) return Traverse_Result;
+      --  Replace reference to formal of inherited operation or to primitive
+      --  operation of root type, with corresponding entity for derived type.
+
+      --------------------
+      -- Replace_Entity --
+      --------------------
+
+      function Replace_Entity (N : Node_Id) return Traverse_Result
+      is
+         Elmt  : Elmt_Id;
+         New_E : Entity_Id;
+
+      begin
+         if Nkind (N) = N_Identifier
+           and then Present (Entity (N))
+           and then
+             (Is_Formal (Entity (N)) or else Is_Subprogram (Entity (N)))
+           and then
+             (Nkind (Parent (N)) /= N_Attribute_Reference
+               or else Attribute_Name (Parent (N)) /= Name_Class)
+         then
+            --  The replacement does not apply to dispatching calls within
+            --  the condition, but only to calls whose static tag is that
+            --  of the parent type.
+
+            if Is_Subprogram (Entity (N))
+              and then Nkind (Parent (N)) = N_Function_Call
+              and then Present (Controlling_Argument (Parent (N)))
+            then
+               return OK;
+            end if;
+
+            --  Loop to find out if entity has a renaming
+
+            New_E := Empty;
+            Elmt := First_Elmt (Formals_Map);
+            while Present (Elmt) loop
+               if Node (Elmt) = Entity (N) then
+                  New_E := Node (Next_Elmt (Elmt));
+                  exit;
+               end if;
+
+               Next_Elmt (Elmt);
+            end loop;
+
+            if Present (New_E) then
+               Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
+            end if;
+         end if;
+
+         if not Is_Abstract_Subprogram (Inher_Id)
+           and then  Nkind (N) = N_Function_Call
+           and then Present (Entity (Name (N)))
+           and then Is_Abstract_Subprogram (Entity (Name (N)))
+         then
+            Error_Msg_N ("cannot call abstract subprogram", N);
+
+         --  The whole expression will be reanalyzed
+
+         elsif Nkind (N) in N_Has_Etype then
+            Set_Analyzed (N, False);
+         end if;
+
+         return OK;
+      end Replace_Entity;
+
+      procedure Replace_Condition_Entities is
+        new Traverse_Proc (Replace_Entity);
+
+   --  Start of processing for Build_Pragma_Check_Equivalent
+
+   begin
+      Formals_Map := No_Elist;
+
+      --  When the pre- or postcondition is inherited, map the formals of
+      --  the inherited subprogram to those of the current subprogram.
+      --  In addition, map primitive operations of the parent type into the
+      --  corresponding primitive operations of the descendant.
+
+      if Present (Inher_Id) then
+         pragma Assert (Present (Subp_Id));
+
+         Formals_Map := New_Elmt_List;
+
+         --  Create a mapping  <inherited formal> => <subprogram formal>
+
+         Inher_Formal := First_Formal (Inher_Id);
+         Subp_Formal  := First_Formal (Subp_Id);
+         while Present (Inher_Formal) and then Present (Subp_Formal) loop
+            Append_Elmt (Inher_Formal, Formals_Map);
+            Append_Elmt (Subp_Formal, Formals_Map);
+
+            Next_Formal (Inher_Formal);
+            Next_Formal (Subp_Formal);
+         end loop;
+
+      --  Map primitive operations of the parent type into the corresponding
+      --  operations of the descendant. The descendant type might not be
+      --  frozen yet, so we cannot use the dispatch table directly.
+
+         declare
+            T     : constant Entity_Id := Find_Dispatching_Type (Subp_Id);
+            Old_T : constant Entity_Id := Find_Dispatching_Type (Inher_Id);
+            D     : Node_Id;
+            E     : Entity_Id;
+            Old_E : Entity_Id;
+
+         begin
+            D := First (List_Containing (Unit_Declaration_Node (Subp_Id)));
+
+            --  Look for primitive operations of the current type that have
+            --  overridden an operation of the type related to the original
+            --  class-wide precondition. There may be several intermediate
+            --  overridings between them.
+
+            while Present (D) loop
+               if Nkind (D) = N_Subprogram_Declaration then
+                  E := Defining_Entity (D);
+                  if Is_Subprogram (E)
+                    and then Present (Overridden_Operation (E))
+                    and then Find_Dispatching_Type (E) = T
+                  then
+                     Old_E := Overridden_Operation (E);
+                     while Present (Overridden_Operation (Old_E))
+                       and then Scope (Old_E) /= Scope (Inher_Id)
+                     loop
+                        Old_E := Overridden_Operation (Old_E);
+                     end loop;
+
+                     Append_Elmt (Old_E, Formals_Map);
+                     Append_Elmt (E, Formals_Map);
+                  end if;
+               end if;
+
+               Next (D);
+            end loop;
+
+            E := First_Entity (Scope (Subp_Id));
+            while Present (E) loop
+               if not Comes_From_Source (E)
+                 and then Ekind (E) = E_Function
+                 and then Present (Alias (E))
+               then
+                  Old_E := Alias (E);
+                  while Present (Alias (Old_E))
+                    and then Scope (Old_E) /= Scope (Inher_Id)
+                  loop
+                     Old_E := Alias (Old_E);
+                  end loop;
+
+                  Append_Elmt (Old_E, Formals_Map);
+                  Append_Elmt (E, Formals_Map);
+               end if;
+               Next_Entity (E);
+            end loop;
+
+            if Formals_Map /= No_Elist then
+               Append_Elmt (Old_T, Formals_Map);
+               Append_Elmt (T, Formals_Map);
+            end if;
+         end;
+      end if;
+
+      --  Copy the original pragma while performing substitutions (if
+      --  applicable).
+
+      Check_Prag := New_Copy_Tree (Source    => Prag);
+
+      if Formals_Map /= No_Elist then
+         Replace_Condition_Entities (Check_Prag);
+      end if;
+
+      --  Mark the pragma as being internally generated and reset the
+      --  Analyzed flag.
+
+      Set_Analyzed          (Check_Prag, False);
+      Set_Comes_From_Source (Check_Prag, False);
+      Set_Class_Present     (Check_Prag, False);
+
+      --  The tree of the original pragma may contain references to the
+      --  formal parameters of the related subprogram. At the same time
+      --  the corresponding body may mark the formals as unreferenced:
+
+      --     procedure Proc (Formal : ...)
+      --       with Pre => Formal ...;
+
+      --     procedure Proc (Formal : ...) is
+      --        pragma Unreferenced (Formal);
+      --     ...
+
+      --  This creates problems because all pragma Check equivalents are
+      --  analyzed at the end of the body declarations. Since all source
+      --  references have already been accounted for, reset any references
+      --  to such formals in the generated pragma Check equivalent.
+
+      Suppress_References (Check_Prag);
+
+      if Present (Corresponding_Aspect (Prag)) then
+         Nam := Chars (Identifier (Corresponding_Aspect (Prag)));
+      else
+         Nam := Prag_Nam;
+      end if;
+
+      --  Convert the copy into pragma Check by correcting the name and
+      --  adding a check_kind argument.
+
+      Set_Pragma_Identifier
+        (Check_Prag, Make_Identifier (Loc, Name_Check));
+
+      Prepend_To (Pragma_Argument_Associations (Check_Prag),
+        Make_Pragma_Argument_Association (Loc,
+          Expression => Make_Identifier (Loc, Nam)));
+
+      --  Update the error message when the pragma is inherited
+
+      if Present (Inher_Id) then
+         Msg_Arg := Last (Pragma_Argument_Associations (Check_Prag));
+
+         if Chars (Msg_Arg) = Name_Message then
+            String_To_Name_Buffer (Strval (Expression (Msg_Arg)));
+
+            --  Insert "inherited" to improve the error message
+
+            if Name_Buffer (1 .. 8) = "failed p" then
+               Insert_Str_In_Name_Buffer ("inherited ", 8);
+               Set_Strval (Expression (Msg_Arg), String_From_Name_Buffer);
+            end if;
+         end if;
+      end if;
+
+      return Check_Prag;
+   end Build_Pragma_Check_Equivalent;
+
    -----------------------------
    -- Check_Applicable_Policy --
    -----------------------------
@@ -26625,6 +26785,42 @@ package body Sem_Prag is
          Next_Elmt (Constit_Elmt);
       end loop;
    end Check_State_And_Constituent_Use;
+
+   ---------------------------------------------
+   -- Collect_Inherited_Class_Wide_Conditions --
+   ---------------------------------------------
+
+   procedure Collect_Inherited_Class_Wide_Conditions
+     (Subp : Entity_Id;
+      Bod  : Node_Id)
+   is
+      Parent_Subp : constant Entity_Id := Overridden_Operation (Subp);
+      Prags       : constant Node_Id := Contract (Parent_Subp);
+      Prag        : Node_Id;
+
+   begin
+      --  Iterate over the contract to find inherited class-wide pre- and
+      --  postconditions.
+
+      if Present (Prags) then
+         Prag := Pre_Post_Conditions (Prags);
+
+         while Present (Prag) loop
+            if Pragma_Name (Prag) = Name_Precondition
+              or else Pragma_Name (Prag) = Name_Postcondition
+            then
+               if No (Declarations (Bod)) then
+                  Set_Declarations (Bod, Empty_List);
+               end if;
+
+               Append (Build_Pragma_Check_Equivalent (Prag, Subp, Parent_Subp),
+                 To => Declarations (Bod));
+            end if;
+
+            Prag := Next_Pragma (Prag);
+         end loop;
+      end if;
+   end Collect_Inherited_Class_Wide_Conditions;
 
    ---------------------------------------
    -- Collect_Subprogram_Inputs_Outputs --
