@@ -1,3 +1,10 @@
+2016-04-18  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/70699
+	* gcc.dg/pr70161.c: Add dot-file scans.
+	* lib/scandump.exp (dump-suffix): Return suffix after first dot char,
+	instead of after last dot char.
+
 2016-04-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-c++-common/dump-ada-spec-3.c: New test.
