@@ -24246,23 +24246,25 @@ package body Sem_Prag is
          procedure Check_Constituent_Usage (State_Id : Entity_Id);
          --  Determine whether one of the following coverage scenarios is in
          --  effect:
-         --    1) there is at least one constituent of mode In_Out
-         --    2) there is at least one Input and one Output constituent
-         --    3) not all constituents are present and one of them is of mode
-         --       Output.
-         --  If this is not the case, emit an error.
+         --    1) there is at least one constituent of mode In_Out or Output
+         --    2) there is at least one pair of constituents with modes Input
+         --       and Output, or Proof_In and Output.
+         --    3) there is at least one constituent of mode Output and not all
+         --       constituents are present.
+         --  If this is not the case, emit an error (SPARK RM 7.2.4(5)).
 
          -----------------------------
          -- Check_Constituent_Usage --
          -----------------------------
 
          procedure Check_Constituent_Usage (State_Id : Entity_Id) is
-            Constit_Elmt : Elmt_Id;
-            Constit_Id   : Entity_Id;
-            Has_Missing  : Boolean := False;
-            In_Out_Seen  : Boolean := False;
-            In_Seen      : Boolean := False;
-            Out_Seen     : Boolean := False;
+            Constit_Elmt  : Elmt_Id;
+            Constit_Id    : Entity_Id;
+            Has_Missing   : Boolean := False;
+            In_Out_Seen   : Boolean := False;
+            Input_Seen    : Boolean := False;
+            Output_Seen   : Boolean := False;
+            Proof_In_Seen : Boolean := False;
 
          begin
             --  Process all the constituents of the state and note their modes
@@ -24273,22 +24275,16 @@ package body Sem_Prag is
                Constit_Id := Node (Constit_Elmt);
 
                if Present_Then_Remove (In_Constits, Constit_Id) then
-                  In_Seen := True;
+                  Input_Seen := True;
 
                elsif Present_Then_Remove (In_Out_Constits, Constit_Id) then
                   In_Out_Seen := True;
 
                elsif Present_Then_Remove (Out_Constits, Constit_Id) then
-                  Out_Seen := True;
-
-               --  A Proof_In constituent cannot participate in the completion
-               --  of an Output state (SPARK RM 7.2.4(5)).
+                  Output_Seen := True;
 
                elsif Present_Then_Remove (Proof_In_Constits, Constit_Id) then
-                  Error_Msg_Name_1 := Chars (State_Id);
-                  SPARK_Msg_NE
-                    ("constituent & of state % must have mode Input, In_Out "
-                     & "or Output in global refinement", N, Constit_Id);
+                  Proof_In_Seen := True;
 
                else
                   Has_Missing := True;
@@ -24297,26 +24293,41 @@ package body Sem_Prag is
                Next_Elmt (Constit_Elmt);
             end loop;
 
-            --  A single In_Out constituent is a valid completion
+            --  An In_Out constituent is a valid completion
 
             if In_Out_Seen then
                null;
 
-            --  A pair of one Input and one Output constituent is a valid
-            --  completion.
+            --  A pair of one Input/Proof_In and one Output constituent is a
+            --  valid completion.
 
-            elsif In_Seen and Out_Seen then
+            elsif (Input_Seen or Proof_In_Seen) and Output_Seen then
                null;
 
-            --  A single Output constituent is a valid completion only when
-            --  some of the other constituents are missing (SPARK RM 7.2.4(5)).
+            elsif Output_Seen then
 
-            elsif Out_Seen and Has_Missing then
-               null;
+               --  A single Output constituent is a valid completion only when
+               --  some of the other constituents are missing.
+
+               if Has_Missing then
+                  null;
+
+               --  Otherwise all constituents are of mode Output
+
+               else
+                  SPARK_Msg_NE
+                    ("global refinement of state & must include at least one "
+                     & "constituent of mode `In_Out`, `Input`, or `Proof_In`",
+                     N, State_Id);
+               end if;
 
             --  The state lacks a completion
 
-            elsif not In_Seen and not In_Out_Seen and not Out_Seen then
+            elsif not Input_Seen
+              and not In_Out_Seen
+              and not Output_Seen
+              and not Proof_In_Seen
+            then
                SPARK_Msg_NE
                  ("missing global refinement of state &", N, State_Id);
 
@@ -24373,8 +24384,8 @@ package body Sem_Prag is
          procedure Check_Constituent_Usage (State_Id : Entity_Id);
          --  Determine whether at least one constituent of state State_Id with
          --  visible refinement is used and has mode Input. Ensure that the
-         --  remaining constituents do not have In_Out, Output or Proof_In
-         --  modes.
+         --  remaining constituents do not have In_Out or Output modes. Emit an
+         --  error if this is not the case (SPARK RM 7.2.4(5)).
 
          -----------------------------
          -- Check_Constituent_Usage --
@@ -24395,17 +24406,22 @@ package body Sem_Prag is
                if Present_Then_Remove (In_Constits, Constit_Id) then
                   In_Seen := True;
 
+               --  A Proof_In constituent can refine an Input state as long as
+               --  there is at least one Input constituent present.
+
+               elsif Present_Then_Remove (Proof_In_Constits, Constit_Id) then
+                  null;
+
                --  The constituent appears in the global refinement, but has
-               --  mode In_Out, Output or Proof_In (SPARK RM 7.2.4(5)).
+               --  mode In_Out or Output (SPARK RM 7.2.4(5)).
 
                elsif Present_Then_Remove (In_Out_Constits, Constit_Id)
                  or else Present_Then_Remove (Out_Constits, Constit_Id)
-                 or else Present_Then_Remove (Proof_In_Constits, Constit_Id)
                then
                   Error_Msg_Name_1 := Chars (State_Id);
                   SPARK_Msg_NE
-                    ("constituent & of state % must have mode Input in global "
-                     & "refinement", N, Constit_Id);
+                    ("constituent & of state % must have mode `Input` in "
+                     & "global refinement", N, Constit_Id);
                end if;
 
                Next_Elmt (Constit_Elmt);
@@ -24416,7 +24432,7 @@ package body Sem_Prag is
             if not In_Seen then
                SPARK_Msg_NE
                  ("global refinement of state & must include at least one "
-                  & "constituent of mode Input", N, State_Id);
+                  & "constituent of mode `Input`", N, State_Id);
             end if;
          end Check_Constituent_Usage;
 
@@ -24464,7 +24480,7 @@ package body Sem_Prag is
          procedure Check_Constituent_Usage (State_Id : Entity_Id);
          --  Determine whether all constituents of state State_Id with visible
          --  refinement are used and have mode Output. Emit an error if this is
-         --  not the case.
+         --  not the case (SPARK RM 7.2.4(5)).
 
          -----------------------------
          -- Check_Constituent_Usage --
@@ -24492,7 +24508,7 @@ package body Sem_Prag is
                then
                   Error_Msg_Name_1 := Chars (State_Id);
                   SPARK_Msg_NE
-                    ("constituent & of state % must have mode Output in "
+                    ("constituent & of state % must have mode `Output` in "
                      & "global refinement", N, Constit_Id);
 
                --  The constituent is altogether missing (SPARK RM 7.2.5(3))
@@ -24501,7 +24517,7 @@ package body Sem_Prag is
                   if not Posted then
                      Posted := True;
                      SPARK_Msg_NE
-                       ("output state & must be replaced by all its "
+                       ("`Output` state & must be replaced by all its "
                         & "constituents in global refinement", N, State_Id);
                   end if;
 
@@ -24559,6 +24575,7 @@ package body Sem_Prag is
          --  Determine whether at least one constituent of state State_Id with
          --  visible refinement is used and has mode Proof_In. Ensure that the
          --  remaining constituents do not have Input, In_Out or Output modes.
+         --  Emit an error of this is not the case (SPARK RM 7.2.4(5)).
 
          -----------------------------
          -- Check_Constituent_Usage --
@@ -24588,7 +24605,7 @@ package body Sem_Prag is
                then
                   Error_Msg_Name_1 := Chars (State_Id);
                   SPARK_Msg_NE
-                    ("constituent & of state % must have mode Proof_In in "
+                    ("constituent & of state % must have mode `Proof_In` in "
                      & "global refinement", N, Constit_Id);
                end if;
 
@@ -24600,7 +24617,7 @@ package body Sem_Prag is
             if not Proof_In_Seen then
                SPARK_Msg_NE
                  ("global refinement of state & must include at least one "
-                  & "constituent of mode Proof_In", N, State_Id);
+                  & "constituent of mode `Proof_In`", N, State_Id);
             end if;
          end Check_Constituent_Usage;
 

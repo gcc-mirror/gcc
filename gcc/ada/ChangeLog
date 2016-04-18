@@ -1,3 +1,18 @@
+2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_In_Out_States.Check_Constituent_Usage):
+	Update the comment on usage.  Reimplemented.
+	(Check_Input_States.Check_Constituent_Usage): Update the comment
+	on usage. A Proof_In constituent can now refine an Input state
+	as long as there is at least one Input constituent present.
+
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Inline_Pragma): Use the Sloc of the
+	body id as the sloc of the entity in the generated subprogram
+	declaration, to avoid spurious conformance errors when style
+	checks are enabled.
+
 2016-04-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Analyze_Selected_Component, Has_Dereference):
