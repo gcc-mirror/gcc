@@ -1204,6 +1204,7 @@ package Snames is
    --  convention name. So is To_Address, which is a GNAT attribute.
 
    First_Intrinsic_Name                  : constant Name_Id := N + $;
+   Name_Compilation_ISO_Date             : constant Name_Id := N + $;
    Name_Compilation_Date                 : constant Name_Id := N + $;
    Name_Compilation_Time                 : constant Name_Id := N + $;
    Name_Divide                           : constant Name_Id := N + $;

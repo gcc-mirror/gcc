@@ -1,3 +1,40 @@
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate): If
+	Warn_On_Redundant_Constructs is enabled, report a redundant box
+	association that does not cover any components, as it done for
+	redundant others associations in case statements.
+
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Collect_Inherited_Class_Wide_Conditions):
+	Analyze the generated Check pragma for an inherited condition so
+	that it does not freeze the dispatching type of the primitive
+	operation, because it is pre-analyzed at the point of the
+	subprogram declaration (and not in the subprogram body, as is
+	done during regular expansion).
+
+2016-04-18  Vincent Celier  <celier@adacore.com>
+
+	* ali.ads: Increase the range of all _Id types to 100 millions.
+
+2016-04-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_warn.adb (Check_References): Change warning to suggest
+	using pragma Export rather than saying "volatile has no effect".
+
+2016-04-18  Bob Duff  <duff@adacore.com>
+
+	* g-souinf.ads (Compilation_ISO_Date): New function to return
+	the current date in ISO form.
+	* exp_intr.adb (Expand_Source_Info, Add_Source_Info): Expand
+	a call to Compilation_ISO_Date into a string literal containing
+	the current date in ISO form.
+	* exp_intr.ads (Add_Source_Info): Improve documentation.
+	* sem_intr.adb (Check_Intrinsic_Subprogram): Recognize
+	Compilation_ISO_Date.
+	* snames.ads-tmpl (Name_Compilation_ISO_Date): New Name_Id.
+
 2016-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* layout.adb (Set_Elem_Alignment): Extend setting of alignment

@@ -359,6 +359,7 @@ package body Sem_Intr is
                          Name_Line,
                          Name_Source_Location,
                          Name_Enclosing_Entity,
+                         Name_Compilation_ISO_Date,
                          Name_Compilation_Date,
                          Name_Compilation_Time)
       then
