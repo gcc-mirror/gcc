@@ -1,5 +1,11 @@
 2016-04-18  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/70701
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Resolve fully constant
+	references after translating through a memcpy.
+
+2016-04-18  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-pre.c (postorder, postorder_num): Make locals ...
 	(compute_antic): ... here.  For partial antic use regular
 	postorder and scrap iteration.

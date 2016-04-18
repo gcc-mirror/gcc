@@ -1,3 +1,8 @@
+2016-04-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70701
+	* gcc.dg/tree-ssa/ssa-fre-53.c: New testcase.
+
 2016-04-18  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/70699
