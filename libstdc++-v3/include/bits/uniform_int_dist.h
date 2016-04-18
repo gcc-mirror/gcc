@@ -58,7 +58,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class uniform_int_distribution
     {
       static_assert(std::is_integral<_IntType>::value,
-		    "template argument not an integral type");
+		    "template argument must be an integral type");
 
     public:
       /** The type of the range of the distribution. */
