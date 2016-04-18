@@ -1,5 +1,7 @@
 2016-04-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* config/cpu/sh/atomicity.h: Fix typo in comment.
+
 	PR libstdc++/70294
 	* include/std/thread (operator<, operator==): Move definitions to
 	namespace-scope.
