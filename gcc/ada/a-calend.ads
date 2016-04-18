@@ -115,8 +115,9 @@ is
    Time_Error : exception;
 
 private
-   --  Mark private part as SPARK_Mode Off to avoid accounting for variable
+   --  Mark the private part as SPARK_Mode Off to avoid accounting for variable
    --  Invalid_Time_Zone_Offset in abstract state.
+
    pragma SPARK_Mode (Off);
 
    pragma Inline (Clock);

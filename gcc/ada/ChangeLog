@@ -1,3 +1,11 @@
+2016-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* layout.adb: Fix more minor typos in comments.
+
+2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-calend.ads, sem_prag.adb, sem_ch6.adb: Minor reformatting.
+
 2016-04-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): In GNATprove
