@@ -137,6 +137,11 @@ package body Namet is
       end loop;
    end Append;
 
+   procedure Append (Buf : in out Bounded_String; Buf2 : Bounded_String) is
+   begin
+      Append (Buf, Buf2.Chars (1 .. Buf2.Length));
+   end Append;
+
    procedure Append (Buf : in out Bounded_String; Id : Name_Id) is
       pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
       S : constant Int := Name_Entries.Table (Id).Name_Chars_Index;
@@ -154,26 +159,27 @@ package body Namet is
    procedure Append_Decoded (Buf : in out Bounded_String; Id : Name_Id) is
       C : Character;
       P : Natural;
+      Temp : Bounded_String;
 
    begin
-      Append (Buf, Id);
+      Append (Temp, Id);
 
       --  Skip scan if we already know there are no encodings
 
       if Name_Entries.Table (Id).Name_Has_No_Encodings then
-         return;
+         goto Done;
       end if;
 
       --  Quick loop to see if there is anything special to do
 
       P := 1;
       loop
-         if P = Buf.Length then
+         if P = Temp.Length then
             Name_Entries.Table (Id).Name_Has_No_Encodings := True;
-            return;
+            goto Done;
 
          else
-            C := Buf.Chars (P);
+            C := Temp.Chars (P);
 
             exit when
               C = 'U' or else
@@ -190,10 +196,10 @@ package body Namet is
       Decode : declare
          New_Len : Natural;
          Old     : Positive;
-         New_Buf : String (1 .. Buf.Chars'Last);
+         New_Buf : String (1 .. Temp.Chars'Last);
 
          procedure Copy_One_Character;
-         --  Copy a character from Buf.Chars to New_Buf. Includes case
+         --  Copy a character from Temp.Chars to New_Buf. Includes case
          --  of copying a Uhh,Whhhh,WWhhhhhhhh sequence and decoding it.
 
          function Hex (N : Natural) return Word;
@@ -210,14 +216,14 @@ package body Namet is
             C : Character;
 
          begin
-            C := Buf.Chars (Old);
+            C := Temp.Chars (Old);
 
             --  U (upper half insertion case)
 
             if C = 'U'
-              and then Old < Buf.Length
-              and then Buf.Chars (Old + 1) not in 'A' .. 'Z'
-              and then Buf.Chars (Old + 1) /= '_'
+              and then Old < Temp.Length
+              and then Temp.Chars (Old + 1) not in 'A' .. 'Z'
+              and then Temp.Chars (Old + 1) /= '_'
             then
                Old := Old + 1;
 
@@ -237,8 +243,8 @@ package body Namet is
             --  WW (wide wide character insertion)
 
             elsif C = 'W'
-              and then Old < Buf.Length
-              and then Buf.Chars (Old + 1) = 'W'
+              and then Old < Temp.Length
+              and then Temp.Chars (Old + 1) = 'W'
             then
                Old := Old + 2;
                Widechar.Set_Wide (Char_Code (Hex (8)), New_Buf, New_Len);
@@ -246,9 +252,9 @@ package body Namet is
             --  W (wide character insertion)
 
             elsif C = 'W'
-              and then Old < Buf.Length
-              and then Buf.Chars (Old + 1) not in 'A' .. 'Z'
-              and then Buf.Chars (Old + 1) /= '_'
+              and then Old < Temp.Length
+              and then Temp.Chars (Old + 1) not in 'A' .. 'Z'
+              and then Temp.Chars (Old + 1) /= '_'
             then
                Old := Old + 1;
                Widechar.Set_Wide (Char_Code (Hex (4)), New_Buf, New_Len);
@@ -271,7 +277,7 @@ package body Namet is
 
          begin
             for J in 1 .. N loop
-               C := Buf.Chars (Old);
+               C := Temp.Chars (Old);
                Old := Old + 1;
 
                pragma Assert (C in '0' .. '9' or else C in 'a' .. 'f');
@@ -304,12 +310,12 @@ package body Namet is
 
          --  Loop through characters of name
 
-         while Old <= Buf.Length loop
+         while Old <= Temp.Length loop
 
             --  Case of character literal, put apostrophes around character
 
-            if Buf.Chars (Old) = 'Q'
-              and then Old < Buf.Length
+            if Temp.Chars (Old) = 'Q'
+              and then Old < Temp.Length
             then
                Old := Old + 1;
                Insert_Character (''');
@@ -318,10 +324,10 @@ package body Namet is
 
             --  Case of operator name
 
-            elsif Buf.Chars (Old) = 'O'
-              and then Old < Buf.Length
-              and then Buf.Chars (Old + 1) not in 'A' .. 'Z'
-              and then Buf.Chars (Old + 1) /= '_'
+            elsif Temp.Chars (Old) = 'O'
+              and then Old < Temp.Length
+              and then Temp.Chars (Old + 1) not in 'A' .. 'Z'
+              and then Temp.Chars (Old + 1) /= '_'
             then
                Old := Old + 1;
 
@@ -362,8 +368,8 @@ package body Namet is
 
                   J := Map'First;
                   loop
-                     exit when Buf.Chars (Old) = Map (J)
-                       and then Buf.Chars (Old + 1) = Map (J + 1);
+                     exit when Temp.Chars (Old) = Map (J)
+                       and then Temp.Chars (Old + 1) = Map (J + 1);
                      J := J + 4;
                   end loop;
 
@@ -380,8 +386,8 @@ package body Namet is
 
                      --  Skip past original operator name in input
 
-                     while Old <= Buf.Length
-                       and then Buf.Chars (Old) in 'a' .. 'z'
+                     while Old <= Temp.Length
+                       and then Temp.Chars (Old) in 'a' .. 'z'
                      loop
                         Old := Old + 1;
                      end loop;
@@ -392,8 +398,8 @@ package body Namet is
                   else
                      --  Copy original operator name from input to output
 
-                     while Old <= Buf.Length
-                        and then Buf.Chars (Old) in 'a' .. 'z'
+                     while Old <= Temp.Length
+                        and then Temp.Chars (Old) in 'a' .. 'z'
                      loop
                         Copy_One_Character;
                      end loop;
@@ -411,9 +417,12 @@ package body Namet is
 
          --  Copy new buffer as result
 
-         Buf.Length := New_Len;
-         Buf.Chars (1 .. New_Len) := New_Buf (1 .. New_Len);
+         Temp.Length := New_Len;
+         Temp.Chars (1 .. New_Len) := New_Buf (1 .. New_Len);
       end Decode;
+
+      <<Done>>
+      Append (Buf, Temp);
    end Append_Decoded;
 
    ----------------------------------
@@ -440,67 +449,73 @@ package body Namet is
       --  Only remaining issue is U/W/WW sequences
 
       else
-         Append (Buf, Id);
+         declare
+            Temp : Bounded_String;
+         begin
+            Append (Temp, Id);
 
-         P := 1;
-         while P < Buf.Length loop
-            if Buf.Chars (P + 1) in 'A' .. 'Z' then
-               P := P + 1;
+            P := 1;
+            while P < Temp.Length loop
+               if Temp.Chars (P + 1) in 'A' .. 'Z' then
+                  P := P + 1;
 
-            --  Uhh encoding
+               --  Uhh encoding
 
-            elsif Buf.Chars (P) = 'U' then
-               for J in reverse P + 3 .. P + Buf.Length loop
-                  Buf.Chars (J + 3) := Buf.Chars (J);
-               end loop;
+               elsif Temp.Chars (P) = 'U' then
+                  for J in reverse P + 3 .. P + Temp.Length loop
+                     Temp.Chars (J + 3) := Temp.Chars (J);
+                  end loop;
 
-               Buf.Length := Buf.Length + 3;
-               Buf.Chars (P + 3) := Buf.Chars (P + 2);
-               Buf.Chars (P + 2) := Buf.Chars (P + 1);
-               Buf.Chars (P)     := '[';
-               Buf.Chars (P + 1) := '"';
-               Buf.Chars (P + 4) := '"';
-               Buf.Chars (P + 5) := ']';
-               P := P + 6;
+                  Temp.Length := Temp.Length + 3;
+                  Temp.Chars (P + 3) := Temp.Chars (P + 2);
+                  Temp.Chars (P + 2) := Temp.Chars (P + 1);
+                  Temp.Chars (P)     := '[';
+                  Temp.Chars (P + 1) := '"';
+                  Temp.Chars (P + 4) := '"';
+                  Temp.Chars (P + 5) := ']';
+                  P := P + 6;
 
-            --  WWhhhhhhhh encoding
+               --  WWhhhhhhhh encoding
 
-            elsif Buf.Chars (P) = 'W'
-              and then P + 9 <= Buf.Length
-              and then Buf.Chars (P + 1) = 'W'
-              and then Buf.Chars (P + 2) not in 'A' .. 'Z'
-              and then Buf.Chars (P + 2) /= '_'
-            then
-               Buf.Chars (P + 12 .. Buf.Length + 2) :=
-                 Buf.Chars (P + 10 .. Buf.Length);
-               Buf.Chars (P)     := '[';
-               Buf.Chars (P + 1) := '"';
-               Buf.Chars (P + 10) := '"';
-               Buf.Chars (P + 11) := ']';
-               Buf.Length := Buf.Length + 2;
-               P := P + 12;
+               elsif Temp.Chars (P) = 'W'
+                 and then P + 9 <= Temp.Length
+                 and then Temp.Chars (P + 1) = 'W'
+                 and then Temp.Chars (P + 2) not in 'A' .. 'Z'
+                 and then Temp.Chars (P + 2) /= '_'
+               then
+                  Temp.Chars (P + 12 .. Temp.Length + 2) :=
+                    Temp.Chars (P + 10 .. Temp.Length);
+                  Temp.Chars (P)     := '[';
+                  Temp.Chars (P + 1) := '"';
+                  Temp.Chars (P + 10) := '"';
+                  Temp.Chars (P + 11) := ']';
+                  Temp.Length := Temp.Length + 2;
+                  P := P + 12;
 
-            --  Whhhh encoding
+               --  Whhhh encoding
 
-            elsif Buf.Chars (P) = 'W'
-              and then P < Buf.Length
-              and then Buf.Chars (P + 1) not in 'A' .. 'Z'
-              and then Buf.Chars (P + 1) /= '_'
-            then
-               Buf.Chars (P + 8 .. P + Buf.Length + 3) :=
-                 Buf.Chars (P + 5 .. Buf.Length);
-               Buf.Chars (P + 2 .. P + 5) := Buf.Chars (P + 1 .. P + 4);
-               Buf.Chars (P)     := '[';
-               Buf.Chars (P + 1) := '"';
-               Buf.Chars (P + 6) := '"';
-               Buf.Chars (P + 7) := ']';
-               Buf.Length := Buf.Length + 3;
-               P := P + 8;
+               elsif Temp.Chars (P) = 'W'
+                 and then P < Temp.Length
+                 and then Temp.Chars (P + 1) not in 'A' .. 'Z'
+                 and then Temp.Chars (P + 1) /= '_'
+               then
+                  Temp.Chars (P + 8 .. P + Temp.Length + 3) :=
+                    Temp.Chars (P + 5 .. Temp.Length);
+                  Temp.Chars (P + 2 .. P + 5) := Temp.Chars (P + 1 .. P + 4);
+                  Temp.Chars (P)     := '[';
+                  Temp.Chars (P + 1) := '"';
+                  Temp.Chars (P + 6) := '"';
+                  Temp.Chars (P + 7) := ']';
+                  Temp.Length := Temp.Length + 3;
+                  P := P + 8;
 
-            else
-               P := P + 1;
-            end if;
-         end loop;
+               else
+                  P := P + 1;
+               end if;
+            end loop;
+
+            Append (Buf, Temp);
+         end;
       end if;
    end Append_Decoded_With_Brackets;
 
@@ -564,9 +579,11 @@ package body Namet is
    ------------------------
 
    procedure Append_Unqualified (Buf : in out Bounded_String; Id : Name_Id) is
+      Temp : Bounded_String;
    begin
-      Append (Buf, Id);
-      Strip_Qualification_And_Suffixes (Buf);
+      Append (Temp, Id);
+      Strip_Qualification_And_Suffixes (Temp);
+      Append (Buf, Temp);
    end Append_Unqualified;
 
    --------------------------------
@@ -577,9 +594,11 @@ package body Namet is
      (Buf : in out Bounded_String;
       Id  : Name_Id)
    is
+      Temp : Bounded_String;
    begin
-      Append_Decoded (Buf, Id);
-      Strip_Qualification_And_Suffixes (Buf);
+      Append_Decoded (Temp, Id);
+      Strip_Qualification_And_Suffixes (Temp);
+      Append (Buf, Temp);
    end Append_Unqualified_Decoded;
 
    --------------
@@ -1625,9 +1644,9 @@ package body Namet is
    -- To_String --
    ---------------
 
-   function To_String (X : Bounded_String) return String is
+   function To_String (Buf : Bounded_String) return String is
    begin
-      return X.Chars (1 .. X.Length);
+      return Buf.Chars (1 .. Buf.Length);
    end To_String;
 
    ---------------

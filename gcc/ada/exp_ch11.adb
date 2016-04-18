@@ -1565,13 +1565,15 @@ package body Exp_Ch11 is
          if Prefix_Exception_Messages
            and then Nkind (Expression (N)) = N_String_Literal
          then
-            Name_Len := 0;
-            Add_Source_Info (Loc, Name_Enclosing_Entity);
-            Add_Str_To_Name_Buffer (": ");
-            Add_String_To_Name_Buffer (Strval (Expression (N)));
-            Rewrite (Expression (N),
-              Make_String_Literal (Loc, Name_Buffer (1 .. Name_Len)));
-            Analyze_And_Resolve (Expression (N), Standard_String);
+            declare
+               Buf : Bounded_String;
+            begin
+               Add_Source_Info (Buf, Loc, Name_Enclosing_Entity);
+               Append (Buf, ": ");
+               Append (Buf, Strval (Expression (N)));
+               Rewrite (Expression (N), Make_String_Literal (Loc, +Buf));
+               Analyze_And_Resolve (Expression (N), Standard_String);
+            end;
          end if;
 
          --  Avoid passing exception-name'identity in runtimes in which this

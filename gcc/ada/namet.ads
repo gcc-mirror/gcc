@@ -318,8 +318,9 @@ package Namet is
    -- Subprograms --
    -----------------
 
-   function To_String (X : Bounded_String) return String;
-   function "+" (X : Bounded_String) return String renames To_String;
+   function To_String (Buf : Bounded_String) return String;
+   pragma Inline (To_String);
+   function "+" (Buf : Bounded_String) return String renames To_String;
 
    function Name_Find
      (Buf : Bounded_String := Global_Name_Buffer) return Name_Id;
@@ -360,6 +361,9 @@ package Namet is
 
    procedure Append (Buf : in out Bounded_String; S : String);
    --  Append S onto Buf
+
+   procedure Append (Buf : in out Bounded_String; Buf2 : Bounded_String);
+   --  Append Buf2 onto Buf
 
    procedure Append (Buf : in out Bounded_String; Id : Name_Id);
    --  Append the characters of Id onto Buf. It is an error to call this with

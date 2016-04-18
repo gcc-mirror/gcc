@@ -124,10 +124,13 @@ package Stringt is
    --  Error if any characters are out of Character range. Does not attempt
    --  to do any encoding of any characters.
 
+   procedure Append (Buf : in out Bounded_String; S : String_Id);
+   --  Append characters of given string to Buf. Error if any characters are
+   --  out of Character range. Does not attempt to do any encoding of any
+   --  characters.
+
    procedure Add_String_To_Name_Buffer (S : String_Id);
-   --  Append characters of given string to Name_Buffer, updating Name_Len.
-   --  Error if any characters are out of Character range. Does not attempt
-   --  to do any encoding of any characters.
+   --  Same as Append (Global_Name_Buffer, S)
 
    function String_Chars_Address return System.Address;
    --  Return address of String_Chars table (used by Back_End call to Gigi)

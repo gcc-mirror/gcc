@@ -54,7 +54,6 @@ with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
-with Stringt;  use Stringt;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
@@ -112,58 +111,51 @@ package body Exp_Intr is
    --  GNAT.Source_Info; see g-souinf.ads for documentation of these
    --  intrinsics.
 
-   procedure Write_Entity_Name (E : Entity_Id);
+   procedure Append_Entity_Name (Buf : in out Bounded_String; E : Entity_Id);
    --  Recursive procedure to construct string for qualified name of enclosing
    --  program unit. The qualification stops at an enclosing scope has no
    --  source name (block or loop). If entity is a subprogram instance, skip
-   --  enclosing wrapper package. The name is appended to the current contents
-   --  of Name_Buffer, incrementing Name_Len.
+   --  enclosing wrapper package. The name is appended to Buf.
 
    ---------------------
    -- Add_Source_Info --
    ---------------------
 
-   procedure Add_Source_Info (Loc : Source_Ptr; Nam : Name_Id) is
-      Ent : Entity_Id;
-
-      Save_NB : constant String  := Name_Buffer (1 .. Name_Len);
-      Save_NL : constant Natural := Name_Len;
-      --  Save current Name_Buffer contents
-
+   procedure Add_Source_Info
+     (Buf : in out Bounded_String;
+      Loc : Source_Ptr;
+      Nam : Name_Id)
+   is
    begin
-      Name_Len := 0;
-
-      --  Line
-
       case Nam is
-
          when Name_Line =>
-            Add_Nat_To_Name_Buffer (Nat (Get_Logical_Line_Number (Loc)));
+            Append (Buf, Nat (Get_Logical_Line_Number (Loc)));
 
          when Name_File =>
-            Get_Decoded_Name_String
-              (Reference_Name (Get_Source_File_Index (Loc)));
+            Append_Decoded (Buf, Reference_Name (Get_Source_File_Index (Loc)));
 
          when Name_Source_Location =>
-            Build_Location_String (Global_Name_Buffer, Loc);
+            Build_Location_String (Buf, Loc);
 
          when Name_Enclosing_Entity =>
 
             --  Skip enclosing blocks to reach enclosing unit
 
-            Ent := Current_Scope;
-            while Present (Ent) loop
-               exit when not Ekind_In (Ent, E_Block, E_Loop);
-               Ent := Scope (Ent);
-            end loop;
+            declare
+               Ent : Entity_Id := Current_Scope;
+            begin
+               while Present (Ent) loop
+                  exit when not Ekind_In (Ent, E_Block, E_Loop);
+                  Ent := Scope (Ent);
+               end loop;
 
-            --  Ent now points to the relevant defining entity
+               --  Ent now points to the relevant defining entity
 
-            Write_Entity_Name (Ent);
+               Append_Entity_Name (Buf, Ent);
+            end;
 
          when Name_Compilation_ISO_Date =>
-            Name_Buffer (1 .. 10) := Opt.Compilation_Time (1 .. 10);
-            Name_Len := 10;
+            Append (Buf, Opt.Compilation_Time (1 .. 10));
 
          when Name_Compilation_Date =>
             declare
@@ -177,34 +169,117 @@ package body Exp_Intr is
 
                MM : constant Natural range 1 .. 12 :=
                       (Character'Pos (M1) - Character'Pos ('0')) * 10 +
-                 (Character'Pos (M2) - Character'Pos ('0'));
+                      (Character'Pos (M2) - Character'Pos ('0'));
 
             begin
                --  Reformat ISO date into MMM DD YYYY (__DATE__) format
 
-               Name_Buffer (1 .. 3)  := Months (MM);
-               Name_Buffer (4)       := ' ';
-               Name_Buffer (5 .. 6)  := Opt.Compilation_Time (9 .. 10);
-               Name_Buffer (7)       := ' ';
-               Name_Buffer (8 .. 11) := Opt.Compilation_Time (1 .. 4);
-               Name_Len := 11;
+               Append (Buf, Months (MM));
+               Append (Buf, ' ');
+               Append (Buf, Opt.Compilation_Time (9 .. 10));
+               Append (Buf, ' ');
+               Append (Buf, Opt.Compilation_Time (1 .. 4));
             end;
 
          when Name_Compilation_Time =>
-            Name_Buffer (1 .. 8) := Opt.Compilation_Time (12 .. 19);
-            Name_Len := 8;
+            Append (Buf, Opt.Compilation_Time (12 .. 19));
 
          when others =>
             raise Program_Error;
       end case;
-
-      --  Prepend original Name_Buffer contents
-
-      Name_Buffer (Save_NL + 1 .. Save_NL + Name_Len) :=
-        Name_Buffer (1 .. Name_Len);
-      Name_Buffer (1 .. Save_NL) := Save_NB;
-      Name_Len := Name_Len + Save_NL;
    end Add_Source_Info;
+
+   -----------------------
+   -- Append_Entity_Name --
+   -----------------------
+
+   procedure Append_Entity_Name (Buf : in out Bounded_String; E : Entity_Id) is
+      Temp : Bounded_String;
+
+      procedure Inner (E : Entity_Id);
+      --  Inner recursive routine, keep outer routine non-recursive to ease
+      --  debugging when we get strange results from this routine.
+
+      -----------
+      -- Inner --
+      -----------
+
+      procedure Inner (E : Entity_Id) is
+      begin
+         --  If entity has an internal name, skip by it, and print its scope.
+         --  Note that we strip a final R from the name before the test, this
+         --  is needed for some cases of instantiations.
+
+         declare
+            E_Name : Bounded_String;
+
+         begin
+            Append (E_Name, Chars (E));
+
+            if E_Name.Chars (E_Name.Length) = 'R' then
+               E_Name.Length := E_Name.Length - 1;
+            end if;
+
+            if Is_Internal_Name (E_Name) then
+               Inner (Scope (E));
+               return;
+            end if;
+         end;
+
+         --  Just print entity name if its scope is at the outer level
+
+         if Scope (E) = Standard_Standard then
+            null;
+
+         --  If scope comes from source, write scope and entity
+
+         elsif Comes_From_Source (Scope (E)) then
+            Append_Entity_Name (Temp, Scope (E));
+            Append (Temp, '.');
+
+         --  If in wrapper package skip past it
+
+         elsif Is_Wrapper_Package (Scope (E)) then
+            Append_Entity_Name (Temp, Scope (Scope (E)));
+            Append (Temp, '.');
+
+         --  Otherwise nothing to output (happens in unnamed block statements)
+
+         else
+            null;
+         end if;
+
+         --  Output the name
+
+         declare
+            E_Name : Bounded_String;
+
+         begin
+            Append_Unqualified_Decoded (E_Name, Chars (E));
+
+            --  Remove trailing upper case letters from the name (useful for
+            --  dealing with some cases of internal names generated in the case
+            --  of references from within a generic.
+
+            while E_Name.Length > 1
+              and then E_Name.Chars (E_Name.Length) in 'A' .. 'Z'
+            loop
+               E_Name.Length := E_Name.Length - 1;
+            end loop;
+
+            --  Adjust casing appropriately (gets name from source if possible)
+
+            Adjust_Name_Case (E_Name, Sloc (E));
+            Append (Temp, E_Name);
+         end;
+      end Inner;
+
+   --  Start of processing for Append_Entity_Name
+
+   begin
+      Inner (E);
+      Append (Buf, Temp);
+   end Append_Entity_Name;
 
    ---------------------------------
    -- Expand_Binary_Operator_Call --
@@ -865,12 +940,13 @@ package body Exp_Intr is
       --  String cases
 
       else
-         Name_Len := 0;
-         Add_Source_Info (Loc, Nam);
-         Rewrite (N,
-           Make_String_Literal (Loc,
-             Strval => String_From_Name_Buffer));
-         Analyze_And_Resolve (N, Standard_String);
+         declare
+            Buf : Bounded_String;
+         begin
+            Add_Source_Info (Buf, Loc, Nam);
+            Rewrite (N, Make_String_Literal (Loc, Strval => +Buf));
+            Analyze_And_Resolve (N, Standard_String);
+         end;
       end if;
 
       Set_Is_Static_Expression (N);
@@ -1401,109 +1477,4 @@ package body Exp_Intr is
       Analyze (N);
    end Expand_To_Pointer;
 
-   -----------------------
-   -- Write_Entity_Name --
-   -----------------------
-
-   procedure Write_Entity_Name (E : Entity_Id) is
-
-      procedure Write_Entity_Name_Inner (E : Entity_Id);
-      --  Inner recursive routine, keep outer routine non-recursive to ease
-      --  debugging when we get strange results from this routine.
-
-      -----------------------------
-      -- Write_Entity_Name_Inner --
-      -----------------------------
-
-      procedure Write_Entity_Name_Inner (E : Entity_Id) is
-      begin
-         --  If entity has an internal name, skip by it, and print its scope.
-         --  Note that Is_Internal_Name destroys Name_Buffer, hence the save
-         --  and restore since we depend on its current contents. Note that
-         --  we strip a final R from the name before the test, this is needed
-         --  for some cases of instantiations.
-
-         declare
-            Save_NB : constant String  := Name_Buffer (1 .. Name_Len);
-            Save_NL : constant Natural := Name_Len;
-            Iname   : Boolean;
-
-         begin
-            Get_Name_String (Chars (E));
-
-            if Name_Buffer (Name_Len) = 'R' then
-               Name_Len := Name_Len - 1;
-            end if;
-
-            Iname := Is_Internal_Name;
-
-            Name_Buffer (1 .. Save_NL) := Save_NB;
-            Name_Len := Save_NL;
-
-            if Iname then
-               Write_Entity_Name_Inner (Scope (E));
-               return;
-            end if;
-         end;
-
-         --  Just print entity name if its scope is at the outer level
-
-         if Scope (E) = Standard_Standard then
-            null;
-
-         --  If scope comes from source, write scope and entity
-
-         elsif Comes_From_Source (Scope (E)) then
-            Write_Entity_Name (Scope (E));
-            Add_Char_To_Name_Buffer ('.');
-
-         --  If in wrapper package skip past it
-
-         elsif Is_Wrapper_Package (Scope (E)) then
-            Write_Entity_Name (Scope (Scope (E)));
-            Add_Char_To_Name_Buffer ('.');
-
-         --  Otherwise nothing to output (happens in unnamed block statements)
-
-         else
-            null;
-         end if;
-
-         --  Output the name
-
-         declare
-            Save_NB : constant String  := Name_Buffer (1 .. Name_Len);
-            Save_NL : constant Natural := Name_Len;
-
-         begin
-            Get_Unqualified_Decoded_Name_String (Chars (E));
-
-            --  Remove trailing upper case letters from the name (useful for
-            --  dealing with some cases of internal names generated in the case
-            --  of references from within a generic.
-
-            while Name_Len > 1
-              and then Name_Buffer (Name_Len) in 'A' .. 'Z'
-            loop
-               Name_Len := Name_Len  - 1;
-            end loop;
-
-            --  Adjust casing appropriately (gets name from source if possible)
-
-            Adjust_Name_Case (Sloc (E));
-
-            --  Append to original entry value of Name_Buffer
-
-            Name_Buffer (Save_NL + 1 ..  Save_NL + Name_Len) :=
-              Name_Buffer (1 .. Name_Len);
-            Name_Buffer (1 .. Save_NL) := Save_NB;
-            Name_Len := Save_NL + Name_Len;
-         end;
-      end Write_Entity_Name_Inner;
-
-   --  Start of processing for Write_Entity_Name
-
-   begin
-      Write_Entity_Name_Inner (E);
-   end Write_Entity_Name;
 end Exp_Intr;

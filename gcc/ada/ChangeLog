@@ -1,3 +1,44 @@
+2016-04-18  Bob Duff  <duff@adacore.com>
+
+	* sem_ch6.adb (Is_Inline_Pragma): The pragma
+	argument can be a selected component, which has no Chars field,
+	so we need to deal with that case (use the Selector_Name).
+	(Check_Inline_Pragma): We need to test Is_List_Member before
+	calling In_Same_List, because in case of a library unit, they're
+	not in lists, so In_Same_List fails an assertion.
+
+2016-04-18  Bob Duff  <duff@adacore.com>
+
+	* namet.ads, namet.adb: Add an Append that appends a
+	Bounded_String onto a Bounded_String. Probably a little more
+	efficient than "Append(X, +Y);". Also minor cleanup.
+	(Append_Decoded, Append_Decoded_With_Brackets, Append_Unqualified,
+	Append_Unqualified_Decoded): Make sure these work with non-empty
+	buffers.
+	* casing.ads, casing.adb (Set_Casing): Pass a Bounded_String
+	parameter, defaulting to Global_Name_Buffer.
+	* errout.ads, errout.adb (Adjust_Name_Case): Pass a
+	Bounded_String parameter, no default.
+	* exp_ch11.adb (Expand_N_Raise_Statement): Use local
+	Bounded_String instead of Global_Name_Buffer.
+	* exp_intr.ads, exp_intr.adb (Write_Entity_Name): Rename it
+	to Append_Entity_Name, and pass a Bounded_String parameter,
+	instead of using globals.
+	(Add_Source_Info): Pass a Bounded_String parameter, instead of
+	using globals.
+	(Expand_Source_Info): Use local instead of globals.
+	* stringt.ads, stringt.adb (Append): Add an Append procedure
+	for appending a String_Id onto a Bounded_String.
+	(String_To_Name_Buffer, Add_String_To_Name_Buffer): Rewrite in
+	terms of Append.
+	* sem_prag.adb (Set_Error_Msg_To_Profile_Name): Adjust for new
+	Adjust_Name_Case parameter.
+	* erroutc.adb, uname.adb: Don't pass D => Mixed_Case to
+	Set_Casing; that's the default.
+	* lib-xref-spark_specific.adb (Add_SPARK_Scope): Pretend that calls to
+	protected subprograms are entry calls; otherwise it is not possible to
+	distinguish them from regular subprogram calls.
+
 2016-04-18  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch13.adb (Has_Good_Profile): Improvement

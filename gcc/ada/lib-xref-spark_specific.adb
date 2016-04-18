@@ -261,14 +261,27 @@ package body SPARK_Specific is
       case Ekind (E) is
          when E_Entry
             | E_Entry_Family
-            | E_Function
             | E_Generic_Function
             | E_Generic_Package
             | E_Generic_Procedure
             | E_Package
-            | E_Procedure
          =>
             Typ := Xref_Entity_Letters (Ekind (E));
+
+         when E_Function
+            | E_Procedure
+         =>
+            --  In in SPARK we need to distinguish protected functions and
+            --  procedures from ordinary subprograms, but there are no special
+            --  Xref letters for them. Since this distiction is only needed
+            --  to detect protected calls we pretent that such calls are entry
+            --  calls.
+
+            if Ekind (Scope (E)) = E_Protected_Type then
+               Typ := Xref_Entity_Letters (E_Entry);
+            else
+               Typ := Xref_Entity_Letters (Ekind (E));
+            end if;
 
          when E_Package_Body | E_Subprogram_Body | E_Task_Body =>
             Typ := Xref_Entity_Letters (Ekind (Unique_Entity (E)));
