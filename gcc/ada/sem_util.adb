@@ -11574,6 +11574,23 @@ package body Sem_Util is
               and then Defining_Entity (P) = Typ
             then
                return True;
+
+            --  A subtype name may appear in an aspect specification for a
+            --  Predicate_Failure aspect, for which we do not construct a
+            --  wrapper procedure. The subtype will be replaced by the
+            --  expression being tested when the corresponding predicate
+            --  check is expanded.
+
+            elsif Nkind (P) = N_Aspect_Specification
+              and then Nkind (Parent (P)) = N_Subtype_Declaration
+            then
+               return True;
+
+            elsif Nkind (P) = N_Pragma
+              and then
+                Get_Pragma_Id (Pragma_Name (P)) = Pragma_Predicate_Failure
+            then
+               return True;
             end if;
 
             P := Parent (P);

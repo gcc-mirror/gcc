@@ -362,7 +362,7 @@ package body Sem_Ch6 is
          Set_Is_Inlined (Prev);
 
       --  If the expression function is a completion, the previous declaration
-      --  must come from source. We know already that appears in the current
+      --  must come from source. We know already that it appears in the current
       --  scope. The entity itself may be internally created if within a body
       --  to be inlined.
 
@@ -371,6 +371,7 @@ package body Sem_Ch6 is
         and then not Is_Formal_Subprogram (Prev)
       then
          Set_Has_Completion (Prev, False);
+         Set_Is_Inlined (Prev);
 
          --  An expression function that is a completion freezes the
          --  expression. This means freezing the return type, and if it is
@@ -411,7 +412,6 @@ package body Sem_Ch6 is
          --  Not clear that the backend can inline it in this case ???
 
          if Has_Completion (Prev) then
-            Set_Is_Inlined (Prev);
 
             --  The formals of the expression function are body formals,
             --  and do not appear in the ali file, which will only contain

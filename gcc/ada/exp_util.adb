@@ -46,6 +46,7 @@ with Rident;   use Rident;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
@@ -6503,9 +6504,38 @@ package body Exp_Util is
      (Typ  : Entity_Id;
       Expr : Node_Id) return Node_Id
    is
-      Loc      : constant Source_Ptr := Sloc (Expr);
-      Arg_List : List_Id;
-      Nam      : Name_Id;
+      procedure Replace_Subtype_Reference (N : Node_Id);
+      --  Replace current occurrences of the subtype to which a dynamic
+      --  predicate applies, by the expression that triggers a predicate
+      --  check. This is needed for aspect Predicate_Failure, for which
+      --  we do not generate a wrapper procedure, but simply modify the
+      --  expression for the pragma of the predicate check.
+
+      --------------------------------
+      --  Replace_Subtype_Reference --
+      --------------------------------
+
+      procedure Replace_Subtype_Reference (N : Node_Id) is
+      begin
+         Rewrite (N, New_Copy_Tree (Expr));
+
+         --  We want to treat the node as if it comes from source, so
+         --  that ASIS will not ignore it.
+
+         Set_Comes_From_Source (N, True);
+      end Replace_Subtype_Reference;
+
+      procedure Replace_Subtype_References is
+        new Replace_Type_References_Generic (Replace_Subtype_Reference);
+
+      --  Local variables
+
+      Loc       : constant Source_Ptr := Sloc (Expr);
+      Arg_List  : List_Id;
+      Fail_Expr : Node_Id;
+      Nam       : Name_Id;
+
+   --  Start of processing for Make_Predicate_Check
 
    begin
       --  If predicate checks are suppressed, then return a null statement. For
@@ -6540,12 +6570,19 @@ package body Exp_Util is
         Make_Pragma_Argument_Association (Loc,
           Expression => Make_Predicate_Call (Typ, Expr)));
 
+      --  If subtype has Predicate_Failure defined, add the correponding
+      --  expression as an additional pragma parameter, after replacing
+      --  current instances with the expression being checked.
+
       if Has_Aspect (Typ, Aspect_Predicate_Failure) then
+         Fail_Expr :=
+           New_Copy_Tree
+             (Expression (Find_Aspect (Typ, Aspect_Predicate_Failure)));
+         Replace_Subtype_References (Fail_Expr, Typ);
+
          Append_To (Arg_List,
            Make_Pragma_Argument_Association (Loc,
-             Expression =>
-               New_Copy_Tree
-                 (Expression (Find_Aspect (Typ, Aspect_Predicate_Failure)))));
+             Expression => Fail_Expr));
       end if;
 
       return
