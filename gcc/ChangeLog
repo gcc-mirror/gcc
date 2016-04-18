@@ -1,5 +1,14 @@
 2016-04-18  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-pre.c (postorder, postorder_num): Make locals ...
+	(compute_antic): ... here.  For partial antic use regular
+	postorder and scrap iteration.
+	(compute_partial_antic_aux): Remove unused return value.
+	(init_pre): Do not allocate postorder.
+	(fini_pre): Do not free postorder.
+
+2016-04-18  Richard Biener  <rguenther@suse.de>
+
         PR middle-end/37870
 	* expmed.c (extract_bit_field_1): Remove broken case
 	using a wider MODE_INT mode.
