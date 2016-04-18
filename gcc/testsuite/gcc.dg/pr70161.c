@@ -5,3 +5,6 @@ void
 foo (void)
 {
 }
+
+/* { dg-final { scan-ipa-dump-times "subgraph" 1 "inline.dot" } } */
+/* { dg-final { scan-ipa-dump-times "subgraph" 1 "cp.dot" } } */
