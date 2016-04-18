@@ -187,9 +187,16 @@ package body Ada.Containers.Unbounded_Priority_Queues is
          Prev.Next.Prev := Node;
          Prev.Next := Node;
 
-         if List.Length = 0 then
+         if Prev = H then
+
+            --  Make sure Next_Unequal of the Header always points to the first
+            --  "real" node. Here, we've inserted a new first "real" node, so
+            --  must update.
+
             List.Header.Next_Unequal := Node;
          end if;
+
+         pragma Assert (List.Header.Next_Unequal = List.Header.Next);
 
          List.Length := List.Length + 1;
 

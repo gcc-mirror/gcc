@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -38,7 +38,9 @@
 
 with System.Random_Numbers;
 
-package Ada.Numerics.Float_Random is
+package Ada.Numerics.Float_Random with
+  SPARK_Mode => Off
+is
 
    --  Basic facilities
 

@@ -1034,6 +1034,19 @@ package Sem_Util is
    --  Determine whether subprogram Subp_Id has an effectively volatile formal
    --  parameter or returns an effectively volatile value.
 
+   function Has_Full_Default_Initialization (Typ : Entity_Id) return Boolean;
+   --  Determine whether type Typ defines "full default initialization" as
+   --  specified by SPARK RM 3.1. To qualify as such, the type must be
+   --    * A scalar type with specified Default_Value
+   --    * An array-of-scalar type with specified Default_Component_Value
+   --    * An array type whose element type defines full default initialization
+   --    * A protected type, record type or type extension whose components
+   --      either include a default expression or have a type which defines
+   --      full default initialization. In the case of type extensions, the
+   --      parent type defines full default initialization.
+   --   * A task type
+   --   * A private type whose Default_Initial_Condition is non-null
+
    function Has_Infinities (E : Entity_Id) return Boolean;
    --  Determines if the range of the floating-point type E includes
    --  infinities. Returns False if E is not a floating-point type.

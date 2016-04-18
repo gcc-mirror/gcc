@@ -852,11 +852,7 @@ package body Exp_Intr is
    ------------------------
 
    procedure Expand_Source_Info (N : Node_Id; Nam : Name_Id) is
-      --  ???There is duplicated code here (see Add_Source_Info)
-
       Loc : constant Source_Ptr := Sloc (N);
-      Ent : Entity_Id;
-
    begin
       --  Integer cases
 
@@ -870,67 +866,7 @@ package body Exp_Intr is
 
       else
          Name_Len := 0;
-
-         case Nam is
-            when Name_File =>
-               Get_Decoded_Name_String
-                 (Reference_Name (Get_Source_File_Index (Loc)));
-
-            when Name_Source_Location =>
-               Build_Location_String (Loc);
-
-            when Name_Enclosing_Entity =>
-
-               --  Skip enclosing blocks to reach enclosing unit
-
-               Ent := Current_Scope;
-               while Present (Ent) loop
-                  exit when Ekind (Ent) /= E_Block
-                    and then Ekind (Ent) /= E_Loop;
-                  Ent := Scope (Ent);
-               end loop;
-
-               --  Ent now points to the relevant defining entity
-
-               Write_Entity_Name (Ent);
-
-            when Name_Compilation_ISO_Date =>
-               Name_Buffer (1 .. 10) := Opt.Compilation_Time (1 .. 10);
-               Name_Len := 10;
-
-            when Name_Compilation_Date =>
-               declare
-                  subtype S13 is String (1 .. 3);
-                  Months : constant array (1 .. 12) of S13 :=
-                    ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
-
-                  M1 : constant Character := Opt.Compilation_Time (6);
-                  M2 : constant Character := Opt.Compilation_Time (7);
-
-                  MM : constant Natural range 1 .. 12 :=
-                    (Character'Pos (M1) - Character'Pos ('0')) * 10 +
-                    (Character'Pos (M2) - Character'Pos ('0'));
-
-               begin
-                  --  Reformat ISO date into MMM DD YYYY (__DATE__) format
-
-                  Name_Buffer (1 .. 3)  := Months (MM);
-                  Name_Buffer (4)       := ' ';
-                  Name_Buffer (5 .. 6)  := Opt.Compilation_Time (9 .. 10);
-                  Name_Buffer (7)       := ' ';
-                  Name_Buffer (8 .. 11) := Opt.Compilation_Time (1 .. 4);
-                  Name_Len := 11;
-               end;
-
-            when Name_Compilation_Time =>
-               Name_Buffer (1 .. 8) := Opt.Compilation_Time (12 .. 19);
-               Name_Len := 8;
-
-            when others =>
-               raise Program_Error;
-         end case;
-
+         Add_Source_Info (Loc, Nam);
          Rewrite (N,
            Make_String_Literal (Loc,
              Strval => String_From_Name_Buffer));

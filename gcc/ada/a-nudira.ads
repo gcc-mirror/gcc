@@ -41,7 +41,9 @@ with System.Random_Numbers;
 generic
    type Result_Subtype is (<>);
 
-package Ada.Numerics.Discrete_Random is
+package Ada.Numerics.Discrete_Random with
+  SPARK_Mode => Off
+is
 
    --  Basic facilities
 

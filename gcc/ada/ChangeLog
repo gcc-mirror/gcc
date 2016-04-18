@@ -1,3 +1,41 @@
+2016-04-18  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb, sem_util.ads (Has_Full_Default_Initialization): used
+	outside of GNATprove, hence it should not be removed.
+
+2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Refinement_Clause):
+	The refinement of an external abstract state can now mention
+	non-external constituents.
+	(Check_External_Property): Update all SPARK RM references.
+
+2016-04-18  Bob Duff  <duff@adacore.com>
+
+	* exp_intr.adb: Remove some duplicated code.
+
+2016-04-18  Yannick Moy  <moy@adacore.com>
+
+	* a-nudira.adb, a-nudira.ads, a-nuflra.adb, a-nuflra.ads: Mark
+	package spec and body out of SPARK.
+
+2016-04-18  Johannes Kanig  <kanig@adacore.com>
+
+	* spark_xrefs.ads: Minor comment update.
+
+2016-04-18  Johannes Kanig  <kanig@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Force loading of System
+	unit for SPARK.
+
+2016-04-18  Bob Duff  <duff@adacore.com>
+
+	* a-cuprqu.adb: Correction to previous change. If a new node
+	is inserted at the front of the queue (because it is higher
+	priority than the previous front node), we need to update
+	Header.Next_Unequal -- not just in the case where the queue was
+	previously empty.
+
 2016-04-18  Bob Duff  <duff@adacore.com>
 
 	* a-cuprqu.ads: Change the representation of List_Type from a

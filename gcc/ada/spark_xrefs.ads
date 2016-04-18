@@ -200,7 +200,7 @@ package SPARK_Xrefs is
    --  not relate to Generated Globals.
 
    --  The processing (reading and writing) of this section happens in
-   --  package Flow_Computed_Globals (from the SPARK 2014 sources), for
+   --  package Flow_Generated_Globals (from the SPARK 2014 sources), for
    --  further information please refer there.
 
    ----------------

@@ -29,7 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body Ada.Numerics.Discrete_Random is
+package body Ada.Numerics.Discrete_Random with
+  SPARK_Mode => Off
+is
 
    package SRN renames System.Random_Numbers;
    use SRN;
