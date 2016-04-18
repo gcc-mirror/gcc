@@ -763,7 +763,7 @@ package body Debug is
    --       any unreachable subprograms that get deleted.
 
    --  d.4  By default in case of an error during C generation, the .c or .h
-   --       file is delete. This flag keeps the C file.
+   --       file is deleted. This flag keeps the C file.
 
    --  d.5  By default a subprogram imported generates a subprogram profile.
    --       This debug flag disables this generation when generating C code,
