@@ -106,17 +106,18 @@ package body System.File_IO is
    --  Holds open string (longest is "w+b" & nul)
 
    procedure Fopen_Mode
-     (Mode    : File_Mode;
+     (Namestr : String;
+      Mode    : File_Mode;
       Text    : Boolean;
       Creat   : Boolean;
       Amethod : Character;
       Fopstr  : out Fopen_String);
    --  Determines proper open mode for a file to be opened in the given Ada
-   --  mode. Text is true for a text file and false otherwise, and Creat is
-   --  true for a create call, and False for an open call. The value stored
-   --  in Fopstr is a nul-terminated string suitable for a call to fopen or
-   --  freopen. Amethod is the character designating the access method from
-   --  the Access_Method field of the FCB.
+   --  mode. Namestr is the NUL-terminated file name. Text is true for a text
+   --  file and false otherwise, and Creat is true for a create call, and False
+   --  for an open call. The value stored in Fopstr is a nul-terminated string
+   --  suitable for a call to fopen or freopen. Amethod is the character
+   --  designating the access method from the Access_Method field of the FCB.
 
    function Errno_Message
      (Name  : String;
@@ -433,9 +434,13 @@ package body System.File_IO is
    --                                     OPEN         CREATE
    --     Append_File                     "r+"           "w+"
    --     In_File                         "r"            "w+"
-   --     Out_File (Direct_IO, Stream_IO) "r+"           "w"
+   --     Out_File (Direct_IO, Stream_IO) "r+" [*]       "w"
    --     Out_File (others)               "w"            "w"
    --     Inout_File                      "r+"           "w+"
+
+   --  [*] Except that for Out_File, if the file exists and is a fifo (i.e. a
+   --  named pipe), we use "w" instead of "r+". This is necessary to make a
+   --  write to the fifo block until a reader is ready.
 
    --  Note: we do not use "a" or "a+" for Append_File, since this would not
    --  work in the case of stream files, where even if in append file mode,
@@ -458,13 +463,17 @@ package body System.File_IO is
    --  to the mode, depending on the setting of Text.
 
    procedure Fopen_Mode
-     (Mode    : File_Mode;
+     (Namestr : String;
+      Mode    : File_Mode;
       Text    : Boolean;
       Creat   : Boolean;
       Amethod : Character;
       Fopstr  : out Fopen_String)
    is
       Fptr : Positive;
+
+      function is_fifo (Path : Address) return Integer;
+      pragma Import (C, is_fifo, "__gnat_is_fifo");
 
    begin
       case Mode is
@@ -479,7 +488,10 @@ package body System.File_IO is
             end if;
 
          when Out_File =>
-            if Amethod in 'D' | 'S' and then not Creat then
+            if Amethod in 'D' | 'S'
+              and then not Creat
+              and then is_fifo (Namestr'Address) = 0
+            then
                Fopstr (1) := 'r';
                Fopstr (2) := '+';
                Fptr := 3;
@@ -1045,7 +1057,7 @@ package body System.File_IO is
 
          else
             Fopen_Mode
-              (Mode, Text_Encoding in Text_Content_Encoding,
+              (Namestr, Mode, Text_Encoding in Text_Content_Encoding,
                Creat, Amethod, Fopstr);
 
             --  A special case, if we are opening (OPEN case) a file and the
@@ -1218,7 +1230,7 @@ package body System.File_IO is
 
       else
          Fopen_Mode
-           (Mode, File.Text_Encoding in Text_Content_Encoding,
+           (File.Name.all, Mode, File.Text_Encoding in Text_Content_Encoding,
             False, File.Access_Method, Fopstr);
 
          File.Stream := freopen

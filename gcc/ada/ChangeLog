@@ -1,3 +1,34 @@
+2016-04-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* lib-xref-spark_specific.adb, par-ch2.adb, errout.ads,
+	exp_intr.adb: Minor reformatting and typo corrections.
+
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: Code cleanup.
+
+2016-04-18  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb: Minor reformatting and error message tweaking
+	(remove extraneous spaces).
+
+2016-04-18  Johannes Kanig  <kanig@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Force loading of System unit for SPARK.
+
+2016-04-18  Bob Duff  <duff@adacore.com>
+
+	* s-fileio.adb (Fopen_Mode): If Mode = Out_File, and the file
+	exists, and it's a fifo, we use "w" as the open string instead of
+	"r+". This is necessary to make a write to the fifo block until
+	a reader is ready.
+
+2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb (Denote_Same_Function): Account
+	for a special case where a primitive of a tagged type inherits
+	a class-wide postcondition from a parent type.
+
 2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* par-ch2.adb (P_Expression_Or_Reserved_Word): New routine.

@@ -490,7 +490,7 @@ package body Ch2 is
       Reserved_Words_OK : Boolean := False)
    is
       function P_Expression_Or_Reserved_Word return Node_Id;
-      --  Parse an expression or if the token denotes one of the following
+      --  Parse an expression or, if the token denotes one of the following
       --  reserved words, construct an identifier with proper Chars field.
       --    Access
       --    Delta
@@ -644,7 +644,7 @@ package body Ch2 is
 
       if Identifier_OK then
 
-         --  Certain pragmas such as Restriction_Warninds and Restrictions
+         --  Certain pragmas such as Restriction_Warnings and Restrictions
          --  allow reserved words to appear as expressions when checking for
          --  prohibited uses of attributes.
 

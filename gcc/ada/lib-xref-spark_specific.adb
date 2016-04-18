@@ -271,10 +271,10 @@ package body SPARK_Specific is
          when E_Function
             | E_Procedure
          =>
-            --  In in SPARK we need to distinguish protected functions and
+            --  In SPARK we need to distinguish protected functions and
             --  procedures from ordinary subprograms, but there are no special
             --  Xref letters for them. Since this distiction is only needed
-            --  to detect protected calls we pretent that such calls are entry
+            --  to detect protected calls, we pretend that such calls are entry
             --  calls.
 
             if Ekind (Scope (E)) = E_Protected_Type then

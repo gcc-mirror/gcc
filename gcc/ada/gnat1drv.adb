@@ -1045,12 +1045,11 @@ begin
       Original_Operating_Mode := Operating_Mode;
       Frontend;
 
-      --  In GNATprove mode, force loading of System unit when tasking is
-      --  used, so that in particular System.Interrupt_Priority is available
-      --  to GNATprove for the generation of VCs for checking the respect of
-      --  Ceiling Protocol.
+      --  In GNATprove mode, force loading of System unit to ensure that
+      --  System.Interrupt_Priority is available to GNATprove for the
+      --  generation of VCs for related to Ceiling Priority.
 
-      if GNATprove_Mode and Opt.Tasking_Used then
+      if GNATprove_Mode then
          declare
             Unused_E : constant Entity_Id :=
               Rtsfind.RTE (Rtsfind.RE_Interrupt_Priority);
