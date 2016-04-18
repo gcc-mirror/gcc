@@ -1,3 +1,8 @@
+2016-04-17  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-ivopts.c (avg_loop_niter): Use also
+	max_loop_iterations_int.
+
 2016-04-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/43434
