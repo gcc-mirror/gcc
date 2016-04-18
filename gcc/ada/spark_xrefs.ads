@@ -209,9 +209,10 @@ package SPARK_Xrefs is
 
    --  The following table records SPARK cross-references
 
-   type Xref_Index is new Int;
+   type Xref_Index is new Nat;
    --  Used to index values in this table. Values start at 1 and are assigned
-   --  sequentially as entries are constructed.
+   --  sequentially as entries are constructed; value 0 is used temporarily
+   --  until a proper value is determined.
 
    type SPARK_Xref_Record is record
       Entity_Name : String_Ptr;
@@ -268,9 +269,11 @@ package SPARK_Xrefs is
    --  This table keeps track of the scopes and the corresponding starting and
    --  ending indexes (From, To) in the Xref table.
 
-   type Scope_Index is new Int;
+   type Scope_Index is new Nat;
    --  Used to index values in this table. Values start at 1 and are assigned
-   --  sequentially as entries are constructed.
+   --  sequentially as entries are constructed; value 0 indicates that no
+   --  entries have been constructed and is also used until a proper value is
+   --  determined.
 
    type SPARK_Scope_Record is record
       Scope_Name : String_Ptr;
@@ -296,8 +299,10 @@ package SPARK_Xrefs is
       Stype : Character;
       --  Indicates type of scope, using code used in ALI file:
       --    K = package
-      --    V = function
+      --    T = task
       --    U = procedure
+      --    V = function
+      --    Y = entry
 
       Col : Nat;
       --  Column number for the scope
@@ -329,9 +334,10 @@ package SPARK_Xrefs is
    --  This table keeps track of the units and the corresponding starting and
    --  ending indexes (From, To) in the Scope table.
 
-   type File_Index is new Int;
+   type File_Index is new Nat;
    --  Used to index values in this table. Values start at 1 and are assigned
-   --  sequentially as entries are constructed.
+   --  sequentially as entries are constructed; value 0 indicates that no
+   --  entries have been constructed.
 
    type SPARK_File_Record is record
       File_Name : String_Ptr;

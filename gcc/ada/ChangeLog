@@ -1,3 +1,41 @@
+2016-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* layout.adb (Set_Elem_Alignment): Extend setting of alignment
+	to subtypes that are not first subtypes.
+
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.ads (Collect_Inherited_Class_Wide_Conditions):
+	Simplify interface.
+	* sem_prag.adb (Collect_Inherited_Class_Wide_Conditions): Insert
+	generated pragmas after subprogram declaration, rather than in
+	the corresponding subprogram body.
+	* sem_ch6.adb (New_Overloaded_Entity): In GNATProve
+	mode, if the operation is overridding, call
+	Collect_Inherited_Class_Wide_Conditions to generate the
+	corresponding pragmas immediately after the corresponding
+	subprogram declaration.
+
+2016-04-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* spark_xrefs.ads (Xref_Index, Scope_Index, File_Index): restrict
+	type to natural numbers.
+	(Stype): document code characters for concurrent entities.
+
+2016-04-18  Olivier Hainque  <hainque@adacore.com>
+
+	* targparm.ads: Update the Frontend_Exceptions default internal
+	value.
+	(Frontend_Exceptions_On_Target): Change default value to True.
+
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): Refine error
+	detection when a selected component in the body of a synchronized
+	type is a reference to an object of the same type declared
+	elsewhere. The construct is legal if the prefix of the selected
+	component includes an explicit dereference at any point.
+
 2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb (Analyze_Object_Declaration): Do not consider

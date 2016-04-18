@@ -3268,80 +3268,114 @@ package body Layout is
          elsif Alignment (E) = A then
             null;
 
-         --  Now we come to the difficult cases where we have inherited an
-         --  alignment and size, but overridden the size but not the alignment.
-
-         elsif Has_Size_Clause (E) or else Has_Object_Size_Clause (E) then
-
-            --  This is tricky, it might be thought that we should try to
-            --  inherit the alignment, since that's what the RM implies, but
-            --  that leads to complex rules and oddities. Consider for example:
-
-            --    type R is new Character;
-            --    for R'Size use 16;
-
-            --  It seems quite bogus in this case to inherit an alignment of 1
-            --  from the parent type Character. Furthermore, if that's what the
-            --  programmer really wanted for some odd reason, then he could
-            --  specify the alignment directly.
-
-            --  Furthermore we really don't want to inherit the alignment in
-            --  the case of a specified Object_Size for a subtype, since then
-            --  there would be no way of overriding to give a reasonable value
-            --  (we don't have an Object_Subtype attribute). Consider:
-
-            --    subtype R is Character;
-            --    for R'Object_Size use 16;
-
-            --  If we inherit the alignment of 1, then we have an inefficient
-            --  alignment for the subtype, which cannot be fixed.
-
-            --  So we make the decision that if Size (or Object_Size) is given
-            --  (and, in the case of a first subtype, the alignment is not set
-            --  with a specific alignment clause), we reset the alignment to
-            --  the appropriate value for the specified size. This is a nice
-            --  simple rule to implement and document.
-
-            --  There is one slight glitch, which is that a confirming size
-            --  clause can now change the alignment, which, if we really think
-            --  that confirming rep clauses should have no effect, is a no-no.
-
-            --    type R is new Character;
-            --    for R'Alignment use 2;
-            --    type S is new R;
-            --    for S'Size use Character'Size;
-
-            --  Now the alignment of S is changed to 1 instead of 2 as a result
-            --  of applying the above rule to the confirming rep clause for S.
-            --  Not clear this is worth worrying about. If we recorded whether
-            --  a size clause was confirming we could avoid this, but right now
-            --  we have no way of doing that or easily figuring it out, so we
-            --  don't bother.
-
-            --  Historical note: in versions of GNAT prior to Nov 6th, 2011, an
-            --  odd distinction was made between inherited alignments larger
-            --  than the computed alignment (where the larger alignment was
-            --  inherited) and inherited alignments smaller than the computed
-            --  alignment (where the smaller alignment was overridden). This
-            --  was a dubious fix to get around an ACATS problem which seems
-            --  to have disappeared anyway, and in any case, this peculiarity
-            --  was never documented.
-
-            Init_Alignment (E, A);
-
-         --  If no Size (or Object_Size) was specified, then we inherited the
-         --  object size, so we should inherit the alignment as well and not
-         --  modify it. This takes care of cases like:
-
-         --    type R is new Integer;
-         --    for R'Alignment use 1;
-         --    subtype S is R;
-
-         --  Here we have R with a default Object_Size of 32, and a specified
-         --  alignment of 1, and it seeems right for S to inherit both values.
-
          else
-            null;
+            --  Now we come to the difficult cases of subtypes for which we
+            --  have inherited an alignment different from the computed one.
+            --  We resort to the presence of alignment and size clauses to
+            --  guide our choices. Note that they can generally be present
+            --  only on the first subtype (except for Object_Size) and that
+            --  we need to look at the Rep_Item chain to correctly handle
+            --  derived types.
+
+            declare
+               FST : constant Entity_Id := First_Subtype (E);
+
+               function Has_Attribute_Clause
+                 (E  : Entity_Id;
+                  Id : Attribute_Id) return Boolean;
+               --  Wrapper around Get_Attribute_Definition_Clause which tests
+               --  for the presence of the specified attribute clause.
+
+               --------------------------
+               -- Has_Attribute_Clause --
+               --------------------------
+
+               function Has_Attribute_Clause
+                 (E  : Entity_Id;
+                  Id : Attribute_Id) return Boolean is
+               begin
+                  return Present (Get_Attribute_Definition_Clause (E, Id));
+               end Has_Attribute_Clause;
+
+            begin
+               --  If the alignment comes from a clause, then we respect it.
+               --  Consider for example:
+
+               --    type R is new Character;
+               --    for R'Alignment use 1;
+               --    for R'Size use 16;
+               --    subtype S is R;
+
+               --  Here R has a specified size of 16 and a specified alignment
+               --  of 1, and it seems right for S to inherit both values.
+
+               if Has_Attribute_Clause (FST, Attribute_Alignment) then
+                  null;
+
+               --  Now we come to the cases where we have inherited alignment
+               --  and size, and overridden the size but not the alignment.
+
+               elsif Has_Attribute_Clause (FST, Attribute_Size)
+                 or else Has_Attribute_Clause (FST, Attribute_Object_Size)
+                 or else Has_Attribute_Clause (E, Attribute_Object_Size)
+               then
+                  --  This is tricky, it might be thought that we should try to
+                  --  inherit the alignment, since that's what the RM implies,
+                  --  but that leads to complex rules and oddities. Consider
+                  --  for example:
+
+                  --    type R is new Character;
+                  --    for R'Size use 16;
+
+                  --  It seems quite bogus in this case to inherit an alignment
+                  --  of 1 from the parent type Character. Furthermore, if that
+                  --  is what the programmer really wanted for some odd reason,
+                  --  then he could specify the alignment directly.
+
+                  --  Moreover we really don't want to inherit the alignment in
+                  --  the case of a specified Object_Size for a subtype, since
+                  --  there would be no way of overriding to give a reasonable
+                  --  value (as we don't have an Object_Alignment attribute).
+                  --  Consider for example:
+
+                  --    subtype R is Character;
+                  --    for R'Object_Size use 16;
+
+                  --  If we inherit the alignment of 1, then it will be very
+                  --  inefficient for the subtype and this cannot be fixed.
+
+                  --  So we make the decision that if Size (or Object_Size) is
+                  --  given and the alignment is not specified with a clause,
+                  --  we reset the alignment to the appropriate value for the
+                  --  specified size. This is a nice simple rule to implement
+                  --  and document.
+
+                  --  There is a theoretical glitch, which is that a confirming
+                  --  size clause could now change the alignment, which, if we
+                  --  really think that confirming rep clauses should have no
+                  --  effect, could be seen as a no-no. However that's already
+                  --  implemented by Alignment_Check_For_Size_Change so we do
+                  --  not change the philosophy here.
+
+                  --  Historical note: in versions prior to Nov 6th, 2011, an
+                  --  odd distinction was made between inherited alignments
+                  --  larger than the computed alignment (where the larger
+                  --  alignment was inherited) and inherited alignments smaller
+                  --  than the computed alignment (where the smaller alignment
+                  --  was overridden). This was a dubious fix to get around an
+                  --  ACATS problem which seems to have disappeared anyway, and
+                  --  in any case, this peculiarity was never documented.
+
+                  Init_Alignment (E, A);
+
+               --  If no Size (or Object_Size) was specified, then we have
+               --  inherited the object size, so we should also inherit the
+               --  alignment and not modify it.
+
+               else
+                  null;
+               end if;
+            end;
          end if;
       end;
    end Set_Elem_Alignment;

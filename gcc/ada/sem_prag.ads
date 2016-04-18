@@ -311,12 +311,12 @@ package Sem_Prag is
    --  state, variable or package instantiation denoted by Item_Id requires the
    --  use of indicator/option Part_Of. If this is the case, emit an error.
 
-   procedure Collect_Inherited_Class_Wide_Conditions
-     (Subp : Entity_Id;
-      Bod  : Node_Id);
-   --  When analyzing an overriding subprogram, check whether the overridden
-   --  operations have class-wide pre/postconditions, and generate the
-   --  corresponding pragmas.
+   procedure Collect_Inherited_Class_Wide_Conditions (Subp : Entity_Id);
+   --  In GNATprove mode, when analyzing an overriding subprogram, check
+   --  whether the overridden operations have class-wide pre/postconditions,
+   --  and generate the corresponding pragmas. The pragmas are inserted after
+   --  the subprogram declaration, together with those generated for other
+   --  aspects of the subprogram.
 
    procedure Collect_Subprogram_Inputs_Outputs
      (Subp_Id      : Entity_Id;
