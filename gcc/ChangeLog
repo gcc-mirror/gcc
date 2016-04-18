@@ -1,3 +1,8 @@
+2016-04-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* has-brig.c (lendian16): Don't try to use __builtin_bswap16
+	unless compiling with at least GCC-4.8.
+
 2016-04-17  Jan Hubicka  <jh@suse.cz>
 
 	PR bootstrap/70706

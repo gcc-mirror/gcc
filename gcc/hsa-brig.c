@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 static uint16_t
 lendian16 (uint16_t val)
 {
-#if GCC_VERSION >= 4006
+#if GCC_VERSION >= 4008
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
   return val;
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
