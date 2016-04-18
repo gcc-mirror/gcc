@@ -26762,9 +26762,10 @@ package body Sem_Prag is
    procedure Collect_Inherited_Class_Wide_Conditions (Subp : Entity_Id) is
       Parent_Subp : constant Entity_Id := Overridden_Operation (Subp);
       Prags       : constant Node_Id   := Contract (Parent_Subp);
-      Prag        : Node_Id;
-      New_Prag    : Node_Id;
-      Installed   : Boolean;
+      Prag         : Node_Id;
+      New_Prag     : Node_Id;
+      Installed    : Boolean;
+      In_Spec_Expr : Boolean;
 
    begin
       Installed := False;
@@ -26781,24 +26782,35 @@ package body Sem_Prag is
               and then Class_Present (Prag)
             then
                --  The generated pragma must be analyzed in the context of
-               --  the subprogram, to make its formals visible.
+               --  the subprogram, to make its formals visible. In addition,
+               --  we must inhibit freezing and full analysis because the
+               --  controlling type of the subprogram is not frozen yet, and
+               --  may have further primitives.
 
                if not Installed then
                   Installed := True;
                   Push_Scope (Subp);
                   Install_Formals (Subp);
+                  In_Spec_Expr := In_Spec_Expression;
+                  In_Spec_Expression := True;
                end if;
 
                New_Prag :=
                  Build_Pragma_Check_Equivalent (Prag, Subp, Parent_Subp);
                Insert_After (Unit_Declaration_Node (Subp), New_Prag);
                Preanalyze (New_Prag);
+
+               --  Prevent further analysis in subsequent processing of the
+               --  current list of declarations
+
+               Set_Analyzed (New_Prag);
             end if;
 
             Prag := Next_Pragma (Prag);
          end loop;
 
          if Installed then
+            In_Spec_Expression := In_Spec_Expr;
             End_Scope;
          end if;
       end if;

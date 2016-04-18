@@ -2972,14 +2972,20 @@ package body Sem_Aggr is
       --
       --  This variable is updated as a side effect of function Get_Value.
 
+      Box_Node       : Node_Id;
       Is_Box_Present : Boolean := False;
-      Others_Box     : Boolean := False;
+      Others_Box     : Integer := 0;
+
       --  Ada 2005 (AI-287): Variables used in case of default initialization
       --  to provide a functionality similar to Others_Etype. Box_Present
       --  indicates that the component takes its default initialization;
-      --  Others_Box indicates that at least one component takes its default
-      --  initialization. Similar to Others_Etype, they are also updated as a
+      --  Others_Box counts the number of components of the current aggregate
+      --  (which may be a sub-aggregate of a larger one) that are default-
+      --  initialized. A value of One indicates that an others_box is present.
+      --  Any larger value indicates that the others_box is not redundant.
+      --  These variables, similar to Others_Etype, are also updated as a
       --  side effect of function Get_Value.
+      --  Box_Node is used to place a warning on a redundant others_box.
 
       procedure Add_Association
         (Component      : Entity_Id;
@@ -3231,7 +3237,7 @@ package body Sem_Aggr is
                      --  checks when the default includes function calls.
 
                      if Box_Present (Assoc) then
-                        Others_Box     := True;
+                        Others_Box     := Others_Box + 1;
                         Is_Box_Present := True;
 
                         if Expander_Active then
@@ -3704,7 +3710,8 @@ package body Sem_Aggr is
                   --  any component.
 
                   elsif Box_Present (Assoc) then
-                     Others_Box := True;
+                     Others_Box := 1;
+                     Box_Node   := Assoc;
                   end if;
 
                else
@@ -4439,7 +4446,8 @@ package body Sem_Aggr is
 
                               Comp_Elmt := First_Elmt (Components);
                               while Present (Comp_Elmt) loop
-                                 if Ekind (Node (Comp_Elmt)) /= E_Discriminant
+                                 if
+                                   Ekind (Node (Comp_Elmt)) /= E_Discriminant
                                  then
                                     Process_Component (Node (Comp_Elmt));
                                  end if;
@@ -4585,9 +4593,14 @@ package body Sem_Aggr is
 
                --  Ada 2005 (AI-287): others choice may have expression or box
 
-               if No (Others_Etype) and then not Others_Box then
+               if No (Others_Etype) and then Others_Box = 0 then
                   Error_Msg_N
                     ("OTHERS must represent at least one component", Selectr);
+
+               elsif Others_Box = 1 and then Warn_On_Redundant_Constructs then
+                  Error_Msg_N ("others choice is redundant?", Box_Node);
+                  Error_Msg_N ("\previous choices cover all components?",
+                     Box_Node);
                end if;
 
                exit Verification;

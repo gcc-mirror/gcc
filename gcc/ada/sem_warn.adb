@@ -1137,13 +1137,17 @@ package body Sem_Warn is
                   --  A special case, if this variable is volatile and not
                   --  imported, it is not helpful to tell the programmer
                   --  to mark the variable as constant, since this would be
-                  --  illegal by virtue of RM C.6(13).
+                  --  illegal by virtue of RM C.6(13). Instead we suggest
+                  --  using pragma Export (can't be Import because of the
+                  --  initial value).
 
                   if (Is_Volatile (E1) or else Has_Volatile_Components (E1))
                     and then not Is_Imported (E1)
                   then
                      Error_Msg_N
-                       ("?k?& is not modified, volatile has no effect!", E1);
+                       ("?k?& is not modified, " &
+                          "consider pragma Export for volatile variable!",
+                        E1);
 
                   --  Another special case, Exception_Occurrence, this catches
                   --  the case of exception choice (and a bit more too, but not

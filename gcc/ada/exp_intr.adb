@@ -107,14 +107,10 @@ package body Exp_Intr is
    --  System.Address_To_Access_Conversions.
 
    procedure Expand_Source_Info (N : Node_Id; Nam : Name_Id);
-   --  Rewrite the node by the appropriate string or positive constant.
-   --  Nam can be one of the following:
-   --    Name_File                  - expand string name of source file
-   --    Name_Line                  - expand integer line number
-   --    Name_Source_Location       - expand string of form file:line
-   --    Name_Enclosing_Entity      - expand string name of enclosing entity
-   --    Name_Compilation_Date      - expand string with compilation date
-   --    Name_Compilation_Time      - expand string with compilation time
+   --  Rewrite the node as the appropriate string literal or positive
+   --  constant. Nam is the name of one of the intrinsics declared in
+   --  GNAT.Source_Info; see g-souinf.ads for documentation of these
+   --  intrinsics.
 
    procedure Write_Entity_Name (E : Entity_Id);
    --  Recursive procedure to construct string for qualified name of enclosing
@@ -164,6 +160,10 @@ package body Exp_Intr is
             --  Ent now points to the relevant defining entity
 
             Write_Entity_Name (Ent);
+
+         when Name_Compilation_ISO_Date =>
+            Name_Buffer (1 .. 10) := Opt.Compilation_Time (1 .. 10);
+            Name_Len := 10;
 
          when Name_Compilation_Date =>
             declare
@@ -696,6 +696,7 @@ package body Exp_Intr is
                          Name_Line,
                          Name_Source_Location,
                          Name_Enclosing_Entity,
+                         Name_Compilation_ISO_Date,
                          Name_Compilation_Date,
                          Name_Compilation_Time)
       then
@@ -851,6 +852,8 @@ package body Exp_Intr is
    ------------------------
 
    procedure Expand_Source_Info (N : Node_Id; Nam : Name_Id) is
+      --  ???There is duplicated code here (see Add_Source_Info)
+
       Loc : constant Source_Ptr := Sloc (N);
       Ent : Entity_Id;
 
@@ -890,6 +893,10 @@ package body Exp_Intr is
                --  Ent now points to the relevant defining entity
 
                Write_Entity_Name (Ent);
+
+            when Name_Compilation_ISO_Date =>
+               Name_Buffer (1 .. 10) := Opt.Compilation_Time (1 .. 10);
+               Name_Len := 10;
 
             when Name_Compilation_Date =>
                declare
