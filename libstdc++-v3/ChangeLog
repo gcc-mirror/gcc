@@ -1,5 +1,12 @@
 2016-04-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/type_erased_allocator/1.cc: Don't include
+	internal header.
+	* testsuite/experimental/type_erased_allocator/1_neg.cc: Likewise.
+	* testsuite/experimental/type_erased_allocator/2.cc: Likewise.
+	* testsuite/experimental/type_erased_allocator/uses_allocator.cc:
+	Likewise. Add licence and change to compile-only test.
+
 	* include/bits/locale_facets.h (ctype::do_narrow): Add attribute to
 	unused parameter.
 	* include/bits/regex_automaton.h (_NFA::_M_insert_alt): Likewise.
