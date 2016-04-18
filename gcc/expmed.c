@@ -1647,17 +1647,6 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	    if (GET_CODE (op0) == SUBREG)
 	      op0 = force_reg (imode, op0);
 	  }
-	else if (REG_P (op0))
-	  {
-	    rtx reg, subreg;
-	    imode = smallest_mode_for_size (GET_MODE_BITSIZE (GET_MODE (op0)),
-					    MODE_INT);
-	    reg = gen_reg_rtx (imode);
-	    subreg = gen_lowpart_SUBREG (GET_MODE (op0), reg);
-	    emit_move_insn (subreg, op0);
-	    op0 = reg;
-	    bitnum += SUBREG_BYTE (subreg) * BITS_PER_UNIT;
-	  }
 	else
 	  {
 	    HOST_WIDE_INT size = GET_MODE_SIZE (GET_MODE (op0));

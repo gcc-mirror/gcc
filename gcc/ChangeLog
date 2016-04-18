@@ -1,3 +1,9 @@
+2016-04-18  Richard Biener  <rguenther@suse.de>
+
+        PR middle-end/37870
+	* expmed.c (extract_bit_field_1): Remove broken case
+	using a wider MODE_INT mode.
+
 2016-04-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* has-brig.c (lendian16): Don't try to use __builtin_bswap16
