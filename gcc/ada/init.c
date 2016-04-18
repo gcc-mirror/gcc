@@ -1714,8 +1714,11 @@ __gnat_install_handler (void)
 #include <iv.h>
 #endif
 
-#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6) && !defined(__RTP__)
+#if ((defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6)) || defined (__x86_64__)) && !defined(__RTP__)
+#define VXWORKS_FORCE_GUARD_PAGE 1
 #include <vmLib.h>
+extern size_t vxIntStackOverflowSize;
+#define INT_OVERFLOW_SIZE vxIntStackOverflowSize
 #endif
 
 #ifdef VTHREADS
@@ -1726,13 +1729,13 @@ __gnat_install_handler (void)
 
 /* Directly vectored Interrupt routines are not supported when using RTPs.  */
 
-extern int __gnat_inum_to_ivec (int);
+extern void * __gnat_inum_to_ivec (int);
 
 /* This is needed by the GNAT run time to handle Vxworks interrupts.  */
-int
+void *
 __gnat_inum_to_ivec (int num)
 {
-  return (int) ((long) INUM_TO_IVEC ((long) num));
+  return (void *) INUM_TO_IVEC (num);
 }
 #endif
 
@@ -1750,6 +1753,69 @@ getpid (void)
 }
 #endif
 
+/* When stack checking is performed by probing a guard page on the stack,
+   sometimes this guard page is not properly reset on VxWorks. We need to
+   manually reset it in this case.
+   This function returns TRUE in case the guard page was hit by the
+   signal. */
+static int
+__gnat_reset_guard_page (int sig, void *sc)
+{
+  /* On ARM VxWorks 6.x and x86_64 VxWorks 7, the guard page is left un-armed
+     by the kernel after being violated, so subsequent violations aren't
+     detected.
+     So we retrieve the address of the guard page from the TCB and compare it
+     with the page that is violated and re-arm that page if there's a match. */
+#if defined (VXWORKS_FORCE_GUARD_PAGE)
+
+  /* Ignore signals that are not stack overflow signals */
+  if (sig != SIGSEGV && sig != SIGBUS && sig != SIGILL) return FALSE;
+
+  /* If the target does not support guard pages, INT_OVERFLOW_SIZE will be 0 */
+  if (INT_OVERFLOW_SIZE == 0) return FALSE;
+
+  TASK_ID tid           = taskIdSelf ();
+  WIND_TCB *pTcb        = taskTcb (tid);
+  REG_SET *pregs        = ((struct sigcontext *) sc)->sc_pregs;
+  VIRT_ADDR guardPage   = (VIRT_ADDR) pTcb->pStackEnd - INT_OVERFLOW_SIZE;
+  UINT stateMask        = VM_STATE_MASK_VALID;
+  UINT state            = VM_STATE_VALID_NOT;
+  size_t probe_distance = 0;
+  VIRT_ADDR sigPage;
+
+#if defined (ARMEL)
+  /* violating address in rip: r12 */
+  sigPage    = pregs->r[12] & ~(INT_OVERFLOW_SIZE - 1);
+#elif defined (__x86_64__)
+  /* violating address in rsp. */
+  probe_distance = 16 * 1024; /* in gcc/config/i386/vxworks7.h */
+  sigPage    = pregs->rsp & ~(INT_OVERFLOW_SIZE - 1);
+  stateMask |= MMU_ATTR_SPL_MSK;
+  state     |= MMU_ATTR_NO_BLOCK;
+#else
+#error "Not Implemented for this CPU"
+#endif
+
+  if (guardPage == (sigPage - probe_distance))
+    {
+      UINT nState;
+      vmStateGet (NULL, guardPage, &nState);
+      if ((nState & VM_STATE_MASK_VALID) != VM_STATE_VALID_NOT) {
+        /* If the guard page has a valid state, we need to reset to
+           invalid state here */
+        vmStateSet (NULL, guardPage, INT_OVERFLOW_SIZE, stateMask, state);
+      }
+
+      return TRUE;
+    }
+  else
+    {
+      return FALSE;
+    }
+#endif /* VXWORKS_FORCE_GUARD_PAGE */
+  return FALSE;
+}
+
 /* VxWorks 653 vThreads expects the field excCnt to be zeroed when a signal is.
    handled. The VxWorks version of longjmp does this; GCC's builtin_longjmp
    doesn't.  */
@@ -1766,8 +1832,7 @@ __gnat_clear_exception_count (void)
 /* Handle different SIGnal to exception mappings in different VxWorks
    versions.  */
 void
-__gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
-		   void *sc ATTRIBUTE_UNUSED)
+__gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED, void *sc)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -1854,49 +1919,25 @@ __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
       msg = "unhandled signal";
     }
 
-  /* On ARM VxWorks 6.x, the guard page is left un-armed by the kernel
-     after being violated, so subsequent violations aren't detected.
-     so we retrieve the address of the guard page from the TCB and compare it
-     with the page that is violated (pREG 12 in the context) and re-arm that
-     page if there's a match.  Additionally we're are assured this is a
-     genuine stack overflow condition and and set the message and exception
-     to that effect.  */
-#if defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6) && !defined(__RTP__)
-
-  /* We re-arm the guard page by marking it invalid */
-
-#define PAGE_SIZE 4096
-#define REG_IP 12
-
-  if (sig == SIGSEGV || sig == SIGBUS || sig == SIGILL)
+  if (__gnat_reset_guard_page (sig, sc))
     {
-      TASK_ID tid = taskIdSelf ();
-      WIND_TCB *pTcb = taskTcb (tid);
-      unsigned long violated_page
-          = ((struct sigcontext *) sc)->sc_pregs->r[REG_IP] & ~(PAGE_SIZE - 1);
+      /* Set the exception message: we know for sure that we have a
+         stack overflow here */
+      exception = &storage_error;
 
-      if ((unsigned long) (pTcb->pStackEnd - PAGE_SIZE) == violated_page)
+      switch (sig)
         {
-	  vmStateSet (NULL, violated_page,
-		      PAGE_SIZE, VM_STATE_MASK_VALID, VM_STATE_VALID_NOT);
-	  exception = &storage_error;
-
-	  switch (sig)
-	  {
-            case SIGSEGV:
-	      msg = "SIGSEGV: stack overflow";
-	      break;
-            case SIGBUS:
-	      msg = "SIGBUS: stack overflow";
-	      break;
-            case SIGILL:
-	      msg = "SIGILL: stack overflow";
-	      break;
-	  }
-       }
+        case SIGSEGV:
+          msg = "SIGSEGV: stack overflow";
+          break;
+        case SIGBUS:
+          msg = "SIGBUS: stack overflow";
+          break;
+        case SIGILL:
+          msg = "SIGILL: stack overflow";
+          break;
+        }
     }
-#endif /* defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6) && !defined(__RTP__) */
-
   __gnat_clear_exception_count ();
   Raise_From_Signal_Handler (exception, msg);
 }
@@ -2115,7 +2156,7 @@ __gnat_init_float (void)
 #endif
 #endif
 
-#if (defined (__i386__) && !defined (VTHREADS))
+#if defined (__i386__) && !defined (VTHREADS)
   /* This is used to properly initialize the FPU on an x86 for each
      process thread. Is this needed for x86_64 ???  */
   asm ("finit");

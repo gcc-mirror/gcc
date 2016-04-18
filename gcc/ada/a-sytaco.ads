@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -44,7 +44,8 @@ is
    pragma Preelaborate;
    --  In accordance with Ada 2005 AI-362
 
-   type Suspension_Object is limited private;
+   type Suspension_Object is limited private with
+     Default_Initial_Condition;
 
    procedure Set_True (S : in out Suspension_Object) with
      Global  => null,
