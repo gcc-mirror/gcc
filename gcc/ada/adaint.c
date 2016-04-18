@@ -2613,6 +2613,22 @@ __gnat_os_exit (int status)
   exit (status);
 }
 
+int
+__gnat_current_process_id (void)
+{
+#if defined (__vxworks) || defined (__PikeOS__)
+  return -1;
+
+#elif defined (_WIN32)
+
+  return (int)GetCurrentProcessId();
+
+#else
+
+  return (int)getpid();
+#endif
+}
+
 /* Locate file on path, that matches a predicate */
 
 char *
