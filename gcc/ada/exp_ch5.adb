@@ -1693,9 +1693,10 @@ package body Exp_Ch5 is
 
             --  The attribute Priority applied to protected objects has been
             --  previously expanded into a call to the Get_Ceiling run-time
-            --  subprogram.
+            --  subprogram. In restricted profiles this is not available.
 
             if Nkind (Ent) = N_Function_Call
+              and then RTE_Available (RE_Get_Ceiling)
               and then (Entity (Name (Ent)) = RTE (RE_Get_Ceiling)
                           or else
                         Entity (Name (Ent)) = RTE (RO_PE_Get_Ceiling))

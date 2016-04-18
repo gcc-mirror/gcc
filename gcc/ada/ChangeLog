@@ -1,3 +1,55 @@
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Build_Pragma_Check_Equivalent): The mapping
+	that relates operations of the parent type to the operations of
+	the derived type has three distinct sources:
+	a) explicit operations of the derived type carry an
+	Overridden_Operation that designates the operation in the
+	ancestor.
+	b) Implicit operations that are inherited by the derived type
+	carry an alias that may be an explicit subprogram (in which case
+	it may have an Overridden_ Operation indicator) or may also be
+	inherited and carry its own alias.
+	c) If the parent type is an interface, the operation of the
+	derived type does not override, but the interface operation
+	indicates the operation that implements it.
+	* sem_prag.adb: Minor reformatting.
+	* sem_prag.adb (Check_External_Property): Update
+	the comment on usage. Reimplement.
+
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Assignment_Statement): In restricted
+	profiles such as ZFP, ceiling priority is not available.
+
+2016-04-18  Bob Duff  <duff@adacore.com>
+
+	* namet-sp.ads: Minor typo fix, ironically in 'Spelling_Checker'.
+
+2016-04-18  Bob Duff  <duff@adacore.com>
+
+	* sem_elab.adb (Output_Calls): Use
+	Get_Name_String, to clearly indicate that the global Name_Buffer
+	is being used. The previous code used Is_Internal_Name, which
+	returns a Boolean, but also has a side effect of setting the
+	Name_Buffer. Then it called the other Is_Internal_Name, which uses
+	the Name_Buffer for its input. And then it called Error_Msg_N,
+	again using the Name_Buffer. We haven't eliminated the global
+	usage here, but we've made it a bit clearer.
+	This also allows us to have a side-effect-free version of
+	Is_Internal_Name.
+	* namet.ads, namet.adb: Provide a type Bounded_String, along with
+	routines that can be used without using global variables. Provide
+	Global_Name_Buffer so existing code can continue to use the
+	global. Mark the routines that use globals as obsolete.  New code
+	shouldn't call the obsolete ones, and we should clean up existing
+	code from time to time.
+	Name_Find_Str is renamed as Name_Find.
+	* namet.h: Changed as necessary to interface to the new version
+	of Namet.
+	* bindgen.adb, exp_unst.adb: Name_Find_Str is renamed as
+	Name_Find.
+
 2016-04-18  Yannick Moy  <moy@adacore.com>
 
 	* sem_util.adb, sem_util.ads (Has_Full_Default_Initialization): used

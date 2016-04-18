@@ -161,7 +161,7 @@ package body Exp_Unst is
 
       function AREC_Name (J : Pos; S : String) return Name_Id is
       begin
-         return Name_Find_Str ("AREC" & Img_Pos (J) & S);
+         return Name_Find ("AREC" & Img_Pos (J) & S);
       end AREC_Name;
 
       --------------------
@@ -244,7 +244,7 @@ package body Exp_Unst is
             if No (C) then
                return Chars (Ent);
             elsif Chars (Defining_Identifier (C)) = Chars (Ent) then
-               return Name_Find_Str
+               return Name_Find
                         (Get_Name_String (Chars (Ent)) & Img_Pos (Index));
             else
                Next (C);

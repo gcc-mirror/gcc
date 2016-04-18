@@ -2922,7 +2922,7 @@ package body Bindgen is
          Osint.Fail ("bind environment value """ & Value & """ too long");
       end if;
 
-      Bind_Environment.Set (Name_Find_Str (Key), Name_Find_Str (Value));
+      Bind_Environment.Set (Name_Find (Key), Name_Find (Value));
    end Set_Bind_Env;
 
    -----------------

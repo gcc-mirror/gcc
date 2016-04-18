@@ -73,16 +73,14 @@ package body Namet is
    -- Local Subprograms --
    -----------------------
 
-   function Hash return Hash_Index_Type;
+   function Hash (Buf : Bounded_String) return Hash_Index_Type;
    pragma Inline (Hash);
-   --  Compute hash code for name stored in Name_Buffer (length in Name_Len)
+   --  Compute hash code for name stored in Buf
 
-   procedure Strip_Qualification_And_Suffixes;
-   --  Given an encoded entity name in Name_Buffer, remove package body
+   procedure Strip_Qualification_And_Suffixes (Buf : in out Bounded_String);
+   --  Given an encoded entity name in Buf, remove package body
    --  suffix as described for Strip_Package_Body_Suffix, and also remove
-   --  all qualification, i.e. names followed by two underscores. The
-   --  contents of Name_Buffer is modified by this call, and on return
-   --  Name_Buffer and Name_Len reflect the stripped name.
+   --  all qualification, i.e. names followed by two underscores.
 
    -----------------------------
    -- Add_Char_To_Name_Buffer --
@@ -90,10 +88,7 @@ package body Namet is
 
    procedure Add_Char_To_Name_Buffer (C : Character) is
    begin
-      if Name_Len < Name_Buffer'Last then
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := C;
-      end if;
+      Append (Global_Name_Buffer, C);
    end Add_Char_To_Name_Buffer;
 
    ----------------------------
@@ -102,11 +97,7 @@ package body Namet is
 
    procedure Add_Nat_To_Name_Buffer (V : Nat) is
    begin
-      if V >= 10 then
-         Add_Nat_To_Name_Buffer (V / 10);
-      end if;
-
-      Add_Char_To_Name_Buffer (Character'Val (Character'Pos ('0') + V rem 10));
+      Append (Global_Name_Buffer, V);
    end Add_Nat_To_Name_Buffer;
 
    ----------------------------
@@ -115,10 +106,477 @@ package body Namet is
 
    procedure Add_Str_To_Name_Buffer (S : String) is
    begin
-      for J in S'Range loop
-         Add_Char_To_Name_Buffer (S (J));
-      end loop;
+      Append (Global_Name_Buffer, S);
    end Add_Str_To_Name_Buffer;
+
+   ------------
+   -- Append --
+   ------------
+
+   procedure Append (Buf : in out Bounded_String; C : Character) is
+   begin
+      if Buf.Length < Buf.Chars'Last then
+         Buf.Length := Buf.Length + 1;
+         Buf.Chars (Buf.Length) := C;
+      end if;
+   end Append;
+
+   procedure Append (Buf : in out Bounded_String; V : Nat) is
+   begin
+      if V >= 10 then
+         Append (Buf, V / 10);
+      end if;
+
+      Append (Buf, Character'Val (Character'Pos ('0') + V rem 10));
+   end Append;
+
+   procedure Append (Buf : in out Bounded_String; S : String) is
+   begin
+      for J in S'Range loop
+         Append (Buf, S (J));
+      end loop;
+   end Append;
+
+   procedure Append (Buf : in out Bounded_String; Id : Name_Id) is
+      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
+      S : constant Int := Name_Entries.Table (Id).Name_Chars_Index;
+   begin
+      for J in 1 .. Natural (Name_Entries.Table (Id).Name_Len) loop
+         Append (Buf, Name_Chars.Table (S + Int (J)));
+      end loop;
+   end Append;
+
+   --------------------
+   -- Append_Decoded --
+   --------------------
+
+   procedure Append_Decoded (Buf : in out Bounded_String; Id : Name_Id) is
+      C : Character;
+      P : Natural;
+
+   begin
+      Append (Buf, Id);
+
+      --  Skip scan if we already know there are no encodings
+
+      if Name_Entries.Table (Id).Name_Has_No_Encodings then
+         return;
+      end if;
+
+      --  Quick loop to see if there is anything special to do
+
+      P := 1;
+      loop
+         if P = Buf.Length then
+            Name_Entries.Table (Id).Name_Has_No_Encodings := True;
+            return;
+
+         else
+            C := Buf.Chars (P);
+
+            exit when
+              C = 'U' or else
+              C = 'W' or else
+              C = 'Q' or else
+              C = 'O';
+
+            P := P + 1;
+         end if;
+      end loop;
+
+      --  Here we have at least some encoding that we must decode
+
+      Decode : declare
+         New_Len : Natural;
+         Old     : Positive;
+         New_Buf : String (1 .. Buf.Chars'Last);
+
+         procedure Copy_One_Character;
+         --  Copy a character from Buf.Chars to New_Buf. Includes case
+         --  of copying a Uhh,Whhhh,WWhhhhhhhh sequence and decoding it.
+
+         function Hex (N : Natural) return Word;
+         --  Scans past N digits using Old pointer and returns hex value
+
+         procedure Insert_Character (C : Character);
+         --  Insert a new character into output decoded name
+
+         ------------------------
+         -- Copy_One_Character --
+         ------------------------
+
+         procedure Copy_One_Character is
+            C : Character;
+
+         begin
+            C := Buf.Chars (Old);
+
+            --  U (upper half insertion case)
+
+            if C = 'U'
+              and then Old < Buf.Length
+              and then Buf.Chars (Old + 1) not in 'A' .. 'Z'
+              and then Buf.Chars (Old + 1) /= '_'
+            then
+               Old := Old + 1;
+
+               --  If we have upper half encoding, then we have to set an
+               --  appropriate wide character sequence for this character.
+
+               if Upper_Half_Encoding then
+                  Widechar.Set_Wide (Char_Code (Hex (2)), New_Buf, New_Len);
+
+                  --  For other encoding methods, upper half characters can
+                  --  simply use their normal representation.
+
+               else
+                  Insert_Character (Character'Val (Hex (2)));
+               end if;
+
+            --  WW (wide wide character insertion)
+
+            elsif C = 'W'
+              and then Old < Buf.Length
+              and then Buf.Chars (Old + 1) = 'W'
+            then
+               Old := Old + 2;
+               Widechar.Set_Wide (Char_Code (Hex (8)), New_Buf, New_Len);
+
+            --  W (wide character insertion)
+
+            elsif C = 'W'
+              and then Old < Buf.Length
+              and then Buf.Chars (Old + 1) not in 'A' .. 'Z'
+              and then Buf.Chars (Old + 1) /= '_'
+            then
+               Old := Old + 1;
+               Widechar.Set_Wide (Char_Code (Hex (4)), New_Buf, New_Len);
+
+            --  Any other character is copied unchanged
+
+            else
+               Insert_Character (C);
+               Old := Old + 1;
+            end if;
+         end Copy_One_Character;
+
+         ---------
+         -- Hex --
+         ---------
+
+         function Hex (N : Natural) return Word is
+            T : Word := 0;
+            C : Character;
+
+         begin
+            for J in 1 .. N loop
+               C := Buf.Chars (Old);
+               Old := Old + 1;
+
+               pragma Assert (C in '0' .. '9' or else C in 'a' .. 'f');
+
+               if C <= '9' then
+                  T := 16 * T + Character'Pos (C) - Character'Pos ('0');
+               else -- C in 'a' .. 'f'
+                  T := 16 * T + Character'Pos (C) - (Character'Pos ('a') - 10);
+               end if;
+            end loop;
+
+            return T;
+         end Hex;
+
+         ----------------------
+         -- Insert_Character --
+         ----------------------
+
+         procedure Insert_Character (C : Character) is
+         begin
+            New_Len := New_Len + 1;
+            New_Buf (New_Len) := C;
+         end Insert_Character;
+
+      --  Start of processing for Decode
+
+      begin
+         New_Len := 0;
+         Old := 1;
+
+         --  Loop through characters of name
+
+         while Old <= Buf.Length loop
+
+            --  Case of character literal, put apostrophes around character
+
+            if Buf.Chars (Old) = 'Q'
+              and then Old < Buf.Length
+            then
+               Old := Old + 1;
+               Insert_Character (''');
+               Copy_One_Character;
+               Insert_Character (''');
+
+            --  Case of operator name
+
+            elsif Buf.Chars (Old) = 'O'
+              and then Old < Buf.Length
+              and then Buf.Chars (Old + 1) not in 'A' .. 'Z'
+              and then Buf.Chars (Old + 1) /= '_'
+            then
+               Old := Old + 1;
+
+               declare
+                  --  This table maps the 2nd and 3rd characters of the name
+                  --  into the required output. Two blanks means leave the
+                  --  name alone
+
+                  Map : constant String :=
+                     "ab  " &               --  Oabs         => "abs"
+                     "ad+ " &               --  Oadd         => "+"
+                     "an  " &               --  Oand         => "and"
+                     "co& " &               --  Oconcat      => "&"
+                     "di/ " &               --  Odivide      => "/"
+                     "eq= " &               --  Oeq          => "="
+                     "ex**" &               --  Oexpon       => "**"
+                     "gt> " &               --  Ogt          => ">"
+                     "ge>=" &               --  Oge          => ">="
+                     "le<=" &               --  Ole          => "<="
+                     "lt< " &               --  Olt          => "<"
+                     "mo  " &               --  Omod         => "mod"
+                     "mu* " &               --  Omutliply    => "*"
+                     "ne/=" &               --  One          => "/="
+                     "no  " &               --  Onot         => "not"
+                     "or  " &               --  Oor          => "or"
+                     "re  " &               --  Orem         => "rem"
+                     "su- " &               --  Osubtract    => "-"
+                     "xo  ";                --  Oxor         => "xor"
+
+                  J : Integer;
+
+               begin
+                  Insert_Character ('"');
+
+                  --  Search the map. Note that this loop must terminate, if
+                  --  not we have some kind of internal error, and a constraint
+                  --  error may be raised.
+
+                  J := Map'First;
+                  loop
+                     exit when Buf.Chars (Old) = Map (J)
+                       and then Buf.Chars (Old + 1) = Map (J + 1);
+                     J := J + 4;
+                  end loop;
+
+                  --  Special operator name
+
+                  if Map (J + 2) /= ' ' then
+                     Insert_Character (Map (J + 2));
+
+                     if Map (J + 3) /= ' ' then
+                        Insert_Character (Map (J + 3));
+                     end if;
+
+                     Insert_Character ('"');
+
+                     --  Skip past original operator name in input
+
+                     while Old <= Buf.Length
+                       and then Buf.Chars (Old) in 'a' .. 'z'
+                     loop
+                        Old := Old + 1;
+                     end loop;
+
+                  --  For other operator names, leave them in lower case,
+                  --  surrounded by apostrophes
+
+                  else
+                     --  Copy original operator name from input to output
+
+                     while Old <= Buf.Length
+                        and then Buf.Chars (Old) in 'a' .. 'z'
+                     loop
+                        Copy_One_Character;
+                     end loop;
+
+                     Insert_Character ('"');
+                  end if;
+               end;
+
+            --  Else copy one character and keep going
+
+            else
+               Copy_One_Character;
+            end if;
+         end loop;
+
+         --  Copy new buffer as result
+
+         Buf.Length := New_Len;
+         Buf.Chars (1 .. New_Len) := New_Buf (1 .. New_Len);
+      end Decode;
+   end Append_Decoded;
+
+   ----------------------------------
+   -- Append_Decoded_With_Brackets --
+   ----------------------------------
+
+   procedure Append_Decoded_With_Brackets
+     (Buf : in out Bounded_String; Id : Name_Id) is
+      P : Natural;
+
+   begin
+      --  Case of operator name, normal decoding is fine
+
+      if Buf.Chars (1) = 'O' then
+         Append_Decoded (Buf, Id);
+
+      --  For character literals, normal decoding is fine
+
+      elsif Buf.Chars (1) = 'Q' then
+         Append_Decoded (Buf, Id);
+
+      --  Only remaining issue is U/W/WW sequences
+
+      else
+         Append (Buf, Id);
+
+         P := 1;
+         while P < Buf.Length loop
+            if Buf.Chars (P + 1) in 'A' .. 'Z' then
+               P := P + 1;
+
+            --  Uhh encoding
+
+            elsif Buf.Chars (P) = 'U' then
+               for J in reverse P + 3 .. P + Buf.Length loop
+                  Buf.Chars (J + 3) := Buf.Chars (J);
+               end loop;
+
+               Buf.Length := Buf.Length + 3;
+               Buf.Chars (P + 3) := Buf.Chars (P + 2);
+               Buf.Chars (P + 2) := Buf.Chars (P + 1);
+               Buf.Chars (P)     := '[';
+               Buf.Chars (P + 1) := '"';
+               Buf.Chars (P + 4) := '"';
+               Buf.Chars (P + 5) := ']';
+               P := P + 6;
+
+            --  WWhhhhhhhh encoding
+
+            elsif Buf.Chars (P) = 'W'
+              and then P + 9 <= Buf.Length
+              and then Buf.Chars (P + 1) = 'W'
+              and then Buf.Chars (P + 2) not in 'A' .. 'Z'
+              and then Buf.Chars (P + 2) /= '_'
+            then
+               Buf.Chars (P + 12 .. Buf.Length + 2) :=
+                 Buf.Chars (P + 10 .. Buf.Length);
+               Buf.Chars (P)     := '[';
+               Buf.Chars (P + 1) := '"';
+               Buf.Chars (P + 10) := '"';
+               Buf.Chars (P + 11) := ']';
+               Buf.Length := Buf.Length + 2;
+               P := P + 12;
+
+            --  Whhhh encoding
+
+            elsif Buf.Chars (P) = 'W'
+              and then P < Buf.Length
+              and then Buf.Chars (P + 1) not in 'A' .. 'Z'
+              and then Buf.Chars (P + 1) /= '_'
+            then
+               Buf.Chars (P + 8 .. P + Buf.Length + 3) :=
+                 Buf.Chars (P + 5 .. Buf.Length);
+               Buf.Chars (P + 2 .. P + 5) := Buf.Chars (P + 1 .. P + 4);
+               Buf.Chars (P)     := '[';
+               Buf.Chars (P + 1) := '"';
+               Buf.Chars (P + 6) := '"';
+               Buf.Chars (P + 7) := ']';
+               Buf.Length := Buf.Length + 3;
+               P := P + 8;
+
+            else
+               P := P + 1;
+            end if;
+         end loop;
+      end if;
+   end Append_Decoded_With_Brackets;
+
+   --------------------
+   -- Append_Encoded --
+   --------------------
+
+   procedure Append_Encoded (Buf : in out Bounded_String; C : Char_Code) is
+      procedure Set_Hex_Chars (C : Char_Code);
+      --  Stores given value, which is in the range 0 .. 255, as two hex
+      --  digits (using lower case a-f) in Buf.Chars, incrementing Buf.Length.
+
+      -------------------
+      -- Set_Hex_Chars --
+      -------------------
+
+      procedure Set_Hex_Chars (C : Char_Code) is
+         Hexd : constant String := "0123456789abcdef";
+         N    : constant Natural := Natural (C);
+      begin
+         Buf.Chars (Buf.Length + 1) := Hexd (N / 16 + 1);
+         Buf.Chars (Buf.Length + 2) := Hexd (N mod 16 + 1);
+         Buf.Length := Buf.Length + 2;
+      end Set_Hex_Chars;
+
+   --  Start of processing for Append_Encoded
+
+   begin
+      Buf.Length := Buf.Length + 1;
+
+      if In_Character_Range (C) then
+         declare
+            CC : constant Character := Get_Character (C);
+         begin
+            if CC in 'a' .. 'z' or else CC in '0' .. '9' then
+               Buf.Chars (Buf.Length) := CC;
+            else
+               Buf.Chars (Buf.Length) := 'U';
+               Set_Hex_Chars (C);
+            end if;
+         end;
+
+      elsif In_Wide_Character_Range (C) then
+         Buf.Chars (Buf.Length) := 'W';
+         Set_Hex_Chars (C / 256);
+         Set_Hex_Chars (C mod 256);
+
+      else
+         Buf.Chars (Buf.Length) := 'W';
+         Buf.Length := Buf.Length + 1;
+         Buf.Chars (Buf.Length) := 'W';
+         Set_Hex_Chars (C / 2 ** 24);
+         Set_Hex_Chars ((C / 2 ** 16) mod 256);
+         Set_Hex_Chars ((C / 256) mod 256);
+         Set_Hex_Chars (C mod 256);
+      end if;
+   end Append_Encoded;
+
+   ------------------------
+   -- Append_Unqualified --
+   ------------------------
+
+   procedure Append_Unqualified
+     (Buf : in out Bounded_String; Id : Name_Id) is
+   begin
+      Append (Buf, Id);
+      Strip_Qualification_And_Suffixes (Buf);
+   end Append_Unqualified;
+
+   --------------------------------
+   -- Append_Unqualified_Decoded --
+   --------------------------------
+
+   procedure Append_Unqualified_Decoded
+     (Buf : in out Bounded_String; Id : Name_Id) is
+   begin
+      Append_Decoded (Buf, Id);
+      Strip_Qualification_And_Suffixes (Buf);
+   end Append_Unqualified_Decoded;
 
    --------------
    -- Finalize --
@@ -275,268 +733,9 @@ package body Namet is
    -----------------------------
 
    procedure Get_Decoded_Name_String (Id : Name_Id) is
-      C : Character;
-      P : Natural;
-
    begin
-      Get_Name_String (Id);
-
-      --  Skip scan if we already know there are no encodings
-
-      if Name_Entries.Table (Id).Name_Has_No_Encodings then
-         return;
-      end if;
-
-      --  Quick loop to see if there is anything special to do
-
-      P := 1;
-      loop
-         if P = Name_Len then
-            Name_Entries.Table (Id).Name_Has_No_Encodings := True;
-            return;
-
-         else
-            C := Name_Buffer (P);
-
-            exit when
-              C = 'U' or else
-              C = 'W' or else
-              C = 'Q' or else
-              C = 'O';
-
-            P := P + 1;
-         end if;
-      end loop;
-
-      --  Here we have at least some encoding that we must decode
-
-      Decode : declare
-         New_Len : Natural;
-         Old     : Positive;
-         New_Buf : String (1 .. Name_Buffer'Last);
-
-         procedure Copy_One_Character;
-         --  Copy a character from Name_Buffer to New_Buf. Includes case
-         --  of copying a Uhh,Whhhh,WWhhhhhhhh sequence and decoding it.
-
-         function Hex (N : Natural) return Word;
-         --  Scans past N digits using Old pointer and returns hex value
-
-         procedure Insert_Character (C : Character);
-         --  Insert a new character into output decoded name
-
-         ------------------------
-         -- Copy_One_Character --
-         ------------------------
-
-         procedure Copy_One_Character is
-            C : Character;
-
-         begin
-            C := Name_Buffer (Old);
-
-            --  U (upper half insertion case)
-
-            if C = 'U'
-              and then Old < Name_Len
-              and then Name_Buffer (Old + 1) not in 'A' .. 'Z'
-              and then Name_Buffer (Old + 1) /= '_'
-            then
-               Old := Old + 1;
-
-               --  If we have upper half encoding, then we have to set an
-               --  appropriate wide character sequence for this character.
-
-               if Upper_Half_Encoding then
-                  Widechar.Set_Wide (Char_Code (Hex (2)), New_Buf, New_Len);
-
-                  --  For other encoding methods, upper half characters can
-                  --  simply use their normal representation.
-
-               else
-                  Insert_Character (Character'Val (Hex (2)));
-               end if;
-
-            --  WW (wide wide character insertion)
-
-            elsif C = 'W'
-              and then Old < Name_Len
-              and then Name_Buffer (Old + 1) = 'W'
-            then
-               Old := Old + 2;
-               Widechar.Set_Wide (Char_Code (Hex (8)), New_Buf, New_Len);
-
-            --  W (wide character insertion)
-
-            elsif C = 'W'
-              and then Old < Name_Len
-              and then Name_Buffer (Old + 1) not in 'A' .. 'Z'
-              and then Name_Buffer (Old + 1) /= '_'
-            then
-               Old := Old + 1;
-               Widechar.Set_Wide (Char_Code (Hex (4)), New_Buf, New_Len);
-
-            --  Any other character is copied unchanged
-
-            else
-               Insert_Character (C);
-               Old := Old + 1;
-            end if;
-         end Copy_One_Character;
-
-         ---------
-         -- Hex --
-         ---------
-
-         function Hex (N : Natural) return Word is
-            T : Word := 0;
-            C : Character;
-
-         begin
-            for J in 1 .. N loop
-               C := Name_Buffer (Old);
-               Old := Old + 1;
-
-               pragma Assert (C in '0' .. '9' or else C in 'a' .. 'f');
-
-               if C <= '9' then
-                  T := 16 * T + Character'Pos (C) - Character'Pos ('0');
-               else -- C in 'a' .. 'f'
-                  T := 16 * T + Character'Pos (C) - (Character'Pos ('a') - 10);
-               end if;
-            end loop;
-
-            return T;
-         end Hex;
-
-         ----------------------
-         -- Insert_Character --
-         ----------------------
-
-         procedure Insert_Character (C : Character) is
-         begin
-            New_Len := New_Len + 1;
-            New_Buf (New_Len) := C;
-         end Insert_Character;
-
-      --  Start of processing for Decode
-
-      begin
-         New_Len := 0;
-         Old := 1;
-
-         --  Loop through characters of name
-
-         while Old <= Name_Len loop
-
-            --  Case of character literal, put apostrophes around character
-
-            if Name_Buffer (Old) = 'Q'
-              and then Old < Name_Len
-            then
-               Old := Old + 1;
-               Insert_Character (''');
-               Copy_One_Character;
-               Insert_Character (''');
-
-            --  Case of operator name
-
-            elsif Name_Buffer (Old) = 'O'
-              and then Old < Name_Len
-              and then Name_Buffer (Old + 1) not in 'A' .. 'Z'
-              and then Name_Buffer (Old + 1) /= '_'
-            then
-               Old := Old + 1;
-
-               declare
-                  --  This table maps the 2nd and 3rd characters of the name
-                  --  into the required output. Two blanks means leave the
-                  --  name alone
-
-                  Map : constant String :=
-                     "ab  " &               --  Oabs         => "abs"
-                     "ad+ " &               --  Oadd         => "+"
-                     "an  " &               --  Oand         => "and"
-                     "co& " &               --  Oconcat      => "&"
-                     "di/ " &               --  Odivide      => "/"
-                     "eq= " &               --  Oeq          => "="
-                     "ex**" &               --  Oexpon       => "**"
-                     "gt> " &               --  Ogt          => ">"
-                     "ge>=" &               --  Oge          => ">="
-                     "le<=" &               --  Ole          => "<="
-                     "lt< " &               --  Olt          => "<"
-                     "mo  " &               --  Omod         => "mod"
-                     "mu* " &               --  Omutliply    => "*"
-                     "ne/=" &               --  One          => "/="
-                     "no  " &               --  Onot         => "not"
-                     "or  " &               --  Oor          => "or"
-                     "re  " &               --  Orem         => "rem"
-                     "su- " &               --  Osubtract    => "-"
-                     "xo  ";                --  Oxor         => "xor"
-
-                  J : Integer;
-
-               begin
-                  Insert_Character ('"');
-
-                  --  Search the map. Note that this loop must terminate, if
-                  --  not we have some kind of internal error, and a constraint
-                  --  error may be raised.
-
-                  J := Map'First;
-                  loop
-                     exit when Name_Buffer (Old) = Map (J)
-                       and then Name_Buffer (Old + 1) = Map (J + 1);
-                     J := J + 4;
-                  end loop;
-
-                  --  Special operator name
-
-                  if Map (J + 2) /= ' ' then
-                     Insert_Character (Map (J + 2));
-
-                     if Map (J + 3) /= ' ' then
-                        Insert_Character (Map (J + 3));
-                     end if;
-
-                     Insert_Character ('"');
-
-                     --  Skip past original operator name in input
-
-                     while Old <= Name_Len
-                       and then Name_Buffer (Old) in 'a' .. 'z'
-                     loop
-                        Old := Old + 1;
-                     end loop;
-
-                  --  For other operator names, leave them in lower case,
-                  --  surrounded by apostrophes
-
-                  else
-                     --  Copy original operator name from input to output
-
-                     while Old <= Name_Len
-                        and then Name_Buffer (Old) in 'a' .. 'z'
-                     loop
-                        Copy_One_Character;
-                     end loop;
-
-                     Insert_Character ('"');
-                  end if;
-               end;
-
-            --  Else copy one character and keep going
-
-            else
-               Copy_One_Character;
-            end if;
-         end loop;
-
-         --  Copy new buffer as result
-
-         Name_Len := New_Len;
-         Name_Buffer (1 .. New_Len) := New_Buf (1 .. New_Len);
-      end Decode;
+      Global_Name_Buffer.Length := 0;
+      Append_Decoded (Global_Name_Buffer, Id);
    end Get_Decoded_Name_String;
 
    -------------------------------------------
@@ -544,84 +743,9 @@ package body Namet is
    -------------------------------------------
 
    procedure Get_Decoded_Name_String_With_Brackets (Id : Name_Id) is
-      P : Natural;
-
    begin
-      --  Case of operator name, normal decoding is fine
-
-      if Name_Buffer (1) = 'O' then
-         Get_Decoded_Name_String (Id);
-
-      --  For character literals, normal decoding is fine
-
-      elsif Name_Buffer (1) = 'Q' then
-         Get_Decoded_Name_String (Id);
-
-      --  Only remaining issue is U/W/WW sequences
-
-      else
-         Get_Name_String (Id);
-
-         P := 1;
-         while P < Name_Len loop
-            if Name_Buffer (P + 1) in 'A' .. 'Z' then
-               P := P + 1;
-
-            --  Uhh encoding
-
-            elsif Name_Buffer (P) = 'U' then
-               for J in reverse P + 3 .. P + Name_Len loop
-                  Name_Buffer (J + 3) := Name_Buffer (J);
-               end loop;
-
-               Name_Len := Name_Len + 3;
-               Name_Buffer (P + 3) := Name_Buffer (P + 2);
-               Name_Buffer (P + 2) := Name_Buffer (P + 1);
-               Name_Buffer (P)     := '[';
-               Name_Buffer (P + 1) := '"';
-               Name_Buffer (P + 4) := '"';
-               Name_Buffer (P + 5) := ']';
-               P := P + 6;
-
-            --  WWhhhhhhhh encoding
-
-            elsif Name_Buffer (P) = 'W'
-              and then P + 9 <= Name_Len
-              and then Name_Buffer (P + 1) = 'W'
-              and then Name_Buffer (P + 2) not in 'A' .. 'Z'
-              and then Name_Buffer (P + 2) /= '_'
-            then
-               Name_Buffer (P + 12 .. Name_Len + 2) :=
-                 Name_Buffer (P + 10 .. Name_Len);
-               Name_Buffer (P)     := '[';
-               Name_Buffer (P + 1) := '"';
-               Name_Buffer (P + 10) := '"';
-               Name_Buffer (P + 11) := ']';
-               Name_Len := Name_Len + 2;
-               P := P + 12;
-
-            --  Whhhh encoding
-
-            elsif Name_Buffer (P) = 'W'
-              and then P < Name_Len
-              and then Name_Buffer (P + 1) not in 'A' .. 'Z'
-              and then Name_Buffer (P + 1) /= '_'
-            then
-               Name_Buffer (P + 8 .. P + Name_Len + 3) :=
-                 Name_Buffer (P + 5 .. Name_Len);
-               Name_Buffer (P + 2 .. P + 5) := Name_Buffer (P + 1 .. P + 4);
-               Name_Buffer (P)     := '[';
-               Name_Buffer (P + 1) := '"';
-               Name_Buffer (P + 6) := '"';
-               Name_Buffer (P + 7) := ']';
-               Name_Len := Name_Len + 3;
-               P := P + 8;
-
-            else
-               P := P + 1;
-            end if;
-         end loop;
-      end if;
+      Global_Name_Buffer.Length := 0;
+      Append_Decoded_With_Brackets (Global_Name_Buffer, Id);
    end Get_Decoded_Name_String_With_Brackets;
 
    ------------------------
@@ -650,45 +774,17 @@ package body Namet is
    -- Get_Name_String --
    ---------------------
 
-   --  Procedure version leaving result in Name_Buffer, length in Name_Len
-
    procedure Get_Name_String (Id : Name_Id) is
-      S : Int;
-
    begin
-      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
-
-      S := Name_Entries.Table (Id).Name_Chars_Index;
-      Name_Len := Natural (Name_Entries.Table (Id).Name_Len);
-
-      for J in 1 .. Name_Len loop
-         Name_Buffer (J) := Name_Chars.Table (S + Int (J));
-      end loop;
+      Global_Name_Buffer.Length := 0;
+      Append (Global_Name_Buffer, Id);
    end Get_Name_String;
 
-   ---------------------
-   -- Get_Name_String --
-   ---------------------
-
-   --  Function version returning a string
-
    function Get_Name_String (Id : Name_Id) return String is
-      S : Int;
-
+      Buf : Bounded_String;
    begin
-      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
-      S := Name_Entries.Table (Id).Name_Chars_Index;
-
-      declare
-         R : String (1 .. Natural (Name_Entries.Table (Id).Name_Len));
-
-      begin
-         for J in R'Range loop
-            R (J) := Name_Chars.Table (S + Int (J));
-         end loop;
-
-         return R;
-      end;
+      Append (Buf, Id);
+      return +Buf;
    end Get_Name_String;
 
    --------------------------------
@@ -696,17 +792,8 @@ package body Namet is
    --------------------------------
 
    procedure Get_Name_String_And_Append (Id : Name_Id) is
-      S : Int;
-
    begin
-      pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
-
-      S := Name_Entries.Table (Id).Name_Chars_Index;
-
-      for J in 1 .. Natural (Name_Entries.Table (Id).Name_Len) loop
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := Name_Chars.Table (S + Int (J));
-      end loop;
+      Append (Global_Name_Buffer, Id);
    end Get_Name_String_And_Append;
 
    -----------------------------
@@ -765,8 +852,8 @@ package body Namet is
 
    procedure Get_Unqualified_Decoded_Name_String (Id : Name_Id) is
    begin
-      Get_Decoded_Name_String (Id);
-      Strip_Qualification_And_Suffixes;
+      Global_Name_Buffer.Length := 0;
+      Append_Unqualified_Decoded (Global_Name_Buffer, Id);
    end Get_Unqualified_Decoded_Name_String;
 
    ---------------------------------
@@ -775,15 +862,15 @@ package body Namet is
 
    procedure Get_Unqualified_Name_String (Id : Name_Id) is
    begin
-      Get_Name_String (Id);
-      Strip_Qualification_And_Suffixes;
+      Global_Name_Buffer.Length := 0;
+      Append_Unqualified (Global_Name_Buffer, Id);
    end Get_Unqualified_Name_String;
 
    ----------
    -- Hash --
    ----------
 
-   function Hash return Hash_Index_Type is
+   function Hash (Buf : Bounded_String) return Hash_Index_Type is
 
       --  This hash function looks at every character, in order to make it
       --  likely that similar strings get different hash values. The rotate by
@@ -800,8 +887,8 @@ package body Namet is
       Result : Unsigned_16 := 0;
 
    begin
-      for J in 1 .. Name_Len loop
-         Result := Rotate_Left (Result, 7) xor Character'Pos (Name_Buffer (J));
+      for J in 1 .. Buf.Length loop
+         Result := Rotate_Left (Result, 7) xor Character'Pos (Buf.Chars (J));
       end loop;
 
       return Hash_Index_Type (Result);
@@ -816,55 +903,47 @@ package body Namet is
       null;
    end Initialize;
 
+   ----------------
+   -- Insert_Str --
+   ----------------
+
+   procedure Insert_Str
+     (Buf : in out Bounded_String; S : String; Index : Positive) is
+      SL : constant Natural := S'Length;
+   begin
+      Buf.Chars (Index + SL .. Buf.Length + SL) :=
+        Buf.Chars (Index .. Buf.Length);
+      Buf.Chars (Index .. Index + SL - 1) := S;
+      Buf.Length := Buf.Length + SL;
+   end Insert_Str;
+
    -------------------------------
    -- Insert_Str_In_Name_Buffer --
    -------------------------------
 
    procedure Insert_Str_In_Name_Buffer (S : String; Index : Positive) is
-      SL : constant Natural := S'Length;
    begin
-      Name_Buffer (Index + SL .. Name_Len + SL) :=
-        Name_Buffer (Index .. Name_Len);
-      Name_Buffer (Index .. Index + SL - 1) := S;
-      Name_Len := Name_Len + SL;
+      Insert_Str (Global_Name_Buffer, S, Index);
    end Insert_Str_In_Name_Buffer;
 
    ----------------------
    -- Is_Internal_Name --
    ----------------------
 
-   --  Version taking an argument
-
-   function Is_Internal_Name (Id : Name_Id) return Boolean is
-   begin
-      if Id in Error_Name_Or_No_Name then
-         return False;
-      else
-         Get_Name_String (Id);
-         return Is_Internal_Name;
-      end if;
-   end Is_Internal_Name;
-
-   ----------------------
-   -- Is_Internal_Name --
-   ----------------------
-
-   --  Version taking its input from Name_Buffer
-
-   function Is_Internal_Name return Boolean is
+   function Is_Internal_Name (Buf : Bounded_String) return Boolean is
       J : Natural;
 
    begin
-      --  AAny name starting with underscore is internal
+      --  Any name starting or ending with underscore is internal
 
-      if Name_Buffer (1) = '_'
-        or else Name_Buffer (Name_Len) = '_'
+      if Buf.Chars (1) = '_'
+        or else Buf.Chars (Buf.Length) = '_'
       then
          return True;
 
       --  Allow quoted character
 
-      elsif Name_Buffer (1) = ''' then
+      elsif Buf.Chars (1) = ''' then
          return False;
 
       --  All other cases, scan name
@@ -873,30 +952,30 @@ package body Namet is
          --  Test backwards, because we only want to test the last entity
          --  name if the name we have is qualified with other entities.
 
-         J := Name_Len;
+         J := Buf.Length;
          while J /= 0 loop
 
             --  Skip stuff between brackets (A-F OK there)
 
-            if Name_Buffer (J) = ']' then
+            if Buf.Chars (J) = ']' then
                loop
                   J := J - 1;
-                  exit when J = 1 or else Name_Buffer (J) = '[';
+                  exit when J = 1 or else Buf.Chars (J) = '[';
                end loop;
 
             --  Test for internal letter
 
-            elsif Is_OK_Internal_Letter (Name_Buffer (J)) then
+            elsif Is_OK_Internal_Letter (Buf.Chars (J)) then
                return True;
 
             --  Quit if we come to terminating double underscore (note that
             --  if the current character is an underscore, we know that
             --  there is a previous character present, since we already
-            --  filtered out the case of Name_Buffer (1) = '_' above.
+            --  filtered out the case of Buf.Chars (1) = '_' above.
 
-            elsif Name_Buffer (J) = '_'
-              and then Name_Buffer (J - 1) = '_'
-              and then Name_Buffer (J - 2) /= '_'
+            elsif Buf.Chars (J) = '_'
+              and then Buf.Chars (J - 1) = '_'
+              and then Buf.Chars (J - 2) /= '_'
             then
                return False;
             end if;
@@ -906,6 +985,22 @@ package body Namet is
       end if;
 
       return False;
+   end Is_Internal_Name;
+
+   function Is_Internal_Name (Id : Name_Id) return Boolean is
+      Buf : Bounded_String;
+   begin
+      if Id in Error_Name_Or_No_Name then
+         return False;
+      else
+         Append (Buf, Id);
+         return Is_Internal_Name (Buf);
+      end if;
+   end Is_Internal_Name;
+
+   function Is_Internal_Name return Boolean is
+   begin
+      return Is_Internal_Name (Global_Name_Buffer);
    end Is_Internal_Name;
 
    ---------------------------
@@ -979,11 +1074,13 @@ package body Namet is
    -- Name_Enter --
    ----------------
 
-   function Name_Enter return Name_Id is
+   function Name_Enter
+     (Buf : Bounded_String := Global_Name_Buffer) return Name_Id
+   is
    begin
       Name_Entries.Append
         ((Name_Chars_Index      => Name_Chars.Last,
-          Name_Len              => Short (Name_Len),
+          Name_Len              => Short (Buf.Length),
           Byte_Info             => 0,
           Int_Info              => 0,
           Boolean1_Info         => False,
@@ -994,8 +1091,8 @@ package body Namet is
 
       --  Set corresponding string entry in the Name_Chars table
 
-      for J in 1 .. Name_Len loop
-         Name_Chars.Append (Name_Buffer (J));
+      for J in 1 .. Buf.Length loop
+         Name_Chars.Append (Buf.Chars (J));
       end loop;
 
       Name_Chars.Append (ASCII.NUL);
@@ -1025,7 +1122,9 @@ package body Namet is
    -- Name_Find --
    ---------------
 
-   function Name_Find return Name_Id is
+   function Name_Find
+     (Buf : Bounded_String := Global_Name_Buffer) return Name_Id
+   is
       New_Id : Name_Id;
       --  Id of entry in hash search, and value to be returned
 
@@ -1038,13 +1137,13 @@ package body Namet is
    begin
       --  Quick handling for one character names
 
-      if Name_Len = 1 then
-         return Name_Id (First_Name_Id + Character'Pos (Name_Buffer (1)));
+      if Buf.Length = 1 then
+         return Name_Id (First_Name_Id + Character'Pos (Buf.Chars (1)));
 
       --  Otherwise search hash table for existing matching entry
 
       else
-         Hash_Index := Namet.Hash;
+         Hash_Index := Namet.Hash (Buf);
          New_Id := Hash_Table (Hash_Index);
 
          if New_Id = No_Name then
@@ -1052,7 +1151,7 @@ package body Namet is
 
          else
             Search : loop
-               if Name_Len /=
+               if Buf.Length /=
                  Integer (Name_Entries.Table (New_Id).Name_Len)
                then
                   goto No_Match;
@@ -1060,8 +1159,8 @@ package body Namet is
 
                S := Name_Entries.Table (New_Id).Name_Chars_Index;
 
-               for J in 1 .. Name_Len loop
-                  if Name_Chars.Table (S + Int (J)) /= Name_Buffer (J) then
+               for J in 1 .. Buf.Length loop
+                  if Name_Chars.Table (S + Int (J)) /= Buf.Chars (J) then
                      goto No_Match;
                   end if;
                end loop;
@@ -1087,7 +1186,7 @@ package body Namet is
 
          Name_Entries.Append
            ((Name_Chars_Index      => Name_Chars.Last,
-             Name_Len              => Short (Name_Len),
+             Name_Len              => Short (Buf.Length),
              Hash_Link             => No_Name,
              Name_Has_No_Encodings => False,
              Int_Info              => 0,
@@ -1098,8 +1197,8 @@ package body Namet is
 
          --  Set corresponding string entry in the Name_Chars table
 
-         for J in 1 .. Name_Len loop
-            Name_Chars.Append (Name_Buffer (J));
+         for J in 1 .. Buf.Length loop
+            Name_Chars.Append (Buf.Chars (J));
          end loop;
 
          Name_Chars.Append (ASCII.NUL);
@@ -1108,16 +1207,12 @@ package body Namet is
       end if;
    end Name_Find;
 
-   -------------------
-   -- Name_Find_Str --
-   -------------------
-
-   function Name_Find_Str (S : String) return Name_Id is
+   function Name_Find (S : String) return Name_Id is
+      Buf : Bounded_String;
    begin
-      Name_Len := S'Length;
-      Name_Buffer (1 .. Name_Len) := S;
-      return Name_Find;
-   end Name_Find_Str;
+      Append (Buf, S);
+      return Name_Find (Buf);
+   end Name_Find;
 
    -------------
    -- Nam_In --
@@ -1319,29 +1414,7 @@ package body Namet is
 
    function Name_Equals (N1 : Name_Id; N2 : Name_Id) return Boolean is
    begin
-      if N1 = N2 then
-         return True;
-      end if;
-
-      declare
-         L1 : constant Int := Int (Name_Entries.Table (N1).Name_Len);
-         L2 : constant Int := Int (Name_Entries.Table (N2).Name_Len);
-
-      begin
-         if L1 /= L2 then
-            return False;
-         end if;
-
-         declare
-            use Name_Chars;
-            I1 : constant Int := Name_Entries.Table (N1).Name_Chars_Index;
-            I2 : constant Int := Name_Entries.Table (N2).Name_Chars_Index;
-
-         begin
-            return (Name_Chars.Table (1 + I1 .. I1 + L1) =
-                    Name_Chars.Table (1 + I2 .. I2 + L2));
-         end;
-      end;
+      return N1 = N2 or else Get_Name_String (N1) = Get_Name_String (N2);
    end Name_Equals;
 
    ------------------
@@ -1394,11 +1467,17 @@ package body Namet is
    -- Set_Character_Literal_Name --
    --------------------------------
 
+   procedure Set_Character_Literal_Name
+     (Buf : in out Bounded_String; C : Char_Code) is
+   begin
+      Buf.Length := 0;
+      Append (Buf, 'Q');
+      Append_Encoded (Buf, C);
+   end Set_Character_Literal_Name;
+
    procedure Set_Character_Literal_Name (C : Char_Code) is
    begin
-      Name_Buffer (1) := 'Q';
-      Name_Len := 1;
-      Store_Encoded_Character (C);
+      Set_Character_Literal_Name (Global_Name_Buffer, C);
    end Set_Character_Literal_Name;
 
    -----------------------------
@@ -1456,89 +1535,43 @@ package body Namet is
    -----------------------------
 
    procedure Store_Encoded_Character (C : Char_Code) is
-      procedure Set_Hex_Chars (C : Char_Code);
-      --  Stores given value, which is in the range 0 .. 255, as two hex
-      --  digits (using lower case a-f) in Name_Buffer, incrementing Name_Len.
-
-      -------------------
-      -- Set_Hex_Chars --
-      -------------------
-
-      procedure Set_Hex_Chars (C : Char_Code) is
-         Hexd : constant String := "0123456789abcdef";
-         N    : constant Natural := Natural (C);
-      begin
-         Name_Buffer (Name_Len + 1) := Hexd (N / 16 + 1);
-         Name_Buffer (Name_Len + 2) := Hexd (N mod 16 + 1);
-         Name_Len := Name_Len + 2;
-      end Set_Hex_Chars;
-
-   --  Start of processing for Store_Encoded_Character
-
    begin
-      Name_Len := Name_Len + 1;
-
-      if In_Character_Range (C) then
-         declare
-            CC : constant Character := Get_Character (C);
-         begin
-            if CC in 'a' .. 'z' or else CC in '0' .. '9' then
-               Name_Buffer (Name_Len) := CC;
-            else
-               Name_Buffer (Name_Len) := 'U';
-               Set_Hex_Chars (C);
-            end if;
-         end;
-
-      elsif In_Wide_Character_Range (C) then
-         Name_Buffer (Name_Len) := 'W';
-         Set_Hex_Chars (C / 256);
-         Set_Hex_Chars (C mod 256);
-
-      else
-         Name_Buffer (Name_Len) := 'W';
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := 'W';
-         Set_Hex_Chars (C / 2 ** 24);
-         Set_Hex_Chars ((C / 2 ** 16) mod 256);
-         Set_Hex_Chars ((C / 256) mod 256);
-         Set_Hex_Chars (C mod 256);
-      end if;
+      Append_Encoded (Global_Name_Buffer, C);
    end Store_Encoded_Character;
 
    --------------------------------------
    -- Strip_Qualification_And_Suffixes --
    --------------------------------------
 
-   procedure Strip_Qualification_And_Suffixes is
+   procedure Strip_Qualification_And_Suffixes (Buf : in out Bounded_String) is
       J : Integer;
 
    begin
       --  Strip package body qualification string off end
 
-      for J in reverse 2 .. Name_Len loop
-         if Name_Buffer (J) = 'X' then
-            Name_Len := J - 1;
+      for J in reverse 2 .. Buf.Length loop
+         if Buf.Chars (J) = 'X' then
+            Buf.Length := J - 1;
             exit;
          end if;
 
-         exit when Name_Buffer (J) /= 'b'
-           and then Name_Buffer (J) /= 'n'
-           and then Name_Buffer (J) /= 'p';
+         exit when Buf.Chars (J) /= 'b'
+           and then Buf.Chars (J) /= 'n'
+           and then Buf.Chars (J) /= 'p';
       end loop;
 
       --  Find rightmost __ or $ separator if one exists. First we position
       --  to start the search. If we have a character constant, position
       --  just before it, otherwise position to last character but one
 
-      if Name_Buffer (Name_Len) = ''' then
-         J := Name_Len - 2;
-         while J > 0 and then Name_Buffer (J) /= ''' loop
+      if Buf.Chars (Buf.Length) = ''' then
+         J := Buf.Length - 2;
+         while J > 0 and then Buf.Chars (J) /= ''' loop
             J := J - 1;
          end loop;
 
       else
-         J := Name_Len - 1;
+         J := Buf.Length - 1;
       end if;
 
       --  Loop to search for rightmost __ or $ (homonym) separator
@@ -1547,28 +1580,28 @@ package body Namet is
 
          --  If $ separator, homonym separator, so strip it and keep looking
 
-         if Name_Buffer (J) = '$' then
-            Name_Len := J - 1;
-            J := Name_Len - 1;
+         if Buf.Chars (J) = '$' then
+            Buf.Length := J - 1;
+            J := Buf.Length - 1;
 
          --  Else check for __ found
 
-         elsif Name_Buffer (J) = '_' and then Name_Buffer (J + 1) = '_' then
+         elsif Buf.Chars (J) = '_' and then Buf.Chars (J + 1) = '_' then
 
             --  Found __ so see if digit follows, and if so, this is a
             --  homonym separator, so strip it and keep looking.
 
-            if Name_Buffer (J + 2) in '0' .. '9' then
-               Name_Len := J - 1;
-               J := Name_Len - 1;
+            if Buf.Chars (J + 2) in '0' .. '9' then
+               Buf.Length := J - 1;
+               J := Buf.Length - 1;
 
             --  If not a homonym separator, then we simply strip the
             --  separator and everything that precedes it, and we are done
 
             else
-               Name_Buffer (1 .. Name_Len - J - 1) :=
-                 Name_Buffer (J + 2 .. Name_Len);
-               Name_Len := Name_Len - J - 1;
+               Buf.Chars (1 .. Buf.Length - J - 1) :=
+                 Buf.Chars (J + 2 .. Buf.Length);
+               Buf.Length := Buf.Length - J - 1;
                exit;
             end if;
 
@@ -1577,6 +1610,15 @@ package body Namet is
          end if;
       end loop;
    end Strip_Qualification_And_Suffixes;
+
+   ---------------
+   -- To_String --
+   ---------------
+
+   function To_String (X : Bounded_String) return String is
+   begin
+      return X.Chars (1 .. X.Length);
+   end To_String;
 
    ---------------
    -- Tree_Read --
@@ -1625,10 +1667,8 @@ package body Namet is
    --------
 
    procedure wn (Id : Name_Id) is
-      S : Int;
-
    begin
-      if not Id'Valid then
+      if Id not in Name_Entries.First .. Name_Entries.Last then
          Write_Str ("<invalid name_id>");
 
       elsif Id = No_Name then
@@ -1638,12 +1678,12 @@ package body Namet is
          Write_Str ("<Error_Name>");
 
       else
-         S := Name_Entries.Table (Id).Name_Chars_Index;
-         Name_Len := Natural (Name_Entries.Table (Id).Name_Len);
-
-         for J in 1 .. Name_Len loop
-            Write_Char (Name_Chars.Table (S + Int (J)));
-         end loop;
+         declare
+            Buf : Bounded_String;
+         begin
+            Append (Buf, Id);
+            Write_Str (Buf.Chars (1 .. Buf.Length));
+         end;
       end if;
 
       Write_Eol;
@@ -1654,10 +1694,11 @@ package body Namet is
    ----------------
 
    procedure Write_Name (Id : Name_Id) is
+      Buf : Bounded_String;
    begin
       if Id >= First_Name_Id then
-         Get_Name_String (Id);
-         Write_Str (Name_Buffer (1 .. Name_Len));
+         Append (Buf, Id);
+         Write_Str (Buf.Chars (1 .. Buf.Length));
       end if;
    end Write_Name;
 
@@ -1666,10 +1707,11 @@ package body Namet is
    ------------------------
 
    procedure Write_Name_Decoded (Id : Name_Id) is
+      Buf : Bounded_String;
    begin
       if Id >= First_Name_Id then
-         Get_Decoded_Name_String (Id);
-         Write_Str (Name_Buffer (1 .. Name_Len));
+         Append_Decoded (Buf, Id);
+         Write_Str (Buf.Chars (1 .. Buf.Length));
       end if;
    end Write_Name_Decoded;
 

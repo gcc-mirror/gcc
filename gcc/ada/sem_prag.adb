@@ -25188,9 +25188,10 @@ package body Sem_Prag is
             Enabled  : Boolean;
             Constit  : Entity_Id);
          --  Determine whether a property denoted by name Prop_Nam is present
-         --  in both the refined state and constituent Constit. Flag Enabled
-         --  should be set when the property applies to the refined state. If
-         --  this is not the case, emit an error message.
+         --  in the refined state. Emit an error if this is not the case. Flag
+         --  Enabled should be set when the property applies to the refined
+         --  state. Constit denotes the constituent (if any) which introduces
+         --  the property in the refinement.
 
          procedure Match_State;
          --  Determine whether the state being refined appears in list
@@ -25511,27 +25512,21 @@ package body Sem_Prag is
             Constit  : Entity_Id)
          is
          begin
-            Error_Msg_Name_1 := Prop_Nam;
-
-            --  The property is enabled in the related Abstract_State pragma
-            --  that defines the state (SPARK RM 7.2.8(2)).
-
-            if Enabled then
-               if No (Constit) then
-                  SPARK_Msg_NE
-                    ("external state & requires at least one constituent with "
-                     & "property %", State, State_Id);
-               end if;
-
             --  The property is missing in the declaration of the state, but
             --  a constituent is introducing it in the state refinement
             --  (SPARK RM 7.2.8(2)).
 
-            elsif Present (Constit) then
-               Error_Msg_Name_2 := Chars (Constit);
+            if not Enabled and then Present (Constit) then
+               Error_Msg_Name_1 := Prop_Nam;
+               Error_Msg_Name_2 := Chars (State_Id);
                SPARK_Msg_NE
-                 ("external state & lacks property % set by constituent %",
-                  State, State_Id);
+                 ("constituent & introduces external property % in refinement "
+                  & "of state %", State, Constit);
+
+               Error_Msg_Sloc := Sloc (State_Id);
+               SPARK_Msg_N
+                 ("\property is missing in abstract state declaration #",
+                  State);
             end if;
          end Check_External_Property;
 
@@ -25746,10 +25741,8 @@ package body Sem_Prag is
             Analyze_Constituent (Constit);
          end if;
 
-         --  The set of properties that all external constituents yield must
-         --  match that of the refined state. There are two cases to detect:
-         --  the refined state lacks a property or has an extra property
-         --  (SPARK RM 7.2.8(2)).
+         --  Verify that external constituents do not introduce new external
+         --  property in the state refinement (SPARK RM 7.2.8(2)).
 
          if Is_External_State (State_Id) then
             Check_External_Property
@@ -26050,14 +26043,20 @@ package body Sem_Prag is
             if Present (New_E) then
                Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
             end if;
-         end if;
 
-         if not Is_Abstract_Subprogram (Inher_Id)
-           and then Nkind (N) = N_Function_Call
-           and then Present (Entity (Name (N)))
-           and then Is_Abstract_Subprogram (Entity (Name (N)))
-         then
-            Error_Msg_N ("cannot call abstract subprogram", N);
+            --  Check that there are no calls left to abstract operations
+            --  if the current subprogram is not abstract.
+
+            if Nkind (Parent (N)) = N_Function_Call
+              and then N = Name (Parent (N))
+              and then not Is_Abstract_Subprogram (Subp_Id)
+              and then Is_Abstract_Subprogram (Entity (N))
+            then
+               Error_Msg_Sloc := Sloc (Current_Scope);
+               Error_Msg_NE
+                 ("cannot call abstract subprogram in inherited condition "
+                   & "for&#", N, Current_Scope);
+            end if;
 
          --  The whole expression will be reanalyzed
 
@@ -26140,12 +26139,46 @@ package body Sem_Prag is
          --  operations of the descendant. Note that the descendant type may
          --  not be frozen yet, so we cannot use the dispatch table directly.
 
-         declare
+         --  Note : the construction of the map involves a full traversal of
+         --  the list of primitive operations, as well as a scan of the
+         --  declarations in the scope of the operation. Given that class-wide
+         --  conditions are typically short expressions, it might be much more
+         --  efficient to collect the identifiers in the expression first, and
+         --  then determine the ones that have to be mapped. Optimization ???
+
+         Primitive_Mapping : declare
+            function Overridden_Ancestor (S : Entity_Id) return Entity_Id;
+            --  Given the controlling type of the overridden operation and a
+            --  primitive of the current type, find the corresponding operation
+            --  of the parent type.
+
+            -------------------------
+            -- Overridden_Ancestor --
+            -------------------------
+
+            function Overridden_Ancestor (S : Entity_Id) return Entity_Id is
+               Anc : Entity_Id;
+
+            begin
+               Anc := S;
+               while Present (Overridden_Operation (Anc)) loop
+                  exit when Scope (Anc) = Scope (Inher_Id);
+                  Anc := Overridden_Operation (Anc);
+               end loop;
+
+               return Anc;
+            end Overridden_Ancestor;
+
+            --  Local variables
+
             Old_Typ  : constant Entity_Id := Find_Dispatching_Type (Inher_Id);
             Typ      : constant Entity_Id := Find_Dispatching_Type (Subp_Id);
             Decl     : Node_Id;
+            Old_Elmt : Elmt_Id;
             Old_Prim : Entity_Id;
             Prim     : Entity_Id;
+
+         --  Start of processing for Primitive_Mapping
 
          begin
             Decl := First (List_Containing (Unit_Declaration_Node (Subp_Id)));
@@ -26163,12 +26196,7 @@ package body Sem_Prag is
                     and then Present (Overridden_Operation (Prim))
                     and then Find_Dispatching_Type (Prim) = Typ
                   then
-                     Old_Prim := Overridden_Operation (Prim);
-                     while Present (Overridden_Operation (Old_Prim))
-                       and then Scope (Old_Prim) /= Scope (Inher_Id)
-                     loop
-                        Old_Prim := Overridden_Operation (Old_Prim);
-                     end loop;
+                     Old_Prim := Overridden_Ancestor (Prim);
 
                      Append_Elmt (Old_Prim, Map);
                      Append_Elmt (Prim,     Map);
@@ -26178,6 +26206,13 @@ package body Sem_Prag is
                Next (Decl);
             end loop;
 
+            --  Now examine inherited operations. These do not override, but
+            --  have an alias, which is the entity used in a call. In turn
+            --  that alias may be inherited or comes from source, in which
+            --  case it may override an earlier operation. We only need to
+            --  examine inherited functions, that may appear within the
+            --  inherited expression.
+
             Prim := First_Entity (Scope (Subp_Id));
             while Present (Prim) loop
                if not Comes_From_Source (Prim)
@@ -26185,11 +26220,22 @@ package body Sem_Prag is
                  and then Present (Alias (Prim))
                then
                   Old_Prim := Alias (Prim);
-                  while Present (Alias (Old_Prim))
-                    and then Scope (Old_Prim) /= Scope (Inher_Id)
-                  loop
-                     Old_Prim := Alias (Old_Prim);
-                  end loop;
+
+                  if Comes_From_Source (Old_Prim) then
+                     Old_Prim := Overridden_Ancestor (Old_Prim);
+
+                  else
+                     while Present (Alias (Old_Prim))
+                       and then Scope (Old_Prim) /= Scope (Inher_Id)
+                     loop
+                        Old_Prim := Alias (Old_Prim);
+
+                        if Comes_From_Source (Old_Prim) then
+                           Old_Prim := Overridden_Ancestor (Old_Prim);
+                           exit;
+                        end if;
+                     end loop;
+                  end if;
 
                   Append_Elmt (Old_Prim, Map);
                   Append_Elmt (Prim,     Map);
@@ -26198,11 +26244,31 @@ package body Sem_Prag is
                Next_Entity (Prim);
             end loop;
 
+            --  If the parent operation is an interface operation, the
+            --  overriding indicator is not present. Instead, we get from
+            --  the interface operation the primitive of the current type
+            --  that implements it.
+
+            if Is_Interface (Old_Typ) then
+               Old_Elmt := First_Elmt (Collect_Primitive_Operations (Old_Typ));
+               while Present (Old_Elmt) loop
+                  Old_Prim := Node (Old_Elmt);
+                  Prim := Find_Primitive_Covering_Interface (Typ, Old_Prim);
+
+                  if Present (Prim) then
+                     Append_Elmt (Old_Prim, Map);
+                     Append_Elmt (Prim,     Map);
+                  end if;
+
+                  Next_Elmt (Old_Elmt);
+               end loop;
+            end if;
+
             if Map /= No_Elist then
                Append_Elmt (Old_Typ, Map);
                Append_Elmt (Typ,     Map);
             end if;
-         end;
+         end Primitive_Mapping;
       end if;
 
       --  Copy the original pragma while performing substitutions (if
