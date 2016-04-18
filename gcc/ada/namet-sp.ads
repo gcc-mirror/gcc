@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 
 --  This child package contains a spell checker for Name_Id values. It is
 --  separated off as a child package, because of the extra dependencies,
---  in particular on GNAT.UTF_32_ Spelling_Checker. There are a number of
+--  in particular on GNAT.UTF_32_Spelling_Checker. There are a number of
 --  packages that use Namet that do not need the spell checking feature,
 --  and this separation helps in dealing with older versions of GNAT.
 

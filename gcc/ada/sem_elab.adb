@@ -3287,11 +3287,11 @@ package body Sem_Elab is
       --  Determine whether to emit an error message based on the combination
       --  of flags Check_Elab_Flag and Flag.
 
-      function Is_Printable_Error_Name (Nm : Name_Id) return Boolean;
-      --  An internal function, used to determine if a name, Nm, is either
-      --  a non-internal name, or is an internal name that is printable
-      --  by the error message circuits (i.e. it has a single upper
-      --  case letter at the end).
+      function Is_Printable_Error_Name return Boolean;
+      --  An internal function, used to determine if a name, stored in the
+      --  Name_Buffer, is either a non-internal name, or is an internal name
+      --  that is printable by the error message circuits (i.e. it has a single
+      --  upper case letter at the end).
 
       ----------
       -- Emit --
@@ -3310,9 +3310,9 @@ package body Sem_Elab is
       -- Is_Printable_Error_Name --
       -----------------------------
 
-      function Is_Printable_Error_Name (Nm : Name_Id) return Boolean is
+      function Is_Printable_Error_Name return Boolean is
       begin
-         if not Is_Internal_Name (Nm) then
+         if not Is_Internal_Name then
             return True;
 
          elsif Name_Len = 1 then
@@ -3335,6 +3335,7 @@ package body Sem_Elab is
          Error_Msg_Sloc := Elab_Call.Table (J).Cloc;
 
          Ent := Elab_Call.Table (J).Ent;
+         Get_Name_String (Chars (Ent));
 
          --  Dynamic elaboration model, warnings controlled by -gnatwl
 
@@ -3344,7 +3345,7 @@ package body Sem_Elab is
                   Error_Msg_NE ("\\?l?& instantiated #", N, Ent);
                elsif Is_Init_Proc (Ent) then
                   Error_Msg_N ("\\?l?initialization procedure called #", N);
-               elsif Is_Printable_Error_Name (Chars (Ent)) then
+               elsif Is_Printable_Error_Name then
                   Error_Msg_NE ("\\?l?& called #", N, Ent);
                else
                   Error_Msg_N ("\\?l?called #", N);
@@ -3359,7 +3360,7 @@ package body Sem_Elab is
                   Error_Msg_NE ("\\?$?& instantiated #", N, Ent);
                elsif Is_Init_Proc (Ent) then
                   Error_Msg_N ("\\?$?initialization procedure called #", N);
-               elsif Is_Printable_Error_Name (Chars (Ent)) then
+               elsif Is_Printable_Error_Name then
                   Error_Msg_NE ("\\?$?& called #", N, Ent);
                else
                   Error_Msg_N ("\\?$?called #", N);
