@@ -47,7 +47,7 @@ test01()
   static_assert(is_same<tuple_element<1, volatile array_type>::type,
                 volatile int>::value, "");
   static_assert( (is_same<tuple_element<2, volatile array_type>::type,
-           volatile int>::value == true) );
+           volatile int>::value == true), "" );
 
   static_assert(is_same<tuple_element<0, const volatile array_type>::type,
                 const volatile int>::value, "");

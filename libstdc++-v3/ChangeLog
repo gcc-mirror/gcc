@@ -1,5 +1,29 @@
 2016-04-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/18_support/bad_exception/23591_thread-1.c: Add
+	-Wno-pedantic to dg-options.
+	* testsuite/20_util/align/2.cc: Use type as operand of alignof.
+	* testsuite/20_util/is_floating_point/value.cc: Add -Wno-pedantic
+	to dg-options.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/32158.cc:
+	Remove extra semi-colon.
+	* testsuite/23_containers/array/tuple_interface/tuple_element.cc:
+	Always supply second argument to static_assert.
+	* testsuite/25_algorithms/lower_bound/no_operator_ne.cc: Remove extra
+	semi-colon.
+	* testsuite/26_numerics/complex/c99.cc: Add -Wno-pedantic to
+	dg-options.
+	* testsuite/26_numerics/complex/literals/values.cc: Likewise.
+	* testsuite/29_atomics/atomic/60695.cc: Likewise.
+	* testsuite/29_atomics/atomic/62259.cc: use __alignof__ instead of
+	alignof when operand is an object not a type.
+	* testsuite/decimal/ctor.cc: Add -Wno-pedantic to dg-options.
+	* testsuite/decimal/make-decimal.cc: Likewise.
+	* testsuite/experimental/type_traits/value.cc: Always supply second
+	argument to static_assert.
+	* testsuite/util/testsuite_common_types.h: Use __extension__ for
+	__int128 types.
+
 	* testsuite/experimental/type_erased_allocator/1.cc: Don't include
 	internal header.
 	* testsuite/experimental/type_erased_allocator/1_neg.cc: Likewise.

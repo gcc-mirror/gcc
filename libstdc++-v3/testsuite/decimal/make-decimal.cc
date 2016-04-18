@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-require-effective-target dfp }
+// { dg-options "-Wno-pedantic" }
 
 // ISO/IEC TR 24733  3.2.5  Initialization from coefficient and exponent.
 
