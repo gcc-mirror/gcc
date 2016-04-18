@@ -1128,7 +1128,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @return  The converted char.
       */
       virtual char
-      do_narrow(char_type __c, char __dfault) const
+      do_narrow(char_type __c, char __dfault __attribute__((__unused__))) const
       { return __c; }
 
       /**
@@ -1155,7 +1155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       virtual const char_type*
       do_narrow(const char_type* __lo, const char_type* __hi,
-		char __dfault, char* __to) const
+		char __dfault __attribute__((__unused__)), char* __to) const
       {
 	__builtin_memcpy(__to, __lo, __hi - __lo);
 	return __hi;

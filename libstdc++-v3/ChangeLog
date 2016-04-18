@@ -1,5 +1,9 @@
 2016-04-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/locale_facets.h (ctype::do_narrow): Add attribute to
+	unused parameter.
+	* include/bits/regex_automaton.h (_NFA::_M_insert_alt): Likewise.
+
 	* include/ext/string_conversions.h (__stoa): Avoid -Wsign-compare
 	warnings.
 
