@@ -25514,7 +25514,7 @@ package body Sem_Prag is
             Error_Msg_Name_1 := Prop_Nam;
 
             --  The property is enabled in the related Abstract_State pragma
-            --  that defines the state (SPARK RM 7.2.8(3)).
+            --  that defines the state (SPARK RM 7.2.8(2)).
 
             if Enabled then
                if No (Constit) then
@@ -25525,7 +25525,7 @@ package body Sem_Prag is
 
             --  The property is missing in the declaration of the state, but
             --  a constituent is introducing it in the state refinement
-            --  (SPARK RM 7.2.8(3)).
+            --  (SPARK RM 7.2.8(2)).
 
             elsif Present (Constit) then
                Error_Msg_Name_2 := Chars (Constit);
@@ -25746,49 +25746,31 @@ package body Sem_Prag is
             Analyze_Constituent (Constit);
          end if;
 
-         --  A refined external state is subject to special rules with respect
-         --  to its properties and constituents.
+         --  The set of properties that all external constituents yield must
+         --  match that of the refined state. There are two cases to detect:
+         --  the refined state lacks a property or has an extra property
+         --  (SPARK RM 7.2.8(2)).
 
          if Is_External_State (State_Id) then
+            Check_External_Property
+              (Prop_Nam => Name_Async_Readers,
+               Enabled  => Async_Readers_Enabled (State_Id),
+               Constit  => AR_Constit);
 
-            --  The set of properties that all external constituents yield must
-            --  match that of the refined state. There are two cases to detect:
-            --  the refined state lacks a property or has an extra property.
+            Check_External_Property
+              (Prop_Nam => Name_Async_Writers,
+               Enabled  => Async_Writers_Enabled (State_Id),
+               Constit  => AW_Constit);
 
-            if External_Constit_Seen then
-               Check_External_Property
-                 (Prop_Nam => Name_Async_Readers,
-                  Enabled  => Async_Readers_Enabled (State_Id),
-                  Constit  => AR_Constit);
+            Check_External_Property
+              (Prop_Nam => Name_Effective_Reads,
+               Enabled  => Effective_Reads_Enabled (State_Id),
+               Constit  => ER_Constit);
 
-               Check_External_Property
-                 (Prop_Nam => Name_Async_Writers,
-                  Enabled  => Async_Writers_Enabled (State_Id),
-                  Constit  => AW_Constit);
-
-               Check_External_Property
-                 (Prop_Nam => Name_Effective_Reads,
-                  Enabled  => Effective_Reads_Enabled (State_Id),
-                  Constit  => ER_Constit);
-
-               Check_External_Property
-                 (Prop_Nam => Name_Effective_Writes,
-                  Enabled  => Effective_Writes_Enabled (State_Id),
-                  Constit  => EW_Constit);
-
-            --  An external state may be refined to null (SPARK RM 7.2.8(2))
-
-            elsif Null_Seen then
-               null;
-
-            --  The external state has constituents, but none of them are
-            --  external (SPARK RM 7.2.8(2)).
-
-            else
-               SPARK_Msg_NE
-                 ("external state & requires at least one external "
-                  & "constituent or null refinement", State, State_Id);
-            end if;
+            Check_External_Property
+              (Prop_Nam => Name_Effective_Writes,
+               Enabled  => Effective_Writes_Enabled (State_Id),
+               Constit  => EW_Constit);
 
          --  When a refined state is not external, it should not have external
          --  constituents (SPARK RM 7.2.8(1)).
@@ -26760,17 +26742,17 @@ package body Sem_Prag is
    ---------------------------------------------
 
    procedure Collect_Inherited_Class_Wide_Conditions (Subp : Entity_Id) is
-      Parent_Subp : constant Entity_Id := Overridden_Operation (Subp);
-      Prags       : constant Node_Id   := Contract (Parent_Subp);
+      Parent_Subp  : constant Entity_Id := Overridden_Operation (Subp);
+      Prags        : constant Node_Id   := Contract (Parent_Subp);
+      In_Spec_Expr : Boolean;
+      Installed    : Boolean;
       Prag         : Node_Id;
       New_Prag     : Node_Id;
-      Installed    : Boolean;
-      In_Spec_Expr : Boolean;
 
    begin
       Installed := False;
 
-      --  Iterate over the contract of the overridden subprogram  to find
+      --  Iterate over the contract of the overridden subprogram to find all
       --  inherited class-wide pre- and postconditions.
 
       if Present (Prags) then
