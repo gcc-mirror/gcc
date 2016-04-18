@@ -29981,8 +29981,8 @@ arm_relayout_function (tree fndecl)
   if (!callee_tree)
     callee_tree = target_option_default_node;
 
-  DECL_ALIGN (fndecl) =
-    FUNCTION_BOUNDARY_P (TREE_TARGET_OPTION (callee_tree)->x_target_flags);
+  struct cl_target_option *opts = TREE_TARGET_OPTION (callee_tree);
+  SET_DECL_ALIGN (fndecl, FUNCTION_BOUNDARY_P (opts->x_target_flags));
 }
 
 /* Inner function to process the attribute((target(...))), take an argument and

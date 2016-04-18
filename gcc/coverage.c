@@ -751,7 +751,7 @@ build_var (tree fn_decl, tree type, int counter)
   TREE_STATIC (var) = 1;
   TREE_ADDRESSABLE (var) = 1;
   DECL_NONALIASED (var) = 1;
-  DECL_ALIGN (var) = TYPE_ALIGN (type);
+  SET_DECL_ALIGN (var, TYPE_ALIGN (type));
 
   return var;
 }

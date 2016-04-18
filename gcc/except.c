@@ -300,7 +300,7 @@ init_eh (void)
 #ifdef DONT_USE_BUILTIN_SETJMP
       /* We don't know what the alignment requirements of the
 	 runtime's jmp_buf has.  Overestimate.  */
-      DECL_ALIGN (f_jbuf) = BIGGEST_ALIGNMENT;
+      SET_DECL_ALIGN (f_jbuf, BIGGEST_ALIGNMENT);
       DECL_USER_ALIGN (f_jbuf) = 1;
 #endif
       DECL_FIELD_CONTEXT (f_jbuf) = sjlj_fc_type_node;

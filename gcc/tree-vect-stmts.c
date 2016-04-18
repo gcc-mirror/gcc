@@ -5131,7 +5131,7 @@ ensure_base_align (stmt_vec_info stmt_info, struct data_reference *dr)
 	symtab_node::get (base_decl)->increase_alignment (TYPE_ALIGN (vectype));
       else
 	{
-          DECL_ALIGN (base_decl) = TYPE_ALIGN (vectype);
+          SET_DECL_ALIGN (base_decl, TYPE_ALIGN (vectype));
           DECL_USER_ALIGN (base_decl) = 1;
 	}
       DR_VECT_AUX (dr)->base_misaligned = false;

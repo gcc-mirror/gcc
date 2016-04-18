@@ -1,3 +1,7 @@
+2016-04-18  Michael Matz  <matz@suse.de>
+
+	* objc-act.c (objc_build_struct): Use SET_DECL_ALIGN.
+
 2016-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* objc-act.c: Spelling fixes - behaviour -> behavior and

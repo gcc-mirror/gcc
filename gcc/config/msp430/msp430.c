@@ -1461,7 +1461,7 @@ msp430_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   if (boundary < TYPE_ALIGN (type))
     {
       type = build_variant_type_copy (type);
-      TYPE_ALIGN (type) = boundary;
+      SET_TYPE_ALIGN (type, boundary);
     }
 
   /* Compute the rounded size of the type.  */

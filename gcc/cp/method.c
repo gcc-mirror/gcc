@@ -1865,7 +1865,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       SET_OVERLOADED_OPERATOR_CODE (fn, NOP_EXPR);
     }
 
-  DECL_ALIGN (fn) = MINIMUM_METHOD_BOUNDARY;
+  SET_DECL_ALIGN (fn, MINIMUM_METHOD_BOUNDARY);
 
   /* Create the explicit arguments.  */
   if (rhs_parm_type)

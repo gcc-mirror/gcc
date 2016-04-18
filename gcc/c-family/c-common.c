@@ -7837,7 +7837,7 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       else
 	*type = build_variant_type_copy (*type);
 
-      TYPE_ALIGN (*type) = (1U << i) * BITS_PER_UNIT;
+      SET_TYPE_ALIGN (*type, (1U << i) * BITS_PER_UNIT);
       TYPE_USER_ALIGN (*type) = 1;
     }
   else if (! VAR_OR_FUNCTION_DECL_P (decl)
@@ -7871,7 +7871,7 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
     }
   else
     {
-      DECL_ALIGN (decl) = (1U << i) * BITS_PER_UNIT;
+      SET_DECL_ALIGN (decl, (1U << i) * BITS_PER_UNIT);
       DECL_USER_ALIGN (decl) = 1;
     }
 

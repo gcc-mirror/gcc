@@ -192,7 +192,7 @@ insert_field_into_struct (tree type, tree field)
 
   /* Set correct alignment for frame struct type.  */
   if (TYPE_ALIGN (type) < DECL_ALIGN (field))
-    TYPE_ALIGN (type) = DECL_ALIGN (field);
+    SET_TYPE_ALIGN (type, DECL_ALIGN (field));
 }
 
 /* Build or return the RECORD_TYPE that describes the frame state that is
@@ -275,14 +275,14 @@ lookup_field_for_decl (struct nesting_info *info, tree decl,
       if (use_pointer_in_frame (decl))
 	{
 	  TREE_TYPE (field) = build_pointer_type (TREE_TYPE (decl));
-	  DECL_ALIGN (field) = TYPE_ALIGN (TREE_TYPE (field));
+	  SET_DECL_ALIGN (field, TYPE_ALIGN (TREE_TYPE (field)));
 	  DECL_NONADDRESSABLE_P (field) = 1;
 	}
       else
 	{
           TREE_TYPE (field) = TREE_TYPE (decl);
           DECL_SOURCE_LOCATION (field) = DECL_SOURCE_LOCATION (decl);
-          DECL_ALIGN (field) = DECL_ALIGN (decl);
+          SET_DECL_ALIGN (field, DECL_ALIGN (decl));
           DECL_USER_ALIGN (field) = DECL_USER_ALIGN (decl);
           TREE_ADDRESSABLE (field) = TREE_ADDRESSABLE (decl);
           DECL_NONADDRESSABLE_P (field) = !TREE_ADDRESSABLE (decl);
@@ -361,7 +361,7 @@ get_chain_field (struct nesting_info *info)
       field = make_node (FIELD_DECL);
       DECL_NAME (field) = get_identifier ("__chain");
       TREE_TYPE (field) = type;
-      DECL_ALIGN (field) = TYPE_ALIGN (type);
+      SET_DECL_ALIGN (field, TYPE_ALIGN (type));
       DECL_NONADDRESSABLE_P (field) = 1;
 
       insert_field_into_struct (get_frame_type (info), field);
@@ -474,7 +474,7 @@ get_trampoline_type (struct nesting_info *info)
   t = build_array_type (char_type_node, t);
   t = build_decl (DECL_SOURCE_LOCATION (info->context),
 		  FIELD_DECL, get_identifier ("__data"), t);
-  DECL_ALIGN (t) = align;
+  SET_DECL_ALIGN (t, align);
   DECL_USER_ALIGN (t) = 1;
 
   trampoline_type = make_node (RECORD_TYPE);
@@ -548,7 +548,7 @@ get_nl_goto_field (struct nesting_info *info)
       field = make_node (FIELD_DECL);
       DECL_NAME (field) = get_identifier ("__nl_goto_buf");
       TREE_TYPE (field) = type;
-      DECL_ALIGN (field) = TYPE_ALIGN (type);
+      SET_DECL_ALIGN (field, TYPE_ALIGN (type));
       TREE_ADDRESSABLE (field) = 1;
 
       insert_field_into_struct (get_frame_type (info), field);

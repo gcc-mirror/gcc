@@ -904,7 +904,7 @@ make_aligning_type (tree type, unsigned int align, tree size,
 			     pos, 1, -1);
   TYPE_FIELDS (record_type) = field;
 
-  TYPE_ALIGN (record_type) = base_align;
+  SET_TYPE_ALIGN (record_type, base_align);
   TYPE_USER_ALIGN (record_type) = 1;
 
   TYPE_SIZE (record_type)
@@ -963,7 +963,7 @@ make_packable_type (tree type, bool in_record)
   if (in_record && size <= MAX_FIXED_MODE_SIZE)
     {
       align = ceil_pow2 (size);
-      TYPE_ALIGN (new_type) = align;
+      SET_TYPE_ALIGN (new_type, align);
       new_size = (size + align - 1) & -align;
     }
   else
@@ -983,7 +983,7 @@ make_packable_type (tree type, bool in_record)
 	return type;
 
       align = new_size & -new_size;
-      TYPE_ALIGN (new_type) = MIN (TYPE_ALIGN (type), align);
+      SET_TYPE_ALIGN (new_type, MIN (TYPE_ALIGN (type), align));
     }
 
   TYPE_USER_ALIGN (new_type) = 1;
@@ -1295,7 +1295,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   else if (Present (gnat_entity))
     TYPE_NAME (record) = create_concat_name (gnat_entity, "PAD");
 
-  TYPE_ALIGN (record) = align ? align : orig_align;
+  SET_TYPE_ALIGN (record, align ? align : orig_align);
   TYPE_SIZE (record) = size ? size : orig_size;
   TYPE_SIZE_UNIT (record)
     = convert (sizetype,
@@ -1650,7 +1650,7 @@ finish_fat_pointer_type (tree record_type, tree field_list)
 {
   /* Make sure we can put it into a register.  */
   if (STRICT_ALIGNMENT)
-    TYPE_ALIGN (record_type) = MIN (BIGGEST_ALIGNMENT, 2 * POINTER_SIZE);
+    SET_TYPE_ALIGN (record_type, MIN (BIGGEST_ALIGNMENT, 2 * POINTER_SIZE));
 
   /* Show what it really is.  */
   TYPE_FAT_POINTER_P (record_type) = 1;
@@ -1697,7 +1697,8 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
      that just means some initializations; otherwise, layout the record.  */
   if (rep_level > 0)
     {
-      TYPE_ALIGN (record_type) = MAX (BITS_PER_UNIT, TYPE_ALIGN (record_type));
+      SET_TYPE_ALIGN (record_type, MAX (BITS_PER_UNIT,
+					TYPE_ALIGN (record_type)));
 
       if (!had_size_unit)
 	TYPE_SIZE_UNIT (record_type) = size_zero_node;
@@ -1775,7 +1776,7 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 		 maximum alignment, if any.  */
 	      if (TYPE_ALIGN (record_type) >= align)
 		{
-		  DECL_ALIGN (field) = MAX (DECL_ALIGN (field), align);
+		  SET_DECL_ALIGN (field, MAX (DECL_ALIGN (field), align));
 		  DECL_BIT_FIELD (field) = 0;
 		}
 	      else if (!had_align
@@ -1784,8 +1785,8 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 		       && (!TYPE_MAX_ALIGN (record_type)
 			   || TYPE_MAX_ALIGN (record_type) >= align))
 		{
-		  TYPE_ALIGN (record_type) = align;
-		  DECL_ALIGN (field) = MAX (DECL_ALIGN (field), align);
+		  SET_TYPE_ALIGN (record_type, align);
+		  SET_DECL_ALIGN (field, MAX (DECL_ALIGN (field), align));
 		  DECL_BIT_FIELD (field) = 0;
 		}
 	    }
@@ -1808,8 +1809,8 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
       /* A type must be as aligned as its most aligned field that is not
 	 a bit-field.  But this is already enforced by layout_type.  */
       if (rep_level > 0 && !DECL_BIT_FIELD (field))
-	TYPE_ALIGN (record_type)
-	  = MAX (TYPE_ALIGN (record_type), DECL_ALIGN (field));
+	SET_TYPE_ALIGN (record_type,
+			MAX (TYPE_ALIGN (record_type), DECL_ALIGN (field)));
 
       switch (code)
 	{
@@ -1980,7 +1981,7 @@ rest_of_record_type_compilation (tree record_type)
 	= concat_name (orig_name, TREE_CODE (record_type) == QUAL_UNION_TYPE
 				  ? "XVU" : "XVE");
       TYPE_NAME (new_record_type) = new_name;
-      TYPE_ALIGN (new_record_type) = BIGGEST_ALIGNMENT;
+      SET_TYPE_ALIGN (new_record_type, BIGGEST_ALIGNMENT);
       TYPE_STUB_DECL (new_record_type)
 	= create_type_stub_decl (new_name, new_record_type);
       DECL_IGNORED_P (TYPE_STUB_DECL (new_record_type))
@@ -2072,7 +2073,7 @@ rest_of_record_type_compilation (tree record_type)
 	      if (align != 0 && TYPE_ALIGN (field_type) > align)
 		{
 		  field_type = copy_node (field_type);
-		  TYPE_ALIGN (field_type) = align;
+		  SET_TYPE_ALIGN (field_type, align);
 		}
 	      var = true;
 	    }
@@ -2620,7 +2621,7 @@ create_field_decl (tree name, tree type, tree record_type, tree size, tree pos,
 		 || (!pos
 		     && AGGREGATE_TYPE_P (type)
 		     && aggregate_type_contains_array_p (type))))
-    DECL_ALIGN (field_decl) = BITS_PER_UNIT;
+    SET_DECL_ALIGN (field_decl, BITS_PER_UNIT);
 
   /* If a size is specified, use it.  Otherwise, if the record type is packed
      compute a size to use, which may differ from the object's natural size.
@@ -2667,9 +2668,9 @@ create_field_decl (tree name, tree type, tree record_type, tree size, tree pos,
 	{
 	  if (TYPE_ALIGN (record_type) != 0
 	      && TYPE_ALIGN (record_type) < TYPE_ALIGN (type))
-	    DECL_ALIGN (field_decl) = TYPE_ALIGN (record_type);
+	    SET_DECL_ALIGN (field_decl, TYPE_ALIGN (record_type));
 	  else
-	    DECL_ALIGN (field_decl) = TYPE_ALIGN (type);
+	    SET_DECL_ALIGN (field_decl, TYPE_ALIGN (type));
 	}
     }
 
@@ -2685,10 +2686,10 @@ create_field_decl (tree name, tree type, tree record_type, tree size, tree pos,
 	 : packed && TYPE_MODE (type) != BLKmode ? BITS_PER_UNIT : 0);
 
     if (bit_align > DECL_ALIGN (field_decl))
-      DECL_ALIGN (field_decl) = bit_align;
+      SET_DECL_ALIGN (field_decl, bit_align);
     else if (!bit_align && TYPE_ALIGN (type) > DECL_ALIGN (field_decl))
       {
-	DECL_ALIGN (field_decl) = TYPE_ALIGN (type);
+	SET_DECL_ALIGN (field_decl, TYPE_ALIGN (type));
 	DECL_USER_ALIGN (field_decl) = TYPE_USER_ALIGN (type);
       }
   }

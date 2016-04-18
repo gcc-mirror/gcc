@@ -369,7 +369,7 @@ align_local_variable (tree decl)
   else
     {
       align = LOCAL_DECL_ALIGNMENT (decl);
-      DECL_ALIGN (decl) = align;
+      SET_DECL_ALIGN (decl, align);
     }
   return align / BITS_PER_UNIT;
 }
@@ -1018,7 +1018,7 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
 	 alignment here, but (at least) the i386 port does exactly this
 	 via the MINIMUM_ALIGNMENT hook.  */
 
-      DECL_ALIGN (decl) = align;
+      SET_DECL_ALIGN (decl, align);
       DECL_USER_ALIGN (decl) = 0;
     }
 

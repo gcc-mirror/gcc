@@ -2153,7 +2153,7 @@ increase_alignment_1 (symtab_node *n, void *v)
   if (DECL_ALIGN (n->decl) < align
       && n->can_increase_alignment_p ())
     {
-      DECL_ALIGN (n->decl) = align;
+      SET_DECL_ALIGN (n->decl, align);
       DECL_USER_ALIGN (n->decl) = 1;
     }
   return false;

@@ -2687,7 +2687,7 @@ Gcc_backend::implicit_variable(const std::string& name, Btype* type,
     }
   if (alignment != 0)
     {
-      DECL_ALIGN(decl) = alignment * BITS_PER_UNIT;
+      SET_DECL_ALIGN(decl, alignment * BITS_PER_UNIT);
       DECL_USER_ALIGN(decl) = 1;
     }
 

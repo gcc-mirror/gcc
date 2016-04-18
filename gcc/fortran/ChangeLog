@@ -1,3 +1,9 @@
+2016-04-18  Michael Matz  <matz@suse.de>
+
+	* trans-io.c (gfc_build_io_library_fndecls): Use SET_TYPE_ALIGN.
+	* trans-common.c (build_common_decl): Use SET_DECL_ALIGN.
+	* trans-types.c (gfc_add_field_to_struct): Use SET_DECL_ALIGN.
+
 2016-04-13  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/67039

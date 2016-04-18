@@ -1,3 +1,8 @@
+2016-04-18  Michael Matz  <matz@suse.de>
+
+	* c-decl.c (merge_decls): Use SET_DECL_ALIGN and SET_TYPE_ALIGN.
+	(grokdeclarator, parser_xref_tag, finish_enum): Use SET_TYPE_ALIGN.
+
 2016-04-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c/70671

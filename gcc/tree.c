@@ -1020,11 +1020,11 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 	{
 	  if (code == FUNCTION_DECL)
 	    {
-	      DECL_ALIGN (t) = FUNCTION_BOUNDARY;
+	      SET_DECL_ALIGN (t, FUNCTION_BOUNDARY);
 	      DECL_MODE (t) = FUNCTION_MODE;
 	    }
 	  else
-	    DECL_ALIGN (t) = 1;
+	    SET_DECL_ALIGN (t, 1);
 	}
       DECL_SOURCE_LOCATION (t) = input_location;
       if (TREE_CODE (t) == DEBUG_EXPR_DECL)
@@ -1041,7 +1041,7 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 
     case tcc_type:
       TYPE_UID (t) = next_type_uid++;
-      TYPE_ALIGN (t) = BITS_PER_UNIT;
+      SET_TYPE_ALIGN (t, BITS_PER_UNIT);
       TYPE_USER_ALIGN (t) = 0;
       TYPE_MAIN_VARIANT (t) = t;
       TYPE_CANONICAL (t) = t;
@@ -6646,7 +6646,7 @@ build_qualified_type (tree type, int type_quals)
 	      /* Ensure the alignment of this type is compatible with
 		 the required alignment of the atomic type.  */
 	      if (TYPE_ALIGN (atomic_type) > TYPE_ALIGN (t))
-		TYPE_ALIGN (t) = TYPE_ALIGN (atomic_type);
+		SET_TYPE_ALIGN (t, TYPE_ALIGN (atomic_type));
 	    }
 	}
 
@@ -6685,7 +6685,7 @@ build_aligned_type (tree type, unsigned int align)
       return t;
 
   t = build_variant_type_copy (type);
-  TYPE_ALIGN (t) = align;
+  SET_TYPE_ALIGN (t, align);
 
   return t;
 }
@@ -8135,7 +8135,7 @@ build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
   SET_TYPE_MODE (itype, TYPE_MODE (type));
   TYPE_SIZE (itype) = TYPE_SIZE (type);
   TYPE_SIZE_UNIT (itype) = TYPE_SIZE_UNIT (type);
-  TYPE_ALIGN (itype) = TYPE_ALIGN (type);
+  SET_TYPE_ALIGN (itype, TYPE_ALIGN (type));
   TYPE_USER_ALIGN (itype) = TYPE_USER_ALIGN (type);
 
   if (!shared)
@@ -10036,7 +10036,7 @@ build_atomic_base (tree type, unsigned int align)
   set_type_quals (t, TYPE_QUAL_ATOMIC);
 
   if (align)
-    TYPE_ALIGN (t) = align;
+    SET_TYPE_ALIGN (t, align);
 
   return t;
 }
@@ -10185,7 +10185,7 @@ build_common_tree_nodes (bool signed_char)
 
   /* We are not going to have real types in C with less than byte alignment,
      so we might as well not have any types that claim to have it.  */
-  TYPE_ALIGN (void_type_node) = BITS_PER_UNIT;
+  SET_TYPE_ALIGN (void_type_node, BITS_PER_UNIT);
   TYPE_USER_ALIGN (void_type_node) = 0;
 
   void_node = make_node (VOID_CST);

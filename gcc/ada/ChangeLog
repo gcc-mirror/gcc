@@ -1,3 +1,19 @@
+2016-04-18  Michael Matz  <matz@suse.de>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use SET_TYPE_ALIGN.
+	(gnat_to_gnu_field): Ditto.
+	(components_to_record): Ditto.
+	(create_variant_part_from): Ditto.
+	(copy_and_substitute_in_size): Ditto.
+	(substitute_in_type): Ditto.
+	* gcc-interface/utils.c (make_aligning_type): Use SET_TYPE_ALIGN.
+	(make_packable_type): Ditto.
+	(maybe_pad_type): Ditto.
+	(finish_fat_pointer_type): Ditto.
+	(finish_record_type): Ditto and use SET_DECL_ALIGN.
+	(rest_of_record_type_compilation): Use SET_TYPE_ALIGN.
+	(create_field_decl): Use SET_DECL_ALIGN.
+
 2016-04-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* einfo.adb (Overridden_Operation): assert that
