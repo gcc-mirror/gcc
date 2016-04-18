@@ -261,7 +261,7 @@ package Targparm is
    --    Back-End Setjmp/Longjmp Exceptions
 
    --      With this approach, the back end also handles the generation and
-   --      handling of exceptions, using setjmp/longjmp to setup receivers and
+   --      handling of exceptions, using setjmp/longjmp to set up receivers and
    --      propagate. AT-END actions on exceptional paths are also taken care
    --      of by the back end and the front end doesn't need to generate
    --      explicit exception handlers for these.
@@ -271,7 +271,7 @@ package Targparm is
    --      The following switches specify whether we're using a front-end or a
    --      back-end mechanism and whether this is a zero-cost or a sjlj scheme.
 
-   --      The per switch default values correspond to the default value of
+   --      The per-switch default values correspond to the default value of
    --      Opt.Exception_Mechanism.
 
    ZCX_By_Default_On_Target : Boolean := False;

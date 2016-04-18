@@ -3761,15 +3761,7 @@ package body Sem_Ch6 is
       end if;
 
       --  When generating code, inherited pre/postconditions are handled when
-      --  expanding the corresponding contract. In GNATprove the annotations
-      --  must be processed when the body is analyzed.
-
-      if GNATprove_Mode
-        and then Present (Spec_Id)
-        and then Present (Overridden_Operation (Spec_Id))
-      then
-         Collect_Inherited_Class_Wide_Conditions (Spec_Id, N);
-      end if;
+      --  expanding the corresponding contract.
 
       --  Ada 2005 (AI-262): In library subprogram bodies, after the analysis
       --  of the specification we have to install the private withed units.
@@ -9945,6 +9937,13 @@ package body Sem_Ch6 is
 
                         Set_Convention (S, Convention (E));
                         Check_Dispatching_Operation (S, E);
+
+                        --  In GNATprove_Mode, create the pragmas corresponding
+                        --  to inherited class-wide conditions.
+
+                        if GNATprove_Mode then
+                           Collect_Inherited_Class_Wide_Conditions (S);
+                        end if;
 
                      else
                         Check_Dispatching_Operation (S, Empty);

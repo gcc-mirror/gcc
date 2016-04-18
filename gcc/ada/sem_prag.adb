@@ -26759,17 +26759,18 @@ package body Sem_Prag is
    -- Collect_Inherited_Class_Wide_Conditions --
    ---------------------------------------------
 
-   procedure Collect_Inherited_Class_Wide_Conditions
-     (Subp : Entity_Id;
-      Bod  : Node_Id)
-   is
+   procedure Collect_Inherited_Class_Wide_Conditions (Subp : Entity_Id) is
       Parent_Subp : constant Entity_Id := Overridden_Operation (Subp);
       Prags       : constant Node_Id   := Contract (Parent_Subp);
       Prag        : Node_Id;
+      New_Prag    : Node_Id;
+      Installed   : Boolean;
 
    begin
-      --  Iterate over the contract to find inherited class-wide pre- and
-      --  postconditions.
+      Installed := False;
+
+      --  Iterate over the contract of the overridden subprogram  to find
+      --  inherited class-wide pre- and postconditions.
 
       if Present (Prags) then
          Prag := Pre_Post_Conditions (Prags);
@@ -26777,17 +26778,29 @@ package body Sem_Prag is
          while Present (Prag) loop
             if Nam_In (Pragma_Name (Prag), Name_Precondition,
                                            Name_Postcondition)
+              and then Class_Present (Prag)
             then
-               if No (Declarations (Bod)) then
-                  Set_Declarations (Bod, Empty_List);
+               --  The generated pragma must be analyzed in the context of
+               --  the subprogram, to make its formals visible.
+
+               if not Installed then
+                  Installed := True;
+                  Push_Scope (Subp);
+                  Install_Formals (Subp);
                end if;
 
-               Append_To (Declarations (Bod),
-                 Build_Pragma_Check_Equivalent (Prag, Subp, Parent_Subp));
+               New_Prag :=
+                 Build_Pragma_Check_Equivalent (Prag, Subp, Parent_Subp);
+               Insert_After (Unit_Declaration_Node (Subp), New_Prag);
+               Preanalyze (New_Prag);
             end if;
 
             Prag := Next_Pragma (Prag);
          end loop;
+
+         if Installed then
+            End_Scope;
+         end if;
       end if;
    end Collect_Inherited_Class_Wide_Conditions;
 

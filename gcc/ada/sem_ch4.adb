@@ -4657,21 +4657,44 @@ package body Sem_Ch4 is
          end loop;
 
          --  If the scope is a current instance, the prefix cannot be an
-         --  expression of the same type (that would represent an attempt
-         --  to reach an internal operation of another synchronized object).
+         --  expression of the same type, unless the selector designates a
+         --  public operation (otherwise that would represent an attempt to
+         --  reach an internal entity of another synchronized object).
          --  This is legal if prefix is an access to such type and there is
-         --  a dereference.
+         --  a dereference, or is a component with a dereferenced prefix.
 
-         if In_Scope
-           and then not Is_Entity_Name (Name)
-           and then Nkind (Name) /= N_Explicit_Dereference
-         then
-            Error_Msg_NE
-              ("invalid reference to internal operation of some object of "
-               & "type &", N, Type_To_Use);
-            Set_Entity (Sel, Any_Id);
-            Set_Etype  (Sel, Any_Type);
-            return;
+         if In_Scope and then not Is_Entity_Name (Name) then
+            declare
+
+               function Has_Dereference (N : Node_Id) return Boolean;
+               --  Check whether prefix includes a dereference at any level.
+
+               ---------------------
+               -- Has_Dereference --
+               ---------------------
+
+               function Has_Dereference (N : Node_Id) return Boolean is
+               begin
+                  if Nkind (N) = N_Explicit_Dereference then
+                     return True;
+                  elsif
+                    Nkind_In (N, N_Selected_Component, N_Indexed_Component)
+                  then
+                     return Has_Dereference (Prefix (N));
+                  else
+                     return False;
+                  end if;
+               end Has_Dereference;
+
+            begin
+               if not Has_Dereference (Name) then
+                  Error_Msg_NE ("invalid reference to internal operation "
+                     & "of some object of type &", N, Type_To_Use);
+                  Set_Entity (Sel, Any_Id);
+                  Set_Etype  (Sel, Any_Type);
+                  return;
+               end if;
+            end;
          end if;
 
          --  If there is no visible entity with the given name or none of the
