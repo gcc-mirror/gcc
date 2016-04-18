@@ -145,7 +145,7 @@ package body Exp_Intr is
               (Reference_Name (Get_Source_File_Index (Loc)));
 
          when Name_Source_Location =>
-            Build_Location_String (Loc);
+            Build_Location_String (Global_Name_Buffer, Loc);
 
          when Name_Enclosing_Entity =>
 

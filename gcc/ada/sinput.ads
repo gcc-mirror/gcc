@@ -536,18 +536,17 @@ package Sinput is
    --  The caller has checked that a Line_Terminator character precedes P so
    --  that there definitely is a previous line in the source buffer.
 
-   procedure Build_Location_String (Loc : Source_Ptr);
+   procedure Build_Location_String
+     (Buf : in out Bounded_String;
+      Loc : Source_Ptr);
    --  This function builds a string literal of the form "name:line", where
    --  name is the file name corresponding to Loc, and line is the line number.
-   --  In the event that instantiations are involved, additional suffixes of
-   --  the same form are appended after the separating string " instantiated at
-   --  ". The returned string is appended to the Name_Buffer, terminated by
-   --  ASCII.NUL, with Name_Length indicating the length not including the
-   --  terminating Nul.
+   --  If instantiations are involved, additional suffixes of the same form are
+   --  appended after the separating string " instantiated at ". The returned
+   --  string is appended to Buf.
 
    function Build_Location_String (Loc : Source_Ptr) return String;
-   --  Functional form returning a string, which does not include a terminating
-   --  null character. The contents of Name_Buffer is destroyed.
+   --  Functional form returning a String
 
    procedure Check_For_BOM;
    --  Check if the current source starts with a BOM. Scan_Ptr needs to be at

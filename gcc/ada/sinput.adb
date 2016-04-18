@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -221,33 +221,31 @@ package body Sinput is
    -- Build_Location_String --
    ---------------------------
 
-   procedure Build_Location_String (Loc : Source_Ptr) is
-      Ptr : Source_Ptr;
+   procedure Build_Location_String
+     (Buf : in out Bounded_String;
+      Loc : Source_Ptr)
+   is
+      Ptr : Source_Ptr := Loc;
 
    begin
       --  Loop through instantiations
 
-      Ptr := Loc;
       loop
-         Get_Name_String_And_Append
-           (Reference_Name (Get_Source_File_Index (Ptr)));
-         Add_Char_To_Name_Buffer (':');
-         Add_Nat_To_Name_Buffer (Nat (Get_Logical_Line_Number (Ptr)));
+         Append (Buf, Reference_Name (Get_Source_File_Index (Ptr)));
+         Append (Buf, ':');
+         Append (Buf, Nat (Get_Logical_Line_Number (Ptr)));
 
          Ptr := Instantiation_Location (Ptr);
          exit when Ptr = No_Location;
-         Add_Str_To_Name_Buffer (" instantiated at ");
+         Append (Buf, " instantiated at ");
       end loop;
-
-      Name_Buffer (Name_Len + 1) := NUL;
-      return;
    end Build_Location_String;
 
    function Build_Location_String (Loc : Source_Ptr) return String is
+      Buf : Bounded_String;
    begin
-      Name_Len := 0;
-      Build_Location_String (Loc);
-      return Name_Buffer (1 .. Name_Len);
+      Build_Location_String (Buf, Loc);
+      return +Buf;
    end Build_Location_String;
 
    -------------------
