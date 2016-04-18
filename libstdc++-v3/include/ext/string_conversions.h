@@ -65,14 +65,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	int _M_errno;
       } const __save_errno;
 
+      struct _Range_chk {
+	  static bool
+	  _S_chk(_TRet, std::false_type) { return false; }
+
+	  static bool
+	  _S_chk(_TRet __val, std::true_type) // only called when _Ret is int
+	  {
+	    return __val < _TRet(__numeric_traits<int>::__min)
+	      || __val > _TRet(__numeric_traits<int>::__max);
+	  }
+      };
+
       const _TRet __tmp = __convf(__str, &__endptr, __base...);
 
       if (__endptr == __str)
 	std::__throw_invalid_argument(__name);
       else if (errno == ERANGE
-	       || (std::__are_same<_Ret, int>::__value
-		   && (__tmp < __numeric_traits<int>::__min
-		       || __tmp > __numeric_traits<int>::__max)))
+	  || _Range_chk::_S_chk(__tmp, std::is_same<_Ret, int>{}))
 	std::__throw_out_of_range(__name);
       else
 	__ret = __tmp;

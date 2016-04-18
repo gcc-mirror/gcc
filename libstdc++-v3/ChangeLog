@@ -1,3 +1,8 @@
+2016-04-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/string_conversions.h (__stoa): Avoid -Wsign-compare
+	warnings.
+
 2016-04-17  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/bits/specfun.h: Trivial comment misspelling.
