@@ -4395,6 +4395,8 @@ package body Sem_Ch13 is
          Set_Analyzed (N, True);
       end if;
 
+      Check_Restriction_No_Use_Of_Attribute (N);
+
       --  Ignore some selected attributes in CodePeer mode since they are not
       --  relevant in this context.
 
@@ -4580,7 +4582,6 @@ package body Sem_Ch13 is
       end if;
 
       Set_Entity (N, U_Ent);
-      Check_Restriction_No_Use_Of_Attribute (N);
 
       --  Switch on particular attribute
 

@@ -10046,6 +10046,8 @@ package body Sem_Prag is
          Set_Analyzed (N);
       end if;
 
+      Check_Restriction_No_Use_Of_Pragma (N);
+
       --  Deal with unrecognized pragma
 
       Pname := Pragma_Name (N);
@@ -10148,8 +10150,6 @@ package body Sem_Prag is
             end if;
          end if;
       end if;
-
-      Check_Restriction_No_Use_Of_Pragma (N);
 
       --  An enumeration type defines the pragmas that are supported by the
       --  implementation. Get_Pragma_Id (in package Prag) transforms a name

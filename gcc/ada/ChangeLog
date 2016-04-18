@@ -1,3 +1,33 @@
+2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* par-ch2.adb (P_Expression_Or_Reserved_Word): New routine.
+	(P_Pragma): Signal Scan_Pragma_Argument_Association when the use
+	of reserved words is OK.
+	(Scan_Pragma_Argument_Association):
+	Add new formal Reserved_Words_OK and update the comment on
+	usage. Code cleanup. Parse an expression or a reserved word in
+	identifier form for pragmas Restriction_Warnings and Restrictions
+	No_Use_Of_Attribute.
+	* restrict.adb (Check_Restriction_No_Use_Of_Attribute):
+	Reimplemented.	(Check_Restriction_No_Use_Of_Pragma): Code cleanup.
+	(Set_Restriction_No_Specification_Of_Aspect): Properly set the warning
+	flag for an aspect.
+	(Set_Restriction_No_Use_Of_Attribute): Properly set the warning
+	flag for an attribute.	(Set_Restriction_No_Use_Of_Entity):
+	Update the parameter profile.
+	(Set_Restriction_No_Use_Of_Pragma): Properly set the warning flag for
+	a pragma.
+	* restrict.ads (Check_Restriction_No_Use_Of_Attribute): Update
+	the comment on usage.
+	(Set_Restriction_No_Use_Of_Entity): Update the parameter profile.
+	* sem_attr.adb (Analyze_Attribute): Check restriction
+	No_Use_Of_Attribute.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Check
+	restriction No_Use_Of_Attribute before any rewritings have
+	taken place.
+	* sem_prag.adb (Analyze_Pragma): Check restriction
+	No_Use_Of_Pragma before any rewritings have taken place.
+
 2016-04-18  Bob Duff  <duff@adacore.com>
 
 	* sem_ch6.adb (Is_Inline_Pragma): The pragma

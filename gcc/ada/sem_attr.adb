@@ -2624,12 +2624,14 @@ package body Sem_Attr is
    --  Start of processing for Analyze_Attribute
 
    begin
-      --  Immediate return if unrecognized attribute (already diagnosed
-      --  by parser, so there is nothing more that we need to do)
+      --  Immediate return if unrecognized attribute (already diagnosed by
+      --  parser, so there is nothing more that we need to do).
 
       if not Is_Attribute_Name (Aname) then
          raise Bad_Attribute;
       end if;
+
+      Check_Restriction_No_Use_Of_Attribute (N);
 
       --  Deal with Ada 83 issues
 
