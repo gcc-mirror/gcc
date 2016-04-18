@@ -1,5 +1,13 @@
 2016-04-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/41759
+	* include/bits/random.h: Reword static assertion messages to state
+	positive conditions.
+	* include/bits/random.tcc: Likewise.
+	* include/bits/uniform_int_dist.h: Likewise.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	patterns.
+
 	* include/std/function (_Bind, _Bind_result): Remove unused typedefs.
 
 	* config/cpu/sh/atomicity.h: Fix typo in comment.
