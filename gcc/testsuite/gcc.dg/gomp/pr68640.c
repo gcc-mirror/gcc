@@ -13,4 +13,4 @@ foo (int *__restrict__ ap)
 }
 
 /* { dg-final { scan-tree-dump-times "clique 1 base 1" 2 "ealias" } } */
-/* { dg-final { scan-tree-dump-times "(?n)clique .* base .*" 2 "ealias" } } */
+/* { dg-final { scan-tree-dump-times "(?n)clique 1 base 0" 2 "ealias" } } */
