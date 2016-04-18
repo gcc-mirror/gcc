@@ -1,3 +1,10 @@
+2016-04-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/70708
+	* config/i386/sse.md (sse2_loadlpd): Accept load from "xm" and
+	replace %vmovsd with "%vmovq".
+	(vec_concatv2df): Likewise.
+
 2016-04-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md (*vec_extractv2sf_0): Use gen_lowpart.

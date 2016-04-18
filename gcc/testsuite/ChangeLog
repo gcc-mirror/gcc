@@ -1,3 +1,8 @@
+2016-04-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/70708
+	* gcc.target/i386/pr70708.c: New test.
+
 2016-04-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/43434
