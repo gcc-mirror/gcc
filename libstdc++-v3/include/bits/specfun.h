@@ -126,7 +126,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @subsection promotion Argument Promotion
    * The arguments suppled to the non-suffixed functions will be promoted
    * according to the following rules:
-   * 1. If any argument intended to be floating opint is given an integral value
+   * 1. If any argument intended to be floating point is given an integral value
    * That integral value is promoted to double.
    * 2. All floating point arguments are promoted up to the largest floating
    *    point precision among them.
