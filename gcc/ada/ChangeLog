@@ -1,3 +1,13 @@
+2016-04-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch13.adb (Has_Good_Profile): Improvement
+	of error message. Now indicates subtype_mark of formal parameter
+	rather than the formal's name, plus minor rewording.
+
+2016-04-18  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c, adaint.h, s-os_lib.ads: Add new routine Current_Process_Id.
+
 2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* stringt.adb, exp_ch6.adb, sem_ch13.adb: Minor reformatting.

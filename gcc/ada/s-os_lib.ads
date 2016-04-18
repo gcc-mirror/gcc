@@ -723,6 +723,10 @@ package System.OS_Lib is
    Invalid_Pid : constant Process_Id;
    --  A special value used to indicate errors, as described below
 
+   function Current_Process_Id return Process_Id;
+   --  Returns the current process id or Invalid_Pid if not supported by the
+   --  runtime.
+
    function Argument_String_To_List
      (Arg_String : String) return Argument_List_Access;
    --  Take a string that is a program and its arguments and parse it into an
@@ -1060,6 +1064,7 @@ private
    pragma Import (C, Path_Separator, "__gnat_path_separator");
    pragma Import (C, Directory_Separator, "__gnat_dir_separator");
    pragma Import (C, Current_Time, "__gnat_current_time");
+   pragma Import (C, Current_Process_Id, "__gnat_current_process_id");
 
    type OS_Time is
      range -(2 ** (Standard'Address_Size - Integer'(1))) ..
