@@ -245,10 +245,13 @@ package body Sem_Prag is
    --  Determine whether dependency clause Clause is surrounded by extra
    --  parentheses. If this is the case, issue an error message.
 
-   function Is_CCT_Instance (Ref : Node_Id) return Boolean;
+   function Is_CCT_Instance
+     (Ref_Id     : Entity_Id;
+      Context_Id : Entity_Id) return Boolean;
    --  Subsidiary to the analysis of pragmas [Refined_]Depends and [Refined_]
-   --  Global. Determine whether reference Ref denotes the current instance of
-   --  a concurrent type.
+   --  Global. Determine whether entity Ref_Id denotes the current instance of
+   --  a concurrent type. Context_Id denotes the associated context where the
+   --  pragma appears.
 
    function Is_Unconstrained_Or_Tagged_Item (Item : Entity_Id) return Boolean;
    --  Subsidiary to Collect_Subprogram_Inputs_Outputs and the analysis of
@@ -559,6 +562,10 @@ package body Sem_Prag is
       --  Two lists containing the full set of inputs and output of the related
       --  subprograms. Note that these lists contain both nodes and entities.
 
+      Task_Input_Seen  : Boolean := False;
+      Task_Output_Seen : Boolean := False;
+      --  Flags used to track the implicit dependence of a task unit on itself
+
       procedure Add_Item_To_Name_Buffer (Item_Id : Entity_Id);
       --  Subsidiary routine to Check_Role and Check_Usage. Add the item kind
       --  to the name buffer. The individual kinds are as follows:
@@ -590,7 +597,7 @@ package body Sem_Prag is
          Item_Id  : Entity_Id;
          Is_Input : Boolean;
          Self_Ref : Boolean);
-      --  Ensure that an item fulfils its designated input and/or output role
+      --  Ensure that an item fulfills its designated input and/or output role
       --  as specified by pragma Global (if any) or the enclosing context. If
       --  this is not the case, emit an error. Item and Item_Id denote the
       --  attributes of an item. Flag Is_Input should be set when item comes
@@ -763,9 +770,30 @@ package body Sem_Prag is
             Null_Seen     : in out Boolean;
             Non_Null_Seen : in out Boolean)
          is
+            procedure Current_Task_Instance_Seen;
+            --  Set the appropriate global flag when the current instance of a
+            --  task unit is encountered.
+
+            --------------------------------
+            -- Current_Task_Instance_Seen --
+            --------------------------------
+
+            procedure Current_Task_Instance_Seen is
+            begin
+               if Is_Input then
+                  Task_Input_Seen := True;
+               else
+                  Task_Output_Seen := True;
+               end if;
+            end Current_Task_Instance_Seen;
+
+            --  Local variables
+
             Is_Output : constant Boolean := not Is_Input;
             Grouped   : Node_Id;
             Item_Id   : Entity_Id;
+
+         --  Start of processing for Analyze_Input_Output
 
          begin
             --  Multiple input or output items appear as an aggregate
@@ -899,18 +927,45 @@ package body Sem_Prag is
 
                     Ekind_In (Item_Id, E_Abstract_State, E_Variable)
                   then
-                     --  The item denotes a concurrent type, but it is not the
-                     --  current instance of an enclosing concurrent type.
+                     --  The item denotes a concurrent type. Note that single
+                     --  protected/task types are not considered here because
+                     --  they behave as objects in the context of pragma
+                     --  [Refined_]Depends.
 
-                     if Ekind_In (Item_Id, E_Protected_Type, E_Task_Type)
-                       and then not Is_CCT_Instance (Item)
+                     if Ekind_In (Item_Id, E_Protected_Type, E_Task_Type) then
+
+                        --  This use is legal as long as the concurrent type is
+                        --  the current instance of an enclosing type.
+
+                        if Is_CCT_Instance (Item_Id, Spec_Id) then
+
+                           --  The dependence of a task unit on itself is
+                           --  implicit and may or may not be explicitly
+                           --  specified (SPARK RM 6.1.4).
+
+                           if Ekind (Item_Id) = E_Task_Type then
+                              Current_Task_Instance_Seen;
+                           end if;
+
+                        --  Otherwise this is not the current instance
+
+                        else
+                           SPARK_Msg_N
+                             ("invalid use of subtype mark in dependency "
+                              & "relation", Item);
+                        end if;
+
+                     --  The dependency of a task unit on itself is implicit
+                     --  and may or may not be explicitly specified
+                     --  (SPARK RM 6.1.4).
+
+                     elsif Is_Single_Task_Object (Item_Id)
+                       and then Is_CCT_Instance (Item_Id, Spec_Id)
                      then
-                        SPARK_Msg_N
-                          ("invalid use of subtype mark in dependency "
-                           & "relation", Item);
+                        Current_Task_Instance_Seen;
                      end if;
 
-                     --  Ensure that the item fulfils its role as input and/or
+                     --  Ensure that the item fulfills its role as input and/or
                      --  output as specified by pragma Global or the enclosing
                      --  context.
 
@@ -1427,13 +1482,30 @@ package body Sem_Prag is
             if Present (Item_Id)
               and then not Contains (Used_Items, Item_Id)
             then
-               --  The current instance of a concurrent type behaves as a
-               --  formal parameter (SPARK RM 6.1.4).
+               if Is_Formal (Item_Id) then
+                  Usage_Error (Item_Id);
 
-               if Is_Formal (Item_Id)
-                 or else Ekind_In (Item_Id, E_Protected_Type, E_Task_Type)
+               --  The current instance of a protected type behaves as a formal
+               --  parameter (SPARK RM 6.1.4).
+
+               elsif Ekind (Item_Id) = E_Protected_Type
+                 or else Is_Single_Protected_Object (Item_Id)
                then
                   Usage_Error (Item_Id);
+
+               --  The current instance of a task type behaves as a formal
+               --  parameter (SPARK RM 6.1.4).
+
+               elsif Ekind (Item_Id) = E_Task_Type
+                 or else Is_Single_Task_Object (Item_Id)
+               then
+                  --  The dependence of a task unit on itself is implicit and
+                  --  may or may not be explicitly specified (SPARK RM 6.1.4).
+                  --  Emit an error if only one input/output is present.
+
+                  if Task_Input_Seen /= Task_Output_Seen then
+                     Usage_Error (Item_Id);
+                  end if;
 
                --  States and global objects are not used properly only when
                --  the subprogram is subject to pragma Global.
@@ -2036,20 +2108,18 @@ package body Sem_Prag is
                   end if;
 
                --  A global item may denote a concurrent type as long as it is
-               --  the current instance of an enclosing concurrent type
+               --  the current instance of an enclosing protected or task type
                --  (SPARK RM 6.1.4).
 
                elsif Ekind_In (Item_Id, E_Protected_Type, E_Task_Type) then
-                  if Is_CCT_Instance (Item) then
+                  if Is_CCT_Instance (Item_Id, Spec_Id) then
 
                      --  Pragma [Refined_]Global associated with a protected
                      --  subprogram cannot mention the current instance of a
                      --  protected type because the instance behaves as a
                      --  formal parameter.
 
-                     if Ekind (Item_Id) = E_Protected_Type
-                       and then Scope (Spec_Id) = Item_Id
-                     then
+                     if Ekind (Item_Id) = E_Protected_Type then
                         Error_Msg_Name_1 := Chars (Item_Id);
                         SPARK_Msg_NE
                           (Fix_Msg (Spec_Id, "global item of subprogram & "
@@ -2061,9 +2131,7 @@ package body Sem_Prag is
                      --  cannot mention the current instance of a task type
                      --  because the instance behaves as a formal parameter.
 
-                     elsif Ekind (Item_Id) = E_Task_Type
-                       and then Spec_Id = Item_Id
-                     then
+                     else pragma Assert (Ekind (Item_Id) = E_Task_Type);
                         Error_Msg_Name_1 := Chars (Item_Id);
                         SPARK_Msg_NE
                           (Fix_Msg (Spec_Id, "global item of subprogram & "
@@ -2078,6 +2146,39 @@ package body Sem_Prag is
                   else
                      SPARK_Msg_N
                        ("invalid use of subtype mark in global list", Item);
+                     return;
+                  end if;
+
+               --  A global item may denote the anonymous object created for a
+               --  single protected/task type as long as the current instance
+               --  is the same single type (SPARK RM 6.1.4).
+
+               elsif Is_Single_Concurrent_Object (Item_Id)
+                 and then Is_CCT_Instance (Item_Id, Spec_Id)
+               then
+                  --  Pragma [Refined_]Global associated with a protected
+                  --  subprogram cannot mention the current instance of a
+                  --  protected type because the instance behaves as a formal
+                  --  parameter.
+
+                  if Is_Single_Protected_Object (Item_Id) then
+                     Error_Msg_Name_1 := Chars (Item_Id);
+                     SPARK_Msg_NE
+                       (Fix_Msg (Spec_Id, "global item of subprogram & cannot "
+                        & "reference current instance of protected type %"),
+                        Item, Spec_Id);
+                     return;
+
+                  --  Pragma [Refined_]Global associated with a task type
+                  --  cannot mention the current instance of a task type
+                  --  because the instance behaves as a formal parameter.
+
+                  else pragma Assert (Is_Single_Task_Object (Item_Id));
+                     Error_Msg_Name_1 := Chars (Item_Id);
+                     SPARK_Msg_NE
+                       (Fix_Msg (Spec_Id, "global item of subprogram & cannot "
+                        & "reference current instance of task type %"),
+                        Item, Spec_Id);
                      return;
                   end if;
 
@@ -27455,23 +27556,55 @@ package body Sem_Prag is
    -- Is_CCT_Instance --
    ---------------------
 
-   function Is_CCT_Instance (Ref : Node_Id) return Boolean is
-      Ref_Id : constant Entity_Id := Entity (Ref);
-      S      : Entity_Id;
+   function Is_CCT_Instance
+     (Ref_Id     : Entity_Id;
+      Context_Id : Entity_Id) return Boolean
+   is
+      S   : Entity_Id;
+      Typ : Entity_Id;
 
    begin
-      --  Climb the scope chain looking for an enclosing concurrent type that
-      --  matches the referenced entity.
+      --  When the reference denotes a single protected type, the context is
+      --  either a protected subprogram or its body.
 
-      S := Current_Scope;
-      while Present (S) and then S /= Standard_Standard loop
-         if Ekind_In (S, E_Protected_Type, E_Task_Type) and then S = Ref_Id
-         then
-            return True;
+      if Is_Single_Protected_Object (Ref_Id) then
+         Typ := Scope (Context_Id);
+
+         return
+           Ekind (Typ) = E_Protected_Type
+             and then Present (Anonymous_Object (Typ))
+             and then Anonymous_Object (Typ) = Ref_Id;
+
+      --  When the reference denotes a single task type, the context is either
+      --  the same type or if inside the body, the anonymous task type.
+
+      elsif Is_Single_Task_Object (Ref_Id) then
+         if Ekind (Context_Id) = E_Task_Type then
+            return
+              Present (Anonymous_Object (Context_Id))
+                and then Anonymous_Object (Context_Id) = Ref_Id;
+         else
+            return Ref_Id = Context_Id;
          end if;
 
-         S := Scope (S);
-      end loop;
+      --  Otherwise the reference denotes a protected or a task type. Climb the
+      --  scope chain looking for an enclosing concurrent type that matches the
+      --  referenced entity.
+
+      else
+         pragma Assert (Ekind_In (Ref_Id, E_Protected_Type, E_Task_Type));
+
+         S := Current_Scope;
+         while Present (S) and then S /= Standard_Standard loop
+            if Ekind_In (S, E_Protected_Type, E_Task_Type)
+              and then S = Ref_Id
+            then
+               return True;
+            end if;
+
+            S := Scope (S);
+         end loop;
+      end if;
 
       return False;
    end Is_CCT_Instance;

@@ -43,14 +43,15 @@ extern "C" {
    system headers so call it something unique.  */
 typedef void __sigtramphandler_t (int signo, void *siginfo, void *sigcontext);
 
-#if defined(__vxworks) && (CPU == SIMNT || CPU == SIMPENTIUM || CPU == SIMLINUX)
-/* Vxsim requires a specially compiled handler.  */
-extern void __gnat_sigtramp_vxsim (int signo, void *siginfo, void *sigcontext,
-				   __sigtramphandler_t * handler);
-#else
+/* The vxsim target has a different sigcontext structure than the one we're
+   compiling the run-time with. We thus need to adjust it in this case */
+#if defined(__vxworks) && (defined (__i386__) || defined (__x86_64__)) && !defined (VTHREADS)
+#define __HANDLE_VXSIM_SC
+extern void __gnat_set_is_vxsim(int val);
+#endif
+
 extern void __gnat_sigtramp (int signo, void *siginfo, void *sigcontext,
 			     __sigtramphandler_t * handler);
-#endif
 
 /* The signal trampoline is to be called from an established signal handler.
    It sets up the DWARF CFI and calls HANDLER (SIGNO, SIGINFO, SIGCONTEXT).

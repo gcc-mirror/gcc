@@ -89,18 +89,27 @@ typedef struct ucontext
    and not "static" to prevent compiler complaints about a symbol used but
    never defined.  */
 
+#define TRAMP_COMMON __gnat_sigtramp_common
+
 /* sigtramp stub providing CFI info for common registers.  */
 
-extern void __gnat_sigtramp_common
-(int signo, void *siginfo, void *sigcontext,
- __sigtramphandler_t * handler, void * sc_pregs);
-
+extern void
+TRAMP_COMMON (int signo, void *siginfo, void *sigcontext,
+              __sigtramphandler_t * handler, REG_SET * sc_pregs);
 
 /* -------------------------------------
    -- Common interface implementation --
    -------------------------------------
 
    We enforce optimization to minimize the overhead of the extra layer.  */
+
+#if defined(__vxworks) && (defined (__i386__) || defined (__x86_64__)) && !defined (VTHREADS)
+static int __gnat_is_vxsim = 0;
+
+void __gnat_set_is_vxsim(int val) {
+  __gnat_is_vxsim = val;
+}
+#endif
 
 void __gnat_sigtramp (int signo, void *si, void *sc,
 		      __sigtramphandler_t * handler)
@@ -109,17 +118,58 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
 void __gnat_sigtramp (int signo, void *si, void *sc,
 		      __sigtramphandler_t * handler)
 {
-#ifdef __RTP__
-  mcontext_t *mcontext = &((ucontext_t *) sc)->uc_mcontext;
+  REG_SET *pregs;
 
-  /* Pass MCONTEXT in the fifth position so that the assembly code can find
-     it at the same stack location or in the same register as SC_PREGS.  */
-  __gnat_sigtramp_common (signo, si, mcontext, handler, mcontext);
-#else
+  /* VXSIM uses a different signal context structure than the regular x86
+     targets:
+     * on x86-vx6: two 32-bit values are added at the end of the REG_SET, plus
+       an explicit padding of 0xc8 characters (200 characters). The sigcontext
+       containing a complete REG_SET just before the field 'sc_pregs', this
+       adds a 208 bytes offset to get the value of 'sc_pregs'.
+     * on x86-vx7: the same offset is used on vx7: 3 32-bit values are present
+       at the enf of the reg set, but the padding is then of 0xc4 characters.
+     * on x86_64-vx7: two 64-bit values are added at the beginning of the
+       REG_SET. This adds a 16 bytes offset to get the value of 'sc_pregs',
+       and another 16 bytes offset within the pregs structure to retrieve the
+       registers list.
+  */
+
+  /* Retrieve the registers to restore : */
+#ifndef __RTP__
+#ifdef __HANDLE_VXSIM_SC
+#if defined(__i386__)
+  /* move sctx 208 bytes further, so that the vxsim's sc_pregs field coincide
+     with the expected x86 one */
+  struct sigcontext * sctx =
+    (struct sigcontext *) (sc + (__gnat_is_vxsim ? 208 : 0));
+#elif defined(__x86_64__)
+  /* move sctx 16 bytes further, so that the vxsim's sc_pregs field coincide
+     with the expected x86_64 one */
+  struct sigcontext * sctx =
+    (struct sigcontext *) (sc + (__gnat_is_vxsim ? 16 : 0));
+#endif /* __i386__ || __x86_64__ */
+#else  /* __HANDLE_VXSIM_SC__ */
   struct sigcontext * sctx = (struct sigcontext *) sc;
-
-  __gnat_sigtramp_common (signo, si, sctx, handler, sctx->sc_pregs);
 #endif
+
+  pregs = sctx->sc_pregs;
+
+#else /* !defined(__RTP__) */
+
+  mcontext_t *mcontext = &((ucontext_t *) sc)->uc_mcontext;
+  /* No specific offset in this case for vxsim */
+  pregs = &(mcontext->regs);
+
+#endif /* !defined(__RTP__) */
+
+#if defined (__HANDLE_VXSIM_SC) && defined (__x86_64__)
+  /* Ignore the first two values, that are not registers in case of
+     vxsim */
+  pregs = (REG_SET *) ((void *)pregs + (__gnat_is_vxsim ? 16 : 0));
+#endif
+
+  /* And now call the real signal trampoline with the list of registers */
+  __gnat_sigtramp_common (signo, si, sc, handler, pregs);
 }
 
 /* Include the target specific bits.  */
@@ -127,12 +177,8 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
 
 /* sigtramp stub for common registers.  */
 
-#define TRAMP_COMMON __gnat_sigtramp_common
-
 asm (SIGTRAMP_START(TRAMP_COMMON));
 asm (CFI_DEF_CFA);
 asm (CFI_COMMON_REGS);
 asm (SIGTRAMP_BODY);
 asm (SIGTRAMP_END(TRAMP_COMMON));
-
-
