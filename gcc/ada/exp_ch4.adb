@@ -5450,8 +5450,10 @@ package body Exp_Ch4 is
 
          --  We now wrap the actions into the appropriate expression
 
-         if Minimize_Expression_With_Actions then
-
+         if Minimize_Expression_With_Actions
+           and then (Is_Elementary_Type (Underlying_Type (Typ))
+                      or else Is_Constrained (Underlying_Type (Typ)))
+         then
             --  If we can't use N_Expression_With_Actions nodes, then we insert
             --  the following sequence of actions (using Insert_Actions):
 

@@ -1,3 +1,19 @@
+2016-04-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_res.adb (Resolve_Entry_Call): reset
+	Is_Overloaded flag after resolving calls to overloaded protected
+	operations.
+	* exp_spark.adb (Expand_SPARK): call
+	Qualify_Entity_Names for tasking nodes, i.e. protected types,
+	task types and entries.
+	* exp_ch4.adb (Expand_N_If_Expression): Refine previous change
+	in case of an unconstrained type.
+
+2016-04-18  Yannick Moy  <moy@adacore.com>
+
+	* sem_eval.adb, sem_eval.ads (Check_Non_Static_Context): Add
+	comment to document usage of subprogram in GNATprove.
+
 2016-04-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma, case Test_Case): Improve error

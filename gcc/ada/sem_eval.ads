@@ -159,6 +159,11 @@ package Sem_Eval is
    --  customer for this procedure is Sem_Attr (because Eval_Attribute is
    --  there). There is also one special case arising from ranges (see body of
    --  Resolve_Range).
+   --
+   --  Note: this procedure is also called by GNATprove on real literals
+   --  that are not sub-expressions of static expressions, to convert them to
+   --  machine numbers, as GNATprove cannot perform this conversion contrary
+   --  to gigi.
 
    procedure Check_String_Literal_Length (N : Node_Id; Ttype : Entity_Id);
    --  N is either a string literal, or a constraint error node. In the latter

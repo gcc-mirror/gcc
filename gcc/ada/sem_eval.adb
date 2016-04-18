@@ -467,6 +467,14 @@ package body Sem_Eval is
       --  non-static contexts, then ACVC test C490001 fails on Sparc/Solaris
       --  and SGI/Irix.
 
+      --  This conversion is always done by GNATprove on real literals in
+      --  non-static expressions, by calling Check_Non_Static_Context from
+      --  gnat2why, as GNATprove cannot do the conversion later contrary
+      --  to gigi. The frontend computes the information about which
+      --  expressions are static, which is used by gnat2why to call
+      --  Check_Non_Static_Context on exactly those real literals that are
+      --  not sub-expressions of static expressions.
+
       if Nkind (N) = N_Real_Literal
         and then not Is_Machine_Number (N)
         and then not Is_Generic_Type (Etype (N))
