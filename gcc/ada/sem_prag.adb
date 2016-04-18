@@ -235,6 +235,11 @@ package body Sem_Prag is
    --  original one, following the renaming chain) is returned. Otherwise the
    --  entity is returned unchanged. Should be in Einfo???
 
+   function Get_SPARK_Mode_Type (N : Name_Id) return SPARK_Mode_Type;
+   --  Subsidiary to the analysis of pragma SPARK_Mode as well as subprogram
+   --  Get_SPARK_Mode_From_Annotation. Convert a name into a corresponding
+   --  value of type SPARK_Mode_Type.
+
    function Has_Extra_Parentheses (Clause : Node_Id) return Boolean;
    --  Subsidiary to the analysis of pragmas Depends and Refined_Depends.
    --  Determine whether dependency clause Clause is surrounded by extra
@@ -20338,8 +20343,8 @@ package body Sem_Prag is
                   --  Issue an error if the new mode is less restrictive than
                   --  that of the context.
 
-                  if Get_SPARK_Mode_From_Pragma (Context_Pragma) = Off
-                    and then Get_SPARK_Mode_From_Pragma (N) = On
+                  if Get_SPARK_Mode_From_Annotation (Context_Pragma) = Off
+                    and then Get_SPARK_Mode_From_Annotation (N) = On
                   then
                      Error_Msg_N
                        ("cannot change SPARK_Mode from Off to On", Err_N);
@@ -20376,8 +20381,8 @@ package body Sem_Prag is
                      --  Issue an error if the new mode is less restrictive
                      --  than that of the initial declaration.
 
-                     if Get_SPARK_Mode_From_Pragma (Entity_Pragma) = Off
-                       and then Get_SPARK_Mode_From_Pragma (N) = On
+                     if Get_SPARK_Mode_From_Annotation (Entity_Pragma) = Off
+                       and then Get_SPARK_Mode_From_Annotation (N) = On
                      then
                         Error_Msg_N ("incorrect use of SPARK_Mode", Err_N);
                         Error_Msg_Sloc := Sloc (Entity_Pragma);
@@ -27553,30 +27558,45 @@ package body Sem_Prag is
       end if;
    end Get_SPARK_Mode_Type;
 
-   --------------------------------
-   -- Get_SPARK_Mode_From_Pragma --
-   --------------------------------
+   ------------------------------------
+   -- Get_SPARK_Mode_From_Annotation --
+   ------------------------------------
 
-   function Get_SPARK_Mode_From_Pragma (N : Node_Id) return SPARK_Mode_Type is
-      Args : List_Id;
+   function Get_SPARK_Mode_From_Annotation
+     (N : Node_Id) return SPARK_Mode_Type
+   is
       Mode : Node_Id;
 
    begin
-      pragma Assert (Nkind (N) = N_Pragma);
-      Args := Pragma_Argument_Associations (N);
+      if Nkind (N) = N_Aspect_Specification then
+         Mode := Expression (N);
 
-      --  Extract the mode from the argument list
-
-      if Present (Args) then
+      else pragma Assert (Nkind (N) = N_Pragma);
          Mode := First (Pragma_Argument_Associations (N));
-         return Get_SPARK_Mode_Type (Chars (Get_Pragma_Arg (Mode)));
 
-      --  If SPARK_Mode pragma has no argument, default is ON
+         if Present (Mode) then
+            Mode := Get_Pragma_Arg (Mode);
+         end if;
+      end if;
+
+      --  Aspect or pragma SPARK_Mode specifies an explicit mode
+
+      if Present (Mode) then
+         if Nkind (Mode) = N_Identifier then
+            return Get_SPARK_Mode_Type (Chars (Mode));
+
+         --  In case of a malformed aspect or pragma, return the default None
+
+         else
+            return None;
+         end if;
+
+      --  Otherwise the lack of an expression defaults SPARK_Mode to On
 
       else
          return On;
       end if;
-   end Get_SPARK_Mode_From_Pragma;
+   end Get_SPARK_Mode_From_Annotation;
 
    ---------------------------
    -- Has_Extra_Parentheses --

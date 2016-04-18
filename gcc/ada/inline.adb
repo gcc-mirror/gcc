@@ -1553,7 +1553,8 @@ package body Inline is
       elsif Present (Spec_Id)
         and then
           (No (SPARK_Pragma (Spec_Id))
-            or else Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Spec_Id)) /= On)
+            or else
+           Get_SPARK_Mode_From_Annotation (SPARK_Pragma (Spec_Id)) /= On)
       then
          return False;
 

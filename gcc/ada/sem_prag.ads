@@ -397,13 +397,9 @@ package Sem_Prag is
    --  Context denotes the entity of the function, package or procedure where
    --  Prag resides.
 
-   function Get_SPARK_Mode_From_Pragma (N : Node_Id) return SPARK_Mode_Type;
-   --  Given a pragma SPARK_Mode node, return corresponding mode id
-
-   function Get_SPARK_Mode_Type (N : Name_Id) return SPARK_Mode_Type;
-   --  Subsidiary to the analysis of pragma SPARK_Mode as well as subprogram
-   --  Get_SPARK_Mode_From_Pragma. Convert a name into a corresponding value
-   --  of type SPARK_Mode_Type.
+   function Get_SPARK_Mode_From_Annotation
+     (N : Node_Id) return SPARK_Mode_Type;
+   --  Given an aspect or pragma SPARK_Mode node, return corresponding mode id
 
    procedure Initialize;
    --  Initializes data structures used for pragma processing. Must be called

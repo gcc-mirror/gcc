@@ -18645,7 +18645,7 @@ package body Sem_Util is
          null;
 
       elsif Present (SPARK_Pragma (Context)) then
-         SPARK_Mode := Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Context));
+         SPARK_Mode := Get_SPARK_Mode_From_Annotation (SPARK_Pragma (Context));
       end if;
    end Save_SPARK_Mode_And_Set;
 
