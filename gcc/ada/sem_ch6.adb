@@ -3378,10 +3378,13 @@ package body Sem_Ch6 is
                Conformant := True;
 
             --  Conversely, the spec may have been generated for specless body
-            --  with an inline pragma.
+            --  with an inline pragma. The entity comes from source, which is
+            --  both semantically correct and necessary for proper inlining.
+            --  The subprogram declaration itself is not in the source.
 
             elsif Comes_From_Source (N)
-              and then not Comes_From_Source (Spec_Id)
+              and then Present (Spec_Decl)
+              and then not Comes_From_Source (Spec_Decl)
               and then Has_Pragma_Inline (Spec_Id)
             then
                Conformant := True;

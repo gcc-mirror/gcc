@@ -4539,6 +4539,25 @@ package body Sem_Prag is
          Argx : constant Node_Id := Get_Pragma_Arg (Arg);
 
       begin
+         --  If this pragma came from an aspect specification, we don't want to
+         --  check for this error, because that would cause spurious errors, in
+         --  case a type is frozen in a scope more nested than the type. The
+         --  aspect itself of course can't be anywhere but on the declaration
+         --  itself.
+
+         if Nkind (Arg) = N_Pragma_Argument_Association then
+            if From_Aspect_Specification (Parent (Arg)) then
+               return;
+            end if;
+
+         --  Arg is the Expression of an N_Pragma_Argument_Association
+
+         else
+            if From_Aspect_Specification (Parent (Parent (Arg))) then
+               return;
+            end if;
+         end if;
+
          Analyze (Argx);
 
          if Nkind (Argx) not in N_Direct_Name

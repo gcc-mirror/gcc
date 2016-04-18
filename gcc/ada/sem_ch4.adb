@@ -4221,6 +4221,13 @@ package body Sem_Ch4 is
          if Nkind (Nod) = N_Explicit_Dereference then
             return True;
 
+         --  When expansion is disabled an explicit dereference may not have
+         --  been inserted, but if this is an access type the indirection makes
+         --  the call safe.
+
+         elsif Is_Access_Type (Etype (Nod)) then
+            return True;
+
          elsif Nkind_In (Nod, N_Indexed_Component, N_Selected_Component) then
             return Has_Dereference (Prefix (Nod));
 
