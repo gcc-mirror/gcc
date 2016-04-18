@@ -2554,8 +2554,9 @@ package body Sem_Ch6 is
               Nkind (N) = N_Pragma
                 and then
                   (Pragma_Name (N) = Name_Inline_Always
-                    or else (Front_End_Inlining
-                              and then Pragma_Name (N) = Name_Inline))
+                    or else (Pragma_Name (N) = Name_Inline
+                      and then
+                        (Front_End_Inlining or else Optimization_Level > 0)))
                 and then
                   Chars
                     (Expression (First (Pragma_Argument_Associations (N)))) =

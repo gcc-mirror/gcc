@@ -37,6 +37,10 @@ package Sem_Ch12 is
    procedure Analyze_Formal_Subprogram_Declaration      (N : Node_Id);
    procedure Analyze_Formal_Package_Declaration         (N : Node_Id);
 
+   procedure Add_Pending_Instantiation (Inst : Node_Id; Act_Decl : Node_Id);
+   --  Add an entry in the table of instance bodies that must be analyzed
+   --  when inlining requires its body or the body of a nested instance.
+
    function Build_Function_Wrapper
      (Formal_Subp : Entity_Id;
       Actual_Subp : Entity_Id) return Node_Id;
@@ -113,12 +117,12 @@ package Sem_Ch12 is
    --  of G, we compile the body of I2, but not that of I1. However, when we
    --  compile U as the main unit, we compile both bodies. This will lead to
    --  link-time errors if the compilation of I1 generates public symbols,
-   --  because those in I2 will receive different names in both cases.
-   --  This forces us to analyze the body of I1 even when U is not the main
-   --  unit. We don't want this additional mechanism to generate an error
-   --  when the body of the generic for I1 is not present, and this is the
-   --  reason for the presence of the flag Body_Optional, which is exchanged
-   --  between the current procedure and Load_Parent_Of_Generic.
+   --  because those in I2 will receive different names in both cases. This
+   --  forces us to analyze the body of I1 even when U is not the main unit.
+   --  We don't want this additional mechanism to generate an error when the
+   --  body of the generic for I1 is not present, and this is the reason for
+   --  the presence of the flag Body_Optional, which is exchanged between the
+   --  current procedure and Load_Parent_Of_Generic.
 
    procedure Instantiate_Subprogram_Body
      (Body_Info     : Pending_Body_Info;

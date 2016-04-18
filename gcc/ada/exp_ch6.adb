@@ -59,6 +59,7 @@ with Sem;       use Sem;
 with Sem_Aux;   use Sem_Aux;
 with Sem_Ch6;   use Sem_Ch6;
 with Sem_Ch8;   use Sem_Ch8;
+with Sem_Ch12;  use Sem_Ch12;
 with Sem_Ch13;  use Sem_Ch13;
 with Sem_Dim;   use Sem_Dim;
 with Sem_Disp;  use Sem_Disp;
@@ -3897,6 +3898,50 @@ package body Exp_Ch6 is
                                                                       N_Entity
          then
             Add_Inlined_Body (Subp, Call_Node);
+
+            --  If the inlined call appears within an instantiation and some
+            --  level of optimization is required, ensure that the enclosing
+            --  instance body is available so that the back-end can actually
+            --  perform the inlining.
+
+            if In_Instance
+               and then Comes_From_Source (Subp)
+               and then Optimization_Level > 0
+            then
+               declare
+                  Inst : Entity_Id;
+                  Decl : Node_Id;
+
+               begin
+                  Inst := Scope (Subp);
+
+                  --  Find enclosing instance.
+
+                  while Present (Inst) and then Inst /= Standard_Standard loop
+                     exit when Is_Generic_Instance (Inst);
+                     Inst := Scope (Inst);
+                  end loop;
+
+                  if Present (Inst) and then Is_Generic_Instance (Inst) then
+                     Set_Is_Inlined (Inst);
+                     Decl := Unit_Declaration_Node (Inst);
+
+                     --  Do not add a pending instantiation if the body exits
+                     --  already, or if the instance is a compilation unit, or
+                     --  the instance node is missing.
+
+                     if Present (Corresponding_Body (Decl))
+                       or else Nkind (Parent (Decl)) = N_Compilation_Unit
+                       or else No (Next (Decl))
+                     then
+                        null;
+
+                     else
+                        Add_Pending_Instantiation (Next (Decl), Decl);
+                     end if;
+                  end if;
+               end;
+            end if;
 
          --  Front end expansion of simple functions returning unconstrained
          --  types (see Check_And_Split_Unconstrained_Function). Note that the

@@ -243,9 +243,10 @@ package body Exp_Unst is
          loop
             if No (C) then
                return Chars (Ent);
+
             elsif Chars (Defining_Identifier (C)) = Chars (Ent) then
-               return Name_Find
-                        (Get_Name_String (Chars (Ent)) & Img_Pos (Index));
+               return
+                 Name_Find (Get_Name_String (Chars (Ent)) & Img_Pos (Index));
             else
                Next (C);
             end if;

@@ -152,10 +152,10 @@ package Namet is
    type Bounded_String (Max_Length : Natural := 4 * Max_Line_Length) is limited
    --  The default here is intended to be an infinite value that ensures that
    --  we never overflow the buffer (names this long are too absurd to worry).
-      record
-         Length : Natural := 0;
-         Chars  : String (1 .. Max_Length);
-      end record;
+   record
+      Length : Natural := 0;
+      Chars  : String (1 .. Max_Length);
+   end record;
 
    --  To create a Name_Id, you can declare a Bounded_String as a local
    --  variable, and Append things onto it, and finally call Name_Find.
@@ -167,8 +167,8 @@ package Namet is
    --  to avoid the global.
 
    Global_Name_Buffer : Bounded_String;
-   Name_Buffer : String renames Global_Name_Buffer.Chars;
-   Name_Len : Natural renames Global_Name_Buffer.Length;
+   Name_Buffer        : String renames Global_Name_Buffer.Chars;
+   Name_Len           : Natural renames Global_Name_Buffer.Length;
 
    --  Note that there is some circuitry (e.g. Osint.Write_Program_Name) that
    --  does a save/restore on Name_Len and Name_Buffer (1 .. Name_Len). This
@@ -373,7 +373,8 @@ package Namet is
    --  apostrophes.
 
    procedure Append_Decoded_With_Brackets
-     (Buf : in out Bounded_String; Id : Name_Id);
+     (Buf : in out Bounded_String;
+      Id  : Name_Id);
    --  Same as Append_Decoded, except that the brackets notation (Uhh
    --  replaced by ["hh"], Whhhh replaced by ["hhhh"], WWhhhhhhhh replaced by
    --  ["hhhhhhhh"]) is used for all non-lower half characters, regardless of
@@ -383,8 +384,7 @@ package Namet is
    --  requirement for a canonical representation not affected by the
    --  character set options (e.g. in the binder generation of symbols).
 
-   procedure Append_Unqualified
-     (Buf : in out Bounded_String; Id : Name_Id);
+   procedure Append_Unqualified (Buf : in out Bounded_String; Id : Name_Id);
    --  Same as Append, except that qualification (as defined in unit
    --  Exp_Dbug) is removed (including both preceding __ delimited names, and
    --  also the suffixes used to indicate package body entities and to
@@ -395,7 +395,8 @@ package Namet is
    --  after gigi has been called.
 
    procedure Append_Unqualified_Decoded
-     (Buf : in out Bounded_String; Id : Name_Id);
+     (Buf : in out Bounded_String;
+      Id  : Name_Id);
    --  Same as Append_Unqualified, but decoded as for Append_Decoded
 
    procedure Append_Encoded (Buf : in out Bounded_String; C : Char_Code);
@@ -408,12 +409,15 @@ package Namet is
    --  are stored using the Uhh encoding).
 
    procedure Set_Character_Literal_Name
-     (Buf : in out Bounded_String; C : Char_Code);
+     (Buf : in out Bounded_String;
+      C   : Char_Code);
    --  This procedure sets the proper encoded name for the character literal
    --  for the given character code.
 
    procedure Insert_Str
-     (Buf : in out Bounded_String; S : String; Index : Positive);
+     (Buf   : in out Bounded_String;
+      S     : String;
+      Index : Positive);
    --  Inserts S in Buf, starting at Index. Any existing characters at or past
    --  this location get moved beyond the inserted string.
 

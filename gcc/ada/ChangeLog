@@ -1,3 +1,45 @@
+2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* namet.adb, namet.ads, exp_unst.adb: Minor reformatting.
+
+2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_eval.adb (Choice_Matches): Check the expression
+	against the predicate values when the choice denotes a
+	subtype with a static predicate.
+	(Eval_Membership_Op): Code cleanup. Remove the suspicious guard which
+	tests for predicates.
+	(Is_OK_Static_Subtype): A subtype with a dynamic predicate
+	is not static.	(Is_Static_Subtype): A subtype with a dynamic
+	predicate is not static.
+	* sem_eval.ads (Is_OK_Static_Subtype): Update the comment on usage.
+	(Is_Static_Subtype): Update the comment on usage.
+
+2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Input_Item): Allow
+	generic formals to appear as initialization items.
+
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Stream_TSS_Definition,
+	Has_Good_Profile): Additional error message to indicate that
+	the second parameter of the subprogram must be a first subtype.
+
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper, Is_Inline_Pragma):
+	Use the pragma lookahead that determines whether a subprogram
+	is to be inlined, when some level of backend optimization is
+	required.
+	* sem_ch12.ads, sem_ch12.adb (Add_Pending_Instantiation): Factorize
+	code used to create an instance body when needed for inlining.
+	* exp_ch6.adb (Expand_Call): When a call is to be inlined, and the
+	call appears within an instantiation that is not a compilation
+	unit, add a pending instantiation for the enclosing instance,
+	so the backend can inline in turn the calls contained in the
+	inlined body.
+
 2016-04-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Build_Pragma_Check_Equivalent): The mapping

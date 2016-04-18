@@ -140,6 +140,7 @@ package body Namet is
    procedure Append (Buf : in out Bounded_String; Id : Name_Id) is
       pragma Assert (Id in Name_Entries.First .. Name_Entries.Last);
       S : constant Int := Name_Entries.Table (Id).Name_Chars_Index;
+
    begin
       for J in 1 .. Natural (Name_Entries.Table (Id).Name_Len) loop
          Append (Buf, Name_Chars.Table (S + Int (J)));
@@ -420,7 +421,9 @@ package body Namet is
    ----------------------------------
 
    procedure Append_Decoded_With_Brackets
-     (Buf : in out Bounded_String; Id : Name_Id) is
+     (Buf : in out Bounded_String;
+      Id  : Name_Id)
+   is
       P : Natural;
 
    begin
@@ -560,8 +563,7 @@ package body Namet is
    -- Append_Unqualified --
    ------------------------
 
-   procedure Append_Unqualified
-     (Buf : in out Bounded_String; Id : Name_Id) is
+   procedure Append_Unqualified (Buf : in out Bounded_String; Id : Name_Id) is
    begin
       Append (Buf, Id);
       Strip_Qualification_And_Suffixes (Buf);
@@ -572,7 +574,9 @@ package body Namet is
    --------------------------------
 
    procedure Append_Unqualified_Decoded
-     (Buf : in out Bounded_String; Id : Name_Id) is
+     (Buf : in out Bounded_String;
+      Id  : Name_Id)
+   is
    begin
       Append_Decoded (Buf, Id);
       Strip_Qualification_And_Suffixes (Buf);
@@ -908,8 +912,12 @@ package body Namet is
    ----------------
 
    procedure Insert_Str
-     (Buf : in out Bounded_String; S : String; Index : Positive) is
+     (Buf   : in out Bounded_String;
+      S     : String;
+      Index : Positive)
+   is
       SL : constant Natural := S'Length;
+
    begin
       Buf.Chars (Index + SL .. Buf.Length + SL) :=
         Buf.Chars (Index .. Buf.Length);
@@ -1468,7 +1476,9 @@ package body Namet is
    --------------------------------
 
    procedure Set_Character_Literal_Name
-     (Buf : in out Bounded_String; C : Char_Code) is
+     (Buf : in out Bounded_String;
+      C   : Char_Code)
+   is
    begin
       Buf.Length := 0;
       Append (Buf, 'Q');
