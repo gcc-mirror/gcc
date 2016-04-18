@@ -1,3 +1,17 @@
+2016-04-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, i?86-*-solaris2.10): Update gas and
+	gld requirements.
+	(Specific, *-*-solaris2*): Update Solaris 11 bundled gcc
+	versions.
+	Mention Solaris 11 packaging changes.
+	Update gas and gld requirements.
+	Remove reference to pre-Solaris 10 bug.
+	(Specific, sparc-sun-solaris2*): Remove reference to pre-Solaris 10
+	systems and bugs.
+	(Specific, sparc64-*-solaris2*): Remove reference to bootstrap
+	with cc.
+
 2016-04-17  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-loop-ivopts.c (avg_loop_niter): Use also
