@@ -3922,7 +3922,10 @@ package body Exp_Ch6 is
                      Inst := Scope (Inst);
                   end loop;
 
-                  if Present (Inst) and then Is_Generic_Instance (Inst) then
+                  if Present (Inst)
+                    and then Is_Generic_Instance (Inst)
+                    and then not Is_Inlined (Inst)
+                  then
                      Set_Is_Inlined (Inst);
                      Decl := Unit_Declaration_Node (Inst);
 

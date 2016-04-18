@@ -1,5 +1,14 @@
 2016-04-18  Arnaud Charlet  <charlet@adacore.com>
 
+	* exp_ch4.adb: Update comment.
+
+2016-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Make sure instantiations are
+	registered only once as pending here.
+
+2016-04-18  Arnaud Charlet  <charlet@adacore.com>
+
 	* exp_ch4.adb, gnat1drv.adb, opt.ads, sem_res.adb
 	(Minimize_Expression_With_Actions): New flag.
 	(Adjust_Global_Switches): Set Minimize_Expression_With_Actions
