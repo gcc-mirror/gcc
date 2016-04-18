@@ -1,3 +1,10 @@
+2016-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70690
+	PR c++/70528
+	* class.c (type_maybe_constexpr_default_constructor): New.
+	(type_has_constexpr_default_constructor): Revert.
+
 2016-04-16  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR target/1078
