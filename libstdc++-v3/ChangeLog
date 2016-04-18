@@ -1,5 +1,10 @@
 2016-04-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/70294
+	* include/std/thread (operator<, operator==): Move definitions to
+	namespace-scope.
+	* testsuite/30_threads/thread/id/70294.cc: New test.
+
 	* testsuite/18_support/bad_exception/23591_thread-1.c: Add
 	-Wno-pedantic to dg-options.
 	* testsuite/20_util/align/2.cc: Use type as operand of alignof.
