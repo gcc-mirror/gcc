@@ -1,3 +1,21 @@
+2016-04-18  Bob Duff  <duff@adacore.com>
+
+	* a-cuprqu.ads: Change the representation of List_Type from a
+	singly-linked list to a doubly-linked list. In addition, add a
+	pointer Next_Unequal, which points past a possibly-long chain
+	of equal-priority items. This increases efficiency, especially
+	in the case of many equal-priority items.
+	* a-cuprqu.adb (Dequeue, Enqueue): Rewrite algorithms to take
+	advantage of new data structure.
+	(Finalize): Rewrite in terms of Dequeue, for simplicity.
+
+2016-04-18  Yannick Moy  <moy@adacore.com>
+
+	* contracts.adb (Analyze_Object_Contract,
+	Analyze_Protected_Contract): Remove tests performed in GNATprove.
+	* sem_util.adb, sem_util.ads (Has_Full_Default_Initialization):
+	Remove query for tests performed in GNATprove.
+
 2016-04-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_aggr.adb (Resolve_Record_Aggregate): If

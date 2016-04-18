@@ -660,7 +660,6 @@ package body Contracts is
       Obj_Typ      : constant Entity_Id := Etype (Obj_Id);
       AR_Val       : Boolean := False;
       AW_Val       : Boolean := False;
-      Encap_Id     : Entity_Id;
       ER_Val       : Boolean := False;
       EW_Val       : Boolean := False;
       Items        : Node_Id;
@@ -871,28 +870,6 @@ package body Contracts is
                     ("non-volatile object & cannot have volatile components",
                      Obj_Id);
                end if;
-            end if;
-
-            --  A variable whose Part_Of pragma specifies a single concurrent
-            --  type as encapsulator must be (SPARK RM 9.4):
-            --    * Of a type that defines full default initialization, or
-            --    * Declared with a default value, or
-            --    * Imported
-
-            Encap_Id := Encapsulating_State (Obj_Id);
-
-            if Present (Encap_Id)
-              and then Is_Single_Concurrent_Object (Encap_Id)
-              and then not Has_Full_Default_Initialization (Etype (Obj_Id))
-              and then not Has_Initial_Value (Obj_Id)
-              and then not Is_Imported (Obj_Id)
-            then
-               Error_Msg_N ("& requires full default initialization", Obj_Id);
-
-               Error_Msg_Name_1 := Chars (Encap_Id);
-               Error_Msg_N
-                 (Fix_Msg (Encap_Id, "\object acts as constituent of single "
-                  & "protected type %"), Obj_Id);
             end if;
          end if;
       end if;
@@ -1137,7 +1114,6 @@ package body Contracts is
 
    procedure Analyze_Protected_Contract (Prot_Id : Entity_Id) is
       Items : constant Node_Id := Contract (Prot_Id);
-      Mode  : SPARK_Mode_Type;
 
    begin
       --  Do not analyze a contract multiple times
@@ -1149,30 +1125,6 @@ package body Contracts is
             Set_Analyzed (Items);
          end if;
       end if;
-
-      --  Due to the timing of contract analysis, delayed pragmas may be
-      --  subject to the wrong SPARK_Mode, usually that of the enclosing
-      --  context. To remedy this, restore the original SPARK_Mode of the
-      --  related protected unit.
-
-      Save_SPARK_Mode_And_Set (Prot_Id, Mode);
-
-      --  A protected type must define full default initialization
-      --  (SPARK RM 9.4). This check is relevant only when SPARK_Mode is on as
-      --  it is not a standard Ada legality rule.
-
-      if SPARK_Mode = On
-        and then not Has_Full_Default_Initialization (Prot_Id)
-      then
-         Error_Msg_N
-           ("protected type & must define full default initialization",
-            Prot_Id);
-      end if;
-
-      --  Restore the SPARK_Mode of the enclosing context after all delayed
-      --  pragmas have been analyzed.
-
-      Restore_SPARK_Mode (Mode);
    end Analyze_Protected_Contract;
 
    -------------------------------------------

@@ -37,8 +37,21 @@ package body Ada.Containers.Unbounded_Priority_Queues is
       -- Local Subprograms --
       -----------------------
 
+      function Before_Or_Equal (X, Y : Queue_Priority) return Boolean;
+      --  True if X is before or equal to Y. Equal means both Before(X,Y) and
+      --  Before(Y,X) are False.
+
       procedure Free is
-         new Ada.Unchecked_Deallocation (Node_Type, Node_Access);
+        new Ada.Unchecked_Deallocation (Node_Type, Node_Access);
+
+      ---------------------
+      -- Before_Or_Equal --
+      ---------------------
+
+      function Before_Or_Equal (X, Y : Queue_Priority) return Boolean is
+      begin
+         return (if Before (X, Y) then True else not Before (Y, X));
+      end Before_Or_Equal;
 
       -------------
       -- Dequeue --
@@ -48,20 +61,36 @@ package body Ada.Containers.Unbounded_Priority_Queues is
         (List    : in out List_Type;
          Element : out Queue_Interfaces.Element_Type)
       is
-         X : Node_Access;
+         H : constant Node_Access := List.Header'Unchecked_Access;
+         pragma Assert (List.Length /= 0);
+         pragma Assert (List.Header.Next /= H);
+         --  List can't be empty; see the barrier
+
+         pragma Assert
+           (List.Header.Next.Next = H or else
+            Before_Or_Equal (Get_Priority (List.Header.Next.Element),
+                             Get_Priority (List.Header.Next.Next.Element)));
+         --  The first item is before-or-equal to the second
+
+         pragma Assert
+           (List.Header.Next.Next_Unequal = H or else
+            Before (Get_Priority (List.Header.Next.Element),
+                    Get_Priority (List.Header.Next.Next_Unequal.Element)));
+         --  The first item is before its Next_Unequal item
+
+         --  The highest-priority item is always first; just remove it and
+         --  return that element.
+
+         X : Node_Access := List.Header.Next;
+
+      --  Start of processing for Dequeue
 
       begin
-         Element := List.First.Element;
-
-         X := List.First;
-         List.First := List.First.Next;
-
-         if List.First = null then
-            List.Last := null;
-         end if;
-
+         Element := X.Element;
+         X.Next.Prev := H;
+         List.Header.Next := X.Next;
+         List.Header.Next_Unequal := X.Next;
          List.Length := List.Length - 1;
-
          Free (X);
       end Dequeue;
 
@@ -93,15 +122,13 @@ package body Ada.Containers.Unbounded_Priority_Queues is
          --  dequeue an item. If it's false, it means no item is dequeued, and
          --  we return False as the Success value.
 
-         if List.Length = 0
-           or else Before (At_Least, Get_Priority (List.First.Element))
-         then
-            Success := False;
-            return;
-         end if;
+         Success := List.Length > 0
+           and then
+             not Before (At_Least, Get_Priority (List.Header.Next.Element));
 
-         List.Dequeue (Element);
-         Success := True;
+         if Success then
+            List.Dequeue (Element);
+         end if;
       end Dequeue;
 
       -------------
@@ -113,41 +140,55 @@ package body Ada.Containers.Unbounded_Priority_Queues is
          New_Item : Queue_Interfaces.Element_Type)
       is
          P : constant Queue_Priority := Get_Priority (New_Item);
+         H : constant Node_Access := List.Header'Unchecked_Access;
 
-         Node : Node_Access;
-         Prev : Node_Access;
+         function Next return Node_Access;
+         --  The node before which we wish to insert the new node
+
+         ----------
+         -- Next --
+         ----------
+
+         function Next return Node_Access is
+         begin
+            return Result : Node_Access := H.Next_Unequal do
+               while Result /= H
+                 and then not Before (P, Get_Priority (Result.Element))
+               loop
+                  Result := Result.Next_Unequal;
+               end loop;
+            end return;
+         end Next;
+
+         --  Local varaibles
+
+         Prev : constant Node_Access := Next.Prev;
+         --  The node after which we wish to insert the new node. So Prev must
+         --  be the header, or be higher or equal priority to the new item.
+         --  Prev.Next must be the header, or be lower priority than the
+         --  new item.
+
+         pragma Assert
+           (Prev = H or else Before_Or_Equal (Get_Priority (Prev.Element), P));
+         pragma Assert
+           (Prev.Next = H
+              or else Before (P, Get_Priority (Prev.Next.Element)));
+         pragma Assert (Prev.Next = Prev.Next_Unequal);
+
+         Node : constant Node_Access :=
+                  new Node_Type'(New_Item,
+                                 Prev         => Prev,
+                                 Next         => Prev.Next,
+                                 Next_Unequal => Prev.Next);
+
+      --  Start of processing for Enqueue
 
       begin
-         Node := new Node_Type'(New_Item, null);
+         Prev.Next.Prev := Node;
+         Prev.Next := Node;
 
-         if List.First = null then
-            List.First := Node;
-            List.Last := List.First;
-
-         else
-            Prev := List.First;
-
-            if Before (P, Get_Priority (Prev.Element)) then
-               Node.Next := List.First;
-               List.First := Node;
-
-            else
-               while Prev.Next /= null loop
-                  if Before (P, Get_Priority (Prev.Next.Element)) then
-                     Node.Next := Prev.Next;
-                     Prev.Next := Node;
-
-                     exit;
-                  end if;
-
-                  Prev := Prev.Next;
-               end loop;
-
-               if Prev.Next = null then
-                  List.Last.Next := Node;
-                  List.Last := Node;
-               end if;
-            end if;
+         if List.Length = 0 then
+            List.Header.Next_Unequal := Node;
          end if;
 
          List.Length := List.Length + 1;
@@ -162,12 +203,10 @@ package body Ada.Containers.Unbounded_Priority_Queues is
       --------------
 
       procedure Finalize (List : in out List_Type) is
-         X : Node_Access;
+         Ignore : Queue_Interfaces.Element_Type;
       begin
-         while List.First /= null loop
-            X := List.First;
-            List.First := List.First.Next;
-            Free (X);
+         while List.Length > 0 loop
+            List.Dequeue (Ignore);
          end loop;
       end Finalize;
 

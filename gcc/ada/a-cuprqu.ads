@@ -81,18 +81,35 @@ package Ada.Containers.Unbounded_Priority_Queues is
 
    private
 
+      --  List_Type is implemented as a circular doubly-linked list with a
+      --  dummy header node; Prev and Next are the links. The list is in
+      --  decreasing priority order, so the highest-priority item is always
+      --  first. (If there are multiple items with the highest priority, the
+      --  oldest one is first.) Header.Element is undefined and not used.
+      --
+      --  In addition, Next_Unequal points to the next item with a different
+      --  (i.e. strictly lower) priority. This is used to speed up the search
+      --  for the next lower-priority item, in cases where there are many items
+      --  with the same priority.
+      --
+      --  An empty list has Header.Prev, Header.Next, and Header.Next_Unequal
+      --  all pointing to Header. A nonempty list has Header.Next_Unequal
+      --  pointing to the first "real" item, and the last item has Next_Unequal
+      --  pointing back to Header.
+
       type Node_Type;
-      type Node_Access is access Node_Type;
+      type Node_Access is access all Node_Type;
 
       type Node_Type is limited record
-         Element : Queue_Interfaces.Element_Type;
-         Next    : Node_Access;
+         Element      : Queue_Interfaces.Element_Type;
+         Prev, Next   : Node_Access := Node_Type'Unchecked_Access;
+         Next_Unequal : Node_Access := Node_Type'Unchecked_Access;
       end record;
 
       type List_Type is new Ada.Finalization.Limited_Controlled with record
-         First, Last : Node_Access;
-         Length      : Count_Type := 0;
-         Max_Length  : Count_Type := 0;
+         Header     : aliased Node_Type;
+         Length     : Count_Type := 0;
+         Max_Length : Count_Type := 0;
       end record;
 
       overriding procedure Finalize (List : in out List_Type);
