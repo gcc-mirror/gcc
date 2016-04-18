@@ -87,6 +87,9 @@
    |march=armv7e-m|mcpu=cortex-m4|mcpu=cortex-m7        \
    |march=armv6-m|mcpu=cortex-m0                        \
    |march=armv8-a					\
+   |march=armv8-a+crc					\
+   |march=armv8.1-a					\
+   |march=armv8.1-a+crc					\
    :%{!r:--be8}}}"
 #else
 #define BE8_LINK_SPEC \
@@ -115,6 +118,9 @@
    |march=armv7e-m|mcpu=cortex-m4|mcpu=cortex-m7        \
    |march=armv6-m|mcpu=cortex-m0                        \
    |march=armv8-a					\
+   |march=armv8-a+crc					\
+   |march=armv8.1-a					\
+   |march=armv8.1-a+crc					\
    :%{!r:--be8}}}"
 #endif
 
