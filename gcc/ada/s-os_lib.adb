@@ -1867,6 +1867,14 @@ package body System.OS_Lib is
 
       Result := Non_Blocking_Spawn (Program_Name, Args);
 
+      --  Close the files just created for the output, as the file descriptors
+      --  cannot be used anywhere, being local values. It is safe to do that,
+      --  as the file descriptors have been duplicated to form standard output
+      --  and standard error of the spawned process.
+
+      Close (Stdout_FD);
+      Close (Stderr_FD);
+
       --  Restore the standard output and error
 
       Dup2 (Saved_Output, Standout);

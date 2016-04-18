@@ -1758,7 +1758,6 @@ package body Sem_Ch5 is
       Subt      : constant Node_Id    := Subtype_Indication (N);
       Iter_Name : constant Node_Id    := Name (N);
 
-      Ent : Entity_Id;
       Typ : Entity_Id;
       Bas : Entity_Id;
 
@@ -2306,27 +2305,12 @@ package body Sem_Ch5 is
                  Get_Cursor_Type
                    (Parent (Find_Value_Of_Aspect (Typ, Aspect_Iterable)),
                     Typ));
-               Ent := Etype (Def_Id);
 
             else
                Set_Etype (Def_Id, Get_Cursor_Type (Typ));
             end if;
 
          end if;
-      end if;
-
-      --  A loop parameter cannot be effectively volatile (SPARK RM 7.1.3(4)).
-      --  This check is relevant only when SPARK_Mode is on as it is not a
-      --  standard Ada legality check.
-
-      --  Not clear whether this applies to element iterators, where the
-      --  cursor is not an explicit entity ???
-
-      if SPARK_Mode = On
-        and then not Of_Present (N)
-        and then Is_Effectively_Volatile (Ent)
-      then
-         Error_Msg_N ("loop parameter cannot be volatile", Ent);
       end if;
    end Analyze_Iterator_Specification;
 

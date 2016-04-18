@@ -1061,6 +1061,12 @@ package Opt is
    --  GNATMAKE
    --  Set to True if minimal recompilation mode requested
 
+   Minimize_Expression_With_Actions : Boolean := False;
+   --  GNAT
+   --  If True, minimize the use of N_Expression_With_Actions node.
+   --  This can be used in particular on some back-ends where this node is
+   --  difficult to support.
+
    Modify_Tree_For_C : Boolean := False;
    --  GNAT
    --  If this switch is set True (currently it is set only by -gnatd.V), then
