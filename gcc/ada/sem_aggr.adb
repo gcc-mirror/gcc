@@ -479,7 +479,7 @@ package body Sem_Aggr is
          else
             if Compile_Time_Known_Value (This_Low) then
                if not Compile_Time_Known_Value (Aggr_Low (Dim)) then
-                  Aggr_Low (Dim)  := This_Low;
+                  Aggr_Low (Dim) := This_Low;
 
                elsif Expr_Value (This_Low) /= Expr_Value (Aggr_Low (Dim)) then
                   Set_Raises_Constraint_Error (N);
@@ -491,7 +491,7 @@ package body Sem_Aggr is
 
             if Compile_Time_Known_Value (This_High) then
                if not Compile_Time_Known_Value (Aggr_High (Dim)) then
-                  Aggr_High (Dim)  := This_High;
+                  Aggr_High (Dim) := This_High;
 
                elsif
                  Expr_Value (This_High) /= Expr_Value (Aggr_High (Dim))
@@ -1842,7 +1842,7 @@ package body Sem_Aggr is
             Errors_Posted_On_Choices : Boolean := False;
             --  Keeps track of whether any choices have semantic errors
 
-            function Empty_Range (A : Node_Id)  return Boolean;
+            function Empty_Range (A : Node_Id) return Boolean;
             --  If an association covers an empty range, some warnings on the
             --  expression of the association can be disabled.
 
@@ -1850,7 +1850,7 @@ package body Sem_Aggr is
             -- Empty_Range --
             -----------------
 
-            function Empty_Range (A : Node_Id)  return Boolean is
+            function Empty_Range (A : Node_Id) return Boolean is
                R : constant Node_Id := First (Choices (A));
             begin
                return No (Next (R))

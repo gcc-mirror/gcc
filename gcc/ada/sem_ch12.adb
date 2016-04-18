@@ -1324,7 +1324,7 @@ package body Sem_Ch12 is
       -- Process_Default --
       ---------------------
 
-      procedure Process_Default (F : Entity_Id)  is
+      procedure Process_Default (F : Entity_Id) is
          Loc     : constant Source_Ptr := Sloc (I_Node);
          F_Id    : constant Entity_Id  := Defining_Entity (F);
          Decl    : Node_Id;

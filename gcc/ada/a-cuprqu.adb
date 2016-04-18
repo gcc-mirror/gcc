@@ -194,6 +194,15 @@ package body Ada.Containers.Unbounded_Priority_Queues is
             --  must update.
 
             List.Header.Next_Unequal := Node;
+
+         elsif Before (Get_Priority (Prev.Element), P) then
+
+            --  If the new item inserted has a unique priority in queue (not
+            --  same priority as precedent), set Next_Unequal of precedent
+            --  element to the new element instead of old next element, since
+            --  Before (P, Get_Priority (Next.Element) or Next = H).
+
+            Prev.Next_Unequal := Node;
          end if;
 
          pragma Assert (List.Header.Next_Unequal = List.Header.Next);

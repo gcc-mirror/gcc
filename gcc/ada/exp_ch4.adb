@@ -4845,16 +4845,19 @@ package body Exp_Ch4 is
    ------------------------------
 
    procedure Expand_N_Case_Expression (N : Node_Id) is
-      Loc     : constant Source_Ptr := Sloc (N);
-      Typ     : constant Entity_Id  := Etype (N);
-      Cstmt   : Node_Id;
-      Decl    : Node_Id;
-      Tnn     : Entity_Id;
-      Pnn     : Entity_Id;
-      Actions : List_Id;
-      Ttyp    : Entity_Id;
-      Alt     : Node_Id;
-      Fexp    : Node_Id;
+      Loc                  : constant Source_Ptr := Sloc (N);
+      Typ                  : constant Entity_Id  := Etype (N);
+      Acts                 : List_Id;
+      Alt                  : Node_Id;
+      Case_Stmt            : Node_Id;
+      Decl                 : Node_Id;
+      Expr                 : Node_Id;
+      In_Predicate         : Boolean := False;
+      Optimize_Return_Stmt : Boolean := False;
+      Par                  : Node_Id;
+      Ptr_Typ              : Entity_Id;
+      Target               : Entity_Id;
+      Target_Typ           : Entity_Id;
 
    begin
       --  Check for MINIMIZED/ELIMINATED overflow mode
@@ -4870,10 +4873,13 @@ package body Exp_Ch4 is
 
       if Ekind_In (Current_Scope, E_Function, E_Procedure)
         and then Is_Predicate_Function (Current_Scope)
-        and then
-          Has_Static_Predicate_Aspect (Etype (First_Entity (Current_Scope)))
       then
-         return;
+         In_Predicate := True;
+
+         if Has_Static_Predicate_Aspect (Etype (First_Entity (Current_Scope)))
+         then
+            return;
+         end if;
       end if;
 
       --  We expand
@@ -4883,35 +4889,54 @@ package body Exp_Ch4 is
       --  to
 
       --    do
-      --       Tnn : typ;
+      --       Target : typ;
       --       case X is
       --          when A =>
-      --             Tnn := AX;
+      --             Target := AX;
       --          when B =>
-      --             Tnn := BX;
+      --             Target := BX;
       --          ...
       --       end case;
-      --    in Tnn end;
+      --    in Target end;
 
-      --  However, this expansion is wrong for limited types, and also
-      --  wrong for unconstrained types (since the bounds may not be the
-      --  same in all branches). Furthermore it involves an extra copy
-      --  for large objects. So we take care of this by using the following
-      --  modified expansion for non-elementary types:
+      --  Except when the case expression appears as part of a simple return
+      --  statement, returning an elementary type, where we expand
+
+      --    return (case X is when A => AX, when B => BX ...)
+
+      --  to
+
+      --    case X is
+      --       when A =>
+      --          return AX;
+      --       when B =>
+      --          return BX;
+      --       ...
+      --    end case;
+
+      --    Note that this expansion is also triggered for expression functions
+      --    containing a single case expression since these functions are
+      --    expanded as above.
+
+      --  However, this expansion is wrong for limited types, and also wrong
+      --  for unconstrained types (since the bounds may not be the same in all
+      --  branches). Furthermore it involves an extra copy for large objects.
+      --  So we take care of this by using the following modified expansion for
+      --  non-elementary types:
 
       --    do
-      --       type Pnn is access all typ;
-      --       Tnn : Pnn;
+      --       type Ptr_Typ is access all typ;
+      --       Target : Ptr_Typ;
       --       case X is
       --          when A =>
-      --             T := AX'Unrestricted_Access;
+      --             Target := AX'Unrestricted_Access;
       --          when B =>
-      --             T := BX'Unrestricted_Access;
+      --             Target := BX'Unrestricted_Access;
       --          ...
       --       end case;
-      --    in Tnn.all end;
+      --    in Target.all end;
 
-      Cstmt :=
+      Case_Stmt :=
         Make_Case_Statement (Loc,
           Expression   => Expression (N),
           Alternatives => New_List);
@@ -4921,99 +4946,126 @@ package body Exp_Ch4 is
       --  the premature finalization of controlled objects found within the
       --  case statement.
 
-      Set_From_Conditional_Expression (Cstmt);
-
-      Actions := New_List;
+      Set_From_Conditional_Expression (Case_Stmt);
+      Acts := New_List;
 
       --  Scalar case
 
       if Is_Elementary_Type (Typ) then
-         Ttyp := Typ;
+         Target_Typ := Typ;
+
+         --  ??? Do not perform the optimization when the return statement is
+         --  within a predicate function as this causes supurious errors. A
+         --  possible mismatch in handling this case somewhere else in semantic
+         --  analysis?
+
+         if not In_Predicate
+           and then Nkind (Parent (N)) = N_Simple_Return_Statement
+         then
+            Optimize_Return_Stmt := True;
+         end if;
 
       else
-         Pnn := Make_Temporary (Loc, 'P');
-         Append_To (Actions,
+         Ptr_Typ := Make_Temporary (Loc, 'P');
+         Append_To (Acts,
            Make_Full_Type_Declaration (Loc,
-             Defining_Identifier => Pnn,
+             Defining_Identifier => Ptr_Typ,
              Type_Definition     =>
                Make_Access_To_Object_Definition (Loc,
                  All_Present        => True,
                  Subtype_Indication => New_Occurrence_Of (Typ, Loc))));
-         Ttyp := Pnn;
+         Target_Typ := Ptr_Typ;
       end if;
 
-      Tnn := Make_Temporary (Loc, 'T');
+      if not Optimize_Return_Stmt then
+         Target := Make_Temporary (Loc, 'T');
 
-      --  Create declaration for target of expression, and indicate that it
-      --  does not require initialization.
+         --  Create declaration for target of expression, and indicate that it
+         --  does not require initialization.
 
-      Decl :=
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Tnn,
-          Object_Definition   => New_Occurrence_Of (Ttyp, Loc));
-      Set_No_Initialization (Decl);
-      Append_To (Actions, Decl);
+         Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Target,
+             Object_Definition   => New_Occurrence_Of (Target_Typ, Loc));
+         Set_No_Initialization (Decl);
+         Append_To (Acts, Decl);
+      end if;
 
       --  Now process the alternatives
 
       Alt := First (Alternatives (N));
       while Present (Alt) loop
          declare
-            Aexp  : Node_Id             := Expression (Alt);
-            Aloc  : constant Source_Ptr := Sloc (Aexp);
-            Stats : List_Id;
+            Alt_Expr : Node_Id             := Expression (Alt);
+            Alt_Loc  : constant Source_Ptr := Sloc (Alt_Expr);
+            Stmts    : List_Id;
 
          begin
             --  As described above, take Unrestricted_Access for case of non-
             --  scalar types, to avoid big copies, and special cases.
 
             if not Is_Elementary_Type (Typ) then
-               Aexp :=
-                 Make_Attribute_Reference (Aloc,
-                   Prefix         => Relocate_Node (Aexp),
+               Alt_Expr :=
+                 Make_Attribute_Reference (Alt_Loc,
+                   Prefix         => Relocate_Node (Alt_Expr),
                    Attribute_Name => Name_Unrestricted_Access);
             end if;
 
-            Stats := New_List (
-              Make_Assignment_Statement (Aloc,
-                Name       => New_Occurrence_Of (Tnn, Loc),
-                Expression => Aexp));
+            if Optimize_Return_Stmt then
+               Stmts := New_List (
+                 Make_Simple_Return_Statement (Alt_Loc,
+                   Expression => Alt_Expr));
+            else
+               Stmts := New_List (
+                 Make_Assignment_Statement (Alt_Loc,
+                   Name       => New_Occurrence_Of (Target, Loc),
+                   Expression => Alt_Expr));
+            end if;
 
             --  Propagate declarations inserted in the node by Insert_Actions
             --  (for example, temporaries generated to remove side effects).
             --  These actions must remain attached to the alternative, given
             --  that they are generated by the corresponding expression.
 
-            if Present (Sinfo.Actions (Alt)) then
-               Prepend_List (Sinfo.Actions (Alt), Stats);
+            if Present (Actions (Alt)) then
+               Prepend_List (Actions (Alt), Stmts);
             end if;
 
             Append_To
-              (Alternatives (Cstmt),
+              (Alternatives (Case_Stmt),
                Make_Case_Statement_Alternative (Sloc (Alt),
                  Discrete_Choices => Discrete_Choices (Alt),
-                 Statements       => Stats));
+                 Statements       => Stmts));
          end;
 
          Next (Alt);
       end loop;
 
-      Append_To (Actions, Cstmt);
+      --  Rewrite parent return statement as a case statement if possible
+
+      if Optimize_Return_Stmt then
+         Par := Parent (N);
+         Rewrite (Par, Case_Stmt);
+         Analyze (Par);
+         return;
+      end if;
+
+      Append_To (Acts, Case_Stmt);
 
       --  Construct and return final expression with actions
 
       if Is_Elementary_Type (Typ) then
-         Fexp := New_Occurrence_Of (Tnn, Loc);
+         Expr := New_Occurrence_Of (Target, Loc);
       else
-         Fexp :=
+         Expr :=
            Make_Explicit_Dereference (Loc,
-             Prefix => New_Occurrence_Of (Tnn, Loc));
+             Prefix => New_Occurrence_Of (Target, Loc));
       end if;
 
       Rewrite (N,
         Make_Expression_With_Actions (Loc,
-          Expression => Fexp,
-          Actions    => Actions));
+          Expression => Expr,
+          Actions    => Acts));
 
       Analyze_And_Resolve (N, Typ);
    end Expand_N_Case_Expression;

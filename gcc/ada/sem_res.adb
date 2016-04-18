@@ -7657,14 +7657,15 @@ package body Sem_Res is
 
          --  Reset the Is_Overloaded flag, since resolution is now completed
 
+         --  Simple entry call
+
          if Nkind (Entry_Name) = N_Selected_Component then
-            --  Simple entry call
             Set_Is_Overloaded (Selector_Name (Entry_Name), False);
 
-         else pragma Assert (Nkind (Entry_Name) = N_Indexed_Component);
-            --  Call to member of entry family
-            Set_Is_Overloaded (Selector_Name (Prefix (Entry_Name)), False);
+         --  Call to a member of an entry family
 
+         else pragma Assert (Nkind (Entry_Name) = N_Indexed_Component);
+            Set_Is_Overloaded (Selector_Name (Prefix (Entry_Name)), False);
          end if;
       end if;
 

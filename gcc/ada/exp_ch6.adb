@@ -3707,7 +3707,7 @@ package body Exp_Ch6 is
                  Make_Explicit_Dereference (Loc,
                    Prefix => Nam);
 
-               if Present (Parameter_Associations (Call_Node))  then
+               if Present (Parameter_Associations (Call_Node)) then
                   Parm := Parameter_Associations (Call_Node);
                else
                   Parm := New_List;
@@ -3790,7 +3790,7 @@ package body Exp_Ch6 is
                 (RTE (RE_Address), Relocate_Node (First_Actual (Call_Node))));
             return;
 
-         elsif Is_Null_Procedure (Subp)  then
+         elsif Is_Null_Procedure (Subp) then
             Rewrite (Call_Node, Make_Null_Statement (Loc));
             return;
          end if;

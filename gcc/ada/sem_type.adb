@@ -2975,7 +2975,7 @@ package body Sem_Type is
    -- New_Interps --
    -----------------
 
-   procedure New_Interps (N : Node_Id)  is
+   procedure New_Interps (N : Node_Id) is
       Map_Ptr : Int;
 
    begin

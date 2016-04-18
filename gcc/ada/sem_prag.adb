@@ -4652,7 +4652,7 @@ package body Sem_Prag is
                then
                   OK := True;
 
-               --  If the aspect is a predicate (possibly others ???)  and the
+               --  If the aspect is a predicate (possibly others ???) and the
                --  context is a record type, this is a discriminant expression
                --  within a type declaration, that freezes the predicated
                --  subtype.

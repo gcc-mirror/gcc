@@ -1,5 +1,33 @@
 2016-04-18  Arnaud Charlet  <charlet@adacore.com>
 
+	* einfo.adb (Overridden_Operation): assert that
+	function is called for valid arguments.
+	* sem_aggr.adb, sem_ch3.adb, sem_ch5.adb, sem_type.adb,
+	s-osinte-vxworks.ads, a-ngcefu.adb, sem_ch10.adb, einfo.ads,
+	sem_prag.adb, sem_ch12.adb, sem.adb, i-cobol.ads, freeze.adb,
+	sem_util.adb, a-chtgop.ads, s-rannum.adb, exp_ch6.adb, s-bignum.adb,
+	s-osinte-freebsd.ads, par-ch5.adb, a-chtgbo.ads, a-cofove.adb:
+	No space after closing parenthesis except where required for
+	layout.
+	* sem_res.adb: Minor reformatting.
+
+2016-04-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Case_Expression): Convert into a case
+	statement when relevant.
+
+2016-04-18  Bob Duff  <duff@adacore.com>
+
+	* a-cuprqu.adb (Enqueue): Properly handle the
+	case where the new element has a unique priority.
+
+2016-04-18  Tristan Gingold  <gingold@adacore.com>
+
+	* adaint.h: Define stat structures and functions for iOS
+	simulator.
+
+2016-04-18  Arnaud Charlet  <charlet@adacore.com>
+
 	* sem_res.adb (Resolve_Entry_Call): reset
 	Is_Overloaded flag after resolving calls to overloaded protected
 	operations.

@@ -2039,7 +2039,7 @@ package body Sem is
                --  The flag Withed_Body on a context clause indicates that a
                --  unit contains an instantiation that may be needed later,
                --  and therefore the body that contains the generic body (and
-               --  its context)  must be traversed immediately after the
+               --  its context) must be traversed immediately after the
                --  corresponding spec (see Do_Unit_And_Dependents).
 
                --  The main unit itself is processed separately after all other
