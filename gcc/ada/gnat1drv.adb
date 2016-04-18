@@ -148,6 +148,7 @@ procedure Gnat1drv is
       if Generate_C_Code then
          Modify_Tree_For_C := True;
          Unnest_Subprogram_Mode := True;
+         Minimize_Expression_With_Actions := True;
 
          --  Set operating mode to Generate_Code to benefit from full front-end
          --  expansion (e.g. generics).

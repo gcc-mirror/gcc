@@ -10504,10 +10504,12 @@ package body Sem_Ch6 is
          Analyze_Return_Type (Related_Nod);
 
          --  If return type is class-wide, subprogram freezing may be
-         --  delayed as well.
+         --  delayed as well, unless the declaration is a compilation unit
+         --  in which case the freeze node would appear too late.
 
          if Is_Class_Wide_Type (Etype (Current_Scope))
            and then not Is_Thunk (Current_Scope)
+           and then not Is_Compilation_Unit (Current_Scope)
            and then Nkind (Unit_Declaration_Node (Current_Scope)) =
              N_Subprogram_Declaration
          then

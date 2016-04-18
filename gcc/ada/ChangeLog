@@ -1,5 +1,37 @@
 2016-04-18  Arnaud Charlet  <charlet@adacore.com>
 
+	* exp_ch4.adb, gnat1drv.adb, opt.ads, sem_res.adb
+	(Minimize_Expression_With_Actions): New flag.
+	(Adjust_Global_Switches): Set Minimize_Expression_With_Actions
+	when generating C.
+	(Resolve_Short_Circuit): Redo previous change
+	using Minimize_Expression_With_Actions.
+	(Expand_N_If_Expression,
+	Expand_Short_Circuit_Operator): Restore old code to avoid
+	Expression_With_Actions when Minimize_Expression_With_Actions
+	is set.
+
+2016-04-18  Vincent Celier  <celier@adacore.com>
+
+	* s-os_lib.adb (Non_Blocking_Spawn, version with Stdout_File and
+	Stderr_File): Close local file descriptors when no longer needed.
+
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Remove SPARK
+	mode check that the type of the cursor in an iteration over
+	a formal container is not volatile. The proper check on the
+	element type is done elsewhere.
+
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Process_Formals): Do not set a delay freeze on
+	a subprogram that returns a class-wide type, if the subprogram
+	is a compilation unit, because otherwise gigi will treat the
+	subprogram as external, leading to link errors.
+
+2016-04-18  Arnaud Charlet  <charlet@adacore.com>
+
 	* sem_res.adb (Resolve_Short_Circuit): Do not use
 	expression-with-actions when generating C.
 

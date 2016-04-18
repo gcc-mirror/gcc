@@ -10044,11 +10044,9 @@ package body Sem_Res is
       --  finalization of transient controlled objects) are fully evaluated
       --  locally within an expression with actions. This is particularly
       --  helpful for coverage analysis. However this should not happen in
-      --  generics. Similarly, we want to minimize use of expression with
-      --  actions when generating C code, and finalization is not supported
-      --  in this mode anyway.
+      --  generics or if Minimize_Expression_With_Actions is set.
 
-      if Expander_Active and not Generate_C_Code then
+      if Expander_Active and not Minimize_Expression_With_Actions then
          declare
             Reloc_L : constant Node_Id := Relocate_Node (L);
          begin
