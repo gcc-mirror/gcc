@@ -1,3 +1,13 @@
+2016-04-18  Jerome Lambourg  <lambourg@adacore.com>
+
+	* sigtramp-vxworks-target.inc: sigtramp-vxworks: force the stack
+	alignment for x86_64.
+	* init.c: Better fix for guard page reset on x86_64-vx7.
+	Do not try to retrieve the page that actually raised
+	the signal as the probing mechanism used on x86_64 do not allow
+	such retrieval. We thus just test if the guard page is active,
+	and re-activate it if not.
+
 2016-04-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* a-sytaco.adb (Suspension_Object): Aspect Default_Initial_Condition

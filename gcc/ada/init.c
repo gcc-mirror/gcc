@@ -1759,7 +1759,7 @@ getpid (void)
    This function returns TRUE in case the guard page was hit by the
    signal. */
 static int
-__gnat_reset_guard_page (int sig, void *sc)
+__gnat_reset_guard_page (int sig)
 {
   /* On ARM VxWorks 6.x and x86_64 VxWorks 7, the guard page is left un-armed
      by the kernel after being violated, so subsequent violations aren't
@@ -1776,41 +1776,23 @@ __gnat_reset_guard_page (int sig, void *sc)
 
   TASK_ID tid           = taskIdSelf ();
   WIND_TCB *pTcb        = taskTcb (tid);
-  REG_SET *pregs        = ((struct sigcontext *) sc)->sc_pregs;
   VIRT_ADDR guardPage   = (VIRT_ADDR) pTcb->pStackEnd - INT_OVERFLOW_SIZE;
   UINT stateMask        = VM_STATE_MASK_VALID;
-  UINT state            = VM_STATE_VALID_NOT;
-  size_t probe_distance = 0;
-  VIRT_ADDR sigPage;
+  UINT guardState       = VM_STATE_VALID_NOT;
 
-#if defined (ARMEL)
-  /* violating address in rip: r12 */
-  sigPage    = pregs->r[12] & ~(INT_OVERFLOW_SIZE - 1);
-#elif defined (__x86_64__)
-  /* violating address in rsp. */
-  probe_distance = 16 * 1024; /* in gcc/config/i386/vxworks7.h */
-  sigPage    = pregs->rsp & ~(INT_OVERFLOW_SIZE - 1);
-  stateMask |= MMU_ATTR_SPL_MSK;
-  state     |= MMU_ATTR_NO_BLOCK;
-#else
-#error "Not Implemented for this CPU"
+#if (_WRS_VXWORKS_MAJOR >= 7)
+  stateMask  |= MMU_ATTR_SPL_MSK;
+  guardState |= MMU_ATTR_NO_BLOCK;
 #endif
 
-  if (guardPage == (sigPage - probe_distance))
+  UINT nState;
+  vmStateGet (NULL, guardPage, &nState);
+  if ((nState & VM_STATE_MASK_VALID) != VM_STATE_VALID_NOT)
     {
-      UINT nState;
-      vmStateGet (NULL, guardPage, &nState);
-      if ((nState & VM_STATE_MASK_VALID) != VM_STATE_VALID_NOT) {
-        /* If the guard page has a valid state, we need to reset to
-           invalid state here */
-        vmStateSet (NULL, guardPage, INT_OVERFLOW_SIZE, stateMask, state);
-      }
-
+      /* If the guard page has a valid state, we need to reset to
+         invalid state here */
+      vmStateSet (NULL, guardPage, INT_OVERFLOW_SIZE, stateMask, guardState);
       return TRUE;
-    }
-  else
-    {
-      return FALSE;
     }
 #endif /* VXWORKS_FORCE_GUARD_PAGE */
   return FALSE;
@@ -1919,7 +1901,7 @@ __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED, void *sc)
       msg = "unhandled signal";
     }
 
-  if (__gnat_reset_guard_page (sig, sc))
+  if (__gnat_reset_guard_page (sig))
     {
       /* Set the exception message: we know for sure that we have a
          stack overflow here */
@@ -1997,14 +1979,17 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
      when they contain SPE instructions, we need to set it back before doing
      anything else.
      This mechanism is only need in kernel mode. */
-#if !(defined (__RTP__) || defined (CERT)) && ((CPU == PPCE500V2) || (CPU == PPC85XX))
+#if !(defined (__RTP__) || defined (VTHREADS)) && ((CPU == PPCE500V2) || (CPU == PPC85XX))
   register unsigned msr;
   /* Read the MSR value */
   asm volatile ("mfmsr %0" : "=r" (msr));
-  /* Force the SPE bit */
-  msr |= 0x02000000;
-  /* Store to MSR */
-  asm volatile ("mtmsr %0" : : "r" (msr));
+  /* Force the SPE bit if not set.  */
+  if ((msr & 0x02000000) == 0)
+    {
+      msr |= 0x02000000;
+      /* Store to MSR */
+      asm volatile ("mtmsr %0" : : "r" (msr));
+    }
 #endif
 
   /* VxWorks will always mask out the signal during the signal handler and
