@@ -1,5 +1,10 @@
 2016-04-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70690
+	PR c++/70528
+	* class.c (type_maybe_constexpr_default_constructor): New.
+	(type_has_constexpr_default_constructor): Revert.
+
 	PR c++/70505
 	* pt.c (tsubst_baselink): Give the new TEMPLATE_ID_EXPR
 	unknown_type_node, too.
