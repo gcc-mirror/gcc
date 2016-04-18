@@ -1,5 +1,19 @@
 2016-04-18  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/43434
+	* gcc.dg/vect/pr43434.c: New testcase.
+	* c-c++-common/goacc/kernels-alias-3.c: Adjust.
+	* c-c++-common/goacc/kernels-alias-4.c: Likewise.
+	* c-c++-common/goacc/kernels-alias-5.c: Likewise.
+	* c-c++-common/goacc/kernels-alias-6.c: Likewise.
+	* c-c++-common/goacc/kernels-alias-7.c: Likewise.
+	* c-c++-common/goacc/kernels-alias-8.c: Likewise.
+	* gcc.dg/gomp/pr68640.c: Likewise.
+	* gfortran.dg/goacc/kernels-alias-3.f95: Likewise.
+	* gfortran.dg/goacc/kernels-alias-4.f95: Likewise.
+
+2016-04-18  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/70701
 	* gcc.dg/tree-ssa/ssa-fre-53.c: New testcase.
 

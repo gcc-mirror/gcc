@@ -7182,13 +7182,20 @@ delete_points_to_sets (void)
   obstack_free (&final_solutions_obstack, NULL);
 }
 
+struct vls_data
+{
+  unsigned short clique;
+  bitmap rvars;
+};
+
 /* Mark "other" loads and stores as belonging to CLIQUE and with
    base zero.  */
 
 static bool
-visit_loadstore (gimple *, tree base, tree ref, void *clique_)
+visit_loadstore (gimple *, tree base, tree ref, void *data)
 {
-  unsigned short clique = (uintptr_t)clique_;
+  unsigned short clique = ((vls_data *) data)->clique;
+  bitmap rvars = ((vls_data *) data)->rvars;
   if (TREE_CODE (base) == MEM_REF
       || TREE_CODE (base) == TARGET_MEM_REF)
     {
@@ -7196,12 +7203,16 @@ visit_loadstore (gimple *, tree base, tree ref, void *clique_)
       if (TREE_CODE (ptr) == SSA_NAME
 	  && ! SSA_NAME_IS_DEFAULT_DEF (ptr))
 	{
-	  /* ???  We need to make sure 'ptr' doesn't include any of
+	  /* We need to make sure 'ptr' doesn't include any of
 	     the restrict tags we added bases for in its points-to set.  */
-	  return false;
-	}
+	  varinfo_t vi = lookup_vi_for_tree (ptr);
+	  if (! vi)
+	    return false;
 
-      /* For now let decls through.  */
+	  vi = get_varinfo (find (vi->id));
+	  if (bitmap_intersect_p (rvars, vi->solution))
+	    return false;
+	}
 
       /* Do not overwrite existing cliques (that includes clique, base
          pairs we just set).  */
@@ -7275,6 +7286,7 @@ compute_dependence_clique (void)
 {
   unsigned short clique = 0;
   unsigned short last_ruid = 0;
+  bitmap rvars = BITMAP_ALLOC (NULL);
   for (unsigned i = 0; i < num_ssa_names; ++i)
     {
       tree ptr = ssa_name (i);
@@ -7330,38 +7342,46 @@ compute_dependence_clique (void)
 	  /* Now look at possible dereferences of ptr.  */
 	  imm_use_iterator ui;
 	  gimple *use_stmt;
+	  bool used = false;
 	  FOR_EACH_IMM_USE_STMT (use_stmt, ui, ptr)
 	    {
 	      /* ???  Calls and asms.  */
 	      if (!gimple_assign_single_p (use_stmt))
 		continue;
-	      maybe_set_dependence_info (gimple_assign_lhs (use_stmt), ptr,
-					 clique, restrict_var, last_ruid);
-	      maybe_set_dependence_info (gimple_assign_rhs1 (use_stmt), ptr,
-					 clique, restrict_var, last_ruid);
+	      used |= maybe_set_dependence_info (gimple_assign_lhs (use_stmt),
+						 ptr, clique, restrict_var,
+						 last_ruid);
+	      used |= maybe_set_dependence_info (gimple_assign_rhs1 (use_stmt),
+						 ptr, clique, restrict_var,
+						 last_ruid);
 	    }
+	  if (used)
+	    bitmap_set_bit (rvars, restrict_var->id);
 	}
     }
 
-  if (clique == 0)
-    return;
+  if (clique != 0)
+    {
+      /* Assign the BASE id zero to all accesses not based on a restrict
+	 pointer.  That way they get disambiguated against restrict
+	 accesses but not against each other.  */
+      /* ???  For restricts derived from globals (thus not incoming
+	 parameters) we can't restrict scoping properly thus the following
+	 is too aggressive there.  For now we have excluded those globals from
+	 getting into the MR_DEPENDENCE machinery.  */
+      vls_data data = { clique, rvars };
+      basic_block bb;
+      FOR_EACH_BB_FN (bb, cfun)
+	for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	     !gsi_end_p (gsi); gsi_next (&gsi))
+	  {
+	    gimple *stmt = gsi_stmt (gsi);
+	    walk_stmt_load_store_ops (stmt, &data,
+				      visit_loadstore, visit_loadstore);
+	  }
+    }
 
-  /* Assign the BASE id zero to all accesses not based on a restrict
-     pointer.  That way they get disabiguated against restrict
-     accesses but not against each other.  */
-  /* ???  For restricts derived from globals (thus not incoming
-     parameters) we can't restrict scoping properly thus the following
-     is too aggressive there.  For now we have excluded those globals from
-     getting into the MR_DEPENDENCE machinery.  */
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, cfun)
-    for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
-	 !gsi_end_p (gsi); gsi_next (&gsi))
-      {
-	gimple *stmt = gsi_stmt (gsi);
-	walk_stmt_load_store_ops (stmt, (void *)(uintptr_t)clique,
-				  visit_loadstore, visit_loadstore);
-      }
+  BITMAP_FREE (rvars);
 }
 
 /* Compute points-to information for every SSA_NAME pointer in the

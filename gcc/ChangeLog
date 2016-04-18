@@ -1,3 +1,11 @@
+2016-04-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/43434
+	* tree-ssa-structalias.c (struct vls_data): New.
+	(visit_loadstore): Handle all pointer-based accesses.
+	(compute_dependence_clique): Compute a bitmap of restrict tags
+	assigned bases and pass it to visit_loadstore.
+
 2016-04-18  Matthew Wahab  <matthew.wahab@arm.com>
 
 	PR target/70711
