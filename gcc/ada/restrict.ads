@@ -287,9 +287,9 @@ package Restrict is
    --  for this aspect using Set_No_Specification_Of_Aspect.
 
    procedure Check_Restriction_No_Use_Of_Attribute (N : Node_Id);
-   --  N is the node of an attribute definition clause. An error message
-   --  (warning) will be issued if a restriction (warning) was previously set
-   --  for this attribute using Set_No_Use_Of_Attribute.
+   --  N denotes an attribute definition clause or an attribute reference. An
+   --  error message (warning) will be issued if a restriction (warning) was
+   --  previously set for this attribute using Set_No_Use_Of_Attribute.
 
    procedure Check_Restriction_No_Use_Of_Entity (N : Node_Id);
    --  N is the node id for an entity reference. An error message (warning)
@@ -316,7 +316,10 @@ package Restrict is
    --  the SPARK_05 restriction is set, then an error is issued on N. Msg
    --  is appended to the restriction failure message.
 
-   procedure Check_SPARK_05_Restriction (Msg1, Msg2 : String; N : Node_Id);
+   procedure Check_SPARK_05_Restriction
+     (Msg1 : String;
+      Msg2 : String;
+      N    : Node_Id);
    --  Same as Check_SPARK_05_Restriction except there is a continuation
    --  message Msg2 following the initial message Msg1.
 
@@ -490,7 +493,7 @@ package Restrict is
 
    procedure Set_Restriction_No_Use_Of_Entity
      (Entity  : Node_Id;
-      Warn    : Boolean;
+      Warning : Boolean;
       Profile : Profile_Name := No_Profile);
    --  Sets given No_Use_Of_Entity restriction in table if not there already.
    --  Warn is True if from Restriction_Warnings, or for Restrictions if the
