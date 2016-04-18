@@ -28,7 +28,6 @@ GNATRTL_TASKING_OBJS= \
   a-dispat$(objext) \
   a-dynpri$(objext) \
   a-interr$(objext) \
-  a-intsig$(objext) \
   a-intnam$(objext) \
   a-reatim$(objext) \
   a-retide$(objext) \

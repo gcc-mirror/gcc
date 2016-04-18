@@ -44,6 +44,8 @@ with Output;  use Output;
 with Sinput;  use Sinput;
 with Tree_IO; use Tree_IO;
 
+with GNAT.Heap_Sort_G;
+
 package body Atree is
 
    Reporting_Proc : Report_Proc := null;
@@ -114,6 +116,10 @@ package body Atree is
 
    procedure Node_Debug_Output (Op : String; N : Node_Id);
    --  Common code for nnd and rrd, writes Op followed by information about N
+
+   procedure Print_Statistics;
+   pragma Export (Ada, Print_Statistics);
+   --  Print various statistics on the tables maintained by the package
 
    -----------------------------
    -- Local Objects and Types --
@@ -1954,6 +1960,102 @@ package body Atree is
       Nodes.Table (NewN).Comes_From_Source :=
         Nodes.Table (OldN).Comes_From_Source;
    end Preserve_Comes_From_Source;
+
+   ----------------------
+   -- Print_Statistics --
+   ----------------------
+
+   procedure Print_Statistics is
+      N_Count : constant Natural := Natural (Nodes.Last - First_Node_Id + 1);
+      E_Count : Natural := 0;
+
+   begin
+      Write_Str ("Maximum number of nodes per entity: ");
+      Write_Int (Int (Num_Extension_Nodes + 1));
+      Write_Eol;
+      Write_Str ("Number of allocated nodes: ");
+      Write_Int (Int (N_Count));
+      Write_Eol;
+
+      Write_Str ("Number of entities: ");
+      Write_Eol;
+
+      declare
+         function CP_Lt (Op1, Op2 : Natural) return Boolean;
+         --  Compare routine for Sort
+
+         procedure CP_Move (From : Natural; To : Natural);
+         --  Move routine for Sort
+
+         Kind_Count : array (Node_Kind) of Natural := (others => 0);
+         --  Array of occurrence count per node kind
+
+         Kind_Max : constant Natural := Node_Kind'Pos (N_Unused_At_End) - 1;
+         --  The index of the largest (interesting) node kind
+
+         Ranking : array (0 .. Kind_Max) of Node_Kind;
+         --  Ranking array for node kinds (index 0 is used for the temporary)
+
+         package Sorting is new GNAT.Heap_Sort_G (CP_Move, CP_Lt);
+
+         function CP_Lt (Op1, Op2 : Natural) return Boolean is
+         begin
+            return Kind_Count (Ranking (Op2)) < Kind_Count (Ranking (Op1));
+         end CP_Lt;
+
+         procedure CP_Move (From : Natural; To : Natural) is
+         begin
+            Ranking (To) := Ranking (From);
+         end CP_Move;
+
+      begin
+         --  Count the number of occurrences of each node kind
+
+         for I in First_Node_Id .. Nodes.Last loop
+            declare
+               Nkind : constant Node_Kind := Nodes.Table (I).Nkind;
+            begin
+               if not Nodes.Table (I).Is_Extension then
+                  Kind_Count (Nkind) := Kind_Count (Nkind) + 1;
+               end if;
+            end;
+         end loop;
+
+         --  Sort the node kinds by number of occurrences
+
+         for N in 1 .. Kind_Max loop
+            Ranking (N) := Node_Kind'Val (N);
+         end loop;
+
+         Sorting.Sort (Kind_Max);
+
+         --  Print the list in descending order
+
+         for N in 1 .. Kind_Max loop
+            declare
+               Count : constant Natural := Kind_Count (Ranking (N));
+            begin
+               if Count > 0 then
+                  Write_Str ("  ");
+                  Write_Str (Node_Kind'Image (Ranking (N)));
+                  Write_Str (": ");
+                  Write_Int (Int (Count));
+                  Write_Eol;
+
+                  E_Count := E_Count + Count;
+               end if;
+            end;
+         end loop;
+      end;
+
+      Write_Str ("Total number of entities: ");
+      Write_Int (Int (E_Count));
+      Write_Eol;
+      Write_Str ("Ratio allocated nodes/entities: ");
+      Write_Int (Int (N_Count * 100 / E_Count));
+      Write_Str ("/100");
+      Write_Eol;
+   end Print_Statistics;
 
    -------------------
    -- Relocate_Node --

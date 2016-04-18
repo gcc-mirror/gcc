@@ -76,6 +76,10 @@ package Atree is
    --  This value is increased by one if debug flag -gnatd.N is set. This is
    --  for testing performance impact of adding a new extension node. We make
    --  this of type Node_Id for easy reference in loops using this value.
+   --  Print_Statistics can be used to display statistics on entities & nodes.
+   --  Measurements conducted for the 5->6 bump showed an increase from 1.81 to
+   --  2.01 for the nodes/entities ratio and a 2% increase in compilation time
+   --  on average for the GCC-based compiler at -O0 on a 32-bit x86 host.
 
    ----------------------------------------
    -- Definitions of Fields in Tree Node --

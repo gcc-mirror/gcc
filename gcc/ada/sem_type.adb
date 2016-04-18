@@ -1751,17 +1751,16 @@ package body Sem_Type is
             begin
                Get_First_Interp (N, I, It);
                while Present (It.Typ) loop
-                  if (Covers (Typ, It.Typ) or else Typ = Any_Type)
-                    and then
-                     (It.Typ = Universal_Integer
+                  if (It.Typ = Universal_Integer
                        or else It.Typ = Universal_Real)
+                    and then (Typ = Any_Type or else Covers (Typ, It.Typ))
                   then
                      return It;
 
-                  elsif Covers (Typ, It.Typ)
+                  elsif Is_Numeric_Type (It.Typ)
                     and then Scope (It.Typ) = Standard_Standard
                     and then Scope (It.Nam) = Standard_Standard
-                    and then Is_Numeric_Type (It.Typ)
+                    and then Covers (Typ, It.Typ)
                   then
                      Candidate := It;
                   end if;
@@ -3026,19 +3025,19 @@ package body Sem_Type is
    ---------------------------
 
    function Operator_Matches_Spec (Op, New_S : Entity_Id) return Boolean is
+      New_First_F : constant Entity_Id := First_Formal (New_S);
       Op_Name     : constant Name_Id   := Chars (Op);
       T           : constant Entity_Id := Etype (New_S);
-      New_First_F : constant Entity_Id := First_Formal (New_S);
       New_F       : Entity_Id;
-      Old_F       : Entity_Id;
       Num         : Int;
+      Old_F       : Entity_Id;
       T1          : Entity_Id;
       T2          : Entity_Id;
 
    begin
-      --  To verify that a predefined operator matches a given signature,
-      --  do a case analysis of the operator classes. Function can have one
-      --  or two formals and must have the proper result type.
+      --  To verify that a predefined operator matches a given signature, do a
+      --  case analysis of the operator classes. Function can have one or two
+      --  formals and must have the proper result type.
 
       New_F := New_First_F;
       Old_F := First_Formal (Op);

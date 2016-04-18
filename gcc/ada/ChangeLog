@@ -1,3 +1,25 @@
+2016-04-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-intsig.ads, a-intsig.adb: Removed, no longer used.
+	* Makefile.rtl: update accordingly.
+
+2016-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_type.adb (Disambiguate): Call Covers only when necessary
+	for standard operators.
+
+2016-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* atree.ads (Num_Extension_Nodes): Add couple of figures
+	to comment.
+	* atree.adb: Add GNAT.Heap_Sort_G dependency.
+	(Print_Statistics): New exported procedure to print statistics.
+
+2016-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Build_Record_Init_Proc): Do not mark the procedure
+	as to be inlined if the type needs finalization.
+
 2016-04-18  Jerome Lambourg  <lambourg@adacore.com>
 
 	* sigtramp-vxworks-target.inc: sigtramp-vxworks: force the stack

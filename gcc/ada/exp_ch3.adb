@@ -3597,10 +3597,12 @@ package body Exp_Ch3 is
          --  The initialization of protected records is not worth inlining.
          --  In addition, when compiled for another unit for inlining purposes,
          --  it may make reference to entities that have not been elaborated
-         --  yet. Similar considerations apply to task types.
+         --  yet. Similar considerations apply to task types and types that
+         --  need finalization.
 
          if not Is_Concurrent_Type (Rec_Type)
            and then not Has_Task (Rec_Type)
+           and then not Needs_Finalization (Rec_Type)
          then
             Set_Is_Inlined  (Proc_Id);
          end if;
