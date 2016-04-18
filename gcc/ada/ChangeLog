@@ -1,3 +1,28 @@
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): In GNATprove
+	mode, collect inherited class-wide conditions to generate the
+	corresponding pragmas.
+	* sem_prag.ads (Build_Pragma_Check_Equivalent): Moved from contracts
+	* contracts.adb (Collect_Inherited_Class_Wide_Conditions): New
+	procedure for overriding subprograms, used to generate the pragmas
+	corresponding to an inherited class- wide pre- or postcondition.
+	* sem_prag.adb (Build_Pragma_Check_Equivalent): moved here
+	from contracts.adb (Replace_Condition_Entities): Subsidiary
+	Build_Pragma_Check_Equivalent, to implement the proper semantics
+	of inherited class-wide conditions, as given in AI12-0113.
+	(Process_Class_Wide_Condition): Removed.
+	(Collect_Inherited_Class_Wide_Conditions): Iterate over pragmas
+	in contract of subprogram, to collect inherited class-wide
+	conditions.
+	(Build_Pragma_Check_Equivalent): Moved to sem_prag.adb
+
+2016-04-18  Yannick Moy  <moy@adacore.com>
+
+	* a-calend.adb (Ada.Calendar): Mark package body as SPARK_Mode Off.
+	* a-calend.ads (Ada.Calendar): Mark package spec as
+	SPARK_Mode and add synchronous external abstract state Clock_Time.
+
 2016-04-18  Yannick Moy  <moy@adacore.com>
 
 	* sem_res.adb (Resolve_Call): Prevent inlining of

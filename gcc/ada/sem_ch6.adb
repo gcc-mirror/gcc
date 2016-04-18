@@ -3754,6 +3754,17 @@ package body Sem_Ch6 is
          Build_Body_To_Inline (N, Spec_Id);
       end if;
 
+      --  When generating code, inherited pre/postconditions are handled
+      --  when expanding the corresponding contract. If GNATprove mode we
+      --  must process them when the body is analyzed.
+
+      if GNATprove_Mode
+        and then Present (Spec_Id)
+        and then Present (Overridden_Operation (Spec_Id))
+      then
+         Collect_Inherited_Class_Wide_Conditions (Spec_Id, N);
+      end if;
+
       --  Ada 2005 (AI-262): In library subprogram bodies, after the analysis
       --  of the specification we have to install the private withed units.
       --  This holds for child units as well.
