@@ -4108,6 +4108,9 @@ package body Sem_Ch4 is
       --  conformant. If the parent node is not analyzed yet it may be an
       --  indexed component rather than a function call.
 
+      function Has_Dereference (Nod : Node_Id) return Boolean;
+      --  Check whether prefix includes a dereference at any level
+
       --------------------------------
       -- Find_Component_In_Instance --
       --------------------------------
@@ -4208,6 +4211,23 @@ package body Sem_Ch4 is
 
          return True;
       end Has_Mode_Conformant_Spec;
+
+      ---------------------
+      -- Has_Dereference --
+      ---------------------
+
+      function Has_Dereference (Nod : Node_Id) return Boolean is
+      begin
+         if Nkind (Nod) = N_Explicit_Dereference then
+            return True;
+
+         elsif Nkind_In (Nod, N_Indexed_Component, N_Selected_Component) then
+            return Has_Dereference (Prefix (Nod));
+
+         else
+            return False;
+         end if;
+      end Has_Dereference;
 
    --  Start of processing for Analyze_Selected_Component
 
@@ -4663,38 +4683,16 @@ package body Sem_Ch4 is
          --  This is legal if prefix is an access to such type and there is
          --  a dereference, or is a component with a dereferenced prefix.
 
-         if In_Scope and then not Is_Entity_Name (Name) then
-            declare
-
-               function Has_Dereference (N : Node_Id) return Boolean;
-               --  Check whether prefix includes a dereference at any level.
-
-               ---------------------
-               -- Has_Dereference --
-               ---------------------
-
-               function Has_Dereference (N : Node_Id) return Boolean is
-               begin
-                  if Nkind (N) = N_Explicit_Dereference then
-                     return True;
-                  elsif
-                    Nkind_In (N, N_Selected_Component, N_Indexed_Component)
-                  then
-                     return Has_Dereference (Prefix (N));
-                  else
-                     return False;
-                  end if;
-               end Has_Dereference;
-
-            begin
-               if not Has_Dereference (Name) then
-                  Error_Msg_NE ("invalid reference to internal operation "
-                     & "of some object of type &", N, Type_To_Use);
-                  Set_Entity (Sel, Any_Id);
-                  Set_Etype  (Sel, Any_Type);
-                  return;
-               end if;
-            end;
+         if In_Scope
+           and then not Is_Entity_Name (Name)
+           and then not Has_Dereference (Name)
+         then
+            Error_Msg_NE
+              ("invalid reference to internal operation of some object of "
+               & "type &", N, Type_To_Use);
+            Set_Entity (Sel, Any_Id);
+            Set_Etype  (Sel, Any_Type);
+            return;
          end if;
 
          --  If there is no visible entity with the given name or none of the
