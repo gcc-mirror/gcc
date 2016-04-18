@@ -2010,6 +2010,10 @@ package body Contracts is
          --  The insertion node after which all pragma Check equivalents are
          --  inserted.
 
+         function Is_Prologue_Renaming (Decl : Node_Id) return Boolean;
+         --  Determine whether arbitrary declaration Decl denotes a renaming of
+         --  a discriminant or protection field _object.
+
          procedure Merge_Preconditions (From : Node_Id; Into : Node_Id);
          --  Merge two class-wide preconditions by "or else"-ing them. The
          --  changes are accumulated in parameter Into. Update the error
@@ -2029,6 +2033,52 @@ package body Contracts is
          procedure Process_Preconditions_For (Subp_Id : Entity_Id);
          --  Collect all preconditions of subprogram Subp_Id and prepend their
          --  pragma Check equivalents to the declarations of the body.
+
+         --------------------------
+         -- Is_Prologue_Renaming --
+         --------------------------
+
+         function Is_Prologue_Renaming (Decl : Node_Id) return Boolean is
+            Nam  : Node_Id;
+            Obj  : Entity_Id;
+            Pref : Node_Id;
+            Sel  : Node_Id;
+
+         begin
+            if Nkind (Decl) = N_Object_Renaming_Declaration then
+               Obj := Defining_Entity (Decl);
+               Nam := Name (Decl);
+
+               if Nkind (Nam) = N_Selected_Component then
+                  Pref := Prefix (Nam);
+                  Sel  := Selector_Name (Nam);
+
+                  --  A discriminant renaming appears as
+                  --    Discr : constant ... := Prefix.Discr;
+
+                  if Ekind (Obj) = E_Constant
+                    and then Is_Entity_Name (Sel)
+                    and then Present (Entity (Sel))
+                    and then Ekind (Entity (Sel)) = E_Discriminant
+                  then
+                     return True;
+
+                  --  A protection field renaming appears as
+                  --    Prot : ... := _object._object;
+
+                  elsif Ekind (Obj) = E_Variable
+                    and then Nkind (Pref) = N_Identifier
+                    and then Chars (Pref) = Name_uObject
+                    and then Nkind (Sel) = N_Identifier
+                    and then Chars (Sel) = Name_uObject
+                  then
+                     return True;
+                  end if;
+               end if;
+            end if;
+
+            return False;
+         end Is_Prologue_Renaming;
 
          -------------------------
          -- Merge_Preconditions --
@@ -2278,15 +2328,34 @@ package body Contracts is
       --  Start of processing for Process_Preconditions
 
       begin
-         --  Find the last internally generated declaration, starting from the
-         --  top of the body declarations. This ensures that discriminals and
-         --  subtypes are properly visible to the pragma Check equivalents.
+         --  Find the proper insertion point for all pragma Check equivalents
 
          if Present (Decls) then
             Decl := First (Decls);
             while Present (Decl) loop
-               exit when Comes_From_Source (Decl);
-               Insert_Node := Decl;
+
+               --  First source declaration terminates the search, because all
+               --  preconditions must be evaluated prior to it, by definition.
+
+               if Comes_From_Source (Decl) then
+                  exit;
+
+               --  Certain internally generated object renamings such as those
+               --  for discriminants and protection fields must be elaborated
+               --  before the preconditions are evaluated, as their expressions
+               --  may mention the discriminants.
+
+               elsif Is_Prologue_Renaming (Decl) then
+                  Insert_Node := Decl;
+
+               --  Otherwise the declaration does not come from source. This
+               --  also terminates the search, because internal code may raise
+               --  exceptions which should not preempt the preconditions.
+
+               else
+                  exit;
+               end if;
+
                Next (Decl);
             end loop;
          end if;

@@ -1047,7 +1047,7 @@ begin
 
       --  In GNATprove mode, force loading of System unit to ensure that
       --  System.Interrupt_Priority is available to GNATprove for the
-      --  generation of VCs for related to Ceiling Priority.
+      --  generation of VCs related to ceiling priority.
 
       if GNATprove_Mode then
          declare

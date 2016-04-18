@@ -1,3 +1,33 @@
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component, Has_Dereference):
+	Refine check on illegal calls to entities within a task body,
+	when the entity is declared in an object of the same type. In
+	a generic context there might be no explicit dereference but if
+	the prefix includes an access type the construct is legal.
+
+2016-04-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* rtsfind.ads, rtsfind.adb (RE_Id, RE_Unit_Table): add
+	RE_Default_Priority.
+
+2016-04-18  Bob Duff  <duff@adacore.com>
+
+	* sem_prag.adb (Check_Arg_Is_Local_Name): Don't do the check
+	if the pragma came from an aspect specification.
+
+2016-04-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat1drv.adb, contracts.adb: Minor reformatting and wording fixes.
+
+2016-04-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): To suppress
+	superfluous conformance check on an inlined body with a previous
+	spec, use the fact that the generated declaration does not come
+	from source. We must treat the entity as coming from source to
+	enable some back-end inlining when pragma appears after the body.
+
 2016-04-18  Gary Dismukes  <dismukes@adacore.com>
 
 	* lib-xref-spark_specific.adb, par-ch2.adb, errout.ads,
