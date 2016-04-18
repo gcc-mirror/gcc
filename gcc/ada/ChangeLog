@@ -1,3 +1,22 @@
+2016-04-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Process_Convention): Relax rule on exporting
+	Intrinsic types if Relaxed_RM_Semantics is True.
+
+2016-04-18  Vincent Celier  <celier@adacore.com>
+
+	* sem_ch3.adb, lib.ads, sinfo.ads, sem_ch10.adb, einfo.adb, einfo.ads,
+	checks.ads, sem_ch12.adb, sem.adb, sem_util.adb, sem_util.ads,
+	sem_res.adb, sem_attr.adb, par.adb, exp_ch4.adb, errout.ads,
+	sem_ch4.adb, atree.adb, atree.ads, sem_warn.adb, treepr.adb,
+	exp_ch3.ads, exp_unst.adb: Change "descendent" to
+	"descendant" in comments, error messages and identifiers.
+
+2016-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_type.adb (Operator_Matches_Spec): Call First_Formal on
+	New_S only once at the beginning of the function.
+
 2016-04-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (components_to_record): Restrict the previous

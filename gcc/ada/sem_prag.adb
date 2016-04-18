@@ -7139,8 +7139,12 @@ package body Sem_Prag is
          if C = Convention_Intrinsic
            and then not Is_Subprogram_Or_Generic_Subprogram (E)
          then
-            Error_Pragma_Arg
-              ("second argument of pragma% must be a subprogram", Arg2);
+            --  Accept Intrinsic Export on types if Relaxed_RM_Semantics
+
+            if not (Is_Type (E) and then Relaxed_RM_Semantics) then
+               Error_Pragma_Arg
+                 ("second argument of pragma% must be a subprogram", Arg2);
+            end if;
          end if;
 
          --  Deal with non-subprogram cases

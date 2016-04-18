@@ -2915,9 +2915,9 @@ package body Sem_Ch3 is
         and then Chars (Def_Id) = Name_Address
         and then Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (N)))
       then
-         Set_Is_Descendent_Of_Address (Def_Id);
-         Set_Is_Descendent_Of_Address (Base_Type (Def_Id));
-         Set_Is_Descendent_Of_Address (Prev);
+         Set_Is_Descendant_Of_Address (Def_Id);
+         Set_Is_Descendant_Of_Address (Base_Type (Def_Id));
+         Set_Is_Descendant_Of_Address (Prev);
       end if;
 
       Set_Optimize_Alignment_Flags (Def_Id);
@@ -5063,7 +5063,7 @@ package body Sem_Ch3 is
 
       Set_Is_Immediately_Visible   (Id, True);
       Set_Depends_On_Private       (Id, Has_Private_Component (T));
-      Set_Is_Descendent_Of_Address (Id, Is_Descendent_Of_Address (T));
+      Set_Is_Descendant_Of_Address (Id, Is_Descendant_Of_Address (T));
 
       if Is_Interface (T) then
          Set_Is_Interface (Id);
@@ -6745,10 +6745,10 @@ package body Sem_Ch3 is
          Set_Is_Known_Valid (Derived_Type, Is_Known_Valid (Parent_Type));
       end if;
 
-      Set_Is_Descendent_Of_Address (Derived_Type,
-        Is_Descendent_Of_Address (Parent_Type));
-      Set_Is_Descendent_Of_Address (Implicit_Base,
-        Is_Descendent_Of_Address (Parent_Type));
+      Set_Is_Descendant_Of_Address (Derived_Type,
+        Is_Descendant_Of_Address (Parent_Type));
+      Set_Is_Descendant_Of_Address (Implicit_Base,
+        Is_Descendant_Of_Address (Parent_Type));
 
       --  Set remaining type-specific fields, depending on numeric type
 

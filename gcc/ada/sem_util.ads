@@ -62,7 +62,7 @@ package Sem_Util is
 
    function Address_Integer_Convert_OK (T1, T2 : Entity_Id) return Boolean;
    --  Given two types, returns True if we are in Allow_Integer_Address mode
-   --  and one of the types is (a descendent of) System.Address (and this type
+   --  and one of the types is (a descendant of) System.Address (and this type
    --  is private), and the other type is any integer type.
 
    function Addressable (V : Uint) return Boolean;
@@ -1327,16 +1327,16 @@ package Sem_Util is
    --  access value (selected/indexed component, explicit dereference or a
    --  slice), and false otherwise.
 
-   function Is_Descendent_Of (T1 : Entity_Id; T2 : Entity_Id) return Boolean;
-   --  Returns True if type T1 is a descendent of type T2, and false otherwise.
-   --  This is the RM definition, a type is a descendent of another type if it
-   --  is the same type or is derived from a descendent of the other type.
+   function Is_Descendant_Of (T1 : Entity_Id; T2 : Entity_Id) return Boolean;
+   --  Returns True if type T1 is a descendant of type T2, and false otherwise.
+   --  This is the RM definition, a type is a descendant of another type if it
+   --  is the same type or is derived from a descendant of the other type.
 
    function Is_Descendant_Of_Suspension_Object
      (Typ : Entity_Id) return Boolean;
    --  Determine whether type Typ is a descendant of type Suspension_Object
    --  defined in Ada.Synchronous_Task_Control. This version is different from
-   --  Is_Descendent_Of as the detection of Suspension_Object does not involve
+   --  Is_Descendant_Of as the detection of Suspension_Object does not involve
    --  an entity and by extension a call to RTSfind.
 
    function Is_Double_Precision_Floating_Point_Type
@@ -1778,10 +1778,10 @@ package Sem_Util is
       New_Sloc  : Source_Ptr := No_Location;
       New_Scope : Entity_Id  := Empty) return Node_Id;
    --  Given a node that is the root of a subtree, Copy_Tree copies the entire
-   --  syntactic subtree, including recursively any descendents whose parent
-   --  field references a copied node (descendents not linked to a copied node
+   --  syntactic subtree, including recursively any descendants whose parent
+   --  field references a copied node (descendants not linked to a copied node
    --  by the parent field are not copied, instead the copied tree references
-   --  the same descendent as the original in this case, which is appropriate
+   --  the same descendant as the original in this case, which is appropriate
    --  for non-syntactic fields such as Etype). The parent pointers in the
    --  copy are properly set. Copy_Tree (Empty/Error) returns Empty/Error.
    --  The one exception to the rule of not copying semantic fields is that

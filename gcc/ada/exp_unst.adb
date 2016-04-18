@@ -589,7 +589,7 @@ package body Exp_Unst is
                end;
 
                --  Now at this level, return skipping the subprogram body
-               --  descendents, since we already took care of them!
+               --  descendants, since we already took care of them!
 
                return Skip;
 

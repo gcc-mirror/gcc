@@ -382,7 +382,7 @@ package body Sem_Warn is
          Comp := First_Component (Rec);
          while Present (Comp) loop
             if Is_Access_Type (Etype (Comp))
-              or else Is_Descendent_Of_Address (Etype (Comp))
+              or else Is_Descendant_Of_Address (Etype (Comp))
             then
                return True;
             end if;

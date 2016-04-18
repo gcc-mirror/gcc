@@ -612,7 +612,7 @@ package body Sem_Ch10 is
 
       --  If the unit is a subunit whose parent has not been analyzed (which
       --  indicates that the main unit is a subunit, either the current one or
-      --  one of its descendents) then the subunit is compiled as part of the
+      --  one of its descendants) then the subunit is compiled as part of the
       --  analysis of the parent, which we proceed to do. Basically this gets
       --  handled from the top down and we don't want to do anything at this
       --  level (i.e. this subunit will be handled on the way down from the

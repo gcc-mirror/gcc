@@ -1611,7 +1611,7 @@ begin
                          Name (Name'First .. Name'First + 3) = "ada."
                      then
                         Error_Msg
-                          ("user-defined descendents of package Ada " &
+                          ("user-defined descendants of package Ada " &
                              "are not allowed",
                            Sloc (Unit (Comp_Unit_Node)));
 
@@ -1620,7 +1620,7 @@ begin
                          Name (Name'First .. Name'First + 10) = "interfaces."
                      then
                         Error_Msg
-                          ("user-defined descendents of package Interfaces " &
+                          ("user-defined descendants of package Interfaces " &
                              "are not allowed",
                            Sloc (Unit (Comp_Unit_Node)));
 
@@ -1633,7 +1633,7 @@ begin
                                                                  "system.rpc.")
                      then
                         Error_Msg
-                          ("user-defined descendents of package System " &
+                          ("user-defined descendants of package System " &
                              "are not allowed",
                            Sloc (Unit (Comp_Unit_Node)));
                      end if;

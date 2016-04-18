@@ -3124,10 +3124,10 @@ package body Sem_Ch4 is
          --  a visible integer type.
 
          return Hides_Op (Fun, Nam)
-           or else Is_Descendent_Of_Address (Etype (Form1))
+           or else Is_Descendant_Of_Address (Etype (Form1))
            or else
              (Present (Form2)
-               and then Is_Descendent_Of_Address (Etype (Form2)));
+               and then Is_Descendant_Of_Address (Etype (Form2)));
       end Operator_Hidden_By;
 
    --  Start of processing for Analyze_One_Call
@@ -3316,13 +3316,13 @@ package body Sem_Ch4 is
                --  The actual can be compatible with the formal, but we must
                --  also check that the context is not an address type that is
                --  visibly an integer type. In this case the use of literals is
-               --  illegal, except in the body of descendents of system, where
+               --  illegal, except in the body of descendants of system, where
                --  arithmetic operations on address are of course used.
 
                if Has_Compatible_Type (Actual, Etype (Formal))
                  and then
                   (Etype (Actual) /= Universal_Integer
-                    or else not Is_Descendent_Of_Address (Etype (Formal))
+                    or else not Is_Descendant_Of_Address (Etype (Formal))
                     or else
                       Is_Predefined_File_Name
                         (Unit_File_Name (Get_Source_Unit (N))))
@@ -6673,8 +6673,8 @@ package body Sem_Ch4 is
                   return;
 
                elsif Allow_Integer_Address
-                 and then Is_Descendent_Of_Address (Etype (L))
-                 and then Is_Descendent_Of_Address (Etype (R))
+                 and then Is_Descendant_Of_Address (Etype (L))
+                 and then Is_Descendant_Of_Address (Etype (R))
                  and then not Error_Posted (N)
                then
                   declare
@@ -6909,7 +6909,7 @@ package body Sem_Ch4 is
 
    procedure Remove_Abstract_Operations (N : Node_Id) is
       Abstract_Op        : Entity_Id := Empty;
-      Address_Descendent : Boolean := False;
+      Address_Descendant : Boolean := False;
       I                  : Interp_Index;
       It                 : Interp;
 
@@ -6946,8 +6946,8 @@ package body Sem_Ch4 is
                   Formal := Next_Entity (Formal);
                end if;
 
-               if Is_Descendent_Of_Address (Etype (Formal)) then
-                  Address_Descendent := True;
+               if Is_Descendant_Of_Address (Etype (Formal)) then
+                  Address_Descendant := True;
                   Remove_Interp (I);
                end if;
 
@@ -6974,8 +6974,8 @@ package body Sem_Ch4 is
             then
                Abstract_Op := It.Nam;
 
-               if Is_Descendent_Of_Address (It.Typ) then
-                  Address_Descendent := True;
+               if Is_Descendant_Of_Address (It.Typ) then
+                  Address_Descendant := True;
                   Remove_Interp (I);
                   exit;
 
@@ -7068,7 +7068,7 @@ package body Sem_Ch4 is
 
                      Get_First_Interp (N, I, It);
                      while Present (It.Nam) loop
-                        if Is_Descendent_Of_Address (It.Typ) then
+                        if Is_Descendant_Of_Address (It.Typ) then
                            Remove_Interp (I);
 
                         elsif not Is_Type (It.Nam) then
@@ -7143,7 +7143,7 @@ package body Sem_Ch4 is
             --  predefined operators when addresses are involved since this
             --  case is handled separately.
 
-            elsif Ada_Version >= Ada_2005 and then not Address_Descendent then
+            elsif Ada_Version >= Ada_2005 and then not Address_Descendant then
                while Present (It.Nam) loop
                   if Is_Numeric_Type (It.Typ)
                     and then Scope (It.Typ) = Standard_Standard

@@ -580,7 +580,7 @@ package Lib is
    function In_Predefined_Unit (N : Node_Or_Entity_Id) return Boolean;
    --  Returns True if the given node or entity appears within the source text
    --  of a predefined unit (i.e. within Ada, Interfaces, System or within one
-   --  of the descendent packages of one of these three packages).
+   --  of the descendant packages of one of these three packages).
 
    function In_Predefined_Unit (S : Source_Ptr) return Boolean;
    --  Same function as above but argument is a source pointer

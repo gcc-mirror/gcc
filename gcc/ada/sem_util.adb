@@ -272,11 +272,11 @@ package body Sem_Util is
    function Address_Integer_Convert_OK (T1, T2 : Entity_Id) return Boolean is
    begin
       if Allow_Integer_Address
-        and then ((Is_Descendent_Of_Address  (T1)
+        and then ((Is_Descendant_Of_Address  (T1)
                     and then Is_Private_Type (T1)
                     and then Is_Integer_Type (T2))
                             or else
-                  (Is_Descendent_Of_Address  (T2)
+                  (Is_Descendant_Of_Address  (T2)
                     and then Is_Private_Type (T2)
                     and then Is_Integer_Type (T1)))
       then
@@ -2128,7 +2128,7 @@ package body Sem_Util is
             T := Full_View (T);
          end if;
 
-         if Is_Descendent_Of_Address (T) or else Is_Limited_Type (T) then
+         if Is_Descendant_Of_Address (T) or else Is_Limited_Type (T) then
             Set_Is_Pure (Subp_Id, False);
             exit;
          end if;
@@ -11807,10 +11807,10 @@ package body Sem_Util is
    end Is_Dereferenced;
 
    ----------------------
-   -- Is_Descendent_Of --
+   -- Is_Descendant_Of --
    ----------------------
 
-   function Is_Descendent_Of (T1 : Entity_Id; T2 : Entity_Id) return Boolean is
+   function Is_Descendant_Of (T1 : Entity_Id; T2 : Entity_Id) return Boolean is
       T    : Entity_Id;
       Etyp : Entity_Id;
 
@@ -11863,7 +11863,7 @@ package body Sem_Util is
             T := Base_Type (Etyp);
          end loop;
       end if;
-   end Is_Descendent_Of;
+   end Is_Descendant_Of;
 
    ----------------------------------------
    -- Is_Descendant_Of_Suspension_Object --
@@ -15260,7 +15260,7 @@ package body Sem_Util is
       procedure Copy_Itype_With_Replacement (New_Itype : Entity_Id);
       --  Called during the second phase to process a copied Itype. The actual
       --  copy happened during the first phase (so that we could make the entry
-      --  in the mapping), but we still have to deal with the descendents of
+      --  in the mapping), but we still have to deal with the descendants of
       --  the copied Itype and copy them where necessary.
 
       function Copy_List_With_Replacement (Old_List : List_Id) return List_Id;
@@ -15274,7 +15274,7 @@ package body Sem_Util is
 
       procedure Visit_Field (F : Union_Id; N : Node_Id);
       --  Visit a single field, recursing to call Visit_Node or Visit_List
-      --  if the field is a syntactic descendent of the current node (i.e.
+      --  if the field is a syntactic descendant of the current node (i.e.
       --  its parent is Node N).
 
       procedure Visit_Itype (Old_Itype : Entity_Id);
@@ -15662,7 +15662,7 @@ package body Sem_Util is
                end;
             end if;
 
-            --  Recursively copy descendents
+            --  Recursively copy descendants
 
             Set_Field1
               (New_Node, Copy_Field_With_Replacement (Field1 (New_Node)));
@@ -15923,7 +15923,7 @@ package body Sem_Util is
             Set_Cloned_Subtype (New_Itype, Old_Itype);
          end if;
 
-         --  Visit descendents that eventually get copied
+         --  Visit descendants that eventually get copied
 
          Visit_Field (Union_Id (Etype (Old_Itype)), Old_Itype);
 
@@ -15980,7 +15980,7 @@ package body Sem_Util is
 
             --  Nothing to do if already in the list. This can happen with an
             --  Itype entity that appears more than once in the tree.
-            --  Note that we do not want to visit descendents in this case.
+            --  Note that we do not want to visit descendants in this case.
 
             --  Test for already in list when hash table is used
 
@@ -16011,7 +16011,7 @@ package body Sem_Util is
             Visit_Itype (N);
          end if;
 
-         --  Visit descendents
+         --  Visit descendants
 
          Visit_Field (Field1 (N), N);
          Visit_Field (Field2 (N), N);
@@ -16053,12 +16053,12 @@ package body Sem_Util is
       end if;
 
       --  Hash table set up if required, now start phase one by visiting
-      --  top node (we will recursively visit the descendents).
+      --  top node (we will recursively visit the descendants).
 
       Visit_Node (Source);
 
       --  Now the second phase of the copy can start. First we process
-      --  all the mapped entities, copying their descendents.
+      --  all the mapped entities, copying their descendants.
 
       if Present (Actual_Map) then
          declare
