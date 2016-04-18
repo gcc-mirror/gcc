@@ -2178,6 +2178,11 @@ package body Sem_Ch6 is
       --  Check whether unanalyzed body has an aspect or pragma that may
       --  generate a SPARK contract.
 
+      function Body_Has_SPARK_Mode_On return Boolean;
+      --  Check whether SPARK_Mode On applies to the subprogram body, either
+      --  because it is specified directly on the body, or because it is
+      --  inherited from the enclosing subprogram or package.
+
       procedure Build_Subprogram_Declaration;
       --  Create a matching subprogram declaration for subprogram body N
 
@@ -2271,6 +2276,53 @@ package body Sem_Ch6 is
 
          return False;
       end Body_Has_Contract;
+
+      ----------------------------
+      -- Body_Has_SPARK_Mode_On --
+      ----------------------------
+
+      function Body_Has_SPARK_Mode_On return Boolean is
+         Decls : constant List_Id := Declarations (N);
+         Item  : Node_Id;
+
+      begin
+         --  Check for SPARK_Mode aspect
+
+         if Present (Aspect_Specifications (N)) then
+            Item := First (Aspect_Specifications (N));
+            while Present (Item) loop
+               if Get_Aspect_Id (Item) = Aspect_SPARK_Mode then
+                  return No (Expression (Item))
+                           or else
+                        (Nkind (Expression (Item)) = N_Identifier
+                           and then
+                         Get_SPARK_Mode_Type (Chars (Expression (Item))) = On);
+               end if;
+
+               Next (Item);
+            end loop;
+         end if;
+
+         --  Check for SPARK_Mode pragma
+
+         if Present (Decls) then
+            Item := First (Decls);
+            while Present (Item) loop
+               if Nkind (Item) = N_Pragma
+                 and then Get_Pragma_Id (Item) = Pragma_SPARK_Mode
+               then
+                  return Get_SPARK_Mode_From_Pragma (Item) = On;
+               end if;
+
+               Next (Item);
+            end loop;
+         end if;
+
+         --  Applicable SPARK_Mode is inherited from the enclosing subprogram
+         --  or package.
+
+         return SPARK_Mode = On;
+      end Body_Has_SPARK_Mode_On;
 
       ----------------------------------
       -- Build_Subprogram_Declaration --
@@ -3695,6 +3747,7 @@ package body Sem_Ch6 is
         and then Present (Spec_Id)
         and then
           Nkind (Unit_Declaration_Node (Spec_Id)) = N_Subprogram_Declaration
+        and then Body_Has_SPARK_Mode_On
         and then Can_Be_Inlined_In_GNATprove_Mode (Spec_Id, Body_Id)
         and then not Body_Has_Contract
       then
@@ -3813,18 +3866,6 @@ package body Sem_Ch6 is
       --  are now chained on the contract of the subprogram body.
 
       Analyze_Entry_Or_Subprogram_Body_Contract (Body_Id);
-
-      --  If SPARK_Mode for body is not On, disable frontend inlining for this
-      --  subprogram in GNATprove mode, as its body should not be analyzed.
-
-      if SPARK_Mode /= On
-        and then GNATprove_Mode
-        and then Present (Spec_Id)
-        and then Nkind (Parent (Parent (Spec_Id))) = N_Subprogram_Declaration
-      then
-         Set_Body_To_Inline (Parent (Parent (Spec_Id)), Empty);
-         Set_Is_Inlined_Always (Spec_Id, False);
-      end if;
 
       --  Check completion, and analyze the statements
 

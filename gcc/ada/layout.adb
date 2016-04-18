@@ -3318,7 +3318,7 @@ package body Layout is
             --  we have no way of doing that or easily figuring it out, so we
             --  don't bother.
 
-            --  Historical note. In versions of GNAT prior to Nov 6th, 2010, an
+            --  Historical note. In versions of GNAT prior to Nov 6th, 2011, an
             --  odd distinction was made between inherited alignments greater
             --  than the computed alignment (where the larger alignment was
             --  inherited) and inherited alignments smaller than the computed

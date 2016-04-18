@@ -1,3 +1,29 @@
+2016-04-18  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Prevent inlining of
+	calls inside expression functions.  Factor previous code issuing
+	errors to call Cannot_Inline instead, which does appropriate
+	processing of message for GNATprove.
+
+2016-04-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* einfo.ads, sem_ch3.adb, sem_ch8.adb, osint-l.adb, rtsfind.adb,
+	osint-b.adb: Cleanups.
+
+2016-04-18  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Only create
+	body to inline in GNATprove mode when SPARK_Mode On applies to
+	subprogram body.
+	* sem_prag.adb, sem_prag.ads (Get_SPARK_Mode_Type): Make function
+	public.
+
+2016-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* layout.adb: Fix minor typo in comment.
+	* inline.adb: Fix minor pasto.
+	* sem_ch12.ads: Fix minor typos in comments.
+
 2016-04-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_disp.adb (Check_Dispatching_Call): Major rewriting to

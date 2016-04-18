@@ -6428,16 +6428,14 @@ package body Sem_Res is
             --  assertions as logic expressions.
 
             elsif In_Assertion_Expr /= 0 then
-               Error_Msg_NE ("info: no contextual analysis of &?", N, Nam);
-               Error_Msg_N ("\call appears in assertion expression", N);
-               Set_Is_Inlined_Always (Nam_UA, False);
+               Cannot_Inline
+                 ("cannot inline & (in assertion expression)?", N, Nam_UA);
 
             --  Calls cannot be inlined inside default expressions
 
             elsif In_Default_Expr then
-               Error_Msg_NE ("info: no contextual analysis of &?", N, Nam);
-               Error_Msg_N ("\call appears in default expression", N);
-               Set_Is_Inlined_Always (Nam_UA, False);
+               Cannot_Inline
+                 ("cannot inline & (in default expression)?", N, Nam_UA);
 
             --  Inlining should not be performed during pre-analysis
 
@@ -6447,10 +6445,8 @@ package body Sem_Res is
                --  inlined if the corresponding body has not been seen yet.
 
                if No (Body_Id) then
-                  Error_Msg_NE
-                    ("info: no contextual analysis of & (body not seen yet)?",
-                     N, Nam);
-                  Set_Is_Inlined_Always (Nam_UA, False);
+                  Cannot_Inline
+                    ("cannot inline & (body not seen yet)?", N, Nam_UA);
 
                --  Nothing to do if there is no body to inline, indicating that
                --  the subprogram is not suitable for inlining in GNATprove
@@ -6459,15 +6455,26 @@ package body Sem_Res is
                elsif No (Body_To_Inline (Nam_Decl)) then
                   null;
 
+               --  Do not inline calls inside expression functions, as this
+               --  would prevent interpreting them as logical formulas in
+               --  GNATprove.
+
+               elsif Present (Current_Subprogram)
+                       and then
+                     Is_Expression_Function_Or_Completion (Current_Subprogram)
+               then
+                  Cannot_Inline
+                    ("cannot inline & (inside expression function)?",
+                     N, Nam_UA);
+
                --  Calls cannot be inlined inside potentially unevaluated
                --  expressions, as this would create complex actions inside
                --  expressions, that are not handled by GNATprove.
 
                elsif Is_Potentially_Unevaluated (N) then
-                  Error_Msg_NE ("info: no contextual analysis of &?", N, Nam);
-                  Error_Msg_N
-                    ("\call appears in potentially unevaluated context", N);
-                  Set_Is_Inlined_Always (Nam_UA, False);
+                  Cannot_Inline
+                    ("cannot inline & (in potentially unevaluated context)?",
+                     N, Nam_UA);
 
                --  Otherwise, inline the call
 

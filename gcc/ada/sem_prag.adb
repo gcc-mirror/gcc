@@ -235,11 +235,6 @@ package body Sem_Prag is
    --  original one, following the renaming chain) is returned. Otherwise the
    --  entity is returned unchanged. Should be in Einfo???
 
-   function Get_SPARK_Mode_Type (N : Name_Id) return SPARK_Mode_Type;
-   --  Subsidiary to the analysis of pragma SPARK_Mode as well as subprogram
-   --  Get_SPARK_Mode_Type. Convert a name into a corresponding value of type
-   --  SPARK_Mode_Type.
-
    function Has_Extra_Parentheses (Clause : Node_Id) return Boolean;
    --  Subsidiary to the analysis of pragmas Depends and Refined_Depends.
    --  Determine whether dependency clause Clause is surrounded by extra

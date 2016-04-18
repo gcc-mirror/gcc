@@ -383,6 +383,11 @@ package Sem_Prag is
    function Get_SPARK_Mode_From_Pragma (N : Node_Id) return SPARK_Mode_Type;
    --  Given a pragma SPARK_Mode node, return corresponding mode id
 
+   function Get_SPARK_Mode_Type (N : Name_Id) return SPARK_Mode_Type;
+   --  Subsidiary to the analysis of pragma SPARK_Mode as well as subprogram
+   --  Get_SPARK_Mode_From_Pragma. Convert a name into a corresponding value
+   --  of type SPARK_Mode_Type.
+
    procedure Initialize;
    --  Initializes data structures used for pragma processing. Must be called
    --  before analyzing each new main source program.

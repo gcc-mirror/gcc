@@ -19828,7 +19828,7 @@ package body Sem_Ch3 is
                         end if;
 
                      elsif Is_Dispatching_Operation (Prim)
-                       and then Disp_Typ  /= Full_T
+                       and then Disp_Typ /= Full_T
                      then
 
                         --  Verify that it is not otherwise controlled by a

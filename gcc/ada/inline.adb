@@ -3866,7 +3866,6 @@ package body Inline is
          --  We can now complete the cleanup actions of scopes that contain
          --  pending instantiations (skipped for generic units, since we
          --  never need any cleanups in generic units).
-         --  pending instantiations.
 
          if Expander_Active
            and then not Is_Generic_Unit (Main_Unit_Entity)
