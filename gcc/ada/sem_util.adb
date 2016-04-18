@@ -4574,9 +4574,16 @@ package body Sem_Util is
 
    begin
       --  If this is a warning, convert it into an error if we are in code
-      --  subject to SPARK_Mode being set ON.
+      --  subject to SPARK_Mode being set On, unless Warn is True to force a
+      --  warning. The rationale is that a compile-time constraint error should
+      --  lead to an error instead of a warning when SPARK_Mode is On, but in
+      --  a few cases we prefer to issue a warning and generate both a suitable
+      --  run-time error in GNAT and a suitable check message in GNATprove.
+      --  Those cases are those that likely correspond to deactivated SPARK
+      --  code, so that this kind of code can be compiled and analyzed instead
+      --  of being rejected.
 
-      Error_Msg_Warn := SPARK_Mode /= On;
+      Error_Msg_Warn := Warn or SPARK_Mode /= On;
 
       --  A static constraint error in an instance body is not a fatal error.
       --  we choose to inhibit the message altogether, because there is no
@@ -4648,8 +4655,6 @@ package body Sem_Util is
          --  evaluated.
 
          if not Is_Statically_Unevaluated (N) then
-            Error_Msg_Warn := SPARK_Mode /= On;
-
             if Present (Ent) then
                Error_Msg_NEL (Msgc (1 .. Msgl), N, Ent, Eloc);
             else

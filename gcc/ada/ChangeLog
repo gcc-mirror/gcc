@@ -1,3 +1,25 @@
+2016-04-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* osint-c.ads, osint-c.adb (Delete_C_File, Delete_H_File): New.
+	* gnat1drv.adb (Gnat1drv): Delete old C files before regenerating them.
+	* debug.adb: Reserve -gnatd.4 to force generation of C files.
+
+2016-04-18  Yannick Moy  <moy@adacore.com>
+
+	* sem_eval.adb (Eval_Arithmetic_Op): Do not issue error on static
+	division by zero, instead possibly issue a warning.
+	* sem_res.adb (Resolve_Arithmetic_Op): Do not issue error on
+	static division by zero, instead add check flag on original
+	expression.
+	* sem_util.adb, sem_util.ads (Compile_Time_Constraint_Error):
+	Only issue error when both SPARK_Mode is On and Warn is False.
+
+2016-04-18  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb (Apply_Scalar_Range_Check): Force
+	warning instead of error when SPARK_Mode is On, on index out of
+	bounds, and set check flag for GNATprove.
+
 2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Check_In_Out_States.Check_Constituent_Usage):

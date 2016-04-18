@@ -158,7 +158,7 @@ package body Debug is
    --  d.1  Enable unnesting of nested procedures
    --  d.2  Allow statements in declarative part
    --  d.3  Output debugging information from Exp_Unst
-   --  d.4
+   --  d.4  Do not delete generated C file in case of errors
    --  d.5  Do not generate imported subprogram definitions in C code
    --  d.6
    --  d.7
@@ -761,6 +761,9 @@ package body Debug is
 
    --  d.3  Output debugging information from Exp_Unst, including the name of
    --       any unreachable subprograms that get deleted.
+
+   --  d.4  By default in case of an error during C generation, the .c or .h
+   --       file is delete. This flag keeps the C file.
 
    --  d.5  By default a subprogram imported generates a subprogram profile.
    --       This debug flag disables this generation when generating C code,

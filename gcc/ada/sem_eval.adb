@@ -1885,9 +1885,14 @@ package body Sem_Eval is
                   --  division, rem and mod if the right operand is zero.
 
                   if Right_Int = 0 then
+
+                     --  When SPARK_Mode is On, force a warning instead of
+                     --  an error in that case, as this likely corresponds
+                     --  to deactivated code.
+
                      Apply_Compile_Time_Constraint_Error
                        (N, "division by zero", CE_Divide_By_Zero,
-                        Warn => not Stat);
+                        Warn => not Stat or SPARK_Mode = On);
                      Set_Raises_Constraint_Error (N);
                      return;
 
@@ -1903,10 +1908,16 @@ package body Sem_Eval is
                   --  division, rem and mod if the right operand is zero.
 
                   if Right_Int = 0 then
+
+                     --  When SPARK_Mode is On, force a warning instead of
+                     --  an error in that case, as this likely corresponds
+                     --  to deactivated code.
+
                      Apply_Compile_Time_Constraint_Error
                        (N, "mod with zero divisor", CE_Divide_By_Zero,
-                        Warn => not Stat);
+                        Warn => not Stat or SPARK_Mode = On);
                      return;
+
                   else
                      Result := Left_Int mod Right_Int;
                   end if;
@@ -1917,9 +1928,14 @@ package body Sem_Eval is
                   --  division, rem and mod if the right operand is zero.
 
                   if Right_Int = 0 then
+
+                     --  When SPARK_Mode is On, force a warning instead of
+                     --  an error in that case, as this likely corresponds
+                     --  to deactivated code.
+
                      Apply_Compile_Time_Constraint_Error
                        (N, "rem with zero divisor", CE_Divide_By_Zero,
-                        Warn => not Stat);
+                        Warn => not Stat or SPARK_Mode = On);
                      return;
 
                   else
