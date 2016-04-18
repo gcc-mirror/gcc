@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-options "-std=gnu++11 -Wno-pedantic" }
 // { dg-do compile }
 //
 // Copyright (C) 2011-2016 Free Software Foundation, Inc.

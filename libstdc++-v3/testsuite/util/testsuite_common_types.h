@@ -304,8 +304,8 @@ namespace __gnu_test
     typedef char16_t 		a14;
     typedef char32_t 		a15;
 # if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
-    typedef __int128            a16;
-    typedef unsigned __int128   a17;
+    __extension__ typedef __int128            a16;
+    __extension__ typedef unsigned __int128   a17;
 
     typedef node<_GLIBCXX_TYPELIST_CHAIN17(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
 					   a10, a11, a12, a13, a14, a15,
@@ -316,8 +316,8 @@ namespace __gnu_test
 # endif
 #else
 # if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
-    typedef __int128            a14;
-    typedef unsigned __int128   a15;
+    __extension__ typedef __int128            a14;
+    __extension__ typedef unsigned __int128   a15;
 
     typedef node<_GLIBCXX_TYPELIST_CHAIN15(a1, a2, a3, a4, a5, a6, a7, a8, a9, 
 					   a10, a11, a12, a13, a14, a15)> type;

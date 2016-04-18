@@ -22,8 +22,8 @@
 // http://gcc.gnu.org/ml/libstdc++/2000-06/msg00316.html
 struct foo { };
 
-bool operator== (const foo&, const foo&) { return true; };
-bool operator< (const foo&, const foo&) { return true; };
+bool operator== (const foo&, const foo&) { return true; }
+bool operator< (const foo&, const foo&) { return true; }
 
 void bar(foo* a, foo* b, foo& x)
 {
