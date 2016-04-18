@@ -3886,17 +3886,16 @@ package Einfo is
 --       package can see the entities in the package via the renaming.
 
 --    Renamed_Object (Node18)
---       Defined in all objects (constants, variables, components, formal
---       parameters, generic formal parameters, and loop parameters).
---       ??? Defined in discriminants?
---       Set non-Empty if the object was declared by a renaming declaration,
---       in which case it references the tree node for the name of the renamed
---       object. This is only possible for the variable and constant cases.
---       For formal parameters, this field is used in the course of inline
---       expansion, to map the formals of a subprogram into the corresponding
---       actuals. For formals of a task entry, it denotes the local renaming
---       that replaces the actual within the accept statement. The field is
---       Empty otherwise (it is always empty for loop parameters).
+--       Defined in components, constants, discriminants, formal parameters,
+--       generic formals, loop parameters, and variables. Set to non-Empty if
+--       the object was declared by a renaming declaration. For constants and
+--       variables, the attribute references the tree node for the name of the
+--       renamed object. For formal parameters, the field is used in inlining
+--       and maps the entities of all formal parameters of a subprogram to the
+--       entities of the corresponding actuals. For formals of a task entry,
+--       the attribute denotes the local renaming that replaces the actual
+--       within an accept statement. For all remaining cases (discriminants,
+--       loop parameters) the field is Empty.
 
 --    Renaming_Map (Uint9)
 --       Defined in generic subprograms, generic packages, and their

@@ -21739,7 +21739,8 @@ package body Sem_Prag is
             --  Otherwise the placement is illegal
 
             else
-               Pragma_Misplaced;
+               Error_Pragma
+                 ("pragma % must be specified within a package declaration");
                return;
             end if;
 
@@ -21778,7 +21779,9 @@ package body Sem_Prag is
             --  Otherwise the placement is illegal
 
             else
-               Pragma_Misplaced;
+               Error_Pragma
+                 ("pragma % must be applied to a library-level subprogram "
+                  & "declaration");
                return;
             end if;
 
