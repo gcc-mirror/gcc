@@ -2152,6 +2152,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       vr->operands[1] = op;
       vr->hashcode = vn_reference_compute_hash (vr);
 
+      /* Try folding the new reference to a constant.  */
+      tree val = fully_constant_vn_reference_p (vr);
+      if (val)
+	return vn_reference_lookup_or_insert_for_pieces
+		 (vuse, vr->set, vr->type, vr->operands, val);
+
       /* Adjust *ref from the new operands.  */
       if (!ao_ref_init_from_vn_reference (&r, vr->set, vr->type, vr->operands))
 	return (void *)-1;
