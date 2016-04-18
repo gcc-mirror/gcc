@@ -1,3 +1,16 @@
+2016-04-18  Bob Duff  <duff@adacore.com>
+
+	* sinput.ads, sinput.adb (Build_Location_String): Take a
+	parameter instead of using a global variable.  The function
+	version no longer destroys the Name_Buffer.
+	* stringt.ads, stringt.adb (String_From_Name_Buffer): Take a
+	parameter, which defaults to the Global_Name_Buffer, so some
+	calls can avoid the global.
+	* exp_ch11.adb, exp_intr.adb: Use new interfaces above
+	to avoid using globals. All but one call to Build_Location_String
+	avoids the global. Only one call to String_From_Name_Buffer
+	avoids it.
+
 2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* namet.adb, namet.ads, exp_unst.adb: Minor reformatting.

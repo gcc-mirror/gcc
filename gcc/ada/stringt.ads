@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Namet;  use Namet;
 with System; use System;
 with Types;  use Types;
 
@@ -131,10 +132,9 @@ package Stringt is
    function String_Chars_Address return System.Address;
    --  Return address of String_Chars table (used by Back_End call to Gigi)
 
-   function String_From_Name_Buffer return String_Id;
-   --  Given a name stored in Namet.Name_Buffer (length in Namet.Name_Len),
-   --  returns a string of the corresponding value. The value in Name_Buffer
-   --  is unchanged, and the cases of letters are unchanged.
+   function String_From_Name_Buffer
+     (Buf : Bounded_String := Global_Name_Buffer) return String_Id;
+   --  Given a name stored in Buf, returns a string of the corresponding value.
 
    function Strings_Address return System.Address;
    --  Return address of Strings table (used by Back_End call to Gigi)
