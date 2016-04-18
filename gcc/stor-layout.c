@@ -579,7 +579,7 @@ do_type_align (tree type, tree decl)
 {
   if (TYPE_ALIGN (type) > DECL_ALIGN (decl))
     {
-      DECL_ALIGN (decl) = TYPE_ALIGN (type);
+      SET_DECL_ALIGN (decl, TYPE_ALIGN (type));
       if (TREE_CODE (decl) == FIELD_DECL)
 	DECL_USER_ALIGN (decl) = TYPE_USER_ALIGN (type);
     }
@@ -672,7 +672,7 @@ layout_decl (tree decl, unsigned int known_align)
 #ifdef EMPTY_FIELD_BOUNDARY
 		  if (EMPTY_FIELD_BOUNDARY > DECL_ALIGN (decl))
 		    {
-		      DECL_ALIGN (decl) = EMPTY_FIELD_BOUNDARY;
+		      SET_DECL_ALIGN (decl, EMPTY_FIELD_BOUNDARY);
 		      DECL_USER_ALIGN (decl) = 0;
 		    }
 #endif
@@ -694,7 +694,7 @@ layout_decl (tree decl, unsigned int known_align)
 		  && !(xalign > BITS_PER_UNIT && DECL_PACKED (decl))
 		  && (known_align == 0 || known_align >= xalign))
 		{
-		  DECL_ALIGN (decl) = MAX (xalign, DECL_ALIGN (decl));
+		  SET_DECL_ALIGN (decl, MAX (xalign, DECL_ALIGN (decl)));
 		  DECL_MODE (decl) = xmode;
 		  DECL_BIT_FIELD (decl) = 0;
 		}
@@ -719,7 +719,7 @@ layout_decl (tree decl, unsigned int known_align)
 	 DECL_USER_ALIGN, so we need to check old_user_align instead.  */
       if (packed_p
 	  && !old_user_align)
-	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
+	SET_DECL_ALIGN (decl, MIN (DECL_ALIGN (decl), BITS_PER_UNIT));
 
       if (! packed_p && ! DECL_USER_ALIGN (decl))
 	{
@@ -727,11 +727,11 @@ layout_decl (tree decl, unsigned int known_align)
 	     to a lower boundary than alignment of variables unless
 	     it was overridden by attribute aligned.  */
 #ifdef BIGGEST_FIELD_ALIGNMENT
-	  DECL_ALIGN (decl)
-	    = MIN (DECL_ALIGN (decl), (unsigned) BIGGEST_FIELD_ALIGNMENT);
+	  SET_DECL_ALIGN (decl, MIN (DECL_ALIGN (decl),
+				     (unsigned) BIGGEST_FIELD_ALIGNMENT));
 #endif
 #ifdef ADJUST_FIELD_ALIGN
-	  DECL_ALIGN (decl) = ADJUST_FIELD_ALIGN (decl, DECL_ALIGN (decl));
+	  SET_DECL_ALIGN (decl, ADJUST_FIELD_ALIGN (decl, DECL_ALIGN (decl)));
 #endif
 	}
 
@@ -741,7 +741,7 @@ layout_decl (tree decl, unsigned int known_align)
 	mfa = maximum_field_alignment;
       /* Should this be controlled by DECL_USER_ALIGN, too?  */
       if (mfa != 0)
-	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), mfa);
+	SET_DECL_ALIGN (decl, MIN (DECL_ALIGN (decl), mfa));
     }
 
   /* Evaluate nonconstant size only once, either now or as soon as safe.  */
@@ -791,7 +791,7 @@ relayout_decl (tree decl)
   DECL_SIZE (decl) = DECL_SIZE_UNIT (decl) = 0;
   DECL_MODE (decl) = VOIDmode;
   if (!DECL_USER_ALIGN (decl))
-    DECL_ALIGN (decl) = 0;
+    SET_DECL_ALIGN (decl, 0);
   SET_DECL_RTL (decl, 0);
 
   layout_decl (decl, 0);
@@ -1572,10 +1572,10 @@ finalize_record_size (record_layout_info rli)
 
   /* Determine the desired alignment.  */
 #ifdef ROUND_TYPE_ALIGN
-  TYPE_ALIGN (rli->t) = ROUND_TYPE_ALIGN (rli->t, TYPE_ALIGN (rli->t),
-					  rli->record_align);
+  SET_TYPE_ALIGN (rli->t, ROUND_TYPE_ALIGN (rli->t, TYPE_ALIGN (rli->t),
+					    rli->record_align));
 #else
-  TYPE_ALIGN (rli->t) = MAX (TYPE_ALIGN (rli->t), rli->record_align);
+  SET_TYPE_ALIGN (rli->t, MAX (TYPE_ALIGN (rli->t), rli->record_align));
 #endif
 
   /* Compute the size so far.  Be sure to allow for extra bits in the
@@ -1732,15 +1732,15 @@ finalize_type_size (tree type)
 	 alignment of one of the fields.  */
       if (mode_align >= TYPE_ALIGN (type))
 	{
-	  TYPE_ALIGN (type) = mode_align;
+	  SET_TYPE_ALIGN (type, mode_align);
 	  TYPE_USER_ALIGN (type) = 0;
 	}
     }
 
   /* Do machine-dependent extra alignment.  */
 #ifdef ROUND_TYPE_ALIGN
-  TYPE_ALIGN (type)
-    = ROUND_TYPE_ALIGN (type, TYPE_ALIGN (type), BITS_PER_UNIT);
+  SET_TYPE_ALIGN (type,
+                  ROUND_TYPE_ALIGN (type, TYPE_ALIGN (type), BITS_PER_UNIT));
 #endif
 
   /* If we failed to find a simple way to calculate the unit size
@@ -1793,7 +1793,7 @@ finalize_type_size (tree type)
 	    valign = MAX (valign, TYPE_ALIGN (variant));
 	  else
 	    TYPE_USER_ALIGN (variant) = user_align;
-	  TYPE_ALIGN (variant) = valign;
+	  SET_TYPE_ALIGN (variant, valign);
 	  TYPE_PRECISION (variant) = precision;
 	  SET_TYPE_MODE (variant, mode);
 	}
@@ -2087,7 +2087,7 @@ finish_builtin_struct (tree type, const char *name, tree fields,
 
   if (align_type)
     {
-      TYPE_ALIGN (type) = TYPE_ALIGN (align_type);
+      SET_TYPE_ALIGN (type, TYPE_ALIGN (align_type));
       TYPE_USER_ALIGN (type) = TYPE_USER_ALIGN (align_type);
     }
 
@@ -2200,7 +2200,7 @@ layout_type (tree type)
 	   Instead, query a target hook, defaulting to natural alignment.
 	   This prevents ABI changes depending on whether or not native
 	   vector modes are supported.  */
-	TYPE_ALIGN (type) = targetm.vector_alignment (type);
+	SET_TYPE_ALIGN (type, targetm.vector_alignment (type));
 
 	/* However, if the underlying mode requires a bigger alignment than
 	   what the target hook provides, we cannot use the mode.  For now,
@@ -2212,7 +2212,7 @@ layout_type (tree type)
 
     case VOID_TYPE:
       /* This is an incomplete type and so doesn't have a size.  */
-      TYPE_ALIGN (type) = 1;
+      SET_TYPE_ALIGN (type, 1);
       TYPE_USER_ALIGN (type) = 0;
       SET_TYPE_MODE (type, VOIDmode);
       break;
@@ -2337,7 +2337,7 @@ layout_type (tree type)
 #else
 	align = MAX (align, BITS_PER_UNIT);
 #endif
-	TYPE_ALIGN (type) = align;
+	SET_TYPE_ALIGN (type, align);
 	SET_TYPE_MODE (type, BLKmode);
 	if (TYPE_SIZE (type) != 0
 	    && ! targetm.member_type_forces_blk (type, VOIDmode)
@@ -2609,13 +2609,13 @@ initialize_sizetypes (void)
 
   /* Now layout both types manually.  */
   SET_TYPE_MODE (sizetype, smallest_mode_for_size (precision, MODE_INT));
-  TYPE_ALIGN (sizetype) = GET_MODE_ALIGNMENT (TYPE_MODE (sizetype));
+  SET_TYPE_ALIGN (sizetype, GET_MODE_ALIGNMENT (TYPE_MODE (sizetype)));
   TYPE_SIZE (sizetype) = bitsize_int (precision);
   TYPE_SIZE_UNIT (sizetype) = size_int (GET_MODE_SIZE (TYPE_MODE (sizetype)));
   set_min_and_max_values_for_integral_type (sizetype, precision, UNSIGNED);
 
   SET_TYPE_MODE (bitsizetype, smallest_mode_for_size (bprecision, MODE_INT));
-  TYPE_ALIGN (bitsizetype) = GET_MODE_ALIGNMENT (TYPE_MODE (bitsizetype));
+  SET_TYPE_ALIGN (bitsizetype, GET_MODE_ALIGNMENT (TYPE_MODE (bitsizetype)));
   TYPE_SIZE (bitsizetype) = bitsize_int (bprecision);
   TYPE_SIZE_UNIT (bitsizetype)
     = size_int (GET_MODE_SIZE (TYPE_MODE (bitsizetype)));

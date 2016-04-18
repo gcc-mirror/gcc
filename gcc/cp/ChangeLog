@@ -1,3 +1,22 @@
+2016-04-18  Michael Matz  <matz@suse.de>
+
+	* class.c (build_vtable): Use SET_DECL_ALIGN and SET_TYPE_ALIGN.
+	(layout_class_type): Ditto.
+	(build_base_field): Use SET_DECL_ALIGN.
+	(fixup_attribute_variants): Use SET_TYPE_ALIGN.
+	* decl.c (duplicate_decls): Use SET_DECL_ALIGN.
+	(record_unknown_type): Use SET_TYPE_ALIGN.
+	(cxx_init_decl_processing): Ditto.
+	(copy_type_enum): Ditto.
+	(grokfndecl): Use SET_DECL_ALIGN.
+	(copy_type_enum): Use SET_TYPE_ALIGN.
+	* pt.c (instantiate_class_template_1): Use SET_TYPE_ALIGN.
+	(tsubst): Ditto.
+	* tree.c (cp_build_qualified_type_real): Use SET_TYPE_ALIGN.
+	* lambda.c (maybe_add_lambda_conv_op): Use SET_DECL_ALIGN.
+	* method.c (implicitly_declare_fn): Use SET_DECL_ALIGN.
+	* rtti.c (emit_tinfo_decl): Ditto.
+
 2016-04-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70690

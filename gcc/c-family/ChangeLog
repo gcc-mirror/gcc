@@ -1,3 +1,8 @@
+2016-04-18  Michael Matz  <matz@suse.de>
+
+	* c-common.c (handle_aligned_attribute): Use SET_TYPE_ALIGN
+	and SET_DECL_ALIGN.
+
 2016-04-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (get_underlying_decl): Return the typedef, if any.

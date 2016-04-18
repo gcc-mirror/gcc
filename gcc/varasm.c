@@ -1053,7 +1053,7 @@ align_variable (tree decl, bool dont_output_data)
 
   /* Reset the alignment in case we have made it tighter, so we can benefit
      from it in get_pointer_alignment.  */
-  DECL_ALIGN (decl) = align;
+  SET_DECL_ALIGN (decl, align);
 }
 
 /* Return DECL_ALIGN (decl), possibly increased for optimization purposes
@@ -2187,8 +2187,8 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
       && asan_protect_global (decl))
     {
       asan_protected = true;
-      DECL_ALIGN (decl) = MAX (DECL_ALIGN (decl), 
-                               ASAN_RED_ZONE_SIZE * BITS_PER_UNIT);
+      SET_DECL_ALIGN (decl, MAX (DECL_ALIGN (decl),
+				 ASAN_RED_ZONE_SIZE * BITS_PER_UNIT));
     }
 
   set_mem_align (decl_rtl, DECL_ALIGN (decl));
@@ -3249,7 +3249,7 @@ build_constant_desc (tree exp)
      architectures so use DATA_ALIGNMENT as well, except for strings.  */
   if (TREE_CODE (exp) == STRING_CST)
     {
-      DECL_ALIGN (decl) = CONSTANT_ALIGNMENT (exp, DECL_ALIGN (decl));
+      SET_DECL_ALIGN (decl, CONSTANT_ALIGNMENT (exp, DECL_ALIGN (decl)));
     }
   else
     align_variable (decl, 0);
@@ -3404,8 +3404,8 @@ output_constant_def_contents (rtx symbol)
       && asan_protect_global (exp))
     {
       asan_protected = true;
-      DECL_ALIGN (decl) = MAX (DECL_ALIGN (decl),
-			       ASAN_RED_ZONE_SIZE * BITS_PER_UNIT);
+      SET_DECL_ALIGN (decl, MAX (DECL_ALIGN (decl),
+				 ASAN_RED_ZONE_SIZE * BITS_PER_UNIT));
     }
 
   /* If the constant is part of an object block, make sure that the

@@ -1,3 +1,10 @@
+2016-04-18  Michael Matz  <matz@suse.de>
+
+	* class.c (add_method_1): Use SET_DECL_ALIGN.
+	(make_class_data): Ditto.
+	(emit_register_classes_in_jcr_section): Ditto.
+	* typeck.c (build_java_array_type): Ditto.
+
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

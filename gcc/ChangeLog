@@ -1,3 +1,59 @@
+2016-04-18  Michael Matz  <matz@suse.de>
+
+	* tree.h (TYPE_ALIGN, DECL_ALIGN): Return shifted amount.
+	(SET_TYPE_ALIGN, SET_DECL_ALIGN): New.
+	* tree-core.h (tree_type_common.align): Use bit-field.
+	(tree_type_common.spare): New.
+	(tree_decl_common.off_align): Make smaller.
+	(tree_decl_common.align): Use bit-field.
+
+	* expr.c (expand_expr_addr_expr_1): Use SET_TYPE_ALIGN.
+	* omp-low.c (install_var_field): Use SET_DECL_ALIGN.
+	(scan_sharing_clauses): Ditto.
+	(finish_taskreg_scan): Use SET_DECL_ALIGN and SET_TYPE_ALIGN.
+	(omp_finish_file): Ditto.
+	* stor-layout.c (do_type_align): Use SET_DECL_ALIGN.
+	(layout_decl): Ditto.
+	(relayout_decl): Ditto.
+	(finalize_record_size): Use SET_TYPE_ALIGN.
+	(finalize_type_size): Ditto.
+	(finish_builtin_struct): Ditto.
+	(layout_type): Ditto.
+	(initialize_sizetypes): Ditto.
+	* targhooks.c (std_gimplify_va_arg_expr): Use SET_TYPE_ALIGN.
+	* tree-nested.c (insert_field_into_struct): Use SET_TYPE_ALIGN.
+	(lookup_field_for_decl): Use SET_DECL_ALIGN.
+	(get_chain_field): Ditto.
+	(get_trampoline_type): Ditto.
+	(get_nl_goto_field): Ditto.
+	* tree-streamer-in.c (unpack_ts_decl_common_value_fields): Use
+	SET_DECL_ALIGN.
+	(unpack_ts_type_common_value_fields): Use SET_TYPE_ALIGN.
+	* gimple-expr.c (copy_var_decl): Use SET_DECL_ALIGN.
+	* tree.c (make_node_stat): Use SET_DECL_ALIGN and SET_TYPE_ALIGN.
+	(build_qualified_type): Use SET_TYPE_ALIGN.
+	(build_aligned_type, build_range_type_1): Ditto.
+	(build_atomic_base): Ditto.
+	(build_common_tree_nodes): Ditto.
+	* cfgexpand.c (align_local_variable): Use SET_DECL_ALIGN.
+	(expand_one_stack_var_at): Ditto.
+	* coverage.c (build_var): Use SET_DECL_ALIGN.
+	* except.c (init_eh): Ditto.
+	* function.c (assign_parm_setup_block): Ditto.
+	* symtab.c (increase_alignment_1): Ditto.
+	* tree-ssa-ccp.c (fold_builtin_alloca_with_align): Ditto.
+	* tree-vect-stmts.c (ensure_base_align): Ditto.
+	* varasm.c (align_variable): Ditto.
+	(assemble_variable): Ditto.
+	(build_constant_desc): Ditto.
+	(output_constant_def_contents): Ditto.
+
+	* config/arm/arm.c (arm_relayout_function): Use SET_DECL_ALIGN.
+	* config/avr/avr.c (avr_adjust_type_node): Use SET_TYPE_ALIGN.
+	* config/mips/mips.c (mips_std_gimplify_va_arg_expr): Ditto.
+	* config/msp430/msp430.c (msp430_gimplify_va_arg_expr): Ditto.
+	* config/spu/spu.c (spu_build_builtin_va_list): Use SET_DECL_ALIGN.
+
 2016-04-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/70708

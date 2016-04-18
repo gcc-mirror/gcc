@@ -7712,7 +7712,7 @@ expand_expr_addr_expr_1 (tree exp, rtx target, machine_mode tmode,
     {
       inner = copy_node (inner);
       TREE_TYPE (inner) = copy_node (TREE_TYPE (inner));
-      TYPE_ALIGN (TREE_TYPE (inner)) = TYPE_ALIGN (TREE_TYPE (exp));
+      SET_TYPE_ALIGN (TREE_TYPE (inner), TYPE_ALIGN (TREE_TYPE (exp)));
       TYPE_USER_ALIGN (TREE_TYPE (inner)) = 1;
     }
   result = expand_expr_addr_expr_1 (inner, subtarget, tmode, modifier, as);

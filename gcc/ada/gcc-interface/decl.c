@@ -1888,8 +1888,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     This means that bit-packed arrays are given "ceil" alignment for
 	     their size by default, which may seem counter-intuitive but makes
 	     it possible to overlay them on modular types easily.  */
-	  TYPE_ALIGN (gnu_type)
-	    = align > 0 ? align : TYPE_ALIGN (gnu_field_type);
+	  SET_TYPE_ALIGN (gnu_type,
+			  align > 0 ? align : TYPE_ALIGN (gnu_field_type));
 
 	  /* Propagate the reverse storage order flag to the record type so
 	     that the required byte swapping is performed when retrieving the
@@ -1953,7 +1953,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  TYPE_SIZE (gnu_type) = TYPE_SIZE (gnu_field_type);
 	  TYPE_SIZE_UNIT (gnu_type) = TYPE_SIZE_UNIT (gnu_field_type);
 	  SET_TYPE_ADA_SIZE (gnu_type, TYPE_RM_SIZE (gnu_field_type));
-	  TYPE_ALIGN (gnu_type) = align;
+	  SET_TYPE_ALIGN (gnu_type, align);
 	  relate_alias_sets (gnu_type, gnu_field_type, ALIAS_SET_COPY);
 
 	  /* Don't declare the field as addressable since we won't be taking
@@ -2265,9 +2265,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if (No (Packed_Array_Impl_Type (gnat_entity))
 	    && Known_Alignment (gnat_entity))
 	  {
-	    TYPE_ALIGN (tem)
-	      = validate_alignment (Alignment (gnat_entity), gnat_entity,
-				    TYPE_ALIGN (tem));
+	    SET_TYPE_ALIGN (tem,
+			    validate_alignment (Alignment (gnat_entity),
+						gnat_entity,
+						TYPE_ALIGN (tem)));
 	    if (Present (Alignment_Clause (gnat_entity)))
 	      TYPE_USER_ALIGN (tem) = 1;
 	  }
@@ -2296,7 +2297,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	TYPE_POINTER_TO (gnu_type) = gnu_fat_type;
 	TYPE_REFERENCE_TO (gnu_type) = gnu_fat_type;
 	SET_TYPE_MODE (gnu_type, BLKmode);
-	TYPE_ALIGN (gnu_type) = TYPE_ALIGN (tem);
+	SET_TYPE_ALIGN (gnu_type, TYPE_ALIGN (tem));
 
 	/* If the maximum size doesn't overflow, use it.  */
 	if (gnu_max_size
@@ -3035,11 +3036,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* Always set the alignment on the record type here so that it can
 	   get the proper layout.  */
 	if (has_align)
-	  TYPE_ALIGN (gnu_type)
-	    = validate_alignment (Alignment (gnat_entity), gnat_entity, 0);
+	  SET_TYPE_ALIGN (gnu_type,
+			  validate_alignment (Alignment (gnat_entity),
+					      gnat_entity, 0));
 	else
 	  {
-	    TYPE_ALIGN (gnu_type) = 0;
+	    SET_TYPE_ALIGN (gnu_type, 0);
 
 	    /* If a type needs strict alignment, the minimum size will be the
 	       type size instead of the RM size (see validate_size).  Cap the
@@ -3138,7 +3140,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       be created with a component clause below, then we need
 	       to apply the same adjustment as in gnat_to_gnu_field.  */
 	    if (has_rep && TYPE_ALIGN (gnu_type) < TYPE_ALIGN (gnu_parent))
-	      TYPE_ALIGN (gnu_type) = TYPE_ALIGN (gnu_parent);
+	      SET_TYPE_ALIGN (gnu_type, TYPE_ALIGN (gnu_parent));
 
 	    /* Finally we fix up both kinds of twisted COMPONENT_REF we have
 	       initially built.  The discriminants must reference the fields
@@ -4565,8 +4567,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    /* Set a default alignment to speed up accesses.  But we
 		       shouldn't increase the size of the structure too much,
 		       lest it doesn't fit in return registers anymore.  */
-		    TYPE_ALIGN (gnu_return_type)
-		      = get_mode_alignment (ptr_mode);
+		    SET_TYPE_ALIGN (gnu_return_type,
+				    get_mode_alignment (ptr_mode));
 		  }
 
 		gnu_field
@@ -4613,8 +4615,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    if (mode != BLKmode)
 		      {
 			SET_TYPE_MODE (gnu_return_type, mode);
-			TYPE_ALIGN (gnu_return_type)
-			  = GET_MODE_ALIGNMENT (mode);
+			SET_TYPE_ALIGN (gnu_return_type,
+					GET_MODE_ALIGNMENT (mode));
 			TYPE_SIZE (gnu_return_type)
 			  = bitsize_int (GET_MODE_BITSIZE (mode));
 			TYPE_SIZE_UNIT (gnu_return_type)
@@ -6796,7 +6798,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	  const unsigned int type_align = TYPE_ALIGN (gnu_field_type);
 
 	  if (TYPE_ALIGN (gnu_record_type) < type_align)
-	    TYPE_ALIGN (gnu_record_type) = type_align;
+	    SET_TYPE_ALIGN (gnu_record_type, type_align);
 
 	  /* If the position is not a multiple of the alignment of the type,
 	     then error out and reset the position.  */
@@ -7283,7 +7285,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	    = make_node (unchecked_union ? UNION_TYPE : QUAL_UNION_TYPE);
 
 	  TYPE_NAME (gnu_union_type) = gnu_union_name;
-	  TYPE_ALIGN (gnu_union_type) = 0;
+	  SET_TYPE_ALIGN (gnu_union_type, 0);
 	  TYPE_PACKED (gnu_union_type) = TYPE_PACKED (gnu_record_type);
 	  TYPE_REVERSE_STORAGE_ORDER (gnu_union_type)
 	    = TYPE_REVERSE_STORAGE_ORDER (gnu_record_type);
@@ -7336,7 +7338,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	  /* Set the alignment of the inner type in case we need to make
 	     inner objects into bitfields, but then clear it out so the
 	     record actually gets only the alignment required.  */
-	  TYPE_ALIGN (gnu_variant_type) = TYPE_ALIGN (gnu_record_type);
+	  SET_TYPE_ALIGN (gnu_variant_type, TYPE_ALIGN (gnu_record_type));
 	  TYPE_PACKED (gnu_variant_type) = TYPE_PACKED (gnu_record_type);
 	  TYPE_REVERSE_STORAGE_ORDER (gnu_variant_type)
 	    = TYPE_REVERSE_STORAGE_ORDER (gnu_record_type);
@@ -7568,9 +7570,9 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	  SET_DECL_OFFSET_ALIGN (gnu_field, BIGGEST_ALIGNMENT);
 	  DECL_FIELD_BIT_OFFSET (gnu_field) = bitsize_zero_node;
 	  if (field_is_aliased (gnu_field))
-	    TYPE_ALIGN (gnu_record_type)
-	      = MAX (TYPE_ALIGN (gnu_record_type),
-		     TYPE_ALIGN (TREE_TYPE (gnu_field)));
+	    SET_TYPE_ALIGN (gnu_record_type,
+			    MAX (TYPE_ALIGN (gnu_record_type),
+				 TYPE_ALIGN (TREE_TYPE (gnu_field))));
 	  MOVE_FROM_FIELD_LIST_TO (gnu_zero_list);
 	  continue;
 	}
@@ -7681,7 +7683,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
     gnu_field_list = chainon (gnu_field_list, gnu_variant_part);
 
   if (cancel_alignment)
-    TYPE_ALIGN (gnu_record_type) = 0;
+    SET_TYPE_ALIGN (gnu_record_type, 0);
 
   TYPE_ARTIFICIAL (gnu_record_type) = artificial;
 
@@ -8794,7 +8796,7 @@ create_variant_part_from (tree old_variant_part,
       SET_TYPE_ADA_SIZE (new_union_type,
 			 size_binop (MINUS_EXPR, TYPE_ADA_SIZE (record_type),
  				     first_bit));
-      TYPE_ALIGN (new_union_type) = TYPE_ALIGN (old_union_type);
+      SET_TYPE_ALIGN (new_union_type, TYPE_ALIGN (old_union_type));
       relate_alias_sets (new_union_type, old_union_type, ALIAS_SET_COPY);
     }
   else
@@ -8891,7 +8893,7 @@ copy_and_substitute_in_size (tree new_type, tree old_type,
   TYPE_SIZE (new_type) = TYPE_SIZE (old_type);
   TYPE_SIZE_UNIT (new_type) = TYPE_SIZE_UNIT (old_type);
   SET_TYPE_ADA_SIZE (new_type, TYPE_ADA_SIZE (old_type));
-  TYPE_ALIGN (new_type) = TYPE_ALIGN (old_type);
+  SET_TYPE_ALIGN (new_type, TYPE_ALIGN (old_type));
   relate_alias_sets (new_type, old_type, ALIAS_SET_COPY);
 
   if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (new_type)))
@@ -9034,7 +9036,7 @@ substitute_in_type (tree t, tree f, tree r)
 	  return t;
 
 	nt = build_nonshared_array_type (component, domain);
-	TYPE_ALIGN (nt) = TYPE_ALIGN (t);
+	SET_TYPE_ALIGN (nt, TYPE_ALIGN (t));
 	TYPE_USER_ALIGN (nt) = TYPE_USER_ALIGN (t);
 	SET_TYPE_MODE (nt, TYPE_MODE (t));
 	TYPE_SIZE (nt) = SUBSTITUTE_IN_EXPR (TYPE_SIZE (t), f, r);

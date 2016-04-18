@@ -377,7 +377,7 @@ copy_var_decl (tree var, tree name, tree type)
   DECL_ATTRIBUTES (copy) = DECL_ATTRIBUTES (var);
   if (DECL_USER_ALIGN (var))
     {
-      DECL_ALIGN (copy) = DECL_ALIGN (var);
+      SET_DECL_ALIGN (copy, DECL_ALIGN (var));
       DECL_USER_ALIGN (copy) = 1;
     }
 

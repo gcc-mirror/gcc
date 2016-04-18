@@ -1445,12 +1445,12 @@ install_var_field (tree var, bool by_ref, int mask, omp_context *ctx,
   DECL_ABSTRACT_ORIGIN (field) = var;
   if (type == TREE_TYPE (var))
     {
-      DECL_ALIGN (field) = DECL_ALIGN (var);
+      SET_DECL_ALIGN (field, DECL_ALIGN (var));
       DECL_USER_ALIGN (field) = DECL_USER_ALIGN (var);
       TREE_THIS_VOLATILE (field) = TREE_THIS_VOLATILE (var);
     }
   else
-    DECL_ALIGN (field) = TYPE_ALIGN (type);
+    SET_DECL_ALIGN (field, TYPE_ALIGN (type));
 
   if ((mask & 3) == 3)
     {
@@ -1460,7 +1460,7 @@ install_var_field (tree var, bool by_ref, int mask, omp_context *ctx,
 	  sfield = build_decl (DECL_SOURCE_LOCATION (var),
 			       FIELD_DECL, DECL_NAME (var), type);
 	  DECL_ABSTRACT_ORIGIN (sfield) = var;
-	  DECL_ALIGN (sfield) = DECL_ALIGN (field);
+	  SET_DECL_ALIGN (sfield, DECL_ALIGN (field));
 	  DECL_USER_ALIGN (sfield) = DECL_USER_ALIGN (field);
 	  TREE_THIS_VOLATILE (sfield) = TREE_THIS_VOLATILE (field);
 	  insert_field_into_struct (ctx->srecord_type, sfield);
@@ -2153,7 +2153,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 		  tree field
 		    = build_decl (OMP_CLAUSE_LOCATION (c),
 				  FIELD_DECL, NULL_TREE, ptr_type_node);
-		  DECL_ALIGN (field) = TYPE_ALIGN (ptr_type_node);
+		  SET_DECL_ALIGN (field, TYPE_ALIGN (ptr_type_node));
 		  insert_field_into_struct (ctx->record_type, field);
 		  splay_tree_insert (ctx->field_map, (splay_tree_key) decl,
 				     (splay_tree_value) field);
@@ -2804,18 +2804,18 @@ finish_taskreg_scan (omp_context *ctx)
 	    TREE_TYPE (field) = build_pointer_type (TREE_TYPE (decl));
 	    TREE_THIS_VOLATILE (field) = 0;
 	    DECL_USER_ALIGN (field) = 0;
-	    DECL_ALIGN (field) = TYPE_ALIGN (TREE_TYPE (field));
+	    SET_DECL_ALIGN (field, TYPE_ALIGN (TREE_TYPE (field)));
 	    if (TYPE_ALIGN (ctx->record_type) < DECL_ALIGN (field))
-	      TYPE_ALIGN (ctx->record_type) = DECL_ALIGN (field);
+	      SET_TYPE_ALIGN (ctx->record_type, DECL_ALIGN (field));
 	    if (ctx->srecord_type)
 	      {
 		tree sfield = lookup_sfield (decl, ctx);
 		TREE_TYPE (sfield) = TREE_TYPE (field);
 		TREE_THIS_VOLATILE (sfield) = 0;
 		DECL_USER_ALIGN (sfield) = 0;
-		DECL_ALIGN (sfield) = DECL_ALIGN (field);
+		SET_DECL_ALIGN (sfield, DECL_ALIGN (field));
 		if (TYPE_ALIGN (ctx->srecord_type) < DECL_ALIGN (sfield))
-		  TYPE_ALIGN (ctx->srecord_type) = DECL_ALIGN (sfield);
+		  SET_TYPE_ALIGN (ctx->srecord_type, DECL_ALIGN (sfield));
 	      }
 	  }
     }
@@ -18486,8 +18486,8 @@ omp_finish_file (void)
 						    num_vars * 2);
       tree funcs_decl_type = build_array_type_nelts (pointer_sized_int_node,
 						     num_funcs);
-      TYPE_ALIGN (vars_decl_type) = TYPE_ALIGN (pointer_sized_int_node);
-      TYPE_ALIGN (funcs_decl_type) = TYPE_ALIGN (pointer_sized_int_node);
+      SET_TYPE_ALIGN (vars_decl_type, TYPE_ALIGN (pointer_sized_int_node));
+      SET_TYPE_ALIGN (funcs_decl_type, TYPE_ALIGN (pointer_sized_int_node));
       tree ctor_v = build_constructor (vars_decl_type, v_v);
       tree ctor_f = build_constructor (funcs_decl_type, v_f);
       TREE_CONSTANT (ctor_v) = TREE_CONSTANT (ctor_f) = 1;
@@ -18503,8 +18503,8 @@ omp_finish_file (void)
 	 otherwise a joint table in a binary will contain padding between
 	 tables from multiple object files.  */
       DECL_USER_ALIGN (funcs_decl) = DECL_USER_ALIGN (vars_decl) = 1;
-      DECL_ALIGN (funcs_decl) = TYPE_ALIGN (funcs_decl_type);
-      DECL_ALIGN (vars_decl) = TYPE_ALIGN (vars_decl_type);
+      SET_DECL_ALIGN (funcs_decl, TYPE_ALIGN (funcs_decl_type));
+      SET_DECL_ALIGN (vars_decl, TYPE_ALIGN (vars_decl_type));
       DECL_INITIAL (funcs_decl) = ctor_f;
       DECL_INITIAL (vars_decl) = ctor_v;
       set_decl_section_name (funcs_decl, OFFLOAD_FUNC_TABLE_SECTION_NAME);

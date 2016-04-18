@@ -9856,7 +9856,7 @@ instantiate_class_template_1 (tree type)
     DECL_SOURCE_LOCATION (typedecl);
 
   TYPE_PACKED (type) = TYPE_PACKED (pattern);
-  TYPE_ALIGN (type) = TYPE_ALIGN (pattern);
+  SET_TYPE_ALIGN (type, TYPE_ALIGN (pattern));
   TYPE_USER_ALIGN (type) = TYPE_USER_ALIGN (pattern);
   TYPE_FOR_JAVA (type) = TYPE_FOR_JAVA (pattern); /* For libjava's JArray<T> */
   if (ANON_AGGR_TYPE_P (pattern))
@@ -13403,7 +13403,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	if (TYPE_USER_ALIGN (t))
 	  {
-	    TYPE_ALIGN (r) = TYPE_ALIGN (t);
+	    SET_TYPE_ALIGN (r, TYPE_ALIGN (t));
 	    TYPE_USER_ALIGN (r) = 1;
 	  }
 

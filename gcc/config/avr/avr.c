@@ -911,7 +911,7 @@ avr_adjust_type_node (tree *node, machine_mode mode, int sat_p)
   TYPE_IBIT (*node) = GET_MODE_IBIT (mode);
   TYPE_FBIT (*node) = GET_MODE_FBIT (mode);
   TYPE_PRECISION (*node) = GET_MODE_BITSIZE (mode);
-  TYPE_ALIGN (*node) = 8;
+  SET_TYPE_ALIGN (*node, 8);
   SET_TYPE_MODE (*node, mode);
 
   layout_type (*node);

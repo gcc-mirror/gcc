@@ -801,7 +801,7 @@ build_vtable (tree class_type, tree name, tree vtable_type)
   TREE_STATIC (decl) = 1;
   TREE_READONLY (decl) = 1;
   DECL_VIRTUAL_P (decl) = 1;
-  DECL_ALIGN (decl) = TARGET_VTABLE_ENTRY_ALIGN;
+  SET_DECL_ALIGN (decl, TARGET_VTABLE_ENTRY_ALIGN);
   DECL_USER_ALIGN (decl) = true;
   DECL_VTABLE_OR_VTT_P (decl) = 1;
   set_linkage_according_to_type (class_type, decl);
@@ -2035,7 +2035,7 @@ fixup_attribute_variants (tree t)
 	valign = MAX (valign, TYPE_ALIGN (variants));
       else
 	TYPE_USER_ALIGN (variants) = user_align;
-      TYPE_ALIGN (variants) = valign;
+      SET_TYPE_ALIGN (variants, valign);
       if (may_alias)
 	fixup_may_alias (variants);
     }
@@ -4484,7 +4484,7 @@ build_base_field (record_layout_info rli, tree binfo,
 	{
 	  DECL_SIZE (decl) = CLASSTYPE_SIZE (basetype);
 	  DECL_SIZE_UNIT (decl) = CLASSTYPE_SIZE_UNIT (basetype);
-	  DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
+	  SET_DECL_ALIGN (decl, CLASSTYPE_ALIGN (basetype));
 	  DECL_USER_ALIGN (decl) = CLASSTYPE_USER_ALIGN (basetype);
 	  DECL_MODE (decl) = TYPE_MODE (basetype);
 	  DECL_FIELD_IS_BASE (decl) = 1;
@@ -6404,7 +6404,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	    }
 
 	  DECL_SIZE (field) = TYPE_SIZE (integer_type);
-	  DECL_ALIGN (field) = TYPE_ALIGN (integer_type);
+	  SET_DECL_ALIGN (field, TYPE_ALIGN (integer_type));
 	  DECL_USER_ALIGN (field) = TYPE_USER_ALIGN (integer_type);
 	  layout_nonempty_base_or_field (rli, field, NULL_TREE,
 					 empty_base_offsets);
@@ -6539,7 +6539,7 @@ layout_class_type (tree t, tree *virtuals_p)
 		      size_binop (MULT_EXPR,
 				  fold_convert (bitsizetype, eoc),
 				  bitsize_int (BITS_PER_UNIT)));
-      TYPE_ALIGN (base_t) = rli->record_align;
+      SET_TYPE_ALIGN (base_t, rli->record_align);
       TYPE_USER_ALIGN (base_t) = TYPE_USER_ALIGN (t);
 
       /* Copy the fields from T.  */

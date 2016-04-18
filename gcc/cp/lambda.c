@@ -1006,7 +1006,7 @@ maybe_add_lambda_conv_op (tree type)
   tree convfn = build_lang_decl (FUNCTION_DECL, name, fntype);
   tree fn = convfn;
   DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);
-  DECL_ALIGN (fn) = MINIMUM_METHOD_BOUNDARY;
+  SET_DECL_ALIGN (fn, MINIMUM_METHOD_BOUNDARY);
   SET_OVERLOADED_OPERATOR_CODE (fn, TYPE_EXPR);
   grokclassfn (type, fn, NO_SPECIAL);
   set_linkage_according_to_type (type, fn);

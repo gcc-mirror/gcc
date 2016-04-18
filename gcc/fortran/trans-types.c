@@ -2275,7 +2275,7 @@ gfc_add_field_to_struct (tree context, tree name, tree type, tree **chain)
   tree decl = gfc_add_field_to_struct_1 (context, name, type, chain);
 
   DECL_INITIAL (decl) = 0;
-  DECL_ALIGN (decl) = 0;
+  SET_DECL_ALIGN (decl, 0);
   DECL_USER_ALIGN (decl) = 0;
 
   return decl;
