@@ -1,3 +1,7 @@
+2016-04-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnatvsn.ads (Library_Version): Bump to 7.
+
 2016-04-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Analyze_Expression_Function): Set Inlined flag
