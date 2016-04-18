@@ -2550,17 +2550,27 @@ package body Sem_Ch6 is
 
          function Is_Inline_Pragma (N : Node_Id) return Boolean is
          begin
-            return
-              Nkind (N) = N_Pragma
+            if Nkind (N) = N_Pragma
                 and then
                   (Pragma_Name (N) = Name_Inline_Always
                     or else (Pragma_Name (N) = Name_Inline
                       and then
                         (Front_End_Inlining or else Optimization_Level > 0)))
-                and then
-                  Chars
-                    (Expression (First (Pragma_Argument_Associations (N)))) =
-                                                              Chars (Body_Id);
+            then
+               declare
+                  Pragma_Arg : Node_Id :=
+                    Expression (First (Pragma_Argument_Associations (N)));
+               begin
+                  if Nkind (Pragma_Arg) = N_Selected_Component then
+                     Pragma_Arg := Selector_Name (Pragma_Arg);
+                  end if;
+
+                  return Chars (Pragma_Arg) = Chars (Body_Id);
+               end;
+
+            else
+               return False;
+            end if;
          end Is_Inline_Pragma;
 
       --  Start of processing for Check_Inline_Pragma
@@ -2588,7 +2598,10 @@ package body Sem_Ch6 is
 
          if Present (Prag) then
             if Present (Spec_Id) then
-               if In_Same_List (N, Unit_Declaration_Node (Spec_Id)) then
+               if Is_List_Member (N)
+                 and then Is_List_Member (Unit_Declaration_Node (Spec_Id))
+                 and then In_Same_List (N, Unit_Declaration_Node (Spec_Id))
+               then
                   Analyze (Prag);
                end if;
 

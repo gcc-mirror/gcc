@@ -66,7 +66,7 @@ package body Erroutc is
          Class_Flag := False;
          Set_Msg_Char (''');
          Get_Name_String (Name_Class);
-         Set_Casing (Identifier_Casing (Flag_Source), Mixed_Case);
+         Set_Casing (Identifier_Casing (Flag_Source));
          Set_Msg_Name_Buffer;
       end if;
    end Add_Class;
@@ -1187,7 +1187,7 @@ package body Erroutc is
          --  Else output with surrounding quotes in proper casing mode
 
          else
-            Set_Casing (Identifier_Casing (Flag_Source), Mixed_Case);
+            Set_Casing (Identifier_Casing (Flag_Source));
             Set_Msg_Quote;
             Set_Msg_Name_Buffer;
             Set_Msg_Quote;

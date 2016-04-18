@@ -30,12 +30,14 @@ with Types; use Types;
 
 package Exp_Intr is
 
-   procedure Add_Source_Info (Loc : Source_Ptr; Nam : Name_Id);
-   --  Append a string to Name_Buffer depending on Nam, which is the name of
-   --  one of the intrinsics declared in GNAT.Source_Info; see g-souinf.ads for
-   --  documentation of these intrinsics. The caller must set Name_Buffer and
-   --  Name_Len before the call. Loc is passed to provide location information
-   --  where it is needed.
+   procedure Add_Source_Info
+     (Buf : in out Bounded_String;
+      Loc : Source_Ptr;
+      Nam : Name_Id);
+   --  Append a string to Buf depending on Nam, which is the name of one of the
+   --  intrinsics declared in GNAT.Source_Info; see g-souinf.ads for
+   --  documentation of these intrinsics. Loc is passed to provide location
+   --  information where it is needed.
 
    procedure Expand_Intrinsic_Call (N : Node_Id; E : Entity_Id);
    --  N is either a function call node, a procedure call statement node, or

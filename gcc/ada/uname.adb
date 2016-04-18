@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -429,7 +429,7 @@ package body Uname is
    begin
       Get_Decoded_Name_String (N);
       Unit_Is_Body := Name_Buffer (Name_Len) = 'b';
-      Set_Casing (Identifier_Casing (Source_Index (Main_Unit)), Mixed_Case);
+      Set_Casing (Identifier_Casing (Source_Index (Main_Unit)));
 
       --  A special fudge, normally we don't have operator symbols present,
       --  since it is always an error to do so. However, if we do, at this

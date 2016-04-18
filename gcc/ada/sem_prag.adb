@@ -9863,7 +9863,7 @@ package body Sem_Prag is
 
          begin
             Get_Name_String (Chars (Prof_Nam));
-            Adjust_Name_Case (Sloc (Prof_Nam));
+            Adjust_Name_Case (Global_Name_Buffer, Sloc (Prof_Nam));
             Error_Msg_Strlen := Name_Len;
             Error_Msg_String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
          end Set_Error_Msg_To_Profile_Name;
