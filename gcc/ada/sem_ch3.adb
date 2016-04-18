@@ -3776,9 +3776,13 @@ package body Sem_Ch3 is
          --  A formal parameter of a specific tagged type whose related
          --  subprogram is subject to pragma Extensions_Visible with value
          --  "False" cannot be implicitly converted to a class-wide type by
-         --  means of an initialization expression (SPARK RM 6.1.7(3)).
+         --  means of an initialization expression (SPARK RM 6.1.7(3)). Do
+         --  not consider internally generated expressions.
 
-         if Is_Class_Wide_Type (T) and then Is_EVF_Expression (E) then
+         if Is_Class_Wide_Type (T)
+           and then Comes_From_Source (E)
+           and then Is_EVF_Expression (E)
+         then
             Error_Msg_N
               ("formal parameter with Extensions_Visible False cannot be "
                & "implicitly converted to class-wide type", E);

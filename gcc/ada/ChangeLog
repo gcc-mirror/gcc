@@ -1,5 +1,16 @@
 2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_ch3.adb (Analyze_Object_Declaration): Do not consider
+	internally generated expressions when trying to determine whether
+	a formal parameter of a tagged type subject to Extensions_Visible
+	False is used to initialize an object.
+	* sem_ch4.adb (Analyze_Type_Conversion): Do not consider
+	internally generated expressions when trying to determine whether
+	a formal parameter of a tagged type subject to Extensions_Visible
+	False is used in a type conversion.
+
+2016-04-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_res.adb (Is_Protected_Operation_Call):
 	Add guards to account for a non-decorated selected component.
 

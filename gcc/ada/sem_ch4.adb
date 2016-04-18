@@ -5158,9 +5158,13 @@ package body Sem_Ch4 is
 
       --  A formal parameter of a specific tagged type whose related subprogram
       --  is subject to pragma Extensions_Visible with value "False" cannot
-      --  appear in a class-wide conversion (SPARK RM 6.1.7(3)).
+      --  appear in a class-wide conversion (SPARK RM 6.1.7(3)). Do not check
+      --  internally generated expressions.
 
-      if Is_Class_Wide_Type (Typ) and then Is_EVF_Expression (Expr) then
+      if Is_Class_Wide_Type (Typ)
+        and then Comes_From_Source (Expr)
+        and then Is_EVF_Expression (Expr)
+      then
          Error_Msg_N
            ("formal parameter with Extensions_Visible False cannot be "
             & "converted to class-wide type", Expr);
@@ -6602,7 +6606,7 @@ package body Sem_Ch4 is
             --  Boolean, then we know that the other operand cannot resolve to
             --  Boolean (since we got no interpretations), but in that case we
             --  pretty much know that the other operand should be Boolean, so
-            --  resolve it that way (generating an error)
+            --  resolve it that way (generating an error).
 
             elsif Nkind_In (N, N_Op_And, N_Op_Or, N_Op_Xor) then
                if Etype (L) = Standard_Boolean then
