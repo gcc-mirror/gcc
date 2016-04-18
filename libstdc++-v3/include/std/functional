@@ -927,7 +927,6 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     class _Bind<_Functor(_Bound_args...)>
     : public _Weak_result_type<_Functor>
     {
-      typedef _Bind __self_type;
       typedef typename _Build_index_tuple<sizeof...(_Bound_args)>::__type
 	_Bound_indexes;
 
@@ -1052,7 +1051,6 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
   template<typename _Result, typename _Functor, typename... _Bound_args>
     class _Bind_result<_Result, _Functor(_Bound_args...)>
     {
-      typedef _Bind_result __self_type;
       typedef typename _Build_index_tuple<sizeof...(_Bound_args)>::__type
 	_Bound_indexes;
 
