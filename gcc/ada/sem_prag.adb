@@ -23198,8 +23198,8 @@ package body Sem_Prag is
 
       if Class_Present (N) then
 
-         --  Verify that a class-wide condition is legal, i.e. the operation
-         --  is a primitive of a tagged type.
+         --  Verify that a class-wide condition is legal, i.e. the operation is
+         --  a primitive of a tagged type.
 
          Disp_Typ := Find_Dispatching_Type (Spec_Id);
 
@@ -26045,11 +26045,88 @@ package body Sem_Prag is
       Subp_Id  : Entity_Id := Empty;
       Inher_Id : Entity_Id := Empty) return Node_Id
    is
+      Map : Elist_Id;
+      --  List containing the following mappings
+      --    * Formal parameters of inherited subprogram Inher_Id and subprogram
+      --    Subp_Id.
+      --
+      --    * The dispatching type of Inher_Id and the dispatching type of
+      --    Subp_Id.
+      --
+      --    * Primitives of the dispatching type of Inher_Id and primitives of
+      --    the dispatching type of Subp_Id.
+
+      function Replace_Entity (N : Node_Id) return Traverse_Result;
+      --  Replace reference to formal of inherited operation or to primitive
+      --  operation of root type, with corresponding entity for derived type.
+
       function Suppress_Reference (N : Node_Id) return Traverse_Result;
       --  Detect whether node N references a formal parameter subject to
       --  pragma Unreferenced. If this is the case, set Comes_From_Source
       --  to False to suppress the generation of a reference when analyzing
       --  N later on.
+
+      --------------------
+      -- Replace_Entity --
+      --------------------
+
+      function Replace_Entity (N : Node_Id) return Traverse_Result is
+         Elmt  : Elmt_Id;
+         New_E : Entity_Id;
+
+      begin
+         if Nkind (N) = N_Identifier
+           and then Present (Entity (N))
+           and then
+             (Is_Formal (Entity (N)) or else Is_Subprogram (Entity (N)))
+           and then
+             (Nkind (Parent (N)) /= N_Attribute_Reference
+               or else Attribute_Name (Parent (N)) /= Name_Class)
+         then
+            --  The replacement does not apply to dispatching calls within the
+            --  condition, but only to calls whose static tag is that of the
+            --  parent type.
+
+            if Is_Subprogram (Entity (N))
+              and then Nkind (Parent (N)) = N_Function_Call
+              and then Present (Controlling_Argument (Parent (N)))
+            then
+               return OK;
+            end if;
+
+            --  Loop to find out if entity has a renaming
+
+            New_E := Empty;
+            Elmt  := First_Elmt (Map);
+            while Present (Elmt) loop
+               if Node (Elmt) = Entity (N) then
+                  New_E := Node (Next_Elmt (Elmt));
+                  exit;
+               end if;
+
+               Next_Elmt (Elmt);
+            end loop;
+
+            if Present (New_E) then
+               Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
+            end if;
+         end if;
+
+         if not Is_Abstract_Subprogram (Inher_Id)
+           and then Nkind (N) = N_Function_Call
+           and then Present (Entity (Name (N)))
+           and then Is_Abstract_Subprogram (Entity (Name (N)))
+         then
+            Error_Msg_N ("cannot call abstract subprogram", N);
+
+         --  The whole expression will be reanalyzed
+
+         elsif Nkind (N) in N_Has_Etype then
+            Set_Analyzed (N, False);
+         end if;
+
+         return OK;
+      end Replace_Entity;
 
       ------------------------
       -- Suppress_Reference --
@@ -26076,6 +26153,9 @@ package body Sem_Prag is
          return OK;
       end Suppress_Reference;
 
+      procedure Replace_Condition_Entities is
+        new Traverse_Proc (Replace_Entity);
+
       procedure Suppress_References is
         new Traverse_Proc (Suppress_Reference);
 
@@ -26084,172 +26164,103 @@ package body Sem_Prag is
       Loc          : constant Source_Ptr := Sloc (Prag);
       Prag_Nam     : constant Name_Id    := Pragma_Name (Prag);
       Check_Prag   : Node_Id;
-      Formals_Map  : Elist_Id;
       Inher_Formal : Entity_Id;
       Msg_Arg      : Node_Id;
       Nam          : Name_Id;
       Subp_Formal  : Entity_Id;
 
-      function Replace_Entity (N : Node_Id) return Traverse_Result;
-      --  Replace reference to formal of inherited operation or to primitive
-      --  operation of root type, with corresponding entity for derived type.
-
-      --------------------
-      -- Replace_Entity --
-      --------------------
-
-      function Replace_Entity (N : Node_Id) return Traverse_Result
-      is
-         Elmt  : Elmt_Id;
-         New_E : Entity_Id;
-
-      begin
-         if Nkind (N) = N_Identifier
-           and then Present (Entity (N))
-           and then
-             (Is_Formal (Entity (N)) or else Is_Subprogram (Entity (N)))
-           and then
-             (Nkind (Parent (N)) /= N_Attribute_Reference
-               or else Attribute_Name (Parent (N)) /= Name_Class)
-         then
-            --  The replacement does not apply to dispatching calls within
-            --  the condition, but only to calls whose static tag is that
-            --  of the parent type.
-
-            if Is_Subprogram (Entity (N))
-              and then Nkind (Parent (N)) = N_Function_Call
-              and then Present (Controlling_Argument (Parent (N)))
-            then
-               return OK;
-            end if;
-
-            --  Loop to find out if entity has a renaming
-
-            New_E := Empty;
-            Elmt := First_Elmt (Formals_Map);
-            while Present (Elmt) loop
-               if Node (Elmt) = Entity (N) then
-                  New_E := Node (Next_Elmt (Elmt));
-                  exit;
-               end if;
-
-               Next_Elmt (Elmt);
-            end loop;
-
-            if Present (New_E) then
-               Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
-            end if;
-         end if;
-
-         if not Is_Abstract_Subprogram (Inher_Id)
-           and then  Nkind (N) = N_Function_Call
-           and then Present (Entity (Name (N)))
-           and then Is_Abstract_Subprogram (Entity (Name (N)))
-         then
-            Error_Msg_N ("cannot call abstract subprogram", N);
-
-         --  The whole expression will be reanalyzed
-
-         elsif Nkind (N) in N_Has_Etype then
-            Set_Analyzed (N, False);
-         end if;
-
-         return OK;
-      end Replace_Entity;
-
-      procedure Replace_Condition_Entities is
-        new Traverse_Proc (Replace_Entity);
-
    --  Start of processing for Build_Pragma_Check_Equivalent
 
    begin
-      Formals_Map := No_Elist;
+      Map := No_Elist;
 
-      --  When the pre- or postcondition is inherited, map the formals of
-      --  the inherited subprogram to those of the current subprogram.
-      --  In addition, map primitive operations of the parent type into the
-      --  corresponding primitive operations of the descendant.
+      --  When the pre- or postcondition is inherited, map the formals of the
+      --  inherited subprogram to those of the current subprogram. In addition,
+      --  map primitive operations of the parent type into the corresponding
+      --  primitive operations of the descendant.
 
       if Present (Inher_Id) then
          pragma Assert (Present (Subp_Id));
 
-         Formals_Map := New_Elmt_List;
+         Map := New_Elmt_List;
 
          --  Create a mapping  <inherited formal> => <subprogram formal>
 
          Inher_Formal := First_Formal (Inher_Id);
          Subp_Formal  := First_Formal (Subp_Id);
          while Present (Inher_Formal) and then Present (Subp_Formal) loop
-            Append_Elmt (Inher_Formal, Formals_Map);
-            Append_Elmt (Subp_Formal, Formals_Map);
+            Append_Elmt (Inher_Formal, Map);
+            Append_Elmt (Subp_Formal,  Map);
 
             Next_Formal (Inher_Formal);
             Next_Formal (Subp_Formal);
          end loop;
 
-      --  Map primitive operations of the parent type into the corresponding
-      --  operations of the descendant. The descendant type might not be
-      --  frozen yet, so we cannot use the dispatch table directly.
+         --  Map primitive operations of the parent type to the corresponding
+         --  operations of the descendant. Note that the descendant type may
+         --  not be frozen yet, so we cannot use the dispatch table directly.
 
          declare
-            T     : constant Entity_Id := Find_Dispatching_Type (Subp_Id);
-            Old_T : constant Entity_Id := Find_Dispatching_Type (Inher_Id);
-            D     : Node_Id;
-            E     : Entity_Id;
-            Old_E : Entity_Id;
+            Old_Typ  : constant Entity_Id := Find_Dispatching_Type (Inher_Id);
+            Typ      : constant Entity_Id := Find_Dispatching_Type (Subp_Id);
+            Decl     : Node_Id;
+            Old_Prim : Entity_Id;
+            Prim     : Entity_Id;
 
          begin
-            D := First (List_Containing (Unit_Declaration_Node (Subp_Id)));
+            Decl := First (List_Containing (Unit_Declaration_Node (Subp_Id)));
 
             --  Look for primitive operations of the current type that have
             --  overridden an operation of the type related to the original
             --  class-wide precondition. There may be several intermediate
             --  overridings between them.
 
-            while Present (D) loop
-               if Nkind (D) = N_Subprogram_Declaration then
-                  E := Defining_Entity (D);
-                  if Is_Subprogram (E)
-                    and then Present (Overridden_Operation (E))
-                    and then Find_Dispatching_Type (E) = T
+            while Present (Decl) loop
+               if Nkind (Decl) = N_Subprogram_Declaration then
+                  Prim := Defining_Entity (Decl);
+
+                  if Is_Subprogram (Prim)
+                    and then Present (Overridden_Operation (Prim))
+                    and then Find_Dispatching_Type (Prim) = Typ
                   then
-                     Old_E := Overridden_Operation (E);
-                     while Present (Overridden_Operation (Old_E))
-                       and then Scope (Old_E) /= Scope (Inher_Id)
+                     Old_Prim := Overridden_Operation (Prim);
+                     while Present (Overridden_Operation (Old_Prim))
+                       and then Scope (Old_Prim) /= Scope (Inher_Id)
                      loop
-                        Old_E := Overridden_Operation (Old_E);
+                        Old_Prim := Overridden_Operation (Old_Prim);
                      end loop;
 
-                     Append_Elmt (Old_E, Formals_Map);
-                     Append_Elmt (E, Formals_Map);
+                     Append_Elmt (Old_Prim, Map);
+                     Append_Elmt (Prim,     Map);
                   end if;
                end if;
 
-               Next (D);
+               Next (Decl);
             end loop;
 
-            E := First_Entity (Scope (Subp_Id));
-            while Present (E) loop
-               if not Comes_From_Source (E)
-                 and then Ekind (E) = E_Function
-                 and then Present (Alias (E))
+            Prim := First_Entity (Scope (Subp_Id));
+            while Present (Prim) loop
+               if not Comes_From_Source (Prim)
+                 and then Ekind (Prim) = E_Function
+                 and then Present (Alias (Prim))
                then
-                  Old_E := Alias (E);
-                  while Present (Alias (Old_E))
-                    and then Scope (Old_E) /= Scope (Inher_Id)
+                  Old_Prim := Alias (Prim);
+                  while Present (Alias (Old_Prim))
+                    and then Scope (Old_Prim) /= Scope (Inher_Id)
                   loop
-                     Old_E := Alias (Old_E);
+                     Old_Prim := Alias (Old_Prim);
                   end loop;
 
-                  Append_Elmt (Old_E, Formals_Map);
-                  Append_Elmt (E, Formals_Map);
+                  Append_Elmt (Old_Prim, Map);
+                  Append_Elmt (Prim,     Map);
                end if;
-               Next_Entity (E);
+
+               Next_Entity (Prim);
             end loop;
 
-            if Formals_Map /= No_Elist then
-               Append_Elmt (Old_T, Formals_Map);
-               Append_Elmt (T, Formals_Map);
+            if Map /= No_Elist then
+               Append_Elmt (Old_Typ, Map);
+               Append_Elmt (Typ,     Map);
             end if;
          end;
       end if;
@@ -26257,14 +26268,14 @@ package body Sem_Prag is
       --  Copy the original pragma while performing substitutions (if
       --  applicable).
 
-      Check_Prag := New_Copy_Tree (Source    => Prag);
+      Check_Prag := New_Copy_Tree (Source => Prag);
 
-      if Formals_Map /= No_Elist then
+      if Map /= No_Elist then
          Replace_Condition_Entities (Check_Prag);
       end if;
 
-      --  Mark the pragma as being internally generated and reset the
-      --  Analyzed flag.
+      --  Mark the pragma as being internally generated and reset the Analyzed
+      --  flag.
 
       Set_Analyzed          (Check_Prag, False);
       Set_Comes_From_Source (Check_Prag, False);
@@ -26294,8 +26305,8 @@ package body Sem_Prag is
          Nam := Prag_Nam;
       end if;
 
-      --  Convert the copy into pragma Check by correcting the name and
-      --  adding a check_kind argument.
+      --  Convert the copy into pragma Check by correcting the name and adding
+      --  a check_kind argument.
 
       Set_Pragma_Identifier
         (Check_Prag, Make_Identifier (Loc, Name_Check));
@@ -26795,7 +26806,7 @@ package body Sem_Prag is
       Bod  : Node_Id)
    is
       Parent_Subp : constant Entity_Id := Overridden_Operation (Subp);
-      Prags       : constant Node_Id := Contract (Parent_Subp);
+      Prags       : constant Node_Id   := Contract (Parent_Subp);
       Prag        : Node_Id;
 
    begin
@@ -26806,15 +26817,15 @@ package body Sem_Prag is
          Prag := Pre_Post_Conditions (Prags);
 
          while Present (Prag) loop
-            if Pragma_Name (Prag) = Name_Precondition
-              or else Pragma_Name (Prag) = Name_Postcondition
+            if Nam_In (Pragma_Name (Prag), Name_Precondition,
+                                           Name_Postcondition)
             then
                if No (Declarations (Bod)) then
                   Set_Declarations (Bod, Empty_List);
                end if;
 
-               Append (Build_Pragma_Check_Equivalent (Prag, Subp, Parent_Subp),
-                 To => Declarations (Bod));
+               Append_To (Declarations (Bod),
+                 Build_Pragma_Check_Equivalent (Prag, Subp, Parent_Subp));
             end if;
 
             Prag := Next_Pragma (Prag);

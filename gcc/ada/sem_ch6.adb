@@ -3754,9 +3754,9 @@ package body Sem_Ch6 is
          Build_Body_To_Inline (N, Spec_Id);
       end if;
 
-      --  When generating code, inherited pre/postconditions are handled
-      --  when expanding the corresponding contract. If GNATprove mode we
-      --  must process them when the body is analyzed.
+      --  When generating code, inherited pre/postconditions are handled when
+      --  expanding the corresponding contract. In GNATprove the annotations
+      --  must be processed when the body is analyzed.
 
       if GNATprove_Mode
         and then Present (Spec_Id)

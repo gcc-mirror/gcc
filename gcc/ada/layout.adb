@@ -3247,7 +3247,7 @@ package body Layout is
             A := 2 * A;
          end loop;
 
-         --  If alignment is currently not set, then we can safetly set it to
+         --  If alignment is currently not set, then we can safely set it to
          --  this new calculated value.
 
          if Unknown_Alignment (E) then
@@ -3256,7 +3256,7 @@ package body Layout is
          --  Cases where we have inherited an alignment
 
          --  For constructed types, always reset the alignment, these are
-         --  Generally invisible to the user anyway, and that way we are
+         --  generally invisible to the user anyway, and that way we are
          --  sure that no constructed types have weird alignments.
 
          elsif not Comes_From_Source (E) then
@@ -3282,23 +3282,23 @@ package body Layout is
 
             --  It seems quite bogus in this case to inherit an alignment of 1
             --  from the parent type Character. Furthermore, if that's what the
-            --  programmer really wanted for some odd reason, then they could
-            --  specify the alignment they wanted.
+            --  programmer really wanted for some odd reason, then he could
+            --  specify the alignment directly.
 
             --  Furthermore we really don't want to inherit the alignment in
             --  the case of a specified Object_Size for a subtype, since then
             --  there would be no way of overriding to give a reasonable value
             --  (we don't have an Object_Subtype attribute). Consider:
 
-            --    subtype R is new Character;
+            --    subtype R is Character;
             --    for R'Object_Size use 16;
 
-            --  If we inherit the alignment of 1, then we have an odd
-            --  inefficient alignment for the subtype, which cannot be fixed.
+            --  If we inherit the alignment of 1, then we have an inefficient
+            --  alignment for the subtype, which cannot be fixed.
 
             --  So we make the decision that if Size (or Object_Size) is given
             --  (and, in the case of a first subtype, the alignment is not set
-            --  with a specific alignment clause). We reset the alignment to
+            --  with a specific alignment clause), we reset the alignment to
             --  the appropriate value for the specified size. This is a nice
             --  simple rule to implement and document.
 
@@ -3311,15 +3311,15 @@ package body Layout is
             --    type S is new R;
             --    for S'Size use Character'Size;
 
-            --  Now the alignment of S is 1 instead of 2, as a result of
-            --  applying the above rule to the confirming rep clause for S. Not
-            --  clear this is worth worrying about. If we recorded whether a
-            --  size clause was confirming we could avoid this, but right now
+            --  Now the alignment of S is changed to 1 instead of 2 as a result
+            --  of applying the above rule to the confirming rep clause for S.
+            --  Not clear this is worth worrying about. If we recorded whether
+            --  a size clause was confirming we could avoid this, but right now
             --  we have no way of doing that or easily figuring it out, so we
             --  don't bother.
 
-            --  Historical note. In versions of GNAT prior to Nov 6th, 2011, an
-            --  odd distinction was made between inherited alignments greater
+            --  Historical note: in versions of GNAT prior to Nov 6th, 2011, an
+            --  odd distinction was made between inherited alignments larger
             --  than the computed alignment (where the larger alignment was
             --  inherited) and inherited alignments smaller than the computed
             --  alignment (where the smaller alignment was overridden). This
@@ -3337,7 +3337,7 @@ package body Layout is
          --    for R'Alignment use 1;
          --    subtype S is R;
 
-         --  Here we have R has a default Object_Size of 32, and a specified
+         --  Here we have R with a default Object_Size of 32, and a specified
          --  alignment of 1, and it seeems right for S to inherit both values.
 
          else
