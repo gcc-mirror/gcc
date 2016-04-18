@@ -214,6 +214,7 @@ static bool base_derived_from (tree, tree);
 static int empty_base_at_nonzero_offset_p (tree, tree, splay_tree);
 static tree end_of_base (tree);
 static tree get_vcall_index (tree, tree);
+static bool type_maybe_constexpr_default_constructor (tree);
 
 /* Variables shared between class.c and call.c.  */
 
@@ -3346,7 +3347,11 @@ add_implicitly_declared_members (tree t, tree* access_decls,
       CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
       if (cxx_dialect >= cxx11)
 	TYPE_HAS_CONSTEXPR_CTOR (t)
-	  = type_has_constexpr_default_constructor (t);
+	  /* Don't force the declaration to get a hard answer; if the
+	     definition would have made the class non-literal, it will still be
+	     non-literal because of the base or member in question, and that
+	     gives a better diagnostic.  */
+	  = type_maybe_constexpr_default_constructor (t);
     }
 
   /* [class.ctor]
@@ -5348,14 +5353,26 @@ type_has_constexpr_default_constructor (tree t)
     {
       if (!TYPE_HAS_COMPLEX_DFLT (t))
 	return trivial_default_constructor_is_constexpr (t);
-      /* Assume it's constexpr to avoid unnecessary instantiation; if the
-	 definition would have made the class non-literal, it will still be
-	 non-literal because of the base or member in question, and that
-	 gives a better diagnostic.  */
-      return true;
+      /* Non-trivial, we need to check subobject constructors.  */
+      lazily_declare_fn (sfk_constructor, t);
     }
   fns = locate_ctor (t);
   return (fns && DECL_DECLARED_CONSTEXPR_P (fns));
+}
+
+/* Returns true iff class T has a constexpr default constructor or has an
+   implicitly declared default constructor that we can't tell if it's constexpr
+   without forcing a lazy declaration (which might cause undesired
+   instantiations).  */
+
+bool
+type_maybe_constexpr_default_constructor (tree t)
+{
+  if (CLASS_TYPE_P (t) && CLASSTYPE_LAZY_DEFAULT_CTOR (t)
+      && TYPE_HAS_COMPLEX_DFLT (t))
+    /* Assume it's constexpr.  */
+    return true;
+  return type_has_constexpr_default_constructor (t);
 }
 
 /* Returns true iff class TYPE has a virtual destructor.  */
