@@ -36,6 +36,7 @@ with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
+with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
@@ -154,7 +155,7 @@ package body Ghost is
 
       function Is_OK_Ghost_Context (Context : Node_Id) return Boolean;
       --  Determine whether node Context denotes a Ghost-friendly context where
-      --  a Ghost entity can safely reside.
+      --  a Ghost entity can safely reside (SPARK RM 6.9(10)).
 
       -------------------------
       -- Is_OK_Ghost_Context --
@@ -334,30 +335,19 @@ package body Ghost is
                   return True;
 
                --  An assertion expression pragma is Ghost when it contains a
-               --  reference to a Ghost entity (SPARK RM 6.9(11)).
+               --  reference to a Ghost entity (SPARK RM 6.9(10)).
 
                elsif Assertion_Expression_Pragma (Prag_Id) then
 
-                  --  Predicates are excluded from this category when they do
-                  --  not apply to a Ghost subtype (SPARK RM 6.9(11)).
+                  --  Ensure that the assertion policy and the Ghost policy are
+                  --  compatible (SPARK RM 6.9(18)).
 
-                  if Nam_In (Prag_Nam, Name_Dynamic_Predicate,
-                                       Name_Predicate,
-                                       Name_Static_Predicate)
-                  then
-                     return False;
-
-                  --  Otherwise ensure that the assertion policy and the Ghost
-                  --  policy are compatible (SPARK RM 6.9(18)).
-
-                  else
-                     Check_Policies (Prag_Nam);
-                     return True;
-                  end if;
+                  Check_Policies (Prag_Nam);
+                  return True;
 
                --  Several pragmas that may apply to a non-Ghost entity are
                --  treated as Ghost when they contain a reference to a Ghost
-               --  entity (SPARK RM 6.9(12)).
+               --  entity (SPARK RM 6.9(11)).
 
                elsif Nam_In (Prag_Nam, Name_Global,
                                        Name_Depends,
@@ -455,7 +445,7 @@ package body Ghost is
                   return True;
 
                --  A reference to a Ghost entity can appear within an aspect
-               --  specification (SPARK RM 6.9(11)).
+               --  specification (SPARK RM 6.9(10)).
 
                elsif Nkind (Par) = N_Aspect_Specification then
                   return True;
@@ -504,7 +494,7 @@ package body Ghost is
 
       begin
          --  The Ghost policy in effect a the point of declaration and at the
-         --  point of use must match (SPARK RM 6.9(14)).
+         --  point of use must match (SPARK RM 6.9(13)).
 
          if Is_Checked_Ghost_Entity (Id) and then Policy = Name_Ignore then
             Error_Msg_Sloc := Sloc (Err_N);
@@ -541,48 +531,6 @@ package body Ghost is
    end Check_Ghost_Context;
 
    ----------------------------
-   -- Check_Ghost_Derivation --
-   ----------------------------
-
-   procedure Check_Ghost_Derivation (Typ : Entity_Id) is
-      Parent_Typ : constant Entity_Id := Etype (Typ);
-      Iface      : Entity_Id;
-      Iface_Elmt : Elmt_Id;
-
-   begin
-      --  Allow untagged derivations from predefined types such as Integer as
-      --  those are not Ghost by definition.
-
-      if Is_Scalar_Type (Typ) and then Parent_Typ = Base_Type (Typ) then
-         null;
-
-      --  The parent type of a Ghost type extension must be Ghost
-
-      elsif not Is_Ghost_Entity (Parent_Typ) then
-         Error_Msg_N  ("type extension & cannot be ghost", Typ);
-         Error_Msg_NE ("\parent type & is not ghost", Typ, Parent_Typ);
-         return;
-      end if;
-
-      --  All progenitors (if any) must be Ghost as well
-
-      if Is_Tagged_Type (Typ) and then Present (Interfaces (Typ)) then
-         Iface_Elmt := First_Elmt (Interfaces (Typ));
-         while Present (Iface_Elmt) loop
-            Iface := Node (Iface_Elmt);
-
-            if not Is_Ghost_Entity (Iface) then
-               Error_Msg_N  ("type extension & cannot be ghost", Typ);
-               Error_Msg_NE ("\interface type & is not ghost",   Typ, Iface);
-               return;
-            end if;
-
-            Next_Elmt (Iface_Elmt);
-         end loop;
-      end if;
-   end Check_Ghost_Derivation;
-
-   ----------------------------
    -- Check_Ghost_Overriding --
    ----------------------------
 
@@ -590,39 +538,233 @@ package body Ghost is
      (Subp            : Entity_Id;
       Overridden_Subp : Entity_Id)
    is
+      Deriv_Typ : Entity_Id;
       Over_Subp : Entity_Id;
 
    begin
       if Present (Subp) and then Present (Overridden_Subp) then
          Over_Subp := Ultimate_Alias (Overridden_Subp);
+         Deriv_Typ := Find_Dispatching_Type (Subp);
 
-         --  The Ghost policy in effect at the point of declaration of a parent
-         --  and an overriding subprogram must match (SPARK RM 6.9(17)).
+         --  A Ghost primitive of a non-Ghost type extension cannot override an
+         --  inherited non-Ghost primitive (SPARK RM 6.9(8)).
 
-         if Is_Checked_Ghost_Entity (Over_Subp)
-           and then Is_Ignored_Ghost_Entity (Subp)
+         if Is_Ghost_Entity (Subp)
+           and then Present (Deriv_Typ)
+           and then not Is_Ghost_Entity (Deriv_Typ)
+           and then not Is_Ghost_Entity (Over_Subp)
          then
-            Error_Msg_N ("incompatible ghost policies in effect",    Subp);
+            Error_Msg_N ("incompatible overriding in effect", Subp);
 
             Error_Msg_Sloc := Sloc (Over_Subp);
-            Error_Msg_N ("\& declared # with ghost policy `Check`",  Subp);
+            Error_Msg_N ("\& declared # as non-ghost subprogram", Subp);
 
             Error_Msg_Sloc := Sloc (Subp);
-            Error_Msg_N ("\overridden # with ghost policy `Ignore`", Subp);
+            Error_Msg_N ("\overridden # with ghost subprogram", Subp);
+         end if;
 
-         elsif Is_Ignored_Ghost_Entity (Over_Subp)
-           and then Is_Checked_Ghost_Entity (Subp)
+         --  A non-Ghost primitive of a type extension cannot override an
+         --  inherited Ghost primitive (SPARK RM 6.9(8)).
+
+         if not Is_Ghost_Entity (Subp)
+           and then Is_Ghost_Entity (Over_Subp)
          then
-            Error_Msg_N ("incompatible ghost policies in effect",    Subp);
+            Error_Msg_N ("incompatible overriding in effect", Subp);
 
             Error_Msg_Sloc := Sloc (Over_Subp);
-            Error_Msg_N ("\& declared # with ghost policy `Ignore`", Subp);
+            Error_Msg_N ("\& declared # as ghost subprogram", Subp);
 
             Error_Msg_Sloc := Sloc (Subp);
-            Error_Msg_N ("\overridden # with ghost policy `Check`",  Subp);
+            Error_Msg_N ("\overridden # with non-ghost subprogram", Subp);
+         end if;
+
+         if Present (Deriv_Typ)
+           and then not Is_Ignored_Ghost_Entity (Deriv_Typ)
+         then
+            --  When a tagged type is either non-Ghost or checked Ghost and
+            --  one of its primitives overrides an inherited operation, the
+            --  overridden operation of the ancestor type must be ignored Ghost
+            --  if the primitive is ignored Ghost (SPARK RM 6.9(17)).
+
+            if Is_Ignored_Ghost_Entity (Subp) then
+
+               --  Both the parent subprogram and overriding subprogram are
+               --  ignored Ghost.
+
+               if Is_Ignored_Ghost_Entity (Over_Subp) then
+                  null;
+
+               --  The parent subprogram carries policy Check
+
+               elsif Is_Checked_Ghost_Entity (Over_Subp) then
+                  Error_Msg_N
+                    ("incompatible ghost policies in effect", Subp);
+
+                  Error_Msg_Sloc := Sloc (Over_Subp);
+                  Error_Msg_N
+                    ("\& declared # with ghost policy `Check`", Subp);
+
+                  Error_Msg_Sloc := Sloc (Subp);
+                  Error_Msg_N
+                    ("\overridden # with ghost policy `Ignore`", Subp);
+
+               --  The parent subprogram is non-Ghost
+
+               else
+                  Error_Msg_N
+                    ("incompatible ghost policies in effect", Subp);
+
+                  Error_Msg_Sloc := Sloc (Over_Subp);
+                  Error_Msg_N ("\& declared # as non-ghost subprogram", Subp);
+
+                  Error_Msg_Sloc := Sloc (Subp);
+                  Error_Msg_N
+                    ("\overridden # with ghost policy `Ignore`", Subp);
+               end if;
+
+            --  When a tagged type is either non-Ghost or checked Ghost and
+            --  one of its primitives overrides an inherited operation, the
+            --  the primitive of the tagged type must be ignored Ghost if the
+            --  overridden operation is ignored Ghost (SPARK RM 6.9(17)).
+
+            elsif Is_Ignored_Ghost_Entity (Over_Subp) then
+
+               --  Both the parent subprogram and the overriding subprogram are
+               --  ignored Ghost.
+
+               if Is_Ignored_Ghost_Entity (Subp) then
+                  null;
+
+               --  The overriding subprogram carries policy Check
+
+               elsif Is_Checked_Ghost_Entity (Subp) then
+                  Error_Msg_N
+                    ("incompatible ghost policies in effect", Subp);
+
+                  Error_Msg_Sloc := Sloc (Over_Subp);
+                  Error_Msg_N
+                    ("\& declared # with ghost policy `Ignore`", Subp);
+
+                  Error_Msg_Sloc := Sloc (Subp);
+                  Error_Msg_N
+                    ("\overridden # with Ghost policy `Check`", Subp);
+
+               --  The overriding subprogram is non-Ghost
+
+               else
+                  Error_Msg_N
+                    ("incompatible ghost policies in effect", Subp);
+
+                  Error_Msg_Sloc := Sloc (Over_Subp);
+                  Error_Msg_N
+                    ("\& declared # with ghost policy `Ignore`", Subp);
+
+                  Error_Msg_Sloc := Sloc (Subp);
+                  Error_Msg_N
+                    ("\overridden # with non-ghost subprogram", Subp);
+               end if;
+            end if;
          end if;
       end if;
    end Check_Ghost_Overriding;
+
+   ---------------------------
+   -- Check_Ghost_Primitive --
+   ---------------------------
+
+   procedure Check_Ghost_Primitive (Prim : Entity_Id; Typ : Entity_Id) is
+   begin
+      --  The Ghost policy in effect at the point of declaration of a primitive
+      --  operation and a tagged type must match (SPARK RM 6.9(16)).
+
+      if Is_Tagged_Type (Typ) then
+         if Is_Checked_Ghost_Entity (Prim)
+           and then Is_Ignored_Ghost_Entity (Typ)
+         then
+            Error_Msg_N ("incompatible ghost policies in effect", Prim);
+
+            Error_Msg_Sloc := Sloc (Typ);
+            Error_Msg_NE
+              ("\tagged type & declared # with ghost policy `Ignore`",
+               Prim, Typ);
+
+            Error_Msg_Sloc := Sloc (Prim);
+            Error_Msg_N
+              ("\primitive subprogram & declared # with ghost policy `Check`",
+               Prim);
+
+         elsif Is_Ignored_Ghost_Entity (Prim)
+           and then Is_Checked_Ghost_Entity (Typ)
+         then
+            Error_Msg_N ("incompatible ghost policies in effect", Prim);
+
+            Error_Msg_Sloc := Sloc (Typ);
+            Error_Msg_NE
+              ("\tagged type & declared # with ghost policy `Check`",
+               Prim, Typ);
+
+            Error_Msg_Sloc := Sloc (Prim);
+            Error_Msg_N
+              ("\primitive subprogram & declared # with ghost policy `Ignore`",
+               Prim);
+         end if;
+      end if;
+   end Check_Ghost_Primitive;
+
+   ----------------------------
+   -- Check_Ghost_Refinement --
+   ----------------------------
+
+   procedure Check_Ghost_Refinement
+     (State      : Node_Id;
+      State_Id   : Entity_Id;
+      Constit    : Node_Id;
+      Constit_Id : Entity_Id)
+   is
+   begin
+      if Is_Ghost_Entity (State_Id) then
+         if Is_Ghost_Entity (Constit_Id) then
+
+            --  The Ghost policy in effect at the point of abstract state
+            --  declaration and constituent must match (SPARK RM 6.9(15)).
+
+            if Is_Checked_Ghost_Entity (State_Id)
+              and then Is_Ignored_Ghost_Entity (Constit_Id)
+            then
+               Error_Msg_Sloc := Sloc (Constit);
+               SPARK_Msg_N ("incompatible ghost policies in effect", State);
+
+               SPARK_Msg_NE
+                 ("\abstract state & declared with ghost policy `Check`",
+                  State, State_Id);
+               SPARK_Msg_NE
+                 ("\constituent & declared # with ghost policy `Ignore`",
+                  State, Constit_Id);
+
+            elsif Is_Ignored_Ghost_Entity (State_Id)
+              and then Is_Checked_Ghost_Entity (Constit_Id)
+            then
+               Error_Msg_Sloc := Sloc (Constit);
+               SPARK_Msg_N ("incompatible ghost policies in effect", State);
+
+               SPARK_Msg_NE
+                 ("\abstract state & declared with ghost policy `Ignore`",
+                  State, State_Id);
+               SPARK_Msg_NE
+                 ("\constituent & declared # with ghost policy `Check`",
+                  State, Constit_Id);
+            end if;
+
+            --  A constituent of a Ghost abstract state must be a Ghost entity
+            --  (SPARK RM 7.2.2(12)).
+
+         else
+            SPARK_Msg_NE
+              ("constituent of ghost state & must be ghost",
+               Constit, State_Id);
+         end if;
+      end if;
+   end Check_Ghost_Refinement;
 
    ------------------
    -- Ghost_Entity --

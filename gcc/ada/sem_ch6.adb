@@ -4701,18 +4701,6 @@ package body Sem_Ch6 is
          then
             Conformance_Error ("\formal subprograms not allowed!");
             return;
-
-         --  Pragma Ghost behaves as a convention in the context of subtype
-         --  conformance (SPARK RM 6.9(5)). Do not check internally generated
-         --  subprograms as their spec may reside in a Ghost region and their
-         --  body not, or vice versa.
-
-         elsif Comes_From_Source (Old_Id)
-           and then Comes_From_Source (New_Id)
-           and then Is_Ghost_Entity (Old_Id) /= Is_Ghost_Entity (New_Id)
-         then
-            Conformance_Error ("\ghost modes do not match!");
-            return;
          end if;
       end if;
 
@@ -9014,6 +9002,12 @@ package body Sem_Ch6 is
                   Set_Has_Primitive_Operations (B_Typ);
                   Set_Is_Primitive (S);
                   Check_Private_Overriding (B_Typ);
+
+                  --  The Ghost policy in effect at the point of declaration of
+                  --  a tagged type and a primitive operation must match
+                  --  (SPARK RM 6.9(16)).
+
+                  Check_Ghost_Primitive (S, B_Typ);
                end if;
             end if;
 
@@ -9041,6 +9035,12 @@ package body Sem_Ch6 is
                   Set_Is_Primitive (S);
                   Set_Has_Primitive_Operations (B_Typ);
                   Check_Private_Overriding (B_Typ);
+
+                  --  The Ghost policy in effect at the point of declaration of
+                  --  a tagged type and a primitive operation must match
+                  --  (SPARK RM 6.9(16)).
+
+                  Check_Ghost_Primitive (S, B_Typ);
                end if;
 
                Next_Formal (Formal);
@@ -9068,6 +9068,12 @@ package body Sem_Ch6 is
                Set_Is_Primitive (S);
                Set_Has_Primitive_Operations (B_Typ);
                Check_Private_Overriding (B_Typ);
+
+               --  The Ghost policy in effect at the point of declaration of a
+               --  tagged type and a primitive operation must match
+               --  (SPARK RM 6.9(16)).
+
+               Check_Ghost_Primitive (S, B_Typ);
             end if;
          end if;
       end Check_For_Primitive_Subprogram;

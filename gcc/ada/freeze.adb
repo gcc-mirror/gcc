@@ -3466,8 +3466,8 @@ package body Freeze is
 
            and then Convention (E) /= Convention_Intrinsic
 
-            --  Assume that ASM interface knows what it is doing. This deals
-            --  with unsigned.ads in the AAMP back end.
+           --  Assume that ASM interface knows what it is doing. This deals
+           --  with unsigned.ads in the AAMP back end.
 
            and then Convention (E) /= Convention_Assembler
          then
@@ -5213,7 +5213,7 @@ package body Freeze is
             if Is_Concurrent_Type (E) then
                Error_Msg_N ("ghost type & cannot be concurrent", E);
 
-            --  A Ghost type cannot be effectively volatile (SPARK RM 6.9(8))
+            --  A Ghost type cannot be effectively volatile (SPARK RM 6.9(7))
 
             elsif Is_Effectively_Volatile (E) then
                Error_Msg_N ("ghost type & cannot be volatile", E);

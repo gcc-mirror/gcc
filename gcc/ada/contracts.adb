@@ -907,13 +907,13 @@ package body Contracts is
          if Yields_Synchronized_Object (Obj_Typ) then
             Error_Msg_N ("ghost object & cannot be synchronized", Obj_Id);
 
-         --  A Ghost object cannot be effectively volatile (SPARK RM 6.9(8) and
+         --  A Ghost object cannot be effectively volatile (SPARK RM 6.9(7) and
          --  SPARK RM 6.9(19)).
 
          elsif Is_Effectively_Volatile (Obj_Id) then
             Error_Msg_N ("ghost object & cannot be volatile", Obj_Id);
 
-         --  A Ghost object cannot be imported or exported (SPARK RM 6.9(8)).
+         --  A Ghost object cannot be imported or exported (SPARK RM 6.9(7)).
          --  One exception to this is the object that represents the dispatch
          --  table of a Ghost tagged type, as the symbol needs to be exported.
 

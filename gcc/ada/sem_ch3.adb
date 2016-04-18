@@ -14649,8 +14649,8 @@ package body Sem_Ch3 is
       then
          Set_Derived_Name;
 
-      --  Otherwise, the type is inheriting a private operation, so enter
-      --  it with a special name so it can't be overridden.
+      --  Otherwise, the type is inheriting a private operation, so enter it
+      --  with a special name so it can't be overridden.
 
       else
          Set_Chars (New_Subp, New_External_Name (Chars (Parent_Subp), 'P'));
@@ -19955,14 +19955,6 @@ package body Sem_Ch3 is
          --  point of completion must match (SPARK RM 6.9(14)).
 
          Check_Ghost_Completion (Priv_T, Full_T);
-
-         --  In the case where the private view of a tagged type lacks a parent
-         --  type and is subject to pragma Ghost, ensure that the parent type
-         --  specified by the full view is also Ghost (SPARK RM 6.9(9)).
-
-         if Is_Derived_Type (Full_T) then
-            Check_Ghost_Derivation (Full_T);
-         end if;
 
          --  Propagate the attributes related to pragma Ghost from the private
          --  to the full view.
