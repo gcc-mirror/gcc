@@ -1,3 +1,9 @@
+2016-04-18  Matthew Wahab  <matthew.wahab@arm.com>
+
+	PR target/70711
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Add entries for armv8+crc,
+	armv8.1-a and armv8.1-a+crc.
+
 2016-04-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70701
