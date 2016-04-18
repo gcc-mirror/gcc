@@ -2619,6 +2619,11 @@ package body Sem_Ch6 is
                begin
                   Set_Defining_Unit_Name (Specification (Decl), Subp);
 
+                  --  To ensure proper coverage when body is inlined, indicate
+                  --  whether the subprogram comes from source.
+
+                  Set_Comes_From_Source (Subp, Comes_From_Source (N));
+
                   if Present (First_Formal (Body_Id)) then
                      Plist := Copy_Parameter_List (Body_Id);
                      Set_Parameter_Specifications

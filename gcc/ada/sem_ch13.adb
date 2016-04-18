@@ -334,7 +334,7 @@ package body Sem_Ch13 is
                               & "(component is little-endian)?V?", CLC);
                         end if;
 
-                        --  Do not allow non-contiguous field
+                     --  Do not allow non-contiguous field
 
                      else
                         Error_Msg_N
@@ -451,7 +451,7 @@ package body Sem_Ch13 is
                            if Warn_On_Reverse_Bit_Order then
                               Error_Msg_N
                                 ("info: multi-byte field specified with "
-                                 & "  non-standard Bit_Order?V?", CC);
+                                 & "non-standard Bit_Order?V?", CC);
 
                               if Bytes_Big_Endian then
                                  Error_Msg_N

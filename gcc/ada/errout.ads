@@ -907,14 +907,14 @@ package Errout is
    procedure Adjust_Name_Case
      (Buf : in out Bounded_String;
       Loc : Source_Ptr);
-   --  Given a name stored in Buf, set proper casing.  Loc is an associated
-   --  source position, if we can find a match between the name in Buf and the
-   --  name at that source location, we copy the casing from the source,
+   --  Given a name stored in Buf, set proper casing. Loc is an associated
+   --  source position, and if we can find a match between the name in Buf and
+   --  the name at that source location, we copy the casing from the source,
    --  otherwise we set appropriate default casing.
 
    procedure Adjust_Name_Case (Loc : Source_Ptr);
    --  Uses Buf => Global_Name_Buffer. There are no calls to this in the
-   --  compiler, but it is called in SPARK2014.
+   --  compiler, but it is called in SPARK 2014.
 
    procedure Set_Identifier_Casing
      (Identifier_Name : System.Address;

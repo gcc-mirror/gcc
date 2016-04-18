@@ -197,7 +197,7 @@ package body Exp_Intr is
       Temp : Bounded_String;
 
       procedure Inner (E : Entity_Id);
-      --  Inner recursive routine, keep outer routine non-recursive to ease
+      --  Inner recursive routine, keep outer routine nonrecursive to ease
       --  debugging when we get strange results from this routine.
 
       -----------
@@ -207,7 +207,7 @@ package body Exp_Intr is
       procedure Inner (E : Entity_Id) is
       begin
          --  If entity has an internal name, skip by it, and print its scope.
-         --  Note that we strip a final R from the name before the test, this
+         --  Note that we strip a final R from the name before the test; this
          --  is needed for some cases of instantiations.
 
          declare
@@ -257,9 +257,9 @@ package body Exp_Intr is
          begin
             Append_Unqualified_Decoded (E_Name, Chars (E));
 
-            --  Remove trailing upper case letters from the name (useful for
+            --  Remove trailing upper-case letters from the name (useful for
             --  dealing with some cases of internal names generated in the case
-            --  of references from within a generic.
+            --  of references from within a generic).
 
             while E_Name.Length > 1
               and then E_Name.Chars (E_Name.Length) in 'A' .. 'Z'

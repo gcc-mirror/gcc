@@ -39,6 +39,8 @@
 
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #ifdef _AIX
 /* needed to avoid conflicting declarations */
@@ -319,6 +321,24 @@ __gnat_fseek64 (FILE *stream, __int64 offset, int origin)
     return -1;
 }
 #endif
+
+/* Returns true if the path names a fifo (i.e. a named pipe). */
+int
+__gnat_is_fifo (const char* path)
+{
+/* Posix defines S_ISFIFO as a macro. If the macro doesn't exist, we return
+   false. */
+#ifdef S_ISFIFO
+  struct stat buf;
+  const int status = stat(path, &buf);
+  if (status == 0)
+    return S_ISFIFO(buf.st_mode);
+#endif
+
+  /* S_ISFIFO is not available, or stat got an error (probably
+     file not found). */
+  return 0;
+}
 
 #ifdef __cplusplus
 }
