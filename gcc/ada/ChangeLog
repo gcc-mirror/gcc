@@ -1,3 +1,8 @@
+2016-04-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_res.adb (Resolve_Short_Circuit): Do not use
+	expression-with-actions when generating C.
+
 2016-04-18  Yannick Moy  <moy@adacore.com>
 
 	* sem_util.adb (Apply_Compile_Time_Constraint_Error): Do not generate
