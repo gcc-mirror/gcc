@@ -949,7 +949,7 @@ private
    --
    --    For the static case the result is one or two nodes that should cause
    --    a Constraint_Error. Typically these will include Expr itself or the
-   --    direct descendents of Expr, such as Low/High_Bound (Expr)). It is the
+   --    direct descendants of Expr, such as Low/High_Bound (Expr)). It is the
    --    responsibility of the caller to rewrite and substitute the nodes with
    --    N_Raise_Constraint_Error nodes.
    --

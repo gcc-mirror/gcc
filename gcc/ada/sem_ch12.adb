@@ -13880,7 +13880,7 @@ package body Sem_Ch12 is
       --  so that it can be properly resolved in a subsequent instantiation.
 
       procedure Save_Global_Descendant (D : Union_Id);
-      --  Apply Save_References recursively to the descendents of node D
+      --  Apply Save_References recursively to the descendants of node D
 
       procedure Save_References (N : Node_Id);
       --  This is the recursive procedure that does the work, once the

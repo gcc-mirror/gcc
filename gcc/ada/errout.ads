@@ -793,7 +793,7 @@ package Errout is
 
    procedure Remove_Warning_Messages (N : Node_Id);
    --  Remove any warning messages corresponding to the Sloc of N or any
-   --  of its descendent nodes. No effect if no such warnings. Note that
+   --  of its descendant nodes. No effect if no such warnings. Note that
    --  style messages (identified by the fact that they start with "(style)")
    --  are not removed by this call. Basically the idea behind this procedure
    --  is to remove warnings about execution conditions from known dead code.

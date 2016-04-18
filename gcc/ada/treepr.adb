@@ -126,10 +126,10 @@ package body Treepr is
    --  value of the field.
 
    procedure Print_Init;
-   --  Initialize for printing of tree with descendents
+   --  Initialize for printing of tree with descendants
 
    procedure Print_Term;
-   --  Clean up after printing of tree with descendents
+   --  Clean up after printing of tree with descendants
 
    procedure Print_Char (C : Character);
    --  Print character C if currently in print phase, noop if in marking phase
@@ -202,17 +202,17 @@ package body Treepr is
      (N           : Node_Id;
       Prefix_Str  : String;
       Prefix_Char : Character);
-   --  Called to process a single node in the case where descendents are to
+   --  Called to process a single node in the case where descendants are to
    --  be printed before every line, and Prefix_Char added to all lines
    --  except the header line for the node.
 
    procedure Visit_List (L : List_Id; Prefix_Str : String);
-   --  Visit_List is called to process a list in the case where descendents
+   --  Visit_List is called to process a list in the case where descendants
    --  are to be printed. Prefix_Str is to be added to all printed lines.
 
    procedure Visit_Elist (E : Elist_Id; Prefix_Str : String);
    --  Visit_Elist is called to process an element list in the case where
-   --  descendents are to be printed. Prefix_Str is to be added to all
+   --  descendants are to be printed. Prefix_Str is to be added to all
    --  printed lines.
 
    -------
@@ -1894,7 +1894,7 @@ package body Treepr is
       New_Prefix : String (Prefix_Str'First .. Prefix_Str'Last + 2);
       --  Prefix string for printing referenced fields
 
-      procedure Visit_Descendent
+      procedure Visit_Descendant
         (D         : Union_Id;
          No_Indent : Boolean := False);
       --  This procedure tests the given value of one of the Fields referenced
@@ -1902,23 +1902,23 @@ package body Treepr is
       --  Normally No_Indent is false, which means that the visited node will
       --  be indented using New_Prefix. If No_Indent is set to True, then
       --  this indentation is skipped, and Prefix_Str is used for the call
-      --  to print the descendent. No_Indent is effective only if the
-      --  referenced descendent is a node.
+      --  to print the descendant. No_Indent is effective only if the
+      --  referenced descendant is a node.
 
       ----------------------
-      -- Visit_Descendent --
+      -- Visit_Descendant --
       ----------------------
 
-      procedure Visit_Descendent
+      procedure Visit_Descendant
         (D         : Union_Id;
          No_Indent : Boolean := False)
       is
       begin
-         --  Case of descendent is a node
+         --  Case of descendant is a node
 
          if D in Node_Range then
 
-            --  Don't bother about Empty or Error descendents
+            --  Don't bother about Empty or Error descendants
 
             if D <= Union_Id (Empty_Or_Error) then
                return;
@@ -1928,7 +1928,7 @@ package body Treepr is
                Nod : constant Node_Or_Entity_Id := Node_Or_Entity_Id (D);
 
             begin
-               --  Descendents in one of the standardly compiled internal
+               --  Descendants in one of the standardly compiled internal
                --  packages are normally ignored, unless the parent is also
                --  in such a package (happens when Standard itself is output)
                --  or if the -df switch is set which causes all links to be
@@ -1941,7 +1941,7 @@ package body Treepr is
                      return;
                   end if;
 
-               --  Don't bother about a descendent in a different unit than
+               --  Don't bother about a descendant in a different unit than
                --  the node we came from unless the -df switch is set. Note
                --  that we know at this point that Sloc (D) > Standard_Location
 
@@ -1992,7 +1992,7 @@ package body Treepr is
                end if;
             end;
 
-         --  Case of descendent is a list
+         --  Case of descendant is a list
 
          elsif D in List_Range then
 
@@ -2016,7 +2016,7 @@ package body Treepr is
                Visit_List (List_Id (D), New_Prefix);
             end if;
 
-         --  Case of descendent is an element list
+         --  Case of descendant is an element list
 
          elsif D in Elist_Range then
 
@@ -2033,15 +2033,15 @@ package body Treepr is
                Visit_Elist (Elist_Id (D), New_Prefix);
             end if;
 
-         --  For all other kinds of descendents (strings, names, uints etc),
+         --  For all other kinds of descendants (strings, names, uints etc),
          --  there is nothing to visit (the contents of the field will be
          --  printed when we print the containing node, but what concerns
-         --  us now is looking for descendents in the tree.
+         --  us now is looking for descendants in the tree.
 
          else
             null;
          end if;
-      end Visit_Descendent;
+      end Visit_Descendant;
 
    --  Start of processing for Visit_Node
 
@@ -2100,44 +2100,44 @@ package body Treepr is
          end if;
       end if;
 
-      --  Visit all descendents of this node
+      --  Visit all descendants of this node
 
       if Nkind (N) not in N_Entity then
-         Visit_Descendent (Field1 (N));
-         Visit_Descendent (Field2 (N));
-         Visit_Descendent (Field3 (N));
-         Visit_Descendent (Field4 (N));
-         Visit_Descendent (Field5 (N));
+         Visit_Descendant (Field1 (N));
+         Visit_Descendant (Field2 (N));
+         Visit_Descendant (Field3 (N));
+         Visit_Descendant (Field4 (N));
+         Visit_Descendant (Field5 (N));
 
          if Has_Aspects (N) then
-            Visit_Descendent (Union_Id (Aspect_Specifications (N)));
+            Visit_Descendant (Union_Id (Aspect_Specifications (N)));
          end if;
 
       --  Entity case
 
       else
-         Visit_Descendent (Field1 (N));
-         Visit_Descendent (Field3 (N));
-         Visit_Descendent (Field4 (N));
-         Visit_Descendent (Field5 (N));
-         Visit_Descendent (Field6 (N));
-         Visit_Descendent (Field7 (N));
-         Visit_Descendent (Field8 (N));
-         Visit_Descendent (Field9 (N));
-         Visit_Descendent (Field10 (N));
-         Visit_Descendent (Field11 (N));
-         Visit_Descendent (Field12 (N));
-         Visit_Descendent (Field13 (N));
-         Visit_Descendent (Field14 (N));
-         Visit_Descendent (Field15 (N));
-         Visit_Descendent (Field16 (N));
-         Visit_Descendent (Field17 (N));
-         Visit_Descendent (Field18 (N));
-         Visit_Descendent (Field19 (N));
-         Visit_Descendent (Field20 (N));
-         Visit_Descendent (Field21 (N));
-         Visit_Descendent (Field22 (N));
-         Visit_Descendent (Field23 (N));
+         Visit_Descendant (Field1 (N));
+         Visit_Descendant (Field3 (N));
+         Visit_Descendant (Field4 (N));
+         Visit_Descendant (Field5 (N));
+         Visit_Descendant (Field6 (N));
+         Visit_Descendant (Field7 (N));
+         Visit_Descendant (Field8 (N));
+         Visit_Descendant (Field9 (N));
+         Visit_Descendant (Field10 (N));
+         Visit_Descendant (Field11 (N));
+         Visit_Descendant (Field12 (N));
+         Visit_Descendant (Field13 (N));
+         Visit_Descendant (Field14 (N));
+         Visit_Descendant (Field15 (N));
+         Visit_Descendant (Field16 (N));
+         Visit_Descendant (Field17 (N));
+         Visit_Descendant (Field18 (N));
+         Visit_Descendant (Field19 (N));
+         Visit_Descendant (Field20 (N));
+         Visit_Descendant (Field21 (N));
+         Visit_Descendant (Field22 (N));
+         Visit_Descendant (Field23 (N));
 
          --  Now an interesting special case. Normally parents are always
          --  printed since we traverse the tree in a downwards direction.
@@ -2146,7 +2146,7 @@ package body Treepr is
          --  referenced elsewhere in the tree. The following catches this case.
 
          if not Comes_From_Source (N) then
-            Visit_Descendent (Union_Id (Parent (N)));
+            Visit_Descendant (Union_Id (Parent (N)));
          end if;
 
          --  You may be wondering why we omitted Field2 above. The answer
@@ -2171,7 +2171,7 @@ package body Treepr is
             begin
                Nod := N;
                while Present (Nod) loop
-                  Visit_Descendent (Union_Id (Next_Entity (Nod)));
+                  Visit_Descendant (Union_Id (Next_Entity (Nod)));
                   Nod := Next_Entity (Nod);
                end loop;
             end;

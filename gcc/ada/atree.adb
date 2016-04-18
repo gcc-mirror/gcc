@@ -905,7 +905,7 @@ package body Atree is
       else
          New_Id := New_Copy (Source);
 
-         --  Recursively copy descendents
+         --  Recursively copy descendants
 
          Set_Field1 (New_Id, Possible_Copy (Field1 (New_Id)));
          Set_Field2 (New_Id, Possible_Copy (Field2 (New_Id)));
@@ -2305,11 +2305,11 @@ package body Atree is
          if Fld = Union_Id (Empty) then
             return OK;
 
-         --  Descendent is a node
+         --  Descendant is a node
 
          elsif Fld in Node_Range then
 
-            --  Traverse descendent that is syntactic subtree node
+            --  Traverse descendant that is syntactic subtree node
 
             if Is_Syntactic_Field (Nkind (Nod), FN) then
                return Traverse_Func (Node_Id (Fld));
@@ -2320,11 +2320,11 @@ package body Atree is
                return OK;
             end if;
 
-         --  Descendent is a list
+         --  Descendant is a list
 
          elsif Fld in List_Range then
 
-            --  Traverse descendent that is a syntactic subtree list
+            --  Traverse descendant that is a syntactic subtree list
 
             if Is_Syntactic_Field (Nkind (Nod), FN) then
                declare

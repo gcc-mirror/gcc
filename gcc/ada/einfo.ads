@@ -2368,7 +2368,7 @@ package Einfo is
 --       Defined in functions and procedures. Set for a generated procedure
 --       which verifies the assumption of pragma Default_Initial_Condition.
 
---    Is_Descendent_Of_Address (Flag223)
+--    Is_Descendant_Of_Address (Flag223)
 --       Defined in all entities. True if the entity is type System.Address,
 --       or (recursively) a subtype or derived type of System.Address.
 
@@ -2929,7 +2929,7 @@ package Einfo is
 --    Is_Private_Descendant (Flag53)
 --       Defined in entities that can represent library units (packages,
 --       functions, procedures). Set if the library unit is itself a private
---       child unit, or if it is the descendent of a private child unit.
+--       child unit, or if it is the descendant of a private child unit.
 
 --    Is_Private_Primitive (Flag245)
 --       Defined in subprograms. Set if the operation is a primitive of a
@@ -5341,7 +5341,7 @@ package Einfo is
    --    Is_Checked_Ghost_Entity             (Flag277)
    --    Is_Child_Unit                       (Flag73)
    --    Is_Compilation_Unit                 (Flag149)
-   --    Is_Descendent_Of_Address            (Flag223)
+   --    Is_Descendant_Of_Address            (Flag223)
    --    Is_Discrim_SO_Function              (Flag176)
    --    Is_Discriminant_Check_Function      (Flag264)
    --    Is_Dispatch_Table_Entity            (Flag234)
@@ -6965,7 +6965,7 @@ package Einfo is
    function Is_Controlling_Formal               (Id : E) return B;
    function Is_CPP_Class                        (Id : E) return B;
    function Is_Default_Init_Cond_Procedure      (Id : E) return B;
-   function Is_Descendent_Of_Address            (Id : E) return B;
+   function Is_Descendant_Of_Address            (Id : E) return B;
    function Is_Discrim_SO_Function              (Id : E) return B;
    function Is_Discriminant_Check_Function      (Id : E) return B;
    function Is_Dispatch_Table_Entity            (Id : E) return B;
@@ -7628,7 +7628,7 @@ package Einfo is
    procedure Set_Is_Controlling_Formal           (Id : E; V : B := True);
    procedure Set_Is_CPP_Class                    (Id : E; V : B := True);
    procedure Set_Is_Default_Init_Cond_Procedure  (Id : E; V : B := True);
-   procedure Set_Is_Descendent_Of_Address        (Id : E; V : B := True);
+   procedure Set_Is_Descendant_Of_Address        (Id : E; V : B := True);
    procedure Set_Is_Discrim_SO_Function          (Id : E; V : B := True);
    procedure Set_Is_Discriminant_Check_Function  (Id : E; V : B := True);
    procedure Set_Is_Dispatch_Table_Entity        (Id : E; V : B := True);
@@ -8422,7 +8422,7 @@ package Einfo is
    pragma Inline (Is_CPP_Class);
    pragma Inline (Is_Decimal_Fixed_Point_Type);
    pragma Inline (Is_Default_Init_Cond_Procedure);
-   pragma Inline (Is_Descendent_Of_Address);
+   pragma Inline (Is_Descendant_Of_Address);
    pragma Inline (Is_Digits_Type);
    pragma Inline (Is_Discrete_Or_Fixed_Point_Type);
    pragma Inline (Is_Discrete_Type);
@@ -8917,7 +8917,7 @@ package Einfo is
    pragma Inline (Set_Is_Controlling_Formal);
    pragma Inline (Set_Is_CPP_Class);
    pragma Inline (Set_Is_Default_Init_Cond_Procedure);
-   pragma Inline (Set_Is_Descendent_Of_Address);
+   pragma Inline (Set_Is_Descendant_Of_Address);
    pragma Inline (Set_Is_Discrim_SO_Function);
    pragma Inline (Set_Is_Discriminant_Check_Function);
    pragma Inline (Set_Is_Dispatch_Table_Entity);

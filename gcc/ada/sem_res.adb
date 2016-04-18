@@ -12080,7 +12080,7 @@ package body Sem_Res is
                   --  operations must be done explicitly here.
 
                   if not Address_Is_Private
-                    and then Is_Descendent_Of_Address (It.Typ)
+                    and then Is_Descendant_Of_Address (It.Typ)
                   then
                      Remove_Interp (I);
                   end if;

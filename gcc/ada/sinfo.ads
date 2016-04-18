@@ -5268,7 +5268,7 @@ package Sinfo is
       --  argument expression has the Do_Range_Check flag set, and the range
       --  check is done against the formal type. Note that this argument
       --  expression may appear directly in the Parameter_Associations list,
-      --  or may be a descendent of an N_Parameter_Association node that
+      --  or may be a descendant of an N_Parameter_Association node that
       --  appears in this list.
 
       ------------------------
