@@ -1,5 +1,15 @@
 2016-04-18  Arnaud Charlet  <charlet@adacore.com>
 
+	* a-sytaco.adb (Suspension_Object): Aspect Default_Initial_Condition
+	added.
+
+2016-04-18  Jerome Lambourg  <lambourg@adacore.com>
+
+	* affinity.c: Use the proper type for task id.
+	* init.c (__gnat_inum_to_ivec): ivec is a pointer.
+
+2016-04-18  Arnaud Charlet  <charlet@adacore.com>
+
 	* sem_prag.adb (Process_Convention): Relax rule on exporting
 	Intrinsic types if Relaxed_RM_Semantics is True.
 

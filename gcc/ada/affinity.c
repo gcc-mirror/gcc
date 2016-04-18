@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2005-2011, Free Software Foundation, Inc.       *
+ *            Copyright (C) 2005-2015, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -34,11 +34,11 @@
 #include "taskLib.h"
 #include "cpuset.h"
 
-extern int __gnat_set_affinity (int tid, unsigned cpu);
-extern int __gnat_set_affinity_mask (int tid, unsigned mask);
+extern int __gnat_set_affinity (TASK_ID tid, unsigned cpu);
+extern int __gnat_set_affinity_mask (TASK_ID tid, unsigned mask);
 
 int
- __gnat_set_affinity (int tid, unsigned cpu)
+ __gnat_set_affinity (TASK_ID tid, unsigned cpu)
 {
   cpuset_t cpuset;
 
@@ -48,9 +48,9 @@ int
 }
 
 int
-__gnat_set_affinity_mask (int tid, unsigned mask)
+__gnat_set_affinity_mask (TASK_ID tid, unsigned mask)
 {
-  int index;
+  unsigned index;
   cpuset_t cpuset;
 
   CPUSET_ZERO(cpuset);
