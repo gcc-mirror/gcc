@@ -1,5 +1,17 @@
 2016-04-19  Olivier Hainque  <hainque@adacore.com>
 
+	* par_sco.adb (Traverse_One, case N_Case_Statement):
+	Skip pragmas before the first alternative.
+	(Traverse_Handled_Statement_Sequence, Exception_Handlers): Likewise.
+
+2016-04-19  Tristan Gingold  <gingold@adacore.com>
+
+	* adaint.c (__gnat_lwp_self): New function (for darwin).
+	* s-osinte-darwin.ads, s-osinte-darwin.adb (lwp_self): Import
+	of __gnat_lwp_self.
+
+2016-04-19  Olivier Hainque  <hainque@adacore.com>
+
 	* sem_util.adb (Build_Elaboration_Entity): Always request an
 	elab counter when preserving control-flow.
 
