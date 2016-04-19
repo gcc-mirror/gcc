@@ -1,3 +1,12 @@
+2016-04-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch6.adb (Process_Formals): Mark suspicious reference to
+	SPARK RM in comment.
+	* sem_prag.adb (Analyze_Global_Item): Fix reference to SPARK RM
+	in comment.
+	* sem_res.adb (Property_Error, Resolve_Actuals): Fix reference
+	to SPARK RM in both comment and error message.
+
 2016-04-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch6.adb (Possible_Freeze): If the type is an incomplete

@@ -3520,7 +3520,7 @@ package body Sem_Res is
          Error_Msg_Name_1 := Prop_Nam;
          Error_Msg_NE
            ("external variable & with enabled property % cannot appear as "
-            & "actual in procedure call (SPARK RM 7.1.3(11))", Var, Var_Id);
+            & "actual in procedure call (SPARK RM 7.1.3(10))", Var, Var_Id);
          Error_Msg_N ("\\corresponding formal parameter has mode In", Var);
       end Property_Error;
 
@@ -4467,7 +4467,7 @@ package body Sem_Res is
             then
                --  An effectively volatile object may act as an actual when the
                --  corresponding formal is of a non-scalar effectively volatile
-               --  type (SPARK RM 7.1.3(12)).
+               --  type (SPARK RM 7.1.3(11)).
 
                if not Is_Scalar_Type (Etype (F))
                  and then Is_Effectively_Volatile (Etype (F))
@@ -4476,7 +4476,7 @@ package body Sem_Res is
 
                --  An effectively volatile object may act as an actual in a
                --  call to an instance of Unchecked_Conversion.
-               --  (SPARK RM 7.1.3(12)).
+               --  (SPARK RM 7.1.3(11)).
 
                elsif Is_Unchecked_Conversion_Instance (Nam) then
                   null;
@@ -4484,7 +4484,7 @@ package body Sem_Res is
                else
                   Error_Msg_N
                     ("volatile object cannot act as actual in a call (SPARK "
-                     & "RM 7.1.3(12))", A);
+                     & "RM 7.1.3(11))", A);
                end if;
 
                --  Detect an external variable with an enabled property that
