@@ -2311,7 +2311,7 @@ package body Sem_Prag is
 
                   --  An effectively volatile object with external property
                   --  Effective_Reads set to True must have mode Output or
-                  --  In_Out (SPARK RM 7.1.3(11)).
+                  --  In_Out (SPARK RM 7.1.3(10)).
 
                   elsif Effective_Reads_Enabled (Item_Id)
                     and then Global_Mode = Name_Input
