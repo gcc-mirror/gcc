@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , November 18, 2015
+GNAT Reference Manual , April 19, 2016
 
 AdaCore
 
@@ -12112,19 +12112,15 @@ Long_Integer'Size.
 
 @geindex No_Multiple_Elaboration
 
-[GNAT] Normally each package contains a 16-bit counter used to check for access
-before elaboration, and to control multiple elaboration attempts.
-This counter is eliminated for units compiled with the static model
-of elaboration if restriction @cite{No_Elaboration_Code}
-is active but because of
-the need to check for multiple elaboration in the general case, these
-counters cannot be eliminated if elaboration code may be present. The
-restriction @cite{No_Multiple_Elaboration}
-allows suppression of these counters
-in static elaboration units even if they do have elaboration code. If this
-restriction is used, then the situations in which multiple elaboration is
-possible, including non-Ada main programs, and Stand Alone libraries, are not
-permitted, and will be diagnosed by the binder.
+[GNAT] When this restriction is active, we are not requesting control-flow
+preservation with -fpreserve-control-flow and the static elaboration model is
+used, the compiler is allowed to suppress the elaboration counter normally
+associated with the unit, even if the unit has elaboration code. This counter
+is typically used to check for access before elaboration and to control
+multiple elaboration attempts. If the restriction is used, then the
+situations in which multiple elaboration is possible, including non-Ada main
+programs and Stand Alone libraries, are not permitted and will be diagnosed
+by the binder.
 
 @node No_Nested_Finalization,No_Protected_Type_Allocators,No_Multiple_Elaboration,Partition-Wide Restrictions
 @anchor{gnat_rm/standard_and_implementation_defined_restrictions no-nested-finalization}@anchor{19e}
@@ -12601,6 +12597,12 @@ optimizer can figure this out.
 Note that this the implementation of this restriction requires full
 code generation. If it is used in conjunction with "semantics only"
 checking, then some cases of violations may be missed.
+
+When this restriction is active, we are not requesting control-flow
+preservation with -fpreserve-control-flow and the static elaboration model is
+used, the compiler is allowed to suppress the elaboration counter normally
+associated with the unit, used to check for access before elaboration and to
+control.
 
 @node No_Dynamic_Sized_Objects,No_Entry_Queue,No_Elaboration_Code,Program Unit Level Restrictions
 @anchor{gnat_rm/standard_and_implementation_defined_restrictions no-dynamic-sized-objects}@anchor{1bf}
