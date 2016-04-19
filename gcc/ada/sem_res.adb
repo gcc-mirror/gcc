@@ -3379,6 +3379,10 @@ package body Sem_Res is
                  New_Scope => Current_Scope,
                  New_Sloc  => Loc);
 
+            --  Propagate dimension information, if any.
+
+            Copy_Dimensions (Default_Value (F), Actval);
+
             if Is_Concurrent_Type (Scope (Nam))
               and then Has_Discriminants (Scope (Nam))
             then
@@ -6882,7 +6886,7 @@ package body Sem_Res is
          --  Determine whether an arbitrary node appears in a check node
 
          function Within_Subprogram_Call (Nod : Node_Id) return Boolean;
-         --  Determine whether an arbitrary node appears in a procedure call
+         --  Determine whether an arbitrary node appears in a subprogram call
 
          function Within_Volatile_Function (Id : Entity_Id) return Boolean;
          --  Determine whether an arbitrary entity appears in a volatile
@@ -6960,7 +6964,8 @@ package body Sem_Res is
             Par := Nod;
             while Present (Par) loop
                if Nkind_In (Par, N_Function_Call,
-                                 N_Procedure_Call_Statement)
+                                 N_Procedure_Call_Statement,
+                                 N_Entry_Call_Statement)
                then
                   return True;
 

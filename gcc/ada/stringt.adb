@@ -241,7 +241,7 @@ package body Stringt is
       --  String_Chars table all at once.
 
       S_First  : constant Int := Strings.Table (S).String_Index;
-      S_Len    : constant Int := String_Length (S);
+      S_Len    : constant Nat := String_Length (S);
       Old_Last : constant Int := String_Chars.Last;
       New_Last : constant Int := Old_Last + S_Len;
 

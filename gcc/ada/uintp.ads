@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -431,7 +431,7 @@ private
 
    --  Base is defined to allow efficient execution of the primitive operations
    --  (a0, b0, c0) defined in the section "The Classical Algorithms"
-   --  (sec. 4.3.1) of Donald Knuth's "The Art of Computer  Programming",
+   --  (sec. 4.3.1) of Donald Knuth's "The Art of Computer Programming",
    --  Vol. 2. These algorithms are used in this package. In particular,
    --  the product of two single digits in this base fits in a 32-bit integer.
 

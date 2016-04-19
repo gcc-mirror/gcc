@@ -6698,7 +6698,7 @@ package body Sem_Prag is
                declare
                   Str   : constant String_Id :=
                             Strval (Get_Pragma_Arg (Arg2));
-                  Len   : constant Int := String_Length (Str);
+                  Len   : constant Nat := String_Length (Str);
                   Cont  : Boolean;
                   Ptr   : Nat;
                   CC    : Char_Code;
@@ -21237,7 +21237,7 @@ package body Sem_Prag is
                Check_Arg_Count (1);
 
                if Nkind (A) = N_String_Literal then
-                  S   := Strval (A);
+                  S := Strval (A);
 
                   declare
                      Slen    : constant Natural := Natural (String_Length (S));
@@ -28802,10 +28802,10 @@ package body Sem_Prag is
 
    procedure Set_Encoded_Interface_Name (E : Entity_Id; S : Node_Id) is
       Str : constant String_Id := Strval (S);
-      Len : constant Int       := String_Length (Str);
+      Len : constant Nat       := String_Length (Str);
       CC  : Char_Code;
       C   : Character;
-      J   : Int;
+      J   : Pos;
 
       Hex : constant array (0 .. 15) of Character := "0123456789abcdef";
 
