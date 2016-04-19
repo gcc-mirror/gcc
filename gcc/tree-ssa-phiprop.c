@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
+#include "stor-layout.h"
 
 /* This pass propagates indirect loads through the PHI node for its
    address to make the load source possibly non-addressable and to
@@ -132,7 +133,7 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
 		    struct phiprop_d *phivn, size_t n)
 {
   tree res;
-  gphi *new_phi;
+  gphi *new_phi = NULL;
   edge_iterator ei;
   edge e;
 
@@ -142,7 +143,8 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
   /* Build a new PHI node to replace the definition of
      the indirect reference lhs.  */
   res = gimple_assign_lhs (use_stmt);
-  new_phi = create_phi_node (res, bb);
+  if (TREE_CODE (res) == SSA_NAME)
+    new_phi = create_phi_node (res, bb);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -187,7 +189,10 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
 	{
 	  tree rhs = gimple_assign_rhs1 (use_stmt);
 	  gcc_assert (TREE_CODE (old_arg) == ADDR_EXPR);
-	  new_var = make_ssa_name (TREE_TYPE (rhs));
+	  if (TREE_CODE (res) == SSA_NAME)
+	    new_var = make_ssa_name (TREE_TYPE (rhs));
+	  else
+	    new_var = unshare_expr (res);
 	  if (!is_gimple_min_invariant (old_arg))
 	    old_arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
 	  else
@@ -210,13 +215,17 @@ phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
 	    }
 	}
 
-      add_phi_arg (new_phi, new_var, e, locus);
+      if (new_phi)
+	add_phi_arg (new_phi, new_var, e, locus);
     }
 
-  update_stmt (new_phi);
+  if (new_phi)
+    {
+      update_stmt (new_phi);
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    print_gimple_stmt (dump_file, new_phi, 0, 0);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	print_gimple_stmt (dump_file, new_phi, 0, 0);
+    }
 
   return res;
 }
@@ -250,7 +259,8 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
   tree type = NULL_TREE;
 
   if (!POINTER_TYPE_P (TREE_TYPE (ptr))
-      || !is_gimple_reg_type (TREE_TYPE (TREE_TYPE (ptr))))
+      || (!is_gimple_reg_type (TREE_TYPE (TREE_TYPE (ptr)))
+	  && TYPE_MODE (TREE_TYPE (TREE_TYPE (ptr))) == BLKmode))
     return false;
 
   /* Check if we can "cheaply" dereference all phi arguments.  */
@@ -306,7 +316,6 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
          
       /* Check whether this is a load of *ptr.  */
       if (!(is_gimple_assign (use_stmt)
-	    && TREE_CODE (gimple_assign_lhs (use_stmt)) == SSA_NAME
 	    && gimple_assign_rhs_code (use_stmt) == MEM_REF
 	    && TREE_OPERAND (gimple_assign_rhs1 (use_stmt), 0) == ptr
 	    && integer_zerop (TREE_OPERAND (gimple_assign_rhs1 (use_stmt), 1))
@@ -327,9 +336,31 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
 				  bb, gimple_bb (def_stmt))))
 	goto next;
 
+      /* Found a proper dereference with an aggregate copy.  Just
+         insert aggregate copies on the edges instead.  */
+      if (!is_gimple_reg_type (TREE_TYPE (TREE_TYPE (ptr))))
+	{
+	  phiprop_insert_phi (bb, phi, use_stmt, phivn, n);
+
+	  /* Remove old stmt.  The phi is taken care of by DCE.  */
+	  gsi = gsi_for_stmt (use_stmt);
+	  /* Unlinking the VDEF here is fine as we are sure that we process
+	     stmts in execution order due to aggregate copies having VDEFs
+	     and we emit loads on the edges in the very same order.
+	     We get multiple copies (or intermediate register loads) handled
+	     only by walking PHIs or immediate uses in a lucky order though,
+	     so we could signal the caller to re-start iterating over PHIs
+	     when we come here which would make it quadratic in the number
+	     of PHIs.  */
+	  unlink_stmt_vdef (use_stmt);
+	  gsi_remove (&gsi, true);
+
+	  phi_inserted = true;
+	}
+
       /* Found a proper dereference.  Insert a phi node if this
 	 is the first load transformation.  */
-      if (!phi_inserted)
+      else if (!phi_inserted)
 	{
 	  res = phiprop_insert_phi (bb, phi, use_stmt, phivn, n);
 	  type = TREE_TYPE (res);

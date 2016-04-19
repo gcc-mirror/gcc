@@ -1,3 +1,10 @@
+2016-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70171
+	* tree-ssa-phiprop.c: Include stor-layout.h.
+	(phiprop_insert_phi): Handle the aggregate copy case.
+	(propagate_with_phi): Likewise.
+
 2016-04-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_decompose_address): Use lowpart_subreg
