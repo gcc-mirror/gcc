@@ -1,3 +1,8 @@
+2016-04-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/70689
+	* testsuite/gcc.target/i386/pr70689.c: New.
+
 2016-04-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/70708

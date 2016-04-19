@@ -1,3 +1,11 @@
+2016-04-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/70689
+	* lra-constraints.c (equiv_substition_p): New.
+	(process_alt_operands): Use it.
+	(swap_operands): Swap it.
+	(curr_insn_transform): Update it.
+
 2016-04-18  Michael Matz  <matz@suse.de>
 
 	* tree.h (TYPE_ALIGN, DECL_ALIGN): Return shifted amount.
