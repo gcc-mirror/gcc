@@ -3241,8 +3241,9 @@ static bool
 breaks (tree *jump_target)
 {
   return *jump_target
-    && TREE_CODE (*jump_target) == LABEL_DECL
-    && LABEL_DECL_BREAK (*jump_target);
+    && ((TREE_CODE (*jump_target) == LABEL_DECL
+	 && LABEL_DECL_BREAK (*jump_target))
+	|| TREE_CODE (*jump_target) == EXIT_EXPR);
 }
 
 static bool
@@ -3358,8 +3359,8 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
       hash_set<tree> save_exprs;
       new_ctx.save_exprs = &save_exprs;
 
-      cxx_eval_statement_list (&new_ctx, body,
-			       non_constant_p, overflow_p, jump_target);
+      cxx_eval_constant_expression (&new_ctx, body, /*lval*/false,
+				    non_constant_p, overflow_p, jump_target);
 
       /* Forget saved values of SAVE_EXPRs.  */
       for (hash_set<tree>::iterator iter = save_exprs.begin();
@@ -3750,6 +3751,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    cxx_eval_constant_expression (ctx, op0,
 					  true, non_constant_p, overflow_p,
 					  jump_target);
+	    if (*non_constant_p)
+	      return t;
 	    op1 = TREE_OPERAND (t, 1);
 	    r = cxx_eval_constant_expression (ctx, op1,
 					      lval, non_constant_p, overflow_p,
@@ -4013,6 +4016,17 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    (ctx, ctor, lval,
 	     non_constant_p, overflow_p);
 	}
+      break;
+
+    case EXIT_EXPR:
+      {
+	tree cond = TREE_OPERAND (t, 0);
+	cond = cxx_eval_constant_expression (ctx, cond, /*lval*/false,
+					     non_constant_p, overflow_p);
+	VERIFY_CONSTANT (cond);
+	if (integer_nonzerop (cond))
+	  *jump_target = t;
+      }
       break;
 
     case GOTO_EXPR:

@@ -1,5 +1,10 @@
 2016-04-19  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (breaks): Handle EXIT_EXPR.
+	(cxx_eval_loop_expr): Handle COMPOUND_EXPR body.
+	(cxx_eval_constant_expression): Handle EXIT_EXPR, improve handling
+	of COMPOUND_EXPR.
+
 	PR c++/68206
 	PR c++/68530
 	* constexpr.c (potential_constant_expression_1): Handle LOOP_EXPR
