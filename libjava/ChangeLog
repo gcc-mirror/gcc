@@ -1,3 +1,8 @@
+2016-04-20  Ben Elliston  <bje@gnu.org>
+
+	* testsuite/lib/libjava.exp (libjava_arguments): Use 'file
+	normalize' rather than the defunct DejaGnu 'absolute' proc.
+
 2016-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* classpath/gnu/java/rmi/registry/RegistryImpl.java (version): Update
