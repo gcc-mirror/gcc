@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -178,7 +178,7 @@ package body GNAT.MBBS_Discrete_Random is
 
    begin
       X1 := Int (Calendar.Year    (Now)) * 12 * 31 +
-            Int (Calendar.Month   (Now) * 31)     +
+            Int (Calendar.Month   (Now) * 31)      +
             Int (Calendar.Day     (Now));
 
       X2 := Int (Calendar.Seconds (Now) * Duration (1000.0));

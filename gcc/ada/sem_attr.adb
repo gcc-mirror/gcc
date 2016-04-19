@@ -748,7 +748,25 @@ package body Sem_Attr is
                if Nkind_In (Par, N_Aggregate, N_Extension_Aggregate) then
                   if Etype (Par) = Typ then
                      Set_Has_Self_Reference (Par);
-                     return True;
+
+                     --  Check the context: the aggregate must be part of the
+                     --  initialization of a type or component, or it is the
+                     --  resulting expansion in an initialization procedure.
+
+                     if Is_Init_Proc (Current_Scope) then
+                        return True;
+                     else
+                        Par := Parent (Par);
+                        while Present (Par) loop
+                           if Nkind (Par) = N_Full_Type_Declaration then
+                              return True;
+                           end if;
+
+                           Par := Parent (Par);
+                        end loop;
+                     end if;
+
+                     return False;
                   end if;
                end if;
 

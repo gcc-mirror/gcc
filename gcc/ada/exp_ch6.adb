@@ -2074,10 +2074,13 @@ package body Exp_Ch6 is
 
       if not Is_Empty_List (Post_Call) then
 
-         --  Cases where the call is not a member of a statement list
+         --  Cases where the call is not a member of a statement list.
+         --  This includes the case where the call is an actual in another
+         --  function call or indexing, i.e. an expression context as well.
 
-         if not Is_List_Member (N) then
-
+         if not Is_List_Member (N)
+           or else Nkind_In (Parent (N), N_Function_Call, N_Indexed_Component)
+         then
             --  In Ada 2012 the call may be a function call in an expression
             --  (since OUT and IN OUT parameters are now allowed for such
             --  calls). The write-back of (in)-out parameters is handled
