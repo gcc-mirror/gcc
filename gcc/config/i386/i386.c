@@ -14100,7 +14100,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
       else if (GET_CODE (addr) == AND
 	       && const_32bit_mask (XEXP (addr, 1), DImode))
 	{
-	  addr = simplify_gen_subreg (SImode, XEXP (addr, 0), DImode, 0);
+	  addr = lowpart_subreg (SImode, XEXP (addr, 0), DImode);
 	  if (addr == NULL_RTX)
 	    return 0;
 
@@ -16211,8 +16211,7 @@ ix86_delegitimize_address (rtx x)
 	  x = XVECEXP (XEXP (x, 0), 0, 0);
 	  if (GET_MODE (orig_x) != GET_MODE (x) && MEM_P (orig_x))
 	    {
-	      x = simplify_gen_subreg (GET_MODE (orig_x), x,
-				       GET_MODE (x), 0);
+	      x = lowpart_subreg (GET_MODE (orig_x), x, GET_MODE (x));
 	      if (x == NULL_RTX)
 		return orig_x;
 	    }
@@ -16303,7 +16302,7 @@ ix86_delegitimize_address (rtx x)
     }
   if (GET_MODE (orig_x) != Pmode && MEM_P (orig_x))
     {
-      result = simplify_gen_subreg (GET_MODE (orig_x), result, Pmode, 0);
+      result = lowpart_subreg (GET_MODE (orig_x), result, Pmode);
       if (result == NULL_RTX)
 	return orig_x;
     }
@@ -19580,9 +19579,9 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
   emit_label (qimode_label);
   /* Don't use operands[0] for result of 8bit divide since not all
      registers support QImode ZERO_EXTRACT.  */
-  tmp0 = simplify_gen_subreg (HImode, scratch, mode, 0);
-  tmp1 = simplify_gen_subreg (HImode, operands[2], mode, 0);
-  tmp2 = simplify_gen_subreg (QImode, operands[3], mode, 0);
+  tmp0 = lowpart_subreg (HImode, scratch, mode);
+  tmp1 = lowpart_subreg (HImode, operands[2], mode);
+  tmp2 = lowpart_subreg (QImode, operands[3], mode);
   emit_insn (gen_udivmodhiqi3 (tmp0, tmp1, tmp2));
 
   if (signed_p)
@@ -21016,7 +21015,7 @@ ix86_split_copysign_const (rtx operands[])
   mode = GET_MODE (dest);
   vmode = GET_MODE (mask);
 
-  dest = simplify_gen_subreg (vmode, dest, mode, 0);
+  dest = lowpart_subreg (vmode, dest, mode);
   x = gen_rtx_AND (vmode, dest, mask);
   emit_insn (gen_rtx_SET (dest, x));
 
@@ -21062,7 +21061,7 @@ ix86_split_copysign_var (rtx operands[])
       emit_insn (gen_rtx_SET (scratch, x));
 
       dest = mask;
-      op0 = simplify_gen_subreg (vmode, op0, mode, 0);
+      op0 = lowpart_subreg (vmode, op0, mode);
       x = gen_rtx_NOT (vmode, dest);
       x = gen_rtx_AND (vmode, x, op0);
       emit_insn (gen_rtx_SET (dest, x));
@@ -21076,21 +21075,21 @@ ix86_split_copysign_var (rtx operands[])
       else						/* alternative 2,4 */
 	{
           gcc_assert (REGNO (mask) == REGNO (scratch));
-          op1 = simplify_gen_subreg (vmode, op1, mode, 0);
+          op1 = lowpart_subreg (vmode, op1, mode);
 	  x = gen_rtx_AND (vmode, scratch, op1);
 	}
       emit_insn (gen_rtx_SET (scratch, x));
 
       if (REGNO (op0) == REGNO (dest))			/* alternative 1,2 */
 	{
-	  dest = simplify_gen_subreg (vmode, op0, mode, 0);
+	  dest = lowpart_subreg (vmode, op0, mode);
 	  x = gen_rtx_AND (vmode, dest, nmask);
 	}
       else						/* alternative 3,4 */
 	{
           gcc_assert (REGNO (nmask) == REGNO (dest));
 	  dest = nmask;
-	  op0 = simplify_gen_subreg (vmode, op0, mode, 0);
+	  op0 = lowpart_subreg (vmode, op0, mode);
 	  x = gen_rtx_AND (vmode, dest, op0);
 	}
       emit_insn (gen_rtx_SET (dest, x));
@@ -39115,7 +39114,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
   else
     {
       real_target = gen_reg_rtx (tmode);
-      target = simplify_gen_subreg (rmode, real_target, tmode, 0);
+      target = lowpart_subreg (rmode, real_target, tmode);
     }
 
   for (i = 0; i < nargs; i++)
@@ -39132,7 +39131,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	     count.  If count doesn't match, we put it in register.  */
 	  if (!match)
 	    {
-	      op = simplify_gen_subreg (SImode, op, GET_MODE (op), 0);
+	      op = lowpart_subreg (SImode, op, GET_MODE (op));
 	      if (!insn_p->operand[i + 1].predicate (op, mode))
 		op = copy_to_reg (op);
 	    }
@@ -39288,7 +39287,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	  else
 	    {
 	      op = copy_to_reg (op);
-	      op = simplify_gen_subreg (mode, op, GET_MODE (op), 0);
+	      op = lowpart_subreg (mode, op, GET_MODE (op));
 	    }
 	}
 
@@ -39662,7 +39661,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
 	  else
 	    {
 	      op = copy_to_reg (op);
-	      op = simplify_gen_subreg (mode, op, GET_MODE (op), 0);
+	      op = lowpart_subreg (mode, op, GET_MODE (op));
 	    }
 	}
 
@@ -40060,7 +40059,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	      else
 	        {
 	          op = copy_to_reg (op);
-	          op = simplify_gen_subreg (mode, op, GET_MODE (op), 0);
+	          op = lowpart_subreg (mode, op, GET_MODE (op));
 	        }
 	    }
 	}
@@ -41276,9 +41275,9 @@ rdseed_step:
       op1 = expand_normal (arg1);
 
       op0 = copy_to_reg (op0);
-      op0 = simplify_gen_subreg (mode0, op0, GET_MODE (op0), 0);
+      op0 = lowpart_subreg (mode0, op0, GET_MODE (op0));
       op1 = copy_to_reg (op1);
-      op1 = simplify_gen_subreg (mode0, op1, GET_MODE (op1), 0);
+      op1 = lowpart_subreg (mode0, op1, GET_MODE (op1));
 
       target = gen_reg_rtx (QImode);
       emit_insn (gen_rtx_SET (target, const0_rtx));
@@ -41669,7 +41668,7 @@ rdseed_step:
       else
 	{
 	  op3 = copy_to_reg (op3);
-	  op3 = simplify_gen_subreg (mode3, op3, GET_MODE (op3), 0);
+	  op3 = lowpart_subreg (mode3, op3, GET_MODE (op3));
 	}
       if (!insn_data[icode].operand[5].predicate (op4, mode4))
 	{
@@ -41844,7 +41843,7 @@ rdseed_step:
       else
 	{
 	  op1 = copy_to_reg (op1);
-	  op1 = simplify_gen_subreg (mode1, op1, GET_MODE (op1), 0);
+	  op1 = lowpart_subreg (mode1, op1, GET_MODE (op1));
 	}
 
       if (!insn_data[icode].operand[2].predicate (op2, mode2))
@@ -41892,7 +41891,7 @@ rdseed_step:
       else
 	{
 	  op0 = copy_to_reg (op0);
-	  op0 = simplify_gen_subreg (mode0, op0, GET_MODE (op0), 0);
+	  op0 = lowpart_subreg (mode0, op0, GET_MODE (op0));
 	}
 
       if (!insn_data[icode].operand[1].predicate (op1, mode1))

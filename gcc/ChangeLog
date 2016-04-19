@@ -1,3 +1,20 @@
+2016-04-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_decompose_address): Use lowpart_subreg
+	instead of simplify_gen_subreg (... , 0).
+	(ix86_delegitimize_address): Ditto.
+	(ix86_split_divmod): Ditto.
+	(ix86_split_copysign_const): Ditto.
+	(ix86_split_copysign_var): Ditto.
+	(ix86_expand_args_builtin): Ditto.
+	(ix86_expand_round_builtin): Ditto.
+	(ix86_expand_special_args_builtin): Ditto.
+	* config/i386/i386.md (TARGET_USE_VECTOR_FP_CONVERTS splitters): Ditto.
+	(TARGET_SSE_PARTIAL_REG_DEPENDENCY splitters and peephole2s): Ditto.
+	(udivmodqi4): Ditto.
+	(absneg splitters): Ditto.
+	(*jcc_bt<mode>_1): Ditto.
+
 2016-04-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70724
