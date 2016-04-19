@@ -15063,6 +15063,12 @@ package body Sem_Prag is
                  and then No (Corresponding_Spec (Context))
                then
                   Id := Defining_Entity (Context);
+
+               --  Pragma Ghost applies to a subprogram declaration that acts
+               --  as a compilation unit.
+
+               elsif Nkind (Context) = N_Subprogram_Declaration then
+                  Id := Defining_Entity (Context);
                end if;
             end if;
 

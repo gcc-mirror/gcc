@@ -958,10 +958,10 @@ package body Sem_Elab is
             Ent := Alias (Ent);
             E_Scope := Ent;
 
-            --  If no alias, there is a previous error
+            --  If no alias, there could be a previous error, but not if we've
+            --  already reached the outermost level (Standard).
 
             if No (Ent) then
-               Check_Error_Detected;
                return;
             end if;
          end loop;

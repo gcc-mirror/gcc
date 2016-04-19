@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2013, AdaCore                     --
+--                     Copyright (C) 1998-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1241,13 +1241,13 @@ package body GNAT.Spitbol.Patterns is
    --  Called to raise Program_Error with an appropriate message if an
    --  internal logic error is detected.
 
-   function Str_BF (A : Boolean_Func)   return String;
-   function Str_FP (A : File_Ptr)       return String;
-   function Str_NF (A : Natural_Func)   return String;
-   function Str_NP (A : Natural_Ptr)    return String;
-   function Str_PP (A : Pattern_Ptr)    return String;
-   function Str_VF (A : VString_Func)   return String;
-   function Str_VP (A : VString_Ptr)    return String;
+   function Str_BF (A : Boolean_Func) return String;
+   function Str_FP (A : File_Ptr)     return String;
+   function Str_NF (A : Natural_Func) return String;
+   function Str_NP (A : Natural_Ptr)  return String;
+   function Str_PP (A : Pattern_Ptr)  return String;
+   function Str_VF (A : VString_Func) return String;
+   function Str_VP (A : VString_Ptr)  return String;
    --  These are debugging routines, which return a representation of the
    --  given access value (they are called only by Image and Dump)
 
