@@ -10094,11 +10094,10 @@ package body Sem_Attr is
                      Freeze_Before (N, Entity (P));
                   end if;
 
-               --    If it is a type, there is nothing to resolve.
-               --    If it is an object, complete its resolution.
+               --  If it is a type, there is nothing to resolve. If it is an
+               --  object, complete its resolution.
 
                elsif Is_Overloadable (Entity (P)) then
-
                   if not In_Spec_Expression then
                      Freeze_Before (N, Entity (P));
                   end if;

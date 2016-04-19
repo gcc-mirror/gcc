@@ -354,10 +354,16 @@ package body Exp_Aggr is
                Siz : constant Nat := Component_Count (Component_Type (T));
 
             begin
+               --  Check for superflat arrays, i.e. arrays with such bounds
+               --  as 4 .. 2, to insure that this function never returns a
+               --  meaningless negative value.
+
                if not Compile_Time_Known_Value (Lo)
                  or else not Compile_Time_Known_Value (Hi)
+                 or else Expr_Value (Hi) < Expr_Value (Lo)
                then
                   return 0;
+
                else
                   return
                     Siz * UI_To_Int (Expr_Value (Hi) - Expr_Value (Lo) + 1);

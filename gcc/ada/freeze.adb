@@ -3288,12 +3288,14 @@ package body Freeze is
 
          if Ekind (E) = E_Function then
 
-            --  Check whether function is declared elsewhere.
+            --  Check whether function is declared elsewhere. Previous code
+            --  used Get_Source_Unit on both arguments, but the values are
+            --  equal in the case of a parent and a child unit.
+            --  Confusion with subunits in code  ????
 
             Late_Freezing :=
-              Get_Source_Unit (E) /= Get_Source_Unit (N)
-                and then Returns_Limited_View (E)
-                and then not In_Open_Scopes (Scope (E));
+              not In_Same_Extended_Unit (E, N)
+                and then Returns_Limited_View (E);
 
             --  Freeze return type
 
