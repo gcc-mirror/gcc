@@ -4924,6 +4924,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     case NON_DEPENDENT_EXPR:
       /* For convenience.  */
     case RETURN_EXPR:
+    case LOOP_EXPR:
+    case EXIT_EXPR:
       return RECUR (TREE_OPERAND (t, 0), want_rval);
 
     case TRY_FINALLY_EXPR:
@@ -5134,6 +5136,15 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 
     case EMPTY_CLASS_EXPR:
       return false;
+
+    case GOTO_EXPR:
+      {
+	tree *target = &TREE_OPERAND (t, 0);
+	/* Gotos representing break and continue are OK; we should have
+	   rejected other gotos in parsing.  */
+	gcc_assert (breaks (target) || continues (target));
+	return true;
+      }
 
     default:
       if (objc_is_property_ref (t))
