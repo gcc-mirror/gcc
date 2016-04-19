@@ -1649,7 +1649,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-  // std::uniform_int_distribution is defined in <bits/random_uid.h>
+  // std::uniform_int_distribution is defined in <bits/uniform_int_dist.h>
 
   /**
    * @brief Return true if two uniform integer distributions have
