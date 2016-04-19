@@ -12265,11 +12265,11 @@ package body Sem_Prag is
 
             case Cname is
 
-               --  Nothing to do for invariants and predicates as the checks
-               --  occur in the client units. The SCO for the aspect in the
-               --  declaration unit is conservatively always enabled.
+               --  Nothing to do for predicates as the checks occur in the
+               --  client units. The SCO for the aspect in the declaration
+               --  unit is conservatively always enabled.
 
-               when Name_Invariant | Name_Predicate =>
+               when Name_Predicate =>
                   null;
 
                --  Otherwise mark aspect/pragma SCO as enabled

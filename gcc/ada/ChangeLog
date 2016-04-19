@@ -1,3 +1,19 @@
+2016-04-19  Olivier Hainque  <hainque@adacore.com>
+
+	* sem_util.adb (Build_Elaboration_Entity): Always request an
+	elab counter when preserving control-flow.
+
+2016-04-19  Olivier Hainque  <hainque@adacore.com>
+
+	* sem_ch13.adb (Build_Invariant_Procedure_Declaration): Set
+	Needs_Debug_Info when producing SCOs.
+	* par_sco.adb (Traverse_Aspects): Fix categorization of
+	Type_Invariant to match actual processing as activated depending
+	on pragma Assertion_Policy.
+	* sem_prag.adb (Analyze_Pragma): Remove special case for
+	Name_Invariant regarding SCO generation, which completely disabled
+	the production of SCOs for Invariant pragmas and aspects.
+
 2016-04-19  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* checks.adb, sem_util.adb, sem_res.adb, sem_attr.adb: Minor

@@ -1640,11 +1640,12 @@ package body Par_SCO is
                --  specification. The corresponding pragma will have the same
                --  sloc.
 
-               when Aspect_Pre           |
-                    Aspect_Precondition  |
-                    Aspect_Post          |
-                    Aspect_Postcondition |
-                    Aspect_Invariant     =>
+               when Aspect_Pre            |
+                    Aspect_Precondition   |
+                    Aspect_Post           |
+                    Aspect_Postcondition  |
+                    Aspect_Type_Invariant |
+                    Aspect_Invariant      =>
 
                   C1 := 'a';
 
@@ -1660,8 +1661,7 @@ package body Par_SCO is
 
                when Aspect_Predicate         |
                     Aspect_Static_Predicate  |
-                    Aspect_Dynamic_Predicate |
-                    Aspect_Type_Invariant    =>
+                    Aspect_Dynamic_Predicate =>
 
                   C1 := 'A';
 
@@ -2397,8 +2397,8 @@ package body Par_SCO is
       Sync_Def : Node_Id;
       --  N's protected or task definition
 
-      Vis_Decl : List_Id;
-      --  Sync_Def's Visible_Declarations
+      Vis_Decl, Priv_Decl : List_Id;
+      --  Sync_Def's Visible_Declarations and Private_Declarations
 
    begin
       case Nkind (N) is
@@ -2412,7 +2412,16 @@ package body Par_SCO is
             raise Program_Error;
       end case;
 
-      Vis_Decl := Visible_Declarations (Sync_Def);
+      --  Sync_Def may be Empty at least for empty Task_Type_Declarations.
+      --  Querying Visible or Private_Declarations is invalid in this case.
+
+      if Present (Sync_Def) then
+         Vis_Decl := Visible_Declarations (Sync_Def);
+         Priv_Decl := Private_Declarations (Sync_Def);
+      else
+         Vis_Decl := No_List;
+         Priv_Decl := No_List;
+      end if;
 
       Dom_Info := Traverse_Declarations_Or_Statements
                     (L => Vis_Decl,
@@ -2422,7 +2431,7 @@ package body Par_SCO is
       --  is dominated by the last visible declaration.
 
       Traverse_Declarations_Or_Statements
-        (L => Private_Declarations (Sync_Def),
+        (L => Priv_Decl,
          D => Dom_Info);
    end Traverse_Sync_Definition;
 
