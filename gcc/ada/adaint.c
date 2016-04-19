@@ -3101,6 +3101,30 @@ __gnat_lwp_self (void)
 }
 #endif
 
+#if defined (__APPLE__)
+#include <mach/thread_info.h>
+#include <mach/mach_init.h>
+#include <mach/thread_act.h>
+
+/* System-wide thread identifier.  Note it could be truncated on 32 bit
+   hosts.
+   Previously was: pthread_mach_thread_np (pthread_self ()).  */
+void *
+__gnat_lwp_self (void)
+{
+  thread_identifier_info_data_t data;
+  mach_msg_type_number_t count = THREAD_IDENTIFIER_INFO_COUNT;
+  kern_return_t kret;
+
+  kret = thread_info (mach_thread_self (), THREAD_IDENTIFIER_INFO,
+		      (thread_info_t) &data, &count);
+  if (kret == KERN_SUCCESS)
+    return (void *)(uintptr_t)data.thread_id;
+  else
+    return 0;
+}
+#endif
+
 #if defined (__linux__)
 #include <sched.h>
 
