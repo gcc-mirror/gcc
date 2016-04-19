@@ -3,7 +3,7 @@
 
 #define N 1024
 
-float a[N], b[N+3], c[N];
+extern float a[N], b[N+3], c[N];
 
 void
 avx_test (void)
@@ -14,7 +14,6 @@ avx_test (void)
     b[i+3] = a[i] * c[i];
 }
 
-/* { dg-final { scan-assembler "avx_storeups256" } } */
-/* { dg-final { scan-assembler-not "sse_storeups" } } */
-/* { dg-final { scan-assembler-not "\\*avx_movv4sf_internal/3" } } */
+/* { dg-final { scan-assembler "vmovups.*movv8sf_internal/3" } } */
+/* { dg-final { scan-assembler-not "movups.*movv4sf_internal/3" } } */
 /* { dg-final { scan-assembler-not "vextractf128" } } */
