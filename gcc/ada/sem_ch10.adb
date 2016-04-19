@@ -2008,7 +2008,7 @@ package body Sem_Ch10 is
       Par_Unit : constant Entity_Id := Current_Scope;
 
       Lib_Spec        : Node_Id := Library_Unit (Lib_Unit);
-      Num_Scopes      : Int := 0;
+      Num_Scopes      : Nat := 0;
       Use_Clauses     : array (1 .. Scope_Stack.Last) of Node_Id;
       Enclosing_Child : Entity_Id := Empty;
       Svg             : constant Suppress_Record := Scope_Suppress;

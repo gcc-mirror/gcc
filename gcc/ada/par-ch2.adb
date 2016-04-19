@@ -230,7 +230,7 @@ package body Ch2 is
       Import_Check_Required : Boolean := False;
       --  Set True if check of pragma IMPORT is required
 
-      Arg_Count : Int := 0;
+      Arg_Count : Nat := 0;
       --  Number of argument associations processed
 
       Identifier_Seen : Boolean := False;

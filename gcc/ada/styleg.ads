@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,12 +109,12 @@ package Styleg is
    procedure Check_Left_Paren;
    --  Called after scanning out a left parenthesis to check spacing
 
-   procedure Check_Line_Max_Length (Len : Int);
+   procedure Check_Line_Max_Length (Len : Nat);
    --  Called with Scan_Ptr pointing to the first line terminator character
    --  terminating the current line. Used to check for appropriate line length.
    --  The parameter Len is the length of the current line.
 
-   procedure Check_Line_Terminator (Len : Int);
+   procedure Check_Line_Terminator (Len : Nat);
    --  Called with Scan_Ptr pointing to the first line terminator terminating
    --  the current line, used to check for appropriate line terminator usage.
    --  The parameter Len is the length of the current line.

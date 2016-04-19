@@ -74,7 +74,7 @@ package body Exp_Ch9 is
    --  families of 128K should be reasonable in all cases, and is a documented
    --  implementation restriction.
 
-   Entry_Family_Bound : constant Int := 2**16;
+   Entry_Family_Bound : constant Pos := 2**16;
 
    -----------------------
    -- Local Subprograms --
@@ -9492,7 +9492,7 @@ package body Exp_Ch9 is
             Entry_Count_Expr   : constant Node_Id :=
                                    Build_Entry_Count_Expression
                                      (Prot_Typ, Cdecls, Loc);
-            Num_Attach_Handler : Int := 0;
+            Num_Attach_Handler : Nat := 0;
             Protection_Subtype : Node_Id;
             Ritem              : Node_Id;
 
@@ -10578,7 +10578,7 @@ package body Exp_Ch9 is
       Delay_Val      : Entity_Id;
       Delay_Index    : Entity_Id;
       Delay_Min      : Entity_Id;
-      Delay_Num      : Int := 1;
+      Delay_Num      : Pos := 1;
       Delay_Alt_List : List_Id := New_List;
       Delay_List     : constant List_Id := New_List;
       D              : Entity_Id;
@@ -10588,7 +10588,7 @@ package body Exp_Ch9 is
       Guard_Open     : Entity_Id;
 
       End_Lab        : Node_Id;
-      Index          : Int := 1;
+      Index          : Pos := 1;
       Lab            : Node_Id;
       Num_Alts       : Int;
       Num_Accept     : Nat := 0;

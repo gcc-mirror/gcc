@@ -317,7 +317,7 @@ package body Exp_Aggr is
       --  This avoids running away with attempts to convert huge aggregates,
       --  which hit memory limits in the backend.
 
-      function Component_Count (T : Entity_Id) return Int;
+      function Component_Count (T : Entity_Id) return Nat;
       --  The limit is applied to the total number of components that the
       --  aggregate will have, which is the number of static expressions
       --  that will appear in the flattened array. This requires a recursive
@@ -327,8 +327,8 @@ package body Exp_Aggr is
       -- Component_Count --
       ---------------------
 
-      function Component_Count (T : Entity_Id) return Int is
-         Res  : Int := 0;
+      function Component_Count (T : Entity_Id) return Nat is
+         Res  : Nat := 0;
          Comp : Entity_Id;
 
       begin
@@ -351,7 +351,7 @@ package body Exp_Aggr is
                Hi : constant Node_Id :=
                  Type_High_Bound (Etype (First_Index (T)));
 
-               Siz : constant Int := Component_Count (Component_Type (T));
+               Siz : constant Nat := Component_Count (Component_Type (T));
 
             begin
                if not Compile_Time_Known_Value (Lo)
@@ -6164,8 +6164,8 @@ package body Exp_Aggr is
                First_Comp   : Node_Id;
                Discriminant : Entity_Id;
                Decl         : Node_Id;
-               Num_Disc     : Int := 0;
-               Num_Gird     : Int := 0;
+               Num_Disc     : Nat := 0;
+               Num_Gird     : Nat := 0;
 
                procedure Prepend_Stored_Values (T : Entity_Id);
                --  Scan the list of stored discriminants of the type, and add

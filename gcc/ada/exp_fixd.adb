@@ -404,15 +404,15 @@ package body Exp_Fixd is
      (N       : Node_Id;
       X, Y, Z : Node_Id) return Node_Id
    is
-      Y_Size : constant Int := UI_To_Int (Esize (Etype (Y)));
-      Z_Size : constant Int := UI_To_Int (Esize (Etype (Z)));
+      Y_Size : constant Nat := UI_To_Int (Esize (Etype (Y)));
+      Z_Size : constant Nat := UI_To_Int (Esize (Etype (Z)));
       Expr   : Node_Id;
 
    begin
       --  If denominator fits in 64 bits, we can build the operations directly
       --  without causing any intermediate overflow, so that's what we do.
 
-      if Int'Max (Y_Size, Z_Size) <= 32 then
+      if Nat'Max (Y_Size, Z_Size) <= 32 then
          return
            Build_Divide (N, X, Build_Multiply (N, Y, Z));
 
@@ -473,11 +473,11 @@ package body Exp_Fixd is
    is
       Loc    : constant Source_Ptr := Sloc (N);
 
-      X_Size : constant Int := UI_To_Int (Esize (Etype (X)));
-      Y_Size : constant Int := UI_To_Int (Esize (Etype (Y)));
-      Z_Size : constant Int := UI_To_Int (Esize (Etype (Z)));
+      X_Size : constant Nat := UI_To_Int (Esize (Etype (X)));
+      Y_Size : constant Nat := UI_To_Int (Esize (Etype (Y)));
+      Z_Size : constant Nat := UI_To_Int (Esize (Etype (Z)));
 
-      QR_Siz : Int;
+      QR_Siz : Nat;
       QR_Typ : Entity_Id;
 
       Nnn : Entity_Id;
@@ -489,7 +489,7 @@ package body Exp_Fixd is
    begin
       --  Find type that will allow computation of numerator
 
-      QR_Siz := Int'Max (X_Size, 2 * Int'Max (Y_Size, Z_Size));
+      QR_Siz := Nat'Max (X_Size, 2 * Nat'Max (Y_Size, Z_Size));
 
       if QR_Siz <= 16 then
          QR_Typ := Standard_Integer_16;
@@ -499,7 +499,7 @@ package body Exp_Fixd is
          QR_Typ := Standard_Integer_64;
 
       --  For more than 64, bits, we use the 64-bit integer defined in
-      --  Interfaces, so that it can be handled by the runtime routine
+      --  Interfaces, so that it can be handled by the runtime routine.
 
       else
          QR_Typ := RTE (RE_Integer_64);
@@ -784,15 +784,15 @@ package body Exp_Fixd is
      (N       : Node_Id;
       X, Y, Z : Node_Id) return Node_Id
    is
-      X_Size : constant Int := UI_To_Int (Esize (Etype (X)));
-      Y_Size : constant Int := UI_To_Int (Esize (Etype (Y)));
+      X_Size : constant Nat := UI_To_Int (Esize (Etype (X)));
+      Y_Size : constant Nat := UI_To_Int (Esize (Etype (Y)));
       Expr   : Node_Id;
 
    begin
       --  If numerator fits in 64 bits, we can build the operations directly
       --  without causing any intermediate overflow, so that's what we do.
 
-      if Int'Max (X_Size, Y_Size) <= 32 then
+      if Nat'Max (X_Size, Y_Size) <= 32 then
          return
            Build_Divide (N, Build_Multiply (N, X, Y), Z);
 
@@ -850,11 +850,11 @@ package body Exp_Fixd is
    is
       Loc    : constant Source_Ptr := Sloc (N);
 
-      X_Size : constant Int := UI_To_Int (Esize (Etype (X)));
-      Y_Size : constant Int := UI_To_Int (Esize (Etype (Y)));
-      Z_Size : constant Int := UI_To_Int (Esize (Etype (Z)));
+      X_Size : constant Nat := UI_To_Int (Esize (Etype (X)));
+      Y_Size : constant Nat := UI_To_Int (Esize (Etype (Y)));
+      Z_Size : constant Nat := UI_To_Int (Esize (Etype (Z)));
 
-      QR_Siz : Int;
+      QR_Siz : Nat;
       QR_Typ : Entity_Id;
 
       Nnn : Entity_Id;
@@ -866,7 +866,7 @@ package body Exp_Fixd is
    begin
       --  Find type that will allow computation of numerator
 
-      QR_Siz := Int'Max (X_Size, 2 * Int'Max (Y_Size, Z_Size));
+      QR_Siz := Nat'Max (X_Size, 2 * Nat'Max (Y_Size, Z_Size));
 
       if QR_Siz <= 16 then
          QR_Typ := Standard_Integer_16;
@@ -876,7 +876,7 @@ package body Exp_Fixd is
          QR_Typ := Standard_Integer_64;
 
       --  For more than 64, bits, we use the 64-bit integer defined in
-      --  Interfaces, so that it can be handled by the runtime routine
+      --  Interfaces, so that it can be handled by the runtime routine.
 
       else
          QR_Typ := RTE (RE_Integer_64);
