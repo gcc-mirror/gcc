@@ -870,8 +870,8 @@ package body SPARK_Specific is
                Line := 0;
                Col  := 0;
             else
-               Line := Int (Get_Logical_Line_Number (Ref_Entry.Def));
-               Col  := Int (Get_Column_Number (Ref_Entry.Def));
+               Line := Nat (Get_Logical_Line_Number (Ref_Entry.Def));
+               Col  := Nat (Get_Column_Number (Ref_Entry.Def));
             end if;
 
             --  References to constant objects without variable inputs (see
@@ -895,9 +895,9 @@ package body SPARK_Specific is
                Entity_Col  => Col,
                File_Num    => Dependency_Num (Ref.Lun),
                Scope_Num   => Get_Scope_Num (Ref.Ref_Scope),
-               Line        => Int (Get_Logical_Line_Number (Ref.Loc)),
+               Line        => Nat (Get_Logical_Line_Number (Ref.Loc)),
                Rtype       => Typ,
-               Col         => Int (Get_Column_Number (Ref.Loc))));
+               Col         => Nat (Get_Column_Number (Ref.Loc))));
          end;
       end loop;
 

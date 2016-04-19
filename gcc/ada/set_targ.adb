@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2013-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2013-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -946,21 +946,21 @@ begin
                T : FPT_Mode_Entry renames
                  FPT_Mode_Table (FPT_Mode_Index_For (S_Float));
             begin
-               Float_Size := Int (T.SIZE);
+               Float_Size := Pos (T.SIZE);
             end;
 
             declare
                T : FPT_Mode_Entry renames
                  FPT_Mode_Table (FPT_Mode_Index_For (S_Long_Float));
             begin
-               Double_Size := Int (T.SIZE);
+               Double_Size := Pos (T.SIZE);
             end;
 
             declare
                T : FPT_Mode_Entry renames
                  FPT_Mode_Table (FPT_Mode_Index_For (S_Long_Long_Float));
             begin
-               Long_Double_Size := Int (T.SIZE);
+               Long_Double_Size := Pos (T.SIZE);
             end;
 
          end if;

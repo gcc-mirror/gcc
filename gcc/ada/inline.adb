@@ -2242,7 +2242,7 @@ package body Inline is
       Lab_Decl : Node_Id;
       Lab_Id   : Node_Id;
       New_A    : Node_Id;
-      Num_Ret  : Int := 0;
+      Num_Ret  : Nat := 0;
       Ret_Type : Entity_Id;
 
       Targ : Node_Id;

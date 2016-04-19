@@ -1,5 +1,18 @@
 2016-04-19  Arnaud Charlet  <charlet@adacore.com>
 
+	* sem_res.adb (Within_Subprogram_Call): Detect
+	also nodes that appear in entry calls.
+	(Resolve_Actuals, Insert_Default): Propagate
+	dimension information if any, from default expression to the
+	copy that appears in the list of actuals.
+	* uintp.ads: minor whitespace fix in comment.
+	* sem_prag.adb, stringt.adb, inline.adb, lib-xref-spark_specific.adb:
+	Minor code cleanup.
+	* set_targ.adb (Set_Targ): convert directly from
+	Natural to Pos, without intermediate conversion to Int.
+
+2016-04-19  Arnaud Charlet  <charlet@adacore.com>
+
 	* sem_ch6.adb (Process_Formals): Mark suspicious reference to
 	SPARK RM in comment.
 	* sem_prag.adb (Analyze_Global_Item): Fix reference to SPARK RM
