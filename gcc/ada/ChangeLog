@@ -1,3 +1,16 @@
+2016-04-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.adb (Copy_Node_With_Replacement):
+	use Set_Comes_From_Source instead of directly manipulating
+	internals of the node table.
+	* sem_util.adb (Within_Scope): refactored to remove duplicated code.
+	* sem_aux.adb (Get_Rep_Pragma,
+	Subprogram_Body_Entity, Subprogram_Spec): declare variables that
+	do not change as constants and initialize them in the declaration.
+	(Get_Rep_Pragma, Subprogram_Body_Entity, Subprogram_Spec): declare
+	variables that do not change as constants and initialize them
+	in the declaration.
+
 2016-04-19  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Resolve_Entry_Call): If the entry has
