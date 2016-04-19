@@ -1,5 +1,18 @@
 2016-04-19  Arnaud Charlet  <charlet@adacore.com>
 
+	* sem_prag.adb, sem_attr.adb, par-prag.adb, exp_aggr.adb, sem_type.adb
+	sem_ch12.adb, sem_ch3.adb, exp_ch7.adb, exp_ch9.adb: Code cleanup.
+	* sem_res.adb, sem_util.ads, sem_util.adb (Is_OK_Volatile_Context):
+	Promoted from being a nested subprogram in Sem_Res.Resolve_Entity_Name
+	to publicly visible routine in Sem_Util.
+
+2016-04-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Parameter_Aliasing_Checks): Do not apply
+	the check if the type of the actual is By_Reference.
+
+2016-04-19  Arnaud Charlet  <charlet@adacore.com>
+
 	* sem_res.adb (Within_Subprogram_Call): Detect
 	also nodes that appear in entry calls.
 	(Resolve_Actuals, Insert_Default): Propagate

@@ -6041,7 +6041,7 @@ package body Sem_Attr is
 
                Start_String;
                for J in 1 .. String_Length (Full_Name) - 1 loop
-                  Store_String_Char (Get_String_Char (Full_Name, Int (J)));
+                  Store_String_Char (Get_String_Char (Full_Name, Pos (J)));
                end loop;
 
                Store_String_Chars ("'Type_Key");

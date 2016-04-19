@@ -3029,7 +3029,7 @@ package body Sem_Type is
       Op_Name     : constant Name_Id   := Chars (Op);
       T           : constant Entity_Id := Etype (New_S);
       New_F       : Entity_Id;
-      Num         : Int;
+      Num         : Nat;
       Old_F       : Entity_Id;
       T1          : Entity_Id;
       T2          : Entity_Id;

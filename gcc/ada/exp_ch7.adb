@@ -6227,7 +6227,7 @@ package body Exp_Ch7 is
 
       procedure Preprocess_Components
         (Comps     : Node_Id;
-         Num_Comps : out Int;
+         Num_Comps : out Nat;
          Has_POC   : out Boolean);
       --  Examine all components in component list Comps, count all controlled
       --  components and determine whether at least one of them is per-object
@@ -6265,7 +6265,7 @@ package body Exp_Ch7 is
             Decl_Id   : Entity_Id;
             Decl_Typ  : Entity_Id;
             Has_POC   : Boolean;
-            Num_Comps : Int;
+            Num_Comps : Nat;
 
             procedure Process_Component_For_Adjust (Decl : Node_Id);
             --  Process the declaration of a single controlled component
@@ -6679,7 +6679,7 @@ package body Exp_Ch7 is
             Jump_Block : Node_Id;
             Label      : Node_Id;
             Label_Id   : Entity_Id;
-            Num_Comps  : Int;
+            Num_Comps  : Nat;
             Stmts      : List_Id;
 
             procedure Process_Component_For_Finalize
@@ -7236,7 +7236,7 @@ package body Exp_Ch7 is
 
       procedure Preprocess_Components
         (Comps     : Node_Id;
-         Num_Comps : out Int;
+         Num_Comps : out Nat;
          Has_POC   : out Boolean)
       is
          Decl : Node_Id;
