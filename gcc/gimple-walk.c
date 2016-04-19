@@ -100,9 +100,6 @@ walk_gimple_asm (gasm *stmt, walk_tree_fn callback_op,
   noutputs = gimple_asm_noutputs (stmt);
   oconstraints = (const char **) alloca ((noutputs) * sizeof (const char *));
 
-  if (wi)
-    wi->is_lhs = true;
-
   for (i = 0; i < noutputs; i++)
     {
       op = gimple_asm_output_op (stmt, i);
@@ -114,6 +111,8 @@ walk_gimple_asm (gasm *stmt, walk_tree_fn callback_op,
 				       &allows_reg, &is_inout))
 	    wi->val_only = (allows_reg || !allows_mem);
 	}
+      if (wi)
+	wi->is_lhs = true;
       ret = walk_tree (&TREE_VALUE (op), callback_op, wi, NULL);
       if (ret)
 	return ret;
@@ -181,6 +180,9 @@ walk_gimple_op (gimple *stmt, walk_tree_fn callback_op,
   hash_set<tree> *pset = (wi) ? wi->pset : NULL;
   unsigned i;
   tree ret = NULL_TREE;
+
+  if (wi)
+    wi->stmt = stmt;
 
   switch (gimple_code (stmt))
     {

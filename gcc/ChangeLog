@@ -1,3 +1,13 @@
+2016-04-19  Richard Biener  <rguenther@suse.de>
+
+	* gimple-walk.h (struct walk_stmt_info): Add stmt member.
+	* gimple-walk.c (walk_gimple_op): Initialize it.
+	(walk_gimple_asm): Set wi->is_lhs before each callback invocation.
+	* tree-inline.c (remap_gimple_op_r): Set SSA_NAME_DEF_STMT when
+	remapping SSA names of defs.
+	(copy_bb): Remove walk over all SSA defs and SSA_NAME_DEF_STMT
+	adjustment.
+
 2016-04-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/70689
