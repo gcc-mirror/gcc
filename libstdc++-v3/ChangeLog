@@ -1,5 +1,13 @@
 2016-04-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/69703
+	* src/c++11/codecvt.cc (__codecvt_utf8_base<char16_t>::do_in)):
+	Override endianness bit in mode.
+	* testsuite/22_locale/codecvt/codecvt_utf8/69703.cc: New test.
+	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/66855.cc: Test
+	that little_endian mode is ignored.
+	* testsuite/experimental/filesystem/path/native/string.cc: New test.
+
 	PR libstdc++/70609
 	* src/filesystem/ops.cc (close_fd): New function.
 	(do_copy_file): Set permissions before copying file contents. Check
