@@ -1,5 +1,12 @@
 2016-04-19  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_legitimate_combined_insn): Remove
+	alignment check.
+	* config/i386/i386.md (ssememalign): Removed.
+	* config/i386/sse.md: Remove ssememalign attribute from patterns.
+
+2016-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/69201
 	* config/i386/avx512bwintrin.h (_mm512_mask_loadu_epi16): Pass
 	const short * to __builtin_ia32_loaddquhi512_mask.

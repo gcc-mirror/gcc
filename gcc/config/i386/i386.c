@@ -7317,18 +7317,6 @@ ix86_legitimate_combined_insn (rtx_insn *insn)
 	  bool win;
 	  int j;
 
-	  /* For pre-AVX disallow unaligned loads/stores where the
-	     instructions don't support it.  */
-	  if (!TARGET_AVX
-	      && VECTOR_MODE_P (mode)
-	      && misaligned_operand (op, mode))
-	    {
-	      unsigned int min_align = get_attr_ssememalign (insn);
-	      if (min_align == 0
-		  || MEM_ALIGN (op) < min_align)
-		return false;
-	    }
-
 	  /* A unary operator may be accepted by the predicate, but it
 	     is irrelevant for matching constraints.  */
 	  if (UNARY_P (op))
