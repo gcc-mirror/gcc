@@ -6963,8 +6963,8 @@ package body Sem_Res is
             then
                null;
             else
-               Error_Msg_N (
-                 "deferred constant is frozen before completion", N);
+               Error_Msg_N
+                 ("deferred constant is frozen before completion", N);
             end if;
          end if;
 

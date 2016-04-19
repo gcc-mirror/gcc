@@ -2354,11 +2354,13 @@ package body Checks is
 
       --  Local variables
 
-      Actual_1 : Node_Id;
-      Actual_2 : Node_Id;
-      Check    : Node_Id;
-      Formal_1 : Entity_Id;
-      Formal_2 : Entity_Id;
+      Actual_1   : Node_Id;
+      Actual_2   : Node_Id;
+      Check      : Node_Id;
+      Formal_1   : Entity_Id;
+      Formal_2   : Entity_Id;
+      Orig_Act_1 : Node_Id;
+      Orig_Act_2 : Node_Id;
 
    --  Start of processing for Apply_Parameter_Aliasing_Checks
 
@@ -2368,6 +2370,7 @@ package body Checks is
       Actual_1 := First_Actual (Call);
       Formal_1 := First_Formal (Subp);
       while Present (Actual_1) and then Present (Formal_1) loop
+         Orig_Act_1 := Original_Actual (Actual_1);
 
          --  Ensure that the actual is an object that is not passed by value.
          --  Elementary types are always passed by value, therefore actuals of
@@ -2378,30 +2381,27 @@ package body Checks is
          --  will be done in place and a subsequent read will always see the
          --  correct value, see RM 6.2 (12/3).
 
-         if Nkind (Original_Actual (Actual_1)) = N_Aggregate
-           or else
-             (Nkind (Original_Actual (Actual_1)) = N_Qualified_Expression
-                and then Nkind (Expression (Original_Actual (Actual_1))) =
-                           N_Aggregate)
+         if Nkind (Orig_Act_1) = N_Aggregate
+           or else (Nkind (Orig_Act_1) = N_Qualified_Expression
+                     and then Nkind (Expression (Orig_Act_1)) = N_Aggregate)
          then
             null;
 
-         elsif Is_Object_Reference (Original_Actual (Actual_1))
-           and then not Is_Elementary_Type (Etype (Original_Actual (Actual_1)))
-           and then
-              not Is_By_Reference_Type (Etype (Original_Actual (Actual_1)))
+         elsif Is_Object_Reference (Orig_Act_1)
+           and then not Is_Elementary_Type (Etype (Orig_Act_1))
+           and then not Is_By_Reference_Type (Etype (Orig_Act_1))
          then
             Actual_2 := Next_Actual (Actual_1);
             Formal_2 := Next_Formal (Formal_1);
             while Present (Actual_2) and then Present (Formal_2) loop
+               Orig_Act_2 := Original_Actual (Actual_2);
 
                --  The other actual we are testing against must also denote
                --  a non pass-by-value object. Generate the check only when
                --  the mode of the two formals may lead to aliasing.
 
-               if Is_Object_Reference (Original_Actual (Actual_2))
-                 and then not
-                   Is_Elementary_Type (Etype (Original_Actual (Actual_2)))
+               if Is_Object_Reference (Orig_Act_2)
+                 and then not Is_Elementary_Type (Etype (Orig_Act_2))
                  and then May_Cause_Aliasing (Formal_1, Formal_2)
                then
                   Overlap_Check

@@ -13103,9 +13103,9 @@ package body Sem_Util is
 
          Par := Nod;
          while Present (Par) loop
-            if Nkind_In (Par, N_Function_Call,
-                              N_Procedure_Call_Statement,
-                              N_Entry_Call_Statement)
+            if Nkind_In (Par, N_Entry_Call_Statement,
+                              N_Function_Call,
+                              N_Procedure_Call_Statement)
             then
                return True;
 
@@ -15978,22 +15978,20 @@ package body Sem_Util is
             if New_Sloc /= No_Location then
                Set_Sloc (New_Node, New_Sloc);
 
-               --  If we adjust the Sloc, then we are essentially making
-               --  a completely new node, so the Comes_From_Source flag
-               --  should be reset to the proper default value.
+               --  If we adjust the Sloc, then we are essentially making a
+               --  completely new node, so the Comes_From_Source flag should
+               --  be reset to the proper default value.
 
-               Set_Comes_From_Source (New_Node,
-                                      Default_Node.Comes_From_Source);
-
+               Set_Comes_From_Source
+                 (New_Node, Default_Node.Comes_From_Source);
             end if;
 
-            --  If the node is call and has named associations,
-            --  set the corresponding links in the copy.
+            --  If the node is a call and has named associations, set the
+            --  corresponding links in the copy.
 
-            if (Nkind (Old_Node) = N_Function_Call
-                 or else Nkind (Old_Node) = N_Entry_Call_Statement
-                 or else
-                   Nkind (Old_Node) = N_Procedure_Call_Statement)
+            if Nkind_In (Old_Node, N_Entry_Call_Statement,
+                                   N_Function_Call,
+                                   N_Procedure_Call_Statement)
               and then Present (First_Named_Actual (Old_Node))
             then
                Adjust_Named_Associations (Old_Node, New_Node);
