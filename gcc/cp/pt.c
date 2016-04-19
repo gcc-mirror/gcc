@@ -10961,6 +10961,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	  /* We can't substitute for this parameter pack.  We use a flag as
 	     well as the missing_level counter because function parameter
 	     packs don't have a level.  */
+	  gcc_assert (processing_template_decl);
 	  unsubstituted_packs = true;
 	}
     }
@@ -15135,7 +15136,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	  {
 	    tree scope = USING_DECL_SCOPE (decl);
 	    tree name = DECL_NAME (decl);
-	    tree decl;
 
 	    scope = tsubst (scope, args, complain, in_decl);
 	    decl = lookup_qualified_name (scope, name,
