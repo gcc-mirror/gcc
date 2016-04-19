@@ -1,3 +1,11 @@
+2016-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/fs_fwd.h (operator&, operator|, operator^,
+	operator~ operator&=, operator|=, operator^=): Add noexcept to
+	overloaded operators for copy_options, perms and directory_options.
+	* src/filesystem/ops.cc (make_file_type, make_file_status,
+	is_not_found_errno, file_time): Add noexcept.
+
 2016-04-19  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/bits/c++14_warning.h: Do not refer C++14 as experimental.
