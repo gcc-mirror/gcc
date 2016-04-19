@@ -204,6 +204,7 @@ extern vn_ssa_aux_t VN_INFO_GET (tree);
 tree vn_get_expr_for (tree);
 bool run_scc_vn (vn_lookup_kind);
 void free_scc_vn (void);
+void scc_vn_restore_ssa_info (void);
 tree vn_nary_op_lookup (tree, vn_nary_op_t *);
 tree vn_nary_op_lookup_stmt (gimple *, vn_nary_op_t *);
 tree vn_nary_op_lookup_pieces (unsigned int, enum tree_code,
