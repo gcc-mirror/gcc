@@ -1,3 +1,8 @@
+2016-04-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst,
+	gnat_rm.texi: Update documentation.
+
 2016-04-19  Olivier Hainque  <hainque@adacore.com>
 
 	* par_sco.adb (Traverse_One, case N_Case_Statement):

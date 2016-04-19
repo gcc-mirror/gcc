@@ -524,19 +524,15 @@ No_Multiple_Elaboration
 -----------------------
 .. index:: No_Multiple_Elaboration
 
-[GNAT] Normally each package contains a 16-bit counter used to check for access
-before elaboration, and to control multiple elaboration attempts.
-This counter is eliminated for units compiled with the static model
-of elaboration if restriction `No_Elaboration_Code`
-is active but because of
-the need to check for multiple elaboration in the general case, these
-counters cannot be eliminated if elaboration code may be present. The
-restriction `No_Multiple_Elaboration`
-allows suppression of these counters
-in static elaboration units even if they do have elaboration code. If this
-restriction is used, then the situations in which multiple elaboration is
-possible, including non-Ada main programs, and Stand Alone libraries, are not
-permitted, and will be diagnosed by the binder.
+[GNAT] When this restriction is active, we are not requesting control-flow
+preservation with -fpreserve-control-flow and the static elaboration model is
+used, the compiler is allowed to suppress the elaboration counter normally
+associated with the unit, even if the unit has elaboration code. This counter
+is typically used to check for access before elaboration and to control
+multiple elaboration attempts. If the restriction is used, then the
+situations in which multiple elaboration is possible, including non-Ada main
+programs and Stand Alone libraries, are not permitted and will be diagnosed
+by the binder.
 
 No_Nested_Finalization
 ----------------------
@@ -879,6 +875,12 @@ optimizer can figure this out.
 Note that this the implementation of this restriction requires full
 code generation. If it is used in conjunction with "semantics only"
 checking, then some cases of violations may be missed.
+
+When this restriction is active, we are not requesting control-flow
+preservation with -fpreserve-control-flow and the static elaboration model is
+used, the compiler is allowed to suppress the elaboration counter normally
+associated with the unit, used to check for access before elaboration and to
+control.
 
 No_Dynamic_Sized_Objects
 ------------------------
