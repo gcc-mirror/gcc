@@ -4306,6 +4306,33 @@ init_scc_vn (void)
     }
 }
 
+/* Restore SSA info that has been reset on value leaders.  */
+
+void
+scc_vn_restore_ssa_info (void)
+{
+  for (unsigned i = 0; i < num_ssa_names; i++)
+    {
+      tree name = ssa_name (i);
+      if (name
+	  && has_VN_INFO (name))
+	{
+	  if (VN_INFO (name)->needs_insertion)
+	    ;
+	  else if (POINTER_TYPE_P (TREE_TYPE (name))
+		   && VN_INFO (name)->info.ptr_info)
+	    SSA_NAME_PTR_INFO (name) = VN_INFO (name)->info.ptr_info;
+	  else if (INTEGRAL_TYPE_P (TREE_TYPE (name))
+		   && VN_INFO (name)->info.range_info)
+	    {
+	      SSA_NAME_RANGE_INFO (name) = VN_INFO (name)->info.range_info;
+	      SSA_NAME_ANTI_RANGE_P (name)
+		= VN_INFO (name)->range_info_anti_range_p;
+	    }
+	}
+    }
+}
+
 void
 free_scc_vn (void)
 {
@@ -4322,21 +4349,9 @@ free_scc_vn (void)
     {
       tree name = ssa_name (i);
       if (name
-	  && has_VN_INFO (name))
-	{
-	  if (VN_INFO (name)->needs_insertion)
-	    release_ssa_name (name);
-	  else if (POINTER_TYPE_P (TREE_TYPE (name))
-		   && VN_INFO (name)->info.ptr_info)
-	    SSA_NAME_PTR_INFO (name) = VN_INFO (name)->info.ptr_info;
-	  else if (INTEGRAL_TYPE_P (TREE_TYPE (name))
-		   && VN_INFO (name)->info.range_info)
-	    {
-	      SSA_NAME_RANGE_INFO (name) = VN_INFO (name)->info.range_info;
-	      SSA_NAME_ANTI_RANGE_P (name)
-		= VN_INFO (name)->range_info_anti_range_p;
-	    }
-	}
+	  && has_VN_INFO (name)
+	  && VN_INFO (name)->needs_insertion)
+	release_ssa_name (name);
     }
   obstack_free (&vn_ssa_aux_obstack, NULL);
   vn_ssa_aux_table.release ();
