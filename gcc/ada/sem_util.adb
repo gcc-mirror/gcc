@@ -5143,6 +5143,29 @@ package body Sem_Util is
       end if;
    end Current_Scope;
 
+   ----------------------------
+   -- Current_Scope_No_Loops --
+   ----------------------------
+
+   function Current_Scope_No_Loops return Entity_Id is
+      S : Entity_Id;
+
+   begin
+      --  Examine the scope stack starting from the current scope and skip any
+      --  internally generated loops.
+
+      S := Current_Scope;
+      while Present (S) and then S /= Standard_Standard loop
+         if Ekind (S) = E_Loop and then not Comes_From_Source (S) then
+            S := Scope (S);
+         else
+            exit;
+         end if;
+      end loop;
+
+      return S;
+   end Current_Scope_No_Loops;
+
    ------------------------
    -- Current_Subprogram --
    ------------------------

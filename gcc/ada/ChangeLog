@@ -1,3 +1,19 @@
+2016-04-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Entry_Call): If the entry has
+	preconditions it is rewritten by means of a wrapper that
+	incorporates the original call. Before rewriting generate a
+	reference to the entry being called to prevent spurious warnings
+	and provide correct cross-reference information.
+
+2016-04-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Context): Code cleanup. Add
+	local constant Scop. Ignore any internally generated loops when
+	performing the check concerning an abstract subprogram call
+	without a controlling argument.
+	* sem_util.ads, sem_util.adb (Current_Scope_No_Loops): New routine.
+
 2016-04-19  Bob Duff  <duff@adacore.com>
 
 	* sem_elab.adb (Check_A_Call): There are cases where we have No

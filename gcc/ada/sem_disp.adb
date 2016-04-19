@@ -510,7 +510,6 @@ package body Sem_Disp is
 
       procedure Check_Dispatching_Context (Call : Node_Id) is
          Subp : constant Entity_Id := Entity (Name (Call));
-         Typ  : constant Entity_Id := Etype (Subp);
 
          procedure Abstract_Context_Error;
          --  Error for abstract call dispatching on result is not dispatching
@@ -530,14 +529,15 @@ package body Sem_Disp is
 
             else
                Error_Msg_N
-                 ("call to abstract procedure must be dispatching",
-                  N);
+                 ("call to abstract procedure must be dispatching", N);
             end if;
          end Abstract_Context_Error;
 
          --  Local variables
 
-         Par : Node_Id;
+         Scop : constant Entity_Id := Current_Scope_No_Loops;
+         Typ  : constant Entity_Id := Etype (Subp);
+         Par  : Node_Id;
 
       --  Start of processing for Check_Dispatching_Context
 
@@ -568,18 +568,20 @@ package body Sem_Disp is
             --  but will be legal in overridings of the operation.
 
             elsif In_Spec_Expression
-              and then (Is_Subprogram (Current_Scope)
-                 or else Chars (Current_Scope) = Name_Postcondition)
               and then
-                ((Nkind (Parent (Current_Scope)) = N_Procedure_Specification
-                   and then Null_Present (Parent (Current_Scope)))
-                 or else Is_Abstract_Subprogram (Current_Scope))
+                (Is_Subprogram (Scop)
+                  or else Chars (Scop) = Name_Postcondition)
+              and then
+                (Is_Abstract_Subprogram (Scop)
+                  or else
+                    (Nkind (Parent (Scop)) = N_Procedure_Specification
+                      and then Null_Present (Parent (Scop))))
             then
                null;
 
             elsif Ekind (Current_Scope) = E_Function
-              and then Nkind (Unit_Declaration_Node (Current_Scope)) =
-                                          N_Generic_Subprogram_Declaration
+              and then Nkind (Unit_Declaration_Node (Scop)) =
+                         N_Generic_Subprogram_Declaration
             then
                null;
 
@@ -969,8 +971,8 @@ package body Sem_Disp is
       --  if the associated tagged type is already frozen.
 
       Has_Dispatching_Parent :=
-         Present (Alias (Subp))
-           and then Is_Dispatching_Operation (Alias (Subp));
+        Present (Alias (Subp))
+          and then Is_Dispatching_Operation (Alias (Subp));
 
       if No (Tagged_Type) then
 
