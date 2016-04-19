@@ -1,5 +1,10 @@
 2016-04-19  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (tsubst_expr): Remove shadowing declaration.
+	(tsubst_pack_expansion): Add assert.
+
+	* semantics.c (add_decl_expr): Use DECL_SOURCE_LOCATION.
+
 	PR c++/70522
 	* name-lookup.c (qualified_lookup_using_namespace): Look through
 	hidden names.
