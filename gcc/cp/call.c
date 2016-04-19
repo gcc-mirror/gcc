@@ -1862,7 +1862,24 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
 
       cand = build_user_type_conversion_1 (to, expr, flags, complain);
       if (cand)
-	conv = cand->second_conv;
+	{
+	  if (BRACE_ENCLOSED_INITIALIZER_P (expr)
+	      && CONSTRUCTOR_NELTS (expr) == 1
+	      && !is_list_ctor (cand->fn))
+	    {
+	      /* "If C is not an initializer-list constructor and the
+		 initializer list has a single element of type cv U, where U is
+		 X or a class derived from X, the implicit conversion sequence
+		 has Exact Match rank if U is X, or Conversion rank if U is
+		 derived from X."  */
+	      tree elt = CONSTRUCTOR_ELT (expr, 0)->value;
+	      tree elttype = TREE_TYPE (elt);
+	      if (reference_related_p (to, elttype))
+		return implicit_conversion (to, elttype, elt,
+					    c_cast_p, flags, complain);
+	    }
+	  conv = cand->second_conv;
+	}
 
       /* We used to try to bind a reference to a temporary here, but that
 	 is now handled after the recursive call to this function at the end
