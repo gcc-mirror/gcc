@@ -1,3 +1,7 @@
+2016-04-19  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/bits/c++14_warning.h: Do not refer C++14 as experimental.
+
 2016-04-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/41759
