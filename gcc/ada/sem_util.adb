@@ -15735,8 +15735,9 @@ package body Sem_Util is
                --  a completely new node, so the Comes_From_Source flag
                --  should be reset to the proper default value.
 
-               Nodes.Table (New_Node).Comes_From_Source :=
-                 Default_Node.Comes_From_Source;
+               Set_Comes_From_Source (New_Node,
+                                      Default_Node.Comes_From_Source);
+
             end if;
 
             --  If the node is call and has named associations,
@@ -20179,18 +20180,8 @@ package body Sem_Util is
    ------------------
 
    function Within_Scope (E : Entity_Id; S : Entity_Id) return Boolean is
-      SE : Entity_Id;
    begin
-      SE := Scope (E);
-      loop
-         if SE = S then
-            return True;
-         elsif SE = Standard_Standard then
-            return False;
-         else
-            SE := Scope (SE);
-         end if;
-      end loop;
+      return Scope_Within_Or_Same (Scope (E), S);
    end Within_Scope;
 
    ----------------
