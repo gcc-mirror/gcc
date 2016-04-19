@@ -4647,8 +4647,9 @@ qualified_lookup_using_namespace (tree name, tree scope,
 	    cp_binding_level_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
 	  if (binding)
 	    {
-	      found_here = true;
 	      ambiguous_decl (result, binding, flags);
+	      if (result->type || result->value)
+		found_here = true;
 	    }
 
 	  for (usings = DECL_NAMESPACE_USING (scope); usings;
