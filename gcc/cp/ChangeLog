@@ -1,3 +1,9 @@
+2016-04-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70522
+	* name-lookup.c (qualified_lookup_using_namespace): Look through
+	hidden names.
+
 2016-04-18  Michael Matz  <matz@suse.de>
 
 	* class.c (build_vtable): Use SET_DECL_ALIGN and SET_TYPE_ALIGN.
