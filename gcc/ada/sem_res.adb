@@ -7614,6 +7614,12 @@ package body Sem_Res is
         and then Present (Contract_Wrapper (Nam))
         and then Current_Scope /= Contract_Wrapper (Nam)
       then
+
+         --  Note the entity being called before rewriting the call, so that
+         --  it appears used at this point.
+
+         Generate_Reference (Nam, Entry_Name, 'r');
+
          --  Rewrite as call to the precondition wrapper, adding the task
          --  object to the list of actuals. If the call is to a member of an
          --  entry family, include the index as well.
