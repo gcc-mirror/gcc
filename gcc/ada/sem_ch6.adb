@@ -5251,8 +5251,9 @@ package body Sem_Ch6 is
       --  T is the type of either a formal parameter or of the return type.
       --  If T is not yet frozen and needs a delayed freeze, then the
       --  subprogram itself must be delayed. If T is the limited view of an
-      --  incomplete type the subprogram must be frozen as well, because
-      --  T may depend on local types that have not been frozen yet.
+      --  incomplete type (or of a CW type thereof) the subprogram must be
+      --  frozen as well, because T may depend on local types that have not
+      --  been frozen yet.
 
       ---------------------
       -- Possible_Freeze --
@@ -5269,7 +5270,8 @@ package body Sem_Ch6 is
          then
             Set_Has_Delayed_Freeze (Designator);
 
-         elsif Ekind (T) = E_Incomplete_Type
+         elsif (Ekind (T) = E_Incomplete_Type
+                 or else Ekind (T) = E_Class_Wide_Type)
            and then From_Limited_With (T)
          then
             Set_Has_Delayed_Freeze (Designator);

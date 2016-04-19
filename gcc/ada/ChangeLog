@@ -1,3 +1,10 @@
+2016-04-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch6.adb (Possible_Freeze): If the type is an incomplete
+	CW type, then the subprogram must have a delayed freeze. This
+	ensures that the backend can properly recover the full view when
+	elaborating the access subprogram declaration.
+
 2016-04-19  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb (Resolve_Attribute, case 'Access): Freeze
