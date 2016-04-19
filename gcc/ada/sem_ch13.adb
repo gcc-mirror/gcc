@@ -7841,6 +7841,14 @@ package body Sem_Ch13 is
       Set_Is_Invariant_Procedure (SId);
       Set_Invariant_Procedure (Typ, SId);
 
+      --  Source Coverage Obligations might be attached to the invariant
+      --  expression this procedure evaluates, and we need debug info to be
+      --  able to assess the coverage achieved by evaluations.
+
+      if Opt.Generate_SCO then
+         Set_Needs_Debug_Info (SId);
+      end if;
+
       --  Mark the invariant procedure explicitly as Ghost because it does not
       --  come from source.
 

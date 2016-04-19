@@ -1662,9 +1662,17 @@ package body Sem_Util is
       elsif ASIS_Mode then
          return;
 
-      --  See if we need elaboration entity. We always need it for the dynamic
-      --  elaboration model, since it is needed to properly generate the PE
-      --  exception for access before elaboration.
+      --  See if we need elaboration entity.
+
+      --  We always need an elaboration entity when preserving control-flow, as
+      --  we want to remain explicit about the units elaboration order.
+
+      elsif Opt.Suppress_Control_Flow_Optimizations then
+         null;
+
+      --  We always need an elaboration entity for the dynamic elaboration
+      --  model, since it is needed to properly generate the PE exception for
+      --  access before elaboration.
 
       elsif Dynamic_Elaboration_Checks then
          null;
