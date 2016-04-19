@@ -1,5 +1,14 @@
 2016-04-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/70609
+	* src/filesystem/ops.cc (close_fd): New function.
+	(do_copy_file): Set permissions before copying file contents. Check
+	result of closing file descriptors. Don't copy streambuf when file
+	is empty.
+	(copy(const path&, const path&, copy_options, error_code&)): Use
+	lstat for source file when copy_symlinks is set.
+	* testsuite/experimental/filesystem/operations/copy.cc: Test copy().
+
 	* include/experimental/bits/fs_fwd.h (operator&, operator|, operator^,
 	operator~ operator&=, operator|=, operator^=): Add noexcept to
 	overloaded operators for copy_options, perms and directory_options.
