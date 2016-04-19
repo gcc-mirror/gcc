@@ -1,5 +1,10 @@
 2016-04-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/68206
+	PR c++/68530
+	* constexpr.c (potential_constant_expression_1): Handle LOOP_EXPR
+	and GOTO_EXPR.
+
 	* pt.c (tsubst_expr): Remove shadowing declaration.
 	(tsubst_pack_expansion): Add assert.
 
