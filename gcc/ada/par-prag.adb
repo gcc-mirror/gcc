@@ -974,13 +974,13 @@ begin
                declare
                   Slen    : constant Natural := Natural (String_Length (S));
                   Options : String (1 .. Slen);
-                  J       : Natural;
-                  Ptr     : Natural;
+                  J       : Positive;
+                  Ptr     : Positive;
 
                begin
                   J := 1;
                   loop
-                     C := Get_String_Char (S, Int (J));
+                     C := Get_String_Char (S, Pos (J));
 
                      if not In_Character_Range (C) then
                         OK := False;

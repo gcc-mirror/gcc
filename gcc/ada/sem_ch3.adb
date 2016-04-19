@@ -13871,8 +13871,8 @@ package body Sem_Ch3 is
       --  Inherit the discriminants of the parent type
 
       Add_Discriminants : declare
-         Num_Disc : Int;
-         Num_Gird : Int;
+         Num_Disc : Nat;
+         Num_Gird : Nat;
 
       begin
          Num_Disc := 0;

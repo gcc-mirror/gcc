@@ -4321,7 +4321,7 @@ package body Exp_Aggr is
          Decl     : Node_Id;
          Typ      : constant Entity_Id := Etype (N);
          Indexes  : constant List_Id   := New_List;
-         Num      : Int;
+         Num      : Nat;
          Sub_Agg  : Node_Id;
 
       begin
@@ -7085,7 +7085,7 @@ package body Exp_Aggr is
          Byte_Size : constant Int := UI_To_Int (Component_Size (Packed_Array));
          --  The packed array type is a byte array
 
-         Packed_Num : Int;
+         Packed_Num : Nat;
          --  Number of components accumulated in current byte
 
          Comps : List_Id;

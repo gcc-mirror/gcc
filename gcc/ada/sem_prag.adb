@@ -21242,12 +21242,12 @@ package body Sem_Prag is
                   declare
                      Slen    : constant Natural := Natural (String_Length (S));
                      Options : String (1 .. Slen);
-                     J       : Natural;
+                     J       : Positive;
 
                   begin
                      J := 1;
                      loop
-                        C := Get_String_Char (S, Int (J));
+                        C := Get_String_Char (S, Pos (J));
                         exit when not In_Character_Range (C);
                         Options (J) := Get_Character (C);
 
@@ -22592,14 +22592,14 @@ package body Sem_Prag is
                   declare
                      Slen    : constant Natural := Natural (String_Length (S));
                      Options : String (1 .. Slen);
-                     J       : Natural;
+                     J       : Positive;
 
                   begin
                      --  Couldn't we use a for loop here over Options'Range???
 
                      J := 1;
                      loop
-                        C := Get_String_Char (S, Int (J));
+                        C := Get_String_Char (S, Pos (J));
 
                         --  This is a weird test, it skips setting validity
                         --  checks entirely if any element of S is out of

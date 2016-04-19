@@ -15117,7 +15117,7 @@ package body Sem_Ch12 is
       T       : constant Entity_Id := Entity (Prefix (Def));
       Is_Fun  : constant Boolean := (Ekind (Nam) = E_Function);
       F       : Entity_Id;
-      Num_F   : Int;
+      Num_F   : Nat;
       OK      : Boolean;
 
    begin

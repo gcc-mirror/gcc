@@ -2373,7 +2373,10 @@ package body Checks is
          --  Elementary types are always passed by value, therefore actuals of
          --  such types cannot lead to aliasing. An aggregate is an object in
          --  Ada 2012, but an actual that is an aggregate cannot overlap with
-         --  another actual.
+         --  another actual. A type that is By_Reference (such as an array of
+         --  controlled types) is not subject to the check because any update
+         --  will be done in place and a subsequent read will always see the
+         --  correct value, see RM 6.2 (12/3).
 
          if Nkind (Original_Actual (Actual_1)) = N_Aggregate
            or else
@@ -2385,6 +2388,8 @@ package body Checks is
 
          elsif Is_Object_Reference (Original_Actual (Actual_1))
            and then not Is_Elementary_Type (Etype (Original_Actual (Actual_1)))
+           and then
+              not Is_By_Reference_Type (Etype (Original_Actual (Actual_1)))
          then
             Actual_2 := Next_Actual (Actual_1);
             Formal_2 := Next_Formal (Formal_1);

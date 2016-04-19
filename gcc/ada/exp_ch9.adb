@@ -10590,7 +10590,7 @@ package body Exp_Ch9 is
       End_Lab        : Node_Id;
       Index          : Pos := 1;
       Lab            : Node_Id;
-      Num_Alts       : Int;
+      Num_Alts       : Nat;
       Num_Accept     : Nat := 0;
       Proc           : Node_Id;
       Time_Type      : Entity_Id;
