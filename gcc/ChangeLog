@@ -1,5 +1,16 @@
 2016-04-19  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/70724
+	* tree-ssa-sccvn.c (scc_vn_restore_ssa_info): Split SSA info
+	restoring out from ...
+	(free_scc_vn): ... here.
+	* tree-ssa-sccvn.h (scc_vn_restore_ssa_info): Declare.
+	* tres-ssa-pre.c (pass_pre::execute): Restore SSA info before
+	tail merging.
+	(pass_fre::execute): Restore SSA info.
+
+2016-04-19  Richard Biener  <rguenther@suse.de>
+
 	* gimple-walk.h (struct walk_stmt_info): Add stmt member.
 	* gimple-walk.c (walk_gimple_op): Initialize it.
 	(walk_gimple_asm): Set wi->is_lhs before each callback invocation.

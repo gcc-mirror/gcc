@@ -1,3 +1,8 @@
+2016-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70724
+	* gcc.dg/torture/pr70724.c: New testcase.
+
 2016-04-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/70689

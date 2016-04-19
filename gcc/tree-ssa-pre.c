@@ -4804,6 +4804,9 @@ pass_pre::execute (function *fun)
   todo |= fini_eliminate ();
   loop_optimizer_finalize ();
 
+  /* Restore SSA info before tail-merging as that resets it as well.  */
+  scc_vn_restore_ssa_info ();
+
   /* TODO: tail_merge_optimize may merge all predecessors of a block, in which
      case we can merge the block with the remaining predecessor of the block.
      It should either:
@@ -4877,6 +4880,7 @@ pass_fre::execute (function *fun)
 
   todo |= fini_eliminate ();
 
+  scc_vn_restore_ssa_info ();
   free_scc_vn ();
 
   statistics_counter_event (fun, "Insertions", pre_stats.insertions);
