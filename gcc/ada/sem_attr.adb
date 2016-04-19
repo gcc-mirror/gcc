@@ -10087,14 +10087,17 @@ package body Sem_Attr is
                      Get_Next_Interp (Index, It);
                   end loop;
 
-               --  If Prefix is a subprogram name, this reference freezes:
+                  --  If Prefix is a subprogram name, this reference freezes,
+                  --  but not if within spec expression mode
+
+                  if not In_Spec_Expression then
+                     Freeze_Before (N, Entity (P));
+                  end if;
 
                --    If it is a type, there is nothing to resolve.
                --    If it is an object, complete its resolution.
 
                elsif Is_Overloadable (Entity (P)) then
-
-                  --  Avoid insertion of freeze actions in spec expression mode
 
                   if not In_Spec_Expression then
                      Freeze_Before (N, Entity (P));

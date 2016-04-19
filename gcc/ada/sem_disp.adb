@@ -2132,7 +2132,7 @@ package body Sem_Disp is
       --  table, but it would be awfully heavy, and there is no way that we
       --  could reasonably exceed this value.
 
-      N : Int := 0;
+      N : Nat := 0;
       --  Number of entries in Result
 
       Parent_Op : Entity_Id;

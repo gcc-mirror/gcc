@@ -1096,7 +1096,7 @@ package body Exp_Ch7 is
       --    Jump_Alts
 
       Counter_Id  : Entity_Id := Empty;
-      Counter_Val : Int       := 0;
+      Counter_Val : Nat       := 0;
       --  Name and value of the state counter
 
       Decls : List_Id := No_List;
@@ -1725,7 +1725,7 @@ package body Exp_Ch7 is
          Spec    : Node_Id;
          Typ     : Entity_Id;
 
-         Old_Counter_Val : Int;
+         Old_Counter_Val : Nat;
          --  This variable is used to determine whether a nested package or
          --  instance contains at least one controlled object.
 

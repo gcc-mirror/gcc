@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -574,7 +574,7 @@ package body Sem_Elim is
                      --------------------
 
                      function Line_Num_Match return Boolean is
-                        N : Int := 0;
+                        N : Nat := 0;
 
                      begin
                         if Idx = 0 then

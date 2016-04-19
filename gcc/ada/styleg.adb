@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -717,7 +717,7 @@ package body Styleg is
    --  In check max line length mode (-gnatym), the line length must
    --  not exceed the permitted maximum value.
 
-   procedure Check_Line_Max_Length (Len : Int) is
+   procedure Check_Line_Max_Length (Len : Nat) is
    begin
       if Style_Check_Max_Line_Length then
          if Len > Style_Max_Line_Length then
@@ -741,10 +741,10 @@ package body Styleg is
    --  In check DOS line terminators node (-gnatyd), the line terminator
    --  must be a single LF, without a following CR.
 
-   procedure Check_Line_Terminator (Len : Int) is
+   procedure Check_Line_Terminator (Len : Nat) is
       S : Source_Ptr;
 
-      L : Int := Len;
+      L : Nat := Len;
       --  Length of line (adjusted down for blanks at end of line)
 
    begin

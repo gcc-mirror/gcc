@@ -5638,7 +5638,7 @@ package body Sem_Util is
       then
          declare
             Root1, Root2   : Node_Id;
-            Depth1, Depth2 : Int := 0;
+            Depth1, Depth2 : Nat := 0;
 
          begin
             Root1 := Prefix (A1);

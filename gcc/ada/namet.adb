@@ -610,13 +610,13 @@ package body Namet is
       --  N'th entry is the number of chains of length N, except last entry,
       --  which is the number of chains of length F'Last or more.
 
-      Max_Chain_Length : Int := 0;
+      Max_Chain_Length : Nat := 0;
       --  Maximum length of all chains
 
-      Probes : Int := 0;
+      Probes : Nat := 0;
       --  Used to compute average number of probes
 
-      Nsyms : Int := 0;
+      Nsyms : Nat := 0;
       --  Number of symbols in table
 
       Verbosity : constant Int range 1 .. 3 := 1;
@@ -647,7 +647,7 @@ package body Namet is
 
          else
             declare
-               C : Int;
+               C : Nat;
                N : Name_Id;
                S : Int;
 

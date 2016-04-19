@@ -1,3 +1,16 @@
+2016-04-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute, case 'Access): Freeze
+	overloadable entity if originally overloaded.
+
+2016-04-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb, exp_ch3.adb, exp_ch7.adb, exp_ch9.adb, exp_code.adb,
+	exp_fixd.adb, namet.adb, osint.adb, osint.ads, par-ch2.adb,
+	sem_ch10.adb, sem_ch12.adb, sem_disp.adb, sem_elab.adb, sem_elim.adb
+	sem_util.adb, styleg.adb, styleg.ads, stylesw.ads: Minor code
+	clean up.
+
 2016-04-19  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_util.adb (Copy_Node_With_Replacement):

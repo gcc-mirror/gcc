@@ -1088,8 +1088,8 @@ package body Sem_Ch12 is
       --  name of the formal.
 
       Is_Named_Assoc : Boolean;
-      Num_Matched    : Int := 0;
-      Num_Actuals    : Int := 0;
+      Num_Matched    : Nat := 0;
+      Num_Actuals    : Nat := 0;
 
       Others_Present : Boolean := False;
       Others_Choice  : Node_Id := Empty;
@@ -4406,7 +4406,7 @@ package body Sem_Ch12 is
       --  to provide a clean environment for analysis of the inlined body will
       --  eliminate any previously set SPARK_Mode.
 
-      Scope_Stack_Depth : constant Int :=
+      Scope_Stack_Depth : constant Pos :=
                             Scope_Stack.Last - Scope_Stack.First + 1;
 
       Use_Clauses  : array (1 .. Scope_Stack_Depth) of Node_Id;
@@ -4414,9 +4414,9 @@ package body Sem_Ch12 is
       Inner_Scopes : array (1 .. Scope_Stack_Depth) of Entity_Id;
       Curr_Scope   : Entity_Id := Empty;
       List         : Elist_Id;
-      Num_Inner    : Int := 0;
-      Num_Scopes   : Int := 0;
-      N_Instances  : Int := 0;
+      Num_Inner    : Nat := 0;
+      Num_Scopes   : Nat := 0;
+      N_Instances  : Nat := 0;
       Removed      : Boolean := False;
       S            : Entity_Id;
       Vis          : Boolean;
@@ -11606,15 +11606,15 @@ package body Sem_Ch12 is
          I2 : Node_Id;
          T2 : Entity_Id;
 
-         function Formal_Dimensions return Int;
+         function Formal_Dimensions return Nat;
          --  Count number of dimensions in array type formal
 
          -----------------------
          -- Formal_Dimensions --
          -----------------------
 
-         function Formal_Dimensions return Int is
-            Num   : Int := 0;
+         function Formal_Dimensions return Nat is
+            Num   : Nat := 0;
             Index : Node_Id;
 
          begin
@@ -13348,7 +13348,7 @@ package body Sem_Ch12 is
    procedure Preanalyze_Actuals (N : Node_Id; Inst : Entity_Id := Empty) is
       Assoc : Node_Id;
       Act   : Node_Id;
-      Errs  : constant Int := Serious_Errors_Detected;
+      Errs  : constant Nat := Serious_Errors_Detected;
 
       Cur : Entity_Id := Empty;
       --  Current homograph of the instance name

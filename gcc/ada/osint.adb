@@ -157,7 +157,7 @@ package body Osint is
    EOL : constant Character := ASCII.LF;
    --  End of line character
 
-   Number_File_Names : Int := 0;
+   Number_File_Names : Nat := 0;
    --  Number of file names found on command line and placed in File_Names
 
    Look_In_Primary_Directory_For_Current_Main : Boolean := False;
@@ -2094,7 +2094,7 @@ package body Osint is
    -- Number_Of_Files --
    ---------------------
 
-   function Number_Of_Files return Int is
+   function Number_Of_Files return Nat is
    begin
       return Number_File_Names;
    end Number_Of_Files;
