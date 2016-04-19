@@ -249,7 +249,7 @@ namespace
   typedef struct ::stat stat_type;
 
   inline fs::file_type
-  make_file_type(const stat_type& st)
+  make_file_type(const stat_type& st) noexcept
   {
     using fs::file_type;
 #ifdef _GLIBCXX_HAVE_S_ISREG
@@ -273,7 +273,7 @@ namespace
   }
 
   inline fs::file_status
-  make_file_status(const stat_type& st)
+  make_file_status(const stat_type& st) noexcept
   {
     return fs::file_status{
 	make_file_type(st),
@@ -282,13 +282,13 @@ namespace
   }
 
   inline bool
-  is_not_found_errno(int err)
+  is_not_found_errno(int err) noexcept
   {
     return err == ENOENT || err == ENOTDIR;
   }
 
   inline fs::file_time_type
-  file_time(const stat_type& st)
+  file_time(const stat_type& st) noexcept
   {
     using namespace std::chrono;
     return fs::file_time_type{
