@@ -1,3 +1,31 @@
+2016-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/69201
+	* gcc.target/i386/avx256-unaligned-store-1.c (a): Make it
+	extern to force it misaligned.
+	(b): Likewise.
+	(c): Likewise.
+	(d): Likewise.
+	Check vmovups.*movv8sf_internal/3 instead of avx_storeups256.
+	Don't check `*' before movv4sf_internal.
+	* gcc.target/i386/avx256-unaligned-store-2.c: Check
+	vmovups.*movv32qi_internal/3 instead of avx_storeups256.
+	Don't check `*' before movv16qi_internal.
+	* gcc.target/i386/avx256-unaligned-store-3.c (a): Make it
+	extern to force it misaligned.
+	(b): Likewise.
+	(c): Likewise.
+	(d): Likewise.
+	Check vmovups.*movv4df_internal/3 instead of avx_storeupd256.
+	Don't check `*' before movv2df_internal.
+	* gcc.target/i386/avx256-unaligned-store-4.c (a): Make it
+	extern to force it misaligned.
+	(b): Likewise.
+	(c): Likewise.
+	(d): Likewise.
+	Check movv8sf_internal instead of avx_storeups256.
+	Check movups.*movv4sf_internal/3 instead of avx_storeups256.
+
 2016-04-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70171

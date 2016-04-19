@@ -1,3 +1,181 @@
+2016-04-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/69201
+	* config/i386/avx512bwintrin.h (_mm512_mask_loadu_epi16): Pass
+	const short * to __builtin_ia32_loaddquhi512_mask.
+	(_mm512_maskz_loadu_epi16): Likewise.
+	(_mm512_mask_storeu_epi16): Pass short * to
+	__builtin_ia32_storedquhi512_mask.
+	(_mm512_mask_loadu_epi8): Pass const char * to
+	__builtin_ia32_loaddquqi512_mask.
+	(_mm512_maskz_loadu_epi8): Likewise.
+	(_mm512_mask_storeu_epi8): Pass char * to
+	__builtin_ia32_storedquqi512_mask.
+	* config/i386/avx512fintrin.h (_mm512_loadu_pd): Pass
+	const double * to __builtin_ia32_loadupd512_mask.
+	(_mm512_mask_loadu_pd): Likewise.
+	(_mm512_maskz_loadu_pd): Likewise.
+	(_mm512_storeu_pd): Pass double * to
+	__builtin_ia32_storeupd512_mask.
+	(_mm512_mask_storeu_pd): Likewise.
+	(_mm512_loadu_ps): Pass const float * to
+	__builtin_ia32_loadups512_mask.
+	(_mm512_mask_loadu_ps): Likewise.
+	(_mm512_maskz_loadu_ps): Likewise.
+	(_mm512_storeu_ps): Pass float * to
+	__builtin_ia32_storeups512_mask.
+	(_mm512_mask_storeu_ps): Likewise.
+	(_mm512_mask_loadu_epi64): Pass const long long * to
+	__builtin_ia32_loaddqudi512_mask.
+	(_mm512_maskz_loadu_epi64): Likewise.
+	(_mm512_mask_storeu_epi64): Pass long long *
+	to __builtin_ia32_storedqudi512_mask.
+	(_mm512_loadu_si512): Pass const int * to
+	__builtin_ia32_loaddqusi512_mask.
+	(_mm512_mask_loadu_epi32): Likewise.
+	(_mm512_maskz_loadu_epi32): Likewise.
+	(_mm512_storeu_si512): Pass int * to
+	__builtin_ia32_storedqusi512_mask.
+	(_mm512_mask_storeu_epi32): Likewise.
+	* config/i386/avx512vlbwintrin.h (_mm256_mask_storeu_epi8): Pass
+	char * to __builtin_ia32_storedquqi256_mask.
+	(_mm_mask_storeu_epi8): Likewise.
+	(_mm256_mask_loadu_epi16): Pass const short * to
+	__builtin_ia32_loaddquhi256_mask.
+	(_mm256_maskz_loadu_epi16): Likewise.
+	(_mm_mask_loadu_epi16): Pass const short * to
+	__builtin_ia32_loaddquhi128_mask.
+	(_mm_maskz_loadu_epi16): Likewise.
+	(_mm256_mask_loadu_epi8): Pass const char * to
+	__builtin_ia32_loaddquqi256_mask.
+	(_mm256_maskz_loadu_epi8): Likewise.
+	(_mm_mask_loadu_epi8): Pass const char * to
+	__builtin_ia32_loaddquqi128_mask.
+	(_mm_maskz_loadu_epi8): Likewise.
+	(_mm256_mask_storeu_epi16): Pass short * to.
+	__builtin_ia32_storedquhi256_mask.
+	(_mm_mask_storeu_epi16): Pass short * to.
+	__builtin_ia32_storedquhi128_mask.
+	* config/i386/avx512vlintrin.h (_mm256_mask_loadu_pd): Pass
+	const double * to __builtin_ia32_loadupd256_mask.
+	(_mm256_maskz_loadu_pd): Likewise.
+	(_mm_mask_loadu_pd): Pass onst double * to
+	__builtin_ia32_loadupd128_mask.
+	(_mm_maskz_loadu_pd): Likewise.
+	(_mm256_mask_storeu_pd): Pass double * to
+	__builtin_ia32_storeupd256_mask.
+	(_mm_mask_storeu_pd): Pass double * to
+	__builtin_ia32_storeupd128_mask.
+	(_mm256_mask_loadu_ps): Pass const float * to
+	__builtin_ia32_loadups256_mask.
+	(_mm256_maskz_loadu_ps): Likewise.
+	(_mm_mask_loadu_ps): Pass const float * to
+	__builtin_ia32_loadups128_mask.
+	(_mm_maskz_loadu_ps): Likewise.
+	(_mm256_mask_storeu_ps): Pass float * to
+	__builtin_ia32_storeups256_mask.
+	(_mm_mask_storeu_ps): ass float * to
+	__builtin_ia32_storeups128_mask.
+	(_mm256_mask_loadu_epi64): Pass const long long * to
+	__builtin_ia32_loaddqudi256_mask.
+	(_mm256_maskz_loadu_epi64): Likewise.
+	(_mm_mask_loadu_epi64): Pass const long long * to
+	__builtin_ia32_loaddqudi128_mask.
+	(_mm_maskz_loadu_epi64): Likewise.
+	(_mm256_mask_storeu_epi64): Pass long long * to
+	__builtin_ia32_storedqudi256_mask.
+	(_mm_mask_storeu_epi64): Pass long long * to
+	__builtin_ia32_storedqudi128_mask.
+	(_mm256_mask_loadu_epi32): Pass const int * to
+	__builtin_ia32_loaddqusi256_mask.
+	(_mm256_maskz_loadu_epi32): Likewise.
+	(_mm_mask_loadu_epi32): Pass const int * to
+	__builtin_ia32_loaddqusi128_mask.
+	(_mm_maskz_loadu_epi32): Likewise.
+	(_mm256_mask_storeu_epi32): Pass int * to
+	__builtin_ia32_storedqusi256_mask.
+	(_mm_mask_storeu_epi32): Pass int * to
+	__builtin_ia32_storedqusi128_mask.
+	* config/i386/i386-builtin-types.def (PCSHORT): New.
+	(PINT64): Likewise.
+	(V64QI_FTYPE_PCCHAR_V64QI_UDI): Likewise.
+	(V32HI_FTYPE_PCSHORT_V32HI_USI): Likewise.
+	(V32QI_FTYPE_PCCHAR_V32QI_USI): Likewise.
+	(V16SF_FTYPE_PCFLOAT_V16SF_UHI): Likewise.
+	(V8DF_FTYPE_PCDOUBLE_V8DF_UQI): Likewise.
+	(V16SI_FTYPE_PCINT_V16SI_UHI): Likewise.
+	(V16HI_FTYPE_PCSHORT_V16HI_UHI): Likewise.
+	(V16QI_FTYPE_PCCHAR_V16QI_UHI): Likewise.
+	(V8SF_FTYPE_PCFLOAT_V8SF_UQI): Likewise.
+	(V8DI_FTYPE_PCINT64_V8DI_UQI): Likewise.
+	(V8SI_FTYPE_PCINT_V8SI_UQI): Likewise.
+	(V8HI_FTYPE_PCSHORT_V8HI_UQI): Likewise.
+	(V4DF_FTYPE_PCDOUBLE_V4DF_UQI): Likewise.
+	(V4SF_FTYPE_PCFLOAT_V4SF_UQI): Likewise.
+	(V4DI_FTYPE_PCINT64_V4DI_UQI): Likewise.
+	(V4SI_FTYPE_PCINT_V4SI_UQI): Likewise.
+	(V2DF_FTYPE_PCDOUBLE_V2DF_UQI): Likewise.
+	(V2DI_FTYPE_PCINT64_V2DI_UQI): Likewise.
+	(VOID_FTYPE_PDOUBLE_V8DF_UQI): Likewise.
+	(VOID_FTYPE_PDOUBLE_V4DF_UQI): Likewise.
+	(VOID_FTYPE_PDOUBLE_V2DF_UQI): Likewise.
+	(VOID_FTYPE_PFLOAT_V16SF_UHI): Likewise.
+	(VOID_FTYPE_PFLOAT_V8SF_UQI): Likewise.
+	(VOID_FTYPE_PFLOAT_V4SF_UQI): Likewise.
+	(VOID_FTYPE_PINT64_V8DI_UQI): Likewise.
+	(VOID_FTYPE_PINT64_V4DI_UQI): Likewise.
+	(VOID_FTYPE_PINT64_V2DI_UQI): Likewise.
+	(VOID_FTYPE_PINT_V16SI_UHI): Likewise.
+	(VOID_FTYPE_PINT_V8SI_UHI): Likewise.
+	(VOID_FTYPE_PINT_V4SI_UHI): Likewise.
+	(VOID_FTYPE_PSHORT_V32HI_USI): Likewise.
+	(VOID_FTYPE_PSHORT_V16HI_UHI): Likewise.
+	(VOID_FTYPE_PSHORT_V8HI_UQI): Likewise.
+	(VOID_FTYPE_PCHAR_V64QI_UDI): Likewise.
+	(VOID_FTYPE_PCHAR_V32QI_USI): Likewise.
+	(VOID_FTYPE_PCHAR_V16QI_UHI): Likewise.
+	(V64QI_FTYPE_PCV64QI_V64QI_UDI): Removed.
+	(V32HI_FTYPE_PCV32HI_V32HI_USI): Likewise.
+	(V32QI_FTYPE_PCV32QI_V32QI_USI): Likewise.
+	(V16HI_FTYPE_PCV16HI_V16HI_UHI): Likewise.
+	(V16QI_FTYPE_PCV16QI_V16QI_UHI): Likewise.
+	(V8HI_FTYPE_PCV8HI_V8HI_UQI): Likewise.
+	(VOID_FTYPE_PV32HI_V32HI_USI): Likewise.
+	(VOID_FTYPE_PV16HI_V16HI_UHI): Likewise.
+	(VOID_FTYPE_PV8HI_V8HI_UQI): Likewise.
+	(VOID_FTYPE_PV64QI_V64QI_UDI): Likewise.
+	(VOID_FTYPE_PV32QI_V32QI_USI): Likewise.
+	(VOID_FTYPE_PV16QI_V16QI_UHI): Likewise.
+	* config/i386/i386.c (ix86_emit_save_reg_using_mov): Don't
+	use UNSPEC_STOREU.
+	(ix86_emit_restore_sse_regs_using_mov): Don't use UNSPEC_LOADU.
+	(ix86_avx256_split_vector_move_misalign): Don't use unaligned
+	load nor store.
+	(ix86_expand_vector_move_misalign): Likewise.
+	(bdesc_special_args): Use CODE_FOR_movvNXY_internal and pointer
+	to scalar function prototype for unaligned load/store builtins.
+	(ix86_expand_special_args_builtin): Updated.
+	* config/i386/sse.md (UNSPEC_LOADU): Removed.
+	(UNSPEC_STOREU): Likewise.
+	(VI_ULOADSTORE_BW_AVX512VL): Likewise.
+	(VI_ULOADSTORE_F_AVX512VL): Likewise.
+	(ssescalarsize): Handle V4TI, V2TI and V1TI.
+	(<sse>_loadu<ssemodesuffix><avxsizesuffix><mask_name>): Likewise.
+	(*<sse>_loadu<ssemodesuffix><avxsizesuffix><mask_name>): Likewise.
+	(<sse>_storeu<ssemodesuffix><avxsizesuffix>): Likewise.
+	(<avx512>_storeu<ssemodesuffix><avxsizesuffix>_mask): Likewise.
+	(<sse2_avx_avx512f>_loaddqu<mode><mask_name>): Likewise.
+	(*<sse2_avx_avx512f>_loaddqu<mode><mask_name>"): Likewise.
+	(sse2_avx_avx512f>_storedqu<mode>): Likewise.
+	(<avx512>_storedqu<mode>_mask): Likewise.
+	(*sse4_2_pcmpestr_unaligned): Likewise.
+	(*sse4_2_pcmpistr_unaligned): Likewise.
+	(*mov<mode>_internal): Renamed to ...
+	(mov<mode>_internal): This.  Remove check of AVX and IAMCU on
+	misaligned operand.  Replace vmovdqu64 with vmovdqu<ssescalarsize>.
+	(movsd/movhpd to movupd peephole): Don't use UNSPEC_LOADU.
+	(movlpd/movhpd to movupd peephole): Don't use UNSPEC_STOREU.
+
 2016-04-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70171
