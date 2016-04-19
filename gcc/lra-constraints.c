@@ -1258,6 +1258,10 @@ static bool goal_alt_swapped;
 /* The chosen insn alternative.	 */
 static int goal_alt_number;
 
+/* True if the corresponding operand is the result of an equivalence
+   substitution.  */
+static bool equiv_substition_p[MAX_RECOG_OPERANDS];
+
 /* The following five variables are used to choose the best insn
    alternative.	 They reflect final characteristics of the best
    alternative.	 */
@@ -2064,7 +2068,10 @@ process_alt_operands (int only_alternative)
 			 memory, or make other memory by reloading the
 			 address like for 'o'.  */
 		      if (CONST_POOL_OK_P (mode, op)
-			  || MEM_P (op) || REG_P (op))
+			  || MEM_P (op) || REG_P (op)
+			  /* We can restore the equiv insn by a
+			     reload.  */
+			  || equiv_substition_p[nop])
 			badop = false;
 		      constmemok = true;
 		      offmemok = true;
@@ -3371,6 +3378,7 @@ swap_operands (int nop)
   std::swap (curr_operand_mode[nop], curr_operand_mode[nop + 1]);
   std::swap (original_subreg_reg_mode[nop], original_subreg_reg_mode[nop + 1]);
   std::swap (*curr_id->operand_loc[nop], *curr_id->operand_loc[nop + 1]);
+  std::swap (equiv_substition_p[nop], equiv_substition_p[nop + 1]);
   /* Swap the duplicates too.  */
   lra_update_dup (curr_id, nop);
   lra_update_dup (curr_id, nop + 1);
@@ -3473,8 +3481,10 @@ curr_insn_transform (bool check_only_p)
 	  old = SUBREG_REG (old);
 	subst = get_equiv_with_elimination (old, curr_insn);
 	original_subreg_reg_mode[i] = VOIDmode;
+	equiv_substition_p[i] = false;
 	if (subst != old)
 	  {
+	    equiv_substition_p[i] = true;
 	    subst = copy_rtx (subst);
 	    lra_assert (REG_P (old));
 	    if (GET_CODE (op) != SUBREG)
