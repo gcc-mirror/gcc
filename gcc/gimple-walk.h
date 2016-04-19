@@ -28,6 +28,7 @@ struct walk_stmt_info
 {
   /* Points to the current statement being walked.  */
   gimple_stmt_iterator gsi;
+  gimple *stmt;
 
   /* Additional data that the callback functions may want to carry
      through the recursion.  */
