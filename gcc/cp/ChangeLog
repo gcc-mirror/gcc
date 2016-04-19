@@ -1,5 +1,11 @@
 2016-04-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66543
+	* expr.c (mark_exp_read): Handle NON_DEPENDENT_EXPR.
+	* pt.c (make_pack_expansion): Call mark_exp_read.
+	* semantics.c (finish_id_expression): Call mark_type_use in
+	unevaluated context.
+
 	DR 2137
 	* call.c (implicit_conversion): If we choose a copy constructor
 	for list-initialization from the same type, the conversion is an
