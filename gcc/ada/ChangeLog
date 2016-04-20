@@ -1,5 +1,9 @@
 2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_unst.adb: Minor reformatting.
+
+2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_ch4.adb (Expand_Allocator_Expression): Ensure that the
 	tag assignment and adjustment preceed the accessibility check.
 	* exp_ch7.adb (Is_Subprogram_Call): Reimplemented.

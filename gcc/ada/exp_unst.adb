@@ -145,6 +145,7 @@ package body Exp_Unst is
    function Get_Level (Subp : Entity_Id; Sub : Entity_Id) return Nat is
       Lev : Nat;
       S   : Entity_Id;
+
    begin
       Lev := 1;
       S   := Sub;
@@ -152,8 +153,8 @@ package body Exp_Unst is
          if S = Subp then
             return Lev;
          else
-            S := Enclosing_Subprogram (S);
             Lev := Lev + 1;
+            S   := Enclosing_Subprogram (S);
          end if;
       end loop;
    end Get_Level;
