@@ -1152,8 +1152,8 @@ package Sem_Util is
    --  Returns true if the Typ_Ent implements interface Iface_Ent
 
    function In_Assertion_Expression_Pragma (N : Node_Id) return Boolean;
-   --  Determine whether an arbitrary node appears in a pragma that acts as an
-   --  assertion expression. See Sem_Prag for the list of qualifying pragmas.
+   --  Returns True if node N appears within a pragma that acts as an assertion
+   --  expression. See Sem_Prag for the list of qualifying pragmas.
 
    function In_Instance return Boolean;
    --  Returns True if the current scope is within a generic instance
@@ -1178,6 +1178,10 @@ package Sem_Util is
 
    function In_Pragma_Expression (N : Node_Id; Nam : Name_Id) return Boolean;
    --  Returns true if the expression N occurs within a pragma with name Nam
+
+   function In_Pre_Post_Condition (N : Node_Id) return Boolean;
+   --  Returns True if node N appears within a pre/postcondition pragma. Note
+   --  the pragma Check equivalents are NOT considered.
 
    function In_Reverse_Storage_Order_Object (N : Node_Id) return Boolean;
    --  Returns True if N denotes a component or subcomponent in a record or
