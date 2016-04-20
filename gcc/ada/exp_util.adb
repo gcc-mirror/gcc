@@ -4075,22 +4075,6 @@ package body Exp_Util is
                   end if;
 
                   return;
-
-               --  Iteration scheme located in a transient scope
-
-               elsif Nkind (P) = N_Iteration_Scheme
-                 and then Present (Wrapped_Node)
-               then
-                  --  If the enclosing iterator loop is marked as requiring the
-                  --  secondary stack then the actions must be inserted in the
-                  --  transient scope.
-
-                  if Uses_Sec_Stack
-                       (Find_Enclosing_Iterator_Loop (Current_Scope))
-                  then
-                     Store_Before_Actions_In_Scope (Ins_Actions);
-                     return;
-                  end if;
                end if;
 
             --  Statements, declarations, pragmas, representation clauses
