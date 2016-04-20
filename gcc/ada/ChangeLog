@@ -1,3 +1,25 @@
+2016-04-20  Yannick Moy  <moy@adacore.com>
+
+	* osint.adb (Relocate_Path): Fix test when Path is shorter than Prefix.
+	* einfo.adb (Set_Overridden_Operation): Add assertion.
+	* sem_util.adb (Unique_Entity): for renaming-as-body return the spec
+	entity.
+
+2016-04-20  Javier Miranda  <miranda@adacore.com>
+
+	* exp_unst.adb (Append_Unique_Call): New subprogram.
+	(Unnest_Subprogram): Replace the unique occurrence
+	of Call.Append() by Append_Unique_Call() which protects us from
+	adding to the Calls table duplicated entries.
+
+2016-04-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_attr.adb (Is_GCC_Target): Fix for C backend.
+	* xref_lib.ads (Dependencies_Tables): instantiate
+	Table package with types that guarantee its safe use.
+	* s-imgllu.adb, s-imgint.adb, s-imguns.adb, s-imglli.adb: Avoid nested
+	procedures.
+
 2016-04-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_attr.adb (Expand_N_Attribute_Reference [Attribute_Valid]):

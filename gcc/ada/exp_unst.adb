@@ -80,6 +80,10 @@ package body Exp_Unst is
    --  that are to other subprograms nested within the outer subprogram. These
    --  are the calls that may need an additional parameter.
 
+   procedure Append_Unique_Call (Call : Call_Entry);
+   --  Append a call entry to the Calls table. A check is made to see if the
+   --  table already contains this entry and if so it has no effect.
+
    -----------
    -- Urefs --
    -----------
@@ -118,6 +122,21 @@ package body Exp_Unst is
      Table_Initial        => 100,
      Table_Increment      => 200,
      Table_Name           => "Unnest_Urefs");
+
+   ------------------------
+   -- Append_Unique_Call --
+   ------------------------
+
+   procedure Append_Unique_Call (Call : Call_Entry) is
+   begin
+      for J in Calls.First .. Calls.Last loop
+         if Calls.Table (J) = Call then
+            return;
+         end if;
+      end loop;
+
+      Calls.Append (Call);
+   end Append_Unique_Call;
 
    -----------------------
    -- Unnest_Subprogram --
@@ -520,7 +539,7 @@ package body Exp_Unst is
                      --  Both caller and callee must be subprograms
 
                      if Is_Subprogram (Ent) then
-                        Calls.Append ((N, Current_Subprogram, Ent));
+                        Append_Unique_Call ((N, Current_Subprogram, Ent));
                      end if;
                   end if;
                end if;
