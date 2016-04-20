@@ -1,3 +1,8 @@
+2016-04-20  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/69489
+	* gcc.dg/tree-ssa/ifc-pr69489-2.c: New test.
+
 2016-04-20  Ilya Verbin  <ilya.verbin@intel.com>
 
 	PR c++/69363

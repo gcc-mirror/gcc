@@ -575,6 +575,65 @@ bb_with_exit_edge_p (struct loop *loop, basic_block bb)
   return false;
 }
 
+/* Given PHI which has more than two arguments, this function checks if
+   it's if-convertible by degenerating its arguments.  Specifically, if
+   below two conditions are satisfied:
+
+     1) Number of PHI arguments with different values equals to 2 and one
+	argument has the only occurrence.
+     2) The edge corresponding to the unique argument isn't critical edge.
+
+   Such PHI can be handled as PHIs have only two arguments.  For example,
+   below PHI:
+
+     res = PHI <A_1(e1), A_1(e2), A_2(e3)>;
+
+   can be transformed into:
+
+     res = (predicate of e3) ? A_2 : A_1;
+
+   Return TRUE if it is the case, FALSE otherwise.  */
+
+static bool
+phi_convertible_by_degenerating_args (gphi *phi)
+{
+  edge e;
+  tree arg, t1 = NULL, t2 = NULL;
+  unsigned int i, i1 = 0, i2 = 0, n1 = 0, n2 = 0;
+  unsigned int num_args = gimple_phi_num_args (phi);
+
+  gcc_assert (num_args > 2);
+
+  for (i = 0; i < num_args; i++)
+    {
+      arg = gimple_phi_arg_def (phi, i);
+      if (t1 == NULL || operand_equal_p (t1, arg, 0))
+	{
+	  n1++;
+	  i1 = i;
+	  t1 = arg;
+	}
+      else if (t2 == NULL || operand_equal_p (t2, arg, 0))
+	{
+	  n2++;
+	  i2 = i;
+	  t2 = arg;
+	}
+      else
+	return false;
+    }
+
+  if (n1 != 1 && n2 != 1)
+    return false;
+
+  /* Check if the edge corresponding to the unique arg is critical.  */
+  e = gimple_phi_arg_edge (phi, (n1 == 1) ? i1 : i2);
+  if (EDGE_COUNT (e->src->succs) > 1)
+    return false;
+
+  return true;
+}
+
 /* Return true when PHI is if-convertible.  PHI is part of loop LOOP
    and it belongs to basic block BB.
 
@@ -601,10 +660,11 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, gphi *phi,
   if (bb != loop->header)
     {
       if (gimple_phi_num_args (phi) != 2
-	  && !aggressive_if_conv)
+	  && !aggressive_if_conv
+	  && !phi_convertible_by_degenerating_args (phi))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "More than two phi node args.\n");
+	    fprintf (dump_file, "Phi can't be predicated by single cond.\n");
 	  return false;
         }
     }
@@ -1001,10 +1061,6 @@ if_convertible_bb_p (struct loop *loop, basic_block bb, basic_block exit_bb)
     fprintf (dump_file, "----------[%d]-------------\n", bb->index);
 
   if (EDGE_COUNT (bb->succs) > 2)
-    return false;
-
-  if (EDGE_COUNT (bb->preds) > 2
-      && !aggressive_if_conv)
     return false;
 
   if (exit_bb)
