@@ -1,3 +1,11 @@
+2016-04-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/55635
+	* init.c (build_vec_delete_1): Protect operator delete call in try
+	finally.
+	(build_delete): Likewise.
+	* optimize.c (build_delete_destructor_body): Likewise.
+
 2016-04-20  Ilya Verbin  <ilya.verbin@intel.com>
 
 	PR c++/69363

@@ -1,3 +1,8 @@
+2016-04-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/55635
+	* g++.dg/eh/delete1.C: New.
+
 2016-04-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/avx256-unaligned-store-2.c: Add
