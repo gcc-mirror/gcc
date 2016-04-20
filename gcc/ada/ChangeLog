@@ -1,3 +1,20 @@
+2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Add_Invariant): Do not replace
+	the saved expression of an invariatn aspect when inheriting
+	a class-wide type invariant as this clobbers the existing
+	expression. Do not use New_Copy_List as it is unnecessary
+	and leaves the parent pointers referencing the wrong part of
+	the tree. Do not replace the type references for ASIS when
+	inheriting a class-wide type invariant as this clobbers the
+	existing replacement.
+
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Build_Explicit_Dereference): If the designated
+	expression is an entity name, generate reference to the entity
+	because it will not be resolved again.
+
 2016-04-19  Arnaud Charlet  <charlet@adacore.com>
 
 	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst,
