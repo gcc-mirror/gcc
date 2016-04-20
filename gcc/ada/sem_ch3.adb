@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -11820,8 +11820,17 @@ package body Sem_Ch3 is
       --  in particular when the full type is a scalar type for which an
       --  anonymous base type is constructed.
 
+      --  The predicate functions are generated either at the freeze point
+      --  of the type or at the end of the visible part, and we must avoid
+      --  generating them twice.
+
       if Has_Predicates (Priv) then
          Set_Has_Predicates (Full);
+         if Present (Predicate_Function (Priv))
+            and then No (Predicate_Function (Full))
+         then
+            Set_Predicate_Function (Full, Predicate_Function (Priv));
+         end if;
       end if;
 
       if Has_Delayed_Aspects (Priv) then

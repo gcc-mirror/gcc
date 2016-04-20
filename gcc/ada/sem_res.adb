@@ -10847,6 +10847,23 @@ package body Sem_Res is
       then
          Set_Do_Range_Check (Operand);
       end if;
+
+      --  Generating C code a type conversion of an access to constrained
+      --  array type to access to unconstrained array type involves building
+      --  a fat pointer which in general cannot be generated on the fly. We
+      --  remove side effects in order to store the result of the conversion
+      --  into a temporary.
+
+      if Generate_C_Code
+        and then Nkind (N) = N_Type_Conversion
+        and then Nkind (Parent (N)) /= N_Object_Declaration
+        and then Is_Access_Type (Etype (N))
+        and then Is_Array_Type (Designated_Type (Etype (N)))
+        and then not Is_Constrained (Designated_Type (Etype (N)))
+        and then Is_Constrained (Designated_Type (Etype (Expression (N))))
+      then
+         Remove_Side_Effects (N);
+      end if;
    end Resolve_Type_Conversion;
 
    ----------------------

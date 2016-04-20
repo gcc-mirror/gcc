@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -440,7 +440,7 @@ begin
 
          --  At this stage we can unnest subprogram bodies if required
 
-         Exp_Ch6.Unnest_Subprograms;
+         Exp_Ch6.Unnest_Subprograms (Cunit (Main_Unit));
 
          --  List library units if requested
 

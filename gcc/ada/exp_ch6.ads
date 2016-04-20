@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -212,9 +212,9 @@ package Exp_Ch6 is
    --  parameter to identify the accessibility level of the function result
    --  "determined by the point of call".
 
-   procedure Unnest_Subprograms;
-   --  Called to unnest subprograms. If we are in unnest subprogram mode, and
-   --  subprograms have been gathered in the Unest_Bodies table, this is the
-   --  call that causes them to be processed for unnesting.
+   procedure Unnest_Subprograms (N : Node_Id);
+   --  Called to unnest subprograms. If we are in unnest subprogram mode, this
+   --  is the call that traverses the tree N and locates all the library level
+   --  subprograms with nested subprograms to process them.
 
 end Exp_Ch6;

@@ -1,3 +1,53 @@
+2016-04-20  Bob Duff  <duff@adacore.com>
+
+	* s-os_lib.ads: Minor comment fix.
+
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Do no generate
+	a discriminant check for a type whose partial view has unknown
+	discriminants when the full view has discriminants with defaults.
+
+2016-04-20  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): When generating C code
+	remove side effect of type conversion of access to unconstrained
+	array type.
+	(Side_Effect_Free): Return false for the type
+	conversion of access to unconstrained array type when generating
+	C code.
+	* sem_res.adb (Resolved_Type_Conversion): Remove side effects
+	of access to unconstrained array type conversion when generating
+	C code.
+
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Function_Declaration): New
+	function, to construct the declaration of a predicate function
+	at the end of the current declarative part rather than at the
+	(possibly later) freeze point of the type. This also allows uses
+	of a type with predicates in instantiations elsewhere.
+	(Resolve_Aspect_Expression): New procedure to detect visiblity
+	errors in aspect expressions, at the end of the declarative part
+	that includes the type declaration.
+	* sem_ch3.adb (Complete_Private_Subtype): Propagate properly the
+	predicate function from private to full view.
+	* einfo.adb (Predicate_Function): Refine search for predicate
+	function when type has a full view and predicate function may
+	be defined on either view.
+
+2016-04-20  Javier Miranda  <miranda@adacore.com>
+
+	* frontend.adb: Passing the root of the tree to
+	Unnest_Subprograms().
+	* exp_ch6.adb (Expand_N_Subprogram_Body): Remove code that
+	took care of adding subprograms to the Unest_Bodies table since
+	performing such action too early disables the ability to process
+	generic instantiations.
+	(Unnest_Subprograms): Adding parameter.
+	(Search_Unnesting_Subprograms): New subprogram.
+	* exp_ch6.ads (Unnest_Subrograms): Update documentation.
+
 2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_util.adb, freeze.adb, sem_util.adb: Minor reformatting.
