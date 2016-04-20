@@ -14344,7 +14344,8 @@ package body Sem_Util is
 
    begin
       --  Look for a function whose generic parent is the predefined intrinsic
-      --  function Unchecked_Conversion.
+      --  function Unchecked_Conversion, or for one that renames such an
+      --  instance.
 
       if Ekind (Id) = E_Function then
          Par := Parent (Id);
@@ -14352,12 +14353,16 @@ package body Sem_Util is
          if Nkind (Par) = N_Function_Specification then
             Par := Generic_Parent (Par);
 
-            return
-              Present (Par)
-                and then Chars (Par) = Name_Unchecked_Conversion
-                and then Is_Intrinsic_Subprogram (Par)
-                and then Is_Predefined_File_Name
-                           (Unit_File_Name (Get_Source_Unit (Par)));
+            if Present (Par) then
+               return
+                 Chars (Par) = Name_Unchecked_Conversion
+                   and then Is_Intrinsic_Subprogram (Par)
+                   and then Is_Predefined_File_Name
+                              (Unit_File_Name (Get_Source_Unit (Par)));
+            else
+               return Present (Alias (Id))
+                 and then Is_Unchecked_Conversion_Instance (Alias (Id));
+            end if;
          end if;
       end if;
 

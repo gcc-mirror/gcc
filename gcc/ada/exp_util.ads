@@ -238,6 +238,10 @@ package Exp_Util is
    --  must be a free statement. If flag Is_Allocate is set, the generated
    --  routine is allocate, deallocate otherwise.
 
+   procedure Build_Procedure_Form (N : Node_Id);
+   --  Create a procedure declaration which emulates the behavior of a function
+   --  that returns an array type, for C-compatible generation.
+
    function Build_Runtime_Call (Loc : Source_Ptr; RE : RE_Id) return Node_Id;
    --  Build an N_Procedure_Call_Statement calling the given runtime entity.
    --  The call has no parameters. The first argument provides the location

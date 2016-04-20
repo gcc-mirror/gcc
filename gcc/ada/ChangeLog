@@ -1,3 +1,24 @@
+2016-04-20  Bob Duff  <duff@adacore.com>
+
+	* sem_ch6.adb (Enter_Overloaded_Entity): Do not warn about
+	hiding unless we're actually hiding something. The previous
+	code would (for example) warn about a "<" on a record type
+	because it incorrectly thought it was hiding the "<" on Boolean
+	in Standard. We need to check that the homonym S is in fact a
+	homograph of a predefined operator.
+
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.ads, exp_util.adb (Build_Procedure_Form): Moved here
+	from exp_ch6.adb, for use in SPARK_To_C mode when creating the
+	procedure equivalent to a function returning an array, when this
+	construction is deferred to the freeze point of the function.
+	* sem_util.adb (Is_Unchecked_Conversion_Instance): Include a
+	function that renames an instance of Unchecked_Conversion.
+	* freeze.adb (Freeze_Subprogram): Generate the proper procedure
+	declaration for a function returning an array.
+	* exp_ch6.adb (Build_Procedure_Form): Moved to exp_util.
+
 2016-04-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.ads, sem_util.adb (Is_Expanded_Priority_Attribute):
