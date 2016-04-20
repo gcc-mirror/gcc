@@ -1,6 +1,14 @@
 2016-04-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2016-04-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/70503
+	* src/c++11/thread.cc (execute_native_thread_routine,
+	execute_native_thread_routine_compat): Give internal linkage.
+	* testsuite/30_threads/thread/70503.cc: New test.
+
+	Backport from mainline
 	2016-01-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/69464

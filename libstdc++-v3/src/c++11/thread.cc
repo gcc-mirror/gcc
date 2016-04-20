@@ -70,9 +70,9 @@ static inline int get_nprocs()
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-  namespace
+  extern "C"
   {
-    extern "C" void*
+    static void*
     execute_native_thread_routine(void* __p)
     {
       thread::_Impl_base* __t = static_cast<thread::_Impl_base*>(__p);
@@ -94,7 +94,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
       return nullptr;
     }
-  }
+  } // extern "C"
 
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
