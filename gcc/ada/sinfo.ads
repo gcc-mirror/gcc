@@ -879,9 +879,9 @@ package Sinfo is
    --    Present in subprogram declarations. Denotes analyzed but unexpanded
    --    body of subprogram, to be used when inlining calls. Present when the
    --    subprogram has an Inline pragma and inlining is enabled. If the
-   --    declaration is completed by a renaming_as_body, and the renamed en-
-   --    tity is a subprogram, the Body_To_Inline is the name of that entity,
-   --    which is used directly in later calls to the original subprogram.
+   --    declaration is completed by a renaming_as_body, and the renamed entity
+   --    is a subprogram, the Body_To_Inline is the name of that entity, which
+   --    is used directly in later calls to the original subprogram.
 
    --  Body_Required (Flag13-Sem)
    --    A flag that appears in the N_Compilation_Unit node indicating that
