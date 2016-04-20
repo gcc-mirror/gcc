@@ -545,6 +545,8 @@ package body Exp_Aggr is
 
    --   10. No controlled actions need to be generated for components
 
+   --   11. When generating C code, N must be part of a N_Object_Declaration
+
    function Backend_Processing_Possible (N : Node_Id) return Boolean is
       Typ : constant Entity_Id := Etype (N);
       --  Typ is the correct constrained array subtype of the aggregate
@@ -566,6 +568,17 @@ package body Exp_Aggr is
          --  Checks 1: (no component associations)
 
          if Present (Component_Associations (N)) then
+            return False;
+         end if;
+
+         --  Checks 11: (part of an object declaration)
+
+         if Generate_C_Code
+           and then Nkind (Parent (N)) /= N_Object_Declaration
+           and then
+             (Nkind (Parent (N)) /= N_Qualified_Expression
+               or else Nkind (Parent (Parent (N))) /= N_Object_Declaration)
+         then
             return False;
          end if;
 

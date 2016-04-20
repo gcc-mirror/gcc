@@ -1,3 +1,26 @@
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Rep_Item_Too_Late): Better error message for
+	an illegal aspect that freezes the entity to which it applies.
+
+2016-04-20  Bob Duff  <duff@adacore.com>
+
+	* a-stwibo.ads, a-stzbou.ads
+	("="): Add overriding keyword before function to avoid crash when
+	compiler is called with -gnatyO (check overriding indicators).
+
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Check_Policy):  If this
+	is a configuration pragma and it uses the ARG syntax, insert
+	the rewritten pragma after the current one rather than using
+	Insert_Actions.
+
+2016-04-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb (Backend_Processing_Possible): Add handling of
+	C back-end.
+
 2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* s-imgllu.adb, sem_util.adb, s-imgint.adb, s-imguns.adb,

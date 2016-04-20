@@ -12286,6 +12286,18 @@ package body Sem_Ch13 is
 
         and then Comes_From_Source (T)
       then
+         --  A self-referential aspect is illegal if it forces freezing the
+         --  entity before the corresponding pragma has been analyzed.
+
+         if Nkind_In (N, N_Attribute_Definition_Clause, N_Pragma)
+           and then From_Aspect_Specification (N)
+         then
+            Error_Msg_NE
+              ("aspect specification causes premature freezing of&", T, N);
+            Set_Has_Delayed_Freeze (T, False);
+            return True;
+         end if;
+
          Too_Late;
          S := First_Subtype (T);
 
