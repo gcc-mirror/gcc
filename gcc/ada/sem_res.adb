@@ -6509,13 +6509,27 @@ package body Sem_Res is
    -----------------------------
 
    procedure Resolve_Case_Expression (N : Node_Id; Typ : Entity_Id) is
-      Alt    : Node_Id;
-      Is_Dyn : Boolean;
+      Alt      : Node_Id;
+      Alt_Expr : Node_Id;
+      Alt_Typ  : Entity_Id;
+      Is_Dyn   : Boolean;
 
    begin
       Alt := First (Alternatives (N));
       while Present (Alt) loop
-         Resolve (Expression (Alt), Typ);
+         Alt_Expr := Expression (Alt);
+         Resolve (Alt_Expr, Typ);
+         Alt_Typ := Etype (Alt_Expr);
+
+         --  When the expression is of a scalar subtype different from the
+         --  result subtype, then insert a conversion to ensure the generation
+         --  of a constraint check.
+
+         if Is_Scalar_Type (Alt_Typ) and then Alt_Typ /= Typ then
+            Rewrite (Alt_Expr, Convert_To (Typ, Alt_Expr));
+            Analyze_And_Resolve (Alt_Expr, Typ);
+         end if;
+
          Next (Alt);
       end loop;
 
@@ -6523,13 +6537,14 @@ package body Sem_Res is
       --  dynamically tagged must be known statically.
 
       if Is_Tagged_Type (Typ) and then not Is_Class_Wide_Type (Typ) then
-         Alt := First (Alternatives (N));
+         Alt    := First (Alternatives (N));
          Is_Dyn := Is_Dynamically_Tagged (Expression (Alt));
 
          while Present (Alt) loop
             if Is_Dynamically_Tagged (Expression (Alt)) /= Is_Dyn then
-               Error_Msg_N ("all or none of the dependent expressions "
-                            & "can be dynamically tagged", N);
+               Error_Msg_N
+                 ("all or none of the dependent expressions can be "
+                  & "dynamically tagged", N);
             end if;
 
             Next (Alt);

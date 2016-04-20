@@ -2175,12 +2175,12 @@ package body Sem_Ch4 is
          begin
             Set_Etype (N, Any_Type);
 
-            --  Loop through intepretations of Then_Expr
+            --  Loop through interpretations of Then_Expr
 
             Get_First_Interp (Then_Expr, I, It);
             while Present (It.Nam) loop
 
-               --  Add possible intepretation of Then_Expr if no Else_Expr, or
+               --  Add possible interpretation of Then_Expr if no Else_Expr, or
                --  Else_Expr is present and has a compatible type.
 
                if No (Else_Expr)

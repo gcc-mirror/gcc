@@ -1,3 +1,8 @@
+2016-04-20  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch4.adb: Fix typos in comments.
+	* sem_res.adb (Resolve_Case_Expression): Fix type of case alternatives.
+
 2016-04-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Analyze_Selected_Component): A reference to the
