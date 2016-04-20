@@ -5962,16 +5962,6 @@ package body Sem_Ch3 is
       if Null_Exclusion_Present (Type_Definition (N)) then
          Set_Can_Never_Be_Null (Derived_Type);
 
-         --  What is with the "AND THEN FALSE" here ???
-
-         if Can_Never_Be_Null (Parent_Type)
-           and then False
-         then
-            Error_Msg_NE
-              ("`NOT NULL` not allowed (& already excludes null)",
-                N, Parent_Type);
-         end if;
-
       elsif Can_Never_Be_Null (Parent_Type) then
          Set_Can_Never_Be_Null (Derived_Type);
       end if;
@@ -5983,6 +5973,7 @@ package body Sem_Ch3 is
       --  ??? THIS CODE SHOULD NOT BE HERE REALLY.
 
       Desig_Type := Designated_Type (Derived_Type);
+
       if Is_Composite_Type (Desig_Type)
         and then (not Is_Array_Type (Desig_Type))
         and then Has_Discriminants (Desig_Type)
@@ -13046,6 +13037,18 @@ package body Sem_Ch3 is
 
       if Is_Access_Type (T) then
          T := Designated_Type (T);
+      end if;
+
+      --  In an instance it may be necessary to retrieve the full view of a
+      --  type with unknown discriminants. In other contexts the constraint
+      --  is illegal.
+
+      if In_Instance
+        and then Is_Private_Type (T)
+        and then Has_Unknown_Discriminants (T)
+        and then Present (Full_View (T))
+      then
+         T := Full_View (T);
       end if;
 
       --  Ada 2005 (AI-412): Constrained incomplete subtypes are illegal.
@@ -20745,7 +20748,13 @@ package body Sem_Ch3 is
 
             when Private_Kind =>
                Constrain_Discriminated_Type (Def_Id, S, Related_Nod);
-               Set_Private_Dependents (Def_Id, New_Elmt_List);
+
+               --  The base type may be private but Def_Id may be a full view
+               --  in an instance.
+
+               if Is_Private_Type (Def_Id) then
+                  Set_Private_Dependents (Def_Id, New_Elmt_List);
+               end if;
 
                --  In case of an invalid constraint prevent further processing
                --  since the type constructed is missing expected fields.

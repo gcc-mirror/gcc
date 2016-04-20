@@ -7993,14 +7993,22 @@ package body Exp_Ch7 is
                elsif Ekind_In (S, E_Entry, E_Loop) then
                   exit;
 
-               --  In a procedure or a block, we release on exit of the
-               --  procedure or block. ??? memory leak can be created by
-               --  recursive calls.
+               --  In a procedure or a block, release the sec stack on exit
+               --  from the construct. Note that an exception handler with a
+               --  choice parameter requires a declarative region in the form
+               --  of a block. The block does not physically manifest in the
+               --  tree as it only serves as a scope. Do not consider such a
+               --  block because it will never release the sec stack.
 
-               elsif Ekind_In (S, E_Block, E_Procedure) then
+               --  ??? Memory leak can be created by recursive calls
+
+               elsif Ekind (S) = E_Procedure
+                 or else (Ekind (S) = E_Block
+                           and then not Is_Exception_Handler (S))
+               then
+                  Set_Uses_Sec_Stack (Current_Scope, False);
                   Set_Uses_Sec_Stack (S, True);
                   Check_Restriction (No_Secondary_Stack, Action);
-                  Set_Uses_Sec_Stack (Current_Scope, False);
                   exit;
 
                else

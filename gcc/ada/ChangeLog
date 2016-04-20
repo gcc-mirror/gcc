@@ -1,3 +1,30 @@
+2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb Flag286 is now used as Is_Exception_Handler.
+	(Is_Exception_Handler): New routine.
+	(Set_Is_Exception_Handler): New routine.
+	(Write_Entity_Flags): Output the status of Is_Exception_Handler.
+	* einfo.ads New attribute Is_Exception_Handler along with
+	occurrences in entities.
+	(Is_Exception_Handler): New routine along with pragma Inline.
+	(Set_Is_Exception_Handler): New routine along with pragma Inline.
+	* exp_ch7.adb (Make_Transient_Block): Ignore blocks generated
+	for exception handlers with a choice parameter.
+	* sem_ch11.adb (Analyze_Exception_Handlers): Mark the scope
+	generated for a choice parameter as an exception handler.
+
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Access_Type): Remove dead code.
+	(Constrain_Discriminated_Type): In an instance, if the type has
+	unknown discriminants, use its full view.
+	(Process_Subtype): Check that the base type is private before
+	adding subtype to Private_Dependents list.
+
+2016-04-20  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb: Minor comment fix.
+
 2016-04-20  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch4.adb: Fix typos in comments.
