@@ -1,3 +1,18 @@
+2016-04-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* snames.ads-tmpl (Internal_Attribute_Id, Attribute_Class_Array): Fix
+	indentation.
+	* sem_util.adb (Is_Unchecked_Conversion_Instance):
+	defense against library-level renamings of other functions,
+	which are never instances of Unchecked_Conversion.
+	* einfo.ads: minor fix of casing in comment
+
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Subprogram_Stub): Do not expand a body
+	that has been analyzed and expanded already. Qualify the names
+	in the proper body for use in the generation of C code.
+
 2016-04-20  Javier Miranda  <miranda@adacore.com>
 
 	* contracts.adb (Build_Postconditions_Procedure): Force its

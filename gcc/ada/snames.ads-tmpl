@@ -1677,11 +1677,11 @@ package Snames is
       Attribute_Dispatching_Domain,
       Attribute_Interrupt_Priority);
 
-      subtype Internal_Attribute_Id is Attribute_Id range
-        Attribute_CPU .. Attribute_Interrupt_Priority;
+   subtype Internal_Attribute_Id is Attribute_Id range
+     Attribute_CPU .. Attribute_Interrupt_Priority;
 
-      type Attribute_Class_Array is array (Attribute_Id) of Boolean;
-      --  Type used to build attribute classification flag arrays
+   type Attribute_Class_Array is array (Attribute_Id) of Boolean;
+   --  Type used to build attribute classification flag arrays
 
    ------------------------------------
    -- Convention Name ID Definitions --

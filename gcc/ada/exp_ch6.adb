@@ -5521,10 +5521,23 @@ package body Exp_Ch6 is
    -----------------------------------
 
    procedure Expand_N_Subprogram_Body_Stub (N : Node_Id) is
+      Bod : Node_Id;
    begin
       if Present (Corresponding_Body (N)) then
-         Expand_N_Subprogram_Body (
-           Unit_Declaration_Node (Corresponding_Body (N)));
+         Bod := Unit_Declaration_Node (Corresponding_Body (N));
+
+         --  The body may have been expanded already when it is analyzed
+         --  through the subunit node. Do no expand again: it interferes
+         --  with the construction of unnesting tables when generating C.
+
+         if not Analyzed (Bod) then
+            Expand_N_Subprogram_Body (Bod);
+         end if;
+
+         --  Add full qualification to entities that may be created late
+         --  during unnesting.
+
+         Qualify_Entity_Names (N);
       end if;
    end Expand_N_Subprogram_Body_Stub;
 
