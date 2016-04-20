@@ -1,3 +1,16 @@
+2016-04-20  Vincent Celier  <celier@adacore.com>
+
+	* clean.adb (Gnatclean): Fail if project file specified and
+	gprclean is not available.
+	* gnatname.adb: Fail is -P is used and gprname is not available.
+	* make.adb (Initialize): Fail if project file specified and
+	gprbuild is not available.
+
+2016-04-20  Bob Duff  <duff@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Do not use secondary
+	stack when possible.
+
 2016-04-20  Gary Dismukes  <dismukes@adacore.com>
 
 	* par_sco.adb, sem_util.adb, sem_ch13.adb: Minor typo corrections and
