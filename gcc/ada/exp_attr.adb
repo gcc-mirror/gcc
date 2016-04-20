@@ -7988,7 +7988,9 @@ package body Exp_Attr is
 
       function Is_GCC_Target return Boolean is
       begin
-         return not CodePeer_Mode and then not AAMP_On_Target;
+         return not CodePeer_Mode
+           and then not AAMP_On_Target
+           and then not Generate_C_Code;
       end Is_GCC_Target;
 
    --  Start of processing for Exp_Attr

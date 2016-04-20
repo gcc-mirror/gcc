@@ -20138,6 +20138,9 @@ package body Sem_Util is
               and then Present (Corresponding_Spec_Of_Stub (P))
             then
                U := Corresponding_Spec_Of_Stub (P);
+            elsif Nkind (P) = N_Subprogram_Renaming_Declaration
+            then
+               U := Corresponding_Spec (P);
             end if;
 
          when E_Task_Body =>

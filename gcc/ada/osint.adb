@@ -2752,7 +2752,7 @@ package body Osint is
          end if;
       end if;
 
-      if Path (Prefix'Range) = Prefix then
+      if Path'Last >= Prefix'Last and then Path (Prefix'Range) = Prefix then
          if Std_Prefix.all /= "" then
             S := new String
               (1 .. Std_Prefix'Length + Path'Last - Prefix'Last);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,12 @@
 
 package body System.Img_LLI is
 
+   procedure Set_Digits
+     (T : Long_Long_Integer; S : in out String; P : in out Natural);
+   --  Set digits of absolute value of T, which is zero or negative. We work
+   --  with the negative of the value so that the largest negative number is
+   --  not a special case.
+
    -----------------------------
    -- Image_Long_Long_Integer --
    -----------------------------
@@ -53,45 +59,38 @@ package body System.Img_LLI is
       Set_Image_Long_Long_Integer (V, S, P);
    end Image_Long_Long_Integer;
 
-   ------------------------------
+   ----------------
+   -- Set_Digits --
+   ----------------
+
+   procedure Set_Digits
+     (T : Long_Long_Integer; S : in out String; P : in out Natural) is
+   begin
+      if T <= -10 then
+         Set_Digits (T / 10, S, P);
+         P := P + 1;
+         S (P) := Character'Val (48 - (T rem 10));
+      else
+         P := P + 1;
+         S (P) := Character'Val (48 - T);
+      end if;
+   end Set_Digits;
+
+   ---------------------------------
    -- Set_Image_Long_Long_Integer --
-   -----------------------------
+   --------------------------------
 
    procedure Set_Image_Long_Long_Integer
      (V : Long_Long_Integer;
       S : in out String;
-      P : in out Natural)
-   is
-      procedure Set_Digits (T : Long_Long_Integer);
-      --  Set digits of absolute value of T, which is zero or negative. We work
-      --  with the negative of the value so that the largest negative number is
-      --  not a special case.
-
-      ----------------
-      -- Set_Digits --
-      ----------------
-
-      procedure Set_Digits (T : Long_Long_Integer) is
-      begin
-         if T <= -10 then
-            Set_Digits (T / 10);
-            P := P + 1;
-            S (P) := Character'Val (48 - (T rem 10));
-         else
-            P := P + 1;
-            S (P) := Character'Val (48 - T);
-         end if;
-      end Set_Digits;
-
-   --  Start of processing for Set_Image_Long_Long_Integer
-
+      P : in out Natural) is
    begin
       if V >= 0 then
-         Set_Digits (-V);
+         Set_Digits (-V, S, P);
       else
          P := P + 1;
          S (P) := '-';
-         Set_Digits (V);
+         Set_Digits (V, S, P);
       end if;
    end Set_Image_Long_Long_Integer;
 
