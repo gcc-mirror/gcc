@@ -267,9 +267,9 @@ ifc_temp_var (tree type, tree expr, gimple_stmt_iterator *gsi)
 static inline bool
 is_false_predicate (tree cond)
 {
-  return (cond == NULL_TREE
-	  || cond == boolean_false_node
-	  || integer_zerop (cond));
+  return (cond != NULL_TREE
+	  && (cond == boolean_false_node
+	      || integer_zerop (cond)));
 }
 
 /* Return true when COND is a true predicate.  */
