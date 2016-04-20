@@ -1,3 +1,10 @@
+2016-04-20  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/56625
+	PR tree-optimization/69489
+	* gcc.dg/vect/pr56625.c: New test.
+	* gcc.dg/tree-ssa/ifc-pr69489-1.c: New test.
+
 2016-04-20  Andrew Pinski  <apinski@cavium.com>
 
 	PR target/64971

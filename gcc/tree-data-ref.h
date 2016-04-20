@@ -144,6 +144,7 @@ struct data_reference
 #define DR_STEP(DR)                (DR)->innermost.step
 #define DR_PTR_INFO(DR)            (DR)->alias.ptr_info
 #define DR_ALIGNED_TO(DR)          (DR)->innermost.aligned_to
+#define DR_INNERMOST(DR)           (DR)->innermost
 
 typedef struct data_reference *data_reference_p;
 
