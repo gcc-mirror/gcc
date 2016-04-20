@@ -1,3 +1,24 @@
+2016-04-20  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/56625
+	PR tree-optimization/69489
+	* tree-data-ref.h (DR_INNERMOST): New macro.
+	* tree-if-conv.c (innermost_loop_behavior_hash): New class for
+	hashing struct innermost_loop_behavior.
+	(ref_DR_map): Remove.
+	(innermost_DR_map): New map.
+	(baseref_DR_map): Revise comment.
+	(hash_memrefs_baserefs_and_store_DRs_read_written_info): Store DR
+	to innermost_DR_map accroding to its innermost loop behavior.
+	(ifcvt_memrefs_wont_trap): Get DR from innermost_DR_map according
+	to its innermost loop behavior.
+	(if_convertible_loop_p_1): Remove intialization for ref_DR_map.
+	Add initialization for innermost_DR_map.  Record memory reference
+	in DR_BASE_ADDRESS if the reference is compound one or it doesn't
+	have innermost loop behavior.
+	(if_convertible_loop_p): Remove release for ref_DR_map.  Release
+	innermost_DR_map.
+
 2016-04-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*lea<mode>_general_1): Rename from

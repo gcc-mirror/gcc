@@ -114,16 +114,68 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "params.h"
 
+/* Hash for struct innermost_loop_behavior.  It depends on the user to
+   free the memory.  */
+
+struct innermost_loop_behavior_hash : nofree_ptr_hash <innermost_loop_behavior>
+{
+  static inline hashval_t hash (const value_type &);
+  static inline bool equal (const value_type &,
+			    const compare_type &);
+};
+
+inline hashval_t
+innermost_loop_behavior_hash::hash (const value_type &e)
+{
+  hashval_t hash;
+
+  hash = iterative_hash_expr (e->base_address, 0);
+  hash = iterative_hash_expr (e->offset, hash);
+  hash = iterative_hash_expr (e->init, hash);
+  return iterative_hash_expr (e->step, hash);
+}
+
+inline bool
+innermost_loop_behavior_hash::equal (const value_type &e1,
+				     const compare_type &e2)
+{
+  if ((e1->base_address && !e2->base_address)
+      || (!e1->base_address && e2->base_address)
+      || (!e1->offset && e2->offset)
+      || (e1->offset && !e2->offset)
+      || (!e1->init && e2->init)
+      || (e1->init && !e2->init)
+      || (!e1->step && e2->step)
+      || (e1->step && !e2->step))
+    return false;
+
+  if (e1->base_address && e2->base_address
+      && !operand_equal_p (e1->base_address, e2->base_address, 0))
+    return false;
+  if (e1->offset && e2->offset
+      && !operand_equal_p (e1->offset, e2->offset, 0))
+    return false;
+  if (e1->init && e2->init
+      && !operand_equal_p (e1->init, e2->init, 0))
+    return false;
+  if (e1->step && e2->step
+      && !operand_equal_p (e1->step, e2->step, 0))
+    return false;
+
+  return true;
+}
+
 /* List of basic blocks in if-conversion-suitable order.  */
 static basic_block *ifc_bbs;
 
 /* Apply more aggressive (extended) if-conversion if true.  */
 static bool aggressive_if_conv;
 
-/* Hash table to store references, DR pairs.  */
-static hash_map<tree_operand_hash, data_reference_p> *ref_DR_map;
+/* Hash table to store <DR's innermost loop behavior, DR> pairs.  */
+static hash_map<innermost_loop_behavior_hash,
+		data_reference_p> *innermost_DR_map;
 
-/* Hash table to store base reference, DR pairs.  */
+/* Hash table to store <base reference, DR> pairs.  */
 static hash_map<tree_operand_hash, data_reference_p> *baseref_DR_map;
 
 /* Structure used to predicate basic blocks.  This is attached to the
@@ -623,17 +675,12 @@ hash_memrefs_baserefs_and_store_DRs_read_written_info (data_reference_p a)
 {
 
   data_reference_p *master_dr, *base_master_dr;
-  tree ref = DR_REF (a);
   tree base_ref = DR_BASE_OBJECT (a);
+  innermost_loop_behavior *innermost = &DR_INNERMOST (a);
   tree ca = bb_predicate (gimple_bb (DR_STMT (a)));
   bool exist1, exist2;
 
-  while (TREE_CODE (ref) == COMPONENT_REF
-	 || TREE_CODE (ref) == IMAGPART_EXPR
-	 || TREE_CODE (ref) == REALPART_EXPR)
-    ref = TREE_OPERAND (ref, 0);
-
-  master_dr = &ref_DR_map->get_or_insert (ref, &exist1);
+  master_dr = &innermost_DR_map->get_or_insert (innermost, &exist1);
   if (!exist1)
     *master_dr = a;
 
@@ -695,20 +742,17 @@ ifcvt_memrefs_wont_trap (gimple *stmt, vec<data_reference_p> drs)
   data_reference_p *master_dr, *base_master_dr;
   data_reference_p a = drs[gimple_uid (stmt) - 1];
 
-  tree ref_base_a = DR_REF (a);
   tree base = DR_BASE_OBJECT (a);
+  innermost_loop_behavior *innermost = &DR_INNERMOST (a);
 
   gcc_assert (DR_STMT (a) == stmt);
+  gcc_assert (DR_BASE_ADDRESS (a) || DR_OFFSET (a)
+              || DR_INIT (a) || DR_STEP (a));
 
-  while (TREE_CODE (ref_base_a) == COMPONENT_REF
-	 || TREE_CODE (ref_base_a) == IMAGPART_EXPR
-	 || TREE_CODE (ref_base_a) == REALPART_EXPR)
-    ref_base_a = TREE_OPERAND (ref_base_a, 0);
-
-  master_dr = ref_DR_map->get (ref_base_a);
-  base_master_dr = baseref_DR_map->get (base);
-
+  master_dr = innermost_DR_map->get (innermost);
   gcc_assert (master_dr != NULL);
+
+  base_master_dr = baseref_DR_map->get (base);
 
   /* If a is unconditionally written to it doesn't trap.  */
   if (DR_W_UNCONDITIONALLY (*master_dr))
@@ -1238,13 +1282,16 @@ if_convertible_loop_p_1 (struct loop *loop,
 
   data_reference_p dr;
 
-  ref_DR_map = new hash_map<tree_operand_hash, data_reference_p>;
+  innermost_DR_map
+	  = new hash_map<innermost_loop_behavior_hash, data_reference_p>;
   baseref_DR_map = new hash_map<tree_operand_hash, data_reference_p>;
 
   predicate_bbs (loop);
 
   for (i = 0; refs->iterate (i, &dr); i++)
     {
+      tree ref = DR_REF (dr);
+
       dr->aux = XNEW (struct ifc_dr);
       DR_BASE_W_UNCONDITIONALLY (dr) = false;
       DR_RW_UNCONDITIONALLY (dr) = false;
@@ -1254,6 +1301,27 @@ if_convertible_loop_p_1 (struct loop *loop,
       IFC_DR (dr)->base_w_predicate = boolean_false_node;
       if (gimple_uid (DR_STMT (dr)) == 0)
 	gimple_set_uid (DR_STMT (dr), i + 1);
+
+      /* If DR doesn't have innermost loop behavior or it's a compound
+         memory reference, we synthesize its innermost loop behavior
+         for hashing.  */
+      if (TREE_CODE (ref) == COMPONENT_REF
+          || TREE_CODE (ref) == IMAGPART_EXPR
+          || TREE_CODE (ref) == REALPART_EXPR
+          || !(DR_BASE_ADDRESS (dr) || DR_OFFSET (dr)
+	       || DR_INIT (dr) || DR_STEP (dr)))
+        {
+          while (TREE_CODE (ref) == COMPONENT_REF
+	         || TREE_CODE (ref) == IMAGPART_EXPR
+	         || TREE_CODE (ref) == REALPART_EXPR)
+	    ref = TREE_OPERAND (ref, 0);
+
+          DR_BASE_ADDRESS (dr) = ref;
+          DR_OFFSET (dr) = NULL;
+          DR_INIT (dr) = NULL;
+          DR_STEP (dr) = NULL;
+          DR_ALIGNED_TO (dr) = NULL;
+        }
       hash_memrefs_baserefs_and_store_DRs_read_written_info (dr);
     }
 
@@ -1348,8 +1416,8 @@ if_convertible_loop_p (struct loop *loop, bool *any_mask_load_store)
 
   free_data_refs (refs);
 
-  delete ref_DR_map;
-  ref_DR_map = NULL;
+  delete innermost_DR_map;
+  innermost_DR_map = NULL;
 
   delete baseref_DR_map;
   baseref_DR_map = NULL;
