@@ -32,7 +32,9 @@
 package body System.Img_LLI is
 
    procedure Set_Digits
-     (T : Long_Long_Integer; S : in out String; P : in out Natural);
+     (T : Long_Long_Integer;
+      S : in out String;
+      P : in out Natural);
    --  Set digits of absolute value of T, which is zero or negative. We work
    --  with the negative of the value so that the largest negative number is
    --  not a special case.
@@ -64,7 +66,10 @@ package body System.Img_LLI is
    ----------------
 
    procedure Set_Digits
-     (T : Long_Long_Integer; S : in out String; P : in out Natural) is
+     (T : Long_Long_Integer;
+      S : in out String;
+      P : in out Natural)
+   is
    begin
       if T <= -10 then
          Set_Digits (T / 10, S, P);

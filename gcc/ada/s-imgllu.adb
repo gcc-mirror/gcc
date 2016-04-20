@@ -56,7 +56,8 @@ package body System.Img_LLU is
    procedure Set_Image_Long_Long_Unsigned
      (V : Long_Long_Unsigned;
       S : in out String;
-      P : in out Natural) is
+      P : in out Natural)
+   is
    begin
       if V >= 10 then
          Set_Image_Long_Long_Unsigned (V / 10, S, P);
