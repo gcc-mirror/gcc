@@ -1,5 +1,6 @@
 2016-04-20  Ben Elliston  <bje@gnu.org>
 
+	PR testsuite/70719
 	* testsuite/lib/libjava.exp (libjava_arguments): Use 'file
 	normalize' rather than the defunct DejaGnu 'absolute' proc.
 
