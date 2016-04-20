@@ -7293,6 +7293,20 @@ package body Sem_Ch12 is
                      Set_Entity (New_N, Entity (Assoc));
                      Check_Private_View (N);
 
+                  --  The node is a reference to a global type and acts as the
+                  --  subtype mark of a qualified expression created in order
+                  --  to aid resolution of accidental overloading in instances.
+                  --  Since N is a reference to a type, the Associated_Node of
+                  --  N denotes an entity rather than another identifier. See
+                  --  Qualify_Universal_Operands for details.
+
+                  elsif Nkind (N) = N_Identifier
+                    and then Nkind (Parent (N)) = N_Qualified_Expression
+                    and then Subtype_Mark (Parent (N)) = N
+                    and then Is_Qualified_Universal_Literal (Parent (N))
+                  then
+                     Set_Entity (New_N, Assoc);
+
                   --  The name in the call may be a selected component if the
                   --  call has not been analyzed yet, as may be the case for
                   --  pre/post conditions in a generic unit.
@@ -13982,6 +13996,7 @@ package body Sem_Ch12 is
             Loc  : constant Source_Ptr := Sloc (Opnd);
             Typ  : constant Entity_Id  := Etype (Actual);
             Mark : Node_Id;
+            Qual : Node_Id;
 
          begin
             --  Qualify the operand when it is of a universal type. Note that
@@ -14007,10 +14022,19 @@ package body Sem_Ch12 is
                   Mark := Qualify_Type (Loc, Typ);
                end if;
 
-               Rewrite (Opnd,
+               Qual :=
                  Make_Qualified_Expression (Loc,
                    Subtype_Mark => Mark,
-                   Expression   => Relocate_Node (Opnd)));
+                   Expression   => Relocate_Node (Opnd));
+
+               --  Mark the qualification to distinguish it from other source
+               --  constructs and signal the instantiation mechanism that this
+               --  node requires special processing. See Copy_Generic_Node for
+               --  details.
+
+               Set_Is_Qualified_Universal_Literal (Qual);
+
+               Rewrite (Opnd, Qual);
             end if;
          end Qualify_Operand;
 

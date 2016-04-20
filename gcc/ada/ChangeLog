@@ -1,5 +1,37 @@
 2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_ch12.adb (Copy_Generic_Node): Handle the special
+	qualification installed for universal literals that act as
+	operands in binary or unary operators.	(Qualify_Operand): Mark
+	the qualification to signal the instantiation mechanism how to
+	handle global reference propagation.
+	* sinfo.adb (Is_Qualified_Universal_Literal): New routine.
+	(Set_Is_Qualified_Universal_Literal): New routine.
+	* sinfo.ads New attribute Is_Qualified_Universal_Literal along
+	with occurrences in nodes.
+	(Is_Qualified_Universal_Literal):
+	New routine along with pragma Inline.
+	(Set_Is_Qualified_Universal_Literal): New routine along with
+	pragma Inline.
+
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb (Do_Analyze): Save and restore Style_Max_Line_Length
+	so that the corresponding checks are preserved across compilations
+	that include System.Constants in their context.
+
+2016-04-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_type.adb: Minor typo fix and reformatting.
+	* a-conhel.ads: Update comment.
+
+2016-04-20  Bob Duff  <duff@adacore.com>
+
+	* a-cihama.adb, a-cihase.adb, a-coinve.adb (Copy): Rewrite the
+	code so it doesn't trigger an "uninit var" warning.
+
+2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_attr.ads Add new table Universal_Type_Attribute.
 	* sem_util.adb (Yields_Universal_Type): Use a table lookup when
 	checking attributes.

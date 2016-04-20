@@ -1982,6 +1982,14 @@ package body Sinfo is
       return Flag7 (N);
    end Is_Protected_Subprogram_Body;
 
+   function Is_Qualified_Universal_Literal
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Qualified_Expression);
+      return Flag4 (N);
+   end Is_Qualified_Universal_Literal;
+
    function Is_Static_Coextension
       (N : Node_Id) return Boolean is
    begin
@@ -5228,6 +5236,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Subprogram_Body);
       Set_Flag7 (N, Val);
    end Set_Is_Protected_Subprogram_Body;
+
+   procedure Set_Is_Qualified_Universal_Literal
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Qualified_Expression);
+      Set_Flag4 (N, Val);
+   end Set_Is_Qualified_Universal_Literal;
 
    procedure Set_Is_Static_Coextension
       (N : Node_Id; Val : Boolean := True) is
