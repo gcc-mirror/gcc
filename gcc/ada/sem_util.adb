@@ -20957,4 +20957,63 @@ package body Sem_Util is
       end if;
    end Yields_Synchronized_Object;
 
+   ---------------------------
+   -- Yields_Universal_Type --
+   ---------------------------
+
+   function Yields_Universal_Type (N : Node_Id) return Boolean is
+      Nam : Name_Id;
+
+   begin
+      --  Integer and real literals are of a universal type
+
+      if Nkind_In (N, N_Integer_Literal, N_Real_Literal) then
+         return True;
+
+      --  The values of certain attributes are of a universal type
+
+      elsif Nkind (N) = N_Attribute_Reference then
+         Nam := Attribute_Name (N);
+
+         return
+           Nam = Name_Aft
+             or else Nam = Name_Alignment
+             or else Nam = Name_Component_Size
+             or else Nam = Name_Count
+             or else Nam = Name_Delta
+             or else Nam = Name_Digits
+             or else Nam = Name_Exponent
+             or else Nam = Name_First_Bit
+             or else Nam = Name_Fore
+             or else Nam = Name_Last_Bit
+             or else Nam = Name_Length
+             or else Nam = Name_Machine_Emax
+             or else Nam = Name_Machine_Emin
+             or else Nam = Name_Machine_Mantissa
+             or else Nam = Name_Machine_Radix
+             or else Nam = Name_Max_Alignment_For_Allocation
+             or else Nam = Name_Max_Size_In_Storage_Elements
+             or else Nam = Name_Model_Emin
+             or else Nam = Name_Model_Epsilon
+             or else Nam = Name_Model_Mantissa
+             or else Nam = Name_Model_Small
+             or else Nam = Name_Modulus
+             or else Nam = Name_Pos
+             or else Nam = Name_Position
+             or else Nam = Name_Safe_First
+             or else Nam = Name_Safe_Last
+             or else Nam = Name_Scale
+             or else Nam = Name_Size
+             or else Nam = Name_Small
+             or else Nam = Name_Wide_Wide_Width
+             or else Nam = Name_Wide_Width
+             or else Nam = Name_Width;
+
+      --  ??? There are possibly other cases to consider
+
+      else
+         return False;
+      end if;
+   end Yields_Universal_Type;
+
 end Sem_Util;

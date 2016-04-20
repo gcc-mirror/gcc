@@ -1,3 +1,12 @@
+2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb (Qualify_Universal_Operands): New routine.
+	(Save_References_In_Operator): Add explicit qualifications in
+	the generic template for all operands of universal type.
+	* sem_type.adb (Disambiguate): Update the call to Matches.
+	(Matches): Reimplemented.
+	* sem_util.ads, sem_util.adb (Yields_Universal_Type): New routine.
+
 2016-04-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Rep_Item_Too_Late): Better error message for
