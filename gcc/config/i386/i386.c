@@ -18807,7 +18807,39 @@ ix86_avx256_split_vector_move_misalign (rtx op0, rtx op1)
   rtx (*extract) (rtx, rtx, rtx);
   machine_mode mode;
 
-  switch (GET_MODE (op0))
+  if ((MEM_P (op1) && !TARGET_AVX256_SPLIT_UNALIGNED_LOAD)
+      || (MEM_P (op0) && !TARGET_AVX256_SPLIT_UNALIGNED_STORE))
+    {
+      emit_insn (gen_rtx_SET (op0, op1));
+      return;
+    }
+
+  rtx orig_op0 = NULL_RTX;
+  mode = GET_MODE (op0);
+  switch (GET_MODE_CLASS (mode))
+    {
+    case MODE_VECTOR_INT:
+    case MODE_INT:
+      if (mode != V32QImode)
+	{
+	  if (!MEM_P (op0))
+	    {
+	      orig_op0 = op0;
+	      op0 = gen_reg_rtx (V32QImode);
+	    }
+	  else
+	    op0 = gen_lowpart (V32QImode, op0);
+	  op1 = gen_lowpart (V32QImode, op1);
+	  mode = V32QImode;
+	}
+      break;
+    case MODE_VECTOR_FLOAT:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  switch (mode)
     {
     default:
       gcc_unreachable ();
@@ -18827,34 +18859,25 @@ ix86_avx256_split_vector_move_misalign (rtx op0, rtx op1)
 
   if (MEM_P (op1))
     {
-      if (TARGET_AVX256_SPLIT_UNALIGNED_LOAD
-	  && optimize_insn_for_speed_p ())
-	{
-	  rtx r = gen_reg_rtx (mode);
-	  m = adjust_address (op1, mode, 0);
-	  emit_move_insn (r, m);
-	  m = adjust_address (op1, mode, 16);
-	  r = gen_rtx_VEC_CONCAT (GET_MODE (op0), r, m);
-	  emit_move_insn (op0, r);
-	}
-      else
-	emit_insn (gen_rtx_SET (op0, op1));
+      rtx r = gen_reg_rtx (mode);
+      m = adjust_address (op1, mode, 0);
+      emit_move_insn (r, m);
+      m = adjust_address (op1, mode, 16);
+      r = gen_rtx_VEC_CONCAT (GET_MODE (op0), r, m);
+      emit_move_insn (op0, r);
     }
   else if (MEM_P (op0))
     {
-      if (TARGET_AVX256_SPLIT_UNALIGNED_STORE
-	  && optimize_insn_for_speed_p ())
-	{
-	  m = adjust_address (op0, mode, 0);
-	  emit_insn (extract (m, op1, const0_rtx));
-	  m = adjust_address (op0, mode, 16);
-	  emit_insn (extract (m, op1, const1_rtx));
-	}
-      else
-	emit_insn (gen_rtx_SET (op0, op1));
+      m = adjust_address (op0, mode, 0);
+      emit_insn (extract (m, op1, const0_rtx));
+      m = adjust_address (op0, mode, 16);
+      emit_insn (extract (m, op1, const1_rtx));
     }
   else
     gcc_unreachable ();
+
+  if (orig_op0)
+    emit_move_insn (orig_op0, gen_lowpart (GET_MODE (orig_op0), op0));
 }
 
 /* Implement the movmisalign patterns for SSE.  Non-SSE modes go
@@ -18912,117 +18935,49 @@ ix86_avx256_split_vector_move_misalign (rtx op0, rtx op1)
 void
 ix86_expand_vector_move_misalign (machine_mode mode, rtx operands[])
 {
-  rtx op0, op1, orig_op0 = NULL_RTX, m;
+  rtx op0, op1, m;
 
   op0 = operands[0];
   op1 = operands[1];
 
-  if (GET_MODE_SIZE (mode) == 64)
+  /* Use unaligned load/store for AVX512 or when optimizing for size.  */
+  if (GET_MODE_SIZE (mode) == 64 || optimize_insn_for_size_p ())
     {
-      switch (GET_MODE_CLASS (mode))
-	{
-	case MODE_VECTOR_INT:
-	case MODE_INT:
-	  if (GET_MODE (op0) != V16SImode)
-	    {
-	      if (!MEM_P (op0))
-		{
-		  orig_op0 = op0;
-		  op0 = gen_reg_rtx (V16SImode);
-		}
-	      else
-		op0 = gen_lowpart (V16SImode, op0);
-	    }
-	  op1 = gen_lowpart (V16SImode, op1);
-	  /* FALLTHRU */
-
-	case MODE_VECTOR_FLOAT:
-
-	  emit_insn (gen_rtx_SET (op0, op1));
-	  if (orig_op0)
-	    emit_move_insn (orig_op0, gen_lowpart (GET_MODE (orig_op0), op0));
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-
+      emit_insn (gen_rtx_SET (op0, op1));
       return;
     }
 
-  if (TARGET_AVX
-      && GET_MODE_SIZE (mode) == 32)
+  if (TARGET_AVX)
     {
-      switch (GET_MODE_CLASS (mode))
-	{
-	case MODE_VECTOR_INT:
-	case MODE_INT:
-	  if (GET_MODE (op0) != V32QImode)
-	    {
-	      if (!MEM_P (op0))
-		{
-		  orig_op0 = op0;
-		  op0 = gen_reg_rtx (V32QImode);
-		}
-	      else
-		op0 = gen_lowpart (V32QImode, op0);
-	    }
-	  op1 = gen_lowpart (V32QImode, op1);
-	  /* FALLTHRU */
+      if (GET_MODE_SIZE (mode) == 32)
+	ix86_avx256_split_vector_move_misalign (op0, op1);
+      else
+	/* Always use 128-bit mov<mode>_internal pattern for AVX.  */
+	emit_insn (gen_rtx_SET (op0, op1));
+      return;
+    }
 
-	case MODE_VECTOR_FLOAT:
-	  ix86_avx256_split_vector_move_misalign (op0, op1);
-	  if (orig_op0)
-	    emit_move_insn (orig_op0, gen_lowpart (GET_MODE (orig_op0), op0));
-	  break;
+  if (TARGET_SSE_UNALIGNED_LOAD_OPTIMAL
+      || TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+    {
+      emit_insn (gen_rtx_SET (op0, op1));
+      return;
+    }
 
-	default:
-	  gcc_unreachable ();
-	}
-
+  /* ??? If we have typed data, then it would appear that using
+     movdqu is the only way to get unaligned data loaded with
+     integer type.  */
+  if (TARGET_SSE2 && GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+    {
+      emit_insn (gen_rtx_SET (op0, op1));
       return;
     }
 
   if (MEM_P (op1))
     {
-      /* Normal *mov<mode>_internal pattern will handle
-	 unaligned loads just fine if misaligned_operand
-	 is true, and without the UNSPEC it can be combined
-	 with arithmetic instructions.  */
-      if (TARGET_AVX
-	  && (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-	      || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
-	  && misaligned_operand (op1, GET_MODE (op1)))
-	emit_insn (gen_rtx_SET (op0, op1));
-      /* ??? If we have typed data, then it would appear that using
-	 movdqu is the only way to get unaligned data loaded with
-	 integer type.  */
-      else if (TARGET_SSE2 && GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
-	{
-	  if (GET_MODE (op0) != V16QImode)
-	    {
-	      orig_op0 = op0;
-	      op0 = gen_reg_rtx (V16QImode);
-	    }
-	  op1 = gen_lowpart (V16QImode, op1);
-	  /* We will eventually emit movups based on insn attributes.  */
-	  emit_insn (gen_rtx_SET (op0, op1));
-	  if (orig_op0)
-	    emit_move_insn (orig_op0, gen_lowpart (GET_MODE (orig_op0), op0));
-	}
-      else if (TARGET_SSE2 && mode == V2DFmode)
+      if (TARGET_SSE2 && mode == V2DFmode)
         {
           rtx zero;
-
-	  if (TARGET_AVX
-	      || TARGET_SSE_UNALIGNED_LOAD_OPTIMAL
-	      || TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL
-	      || optimize_insn_for_size_p ())
-	    {
-	      /* We will eventually emit movups based on insn attributes.  */
-	      emit_insn (gen_rtx_SET (op0, op1));
-	      return;
-	    }
 
 	  /* When SSE registers are split into halves, we can avoid
 	     writing to the top half twice.  */
@@ -19053,24 +19008,6 @@ ix86_expand_vector_move_misalign (machine_mode mode, rtx operands[])
         {
 	  rtx t;
 
-	  if (TARGET_AVX
-	      || TARGET_SSE_UNALIGNED_LOAD_OPTIMAL
-	      || TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL
-	      || optimize_insn_for_size_p ())
-	    {
-	      if (GET_MODE (op0) != V4SFmode)
-		{
-		  orig_op0 = op0;
-		  op0 = gen_reg_rtx (V4SFmode);
-		}
-	      op1 = gen_lowpart (V4SFmode, op1);
-	      emit_insn (gen_rtx_SET (op0, op1));
-	      if (orig_op0)
-		emit_move_insn (orig_op0,
-				gen_lowpart (GET_MODE (orig_op0), op0));
-	      return;
-            }
-
 	  if (mode != V4SFmode)
 	    t = gen_reg_rtx (V4SFmode);
 	  else
@@ -19091,49 +19028,22 @@ ix86_expand_vector_move_misalign (machine_mode mode, rtx operands[])
     }
   else if (MEM_P (op0))
     {
-      if (TARGET_SSE2 && GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
-        {
-	  op0 = gen_lowpart (V16QImode, op0);
-	  op1 = gen_lowpart (V16QImode, op1);
-	  /* We will eventually emit movups based on insn attributes.  */
-	  emit_insn (gen_rtx_SET (op0, op1));
-	}
-      else if (TARGET_SSE2 && mode == V2DFmode)
+      if (TARGET_SSE2 && mode == V2DFmode)
 	{
-	  if (TARGET_AVX
-	      || TARGET_SSE_UNALIGNED_STORE_OPTIMAL
-	      || TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL
-	      || optimize_insn_for_size_p ())
-	    /* We will eventually emit movups based on insn attributes.  */
-	    emit_insn (gen_rtx_SET (op0, op1));
-	  else
-	    {
-	      m = adjust_address (op0, DFmode, 0);
-	      emit_insn (gen_sse2_storelpd (m, op1));
-	      m = adjust_address (op0, DFmode, 8);
-	      emit_insn (gen_sse2_storehpd (m, op1));
-	    }
+	  m = adjust_address (op0, DFmode, 0);
+	  emit_insn (gen_sse2_storelpd (m, op1));
+	  m = adjust_address (op0, DFmode, 8);
+	  emit_insn (gen_sse2_storehpd (m, op1));
 	}
       else
 	{
 	  if (mode != V4SFmode)
 	    op1 = gen_lowpart (V4SFmode, op1);
 
-	  if (TARGET_AVX
-	      || TARGET_SSE_UNALIGNED_STORE_OPTIMAL
-	      || TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL
-	      || optimize_insn_for_size_p ())
-	    {
-	      op0 = gen_lowpart (V4SFmode, op0);
-	      emit_insn (gen_rtx_SET (op0, op1));
-	    }
-	  else
-	    {
-	      m = adjust_address (op0, V2SFmode, 0);
-	      emit_insn (gen_sse_storelps (m, op1));
-	      m = adjust_address (op0, V2SFmode, 8);
-	      emit_insn (gen_sse_storehps (m, op1));
-	    }
+	  m = adjust_address (op0, V2SFmode, 0);
+	  emit_insn (gen_sse_storelps (m, op1));
+	  m = adjust_address (op0, V2SFmode, 8);
+	  emit_insn (gen_sse_storehps (m, op1));
 	}
     }
   else
