@@ -13848,6 +13848,19 @@ package body Sem_Ch12 is
       --  global because it is used to denote a specific compilation unit at
       --  the time the instantiations will be analyzed.
 
+      procedure Qualify_Universal_Operands
+        (Op        : Node_Id;
+         Func_Call : Node_Id);
+      --  Op denotes a binary or unary operator in generic template Templ. Node
+      --  Func_Call is the function call alternative of the operator within the
+      --  the analyzed copy of the template. Change each operand which yields a
+      --  universal type by wrapping it into a qualified expression
+      --
+      --    Actual_Typ'(Operand)
+      --
+      --  where Actual_Typ is the type of corresponding actual parameter of
+      --  Operand in Func_Call.
+
       procedure Reset_Entity (N : Node_Id);
       --  Save semantic information on global entity so that it is not resolved
       --  again at instantiation time.
@@ -13937,6 +13950,109 @@ package body Sem_Ch12 is
             return False;
          end if;
       end Is_Global;
+
+      --------------------------------
+      -- Qualify_Universal_Operands --
+      --------------------------------
+
+      procedure Qualify_Universal_Operands
+        (Op        : Node_Id;
+         Func_Call : Node_Id)
+      is
+         procedure Qualify_Operand (Opnd : Node_Id; Actual : Node_Id);
+         --  Rewrite operand Opnd as a qualified expression of the form
+         --
+         --    Actual_Typ'(Opnd)
+         --
+         --  where Actual is the corresponding actual parameter of Opnd in
+         --  function call Func_Call.
+
+         function Qualify_Type
+           (Loc : Source_Ptr;
+            Typ : Entity_Id) return Node_Id;
+         --  Qualify type Typ by creating a selected component of the form
+         --
+         --    Scope_Of_Typ.Typ
+
+         ---------------------
+         -- Qualify_Operand --
+         ---------------------
+
+         procedure Qualify_Operand (Opnd : Node_Id; Actual : Node_Id) is
+            Loc  : constant Source_Ptr := Sloc (Opnd);
+            Typ  : constant Entity_Id  := Etype (Actual);
+            Mark : Node_Id;
+
+         begin
+            --  Qualify the operand when it is of a universal type. Note that
+            --  the template is unanalyzed and it is not possible to directly
+            --  query the type. This transformation is not done when the type
+            --  of the actual is internally generated because the type will be
+            --  regenerated in the instance.
+
+            if Yields_Universal_Type (Opnd)
+              and then Comes_From_Source (Typ)
+              and then not Is_Hidden (Typ)
+            then
+               --  The type of the actual may be a global reference. Save this
+               --  information by creating a reference to it.
+
+               if Is_Global (Typ) then
+                  Mark := New_Occurrence_Of (Typ, Loc);
+
+               --  Otherwise rely on resolution to find the proper type within
+               --  the instance.
+
+               else
+                  Mark := Qualify_Type (Loc, Typ);
+               end if;
+
+               Rewrite (Opnd,
+                 Make_Qualified_Expression (Loc,
+                   Subtype_Mark => Mark,
+                   Expression   => Relocate_Node (Opnd)));
+            end if;
+         end Qualify_Operand;
+
+         ------------------
+         -- Qualify_Type --
+         ------------------
+
+         function Qualify_Type
+           (Loc : Source_Ptr;
+            Typ : Entity_Id) return Node_Id
+         is
+            Scop   : constant Entity_Id := Scope (Typ);
+            Result : Node_Id;
+
+         begin
+            Result := Make_Identifier (Loc, Chars (Typ));
+
+            if Present (Scop) and then Scop /= Standard_Standard then
+               Result :=
+                 Make_Selected_Component (Loc,
+                   Prefix        => Make_Identifier (Loc, Chars (Scop)),
+                   Selector_Name => Result);
+            end if;
+
+            return Result;
+         end Qualify_Type;
+
+         --  Local variables
+
+         Actuals : constant List_Id := Parameter_Associations (Func_Call);
+
+      --  Start of processing for Qualify_Universal_Operands
+
+      begin
+         if Nkind (Op) in N_Binary_Op then
+            Qualify_Operand (Left_Opnd  (Op), First (Actuals));
+            Qualify_Operand (Right_Opnd (Op), Next (First (Actuals)));
+
+         elsif Nkind (Op) in N_Unary_Op then
+            Qualify_Operand (Right_Opnd (Op), First (Actuals));
+         end if;
+      end Qualify_Universal_Operands;
 
       ------------------
       -- Reset_Entity --
@@ -14716,7 +14832,8 @@ package body Sem_Ch12 is
                Reset_Entity (N);
 
             --  The analysis of the generic copy transformed the operator into
-            --  some other construct. Propagate the changes to the template.
+            --  some other construct. Propagate the changes to the template if
+            --  applicable.
 
             else
                N2 := Get_Associated_Node (N);
@@ -14724,13 +14841,21 @@ package body Sem_Ch12 is
                --  The operator resoved to a function call
 
                if Nkind (N2) = N_Function_Call then
+
+                  --  Add explicit qualifications in the generic template for
+                  --  all operands of universal type. This aids resolution by
+                  --  preserving the actual type of a literal or an attribute
+                  --  that yields a universal result.
+
+                  Qualify_Universal_Operands (N, N2);
+
                   E := Entity (Name (N2));
 
                   if Present (E) and then Is_Global (E) then
                      Set_Etype (N, Etype (N2));
                   else
                      Set_Associated_Node (N, Empty);
-                     Set_Etype (N, Empty);
+                     Set_Etype           (N, Empty);
                   end if;
 
                --  The operator was folded into a literal

@@ -1316,13 +1316,13 @@ package body Sem_Type is
       --  the generic. Within the instance the actual is represented by a
       --  constructed subprogram renaming.
 
-      function Matches (Actual, Formal : Node_Id) return Boolean;
-      --  Look for exact type match in an instance, to remove spurious
-      --  ambiguities when two formal types have the same actual.
+      function Matches (Op : Node_Id; Func_Id : Entity_Id) return Boolean;
+      --  Determine whether function Func_Id is an exact match for binary or
+      --  unary operator Op.
 
       function Operand_Type return Entity_Id;
-      --  Determine type of operand for an equality operation, to apply
-      --  Ada 2005 rules to equality on anonymous access types.
+      --  Determine type of operand for an equality operation, to apply Ada
+      --  2005 rules to equality on anonymous access types.
 
       function Standard_Operator return Boolean;
       --  Check whether subprogram is predefined operator declared in Standard.
@@ -1412,14 +1412,82 @@ package body Sem_Type is
       -- Matches --
       -------------
 
-      function Matches (Actual, Formal : Node_Id) return Boolean is
-         T1 : constant Entity_Id := Etype (Actual);
-         T2 : constant Entity_Id := Etype (Formal);
+      function Matches (Op : Node_Id; Func_Id : Entity_Id) return Boolean is
+         function Matching_Types
+           (Opnd_Typ   : Entity_Id;
+            Formal_Typ : Entity_Id) return Boolean;
+         --  Determine whether operand type Opnd_Typ and formal parameter type
+         --  Formal_Typ are either the same or compatible.
+
+         --------------------
+         -- Matching_Types --
+         --------------------
+
+         function Matching_Types
+           (Opnd_Typ   : Entity_Id;
+            Formal_Typ : Entity_Id) return Boolean
+         is
+         begin
+            --  A direct match
+
+            if Opnd_Typ = Formal_Typ then
+               return True;
+
+            --  Any integer type matches universal integer
+
+            elsif Opnd_Typ = Universal_Integer
+              and then Is_Integer_Type (Formal_Typ)
+            then
+               return True;
+
+            --  Any floating point type matches universal real
+
+            elsif Opnd_Typ = Universal_Real
+              and then Is_Floating_Point_Type (Formal_Typ)
+            then
+               return True;
+
+            --  The type of the formal parameter maps a generic actual type to
+            --  a generic formal type. If the operand type is the type being
+            --  mapped in an instance, then this is a match.
+
+            elsif Is_Generic_Actual_Type (Formal_Typ)
+              and then Etype (Formal_Typ) = Opnd_Typ
+            then
+               return True;
+
+            --  ??? There are possibly other cases to consider
+
+            else
+               return False;
+            end if;
+         end Matching_Types;
+
+         --  Local variables
+
+         F1      : constant Entity_Id := First_Formal (Func_Id);
+         F1_Typ  : constant Entity_Id := Etype (F1);
+         F2      : constant Entity_Id := Next_Formal (F1);
+         F2_Typ  : constant Entity_Id := Etype (F2);
+         Lop_Typ : constant Entity_Id := Etype (Left_Opnd  (Op));
+         Rop_Typ : constant Entity_Id := Etype (Right_Opnd (Op));
+
+      --  Start of processing for Matches
+
       begin
-         return T1 = T2
-           or else
-             (Is_Numeric_Type (T2)
-               and then (T1 = Universal_Real or else T1 = Universal_Integer));
+         if Lop_Typ = F1_Typ then
+            return Matching_Types (Rop_Typ, F2_Typ);
+
+         elsif Rop_Typ = F2_Typ then
+            return Matching_Types (Lop_Typ, F1_Typ);
+
+         --  Otherwise this is not a good match bechause each operand-formal
+         --  pair is compatible only on base type basis which is not specific
+         --  enough.
+
+         else
+            return False;
+         end if;
       end Matches;
 
       ------------------
@@ -1697,6 +1765,7 @@ package body Sem_Type is
 
       It1  := It;
       Nam1 := It.Nam;
+
       while I /= I2 loop
          Get_Next_Interp (I, It);
       end loop;
@@ -1967,10 +2036,7 @@ package body Sem_Type is
                end;
 
             elsif Nkind (N) in N_Binary_Op then
-               if Matches (Left_Opnd (N), First_Formal (Nam1))
-                 and then
-                   Matches (Right_Opnd (N), Next_Formal (First_Formal (Nam1)))
-               then
+               if Matches (N, Nam1) then
                   return It1;
                else
                   return It2;

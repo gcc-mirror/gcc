@@ -2295,4 +2295,7 @@ package Sem_Util is
    --    * A synchronized interface type
    --    * A task type
 
+   function Yields_Universal_Type (N : Node_Id) return Boolean;
+   --  Determine whether unanalyzed node N yields a universal type
+
 end Sem_Util;
