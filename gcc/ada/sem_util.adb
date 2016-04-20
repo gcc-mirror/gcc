@@ -14282,6 +14282,7 @@ package body Sem_Util is
    --------------------------------------
 
    function Is_Unchecked_Conversion_Instance (Id : Entity_Id) return Boolean is
+      Par     : Node_Id;
       Gen_Par : Entity_Id;
 
    begin
@@ -14289,7 +14290,13 @@ package body Sem_Util is
       --  function Unchecked_Conversion.
 
       if Ekind (Id) = E_Function then
-         Gen_Par := Generic_Parent (Parent (Id));
+         Par     := Parent (Id);
+
+         if Nkind (Par) /= N_Function_Specification then
+            return False;
+         end if;
+
+         Gen_Par := Generic_Parent (Par);
 
          return
            Present (Gen_Par)

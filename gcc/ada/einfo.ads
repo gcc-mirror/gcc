@@ -4441,9 +4441,9 @@ package Einfo is
 --  protected operation, etc).
 
 --  b) Alias applies to overloadable entities, and the value is an overloadable
---  entity. so this is a subset of the previous one. We use the term Alias to
+--  entity. So this is a subset of the previous one. We use the term Alias to
 --  cover both renamings and inherited operations, because both cases are
---  handled in the same way when expanding a call. namely the Alias of a given
+--  handled in the same way when expanding a call. Namely the Alias of a given
 --  subprogram is the subprogram that will actually be called.
 
 --  Both a) and b) are set transitively, so that in fact it is not necessary to
