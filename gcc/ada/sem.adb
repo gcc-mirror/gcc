@@ -53,6 +53,7 @@ with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
+with Stylesw;  use Stylesw;
 with Uintp;    use Uintp;
 with Uname;    use Uname;
 
@@ -1316,6 +1317,13 @@ package body Sem is
       procedure Do_Analyze is
          Save_Ghost_Mode : constant Ghost_Mode_Type := Ghost_Mode;
 
+         --  Generally style checks are preserved across compilations, with
+         --  one exception: s-oscons.ads, which allows arbitrary long lines
+         --  unconditionally, and has no restore mechanism, because it is
+         --  intended as a lowest-level Pure package.
+
+         Save_Max_Line   : constant Int := Style_Max_Line_Length;
+
          List : Elist_Id;
 
       begin
@@ -1346,6 +1354,7 @@ package body Sem is
          Pop_Scope;
          Restore_Scope_Stack (List);
          Ghost_Mode := Save_Ghost_Mode;
+         Style_Max_Line_Length := Save_Max_Line;
       end Do_Analyze;
 
       --  Local variables

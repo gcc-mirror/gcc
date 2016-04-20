@@ -1481,8 +1481,8 @@ package body Sem_Type is
          elsif Rop_Typ = F2_Typ then
             return Matching_Types (Lop_Typ, F1_Typ);
 
-         --  Otherwise this is not a good match bechause each operand-formal
-         --  pair is compatible only on base type basis which is not specific
+         --  Otherwise this is not a good match because each operand-formal
+         --  pair is compatible only on base-type basis, which is not specific
          --  enough.
 
          else
