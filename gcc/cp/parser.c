@@ -37714,7 +37714,7 @@ cp_parser_cilk_simd_all_clauses (cp_parser *parser, cp_token *pragma_token)
   if (clauses == error_mark_node)
     return error_mark_node;
   else
-    return c_finish_cilk_clauses (clauses);
+    return finish_omp_clauses (clauses, false, false, true);
 }
 
 /* Main entry-point for parsing Cilk Plus <#pragma simd> for loops.  */

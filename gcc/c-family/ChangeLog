@@ -1,3 +1,9 @@
+2016-04-20  Ilya Verbin  <ilya.verbin@intel.com>
+
+	PR c++/69363
+	* c-cilkplus.c (c_finish_cilk_clauses): Remove function.
+	* c-common.h (c_finish_cilk_clauses): Remove declaration.
+
 2016-04-18  Michael Matz  <matz@suse.de>
 
 	* c-common.c (handle_aligned_attribute): Use SET_TYPE_ALIGN

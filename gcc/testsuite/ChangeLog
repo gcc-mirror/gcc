@@ -1,3 +1,10 @@
+2016-04-20  Ilya Verbin  <ilya.verbin@intel.com>
+
+	PR c++/69363
+	* c-c++-common/cilk-plus/PS/clauses3.c: Adjust dg-error string.
+	* c-c++-common/cilk-plus/PS/clauses4.c: New test.
+	* c-c++-common/cilk-plus/PS/pr69363.c: New test.
+
 2016-04-20  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/56625

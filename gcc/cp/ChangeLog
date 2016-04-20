@@ -1,3 +1,12 @@
+2016-04-20  Ilya Verbin  <ilya.verbin@intel.com>
+
+	PR c++/69363
+	* cp-tree.h (finish_omp_clauses): Add new default argument.
+	* parser.c (cp_parser_cilk_simd_all_clauses): Use finish_omp_clauses
+	instead of c_finish_cilk_clauses.
+	* semantics.c (finish_omp_clauses): Add new argument.  Allow
+	floating-point variables in the linear clause for Cilk Plus.
+
 2016-04-20  Nathan Sidwell  <nathan@acm.org>
 
 	* semantics.c (finish_compound_lteral): Don't wrap VECTOR_TYPEs in a

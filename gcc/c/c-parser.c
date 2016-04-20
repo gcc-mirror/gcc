@@ -17509,7 +17509,7 @@ c_parser_cilk_all_clauses (c_parser *parser)
 
  saw_error:
   c_parser_skip_to_pragma_eol (parser);
-  return c_finish_cilk_clauses (clauses);
+  return c_finish_omp_clauses (clauses, false, false, true);
 }
 
 /* This function helps parse the grainsize pragma for a _Cilk_for statement.
