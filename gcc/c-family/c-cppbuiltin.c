@@ -841,7 +841,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_lambdas=200907");
 	  if (cxx_dialect == cxx11)
 	    cpp_define (pfile, "__cpp_constexpr=200704");
-	  cpp_define (pfile, "__cpp_range_based_for=201603");
+	  if (cxx_dialect <= cxx14)
+	    cpp_define (pfile, "__cpp_range_based_for=200907");
 	  if (cxx_dialect <= cxx14)
 	    cpp_define (pfile, "__cpp_static_assert=200410");
 	  cpp_define (pfile, "__cpp_decltype=200707");
@@ -877,6 +878,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_nested_namespace_definitions=201411");
 	  cpp_define (pfile, "__cpp_fold_expressions=201603");
 	  cpp_define (pfile, "__cpp_nontype_template_args=201411");
+	  cpp_define (pfile, "__cpp_range_based_for=201603");
 	}
       if (flag_concepts)
 	/* Use a value smaller than the 201507 specified in
