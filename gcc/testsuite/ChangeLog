@@ -1,3 +1,7 @@
+2016-04-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/self1.adb: Remove now incorrect test.
+
 2016-04-20  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-ssa/scev-11.c: New test.
