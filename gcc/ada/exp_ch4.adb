@@ -1281,7 +1281,12 @@ package body Exp_Ch4 is
             Displace_Allocator_Pointer (N);
          end if;
 
-      elsif Aggr_In_Place then
+      --  Always force the generation of a temporary for aggregates when
+      --  generating C code, to simplify the work in the code generator.
+
+      elsif Aggr_In_Place
+        or else (Generate_C_Code and then Nkind (Exp) = N_Aggregate)
+      then
          Temp := Make_Temporary (Loc, 'P', N);
          Temp_Decl :=
            Make_Object_Declaration (Loc,

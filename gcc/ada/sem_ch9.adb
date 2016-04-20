@@ -3077,6 +3077,7 @@ package body Sem_Ch9 is
       if Restriction_Check_Required (No_Task_Hierarchy)
         and then not Is_Library_Level_Entity (T)
         and then Comes_From_Source (T)
+        and then not CodePeer_Mode
       then
          Error_Msg_Sloc := Restrictions_Loc (No_Task_Hierarchy);
 
