@@ -1,3 +1,9 @@
+2016-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/70680
+	* testsuite/libgomp.c/pr70680-1.c: New test.
+	* testsuite/libgomp.c/pr70680-2.c: New test.
+
 2016-04-14  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/non-scalar-data.f90: Don't

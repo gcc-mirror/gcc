@@ -1,3 +1,9 @@
+2016-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/70680
+	* gimplify.c (gimplify_omp_for): Call omp_notice_variable for
+	implicitly linear or lastprivate iterator on the outer context.
+
 2016-04-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_legitimate_combined_insn): Remove
