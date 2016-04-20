@@ -1,3 +1,12 @@
+2016-04-20  Ilya Verbin  <ilya.verbin@intel.com>
+
+	PR c++/69363
+	* c-parser.c (c_parser_cilk_all_clauses): Use c_finish_omp_clauses
+	instead of c_finish_cilk_clauses.
+	* c-tree.h (c_finish_omp_clauses): Add new default argument.
+	* c-typeck.c (c_finish_omp_clauses): Add new argument.  Allow
+	floating-point variables in the linear clause for Cilk Plus.
+
 2016-04-18  Michael Matz  <matz@suse.de>
 
 	* c-decl.c (merge_decls): Use SET_DECL_ALIGN and SET_TYPE_ALIGN.

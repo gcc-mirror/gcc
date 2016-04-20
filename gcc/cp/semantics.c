@@ -5793,7 +5793,8 @@ cp_finish_omp_clause_depend_sink (tree sink_clause)
    Remove any elements from the list that are invalid.  */
 
 tree
-finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
+finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd,
+		    bool is_cilk)
 {
   bitmap_head generic_head, firstprivate_head, lastprivate_head;
   bitmap_head aligned_head, map_head, map_field_head;
@@ -5889,13 +5890,29 @@ finish_omp_clauses (tree clauses, bool allow_fields, bool declare_simd)
 		}
 	      if (TREE_CODE (type) == REFERENCE_TYPE)
 		type = TREE_TYPE (type);
-	      if (!INTEGRAL_TYPE_P (type)
-		  && TREE_CODE (type) != POINTER_TYPE)
+	      if (is_cilk)
 		{
-		  error ("linear clause applied to non-integral non-pointer "
-			 "variable with %qT type", TREE_TYPE (t));
-		  remove = true;
-		  break;
+		  if (!INTEGRAL_TYPE_P (type)
+		      && !SCALAR_FLOAT_TYPE_P (type)
+		      && TREE_CODE (type) != POINTER_TYPE)
+		    {
+		      error ("linear clause applied to non-integral, "
+			     "non-floating, non-pointer variable with %qT type",
+			     TREE_TYPE (t));
+		      remove = true;
+		      break;
+		    }
+		}
+	      else
+		{
+		  if (!INTEGRAL_TYPE_P (type)
+		      && TREE_CODE (type) != POINTER_TYPE)
+		    {
+		      error ("linear clause applied to non-integral non-pointer"
+			     " variable with %qT type", TREE_TYPE (t));
+		      remove = true;
+		      break;
+		    }
 		}
 	    }
 	  t = OMP_CLAUSE_LINEAR_STEP (c);
