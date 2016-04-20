@@ -353,12 +353,12 @@ private
    type Node_Array is array (Count_Type range <>) of Node_Type;
    function "=" (L, R : Node_Array) return Boolean is abstract;
 
-   type List (Capacity : Count_Type) is tagged record
-      Nodes  : Node_Array (1 .. Capacity) := (others => <>);
+   type List (Capacity : Count_Type) is record
       Free   : Count_Type'Base := -1;
       Length : Count_Type := 0;
       First  : Count_Type := 0;
       Last   : Count_Type := 0;
+      Nodes  : Node_Array (1 .. Capacity) := (others => <>);
    end record;
 
    type Cursor is record

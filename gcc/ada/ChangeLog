@@ -1,3 +1,15 @@
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): A reference to the
+	current instance of a task type is legal if the prefix is an
+	expression of that task type and the selector is an entry or
+	entry family.
+
+2016-04-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-cfdlli.ads (List): Type is no longer tagged, not needed. Move
+	varsize field at the end for efficiency.
+
 2016-04-20  Vincent Celier  <celier@adacore.com>
 
 	* gnatcmd.adb: Do not invoke gprls when the invocation of "gnat
