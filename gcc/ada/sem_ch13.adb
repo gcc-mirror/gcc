@@ -8048,9 +8048,11 @@ package body Sem_Ch13 is
             --  If the invariant pragma comes from an aspect, replace the saved
             --  expression because we need the subtype references replaced for
             --  the calls to Preanalyze_Spec_Expression in Check_Aspect_At_xxx
-            --  routines.
+            --  routines. This is not done for interited class-wide invariants
+            --  because the original pragma of the parent type must remain
+            --  unchanged.
 
-            if Present (Asp) then
+            if not Inherit and then Present (Asp) then
                Set_Entity (Identifier (Asp), New_Copy_Tree (Expr));
             end if;
 
@@ -8066,40 +8068,46 @@ package body Sem_Ch13 is
             Set_Parent (Expr, Parent (Arg2));
             Preanalyze_Assert_Expression (Expr, Any_Boolean);
 
-            --  A class-wide invariant may be inherited in a separate unit,
-            --  where the corresponding expression cannot be resolved by
-            --  visibility, because it refers to a local function. Propagate
-            --  semantic information to the original representation item, to
-            --  be used when an invariant procedure for a derived type is
-            --  constructed.
+            --  Both modifications performed below are not done for inherited
+            --  class-wide invariants because the origial aspect/pragma of the
+            --  parent type must remain unchanged.
 
-            --  ??? Unclear how to handle class-wide invariants that are not
-            --  function calls.
+            if not Inherit then
 
-            if not Inherit
-              and then Class_Present (Prag)
-              and then Nkind (Expr) = N_Function_Call
-              and then Nkind (Arg2) = N_Indexed_Component
-            then
-               Rewrite (Arg2,
-                 Make_Function_Call (Ploc,
-                   Name                   =>
-                     New_Occurrence_Of (Entity (Name (Expr)), Ploc),
-                   Parameter_Associations =>
-                     New_Copy_List (Expressions (Arg2))));
-            end if;
+               --  A class-wide invariant may be inherited in a separate unit,
+               --  where the corresponding expression cannot be resolved by
+               --  visibility, because it refers to a local function. Propagate
+               --  semantic information to the original representation item, to
+               --  be used when an invariant procedure for a derived type is
+               --  constructed.
 
-            --  In ASIS mode, even if assertions are not enabled, we must
-            --  analyze the original expression in the aspect specification
-            --  because it is part of the original tree.
+               --  ??? Unclear how to handle class-wide invariants that are not
+               --  function calls.
 
-            if ASIS_Mode and then Present (Asp) then
-               declare
-                  Orig_Expr : constant Node_Id := Expression (Asp);
-               begin
-                  Replace_Type_References (Orig_Expr, T);
-                  Preanalyze_Assert_Expression (Orig_Expr, Any_Boolean);
-               end;
+               if Class_Present (Prag)
+                 and then Nkind (Expr) = N_Function_Call
+                 and then Nkind (Arg2) = N_Indexed_Component
+               then
+                  Rewrite (Arg2,
+                    Make_Function_Call (Ploc,
+                      Name                   =>
+                        New_Occurrence_Of (Entity (Name (Expr)), Ploc),
+                      Parameter_Associations => Expressions (Arg2)));
+               end if;
+
+               --  In ASIS mode, even if assertions are not enabled, we must
+               --  analyze the original expression in the aspect specification
+               --  because it is part of the original tree.
+
+               if ASIS_Mode and then Present (Asp) then
+                  declare
+                     Asp_Expr : constant Node_Id := Expression (Asp);
+
+                  begin
+                     Replace_Type_References (Asp_Expr, T);
+                     Preanalyze_Assert_Expression (Asp_Expr, Any_Boolean);
+                  end;
+               end if;
             end if;
 
             --  An ignored invariant must not generate a runtime check. Add a

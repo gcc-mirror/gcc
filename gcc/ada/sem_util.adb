@@ -1759,6 +1759,11 @@ package body Sem_Util is
       if Is_Entity_Name (Expr) then
          Set_Etype (Expr, Etype (Entity (Expr)));
 
+         --  The designated entity will not be examined again when resolving
+         --  the dereference, so generate a reference to it now.
+
+         Generate_Reference (Entity (Expr), Expr);
+
       elsif Nkind (Expr) = N_Function_Call then
 
          --  If the name of the indexing function is overloaded, locate the one
