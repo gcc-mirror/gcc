@@ -74,9 +74,9 @@ package Inline is
       --  must be inhibited.
 
       Current_Sem_Unit : Unit_Number_Type;
-      --  The semantic unit within which the instantiation is found. Must
-      --  be restored when compiling the body, to insure that internal enti-
-      --  ties use the same counter and are unique over spec and body.
+      --  The semantic unit within which the instantiation is found. Must be
+      --  restored when compiling the body, to insure that internal entities
+      --  use the same counter and are unique over spec and body.
 
       Scope_Suppress           : Suppress_Record;
       Local_Suppress_Stack_Top : Suppress_Stack_Entry_Ptr;

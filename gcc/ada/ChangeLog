@@ -1,3 +1,9 @@
+2016-04-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference [Attribute_Valid]):
+	Disable expansion when generating C code.
+	* sinfo.ads, inline.ads: Minor editing.
+
 2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_util.adb, contracts.adb, ghost.adb, exp_ch6.adb: Minor
