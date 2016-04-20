@@ -5557,64 +5557,6 @@ package body Exp_Ch6 is
       Loc  : constant Source_Ptr := Sloc (N);
       Subp : constant Entity_Id  := Defining_Entity (N);
 
-      procedure Build_Procedure_Form;
-      --  Create a procedure declaration which emulates the behavior of
-      --  function Subp, for C-compatible generation.
-
-      --------------------------
-      -- Build_Procedure_Form --
-      --------------------------
-
-      procedure Build_Procedure_Form is
-         Func_Formal  : Entity_Id;
-         Proc_Formals : List_Id;
-
-      begin
-         Proc_Formals := New_List;
-
-         --  Create a list of formal parameters with the same types as the
-         --  function.
-
-         Func_Formal := First_Formal (Subp);
-         while Present (Func_Formal) loop
-            Append_To (Proc_Formals,
-              Make_Parameter_Specification (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc, Chars (Func_Formal)),
-                Parameter_Type      =>
-                  New_Occurrence_Of (Etype (Func_Formal), Loc)));
-
-            Next_Formal (Func_Formal);
-         end loop;
-
-         --  Add an extra out parameter to carry the function result
-
-         Name_Len := 6;
-         Name_Buffer (1 .. Name_Len) := "RESULT";
-         Append_To (Proc_Formals,
-           Make_Parameter_Specification (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Chars => Name_Find),
-             Out_Present         => True,
-             Parameter_Type      => New_Occurrence_Of (Etype (Subp), Loc)));
-
-         --  The new procedure declaration is inserted immediately after the
-         --  function declaration. The processing in Build_Procedure_Body_Form
-         --  relies on this order.
-
-         Insert_After_And_Analyze (N,
-           Make_Subprogram_Declaration (Loc,
-             Specification =>
-               Make_Procedure_Specification (Loc,
-                 Defining_Unit_Name       =>
-                   Make_Defining_Identifier (Loc, Chars (Subp)),
-                 Parameter_Specifications => Proc_Formals)));
-
-         --  Mark the function as having a procedure form
-
-         Set_Rewritten_For_C (Subp);
-      end Build_Procedure_Form;
-
       --  Local variables
 
       Scop      : constant Entity_Id  := Scope (Subp);
@@ -5740,7 +5682,7 @@ package body Exp_Ch6 is
         and then Is_Constrained (Etype (Subp))
         and then not Is_Unchecked_Conversion_Instance (Subp)
       then
-         Build_Procedure_Form;
+         Build_Procedure_Form (N);
       end if;
    end Expand_N_Subprogram_Declaration;
 
