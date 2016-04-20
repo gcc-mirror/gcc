@@ -1408,10 +1408,41 @@ package body Sem_Attr is
       --------------------------------
 
       procedure Check_Array_Or_Scalar_Type is
+         function In_Aspect_Specification return Boolean;
+         --  A current instance of a type in an aspect specification is an
+         --  object and not a type, and therefore cannot be of a scalar type
+         --  in the prefix of one of the array attributes if the attribute
+         --  reference is part of an aspect expression.
+
+         -----------------------------
+         -- In_Aspect_Specification --
+         -----------------------------
+
+         function In_Aspect_Specification return Boolean is
+            P : Node_Id;
+
+         begin
+            P := Parent (N);
+            while Present (P) loop
+               if Nkind (P) = N_Aspect_Specification then
+                  return P_Type = Entity (P);
+
+               elsif Nkind (P) in N_Declaration then
+                  return False;
+               end if;
+
+               P := Parent (P);
+            end loop;
+
+            return False;
+         end In_Aspect_Specification;
+
+         --  Local variables
+
+         Dims  : Int;
          Index : Entity_Id;
 
-         D : Int;
-         --  Dimension number for array attributes
+      --  Start of processing for Check_Array_Or_Scalar_Type
 
       begin
          --  Case of string literal or string literal subtype. These cases
@@ -1431,6 +1462,12 @@ package body Sem_Attr is
 
             if Present (E1) then
                Error_Attr ("invalid argument in % attribute", E1);
+
+            elsif In_Aspect_Specification then
+               Error_Attr
+                 ("prefix of % attribute cannot be the current instance of a "
+                  & "scalar type", P);
+
             else
                Set_Etype (N, P_Base_Type);
                return;
@@ -1466,9 +1503,9 @@ package body Sem_Attr is
                Set_Etype (N, Base_Type (Etype (Index)));
 
             else
-               D := UI_To_Int (Intval (E1));
+               Dims := UI_To_Int (Intval (E1));
 
-               for J in 1 .. D - 1 loop
+               for J in 1 .. Dims - 1 loop
                   Next_Index (Index);
                end loop;
 

@@ -7902,7 +7902,6 @@ package body Freeze is
       then
          Build_Procedure_Form (Unit_Declaration_Node (E));
       end if;
-
    end Freeze_Subprogram;
 
    ----------------------
