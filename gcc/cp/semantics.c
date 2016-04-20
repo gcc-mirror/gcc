@@ -3487,6 +3487,12 @@ finish_id_expression (tree id_expression,
       if (!scope && decl != error_mark_node && identifier_p (id_expression))
 	maybe_note_name_used_in_class (id_expression, decl);
 
+      /* A use in unevaluated operand might not be instantiated appropriately
+	 if tsubst_copy builds a dummy parm, or if we never instantiate a
+	 generic lambda, so mark it now.  */
+      if (processing_template_decl && cp_unevaluated_operand)
+	mark_type_use (decl);
+
       /* Disallow uses of local variables from containing functions, except
 	 within lambda-expressions.  */
       if (outer_automatic_var_p (decl))
