@@ -1,3 +1,16 @@
+2016-04-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*lea<mode>_general_1): Rename from
+	*lea_general_1.  Use explicit SWI12 mode interator.
+	(*lea<mode>_general_2): Rename from *lea_general_2.
+	Use explicit SWI12 mode interator.
+	(*lea<mode>_general_3): Rename from *lea_general_3.
+	Use explicit SWI12 mode interator.
+	(*lea<SWI12:mode>_general_4): Split from *lea_general_4.
+	Use explicit SWI12 mode interator.
+	(*lea<SWI48:mode>_general_4): Split from *lea_general_4.
+	Use explicit SWI48 mode interator.
+
 2016-04-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_avx256_split_vector_move_misalign):
