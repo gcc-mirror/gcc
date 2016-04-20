@@ -678,6 +678,14 @@ package Exp_Unst is
    -- Subprograms --
    -----------------
 
+   function Get_Level (Subp : Entity_Id; Sub : Entity_Id) return Nat;
+   --  Sub is either Subp itself, or a subprogram nested within Subp. This
+   --  function returns the level of nesting (Subp = 1, subprograms that
+   --  are immediately nested within Subp = 2, etc).
+
+   function Subp_Index (Sub : Entity_Id) return SI_Type;
+   --  Given the entity for a subprogram, return corresponding Subps index
+
    procedure Unnest_Subprogram (Subp : Entity_Id; Subp_Body : Node_Id);
    --  Subp is a library level subprogram which has nested subprograms, and
    --  Subp_Body is the corresponding N_Subprogram_Body node. This procedure

@@ -862,16 +862,16 @@ package body Exp_Prag is
 
                --  Generate a temporary to capture the value of the prefix:
                --    Temp : <Pref type>;
-               --  Place that temporary at the beginning of declarations, to
-               --  prevent anomalies in the GNATprove flow-analysis pass in
-               --  the precondition procedure that follows.
 
                Decl :=
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Temp,
                    Object_Definition   =>
                      New_Occurrence_Of (Etype (Pref), Loc));
-               Set_No_Initialization (Decl);
+
+               --  Place that temporary at the beginning of declarations, to
+               --  prevent anomalies in the GNATprove flow-analysis pass in
+               --  the precondition procedure that follows.
 
                Prepend_To (Decls, Decl);
                Analyze (Decl);

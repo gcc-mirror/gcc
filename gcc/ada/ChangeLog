@@ -1,3 +1,20 @@
+2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Ensure that the
+	tag assignment and adjustment preceed the accessibility check.
+	* exp_ch7.adb (Is_Subprogram_Call): Reimplemented.
+
+2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_prag.adb (Expand_Attributes): Ensure that
+	the temporary used to capture the value of attribute 'Old's
+	prefix is properly initialized.
+
+2016-04-20  Javier Miranda  <miranda@adacore.com>
+
+	* exp_unst.ads, exp_unst.adb (Get_Level, Subp_Index): Moved to library
+	level.
+
 2016-04-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_ch9.adb (Analyze_Task_Type_Declaration): Shut down warning

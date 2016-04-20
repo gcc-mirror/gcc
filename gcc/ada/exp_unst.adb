@@ -138,6 +138,36 @@ package body Exp_Unst is
       Calls.Append (Call);
    end Append_Unique_Call;
 
+   ---------------
+   -- Get_Level --
+   ---------------
+
+   function Get_Level (Subp : Entity_Id; Sub : Entity_Id) return Nat is
+      Lev : Nat;
+      S   : Entity_Id;
+   begin
+      Lev := 1;
+      S   := Sub;
+      loop
+         if S = Subp then
+            return Lev;
+         else
+            S := Enclosing_Subprogram (S);
+            Lev := Lev + 1;
+         end if;
+      end loop;
+   end Get_Level;
+
+   ----------------
+   -- Subp_Index --
+   ----------------
+
+   function Subp_Index (Sub : Entity_Id) return SI_Type is
+   begin
+      pragma Assert (Is_Subprogram (Sub));
+      return SI_Type (UI_To_Int (Subps_Index (Sub)));
+   end Subp_Index;
+
    -----------------------
    -- Unnest_Subprogram --
    -----------------------
@@ -151,16 +181,8 @@ package body Exp_Unst is
       --  This function returns the index of the enclosing subprogram which
       --  will have a Lev value one less than this.
 
-      function Get_Level (Sub : Entity_Id) return Nat;
-      --  Sub is either Subp itself, or a subprogram nested within Subp. This
-      --  function returns the level of nesting (Subp = 1, subprograms that
-      --  are immediately nested within Subp = 2, etc).
-
       function Img_Pos (N : Pos) return String;
       --  Return image of N without leading blank
-
-      function Subp_Index (Sub : Entity_Id) return SI_Type;
-      --  Given the entity for a subprogram, return corresponding Subps index
 
       function Upref_Name
         (Ent   : Entity_Id;
@@ -196,26 +218,6 @@ package body Exp_Unst is
          return Ret;
       end Enclosing_Subp;
 
-      ---------------
-      -- Get_Level --
-      ---------------
-
-      function Get_Level (Sub : Entity_Id) return Nat is
-         Lev : Nat;
-         S   : Entity_Id;
-      begin
-         Lev := 1;
-         S   := Sub;
-         loop
-            if S = Subp then
-               return Lev;
-            else
-               S := Enclosing_Subprogram (S);
-               Lev := Lev + 1;
-            end if;
-         end loop;
-      end Get_Level;
-
       -------------
       -- Img_Pos --
       -------------
@@ -236,16 +238,6 @@ package body Exp_Unst is
 
          return Buf (Ptr + 1 .. Buf'Last);
       end Img_Pos;
-
-      ----------------
-      -- Subp_Index --
-      ----------------
-
-      function Subp_Index (Sub : Entity_Id) return SI_Type is
-      begin
-         pragma Assert (Is_Subprogram (Sub));
-         return SI_Type (UI_To_Int (Subps_Index (Sub)));
-      end Subp_Index;
 
       ----------------
       -- Upref_Name --
@@ -561,7 +553,7 @@ package body Exp_Unst is
                --  Make new entry in subprogram table if not already made
 
                declare
-                  L : constant Nat := Get_Level (Ent);
+                  L : constant Nat := Get_Level (Subp, Ent);
                begin
                   Subps.Append
                     ((Ent           => Ent,
