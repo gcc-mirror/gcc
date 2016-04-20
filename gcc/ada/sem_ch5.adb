@@ -1753,14 +1753,6 @@ package body Sem_Ch5 is
    ------------------------------------
 
    procedure Analyze_Iterator_Specification (N : Node_Id) is
-      Loc       : constant Source_Ptr := Sloc (N);
-      Def_Id    : constant Node_Id    := Defining_Identifier (N);
-      Subt      : constant Node_Id    := Subtype_Indication (N);
-      Iter_Name : constant Node_Id    := Name (N);
-
-      Typ : Entity_Id;
-      Bas : Entity_Id;
-
       procedure Check_Reverse_Iteration (Typ : Entity_Id);
       --  For an iteration over a container, if the loop carries the Reverse
       --  indicator, verify that the container type has an Iterate aspect that
@@ -1821,6 +1813,16 @@ package body Sem_Ch5 is
 
          return Etype (Ent);
       end Get_Cursor_Type;
+
+      --  Local variables
+
+      Def_Id    : constant Node_Id    := Defining_Identifier (N);
+      Iter_Name : constant Node_Id    := Name (N);
+      Loc       : constant Source_Ptr := Sloc (N);
+      Subt      : constant Node_Id    := Subtype_Indication (N);
+
+      Bas : Entity_Id;
+      Typ : Entity_Id;
 
    --   Start of processing for Analyze_iterator_Specification
 
@@ -1925,7 +1927,7 @@ package body Sem_Ch5 is
 
         --  Do not perform this expansion in SPARK mode, since the formal
         --  verification directly deals with the source form of the iterator.
-        --  Ditto for ASIS and when expansion is disabled,, where the temporary
+        --  Ditto for ASIS and when expansion is disabled, where the temporary
         --  may hide the transformation of a selected component into a prefixed
         --  function call, and references need to see the original expression.
 
@@ -2001,7 +2003,7 @@ package body Sem_Ch5 is
             --  to it. It has no effect on the generated code if no actions
             --  are added to it (see Wrap_Transient_Declaration).
 
-            if Expander_Active then
+            if not Is_Array_Type (Typ) and then Expander_Active then
                Establish_Transient_Scope (Name (Decl), Sec_Stack => True);
             end if;
 
