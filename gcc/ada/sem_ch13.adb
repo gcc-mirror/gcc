@@ -10847,10 +10847,10 @@ package body Sem_Ch13 is
       --  After all forms of overriding have been resolved, a tagged type may
       --  be left with a set of implicitly declared and possibly erroneous
       --  abstract subprograms, null procedures and subprograms that require
-      --  overriding. If this set contains fully conformat homographs, then one
-      --  is chosen arbitrarily (already done during resolution), otherwise all
-      --  remaining non-fully conformant homographs are hidden from visibility
-      --  (Ada RM 8.3 12.3/2).
+      --  overriding. If this set contains fully conformant homographs, then
+      --  one is chosen arbitrarily (already done during resolution), otherwise
+      --  all remaining non-fully conformant homographs are hidden from
+      --  visibility (Ada RM 8.3 12.3/2).
 
       if Is_Tagged_Type (E) then
          Hide_Non_Overridden_Subprograms (E);
