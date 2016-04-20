@@ -1,3 +1,9 @@
+2016-04-20  Javier Miranda  <miranda@adacore.com>
+
+	* contracts.adb (Build_Postconditions_Procedure): Code cleanup.
+	* ghost.adb (Os_OK_Ghost_Context.Is_OK_Declaration): Handle the
+	declaration of the internally built _postcondition procedure.
+
 2016-04-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* snames.ads-tmpl (Internal_Attribute_Id, Attribute_Class_Array): Fix
