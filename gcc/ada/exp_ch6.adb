@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5491,28 +5491,6 @@ package body Exp_Ch6 is
 
       Qualify_Entity_Names (N);
 
-      --  If we are unnesting procedures, and this is an outer level procedure
-      --  with nested subprograms, do the unnesting operation now.
-
-      if Opt.Unnest_Subprogram_Mode
-
-        --  We are only interested in subprograms (not generic subprograms)
-
-        and then Is_Subprogram (Spec_Id)
-
-        --  Only deal with outer level subprograms. Nested subprograms are
-        --  handled as part of dealing with the outer level subprogram in
-        --  which they are nested.
-
-        and then Enclosing_Subprogram (Spec_Id) = Empty
-
-        --  We are only interested in subprograms that have nested subprograms
-
-        and then Has_Nested_Subprogram (Spec_Id)
-      then
-         Unest_Bodies.Append ((Spec_Id, N));
-      end if;
-
       Ghost_Mode := Save_Ghost_Mode;
    end Expand_N_Subprogram_Body;
 
@@ -8497,8 +8475,74 @@ package body Exp_Ch6 is
    -- Unnest_Subprograms --
    ------------------------
 
-   procedure Unnest_Subprograms is
+   procedure Unnest_Subprograms (N : Node_Id) is
+
+      procedure Search_Unnesting_Subprograms (N : Node_Id);
+      --  Search for outer level procedures with nested subprograms and append
+      --  them to the Unnest table.
+
+      ----------------------------------
+      -- Search_Unnesting_Subprograms --
+      ----------------------------------
+
+      procedure Search_Unnesting_Subprograms (N : Node_Id) is
+
+         function Search_Subprograms (N : Node_Id) return Traverse_Result;
+         --  Tree visitor that search for outer level procedures with nested
+         --  subprograms and adds them to the Unnest table.
+
+         ------------------------
+         -- Search_Subprograms --
+         ------------------------
+
+         function Search_Subprograms (N : Node_Id) return Traverse_Result is
+         begin
+            if Nkind_In (N, N_Subprogram_Body,
+                            N_Subprogram_Body_Stub)
+            then
+               declare
+                  Spec_Id : constant Entity_Id := Unique_Defining_Entity (N);
+
+               begin
+                  --  We are only interested in subprograms (not generic
+                  --  subprograms), that have nested subprograms.
+
+                  if Is_Subprogram (Spec_Id)
+                    and then Has_Nested_Subprogram (Spec_Id)
+                    and then Is_Library_Level_Entity (Spec_Id)
+                  then
+                     Unest_Bodies.Append ((Spec_Id, N));
+                  end if;
+               end;
+            end if;
+
+            return OK;
+         end Search_Subprograms;
+
+         ---------------
+         -- Do_Search --
+         ---------------
+
+         procedure Do_Search is new Traverse_Proc (Search_Subprograms);
+         --  Subtree visitor instantiation
+
+      --  Start of processing for Search_Unnesting_Subprograms
+
+      begin
+         if Opt.Unnest_Subprogram_Mode then
+            Do_Search (N);
+         end if;
+      end Search_Unnesting_Subprograms;
+
+   --  Start of processing for Unnest_Subprograms
+
    begin
+      if not Opt.Unnest_Subprogram_Mode then
+         return;
+      end if;
+
+      Search_Unnesting_Subprograms (N);
+
       for J in Unest_Bodies.First .. Unest_Bodies.Last loop
          declare
             UBJ : Unest_Entry renames Unest_Bodies.Table (J);

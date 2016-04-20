@@ -454,7 +454,7 @@ package System.OS_Lib is
    --  that is writable. Returns True if so, False otherwise. Note that this
    --  function simply interrogates the file attributes (e.g. using the C
    --  function stat), so it does not indicate a situation in which a file may
-   --  not actually be writeable due to some other process having exclusive
+   --  not actually be writable due to some other process having exclusive
    --  access.
 
    function Locate_Exec_On_Path (Exec_Name : String) return String_Access;

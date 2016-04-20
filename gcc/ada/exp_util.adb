@@ -7800,7 +7800,30 @@ package body Exp_Util is
 
       elsif Nkind (Exp) = N_Type_Conversion then
          Remove_Side_Effects (Expression (Exp), Name_Req, Variable_Ref);
-         goto Leave;
+
+         --  Generating C code the type conversion of an access to constrained
+         --  array type into an access to unconstrained array type involves
+         --  initializing a fat pointer and the expression must be free of
+         --  side effects to safely compute its bounds.
+
+         if Generate_C_Code
+           and then Is_Access_Type (Etype (Exp))
+           and then Is_Array_Type (Designated_Type (Etype (Exp)))
+           and then not Is_Constrained (Designated_Type (Etype (Exp)))
+         then
+            Def_Id := Build_Temporary (Loc, 'R', Exp);
+            Set_Etype (Def_Id, Exp_Type);
+            Res := New_Occurrence_Of (Def_Id, Loc);
+
+            Insert_Action (Exp,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Def_Id,
+                Object_Definition   => New_Occurrence_Of (Exp_Type, Loc),
+                Constant_Present    => True,
+                Expression          => Relocate_Node (Exp)));
+         else
+            goto Leave;
+         end if;
 
       --  If this is an unchecked conversion that Gigi can't handle, make
       --  a copy or a use a renaming to capture the value.
@@ -9076,6 +9099,19 @@ package body Exp_Util is
         and then Is_Class_Wide_Type (Typ)
       then
          return True;
+
+      --  Generating C the type conversion of an access to constrained array
+      --  type into an access to unconstrained array type involves initializing
+      --  a fat pointer and the expression cannot be assumed to be free of side
+      --  effects since it must referenced several times to compute its bounds.
+
+      elsif Generate_C_Code
+        and then Nkind (N) = N_Type_Conversion
+        and then Is_Access_Type (Typ)
+        and then Is_Array_Type (Designated_Type (Typ))
+        and then not Is_Constrained (Designated_Type (Typ))
+      then
+         return False;
       end if;
 
       --  For other than entity names and compile time known values,
