@@ -1,3 +1,11 @@
+2016-04-20  Richard Biener  <rguenther@suse.de>
+
+	* gimple-match.h (maybe_build_generic_op): Adjust prototype.
+	* gimple-match-head.c (maybe_build_generic_op): Pass all ops
+	by reference, clear op1 and op2 when GENERICizing BIT_FIELD_REF.
+	(maybe_push_res_to_seq): Adjust.
+	* gimple-fold.c (maybe_build_generic_op): Likewise.
+
 2016-04-20  Marek Polacek  <polacek@redhat.com>
 
 	* tree-if-conv.c (is_false_predicate): For NULL_TREE return false

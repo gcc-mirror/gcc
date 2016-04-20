@@ -3376,8 +3376,7 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	  || gimple_num_ops (stmt) > get_gimple_rhs_num_ops (rcode))
 	{
 	  maybe_build_generic_op (rcode,
-				  TREE_TYPE (gimple_assign_lhs (stmt)),
-				  &ops[0], ops[1], ops[2]);
+				  TREE_TYPE (gimple_assign_lhs (stmt)), ops);
 	  gimple_assign_set_rhs_with_ops (gsi, rcode, ops[0], ops[1], ops[2]);
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
