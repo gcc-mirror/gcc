@@ -12123,6 +12123,19 @@ package body Sem_Util is
           and then Nkind (Unit_Declaration_Node (Id)) = N_Entry_Declaration;
    end Is_Entry_Declaration;
 
+   ------------------------------------
+   -- Is_Expanded_Priority_Attribute --
+   ------------------------------------
+
+   function Is_Expanded_Priority_Attribute (E : Entity_Id) return Boolean is
+   begin
+      return
+        Nkind (E) = N_Function_Call
+          and then not Configurable_Run_Time_Mode
+          and then (Entity (Name (E)) = RTE (RE_Get_Ceiling)
+                     or else Entity (Name (E)) = RTE (RO_PE_Get_Ceiling));
+   end Is_Expanded_Priority_Attribute;
+
    ----------------------------
    -- Is_Expression_Function --
    ----------------------------
