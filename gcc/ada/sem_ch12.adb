@@ -14052,7 +14052,7 @@ package body Sem_Ch12 is
          begin
             Result := Make_Identifier (Loc, Chars (Typ));
 
-            if Present (Scop) and then Scop /= Standard_Standard then
+            if Present (Scop) and then not Is_Generic_Unit (Scop) then
                Result :=
                  Make_Selected_Component (Loc,
                    Prefix        => Make_Identifier (Loc, Chars (Scop)),

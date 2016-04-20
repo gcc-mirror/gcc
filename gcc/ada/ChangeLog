@@ -1,3 +1,17 @@
+2016-04-20  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: Do not invoke gprls when the invocation of "gnat
+	ls" includes the switch -V.
+	* clean.adb: "<target>-gnatclean -P" now calls "gprclean
+	--target=<target>"
+	* make.adb: "<target>-gnatmake -P" now calls "gprbuild
+	--target=<target>"
+
+2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb (Qualify_Type): Do not perform
+	partial qualification when the immediate scope is a generic unit.
+
 2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_unst.adb: Minor reformatting.

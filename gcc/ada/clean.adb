@@ -1619,8 +1619,8 @@ package body Clean is
 
    procedure Parse_Cmd_Line is
       Last         : constant Natural := Argument_Count;
-      Source_Index : Int := 0;
       Index        : Positive;
+      Source_Index : Int := 0;
 
       procedure Check_Version_And_Help is new Check_Version_And_Help_G (Usage);
 
@@ -1629,16 +1629,29 @@ package body Clean is
 
       Check_Version_And_Help ("GNATCLEAN", "2003");
 
-      --  First, for native gnatclean, check for switch -P and, if found and
-      --  gprclean is available, silently invoke gprclean.
+      --  First, check for switch -P and, if found and gprclean is available,
+      --  silently invoke gprclean, with switch --target if not on a native
+      --  platform.
 
-      Find_Program_Name;
+      declare
+         Arg_Len       : Positive      := Argument_Count;
+         Call_Gprclean : Boolean       := False;
+         Gprclean      : String_Access := null;
+         Pos           : Natural       := 0;
+         Success       : Boolean;
+         Target        : String_Access := null;
 
-      if Name_Buffer (1 .. Name_Len) = "gnatclean" then
-         declare
-            Call_Gprclean : Boolean := False;
+      begin
+         Find_Program_Name;
 
-         begin
+         if Name_Len >= 9
+           and then Name_Buffer (Name_Len - 8 .. Name_Len) = "gnatclean"
+         then
+            if Name_Len > 9 then
+               Target  := new String'(Name_Buffer (1 .. Name_Len - 10));
+               Arg_Len := Arg_Len + 1;
+            end if;
+
             for J in 1 .. Argument_Count loop
                declare
                   Arg : constant String := Argument (J);
@@ -1653,16 +1666,20 @@ package body Clean is
             end loop;
 
             if Call_Gprclean then
-               declare
-                  Gprclean : String_Access :=
-                               Locate_Exec_On_Path (Exec_Name => "gprclean");
-                  Args     : Argument_List (1 .. Argument_Count);
-                  Success  : Boolean;
+               Gprclean := Locate_Exec_On_Path (Exec_Name => "gprclean");
 
-               begin
-                  if Gprclean /= null then
+               if Gprclean /= null then
+                  declare
+                     Args : Argument_List (1 .. Arg_Len);
+                  begin
+                     if Target /= null then
+                        Args (1) := new String'("--target=" & Target.all);
+                        Pos := 1;
+                     end if;
+
                      for J in 1 .. Argument_Count loop
-                        Args (J) := new String'(Argument (J));
+                        Pos := Pos + 1;
+                        Args (Pos) := new String'(Argument (J));
                      end loop;
 
                      Spawn (Gprclean.all, Args, Success);
@@ -1672,11 +1689,11 @@ package body Clean is
                      if Success then
                         Exit_Program (E_Success);
                      end if;
-                  end if;
-               end;
+                  end;
+               end if;
             end if;
-         end;
-      end if;
+         end if;
+      end;
 
       Index := 1;
       while Index <= Last loop
