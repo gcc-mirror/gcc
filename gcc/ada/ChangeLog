@@ -1,5 +1,26 @@
 2016-04-20  Javier Miranda  <miranda@adacore.com>
 
+	* contracts.adb (Build_Postconditions_Procedure): Force its
+	inlining when generating C code.
+	* sem_attr.adb (Analyze_Attribute_Old_Result): Handle inlined
+	_postconditions when generating C code.
+	* exp_ch6.adb (Inlined_Subprogram): Inline calls to
+	_postconditions when generating C code.
+	* sinfo.ads, sinfo.adb (Corresponding_Spec, Set_Corresponding_Spec):
+	types of return value and argument changed from Node_Id to
+	Entity_Id.
+
+2016-04-20  Vincent Celier  <celier@adacore.com>
+
+	* make.adb, clean.adb, gnatname.adb: Revert previous change for now.
+
+2016-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Analyze_Instance_And_Renamings): Do not reset
+	the Has_Delayed_Freeze flag on the anonymous instance node.
+
+2016-04-20  Javier Miranda  <miranda@adacore.com>
+
 	* sem_ch5.adb (Analyze_Iterator_Specification): Remove transient
 	scope associated with the renaming object declaration.
 	* exp_util.adb (Insert_Actions): Remove handling of iterator

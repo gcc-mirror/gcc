@@ -691,7 +691,7 @@ package body Sinfo is
    end Corresponding_Integer_Value;
 
    function Corresponding_Spec
-      (N : Node_Id) return Node_Id is
+      (N : Node_Id) return Entity_Id is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Expression_Function
@@ -3947,7 +3947,7 @@ package body Sinfo is
    end Set_Corresponding_Integer_Value;
 
    procedure Set_Corresponding_Spec
-      (N : Node_Id; Val : Node_Id) is
+      (N : Node_Id; Val : Entity_Id) is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Expression_Function

@@ -8993,7 +8993,7 @@ package Sinfo is
      (N : Node_Id) return Uint;       -- Uint4
 
    function Corresponding_Spec
-     (N : Node_Id) return Node_Id;    -- Node5
+     (N : Node_Id) return Entity_Id;  -- Node5
 
    function Corresponding_Spec_Of_Stub
      (N : Node_Id) return Node_Id;    -- Node2
@@ -10033,7 +10033,7 @@ package Sinfo is
      (N : Node_Id; Val : Uint);               -- Uint4
 
    procedure Set_Corresponding_Spec
-     (N : Node_Id; Val : Node_Id);            -- Node5
+     (N : Node_Id; Val : Entity_Id);          -- Node5
 
    procedure Set_Corresponding_Spec_Of_Stub
      (N : Node_Id; Val : Node_Id);            -- Node2
