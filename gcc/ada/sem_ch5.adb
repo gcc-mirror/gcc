@@ -1925,11 +1925,12 @@ package body Sem_Ch5 is
 
         --  Do not perform this expansion in SPARK mode, since the formal
         --  verification directly deals with the source form of the iterator.
-        --  Ditto for ASIS, where the temporary may hide the transformation
-        --  of a selected component into a prefixed function call.
+        --  Ditto for ASIS and when expansion is disabled,, where the temporary
+        --  may hide the transformation of a selected component into a prefixed
+        --  function call, and references need to see the original expression.
 
         and then not GNATprove_Mode
-        and then not ASIS_Mode
+        and then Expander_Active
       then
          declare
             Id    : constant Entity_Id := Make_Temporary (Loc, 'R', Iter_Name);
@@ -2016,7 +2017,7 @@ package body Sem_Ch5 is
       --  Iterate is not a reserved name. What matters is that the return type
       --  of the function is an iterator type.
 
-      elsif Is_Entity_Name (Iter_Name) then
+      elsif Is_Entity_Name (Iter_Name) or else not Expander_Active then
          Analyze (Iter_Name);
 
          if Nkind (Iter_Name) = N_Function_Call then
@@ -2266,9 +2267,11 @@ package body Sem_Ch5 is
             --  If that object is a selected component, verify that it is not
             --  a component of an unconstrained mutable object.
 
-            if Nkind (Iter_Name) = N_Identifier then
+            if Nkind (Iter_Name) = N_Identifier
+              or else (not Expander_Active and Comes_From_Source (Iter_Name))
+            then
                declare
-                  Orig_Node : constant Node_Id := Original_Node (Iter_Name);
+                  Orig_Node : constant Node_Id   := Original_Node (Iter_Name);
                   Iter_Kind : constant Node_Kind := Nkind (Orig_Node);
                   Obj       : Node_Id;
 

@@ -1,3 +1,33 @@
+2016-04-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* par_sco.adb, sem_util.adb, sem_ch13.adb: Minor typo corrections and
+	reformatting.
+
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Default_Storage_Pool):
+	If the pragma comes from an aspect specification, verify that
+	the aspect applies to an entity with a declarative part.
+	* exp_ch5.adb: Code cleanup.
+
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_If_Expression): If first expression is
+	universal, resolve subsequent ones with the corresponding class
+	type (Any_Integer or Any_Real).
+
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): If expansion is
+	disabled, complete the analysis of the iterator name to ensure
+	that reference for entities within are properly generated.
+
+2016-04-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-dispat.ads (Yield): add Global contract.
+	* a-calend.ads, a-reatim.ads: Added Initializes => Clock_Time.
+	* a-taside.adb: Added Initializes => Tasking_State.
+
 2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch13.adb (Build_Invariant_Procedure):

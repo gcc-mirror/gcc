@@ -8048,9 +8048,19 @@ package body Sem_Res is
       end if;
 
       --  If ELSE expression present, just resolve using the determined type
+      --  If type is universal, resolve to any member of the class.
 
       if Present (Else_Expr) then
-         Resolve (Else_Expr, Typ);
+         if Typ = Universal_Integer then
+            Resolve (Else_Expr, Any_Integer);
+
+         elsif Typ = Universal_Real then
+            Resolve (Else_Expr, Any_Real);
+
+         else
+            Resolve (Else_Expr, Typ);
+         end if;
+
          Else_Typ := Etype (Else_Expr);
 
          if Is_Scalar_Type (Else_Typ) and then Else_Typ /= Typ then

@@ -37,7 +37,8 @@ package Ada.Calendar with
   SPARK_Mode,
   Abstract_State => (Clock_Time with Synchronous,
                                      External => (Async_Readers,
-                                                  Async_Writers))
+                                                  Async_Writers)),
+  Initializes    => Clock_Time
 is
 
    type Time is private;

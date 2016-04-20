@@ -13582,6 +13582,17 @@ package body Sem_Prag is
                Check_Is_In_Decl_Part_Or_Package_Spec;
             end if;
 
+            if From_Aspect_Specification (N) then
+               declare
+                  E : constant Entity_Id := Entity (Corresponding_Aspect (N));
+               begin
+                  if not In_Open_Scopes (E) then
+                     Error_Msg_N
+                       ("aspect must apply to package or subprogram", N);
+                  end if;
+               end;
+            end if;
+
             if Present (Arg1) then
                Pool := Get_Pragma_Arg (Arg1);
 
