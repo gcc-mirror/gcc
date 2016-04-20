@@ -254,15 +254,26 @@ package body Ghost is
             then
                Subp_Id := Corresponding_Spec (Decl);
 
-               --  The original context is an expression function that has
-               --  been split into a spec and a body. The context is OK as
-               --  long as the initial declaration is Ghost.
-
                if Present (Subp_Id) then
-                  Subp_Decl := Original_Node (Unit_Declaration_Node (Subp_Id));
 
-                  if Nkind (Subp_Decl) = N_Expression_Function then
-                     return Is_Subject_To_Ghost (Subp_Decl);
+                  --  The context is the internally built _postconditions
+                  --  subprogram, which it is OK because the real check was
+                  --  done before expansion activities.
+
+                  if Chars (Subp_Id) = Name_uPostconditions then
+                     return True;
+
+                  else
+                     Subp_Decl :=
+                       Original_Node (Unit_Declaration_Node (Subp_Id));
+
+                     --  The original context is an expression function that
+                     --  has been split into a spec and a body. The context is
+                     --  OK as long as the initial declaration is Ghost.
+
+                     if Nkind (Subp_Decl) = N_Expression_Function then
+                        return Is_Subject_To_Ghost (Subp_Decl);
+                     end if;
                   end if;
 
                --  Otherwise this is either an internal body or an internal

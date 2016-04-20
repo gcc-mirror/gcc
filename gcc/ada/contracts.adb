@@ -1749,8 +1749,7 @@ package body Contracts is
          end if;
 
          Proc_Id := Make_Defining_Identifier (Loc, Name_uPostconditions);
-         Set_Debug_Info_Needed   (Proc_Id);
-         Set_Postconditions_Proc (Subp_Id, Proc_Id);
+         Set_Debug_Info_Needed (Proc_Id);
 
          --  The related subprogram is a function: create the specification of
          --  parameter _Result.
@@ -1786,51 +1785,47 @@ package body Contracts is
          --  the postconditions: this would cause confusing debug info to be
          --  produced, interfering with coverage-analysis tools.
 
-         Proc_Bod :=
-           Make_Subprogram_Body (Loc,
-             Specification              =>
+         declare
+            Proc_Decl    : Node_Id;
+            Proc_Decl_Id : Entity_Id;
+            Proc_Spec    : Node_Id;
+         begin
+            Proc_Spec :=
                Make_Procedure_Specification (Loc,
                  Defining_Unit_Name       => Proc_Id,
-                 Parameter_Specifications => Params),
+                 Parameter_Specifications => Params);
 
-             Declarations               => Empty_List,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => Stmts,
-                 End_Label  => Make_Identifier (Loc, Chars (Proc_Id))));
+            Proc_Decl := Make_Subprogram_Declaration (Loc, Proc_Spec);
+            Proc_Decl_Id := Defining_Entity (Specification (Proc_Decl));
+            Set_Postconditions_Proc (Subp_Id, Proc_Decl_Id);
 
-         Insert_Before_First_Source_Declaration (Proc_Bod);
+            --  Force the front end inlining of _PostConditions when generating
+            --  C code since its body may have references to itypes defined in
+            --  the enclosing subprogram, thus causing problems to unnesting
+            --  routines.
 
-         --  Force the front-end inlining of _PostConditions when generating
-         --  C code, since its body may have references to itypes defined in
-         --  the enclosing subprogram, thus causing problems for the unnested
-         --  routines. For this purpose its declaration with proper decoration
-         --  for inlining is needed.
-
-         if Generate_C_Code then
-            declare
-               Proc_Decl    : Node_Id;
-               Proc_Decl_Id : Entity_Id;
-
-            begin
-               Proc_Decl :=
-                 Make_Subprogram_Declaration (Loc,
-                   Specification =>
-                     Copy_Subprogram_Spec (Specification (Proc_Bod)));
-               Insert_Before (Proc_Bod, Proc_Decl);
-
-               Proc_Decl_Id := Defining_Entity (Specification (Proc_Decl));
+            if Generate_C_Code then
                Set_Has_Pragma_Inline (Proc_Decl_Id);
                Set_Has_Pragma_Inline_Always (Proc_Decl_Id);
                Set_Is_Inlined (Proc_Decl_Id);
+            end if;
 
-               Set_Postconditions_Proc (Subp_Id, Proc_Decl_Id);
+            Insert_Before_First_Source_Declaration (Proc_Decl);
+            Analyze (Proc_Decl);
 
-               Analyze (Proc_Decl);
-            end;
-         end if;
+            Proc_Bod :=
+              Make_Subprogram_Body (Loc,
+                Specification              =>
+                  Copy_Subprogram_Spec (Proc_Spec),
+                Declarations               => Empty_List,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => Stmts,
+                    End_Label  => Make_Identifier (Loc, Chars (Proc_Id))));
 
-         Analyze (Proc_Bod);
+            Insert_Before_First_Source_Declaration (Proc_Bod);
+            Analyze (Proc_Bod);
+         end;
       end Build_Postconditions_Procedure;
 
       ----------------------------
