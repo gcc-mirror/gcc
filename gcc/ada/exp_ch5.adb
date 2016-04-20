@@ -1695,12 +1695,8 @@ package body Exp_Ch5 is
             --  previously expanded into a call to the Get_Ceiling run-time
             --  subprogram. In restricted profiles this is not available.
 
-            if Nkind (Ent) = N_Function_Call
-              and then not Configurable_Run_Time_Mode
-              and then (Entity (Name (Ent)) = RTE (RE_Get_Ceiling)
-                          or else
-                        Entity (Name (Ent)) = RTE (RO_PE_Get_Ceiling))
-            then
+            if Is_Expanded_Priority_Attribute (Ent) then
+
                --  Look for the enclosing concurrent type
 
                Conctyp := Current_Scope;

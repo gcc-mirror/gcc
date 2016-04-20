@@ -41,7 +41,6 @@ with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Restrict; use Restrict;
 with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Case; use Sem_Case;
@@ -440,11 +439,7 @@ package body Sem_Ch5 is
                   --  objects have been previously expanded into calls to the
                   --  Get_Ceiling run-time subprogram.
 
-                 or else
-                  (Nkind (Ent) = N_Function_Call
-                    and then (Entity (Name (Ent)) = RTE (RE_Get_Ceiling)
-                               or else
-                              Entity (Name (Ent)) = RTE (RO_PE_Get_Ceiling)))
+                 or else Is_Expanded_Priority_Attribute (Ent)
                then
                   --  The enclosing subprogram cannot be a protected function
 

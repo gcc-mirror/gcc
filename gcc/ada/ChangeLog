@@ -1,3 +1,12 @@
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Is_Expanded_Priority_Attribute):
+	New predicate to determine that in a context with full run-time,
+	a function call is an expansion of a reference to attribute
+	Priority.
+	* sem_ch5.adb (Analyze_Function_Call): use it.
+	* exp_ch5.adb (Expand_N_Subprogram_Call): use it.
+
 2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb Flag286 is now used as Is_Exception_Handler.

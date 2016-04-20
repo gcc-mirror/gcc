@@ -1376,6 +1376,11 @@ package Sem_Util is
    function Is_Entry_Declaration (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id is the spec entity of an entry [family]
 
+   function Is_Expanded_Priority_Attribute (E : Entity_Id) return Boolean;
+   --  Check whether a function in a call is an expanded priority attribute,
+   --  which is transformed into an Rtsfind call to Get_Ceiling. This expansion
+   --  does not take place in a configurable runtime.
+
    function Is_Expression_Function (Subp : Entity_Id) return Boolean;
    --  Determine whether subprogram [body] Subp denotes an expression function
 
