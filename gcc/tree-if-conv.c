@@ -262,6 +262,16 @@ ifc_temp_var (tree type, tree expr, gimple_stmt_iterator *gsi)
   return new_name;
 }
 
+/* Return true when COND is a false predicate.  */
+
+static inline bool
+is_false_predicate (tree cond)
+{
+  return (cond == NULL_TREE
+	  || cond == boolean_false_node
+	  || integer_zerop (cond));
+}
+
 /* Return true when COND is a true predicate.  */
 
 static inline bool
@@ -1988,7 +1998,7 @@ predicate_mem_writes (loop_p loop)
       gimple *stmt;
       int index;
 
-      if (is_true_predicate (cond))
+      if (is_true_predicate (cond) || is_false_predicate (cond))
 	continue;
 
       swap = false;
