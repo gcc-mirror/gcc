@@ -1,3 +1,10 @@
+2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Rewrite_Renamed_Operator): Do not rewrite the
+	renamed operator when the associated node appears within a
+	pre/postcondition.
+	* sem_util.ads, sem_util.adb (In_Pre_Post_Condition): New routine.
+
 2016-04-20  Yannick Moy  <moy@adacore.com>
 
 	* osint.adb (Relocate_Path): Fix test when Path is shorter than Prefix.

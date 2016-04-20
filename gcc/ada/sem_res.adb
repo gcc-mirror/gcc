@@ -11122,8 +11122,10 @@ package body Sem_Res is
       --  Do not perform this transformation within a pre/postcondition,
       --  because the expression will be re-analyzed, and the transformation
       --  might affect the visibility of the operator, e.g. in an instance.
+      --  Note that fully analyzed and expanded pre/postconditions appear as
+      --  pragma Check equivalents.
 
-      if In_Assertion_Expr > 0 then
+      if In_Pre_Post_Condition (N) then
          return;
       end if;
 
@@ -11145,7 +11147,7 @@ package body Sem_Res is
          Generate_Reference (Op, N);
 
          if Is_Binary then
-            Set_Left_Opnd  (Op_Node, Left_Opnd  (N));
+            Set_Left_Opnd (Op_Node, Left_Opnd (N));
          end if;
 
          Rewrite (N, Op_Node);
@@ -11154,9 +11156,7 @@ package body Sem_Res is
          --  that the operator is applied to the full view. This is done in the
          --  routines that resolve intrinsic operators.
 
-         if Is_Intrinsic_Subprogram (Op)
-           and then Is_Private_Type (Typ)
-         then
+         if Is_Intrinsic_Subprogram (Op) and then Is_Private_Type (Typ) then
             case Nkind (N) is
                when N_Op_Add   | N_Op_Subtract | N_Op_Multiply | N_Op_Divide |
                     N_Op_Expon | N_Op_Mod      | N_Op_Rem      =>

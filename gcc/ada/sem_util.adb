@@ -10474,6 +10474,51 @@ package body Sem_Util is
       end loop;
    end In_Pragma_Expression;
 
+   ---------------------------
+   -- In_Pre_Post_Condition --
+   ---------------------------
+
+   function In_Pre_Post_Condition (N : Node_Id) return Boolean is
+      Par     : Node_Id;
+      Prag    : Node_Id := Empty;
+      Prag_Id : Pragma_Id;
+
+   begin
+      --  Climb the parent chain looking for an enclosing pragma
+
+      Par := N;
+      while Present (Par) loop
+         if Nkind (Par) = N_Pragma then
+            Prag := Par;
+            exit;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (Par) then
+            exit;
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      if Present (Prag) then
+         Prag_Id := Get_Pragma_Id (Prag);
+
+         return
+           Prag_Id = Pragma_Post
+             or else Prag_Id = Pragma_Post_Class
+             or else Prag_Id = Pragma_Postcondition
+             or else Prag_Id = Pragma_Pre
+             or else Prag_Id = Pragma_Pre_Class
+             or else Prag_Id = Pragma_Precondition;
+
+      --  Otherwise the node is not enclosed by a pre/postcondition pragma
+
+      else
+         return False;
+      end if;
+   end In_Pre_Post_Condition;
+
    -------------------------------------
    -- In_Reverse_Storage_Order_Object --
    -------------------------------------
