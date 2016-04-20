@@ -1,3 +1,11 @@
+2016-04-20  Andrew Pinski  <apinski@cavium.com>
+            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/64971
+	* config/aarch64/aarch64.md (sibcall): Force call
+	address to be DImode for ILP32.
+	(sibcall_value): Likewise.
+
 2016-04-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/invoke.texi: Replace -skip-rax-setup with -mskip-rax-setup.

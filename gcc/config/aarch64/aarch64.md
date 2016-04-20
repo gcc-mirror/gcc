@@ -855,6 +855,13 @@
 	   || aarch64_is_noplt_call_p (callee)))
       XEXP (operands[0], 0) = force_reg (Pmode, callee);
 
+    /* FIXME: This is a band-aid.  Need to analyze why expand_expr_addr_expr
+       is generating an SImode symbol reference.  See PR 64971.  */
+    if (TARGET_ILP32
+	&& GET_CODE (XEXP (operands[0], 0)) == SYMBOL_REF
+	&& GET_MODE (XEXP (operands[0], 0)) == SImode)
+      XEXP (operands[0], 0) = convert_memory_address (Pmode,
+						      XEXP (operands[0], 0));
     if (operands[2] == NULL_RTX)
       operands[2] = const0_rtx;
 
@@ -885,6 +892,14 @@
        && ((GET_CODE (callee) != SYMBOL_REF)
 	   || aarch64_is_noplt_call_p (callee)))
       XEXP (operands[1], 0) = force_reg (Pmode, callee);
+
+    /* FIXME: This is a band-aid.  Need to analyze why expand_expr_addr_expr
+       is generating an SImode symbol reference.  See PR 64971.  */
+    if (TARGET_ILP32
+	&& GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF
+	&& GET_MODE (XEXP (operands[1], 0)) == SImode)
+      XEXP (operands[1], 0) = convert_memory_address (Pmode,
+						      XEXP (operands[1], 0));
 
     if (operands[3] == NULL_RTX)
       operands[3] = const0_rtx;

@@ -1,3 +1,8 @@
+2016-04-20  Andrew Pinski  <apinski@cavium.com>
+
+	PR target/64971
+	* gcc.c-torture/compile/pr37433-1.c: New testcase.
+
 2016-04-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/self1.adb: Remove now incorrect test.
