@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O3 -dp -mavx -mavx256-split-unaligned-store -mno-prefer-avx128" } */
+/* { dg-options "-O3 -mtune-ctrl=sse_typeless_stores -dp -mavx -mavx256-split-unaligned-store -mno-prefer-avx128" } */
 
 #define N 1024
 
