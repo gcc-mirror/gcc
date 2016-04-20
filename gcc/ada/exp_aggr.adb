@@ -1879,6 +1879,11 @@ package body Exp_Aggr is
       --  Returns the first discriminant association in the constraint
       --  associated with T, if any, otherwise returns Empty.
 
+      function Get_Explicit_Discriminant_Value (D : Entity_Id) return Node_Id;
+      --  If the ancestor part is an unconstrained type and further ancestors
+      --  do not provide discriminants for it, check aggregate components for
+      --  values of the discriminants.
+
       procedure Init_Hidden_Discriminants (Typ : Entity_Id; List : List_Id);
       --  If Typ is derived, and constrains discriminants of the parent type,
       --  these discriminants are not components of the aggregate, and must be
@@ -1886,10 +1891,19 @@ package body Exp_Aggr is
       --  if Typ derives fron an already constrained subtype of a discriminated
       --  parent type.
 
-      function Get_Explicit_Discriminant_Value (D : Entity_Id) return Node_Id;
-      --  If the ancestor part is an unconstrained type and further ancestors
-      --  do not provide discriminants for it, check aggregate components for
-      --  values of the discriminants.
+      procedure Init_Stored_Discriminants;
+      --  If the type is derived and has inherited discriminants, generate
+      --  explicit assignments for each, using the store constraint of the
+      --  type. Note that both visible and stored discriminants must be
+      --  initialized in case the derived type has some renamed and some
+      --  constrained discriminants.
+
+      procedure Init_Visible_Discriminants;
+      --  If type has discriminants, retrieve their values from aggregate,
+      --  and generate explicit assignments for each. This does not include
+      --  discriminants inherited from ancestor, which are handled above.
+      --  The type of the aggregate is a subtype created ealier using the
+      --  given values of the discriminant components of the aggregate.
 
       function Is_Int_Range_Bounds (Bounds : Node_Id) return Boolean;
       --  Check whether Bounds is a range node and its lower and higher bounds
@@ -2278,6 +2292,70 @@ package body Exp_Aggr is
             Base_Typ := Base_Type (Par_Typ);
          end loop;
       end Init_Hidden_Discriminants;
+
+      --------------------------------
+      -- Init_Visible_Discriminants --
+      --------------------------------
+
+      procedure Init_Visible_Discriminants is
+         Discriminant       : Entity_Id;
+         Discriminant_Value : Node_Id;
+
+      begin
+         Discriminant := First_Discriminant (Typ);
+         while Present (Discriminant) loop
+            Comp_Expr :=
+              Make_Selected_Component (Loc,
+                Prefix        => New_Copy_Tree (Target),
+                Selector_Name => New_Occurrence_Of (Discriminant, Loc));
+
+            Discriminant_Value :=
+              Get_Discriminant_Value
+                (Discriminant, Typ, Discriminant_Constraint (N_Typ));
+
+            Instr :=
+              Make_OK_Assignment_Statement (Loc,
+                Name       => Comp_Expr,
+                Expression => New_Copy_Tree (Discriminant_Value));
+
+            Set_No_Ctrl_Actions (Instr);
+            Append_To (L, Instr);
+
+            Next_Discriminant (Discriminant);
+         end loop;
+      end Init_Visible_Discriminants;
+
+      -------------------------------
+      -- Init_Stored_Discriminants --
+      -------------------------------
+
+      procedure Init_Stored_Discriminants is
+         Discriminant       : Entity_Id;
+         Discriminant_Value : Node_Id;
+
+      begin
+         Discriminant := First_Stored_Discriminant (Typ);
+         while Present (Discriminant) loop
+            Comp_Expr :=
+              Make_Selected_Component (Loc,
+                Prefix        => New_Copy_Tree (Target),
+                Selector_Name => New_Occurrence_Of (Discriminant, Loc));
+
+            Discriminant_Value :=
+              Get_Discriminant_Value
+                (Discriminant, N_Typ, Discriminant_Constraint (N_Typ));
+
+            Instr :=
+              Make_OK_Assignment_Statement (Loc,
+                Name       => Comp_Expr,
+                Expression => New_Copy_Tree (Discriminant_Value));
+
+            Set_No_Ctrl_Actions (Instr);
+            Append_To (L, Instr);
+
+            Next_Stored_Discriminant (Discriminant);
+         end loop;
+      end Init_Stored_Discriminants;
 
       -------------------------
       -- Is_Int_Range_Bounds --
@@ -2681,35 +2759,11 @@ package body Exp_Aggr is
 
             --  Generate discriminant init values for the visible discriminants
 
-            declare
-               Discriminant : Entity_Id;
-               Discriminant_Value : Node_Id;
+            Init_Visible_Discriminants;
 
-            begin
-               Discriminant := First_Stored_Discriminant (Typ);
-               while Present (Discriminant) loop
-                  Comp_Expr :=
-                    Make_Selected_Component (Loc,
-                      Prefix        => New_Copy_Tree (Target),
-                      Selector_Name => New_Occurrence_Of (Discriminant, Loc));
-
-                  Discriminant_Value :=
-                    Get_Discriminant_Value
-                      (Discriminant,
-                       N_Typ,
-                       Discriminant_Constraint (N_Typ));
-
-                  Instr :=
-                    Make_OK_Assignment_Statement (Loc,
-                      Name       => Comp_Expr,
-                      Expression => New_Copy_Tree (Discriminant_Value));
-
-                  Set_No_Ctrl_Actions (Instr);
-                  Append_To (L, Instr);
-
-                  Next_Stored_Discriminant (Discriminant);
-               end loop;
-            end;
+            if Is_Derived_Type (N_Typ) then
+               Init_Stored_Discriminants;
+            end if;
          end if;
       end if;
 

@@ -1,5 +1,19 @@
 2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_attr.ads Add new table Universal_Type_Attribute.
+	* sem_util.adb (Yields_Universal_Type): Use a table lookup when
+	checking attributes.
+
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Init_Stored_Discriminants,
+	Init_Visible_Discriminants): New procedures, subsidiary of
+	Build_Record_Aggr_Code, to handle properly the construction
+	of aggregates for a derived type that constrains some parent
+	discriminants and renames others.
+
+2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch12.adb (Qualify_Universal_Operands): New routine.
 	(Save_References_In_Operator): Add explicit qualifications in
 	the generic template for all operands of universal type.
