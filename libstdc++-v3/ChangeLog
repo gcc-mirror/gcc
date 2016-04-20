@@ -1,6 +1,19 @@
 2016-04-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2016-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/69478
+	* include/bits/stl_algobase.h (__copy_move<_IsMove, true,
+	random_access_iterator_tag>): Check is_move_assignable when moving.
+	(__copy_move_backwards<_IsMove, true, random_access_iterator_tag>):
+	Likewise.
+	* testsuite/25_algorithms/copy/move_iterators/69478.cc: New.
+	* testsuite/25_algorithms/copy_backward/move_iterators/69478.cc: New.
+	* testsuite/25_algorithms/move/69478.cc: New.
+	* testsuite/25_algorithms/move_backward/69478.cc: New.
+
+	Backport from mainline
 	2016-04-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/70503

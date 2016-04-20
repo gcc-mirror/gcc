@@ -373,9 +373,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         __copy_m(const _Tp* __first, const _Tp* __last, _Tp* __result)
         {
 #if __cplusplus >= 201103L
+	  using __assignable = conditional<_IsMove,
+					   is_move_assignable<_Tp>,
+					   is_copy_assignable<_Tp>>;
 	  // trivial types can have deleted assignment
-	  static_assert( is_copy_assignable<_Tp>::value,
-	                 "type is not assignable" );
+	  static_assert( __assignable::type::value, "type is not assignable" );
 #endif
 	  const ptrdiff_t _Num = __last - __first;
 	  if (_Num)
@@ -573,9 +575,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         __copy_move_b(const _Tp* __first, const _Tp* __last, _Tp* __result)
         {
 #if __cplusplus >= 201103L
+	  using __assignable = conditional<_IsMove,
+					   is_move_assignable<_Tp>,
+					   is_copy_assignable<_Tp>>;
 	  // trivial types can have deleted assignment
-	  static_assert( is_copy_assignable<_Tp>::value,
-	                 "type is not assignable" );
+	  static_assert( __assignable::type::value, "type is not assignable" );
 #endif
 	  const ptrdiff_t _Num = __last - __first;
 	  if (_Num)
