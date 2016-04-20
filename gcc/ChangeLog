@@ -1,3 +1,7 @@
+2016-04-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/invoke.texi: Replace -skip-rax-setup with -mskip-rax-setup.
+
 2016-04-20  Richard Biener  <rguenther@suse.de>
 
 	* gimple-match.h (maybe_build_generic_op): Adjust prototype.
