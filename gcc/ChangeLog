@@ -1,3 +1,7 @@
+2016-04-20  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-scalar-evolution.c (interpret_rhs_expr): Handle BIT_AND_EXPR.
+
 2016-04-20  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/70725
