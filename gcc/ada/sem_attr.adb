@@ -1370,6 +1370,22 @@ package body Sem_Attr is
 
          Legal   := True;
          Spec_Id := Unique_Defining_Entity (Subp_Decl);
+
+         --  When generating C code, nested _postcondition subprograms are
+         --  inlined by the front end to avoid problems (when unnested) with
+         --  referenced itypes. Handle that here, since as part of inlining the
+         --  expander nests subprogram within a dummy procedure named _parent
+         --  (see Build_Postconditions_Procedure and Build_Body_To_Inline).
+         --  Hence, in this context, the spec_id of _postconditions is the
+         --  enclosing scope.
+
+         if Generate_C_Code
+           and then Chars (Spec_Id) = Name_uParent
+           and then Chars (Scope (Spec_Id)) = Name_uPostconditions
+         then
+            Spec_Id := Scope (Spec_Id);
+            pragma Assert (Is_Inlined (Spec_Id));
+         end if;
       end Analyze_Attribute_Old_Result;
 
       ---------------------------------

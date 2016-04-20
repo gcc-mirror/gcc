@@ -4923,14 +4923,6 @@ package body Sem_Ch12 is
 
          Set_Comes_From_Source (Act_Decl_Id, Comes_From_Source (Gen_Unit));
 
-         --  The signature may involve types that are not frozen yet, but the
-         --  subprogram will be frozen at the point the wrapper package is
-         --  frozen, so it does not need its own freeze node. In fact, if one
-         --  is created, it might conflict with the freezing actions from the
-         --  wrapper package.
-
-         Set_Has_Delayed_Freeze (Anon_Id, False);
-
          --  If the instance is a child unit, mark the Id accordingly. Mark
          --  the anonymous entity as well, which is the real subprogram and
          --  which is used when the instance appears in a context clause.

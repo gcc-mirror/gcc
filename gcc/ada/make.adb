@@ -6509,8 +6509,7 @@ package body Make is
       --  Warn about 'gnatmake -P'
 
       if Project_File_Name /= null then
-         Make_Failed
-           ("project files are no longer supported; use gprbuild instead");
+         Make_Failed ("project file name missing after -P");
       end if;
 
       --  If --subdirs= is specified, but not -P, this is equivalent to -D,

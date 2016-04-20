@@ -1800,6 +1800,36 @@ package body Contracts is
                  End_Label  => Make_Identifier (Loc, Chars (Proc_Id))));
 
          Insert_Before_First_Source_Declaration (Proc_Bod);
+
+         --  Force the front-end inlining of _PostConditions when generating
+         --  C code, since its body may have references to itypes defined in
+         --  the enclosing subprogram, thus causing problems for the unnested
+         --  routines. For this purpose its declaration with proper decoration
+         --  for inlining is needed.
+
+         if Generate_C_Code then
+            declare
+               Proc_Decl    : Node_Id;
+               Proc_Decl_Id : Entity_Id;
+
+            begin
+               Proc_Decl :=
+                 Make_Subprogram_Declaration (Loc,
+                   Specification =>
+                     Copy_Subprogram_Spec (Specification (Proc_Bod)));
+               Insert_Before (Proc_Bod, Proc_Decl);
+
+               Proc_Decl_Id := Defining_Entity (Specification (Proc_Decl));
+               Set_Has_Pragma_Inline (Proc_Decl_Id);
+               Set_Has_Pragma_Inline_Always (Proc_Decl_Id);
+               Set_Is_Inlined (Proc_Decl_Id);
+
+               Set_Postconditions_Proc (Subp_Id, Proc_Decl_Id);
+
+               Analyze (Proc_Decl);
+            end;
+         end if;
+
          Analyze (Proc_Bod);
       end Build_Postconditions_Procedure;
 
