@@ -160,8 +160,8 @@ ARM_FUNC_ALIAS aeabi_dadd adddf3
 	teq	r4, r5
 	beq	LSYM(Lad_d)
 
-@ CFI note: we're lucky that the branches to Lad_* that appear after this function
-@ have a CFI state that's exactly the same as the one we're in at this
+@ CFI note: we're lucky that the branches to Lad_* that appear after this
+@ function have a CFI state that's exactly the same as the one we're in at this
 @ point. Otherwise the CFI would change to a different state after the branch,
 @ which would be disastrous for backtracing.
 LSYM(Lad_x):
@@ -1158,8 +1158,8 @@ ARM_FUNC_ALIAS eqdf2 cmpdf2
 1:	str	ip, [sp, #-4]!
 	.cfi_adjust_cfa_offset 4        @ CFA is now sp + previousOffset + 4.
 	@ We're not adding CFI for ip as it's pushed into the stack
-	@ only because @ it may be popped off later as a return value
-	@ (i.e. we're not preserving @ it anyways).
+	@ only because it may be popped off later as a return value
+	@ (i.e. we're not preserving it anyways).
 
 	@ Trap any INF/NAN first.
 	mov	ip, xh, lsl #1
@@ -1169,14 +1169,14 @@ ARM_FUNC_ALIAS eqdf2 cmpdf2
 	COND(mvn,s,ne)	ip, ip, asr #21
 	beq	3f
 	.cfi_remember_state
-	@ Save the current CFI state. This is done because the branch
-	@ is conditional, @ and if we don't take it we'll issue a
-	@ .cfi_adjust_cfa_offset and return.  @ If we do take it,
-	@ however, the .cfi_adjust_cfa_offset from the non-branch @ code
-	@ will affect the branch code as well. To avoid this we'll
-	@ restore @ the current state before executing the branch code.
+	@ Save the current CFI state.  This is done because the branch
+	@ is conditional, and if we don't take it we'll issue a
+	@ .cfi_adjust_cfa_offset and return.  If we do take it,
+	@ however, the .cfi_adjust_cfa_offset from the non-branch code
+	@ will affect the branch code as well.  To avoid this we'll
+	@ restore the current state before executing the branch code.
 
-	@ Test for equality.  @ Note that 0.0 is equal to -0.0.
+	@ Test for equality.  Note that 0.0 is equal to -0.0.
 2:	add	sp, sp, #4
 	.cfi_adjust_cfa_offset -4       @ CFA is now sp + previousOffset.
 
