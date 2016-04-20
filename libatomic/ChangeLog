@@ -1,3 +1,9 @@
+2016-04-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/70454
+	* configure.tgt (XCFLAGS): Don't add -march=i486 to compile
+	32-bit x86 target library on x86-64.
+
 2016-01-06  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR other/67627
