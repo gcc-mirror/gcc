@@ -1182,8 +1182,6 @@ package body Exp_Ch4 is
             end;
          end if;
 
-         Apply_Accessibility_Check (Temp);
-
          --  Generate the tag assignment
 
          --  Suppress the tag assignment for VM targets because VM tags are
@@ -1241,34 +1239,36 @@ package body Exp_Ch4 is
             Insert_Action (N, Tag_Assign);
          end if;
 
-         if Needs_Finalization (DesigT) and then Needs_Finalization (T) then
+         --  Generate an Adjust call if the object will be moved. In Ada 2005,
+         --  the object may be inherently limited, in which case there is no
+         --  Adjust procedure, and the object is built in place. In Ada 95, the
+         --  object can be limited but not inherently limited if this allocator
+         --  came from a return statement (we're allocating the result on the
+         --  secondary stack). In that case, the object will be moved, so we do
+         --  want to Adjust.
 
-            --  Generate an Adjust call if the object will be moved. In Ada
-            --  2005, the object may be inherently limited, in which case
-            --  there is no Adjust procedure, and the object is built in
-            --  place. In Ada 95, the object can be limited but not
-            --  inherently limited if this allocator came from a return
-            --  statement (we're allocating the result on the secondary
-            --  stack). In that case, the object will be moved, so we _do_
-            --  want to Adjust.
+         if Needs_Finalization (DesigT)
+           and then Needs_Finalization (T)
+           and then not Aggr_In_Place
+           and then not Is_Limited_View (T)
+         then
+            --  An unchecked conversion is needed in the classwide case because
+            --  the designated type can be an ancestor of the subtype mark of
+            --  the allocator.
 
-            if not Aggr_In_Place
-              and then not Is_Limited_View (T)
-            then
-               Insert_Action (N,
-
-                 --  An unchecked conversion is needed in the classwide case
-                 --  because the designated type can be an ancestor of the
-                 --  subtype mark of the allocator.
-
-                 Make_Adjust_Call
-                   (Obj_Ref =>
-                      Unchecked_Convert_To (T,
-                        Make_Explicit_Dereference (Loc,
-                          Prefix => New_Occurrence_Of (Temp, Loc))),
-                    Typ     => T));
-            end if;
+            Insert_Action (N,
+              Make_Adjust_Call
+                (Obj_Ref =>
+                   Unchecked_Convert_To (T,
+                     Make_Explicit_Dereference (Loc,
+                       Prefix => New_Occurrence_Of (Temp, Loc))),
+                 Typ     => T));
          end if;
+
+         --  Note: the accessibility check must be inserted after the call to
+         --  [Deep_]Adjust to ensure proper completion of the assignment.
+
+         Apply_Accessibility_Check (Temp);
 
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
          Analyze_And_Resolve (N, PtrT);
