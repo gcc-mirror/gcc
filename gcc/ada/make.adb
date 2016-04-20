@@ -6506,12 +6506,6 @@ package body Make is
          Make_Failed ("-i and -D cannot be used simultaneously");
       end if;
 
-      --  Warn about 'gnatmake -P'
-
-      if Project_File_Name /= null then
-         Make_Failed ("project file name missing after -P");
-      end if;
-
       --  If --subdirs= is specified, but not -P, this is equivalent to -D,
       --  except that the directory is created if it does not exist.
 
