@@ -2732,8 +2732,8 @@ finish_compound_literal (tree type, tree compound_literal,
   compound_literal = digest_init (type, compound_literal, complain);
   if (TREE_CODE (compound_literal) == CONSTRUCTOR)
     TREE_HAS_CONSTRUCTOR (compound_literal) = true;
-  /* Put static/constant array temporaries in static variables, but always
-     represent class temporaries with TARGET_EXPR so we elide copies.  */
+
+  /* Put static/constant array temporaries in static variables.  */
   if ((!at_function_scope_p () || CP_TYPE_CONST_P (type))
       && TREE_CODE (type) == ARRAY_TYPE
       && !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
@@ -2763,8 +2763,13 @@ finish_compound_literal (tree type, tree compound_literal,
 	return error_mark_node;
       return decl;
     }
-  else
-    return get_target_expr_sfinae (compound_literal, complain);
+
+  /* Represent other compound literals with TARGET_EXPR so we produce
+     an lvalue, but can elide copies.  */
+  if (!VECTOR_TYPE_P (type))
+    compound_literal = get_target_expr_sfinae (compound_literal, complain);
+
+  return compound_literal;
 }
 
 /* Return the declaration for the function-name variable indicated by
