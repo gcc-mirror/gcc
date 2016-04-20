@@ -448,6 +448,15 @@ package body Exp_Unst is
                      end loop;
                   end;
 
+               --  For private type, examine whether full view is static
+
+               elsif Is_Private_Type (T) and then Present (Full_View (T)) then
+                  Check_Static_Type (Full_View (T), DT);
+
+                  if Is_Static_Type (Full_View (T)) then
+                     Set_Is_Static_Type (T);
+                  end if;
+
                --  For now, ignore other types
 
                else

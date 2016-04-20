@@ -924,8 +924,8 @@ package body Exp_Util is
    --------------------------
 
    procedure Build_Procedure_Form (N : Node_Id) is
-      Loc          : constant Source_Ptr := Sloc (N);
-      Subp         : constant Entity_Id := Defining_Entity (N);
+      Loc  : constant Source_Ptr := Sloc (N);
+      Subp : constant Entity_Id := Defining_Entity (N);
 
       Func_Formal  : Entity_Id;
       Proc_Formals : List_Id;
@@ -941,7 +941,6 @@ package body Exp_Util is
          Append_To (Proc_Formals,
            Make_Parameter_Specification (Loc,
              Defining_Identifier =>
-
                Make_Defining_Identifier (Loc, Chars (Func_Formal)),
              Parameter_Type      =>
                New_Occurrence_Of (Etype (Func_Formal), Loc)));

@@ -14360,8 +14360,9 @@ package body Sem_Util is
                    and then Is_Predefined_File_Name
                               (Unit_File_Name (Get_Source_Unit (Par)));
             else
-               return Present (Alias (Id))
-                 and then Is_Unchecked_Conversion_Instance (Alias (Id));
+               return
+                 Present (Alias (Id))
+                   and then Is_Unchecked_Conversion_Instance (Alias (Id));
             end if;
          end if;
       end if;

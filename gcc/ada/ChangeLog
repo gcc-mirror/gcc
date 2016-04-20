@@ -1,3 +1,18 @@
+2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb, freeze.adb, sem_util.adb: Minor reformatting.
+
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Check_Static_Type): For a private type, check
+	full view.
+
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Check_Type): Reject an attribute reference in
+	an aspect expression, when the prefix of the reference is the
+	current instance of the type to which the aspect applies.
+
 2016-04-20  Bob Duff  <duff@adacore.com>
 
 	* sem_ch6.adb (Enter_Overloaded_Entity): Do not warn about
