@@ -13233,9 +13233,9 @@
   "ix86_expand_sse_unpack (operands[0], operands[1], true, false); DONE;")
 
 (define_expand "vec_unpacks_lo_hi"
-  [(set (match_operand:QI 0 "register_operand")
-        (subreg:QI (match_operand:HI 1 "register_operand") 0))]
-  "TARGET_AVX512DQ")
+  [(set (subreg:HI (match_operand:QI 0 "register_operand") 0)
+        (match_operand:HI 1 "register_operand"))]
+  "TARGET_AVX512F")
 
 (define_expand "vec_unpacks_lo_si"
   [(set (match_operand:HI 0 "register_operand")

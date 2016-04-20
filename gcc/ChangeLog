@@ -1,3 +1,8 @@
+2016-04-20  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* config/i386/sse.md (vec_unpacks_lo_hi): Always
+	use kmovw to support AVX512F target.
+
 2016-04-20  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-scalar-evolution.c (interpret_rhs_expr): Handle BIT_AND_EXPR.
