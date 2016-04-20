@@ -14282,28 +14282,25 @@ package body Sem_Util is
    --------------------------------------
 
    function Is_Unchecked_Conversion_Instance (Id : Entity_Id) return Boolean is
-      Par     : Node_Id;
-      Gen_Par : Entity_Id;
+      Par : Node_Id;
 
    begin
       --  Look for a function whose generic parent is the predefined intrinsic
       --  function Unchecked_Conversion.
 
       if Ekind (Id) = E_Function then
-         Par     := Parent (Id);
+         Par := Parent (Id);
 
-         if Nkind (Par) /= N_Function_Specification then
-            return False;
+         if Nkind (Par) = N_Function_Specification then
+            Par := Generic_Parent (Par);
+
+            return
+              Present (Par)
+                and then Chars (Par) = Name_Unchecked_Conversion
+                and then Is_Intrinsic_Subprogram (Par)
+                and then Is_Predefined_File_Name
+                           (Unit_File_Name (Get_Source_Unit (Par)));
          end if;
-
-         Gen_Par := Generic_Parent (Par);
-
-         return
-           Present (Gen_Par)
-             and then Chars (Gen_Par) = Name_Unchecked_Conversion
-             and then Is_Intrinsic_Subprogram (Gen_Par)
-             and then Is_Predefined_File_Name
-                        (Unit_File_Name (Get_Source_Unit (Gen_Par)));
       end if;
 
       return False;

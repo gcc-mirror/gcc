@@ -256,9 +256,9 @@ package body Ghost is
 
                if Present (Subp_Id) then
 
-                  --  The context is the internally built _postconditions
-                  --  subprogram, which it is OK because the real check was
-                  --  done before expansion activities.
+                  --  The context is the internally built _Postconditions
+                  --  procedure, which is OK because the real check was done
+                  --  before expansion activities.
 
                   if Chars (Subp_Id) = Name_uPostconditions then
                      return True;
