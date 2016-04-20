@@ -6413,16 +6413,29 @@ package body Make is
       --  Scan again the switch and arguments, now that we are sure that they
       --  do not include --version or --help.
 
-      --  First, for native gnatmake, check for switch -P and, if found and
-      --  gprbuild is available, silently invoke gprbuild.
+      --  First, check for switch -P and, if found and gprbuild is available,
+      --  silently invoke gprbuild, with switch --target if not on a native
+      --  platform.
 
-      Find_Program_Name;
+      declare
+         Arg_Len       : Positive      := Argument_Count;
+         Call_Gprbuild : Boolean       := False;
+         Gprbuild      : String_Access := null;
+         Pos           : Natural       := 0;
+         Success       : Boolean;
+         Target        : String_Access := null;
 
-      if Name_Buffer (1 .. Name_Len) = "gnatmake" then
-         declare
-            Call_Gprbuild : Boolean := False;
+      begin
+         Find_Program_Name;
 
-         begin
+         if Name_Len >= 8
+           and then Name_Buffer (Name_Len - 7 .. Name_Len) = "gnatmake"
+         then
+            if Name_Len > 8 then
+               Target  := new String'(Name_Buffer (1 .. Name_Len - 9));
+               Arg_Len := Arg_Len + 1;
+            end if;
+
             for J in 1 .. Argument_Count loop
                declare
                   Arg : constant String := Argument (J);
@@ -6437,16 +6450,20 @@ package body Make is
             end loop;
 
             if Call_Gprbuild then
-               declare
-                  Gprbuild : String_Access :=
-                               Locate_Exec_On_Path (Exec_Name => "gprbuild");
-                  Args     : Argument_List (1 .. Argument_Count);
-                  Success  : Boolean;
+               Gprbuild := Locate_Exec_On_Path (Exec_Name => "gprbuild");
 
-               begin
-                  if Gprbuild /= null then
+               if Gprbuild /= null then
+                  declare
+                     Args : Argument_List (1 .. Arg_Len);
+                  begin
+                     if Target /= null then
+                        Args (1) := new String'("--target=" & Target.all);
+                        Pos := 1;
+                     end if;
+
                      for J in 1 .. Argument_Count loop
-                        Args (J) := new String'(Argument (J));
+                        Pos := Pos + 1;
+                        Args (Pos) := new String'(Argument (J));
                      end loop;
 
                      Spawn (Gprbuild.all, Args, Success);
@@ -6456,11 +6473,11 @@ package body Make is
                      if Success then
                         Exit_Program (E_Success);
                      end if;
-                  end if;
-               end;
+                  end;
+               end if;
             end if;
-         end;
-      end if;
+         end if;
+      end;
 
       Scan_Args : for Next_Arg in 1 .. Argument_Count loop
          Scan_Make_Arg (Env, Argument (Next_Arg), And_Save => True);
