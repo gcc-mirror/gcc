@@ -8336,7 +8336,7 @@ package body Sem_Ch13 is
                  Statements => Stmts));
 
          --  The processing of an invariant pragma immediately generates the
-         --  invariant procedure spec, inserts it into the tree and analyzes
+         --  invariant procedure spec, inserts it into the tree, and analyzes
          --  it. If the spec has not been analyzed, then the invariant pragma
          --  is being inherited and requires manual insertion and analysis.
 
@@ -8362,9 +8362,9 @@ package body Sem_Ch13 is
             end if;
 
          --  Otherwise there are no private declarations. This is either an
-         --  error or the related type is a private extension in which case
+         --  error or the related type is a private extension, in which case
          --  it does not need a completion in a private part. Insert the body
-         --  and the end of the visible declarations and analyze immediately
+         --  at the end of the visible declarations and analyze immediately
          --  because the related type is about to be frozen.
 
          else

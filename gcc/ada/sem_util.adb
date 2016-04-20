@@ -1664,8 +1664,8 @@ package body Sem_Util is
 
       --  See if we need elaboration entity.
 
-      --  We always need an elaboration entity when preserving control-flow, as
-      --  we want to remain explicit about the units elaboration order.
+      --  We always need an elaboration entity when preserving control flow, as
+      --  we want to remain explicit about the unit's elaboration order.
 
       elsif Opt.Suppress_Control_Flow_Optimizations then
          null;

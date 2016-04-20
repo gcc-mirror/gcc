@@ -2797,7 +2797,7 @@ package body Par_SCO is
                   when others =>
                      if T.C2 = '?' then
 
-                        --  This in not a logical operator: start looking for
+                        --  This is not a logical operator: start looking for
                         --  nested decisions from here. Recurse over the left
                         --  child and let the loop take care of the right one.
 
@@ -2849,7 +2849,7 @@ package body Par_SCO is
                   when others =>
                      if T.C2 = '?' and then Process_Nested_Decisions then
 
-                        --  This in not a logical operator: start looking for
+                        --  This is not a logical operator: start looking for
                         --  nested decisions from here. Recurse over the left
                         --  child and let the loop take care of the right one.
 
