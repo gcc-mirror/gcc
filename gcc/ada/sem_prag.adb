@@ -12504,9 +12504,10 @@ package body Sem_Prag is
 
             else
                declare
-                  Arg  : Node_Id;
-                  Argx : Node_Id;
-                  LocP : Source_Ptr;
+                  Arg   : Node_Id;
+                  Argx  : Node_Id;
+                  LocP  : Source_Ptr;
+                  New_P : Node_Id;
 
                begin
                   Arg := Arg1;
@@ -12526,7 +12527,7 @@ package body Sem_Prag is
                      --  Construct equivalent old form syntax Check_Policy
                      --  pragma and insert it to get remaining checks.
 
-                     Insert_Action (N,
+                     New_P :=
                        Make_Pragma (LocP,
                          Chars                        => Name_Check_Policy,
                          Pragma_Argument_Associations => New_List (
@@ -12534,9 +12535,20 @@ package body Sem_Prag is
                              Expression =>
                                Make_Identifier (LocP, Chars (Arg))),
                            Make_Pragma_Argument_Association (Sloc (Argx),
-                             Expression => Argx))));
+                             Expression => Argx)));
 
                      Arg := Next (Arg);
+
+                     --  For a configuration pragma, insert old form in
+                     --  the corresponding file.
+
+                     if Is_Configuration_Pragma then
+                        Insert_After (N, New_P);
+                        Analyze (New_P);
+
+                     else
+                        Insert_Action (N, New_P);
+                     end if;
                   end loop;
 
                   --  Rewrite original Check_Policy pragma to null, since we
