@@ -1,3 +1,9 @@
+2016-04-20  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/70725
+	* tree-if-conv.c (is_false_predicate): New function.
+	(predicate_mem_writes): Use it.
+
 2016-04-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70726

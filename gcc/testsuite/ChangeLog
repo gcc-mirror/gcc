@@ -1,3 +1,8 @@
+2016-04-20  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/70725
+	* gcc.dg/pr70725.c: New test.
+
 2016-04-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/70726
