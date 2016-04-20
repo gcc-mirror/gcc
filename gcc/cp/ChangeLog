@@ -1,3 +1,8 @@
+2016-04-20  Nathan Sidwell  <nathan@acm.org>
+
+	* semantics.c (finish_compound_lteral): Don't wrap VECTOR_TYPEs in a
+	TARGET_EXPR.
+
 2016-04-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66543
