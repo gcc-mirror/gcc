@@ -1,3 +1,12 @@
+2016-04-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_avx256_split_vector_move_misalign):
+	Short-cut unaligned load and store cases.  Handle all integer
+	vector modes.
+	(ix86_expand_vector_move_misalign): Short-cut unaligned load
+	and store cases.  Call ix86_avx256_split_vector_move_misalign
+	directly without checking mode class.
+
 2016-04-20  Andrew Pinski  <apinski@cavium.com>
             Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
