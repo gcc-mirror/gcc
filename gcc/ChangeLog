@@ -1,3 +1,8 @@
+2016-04-20  Marek Polacek  <polacek@redhat.com>
+
+	* tree-if-conv.c (is_false_predicate): For NULL_TREE return false
+	rather than true.
+
 2016-04-20  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* config/i386/sse.md (vec_unpacks_lo_hi): Always
