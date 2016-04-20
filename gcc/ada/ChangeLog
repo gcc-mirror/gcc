@@ -1,3 +1,8 @@
+2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb, contracts.adb, ghost.adb, exp_ch6.adb: Minor
+	reformatting.
+
 2016-04-20  Javier Miranda  <miranda@adacore.com>
 
 	* contracts.adb (Build_Postconditions_Procedure): Code cleanup.

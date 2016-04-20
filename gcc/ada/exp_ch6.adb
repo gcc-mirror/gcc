@@ -5522,6 +5522,7 @@ package body Exp_Ch6 is
 
    procedure Expand_N_Subprogram_Body_Stub (N : Node_Id) is
       Bod : Node_Id;
+
    begin
       if Present (Corresponding_Body (N)) then
          Bod := Unit_Declaration_Node (Corresponding_Body (N));
