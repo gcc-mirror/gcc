@@ -3917,10 +3917,30 @@ package body Sem_Attr is
       -- Image --
       -----------
 
-      when Attribute_Image => Image :
-      begin
+      when Attribute_Image => Image : begin
          Check_SPARK_05_Restriction_On_Attribute;
-         Check_Scalar_Type;
+
+         --  AI12-00124-1 : The ARG has adopted the GNAT semantics of 'Img
+         --  for scalar types, so that the prefix can be an object and not
+         --  a type, and there is no need for an argument. Given this vote
+         --  of confidence from the ARG, simplest is to transform this new
+         --  usage of 'Image into a reference to 'Img.
+
+         if Ada_Version > Ada_2005
+           and then Is_Object_Reference (P)
+           and then Is_Scalar_Type (P_Type)
+         then
+            Rewrite (N,
+              Make_Attribute_Reference (Loc,
+                Prefix         => Relocate_Node (P),
+                Attribute_Name => Name_Img));
+            Analyze (N);
+            return;
+
+         else
+            Check_Scalar_Type;
+         end if;
+
          Set_Etype (N, Standard_String);
 
          if Is_Real_Type (P_Type) then

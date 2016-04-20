@@ -1174,8 +1174,7 @@ package body Lib.Xref is
       while Present (Formal) loop
          if Ekind (Formal) = E_In_Parameter then
 
-            if Nkind (Parameter_Type (Parent (Formal)))
-              = N_Access_Definition
+            if Nkind (Parameter_Type (Parent (Formal))) = N_Access_Definition
             then
                Generate_Reference (E, Formal, '^', False);
             else

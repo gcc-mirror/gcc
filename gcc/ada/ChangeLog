@@ -1,3 +1,17 @@
+2016-04-20  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Remove transient
+	scope associated with the renaming object declaration.
+	* exp_util.adb (Insert_Actions): Remove handling of iterator
+	loop marked as requiring the secondary stack.
+
+2016-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case 'Image): Implement
+	AI12-0124, which extends the functionality of the attribute so it
+	reflects the semantics of GNAT 'Img when applied to scalar types.
+	* lib-xref.adb: minor whitespace layout fix.
+
 2016-04-20  Vincent Celier  <celier@adacore.com>
 
 	* clean.adb (Gnatclean): Fail if project file specified and
