@@ -1,5 +1,10 @@
 2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_ch13.adb (Build_Invariant_Procedure):
+	Reimplement the invariant procedure spec and body insertion.
+
+2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch13.adb (Add_Invariant): Do not replace
 	the saved expression of an invariatn aspect when inheriting
 	a class-wide type invariant as this clobbers the existing

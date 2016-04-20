@@ -8335,46 +8335,40 @@ package body Sem_Ch13 is
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => Stmts));
 
-         --  Insert procedure declaration and spec at the appropriate points.
-         --  If declaration is already analyzed, it was processed by the
-         --  generated pragma.
+         --  The processing of an invariant pragma immediately generates the
+         --  invariant procedure spec, inserts it into the tree and analyzes
+         --  it. If the spec has not been analyzed, then the invariant pragma
+         --  is being inherited and requires manual insertion and analysis.
+
+         if not Analyzed (PDecl) then
+            Append_To (Vis_Decls, PDecl);
+            Analyze (PDecl);
+         end if;
+
+         --  The invariant procedure body is inserted at the end of the private
+         --  declarations.
 
          if Present (Priv_Decls) then
-
-            --  The spec goes at the end of visible declarations, but they have
-            --  already been analyzed, so we need to explicitly do the analyze.
-
-            if not Analyzed (PDecl) then
-               Append_To (Vis_Decls, PDecl);
-               Analyze (PDecl);
-            end if;
-
-            --  The body goes at the end of the private declarations, which we
-            --  have not analyzed yet, so we do not need to perform an explicit
-            --  analyze call. We skip this if there are no private declarations
-            --  (this is an error that will be caught elsewhere);
-
             Append_To (Priv_Decls, PBody);
 
-            --  If the invariant appears on the full view of a type, the
-            --  analysis of the private part is complete, and we must
-            --  analyze the new body explicitly.
+            --  If the invariant appears on the full view of a private type,
+            --  then the analysis of the private part is already completed.
+            --  Manually analyze the new body in this case, otherwise wait
+            --  for the analysis of the private declarations to process the
+            --  body.
 
             if In_Private_Part (Current_Scope) then
                Analyze (PBody);
             end if;
 
-         --  If there are no private declarations this may be an error that
-         --  will be diagnosed elsewhere. However, if this is a non-private
-         --  type that inherits invariants, it needs no completion and there
-         --  may be no private part. In this case insert invariant procedure
-         --  at end of current declarative list, and analyze at once, given
-         --  that the type is about to be frozen.
+         --  Otherwise there are no private declarations. This is either an
+         --  error or the related type is a private extension in which case
+         --  it does not need a completion in a private part. Insert the body
+         --  and the end of the visible declarations and analyze immediately
+         --  because the related type is about to be frozen.
 
-         elsif not Is_Private_Type (Typ) then
-            Append_To (Vis_Decls, PDecl);
+         else
             Append_To (Vis_Decls, PBody);
-            Analyze (PDecl);
             Analyze (PBody);
          end if;
       end if;
