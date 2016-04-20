@@ -10538,19 +10538,25 @@ s390_restore_gprs_from_fprs (void)
 
   for (i = 6; i < 16; i++)
     {
-      if (FP_REGNO_P (cfun_gpr_save_slot (i)))
-	{
-	  rtx_insn *insn =
-	    emit_move_insn (gen_rtx_REG (DImode, i),
-			    gen_rtx_REG (DImode, cfun_gpr_save_slot (i)));
-	  df_set_regs_ever_live (i, true);
-	  add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (DImode, i));
-	  if (i == STACK_POINTER_REGNUM)
-	    add_reg_note (insn, REG_CFA_DEF_CFA,
-			  plus_constant (Pmode, stack_pointer_rtx,
-					 STACK_POINTER_OFFSET));
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	}
+      rtx_insn *insn;
+
+      if (!FP_REGNO_P (cfun_gpr_save_slot (i)))
+	continue;
+
+      rtx fpr = gen_rtx_REG (DImode, cfun_gpr_save_slot (i));
+
+      if (i == STACK_POINTER_REGNUM)
+	insn = emit_insn (gen_stack_restore_from_fpr (fpr));
+      else
+	insn = emit_move_insn (gen_rtx_REG (DImode, i), fpr);
+
+      df_set_regs_ever_live (i, true);
+      add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (DImode, i));
+      if (i == STACK_POINTER_REGNUM)
+	add_reg_note (insn, REG_CFA_DEF_CFA,
+		      plus_constant (Pmode, stack_pointer_rtx,
+				     STACK_POINTER_OFFSET));
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
 }
 
@@ -13032,37 +13038,46 @@ s390_optimize_prologue (void)
 
       /* Remove ldgr/lgdr instructions used for saving and restore
 	 GPRs if possible.  */
-      if (TARGET_Z10
-	  && GET_CODE (pat) == SET
-	  && GET_MODE (SET_SRC (pat)) == DImode
-	  && REG_P (SET_SRC (pat))
-	  && REG_P (SET_DEST (pat)))
+      if (TARGET_Z10)
 	{
-	  int src_regno = REGNO (SET_SRC (pat));
-	  int dest_regno = REGNO (SET_DEST (pat));
-	  int gpr_regno;
-	  int fpr_regno;
+	  rtx tmp_pat = pat;
 
-	  if (!((GENERAL_REGNO_P (src_regno) && FP_REGNO_P (dest_regno))
-		|| (FP_REGNO_P (src_regno) && GENERAL_REGNO_P (dest_regno))))
-	    continue;
+	  if (INSN_CODE (insn) == CODE_FOR_stack_restore_from_fpr)
+	    tmp_pat = XVECEXP (pat, 0, 0);
 
-	  gpr_regno = GENERAL_REGNO_P (src_regno) ? src_regno : dest_regno;
-	  fpr_regno = FP_REGNO_P (src_regno) ? src_regno : dest_regno;
-
-	  /* GPR must be call-saved, FPR must be call-clobbered.  */
-	  if (!call_really_used_regs[fpr_regno]
-	      || call_really_used_regs[gpr_regno])
-	    continue;
-
-	  /* It must not happen that what we once saved in an FPR now
-	     needs a stack slot.  */
-	  gcc_assert (cfun_gpr_save_slot (gpr_regno) != SAVE_SLOT_STACK);
-
-	  if (cfun_gpr_save_slot (gpr_regno) == SAVE_SLOT_NONE)
+	  if (GET_CODE (tmp_pat) == SET
+	      && GET_MODE (SET_SRC (tmp_pat)) == DImode
+	      && REG_P (SET_SRC (tmp_pat))
+	      && REG_P (SET_DEST (tmp_pat)))
 	    {
-	      remove_insn (insn);
-	      continue;
+	      int src_regno = REGNO (SET_SRC (tmp_pat));
+	      int dest_regno = REGNO (SET_DEST (tmp_pat));
+	      int gpr_regno;
+	      int fpr_regno;
+
+	      if (!((GENERAL_REGNO_P (src_regno)
+		     && FP_REGNO_P (dest_regno))
+		    || (FP_REGNO_P (src_regno)
+			&& GENERAL_REGNO_P (dest_regno))))
+		continue;
+
+	      gpr_regno = GENERAL_REGNO_P (src_regno) ? src_regno : dest_regno;
+	      fpr_regno = FP_REGNO_P (src_regno) ? src_regno : dest_regno;
+
+	      /* GPR must be call-saved, FPR must be call-clobbered.  */
+	      if (!call_really_used_regs[fpr_regno]
+		  || call_really_used_regs[gpr_regno])
+		continue;
+
+	      /* It must not happen that what we once saved in an FPR now
+		 needs a stack slot.  */
+	      gcc_assert (cfun_gpr_save_slot (gpr_regno) != SAVE_SLOT_STACK);
+
+	      if (cfun_gpr_save_slot (gpr_regno) == SAVE_SLOT_NONE)
+		{
+		  remove_insn (insn);
+		  continue;
+		}
 	    }
 	}
 
