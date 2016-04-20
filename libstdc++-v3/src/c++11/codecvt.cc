@@ -789,7 +789,7 @@ do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
 {
   range<const char> from{ __from, __from_end };
   range<char16_t> to{ __to, __to_end };
-  codecvt_mode mode = codecvt_mode(_M_mode | (consume_header|generate_header));
+  codecvt_mode mode = codecvt_mode(_M_mode & (consume_header|generate_header));
 #if __BYTE_ORDER__ != __ORDER_BIG_ENDIAN__
   mode = codecvt_mode(mode | little_endian);
 #endif
@@ -1268,7 +1268,7 @@ do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
 {
   range<const char> from{ __from, __from_end };
   range<char16_t> to{ __to, __to_end };
-  codecvt_mode mode = codecvt_mode(_M_mode | (consume_header|generate_header));
+  codecvt_mode mode = codecvt_mode(_M_mode & (consume_header|generate_header));
 #if __BYTE_ORDER__ != __ORDER_BIG_ENDIAN__
   mode = codecvt_mode(mode | little_endian);
 #endif
