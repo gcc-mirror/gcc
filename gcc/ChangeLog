@@ -1,3 +1,11 @@
+2016-04-20  Andrew Pinski  <apinski@cavium.com>
+            Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/64971
+	* config/aarch64/aarch64.md (sibcall): Force call
+	address to be DImode for ILP32.
+	(sibcall_value): Likewise.
+
 2016-04-20  Marek Polacek  <polacek@redhat.com>
 
 	* tree-if-conv.c (is_false_predicate): For NULL_TREE return false
