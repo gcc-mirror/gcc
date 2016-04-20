@@ -1,5 +1,14 @@
 2016-04-20  Bin Cheng  <bin.cheng@arm.com>
 
+	PR tree-optimization/69489
+	* tree-if-conv.c (phi_convertible_by_degenerating_args): New.
+	(if_convertible_phi_p): Call phi_convertible_by_degenerating_args.
+	Revise dump message.
+	(if_convertible_bb_p): Remove check on edge count of basic block's
+	predecessors.
+
+2016-04-20  Bin Cheng  <bin.cheng@arm.com>
+
 	PR tree-optimization/56625
 	PR tree-optimization/69489
 	* tree-data-ref.h (DR_INNERMOST): New macro.
