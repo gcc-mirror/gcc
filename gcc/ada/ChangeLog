@@ -1,5 +1,10 @@
 2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* s-imgllu.adb, sem_util.adb, s-imgint.adb, s-imguns.adb,
+	s-imglli.adb: Minor reformatting.
+
+2016-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_res.adb (Rewrite_Renamed_Operator): Do not rewrite the
 	renamed operator when the associated node appears within a
 	pre/postcondition.
