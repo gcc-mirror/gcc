@@ -1,3 +1,8 @@
+2016-04-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70726
+	* g++.dg/vect/pr70726.cc: New testcase.
+
 2016-04-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/70674

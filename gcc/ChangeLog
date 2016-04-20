@@ -1,3 +1,9 @@
+2016-04-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70726
+	* tree-vect-stmts.c (vectorizable_shift): Do not use scalar
+	shift amounts from a pattern stmt operand.
+
 2016-04-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/70674
