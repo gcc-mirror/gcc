@@ -1,3 +1,7 @@
+2016-04-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (min(int_max, x), max(int_min, x)): New transformations.
+
 2016-04-20  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (can_inline_edge_p): Pass caller info to
