@@ -13105,18 +13105,23 @@ package body Sem_Ch12 is
                               --  The instance_spec is in the wrapper package,
                               --  usually followed by its local renaming
                               --  declaration. See Build_Subprogram_Renaming
-                              --  for details.
+                              --  for details. If the instance carries aspects,
+                              --  these result in the corresponding pragmas,
+                              --  inserted after the subprogram declaration.
+                              --  They must be skipped as well when retrieving
+                              --  the desired spec. A direct link would be
+                              --  more robust ???
 
                               declare
                                  Decl : Node_Id :=
                                           (Last (Visible_Declarations
                                             (Specification (Info.Act_Decl))));
                               begin
-                                 if Nkind (Decl) =
-                                      N_Subprogram_Renaming_Declaration
-                                 then
+                                 while Nkind_In (Decl,
+                                   N_Subprogram_Renaming_Declaration, N_Pragma)
+                                 loop
                                     Decl := Prev (Decl);
-                                 end if;
+                                 end loop;
 
                                  Info.Act_Decl := Decl;
                               end;

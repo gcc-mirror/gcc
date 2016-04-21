@@ -354,9 +354,10 @@ extern void __runnit(); /* thread entry point.  */
 
 #define BASE_SKIP 1
 
-/*-------------------- PPC ELF (GNU/Linux & VxWorks) ---------------------*/
+/*----------- PPC ELF (GNU/Linux & VxWorks & Lynx178e) -------------------*/
 
 #elif (defined (_ARCH_PPC) && defined (__vxworks)) ||  \
+  (defined (__powerpc__) && defined (__Lynx__) && defined(__ELF__)) || \
   (defined (__linux__) && defined (__powerpc__))
 
 #define USE_GENERIC_UNWINDER

@@ -5074,7 +5074,7 @@ package body Sem_Ch3 is
       --  inherit static and dynamic predicates if any.
 
       --  If declaration has no aspect specifications, inherit predicate
-      --  info as well.  Unclear how to handle the case of both specified
+      --  info as well. Unclear how to handle the case of both specified
       --  and inherited predicates ??? Other inherited aspects, such as
       --  invariants, should be OK, but the combination with later pragmas
       --  may also require special merging.

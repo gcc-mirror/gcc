@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -7537,27 +7537,54 @@ package body Sem_Ch4 is
             Get_First_Interp (Func_Name, I, It);
             Set_Etype (Indexing, Any_Type);
 
+            --  Analyze eacn candidae function with the given actuals
+
             while Present (It.Nam) loop
                Analyze_One_Call (Indexing, It.Nam, False, Success);
+               Get_Next_Interp (I, It);
+            end loop;
 
-               if Success then
+            --  If there are several successful candidates, resolution will
+            --  be by result. Mark the interpretations of the function name
+            --  itself.
 
-                  --  Function in current interpretation is a valid candidate.
-                  --  Its result type is also a potential type for the
-                  --  original Indexed_Component node.
+            if Is_Overloaded (Indexing) then
+               Get_First_Interp (Indexing, I, It);
 
+               while Present (It.Nam) loop
                   Add_One_Interp (Name (Indexing), It.Nam, It.Typ);
+                  Get_Next_Interp (I, It);
+               end loop;
+
+            else
+               Set_Etype (Name (Indexing), Etype (Indexing));
+            end if;
+
+            --  Now add the candidate interpretations to the indexing node
+            --  itself, to be replaced later by the function call.
+
+            if Is_Overloaded (Name (Indexing)) then
+               Get_First_Interp (Name (Indexing), I, It);
+
+               while Present (It.Nam) loop
                   Add_One_Interp (N, It.Nam, It.Typ);
 
-                  --  Add implicit dereference interpretation to original node
+                  --  Add dereference interpretation if the result type type
+                  --  has implicit reference discriminants.
 
                   if Has_Discriminants (Etype (It.Nam)) then
                      Check_Implicit_Dereference (N, Etype (It.Nam));
                   end if;
-               end if;
 
-               Get_Next_Interp (I, It);
-            end loop;
+                  Get_Next_Interp (I, It);
+               end loop;
+
+            else
+               Set_Etype (N, Etype (Name (Indexing)));
+               if Has_Discriminants (Etype (N)) then
+                  Check_Implicit_Dereference (N, Etype (N));
+               end if;
+            end if;
          end;
       end if;
 

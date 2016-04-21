@@ -5637,10 +5637,10 @@ package body Sem_Ch10 is
 
          Set_Ekind             (Ent, E_Incomplete_Type);
          Set_Etype             (Ent, Ent);
-         Set_Scope             (Ent, Scop);
-         Set_Is_First_Subtype  (Ent);
-         Set_Stored_Constraint (Ent, No_Elist);
          Set_Full_View         (Ent, Empty);
+         Set_Is_First_Subtype  (Ent);
+         Set_Scope             (Ent, Scop);
+         Set_Stored_Constraint (Ent, No_Elist);
          Init_Size_Align       (Ent);
 
          --  A tagged type and its corresponding shadow entity share one common
@@ -5668,16 +5668,16 @@ package body Sem_Ch10 is
             Set_Parent (CW_Typ, Parent (Ent));
 
             Set_Ekind                     (CW_Typ, E_Class_Wide_Type);
-            Set_Etype                     (CW_Typ, Ent);
-            Set_Scope                     (CW_Typ, Scop);
-            Set_Is_Tagged_Type            (CW_Typ);
-            Set_Is_First_Subtype          (CW_Typ);
-            Init_Size_Align               (CW_Typ);
-            Set_Has_Unknown_Discriminants (CW_Typ);
             Set_Class_Wide_Type           (CW_Typ, CW_Typ);
+            Set_Etype                     (CW_Typ, Ent);
             Set_Equivalent_Type           (CW_Typ, Empty);
             Set_From_Limited_With         (CW_Typ, From_Limited_With (Ent));
+            Set_Has_Unknown_Discriminants (CW_Typ);
+            Set_Is_First_Subtype          (CW_Typ);
+            Set_Is_Tagged_Type            (CW_Typ);
             Set_Materialize_Entity        (CW_Typ, Materialize);
+            Set_Scope                     (CW_Typ, Scop);
+            Init_Size_Align               (CW_Typ);
          end if;
       end Decorate_Type;
 
