@@ -1,11 +1,13 @@
+2016-04-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb (Component_Not_OK_For_Backend): Refine previous
+	change to take into account Per_Object_Constraint field rather
+	than special casing strings.
+	* exp_ch6.adb: Fix typo in Replace_Returns.
+
 2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch5.adb: Minor reformatting.
-
-2016-04-21  Eric Botcazou  <ebotcazou@adacore.com>
-
-	* exp_ch2.adb (Expand_Current_Value): Make an appropriate
-	character literal if the entity is of a character type.
 
 2016-04-21  Arnaud Charlet  <charlet@adacore.com>
 

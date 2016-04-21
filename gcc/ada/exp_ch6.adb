@@ -739,7 +739,7 @@ package body Exp_Ch6 is
                begin
                   Part := First (Elsif_Parts (Stmt));
                   while Present (Part) loop
-                     Replace_Returns (Part, Then_Statements (Part));
+                     Replace_Returns (Param_Id, Then_Statements (Part));
                      Next (Part);
                   end loop;
                end;
@@ -806,6 +806,11 @@ package body Exp_Ch6 is
             Make_Handled_Sequence_Of_Statements (Loc,
               Statements => Stmts));
 
+      --  If the function is a generic instance, so is the new procedure.
+      --  Set flag accordingly so that the proper renaming declarations are
+      --  generated.
+
+      Set_Is_Generic_Instance (Proc_Id, Is_Generic_Instance (Func_Id));
       return New_Body;
    end Build_Procedure_Body_Form;
 

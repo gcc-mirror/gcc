@@ -6024,7 +6024,8 @@ package body Exp_Aggr is
                return True;
 
             elsif Modify_Tree_For_C
-              and then Ekind (Etype (Expr_Q)) = E_String_Literal_Subtype
+              and then Nkind (C) in N_Entity
+              and then Has_Per_Object_Constraint (C)
             then
                Static_Components := False;
                return True;
