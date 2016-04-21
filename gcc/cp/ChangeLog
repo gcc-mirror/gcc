@@ -1,3 +1,9 @@
+2016-04-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70513
+	* parser.c (cp_parser_enum_specifier): Check and possibly error for
+	extra qualification.
+
 2016-04-20  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/55635

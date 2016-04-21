@@ -1,3 +1,9 @@
+2016-04-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70513
+	* g++.dg/cpp0x/forw_enum12.C: New test.
+	* g++.dg/cpp0x/forw_enum13.C: New test.
+
 2016-04-21  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/70728
