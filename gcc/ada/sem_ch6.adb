@@ -3302,7 +3302,7 @@ package body Sem_Ch6 is
 
       --  If we are generating C and this is a function returning a constrained
       --  array type for which we must create a procedure with an extra out
-      --  parameter, build and analyze the body now.  The procedure declaration
+      --  parameter, build and analyze the body now. The procedure declaration
       --  has already been created. We reuse the source body of the function,
       --  because in an instance it may contain global references that cannot
       --  be reanalyzed. The source function itself is not used any further,
@@ -3319,9 +3319,9 @@ package body Sem_Ch6 is
          Rewrite (N, Build_Procedure_Body_Form (Spec_Id, N));
          Analyze (N);
 
-         --  The entity for the created procedure must remain invisible,
-         --  so it does not participate in resolution of subsequent
-         --  references to the function.
+         --  The entity for the created procedure must remain invisible, so it
+         --  does not participate in resolution of subsequent references to the
+         --  function.
 
          Set_Is_Immediately_Visible (Corresponding_Spec (N), False);
          return;

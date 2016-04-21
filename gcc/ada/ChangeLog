@@ -1,3 +1,8 @@
+2016-04-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* lib-writ.adb, sem_ch6.adb: Minor reformatting and code cleanup.
+	* sem.adb: Fix comment.
+
 2016-04-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Analyze_Subtype_Declaration): A subtype
