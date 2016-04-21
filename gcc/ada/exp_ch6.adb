@@ -72,40 +72,12 @@ with Sem_Util;  use Sem_Util;
 with Sinfo;     use Sinfo;
 with Snames;    use Snames;
 with Stand;     use Stand;
-with Table;
 with Targparm;  use Targparm;
 with Tbuild;    use Tbuild;
 with Uintp;     use Uintp;
 with Validsw;   use Validsw;
 
 package body Exp_Ch6 is
-
-   -------------------------------------
-   -- Table for Unnesting Subprograms --
-   -------------------------------------
-
-   --  When we expand a subprogram body, if it has nested subprograms and if
-   --  we are in Unnest_Subprogram_Mode, then we record the subprogram entity
-   --  and the body in this table, to later be passed to Unnest_Subprogram.
-
-   --  We need this delaying mechanism, because we have to wait until all
-   --  instantiated bodies have been inserted before doing the unnesting.
-
-   type Unest_Entry is record
-      Ent : Entity_Id;
-      --  Entity for subprogram to be unnested
-
-      Bod : Node_Id;
-      --  Subprogram body to be unnested
-   end record;
-
-   package Unest_Bodies is new Table.Table (
-     Table_Component_Type => Unest_Entry,
-     Table_Index_Type     => Nat,
-     Table_Low_Bound      => 1,
-     Table_Initial        => 100,
-     Table_Increment      => 200,
-     Table_Name           => "Unest_Bodies");
 
    -----------------------
    -- Local Subprograms --
@@ -6803,15 +6775,6 @@ package body Exp_Ch6 is
       return False;
    end Has_Unconstrained_Access_Discriminants;
 
-   ----------------
-   -- Initialize --
-   ----------------
-
-   procedure Initialize is
-   begin
-      Unest_Bodies.Init;
-   end Initialize;
-
    --------------------------------
    -- Is_Build_In_Place_Function --
    --------------------------------
@@ -8477,62 +8440,44 @@ package body Exp_Ch6 is
 
    procedure Unnest_Subprograms (N : Node_Id) is
 
-      procedure Search_Unnesting_Subprograms (N : Node_Id);
-      --  Search for outer level procedures with nested subprograms and append
-      --  them to the Unnest table.
+      function Search_Subprograms (N : Node_Id) return Traverse_Result;
+      --  Tree visitor that search for outer level procedures with nested
+      --  subprograms and invokes Unnest_Subprogram()
 
-      ----------------------------------
-      -- Search_Unnesting_Subprograms --
-      ----------------------------------
+      ------------------------
+      -- Search_Subprograms --
+      ------------------------
 
-      procedure Search_Unnesting_Subprograms (N : Node_Id) is
-
-         function Search_Subprograms (N : Node_Id) return Traverse_Result;
-         --  Tree visitor that search for outer level procedures with nested
-         --  subprograms and adds them to the Unnest table.
-
-         ------------------------
-         -- Search_Subprograms --
-         ------------------------
-
-         function Search_Subprograms (N : Node_Id) return Traverse_Result is
-         begin
-            if Nkind_In (N, N_Subprogram_Body,
-                            N_Subprogram_Body_Stub)
-            then
-               declare
-                  Spec_Id : constant Entity_Id := Unique_Defining_Entity (N);
-
-               begin
-                  --  We are only interested in subprograms (not generic
-                  --  subprograms), that have nested subprograms.
-
-                  if Is_Subprogram (Spec_Id)
-                    and then Has_Nested_Subprogram (Spec_Id)
-                    and then Is_Library_Level_Entity (Spec_Id)
-                  then
-                     Unest_Bodies.Append ((Spec_Id, N));
-                  end if;
-               end;
-            end if;
-
-            return OK;
-         end Search_Subprograms;
-
-         ---------------
-         -- Do_Search --
-         ---------------
-
-         procedure Do_Search is new Traverse_Proc (Search_Subprograms);
-         --  Subtree visitor instantiation
-
-      --  Start of processing for Search_Unnesting_Subprograms
-
+      function Search_Subprograms (N : Node_Id) return Traverse_Result is
       begin
-         if Opt.Unnest_Subprogram_Mode then
-            Do_Search (N);
+         if Nkind_In (N, N_Subprogram_Body,
+                         N_Subprogram_Body_Stub)
+         then
+            declare
+               Spec_Id : constant Entity_Id := Unique_Defining_Entity (N);
+
+            begin
+               --  We are only interested in subprograms (not generic
+               --  subprograms), that have nested subprograms.
+
+               if Is_Subprogram (Spec_Id)
+                 and then Has_Nested_Subprogram (Spec_Id)
+                 and then Is_Library_Level_Entity (Spec_Id)
+               then
+                  Unnest_Subprogram (Spec_Id, N);
+               end if;
+            end;
          end if;
-      end Search_Unnesting_Subprograms;
+
+         return OK;
+      end Search_Subprograms;
+
+      ---------------
+      -- Do_Search --
+      ---------------
+
+      procedure Do_Search is new Traverse_Proc (Search_Subprograms);
+      --  Subtree visitor instantiation
 
    --  Start of processing for Unnest_Subprograms
 
@@ -8541,15 +8486,7 @@ package body Exp_Ch6 is
          return;
       end if;
 
-      Search_Unnesting_Subprograms (N);
-
-      for J in Unest_Bodies.First .. Unest_Bodies.Last loop
-         declare
-            UBJ : Unest_Entry renames Unest_Bodies.Table (J);
-         begin
-            Unnest_Subprogram (UBJ.Ent, UBJ.Bod);
-         end;
-      end loop;
+      Do_Search (N);
    end Unnest_Subprograms;
 
 end Exp_Ch6;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2013-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2013-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -697,6 +697,8 @@ package body Set_Targ is
       end if;
 
       Buflen := Read (File_Desc, Buffer'Address, Buffer'Length);
+
+      Close (File_Desc);
 
       if Buflen = Buffer'Length then
          Fail ("file is too long: " & File_Name);

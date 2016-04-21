@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2015, AdaCore                     --
+--                     Copyright (C) 1995-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1848,6 +1848,8 @@ package body System.OS_Lib is
       Saved_Error  : File_Descriptor;
       Saved_Output : File_Descriptor;
 
+      Dummy_Status : Boolean;
+
    begin
       --  Do not attempt to spawn if the output files could not be created
 
@@ -1863,9 +1865,8 @@ package body System.OS_Lib is
       Saved_Error  := Dup (Standerr);
       Dup2 (Stderr_FD, Standerr);
 
-      --  Spawn the program
-
-      Result := Non_Blocking_Spawn (Program_Name, Args);
+      Set_Close_On_Exec (Saved_Output, True, Dummy_Status);
+      Set_Close_On_Exec (Saved_Error,  True, Dummy_Status);
 
       --  Close the files just created for the output, as the file descriptors
       --  cannot be used anywhere, being local values. It is safe to do that,
@@ -1874,6 +1875,10 @@ package body System.OS_Lib is
 
       Close (Stdout_FD);
       Close (Stderr_FD);
+
+      --  Spawn the program
+
+      Result := Non_Blocking_Spawn (Program_Name, Args);
 
       --  Restore the standard output and error
 
