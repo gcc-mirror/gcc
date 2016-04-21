@@ -1,3 +1,12 @@
+2016-04-21  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	* name-lookup.c (free_saved_scope): New free list of saved_scope
+	structures.
+	(push_to_top_level): Attempt to reuse a saved_scope struct
+	from free_saved_scope instead of allocating a new one each time.
+	(pop_from_top_level_1): Chain the now-unused saved_scope structure
+	onto free_saved_scope.
+
 2016-04-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70540
