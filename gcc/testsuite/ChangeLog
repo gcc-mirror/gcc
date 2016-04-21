@@ -1,3 +1,8 @@
+2016-04-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70540
+	* g++.dg/cpp0x/auto48.C: New.
+
 2016-04-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/70513

@@ -3281,7 +3281,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
   tree initializer = convert_from_reference (decl);
 
   /* Mark it as used now even if the use is ill-formed.  */
-  if (!mark_used (decl, complain) && !(complain & tf_error))
+  if (!mark_used (decl, complain))
     return error_mark_node;
 
   bool saw_generic_lambda = false;
