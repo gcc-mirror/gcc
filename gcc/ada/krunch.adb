@@ -107,6 +107,7 @@ begin
         or else (Curlen =  9 and then Buffer (3 ..  9) = "fortran")
         or else (Curlen = 16 and then Buffer (3 .. 16) = "packed_decimal")
         or else (Curlen >  8 and then Buffer (3 ..  9) = "vxworks")
+        or else (Curlen >  5 and then Buffer (3 ..  6) = "java")
       then
          Krlen := 8;
       else
