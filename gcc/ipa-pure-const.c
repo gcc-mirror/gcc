@@ -1163,7 +1163,10 @@ ignore_edge_for_nothrow (struct cgraph_edge *e)
   enum availability avail;
   cgraph_node *n = e->callee->function_or_virtual_thunk_symbol (&avail,
 							        e->caller);
-  return (avail <= AVAIL_INTERPOSABLE || TREE_NOTHROW (n->decl));
+  if (avail <= AVAIL_INTERPOSABLE || TREE_NOTHROW (n->decl))
+    return true;
+  return opt_for_fn (e->callee->decl, flag_non_call_exceptions)
+	 && !e->callee->binds_to_current_def_p (e->caller);
 }
 
 /* Return true if NODE is self recursive function.
@@ -1589,14 +1592,20 @@ propagate_nothrow (void)
 		    continue;
 
 		  struct cgraph_node *y = e->callee->
-				    function_or_virtual_thunk_symbol (&avail,
-								      e->caller);
+				   function_or_virtual_thunk_symbol (&avail,
+								     e->caller);
 
 		  /* We can use info about the callee only if we know it can
-		     not be interposed.  */
+		     not be interposed.
+		     When callee is compiled with non-call exceptions we also
+		     must check that the declaration is bound to current
+		     body as other semantically equivalent body may still
+		     throw.  */
 		  if (avail <= AVAIL_INTERPOSABLE
 		      || (!TREE_NOTHROW (y->decl)
-			  && get_function_state (y)->can_throw))
+			  && (get_function_state (y)->can_throw
+			      || (opt_for_fn (y->decl, flag_non_call_exceptions)
+				  && !e->callee->binds_to_current_def_p (w)))))
 		    can_throw = true;
 		}
 	      for (ie = w->indirect_calls; ie && !can_throw;
